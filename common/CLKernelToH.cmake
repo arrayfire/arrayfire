@@ -25,7 +25,7 @@
 
 include(CMakeParseArguments)
 
-get_filename_component(BIN2CPP_PROGRAM "${CMAKE_BINARY_DIR}/bin2cpp" PROGRAM)
+set(BIN2CPP_PROGRAM "bin2cpp")
 
 function(CL_KERNEL_TO_H)
     cmake_parse_arguments(RTCS "" "VARNAME;EXTENSION;OUTPUT_DIR;TARGETS" "SOURCES" ${ARGN})
