@@ -44,8 +44,6 @@ CL_KERNEL_TO_H(
     TARGETS cl_kernel_targets
     )
 
-MESSAGE(${kernel_files})
-
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 ADD_LIBRARY(afopencl SHARED ${opencl_src})
