@@ -35,8 +35,8 @@ IF(${BUILD_OPENCL})
 ENDIF()
 
 SUBDIRS(src/array)
-SUBDIRS(test)
 
 IF(${BUILD_TEST})
     ENABLE_TESTING()
+    SUBDIRS(test)
 ENDIF()
