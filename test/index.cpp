@@ -124,6 +124,7 @@ class Indexing2D : public ::testing::Test
 {
 public:
     virtual void SetUp() {
+
         column_continuous_seq.push_back({{span, af_seq{ .begin = 0, .end = 6, .step = 1}}});
         column_continuous_seq.push_back({{span, af_seq{ .begin = 4, .end = 9, .step = 1}}});
         column_continuous_seq.push_back({{span, af_seq{ .begin = 3, .end = 8, .step = 1}}});
