@@ -19,10 +19,10 @@ SET( opencl_src
     index.cpp
     print.cpp
     generator.cpp
-    backend_helper.h
+    backend.h
     ../ArrayInfo.cpp
     ../ArrayInfo.hpp
-    ../common_helper.h
+    ../helper.h
     ../elwise.cpp
     ../generator.cpp
     ../copy.cpp

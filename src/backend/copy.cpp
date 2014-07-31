@@ -4,8 +4,8 @@
 #include <af/defines.h>
 #include <ArrayInfo.hpp>
 #include <copy.hpp>
-#include <common_helper.h>
-#include <backend_helper.h>
+#include <helper.h>
+#include <backend.h>
 //#include <Array.hpp>
 
 af_err af_copy(af_array *dst, const void* const src)

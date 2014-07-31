@@ -3,8 +3,8 @@
 #include <af/arith.h>
 #include <ArrayInfo.hpp>
 #include <elwise.hpp>
-#include <common_helper.h>
-#include <backend_helper.h>
+#include <helper.h>
+#include <backend.h>
 
 af_err af_add(af_array *result, const af_array lhs, const af_array rhs)
 {

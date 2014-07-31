@@ -5,8 +5,8 @@
 #include <af/array.h>
 #include <af/defines.h>
 #include <generator.hpp>
-#include <common_helper.h>
-#include <backend_helper.h>
+#include <helper.h>
+#include <backend.h>
 
 using af::dim4;
 

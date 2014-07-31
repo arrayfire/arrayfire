@@ -10,10 +10,10 @@ SET(cpp_src
     Array.cpp Array.hpp
     generator.cpp
     print.cpp
-    backend_helper.h
+    backend.h
     ../ArrayInfo.cpp
     ../ArrayInfo.hpp
-    ../common_helper.h
+    ../helper.h
     ../elwise.cpp
     ../generator.cpp
     ../copy.cpp

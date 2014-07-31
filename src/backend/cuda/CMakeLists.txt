@@ -15,10 +15,10 @@ SET( cuda_src
     print.cu
     index.cu index.hpp
     generator.cu
-    backend_helper.h
+    backend.h
     ../ArrayInfo.cpp
     ../ArrayInfo.hpp
-    ../common_helper.h
+    ../helper.h
     ../elwise.cpp
     ../generator.cpp
     ../copy.cpp
