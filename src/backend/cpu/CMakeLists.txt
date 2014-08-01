@@ -4,22 +4,27 @@ INCLUDE_DIRECTORIES(
     )
 
 SET(cpp_src
-    elwise.cpp elwise.hpp
-    copy.cpp
-    index.cpp
-    Array.cpp Array.hpp
-    generator.cpp
-    print.cpp
+    Array.cpp
+    Array.hpp
     backend.h
+    copy.cpp
+    copy.hpp
+    elwise.cpp
+    elwise.hpp
+    generator.cpp
+    generator.hpp
+    index.cpp
+    index.hpp
+    print.cpp
+    print.hpp
+    ../array.cpp
     ../ArrayInfo.cpp
     ../ArrayInfo.hpp
-    ../helper.h
+    ../dim4.cpp
     ../elwise.cpp
-    ../generator.cpp
-    ../copy.cpp
+    ../helper.h
     ../index.cpp
     ../print.cpp
-    ../dim4.cpp
     )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")

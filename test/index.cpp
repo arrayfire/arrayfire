@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
-#include "arrayfire.h"
+#include <gtest/gtest.h>
+#include <arrayfire.h>
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <vector>
@@ -38,31 +38,30 @@ DimCheck(const vector<af_seq> &seqs) {
     generate(begin(hData), end(hData), [&] () { return n++; });
 
     af_array a = 0;
-    EXPECT_EQ(AF_SUCCESS, af_create_array(&a, ndims, d, (af_dtype) af::dtype_traits<T>::af_type));
-    EXPECT_EQ(AF_SUCCESS, af_copy(&a, &hData.front()));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &hData.front(), ndims, d, (af_dtype) af::dtype_traits<T>::af_type));
 
     vector<af_array> indexed_array(seqs.size(), 0);
     for(size_t i = 0; i < seqs.size(); i++) {
-        EXPECT_EQ(AF_SUCCESS, af_index(&(indexed_array[i]), a, ndims, &seqs[i]))
-        << "where seqs[i].begin == "    << seqs[i].begin
-        << " seqs[i].step == "          << seqs[i].step
-        << " seqs[i].end == "           << seqs[i].end;
+        ASSERT_EQ(AF_SUCCESS, af_index(&(indexed_array[i]), a, ndims, &seqs[i]))
+            << "where seqs[i].begin == "    << seqs[i].begin
+            << " seqs[i].step == "          << seqs[i].step
+            << " seqs[i].end == "           << seqs[i].end;
     }
 
     vector<T*> h_indexed(seqs.size());
     for(size_t i = 0; i < seqs.size(); i++) {
-        //af_print(indexed_array[i]);
-        EXPECT_EQ(AF_SUCCESS, af_host_ptr((void **)&(h_indexed[i]), indexed_array[i]));
+        dim_type elems;
+        ASSERT_EQ(AF_SUCCESS, af_get_elements(&elems, indexed_array[i]));
+        h_indexed[i] = new T[elems];
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void *)(h_indexed[i]), indexed_array[i]));
     }
 
     for(size_t k = 0; k < seqs.size(); k++) {
         if(seqs[k].step > 0)        {
             checkValues(seqs[k], &hData.front(), h_indexed[k], std::less_equal<int>());
-        }
-        else if (seqs[k].step < 0)  {
+        } else if (seqs[k].step < 0)  {
             checkValues(seqs[k], &hData.front(), h_indexed[k], std::greater_equal<int>());
-        } //reverse indexing
-        else                        {                                                 //span
+        } else {
             for(size_t i = 0; i <= seqs[k].end; i++) {
                 ASSERT_DOUBLE_EQ(hData[i], h_indexed[k][i])
                     << "Where i = " << i;
@@ -283,20 +282,20 @@ DimCheck2D(const vector<array<af_seq,NDims>> &seqs,string TestFile)
     ReadTests<int, T>(TestFile, dimensions, hData, tests);
 
     af_array a = 0;
-    EXPECT_EQ(AF_SUCCESS, af_create_array(&a, NDims, dimensions.get(), (af_dtype) af::dtype_traits<T>::af_type));
-    EXPECT_EQ(AF_SUCCESS, af_copy(&a, &hData.front()));
-    //af_print(a); fflush(stdout);
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &hData.front(), NDims, dimensions.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
     vector<af_array> indexed_arrays(seqs.size(), 0);
     for(size_t i = 0; i < seqs.size(); i++) {
-        EXPECT_EQ(AF_SUCCESS, af_index(&(indexed_arrays[i]), a, NDims, seqs[i].data()));
-        //af_print(indexed_arrays[i]);
+        ASSERT_EQ(AF_SUCCESS, af_index(&(indexed_arrays[i]), a, NDims, seqs[i].data()));
     }
 
     vector<T*> h_indexed(seqs.size(), nullptr);
     for(size_t i = 0; i < seqs.size(); i++) {
-        //af_print(indexed_arrays[i]);
-        EXPECT_EQ(AF_SUCCESS, af_host_ptr((void **) &h_indexed[i], indexed_arrays[i]));
+        dim_type elems;
+        ASSERT_EQ(AF_SUCCESS, af_get_elements(&elems, indexed_arrays[i]));
+        h_indexed[i] = new T[elems];
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void *)h_indexed[i], indexed_arrays[i]));
+
         T* ptr = h_indexed[i];
         if(false == equal(ptr, ptr + tests[i].size(), begin(tests[i]))) {
             af_print(indexed_arrays[i]);
@@ -306,6 +305,7 @@ DimCheck2D(const vector<array<af_seq,NDims>> &seqs,string TestFile)
             copy(begin(tests[i]), end(tests[i]), ostream_iterator<T>(cout, ", "));
             FAIL() << "indexed_array[" << i << "] FAILED" << endl;
         }
+        delete[] h_indexed[i];
     }
 }
 
@@ -313,91 +313,90 @@ TYPED_TEST_CASE(Indexing2D, TestTypes);
 
 TYPED_TEST(Indexing2D, ColumnContinious)
 {
-    DimCheck2D<TypeParam, 2>(this->column_continuous_seq, "./test/data/ColumnContinious.test");
+    DimCheck2D<TypeParam, 2>(this->column_continuous_seq, "./test/data/index/ColumnContinious.test");
 }
 
 TYPED_TEST(Indexing2D, ColumnContiniousReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->column_continuous_reverse_seq, "./test/data/ColumnContiniousReverse.test");
+    DimCheck2D<TypeParam, 2>(this->column_continuous_reverse_seq, "./test/data/index/ColumnContiniousReverse.test");
 }
 
 TYPED_TEST(Indexing2D, ColumnStrided)
 {
-    DimCheck2D<TypeParam, 2>(this->column_strided_seq, "./test/data/ColumnStrided.test");
+    DimCheck2D<TypeParam, 2>(this->column_strided_seq, "./test/data/index/ColumnStrided.test");
 }
 
 TYPED_TEST(Indexing2D, ColumnStridedReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->column_strided_reverse_seq, "./test/data/ColumnStridedReverse.test");
+    DimCheck2D<TypeParam, 2>(this->column_strided_reverse_seq, "./test/data/index/ColumnStridedReverse.test");
 }
 
 TYPED_TEST(Indexing2D, RowContinious)
 {
-    DimCheck2D<TypeParam, 2>(this->row_continuous_seq, "./test/data/RowContinious.test");
+    DimCheck2D<TypeParam, 2>(this->row_continuous_seq, "./test/data/index/RowContinious.test");
 }
 
 TYPED_TEST(Indexing2D, RowContiniousReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->row_continuous_reverse_seq, "./test/data/RowContiniousReverse.test");
+    DimCheck2D<TypeParam, 2>(this->row_continuous_reverse_seq, "./test/data/index/RowContiniousReverse.test");
 }
 
 TYPED_TEST(Indexing2D, RowStrided)
 {
-    DimCheck2D<TypeParam, 2>(this->row_strided_seq, "./test/data/RowStrided.test");
+    DimCheck2D<TypeParam, 2>(this->row_strided_seq, "./test/data/index/RowStrided.test");
 }
 
 TYPED_TEST(Indexing2D, RowStridedReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->row_strided_reverse_seq, "./test/data/RowStridedReverse.test");
+    DimCheck2D<TypeParam, 2>(this->row_strided_reverse_seq, "./test/data/index/RowStridedReverse.test");
 }
 
 TYPED_TEST(Indexing2D, ContiniousContinious)
 {
-    DimCheck2D<TypeParam, 2>(this->continuous_continuous_seq, "./test/data/ContiniousContinious.test");
+    DimCheck2D<TypeParam, 2>(this->continuous_continuous_seq, "./test/data/index/ContiniousContinious.test");
 }
 
 TYPED_TEST(Indexing2D, ContiniousReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->continuous_reverse_seq, "./test/data/ContiniousReverse.test");
+    DimCheck2D<TypeParam, 2>(this->continuous_reverse_seq, "./test/data/index/ContiniousReverse.test");
 }
 
 TYPED_TEST(Indexing2D, ContiniousStrided)
 {
-    DimCheck2D<TypeParam, 2>(this->continuous_strided_seq, "./test/data/ContiniousStrided.test");
+    DimCheck2D<TypeParam, 2>(this->continuous_strided_seq, "./test/data/index/ContiniousStrided.test");
 }
 
 TYPED_TEST(Indexing2D, ContiniousStridedReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->continuous_strided_reverse_seq, "./test/data/ContiniousStridedReverse.test");
+    DimCheck2D<TypeParam, 2>(this->continuous_strided_reverse_seq, "./test/data/index/ContiniousStridedReverse.test");
 }
 
 TYPED_TEST(Indexing2D, ReverseContinious)
 {
-    DimCheck2D<TypeParam, 2>(this->reverse_continuous_seq, "./test/data/ReverseContinious.test");
+    DimCheck2D<TypeParam, 2>(this->reverse_continuous_seq, "./test/data/index/ReverseContinious.test");
 }
 
 TYPED_TEST(Indexing2D, ReverseReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->reverse_reverse_seq, "./test/data/ReverseReverse.test");
+    DimCheck2D<TypeParam, 2>(this->reverse_reverse_seq, "./test/data/index/ReverseReverse.test");
 }
 
 TYPED_TEST(Indexing2D, ReverseStrided)
 {
-    DimCheck2D<TypeParam, 2>(this->reverse_strided_seq, "./test/data/ReverseStrided.test");
+    DimCheck2D<TypeParam, 2>(this->reverse_strided_seq, "./test/data/index/ReverseStrided.test");
 }
 
 TYPED_TEST(Indexing2D, ReverseStridedReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->reverse_strided_reverse_seq, "./test/data/ReverseStridedReverse.test");
+    DimCheck2D<TypeParam, 2>(this->reverse_strided_reverse_seq, "./test/data/index/ReverseStridedReverse.test");
 }
 
 TYPED_TEST(Indexing2D, StridedContinious)
 {
-    DimCheck2D<TypeParam, 2>(this->strided_continuous_seq, "./test/data/StridedContinious.test");
+    DimCheck2D<TypeParam, 2>(this->strided_continuous_seq, "./test/data/index/StridedContinious.test");
 }
 
 TYPED_TEST(Indexing2D, StridedStrided)
 {
-    DimCheck2D<TypeParam, 2>(this->strided_strided_seq, "./test/data/StridedStrided.test");
+    DimCheck2D<TypeParam, 2>(this->strided_strided_seq, "./test/data/index/StridedStrided.test");
 }
-

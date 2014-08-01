@@ -25,7 +25,7 @@ void binOp(af_array *result, const af_array lhs, const af_array rhs)
     typedef decltype(Op()(declval<T>(), declval<U>())) ret_type;
     const Array<T> &lhs_arr = getArray<T>(lhs);
     const Array<U> &rhs_arr = getArray<U>(rhs);
-    Array<ret_type> *res= createArray<ret_type>(lhs_arr.dims(), 0);
+    Array<ret_type> *res= createValueArray<ret_type>(lhs_arr.dims(), 0);
 
     transform(  lhs_arr.get(), lhs_arr.get() + lhs_arr.elements(),
                 rhs_arr.get(),
