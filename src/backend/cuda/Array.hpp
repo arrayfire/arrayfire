@@ -11,6 +11,7 @@ namespace cuda
 template<typename T>
 T* cudaMallocWrapper(const size_t &elements) {
     T* ptr = NULL;
+    //FIXME: Add checks
     cudaMalloc(reinterpret_cast<void**>(&ptr), sizeof(T) * elements);
     return ptr;
 }
@@ -25,23 +26,35 @@ public:
         return parent == NULL;
     }
 
+    // FIXME: Add checks
     Array(af::dim4 dims) :
-                    ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)af::dtype_traits<T>::af_type),
-                    data(cudaMallocWrapper<T>(dims.elements())),
-                    parent()
+        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)af::dtype_traits<T>::af_type),
+        data(cudaMallocWrapper<T>(dims.elements())),
+        parent()
     {}
 
-    Array(af::dim4 dims, T val) :
-                    ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)af::dtype_traits<T>::af_type),
-                    data(cudaMallocWrapper<T>(dims.elements())),
-                    parent()
+    // FIXME: Add checks
+    explicit Array(af::dim4 dims, T val) :
+        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)af::dtype_traits<T>::af_type),
+        data(cudaMallocWrapper<T>(dims.elements())),
+        parent()
     {
         kernel::set(data, val, elements());
+    }
+
+    // FIXME: Add checks
+    explicit Array(af::dim4 dims, const T * const in_data) :
+        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)af::dtype_traits<T>::af_type),
+        data(cudaMallocWrapper<T>(dims.elements())),
+        parent()
+    {
+        cudaMemcpy(data, in_data, dims.elements() * sizeof(T), cudaMemcpyHostToDevice);
     }
 
             T* get()        {  return data; }
     const   T* get() const  {  return data; }
 
+    // FIXME: Add checks
     ~Array() { cudaFree(data); }
 };
 
@@ -63,15 +76,14 @@ getHandle(const Array<T> &arr);
 // Creates a new Array object on the heap and returns a reference to it.
 template<typename T>
 Array<T>*
-createArray(const af::dim4 &size, const T& value);
+createValueArray(const af::dim4 &size, const T& value);
+
+// Creates a new Array object on the heap and returns a reference to it.
+template<typename T>
+Array<T>*
+createDataArray(const af::dim4 &size, const T * const data);
 
 template<typename T>
 Array<T> *
 createView(const Array<T>& parent, const af::dim4 &dims, const af::dim4 &offset, const af::dim4 &stride);
-
-// Creates a new Array object on the heap and returns a reference to it.
-template<typename T>
-void
-deleteArray(const af_array& arr);
-
 }

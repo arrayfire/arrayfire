@@ -2,10 +2,9 @@
 #include <af/array.h>
 
 namespace cuda {
-    template<typename T>
-    T* copyData(const af_array &arr);
 
-    template<typename T>
-    void
-    copyData(af_array &dst, const T* const src);
+template<typename T>
+void
+copyData(T *data, const af_array &arr);
+
 }

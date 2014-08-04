@@ -4,8 +4,8 @@
 #include <af/array.h>
 #include <ArrayInfo.hpp>
 #include <index.hpp>
-#include <common_helper.h>
-#include <backend_helper.h>
+#include <helper.h>
+#include <backend.h>
 
 using std::vector;
 using std::swap;

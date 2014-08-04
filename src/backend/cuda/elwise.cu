@@ -22,7 +22,7 @@ void binOp(af_array *result, const af_array lhs, const af_array rhs)
     typedef BOOST_TYPEOF(Op()(declval<T>(), declval<U>())) ret_type;
     const Array<T> &lhs_arr = getArray<T>(lhs);
     const Array<U> &rhs_arr = getArray<U>(rhs);
-    Array<ret_type> *res= createArray<ret_type>(lhs_arr.dims(), 0);
+    Array<ret_type> *res= createValueArray<ret_type>(lhs_arr.dims(), 0);
 
     kernel::binaryOp(res->get(), lhs_arr.get(), rhs_arr.get(), lhs_arr.elements());
 

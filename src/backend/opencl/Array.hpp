@@ -15,26 +15,33 @@ class Array : public ArrayInfo
 {
     cl::Buffer  data;
     Array*      parent;
+
 public:
     bool isOwner() { return parent == nullptr; }
     Array(af::dim4 dims) :
-                    ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)af::dtype_traits<T>::af_type),
-                    data(getCtx(0), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
-                    parent()
+        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)af::dtype_traits<T>::af_type),
+        data(getCtx(0), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
+        parent()
     {
     }
 
-    Array(af::dim4 dims, T val) :
-                    ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)af::dtype_traits<T>::af_type),
-                    data(getCtx(0), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
-                    parent()
+    explicit Array(af::dim4 dims, T val) :
+        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)af::dtype_traits<T>::af_type),
+        data(getCtx(0), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
+        parent()
     {
         set(data, val, elements());
     }
 
-    using ArrayInfo::getType;
+    explicit Array(af::dim4 dims, const T * const in_data) :
+        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)af::dtype_traits<T>::af_type),
+        data(getCtx(0), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
+        parent()
+    {
+        cl::copy(getQueue(0), in_data, in_data + dims.elements(), data);
+    }
 
-            cl::Buffer& get()        {  return data; }
+    cl::Buffer& get()        {  return data; }
     const   cl::Buffer& get() const  {  return data; }
 
     ~Array() { }
@@ -58,14 +65,18 @@ getHandle(const Array<T> &arr);
 // Creates a new Array object on the heap and returns a reference to it.
 template<typename T>
 Array<T>*
-createArray(const af::dim4 &size, const T& value);
+createValueArray(const af::dim4 &size, const T& value);
+
+// Creates a new Array object on the heap and returns a reference to it.
+template<typename T>
+Array<T>*
+createDataArray(const af::dim4 &size, const T * const data);
 
 template<typename T>
 Array<T> *
 createView(const Array<T>& parent, const af::dim4 &dims, const af::dim4 &offset, const af::dim4 &stride);
 
-// Creates a new Array object on the heap and returns a reference to it.
 template<typename T>
 void
-deleteArray(const af_array& arr);
+copyData(T *data, const af_array &arr);
 }

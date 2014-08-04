@@ -1,12 +1,12 @@
 #include <algorithm>
 #include <functional>
+#include <assert.h>
 #include <af/array.h>
 #include <af/arith.h>
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <elwise.hpp>
 #include <kernel/binaryOp.hpp>
-
 
 namespace opencl
 {
@@ -34,7 +34,7 @@ void binOp(af_array *result, const af_array lhs, const af_array rhs)
     typedef decltype(Op()(declval<T>(), declval<U>())) ret_type;
     const Array<T> &lhs_impl = getArray<T>(lhs);
     const Array<U> &rhs_impl = getArray<U>(rhs);
-    Array<ret_type> *res= createArray<ret_type>(lhs_impl.dims(), 0);
+    Array<ret_type> *res= createValueArray<ret_type>(lhs_impl.dims(), 0);
 
     kernel::binaryOp<ret_type, T, U, Op>(   res->get(),
                                             lhs_impl.get(),
@@ -45,28 +45,32 @@ void binOp(af_array *result, const af_array lhs, const af_array rhs)
     swap(*result, out);
 }
 
-binaryOp
-getFunction(af_dtype lhs, af_dtype rhs)
-{
-    switch (lhs) {
+    binaryOp
+    getFunction(af_dtype lhs, af_dtype rhs)
+    {
+        switch (lhs) {
         case f32:
             switch (rhs) {
-                case f32:    return binOp<float,float, plus>;
-                case f64:    return binOp<float,double, plus>;
-                case s32:    return binOp<float,int, plus>;
+            case f32:    return binOp<float,float, plus>;
+            case f64:    return binOp<float,double, plus>;
+            case s32:    return binOp<float,int, plus>;
+            default:     assert("NOT IMPLEMENTED" && 1 != 1);
             }
         case f64:
             switch (rhs) {
-                case f32:    return binOp<double,float, plus>;
-                case f64:    return binOp<double,double, plus>;
+            case f32:    return binOp<double,float, plus>;
+            case f64:    return binOp<double,double, plus>;
+            default:     assert("NOT IMPLEMENTED" && 1 != 1);
             }
         case s32:
             switch (rhs) {
-                case f32:    return binOp<int,float, plus>;
-                case f64:    return binOp<int,double, plus>;
+            case f32:    return binOp<int,float, plus>;
+            case f64:    return binOp<int,double, plus>;
+            default:     assert("NOT IMPLEMENTED" && 1 != 1);
             }
+        default:     assert("NOT IMPLEMENTED" && 1 != 1);
+        }
+        return NULL;
     }
-    return NULL;
-}
 
 } //namespace opencl

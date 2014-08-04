@@ -51,18 +51,24 @@ public:
             ptr = &parent->data.front() + offset;
         }
         return ptr;
-   }
+    }
 
     Array(dim4 dims):
-                    ArrayInfo(dims, dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)af::dtype_traits<T>::af_type),
-                    data(dims.elements()),
-                    parent(nullptr)
+        ArrayInfo(dims, dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)af::dtype_traits<T>::af_type),
+        data(dims.elements()),
+        parent(nullptr)
     { }
 
-    Array(dim4 dims, T val):
-                    ArrayInfo(dims, dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)af::dtype_traits<T>::af_type),
-                    data(dims.elements(), val),
-                    parent(nullptr)
+    explicit Array(dim4 dims, T val):
+        ArrayInfo(dims, dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)af::dtype_traits<T>::af_type),
+        data(dims.elements(), val),
+        parent(nullptr)
+    { }
+
+    explicit Array(dim4 dims, const T * const in_data):
+        ArrayInfo(dims, dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)af::dtype_traits<T>::af_type),
+        data(in_data, in_data + dims.elements()),
+        parent(nullptr)
     { }
 
     Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
@@ -70,7 +76,6 @@ public:
         data(0),
         parent(&parnt)
     { }
-
 
     ~Array() {}
 
@@ -94,17 +99,21 @@ getHandle(const Array<T> &arr);
 // Creates a new Array object on the heap and returns a reference to it.
 template<typename T>
 Array<T> *
-createArray(const af::dim4 &size, const T& value);
+createValueArray(const af::dim4 &size, const T& value);
+
+// Creates a new Array object on the heap and returns a reference to it.
+template<typename T>
+Array<T>*
+createDataArray(const af::dim4 &size, const T * const data);
 
 // Creates a new Array View(sub array).
 template<typename T>
 Array<T> *
 createView(const Array<T>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
 
-// Creates a new Array object on the heap and returns a reference to it.
 template<typename T>
 void
-deleteArray(const af_array& arr);
+copyData(T *data, const af_array &arr);
 
 template<typename T>
 void

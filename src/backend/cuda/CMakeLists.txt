@@ -9,21 +9,26 @@ INCLUDE_DIRECTORIES(
 
 SET( cuda_src
     kernel/elwise.cu
-    Array.cu Array.hpp
-    elwise.cu elwise.hpp
+    Array.cu
+    Array.hpp
+    backend.h
     copy.cu
-    print.cu
-    index.cu index.hpp
+    copy.hpp
+    elwise.cu
+    elwise.hpp
+    index.cu
+    index.hpp
     generator.cu
-    backend_helper.h
+    generator.hpp
+    print.cu
+    print.hpp
+    ../array.cpp
     ../ArrayInfo.cpp
     ../ArrayInfo.hpp
-    ../common_helper.h
-    ../elwise.cpp
-    ../generator.cpp
-    ../copy.cpp
-    ../index.cpp
     ../dim4.cpp
+    ../elwise.cpp
+    ../helper.h
+    ../index.cpp
     ../print.cpp
     )
 

@@ -33,15 +33,17 @@ getInfo(af_array arr)
     return *info;
 }
 
-dim_type
-af_get_elements(af_array arr)
+af_err
+af_get_elements(dim_type *elems, const af_array arr)
 {
-    return getInfo(arr).elements();
+    *elems =  getInfo(arr).elements();
+    return AF_SUCCESS; //FIXME: Catch exceptions correctly
 }
 
-af_dtype af_get_type(af_array arr)
+af_err af_get_type(af_dtype *type, const af_array arr)
 {
-    return getInfo(arr).getType();
+    *type = getInfo(arr).getType();
+    return AF_SUCCESS; //FIXME: Catch exceptions correctly
 }
 
 dim4
@@ -52,4 +54,3 @@ calcBaseStride(const dim4 &parentDim)
     partial_sum(parentPtr, parentPtr + parentDim.ndims(), out.get() + 1);
     return out;
 }
-

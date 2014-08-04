@@ -3,6 +3,7 @@
 #include <Array.hpp>
 #include <iostream>
 
+using af::dim4;
 
 namespace cuda
 {
@@ -59,23 +60,47 @@ namespace cuda
     template af_array getHandle<unsigned>                    (const Array<unsigned> &arr);
     template af_array getHandle<unsigned char>               (const Array<unsigned char> &arr);
 
-    using af::dim4;
+    template<typename T>
+    Array<T> *
+    createDataArray(const dim4 &size, const T * const data)
+    {
+        Array<T> *out = new Array<T>(size, data);
+        return out;
+    }
+
+    template Array<float>*                          createDataArray<float>(const dim4 & size, const float * const data);
+    template Array<cfloat>*                         createDataArray<cfloat>(const dim4 & size, const cfloat * const data);
+    template Array<double>*                         createDataArray<double>(const dim4 &size, const double * const data);
+    template Array<cdouble>*                        createDataArray<cdouble>(const dim4 &size, const cdouble * const data);
+    template Array<char>*                           createDataArray<char>(const dim4 &size, const char * const data);
+    template Array<int>*                            createDataArray<int>(const dim4 &size, const int * const data);
+    template Array<unsigned>*                       createDataArray<unsigned>(const dim4 &size, const unsigned * const data);
+    template Array<unsigned char>*                  createDataArray<unsigned char>(const dim4 &size, const unsigned char * const data);
+
     template<typename T>
     Array<T>*
-    createArray(const dim4 &size, const T& value)
+    createValueArray(const dim4 &size, const T& value)
     {
         Array<T> *out = new Array<T>(size, value);
         return out;
     }
+
+    template Array<float>*                          createValueArray<float>(const dim4 & size, const float &value);
+    template Array<cfloat>*                         createValueArray<cfloat>(const dim4 & size, const cfloat &value);
+    template Array<double>*                         createValueArray<double>(const dim4 &size, const double &value);
+    template Array<cdouble>*                        createValueArray<cdouble>(const dim4 &size, const cdouble &value);
+    template Array<char>*                           createValueArray<char>(const dim4 &size, const char &value);
+    template Array<int>*                            createValueArray<int>(const dim4 &size, const int &value);
+    template Array<unsigned>*                       createValueArray<unsigned>(const dim4 &size, const unsigned &value);
+    template Array<unsigned char>*                  createValueArray<unsigned char>(const dim4 &size, const unsigned char &value);
+
 
     template<typename T>
     Array<T> *
     createView(const Array<T>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride)
     {
         assert("NOT IMPLEMENTED" && 1 != 1);
-        return NULL;//createArray<T>(dims, T());
-        //Array<T> *out = new Array<T>(parent, dims, offset, stride);
-        //return out;
+        return NULL;
     }
 
     template Array<float>*          createView<float>(const Array<float>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
@@ -86,31 +111,4 @@ namespace cuda
     template Array<int>*            createView<int>(const Array<int>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
     template Array<unsigned>*       createView<unsigned>(const Array<unsigned>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
     template Array<unsigned char>*  createView<unsigned char>(const Array<unsigned char>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
-
-    template Array<float>*                          createArray<float>(const dim4 & size, const float &value);
-    template Array<cfloat>*                         createArray<cfloat>(const dim4 & size, const cfloat &value);
-    template Array<double>*                         createArray<double>(const dim4 &size, const double &value);
-    template Array<cdouble>*                        createArray<cdouble>(const dim4 &size, const cdouble &value);
-    template Array<char>*                           createArray<char>(const dim4 &size, const char &value);
-    template Array<int>*                            createArray<int>(const dim4 &size, const int &value);
-    template Array<unsigned>*                       createArray<unsigned>(const dim4 &size, const unsigned &value);
-    template Array<unsigned char>*                  createArray<unsigned char>(const dim4 &size, const unsigned char &value);
-
-    template<typename T>
-    void
-    deleteArray(const af_array& arr)
-    {
-        Array<T> &obj = getWritableArray<T>(arr);
-        delete &obj;
-    }
-
-    template void deleteArray<float>                        (const af_array& arr);
-    template void deleteArray<cfloat>                       (const af_array& arr);
-    template void deleteArray<double>                       (const af_array& arr);
-    template void deleteArray<cdouble>                      (const af_array& arr);
-    template void deleteArray<char>                         (const af_array& arr);
-    template void deleteArray<int>                          (const af_array& arr);
-    template void deleteArray<unsigned>                     (const af_array& arr);
-    template void deleteArray<unsigned char>                (const af_array& arr);
-
 }

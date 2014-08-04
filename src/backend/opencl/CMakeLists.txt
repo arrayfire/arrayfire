@@ -12,22 +12,28 @@ INCLUDE_DIRECTORIES(
     )
 
 SET( opencl_src
-    Array.cpp Array.hpp
-    ctx.cpp ctx.hpp
-    elwise.cpp elwise.hpp
+    Array.cpp
+    Array.hpp
+    backend.h
     copy.cpp
-    index.cpp
-    print.cpp
+    copy.hpp
+    ctx.cpp
+    ctx.hpp
+    elwise.cpp
+    elwise.hpp
     generator.cpp
-    backend_helper.h
+    generator.hpp
+    index.cpp
+    index.hpp
+    print.cpp
+    print.hpp
+    ../array.cpp
     ../ArrayInfo.cpp
     ../ArrayInfo.hpp
-    ../common_helper.h
-    ../elwise.cpp
-    ../generator.cpp
-    ../copy.cpp
-    ../index.cpp
     ../dim4.cpp
+    ../elwise.cpp
+    ../helper.h
+    ../index.cpp
     ../print.cpp
     )
 
