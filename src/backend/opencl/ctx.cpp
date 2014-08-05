@@ -23,7 +23,7 @@ getCtx(unsigned char idx)
         Platform::get(&platforms);
         for(auto platform : platforms) {
             vector<cl_context_properties> prop = {CL_CONTEXT_PLATFORM, (cl_context_properties)platform(), 0};
-            contexts.emplace_back(CL_DEVICE_TYPE_CPU, &prop.front(), ctxCB);
+            contexts.emplace_back(CL_DEVICE_TYPE_DEFAULT, &prop.front(), ctxCB);
         }
     }
     return contexts[idx];
