@@ -1,10 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 FIND_PACKAGE(Threads)
-ADD_TEST(BasicTests_cpu     basic_cpu)
-ADD_TEST(IndexingTests_cpu  index_cpu)
-ADD_TEST(BasicTests_cuda    basic_cuda)
-ADD_TEST(BasicTests_opencl  basic_opencl)
 
 IF(${BUILD_GTEST})
     INCLUDE(${CMAKE_SOURCE_DIR}/common/build_gtest.cmake)
@@ -35,6 +31,9 @@ SET(GTEST_BOTH_LIBRARIES    "${GTEST_LIBRARY_DIRS}/libgtest.a"
 ADD_DEFINITIONS("-D TEST_DIR=\"\\\"${TESTDATA_SOURCE_DIR}\\\"\"")
 
 IF(${BUILD_CPU})
+    ADD_TEST(BasicTests_cpu     basic_cpu)
+    ADD_TEST(IndexingTests_cpu  index_cpu)
+
     ADD_EXECUTABLE(basic_cpu basic.cpp)
     ADD_EXECUTABLE(index_cpu index.cpp)
     IF(${BUILD_GTEST})
@@ -46,6 +45,9 @@ IF(${BUILD_CPU})
 ENDIF()
 
 IF(${BUILD_CUDA})
+    ADD_TEST(BasicTests_cuda    basic_cuda)
+    ADD_TEST(IndexingTests_cuda  index_cuda)
+
     ADD_EXECUTABLE(basic_cuda basic.cpp)
     ADD_EXECUTABLE(index_cuda index.cpp)
     IF(${BUILD_GTEST})
@@ -57,6 +59,9 @@ IF(${BUILD_CUDA})
 ENDIF()
 
 IF(${BUILD_OPENCL})
+    ADD_TEST(BasicTests_opencl  basic_opencl)
+    ADD_TEST(IndexingTests_opencl  index_opencl)
+
     ADD_EXECUTABLE(basic_opencl basic.cpp)
     ADD_EXECUTABLE(index_opencl index.cpp)
     IF(${BUILD_GTEST})
