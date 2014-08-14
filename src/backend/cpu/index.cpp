@@ -31,7 +31,7 @@ template void indexArray<double>        (af_array &dest, const af_array &src, co
 template void indexArray<cdouble>       (af_array &dest, const af_array &src, const unsigned ndims, const af_seq *index);
 template void indexArray<unsigned>      (af_array &dest, const af_array &src, const unsigned ndims, const af_seq *index);
 template void indexArray<int>           (af_array &dest, const af_array &src, const unsigned ndims, const af_seq *index);
-template void indexArray<unsigned char> (af_array &dest, const af_array &src, const unsigned ndims, const af_seq *index);
+template void indexArray<uchar>         (af_array &dest, const af_array &src, const unsigned ndims, const af_seq *index);
 template void indexArray<char>          (af_array &dest, const af_array &src, const unsigned ndims, const af_seq *index);
 
 }

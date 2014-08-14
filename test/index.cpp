@@ -2,6 +2,8 @@
 #include <arrayfire.h>
 #include <af/dim4.hpp>
 #include <af/defines.h>
+#include <af/traits.hpp>
+
 #include <vector>
 #include <array>
 #include <algorithm>
@@ -15,6 +17,7 @@ using std::cout;
 using std::endl;
 using std::begin;
 using std::end;
+using af::dtype_traits;
 
 template<typename T, typename OP>
 void
@@ -31,14 +34,14 @@ DimCheck(const vector<af_seq> &seqs) {
     static const int ndims = 1;
     static const size_t dims = 100;
 
-    long d[1] = {dims};
+    dim_type d[1] = {dims};
 
     vector<T> hData(dims);
     T n(0);
     generate(begin(hData), end(hData), [&] () { return n++; });
 
     af_array a = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &hData.front(), ndims, d, (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &hData.front(), ndims, d, (af_dtype) dtype_traits<T>::af_type));
 
     vector<af_array> indexed_array(seqs.size(), 0);
     for(size_t i = 0; i < seqs.size(); i++) {

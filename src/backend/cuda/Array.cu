@@ -24,7 +24,7 @@ namespace cuda
     template const Array<char>&                             getArray<char>(const af_array &arr);
     template const Array<int>&                              getArray<int>(const af_array &arr);
     template const Array<unsigned>&                         getArray<unsigned>(const af_array &arr);
-    template const Array<unsigned char>&                    getArray<unsigned char>(const af_array &arr);
+    template const Array<uchar>&                            getArray<uchar>(const af_array &arr);
 
     template<typename T>
     Array<T> &
@@ -41,7 +41,7 @@ namespace cuda
     template Array<char>&                           getWritableArray<char>(const af_array &arr);
     template Array<int>&                            getWritableArray<int>(const af_array &arr);
     template Array<unsigned>&                       getWritableArray<unsigned>(const af_array &arr);
-    template Array<unsigned char>&                  getWritableArray<unsigned char>(const af_array &arr);
+    template Array<uchar>&                          getWritableArray<uchar>(const af_array &arr);
 
     template<typename T>
     af_array
@@ -58,7 +58,7 @@ namespace cuda
     template af_array getHandle<char>                        (const Array<char> &arr);
     template af_array getHandle<int>                         (const Array<int> &arr);
     template af_array getHandle<unsigned>                    (const Array<unsigned> &arr);
-    template af_array getHandle<unsigned char>               (const Array<unsigned char> &arr);
+    template af_array getHandle<uchar>                       (const Array<uchar> &arr);
 
     template<typename T>
     Array<T> *
@@ -75,7 +75,7 @@ namespace cuda
     template Array<char>*                           createDataArray<char>(const dim4 &size, const char * const data);
     template Array<int>*                            createDataArray<int>(const dim4 &size, const int * const data);
     template Array<unsigned>*                       createDataArray<unsigned>(const dim4 &size, const unsigned * const data);
-    template Array<unsigned char>*                  createDataArray<unsigned char>(const dim4 &size, const unsigned char * const data);
+    template Array<uchar>*                          createDataArray<uchar>(const dim4 &size, const uchar * const data);
 
     template<typename T>
     Array<T>*
@@ -92,7 +92,7 @@ namespace cuda
     template Array<char>*                           createValueArray<char>(const dim4 &size, const char &value);
     template Array<int>*                            createValueArray<int>(const dim4 &size, const int &value);
     template Array<unsigned>*                       createValueArray<unsigned>(const dim4 &size, const unsigned &value);
-    template Array<unsigned char>*                  createValueArray<unsigned char>(const dim4 &size, const unsigned char &value);
+    template Array<uchar>*                          createValueArray<uchar>(const dim4 &size, const uchar &value);
 
 
     template<typename T>
@@ -110,5 +110,5 @@ namespace cuda
     template Array<char>*           createView<char>(const Array<char>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
     template Array<int>*            createView<int>(const Array<int>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
     template Array<unsigned>*       createView<unsigned>(const Array<unsigned>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
-    template Array<unsigned char>*  createView<unsigned char>(const Array<unsigned char>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
+    template Array<uchar>*          createView<uchar>(const Array<uchar>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
 }

@@ -5,6 +5,8 @@
 #include <kernel/set.hpp>
 #include <cl.hpp>
 #include <ctx.hpp>
+#include "traits.hpp"
+#include "backend.h"
 
 namespace opencl
 {
@@ -19,14 +21,14 @@ class Array : public ArrayInfo
 public:
     bool isOwner() { return parent == nullptr; }
     Array(af::dim4 dims) :
-        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)af::dtype_traits<T>::af_type),
+        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)dtype_traits<T>::af_type),
         data(getCtx(0), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
         parent()
     {
     }
 
     explicit Array(af::dim4 dims, T val) :
-        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)af::dtype_traits<T>::af_type),
+        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)dtype_traits<T>::af_type),
         data(getCtx(0), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
         parent()
     {
@@ -34,7 +36,7 @@ public:
     }
 
     explicit Array(af::dim4 dims, const T * const in_data) :
-        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)af::dtype_traits<T>::af_type),
+        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)dtype_traits<T>::af_type),
         data(getCtx(0), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
         parent()
     {

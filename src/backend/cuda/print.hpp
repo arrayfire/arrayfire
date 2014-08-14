@@ -1,5 +1,6 @@
 #include <af/array.h>
 #include <iosfwd>
+#include "backend.h"
 
 namespace cuda
 {

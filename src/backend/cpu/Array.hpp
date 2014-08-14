@@ -3,6 +3,8 @@
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
+#include "traits.hpp"
+#include "backend.h"
 
 #include <memory>
 #include <vector>
@@ -54,25 +56,25 @@ public:
     }
 
     Array(dim4 dims):
-        ArrayInfo(dims, dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)af::dtype_traits<T>::af_type),
+        ArrayInfo(dims, dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)dtype_traits<T>::af_type),
         data(dims.elements()),
         parent(nullptr)
     { }
 
     explicit Array(dim4 dims, T val):
-        ArrayInfo(dims, dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)af::dtype_traits<T>::af_type),
+        ArrayInfo(dims, dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)dtype_traits<T>::af_type),
         data(dims.elements(), val),
         parent(nullptr)
     { }
 
     explicit Array(dim4 dims, const T * const in_data):
-        ArrayInfo(dims, dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)af::dtype_traits<T>::af_type),
+        ArrayInfo(dims, dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)dtype_traits<T>::af_type),
         data(in_data, in_data + dims.elements()),
         parent(nullptr)
     { }
 
     Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
-        ArrayInfo(dims, offset, stride, (af_dtype)af::dtype_traits<T>::af_type),
+        ArrayInfo(dims, offset, stride, (af_dtype)dtype_traits<T>::af_type),
         data(0),
         parent(&parnt)
     { }

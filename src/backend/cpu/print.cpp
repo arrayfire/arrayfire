@@ -57,5 +57,5 @@ namespace cpu
     template void print<char>                    (const af_array &arr);
     template void print<int>                     (const af_array &arr);
     template void print<unsigned>                (const af_array &arr);
-    template void print<unsigned char>           (const af_array &arr);
+    template void print<uchar>                   (const af_array &arr);
 }
