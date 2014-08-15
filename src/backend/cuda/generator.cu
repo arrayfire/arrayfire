@@ -35,7 +35,7 @@ namespace cuda {
     template af_array createArrayHandle<int>(dim4 d, double val);
     template af_array createArrayHandle<unsigned>(dim4 d, double val);
     template af_array createArrayHandle<char>(dim4 d, double val);
-    template af_array createArrayHandle<unsigned char>(dim4 d, double val);
+    template af_array createArrayHandle<uchar>(dim4 d, double val);
 
     template<typename T>
     af_array createArrayHandle(dim4 d, const T * const data)
@@ -50,7 +50,7 @@ namespace cuda {
     template af_array createArrayHandle<int>(dim4 d, const int * const val);
     template af_array createArrayHandle<unsigned>(dim4 d, const unsigned * const val);
     template af_array createArrayHandle<char>(dim4 d, const char * const val);
-    template af_array createArrayHandle<unsigned char>(dim4 d, const unsigned char * const val);
+    template af_array createArrayHandle<uchar>(dim4 d, const uchar * const val);
 
     template<typename T>
     void
@@ -67,5 +67,5 @@ namespace cuda {
     template void destroyArrayHandle<char>                         (const af_array& arr);
     template void destroyArrayHandle<int>                          (const af_array& arr);
     template void destroyArrayHandle<unsigned>                     (const af_array& arr);
-    template void destroyArrayHandle<unsigned char>                (const af_array& arr);
+    template void destroyArrayHandle<uchar>                        (const af_array& arr);
 }

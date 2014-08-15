@@ -3,6 +3,8 @@
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
+#include "traits.hpp"
+#include "backend.h"
 #include <kernel/elwise.hpp> //set
 
 namespace cuda
@@ -28,14 +30,14 @@ public:
 
     // FIXME: Add checks
     Array(af::dim4 dims) :
-        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)af::dtype_traits<T>::af_type),
+        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)dtype_traits<T>::af_type),
         data(cudaMallocWrapper<T>(dims.elements())),
         parent()
     {}
 
     // FIXME: Add checks
     explicit Array(af::dim4 dims, T val) :
-        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)af::dtype_traits<T>::af_type),
+        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)dtype_traits<T>::af_type),
         data(cudaMallocWrapper<T>(dims.elements())),
         parent()
     {
@@ -44,7 +46,7 @@ public:
 
     // FIXME: Add checks
     explicit Array(af::dim4 dims, const T * const in_data) :
-        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)af::dtype_traits<T>::af_type),
+        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)dtype_traits<T>::af_type),
         data(cudaMallocWrapper<T>(dims.elements())),
         parent()
     {

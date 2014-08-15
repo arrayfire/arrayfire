@@ -5,6 +5,7 @@
 #include <elwise.hpp>
 #include <helper.h>
 #include <backend.h>
+using namespace detail;
 
 af_err af_add(af_array *result, const af_array lhs, const af_array rhs)
 {

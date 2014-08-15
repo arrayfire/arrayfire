@@ -26,6 +26,6 @@ template void copyData<cdouble>(cdouble *data, const af_array &dst);
 template void copyData<char>(char *data, const af_array &dst);
 template void copyData<int>(int *data, const af_array &dst);
 template void copyData<unsigned>(unsigned *data, const af_array &dst);
-template void copyData<unsigned char>(unsigned char *data, const af_array &dst);
+template void copyData<uchar>(uchar *data, const af_array &dst);
 
 }

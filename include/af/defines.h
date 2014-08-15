@@ -52,7 +52,7 @@ typedef enum {
   #include <stdbool.h>
 #endif
 
-typedef long dim_type;
+typedef long long dim_type;
 
 #include <cstddef>
 typedef struct af_seq {
@@ -60,97 +60,3 @@ typedef struct af_seq {
     int    step;
 } af_seq;
 static const af_seq span = {1, 1, 0};
-
-#ifdef __cplusplus
-#include <complex>
-#ifdef AF_CUDA
-#include <cuComplex.h>
-#include <vector_types.h>
-typedef cuFloatComplex cfloat;
-typedef cuDoubleComplex cdouble;
-#else
-typedef std::complex<float> cuFloatComplex;
-typedef std::complex<double> cuDoubleComplex;
-typedef std::complex<float> cfloat;
-typedef std::complex<double> cdouble;
-//typedef char[4]             char4;
-//typedef unsigned char[4]    uchar4;
-#endif
-
-namespace af {
-
-    typedef af_dtype dtype;
-
-    //TODO: Move to seperate file
-    template<typename T> struct dtype_traits;
-    template<>
-    struct dtype_traits<float> {
-        enum { af_type = f32 };
-        typedef float cuda_type;
-        typedef float* cuda_type_ptr;
-        static const char* getName() { return "float"; }
-    };
-    template<>
-    struct dtype_traits<cfloat> {
-        enum { af_type = c32 };
-        typedef cuFloatComplex cuda_type;
-        typedef cuda_type* cuda_type_ptr;
-        static const char* getName() { return "cfloat"; }
-    };
-    template<>
-    struct dtype_traits<double> {
-        enum { af_type = f64 };
-        typedef double  cuda_type;
-        typedef cuda_type* cuda_type_ptr;
-        static const char* getName() { return "double"; }
-    };
-    template<>
-    struct dtype_traits<cdouble> {
-        enum { af_type = c64 };
-        typedef cuDoubleComplex  cuda_type;
-        typedef cuda_type* cuda_type_ptr;
-        static const char* getName() { return "cdouble"; }
-    };
-    template<>
-    struct dtype_traits<char> {
-        enum { af_type = b8 };
-        typedef bool  cuda_type;
-        typedef cuda_type* cuda_type_ptr;
-        static const char* getName() { return "char"; }
-    };
-    template<>
-    struct dtype_traits<int> {
-        enum { af_type = s32 };
-        typedef int  cuda_type;
-        typedef cuda_type* cuda_type_ptr;
-        static const char* getName() { return "int"; }
-    };
-    template<>
-    struct dtype_traits<unsigned> {
-        enum { af_type = u32 };
-        typedef unsigned  cuda_type;
-        typedef cuda_type* cuda_type_ptr;
-        static const char* getName() { return "unsigned"; }
-    };
-    template<>
-    struct dtype_traits<unsigned char> {
-        enum { af_type = u8 };
-        typedef unsigned  cuda_type;
-        typedef cuda_type* cuda_type_ptr;
-        static const char* getName() { return "unsigned char"; }
-    };
-// TODO: Add combined types
-//    template<>
-//    struct dtype_traits<uchar4> {
-//        enum { af_type = u8x4 };
-//        typedef unsigned  cuda_type;
-//        typedef cuda_type* cuda_type_ptr;
-//    };
-//    template<>
-//    struct dtype_traits<char4> {
-//        enum { af_type = s8x4 };
-//        typedef unsigned  cuda_type;
-//        typedef cuda_type* cuda_type_ptr;
-//    };
-}
-#endif

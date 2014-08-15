@@ -8,7 +8,7 @@ TEST(BasicTests, constant1000x1000)
 {
     static const int ndims = 2;
     static const int dim_size = 1000;
-    long d[ndims] = {dim_size, dim_size};
+    dim_type d[ndims] = {dim_size, dim_size};
 
     double valA = 3.9;
     af_array a;
@@ -27,7 +27,7 @@ TEST(BasicTests, constant10x10)
 {
     static const int ndims = 2;
     static const int dim_size = 10;
-    long d[2] = {dim_size, dim_size};
+    dim_type d[2] = {dim_size, dim_size};
 
     double valA = 3.9;
     af_array a;
@@ -46,7 +46,7 @@ TEST(BasicTests, constant100x100)
 {
     static const int ndims = 2;
     static const int dim_size = 100;
-    long d[2] = {dim_size, dim_size};
+    dim_type d[2] = {dim_size, dim_size};
 
     double valA = 4.9;
     af_array a;
@@ -66,7 +66,7 @@ TEST(BasicTests, AdditionSameType)
 {
     static const int ndims = 2;
     static const int dim_size = 100;
-    long d[ndims] = {dim_size, dim_size};
+    dim_type d[ndims] = {dim_size, dim_size};
 
     double valA = 3.9;
     double valB = 5.7;
@@ -105,7 +105,7 @@ TEST(BasicTests, Additionf32f64)
 {
     static const int ndims = 2;
     static const int dim_size = 100;
-    long d[ndims] = {dim_size, dim_size};
+    dim_type d[ndims] = {dim_size, dim_size};
 
     double valA = 3.9;
     double valB = 5.7;
@@ -135,7 +135,7 @@ TEST(BasicTests, Additionf64f64)
 {
     static const int ndims = 2;
     static const int dim_size = 100;
-    long d[ndims] = {dim_size, dim_size};
+    dim_type d[ndims] = {dim_size, dim_size};
 
     double valA = 3.9;
     double valB = 5.7;

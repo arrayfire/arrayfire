@@ -1,6 +1,8 @@
 #include <kernel_headers/binaryOp.hpp>
 #include <cl.hpp>
 #include <ctx.hpp>
+#include <sstream>
+#include "../traits.hpp"
 
 using cl::Buffer;
 using cl::Program;
@@ -26,9 +28,9 @@ binaryOp(Buffer out, const Buffer lhs, const Buffer rhs, const size_t elements)
     Program prog(getCtx(0), setSrc);
 
     std::ostringstream options;
-    options << " -D T=" << af::dtype_traits<T>::getName()
-            << " -D U=" << af::dtype_traits<U>::getName()
-            << " -D R=" << af::dtype_traits<R>::getName()
+    options << " -D T=" << dtype_traits<T>::getName()
+            << " -D U=" << dtype_traits<U>::getName()
+            << " -D R=" << dtype_traits<R>::getName()
             << " -D OP=" << OP::stringOp();
     prog.build(options.str().c_str());
 

@@ -1,6 +1,7 @@
 #include <limits>
 #include <numeric>
 #include <vector>
+#include <iostream>
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
 

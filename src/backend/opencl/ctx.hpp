@@ -12,4 +12,3 @@ const cl::Context& getCtx(unsigned char idx);
 cl::CommandQueue& getQueue(unsigned char idx);
 
 }
-
