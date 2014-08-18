@@ -54,3 +54,9 @@ calcBaseStride(const dim4 &parentDim)
     partial_sum(parentPtr, parentPtr + parentDim.ndims(), out.get() + 1);
     return out;
 }
+
+void ArrayInfo::moddims(const dim4 &newDims)
+{
+    dim_size   = newDims;
+    strides()  = calcBaseStride(newDims);
+}

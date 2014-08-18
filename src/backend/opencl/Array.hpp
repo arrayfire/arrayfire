@@ -19,7 +19,7 @@ class Array : public ArrayInfo
     Array*      parent;
 
 public:
-    bool isOwner() { return parent == nullptr; }
+    bool isOwner() const { return parent == nullptr; }
     Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)dtype_traits<T>::af_type),
         data(getCtx(0), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),

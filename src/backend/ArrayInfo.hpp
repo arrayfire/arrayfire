@@ -30,11 +30,19 @@ public:
 #endif
     ~ArrayInfo() {}
     size_t elements() const             { return dim_size.elements();   }
+
     const af::dim4& offsets() const     { return dim_offsets;           }
+    af::dim4& offsets()                 { return dim_offsets;           }
+
     const af::dim4& strides() const     { return dim_strides;           }
+    af::dim4& strides()                 { return dim_strides;           }
+
     size_t ndims() const                { return dim_size.ndims();      }
     const af_dtype& getType() const     { return type;                  }
+
     const af::dim4& dims() const        { return dim_size;              }
+
+    void moddims(const af::dim4 &newDims);
 };
 
 dim_type

@@ -1,5 +1,6 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
+#include <copy.hpp>
 #include <iostream>
 
 namespace cpu
@@ -108,4 +109,40 @@ namespace cpu
     template Array<int>*            createView<int>(const Array<int>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
     template Array<unsigned>*       createView<unsigned>(const Array<unsigned>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
     template Array<uchar>*          createView<uchar>(const Array<uchar>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
+
+    template<typename T>
+    Array<T> *
+    copyArray(const Array<T>& input)
+    {
+        return new Array<T>(input);
+    }
+
+    template Array<float>*          copyArray<float>(const Array<float>& input);
+    template Array<cfloat>*         copyArray<cfloat>(const Array<cfloat>& input);
+    template Array<double>*         copyArray<double>(const Array<double>& input);
+    template Array<cdouble>*        copyArray<cdouble>(const Array<cdouble>& input);
+    template Array<char>*           copyArray<char>(const Array<char>& input);
+    template Array<int>*            copyArray<int>(const Array<int>& input);
+    template Array<unsigned>*       copyArray<unsigned>(const Array<unsigned>& input);
+    template Array<uchar>*          copyArray<uchar>(const Array<uchar>& input);
+
+    template<typename T>
+    void Array<T>::eval()
+    {
+        if (isOwner()==false) {
+            data.resize(dims().elements());
+            stridedCopy(&data.front(),get(),dims(),strides(),ndims());
+            offsets() = dim4(0,0,0,0);
+            parent = nullptr;
+        }
+    }
+
+    template void Array<float>::eval();
+    template void Array<cfloat>::eval();
+    template void Array<double>::eval();
+    template void Array<cdouble>::eval();
+    template void Array<int>::eval();
+    template void Array<unsigned>::eval();
+    template void Array<char>::eval();
+    template void Array<uchar>::eval();
 }

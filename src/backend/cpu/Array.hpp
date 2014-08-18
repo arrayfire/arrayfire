@@ -81,6 +81,7 @@ public:
 
     ~Array() {}
 
+    void eval();
 };
 
 // Returns a reference to a Array object. This reference is not const.
@@ -112,6 +113,11 @@ createDataArray(const af::dim4 &size, const T * const data);
 template<typename T>
 Array<T> *
 createView(const Array<T>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
+
+// Create a new deep copy of the input Array
+template<typename T>
+Array<T> *
+copyArray(const Array<T>& input);
 
 template<typename T>
 void

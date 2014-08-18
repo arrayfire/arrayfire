@@ -22,6 +22,8 @@ SET( cuda_src
     generator.hpp
     print.cu
     print.hpp
+    moddims.cu
+    moddims.hpp
     ../array.cpp
     ../ArrayInfo.cpp
     ../ArrayInfo.hpp
@@ -30,6 +32,7 @@ SET( cuda_src
     ../helper.h
     ../index.cpp
     ../print.cpp
+    ../moddims.cpp
     )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
