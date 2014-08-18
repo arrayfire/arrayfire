@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
+#include <testHelpers.hpp>
 
 using std::vector;
 using std::string;
@@ -230,49 +231,6 @@ public:
     vector<std::array<af_seq, 2>> strided_continuous_seq;
     vector<std::array<af_seq, 2>> strided_strided_seq;
 };
-
-#include <fstream>
-#include <iterator>
-
-using std::copy;
-using std::istream_iterator;
-using std::ostream_iterator;
-
-template<typename InputType, typename ReturnType>
-void
-ReadTests(const string &FileName, af::dim4 &dims, vector<ReturnType> &out, vector<vector<ReturnType>> &tests) {
-    std::ifstream testFile(FileName);
-    if(testFile.good()) {
-        testFile >> dims;
-        vector<InputType>         data(dims.elements());
-
-        unsigned testCount;
-        testFile >> testCount;
-        tests.resize(testCount);
-
-        vector<unsigned> testSizes(testCount);
-        for(unsigned i = 0; i < testCount; i++) {
-            testFile >> testSizes[i];
-        }
-
-        copy_n( istream_iterator<InputType>(testFile),
-                dims.elements(),
-                begin(data));
-
-        copy(   begin(data),
-                end(data),
-                back_inserter(out));
-
-        for(unsigned i = 0; i < testCount; i++) {
-            copy_n( istream_iterator<int>(testFile),
-                    testSizes[i],
-                    back_inserter(tests[i]));
-        }
-    }
-    else {
-        FAIL() << "TEST FILE NOT FOUND";
-    }
-}
 
 template<typename T, size_t NDims>
 void
