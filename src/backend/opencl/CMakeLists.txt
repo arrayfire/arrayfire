@@ -27,6 +27,8 @@ SET( opencl_src
     index.hpp
     print.cpp
     print.hpp
+    diff.hpp
+    diff.cpp
     ../array.cpp
     ../ArrayInfo.cpp
     ../ArrayInfo.hpp
@@ -35,6 +37,7 @@ SET( opencl_src
     ../helper.h
     ../index.cpp
     ../print.cpp
+    ../diff.cpp
     )
 
 SET ( kernel_src
