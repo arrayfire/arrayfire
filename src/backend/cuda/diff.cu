@@ -1,8 +1,8 @@
-#include <type_traits>
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <diff.hpp>
+#include <cassert>
 
 namespace cuda
 {
@@ -10,10 +10,7 @@ namespace cuda
     af_array diff1(const af_array &in, const int dim)
     {
         assert(1!=1);
-
-        // Create output placeholder
-        Array<T> *outArray = createValueArray(af::dim4(1), (T)0);
-        return getHandle(*outArray);
+        return in;
     }
 
     template af_array diff1<float>        (const af_array &in, const int dim);
@@ -26,14 +23,11 @@ namespace cuda
     template af_array diff1<unsigned char>(const af_array &in, const int dim);
 
     ///////////////////////////////////////////////////////////////////////////
-
+    template<typename T>
     af_array diff2(const af_array &in, const int dim)
     {
         assert(1!=1);
-
-        // Create output placeholder
-        Array<T> *outArray = createValueArray(af::dim4(1), (T)0);
-        return getHandle(*outArray);
+        return in;
     }
 
     template af_array diff2<float>        (const af_array &in, const int dim);

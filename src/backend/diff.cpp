@@ -3,6 +3,7 @@
 #include <diff.hpp>
 #include <helper.h>
 #include <backend.h>
+#include <ArrayInfo.hpp>
 
 using af::dim4;
 using namespace detail;
