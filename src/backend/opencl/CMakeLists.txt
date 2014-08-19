@@ -29,6 +29,8 @@ SET( opencl_src
     print.hpp
     diff.hpp
     diff.cpp
+    moddims.cpp
+    moddims.hpp
     ../array.cpp
     ../ArrayInfo.cpp
     ../ArrayInfo.hpp
@@ -38,6 +40,7 @@ SET( opencl_src
     ../index.cpp
     ../print.cpp
     ../diff.cpp
+    ../moddims.cpp
     )
 
 SET ( kernel_src

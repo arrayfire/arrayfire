@@ -41,6 +41,8 @@ extern "C" {
     // Compute second order difference along a given dimension.
     AFAPI af_err af_diff2(af_array *out, const af_array in, const int dim);
 
+    // re-shape the the dimensions of the input array
+    AFAPI af_err af_moddims(af_array *out, const af_array in, const unsigned ndims, const dim_type * const dims);
 #ifdef __cplusplus
 }
 #endif
