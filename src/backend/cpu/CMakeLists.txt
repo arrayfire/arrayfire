@@ -11,16 +11,11 @@ SET(cpp_src
     copy.hpp
     elwise.cpp
     elwise.hpp
-    generator.cpp
-    generator.hpp
-    index.cpp
-    index.hpp
     print.cpp
     print.hpp
     diff.hpp
     diff.cpp
-    moddims.cpp
-    moddims.hpp
+    ../generator.hpp
     ../array.cpp
     ../ArrayInfo.cpp
     ../ArrayInfo.hpp

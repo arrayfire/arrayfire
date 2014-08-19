@@ -10,22 +10,36 @@
 namespace opencl
 {
 
-template<typename T>
-void copyData(T *data, const af_array &arr)
-{
-    const Array<T> &val_impl = getArray<T>(arr);
-    //FIXME: Add checks
-    cl::copy(getQueue(0), val_impl.get(), data, data + val_impl.elements());
-    return;
-}
+    template<typename T>
+    void copyData(T *data, const Array<T> &A)
+    {
+        //FIXME: Add checks
+        //FIXME: Check if faster or slower than cl::enqueueReadBuffer
+        cl::copy(getQueue(0), A.get(), data, data + A.elements());
+        return;
+    }
 
-template void copyData<float>(float *data, const af_array &dst);
-template void copyData<cfloat>(cfloat *data, const af_array &dst);
-template void copyData<double>(double *data, const af_array &dst);
-template void copyData<cdouble>(cdouble *data, const af_array &dst);
-template void copyData<char>(char *data, const af_array &dst);
-template void copyData<int>(int *data, const af_array &dst);
-template void copyData<unsigned>(unsigned *data, const af_array &dst);
-template void copyData<uchar>(uchar *data, const af_array &dst);
+    template<typename T>
+    Array<T> *copyArray(const Array<T> &A)
+    {
+        Array<T> *out = createEmptyArray<T>(A.dims());
 
+        // FIXME: Add checks
+        cl::enqueueCopyBuffer(A.get(), out->get(), 0, 0, A.elements() * sizeof(T));
+        return out;
+    }
+
+
+#define INSTANTIATE(T)                                                  \
+    template void      copyData<T> (T *data, const Array<T> &from);     \
+    template Array<T>* copyArray<T>(const Array<T> &A);                 \
+
+    INSTANTIATE(float)
+    INSTANTIATE(double)
+    INSTANTIATE(cfloat)
+    INSTANTIATE(cdouble)
+    INSTANTIATE(int)
+    INSTANTIATE(uint)
+    INSTANTIATE(uchar)
+    INSTANTIATE(char)
 }

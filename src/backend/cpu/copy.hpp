@@ -1,9 +1,10 @@
 #include <af/array.h>
+#include <Array.hpp>
 
 namespace cpu {
     template<typename T>
-    void copyData(T *data, const af_array &arr);
+    void copyData(T *data, const Array<T> &A);
 
     template<typename T>
-    void stridedCopy(T* dst, const T* src, const af::dim4 &dims, const af::dim4 &strides, unsigned dim);
+    Array<T>* copyArray(const Array<T> &A);
 }

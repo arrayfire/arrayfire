@@ -11,54 +11,59 @@
 namespace cpu
 {
 
-template<typename T>
-void stridedCopy(T* dst, const T* src, const dim4 &dims, const dim4 &strides, unsigned dim)
-{
-    if(dim == 0) {
-        if(strides[dim] == 1) {
-            //FIXME: Check for errors / exceptions
-            memcpy(dst, src, dims[dim] * sizeof(T));
+    template<typename T>
+    static void stridedCopy(T* dst, const T* src, const dim4 &dims, const dim4 &strides, unsigned dim)
+    {
+        if(dim == 0) {
+            if(strides[dim] == 1) {
+                //FIXME: Check for errors / exceptions
+                memcpy(dst, src, dims[dim] * sizeof(T));
+            } else {
+                for(int i = 0; i < dims[dim]; i++) {
+                    dst[i] = src[strides[dim]*i];
+                }
+            }
         } else {
-            for(int i = 0; i < dims[dim]; i++) {
-                dst[i] = src[strides[dim]*i];
+            for(int i = dims[dim]; i > 0; i--) {
+                stridedCopy<T>(dst, src, dims, strides, dim - 1);
+                src += strides[dim];
+                dst += dims[dim-1];
             }
         }
-    } else {
-        for(int i = dims[dim]; i > 0; i--) {
-            stridedCopy<T>(dst, src, dims, strides, dim - 1);
-            src += strides[dim];
-            dst += dims[dim-1];
+    }
+
+    // Assigns to single elements
+    template<typename T>
+    void copyData(T *to, const Array<T> &from)
+    {
+        if(from.isOwner()) {
+            // FIXME: Check for errors / exceptions
+            memcpy(to, from.get(), from.elements()*sizeof(T));
+        } else {
+            stridedCopy<T>(to, from.get(), from.dims(), from.strides(), from.ndims() - 1);
         }
     }
-}
 
-// Assigns to single elements
-template<typename T>
-void assignVal(T *to, const Array<T> &from, size_t elements)
-{
-    if(from.isOwner()) {
-        // FIXME: Check for errors / exceptions
-        memcpy(to, from.get(), elements*sizeof(T));
-    } else {
-        stridedCopy<T>(to, from.get(), from.dims(), from.strides(), from.ndims() - 1);
+
+    template<typename T>
+    Array<T> *copyArray(const Array<T> &A)
+    {
+        Array<T> *out = createEmptyArray<T>(A.dims());
+        copyData(out->get(), A);
+        return out;
     }
-}
 
-template<typename T>
-void copyData(T *data, const af_array &arr)
-{
-    const Array<T> &val_arr = getArray<T>(arr);
-    assignVal(data, val_arr, val_arr.elements()); //TODO: Do a simple memcpy for the cpu version
-    return;
-}
 
-template void copyData<float>(float *data, const af_array &dst);
-template void copyData<cfloat>(cfloat *data, const af_array &dst);
-template void copyData<double>(double *data, const af_array &dst);
-template void copyData<cdouble>(cdouble *data, const af_array &dst);
-template void copyData<char>(char *data, const af_array &dst);
-template void copyData<int>(int *data, const af_array &dst);
-template void copyData<unsigned>(unsigned *data, const af_array &dst);
-template void copyData<uchar>(uchar *data, const af_array &dst);
+#define INSTANTIATE(T)                                                  \
+    template void      copyData<T> (T *data, const Array<T> &from);     \
+    template Array<T>* copyArray<T>(const Array<T> &A);                 \
 
+    INSTANTIATE(float)
+    INSTANTIATE(double)
+    INSTANTIATE(cfloat)
+    INSTANTIATE(cdouble)
+    INSTANTIATE(int)
+    INSTANTIATE(uint)
+    INSTANTIATE(uchar)
+    INSTANTIATE(char)
 }

@@ -1,6 +1,4 @@
 #pragma once
-#include <boost/utility/declval.hpp>
-#include <boost/typeof/typeof.hpp>
 
 namespace cuda
 {
@@ -32,9 +30,8 @@ void binaryOp(O* out, const T* lhs, const U* rhs, const size_t &elements)
 {
     dim3 threads(512);
     dim3 blocks(divup(elements,threads.x));
-    typedef BOOST_TYPEOF(boost::declval<T>()+boost::declval<U>()) ret_type;
 
-    binaryOpKernel<ret_type,T,U,plus<ret_type> ><<<threads, blocks>>>(out, lhs, rhs, elements);
+    binaryOpKernel<O,T,U,plus<O> ><<<threads, blocks>>>(out, lhs, rhs, elements);
 }
 
 template<typename T>

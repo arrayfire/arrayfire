@@ -1,10 +1,11 @@
 #include <af/array.h>
+#include <Array.hpp>
 
 namespace cuda
 {
     template<typename T>
-    af_array diff1(const af_array &in, const int dim);
+    Array<T> *diff1(const Array<T> &in, const int dim);
 
     template<typename T>
-    af_array diff2(const af_array &in, const int dim);
+    Array<T> *diff2(const Array<T> &in, const int dim);
 }

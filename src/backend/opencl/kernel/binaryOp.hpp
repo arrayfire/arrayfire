@@ -2,6 +2,7 @@
 #include <cl.hpp>
 #include <ctx.hpp>
 #include <sstream>
+#include <string>
 #include "../traits.hpp"
 
 using cl::Buffer;
@@ -17,6 +18,8 @@ namespace opencl
 namespace kernel
 {
 
+    template<typename OP> std::string stringOp() { return std::string("+"); }
+
 //TODO: Build only once for each instance of a kernel.  NOTE: Static objects in
 //      different instances of templates are the same.
 template<typename R, typename T, typename U, typename OP>
@@ -31,7 +34,7 @@ binaryOp(Buffer out, const Buffer lhs, const Buffer rhs, const size_t elements)
     options << " -D T=" << dtype_traits<T>::getName()
             << " -D U=" << dtype_traits<U>::getName()
             << " -D R=" << dtype_traits<R>::getName()
-            << " -D OP=" << OP::stringOp();
+            << " -D OP=" << stringOp<OP>();
     prog.build(options.str().c_str());
 
     auto binOp = make_kernel<Buffer, Buffer, Buffer, const unsigned long>(prog, "binaryOp");

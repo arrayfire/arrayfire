@@ -4,9 +4,22 @@
 #include <helper.h>
 #include <backend.h>
 #include <ArrayInfo.hpp>
+#include <diff.hpp>
 
 using af::dim4;
 using namespace detail;
+
+template<typename T>
+static inline af_array diff1(const af_array in, const int dim)
+{
+    return getHandle(*diff1<T>(getArray<T>(in), dim));
+}
+
+template<typename T>
+static inline af_array diff2(const af_array in, const int dim)
+{
+    return getHandle(*diff2<T>(getArray<T>(in), dim));
+}
 
 af_err af_diff1(af_array *out, const af_array in, const int dim)
 {

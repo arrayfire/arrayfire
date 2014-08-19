@@ -12,5 +12,5 @@ namespace opencl
 
     template<typename T>
     void
-    print(const af_array &arr);
+    print(const Array<T> &A);
 }

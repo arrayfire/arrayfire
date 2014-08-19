@@ -29,7 +29,14 @@ class Array : public ArrayInfo
 
 public:
 
-    bool isOwner() const {
+    Array(dim4 dims);
+    explicit Array(dim4 dims, T val);
+    explicit Array(dim4 dims, const T * const in_data);
+    Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
+    ~Array();
+
+    bool isOwner() const
+    {
         return parent == nullptr;
     }
 
@@ -54,34 +61,6 @@ public:
         }
         return ptr;
     }
-
-    Array(dim4 dims):
-        ArrayInfo(dims, dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(dims.elements()),
-        parent(nullptr)
-    { }
-
-    explicit Array(dim4 dims, T val):
-        ArrayInfo(dims, dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(dims.elements(), val),
-        parent(nullptr)
-    { }
-
-    explicit Array(dim4 dims, const T * const in_data):
-        ArrayInfo(dims, dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(in_data, in_data + dims.elements()),
-        parent(nullptr)
-    { }
-
-    Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
-        ArrayInfo(dims, offset, stride, (af_dtype)dtype_traits<T>::af_type),
-        data(0),
-        parent(&parnt)
-    { }
-
-    ~Array() {}
-
-    void eval();
 };
 
 // Returns a reference to a Array object. This reference is not const.
@@ -109,19 +88,19 @@ template<typename T>
 Array<T>*
 createDataArray(const af::dim4 &size, const T * const data);
 
+// Create an Array object and do not assign any values to it
+template<typename T>
+Array<T>*
+createEmptyArray(const af::dim4 &size);
+
 // Creates a new Array View(sub array).
 template<typename T>
 Array<T> *
-createView(const Array<T>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
-
-// Create a new deep copy of the input Array
-template<typename T>
-Array<T> *
-copyArray(const Array<T>& input);
+createSubArray(const Array<T>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
 
 template<typename T>
 void
-copyData(T *data, const af_array &arr);
+destroyArray(const af_array& arr);
 
 template<typename T>
 void

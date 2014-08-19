@@ -45,17 +45,20 @@ namespace cpu
 
     template<typename T>
     void
-    print(const af_array &arr) {
-        const Array<T> &impl = getArray<T>(arr);
-        std::cout << impl;
+    print(const Array<T> &A)
+    {
+        std::cout << A;
     }
 
-    template void print<float>                   (const af_array &arr);
-    template void print<cfloat>                  (const af_array &arr);
-    template void print<double>                  (const af_array &arr);
-    template void print<cdouble>                 (const af_array &arr);
-    template void print<char>                    (const af_array &arr);
-    template void print<int>                     (const af_array &arr);
-    template void print<unsigned>                (const af_array &arr);
-    template void print<uchar>                   (const af_array &arr);
+#define INSTANTIATE(T)                          \
+    template void print<T> (const Array<T> &A); \
+
+    INSTANTIATE(float)
+    INSTANTIATE(double)
+    INSTANTIATE(cfloat)
+    INSTANTIATE(cdouble)
+    INSTANTIATE(int)
+    INSTANTIATE(uint)
+    INSTANTIATE(uchar)
+    INSTANTIATE(char)
 }

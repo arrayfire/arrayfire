@@ -11,66 +11,26 @@
 namespace opencl
 {
 
-using std::swap;
-using std::declval;
-using std::string;
+    using std::swap;
+    using std::declval;
 
-class plus
-{
-public:
-    template<typename T, typename U>
-    auto
-    operator()(const T& lhs, const U& rhs) -> decltype(declval<T>() + declval<U>())
+    template<typename Tl, typename Tr, typename To, typename Op>
+    Array<To>* binOp(const Array<Tl> &lhs, const Array<Tr> &rhs)
     {
-        return lhs + rhs;
+        Array<To> *res= createValueArray<To>(lhs.dims(), 0);
+        kernel::binaryOp<To, Tl, Tr, Op>(res->get(),
+                                         lhs.get(),
+                                         rhs.get(),
+                                         lhs.elements());
+        return res;
     }
 
-    constexpr static const char * const stringOp() { return "+"; }
-};
+#define INSTANTIATE(L, R, O, OP)                                        \
+    template Array<O>* binOp<L, R, O, OP>(const Array<L> &lhs, const Array<R> &rhs); \
 
-template<typename T, typename U, typename Op>
-void binOp(af_array *result, const af_array lhs, const af_array rhs)
-{
-    typedef decltype(Op()(declval<T>(), declval<U>())) ret_type;
-    const Array<T> &lhs_impl = getArray<T>(lhs);
-    const Array<U> &rhs_impl = getArray<U>(rhs);
-    Array<ret_type> *res= createValueArray<ret_type>(lhs_impl.dims(), 0);
-
-    kernel::binaryOp<ret_type, T, U, Op>(   res->get(),
-                                            lhs_impl.get(),
-                                            rhs_impl.get(),
-                                            lhs_impl.elements());
-
-    af_array out = getHandle(*res);
-    swap(*result, out);
-}
-
-    binaryOp
-    getFunction(af_dtype lhs, af_dtype rhs)
-    {
-        switch (lhs) {
-        case f32:
-            switch (rhs) {
-            case f32:    return binOp<float,float, plus>;
-            case f64:    return binOp<float,double, plus>;
-            case s32:    return binOp<float,int, plus>;
-            default:     assert("NOT IMPLEMENTED" && 1 != 1);
-            }
-        case f64:
-            switch (rhs) {
-            case f32:    return binOp<double,float, plus>;
-            case f64:    return binOp<double,double, plus>;
-            default:     assert("NOT IMPLEMENTED" && 1 != 1);
-            }
-        case s32:
-            switch (rhs) {
-            case f32:    return binOp<int,float, plus>;
-            case f64:    return binOp<int,double, plus>;
-            default:     assert("NOT IMPLEMENTED" && 1 != 1);
-            }
-        default:     assert("NOT IMPLEMENTED" && 1 != 1);
-        }
-        return NULL;
-    }
+    INSTANTIATE(float ,  float,  float, std::plus<float>);
+    INSTANTIATE(float , double, double, std::plus<double>);
+    INSTANTIATE(double,  float, double, std::plus<double>);
+    INSTANTIATE(double, double, double, std::plus<double>);
 
 } //namespace opencl

@@ -1,8 +1,9 @@
 #include <af/defines.h>
 #include <af/array.h>
+#include <Array.hpp>
 
 namespace cpu
 {
-typedef void(*binaryOp)(af_array*, af_array, af_array);
-binaryOp getFunction(af_dtype lhs, af_dtype rhs);
+    template<typename Tl, typename Tr, typename To, typename Op>
+    Array<To>* binOp(const Array<Tl> &lhs, const Array<Tr> &rhs);
 }

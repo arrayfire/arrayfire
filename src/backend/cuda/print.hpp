@@ -1,6 +1,7 @@
 #include <af/array.h>
+#include <Array.hpp>
 #include <iosfwd>
-#include "backend.h"
+#include <backend.h>
 
 namespace cuda
 {
@@ -12,5 +13,5 @@ namespace cuda
 
     template<typename T>
     void
-    print(const af_array &arr);
+    print(const Array<T> &A);
 }

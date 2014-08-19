@@ -3,13 +3,29 @@
 
 #include <af/array.h>
 #include <ArrayInfo.hpp>
-#include <index.hpp>
 #include <helper.h>
 #include <backend.h>
+#include <Array.hpp>
 
 using namespace detail;
 using std::vector;
 using std::swap;
+
+template<typename T>
+static void indexArray(af_array &dest, const af_array &src, const unsigned ndims, const af_seq *index)
+{
+    using af::toOffset;
+    using af::toDims;
+    using af::toStride;
+
+    const Array<T> &parent = getArray<T>(src);
+    vector<af_seq> index_(index, index+ndims);
+    Array<T>* dst =  createSubArray(    parent,
+                                        toDims(index_, parent.dims()),
+                                        toOffset(index_),
+                                        toStride(index_, parent.dims()) );
+    dest = getHandle(*dst);
+}
 
 af_err af_index(af_array *result, const af_array in, const unsigned ndims, const af_seq* index)
 {

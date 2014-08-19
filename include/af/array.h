@@ -3,7 +3,7 @@
 #include <af/dim4.hpp>
 #define AF_MAX_DIMS 4
 
-typedef long long af_array;
+typedef size_t af_array;
 
 #ifdef __cplusplus
 extern "C" {

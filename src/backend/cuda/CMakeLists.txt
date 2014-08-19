@@ -16,16 +16,11 @@ SET( cuda_src
     copy.hpp
     elwise.cu
     elwise.hpp
-    index.cu
-    index.hpp
-    generator.cu
-    generator.hpp
     print.cu
     print.hpp
     diff.hpp
     diff.cu
-    moddims.cu
-    moddims.hpp
+    ../generator.hpp
     ../array.cpp
     ../ArrayInfo.cpp
     ../ArrayInfo.hpp

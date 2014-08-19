@@ -1,52 +1,33 @@
-#include <tuple>
-#include <algorithm>
-#include <map>
-#include <functional>
 #include <af/defines.h>
 #include <af/array.h>
 #include <af/arith.h>
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <elwise.hpp>
+#include <algorithm>
 
 namespace cpu
 {
 
-using std::declval;
-using std::map;
-using std::swap;
-using std::function;
-using std::tuple;
-using std::make_tuple;
+    using std::swap;
+    template<typename Tl, typename Tr, typename To, typename Op>
+    Array<To>* binOp(const Array<Tl> &lhs, const Array<Tr> &rhs)
+    {
+        Array<To> *res= createEmptyArray<To>(lhs.dims());
+        std::transform(lhs.get(), lhs.get() + lhs.elements(),
+                       rhs.get(),
+                       res->get(),
+                       Op());
 
-template<typename T, typename U, typename Op>
-void binOp(af_array *result, const af_array lhs, const af_array rhs)
-{
-    typedef decltype(Op()(declval<T>(), declval<U>())) ret_type;
-    const Array<T> &lhs_arr = getArray<T>(lhs);
-    const Array<U> &rhs_arr = getArray<U>(rhs);
-    Array<ret_type> *res= createValueArray<ret_type>(lhs_arr.dims(), 0);
-
-    transform(  lhs_arr.get(), lhs_arr.get() + lhs_arr.elements(),
-                rhs_arr.get(),
-                res->get(),
-                Op());
-
-    af_array out = getHandle(*res);
-    swap(*result, out);
-}
-
-binaryOp getFunction(af_dtype lhs, af_dtype rhs)
-{
-    static map<tuple<af_dtype, af_dtype>, binaryOp> addFunctions;
-    static map<tuple<af_dtype, af_dtype>, binaryOp> minusFunctions;
-    if(addFunctions.empty()) {
-        addFunctions[make_tuple(f32,f32)] = binOp<float,float, std::plus<float>>;
-        addFunctions[make_tuple(f32,f64)] = binOp<float,double, std::plus<double>>;
-        addFunctions[make_tuple(f64,f32)] = binOp<double,float, std::plus<double>>;
-        addFunctions[make_tuple(f64,f64)] = binOp<double,double, std::plus<double>>;
+        return res;
     }
-    return addFunctions[make_tuple(lhs,rhs)];
 
-}
+#define INSTANTIATE(L, R, O, OP)                                        \
+    template Array<O>* binOp<L, R, O, OP>(const Array<L> &lhs, const Array<R> &rhs); \
+
+    INSTANTIATE(float ,  float,  float, std::plus<float>);
+    INSTANTIATE(float , double, double, std::plus<double>);
+    INSTANTIATE(double,  float, double, std::plus<double>);
+    INSTANTIATE(double, double, double, std::plus<double>);
+
 } //namespace af

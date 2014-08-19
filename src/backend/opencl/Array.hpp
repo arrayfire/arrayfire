@@ -19,34 +19,16 @@ class Array : public ArrayInfo
     Array*      parent;
 
 public:
+    Array(af::dim4 dims);
+    explicit Array(af::dim4 dims, T val);
+    explicit Array(af::dim4 dims, const T * const in_data);
+    ~Array();
+
     bool isOwner() const { return parent == nullptr; }
-    Array(af::dim4 dims) :
-        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)dtype_traits<T>::af_type),
-        data(getCtx(0), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
-        parent()
-    {
-    }
 
-    explicit Array(af::dim4 dims, T val) :
-        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)dtype_traits<T>::af_type),
-        data(getCtx(0), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
-        parent()
-    {
-        set(data, val, elements());
-    }
-
-    explicit Array(af::dim4 dims, const T * const in_data) :
-        ArrayInfo(dims, af::dim4(0), af::dim4(0), (af_dtype)dtype_traits<T>::af_type),
-        data(getCtx(0), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
-        parent()
-    {
-        cl::copy(getQueue(0), in_data, in_data + dims.elements(), data);
-    }
-
-    cl::Buffer& get()        {  return data; }
+            cl::Buffer& get()        {  return data; }
     const   cl::Buffer& get() const  {  return data; }
 
-    ~Array() { }
 };
 
 // Returns a reference to a Array object. This reference is not const.
@@ -74,11 +56,16 @@ template<typename T>
 Array<T>*
 createDataArray(const af::dim4 &size, const T * const data);
 
+// Create an Array object and do not assign any values to it
+template<typename T>
+Array<T>*
+createEmptyArray(const af::dim4 &size);
+
 template<typename T>
 Array<T> *
-createView(const Array<T>& parent, const af::dim4 &dims, const af::dim4 &offset, const af::dim4 &stride);
+createSubArray(const Array<T>& parent, const af::dim4 &dims, const af::dim4 &offset, const af::dim4 &stride);
 
 template<typename T>
 void
-copyData(T *data, const af_array &arr);
+destroyArray(const af_array& arr);
 }
