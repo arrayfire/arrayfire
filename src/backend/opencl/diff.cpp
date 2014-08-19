@@ -12,7 +12,7 @@ namespace opencl
         assert(1!=1);
 
         // Create output placeholder
-        Array<T> *outArray = createValueArray(dims, (T)0);
+        Array<T> *outArray = createValueArray(af::dim4(1), (T)0);
         return getHandle(*outArray);
     }
 
