@@ -46,11 +46,10 @@ af_err af_get_type(af_dtype *type, const af_array arr)
     return AF_SUCCESS; //FIXME: Catch exceptions correctly
 }
 
-dim4
-calcBaseStride(const dim4 &parentDim)
+dim4 calcBaseStride(const dim4 &parentDim)
 {
     dim4 out(1, 1, 1, 1);
     const dim_type *parentPtr = parentDim.get();
-    partial_sum(parentPtr, parentPtr + parentDim.ndims(), out.get() + 1);
+    partial_sum(parentPtr, parentPtr + parentDim.ndims(), out.get() + 1, std::multiplies<dim_type>());
     return out;
 }
