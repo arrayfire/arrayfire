@@ -76,7 +76,7 @@ void moddimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *se
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
     }
 
-    for (int testIter=0; testIter<tests.size(); ++testIter) {
+    for (size_t testIter=0; testIter<tests.size(); ++testIter) {
         vector<T> currGoldBar   = tests[testIter];
         size_t nElems        = currGoldBar.size();
         for (size_t elIter=0; elIter<nElems; ++elIter) {
