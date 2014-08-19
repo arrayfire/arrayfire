@@ -17,6 +17,8 @@ SET(cpp_src
     index.hpp
     print.cpp
     print.hpp
+    diff.hpp
+    diff.cpp
     ../array.cpp
     ../ArrayInfo.cpp
     ../ArrayInfo.hpp
@@ -25,6 +27,7 @@ SET(cpp_src
     ../helper.h
     ../index.cpp
     ../print.cpp
+    ../diff.cpp
     )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
