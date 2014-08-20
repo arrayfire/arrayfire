@@ -25,6 +25,8 @@ SET( opencl_src
     print.hpp
     diff.hpp
     diff.cpp
+    random.hpp
+    random.cpp
     ../generator.hpp
     transpose.cpp
     transpose.hpp
