@@ -28,6 +28,7 @@ namespace cpu
                 printer(out, ptr, info, dim - 1);
                 ptr += stride;
             }
+            out << endl;
         }
 
     }
