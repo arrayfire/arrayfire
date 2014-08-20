@@ -122,3 +122,22 @@ TYPED_TEST(Transpose,SubRefBatch)
 {
     trsTest<TypeParam>(string(TEST_DIR"/transpose/offset_batch.test"),true,&(this->subMat3D));
 }
+
+TYPED_TEST(Transpose,InvalidArgs)
+{
+    af::dim4            dims(1);
+    vector<TypeParam>           in;
+    vector<vector<TypeParam>>   tests;
+    ReadTests<int, TypeParam>(string(TEST_DIR"/transpose/square.test"),dims,in,tests);
+
+    af_array inArray   = 0;
+    af_array outArray  = 0;
+
+    // square test file is 100x100 originally
+    // usee new dimensions for this argument
+    // unit test
+    af::dim4 newDims(5,5,2,2);
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), newDims.ndims(), newDims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
+
+    ASSERT_EQ(AF_ERR_ARG, af_transpose(&outArray,inArray));
+}
