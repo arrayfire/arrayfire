@@ -43,6 +43,15 @@ extern "C" {
 
     // re-shape the the dimensions of the input array
     AFAPI af_err af_moddims(af_array *out, const af_array in, const unsigned ndims, const dim_type * const dims);
+
+    // Generate Random Numbers using uniform distribution
+    AFAPI af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+    AFAPI af_err af_randu_wrapper(af_array *out, const unsigned dim0, const unsigned dim1, const unsigned dim2, const unsigned dim3, const af_dtype type);
+
+    // Generate Random Numbers using normal distribution
+    AFAPI af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+    AFAPI af_err af_randn_wrapper(af_array *out, const unsigned dim0, const unsigned dim1, const unsigned dim2, const unsigned dim3, const af_dtype type);
+
 #ifdef __cplusplus
 }
 #endif

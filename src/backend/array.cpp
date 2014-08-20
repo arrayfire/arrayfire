@@ -7,6 +7,7 @@
 #include <helper.h>
 #include <backend.h>
 #include <generator.hpp>
+#include <random.hpp>
 
 using af::dim4;
 using namespace detail;
@@ -95,6 +96,90 @@ af_err af_constant(af_array *result, const double value,
     }
     CATCHALL
         return ret;
+}
+
+template<typename T>
+static inline af_array randu_(const af::dim4 &dims)
+{
+    return getHandle(*randu<T>(dims));
+}
+
+af_err af_randu_wrapper(af_array *out, const unsigned dim0, const unsigned dim1,
+                        const unsigned dim2, const unsigned dim3, const af_dtype type)
+{
+     dim_type dims[] = {dim0, dim1, dim2, dim3};
+    return af_randu(out, 4, dims, type);
+}
+
+af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
+{
+    af_err ret = AF_SUCCESS;
+    af_array result;
+    try {
+        dim4 d((size_t)dims[0]);
+        for(unsigned i = 1; i < ndims; i++) {
+            d[i] = dims[i];
+            if(d[i] < 1) {
+                return AF_ERR_ARG;
+            }
+        }
+        switch(type) {
+            case f32:   result = randu_<float  >(d);    break;
+            case c32:   result = randu_<cfloat >(d);    break;
+            case f64:   result = randu_<double >(d);    break;
+            case c64:   result = randu_<cdouble>(d);    break;
+            case s32:   result = randu_<int    >(d);    break;
+            case u32:   result = randu_<uint   >(d);    break;
+            case u8:    result = randu_<uchar  >(d);    break;
+            // Removed because of bool type. Functions implementations exist.
+            //case s8:    result = randu_<char   >(d);    break;
+            //case b8:    result = randu_<char   >(d);    break;
+            default:    ret    = AF_ERR_NOT_SUPPORTED; break;
+        }
+        if(ret == AF_SUCCESS)
+            std::swap(*out, result);
+    }
+    CATCHALL
+    return ret;
+}
+
+template<typename T>
+static inline af_array randn_(const af::dim4 &dims)
+{
+    return getHandle(*randn<T>(dims));
+}
+
+af_err af_randn_wrapper(af_array *out, const unsigned dim0, const unsigned dim1,
+                        const unsigned dim2, const unsigned dim3, const af_dtype type)
+{
+    dim_type dims[] = {dim0, dim1, dim2, dim3};
+    return af_randn(out, 4, dims, type);
+}
+
+af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
+{
+    af_err ret = AF_SUCCESS;
+    af_array result;
+    try {
+        dim4 d((size_t)dims[0]);
+        for(unsigned i = 1; i < ndims; i++) {
+            d[i] = dims[i];
+            if(d[i] < 1) {
+                return AF_ERR_ARG;
+            }
+        }
+        switch(type) {
+            case f32:   result = randn_<float  >(d);    break;
+            case c32:   result = randn_<cfloat >(d);    break;
+            case f64:   result = randn_<double >(d);    break;
+            case c64:   result = randn_<cdouble>(d);    break;
+            default:    ret    = AF_ERR_NOT_SUPPORTED; break;
+        }
+        if(ret == AF_SUCCESS)
+            std::swap(*out, result);
+    }
+    CATCHALL
+    return ret;
 }
 
 af_err af_destroy_array(af_array arr)

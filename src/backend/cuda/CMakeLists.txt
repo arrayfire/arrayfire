@@ -20,6 +20,8 @@ SET( cuda_src
     print.hpp
     diff.hpp
     diff.cu
+    random.hpp
+    random.cu
     ../generator.hpp
     ../array.cpp
     ../ArrayInfo.cpp

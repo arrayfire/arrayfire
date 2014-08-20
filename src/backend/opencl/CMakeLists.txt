@@ -25,6 +25,8 @@ SET( opencl_src
     print.hpp
     diff.hpp
     diff.cpp
+    random.hpp
+    random.cpp
     ../generator.hpp
     ../array.cpp
     ../ArrayInfo.cpp

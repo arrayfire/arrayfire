@@ -15,6 +15,8 @@ SET(cpp_src
     print.hpp
     diff.hpp
     diff.cpp
+    random.cpp
+    random.hpp
     ../generator.hpp
     ../array.cpp
     ../ArrayInfo.cpp
