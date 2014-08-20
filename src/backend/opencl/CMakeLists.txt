@@ -26,6 +26,8 @@ SET( opencl_src
     diff.hpp
     diff.cpp
     ../generator.hpp
+    transpose.cpp
+    transpose.hpp
     ../array.cpp
     ../ArrayInfo.cpp
     ../ArrayInfo.hpp
@@ -36,6 +38,7 @@ SET( opencl_src
     ../print.cpp
     ../diff.cpp
     ../moddims.cpp
+    ../transpose.cpp
     )
 
 SET ( kernel_src

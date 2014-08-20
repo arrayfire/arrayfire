@@ -33,7 +33,7 @@ extern "C" {
 
     // Create a new af_array by indexing from existing af_array.
     // This takes the form `out = in(seq_a, seq_b)`
-    AFAPI af_err af_index(af_array *out, const af_array in, unsigned ndims, const af_seq* const index );
+    AFAPI af_err af_index(af_array *out, const af_array in, unsigned ndims, const af_seq* const index);
 
     // Compute first order difference along a given dimension.
     AFAPI af_err af_diff1(af_array *out, const af_array in, const int dim);
@@ -43,6 +43,9 @@ extern "C" {
 
     // re-shape the the dimensions of the input array
     AFAPI af_err af_moddims(af_array *out, const af_array in, const unsigned ndims, const dim_type * const dims);
+
+    // matrix transpose
+    AFAPI af_err af_transpose(af_array *out, af_array in);
 #ifdef __cplusplus
 }
 #endif

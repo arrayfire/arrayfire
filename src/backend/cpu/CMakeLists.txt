@@ -16,6 +16,8 @@ SET(cpp_src
     diff.hpp
     diff.cpp
     ../generator.hpp
+    transpose.hpp
+    transpose.cpp
     ../array.cpp
     ../ArrayInfo.cpp
     ../ArrayInfo.hpp
@@ -26,6 +28,7 @@ SET(cpp_src
     ../print.cpp
     ../diff.cpp
     ../moddims.cpp
+    ../transpose.cpp
     )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
