@@ -21,6 +21,8 @@ SET( cuda_src
     diff.hpp
     diff.cu
     ../generator.hpp
+    transpose.cu
+    transpose.hpp
     ../array.cpp
     ../ArrayInfo.cpp
     ../ArrayInfo.hpp
@@ -31,6 +33,7 @@ SET( cuda_src
     ../print.cpp
     ../diff.cpp
     ../moddims.cpp
+    ../transpose.cpp
     )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
