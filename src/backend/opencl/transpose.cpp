@@ -8,12 +8,14 @@
 
 using af::dim4;
 
-namespace opencl {
+namespace opencl
+{
+
     template<typename T>
     Array<T> * transpose(const Array<T> &in)
     {
-        Array<T> *out;
-        assert("transpose is not supported yet in opencl backend" && 1==0);
+        Array<T> *out = nullptr;
+        assert("transpose is not supported yet in opencl backend" && 1<3);
         return out;
     }
 
@@ -26,7 +28,7 @@ namespace opencl {
     INSTANTIATE(cdouble)
     INSTANTIATE(char)
     INSTANTIATE(int)
-    INSTANTIATE(unsigned)
-    INSTANTIATE(unsigned char)
+    INSTANTIATE(uint)
+    INSTANTIATE(uchar)
 
 }

@@ -20,8 +20,14 @@ af_err af_transpose(af_array *out, af_array in)
     af_array output;
 
     try {
-        af_dtype type;
-        af_get_type(&type, in);
+        ArrayInfo info = getInfo(in);
+        af_dtype type = info.getType();
+        af::dim4 dims = info.dims();
+
+        if (dims.ndims()>3) {
+            return AF_ERR_ARG;
+        }
+
         switch(type) {
             case f32: output = transpose<float>(in);          break;
             case c32: output = transpose<cfloat>(in);         break;
@@ -29,8 +35,8 @@ af_err af_transpose(af_array *out, af_array in)
             case c64: output = transpose<cdouble>(in);        break;
             case b8 : output = transpose<char>(in);           break;
             case s32: output = transpose<int>(in);            break;
-            case u32: output = transpose<unsigned>(in);       break;
-            case u8 : output = transpose<unsigned char>(in);  break;
+            case u32: output = transpose<uint>(in);       break;
+            case u8 : output = transpose<uchar>(in);  break;
             default : ret  = AF_ERR_NOT_SUPPORTED;            break;
         }
         if (ret!=AF_ERR_NOT_SUPPORTED) {

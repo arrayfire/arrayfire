@@ -8,13 +8,14 @@
 
 using af::dim4;
 
-namespace cuda {
+namespace cuda
+{
 
     template<typename T>
     Array<T> * transpose(const Array<T> &in)
     {
-        Array<T> *out;
-        assert("transpose is not supported yet in cuda backend" && 1==0);
+        Array<T> *out = 0;
+        assert("transpose is not supported yet in cuda backend" && 1<3);
         return out;
     }
 
@@ -27,7 +28,7 @@ namespace cuda {
     INSTANTIATE(cdouble)
     INSTANTIATE(char)
     INSTANTIATE(int)
-    INSTANTIATE(unsigned)
-    INSTANTIATE(unsigned char)
+    INSTANTIATE(uint)
+    INSTANTIATE(uchar)
 
 }
