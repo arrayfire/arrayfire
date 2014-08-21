@@ -40,13 +40,14 @@ public:
         return parent == nullptr;
     }
 
-    T *get(bool withOffset = true)
+    T* get(bool withOffset = true)
     {
         return const_cast<T*>(static_cast<const Array<T>*>(this)->get());
     }
 
-    const   T *get(bool withOffset = true) const
+    const T* get(bool withOffset = true) const
     {
+
         const T* ptr = nullptr;
         if(parent == nullptr) {
             ptr = &data.front();
@@ -54,7 +55,7 @@ public:
         else {
             size_t offset = 0;
             if(withOffset) {
-                offset = calcGlobalOffset(this->strides(), this->offsets());
+                offset = calcGlobalOffset(parent->strides(), this->offsets());
             }
             ptr = &parent->data.front() + offset;
         }

@@ -92,6 +92,11 @@ namespace cpu
     createSubArray(const Array<T>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride)
     {
         Array<T> *out = new Array<T>(parent, dims, offset, stride);
+        // FIXME: check what is happening with the references here
+        if (stride[0] != 1 ||
+            stride[1] <  0 ||
+            stride[2] <  0 ||
+            stride[3] <  0) out = copyArray(*out);
         return out;
     }
 
@@ -112,7 +117,6 @@ namespace cpu
     template       Array<T>*  createEmptyArray<T> (const dim4 &size);   \
     template       Array<T>*  createSubArray<T>       (const Array<T> &parent, const dim4 &dims, const dim4 &offset, const dim4 &stride); \
     template       void       destroyArray<T>     (const af_array &arr); \
-
 
     INSTANTIATE(float)
     INSTANTIATE(double)
