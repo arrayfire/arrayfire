@@ -9,20 +9,11 @@ using std::accumulate;
 using std::transform;
 
 dim_type
-calcGlobalOffset(const ArrayInfo &info, const ArrayInfo &parentInfo)
+calcGlobalOffset(const af::dim4 &strides, const af::dim4 &offsets)
 {
-
-    size_t ndims = info.ndims();
-    const dim_type *offsetPtr = info.offsets().get();
-    const dim_type *dimPtr = parentInfo.dims().get();
-    dim4 out(offsetPtr[0],0,0,0);
-
-    transform(  offsetPtr + 1, offsetPtr + ndims,
-                dimPtr,
-                out.get() + 1,
-                std::multiplies<dim_type>());
-
-    return abs(accumulate(out.get(), out.get() + ndims, 0));
+    dim_type offset = 0;
+    for (int i = 0; i < 4; i++) offset += offsets[i] * strides[i];
+    return offset;
 }
 
 

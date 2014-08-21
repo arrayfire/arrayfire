@@ -46,7 +46,7 @@ public:
 };
 
 dim_type
-calcGlobalOffset(const ArrayInfo &info, const ArrayInfo &parentInfo );
+calcGlobalOffset(const af::dim4 &strides, const af::dim4 &offsets);
 
 af::dim4
 calcBaseStride(const af::dim4 &parentDim);

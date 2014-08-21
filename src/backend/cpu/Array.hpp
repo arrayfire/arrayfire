@@ -54,8 +54,7 @@ public:
         else {
             size_t offset = 0;
             if(withOffset) {
-                offset = calcGlobalOffset(  *static_cast<const ArrayInfo*>(this),
-                                            *static_cast<const ArrayInfo*>(parent));
+                offset = calcGlobalOffset(this->strides(), this->offsets());
             }
             ptr = &parent->data.front() + offset;
         }
