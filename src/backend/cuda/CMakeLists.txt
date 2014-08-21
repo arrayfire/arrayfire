@@ -7,35 +7,13 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_SOURCE_DIR}/src/backend/cuda
     )
 
-SET( cuda_src
-    kernel/elwise.cu
-    Array.cu
-    Array.hpp
-    backend.h
-    copy.cu
-    copy.hpp
-    elwise.cu
-    elwise.hpp
-    print.cu
-    print.hpp
-    diff.hpp
-    diff.cu
-    random.hpp
-    random.cu
-    ../generator.hpp
-    transpose.cu
-    transpose.hpp
-    ../array.cpp
-    ../ArrayInfo.cpp
-    ../ArrayInfo.hpp
-    ../dim4.cpp
-    ../elwise.cpp
-    ../helper.h
-    ../index.cpp
-    ../print.cpp
-    ../diff.cpp
-    ../moddims.cpp
-    ../transpose.cpp
+FILE(GLOB cuda_src
+    "*.h*"
+    "*.c*"
+    "kernel/*.h*"
+    "kernel/*.c*"
+    "../*.h*"
+    "../*.c*"
     )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")

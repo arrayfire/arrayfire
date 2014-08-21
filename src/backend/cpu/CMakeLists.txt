@@ -3,34 +3,11 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_SOURCE_DIR}/src/backend/cpu
     )
 
-SET(cpp_src
-    Array.cpp
-    Array.hpp
-    backend.h
-    copy.cpp
-    copy.hpp
-    elwise.cpp
-    elwise.hpp
-    print.cpp
-    print.hpp
-    diff.hpp
-    diff.cpp
-    random.cpp
-    random.hpp
-    ../generator.hpp
-    transpose.hpp
-    transpose.cpp
-    ../array.cpp
-    ../ArrayInfo.cpp
-    ../ArrayInfo.hpp
-    ../dim4.cpp
-    ../elwise.cpp
-    ../helper.h
-    ../index.cpp
-    ../print.cpp
-    ../diff.cpp
-    ../moddims.cpp
-    ../transpose.cpp
+FILE(GLOB cpp_src
+    "*.h*"
+    "*.c*"
+    "../*.h*"
+    "../*.c*"
     )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")

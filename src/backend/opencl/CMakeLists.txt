@@ -11,36 +11,11 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_BINARY_DIR}
     )
 
-SET( opencl_src
-    Array.cpp
-    Array.hpp
-    backend.h
-    copy.cpp
-    copy.hpp
-    ctx.cpp
-    ctx.hpp
-    elwise.cpp
-    elwise.hpp
-    print.cpp
-    print.hpp
-    diff.hpp
-    diff.cpp
-    random.hpp
-    random.cpp
-    ../generator.hpp
-    transpose.cpp
-    transpose.hpp
-    ../array.cpp
-    ../ArrayInfo.cpp
-    ../ArrayInfo.hpp
-    ../dim4.cpp
-    ../elwise.cpp
-    ../helper.h
-    ../index.cpp
-    ../print.cpp
-    ../diff.cpp
-    ../moddims.cpp
-    ../transpose.cpp
+FILE(GLOB opencl_src
+    "*.h*"
+    "*.c*"
+    "../*.h*"
+    "../*.c*"
     )
 
 SET ( kernel_src
