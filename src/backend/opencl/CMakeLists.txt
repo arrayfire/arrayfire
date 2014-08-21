@@ -12,10 +12,12 @@ INCLUDE_DIRECTORIES(
     )
 
 FILE(GLOB opencl_src
-    "*.h*"
-    "*.c*"
-    "../*.h*"
-    "../*.c*"
+    "*.hpp"
+    "*.h"
+    "*.cpp"
+    "../*.hpp"
+    "../*.h"
+    "../*.cpp"
     )
 
 SET ( kernel_src

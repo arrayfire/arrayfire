@@ -8,12 +8,17 @@ INCLUDE_DIRECTORIES(
     )
 
 FILE(GLOB cuda_src
-    "*.h*"
-    "*.c*"
-    "kernel/*.h*"
-    "kernel/*.c*"
-    "../*.h*"
-    "../*.c*"
+    "*.hpp"
+    "*.h"
+    "*.cpp"
+    "*.cu"
+    "../*.hpp"
+    "../*.h"
+    "../*.cpp"
+    "kernel/*.cu"
+    "kernel/*.cpp"
+    "kernel/*.hpp"
+    "kernel/*.h"
     )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")

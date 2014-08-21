@@ -4,10 +4,12 @@ INCLUDE_DIRECTORIES(
     )
 
 FILE(GLOB cpp_src
-    "*.h*"
-    "*.c*"
-    "../*.h*"
-    "../*.c*"
+    "*.hpp"
+    "*.h"
+    "*.cpp"
+    "../*.hpp"
+    "../*.h"
+    "../*.cpp"
     )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
