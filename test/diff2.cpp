@@ -95,20 +95,10 @@ TYPED_TEST(Diff2,Basic0)
     diff2Test<TypeParam, 0>(string(TEST_DIR"/diff2/basic0.test"));
 }
 
-TYPED_TEST(Diff2,Subref0)
-{
-    diff2Test<TypeParam, 0>(string(TEST_DIR"/diff2/subref0.test"),true,&(this->subMat0));
-}
-
 // Diff on 1 dimension
 TYPED_TEST(Diff2,Basic1)
 {
     diff2Test<TypeParam, 1>(string(TEST_DIR"/diff2/basic1.test"));
-}
-
-TYPED_TEST(Diff2,Subref1)
-{
-    diff2Test<TypeParam, 1>(string(TEST_DIR"/diff2/subref1.test"),true,&(this->subMat1));
 }
 
 // Diff on 2 dimension
@@ -117,10 +107,22 @@ TYPED_TEST(Diff2,Basic2)
     diff2Test<TypeParam, 2>(string(TEST_DIR"/diff2/basic2.test"));
 }
 
+#if defined(AF_CPU)
+TYPED_TEST(Diff2,Subref0)
+{
+    diff2Test<TypeParam, 0>(string(TEST_DIR"/diff2/subref0.test"),true,&(this->subMat0));
+}
+
+TYPED_TEST(Diff2,Subref1)
+{
+    diff2Test<TypeParam, 1>(string(TEST_DIR"/diff2/subref1.test"),true,&(this->subMat1));
+}
+
 TYPED_TEST(Diff2,Subref2)
 {
     diff2Test<TypeParam, 2>(string(TEST_DIR"/diff2/subref2.test"),true,&(this->subMat2));
 }
+#endif
 
 template<typename T>
 void diff2ArgsTest(string pTestFile)
