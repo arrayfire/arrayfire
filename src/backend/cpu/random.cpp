@@ -2,6 +2,7 @@
 #include <random>
 #include <algorithm>
 #include <limits>
+#include <type_traits>
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <af/defines.h>
@@ -14,22 +15,25 @@ namespace cpu
 
 using namespace std;
 
+template<typename T>
+using is_arithmetic_t       = typename enable_if< is_arithmetic<T>::value,      function<T()>>::type;
+template<typename T>
+using is_complex_t          = typename enable_if< is_complex<T>::value,         function<T()>>::type;
+template<typename T>
+using is_floating_point_t   = typename enable_if< is_floating_point<T>::value,  function<T()>>::type;
+
 template<typename T, typename GenType>
-typename enable_if<is_floating_point<T>::value, function<T()>>::type
+is_arithmetic_t<T>
 urand(GenType &generator)
 {
-    return bind(uniform_real_distribution<T>(), generator);
+    typedef typename conditional<   is_floating_point<T>::value,
+                                    uniform_real_distribution<T>,
+                                    uniform_int_distribution<T>>::type dist;
+    return bind(dist(), generator);
 }
 
 template<typename T, typename GenType>
-typename enable_if<is_integral<T>::value, function<T()>>::type
-urand(GenType &generator)
-{
-    return bind(uniform_int_distribution<T>(), generator);
-}
-
-template<typename T, typename GenType>
-typename enable_if<is_complex<T>::value, function<T()>>::type
+is_complex_t<T>
 urand(GenType &generator)
 {
     auto func = urand<typename T::value_type>(generator);
@@ -37,14 +41,14 @@ urand(GenType &generator)
 }
 
 template<typename T, typename GenType>
-typename enable_if<is_floating_point<T>::value, function<T()>>::type
+is_floating_point_t<T>
 nrand(GenType &generator)
 {
     return bind(normal_distribution<T>(), generator);
 }
 
 template<typename T, typename GenType>
-typename enable_if<is_complex<T>::value, function<T()>>::type
+is_complex_t<T>
 nrand(GenType &generator)
 {
     auto func = nrand<typename T::value_type>(generator);
