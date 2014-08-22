@@ -1,7 +1,7 @@
 #include <af/defines.h>
 #include <kernel/transpose.hpp>
-#include "backend.h"
-#include <helper.hpp>
+#include <backend.hpp>
+#include "../helper.hpp"
 
 namespace cuda
 {

@@ -2,7 +2,7 @@
 #pragma once
 
 #include <af/defines.h>
-#include <backend.h>
+#include <backend.hpp>
 
 // FIXME: Remove this assert when 292 is fixed
 #include <cassert>
