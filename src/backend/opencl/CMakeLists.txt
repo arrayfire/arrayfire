@@ -20,10 +20,7 @@ FILE(GLOB opencl_src
     "../*.cpp"
     )
 
-SET ( kernel_src
-    kernel/set.cl
-    kernel/binaryOp.cl
-    )
+FILE(GLOB kernel_src "kernel/*.cl")
 
 CL_KERNEL_TO_H(
     SOURCES ${kernel_src}
