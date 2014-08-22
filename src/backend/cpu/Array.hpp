@@ -4,7 +4,7 @@
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
 #include "traits.hpp"
-#include "backend.h"
+#include <backend.hpp>
 
 #include <memory>
 #include <vector>

@@ -2,7 +2,7 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <copy.hpp>
-#include <backend.h>
+#include <backend.hpp>
 
 template<typename T>
 static af_array createHandle(af::dim4 d, double val)

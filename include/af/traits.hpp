@@ -1,6 +1,5 @@
 #pragma once
 
-
 #ifdef __cplusplus
 
 #include <complex>

@@ -3,8 +3,8 @@
 
 #include <af/array.h>
 #include <ArrayInfo.hpp>
-#include <helper.h>
-#include <backend.h>
+#include <helper.hpp>
+#include <backend.hpp>
 #include <Array.hpp>
 
 using namespace detail;
