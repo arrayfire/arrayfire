@@ -55,7 +55,7 @@ public:
         else {
             size_t offset = 0;
             if(withOffset) {
-                offset = calcGlobalOffset(parent->strides(), this->offsets());
+                offset = calcOffset(parent->strides(), this->offsets());
             }
             ptr = &parent->data.front() + offset;
         }

@@ -123,7 +123,7 @@ toOffset(const vector<af_seq>& seqs)
 dim4
 toStride(const vector<af_seq>& seqs, af::dim4 parentDims)
 {
-    dim4 out(calcBaseStride(parentDims));
+    dim4 out(calcStrides(parentDims));
     for(unsigned i = 0; i < seqs.size(); i++ ) {
         if  (seqs[i].step != 0) {   out[i] *= seqs[i].step; }
     }

@@ -9,21 +9,21 @@ namespace cpu
 
     template<typename T>
     Array<T>::Array(dim4 dims):
-        ArrayInfo(dims, dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(dims.elements()),
         parent(nullptr)
     { }
 
     template<typename T>
     Array<T>::Array(dim4 dims, T val):
-        ArrayInfo(dims, dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(dims.elements(), val),
         parent(nullptr)
     { }
 
     template<typename T>
     Array<T>::Array(dim4 dims, const T * const in_data):
-        ArrayInfo(dims, dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(in_data, in_data + dims.elements()),
         parent(nullptr)
     { }

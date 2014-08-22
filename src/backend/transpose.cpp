@@ -29,7 +29,7 @@ af_err af_transpose(af_array *out, af_array in)
 
         if (dims[0]==1 || dims[1]==1) {
             // for a vector OR a batch of vectors
-            // we can use moddims to transpose
+            // we can use modDims to transpose
             af::dim4 outDims(dims[1],dims[0],dims[2],dims[3]);
             return af_moddims(out, in, outDims.ndims(), outDims.get());
         }

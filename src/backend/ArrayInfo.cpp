@@ -9,7 +9,7 @@ using std::accumulate;
 using std::transform;
 
 dim_type
-calcGlobalOffset(const af::dim4 &strides, const af::dim4 &offsets)
+calcOffset(const af::dim4 &strides, const af::dim4 &offsets)
 {
     dim_type offset = 0;
     for (int i = 0; i < 4; i++) offset += offsets[i] * strides[i];
@@ -37,7 +37,7 @@ af_err af_get_type(af_dtype *type, const af_array arr)
     return AF_SUCCESS; //FIXME: Catch exceptions correctly
 }
 
-dim4 calcBaseStride(const dim4 &parentDim)
+dim4 calcStrides(const dim4 &parentDim)
 {
     dim4 out(1, 1, 1, 1);
     const dim_type *parentPtr = parentDim.get();
@@ -45,8 +45,13 @@ dim4 calcBaseStride(const dim4 &parentDim)
     return out;
 }
 
-void ArrayInfo::moddims(const dim4 &newDims)
+void ArrayInfo::modStrides(const dim4 &newStrides)
+{
+    dim_strides = newStrides;
+}
+
+void ArrayInfo::modDims(const dim4 &newDims)
 {
     dim_size   = newDims;
-    strides()  = calcBaseStride(newDims);
+    modStrides(calcStrides(newDims));
 }

@@ -22,7 +22,7 @@ namespace cuda
     // FIXME: Add checks
     template<typename T>
     Array<T>::Array(af::dim4 dims) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(cudaMallocWrapper<T>(dims.elements())),
         parent()
     {}
@@ -30,7 +30,7 @@ namespace cuda
     // FIXME: Add checks
     template<typename T>
     Array<T>::Array(af::dim4 dims, T val) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(cudaMallocWrapper<T>(dims.elements())),
         parent()
     {
@@ -40,7 +40,7 @@ namespace cuda
     // FIXME: Add checks
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data) :
-    ArrayInfo(dims, af::dim4(0,0,0,0), calcBaseStride(dims), (af_dtype)dtype_traits<T>::af_type),
+    ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(cudaMallocWrapper<T>(dims.elements())),
         parent()
     {

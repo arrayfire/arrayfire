@@ -9,10 +9,10 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
-af_array moddims(const af_array in, const af::dim4 &newDims)
+af_array modDims(const af_array in, const af::dim4 &newDims)
 {
     Array<T> *out = copyArray(getArray<T>(in));
-    out->moddims(newDims);
+    out->modDims(newDims);
     return getHandle(*out);
 }
 
@@ -41,15 +41,15 @@ af_err af_moddims(af_array *out, const af_array in, const unsigned ndims, const 
         af_get_type(&type, in);
 
         switch(type) {
-            case f32: output = moddims<float  >(in, newDims); break;
-            case c32: output = moddims<cfloat >(in, newDims); break;
-            case f64: output = moddims<double >(in, newDims); break;
-            case c64: output = moddims<cdouble>(in, newDims); break;
-            case b8:  output = moddims<char   >(in, newDims); break;
-            case s32: output = moddims<int    >(in, newDims); break;
-            case u32: output = moddims<uint   >(in, newDims); break;
-            case u8:  output = moddims<uchar  >(in, newDims); break;
-            case s8:  output = moddims<char>(in,newDims);     break;
+            case f32: output = modDims<float  >(in, newDims); break;
+            case c32: output = modDims<cfloat >(in, newDims); break;
+            case f64: output = modDims<double >(in, newDims); break;
+            case c64: output = modDims<cdouble>(in, newDims); break;
+            case b8:  output = modDims<char   >(in, newDims); break;
+            case s32: output = modDims<int    >(in, newDims); break;
+            case u32: output = modDims<uint   >(in, newDims); break;
+            case u8:  output = modDims<uchar  >(in, newDims); break;
+            case s8:  output = modDims<char>(in,newDims);     break;
             default:  ret = AF_ERR_NOT_SUPPORTED;             break;
         }
         if (ret!=AF_ERR_NOT_SUPPORTED) {
