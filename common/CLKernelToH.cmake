@@ -37,7 +37,7 @@ function(CL_KERNEL_TO_H)
         get_filename_component(var_name "${_input_file}" NAME)
         get_filename_component(_name_we "${_input_file}" NAME_WE)
 
-        file(READ "${CMAKE_CURRENT_SOURCE_DIR}/${_path}/namespace.txt" _namespace)
+        file(READ "${_path}/namespace.txt" _namespace)
         string(STRIP "${_namespace}" _namespace)
         string(REPLACE "." "_" var_name ${var_name})
 
@@ -48,9 +48,9 @@ function(CL_KERNEL_TO_H)
             OUTPUT ${_output_file}
             DEPENDS ${_input_file} ${BIN2CPP_PROGRAM}
             COMMAND ${CMAKE_COMMAND} -E make_directory "${_output_path}"
-            COMMAND ${CMAKE_COMMAND} -E echo "\\#include \\<${CMAKE_CURRENT_SOURCE_DIR}/${_path}/${_name_we}.hpp\\>"  >>"${_output_file}"
+            COMMAND ${CMAKE_COMMAND} -E echo "\\#include \\<${_path}/${_name_we}.hpp\\>"  >>"${_output_file}"
             COMMAND ${BIN2CPP_PROGRAM} --file ${_name} --namespace ${_namespace} --output ${_output_file} --name ${var_name}
-            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${_path}"
+            WORKING_DIRECTORY "${_path}"
             COMMENT "Compiling ${_input_file} to C++ source"
         )
 
