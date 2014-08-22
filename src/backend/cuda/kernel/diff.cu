@@ -75,6 +75,11 @@ namespace cuda
                   const unsigned iElem, const unsigned indims, const dim_type *idims, const dim_type *istrides)
         {
             dim3 threads(TX, TY, 1);
+
+            if (dim == 0 && indims == 1) {
+                threads = dim3(TX * TY, 1, 1);
+            }
+
             unsigned blocksPerMatX = divup(odims[0], TX);
             unsigned blocksPerMatY = divup(odims[1], TY);
             dim3 blocks(blocksPerMatX * odims[2],
