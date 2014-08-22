@@ -99,16 +99,15 @@ af_err af_constant(af_array *result, const double value,
 }
 
 template<typename T>
+static inline af_array randn_(const af::dim4 &dims)
+{
+    return getHandle(*randn<T>(dims));
+}
+
+template<typename T>
 static inline af_array randu_(const af::dim4 &dims)
 {
     return getHandle(*randu<T>(dims));
-}
-
-af_err af_randu_wrapper(af_array *out, const unsigned dim0, const unsigned dim1,
-                        const unsigned dim2, const unsigned dim3, const af_dtype type)
-{
-     dim_type dims[] = {dim0, dim1, dim2, dim3};
-    return af_randu(out, 4, dims, type);
 }
 
 af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
@@ -141,19 +140,6 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims
     }
     CATCHALL
     return ret;
-}
-
-template<typename T>
-static inline af_array randn_(const af::dim4 &dims)
-{
-    return getHandle(*randn<T>(dims));
-}
-
-af_err af_randn_wrapper(af_array *out, const unsigned dim0, const unsigned dim1,
-                        const unsigned dim2, const unsigned dim3, const af_dtype type)
-{
-    dim_type dims[] = {dim0, dim1, dim2, dim3};
-    return af_randn(out, 4, dims, type);
 }
 
 af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)

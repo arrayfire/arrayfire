@@ -1,6 +1,8 @@
 #include <type_traits>
 #include <random>
+#include <algorithm>
 #include <limits>
+#include <type_traits>
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <af/defines.h>
@@ -11,82 +13,91 @@
 namespace cpu
 {
 
-#define RAND(T, D, dist, a, b)                                                              \
-    void generate##D(T *outPtr, dim_type nElements)                                         \
-    {                                                                                       \
-        std::default_random_engine generator;                                               \
-        dist<T> distribution(a, b);                                                         \
-                                                                                            \
-        auto gen = std::bind(distribution, generator);                                      \
-        for (int i = 0; i < nElements; ++i) {                                               \
-            outPtr[i] = gen();                                                              \
-        }                                                                                   \
-    }
+using namespace std;
 
+template<typename T>
+using is_arithmetic_t       = typename enable_if< is_arithmetic<T>::value,      function<T()>>::type;
+template<typename T>
+using is_complex_t          = typename enable_if< is_complex<T>::value,         function<T()>>::type;
+template<typename T>
+using is_floating_point_t   = typename enable_if< is_floating_point<T>::value,  function<T()>>::type;
 
-#define RANDC(T, TY, D, dist, a, b)                                                         \
-    void generate##D(T *outPtr, dim_type nElements)                                         \
-    {                                                                                       \
-        std::default_random_engine generator;                                               \
-        dist<TY> distribution(a, b);                                                        \
-                                                                                            \
-        auto gen = std::bind(distribution, generator);                                      \
-        for (int i = 0; i < nElements; ++i) {                                               \
-            outPtr[i] = T(gen(), gen());                                                    \
-        }                                                                                   \
-    }
+template<typename T, typename GenType>
+is_arithmetic_t<T>
+urand(GenType &generator)
+{
+    typedef typename conditional<   is_floating_point<T>::value,
+                                    uniform_real_distribution<T>,
+                                    uniform_int_distribution<T>>::type dist;
+    return bind(dist(), generator);
+}
 
-RAND(float,   U, std::uniform_real_distribution, 0, 1.0);
-RAND(double,  U, std::uniform_real_distribution, 0, 1.0);
-RAND(int,     U, std::uniform_int_distribution,  0, std::numeric_limits<int>::max());
-RAND(uint,    U, std::uniform_int_distribution,  0, std::numeric_limits<uint>::max());
-RAND(char,    U, std::uniform_int_distribution,  0, std::numeric_limits<char>::max());
-RAND(uchar,   U, std::uniform_int_distribution,  0, std::numeric_limits<uchar>::max());
-RANDC(cfloat,  float,  U, std::uniform_real_distribution, 0.0, 1.0);
-RANDC(cdouble, double, U, std::uniform_real_distribution, 0.0, 1.0);
+template<typename T, typename GenType>
+is_complex_t<T>
+urand(GenType &generator)
+{
+    auto func = urand<typename T::value_type>(generator);
+    return [func] () { return T(func(), func());};
+}
 
-RAND(float,   N, std::normal_distribution, 0, 1.0);
-RAND(double,  N, std::normal_distribution, 0, 1.0);
-RANDC(cfloat,  float,  N, std::normal_distribution, 0.0, 1.0);
-RANDC(cdouble, double, N, std::normal_distribution, 0.0, 1.0);
+template<typename T, typename GenType>
+is_floating_point_t<T>
+nrand(GenType &generator)
+{
+    return bind(normal_distribution<T>(), generator);
+}
 
-    template<typename T>
-    Array<T>* randu(const af::dim4 &dims)
-    {
-        Array<T> *outArray = createValueArray(dims, (T)0);
+template<typename T, typename GenType>
+is_complex_t<T>
+nrand(GenType &generator)
+{
+    auto func = nrand<typename T::value_type>(generator);
+    return [func] () { return T(func(), func());};
+}
 
-        T *outPtr = outArray->get();
+template<typename T>
+Array<T>* randn(const af::dim4 &dims)
+{
+    Array<T> *outArray = createValueArray(dims, T(0));
+    T *outPtr = outArray->get();
 
-        generateU(outPtr, dims.elements());
+    default_random_engine generator;
+    generate(outPtr, outPtr + outArray->elements(), nrand<T>(generator));
 
-        return outArray;
-    }
+    return outArray;
+}
 
-    template Array<float>  * randu<float>   (const af::dim4 &dims);
-    template Array<double> * randu<double>  (const af::dim4 &dims);
-    template Array<cfloat> * randu<cfloat>  (const af::dim4 &dims);
-    template Array<cdouble>* randu<cdouble> (const af::dim4 &dims);
-    template Array<int>    * randu<int>     (const af::dim4 &dims);
-    template Array<uint>   * randu<uint>    (const af::dim4 &dims);
-    template Array<char>   * randu<char>    (const af::dim4 &dims);
-    template Array<uchar>  * randu<uchar>   (const af::dim4 &dims);
+template<typename T>
+Array<T>* randu(const af::dim4 &dims)
+{
+    Array<T> *outArray = createValueArray(dims, T(0));
+    T *outPtr = outArray->get();
 
-    template<typename T>
-    Array<T>* randn(const af::dim4 &dims)
-    {
-        Array<T> *outArray = createValueArray(dims, (T)0);
+    default_random_engine generator;
+    generate(outPtr, outPtr + outArray->elements(), urand<T>(generator));
 
-        T *outPtr = outArray->get();
+    return outArray;
+}
 
-        generateN(outPtr, dims.elements());
+#define INSTANTIATE_UNIFORM(T)                              \
+    template Array<T>*  randu<T>    (const af::dim4 &dims);
 
-        return outArray;
-    }
+INSTANTIATE_UNIFORM(float)
+INSTANTIATE_UNIFORM(double)
+INSTANTIATE_UNIFORM(cfloat)
+INSTANTIATE_UNIFORM(cdouble)
+INSTANTIATE_UNIFORM(int)
+INSTANTIATE_UNIFORM(uint)
+INSTANTIATE_UNIFORM(char)
+INSTANTIATE_UNIFORM(uchar)
 
-    template Array<float>  * randn<float>   (const af::dim4 &dims);
-    template Array<double> * randn<double>  (const af::dim4 &dims);
-    template Array<cfloat> * randn<cfloat>  (const af::dim4 &dims);
-    template Array<cdouble>* randn<cdouble> (const af::dim4 &dims);
+#define INSTANTIATE_NORMAL(T)                              \
+    template Array<T>*  randn<T>(const af::dim4 &dims);
+
+INSTANTIATE_NORMAL(float)
+INSTANTIATE_NORMAL(double)
+INSTANTIATE_NORMAL(cfloat)
+INSTANTIATE_NORMAL(cdouble)
 
 }
 
