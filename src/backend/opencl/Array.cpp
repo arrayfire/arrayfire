@@ -2,7 +2,7 @@
 #include <Array.hpp>
 #include <cassert>
 #include <iostream>
-#include "backend.h"
+#include <backend.hpp>
 using af::dim4;
 
 namespace opencl

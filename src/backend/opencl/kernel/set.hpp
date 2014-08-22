@@ -1,8 +1,8 @@
 #include <kernel_headers/set.hpp>
 #include <cl.hpp>
 #include <ctx.hpp>
-#include "../traits.hpp"
-#include "../backend.h"
+#include <traits.hpp>
+#include <backend.hpp>
 
 using cl::Buffer;
 using cl::Program;

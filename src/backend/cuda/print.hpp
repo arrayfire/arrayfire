@@ -1,7 +1,7 @@
 #include <af/array.h>
 #include <Array.hpp>
 #include <iosfwd>
-#include <backend.h>
+#include <backend.hpp>
 
 namespace cuda
 {

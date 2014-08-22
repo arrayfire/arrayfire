@@ -1,4 +1,4 @@
-#include <af/array.h>
+#pragma once
 
 namespace cpu
 {

@@ -1,7 +1,7 @@
 #include <functional>
 #include <af/defines.h>
 #include <kernel/elwise.hpp>
-#include "backend.h"
+#include <backend.hpp>
 
 namespace cuda
 {

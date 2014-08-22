@@ -2,8 +2,8 @@
 #include <af/defines.h>
 #include <af/array.h>
 #include <transpose.hpp>
-#include <helper.h>
-#include <backend.h>
+#include <helper.hpp>
+#include <backend.hpp>
 
 using af::dim4;
 using namespace detail;

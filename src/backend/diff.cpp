@@ -1,8 +1,8 @@
 #include <af/array.h>
 #include <af/defines.h>
 #include <diff.hpp>
-#include <helper.h>
-#include <backend.h>
+#include <helper.hpp>
+#include <backend.hpp>
 #include <ArrayInfo.hpp>
 #include <diff.hpp>
 

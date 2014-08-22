@@ -4,8 +4,8 @@
 #include <af/array.h>
 #include <af/defines.h>
 #include <copy.hpp>
-#include <helper.h>
-#include <backend.h>
+#include <helper.hpp>
+#include <backend.hpp>
 #include <generator.hpp>
 #include <random.hpp>
 

@@ -6,7 +6,7 @@
 #include <cl.hpp>
 #include <ctx.hpp>
 #include "traits.hpp"
-#include "backend.h"
+#include <backend.hpp>
 
 namespace opencl
 {

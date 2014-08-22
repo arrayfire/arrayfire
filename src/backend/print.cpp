@@ -2,8 +2,8 @@
 #include <copy.hpp>
 #include <print.hpp>
 #include <ArrayInfo.hpp>
-#include <helper.h>
-#include <backend.h>
+#include <helper.hpp>
+#include <backend.hpp>
 
 using namespace detail;
 af_err af_print(af_array arr)

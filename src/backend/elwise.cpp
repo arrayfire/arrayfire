@@ -3,8 +3,8 @@
 #include <af/arith.h>
 #include <ArrayInfo.hpp>
 #include <elwise.hpp>
-#include <helper.h>
-#include <backend.h>
+#include <helper.hpp>
+#include <backend.hpp>
 #include <tuple>
 #include <map>
 #include <functional>
