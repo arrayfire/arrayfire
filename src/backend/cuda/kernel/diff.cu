@@ -6,143 +6,105 @@
 
 namespace cuda
 {
-namespace kernel
-{
-    // Kernel Launch Config Values
-    static const unsigned TX = 16;
-    static const unsigned TY = 16;
-    static const unsigned TPB = TX * TY;
-
-    template<typename T>
-    inline __host__ __device__
-    void diff_this(T* out, const T* in, const unsigned oMem, const unsigned iMem0,
-                                        const unsigned iMem1, const unsigned iMem2 = 0)
+    namespace kernel
     {
-        //iMem2 can never be 0
-        if(iMem2 == 0) {                        // Diff1
-            out[oMem] = in[iMem1] - in[iMem0];
-        } else {                                // Diff2
-            out[oMem] = in[iMem2] - in[iMem1] - in[iMem1] + in[iMem0];
+        typedef struct
+        {
+            dim_type dim[4];
+        } dims_t;
+
+        // Kernel Launch Config Values
+        static const unsigned TX = 16;
+        static const unsigned TY = 16;
+
+        template<typename T, bool D>
+        inline __host__ __device__
+        void diff_this(T* out, const T* in, const unsigned oMem, const unsigned iMem0,
+                       const unsigned iMem1, const unsigned iMem2)
+        {
+            //iMem2 can never be 0
+            if(D == 0) {                        // Diff1
+                out[oMem] = in[iMem1] - in[iMem0];
+            } else {                                // Diff2
+                out[oMem] = in[iMem2] - in[iMem1] - in[iMem1] + in[iMem0];
+            }
         }
-    }
 
-    /////////////////////////////////////////////////////////////////////////////
-    // 1st and 2nd Order Differential Specialized for Vectors (1D)
-    ///////////////////////////////////////////////////////////////////////////
-    template<typename T, bool D>            // D = false (diff1), true (diff2)
-    __global__
-    void diff_1D(T *out, const T *in, const unsigned dim, const unsigned oElem)
-    {
-        unsigned idx = threadIdx.x + blockIdx.x * blockDim.x;
+        /////////////////////////////////////////////////////////////////////////////
+        // 1st and 2nd Order Differential for 4D along all dimensions
+        ///////////////////////////////////////////////////////////////////////////
+        template<typename T, unsigned dim, bool isDiff2>
+        __global__
+        void diff_kernel(T *out, const T *in,
+                         const unsigned oElem, const dims_t odims,
+                         const dims_t ostrides, const dims_t istrides,
+                         const unsigned blocksPerMatX, const unsigned blocksPerMatY)
+        {
+            unsigned idz = blockIdx.x / blocksPerMatX;
+            unsigned idw = blockIdx.y / blocksPerMatY;
 
-        if(idx > oElem)
-            return;
+            unsigned blockIdx_x = blockIdx.x - idz * blocksPerMatX;
+            unsigned blockIdx_y = blockIdx.y - idw * blocksPerMatY;
 
-        diff_this(out, in, idx, idx, idx + 1, (idx + 2) * D);
-    }
+            unsigned idx = threadIdx.x + blockIdx_x * blockDim.x;
+            unsigned idy = threadIdx.y + blockIdx_y * blockDim.y;
 
-    /////////////////////////////////////////////////////////////////////////////
-    // 1st and 2nd Order Differential for 4D along all dimensions
-    ///////////////////////////////////////////////////////////////////////////
-    template<typename T, bool D>            // D = false (diff1), true (diff2)
-    __global__
-    void diff_4D(T *out, const T *in, const unsigned dim,
-                  const unsigned oElem, const dim_type odims0,
-                  const dim_type odims1, const dim_type odims2,
-                  const dim_type ostrides1, const dim_type ostrides2, const dim_type ostrides3,
-                  const dim_type istrides1, const dim_type istrides2, const dim_type istrides3,
-                  const unsigned blocksPerMatX, const unsigned blocksPerMatY)
-    {
-        const bool isDim0 = dim == 0;
-        const bool isDim1 = dim == 1;
-        const bool isDim2 = dim == 2;
-        const bool isDim3 = dim == 3;
-        unsigned idx = threadIdx.x + (blockIdx.x % blocksPerMatX) * blockDim.x;
-        unsigned idy = threadIdx.y + (blockIdx.y % blocksPerMatY) * blockDim.y;
-        unsigned idz = blockIdx.x / blocksPerMatX;
-        unsigned idw = blockIdx.y / blocksPerMatY;
+            if(idx >= odims.dim[0] ||
+               idy >= odims.dim[1] ||
+               idz >= odims.dim[2] ||
+               idw >= odims.dim[3])
+                return;
 
-        if(idx >= odims0 || idy >= odims1 || idz >= odims2)
-            return;
-        if(idx + idy * odims0 + idz * odims0 * odims1 + idw * odims0 * odims1 * odims2 > oElem)
-            return;
+            unsigned iMem0 = idw * istrides.dim[3] + idz * istrides.dim[2] + idy * istrides.dim[1] + idx;
+            unsigned iMem1 = iMem0 + istrides.dim[dim];
+            unsigned iMem2 = iMem1 + istrides.dim[dim];
 
-        unsigned iMem0 = (idw + 0 * isDim3) * istrides3 + (idz + 0 * isDim2) * istrides2 +
-                         (idy + 0 * isDim1) * istrides1 + (idx + 0 * isDim0);
-        unsigned iMem1 = (idw + 1 * isDim3) * istrides3 + (idz + 1 * isDim2) * istrides2 +
-                         (idy + 1 * isDim1) * istrides1 + (idx + 1 * isDim0);
-        unsigned iMem2 = (idw + 2 * isDim3) * istrides3 + (idz + 2 * isDim2) * istrides2 +
-                         (idy + 2 * isDim1) * istrides1 + (idx + 2 * isDim0);
-        unsigned oMem = idw * ostrides3 + idz * ostrides2 + idy * ostrides1 + idx;
+            unsigned oMem = idw * ostrides.dim[3] + idz * ostrides.dim[2] + idy * ostrides.dim[1] + idx;
 
-        iMem2 *= D;
+            iMem2 *= isDiff2;
 
-        diff_this(out, in, oMem, iMem0, iMem1, iMem2);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Wrapper functions
-    ///////////////////////////////////////////////////////////////////////////
-    template<typename T>
-    void diff1(T *out, const T *in, const unsigned dim,
-               const unsigned oElem, const unsigned ondims, const dim_type *odims, const dim_type *ostrides,
-               const unsigned iElem, const unsigned indims, const dim_type *idims, const dim_type *istrides)
-    {
-        dim3 threads(TX, TY, 1);
-        unsigned blocksPerMatX = divup(odims[0], TX);
-        unsigned blocksPerMatY = divup(odims[1], TY);
-        dim3 blocks(blocksPerMatX * odims[2],
-                    blocksPerMatY * odims[3],
-                    1);
-
-        if (indims == 1) {
-            threads = dim3(TPB, 1, 1);
-            blocks = dim3(divup(odims[0], TPB));
-            diff_1D<T, false><<<blocks, threads>>>(out, in, dim, oElem);
-        } else if (indims < 4) {
-            diff_4D<T, false><<<blocks, threads>>>(out, in, dim, oElem, odims[0], odims[1], odims[2],
-                                          ostrides[1], ostrides[2], ostrides[3],
-                                          istrides[1], istrides[2], istrides[3],
-                                          blocksPerMatX, blocksPerMatY);
-        } else {
-            assert(1!=1);
+            diff_this<T, isDiff2>(out, in, oMem, iMem0, iMem1, iMem2);
         }
-    }
 
-    template<typename T>
-    void diff2(T *out, const T *in, const unsigned dim,
-               const unsigned oElem, const unsigned ondims, const dim_type *odims, const dim_type *ostrides,
-               const unsigned iElem, const unsigned indims, const dim_type *idims, const dim_type *istrides)
-    {
-        dim3 threads(TX, TY, 1);
-        unsigned blocksPerMatX = divup(odims[0], TX);
-        unsigned blocksPerMatY = divup(odims[1], TY);
-        dim3 blocks(blocksPerMatX * odims[2],
-                    blocksPerMatY * odims[3],
-                    1);
+        ///////////////////////////////////////////////////////////////////////////
+        // Wrapper functions
+        ///////////////////////////////////////////////////////////////////////////
+        template<typename T, unsigned dim, bool isDiff2>
+        void diff(T *out, const T *in,
+                  const unsigned oElem, const unsigned ondims, const dim_type *odims, const dim_type *ostrides,
+                  const unsigned iElem, const unsigned indims, const dim_type *idims, const dim_type *istrides)
+        {
+            dim3 threads(TX, TY, 1);
+            unsigned blocksPerMatX = divup(odims[0], TX);
+            unsigned blocksPerMatY = divup(odims[1], TY);
+            dim3 blocks(blocksPerMatX * odims[2],
+                        blocksPerMatY * odims[3],
+                        1);
 
-        if (indims == 1) {
-            threads = dim3(TPB, 1, 1);
-            blocks = dim3(divup(odims[0], TPB));
-            diff_1D<T, true><<<blocks, threads>>>(out, in, dim, oElem);
-        } else if (indims < 4) {
-            diff_4D<T, true><<<blocks, threads>>>(out, in, dim, oElem, odims[0], odims[1], odims[2],
-                                          ostrides[1], ostrides[2], ostrides[3],
-                                          istrides[1], istrides[2], istrides[3],
-                                          blocksPerMatX, blocksPerMatY);
-        } else {
-            assert(1!=1);
+            dims_t _odims = {{odims[0], odims[1], odims[2], odims[3]}};
+            dims_t _ostrides = {{ostrides[0], ostrides[1], ostrides[2], ostrides[3]}};
+            dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
+
+            diff_kernel<T, dim, isDiff2><<<blocks, threads>>>(out, in, oElem, _odims,
+                                                              _ostrides, _istrides,
+                                                              blocksPerMatX, blocksPerMatY);
         }
-    }
 
-#define INSTANTIATE(T)                                                      \
-    template void diff1<T> (T *out, const T *in, const unsigned dim,        \
-               const unsigned oElem, const unsigned ondims, const dim_type *odims, const dim_type *ostrides,  \
-               const unsigned iElem, const unsigned indims, const dim_type *idims, const dim_type *istrides); \
-    template void diff2<T> (T *out, const T *in, const unsigned dim,        \
-               const unsigned oElem, const unsigned ondims, const dim_type *odims, const dim_type *ostrides,  \
-               const unsigned iElem, const unsigned indims, const dim_type *idims, const dim_type *istrides); \
 
+#define INSTANTIATE_D(T, D)                                             \
+        template void diff<T, D, false>(T *out, const T *in,            \
+                                        const unsigned oElem, const unsigned ondims, const dim_type *odims, const dim_type *ostrides, \
+                                        const unsigned iElem, const unsigned indims, const dim_type *idims, const dim_type *istrides); \
+        template void diff<T, D, true >(T *out, const T *in,            \
+                                        const unsigned oElem, const unsigned ondims, const dim_type *odims, const dim_type *ostrides, \
+                                        const unsigned iElem, const unsigned indims, const dim_type *idims, const dim_type *istrides); \
+
+
+#define INSTANTIATE(T)                          \
+        INSTANTIATE_D(T, 0)                     \
+        INSTANTIATE_D(T, 1)                     \
+        INSTANTIATE_D(T, 2)                     \
+        INSTANTIATE_D(T, 3)                     \
 
     INSTANTIATE(float);
     INSTANTIATE(double);

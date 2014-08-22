@@ -7,12 +7,13 @@
 
 namespace cuda
 {
-    template<typename T>
-    Array<T> *diff1(const Array<T> &in, const int dim)
+
+    template<typename T, bool isDiff2>
+    static Array<T> *diff(const Array<T> &in, const int dim)
     {
         const af::dim4 iDims = in.dims();
         af::dim4 oDims = iDims;
-        oDims[dim]--;
+        oDims[dim] -= (isDiff2 + 1);
 
         if(iDims.elements() == 0 || oDims.elements() == 0) {
             // error out
@@ -21,32 +22,42 @@ namespace cuda
 
         Array<T> *out = createEmptyArray<T>(oDims);
 
-        kernel::diff1(out->get(), in.get(), dim,
-                      oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
-                      iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get());
+        switch (dim) {
+
+        case (0):       kernel::diff<T, 0, isDiff2>(out->get(), in.get(),
+                                                    oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
+                                                    iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get());
+            break;
+
+        case (1):       kernel::diff<T, 1, isDiff2>(out->get(), in.get(),
+                                                    oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
+                                                    iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get());
+            break;
+
+        case (2):       kernel::diff<T, 2, isDiff2>(out->get(), in.get(),
+                                                    oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
+                                                    iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get());
+            break;
+
+        case (3):       kernel::diff<T, 3, isDiff2>(out->get(), in.get(),
+                                                    oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
+                                                    iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get());
+            break;
+        }
 
         return out;
     }
 
     template<typename T>
+    Array<T> *diff1(const Array<T> &in, const int dim)
+    {
+        return diff<T, false>(in, dim);
+    }
+
+    template<typename T>
     Array<T> *diff2(const Array<T> &in, const int dim)
     {
-        const af::dim4 iDims = in.dims();
-        af::dim4 oDims = iDims;
-        oDims[dim] -= 2;
-
-        if(iDims.elements() == 0 || oDims.elements() == 0) {
-            // error out
-            assert(1!=1);
-        }
-
-        Array<T> *out = createEmptyArray<T>(oDims);
-
-        kernel::diff2(out->get(), in.get(), dim,
-                      oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
-                      iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get());
-
-        return out;
+        return diff<T, true>(in, dim);
     }
 
 #define INSTANTIATE(T)                                                  \
