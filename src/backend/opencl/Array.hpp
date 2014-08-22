@@ -11,46 +11,59 @@
 namespace opencl
 {
     using kernel::set;
+    using af::dim4;
 
-template<typename T>
-class Array : public ArrayInfo
-{
-    cl::Buffer  data;
-    Array*      parent;
+    template<typename T> class Array;
 
-public:
-    Array(af::dim4 dims);
-    explicit Array(af::dim4 dims, T val);
-    explicit Array(af::dim4 dims, const T * const in_data);
-    ~Array();
+    // Creates a new Array object on the heap and returns a reference to it.
+    template<typename T>
+    Array<T>*
+    createValueArray(const af::dim4 &size, const T& value);
 
-    bool isOwner() const { return parent == nullptr; }
+    // Creates a new Array object on the heap and returns a reference to it.
+    template<typename T>
+    Array<T>*
+    createDataArray(const af::dim4 &size, const T * const data);
 
-            cl::Buffer& get()        {  return data; }
-    const   cl::Buffer& get() const  {  return data; }
+    // Create an Array object and do not assign any values to it
+    template<typename T>
+    Array<T>*
+    createEmptyArray(const af::dim4 &size);
 
-};
+    // Creates a new Array object on the heap and returns a reference to it.
+    template<typename T>
+    void
+    destroyArray(Array<T> &A);
 
-// Creates a new Array object on the heap and returns a reference to it.
-template<typename T>
-Array<T>*
-createValueArray(const af::dim4 &size, const T& value);
+    template<typename T>
+    Array<T> *
+    createSubArray(const Array<T>& parent, const af::dim4 &dims, const af::dim4 &offset, const af::dim4 &stride);
 
-// Creates a new Array object on the heap and returns a reference to it.
-template<typename T>
-Array<T>*
-createDataArray(const af::dim4 &size, const T * const data);
 
-// Create an Array object and do not assign any values to it
-template<typename T>
-Array<T>*
-createEmptyArray(const af::dim4 &size);
+    template<typename T>
+    class Array : public ArrayInfo
+    {
+        cl::Buffer  data;
+        Array*      parent;
 
-template<typename T>
-Array<T> *
-createSubArray(const Array<T>& parent, const af::dim4 &dims, const af::dim4 &offset, const af::dim4 &stride);
+        Array(af::dim4 dims);
+        explicit Array(af::dim4 dims, T val);
+        explicit Array(af::dim4 dims, const T * const in_data);
 
-template<typename T>
-void
-destroyArray(Array<T> &A);
+    public:
+
+        ~Array();
+
+        bool isOwner() const { return parent == nullptr; }
+
+        cl::Buffer& get()        {  return data; }
+        const   cl::Buffer& get() const  {  return data; }
+
+        friend Array<T>* createValueArray<T>(const af::dim4 &size, const T& value);
+        friend Array<T>* createDataArray<T>(const af::dim4 &size, const T * const data);
+        friend Array<T>* createEmptyArray<T>(const af::dim4 &size);
+        friend Array<T>* createSubArray<T>(const Array<T>& parent,
+                                           const dim4 &dims, const dim4 &offset, const dim4 &stride);
+        friend void      destroyArray<T>(Array<T> &arr);
+    };
 }

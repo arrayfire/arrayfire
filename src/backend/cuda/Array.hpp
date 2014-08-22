@@ -8,53 +8,60 @@
 
 namespace cuda
 {
+    using af::dim4;
+    template<typename T> class Array;
 
-template<typename T>
-T* cudaMallocWrapper(const size_t &elements);
+    // Creates a new Array object on the heap and returns a reference to it.
+    template<typename T>
+    Array<T>*
+    createValueArray(const af::dim4 &size, const T& value);
 
-template<typename T>
-class Array : public ArrayInfo
-{
-    T*      data;
-    Array*  parent;
+    // Creates a new Array object on the heap and returns a reference to it.
+    template<typename T>
+    Array<T>*
+    createDataArray(const af::dim4 &size, const T * const data);
 
-public:
+    // Create an Array object and do not assign any values to it
+    template<typename T>
+    Array<T>*
+    createEmptyArray(const af::dim4 &size);
 
-    Array(af::dim4 dims);
-    explicit Array(af::dim4 dims, T val);
-    explicit Array(af::dim4 dims, const T * const in_data);
+    // Creates a new Array object on the heap and returns a reference to it.
+    template<typename T>
+    void
+    destroyArray(Array<T> &A);
 
-    bool isOwner() const { return parent == NULL; }
+    template<typename T>
+    Array<T> *
+    createSubArray(const Array<T>& parent, const af::dim4 &dims, const af::dim4 &offset, const af::dim4 &stride);
 
-            T* get()        {  return data; }
-    const   T* get() const  {  return data; }
+    template<typename T>
+    T* cudaMallocWrapper(const size_t &elements);
 
-    // FIXME: Add checks
-    ~Array();
-};
+    template<typename T>
+    class Array : public ArrayInfo
+    {
+        T*      data;
+        Array*  parent;
 
-// Creates a new Array object on the heap and returns a reference to it.
-template<typename T>
-Array<T>*
-createValueArray(const af::dim4 &size, const T& value);
+        Array(af::dim4 dims);
+        explicit Array(af::dim4 dims, T val);
+        explicit Array(af::dim4 dims, const T * const in_data);
 
-// Creates a new Array object on the heap and returns a reference to it.
-template<typename T>
-Array<T>*
-createDataArray(const af::dim4 &size, const T * const data);
+    public:
 
-// Create an Array object and do not assign any values to it
-template<typename T>
-Array<T>*
-createEmptyArray(const af::dim4 &size);
+        ~Array();
 
-// Creates a new Array object on the heap and returns a reference to it.
-template<typename T>
-void
-destroyArray(Array<T> &A);
+        bool isOwner() const { return parent == NULL; }
 
-template<typename T>
-Array<T> *
-createSubArray(const Array<T>& parent, const af::dim4 &dims, const af::dim4 &offset, const af::dim4 &stride);
+        T* get()        {  return data; }
+        const   T* get() const  {  return data; }
 
+        friend Array<T>* createValueArray<T>(const af::dim4 &size, const T& value);
+        friend Array<T>* createDataArray<T>(const af::dim4 &size, const T * const data);
+        friend Array<T>* createEmptyArray<T>(const af::dim4 &size);
+        friend Array<T>* createSubArray<T>(const Array<T>& parent,
+                                           const dim4 &dims, const dim4 &offset, const dim4 &stride);
+        friend void      destroyArray<T>(Array<T> &arr);
+    };
 }
