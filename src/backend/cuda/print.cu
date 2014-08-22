@@ -1,7 +1,7 @@
 #include <iostream>
 #include <Array.hpp>
 #include <print.hpp>
-
+#include <copy.hpp>
 
 namespace cuda
 {
@@ -52,7 +52,10 @@ namespace cuda
         out << "Dim:" << arr.dims();
         out << "Offset: " << arr.offsets();
         out << "Stride: " << arr.strides();
-        printer(out, arr.get(), arr, arr.ndims() - 1);
+        T * dataPtr = new T[arr.elements()];
+        copyData(dataPtr,arr);
+        printer(out, dataPtr, arr, arr.ndims() - 1);
+        delete[] dataPtr;
         return out;
     }
 
