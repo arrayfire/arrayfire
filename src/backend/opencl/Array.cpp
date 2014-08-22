@@ -39,30 +39,6 @@ namespace opencl
     Array<T>::~Array()
     { }
 
-    template<typename T>
-    Array<T> &
-    getWritableArray(const af_array &arr)
-    {
-        const Array<T> &out = getArray<T>(arr);
-        return const_cast<Array<T>&>(out);
-    }
-
-    template<typename T>
-    const Array<T> &
-    getArray(const af_array &arr)
-    {
-        Array<T> *out = reinterpret_cast<Array<T>*>(arr);
-        return *out;
-    }
-
-    template<typename T>
-    af_array
-    getHandle(const Array<T> &arr)
-    {
-        af_array out = reinterpret_cast<af_array>(&arr);
-        return out;
-    }
-
     using af::dim4;
 
     template<typename T>
@@ -99,21 +75,17 @@ namespace opencl
 
     template<typename T>
     void
-    destroyArray(const af_array& arr)
+    destroyArray(Array &A)
     {
-        Array<T> &obj = getWritableArray<T>(arr);
-        delete &obj;
+        delete &A;
     }
 
 #define INSTANTIATE(T)                                                  \
-    template       Array<T>&  getWritableArray<T> (const af_array &arr); \
-    template const Array<T>&  getArray<T>         (const af_array &arr); \
-    template       af_array   getHandle<T>        (const Array<T> &A);  \
     template       Array<T>*  createDataArray<T>  (const dim4 &size, const T * const data); \
     template       Array<T>*  createValueArray<T> (const dim4 &size, const T &value); \
     template       Array<T>*  createEmptyArray<T> (const dim4 &size);   \
-    template       Array<T>*  createSubArray<T>       (const Array<T> &parent, const dim4 &dims, const dim4 &offset, const dim4 &stride); \
-    template       void       destroyArray<T>     (const af_array &arr); \
+    template       Array<T>*  createSubArray<T>   (const Array<T> &parent, const dim4 &dims, const dim4 &offset, const dim4 &stride); \
+    template       void       destroyArray<T>     (Array &A);           \
     template                  Array<T>::~Array();
 
     INSTANTIATE(float)

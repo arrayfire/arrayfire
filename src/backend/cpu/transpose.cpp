@@ -41,7 +41,7 @@ namespace cpu
             for (int j=0; j<outDims[1]; ++j) {
                 for (int i=0; i<outDims[0]; ++i) {
                     // calculate array indices based on offsets and strides
-                    // the helper getIdx takes care of indexed af_array's
+                    // the helper getIdx takes care of indices
                     int inIdx  = getIdx(in.strides(),j,i,k);
                     int outIdx = getIdx(out->strides(),i,j,k);
                     outData[outIdx]  = inData[inIdx];

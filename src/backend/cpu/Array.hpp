@@ -15,7 +15,6 @@ using std::vector;
 using af::dim4;
 
 /// Array Arrayementation
-// This class handles all resouces and relationships of an af_array object.
 template<typename T>
 class Array : public ArrayInfo
 {
@@ -63,21 +62,6 @@ public:
     }
 };
 
-// Returns a reference to a Array object. This reference is not const.
-template<typename T>
-Array<T> &
-getWritableArray(const af_array &arr);
-
-// Returns a constant reference to the Array object from an af_array object
-template<typename T>
-const  Array<T>&
-getArray(const af_array &arr);
-
-// Returns the af_array handle for the Array object.
-template<typename T>
-af_array
-getHandle(const Array<T> &arr);
-
 // Creates a new Array object on the heap and returns a reference to it.
 template<typename T>
 Array<T> *
@@ -100,7 +84,7 @@ createSubArray(const Array<T>& parent, const dim4 &dims, const dim4 &offset, con
 
 template<typename T>
 void
-destroyArray(const af_array& arr);
+destroyArray(Array<T> &arr);
 
 template<typename T>
 void

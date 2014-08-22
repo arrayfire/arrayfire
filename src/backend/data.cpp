@@ -6,11 +6,50 @@
 #include <copy.hpp>
 #include <helper.hpp>
 #include <backend.hpp>
-#include <generator.hpp>
+#include <handle.hpp>
 #include <random.hpp>
 
 using af::dim4;
 using namespace detail;
+
+template<typename T>
+static af_array createHandle(af::dim4 d, double val)
+{
+    return getHandle(*createValueArray<T>(d, static_cast<T>(val)));
+}
+
+// TODO: See if we can combine specializations
+template<>
+af_array createHandle<cfloat>(af::dim4 d, double val)
+{
+    cfloat cval = {static_cast<float>(val), 0};
+    return getHandle(*createValueArray<cfloat>(d, cval));
+}
+
+template<>
+af_array createHandle<cdouble>(af::dim4 d, double val)
+{
+    cdouble cval = {val, 0};
+    return getHandle(*createValueArray<cdouble>(d, cval));
+}
+
+template<typename T>
+static af_array createHandle(af::dim4 d, const T * const data)
+{
+    return getHandle(*createDataArray<T>(d, data));
+}
+
+template<typename T>
+static void copyData(T *data, const af_array &arr)
+{
+    return copyData(data, getArray<T>(arr));
+}
+
+template<typename T>
+static void destroyHandle(const af_array arr)
+{
+    destroyArray(getWritableArray<T>(arr));
+}
 
 af_err af_get_data_ptr(void *data, const af_array arr)
 {
@@ -176,17 +215,18 @@ af_err af_destroy_array(af_array arr)
         af_get_type(&type, arr);
 
         switch(type) {
-        case f32:   destroyArray<float   >(arr); break;
-        case c32:   destroyArray<cfloat  >(arr); break;
-        case f64:   destroyArray<double  >(arr); break;
-        case c64:   destroyArray<cdouble >(arr); break;
-        case b8:    destroyArray<char    >(arr); break;
-        case s32:   destroyArray<int     >(arr); break;
-        case u32:   destroyArray<uint    >(arr); break;
-        case u8:    destroyArray<uchar   >(arr); break;
-        case s8:    destroyArray<char    >(arr); break;
+        case f32:   destroyHandle<float   >(arr); break;
+        case c32:   destroyHandle<cfloat  >(arr); break;
+        case f64:   destroyHandle<double  >(arr); break;
+        case c64:   destroyHandle<cdouble >(arr); break;
+        case b8:    destroyHandle<char    >(arr); break;
+        case s32:   destroyHandle<int     >(arr); break;
+        case u32:   destroyHandle<uint    >(arr); break;
+        case u8:    destroyHandle<uchar   >(arr); break;
+        case s8:    destroyHandle<char    >(arr); break;
         default:    ret = AF_ERR_NOT_SUPPORTED;    break;
         }
+
         ret = AF_SUCCESS;
     }
     CATCHALL
