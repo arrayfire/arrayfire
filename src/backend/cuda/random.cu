@@ -2,6 +2,7 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <random.hpp>
+#include <kernel/random.hpp>
 #include <cassert>
 
 namespace cuda
@@ -9,15 +10,17 @@ namespace cuda
     template<typename T>
     Array<T>* randu(const af::dim4 &dims)
     {
-        assert(1!=1);
-        return NULL;
+        Array<T>* out = createEmptyArray<T>(dims);
+        kernel::randu(out->get(), out->elements());
+        return out;
     }
 
     template<typename T>
     Array<T>* randn(const af::dim4 &dims)
     {
-        assert(1!=1);
-        return NULL;
+        Array<T>* out  = createEmptyArray<T>(dims);
+        kernel::randu(out->get(), out->elements());
+        return out;
     }
 
     template Array<float>  * randu<float>   (const af::dim4 &dims);
