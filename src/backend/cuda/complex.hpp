@@ -279,11 +279,6 @@ _DH static cdouble operator -=(cdouble &x, cdouble y)  {
 }
 _DH static cdouble operator -=(cdouble &x, cfloat y)  { return x -= upcast(y); }
 
-//        FUNCTIONS
-
-_DH float abs(const cfloat x) { return cuCabsf(x); }
-_DH double abs(const cdouble x){ return cuCabs(x); }
-
 #define D_i            ::make_cuDoubleComplex(0.0, 1.0)
 #define F_i            ::make_cuComplex(1.0, 0.0)
 

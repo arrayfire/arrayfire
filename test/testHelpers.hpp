@@ -12,9 +12,9 @@ using std::istream_iterator;
 using std::ostream_iterator;
 
 template<typename FileDataElementType, typename ArrayElementType>
-void ReadTests(const string &FileName, af::dim4 &dims, 
-        vector<ArrayElementType> &out, 
-        vector<vector<ArrayElementType>> &tests)
+void ReadTests(const string &FileName, af::dim4 &dims,
+        vector<ArrayElementType> &testInput,
+        vector<vector<ArrayElementType>> &testOutputs)
 {
     std::ifstream testFile(FileName);
     if(testFile.good()) {
@@ -23,7 +23,7 @@ void ReadTests(const string &FileName, af::dim4 &dims,
 
         unsigned testCount;
         testFile >> testCount;
-        tests.resize(testCount);
+        testOutputs.resize(testCount);
 
         vector<unsigned> testSizes(testCount);
         for(unsigned i = 0; i < testCount; i++) {
@@ -36,12 +36,12 @@ void ReadTests(const string &FileName, af::dim4 &dims,
 
         copy(   begin(data),
                 end(data),
-                back_inserter(out));
+                back_inserter(testInput));
 
         for(unsigned i = 0; i < testCount; i++) {
             copy_n( istream_iterator<int>(testFile),
                     testSizes[i],
-                    back_inserter(tests[i]));
+                    back_inserter(testOutputs[i]));
         }
     }
     else {
