@@ -8,9 +8,9 @@ namespace cuda
 namespace kernel
 {
 
-    static const size_t TILE_DIM  = 32;
-    static const size_t THREADS_X = TILE_DIM;
-    static const size_t THREADS_Y = TILE_DIM/4;
+    static const dim_type TILE_DIM  = 32;
+    static const dim_type THREADS_X = TILE_DIM;
+    static const dim_type THREADS_Y = TILE_DIM/4;
 
     // Kernel is going access original data in colleased format
     template<typename T, bool is32Multiple>
@@ -20,46 +20,50 @@ namespace kernel
                     dim_type iStride0, dim_type iStride1,
                     dim_type nonBatchBlkSize)
     {
-        SharedMemory<T> shared;
-        T * shrdMem = shared.getPointer();
+        __shared__ T shrdMem[TILE_DIM][TILE_DIM+1];
+
         // create variables to hold output dimensions
-        const size_t oDim0 = iDim1;
-        const size_t oDim1 = iDim0;
+        const dim_type oDim0 = iDim1;
+        const dim_type oDim1 = iDim0;
+
         // calculate strides
-        const size_t oStride0    = iStride0;
-        const size_t oStride1    = oDim0 * oStride0;
-        const size_t batchStride = iDim0 * iDim1;
-        const size_t shrdStride  = blockDim.x + 1;
+        const dim_type oStride0    = iStride0;
+        const dim_type oStride1    = oDim0 * oStride0;
+        const dim_type batchStride = iDim0 * iDim1;
+
         // TODO: Launch multiple blocks along x dimension
         //       to handle batch later, for loop is just for now
-        int lx      = threadIdx.x;
-        int ly      = threadIdx.y;
+        dim_type lx      = threadIdx.x;
+        dim_type ly      = threadIdx.y;
+
         // batch based block Id
-        size_t batchId = blockIdx.x / nonBatchBlkSize;
-        size_t blkIdx_x= (blockIdx.x-batchId*nonBatchBlkSize);
+        dim_type batchId = blockIdx.x / nonBatchBlkSize;
+        dim_type blkIdx_x= (blockIdx.x-batchId*nonBatchBlkSize);
+
         // calculate global indices
-        int gx      = lx + blockDim.x * blkIdx_x;
-        int gy      = ly + TILE_DIM * blockIdx.y;
+        dim_type gx      = lx + blockDim.x * blkIdx_x;
+        dim_type gy      = ly + TILE_DIM * blockIdx.y;
+
         // offset in and out based on batch id
         int offset  = batchId*batchStride;
-        const T* in_= in  + offset;
-        T* out_     = out + offset;
+        in  += offset;
+        out += offset;
 
 #pragma unroll
-        for (int rep = 0; rep < TILE_DIM; rep += blockDim.y) {
-            int gy_ = gy+rep;
+        for (dim_type repeat = 0; repeat < TILE_DIM; repeat += blockDim.y) {
+            dim_type gy_ = gy+repeat;
             if (is32Multiple || (gx<iDim0 && gy_<iDim1))
-                shrdMem[(ly+rep)*shrdStride+lx] = in_[gy_*iStride1+gx];
+                shrdMem[ly+repeat][lx] = in[gy_*iStride1+gx];
         }
         __syncthreads();
 
         gx          = lx + blockDim.x * blockIdx.y;
         gy          = ly + TILE_DIM * blkIdx_x;
 
-        for (int rep = 0; rep < TILE_DIM; rep += blockDim.y) {
-            int gy_ = gy+rep;
+        for (dim_type repeat = 0; repeat < TILE_DIM; repeat += blockDim.y) {
+            dim_type gy_ = gy+repeat;
             if (is32Multiple || (gx<oDim0 && gy_<oDim1))
-                out_[gy_*oStride1+gx] = shrdMem[lx*shrdStride+(ly+rep)];
+                out[gy_*oStride1+gx] = shrdMem[lx][ly+repeat];
         }
     }
 
@@ -72,17 +76,15 @@ namespace kernel
         dim3 threads(kernel::THREADS_X,kernel::THREADS_Y);
 
 
-        size_t blk_x = divup(dims[0],TILE_DIM);
-        size_t blk_y = divup(dims[1],TILE_DIM);
+        dim_type blk_x = divup(dims[0],TILE_DIM);
+        dim_type blk_y = divup(dims[1],TILE_DIM);
         // launch batch * blk_x blocks along x dimension
         dim3 blocks(blk_x*dims[2],blk_y);
 
-        size_t sharedMemSize = (TILE_DIM+1)*TILE_DIM*sizeof(T);
-
         if (dims[0]%TILE_DIM==0 && dims[1]%TILE_DIM==0)
-            transpose < T, true > <<< blocks,threads,sharedMemSize >>> (out,in,dims[0],dims[1],strides[0],strides[1],blk_x);
+            transpose < T, true > <<< blocks,threads >>> (out,in,dims[0],dims[1],strides[0],strides[1],blk_x);
         else
-            transpose < T, false > <<< blocks,threads,sharedMemSize >>> (out,in,dims[0],dims[1],strides[0],strides[1],blk_x);
+            transpose < T, false > <<< blocks,threads >>> (out,in,dims[0],dims[1],strides[0],strides[1],blk_x);
     }
 
 #define INSTANTIATE(T)                                          \
