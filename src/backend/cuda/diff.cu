@@ -2,22 +2,62 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <diff.hpp>
+#include <kernel/diff.hpp>
 #include <cassert>
 
 namespace cuda
 {
+
+    template<typename T, bool isDiff2>
+    static Array<T> *diff(const Array<T> &in, const int dim)
+    {
+        const af::dim4 iDims = in.dims();
+        af::dim4 oDims = iDims;
+        oDims[dim] -= (isDiff2 + 1);
+
+        if(iDims.elements() == 0 || oDims.elements() == 0) {
+            // error out
+            assert(1!=1);
+        }
+
+        Array<T> *out = createEmptyArray<T>(oDims);
+
+        switch (dim) {
+
+        case (0):       kernel::diff<T, 0, isDiff2>(out->get(), in.get(),
+                                                    oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
+                                                    iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get());
+            break;
+
+        case (1):       kernel::diff<T, 1, isDiff2>(out->get(), in.get(),
+                                                    oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
+                                                    iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get());
+            break;
+
+        case (2):       kernel::diff<T, 2, isDiff2>(out->get(), in.get(),
+                                                    oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
+                                                    iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get());
+            break;
+
+        case (3):       kernel::diff<T, 3, isDiff2>(out->get(), in.get(),
+                                                    oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
+                                                    iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get());
+            break;
+        }
+
+        return out;
+    }
+
     template<typename T>
     Array<T> *diff1(const Array<T> &in, const int dim)
     {
-        assert(1!=1);
-        return NULL;
+        return diff<T, false>(in, dim);
     }
 
     template<typename T>
     Array<T> *diff2(const Array<T> &in, const int dim)
     {
-        assert(1!=1);
-        return NULL;
+        return diff<T, true>(in, dim);
     }
 
 #define INSTANTIATE(T)                                                  \

@@ -19,17 +19,17 @@ class Diff1 : public ::testing::Test
 {
     public:
         virtual void SetUp() {
-            subMat0.push_back({1, 3, 1});
+            subMat0.push_back({1, 4, 1});
             subMat0.push_back({0, 2, 1});
-            subMat0.push_back({0, 0, 1});
+            subMat0.push_back({0, 1, 1});
 
-            subMat1.push_back({3, 5, 1});
+            subMat1.push_back({0, 4, 1});
             subMat1.push_back({1, 3, 1});
-            subMat1.push_back({0, 0, 1});
+            subMat1.push_back({1, 3, 1});
 
-            subMat2.push_back({2, 4, 1});
-            subMat2.push_back({1, 3, 1});
-            subMat2.push_back({0, 1, 1});
+            subMat2.push_back({1, 5, 1});
+            subMat2.push_back({0, 3, 1});
+            subMat2.push_back({0, 2, 1});
         }
         vector<af_seq> subMat0;
         vector<af_seq> subMat1;
@@ -95,20 +95,10 @@ TYPED_TEST(Diff1,Basic0)
     diff1Test<TypeParam, 0>(string(TEST_DIR"/diff1/basic0.test"));
 }
 
-TYPED_TEST(Diff1,Subref0)
-{
-    diff1Test<TypeParam, 0>(string(TEST_DIR"/diff1/subref0.test"),true,&(this->subMat0));
-}
-
 // Diff on 1 dimension
 TYPED_TEST(Diff1,Basic1)
 {
     diff1Test<TypeParam, 1>(string(TEST_DIR"/diff1/basic1.test"));
-}
-
-TYPED_TEST(Diff1,Subref1)
-{
-    diff1Test<TypeParam, 1>(string(TEST_DIR"/diff1/subref1.test"),true,&(this->subMat1));
 }
 
 // Diff on 2 dimension
@@ -117,10 +107,25 @@ TYPED_TEST(Diff1,Basic2)
     diff1Test<TypeParam, 2>(string(TEST_DIR"/diff1/basic2.test"));
 }
 
+#if defined(AF_CPU)
+// Diff on 0 dimension subref
+TYPED_TEST(Diff1,Subref0)
+{
+    diff1Test<TypeParam, 0>(string(TEST_DIR"/diff1/subref0.test"),true,&(this->subMat0));
+}
+
+// Diff on 1 dimension subref
+TYPED_TEST(Diff1,Subref1)
+{
+    diff1Test<TypeParam, 1>(string(TEST_DIR"/diff1/subref1.test"),true,&(this->subMat1));
+}
+
+// Diff on 2 dimension subref
 TYPED_TEST(Diff1,Subref2)
 {
     diff1Test<TypeParam, 2>(string(TEST_DIR"/diff1/subref2.test"),true,&(this->subMat2));
 }
+#endif
 
 template<typename T>
 void diff1ArgsTest(string pTestFile)
