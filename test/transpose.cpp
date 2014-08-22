@@ -4,12 +4,9 @@
 #include <af/traits.hpp>
 #include <string>
 #include <vector>
-#include <iostream>
 #include <testHelpers.hpp>
 
 using std::string;
-using std::cout;
-using std::endl;
 using std::vector;
 using af::af_cfloat;
 using af::af_cdouble;
@@ -62,7 +59,7 @@ void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=n
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems,outArray));
         outData = new T[nElems];
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_transpose(&outArray,inArray));
+        ASSERT_EQ(AF_SUCCESS,af_transpose(&outArray,inArray));
         outData = new T[dims.elements()];
     }
 
@@ -97,15 +94,24 @@ TYPED_TEST(Transpose,Square)
     trsTest<TypeParam>(string(TEST_DIR"/transpose/square.test"));
 }
 
+TYPED_TEST(Transpose,Square2)
+{
+    trsTest<TypeParam>(string(TEST_DIR"/transpose/square2.test"));
+}
+
 TYPED_TEST(Transpose,SquareBatch)
 {
     trsTest<TypeParam>(string(TEST_DIR"/transpose/square_batch.test"));
 }
 
-
 TYPED_TEST(Transpose,Rectangle)
 {
     trsTest<TypeParam>(string(TEST_DIR"/transpose/rectangle.test"));
+}
+
+TYPED_TEST(Transpose,Rectangle2)
+{
+    trsTest<TypeParam>(string(TEST_DIR"/transpose/rectangle2.test"));
 }
 
 TYPED_TEST(Transpose,RectangleBatch)
@@ -113,14 +119,9 @@ TYPED_TEST(Transpose,RectangleBatch)
     trsTest<TypeParam>(string(TEST_DIR"/transpose/rectangle_batch.test"));
 }
 
-TYPED_TEST(Transpose,SubRef)
+TYPED_TEST(Transpose,RectangleBatch2)
 {
-    trsTest<TypeParam>(string(TEST_DIR"/transpose/offset.test"),true,&(this->subMat2D));
-}
-
-TYPED_TEST(Transpose,SubRefBatch)
-{
-    trsTest<TypeParam>(string(TEST_DIR"/transpose/offset_batch.test"),true,&(this->subMat3D));
+    trsTest<TypeParam>(string(TEST_DIR"/transpose/rectangle_batch2.test"));
 }
 
 TYPED_TEST(Transpose,InvalidArgs)
@@ -141,3 +142,16 @@ TYPED_TEST(Transpose,InvalidArgs)
 
     ASSERT_EQ(AF_ERR_ARG, af_transpose(&outArray,inArray));
 }
+
+#if defined(AF_CPU)
+
+TYPED_TEST(Transpose,SubRef)
+{
+    trsTest<TypeParam>(string(TEST_DIR"/transpose/offset.test"),true,&(this->subMat2D));
+}
+
+TYPED_TEST(Transpose,SubRefBatch)
+{
+    trsTest<TypeParam>(string(TEST_DIR"/transpose/offset_batch.test"),true,&(this->subMat3D));
+}
+#endif

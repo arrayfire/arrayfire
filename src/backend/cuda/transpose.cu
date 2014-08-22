@@ -1,10 +1,7 @@
 #include <af/dim4.hpp>
-#include <af/defines.h>
-#include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <transpose.hpp>
-
-#include <cassert>
+#include <kernel/transpose.hpp>
 
 using af::dim4;
 
@@ -14,8 +11,15 @@ namespace cuda
     template<typename T>
     Array<T> * transpose(const Array<T> &in)
     {
-        Array<T> *out = 0;
-        assert("transpose is not supported yet in cuda backend" && 1<3);
+        const dim4 inDims   = in.dims();
+        const dim4 inStrides= in.strides();
+
+        dim4 outDims  = dim4(inDims[1],inDims[0],inDims[2],inDims[3]);
+
+        Array<T>* out  = createEmptyArray<T>(outDims);
+
+        kernel::transpose(out->get(), in.get(), inDims.ndims(), inDims.get(), inStrides.get());
+
         return out;
     }
 

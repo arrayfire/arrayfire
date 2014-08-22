@@ -1,11 +1,11 @@
 #pragma once
 
+#include <helper.hpp>
+
 namespace cuda
 {
 namespace kernel
 {
-
-#define divup(a, b) (a+b-1)/b
 
 template<typename T>
 class plus

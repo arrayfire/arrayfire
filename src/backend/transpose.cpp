@@ -17,7 +17,6 @@ static inline af_array transpose(const af_array in)
 af_err af_transpose(af_array *out, af_array in)
 {
     af_err ret = AF_ERR_RUNTIME;
-    af_array output;
 
     try {
         ArrayInfo info = getInfo(in);
@@ -28,6 +27,14 @@ af_err af_transpose(af_array *out, af_array in)
             return AF_ERR_ARG;
         }
 
+        if (dims[0]==1 || dims[1]==1) {
+            // for a vector OR a batch of vectors
+            // we can use moddims to transpose
+            af::dim4 outDims(dims[1],dims[0],dims[2],dims[3]);
+            return af_moddims(out, in, outDims.ndims(), outDims.get());
+        }
+
+        af_array output;
         switch(type) {
             case f32: output = transpose<float>(in);          break;
             case c32: output = transpose<cfloat>(in);         break;
