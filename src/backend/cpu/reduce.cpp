@@ -27,12 +27,12 @@ namespace cpu
                         const int dim)
         {
             const int D1 = D - 1;
-            for (int i = 0; i < odims[D1]; i++) {
+            for (dim_type i = 0; i < odims[D1]; i++) {
                 reduce_dim<op, Ti, To, D1>()(out + i * ostrides[D1],
-                                              ostrides, odims,
-                                              in  + i * istrides[D1],
-                                              istrides, idims,
-                                              dim);
+                                             ostrides, odims,
+                                             in  + i * istrides[D1],
+                                             istrides, idims,
+                                             dim);
             }
         }
     };
@@ -47,7 +47,7 @@ namespace cpu
             reduce_op<Ti, To, op> Op;
 
             *out = Op.init();
-            for (int i = 0; i < idims[dim]; i++) {
+            for (dim_type i = 0; i < idims[dim]; i++) {
                 *out = Op.calc(in[i * istrides[dim]], *out);
             }
         }

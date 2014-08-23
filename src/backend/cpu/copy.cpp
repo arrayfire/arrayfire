@@ -19,12 +19,12 @@ namespace cpu
                 //FIXME: Check for errors / exceptions
                 memcpy(dst, src, dims[dim] * sizeof(T));
             } else {
-                for(int i = 0; i < dims[dim]; i++) {
+                for(dim_type i = 0; i < dims[dim]; i++) {
                     dst[i] = src[strides[dim]*i];
                 }
             }
         } else {
-            for(int i = dims[dim]; i > 0; i--) {
+            for(dim_type i = dims[dim]; i > 0; i--) {
                 stridedCopy<T>(dst, src, dims, strides, dim - 1);
                 src += strides[dim];
                 dst += dims[dim-1];

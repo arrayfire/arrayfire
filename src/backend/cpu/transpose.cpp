@@ -34,12 +34,12 @@ namespace cpu
         T* outData          = out->get();
         const T*   inData   = in.get();
 
-        for (int k=0; k<outDims[2]; ++k) {
+        for (uint k=0; k<outDims[2]; ++k) {
             // Outermost loop handles batch mode
             // if input has no data along third dimension
             // this loop runs only once
-            for (int j=0; j<outDims[1]; ++j) {
-                for (int i=0; i<outDims[0]; ++i) {
+            for (uint j=0; j<outDims[1]; ++j) {
+                for (uint i=0; i<outDims[0]; ++i) {
                     // calculate array indices based on offsets and strides
                     // the helper getIdx takes care of indices
                     int inIdx  = getIdx(in.strides(),j,i,k);

@@ -36,7 +36,7 @@ namespace opencl
             out << std::endl;
         }
         else {
-            for(int i = 0; i < d; i++) {
+            for(dim_type i = 0; i < d; i++) {
                 printer(out, ptr, info, dim - 1);
                 ptr += stride;
             }
