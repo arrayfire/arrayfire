@@ -53,6 +53,7 @@ typedef enum {
 #endif
 
 typedef long long dim_type;
+#define OCL_DIM_TYPE_NAME "long"
 
 #include <cstddef>
 typedef struct af_seq {

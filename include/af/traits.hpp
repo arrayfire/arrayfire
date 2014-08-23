@@ -51,13 +51,13 @@ struct dtype_traits<int> {
 template<>
 struct dtype_traits<unsigned> {
     enum { af_type = u32 };
-    static const char* getName() { return "unsigned int"; }
+    static const char* getName() { return "uint"; }
 };
 
 template<>
 struct dtype_traits<unsigned char> {
     enum { af_type = u8 };
-    static const char* getName() { return "unsigned char"; }
+    static const char* getName() { return "uchar"; }
 };
 
 }
