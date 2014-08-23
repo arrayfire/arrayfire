@@ -18,8 +18,6 @@ struct dtype_traits<cl_double2> {
 
 template<>
 struct dtype_traits<size_t> {
-    //FIXME: fix the enum to appropriate value
-    enum { af_type = -1 };
     static const char* getName() { return "size_t"; };
 };
 
