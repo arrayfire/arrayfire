@@ -39,9 +39,10 @@ af_err af_get_type(af_dtype *type, const af_array arr)
 
 dim4 calcStrides(const dim4 &parentDim)
 {
-    dim4 out(1, 1, 1, 1);
+    dim_type out_dims[4] = {1, 1, 1, 1};
     const dim_type *parentPtr = parentDim.get();
-    partial_sum(parentPtr, parentPtr + parentDim.ndims(), out.get() + 1, std::multiplies<dim_type>());
+    partial_sum(parentPtr, parentPtr + parentDim.ndims(), out_dims, std::multiplies<dim_type>());
+    dim4 out(1, out_dims[0], out_dims[1], out_dims[2]);
     return out;
 }
 
