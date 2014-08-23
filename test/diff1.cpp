@@ -89,6 +89,21 @@ void diff1Test(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv
     if(tempArray != 0) af_destroy_array(tempArray);
 }
 
+TYPED_TEST(Diff1,Vector0)
+{
+    diff1Test<TypeParam, 0>(string(TEST_DIR"/diff1/vector0.test"));
+}
+
+TYPED_TEST(Diff1,Matrix0)
+{
+    diff1Test<TypeParam, 0>(string(TEST_DIR"/diff1/matrix0.test"));
+}
+
+TYPED_TEST(Diff1,Matrix1)
+{
+    diff1Test<TypeParam, 1>(string(TEST_DIR"/diff1/matrix1.test"));
+}
+
 // Diff on 0 dimension
 TYPED_TEST(Diff1,Basic0)
 {
