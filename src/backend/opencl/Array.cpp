@@ -32,7 +32,7 @@ namespace opencl
         data(getCtx(0), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
         parent()
     {
-        cl::copy(getQueue(0), in_data, in_data + dims.elements(), data);
+        getQueue(0).enqueueWriteBuffer(data,CL_TRUE,0,sizeof(T)*ArrayInfo::elements(),in_data);
     }
 
     template<typename T>

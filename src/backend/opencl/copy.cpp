@@ -15,17 +15,15 @@ namespace opencl
     {
         //FIXME: Add checks
         //FIXME: Check if faster or slower than cl::enqueueReadBuffer
-        cl::copy(getQueue(0), A.get(), data, data + A.elements());
-        return;
+        getQueue(0).enqueueReadBuffer(A.get(),CL_TRUE,0,sizeof(T)*A.elements(),data);
     }
 
     template<typename T>
     Array<T> *copyArray(const Array<T> &A)
     {
         Array<T> *out = createEmptyArray<T>(A.dims());
-
         // FIXME: Add checks
-        cl::enqueueCopyBuffer(A.get(), out->get(), 0, 0, A.elements() * sizeof(T));
+        getQueue(0).enqueueCopyBuffer(A.get(), out->get(), 0, 0, A.elements() * sizeof(T));
         return out;
     }
 
