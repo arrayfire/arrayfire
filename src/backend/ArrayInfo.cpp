@@ -4,9 +4,6 @@
 #include <functional>
 
 using af::dim4;
-using std::partial_sum;
-using std::accumulate;
-using std::transform;
 
 dim_type
 calcOffset(const af::dim4 &strides, const af::dim4 &offsets)
@@ -39,10 +36,14 @@ af_err af_get_type(af_dtype *type, const af_array arr)
 
 dim4 calcStrides(const dim4 &parentDim)
 {
-    dim_type out_dims[4] = {1, 1, 1, 1};
-    const dim_type *parentPtr = parentDim.get();
-    partial_sum(parentPtr, parentPtr + parentDim.ndims(), out_dims, std::multiplies<dim_type>());
-    dim4 out(1, out_dims[0], out_dims[1], out_dims[2]);
+    dim4 out(1, 1, 1, 1);
+    dim_type *out_dims = out.get();
+    const dim_type *parent_dims =  parentDim.get();
+
+    for (dim_type i=1; i < 4; i++) {
+        out_dims[i] = out_dims[i - 1] * parent_dims[i-1];
+    }
+
     return out;
 }
 
