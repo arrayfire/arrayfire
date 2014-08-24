@@ -42,8 +42,8 @@ af_err af_transpose(af_array *out, af_array in)
             case c64: output = transpose<cdouble>(in);        break;
             case b8 : output = transpose<char>(in);           break;
             case s32: output = transpose<int>(in);            break;
-            case u32: output = transpose<uint>(in);       break;
-            case u8 : output = transpose<uchar>(in);  break;
+            case u32: output = transpose<uint>(in);           break;
+            case u8 : output = transpose<uchar>(in);          break;
             default : ret  = AF_ERR_NOT_SUPPORTED;            break;
         }
         if (ret!=AF_ERR_NOT_SUPPORTED) {

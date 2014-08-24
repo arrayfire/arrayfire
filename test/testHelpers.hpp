@@ -11,6 +11,8 @@ using std::vector;
 using std::istream_iterator;
 using std::ostream_iterator;
 
+typedef unsigned char uchar;
+
 template<typename FileDataElementType, typename ArrayElementType>
 void ReadTests(const string &FileName, af::dim4 &dims,
         vector<ArrayElementType> &testInput,

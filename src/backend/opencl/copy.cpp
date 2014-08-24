@@ -1,7 +1,4 @@
-#define __CL_ENABLE_EXCEPTIONS
 #include <iostream>
-#include <cassert>
-#include <iterator>
 #include <af/array.h>
 #include <af/defines.h>
 #include <Array.hpp>
@@ -15,7 +12,9 @@ namespace opencl
     {
         //FIXME: Add checks
         //FIXME: Check if faster or slower than cl::enqueueReadBuffer
-        getQueue(0).enqueueReadBuffer(A.get(),CL_TRUE,0,sizeof(T)*A.elements(),data);
+        cl_int err = getQueue(0).enqueueReadBuffer(A.get(),CL_TRUE,0,sizeof(T)*A.elements(),data);
+        if(err!=CL_SUCCESS)
+            printf("@copyData: Error status of copyData = %d\n",err);
     }
 
     template<typename T>

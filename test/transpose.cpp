@@ -28,7 +28,7 @@ class Transpose : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, af_cfloat, double, af_cdouble, int, unsigned, char, unsigned char> TestTypes;
+typedef ::testing::Types<float, af_cfloat, double, af_cdouble, int, uint, char, uchar> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Transpose, TestTypes);
@@ -89,19 +89,9 @@ TYPED_TEST(Transpose,VectorBatch)
     trsTest<TypeParam>(string(TEST_DIR"/transpose/vector_batch.test"));
 }
 
-TYPED_TEST(Transpose,Square)
+ TYPED_TEST(Transpose,Square)
 {
     trsTest<TypeParam>(string(TEST_DIR"/transpose/square.test"));
-}
-
-TYPED_TEST(Transpose,Square2)
-{
-    trsTest<TypeParam>(string(TEST_DIR"/transpose/square2.test"));
-}
-
-TYPED_TEST(Transpose,SquareBatch)
-{
-    trsTest<TypeParam>(string(TEST_DIR"/transpose/square_batch.test"));
 }
 
 TYPED_TEST(Transpose,Rectangle)
@@ -114,6 +104,11 @@ TYPED_TEST(Transpose,Rectangle2)
     trsTest<TypeParam>(string(TEST_DIR"/transpose/rectangle2.test"));
 }
 
+TYPED_TEST(Transpose,SquareBatch)
+{
+    trsTest<TypeParam>(string(TEST_DIR"/transpose/square_batch.test"));
+}
+
 TYPED_TEST(Transpose,RectangleBatch)
 {
     trsTest<TypeParam>(string(TEST_DIR"/transpose/rectangle_batch.test"));
@@ -122,6 +117,11 @@ TYPED_TEST(Transpose,RectangleBatch)
 TYPED_TEST(Transpose,RectangleBatch2)
 {
     trsTest<TypeParam>(string(TEST_DIR"/transpose/rectangle_batch2.test"));
+}
+
+TYPED_TEST(Transpose,Square512x512)
+{
+    trsTest<TypeParam>(string(TEST_DIR"/transpose/square2.test"));
 }
 
 TYPED_TEST(Transpose,InvalidArgs)
