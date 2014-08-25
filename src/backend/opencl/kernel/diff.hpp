@@ -10,8 +10,9 @@
 #include <string>
 
 typedef struct
+
 {
-    size_t dim[4];
+    dim_type dim[4];
 } dims_t;
 
 #define divup(a, b) ((a+b-1) / b)
@@ -42,9 +43,11 @@ namespace opencl
             Program prog(getCtx(0), setSrc);
 
             std::ostringstream options;
-            options << " -D T="       << dtype_traits<T>::getName()
-                    << " -D DIM="     << dim
-                    << " -D isDiff2=" << isDiff2;
+            options << " -D T="        << dtype_traits<T>::getName()
+                    << " -D DIM="      << dim
+                    << " -D isDiff2="  << isDiff2
+                    << " -D dim_type=" << dtype_traits<dim_type>::getName();
+
             prog.build(options.str().c_str());
 
             auto diffOp = make_kernel<Buffer, const Buffer,
