@@ -27,7 +27,7 @@ static const dim_type THREADS_X = TILE_DIM;
 static const dim_type THREADS_Y = TILE_DIM/4;
 
 template<typename T>
-void transpose( Buffer &out, const Buffer &in, const dim_type ndims, const dim_type * const dims, 
+void transpose( Buffer &out, const Buffer &in, const dim_type ndims, const dim_type * const dims,
                 const dim_type * const offsets, const dim_type * const strides)
 {
     Program::Sources setSrc;
@@ -40,11 +40,11 @@ void transpose( Buffer &out, const Buffer &in, const dim_type ndims, const dim_t
         << " -D TILE_DIM=" << TILE_DIM;
     prog.build(options.str().c_str());
 
-    auto transposeOp = make_kernel< Buffer, Buffer, 
-         dim_type, dim_type, 
-         dim_type, dim_type, 
-         dim_type, dim_type, 
-         dim_type > 
+    auto transposeOp = make_kernel< Buffer, Buffer,
+         dim_type, dim_type,
+         dim_type, dim_type,
+         dim_type, dim_type,
+         dim_type >
              (prog, "transpose");
 
     NDRange local(THREADS_X,THREADS_Y);
@@ -55,7 +55,7 @@ void transpose( Buffer &out, const Buffer &in, const dim_type ndims, const dim_t
     NDRange global( blk_x*TILE_DIM*dims[2],
             blk_y*TILE_DIM);
 
-    transposeOp(    EnqueueArgs(getQueue(0), global, local), 
+    transposeOp(    EnqueueArgs(getQueue(0), global, local),
             out, in, dims[0], dims[1],
             offsets[0], offsets[1],
             strides[0], strides[1], blk_x);
