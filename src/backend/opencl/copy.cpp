@@ -12,9 +12,7 @@ namespace opencl
     {
         //FIXME: Add checks
         //FIXME: Check if faster or slower than cl::enqueueReadBuffer
-        cl_int err = getQueue(0).enqueueReadBuffer(A.get(),CL_TRUE,0,sizeof(T)*A.elements(),data);
-        if(err!=CL_SUCCESS)
-            printf("@copyData: Error status of copyData = %d\n",err);
+        getQueue(0).enqueueReadBuffer(A.get(),CL_TRUE,0,sizeof(T)*A.elements(),data);
     }
 
     template<typename T>

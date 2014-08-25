@@ -15,7 +15,7 @@ using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
 
-#define divup(a, b) (a+b-1)/b
+#define divup(a, b) ((a)+(b)-1)/(b)
 
 namespace opencl
 {
