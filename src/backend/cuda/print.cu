@@ -21,6 +21,13 @@ namespace cuda
         return out;
     }
 
+    ostream&
+    operator<<(ostream &out, const unsigned char& var)
+    {
+        out << (int)var;
+        return out;
+    }
+
     template<typename T>
     void
     printer(ostream &out, const T* ptr, const Array<T> &info, unsigned dim)
