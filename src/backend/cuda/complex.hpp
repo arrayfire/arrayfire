@@ -79,16 +79,6 @@ _DH cuDoubleComplex  operator-(cuDoubleComplex a, cuDoubleComplex b) { return cu
 _DH static cuFloatComplex  operator/(cuFloatComplex  a, float b)   { return make_cuComplex( real(a) / b, imag(a) / (b)); }
 _DH static cuDoubleComplex operator/(cuDoubleComplex a, float b)   { return make_cuDoubleComplex(real(a) / b, imag(a) / (b)); }
 
-_DH cuFloatComplex min(cuFloatComplex a, cuFloatComplex b) { return cuCabsf(a) < cuCabsf(b) ? a : b; }
-_DH cuDoubleComplex min(cuDoubleComplex a, cuDoubleComplex b) { return cuCabs(a) < cuCabs(b) ? a : b; }
-_DH cuFloatComplex min(float a, cuFloatComplex b) { return fabsf(a) < cuCabsf(b) ? make_cuComplex(a) : b; }
-_DH cuDoubleComplex min(double a, cuDoubleComplex b) { return fabs(a) < cuCabs(b) ? make_cuDoubleComplex(a) : b; }
-
-_DH cuFloatComplex max(cuFloatComplex a, cuFloatComplex b) { return cuCabsf(a) > cuCabsf(b) ? a : b; }
-_DH cuDoubleComplex max(cuDoubleComplex a, cuDoubleComplex b) { return cuCabs(a) > cuCabs(b) ? a : b; }
-_DH cuFloatComplex max(float a, cuFloatComplex b) { return fabsf(a) > cuCabsf(b) ? make_cuComplex(a) : b; }
-_DH cuDoubleComplex max(double a, cuDoubleComplex b) { return fabs(a) > cuCabs(b) ? make_cuDoubleComplex(a) : b; }
-
 #define NEQ_OPS(OP, OT)                                     \
     _DH static bool operator OP(cuFloatComplex a, float b)       \
     { return (imag(a) OP 0 OT real(a) OP b); }              \

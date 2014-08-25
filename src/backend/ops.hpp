@@ -1,7 +1,5 @@
 #pragma once
 #include <backend.hpp>
-#include <cassert>
-#include <limits>
 
 #ifndef __DH__
 #define __DH__
@@ -19,72 +17,12 @@ typedef enum {
 using detail::cfloat;
 using detail::cdouble;
 
-namespace ops
-{
-
-    template<typename T>
-    static __DH__ T max(T lhs, T rhs)
-    {
-        return std::max(lhs, rhs);
-    }
-
-    template<>
-    __DH__ cfloat max<cfloat>(cfloat lhs, cfloat rhs)
-    {
-        return detail::abs(lhs) > detail::abs(rhs) ? lhs : rhs;
-    }
-
-    template<>
-    __DH__ cdouble max<cdouble>(cdouble lhs, cdouble rhs)
-    {
-        return detail::abs(lhs) > detail::abs(rhs) ? lhs : rhs;
-    }
-
-    template<typename T>
-    static __DH__ T min(T lhs, T rhs)
-    {
-        return std::min(lhs, rhs);
-    }
-
-    template<>
-    __DH__ cfloat min<cfloat>(cfloat lhs, cfloat rhs)
-    {
-        return detail::abs(lhs) < detail::abs(rhs) ? lhs :  rhs;
-    }
-
-    template<>
-    __DH__ cdouble min<cdouble>(cdouble lhs, cdouble rhs)
-    {
-        return detail::abs(lhs) < detail::abs(rhs) ? lhs :  rhs;
-    }
-
-    template<typename T>
-    static __DH__ T constant(double val)
-    {
-        return (T)(val);
-    }
-
-    template<>
-    __DH__ cfloat  constant<cfloat >(double val)
-    {
-        cfloat  cval = {(float)val, 0};
-        return cval;
-    }
-
-    template<>
-    __DH__ cdouble constant<cdouble >(double val)
-    {
-        cdouble  cval = {val, 0};
-        return cval;
-    }
-};
-
 template<typename T, af_op_t op>
 struct reduce_op
 {
     __DH__ T init()
     {
-        return ops::constant<T>(0);
+        return detail::constant<T>(0);
     }
 
     __DH__ T calc(T lhs, T rhs)
@@ -98,7 +36,7 @@ struct reduce_op<T, af_add_t>
 {
     __DH__ T init()
     {
-        return ops::constant<T>(0);
+        return detail::constant<T>(0);
     }
 
     __DH__ T calc(T lhs, T rhs)
@@ -112,7 +50,7 @@ struct reduce_op<T, af_or_t>
 {
     __DH__ T init()
     {
-        return ops::constant<T>(0);
+        return detail::constant<T>(0);
     }
 
     __DH__ T calc(T lhs, T rhs)
@@ -126,7 +64,7 @@ struct reduce_op<T, af_and_t>
 {
     __DH__ T init()
     {
-        return ops::constant<T>(1);
+        return detail::constant<T>(1);
     }
 
     __DH__ T calc(T lhs, T rhs)
@@ -140,7 +78,7 @@ struct reduce_op<T, af_notzero_t>
 {
     __DH__ T init()
     {
-        return ops::constant<T>(0);
+        return detail::constant<T>(0);
     }
 
     __DH__ T calc(T lhs, T rhs)
@@ -154,12 +92,12 @@ struct reduce_op<T, af_min_t>
 {
     __DH__ T init()
     {
-        return std::numeric_limits<T>::max();
+        return detail::limit_max<T>();
     }
 
     __DH__ T calc(T lhs, T rhs)
     {
-        return ops::min(lhs, rhs);
+        return detail::min(lhs, rhs);
     }
 };
 
@@ -169,14 +107,14 @@ struct reduce_op<T, af_min_t>
     {                                           \
         __DH__ T init()                         \
         {                                       \
-            return ops::constant<T>(            \
-                std::numeric_limits<Tr>::max()  \
+            return detail::constant<T>(         \
+                detail::limit_max<Tr>()         \
                 );                              \
         }                                       \
                                                 \
         __DH__ T calc(T lhs, T rhs)             \
         {                                       \
-            return ops::min(lhs, rhs);          \
+            return detail::min(lhs, rhs);       \
         }                                       \
     };                                          \
 
@@ -190,12 +128,12 @@ struct reduce_op<T, af_max_t>
 {
     __DH__ T init()
     {
-        return std::numeric_limits<T>::min();
+        return detail::limit_min<T>();
     }
 
     __DH__ T calc(T lhs, T rhs)
     {
-        return ops::max(lhs, rhs);
+        return detail::max(lhs, rhs);
     }
 };
 
@@ -206,12 +144,12 @@ struct reduce_op<T, af_max_t>
     {                                               \
         __DH__ T init()                             \
         {                                           \
-            return -std::numeric_limits<T>::max();  \
+            return -detail::limit_max<T>();         \
         }                                           \
                                                     \
         __DH__ T calc(T lhs, T rhs)                 \
         {                                           \
-            return ops::max(lhs, rhs);              \
+            return detail::max(lhs, rhs);           \
         }                                           \
     };                                              \
 
@@ -234,7 +172,7 @@ struct transform_op<Ti, To, af_or_t>
 {
     __DH__ To operator ()(Ti in)
     {
-        return (in != ops::constant<Ti>(0));
+        return (in != detail::constant<Ti>(0));
     }
 };
 
@@ -243,7 +181,7 @@ struct transform_op<Ti, To, af_and_t>
 {
     __DH__ To operator ()(Ti in)
     {
-        return (in != ops::constant<Ti>(0));
+        return (in != detail::constant<Ti>(0));
     }
 };
 
@@ -252,6 +190,6 @@ struct transform_op<Ti, To, af_notzero_t>
 {
     __DH__ To operator ()(Ti in)
     {
-        return (in != ops::constant<Ti>(0));
+        return (in != detail::constant<Ti>(0));
     }
 };
