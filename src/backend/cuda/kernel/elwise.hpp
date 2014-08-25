@@ -1,12 +1,12 @@
-#pragma once
-
+#include <functional>
+#include <af/defines.h>
+#include <backend.hpp>
 #include "../helper.hpp"
 
 namespace cuda
 {
 namespace kernel
 {
-
 template<typename T>
 class plus
 {
@@ -35,6 +35,22 @@ void binaryOp(O* out, const T* lhs, const U* rhs, const size_t &elements)
 }
 
 template<typename T>
-void set(T* ptr, T val, const size_t &elements);
+__global__
+void setKernel(T* ptr, T val, const size_t elements)
+{
+    const size_t idx = blockDim.x * blockIdx.x + threadIdx.x;
+    if(idx < elements) {
+        ptr[idx] = val;
+    }
+}
+
+template<typename T>
+void set(T* ptr, T val, const size_t &elements)
+{
+    dim3 threads(512);
+    dim3 blocks(divup(elements,threads.x));
+
+    setKernel<T><<<blocks, threads>>>(ptr, val, elements);
+}
 }
 }
