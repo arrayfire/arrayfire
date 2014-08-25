@@ -79,141 +79,139 @@ namespace ops
     }
 };
 
-template<typename Ti, typename To, af_op_t op>
+template<typename T, af_op_t op>
 struct reduce_op
 {
-    __DH__ To init()
+    __DH__ T init()
     {
-        assert("Operation not supported" && 1 != 1);
-        return ops::constant<To>(0);
+        return ops::constant<T>(0);
     }
 
-    __DH__ To calc(To out, Ti in)
+    __DH__ T calc(T lhs, T rhs)
     {
-        assert("Operation not supported" && 1 != 1);
-        return out;
+        return lhs + rhs;
     }
 };
 
-template<typename Ti, typename To>
-struct reduce_op<Ti, To, af_add_t>
+template<typename T>
+struct reduce_op<T, af_add_t>
 {
-    __DH__ To init()
+    __DH__ T init()
     {
-        return ops::constant<To>(0);
+        return ops::constant<T>(0);
     }
 
-    __DH__ To calc(Ti in, To out)
+    __DH__ T calc(T lhs, T rhs)
     {
-        return in + out;
+        return lhs + rhs;
     }
 };
 
-template<typename Ti, typename To>
-struct reduce_op<Ti, To, af_or_t>
+template<typename T>
+struct reduce_op<T, af_or_t>
 {
-    __DH__ To init()
+    __DH__ T init()
     {
-        return ops::constant<To>(0);
+        return ops::constant<T>(0);
     }
 
-    __DH__ To calc(Ti in, To out)
+    __DH__ T calc(T lhs, T rhs)
     {
-        return out || (in != ops::constant<Ti>(0));
+        return lhs || rhs;
     }
 };
 
-template<typename Ti, typename To>
-struct reduce_op<Ti, To, af_and_t>
+template<typename T>
+struct reduce_op<T, af_and_t>
 {
-    __DH__ To init()
+    __DH__ T init()
     {
-        return ops::constant<To>(1);
+        return ops::constant<T>(1);
     }
 
-    __DH__ To calc(Ti in, To out)
+    __DH__ T calc(T lhs, T rhs)
     {
-        return out && (in != ops::constant<Ti>(0));
+        return lhs && rhs;
     }
 };
 
-template<typename Ti, typename To>
-struct reduce_op<Ti, To, af_notzero_t>
+template<typename T>
+struct reduce_op<T, af_notzero_t>
 {
-    __DH__ To init()
+    __DH__ T init()
     {
-        return ops::constant<To>(0);
+        return ops::constant<T>(0);
     }
 
-    __DH__ To calc(Ti in, To out)
+    __DH__ T calc(T lhs, T rhs)
     {
-        return out + (in != ops::constant<Ti>(0));
+        return lhs + rhs;
     }
 };
 
-template<typename Ti, typename To>
-struct reduce_op<Ti, To, af_min_t>
+template<typename T>
+struct reduce_op<T, af_min_t>
 {
-    __DH__ To init()
+    __DH__ T init()
     {
-        return std::numeric_limits<To>::max();
+        return std::numeric_limits<T>::max();
     }
 
-    __DH__ To calc(Ti in, To out)
+    __DH__ T calc(T lhs, T rhs)
     {
-        return ops::min(out, in);
+        return ops::min(lhs, rhs);
     }
 };
 
-#define SPEICALIZE_COMPLEX_MIN(T, Tr)                                   \
-    template<>                                                          \
-    struct reduce_op<T, T, af_min_t>                                    \
-    {                                                                   \
-        __DH__ T init()                                                 \
-        {                                                               \
-            return ops::constant<T>(                                    \
-                std::numeric_limits<Tr>::max()                          \
-                );                                                      \
-        }                                                               \
-                                                                        \
-        __DH__ T calc(T in, T out)                                      \
-        {                                                               \
-            return ops::min(out, in);                                   \
-        }                                                               \
-    };                                                                  \
+#define SPEICALIZE_COMPLEX_MIN(T, Tr)           \
+    template<>                                  \
+    struct reduce_op<T, af_min_t>               \
+    {                                           \
+        __DH__ T init()                         \
+        {                                       \
+            return ops::constant<T>(            \
+                std::numeric_limits<Tr>::max()  \
+                );                              \
+        }                                       \
+                                                \
+        __DH__ T calc(T lhs, T rhs)             \
+        {                                       \
+            return ops::min(lhs, rhs);          \
+        }                                       \
+    };                                          \
 
 SPEICALIZE_COMPLEX_MIN(cfloat, float)
 SPEICALIZE_COMPLEX_MIN(cdouble, double)
 
 #undef SPEICALIZE_COMPLEX_MIN
 
-template<typename Ti, typename To>
-struct reduce_op<Ti, To, af_max_t>
+template<typename T>
+struct reduce_op<T, af_max_t>
 {
-    __DH__ To init()
+    __DH__ T init()
     {
-        return std::numeric_limits<To>::min();
+        return std::numeric_limits<T>::min();
     }
 
-    __DH__ To calc(Ti in, To out)
+    __DH__ T calc(T lhs, T rhs)
     {
-        return ops::max(out, in);
+        return ops::max(lhs, rhs);
     }
 };
 
 
 #define SPEICALIZE_FLOATING_MAX(T)                  \
     template<>                                      \
-    struct reduce_op<T, T, af_max_t>                \
+    struct reduce_op<T, af_max_t>                   \
     {                                               \
         __DH__ T init()                             \
         {                                           \
             return -std::numeric_limits<T>::max();  \
         }                                           \
                                                     \
-        __DH__ T calc(T in, T out)                  \
+        __DH__ T calc(T lhs, T rhs)                 \
         {                                           \
-            return ops::max(out, in);               \
+            return ops::max(lhs, rhs);              \
         }                                           \
     };                                              \
 
@@ -221,3 +219,39 @@ SPEICALIZE_FLOATING_MAX(float)
 SPEICALIZE_FLOATING_MAX(double)
 
 #undef SPEICALIZE_FLOATING_MAX
+
+template<typename Ti, typename To, af_op_t op>
+struct transform_op
+{
+    __DH__ To operator ()(Ti in)
+    {
+        return (To)(in);
+    }
+};
+
+template<typename Ti, typename To>
+struct transform_op<Ti, To, af_or_t>
+{
+    __DH__ To operator ()(Ti in)
+    {
+        return (in != ops::constant<Ti>(0));
+    }
+};
+
+template<typename Ti, typename To>
+struct transform_op<Ti, To, af_and_t>
+{
+    __DH__ To operator ()(Ti in)
+    {
+        return (in != ops::constant<Ti>(0));
+    }
+};
+
+template<typename Ti, typename To>
+struct transform_op<Ti, To, af_notzero_t>
+{
+    __DH__ To operator ()(Ti in)
+    {
+        return (in != ops::constant<Ti>(0));
+    }
+};
