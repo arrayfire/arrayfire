@@ -1,5 +1,6 @@
 #include <limits>
 #include <numeric>
+#include <cmath>
 #include <vector>
 #include <iostream>
 #include <af/dim4.hpp>
@@ -10,6 +11,7 @@ namespace af
 
 using std::vector;
 using std::numeric_limits;
+using std::abs;
 
 dim4::dim4( dim_type first,
             dim_type second,

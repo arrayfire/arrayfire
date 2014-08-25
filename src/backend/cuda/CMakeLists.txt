@@ -24,7 +24,7 @@ FILE(GLOB cuda_src
     "kernel/*.h"
     )
 
-IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND ${APPLE})
+IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND "${APPLE}")
     ADD_DEFINITIONS(-stdlib=libstdc++)
     SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libstdc++")
     SET(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libstdc++")
