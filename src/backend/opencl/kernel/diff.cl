@@ -3,7 +3,7 @@
 #endif
 
 typedef struct {
-    long dim[4];
+    dim_type dim[4];
 } dims_t;
 
 void diff_this(__global T* out, __global const T* in, unsigned oMem,

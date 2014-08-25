@@ -1,7 +1,4 @@
-#define __CL_ENABLE_EXCEPTIONS
 #include <iostream>
-#include <cassert>
-#include <iterator>
 #include <af/array.h>
 #include <af/defines.h>
 #include <Array.hpp>

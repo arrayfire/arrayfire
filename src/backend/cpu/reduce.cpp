@@ -44,12 +44,19 @@ namespace cpu
                         const Ti *in , const dim4 istrides, const dim4 idims,
                         const int dim)
         {
-            reduce_op<Ti, To, op> Op;
 
-            *out = Op.init();
+            dim_type stride = istrides[dim];
+
+            transform_op<Ti, To, op> Transform;
+            reduce_op<To, op> Reduce;
+
+            To out_val = Reduce.init();
             for (dim_type i = 0; i < idims[dim]; i++) {
-                *out = Op.calc(in[i * istrides[dim]], *out);
+                To in_val = Transform(in[i * stride]);
+                out_val = Reduce.calc(in_val, out_val);
             }
+
+            *out = out_val;
         }
     };
 

@@ -3,7 +3,7 @@
 #include <backend.hpp>
 #include <cassert>
 
-#define divup(a, b) (a+b-1)/b
+#define divup(a, b) ((a)+(b)-1)/(b)
 
 #define cudaCheckError() {                                              \
      cudaError_t e=cudaGetLastError();                                  \

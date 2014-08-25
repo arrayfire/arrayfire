@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <af/dim4.hpp>
 
+typedef unsigned char uchar;
+
 template<typename FileDataElementType, typename ArrayElementType>
 void ReadTests(const std::string &FileName, af::dim4 &dims,
         std::vector<ArrayElementType> &testInput,

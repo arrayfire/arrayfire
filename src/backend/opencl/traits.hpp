@@ -21,6 +21,11 @@ struct dtype_traits<size_t> {
     static const char* getName() { return "size_t"; };
 };
 
+template<>
+struct dtype_traits<long long> {
+    static const char* getName() { return "long"; };
+};
+
 }
 
 using af::dtype_traits;

@@ -10,8 +10,9 @@
 #include <string>
 
 typedef struct
+
 {
-    size_t dim[4];
+    dim_type dim[4];
 } dims_t;
 
 #define divup(a, b) ((a+b-1) / b)
@@ -42,9 +43,11 @@ namespace opencl
             Program prog(getCtx(0), setSrc);
 
             std::ostringstream options;
-            options << " -D T="       << dtype_traits<T>::getName()
-                    << " -D DIM="     << dim
-                    << " -D isDiff2=" << isDiff2;
+            options << " -D T="        << dtype_traits<T>::getName()
+                    << " -D DIM="      << dim
+                    << " -D isDiff2="  << isDiff2
+                    << " -D dim_type=" << dtype_traits<dim_type>::getName();
+
             prog.build(options.str().c_str());
 
             auto diffOp = make_kernel<Buffer, const Buffer,
@@ -72,33 +75,5 @@ namespace opencl
                    out, in, oElem, _odims, _ostrides, _istrides, blocksPerMatX, blocksPerMatY);
 
         }
-
-#define INSTANTIATE_D(T, D)                                                             \
-    template void diff<T, D, false>(Buffer out, const Buffer in,                        \
-                                    const unsigned oElem, const unsigned ondims,        \
-                                    const dim_type *odims, const dim_type *ostrides,    \
-                                    const unsigned iElem, const unsigned indims,        \
-                                    const dim_type *idims, const dim_type *istrides);   \
-    template void diff<T, D, true >(Buffer out, const Buffer in,                        \
-                                    const unsigned oElem, const unsigned ondims,        \
-                                    const dim_type *odims, const dim_type *ostrides,    \
-                                    const unsigned iElem, const unsigned indims,        \
-                                    const dim_type *idims, const dim_type *istrides);   \
-
-
-#define INSTANTIATE_2(T)                    \
-    INSTANTIATE_D(T, 0)                     \
-    INSTANTIATE_D(T, 1)                     \
-    INSTANTIATE_D(T, 2)                     \
-    INSTANTIATE_D(T, 3)                     \
-
-    INSTANTIATE_2(float);
-    INSTANTIATE_2(double);
-    INSTANTIATE_2(cfloat);
-    INSTANTIATE_2(cdouble);
-    INSTANTIATE_2(int);
-    INSTANTIATE_2(uint);
-    INSTANTIATE_2(uchar);
-    INSTANTIATE_2(char);
-    }
+}
 }
