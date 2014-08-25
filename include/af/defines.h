@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdlib.h>
-
 typedef enum {
     AF_SUCCESS=0,
     AF_ERR_INTERNAL,
@@ -54,7 +52,7 @@ typedef enum {
   #include <stdbool.h>
 #endif
 
-typedef size_t dim_type;
+typedef long long dim_type;
 
 #include <cstddef>
 typedef struct af_seq {
