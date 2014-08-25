@@ -63,10 +63,10 @@ namespace cpu
     template<af_op_t op, typename Ti, typename To>
     Array<To>* reduce(const Array<Ti> in, const int dim)
     {
-        dim4 dims = in.dims();
-        dims[dim] = 1;
+        dim4 odims = in.dims();
+        odims[dim] = 1;
 
-        Array<To> *out = createValueArray<To>(dims, 0);
+        Array<To> *out = createEmptyArray<To>(odims);
 
         switch (in.ndims()) {
         case 1:
