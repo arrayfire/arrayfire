@@ -18,7 +18,7 @@ af_array modDims(const af_array in, const af::dim4 &newDims)
 
 af_err af_moddims(af_array *out, const af_array in, const unsigned ndims, const dim_type * const dims)
 {
-    if (ndims<1 || dims==nullptr) {
+    if (ndims<1 || dims==NULL) {
         return AF_ERR_ARG;
     }
 

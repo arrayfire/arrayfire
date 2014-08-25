@@ -25,7 +25,7 @@ void reduceTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv
     vector<vector<int>> tests;
     ReadTests<int, int> (pTestFile,dims,data,tests);
 
-    vector<Ti> in(begin(data), end(data));
+    vector<Ti> in(data.begin(), data.end());
 
     af_array inArray   = 0;
     af_array outArray  = 0;
@@ -41,7 +41,7 @@ void reduceTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv
 
     // Compare result
     for (int d = 0; d < (int)tests.size(); ++d) {
-        vector<To> currGoldBar(begin(tests[d]), end(tests[d]));
+        vector<To> currGoldBar(tests[d].begin(), tests[d].begin());
 
         // Run sum
         ASSERT_EQ(AF_SUCCESS, af_reduce(&outArray, inArray, d));

@@ -15,8 +15,9 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/backend
     )
 
-SET(CMAKE_CXX_FLAGS "-Wall -std=c++0x -fvisibility=hidden")
-
+IF(${UNIX})
+    ADD_DEFINITIONS(-Wall -std=c++0x -fvisibility=hidden)
+ENDIF()
 
 IF(${BUILD_CPU})
     SUBDIRS(src/backend/cpu)

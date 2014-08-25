@@ -1,6 +1,7 @@
 #pragma once
 
-#include <iosfwd>
+#include <ostream>
+#include <istream>
 #include <vector>
 #if __cplusplus > 199711L // Necessary for NVCC
 //#include <initializer_list>
@@ -34,13 +35,27 @@ public:
     const   dim_type* get() const   { return dims; }
 };
 
-AFAPI
+static inline
 std::ostream&
-operator<<(std::ostream& ostr, const dim4& dims);
+operator<<(std::ostream& ostr, const dim4& dims)
+{
+    ostr << dims[0] << " "
+         << dims[1] << " "
+         << dims[2] << " "
+         << dims[3] << "\n";
+    return ostr;
+}
 
-AFAPI
+static inline
 std::istream&
-operator>>(std::istream& istr, dim4& dims);
+operator>>(std::istream& istr, dim4& dims)
+{
+    istr >> dims[0]
+         >> dims[1]
+         >> dims[2]
+         >> dims[3];
+    return istr;
+}
 
 bool isSpan(const af_seq &seq);
 

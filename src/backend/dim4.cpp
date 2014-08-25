@@ -14,14 +14,20 @@ using std::numeric_limits;
 dim4::dim4( dim_type first,
             dim_type second,
             dim_type third,
-            dim_type fourth):
-    dims{first, second, third, fourth}
+            dim_type fourth)
 {
+    dims[0] = first;
+    dims[1] = second;
+    dims[2] = third;
+    dims[3] = fourth;
 }
 
-dim4::dim4(const dim4& other):
-    dims{other[0], other[1], other[2], other[3]}
+dim4::dim4(const dim4& other)
 {
+    dims[0] = other.dims[0];
+    dims[1] = other.dims[1];
+    dims[2] = other.dims[2];
+    dims[3] = other.dims[3];
 }
 
 dim_type
@@ -63,26 +69,6 @@ dim_type &
 dim4::operator[](const unsigned dim)
 {
     return const_cast<dim_type&>(static_cast<const dim4&>((*this))[dim]);
-}
-
-std::ostream&
-operator<<(std::ostream& ostr, const dim4& dims)
-{
-    ostr << dims[0] << " "
-         << dims[1] << " "
-         << dims[2] << " "
-         << dims[3] << "\n";
-    return ostr;
-}
-
-std::istream&
-operator>>(std::istream& istr, dim4& dims)
-{
-    istr >> dims[0]
-         >> dims[1]
-         >> dims[2]
-         >> dims[3];
-    return istr;
 }
 
 bool

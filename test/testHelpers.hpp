@@ -3,45 +3,44 @@
 #include <iterator>
 #include <vector>
 #include <algorithm>
-
-using std::copy;
-using std::copy_n;
-using std::string;
-using std::vector;
-using std::istream_iterator;
-using std::ostream_iterator;
+#include <af/dim4.hpp>
 
 template<typename FileDataElementType, typename ArrayElementType>
-void ReadTests(const string &FileName, af::dim4 &dims,
-        vector<ArrayElementType> &testInput,
-        vector<vector<ArrayElementType>> &testOutputs)
+void ReadTests(const std::string &FileName, af::dim4 &dims,
+        std::vector<ArrayElementType> &testInput,
+        std::vector<std::vector<ArrayElementType>> &testOutputs)
 {
-    std::ifstream testFile(FileName);
+    using std::copy;
+    using std::string;
+    using std::vector;
+
+    std::ifstream testFile(FileName.c_str());
     if(testFile.good()) {
         testFile >> dims;
-        vector<FileDataElementType> data(dims.elements());
 
         unsigned testCount;
         testFile >> testCount;
-        testOutputs.resize(testCount);
 
         vector<unsigned> testSizes(testCount);
         for(unsigned i = 0; i < testCount; i++) {
             testFile >> testSizes[i];
         }
 
-        copy_n( istream_iterator<FileDataElementType>(testFile),
-                dims.elements(),
-                begin(data));
+        vector<FileDataElementType> data(dims.elements());
+        testInput.reserve(dims.elements());
+        for(unsigned i = 0; i < dims.elements(); i++) {
+            testFile >> data[i];
+            testInput.push_back(data[i]); //convert to ArrayElementType
+        }
 
-        copy(   begin(data),
-                end(data),
-                back_inserter(testInput));
-
+        testOutputs.resize(testCount, vector<ArrayElementType>(0));
         for(unsigned i = 0; i < testCount; i++) {
-            copy_n( istream_iterator<int>(testFile),
-                    testSizes[i],
-                    back_inserter(testOutputs[i]));
+            testOutputs[i].resize(testSizes[i]);
+            FileDataElementType tmp;
+            for(unsigned j = 0; j < testSizes[i]; j++) {
+                testFile >> tmp;
+                testOutputs[i][j] = tmp;
+            }
         }
     }
     else {
