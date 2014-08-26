@@ -21,7 +21,7 @@ static af_err reduce_type(af_array *out, const af_array in, const int dim)
     if (dim <  0) return AF_ERR_ARG;
     if (dim >= 4) return AF_ERR_ARG;
 
-    const ArrayInfo& in_info = getInfo(in);
+    const ArrayInfo in_info = getInfo(in);
 
     if (dim >= (int)in_info.ndims()) {
         // FIXME: Implement a simple assignment function which increments the reference count of parent
@@ -64,7 +64,7 @@ static af_err reduce_common(af_array *out, const af_array in, const int dim)
     if (dim <  0) return AF_ERR_ARG;
     if (dim >= 4) return AF_ERR_ARG;
 
-    const ArrayInfo& in_info = getInfo(in);
+    const ArrayInfo in_info = getInfo(in);
 
     if (dim >= (int)in_info.ndims()) {
         // FIXME: Implement a simple assignment function which increments the reference count of parent
@@ -107,7 +107,7 @@ static af_err reduce_promote(af_array *out, const af_array in, const int dim)
     if (dim <  0) return AF_ERR_ARG;
     if (dim >= 4) return AF_ERR_ARG;
 
-    const ArrayInfo& in_info = getInfo(in);
+    const ArrayInfo in_info = getInfo(in);
 
     if (dim >= (int)in_info.ndims()) {
         // FIXME: Implement a simple assignment function which increments the reference count of parent
@@ -136,7 +136,6 @@ static af_err reduce_promote(af_array *out, const af_array in, const int dim)
         default:
             ret = AF_ERR_NOT_SUPPORTED;
         }
-
         std::swap(*out, res);
         ret = AF_SUCCESS;
     }
