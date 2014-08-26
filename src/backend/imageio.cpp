@@ -31,7 +31,6 @@ using namespace detail;
 // Helpers
 void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage);
 
-typedef unsigned char uchar;
 typedef unsigned short ushort;
 
 // Error handler for FreeImage library.
@@ -77,7 +76,7 @@ static af_err channel_split(const af_array rgb, const af::dim4 dims,
 
 template<typename T, int fi_color, int fo_color>
 static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcPitch,
-                        const int fi_w, const int fi_h)
+                        const uint fi_w, const uint fi_h)
 {
     // create an array to receive the loaded image data.
     float* pDst = (float*)malloc(fi_w * fi_h * sizeof(float) * 4); //4 channels is max
@@ -90,11 +89,11 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
     if (fo_color == 3 && fi_color == 1) {       //Convert gray to color
         offG = 0; offR = 0;
     }
-    unsigned int indx = 0;
-    unsigned int step = fi_color;
+    uint indx = 0;
+    uint step = fi_color;
 
-    for (unsigned int x = 0; x < fi_w; ++x) {
-        for (unsigned int y = 0; y < fi_h; ++y) {
+    for (uint x = 0; x < fi_w; ++x) {
+        for (uint y = 0; y < fi_h; ++y) {
             const T *src = (T*)(pSrcLine - y * nSrcPitch);
                                pDst2[indx] = (float) *(src + (x * step + offB));
             if (fo_color >= 3) pDst1[indx] = (float) *(src + (x * step + offG));
@@ -113,16 +112,16 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
 
 template<typename T, int fo_color>
 static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcPitch,
-                        const int fi_w, const int fi_h)
+                        const uint fi_w, const uint fi_h)
 {
     // create an array to receive the loaded image data.
     float* pDst = (float*)malloc(fi_w * fi_h * sizeof(float)); //only gray channel
 
-    unsigned int indx = 0;
-    unsigned int step = nSrcPitch / (fi_w * sizeof(T));
+    uint indx = 0;
+    uint step = nSrcPitch / (fi_w * sizeof(T));
     T r, g, b;
-    for (unsigned int x = 0; x < fi_w; ++x) {
-        for (unsigned int y = 0; y < fi_h; ++y) {
+    for (uint x = 0; x < fi_w; ++x) {
+        for (uint y = 0; y < fi_h; ++y) {
             const T *src = (T*)(pSrcLine - y * nSrcPitch);
             if (fo_color == 1) {
                 pDst[indx] = (float) *(src + (x * step));
@@ -171,8 +170,8 @@ AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isCol
         if(pBitmap == NULL) return AF_ERR_ARG;
 
         // check image color type
-        unsigned int color_type = FreeImage_GetColorType(pBitmap);
-        const unsigned int fi_bpp = FreeImage_GetBPP(pBitmap);
+        uint color_type = FreeImage_GetColorType(pBitmap);
+        const uint fi_bpp = FreeImage_GetBPP(pBitmap);
         //int fi_color = (int)((fi_bpp / 8.0) + 0.5);        //ceil
         int fi_color;
         if      (color_type == 1) fi_color = 1;
@@ -184,11 +183,11 @@ AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isCol
             return AF_ERR_RUNTIME;//THROW("Bits Per channel not supported");
 
         // sizes
-        unsigned int fi_w = FreeImage_GetWidth(pBitmap);
-        unsigned int fi_h = FreeImage_GetHeight(pBitmap);
+        uint fi_w = FreeImage_GetWidth(pBitmap);
+        uint fi_h = FreeImage_GetHeight(pBitmap);
 
         // FI = row major | AF = column major
-        unsigned int nSrcPitch = FreeImage_GetPitch(pBitmap);
+        uint nSrcPitch = FreeImage_GetPitch(pBitmap);
         const uchar* pSrcLine = FreeImage_GetBits(pBitmap) + nSrcPitch * (fi_h - 1);
 
         // result image
@@ -281,7 +280,7 @@ af_err af_save_image(const char* filename, const af_array in_)
     ArrayInfo info = getInfo(in_);
 
     // check image color type
-    unsigned int channels = info.dims()[2];
+    uint channels = info.dims()[2];
     //if(channels  > 4)  THROW("too many channels. Max is 4");
     //if(channels  == 2) THROW("2 channels not supported");
     if(channels  > 4)  return AF_ERR_ARG;
@@ -290,8 +289,8 @@ af_err af_save_image(const char* filename, const af_array in_)
     int fi_bpp = channels * 8;
 
     // sizes
-    unsigned int fi_w = info.dims()[1];
-    unsigned int fi_h = info.dims()[0];
+    uint fi_w = info.dims()[1];
+    uint fi_h = info.dims()[0];
 
     // create the result image storage using FreeImage
     FIBITMAP* pResultBitmap = FreeImage_Allocate(fi_w, fi_h, fi_bpp);
@@ -306,15 +305,15 @@ af_err af_save_image(const char* filename, const af_array in_)
     //else  { in = in_; }
 
     // FI = row major | AF = column major
-    unsigned int nDstPitch = FreeImage_GetPitch(pResultBitmap);
+    uint nDstPitch = FreeImage_GetPitch(pResultBitmap);
     uchar* pDstLine = FreeImage_GetBits(pResultBitmap) + nDstPitch * (fi_h - 1);
     af_array rr = 0, gg = 0, bb = 0, aa = 0;
     ret = channel_split(in, info.dims(), &rr, &gg, &bb, &aa); // convert array to 3 channels if needed
     if(ret != AF_SUCCESS)
         return ret;
 
-    unsigned int step = channels; // force 3 channels saving
-    unsigned int indx = 0;
+    uint step = channels; // force 3 channels saving
+    uint indx = 0;
 
     af_array rrT = 0, ggT = 0, bbT = 0, aaT = 0;
     if(channels == 4) {
@@ -341,8 +340,8 @@ af_err af_save_image(const char* filename, const af_array in_)
         if(ret != AF_SUCCESS) return ret;
 
         // Copy the array into FreeImage buffer
-        for (unsigned int y = 0; y < fi_h; ++y) {
-            for (unsigned int x = 0; x < fi_w; ++x) {
+        for (uint y = 0; y < fi_h; ++y) {
+            for (uint x = 0; x < fi_w; ++x) {
                 *(pDstLine + x * step + 2) = (uchar) pSrc0[indx]; // b
                 *(pDstLine + x * step + 1) = (uchar) pSrc1[indx]; // g
                 *(pDstLine + x * step + 0) = (uchar) pSrc2[indx]; // r
@@ -374,8 +373,8 @@ af_err af_save_image(const char* filename, const af_array in_)
         if(ret != AF_SUCCESS) return ret;
 
         // Copy the array into FreeImage buffer
-        for (unsigned int y = 0; y < fi_h; ++y) {
-            for (unsigned int x = 0; x < fi_w; ++x) {
+        for (uint y = 0; y < fi_h; ++y) {
+            for (uint x = 0; x < fi_w; ++x) {
                 *(pDstLine + x * step + 2) = (uchar) pSrc0[indx]; // b
                 *(pDstLine + x * step + 1) = (uchar) pSrc1[indx]; // g
                 *(pDstLine + x * step + 0) = (uchar) pSrc2[indx]; // r
@@ -394,8 +393,8 @@ af_err af_save_image(const char* filename, const af_array in_)
         ret = af_get_data_ptr((void*)pSrc0, rrT);
         if(ret != AF_SUCCESS) return ret;
 
-        for (unsigned int y = 0; y < fi_h; ++y) {
-            for (unsigned int x = 0; x < fi_w; ++x) {
+        for (uint y = 0; y < fi_h; ++y) {
+            for (uint x = 0; x < fi_w; ++x) {
                 *(pDstLine + x * step) = (uchar) pSrc0[indx];
                 ++indx;
             }
