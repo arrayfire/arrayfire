@@ -1,9 +1,5 @@
 #pragma once
 #include <af/defines.h>
-#include <af/dim4.hpp>
-#define AF_MAX_DIMS 4
-
-typedef size_t af_array;
 
 #ifdef __cplusplus
 extern "C" {

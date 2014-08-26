@@ -8,6 +8,8 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <cstdio>
+#include <cstdlib>
 
 #ifndef DEBUG
 #define ASSERT(x)

@@ -52,9 +52,13 @@ typedef enum {
   #include <stdbool.h>
 #endif
 
+#include <cstddef>
+#define AF_MAX_DIMS 4
+
+typedef size_t af_array;
+
 typedef long long dim_type;
 
-#include <cstddef>
 typedef struct af_seq {
     size_t begin, end;
     int    step;

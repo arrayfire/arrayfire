@@ -10,8 +10,6 @@ OPTION(BUILD_OPENCL "Build ArrayFire with a OpenCL backend" OFF)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/common)
 
-SET(CMAKE_CXX_FLAGS "-Wall -std=c++0x -fvisibility=hidden")
-
 FIND_PACKAGE(FreeImage)
 IF(FREEIMAGE_FOUND)
     SET(lib_deps ${FREEIMAGE_LIBRARY} CACHE PATH "Library Dependencies")
