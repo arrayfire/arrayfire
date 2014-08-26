@@ -10,9 +10,20 @@ OPTION(BUILD_OPENCL "Build ArrayFire with a OpenCL backend" OFF)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/common)
 
+SET(CMAKE_CXX_FLAGS "-Wall -std=c++0x -fvisibility=hidden")
+
+FIND_PACKAGE(FreeImage)
+IF(FREEIMAGE_FOUND)
+    SET(lib_deps ${FREEIMAGE_LIBRARY} CACHE PATH "Library Dependencies")
+ELSE(FREEIMAGE_FOUND)
+    MESSAGE(WARNING, "FreeImage not found!")
+ENDIF(FREEIMAGE_FOUND)
+
+
 INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src/backend
+    ${FREEIMAGE_INCLUDE_PATH}
     )
 
 IF(${UNIX})
@@ -20,23 +31,23 @@ IF(${UNIX})
 ENDIF()
 
 IF(${BUILD_CPU})
-    SUBDIRS(src/backend/cpu)
+  ADD_SUBDIRECTORY(src/backend/cpu)
 ENDIF()
 
 IF(${BUILD_CUDA})
     FIND_PACKAGE(CUDA)
-    SUBDIRS(src/backend/cuda)
+    ADD_SUBDIRECTORY(src/backend/cuda)
 ENDIF()
 
 IF(${BUILD_OPENCL})
     FIND_PACKAGE(OpenCL)
-    SUBDIRS(src/backend/opencl)
+    ADD_SUBDIRECTORY(src/backend/opencl)
     ADD_EXECUTABLE(bin2cpp common/bin2cpp.cpp)
 ENDIF()
 
-SUBDIRS(src/array)
+ADD_SUBDIRECTORY(src/array)
 
 IF(${BUILD_TEST})
     ENABLE_TESTING()
-    SUBDIRS(test)
+    ADD_SUBDIRECTORY(test)
 ENDIF()

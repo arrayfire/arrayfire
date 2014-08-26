@@ -34,4 +34,4 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 ADD_LIBRARY(afopencl SHARED ${opencl_src})
 ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
-TARGET_LINK_LIBRARIES(afopencl ${OPENCL_LIBRARIES})
+TARGET_LINK_LIBRARIES(afopencl ${OPENCL_LIBRARIES} ${lib_deps})
