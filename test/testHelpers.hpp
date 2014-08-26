@@ -51,36 +51,36 @@ void ReadTests(const std::string &FileName, af::dim4 &dims,
 }
 
 template<typename inType, typename outType, typename FileElementType>
-void ReadTests2(const string &FileName, af::dim4 &dims,
-        vector<inType> &testInput,
-        vector<vector<outType>> &testOutputs)
+void ReadTests2(const std::string &FileName, af::dim4 &dims,
+                std::vector<inType> &testInput,
+                std::vector<std::vector<outType>> &testOutputs)
 {
     std::ifstream testFile(FileName);
     if(testFile.good()) {
         testFile >> dims;
-        vector<inType> data(dims.elements());
+        std::vector<inType> data(dims.elements());
 
         unsigned testCount;
         testFile >> testCount;
         testOutputs.resize(testCount);
 
-        vector<unsigned> testSizes(testCount);
+        std::vector<unsigned> testSizes(testCount);
         for(unsigned i = 0; i < testCount; i++) {
             testFile >> testSizes[i];
         }
 
-        copy_n( istream_iterator<FileElementType>(testFile),
-                dims.elements(),
-                begin(data));
+        std::copy_n(std::istream_iterator<FileElementType>(testFile),
+                     dims.elements(),
+                     begin(data));
 
-        copy(   begin(data),
-                end(data),
-                back_inserter(testInput));
+        std::copy(   begin(data),
+                     end(data),
+                     back_inserter(testInput));
 
         for(unsigned i = 0; i < testCount; i++) {
-            copy_n( istream_iterator<outType>(testFile),
-                    testSizes[i],
-                    back_inserter(testOutputs[i]));
+            std::copy_n( std::istream_iterator<outType>(testFile),
+                         testSizes[i],
+                         back_inserter(testOutputs[i]));
         }
     }
     else {
