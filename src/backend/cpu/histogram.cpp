@@ -39,8 +39,8 @@ Array<outType> * histogram(const Array<inType> &in, const unsigned &nbins, const
     for(dim_type batchId=0; batchId<batchCount; batchId++) {
         for(dim_type i=0; i<numElements; i++) {
             int bin = (int)((inData[i] - minval) / step);
-            bin = (bin < 0)      ?     0     : bin;
-            bin = (bin >= nbins) ? (nbins-1) : bin;
+            bin = std::max(bin, 0);
+            bin = std::min(bin, (int)(nbins - 1));
             outData[bin]++;
         }
         inData  += batchStride;
