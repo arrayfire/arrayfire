@@ -49,10 +49,6 @@ extern "C" {
     // Generate Random Numbers using normal distribution
     AFAPI af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
-    // Image IO: Load and Save Image functions
-    AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isColor);
-    AFAPI af_err af_save_image(const char* filename, const af_array in);
-
 #ifdef __cplusplus
 }
 #endif
