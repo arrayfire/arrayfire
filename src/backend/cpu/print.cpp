@@ -3,18 +3,12 @@
 #include <print.hpp>
 #include <Array.hpp>
 #include <iostream>
+#include <helper.hpp>
 
 namespace cpu
 {
     using std::ostream;
     using std::endl;
-
-    ostream&
-    operator<<(ostream &out, const unsigned char& var)
-    {
-        out << (int)var;
-        return out;
-    }
 
     template<typename T>
     void
@@ -23,10 +17,11 @@ namespace cpu
 
         dim_type stride =   info.strides()[dim];
         dim_type d      =   info.dims()[dim];
+        ToNum<T> toNum;
 
         if(dim == 0) {
             for(dim_type i = 0, j = 0; i < d; i++, j+=stride) {
-                out << ptr[j] << "\t";
+                out << toNum(ptr[j]) << "\t";
             }
             out << endl;
         }
