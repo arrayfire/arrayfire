@@ -28,8 +28,6 @@ using namespace detail;
 
 // Helpers
 void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage);
-af_err channel_split(const af_array rgb, const af::dim4 dims, af_array *outr, af_array *outg, af_array *outb,
-                         af_array *outa);
 
 typedef unsigned char uchar;
 typedef unsigned short ushort;
@@ -42,8 +40,8 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage) {
 
 //  Split a MxNx3 image into 3 separate channel matrices.
 //  Produce 3 channels if needed
-af_err channel_split(const af_array rgb, const af::dim4 dims, af_array *outr, af_array *outg, af_array *outb,
-                         af_array *outa)
+static af_err channel_split(const af_array rgb, const af::dim4 dims,
+                            af_array *outr, af_array *outg, af_array *outb, af_array *outa)
 {
     af_err ret = AF_SUCCESS;
     af_seq idx[4][3] = {{span, span, {0, 0, 1}},
