@@ -2,6 +2,7 @@
 #include <Array.hpp>
 #include <print.hpp>
 #include <copy.hpp>
+#include <helper.hpp>
 
 namespace cuda
 {
@@ -28,10 +29,10 @@ namespace cuda
 
         dim_type stride =   info.strides()[dim];
         dim_type d      =   info.dims()[dim];
-
+        ToNum<T> toNum;
         if(dim == 0) {
             for(dim_type i = 0, j = 0; i < d; i++, j+=stride) {
-                out << ptr[j] << "\t";
+                out << toNum(ptr[j]) << "\t";
             }
             out << std::endl;
         }
