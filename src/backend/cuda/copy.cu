@@ -1,10 +1,9 @@
-#include <cassert>
-
 #include <cuda_runtime_api.h>
 #include <af/array.h>
 #include <af/defines.h>
 #include <Array.hpp>
 #include <copy.hpp>
+#include <kernel/memcopy.hpp>
 
 namespace cuda
 {
@@ -12,8 +11,24 @@ namespace cuda
     template<typename T>
     void copyData(T *data, const Array<T> &A)
     {
+        Array<T> *out = NULL;
+        const T *ptr = NULL;
+
+        if (A.isOwner() || // No offsets, No strides
+            A.ndims() == 1 // Simple offset, no strides.
+            ) {
+
+            //A.get() gets data with offsets
+            ptr = A.get();
+        } else {
+            //FIXME: Think about implementing eval
+            out = copyArray(A);
+            ptr = out->get();
+        }
+
         //FIXME: Add checks
-        cudaMemcpy(data, A.get(), A.elements()*sizeof(T), cudaMemcpyDeviceToHost);
+        cudaMemcpy(data, ptr, A.elements()*sizeof(T), cudaMemcpyDeviceToHost);
+        if (out != NULL) delete out;
 
         return;
     }
@@ -24,8 +39,13 @@ namespace cuda
     {
         Array<T> *out = createEmptyArray<T>(A.dims());
 
-        // FIXME: Add checks
-        cudaMemcpy(out->get(), A.get(), A.elements()*sizeof(T), cudaMemcpyDeviceToDevice);
+        if (A.isOwner()) {
+            // FIXME: Add checks
+            cudaMemcpy(out->get(), A.get(), A.elements()*sizeof(T), cudaMemcpyDeviceToDevice);
+        } else {
+            kernel::memcopy(out->get(), out->strides().get(), A.get(), A.dims().get(),
+                            A.strides().get(), (uint)A.ndims());
+        }
         return out;
     }
 
