@@ -45,10 +45,12 @@ TYPED_TEST_CASE(Diff1, TestTypes);
 template<typename T, unsigned dim>
 void diff1Test(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=nullptr)
 {
-    af::dim4            dims(1);
-    vector<T>           in;
+    vector<af::dim4> numDims;
+
+    vector<vector<T>>   in;
     vector<vector<T>>   tests;
-    ReadTests<int, T>(pTestFile,dims,in,tests);
+    readTests<T,T,int>(pTestFile,numDims,in,tests);
+    af::dim4 dims       = numDims[0];
 
     T *outData;
 
@@ -58,11 +60,11 @@ void diff1Test(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv
     // Get input array
     if (isSubRef) {
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
     }
 
     // Run diff1
@@ -145,15 +147,17 @@ TYPED_TEST(Diff1,Subref2)
 template<typename T>
 void diff1ArgsTest(string pTestFile)
 {
-    af::dim4          dims(1);
-    vector<T>         in;
+    vector<af::dim4> numDims;
+
+    vector<vector<T>> in;
     vector<vector<T>> tests;
-    ReadTests<int, T>(pTestFile,dims,in,tests);
+    readTests<T,T,int>(pTestFile,numDims,in,tests);
+    af::dim4 dims       = numDims[0];
 
     af_array inArray  = 0;
     af_array outArray = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
     ASSERT_EQ(AF_ERR_ARG, af_diff1(&outArray, inArray, -1));
     ASSERT_EQ(AF_ERR_ARG, af_diff1(&outArray, inArray,  5));

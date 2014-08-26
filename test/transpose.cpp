@@ -36,15 +36,17 @@ TYPED_TEST_CASE(Transpose, TestTypes);
 template<typename T>
 void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=nullptr)
 {
-    af::dim4            dims(1);
-    vector<T>           in;
+    vector<af::dim4> numDims;
+
+    vector<vector<T>>   in;
     vector<vector<T>>   tests;
-    ReadTests<int, T>(pTestFile,dims,in,tests);
+    readTests<T,T,int>(pTestFile,numDims,in,tests);
+    af::dim4 dims       = numDims[0];
 
     af_array outArray   = 0;
     af_array inArray    = 0;
     T *outData;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
     // check if the test is for indexed Array
     if (isSubRef) {
@@ -126,10 +128,11 @@ TYPED_TEST(Transpose,Square512x512)
 
 TYPED_TEST(Transpose,InvalidArgs)
 {
-    af::dim4            dims(1);
-    vector<TypeParam>           in;
+    vector<af::dim4> numDims;
+
+    vector<vector<TypeParam>>   in;
     vector<vector<TypeParam>>   tests;
-    ReadTests<int, TypeParam>(string(TEST_DIR"/transpose/square.test"),dims,in,tests);
+    readTests<TypeParam,TypeParam,int>(string(TEST_DIR"/transpose/square.test"),numDims,in,tests);
 
     af_array inArray   = 0;
     af_array outArray  = 0;
@@ -138,7 +141,7 @@ TYPED_TEST(Transpose,InvalidArgs)
     // usee new dimensions for this argument
     // unit test
     af::dim4 newDims(5,5,2,2);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), newDims.ndims(), newDims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), newDims.ndims(), newDims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
 
     ASSERT_EQ(AF_ERR_ARG, af_transpose(&outArray,inArray));
 }

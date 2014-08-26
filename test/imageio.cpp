@@ -29,10 +29,12 @@ TYPED_TEST_CASE(ImageIO, TestTypes);
 
 void loadImageTest(string pTestFile, string pImageFile, const bool isColor)
 {
-    af::dim4            dims(1);
-    vector<float>           in;
+    vector<af::dim4> numDims;
+
+    vector<vector<float>>   in;
     vector<vector<float>>   tests;
-    ReadTests<float, float>(pTestFile,dims,in,tests);
+    readTests<float, float, float>(pTestFile,numDims,in,tests);
+    af::dim4 dims       = numDims[0];
 
     af_array imgArray = 0;
     ASSERT_EQ(AF_SUCCESS, af_load_image(&imgArray, pImageFile.c_str(), isColor));
@@ -42,9 +44,9 @@ void loadImageTest(string pTestFile, string pImageFile, const bool isColor)
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*) imgData, imgArray));
 
     // Compare result
-    size_t nElems = in.size();
+    size_t nElems = in[0].size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(in[elIter], imgData[elIter]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(in[0][elIter], imgData[elIter]) << "at: " << elIter << std::endl;
     }
 
     // Delete

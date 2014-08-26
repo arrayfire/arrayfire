@@ -20,12 +20,14 @@ typedef af_err (*reduceFunc)(af_array *, const af_array, const int);
 template<typename Ti, typename To, reduceFunc af_reduce>
 void reduceTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=vector<af_seq>())
 {
-    af::dim4            dims(1);
-    vector<int>         data;
-    vector<vector<int>> tests;
-    ReadTests<int, int> (pTestFile,dims,data,tests);
+    vector<af::dim4> numDims;
 
-    vector<Ti> in(data.begin(), data.end());
+    vector<vector<int>> data;
+    vector<vector<int>> tests;
+    readTests<int,int,int> (pTestFile,numDims,data,tests);
+    af::dim4 dims       = numDims[0];
+
+    vector<Ti> in(data[0].begin(), data[0].end());
 
     af_array inArray   = 0;
     af_array outArray  = 0;
