@@ -36,7 +36,7 @@ namespace opencl
                   const unsigned oElem, const unsigned ondims,
                   const dim_type *odims, const dim_type *ostrides,
                   const unsigned iElem, const unsigned indims,
-                  const dim_type *idims, const dim_type *istrides)
+                  const dim_type *idims, const dim_type *istrides, dim_type offset)
         {
             Program::Sources setSrc;
             setSrc.emplace_back(diff_cl, diff_cl_len);
@@ -53,7 +53,7 @@ namespace opencl
             auto diffOp = make_kernel<Buffer, const Buffer,
                                       const unsigned, const dims_t,
                                       const dims_t, const dims_t,
-                                      const unsigned, const unsigned>
+                                      dim_type, const unsigned, const unsigned>
                                       (prog, "diff_kernel");
 
             NDRange local(TX, TY, 1);
@@ -72,7 +72,7 @@ namespace opencl
             dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
 
             diffOp(EnqueueArgs(getQueue(0), global, local),
-                   out, in, oElem, _odims, _ostrides, _istrides, blocksPerMatX, blocksPerMatY);
+                   out, in, oElem, _odims, _ostrides, _istrides, offset, blocksPerMatX, blocksPerMatY);
 
         }
 }

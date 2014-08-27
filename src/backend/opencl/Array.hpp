@@ -44,20 +44,36 @@ namespace opencl
     class Array : public ArrayInfo
     {
         cl::Buffer  data;
-        Array*      parent;
+        const Array*      parent;
 
         Array(af::dim4 dims);
         explicit Array(af::dim4 dims, T val);
         explicit Array(af::dim4 dims, const T * const in_data);
-
+        Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
     public:
 
         ~Array();
 
         bool isOwner() const { return parent == nullptr; }
 
-        cl::Buffer& get()        {  return data; }
-        const   cl::Buffer& get() const  {  return data; }
+
+        //FIXME: This should do a copy if it is not owner. You do not want to overwrite parents data
+        cl::Buffer& get()
+        {
+            if (isOwner()) return data;
+            return (cl::Buffer &)parent->data;
+        }
+
+        const   cl::Buffer& get() const
+        {
+            if (isOwner()) return data;
+            return parent->data;
+        }
+
+        const dim_type getOffset() const
+        {
+            return isOwner() ? 0 : calcOffset(parent->strides(), this->offsets());
+        }
 
         friend Array<T>* createValueArray<T>(const af::dim4 &size, const T& value);
         friend Array<T>* createDataArray<T>(const af::dim4 &size, const T * const data);
