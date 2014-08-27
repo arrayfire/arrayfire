@@ -146,8 +146,6 @@ TYPED_TEST(Transpose,InvalidArgs)
     ASSERT_EQ(AF_ERR_ARG, af_transpose(&outArray,inArray));
 }
 
-#if defined(AF_CPU)
-
 TYPED_TEST(Transpose,SubRef)
 {
     trsTest<TypeParam>(string(TEST_DIR"/transpose/offset.test"),true,&(this->subMat2D));
@@ -157,4 +155,3 @@ TYPED_TEST(Transpose,SubRefBatch)
 {
     trsTest<TypeParam>(string(TEST_DIR"/transpose/offset_batch.test"),true,&(this->subMat3D));
 }
-#endif
