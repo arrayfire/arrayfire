@@ -239,14 +239,15 @@ template<typename T, size_t NDims>
 void
 DimCheck2D(const vector<vector<af_seq>> &seqs,string TestFile)
 {
-    af::dim4 dimensions(1);
-    vector<T> hData;
+    vector<af::dim4> numDims;
 
+    vector<vector<T>> hData;
     vector<vector<T>> tests;
-    ReadTests<int, T>(TestFile, dimensions, hData, tests);
+    readTests<T,T,int>(TestFile, numDims, hData, tests);
+    af::dim4 dimensions = numDims[0];
 
     af_array a = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &hData.front(), NDims, dimensions.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &(hData[0].front()), NDims, dimensions.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
     vector<af_array> indexed_arrays(seqs.size(), 0);
     for(size_t i = 0; i < seqs.size(); i++) {
@@ -262,7 +263,6 @@ DimCheck2D(const vector<vector<af_seq>> &seqs,string TestFile)
 
         T* ptr = h_indexed[i];
         if(false == equal(ptr, ptr + tests[i].size(), tests[i].begin())) {
-            af_print(indexed_arrays[i]);
             cout << "index data: ";
             copy(ptr, ptr + tests[i].size(), ostream_iterator<T>(cout, ", "));
             cout << endl << "file data: ";

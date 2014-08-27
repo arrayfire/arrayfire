@@ -16,7 +16,7 @@ namespace kernel
     __global__
     void transpose( T * out, const T * in,
                     dim_type iDim0, dim_type iDim1,
-                    dim_type iStride0, dim_type iStride1,
+                    dim_type iStride1, dim_type iStride2,
                     dim_type nonBatchBlkSize)
     {
         __shared__ T shrdMem[TILE_DIM][TILE_DIM+1];
@@ -26,9 +26,7 @@ namespace kernel
         const dim_type oDim1 = iDim0;
 
         // calculate strides
-        const dim_type oStride0    = iStride0;
-        const dim_type oStride1    = oDim0 * oStride0;
-        const dim_type batchStride = iDim0 * iDim1;
+        const dim_type oStride1 = oDim0;
 
         // TODO: Launch multiple blocks along x dimension
         //       to handle batch later, for loop is just for now
@@ -44,9 +42,8 @@ namespace kernel
         dim_type gy      = ly + TILE_DIM * blockIdx.y;
 
         // offset in and out based on batch id
-        int offset  = batchId*batchStride;
-        in  += offset;
-        out += offset;
+        in  += batchId * iStride2;
+        out += batchId * oDim0 * oDim1;
 
 #pragma unroll
         for (dim_type repeat = 0; repeat < TILE_DIM; repeat += blockDim.y) {
@@ -81,9 +78,9 @@ namespace kernel
         dim3 blocks(blk_x*dims[2],blk_y);
 
         if (dims[0]%TILE_DIM==0 && dims[1]%TILE_DIM==0)
-            transpose < T, true > <<< blocks,threads >>> (out,in,dims[0],dims[1],strides[0],strides[1],blk_x);
+            transpose < T, true > <<< blocks,threads >>> (out,in,dims[0],dims[1],strides[1],strides[2],blk_x);
         else
-            transpose < T, false > <<< blocks,threads >>> (out,in,dims[0],dims[1],strides[0],strides[1],blk_x);
+            transpose < T, false > <<< blocks,threads >>> (out,in,dims[0],dims[1],strides[1],strides[2],blk_x);
     }
 }
 }

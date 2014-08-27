@@ -42,20 +42,31 @@ namespace cuda
     class Array : public ArrayInfo
     {
         T*      data;
-        Array*  parent;
+        const Array*  parent;
 
         Array(af::dim4 dims);
         explicit Array(af::dim4 dims, T val);
         explicit Array(af::dim4 dims, const T * const in_data);
-
+        Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
     public:
 
         ~Array();
 
         bool isOwner() const { return parent == NULL; }
 
-        T* get()        {  return data; }
-        const   T* get() const  {  return data; }
+
+        //FIXME: This should do a copy if it is not owner. You do not want to overwrite parents data
+        T* get(bool withOffset = true)
+        {
+            return const_cast<T*>(static_cast<const Array<T>*>(this)->get(withOffset));
+        }
+
+        //FIXME: implement withOffset parameter
+        const   T* get(bool withOffset = true) const
+        {
+            if (isOwner()) return data;
+            return parent->data + (withOffset ? calcOffset(parent->strides(), this->offsets()) : 0);
+        }
 
         friend Array<T>* createValueArray<T>(const af::dim4 &size, const T& value);
         friend Array<T>* createDataArray<T>(const af::dim4 &size, const T * const data);

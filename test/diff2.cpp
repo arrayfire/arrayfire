@@ -45,10 +45,12 @@ TYPED_TEST_CASE(Diff2, TestTypes);
 template<typename T, unsigned dim>
 void diff2Test(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=nullptr)
 {
-    af::dim4            dims(1);
-    vector<T>           in;
+    vector<af::dim4> numDims;
+
+    vector<vector<T>>   in;
     vector<vector<T>>   tests;
-    ReadTests<int, T>(pTestFile,dims,in,tests);
+    readTests<T,T,int>(pTestFile,numDims,in,tests);
+    af::dim4 dims       = numDims[0];
 
     T *outData;
 
@@ -58,11 +60,11 @@ void diff2Test(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv
     // Get input array
     if (isSubRef) {
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
     }
 
     // Run diff2
@@ -122,7 +124,6 @@ TYPED_TEST(Diff2,Basic2)
     diff2Test<TypeParam, 2>(string(TEST_DIR"/diff2/basic2.test"));
 }
 
-#if defined(AF_CPU)
 TYPED_TEST(Diff2,Subref0)
 {
     diff2Test<TypeParam, 0>(string(TEST_DIR"/diff2/subref0.test"),true,&(this->subMat0));
@@ -137,20 +138,21 @@ TYPED_TEST(Diff2,Subref2)
 {
     diff2Test<TypeParam, 2>(string(TEST_DIR"/diff2/subref2.test"),true,&(this->subMat2));
 }
-#endif
 
 template<typename T>
 void diff2ArgsTest(string pTestFile)
 {
-    af::dim4          dims(1);
-    vector<T>         in;
+    vector<af::dim4> numDims;
+
+    vector<vector<T>> in;
     vector<vector<T>> tests;
-    ReadTests<int, T>(pTestFile,dims,in,tests);
+    readTests<T,T,int>(pTestFile,numDims,in,tests);
+    af::dim4 dims       = numDims[0];
 
     af_array inArray  = 0;
     af_array outArray = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
     ASSERT_EQ(AF_ERR_ARG, af_diff2(&outArray, inArray, -1));
     ASSERT_EQ(AF_ERR_ARG, af_diff2(&outArray, inArray,  5));

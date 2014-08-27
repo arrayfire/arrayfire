@@ -35,10 +35,12 @@ TYPED_TEST_CASE(Moddims, TestTypes);
 template<typename T>
 void moddimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=nullptr)
 {
-    af::dim4            dims(1);
-    vector<T>           in;
+    vector<af::dim4> numDims;
+
+    vector<vector<T>>   in;
     vector<vector<T>>   tests;
-    ReadTests<int, T>(pTestFile,dims,in,tests);
+    readTests<T,T,int>(pTestFile,numDims,in,tests);
+    af::dim4 dims       = numDims[0];
 
     T *outData;
 
@@ -47,7 +49,7 @@ void moddimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *se
         af_array subArray  = 0;
         af_array outArray  = 0;
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_index(&subArray,inArray,seqv->size(),&seqv->front()));
 
@@ -65,7 +67,7 @@ void moddimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *se
         af_array inArray   = 0;
         af_array outArray  = 0;
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
         af::dim4 newDims(1);
         newDims[0] = dims[1];
@@ -100,14 +102,16 @@ TYPED_TEST(Moddims,Subref)
 template<typename T>
 void moddimsArgsTest(string pTestFile)
 {
-    af::dim4            dims(1);
-    vector<T>           in;
+    vector<af::dim4> numDims;
+
+    vector<vector<T>>   in;
     vector<vector<T>>   tests;
-    ReadTests<int, T>(pTestFile,dims,in,tests);
+    readTests<T,T,int>(pTestFile,numDims,in,tests);
+    af::dim4 dims       = numDims[0];
 
     af_array inArray   = 0;
     af_array outArray  = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
     af::dim4 newDims(1);
     newDims[0] = dims[1];
@@ -124,14 +128,16 @@ TYPED_TEST(Moddims,InvalidArgs)
 template<typename T>
 void moddimsMismatchTest(string pTestFile)
 {
-    af::dim4            dims(1);
-    vector<T>           in;
+    vector<af::dim4> numDims;
+
+    vector<vector<T>>   in;
     vector<vector<T>>   tests;
-    ReadTests<int, T>(pTestFile,dims,in,tests);
+    readTests<T,T,int>(pTestFile,numDims,in,tests);
+    af::dim4 dims       = numDims[0];
 
     af_array inArray   = 0;
     af_array outArray  = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
     af::dim4 newDims(1);
     newDims[0] = dims[1]-1;

@@ -42,16 +42,17 @@ TYPED_TEST(Histogram,InvalidArgs)
 template<typename inType, typename outType>
 void histTest(string pTestFile, unsigned nbins, double minval, double maxval)
 {
-    af::dim4 dims(1);
+    vector<af::dim4> numDims;
 
-    vector<inType>         in;
+    vector<vector<inType>>  in;
     vector<vector<outType>> tests;
-    ReadTests2<inType,uint,int>(pTestFile,dims,in,tests);
+    readTests<inType,uint,int>(pTestFile,numDims,in,tests);
+    af::dim4 dims       = numDims[0];
 
     af_array outArray   = 0;
     af_array inArray    = 0;
     outType *outData;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<inType>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<inType>::af_type));
 
     ASSERT_EQ(AF_SUCCESS,af_histogram(&outArray,inArray,nbins,minval,maxval));
 

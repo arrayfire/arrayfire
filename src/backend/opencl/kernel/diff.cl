@@ -20,6 +20,7 @@ __kernel
 void diff_kernel(__global T *out, __global const T *in,
                  const unsigned oElem, const dims_t odims,
                  const dims_t ostrides, const dims_t istrides,
+                 dim_type offset,
                  const unsigned blocksPerMatX, const unsigned blocksPerMatY)
 {
     unsigned idz = get_group_id(0) / blocksPerMatX;
@@ -45,5 +46,5 @@ void diff_kernel(__global T *out, __global const T *in,
 
     iMem2 *= isDiff2;
 
-    diff_this(out, in, oMem, iMem0, iMem1, iMem2);
+    diff_this(out, in + offset, oMem, iMem0, iMem1, iMem2);
 }
