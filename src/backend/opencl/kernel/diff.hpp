@@ -10,7 +10,6 @@
 #include <string>
 
 typedef struct
-
 {
     dim_type dim[4];
 } dims_t;
