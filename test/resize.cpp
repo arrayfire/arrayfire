@@ -19,7 +19,11 @@ class Resize : public ::testing::Test
 {
     public:
         virtual void SetUp() {
+            subMat0.push_back({0, 4, 1});
+            subMat0.push_back({2, 6, 1});
+            subMat0.push_back({0, 2, 1});
         }
+        vector<af_seq> subMat0;
 };
 
 template<typename T>
@@ -27,7 +31,16 @@ class ResizeI : public ::testing::Test
 {
     public:
         virtual void SetUp() {
+            subMat0.push_back({0, 4, 1});
+            subMat0.push_back({2, 6, 1});
+            subMat0.push_back({0, 2, 1});
+
+            subMat1.push_back({0, 5, 1});
+            subMat1.push_back({0, 5, 1});
+            subMat1.push_back({0, 2, 1});
         }
+        vector<af_seq> subMat0;
+        vector<af_seq> subMat1;
 };
 
 // create a list of types to be tested
@@ -39,16 +52,26 @@ TYPED_TEST_CASE(Resize, TestTypesF);
 TYPED_TEST_CASE(ResizeI, TestTypesI);
 
 template<typename T>
-void resizeTest(string pTestFile, const unsigned resultIdx, const dim_type odim0, const dim_type odim1, const af_interp_type method)
+void resizeTest(string pTestFile, const unsigned resultIdx, const dim_type odim0, const dim_type odim1, const af_interp_type method, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
 {
-    af::dim4            dims(1);
-    vector<T>           in;
+    vector<af::dim4> numDims;
+    vector<vector<T>>   in;
     vector<vector<T>>   tests;
-    ReadTests<float, T>(pTestFile,dims,in,tests);
+    readTests<T, T, float>(pTestFile,numDims,in,tests);
+
+    af::dim4 dims = numDims[0];
 
     af_array inArray = 0;
     af_array outArray = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    af_array tempArray = 0;
+    if (isSubRef) {
+
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+
+        ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
+    } else {
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    }
 
     ASSERT_EQ(AF_SUCCESS, af_resize(&outArray, inArray, odim0, odim1, method));
 
@@ -68,6 +91,7 @@ void resizeTest(string pTestFile, const unsigned resultIdx, const dim_type odim0
 
     if(inArray   != 0) af_destroy_array(inArray);
     if(outArray  != 0) af_destroy_array(outArray);
+    if(tempArray != 0) af_destroy_array(tempArray);
 }
 
 TYPED_TEST(Resize, Resize3CSquareUpNearest)
@@ -88,6 +112,30 @@ TYPED_TEST(Resize, Resize3CSquareDownNearest)
 TYPED_TEST(Resize, Resize3CSquareDownLinear)
 {
     resizeTest<TypeParam>(string(TEST_DIR"/resize/square.test"), 3, 4, 4, AF_INTERP_BILINEAR);
+}
+
+TYPED_TEST(Resize, Resize3CSquareUpNearestSubref)
+{
+    resizeTest<TypeParam>(string(TEST_DIR"/resize/square.test"), 4, 10, 10, AF_INTERP_NEAREST,
+                          true, &(this->subMat0));
+}
+
+TYPED_TEST(Resize, Resize3CSquareUpLinearSubref)
+{
+    resizeTest<TypeParam>(string(TEST_DIR"/resize/square.test"), 5, 10, 10, AF_INTERP_BILINEAR,
+                          true, &(this->subMat0));
+}
+
+TYPED_TEST(Resize, Resize3CSquareDownNearestSubref)
+{
+    resizeTest<TypeParam>(string(TEST_DIR"/resize/square.test"), 6, 3, 3, AF_INTERP_NEAREST,
+                          true, &(this->subMat0));
+}
+
+TYPED_TEST(Resize, Resize3CSquareDownLinearSubref)
+{
+    resizeTest<TypeParam>(string(TEST_DIR"/resize/square.test"), 7, 3, 3, AF_INTERP_BILINEAR,
+                          true, &(this->subMat0));
 }
 
 TYPED_TEST(Resize, Resize1CRectangleUpNearest)
@@ -130,17 +178,43 @@ TYPED_TEST(ResizeI, Resize3CSquareDownLinear)
     resizeTest<TypeParam>(string(TEST_DIR"/resize/square.test"), 3, 4, 4, AF_INTERP_BILINEAR);
 }
 
+TYPED_TEST(ResizeI, Resize3CSquareUpNearestSubref)
+{
+    resizeTest<TypeParam>(string(TEST_DIR"/resize/square.test"), 4, 10, 10, AF_INTERP_NEAREST,
+                          true, &(this->subMat0));
+}
+
+TYPED_TEST(ResizeI, Resize3CSquareUpLinearSubref)
+{
+    resizeTest<TypeParam>(string(TEST_DIR"/resize/square.test"), 5, 10, 10, AF_INTERP_BILINEAR,
+                          true, &(this->subMat0));
+}
+
+TYPED_TEST(ResizeI, Resize3CSquareDownNearestSubref)
+{
+    resizeTest<TypeParam>(string(TEST_DIR"/resize/square.test"), 6, 3, 3, AF_INTERP_NEAREST,
+                          true, &(this->subMat0));
+}
+
+TYPED_TEST(ResizeI, Resize3CSquareDownLinearSubref)
+{
+    resizeTest<TypeParam>(string(TEST_DIR"/resize/square.test"), 8, 3, 3, AF_INTERP_BILINEAR,
+                          true, &(this->subMat1));
+}
+
 template<typename T>
 void resizeArgsTest(af_err err, string pTestFile, const af::dim4 odims, const af_interp_type method)
 {
-    af::dim4            dims(1);
-    vector<T>           in;
+    vector<af::dim4> numDims;
+    vector<vector<T>>   in;
     vector<vector<T>>   tests;
-    ReadTests<float, T>(pTestFile,dims,in,tests);
+    readTests<T, T, float>(pTestFile,numDims,in,tests);
+
+    af::dim4 dims = numDims[0];
 
     af_array inArray = 0;
     af_array outArray = 0;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
     ASSERT_EQ(err, af_resize(&outArray, inArray, odims[0], odims[1], method));
 

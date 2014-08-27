@@ -32,7 +32,7 @@ namespace cpu
         Array<T> *outArray = createValueArray(odims, (T)10);
 
         // Get pointers to raw data
-        const T *inPtr = in.get(false);
+        const T *inPtr = in.get();
               T *outPtr = outArray->get();
 
         af::dim4 ostrides = outArray->strides();

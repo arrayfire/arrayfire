@@ -21,7 +21,7 @@ namespace opencl
         Array<T> *out = createEmptyArray<T>(oDims);
 
         kernel::resize<T>(out->get(), oDims[0], oDims[1], in.get(), iDims[0], iDims[1], iDims[2],
-                          out->strides().get(), in.strides().get(), method);
+                          out->strides().get(), in.strides().get(), in.getOffset(), method);
 
         return out;
     }

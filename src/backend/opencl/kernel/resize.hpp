@@ -35,7 +35,7 @@ namespace opencl
         void resize(Buffer out, const dim_type odim0, const dim_type odim1,
               const Buffer in,  const dim_type idim0, const dim_type idim1,
               const dim_type channels, const dim_type *ostrides, const dim_type *istrides,
-              const af_interp_type method)
+              const dim_type offset, const af_interp_type method)
         {
             Program::Sources setSrc;
             setSrc.emplace_back(resize_cl, resize_cl_len);
@@ -50,13 +50,13 @@ namespace opencl
             cl_int err = 0;
             auto resizeNOp = make_kernel<Buffer, const dim_type, const dim_type,
                                    const Buffer, const dim_type, const dim_type,
-                                   const dims_t, const dims_t,
+                                   const dims_t, const dims_t, const dim_type,
                                    const unsigned, const float, const float>
                                    (prog, "resize_n", &err);
 
             auto resizeBOp = make_kernel<Buffer, const dim_type, const dim_type,
                                    const Buffer, const dim_type, const dim_type,
-                                   const dims_t, const dims_t,
+                                   const dims_t, const dims_t, const dim_type,
                                    const unsigned, const float, const float>
                                    (prog, "resize_b", &err);
 
@@ -79,11 +79,11 @@ namespace opencl
             if(method == AF_INTERP_NEAREST) {
                 resizeNOp(EnqueueArgs(getQueue(0), global, local),
                         out, odim0, odim1, in, idim0, idim1,
-                        _ostrides, _istrides, blocksPerMatX, xf, yf);
+                        _ostrides, _istrides, offset, blocksPerMatX, xf, yf);
             } else if(method == AF_INTERP_BILINEAR) {
                 resizeBOp(EnqueueArgs(getQueue(0), global, local),
                         out, odim0, odim1, in, idim0, idim1,
-                        _ostrides, _istrides, blocksPerMatX, xf, yf);
+                        _ostrides, _istrides, offset, blocksPerMatX, xf, yf);
             }
 
         }

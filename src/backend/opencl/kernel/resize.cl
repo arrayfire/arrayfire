@@ -31,12 +31,12 @@ void resize_n_(__global T* d_out, const dim_type odim0, const dim_type odim1,
 __kernel
 void resize_n(__global T *d_out, const dim_type odim0, const dim_type odim1,
               __global const T *d_in, const dim_type idim0, const dim_type idim1,
-              const dims_t ostrides, const dims_t istrides,
+              const dims_t ostrides, const dims_t istrides, const dim_type offset,
               const unsigned b0, const float xf, const float yf)
 {
     unsigned id = get_group_id(0) / b0;
     // gfor adjustment
-    int i_off = id * istrides.dim[2];
+    int i_off = id * istrides.dim[2] + offset;
     int o_off = id * ostrides.dim[2];
     unsigned blockIdx_x =  get_group_id(0) - id * b0;
 
@@ -74,7 +74,7 @@ void resize_b_(__global T* d_out, const dim_type odim0, const dim_type odim1,
 
     const T p1 = d_in[ix  + istrides.dim[1] * iy ];
     const T p2 = d_in[ix  + istrides.dim[1] * iy2];
-    const T p3 = d_in[ix2 + istrides.dim[1] * iy ] ;
+    const T p3 = d_in[ix2 + istrides.dim[1] * iy ];
     const T p4 = d_in[ix2 + istrides.dim[1] * iy2];
 
     T out = (1.0f-a) * (1.0f-b) * p1 +
@@ -88,12 +88,12 @@ void resize_b_(__global T* d_out, const dim_type odim0, const dim_type odim1,
 __kernel
 void resize_b(__global T *d_out, const dim_type odim0, const dim_type odim1,
               __global const T *d_in, const dim_type idim0, const dim_type idim1,
-              const dims_t ostrides, const dims_t istrides,
+              const dims_t ostrides, const dims_t istrides, const dim_type offset,
               const unsigned b0, const float xf, const float yf)
 {
     unsigned id = get_group_id(0) / b0;
     // gfor adjustment
-    int i_off = id * istrides.dim[2];
+    int i_off = id * istrides.dim[2] + offset;
     int o_off = id * ostrides.dim[2];
     unsigned blockIdx_x =  get_group_id(0) - id * b0;
 
