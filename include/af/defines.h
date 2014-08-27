@@ -64,3 +64,10 @@ typedef struct af_seq {
     int    step;
 } af_seq;
 static const af_seq span = {1, 1, 0};
+
+typedef enum {
+    AF_INTERP_NEAREST,
+    AF_INTERP_LINEAR,
+    AF_INTERP_BILINEAR,
+    AF_INTERP_CUBIC
+} af_interp_type;
