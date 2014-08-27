@@ -8,10 +8,10 @@ namespace cpu
 {
     unsigned getIdx(af::dim4 strides, af::dim4 offs, int i, int j = 0, int k = 0, int l = 0)
     {
-        return ((l + offs[3]) * strides[3] +
-                (k + offs[2]) * strides[2] +
-                (j + offs[1]) * strides[1] +
-                (i + offs[0]));
+        return (l * strides[3] +
+                k * strides[2] +
+                j * strides[1] +
+                i);
     }
 
     template<typename T>
@@ -31,7 +31,7 @@ namespace cpu
         Array<T> *outArray = createValueArray(dims, (T)0);
 
         // Get pointers to raw data
-        const T *inPtr = in.get(false);
+        const T *inPtr = in.get();
               T *outPtr = outArray->get();
 
         // TODO: Improve this
@@ -71,7 +71,7 @@ namespace cpu
         Array<T> *outArray = createValueArray(dims, (T)0);
 
         // Get pointers to raw data
-        const T *inPtr = in.get(false);
+        const T *inPtr = in.get();
               T *outPtr = outArray->get();
 
         // TODO: Improve this
