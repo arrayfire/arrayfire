@@ -124,7 +124,6 @@ TYPED_TEST(Diff2,Basic2)
     diff2Test<TypeParam, 2>(string(TEST_DIR"/diff2/basic2.test"));
 }
 
-#if defined(AF_CPU)
 TYPED_TEST(Diff2,Subref0)
 {
     diff2Test<TypeParam, 0>(string(TEST_DIR"/diff2/subref0.test"),true,&(this->subMat0));
@@ -139,7 +138,6 @@ TYPED_TEST(Diff2,Subref2)
 {
     diff2Test<TypeParam, 2>(string(TEST_DIR"/diff2/subref2.test"),true,&(this->subMat2));
 }
-#endif
 
 template<typename T>
 void diff2ArgsTest(string pTestFile)
