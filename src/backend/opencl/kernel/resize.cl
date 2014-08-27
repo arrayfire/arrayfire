@@ -2,6 +2,9 @@
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 #endif
 
+#define NEAREST resize_n_
+#define BILINEAR resize_b_
+
 typedef struct {
     dim_type dim[4];
 } dims_t;
@@ -26,24 +29,6 @@ void resize_n_(__global T* d_out, const dim_type odim0, const dim_type odim1,
     if (iy >= idim1) { iy = idim1 - 1; }
 
     d_out[ox + oy * ostrides.dim[1]] = d_in[ix + iy * istrides.dim[1]];
-}
-
-__kernel
-void resize_n(__global T *d_out, const dim_type odim0, const dim_type odim1,
-              __global const T *d_in, const dim_type idim0, const dim_type idim1,
-              const dims_t ostrides, const dims_t istrides, const dim_type offset,
-              const unsigned b0, const float xf, const float yf)
-{
-    unsigned id = get_group_id(0) / b0;
-    // gfor adjustment
-    int i_off = id * istrides.dim[2] + offset;
-    int o_off = id * ostrides.dim[2];
-    unsigned blockIdx_x =  get_group_id(0) - id * b0;
-
-    // core
-    resize_n_(d_out+o_off, odim0, odim1,
-              d_in +i_off, idim0, idim1,
-              ostrides, istrides, blockIdx_x, xf, yf);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -85,11 +70,13 @@ void resize_b_(__global T* d_out, const dim_type odim0, const dim_type odim1,
     d_out[ox + oy * ostrides.dim[1]] = out;
 }
 
+////////////////////////////////////////////////////////////////////////////////////
+// Wrapper Kernel
 __kernel
-void resize_b(__global T *d_out, const dim_type odim0, const dim_type odim1,
-              __global const T *d_in, const dim_type idim0, const dim_type idim1,
-              const dims_t ostrides, const dims_t istrides, const dim_type offset,
-              const unsigned b0, const float xf, const float yf)
+void resize_kernel(__global T *d_out, const dim_type odim0, const dim_type odim1,
+                   __global const T *d_in, const dim_type idim0, const dim_type idim1,
+                   const dims_t ostrides, const dims_t istrides, const dim_type offset,
+                   const unsigned b0, const float xf, const float yf)
 {
     unsigned id = get_group_id(0) / b0;
     // gfor adjustment
@@ -97,10 +84,9 @@ void resize_b(__global T *d_out, const dim_type odim0, const dim_type odim1,
     int o_off = id * ostrides.dim[2];
     unsigned blockIdx_x =  get_group_id(0) - id * b0;
 
-    // core
-    resize_b_(d_out+o_off, odim0, odim1,
-              d_in +i_off, idim0, idim1,
-              ostrides, istrides, blockIdx_x, xf, yf);
+    INTERP(d_out+o_off, odim0, odim1,
+           d_in +i_off, idim0, idim1,
+           ostrides, istrides, blockIdx_x, xf, yf);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

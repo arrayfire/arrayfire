@@ -16,14 +16,15 @@ namespace cuda
         static const unsigned TY = 16;
 
 
-        ////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////
         // nearest-neighbor resampling
+        ///////////////////////////////////////////////////////////////////////////
         template<class T>
         __host__ __device__
-        void resize_n_(      T* d_out, dim_type odim0, dim_type odim1,
-                       const T* d_in,  dim_type idim0, dim_type idim1,
-                       const dims_t ostrides, const dims_t istrides,
-                       const unsigned blockIdx_x, const float xf, const float yf)
+        void resize_n(      T* d_out, dim_type odim0, dim_type odim1,
+                      const T* d_in,  dim_type idim0, dim_type idim1,
+                      const dims_t ostrides, const dims_t istrides,
+                      const unsigned blockIdx_x, const float xf, const float yf)
         {
             int const ox = threadIdx.x + blockIdx_x * blockDim.x;
             int const oy = threadIdx.y + blockIdx.y * blockDim.y;
@@ -38,36 +39,15 @@ namespace cuda
             d_out[ox + oy * ostrides.dim[1]] = d_in[ix + iy * istrides.dim[1]];
         }
 
-        template<class T>
-        __global__
-        void resize_n(      T* d_out, dim_type odim0, dim_type odim1,
-                      const T* d_in,  dim_type idim0, dim_type idim1,
-                      const dims_t ostrides, const dims_t istrides,
-                      const unsigned b0, const dim_type batch,
-                      const float xf, const float yf)
-        {
-            unsigned id = blockIdx.x / b0;
-            // channel adjustment
-            int i_off = id * istrides.dim[2];
-            int o_off = id * ostrides.dim[2];
-            unsigned blockIdx_x =  blockIdx.x - id * b0;
-
-            // core
-            resize_n_(d_out+o_off, odim0, odim1,
-                      d_in +i_off, idim0, idim1,
-                      ostrides, istrides,
-                      blockIdx_x, xf, yf);
-        }
-        ////////////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////
         // bilinear resampling
+        ///////////////////////////////////////////////////////////////////////////
         template<class T>
         __host__ __device__
-        void resize_b_(      T* d_out, dim_type odim0, dim_type odim1,
-                       const T* d_in,  dim_type idim0, dim_type idim1,
-                       const dims_t ostrides, const dims_t istrides,
-                       const unsigned blockIdx_x, const float xf_, const float yf_)
+        void resize_b(      T* d_out, dim_type odim0, dim_type odim1,
+                      const T* d_in,  dim_type idim0, dim_type idim1,
+                      const dims_t ostrides, const dims_t istrides,
+                      const unsigned blockIdx_x, const float xf_, const float yf_)
         {
             int const ox = threadIdx.x + blockIdx_x * blockDim.x;
             int const oy = threadIdx.y + blockIdx.y * blockDim.y;
@@ -101,13 +81,16 @@ namespace cuda
             d_out[ox + oy * ostrides.dim[1]] = out;
         }
 
-        template<class T>
+        ///////////////////////////////////////////////////////////////////////////
+        // Resize Kernel
+        ///////////////////////////////////////////////////////////////////////////
+        template<class T, af_interp_type method>
         __global__
-        void resize_b(      T* d_out, dim_type odim0, dim_type odim1,
-                      const T* d_in,  dim_type idim0, dim_type idim1,
-                      const dims_t ostrides, const dims_t istrides,
-                      const unsigned b0, const dim_type batch,
-                      const float xf, const float yf)
+        void resize_kernel(      T* d_out, dim_type odim0, dim_type odim1,
+                           const T* d_in,  dim_type idim0, dim_type idim1,
+                           const dims_t ostrides, const dims_t istrides,
+                           const unsigned b0, const dim_type batch,
+                           const float xf, const float yf)
         {
             unsigned id = blockIdx.x / b0;
             // channel adjustment
@@ -116,21 +99,26 @@ namespace cuda
             unsigned blockIdx_x =  blockIdx.x - id * b0;
 
             // core
-            resize_b_(d_out+o_off, odim0, odim1,
-                      d_in +i_off, idim0, idim1,
-                      ostrides, istrides,
-                      blockIdx_x, xf, yf);
+            if(method == AF_INTERP_NEAREST) {
+                resize_n(d_out+o_off, odim0, odim1,
+                         d_in +i_off, idim0, idim1,
+                         ostrides, istrides,
+                         blockIdx_x, xf, yf);
+            } else if(method == AF_INTERP_BILINEAR) {
+                resize_b(d_out+o_off, odim0, odim1,
+                         d_in +i_off, idim0, idim1,
+                         ostrides, istrides,
+                         blockIdx_x, xf, yf);
+            }
         }
-        ////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
-        template <class T>
+        template <class T, af_interp_type method>
         void resize(T *out, const dim_type odim0, const dim_type odim1,
               const T *in, const dim_type idim0, const dim_type idim1,
-              const dim_type channels, const dim_type *ostrides, const dim_type *istrides,
-              const af_interp_type method)
+              const dim_type channels, const dim_type *ostrides, const dim_type *istrides)
         {
             dim3 threads(TX, TY, 1);
             dim3 blocks(divup(odim0, threads.x), divup(odim1, threads.y));
@@ -143,16 +131,9 @@ namespace cuda
             dims_t _ostrides = {{ostrides[0], ostrides[1], ostrides[2], ostrides[3]}};
             dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
 
-            if(method == AF_INTERP_NEAREST)
-                resize_n<<<blocks, threads>>>(out, odim0, odim1,
-                                              in,  idim0, idim1,
-                                              _ostrides, _istrides,
-                                              blocksPerMatX, channels, xf, yf);
-            else
-                resize_b<<<blocks, threads>>>(out, odim0, odim1,
-                                              in,  idim0, idim1,
-                                              _ostrides, _istrides,
-                                              blocksPerMatX, channels, xf, yf);
+            resize_kernel<T, method><<<blocks, threads>>>(out, odim0, odim1,
+                                          in,  idim0, idim1, _ostrides, _istrides,
+                                          blocksPerMatX, channels, xf, yf);
         }
 
     }

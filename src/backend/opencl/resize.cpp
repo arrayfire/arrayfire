@@ -20,9 +20,20 @@ namespace opencl
 
         Array<T> *out = createEmptyArray<T>(oDims);
 
-        kernel::resize<T>(out->get(), oDims[0], oDims[1], in.get(), iDims[0], iDims[1], iDims[2],
-                          out->strides().get(), in.strides().get(), in.getOffset(), method);
-
+        switch(method) {
+            case AF_INTERP_NEAREST:
+                kernel::resize<T, AF_INTERP_NEAREST>
+                    (out->get(), oDims[0], oDims[1], in.get(), iDims[0], iDims[1], iDims[2],
+                     out->strides().get(), in.strides().get(), in.getOffset());
+                break;
+            case AF_INTERP_BILINEAR:
+                kernel::resize<T, AF_INTERP_BILINEAR>
+                    (out->get(), oDims[0], oDims[1], in.get(), iDims[0], iDims[1], iDims[2],
+                     out->strides().get(), in.strides().get(), in.getOffset());
+                break;
+            default:
+                break;
+        }
         return out;
     }
 

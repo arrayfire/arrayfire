@@ -31,11 +31,11 @@ namespace opencl
         static const dim_type TX = 16;
         static const dim_type TY = 16;
 
-        template<typename T>
+        template<typename T, af_interp_type method>
         void resize(Buffer out, const dim_type odim0, const dim_type odim1,
               const Buffer in,  const dim_type idim0, const dim_type idim1,
               const dim_type channels, const dim_type *ostrides, const dim_type *istrides,
-              const dim_type offset, const af_interp_type method)
+              const dim_type offset)
         {
             Program::Sources setSrc;
             setSrc.emplace_back(resize_cl, resize_cl_len);
@@ -45,20 +45,25 @@ namespace opencl
             options << " -D T="        << dtype_traits<T>::getName()
                     << " -D dim_type=" << dtype_traits<dim_type>::getName();
 
+            switch(method) {
+                case AF_INTERP_NEAREST:
+                    options << " -D INTERP=NEAREST";
+                    break;
+                case AF_INTERP_BILINEAR:
+                    options << " -D INTERP=BILINEAR";
+                    break;
+                default:
+                    break;
+            }
+
             prog.build(options.str().c_str());
 
             cl_int err = 0;
-            auto resizeNOp = make_kernel<Buffer, const dim_type, const dim_type,
-                                   const Buffer, const dim_type, const dim_type,
-                                   const dims_t, const dims_t, const dim_type,
-                                   const unsigned, const float, const float>
-                                   (prog, "resize_n", &err);
-
-            auto resizeBOp = make_kernel<Buffer, const dim_type, const dim_type,
-                                   const Buffer, const dim_type, const dim_type,
-                                   const dims_t, const dims_t, const dim_type,
-                                   const unsigned, const float, const float>
-                                   (prog, "resize_b", &err);
+            auto resizeOp = make_kernel<Buffer, const dim_type, const dim_type,
+                                  const Buffer, const dim_type, const dim_type,
+                                  const dims_t, const dims_t, const dim_type,
+                                  const unsigned, const float, const float>
+                                  (prog, "resize_kernel", &err);
 
             NDRange local(TX, TY, 1);
 
@@ -76,16 +81,9 @@ namespace opencl
             dims_t _ostrides = {{ostrides[0], ostrides[1], ostrides[2], ostrides[3]}};
             dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
 
-            if(method == AF_INTERP_NEAREST) {
-                resizeNOp(EnqueueArgs(getQueue(0), global, local),
-                        out, odim0, odim1, in, idim0, idim1,
-                        _ostrides, _istrides, offset, blocksPerMatX, xf, yf);
-            } else if(method == AF_INTERP_BILINEAR) {
-                resizeBOp(EnqueueArgs(getQueue(0), global, local),
-                        out, odim0, odim1, in, idim0, idim1,
-                        _ostrides, _istrides, offset, blocksPerMatX, xf, yf);
-            }
-
+            resizeOp(EnqueueArgs(getQueue(0), global, local),
+                     out, odim0, odim1, in, idim0, idim1,
+                     _ostrides, _istrides, offset, blocksPerMatX, xf, yf);
         }
     }
 }
