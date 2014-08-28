@@ -110,7 +110,6 @@ namespace cpu
     Array<T>* resize(const Array<T> &in, const dim_type odim0, const dim_type odim1,
                      const af_interp_type method)
     {
-        // Decrement dimension of select dimension
         af::dim4 idims = in.dims();
         af::dim4 odims(odim0, odim1, idims[2], idims[3]);
 
