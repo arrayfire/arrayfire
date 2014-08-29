@@ -52,6 +52,9 @@ extern "C" {
     // Generate Random Numbers using normal distribution
     AFAPI af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
+    // Inclusive sum of all the elements along an array
+    AFAPI af_err af_accum(af_array *out, const af_array in, const int dim);
+
 #ifdef __cplusplus
 }
 #endif

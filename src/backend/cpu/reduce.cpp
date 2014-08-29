@@ -6,16 +6,7 @@
 #include <reduce.hpp>
 #include <ops.hpp>
 
-using std::swap;
 using af::dim4;
-
-unsigned getIdx(af::dim4 strides, int i, int j = 0, int k = 0, int l = 0)
-{
-    return (l + strides[3] +
-            k + strides[2] +
-            j + strides[1] +
-            i);
-}
 
 namespace cpu
 {
