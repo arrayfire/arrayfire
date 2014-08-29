@@ -7,20 +7,27 @@
 #include <reduce.hpp>
 #include <complex>
 #include <cassert>
+#include <kernel/reduce.hpp>
 
 using std::swap;
 using af::dim4;
 namespace cuda
 {
     template<af_op_t op, typename Ti, typename To>
-    Array<To>* reduce(const Array<Ti> in, const int dim)
+    Array<To>* reduce(const Array<Ti> &in, const int dim)
     {
-        assert("NOT IMPLEMENTED" && 1 != 1);
-        return NULL;
+
+        dim4 odims = in.dims();
+        odims[dim] = 1;
+        Array<To> *out = createEmptyArray<To>(odims);
+
+        kernel::reduce<Ti, To, op>(out->get(), out->strides().get(), out->dims().get(),
+                                   in.get(), in.strides().get(), in.dims().get(), dim);
+        return out;
     }
 
 #define INSTANTIATE(Op, Ti, To)                                         \
-    template Array<To>* reduce<Op, Ti, To>(const Array<Ti> in, const int dim); \
+    template Array<To>* reduce<Op, Ti, To>(const Array<Ti> &in, const int dim); \
 
     //min
     INSTANTIATE(af_min_t, float  , float  )
