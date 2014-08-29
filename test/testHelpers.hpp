@@ -132,20 +132,24 @@ void readImageTests(const std::string        &pFileName,
  * value of NRMSD. Hence, the range of RMSD is [0,255] for image inputs.
  */
 template<typename T>
-bool compareArraysRMSD(dim_type data_size, T *gold, T *data, float tolerance)
+bool compareArraysRMSD(dim_type data_size, T *gold, T *data, double tolerance)
 {
-    float accum = 0.0f;
-    T minion    = std::numeric_limits<T>::lowest();
-    T maxion    = std::numeric_limits<T>::max();
+    double accum  = 0.0;
+    double maxion = (double)std::numeric_limits<T>::lowest();
+    double minion = (double)std::numeric_limits<T>::max();
+
     for(dim_type i=0;i<data_size;i++)
     {
-        float diff = std::fabs(gold[i]-data[i]) > 1.0e-4 ? gold[i]-data[i] : 0.0f;
-        accum  += std::pow(diff,2.0f);
-        maxion  = std::max(maxion, data[i]);
-        minion  = std::min(minion, data[i]);
+        double dTemp = (double)data[i];
+        double gTemp = (double)gold[i];
+        double diff  = gTemp-dTemp;
+        double err   = std::abs(diff) > 1.0e-4 ? diff : 0.0f;
+        accum  += std::pow(err,2.0);
+        maxion  = std::max(maxion, dTemp);
+        minion  = std::min(minion, dTemp);
     }
     accum      /= data_size;
-    float NRMSD = std::sqrt(accum)/(float)(maxion-minion);
+    double NRMSD = std::sqrt(accum)/(maxion-minion);
 
     if (NRMSD > tolerance)
         return false;
