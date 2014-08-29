@@ -139,13 +139,13 @@ bool compareArraysRMSD(dim_type data_size, T *gold, T *data, float tolerance)
     T maxion    = std::numeric_limits<T>::max();
     for(dim_type i=0;i<data_size;i++)
     {
-        float diff = fabs(gold[i]-data[i]) > 1.0e-4 ? gold[i]-data[i] : 0.0f;
-        accum  += pow(diff,2.0f);
+        float diff = std::fabs(gold[i]-data[i]) > 1.0e-4 ? gold[i]-data[i] : 0.0f;
+        accum  += std::pow(diff,2.0f);
         maxion  = std::max(maxion, data[i]);
         minion  = std::min(minion, data[i]);
     }
     accum      /= data_size;
-    float NRMSD = sqrt(accum)/(float)(maxion-minion);
+    float NRMSD = std::sqrt(accum)/(float)(maxion-minion);
 
     if (NRMSD > tolerance)
         return false;
