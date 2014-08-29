@@ -19,15 +19,16 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
 {
     af_err ret = AF_SUCCESS;
     try {
-        //if(tf is not float)
-        //    return AF_ERR_ARG;
-
         ArrayInfo t_info = getInfo(tf);
         ArrayInfo i_info = getInfo(in);
 
         af::dim4 idims = i_info.dims();
         af::dim4 tdims = t_info.dims();
         af_dtype  type = i_info.getType();
+        af_dtype ttype = t_info.getType();
+
+        if(ttype != f32)
+            return AF_ERR_ARG;
 
         if(tdims[0] != 3 || tdims[1] != 2)
             return AF_ERR_ARG;
@@ -114,12 +115,111 @@ af_err af_rotate(af_array *out, const af_array in, const float theta,
         //if(inverse)
         //    calc_transform_inverse(trans_mat);
 
-        af::dim4 tdims(3, 2, 1, 1);
+        static af::dim4 tdims(3, 2, 1, 1);
         af_array t = 0;
         ret = af_create_array(&t, trans_mat, tdims.ndims(), tdims.get(), f32);
 
         if (ret == AF_SUCCESS) {
             return af_transform(out, in, t, odims0, odims1, true);
+        }
+    }
+    CATCHALL;
+
+    return ret;
+}
+
+af_err af_translate(af_array *out, const af_array in, const float trans0, const float trans1,
+                    const dim_type odim0, const dim_type odim1)
+{
+    af_err ret = AF_SUCCESS;
+    try {
+        static float trans_mat[6] = {1, 0, 0,
+                                     0, 1, 0};
+        trans_mat[2] = trans0;
+        trans_mat[5] = trans1;
+
+        static af::dim4 tdims(3, 2, 1, 1);
+        af_array t = 0;
+
+        ret = af_create_array(&t, trans_mat, tdims.ndims(), tdims.get(), f32);
+
+        if (ret == AF_SUCCESS) {
+            return af_transform(out, in, t, odim0, odim1, true);
+        }
+    }
+    CATCHALL;
+
+    return ret;
+}
+
+af_err af_scale(af_array *out, const af_array in, const float scale0, const float scale1,
+                    const dim_type odim0, const dim_type odim1)
+{
+    af_err ret = AF_SUCCESS;
+    try {
+        ArrayInfo i_info = getInfo(in);
+        af::dim4 idims = i_info.dims();
+
+        dim_type _odim0 = odim0, _odim1 = odim1;
+        float sx = 1.f / scale0, sy = 1.f / scale1;
+        if(_odim0 == 0 && _odim1 == 0) {
+            _odim0 = idims[0] / sx;
+            _odim1 = idims[1] / sy;
+        } else if ( _odim0 == 0 || _odim1 == 0) {
+            return AF_ERR_ARG;
+        }
+
+        static float trans_mat[6] = {1, 0, 0,
+                                     0, 1, 0};
+        trans_mat[0] = sx;
+        trans_mat[4] = sy;
+
+        static af::dim4 tdims(3, 2, 1, 1);
+        af_array t = 0;
+        ret = af_create_array(&t, trans_mat, tdims.ndims(), tdims.get(), f32);
+
+        if (ret == AF_SUCCESS) {
+            return af_transform(out, in, t, odim0, odim1, true);
+        }
+    }
+    CATCHALL;
+
+    return ret;
+}
+
+af_err af_skew(af_array *out, const af_array in, const float skew0, const float skew1,
+               const dim_type odim0, const dim_type odim1, const bool inverse)
+{
+    af_err ret = AF_SUCCESS;
+    try {
+        float tx = std::tan(skew0);
+        float ty = std::tan(skew1);
+
+        static float trans_mat[6] = {1, 0, 0,
+                                     0, 1, 0};
+        trans_mat[1] = ty;
+        trans_mat[3] = tx;
+
+        if(inverse) {
+            if(tx == 0 || ty == 0) {
+                trans_mat[1] = tx;
+                trans_mat[3] = ty;
+            } else {
+                //calc_tranform_inverse(trans_mat);
+                //short cut of calc_transform_inverse
+                float d = 1.0f / (1.0f - tx * ty);
+                trans_mat[0] = d;
+                trans_mat[1] = ty * d;
+                trans_mat[3] = tx * d;
+                trans_mat[4] = d;
+            }
+        }
+        static af::dim4 tdims(3, 2, 1, 1);
+        af_array t = 0;
+        ret = af_create_array(&t, trans_mat, tdims.ndims(), tdims.get(), f32);
+
+        if (ret == AF_SUCCESS) {
+            return af_transform(out, in, t, odim0, odim1, true);
         }
     }
     CATCHALL;

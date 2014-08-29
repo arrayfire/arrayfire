@@ -19,6 +19,15 @@ extern "C" {
 
     // Rotate
     AFAPI af_err af_rotate(af_array *out, const af_array in, const float theta, const bool crop, const bool recenter);
+    // Translate
+    AFAPI af_err af_translate(af_array *out, const af_array in, const float trans0, const float trans1,
+                              const dim_type odim0, const dim_type odim1);
+    // Scale
+    AFAPI af_err af_scale(af_array *out, const af_array in, const float scale0, const float scale1,
+                          const dim_type odim0, const dim_type odim1);
+    // Skew
+    AFAPI af_err af_skew(af_array *out, const af_array in, const float skew0, const float skew1,
+                         const dim_type odim0, const dim_type odim1, const bool inverse);
 
     // image dilation operation
     AFAPI af_err af_dilate(af_array *out, const af_array in, const af_array mask);
