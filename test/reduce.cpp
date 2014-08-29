@@ -18,7 +18,7 @@ using af::af_cdouble;
 typedef af_err (*reduceFunc)(af_array *, const af_array, const int);
 
 template<typename Ti, typename To, reduceFunc af_reduce>
-void reduceTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=vector<af_seq>())
+void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector<af_seq> seqv=vector<af_seq>())
 {
     vector<af::dim4> numDims;
 
@@ -43,10 +43,11 @@ void reduceTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv
 
     // Compare result
     for (int d = 0; d < (int)tests.size(); ++d) {
-        vector<To> currGoldBar(tests[d].begin(), tests[d].begin());
+
+        vector<To> currGoldBar(tests[d].begin(), tests[d].end());
 
         // Run sum
-        ASSERT_EQ(AF_SUCCESS, af_reduce(&outArray, inArray, d));
+        ASSERT_EQ(AF_SUCCESS, af_reduce(&outArray, inArray, d + off));
 
         // Get result
         To *outData;
@@ -56,7 +57,7 @@ void reduceTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv
         size_t nElems = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
             ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
-                                                            << " for dim " << d << std::endl;
+                                                            << " for dim " << d + off << std::endl;
         }
 
         // Delete
@@ -85,12 +86,6 @@ vector<af_seq> init_subs()
         reduceTest<Ti, To, af_##FN>(                    \
             string(TEST_DIR"/reduce/"#FN".test")        \
             );                                          \
-    }                                                   \
-    TEST(Reduce,Test_##FN##_subs_##TAG)                 \
-    {                                                   \
-        reduceTest<Ti, To, af_##FN>(                    \
-            string(TEST_DIR"/reduce/"#FN"Subs.test"),   \
-            true, init_subs());                         \
     }                                                   \
 
 REDUCE_TESTS(sum, float   , float     , float     );
@@ -140,3 +135,19 @@ REDUCE_TESTS(count, cfloat  , af_cfloat , unsigned);
 REDUCE_TESTS(count, cdouble , af_cdouble, unsigned);
 REDUCE_TESTS(count, unsigned, unsigned  , unsigned);
 REDUCE_TESTS(count, uchar   , unsigned char, unsigned);
+
+TEST(Reduce,Test_Reduce_Big0)
+{
+    reduceTest<int, int, af_sum>(
+        string(TEST_DIR"/reduce/big0.test"),
+        0
+        );
+}
+
+TEST(Reduce,Test_Reduce_Big1)
+{
+    reduceTest<int, int, af_sum>(
+        string(TEST_DIR"/reduce/big1.test"),
+        1
+        );
+}

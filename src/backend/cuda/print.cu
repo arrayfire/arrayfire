@@ -41,6 +41,7 @@ namespace cuda
                 printer(out, ptr, info, dim - 1);
                 ptr += stride;
             }
+            out << std::endl;
         }
 
     }

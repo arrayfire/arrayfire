@@ -1,16 +1,18 @@
 #pragma once
 
 #include <backend.hpp>
-#include <cassert>
 
 #define divup(a, b) ((a)+(b)-1)/(b)
 
-#define cudaCheckError() {                                              \
-     cudaError_t e=cudaGetLastError();                                  \
-     if(e!=cudaSuccess) {                                               \
-            printf("Cuda failure %s:%d: '%s'\n",__FILE__,__LINE__,cudaGetErrorString(e));           \
-            exit(0);                                                    \
-          }                                                             \
+static inline unsigned nextpow2(unsigned x)
+{
+	   x = x - 1;
+	   x = x | (x >> 1);
+	   x = x | (x >> 2);
+	   x = x | (x >> 4);
+	   x = x | (x >> 8);
+	   x = x | (x >>16);
+	   return x + 1;
 }
 
 namespace cuda
