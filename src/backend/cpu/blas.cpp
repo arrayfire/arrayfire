@@ -74,8 +74,6 @@ BLAS_FUNC_DEF( dot )
 BLAS_FUNC(dot, float,       s)
 BLAS_FUNC(dot, double,      d)
 
-//template<typename T> dot_func_def<T> dot_func();
-
 template<typename T>
 typename enable_if<is_floating_point<T>::value, scale_type<T>>::type
 getScale() { return T(1); }

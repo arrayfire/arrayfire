@@ -1,0 +1,246 @@
+#include <blas.hpp>
+#include <print.hpp>
+#include <cuda_runtime.h>
+#include <cublas_v2.h>
+
+#include <boost/scoped_ptr.hpp>
+
+#include <stdexcept>
+#include <string>
+#include <cassert>
+#include <iostream>
+
+namespace cuda
+{
+
+static
+const char * const
+cublasErrorString(cublasStatus_t err)
+{
+
+    switch(err)
+    {
+        case    CUBLAS_STATUS_SUCCESS:              return "CUBLAS_STATUS_SUCCESS";
+        case    CUBLAS_STATUS_NOT_INITIALIZED:      return "CUBLAS_STATUS_NOT_INITIALIZED";
+        case    CUBLAS_STATUS_ALLOC_FAILED:         return "CUBLAS_STATUS_ALLOC_FAILED";
+        case    CUBLAS_STATUS_INVALID_VALUE:        return "CUBLAS_STATUS_INVALID_VALUE";
+        case    CUBLAS_STATUS_ARCH_MISMATCH:        return "CUBLAS_STATUS_ARCH_MISMATCH";
+        case    CUBLAS_STATUS_MAPPING_ERROR:        return "CUBLAS_STATUS_MAPPING_ERROR";
+        case    CUBLAS_STATUS_EXECUTION_FAILED:     return "CUBLAS_STATUS_EXECUTION_FAILED";
+        case    CUBLAS_STATUS_INTERNAL_ERROR:       return "CUBLAS_STATUS_INTERNAL_ERROR";
+        case    CUBLAS_STATUS_NOT_SUPPORTED:        return "CUBLAS_STATUS_NOT_SUPPORTED";
+        default:                                    return "UNKNOWN";
+    }
+}
+
+//RAII class around the cublas Handle
+class cublasHandle
+{
+    cublasHandle_t handle;
+public:
+    cublasHandle()
+    {
+        cublasStatus_t cErr;
+        cErr = cublasCreate(&handle);
+        if(cErr != CUBLAS_STATUS_SUCCESS) {
+            using std::string;
+            throw std::runtime_error(string("cuBLAS Error: ") + cublasErrorString(cErr));
+        }
+    }
+    ~cublasHandle()             { cublasDestroy(handle);}
+    operator cublasHandle_t()   { return handle;        }
+};
+
+cublasHandle&
+getHandle()
+{
+    using boost::scoped_ptr;
+    static scoped_ptr<cublasHandle> handle(NULL);
+    if(handle == NULL) {
+        handle.reset(new cublasHandle());
+    }
+    return *handle;
+}
+
+cublasOperation_t
+toCblasTranspose(af_blas_transpose opt)
+{
+    cublasOperation_t out;
+    switch(opt) {
+        case AF_NO_TRANSPOSE        : out = CUBLAS_OP_N;    break;
+        case AF_TRANSPOSE           : out = CUBLAS_OP_T;    break;
+        case AF_CONJUGATE_TRANSPOSE : out = CUBLAS_OP_C;    break;
+        default                     : assert( "INVALID af_blas_transpose" && 1!=1);
+    }
+    return out;
+}
+
+template<typename T>
+struct gemm_func_def_t
+{
+    typedef cublasStatus_t (*gemm_func_def)(    cublasHandle_t,
+                                                cublasOperation_t, cublasOperation_t,
+                                                int, int, int,
+                                                const T *,  const T *, int,
+                                                            const T *, int,
+                                                const T *,        T *, int);
+};
+
+template<typename T>
+struct gemv_func_def_t
+{
+    typedef cublasStatus_t (*gemv_func_def)(    cublasHandle_t,
+                                                cublasOperation_t,
+                                                int, int,
+                                                const T *,  const T *, int,
+                                                            const T *, int,
+                                                const T *,        T *, int);
+};
+
+template<typename T>
+struct dot_func_def_t
+{
+    typedef cublasStatus_t (*dot_func_def)(    cublasHandle_t,
+                                                int,
+                                                const T *,  int,
+                                                const T *,  int,
+                                                T *);
+};
+
+#define BLAS_FUNC_DEF( FUNC )                       \
+template<typename T>                                \
+typename FUNC##_func_def_t<T>::FUNC##_func_def      \
+FUNC##_func();
+
+#define BLAS_FUNC( FUNC, TYPE, PREFIX )         \
+template<> typename FUNC##_func_def_t<TYPE>::FUNC##_func_def       FUNC##_func<TYPE>()  { return &cublas##PREFIX##FUNC; }
+
+BLAS_FUNC_DEF(gemm)
+BLAS_FUNC(gemm, float,  S)
+BLAS_FUNC(gemm, cfloat, C)
+BLAS_FUNC(gemm, double, D)
+BLAS_FUNC(gemm, cdouble,Z)
+
+BLAS_FUNC_DEF(gemv)
+BLAS_FUNC(gemv, float,  S)
+BLAS_FUNC(gemv, cfloat, C)
+BLAS_FUNC(gemv, double, D)
+BLAS_FUNC(gemv, cdouble,Z)
+
+BLAS_FUNC_DEF(dot)
+BLAS_FUNC(dot, float,  S)
+BLAS_FUNC(dot, double, D)
+
+using namespace std;
+
+template<typename T>
+T
+make_value(int val)
+{
+    return T(val);
+}
+
+template<>
+cfloat
+make_value<cfloat>(int val)
+{
+    cfloat out = make_cuFloatComplex(val, 0);
+    return out;
+}
+
+template<>
+cdouble
+make_value<cdouble>(int val) {
+    cdouble out = make_cuDoubleComplex(val, 0);
+    return out;
+}
+
+template<typename T>
+Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
+                    af_blas_transpose optLhs, af_blas_transpose optRhs)
+{
+    cublasOperation_t lOpts = toCblasTranspose(optLhs);
+    cublasOperation_t rOpts = toCblasTranspose(optRhs);
+
+    int aRowDim = (lOpts == CUBLAS_OP_N) ? 0 : 1;
+    int aColDim = (lOpts == CUBLAS_OP_N) ? 1 : 0;
+    int bRowDim = (rOpts == CUBLAS_OP_N) ? 0 : 1;
+    int bColDim = (rOpts == CUBLAS_OP_N) ? 1 : 0;
+
+    dim4 lDims = lhs.dims();
+    dim4 rDims = rhs.dims();
+    int M = lDims[aRowDim];
+    int N = rDims[bColDim];
+    int K = lDims[aColDim];
+
+    assert(lDims[aColDim] == rDims[bRowDim]);
+
+    T init = make_value<T>(0);
+    Array<T> *out = createValueArray<T>(af::dim4(M, N, 1, 1), init);
+    T scale = make_value<T>(1);
+
+    dim4 lStrides = lhs.strides();
+    dim4 rStrides = rhs.strides();
+    if(rDims[bColDim] == 1) {
+        N = lDims[aColDim];
+        gemv_func<T>()(
+            getHandle(), lOpts,
+            M, N,
+            &scale, lhs.get(),   lStrides[1],
+                    rhs.get(),   rStrides[0],
+            &scale, out->get(),            1);
+    }
+    else {
+        cublasStatus_t err =
+            gemm_func<T>()(
+                getHandle(), lOpts, rOpts,
+                M, N, K,
+                &scale, lhs.get(),  lStrides[1],
+                        rhs.get(),  rStrides[1],
+                &scale, out->get(), out->dims()[0]);
+
+        if(err != CUBLAS_STATUS_SUCCESS) {
+            std::cout << __func__<< " ERROR: " << cublasErrorString(err) << std::endl;
+        }
+    }
+
+    return out;
+
+}
+
+template<typename T>
+Array<T>* dot(const Array<T> &lhs, const Array<T> &rhs,
+                    af_blas_transpose optLhs, af_blas_transpose optRhs)
+{
+    assert(lhs.dims()[0] == rhs.dims()[0]);
+    int N = lhs.dims()[0];
+
+    T out;
+    dot_func<T>()(  getHandle(), N,
+                            lhs.get(), lhs.strides()[0],
+                            rhs.get(), rhs.strides()[0],
+                            &out);
+
+    return createValueArray(af::dim4(1), out);
+}
+
+#define INSTANTIATE_BLAS(TYPE)                                                          \
+    template Array<TYPE>* matmul<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs,  \
+                    af_blas_transpose optLhs, af_blas_transpose optRhs);
+
+INSTANTIATE_BLAS(float)
+INSTANTIATE_BLAS(cfloat)
+INSTANTIATE_BLAS(double)
+INSTANTIATE_BLAS(cdouble)
+
+#define INSTANTIATE_DOT(TYPE)                                                       \
+    template Array<TYPE>* dot<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs, \
+                    af_blas_transpose optLhs, af_blas_transpose optRhs);
+
+template<typename T>
+Array<T>* dot(const Array<T> &lhs, const Array<T> &rhs,
+                    af_blas_transpose optLhs, af_blas_transpose optRhs);
+
+INSTANTIATE_DOT(float)
+INSTANTIATE_DOT(double)
+}

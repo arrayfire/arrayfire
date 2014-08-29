@@ -54,7 +54,7 @@ namespace cuda
 
         bool isOwner() const { return parent == NULL; }
 
-        T* get()        {  return data; }
+        T* get()                {  return data; }
         const   T* get() const  {  return data; }
 
         friend Array<T>* createValueArray<T>(const af::dim4 &size, const T& value);
