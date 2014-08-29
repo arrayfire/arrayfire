@@ -66,9 +66,9 @@ Array<T> * bilateral(const Array<T> &in, const float &s_sigma, const float &c_si
 
                         // proceed
                         const T val= inData[ getIdx(istrides, ti, tj) ];
-                        const float gauss_space = std::exp((wi*wi+wj*wj)/(-2.f*svar));
-                        const float gauss_range = std::exp(((center-val)*(center-val))/(-2.f*cvar));
-                        const float weight = gauss_space*gauss_range;
+                        const float gauss_space = (wi*wi+wj*wj)/(-2.f*svar);
+                        const float gauss_range = ((center-val)*(center-val))/(-2.f*cvar);
+                        const float weight = std::exp(gauss_space+gauss_range);
                         norm += weight;
                         res += val*weight;
                     }
