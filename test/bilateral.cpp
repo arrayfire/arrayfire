@@ -20,12 +20,12 @@ class Bilateral : public ::testing::Test
 
 // create a list of types to be tested
 // FIXME: since af_load_image returns only f32 type arrays
-//       only float, double, int data types test are enabledpassing
+//       only float, double data types test are enabled & passing
 //       Note: compareArraysRMSD is handling upcasting while working
 //       with two different type of types
 //
 //typedef ::testing::Types<float, double, int, uint, char, uchar> TestTypes;
-typedef ::testing::Types<float, double, int> TestTypes;
+typedef ::testing::Types<float, double> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Bilateral, TestTypes);
