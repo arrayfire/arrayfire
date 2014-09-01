@@ -90,7 +90,7 @@ MatMulCheck(string TestFile)
         ASSERT_EQ(AF_SUCCESS, af_matmul( &out[3] , aT, bT, AF_TRANSPOSE,      AF_TRANSPOSE));
     }
 
-    for(int i = 0; i < tests.size(); i++) {
+    for(size_t i = 0; i < tests.size(); i++) {
         dim_type elems;
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&elems, out[i]));
         vector<T> h_out(elems);

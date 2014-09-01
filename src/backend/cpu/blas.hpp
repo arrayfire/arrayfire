@@ -1,7 +1,11 @@
 #include <af/defines.h>
 #include <af/blas.h>
 #include <Array.hpp>
+#ifdef __APPLE__
 #include <Accelerate/Accelerate.h>
+#else
+#include <cblas.h>
+#endif
 
 namespace cpu
 {

@@ -28,7 +28,9 @@ cublasErrorString(cublasStatus_t err)
         case    CUBLAS_STATUS_MAPPING_ERROR:        return "CUBLAS_STATUS_MAPPING_ERROR";
         case    CUBLAS_STATUS_EXECUTION_FAILED:     return "CUBLAS_STATUS_EXECUTION_FAILED";
         case    CUBLAS_STATUS_INTERNAL_ERROR:       return "CUBLAS_STATUS_INTERNAL_ERROR";
+#if CUDA_VERSION > 5050
         case    CUBLAS_STATUS_NOT_SUPPORTED:        return "CUBLAS_STATUS_NOT_SUPPORTED";
+#endif
         default:                                    return "UNKNOWN";
     }
 }

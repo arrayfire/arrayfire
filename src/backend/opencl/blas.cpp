@@ -8,6 +8,7 @@
 #include <iostream>
 #include <functional>
 #include <stdexcept>
+#include <mutex>
 
 namespace opencl
 {
