@@ -21,27 +21,8 @@ class MatrixMultiply : public ::testing::Test
 };
 
 typedef ::testing::Types<float, af::af_cfloat, double, af::af_cdouble> TestTypes;
-//typedef ::testing::Types<float> TestTypes;
 TYPED_TEST_CASE(MatrixMultiply, TestTypes);
 
-// array a2 = array(a,  rows, cols); //flip
-// array b2 = array(b,  rows, cols); //flip
-// print(a.T());
-// print(b.T());
-// if(b.is_col())
-// {
-//   print(matmul(a2, b).T());
-//   print(matmul(b2 , a).T());
-//   print(matmul(b.T() , a).T());
-//   print(matmul(b2, a2.T()).T());
-//   print(matmul(b.T(), a2.T()).T());
-// }
-// else {
-//   print(matmul(a, b).T());
-//   print(matmul(a, b2.T()).T());
-//   print(matmul(a.T(), b2).T());
-//   print(matmul(a2.T(), b2.T()).T());
-// }
 template<typename T, bool isBVector = false>
 void
 MatMulCheck(string TestFile)
@@ -106,29 +87,21 @@ MatMulCheck(string TestFile)
     }
 }
 
-// array a = constant(2, 10, 10);
-// array b = constant(3, 10, 10);
 TYPED_TEST(MatrixMultiply, Square)
 {
     MatMulCheck<TypeParam>(TEST_DIR"/blas/Basic.test");
 }
 
-// array a = array(seq(80), 10, 8);
-// array b = array(seq(80), 8, 10);
 TYPED_TEST(MatrixMultiply, NonSquare)
 {
     MatMulCheck<TypeParam>(TEST_DIR"/blas/NonSquare.test");
 }
 
-// array a = array(seq(100), 10, 10);
-// array b = array(seq(10), 10, 1);
 TYPED_TEST(MatrixMultiply, SquareVector)
 {
     MatMulCheck<TypeParam, true>(TEST_DIR"/blas/SquareVector.test");
 }
 
-// array a = array(seq(200), 10, 20);
-// array b = array(seq(10), 10, 1);
 TYPED_TEST(MatrixMultiply, RectangleVector)
 {
     MatMulCheck<TypeParam, true>(TEST_DIR"/blas/RectangleVector.test");
