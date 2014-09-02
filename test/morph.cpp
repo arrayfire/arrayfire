@@ -105,6 +105,69 @@ TYPED_TEST(Morph, Erode3x3x3)
     morphTest<TypeParam, false, true>(string(TEST_DIR"/morph/erode3x3x3.test"));
 }
 
+template<typename T, bool isDilation, bool isColor>
+void morphImageTest(string pTestFile)
+{
+    using af::dim4;
+
+    vector<dim4>       inDims;
+    vector<string>    inFiles;
+    vector<dim_type> outSizes;
+    vector<string>   outFiles;
+
+    readImageTests(pTestFile, inDims, inFiles, outSizes, outFiles);
+
+    size_t testCount = inDims.size();
+
+    for (size_t testId=0; testId<testCount; ++testId) {
+
+        af_array inArray  = 0;
+        af_array maskArray= 0;
+        af_array outArray = 0;
+        af_array goldArray= 0;
+        dim_type nElems   = 0;
+
+        inFiles[testId].insert(0,string(TEST_DIR"/morph/"));
+        outFiles[testId].insert(0,string(TEST_DIR"/morph/"));
+
+        dim4 mdims(3,3,1,1);
+        ASSERT_EQ(AF_SUCCESS, af_constant(&maskArray, 1.0,
+                    mdims.ndims(), mdims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+
+        ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray, inFiles[testId].c_str(), isColor));
+        ASSERT_EQ(AF_SUCCESS, af_load_image(&goldArray, outFiles[testId].c_str(), isColor));
+        ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, goldArray));
+
+        if (isDilation)
+            ASSERT_EQ(AF_SUCCESS, af_dilate(&outArray, inArray, maskArray));
+        else
+            ASSERT_EQ(AF_SUCCESS, af_erode(&outArray, inArray, maskArray));
+
+        T * outData = new T[nElems];
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+
+        T * goldData= new T[nElems];
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)goldData, goldArray));
+
+        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData, outData, 0.018f));
+
+        ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+        ASSERT_EQ(AF_SUCCESS, af_destroy_array(maskArray));
+        ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+        ASSERT_EQ(AF_SUCCESS, af_destroy_array(goldArray));
+    }
+}
+
+TEST(Morph, Grayscale)
+{
+    morphImageTest<float, true, false>(string(TEST_DIR"/morph/gray.test"));
+}
+
+TEST(Morph, ColorImage)
+{
+    morphImageTest<float, false, true>(string(TEST_DIR"/morph/color.test"));
+}
+
 template<typename T, bool isDilation>
 void morphInputTest(void)
 {
