@@ -19,7 +19,7 @@ namespace cuda
     Array<T>* randn(const af::dim4 &dims)
     {
         Array<T>* out  = createEmptyArray<T>(dims);
-        kernel::randu(out->get(), out->elements());
+        kernel::randn(out->get(), out->elements());
         return out;
     }
 
