@@ -40,7 +40,32 @@ public:
     const af::dim4& dims() const        { return dim_size;              }
 
     void modDims(const af::dim4 &newDims);
+
     void modStrides(const af::dim4 &newStrides);
+
+    bool isEmpty();
+
+    bool isScalar();
+
+    bool isRow();
+
+    bool isColumn();
+
+    bool isVector();
+
+    bool isComplex();
+
+    bool isReal();
+
+    bool isDouble();
+
+    bool isSingle();
+
+    bool isRealFloating();
+
+    bool isFloating();
+
+    bool isInteger();
 };
 
 dim_type
