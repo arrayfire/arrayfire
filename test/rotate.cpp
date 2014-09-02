@@ -75,7 +75,12 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
     // x or y, hence a different value is copied.
     // We expect 99.99% values to be same between the CPU/GPU versions and
     // ASSERT_EQ (in comments below) to pass for CUDA & OpenCL backends
-    ASSERT_EQ(true, compareArraysRMSD(nElems, &tests[resultIdx].front(), outData, 0.1f));
+    size_t fail_count = 0;
+    for(size_t i = 0; i < nElems; i++) {
+        if(abs(tests[resultIdx][i] - outData[i]) > 0.0001)
+            fail_count++;
+    }
+    ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.005));
 
     //for (size_t elIter = 0; elIter < nElems; ++elIter) {
     //    ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;

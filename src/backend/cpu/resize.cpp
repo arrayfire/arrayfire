@@ -114,7 +114,7 @@ namespace cpu
         af::dim4 odims(odim0, odim1, idims[2], idims[3]);
 
         // Create output placeholder
-        Array<T> *outArray = createValueArray(odims, (T)10);
+        Array<T> *outArray = createValueArray(odims, (T)0);
 
         // Get pointers to raw data
         const T *inPtr = in.get();

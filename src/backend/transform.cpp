@@ -54,10 +54,6 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
             case s32: output = transform<int    >(in, tf, odims, inverse);  break;
             case u32: output = transform<uint   >(in, tf, odims, inverse);  break;
             case u8:  output = transform<uchar  >(in, tf, odims, inverse);  break;
-          //case c32: output = transform<cfloat >(in, tf, odims, inverse);  break;
-          //case c64: output = transform<cdouble>(in, tf, odims, inverse);  break;
-          //case b8:  output = transform<char   >(in, tf, odims, inverse);  break;
-          //case s8:  output = transform<char   >(in, tf, odims, inverse);  break;
             default:  ret = AF_ERR_NOT_SUPPORTED;       break;
         }
         if (ret!=AF_ERR_NOT_SUPPORTED) {
