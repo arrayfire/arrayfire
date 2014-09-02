@@ -13,6 +13,28 @@ using af::dim4;
 namespace opencl
 {
 
+template<typename T>
+static Array<T>* morphHelper(kernel::MorphParams &params,
+                             const Array<T>      &in,
+                             const Array<T>      &mask)
+{
+    const dim4 mdims    = mask.dims();
+    const dim4 dims     = in.dims();
+    const dim4 istrides = in.strides();
+    Array<T>* out       = createEmptyArray<T>(dims);
+    const dim4 ostrides = out->strides();
+
+    params.windLen  = mdims[0];
+    params.offset   = in.getOffset();
+    for (dim_type i=0; i<4; ++i) {
+        params.dims[i] = dims[i];
+        params.istrides[i] = istrides[i];
+        params.ostrides[i] = ostrides[i];
+    }
+
+    return out;
+}
+
 template<typename T, bool isDilation>
 Array<T> * morph(const Array<T> &in, const Array<T> &mask)
 {
@@ -23,32 +45,15 @@ Array<T> * morph(const Array<T> &in, const Array<T> &mask)
     if (mdims[0]>17)
         throw std::runtime_error("Upto 17x17 square kernels are only supported in cuda currently");
 
-    const dim4 dims     = in.dims();
-    const dim4 istrides = in.strides();
-    Array<T>* out       = createEmptyArray<T>(dims);
-    const dim4 ostrides = out->strides();
-
     kernel::MorphParams params;
-    params.windLen  = mdims[0];
-    params.dim0  = dims[0];
-    params.dim1  = dims[1];
-    params.dim2  = dims[2];
-    params.offset   = in.getOffset();
-    params.istride0 = istrides[0];
-    params.istride1 = istrides[1];
-    params.istride2 = istrides[2];
-    params.istride3 = istrides[3];
-    params.ostride0 = ostrides[0];
-    params.ostride1 = ostrides[1];
-    params.ostride2 = ostrides[2];
-    params.ostride3 = ostrides[3];
+    Array<T>* out       = morphHelper(params, in, mask);
 
     try {
         if (isDilation)
             kernel::morph<T, true>(out->get(), in.get(), mask.get(), params);
         else
             kernel::morph<T, false>(out->get(), in.get(), mask.get(), params);
-    }catch(cl::Error error) {
+    } catch(cl::Error error) {
         throw std::runtime_error(std::string("@opencl/morph: ").append(error.what()));
     }
 
@@ -69,7 +74,17 @@ Array<T> * morph3d(const Array<T> &in, const Array<T> &mask)
     if (dims[3]>1)
         throw std::runtime_error("Batch not supported for volumetic morphological operations");
 
-    Array<T>* out       = createEmptyArray<T>(dims);
+    kernel::MorphParams params;
+    Array<T>* out       = morphHelper(params, in, mask);
+
+    try {
+        if (isDilation)
+            kernel::morph3d<T, true>(out->get(), in.get(), mask.get(), params);
+        else
+            kernel::morph3d<T, false>(out->get(), in.get(), mask.get(), params);
+    } catch(cl::Error error) {
+        throw std::runtime_error(std::string("@opencl/morph: ").append(error.what()));
+    }
 
     return out;
 }
