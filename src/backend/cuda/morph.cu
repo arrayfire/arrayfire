@@ -20,8 +20,8 @@ Array<T> * morph(const Array<T> &in, const Array<T> &mask)
 
     if (mdims[0]!=mdims[1])
         throw std::runtime_error("Only square masks are supported in cuda morph currently");
-    if (mdims[0]>17)
-        throw std::runtime_error("Upto 17x17 square kernels are only supported in cuda currently");
+    if (mdims[0]>19)
+        throw std::runtime_error("Upto 19x19 square kernels are only supported in cuda currently");
 
     const dim4 dims     = in.dims();
     const dim4 istrides = in.strides();

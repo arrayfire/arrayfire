@@ -10,9 +10,11 @@ namespace kernel
 
 static const dim_type MAX_MORPH_FILTER_LEN = 17;
 // cFilter is used by both 2d morph and 3d morph
-// Maximum kernel size supported for 2d morph is 17x17*8 = 2312
+// Maximum kernel size supported for 2d morph is 19x19*8 = 2888
 // Maximum kernel size supported for 3d morph is 7x7x7*8 = 2744
-__constant__ double cFilter[MAX_MORPH_FILTER_LEN*MAX_MORPH_FILTER_LEN];
+// We will declare a char array as __constant__ array and allocate
+// size necessary to hold doubles of FILTER_LEN*FILTER_LEN
+__constant__ char cFilter[MAX_MORPH_FILTER_LEN*MAX_MORPH_FILTER_LEN*sizeof(double)];
 
 static const dim_type THREADS_X = 16;
 static const dim_type THREADS_Y = 16;
@@ -56,17 +58,16 @@ inline __device__ void load2ShrdMem(T * shrd, const T * const in,
 
 // kernel assumes mask/filter is square and hence does the
 // necessary operations accordingly.
-template<typename T, bool isDilation>
-static __global__ void morphKernel( const morph_param_t<T> params,
-                                    dim_type nonBatchBlkSize)
+template<typename T, bool isDilation, dim_type windLen>
+static __global__ void morphKernel(const morph_param_t<T> params,
+                                   dim_type nonBatchBlkSize)
 {
     // get shared memory pointer
     SharedMemory<T> shared;
     T * shrdMem = shared.getPointer();
 
     // calculate necessary offset and window parameters
-    const dim_type se_len = params.windLen;
-    const dim_type halo   = se_len/2;
+    const dim_type halo   = windLen/2;
     const dim_type padding= 2*halo;
     const dim_type shrdLen= blockDim.x + padding + 1;
 
@@ -122,13 +123,13 @@ static __global__ void morphKernel( const morph_param_t<T> params,
     const T * d_filt = (const T *)cFilter;
     T acc = shrdMem[ lIdx(i, j, shrdLen, 1) ];
 #pragma unroll
-    for(dim_type wj=j-halo; wj<=j+halo; ++wj) {
-        dim_type joff   = (wj-j+halo)*se_len;
-        dim_type w_joff = wj*shrdLen;
+    for(dim_type wj=0; wj<windLen; ++wj) {
+        dim_type joff   = wj*windLen;
+        dim_type w_joff = (j+wj-halo)*shrdLen;
 #pragma unroll
-        for(dim_type wi=i-halo; wi<=i+halo; ++wi) {
-            T cur  = shrdMem[w_joff + wi];
-            if (d_filt[joff + wi-i+halo]) {
+        for(dim_type wi=0; wi<windLen; ++wi) {
+            T cur  = shrdMem[w_joff + (i+wi-halo)];
+            if (d_filt[joff+wi]) {
                 if (isDilation)
                     acc = max(acc, cur);
                 else
@@ -167,18 +168,17 @@ inline __device__ void load2ShrdVolume(T * shrd, const T * const in,
 
 // kernel assumes mask/filter is square and hence does the
 // necessary operations accordingly.
-template<typename T, bool isDilation>
+template<typename T, bool isDilation, dim_type windLen>
 static __global__ void morph3DKernel(const morph_param_t<T> params)
 {
     // get shared memory pointer
     SharedMemory<T> shared;
     T * shrdMem = shared.getPointer();
 
-    const dim_type se_len    = params.windLen;
-    const dim_type halo      = se_len/2;
+    const dim_type halo      = windLen/2;
     const dim_type padding   = 2*halo;
 
-    const dim_type se_area   = se_len*se_len;
+    const dim_type se_area   = windLen*windLen;
     const dim_type shrdLen   = blockDim.x + padding + 1;
     const dim_type shrdArea  = shrdLen * (blockDim.y+padding);
 
@@ -259,17 +259,17 @@ static __global__ void morph3DKernel(const morph_param_t<T> params)
     const T * d_filt = (const T *)cFilter;
     T acc = shrdMem[ lIdx3D(i, j, k, shrdArea, shrdLen, 1) ];
 #pragma unroll
-    for(dim_type wk=k-halo; wk<=k+halo; ++wk) {
-        dim_type koff   = (wk-k+halo)*se_area;
-        dim_type w_koff = wk*shrdArea;
+    for(dim_type wk=0; wk<windLen; ++wk) {
+        dim_type koff   = wk*se_area;
+        dim_type w_koff = (k+wk-halo)*shrdArea;
 #pragma unroll
-        for(dim_type wj=j-halo; wj<=j+halo; ++wj) {
-        dim_type joff   = (wj-j+halo)*se_len;
-        dim_type w_joff = wj*shrdLen;
+        for(dim_type wj=0; wj<windLen; ++wj) {
+        dim_type joff   = wj*windLen;
+        dim_type w_joff = (j+wj-halo)*shrdLen;
 #pragma unroll
-            for(dim_type wi=i-halo; wi<=i+halo; ++wi) {
-                T cur  = shrdMem[w_koff + w_joff + wi];
-                if (d_filt[koff+joff+wi-i+halo]) {
+            for(dim_type wi=0; wi<windLen; ++wi) {
+                T cur  = shrdMem[w_koff+w_joff + i+wi-halo];
+                if (d_filt[koff+joff+wi]) {
                     if (isDilation)
                         acc = max(acc, cur);
                     else
@@ -303,7 +303,19 @@ void morph(const morph_param_t<T> &kernelParams)
     int shrdLen   = kernel::THREADS_X + padding + 1; // +1 for to avoid bank conflicts
     int shrdSize  = shrdLen * (kernel::THREADS_Y+padding) * sizeof(T);
 
-    morphKernel<T, isDilation> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x);
+    switch(kernelParams.windLen) {
+        case  3: morphKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
+        case  5: morphKernel<T, isDilation, 5> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
+        case  7: morphKernel<T, isDilation, 7> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
+        case  9: morphKernel<T, isDilation, 9> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
+        case 11: morphKernel<T, isDilation,11> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
+        case 13: morphKernel<T, isDilation,13> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
+        case 15: morphKernel<T, isDilation,15> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
+        case 17: morphKernel<T, isDilation,17> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
+        case 19: morphKernel<T, isDilation,19> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
+        default: morphKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
+    }
+
 }
 
 template<typename T, bool isDilation>
@@ -322,7 +334,12 @@ void morph3d(const morph_param_t<T> &kernelParams)
     int shrdLen   = kernel::CUBE_X + padding + 1; // +1 for to avoid bank conflicts
     int shrdSize  = shrdLen * (kernel::CUBE_Y+padding) * (kernel::CUBE_Z+padding) * sizeof(T);
 
-    morph3DKernel<T, isDilation> <<< blocks, threads, shrdSize>>>(kernelParams);
+    switch(kernelParams.windLen) {
+        case  3: morph3DKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(kernelParams); break;
+        case  5: morph3DKernel<T, isDilation, 5> <<< blocks, threads, shrdSize>>>(kernelParams); break;
+        case  7: morph3DKernel<T, isDilation, 7> <<< blocks, threads, shrdSize>>>(kernelParams); break;
+        default: morph3DKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(kernelParams); break;
+    }
 }
 
 }
