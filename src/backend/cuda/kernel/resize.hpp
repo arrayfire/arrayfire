@@ -19,7 +19,7 @@ namespace cuda
         ///////////////////////////////////////////////////////////////////////////
         // nearest-neighbor resampling
         ///////////////////////////////////////////////////////////////////////////
-        template<class T>
+        template<typename T>
         __host__ __device__
         void resize_n(      T* d_out, dim_type odim0, dim_type odim1,
                       const T* d_in,  dim_type idim0, dim_type idim1,
@@ -42,7 +42,7 @@ namespace cuda
         ///////////////////////////////////////////////////////////////////////////
         // bilinear resampling
         ///////////////////////////////////////////////////////////////////////////
-        template<class T>
+        template<typename T>
         __host__ __device__
         void resize_b(      T* d_out, dim_type odim0, dim_type odim1,
                       const T* d_in,  dim_type idim0, dim_type idim1,
@@ -84,7 +84,7 @@ namespace cuda
         ///////////////////////////////////////////////////////////////////////////
         // Resize Kernel
         ///////////////////////////////////////////////////////////////////////////
-        template<class T, af_interp_type method>
+        template<typename T, af_interp_type method>
         __global__
         void resize_kernel(      T* d_out, dim_type odim0, dim_type odim1,
                            const T* d_in,  dim_type idim0, dim_type idim1,
@@ -115,7 +115,7 @@ namespace cuda
         ///////////////////////////////////////////////////////////////////////////
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
-        template <class T, af_interp_type method>
+        template <typename T, af_interp_type method>
         void resize(T *out, const dim_type odim0, const dim_type odim1,
               const T *in, const dim_type idim0, const dim_type idim1,
               const dim_type channels, const dim_type *ostrides, const dim_type *istrides)

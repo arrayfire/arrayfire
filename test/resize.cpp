@@ -202,6 +202,46 @@ TYPED_TEST(ResizeI, Resize3CSquareDownLinearSubref)
                           true, &(this->subMat1));
 }
 
+TYPED_TEST(Resize, Resize1CLargeUpNearest)
+{
+    resizeTest<TypeParam>(string(TEST_DIR"/resize/large.test"), 0, 256, 256, AF_INTERP_NEAREST);
+}
+
+TYPED_TEST(Resize, Resize1CLargeUpLinear)
+{
+    resizeTest<TypeParam>(string(TEST_DIR"/resize/large.test"), 1, 256, 256, AF_INTERP_BILINEAR);
+}
+
+TYPED_TEST(Resize, Resize1CLargeDownNearest)
+{
+    resizeTest<TypeParam>(string(TEST_DIR"/resize/large.test"), 2, 32, 32, AF_INTERP_NEAREST);
+}
+
+TYPED_TEST(Resize, Resize1CLargeDownLinear)
+{
+    resizeTest<TypeParam>(string(TEST_DIR"/resize/large.test"), 3, 32, 32, AF_INTERP_BILINEAR);
+}
+
+TYPED_TEST(ResizeI, Resize1CLargeUpNearest)
+{
+    resizeTest<TypeParam>(string(TEST_DIR"/resize/large.test"), 0, 256, 256, AF_INTERP_NEAREST);
+}
+
+TYPED_TEST(ResizeI, Resize1CLargeUpLinear)
+{
+    resizeTest<TypeParam>(string(TEST_DIR"/resize/large.test"), 1, 256, 256, AF_INTERP_BILINEAR);
+}
+
+TYPED_TEST(ResizeI, Resize1CLargeDownNearest)
+{
+    resizeTest<TypeParam>(string(TEST_DIR"/resize/large.test"), 2, 32, 32, AF_INTERP_NEAREST);
+}
+
+TYPED_TEST(ResizeI, Resize1CLargeDownLinear)
+{
+    resizeTest<TypeParam>(string(TEST_DIR"/resize/large.test"), 3, 32, 32, AF_INTERP_BILINEAR);
+}
+
 template<typename T>
 void resizeArgsTest(af_err err, string pTestFile, const af::dim4 odims, const af_interp_type method)
 {
