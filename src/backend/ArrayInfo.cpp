@@ -57,3 +57,69 @@ void ArrayInfo::modDims(const dim4 &newDims)
     dim_size   = newDims;
     modStrides(calcStrides(newDims));
 }
+
+bool ArrayInfo::isEmpty()
+{
+    return (elements() == 0);
+}
+
+bool ArrayInfo::isScalar()
+{
+    return (elements() == 1);
+}
+
+bool ArrayInfo::isRow()
+{
+    return (ndims() == 2 && dims()[0] == 1);
+}
+
+bool ArrayInfo::isColumn()
+{
+    return (ndims() == 1);
+}
+
+bool ArrayInfo::isVector()
+{
+    bool ret = true;
+    for(dim_type i = 0; i < (ndims() - 1) && ret; i++) {
+        ret = (dims()[i] == 1);
+    }
+    return ret;
+}
+
+bool ArrayInfo::isComplex()
+{
+    return ((type == c32) || (type == c64));
+}
+
+bool ArrayInfo::isReal()
+{
+    return !isComplex();
+}
+
+bool ArrayInfo::isDouble()
+{
+    return (type == f64 || type == c64);
+}
+
+bool ArrayInfo::isSingle()
+{
+    return (type == f32 || type == c32);
+}
+
+bool ArrayInfo::isRealFloating()
+{
+    return (type == f64 || type == f32);
+}
+
+bool ArrayInfo::isFloating()
+{
+    return (!isInteger());
+}
+
+bool ArrayInfo::isInteger()
+{
+    return (type == s32
+         || type == u32
+         || type == u8);
+}

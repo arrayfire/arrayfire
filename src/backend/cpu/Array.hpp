@@ -70,19 +70,19 @@ namespace cpu
             return parent == nullptr;
         }
 
+        //FIXME: This should do a copy if it is not owner. You do not want to overwrite parents data
         T* get(bool withOffset = true)
         {
-            return const_cast<T*>(static_cast<const Array<T>*>(this)->get());
+            return const_cast<T*>(static_cast<const Array<T>*>(this)->get(withOffset));
         }
 
         const T* get(bool withOffset = true) const
         {
 
             const T* ptr = nullptr;
-            if(parent == nullptr) {
+            if(isOwner()) {
                 ptr = &data.front();
-            }
-            else {
+            } else {
                 size_t offset = 0;
                 if(withOffset) {
                     offset = calcOffset(parent->strides(), this->offsets());

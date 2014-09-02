@@ -1,8 +1,9 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
-#include <cassert>
 #include <iostream>
-#include <backend.hpp>
+#include <stdexcept>
+#include <copy.hpp>
+
 using af::dim4;
 
 namespace opencl
@@ -36,6 +37,13 @@ namespace opencl
     }
 
     template<typename T>
+    Array<T>::Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
+        ArrayInfo(dims, offset, stride, (af_dtype)dtype_traits<T>::af_type),
+        data(0),
+        parent(&parnt)
+    { }
+
+    template<typename T>
     Array<T>::~Array()
     { }
 
@@ -45,8 +53,18 @@ namespace opencl
     Array<T> *
     createSubArray(const Array<T>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride)
     {
-        assert("NOT IMPLEMENTED" && 1 != 1);
-        return NULL;
+
+        Array<T> *out = new Array<T>(parent, dims, offset, stride);
+
+        if (stride[0] != 1 ||
+            stride[1] <  0 ||
+            stride[2] <  0 ||
+            stride[3] <  0) {
+
+            out = copyArray(*out);
+        }
+
+        return out;
     }
 
     template<typename T>

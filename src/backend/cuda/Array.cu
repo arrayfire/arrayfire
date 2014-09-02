@@ -1,7 +1,7 @@
-#include <cassert>
 #include <af/dim4.hpp>
 #include <Array.hpp>
-#include <iostream>
+#include <stdexcept>
+#include <copy.hpp>
 #include <kernel/elwise.hpp> //set
 
 using af::dim4;
@@ -47,6 +47,13 @@ namespace cuda
         cudaMemcpy(data, in_data, dims.elements() * sizeof(T), cudaMemcpyHostToDevice);
     }
 
+    template<typename T>
+    Array<T>::Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
+        ArrayInfo(dims, offset, stride, (af_dtype)dtype_traits<T>::af_type),
+        data(0),
+        parent(&parnt)
+    { }
+
     // FIXME: Add checks
     template<typename T>
     Array<T>::~Array() { cudaFree(data); }
@@ -79,8 +86,18 @@ namespace cuda
     Array<T> *
     createSubArray(const Array<T>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride)
     {
-        assert("NOT IMPLEMENTED" && 1 != 1);
-        return NULL;
+
+        Array<T> *out = new Array<T>(parent, dims, offset, stride);
+
+        // FIXME: Implement this for CUDA
+        if (stride[0] != 1 ||
+            stride[1] <  0 ||
+            stride[2] <  0 ||
+            stride[3] <  0) {
+            out = copyArray(*out);
+        }
+
+        return out;
     }
 
     template<typename T>

@@ -5,8 +5,8 @@
 __kernel
 void transpose( __global T * out, __global const T * in,
                 dim_type iDim0, dim_type iDim1,
-                dim_type iOffset0, dim_type iOffset1,
-                dim_type iStride0, dim_type iStride1,
+                dim_type iStride1, dim_type iStride2,
+                dim_type offset,
                 dim_type nonBatchBlkSize)
 {
     __local T shrdMem[TILE_DIM*(TILE_DIM+1)];
@@ -18,12 +18,8 @@ void transpose( __global T * out, __global const T * in,
     const dim_type oDim1 = iDim0;
 
     // calculate strides
-    const dim_type oStride0    = iStride0;
-    const dim_type oStride1    = oDim0 * oStride0;
-    const dim_type batchStride = iDim0 * iDim1;
+    const dim_type oStride1    = oDim0;
 
-    // TODO: Launch multiple blocks along x dimension
-    //       to handle batch later, for loop is just for now
     dim_type lx      = get_local_id(0);
     dim_type ly      = get_local_id(1);
 
@@ -37,9 +33,8 @@ void transpose( __global T * out, __global const T * in,
 
     // offset in and out based on batch id
     // also add the subBuffer offsets
-    dim_type offset  = batchId*batchStride + (iOffset0 + iOffset1*iStride1);
-    in  += offset;
-    out += offset;
+    in  += batchId * iStride2 + offset;
+    out += batchId * oDim0 * oDim1;
 
     for (dim_type repeat = 0; repeat < TILE_DIM; repeat += get_local_size(1)) {
         dim_type gy_ = gy+repeat;

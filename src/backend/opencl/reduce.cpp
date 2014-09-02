@@ -11,14 +11,14 @@ using af::dim4;
 namespace opencl
 {
     template<af_op_t op, typename Ti, typename To>
-    Array<To>* reduce(const Array<Ti> in, const int dim)
+    Array<To>* reduce(const Array<Ti> &in, const int dim)
     {
         assert("NOT IMPLEMENTED" && 1 != 1);
         return NULL;
     }
 
 #define INSTANTIATE(Op, Ti, To)                                         \
-    template Array<To>* reduce<Op, Ti, To>(const Array<Ti> in, const int dim); \
+    template Array<To>* reduce<Op, Ti, To>(const Array<Ti> &in, const int dim); \
 
     //min
     INSTANTIATE(af_min_t, float  , float  )

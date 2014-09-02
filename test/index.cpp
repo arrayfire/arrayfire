@@ -263,7 +263,6 @@ DimCheck2D(const vector<vector<af_seq>> &seqs,string TestFile)
 
         T* ptr = h_indexed[i];
         if(false == equal(ptr, ptr + tests[i].size(), tests[i].begin())) {
-            af_print(indexed_arrays[i]);
             cout << "index data: ";
             copy(ptr, ptr + tests[i].size(), ostream_iterator<T>(cout, ", "));
             cout << endl << "file data: ";
