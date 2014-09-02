@@ -49,4 +49,13 @@ DECLARE_SPECIALIZATIONS(int)
 DECLARE_SPECIALIZATIONS(uint)
 DECLARE_SPECIALIZATIONS(uchar)
 
+template<typename T>
+struct kernel_params_t {
+    T *             d_dst;
+    const T *       d_src;
+    dim_type     idims[4];
+    dim_type  istrides[4];
+    dim_type  ostrides[4];
+};
+
 }
