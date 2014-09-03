@@ -3,7 +3,6 @@
 #endif
 
 struct Params {
-    dim_type     windLen;
     dim_type      offset;
     dim_type     dims[4];
     dim_type istrides[4];
@@ -38,8 +37,7 @@ void morph(__global T *              out,
            __constant struct Params* params,
            dim_type nonBatchBlkSize)
 {
-    const dim_type se_len = params->windLen;
-    const dim_type halo   = se_len/2;
+    const dim_type halo   = windLen/2;
     const dim_type padding= 2*halo;
     const dim_type shrdLen= get_local_size(0) + padding + 1;
 
@@ -92,11 +90,11 @@ void morph(__global T *              out,
 
     T acc = localMem[ lIdx(i, j, shrdLen, 1) ];
 #pragma unroll
-    for(dim_type wj=0; wj<params->windLen; ++wj) {
-        dim_type joff   = wj*se_len;
+    for(dim_type wj=0; wj<windLen; ++wj) {
+        dim_type joff   = wj*windLen;
         dim_type w_joff = (j+wj-halo)*shrdLen;
 #pragma unroll
-        for(dim_type wi=0; wi<params->windLen; ++wi) {
+        for(dim_type wi=0; wi<windLen; ++wi) {
             T cur  = localMem[w_joff+i+wi-halo];
             if (d_filt[joff+wi]) {
                 if (isDilation)
@@ -144,11 +142,10 @@ void morph3d(__global T *              out,
              __local T *               localMem,
              __constant struct Params* params)
 {
-    const dim_type se_len = params->windLen;
-    const dim_type halo   = se_len/2;
+    const dim_type halo   = windLen/2;
     const dim_type padding= 2*halo;
 
-    const dim_type se_area   = se_len*se_len;
+    const dim_type se_area   = windLen*windLen;
     const dim_type shrdLen   = get_local_size(0) + padding + 1;
     const dim_type shrdArea  = shrdLen * (get_local_size(1)+padding);
 
@@ -225,15 +222,15 @@ void morph3d(__global T *              out,
 
     T acc = localMem[ lIdx3D(i, j, k, shrdArea, shrdLen, 1) ];
 #pragma unroll
-    for(dim_type wk=0; wk<se_len; ++wk) {
+    for(dim_type wk=0; wk<windLen; ++wk) {
         dim_type koff   = wk*se_area;
         dim_type w_koff = (k+wk-halo)*shrdArea;
 #pragma unroll
-        for(dim_type wj=0; wj<se_len; ++wj) {
-        dim_type joff   = wj*se_len;
+        for(dim_type wj=0; wj<windLen; ++wj) {
+        dim_type joff   = wj*windLen;
         dim_type w_joff = (j+wj-halo)*shrdLen;
 #pragma unroll
-            for(dim_type wi=0; wi<se_len; ++wi) {
+            for(dim_type wi=0; wi<windLen; ++wi) {
                 T cur  = localMem[w_koff+w_joff + i+wi-halo];
                 if (d_filt[koff+joff+wi]) {
                     if (isDilation)
