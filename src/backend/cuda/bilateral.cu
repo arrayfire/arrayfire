@@ -2,7 +2,9 @@
 #include <af/defines.h>
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
+#include <helper.hpp>
 #include <bilateral.hpp>
+#include <kernel/bilateral.hpp>
 #include <stdexcept>
 
 using af::dim4;
@@ -13,8 +15,23 @@ namespace cuda
 template<typename T, bool isColor>
 Array<T> * bilateral(const Array<T> &in, const float &s_sigma, const float &c_sigma)
 {
-    Array<T> *out = 0;
-    throw std::runtime_error("bilateral not supported in cuda");
+    const dim4 dims     = in.dims();
+    const dim4 istrides = in.strides();
+
+    Array<T>* out       = createEmptyArray<T>(dims);
+    const dim4 ostrides = out->strides();
+
+    kernel_params_t<T> params;
+    params.d_dst = out->get();
+    params.d_src = in.get();
+    for(dim_type i=0; i<4; ++i) {
+        params.idims[i]    = dims[i];
+        params.istrides[i] = istrides[i];
+        params.ostrides[i] = ostrides[i];
+    }
+
+    kernel::bilateral<T, isColor>(params, s_sigma, c_sigma);
+
     return out;
 }
 
