@@ -31,14 +31,13 @@ static const dim_type CUBE_Z    =  8;
 // FIXME: This struct declaration should stay in
 //        sync with the struct defined inside morph.cl
 typedef struct Params {
-    cl_long     windLen;
     cl_long      offset;
     cl_long     dims[4];
     cl_long istrides[4];
     cl_long ostrides[4];
 } MorphParams;
 
-template<typename T, bool isDilation>
+template<typename T, bool isDilation, dim_type windLen>
 void morph(Buffer         &out,
         const Buffer      &in,
         const Buffer      &mask,
@@ -51,7 +50,8 @@ void morph(Buffer         &out,
     std::ostringstream options;
     options << " -D T=" << dtype_traits<T>::getName()
         << " -D dim_type=" << dtype_traits<dim_type>::getName()
-        << " -D isDilation="<< isDilation;
+        << " -D isDilation="<< isDilation
+        << " -D windLen=" << windLen;
     prog.build(options.str().c_str());
 
     auto morphOp = make_kernel< Buffer, Buffer,
@@ -68,7 +68,7 @@ void morph(Buffer         &out,
                    blk_y * THREADS_Y);
 
     // copy mask/filter to constant memory
-    cl_int se_size   = sizeof(T)*params.windLen*params.windLen;
+    cl_int se_size   = sizeof(T)*windLen*windLen;
     cl::Buffer mBuff = cl::Buffer(getCtx(0), CL_MEM_READ_ONLY, se_size);
     getQueue(0).enqueueCopyBuffer(mask, mBuff, 0, 0, se_size);
 
@@ -77,10 +77,10 @@ void morph(Buffer         &out,
     getQueue(0).enqueueWriteBuffer(pBuff, CL_TRUE, 0, sizeof(kernel::MorphParams), &params);
 
     // calculate shared memory size
-    int halo    = params.windLen/2;
-    int padding = 2*halo;
-    int locLen  = THREADS_X + padding + 1;
-    int locSize = locLen * (THREADS_Y+padding);
+    const int halo    = windLen/2;
+    const int padding = 2*halo;
+    const int locLen  = THREADS_X + padding + 1;
+    const int locSize = locLen * (THREADS_Y+padding);
 
     morphOp(EnqueueArgs(getQueue(0), global, local),
             out, in, mBuff,
@@ -88,7 +88,7 @@ void morph(Buffer         &out,
             pBuff, blk_x);
 }
 
-template<typename T, bool isDilation>
+template<typename T, bool isDilation, dim_type windLen>
 void morph3d(Buffer       &out,
         const Buffer      &in,
         const Buffer      &mask,
@@ -101,7 +101,8 @@ void morph3d(Buffer       &out,
     std::ostringstream options;
     options << " -D T=" << dtype_traits<T>::getName()
         << " -D dim_type=" << dtype_traits<dim_type>::getName()
-        << " -D isDilation="<< isDilation;
+        << " -D isDilation="<< isDilation
+        << " -D windLen=" << windLen;
     prog.build(options.str().c_str());
 
     auto morphOp = make_kernel< Buffer, Buffer,
@@ -120,7 +121,7 @@ void morph3d(Buffer       &out,
                    blk_z * CUBE_Z);
 
     // copy mask/filter to constant memory
-    cl_int se_size   = sizeof(T)*params.windLen*params.windLen*params.windLen;
+    cl_int se_size   = sizeof(T)*windLen*windLen*windLen;
     cl::Buffer mBuff = cl::Buffer(getCtx(0), CL_MEM_READ_ONLY, se_size);
     getQueue(0).enqueueCopyBuffer(mask, mBuff, 0, 0, se_size);
 
@@ -129,11 +130,11 @@ void morph3d(Buffer       &out,
     getQueue(0).enqueueWriteBuffer(pBuff, CL_TRUE, 0, sizeof(kernel::MorphParams), &params);
 
     // calculate shared memory size
-    int halo    = params.windLen/2;
-    int padding = 2*halo;
-    int locLen  = CUBE_X+padding+1;
-    int locArea = locLen *(CUBE_Y+padding);
-    int locSize = locArea*(CUBE_Z+padding);
+    const int halo    = windLen/2;
+    const int padding = 2*halo;
+    const int locLen  = CUBE_X+padding+1;
+    const int locArea = locLen *(CUBE_Y+padding);
+    const int locSize = locArea*(CUBE_Z+padding);
 
     morphOp(EnqueueArgs(getQueue(0), global, local),
             out, in, mBuff, cl::Local(locSize*sizeof(T)), pBuff);
