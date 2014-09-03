@@ -80,7 +80,11 @@ getScale() { return T(1); }
 
 template<typename T>
 typename enable_if<is_complex<T>::value, scale_type<T>>::type
-getScale() { return new T(1); } //LEAKS!!
+getScale()
+{
+    static T val(1);
+    return &val;
+}
 
 CBLAS_TRANSPOSE
 toCblasTranspose(af_blas_transpose opt)
@@ -132,8 +136,7 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
             scale,  lhs.get(),   lStrides[1],
                     rhs.get(),   rStrides[0],
             scale,  out->get(),                1);
-    }
-    else {
+    } else {
         gemm_func<T>()(
             CblasColMajor, lOpts, rOpts,
             M, N, K,

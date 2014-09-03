@@ -3,8 +3,6 @@
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 
-#include <boost/scoped_ptr.hpp>
-
 #include <stdexcept>
 #include <string>
 #include <cassert>
@@ -56,12 +54,8 @@ public:
 cublasHandle&
 getHandle()
 {
-    using boost::scoped_ptr;
-    static scoped_ptr<cublasHandle> handle(NULL);
-    if(handle == NULL) {
-        handle.reset(new cublasHandle());
-    }
-    return *handle;
+    static cublasHandle handle;
+    return handle;
 }
 
 cublasOperation_t
@@ -191,8 +185,7 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
             &scale, lhs.get(),   lStrides[1],
                     rhs.get(),   rStrides[0],
             &scale, out->get(),            1);
-    }
-    else {
+    } else {
         cublasStatus_t err =
             gemm_func<T>()(
                 getHandle(), lOpts, rOpts,

@@ -71,9 +71,9 @@ af_err af_dot(      af_array *out,
             af_array output = 0;
 
             switch(lhsInfo.getType()) {
-                //case f32: output = dot<float  >(lhs, rhs, optLhs, optRhs);   break;
+                case f32: output = dot<float  >(lhs, rhs, optLhs, optRhs);   break;
                 //case c32: output = dot<cfloat >(lhs, rhs, optLhs, optRhs);   break;
-                //case f64: output = dot<double >(lhs, rhs, optLhs, optRhs);   break;
+                case f64: output = dot<double >(lhs, rhs, optLhs, optRhs);   break;
                 //case c64: output = dot<cdouble>(lhs, rhs, optLhs, optRhs);   break;
                 default:  ret = AF_ERR_NOT_SUPPORTED;           break;
             }

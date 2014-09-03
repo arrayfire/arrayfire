@@ -122,19 +122,18 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
         err = gemv(
             clblasColumnMajor, lOpts,
             M, N,
-            scale,  lhs.get()(),    0,   lStrides[1],
-                    rhs.get()(),    0,   rStrides[0],
-            scale,  out->get()(),   0,             1,
+            scale,  lhs.get()(),    lhs.getOffset(),   lStrides[1],
+                    rhs.get()(),    rhs.getOffset(),   rStrides[0],
+            scale,  out->get()(),   out->getOffset(),             1,
             1, &getQueue(0)(), 0, nullptr, &event());
-    }
-    else {
+    } else {
         gemm_func<T> gemm;
         err = gemm(
                 clblasColumnMajor, lOpts, rOpts,
                 M, N, K,
-                scale,  lhs.get()(),    0,   lStrides[1],
-                        rhs.get()(),    0,   rStrides[1],
-                scale,  out->get()(),   0,   out->dims()[0],
+                scale,  lhs.get()(),    lhs.getOffset(),   lStrides[1],
+                        rhs.get()(),    rhs.getOffset(),   rStrides[1],
+                scale,  out->get()(),   out->getOffset(),   out->dims()[0],
                 1, &getQueue(0)(), 0, nullptr, &event());
 
     }
@@ -158,9 +157,9 @@ Array<T>* dot(const Array<T> &lhs, const Array<T> &rhs,
     cl::Buffer scratch(getCtx(0), CL_MEM_READ_WRITE, sizeof(T) * N);
     clblasStatus err;
     err = dot(    N,
-            out->get()(), 0,
-            lhs.get()(),  0, lhs.strides()[0],
-            rhs.get()(),  0, rhs.strides()[0],
+            out->get()(), out->getOffset(),
+            lhs.get()(),  lhs.getOffset(), lhs.strides()[0],
+            rhs.get()(),  rhs.getOffset(), rhs.strides()[0],
             scratch(),
             1, &getQueue(0)(), 0, nullptr, &event());
 
