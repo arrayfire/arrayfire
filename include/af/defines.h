@@ -9,6 +9,7 @@ typedef enum {
     AF_ERR_INVALID_ARRAY,
     AF_ERR_ARG,
     AF_ERR_SIZE,
+    AF_ERR_DIFF_TYPE,
     AF_ERR_NOT_SUPPORTED,
 } af_err;
 

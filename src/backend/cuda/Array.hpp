@@ -54,7 +54,6 @@ namespace cuda
 
         bool isOwner() const { return parent == NULL; }
 
-
         //FIXME: This should do a copy if it is not owner. You do not want to overwrite parents data
         T* get(bool withOffset = true)
         {
