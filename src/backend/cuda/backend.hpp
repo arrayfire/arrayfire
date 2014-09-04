@@ -1,6 +1,7 @@
 #pragma once
-#include <cuComplex.h>
+#include <algorithm>
 #include <limits>
+#include <cuComplex.h>
 #include "complex.hpp"
 
 #ifdef __DH__
