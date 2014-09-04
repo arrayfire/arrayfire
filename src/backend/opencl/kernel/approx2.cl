@@ -84,23 +84,31 @@ void core_linear2(const dim_type idx, const dim_type idy, const dim_type idz, co
     const Tp grid_x = floor(x),   grid_y = floor(y);   // nearest grid
     const Tp off_x  = x - grid_x, off_y  = y - grid_y; // fractional offset
 
-    Tp w = 0;
-    Ty z; set_scalar(z, 0);
-    dim_type ioff = idw * istrides.dim[3] + idz * istrides.dim[2];
-    for(dim_type yy = 0; yy <= (y < idims.dim[1] - 1); ++yy) {
-        Tp fyy = (Tp)(yy);
-        Tp wy = 1 - fabs(off_y - fyy);
-        dim_type idyy = (dim_type)(fyy + grid_y);
-        for(dim_type xx = 0; xx <= (x < idims.dim[0] - 1); ++xx) {
-            Tp fxx = (Tp)(xx);
-            Tp wxy = (1 - fabs(off_x - fxx)) * wy;
-            dim_type imId = idyy * istrides.dim[1] + (dim_type)(fxx + grid_x) + ioff;
-            Ty zt; set(zt, d_in[imId]);
-            z = z + mul(zt, wxy);
-            w = w + wxy;
-        }
-    }
-    set(d_out[omId], div(z, w));
+    dim_type ioff = idw * istrides.dim[3] + idz * istrides.dim[2] + grid_y * istrides.dim[1] + grid_x;
+
+    // Check if pVal and pVal + 1 are both valid indices
+    bool condY = (y < idims.dim[1] - 1);
+    bool condX = (x < idims.dim[0] - 1);
+
+    // Compute wieghts used
+    Tp wt00 = ((Tp)1.0 - off_x) * ((Tp)1.0 - off_y);
+    Tp wt10 = (condY) ? ((Tp)1.0 - off_x) * (off_y) : 0;
+    Tp wt01 = (condX) ? (off_x) * ((Tp)1.0 - off_y) : 0;
+    Tp wt11 = (condX && condY) ? (off_x) * (off_y)  : 0;
+
+    Tp wt = wt00 + wt10 + wt01 + wt11;
+
+    // Compute Weighted Values
+    Ty zero; set_scalar(zero, 0);
+    Ty y00; set(y00,                    mul(d_in[ioff],                       wt00)       );
+    Ty y10; set(y10, (condY) ?          mul(d_in[ioff + istrides.dim[1]],     wt10) : zero);
+    Ty y01; set(y01, (condX) ?          mul(d_in[ioff + 1],                   wt01) : zero);
+    Ty y11; set(y11, (condX && condY) ? mul(d_in[ioff + istrides.dim[1] + 1], wt11) : zero);
+
+    Ty yo = y00 + y10 + y01 + y11;
+
+    // Write Final Value
+    set(d_out[omId], div(yo, wt));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

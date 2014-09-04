@@ -79,18 +79,22 @@ void core_linear1(const dim_type idx, const dim_type idy, const dim_type idz, co
     const Tp grid_x = floor(pVal);  // nearest grid
     const Tp off_x = pVal - grid_x; // fractional offset
 
-    Tp w = 0;
-    Ty y; set_scalar(y, 0);
-    dim_type ioff = idw * istrides.dim[3] + idz * istrides.dim[2] + idy * istrides.dim[1];
-    for(dim_type xx = 0; xx <= (pVal < idims.dim[0] - 1); ++xx) {
-        Tp fxx = (Tp)(xx);
-        Tp wx = 1 - fabs(off_x - fxx);
-        dim_type imId = (dim_type)(fxx + grid_x) + ioff;
-        Ty yt; set(yt, d_in[imId]);
-        y = y + mul(yt, wx);
-        w = w + wx;
-    }
-    set(d_out[omId], div(y, w));
+    dim_type ioff = idw * istrides.dim[3] + idz * istrides.dim[2] + idy * istrides.dim[1] + grid_x;
+
+    // Check if pVal and pVal + 1 are both valid indices
+    bool cond = (pVal < idims.dim[0] - 1);
+    Ty zero; set_scalar(zero, 0);
+
+    // Compute Left and Right Weighted Values
+    Ty yl; set(yl, mul(d_in[ioff] , (1 - off_x)));
+    Ty yr; set(yr, cond ? mul(d_in[ioff + 1], off_x) : zero);
+    Ty yo = yl + yr;
+
+    // Compute Weight used
+    Tp wt = cond ? 1 : (1 - off_x);
+
+    // Write final value
+    set(d_out[omId], div(yo, wt));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

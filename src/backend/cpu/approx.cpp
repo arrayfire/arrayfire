@@ -76,8 +76,8 @@ namespace cpu
                 gFlag = true;
             }
 
-            const Tp grix = floor(x);  // nearest grid
-            const Tp off_x = x - grix; // fractional offset
+            const Tp grid_x = floor(x);  // nearest grid
+            const Tp off_x = x - grid_x; // fractional offset
 
             for(dim_type idw = 0; idw < odims[3]; idw++) {
                 for(dim_type idz = 0; idz < odims[2]; idz++) {
@@ -87,19 +87,18 @@ namespace cpu
                         if(gFlag) {
                             out[omId] = constant<Ty>(offGrid);
                         } else {
-                            Tp w = 0;
-                            Ty y = constant<Ty>(0);
-                            dim_type ioff = idw * istrides[3] + idz * istrides[2]
-                                          + idy * istrides[1];
-                            for(dim_type xx = 0; xx <= (x < idims[0] - 1); ++xx) {
-                                Tp fxx = (Tp)(xx);
-                                Tp wx = 1 - fabs(off_x - fxx);
-                                dim_type imId = (dim_type)(fxx + grix) + ioff;
-                                Ty yt = in[imId];
-                                y = y + (yt * wx);
-                                w = w + wx;
-                            }
-                            out[omId] = (y / w);
+                            dim_type ioff = idw * istrides[3] + idz * istrides[2] + idy * istrides[1] + grid_x;
+
+                            // Check if x and x + 1 are both valid indices
+                            bool cond = (x < idims[0] - 1);
+                            // Compute Left and Right Weighted Values
+                            Ty yl = ((Tp)1.0 - off_x) * in[ioff];
+                            Ty yr = cond ? (off_x) * in[ioff + 1] : constant<Ty>(0);
+                            Ty yo = yl + yr;
+                            // Compute Weight used
+                            Tp wt = cond ? (Tp)1.0 : (Tp)(1.0 - off_x);
+                            // Write final value
+                            out[omId] = (yo / wt);
                         }
                     }
                 }
@@ -223,6 +222,22 @@ namespace cpu
                 gFlag = true;
             }
 
+            const Tp grid_x = floor(x),   grid_y = floor(y);   // nearest grid
+            const Tp off_x  = x - grid_x, off_y  = y - grid_y; // fractional offset
+
+            // Check if pVal and pVal + 1 are both valid indices
+            bool condY = (y < idims[1] - 1);
+            bool condX = (x < idims[0] - 1);
+
+            // Compute wieghts used
+            Tp wt00 = ((Tp)1.0 - off_x) * ((Tp)1.0 - off_y);
+            Tp wt10 = (condY) ? ((Tp)1.0 - off_x) * (off_y) : 0;
+            Tp wt01 = (condX) ? (off_x) * ((Tp)1.0 - off_y) : 0;
+            Tp wt11 = (condX && condY) ? (off_x) * (off_y)  : 0;
+
+            Tp wt = wt00 + wt10 + wt01 + wt11;
+            Ty zero = constant<Ty>(0);
+
             for(dim_type idw = 0; idw < odims[3]; idw++) {
                 for(dim_type idz = 0; idz < odims[2]; idz++) {
                     const dim_type omId = idw * ostrides[3] + idz * ostrides[2]
@@ -230,26 +245,20 @@ namespace cpu
                     if(gFlag) {
                         out[omId] = constant<Ty>(offGrid);
                     } else {
-                        const Tp grid_x = floor(x),   grid_y = floor(y);   // nearest grid
-                        const Tp off_x  = x - grid_x, off_y  = y - grid_y; // fractional offset
+                        dim_type ioff = idw * istrides[3] + idz * istrides[2]
+                                   + grid_y * istrides[1] + grid_x;
 
-                        Tp w = 0;
-                        Ty z = constant<Ty>(0);
-                        dim_type ioff = idw * istrides[3] + idz * istrides[2];
-                        for(dim_type yy = 0; yy <= (y < idims[1] - 1); ++yy) {
-                            Tp fyy = (Tp)(yy);
-                            Tp wy = 1 - fabs(off_y - fyy);
-                            dim_type idyy = (dim_type)(fyy + grid_y);
-                            for(dim_type xx = 0; xx <= (x < idims[0] - 1); ++xx) {
-                                Tp fxx = (Tp)(xx);
-                                Tp wxy = (1 - fabs(off_x - fxx)) * wy;
-                                dim_type imId = idyy * istrides[1] + (dim_type)(fxx + grid_x) + ioff;
-                                Ty zt = in[imId];
-                                z = z + (zt * wxy);
-                                w = w + wxy;
-                            }
-                        }
-                        out[omId] = z / w;
+                        // Compute Weighted Values
+                        Ty y00 =                    wt00 * in[ioff];
+                        Ty y10 = (condY) ?          wt10 * in[ioff + istrides[1]]     : zero;
+                        Ty y01 = (condX) ?          wt01 * in[ioff + 1]                   : zero;
+                        Ty y11 = (condX && condY) ? wt11 * in[ioff + istrides[1] + 1] : zero;
+
+                        Ty yo = y00 + y10 + y01 + y11;
+
+                        // Write Final Value
+                        out[omId] = (yo / wt);
+
                     }
                 }
             }
