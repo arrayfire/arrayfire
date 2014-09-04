@@ -29,18 +29,16 @@ typedef ::testing::Types<float, af_cfloat, double, af_cdouble, int, unsigned, un
 TYPED_TEST_CASE(Random, TestTypes);
 
 template<typename T>
-void randuTest()
+void randuTest(af::dim4 & dims)
 {
-    af::dim4 dims(rand() % 100 + 1, rand() % 100 + 1, rand() % 25 + 1, rand() % 10 + 1);
     af_array outArray = 0;
     ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
 }
 
 template<typename T>
-void randnTest()
+void randnTest(af::dim4 &dims)
 {
-    af::dim4 dims(rand() % 100 + 1, rand() % 100 + 1, rand() % 25 + 1, rand() % 10 + 1);
     af_array outArray = 0;
     ASSERT_EQ(AF_SUCCESS, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
@@ -48,51 +46,79 @@ void randnTest()
 
 // INT, UNIT, CHAR, UCHAR Not Supported by RANDN
 template<>
-void randnTest<int>()
+void randnTest<int>(af::dim4 &dims)
 {
-    af::dim4 dims(rand() % 100 + 1, rand() % 100 + 1, rand() % 25 + 1, rand() % 10 + 1);
     af_array outArray = 0;
     ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<int>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
 }
 
 template<>
-void randnTest<unsigned>()
+void randnTest<unsigned>(af::dim4 &dims)
 {
-    af::dim4 dims(rand() % 100 + 1, rand() % 100 + 1, rand() % 25 + 1, rand() % 10 + 1);
     af_array outArray = 0;
     ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<unsigned>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
 }
 
 template<>
-void randnTest<char>()
+void randnTest<char>(af::dim4 &dims)
 {
-    af::dim4 dims(rand() % 100 + 1, rand() % 100 + 1, rand() % 25 + 1, rand() % 10 + 1);
     af_array outArray = 0;
     ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<char>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
 }
 
 template<>
-void randnTest<unsigned char>()
+void randnTest<unsigned char>(af::dim4 &dims)
 {
-    af::dim4 dims(rand() % 100 + 1, rand() % 100 + 1, rand() % 25 + 1, rand() % 10 + 1);
     af_array outArray = 0;
     ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<unsigned char>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
 }
 
-// Diff on 0 dimension
-TYPED_TEST(Random,randu)
-{
-    randuTest<TypeParam>();
-}
+#define RAND(d0, d1, d2, d3)                            \
+    TYPED_TEST(Random,randu_##d0##_##d1##_##d2##_##d3)                \
+    {                                                   \
+        af::dim4 dims(d0, d1, d2, d3);                  \
+        randuTest<TypeParam>(dims);                     \
+    }                                                   \
+    TYPED_TEST(Random,randn_##d0##_##d1##_##d2##_##d3)                \
+    {                                                   \
+        af::dim4 dims(d0, d1, d2, d3);                  \
+        randnTest<TypeParam>(dims);                     \
+    }                                                   \
 
-TYPED_TEST(Random,randn)
-{
-    randnTest<TypeParam>();
-}
+RAND(1024, 1024,    1,    1);
+RAND( 512,  512,    1,    1);
+RAND( 256,  256,    1,    1);
+RAND( 128,  128,    1,    1);
+RAND(  64,   64,    1,    1);
+RAND(  32,   32,    1,    1);
+RAND(  16,   16,    1,    1);
+RAND(   8,    8,    1,    1);
+RAND(   4,    4,    1,    1);
+RAND(   2,    2,    2,    2);
+RAND(   1,    1,    1,    1);
+RAND( 256,   16,    4,    2);
+RAND(  32,   16,    8,    4);
+RAND(   2,    4,   16,  256);
+RAND(   4,    8,   16,   32);
+
+RAND(  10,   10,   10,   10);
+
+RAND(1920, 1080,    1,    1);
+RAND(1280,  720,    1,    1);
+RAND( 640,  480,    1,    1);
+
+RAND( 215,   24,    6,    5);
+RAND( 132,   64,   23,    2);
+RAND(  15,   35,   50,    3);
+RAND(  77,   43,    8,    1);
+RAND( 123,   45,    6,    7);
+RAND( 345,   28,    9,    1);
+RAND(  79,   68,   12,    6);
+RAND(  45,    1,    1,    1);
 
 template<typename T>
 void randuArgsTest()
