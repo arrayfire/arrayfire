@@ -50,7 +50,8 @@ void histogramKernel(const hist_param_t<inType, outType> params,
 
     if (threadIdx.x == 0) {
         float2 minmax = *d_minmax;
-        step          = (minmax.y-minmax.x) / (float)nbins;
+        min  = minmax.x;
+        step = (minmax.y-minmax.x) / (float)nbins;
     }
 
     for (int i = threadIdx.x; i < nbins; i += blockDim.x)
