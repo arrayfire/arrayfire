@@ -74,6 +74,22 @@ dim4::operator[](const unsigned dim)
 }
 
 bool
+dim4::operator==(const dim4 &other) const
+{
+    bool ret = true;
+    for(unsigned i = 0; i < 4 && ret; i++) {
+        ret = (*this)[i] == other[i];
+    }
+    return ret;
+}
+
+bool
+dim4::operator!=(const dim4 &other) const
+{
+    return !((*this) == other);
+}
+
+bool
 isSpan(const af_seq &seq)          { return (seq.step == 0); }
 
 size_t

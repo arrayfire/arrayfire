@@ -29,6 +29,8 @@ public:
     dim_type elements() const;
     dim_type ndims();
     dim_type ndims() const;
+    bool operator==(const dim4& other) const;
+    bool operator!=(const dim4& other) const;
     dim_type& operator[](const unsigned dim);
     const dim_type& operator[](const unsigned dim) const;
             dim_type* get()         { return dims; }
