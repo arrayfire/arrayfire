@@ -1,80 +1,70 @@
 
 #include <stdexcept>
 #include <string>
+#include <af/defines.h>
+
 
 class AfError   : public std::logic_error
 {
-    string functionName;
+    std::string functionName;
     AfError();
 public:
     AfError( const char * const message
-            ,const char * const funcName)
-        : logic_error   (message)
-        , functionName  (funcName)
-    {}
+            ,const char * const funcName);
+    AfError( std::string message
+            ,std::string funcName);
 
-    virtual ~AfError() {}
-
+    virtual ~AfError() throw();
 };
 
 class TypeError : public AfError
 {
     TypeError();
 public:
-    explicit TypeError(
-                        const char * const  funcName,
-                        const char * const  argName,
-                        af_dtype            expectedType)
-    : AfError (string("Invalid type:\nIn Function: " + funcName +
-            + "\nExpected " + expectedType
-            + "\nActual" + to_string(actual)), funcName),
-    {}
+    TypeError(
+                const char * const  funcName,
+                const char * const  argName,
+                af_dtype            expectedType,
+                af_dtype            actual);
+    ~TypeError() throw() {}
 };
 
 class ArgumentError : public AfError
 {
     ArgumentError();
 public:
-    explicit arg_error(
-                        const char * const  funcName,
-                        const char * const  argName,
-                        int                 argIndex)
-    : AfError (string("Invalid argument:\nIn Function: " + funcName +
-            + "\nExpected " + expectString
-            + "\nActual" + to_string(actual)), funcName)
-    {}
+    ArgumentError(
+                    const char * const  funcName,
+                    const char * const  argName,
+                    int                 argIndex,
+                    const char * const  actual);
+    ~ArgumentError() throw(){}
 };
 
 class DimensionError : public AfError
 {
     DimensionError();
-    string      expected;
-    dim_size    value;
+    std::string      expected;
+    dim_type    value;
 public:
-    explicit DimensionError(
-                        const char * const  funcName,
-                        const char * const  expectString,
-                        dim_size            &actual)
-    : AfError(string("Invalid dimension:\nExpected ") + expectString + "\nActual", to_string(actual))
-    , functionName(funcName)
-    , expected(expectString)
-    , value(actual)
-    {
-
-    }
+    DimensionError(
+                    const char * funcName,
+                    const char * expectString,
+                    dim_type     actual);
+    ~DimensionError() throw(){}
 };
 
 class SupportError  :   public AfError
 {
-    string cond;
-    string backend;
+    std::string cond;
+    std::string backend;
     SupportError();
 public:
     SupportError(const char * const funcName
             , const char * const back
-            , const char * const condition)
-        :   AfError(string(condition) + " not supported by " + backend, funcName)
-        ,   cond(condition)
-        ,   backend(back)
-        {}
+            , const char * const condition);
+    ~SupportError()throw() {}
 };
+
+#define DIM_CHECK(COND, VAL)                        \
+    throw DimensionError(__func__, "##COND##", VAL);
