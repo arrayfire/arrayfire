@@ -4,7 +4,7 @@ INCLUDE(ExternalProject)
 set_directory_properties(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/data)
 
 ExternalProject_Add(arrayfire_data
-    GIT_REPOSITORY git@mule:area51/arrayfire_data
+    GIT_REPOSITORY git@git.arrayfire.org:arrayfire/arrayfire-data.git
     DOWNLOAD_DIR ${CMAKE_BINARY_DIRECTORY}
     CONFIGURE_COMMAND ""
     INSTALL_COMMAND ""
