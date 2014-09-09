@@ -38,13 +38,13 @@ namespace cpu
 
             dim_type stride = istrides[dim];
 
-            transform_op<Ti, To, op> Transform;
-            reduce_op<To, op> Reduce;
+            Transform<Ti, To, op> transform;
+            Binary<To, op> reduce;
 
-            To out_val = Reduce.init();
+            To out_val = reduce.init();
             for (dim_type i = 0; i < idims[dim]; i++) {
-                To in_val = Transform(in[i * stride]);
-                out_val = Reduce.calc(in_val, out_val);
+                To in_val = transform(in[i * stride]);
+                out_val = reduce(in_val, out_val);
             }
 
             *out = out_val;

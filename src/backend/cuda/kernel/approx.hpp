@@ -39,7 +39,7 @@ namespace cuda
 
             const Tp x = d_pos[pmId];
             if (x < 0 || idims.dim[0] < x+1) {
-                d_out[omId] = constant<Ty>(offGrid);
+                d_out[omId] = scalar<Ty>(offGrid);
                 return;
             }
 
@@ -66,7 +66,7 @@ namespace cuda
 
             const Tp x = d_pos[pmId], y = d_qos[qmId];
             if (x < 0 || y < 0 || idims.dim[0] < x+1 || idims.dim[1] < y+1) {
-                d_out[omId] = constant<Ty>(offGrid);
+                d_out[omId] = scalar<Ty>(offGrid);
                 return;
             }
 
@@ -97,7 +97,7 @@ namespace cuda
 
             const Tp pVal = d_pos[pmId];
             if (pVal < 0 || idims.dim[0] < pVal+1) {
-                d_out[omId] = constant<Ty>(offGrid);
+                d_out[omId] = scalar<Ty>(offGrid);
                 return;
             }
 
@@ -110,7 +110,7 @@ namespace cuda
             bool cond = (pVal < idims.dim[0] - 1);
             // Compute Left and Right Weighted Values
             Ty yl = ((Tp)1.0 - off_x) * d_in[ioff];
-            Ty yr = cond ? (off_x) * d_in[ioff + 1] : constant<Ty>(0);
+            Ty yr = cond ? (off_x) * d_in[ioff + 1] : scalar<Ty>(0);
             Ty yo = yl + yr;
             // Compute Weight used
             Tp wt = cond ? (Tp)1.0 : (Tp)(1.0 - off_x);
@@ -134,7 +134,7 @@ namespace cuda
 
             const Tp x = d_pos[pmId], y = d_qos[qmId];
             if (x < 0 || y < 0 || idims.dim[0] < x+1 || idims.dim[1] < y+1) {
-                d_out[omId] = constant<Ty>(offGrid);
+                d_out[omId] = scalar<Ty>(offGrid);
                 return;
             }
 
@@ -156,7 +156,7 @@ namespace cuda
             Tp wt = wt00 + wt10 + wt01 + wt11;
 
             // Compute Weighted Values
-            Ty zero = constant<Ty>(0);
+            Ty zero = scalar<Ty>(0);
             Ty y00 =                    wt00 * d_in[ioff];
             Ty y10 = (condY) ?          wt10 * d_in[ioff + istrides.dim[1]]     : zero;
             Ty y01 = (condX) ?          wt01 * d_in[ioff + 1]                   : zero;

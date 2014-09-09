@@ -41,20 +41,20 @@ namespace cpu
     }
 
     template<typename T>
-    static T constant(double val)
+    static T scalar(double val)
     {
         return (T)(val);
     }
 
     template<>
-    cfloat  constant<cfloat >(double val)
+    cfloat  scalar<cfloat >(double val)
     {
         cfloat  cval = {(float)val, 0};
         return cval;
     }
 
     template<>
-    cdouble constant<cdouble >(double val)
+    cdouble scalar<cdouble >(double val)
     {
         cdouble  cval = {val, 0};
         return cval;

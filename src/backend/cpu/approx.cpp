@@ -45,7 +45,7 @@ namespace cpu
                         const dim_type omId = idw * ostrides[3] + idz * ostrides[2]
                                             + idy * ostrides[1] + idx;
                         if(gFlag) {
-                            out[omId] = constant<Ty>(offGrid);
+                            out[omId] = scalar<Ty>(offGrid);
                         } else {
                             dim_type ioff = idw * istrides[3] + idz * istrides[2]
                                           + idy * istrides[1];
@@ -85,7 +85,7 @@ namespace cpu
                         const dim_type omId = idw * ostrides[3] + idz * ostrides[2]
                                             + idy * ostrides[1] + idx;
                         if(gFlag) {
-                            out[omId] = constant<Ty>(offGrid);
+                            out[omId] = scalar<Ty>(offGrid);
                         } else {
                             dim_type ioff = idw * istrides[3] + idz * istrides[2] + idy * istrides[1] + grid_x;
 
@@ -93,7 +93,7 @@ namespace cpu
                             bool cond = (x < idims[0] - 1);
                             // Compute Left and Right Weighted Values
                             Ty yl = ((Tp)1.0 - off_x) * in[ioff];
-                            Ty yr = cond ? (off_x) * in[ioff + 1] : constant<Ty>(0);
+                            Ty yr = cond ? (off_x) * in[ioff + 1] : scalar<Ty>(0);
                             Ty yo = yl + yr;
                             // Compute Weight used
                             Tp wt = cond ? (Tp)1.0 : (Tp)(1.0 - off_x);
@@ -190,7 +190,7 @@ namespace cpu
                     const dim_type omId = idw * ostrides[3] + idz * ostrides[2]
                                         + idy * ostrides[1] + idx;
                     if(gFlag) {
-                        out[omId] = constant<Ty>(offGrid);
+                        out[omId] = scalar<Ty>(offGrid);
                     } else {
                         const dim_type grid_x = round(x), grid_y = round(y); // nearest grid
                         const dim_type imId = idw * istrides[3] +
@@ -236,14 +236,14 @@ namespace cpu
             Tp wt11 = (condX && condY) ? (off_x) * (off_y)  : 0;
 
             Tp wt = wt00 + wt10 + wt01 + wt11;
-            Ty zero = constant<Ty>(0);
+            Ty zero = scalar<Ty>(0);
 
             for(dim_type idw = 0; idw < odims[3]; idw++) {
                 for(dim_type idz = 0; idz < odims[2]; idz++) {
                     const dim_type omId = idw * ostrides[3] + idz * ostrides[2]
                                         + idy * ostrides[1] + idx;
                     if(gFlag) {
-                        out[omId] = constant<Ty>(offGrid);
+                        out[omId] = scalar<Ty>(offGrid);
                     } else {
                         dim_type ioff = idw * istrides[3] + idz * istrides[2]
                                    + grid_y * istrides[1] + grid_x;

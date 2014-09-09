@@ -63,20 +63,20 @@ namespace cuda
 
     template<typename T>
     static __DH__
-    T constant(double val)
+    T scalar(double val)
     {
         return (T)(val);
     }
 
     template<> __DH__
-    cfloat constant<cfloat >(double val)
+    cfloat scalar<cfloat >(double val)
     {
         cfloat  cval = {(float)val, 0};
         return cval;
     }
 
     template<> __DH__
-    cdouble constant<cdouble >(double val)
+    cdouble scalar<cdouble >(double val)
     {
         cdouble  cval = {val, 0};
         return cval;
@@ -87,7 +87,7 @@ namespace cuda
     template <typename T> T limit_min() { return std::numeric_limits<T>::min(); }
 #else
     template <typename T> __device__ T limit_max() { return 1u << (8 * sizeof(T) - 1); }
-    template <typename T> __device__ T limit_min() { return constant<T>(0); }
+    template <typename T> __device__ T limit_min() { return scalar<T>(0); }
 
     template<> __device__  int    limit_max<int>()    { return 0x7fffffff; }
     template<> __device__  int    limit_min<int>()    { return 0x80000000; }
