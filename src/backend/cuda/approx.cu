@@ -1,5 +1,3 @@
-#include <af/array.h>
-#include <af/dim4.hpp>
 #include <Array.hpp>
 #include <approx.hpp>
 #include <kernel/approx.hpp>
@@ -21,17 +19,11 @@ namespace cuda
         switch(method) {
             case AF_INTERP_NEAREST:
                 kernel::approx1<Ty, Tp, AF_INTERP_NEAREST>
-                              (out->get(), out->dims().get(), out->elements(),
-                               in.get(), in.dims().get(), in.elements(),
-                               pos.get(), pos.dims().get(), out->strides().get(),
-                               in.strides().get(), pos.strides().get(), offGrid);
+                              (*out, in, pos, offGrid);
                 break;
             case AF_INTERP_LINEAR:
                 kernel::approx1<Ty, Tp, AF_INTERP_LINEAR>
-                              (out->get(), out->dims().get(), out->elements(),
-                               in.get(), in.dims().get(), in.elements(),
-                               pos.get(), pos.dims().get(), out->strides().get(),
-                               in.strides().get(), pos.strides().get(), offGrid);
+                              (*out, in, pos, offGrid);
                 break;
             default:
                 break;
@@ -54,21 +46,11 @@ namespace cuda
         switch(method) {
             case AF_INTERP_NEAREST:
                 kernel::approx2<Ty, Tp, AF_INTERP_NEAREST>
-                              (out->get(), out->dims().get(), out->elements(),
-                               in.get(), in.dims().get(), in.elements(),
-                               pos0.get(), pos0.dims().get(), pos1.get(), pos1.dims().get(),
-                               out->strides().get(), in.strides().get(),
-                               pos0.strides().get(), pos1.strides().get(),
-                               offGrid);
+                              (*out, in, pos0, pos1, offGrid);
                 break;
             case AF_INTERP_LINEAR:
                 kernel::approx2<Ty, Tp, AF_INTERP_LINEAR>
-                              (out->get(), out->dims().get(), out->elements(),
-                               in.get(), in.dims().get(), in.elements(),
-                               pos0.get(), pos0.dims().get(), pos1.get(), pos1.dims().get(),
-                               out->strides().get(), in.strides().get(),
-                               pos0.strides().get(), pos1.strides().get(),
-                               offGrid);
+                              (*out, in, pos0, pos1, offGrid);
                 break;
             default:
                 break;

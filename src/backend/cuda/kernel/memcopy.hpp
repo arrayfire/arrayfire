@@ -1,7 +1,6 @@
 #include <af/defines.h>
 #include <backend.hpp>
 #include <dispatch.hpp>
-#include <stdio.h>
 #include <backend.hpp>
 
 namespace cuda

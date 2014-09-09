@@ -21,8 +21,9 @@ namespace cuda
         odims[dim] = 1;
         Array<To> *out = createEmptyArray<To>(odims);
 
-        kernel::reduce<Ti, To, op>(out->get(), out->strides().get(), out->dims().get(),
-                                   in.get(), in.strides().get(), in.dims().get(), dim);
+        const Ti *foo = in.get();
+
+        kernel::reduce<Ti, To, op>(*out, in, dim);
         return out;
     }
 

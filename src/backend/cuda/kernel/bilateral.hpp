@@ -1,6 +1,7 @@
 #include <af/defines.h>
 #include <backend.hpp>
 #include <dispatch.hpp>
+#include <Param.hpp>
 #include "shared.hpp"
 
 namespace cuda
@@ -8,15 +9,6 @@ namespace cuda
 
 namespace kernel
 {
-
-template<typename T>
-struct bilateral_params_t {
-    T *             d_dst;
-    const T *       d_src;
-    dim_type     idims[4];
-    dim_type  istrides[4];
-    dim_type  ostrides[4];
-};
 
 static const dim_type THREADS_X = 16;
 static const dim_type THREADS_Y = 16;
@@ -40,10 +32,10 @@ __forceinline__ __device__ float gaussian1d(float x, float variance)
 
 template<typename T>
 inline __device__ void load2ShrdMem(T * shrd, const T * const in,
-        dim_type lx, dim_type ly, dim_type shrdStride,
-        dim_type dim0, dim_type dim1,
-        dim_type gx, dim_type gy,
-        dim_type inStride1, dim_type inStride0)
+                                    dim_type lx, dim_type ly, dim_type shrdStride,
+                                    dim_type dim0, dim_type dim1,
+                                    dim_type gx, dim_type gy,
+                                    dim_type inStride1, dim_type inStride0)
 {
     int gx_  = clamp(gx, 0, dim0-1);
     int gy_  = clamp(gy, 0, dim1-1);
@@ -52,13 +44,13 @@ inline __device__ void load2ShrdMem(T * shrd, const T * const in,
 
 template<typename T>
 static __global__
-void bilateralKernel(const bilateral_params_t<T> params,
+void bilateralKernel(Param<T> out, CParam<T> in,
                      float sigma_space, float sigma_color,
                      dim_type gaussOff, dim_type nonBatchBlkSize)
 {
     SharedMemory<T> shared;
-    T * localMem = shared.getPointer();
-    T * gauss2d  = localMem + gaussOff;
+    T *localMem = shared.getPointer();
+    T *gauss2d  = localMem + gaussOff;
 
     const dim_type radius      = max((int)(sigma_space * 1.5f), 1);
     const dim_type padding     = 2 * radius;
@@ -69,8 +61,8 @@ void bilateralKernel(const bilateral_params_t<T> params,
 
     // gfor batch offsets
     unsigned batchId = blockIdx.x / nonBatchBlkSize;
-    const T* in      = (const T *)params.d_src + (batchId * params.istrides[2]);
-    T* out           = (T *)params.d_dst + (batchId * params.ostrides[2]);
+    const T* iptr      = (const T *) in.ptr + (batchId * in.strides[2]);
+    T*       optr      = (T *      )out.ptr + (batchId * out.strides[2]);
 
     const dim_type lx = threadIdx.x;
     const dim_type ly = threadIdx.y;
@@ -93,27 +85,27 @@ void bilateralKernel(const bilateral_params_t<T> params,
     }
 
     // pull image to local memory
-    load2ShrdMem(localMem, in, lx, ly, shrdLen,
-                 params.idims[0], params.idims[1], gx-radius,
-                 gy-radius, params.istrides[1], params.istrides[0]);
+    load2ShrdMem(localMem, iptr, lx, ly, shrdLen,
+                 in.dims[0], in.dims[1], gx-radius,
+                 gy-radius, in.strides[1], in.strides[0]);
     if (lx<padding) {
-        load2ShrdMem(localMem, in, lx2, ly, shrdLen,
-                     params.idims[0], params.idims[1], gx2-radius,
-                     gy-radius, params.istrides[1], params.istrides[0]);
+        load2ShrdMem(localMem, iptr, lx2, ly, shrdLen,
+                     in.dims[0], in.dims[1], gx2-radius,
+                     gy-radius, in.strides[1], in.strides[0]);
     }
     if (ly<padding) {
-        load2ShrdMem(localMem, in, lx, ly2, shrdLen,
-                     params.idims[0], params.idims[1], gx-radius,
-                     gy2-radius, params.istrides[1], params.istrides[0]);
+        load2ShrdMem(localMem, iptr, lx, ly2, shrdLen,
+                     in.dims[0], in.dims[1], gx-radius,
+                     gy2-radius, in.strides[1], in.strides[0]);
     }
     if (lx<padding && ly<padding) {
-        load2ShrdMem(localMem, in, lx2, ly2, shrdLen,
-                     params.idims[0], params.idims[1], gx2-radius,
-                     gy2-radius, params.istrides[1], params.istrides[0]);
+        load2ShrdMem(localMem, iptr, lx2, ly2, shrdLen,
+                     in.dims[0], in.dims[1], gx2-radius,
+                     gy2-radius, in.strides[1], in.strides[0]);
     }
     __syncthreads();
 
-    if (gx<params.idims[0] && gy<params.idims[1]) {
+    if (gx<in.dims[0] && gy<in.dims[1]) {
         const float center_color = (float)localMem[j*shrdLen+i];
         float res  = 0;
         float norm = 0;
@@ -131,33 +123,34 @@ void bilateralKernel(const bilateral_params_t<T> params,
                 res  += tmp_color * weight;
             }
         }
-        dim_type oIdx = gy*params.ostrides[1] + gx*params.ostrides[0];
-        out[oIdx] = (T)(res / norm);
+        dim_type oIdx = gy*out.strides[1] + gx*out.strides[0];
+        optr[oIdx] = (T)(res / norm);
     }
 }
 
 template<typename T, bool isColor>
-void bilateral(const bilateral_params_t<T> &params, float s_sigma, float c_sigma)
+void bilateral(Param<T> out, CParam<T> in, float s_sigma, float c_sigma)
 {
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 
-    dim_type blk_x = divup(params.idims[0], THREADS_X);
-    dim_type blk_y = divup(params.idims[1], THREADS_Y);
+    dim_type blk_x = divup(in.dims[0], THREADS_X);
+    dim_type blk_y = divup(in.dims[1], THREADS_Y);
 
-    dim_type bCount = blk_x * params.idims[2];
+    dim_type bCount = blk_x * in.dims[2];
     if (isColor)
-        bCount *= params.idims[3];
+        bCount *= in.dims[3];
 
     dim3 blocks(bCount, blk_y);
 
     // calculate shared memory size
     dim_type radius = (dim_type)std::max(s_sigma * 1.5f, 1.f);
     dim_type num_shrd_elems    = (THREADS_X + 2 * radius) * (THREADS_Y + 2 * radius);
-    dim_type num_gauss_elems   = (2*radius+1)*(2*radius+1);
-    dim_type total_shrd_size   = sizeof(T)*(num_shrd_elems + num_gauss_elems);
+    dim_type num_gauss_elems   = (2 * radius + 1)*(2 * radius + 1);
+    dim_type total_shrd_size   = sizeof(T) * (num_shrd_elems + num_gauss_elems);
 
-    bilateralKernel< T > <<<blocks, threads, total_shrd_size>>>(params,
-            s_sigma, c_sigma, num_shrd_elems, blk_x);
+    bilateralKernel<T>
+        <<<blocks, threads, total_shrd_size>>>
+        (out, in, s_sigma, c_sigma, num_shrd_elems, blk_x);
 }
 
 }

@@ -1,5 +1,3 @@
-#include <af/array.h>
-#include <af/dim4.hpp>
 #include <Array.hpp>
 #include <transform.hpp>
 #include <kernel/transform.hpp>
@@ -15,9 +13,7 @@ namespace cuda
 
         Array<T> *out = createEmptyArray<T>(odims);
 
-        kernel::transform<T>
-                      (out->get(), in.get(), transform.get(), odims.get(), idims.get(),
-                       out->strides().get(), in.strides().get(), transform.strides().get(), inverse);
+        kernel::transform<T>(*out, in, transform, inverse);
 
         return out;
     }

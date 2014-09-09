@@ -40,19 +40,7 @@ Array<outType> * histogram(const Array<inType> &in, const unsigned &nbins, const
     // cleanup the host memory used
     delete[] h_minmax;
 
-    kernel::hist_param_t<inType, outType> params;
-
-    params.d_dst    = out->get();
-    params.d_src    = in.get();
-    params.d_minmax = minmax->get();
-
-    for(dim_type i=0; i<4; ++i) {
-        params.idims[i]    = dims[i];
-        params.istrides[i] = istrides[i];
-        params.ostrides[i] = ostrides[i];
-    }
-
-    kernel::histogram(params, nbins);
+    kernel::histogram<inType, outType>(*out, in, minmax->get(), nbins);
 
     // destroy the minmax array
     destroyArray(*minmax);

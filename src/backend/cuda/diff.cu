@@ -1,9 +1,7 @@
-#include <af/array.h>
-#include <af/dim4.hpp>
 #include <Array.hpp>
 #include <diff.hpp>
 #include <kernel/diff.hpp>
-#include <cassert>
+#include <stdexcept>
 
 namespace cuda
 {
@@ -16,33 +14,20 @@ namespace cuda
         oDims[dim] -= (isDiff2 + 1);
 
         if(iDims.elements() == 0 || oDims.elements() == 0) {
-            // error out
-            assert(1!=1);
+            throw std::runtime_error("Elements are 0");
         }
 
         Array<T> *out = createEmptyArray<T>(oDims);
 
         switch (dim) {
-
-        case (0):       kernel::diff<T, 0, isDiff2>(out->get(), in.get(),
-                                                    oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
-                                                    iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get());
-            break;
-
-        case (1):       kernel::diff<T, 1, isDiff2>(out->get(), in.get(),
-                                                    oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
-                                                    iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get());
-            break;
-
-        case (2):       kernel::diff<T, 2, isDiff2>(out->get(), in.get(),
-                                                    oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
-                                                    iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get());
-            break;
-
-        case (3):       kernel::diff<T, 3, isDiff2>(out->get(), in.get(),
-                                                    oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
-                                                    iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get());
-            break;
+            case (0):   kernel::diff<T, 0, isDiff2>(*out, in, in.ndims());
+                break;
+            case (1):   kernel::diff<T, 1, isDiff2>(*out, in, in.ndims());
+                break;
+            case (2):   kernel::diff<T, 2, isDiff2>(*out, in, in.ndims());
+                break;
+            case (3):   kernel::diff<T, 3, isDiff2>(*out, in, in.ndims());
+                break;
         }
 
         return out;

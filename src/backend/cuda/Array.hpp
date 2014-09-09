@@ -7,6 +7,7 @@
 #include <types.hpp>
 #include <traits.hpp>
 #include <cuda_runtime_api.h>
+#include "Param.hpp"
 
 namespace cuda
 {
@@ -67,6 +68,23 @@ namespace cuda
         {
             if (isOwner()) return data;
             return parent->data + (withOffset ? calcOffset(parent->strides(), this->offsets()) : 0);
+        }
+
+        operator Param<T>()
+        {
+            Param<T> out;
+            out.ptr = this->get();
+            for (int  i = 0; i < 4; i++) {
+                out.dims[i] = dims()[i];
+                out.strides[i] = strides()[i];
+            }
+            return out;
+        }
+
+        operator CParam<T>() const
+        {
+            CParam<T> out(this->get(), this->dims().get(), this->strides().get());
+            return out;
         }
 
         friend Array<T>* createValueArray<T>(const af::dim4 &size, const T& value);

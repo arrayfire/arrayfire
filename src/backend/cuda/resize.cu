@@ -1,5 +1,3 @@
-#include <af/array.h>
-#include <af/dim4.hpp>
 #include <Array.hpp>
 #include <resize.hpp>
 #include <kernel/resize.hpp>
@@ -22,14 +20,10 @@ namespace cuda
 
         switch(method) {
             case AF_INTERP_NEAREST:
-                kernel::resize<T, AF_INTERP_NEAREST>
-                              (out->get(), oDims[0], oDims[1], in.get(), iDims[0], iDims[1], iDims[2],
-                               out->strides().get(), in.strides().get());
+                kernel::resize<T, AF_INTERP_NEAREST >(*out, in);
                 break;
             case AF_INTERP_BILINEAR:
-                kernel::resize<T, AF_INTERP_BILINEAR>
-                              (out->get(), oDims[0], oDims[1], in.get(), iDims[0], iDims[1], iDims[2],
-                               out->strides().get(), in.strides().get());
+                kernel::resize<T, AF_INTERP_BILINEAR>(*out, in);
                 break;
             default:
                 break;

@@ -81,7 +81,7 @@ bool ArrayInfo::isColumn()
 bool ArrayInfo::isVector()
 {
     bool ret = true;
-    for(dim_type i = 0; i < (ndims() - 1) && ret; i++) {
+    for(unsigned i = 0; i < (ndims() - 1) && ret; i++) {
         ret = (dims()[i] == 1);
     }
     return ret;

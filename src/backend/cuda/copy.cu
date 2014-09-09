@@ -43,6 +43,7 @@ namespace cuda
             // FIXME: Add checks
             cudaMemcpy(out->get(), A.get(), A.elements()*sizeof(T), cudaMemcpyDeviceToDevice);
         } else {
+            // FIXME: Seems to fail when using Param<T>
             kernel::memcopy(out->get(), out->strides().get(), A.get(), A.dims().get(),
                             A.strides().get(), (uint)A.ndims());
         }

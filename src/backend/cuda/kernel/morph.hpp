@@ -1,6 +1,7 @@
 #include <af/defines.h>
 #include <backend.hpp>
 #include <dispatch.hpp>
+#include <Param.hpp>
 #include "shared.hpp"
 
 namespace cuda
@@ -23,16 +24,6 @@ static const dim_type THREADS_Y = 16;
 static const dim_type CUBE_X    =  8;
 static const dim_type CUBE_Y    =  8;
 static const dim_type CUBE_Z    =  8;
-
-template<typename T>
-struct morph_param_t{
-    T *             d_dst;
-    const T *       d_src;
-    dim_type      dims[4];
-    dim_type      windLen;
-    dim_type  istrides[4];
-    dim_type  ostrides[4];
-};
 
 __forceinline__ __device__ dim_type lIdx(dim_type x, dim_type y,
         dim_type stride1, dim_type stride0)
@@ -60,7 +51,7 @@ inline __device__ void load2ShrdMem(T * shrd, const T * const in,
 // kernel assumes mask/filter is square and hence does the
 // necessary operations accordingly.
 template<typename T, bool isDilation, dim_type windLen>
-static __global__ void morphKernel(const morph_param_t<T> params,
+static __global__ void morphKernel(Param<T> out, CParam<T> in,
                                    dim_type nonBatchBlkSize)
 {
     // get shared memory pointer
@@ -74,11 +65,11 @@ static __global__ void morphKernel(const morph_param_t<T> params,
 
     // gfor batch offsets
     unsigned batchId = blockIdx.x / nonBatchBlkSize;
-    const T* in      = (const T *)params.d_src + (batchId * params.istrides[2]);
-    T* out           = (T *)params.d_dst + (batchId * params.ostrides[2]);
+    const T* iptr    = (const T *) in.ptr + (batchId *  in.strides[2]);
+    T*       optr    = (T *      )out.ptr + (batchId * out.strides[2]);
 
     dim_type gx, gy, i, j;
-    { //scopping out unnecessary variables
+    { //scoping out unnecessary variables
     // local neighborhood indices
     const dim_type lx = threadIdx.x;
     const dim_type ly = threadIdx.y;
@@ -94,27 +85,27 @@ static __global__ void morphKernel(const morph_param_t<T> params,
     dim_type gy2      = gy + blockDim.y;
 
     // pull image to local memory
-    load2ShrdMem(shrdMem, in, lx, ly, shrdLen,
-                 params.dims[0], params.dims[1],
+    load2ShrdMem(shrdMem, iptr, lx, ly, shrdLen,
+                 in.dims[0], in.dims[1],
                  gx-halo, gy-halo,
-                 params.istrides[1], params.istrides[0]);
+                 in.strides[1], in.strides[0]);
     if (lx<padding) {
-        load2ShrdMem(shrdMem, in, lx2, ly, shrdLen,
-                     params.dims[0], params.dims[1],
+        load2ShrdMem(shrdMem, iptr, lx2, ly, shrdLen,
+                     in.dims[0], in.dims[1],
                      gx2-halo, gy-halo,
-                     params.istrides[1], params.istrides[0]);
+                     in.strides[1], in.strides[0]);
     }
     if (ly<padding) {
-        load2ShrdMem(shrdMem, in, lx, ly2, shrdLen,
-                     params.dims[0], params.dims[1],
+        load2ShrdMem(shrdMem, iptr, lx, ly2, shrdLen,
+                     in.dims[0], in.dims[1],
                      gx-halo, gy2-halo,
-                     params.istrides[1], params.istrides[0]);
+                     in.strides[1], in.strides[0]);
     }
     if (lx<padding && ly<padding) {
-        load2ShrdMem(shrdMem, in, lx2, ly2, shrdLen,
-                     params.dims[0], params.dims[1],
+        load2ShrdMem(shrdMem, iptr, lx2, ly2, shrdLen,
+                     in.dims[0], in.dims[1],
                      gx2-halo, gy2-halo,
-                     params.istrides[1], params.istrides[0]);
+                     in.strides[1], in.strides[0]);
     }
     i = lx + halo;
     j = ly + halo;
@@ -139,9 +130,9 @@ static __global__ void morphKernel(const morph_param_t<T> params,
         }
     }
 
-    if (gx<params.dims[0] && gy<params.dims[1]) {
-        dim_type outIdx = lIdx(gx, gy, params.ostrides[1], params.ostrides[0]);
-        out[outIdx] = acc;
+    if (gx<in.dims[0] && gy<in.dims[1]) {
+        dim_type outIdx = lIdx(gx, gy, out.strides[1], out.strides[0]);
+        optr[outIdx] = acc;
     }
 }
 
@@ -170,7 +161,7 @@ inline __device__ void load2ShrdVolume(T * shrd, const T * const in,
 // kernel assumes mask/filter is square and hence does the
 // necessary operations accordingly.
 template<typename T, bool isDilation, dim_type windLen>
-static __global__ void morph3DKernel(const morph_param_t<T> params)
+static __global__ void morph3DKernel(Param<T> out, CParam<T> in)
 {
     // get shared memory pointer
     SharedMemory<T> shared;
@@ -183,8 +174,8 @@ static __global__ void morph3DKernel(const morph_param_t<T> params)
     const dim_type shrdLen   = blockDim.x + padding + 1;
     const dim_type shrdArea  = shrdLen * (blockDim.y+padding);
 
-    const T* in = (const T *)params.d_src;
-    T* out      = (T *)params.d_dst;
+    const T* iptr = (const T *) in.ptr;
+    T* optr       = (T *      )out.ptr;
 
     dim_type gx, gy, gz, i, j, k;
     { // scoping out unnecessary variables
@@ -204,51 +195,51 @@ static __global__ void morph3DKernel(const morph_param_t<T> params)
     const dim_type lz2 = lz + blockDim.z;
 
     // pull volume to shared memory
-    load2ShrdVolume(shrdMem, in, lx, ly, lz, shrdLen, shrdArea,
-                    params.dims[0], params.dims[1], params.dims[2],
+    load2ShrdVolume(shrdMem, iptr, lx, ly, lz, shrdLen, shrdArea,
+                    in.dims[0], in.dims[1], in.dims[2],
                     gx-halo, gy-halo, gz-halo,
-                    params.istrides[2], params.istrides[1], params.istrides[0]);
+                    in.strides[2], in.strides[1], in.strides[0]);
     if (lx<padding) {
-        load2ShrdVolume(shrdMem, in, lx2, ly, lz, shrdLen, shrdArea,
-                        params.dims[0], params.dims[1], params.dims[2],
+        load2ShrdVolume(shrdMem, iptr, lx2, ly, lz, shrdLen, shrdArea,
+                        in.dims[0], in.dims[1], in.dims[2],
                         gx2-halo, gy-halo, gz-halo,
-                        params.istrides[2], params.istrides[1], params.istrides[0]);
+                        in.strides[2], in.strides[1], in.strides[0]);
     }
     if (ly<padding) {
-        load2ShrdVolume(shrdMem, in, lx, ly2, lz, shrdLen, shrdArea,
-                        params.dims[0], params.dims[1], params.dims[2],
+        load2ShrdVolume(shrdMem, iptr, lx, ly2, lz, shrdLen, shrdArea,
+                        in.dims[0], in.dims[1], in.dims[2],
                         gx-halo, gy2-halo, gz-halo,
-                        params.istrides[2], params.istrides[1], params.istrides[0]);
+                        in.strides[2], in.strides[1], in.strides[0]);
     }
     if (lz<padding) {
-        load2ShrdVolume(shrdMem, in, lx, ly, lz2, shrdLen, shrdArea,
-                        params.dims[0], params.dims[1], params.dims[2],
+        load2ShrdVolume(shrdMem, iptr, lx, ly, lz2, shrdLen, shrdArea,
+                        in.dims[0], in.dims[1], in.dims[2],
                         gx-halo, gy-halo, gz2-halo,
-                        params.istrides[2], params.istrides[1], params.istrides[0]);
+                        in.strides[2], in.strides[1], in.strides[0]);
     }
     if (lx<padding && ly<padding) {
-        load2ShrdVolume(shrdMem, in, lx2, ly2, lz, shrdLen, shrdArea,
-                        params.dims[0], params.dims[1], params.dims[2],
+        load2ShrdVolume(shrdMem, iptr, lx2, ly2, lz, shrdLen, shrdArea,
+                        in.dims[0], in.dims[1], in.dims[2],
                         gx2-halo, gy2-halo, gz-halo,
-                        params.istrides[2], params.istrides[1], params.istrides[0]);
+                        in.strides[2], in.strides[1], in.strides[0]);
     }
     if (ly<padding && lz<padding) {
-        load2ShrdVolume(shrdMem, in, lx, ly2, lz2, shrdLen, shrdArea,
-                        params.dims[0], params.dims[1], params.dims[2],
+        load2ShrdVolume(shrdMem, iptr, lx, ly2, lz2, shrdLen, shrdArea,
+                        in.dims[0], in.dims[1], in.dims[2],
                         gx-halo, gy2-halo, gz2-halo,
-                        params.istrides[2], params.istrides[1], params.istrides[0]);
+                        in.strides[2], in.strides[1], in.strides[0]);
     }
     if (lz<padding && lx<padding) {
-        load2ShrdVolume(shrdMem, in, lx2, ly, lz2, shrdLen, shrdArea,
-                        params.dims[0], params.dims[1], params.dims[2],
+        load2ShrdVolume(shrdMem, iptr, lx2, ly, lz2, shrdLen, shrdArea,
+                        in.dims[0], in.dims[1], in.dims[2],
                         gx2-halo, gy-halo, gz2-halo,
-                        params.istrides[2], params.istrides[1], params.istrides[0]);
+                        in.strides[2], in.strides[1], in.strides[0]);
     }
     if (lx<padding && ly<padding && lz<padding) {
-        load2ShrdVolume(shrdMem, in, lx2, ly2, lz2, shrdLen, shrdArea,
-                        params.dims[0], params.dims[1], params.dims[2],
+        load2ShrdVolume(shrdMem, iptr, lx2, ly2, lz2, shrdLen, shrdArea,
+                        in.dims[0], in.dims[1], in.dims[2],
                         gx2-halo, gy2-halo, gz2-halo,
-                        params.istrides[2], params.istrides[1], params.istrides[0]);
+                        in.strides[2], in.strides[1], in.strides[0]);
     }
     __syncthreads();
     // indices of voxel owned by current thread
@@ -280,66 +271,66 @@ static __global__ void morph3DKernel(const morph_param_t<T> params)
         }
     }
 
-    if (gx<params.dims[0] && gy<params.dims[1] && gz<params.dims[2]) {
-        dim_type outIdx = gz * params.ostrides[2] +
-                          gy * params.ostrides[1] +
-                          gx * params.ostrides[0];
-        out[outIdx] = acc;
+    if (gx<in.dims[0] && gy<in.dims[1] && gz<in.dims[2]) {
+        dim_type outIdx = gz * out.strides[2] +
+                          gy * out.strides[1] +
+                          gx * out.strides[0];
+        optr[outIdx] = acc;
     }
 }
 
 template<typename T, bool isDilation>
-void morph(const morph_param_t<T> &kernelParams)
+void morph(Param<T> out, CParam<T> in, dim_type windLen)
 {
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 
-    dim_type blk_x = divup(kernelParams.dims[0], THREADS_X);
-    dim_type blk_y = divup(kernelParams.dims[1], THREADS_Y);
+    dim_type blk_x = divup(in.dims[0], THREADS_X);
+    dim_type blk_y = divup(in.dims[1], THREADS_Y);
     // launch batch * blk_x blocks along x dimension
-    dim3 blocks(blk_x*kernelParams.dims[2], blk_y);
+    dim3 blocks(blk_x * in.dims[2], blk_y);
 
     // calculate shared memory size
-    int halo      = kernelParams.windLen/2;
+    int halo      = windLen/2;
     int padding   = 2*halo;
     int shrdLen   = kernel::THREADS_X + padding + 1; // +1 for to avoid bank conflicts
-    int shrdSize  = shrdLen * (kernel::THREADS_Y+padding) * sizeof(T);
+    int shrdSize  = shrdLen * (kernel::THREADS_Y + padding) * sizeof(T);
 
-    switch(kernelParams.windLen) {
-        case  3: morphKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
-        case  5: morphKernel<T, isDilation, 5> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
-        case  7: morphKernel<T, isDilation, 7> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
-        case  9: morphKernel<T, isDilation, 9> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
-        case 11: morphKernel<T, isDilation,11> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
-        case 13: morphKernel<T, isDilation,13> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
-        case 15: morphKernel<T, isDilation,15> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
-        case 17: morphKernel<T, isDilation,17> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
-        case 19: morphKernel<T, isDilation,19> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
-        default: morphKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(kernelParams, blk_x); break;
+    switch(windLen) {
+        case  3: morphKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
+        case  5: morphKernel<T, isDilation, 5> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
+        case  7: morphKernel<T, isDilation, 7> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
+        case  9: morphKernel<T, isDilation, 9> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
+        case 11: morphKernel<T, isDilation,11> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
+        case 13: morphKernel<T, isDilation,13> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
+        case 15: morphKernel<T, isDilation,15> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
+        case 17: morphKernel<T, isDilation,17> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
+        case 19: morphKernel<T, isDilation,19> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
+        default: morphKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
     }
 
 }
 
 template<typename T, bool isDilation>
-void morph3d(const morph_param_t<T> &kernelParams)
+void morph3d(Param<T> out, CParam<T> in, dim_type windLen)
 {
     dim3 threads(kernel::CUBE_X, kernel::CUBE_Y, kernel::CUBE_Z);
 
-    dim_type blk_x = divup(kernelParams.dims[0], CUBE_X);
-    dim_type blk_y = divup(kernelParams.dims[1], CUBE_Y);
-    dim_type blk_z = divup(kernelParams.dims[2], CUBE_Z);
+    dim_type blk_x = divup(in.dims[0], CUBE_X);
+    dim_type blk_y = divup(in.dims[1], CUBE_Y);
+    dim_type blk_z = divup(in.dims[2], CUBE_Z);
     dim3 blocks(blk_x, blk_y, blk_z);
 
     // calculate shared memory size
-    int halo      = kernelParams.windLen/2;
+    int halo      = windLen/2;
     int padding   = 2*halo;
     int shrdLen   = kernel::CUBE_X + padding + 1; // +1 for to avoid bank conflicts
-    int shrdSize  = shrdLen * (kernel::CUBE_Y+padding) * (kernel::CUBE_Z+padding) * sizeof(T);
+    int shrdSize  = shrdLen * (kernel::CUBE_Y + padding) * (kernel::CUBE_Z + padding) * sizeof(T);
 
-    switch(kernelParams.windLen) {
-        case  3: morph3DKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(kernelParams); break;
-        case  5: morph3DKernel<T, isDilation, 5> <<< blocks, threads, shrdSize>>>(kernelParams); break;
-        case  7: morph3DKernel<T, isDilation, 7> <<< blocks, threads, shrdSize>>>(kernelParams); break;
-        default: morph3DKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(kernelParams); break;
+    switch(windLen) {
+    case  3: morph3DKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(out, in); break;
+    case  5: morph3DKernel<T, isDilation, 5> <<< blocks, threads, shrdSize>>>(out, in); break;
+    case  7: morph3DKernel<T, isDilation, 7> <<< blocks, threads, shrdSize>>>(out, in); break;
+    default: morph3DKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(out, in); break;
     }
 }
 
