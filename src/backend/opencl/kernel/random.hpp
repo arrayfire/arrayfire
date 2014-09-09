@@ -5,12 +5,10 @@
 #include <cl.hpp>
 #include <ctx.hpp>
 #include <traits.hpp>
-#include <helper.hpp>
 #include <sstream>
 #include <string>
 #include <iostream>
-
-#define divup(a, b) (((a)+(b)-1) / (b))
+#include <dispatch.hpp>
 
 using cl::Buffer;
 using cl::Program;

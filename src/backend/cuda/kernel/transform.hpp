@@ -1,4 +1,5 @@
-#include <cuda/helper.hpp>
+#include <Param.hpp>
+#include <dispatch.hpp>
 
 namespace cuda
 {
@@ -116,4 +117,3 @@ namespace cuda
         }
     }
 }
-

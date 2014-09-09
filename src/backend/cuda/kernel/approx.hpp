@@ -1,4 +1,6 @@
-#include <cuda/helper.hpp>
+#include <math.hpp>
+#include <dispatch.hpp>
+#include <Param.hpp>
 
 namespace cuda
 {
@@ -24,7 +26,7 @@ namespace cuda
 
             const Tp x = pos.ptr[pmId];
             if (x < 0 || in.dims[0] < x+1) {
-                out.ptr[omId] = constant<Ty>(offGrid);
+                out.ptr[omId] = scalar<Ty>(offGrid);
                 return;
             }
 
@@ -48,7 +50,7 @@ namespace cuda
 
             const Tp x = pos.ptr[pmId], y = qos.ptr[qmId];
             if (x < 0 || y < 0 || in.dims[0] < x+1 || in.dims[1] < y+1) {
-                out.ptr[omId] = constant<Ty>(offGrid);
+                out.ptr[omId] = scalar<Ty>(offGrid);
                 return;
             }
 
@@ -75,7 +77,7 @@ namespace cuda
 
             const Tp pVal = pos.ptr[pmId];
             if (pVal < 0 || in.dims[0] < pVal+1) {
-                out.ptr[omId] = constant<Ty>(offGrid);
+                out.ptr[omId] = scalar<Ty>(offGrid);
                 return;
             }
 
@@ -88,7 +90,7 @@ namespace cuda
             bool cond = (pVal < in.dims[0] - 1);
             // Compute Left and Right Weighted Values
             Ty yl = ((Tp)1.0 - off_x) * in.ptr[ioff];
-            Ty yr = cond ? (off_x) * in.ptr[ioff + 1] : constant<Ty>(0);
+            Ty yr = cond ? (off_x) * in.ptr[ioff + 1] : scalar<Ty>(0);
             Ty yo = yl + yr;
             // Compute Weight used
             Tp wt = cond ? (Tp)1.0 : (Tp)(1.0 - off_x);
@@ -109,7 +111,7 @@ namespace cuda
 
             const Tp x = pos.ptr[pmId], y = qos.ptr[qmId];
             if (x < 0 || y < 0 || in.dims[0] < x+1 || in.dims[1] < y+1) {
-                out.ptr[omId] = constant<Ty>(offGrid);
+                out.ptr[omId] = scalar<Ty>(offGrid);
                 return;
             }
 
@@ -131,12 +133,11 @@ namespace cuda
             Tp wt = wt00 + wt10 + wt01 + wt11;
 
             // Compute Weighted Values
-            Ty zero = constant<Ty>(0);
+            Ty zero = scalar<Ty>(0);
             Ty y00 =                    wt00 * in.ptr[ioff];
             Ty y10 = (condY) ?          wt10 * in.ptr[ioff + in.strides[1]]     : zero;
             Ty y01 = (condX) ?          wt01 * in.ptr[ioff + 1]                 : zero;
             Ty y11 = (condX && condY) ? wt11 * in.ptr[ioff + in.strides[1] + 1] : zero;
-
             Ty yo = y00 + y10 + y01 + y11;
 
             // Write Final Value

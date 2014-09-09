@@ -40,14 +40,14 @@ namespace cpu
             dim_type istride = istrides[dim];
             dim_type ostride = ostrides[dim];
 
-            transform_op<Ti, To, op> Transform;
+            Transform<Ti, To, op> transform;
             // FIXME: Change the name to something better
-            reduce_op<To, op> Scan;
+            Binary<To, op> scan;
 
-            To out_val = Scan.init();
+            To out_val = scan.init();
             for (dim_type i = 0; i < idims[dim]; i++) {
-                To in_val = Transform(in[i * istride]);
-                out_val = Scan.calc(in_val, out_val);
+                To in_val = transform(in[i * istride]);
+                out_val = scan(in_val, out_val);
                 out[i * ostride] = out_val;
             }
         }

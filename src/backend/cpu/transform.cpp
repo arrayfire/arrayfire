@@ -35,7 +35,7 @@ namespace cpu
     }
 
     template<typename T>
-    void transform_op(T *out, const T *in, const float *tmat, const af::dim4 &idims,
+    void Transform(T *out, const T *in, const float *tmat, const af::dim4 &idims,
                       const af::dim4 &ostrides, const af::dim4 &istrides,
                       const dim_type nimages, const dim_type o_offset,
                       const dim_type xx, const dim_type yy)
@@ -88,7 +88,7 @@ namespace cpu
             // Do transform for image
             for(int yy = 0; yy < odims[1]; yy++) {
                 for(int xx = 0; xx < odims[0]; xx++) {
-                    transform_op(out, in, tmat, idims, ostrides, istrides,
+                    Transform(out, in, tmat, idims, ostrides, istrides,
                                  nimages, o_offset, xx, yy);
                 }
             }

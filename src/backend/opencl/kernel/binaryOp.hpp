@@ -3,7 +3,7 @@
 #include <ctx.hpp>
 #include <sstream>
 #include <string>
-#include "../traits.hpp"
+#include <traits.hpp>
 
 using cl::Buffer;
 using cl::Program;

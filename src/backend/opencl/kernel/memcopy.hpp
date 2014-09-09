@@ -5,6 +5,7 @@
 #include <traits.hpp>
 #include <sstream>
 #include <string>
+#include <dispatch.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -12,8 +13,6 @@ using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
-
-#define divup(a, b) ((a)+(b)-1)/(b)
 
 namespace opencl
 {

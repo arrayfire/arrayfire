@@ -6,8 +6,6 @@
 #include <kernel/morph.hpp>
 #include <stdexcept>
 
-#include <cstdio>
-
 using af::dim4;
 
 namespace cuda

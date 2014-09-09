@@ -2,7 +2,8 @@
 
 #include <af/traits.hpp>
 
-namespace af {
+namespace af
+{
 
 template<>
 struct dtype_traits<cl_float2> {

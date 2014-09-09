@@ -4,6 +4,7 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <morph.hpp>
+#include <math.hpp>
 #include <kernel/morph.hpp>
 #include <stdexcept>
 #include <iostream>

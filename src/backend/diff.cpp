@@ -1,9 +1,10 @@
 #include <af/array.h>
 #include <af/defines.h>
-#include <diff.hpp>
 #include <helper.hpp>
+#include <handle.hpp>
 #include <backend.hpp>
 #include <ArrayInfo.hpp>
+#include <diff.hpp>
 
 using af::dim4;
 using namespace detail;

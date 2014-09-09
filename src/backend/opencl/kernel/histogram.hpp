@@ -4,8 +4,7 @@
 #include <traits.hpp>
 #include <sstream>
 #include <string>
-
-#define divup(a, b) ((a)+(b)-1)/(b)
+#include <dispatch.hpp>
 
 namespace opencl
 {

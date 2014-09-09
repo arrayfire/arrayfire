@@ -1,4 +1,6 @@
-#include <cuda/helper.hpp>
+#include <math.hpp>
+#include <dispatch.hpp>
+#include <Param.hpp>
 
 namespace cuda
 {

@@ -2,7 +2,6 @@
 #include <af/blas.h>
 #include <Array.hpp>
 #include <clBLAS.h>
-#include <helper.hpp>
 #include <cassert>
 #include <string>
 #include <iostream>

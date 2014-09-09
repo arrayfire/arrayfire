@@ -1,8 +1,8 @@
 #include <af/defines.h>
 #include <backend.hpp>
-#include "../helper.hpp"
-#include <stdio.h>
-#include "../backend.hpp"
+#include <dispatch.hpp>
+#include <backend.hpp>
+
 namespace cuda
 {
 namespace kernel
@@ -15,15 +15,6 @@ namespace kernel
 
     static const uint DIMX = 32;
     static const uint DIMY =  8;
-
-    template<typename T>
-    __device__ T constant(double val)
-    {
-        return (T)(val);
-    }
-
-    template<> cfloat constant<cfloat>(double val) { cfloat cval = {val, 0}; return cval; }
-    template<> cdouble constant<cdouble>(double val) { cdouble cval = {val, 0}; return cval; }
 
     template<typename T>
     __global__ static void
