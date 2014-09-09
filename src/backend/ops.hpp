@@ -1,5 +1,6 @@
 #pragma once
 #include <backend.hpp>
+#include <math.hpp>
 
 #ifndef __DH__
 #define __DH__
@@ -14,8 +15,7 @@ typedef enum {
     af_notzero_t = 5,
 } af_op_t;
 
-using detail::cfloat;
-using detail::cdouble;
+using namespace detail;
 
 template<typename T, af_op_t op>
 struct Binary

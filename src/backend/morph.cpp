@@ -1,9 +1,10 @@
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <af/image.h>
-#include <morph.hpp>
+#include <handle.hpp>
 #include <helper.hpp>
 #include <backend.hpp>
+#include <morph.hpp>
 
 using af::dim4;
 using namespace detail;

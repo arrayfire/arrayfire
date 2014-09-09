@@ -1,5 +1,5 @@
 #include <curand_kernel.h>
-#include "../helper.hpp"
+#include <dispatch.hpp>
 
 namespace cuda
 {

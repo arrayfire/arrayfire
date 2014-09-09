@@ -5,8 +5,9 @@
 #include <kernel/set.hpp>
 #include <cl.hpp>
 #include <ctx.hpp>
-#include "traits.hpp"
 #include <backend.hpp>
+#include <types.hpp>
+#include <traits.hpp>
 
 namespace opencl
 {

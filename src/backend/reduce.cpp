@@ -2,10 +2,11 @@
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/reduce.h>
-#include <reduce.hpp>
-#include <ops.hpp>
 #include <helper.hpp>
+#include <handle.hpp>
+#include <ops.hpp>
 #include <backend.hpp>
+#include <reduce.hpp>
 using af::dim4;
 using namespace detail;
 

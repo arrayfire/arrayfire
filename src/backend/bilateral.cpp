@@ -1,9 +1,10 @@
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <af/image.h>
-#include <bilateral.hpp>
 #include <helper.hpp>
+#include <handle.hpp>
 #include <backend.hpp>
+#include <bilateral.hpp>
 
 using af::dim4;
 using namespace detail;

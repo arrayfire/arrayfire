@@ -1,6 +1,5 @@
-#include <complex.hpp>
-
-#define divup(a, b) ((a+b-1)/b)
+#include <math.hpp>
+#include <dispatch.hpp>
 
 namespace cuda
 {

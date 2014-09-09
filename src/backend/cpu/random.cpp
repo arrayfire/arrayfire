@@ -6,7 +6,6 @@
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <af/defines.h>
-#include <helper.hpp>
 #include <Array.hpp>
 #include <random.hpp>
 
@@ -100,4 +99,3 @@ INSTANTIATE_NORMAL(cfloat)
 INSTANTIATE_NORMAL(cdouble)
 
 }
-

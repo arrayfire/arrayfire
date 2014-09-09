@@ -8,13 +8,12 @@
 #include <helper.hpp>
 #include <sstream>
 #include <string>
+#include <dispatch.hpp>
 
 typedef struct
 {
     dim_type dim[4];
 } dims_t;
-
-#define divup(a, b) ((a+b-1) / b)
 
 using cl::Buffer;
 using cl::Program;
@@ -57,7 +56,6 @@ namespace opencl
             const dim_type nimages = idims[2];
             // Multiplied in src/backend/transform.cpp
             const dim_type ntransforms = odims[2] / idims[2];
-
             NDRange local(TX, TY, 1);
 
             NDRange global(local[0] * divup(odims[0], local[0]) * nimages,

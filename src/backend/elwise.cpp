@@ -4,6 +4,7 @@
 #include <ArrayInfo.hpp>
 #include <elwise.hpp>
 #include <helper.hpp>
+#include <handle.hpp>
 #include <backend.hpp>
 #include <utility>
 #include <map>

@@ -2,7 +2,6 @@
 #include <af/defines.h>
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
-#include <helper.hpp>
 #include <bilateral.hpp>
 #include <kernel/bilateral.hpp>
 #include <stdexcept>
@@ -21,7 +20,7 @@ Array<T> * bilateral(const Array<T> &in, const float &s_sigma, const float &c_si
     Array<T>* out       = createEmptyArray<T>(dims);
     const dim4 ostrides = out->strides();
 
-    kernel_params_t<T> params;
+    kernel::bilateral_params_t<T> params;
     params.d_dst = out->get();
     params.d_src = in.get();
     for(dim_type i=0; i<4; ++i) {

@@ -4,6 +4,7 @@
 #include <af/array.h>
 #include <ArrayInfo.hpp>
 #include <helper.hpp>
+#include <handle.hpp>
 #include <backend.hpp>
 #include <Array.hpp>
 

@@ -3,8 +3,9 @@
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
-#include "traits.hpp"
 #include <backend.hpp>
+#include <types.hpp>
+#include <traits.hpp>
 
 #include <memory>
 #include <vector>

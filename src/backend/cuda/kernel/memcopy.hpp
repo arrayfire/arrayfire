@@ -1,8 +1,9 @@
 #include <af/defines.h>
 #include <backend.hpp>
-#include "../helper.hpp"
+#include <dispatch.hpp>
 #include <stdio.h>
-#include "../backend.hpp"
+#include <backend.hpp>
+
 namespace cuda
 {
 namespace kernel

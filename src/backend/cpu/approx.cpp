@@ -2,6 +2,7 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <approx.hpp>
+#include <math.hpp>
 #include <stdexcept>
 
 namespace cpu
@@ -328,4 +329,3 @@ namespace cpu
     INSTANTIATE(cfloat , float )
     INSTANTIATE(cdouble, double)
 }
-

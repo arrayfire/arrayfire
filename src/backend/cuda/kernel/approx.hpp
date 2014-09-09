@@ -1,5 +1,6 @@
 #include <stdio.h>
-#include <complex.hpp>
+#include <math.hpp>
+#include <dispatch.hpp>
 
 namespace cuda
 {
@@ -14,12 +15,6 @@ namespace cuda
         static const dim_type TX = 16;
         static const dim_type TY = 16;
         static const dim_type THREADS = 256;
-
-        /* divide and round up */
-        static inline unsigned divup(unsigned n, unsigned threads)
-        {
-            return (n % threads) ? (n / threads + 1) : (n / threads);
-        }
 
         ///////////////////////////////////////////////////////////////////////////
         // nearest-neighbor resampling

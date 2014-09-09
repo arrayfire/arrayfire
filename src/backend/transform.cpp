@@ -1,9 +1,10 @@
 #include <af/image.h>
 #include <af/defines.h>
-#include <transform.hpp>
 #include <helper.hpp>
-#include <backend.hpp>
+#include <handle.hpp>
 #include <ArrayInfo.hpp>
+#include <backend.hpp>
+#include <transform.hpp>
 
 using af::dim4;
 using namespace detail;

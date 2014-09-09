@@ -4,6 +4,8 @@
 #include <ArrayInfo.hpp>
 #include "traits.hpp"
 #include <backend.hpp>
+#include <types.hpp>
+#include <traits.hpp>
 #include <cuda_runtime_api.h>
 
 namespace cuda

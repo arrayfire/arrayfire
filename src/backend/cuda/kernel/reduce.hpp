@@ -1,7 +1,7 @@
 #include <af/defines.h>
 #include <ops.hpp>
 #include <backend.hpp>
-#include "../helper.hpp"
+#include <dispatch.hpp>
 
 namespace cuda
 {
