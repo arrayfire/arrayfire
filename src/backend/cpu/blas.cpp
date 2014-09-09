@@ -1,7 +1,6 @@
 #include <blas.hpp>
 #include <af/dim4.hpp>
 #include <handle.hpp>
-#include <print.hpp>
 #include <helper.hpp>
 #include <iostream>
 #include <cassert>
@@ -180,4 +179,3 @@ INSTANTIATE_DOT(float)
 INSTANTIATE_DOT(double)
 
 }
-
