@@ -3,7 +3,7 @@
 #include <Array.hpp>
 #include <diff.hpp>
 #include <kernel/diff.hpp>
-#include <cassert>
+#include <stdexcept>
 
 namespace opencl
 {
@@ -15,8 +15,7 @@ namespace opencl
         oDims[dim] -= (isDiff2 + 1);
 
         if(iDims.elements() == 0 || oDims.elements() == 0) {
-            // error out
-            assert(1!=1);
+            throw std::runtime_error("Elements are 0");
         }
 
         Array<T> *out = createEmptyArray<T>(oDims);

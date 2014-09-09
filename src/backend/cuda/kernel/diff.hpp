@@ -1,16 +1,9 @@
-#include <complex.hpp>
-
-#define divup(a, b) ((a+b-1)/b)
+#include <cuda/helper.hpp>
 
 namespace cuda
 {
     namespace kernel
     {
-        typedef struct
-        {
-            dim_type dim[4];
-        } dims_t;
-
         // Kernel Launch Config Values
         static const unsigned TX = 16;
         static const unsigned TY = 16;
@@ -33,9 +26,7 @@ namespace cuda
         ///////////////////////////////////////////////////////////////////////////
         template<typename T, unsigned dim, bool isDiff2>
         __global__
-        void diff_kernel(T *out, const T *in,
-                         const unsigned oElem, const dims_t odims,
-                         const dims_t ostrides, const dims_t istrides,
+        void diff_kernel(Param<T> out, CParam<T> in, const unsigned oElem,
                          const unsigned blocksPerMatX, const unsigned blocksPerMatY)
         {
             unsigned idz = blockIdx.x / blocksPerMatX;
@@ -47,30 +38,28 @@ namespace cuda
             unsigned idx = threadIdx.x + blockIdx_x * blockDim.x;
             unsigned idy = threadIdx.y + blockIdx_y * blockDim.y;
 
-            if(idx >= odims.dim[0] ||
-               idy >= odims.dim[1] ||
-               idz >= odims.dim[2] ||
-               idw >= odims.dim[3])
+            if(idx >= out.dims[0] ||
+               idy >= out.dims[1] ||
+               idz >= out.dims[2] ||
+               idw >= out.dims[3])
                 return;
 
-            unsigned iMem0 = idw * istrides.dim[3] + idz * istrides.dim[2] + idy * istrides.dim[1] + idx;
-            unsigned iMem1 = iMem0 + istrides.dim[dim];
-            unsigned iMem2 = iMem1 + istrides.dim[dim];
+            unsigned iMem0 = idw * in.strides[3] + idz * in.strides[2] + idy * in.strides[1] + idx;
+            unsigned iMem1 = iMem0 + in.strides[dim];
+            unsigned iMem2 = iMem1 + in.strides[dim];
 
-            unsigned oMem = idw * ostrides.dim[3] + idz * ostrides.dim[2] + idy * ostrides.dim[1] + idx;
+            unsigned oMem = idw * out.strides[3] + idz * out.strides[2] + idy * out.strides[1] + idx;
 
             iMem2 *= isDiff2;
 
-            diff_this<T, isDiff2>(out, in, oMem, iMem0, iMem1, iMem2);
+            diff_this<T, isDiff2>(out.ptr, in.ptr, oMem, iMem0, iMem1, iMem2);
         }
 
         ///////////////////////////////////////////////////////////////////////////
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
         template<typename T, unsigned dim, bool isDiff2>
-        void diff(T *out, const T *in,
-                  const unsigned oElem, const unsigned ondims, const dim_type *odims, const dim_type *ostrides,
-                  const unsigned iElem, const unsigned indims, const dim_type *idims, const dim_type *istrides)
+        void diff(Param<T> out, CParam<T> in, const dim_type indims)
         {
             dim3 threads(TX, TY, 1);
 
@@ -78,19 +67,16 @@ namespace cuda
                 threads = dim3(TX * TY, 1, 1);
             }
 
-            unsigned blocksPerMatX = divup(odims[0], TX);
-            unsigned blocksPerMatY = divup(odims[1], TY);
-            dim3 blocks(blocksPerMatX * odims[2],
-                        blocksPerMatY * odims[3],
+            dim_type blocksPerMatX = divup(out.dims[0], TX);
+            dim_type blocksPerMatY = divup(out.dims[1], TY);
+            dim3 blocks(blocksPerMatX * out.dims[2],
+                        blocksPerMatY * out.dims[3],
                         1);
 
-            dims_t _odims = {{odims[0], odims[1], odims[2], odims[3]}};
-            dims_t _ostrides = {{ostrides[0], ostrides[1], ostrides[2], ostrides[3]}};
-            dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
+            const dim_type oElem = out.dims[0] * out.dims[1] * out.dims[2] * out.dims[3];
 
-            diff_kernel<T, dim, isDiff2><<<blocks, threads>>>(out, in, oElem, _odims,
-                                                              _ostrides, _istrides,
-                                                              blocksPerMatX, blocksPerMatY);
+            diff_kernel<T, dim, isDiff2> <<<blocks, threads>>>
+                (out, in, oElem, blocksPerMatX, blocksPerMatY);
         }
 }
 }
