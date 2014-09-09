@@ -25,7 +25,7 @@ void histogram(__global outType *         d_dst,
     __global outType * out    = d_dst + get_group_id(1) * params->ostrides[2];
 
     dim_type start = get_group_id(0) * THRD_LOAD * get_local_size(0) + get_local_id(0);
-    dim_type end   = min((start + THRD_LOAD * get_local_size(0)), len);
+    dim_type end   = min((dim_type)(start + THRD_LOAD * get_local_size(0)), len);
 
     __local float minval;
     __local float dx;
