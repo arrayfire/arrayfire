@@ -14,36 +14,23 @@ namespace cuda
 template<typename T, bool isDilation>
 Array<T> * morph(const Array<T> &in, const Array<T> &mask)
 {
-    const dim4 mdims    = mask.dims();
+    const dim4 mdims = mask.dims();
 
-    if (mdims[0]!=mdims[1])
+    if (mdims[0] != mdims[1])
         throw std::runtime_error("Only square masks are supported in cuda morph currently");
-    if (mdims[0]>19)
+    if (mdims[0] > 19)
         throw std::runtime_error("Upto 19x19 square kernels are only supported in cuda currently");
 
-    const dim4 dims     = in.dims();
-    const dim4 istrides = in.strides();
-    Array<T>* out       = createEmptyArray<T>(dims);
-    const dim4 ostrides = out->strides();
-
-    kernel::morph_param_t<T> params;
-    params.d_dst    = out->get();
-    params.d_src    = in.get();
-    params.windLen  = mdims[0];
+    Array<T>* out = createEmptyArray<T>(in.dims());
 
     cudaMemcpyToSymbol(kernel::cFilter, mask.get(),
-            mdims[0]*mdims[1]*sizeof(T), 0, cudaMemcpyDeviceToDevice);
-
-    for (int i=0;i<4; ++i) {
-        params.dims[i]     = dims[i];
-        params.istrides[i] = istrides[i];
-        params.ostrides[i] = ostrides[i];
-    }
+                       mdims[0] * mdims[1] * sizeof(T),
+                       0, cudaMemcpyDeviceToDevice);
 
     if (isDilation)
-        kernel::morph<T, true>(params);
+        kernel::morph<T, true >(*out, in, mdims[0]);
     else
-        kernel::morph<T, false>(params);
+        kernel::morph<T, false>(*out, in, mdims[0]);
 
     return out;
 }
@@ -51,39 +38,26 @@ Array<T> * morph(const Array<T> &in, const Array<T> &mask)
 template<typename T, bool isDilation>
 Array<T> * morph3d(const Array<T> &in, const Array<T> &mask)
 {
-    const dim4 mdims    = mask.dims();
+    const dim4 mdims = mask.dims();
 
-    if (mdims[0]!=mdims[1] || mdims[0]!=mdims[2])
+    if (mdims[0] != mdims[1] || mdims[0] != mdims[2])
         throw std::runtime_error("Only cube masks are supported in cuda morph currently");
-    if (mdims[0]>7)
+    if (mdims[0] > 7)
         throw std::runtime_error("Upto 7x7x7 kernels are only supported in cuda currently");
 
-    const dim4 dims     = in.dims();
-    if (dims[3]>1)
+    if (in.dims()[3] > 1)
         throw std::runtime_error("Batch not supported for volumetic morphological operations");
 
-    const dim4 istrides = in.strides();
-    Array<T>* out       = createEmptyArray<T>(dims);
-    const dim4 ostrides = out->strides();
-
-    kernel::morph_param_t<T> params;
-    params.d_dst    = out->get();
-    params.d_src    = in.get();
-    params.windLen  = mdims[0];
+    Array<T>* out       = createEmptyArray<T>(in.dims());
 
     cudaMemcpyToSymbol(kernel::cFilter, mask.get(),
-            mdims[0]*mdims[1]*mdims[2]*sizeof(T), 0, cudaMemcpyDeviceToDevice);
-
-    for (int i=0;i<4; ++i) {
-        params.dims[i]     = dims[i];
-        params.istrides[i] = istrides[i];
-        params.ostrides[i] = ostrides[i];
-    }
+                       mdims[0] * mdims[1] *mdims[2] * sizeof(T),
+                       0, cudaMemcpyDeviceToDevice);
 
     if (isDilation)
-        kernel::morph3d<T, true>(params);
+        kernel::morph3d<T, true >(*out, in, mdims[0]);
     else
-        kernel::morph3d<T, false>(params);
+        kernel::morph3d<T, false>(*out, in, mdims[0]);
 
     return out;
 }

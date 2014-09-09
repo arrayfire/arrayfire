@@ -13,16 +13,6 @@ static const unsigned MAX_BINS  = 4000;
 static const dim_type THREADS_X =  256;
 static const dim_type THRD_LOAD =   16;
 
-template<typename inType, typename outType>
-struct hist_param_t {
-    outType *            d_dst;
-    const inType *       d_src;
-    const float2 *    d_minmax;
-    dim_type          idims[4];
-    dim_type       istrides[4];
-    dim_type       ostrides[4];
-};
-
 __forceinline__ __device__ dim_type minimum(dim_type a, dim_type b)
 {
   return (a < b ? a : b);
@@ -30,18 +20,19 @@ __forceinline__ __device__ dim_type minimum(dim_type a, dim_type b)
 
 template<typename inType, typename outType>
 static __global__
-void histogramKernel(const hist_param_t<inType, outType> params,
-                     dim_type len, dim_type nbins, dim_type blk_x)
+void histogramKernel(Param<outType> out, CParam<inType> in,
+                     const cfloat *d_minmax, dim_type len,
+                     dim_type nbins, dim_type blk_x)
 {
     SharedMemory<outType> shared;
     outType * shrdMem = shared.getPointer();
 
     // offset minmax array to account for batch ops
-    const float2 * d_minmax = params.d_minmax + blockIdx.y;
+    d_minmax += blockIdx.y;
 
     // offset input and output to account for batch ops
-    const inType *in  = params.d_src + blockIdx.y * params.istrides[2];
-    outType * out     = params.d_dst + blockIdx.y * params.ostrides[2];
+    const inType *iptr  =  in.ptr + blockIdx.y *  in.strides[2];
+    outType      *optr  = out.ptr + blockIdx.y * out.strides[2];
 
     int start = blockIdx.x * THRD_LOAD * blockDim.x + threadIdx.x;
     int end   = minimum((start + THRD_LOAD * blockDim.x), len);
@@ -60,7 +51,7 @@ void histogramKernel(const hist_param_t<inType, outType> params,
     __syncthreads();
 
     for (int row = start; row < end; row += blockDim.x) {
-        int bin = (int)((in[row] - min) / step);
+        int bin = (int)((iptr[row] - min) / step);
         bin     = (bin < 0)      ? 0         : bin;
         bin     = (bin >= nbins) ? (nbins-1) : bin;
         atomicAdd((shrdMem + bin), 1);
@@ -68,28 +59,23 @@ void histogramKernel(const hist_param_t<inType, outType> params,
     __syncthreads();
 
     for (int i = threadIdx.x; i < nbins; i += blockDim.x) {
-        atomicAdd((out + i), shrdMem[i]);
+        atomicAdd((optr + i), shrdMem[i]);
     }
 }
 
 template<typename inType, typename outType>
-void histogram(const hist_param_t<inType, outType> &params, dim_type nbins)
+void histogram(Param<outType> out, CParam<inType> in, cfloat *d_minmax, dim_type nbins)
 {
     dim3 threads(kernel::THREADS_X, 1);
-
-    dim_type numElements= params.idims[0]*params.idims[1];
-
+    dim_type numElements= in.dims[0] * in.dims[1];
     dim_type blk_x = divup(numElements, THRD_LOAD*THREADS_X);
-
-    dim_type batchCount = params.idims[2];
-
+    dim_type batchCount = in.dims[2];
     dim3 blocks(blk_x, batchCount);
-
     dim_type smem_size = nbins * sizeof(outType);
 
     histogramKernel<inType, outType>
-                 <<<blocks, threads, smem_size>>>
-                 (params, numElements, nbins, blk_x);
+        <<<blocks, threads, smem_size>>>
+        (out, in, d_minmax, numElements, nbins, blk_x);
 }
 
 }

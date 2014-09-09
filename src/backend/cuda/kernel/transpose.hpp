@@ -1,6 +1,7 @@
 #include <af/defines.h>
 #include <backend.hpp>
 #include <dispatch.hpp>
+#include <Param.hpp>
 
 namespace cuda
 {
@@ -14,19 +15,21 @@ namespace kernel
     // Kernel is going access original data in colleased format
     template<typename T, bool is32Multiple>
     __global__
-    void transpose( T * out, const T * in,
-                    dim_type iDim0, dim_type iDim1,
-                    dim_type iStride1, dim_type iStride2,
-                    dim_type nonBatchBlkSize)
+    void transpose(Param<T> out, CParam<T> in,
+                   dim_type nonBatchBlkSize)
     {
         __shared__ T shrdMem[TILE_DIM][TILE_DIM+1];
 
         // create variables to hold output dimensions
-        const dim_type oDim0 = iDim1;
-        const dim_type oDim1 = iDim0;
+        const dim_type oDim0 = in.dims[1];
+        const dim_type oDim1 = in.dims[0];
 
         // calculate strides
         const dim_type oStride1 = oDim0;
+        const dim_type iStride1 = in.strides[1];
+
+        const dim_type iDim0 = in.dims[0];
+        const dim_type iDim1 = in.dims[1];
 
         // TODO: Launch multiple blocks along x dimension
         //       to handle batch later, for loop is just for now
@@ -42,14 +45,14 @@ namespace kernel
         dim_type gy      = ly + TILE_DIM * blockIdx.y;
 
         // offset in and out based on batch id
-        in  += batchId * iStride2;
-        out += batchId * oDim0 * oDim1;
+        in.ptr  += batchId * in.strides[2];
+        out.ptr += batchId * oDim0 * oDim1;
 
 #pragma unroll
         for (dim_type repeat = 0; repeat < TILE_DIM; repeat += blockDim.y) {
             dim_type gy_ = gy+repeat;
             if (is32Multiple || (gx<iDim0 && gy_<iDim1))
-                shrdMem[ly+repeat][lx] = in[gy_*iStride1+gx];
+                shrdMem[ly + repeat][lx] = in.ptr[gy_ * iStride1 + gx];
         }
         __syncthreads();
 
@@ -59,12 +62,12 @@ namespace kernel
         for (dim_type repeat = 0; repeat < TILE_DIM; repeat += blockDim.y) {
             dim_type gy_ = gy+repeat;
             if (is32Multiple || (gx<oDim0 && gy_<oDim1))
-                out[gy_*oStride1+gx] = shrdMem[lx][ly+repeat];
+                out.ptr[gy_ * oStride1 + gx] = shrdMem[lx][ly + repeat];
         }
     }
 
     template<typename T>
-    void transpose(T * out, const T * in, const dim_type ndims, const dim_type * const dims, const dim_type * const strides)
+    void transpose(Param<T> out, CParam<T> in, const dim_type ndims)
     {
         // dimensions passed to this function should be input dimensions
         // any necessary transformations and dimension related calculations are
@@ -72,15 +75,15 @@ namespace kernel
         dim3 threads(kernel::THREADS_X,kernel::THREADS_Y);
 
 
-        dim_type blk_x = divup(dims[0],TILE_DIM);
-        dim_type blk_y = divup(dims[1],TILE_DIM);
+        dim_type blk_x = divup(in.dims[0],TILE_DIM);
+        dim_type blk_y = divup(in.dims[1],TILE_DIM);
         // launch batch * blk_x blocks along x dimension
-        dim3 blocks(blk_x*dims[2],blk_y);
+        dim3 blocks(blk_x*in.dims[2],blk_y);
 
-        if (dims[0]%TILE_DIM==0 && dims[1]%TILE_DIM==0)
-            transpose < T, true > <<< blocks,threads >>> (out,in,dims[0],dims[1],strides[1],strides[2],blk_x);
+        if (in.dims[0]%TILE_DIM==0 && in.dims[1]%TILE_DIM==0)
+            (transpose< T, true >)<<< blocks,threads >>>(out, in, blk_x);
         else
-            transpose < T, false > <<< blocks,threads >>> (out,in,dims[0],dims[1],strides[1],strides[2],blk_x);
+            (transpose< T, false>)<<< blocks,threads >>>(out, in, blk_x);
     }
 }
 }

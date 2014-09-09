@@ -18,7 +18,7 @@ namespace cuda
 
         Array<T>* out  = createEmptyArray<T>(outDims);
 
-        kernel::transpose(out->get(), in.get(), inDims.ndims(), inDims.get(), inStrides.get());
+        kernel::transpose<T>(*out, in, inDims.ndims());
 
         return out;
     }
