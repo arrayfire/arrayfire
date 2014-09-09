@@ -4,6 +4,7 @@
 #include <traits.hpp>
 #include <sstream>
 #include <string>
+#include <dispatch.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -12,8 +13,6 @@ using cl::EnqueueArgs;
 using cl::LocalSpaceArg;
 using cl::NDRange;
 using std::string;
-
-#define divup(a, b) ((a)+(b)-1)/(b)
 
 namespace opencl
 {
@@ -34,7 +33,7 @@ struct KernelParams {
 };
 
 template<typename T, bool isColor>
-void bilateral(Buffer &out, const Buffer &in, 
+void bilateral(Buffer &out, const Buffer &in,
         const KernelParams &params, float s_sigma, float c_sigma)
 {
     Program::Sources setSrc;

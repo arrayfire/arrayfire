@@ -1,7 +1,7 @@
 #include <af/defines.h>
 #include <ops.hpp>
 #include <backend.hpp>
-#include "../helper.hpp"
+#include <dispatch.hpp>
 
 namespace cuda
 {
@@ -54,15 +54,15 @@ namespace kernel
             (ids[2] < idims.dim[2]) &&
             (ids[3] < idims.dim[3]);
 
-        transform_op<Ti, To, op> Transform;
-        reduce_op<To, op> Reduce;
+        Transform<Ti, To, op> transform;
+        Binary<To, op> reduce;
 
         __shared__ To s_val[THREADS_X * DIMY];
 
-        To out_val = Reduce.init();
+        To out_val = reduce.init();
         for (int id = id_dim_in; is_valid && (id < idims.dim[dim]); id += offset_dim * blockDim.y) {
-            To in_val = Transform(*in);
-            out_val = Reduce.calc(in_val, out_val);
+            To in_val = transform(*in);
+            out_val = reduce(in_val, out_val);
             in = in + offset_dim * blockDim.y * istride_dim;
         }
 
@@ -72,17 +72,17 @@ namespace kernel
         __syncthreads();
 
         if (DIMY == 8) {
-            if (tidy < 4) *s_ptr = Reduce.calc(*s_ptr, s_ptr[THREADS_X * 4]);
+            if (tidy < 4) *s_ptr = reduce(*s_ptr, s_ptr[THREADS_X * 4]);
             __syncthreads();
         }
 
         if (DIMY >= 4) {
-            if (tidy < 2) *s_ptr = Reduce.calc(*s_ptr, s_ptr[THREADS_X * 2]);
+            if (tidy < 2) *s_ptr = reduce(*s_ptr, s_ptr[THREADS_X * 2]);
             __syncthreads();
         }
 
         if (DIMY >= 2) {
-            if (tidy < 1) *s_ptr = Reduce.calc(*s_ptr, s_ptr[THREADS_X * 1]);
+            if (tidy < 1) *s_ptr = reduce(*s_ptr, s_ptr[THREADS_X * 1]);
             __syncthreads();
         }
 
@@ -211,15 +211,15 @@ namespace kernel
             zid >= idims.dim[2] ||
             wid >= idims.dim[3]) return;
 
-        transform_op<Ti, To, op> Transform;
-        reduce_op<To, op> Reduce;
+        Transform<Ti, To, op> transform;
+        Binary<To, op> reduce;
 
         __shared__ To s_val[THREADS_PER_BLOCK];
 
-        To out_val = Reduce.init();
+        To out_val = reduce.init();
         for (int id = xid; id < idims.dim[0]; id += blockDim.x * blocks_x) {
-            To in_val = Transform(in[id]);
-            out_val = Reduce.calc(in_val, out_val);
+            To in_val = transform(in[id]);
+            out_val = reduce(in_val, out_val);
         }
 
         s_val[tid] = out_val;
@@ -227,25 +227,25 @@ namespace kernel
         To *s_ptr = s_val + tidy * DIMX;
 
         if (DIMX == 256) {
-            if (tidx < 128) s_ptr[tidx] = Reduce.calc(s_ptr[tidx], s_ptr[tidx + 128]);
+            if (tidx < 128) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx + 128]);
             __syncthreads();
         }
 
         if (DIMX >= 128) {
-            if (tidx <  64) s_ptr[tidx] = Reduce.calc(s_ptr[tidx], s_ptr[tidx +  64]);
+            if (tidx <  64) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx +  64]);
             __syncthreads();
         }
 
         if (DIMX >=  64) {
-            if (tidx <  32) s_ptr[tidx] = Reduce.calc(s_ptr[tidx], s_ptr[tidx +  32]);
+            if (tidx <  32) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx +  32]);
             __syncthreads();
         }
 
-        if (tidx < 16) s_ptr[tidx] = Reduce.calc(s_ptr[tidx], s_ptr[tidx + 16]);
-        if (tidx <  8) s_ptr[tidx] = Reduce.calc(s_ptr[tidx], s_ptr[tidx +  8]);
-        if (tidx <  4) s_ptr[tidx] = Reduce.calc(s_ptr[tidx], s_ptr[tidx +  4]);
-        if (tidx <  2) s_ptr[tidx] = Reduce.calc(s_ptr[tidx], s_ptr[tidx +  2]);
-        if (tidx <  1) s_ptr[tidx] = Reduce.calc(s_ptr[tidx], s_ptr[tidx +  1]);
+        if (tidx < 16) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx + 16]);
+        if (tidx <  8) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx +  8]);
+        if (tidx <  4) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx +  4]);
+        if (tidx <  2) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx +  2]);
+        if (tidx <  1) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx +  1]);
 
         if (tidx == 0) {
             out[blockIdx_x] = s_ptr[0];

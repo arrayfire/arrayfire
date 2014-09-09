@@ -1,8 +1,9 @@
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <af/array.h>
-#include <backend.hpp>
 #include <helper.hpp>
+#include <handle.hpp>
+#include <backend.hpp>
 #include <copy.hpp>
 
 using af::dim4;

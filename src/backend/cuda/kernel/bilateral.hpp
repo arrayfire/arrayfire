@@ -1,12 +1,22 @@
 #include <af/defines.h>
 #include <backend.hpp>
-#include "../helper.hpp"
+#include <dispatch.hpp>
+#include "shared.hpp"
 
 namespace cuda
 {
 
 namespace kernel
 {
+
+template<typename T>
+struct bilateral_params_t {
+    T *             d_dst;
+    const T *       d_src;
+    dim_type     idims[4];
+    dim_type  istrides[4];
+    dim_type  ostrides[4];
+};
 
 static const dim_type THREADS_X = 16;
 static const dim_type THREADS_Y = 16;
@@ -42,7 +52,7 @@ inline __device__ void load2ShrdMem(T * shrd, const T * const in,
 
 template<typename T>
 static __global__
-void bilateralKernel(const kernel_params_t<T> params,
+void bilateralKernel(const bilateral_params_t<T> params,
                      float sigma_space, float sigma_color,
                      dim_type gaussOff, dim_type nonBatchBlkSize)
 {
@@ -127,7 +137,7 @@ void bilateralKernel(const kernel_params_t<T> params,
 }
 
 template<typename T, bool isColor>
-void bilateral(const kernel_params_t<T> &params, float s_sigma, float c_sigma)
+void bilateral(const bilateral_params_t<T> &params, float s_sigma, float c_sigma)
 {
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 

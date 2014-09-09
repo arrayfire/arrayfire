@@ -6,17 +6,15 @@
 #include <cl.hpp>
 #include <ctx.hpp>
 #include <traits.hpp>
-#include <helper.hpp>
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <dispatch.hpp>
 
 typedef struct
 {
     dim_type dim[4];
 } dims_t;
-
-#define divup(a, b) ((a+b-1) / b)
 
 using cl::Buffer;
 using cl::Program;
@@ -170,4 +168,3 @@ namespace opencl
         }
     }
 }
-

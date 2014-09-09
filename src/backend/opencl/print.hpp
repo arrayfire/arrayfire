@@ -1,16 +1,20 @@
-#include <af/array.h>
-#include <Array.hpp>
-#include <iosfwd>
+#pragma once
+#include <backend.hpp>
+#include <iostream>
 
 namespace opencl
 {
-    using std::ostream;
+    static std::ostream&
+    operator<<(std::ostream &out, const cfloat& var)
+    {
+        out << var.s[0] << " " << var.s[1] << "i";
+        return out;
+    }
 
-    template<typename T>
-    ostream&
-    operator <<(ostream &out, const Array<T> &arr);
-
-    template<typename T>
-    void
-    print(const Array<T> &A);
+    static std::ostream&
+    operator<<(std::ostream &out, const cdouble& var)
+    {
+        out << var.s[0] << " " << var.s[1] << "i";
+        return out;
+    }
 }

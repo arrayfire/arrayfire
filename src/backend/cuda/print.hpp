@@ -1,17 +1,20 @@
-#include <af/array.h>
-#include <Array.hpp>
-#include <iosfwd>
+#pragma once
+#include <iostream>
 #include <backend.hpp>
 
 namespace cuda
 {
-    std::ostream&
-    operator<<(std::ostream &out, const cfloat& var);
+    static std::ostream&
+    operator<<(std::ostream &out, const cfloat& var)
+    {
+        out << var.x << " " << var.y << "i";
+        return out;
+    }
 
-    std::ostream&
-    operator<<(std::ostream &out, const cdouble& var);
-
-    template<typename T>
-    void
-    print(const Array<T> &A);
+    static std::ostream&
+    operator<<(std::ostream &out, const cdouble& var)
+    {
+        out << var.x << " " << var.y << "i";
+        return out;
+    }
 }

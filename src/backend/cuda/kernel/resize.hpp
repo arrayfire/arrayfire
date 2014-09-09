@@ -1,6 +1,5 @@
 #include <stdio.h>
-
-#define divup(a, b) ((a+b-1)/b)
+#include <dispatch.hpp>
 
 namespace cuda
 {

@@ -5,6 +5,7 @@
 #include <helper.hpp>
 #include <backend.hpp>
 #include <ArrayInfo.hpp>
+#include <traits.hpp>
 
 #include <FreeImage.h>
 #include <iostream>
