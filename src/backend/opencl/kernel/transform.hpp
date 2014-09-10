@@ -3,7 +3,7 @@
 #include <af/defines.h>
 #include <kernel_headers/transform.hpp>
 #include <cl.hpp>
-#include <ctx.hpp>
+#include <platform.hpp>
 #include <traits.hpp>
 #include <helper.hpp>
 #include <sstream>
@@ -37,7 +37,7 @@ namespace opencl
         {
             Program::Sources setSrc;
             setSrc.emplace_back(transform_cl, transform_cl_len);
-            Program prog(getCtx(0), setSrc);
+            Program prog(getContext(), setSrc);
 
             std::ostringstream options;
             options << " -D T="        << dtype_traits<T>::getName()
@@ -65,7 +65,7 @@ namespace opencl
             dims_t _ostrides = {{ostrides[0], ostrides[1], ostrides[2], ostrides[3]}};
             dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
 
-            transformOp(EnqueueArgs(getQueue(0), global, local),
+            transformOp(EnqueueArgs(getQueue(), global, local),
                      out, odims[0], odims[1], in, idims[0], idims[1],
                      tf, _ostrides, _istrides, nimages, ntransforms, i_offset);
         }

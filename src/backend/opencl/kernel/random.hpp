@@ -3,7 +3,7 @@
 #include <af/defines.h>
 #include <kernel_headers/random.hpp>
 #include <cl.hpp>
-#include <ctx.hpp>
+#include <platform.hpp>
 #include <traits.hpp>
 #include <sstream>
 #include <string>
@@ -68,7 +68,7 @@ namespace opencl
 
             Program::Sources src;
             src.emplace_back(random_cl, random_cl_len);
-            Program prog(getCtx(0), src);
+            Program prog(getContext(), src);
 
             std::ostringstream options;
             options << " -D T=" << dtype_traits<T>::getName()
@@ -84,7 +84,7 @@ namespace opencl
             NDRange local(THREADS, 1);
             NDRange global(THREADS * groups, 1);
 
-            randomOp(EnqueueArgs(getQueue(0), global, local),
+            randomOp(EnqueueArgs(getQueue(), global, local),
                      out, elements, counter, random_seed[0], random_seed[1]);
         }
     }

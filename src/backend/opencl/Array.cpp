@@ -13,7 +13,7 @@ namespace opencl
     template<typename T>
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(getCtx(0), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
+        data(getContext(), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
         parent()
     {
     }
@@ -21,7 +21,7 @@ namespace opencl
     template<typename T>
     Array<T>::Array(af::dim4 dims, T val) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(getCtx(0), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
+        data(getContext(), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
         parent()
     {
         set(data, val, elements());
@@ -30,10 +30,10 @@ namespace opencl
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(getCtx(0), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
+        data(getContext(), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
         parent()
     {
-        getQueue(0).enqueueWriteBuffer(data,CL_TRUE,0,sizeof(T)*ArrayInfo::elements(),in_data);
+        getQueue().enqueueWriteBuffer(data,CL_TRUE,0,sizeof(T)*ArrayInfo::elements(),in_data);
     }
 
     template<typename T>

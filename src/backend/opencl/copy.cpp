@@ -28,7 +28,7 @@ namespace opencl
         }
 
         //FIXME: Add checks
-        getQueue(0).enqueueReadBuffer(buf, CL_TRUE,
+        getQueue().enqueueReadBuffer(buf, CL_TRUE,
                                       sizeof(T) * offset,
                                       sizeof(T) * A.elements(),
                                       data);
@@ -45,7 +45,7 @@ namespace opencl
 
         if (A.isOwner()) {
             // FIXME: Add checks
-            getQueue(0).enqueueCopyBuffer(A.get(), out->get(),
+            getQueue().enqueueCopyBuffer(A.get(), out->get(),
                                           sizeof(T) * offset, 0,
                                           A.elements() * sizeof(T));
         } else {

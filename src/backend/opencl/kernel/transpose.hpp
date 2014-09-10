@@ -3,7 +3,7 @@
 #include <kernel_headers/transpose.hpp>
 #define __CL_ENABLE_EXCEPTIONS
 #include <cl.hpp>
-#include <ctx.hpp>
+#include <platform.hpp>
 #include <traits.hpp>
 #include <sstream>
 #include <string>
@@ -31,7 +31,7 @@ void transpose( Buffer &out, const Buffer &in, const dim_type ndims, const dim_t
 {
     Program::Sources setSrc;
     setSrc.emplace_back(transpose_cl, transpose_cl_len);
-    Program prog(getCtx(0), setSrc);
+    Program prog(getContext(), setSrc);
 
     std::ostringstream options;
     options << " -D T=" << dtype_traits<T>::getName()
@@ -52,7 +52,7 @@ void transpose( Buffer &out, const Buffer &in, const dim_type ndims, const dim_t
     NDRange global( blk_x*TILE_DIM*dims[2],
             blk_y*TILE_DIM);
 
-    transposeOp(EnqueueArgs(getQueue(0), global, local),
+    transposeOp(EnqueueArgs(getQueue(), global, local),
                 out, in, dims[0], dims[1],
                 strides[1], strides[2], offset, blk_x);
 }

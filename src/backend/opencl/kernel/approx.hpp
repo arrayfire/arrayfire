@@ -4,7 +4,7 @@
 #include <kernel_headers/approx1.hpp>
 #include <kernel_headers/approx2.hpp>
 #include <cl.hpp>
-#include <ctx.hpp>
+#include <platform.hpp>
 #include <traits.hpp>
 #include <sstream>
 #include <string>
@@ -44,7 +44,7 @@ namespace opencl
         {
             Program::Sources setSrc;
             setSrc.emplace_back(approx1_cl, approx1_cl_len);
-            Program prog(getCtx(0), setSrc);
+            Program prog(getContext(), setSrc);
 
             std::ostringstream options;
             options << " -D Ty="        << dtype_traits<Ty>::getName()
@@ -92,7 +92,7 @@ namespace opencl
             dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
             dims_t _pstrides = {{pstrides[0], pstrides[1], pstrides[2], pstrides[3]}};
 
-            approx1Op(EnqueueArgs(getQueue(0), global, local),
+            approx1Op(EnqueueArgs(getQueue(), global, local),
                           out, _odims, oElems, in, _idims, iElems, pos, _pdims,
                           _ostrides, _istrides, _pstrides, offGrid, blocksPerMat, iOffset, pOffset);
         }
@@ -109,7 +109,7 @@ namespace opencl
         {
             Program::Sources setSrc;
             setSrc.emplace_back(approx2_cl, approx2_cl_len);
-            Program prog(getCtx(0), setSrc);
+            Program prog(getContext(), setSrc);
 
             std::ostringstream options;
             options << " -D Ty="        << dtype_traits<Ty>::getName()
@@ -161,7 +161,7 @@ namespace opencl
             dims_t _pstrides = {{pstrides[0], pstrides[1], pstrides[2], pstrides[3]}};
             dims_t _qstrides = {{qstrides[0], qstrides[1], qstrides[2], qstrides[3]}};
 
-            approx2Op(EnqueueArgs(getQueue(0), global, local),
+            approx2Op(EnqueueArgs(getQueue(), global, local),
                           out, _odims, oElems, in, _idims, iElems, pos, _pdims, qos, _qdims,
                           _ostrides, _istrides, _pstrides, _qstrides, offGrid,
                           blocksPerMatX, blocksPerMatY, iOffset, pOffset, qOffset);

@@ -6,6 +6,8 @@
 #include <histogram.hpp>
 #include <kernel/histogram.hpp>
 #include <stdexcept>
+#include <iostream>
+#include <errorcodes.hpp>
 
 using af::dim4;
 
