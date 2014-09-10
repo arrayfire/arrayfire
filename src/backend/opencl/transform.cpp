@@ -15,10 +15,17 @@ namespace opencl
 
         Array<T> *out = createEmptyArray<T>(odims);
 
-        kernel::transform<T>
+        if (inverse) {
+        kernel::transform<T, true>
                       (out->get(), in.get(), transform.get(), odims.get(), idims.get(),
                        out->strides().get(), in.strides().get(), transform.strides().get(),
-                       in.getOffset(), inverse);
+                       in.getOffset());
+        } else {
+            kernel::transform<T, false>
+                (out->get(), in.get(), transform.get(), odims.get(), idims.get(),
+                 out->strides().get(), in.strides().get(), transform.strides().get(),
+                 in.getOffset());
+        }
 
         return out;
     }

@@ -1,5 +1,4 @@
 #include <kernel_headers/memcopy.hpp>
-#define __CL_ENABLE_EXCEPTIONS
 #include <cl.hpp>
 #include <platform.hpp>
 #include <traits.hpp>

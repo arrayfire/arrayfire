@@ -7,6 +7,7 @@
 #include <traits.hpp>
 #include <sstream>
 #include <string>
+#include <mutex>
 #include <dispatch.hpp>
 
 typedef struct
@@ -17,6 +18,7 @@ typedef struct
 
 using cl::Buffer;
 using cl::Program;
+using cl::Kernel;
 using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
@@ -35,33 +37,38 @@ namespace opencl
               const dim_type channels, const dim_type *ostrides, const dim_type *istrides,
               const dim_type offset)
         {
-            Program::Sources setSrc;
-            setSrc.emplace_back(resize_cl, resize_cl_len);
-            Program prog(getContext(), setSrc);
+            static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+            static Program            resProgs[DeviceManager::MAX_DEVICES];
+            static Kernel           resKernels[DeviceManager::MAX_DEVICES];
 
-            std::ostringstream options;
-            options << " -D T="        << dtype_traits<T>::getName()
-                    << " -D dim_type=" << dtype_traits<dim_type>::getName();
+            int device = getActiveDeviceId();
 
-            switch(method) {
-                case AF_INTERP_NEAREST:
-                    options << " -D INTERP=NEAREST";
-                    break;
-                case AF_INTERP_BILINEAR:
-                    options << " -D INTERP=BILINEAR";
-                    break;
-                default:
-                    break;
-            }
+            std::call_once( compileFlags[device], [device] () {
+                    Program::Sources setSrc;
+                    setSrc.emplace_back(resize_cl, resize_cl_len);
 
-            prog.build(options.str().c_str());
+                    resProgs[device] = Program(getContext(), setSrc);
 
-            cl_int err = 0;
+                    std::ostringstream options;
+                    options << " -D T="        << dtype_traits<T>::getName()
+                            << " -D dim_type=" << dtype_traits<dim_type>::getName();
+
+                    switch(method) {
+                        case AF_INTERP_NEAREST:  options<<" -D INTERP=NEAREST";  break;
+                        case AF_INTERP_BILINEAR: options<<" -D INTERP=BILINEAR"; break;
+                        default: break;
+                    }
+                    resProgs[device].build(options.str().c_str());
+
+                    resKernels[device] = Kernel(resProgs[device], "resize_kernel");
+            });
+
+
             auto resizeOp = make_kernel<Buffer, const dim_type, const dim_type,
                                   const Buffer, const dim_type, const dim_type,
                                   const dims_t, const dims_t, const dim_type,
                                   const unsigned, const float, const float>
-                                  (prog, "resize_kernel", &err);
+                                  (resKernels[device]);
 
             NDRange local(TX, TY, 1);
 

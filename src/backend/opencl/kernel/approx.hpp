@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <mutex>
 #include <dispatch.hpp>
 
 typedef struct
@@ -18,6 +19,7 @@ typedef struct
 
 using cl::Buffer;
 using cl::Program;
+using cl::Kernel;
 using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
@@ -42,42 +44,53 @@ namespace opencl
                      const dim_type *istrides, const dim_type *pstrides, const float offGrid,
                      const dim_type iOffset, const dim_type pOffset)
         {
-            Program::Sources setSrc;
-            setSrc.emplace_back(approx1_cl, approx1_cl_len);
-            Program prog(getContext(), setSrc);
+            static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+            static Program            apxProgs[DeviceManager::MAX_DEVICES];
+            static Kernel           apxKernels[DeviceManager::MAX_DEVICES];
 
-            std::ostringstream options;
-            options << " -D Ty="        << dtype_traits<Ty>::getName()
-                    << " -D Tp="        << dtype_traits<Tp>::getName()
-                    << " -D dim_type="  << dtype_traits<dim_type>::getName();
-            if((af_dtype) dtype_traits<Ty>::af_type == c32 ||
-               (af_dtype) dtype_traits<Ty>::af_type == c64) {
-                options << " -D CPLX=1";
-            } else {
-                options << " -D CPLX=0";
-            }
+            int device = getActiveDeviceId();
 
-            switch(method) {
-                case AF_INTERP_NEAREST:
-                    options << " -D INTERP=NEAREST";
-                    break;
-                case AF_INTERP_LINEAR:
-                    options << " -D INTERP=LINEAR";
-                    break;
-                default:
-                    break;
-            }
+            std::call_once( compileFlags[device], [device] () {
+                        Program::Sources setSrc;
+                        setSrc.emplace_back(approx1_cl, approx1_cl_len);
 
-            prog.build(options.str().c_str());
+                        apxProgs[device] = Program(getContext(), setSrc);
 
-            cl_int err = 0;
+                        std::ostringstream options;
+                        options << " -D Ty="        << dtype_traits<Ty>::getName()
+                                << " -D Tp="        << dtype_traits<Tp>::getName()
+                                << " -D dim_type="  << dtype_traits<dim_type>::getName();
+
+                        if((af_dtype) dtype_traits<Ty>::af_type == c32 ||
+                           (af_dtype) dtype_traits<Ty>::af_type == c64) {
+                            options << " -D CPLX=1";
+                        } else {
+                            options << " -D CPLX=0";
+                        }
+
+                        switch(method) {
+                            case AF_INTERP_NEAREST:
+                                options << " -D INTERP=NEAREST";
+                                break;
+                            case AF_INTERP_LINEAR:
+                                options << " -D INTERP=LINEAR";
+                                break;
+                            default:
+                                break;
+                        }
+                        apxProgs[device].build(options.str().c_str());
+
+                        apxKernels[device] = Kernel(apxProgs[device], "approx1_kernel");
+                    });
+
+
             auto approx1Op = make_kernel<Buffer, const dims_t, const dim_type,
                                   const Buffer, const dims_t, const dim_type,
                                   const Buffer, const dims_t,
                                   const dims_t, const dims_t, const dims_t,
                                   const float, const dim_type,
                                   const dim_type, const dim_type>
-                                  (prog, "approx1_kernel", &err);
+                                  (apxKernels[device]);
 
             NDRange local(THREADS, 1, 1);
             dim_type blocksPerMat = divup(odims[0], local[0]);
@@ -107,42 +120,52 @@ namespace opencl
                      const float offGrid, const dim_type iOffset, const dim_type pOffset,
                      const dim_type qOffset)
         {
-            Program::Sources setSrc;
-            setSrc.emplace_back(approx2_cl, approx2_cl_len);
-            Program prog(getContext(), setSrc);
+            static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+            static Program            apxProgs[DeviceManager::MAX_DEVICES];
+            static Kernel           apxKernels[DeviceManager::MAX_DEVICES];
 
-            std::ostringstream options;
-            options << " -D Ty="        << dtype_traits<Ty>::getName()
-                    << " -D Tp="        << dtype_traits<Tp>::getName()
-                    << " -D dim_type="  << dtype_traits<dim_type>::getName();
-            if((af_dtype) dtype_traits<Ty>::af_type == c32 ||
-               (af_dtype) dtype_traits<Ty>::af_type == c64) {
-                options << " -D CPLX=1";
-            } else {
-                options << " -D CPLX=0";
-            }
+            int device = getActiveDeviceId();
 
-            switch(method) {
-                case AF_INTERP_NEAREST:
-                    options << " -D INTERP=NEAREST";
-                    break;
-                case AF_INTERP_LINEAR:
-                    options << " -D INTERP=LINEAR";
-                    break;
-                default:
-                    break;
-            }
+            std::call_once( compileFlags[device], [device] () {
+                        Program::Sources setSrc;
+                        setSrc.emplace_back(approx2_cl, approx2_cl_len);
 
-            prog.build(options.str().c_str());
+                        apxProgs[device] = Program(getContext(), setSrc);
 
-            cl_int err = 0;
+                        std::ostringstream options;
+                        options << " -D Ty="        << dtype_traits<Ty>::getName()
+                                << " -D Tp="        << dtype_traits<Tp>::getName()
+                                << " -D dim_type="  << dtype_traits<dim_type>::getName();
+
+                        if((af_dtype) dtype_traits<Ty>::af_type == c32 ||
+                           (af_dtype) dtype_traits<Ty>::af_type == c64) {
+                            options << " -D CPLX=1";
+                        } else {
+                            options << " -D CPLX=0";
+                        }
+
+                        switch(method) {
+                            case AF_INTERP_NEAREST:
+                                options << " -D INTERP=NEAREST";
+                                break;
+                            case AF_INTERP_LINEAR:
+                                options << " -D INTERP=LINEAR";
+                                break;
+                            default:
+                                break;
+                        }
+                        apxProgs[device].build(options.str().c_str());
+
+                        apxKernels[device] = Kernel(apxProgs[device], "approx2_kernel");
+                    });
+
             auto approx2Op = make_kernel<Buffer, const dims_t, const dim_type,
                                   const Buffer, const dims_t, const dim_type,
                                   const Buffer, const dims_t, const Buffer, const dims_t,
                                   const dims_t, const dims_t, const dims_t, const dims_t,
                                   const float, const dim_type, const dim_type,
                                   const dim_type, const dim_type, const dim_type>
-                                  (prog, "approx2_kernel", &err);
+                                  (apxKernels[device]);
 
             NDRange local(TX, TY, 1);
             dim_type blocksPerMatX = divup(odims[0], local[0]);

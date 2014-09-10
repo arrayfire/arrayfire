@@ -7,6 +7,7 @@
 #include <traits.hpp>
 #include <sstream>
 #include <string>
+#include <mutex>
 #include <dispatch.hpp>
 
 typedef struct
@@ -16,6 +17,7 @@ typedef struct
 
 using cl::Buffer;
 using cl::Program;
+using cl::Kernel;
 using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
@@ -35,23 +37,33 @@ namespace opencl
                   const unsigned iElem, const unsigned indims,
                   const dim_type *idims, const dim_type *istrides, dim_type offset)
         {
-            Program::Sources setSrc;
-            setSrc.emplace_back(diff_cl, diff_cl_len);
-            Program prog(getContext(), setSrc);
+            static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+            static Program            difProgs[DeviceManager::MAX_DEVICES];
+            static Kernel           difKernels[DeviceManager::MAX_DEVICES];
 
-            std::ostringstream options;
-            options << " -D T="        << dtype_traits<T>::getName()
-                    << " -D DIM="      << dim
-                    << " -D isDiff2="  << isDiff2
-                    << " -D dim_type=" << dtype_traits<dim_type>::getName();
+            int device = getActiveDeviceId();
 
-            prog.build(options.str().c_str());
+            std::call_once( compileFlags[device], [device] () {
+                        Program::Sources setSrc;
+                        setSrc.emplace_back(diff_cl, diff_cl_len);
+
+                        difProgs[device] = Program(getContext(), setSrc);
+
+                        std::ostringstream options;
+                        options << " -D T="        << dtype_traits<T>::getName()
+                                << " -D DIM="      << dim
+                                << " -D isDiff2="  << isDiff2
+                                << " -D dim_type=" << dtype_traits<dim_type>::getName();
+                        difProgs[device].build(options.str().c_str());
+
+                        difKernels[device] = Kernel(difProgs[device], "diff_kernel");
+                    });
 
             auto diffOp = make_kernel<Buffer, const Buffer,
                                       const unsigned, const dims_t,
                                       const dims_t, const dims_t,
                                       dim_type, const unsigned, const unsigned>
-                                      (prog, "diff_kernel");
+                                      (difKernels[device]);
 
             NDRange local(TX, TY, 1);
             if(dim == 0 && indims == 1) {

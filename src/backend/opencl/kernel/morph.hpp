@@ -4,10 +4,12 @@
 #include <traits.hpp>
 #include <sstream>
 #include <string>
+#include <mutex>
 #include <dispatch.hpp>
 
 using cl::Buffer;
 using cl::Program;
+using cl::Kernel;
 using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::LocalSpaceArg;
@@ -42,21 +44,32 @@ void morph(Buffer         &out,
         const Buffer      &mask,
         const MorphParams &params)
 {
-    Program::Sources setSrc;
-    setSrc.emplace_back(morph_cl, morph_cl_len);
-    Program prog(getContext(), setSrc);
+    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+    static Program            morProgs[DeviceManager::MAX_DEVICES];
+    static Kernel           morKernels[DeviceManager::MAX_DEVICES];
 
-    std::ostringstream options;
-    options << " -D T=" << dtype_traits<T>::getName()
-        << " -D dim_type=" << dtype_traits<dim_type>::getName()
-        << " -D isDilation="<< isDilation
-        << " -D windLen=" << windLen;
-    prog.build(options.str().c_str());
+    int device = getActiveDeviceId();
+
+    std::call_once( compileFlags[device], [device] () {
+            Program::Sources setSrc;
+            setSrc.emplace_back(morph_cl, morph_cl_len);
+
+            morProgs[device] = Program(getContext(), setSrc);
+
+            std::ostringstream options;
+            options << " -D T=" << dtype_traits<T>::getName()
+                    << " -D dim_type=" << dtype_traits<dim_type>::getName()
+                    << " -D isDilation="<< isDilation
+                    << " -D windLen=" << windLen;
+            morProgs[device].build(options.str().c_str());
+
+            morKernels[device] = Kernel(morProgs[device], "morph");
+            });
 
     auto morphOp = make_kernel< Buffer, Buffer,
                                 Buffer, cl::LocalSpaceArg,
                                 Buffer, dim_type
-                              > (prog, "morph");
+                              > (morKernels[device]);
 
     NDRange local(THREADS_X, THREADS_Y);
 
@@ -93,21 +106,32 @@ void morph3d(Buffer       &out,
         const Buffer      &mask,
         const MorphParams &params)
 {
-    Program::Sources setSrc;
-    setSrc.emplace_back(morph_cl, morph_cl_len);
-    Program prog(getContext(), setSrc);
+    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+    static Program            morProgs[DeviceManager::MAX_DEVICES];
+    static Kernel           morKernels[DeviceManager::MAX_DEVICES];
 
-    std::ostringstream options;
-    options << " -D T=" << dtype_traits<T>::getName()
-        << " -D dim_type=" << dtype_traits<dim_type>::getName()
-        << " -D isDilation="<< isDilation
-        << " -D windLen=" << windLen;
-    prog.build(options.str().c_str());
+    int device = getActiveDeviceId();
+
+    std::call_once( compileFlags[device], [device] () {
+            Program::Sources setSrc;
+            setSrc.emplace_back(morph_cl, morph_cl_len);
+
+            morProgs[device] = Program(getContext(), setSrc);
+
+            std::ostringstream options;
+            options << " -D T=" << dtype_traits<T>::getName()
+                    << " -D dim_type=" << dtype_traits<dim_type>::getName()
+                    << " -D isDilation="<< isDilation
+                    << " -D windLen=" << windLen;
+            morProgs[device].build(options.str().c_str());
+
+            morKernels[device] = Kernel(morProgs[device], "morph3d");
+            });
 
     auto morphOp = make_kernel< Buffer, Buffer,
                                 Buffer, cl::LocalSpaceArg,
                                 Buffer
-                              > (prog, "morph3d");
+                              > (morKernels[device]);
 
     NDRange local(CUBE_X, CUBE_Y, CUBE_Z);
 

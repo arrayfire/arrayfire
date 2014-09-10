@@ -5,7 +5,7 @@
 #include <kernel/set.hpp>
 #include <cl.hpp>
 #include <platform.hpp>
-#include "traits.hpp"
+#include <traits.hpp>
 #include <backend.hpp>
 #include <types.hpp>
 #include <traits.hpp>

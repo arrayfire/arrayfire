@@ -6,6 +6,10 @@
 #include <vector>
 #include <testHelpers.hpp>
 
+#if defined(AF_OPENCL)
+#include <af/opencl.h>
+#endif
+
 using std::string;
 using std::vector;
 using af::af_cfloat;
@@ -43,42 +47,52 @@ void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=n
     readTests<T,T,int>(pTestFile,numDims,in,tests);
     af::dim4 dims       = numDims[0];
 
-    af_array outArray   = 0;
-    af_array inArray    = 0;
-    T *outData;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+#if defined(AF_OPENCL)
+    int nDevices = 0;
+    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&nDevices));
 
-    // check if the test is for indexed Array
-    if (isSubRef) {
-        af::dim4 newDims(dims[1]-4,dims[0]-4,dims[2],dims[3]);
-        af_array subArray = 0;
-        ASSERT_EQ(AF_SUCCESS, af_index(&subArray,inArray,seqv->size(),&seqv->front()));
-        ASSERT_EQ(AF_SUCCESS, af_transpose(&outArray,subArray));
-        // destroy the temporary indexed Array
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(subArray));
+    for(int d=0; d<nDevices; ++d) {
+        ASSERT_EQ(AF_SUCCESS, af_set_device(d));
+#endif
+        af_array outArray   = 0;
+        af_array inArray    = 0;
+        T *outData;
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
-        dim_type nElems;
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems,outArray));
-        outData = new T[nElems];
-    } else {
-        ASSERT_EQ(AF_SUCCESS,af_transpose(&outArray,inArray));
-        outData = new T[dims.elements()];
-    }
+        // check if the test is for indexed Array
+        if (isSubRef) {
+            af::dim4 newDims(dims[1]-4,dims[0]-4,dims[2],dims[3]);
+            af_array subArray = 0;
+            ASSERT_EQ(AF_SUCCESS, af_index(&subArray,inArray,seqv->size(),&seqv->front()));
+            ASSERT_EQ(AF_SUCCESS, af_transpose(&outArray,subArray));
+            // destroy the temporary indexed Array
+            ASSERT_EQ(AF_SUCCESS, af_destroy_array(subArray));
 
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
-
-    for (size_t testIter=0; testIter<tests.size(); ++testIter) {
-        vector<T> currGoldBar   = tests[testIter];
-        size_t nElems        = currGoldBar.size();
-        for (size_t elIter=0; elIter<nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter],outData[elIter])<< "at: " << elIter<< std::endl;
+            dim_type nElems;
+            ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems,outArray));
+            outData = new T[nElems];
+        } else {
+            ASSERT_EQ(AF_SUCCESS,af_transpose(&outArray,inArray));
+            outData = new T[dims.elements()];
         }
-    }
 
-    // cleanup
-    delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+
+        for (size_t testIter=0; testIter<tests.size(); ++testIter) {
+            vector<T> currGoldBar   = tests[testIter];
+            size_t nElems        = currGoldBar.size();
+            for (size_t elIter=0; elIter<nElems; ++elIter) {
+                ASSERT_EQ(currGoldBar[elIter],outData[elIter])<< "at: " << elIter<< std::endl;
+            }
+        }
+
+        // cleanup
+        delete[] outData;
+        ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+        ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+#if defined(AF_OPENCL)
+    }
+#endif
 }
 
 TYPED_TEST(Transpose,Vector)

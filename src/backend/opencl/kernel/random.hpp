@@ -7,11 +7,13 @@
 #include <traits.hpp>
 #include <sstream>
 #include <string>
+#include <mutex>
 #include <iostream>
 #include <dispatch.hpp>
 
 using cl::Buffer;
 using cl::Program;
+using cl::Kernel;
 using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
@@ -66,17 +68,28 @@ namespace opencl
         {
             static unsigned counter;
 
-            Program::Sources src;
-            src.emplace_back(random_cl, random_cl_len);
-            Program prog(getContext(), src);
+            static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+            static Program            ranProgs[DeviceManager::MAX_DEVICES];
+            static Kernel           ranKernels[DeviceManager::MAX_DEVICES];
 
-            std::ostringstream options;
-            options << " -D T=" << dtype_traits<T>::getName()
-                    << " -D repeat="<< REPEAT
-                    << " -D "<< random_name<T, isRandu>().name();
-            prog.build(options.str().c_str());
+            int device = getActiveDeviceId();
 
-            auto randomOp = make_kernel<cl::Buffer, uint, uint, uint, uint>(prog, "random");
+            std::call_once( compileFlags[device], [device] () {
+                        Program::Sources setSrc;
+                        setSrc.emplace_back(random_cl, random_cl_len);
+
+                        ranProgs[device] = Program(getContext(), setSrc);
+
+                        std::ostringstream options;
+                        options << " -D T=" << dtype_traits<T>::getName()
+                                << " -D repeat="<< REPEAT
+                                << " -D "<< random_name<T, isRandu>().name();
+                        ranProgs[device].build(options.str().c_str());
+
+                        ranKernels[device] = Kernel(ranProgs[device], "random");
+                    });
+
+            auto randomOp = make_kernel<cl::Buffer, uint, uint, uint, uint>(ranKernels[device]);
 
             uint groups = divup(elements, THREADS * REPEAT);
             counter += divup(elements, THREADS * groups);

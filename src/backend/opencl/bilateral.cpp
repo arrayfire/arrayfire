@@ -1,4 +1,3 @@
-#define __CL_ENABLE_EXCEPTIONS
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <ArrayInfo.hpp>
