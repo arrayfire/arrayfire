@@ -2,10 +2,12 @@
 #include <cl.hpp>
 #include <platform.hpp>
 #include <traits.hpp>
+#include <mutex>
 #include <backend.hpp>
 
 using cl::Buffer;
 using cl::Program;
+using cl::Kernel;
 using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
@@ -20,13 +22,25 @@ template<typename T>
 void
 set(Buffer &ptr, T val, const size_t &elements)
 {
-    Program::Sources setSrc;
-    setSrc.push_back(std::make_pair((const char *)&set_cl[0], size_t( set_cl_len)));
-    Program prog(getContext(), setSrc);
-    string opt = string("-D T=") + dtype_traits<T>::getName();
-    prog.build(opt.c_str());
+    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+    static Program            setProgs[DeviceManager::MAX_DEVICES];
+    static Kernel           setKernels[DeviceManager::MAX_DEVICES];
 
-    auto setKern = make_kernel<Buffer, T, const unsigned long>(prog, "set");
+    int device = getActiveDeviceId();
+
+    std::call_once( compileFlags[device], [device] () {
+                Program::Sources setSrc;
+                setSrc.emplace_back(set_cl, set_cl_len);
+
+                setProgs[device] = Program(getContext(), setSrc);
+
+                string opt = string("-D T=") + dtype_traits<T>::getName();
+                setProgs[device].build(opt.c_str());
+
+                setKernels[device] = Kernel(setProgs[device], "set");
+            });
+
+    auto setKern = make_kernel<Buffer, T, const unsigned long>(setKernels[device]);
     setKern(EnqueueArgs(getQueue(), NDRange(elements)), ptr, val, elements);
 }
 

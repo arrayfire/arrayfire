@@ -4,7 +4,10 @@
 #include <traits.hpp>
 #include <sstream>
 #include <string>
+#include <mutex>
 #include <dispatch.hpp>
+
+using cl::Kernel;
 
 namespace opencl
 {
@@ -29,22 +32,33 @@ template<typename inType, typename outType>
 void histogram(Buffer &out, const Buffer &in, const Buffer &minmax,
               const HistParams &params, dim_type nbins)
 {
-    Program::Sources setSrc;
-    setSrc.emplace_back(histogram_cl, histogram_cl_len);
-    Program prog(getContext(), setSrc);
+    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+    static Program            histProgs[DeviceManager::MAX_DEVICES];
+    static Kernel           histKernels[DeviceManager::MAX_DEVICES];
 
-    std::ostringstream options;
-    options << " -D inType=" << dtype_traits<inType>::getName()
-        << " -D outType=" << dtype_traits<outType>::getName()
-        << " -D dim_type=" << dtype_traits<dim_type>::getName()
-        << " -D THRD_LOAD=" << THRD_LOAD;
-    prog.build(options.str().c_str());
+    int device = getActiveDeviceId();
+
+    std::call_once( compileFlags[device], [device] () {
+            Program::Sources setSrc;
+            setSrc.emplace_back(histogram_cl, histogram_cl_len);
+
+            histProgs[device] = Program(getContext(), setSrc);
+
+            std::ostringstream options;
+            options << " -D inType=" << dtype_traits<inType>::getName()
+                    << " -D outType=" << dtype_traits<outType>::getName()
+                    << " -D dim_type=" << dtype_traits<dim_type>::getName()
+                    << " -D THRD_LOAD=" << THRD_LOAD;
+            histProgs[device].build(options.str().c_str());
+
+            histKernels[device] = Kernel(histProgs[device], "histogram");
+            });
 
     auto histogramOp = make_kernel< Buffer, Buffer,
                                 Buffer, Buffer,
                                 cl::LocalSpaceArg,
                                 dim_type, dim_type, dim_type
-                              > (prog, "histogram");
+                              > (histKernels[device]);
 
     NDRange local(THREADS_X, 1);
 
