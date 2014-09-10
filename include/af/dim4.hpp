@@ -31,6 +31,9 @@ public:
     dim_type ndims() const;
     bool operator==(const dim4& other) const;
     bool operator!=(const dim4& other) const;
+    dim4& operator*=(const dim4& other);
+    dim4& operator+=(const dim4& other);
+    dim4& operator-=(const dim4& other);
     dim_type& operator[](const unsigned dim);
     const dim_type& operator[](const unsigned dim) const;
             dim_type* get()         { return dims; }

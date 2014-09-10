@@ -89,6 +89,33 @@ dim4::operator!=(const dim4 &other) const
     return !((*this) == other);
 }
 
+dim4&
+dim4::operator*=(const dim4 &other)
+{
+    for(unsigned i = 0; i < 4; i++) {
+        (*this)[i] *= other[i];
+    }
+    return *this;
+}
+
+dim4&
+dim4::operator+=(const dim4 &other)
+{
+    for(unsigned i = 0; i < 4; i++) {
+        (*this)[i] = (*this)[i] + other[i];
+    }
+    return *this;
+}
+
+dim4&
+dim4::operator-=(const dim4 &other)
+{
+    for(unsigned i = 0; i < 4; i++) {
+        (*this)[i] = (*this)[i] - other[i];
+    }
+    return *this;
+}
+
 bool
 isSpan(const af_seq &seq)          { return (seq.step == 0); }
 
