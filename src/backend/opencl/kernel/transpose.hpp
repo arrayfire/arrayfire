@@ -1,7 +1,5 @@
 #pragma once
-
 #include <kernel_headers/transpose.hpp>
-#define __CL_ENABLE_EXCEPTIONS
 #include <cl.hpp>
 #include <platform.hpp>
 #include <traits.hpp>

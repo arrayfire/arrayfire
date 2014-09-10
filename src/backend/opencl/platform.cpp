@@ -1,4 +1,3 @@
-#define __CL_ENABLE_EXCEPTIONS
 #include <cl.hpp>
 #include <platform.hpp>
 #include <af/opencl.h>
