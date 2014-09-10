@@ -10,8 +10,6 @@
 #include <errorcodes.hpp>
 #include <../helper.hpp>
 
-using std::cout;
-using std::endl;
 using std::string;
 using std::vector;
 using std::ostringstream;
@@ -25,50 +23,15 @@ using cl::Device;
 namespace opencl
 {
 
-DeviceManager& DeviceManager::getInstance() {
+DeviceManager& DeviceManager::getInstance()
+{
     static DeviceManager my_instance;
     return my_instance;
 }
 
-string DeviceManager::getInfo() const {
-    return devInfo;
-}
-
-unsigned DeviceManager::deviceCount() const {
-    return queues.size();
-}
-
-unsigned DeviceManager::getActiveDeviceId() const {
-    return activeQId;
-}
-
-const Platform& DeviceManager::getActivePlatform() const {
-    return platforms[activeCtxId];
-}
-
-const Context& DeviceManager::getActiveContext() const {
-    return contexts[activeCtxId];
-}
-
-CommandQueue& DeviceManager::getActiveQueue() {
-    return queues[activeQId];
-}
-
-void DeviceManager::setDevice(size_t device) {
-    if (device>=queues.size() || device>=DeviceManager::MAX_DEVICES)
-        throw runtime_error("@DeviceManger: invalid device index");
-    else {
-        activeQId = device;
-        for(size_t i=0; i<ctxOffsets.size(); ++i) {
-            if (device<ctxOffsets[i]) {
-                activeCtxId = i;
-                break;
-            }
-        }
-    }
-}
-
-DeviceManager::DeviceManager() : devInfo(""), activeCtxId(0), activeQId(0) {
+DeviceManager::DeviceManager()
+    : devInfo(""), activeCtxId(0), activeQId(0)
+{
     ostringstream info;
 
     vector<Platform> platforms;
@@ -106,24 +69,51 @@ DeviceManager::DeviceManager() : devInfo(""), activeCtxId(0), activeQId(0) {
     devInfo = info.str();
 }
 
-CommandQueue& getQueue()
+std::string getInfo()
 {
-    return DeviceManager::getInstance().getActiveQueue();
+    return DeviceManager::getInstance().devInfo;
 }
+
+unsigned deviceCount()
+{
+    return DeviceManager::getInstance().queues.size();
+}
+
+unsigned getActiveDeviceId()
+{
+    return DeviceManager::getInstance().activeQId;
+}
+
 
 const Context& getContext()
 {
-    return DeviceManager::getInstance().getActiveContext();
+    DeviceManager& devMngr = DeviceManager::getInstance();
+    return devMngr.contexts[devMngr.activeCtxId];
 }
 
-unsigned getDeviceCount()
+CommandQueue& getQueue()
 {
-    return DeviceManager::getInstance().deviceCount();
+    DeviceManager& devMngr = DeviceManager::getInstance();
+    return devMngr.queues[devMngr.activeQId];
 }
 
-unsigned getCurrentDeviceId()
+void setDevice(size_t device)
 {
-    return DeviceManager::getInstance().getActiveDeviceId();
+    DeviceManager& devMngr = DeviceManager::getInstance();
+
+    if (device>=devMngr.queues.size() ||
+            device>=DeviceManager::MAX_DEVICES) {
+        throw runtime_error("@setDevice: invalid device index");
+    }
+    else {
+        devMngr.activeQId = device;
+        for(size_t i=0; i<devMngr.ctxOffsets.size(); ++i) {
+            if (device<devMngr.ctxOffsets[i]) {
+                devMngr.activeCtxId = i;
+                break;
+            }
+        }
+    }
 }
 
 }
@@ -133,7 +123,7 @@ af_err af_info()
     af_err ret = AF_SUCCESS;
 
     try {
-        cout<<opencl::DeviceManager::getInstance().getInfo()<<endl;
+        std::cout<<opencl::getInfo()<<std::endl;
     }
     CATCHALL;
 
@@ -145,7 +135,7 @@ af_err af_get_device_count(int *num_of_devices)
     af_err ret = AF_SUCCESS;
 
     try {
-        *num_of_devices = opencl::getDeviceCount();
+        *num_of_devices = opencl::deviceCount();
     }
     CATCHALL;
 
@@ -157,7 +147,7 @@ af_err af_set_device(int device)
     af_err ret = AF_SUCCESS;
 
     try {
-        opencl::DeviceManager::getInstance().setDevice(device);
+        opencl::setDevice(device);
     }
     CATCHALL;
 

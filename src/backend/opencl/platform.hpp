@@ -7,26 +7,36 @@
 namespace opencl
 {
 
+std::string getInfo();
+
+unsigned deviceCount();
+
+unsigned getActiveDeviceId();
+
+const cl::Context& getContext();
+
+cl::CommandQueue& getQueue();
+
+void setDevice(size_t device);
+
 class DeviceManager
 {
+    friend std::string getInfo();
+
+    friend unsigned deviceCount();
+
+    friend unsigned getActiveDeviceId();
+
+    friend const cl::Context& getContext();
+
+    friend cl::CommandQueue& getQueue();
+
+    friend void setDevice(size_t device);
+
     public:
         static const unsigned MAX_DEVICES = 16;
 
         static DeviceManager& getInstance();
-
-        std::string getInfo() const;
-
-        unsigned deviceCount() const;
-
-        unsigned getActiveDeviceId() const;
-
-        const cl::Platform& getActivePlatform() const;
-
-        const cl::Context& getActiveContext() const;
-
-        cl::CommandQueue& getActiveQueue();
-
-        void setDevice(size_t device);
 
     private:
         DeviceManager();
@@ -49,13 +59,5 @@ class DeviceManager
         unsigned activeCtxId;
         unsigned activeQId;
 };
-
-cl::CommandQueue& getQueue();
-
-const cl::Context& getContext();
-
-unsigned getDeviceCount();
-
-unsigned getCurrentDeviceId();
 
 }
