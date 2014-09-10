@@ -20,27 +20,26 @@ namespace cpu
         T* outPtr = out->get();
         const T* inPtr = in.get();
 
-        //tile(*out, in, tileDims.get());
+        const af::dim4 ist = in.strides();
+        const af::dim4 ost = out->strides();
+
         for(dim_type ow = 0; ow < oDims[3]; ow++) {
+            const dim_type iw = ow % iDims[3];
+            const dim_type iW = iw * ist[3];
+            const dim_type oW = ow * ost[3];
             for(dim_type oz = 0; oz < oDims[2]; oz++) {
+                const dim_type iz = oz % iDims[2];
+                const dim_type iZW = iW + iz * ist[2];
+                const dim_type oZW = oW + oz * ost[2];
                 for(dim_type oy = 0; oy < oDims[1]; oy++) {
+                    const dim_type iy = oy % iDims[1];
+                    const dim_type iYZW = iZW + iy * ist[1];
+                    const dim_type oYZW = oZW + oy * ost[1];
                     for(dim_type ox = 0; ox < oDims[0]; ox++) {
-                        const dim_type ix = (iDims[0] == oDims[0]) ? ox :
-                                             ox - ((ox / iDims[0]) * iDims[0]);
-                        const dim_type iy = (iDims[1] == oDims[1]) ? oy :
-                                             oy - ((oy / iDims[1]) * iDims[1]);
-                        const dim_type iz = (iDims[2] == oDims[2]) ? oz :
-                                             oz - ((oz / iDims[2]) * iDims[2]);
-                        const dim_type iw = (iDims[3] == oDims[3]) ? ow :
-                                             ow - ((ow / iDims[3]) * iDims[3]);
-
-                        unsigned iMem = iw * in.strides()[3] + iz * in.strides()[2] +
-                                        iy * in.strides()[1] + ix;
-                        unsigned oMem = ow * out->strides()[3] + oz * out->strides()[2] +
-                                        oy * out->strides()[1] + ox;
-
+                        const dim_type ix = ox % iDims[0];
+                        const dim_type iMem = iYZW + ix;
+                        const dim_type oMem = oYZW + ox;
                         outPtr[oMem] = inPtr[iMem];
-
                     }
                 }
             }

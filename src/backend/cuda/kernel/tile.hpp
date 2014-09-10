@@ -7,8 +7,10 @@ namespace cuda
     namespace kernel
     {
         // Kernel Launch Config Values
-        static const unsigned TX = 16;
-        static const unsigned TY = 16;
+        static const unsigned TX = 32;
+        static const unsigned TY = 8;
+        static const unsigned TILEX = 512;
+        static const unsigned TILEY = 32;
 
         template<typename T>
         __global__
@@ -21,26 +23,34 @@ namespace cuda
             const dim_type blockIdx_x = blockIdx.x - oz * blocksPerMatX;
             const dim_type blockIdx_y = blockIdx.y - ow * blocksPerMatY;
 
-            const dim_type ox = threadIdx.x + blockIdx_x * blockDim.x;
-            const dim_type oy = threadIdx.y + blockIdx_y * blockDim.y;
+            const dim_type xx = threadIdx.x + blockIdx_x * blockDim.x;
+            const dim_type yy = threadIdx.y + blockIdx_y * blockDim.y;
 
-            if(ox >= out.dims[0] ||
-               oy >= out.dims[1] ||
+            if(xx >= out.dims[0] ||
+               yy >= out.dims[1] ||
                oz >= out.dims[2] ||
                ow >= out.dims[3])
                 return;
 
-            const dim_type ix = (in.dims[0] == out.dims[0]) ? ox : ox - ((ox / in.dims[0]) * in.dims[0]);
-            const dim_type iy = (in.dims[1] == out.dims[1]) ? oy : oy - ((oy / in.dims[1]) * in.dims[1]);
-            const dim_type iz = (in.dims[2] == out.dims[2]) ? oz : oz - ((oz / in.dims[2]) * in.dims[2]);
-            const dim_type iw = (in.dims[3] == out.dims[3]) ? ow : ow - ((ow / in.dims[3]) * in.dims[3]);
+            const dim_type iz = oz % in.dims[2];
+            const dim_type iw = ow % in.dims[3];
+            const dim_type izw = iw * in.strides[3] + iz * in.strides[2];
+            const dim_type ozw = ow * out.strides[3] + oz * out.strides[2];
 
-            unsigned iMem = iw * in.strides[3] + iz * in.strides[2] +
-                            iy * in.strides[1] + ix;
-            unsigned oMem = ow * out.strides[3] + oz * out.strides[2] +
-                            oy * out.strides[1] + ox;
+            const dim_type incy = blocksPerMatY * blockDim.y;
+            const dim_type incx = blocksPerMatX * blockDim.x;
 
-            out.ptr[oMem] = in.ptr[iMem];
+            for(dim_type oy = yy; oy < out.dims[1]; oy += incy) {
+                const dim_type iy = oy % in.dims[1];
+                for(dim_type ox = xx; ox < out.dims[0]; ox += incx) {
+                    const dim_type ix = ox % in.dims[0];
+
+                    dim_type iMem = izw + iy * in.strides[1] + ix;
+                    dim_type oMem = ozw + oy * out.strides[1] + ox;
+
+                    out.ptr[oMem] = in.ptr[iMem];
+                }
+            }
         }
 
         ///////////////////////////////////////////////////////////////////////////
@@ -51,8 +61,8 @@ namespace cuda
         {
             dim3 threads(TX, TY, 1);
 
-            dim_type blocksPerMatX = divup(out.dims[0], TX);
-            dim_type blocksPerMatY = divup(out.dims[1], TY);
+            dim_type blocksPerMatX = divup(out.dims[0], TILEX);
+            dim_type blocksPerMatY = divup(out.dims[1], TILEY);
             dim3 blocks(blocksPerMatX * out.dims[2],
                         blocksPerMatY * out.dims[3],
                         1);

@@ -27,8 +27,11 @@ namespace opencl
 {
     namespace kernel
     {
-        static const dim_type TX = 16;
-        static const dim_type TY = 16;
+        // Kernel Launch Config Values
+        static const dim_type TX = 32;
+        static const dim_type TY = 8;
+        static const dim_type TILEX = 512;
+        static const dim_type TILEY = 32;
 
         template<typename T>
         void tile(Buffer out, const Buffer in,
@@ -52,8 +55,8 @@ namespace opencl
 
             NDRange local(TX, TY, 1);
 
-            unsigned blocksPerMatX = divup(odims[0], local[0]);
-            unsigned blocksPerMatY = divup(odims[1], local[1]);
+            unsigned blocksPerMatX = divup(odims[0], TILEX);
+            unsigned blocksPerMatY = divup(odims[1], TILEY);
             NDRange global(local[0] * blocksPerMatX * odims[2],
                            local[1] * blocksPerMatY * odims[3],
                            1);
@@ -67,5 +70,5 @@ namespace opencl
                    out, in, _odims, _idims, _ostrides, _istrides, offset, blocksPerMatX, blocksPerMatY);
 
         }
-}
+    }
 }
