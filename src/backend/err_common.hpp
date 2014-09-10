@@ -1,6 +1,8 @@
+#pragma once
 
 #include <stdexcept>
 #include <string>
+#include <cassert>
 #include <af/defines.h>
 
 
@@ -13,6 +15,8 @@ public:
             ,const char * const funcName);
     AfError( std::string message
             ,std::string funcName);
+	const std::string&
+	getFunctionName() const;
 
     virtual ~AfError() throw();
 };
@@ -24,7 +28,6 @@ public:
     TypeError(
                 const char * const  funcName,
                 const char * const  argName,
-                af_dtype            expectedType,
                 af_dtype            actual);
     ~TypeError() throw() {}
 };
@@ -44,13 +47,14 @@ public:
 class DimensionError : public AfError
 {
     DimensionError();
-    std::string      expected;
-    dim_type    value;
+    std::string	expected;
 public:
     DimensionError(
-                    const char * funcName,
-                    const char * expectString,
-                    dim_type     actual);
+                    const char * const funcName,
+                    const char * const expectString);
+	const std::string&
+	getExpectedCondition() const;
+
     ~DimensionError() throw(){}
 };
 
@@ -66,5 +70,25 @@ public:
     ~SupportError()throw() {}
 };
 
-#define DIM_CHECK(COND, VAL)                        \
-    throw DimensionError(__func__, "##COND##", VAL);
+af_err processException();
+
+#define DIM_ASSERT (COND, VAL)                               \
+    if(COND == false) {                                     \
+        #ifdef NDEBUG                                     	\
+        throw DimensionError(__func__, "##COND##", VAL);    \
+        #else                                               \
+        assert(COND);                                       \
+        #endif												\
+    }
+
+#define INVALID_TYPE_ERROR(type, argName, typeVal)          \
+    throw TypeError(__func__, argName);
+
+#define AFASSERT(COND, MESSAGE)                             \
+    assert(MESSAGE && COND)
+
+#define CATCHALL                		\
+    catch(...) {                		\
+        return processException();     	\
+    }
+

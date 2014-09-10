@@ -2,7 +2,7 @@
 #include <af/image.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
-#include <helper.hpp>
+#include <err_common.hpp>
 #include <backend.hpp>
 #include <ArrayInfo.hpp>
 #include <traits.hpp>

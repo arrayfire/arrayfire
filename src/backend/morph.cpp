@@ -2,7 +2,7 @@
 #include <af/defines.h>
 #include <af/image.h>
 #include <handle.hpp>
-#include <helper.hpp>
+#include <err_common.hpp>
 #include <backend.hpp>
 #include <morph.hpp>
 

@@ -1,5 +1,5 @@
 #include <af/array.h>
-#include <helper.hpp>
+#include <err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
 #include <ArrayInfo.hpp>

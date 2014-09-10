@@ -1,6 +1,6 @@
 #include <af/image.h>
 #include <af/defines.h>
-#include <helper.hpp>
+#include <err_common.hpp>
 #include <handle.hpp>
 #include <ArrayInfo.hpp>
 #include <backend.hpp>

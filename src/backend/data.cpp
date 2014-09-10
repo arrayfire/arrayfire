@@ -4,7 +4,7 @@
 #include <af/array.h>
 #include <af/defines.h>
 #include <copy.hpp>
-#include <helper.hpp>
+#include <err_common.hpp>
 #include <backend.hpp>
 #include <handle.hpp>
 #include <random.hpp>
