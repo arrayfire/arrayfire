@@ -7,10 +7,12 @@
 #include <traits.hpp>
 #include <sstream>
 #include <string>
+#include <mutex>
 #include <dispatch.hpp>
 
 using cl::Buffer;
 using cl::Program;
+using cl::Kernel;
 using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
@@ -29,20 +31,31 @@ template<typename T>
 void transpose( Buffer &out, const Buffer &in, const dim_type ndims, const dim_type * const dims,
                 const dim_type * const strides, const dim_type offset)
 {
-    Program::Sources setSrc;
-    setSrc.emplace_back(transpose_cl, transpose_cl_len);
-    Program prog(getContext(), setSrc);
+    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+    static Program            trsProgs[DeviceManager::MAX_DEVICES];
+    static Kernel           trsKernels[DeviceManager::MAX_DEVICES];
 
-    std::ostringstream options;
-    options << " -D T=" << dtype_traits<T>::getName()
-        << " -D dim_type=" << dtype_traits<dim_type>::getName()
-        << " -D TILE_DIM=" << TILE_DIM;
-    prog.build(options.str().c_str());
+    int device = getActiveDeviceId();
+
+    std::call_once( compileFlags[device], [device] () {
+                Program::Sources setSrc;
+                setSrc.emplace_back(transpose_cl, transpose_cl_len);
+
+                trsProgs[device] = Program(getContext(), setSrc);
+
+                std::ostringstream options;
+                options << " -D T=" << dtype_traits<T>::getName()
+                    << " -D dim_type=" << dtype_traits<dim_type>::getName()
+                    << " -D TILE_DIM=" << TILE_DIM;
+                trsProgs[device].build(options.str().c_str());
+
+                trsKernels[device] = Kernel(trsProgs[device], "transpose");
+            });
 
     auto transposeOp = make_kernel< Buffer, Buffer,
                                     dim_type, dim_type,
                                     dim_type, dim_type,
-                                    dim_type, dim_type > (prog, "transpose");
+                                    dim_type, dim_type > (trsKernels[device]);
 
     NDRange local(THREADS_X,THREADS_Y);
 
