@@ -1,6 +1,6 @@
 #include <kernel_headers/histogram.hpp>
 #include <cl.hpp>
-#include <ctx.hpp>
+#include <platform.hpp>
 #include <traits.hpp>
 #include <sstream>
 #include <string>
@@ -31,7 +31,7 @@ void histogram(Buffer &out, const Buffer &in, const Buffer &minmax,
 {
     Program::Sources setSrc;
     setSrc.emplace_back(histogram_cl, histogram_cl_len);
-    Program prog(getCtx(0), setSrc);
+    Program prog(getContext(), setSrc);
 
     std::ostringstream options;
     options << " -D inType=" << dtype_traits<inType>::getName()
@@ -57,12 +57,12 @@ void histogram(Buffer &out, const Buffer &in, const Buffer &minmax,
     NDRange global(blk_x*THREADS_X, batchCount);
 
     // copy params struct to opencl buffer
-    cl::Buffer pBuff = cl::Buffer(getCtx(0), CL_MEM_READ_ONLY, sizeof(kernel::HistParams));
-    getQueue(0).enqueueWriteBuffer(pBuff, CL_TRUE, 0, sizeof(kernel::HistParams), &params);
+    cl::Buffer pBuff = cl::Buffer(getContext(), CL_MEM_READ_ONLY, sizeof(kernel::HistParams));
+    getQueue().enqueueWriteBuffer(pBuff, CL_TRUE, 0, sizeof(kernel::HistParams), &params);
 
     dim_type locSize = nbins * sizeof(outType);
 
-    histogramOp(EnqueueArgs(getQueue(0), global, local),
+    histogramOp(EnqueueArgs(getQueue(), global, local),
             out, in, minmax, pBuff, cl::Local(locSize),
             numElements, nbins, blk_x);
 }

@@ -1,6 +1,6 @@
 #include <kernel_headers/set.hpp>
 #include <cl.hpp>
-#include <ctx.hpp>
+#include <platform.hpp>
 #include <traits.hpp>
 #include <backend.hpp>
 
@@ -22,12 +22,12 @@ set(Buffer &ptr, T val, const size_t &elements)
 {
     Program::Sources setSrc;
     setSrc.push_back(std::make_pair((const char *)&set_cl[0], size_t( set_cl_len)));
-    Program prog(getCtx(0), setSrc);
+    Program prog(getContext(), setSrc);
     string opt = string("-D T=") + dtype_traits<T>::getName();
     prog.build(opt.c_str());
 
     auto setKern = make_kernel<Buffer, T, const unsigned long>(prog, "set");
-    setKern(EnqueueArgs(getQueue(0), NDRange(elements)), ptr, val, elements);
+    setKern(EnqueueArgs(getQueue(), NDRange(elements)), ptr, val, elements);
 }
 
 }

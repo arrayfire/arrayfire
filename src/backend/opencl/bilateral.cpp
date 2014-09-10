@@ -6,6 +6,8 @@
 #include <bilateral.hpp>
 #include <kernel/bilateral.hpp>
 #include <stdexcept>
+#include <iostream>
+#include <errorcodes.hpp>
 
 using af::dim4;
 
@@ -29,11 +31,7 @@ Array<T> * bilateral(const Array<T> &in, const float &s_sigma, const float &c_si
         params.ostrides[i] = ostrides[i];
     }
 
-    try {
-        kernel::bilateral<T, isColor>(out->get(), in.get(), params, s_sigma, c_sigma);
-    } catch(cl::Error error) {
-        throw std::runtime_error(std::string("@opencl/bilateral: ").append(error.what()));
-    }
+    kernel::bilateral<T, isColor>(out->get(), in.get(), params, s_sigma, c_sigma);
 
     return out;
 }

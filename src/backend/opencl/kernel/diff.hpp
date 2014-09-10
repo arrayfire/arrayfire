@@ -3,7 +3,7 @@
 #include <af/defines.h>
 #include <kernel_headers/diff.hpp>
 #include <cl.hpp>
-#include <ctx.hpp>
+#include <platform.hpp>
 #include <traits.hpp>
 #include <sstream>
 #include <string>
@@ -37,7 +37,7 @@ namespace opencl
         {
             Program::Sources setSrc;
             setSrc.emplace_back(diff_cl, diff_cl_len);
-            Program prog(getCtx(0), setSrc);
+            Program prog(getContext(), setSrc);
 
             std::ostringstream options;
             options << " -D T="        << dtype_traits<T>::getName()
@@ -68,7 +68,7 @@ namespace opencl
             dims_t _ostrides = {{ostrides[0], ostrides[1], ostrides[2], ostrides[3]}};
             dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
 
-            diffOp(EnqueueArgs(getQueue(0), global, local),
+            diffOp(EnqueueArgs(getQueue(), global, local),
                    out, in, oElem, _odims, _ostrides, _istrides, offset, blocksPerMatX, blocksPerMatY);
 
         }

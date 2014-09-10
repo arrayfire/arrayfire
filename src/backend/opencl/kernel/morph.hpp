@@ -1,6 +1,6 @@
 #include <kernel_headers/morph.hpp>
 #include <cl.hpp>
-#include <ctx.hpp>
+#include <platform.hpp>
 #include <traits.hpp>
 #include <sstream>
 #include <string>
@@ -44,7 +44,7 @@ void morph(Buffer         &out,
 {
     Program::Sources setSrc;
     setSrc.emplace_back(morph_cl, morph_cl_len);
-    Program prog(getCtx(0), setSrc);
+    Program prog(getContext(), setSrc);
 
     std::ostringstream options;
     options << " -D T=" << dtype_traits<T>::getName()
@@ -68,12 +68,12 @@ void morph(Buffer         &out,
 
     // copy mask/filter to constant memory
     cl_int se_size   = sizeof(T)*windLen*windLen;
-    cl::Buffer mBuff = cl::Buffer(getCtx(0), CL_MEM_READ_ONLY, se_size);
-    getQueue(0).enqueueCopyBuffer(mask, mBuff, 0, 0, se_size);
+    cl::Buffer mBuff = cl::Buffer(getContext(), CL_MEM_READ_ONLY, se_size);
+    getQueue().enqueueCopyBuffer(mask, mBuff, 0, 0, se_size);
 
     // copy params struct to opencl buffer
-    cl::Buffer pBuff = cl::Buffer(getCtx(0), CL_MEM_READ_ONLY, sizeof(kernel::MorphParams));
-    getQueue(0).enqueueWriteBuffer(pBuff, CL_TRUE, 0, sizeof(kernel::MorphParams), &params);
+    cl::Buffer pBuff = cl::Buffer(getContext(), CL_MEM_READ_ONLY, sizeof(kernel::MorphParams));
+    getQueue().enqueueWriteBuffer(pBuff, CL_TRUE, 0, sizeof(kernel::MorphParams), &params);
 
     // calculate shared memory size
     const int halo    = windLen/2;
@@ -81,7 +81,7 @@ void morph(Buffer         &out,
     const int locLen  = THREADS_X + padding + 1;
     const int locSize = locLen * (THREADS_Y+padding);
 
-    morphOp(EnqueueArgs(getQueue(0), global, local),
+    morphOp(EnqueueArgs(getQueue(), global, local),
             out, in, mBuff,
             cl::Local(locSize*sizeof(T)),
             pBuff, blk_x);
@@ -95,7 +95,7 @@ void morph3d(Buffer       &out,
 {
     Program::Sources setSrc;
     setSrc.emplace_back(morph_cl, morph_cl_len);
-    Program prog(getCtx(0), setSrc);
+    Program prog(getContext(), setSrc);
 
     std::ostringstream options;
     options << " -D T=" << dtype_traits<T>::getName()
@@ -121,12 +121,12 @@ void morph3d(Buffer       &out,
 
     // copy mask/filter to constant memory
     cl_int se_size   = sizeof(T)*windLen*windLen*windLen;
-    cl::Buffer mBuff = cl::Buffer(getCtx(0), CL_MEM_READ_ONLY, se_size);
-    getQueue(0).enqueueCopyBuffer(mask, mBuff, 0, 0, se_size);
+    cl::Buffer mBuff = cl::Buffer(getContext(), CL_MEM_READ_ONLY, se_size);
+    getQueue().enqueueCopyBuffer(mask, mBuff, 0, 0, se_size);
 
     // copy params struct to opencl buffer
-    cl::Buffer pBuff = cl::Buffer(getCtx(0), CL_MEM_READ_ONLY, sizeof(kernel::MorphParams));
-    getQueue(0).enqueueWriteBuffer(pBuff, CL_TRUE, 0, sizeof(kernel::MorphParams), &params);
+    cl::Buffer pBuff = cl::Buffer(getContext(), CL_MEM_READ_ONLY, sizeof(kernel::MorphParams));
+    getQueue().enqueueWriteBuffer(pBuff, CL_TRUE, 0, sizeof(kernel::MorphParams), &params);
 
     // calculate shared memory size
     const int halo    = windLen/2;
@@ -135,7 +135,7 @@ void morph3d(Buffer       &out,
     const int locArea = locLen *(CUBE_Y+padding);
     const int locSize = locArea*(CUBE_Z+padding);
 
-    morphOp(EnqueueArgs(getQueue(0), global, local),
+    morphOp(EnqueueArgs(getQueue(), global, local),
             out, in, mBuff, cl::Local(locSize*sizeof(T)), pBuff);
 }
 

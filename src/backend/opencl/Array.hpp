@@ -4,7 +4,8 @@
 #include <ArrayInfo.hpp>
 #include <kernel/set.hpp>
 #include <cl.hpp>
-#include <ctx.hpp>
+#include <platform.hpp>
+#include "traits.hpp"
 #include <backend.hpp>
 #include <types.hpp>
 #include <traits.hpp>

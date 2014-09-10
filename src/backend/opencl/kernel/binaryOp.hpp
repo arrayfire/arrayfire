@@ -1,6 +1,6 @@
 #include <kernel_headers/binaryOp.hpp>
 #include <cl.hpp>
-#include <ctx.hpp>
+#include <platform.hpp>
 #include <sstream>
 #include <string>
 #include <traits.hpp>
@@ -28,7 +28,7 @@ binaryOp(Buffer out, const Buffer lhs, const Buffer rhs, const size_t elements)
 {
     Program::Sources setSrc;
     setSrc.emplace_back(binaryOp_cl, binaryOp_cl_len);
-    Program prog(getCtx(0), setSrc);
+    Program prog(getContext(), setSrc);
 
     std::ostringstream options;
     options << " -D T=" << dtype_traits<T>::getName()
@@ -38,7 +38,7 @@ binaryOp(Buffer out, const Buffer lhs, const Buffer rhs, const size_t elements)
     prog.build(options.str().c_str());
 
     auto binOp = make_kernel<Buffer, Buffer, Buffer, const unsigned long>(prog, "binaryOp");
-    binOp(EnqueueArgs(getQueue(0), NDRange(elements)), out, lhs, rhs, elements);
+    binOp(EnqueueArgs(getQueue(), NDRange(elements)), out, lhs, rhs, elements);
 }
 
 }

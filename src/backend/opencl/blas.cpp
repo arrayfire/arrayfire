@@ -124,7 +124,7 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
             scale,  lhs.get()(),    lhs.getOffset(),   lStrides[1],
                     rhs.get()(),    rhs.getOffset(),   rStrides[0],
             scale,  out->get()(),   out->getOffset(),             1,
-            1, &getQueue(0)(), 0, nullptr, &event());
+            1, &getQueue()(), 0, nullptr, &event());
     } else {
         gemm_func<T> gemm;
         err = gemm(
@@ -133,7 +133,7 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
                 scale,  lhs.get()(),    lhs.getOffset(),   lStrides[1],
                         rhs.get()(),    rhs.getOffset(),   rStrides[1],
                 scale,  out->get()(),   out->getOffset(),   out->dims()[0],
-                1, &getQueue(0)(), 0, nullptr, &event());
+                1, &getQueue()(), 0, nullptr, &event());
 
     }
     if(err) {
@@ -153,14 +153,14 @@ Array<T>* dot(const Array<T> &lhs, const Array<T> &rhs,
     dot_func<T> dot;
     cl::Event event;
     auto out = createEmptyArray<T>(af::dim4(1));
-    cl::Buffer scratch(getCtx(0), CL_MEM_READ_WRITE, sizeof(T) * N);
+    cl::Buffer scratch(getContext(), CL_MEM_READ_WRITE, sizeof(T) * N);
     clblasStatus err;
     err = dot(    N,
             out->get()(), out->getOffset(),
             lhs.get()(),  lhs.getOffset(), lhs.strides()[0],
             rhs.get()(),  rhs.getOffset(), rhs.strides()[0],
             scratch(),
-            1, &getQueue(0)(), 0, nullptr, &event());
+            1, &getQueue()(), 0, nullptr, &event());
 
     if(err) {
         throw runtime_error(string("CLBLAS error: ") + to_string(err));

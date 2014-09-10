@@ -1,7 +1,7 @@
 #include <kernel_headers/memcopy.hpp>
 #define __CL_ENABLE_EXCEPTIONS
 #include <cl.hpp>
-#include <ctx.hpp>
+#include <platform.hpp>
 #include <traits.hpp>
 #include <sstream>
 #include <string>
@@ -52,7 +52,7 @@ namespace kernel
         Program::Sources src;
         src.emplace_back(memcopy_cl, memcopy_cl_len);
 
-        Program prog(getCtx(0), src);
+        Program prog(getContext(), src);
 
         std::ostringstream options;
         options << " -D T=" << dtype_traits<T>::getName()
@@ -65,7 +65,7 @@ namespace kernel
                                            dims_t, dim_type,
                                            uint, uint >(prog, "memcopy_kernel");
 
-        memcopy_kernel(EnqueueArgs(getQueue(0), global, local),
+        memcopy_kernel(EnqueueArgs(getQueue(), global, local),
                        out, _ostrides, in, _idims, _istrides, offset, groups_0, groups_1);
     }
 }
