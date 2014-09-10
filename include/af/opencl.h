@@ -1,6 +1,5 @@
 #pragma once
 #include <af/defines.h>
-#include <cl.hpp>
 
 #ifdef __cplusplus
 extern "C" {
