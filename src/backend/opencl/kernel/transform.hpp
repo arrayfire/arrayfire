@@ -8,6 +8,7 @@
 #include <helper.hpp>
 #include <sstream>
 #include <string>
+#include <mutex>
 #include <dispatch.hpp>
 
 typedef struct
@@ -17,6 +18,7 @@ typedef struct
 
 using cl::Buffer;
 using cl::Program;
+using cl::Kernel;
 using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
@@ -29,29 +31,38 @@ namespace opencl
         static const dim_type TX = 16;
         static const dim_type TY = 16;
 
-        template<typename T>
+        template<typename T, bool isInverse>
         void transform(Buffer out, const Buffer in, const Buffer tf,
               const dim_type *odims, const dim_type *idims,
               const dim_type *ostrides, const dim_type *istrides, const
-              dim_type *tstrides, const dim_type i_offset, const bool inverse)
+              dim_type *tstrides, const dim_type i_offset)
         {
-            Program::Sources setSrc;
-            setSrc.emplace_back(transform_cl, transform_cl_len);
-            Program prog(getContext(), setSrc);
+            static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+            static Program            trnProgs[DeviceManager::MAX_DEVICES];
+            static Kernel           trnKernels[DeviceManager::MAX_DEVICES];
 
-            std::ostringstream options;
-            options << " -D T="        << dtype_traits<T>::getName()
-                    << " -D dim_type=" << dtype_traits<dim_type>::getName()
-                    << " -D INVERSE="  << (inverse ? 1 : 0);
+            int device = getActiveDeviceId();
 
-            prog.build(options.str().c_str());
+            std::call_once( compileFlags[device], [device] () {
+                    Program::Sources setSrc;
+                    setSrc.emplace_back(transform_cl, transform_cl_len);
 
-            cl_int err = 0;
+                    trnProgs[device] = Program(getContext(), setSrc);
+
+                    std::ostringstream options;
+                    options << " -D T="        << dtype_traits<T>::getName()
+                            << " -D dim_type=" << dtype_traits<dim_type>::getName()
+                            << " -D INVERSE="  << (isInverse ? 1 : 0);
+                    trnProgs[device].build(options.str().c_str());
+
+                    trnKernels[device] = Kernel(trnProgs[device], "transform_kernel");
+                    });
+
             auto transformOp = make_kernel<Buffer, const dim_type, const dim_type,
                                      const Buffer, const dim_type, const dim_type,
                                      const Buffer, const dims_t, const dims_t,
                                      const dim_type, const dim_type, const dim_type>
-                                     (prog, "transform_kernel", &err);
+                                     (trnKernels[device]);
 
             const dim_type nimages = idims[2];
             // Multiplied in src/backend/transform.cpp
