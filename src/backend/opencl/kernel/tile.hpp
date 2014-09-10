@@ -8,16 +8,16 @@
 #include <helper.hpp>
 #include <sstream>
 #include <string>
+#include <dispatch.hpp>
 
 typedef struct
 {
     dim_type dims[4];
 } dims_t;
 
-#define divup(a, b) ((a+b-1) / b)
-
 using cl::Buffer;
 using cl::Program;
+using cl::Kernel;
 using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
@@ -38,20 +38,32 @@ namespace opencl
                   const dim_type *odims, const dim_type *idims,
                   const dim_type *ostrides, const dim_type *istrides, const dim_type offset)
         {
-            Program::Sources setSrc;
-            setSrc.emplace_back(tile_cl, tile_cl_len);
-            Program prog(getCtx(0), setSrc);
 
-            std::ostringstream options;
-            options << " -D T="        << dtype_traits<T>::getName()
-                    << " -D dim_type=" << dtype_traits<dim_type>::getName();
+            static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+            static Program            tileProgs[DeviceManager::MAX_DEVICES];
+            static Kernel           tileKernels[DeviceManager::MAX_DEVICES];
 
-            prog.build(options.str().c_str());
+            int device = getActiveDeviceId();
+
+            std::call_once( compileFlags[device], [device] () {
+                    Program::Sources setSrc;
+                    setSrc.emplace_back(transpose_cl, transpose_cl_len);
+
+                    tileProgs[device] = Program(getContext(), setSrc);
+
+                    std::ostringstream options;
+                    options << " -D T=" << dtype_traits<T>::getName()
+                            << " -D dim_type=" << dtype_traits<dim_type>::getName()
+                            << " -D TILE_DIM=" << TILE_DIM;
+                    tileProgs[device].build(options.str().c_str());
+
+                    tileKernels[device] = Kernel(tileProgs[device], "transpose");
+                });
 
             auto tileOp = make_kernel<Buffer, const Buffer, const dims_t, const dims_t,
                                       const dims_t, const dims_t, const dim_type,
                                       const unsigned, const unsigned>
-                                      (prog, "tile_kernel");
+                                      (tileKernels[device]);
 
             NDRange local(TX, TY, 1);
 
