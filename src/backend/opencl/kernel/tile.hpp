@@ -3,7 +3,7 @@
 #include <af/defines.h>
 #include <kernel_headers/tile.hpp>
 #include <cl.hpp>
-#include <ctx.hpp>
+#include <platform.hpp>
 #include <traits.hpp>
 #include <helper.hpp>
 #include <sstream>
@@ -38,7 +38,6 @@ namespace opencl
                   const dim_type *odims, const dim_type *idims,
                   const dim_type *ostrides, const dim_type *istrides, const dim_type offset)
         {
-
             static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
             static Program            tileProgs[DeviceManager::MAX_DEVICES];
             static Kernel           tileKernels[DeviceManager::MAX_DEVICES];
@@ -47,23 +46,22 @@ namespace opencl
 
             std::call_once( compileFlags[device], [device] () {
                     Program::Sources setSrc;
-                    setSrc.emplace_back(transpose_cl, transpose_cl_len);
+                    setSrc.emplace_back(tile_cl, tile_cl_len);
 
                     tileProgs[device] = Program(getContext(), setSrc);
 
                     std::ostringstream options;
                     options << " -D T=" << dtype_traits<T>::getName()
-                            << " -D dim_type=" << dtype_traits<dim_type>::getName()
-                            << " -D TILE_DIM=" << TILE_DIM;
-                    tileProgs[device].build(options.str().c_str());
+                            << " -D dim_type=" << dtype_traits<dim_type>::getName();
 
-                    tileKernels[device] = Kernel(tileProgs[device], "transpose");
+                    tileProgs[device].build(options.str().c_str());
+                    tileKernels[device] = Kernel(tileProgs[device], "tile_kernel");
                 });
 
             auto tileOp = make_kernel<Buffer, const Buffer, const dims_t, const dims_t,
                                       const dims_t, const dims_t, const dim_type,
                                       const unsigned, const unsigned>
-                                      (tileKernels[device]);
+                (tileKernels[device]);
 
             NDRange local(TX, TY, 1);
 
@@ -78,9 +76,8 @@ namespace opencl
             dims_t _ostrides = {{ostrides[0], ostrides[1], ostrides[2], ostrides[3]}};
             dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
 
-            tileOp(EnqueueArgs(getQueue(0), global, local),
+            tileOp(EnqueueArgs(getQueue(), global, local),
                    out, in, _odims, _idims, _ostrides, _istrides, offset, blocksPerMatX, blocksPerMatY);
-
         }
     }
 }
