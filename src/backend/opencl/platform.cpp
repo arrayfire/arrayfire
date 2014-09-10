@@ -58,7 +58,7 @@ DeviceManager::DeviceManager()
 
             info<< nDevices++ <<". "<<*pIter<<" "<<dstr<<" ";
             info<<dev.getInfo<CL_DEVICE_VERSION>();
-            info<<" Device driver "<<dev.getInfo<CL_DRIVER_VERSION>()<<endl;
+            info<<" Device driver "<<dev.getInfo<CL_DRIVER_VERSION>()<<std::endl;
 
             queues.emplace_back(context, dev);
         }
