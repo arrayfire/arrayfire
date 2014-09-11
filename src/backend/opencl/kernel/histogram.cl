@@ -2,18 +2,12 @@
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 #endif
 
-struct Params {
-    dim_type      offset;
-    dim_type    idims[4];
-    dim_type istrides[4];
-    dim_type ostrides[4];
-};
-
 __kernel
 void histogram(__global outType *         d_dst,
+               KParam                     oInfo,
                __global const inType *    d_src,
+               KParam                     iInfo,
                __global const float2 *    d_minmax,
-               __constant struct Params * params,
                __local outType *          localMem,
                dim_type len, dim_type nbins, dim_type blk_x)
 {
@@ -21,8 +15,8 @@ void histogram(__global outType *         d_dst,
     __global const float2 * d_mnmx = d_minmax + get_group_id(1);
 
     // offset input and output to account for batch ops
-    __global const inType *in = d_src + get_group_id(1) * params->istrides[2] + params->offset;
-    __global outType * out    = d_dst + get_group_id(1) * params->ostrides[2];
+    __global const inType *in = d_src + get_group_id(1) * iInfo.strides[2] + iInfo.offset;
+    __global outType * out    = d_dst + get_group_id(1) * oInfo.strides[2];
 
     dim_type start = get_group_id(0) * THRD_LOAD * get_local_size(0) + get_local_id(0);
     dim_type end   = min((dim_type)(start + THRD_LOAD * get_local_size(0)), len);
