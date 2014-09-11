@@ -2,13 +2,6 @@
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 #endif
 
-struct Params {
-    dim_type      offset;
-    dim_type    idims[4];
-    dim_type istrides[4];
-    dim_type ostrides[4];
-};
-
 dim_type lIdx(dim_type x, dim_type y,
         dim_type stride1, dim_type stride0)
 {
@@ -35,10 +28,11 @@ float gaussian1d(float x, float variance)
 
 __kernel
 void bilateral(__global T *              d_dst,
+               KParam                    oInfo,
                __global const T *        d_src,
+               KParam                    iInfo,
                __local T *               localMem,
                __local T *               gauss2d,
-               __constant struct Params* params,
                float sigma_space, float sigma_color,
                dim_type gaussOff, dim_type nonBatchBlkSize)
 {
@@ -51,8 +45,8 @@ void bilateral(__global T *              d_dst,
 
     // gfor batch offsets
     unsigned batchId = get_group_id(0) / nonBatchBlkSize;
-    __global const T* in = d_src + (batchId * params->istrides[2] + params->offset);
-    __global T* out      = d_dst + (batchId * params->ostrides[2]);
+    __global const T* in = d_src + (batchId * iInfo.strides[2] + iInfo.offset);
+    __global T* out      = d_dst + (batchId * oInfo.strides[2]);
 
     const dim_type lx = get_local_id(0);
     const dim_type ly = get_local_id(1);
@@ -76,26 +70,26 @@ void bilateral(__global T *              d_dst,
 
     // pull image to local memory
     load2LocalMem(localMem, in, lx, ly, shrdLen,
-                 params->idims[0], params->idims[1], gx-radius,
-                 gy-radius, params->istrides[1], params->istrides[0]);
+                 iInfo.dims[0], iInfo.dims[1], gx-radius,
+                 gy-radius, iInfo.strides[1], iInfo.strides[0]);
     if (lx<padding) {
         load2LocalMem(localMem, in, lx2, ly, shrdLen,
-                     params->idims[0], params->idims[1], gx2-radius,
-                     gy-radius, params->istrides[1], params->istrides[0]);
+                     iInfo.dims[0], iInfo.dims[1], gx2-radius,
+                     gy-radius, iInfo.strides[1], iInfo.strides[0]);
     }
     if (ly<padding) {
         load2LocalMem(localMem, in, lx, ly2, shrdLen,
-                     params->idims[0], params->idims[1], gx-radius,
-                     gy2-radius, params->istrides[1], params->istrides[0]);
+                     iInfo.dims[0], iInfo.dims[1], gx-radius,
+                     gy2-radius, iInfo.strides[1], iInfo.strides[0]);
     }
     if (lx<padding && ly<padding) {
         load2LocalMem(localMem, in, lx2, ly2, shrdLen,
-                     params->idims[0], params->idims[1], gx2-radius,
-                     gy2-radius, params->istrides[1], params->istrides[0]);
+                     iInfo.dims[0], iInfo.dims[1], gx2-radius,
+                     gy2-radius, iInfo.strides[1], iInfo.strides[0]);
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    if (gx<params->idims[0] && gy<params->idims[1]) {
+    if (gx<iInfo.dims[0] && gy<iInfo.dims[1]) {
         float center_color = (float)localMem[j*shrdLen+i];
         float res  = 0;
         float norm = 0;
@@ -113,7 +107,7 @@ void bilateral(__global T *              d_dst,
                 res  += tmp_color * weight;
             }
         }
-        dim_type oIdx = gy*params->ostrides[1] + gx*params->ostrides[0];
+        dim_type oIdx = gy*oInfo.strides[1] + gx*oInfo.strides[0];
         out[oIdx] = (T)(res / norm);
     }
 }
