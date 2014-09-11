@@ -9,7 +9,7 @@ namespace opencl
 
 std::string getInfo();
 
-unsigned deviceCount();
+int getDeviceCount();
 
 unsigned getActiveDeviceId();
 
@@ -17,13 +17,13 @@ const cl::Context& getContext();
 
 cl::CommandQueue& getQueue();
 
-void setDevice(size_t device);
+int setDevice(int device);
 
 class DeviceManager
 {
     friend std::string getInfo();
 
-    friend unsigned deviceCount();
+    friend int getDeviceCount();
 
     friend unsigned getActiveDeviceId();
 
@@ -31,7 +31,7 @@ class DeviceManager
 
     friend cl::CommandQueue& getQueue();
 
-    friend void setDevice(size_t device);
+    friend int setDevice(int device);
 
     public:
         static const unsigned MAX_DEVICES = 16;
