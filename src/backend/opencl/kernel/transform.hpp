@@ -1,20 +1,12 @@
 #pragma once
-
-#include <af/defines.h>
 #include <kernel_headers/transform.hpp>
-#include <cl.hpp>
-#include <platform.hpp>
+#include <program.hpp>
 #include <traits.hpp>
-#include <helper.hpp>
-#include <sstream>
 #include <string>
 #include <mutex>
 #include <dispatch.hpp>
-
-typedef struct
-{
-    dim_type dim[4];
-} dims_t;
+#include <Param.hpp>
+#include <cldebug.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -32,53 +24,50 @@ namespace opencl
         static const dim_type TY = 16;
 
         template<typename T, bool isInverse>
-        void transform(Buffer out, const Buffer in, const Buffer tf,
-              const dim_type *odims, const dim_type *idims,
-              const dim_type *ostrides, const dim_type *istrides, const
-              dim_type *tstrides, const dim_type i_offset)
+        void transform(Param out, const Param in, const Param tf)
         {
-            static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-            static Program            trnProgs[DeviceManager::MAX_DEVICES];
-            static Kernel           trnKernels[DeviceManager::MAX_DEVICES];
+            try {
+                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+                static Program      transformProgs[DeviceManager::MAX_DEVICES];
+                static Kernel     transformKernels[DeviceManager::MAX_DEVICES];
 
-            int device = getActiveDeviceId();
+                int device = getActiveDeviceId();
 
-            std::call_once( compileFlags[device], [device] () {
-                    Program::Sources setSrc;
-                    setSrc.emplace_back(transform_cl, transform_cl_len);
-
-                    trnProgs[device] = Program(getContext(), setSrc);
-
+                std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
                     options << " -D T="        << dtype_traits<T>::getName()
-                            << " -D dim_type=" << dtype_traits<dim_type>::getName()
                             << " -D INVERSE="  << (isInverse ? 1 : 0);
-                    trnProgs[device].build(options.str().c_str());
 
-                    trnKernels[device] = Kernel(trnProgs[device], "transform_kernel");
-                    });
+                    buildProgram(transformProgs[device],
+                                 transform_cl,
+                                 transform_cl_len,
+                                 options.str());
 
-            auto transformOp = make_kernel<Buffer, const dim_type, const dim_type,
-                                     const Buffer, const dim_type, const dim_type,
-                                     const Buffer, const dims_t, const dims_t,
-                                     const dim_type, const dim_type, const dim_type>
-                                     (trnKernels[device]);
+                    transformKernels[device] = Kernel(transformProgs[device], "transform_kernel");
+                });
 
-            const dim_type nimages = idims[2];
-            // Multiplied in src/backend/transform.cpp
-            const dim_type ntransforms = odims[2] / idims[2];
-            NDRange local(TX, TY, 1);
+                auto transformOp = make_kernel<Buffer, const KParam,
+                                         const Buffer, const KParam, const Buffer, const KParam,
+                                         const dim_type, const dim_type>
+                                         (transformKernels[device]);
 
-            NDRange global(local[0] * divup(odims[0], local[0]) * nimages,
-                           local[1] * divup(odims[1], local[1]) * ntransforms,
-                           1);
+                const dim_type nimages = in.info.dims[2];
+                // Multiplied in src/backend/transform.cpp
+                const dim_type ntransforms = out.info.dims[2] / in.info.dims[2];
+                NDRange local(TX, TY, 1);
 
-            dims_t _ostrides = {{ostrides[0], ostrides[1], ostrides[2], ostrides[3]}};
-            dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
+                NDRange global(local[0] * divup(out.info.dims[0], local[0]) * nimages,
+                               local[1] * divup(out.info.dims[1], local[1]) * ntransforms,
+                               1);
 
-            transformOp(EnqueueArgs(getQueue(), global, local),
-                     out, odims[0], odims[1], in, idims[0], idims[1],
-                     tf, _ostrides, _istrides, nimages, ntransforms, i_offset);
+                transformOp(EnqueueArgs(getQueue(), global, local),
+                         out.data, out.info, in.data, in.info, tf.data, tf.info, nimages, ntransforms);
+
+                CL_DEBUG_FINISH(getQueue());
+            } catch (cl::Error err) {
+                SHOW_CL_ERROR(err);
+                throw;
+            }
         }
     }
 }

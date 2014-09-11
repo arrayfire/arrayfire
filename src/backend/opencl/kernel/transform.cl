@@ -2,10 +2,6 @@
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 #endif
 
-typedef struct {
-    dim_type dim[4];
-} dims_t;
-
 void calc_affine_inverse(float* txo, __global const float* txi)
 {
     float det = txi[0]*txi[4] - txi[1]*txi[3];
@@ -20,16 +16,19 @@ void calc_affine_inverse(float* txo, __global const float* txi)
 }
 
 __kernel
-void transform_kernel(__global T* out, const dim_type xo, const dim_type yo,
-                      __global const T* in, const dim_type xi, const dim_type yi,
-                      __global const float* c_tmat,
-                      const dims_t ostrides, const dims_t istrides,
-                      const dim_type nimages, const dim_type ntransforms,
-                      const dim_type i_offset)
+void transform_kernel(__global T* d_out, const KParam out,
+                      __global const T* d_in, const KParam in,
+                      __global const float* c_tmat, const KParam tf,
+                      const dim_type nimages, const dim_type ntransforms)
 {
     // Get thread indices
     int xx = get_global_id(0);
     int yy = get_global_id(1);
+
+    const dim_type xo = out.dims[0];
+    const dim_type yo = out.dims[1];
+    const dim_type xi =  in.dims[0];
+    const dim_type yi =  in.dims[1];
 
     if(xx >= xo * nimages || yy >= yo * ntransforms)
         return;
@@ -42,11 +41,10 @@ void transform_kernel(__global T* out, const dim_type xo, const dim_type yo,
     int xido = xx - i_idx * xo;
     int yido = yy - t_idx * yo;
 
-
     // Global offset
     //          Offset for transform channel + Offset for image channel.
-    out += t_idx * nimages * ostrides.dim[2] + i_idx * ostrides.dim[2];
-    in  += i_idx * istrides.dim[2] + i_offset;
+    d_out += t_idx * nimages * out.strides[2] + i_idx * out.strides[2];
+    d_in  += i_idx * in.strides[2] + in.offset;
 
     // Transform is in global memory.
     // Needs offset to correct transform being processed.
@@ -74,11 +72,11 @@ void transform_kernel(__global T* out, const dim_type xo, const dim_type yo,
                                 + tmat[5]);
 
     // Compute memory location of indices
-    dim_type loci = (yidi * istrides.dim[1] + xidi);
-    dim_type loco = (yido * ostrides.dim[1] + xido);
+    dim_type loci = (yidi *  in.strides[1] + xidi);
+    dim_type loco = (yido * out.strides[1] + xido);
 
     T val = 0;
-    if (xidi < xi && yidi < yi && xidi >= 0 && yidi >= 0) val = in[loci];
+    if (xidi < xi && yidi < yi && xidi >= 0 && yidi >= 0) val = d_in[loci];
 
-    out[loco] = val;
+    d_out[loco] = val;
 }
