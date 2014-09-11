@@ -24,7 +24,7 @@ FILE(GLOB opencl_src
     "../*.cpp"
     )
 
-FILE(GLOB kernel_src "kernel/*.cl")
+FILE(GLOB kernel_src "kernel/*.cl" "kernel/KParam.hpp")
 
 CL_KERNEL_TO_H(
     SOURCES ${kernel_src}

@@ -12,14 +12,9 @@ namespace opencl
         af::dim4 oDims = iDims;
         oDims *= tileDims;
 
-        if(iDims.elements() == 0 || oDims.elements() == 0) {
-            throw std::runtime_error("Elements are 0");
-        }
-
         Array<T> *out = createEmptyArray<T>(oDims);
 
-        kernel::tile<T>(out->get(), in.get(), out->dims().get(), in.dims().get(),
-                     out->strides().get(), in.strides().get(), in.getOffset());
+        kernel::tile<T>(*out, in);
 
         return out;
     }

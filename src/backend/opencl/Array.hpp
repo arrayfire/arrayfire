@@ -9,6 +9,7 @@
 #include <backend.hpp>
 #include <types.hpp>
 #include <traits.hpp>
+#include <Param.hpp>
 
 namespace opencl
 {
@@ -75,6 +76,16 @@ namespace opencl
         const dim_type getOffset() const
         {
             return isOwner() ? 0 : calcOffset(parent->strides(), this->offsets());
+        }
+
+        operator Param() const
+        {
+            KParam info = {{dims()[0], dims()[1], dims()[2], dims()[3]},
+                           {strides()[0], strides()[1], strides()[2], strides()[3]},
+                           getOffset()};
+
+            Param out = {this->get(), info};
+            return out;
         }
 
         friend Array<T>* createValueArray<T>(const af::dim4 &size, const T& value);

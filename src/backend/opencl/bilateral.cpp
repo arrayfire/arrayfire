@@ -4,9 +4,6 @@
 #include <Array.hpp>
 #include <bilateral.hpp>
 #include <kernel/bilateral.hpp>
-#include <stdexcept>
-#include <iostream>
-#include <errorcodes.hpp>
 
 using af::dim4;
 
@@ -17,20 +14,10 @@ template<typename T, bool isColor>
 Array<T> * bilateral(const Array<T> &in, const float &s_sigma, const float &c_sigma)
 {
     const dim4 dims     = in.dims();
-    const dim4 istrides = in.strides();
 
     Array<T>* out       = createEmptyArray<T>(dims);
-    const dim4 ostrides = out->strides();
 
-    kernel::KernelParams params;
-    params.offset = in.getOffset();
-    for(dim_type i=0; i<4; ++i) {
-        params.idims[i]    = dims[i];
-        params.istrides[i] = istrides[i];
-        params.ostrides[i] = ostrides[i];
-    }
-
-    kernel::bilateral<T, isColor>(out->get(), in.get(), params, s_sigma, c_sigma);
+    kernel::bilateral<T, isColor>(*out, in, s_sigma, c_sigma);
 
     return out;
 }
