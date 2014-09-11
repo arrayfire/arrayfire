@@ -8,6 +8,7 @@
 #include <functional>
 #include <stdexcept>
 #include <mutex>
+#include <math.hpp>
 
 namespace opencl
 {
@@ -64,22 +65,6 @@ BLAS_FUNC(dot, double,      D)
 #undef BLAS_FUNC_DEF
 #undef BLAS_FUNC
 
-
-template<typename T>
-typename enable_if<is_floating_point<T>::value, T >::type
-getValue(T val)         { return T(val); }
-
-template<typename T>
-typename enable_if<is_complex<T>::value, T>::type
-getValue(double val)
-{
-    T tmp;
-    tmp.s[0] = val;
-    tmp.s[1] = 0;
-    return tmp;
-}
-
-
 static void
 initBlas() {
     static std::once_flag clblasSetupFlag;
@@ -108,8 +93,9 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
     assert(lDims[aColDim] == rDims[bRowDim]);
 
     //FIXME: Leaks on errors.
-    Array<T> *out = createValueArray<T>(af::dim4(M, N, 1, 1), getValue<T>(0));
-    auto scale = getValue<T>(1);
+    Array<T> *out = createEmptyArray<T>(af::dim4(M, N, 1, 1));
+    auto alpha = scalar<T>(1);
+    auto beta  = scalar<T>(0);
 
     dim4 lStrides = lhs.strides();
     dim4 rStrides = rhs.strides();
@@ -121,18 +107,18 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
         err = gemv(
             clblasColumnMajor, lOpts,
             M, N,
-            scale,  lhs.get()(),    lhs.getOffset(),   lStrides[1],
+            alpha,  lhs.get()(),    lhs.getOffset(),   lStrides[1],
                     rhs.get()(),    rhs.getOffset(),   rStrides[0],
-            scale,  out->get()(),   out->getOffset(),             1,
+            beta ,  out->get()(),   out->getOffset(),             1,
             1, &getQueue()(), 0, nullptr, &event());
     } else {
         gemm_func<T> gemm;
         err = gemm(
                 clblasColumnMajor, lOpts, rOpts,
                 M, N, K,
-                scale,  lhs.get()(),    lhs.getOffset(),   lStrides[1],
+                alpha,  lhs.get()(),    lhs.getOffset(),   lStrides[1],
                         rhs.get()(),    rhs.getOffset(),   rStrides[1],
-                scale,  out->get()(),   out->getOffset(),   out->dims()[0],
+                beta,   out->get()(),   out->getOffset(),   out->dims()[0],
                 1, &getQueue()(), 0, nullptr, &event());
 
     }
