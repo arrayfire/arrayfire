@@ -3,22 +3,26 @@
 #endif
 
 __kernel
-void transpose( __global T * out, __global const T * in,
-                dim_type iDim0, dim_type iDim1,
-                dim_type iStride1, dim_type iStride2,
-                dim_type offset,
-                dim_type nonBatchBlkSize)
+void transpose(__global T *oData,
+               KParam oInfo,
+               const __global T *iData,
+               KParam iInfo,
+               dim_type nonBatchBlkSize)
 {
     __local T shrdMem[TILE_DIM*(TILE_DIM+1)];
 
-
     const dim_type shrdStride = TILE_DIM+1;
     // create variables to hold output dimensions
+    const dim_type iDim0 = iInfo.dims[0];
+    const dim_type iDim1 = iInfo.dims[1];
+
     const dim_type oDim0 = iDim1;
     const dim_type oDim1 = iDim0;
 
     // calculate strides
-    const dim_type oStride1    = oDim0;
+    const dim_type oStride1 = oInfo.strides[1];
+    const dim_type iStride1 = iInfo.strides[1];
+    const dim_type iStride2 = iInfo.strides[2];
 
     dim_type lx      = get_local_id(0);
     dim_type ly      = get_local_id(1);
@@ -33,13 +37,14 @@ void transpose( __global T * out, __global const T * in,
 
     // offset in and out based on batch id
     // also add the subBuffer offsets
-    in  += batchId * iStride2 + offset;
-    out += batchId * oDim0 * oDim1;
+    iData += batchId * iStride2 + iInfo.offset;
+    oData += batchId * oDim0 * oDim1 + oInfo.offset;
 
     for (dim_type repeat = 0; repeat < TILE_DIM; repeat += get_local_size(1)) {
-        dim_type gy_ = gy+repeat;
-        if (gx<iDim0 && gy_<iDim1)
-            shrdMem[(ly+repeat)*shrdStride+lx] = in[gy_*iStride1+gx];
+        dim_type gy_ = gy + repeat;
+
+        if (gx < iDim0 && gy_< iDim1)
+            shrdMem[(ly + repeat) * shrdStride + lx] = iData[gy_ * iStride1 + gx];
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -47,8 +52,9 @@ void transpose( __global T * out, __global const T * in,
     gy          = ly + TILE_DIM * blkIdx_x;
 
     for (dim_type repeat = 0; repeat < TILE_DIM; repeat += get_local_size(1)) {
-        dim_type gy_ = gy+repeat;
-        if (gx<oDim0 && gy_<oDim1)
-            out[gy_*oStride1+gx] = shrdMem[lx*shrdStride+ly+repeat];
+        dim_type gy_ = gy + repeat;
+
+        if (gx < oDim0 && gy_ < oDim1)
+            oData[gy_ * oStride1 + gx] = shrdMem[lx * shrdStride + ly + repeat];
     }
 }
