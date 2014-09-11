@@ -72,15 +72,15 @@ BLAS_FUNC_DEF( dot )
 BLAS_FUNC(dot, float,       s)
 BLAS_FUNC(dot, double,      d)
 
-template<typename T>
+template<typename T, int value>
 typename enable_if<is_floating_point<T>::value, scale_type<T>>::type
-getScale() { return T(1); }
+getScale() { return T(value); }
 
-template<typename T>
+template<typename T, int value>
 typename enable_if<is_complex<T>::value, scale_type<T>>::type
 getScale()
 {
-    static T val(1);
+    static T val(value);
     return &val;
 }
 
@@ -122,7 +122,8 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
 
     //FIXME: Leaks on errors.
     Array<T> *out = createEmptyArray<T>(af::dim4(M, N, 1, 1));
-    auto scale = getScale<T>();
+    auto alpha = getScale<T, 1>();
+    auto beta  = getScale<T, 0>();
 
     dim4 lStrides = lhs.strides();
     dim4 rStrides = rhs.strides();
@@ -131,16 +132,16 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
         gemv_func<T>()(
             CblasColMajor, lOpts,
             M, N,
-            scale,  lhs.get(),   lStrides[1],
+            alpha,  lhs.get(),   lStrides[1],
                     rhs.get(),   rStrides[0],
-            scale,  out->get(),                1);
+            beta ,  out->get(),           1);
     } else {
         gemm_func<T>()(
             CblasColMajor, lOpts, rOpts,
             M, N, K,
-            scale,  lhs.get(),   lStrides[1],
+            alpha,  lhs.get(),   lStrides[1],
                     rhs.get(),   rStrides[1],
-            scale, out->get(),    out->dims()[0]);
+            beta ,  out->get(),  out->dims()[0]);
     }
 
     return out;

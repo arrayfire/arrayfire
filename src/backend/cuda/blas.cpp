@@ -6,6 +6,7 @@
 #include <string>
 #include <cassert>
 #include <iostream>
+#include <math.hpp>
 
 namespace cuda
 {
@@ -129,28 +130,6 @@ BLAS_FUNC(dot, double, D)
 using namespace std;
 
 template<typename T>
-T
-make_value(int val)
-{
-    return T(val);
-}
-
-template<>
-cfloat
-make_value<cfloat>(int val)
-{
-    cfloat out = make_cuFloatComplex(val, 0);
-    return out;
-}
-
-template<>
-cdouble
-make_value<cdouble>(int val) {
-    cdouble out = make_cuDoubleComplex(val, 0);
-    return out;
-}
-
-template<typename T>
 Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
                     af_blas_transpose optLhs, af_blas_transpose optRhs)
 {
@@ -170,9 +149,9 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
 
     assert(lDims[aColDim] == rDims[bRowDim]);
 
-    T init = make_value<T>(0);
-    Array<T> *out = createValueArray<T>(af::dim4(M, N, 1, 1), init);
-    T scale = make_value<T>(1);
+    Array<T> *out = createEmptyArray<T>(af::dim4(M, N, 1, 1));
+    T alpha = scalar<T>(1);
+    T beta  = scalar<T>(0);
 
     dim4 lStrides = lhs.strides();
     dim4 rStrides = rhs.strides();
@@ -181,17 +160,17 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
         gemv_func<T>()(
             getHandle(), lOpts,
             M, N,
-            &scale, lhs.get(),   lStrides[1],
+            &alpha, lhs.get(),   lStrides[1],
                     rhs.get(),   rStrides[0],
-            &scale, out->get(),            1);
+            &beta , out->get(),            1);
     } else {
         cublasStatus_t err =
             gemm_func<T>()(
                 getHandle(), lOpts, rOpts,
                 M, N, K,
-                &scale, lhs.get(),  lStrides[1],
+                &alpha, lhs.get(),  lStrides[1],
                         rhs.get(),  rStrides[1],
-                &scale, out->get(), out->dims()[0]);
+                &beta , out->get(), out->dims()[0]);
 
         if(err != CUBLAS_STATUS_SUCCESS) {
             std::cout << __func__<< " ERROR: " << cublasErrorString(err) << std::endl;
