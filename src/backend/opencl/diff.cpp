@@ -22,25 +22,17 @@ namespace opencl
 
         switch (dim) {
 
-            case (0):       kernel::diff<T, 0, isDiff2>(out->get(), in.get(),
-                                    oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
-                                    iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get(), in.getOffset());
-                            break;
+            case (0):    kernel::diff<T, 0, isDiff2>(*out, in, in.ndims());
+                         break;
 
-            case (1):       kernel::diff<T, 1, isDiff2>(out->get(), in.get(),
-                                    oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
-                                    iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get(), in.getOffset());
-                            break;
+            case (1):    kernel::diff<T, 1, isDiff2>(*out, in, in.ndims());
+                         break;
 
-            case (2):       kernel::diff<T, 2, isDiff2>(out->get(), in.get(),
-                                    oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
-                                    iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get(), in.getOffset());
-                            break;
+            case (2):    kernel::diff<T, 2, isDiff2>(*out, in, in.ndims());
+                         break;
 
-            case (3):       kernel::diff<T, 3, isDiff2>(out->get(), in.get(),
-                                    oDims.elements(), oDims.ndims(), oDims.get(), out->strides().get(),
-                                    iDims.elements(), iDims.ndims(), iDims.get(), in.strides().get(), in.getOffset());
-                            break;
+            case (3):    kernel::diff<T, 3, isDiff2>(*out, in, in.ndims());
+                         break;
         }
 
         return out;
