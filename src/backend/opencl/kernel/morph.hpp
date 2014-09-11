@@ -81,6 +81,8 @@ void morph(Param         out,
         morphOp(EnqueueArgs(getQueue(), global, local),
                 out.data, out.info, in.data, in.info, mBuff,
                 cl::Local(locSize*sizeof(T)), blk_x);
+
+        CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {
         SHOW_CL_ERROR(err);
         throw;
@@ -139,6 +141,8 @@ void morph3d(Param       out,
 
         morphOp(EnqueueArgs(getQueue(), global, local),
                 out.data, out.info, in.data, in.info, mBuff, cl::Local(locSize*sizeof(T)));
+
+        CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {
         SHOW_CL_ERROR(err);
         throw;

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <errorcodes.hpp>
 
-#define CL_FINISH(Q) Q.finish()
+#define CL_DEBUG_FINISH(Q) Q.finish()
 #define SHOW_CL_ERROR(ERR) std::cout << ERR.what() << ": " << getErrorMessage(ERR.err()) << std::endl;
 
 #define SHOW_BUILD_INFO(PROG) do {                              \
@@ -17,7 +17,7 @@
 
 #else
 
-#define CL_FINISH(Q)
+#define CL_DEBUG_FINISH(Q)
 #define SHOW_CL_ERROR(ERR)
 #define SHOW_BUILD_INFO(PROG)
 
