@@ -50,7 +50,7 @@ public:
 	const std::string&
 	getTypeName() const;
 
-    const int getArgIndex() const;
+    int getArgIndex() const;
 
     ~TypeError() throw() {}
 };
@@ -70,7 +70,7 @@ public:
 	const std::string&
 	getExpectedCondition() const;
 
-    const int getArgIndex() const;
+    int getArgIndex() const;
 
     ~DimensionError() throw(){}
 };

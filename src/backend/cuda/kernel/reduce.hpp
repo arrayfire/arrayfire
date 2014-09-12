@@ -4,6 +4,7 @@
 #include <Param.hpp>
 #include <dispatch.hpp>
 #include <math.hpp>
+#include <err_cuda.hpp>
 
 namespace cuda
 {
@@ -143,8 +144,7 @@ namespace kernel
 
             for (int k = 0; k < 4; k++) tmp_elements *= tmp.dims[k];
 
-            // FIXME: Add checks, use memory manager
-            cudaMalloc(&tmp.ptr, tmp_elements * sizeof(To));
+            CUDA_CHECK(cudaMalloc(&tmp.ptr, tmp_elements * sizeof(To)));
 
             for (int k = dim + 1; k < 4; k++) tmp.strides[k] *= blocks_dim[dim];
         }
@@ -160,8 +160,7 @@ namespace kernel
                 reduce_dim_launcher<To, To,       op, dim>(out, tmp, threads_y, blocks_dim);
             }
 
-            // FIXME: Add checks, use memory manager
-            cudaFree(tmp.ptr);
+            CUDA_CHECK(cudaFree(tmp.ptr));
         }
 
     }
@@ -278,11 +277,13 @@ namespace kernel
         Param<To> tmp = out;
 
         if (blocks_x > 1) {
-            // FIXME: Add checks, Use memory manager
-            cudaMalloc(
-                &(tmp.ptr),
-                blocks_x * in.dims[1] * in.dims[2] * in.dims[3] * sizeof(To)
-                );
+
+            CUDA_CHECK(cudaMalloc(&(tmp.ptr),
+                                  blocks_x *
+                                  in.dims[1] *
+                                  in.dims[2] *
+                                  in.dims[3] *
+                                  sizeof(To)));
 
             tmp.dims[0] = blocks_x;
             for (int k = 1; k < 4; k++) tmp.strides[k] *= blocks_x;
@@ -299,8 +300,7 @@ namespace kernel
                 reduce_first_launcher<To, To,       op>(out, tmp, 1, blocks_y, threads_x);
             }
 
-            // FIXME: Add checks, memory manager
-            cudaFree(tmp.ptr);
+            CUDA_CHECK(cudaFree(tmp.ptr));
         }
     }
 

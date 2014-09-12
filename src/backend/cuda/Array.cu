@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <copy.hpp>
 #include <kernel/elwise.hpp> //set
+#include <err_cuda.hpp>
 
 using af::dim4;
 
@@ -14,12 +15,10 @@ namespace cuda
     T* cudaMallocWrapper(const size_t &elements)
     {
         T* ptr = NULL;
-        //FIXME: Add checks
-        cudaMalloc(reinterpret_cast<void**>(&ptr), sizeof(T) * elements);
+        CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&ptr), sizeof(T) * elements));
         return ptr;
     }
 
-    // FIXME: Add checks
     template<typename T>
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
@@ -27,7 +26,6 @@ namespace cuda
         parent()
     {}
 
-    // FIXME: Add checks
     template<typename T>
     Array<T>::Array(af::dim4 dims, T val) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
@@ -37,14 +35,13 @@ namespace cuda
         kernel::set(data, val, elements());
     }
 
-    // FIXME: Add checks
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data) :
     ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(cudaMallocWrapper<T>(dims.elements())),
         parent()
     {
-        cudaMemcpy(data, in_data, dims.elements() * sizeof(T), cudaMemcpyHostToDevice);
+        CUDA_CHECK(cudaMemcpy(data, in_data, dims.elements() * sizeof(T), cudaMemcpyHostToDevice));
     }
 
     template<typename T>
@@ -54,9 +51,8 @@ namespace cuda
         parent(&parnt)
     { }
 
-    // FIXME: Add checks
     template<typename T>
-    Array<T>::~Array() { cudaFree(data); }
+    Array<T>::~Array() { CUDA_CHECK(cudaFree(data)); }
 
     template<typename T>
     Array<T> *

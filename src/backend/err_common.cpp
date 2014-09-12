@@ -59,7 +59,7 @@ const string& TypeError::getTypeName() const
     return errTypeName;
 }
 
-const int TypeError::getArgIndex() const
+int TypeError::getArgIndex() const
 {
 	return argIndex;
 }
@@ -80,7 +80,7 @@ const string& DimensionError::getExpectedCondition() const
 	return expected;
 }
 
-const int DimensionError::getArgIndex() const
+int DimensionError::getArgIndex() const
 {
 	return argIndex;
 }

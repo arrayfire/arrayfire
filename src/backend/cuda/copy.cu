@@ -4,6 +4,7 @@
 #include <Array.hpp>
 #include <copy.hpp>
 #include <kernel/memcopy.hpp>
+#include <err_cuda.hpp>
 
 namespace cuda
 {
@@ -26,8 +27,10 @@ namespace cuda
             ptr = out->get();
         }
 
-        //FIXME: Add checks
-        cudaMemcpy(data, ptr, A.elements()*sizeof(T), cudaMemcpyDeviceToHost);
+        CUDA_CHECK(cudaMemcpy(data, ptr,
+                              A.elements() * sizeof(T),
+                              cudaMemcpyDeviceToHost));
+
         if (out != NULL) delete out;
 
         return;
@@ -40,8 +43,9 @@ namespace cuda
         Array<T> *out = createEmptyArray<T>(A.dims());
 
         if (A.isOwner()) {
-            // FIXME: Add checks
-            cudaMemcpy(out->get(), A.get(), A.elements()*sizeof(T), cudaMemcpyDeviceToDevice);
+            CUDA_CHECK(cudaMemcpy(out->get(), A.get(),
+                                  A.elements() * sizeof(T),
+                                  cudaMemcpyDeviceToDevice));
         } else {
             // FIXME: Seems to fail when using Param<T>
             kernel::memcopy(out->get(), out->strides().get(), A.get(), A.dims().get(),

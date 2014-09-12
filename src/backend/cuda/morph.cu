@@ -5,6 +5,7 @@
 #include <morph.hpp>
 #include <kernel/morph.hpp>
 #include <stdexcept>
+#include <err_cuda.hpp>
 
 using af::dim4;
 
@@ -17,15 +18,15 @@ Array<T> * morph(const Array<T> &in, const Array<T> &mask)
     const dim4 mdims = mask.dims();
 
     if (mdims[0] != mdims[1])
-        throw std::runtime_error("Only square masks are supported in cuda morph currently");
+        AF_ERROR("Only square masks are supported in cuda morph currently", AF_ERR_SIZE);
     if (mdims[0] > 19)
-        throw std::runtime_error("Upto 19x19 square kernels are only supported in cuda currently");
+        AF_ERROR("Upto 19x19 square kernels are only supported in cuda currently", AF_ERR_SIZE);
 
     Array<T>* out = createEmptyArray<T>(in.dims());
 
-    cudaMemcpyToSymbol(kernel::cFilter, mask.get(),
-                       mdims[0] * mdims[1] * sizeof(T),
-                       0, cudaMemcpyDeviceToDevice);
+    CUDA_CHECK(cudaMemcpyToSymbol(kernel::cFilter, mask.get(),
+                                  mdims[0] * mdims[1] * sizeof(T),
+                                  0, cudaMemcpyDeviceToDevice));
 
     if (isDilation)
         kernel::morph<T, true >(*out, in, mdims[0]);
@@ -41,18 +42,20 @@ Array<T> * morph3d(const Array<T> &in, const Array<T> &mask)
     const dim4 mdims = mask.dims();
 
     if (mdims[0] != mdims[1] || mdims[0] != mdims[2])
-        throw std::runtime_error("Only cube masks are supported in cuda morph currently");
+        AF_ERROR("Only cube masks are supported in CUDA backend", AF_ERR_NOT_SUPPORTED);
+
     if (mdims[0] > 7)
-        throw std::runtime_error("Upto 7x7x7 kernels are only supported in cuda currently");
+        AF_ERROR("Upto 7x7x7 kernels are only supported in CUDA backend", AF_ERR_NOT_SUPPORTED);
 
     if (in.dims()[3] > 1)
-        throw std::runtime_error("Batch not supported for volumetic morphological operations");
+        AF_ERROR("Batch not supported for volumetic morph operations in CUDA backend",
+                 AF_ERR_NOT_SUPPORTED);
 
     Array<T>* out       = createEmptyArray<T>(in.dims());
 
-    cudaMemcpyToSymbol(kernel::cFilter, mask.get(),
-                       mdims[0] * mdims[1] *mdims[2] * sizeof(T),
-                       0, cudaMemcpyDeviceToDevice);
+    CUDA_CHECK(cudaMemcpyToSymbol(kernel::cFilter, mask.get(),
+                                  mdims[0] * mdims[1] *mdims[2] * sizeof(T),
+                                  0, cudaMemcpyDeviceToDevice));
 
     if (isDilation)
         kernel::morph3d<T, true >(*out, in, mdims[0]);
