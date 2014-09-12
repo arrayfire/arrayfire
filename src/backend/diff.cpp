@@ -23,20 +23,15 @@ static inline af_array diff2(const af_array in, const int dim)
 
 af_err af_diff1(af_array *out, const af_array in, const int dim)
 {
-    if (dim < 0 || dim > 3) {
-        return AF_ERR_ARG;
-    }
 
-    af_err ret = AF_ERR_RUNTIME;
+    ARG_ASSERT(2, ((dim >= 0) && (dim < 4)));
 
     try {
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
-        af::dim4 dims = info.dims();
 
-        if(dims[dim] < 2) {
-            return AF_ERR_ARG;
-        }
+        af::dim4 in_dims = info.dims();
+        DIM_ASSERT(1, in_dims[dim] >= 2);
 
         af_array output;
 
@@ -50,34 +45,25 @@ af_err af_diff1(af_array *out, const af_array in, const int dim)
             case u32: output = diff1<uint   >(in,dim);  break;
             case u8:  output = diff1<uchar  >(in,dim);  break;
             case s8:  output = diff1<char   >(in,dim);  break;
-            default:  ret = AF_ERR_NOT_SUPPORTED;       break;
+            default:  TYPE_ERROR(1, type);
         }
-        if (ret!=AF_ERR_NOT_SUPPORTED) {
             std::swap(*out,output);
-            ret = AF_SUCCESS;
-        }
     }
     CATCHALL;
 
-    return ret;
+    return AF_SUCCESS;
 }
 
 af_err af_diff2(af_array *out, const af_array in, const int dim)
 {
-    if (dim < 0 || dim > 3) {
-        return AF_ERR_ARG;
-    }
-
-    af_err ret = AF_ERR_RUNTIME;
+    ARG_ASSERT(2, ((dim >= 0) && (dim < 4)));
 
     try {
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
-        af::dim4 dims = info.dims();
 
-        if(dims[dim] < 3) {
-            return AF_ERR_ARG;
-        }
+        af::dim4 in_dims = info.dims();
+        DIM_ASSERT(1, in_dims[dim] >= 3);
 
         af_array output;
 
@@ -91,14 +77,11 @@ af_err af_diff2(af_array *out, const af_array in, const int dim)
             case u32: output = diff2<uint   >(in,dim);  break;
             case u8:  output = diff2<uchar  >(in,dim);  break;
             case s8:  output = diff2<char   >(in,dim);  break;
-            default:  ret = AF_ERR_NOT_SUPPORTED;       break;
+            default:  TYPE_ERROR(1, type);
         }
-        if (ret!=AF_ERR_NOT_SUPPORTED) {
-            std::swap(*out,output);
-            ret = AF_SUCCESS;
-        }
+        std::swap(*out,output);
     }
     CATCHALL;
 
-    return ret;
+    return AF_SUCCESS;
 }
