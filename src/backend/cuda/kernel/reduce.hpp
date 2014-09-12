@@ -5,6 +5,7 @@
 #include <dispatch.hpp>
 #include <math.hpp>
 #include <err_cuda.hpp>
+#include <debug_cuda.hpp>
 
 namespace cuda
 {
@@ -123,6 +124,8 @@ namespace kernel
             return (reduce_dim_kernel<Ti, To, op, dim,16>)<<<blocks, threads>>>(
                 out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]);
         }
+
+        POST_LAUNCH_CHECK();
     }
 
     template<typename Ti, typename To, af_op_t op, int dim>
@@ -262,6 +265,8 @@ namespace kernel
             return (reduce_first_kernel<Ti, To, op,  1024>)<<<blocks, threads>>>(
                 out, in, blocks_x, blocks_y);
         }
+
+        POST_LAUNCH_CHECK();
     }
 
     template<typename Ti, typename To, af_op_t op>
