@@ -9,18 +9,26 @@
 class AfError   : public std::logic_error
 {
     std::string functionName;
+    int lineNumber;
+    af_err error;
     AfError();
 
 public:
 
-    AfError( const char * const message
-            ,const char * const funcName);
+    AfError(const char * const funcName,
+            const int line,
+            const char * const message, af_err err);
 
-    AfError( std::string message
-            ,std::string funcName);
+    AfError(std::string funcName,
+            const int line,
+            std::string message, af_err err);
 
 	const std::string&
 	getFunctionName() const;
+
+    const int getLine() const;
+
+    const af_err getError() const;
 
     virtual ~AfError() throw();
 };
@@ -35,7 +43,9 @@ class TypeError : public AfError
 public:
 
     TypeError(const char * const  funcName,
-              const int index, const af_dtype type);
+              const int line,
+              const int index,
+              const af_dtype type);
 
 	const std::string&
 	getTypeName() const;
@@ -53,6 +63,7 @@ class DimensionError : public AfError
 
 public:
     DimensionError(const char * const funcName,
+                   const int line,
                    const int index,
                    const char * const expectString);
 
@@ -70,6 +81,7 @@ class SupportError  :   public AfError
     SupportError();
 public:
     SupportError(const char * const funcName,
+                 const int line,
                  const char * const back);
     ~SupportError()throw() {}
 	const std::string&
@@ -78,16 +90,23 @@ public:
 
 af_err processException();
 
-#define DIM_ASSERT (INDEX, COND) do {                       \
-        if(COND == false) {                                 \
-            throw DimensionError(__func__, INDEX, #COND);   \
-        }                                                   \
+#define DIM_ASSERT (INDEX, COND) do {                   \
+        if(COND == false) {                             \
+            throw DimensionError(__func__, __LINE__,    \
+                                 INDEX, #COND);         \
+        }                                               \
     } while(0)
 
 #define TYPE_ERROR(INDEX, type) do {            \
-        throw TypeError(__func__, INDEX, type); \
+        throw TypeError(__func__, __LINE__,     \
+                        INDEX, type);           \
     } while(0)                                  \
 
+
+#define AF_ERROR(MSG, ERR_TYPE) do {            \
+        throw AfError(__func__, __LINE__,       \
+                      MSG, ERR_TYPE);           \
+    } while(0)
 
 #define AF_ASSERT(COND, MESSAGE)                \
     assert(MESSAGE && COND)

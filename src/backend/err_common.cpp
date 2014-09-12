@@ -8,16 +8,22 @@ using std::string;
 using std::stringstream;
 using std::cerr;
 
-AfError::AfError(const char * const message,
-                 const char * const funcName)
+AfError::AfError(const char * const funcName,
+                 const int line,
+                 const char * const message, af_err err)
     : logic_error   (message),
-      functionName  (funcName)
+      functionName  (funcName),
+      lineNumber(line),
+      error(err)
 {}
 
-AfError::AfError(string message,
-                 string funcName)
+AfError::AfError(string funcName,
+                 const int line,
+                 string message, af_err err)
     : logic_error   (message),
-      functionName  (funcName)
+      functionName  (funcName),
+      lineNumber(line),
+      error(err)
 {}
 
 const string&
@@ -26,11 +32,24 @@ AfError::getFunctionName() const
     return functionName;
 }
 
+const int
+AfError::getLine() const
+{
+    return lineNumber;
+}
+
+const af_err
+AfError::getError() const
+{
+    return error;
+}
+
 AfError::~AfError() throw() {}
 
 TypeError::TypeError(const char * const  funcName,
+                     const int line,
                      const int index, const af_dtype type)
-    : AfError ("Invalid data type", funcName),
+    : AfError (funcName, line, "Invalid data type", AF_ERR_INVALID_TYPE),
       argIndex(index),
       errTypeName(getName(type))
 {}
@@ -46,9 +65,10 @@ const int TypeError::getArgIndex() const
 }
 
 DimensionError::DimensionError(const char * const  funcName,
+                               const int line,
                                const int index,
                                const char * const  expectString)
-    : AfError("Invalid dimension", funcName),
+    : AfError(funcName, line, "Invalid dimension", AF_ERR_SIZE),
       argIndex(index),
       expected(expectString)
 {
@@ -67,8 +87,9 @@ const int DimensionError::getArgIndex() const
 
 
 SupportError::SupportError(const char * const funcName,
+                           const int line,
                            const char * const back)
-    : AfError("Unsupported Error", funcName),
+    : AfError(funcName, line, "Unsupported Error", AF_ERR_NOT_SUPPORTED),
       backend(back)
 {}
 
@@ -87,7 +108,8 @@ af_err processException()
         throw;
     } catch (const DimensionError &ex) {
 
-        ss << "In function " << ex.getFunctionName() << "\n"
+        ss << "In function " << ex.getFunctionName()
+           << "(" << ex.getLine() << "):\n"
            << "Invalid dimension for argument " << ex.getArgIndex() << "\n"
            << "Expected: " << ex.getExpectedCondition();
 
@@ -104,17 +126,20 @@ af_err processException()
         err = AF_ERR_NOT_SUPPORTED;
     } catch (const TypeError &ex) {
 
-        ss << "In function " << ex.getFunctionName() << "\n"
+        ss << "In function " << ex.getFunctionName()
+           << "(" << ex.getLine() << "):\n"
            << "Invalid type for argument " << ex.getArgIndex() << "\n";
 
         cerr << ss.str();
         err = AF_ERR_INVALID_TYPE;
     } catch (const AfError &ex) {
 
-        ss << "Internal error in " << ex.getFunctionName() << "\n";
+        ss << "Internal error in " << ex.getFunctionName()
+           << "(" << ex.getLine() << "):\n"
+           << ex.what() << "\n";
 
         cerr << ss.str();
-        err = AF_ERR_INTERNAL;
+        err = ex.getError();
     } catch (...) {
 
         cerr << "Unknown error\n";
