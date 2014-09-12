@@ -11,7 +11,8 @@ typedef enum {
     AF_ERR_SIZE,
     AF_ERR_DIFF_TYPE,
     AF_ERR_NOT_SUPPORTED,
-    AF_ERR_INVALID_TYPE
+    AF_ERR_INVALID_TYPE,
+    AF_ERR_UNKNOWN
 } af_err;
 
 typedef enum {
