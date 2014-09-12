@@ -70,7 +70,7 @@ namespace opencl
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
-                SHOW_CL_ERROR(err);
+                CL_TO_AF_ERROR(err);
                 throw;
             }
         }

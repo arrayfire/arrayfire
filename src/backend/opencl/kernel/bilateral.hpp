@@ -77,7 +77,7 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {
-        SHOW_CL_ERROR(err);
+        CL_TO_AF_ERROR(err);
         throw;
     }
 }
