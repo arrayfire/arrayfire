@@ -4,7 +4,7 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <reduce.hpp>
-#include <cassert>
+#include <err_opencl.hpp>
 
 using std::swap;
 using af::dim4;
@@ -13,7 +13,7 @@ namespace opencl
     template<af_op_t op, typename Ti, typename To>
     Array<To>* reduce(const Array<Ti> &in, const int dim)
     {
-        assert("NOT IMPLEMENTED" && 1 != 1);
+        OPENCL_NOT_SUPPORTED();
         return NULL;
     }
 

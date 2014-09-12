@@ -4,16 +4,15 @@
 #include <Array.hpp>
 #include <scan.hpp>
 #include <complex>
-#include <stdexcept>
+#include <err_opencl.hpp>
 
 namespace opencl
 {
     template<af_op_t op, typename Ti, typename To>
     Array<To>* scan(const Array<Ti>& in, const int dim)
     {
-        throw std::runtime_error("Scan algorithms not implemented in OpenCL backend");
-        Array<To> *out = createEmptyArray<To>(in.dims());
-        return out;
+        OPENCL_NOT_SUPPORTED();
+        return NULL;
     }
 
 #define INSTANTIATE(ROp, Ti, To)                                        \

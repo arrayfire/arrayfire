@@ -32,13 +32,13 @@ AfError::getFunctionName() const
     return functionName;
 }
 
-const int
+int
 AfError::getLine() const
 {
     return lineNumber;
 }
 
-const af_err
+af_err
 AfError::getError() const
 {
     return error;
@@ -111,7 +111,7 @@ af_err processException()
         ss << "In function " << ex.getFunctionName()
            << "(" << ex.getLine() << "):\n"
            << "Invalid dimension for argument " << ex.getArgIndex() << "\n"
-           << "Expected: " << ex.getExpectedCondition();
+           << "Expected: " << ex.getExpectedCondition() << "\n";
 
         cerr << ss.str();
         err = AF_ERR_SIZE;
@@ -120,7 +120,7 @@ af_err processException()
 
         ss << ex.getFunctionName()
            << " not supported for " << ex.getBackendName()
-           << " backend";
+           << " backend\n";
 
         cerr << ss.str();
         err = AF_ERR_NOT_SUPPORTED;

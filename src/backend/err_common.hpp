@@ -26,9 +26,9 @@ public:
 	const std::string&
 	getFunctionName() const;
 
-    const int getLine() const;
+    int getLine() const;
 
-    const af_err getError() const;
+    af_err getError() const;
 
     virtual ~AfError() throw();
 };
