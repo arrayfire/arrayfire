@@ -3,7 +3,7 @@
 #include <program.hpp>
 #include <kernel_headers/KParam.hpp>
 #include <platform.hpp>
-#include <cldebug.hpp>
+#include <debug_opencl.hpp>
 
 using cl::Buffer;
 using cl::Program;

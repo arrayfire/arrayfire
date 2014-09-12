@@ -7,7 +7,7 @@
 #include <mutex>
 #include <dispatch.hpp>
 #include <Param.hpp>
-#include <cldebug.hpp>
+#include <debug_opencl.hpp>
 
 using cl::Buffer;
 using cl::Program;
