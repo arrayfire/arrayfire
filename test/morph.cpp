@@ -189,9 +189,9 @@ void morphInputTest(void)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
     if (isDilation)
-        ASSERT_EQ(AF_ERR_ARG, af_dilate(&outArray, inArray, maskArray));
+        ASSERT_EQ(AF_ERR_SIZE, af_dilate(&outArray, inArray, maskArray));
     else
-        ASSERT_EQ(AF_ERR_ARG, af_erode(&outArray, inArray, maskArray));
+        ASSERT_EQ(AF_ERR_SIZE, af_erode(&outArray, inArray, maskArray));
 
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 
@@ -202,9 +202,9 @@ void morphInputTest(void)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
     if (isDilation)
-        ASSERT_EQ(AF_ERR_ARG, af_dilate(&outArray, inArray, maskArray));
+        ASSERT_EQ(AF_ERR_SIZE, af_dilate(&outArray, inArray, maskArray));
     else
-        ASSERT_EQ(AF_ERR_ARG, af_erode(&outArray, inArray, maskArray));
+        ASSERT_EQ(AF_ERR_SIZE, af_erode(&outArray, inArray, maskArray));
 
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 
@@ -242,9 +242,9 @@ void morphMaskTest(void)
                 mdims.ndims(), mdims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
     if (isDilation)
-        ASSERT_EQ(AF_ERR_ARG, af_dilate(&outArray, inArray, maskArray));
+        ASSERT_EQ(AF_ERR_SIZE, af_dilate(&outArray, inArray, maskArray));
     else
-        ASSERT_EQ(AF_ERR_ARG, af_erode(&outArray, inArray, maskArray));
+        ASSERT_EQ(AF_ERR_SIZE, af_erode(&outArray, inArray, maskArray));
 
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(maskArray));
 
@@ -255,9 +255,9 @@ void morphMaskTest(void)
                 mdims.ndims(), mdims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
     if (isDilation)
-        ASSERT_EQ(AF_ERR_ARG, af_dilate(&outArray, inArray, maskArray));
+        ASSERT_EQ(AF_ERR_SIZE, af_dilate(&outArray, inArray, maskArray));
     else
-        ASSERT_EQ(AF_ERR_ARG, af_erode(&outArray, inArray, maskArray));
+        ASSERT_EQ(AF_ERR_SIZE, af_erode(&outArray, inArray, maskArray));
 
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(maskArray));
 
@@ -295,9 +295,9 @@ void morph3DMaskTest(void)
                 mdims.ndims(), mdims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
     if (isDilation)
-        ASSERT_EQ(AF_ERR_ARG, af_dilate3d(&outArray, inArray, maskArray));
+        ASSERT_EQ(AF_ERR_SIZE, af_dilate3d(&outArray, inArray, maskArray));
     else
-        ASSERT_EQ(AF_ERR_ARG, af_erode3d(&outArray, inArray, maskArray));
+        ASSERT_EQ(AF_ERR_SIZE, af_erode3d(&outArray, inArray, maskArray));
 
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(maskArray));
 
@@ -308,9 +308,9 @@ void morph3DMaskTest(void)
                 mdims.ndims(), mdims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
     if (isDilation)
-        ASSERT_EQ(AF_ERR_ARG, af_dilate3d(&outArray, inArray, maskArray));
+        ASSERT_EQ(AF_ERR_SIZE, af_dilate3d(&outArray, inArray, maskArray));
     else
-        ASSERT_EQ(AF_ERR_ARG, af_erode3d(&outArray, inArray, maskArray));
+        ASSERT_EQ(AF_ERR_SIZE, af_erode3d(&outArray, inArray, maskArray));
 
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(maskArray));
 
