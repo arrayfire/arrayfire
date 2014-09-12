@@ -20,8 +20,8 @@ static inline af_array reduce(const af_array in, const int dim)
 template<af_op_t op, typename To>
 static af_err reduce_type(af_array *out, const af_array in, const int dim)
 {
-    if (dim <  0) return AF_ERR_ARG;
-    if (dim >= 4) return AF_ERR_ARG;
+    ARG_ASSERT(2, dim >= 0);
+    ARG_ASSERT(2, dim <  4);
 
     const ArrayInfo in_info = getInfo(in);
 
@@ -31,8 +31,6 @@ static af_err reduce_type(af_array *out, const af_array in, const int dim)
         const af_seq indx[] = {span, span, span, span};
         return af_index(out, in, 4, indx);
     }
-
-   af_err ret = AF_SUCCESS;
 
     try {
         af_dtype type = in_info.getType();
@@ -48,23 +46,21 @@ static af_err reduce_type(af_array *out, const af_array in, const int dim)
         case b8:   res = reduce<op, uchar  , To>(in, dim); break;
         case u8:   res = reduce<op, uchar  , To>(in, dim); break;
         case s8:   res = reduce<op, char   , To>(in, dim); break;
-        default:
-            ret = AF_ERR_NOT_SUPPORTED;
+        default:   TYPE_ERROR(1, type);
         }
 
         std::swap(*out, res);
-        ret = AF_SUCCESS;
     }
     CATCHALL;
 
-    return ret;
+    return AF_SUCCESS;
 }
 
 template<af_op_t op>
 static af_err reduce_common(af_array *out, const af_array in, const int dim)
 {
-    if (dim <  0) return AF_ERR_ARG;
-    if (dim >= 4) return AF_ERR_ARG;
+    ARG_ASSERT(2, dim >= 0);
+    ARG_ASSERT(2, dim <  4);
 
     const ArrayInfo in_info = getInfo(in);
 
@@ -73,8 +69,6 @@ static af_err reduce_common(af_array *out, const af_array in, const int dim)
         const af_seq indx[] = {span, span, span, span};
         return af_index(out, in, 4, indx);
     }
-
-    af_err ret = AF_SUCCESS;
 
     try {
         af_dtype type = in_info.getType();
@@ -90,24 +84,22 @@ static af_err reduce_common(af_array *out, const af_array in, const int dim)
         case b8:   res = reduce<op, uchar  , uchar  >(in, dim); break;
         case u8:   res = reduce<op, uchar  , uchar  >(in, dim); break;
         case s8:   res = reduce<op, char   , char   >(in, dim); break;
-        default:
-            ret = AF_ERR_NOT_SUPPORTED;
+        default:   TYPE_ERROR(1, type);
         }
 
         std::swap(*out, res);
-        ret = AF_SUCCESS;
     }
     CATCHALL;
 
-    return ret;
+    return AF_SUCCESS;
 }
 
 template<af_op_t op>
 static af_err reduce_promote(af_array *out, const af_array in, const int dim)
 {
 
-    if (dim <  0) return AF_ERR_ARG;
-    if (dim >= 4) return AF_ERR_ARG;
+    ARG_ASSERT(2, dim >= 0);
+    ARG_ASSERT(2, dim <  4);
 
     const ArrayInfo in_info = getInfo(in);
 
@@ -117,8 +109,6 @@ static af_err reduce_promote(af_array *out, const af_array in, const int dim)
         const af_seq indx[] = {span, span, span, span};
         return af_index(out, in, 4, indx);
     }
-
-    af_err ret = AF_SUCCESS;
 
     try {
         af_dtype type = in_info.getType();
@@ -135,15 +125,13 @@ static af_err reduce_promote(af_array *out, const af_array in, const int dim)
         case s8:   res = reduce<op, char   , int    >(in, dim); break;
         // Make sure you are adding only "1" for every non zero value, even if op == af_add_t
         case b8:   res = reduce<af_notzero_t, uchar  , uint   >(in, dim); break;
-        default:
-            ret = AF_ERR_NOT_SUPPORTED;
+        default:   TYPE_ERROR(1, type);
         }
         std::swap(*out, res);
-        ret = AF_SUCCESS;
     }
     CATCHALL;
 
-    return ret;
+    return AF_SUCCESS;
 }
 
 af_err af_min(af_array *out, const af_array in, const int dim)
