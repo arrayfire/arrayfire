@@ -145,7 +145,7 @@ af_err processException()
            << "Expected: " << ex.getExpectedCondition() << "\n";
 
         cerr << ss.str();
-        err = AF_ERR_SIZE;
+        err = AF_ERR_ARG;
 
     } catch (const SupportError &ex) {
 
