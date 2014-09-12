@@ -38,7 +38,7 @@ static af_err morph(af_array *out, const af_array &in, const af_array &mask)
         dim_type in_ndims = dims.ndims();
         dim_type mask_ndims = mdims.ndims();
 
-        DIM_ASSERT(1, (in_ndims <= 3 && in_ndims >= 1));
+        DIM_ASSERT(1, (in_ndims <= 3 && in_ndims >= 2));
         DIM_ASSERT(2, (mask_ndims == 2));
 
         af_array output;
@@ -70,8 +70,8 @@ static af_err morph3d(af_array *out, const af_array &in, const af_array &mask)
         dim_type in_ndims = dims.ndims();
         dim_type mask_ndims = mdims.ndims();
 
-        DIM_ASSERT(1, (in_ndims != 3));
-        DIM_ASSERT(2, (mask_ndims != 3));
+        DIM_ASSERT(1, (in_ndims == 3));
+        DIM_ASSERT(2, (mask_ndims == 3));
 
         af_array output;
         af_dtype type  = info.getType();
