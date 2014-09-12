@@ -64,10 +64,44 @@ int TypeError::getArgIndex() const
 	return argIndex;
 }
 
+ArgumentError::ArgumentError(const char * const  funcName,
+                             const int line,
+                             const int index,
+                             const char * const  expectString)
+    : AfError(funcName, line, "Invalid argument", AF_ERR_INVALID_ARG),
+      argIndex(index),
+      expected(expectString)
+{
+
+}
+
+const string& ArgumentError::getExpectedCondition() const
+{
+	return expected;
+}
+
+int ArgumentError::getArgIndex() const
+{
+	return argIndex;
+}
+
+
+SupportError::SupportError(const char * const funcName,
+                           const int line,
+                           const char * const back)
+    : AfError(funcName, line, "Unsupported Error", AF_ERR_NOT_SUPPORTED),
+      backend(back)
+{}
+
+const string& SupportError::getBackendName() const
+{
+	return backend;
+}
+
 DimensionError::DimensionError(const char * const  funcName,
-                               const int line,
-                               const int index,
-                               const char * const  expectString)
+                             const int line,
+                             const int index,
+                             const char * const  expectString)
     : AfError(funcName, line, "Invalid dimension", AF_ERR_SIZE),
       argIndex(index),
       expected(expectString)
@@ -86,19 +120,6 @@ int DimensionError::getArgIndex() const
 }
 
 
-SupportError::SupportError(const char * const funcName,
-                           const int line,
-                           const char * const back)
-    : AfError(funcName, line, "Unsupported Error", AF_ERR_NOT_SUPPORTED),
-      backend(back)
-{}
-
-const string& SupportError::getBackendName() const
-{
-	return backend;
-}
-
-
 af_err processException()
 {
     stringstream    ss;
@@ -111,6 +132,16 @@ af_err processException()
         ss << "In function " << ex.getFunctionName()
            << "(" << ex.getLine() << "):\n"
            << "Invalid dimension for argument " << ex.getArgIndex() << "\n"
+           << "Expected: " << ex.getExpectedCondition() << "\n";
+
+        cerr << ss.str();
+        err = AF_ERR_SIZE;
+
+    } catch (const ArgumentError &ex) {
+
+        ss << "In function " << ex.getFunctionName()
+           << "(" << ex.getLine() << "):\n"
+           << "Invalid argument at index " << ex.getArgIndex() << "\n"
            << "Expected: " << ex.getExpectedCondition() << "\n";
 
         cerr << ss.str();

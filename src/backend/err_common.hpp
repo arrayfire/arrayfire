@@ -55,6 +55,39 @@ public:
     ~TypeError() throw() {}
 };
 
+class ArgumentError : public AfError
+{
+    int argIndex;
+    std::string	expected;
+    ArgumentError();
+
+public:
+    ArgumentError(const char * const funcName,
+                   const int line,
+                   const int index,
+                   const char * const expectString);
+
+	const std::string&
+	getExpectedCondition() const;
+
+    int getArgIndex() const;
+
+    ~ArgumentError() throw(){}
+};
+
+class SupportError  :   public AfError
+{
+    std::string backend;
+    SupportError();
+public:
+    SupportError(const char * const funcName,
+                 const int line,
+                 const char * const back);
+    ~SupportError()throw() {}
+	const std::string&
+	getBackendName() const;
+};
+
 class DimensionError : public AfError
 {
     int argIndex;
@@ -75,26 +108,20 @@ public:
     ~DimensionError() throw(){}
 };
 
-class SupportError  :   public AfError
-{
-    std::string backend;
-    SupportError();
-public:
-    SupportError(const char * const funcName,
-                 const int line,
-                 const char * const back);
-    ~SupportError()throw() {}
-	const std::string&
-	getBackendName() const;
-};
-
 af_err processException();
 
-#define DIM_ASSERT (INDEX, COND) do {                   \
-        if(COND == false) {                             \
+#define DIM_ASSERT(INDEX, COND) do {                    \
+        if((COND) == false) {                           \
             throw DimensionError(__func__, __LINE__,    \
                                  INDEX, #COND);         \
         }                                               \
+    } while(0)
+
+#define ARG_ASSERT(INDEX, COND) do {                \
+        if((COND) == false) {                       \
+            throw ArgumentError(__func__, __LINE__, \
+                                INDEX, #COND);      \
+        }                                           \
     } while(0)
 
 #define TYPE_ERROR(INDEX, type) do {            \
