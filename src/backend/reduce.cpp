@@ -20,19 +20,21 @@ static inline af_array reduce(const af_array in, const int dim)
 template<af_op_t op, typename To>
 static af_err reduce_type(af_array *out, const af_array in, const int dim)
 {
-    ARG_ASSERT(2, dim >= 0);
-    ARG_ASSERT(2, dim <  4);
-
-    const ArrayInfo in_info = getInfo(in);
-
-    if (dim >= (int)in_info.ndims()) {
-        // FIXME: Implement a simple assignment function which increments the reference count of parent
-        // FIXME: Need to change types for corner cases
-        const af_seq indx[] = {span, span, span, span};
-        return af_index(out, in, 4, indx);
-    }
-
     try {
+
+        ARG_ASSERT(2, dim >= 0);
+        ARG_ASSERT(2, dim <  4);
+
+        const ArrayInfo in_info = getInfo(in);
+
+        if (dim >= (int)in_info.ndims()) {
+            // FIXME: Implement a simple assignment function
+            // which increments the reference count of parent
+            // FIXME: Need to change types for corner cases
+            const af_seq indx[] = {span, span, span, span};
+            return af_index(out, in, 4, indx);
+        }
+
         af_dtype type = in_info.getType();
         af_array res;
 
@@ -59,18 +61,20 @@ static af_err reduce_type(af_array *out, const af_array in, const int dim)
 template<af_op_t op>
 static af_err reduce_common(af_array *out, const af_array in, const int dim)
 {
-    ARG_ASSERT(2, dim >= 0);
-    ARG_ASSERT(2, dim <  4);
-
-    const ArrayInfo in_info = getInfo(in);
-
-    if (dim >= (int)in_info.ndims()) {
-        // FIXME: Implement a simple assignment function which increments the reference count of parent
-        const af_seq indx[] = {span, span, span, span};
-        return af_index(out, in, 4, indx);
-    }
-
     try {
+
+        ARG_ASSERT(2, dim >= 0);
+        ARG_ASSERT(2, dim <  4);
+
+        const ArrayInfo in_info = getInfo(in);
+
+        if (dim >= (int)in_info.ndims()) {
+            // FIXME: Implement a simple assignment function
+            // which increments the reference count of parent
+            const af_seq indx[] = {span, span, span, span};
+            return af_index(out, in, 4, indx);
+        }
+
         af_dtype type = in_info.getType();
         af_array res;
 
@@ -97,20 +101,21 @@ static af_err reduce_common(af_array *out, const af_array in, const int dim)
 template<af_op_t op>
 static af_err reduce_promote(af_array *out, const af_array in, const int dim)
 {
-
-    ARG_ASSERT(2, dim >= 0);
-    ARG_ASSERT(2, dim <  4);
-
-    const ArrayInfo in_info = getInfo(in);
-
-    if (dim >= (int)in_info.ndims()) {
-        // FIXME: Implement a simple assignment function which increments the reference count of parent
-        // FIXME: Need to promote types for corner cases
-        const af_seq indx[] = {span, span, span, span};
-        return af_index(out, in, 4, indx);
-    }
-
     try {
+
+        ARG_ASSERT(2, dim >= 0);
+        ARG_ASSERT(2, dim <  4);
+
+        const ArrayInfo in_info = getInfo(in);
+
+        if (dim >= (int)in_info.ndims()) {
+            // FIXME: Implement a simple assignment function
+            // which increments the reference count of parent
+            // FIXME: Need to promote types for corner cases
+            const af_seq indx[] = {span, span, span, span};
+            return af_index(out, in, 4, indx);
+        }
+
         af_dtype type = in_info.getType();
         af_array res;
 
@@ -123,7 +128,7 @@ static af_err reduce_promote(af_array *out, const af_array in, const int dim)
         case s32:  res = reduce<op, int    , int    >(in, dim); break;
         case u8:   res = reduce<op, uchar  , uint   >(in, dim); break;
         case s8:   res = reduce<op, char   , int    >(in, dim); break;
-        // Make sure you are adding only "1" for every non zero value, even if op == af_add_t
+            // Make sure you are adding only "1" for every non zero value, even if op == af_add_t
         case b8:   res = reduce<af_notzero_t, uchar  , uint   >(in, dim); break;
         default:   TYPE_ERROR(1, type);
         }
