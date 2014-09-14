@@ -1,6 +1,7 @@
 #include <Array.hpp>
 #include <tile.hpp>
 #include <stdexcept>
+#include <err_cpu.hpp>
 
 namespace cpu
 {

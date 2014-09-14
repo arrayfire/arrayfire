@@ -16,16 +16,12 @@ static inline af_array tile(const af_array in, const af::dim4 &tileDims)
 
 af_err af_tile(af_array *out, const af_array in, const af::dim4 &tileDims)
 {
-    af_err ret = AF_ERR_RUNTIME;
-
     try {
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
 
-        if(tileDims.elements() == 0)
-            return AF_ERR_ARG;
-        if(info.dims().elements() == 0)
-            return AF_ERR_ARG;
+        DIM_ASSERT(1, info.dims().elements() > 0);
+        DIM_ASSERT(2, tileDims.elements() > 0);
 
         af_array output;
 
@@ -39,16 +35,13 @@ af_err af_tile(af_array *out, const af_array in, const af::dim4 &tileDims)
             case u32: output = tile<uint   >(in, tileDims);  break;
             case u8:  output = tile<uchar  >(in, tileDims);  break;
             case s8:  output = tile<char   >(in, tileDims);  break;
-            default:  ret = AF_ERR_NOT_SUPPORTED;       break;
+            default:  TYPE_ERROR(1, type);
         }
-        if (ret!=AF_ERR_NOT_SUPPORTED) {
-            std::swap(*out,output);
-            ret = AF_SUCCESS;
-        }
+        std::swap(*out,output);
     }
     CATCHALL;
 
-    return ret;
+    return AF_SUCCESS;
 }
 
 af_err af_tile(af_array *out, const af_array in,

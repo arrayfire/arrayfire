@@ -1,6 +1,8 @@
 #include <math.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
+#include <err_cuda.hpp>
+#include <debug_cuda.hpp>
 
 namespace cuda
 {
@@ -68,6 +70,7 @@ namespace cuda
                         1);
 
             tile_kernel<T><<<blocks, threads>>>(out, in, blocksPerMatX, blocksPerMatY);
+            POST_LAUNCH_CHECK();
         }
     }
 }
