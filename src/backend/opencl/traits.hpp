@@ -27,6 +27,10 @@ struct dtype_traits<long long> {
     static const char* getName() { return "long"; };
 };
 
+template<typename T> static bool iscplx() { return false; }
+template<> bool iscplx<cl_float2>() { return true; }
+template<> bool iscplx<cl_double2>() { return true; }
+
 }
 
 using af::dtype_traits;
