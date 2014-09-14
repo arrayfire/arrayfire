@@ -99,7 +99,7 @@ void approx1Test(string pTestFile, const unsigned resultIdx, const af_interp_typ
 // Test Argument Failure Cases
 ///////////////////////////////////////////////////////////////////////////////
 template<typename T>
-void approx1ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp_type method)
+void approx1ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp_type method, const af_err err)
 {
     typedef typename af::dtype_traits<T>::base_type BT;
     vector<af::dim4> numDims;
@@ -120,23 +120,23 @@ void approx1ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&posArray, &(in[1].front()), pdims.ndims(), pdims.get(), (af_dtype) af::dtype_traits<BT>::af_type));
 
-    ASSERT_EQ(AF_ERR_ARG, af_approx1(&outArray, inArray, posArray, method, 0));
+    ASSERT_EQ(err, af_approx1(&outArray, inArray, posArray, method, 0));
 
     if(inArray   != 0) af_destroy_array(inArray);
     if(posArray  != 0) af_destroy_array(posArray);
     if(outArray  != 0) af_destroy_array(outArray);
 }
 
-#define APPROX1_ARGS(desc, file, resultIdx, method)                                           \
-    TYPED_TEST(Approx1, desc)                                                                    \
-    {                                                                                           \
-        approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/"#file".test"), resultIdx, method);\
+#define APPROX1_ARGS(desc, file, resultIdx, method, err)                                            \
+    TYPED_TEST(Approx1, desc)                                                                       \
+    {                                                                                               \
+        approx1ArgsTest<TypeParam>(string(TEST_DIR"/approx/"#file".test"), resultIdx, method, err); \
     }
 
-    APPROX1_ARGS(Approx1NearestArgsPos2D, approx1_pos2d, 0, AF_INTERP_NEAREST);
-    APPROX1_ARGS(Approx1LinearArgsPos2D, approx1_pos2d, 1, AF_INTERP_LINEAR);
-    APPROX1_ARGS(Approx1ArgsInterpBilinear, approx1, 0, AF_INTERP_BILINEAR);
-    APPROX1_ARGS(Approx1ArgsInterpCubic, approx1, 0, AF_INTERP_CUBIC);
+    APPROX1_ARGS(Approx1NearestArgsPos2D, approx1_pos2d, 0, AF_INTERP_NEAREST, AF_ERR_SIZE);
+    APPROX1_ARGS(Approx1LinearArgsPos2D, approx1_pos2d, 1, AF_INTERP_LINEAR, AF_ERR_SIZE);
+    APPROX1_ARGS(Approx1ArgsInterpBilinear, approx1, 0, AF_INTERP_BILINEAR, AF_ERR_ARG);
+    APPROX1_ARGS(Approx1ArgsInterpCubic, approx1, 0, AF_INTERP_CUBIC, AF_ERR_ARG);
 
 template<typename T>
 void approx1ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const af_interp_type method)

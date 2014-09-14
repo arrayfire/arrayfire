@@ -2,8 +2,8 @@
 #include <af/defines.h>
 #include <err_common.hpp>
 #include <handle.hpp>
-#include <ArrayInfo.hpp>
 #include <backend.hpp>
+#include <ArrayInfo.hpp>
 #include <approx.hpp>
 
 using af::dim4;
@@ -27,25 +27,18 @@ static inline af_array approx2(const af_array in, const af_array pos0, const af_
 af_err af_approx1(af_array *out, const af_array in, const af_array pos,
                   const af_interp_type method, const float offGrid)
 {
-    af_err ret = AF_SUCCESS;
     try {
         ArrayInfo i_info = getInfo(in);
         ArrayInfo p_info = getInfo(pos);
 
         af_dtype itype = i_info.getType();
 
-        if (!i_info.isFloating())                       // Only floating and complex types
-            return AF_ERR_ARG;
-        if (!p_info.isRealFloating())                   // Only floating types
-            return AF_ERR_ARG;
-        if (i_info.isSingle() ^ p_info.isSingle())      // Must have same precision
-            return AF_ERR_ARG;
-        if (i_info.isDouble() ^ p_info.isDouble())      // Must have same precision
-            return AF_ERR_ARG;
-        if (!p_info.isColumn())                         // Only 1D input allowed
-            return AF_ERR_ARG;
-        if (method != AF_INTERP_LINEAR && method != AF_INTERP_NEAREST)
-            return AF_ERR_ARG;
+        ARG_ASSERT(1, i_info.isFloating());                       // Only floating and complex types
+        ARG_ASSERT(2, p_info.isRealFloating());                   // Only floating types
+        ARG_ASSERT(1, i_info.isSingle() == p_info.isSingle());    // Must have same precision
+        ARG_ASSERT(1, i_info.isDouble() == p_info.isDouble());    // Must have same precision
+        DIM_ASSERT(2, p_info.isColumn());                         // Only 1D input allowed
+        ARG_ASSERT(3, (method == AF_INTERP_LINEAR || method == AF_INTERP_NEAREST));
 
         af_array output;
 
@@ -54,22 +47,18 @@ af_err af_approx1(af_array *out, const af_array in, const af_array pos,
             case f64: output = approx1<double , double>(in, pos, method, offGrid);  break;
             case c32: output = approx1<cfloat , float >(in, pos, method, offGrid);  break;
             case c64: output = approx1<cdouble, double>(in, pos, method, offGrid);  break;
-            default:  ret = AF_ERR_NOT_SUPPORTED;                                   break;
+            default:  TYPE_ERROR(1, itype);
         }
-        if (ret != AF_ERR_NOT_SUPPORTED || ret != AF_ERR_ARG) {
-            std::swap(*out,output);
-            ret = AF_SUCCESS;
-        }
+        std::swap(*out,output);
     }
     CATCHALL;
 
-    return ret;
+    return AF_SUCCESS;
 }
 
 af_err af_approx2(af_array *out, const af_array in, const af_array pos0, const af_array pos1,
                   const af_interp_type method, const float offGrid)
 {
-    af_err ret = AF_SUCCESS;
     try {
         ArrayInfo i_info = getInfo(in);
         ArrayInfo p_info = getInfo(pos0);
@@ -77,24 +66,15 @@ af_err af_approx2(af_array *out, const af_array in, const af_array pos0, const a
 
         af_dtype itype = i_info.getType();
 
-        if (!i_info.isFloating())                       // Only floating and complex types
-            return AF_ERR_ARG;
-        if (!p_info.isRealFloating())                   // Only floating types
-            return AF_ERR_ARG;
-        if (!q_info.isRealFloating())                   // Only floating types
-            return AF_ERR_ARG;
-        if (p_info.getType() != q_info.getType())       // Must be same types
-            return AF_ERR_ARG;
-        if (i_info.isSingle() ^ p_info.isSingle())      // Must have same precision
-            return AF_ERR_ARG;
-        if (i_info.isDouble() ^ p_info.isDouble())      // Must have same precision
-            return AF_ERR_ARG;
-        if (p_info.dims() != q_info.dims())             // POS0 and POS1 must have same dimensions
-            return AF_ERR_ARG;
-        if (method != AF_INTERP_LINEAR && method != AF_INTERP_NEAREST)
-            return AF_ERR_ARG;
-        if (p_info.ndims() > 2) // Allowing input batch but not positions. Output will be (px, py, iz, iw)
-            return AF_ERR_ARG;
+        ARG_ASSERT(1, i_info.isFloating());                       // Only floating and complex types
+        ARG_ASSERT(2, p_info.isRealFloating());                   // Only floating types
+        ARG_ASSERT(3, q_info.isRealFloating());                   // Only floating types
+        ARG_ASSERT(1, p_info.getType() == q_info.getType());      // Must have same type
+        ARG_ASSERT(1, i_info.isSingle() == p_info.isSingle());    // Must have same precision
+        ARG_ASSERT(1, i_info.isDouble() == p_info.isDouble());    // Must have same precision
+        DIM_ASSERT(2, p_info.dims() == q_info.dims());            // POS0 and POS1 must have same dims
+        DIM_ASSERT(2, p_info.ndims() < 3);// Allowing input batch but not positions. Output dims = (px, py, iz, iw)
+        ARG_ASSERT(3, (method == AF_INTERP_LINEAR || method == AF_INTERP_NEAREST));
 
         af_array output;
 
@@ -103,14 +83,11 @@ af_err af_approx2(af_array *out, const af_array in, const af_array pos0, const a
             case f64: output = approx2<double , double>(in, pos0, pos1, method, offGrid);  break;
             case c32: output = approx2<cfloat , float >(in, pos0, pos1, method, offGrid);  break;
             case c64: output = approx2<cdouble, double>(in, pos0, pos1, method, offGrid);  break;
-            default:  ret = AF_ERR_NOT_SUPPORTED;                                          break;
+            default:  TYPE_ERROR(1, itype);
         }
-        if (ret != AF_ERR_NOT_SUPPORTED || ret != AF_ERR_ARG) {
-            std::swap(*out,output);
-            ret = AF_SUCCESS;
-        }
+        std::swap(*out,output);
     }
     CATCHALL;
 
-    return ret;
+    return AF_SUCCESS;
 }

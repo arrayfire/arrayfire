@@ -1,6 +1,8 @@
 #include <math.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
+#include <err_cuda.hpp>
+#include <debug_cuda.hpp>
 
 namespace cuda
 {
@@ -219,6 +221,7 @@ namespace cuda
 
             approx1_kernel<Ty, Tp, method><<<blocks, threads>>>
                           (out, in, pos, offGrid, blocksPerMat);
+            POST_LAUNCH_CHECK();
         }
 
         template <typename Ty, typename Tp, af_interp_type method>
@@ -232,6 +235,7 @@ namespace cuda
 
             approx2_kernel<Ty, Tp, method><<<blocks, threads>>>
                           (out, in, pos, qos, offGrid, blocksPerMatX, blocksPerMatY);
+            POST_LAUNCH_CHECK();
         }
     }
 }
