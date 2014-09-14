@@ -3,7 +3,7 @@
 namespace cpu
 {
 
-    template<typename T>
-    Array<T> * transpose(const Array<T> &in);
+template<typename T>
+Array<T> * transpose(const Array<T> &in);
 
 }
