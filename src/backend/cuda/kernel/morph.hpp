@@ -2,6 +2,7 @@
 #include <backend.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
+#include <debug_cuda.hpp>
 #include "shared.hpp"
 
 namespace cuda
@@ -308,6 +309,7 @@ void morph(Param<T> out, CParam<T> in, dim_type windLen)
         default: morphKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
     }
 
+    POST_LAUNCH_CHECK();
 }
 
 template<typename T, bool isDilation>
@@ -327,11 +329,13 @@ void morph3d(Param<T> out, CParam<T> in, dim_type windLen)
     int shrdSize  = shrdLen * (kernel::CUBE_Y + padding) * (kernel::CUBE_Z + padding) * sizeof(T);
 
     switch(windLen) {
-    case  3: morph3DKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(out, in); break;
-    case  5: morph3DKernel<T, isDilation, 5> <<< blocks, threads, shrdSize>>>(out, in); break;
-    case  7: morph3DKernel<T, isDilation, 7> <<< blocks, threads, shrdSize>>>(out, in); break;
-    default: morph3DKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(out, in); break;
+        case  3: morph3DKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(out, in); break;
+        case  5: morph3DKernel<T, isDilation, 5> <<< blocks, threads, shrdSize>>>(out, in); break;
+        case  7: morph3DKernel<T, isDilation, 7> <<< blocks, threads, shrdSize>>>(out, in); break;
+        default: morph3DKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(out, in); break;
     }
+
+    POST_LAUNCH_CHECK();
 }
 
 }

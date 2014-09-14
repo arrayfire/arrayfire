@@ -4,7 +4,6 @@
 #include <Array.hpp>
 #include <morph.hpp>
 #include <kernel/morph.hpp>
-#include <stdexcept>
 #include <err_cuda.hpp>
 
 using af::dim4;
@@ -42,10 +41,10 @@ Array<T> * morph3d(const Array<T> &in, const Array<T> &mask)
     const dim4 mdims = mask.dims();
 
     if (mdims[0] != mdims[1] || mdims[0] != mdims[2])
-        AF_ERROR("Only cube masks are supported in CUDA backend", AF_ERR_NOT_SUPPORTED);
+        AF_ERROR("Only cube masks are supported in CUDA backend", AF_ERR_SIZE);
 
     if (mdims[0] > 7)
-        AF_ERROR("Upto 7x7x7 kernels are only supported in CUDA backend", AF_ERR_NOT_SUPPORTED);
+        AF_ERROR("Upto 7x7x7 kernels are only supported in CUDA backend", AF_ERR_SIZE);
 
     if (in.dims()[3] > 1)
         AF_ERROR("Batch not supported for volumetic morph operations in CUDA backend",
