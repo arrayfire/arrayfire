@@ -2,6 +2,7 @@
 #include <backend.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
+#include <debug_cuda.hpp>
 #include "shared.hpp"
 
 namespace cuda
@@ -151,6 +152,8 @@ void bilateral(Param<T> out, CParam<T> in, float s_sigma, float c_sigma)
     bilateralKernel<T>
         <<<blocks, threads, total_shrd_size>>>
         (out, in, s_sigma, c_sigma, num_shrd_elems, blk_x);
+
+    POST_LAUNCH_CHECK();
 }
 
 }

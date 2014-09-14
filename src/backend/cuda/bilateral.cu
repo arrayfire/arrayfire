@@ -4,7 +4,6 @@
 #include <Array.hpp>
 #include <bilateral.hpp>
 #include <kernel/bilateral.hpp>
-#include <stdexcept>
 
 using af::dim4;
 
@@ -14,7 +13,7 @@ namespace cuda
 template<typename T, bool isColor>
 Array<T> * bilateral(const Array<T> &in, const float &s_sigma, const float &c_sigma)
 {
-    Array<T>* out       = createEmptyArray<T>(in.dims());
+    Array<T>* out = createEmptyArray<T>(in.dims());
     kernel::bilateral<T, isColor>(*out, in, s_sigma, c_sigma);
     return out;
 }
