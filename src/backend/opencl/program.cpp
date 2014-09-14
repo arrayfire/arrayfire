@@ -15,11 +15,21 @@ using std::string;
 
 namespace opencl
 {
-    void buildProgram(cl::Program &prog, const char *ker_str, int ker_len, std::string options)
+    void buildProgram(cl::Program &prog,
+                      const char *ker_str, const int ker_len, std::string options)
+    {
+        buildProgram(prog, 1, &ker_str, &ker_len, options);
+    }
+
+    void buildProgram(cl::Program &prog, const int num_files,
+                      const char **ker_strs, const int *ker_lens, std::string options)
     {
         Program::Sources setSrc;
         setSrc.emplace_back(KParam_hpp, KParam_hpp_len);
-        setSrc.emplace_back(ker_str, ker_len);
+
+        for (int i = 0; i < num_files; i++) {
+            setSrc.emplace_back(ker_strs[i], ker_lens[i]);
+        }
 
         static std::string defaults =
             std::string(" -D dim_type=") +
@@ -35,8 +45,6 @@ namespace opencl
             SHOW_BUILD_INFO(prog);
             throw;
         }
-
-        return;
     }
 }
 
