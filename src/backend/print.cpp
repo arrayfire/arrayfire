@@ -5,24 +5,12 @@
 #include <ArrayInfo.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>
+#include <type_util.hpp>
 
 using namespace detail;
 using std::ostream;
 using std::cout;
 using std::endl;
-
-//uchar to number converters
-template<typename T>
-struct ToNum
-{
-    inline T operator()(T val) { return val; }
-};
-
-template<>
-struct ToNum<unsigned char>
-{
-    inline int operator()(unsigned char val) { return static_cast<int>(val); }
-};
 
 template<typename T>
 static void printer(ostream &out, const T* ptr, const ArrayInfo &info, unsigned dim)

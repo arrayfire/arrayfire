@@ -4,7 +4,7 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <reduce.hpp>
-#include <err_opencl.hpp>
+#include <kernel/reduce.hpp>
 
 using std::swap;
 using af::dim4;
@@ -13,8 +13,11 @@ namespace opencl
     template<af_op_t op, typename Ti, typename To>
     Array<To>* reduce(const Array<Ti> &in, const int dim)
     {
-        OPENCL_NOT_SUPPORTED();
-        return NULL;
+        dim4 odims = in.dims();
+        odims[dim] = 1;
+        Array<To> *out = createEmptyArray<To>(odims);
+        kernel::reduce<Ti, To, op>(*out, in, dim);
+        return out;
     }
 
 #define INSTANTIATE(Op, Ti, To)                                         \
