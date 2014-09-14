@@ -7,7 +7,7 @@
 #include <mutex>
 #include <dispatch.hpp>
 #include <Param.hpp>
-#include <cldebug.hpp>
+#include <debug_opencl.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -84,7 +84,7 @@ namespace opencl
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
-                SHOW_CL_ERROR(err);
+                CL_TO_AF_ERROR(err);
                 throw;
             }
         }
@@ -145,7 +145,7 @@ namespace opencl
                               qos.data, qos.info, offGrid, blocksPerMatX, blocksPerMatY);
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
-                SHOW_CL_ERROR(err);
+                CL_TO_AF_ERROR(err);
                 throw;
             }
         }

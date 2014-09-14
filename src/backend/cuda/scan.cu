@@ -2,20 +2,19 @@
 #include <af/defines.h>
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
+#include <err_cuda.hpp>
 
 #undef _GLIBCXX_USE_INT128
 #include <scan.hpp>
 #include <complex>
-#include <stdexcept>
 
 namespace cuda
 {
     template<af_op_t op, typename Ti, typename To>
     Array<To>* scan(const Array<Ti> &in, const int dim)
     {
-        throw std::runtime_error("Scan algorithms not implemented in CUDA backend");
-        Array<To> *out = createEmptyArray<To>(in.dims());
-        return out;
+        CUDA_NOT_SUPPORTED();
+        return NULL;
     }
 
 

@@ -7,7 +7,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <errorcodes.hpp>
-#include <../helper.hpp>
+#include <../err_common.hpp>
 
 using std::string;
 using std::vector;

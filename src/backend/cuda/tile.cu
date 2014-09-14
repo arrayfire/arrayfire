@@ -2,6 +2,7 @@
 #include <tile.hpp>
 #include <kernel/tile.hpp>
 #include <stdexcept>
+#include <err_cuda.hpp>
 
 namespace cuda
 {
@@ -13,7 +14,7 @@ namespace cuda
         oDims *= tileDims;
 
         if(iDims.elements() == 0 || oDims.elements() == 0) {
-            throw std::runtime_error("Elements are 0");
+            AF_ERROR("Elements are 0", AF_ERR_SIZE);
         }
 
         Array<T> *out = createEmptyArray<T>(oDims);

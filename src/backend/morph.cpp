@@ -2,7 +2,7 @@
 #include <af/defines.h>
 #include <af/image.h>
 #include <handle.hpp>
-#include <helper.hpp>
+#include <err_common.hpp>
 #include <backend.hpp>
 #include <morph.hpp>
 
@@ -30,17 +30,16 @@ static inline af_array morph3d(const af_array &in, const af_array &mask)
 template<bool isDilation>
 static af_err morph(af_array *out, const af_array &in, const af_array &mask)
 {
-    af_err ret = AF_ERR_RUNTIME;
-
     try {
         ArrayInfo info = getInfo(in);
         ArrayInfo mInfo= getInfo(mask);
         af::dim4 dims  = info.dims();
         af::dim4 mdims = mInfo.dims();
+        dim_type in_ndims = dims.ndims();
+        dim_type mask_ndims = mdims.ndims();
 
-        if (dims.ndims()>3 || dims.ndims()<2 || mdims.ndims()!=2) {
-            return AF_ERR_ARG;
-        }
+        DIM_ASSERT(1, (in_ndims <= 3 && in_ndims >= 2));
+        DIM_ASSERT(2, (mask_ndims == 2));
 
         af_array output;
         af_dtype type  = info.getType();
@@ -51,32 +50,28 @@ static af_err morph(af_array *out, const af_array &in, const af_array &mask)
             case s32: output = morph<int   , isDilation>(in, mask);      break;
             case u32: output = morph<uint  , isDilation>(in, mask);      break;
             case u8 : output = morph<uchar , isDilation>(in, mask);      break;
-            default : ret    = AF_ERR_NOT_SUPPORTED;                     break;
+            default : TYPE_ERROR(1, type);
         }
-        if (ret!=AF_ERR_NOT_SUPPORTED) {
-            std::swap(*out, output);
-            ret = AF_SUCCESS;
-        }
+        std::swap(*out, output);
     }
     CATCHALL;
 
-    return ret;
+    return AF_SUCCESS;
 }
 
 template<bool isDilation>
 static af_err morph3d(af_array *out, const af_array &in, const af_array &mask)
 {
-    af_err ret = AF_ERR_RUNTIME;
-
     try {
         ArrayInfo info = getInfo(in);
         ArrayInfo mInfo= getInfo(mask);
         af::dim4 dims  = info.dims();
         af::dim4 mdims = mInfo.dims();
+        dim_type in_ndims = dims.ndims();
+        dim_type mask_ndims = mdims.ndims();
 
-        if (dims.ndims()<3 || mdims.ndims()!=3) {
-            return AF_ERR_ARG;
-        }
+        DIM_ASSERT(1, (in_ndims == 3));
+        DIM_ASSERT(2, (mask_ndims == 3));
 
         af_array output;
         af_dtype type  = info.getType();
@@ -87,16 +82,13 @@ static af_err morph3d(af_array *out, const af_array &in, const af_array &mask)
             case s32: output = morph3d<int   , isDilation>(in, mask);       break;
             case u32: output = morph3d<uint  , isDilation>(in, mask);       break;
             case u8 : output = morph3d<uchar , isDilation>(in, mask);       break;
-            default : ret    = AF_ERR_NOT_SUPPORTED;                        break;
+            default : TYPE_ERROR(1, type);
         }
-        if (ret!=AF_ERR_NOT_SUPPORTED) {
-            std::swap(*out, output);
-            ret = AF_SUCCESS;
-        }
+        std::swap(*out, output);
     }
     CATCHALL;
 
-    return ret;
+    return AF_SUCCESS;
 }
 af_err af_dilate(af_array *out, const af_array in, const af_array mask)
 {

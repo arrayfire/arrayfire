@@ -157,7 +157,7 @@ TYPED_TEST(Transpose,InvalidArgs)
     af::dim4 newDims(5,5,2,2);
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), newDims.ndims(), newDims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
 
-    ASSERT_EQ(AF_ERR_ARG, af_transpose(&outArray,inArray));
+    ASSERT_EQ(AF_ERR_SIZE, af_transpose(&outArray,inArray));
 }
 
 TYPED_TEST(Transpose,SubRef)

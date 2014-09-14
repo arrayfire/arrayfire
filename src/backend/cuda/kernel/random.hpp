@@ -1,12 +1,14 @@
 #include <curand_kernel.h>
 #include <dispatch.hpp>
+#include <err_cuda.hpp>
 
 namespace cuda
 {
 namespace kernel
 {
 
-    static const int BLOCK_DIM = 256;
+    static const int THREADS = 256;
+    static const int BLOCKS  = 2048;
     static unsigned long long uniform_seed = 0;
     static unsigned long long normal_seed  = 0;
 
@@ -88,41 +90,41 @@ namespace kernel
     __global__ static void
     uniform_kernel(T *out, curandState_t *states, size_t elements)
     {
-        int tid = blockDim.x * blockIdx.x + threadIdx.x;
-        if (tid < elements) {
-            curandState_t state = states[tid];
+        unsigned id = blockDim.x * blockIdx.x + threadIdx.x;
+        curandState_t state = states[id];
+        for (int tid = id; tid < elements; tid += blockDim.x * gridDim.x) {
             T value;
             generate_uniform<T>(&value, &state);
             out[tid] = value;
-            states[tid] = state;
         }
+        states[id] = state;
     }
 
     template<typename T>
     __global__ static void
     normal_kernel(T *out, curandState_t *states, size_t elements)
     {
-        int tid = blockDim.x * blockIdx.x + threadIdx.x;
-        if (tid < elements) {
-            curandState_t state = states[tid];
+        unsigned id = blockDim.x * blockIdx.x + threadIdx.x;
+        curandState_t state = states[id];
+        for (int tid = id; tid < elements; tid += blockDim.x * gridDim.x) {
             T value;
             generate_normal(&value, &state);
             out[tid] = value;
-            states[tid] = state;
         }
+        states[id] = state;
     }
 
     template<typename T>
     void randu(T *out, size_t elements)
     {
-        // FIXME: check for block size limit
-        dim3 threads(BLOCK_DIM);
-        dim3 blocks(divup(elements, BLOCK_DIM));
+        int threads = THREADS;
+        int blocks  = divup(elements, THREADS);
+        if (blocks > BLOCKS) blocks = BLOCKS;
 
         static curandState_t *states = NULL;
         if (states == NULL) {
-            cudaMalloc(&states, blocks.x * threads.x * sizeof(curandState_t));
-            setup_kernel<<<threads, blocks>>>(states, uniform_seed, elements);
+            CUDA_CHECK(cudaMalloc(&states, BLOCKS * THREADS * sizeof(curandState_t)));
+            setup_kernel<<<THREADS, BLOCKS>>>(states, uniform_seed, BLOCKS * THREADS);
         }
 
         uniform_kernel<<<threads, blocks>>>(out, states, elements);
@@ -131,14 +133,14 @@ namespace kernel
     template<typename T>
     void randn(T *out, size_t elements)
     {
-        // FIXME: check for block size limit
-        dim3 threads(BLOCK_DIM);
-        dim3 blocks(divup(elements, BLOCK_DIM));
+        int threads = THREADS;
+        int blocks  = divup(elements, THREADS);
+        if (blocks > BLOCKS) blocks = BLOCKS;
 
         static curandState_t *states = NULL;
         if (states == NULL) {
-            cudaMalloc(&states, blocks.x * threads.x * sizeof(curandState_t));
-            setup_kernel<<<threads, blocks>>>(states, normal_seed, elements);
+            CUDA_CHECK(cudaMalloc(&states, BLOCKS * THREADS * sizeof(curandState_t)));
+            setup_kernel<<<THREADS, BLOCKS>>>(states, uniform_seed, BLOCKS * THREADS);
         }
 
         normal_kernel<<<threads, blocks>>>(out, states, elements);

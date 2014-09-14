@@ -2,9 +2,11 @@
 #include <backend.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
+#include <debug_cuda.hpp>
 
 namespace cuda
 {
+
 namespace kernel
 {
 
@@ -84,6 +86,10 @@ namespace kernel
             (transpose< T, true >)<<< blocks,threads >>>(out, in, blk_x);
         else
             (transpose< T, false>)<<< blocks,threads >>>(out, in, blk_x);
+
+        POST_LAUNCH_CHECK();
     }
+
 }
+
 }

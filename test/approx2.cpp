@@ -104,7 +104,7 @@ void approx2Test(string pTestFile, const unsigned resultIdx, const af_interp_typ
 // Test Argument Failure Cases
 ///////////////////////////////////////////////////////////////////////////////
 template<typename T>
-void approx2ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp_type method)
+void approx2ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp_type method, const af_err err)
 {
     typedef typename af::dtype_traits<T>::base_type BT;
     vector<af::dim4> numDims;
@@ -128,7 +128,7 @@ void approx2ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp
     ASSERT_EQ(AF_SUCCESS, af_create_array(&pos0Array, &(in[1].front()), pdims.ndims(), pdims.get(), (af_dtype) af::dtype_traits<BT>::af_type));
     ASSERT_EQ(AF_SUCCESS, af_create_array(&pos1Array, &(in[2].front()), qdims.ndims(), qdims.get(), (af_dtype) af::dtype_traits<BT>::af_type));
 
-    ASSERT_EQ(AF_ERR_ARG, af_approx2(&outArray, inArray, pos0Array, pos1Array, method, 0));
+    ASSERT_EQ(err, af_approx2(&outArray, inArray, pos0Array, pos1Array, method, 0));
 
     if(inArray   != 0) af_destroy_array(inArray);
     if(pos0Array != 0) af_destroy_array(pos0Array);
@@ -136,17 +136,17 @@ void approx2ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp
     if(outArray  != 0) af_destroy_array(outArray);
 }
 
-#define APPROX2_ARGS(desc, file, resultIdx, method)                                           \
-    TYPED_TEST(Approx2, desc)                                                                    \
-    {                                                                                           \
-        approx2ArgsTest<TypeParam>(string(TEST_DIR"/approx/"#file".test"), resultIdx, method);\
+#define APPROX2_ARGS(desc, file, resultIdx, method, err)                                            \
+    TYPED_TEST(Approx2, desc)                                                                       \
+    {                                                                                               \
+        approx2ArgsTest<TypeParam>(string(TEST_DIR"/approx/"#file".test"), resultIdx, method, err); \
     }
 
-    APPROX2_ARGS(Approx2NearestArgsPos3D, approx2_pos3d, 0, AF_INTERP_NEAREST);
-    APPROX2_ARGS(Approx2LinearArgsPos3D, approx2_pos3d, 1, AF_INTERP_LINEAR);
-    APPROX2_ARGS(Approx2NearestArgsPosUnequal, approx2_unequal, 0, AF_INTERP_NEAREST);
-    APPROX2_ARGS(Approx2ArgsInterpBilinear, approx2, 0, AF_INTERP_BILINEAR);
-    APPROX2_ARGS(Approx2ArgsInterpCubic, approx2, 0, AF_INTERP_CUBIC);
+    APPROX2_ARGS(Approx2NearestArgsPos3D,      approx2_pos3d,   0, AF_INTERP_NEAREST,  AF_ERR_SIZE);
+    APPROX2_ARGS(Approx2LinearArgsPos3D,       approx2_pos3d,   1, AF_INTERP_LINEAR,   AF_ERR_SIZE);
+    APPROX2_ARGS(Approx2NearestArgsPosUnequal, approx2_unequal, 0, AF_INTERP_NEAREST,  AF_ERR_SIZE);
+    APPROX2_ARGS(Approx2ArgsInterpBilinear,    approx2,         0, AF_INTERP_BILINEAR, AF_ERR_ARG);
+    APPROX2_ARGS(Approx2ArgsInterpCubic,       approx2,         0, AF_INTERP_CUBIC,    AF_ERR_ARG);
 
 template<typename T>
 void approx2ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const af_interp_type method)
@@ -186,10 +186,11 @@ void approx2ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const 
     if(outArray  != 0) af_destroy_array(outArray);
 }
 
-#define APPROX2_ARGSP(desc, file, resultIdx, method)                                           \
-    TYPED_TEST(Approx2, desc)                                                                    \
-    {                                                                                           \
-        approx2ArgsTestPrecision<TypeParam>(string(TEST_DIR"/approx/"#file".test"), resultIdx, method);\
+#define APPROX2_ARGSP(desc, file, resultIdx, method)                                    \
+    TYPED_TEST(Approx2, desc)                                                           \
+    {                                                                                   \
+        approx2ArgsTestPrecision<TypeParam>(string(TEST_DIR"/approx/"#file".test"),     \
+                                            resultIdx, method);                         \
     }
 
     APPROX2_ARGSP(Approx2NearestArgsPrecision, approx2, 0, AF_INTERP_NEAREST);

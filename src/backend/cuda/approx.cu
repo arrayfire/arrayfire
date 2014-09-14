@@ -2,6 +2,7 @@
 #include <approx.hpp>
 #include <kernel/approx.hpp>
 #include <stdexcept>
+#include <err_cuda.hpp>
 
 namespace cuda
 {
@@ -18,12 +19,10 @@ namespace cuda
 
         switch(method) {
             case AF_INTERP_NEAREST:
-                kernel::approx1<Ty, Tp, AF_INTERP_NEAREST>
-                              (*out, in, pos, offGrid);
+                kernel::approx1<Ty, Tp, AF_INTERP_NEAREST> (*out, in, pos, offGrid);
                 break;
             case AF_INTERP_LINEAR:
-                kernel::approx1<Ty, Tp, AF_INTERP_LINEAR>
-                              (*out, in, pos, offGrid);
+                kernel::approx1<Ty, Tp, AF_INTERP_LINEAR> (*out, in, pos, offGrid);
                 break;
             default:
                 break;
@@ -45,12 +44,10 @@ namespace cuda
 
         switch(method) {
             case AF_INTERP_NEAREST:
-                kernel::approx2<Ty, Tp, AF_INTERP_NEAREST>
-                              (*out, in, pos0, pos1, offGrid);
+                kernel::approx2<Ty, Tp, AF_INTERP_NEAREST> (*out, in, pos0, pos1, offGrid);
                 break;
             case AF_INTERP_LINEAR:
-                kernel::approx2<Ty, Tp, AF_INTERP_LINEAR>
-                              (*out, in, pos0, pos1, offGrid);
+                kernel::approx2<Ty, Tp, AF_INTERP_LINEAR> (*out, in, pos0, pos1, offGrid);
                 break;
             default:
                 break;

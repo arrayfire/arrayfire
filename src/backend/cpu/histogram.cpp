@@ -19,7 +19,7 @@ Array<outType> * histogram(const Array<inType> &in, const unsigned &nbins, const
     Array<outType>* out = createEmptyArray<outType>(outDims);
 
     // get data pointers for input and output Arrays
-    outType *outData       = out->get();
+    outType *outData    = out->get();
     const inType* inData= in.get();
 
     dim_type batchCount = inDims[2];
@@ -53,11 +53,11 @@ Array<outType> * histogram(const Array<inType> &in, const unsigned &nbins, const
 #define INSTANTIATE(in_t,out_t)\
 template Array<out_t> * histogram(const Array<in_t> &in, const unsigned &nbins, const double &minval, const double &maxval);
 
-INSTANTIATE(float,uint)
-INSTANTIATE(double,uint)
-INSTANTIATE(char,uint)
-INSTANTIATE(int,uint)
-INSTANTIATE(uint,uint)
-INSTANTIATE(uchar,uint)
+INSTANTIATE(float , uint)
+INSTANTIATE(double, uint)
+INSTANTIATE(char  , uint)
+INSTANTIATE(int   , uint)
+INSTANTIATE(uint  , uint)
+INSTANTIATE(uchar , uint)
 
 }

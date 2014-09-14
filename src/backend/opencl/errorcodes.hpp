@@ -2,4 +2,4 @@
 
 #include <string>
 
-std::string getErrorMessage(int error_code);
+const char *getErrorMessage(int error_code);

@@ -2,10 +2,10 @@
 #include <af/defines.h>
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
-#include <morph.hpp>
 #include <math.hpp>
+#include <morph.hpp>
 #include <kernel/morph.hpp>
-#include <stdexcept>
+#include <err_opencl.hpp>
 
 using af::dim4;
 
@@ -18,9 +18,9 @@ Array<T> * morph(const Array<T> &in, const Array<T> &mask)
     const dim4 mdims    = mask.dims();
 
     if (mdims[0]!=mdims[1])
-        throw std::runtime_error("Only square masks are supported in cuda morph currently");
+        AF_ERROR("Only square masks are supported in cuda morph currently", AF_ERR_SIZE);
     if (mdims[0]>19)
-        throw std::runtime_error("Upto 19x19 square kernels are only supported in cuda currently");
+        AF_ERROR("Upto 19x19 square kernels are only supported in cuda currently", AF_ERR_SIZE);
 
     const dim4 dims = in.dims();
     Array<T>* out   = createEmptyArray<T>(dims);
@@ -48,13 +48,13 @@ Array<T> * morph3d(const Array<T> &in, const Array<T> &mask)
     const dim4 mdims    = mask.dims();
 
     if (mdims[0]!=mdims[1] || mdims[0]!=mdims[2])
-        throw std::runtime_error("Only cube masks are supported in cuda morph currently");
+        AF_ERROR("Only cube masks are supported in cuda morph currently", AF_ERR_SIZE);
     if (mdims[0]>7)
-        throw std::runtime_error("Upto 7x7x7 kernels are only supported in cuda currently");
+        AF_ERROR("Upto 7x7x7 kernels are only supported in cuda currently", AF_ERR_SIZE);
 
     const dim4 dims     = in.dims();
     if (dims[3]>1)
-        throw std::runtime_error("Batch not supported for volumetic morphological operations");
+        AF_ERROR("Batch not supported for volumetic morphological operations", AF_ERR_NOT_SUPPORTED);
 
     Array<T>* out   = createEmptyArray<T>(dims);
 

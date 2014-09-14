@@ -1,5 +1,7 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
+#include <err_cuda.hpp>
+#include <debug_cuda.hpp>
 
 namespace cuda
 {
@@ -111,6 +113,7 @@ namespace cuda
             float yf = (float)in.dims[1] / (float)out.dims[1];
 
             resize_kernel<T, method><<<blocks, threads>>>(out, in, blocksPerMatX, xf, yf);
+            POST_LAUNCH_CHECK();
         }
 
     }

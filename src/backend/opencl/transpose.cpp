@@ -21,13 +21,13 @@ Array<T> * transpose(const Array<T> &in)
 #define INSTANTIATE(T)\
     template Array<T> * transpose(const Array<T> &in);
 
-INSTANTIATE(float)
-INSTANTIATE(cfloat)
-INSTANTIATE(double)
+INSTANTIATE(float  )
+INSTANTIATE(cfloat )
+INSTANTIATE(double )
 INSTANTIATE(cdouble)
-INSTANTIATE(char)
-INSTANTIATE(int)
-INSTANTIATE(uint)
-INSTANTIATE(uchar)
+INSTANTIATE(char   )
+INSTANTIATE(int    )
+INSTANTIATE(uint   )
+INSTANTIATE(uchar  )
 
 }

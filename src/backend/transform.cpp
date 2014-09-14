@@ -1,6 +1,6 @@
 #include <af/image.h>
 #include <af/defines.h>
-#include <helper.hpp>
+#include <err_common.hpp>
 #include <handle.hpp>
 #include <ArrayInfo.hpp>
 #include <backend.hpp>
@@ -18,27 +18,18 @@ static inline af_array transform(const af_array in, const af_array tf, const af:
 af_err af_transform(af_array *out, const af_array in, const af_array tf,
                     const dim_type odim0, const dim_type odim1, const bool inverse)
 {
-    af_err ret = AF_SUCCESS;
     try {
         ArrayInfo t_info = getInfo(tf);
         ArrayInfo i_info = getInfo(in);
 
         af::dim4 idims = i_info.dims();
         af::dim4 tdims = t_info.dims();
-        af_dtype  type = i_info.getType();
-        af_dtype ttype = t_info.getType();
+        af_dtype itype = i_info.getType();
 
-        if(ttype != f32)
-            return AF_ERR_ARG;
-
-        if(tdims[0] != 3 || tdims[1] != 2)
-            return AF_ERR_ARG;
-
-        if(idims.elements() == 0)
-            return AF_ERR_ARG;
-
-        if(idims.ndims() < 2 || idims.ndims() > 3)
-            return AF_ERR_ARG;
+        ARG_ASSERT(2, t_info.getType() == f32);
+        DIM_ASSERT(2, (tdims[0] == 3 && tdims[1] == 2));
+        DIM_ASSERT(1, idims.elements() > 0);
+        DIM_ASSERT(1, (idims.ndims() == 2 || idims.ndims() == 3));
 
         dim_type o0 = odim0, o1 = odim1;
         dim_type o2 = idims[2] * tdims[2];
@@ -49,22 +40,19 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
         af::dim4 odims(o0, o1, o2, 1);
 
         af_array output = 0;
-        switch(type) {
+        switch(itype) {
             case f32: output = transform<float  >(in, tf, odims, inverse);  break;
             case f64: output = transform<double >(in, tf, odims, inverse);  break;
             case s32: output = transform<int    >(in, tf, odims, inverse);  break;
             case u32: output = transform<uint   >(in, tf, odims, inverse);  break;
             case u8:  output = transform<uchar  >(in, tf, odims, inverse);  break;
-            default:  ret = AF_ERR_NOT_SUPPORTED;       break;
+            default:  TYPE_ERROR(1, itype);
         }
-        if (ret!=AF_ERR_NOT_SUPPORTED) {
-            std::swap(*out,output);
-            ret = AF_SUCCESS;
-        }
+        std::swap(*out,output);
     }
     CATCHALL;
 
-    return ret;
+    return AF_SUCCESS;
 }
 
 af_err af_rotate(af_array *out, const af_array in, const float theta,
@@ -129,6 +117,7 @@ af_err af_translate(af_array *out, const af_array in, const float trans0, const 
                     const dim_type odim0, const dim_type odim1)
 {
     af_err ret = AF_SUCCESS;
+
     try {
         static float trans_mat[6] = {1, 0, 0,
                                      0, 1, 0};
@@ -141,7 +130,7 @@ af_err af_translate(af_array *out, const af_array in, const float trans0, const 
         ret = af_create_array(&t, trans_mat, tdims.ndims(), tdims.get(), f32);
 
         if (ret == AF_SUCCESS) {
-            return af_transform(out, in, t, odim0, odim1, true);
+            ret = af_transform(out, in, t, odim0, odim1, true);
         }
     }
     CATCHALL;

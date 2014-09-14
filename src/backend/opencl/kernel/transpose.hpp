@@ -6,7 +6,7 @@
 #include <mutex>
 #include <dispatch.hpp>
 #include <Param.hpp>
-#include <cldebug.hpp>
+#include <debug_opencl.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -69,7 +69,7 @@ void transpose(Param out, const Param in)
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {
-        SHOW_CL_ERROR(err);
+        CL_TO_AF_ERROR(err);
         throw;
     }
 }

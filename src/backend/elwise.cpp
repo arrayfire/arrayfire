@@ -3,7 +3,7 @@
 #include <af/arith.h>
 #include <ArrayInfo.hpp>
 #include <elwise.hpp>
-#include <helper.hpp>
+#include <err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
 #include <utility>

@@ -6,7 +6,7 @@
 #include <mutex>
 #include <dispatch.hpp>
 #include <Param.hpp>
-#include <cldebug.hpp>
+#include <debug_opencl.hpp>
 
 using cl::Kernel;
 
@@ -64,7 +64,7 @@ void histogram(Param out, const Param in, const Param minmax, dim_type nbins)
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {
-        SHOW_CL_ERROR(err);
+        CL_TO_AF_ERROR(err);
         throw;
     }
 }

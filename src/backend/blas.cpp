@@ -5,7 +5,7 @@
 #include <af/array.h>
 #include <af/defines.h>
 #include <ArrayInfo.hpp>
-#include <helper.hpp>
+#include <err_common.hpp>
 #include <backend.hpp>
 
 template<typename T>

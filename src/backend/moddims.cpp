@@ -1,7 +1,8 @@
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <af/array.h>
-#include <helper.hpp>
+#include <backend.hpp>
+#include <err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
 #include <copy.hpp>
@@ -58,7 +59,7 @@ af_err af_moddims(af_array *out, const af_array in, const unsigned ndims, const 
             ret = AF_SUCCESS;
         }
     }
-    CATCHALL;
+    CATCHALL
 
     return ret;
 }
