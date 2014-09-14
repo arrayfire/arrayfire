@@ -265,7 +265,7 @@ void resizeArgsTest(af_err err, string pTestFile, const af::dim4 odims, const af
 TYPED_TEST(Resize,InvalidArgsDims0)
 {
     af::dim4 dims(0, 5, 2, 1);
-    resizeArgsTest<TypeParam>(AF_ERR_ARG, string(TEST_DIR"/resize/square.test"), dims, AF_INTERP_BILINEAR);
+    resizeArgsTest<TypeParam>(AF_ERR_SIZE, string(TEST_DIR"/resize/square.test"), dims, AF_INTERP_BILINEAR);
 }
 
 TYPED_TEST(Resize,InvalidArgsMethod)

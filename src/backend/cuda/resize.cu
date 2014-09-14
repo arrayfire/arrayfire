@@ -2,6 +2,7 @@
 #include <resize.hpp>
 #include <kernel/resize.hpp>
 #include <stdexcept>
+#include <err_cuda.hpp>
 
 namespace cuda
 {
@@ -13,7 +14,7 @@ namespace cuda
         af::dim4 oDims(odim0, odim1, iDims[2], iDims[3]);
 
         if(iDims.elements() == 0 || oDims.elements() == 0) {
-            throw std::runtime_error("Elements is 0");
+            AF_ERROR("Elements are 0", AF_ERR_SIZE);
         }
 
         Array<T> *out = createEmptyArray<T>(oDims);
