@@ -4,7 +4,7 @@
 #include <Array.hpp>
 #include <histogram.hpp>
 #include <kernel/histogram.hpp>
-#include <stdexcept>
+#include <err_cuda.hpp>
 
 using af::dim4;
 
@@ -15,8 +15,7 @@ template<typename inType, typename outType>
 Array<outType> * histogram(const Array<inType> &in, const unsigned &nbins, const double &minval, const double &maxval)
 {
 
-    if (nbins>kernel::MAX_BINS)
-        throw std::runtime_error("@histogram: maximum bins exceeded.");
+    ARG_ASSERT(1, (nbins<=kernel::MAX_BINS));
 
     const dim4 dims     = in.dims();
     const dim4 istrides = in.strides();

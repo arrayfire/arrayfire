@@ -4,6 +4,7 @@
 #include <Array.hpp>
 #include <histogram.hpp>
 #include <kernel/histogram.hpp>
+#include <err_opencl.hpp>
 
 using af::dim4;
 
@@ -13,8 +14,7 @@ namespace opencl
 template<typename inType, typename outType>
 Array<outType> * histogram(const Array<inType> &in, const unsigned &nbins, const double &minval, const double &maxval)
 {
-    if (nbins>kernel::MAX_BINS)
-        throw std::runtime_error("@histogram: maximum bins exceeded.");
+    ARG_ASSERT(1, (nbins<=kernel::MAX_BINS));
 
     const dim4 dims     = in.dims();
     dim4 outDims        = dim4(nbins, 1, dims[2], dims[3]);

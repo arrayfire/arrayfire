@@ -19,33 +19,26 @@ static inline af_array histogram(const af_array in, const unsigned &nbins,
 af_err af_histogram(af_array *out, const af_array in,
                     const unsigned nbins, const double minval, const double maxval)
 {
-    af_err ret = AF_ERR_RUNTIME;
-
     try {
         ArrayInfo info = getInfo(in);
-        af_dtype type = info.getType();
-        af::dim4 dims = info.dims();
+        af_dtype type  = info.getType();
+        af::dim4 dims  = info.dims();
 
-        if (dims.ndims()>3) {
-            return AF_ERR_ARG;
-        }
+        DIM_ASSERT(1, (dims.ndims()<=3));
 
         af_array output;
         switch(type) {
-            case f32: output = histogram<float,uint>(in,nbins,minval,maxval);     break;
-            case f64: output = histogram<double,uint>(in,nbins,minval,maxval);    break;
-            case b8 : output = histogram<char,uint>(in,nbins,minval,maxval);      break;
-            case s32: output = histogram<int,uint>(in,nbins,minval,maxval);       break;
-            case u32: output = histogram<uint,uint>(in,nbins,minval,maxval);      break;
-            case u8 : output = histogram<uchar,uint>(in,nbins,minval,maxval);     break;
-            default : ret  = AF_ERR_NOT_SUPPORTED;                                break;
+            case f32: output = histogram<float , uint>(in, nbins, minval, maxval); break;
+            case f64: output = histogram<double, uint>(in, nbins, minval, maxval); break;
+            case b8 : output = histogram<char  , uint>(in, nbins, minval, maxval); break;
+            case s32: output = histogram<int   , uint>(in, nbins, minval, maxval); break;
+            case u32: output = histogram<uint  , uint>(in, nbins, minval, maxval); break;
+            case u8 : output = histogram<uchar , uint>(in, nbins, minval, maxval); break;
+            default : TYPE_ERROR(1, type);
         }
-        if (ret!=AF_ERR_NOT_SUPPORTED) {
-            std::swap(*out,output);
-            ret = AF_SUCCESS;
-        }
+        std::swap(*out,output);
     }
     CATCHALL;
 
-    return ret;
+    return AF_SUCCESS;
 }

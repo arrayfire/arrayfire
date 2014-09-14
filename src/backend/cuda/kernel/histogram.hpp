@@ -1,6 +1,7 @@
 #include <af/defines.h>
 #include <backend.hpp>
 #include <dispatch.hpp>
+#include <debug_cuda.hpp>
 #include "shared.hpp"
 
 namespace cuda
@@ -76,6 +77,8 @@ void histogram(Param<outType> out, CParam<inType> in, cfloat *d_minmax, dim_type
     histogramKernel<inType, outType>
         <<<blocks, threads, smem_size>>>
         (out, in, d_minmax, numElements, nbins, blk_x);
+
+    POST_LAUNCH_CHECK();
 }
 
 }
