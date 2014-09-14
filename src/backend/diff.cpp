@@ -47,7 +47,7 @@ af_err af_diff1(af_array *out, const af_array in, const int dim)
             case s8:  output = diff1<char   >(in,dim);  break;
             default:  TYPE_ERROR(1, type);
         }
-            std::swap(*out,output);
+        std::swap(*out,output);
     }
     CATCHALL;
 

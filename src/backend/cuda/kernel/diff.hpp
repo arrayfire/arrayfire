@@ -1,6 +1,8 @@
 #include <math.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
+#include <err_cuda.hpp>
+#include <debug_cuda.hpp>
 
 namespace cuda
 {
@@ -79,6 +81,8 @@ namespace cuda
 
             diff_kernel<T, dim, isDiff2> <<<blocks, threads>>>
                 (out, in, oElem, blocksPerMatX, blocksPerMatY);
+
+            POST_LAUNCH_CHECK();
         }
 }
 }

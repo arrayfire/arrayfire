@@ -1,8 +1,7 @@
-#include <type_traits>
-#include <af/array.h>
-#include <af/dim4.hpp>
 #include <Array.hpp>
 #include <diff.hpp>
+#include <stdexcept>
+#include <err_cpu.hpp>
 
 namespace cpu
 {
