@@ -36,6 +36,11 @@ af_err af_matmul(   af_array *out,
         if(lhsInfo.getType() == rhsInfo.getType()) {
             af_array output = 0;
 
+        int aColDim = (optLhs == AF_NO_TRANSPOSE) ? 1 : 0;
+        int bRowDim = (optRhs == AF_NO_TRANSPOSE) ? 0 : 1;
+
+        DIM_ASSERT(1, lhsInfo.dims()[aColDim] == rhsInfo.dims()[bRowDim]);
+
             switch(lhsInfo.getType()) {
                 case f32: output = matmul<float  >(lhs, rhs, optLhs, optRhs);   break;
                 case c32: output = matmul<cfloat >(lhs, rhs, optLhs, optRhs);   break;
@@ -66,6 +71,8 @@ af_err af_dot(      af_array *out,
     try {
         ArrayInfo lhsInfo = getInfo(lhs);
         ArrayInfo rhsInfo = getInfo(rhs);
+
+        DIM_ASSERT(1, lhsInfo.dims()[0] == rhsInfo.dims()[0]);
 
         if(lhsInfo.getType() == rhsInfo.getType()) {
             af_array output = 0;

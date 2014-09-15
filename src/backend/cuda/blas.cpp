@@ -138,7 +138,6 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
 
     int aRowDim = (lOpts == CUBLAS_OP_N) ? 0 : 1;
     int aColDim = (lOpts == CUBLAS_OP_N) ? 1 : 0;
-    int bRowDim = (rOpts == CUBLAS_OP_N) ? 0 : 1;
     int bColDim = (rOpts == CUBLAS_OP_N) ? 1 : 0;
 
     dim4 lDims = lhs.dims();
@@ -146,8 +145,6 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
     int M = lDims[aRowDim];
     int N = rDims[bColDim];
     int K = lDims[aColDim];
-
-    assert(lDims[aColDim] == rDims[bRowDim]);
 
     Array<T> *out = createEmptyArray<T>(af::dim4(M, N, 1, 1));
     T alpha = scalar<T>(1);
@@ -185,7 +182,6 @@ template<typename T>
 Array<T>* dot(const Array<T> &lhs, const Array<T> &rhs,
                     af_blas_transpose optLhs, af_blas_transpose optRhs)
 {
-    assert(lhs.dims()[0] == rhs.dims()[0]);
     int N = lhs.dims()[0];
 
     T out;
