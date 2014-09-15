@@ -4,8 +4,6 @@
 #include <iostream>
 #include <cassert>
 
-#include <cassert>
-
 namespace cpu
 {
 
@@ -109,7 +107,6 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
 
     int aRowDim = (lOpts == CblasNoTrans) ? 0 : 1;
     int aColDim = (lOpts == CblasNoTrans) ? 1 : 0;
-    int bRowDim = (rOpts == CblasNoTrans) ? 0 : 1;
     int bColDim = (rOpts == CblasNoTrans) ? 1 : 0;
 
     dim4 lDims = lhs.dims();
@@ -117,8 +114,6 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
     int M = lDims[aRowDim];
     int N = rDims[bColDim];
     int K = lDims[aColDim];
-
-    assert(lDims[aColDim] == rDims[bRowDim]);
 
     //FIXME: Leaks on errors.
     Array<T> *out = createEmptyArray<T>(af::dim4(M, N, 1, 1));
@@ -151,7 +146,6 @@ template<typename T>
 Array<T>* dot(const Array<T> &lhs, const Array<T> &rhs,
                     af_blas_transpose optLhs, af_blas_transpose optRhs)
 {
-    assert(lhs.dims()[0] == rhs.dims()[0]);
     int N = lhs.dims()[0];
 
     T out = dot_func<T>()(  N,

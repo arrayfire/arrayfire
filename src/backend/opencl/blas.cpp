@@ -81,7 +81,6 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
 
     int aRowDim = (lOpts == clblasNoTrans) ? 0 : 1;
     int aColDim = (lOpts == clblasNoTrans) ? 1 : 0;
-    int bRowDim = (rOpts == clblasNoTrans) ? 0 : 1;
     int bColDim = (rOpts == clblasNoTrans) ? 1 : 0;
 
     dim4 lDims = lhs.dims();
@@ -89,8 +88,6 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
     int M = lDims[aRowDim];
     int N = rDims[bColDim];
     int K = lDims[aColDim];
-
-    assert(lDims[aColDim] == rDims[bRowDim]);
 
     //FIXME: Leaks on errors.
     Array<T> *out = createEmptyArray<T>(af::dim4(M, N, 1, 1));
@@ -134,7 +131,7 @@ Array<T>* dot(const Array<T> &lhs, const Array<T> &rhs,
                     af_blas_transpose optLhs, af_blas_transpose optRhs)
 {
     initBlas();
-    assert(lhs.dims()[0] == rhs.dims()[0]);
+
     int N = lhs.dims()[0];
     dot_func<T> dot;
     cl::Event event;
