@@ -1,6 +1,5 @@
 #include <cl.hpp>
 #include <platform.hpp>
-#include <af/opencl.h>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -73,7 +72,7 @@ std::string getInfo()
     return DeviceManager::getInstance().devInfo;
 }
 
-unsigned deviceCount()
+int getDeviceCount()
 {
     return DeviceManager::getInstance().queues.size();
 }
@@ -96,59 +95,26 @@ CommandQueue& getQueue()
     return devMngr.queues[devMngr.activeQId];
 }
 
-void setDevice(size_t device)
+int setDevice(int device)
 {
     DeviceManager& devMngr = DeviceManager::getInstance();
 
-    if (device>=devMngr.queues.size() ||
-            device>=DeviceManager::MAX_DEVICES) {
-        throw runtime_error("@setDevice: invalid device index");
+    if (device>= (int)devMngr.queues.size() ||
+            device>= (int)DeviceManager::MAX_DEVICES) {
+        //throw runtime_error("@setDevice: invalid device index");
+        return -1;
     }
     else {
+        int old = devMngr.activeQId;
         devMngr.activeQId = device;
-        for(size_t i=0; i<devMngr.ctxOffsets.size(); ++i) {
-            if (device<devMngr.ctxOffsets[i]) {
+        for(int i=0; i< (int)devMngr.ctxOffsets.size(); ++i) {
+            if (device< (int)devMngr.ctxOffsets[i]) {
                 devMngr.activeCtxId = i;
                 break;
             }
         }
+        return old;
     }
 }
 
-}
-
-af_err af_info()
-{
-    af_err ret = AF_SUCCESS;
-
-    try {
-        std::cout<<opencl::getInfo()<<std::endl;
-    }
-    CATCHALL;
-
-    return ret;
-}
-
-af_err af_get_device_count(int *num_of_devices)
-{
-    af_err ret = AF_SUCCESS;
-
-    try {
-        *num_of_devices = opencl::deviceCount();
-    }
-    CATCHALL;
-
-    return ret;
-}
-
-af_err af_set_device(int device)
-{
-    af_err ret = AF_SUCCESS;
-
-    try {
-        opencl::setDevice(device);
-    }
-    CATCHALL;
-
-    return ret;
 }

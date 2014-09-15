@@ -6,9 +6,7 @@
 #include <vector>
 #include <testHelpers.hpp>
 
-#if defined(AF_OPENCL)
-#include <af/opencl.h>
-#endif
+#include <af/device.h>
 
 using std::string;
 using std::vector;
@@ -47,13 +45,19 @@ void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=n
     readTests<T,T,int>(pTestFile,numDims,in,tests);
     af::dim4 dims       = numDims[0];
 
-#if defined(AF_OPENCL)
     int nDevices = 0;
     ASSERT_EQ(AF_SUCCESS, af_get_device_count(&nDevices));
 
     for(int d=0; d<nDevices; ++d) {
+
+#if defined(AF_CPU)
+        ASSERT_EQ(AF_ERR_RUNTIME, af_set_device(d));
+#else
         ASSERT_EQ(AF_SUCCESS, af_set_device(d));
 #endif
+
+        ASSERT_EQ(AF_SUCCESS, af_info());
+
         af_array outArray   = 0;
         af_array inArray    = 0;
         T *outData;
@@ -90,9 +94,7 @@ void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=n
         delete[] outData;
         ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
         ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
-#if defined(AF_OPENCL)
     }
-#endif
 }
 
 TYPED_TEST(Transpose,Vector)
