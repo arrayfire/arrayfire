@@ -1,18 +1,18 @@
+#pragma once
 #include <string>
 #include <af/defines.h>
 
-static const char *getName(af_dtype type)
+const char *getName(af_dtype type);
+
+//uchar to number converters
+template<typename T>
+struct ToNum
 {
-    switch(type) {
-    case f32: return "float";
-    case f64: return "double";
-    case c32: return "complex float";
-    case c64: return "complex double";
-    case u32: return "unsigned int";
-    case s32: return "int";
-    case u8: return "unsigned char";
-    case s8: return "char";
-    case b8: return "bool";
-    default: return "unknown type";
-    }
-}
+    inline T operator()(T val) { return val; }
+};
+
+template<>
+struct ToNum<unsigned char>
+{
+    inline int operator()(unsigned char val) { return static_cast<int>(val); }
+};
