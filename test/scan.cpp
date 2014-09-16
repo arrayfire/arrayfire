@@ -43,7 +43,7 @@ void scanTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=v
 
     // Compare result
     for (int d = 0; d < (int)tests.size(); ++d) {
-        vector<To> currGoldBar(tests[d].begin(), tests[d].begin());
+        vector<To> currGoldBar(tests[d].begin(), tests[d].end());
 
         // Run sum
         ASSERT_EQ(AF_SUCCESS, af_scan(&outArray, inArray, d));
