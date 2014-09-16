@@ -6,7 +6,6 @@
 #undef _GLIBCXX_USE_INT128
 #include <reduce.hpp>
 #include <complex>
-#include <cassert>
 #include <kernel/reduce.hpp>
 
 using std::swap;

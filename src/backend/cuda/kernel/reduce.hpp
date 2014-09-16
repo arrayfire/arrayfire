@@ -106,23 +106,17 @@ namespace kernel
 
         switch (threads_y) {
         case 8:
-            return (reduce_dim_kernel<Ti, To, op, dim, 8>)<<<blocks, threads>>>(
-                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]);
+            (reduce_dim_kernel<Ti, To, op, dim, 8>)<<<blocks, threads>>>(
+                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]); break;
         case 4:
-            return (reduce_dim_kernel<Ti, To, op, dim, 4>)<<<blocks, threads>>>(
-                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]);
+            (reduce_dim_kernel<Ti, To, op, dim, 4>)<<<blocks, threads>>>(
+                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]); break;
         case 2:
-            return (reduce_dim_kernel<Ti, To, op, dim, 2>)<<<blocks, threads>>>(
-                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]);
+            (reduce_dim_kernel<Ti, To, op, dim, 2>)<<<blocks, threads>>>(
+                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]); break;
         case 1:
-            return (reduce_dim_kernel<Ti, To, op, dim, 1>)<<<blocks, threads>>>(
-                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]);
-        case 32:
-            return (reduce_dim_kernel<Ti, To, op, dim,32>)<<<blocks, threads>>>(
-                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]);
-        case 16:
-            return (reduce_dim_kernel<Ti, To, op, dim,16>)<<<blocks, threads>>>(
-                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]);
+            (reduce_dim_kernel<Ti, To, op, dim, 1>)<<<blocks, threads>>>(
+                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]); break;
         }
 
         POST_LAUNCH_CHECK();
@@ -247,23 +241,17 @@ namespace kernel
 
         switch (threads_x) {
         case 32:
-            return (reduce_first_kernel<Ti, To, op,  32>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y);
+            (reduce_first_kernel<Ti, To, op,  32>)<<<blocks, threads>>>(
+                out, in, blocks_x, blocks_y); break;
         case 64:
-            return (reduce_first_kernel<Ti, To, op,  64>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y);
+            (reduce_first_kernel<Ti, To, op,  64>)<<<blocks, threads>>>(
+                out, in, blocks_x, blocks_y); break;
         case 128:
-            return (reduce_first_kernel<Ti, To, op,  128>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y);
+            (reduce_first_kernel<Ti, To, op,  128>)<<<blocks, threads>>>(
+                out, in, blocks_x, blocks_y); break;
         case 256:
-            return (reduce_first_kernel<Ti, To, op,  256>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y);
-        case 512:
-            return (reduce_first_kernel<Ti, To, op,  512>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y);
-        case 1024:
-            return (reduce_first_kernel<Ti, To, op,  1024>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y);
+            (reduce_first_kernel<Ti, To, op,  256>)<<<blocks, threads>>>(
+                out, in, blocks_x, blocks_y); break;
         }
 
         POST_LAUNCH_CHECK();
