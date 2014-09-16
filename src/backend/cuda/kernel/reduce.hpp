@@ -6,16 +6,12 @@
 #include <math.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
+#include "config.hpp"
 
 namespace cuda
 {
 namespace kernel
 {
-    static const uint THREADS_PER_BLOCK = 256;
-    static const uint THREADS_X = 32;
-    static const uint THREADS_Y = THREADS_PER_BLOCK / THREADS_X;
-    static const uint REPEAT    = 32;
-
     template<typename Ti, typename To, af_op_t op, uint dim, uint DIMY>
     __global__
     static void reduce_dim_kernel(Param<To> out,
@@ -42,7 +38,7 @@ namespace kernel
         // There are blockDim.y elements per block for in
         // Hence increment ids[dim] just after offseting out and before offsetting in
         optr += ids[3] * out.strides[3] + ids[2] * out.strides[2] + ids[1] * out.strides[1] + ids[0];
-        const uint id_dim_out = ids[dim];
+        const uint blockIdx_dim = ids[dim];
 
         ids[dim] = ids[dim] * blockDim.y + tidy;
         iptr  += ids[3] * in.strides[3] + ids[2] * in.strides[2] + ids[1] * in.strides[1] + ids[0];
@@ -89,7 +85,7 @@ namespace kernel
         }
 
         if (tidy == 0 && is_valid &&
-            (id_dim_out < out.dims[dim])) {
+            (blockIdx_dim < out.dims[dim])) {
             *optr = *s_ptr;
         }
 
