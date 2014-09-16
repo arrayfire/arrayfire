@@ -1,0 +1,63 @@
+#include <Array.hpp>
+#include <reorder.hpp>
+#include <stdexcept>
+#include <err_cpu.hpp>
+
+namespace cpu
+{
+    template<typename T>
+    Array<T> *reorder(const Array<T> &in, const af::dim4 &rdims)
+    {
+        const af::dim4 iDims = in.dims();
+        af::dim4 oDims(0);
+        for(int i = 0; i < 4; i++)
+            oDims[i] = iDims[rdims[i]];
+
+        Array<T> *out = createEmptyArray<T>(oDims);
+
+        T* outPtr = out->get();
+        const T* inPtr = in.get();
+
+        const af::dim4 ist = in.strides();
+        const af::dim4 ost = out->strides();
+
+
+        dim_type ids[4]  = {0};
+        for(dim_type ow = 0; ow < oDims[3]; ow++) {
+            const dim_type oW = ow * ost[3];
+            ids[rdims[3]] = ow;
+            for(dim_type oz = 0; oz < oDims[2]; oz++) {
+                const dim_type oZW = oW + oz * ost[2];
+                ids[rdims[2]] = oz;
+                for(dim_type oy = 0; oy < oDims[1]; oy++) {
+                    const dim_type oYZW = oZW + oy * ost[1];
+                    ids[rdims[1]] = oy;
+                    for(dim_type ox = 0; ox < oDims[0]; ox++) {
+                        const dim_type oIdx = oYZW + ox;
+
+                        ids[rdims[0]] = ox;
+                        const dim_type iIdx = ids[3] * ist[3] + ids[2] * ist[2] +
+                                              ids[1] * ist[1] + ids[0];
+
+                        outPtr[oIdx] = inPtr[iIdx];
+                    }
+                }
+            }
+        }
+
+        return out;
+    }
+
+#define INSTANTIATE(T)                                                         \
+    template Array<T>* reorder<T>(const Array<T> &in, const af::dim4 &rdims);  \
+
+    INSTANTIATE(float)
+    INSTANTIATE(double)
+    INSTANTIATE(cfloat)
+    INSTANTIATE(cdouble)
+    INSTANTIATE(int)
+    INSTANTIATE(uint)
+    INSTANTIATE(uchar)
+    INSTANTIATE(char)
+
+}
