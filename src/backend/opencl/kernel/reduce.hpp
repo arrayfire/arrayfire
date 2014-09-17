@@ -11,6 +11,7 @@
 #include <debug_opencl.hpp>
 #include <type_util.hpp>
 #include "names.hpp"
+#include "config.hpp"
 
 using cl::Buffer;
 using cl::Program;
@@ -26,28 +27,9 @@ namespace opencl
 namespace kernel
 {
 
-    static std::ostream&
-    operator<<(std::ostream &out, const cfloat& var)
-    {
-        out << "{" << var.s[0] << "," << var.s[1] << "}";
-        return out;
-    }
-
-    static std::ostream&
-    operator<<(std::ostream &out, const cdouble& var)
-    {
-        out << "{" << var.s[0] << "," << var.s[1] << "}";
-        return out;
-    }
-
-    static const uint THREADS_PER_GROUP = 256;
-    static const uint THREADS_X = 32;
-    static const uint THREADS_Y = THREADS_PER_GROUP / THREADS_X;
-    static const uint REPEAT    = 32;
-
     template<typename Ti, typename To, af_op_t op, int dim, int threads_y>
     void reduce_dim_launcher(Param out, Param in,
-                       const uint groups_dim[4])
+                       const uint groups_all[4])
     {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
         static Program         reduceProgs[DeviceManager::MAX_DEVICES];
@@ -78,8 +60,8 @@ namespace kernel
             });
 
         NDRange local(THREADS_X, threads_y);
-        NDRange global(groups_dim[0] * groups_dim[2] * local[0],
-                       groups_dim[1] * groups_dim[3] * local[1]);
+        NDRange global(groups_all[0] * groups_all[2] * local[0],
+                       groups_all[1] * groups_all[3] * local[1]);
 
         auto reduceOp = make_kernel<Buffer, KParam,
                                     Buffer, KParam,
@@ -88,24 +70,24 @@ namespace kernel
         reduceOp(EnqueueArgs(getQueue(), global, local),
                  out.data, out.info,
                  in.data, in.info,
-                 groups_dim[0],
-                 groups_dim[1],
-                 groups_dim[dim]);
+                 groups_all[0],
+                 groups_all[1],
+                 groups_all[dim]);
 
         CL_DEBUG_FINISH(getQueue());
     }
 
     template<typename Ti, typename To, af_op_t op, int dim>
     void reduce_dim_fn(Param out, Param in,
-                       const uint threads_y, const uint groups_dim[4])
+                       const uint threads_y, const uint groups_all[4])
     {
         switch(threads_y) {
-        case 8: return reduce_dim_launcher<Ti, To, op, dim, 8>(out, in, groups_dim);
-        case 4: return reduce_dim_launcher<Ti, To, op, dim, 4>(out, in, groups_dim);
-        case 2: return reduce_dim_launcher<Ti, To, op, dim, 2>(out, in, groups_dim);
-        case 1: return reduce_dim_launcher<Ti, To, op, dim, 1>(out, in, groups_dim);
-        case 16: return reduce_dim_launcher<Ti, To, op, dim, 16>(out, in, groups_dim);
-        case 32: return reduce_dim_launcher<Ti, To, op, dim, 32>(out, in, groups_dim);
+        case 8: return reduce_dim_launcher<Ti, To, op, dim, 8>(out, in, groups_all);
+        case 4: return reduce_dim_launcher<Ti, To, op, dim, 4>(out, in, groups_all);
+        case 2: return reduce_dim_launcher<Ti, To, op, dim, 2>(out, in, groups_all);
+        case 1: return reduce_dim_launcher<Ti, To, op, dim, 1>(out, in, groups_all);
+        case 16: return reduce_dim_launcher<Ti, To, op, dim, 16>(out, in, groups_all);
+        case 32: return reduce_dim_launcher<Ti, To, op, dim, 32>(out, in, groups_all);
         }
     }
 
@@ -115,36 +97,36 @@ namespace kernel
         uint threads_y = std::min(THREADS_Y, nextpow2(in.info.dims[dim]));
         uint threads_x = THREADS_X;
 
-        uint groups_dim[] = {(uint)divup(in.info.dims[0], threads_x),
+        uint groups_all[] = {(uint)divup(in.info.dims[0], threads_x),
                              (uint)in.info.dims[1],
                              (uint)in.info.dims[2],
                              (uint)in.info.dims[3]};
 
-        groups_dim[dim] = divup(in.info.dims[dim], threads_y * REPEAT);
+        groups_all[dim] = divup(in.info.dims[dim], threads_y * REPEAT);
 
         Param tmp = out;
 
         dim_type tmp_elements = 1;
-        if (groups_dim[dim] > 1) {
-            tmp.info.dims[dim] = groups_dim[dim];
+        if (groups_all[dim] > 1) {
+            tmp.info.dims[dim] = groups_all[dim];
 
             for (int k = 0; k < 4; k++) tmp_elements *= tmp.info.dims[k];
 
             tmp.data = cl::Buffer(getContext(), CL_MEM_READ_WRITE,
                                   tmp_elements * sizeof(To));
 
-            for (int k = dim + 1; k < 4; k++) tmp.info.strides[k] *= groups_dim[dim];
+            for (int k = dim + 1; k < 4; k++) tmp.info.strides[k] *= groups_all[dim];
         }
 
-        reduce_dim_fn<Ti, To, op, dim>(tmp, in, threads_y, groups_dim);
+        reduce_dim_fn<Ti, To, op, dim>(tmp, in, threads_y, groups_all);
 
-        if (groups_dim[dim] > 1) {
-            groups_dim[dim] = 1;
+        if (groups_all[dim] > 1) {
+            groups_all[dim] = 1;
 
             if (op == af_notzero_t) {
-                reduce_dim_fn<To, To, af_add_t, dim>(out, tmp, threads_y, groups_dim);
+                reduce_dim_fn<To, To, af_add_t, dim>(out, tmp, threads_y, groups_all);
             } else {
-                reduce_dim_fn<To, To,       op, dim>(out, tmp, threads_y, groups_dim);
+                reduce_dim_fn<To, To,       op, dim>(out, tmp, threads_y, groups_all);
             }
         }
 
@@ -229,7 +211,7 @@ namespace kernel
         Param tmp = out;
 
         if (groups_x > 1) {
-
+            // FIXME: DO I need to free this ?
             tmp.data = cl::Buffer(getContext(), CL_MEM_READ_WRITE,
                                   groups_x *
                                   in.info.dims[1] *

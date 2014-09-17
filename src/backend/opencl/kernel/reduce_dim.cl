@@ -1,9 +1,13 @@
+#if Ti == double
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#endif
+
 __kernel
 void reduce_dim_kernel(__global To *oData,
                        KParam oInfo,
                        const __global Ti *iData,
                        KParam iInfo,
-                       uint groups_x, uint groups_y, uint offset_dim)
+                       uint groups_x, uint groups_y, uint group_dim)
 {
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);
@@ -42,11 +46,11 @@ void reduce_dim_kernel(__global To *oData,
 
     To out_val = init;
     for (int id = id_dim_in; is_valid && (id < iInfo.dims[dim]);
-         id += offset_dim * get_local_size(1)) {
+         id += group_dim * get_local_size(1)) {
 
         To in_val = transform(*iData);
         out_val = binOp(in_val, out_val);
-        iData = iData + offset_dim * get_local_size(1) * istride_dim;
+        iData = iData + group_dim * get_local_size(1) * istride_dim;
     }
 
     s_val[lid] = out_val;
