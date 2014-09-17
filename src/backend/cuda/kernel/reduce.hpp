@@ -27,7 +27,7 @@ namespace kernel
         const uint blockIdx_x = blockIdx.x - (blocks_x) * zid;
         const uint blockIdx_y = blockIdx.y - (blocks_y) * wid;
         const uint xid = blockIdx_x * blockDim.x + tidx;
-        const uint yid = blockIdx_y;
+        const uint yid = blockIdx_y; // yid  of output. updated for input later.
 
         uint ids[4] = {xid, yid, zid, wid};
 

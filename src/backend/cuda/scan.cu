@@ -7,14 +7,24 @@
 #undef _GLIBCXX_USE_INT128
 #include <scan.hpp>
 #include <complex>
+#include <kernel/scan_first.hpp>
+#include <kernel/scan_dim.hpp>
 
 namespace cuda
 {
     template<af_op_t op, typename Ti, typename To>
     Array<To>* scan(const Array<Ti> &in, const int dim)
     {
-        CUDA_NOT_SUPPORTED();
-        return NULL;
+        Array<To> *out = createEmptyArray<To>(in.dims());
+
+        switch (dim) {
+        case 0: kernel::scan_first<Ti, To, op   >(*out, in); break;
+        case 1: kernel::scan_dim  <Ti, To, op, 1>(*out, in); break;
+        case 2: kernel::scan_dim  <Ti, To, op, 2>(*out, in); break;
+        case 3: kernel::scan_dim  <Ti, To, op, 3>(*out, in); break;
+        }
+
+        return out;
     }
 
 

@@ -18,7 +18,7 @@ using af::af_cdouble;
 typedef af_err (*scanFunc)(af_array *, const af_array, const int);
 
 template<typename Ti, typename To, scanFunc af_scan>
-void scanTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=vector<af_seq>())
+void scanTest(string pTestFile, int off = 0, bool isSubRef=false, const vector<af_seq> seqv=vector<af_seq>())
 {
     vector<af::dim4> numDims;
 
@@ -38,6 +38,7 @@ void scanTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=v
         ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv.size(), &seqv.front()));
     } else {
+
         ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
     }
 
@@ -46,7 +47,7 @@ void scanTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=v
         vector<To> currGoldBar(tests[d].begin(), tests[d].end());
 
         // Run sum
-        ASSERT_EQ(AF_SUCCESS, af_scan(&outArray, inArray, d));
+        ASSERT_EQ(AF_SUCCESS, af_scan(&outArray, inArray, d + off));
 
         // Get result
         To *outData;
@@ -56,13 +57,13 @@ void scanTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=v
         size_t nElems = currGoldBar.size();
         for (size_t elIter = 0; elIter < nElems; ++elIter) {
             ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
-                                                            << " for dim " << d << std::endl;
+                                                            << " for dim " << d +off
+                                                            << std::endl;
         }
 
         // Delete
         delete[] outData;
     }
-
 
     if(inArray   != 0) af_destroy_array(inArray);
     if(outArray  != 0) af_destroy_array(outArray);
@@ -94,3 +95,19 @@ SCAN_TESTS(accum, cfloat  , af_cfloat , af_cfloat );
 SCAN_TESTS(accum, cdouble , af_cdouble, af_cdouble);
 SCAN_TESTS(accum, unsigned, unsigned  , unsigned  );
 SCAN_TESTS(accum, uchar   , unsigned char, unsigned);
+
+TEST(Scan,Test_Scan_Big0)
+{
+    scanTest<int, int, af_accum>(
+        string(TEST_DIR"/scan/big0.test"),
+        0
+        );
+}
+
+TEST(Scan,Test_Scan_Big1)
+{
+    scanTest<int, int, af_accum>(
+        string(TEST_DIR"/scan/big1.test"),
+        1
+        );
+}
