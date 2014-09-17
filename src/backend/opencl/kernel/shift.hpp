@@ -1,0 +1,83 @@
+#pragma once
+#include <kernel_headers/shift.hpp>
+#include <program.hpp>
+#include <traits.hpp>
+#include <string>
+#include <mutex>
+#include <dispatch.hpp>
+#include <Param.hpp>
+#include <debug_opencl.hpp>
+#include <cassert>
+
+using cl::Buffer;
+using cl::Program;
+using cl::Kernel;
+using cl::make_kernel;
+using cl::EnqueueArgs;
+using cl::NDRange;
+using std::string;
+
+namespace opencl
+{
+    namespace kernel
+    {
+        // Kernel Launch Config Values
+        static const dim_type TX = 32;
+        static const dim_type TY = 8;
+        static const dim_type TILEX = 128;
+        static const dim_type TILEY = 32;
+
+        template<typename T>
+        void shift(Param out, const Param in, const dim_type *sdims)
+        {
+            try {
+                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+                static Program          shiftProgs[DeviceManager::MAX_DEVICES];
+                static Kernel         shiftKernels[DeviceManager::MAX_DEVICES];
+
+                int device = getActiveDeviceId();
+
+                std::call_once( compileFlags[device], [device] () {
+                    std::ostringstream options;
+                    options << " -D T=" << dtype_traits<T>::getName();
+
+                    buildProgram(shiftProgs[device],
+                                 shift_cl,
+                                 shift_cl_len,
+                                 options.str());
+
+                    shiftKernels[device] = Kernel(shiftProgs[device], "shift_kernel");
+                });
+
+                auto shiftOp = make_kernel<Buffer, const Buffer, const KParam, const KParam,
+                                          const dim_type, const dim_type, const dim_type, const dim_type,
+                                          const dim_type, const dim_type> (shiftKernels[device]);
+
+                NDRange local(TX, TY, 1);
+
+                dim_type blocksPerMatX = divup(out.info.dims[0], TILEX);
+                dim_type blocksPerMatY = divup(out.info.dims[1], TILEY);
+                NDRange global(local[0] * blocksPerMatX * out.info.dims[2],
+                               local[1] * blocksPerMatY * out.info.dims[3],
+                               1);
+
+                dim_type sdims_[4];
+                // Need to do this because we are mapping output to input in the kernel
+                for(int i = 0; i < 4; i++) {
+                    // sdims_[i] will always be positive and always [0, oDims[i]].
+                    // Negative shifts are converted to position by going the other way round
+                    sdims_[i] = -(sdims[i] % out.info.dims[i]) + out.info.dims[i] * (sdims[i] > 0);
+                    assert(sdims_[i] >= 0 && sdims_[i] <= out.info.dims[i]);
+                }
+
+                shiftOp(EnqueueArgs(getQueue(), global, local), out.data, in.data, out.info, in.info,
+                       sdims_[0], sdims_[1], sdims_[2], sdims_[3], blocksPerMatX, blocksPerMatY);
+
+                CL_DEBUG_FINISH(getQueue());
+            } catch (cl::Error err) {
+                CL_TO_AF_ERROR(err);
+                throw;
+            }
+        }
+    }
+}

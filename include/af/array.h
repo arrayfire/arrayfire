@@ -39,6 +39,9 @@ extern "C" {
     AFAPI af_err af_reorder(af_array *out, const af_array in,
                             const unsigned x, const unsigned y, const unsigned z, const unsigned w);
 
+    // Reorder an Array
+    AFAPI af_err af_shift(af_array *out, const af_array in, const int x, const int y, const int z, const int w);
+
     // Compute first order difference along a given dimension.
     AFAPI af_err af_diff1(af_array *out, const af_array in, const int dim);
 
