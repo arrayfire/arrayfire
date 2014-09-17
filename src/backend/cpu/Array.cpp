@@ -63,6 +63,20 @@ namespace cpu
         return out;
     }
 
+    template<typename complex_t, typename real_t>
+    Array<complex_t>*
+    createComplexFromReal(const Array<real_t> &in)
+    {
+        const real_t *ptr       = in.get();
+        Array<complex_t> *cmplx = createEmptyArray<complex_t>(in.dims());
+        complex_t *cmplx_ptr    = cmplx->get();
+        for (int i=0; i<in.elements(); ++i) {
+            cmplx_ptr[i].real(ptr[i]);
+            cmplx_ptr[i].imag(0);
+        }
+        return cmplx;
+    }
+
     template<typename T>
     Array<T> *
     createSubArray(const Array<T>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride)
@@ -99,4 +113,8 @@ namespace cpu
     INSTANTIATE(uint)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
+
+
+    template Array<cfloat >* createComplexFromReal<cfloat , float >(const Array<float > &in);
+    template Array<cdouble>* createComplexFromReal<cdouble, double>(const Array<double> &in);
 }

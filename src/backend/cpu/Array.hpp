@@ -32,6 +32,9 @@ namespace cpu
     Array<T>*
     createEmptyArray(const af::dim4 &size);
 
+    template<typename complex_t, typename real_t>
+    Array<complex_t>* createComplexFromReal(const Array<real_t> &in);
+
     // Creates a new Array View(sub array).
     template<typename T>
     Array<T> *
