@@ -1,6 +1,6 @@
 #pragma once
 #include <ops.hpp>
-template<af_op_t T> const char *binOpName() { return "ADD_OP"; }
+template<af_op_t T> static const char *binOpName() { return "ADD_OP"; }
 
 template<> const char *binOpName<af_add_t>() { return "ADD_OP"; }
 template<> const char *binOpName<af_and_t>() { return "AND_OP"; }
