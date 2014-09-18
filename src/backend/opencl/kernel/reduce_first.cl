@@ -1,3 +1,7 @@
+#if Ti == double
+#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#endif
+
 __kernel
 void reduce_first_kernel(__global To *oData,
                          KParam oInfo,

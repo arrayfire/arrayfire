@@ -6,16 +6,12 @@
 #include <math.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
+#include "config.hpp"
 
 namespace cuda
 {
 namespace kernel
 {
-    static const uint THREADS_PER_BLOCK = 256;
-    static const uint THREADS_X = 32;
-    static const uint THREADS_Y = THREADS_PER_BLOCK / THREADS_X;
-    static const uint REPEAT    = 32;
-
     template<typename Ti, typename To, af_op_t op, uint dim, uint DIMY>
     __global__
     static void reduce_dim_kernel(Param<To> out,
@@ -31,7 +27,7 @@ namespace kernel
         const uint blockIdx_x = blockIdx.x - (blocks_x) * zid;
         const uint blockIdx_y = blockIdx.y - (blocks_y) * wid;
         const uint xid = blockIdx_x * blockDim.x + tidx;
-        const uint yid = blockIdx_y;
+        const uint yid = blockIdx_y; // yid  of output. updated for input later.
 
         uint ids[4] = {xid, yid, zid, wid};
 
@@ -42,7 +38,7 @@ namespace kernel
         // There are blockDim.y elements per block for in
         // Hence increment ids[dim] just after offseting out and before offsetting in
         optr += ids[3] * out.strides[3] + ids[2] * out.strides[2] + ids[1] * out.strides[1] + ids[0];
-        const uint id_dim_out = ids[dim];
+        const uint blockIdx_dim = ids[dim];
 
         ids[dim] = ids[dim] * blockDim.y + tidy;
         iptr  += ids[3] * in.strides[3] + ids[2] * in.strides[2] + ids[1] * in.strides[1] + ids[0];
@@ -89,7 +85,7 @@ namespace kernel
         }
 
         if (tidy == 0 && is_valid &&
-            (id_dim_out < out.dims[dim])) {
+            (blockIdx_dim < out.dims[dim])) {
             *optr = *s_ptr;
         }
 
@@ -106,23 +102,17 @@ namespace kernel
 
         switch (threads_y) {
         case 8:
-            return (reduce_dim_kernel<Ti, To, op, dim, 8>)<<<blocks, threads>>>(
-                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]);
+            (reduce_dim_kernel<Ti, To, op, dim, 8>)<<<blocks, threads>>>(
+                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]); break;
         case 4:
-            return (reduce_dim_kernel<Ti, To, op, dim, 4>)<<<blocks, threads>>>(
-                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]);
+            (reduce_dim_kernel<Ti, To, op, dim, 4>)<<<blocks, threads>>>(
+                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]); break;
         case 2:
-            return (reduce_dim_kernel<Ti, To, op, dim, 2>)<<<blocks, threads>>>(
-                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]);
+            (reduce_dim_kernel<Ti, To, op, dim, 2>)<<<blocks, threads>>>(
+                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]); break;
         case 1:
-            return (reduce_dim_kernel<Ti, To, op, dim, 1>)<<<blocks, threads>>>(
-                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]);
-        case 32:
-            return (reduce_dim_kernel<Ti, To, op, dim,32>)<<<blocks, threads>>>(
-                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]);
-        case 16:
-            return (reduce_dim_kernel<Ti, To, op, dim,16>)<<<blocks, threads>>>(
-                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]);
+            (reduce_dim_kernel<Ti, To, op, dim, 1>)<<<blocks, threads>>>(
+                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]); break;
         }
 
         POST_LAUNCH_CHECK();
@@ -247,23 +237,17 @@ namespace kernel
 
         switch (threads_x) {
         case 32:
-            return (reduce_first_kernel<Ti, To, op,  32>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y);
+            (reduce_first_kernel<Ti, To, op,  32>)<<<blocks, threads>>>(
+                out, in, blocks_x, blocks_y); break;
         case 64:
-            return (reduce_first_kernel<Ti, To, op,  64>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y);
+            (reduce_first_kernel<Ti, To, op,  64>)<<<blocks, threads>>>(
+                out, in, blocks_x, blocks_y); break;
         case 128:
-            return (reduce_first_kernel<Ti, To, op,  128>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y);
+            (reduce_first_kernel<Ti, To, op,  128>)<<<blocks, threads>>>(
+                out, in, blocks_x, blocks_y); break;
         case 256:
-            return (reduce_first_kernel<Ti, To, op,  256>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y);
-        case 512:
-            return (reduce_first_kernel<Ti, To, op,  512>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y);
-        case 1024:
-            return (reduce_first_kernel<Ti, To, op,  1024>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y);
+            (reduce_first_kernel<Ti, To, op,  256>)<<<blocks, threads>>>(
+                out, in, blocks_x, blocks_y); break;
         }
 
         POST_LAUNCH_CHECK();

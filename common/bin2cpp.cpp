@@ -34,6 +34,7 @@ Command:
 ./bin2cpp --file blah.txt --namespace blah detail --formatted --name blah_var
 
 Will produce:
+#pragma once
 #include <cstddef>
 namespace blah {
 	namespace detail {
@@ -127,6 +128,7 @@ int main(int argc, const char * const * const argv)
         cout.rdbuf(outfile->rdbuf());
     }
 
+    cout << "#pragma once\n";
     cout << "#include <cstddef>\n"; // defines size_t
 
     int ns_cnt = 0;
