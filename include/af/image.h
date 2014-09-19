@@ -45,6 +45,10 @@ extern "C" {
     // gradient
     AFAPI af_err af_gradient(af_array *grad_rows, af_array *grad_cols, const af_array in);
 
+    // image median filter
+
+    AFAPI af_err af_medfilt(af_array *out, const af_array in, dim_type wind_length, dim_type wind_width, af_pad_type edge_pad);
+
 #ifdef __cplusplus
 }
 #endif

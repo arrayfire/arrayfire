@@ -75,3 +75,8 @@ typedef enum {
     AF_INTERP_BILINEAR,
     AF_INTERP_CUBIC
 } af_interp_type;
+
+typedef enum {
+    AF_ZERO = 0,
+    AF_SYMMETRIC
+} af_pad_type;
