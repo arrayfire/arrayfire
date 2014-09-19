@@ -11,6 +11,9 @@ extern "C" {
     // Create af_array from memory
     AFAPI af_err af_create_array(af_array *arr, const void * const data, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
+    // Create af_array handle without initializing values
+    AFAPI af_err af_create_handle(af_array *arr, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+
     // Get the number of elements in an af_array
     AFAPI af_err af_get_elements(dim_type *elems, const af_array arr);
 
