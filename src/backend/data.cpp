@@ -13,6 +13,12 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
+static af_array createHandle(af::dim4 d)
+{
+    return getHandle(*createEmptyArray<T>(d));
+}
+
+template<typename T>
 static af_array createHandle(af::dim4 d, double val)
 {
     return getHandle(*createValueArray<T>(d, static_cast<T>(val)));
@@ -128,6 +134,36 @@ af_err af_constant(af_array *result, const double value,
         case u32:   out = createHandle<uint   >(d, value); break;
         case u8:    out = createHandle<uchar  >(d, value); break;
         case s8:    out = createHandle<char   >(d, value); break;
+        default:    ret = AF_ERR_NOT_SUPPORTED;    break;
+        }
+        std::swap(*result, out);
+        ret = AF_SUCCESS;
+    }
+    CATCHALL
+        return ret;
+}
+
+//Strong Exception Guarantee
+af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type * const dims,
+                        const af_dtype type)
+{
+    af_err ret = AF_ERR_ARG;
+    af_array out;
+    try {
+        dim4 d((size_t)dims[0]);
+        for(unsigned i = 1; i < ndims; i++) {
+            d[i] = dims[i];
+        }
+        switch(type) {
+        case f32:   out = createHandle<float  >(d); break;
+        case c32:   out = createHandle<cfloat >(d); break;
+        case f64:   out = createHandle<double >(d); break;
+        case c64:   out = createHandle<cdouble>(d); break;
+        case b8:    out = createHandle<char   >(d); break;
+        case s32:   out = createHandle<int    >(d); break;
+        case u32:   out = createHandle<uint   >(d); break;
+        case u8:    out = createHandle<uchar  >(d); break;
+        case s8:    out = createHandle<char   >(d); break;
         default:    ret = AF_ERR_NOT_SUPPORTED;    break;
         }
         std::swap(*result, out);

@@ -42,6 +42,9 @@ extern "C" {
     // image bilateral filter
     AFAPI af_err af_bilateral(af_array *out, const af_array in, const float spatial_sigma, const float chromatic_sigma, const bool isColor);
 
+    // gradient
+    AFAPI af_err af_gradient(af_array *grad_rows, af_array *grad_cols, const af_array in);
+
 #ifdef __cplusplus
 }
 #endif
