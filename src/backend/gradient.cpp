@@ -1,0 +1,45 @@
+#include <af/image.h>
+#include <af/defines.h>
+#include <err_common.hpp>
+#include <handle.hpp>
+#include <backend.hpp>
+#include <ArrayInfo.hpp>
+#include <gradient.hpp>
+
+using af::dim4;
+using namespace detail;
+
+template<typename T>
+static inline void gradient(af_array *grad0, af_array *grad1, const af_array in)
+{
+    gradient<T>(getWritableArray<T>(*grad0), getWritableArray<T>(*grad1), getArray<T>(in));
+}
+
+af_err af_gradient(af_array *grows, af_array *gcols, const af_array in)
+{
+    try {
+        ArrayInfo info = getInfo(in);
+        af_dtype type = info.getType();
+        af::dim4 idims = info.dims();
+
+        DIM_ASSERT(2, info.elements() > 0);
+
+        af_array grad0;
+        af_array grad1;
+        af_create_handle(&grad0, idims.ndims(), idims.get(), type);
+        af_create_handle(&grad1, idims.ndims(), idims.get(), type);
+
+        switch(type) {
+            case f32: gradient<float  >(&grad0, &grad1, in);  break;
+            case c32: gradient<cfloat >(&grad0, &grad1, in);  break;
+            case f64: gradient<double >(&grad0, &grad1, in);  break;
+            case c64: gradient<cdouble>(&grad0, &grad1, in);  break;
+            default:  TYPE_ERROR(1, type);
+        }
+        std::swap(*grows, grad0);
+        std::swap(*gcols, grad1);
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
