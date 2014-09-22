@@ -67,6 +67,8 @@ void gradient_kernel(__global T *d_grad0, const KParam grad0,
         sidx(ty, tx) = d_in[iIdx];
     }
 
+    barrier(CLK_LOCAL_MEM_FENCE);
+
     // Copy buffer zone data. Corner (0,0) etc, are not used.
     // Cols
     if(ty == 0) {

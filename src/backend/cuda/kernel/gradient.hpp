@@ -55,6 +55,8 @@ namespace cuda
             // Copy data to scratch space
             sidx(threadIdx.y, threadIdx.x) = cond ? scalar<T>(0) : in.ptr[iIdx];
 
+            __syncthreads();
+
             // Copy buffer zone data. Corner (0,0) etc, are not used.
             // Cols
             if(threadIdx.y == 0) {
