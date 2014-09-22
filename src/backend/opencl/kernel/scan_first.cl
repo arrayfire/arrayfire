@@ -55,7 +55,7 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
         barrier(CLK_LOCAL_MEM_FENCE);
 
         for (int off = 1; off < DIMX; off *= 2) {
-            if (lidx >= off) val = binOp(val, lData0[lidx - off]);
+            if (lidx >= off) val = binOp(val, lData0[(int)lidx - off]);
             lData1[lidx] = val;
 
             // Swap the pointers to lData0, lData1
