@@ -3,6 +3,7 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <medfilt.hpp>
+#include <kernel/medfilt.hpp>
 #include <err_cuda.hpp>
 
 using af::dim4;
@@ -13,8 +14,14 @@ namespace cuda
 template<typename T, af_pad_type pad>
 Array<T> * medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
 {
-    Array<T> * out = 0;
-    CUDA_NOT_SUPPORTED();
+    ARG_ASSERT(2, (w_len<=kernel::MAX_MEDFILTER_LEN));
+
+    const dim4 dims     = in.dims();
+
+    Array<T> * out      = createEmptyArray<T>(dims);
+
+    kernel::medfilt<T, pad>(*out, in, w_len, w_wid);
+
     return out;
 }
 
