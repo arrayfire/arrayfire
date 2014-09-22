@@ -51,15 +51,13 @@ Array<T> * medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
                             break;
                         case AF_SYMMETRIC:
                             {
-                                dim_type cdelta = abs(wj-w_wid/2);
-
                                 if (im_col < 0) {
-                                    im_col = col + cdelta;
+                                    im_col *= -1;
                                     isColOff = true;
                                 }
 
                                 if (im_col>=dims[1]) {
-                                    im_col = col - cdelta;
+                                    im_col = 2*(dims[1]-1) - im_col;
                                     isColOff = true;
                                 }
 
@@ -82,15 +80,13 @@ Array<T> * medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
                                 break;
                             case AF_SYMMETRIC:
                                 {
-                                    dim_type rdelta = abs(wi-w_len/2);
-
                                     if (im_row < 0) {
-                                        im_row = row + rdelta;
+                                        im_row *= -1;
                                         isRowOff = true;
                                     }
 
                                     if (im_row>=dims[0]) {
-                                        im_row = row - rdelta;
+                                        im_row = 2*(dims[0]-1) - im_row;
                                         isRowOff = true;
                                     }
 
@@ -99,7 +95,7 @@ Array<T> * medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
                                 break;
                         }
 
-                        if(isColOff || isRowOff) {
+                        if(isRowOff || isColOff) {
                             switch(pad) {
                                 case AF_ZERO:
                                     wind_vals.push_back(0);
