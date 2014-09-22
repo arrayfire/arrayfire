@@ -61,14 +61,14 @@ TYPED_TEST(MedianFilter, ZERO_PAD_3x3)
     medfiltTest<TypeParam>(string(TEST_DIR"/medianfilter/zero_pad_3x3_window.test"), 3, 3, AF_ZERO);
 }
 
-TYPED_TEST(MedianFilter, BATCH_ZERO_PAD_3x3)
-{
-    medfiltTest<TypeParam>(string(TEST_DIR"/medianfilter/batch_zero_pad_3x3_window.test"), 3, 3, AF_ZERO);
-}
-
 TYPED_TEST(MedianFilter, SYMMETRIC_PAD_3x3)
 {
     medfiltTest<TypeParam>(string(TEST_DIR"/medianfilter/symmetric_pad_3x3_window.test"), 3, 3, AF_SYMMETRIC);
+}
+
+TYPED_TEST(MedianFilter, BATCH_ZERO_PAD_3x3)
+{
+    medfiltTest<TypeParam>(string(TEST_DIR"/medianfilter/batch_zero_pad_3x3_window.test"), 3, 3, AF_ZERO);
 }
 
 TYPED_TEST(MedianFilter, BATCH_SYMMETRIC_PAD_3x3)

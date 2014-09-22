@@ -15,6 +15,7 @@ static af_array medfilt(af_array const &in, dim_type w_len, dim_type w_wid, af_p
     switch(edge_pad) {
         case AF_ZERO     : return getHandle<T>(*medfilt<T, AF_ZERO     >(getArray<T>(in), w_len, w_wid)); break;
         case AF_SYMMETRIC: return getHandle<T>(*medfilt<T, AF_SYMMETRIC>(getArray<T>(in), w_len, w_wid)); break;
+        default          : return getHandle<T>(*medfilt<T, AF_ZERO     >(getArray<T>(in), w_len, w_wid)); break;
     }
 }
 
