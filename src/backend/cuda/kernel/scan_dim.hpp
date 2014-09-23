@@ -234,26 +234,22 @@ namespace kernel
 
         blocks_all[dim] = divup(out.dims[dim], threads_y * REPEAT);
 
-        Param<To> tmp = out;
-
-        dim_type tmp_elements = 1;
-        if (blocks_all[dim] > 1) {
-            tmp.dims[dim] = blocks_all[dim];
-
-            for (int k = 0; k < 4; k++) tmp_elements *= tmp.dims[k];
-
-            CUDA_CHECK(cudaMalloc(&tmp.ptr, tmp_elements * sizeof(To)));
-
-            for (int k = dim + 1; k < 4; k++) tmp.strides[k] *= blocks_all[dim];
-        }
-
         if (blocks_all[dim] == 1) {
 
-            scan_dim_launcher<Ti, To, op, dim, true>(out, tmp, in,
+            scan_dim_launcher<Ti, To, op, dim, true>(out, out, in,
                                                      threads_y,
                                                      blocks_all);
 
         } else {
+
+            Param<To> tmp = out;
+
+            tmp.dims[dim] = blocks_all[dim];
+            tmp.strides[0] = 1;
+            for (int k = 1; k < 4; k++) tmp.strides[k] = tmp.strides[k - 1] * tmp.dims[k - 1];
+
+            dim_type tmp_elements = tmp.strides[3] * tmp.dims[3];
+            CUDA_CHECK(cudaMalloc(&tmp.ptr, tmp_elements * sizeof(To)));
 
             scan_dim_launcher<Ti, To, op, dim, false>(out, tmp, in,
                                                       threads_y,

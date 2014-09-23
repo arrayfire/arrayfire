@@ -189,16 +189,16 @@ namespace kernel
         } else {
 
             Param tmp = out;
-            // FIXME: Do I need to free this ?
-            tmp.data = cl::Buffer(getContext(), CL_MEM_READ_WRITE,
-                                  groups_x *
-                                  out.info.dims[1] *
-                                  out.info.dims[2] *
-                                  out.info.dims[3] *
-                                  sizeof(To));
-
             tmp.info.dims[0] = groups_x;
-            for (int k = 1; k < 4; k++) tmp.info.strides[k] *= groups_x;
+            tmp.info.strides[0] = 1;
+            for (int k = 1; k < 4; k++) {
+                tmp.info.strides[k] = tmp.info.strides[k - 1] * tmp.info.dims   [k - 1];
+            }
+
+            dim_type tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
+            // FIXME: Do I need to free this ?
+            tmp.data = cl::Buffer(getContext(), CL_MEM_READ_WRITE, tmp_elements * sizeof(To));
+
 
             scan_first_fn<Ti, To, op, false>(out, tmp, in,
                                              groups_x, groups_y,
