@@ -188,16 +188,15 @@ namespace kernel
 
             Param tmp = out;
 
-            dim_type tmp_elements = 1;
             tmp.info.dims[dim] = groups_all[dim];
+            tmp.info.strides[0] = 1;
+            for (int k = 1; k < 4; k++) {
+                tmp.info.strides[k] = tmp.info.strides[k - 1] * tmp.info.dims[k - 1];
+            }
 
-            for (int k = 0; k < 4; k++) tmp_elements *= tmp.info.dims[k];
-            for (int k = dim + 1; k < 4; k++) tmp.info.strides[k] *= groups_all[dim];
-
+            dim_type tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
             // FIXME: Do I need to free this ?
-            tmp.data = cl::Buffer(getContext(), CL_MEM_READ_WRITE,
-                                  tmp_elements * sizeof(To));
-
+            tmp.data = cl::Buffer(getContext(), CL_MEM_READ_WRITE, tmp_elements * sizeof(To));
 
             scan_dim_fn<Ti, To, op, dim, false>(out, tmp, in,
                                                 threads_y,
