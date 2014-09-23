@@ -28,7 +28,7 @@ static const dim_type THREADS_Y = 16;
 
 static const dim_type CUBE_X    =  8;
 static const dim_type CUBE_Y    =  8;
-static const dim_type CUBE_Z    =  8;
+static const dim_type CUBE_Z    =  4;
 
 template<typename T, bool isDilation, dim_type windLen>
 void morph(Param         out,
