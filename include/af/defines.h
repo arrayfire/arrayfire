@@ -80,9 +80,3 @@ typedef enum {
     AF_ZERO = 0,
     AF_SYMMETRIC
 } af_pad_type;
-
-typedef enum {
-    AF_R2C,
-    AF_C2R,
-    AF_C2C
-} af_fft_kind;
