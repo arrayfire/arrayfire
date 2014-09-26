@@ -2,7 +2,7 @@
 #include <err_common.hpp>
 
 #define OPENCL_NOT_SUPPORTED() do {                         \
-        throw SupportError(__func__, __LINE__, "OPENCL");   \
+        throw SupportError(__FILE__, __LINE__, "OPENCL");   \
     } while(0)
 
 #define CL_TO_AF_ERROR(ERR) do {                        \
