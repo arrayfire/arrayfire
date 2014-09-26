@@ -11,6 +11,7 @@
 
 namespace cuda
 {
+
     using af::dim4;
     template<typename T> class Array;
 
@@ -37,6 +38,10 @@ namespace cuda
     template<typename T>
     Array<T> *
     createSubArray(const Array<T>& parent, const af::dim4 &dims, const af::dim4 &offset, const af::dim4 &stride);
+
+    template<typename inType, typename outType>
+    Array<outType> *
+    createPaddedArray(Array<inType> const &in, dim4 const &dims, outType default_value, double factor=1.0);
 
     template<typename T>
     T* cudaMallocWrapper(const size_t &elements);
@@ -94,4 +99,5 @@ namespace cuda
                                            const dim4 &dims, const dim4 &offset, const dim4 &stride);
         friend void      destroyArray<T>(Array<T> &arr);
     };
+
 }
