@@ -12,7 +12,7 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
 
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);
-    const uint lid  = lidy * get_local_size(0) + lidx;
+    const  int lid  = lidy * get_local_size(0) + lidx;
 
     const uint zid = get_group_id(0) / groups_x;
     const uint wid = get_group_id(1) / groups_y;
@@ -32,10 +32,12 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
 
     bool cond_yzw = (yid < oInfo.dims[1]) && (zid < oInfo.dims[2]) && (wid < oInfo.dims[3]);
 
-    __local To l_val[SHARED_MEM_SIZE];
+    __local To l_val0[SHARED_MEM_SIZE];
+    __local To l_val1[SHARED_MEM_SIZE];
+    __local To *l_val = l_val0;
     __local To l_tmp[DIMY];
 
-    __local To *l_ptr = l_val + lidy * (2 * DIMX + 1);
+    bool flip = 0;
 
     const To init_val = init;
     uint id = xid;
@@ -49,16 +51,15 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
 
         bool cond = (cond_yzw && (id < oInfo.dims[0]));
         val = cond ? transform(iData[id]) : init_val;
-        l_ptr[lidx] = val;
+        l_val[lid] = val;
         barrier(CLK_LOCAL_MEM_FENCE);
 
-        uint start = 0;
         for (int off = 1; off < DIMX; off *= 2) {
+            if (lidx >= off) val = binOp(val, l_val[lid - off]);
 
-            if (lidx >= off) val = binOp(val, l_ptr[(start - off) + lidx]);
-            start = DIMX - start;
-            l_ptr[start + lidx] = val;
-
+            flip = 1 - flip;
+            l_val = flip ? l_val1 : l_val0;
+            l_val[lid] = val;
             barrier(CLK_LOCAL_MEM_FENCE);
         }
 
