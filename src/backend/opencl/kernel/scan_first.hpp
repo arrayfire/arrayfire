@@ -38,7 +38,7 @@ namespace kernel
         std::call_once(compileFlags[device], [device] () {
 
                 const uint threads_y = THREADS_PER_GROUP / threads_x;
-                const uint SHARED_MEM_SIZE = (threads_x + 1) * (2 * threads_y);
+                const uint SHARED_MEM_SIZE = (2 * threads_x + 1) * (threads_y);
 
                 Binary<To, op> scan;
                 ToNum<To> toNum;

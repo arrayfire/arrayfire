@@ -48,9 +48,7 @@ void scan_dim_kernel(__global To *oData, KParam oInfo,
     __local To l_val[THREADS_X * DIMY * 2];
     __local To l_tmp[THREADS_X];
 
-    const uint l_off = (DIMY * THREADS_X);
-    __local To *lData0 =  l_val + lid;
-    __local To *lData1 =  l_val + lid + l_off;
+    __local To *l_ptr =  l_val + lid;
 
     const To init_val  = init;
     To val = init_val;
@@ -62,17 +60,15 @@ void scan_dim_kernel(__global To *oData, KParam oInfo,
 
         bool cond = (is_valid) && (id_dim < out_dim);
         val = cond ? transform(*iData) : init_val;
-        *lData0 = val;
+        *l_ptr = val;
         barrier(CLK_LOCAL_MEM_FENCE);
 
+        uint start = 0;
         for (int off = 1; off < DIMY; off *= 2) {
-            if (lidy >= off) val = binOp(val, *(lData0 - off * THREADS_X));
-            *lData1 = val;
 
-            // Swap the pointers to lData0, lData1
-            __local To *lData2 = lData0;
-            lData0 = lData1;
-            lData1 = lData2;
+            if (lidy >= off) val = binOp(val, l_ptr[(start - off) * THREADS_X]);
+            start = DIMY - start;
+            l_ptr[start * THREADS_X] = val;
 
             barrier(CLK_LOCAL_MEM_FENCE);
         }
