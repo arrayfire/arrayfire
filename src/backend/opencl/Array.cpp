@@ -43,6 +43,19 @@ namespace opencl
         parent(&parnt)
     { }
 
+
+    template<typename T>
+    Array<T>::Array(Param &tmp) :
+        ArrayInfo(af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3]),
+                  af::dim4(0, 0, 0, 0),
+                  af::dim4(tmp.info.strides[0], tmp.info.strides[1],
+                           tmp.info.strides[2], tmp.info.strides[3]),
+                  (af_dtype)dtype_traits<T>::af_type),
+        data(tmp.data),
+        parent()
+    {
+    }
+
     template<typename T>
     Array<T>::~Array()
     { }
@@ -92,6 +105,14 @@ namespace opencl
     }
 
     template<typename T>
+    Array<T>*
+    createParamArray(Param &tmp)
+    {
+        Array<T> *out = new Array<T>(tmp);
+        return out;
+    }
+
+    template<typename T>
     void
     destroyArray(Array<T> &A)
     {
@@ -102,6 +123,7 @@ namespace opencl
     template       Array<T>*  createDataArray<T>  (const dim4 &size, const T * const data); \
     template       Array<T>*  createValueArray<T> (const dim4 &size, const T &value); \
     template       Array<T>*  createEmptyArray<T> (const dim4 &size);   \
+    template       Array<T>*  createParamArray<T> (Param &tmp);   \
     template       Array<T>*  createSubArray<T>   (const Array<T> &parent, const dim4 &dims, const dim4 &offset, const dim4 &stride); \
     template       void       destroyArray<T>     (Array<T> &A);        \
     template                  Array<T>::~Array();
