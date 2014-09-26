@@ -61,7 +61,7 @@ namespace kernel
     }
 
     template<typename T>
-    static void where(Param<uint> *out, CParam<T> in)
+    static void where(Param<uint> &out, CParam<T> in)
     {
         uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
         threads_x = std::min(threads_x, THREADS_PER_BLOCK);
@@ -110,13 +110,13 @@ namespace kernel
         CUDA_CHECK(cudaMemcpy(&total, rtmp.ptr + rtmp_elements - 1,
                               sizeof(uint), cudaMemcpyDeviceToHost));
 
-        CUDA_CHECK(cudaMalloc(&(out->ptr), total * sizeof(uint)));
+        CUDA_CHECK(cudaMalloc(&(out.ptr), total * sizeof(uint)));
 
-        out->dims[0] = total;
-        out->strides[0] = 1;
+        out.dims[0] = total;
+        out.strides[0] = 1;
         for (int k = 1; k < 4; k++) {
-            out->dims[k] = 1;
-            out->strides[k] = total;
+            out.dims[k] = 1;
+            out.strides[k] = total;
         }
 
         dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
@@ -125,7 +125,7 @@ namespace kernel
 
         uint lim = divup(otmp.dims[0], (threads_x * blocks_x));
 
-        (get_out_idx<T>)<<<blocks, threads>>>(out->ptr, otmp, rtmp, in, blocks_x, blocks_y, lim);
+        (get_out_idx<T>)<<<blocks, threads>>>(out.ptr, otmp, rtmp, in, blocks_x, blocks_y, lim);
         POST_LAUNCH_CHECK();
 
         CUDA_CHECK(cudaFree(rtmp.ptr));

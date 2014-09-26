@@ -15,7 +15,7 @@ namespace cuda
     Array<uint>* where(const Array<T> &in)
     {
         Param<uint> out;
-        kernel::where<T>(&out, in);
+        kernel::where<T>(out, in);
         return createParamArray<uint>(out);
     }
 
