@@ -1,10 +1,13 @@
+#pragma once
 #include <kernel_headers/memcopy.hpp>
-#include <cl.hpp>
-#include <platform.hpp>
+#include <kernel_headers/copy.hpp>
+#include <program.hpp>
 #include <traits.hpp>
 #include <sstream>
 #include <string>
 #include <dispatch.hpp>
+#include <Param.hpp>
+#include <debug_opencl.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -15,8 +18,10 @@ using std::string;
 
 namespace opencl
 {
+
 namespace kernel
 {
+
     typedef struct
     {
         dim_type dim[4];
@@ -67,5 +72,67 @@ namespace kernel
         memcopy_kernel(EnqueueArgs(getQueue(), global, local),
                        out, _ostrides, in, _idims, _istrides, offset, groups_0, groups_1);
     }
+
+    template<typename inType, typename outType>
+    void copy(Param dst, const Param src, dim_type ndims, double factor)
+    {
+        try {
+            static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+            static Program            cpyProgs[DeviceManager::MAX_DEVICES];
+            static Kernel           cpyKernels[DeviceManager::MAX_DEVICES];
+
+            int device = getActiveDeviceId();
+
+            std::call_once( compileFlags[device], [device] () {
+
+                        std::ostringstream options;
+                        options << " -D inType=" << dtype_traits<inType>::getName()
+                                << " -D outType="<< dtype_traits<outType>::getName()
+                                << " -D inType_" << dtype_traits<inType>::getName()
+                                << " -D outType_"<< dtype_traits<outType>::getName();
+
+                        buildProgram(cpyProgs[device],
+                            copy_cl,
+                            copy_cl_len,
+                            options.str());
+
+                        cpyKernels[device] = Kernel(cpyProgs[device], "copy");
+                    });
+
+            size_t local_size[] = {DIM0, DIM1};
+
+            if (ndims == 1) {
+                local_size[0] *= local_size[1];
+                local_size[1] = 1;
+            }
+
+            dim_type trgt_l = std::min(dst.info.dims[3], src.info.dims[3]);
+            dim_type trgt_k = std::min(dst.info.dims[2], src.info.dims[2]);
+            dim_type trgt_j = std::min(dst.info.dims[1], src.info.dims[1]);
+            dim_type trgt_i = std::min(dst.info.dims[0], src.info.dims[0]);
+
+            // FIXME: DO more work per block
+            NDRange local(local_size[0], local_size[1]);
+
+            size_t blk_x = divup(trgt_i, local_size[0]);
+            size_t blk_y = divup(trgt_j, local_size[1]);
+
+            NDRange global(blk_x * trgt_k * local_size[0],
+                    blk_y * trgt_l * local_size[1]);
+
+            dims_t trgt_dims = {{trgt_i, trgt_j, trgt_k, trgt_l}};
+
+            auto copyOp = make_kernel<Buffer, KParam, Buffer, KParam,
+                                      double, dims_t, dim_type, dim_type>(cpyKernels[device]);
+
+            copyOp(EnqueueArgs(getQueue(), global, local),
+                   dst.data, dst.info, src.data, src.info, factor, trgt_dims, blk_x, blk_y);
+        } catch (cl::Error err) {
+            CL_TO_AF_ERROR(err);
+            throw;
+        }
+    }
+
 }
+
 }

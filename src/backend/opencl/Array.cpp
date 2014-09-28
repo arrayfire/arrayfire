@@ -91,6 +91,17 @@ namespace opencl
         return out;
     }
 
+    template<typename inType, typename outType>
+    Array<outType> *
+    createPaddedArray(Array<inType> const &in, dim4 const &dims, outType default_value, double factor)
+    {
+        Array<outType> *ret = createValueArray<outType>(dims, default_value);
+
+        copy<inType, outType>(*ret, in, factor);
+
+        return ret;
+    }
+
     template<typename T>
     void
     destroyArray(Array<T> &A)
@@ -114,4 +125,29 @@ namespace opencl
     INSTANTIATE(uint)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
+
+#define INSTANTIATE_CREATE_PADDED_ARRAY(SRC_T) \
+    template Array<float  >* createPaddedArray<SRC_T, float  >(Array<SRC_T> const &src, dim4 const &dims, float   default_value, double factor); \
+    template Array<double >* createPaddedArray<SRC_T, double >(Array<SRC_T> const &src, dim4 const &dims, double  default_value, double factor); \
+    template Array<cfloat >* createPaddedArray<SRC_T, cfloat >(Array<SRC_T> const &src, dim4 const &dims, cfloat  default_value, double factor); \
+    template Array<cdouble>* createPaddedArray<SRC_T, cdouble>(Array<SRC_T> const &src, dim4 const &dims, cdouble default_value, double factor); \
+    template Array<int    >* createPaddedArray<SRC_T, int    >(Array<SRC_T> const &src, dim4 const &dims, int     default_value, double factor); \
+    template Array<uint   >* createPaddedArray<SRC_T, uint   >(Array<SRC_T> const &src, dim4 const &dims, uint    default_value, double factor); \
+    template Array<uchar  >* createPaddedArray<SRC_T, uchar  >(Array<SRC_T> const &src, dim4 const &dims, uchar   default_value, double factor); \
+    template Array<char   >* createPaddedArray<SRC_T, char   >(Array<SRC_T> const &src, dim4 const &dims, char    default_value, double factor);
+
+    INSTANTIATE_CREATE_PADDED_ARRAY(float )
+    INSTANTIATE_CREATE_PADDED_ARRAY(double)
+    INSTANTIATE_CREATE_PADDED_ARRAY(int   )
+    INSTANTIATE_CREATE_PADDED_ARRAY(uint  )
+    INSTANTIATE_CREATE_PADDED_ARRAY(uchar )
+    INSTANTIATE_CREATE_PADDED_ARRAY(char  )
+
+#define INSTANTIATE_CREATE_COMPLEX_PADDED_ARRAY(SRC_T) \
+    template Array<cfloat >* createPaddedArray<SRC_T, cfloat >(Array<SRC_T> const &src, dim4 const &dims, cfloat  default_value, double factor); \
+    template Array<cdouble>* createPaddedArray<SRC_T, cdouble>(Array<SRC_T> const &src, dim4 const &dims, cdouble default_value, double factor);
+
+    INSTANTIATE_CREATE_COMPLEX_PADDED_ARRAY(cfloat )
+    INSTANTIATE_CREATE_COMPLEX_PADDED_ARRAY(cdouble)
+
 }

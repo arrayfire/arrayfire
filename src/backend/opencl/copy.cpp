@@ -4,6 +4,7 @@
 #include <Array.hpp>
 #include <copy.hpp>
 #include <kernel/memcopy.hpp>
+#include <err_opencl.hpp>
 
 namespace opencl
 {
@@ -55,6 +56,13 @@ namespace opencl
         return out;
     }
 
+    template<typename inType, typename outType>
+    void copy(Array<outType> &dst, const Array<inType> &src, double factor)
+    {
+        ARG_ASSERT(1, (src.dims().ndims() == dst.dims().ndims()));
+
+        kernel::copy<inType, outType>(dst, src, src.dims().ndims(), factor);
+    }
 
 #define INSTANTIATE(T)                                                  \
     template void      copyData<T> (T *data, const Array<T> &from);     \
@@ -68,4 +76,29 @@ namespace opencl
     INSTANTIATE(uint)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
+
+#define INSTANTIATE_COPY(SRC_T)                                                       \
+    template void copy<SRC_T, float  >(Array<float  > &dst, const Array<SRC_T> &src, double factor); \
+    template void copy<SRC_T, double >(Array<double > &dst, const Array<SRC_T> &src, double factor); \
+    template void copy<SRC_T, cfloat >(Array<cfloat > &dst, const Array<SRC_T> &src, double factor); \
+    template void copy<SRC_T, cdouble>(Array<cdouble> &dst, const Array<SRC_T> &src, double factor); \
+    template void copy<SRC_T, int    >(Array<int    > &dst, const Array<SRC_T> &src, double factor); \
+    template void copy<SRC_T, uint   >(Array<uint   > &dst, const Array<SRC_T> &src, double factor); \
+    template void copy<SRC_T, uchar  >(Array<uchar  > &dst, const Array<SRC_T> &src, double factor); \
+    template void copy<SRC_T, char   >(Array<char   > &dst, const Array<SRC_T> &src, double factor);
+
+    INSTANTIATE_COPY(float )
+    INSTANTIATE_COPY(double)
+    INSTANTIATE_COPY(int   )
+    INSTANTIATE_COPY(uint  )
+    INSTANTIATE_COPY(uchar )
+    INSTANTIATE_COPY(char  )
+
+#define INSTANTIATE_COMPLEX_COPY(SRC_T)                                               \
+    template void copy<SRC_T, cfloat >(Array<cfloat > &dst, const Array<SRC_T> &src, double factor); \
+    template void copy<SRC_T, cdouble>(Array<cdouble> &dst, const Array<SRC_T> &src, double factor);
+
+    INSTANTIATE_COMPLEX_COPY(cfloat )
+    INSTANTIATE_COMPLEX_COPY(cdouble)
+
 }
