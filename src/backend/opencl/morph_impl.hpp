@@ -42,43 +42,7 @@ Array<T> * morph(const Array<T> &in, const Array<T> &mask)
     return out;
 }
 
-template<typename T, bool isDilation>
-Array<T> * morph3d(const Array<T> &in, const Array<T> &mask)
-{
-    const dim4 mdims    = mask.dims();
-
-    if (mdims[0]!=mdims[1] || mdims[0]!=mdims[2])
-        AF_ERROR("Only cube masks are supported in opencl morph currently", AF_ERR_SIZE);
-    if (mdims[0]>7)
-        AF_ERROR("Upto 7x7x7 kernels are only supported in opencl currently", AF_ERR_SIZE);
-
-    const dim4 dims     = in.dims();
-    if (dims[3]>1)
-        AF_ERROR("Batch not supported for volumetic morphological operations", AF_ERR_NOT_SUPPORTED);
-
-    Array<T>* out   = createEmptyArray<T>(dims);
-
-    switch(mdims[0]) {
-        case  3: kernel::morph3d<T, isDilation,  3>(*out, in, mask); break;
-        case  5: kernel::morph3d<T, isDilation,  5>(*out, in, mask); break;
-        case  7: kernel::morph3d<T, isDilation,  7>(*out, in, mask); break;
-        default: kernel::morph3d<T, isDilation,  3>(*out, in, mask); break;
-    }
-
-    return out;
 }
 
-#define INSTANTIATE(T)\
-    template Array<T> * morph  <T, true >(const Array<T> &in, const Array<T> &mask);\
-    template Array<T> * morph  <T, false>(const Array<T> &in, const Array<T> &mask);\
-    template Array<T> * morph3d<T, true >(const Array<T> &in, const Array<T> &mask);\
-    template Array<T> * morph3d<T, false>(const Array<T> &in, const Array<T> &mask);
-
-INSTANTIATE(float )
-INSTANTIATE(double)
-INSTANTIATE(char  )
-INSTANTIATE(int   )
-INSTANTIATE(uint  )
-INSTANTIATE(uchar )
-
-}
+#define INSTANTIATE(T, ISDILATE)                                                 \
+    template Array<T> * morph  <T, ISDILATE>(const Array<T> &in, const Array<T> &mask);
