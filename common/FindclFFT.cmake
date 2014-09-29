@@ -35,9 +35,19 @@ IF(CLFFT_INCLUDE_DIRS)
     set (CLFFT_FIND_QUIETLY TRUE)
 ENDIF (CLFFT_INCLUDE_DIRS)
 
+FIND_PATH(CLFFT_SOURCE_DIR
+        NAMES src/include/clFFT.h
+        HINTS ${CMAKE_SOURCE_DIR}/clFFT ${CMAKE_SOURCE_DIR}/../clFFT ${CMAKE_SOURCE_DIR}/../../clFFT
+        DOC "clFFT source directory.")
+
+FIND_PATH(CLFFT_BUILD_DIR
+        NAMES ./install_manifest.txt
+        HINTS ${CLFFT_SOURCE_DIR}/build ${CLFFT_SOURCE_DIR}/src/build
+        DOC "clFFT build directory.")
+
 FIND_PATH(CLFFT_ROOT_DIR
     NAMES include/clFFT.h
-    HINTS /usr/local/ $ENV{CLFFT_ROOT} ${CMAKE_SOURCE_DIR}/..  ${CMAKE_SOURCE_DIR}/../..
+    HINTS /usr/local/ $ENV{CLFFT_ROOT} ${CMAKE_SOURCE_DIR}/..  ${CMAKE_SOURCE_DIR}/../.. ${CLFFT_BUILD_DIR}/package
     DOC "clFFT root directory.")
 
 FIND_PATH(_CLFFT_INCLUDE_DIRS
