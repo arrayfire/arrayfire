@@ -4,5 +4,5 @@
 namespace cpu
 {
     template<typename T>
-    void sort(Array<T> &sx, Array<T> &ix, const Array<T> &in, const bool dir, const unsigned dim);
+    void sort(Array<T> &sx, Array<int> &ix, const Array<T> &in, const bool dir, const unsigned dim);
 }

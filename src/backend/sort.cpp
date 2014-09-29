@@ -10,9 +10,9 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
-static inline void sort(af_array *sx, af_array *ix, const af_array in, const bool dir, const bool dim)
+static inline void sort(af_array *sx, af_array *ix, const af_array in, const bool dir, const unsigned dim)
 {
-    sort<T>(getWritableArray<T>(*sx), getWritableArray<T>(*ix), getArray<T>(in), dir, dim);
+    sort<T>(getWritableArray<T>(*sx), getWritableArray<int>(*ix), getArray<T>(in), dir, dim);
 }
 
 af_err af_sort(af_array *sorted, af_array *indices, const af_array in, const bool dir, const unsigned dim)
@@ -29,14 +29,14 @@ af_err af_sort(af_array *sorted, af_array *indices, const af_array in, const boo
         af_array sx;
         af_array ix;
         af_create_handle(&sx, idims.ndims(), idims.get(), type);
-        af_create_handle(&ix, idims.ndims(), idims.get(), type);
+        af_create_handle(&ix, idims.ndims(), idims.get(), s32);
 
         switch(type) {
             case f32: sort<float  >(&sx, &ix, in, dir, dim);  break;
-            case c32: sort<cfloat >(&sx, &ix, in, dir, dim);  break;
+            // case c32: sort<cfloat >(&sx, &ix, in, dir, dim);  break;
             case f64: sort<double >(&sx, &ix, in, dir, dim);  break;
-            case c64: sort<cdouble>(&sx, &ix, in, dir, dim);  break;
-            case s32: sort<int    >(&sx, &ix, in, dir, dim);  break;
+            // case c64: sort<cdouble>(&sx, &ix, in, dir, dim);  break;
+            // case s32: sort<int    >(&sx, &ix, in, dir, dim);  break;
             case u32: sort<uint   >(&sx, &ix, in, dir, dim);  break;
             case s8:  sort<char   >(&sx, &ix, in, dir, dim);  break;
             case u8:  sort<uchar  >(&sx, &ix, in, dir, dim);  break;
