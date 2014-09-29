@@ -69,6 +69,8 @@ extern "C" {
     // Inclusive sum of all the elements along an array
     AFAPI af_err af_accum(af_array *out, const af_array in, const int dim);
 
+    AFAPI af_err af_where(af_array *idx, const af_array in);
+
     // Interpolation in 1D
     AFAPI af_err af_approx1(af_array *out, const af_array in, const af_array pos,
                             const af_interp_type method, const float offGrid);
