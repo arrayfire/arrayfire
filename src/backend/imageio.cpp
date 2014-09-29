@@ -145,7 +145,7 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
 /// Load a gray-scale image from disk.
 AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isColor)
 {
-    af_err ret;
+    af_err ret = AF_SUCCESS;
     try {
         // for statically linked FI
     #if defined(_WIN32) || defined(_MSC_VER)
