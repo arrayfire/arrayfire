@@ -2,6 +2,8 @@
 #include <backend.hpp>
 #include <dispatch.hpp>
 #include <backend.hpp>
+#include <Param.hpp>
+#include <debug_cuda.hpp>
 
 namespace cuda
 {
@@ -72,6 +74,123 @@ namespace kernel
         (memcopy_kernel<T>)<<<blocks, threads>>>(out, _ostrides,
                                                  in, _idims, _istrides,
                                                  blocks_x, blocks_y);
+    }
+
+
+    ////////////////////////////// BEGIN - templated help functions for copy_kernel ////////////////////////////////
+    template<typename T>
+    __inline__ __device__ static
+    T scale(T value, double factor) {
+        return (T)(value*factor);
+    }
+
+    template<>
+    __inline__ __device__ static
+    cfloat scale<cfloat>(cfloat value, double factor) {
+        return make_cuFloatComplex(value.x*factor, value.y*factor);
+    }
+
+    template<>
+    __inline__ __device__ static
+    cdouble scale<cdouble>(cdouble value, double factor) {
+        return make_cuDoubleComplex(value.x*factor, value.y*factor);
+    }
+
+    template<typename inType, typename outType>
+    __inline__ __device__ static
+    outType convertType(inType value) {
+        return (outType)value;
+    }
+
+    template<>
+    __inline__ __device__ static
+    cdouble convertType<cfloat, cdouble>(cfloat value) {
+        return cuComplexFloatToDouble(value);
+    }
+
+    template<>
+    __inline__ __device__ static
+    cfloat convertType<cdouble, cfloat>(cdouble value) {
+        return cuComplexDoubleToFloat(value);
+    }
+
+#define OTHER_SPECIALIZATIONS(IN_T)                  \
+    template<>                                      \
+    __inline__ __device__ static                    \
+    cfloat convertType<IN_T, cfloat>(IN_T value) {  \
+        return make_cuFloatComplex(value, 0.0f);    \
+    }                                               \
+                                                    \
+    template<>                                      \
+    __inline__ __device__ static                    \
+    cdouble convertType<IN_T, cdouble>(IN_T value) {\
+        return make_cuDoubleComplex(value, 0.0);    \
+    }
+
+    OTHER_SPECIALIZATIONS(float )
+    OTHER_SPECIALIZATIONS(double)
+    OTHER_SPECIALIZATIONS(int   )
+    OTHER_SPECIALIZATIONS(uint  )
+    OTHER_SPECIALIZATIONS(uchar )
+    OTHER_SPECIALIZATIONS(char  )
+    ////////////////////////////// END - templated help functions for copy_kernel //////////////////////////////////
+
+
+    template<typename inType, typename outType>
+    __global__ static void
+    copy_kernel(Param<outType> dst, CParam<inType> src, double factor, const dims_t trgt, uint blk_x, uint blk_y)
+    {
+        const uint lx = threadIdx.x;
+        const uint ly = threadIdx.y;
+
+        const uint gz = blockIdx.x / blk_x;
+        const uint gw = blockIdx.y / blk_y;
+        const uint blockIdx_x = blockIdx.x - (blk_x) * gz;
+        const uint blockIdx_y = blockIdx.y - (blk_y) * gw;
+        const uint gx = blockIdx_x * blockDim.x + lx;
+        const uint gy = blockIdx_y * blockDim.y + ly;
+
+        // FIXME: Do more work per block
+        const inType * in = src.ptr + (gw * src.strides[3] + gz * src.strides[2] + gy * src.strides[1]);
+        outType * out     = dst.ptr + (gw * dst.strides[3] + gz * dst.strides[2] + gy * dst.strides[1]);
+
+        dim_type istride0 = src.strides[0];
+        dim_type ostride0 = dst.strides[0];
+        if (gx < trgt.dim[0] &&
+            gy < trgt.dim[1] &&
+            gz < trgt.dim[2] &&
+            gw < trgt.dim[3]) {
+            out[gx * ostride0] = convertType<inType, outType>(scale<inType>(in[gx * istride0], factor));
+        }
+    }
+
+    template<typename inType, typename outType>
+    void copy(Param<outType> dst, CParam<inType> src, dim_type ndims, double factor)
+    {
+        dim3 threads(DIMX, DIMY);
+
+        if (ndims == 1) {
+            threads.x *= threads.y;
+            threads.y  = 1;
+        }
+
+        dim_type trgt_l = std::min(dst.dims[3], src.dims[3]);
+        dim_type trgt_k = std::min(dst.dims[2], src.dims[2]);
+        dim_type trgt_j = std::min(dst.dims[1], src.dims[1]);
+        dim_type trgt_i = std::min(dst.dims[0], src.dims[0]);
+
+        // FIXME: DO more work per block
+        uint blk_x = divup(trgt_i, threads.x);
+        uint blk_y = divup(trgt_j, threads.y);
+
+        dim3 blocks(blk_x * trgt_k,
+                    blk_y * trgt_l);
+
+        dims_t trgt_dims = {{trgt_i, trgt_j, trgt_k, trgt_l}};
+
+        (copy_kernel<inType, outType>)<<<blocks, threads>>>(dst, src, factor, trgt_dims, blk_x, blk_y);
+
+        POST_LAUNCH_CHECK();
     }
 
 }
