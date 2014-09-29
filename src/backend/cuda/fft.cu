@@ -123,17 +123,16 @@ void find_cufft_plan(cufftHandle &plan, int rank, int *n,
 template<typename T>
 struct cufft_transform;
 
-#define CUFFT_FUNC(TYPE, TRANSFORM_TYPE)            \
-template<>                                          \
-struct cufft_transform<TYPE>                        \
-{                                                   \
-    enum { type = CUFFT_##TRANSFORM_TYPE };         \
-    template<typename... Args>                      \
-    cufftResult                                     \
-    operator() (Args... args) {                     \
-        return cufftExec##TRANSFORM_TYPE(args...);  \
-    }                                               \
-};
+#define CUFFT_FUNC(T, TRANSFORM_TYPE)                               \
+    template<>                                                      \
+    struct cufft_transform<T>                                       \
+    {                                                               \
+        enum { type = CUFFT_##TRANSFORM_TYPE };                     \
+        cufftResult                                                 \
+            operator() (cufftHandle plan, T *in, T *out, int dir) { \
+            return cufftExec##TRANSFORM_TYPE(plan, in, out, dir);   \
+        }                                                           \
+    };
 
 CUFFT_FUNC(cfloat , C2C)
 CUFFT_FUNC(cdouble, Z2Z)
