@@ -92,7 +92,7 @@ namespace cpu
     void scaleArray(Array<T> &arr, double factor)
     {
         T * src_ptr = arr.get();
-        for(dim_type i=0; i<arr.elements(); ++i)
+        for(dim_type i=0; i< (dim_type)arr.elements(); ++i)
             src_ptr[i] *= factor;
     }
 
