@@ -85,46 +85,46 @@ namespace kernel
     }
 
     template<>
-    __inline__ __device__ static
+    __inline__ __device__
     cfloat scale<cfloat>(cfloat value, double factor) {
         return make_cuFloatComplex(value.x*factor, value.y*factor);
     }
 
     template<>
-    __inline__ __device__ static
+    __inline__ __device__
     cdouble scale<cdouble>(cdouble value, double factor) {
         return make_cuDoubleComplex(value.x*factor, value.y*factor);
     }
 
     template<typename inType, typename outType>
-    __inline__ __device__ static
+    __inline__ __device__
     outType convertType(inType value) {
         return (outType)value;
     }
 
     template<>
-    __inline__ __device__ static
+    __inline__ __device__
     cdouble convertType<cfloat, cdouble>(cfloat value) {
         return cuComplexFloatToDouble(value);
     }
 
     template<>
-    __inline__ __device__ static
+    __inline__ __device__
     cfloat convertType<cdouble, cfloat>(cdouble value) {
         return cuComplexDoubleToFloat(value);
     }
 
-#define OTHER_SPECIALIZATIONS(IN_T)                  \
-    template<>                                      \
-    __inline__ __device__ static                    \
-    cfloat convertType<IN_T, cfloat>(IN_T value) {  \
-        return make_cuFloatComplex(value, 0.0f);    \
-    }                                               \
-                                                    \
-    template<>                                      \
-    __inline__ __device__ static                    \
-    cdouble convertType<IN_T, cdouble>(IN_T value) {\
-        return make_cuDoubleComplex(value, 0.0);    \
+#define OTHER_SPECIALIZATIONS(IN_T)                     \
+    template<>                                          \
+    __inline__ __device__                               \
+    cfloat convertType<IN_T, cfloat>(IN_T value) {      \
+        return make_cuFloatComplex(value, 0.0f);        \
+    }                                                   \
+                                                        \
+    template<>                                          \
+    __inline__ __device__                               \
+    cdouble convertType<IN_T, cdouble>(IN_T value) {    \
+        return make_cuDoubleComplex(value, 0.0);        \
     }
 
     OTHER_SPECIALIZATIONS(float )
