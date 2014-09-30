@@ -14,10 +14,10 @@ namespace cpu
 {
     // Based off of http://stackoverflow.com/a/12399290
     template<typename T>
-    void sort(Array<T> &sx, Array<int> &ix, const Array<T> &in, const bool dir, const unsigned dim)
+    void sort(Array<T> &sx, Array<unsigned> &ix, const Array<T> &in, const bool dir, const unsigned dim)
     {
         // initialize original index locations
-        int *ixptr = ix.get();
+        unsigned *ixptr = ix.get();
         for (size_t i = 0; i != ix.elements(); ++i) ixptr[i] = i;
 
         const T *nptr = in.get();
@@ -25,7 +25,7 @@ namespace cpu
         if(dir) { op = less<T>(); }
         auto comparator = [&nptr, &op](size_t i1, size_t i2) {return op(nptr[i1], nptr[i2]);};
 
-        std::sort(ix.get(), ix.get() + ix.elements(), comparator);
+        std::stable_sort(ix.get(), ix.get() + ix.elements(), comparator);
 
         T *sxptr = sx.get();
 
@@ -36,14 +36,15 @@ namespace cpu
         return;
     }
 
-#define INSTANTIATE(T)                                                                                          \
-    template void sort<T>(Array<T> &sx, Array<int> &ix, const Array<T> &in, const bool dir, const unsigned dim);  \
+#define INSTANTIATE(T)                                                              \
+    template void sort<T>(Array<T> &sx, Array<unsigned> &ix, const Array<T> &in,    \
+                          const bool dir, const unsigned dim);                      \
 
     INSTANTIATE(float)
     INSTANTIATE(double)
-    // INSTANTIATE(cfloat)
-    // INSTANTIATE(cdouble)
-    // INSTANTIATE(int)
+    //INSTANTIATE(cfloat)
+    //INSTANTIATE(cdouble)
+    INSTANTIATE(int)
     INSTANTIATE(uint)
     INSTANTIATE(char)
     INSTANTIATE(uchar)
