@@ -3,6 +3,7 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <meanshift.hpp>
+#include <kernel/meanshift.hpp>
 #include <err_cuda.hpp>
 
 using af::dim4;
@@ -13,8 +14,12 @@ namespace cuda
 template<typename T, bool is_color>
 Array<T> * meanshift(const Array<T> &in, const float &s_sigma, const float &c_sigma, const unsigned iter)
 {
-    Array<T> *out = 0;
-    CUDA_NOT_SUPPORTED();
+    const dim4 dims = in.dims();
+
+    Array<T>* out   = createEmptyArray<T>(dims);
+
+    kernel::meanshift<T, is_color>(*out, in, s_sigma, c_sigma, iter);
+
     return out;
 }
 
