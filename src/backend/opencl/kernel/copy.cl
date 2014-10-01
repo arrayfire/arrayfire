@@ -48,6 +48,7 @@ void copy(__global outType * dst,
           KParam oInfo,
           __global const inType * src,
           KParam iInfo,
+          outType default_value,
           double factor, dims_t trgt,
           dim_type blk_x, dim_type blk_y)
 {
@@ -61,18 +62,25 @@ void copy(__global outType * dst,
     uint gx = blockIdx_x * get_local_size(0) + lx;
     uint gy = blockIdx_y * get_local_size(1) + ly;
 
-    // FIXME: Do more work per block
     __global const inType *in = src + (gw * iInfo.strides[3] + gz * iInfo.strides[2] + gy * iInfo.strides[1] + iInfo.offset);
     __global outType *out     = dst + (gw * oInfo.strides[3] + gz * oInfo.strides[2] + gy * oInfo.strides[1]);
 
     uint istride0 = iInfo.strides[0];
     uint ostride0 = oInfo.strides[0];
 
-    if (gx < trgt.dim[0] &&
-        gy < trgt.dim[1] &&
-        gz < trgt.dim[2] &&
-        gw < trgt.dim[3]) {
-        inType temp = in[gx*istride0];
-        out[gx*ostride0] = CONVERT(scale(temp, factor));
+    if (gy < oInfo.dims[1] && gz < oInfo.dims[2] && gw < oInfo.dims[3]) {
+        dim_type loop_offset = get_num_groups(0)*get_local_size(0);
+        bool cond = gy < trgt.dim[1] && gz < trgt.dim[2] && gw < trgt.dim[3];
+        for(dim_type rep=gx; rep<oInfo.dims[0]; rep+=loop_offset) {
+            outType temp  = default_value;
+#if SAME_DIMS
+            temp = CONVERT(scale(in[rep*istride0], factor));
+#else
+            if (rep < trgt.dim[0] && cond) {
+                temp = CONVERT(scale(in[rep*istride0], factor));
+            }
+#endif
+            out[rep*ostride0] = temp;
+        }
     }
 }

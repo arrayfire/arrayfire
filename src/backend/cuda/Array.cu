@@ -101,9 +101,9 @@ namespace cuda
     Array<outType> *
     createPaddedArray(Array<inType> const &in, dim4 const &dims, outType default_value, double factor)
     {
-        Array<outType> *ret = createValueArray<outType>(dims, default_value);
+        Array<outType> *ret = createEmptyArray<outType>(dims);
 
-        copy<inType, outType>(*ret, in, factor);
+        copy<inType, outType>(*ret, in, default_value, factor);
 
         return ret;
     }

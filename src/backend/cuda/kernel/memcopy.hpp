@@ -136,9 +136,10 @@ namespace kernel
     ////////////////////////////// END - templated help functions for copy_kernel //////////////////////////////////
 
 
-    template<typename inType, typename outType>
+    template<typename inType, typename outType, bool same_dims>
     __global__ static void
-    copy_kernel(Param<outType> dst, CParam<inType> src, double factor, const dims_t trgt, uint blk_x, uint blk_y)
+    copy_kernel(Param<outType> dst, CParam<inType> src, outType default_value,
+                double factor, const dims_t trgt, uint blk_x, uint blk_y)
     {
         const uint lx = threadIdx.x;
         const uint ly = threadIdx.y;
@@ -150,45 +151,56 @@ namespace kernel
         const uint gx = blockIdx_x * blockDim.x + lx;
         const uint gy = blockIdx_y * blockDim.y + ly;
 
-        // FIXME: Do more work per block
         const inType * in = src.ptr + (gw * src.strides[3] + gz * src.strides[2] + gy * src.strides[1]);
         outType * out     = dst.ptr + (gw * dst.strides[3] + gz * dst.strides[2] + gy * dst.strides[1]);
 
         dim_type istride0 = src.strides[0];
         dim_type ostride0 = dst.strides[0];
-        if (gx < trgt.dim[0] &&
-            gy < trgt.dim[1] &&
-            gz < trgt.dim[2] &&
-            gw < trgt.dim[3]) {
-            out[gx * ostride0] = convertType<inType, outType>(scale<inType>(in[gx * istride0], factor));
+
+        if (gy < dst.dims[1] && gz < dst.dims[2] && gw < dst.dims[3]) {
+            dim_type loop_offset = blockDim.x*gridDim.x;
+            bool cond = gy < trgt.dim[1] && gz < trgt.dim[2] && gw < trgt.dim[3];
+            for(dim_type rep=gx; rep<dst.dims[0]; rep+=loop_offset) {
+                outType temp = default_value;
+                if (same_dims || (rep < trgt.dim[0] && cond)) {
+                    temp = convertType<inType, outType>(scale<inType>(in[rep * istride0], factor));
+                }
+                out[rep*ostride0] = temp;
+            }
         }
     }
 
     template<typename inType, typename outType>
-    void copy(Param<outType> dst, CParam<inType> src, dim_type ndims, double factor)
+    void copy(Param<outType> dst, CParam<inType> src, dim_type ndims, outType default_value, double factor)
     {
-        dim3 threads(DIMX, DIMY);
+        static dim3 threads(DIMX, DIMY);
 
+        threads.x *= threads.y;
         if (ndims == 1) {
-            threads.x *= threads.y;
             threads.y  = 1;
         }
 
-        dim_type trgt_l = std::min(dst.dims[3], src.dims[3]);
-        dim_type trgt_k = std::min(dst.dims[2], src.dims[2]);
-        dim_type trgt_j = std::min(dst.dims[1], src.dims[1]);
-        dim_type trgt_i = std::min(dst.dims[0], src.dims[0]);
+        uint blk_x = divup(dst.dims[0], threads.x);
+        uint blk_y = divup(dst.dims[1], threads.y);
 
-        // FIXME: DO more work per block
-        uint blk_x = divup(trgt_i, threads.x);
-        uint blk_y = divup(trgt_j, threads.y);
+        dim3 blocks(blk_x * dst.dims[2],
+                    blk_y * dst.dims[3]);
 
-        dim3 blocks(blk_x * trgt_k,
-                    blk_y * trgt_l);
-
+        dim_type trgt_l  = std::min(dst.dims[3], src.dims[3]);
+        dim_type trgt_k  = std::min(dst.dims[2], src.dims[2]);
+        dim_type trgt_j  = std::min(dst.dims[1], src.dims[1]);
+        dim_type trgt_i  = std::min(dst.dims[0], src.dims[0]);
         dims_t trgt_dims = {{trgt_i, trgt_j, trgt_k, trgt_l}};
 
-        (copy_kernel<inType, outType>)<<<blocks, threads>>>(dst, src, factor, trgt_dims, blk_x, blk_y);
+        bool same_dims = ( (src.dims[0]==dst.dims[0]) &&
+                           (src.dims[1]==dst.dims[1]) &&
+                           (src.dims[2]==dst.dims[2]) &&
+                           (src.dims[3]==dst.dims[3]) );
+
+        if (same_dims)
+            (copy_kernel<inType, outType, true >)<<<blocks, threads>>>(dst, src, default_value, factor, trgt_dims, blk_x, blk_y);
+        else
+            (copy_kernel<inType, outType, false>)<<<blocks, threads>>>(dst, src, default_value, factor, trgt_dims, blk_x, blk_y);
 
         POST_LAUNCH_CHECK();
     }
