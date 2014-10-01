@@ -11,6 +11,6 @@ namespace cuda
     Array<T>* copyArray(const Array<T> &A);
 
     template<typename inType, typename outType>
-    void copy(Array<outType> &dst, const Array<inType> &src, double factor);
+    void copy(Array<outType> &dst, const Array<inType> &src, outType default_value, double factor);
 
 }
