@@ -58,9 +58,9 @@ namespace cpu
 
     INSTANTIATE(float)
     INSTANTIATE(double)
-    // INSTANTIATE(cfloat)
-    // INSTANTIATE(cdouble)
-    // INSTANTIATE(int)
+    //INSTANTIATE(cfloat)
+    //INSTANTIATE(cdouble)
+    INSTANTIATE(int)
     INSTANTIATE(uint)
     INSTANTIATE(char)
     INSTANTIATE(uchar)

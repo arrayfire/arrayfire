@@ -5,6 +5,7 @@
 #include <backend.hpp>
 #include <ArrayInfo.hpp>
 #include <sort.hpp>
+#include <copy.hpp>
 
 using af::dim4;
 using namespace detail;
@@ -25,6 +26,7 @@ af_err af_sort(af_array *sorted, af_array *indices, const af_array in, const boo
         DIM_ASSERT(2, info.elements() > 0);
         // Only Dim 0 supported
         ARG_ASSERT(4, dim == 0);
+        ARG_ASSERT(2, info.ndims() == 1);
 
         af_array sx;
         af_array ix;
@@ -33,10 +35,8 @@ af_err af_sort(af_array *sorted, af_array *indices, const af_array in, const boo
 
         switch(type) {
             case f32: sort<float  >(&sx, &ix, in, dir, dim);  break;
-            // case c32: sort<cfloat >(&sx, &ix, in, dir, dim);  break;
             case f64: sort<double >(&sx, &ix, in, dir, dim);  break;
-            // case c64: sort<cdouble>(&sx, &ix, in, dir, dim);  break;
-            // case s32: sort<int    >(&sx, &ix, in, dir, dim);  break;
+            case s32: sort<int    >(&sx, &ix, in, dir, dim);  break;
             case u32: sort<uint   >(&sx, &ix, in, dir, dim);  break;
             case s8:  sort<char   >(&sx, &ix, in, dir, dim);  break;
             case u8:  sort<uchar  >(&sx, &ix, in, dir, dim);  break;
@@ -49,4 +49,3 @@ af_err af_sort(af_array *sorted, af_array *indices, const af_array in, const boo
 
     return AF_SUCCESS;
 }
-
