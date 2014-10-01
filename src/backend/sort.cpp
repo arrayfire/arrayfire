@@ -12,7 +12,7 @@ using namespace detail;
 template<typename T>
 static inline void sort(af_array *sx, af_array *ix, const af_array in, const bool dir, const unsigned dim)
 {
-    sort<T>(getWritableArray<T>(*sx), getWritableArray<int>(*ix), getArray<T>(in), dir, dim);
+    sort<T>(getWritableArray<T>(*sx), getWritableArray<uint>(*ix), getArray<T>(in), dir, dim);
 }
 
 af_err af_sort(af_array *sorted, af_array *indices, const af_array in, const bool dir, const unsigned dim)
@@ -29,7 +29,7 @@ af_err af_sort(af_array *sorted, af_array *indices, const af_array in, const boo
         af_array sx;
         af_array ix;
         af_create_handle(&sx, idims.ndims(), idims.get(), type);
-        af_create_handle(&ix, idims.ndims(), idims.get(), s32);
+        af_create_handle(&ix, idims.ndims(), idims.get(), u32);
 
         switch(type) {
             case f32: sort<float  >(&sx, &ix, in, dir, dim);  break;
