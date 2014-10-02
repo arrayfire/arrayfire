@@ -18,9 +18,9 @@ Array<T> * morph(const Array<T> &in, const Array<T> &mask)
     const dim4 mdims    = mask.dims();
 
     if (mdims[0]!=mdims[1])
-        AF_ERROR("Only square masks are supported in cuda morph currently", AF_ERR_SIZE);
+        AF_ERROR("Only square masks are supported in opencl morph currently", AF_ERR_SIZE);
     if (mdims[0]>19)
-        AF_ERROR("Upto 19x19 square kernels are only supported in cuda currently", AF_ERR_SIZE);
+        AF_ERROR("Upto 19x19 square kernels are only supported in opencl currently", AF_ERR_SIZE);
 
     const dim4 dims = in.dims();
     Array<T>* out   = createEmptyArray<T>(dims);
@@ -48,9 +48,9 @@ Array<T> * morph3d(const Array<T> &in, const Array<T> &mask)
     const dim4 mdims    = mask.dims();
 
     if (mdims[0]!=mdims[1] || mdims[0]!=mdims[2])
-        AF_ERROR("Only cube masks are supported in cuda morph currently", AF_ERR_SIZE);
+        AF_ERROR("Only cube masks are supported in opencl morph currently", AF_ERR_SIZE);
     if (mdims[0]>7)
-        AF_ERROR("Upto 7x7x7 kernels are only supported in cuda currently", AF_ERR_SIZE);
+        AF_ERROR("Upto 7x7x7 kernels are only supported in opencl currently", AF_ERR_SIZE);
 
     const dim4 dims     = in.dims();
     if (dims[3]>1)

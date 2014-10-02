@@ -1,4 +1,6 @@
+#pragma once
 #include <stdio.h>
+#include <errorcodes.hpp>
 #include <err_common.hpp>
 
 #define OPENCL_NOT_SUPPORTED() do {                         \

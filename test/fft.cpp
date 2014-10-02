@@ -23,7 +23,7 @@ TEST(fft, Invalid_Array)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
-    ASSERT_EQ(AF_ERR_SIZE, af_fft(&outArray, inArray, AF_R2C, 1.0, 0));
+    ASSERT_EQ(AF_ERR_SIZE, af_fft(&outArray, inArray, 1.0, 0));
 }
 
 TEST(fft2, Invalid_Array)
@@ -37,7 +37,7 @@ TEST(fft2, Invalid_Array)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
-    ASSERT_EQ(AF_ERR_SIZE, af_fft2(&outArray, inArray, AF_R2C, 1.0, 0, 0));
+    ASSERT_EQ(AF_ERR_SIZE, af_fft2(&outArray, inArray, 1.0, 0, 0));
 }
 
 TEST(fft3, Invalid_Array)
@@ -51,7 +51,7 @@ TEST(fft3, Invalid_Array)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
-    ASSERT_EQ(AF_ERR_SIZE, af_fft3(&outArray, inArray, AF_R2C, 1.0, 0, 0, 0));
+    ASSERT_EQ(AF_ERR_SIZE, af_fft3(&outArray, inArray, 1.0, 0, 0, 0));
 }
 
 TEST(ifft1, Invalid_Array)
@@ -65,7 +65,7 @@ TEST(ifft1, Invalid_Array)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<af_cfloat>::af_type));
 
-    ASSERT_EQ(AF_ERR_SIZE, af_ifft(&outArray, inArray, AF_C2R, 0.01, 0));
+    ASSERT_EQ(AF_ERR_SIZE, af_ifft(&outArray, inArray, 0.01, 0));
 }
 
 TEST(ifft2, Invalid_Array)
@@ -79,7 +79,7 @@ TEST(ifft2, Invalid_Array)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<af_cfloat>::af_type));
 
-    ASSERT_EQ(AF_ERR_SIZE, af_ifft2(&outArray, inArray, AF_C2R, 0.01, 0, 0));
+    ASSERT_EQ(AF_ERR_SIZE, af_ifft2(&outArray, inArray, 0.01, 0, 0));
 }
 
 TEST(ifft3, Invalid_Array)
@@ -93,39 +93,11 @@ TEST(ifft3, Invalid_Array)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<af_cfloat>::af_type));
 
-    ASSERT_EQ(AF_ERR_SIZE, af_ifft3(&outArray, inArray, AF_C2R, 0.01, 0, 0, 0));
-}
-
-TEST(fft, Invalid_Kind)
-{
-    vector<float>   in(100,1);
-
-    af_array inArray   = 0;
-    af_array outArray  = 0;
-
-    af::dim4 dims(5,5,4,1);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
-
-    ASSERT_EQ(AF_ERR_ARG, af_fft3(&outArray, inArray, AF_C2R, 0.01, 0, 0, 0));
-}
-
-TEST(ifft, Invalid_Kind)
-{
-    vector<float>   in(100,1);
-
-    af_array inArray   = 0;
-    af_array outArray  = 0;
-
-    af::dim4 dims(5,5,1,1);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<af_cfloat>::af_type));
-
-    ASSERT_EQ(AF_ERR_ARG, af_ifft2(&outArray, inArray, AF_R2C, 0.01, 0, 0));
+    ASSERT_EQ(AF_ERR_SIZE, af_ifft3(&outArray, inArray, 0.01, 0, 0, 0));
 }
 
 template<typename inType, typename outType, bool isInverse>
-void fftTest(string pTestFile, af_fft_kind kind, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0)
+void fftTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0)
 {
     vector<af::dim4>        numDims;
     vector<vector<inType>>       in;
@@ -141,17 +113,21 @@ void fftTest(string pTestFile, af_fft_kind kind, dim_type pad0=0, dim_type pad1=
                 dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<inType>::af_type));
 
     if (isInverse){
+        double norm_factor = 1.0;
+#if defined(AF_OPENCL)
+        norm_factor *= (dims.elements());
+#endif
         switch(dims.ndims()) {
-            case 1 : ASSERT_EQ(AF_SUCCESS, af_ifft (&outArray, inArray, kind, 1.0, pad0));              break;
-            case 2 : ASSERT_EQ(AF_SUCCESS, af_ifft2(&outArray, inArray, kind, 1.0, pad0, pad1));        break;
-            case 3 : ASSERT_EQ(AF_SUCCESS, af_ifft3(&outArray, inArray, kind, 1.0, pad0, pad1, pad2));  break;
+            case 1 : ASSERT_EQ(AF_SUCCESS, af_ifft (&outArray, inArray, norm_factor, pad0));              break;
+            case 2 : ASSERT_EQ(AF_SUCCESS, af_ifft2(&outArray, inArray, norm_factor, pad0, pad1));        break;
+            case 3 : ASSERT_EQ(AF_SUCCESS, af_ifft3(&outArray, inArray, norm_factor, pad0, pad1, pad2));  break;
             default: throw std::runtime_error("This error shouldn't happen, pls check");
         }
     } else {
         switch(dims.ndims()) {
-            case 1 : ASSERT_EQ(AF_SUCCESS, af_fft (&outArray, inArray, kind, 1.0, pad0));               break;
-            case 2 : ASSERT_EQ(AF_SUCCESS, af_fft2(&outArray, inArray, kind, 1.0, pad0, pad1));         break;
-            case 3 : ASSERT_EQ(AF_SUCCESS, af_fft3(&outArray, inArray, kind, 1.0, pad0, pad1, pad2));   break;
+            case 1 : ASSERT_EQ(AF_SUCCESS, af_fft (&outArray, inArray, 1.0, pad0));               break;
+            case 2 : ASSERT_EQ(AF_SUCCESS, af_fft2(&outArray, inArray, 1.0, pad0, pad1));         break;
+            case 3 : ASSERT_EQ(AF_SUCCESS, af_fft3(&outArray, inArray, 1.0, pad0, pad1, pad2));   break;
             default: throw std::runtime_error("This error shouldn't happen, pls check");
         }
     }
@@ -189,48 +165,40 @@ void fftTest(string pTestFile, af_fft_kind kind, dim_type pad0=0, dim_type pad1=
     }
 
 // Real to complex transforms
-INSTANTIATE_TEST(fft ,  R2C_Float, false,  float,  af_cfloat, string(TEST_DIR"/signal/fft_r2c.test") , AF_R2C);
-INSTANTIATE_TEST(fft , R2C_Double, false, double, af_cdouble, string(TEST_DIR"/signal/fft_r2c.test") , AF_R2C);
-INSTANTIATE_TEST(fft2,  R2C_Float, false,  float,  af_cfloat, string(TEST_DIR"/signal/fft2_r2c.test"), AF_R2C);
-INSTANTIATE_TEST(fft2, R2C_Double, false, double, af_cdouble, string(TEST_DIR"/signal/fft2_r2c.test"), AF_R2C);
-INSTANTIATE_TEST(fft3,  R2C_Float, false,  float,  af_cfloat, string(TEST_DIR"/signal/fft3_r2c.test"), AF_R2C);
-INSTANTIATE_TEST(fft3, R2C_Double, false, double, af_cdouble, string(TEST_DIR"/signal/fft3_r2c.test"), AF_R2C);
+INSTANTIATE_TEST(fft ,  R2C_Float, false,  float,  af_cfloat, string(TEST_DIR"/signal/fft_r2c.test") );
+INSTANTIATE_TEST(fft , R2C_Double, false, double, af_cdouble, string(TEST_DIR"/signal/fft_r2c.test") );
+INSTANTIATE_TEST(fft2,  R2C_Float, false,  float,  af_cfloat, string(TEST_DIR"/signal/fft2_r2c.test"));
+INSTANTIATE_TEST(fft2, R2C_Double, false, double, af_cdouble, string(TEST_DIR"/signal/fft2_r2c.test"));
+INSTANTIATE_TEST(fft3,  R2C_Float, false,  float,  af_cfloat, string(TEST_DIR"/signal/fft3_r2c.test"));
+INSTANTIATE_TEST(fft3, R2C_Double, false, double, af_cdouble, string(TEST_DIR"/signal/fft3_r2c.test"));
 
 // complex to complex transforms
-INSTANTIATE_TEST(fft ,  C2C_Float, false,  af_cfloat,  af_cfloat, string(TEST_DIR"/signal/fft_c2c.test") , AF_C2C);
-INSTANTIATE_TEST(fft , C2C_Double, false, af_cdouble, af_cdouble, string(TEST_DIR"/signal/fft_c2c.test") , AF_C2C);
-INSTANTIATE_TEST(fft2,  C2C_Float, false,  af_cfloat,  af_cfloat, string(TEST_DIR"/signal/fft2_c2c.test"), AF_C2C);
-INSTANTIATE_TEST(fft2, C2C_Double, false, af_cdouble, af_cdouble, string(TEST_DIR"/signal/fft2_c2c.test"), AF_C2C);
-INSTANTIATE_TEST(fft3,  C2C_Float, false,  af_cfloat,  af_cfloat, string(TEST_DIR"/signal/fft3_c2c.test"), AF_C2C);
-INSTANTIATE_TEST(fft3, C2C_Double, false, af_cdouble, af_cdouble, string(TEST_DIR"/signal/fft3_c2c.test"), AF_C2C);
+INSTANTIATE_TEST(fft ,  C2C_Float, false,  af_cfloat,  af_cfloat, string(TEST_DIR"/signal/fft_c2c.test") );
+INSTANTIATE_TEST(fft , C2C_Double, false, af_cdouble, af_cdouble, string(TEST_DIR"/signal/fft_c2c.test") );
+INSTANTIATE_TEST(fft2,  C2C_Float, false,  af_cfloat,  af_cfloat, string(TEST_DIR"/signal/fft2_c2c.test"));
+INSTANTIATE_TEST(fft2, C2C_Double, false, af_cdouble, af_cdouble, string(TEST_DIR"/signal/fft2_c2c.test"));
+INSTANTIATE_TEST(fft3,  C2C_Float, false,  af_cfloat,  af_cfloat, string(TEST_DIR"/signal/fft3_c2c.test"));
+INSTANTIATE_TEST(fft3, C2C_Double, false, af_cdouble, af_cdouble, string(TEST_DIR"/signal/fft3_c2c.test"));
 
 // transforms on padded and truncated arrays
-INSTANTIATE_TEST(fft2,  R2C_Float_Trunc, false,  float,  af_cfloat, string(TEST_DIR"/signal/fft2_r2c_trunc.test"), AF_R2C, 16, 16);
-INSTANTIATE_TEST(fft2, R2C_Double_Trunc, false, double, af_cdouble, string(TEST_DIR"/signal/fft2_r2c_trunc.test"), AF_R2C, 16, 16);
+INSTANTIATE_TEST(fft2,  R2C_Float_Trunc, false,  float,  af_cfloat, string(TEST_DIR"/signal/fft2_r2c_trunc.test"), 16, 16);
+INSTANTIATE_TEST(fft2, R2C_Double_Trunc, false, double, af_cdouble, string(TEST_DIR"/signal/fft2_r2c_trunc.test"), 16, 16);
 
-INSTANTIATE_TEST(fft2,  C2C_Float_Pad, false,  af_cfloat,  af_cfloat, string(TEST_DIR"/signal/fft2_c2c_pad.test"), AF_C2C, 16, 16);
-INSTANTIATE_TEST(fft2, C2C_Double_Pad, false, af_cdouble, af_cdouble, string(TEST_DIR"/signal/fft2_c2c_pad.test"), AF_C2C, 16, 16);
+INSTANTIATE_TEST(fft2,  C2C_Float_Pad, false,  af_cfloat,  af_cfloat, string(TEST_DIR"/signal/fft2_c2c_pad.test"), 16, 16);
+INSTANTIATE_TEST(fft2, C2C_Double_Pad, false, af_cdouble, af_cdouble, string(TEST_DIR"/signal/fft2_c2c_pad.test"), 16, 16);
 
 // inverse transforms
-// complex to real transforms
-INSTANTIATE_TEST(ifft ,  C2R_Float, true,  af_cfloat,  float, string(TEST_DIR"/signal/ifft_c2r.test") , AF_C2R);
-INSTANTIATE_TEST(ifft , C2R_Double, true, af_cdouble, double, string(TEST_DIR"/signal/ifft_c2r.test") , AF_C2R);
-INSTANTIATE_TEST(ifft2,  C2R_Float, true,  af_cfloat,  float, string(TEST_DIR"/signal/ifft2_c2r.test"), AF_C2R);
-INSTANTIATE_TEST(ifft2, C2R_Double, true, af_cdouble, double, string(TEST_DIR"/signal/ifft2_c2r.test"), AF_C2R);
-INSTANTIATE_TEST(ifft3,  C2R_Float, true,  af_cfloat,  float, string(TEST_DIR"/signal/ifft3_c2r.test"), AF_C2R);
-INSTANTIATE_TEST(ifft3, C2R_Double, true, af_cdouble, double, string(TEST_DIR"/signal/ifft3_c2r.test"), AF_C2R);
-
 // complex to complex transforms
-INSTANTIATE_TEST(ifft ,  C2C_Float, true,  af_cfloat,  af_cfloat, string(TEST_DIR"/signal/ifft_c2c.test") , AF_C2C);
-INSTANTIATE_TEST(ifft , C2C_Double, true, af_cdouble, af_cdouble, string(TEST_DIR"/signal/ifft_c2c.test") , AF_C2C);
-INSTANTIATE_TEST(ifft2,  C2C_Float, true,  af_cfloat,  af_cfloat, string(TEST_DIR"/signal/ifft2_c2c.test"), AF_C2C);
-INSTANTIATE_TEST(ifft2, C2C_Double, true, af_cdouble, af_cdouble, string(TEST_DIR"/signal/ifft2_c2c.test"), AF_C2C);
-INSTANTIATE_TEST(ifft3,  C2C_Float, true,  af_cfloat,  af_cfloat, string(TEST_DIR"/signal/ifft3_c2c.test"), AF_C2C);
-INSTANTIATE_TEST(ifft3, C2C_Double, true, af_cdouble, af_cdouble, string(TEST_DIR"/signal/ifft3_c2c.test"), AF_C2C);
+INSTANTIATE_TEST(ifft ,  C2C_Float, true,  af_cfloat,  af_cfloat, string(TEST_DIR"/signal/ifft_c2c.test") );
+INSTANTIATE_TEST(ifft , C2C_Double, true, af_cdouble, af_cdouble, string(TEST_DIR"/signal/ifft_c2c.test") );
+INSTANTIATE_TEST(ifft2,  C2C_Float, true,  af_cfloat,  af_cfloat, string(TEST_DIR"/signal/ifft2_c2c.test"));
+INSTANTIATE_TEST(ifft2, C2C_Double, true, af_cdouble, af_cdouble, string(TEST_DIR"/signal/ifft2_c2c.test"));
+INSTANTIATE_TEST(ifft3,  C2C_Float, true,  af_cfloat,  af_cfloat, string(TEST_DIR"/signal/ifft3_c2c.test"));
+INSTANTIATE_TEST(ifft3, C2C_Double, true, af_cdouble, af_cdouble, string(TEST_DIR"/signal/ifft3_c2c.test"));
 
 
 template<typename inType, typename outType, int rank, bool isInverse>
-void fftBatchTest(string pTestFile, af_fft_kind kind, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0)
+void fftBatchTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0)
 {
     vector<af::dim4>        numDims;
     vector<vector<inType>>       in;
@@ -246,17 +214,23 @@ void fftBatchTest(string pTestFile, af_fft_kind kind, dim_type pad0=0, dim_type 
                 dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<inType>::af_type));
 
     if(isInverse) {
+        double norm_factor = 1.0;
+#if defined(AF_OPENCL)
+        dim_type cnt = dims.ndims();
+        for(dim_type r=0; r<cnt-1; r++)
+            norm_factor *= dims[r];
+#endif
         switch(rank) {
-            case 1 : ASSERT_EQ(AF_SUCCESS, af_ifft (&outArray, inArray, kind, 1.0, pad0));              break;
-            case 2 : ASSERT_EQ(AF_SUCCESS, af_ifft2(&outArray, inArray, kind, 1.0, pad0, pad1));        break;
-            case 3 : ASSERT_EQ(AF_SUCCESS, af_ifft3(&outArray, inArray, kind, 1.0, pad0, pad1, pad2));  break;
+            case 1 : ASSERT_EQ(AF_SUCCESS, af_ifft (&outArray, inArray, norm_factor, pad0));              break;
+            case 2 : ASSERT_EQ(AF_SUCCESS, af_ifft2(&outArray, inArray, norm_factor, pad0, pad1));        break;
+            case 3 : ASSERT_EQ(AF_SUCCESS, af_ifft3(&outArray, inArray, norm_factor, pad0, pad1, pad2));  break;
             default: throw std::runtime_error("This error shouldn't happen, pls check");
         }
     } else {
         switch(rank) {
-            case 1 : ASSERT_EQ(AF_SUCCESS, af_fft (&outArray, inArray, kind, 1.0, pad0));               break;
-            case 2 : ASSERT_EQ(AF_SUCCESS, af_fft2(&outArray, inArray, kind, 1.0, pad0, pad1));         break;
-            case 3 : ASSERT_EQ(AF_SUCCESS, af_fft3(&outArray, inArray, kind, 1.0, pad0, pad1, pad2));   break;
+            case 1 : ASSERT_EQ(AF_SUCCESS, af_fft (&outArray, inArray, 1.0, pad0));               break;
+            case 2 : ASSERT_EQ(AF_SUCCESS, af_fft2(&outArray, inArray, 1.0, pad0, pad1));         break;
+            case 3 : ASSERT_EQ(AF_SUCCESS, af_fft3(&outArray, inArray, 1.0, pad0, pad1, pad2));   break;
             default: throw std::runtime_error("This error shouldn't happen, pls check");
         }
     }
@@ -302,28 +276,23 @@ void fftBatchTest(string pTestFile, af_fft_kind kind, dim_type pad0=0, dim_type 
     }
 
 // real to complex transforms
-INSTANTIATE_BATCH_TEST(fft , R2C_Float, 1, false, float, af_cfloat, string(TEST_DIR"/signal/fft_r2c_batch.test") , AF_R2C);
-INSTANTIATE_BATCH_TEST(fft2, R2C_Float, 2, false, float, af_cfloat, string(TEST_DIR"/signal/fft2_r2c_batch.test"), AF_R2C);
-INSTANTIATE_BATCH_TEST(fft3, R2C_Float, 3, false, float, af_cfloat, string(TEST_DIR"/signal/fft3_r2c_batch.test"), AF_R2C);
+INSTANTIATE_BATCH_TEST(fft , R2C_Float, 1, false, float, af_cfloat, string(TEST_DIR"/signal/fft_r2c_batch.test") );
+INSTANTIATE_BATCH_TEST(fft2, R2C_Float, 2, false, float, af_cfloat, string(TEST_DIR"/signal/fft2_r2c_batch.test"));
+INSTANTIATE_BATCH_TEST(fft3, R2C_Float, 3, false, float, af_cfloat, string(TEST_DIR"/signal/fft3_r2c_batch.test"));
 
 // complex to complex transforms
-INSTANTIATE_BATCH_TEST(fft , C2C_Float, 1, false, af_cfloat, af_cfloat, string(TEST_DIR"/signal/fft_c2c_batch.test") , AF_C2C);
-INSTANTIATE_BATCH_TEST(fft2, C2C_Float, 2, false, af_cfloat, af_cfloat, string(TEST_DIR"/signal/fft2_c2c_batch.test"), AF_C2C);
-INSTANTIATE_BATCH_TEST(fft3, C2C_Float, 3, false, af_cfloat, af_cfloat, string(TEST_DIR"/signal/fft3_c2c_batch.test"), AF_C2C);
+INSTANTIATE_BATCH_TEST(fft , C2C_Float, 1, false, af_cfloat, af_cfloat, string(TEST_DIR"/signal/fft_c2c_batch.test") );
+INSTANTIATE_BATCH_TEST(fft2, C2C_Float, 2, false, af_cfloat, af_cfloat, string(TEST_DIR"/signal/fft2_c2c_batch.test"));
+INSTANTIATE_BATCH_TEST(fft3, C2C_Float, 3, false, af_cfloat, af_cfloat, string(TEST_DIR"/signal/fft3_c2c_batch.test"));
 
 // inverse transforms
-// complex to real transforms
-INSTANTIATE_BATCH_TEST(ifft , C2R_Float, 1, true, af_cfloat, float, string(TEST_DIR"/signal/ifft_c2r_batch.test") , AF_C2R);
-INSTANTIATE_BATCH_TEST(ifft2, C2R_Float, 2, true, af_cfloat, float, string(TEST_DIR"/signal/ifft2_c2r_batch.test"), AF_C2R);
-INSTANTIATE_BATCH_TEST(ifft3, C2R_Float, 3, true, af_cfloat, float, string(TEST_DIR"/signal/ifft3_c2r_batch.test"), AF_C2R);
-
 // complex to complex transforms
-INSTANTIATE_BATCH_TEST(ifft , C2C_Float, 1, true, af_cfloat, af_cfloat, string(TEST_DIR"/signal/ifft_c2c_batch.test") , AF_C2C);
-INSTANTIATE_BATCH_TEST(ifft2, C2C_Float, 2, true, af_cfloat, af_cfloat, string(TEST_DIR"/signal/ifft2_c2c_batch.test"), AF_C2C);
-INSTANTIATE_BATCH_TEST(ifft3, C2C_Float, 3, true, af_cfloat, af_cfloat, string(TEST_DIR"/signal/ifft3_c2c_batch.test"), AF_C2C);
+INSTANTIATE_BATCH_TEST(ifft , C2C_Float, 1, true, af_cfloat, af_cfloat, string(TEST_DIR"/signal/ifft_c2c_batch.test") );
+INSTANTIATE_BATCH_TEST(ifft2, C2C_Float, 2, true, af_cfloat, af_cfloat, string(TEST_DIR"/signal/ifft2_c2c_batch.test"));
+INSTANTIATE_BATCH_TEST(ifft3, C2C_Float, 3, true, af_cfloat, af_cfloat, string(TEST_DIR"/signal/ifft3_c2c_batch.test"));
 
 // transforms on padded and truncated arrays
-INSTANTIATE_BATCH_TEST(fft2,  R2C_Float_Trunc, 2, false,  float,  af_cfloat, string(TEST_DIR"/signal/fft2_r2c_trunc_batch.test"), AF_R2C, 16, 16);
-INSTANTIATE_BATCH_TEST(fft2, R2C_Double_Trunc, 2, false, double, af_cdouble, string(TEST_DIR"/signal/fft2_r2c_trunc_batch.test"), AF_R2C, 16, 16);
-INSTANTIATE_BATCH_TEST(fft2,  C2C_Float_Pad, 2, false,  af_cfloat,  af_cfloat, string(TEST_DIR"/signal/fft2_c2c_pad_batch.test"), AF_C2C, 16, 16);
-INSTANTIATE_BATCH_TEST(fft2, C2C_Double_Pad, 2, false, af_cdouble, af_cdouble, string(TEST_DIR"/signal/fft2_c2c_pad_batch.test"), AF_C2C, 16, 16);
+INSTANTIATE_BATCH_TEST(fft2,  R2C_Float_Trunc, 2, false,  float,  af_cfloat, string(TEST_DIR"/signal/fft2_r2c_trunc_batch.test"), 16, 16);
+INSTANTIATE_BATCH_TEST(fft2, R2C_Double_Trunc, 2, false, double, af_cdouble, string(TEST_DIR"/signal/fft2_r2c_trunc_batch.test"), 16, 16);
+INSTANTIATE_BATCH_TEST(fft2,  C2C_Float_Pad, 2, false,  af_cfloat,  af_cfloat, string(TEST_DIR"/signal/fft2_c2c_pad_batch.test"), 16, 16);
+INSTANTIATE_BATCH_TEST(fft2, C2C_Double_Pad, 2, false, af_cdouble, af_cdouble, string(TEST_DIR"/signal/fft2_c2c_pad_batch.test"), 16, 16);
