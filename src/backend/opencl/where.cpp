@@ -12,9 +12,10 @@ namespace opencl
     template<typename T>
     Array<uint>* where(const Array<T> &in)
     {
-        Param out;
-        kernel::where<T>(out, in);
-        return createParamArray<uint>(out);
+        Param Out;
+        Param In = in;
+        kernel::where<T>(Out, In);
+        return createParamArray<uint>(Out);
     }
 
 

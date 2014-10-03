@@ -70,7 +70,7 @@ namespace kernel
     template<typename Ti, typename To, af_op_t op, bool isFinalPass, uint threads_x>
     static void scan_first_launcher(Param &out,
                                     Param &tmp,
-                                    const Param in,
+                                    const Param &in,
                                     const uint groups_x,
                                     const uint groups_y)
     {
@@ -124,7 +124,7 @@ namespace kernel
     template<typename Ti, typename To, af_op_t op, bool isFinalPass>
     static void scan_first_fn(Param &out,
                               Param &tmp,
-                              const Param in,
+                              const Param &in,
                               const uint groups_x,
                               const uint groups_y,
                               const uint threads_x)

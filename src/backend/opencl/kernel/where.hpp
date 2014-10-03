@@ -27,8 +27,8 @@ namespace kernel
 
     template<typename T>
     static void get_out_idx(Buffer out_data,
-                            Param otmp, Param rtmp,
-                            Param in, uint threads_x,
+                            Param &otmp, Param &rtmp,
+                            Param &in, uint threads_x,
                             uint groups_x, uint groups_y)
     {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -75,7 +75,7 @@ namespace kernel
     }
 
     template<typename T>
-    static void where(Param &out, Param in)
+    static void where(Param &out, Param &in)
     {
         try {
             uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
