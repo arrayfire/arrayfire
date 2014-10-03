@@ -30,9 +30,9 @@ namespace opencl
 
         //FIXME: Add checks
         getQueue().enqueueReadBuffer(buf, CL_TRUE,
-                                      sizeof(T) * offset,
-                                      sizeof(T) * A.elements(),
-                                      data);
+                                     sizeof(T) * offset,
+                                     sizeof(T) * A.elements(),
+                                     data);
         if (out != nullptr) delete out;
 
         return;

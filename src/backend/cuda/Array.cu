@@ -53,6 +53,17 @@ namespace cuda
     { }
 
     template<typename T>
+    Array<T>::Array(Param<T> &tmp) :
+        ArrayInfo(af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3]),
+                  af::dim4(0, 0, 0, 0),
+                  af::dim4(tmp.strides[0], tmp.strides[1], tmp.strides[2], tmp.strides[3]),
+                  (af_dtype)dtype_traits<T>::af_type),
+        data(tmp.ptr),
+        parent()
+    {
+    }
+
+    template<typename T>
     Array<T>::~Array() { CUDA_CHECK(cudaFree(data)); }
 
     template<typename T>
@@ -109,6 +120,14 @@ namespace cuda
     }
 
     template<typename T>
+    Array<T>*
+    createParamArray(Param<T> &tmp)
+    {
+        Array<T> *out = new Array<T>(tmp);
+        return out;
+    }
+
+    template<typename T>
     void
     destroyArray(Array<T> &A)
     {
@@ -119,6 +138,7 @@ namespace cuda
     template       Array<T>*  createDataArray<T>  (const dim4 &size, const T * const data); \
     template       Array<T>*  createValueArray<T> (const dim4 &size, const T &value); \
     template       Array<T>*  createEmptyArray<T> (const dim4 &size);   \
+    template       Array<T>*  createParamArray<T> (Param<T> &tmp);           \
     template       Array<T>*  createSubArray<T>       (const Array<T> &parent, const dim4 &dims, const dim4 &offset, const dim4 &stride); \
     template       void       destroyArray<T>     (Array<T> &A);        \
     template                  Array<T>::~Array();

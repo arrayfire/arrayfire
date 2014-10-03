@@ -33,6 +33,11 @@ namespace opencl
     Array<T>*
     createEmptyArray(const af::dim4 &size);
 
+    // Create an Array object from Param<T>
+    template<typename T>
+    Array<T>*
+    createParamArray(Param &tmp);
+
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     void
@@ -56,6 +61,8 @@ namespace opencl
         explicit Array(af::dim4 dims, T val);
         explicit Array(af::dim4 dims, const T * const in_data);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
+        Array(Param &tmp);
+
     public:
 
         ~Array();
@@ -96,6 +103,7 @@ namespace opencl
         friend Array<T>* createEmptyArray<T>(const af::dim4 &size);
         friend Array<T>* createSubArray<T>(const Array<T>& parent,
                                            const dim4 &dims, const dim4 &offset, const dim4 &stride);
+        friend Array<T>* createParamArray<T>(Param &tmp);
         friend void      destroyArray<T>(Array<T> &arr);
     };
 }

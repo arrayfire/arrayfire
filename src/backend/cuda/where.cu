@@ -7,14 +7,16 @@
 #undef _GLIBCXX_USE_INT128
 #include <where.hpp>
 #include <complex>
+#include <kernel/where.hpp>
 
 namespace cuda
 {
     template<typename T>
     Array<uint>* where(const Array<T> &in)
     {
-        CUDA_NOT_SUPPORTED();
-        return NULL;
+        Param<uint> out;
+        kernel::where<T>(out, in);
+        return createParamArray<uint>(out);
     }
 
 

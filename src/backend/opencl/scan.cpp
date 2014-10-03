@@ -17,11 +17,13 @@ namespace opencl
         Array<To> *out = createEmptyArray<To>(in.dims());
 
         try {
+            Param Out = *out;
+            Param In  =   in;
             switch (dim) {
-            case 0: kernel::scan_first<Ti, To, op   >(*out, in); break;
-            case 1: kernel::scan_dim  <Ti, To, op, 1>(*out, in); break;
-            case 2: kernel::scan_dim  <Ti, To, op, 2>(*out, in); break;
-            case 3: kernel::scan_dim  <Ti, To, op, 3>(*out, in); break;
+            case 0: kernel::scan_first<Ti, To, op   >(Out, In); break;
+            case 1: kernel::scan_dim  <Ti, To, op, 1>(Out, In); break;
+            case 2: kernel::scan_dim  <Ti, To, op, 2>(Out, In); break;
+            case 3: kernel::scan_dim  <Ti, To, op, 3>(Out, In); break;
             }
         } catch (cl::Error &ex) {
 

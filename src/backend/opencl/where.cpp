@@ -5,14 +5,17 @@
 #include <err_opencl.hpp>
 #include <where.hpp>
 #include <complex>
+#include <kernel/where.hpp>
 
 namespace opencl
 {
     template<typename T>
     Array<uint>* where(const Array<T> &in)
     {
-        OPENCL_NOT_SUPPORTED();
-        return NULL;
+        Param Out;
+        Param In = in;
+        kernel::where<T>(Out, In);
+        return createParamArray<uint>(Out);
     }
 
 

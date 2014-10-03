@@ -64,10 +64,10 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass, uint threads_y>
-    void scan_dim_launcher(Param out,
-                           Param tmp,
-                           const Param in,
-                           const uint groups_all[4])
+    static void scan_dim_launcher(Param &out,
+                                  Param &tmp,
+                                  const Param &in,
+                                  const uint groups_all[4])
     {
         Kernel ker = get_scan_dim_kernels<Ti, To, op, dim, isFinalPass, threads_y>(0);
 
@@ -92,9 +92,9 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass, uint threads_y>
-    void bcast_dim_launcher(Param out,
-                            Param tmp,
-                            const uint groups_all[4])
+    static void bcast_dim_launcher(Param &out,
+                                   Param &tmp,
+                                   const uint groups_all[4])
     {
 
         Kernel ker = get_scan_dim_kernels<Ti, To, op, dim, isFinalPass, threads_y>(1);
@@ -119,11 +119,11 @@ namespace kernel
 
 
     template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass>
-    void scan_dim_fn(Param out,
-                     Param tmp,
-                     const Param in,
-                     const uint threads_y,
-                     const uint groups_all[4])
+    static void scan_dim_fn(Param &out,
+                            Param &tmp,
+                            const Param &in,
+                            const uint threads_y,
+                            const uint groups_all[4])
     {
 
         switch (threads_y) {
@@ -144,10 +144,10 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass>
-    void bcast_dim_fn(Param out,
-                      Param tmp,
-                      const uint threads_y,
-                      const uint groups_all[4])
+    static void bcast_dim_fn(Param &out,
+                             Param &tmp,
+                             const uint threads_y,
+                             const uint groups_all[4])
     {
 
         switch (threads_y) {
@@ -167,7 +167,7 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op, int dim>
-    void scan_dim(Param out, const Param in)
+    static void scan_dim(Param &out, const Param &in)
     {
         uint threads_y = std::min(THREADS_Y, nextpow2(out.info.dims[dim]));
         uint threads_x = THREADS_X;
