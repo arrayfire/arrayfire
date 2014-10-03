@@ -29,8 +29,7 @@ class Sort : public ::testing::Test
 };
 
 // create a list of types to be tested
-//typedef ::testing::Types<float, double, af_cfloat, af_cdouble> TestTypes;
-typedef ::testing::Types<float> TestTypes;
+typedef ::testing::Types<float, double, uint, int, uchar> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Sort, TestTypes);
