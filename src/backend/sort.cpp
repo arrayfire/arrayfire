@@ -26,7 +26,7 @@ af_err af_sort(af_array *sorted, af_array *indices, const af_array in, const boo
         DIM_ASSERT(2, info.elements() > 0);
         // Only Dim 0 supported
         ARG_ASSERT(4, dim == 0);
-        ARG_ASSERT(2, info.ndims() == 1);
+        ARG_ASSERT(2, info.ndims() <= 2);
 
         af_array sx;
         af_array ix;
