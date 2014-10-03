@@ -9,7 +9,6 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
                        uint groups_x, uint groups_y,
                        uint lim)
 {
-
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);
     const  int lid  = lidy * get_local_size(0) + lidx;
@@ -68,7 +67,7 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
         id += DIMX;
     }
 
-    if (!isFinalPass && isLast) {
+    if (!isFinalPass && cond_yzw && isLast) {
         tData[groupId_x] = val;
     }
 }

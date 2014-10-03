@@ -83,7 +83,7 @@ namespace kernel
             id += blockDim.x;
         }
 
-        if (!isFinalPass && isLast) {
+        if (!isFinalPass && cond_yzw && isLast) {
             tptr[blockIdx_x] = val;
         }
     }
