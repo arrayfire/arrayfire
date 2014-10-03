@@ -97,3 +97,5 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
 
     SORT_INIT(Sort0True,  sort, true, 0, 1);
     SORT_INIT(Sort0False, sort,false, 2, 3);
+
+    SORT_INIT(Sort2d0False, basic_2d, true, 0, 1);
