@@ -38,7 +38,7 @@ af_err af_sort(af_array *sorted, af_array *indices, const af_array in, const boo
             case f64: sort<double >(&sx, &ix, in, dir, dim);  break;
             case s32: sort<int    >(&sx, &ix, in, dir, dim);  break;
             case u32: sort<uint   >(&sx, &ix, in, dir, dim);  break;
-            case s8:  sort<char   >(&sx, &ix, in, dir, dim);  break;
+            // case s8:  sort<char   >(&sx, &ix, in, dir, dim);  break;
             case u8:  sort<uchar  >(&sx, &ix, in, dir, dim);  break;
             default:  TYPE_ERROR(1, type);
         }
