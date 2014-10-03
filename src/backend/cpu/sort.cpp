@@ -25,7 +25,11 @@ namespace cpu
 
         // initialize original index locations
         uint *ixptr = ix.get();
-        for (size_t i = 0; i != ix.elements(); ++i) ixptr[i] = i;
+        for (size_t j = 0; j != ix.dims()[1]; ++j) {
+            for (size_t i = 0; i != ix.dims()[0]; ++i){
+                ixptr[j*ix.dims()[0]+i] = i;
+            }
+        }
 
         const T *nptr = in.get();
         function<bool(size_t, size_t)> op = greater<T>();
@@ -33,21 +37,17 @@ namespace cpu
         auto comparator = [&nptr, &op](size_t i1, size_t i2) {return op(nptr[i1], nptr[i2]);};
 
         uint *begin_ptr = nullptr;
-        queue<future<void>> handles;
         for (size_t col = 0; col < in.dims()[1]; col++) {
             begin_ptr = in.dims()[0] * col + ixptr;
-            auto sorter = [=] () {
-                std::sort(begin_ptr, begin_ptr + in.dims()[0], comparator);
-            };
-            handles.push(async(std::launch::async, sorter));
+            std::sort(begin_ptr, begin_ptr + in.dims()[0], comparator);
         }
 
         T *sxptr = sx.get();
-
-        for (int i = 0; i < sx.elements(); i++) {
-            if(i%sx.dims()[0] == 0)
-                handles.pop();
-            sxptr[i] = nptr[ixptr[i]];
+        for (size_t j = 0; j != sx.dims()[1]; ++j) {
+            uint offset = j*ix.dims()[0];
+            for (size_t i = 0; i != sx.dims()[0]; ++i){
+                sxptr[offset+i] = nptr[offset + ixptr[offset+i]];
+            }
         }
 
         return;
