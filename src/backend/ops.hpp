@@ -6,14 +6,7 @@
 #define __DH__
 #endif
 
-typedef enum {
-    af_add_t = 0,
-    af_min_t = 1,
-    af_max_t = 2,
-    af_and_t = 3,
-    af_or_t = 4,
-    af_notzero_t = 5,
-} af_op_t;
+#include "optypes.hpp"
 
 using namespace detail;
 

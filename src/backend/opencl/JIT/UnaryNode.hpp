@@ -1,0 +1,81 @@
+#pragma once
+#include "Node.hpp"
+
+namespace opencl
+{
+
+namespace JIT
+{
+
+    class UnaryNode : public Node
+    {
+    private:
+        std::string m_op_str;
+        Node *m_child;
+
+    public:
+        UnaryNode(const char *out_type_str,
+                  const char *op_str,
+                  Node *child)
+            : Node(out_type_str),
+              m_op_str(op_str),
+              m_child(child)
+        {
+        }
+
+        void genParams(std::stringstream &Stream)
+        {
+            if (m_gen_param) return;
+            if (!(m_child->isGenParam())) m_child->genParams(Stream);
+            m_gen_param = true;
+        }
+
+        void genOffsets(std::stringstream &Stream)
+        {
+            if (m_gen_offset) return;
+            if (!(m_child->isGenOffset())) m_child->genOffsets(Stream);
+            m_gen_offset = true;
+        }
+
+        void genFuncName(std::stringstream &Stream)
+        {
+            if (m_gen_name) return;
+
+            Stream << "_";
+            Stream << m_op_str;
+            m_child->genFuncName(Stream);
+            Stream << "_";
+
+            m_gen_name = true;
+        }
+
+        void genFuncs(std::stringstream &Stream)
+        {
+            if (m_gen_func) return;
+
+            if (!(m_child->isGenFunc())) m_child->genFuncs(Stream);
+
+            Stream << m_type_str << " val" << m_id << " = "
+                   << m_op_str << "(val" << m_child->getId() << ");"
+                   << std::endl;
+
+            m_gen_func = true;
+        }
+
+        int setId(int id)
+        {
+            if (m_set_id) return id;
+
+            id = m_child->setId(id);
+
+            m_id = id;
+            m_set_id = true;
+
+            return m_id + 1;
+        }
+
+    };
+
+}
+
+}
