@@ -26,8 +26,8 @@ namespace opencl
         static const dim_type TX = 32;
         static const dim_type TY = 8;
 
-        template<typename T>
-        void sort0(Param sx, Param ix, const Param in, const bool dir)
+        template<typename T, bool DIR>
+        void sort0(Param sx, Param ix, const Param in)
         {
             try {
                 compute::command_queue c_queue(getQueue()());
@@ -35,24 +35,32 @@ namespace opencl
                 compute::buffer sx_buf(sx.data());
                 compute::buffer ix_buf(ix.data());
 
-                compute::vector<unsigned> ix_vec(
-                        compute::counting_iterator<int>(0),
-                        compute::counting_iterator<int>(in.info.dims[0]),
-                        c_queue);
+                for(dim_type w = 0; w < in.info.dims[3]; w++) {
+                    for(dim_type z = 0; z < in.info.dims[2]; z++) {
+                        for(dim_type y = 0; y < in.info.dims[1]; y++) {
 
-                if(dir) {
-                    compute::sort_by_key(
-                            compute::make_buffer_iterator<T>(sx_buf, 0),
-                            compute::make_buffer_iterator<T>(sx_buf, sx.info.dims[0]),
-                            ix_vec.begin(), c_queue);
-                } else {
-                    compute::sort_by_key(
-                            compute::make_buffer_iterator<T>(sx_buf, 0),
-                            compute::make_buffer_iterator<T>(sx_buf, sx.info.dims[0]),
-                            ix_vec.begin(), compute::greater<T>(), c_queue);
+                            dim_type sxOffset = w * sx.info.strides[3] + z * sx.info.strides[2]
+                                              + y * sx.info.strides[1];
+                            dim_type ixOffset = w * ix.info.strides[3] + z * ix.info.strides[2]
+                                              + y * ix.info.strides[1];
+
+                            compute::buffer_iterator<unsigned> ix_begin(ix_buf, ixOffset);
+                            compute::iota(ix_begin, ix_begin + in.info.dims[0], 0, c_queue);
+
+                            if(DIR) {
+                                compute::sort_by_key(
+                                        compute::make_buffer_iterator<T>(sx_buf, sxOffset),
+                                        compute::make_buffer_iterator<T>(sx_buf, sxOffset + sx.info.dims[0]),
+                                        ix_begin, compute::less<T>(), c_queue);
+                            } else {
+                                compute::sort_by_key(
+                                        compute::make_buffer_iterator<T>(sx_buf, sxOffset),
+                                        compute::make_buffer_iterator<T>(sx_buf, sxOffset + sx.info.dims[0]),
+                                        ix_begin, compute::greater<T>(), c_queue);
+                            }
+                        }
+                    }
                 }
-
-                ix_buf = ix_vec.get_buffer();
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {

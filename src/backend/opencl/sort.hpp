@@ -3,6 +3,6 @@
 
 namespace opencl
 {
-    template<typename T>
-    void sort(Array<T> &sx, Array<unsigned> &ix, const Array<T> &in, const bool dir, const unsigned dim);
+    template<typename T, bool DIR>
+    void sort(Array<T> &sx, Array<unsigned> &ix, const Array<T> &in, const unsigned dim);
 }

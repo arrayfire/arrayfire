@@ -39,8 +39,8 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
 {
     vector<af::dim4> numDims;
     vector<vector<T>> in;
-    vector<vector<T>> tests;
-    readTests<T, T, float>(pTestFile,numDims,in,tests);
+    vector<vector<float>> tests;
+    readTests<T, float, int>(pTestFile,numDims,in,tests);
 
     af::dim4 idims = numDims[0];
 
@@ -99,3 +99,15 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
     SORT_INIT(Sort0False, sort,false, 2, 3);
 
     SORT_INIT(Sort2d0False, basic_2d, true, 0, 1);
+
+    SORT_INIT(Sort10x10True,  sort_10x10, true,  0, 1);
+    SORT_INIT(Sort10x10False, sort_10x10, false, 2, 3);
+    SORT_INIT(Sort1000True,   sort_1000,  true,  0, 1);
+    SORT_INIT(Sort1000False,  sort_1000,  false, 2, 3);
+    SORT_INIT(SortMedTrue,    sort_med1,  true,  0, 1);
+    SORT_INIT(SortMedFalse,   sort_med1,  false, 2, 3);
+    SORT_INIT(SortMed5True,   sort_med,   true,  0, 1);
+    SORT_INIT(SortMed5False,  sort_med,   false, 2, 3);
+    // Takes too much time in current implementation. Enable when everything is parallel
+    //SORT_INIT(SortLargeTrue,  sort_large, true,  0, 1);
+    //SORT_INIT(SortLargeFalse, sort_large, false, 2, 3);
