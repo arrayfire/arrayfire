@@ -19,6 +19,9 @@ namespace opencl
     template Array<T>* arithOp<T, af_sub_t>(const Array<T> &lhs, const Array<T> &rhs); \
     template Array<T>* arithOp<T, af_mul_t>(const Array<T> &lhs, const Array<T> &rhs); \
     template Array<T>* arithOp<T, af_div_t>(const Array<T> &lhs, const Array<T> &rhs); \
+    template Array<T>* arithOp<T, af_min_t>(const Array<T> &lhs, const Array<T> &rhs); \
+    template Array<T>* arithOp<T, af_max_t>(const Array<T> &lhs, const Array<T> &rhs); \
+    template Array<T>* arithOp<T, af_pow_t>(const Array<T> &lhs, const Array<T> &rhs); \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

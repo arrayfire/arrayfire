@@ -15,7 +15,7 @@ namespace opencl
         }
     };
 
-#define BINARY(fn)                              \
+#define BINARY_TYPE_1(fn)                      \
     template<typename To, typename Ti>          \
     struct BinOp<To, Ti, af_##fn##_t>           \
     {                                           \
@@ -44,18 +44,78 @@ namespace opencl
     };                                          \
 
 
-BINARY(eq)
-BINARY(neq)
-BINARY(lt)
-BINARY(le)
-BINARY(gt)
-BINARY(ge)
-BINARY(add)
-BINARY(sub)
-BINARY(mul)
-BINARY(div)
+BINARY_TYPE_1(eq)
+BINARY_TYPE_1(neq)
+BINARY_TYPE_1(lt)
+BINARY_TYPE_1(le)
+BINARY_TYPE_1(gt)
+BINARY_TYPE_1(ge)
+BINARY_TYPE_1(add)
+BINARY_TYPE_1(sub)
+BINARY_TYPE_1(mul)
+BINARY_TYPE_1(div)
 
-#undef BINARY
+#undef BINARY_TYPE_1
+
+#define BINARY_TYPE_2(fn)                       \
+    template<typename To, typename Ti>          \
+    struct BinOp<To, Ti, af_##fn##_t>           \
+    {                                           \
+        const char *name()                      \
+        {                                       \
+            return #fn;                         \
+        }                                       \
+    };                                          \
+    template<typename To>                       \
+    struct BinOp<To, cfloat, af_##fn##_t>       \
+    {                                           \
+        const char *name()                      \
+        {                                       \
+            return "__c"#fn"f";                 \
+        }                                       \
+    };                                          \
+                                                \
+    template<typename To>                       \
+    struct BinOp<To, cdouble, af_##fn##_t>      \
+    {                                           \
+        const char *name()                      \
+        {                                       \
+            return "__c"#fn;                    \
+        }                                       \
+    };                                          \
+
+
+BINARY_TYPE_2(min)
+BINARY_TYPE_2(max)
+BINARY_TYPE_2(pow)
+
+template<typename Ti>
+struct BinOp<cfloat, Ti, af_cplx2_t>
+{
+    const char *name()
+    {
+        return "__cplx2f";
+    }
+};
+
+template<typename Ti>
+struct BinOp<cdouble, Ti, af_cplx2_t>
+{
+    const char *name()
+    {
+        return "__cplx2";
+    }
+};
+
+template<typename To, typename Ti>
+struct BinOp<To, Ti, af_cplx2_t>
+{
+    const char *name()
+    {
+        AF_ERROR("Invalid inputs to cplx2", AF_ERR_ARG);
+        return "noop";
+    }
+};
 
 template<typename To, typename Ti, af_op_t op>
 Array<To> *createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs)

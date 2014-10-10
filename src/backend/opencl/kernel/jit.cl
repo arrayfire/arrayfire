@@ -116,3 +116,35 @@ double2 __cdiv(double2 lhs, double2 rhs)
 #define __cle(lhs, rhs) (__cabs2(lhs) <= __cabs2(rhs))
 #define __cgt(lhs, rhs) (__cabs2(lhs) > __cabs2(rhs))
 #define __cge(lhs, rhs) (__cabs2(lhs) >= __cabs2(rhs))
+
+float2 __cminf(float2 lhs, float2 rhs)
+{
+    return __abs2(lhs) < __abs2(rhs) ? lhs : rhs;
+}
+
+float2 __cmaxf(float2 lhs, float2 rhs)
+{
+    return __abs2(lhs) > __abs2(rhs) ? lhs : rhs;
+}
+
+double2 __cmin(double2 lhs, double2 rhs)
+{
+    return __abs2(lhs) < __abs2(rhs) ? lhs : rhs;
+}
+
+double2 __cmax(double2 lhs, double2 rhs)
+{
+    return __abs2(lhs) > __abs2(rhs) ? lhs : rhs;
+}
+
+float2 __cplx2f(float lhs, float rhs)
+{
+    float2 out = {lhs, rhs};
+    return out;
+}
+
+double2 __cplx2(double lhs, double rhs)
+{
+    double2 out = {lhs, rhs};
+    return out;
+}

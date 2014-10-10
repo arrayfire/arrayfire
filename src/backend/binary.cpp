@@ -4,12 +4,13 @@
 #include <ArrayInfo.hpp>
 #include <optypes.hpp>
 #include <implicit.hpp>
-
-#include <arith.hpp>
-#include <logic.hpp>
 #include <err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
+
+#include <arith.hpp>
+#include <logic.hpp>
+#include <complex.hpp>
 
 using namespace detail;
 
@@ -65,6 +66,45 @@ af_err af_sub(af_array *out, const af_array lhs, const af_array rhs)
 af_err af_div(af_array *out, const af_array lhs, const af_array rhs)
 {
     return af_arith<af_div_t>(out, lhs, rhs);
+}
+
+af_err af_maxof(af_array *out, const af_array lhs, const af_array rhs)
+{
+    return af_arith<af_max_t>(out, lhs, rhs);
+}
+
+af_err af_minof(af_array *out, const af_array lhs, const af_array rhs)
+{
+    return af_arith<af_min_t>(out, lhs, rhs);
+}
+
+af_err af_pow(af_array *out, const af_array lhs, const af_array rhs)
+{
+    try {
+        ArrayInfo linfo = getInfo(lhs);
+        ArrayInfo rinfo = getInfo(rhs);
+        if (linfo.isComplex() || rinfo.isComplex()) {
+            AF_ERROR("Powers of Complex numbers not supported", AF_ERR_NOT_SUPPORTED);
+        }
+        return af_arith<af_pow_t>(out, lhs, rhs);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs)
+{
+    try {
+        ArrayInfo linfo = getInfo(lhs);
+        ArrayInfo rinfo = getInfo(rhs);
+
+        if (!(linfo.isRealFloating() || !(rinfo.isRealFloating()))) {
+            AF_ERROR("Only floating point arrays are supported for atan2 ", AF_ERR_NOT_SUPPORTED);
+        }
+        return af_arith<af_pow_t>(out, lhs, rhs);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
 }
 
 template<typename T, af_op_t op>
@@ -130,4 +170,38 @@ af_err af_lt(af_array *out, const af_array lhs, const af_array rhs)
 af_err af_le(af_array *out, const af_array lhs, const af_array rhs)
 {
     return af_logic<af_le_t>(out, lhs, rhs);
+}
+
+template<typename To, typename Ti>
+static inline af_array complexOp(const af_array lhs, const af_array rhs)
+{
+    return getHandle(*complexOp<To, Ti>(getArray<Ti>(lhs), getArray<Ti>(rhs)));
+}
+
+af_err af_cplx2(af_array *out, const af_array lhs, const af_array rhs)
+{
+    try {
+
+        af_dtype type = implicit(lhs, rhs);
+
+        if (type == c32 || type == c64) {
+            AF_ERROR("Inputs to cplx2 can not be of complex type", AF_ERR_ARG);
+        }
+
+        if (type != f64) type = f32;
+
+        const af_array left  = cast(lhs, type);
+        const af_array right = cast(rhs, type);
+
+        af_array res;
+        switch (type) {
+        case f32: res = complexOp<cfloat , float>(left, right); break;
+        case f64: res = complexOp<cdouble, double>(left, right); break;
+        default: TYPE_ERROR(0, type);
+        }
+
+        std::swap(*out, res);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
 }

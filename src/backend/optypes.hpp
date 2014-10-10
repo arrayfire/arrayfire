@@ -22,7 +22,7 @@ typedef enum {
     af_min_t,
     af_max_t,
     af_cplx2_t,
-    af_tan2_t,
+    af_atan2_t,
     af_pow_t,
 
     af_sin_t,
