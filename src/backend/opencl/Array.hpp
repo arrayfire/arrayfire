@@ -20,6 +20,7 @@ namespace opencl
 
     template<typename T> class Array;
 
+    void evalNodes(Param &out, JIT::Node *node);
 
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>

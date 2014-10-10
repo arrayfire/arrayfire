@@ -10,29 +10,51 @@ namespace JIT
     class ScalarNode : public Node
     {
     private:
-        const double m_val;
+        const cl_double2 m_val;
         const bool m_double;
+        const bool m_complex;
         std::string m_name_str;
-        std::string m_info_str;
         bool m_gen_name;
+        bool m_set_arg;
 
     public:
 
-        ScalarNode(const char *type_str, const double val, bool isDouble)
-            : Node(type_str),
+        ScalarNode(const double val, bool isDouble)
+            : Node("float"),
+              m_double(isDouble),
+              m_complex(false),
+              m_name_str("f"),
+              m_gen_name(false),
+              m_set_arg(false)
+        {
+            m_val = {val, 0};
+            if (isDouble) {
+                m_type_str = std::string("double");
+                m_name_str = std::string("d");
+            }
+        }
+
+        ScalarNode(const double2 val, bool isDouble)
+            : Node("float2"),
               m_val(val),
               m_double(isDouble),
-              m_name_str(),
-              m_info_str(),
-              m_gen_name(false)
-        {}
+              m_complex(true),
+              m_name_str("c"),
+              m_gen_name(false),
+              m_set_arg(false)
+        {
+            if (isDouble) {
+                m_type_str = std::string("double2");
+                m_name_str = std::string("z");
+            }
+        }
 
         void genKerName(std::stringstream &Stream, bool genInputs)
         {
             if (!genInputs) return;
             if (m_gen_name) return;
 
-            Stream << m_type_str;
+            Stream << m_name_str;
             m_gen_name = true;
         }
 
@@ -41,6 +63,33 @@ namespace JIT
             if (m_gen_param) return;
             Stream << m_type_str << " scalar" << m_id << ", " << std::endl;
             m_gen_param = true;
+        }
+
+        int setArgs(cl::Kernel &ker, int id)
+        {
+            if (m_set_arg) return id;
+
+            if (!m_complex) {
+
+                if (m_double) {
+                    ker.setArg(id, (double)(val.s0));
+                } else {
+                    ker.setArg(id, (float)(val.s0));
+                }
+
+            } else {
+
+                if (m_double) {
+                    ker.setArg(id, (val));
+                } else {
+                    float2 valf = {(float)val.s0, (float)val.s1};
+                    ker.setArg(id, valf);
+                }
+
+            }
+
+            m_set_arg = true;
+            return id + 1;
         }
 
         void genOffsets(std::stringstream &Stream)

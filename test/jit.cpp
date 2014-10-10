@@ -17,7 +17,7 @@ using af::af_cdouble;
 
 static void test()
 {
-    af_array lhs, rhs, out, out2, out3;
+    af_array lhs, rhs, out;
 
     dim_type num = 20;
     ASSERT_EQ(AF_SUCCESS, af_constant(&lhs, 1, 1, &num, f32));
@@ -27,10 +27,8 @@ static void test()
     af_print(rhs);
 
     ASSERT_EQ(AF_SUCCESS, af_add(&out, lhs, rhs));
-    ASSERT_EQ(AF_SUCCESS, af_mul(&out2, out, lhs));
-    ASSERT_EQ(AF_SUCCESS, af_sub(&out3, out, out2));
 
-    af_print(out3);
+    af_print(out);
 }
 
 TEST(jit, simple)

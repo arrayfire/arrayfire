@@ -34,6 +34,9 @@ namespace JIT
         virtual void genParams  (std::stringstream &Stream) {}
         virtual void genOffsets (std::stringstream &Stream) {}
         virtual void genFuncs   (std::stringstream &Stream) { m_gen_func = true;}
+
+        virtual int setArgs (cl::Kernel &ker, int id) { return id; }
+
         virtual int setId(int id) { m_set_id = true; return id; }
         std::string getTypeStr() { return m_type_str; }
 

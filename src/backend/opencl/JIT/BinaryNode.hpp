@@ -35,6 +35,13 @@ namespace JIT
             m_gen_param = true;
         }
 
+        int setArgs(cl::Kernel &ker, int id)
+        {
+            id = m_lhs->setArgs(ker, id);
+            id = m_rhs->setArgs(ker, id);
+            return id;
+        }
+
         void genOffsets(std::stringstream &Stream)
         {
             if (m_gen_offset) return;

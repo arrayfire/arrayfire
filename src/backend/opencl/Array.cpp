@@ -165,56 +165,17 @@ namespace opencl
     void Array<T>::eval()
     {
         if (isReady()) return;
-        std::stringstream Stream;
-
-        int id = node->setId(0) - 1;
-
-        Stream << "__kernel " << std::endl;
-        Stream << "Kernel_";
-        node->genKerName(Stream, false);
-        Stream << "_";
-        node->genKerName(Stream, true);
-        Stream << "(" << std::endl;
-
-        node->genParams(Stream);
-        Stream << "__global " << node->getTypeStr() << " *out, KParam oInfo," << std::endl;
-        Stream << "uint groups_0, uint groups_1)" << std::endl;
-
-        Stream << "{" << std::endl << std::endl;
-
-        Stream << "uint id2 = get_group_id(0) / groups_0;" << std::endl;
-        Stream << "uint id3 = get_group_id(1) / groups_1;" << std::endl;
-        Stream << "uint groupId_0 = get_group_id(0) - id2 * groups_0;" << std::endl;
-        Stream << "uint groupId_1 = get_group_id(1) - id3 * groups_1;" << std::endl;
-        Stream << "uint id1 = get_local_id(1) + groupId_1 * get_local_size(1);" << std::endl;
-        Stream << "uint id0 = get_local_id(0) + groupId_0 * get_local_size(0);" << std::endl;
-        Stream << std::endl;
-
-        Stream << "bool cond = " << std::endl;
-        Stream << "id0 < oInfo.dims[0] && " << std::endl;
-        Stream << "id1 < oInfo.dims[1] && " << std::endl;
-        Stream << "id2 < oInfo.dims[2] && " << std::endl;
-        Stream << "id3 < oInfo.dims[3];" << std::endl << std::endl;
-
-        Stream << "if (!cond) return;" << std::endl << std::endl;
-
-        node->genOffsets(Stream);
-        Stream << "int idx = ";
-        Stream << "oInfo.strides[3] * id3 + oInfo.strides[2] * id2 + ";
-        Stream << "oInfo.strides[1] * id1 + id0 + oInfo.offset;" << std::endl << std::endl;
-
-        node->genFuncs(Stream);
-        Stream << std::endl;
-
-        Stream << "out[idx] = val"
-               << id << ";"  << std::endl;
-
-        Stream << "}" << std::endl;
-
-        std::cout << Stream.str();
 
         data = cl::Buffer(getContext(), CL_MEM_READ_WRITE, elements() * sizeof(T));
-        set(data, 0, elements());
+
+        // Do not replace this with cast operator
+        KParam info = {{dims()[0], dims()[1], dims()[2], dims()[3]},
+                       {strides()[0], strides()[1], strides()[2], strides()[3]},
+                       0};
+        Param res = {data, info};
+
+        evalNodes(res, this->getNode());
+
         node = nullptr;
         ready = true;
     }

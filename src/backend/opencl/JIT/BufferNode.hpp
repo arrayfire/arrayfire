@@ -15,6 +15,7 @@ namespace JIT
         std::string m_idx_str;
         std::string m_info_str;
         bool m_gen_name;
+        bool m_set_arg;
 
     public:
 
@@ -26,7 +27,8 @@ namespace JIT
               m_param(param),
               m_idx_str(),
               m_info_str(),
-              m_gen_name(false)
+              m_gen_name(false),
+              m_set_arg(false)
         {}
 
         void genKerName(std::stringstream &Stream, bool genInputs)
@@ -46,6 +48,16 @@ namespace JIT
             m_gen_param = true;
         }
 
+        int setArgs(cl::Kernel &ker, int id)
+        {
+            if (m_set_arg) return id;
+
+            ker.setArg(id + 0, m_param.data);
+            ker.setArg(id + 1, m_param.info);
+
+            m_set_arg = true;
+            return id + 2;
+        }
         void genOffsets(std::stringstream &Stream)
         {
             if (m_gen_offset) return;
