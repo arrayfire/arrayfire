@@ -3,108 +3,15 @@
 #include <af/arith.h>
 #include <ArrayInfo.hpp>
 #include <optypes.hpp>
+#include <implicit.hpp>
+
 #include <arith.hpp>
 #include <logic.hpp>
-#include <cast.hpp>
 #include <err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
-#include <utility>
-#include <map>
+
 using namespace detail;
-
-static af_dtype implicit(const af_array lhs, const af_array rhs)
-{
-    ArrayInfo lInfo = getInfo(lhs);
-    ArrayInfo rInfo = getInfo(rhs);
-
-    if (lInfo.getType() == rInfo.getType()) {
-        return lInfo.getType();
-    }
-
-    if (lInfo.isComplex() || rInfo.isComplex()) {
-        if (lInfo.isDouble() && rInfo.isDouble()) return c64;
-        if (lInfo.isDouble() && rInfo.isBool()  ) return c64;
-        if (lInfo.isBool()   && rInfo.isDouble()) return c64;
-        return c32;
-    }
-
-    af_dtype ltype = lInfo.getType();
-    af_dtype rtype = lInfo.getType();
-
-    if ((ltype == u32) ||
-        (rtype == u32)) return u32;
-
-    if ((ltype == s32) ||
-        (rtype == s32)) return s32;
-
-    if ((ltype == u8 ) ||
-        (rtype == u8 )) return u8;
-
-    if ((ltype == s8 ) ||
-        (rtype == s8 )) return s8;
-
-    if ((ltype == b8 ) &&
-        (rtype == b8 )) return b8;
-
-    if (lInfo.isDouble() && rInfo.isDouble()) return f64;
-    if (lInfo.isDouble() && rInfo.isBool()  ) return f64;
-    if (lInfo.isBool()   && rInfo.isDouble()) return f64;
-
-    return f32;
-}
-
-
-template<typename To>
-static af_array cast(const af_array in)
-{
-    const ArrayInfo info = getInfo(in);
-    switch (info.getType()) {
-    case f32: return getHandle(*cast<To, float  >(getArray<float  >(in)));
-    case f64: return getHandle(*cast<To, double >(getArray<double >(in)));
-    case c32: return getHandle(*cast<To, cfloat >(getArray<cfloat >(in)));
-    case c64: return getHandle(*cast<To, cdouble>(getArray<cdouble>(in)));
-    case s32: return getHandle(*cast<To, int    >(getArray<int    >(in)));
-    case u32: return getHandle(*cast<To, uint   >(getArray<uint   >(in)));
-    case s8 : return getHandle(*cast<To, char   >(getArray<char   >(in)));
-    case u8 : return getHandle(*cast<To, uchar  >(getArray<uchar  >(in)));
-    case b8 : return getHandle(*cast<To, uchar  >(getArray<uchar  >(in)));
-    default: TYPE_ERROR(1, info.getType());
-    }
-}
-
-static af_array cast(const af_array in, const af_dtype type)
-{
-    const ArrayInfo info = getInfo(in);
-
-    if (info.getType() == type) {
-        return in;
-    }
-
-    switch (type) {
-    case f32: return cast<float   >(in);
-    case f64: return cast<double  >(in);
-    case c32: return cast<cfloat  >(in);
-    case c64: return cast<cdouble >(in);
-    case s32: return cast<int     >(in);
-    case u32: return cast<uint    >(in);
-    case s8 : return cast<char    >(in);
-    case u8 : return cast<uchar   >(in);
-    case b8 : return cast<uchar   >(in);
-    default: TYPE_ERROR(2, type);
-    }
-}
-
-af_err af_cast(af_array *out, const af_array in, const af_dtype type)
-{
-    try {
-        af_array res = cast(in, type);
-        std::swap(*out, res);
-    }
-    CATCHALL;
-
-    return AF_SUCCESS;
-}
 
 template<typename T, af_op_t op>
 static inline af_array arithOp(const af_array lhs, const af_array rhs)
