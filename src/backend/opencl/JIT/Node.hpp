@@ -30,10 +30,10 @@ namespace JIT
               m_gen_offset(false)
         {}
 
-        virtual void genKerName(std::stringstream &Stream, bool genInputs) {}
-        virtual void genParams  (std::stringstream &Stream) {}
-        virtual void genOffsets (std::stringstream &Stream) {}
-        virtual void genFuncs   (std::stringstream &Stream) { m_gen_func = true;}
+        virtual void genKerName(std::stringstream &kerStream, bool genInputs) {}
+        virtual void genParams  (std::stringstream &kerStream) {}
+        virtual void genOffsets (std::stringstream &kerStream) {}
+        virtual void genFuncs   (std::stringstream &kerStream) { m_gen_func = true;}
 
         virtual int setArgs (cl::Kernel &ker, int id) { return id; }
 

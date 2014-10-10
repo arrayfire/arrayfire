@@ -25,10 +25,10 @@ namespace JIT
         {
         }
 
-        void genParams(std::stringstream &Stream)
+        void genParams(std::stringstream &kerStream)
         {
             if (m_gen_param) return;
-            if (!(m_child->isGenParam())) m_child->genParams(Stream);
+            if (!(m_child->isGenParam())) m_child->genParams(kerStream);
             m_gen_param = true;
         }
 
@@ -37,31 +37,31 @@ namespace JIT
             return m_child->setArgs(ker, id);
         }
 
-        void genOffsets(std::stringstream &Stream)
+        void genOffsets(std::stringstream &kerStream)
         {
             if (m_gen_offset) return;
-            if (!(m_child->isGenOffset())) m_child->genOffsets(Stream);
+            if (!(m_child->isGenOffset())) m_child->genOffsets(kerStream);
             m_gen_offset = true;
         }
 
-        void genKerName(std::stringstream &Stream, bool genInputs)
+        void genKerName(std::stringstream &kerStream, bool genInputs)
         {
             if (!genInputs) {
                 // Make the hex representation of enum part of the Kernel name
-                Stream << std::setw(2) << std::setfill('0') << std::hex << m_op << std::dec;
+                kerStream << std::setw(2) << std::setfill('0') << std::hex << m_op << std::dec;
             }
-            m_child->genKerName(Stream, genInputs);
+            m_child->genKerName(kerStream, genInputs);
         }
 
-        void genFuncs(std::stringstream &Stream)
+        void genFuncs(std::stringstream &kerStream)
         {
             if (m_gen_func) return;
 
-            if (!(m_child->isGenFunc())) m_child->genFuncs(Stream);
+            if (!(m_child->isGenFunc())) m_child->genFuncs(kerStream);
 
-            Stream << m_type_str << " val" << m_id << " = "
-                   << m_op_str << "(val" << m_child->getId() << ");"
-                   << std::endl;
+            kerStream << m_type_str << " val" << m_id << " = "
+                      << m_op_str << "(val" << m_child->getId() << ");"
+                      << std::endl;
 
             m_gen_func = true;
         }

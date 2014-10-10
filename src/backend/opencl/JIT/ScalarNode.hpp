@@ -49,19 +49,19 @@ namespace JIT
             }
         }
 
-        void genKerName(std::stringstream &Stream, bool genInputs)
+        void genKerName(std::stringstream &kerStream, bool genInputs)
         {
             if (!genInputs) return;
             if (m_gen_name) return;
 
-            Stream << m_name_str;
+            kerStream << m_name_str;
             m_gen_name = true;
         }
 
-        void genParams(std::stringstream &Stream)
+        void genParams(std::stringstream &kerStream)
         {
             if (m_gen_param) return;
-            Stream << m_type_str << " scalar" << m_id << ", " << std::endl;
+            kerStream << m_type_str << " scalar" << m_id << ", " << std::endl;
             m_gen_param = true;
         }
 
@@ -92,19 +92,19 @@ namespace JIT
             return id + 1;
         }
 
-        void genOffsets(std::stringstream &Stream)
+        void genOffsets(std::stringstream &kerStream)
         {
             if (m_gen_offset) return;
             m_gen_offset = true;
         }
 
-        void genFuncs(std::stringstream &Stream)
+        void genFuncs(std::stringstream &kerStream)
         {
             if (m_gen_func) return;
 
-            Stream << m_type_str << " val" << m_id << " = "
-                   << "scalar" << m_id << ";"
-                   << std::endl;
+            kerStream << m_type_str << " val" << m_id << " = "
+                      << "scalar" << m_id << ";"
+                      << std::endl;
 
             m_gen_func = true;
         }

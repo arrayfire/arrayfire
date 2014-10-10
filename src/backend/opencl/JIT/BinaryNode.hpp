@@ -27,11 +27,11 @@ namespace JIT
         {
         }
 
-        void genParams(std::stringstream &Stream)
+        void genParams(std::stringstream &kerStream)
         {
             if (m_gen_param) return;
-            if (!(m_lhs->isGenParam())) m_lhs->genParams(Stream);
-            if (!(m_rhs->isGenParam())) m_rhs->genParams(Stream);
+            if (!(m_lhs->isGenParam())) m_lhs->genParams(kerStream);
+            if (!(m_rhs->isGenParam())) m_rhs->genParams(kerStream);
             m_gen_param = true;
         }
 
@@ -42,35 +42,35 @@ namespace JIT
             return id;
         }
 
-        void genOffsets(std::stringstream &Stream)
+        void genOffsets(std::stringstream &kerStream)
         {
             if (m_gen_offset) return;
-            if (!(m_lhs->isGenOffset())) m_lhs->genOffsets(Stream);
-            if (!(m_rhs->isGenOffset())) m_rhs->genOffsets(Stream);
+            if (!(m_lhs->isGenOffset())) m_lhs->genOffsets(kerStream);
+            if (!(m_rhs->isGenOffset())) m_rhs->genOffsets(kerStream);
             m_gen_offset = true;
         }
 
-        void genKerName(std::stringstream &Stream, bool genInputs)
+        void genKerName(std::stringstream &kerStream, bool genInputs)
         {
             if (!genInputs) {
                 // Make the hex representation of enum part of the Kernel name
-                Stream << std::setw(2) << std::setfill('0') << std::hex << m_op << std::dec;
+                kerStream << std::setw(2) << std::setfill('0') << std::hex << m_op << std::dec;
             }
-            m_lhs->genKerName(Stream, genInputs);
-            m_rhs->genKerName(Stream, genInputs);
+            m_lhs->genKerName(kerStream, genInputs);
+            m_rhs->genKerName(kerStream, genInputs);
         }
 
-        void genFuncs(std::stringstream &Stream)
+        void genFuncs(std::stringstream &kerStream)
         {
             if (m_gen_func) return;
 
-            if (!(m_lhs->isGenFunc())) m_lhs->genFuncs(Stream);
-            if (!(m_rhs->isGenFunc())) m_rhs->genFuncs(Stream);
+            if (!(m_lhs->isGenFunc())) m_lhs->genFuncs(kerStream);
+            if (!(m_rhs->isGenFunc())) m_rhs->genFuncs(kerStream);
 
-            Stream << m_type_str << " val" << m_id << " = "
-                   << m_op_str << "(val" << m_lhs->getId()
-                   << ", val" << m_rhs->getId() << ");"
-                   << std::endl;
+            kerStream << m_type_str << " val" << m_id << " = "
+                      << m_op_str << "(val" << m_lhs->getId()
+                      << ", val" << m_rhs->getId() << ");"
+                      << std::endl;
 
             m_gen_func = true;
         }

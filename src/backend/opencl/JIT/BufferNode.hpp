@@ -31,20 +31,20 @@ namespace JIT
               m_set_arg(false)
         {}
 
-        void genKerName(std::stringstream &Stream, bool genInputs)
+        void genKerName(std::stringstream &kerStream, bool genInputs)
         {
             if (!genInputs) return;
             if (m_gen_name) return;
 
-            Stream << m_name_str;
+            kerStream << m_name_str;
             m_gen_name = true;
         }
 
-        void genParams(std::stringstream &Stream)
+        void genParams(std::stringstream &kerStream)
         {
             if (m_gen_param) return;
-            Stream << "__global " << m_type_str << " *in" << m_id
-                   << ", KParam iInfo" << m_id << ", " << std::endl;
+            kerStream << "__global " << m_type_str << " *in" << m_id
+                      << ", KParam iInfo" << m_id << ", " << std::endl;
             m_gen_param = true;
         }
 
@@ -58,30 +58,30 @@ namespace JIT
             m_set_arg = true;
             return id + 2;
         }
-        void genOffsets(std::stringstream &Stream)
+        void genOffsets(std::stringstream &kerStream)
         {
             if (m_gen_offset) return;
 
             std::string idx_str = std::string("int idx") + std::to_string(m_id);
             std::string info_str = std::string("iInfo") + std::to_string(m_id);;
 
-            Stream << idx_str << " = "
-                   << info_str << ".strides[3] * id3 + "
-                   << info_str << ".strides[2] * id2 + "
-                   << info_str << ".strides[1] * id1 + "
-                   << "id0 + " << info_str << ".offset;"
-                   << std::endl;
+            kerStream << idx_str << " = "
+                      << info_str << ".strides[3] * id3 + "
+                      << info_str << ".strides[2] * id2 + "
+                      << info_str << ".strides[1] * id1 + "
+                      << "id0 + " << info_str << ".offset;"
+                      << std::endl;
 
             m_gen_offset = true;
         }
 
-        void genFuncs(std::stringstream &Stream)
+        void genFuncs(std::stringstream &kerStream)
         {
             if (m_gen_func) return;
 
-            Stream << m_type_str << " val" << m_id << " = "
-                   << "in" << m_id << "[idx" << m_id << "];"
-                   << std::endl;
+            kerStream << m_type_str << " val" << m_id << " = "
+                      << "in" << m_id << "[idx" << m_id << "];"
+                      << std::endl;
 
             m_gen_func = true;
         }
