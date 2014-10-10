@@ -80,7 +80,7 @@ static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs)
         const af_dtype type = implicit(lhs, rhs);
 
         const af_array left  = cast(lhs, type);
-        const af_array right = cast(lhs, type);
+        const af_array right = cast(rhs, type);
 
         af_array res;
         switch (type) {
