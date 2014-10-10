@@ -67,7 +67,7 @@ Array<To> *createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs)
     JIT::BinaryNode *node = new JIT::BinaryNode(dtype_traits<To>::getName(),
                                                 bop.name(),
                                                 lhs_node,
-                                                rhs_node);
+                                                rhs_node, (int)(op));
 
     return createNodeArray<To>(lhs.dims(), reinterpret_cast<JIT::Node *>(node));
 }

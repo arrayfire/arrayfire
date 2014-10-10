@@ -10,23 +10,31 @@ namespace JIT
     class BufferNode : public Node
     {
     private:
-        const Param m_param;
         std::string m_name_str;
+        const Param m_param;
+        std::string m_idx_str;
         std::string m_info_str;
+        bool m_gen_name;
 
     public:
 
-        BufferNode(const char *type_str, const Param param)
+        BufferNode(const char *type_str,
+                   const char *name_str,
+                   const Param param)
             : Node(type_str),
+              m_name_str(name_str),
               m_param(param),
-              m_name_str(),
-              m_info_str()
+              m_idx_str(),
+              m_info_str(),
+              m_gen_name(false)
         {}
 
-        void genFuncName(std::stringstream &Stream)
+        void genKerName(std::stringstream &Stream, bool genInputs)
         {
+            if (!genInputs) return;
             if (m_gen_name) return;
-            Stream << "_"  << m_type_str << "Array_";
+
+            Stream << m_name_str;
             m_gen_name = true;
         }
 
@@ -42,10 +50,10 @@ namespace JIT
         {
             if (m_gen_offset) return;
 
-            std::string name_str = std::string("int idx") + std::to_string(m_id);
+            std::string idx_str = std::string("int idx") + std::to_string(m_id);
             std::string info_str = std::string("iInfo") + std::to_string(m_id);;
 
-            Stream << name_str << " = "
+            Stream << idx_str << " = "
                    << info_str << ".strides[3] * id3 + "
                    << info_str << ".strides[2] * id2 + "
                    << info_str << ".strides[1] * id1 + "

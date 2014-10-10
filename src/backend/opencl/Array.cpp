@@ -76,7 +76,8 @@ namespace opencl
     Node* Array<T>::getNode() const
     {
         if (node == NULL) {
-            BufferNode *buf_node = new BufferNode(dtype_traits<T>::getName(), *this);
+            BufferNode *buf_node = new BufferNode(dtype_traits<T>::getName(),
+                                                  shortname<T>(true), *this);
             const_cast<Array<T> *>(this)->node = reinterpret_cast<Node *>(buf_node);
         }
 
@@ -168,10 +169,12 @@ namespace opencl
 
         int id = node->setId(0) - 1;
 
-        // node->genFuncName(Stream);
-        // Stream << std::endl;
-
-        Stream << "__kernel jit_kernel(" << std::endl;
+        Stream << "__kernel " << std::endl;
+        Stream << "Kernel_";
+        node->genKerName(Stream, false);
+        Stream << "_";
+        node->genKerName(Stream, true);
+        Stream << "(" << std::endl;
 
         node->genParams(Stream);
         Stream << "__global " << node->getTypeStr() << " *out, KParam oInfo," << std::endl;

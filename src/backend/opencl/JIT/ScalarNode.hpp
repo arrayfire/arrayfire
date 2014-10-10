@@ -14,6 +14,7 @@ namespace JIT
         const bool m_double;
         std::string m_name_str;
         std::string m_info_str;
+        bool m_gen_name;
 
     public:
 
@@ -22,13 +23,16 @@ namespace JIT
               m_val(val),
               m_double(isDouble),
               m_name_str(),
-              m_info_str()
+              m_info_str(),
+              m_gen_name(false)
         {}
 
-        void genFuncName(std::stringstream &Stream)
+        void genKerName(std::stringstream &Stream, bool genInputs)
         {
+            if (!genInputs) return;
             if (m_gen_name) return;
-            Stream << "_"  << m_type_str << "Scalar_";
+
+            Stream << m_type_str;
             m_gen_name = true;
         }
 

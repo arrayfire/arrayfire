@@ -15,6 +15,10 @@ typedef enum {
     af_gt_t,
     af_ge_t,
 
+    af_bitor_t,
+    af_bitand_t,
+    af_bitxor_t,
+
     af_min_t,
     af_max_t,
     af_cplx2_t,
@@ -48,7 +52,21 @@ typedef enum {
     af_imag_t,
     af_sqrt_t,
 
+    af_floor_t,
+    af_ceil_t,
+    af_round_t,
+
+    af_rem_t,
+    af_mod_t,
+
+    af_gamma_t,
+    af_gammaln_t,
+
     af_notzero_t,
+
+    af_iszero_t,
+    af_isinf_t,
+    af_isnan_t,
 
     af_noop_t
 } af_op_t;

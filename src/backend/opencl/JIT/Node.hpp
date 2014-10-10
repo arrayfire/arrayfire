@@ -18,7 +18,6 @@ namespace JIT
         bool m_set_id;
         bool m_gen_func;
         bool m_gen_param;
-        bool m_gen_name;
         bool m_gen_offset;
 
     public:
@@ -28,11 +27,10 @@ namespace JIT
               m_set_id(false),
               m_gen_func(false),
               m_gen_param(false),
-              m_gen_name(false),
               m_gen_offset(false)
         {}
 
-        virtual void genFuncName(std::stringstream &Stream) {}
+        virtual void genKerName(std::stringstream &Stream, bool genInputs) {}
         virtual void genParams  (std::stringstream &Stream) {}
         virtual void genOffsets (std::stringstream &Stream) {}
         virtual void genFuncs   (std::stringstream &Stream) { m_gen_func = true;}
