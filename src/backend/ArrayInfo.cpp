@@ -123,3 +123,8 @@ bool ArrayInfo::isInteger() const
          || type == u32
          || type == u8);
 }
+
+bool ArrayInfo::isBool() const
+{
+    return (type == b8);
+}

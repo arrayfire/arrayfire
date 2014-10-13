@@ -12,6 +12,10 @@ namespace opencl
     template<typename T>
     void copyData(T *data, const Array<T> &A)
     {
+
+        // FIXME: Merge this with copyArray
+        A.eval();
+
         dim_type offset = 0;
         cl::Buffer buf;
         Array<T> *out = nullptr;
