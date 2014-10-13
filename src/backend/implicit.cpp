@@ -1,5 +1,13 @@
 #include <implicit.hpp>
 
+/*
+Implicit type mimics C/C++ behavior.
+
+Order of precedence:
+- complex > real
+- double > float > uint > int > uchar > char
+*/
+
 af_dtype implicit(const af_array lhs, const af_array rhs)
 {
     ArrayInfo lInfo = getInfo(lhs);
@@ -10,11 +18,12 @@ af_dtype implicit(const af_array lhs, const af_array rhs)
     }
 
     if (lInfo.isComplex() || rInfo.isComplex()) {
-        if (lInfo.isDouble() && rInfo.isDouble()) return c64;
-        if (lInfo.isDouble() && rInfo.isBool()  ) return c64;
-        if (lInfo.isBool()   && rInfo.isDouble()) return c64;
+        if (lInfo.isDouble() || rInfo.isDouble()) return c64;
         return c32;
     }
+
+    if (lInfo.isDouble() || rInfo.isDouble()) return f64;
+    if (lInfo.isSingle() || rInfo.isSingle()) return f32;
 
     af_dtype ltype = lInfo.getType();
     af_dtype rtype = lInfo.getType();
@@ -33,10 +42,6 @@ af_dtype implicit(const af_array lhs, const af_array rhs)
 
     if ((ltype == b8 ) &&
         (rtype == b8 )) return b8;
-
-    if (lInfo.isDouble() && rInfo.isDouble()) return f64;
-    if (lInfo.isDouble() && rInfo.isBool()  ) return f64;
-    if (lInfo.isBool()   && rInfo.isDouble()) return f64;
 
     return f32;
 }
