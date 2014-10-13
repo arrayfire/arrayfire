@@ -27,7 +27,7 @@ extern "C" {
     AFAPI af_err af_rem   (af_array *result, const af_array lhs, const af_array rhs);
     AFAPI af_err af_mod   (af_array *result, const af_array lhs, const af_array rhs);
 
-    AFAPI af_err af_cast    (af_array *out, const af_array in);
+    AFAPI af_err af_cast    (af_array *out, const af_array in, af_dtype type);
     AFAPI af_err af_cplx    (af_array *out, const af_array in);
     AFAPI af_err af_abs     (af_array *out, const af_array in);
 
