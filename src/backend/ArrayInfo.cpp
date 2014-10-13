@@ -58,27 +58,27 @@ void ArrayInfo::modDims(const dim4 &newDims)
     modStrides(calcStrides(newDims));
 }
 
-bool ArrayInfo::isEmpty()
+bool ArrayInfo::isEmpty() const
 {
     return (elements() == 0);
 }
 
-bool ArrayInfo::isScalar()
+bool ArrayInfo::isScalar() const
 {
     return (elements() == 1);
 }
 
-bool ArrayInfo::isRow()
+bool ArrayInfo::isRow() const
 {
     return (ndims() == 2 && dims()[0] == 1);
 }
 
-bool ArrayInfo::isColumn()
+bool ArrayInfo::isColumn() const
 {
     return (ndims() == 1);
 }
 
-bool ArrayInfo::isVector()
+bool ArrayInfo::isVector() const
 {
     bool ret = true;
     for(unsigned i = 0; i < (ndims() - 1) && ret; i++) {
@@ -87,37 +87,37 @@ bool ArrayInfo::isVector()
     return ret;
 }
 
-bool ArrayInfo::isComplex()
+bool ArrayInfo::isComplex() const
 {
     return ((type == c32) || (type == c64));
 }
 
-bool ArrayInfo::isReal()
+bool ArrayInfo::isReal() const
 {
     return !isComplex();
 }
 
-bool ArrayInfo::isDouble()
+bool ArrayInfo::isDouble() const
 {
     return (type == f64 || type == c64);
 }
 
-bool ArrayInfo::isSingle()
+bool ArrayInfo::isSingle() const
 {
     return (type == f32 || type == c32);
 }
 
-bool ArrayInfo::isRealFloating()
+bool ArrayInfo::isRealFloating() const
 {
     return (type == f64 || type == f32);
 }
 
-bool ArrayInfo::isFloating()
+bool ArrayInfo::isFloating() const
 {
     return (!isInteger());
 }
 
-bool ArrayInfo::isInteger()
+bool ArrayInfo::isInteger() const
 {
     return (type == s32
          || type == u32
