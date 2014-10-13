@@ -148,3 +148,14 @@ double2 __cplx2(double lhs, double rhs)
     double2 out = {lhs, rhs};
     return out;
 }
+
+float2 __convert_cfloat(float in)
+{
+    float2 out = {in, 0};
+}
+
+
+double2 __convert_cdouble(double in)
+{
+    double2 out = {in, 0};
+}
