@@ -40,17 +40,22 @@ typedef enum {
     af_atanh_t,
 
     af_exp_t,
+    af_expm1_t,
+    af_erf_t,
+    af_erfc_t,
+
     af_log_t,
     af_log10_t,
-    af_expm1_t,
     af_log1p_t,
+
+    af_sqrt_t,
+    af_cbrt_t,
 
     af_abs_t,
     af_cast_t,
     af_cplx_t,
     af_real_t,
     af_imag_t,
-    af_sqrt_t,
 
     af_floor_t,
     af_ceil_t,
@@ -59,8 +64,8 @@ typedef enum {
     af_rem_t,
     af_mod_t,
 
-    af_gamma_t,
-    af_gammaln_t,
+    af_tgamma_t,
+    af_lgamma_t,
 
     af_notzero_t,
 

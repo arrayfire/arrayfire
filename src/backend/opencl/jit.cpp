@@ -12,7 +12,6 @@ namespace opencl
 
 using JIT::Node;
 
-
 using cl::Buffer;
 using cl::Program;
 using cl::Kernel;
@@ -105,7 +104,7 @@ void evalNodes(Param &out, Node *node)
         ker.setArg(args + 0, out.data);
         ker.setArg(args + 1, out.info);
         ker.setArg(args + 2, groups_0);
-        ker.setArg(args + 3, groups_0);
+        ker.setArg(args + 3, groups_1);
 
         getQueue().enqueueNDRangeKernel(ker, cl::NullRange, global, local);
 

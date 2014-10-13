@@ -9,7 +9,6 @@ namespace opencl
 
 namespace JIT
 {
-
     class Node
     {
     protected:

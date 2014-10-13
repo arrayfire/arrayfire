@@ -63,7 +63,7 @@ BINARY_TYPE_1(div)
     {                                           \
         const char *name()                      \
         {                                       \
-            return #fn;                         \
+            return "f"#fn;                      \
         }                                       \
     };                                          \
     template<typename To>                       \
@@ -85,6 +85,7 @@ BINARY_TYPE_1(div)
     };                                          \
 
 
+// FIXME: call #fn instead of "f"#fn for int types
 BINARY_TYPE_2(min)
 BINARY_TYPE_2(max)
 BINARY_TYPE_2(pow)

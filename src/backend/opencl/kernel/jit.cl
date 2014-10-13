@@ -159,3 +159,5 @@ double2 __convert_cdouble(double in)
 {
     double2 out = {in, 0};
 }
+
+#define fpow(lhs, rhs) pow((lhs), (rhs))
