@@ -78,6 +78,16 @@ af_err af_minof(af_array *out, const af_array lhs, const af_array rhs)
     return af_arith<af_min_t>(out, lhs, rhs);
 }
 
+af_err af_rem(af_array *out, const af_array lhs, const af_array rhs)
+{
+    return af_arith<af_rem_t>(out, lhs, rhs);
+}
+
+af_err af_mod(af_array *out, const af_array lhs, const af_array rhs)
+{
+    return af_arith<af_mod_t>(out, lhs, rhs);
+}
+
 af_err af_pow(af_array *out, const af_array lhs, const af_array rhs)
 {
     try {

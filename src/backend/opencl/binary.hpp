@@ -89,6 +89,8 @@ BINARY_TYPE_1(div)
 BINARY_TYPE_2(min)
 BINARY_TYPE_2(max)
 BINARY_TYPE_2(pow)
+BINARY_TYPE_2(rem)
+BINARY_TYPE_2(mod)
 
 template<typename Ti>
 struct BinOp<cfloat, Ti, af_cplx2_t>
