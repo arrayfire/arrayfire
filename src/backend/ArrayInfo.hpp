@@ -43,29 +43,29 @@ public:
 
     void modStrides(const af::dim4 &newStrides);
 
-    bool isEmpty();
+    bool isEmpty() const;
 
-    bool isScalar();
+    bool isScalar() const;
 
-    bool isRow();
+    bool isRow() const;
 
-    bool isColumn();
+    bool isColumn() const;
 
-    bool isVector();
+    bool isVector() const;
 
-    bool isComplex();
+    bool isComplex() const;
 
-    bool isReal();
+    bool isReal() const;
 
-    bool isDouble();
+    bool isDouble() const;
 
-    bool isSingle();
+    bool isSingle() const;
 
-    bool isRealFloating();
+    bool isRealFloating() const;
 
-    bool isFloating();
+    bool isFloating() const;
 
-    bool isInteger();
+    bool isInteger() const;
 };
 
 dim_type
