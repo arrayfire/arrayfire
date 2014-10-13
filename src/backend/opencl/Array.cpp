@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <copy.hpp>
+#include <scalar.hpp>
 #include <JIT/BufferNode.hpp>
 
 using af::dim4;
@@ -123,8 +124,7 @@ namespace opencl
     Array<T>*
     createValueArray(const dim4 &size, const T& value)
     {
-        Array<T> *out = new Array<T>(size, value);
-        return out;
+        return createScalarNode<T>(size, value);
     }
 
     template<typename T>

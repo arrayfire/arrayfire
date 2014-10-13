@@ -21,20 +21,20 @@ namespace JIT
 
         ScalarNode(const double val, bool isDouble)
             : Node("float"),
+              m_val({val, 0}),
               m_double(isDouble),
               m_complex(false),
               m_name_str("f"),
               m_gen_name(false),
               m_set_arg(false)
         {
-            m_val = {val, 0};
             if (isDouble) {
                 m_type_str = std::string("double");
                 m_name_str = std::string("d");
             }
         }
 
-        ScalarNode(const double2 val, bool isDouble)
+        ScalarNode(const cl_double2 val, bool isDouble)
             : Node("float2"),
               m_val(val),
               m_double(isDouble),
@@ -72,17 +72,17 @@ namespace JIT
             if (!m_complex) {
 
                 if (m_double) {
-                    ker.setArg(id, (double)(val.s0));
+                    ker.setArg(id, (double)(m_val.s[0]));
                 } else {
-                    ker.setArg(id, (float)(val.s0));
+                    ker.setArg(id, (float)(m_val.s[0]));
                 }
 
             } else {
 
                 if (m_double) {
-                    ker.setArg(id, (val));
+                    ker.setArg(id, (m_val));
                 } else {
-                    float2 valf = {(float)val.s0, (float)val.s1};
+                    cl_float2 valf = {(float)m_val.s[0], (float)m_val.s[1]};
                     ker.setArg(id, valf);
                 }
 
