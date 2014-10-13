@@ -1,5 +1,6 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
+#include <map>
 #include <iostream>
 #include <stdexcept>
 #include <copy.hpp>
@@ -18,20 +19,22 @@ using cl::Kernel;
 using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
+using std::string;
+using std::stringstream;
 
-static std::string getFuncName(Node *node)
+static string getFuncName(Node *node)
 {
-    std::stringstream funcName;
-    funcName << "Kernel_";
+    stringstream funcName;
+    funcName << "K_";
     node->genKerName(funcName, false);
     funcName << "_";
     node->genKerName(funcName, true);
     return funcName.str();
 }
 
-static std::string getKernelString(std::string funcName, Node *node)
+static string getKernelString(string funcName, Node *node)
 {
-    std::stringstream kerStream;
+    stringstream kerStream;
     int id = node->setId(0) - 1;
 
     kerStream << "__kernel void" << std::endl;
@@ -77,20 +80,45 @@ static std::string getKernelString(std::string funcName, Node *node)
     return kerStream.str();
 }
 
-void evalNodes(Param &out, Node *node)
+static Kernel getKernel(Node *node)
 {
-    std::string funcName = getFuncName(node);
-    std::string jit_ker = getKernelString(funcName, node);
 
-    const char *ker_strs[] = {jit_cl, jit_ker.c_str()};
-    const int ker_lens[] = {jit_cl_len, (int)jit_ker.size()};
+    string funcName = getFuncName(node);
 
-    try {
+    typedef struct {
         Program prog;
         Kernel ker;
+    } kc_entry_t;
 
-        buildProgram(prog, 2, ker_strs, ker_lens, std::string(""));
-        ker = Kernel(prog, funcName.c_str());
+    typedef std::map<string, kc_entry_t> kc_t;
+    static kc_t kernelCaches[DeviceManager::MAX_DEVICES];
+    int device = getActiveDeviceId();
+
+    kc_t::iterator idx = kernelCaches[device].find(funcName);
+    kc_entry_t entry;
+
+    if (idx == kernelCaches[device].end()) {
+        string jit_ker = getKernelString(funcName, node);
+
+        const char *ker_strs[] = {jit_cl, jit_ker.c_str()};
+        const int ker_lens[] = {jit_cl_len, (int)jit_ker.size()};
+
+        buildProgram(entry.prog, 2, ker_strs, ker_lens, string(""));
+        entry.ker = Kernel(entry.prog, funcName.c_str());
+
+        kernelCaches[device][funcName] = entry;
+    } else {
+        entry = idx->second;
+    }
+
+    return entry.ker;
+}
+
+void evalNodes(Param &out, Node *node)
+{
+    try {
+
+        Kernel ker = getKernel(node);
 
         NDRange local(32, 8);
 
