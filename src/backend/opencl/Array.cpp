@@ -175,9 +175,13 @@ namespace opencl
         Param res = {data, info};
 
         evalNodes(res, this->getNode());
-
-        node = nullptr;
         ready = true;
+
+        // Replace the current node in any JIT possible trees with the new BufferNode
+        Node *prev = node;
+        node = nullptr;
+        prev->resetFlags();
+        prev->replace(getNode());
     }
 
     template<typename T>

@@ -25,6 +25,17 @@ namespace JIT
               m_rhs(rhs),
               m_op(op)
         {
+            lhs->addParent(this);
+            rhs->addParent(this);
+        }
+
+        void replaceChild(Node *prev, Node *curr)
+        {
+            if (m_lhs == prev) m_lhs = curr;
+            else m_lhs->replaceChild(prev, curr);
+
+            if (m_rhs == prev) m_rhs = curr;
+            else m_rhs->replaceChild(prev, curr);
         }
 
         void genParams(std::stringstream &kerStream)
@@ -88,6 +99,15 @@ namespace JIT
             return m_id + 1;
         }
 
+        void resetFlags()
+        {
+            m_set_id = false;
+            m_gen_func = false;
+            m_gen_param = false;
+            m_gen_offset = false;
+            m_lhs->resetFlags();
+            m_rhs->resetFlags();
+        }
     };
 
 }
