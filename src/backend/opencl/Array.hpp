@@ -89,21 +89,20 @@ namespace opencl
         //FIXME: This should do a copy if it is not owner. You do not want to overwrite parents data
         cl::Buffer& get()
         {
-            eval();
+            if (!isReady()) eval();
             if (isOwner()) return data;
             return (cl::Buffer &)parent->data;
         }
 
         const   cl::Buffer& get() const
         {
-            eval();
+            if (!isReady()) eval();
             if (isOwner()) return data;
             return parent->data;
         }
 
         const dim_type getOffset() const
         {
-            eval();
             return isOwner() ? 0 : calcOffset(parent->strides(), this->offsets());
         }
 
