@@ -12,8 +12,6 @@ namespace JIT
     private:
         std::string m_name_str;
         const Param m_param;
-        std::string m_idx_str;
-        std::string m_info_str;
         bool m_gen_name;
         bool m_set_arg;
 
@@ -25,8 +23,6 @@ namespace JIT
             : Node(type_str),
               m_name_str(name_str),
               m_param(param),
-              m_idx_str(),
-              m_info_str(),
               m_gen_name(false),
               m_set_arg(false)
         {}
