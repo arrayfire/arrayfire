@@ -27,7 +27,44 @@ namespace opencl
         static const dim_type TY = 8;
 
         template<typename T, bool DIR>
-        void sort0(Param sx, Param ix, const Param in)
+        void sort0(Param sx, const Param in)
+        {
+            try {
+                compute::command_queue c_queue(getQueue()());
+
+                compute::buffer sx_buf(sx.data());
+
+                for(dim_type w = 0; w < in.info.dims[3]; w++) {
+                    for(dim_type z = 0; z < in.info.dims[2]; z++) {
+                        for(dim_type y = 0; y < in.info.dims[1]; y++) {
+
+                            dim_type sxOffset = w * sx.info.strides[3] + z * sx.info.strides[2]
+                                              + y * sx.info.strides[1];
+
+                            if(DIR) {
+                                compute::stable_sort(
+                                        compute::make_buffer_iterator<T>(sx_buf, sxOffset),
+                                        compute::make_buffer_iterator<T>(sx_buf, sxOffset + sx.info.dims[0]),
+                                        compute::less<T>(), c_queue);
+                            } else {
+                                compute::stable_sort(
+                                        compute::make_buffer_iterator<T>(sx_buf, sxOffset),
+                                        compute::make_buffer_iterator<T>(sx_buf, sxOffset + sx.info.dims[0]),
+                                        compute::greater<T>(), c_queue);
+                            }
+                        }
+                    }
+                }
+
+                CL_DEBUG_FINISH(getQueue());
+            } catch (cl::Error err) {
+                CL_TO_AF_ERROR(err);
+                throw;
+            }
+        }
+
+        template<typename T, bool DIR>
+        void sort0_index(Param sx, Param ix, const Param in)
         {
             try {
                 compute::command_queue c_queue(getQueue()());

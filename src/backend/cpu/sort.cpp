@@ -19,10 +19,34 @@ namespace cpu
 {
     // Based off of http://stackoverflow.com/a/12399290
     template<typename T, bool DIR>
-    void sort(Array<T> &sx, Array<uint> &ix, const Array<T> &in, const unsigned dim)
+    void sort0(Array<T> &sx, const Array<T> &in)
     {
-        if(dim != 0) CPU_NOT_SUPPORTED();
+        // initialize original index locations
+              T *sx_ptr = sx.get();
 
+        function<bool(dim_type, dim_type)> op = greater<T>();
+        if(DIR) { op = less<T>(); }
+
+
+        T *comp_ptr = nullptr;
+        for(dim_type w = 0; w < in.dims()[3]; w++) {
+            for(dim_type z = 0; z < in.dims()[2]; z++) {
+                for(dim_type y = 0; y < in.dims()[1]; y++) {
+
+                    dim_type sxOffset = w * sx.strides()[3] + z * sx.strides()[2]
+                                      + y * sx.strides()[1];
+
+                    comp_ptr = sx_ptr + sxOffset;
+                    std::stable_sort(comp_ptr, comp_ptr + sx.dims()[0], op);
+                }
+            }
+        }
+        return;
+    }
+
+    template<typename T, bool DIR>
+    void sort0_index(Array<T> &sx, Array<uint> &ix, const Array<T> &in)
+    {
         // initialize original index locations
            uint *ix_ptr = ix.get();
               T *sx_ptr = sx.get();
@@ -63,11 +87,33 @@ namespace cpu
         return;
     }
 
-#define INSTANTIATE(T)                                                                        \
-    template void sort<T, true>(Array<T> &sx, Array<unsigned> &ix, const Array<T> &in,        \
-                                    const unsigned dim);                                      \
-    template void sort<T,false>(Array<T> &sx, Array<unsigned> &ix, const Array<T> &in,        \
-                                    const unsigned dim);                                      \
+    template<typename T, bool DIR>
+    void sort(Array<T> &sx, const Array<T> &in, const unsigned dim)
+    {
+        switch(dim) {
+            case 0: sort0<T, DIR>(sx, in);
+                    break;
+            default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
+        }
+    }
+
+    template<typename T, bool DIR>
+    void sort_index(Array<T> &sx, Array<unsigned> &ix, const Array<T> &in, const unsigned dim)
+    {
+        switch(dim) {
+            case 0: sort0_index<T, DIR>(sx, ix, in);
+                    break;
+            default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
+        }
+    }
+
+#define INSTANTIATE(T)                                                                          \
+    template void sort<T, true>(Array<T> &sx, const Array<T> &in, const unsigned dim);          \
+    template void sort<T,false>(Array<T> &sx, const Array<T> &in, const unsigned dim);          \
+    template void sort_index<T, true>(Array<T> &sx, Array<unsigned> &ix, const Array<T> &in,    \
+                                      const unsigned dim);                                      \
+    template void sort_index<T,false>(Array<T> &sx, Array<unsigned> &ix, const Array<T> &in,    \
+                                      const unsigned dim);                                      \
 
     INSTANTIATE(float)
     INSTANTIATE(double)
