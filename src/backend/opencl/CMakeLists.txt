@@ -4,6 +4,7 @@ ADD_DEFINITIONS(-DAF_OPENCL)
 #INCLUDE(${CMAKE_SOURCE_DIR}/common/FindCLBLAS.cmake)
 FIND_PACKAGE(CLBLAS REQUIRED)
 
+FIND_PACKAGE(clFFT REQUIRED)
 FIND_PACKAGE(BoostCompute REQUIRED)
 
 SET( cl_kernel_headers
@@ -15,6 +16,7 @@ INCLUDE_DIRECTORIES(
     ${OPENCL_INCLUDE_DIRS}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CLBLAS_INCLUDE_DIR}
+    ${CLFFT_INCLUDE_DIRS}
     ${BoostCompute_INCLUDE_DIR}
     )
 
@@ -22,6 +24,9 @@ FILE(GLOB opencl_src
     "*.hpp"
     "*.h"
     "*.cpp"
+    "kernel/*.hpp"
+    "kernel/*.cl"
+    "jit/*.hpp"
     "../*.hpp"
     "../*.h"
     "../*.cpp"
@@ -43,4 +48,4 @@ LINK_DIRECTORIES(${CLBLAS_LIBRARY_DIR})
 ADD_LIBRARY(afopencl SHARED ${opencl_src})
 ADD_DEFINITIONS( -D__CL_ENABLE_EXCEPTIONS )
 ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
-TARGET_LINK_LIBRARIES(afopencl ${OPENCL_LIBRARIES} ${lib_deps} ${CLBLAS_LIBRARIES})
+TARGET_LINK_LIBRARIES(afopencl ${OPENCL_LIBRARIES} ${lib_deps} ${CLBLAS_LIBRARIES} ${CLFFT_LIBRARIES} ${CMAKE_DL_LIBS})

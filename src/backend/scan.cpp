@@ -20,21 +20,20 @@ static inline af_array scan(const af_array in, const int dim)
 
 af_err af_accum(af_array *out, const af_array in, const int dim)
 {
-    if (dim <  0) return AF_ERR_ARG;
-    if (dim >= 4) return AF_ERR_ARG;
-
-    const ArrayInfo& in_info = getInfo(in);
-
-    if (dim >= (int)in_info.ndims()) {
-        // FIXME: Implement a simple assignment function which increments the reference count of parent
-        // FIXME: Need to promote types for corner cases
-        const af_seq indx[] = {span, span, span, span};
-        return af_index(out, in, 4, indx);
-    }
-
-    af_err ret = AF_SUCCESS;
+    ARG_ASSERT(2, dim >= 0);
+    ARG_ASSERT(2, dim <  4);
 
     try {
+
+        const ArrayInfo& in_info = getInfo(in);
+
+        if (dim >= (int)in_info.ndims()) {
+            // FIXME: Implement a simple assignment function which increments the reference count of parent
+            // FIXME: Need to promote types for corner cases
+            const af_seq indx[] = {span, span, span, span};
+            return af_index(out, in, 4, indx);
+        }
+
         af_dtype type = in_info.getType();
         af_array res;
 
@@ -50,13 +49,12 @@ af_err af_accum(af_array *out, const af_array in, const int dim)
         // Make sure you are adding only "1" for every non zero value, even if op == af_add_t
         case b8:   res = scan<af_notzero_t, uchar  , uint   >(in, dim); break;
         default:
-            ret = AF_ERR_NOT_SUPPORTED;
+            TYPE_ERROR(1, type);
         }
 
         std::swap(*out, res);
-        ret = AF_SUCCESS;
     }
     CATCHALL;
 
-    return ret;
+    return AF_SUCCESS;
 }

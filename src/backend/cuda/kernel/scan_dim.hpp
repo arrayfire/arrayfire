@@ -63,9 +63,6 @@ namespace kernel
 
         __shared__ To s_val[THREADS_X * DIMY * 2];
         __shared__ To s_tmp[THREADS_X];
-
-        const uint s_off = (DIMY * THREADS_X);
-        int mul = 1;
         To *sptr =  s_val + tid;
 
         Transform<Ti, To, op> transform;
@@ -85,12 +82,12 @@ namespace kernel
             *sptr = val;
             __syncthreads();
 
+            uint start = 0;
             for (int off = 1; off < DIMY; off *= 2) {
-                if (tidy >= off) val = binop(val, *(sptr - off * THREADS_X));
 
-                sptr += mul * s_off;
-                *sptr = val;
-                mul *= -1;
+                if (tidy >= off) val = binop(val, sptr[(start - off) * THREADS_X]);
+                start = DIMY - start;
+                sptr[start * THREADS_X] = val;
 
                 __syncthreads();
             }
@@ -170,7 +167,7 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass>
-    void scan_dim_launcher(Param<To> out,
+    static void scan_dim_launcher(Param<To> out,
                            Param<To> tmp,
                            CParam<Ti> in,
                            const uint threads_y,
@@ -204,10 +201,10 @@ namespace kernel
 
 
     template<typename To, af_op_t op, int dim>
-    void bcast_dim_launcher(Param<To> out,
-                            CParam<To> tmp,
-                            const uint threads_y,
-                            const uint blocks_all[4])
+    static void bcast_dim_launcher(Param<To> out,
+                                   CParam<To> tmp,
+                                   const uint threads_y,
+                                   const uint blocks_all[4])
     {
 
         dim3 threads(THREADS_X, threads_y);
@@ -224,7 +221,7 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op, int dim>
-    void scan_dim(Param<To> out, CParam<Ti> in)
+    static void scan_dim(Param<To> out, CParam<Ti> in)
     {
         uint threads_y = std::min(THREADS_Y, nextpow2(out.dims[dim]));
         uint threads_x = THREADS_X;

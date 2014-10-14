@@ -171,10 +171,12 @@ namespace cuda
         char driverVersion[1024] = {" ",};
         int x = nvDriverVersion(driverVersion, sizeof(driverVersion));
         if (x != 1) {
-            #ifndef OS_MAC  // HACK Mac OSX 10.7 needs new method for fetching driver
+            #if !defined(OS_MAC) && !defined(__arm__)  // HACK Mac OSX 10.7 needs new method for fetching driver
             throw runtime_error("Invalid driver");
             #endif
-            return string("");
+            int driver = 0;
+            CUDA(cudaDriverGetVersion(&driver));
+            return string("CUDA Driver Version: ") + toString(driver);
         } else {
             return string(driverVersion);
         }

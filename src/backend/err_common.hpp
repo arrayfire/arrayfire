@@ -112,26 +112,26 @@ af_err processException();
 
 #define DIM_ASSERT(INDEX, COND) do {                    \
         if((COND) == false) {                           \
-            throw DimensionError(__func__, __LINE__,    \
+            throw DimensionError(__FILE__, __LINE__,    \
                                  INDEX, #COND);         \
         }                                               \
     } while(0)
 
 #define ARG_ASSERT(INDEX, COND) do {                \
         if((COND) == false) {                       \
-            throw ArgumentError(__func__, __LINE__, \
+            throw ArgumentError(__FILE__, __LINE__, \
                                 INDEX, #COND);      \
         }                                           \
     } while(0)
 
 #define TYPE_ERROR(INDEX, type) do {            \
-        throw TypeError(__func__, __LINE__,     \
+        throw TypeError(__FILE__, __LINE__,     \
                         INDEX, type);           \
     } while(0)                                  \
 
 
 #define AF_ERROR(MSG, ERR_TYPE) do {            \
-        throw AfError(__func__, __LINE__,       \
+        throw AfError(__FILE__, __LINE__,       \
                       MSG, ERR_TYPE);           \
     } while(0)
 

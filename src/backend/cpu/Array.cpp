@@ -5,6 +5,7 @@
 
 namespace cpu
 {
+
     using af::dim4;
 
     template<typename T>
@@ -63,20 +64,6 @@ namespace cpu
         return out;
     }
 
-    template<typename complex_t, typename real_t>
-    Array<complex_t>*
-    createComplexFromReal(const Array<real_t> &in)
-    {
-        const real_t *ptr       = in.get();
-        Array<complex_t> *cmplx = createEmptyArray<complex_t>(in.dims());
-        complex_t *cmplx_ptr    = cmplx->get();
-        for (int i=0; i<in.elements(); ++i) {
-            cmplx_ptr[i].real(ptr[i]);
-            cmplx_ptr[i].imag(0);
-        }
-        return cmplx;
-    }
-
     template<typename T>
     Array<T> *
     createSubArray(const Array<T>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride)
@@ -88,6 +75,25 @@ namespace cpu
             stride[2] <  0 ||
             stride[3] <  0) out = copyArray(*out);
         return out;
+    }
+
+    template<typename inType, typename outType>
+    Array<outType> *
+    createPaddedArray(Array<inType> const &in, dim4 const &dims, outType default_value)
+    {
+        Array<outType> *ret = createValueArray<outType>(dims, default_value);
+
+        copy<inType, outType>(*ret, in);
+
+        return ret;
+    }
+
+    template<typename T>
+    void scaleArray(Array<T> &arr, double factor)
+    {
+        T * src_ptr = arr.get();
+        for(dim_type i=0; i< (dim_type)arr.elements(); ++i)
+            src_ptr[i] *= factor;
     }
 
     template<typename T>
@@ -102,6 +108,7 @@ namespace cpu
     template       Array<T>*  createValueArray<T> (const dim4 &size, const T &value); \
     template       Array<T>*  createEmptyArray<T> (const dim4 &size);   \
     template       Array<T>*  createSubArray<T>   (const Array<T> &parent, const dim4 &dims, const dim4 &offset, const dim4 &stride); \
+    template       void       scaleArray<T>       (Array<T> &arr, double factor); \
     template       void       destroyArray<T>     (Array<T> &A);        \
     template                  Array<T>::~Array();
 
@@ -114,7 +121,28 @@ namespace cpu
     INSTANTIATE(uchar)
     INSTANTIATE(char)
 
+#define INSTANTIATE_CREATE_PADDED_ARRAY(SRC_T) \
+    template Array<float  >* createPaddedArray<SRC_T, float  >(Array<SRC_T> const &src, dim4 const &dims, float   default_value); \
+    template Array<double >* createPaddedArray<SRC_T, double >(Array<SRC_T> const &src, dim4 const &dims, double  default_value); \
+    template Array<cfloat >* createPaddedArray<SRC_T, cfloat >(Array<SRC_T> const &src, dim4 const &dims, cfloat  default_value); \
+    template Array<cdouble>* createPaddedArray<SRC_T, cdouble>(Array<SRC_T> const &src, dim4 const &dims, cdouble default_value); \
+    template Array<int    >* createPaddedArray<SRC_T, int    >(Array<SRC_T> const &src, dim4 const &dims, int     default_value); \
+    template Array<uint   >* createPaddedArray<SRC_T, uint   >(Array<SRC_T> const &src, dim4 const &dims, uint    default_value); \
+    template Array<uchar  >* createPaddedArray<SRC_T, uchar  >(Array<SRC_T> const &src, dim4 const &dims, uchar   default_value); \
+    template Array<char   >* createPaddedArray<SRC_T, char   >(Array<SRC_T> const &src, dim4 const &dims, char    default_value);
 
-    template Array<cfloat >* createComplexFromReal<cfloat , float >(const Array<float > &in);
-    template Array<cdouble>* createComplexFromReal<cdouble, double>(const Array<double> &in);
+    INSTANTIATE_CREATE_PADDED_ARRAY(float )
+    INSTANTIATE_CREATE_PADDED_ARRAY(double)
+    INSTANTIATE_CREATE_PADDED_ARRAY(int   )
+    INSTANTIATE_CREATE_PADDED_ARRAY(uint  )
+    INSTANTIATE_CREATE_PADDED_ARRAY(uchar )
+    INSTANTIATE_CREATE_PADDED_ARRAY(char  )
+
+#define INSTANTIATE_CREATE_COMPLEX_PADDED_ARRAY(SRC_T) \
+    template Array<cfloat >* createPaddedArray<SRC_T, cfloat >(Array<SRC_T> const &src, dim4 const &dims, cfloat  default_value); \
+    template Array<cdouble>* createPaddedArray<SRC_T, cdouble>(Array<SRC_T> const &src, dim4 const &dims, cdouble default_value);
+
+    INSTANTIATE_CREATE_COMPLEX_PADDED_ARRAY(cfloat )
+    INSTANTIATE_CREATE_COMPLEX_PADDED_ARRAY(cdouble)
+
 }

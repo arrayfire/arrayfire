@@ -32,13 +32,17 @@ namespace cpu
     Array<T>*
     createEmptyArray(const af::dim4 &size);
 
-    template<typename complex_t, typename real_t>
-    Array<complex_t>* createComplexFromReal(const Array<real_t> &in);
-
     // Creates a new Array View(sub array).
     template<typename T>
     Array<T> *
     createSubArray(const Array<T>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
+
+    template<typename inType, typename outType>
+    Array<outType> *
+    createPaddedArray(Array<inType> const &in, dim4 const &dims, outType default_value=outType(0));
+
+    template<typename T>
+    void scaleArray(Array<T> &arr, double factor);
 
     template<typename T>
     void
@@ -103,4 +107,5 @@ namespace cpu
                                            const dim4 &dims, const dim4 &offset, const dim4 &stride);
         friend void      destroyArray<T>(Array<T> &arr);
     };
+
 }

@@ -3,6 +3,13 @@
 #include <af/dim4.hpp>
 
 
+
+dim_type
+calcOffset(const af::dim4 &strides, const af::dim4 &offsets);
+
+af::dim4
+calcStrides(const af::dim4 &parentDim);
+
 /// Array Arrayementation Info class
 // This class is the base class to all Array objects. The purpose of this class
 // was to have a way to retrieve basic information of an Array object without
@@ -39,40 +46,43 @@ public:
     size_t ndims() const                { return dim_size.ndims();      }
     const af::dim4& dims() const        { return dim_size;              }
 
+    void resetInfo(const af::dim4& dims)
+    {
+        dim_size = dims;
+        dim_strides = calcStrides(dims);
+        dim_offsets = af::dim4(0,0,0,0);
+    }
+
     void modDims(const af::dim4 &newDims);
 
     void modStrides(const af::dim4 &newStrides);
 
-    bool isEmpty();
+    bool isEmpty() const;
 
-    bool isScalar();
+    bool isScalar() const;
 
-    bool isRow();
+    bool isRow() const;
 
-    bool isColumn();
+    bool isColumn() const;
 
-    bool isVector();
+    bool isVector() const;
 
-    bool isComplex();
+    bool isComplex() const;
 
-    bool isReal();
+    bool isReal() const;
 
-    bool isDouble();
+    bool isDouble() const;
 
-    bool isSingle();
+    bool isSingle() const;
 
-    bool isRealFloating();
+    bool isRealFloating() const;
 
-    bool isFloating();
+    bool isFloating() const;
 
-    bool isInteger();
+    bool isInteger() const;
+
+    bool isBool() const;
 };
-
-dim_type
-calcOffset(const af::dim4 &strides, const af::dim4 &offsets);
-
-af::dim4
-calcStrides(const af::dim4 &parentDim);
 
 // Returns size and time info for an array object.
 // Note this doesn't require template parameters.

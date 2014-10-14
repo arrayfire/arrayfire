@@ -9,10 +9,9 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
                        uint groups_x, uint groups_y,
                        uint lim)
 {
-
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);
-    const uint lid  = lidy * get_local_size(0) + lidx;
+    const  int lid  = lidy * get_local_size(0) + lidx;
 
     const uint zid = get_group_id(0) / groups_x;
     const uint wid = get_group_id(1) / groups_y;
@@ -32,12 +31,12 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
 
     bool cond_yzw = (yid < oInfo.dims[1]) && (zid < oInfo.dims[2]) && (wid < oInfo.dims[3]);
 
-    __local To l_val[SHARED_MEM_SIZE];
+    __local To l_val0[SHARED_MEM_SIZE];
+    __local To l_val1[SHARED_MEM_SIZE];
+    __local To *l_val = l_val0;
     __local To l_tmp[DIMY];
 
-    const uint l_off = (DIMY * (DIMX + 1));
-    __local To *lData0 = l_val + lidy * (DIMX + 1);
-    __local To *lData1 = l_val + lidy * (DIMX + 1) + l_off;
+    bool flip = 0;
 
     const To init_val = init;
     uint id = xid;
@@ -51,18 +50,15 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
 
         bool cond = (cond_yzw && (id < oInfo.dims[0]));
         val = cond ? transform(iData[id]) : init_val;
-        lData0[lidx] = val;
+        l_val[lid] = val;
         barrier(CLK_LOCAL_MEM_FENCE);
 
         for (int off = 1; off < DIMX; off *= 2) {
-            if (lidx >= off) val = binOp(val, lData0[(int)lidx - off]);
-            lData1[lidx] = val;
+            if (lidx >= off) val = binOp(val, l_val[lid - off]);
 
-            // Swap the pointers to lData0, lData1
-            __local To *lData2 = lData0;
-            lData0 = lData1;
-            lData1 = lData2;
-
+            flip = 1 - flip;
+            l_val = flip ? l_val1 : l_val0;
+            l_val[lid] = val;
             barrier(CLK_LOCAL_MEM_FENCE);
         }
 
@@ -71,7 +67,7 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
         id += DIMX;
     }
 
-    if (!isFinalPass && isLast) {
+    if (!isFinalPass && cond_yzw && isLast) {
         tData[groupId_x] = val;
     }
 }

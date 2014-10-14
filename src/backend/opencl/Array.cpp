@@ -3,6 +3,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <copy.hpp>
+#include <scalar.hpp>
+#include <JIT/BufferNode.hpp>
 
 using af::dim4;
 
@@ -14,7 +16,15 @@ namespace opencl
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(getContext(), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
-        parent()
+        parent(), node(NULL), ready(true)
+    {
+    }
+
+    template<typename T>
+    Array<T>::Array(af::dim4 dims, JIT::Node *n) :
+        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        data(),
+        parent(), node(n), ready(false)
     {
     }
 
@@ -22,7 +32,7 @@ namespace opencl
     Array<T>::Array(af::dim4 dims, T val) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(getContext(), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
-        parent()
+        parent(), node(NULL), ready(true)
     {
         set(data, val, elements());
     }
@@ -31,7 +41,7 @@ namespace opencl
     Array<T>::Array(af::dim4 dims, const T * const in_data) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(getContext(), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
-        parent()
+        parent(), node(NULL), ready(true)
     {
         getQueue().enqueueWriteBuffer(data,CL_TRUE,0,sizeof(T)*ArrayInfo::elements(),in_data);
     }
@@ -40,14 +50,49 @@ namespace opencl
     Array<T>::Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
         ArrayInfo(dims, offset, stride, (af_dtype)dtype_traits<T>::af_type),
         data(0),
-        parent(&parnt)
+        parent(&parnt), node(NULL), ready(true)
     { }
+
+
+    template<typename T>
+    Array<T>::Array(Param &tmp) :
+        ArrayInfo(af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3]),
+                  af::dim4(0, 0, 0, 0),
+                  af::dim4(tmp.info.strides[0], tmp.info.strides[1],
+                           tmp.info.strides[2], tmp.info.strides[3]),
+                  (af_dtype)dtype_traits<T>::af_type),
+        data(tmp.data),
+        parent(), node(NULL), ready(true)
+    {
+    }
 
     template<typename T>
     Array<T>::~Array()
     { }
 
+    using JIT::BufferNode;
+    using JIT::Node;
+
+    template<typename T>
+    Node* Array<T>::getNode() const
+    {
+        if (node == NULL) {
+            BufferNode *buf_node = new BufferNode(dtype_traits<T>::getName(),
+                                                  shortname<T>(true), *this);
+            const_cast<Array<T> *>(this)->node = reinterpret_cast<Node *>(buf_node);
+        }
+
+        return node;
+    }
+
     using af::dim4;
+
+    template<typename T>
+    Array<T> *
+    createNodeArray(const dim4 &dims, Node *node)
+    {
+        return new Array<T>(dims, node);
+    }
 
     template<typename T>
     Array<T> *
@@ -79,8 +124,7 @@ namespace opencl
     Array<T>*
     createValueArray(const dim4 &size, const T& value)
     {
-        Array<T> *out = new Array<T>(size, value);
-        return out;
+        return createScalarNode<T>(size, value);
     }
 
     template<typename T>
@@ -91,6 +135,25 @@ namespace opencl
         return out;
     }
 
+    template<typename inType, typename outType>
+    Array<outType> *
+    createPaddedArray(Array<inType> const &in, dim4 const &dims, outType default_value, double factor)
+    {
+        Array<outType> *ret = createEmptyArray<outType>(dims);
+
+        copy<inType, outType>(*ret, in, default_value, factor);
+
+        return ret;
+    }
+
+    template<typename T>
+    Array<T>*
+    createParamArray(Param &tmp)
+    {
+        Array<T> *out = new Array<T>(tmp);
+        return out;
+    }
+
     template<typename T>
     void
     destroyArray(Array<T> &A)
@@ -98,11 +161,48 @@ namespace opencl
         delete &A;
     }
 
+    template<typename T>
+    void Array<T>::eval()
+    {
+        if (isReady()) return;
+
+        data = cl::Buffer(getContext(), CL_MEM_READ_WRITE, elements() * sizeof(T));
+
+        // Do not replace this with cast operator
+        KParam info = {{dims()[0], dims()[1], dims()[2], dims()[3]},
+                       {strides()[0], strides()[1], strides()[2], strides()[3]},
+                       0};
+        Param res = {data, info};
+
+        evalNodes(res, this->getNode());
+        ready = true;
+
+        // Replace the current node in any JIT possible trees with the new BufferNode
+        Node *prev = node;
+        node = nullptr;
+        prev->resetFlags();
+        prev->replace(getNode());
+    }
+
+    template<typename T>
+    void Array<T>::eval() const
+    {
+        if (isReady()) return;
+        const_cast<Array<T> *>(this)->eval();
+    }
+
+
 #define INSTANTIATE(T)                                                  \
     template       Array<T>*  createDataArray<T>  (const dim4 &size, const T * const data); \
     template       Array<T>*  createValueArray<T> (const dim4 &size, const T &value); \
     template       Array<T>*  createEmptyArray<T> (const dim4 &size);   \
-    template       Array<T>*  createSubArray<T>   (const Array<T> &parent, const dim4 &dims, const dim4 &offset, const dim4 &stride); \
+    template       Array<T>*  createParamArray<T> (Param &tmp);         \
+    template       Array<T>*  createSubArray<T>   (const Array<T> &parent, const dim4 &dims, \
+                                                   const dim4 &offset, const dim4 &stride); \
+    template       Array<T>*  createNodeArray<T>   (const dim4 &size, JIT::Node *node); \
+    template       JIT::Node* Array<T>::getNode() const;                \
+    template       void Array<T>::eval();                               \
+    template       void Array<T>::eval() const;                         \
     template       void       destroyArray<T>     (Array<T> &A);        \
     template                  Array<T>::~Array();
 
@@ -114,4 +214,29 @@ namespace opencl
     INSTANTIATE(uint)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
+
+#define INSTANTIATE_CREATE_PADDED_ARRAY(SRC_T) \
+    template Array<float  >* createPaddedArray<SRC_T, float  >(Array<SRC_T> const &src, dim4 const &dims, float   default_value, double factor); \
+    template Array<double >* createPaddedArray<SRC_T, double >(Array<SRC_T> const &src, dim4 const &dims, double  default_value, double factor); \
+    template Array<cfloat >* createPaddedArray<SRC_T, cfloat >(Array<SRC_T> const &src, dim4 const &dims, cfloat  default_value, double factor); \
+    template Array<cdouble>* createPaddedArray<SRC_T, cdouble>(Array<SRC_T> const &src, dim4 const &dims, cdouble default_value, double factor); \
+    template Array<int    >* createPaddedArray<SRC_T, int    >(Array<SRC_T> const &src, dim4 const &dims, int     default_value, double factor); \
+    template Array<uint   >* createPaddedArray<SRC_T, uint   >(Array<SRC_T> const &src, dim4 const &dims, uint    default_value, double factor); \
+    template Array<uchar  >* createPaddedArray<SRC_T, uchar  >(Array<SRC_T> const &src, dim4 const &dims, uchar   default_value, double factor); \
+    template Array<char   >* createPaddedArray<SRC_T, char   >(Array<SRC_T> const &src, dim4 const &dims, char    default_value, double factor);
+
+    INSTANTIATE_CREATE_PADDED_ARRAY(float )
+    INSTANTIATE_CREATE_PADDED_ARRAY(double)
+    INSTANTIATE_CREATE_PADDED_ARRAY(int   )
+    INSTANTIATE_CREATE_PADDED_ARRAY(uint  )
+    INSTANTIATE_CREATE_PADDED_ARRAY(uchar )
+    INSTANTIATE_CREATE_PADDED_ARRAY(char  )
+
+#define INSTANTIATE_CREATE_COMPLEX_PADDED_ARRAY(SRC_T) \
+    template Array<cfloat >* createPaddedArray<SRC_T, cfloat >(Array<SRC_T> const &src, dim4 const &dims, cfloat  default_value, double factor); \
+    template Array<cdouble>* createPaddedArray<SRC_T, cdouble>(Array<SRC_T> const &src, dim4 const &dims, cdouble default_value, double factor);
+
+    INSTANTIATE_CREATE_COMPLEX_PADDED_ARRAY(cfloat )
+    INSTANTIATE_CREATE_COMPLEX_PADDED_ARRAY(cdouble)
+
 }
