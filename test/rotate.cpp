@@ -80,7 +80,7 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
         if(abs(tests[resultIdx][i] - outData[i]) > 0.0001)
             fail_count++;
     }
-    ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.005));
+    ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.01));
 
     //for (size_t elIter = 0; elIter < nElems; ++elIter) {
     //    ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
