@@ -3,7 +3,7 @@
 
 # - Find CBLAS library
 #
-# This module finds an installed fortran library that implements the CBLAS 
+# This module finds an installed fortran library that implements the CBLAS
 # linear-algebra interface (see http://www.netlib.org/blas/), with CBLAS
 # interface.
 #
@@ -26,14 +26,14 @@ IF (MKL_FOUND AND NOT CBLAS_LIBRARIES)
   SET(CBLAS_INCLUDE_FILE "mkl_cblas.h")
 ENDIF (MKL_FOUND AND NOT CBLAS_LIBRARIES)
 
-# Old CBLAS search 
+# Old CBLAS search
 SET(_verbose TRUE)
 INCLUDE(CheckFunctionExists)
 INCLUDE(CheckIncludeFile)
 
 MACRO(CHECK_ALL_LIBRARIES LIBRARIES _prefix _name _flags _list _include _search_include)
   # This macro checks for the existence of the combination of fortran libraries
-  # given by _list.  If the combination is found, this macro checks (using the 
+  # given by _list.  If the combination is found, this macro checks (using the
   # Check_Fortran_Function_Exists macro) whether can link against that library
   # combination using the name of a routine given by _name using the linker
   # flags given by _flags.  If the combination of libraries is found and passes
@@ -60,19 +60,29 @@ MACRO(CHECK_ALL_LIBRARIES LIBRARIES _prefix _name _flags _list _include _search_
     SET(_combined_name ${_combined_name}_${_library})
     # did we find all the libraries in the _list until now?
     # (we stop at the first unfound one)
-    IF(_libraries_work)      
-      IF(APPLE) 
+    IF(_libraries_work)
+      IF(APPLE)
         FIND_LIBRARY(${_prefix}_${_library}_LIBRARY
           NAMES ${_library}
-          PATHS /usr/local/lib /usr/lib /usr/local/lib64 /usr/lib64 ENV 
-          DYLD_LIBRARY_PATH 
+          PATHS /usr/local/lib /usr/lib /usr/local/lib64 /usr/lib64 ENV
+          DYLD_LIBRARY_PATH
           )
       ELSE(APPLE)
         FIND_LIBRARY(${_prefix}_${_library}_LIBRARY
           NAMES ${_library}
-          PATHS /usr/local/lib /usr/lib /usr/local/lib64 /usr/lib64 /usr/lib64/atlas /usr/lib/atlas ENV 
-          LD_LIBRARY_PATH 
+          PATHS /usr/local/lib /usr/lib /usr/local/lib64 /usr/lib64 ENV
+          LD_LIBRARY_PATH
+          PATH_SUFFIXES atlas
           )
+        IF(NOT ${_prefix}_${library}_LIBRARY)
+            LIST(APPEND CMAKE_FIND_LIBRARY_SUFFIXES ".so.3")
+            FIND_LIBRARY(${_prefix}_${_library}_LIBRARY
+              NAMES ${_library}
+              PATHS /usr/local/lib /usr/lib /usr/local/lib64 /usr/lib64 ENV
+              LD_LIBRARY_PATH
+              PATH_SUFFIXES atlas
+              )
+          ENDIF(NOT ${_prefix}_${library}_LIBRARY)
       ENDIF(APPLE)
       MARK_AS_ADVANCED(${_prefix}_${_library}_LIBRARY)
       IF(${_prefix}_${_library}_LIBRARY)
