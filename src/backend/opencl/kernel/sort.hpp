@@ -27,29 +27,29 @@ namespace opencl
         static const dim_type TY = 8;
 
         template<typename T, bool DIR>
-        void sort0(Param sx, const Param in)
+        void sort0(Param val, const Param in)
         {
             try {
                 compute::command_queue c_queue(getQueue()());
 
-                compute::buffer sx_buf(sx.data());
+                compute::buffer val_buf(val.data());
 
                 for(dim_type w = 0; w < in.info.dims[3]; w++) {
                     for(dim_type z = 0; z < in.info.dims[2]; z++) {
                         for(dim_type y = 0; y < in.info.dims[1]; y++) {
 
-                            dim_type sxOffset = w * sx.info.strides[3] + z * sx.info.strides[2]
-                                              + y * sx.info.strides[1];
+                            dim_type valOffset = w * val.info.strides[3] + z * val.info.strides[2]
+                                               + y * val.info.strides[1];
 
                             if(DIR) {
                                 compute::stable_sort(
-                                        compute::make_buffer_iterator<T>(sx_buf, sxOffset),
-                                        compute::make_buffer_iterator<T>(sx_buf, sxOffset + sx.info.dims[0]),
+                                        compute::make_buffer_iterator<T>(val_buf, valOffset),
+                                        compute::make_buffer_iterator<T>(val_buf, valOffset + val.info.dims[0]),
                                         compute::less<T>(), c_queue);
                             } else {
                                 compute::stable_sort(
-                                        compute::make_buffer_iterator<T>(sx_buf, sxOffset),
-                                        compute::make_buffer_iterator<T>(sx_buf, sxOffset + sx.info.dims[0]),
+                                        compute::make_buffer_iterator<T>(val_buf, valOffset),
+                                        compute::make_buffer_iterator<T>(val_buf, valOffset + val.info.dims[0]),
                                         compute::greater<T>(), c_queue);
                             }
                         }
@@ -64,36 +64,36 @@ namespace opencl
         }
 
         template<typename T, bool DIR>
-        void sort0_index(Param sx, Param ix, const Param in)
+        void sort0_index(Param val, Param idx, const Param in)
         {
             try {
                 compute::command_queue c_queue(getQueue()());
 
-                compute::buffer sx_buf(sx.data());
-                compute::buffer ix_buf(ix.data());
+                compute::buffer val_buf(val.data());
+                compute::buffer idx_buf(idx.data());
 
                 for(dim_type w = 0; w < in.info.dims[3]; w++) {
                     for(dim_type z = 0; z < in.info.dims[2]; z++) {
                         for(dim_type y = 0; y < in.info.dims[1]; y++) {
 
-                            dim_type sxOffset = w * sx.info.strides[3] + z * sx.info.strides[2]
-                                              + y * sx.info.strides[1];
-                            dim_type ixOffset = w * ix.info.strides[3] + z * ix.info.strides[2]
-                                              + y * ix.info.strides[1];
+                            dim_type valOffset = w * val.info.strides[3] + z * val.info.strides[2]
+                                               + y * val.info.strides[1];
+                            dim_type idxOffset = w * idx.info.strides[3] + z * idx.info.strides[2]
+                                               + y * idx.info.strides[1];
 
-                            compute::buffer_iterator<unsigned> ix_begin(ix_buf, ixOffset);
-                            compute::iota(ix_begin, ix_begin + in.info.dims[0], 0, c_queue);
+                            compute::buffer_iterator<unsigned> idx_begin(idx_buf, idxOffset);
+                            compute::iota(idx_begin, idx_begin + in.info.dims[0], 0, c_queue);
 
                             if(DIR) {
                                 compute::sort_by_key(
-                                        compute::make_buffer_iterator<T>(sx_buf, sxOffset),
-                                        compute::make_buffer_iterator<T>(sx_buf, sxOffset + sx.info.dims[0]),
-                                        ix_begin, compute::less<T>(), c_queue);
+                                        compute::make_buffer_iterator<T>(val_buf, valOffset),
+                                        compute::make_buffer_iterator<T>(val_buf, valOffset + val.info.dims[0]),
+                                        idx_begin, compute::less<T>(), c_queue);
                             } else {
                                 compute::sort_by_key(
-                                        compute::make_buffer_iterator<T>(sx_buf, sxOffset),
-                                        compute::make_buffer_iterator<T>(sx_buf, sxOffset + sx.info.dims[0]),
-                                        ix_begin, compute::greater<T>(), c_queue);
+                                        compute::make_buffer_iterator<T>(val_buf, valOffset),
+                                        compute::make_buffer_iterator<T>(val_buf, valOffset + val.info.dims[0]),
+                                        idx_begin, compute::greater<T>(), c_queue);
                             }
                         }
                     }

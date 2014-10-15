@@ -80,11 +80,11 @@ extern "C" {
                             const af_interp_type method, const float offGrid);
 
     // Sort
-    AFAPI af_err af_sort(af_array *sorted, const af_array in,
-                         const bool dir, const unsigned dim);
+    AFAPI af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool dir);
 
-    AFAPI af_err af_sort_index(af_array *sorted, af_array *indices, const af_array in,
-                               const bool dir, const unsigned dim);
+    AFAPI af_err af_sort_index(af_array *out, af_array *indices, const af_array in,
+                               const unsigned dim, const bool dir);
+
 #ifdef __cplusplus
 }
 #endif

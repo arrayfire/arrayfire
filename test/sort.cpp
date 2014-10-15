@@ -56,7 +56,7 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, bool 
         ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_sort(&sxArray, inArray, dir, 0));
+    ASSERT_EQ(AF_SUCCESS, af_sort(&sxArray, inArray, 0, dir));
 
     size_t nElems = tests[resultIdx0].size();
 

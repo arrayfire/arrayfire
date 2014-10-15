@@ -13,63 +13,61 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
-static inline void sort(af_array *sx, const af_array in, const bool dir, const unsigned dim)
+static inline void sort(af_array *val, const af_array in, const unsigned dim, const bool dir)
 {
     const Array<T> &inArray = getArray<T>(in);
-    Array<T> *sxArray = copyArray<T>(inArray);
+    Array<T> *valArray = copyArray<T>(inArray);
     if(dir) {
-        sort<T, 1>(*sxArray, inArray, dim);
+        sort<T, 1>(*valArray, inArray, dim);
     } else {
-        sort<T, 0>(*sxArray, inArray, dim);
+        sort<T, 0>(*valArray, inArray, dim);
     }
-    *sx = getHandle(*sxArray);
+    *val = getHandle(*valArray);
 }
 
 template<typename T>
-static inline void sort_index(af_array *sx, af_array *ix, const af_array in, const bool dir, const unsigned dim)
+static inline void sort_index(af_array *val, af_array *idx, const af_array in,
+                              const unsigned dim, const bool dir)
 {
     const Array<T> &inArray = getArray<T>(in);
-    Array<T> *sxArray = copyArray<T>(inArray);
+    Array<T> *valArray = copyArray<T>(inArray);
     if(dir) {
-        sort_index<T, 1>(*sxArray, getWritableArray<unsigned>(*ix), inArray, dim);
+        sort_index<T, 1>(*valArray, getWritableArray<unsigned>(*idx), inArray, dim);
     } else {
-        sort_index<T, 0>(*sxArray, getWritableArray<unsigned>(*ix), inArray, dim);
+        sort_index<T, 0>(*valArray, getWritableArray<unsigned>(*idx), inArray, dim);
     }
-    *sx = getHandle(*sxArray);
+    *val = getHandle(*valArray);
 }
 
-af_err af_sort(af_array *sorted, const af_array in, const bool dir, const unsigned dim)
+af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool dir)
 {
     try {
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
-        af::dim4 idims = info.dims();
 
-        DIM_ASSERT(2, info.elements() > 0);
+        DIM_ASSERT(1, info.elements() > 0);
         // Only Dim 0 supported
-        ARG_ASSERT(4, dim == 0);
+        ARG_ASSERT(2, dim == 0);
 
-        af_array sx;
-        af_array ix;
-        af_create_handle(&ix, idims.ndims(), idims.get(), u32);
+        af_array val;
 
         switch(type) {
-            case f32: sort<float  >(&sx, in, dir, dim);  break;
-            case f64: sort<double >(&sx, in, dir, dim);  break;
-            case s32: sort<int    >(&sx, in, dir, dim);  break;
-            case u32: sort<uint   >(&sx, in, dir, dim);  break;
-            case u8:  sort<uchar  >(&sx, in, dir, dim);  break;
-         // case s8:  sort<char   >(&sx, in, dir, dim);  break;
+            case f32: sort<float  >(&val, in, dim, dir);  break;
+            case f64: sort<double >(&val, in, dim, dir);  break;
+            case s32: sort<int    >(&val, in, dim, dir);  break;
+            case u32: sort<uint   >(&val, in, dim, dir);  break;
+            case u8:  sort<uchar  >(&val, in, dim, dir);  break;
+         // case s8:  sort<char   >(&val, in, dim, dir);  break;
             default:  TYPE_ERROR(1, type);
         }
-        std::swap(*sorted , sx);
+        std::swap(*out, val);
     }
     CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_sort_index(af_array *sorted, af_array *indices, const af_array in, const bool dir, const unsigned dim)
+af_err af_sort_index(af_array *out, af_array *indices, const af_array in, const unsigned dim, const bool dir)
 {
     try {
         ArrayInfo info = getInfo(in);
@@ -78,23 +76,23 @@ af_err af_sort_index(af_array *sorted, af_array *indices, const af_array in, con
 
         DIM_ASSERT(2, info.elements() > 0);
         // Only Dim 0 supported
-        ARG_ASSERT(4, dim == 0);
+        ARG_ASSERT(3, dim == 0);
 
-        af_array sx;
-        af_array ix;
-        af_create_handle(&ix, idims.ndims(), idims.get(), u32);
+        af_array val;
+        af_array idx;
+        af_create_handle(&idx, idims.ndims(), idims.get(), u32);
 
         switch(type) {
-            case f32: sort_index<float  >(&sx, &ix, in, dir, dim);  break;
-            case f64: sort_index<double >(&sx, &ix, in, dir, dim);  break;
-            case s32: sort_index<int    >(&sx, &ix, in, dir, dim);  break;
-            case u32: sort_index<uint   >(&sx, &ix, in, dir, dim);  break;
-            case u8:  sort_index<uchar  >(&sx, &ix, in, dir, dim);  break;
-         // case s8:  sort_index<char   >(&sx, &ix, in, dir, dim);  break;
+            case f32: sort_index<float  >(&val, &idx, in, dim, dir);  break;
+            case f64: sort_index<double >(&val, &idx, in, dim, dir);  break;
+            case s32: sort_index<int    >(&val, &idx, in, dim, dir);  break;
+            case u32: sort_index<uint   >(&val, &idx, in, dim, dir);  break;
+            case u8:  sort_index<uchar  >(&val, &idx, in, dim, dir);  break;
+         // case s8:  sort_index<char   >(&val, &idx, in, dim, dir);  break;
             default:  TYPE_ERROR(1, type);
         }
-        std::swap(*sorted , sx);
-        std::swap(*indices, ix);
+        std::swap(*out , val);
+        std::swap(*indices, idx);
     }
     CATCHALL;
 

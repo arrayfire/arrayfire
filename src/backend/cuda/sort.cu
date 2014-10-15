@@ -8,31 +8,31 @@
 namespace cuda
 {
     template<typename T, bool DIR>
-    void sort(Array<T> &sx, const Array<T> &in, const unsigned dim)
+    void sort(Array<T> &val, const Array<T> &in, const unsigned dim)
     {
         switch(dim) {
-            case 0: kernel::sort0<T, DIR>(sx, in);
+            case 0: kernel::sort0<T, DIR>(val, in);
                     break;
             default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }
     }
 
     template<typename T, bool DIR>
-    void sort_index(Array<T> &sx, Array<unsigned> &ix, const Array<T> &in, const unsigned dim)
+    void sort_index(Array<T> &val, Array<unsigned> &idx, const Array<T> &in, const unsigned dim)
     {
         switch(dim) {
-            case 0: kernel::sort0_index<T, DIR>(sx, ix, in);
+            case 0: kernel::sort0_index<T, DIR>(val, idx, in);
                     break;
             default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }
     }
 
 #define INSTANTIATE(T)                                                                          \
-    template void sort<T, true>(Array<T> &sx, const Array<T> &in, const unsigned dim);          \
-    template void sort<T,false>(Array<T> &sx, const Array<T> &in, const unsigned dim);          \
-    template void sort_index<T, true>(Array<T> &sx, Array<unsigned> &ix, const Array<T> &in,    \
+    template void sort<T, true>(Array<T> &val, const Array<T> &in, const unsigned dim);         \
+    template void sort<T,false>(Array<T> &val, const Array<T> &in, const unsigned dim);         \
+    template void sort_index<T, true>(Array<T> &val, Array<unsigned> &idx, const Array<T> &in,  \
                                       const unsigned dim);                                      \
-    template void sort_index<T,false>(Array<T> &sx, Array<unsigned> &ix, const Array<T> &in,    \
+    template void sort_index<T,false>(Array<T> &val, Array<unsigned> &idx, const Array<T> &in,  \
                                       const unsigned dim);                                      \
 
     INSTANTIATE(float)
