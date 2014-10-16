@@ -150,8 +150,26 @@ struct Binary<T, af_max_t>
 
 SPECIALIZE_FLOATING_MAX(float, float)
 SPECIALIZE_FLOATING_MAX(double, double)
-SPECIALIZE_FLOATING_MAX(cfloat, float)
-SPECIALIZE_FLOATING_MAX(cdouble, double)
+
+#define SPECIALIZE_COMPLEX_MAX(T, Tr)           \
+    template<>                                  \
+    struct Binary<T, af_max_t>                  \
+    {                                           \
+        __DH__ T init()                         \
+        {                                       \
+            return detail::scalar<T>(           \
+                detail::limit_min<Tr>()         \
+                );                              \
+        }                                       \
+                                                \
+        __DH__ T operator() (T lhs, T rhs)      \
+        {                                       \
+            return detail::max(lhs, rhs);       \
+        }                                       \
+    };                                          \
+
+SPECIALIZE_COMPLEX_MAX(cfloat, float)
+SPECIALIZE_COMPLEX_MAX(cdouble, double)
 
 #undef SPECIALIZE_FLOATING_MAX
 
