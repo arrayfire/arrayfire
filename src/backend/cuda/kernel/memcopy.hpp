@@ -173,15 +173,16 @@ namespace kernel
     template<typename inType, typename outType>
     void copy(Param<outType> dst, CParam<inType> src, dim_type ndims, outType default_value, double factor)
     {
-        static dim3 threads(DIMX, DIMY);
+        dim3 threads(DIMX, DIMY);
+        size_t local_size[] = {DIMX, DIMY};
 
-        threads.x *= threads.y;
+        local_size[0] *= local_size[1];
         if (ndims == 1) {
-            threads.y  = 1;
+            local_size[1] = 1;
         }
 
-        uint blk_x = divup(dst.dims[0], threads.x);
-        uint blk_y = divup(dst.dims[1], threads.y);
+        uint blk_x = divup(dst.dims[0], local_size[0]);
+        uint blk_y = divup(dst.dims[1], local_size[1]);
 
         dim3 blocks(blk_x * dst.dims[2],
                     blk_y * dst.dims[3]);

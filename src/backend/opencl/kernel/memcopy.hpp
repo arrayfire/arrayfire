@@ -101,6 +101,7 @@ namespace kernel
                         cpyKernels[device] = Kernel(cpyProgs[device], "copy");
                     });
 
+            NDRange local(DIM0, DIM1);
             size_t local_size[] = {DIM0, DIM1};
 
             local_size[0] *= local_size[1];
@@ -108,13 +109,11 @@ namespace kernel
                 local_size[1] = 1;
             }
 
-            NDRange local(local_size[0], local_size[1]);
-
             size_t blk_x = divup(dst.info.dims[0], local_size[0]);
             size_t blk_y = divup(dst.info.dims[1], local_size[1]);
 
-            NDRange global(blk_x * dst.info.dims[2] * local_size[0],
-                    blk_y * dst.info.dims[3] * local_size[1]);
+            NDRange global(blk_x * dst.info.dims[2] * DIM0,
+                    blk_y * dst.info.dims[3] * DIM1);
 
             dims_t trgt_dims;
             if (same_dims) {
