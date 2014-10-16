@@ -47,4 +47,3 @@ namespace opencl
         }
     }
 }
-

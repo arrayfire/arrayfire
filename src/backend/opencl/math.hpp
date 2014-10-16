@@ -47,14 +47,18 @@ namespace opencl
     template<>
     cfloat  scalar<cfloat >(double val)
     {
-        cfloat  cval = {(float)val, 0};
+        cfloat  cval;
+        cval.s[0]= (float)val;
+        cval.s[1] = 0;
         return cval;
     }
 
     template<>
     cdouble scalar<cdouble >(double val)
     {
-        cdouble  cval = {val, 0};
+        cdouble cval;
+        cval.s[0]= val;
+        cval.s[1] = 0;
         return cval;
     }
 

@@ -8,6 +8,7 @@
 #include <backend.hpp>
 #include <handle.hpp>
 #include <random.hpp>
+#include <math.hpp>
 
 using af::dim4;
 using namespace detail;
@@ -21,22 +22,7 @@ static af_array createHandle(af::dim4 d)
 template<typename T>
 static af_array createHandle(af::dim4 d, double val)
 {
-    return getHandle(*createValueArray<T>(d, static_cast<T>(val)));
-}
-
-// TODO: See if we can combine specializations
-template<>
-af_array createHandle<cfloat>(af::dim4 d, double val)
-{
-    cfloat cval = {static_cast<float>(val), 0};
-    return getHandle(*createValueArray<cfloat>(d, cval));
-}
-
-template<>
-af_array createHandle<cdouble>(af::dim4 d, double val)
-{
-    cdouble cval = {val, 0};
-    return getHandle(*createValueArray<cdouble>(d, cval));
+    return getHandle(*createValueArray<T>(d, scalar<T>(val)));
 }
 
 template<typename T>

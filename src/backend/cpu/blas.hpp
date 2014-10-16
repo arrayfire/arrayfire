@@ -4,7 +4,9 @@
 #ifdef __APPLE__
 #include <Accelerate/Accelerate.h>
 #else
+extern "C" {
 #include <cblas.h>
+}
 #endif
 
 namespace cpu

@@ -115,7 +115,6 @@ struct BinOp<To, Ti, af_cplx2_t>
 {
     const char *name()
     {
-        AF_ERROR("Invalid inputs to cplx2", AF_ERR_ARG);
         return "noop";
     }
 };
