@@ -7,6 +7,8 @@
 #include <JIT/Node.hpp>
 #include <kernel_headers/jit.hpp>
 #include <program.hpp>
+#include <dispatch.hpp>
+#include <err_opencl.hpp>
 
 namespace opencl
 {

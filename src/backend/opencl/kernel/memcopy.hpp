@@ -83,14 +83,15 @@ namespace kernel
 
             int device = getActiveDeviceId();
 
-            std::call_once( compileFlags[device], [device] () {
+            std::ostringstream options;
+            options << " -D inType=" << dtype_traits<inType>::getName()
+                    << " -D outType="<< dtype_traits<outType>::getName()
+                    << " -D inType_" << dtype_traits<inType>::getName()
+                    << " -D outType_"<< dtype_traits<outType>::getName()
+                    << " -D SAME_DIMS="<< same_dims;
 
-                        std::ostringstream options;
-                        options << " -D inType=" << dtype_traits<inType>::getName()
-                                << " -D outType="<< dtype_traits<outType>::getName()
-                                << " -D inType_" << dtype_traits<inType>::getName()
-                                << " -D outType_"<< dtype_traits<outType>::getName()
-                                << " -D SAME_DIMS="<< same_dims;
+
+            std::call_once(compileFlags[device], [&] () {
 
                         buildProgram(cpyProgs[device],
                             copy_cl,
