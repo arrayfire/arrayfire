@@ -35,11 +35,12 @@ namespace opencl
                 compute::buffer val_buf(val.data());
 
                 for(dim_type w = 0; w < in.info.dims[3]; w++) {
+                    dim_type valW = w * val.info.strides[3];
                     for(dim_type z = 0; z < in.info.dims[2]; z++) {
+                        dim_type valWZ = valW + z * val.info.strides[2];
                         for(dim_type y = 0; y < in.info.dims[1]; y++) {
 
-                            dim_type valOffset = w * val.info.strides[3] + z * val.info.strides[2]
-                                               + y * val.info.strides[1];
+                            dim_type valOffset = valWZ + y * val.info.strides[1];
 
                             if(DIR) {
                                 compute::stable_sort(
@@ -73,13 +74,15 @@ namespace opencl
                 compute::buffer idx_buf(idx.data());
 
                 for(dim_type w = 0; w < in.info.dims[3]; w++) {
+                    dim_type valW = w * val.info.strides[3];
+                    dim_type idxW = w * idx.info.strides[3];
                     for(dim_type z = 0; z < in.info.dims[2]; z++) {
+                        dim_type valWZ = valW + z * val.info.strides[2];
+                        dim_type idxWZ = idxW + z * idx.info.strides[2];
                         for(dim_type y = 0; y < in.info.dims[1]; y++) {
 
-                            dim_type valOffset = w * val.info.strides[3] + z * val.info.strides[2]
-                                               + y * val.info.strides[1];
-                            dim_type idxOffset = w * idx.info.strides[3] + z * idx.info.strides[2]
-                                               + y * idx.info.strides[1];
+                            dim_type valOffset = valWZ + y * val.info.strides[1];
+                            dim_type idxOffset = idxWZ + y * idx.info.strides[1];
 
                             compute::buffer_iterator<unsigned> idx_begin(idx_buf, idxOffset);
                             compute::iota(idx_begin, idx_begin + in.info.dims[0], 0, c_queue);

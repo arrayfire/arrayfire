@@ -17,6 +17,10 @@ using std::async;
 
 namespace cpu
 {
+    ///////////////////////////////////////////////////////////////////////////
+    // Kernel Functions
+    ///////////////////////////////////////////////////////////////////////////
+
     // Based off of http://stackoverflow.com/a/12399290
     template<typename T, bool DIR>
     void sort0(Array<T> &val, const Array<T> &in)
@@ -29,11 +33,12 @@ namespace cpu
 
         T *comp_ptr = nullptr;
         for(dim_type w = 0; w < in.dims()[3]; w++) {
+            dim_type valW = w * val.strides()[3];
             for(dim_type z = 0; z < in.dims()[2]; z++) {
+                dim_type valWZ = valW + z * val.strides()[2];
                 for(dim_type y = 0; y < in.dims()[1]; y++) {
 
-                    dim_type valOffset = w * val.strides()[3] + z * val.strides()[2]
-                                       + y * val.strides()[1];
+                    dim_type valOffset = valWZ + y * val.strides()[1];
 
                     comp_ptr = val_ptr + valOffset;
                     std::stable_sort(comp_ptr, comp_ptr + val.dims()[0], op);
@@ -60,15 +65,18 @@ namespace cpu
         auto comparator = [&comp_ptr, &op](size_t i1, size_t i2) {return op(comp_ptr[i1], comp_ptr[i2]);};
 
         for(dim_type w = 0; w < in.dims()[3]; w++) {
+            dim_type valW = w * val.strides()[3];
+            dim_type idxW = w * idx.strides()[3];
+            dim_type  inW = w *  in.strides()[3];
             for(dim_type z = 0; z < in.dims()[2]; z++) {
+                dim_type valWZ = valW + z * val.strides()[2];
+                dim_type idxWZ = idxW + z * idx.strides()[2];
+                dim_type  inWZ =  inW + z *  in.strides()[2];
                 for(dim_type y = 0; y < in.dims()[1]; y++) {
 
-                    dim_type valOffset = w * val.strides()[3] + z * val.strides()[2]
-                                       + y * val.strides()[1];
-                    dim_type idxOffset = w * idx.strides()[3] + z * idx.strides()[2]
-                                       + y * idx.strides()[1];
-                    dim_type inOffset  = w * in.strides()[3] + z * in.strides()[2]
-                                       + y * in.strides()[1];
+                    dim_type valOffset = valWZ + y * val.strides()[1];
+                    dim_type idxOffset = idxWZ + y * idx.strides()[1];
+                    dim_type inOffset  =  inWZ + y *  in.strides()[1];
 
                     uint *ptr = idx_ptr + idxOffset;
                     std::copy(seq_vec.begin(), seq_vec.end(), ptr);
