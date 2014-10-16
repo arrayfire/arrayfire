@@ -39,6 +39,7 @@ static string getKernelString(string funcName, Node *node)
     stringstream kerStream;
     int id = node->setId(0) - 1;
 
+    kerStrea << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable" << std::endl << std::endl;
     kerStream << "__kernel void" << std::endl;
 
     kerStream << funcName;
