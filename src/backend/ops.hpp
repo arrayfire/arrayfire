@@ -158,7 +158,7 @@ SPECIALIZE_FLOATING_MAX(double, double)
         __DH__ T init()                         \
         {                                       \
             return detail::scalar<T>(           \
-                detail::limit_min<Tr>()         \
+                detail::scalar<Tr>(0)           \
                 );                              \
         }                                       \
                                                 \
