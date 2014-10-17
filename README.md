@@ -51,17 +51,20 @@ If your compiler cannot find the cblas_* symbols when linking, make sure the cbl
 
 ### CentOS 6.*
 - Install devtoolset-2 using the instructions from [here](http://people.centos.org/tru/devtools-2/readme).
+
 ```bash
 scl enable detoolset-2 bash
 ccmake ..
 make
 make test
 ```
+
 - Required version of Boost (>=1.48) may not be available using the package
   manager. It needs to be downloaded and installed. The following commands are
   for version 1.55. For a different version, simply change the version number.
   You may also choose a --perfix path of your choosing, but may need to
   manually edit the cmake path if it is not in one of the standard locations.
+
 ```bash
 wget http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.gz
 tar -xvzf boost_1_55_0.tar.gz
