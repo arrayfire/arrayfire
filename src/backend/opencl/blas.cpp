@@ -23,7 +23,7 @@ using std::to_string;
 clblasTranspose
 toClblasTranspose(af_blas_transpose opt)
 {
-    clblasTranspose out;
+    clblasTranspose out = clblasNoTrans;
     switch(opt) {
         case AF_NO_TRANSPOSE        : out = clblasNoTrans;   break;
         case AF_TRANSPOSE           : out = clblasTrans;     break;

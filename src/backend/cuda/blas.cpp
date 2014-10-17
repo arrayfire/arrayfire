@@ -61,7 +61,7 @@ getHandle()
 cublasOperation_t
 toCblasTranspose(af_blas_transpose opt)
 {
-    cublasOperation_t out;
+    cublasOperation_t out = CUBLAS_OP_N;
     switch(opt) {
         case AF_NO_TRANSPOSE        : out = CUBLAS_OP_N;    break;
         case AF_TRANSPOSE           : out = CUBLAS_OP_T;    break;
