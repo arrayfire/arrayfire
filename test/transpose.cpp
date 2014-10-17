@@ -50,11 +50,7 @@ void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=n
 
     for(int d=0; d<nDevices; ++d) {
 
-#if defined(AF_CPU)
-        ASSERT_EQ(AF_ERR_RUNTIME, af_set_device(d));
-#else
         ASSERT_EQ(AF_SUCCESS, af_set_device(d));
-#endif
 
         ASSERT_EQ(AF_SUCCESS, af_info());
 

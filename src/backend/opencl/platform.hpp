@@ -49,8 +49,6 @@ class DeviceManager
         void operator=(DeviceManager const&);
 
         // Attributes
-        std::string    devInfo;
-
         std::vector<cl::CommandQueue>     queues;
         std::vector<cl::Platform>      platforms;
         std::vector<cl::Context>        contexts;

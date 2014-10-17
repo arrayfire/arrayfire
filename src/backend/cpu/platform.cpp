@@ -17,6 +17,11 @@ namespace cpu {
 
     int setDevice(int device)
     {
-        return -1;
+        static bool flag;
+        if(!flag) {
+            std::cout << "WARNING: af_set_device not supported for CPU" << std::endl;
+            flag = 1;
+        }
+        return 1;
     }
 }
