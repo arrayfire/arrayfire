@@ -31,6 +31,7 @@ FILE(GLOB opencl_src
     "../*.hpp"
     "../*.h"
     "../*.cpp"
+    "kernel/*.cpp"
     )
 
 FILE(GLOB kernel_src "kernel/*.cl" "kernel/KParam.hpp")
