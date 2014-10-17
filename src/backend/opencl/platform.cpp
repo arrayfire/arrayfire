@@ -28,48 +28,58 @@ DeviceManager& DeviceManager::getInstance()
 }
 
 DeviceManager::DeviceManager()
-    : devInfo(""), activeCtxId(0), activeQId(0)
+    : activeCtxId(0), activeQId(0)
 {
-    ostringstream info;
-
-    vector<Platform> platforms;
     Platform::get(&platforms);
-    vector<string> pnames;
 
     for (auto platform: platforms) {
-        string pstr;
-        platform.getInfo(CL_PLATFORM_NAME, &pstr);
-        pnames.push_back(pstr);
-
         cl_context_properties cps[3] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platform)(), 0};
         contexts.emplace_back(CL_DEVICE_TYPE_ALL, cps);
     }
 
     unsigned nDevices = 0;
-    vector<string>::iterator pIter = pnames.begin();
     for (auto context: contexts) {
         vector<Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
 
-        for (auto dev: devices) {
-            string dstr;
-            dev.getInfo(CL_DEVICE_NAME, &dstr);
-
-            info<< nDevices++ <<". "<<*pIter<<" "<<dstr<<" ";
-            info<<dev.getInfo<CL_DEVICE_VERSION>();
-            info<<" Device driver "<<dev.getInfo<CL_DRIVER_VERSION>()<<std::endl;
-
+        for(auto dev : devices) {
+            nDevices++;
             queues.emplace_back(context, dev);
         }
-        pIter++;
 
         ctxOffsets.push_back(nDevices);
     }
-    devInfo = info.str();
 }
 
 std::string getInfo()
 {
-    return DeviceManager::getInstance().devInfo;
+    ostringstream info;
+
+    vector<string> pnames;
+    for (auto platform: DeviceManager::getInstance().platforms) {
+        string pstr;
+        platform.getInfo(CL_PLATFORM_NAME, &pstr);
+        pnames.push_back(pstr);
+    }
+
+    unsigned nDevices = 0;
+    vector<string>::iterator pIter = pnames.begin();
+    for (auto context: DeviceManager::getInstance().contexts) {
+        vector<Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
+
+        for(unsigned i = 0; i < devices.size(); i++) {
+            bool show_braces = (getActiveDeviceId() == nDevices);
+            string dstr;
+            devices[i].getInfo(CL_DEVICE_NAME, &dstr);
+
+            string id = (show_braces ? string("[") : "-") + std::to_string(nDevices++) +
+                        (show_braces ? string("]") : "-");
+            info << id << " " << *pIter << " " << dstr << " ";
+            info << devices[i].getInfo<CL_DEVICE_VERSION>();
+            info << " Device driver " << devices[i].getInfo<CL_DRIVER_VERSION>() <<std::endl;
+        }
+        pIter++;
+    }
+    return info.str();
 }
 
 int getDeviceCount()

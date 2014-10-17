@@ -39,11 +39,7 @@ void scanTest(string pTestFile, int off = 0, bool isSubRef=false, const vector<a
 
     for (int dev = 0; dev < nDevices; dev++) {
 
-#if defined(AF_CPU)
-        ASSERT_EQ(AF_ERR_RUNTIME, af_set_device(dev));
-#else
         ASSERT_EQ(AF_SUCCESS, af_set_device(dev));
-#endif
 
         // Get input array
         if (isSubRef) {
