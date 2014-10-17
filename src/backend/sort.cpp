@@ -98,3 +98,78 @@ af_err af_sort_index(af_array *out, af_array *indices, const af_array in, const 
 
     return AF_SUCCESS;
 }
+
+template<typename Tk, typename Tv>
+static inline void sort_by_key(af_array *okey, af_array *oval, const af_array ikey, const af_array ival,
+                               const unsigned dim, const bool dir)
+{
+    const Array<Tk> &ikeyArray = getArray<Tk>(ikey);
+    const Array<Tv> &ivalArray = getArray<Tv>(ival);
+    Array<Tk> *okeyArray = copyArray<Tk>(ikeyArray);
+    Array<Tv> *ovalArray = copyArray<Tv>(ivalArray);
+    if(dir) {
+        sort_by_key<Tk, Tv, 1>(*okeyArray, *ovalArray, ikeyArray, ivalArray, dim);
+    } else {
+        sort_by_key<Tk, Tv, 0>(*okeyArray, *ovalArray, ikeyArray, ivalArray, dim);
+    }
+    *okey = getHandle(*okeyArray);
+    *oval = getHandle(*ovalArray);
+}
+
+template<typename Tk>
+af_err sort_by_key_tmplt(af_array *okey, af_array *oval, const af_array ikey, const af_array ival,
+                         const unsigned dim, const bool dir)
+{
+    try {
+        ArrayInfo info = getInfo(ival);
+        af_dtype vtype = info.getType();
+
+        switch(vtype) {
+            case f32: sort_by_key<Tk, float  >(okey, oval, ikey, ival, dim, dir);  break;
+            case f64: sort_by_key<Tk, double >(okey, oval, ikey, ival, dim, dir);  break;
+            case s32: sort_by_key<Tk, int    >(okey, oval, ikey, ival, dim, dir);  break;
+            case u32: sort_by_key<Tk, uint   >(okey, oval, ikey, ival, dim, dir);  break;
+            case u8:  sort_by_key<Tk, uchar  >(okey, oval, ikey, ival, dim, dir);  break;
+         // case s8:  sort_by_key<Tk, char   >(okey, oval, ikey, ival, dim, dir);  break;
+            default:  TYPE_ERROR(1, vtype);
+        }
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_sort_by_key(af_array *out_keys, af_array *out_values,
+                      const af_array keys, const af_array values,
+                      const unsigned dim, const bool dir)
+{
+    try {
+        ArrayInfo info = getInfo(keys);
+        af_dtype type = info.getType();
+
+        ArrayInfo vinfo = getInfo(values);
+
+        DIM_ASSERT(3, info.elements() > 0);
+        DIM_ASSERT(4, info.dims() == vinfo.dims());
+        // Only Dim 0 supported
+        ARG_ASSERT(5, dim == 0);
+
+        af_array oKey;
+        af_array oVal;
+
+        switch(type) {
+            case f32: sort_by_key_tmplt<float  >(&oKey, &oVal, keys, values, dim, dir);  break;
+            case f64: sort_by_key_tmplt<double >(&oKey, &oVal, keys, values, dim, dir);  break;
+            case s32: sort_by_key_tmplt<int    >(&oKey, &oVal, keys, values, dim, dir);  break;
+            case u32: sort_by_key_tmplt<uint   >(&oKey, &oVal, keys, values, dim, dir);  break;
+            case u8:  sort_by_key_tmplt<uchar  >(&oKey, &oVal, keys, values, dim, dir);  break;
+         // case s8:  sort_by_key_tmplt<char   >(&oKey, &oVal, keys, values, dim, dir);  break;
+            default:  TYPE_ERROR(1, type);
+        }
+        std::swap(*out_keys , oKey);
+        std::swap(*out_values , oVal);
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
