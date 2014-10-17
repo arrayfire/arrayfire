@@ -3,6 +3,7 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <convolve.hpp>
+#include <kernel/convolve.hpp>
 #include <err_opencl.hpp>
 
 using af::dim4;
@@ -13,16 +14,81 @@ namespace opencl
 template<typename T, typename accT, dim_type baseDim, bool expand>
 Array<T> * convolve(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind)
 {
-    Array<T> * out = nullptr;
-    OPENCL_NOT_SUPPORTED();
+    const dim4 sDims    = signal.dims();
+    const dim4 fDims    = filter.dims();
+
+    dim4 oDims(1);
+    if (expand) {
+        for(dim_type d=0; d<4ll; ++d) {
+            if (kind==ONE2ONE || kind==ONE2MANY) {
+                oDims[d] = sDims[d]+fDims[d]-1;
+            } else {
+                oDims[d] = (d<baseDim ? sDims[d]+fDims[d]-1 : sDims[d]);
+            }
+        }
+    } else {
+        oDims = sDims;
+        if (kind==ONE2MANY) oDims[baseDim] = fDims[baseDim];
+    }
+
+    Array<T> *out   = createEmptyArray<T>(oDims);
+    bool callKernel = true;
+
+    switch(baseDim) {
+        case 1:
+            if (fDims[0]>kernel::MAX_CONV1_FILTER_LEN)
+                callKernel = false;
+            break;
+        case 2:
+            if ((fDims[0]*fDims[1]) > std::pow(kernel::MAX_CONV2_FILTER_LEN,2ll))
+                callKernel = false;
+            break;
+        case 3:
+            if ((fDims[0]*fDims[1]*fDims[2]) > std::pow(kernel::MAX_CONV2_FILTER_LEN,3ll))
+                callKernel = false;
+            break;
+    }
+
+    if (callKernel)
+        kernel::convolve_nd<T, accT, baseDim, expand>(*out, signal, filter, kind);
+    else {
+        // call upon fft
+        OPENCL_NOT_SUPPORTED();
+    }
+
     return out;
 }
 
 template<typename T, typename accT, bool expand>
 Array<T> * convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> const& r_filter)
 {
-    Array<T> * out = nullptr;
-    OPENCL_NOT_SUPPORTED();
+    const dim4 cfDims   = c_filter.dims();
+    const dim4 rfDims   = r_filter.dims();
+
+    if((cfDims[0]*rfDims[0]) > std::pow(kernel::MAX_CONV2_FILTER_LEN,2ll)) {
+        // call upon fft
+        OPENCL_NOT_SUPPORTED();
+    }
+
+    const dim4 sDims = signal.dims();
+    dim4 tDims(sDims[0]+cfDims[0]-1, sDims[1]+rfDims[0]-1, sDims[2], sDims[3]);
+    dim4 oDims(1);
+    if (expand) {
+        oDims[0] = sDims[0]+cfDims[0]-1;
+        oDims[1] = sDims[1]+rfDims[0]-1;
+        oDims[2] = sDims[2];
+    } else {
+        oDims = sDims;
+    }
+
+    Array<T> *temp= createEmptyArray<T>(tDims);
+    Array<T> *out = createEmptyArray<T>(oDims);
+
+    kernel::convolve2<T, accT, 0, true>(*temp, signal, c_filter);
+    kernel::convolve2<T, accT, 1, expand>(*out, *temp, r_filter);
+
+    destroyArray<T>(*temp);
+
     return out;
 }
 
