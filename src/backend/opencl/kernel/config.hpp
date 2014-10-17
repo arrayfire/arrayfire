@@ -1,22 +1,17 @@
 #pragma once
+#include <iostream>
+#include <types.hpp>
+
 namespace opencl
 {
 namespace kernel
 {
 
-    static std::ostream&
-    operator<<(std::ostream &out, const cfloat& var)
-    {
-        out << "{" << var.s[0] << "," << var.s[1] << "}";
-        return out;
-    }
+    std::ostream&
+    operator<<(std::ostream &out, const cfloat& var);
 
-    static std::ostream&
-    operator<<(std::ostream &out, const cdouble& var)
-    {
-        out << "{" << var.s[0] << "," << var.s[1] << "}";
-        return out;
-    }
+    std::ostream&
+    operator<<(std::ostream &out, const cdouble& var);
 
     static const uint THREADS_PER_GROUP = 256;
     static const uint THREADS_X = 32;
