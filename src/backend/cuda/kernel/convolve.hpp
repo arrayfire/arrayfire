@@ -301,7 +301,7 @@ void convolve_nd(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatch
         steps[1] = signal.strides[baseDim];
         steps[2] = filter.strides[baseDim];
         bCount   = signal.dims[baseDim];
-    } else if (kind==ONE2MANY) {
+    } else if (kind==ONE2ALL) {
         steps[0] = out.strides[baseDim];
         steps[2] = filter.strides[baseDim];
         bCount   = filter.dims[baseDim];

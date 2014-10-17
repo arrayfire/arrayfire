@@ -86,7 +86,7 @@ void convolve_nd(Param out, const Param signal, const Param filter, ConvolveBatc
         steps[1] = signal.info.strides[baseDim];
         steps[2] = filter.info.strides[baseDim];
         bCount   = signal.info.dims[baseDim];
-    } else if (kind==ONE2MANY) {
+    } else if (kind==ONE2ALL) {
         steps[0] = out.info.strides[baseDim];
         steps[2] = filter.info.strides[baseDim];
         bCount   = filter.info.dims[baseDim];
