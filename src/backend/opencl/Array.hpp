@@ -2,8 +2,6 @@
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
-#include <kernel/set.hpp>
-#include <kernel/memcopy.hpp>
 #include <cl.hpp>
 #include <platform.hpp>
 #include <traits.hpp>
@@ -15,7 +13,6 @@
 
 namespace opencl
 {
-    using kernel::set;
     using af::dim4;
 
     template<typename T> class Array;

@@ -7,6 +7,8 @@
 #include <JIT/Node.hpp>
 #include <kernel_headers/jit.hpp>
 #include <program.hpp>
+#include <dispatch.hpp>
+#include <err_opencl.hpp>
 
 namespace opencl
 {
@@ -37,6 +39,7 @@ static string getKernelString(string funcName, Node *node)
     stringstream kerStream;
     int id = node->setId(0) - 1;
 
+    kerStream << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable" << std::endl << std::endl;
     kerStream << "__kernel void" << std::endl;
 
     kerStream << funcName;

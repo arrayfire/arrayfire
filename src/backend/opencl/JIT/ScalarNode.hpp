@@ -1,5 +1,6 @@
 #pragma once
 #include "Node.hpp"
+#include <math.hpp>
 
 namespace opencl
 {
@@ -21,7 +22,7 @@ namespace JIT
 
         ScalarNode(const double val, bool isDouble)
             : Node("float"),
-              m_val({val, 0}),
+              m_val(scalar<cdouble>(val)),
               m_double(isDouble),
               m_complex(false),
               m_name_str("f"),
@@ -82,7 +83,9 @@ namespace JIT
                 if (m_double) {
                     ker.setArg(id, (m_val));
                 } else {
-                    cl_float2 valf = {(float)m_val.s[0], (float)m_val.s[1]};
+                    cl_float2 valf;
+                    valf.s[0] = (float)m_val.s[0];
+                    valf.s[1] = (float)m_val.s[1];
                     ker.setArg(id, valf);
                 }
 
