@@ -3,3 +3,4 @@
 #include "af/arith.h"
 #include "af/image.h"
 #include "af/fft.h"
+#include "af/convolve.h"
