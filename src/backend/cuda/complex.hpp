@@ -9,6 +9,6 @@ namespace cuda
     template<typename To, typename Ti>
     Array<To>* complexOp(const Array<Ti> &lhs, const Array<Ti> &rhs)
     {
-        CUDA_NOT_SUPPORTED();
+        return createValueArray<To>(lhs.dims(), scalar<To>(0));
     }
 }

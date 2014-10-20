@@ -1,0 +1,3 @@
+[submodule "src/backend/cuda/ptx"]
+	path = src/backend/cuda/ptx
+	url = git://github.com/arrayfire/math_ptx

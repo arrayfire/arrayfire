@@ -14,7 +14,7 @@ namespace cuda
 template<typename To, typename Ti>
 Array<To>* cast(const Array<Ti> &in)
 {
-    CUDA_NOT_SUPPORTED();
+    return createValueArray<To>(in.dims(), scalar<To>(0));
 }
 
 }

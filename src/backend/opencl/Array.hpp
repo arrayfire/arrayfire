@@ -67,12 +67,10 @@ namespace opencl
         bool ready;
 
         Array(af::dim4 dims);
-        explicit Array(af::dim4 dims, T val);
-        explicit Array(af::dim4 dims, const T * const in_data);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
         Array(Param &tmp);
         explicit Array(af::dim4 dims, JIT::Node *n);
-
+        explicit Array(af::dim4 dims, const T * const in_data);
     public:
 
         ~Array();
