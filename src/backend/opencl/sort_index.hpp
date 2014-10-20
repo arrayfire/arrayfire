@@ -4,5 +4,5 @@
 namespace opencl
 {
     template<typename T, bool DIR>
-    void sort(Array<T> &val, const Array<T> &in, const unsigned dim);
+    void sort_index(Array<T> &val, Array<unsigned> &idx, const Array<T> &in, const unsigned dim);
 }
