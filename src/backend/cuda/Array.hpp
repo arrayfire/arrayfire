@@ -30,6 +30,11 @@ namespace cuda
     Array<T>*
     createEmptyArray(const af::dim4 &size);
 
+    // Create an Array object from Param<T>
+    template<typename T>
+    Array<T>*
+    createParamArray(Param<T> &tmp);
+
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     void
@@ -56,6 +61,7 @@ namespace cuda
         explicit Array(af::dim4 dims, T val);
         explicit Array(af::dim4 dims, const T * const in_data);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
+        Array(Param<T> &tmp);
     public:
 
         ~Array();
@@ -95,6 +101,7 @@ namespace cuda
         friend Array<T>* createValueArray<T>(const af::dim4 &size, const T& value);
         friend Array<T>* createDataArray<T>(const af::dim4 &size, const T * const data);
         friend Array<T>* createEmptyArray<T>(const af::dim4 &size);
+        friend Array<T>* createParamArray<T>(Param<T> &tmp);
         friend Array<T>* createSubArray<T>(const Array<T>& parent,
                                            const dim4 &dims, const dim4 &offset, const dim4 &stride);
         friend void      destroyArray<T>(Array<T> &arr);

@@ -69,6 +69,8 @@ extern "C" {
     // Inclusive sum of all the elements along an array
     AFAPI af_err af_accum(af_array *out, const af_array in, const int dim);
 
+    AFAPI af_err af_where(af_array *idx, const af_array in);
+
     // Interpolation in 1D
     AFAPI af_err af_approx1(af_array *out, const af_array in, const af_array pos,
                             const af_interp_type method, const float offGrid);
@@ -79,6 +81,16 @@ extern "C" {
 
     // Compute labels for connected regions from binary input arrays
     AFAPI af_err af_regions(af_array *out, const af_array in, const int connectivity);
+
+    // Sort
+    AFAPI af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool dir);
+
+    AFAPI af_err af_sort_index(af_array *out, af_array *indices, const af_array in,
+                               const unsigned dim, const bool dir);
+
+    AFAPI af_err af_sort_by_key(af_array *out_keys, af_array *out_values,
+                                const af_array keys, const af_array values, const unsigned dim, const bool dir);
+
 #ifdef __cplusplus
 }
 #endif

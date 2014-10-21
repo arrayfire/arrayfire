@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <testHelpers.hpp>
+#include <af/device.h>
 
 using std::vector;
 using std::string;
@@ -33,41 +34,50 @@ void scanTest(string pTestFile, int off = 0, bool isSubRef=false, const vector<a
     af_array outArray  = 0;
     af_array tempArray = 0;
 
-    // Get input array
-    if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
-        ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv.size(), &seqv.front()));
-    } else {
+    int nDevices = 0;
+    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&nDevices));
 
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
-    }
+    for (int dev = 0; dev < nDevices; dev++) {
 
-    // Compare result
-    for (int d = 0; d < (int)tests.size(); ++d) {
-        vector<To> currGoldBar(tests[d].begin(), tests[d].end());
+        ASSERT_EQ(AF_SUCCESS, af_set_device(dev));
 
-        // Run sum
-        ASSERT_EQ(AF_SUCCESS, af_scan(&outArray, inArray, d + off));
+        // Get input array
+        if (isSubRef) {
+            ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
+            ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv.size(), &seqv.front()));
+        } else {
 
-        // Get result
-        To *outData;
-        outData = new To[dims.elements()];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
-
-        size_t nElems = currGoldBar.size();
-        for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
-                                                            << " for dim " << d +off
-                                                            << std::endl;
+            ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
         }
 
-        // Delete
-        delete[] outData;
-    }
+        // Compare result
+        for (int d = 0; d < (int)tests.size(); ++d) {
+            vector<To> currGoldBar(tests[d].begin(), tests[d].end());
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+            // Run sum
+            ASSERT_EQ(AF_SUCCESS, af_scan(&outArray, inArray, d + off));
+
+            // Get result
+            To *outData;
+            outData = new To[dims.elements()];
+            ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+
+            size_t nElems = currGoldBar.size();
+            for (size_t elIter = 0; elIter < nElems; ++elIter) {
+                ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                                << " for dim " << d +off
+                                                                << " for device " << dev
+                                                                << std::endl;
+            }
+
+            // Delete
+            delete[] outData;
+        }
+
+        if(inArray   != 0) af_destroy_array(inArray);
+        if(outArray  != 0) af_destroy_array(outArray);
+        if(tempArray != 0) af_destroy_array(tempArray);
+    }
 }
 
 vector<af_seq> init_subs()

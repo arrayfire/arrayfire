@@ -42,14 +42,12 @@ namespace kernel
         bool cond_yzw = (yid < out.dims[1]) && (zid < out.dims[2]) && (wid < out.dims[3]);
 
         const uint DIMY = THREADS_PER_BLOCK / DIMX;
-        const uint SHARED_MEM_SIZE = (DIMX + 1) * (2 * DIMY);
+        const uint SHARED_MEM_SIZE = (2 * DIMX + 1) * (DIMY);
 
         __shared__ To s_val[SHARED_MEM_SIZE];
         __shared__ To s_tmp[DIMY];
 
-        To *sptr = s_val + tidy * (DIMX + 1);
-        const uint s_off = (DIMY * (DIMX + 1));
-        int mul = 1;
+        To *sptr = s_val + tidy * (2 * DIMX + 1);
 
         Transform<Ti, To, op> transform;
         Binary<To, op> binop;
@@ -69,12 +67,13 @@ namespace kernel
             sptr[tidx] = val;
             __syncthreads();
 
-            for (int off = 1; off < DIMX; off *= 2) {
-                if (tidx >= off) val = binop(val, sptr[tidx - off]);
 
-                sptr += mul * s_off;
-                sptr[tidx] = val;
-                mul *= -1;
+            uint start = 0;
+            for (int off = 1; off < DIMX; off *= 2) {
+
+                if (tidx >= off) val = binop(val, sptr[(start - off) + tidx]);
+                start = DIMX - start;
+                sptr[start + tidx] = val;
 
                 __syncthreads();
             }
@@ -84,7 +83,7 @@ namespace kernel
             id += blockDim.x;
         }
 
-        if (!isFinalPass && isLast) {
+        if (!isFinalPass && cond_yzw && isLast) {
             tptr[blockIdx_x] = val;
         }
     }
@@ -131,7 +130,7 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op, bool isFinalPass>
-    void scan_first_launcher(Param<To> out,
+    static void scan_first_launcher(Param<To> out,
                              Param<To> tmp,
                              CParam<Ti> in,
                              const uint blocks_x,
@@ -166,11 +165,11 @@ namespace kernel
 
 
     template<typename To, af_op_t op>
-    void bcast_first_launcher(Param<To> out,
-                              CParam<To> tmp,
-                              const uint blocks_x,
-                              const uint blocks_y,
-                              const uint threads_x)
+    static void bcast_first_launcher(Param<To> out,
+                                     CParam<To> tmp,
+                                     const uint blocks_x,
+                                     const uint blocks_y,
+                                     const uint threads_x)
     {
 
         dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
@@ -186,7 +185,7 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op>
-    void scan_first(Param<To> out, CParam<Ti> in)
+    static void scan_first(Param<To> out, CParam<Ti> in)
     {
         uint threads_x = nextpow2(std::max(32u, (uint)out.dims[0]));
         threads_x = std::min(threads_x, THREADS_PER_BLOCK);

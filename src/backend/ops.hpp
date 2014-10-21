@@ -6,14 +6,7 @@
 #define __DH__
 #endif
 
-typedef enum {
-    af_add_t = 0,
-    af_min_t = 1,
-    af_max_t = 2,
-    af_and_t = 3,
-    af_or_t = 4,
-    af_notzero_t = 5,
-} af_op_t;
+#include "optypes.hpp"
 
 using namespace detail;
 
@@ -101,7 +94,7 @@ struct Binary<T, af_min_t>
     }
 };
 
-#define SPEICALIZE_COMPLEX_MIN(T, Tr)           \
+#define SPECIALIZE_COMPLEX_MIN(T, Tr)           \
     template<>                                  \
     struct Binary<T, af_min_t>                  \
     {                                           \
@@ -118,10 +111,10 @@ struct Binary<T, af_min_t>
         }                                       \
     };                                          \
 
-SPEICALIZE_COMPLEX_MIN(cfloat, float)
-SPEICALIZE_COMPLEX_MIN(cdouble, double)
+SPECIALIZE_COMPLEX_MIN(cfloat, float)
+SPECIALIZE_COMPLEX_MIN(cdouble, double)
 
-#undef SPEICALIZE_COMPLEX_MIN
+#undef SPECIALIZE_COMPLEX_MIN
 
 template<typename T>
 struct Binary<T, af_max_t>
@@ -138,13 +131,15 @@ struct Binary<T, af_max_t>
 };
 
 
-#define SPEICALIZE_FLOATING_MAX(T)              \
+#define SPECIALIZE_FLOATING_MAX(T, Tr)          \
     template<>                                  \
     struct Binary<T, af_max_t>                  \
     {                                           \
         __DH__ T init()                         \
         {                                       \
-            return -detail::limit_max<T>();     \
+            return detail::scalar<T>(           \
+                -detail::limit_max<Tr>()        \
+                );                              \
         }                                       \
                                                 \
         __DH__ T operator() (T lhs, T rhs)      \
@@ -153,10 +148,30 @@ struct Binary<T, af_max_t>
         }                                       \
     };                                          \
 
-SPEICALIZE_FLOATING_MAX(float)
-SPEICALIZE_FLOATING_MAX(double)
+SPECIALIZE_FLOATING_MAX(float, float)
+SPECIALIZE_FLOATING_MAX(double, double)
 
-#undef SPEICALIZE_FLOATING_MAX
+#define SPECIALIZE_COMPLEX_MAX(T, Tr)           \
+    template<>                                  \
+    struct Binary<T, af_max_t>                  \
+    {                                           \
+        __DH__ T init()                         \
+        {                                       \
+            return detail::scalar<T>(           \
+                detail::scalar<Tr>(0)           \
+                );                              \
+        }                                       \
+                                                \
+        __DH__ T operator() (T lhs, T rhs)      \
+        {                                       \
+            return detail::max(lhs, rhs);       \
+        }                                       \
+    };                                          \
+
+SPECIALIZE_COMPLEX_MAX(cfloat, float)
+SPECIALIZE_COMPLEX_MAX(cdouble, double)
+
+#undef SPECIALIZE_FLOATING_MAX
 
 template<typename Ti, typename To, af_op_t op>
 struct Transform

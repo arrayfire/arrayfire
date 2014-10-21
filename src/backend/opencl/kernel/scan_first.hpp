@@ -38,7 +38,7 @@ namespace kernel
         std::call_once(compileFlags[device], [device] () {
 
                 const uint threads_y = THREADS_PER_GROUP / threads_x;
-                const uint SHARED_MEM_SIZE = (threads_x + 1) * (2 * threads_y);
+                const uint SHARED_MEM_SIZE = THREADS_PER_GROUP;
 
                 Binary<To, op> scan;
                 ToNum<To> toNum;
@@ -68,11 +68,11 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op, bool isFinalPass, uint threads_x>
-    void scan_first_launcher(Param out,
-                             Param tmp,
-                             const Param in,
-                             const uint groups_x,
-                             const uint groups_y)
+    static void scan_first_launcher(Param &out,
+                                    Param &tmp,
+                                    const Param &in,
+                                    const uint groups_x,
+                                    const uint groups_y)
     {
         Kernel ker = get_scan_first_kernels<Ti, To, op, isFinalPass, threads_x>(0);
 
@@ -95,10 +95,10 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op, bool isFinalPass, uint threads_x>
-    void bcast_first_launcher(Param out,
-                              Param tmp,
-                              const uint groups_x,
-                              const uint groups_y)
+    static void bcast_first_launcher(Param &out,
+                                     Param &tmp,
+                                     const uint groups_x,
+                                     const uint groups_y)
     {
 
         Kernel ker = get_scan_first_kernels<Ti, To, op, isFinalPass, threads_x>(1);
@@ -122,12 +122,12 @@ namespace kernel
 
 
     template<typename Ti, typename To, af_op_t op, bool isFinalPass>
-    void scan_first_fn(Param out,
-                       Param tmp,
-                       const Param in,
-                       const uint groups_x,
-                       const uint groups_y,
-                       const uint threads_x)
+    static void scan_first_fn(Param &out,
+                              Param &tmp,
+                              const Param &in,
+                              const uint groups_x,
+                              const uint groups_y,
+                              const uint threads_x)
     {
 
         switch (threads_x) {
@@ -148,11 +148,11 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op, bool isFinalPass>
-    void bcast_first_fn(Param out,
-                        Param tmp,
-                        const uint groups_x,
-                        const uint groups_y,
-                        const uint threads_x)
+    static void bcast_first_fn(Param &out,
+                               Param &tmp,
+                               const uint groups_x,
+                               const uint groups_y,
+                               const uint threads_x)
     {
 
         switch (threads_x) {
@@ -172,7 +172,7 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op>
-    void scan_first(Param out, const Param in)
+    static void scan_first(Param &out, const Param &in)
     {
         uint threads_x = nextpow2(std::max(32u, (uint)out.info.dims[0]));
         threads_x = std::min(threads_x, THREADS_PER_GROUP);

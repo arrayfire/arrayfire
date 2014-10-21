@@ -48,7 +48,7 @@ dim_type
 dim4::ndims() const
 {
     dim_type ret = 4;
-    for(int i = 3; i >= 0; i--) {
+    for(int i = 3; i >= 1; i--) {
         if(dims[i] == 1)    {   ret--;  }
         else                {   break;  }
     }

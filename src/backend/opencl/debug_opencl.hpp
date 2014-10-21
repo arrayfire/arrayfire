@@ -1,10 +1,12 @@
+#pragma once
 #include <err_opencl.hpp>
-// FIXME: Add a special flag for debug
-#ifndef NDEBUG
 #include <iostream>
 #include <stdio.h>
 #include <errorcodes.hpp>
 
+// FIXME: Add a special flag for debug
+// #ifndef NDEBUG
+#if 1
 #define CL_DEBUG_FINISH(Q) Q.finish()
 
 #define SHOW_BUILD_INFO(PROG) do {                              \

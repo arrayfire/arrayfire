@@ -1,6 +1,7 @@
 #include <curand_kernel.h>
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
+#include <platform.hpp>
 
 namespace cuda
 {
@@ -117,33 +118,37 @@ namespace kernel
     template<typename T>
     void randu(T *out, size_t elements)
     {
+        int device = getActiveDeviceId();
+
         int threads = THREADS;
         int blocks  = divup(elements, THREADS);
         if (blocks > BLOCKS) blocks = BLOCKS;
 
-        static curandState_t *states = NULL;
-        if (states == NULL) {
-            CUDA_CHECK(cudaMalloc(&states, BLOCKS * THREADS * sizeof(curandState_t)));
-            setup_kernel<<<THREADS, BLOCKS>>>(states, uniform_seed, BLOCKS * THREADS);
+        static curandState_t *states[DeviceManager::MAX_DEVICES];
+        if (!states[device]) {
+            CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
+            setup_kernel<<<THREADS, BLOCKS>>>(states[device], uniform_seed, BLOCKS * THREADS);
         }
 
-        uniform_kernel<<<threads, blocks>>>(out, states, elements);
+        uniform_kernel<<<threads, blocks>>>(out, states[device], elements);
     }
 
     template<typename T>
     void randn(T *out, size_t elements)
     {
+        int device = getActiveDeviceId();
+
         int threads = THREADS;
         int blocks  = divup(elements, THREADS);
         if (blocks > BLOCKS) blocks = BLOCKS;
 
-        static curandState_t *states = NULL;
-        if (states == NULL) {
-            CUDA_CHECK(cudaMalloc(&states, BLOCKS * THREADS * sizeof(curandState_t)));
-            setup_kernel<<<THREADS, BLOCKS>>>(states, uniform_seed, BLOCKS * THREADS);
+        static curandState_t *states[DeviceManager::MAX_DEVICES];
+        if (!states[device]) {
+            CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
+            setup_kernel<<<THREADS, BLOCKS>>>(states[device], uniform_seed, BLOCKS * THREADS);
         }
 
-        normal_kernel<<<threads, blocks>>>(out, states, elements);
+        normal_kernel<<<threads, blocks>>>(out, states[device], elements);
     }
 }
 }

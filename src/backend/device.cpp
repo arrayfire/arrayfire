@@ -14,19 +14,15 @@ af_err af_info()
 af_err af_get_device_count(int *nDevices)
 {
     *nDevices = getDeviceCount();
-    if(nDevices <= 0) {
-        return AF_ERR_RUNTIME;
-    } else {
-        return AF_SUCCESS;
-    }
+    return AF_SUCCESS;
 }
 
 af_err af_set_device(const int device)
 {
     if(setDevice(device) < 0) {
-        return AF_ERR_RUNTIME;
-    } else {
-        return AF_SUCCESS;
+        std::cout << "Invalid Device ID" << std::endl;
+        return AF_ERR_INVALID_ARG;
     }
+    return AF_SUCCESS;
 }
 

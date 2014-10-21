@@ -23,7 +23,7 @@ using std::to_string;
 clblasTranspose
 toClblasTranspose(af_blas_transpose opt)
 {
-    clblasTranspose out;
+    clblasTranspose out = clblasNoTrans;
     switch(opt) {
         case AF_NO_TRANSPOSE        : out = clblasNoTrans;   break;
         case AF_TRANSPOSE           : out = clblasTrans;     break;
@@ -120,7 +120,7 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
 
     }
     if(err) {
-        throw runtime_error(string("CLBLAS error: ") + to_string(err));
+        throw runtime_error(std::string("CLBLAS error: ") + std::to_string(err));
     }
 
     return out;
@@ -146,7 +146,7 @@ Array<T>* dot(const Array<T> &lhs, const Array<T> &rhs,
             1, &getQueue()(), 0, nullptr, &event());
 
     if(err) {
-        throw runtime_error(string("CLBLAS error: ") + to_string(err));
+        throw runtime_error(std::string("CLBLAS error: ") + std::to_string(err));
     }
     return out;
 }

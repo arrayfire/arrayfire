@@ -85,7 +85,7 @@ getScale()
 CBLAS_TRANSPOSE
 toCblasTranspose(af_blas_transpose opt)
 {
-    CBLAS_TRANSPOSE out;
+    CBLAS_TRANSPOSE out = CblasNoTrans;
     switch(opt) {
         case AF_NO_TRANSPOSE        : out = CblasNoTrans;   break;
         case AF_TRANSPOSE           : out = CblasTrans;     break;
