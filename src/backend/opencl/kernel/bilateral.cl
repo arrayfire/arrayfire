@@ -8,8 +8,8 @@ dim_type lIdx(dim_type x, dim_type y,
     return (y*stride1 + x*stride0);
 }
 
-void load2LocalMem(__local T *  shrd,
-        __global const T *      in,
+void load2LocalMem(__local outType *  shrd,
+        __global const inType *      in,
         dim_type lx, dim_type ly, dim_type shrdStride,
         dim_type dim0, dim_type dim1,
         dim_type gx, dim_type gy,
@@ -17,7 +17,7 @@ void load2LocalMem(__local T *  shrd,
 {
     dim_type gx_  = clamp(gx, (long)0, dim0-1);
     dim_type gy_  = clamp(gy, (long)0, dim1-1);
-    shrd[ lIdx(lx, ly, shrdStride, 1) ] = in[ lIdx(gx_, gy_, inStride1, inStride0) ];
+    shrd[ lIdx(lx, ly, shrdStride, 1) ] = (outType)in[ lIdx(gx_, gy_, inStride1, inStride0) ];
 }
 
 float gaussian1d(float x, float variance)
@@ -27,12 +27,12 @@ float gaussian1d(float x, float variance)
 }
 
 __kernel
-void bilateral(__global T *              d_dst,
+void bilateral(__global outType *        d_dst,
                KParam                    oInfo,
-               __global const T *        d_src,
+               __global const inType *   d_src,
                KParam                    iInfo,
-               __local T *               localMem,
-               __local T *               gauss2d,
+               __local outType *         localMem,
+               __local outType *         gauss2d,
                float sigma_space, float sigma_color,
                dim_type gaussOff, dim_type nonBatchBlkSize)
 {
@@ -45,8 +45,8 @@ void bilateral(__global T *              d_dst,
 
     // gfor batch offsets
     unsigned batchId = get_group_id(0) / nonBatchBlkSize;
-    __global const T* in = d_src + (batchId * iInfo.strides[2] + iInfo.offset);
-    __global T* out      = d_dst + (batchId * oInfo.strides[2]);
+    __global const inType* in = d_src + (batchId * iInfo.strides[2] + iInfo.offset);
+    __global outType* out     = d_dst + (batchId * oInfo.strides[2]);
 
     const dim_type lx = get_local_id(0);
     const dim_type ly = get_local_id(1);
@@ -90,24 +90,24 @@ void bilateral(__global T *              d_dst,
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if (gx<iInfo.dims[0] && gy<iInfo.dims[1]) {
-        float center_color = (float)localMem[j*shrdLen+i];
-        float res  = 0;
-        float norm = 0;
+        outType center_color = localMem[j*shrdLen+i];
+        outType res  = 0;
+        outType norm = 0;
 #pragma unroll
         for(dim_type wj=0; wj<window_size; ++wj) {
             dim_type joff = (j+wj-radius)*shrdLen;
             dim_type goff = wj*window_size;
 #pragma unroll
             for(dim_type wi=0; wi<window_size; ++wi) {
-                float tmp_color   = (float)localMem[joff+i+wi-radius];
-                float gauss_space = gauss2d[goff+wi];
-                float gauss_range = gaussian1d(center_color - tmp_color, variance_range);
-                float weight      = gauss_space * gauss_range;
+                outType tmp_color   = localMem[joff+i+wi-radius];
+                outType gauss_space = gauss2d[goff+wi];
+                outType gauss_range = gaussian1d(center_color - tmp_color, variance_range);
+                outType weight      = gauss_space * gauss_range;
                 norm += weight;
                 res  += tmp_color * weight;
             }
         }
         dim_type oIdx = gy*oInfo.strides[1] + gx*oInfo.strides[0];
-        out[oIdx] = (T)(res / norm);
+        out[oIdx] = res / norm;
     }
 }

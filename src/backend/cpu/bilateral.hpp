@@ -3,7 +3,7 @@
 namespace cpu
 {
 
-template<typename T, bool isColor>
-Array<T> * bilateral(const Array<T> &in, const float &s_sigma, const float &c_sigma);
+template<typename inType, typename outType, bool isColor>
+Array<outType> * bilateral(const Array<inType> &in, const float &s_sigma, const float &c_sigma);
 
 }

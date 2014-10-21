@@ -202,6 +202,7 @@ bool compareArraysRMSD(dim_type data_size, T *gold, T *data, double tolerance)
     accum      /= data_size;
     double NRMSD = std::sqrt(accum)/(maxion-minion);
 
+    std::cout<<"NRMSD = "<<NRMSD<<std::endl;
     if (NRMSD > tolerance)
         return false;
 

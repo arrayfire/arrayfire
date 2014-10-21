@@ -26,7 +26,7 @@ namespace kernel
 static const dim_type THREADS_X = 16;
 static const dim_type THREADS_Y = 16;
 
-template<typename T, bool isColor>
+template<typename inType, typename outType, bool isColor>
 void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
 {
     try {
@@ -38,7 +38,8 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
 
         std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
-                    options << " -D T=" << dtype_traits<T>::getName();
+                    options << " -D inType=" << dtype_traits<inType>::getName()
+                            << " -D outType="<< dtype_traits<outType>::getName();
 
                     buildProgram(bilProgs[device], bilateral_cl, bilateral_cl_len, options.str());
 
@@ -71,8 +72,8 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
 
         bilateralOp(EnqueueArgs(getQueue(), global, local),
                     out.data, out.info, in.data, in.info,
-                    cl::Local(num_shrd_elems*sizeof(T)),
-                    cl::Local(num_gauss_elems*sizeof(T)),
+                    cl::Local(num_shrd_elems*sizeof(outType)),
+                    cl::Local(num_gauss_elems*sizeof(outType)),
                     s_sigma, c_sigma, num_shrd_elems, blk_x);
 
         CL_DEBUG_FINISH(getQueue());
