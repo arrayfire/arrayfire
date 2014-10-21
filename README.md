@@ -1,20 +1,24 @@
 ## Requirements
 
 ### General
-* gcc >= 4.7
-* cmake >= 2.8.9
-* svn >= 1.6
-* freeimage
+* gcc >= 4.7 (gcc, g++)
+* cmake >= 2.8.9 (cmake, cmake-curses-gui)
+* git >= 1.8
+* svn >= 1.6 (subversion)
+* freeimage (libfreeimage-dev)
 
 ### CPU Backend
-* atlas on Linux
+* atlas on Linux (libatlas3gf-base, libatlas-dev)
 * Accelerate Framework on OSX
 
 ### CUDA Backend
 * CUDA toolkit >= 6.5
 
 ### OpenCL Backend
-* CUDA Toolkit >= 6.5 or AMDAPPSDK >= 2.9 or Intel OpenCL SDK >= 4.4
+* An OpenCL SDK
+  * [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) >= 6.5
+  * [AMDAPPSDK](http://developer.amd.com/tools-and-sdks/opencl-zone/amd-accelerated-parallel-processing-app-sdk/) >= 2.9
+  * [Intel OpenCL SDK](https://software.intel.com/en-us/intel-opencl) >= 4.4
 * [clBLAS](http://github.com/clMathLibraries/clBLAS)
 * [clFFT](http://github.com/clMathLibraries/clFFT)
 * [Boost.Compute](http://github.com/kylelutz/compute)
