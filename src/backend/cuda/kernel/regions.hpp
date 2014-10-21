@@ -1,6 +1,7 @@
 #include <af/defines.h>
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
+#include <math.hpp>
 #include <debug_cuda.hpp>
 #include <stdio.h>
 
@@ -13,10 +14,7 @@
 #include <thrust/sort.h>
 #include <thrust/transform_scan.h>
 
-#if defined(__clang__) && (__clang_major__ >= 5) && (__clang_minor__ >= 1)
-
-#pragma clang diagnostic ignored "-Wunused-const-variable"
-#endif
+#if __CUDACC__
 
 static const dim_type THREADS_X = 16;
 static const dim_type THREADS_Y = 16;
@@ -45,31 +43,48 @@ static T fetch(const int n,
 
 // The initial label kernel distinguishes between valid (nonzero)
 // pixels and "background" (zero) pixels.
-template<typename T>
+template<typename T, int n_per_thread>
 __global__
 static void initial_label(cuda::Param<T> equiv_map, cuda::CParam<cuda::uchar> bin)
 {
-    const int x = blockIdx.x * blockDim.x + threadIdx.x;
-    const int y = blockIdx.y * blockDim.y + threadIdx.y;
-    const int n = y * bin.dims[0] + x;
+    const int base_x = (blockIdx.x * blockDim.x * n_per_thread) + threadIdx.x;
+    const int base_y = (blockIdx.y * blockDim.y * n_per_thread) + threadIdx.y;
 
     // If in bounds and a valid pixel, set the initial label.
-    if (x < bin.dims[0] && y < bin.dims[1])
-        equiv_map.ptr[n] = bin.ptr[n] ? n + 1 : 0;
+    #pragma unroll
+    for (int xb = 0; xb < n_per_thread; ++xb) {
+        #pragma unroll
+        for (int yb = 0; yb < n_per_thread; ++yb) {
+            const int x = base_x + (xb * blockDim.x);
+            const int y = base_y + (yb * blockDim.y);
+            const int n = y * bin.dims[0] + x;
+            if (x < bin.dims[0] && y < bin.dims[1]) {
+                equiv_map.ptr[n] = (bin.ptr[n] == (cuda::uchar)1) ? n + 1 : 0;
+            }
+        }
+    }
 }
                           
-template<typename T>
+template<typename T, int n_per_thread>
 __global__
 static void final_relabel(cuda::Param<T> equiv_map, cuda::CParam<cuda::uchar> bin, const T* d_tmp)
 {
-
-    const int x = blockIdx.x * blockDim.x + threadIdx.x;
-    const int y = blockIdx.y * blockDim.y + threadIdx.y;
-    const int n = y * bin.dims[0] + x;
+    const int base_x = (blockIdx.x * blockDim.x * n_per_thread) + threadIdx.x;
+    const int base_y = (blockIdx.y * blockDim.y * n_per_thread) + threadIdx.y;
 
     // If in bounds and a valid pixel, set the initial label.
-    if (x < bin.dims[0] && y < bin.dims[1])
-        equiv_map.ptr[n] = (bin.ptr[n] == (cuda::uchar)1) ? d_tmp[(int)equiv_map.ptr[n]] : (T)0;
+    #pragma unroll
+    for (int xb = 0; xb < n_per_thread; ++xb) {
+        #pragma unroll
+        for (int yb = 0; yb < n_per_thread; ++yb) {
+            const int x = base_x + (xb * blockDim.x);
+            const int y = base_y + (yb * blockDim.y);
+            const int n = y * bin.dims[0] + x;
+            if (x < bin.dims[0] && y < bin.dims[1]) {
+                equiv_map.ptr[n] = (bin.ptr[n] == (cuda::uchar)1) ? d_tmp[(int)equiv_map.ptr[n]] : (T)0;
+            }
+        }
+    }
 }
 
 // When two labels are equivalent, choose the lower label, but
@@ -77,10 +92,24 @@ static void final_relabel(cuda::Param<T> equiv_map, cuda::CParam<cuda::uchar> bi
 template<typename T>
 __device__ __inline__
 static T relabel(const T a, const T b) {
-    if (a == (T)0) return b;
-    if (b == (T)0) return a;
-    else           return (T)fminf((float)a,(float)b);
+    return min((a + (cuda::limit_max<T>() * (a == 0))),(b + (cuda::limit_max<T>() * (b == 0))));
 }
+template<>
+__device__ __inline__
+static double relabel(const double a, const double b) {
+    return fmin((a + (cuda::limit_max<double>() * (a == 0))),(b + (cuda::limit_max<double>() * (b == 0))));
+}
+template<>
+__device__ __inline__
+static float relabel(const float a, const float b) {
+    return fminf((a + (cuda::limit_max<float>() * (a == 0))),(b + (cuda::limit_max<float>() * (b == 0))));
+}
+
+//Calculates the number of warps at compile time
+template<unsigned thread_count>
+struct warp_count {
+    enum { value = ((thread_count % 32) == 0 ? thread_count/32 : thread_count/32 + 1)};
+};
 
 // The following kernel updates the equivalency map.  This kernel
 // must be launched with a square block configuration with
@@ -91,11 +120,12 @@ static T relabel(const T a, const T b) {
 // num_warps = 8; // (Could compute this from block dim)
 // Number of elements to handle per thread in each dimension
 // int n_per_thread = 2; // 2x2 per thread = 4 total elems per thread
-template <typename T, int block_dim, int num_warps, int n_per_thread, bool full_conn>
+template <typename T, int block_dim, int n_per_thread, bool full_conn>
 __global__
 static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex)
 {
 
+    typedef warp_count<block_dim*block_dim> num_warps;
 #if (__CUDA_ARCH__ >= 120) // This function uses warp ballot instructions
     // Basic coordinates
     const int base_x = (blockIdx.x * blockDim.x * n_per_thread) + threadIdx.x;
@@ -108,7 +138,7 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
 
     // Per element write flags and label, initially 0
     cuda::uchar      write[n_per_thread * n_per_thread];
-    T     best_label[n_per_thread * n_per_thread];
+    T           best_label[n_per_thread * n_per_thread];
 
     #pragma unroll
     for (int i = 0; i < n_per_thread * n_per_thread; ++i) {
@@ -117,10 +147,10 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
     }
 
     // Cached tile of the equivalency map
-    __shared__ T s_tile[n_per_thread*block_dim][(n_per_thread*block_dim)+1];
+    __shared__ T s_tile[n_per_thread*block_dim][(n_per_thread*block_dim)];
 
     // Space to track ballot funcs to track convergence
-    __shared__ T s_changed[num_warps];
+    __shared__ T s_changed[num_warps::value];
 
     const int tn = (threadIdx.y * blockDim.x) + threadIdx.x;
 
@@ -128,9 +158,13 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
     s_changed[warpIdx] = (T)0;
     __syncthreads();
 
+#if (__CUDA_ARCH__ >= 130)
     #pragma unroll
+#endif
     for (int xb = 0; xb < n_per_thread; ++xb) {
+#if (__CUDA_ARCH__ >= 130)
         #pragma unroll
+#endif
         for (int yb = 0; yb < n_per_thread; ++yb) {
 
             // Indexing variables
@@ -151,47 +185,43 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
             best_label[tid_i] = orig_label;
 
             if (orig_label != (T)0) {
+                const int south_y = min(y, height-2) + 1;
+                const int north_y = max(y, 1) - 1;
+                const int east_x = min(x, width-2) + 1;
+                const int west_x = max(x, 1) - 1;
 
                 // Check bottom
-                if (y < height - 1)
-                    best_label[tid_i] = relabel(best_label[tid_i],
-                            fetch((y+1) * width + x, equiv_map, tex));
+                best_label[tid_i] = relabel(best_label[tid_i],
+                        fetch((south_y) * width + x, equiv_map, tex));
 
                 // Check right neighbor
-                if (x < width - 1)
-                    best_label[tid_i] = relabel(best_label[tid_i],
-                            fetch(y * width + x + 1, equiv_map, tex));
+                best_label[tid_i] = relabel(best_label[tid_i],
+                        fetch(y * width + east_x, equiv_map, tex));
 
                 // Check left neighbor
-                if (x > 0)
-                    best_label[tid_i] = relabel(best_label[tid_i],
-                            fetch(y * width + x - 1, equiv_map, tex));
+                best_label[tid_i] = relabel(best_label[tid_i],
+                        fetch(y * width + west_x, equiv_map, tex));
 
                 // Check top neighbor
-                if (y > 0)
-                    best_label[tid_i] = relabel(best_label[tid_i],
-                            fetch((y-1) * width + x, equiv_map, tex));
+                best_label[tid_i] = relabel(best_label[tid_i],
+                        fetch((north_y) * width + x, equiv_map, tex));
 
                 if (full_conn) {
                     // Check NW corner
-                    if (x > 0 && y > 0)
-                        best_label[tid_i] = relabel(best_label[tid_i],
-                                fetch((y-1) * width + x - 1, equiv_map, tex));
+                    best_label[tid_i] = relabel(best_label[tid_i],
+                            fetch((north_y) * width + west_x, equiv_map, tex));
 
                     // Check NE corner
-                    if (x < width - 1 && y > 0)
-                        best_label[tid_i] = relabel(best_label[tid_i],
-                                fetch((y-1) * width + x + 1, equiv_map, tex));
+                    best_label[tid_i] = relabel(best_label[tid_i],
+                            fetch((north_y) * width + east_x, equiv_map, tex));
 
                     // Check SW corner
-                    if (x > 0 && y < height - 1)
-                        best_label[tid_i] = relabel(best_label[tid_i],
-                            fetch((y+1) * width + x - 1, equiv_map, tex));
+                    best_label[tid_i] = relabel(best_label[tid_i],
+                        fetch((south_y) * width + west_x, equiv_map, tex));
 
                     // Check SE corner
-                    if (x < width - 1 && y < height - 1)
-                        best_label[tid_i] = relabel(best_label[tid_i],
-                                fetch((y+1) * width + x+1, equiv_map, tex));
+                    best_label[tid_i] = relabel(best_label[tid_i],
+                            fetch((south_y) * width + east_x, equiv_map, tex));
                 } // if connectivity == 8
             } // if orig_label != 0
 
@@ -219,8 +249,10 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
     s_changed[warpIdx] = __any((int)tid_changed);
     __syncthreads();
 
+#if (__CUDA_ARCH__ >= 130)
     #pragma unroll
-    for (int i = 0; i < num_warps; i++)
+#endif
+    for (int i = 0; i < num_warps::value; i++)
         continue_iter = continue_iter || (s_changed[i] != 0);
 
     // Iterate until no pixel in the tile changes
@@ -229,9 +261,13 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
         // Reset whether or not this thread's pixels have changed.
         tid_changed = false;
 
+#if (__CUDA_ARCH__ >= 130)
         #pragma unroll
+#endif
         for (int xb = 0; xb < n_per_thread; ++xb) {
+#if (__CUDA_ARCH__ >= 130)
             #pragma unroll
+#endif
             for (int yb = 0; yb < n_per_thread; ++yb) {
 
                 // Indexing
@@ -243,47 +279,43 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
 
                 if (best_label[tid_i] != 0) {
 
+                    const int north_y   = max(ty, 1) -1;
+                    const int south_y   = min(ty, n_per_thread*block_dim - 2) +1;
+                    const int east_x    = min(tx, n_per_thread*block_dim - 2) +1;
+                    const int west_x    = max(tx, 1) -1;
+
                     // Check bottom
-                    if (ty < n_per_thread*block_dim - 1)
-                        best_label[tid_i] = relabel(best_label[tid_i],
-                                                    s_tile[ty+1][tx]);
+                    best_label[tid_i] = relabel(best_label[tid_i],
+                                                s_tile[south_y][tx]);
 
                     // Check right neighbor
-                    if (tx < n_per_thread*block_dim - 1)
-                        best_label[tid_i] = relabel(best_label[tid_i],
-                                                    s_tile[ty][tx+1]);
+                    best_label[tid_i] = relabel(best_label[tid_i],
+                                                s_tile[ty][east_x]);
 
                     // Check left neighbor
-                    if (tx > 0)
-                        best_label[tid_i] = relabel(best_label[tid_i],
-                                                    s_tile[ty][tx-1]);
+                    best_label[tid_i] = relabel(best_label[tid_i],
+                                                s_tile[ty][west_x]);
 
                     // Check top neighbor
-                    if (ty > 0)
-                        best_label[tid_i] = relabel(best_label[tid_i],
-                                                    s_tile[ty-1][tx]);
+                    best_label[tid_i] = relabel(best_label[tid_i],
+                                                s_tile[north_y][tx]);
 
                     if (full_conn) {
                         // Check NW corner
-                        if (tx > 0 && ty > 0)
-                            best_label[tid_i] = relabel(best_label[tid_i],
-                                                        s_tile[ty-1][tx-1]);
+                        best_label[tid_i] = relabel(best_label[tid_i],
+                                                    s_tile[north_y][west_x]);
 
                         // Check NE corner
-                        if (tx < n_per_thread*block_dim - 1 && ty > 0)
-                            best_label[tid_i] = relabel(best_label[tid_i],
-                                                        s_tile[ty-1][tx+1]);
+                        best_label[tid_i] = relabel(best_label[tid_i],
+                                                    s_tile[north_y][east_x]);
 
                         // Check SW corner
-                        if (tx > 0 && ty < n_per_thread*block_dim - 1)
-                            best_label[tid_i] = relabel(best_label[tid_i],
-                                                        s_tile[ty+1][tx-1]);
+                        best_label[tid_i] = relabel(best_label[tid_i],
+                                                    s_tile[south_y][west_x]);
 
                         // Check SE corner
-                        if (tx < n_per_thread*block_dim - 1 &&
-                            ty < n_per_thread*block_dim - 1)
-                            best_label[tid_i] = relabel(best_label[tid_i],
-                                                        s_tile[ty+1][tx+1]);
+                        best_label[tid_i] = relabel(best_label[tid_i],
+                                                    s_tile[south_y][east_x]);
                     } // if connectivity == 8
 
                     // This thread's value changed during this iteration if the
@@ -301,16 +333,22 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
         s_changed[warpIdx] = __any((int)tid_changed);
         __syncthreads();
         continue_iter = false;
+#if (__CUDA_ARCH__ >= 130)
         #pragma unroll
-        for (int i = 0; i < num_warps; i++)
-            continue_iter = continue_iter || (s_changed[i] != 0);
+#endif
+        for (int i = 0; i < num_warps::value; i++)
+            continue_iter = continue_iter | (s_changed[i] != 0);
 
         // If we have to continue iterating, update the tile of the
         // equiv map in shared memory
         if (continue_iter) {
+#if (__CUDA_ARCH__ >= 130)
             #pragma unroll
+#endif
             for (int xb = 0; xb < n_per_thread; ++xb) {
+#if (__CUDA_ARCH__ >= 130)
                 #pragma unroll
+#endif
                 for (int yb = 0; yb < n_per_thread; ++yb) {
                     const int tx = threadIdx.x + (xb * blockDim.x);
                     const int ty = threadIdx.y + (yb * blockDim.y);
@@ -324,9 +362,13 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
     } // while (continue_iter)
 
     // Write out equiv_map
+#if (__CUDA_ARCH__ >= 130)
     #pragma unroll
+#endif
     for (int xb = 0; xb < n_per_thread; ++xb) {
+#if (__CUDA_ARCH__ >= 130)
         #pragma unroll
+#endif
         for (int yb = 0; yb < n_per_thread; ++yb) {
             const int x = base_x + (xb * blockDim.x);
             const int y = base_y + (yb * blockDim.y);
@@ -350,17 +392,17 @@ struct clamp_to_one : public thrust::unary_function<T,T>
     }
 };
 
-template<typename T, bool full_conn>
+template<typename T, bool full_conn, int n_per_thread>
 void regions(cuda::Param<T> out, cuda::CParam<cuda::uchar> in, cudaTextureObject_t tex)
 {
     const dim3 threads(THREADS_X, THREADS_Y);
 
-    const dim_type blk_x = divup(in.dims[0], threads.x);
-    const dim_type blk_y = divup(in.dims[1], threads.y);
+    const dim_type blk_x = divup(in.dims[0], threads.x*2);
+    const dim_type blk_y = divup(in.dims[1], threads.y*2);
 
     const dim3 blocks(blk_x, blk_y);
 
-    (initial_label<T>)<<<blocks, threads>>>(out, in);
+    (initial_label<T,n_per_thread>)<<<blocks, threads>>>(out, in);
 
     POST_LAUNCH_CHECK();
 
@@ -370,7 +412,7 @@ void regions(cuda::Param<T> out, cuda::CParam<cuda::uchar> in, cudaTextureObject
         h_continue = 0;
         CUDA_CHECK(cudaMemcpyToSymbol(continue_flag, &h_continue, sizeof(int),
                                       0, cudaMemcpyHostToDevice));
-        (update_equiv<T, 16, 8, 1, full_conn>)<<<blocks, threads>>>
+        (update_equiv<T, 16, n_per_thread, full_conn>)<<<blocks, threads>>>
             (out, tex);
         CUDA_CHECK(cudaMemcpyFromSymbol(&h_continue, continue_flag, sizeof(int),
                                         0, cudaMemcpyDeviceToHost));
@@ -419,9 +461,11 @@ void regions(cuda::Param<T> out, cuda::CParam<cuda::uchar> in, cudaTextureObject
                                      add);
 
     // Apply the correct labels to the equivalency map
-    (final_relabel<T>)<<<blocks,threads>>>(out,
-                                           in,
-                                           thrust::raw_pointer_cast(&labels[0]));
+    (final_relabel<T,n_per_thread>)<<<blocks,threads>>>(out,
+                                                        in,
+                                                        thrust::raw_pointer_cast(&labels[0]));
 
     CUDA_CHECK(cudaFree(tmp));
 }
+
+#endif // __CUDACC__

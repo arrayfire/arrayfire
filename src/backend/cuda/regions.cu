@@ -39,10 +39,10 @@ Array<T> * regions(const Array<uchar> &in, const unsigned connectivity)
 
     switch(connectivity) {
         case 4:
-            regions<T, false>(*out, in, tex);
+            regions<T, false, 2>(*out, in, tex);
             break;
         case 8:
-            regions<T, true >(*out, in, tex);
+            regions<T, true,  2>(*out, in, tex);
             break;
     }
 
