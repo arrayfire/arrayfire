@@ -65,12 +65,12 @@ namespace JIT
             if (!(m_child->isGenFunc())) m_child->genFuncs(kerStream, declStream);
 
             declStream << "declare " << m_type_str << " " << m_op_str
-                       << "(" << m_type_str << ")\n";
+                       << "(" << m_child->getTypeStr() << ")\n";
 
             kerStream << "%val" << m_id << " = call "
                       << m_type_str << " "
                       << m_op_str << "("
-                      << m_type_str << " "
+                      << m_child->getTypeStr() << " "
                       << "%val" << m_child->getId() << ")\n";
 
             m_gen_func = true;
