@@ -42,6 +42,7 @@ CL_KERNEL_TO_H(
     EXTENSION "hpp"
     OUTPUT_DIR ${cl_kernel_headers}
     TARGETS cl_kernel_targets
+    NAMESPACE "opencl"
     )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread")

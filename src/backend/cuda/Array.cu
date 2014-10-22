@@ -4,6 +4,8 @@
 #include <copy.hpp>
 #include <kernel/elwise.hpp> //set
 #include <err_cuda.hpp>
+#include <JIT/BufferNode.hpp>
+#include <scalar.hpp>
 
 using af::dim4;
 
@@ -24,23 +26,14 @@ namespace cuda
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(cudaMallocWrapper<T>(dims.elements())),
-        parent()
+        parent(), node(NULL), ready(true)
     {}
-
-    template<typename T>
-    Array<T>::Array(af::dim4 dims, T val) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(cudaMallocWrapper<T>(dims.elements())),
-        parent()
-    {
-        kernel::set(data, val, elements());
-    }
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data) :
     ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(cudaMallocWrapper<T>(dims.elements())),
-        parent()
+        parent(), node(NULL), ready(true)
     {
         CUDA_CHECK(cudaMemcpy(data, in_data, dims.elements() * sizeof(T), cudaMemcpyHostToDevice));
     }
@@ -48,8 +41,8 @@ namespace cuda
     template<typename T>
     Array<T>::Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
         ArrayInfo(dims, offset, stride, (af_dtype)dtype_traits<T>::af_type),
-        data(0),
-        parent(&parnt)
+        data(NULL),
+        parent(&parnt), node(NULL), ready(true)
     { }
 
     template<typename T>
@@ -59,12 +52,44 @@ namespace cuda
                   af::dim4(tmp.strides[0], tmp.strides[1], tmp.strides[2], tmp.strides[3]),
                   (af_dtype)dtype_traits<T>::af_type),
         data(tmp.ptr),
-        parent()
+        parent(), node(NULL), ready(true)
     {
     }
 
     template<typename T>
-    Array<T>::~Array() { CUDA_CHECK(cudaFree(data)); }
+    Array<T>::Array(af::dim4 dims, JIT::Node *n) :
+        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        data(NULL),
+        parent(), node(n), ready(false)
+    {
+    }
+
+    template<typename T>
+    Array<T>::~Array() { if (!data) CUDA_CHECK(cudaFree(data)); }
+
+
+    using JIT::BufferNode;
+    using JIT::Node;
+
+    template<typename T>
+    Node* Array<T>::getNode() const
+    {
+        if (node == NULL) {
+            CParam<T> this_param = *this;
+            BufferNode<T> *buf_node = new BufferNode<T>(irname<T>(),
+                                                        shortname<T>(true), this_param);
+            const_cast<Array<T> *>(this)->node = reinterpret_cast<Node *>(buf_node);
+        }
+
+        return node;
+    }
+
+    template<typename T>
+    Array<T> *
+    createNodeArray(const dim4 &dims, Node *node)
+    {
+        return new Array<T>(dims, node);
+    }
 
     template<typename T>
     Array<T> *
@@ -78,8 +103,7 @@ namespace cuda
     Array<T>*
     createValueArray(const dim4 &size, const T& value)
     {
-        Array<T> *out = new Array<T>(size, value);
-        return out;
+        return createScalarNode<T>(size, value);
     }
 
     template<typename T>
@@ -141,15 +165,50 @@ namespace cuda
         delete &A;
     }
 
+    template<typename T>
+    void Array<T>::eval()
+    {
+        if (isReady()) return;
+
+        data = cudaMallocWrapper<T>(elements());
+
+        Param<T> res;
+        res.ptr = data;
+
+        for (int  i = 0; i < 4; i++) {
+            res.dims[i] = dims()[i];
+            res.strides[i] = strides()[i];
+        }
+
+        evalNodes(res, this->getNode());
+        ready = true;
+
+        // Replace the current node in any JIT possible trees with the new BufferNode
+        Node *prev = node;
+        node = NULL;
+        prev->resetFlags();
+        prev->replace(getNode());
+    }
+
+    template<typename T>
+    void Array<T>::eval() const
+    {
+        if (isReady()) return;
+        const_cast<Array<T> *>(this)->eval();
+    }
+
 #define INSTANTIATE(T)                                                  \
     template       Array<T>*  createDataArray<T>  (const dim4 &size, const T * const data); \
     template       Array<T>*  createValueArray<T> (const dim4 &size, const T &value); \
     template       Array<T>*  createEmptyArray<T> (const dim4 &size);   \
-    template       Array<T>*  createParamArray<T> (Param<T> &tmp);           \
+    template       Array<T>*  createParamArray<T> (Param<T> &tmp);      \
     template       Array<T>*  createSubArray<T>       (const Array<T> &parent, const dim4 &dims, const dim4 &offset, const dim4 &stride); \
     template       Array<T>*  createRefArray<T>   (const Array<T> &parent, const dim4 &dims, const dim4 &offset, const dim4 &stride); \
     template       void       destroyArray<T>     (Array<T> &A);        \
-    template                  Array<T>::~Array();
+    template       Array<T>*  createNodeArray<T>   (const dim4 &size, JIT::Node *node); \
+    template                  Array<T>::~Array();                       \
+    template       void Array<T>::eval();                               \
+    template       void Array<T>::eval() const;                         \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

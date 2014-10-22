@@ -28,7 +28,7 @@ include(CMakeParseArguments)
 set(BIN2CPP_PROGRAM "bin2cpp")
 
 function(CL_KERNEL_TO_H)
-    cmake_parse_arguments(RTCS "" "VARNAME;EXTENSION;OUTPUT_DIR;TARGETS" "SOURCES" ${ARGN})
+    cmake_parse_arguments(RTCS "" "VARNAME;EXTENSION;OUTPUT_DIR;TARGETS;NAMESPACE" "SOURCES" ${ARGN})
 
     set(_output_files "")
     foreach(_input_file ${RTCS_SOURCES})
@@ -37,8 +37,7 @@ function(CL_KERNEL_TO_H)
         get_filename_component(var_name "${_input_file}" NAME)
         get_filename_component(_name_we "${_input_file}" NAME_WE)
 
-        file(READ "${_path}/namespace.txt" _namespace)
-        string(STRIP "${_namespace}" _namespace)
+        set(_namespace, ${RTCS_NAMESPACE})
         string(REPLACE "." "_" var_name ${var_name})
 
         set(_output_path "${CMAKE_CURRENT_BINARY_DIR}/${RTCS_OUTPUT_DIR}")
@@ -57,8 +56,8 @@ function(CL_KERNEL_TO_H)
 
         list(APPEND _output_files ${_output_file})
     endforeach()
-    ADD_CUSTOM_TARGET(cl_kernels DEPENDS ${_output_files})
+    ADD_CUSTOM_TARGET(${RTCS_NAMESPACE}_bin_target DEPENDS ${_output_files})
 
     set("${RTCS_VARNAME}" ${_output_files} PARENT_SCOPE)
-    set("${RTCS_TARGETS}" cl_kernels PARENT_SCOPE)
+    set("${RTCS_TARGETS}" ${RTCS_NAMESPACE}_bin_target PARENT_SCOPE)
 endfunction(CL_KERNEL_TO_H)

@@ -29,15 +29,6 @@ namespace opencl
     }
 
     template<typename T>
-    Array<T>::Array(af::dim4 dims, T val) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(getContext(), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
-        parent(), node(NULL), ready(true)
-    {
-        set(data, val, elements());
-    }
-
-    template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(getContext(), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),

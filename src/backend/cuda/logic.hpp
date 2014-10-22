@@ -9,6 +9,6 @@ namespace cuda
     template<typename T, af_op_t op>
     Array<uchar>* logicOp(const Array<T> &lhs, const Array<T> &rhs)
     {
-        CUDA_NOT_SUPPORTED();
+        return createBinaryNode<uchar, T, op>(lhs, rhs);
     }
 }

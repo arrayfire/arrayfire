@@ -12,6 +12,9 @@ namespace cuda
     template<typename T>
     void copyData(T *data, const Array<T> &A)
     {
+        // FIXME: Merge this with copyArray
+        A.eval();
+
         Array<T> *out = NULL;
         const T *ptr = NULL;
 

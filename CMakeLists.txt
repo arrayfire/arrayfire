@@ -40,10 +40,10 @@ ENDIF()
 IF(${BUILD_OPENCL})
     FIND_PACKAGE(OpenCL)
     ADD_SUBDIRECTORY(src/backend/opencl)
-    ADD_EXECUTABLE(bin2cpp common/bin2cpp.cpp)
 ENDIF()
 
 ADD_SUBDIRECTORY(src/array)
+ADD_EXECUTABLE(bin2cpp common/bin2cpp.cpp)
 
 IF(${BUILD_TEST})
     ENABLE_TESTING()
