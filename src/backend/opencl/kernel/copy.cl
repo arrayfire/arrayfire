@@ -39,7 +39,7 @@ inType scale(inType value, double factor)
 
 // scalar output, hence no complex input
 // just enforce regular casting
-#define CONVERT(value) convert_##outType(value)
+#define CONVERT(value) ((outType)(value))
 
 #endif
 
@@ -63,7 +63,7 @@ void copy(__global outType * dst,
     uint gy = blockIdx_y * get_local_size(1) + ly;
 
     __global const inType *in = src + (gw * iInfo.strides[3] + gz * iInfo.strides[2] + gy * iInfo.strides[1] + iInfo.offset);
-    __global outType *out     = dst + (gw * oInfo.strides[3] + gz * oInfo.strides[2] + gy * oInfo.strides[1]);
+    __global outType *out     = dst + (gw * oInfo.strides[3] + gz * oInfo.strides[2] + gy * oInfo.strides[1] + oInfo.offset);
 
     uint istride0 = iInfo.strides[0];
     uint ostride0 = oInfo.strides[0];

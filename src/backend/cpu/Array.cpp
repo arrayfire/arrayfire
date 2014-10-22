@@ -77,13 +77,20 @@ namespace cpu
         return out;
     }
 
+    template<typename T>
+    Array<T> *
+    createRefArray(const Array<T>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride)
+    {
+        return new Array<T>(parent, dims, offset, stride);
+    }
+
     template<typename inType, typename outType>
     Array<outType> *
     createPaddedArray(Array<inType> const &in, dim4 const &dims, outType default_value)
     {
         Array<outType> *ret = createValueArray<outType>(dims, default_value);
 
-        copy<inType, outType>(*ret, in);
+        copy<inType, outType>(*ret, in, outType(default_value), 1.0);
 
         return ret;
     }
@@ -108,6 +115,7 @@ namespace cpu
     template       Array<T>*  createValueArray<T> (const dim4 &size, const T &value); \
     template       Array<T>*  createEmptyArray<T> (const dim4 &size);   \
     template       Array<T>*  createSubArray<T>   (const Array<T> &parent, const dim4 &dims, const dim4 &offset, const dim4 &stride); \
+    template       Array<T>*  createRefArray<T>   (const Array<T> &parent, const dim4 &dims, const dim4 &offset, const dim4 &stride); \
     template       void       scaleArray<T>       (Array<T> &arr, double factor); \
     template       void       destroyArray<T>     (Array<T> &A);        \
     template                  Array<T>::~Array();

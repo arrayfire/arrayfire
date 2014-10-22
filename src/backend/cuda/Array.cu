@@ -108,6 +108,13 @@ namespace cuda
         return out;
     }
 
+    template<typename T>
+    Array<T> *
+    createRefArray(const Array<T>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride)
+    {
+        return new Array<T>(parent, dims, offset, stride);
+    }
+
     template<typename inType, typename outType>
     Array<outType> *
     createPaddedArray(Array<inType> const &in, dim4 const &dims, outType default_value, double factor)
@@ -140,6 +147,7 @@ namespace cuda
     template       Array<T>*  createEmptyArray<T> (const dim4 &size);   \
     template       Array<T>*  createParamArray<T> (Param<T> &tmp);           \
     template       Array<T>*  createSubArray<T>       (const Array<T> &parent, const dim4 &dims, const dim4 &offset, const dim4 &stride); \
+    template       Array<T>*  createRefArray<T>   (const Array<T> &parent, const dim4 &dims, const dim4 &offset, const dim4 &stride); \
     template       void       destroyArray<T>     (Array<T> &A);        \
     template                  Array<T>::~Array();
 

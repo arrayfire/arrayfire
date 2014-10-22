@@ -53,6 +53,11 @@ namespace opencl
     Array<T> *
     createSubArray(const Array<T>& parent, const af::dim4 &dims, const af::dim4 &offset, const af::dim4 &stride);
 
+    // Creates a pure reference Array - a virtual view, no copies are made
+    template<typename T>
+    Array<T> *
+    createRefArray(const Array<T>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
+
     template<typename inType, typename outType>
     Array<outType> *
     createPaddedArray(Array<inType> const &in, dim4 const &dims, outType default_value, double factor=1.0);
@@ -119,6 +124,8 @@ namespace opencl
         friend Array<T>* createDataArray<T>(const af::dim4 &size, const T * const data);
         friend Array<T>* createEmptyArray<T>(const af::dim4 &size);
         friend Array<T>* createSubArray<T>(const Array<T>& parent,
+                                           const dim4 &dims, const dim4 &offset, const dim4 &stride);
+        friend Array<T>* createRefArray<T>(const Array<T>& parent,
                                            const dim4 &dims, const dim4 &offset, const dim4 &stride);
         friend Array<T>* createParamArray<T>(Param &tmp);
         friend Array<T>* createNodeArray<T>(const af::dim4 &dims, JIT::Node *node);

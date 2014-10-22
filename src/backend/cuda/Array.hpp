@@ -44,6 +44,11 @@ namespace cuda
     Array<T> *
     createSubArray(const Array<T>& parent, const af::dim4 &dims, const af::dim4 &offset, const af::dim4 &stride);
 
+    // Creates a pure reference Array - a virtual view, no copies are made
+    template<typename T>
+    Array<T> *
+    createRefArray(const Array<T>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
+
     template<typename inType, typename outType>
     Array<outType> *
     createPaddedArray(Array<inType> const &in, dim4 const &dims, outType default_value, double factor=1.0);
@@ -103,6 +108,8 @@ namespace cuda
         friend Array<T>* createEmptyArray<T>(const af::dim4 &size);
         friend Array<T>* createParamArray<T>(Param<T> &tmp);
         friend Array<T>* createSubArray<T>(const Array<T>& parent,
+                                           const dim4 &dims, const dim4 &offset, const dim4 &stride);
+        friend Array<T>* createRefArray<T>(const Array<T>& parent,
                                            const dim4 &dims, const dim4 &offset, const dim4 &stride);
         friend void      destroyArray<T>(Array<T> &arr);
     };
