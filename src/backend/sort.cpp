@@ -5,6 +5,8 @@
 #include <backend.hpp>
 #include <ArrayInfo.hpp>
 #include <sort.hpp>
+#include <sort_index.hpp>
+#include <sort_by_key.hpp>
 #include <copy.hpp>
 
 #include<cstdio>
