@@ -10,23 +10,23 @@ using af::dim4;
 namespace cuda
 {
 
-template<typename T, bool isColor>
-Array<T> * bilateral(const Array<T> &in, const float &s_sigma, const float &c_sigma)
+template<typename inType, typename outType, bool isColor>
+Array<outType> * bilateral(const Array<inType> &in, const float &s_sigma, const float &c_sigma)
 {
-    Array<T>* out = createEmptyArray<T>(in.dims());
-    kernel::bilateral<T, isColor>(*out, in, s_sigma, c_sigma);
+    Array<outType>* out = createEmptyArray<outType>(in.dims());
+    kernel::bilateral<inType, outType, isColor>(*out, in, s_sigma, c_sigma);
     return out;
 }
 
-#define INSTANTIATE(T)\
-template Array<T> * bilateral<T,true >(const Array<T> &in, const float &s_sigma, const float &c_sigma);\
-template Array<T> * bilateral<T,false>(const Array<T> &in, const float &s_sigma, const float &c_sigma);
+#define INSTANTIATE(inT, outT)\
+template Array<outT> * bilateral<inT, outT,true >(const Array<inT> &in, const float &s_sigma, const float &c_sigma);\
+template Array<outT> * bilateral<inT, outT,false>(const Array<inT> &in, const float &s_sigma, const float &c_sigma);
 
-INSTANTIATE(float )
-INSTANTIATE(double)
-INSTANTIATE(char  )
-INSTANTIATE(int   )
-INSTANTIATE(uint  )
-INSTANTIATE(uchar )
+INSTANTIATE(double, double)
+INSTANTIATE(float ,  float)
+INSTANTIATE(char  ,  float)
+INSTANTIATE(int   ,  float)
+INSTANTIATE(uint  ,  float)
+INSTANTIATE(uchar ,  float)
 
 }

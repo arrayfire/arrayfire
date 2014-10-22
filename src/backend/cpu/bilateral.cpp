@@ -25,20 +25,20 @@ static inline unsigned getIdx(const dim4 &strides,
             i * strides[0]);
 }
 
-template<typename T, bool isColor>
-Array<T> * bilateral(const Array<T> &in, const float &s_sigma, const float &c_sigma)
+template<typename inType, typename outType, bool isColor>
+Array<outType> * bilateral(const Array<inType> &in, const float &s_sigma, const float &c_sigma)
 {
     const dim4 dims     = in.dims();
     const dim4 istrides = in.strides();
 
-    Array<T>* out       = createEmptyArray<T>(dims);
+    Array<outType>* out = createEmptyArray<outType>(dims);
     const dim4 ostrides = out->strides();
 
     dim_type bCount     = dims[2];
     if (isColor) bCount*= dims[3];
 
-    T *outData          = out->get();
-    const T * inData    = in.get();
+    outType *outData    = out->get();
+    const inType * inData = in.get();
 
     // clamp spatical and chromatic sigma's
     float space_          = std::min(11.5f, std::max(s_sigma, 0.f));
@@ -53,28 +53,26 @@ Array<T> * bilateral(const Array<T> &in, const float &s_sigma, const float &c_si
             // j steps along 2nd dimension
             for(dim_type i=0; i<dims[0]; ++i) {
                 // i steps along 1st dimension
-                float norm = 0.0f;
-                float res  = 0.0f;
-                const T center = inData[ getIdx(istrides, i, j) ];
+                outType norm = 0.0;
+                outType res  = 0.0;
+                const outType center = (outType)inData[getIdx(istrides, i, j)];
                 for(dim_type wj=-radius; wj<=radius; ++wj) {
                     // clamps offsets
                     dim_type tj = clamp(j+wj, 0, dims[1]-1);
-
                     for(dim_type wi=-radius; wi<=radius; ++wi) {
                         // clamps offsets
                         dim_type ti = clamp(i+wi, 0, dims[0]-1);
-
                         // proceed
-                        const T val= inData[ getIdx(istrides, ti, tj) ];
-                        const float gauss_space = (wi*wi+wj*wj)/(-2.f*svar);
-                        const float gauss_range = ((center-val)*(center-val))/(-2.f*cvar);
-                        const float weight = std::exp(gauss_space+gauss_range);
+                        const outType val= (outType)inData[getIdx(istrides, ti, tj)];
+                        const outType gauss_space = (wi*wi+wj*wj)/(-2.0*svar);
+                        const outType gauss_range = ((center-val)*(center-val))/(-2.0*cvar);
+                        const outType weight = std::exp(gauss_space+gauss_range);
                         norm += weight;
                         res += val*weight;
                     }
                 } // filter loop ends here
 
-                outData[ getIdx(ostrides, i, j) ] = (T)(res/norm);
+                outData[getIdx(ostrides, i, j)] = res/norm;
             } //1st dimension loop ends here
         } //2nd dimension loop ends here
         outData += ostrides[2];
@@ -84,15 +82,15 @@ Array<T> * bilateral(const Array<T> &in, const float &s_sigma, const float &c_si
     return out;
 }
 
-#define INSTANTIATE(T)\
-template Array<T> * bilateral<T,true >(const Array<T> &in, const float &s_sigma, const float &c_sigma);\
-template Array<T> * bilateral<T,false>(const Array<T> &in, const float &s_sigma, const float &c_sigma);
+#define INSTANTIATE(inT, outT)\
+template Array<outT> * bilateral<inT, outT,true >(const Array<inT> &in, const float &s_sigma, const float &c_sigma);\
+template Array<outT> * bilateral<inT, outT,false>(const Array<inT> &in, const float &s_sigma, const float &c_sigma);
 
-INSTANTIATE(float )
-INSTANTIATE(double)
-INSTANTIATE(char  )
-INSTANTIATE(int   )
-INSTANTIATE(uint  )
-INSTANTIATE(uchar )
+INSTANTIATE(double, double)
+INSTANTIATE(float ,  float)
+INSTANTIATE(char  ,  float)
+INSTANTIATE(int   ,  float)
+INSTANTIATE(uint  ,  float)
+INSTANTIATE(uchar ,  float)
 
 }

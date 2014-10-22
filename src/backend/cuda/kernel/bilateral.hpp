@@ -31,8 +31,8 @@ __forceinline__ __device__ float gaussian1d(float x, float variance)
     return exp(exponent);
 }
 
-template<typename T>
-inline __device__ void load2ShrdMem(T * shrd, const T * const in,
+template<typename inType, typename outType>
+inline __device__ void load2ShrdMem(outType * shrd, const inType * const in,
                                     dim_type lx, dim_type ly, dim_type shrdStride,
                                     dim_type dim0, dim_type dim1,
                                     dim_type gx, dim_type gy,
@@ -40,18 +40,18 @@ inline __device__ void load2ShrdMem(T * shrd, const T * const in,
 {
     int gx_  = clamp(gx, 0, dim0-1);
     int gy_  = clamp(gy, 0, dim1-1);
-    shrd[lIdx(lx, ly, shrdStride, 1)] = in[lIdx(gx_, gy_, inStride1, inStride0)];
+    shrd[lIdx(lx, ly, shrdStride, 1)] = (outType)in[lIdx(gx_, gy_, inStride1, inStride0)];
 }
 
-template<typename T>
+template<typename inType, typename outType>
 static __global__
-void bilateralKernel(Param<T> out, CParam<T> in,
+void bilateralKernel(Param<outType> out, CParam<inType> in,
                      float sigma_space, float sigma_color,
                      dim_type gaussOff, dim_type nonBatchBlkSize)
 {
-    SharedMemory<T> shared;
-    T *localMem = shared.getPointer();
-    T *gauss2d  = localMem + gaussOff;
+    SharedMemory<outType> shared;
+    outType *localMem = shared.getPointer();
+    outType *gauss2d  = localMem + gaussOff;
 
     const dim_type radius      = max((int)(sigma_space * 1.5f), 1);
     const dim_type padding     = 2 * radius;
@@ -62,8 +62,8 @@ void bilateralKernel(Param<T> out, CParam<T> in,
 
     // gfor batch offsets
     unsigned batchId = blockIdx.x / nonBatchBlkSize;
-    const T* iptr      = (const T *) in.ptr + (batchId * in.strides[2]);
-    T*       optr      = (T *      )out.ptr + (batchId * out.strides[2]);
+    const inType* iptr  = (const inType *) in.ptr + (batchId * in.strides[2]);
+    outType*       optr = (outType *     )out.ptr + (batchId * out.strides[2]);
 
     const dim_type lx = threadIdx.x;
     const dim_type ly = threadIdx.y;
@@ -86,51 +86,51 @@ void bilateralKernel(Param<T> out, CParam<T> in,
     }
 
     // pull image to local memory
-    load2ShrdMem(localMem, iptr, lx, ly, shrdLen,
+    load2ShrdMem<inType, outType>(localMem, iptr, lx, ly, shrdLen,
                  in.dims[0], in.dims[1], gx-radius,
                  gy-radius, in.strides[1], in.strides[0]);
     if (lx<padding) {
-        load2ShrdMem(localMem, iptr, lx2, ly, shrdLen,
+        load2ShrdMem<inType, outType>(localMem, iptr, lx2, ly, shrdLen,
                      in.dims[0], in.dims[1], gx2-radius,
                      gy-radius, in.strides[1], in.strides[0]);
     }
     if (ly<padding) {
-        load2ShrdMem(localMem, iptr, lx, ly2, shrdLen,
+        load2ShrdMem<inType, outType>(localMem, iptr, lx, ly2, shrdLen,
                      in.dims[0], in.dims[1], gx-radius,
                      gy2-radius, in.strides[1], in.strides[0]);
     }
     if (lx<padding && ly<padding) {
-        load2ShrdMem(localMem, iptr, lx2, ly2, shrdLen,
+        load2ShrdMem<inType, outType>(localMem, iptr, lx2, ly2, shrdLen,
                      in.dims[0], in.dims[1], gx2-radius,
                      gy2-radius, in.strides[1], in.strides[0]);
     }
     __syncthreads();
 
     if (gx<in.dims[0] && gy<in.dims[1]) {
-        const float center_color = (float)localMem[j*shrdLen+i];
-        float res  = 0;
-        float norm = 0;
+        const outType center_color = localMem[j*shrdLen+i];
+        outType res  = 0;
+        outType norm = 0;
 #pragma unroll
         for(dim_type wj=0; wj<window_size; ++wj) {
             dim_type joff = (j+wj-radius)*shrdLen;
             dim_type goff = wj*window_size;
 #pragma unroll
             for(dim_type wi=0; wi<window_size; ++wi) {
-                const float tmp_color   = (float)localMem[joff+i+wi-radius];
-                const float gauss_space = gauss2d[goff+wi];
-                const float gauss_range = gaussian1d(center_color - tmp_color, variance_range);
-                const float weight      = gauss_space * gauss_range;
+                const outType tmp_color   = localMem[joff+i+wi-radius];
+                const outType gauss_space = gauss2d[goff+wi];
+                const outType gauss_range = gaussian1d(center_color - tmp_color, variance_range);
+                const outType weight      = gauss_space * gauss_range;
                 norm += weight;
                 res  += tmp_color * weight;
             }
         }
         dim_type oIdx = gy*out.strides[1] + gx*out.strides[0];
-        optr[oIdx] = (T)(res / norm);
+        optr[oIdx] = res / norm;
     }
 }
 
-template<typename T, bool isColor>
-void bilateral(Param<T> out, CParam<T> in, float s_sigma, float c_sigma)
+template<typename inType, typename outType, bool isColor>
+void bilateral(Param<outType> out, CParam<inType> in, float s_sigma, float c_sigma)
 {
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 
@@ -147,9 +147,9 @@ void bilateral(Param<T> out, CParam<T> in, float s_sigma, float c_sigma)
     dim_type radius = (dim_type)std::max(s_sigma * 1.5f, 1.f);
     dim_type num_shrd_elems    = (THREADS_X + 2 * radius) * (THREADS_Y + 2 * radius);
     dim_type num_gauss_elems   = (2 * radius + 1)*(2 * radius + 1);
-    dim_type total_shrd_size   = sizeof(T) * (num_shrd_elems + num_gauss_elems);
+    dim_type total_shrd_size   = sizeof(outType) * (num_shrd_elems + num_gauss_elems);
 
-    bilateralKernel<T>
+    bilateralKernel<inType, outType>
         <<<blocks, threads, total_shrd_size>>>
         (out, in, s_sigma, c_sigma, num_shrd_elems, blk_x);
 

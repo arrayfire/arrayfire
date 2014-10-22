@@ -4,53 +4,13 @@
 #include <af/traits.hpp>
 #include <string>
 #include <vector>
-#include <testHelpers.hpp>
 #include <cmath>
+#include <type_traits>
+#include <testHelpers.hpp>
 
 using std::string;
 using std::vector;
 using af::dim4;
-
-template<typename T>
-class Bilateral : public ::testing::Test
-{
-    public:
-        virtual void SetUp() {}
-};
-
-// create a list of types to be tested
-// FIXME: since af_load_image returns only f32 type arrays
-//       only float, double data types test are enabled & passing
-//       Note: compareArraysRMSD is handling upcasting while working
-//       with two different type of types
-//
-//typedef ::testing::Types<float, double, int, uint, char, uchar> TestTypes;
-typedef ::testing::Types<float, double> TestTypes;
-
-// register the type list
-TYPED_TEST_CASE(Bilateral, TestTypes);
-
-TYPED_TEST(Bilateral, InvalidArgs)
-{
-    vector<TypeParam>   in(100,1);
-
-    af_array inArray   = 0;
-    af_array outArray  = 0;
-
-    // check for gray scale bilateral
-    af::dim4 dims(5,5,2,2);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
-    ASSERT_EQ(AF_ERR_SIZE, af_bilateral(&outArray, inArray, 0.12f, 0.34f, false));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-
-    // check for color image bilateral
-    dims = af::dim4(100,1,1,1);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
-    ASSERT_EQ(AF_ERR_SIZE, af_bilateral(&outArray, inArray, 0.12f, 0.34f, true));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-}
 
 template<typename T, bool isColor>
 void bilateralTest(string pTestFile)
@@ -94,12 +54,92 @@ void bilateralTest(string pTestFile)
     }
 }
 
-TYPED_TEST(Bilateral, Grayscale)
+TEST(BilateralOnImage, Grayscale)
 {
-    bilateralTest<TypeParam, false>(string(TEST_DIR"/bilateral/gray.test"));
+    bilateralTest<float, false>(string(TEST_DIR"/bilateral/gray.test"));
 }
 
-TYPED_TEST(Bilateral, Color)
+TEST(BilateralOnImage, Color)
 {
-    bilateralTest<TypeParam, true>(string(TEST_DIR"/bilateral/color.test"));
+    bilateralTest<float, true>(string(TEST_DIR"/bilateral/color.test"));
+}
+
+
+template<typename T>
+class BilateralOnData : public ::testing::Test
+{
+};
+
+typedef ::testing::Types<float, double, int, uint, char, uchar> DataTestTypes;
+
+// register the type list
+TYPED_TEST_CASE(BilateralOnData, DataTestTypes);
+
+template<typename inType>
+void bilateralDataTest(string pTestFile)
+{
+    typedef typename std::conditional<std::is_same<inType, double>::value, double, float>::type outType;
+
+    vector<af::dim4>        numDims;
+    vector<vector<inType>>       in;
+    vector<vector<outType>>   tests;
+
+    readTests<inType, outType, float>(pTestFile, numDims, in, tests);
+
+    af::dim4 dims      = numDims[0];
+    af_array outArray  = 0;
+    af_array inArray   = 0;
+    outType *outData;
+
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
+                dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<inType>::af_type));
+
+    ASSERT_EQ(AF_SUCCESS, af_bilateral(&outArray, inArray, 2.25f, 25.56f, false));
+
+    outData = new outType[dims.elements()];
+
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+
+    for (size_t testIter=0; testIter<tests.size(); ++testIter) {
+        vector<outType> currGoldBar = tests[testIter];
+        size_t nElems = currGoldBar.size();
+        ASSERT_EQ(true, compareArraysRMSD(nElems, &currGoldBar.front(), outData, 0.02f));
+    }
+
+    // cleanup
+    delete[] outData;
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+}
+
+TYPED_TEST(BilateralOnData, Rectangle)
+{
+    bilateralDataTest<TypeParam>(string(TEST_DIR"/bilateral/rectangle.test"));
+}
+
+TYPED_TEST(BilateralOnData, Rectangle_Batch)
+{
+    bilateralDataTest<TypeParam>(string(TEST_DIR"/bilateral/rectangle_batch.test"));
+}
+
+TYPED_TEST(BilateralOnData, InvalidArgs)
+{
+    vector<TypeParam>   in(100,1);
+
+    af_array inArray   = 0;
+    af_array outArray  = 0;
+
+    // check for gray scale bilateral
+    af::dim4 dims(5,5,2,2);
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
+                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
+    ASSERT_EQ(AF_ERR_SIZE, af_bilateral(&outArray, inArray, 0.12f, 0.34f, false));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+
+    // check for color image bilateral
+    dims = af::dim4(100,1,1,1);
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
+                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
+    ASSERT_EQ(AF_ERR_SIZE, af_bilateral(&outArray, inArray, 0.12f, 0.34f, true));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
