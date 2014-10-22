@@ -29,6 +29,9 @@ extern "C" {
     AFAPI af_err af_skew(af_array *out, const af_array in, const float skew0, const float skew1,
                          const dim_type odim0, const dim_type odim1, const bool inverse);
 
+    // histogram: return af_array will have elements of type u32
+    AFAPI af_err af_histogram(af_array *out, const af_array in, const unsigned nbins, const double minval, const double maxval);
+
     // image dilation operation
     AFAPI af_err af_dilate(af_array *out, const af_array in, const af_array mask);
 

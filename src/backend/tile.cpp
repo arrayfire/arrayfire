@@ -1,4 +1,4 @@
-#include <af/array.h>
+#include <af/index.h>
 #include <err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>

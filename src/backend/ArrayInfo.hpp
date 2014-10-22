@@ -1,5 +1,6 @@
 #pragma once
 #include <af/array.h>
+#include <af/util.h>
 #include <af/dim4.hpp>
 
 

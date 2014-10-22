@@ -2,6 +2,7 @@
 #include <cassert>
 
 #include <af/array.h>
+#include <af/index.h>
 #include <ArrayInfo.hpp>
 #include <err_common.hpp>
 #include <handle.hpp>

@@ -1,8 +1,7 @@
 #include <complex>
 #include <af/dim4.hpp>
-#include <af/defines.h>
 #include <af/array.h>
-#include <af/defines.h>
+#include <af/util.h>
 #include <copy.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>

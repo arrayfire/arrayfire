@@ -1,0 +1,28 @@
+#pragma once
+#include <af/defines.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    // Create a new af_array by indexing from existing af_array.
+    // This takes the form `out = in(seq_a, seq_b)`
+    AFAPI af_err af_index(af_array *out, const af_array in, unsigned ndims, const af_seq* const index);
+
+    // Tile an Array
+    AFAPI af_err af_tile(af_array *out, const af_array in,
+                         const unsigned x, const unsigned y, const unsigned z, const unsigned w);
+
+    // Reorder an Array
+    AFAPI af_err af_reorder(af_array *out, const af_array in,
+                            const unsigned x, const unsigned y, const unsigned z, const unsigned w);
+
+    // Reorder an Array
+    AFAPI af_err af_shift(af_array *out, const af_array in, const int x, const int y, const int z, const int w);
+
+    // re-shape the the dimensions of the input array
+    AFAPI af_err af_moddims(af_array *out, const af_array in, const unsigned ndims, const dim_type * const dims);
+
+#ifdef __cplusplus
+}
+#endif

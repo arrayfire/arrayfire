@@ -1,5 +1,7 @@
 #include <af/array.h>
 #include <af/image.h>
+#include <af/index.h>
+#include <af/blas.h>
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <err_common.hpp>
