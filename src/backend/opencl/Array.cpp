@@ -114,6 +114,13 @@ namespace opencl
 
     template<typename T>
     Array<T> *
+    createRefArray(const Array<T>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride)
+    {
+        return new Array<T>(parent, dims, offset, stride);
+    }
+
+    template<typename T>
+    Array<T> *
     createDataArray(const dim4 &size, const T * const data)
     {
         Array<T> *out = new Array<T>(size, data);
@@ -198,6 +205,8 @@ namespace opencl
     template       Array<T>*  createEmptyArray<T> (const dim4 &size);   \
     template       Array<T>*  createParamArray<T> (Param &tmp);         \
     template       Array<T>*  createSubArray<T>   (const Array<T> &parent, const dim4 &dims, \
+                                                   const dim4 &offset, const dim4 &stride); \
+    template       Array<T>*  createRefArray<T>   (const Array<T> &parent, const dim4 &dims, \
                                                    const dim4 &offset, const dim4 &stride); \
     template       Array<T>*  createNodeArray<T>   (const dim4 &size, JIT::Node *node); \
     template       JIT::Node* Array<T>::getNode() const;                \

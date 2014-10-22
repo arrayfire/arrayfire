@@ -31,7 +31,6 @@ extern "C" {
     AFAPI af_err af_print(af_array arr);
 
     // Create a new af_array by indexing from existing af_array.
-    // This takes the form `out = in(seq_a, seq_b)`
     AFAPI af_err af_index(af_array *out, const af_array in, unsigned ndims, const af_seq* const index);
 
     // Tile an Array
@@ -87,6 +86,10 @@ extern "C" {
 
     AFAPI af_err af_sort_by_key(af_array *out_keys, af_array *out_values,
                                 const af_array keys, const af_array values, const unsigned dim, const bool dir);
+
+    // copy an array into exiting array of larger dimensions
+    // error out in case of insufficient dimension lengths
+    AFAPI af_err af_assign(af_array out, unsigned ndims, const af_seq* const index, const af_array in);
 
 #ifdef __cplusplus
 }
