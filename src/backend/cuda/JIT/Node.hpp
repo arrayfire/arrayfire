@@ -18,6 +18,7 @@ namespace JIT
         bool m_gen_func;
         bool m_gen_param;
         bool m_gen_offset;
+        bool m_set_arg;
         std::vector<Node *> m_parents;
 
     public:
@@ -28,17 +29,19 @@ namespace JIT
               m_gen_func(false),
               m_gen_param(false),
               m_gen_offset(false),
+              m_set_arg(false),
               m_parents()
         {}
 
         virtual void replaceChild(Node *prev, Node *curr) {};
         virtual void genKerName(std::stringstream &kerStream, bool genInputs) {}
-        virtual void genParams  (std::stringstream &kerStream) {}
+        virtual void genParams  (std::stringstream &kerStream, std::stringstream &annStream) {}
         virtual void genOffsets (std::stringstream &kerStream) {}
         virtual void genFuncs   (std::stringstream &kerStream, std::stringstream &declStream)
         { m_gen_func = true;}
 
         virtual int setId(int id) { m_set_id = true; return id; }
+        virtual void setArgs(std::vector<void *> &args) { m_set_arg = true; }
 
         virtual void resetFlags() {}
 

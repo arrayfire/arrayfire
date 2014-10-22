@@ -1,4 +1,5 @@
 #pragma once
+#include <types.hpp>
 #include "Node.hpp"
 #include <math.hpp>
 
@@ -8,21 +9,26 @@ namespace cuda
 namespace JIT
 {
 
+    typedef union {
+        float s;
+        double d;
+        cfloat c;
+        cdouble z;
+    } scalar_t;
+
     class ScalarNode : public Node
     {
     private:
-        const cl_double2 m_val;
         const bool m_double;
         const bool m_complex;
         std::string m_name_str;
         bool m_gen_name;
         bool m_set_arg;
-
+        scalar_t m_val;
     public:
 
         ScalarNode(const double val, bool isDouble)
             : Node("float"),
-              m_val(scalar<cdouble>(val)),
               m_double(isDouble),
               m_complex(false),
               m_name_str("f"),
@@ -32,12 +38,14 @@ namespace JIT
             if (isDouble) {
                 m_type_str = std::string("double");
                 m_name_str = std::string("d");
+                m_val.d = val;
+            } else {
+                m_val.s = (float)val;
             }
         }
 
-        ScalarNode(const cl_double2 val, bool isDouble)
-            : Node("float2"),
-              m_val(val),
+        ScalarNode(const cdouble val, bool isDouble)
+            : Node("<2 x float>"),
               m_double(isDouble),
               m_complex(true),
               m_name_str("c"),
@@ -45,8 +53,12 @@ namespace JIT
               m_set_arg(false)
         {
             if (isDouble) {
-                m_type_str = std::string("double2");
+                m_type_str = std::string("<2 x double>");
                 m_name_str = std::string("z");
+                m_val.z = val;
+            } else {
+                m_val.c.x = val.x;
+                m_val.c.y = val.y;
             }
         }
 
@@ -59,10 +71,12 @@ namespace JIT
             m_gen_name = true;
         }
 
-        void genParams(std::stringstream &kerStream)
+        void genParams(std::stringstream &kerStream,
+                       std::stringstream &annStream)
         {
             if (m_gen_param) return;
             kerStream << m_type_str << " %val" << m_id << ", " << std::endl;
+            annStream << m_type_str << ",\n";
             m_gen_param = true;
         }
 
@@ -97,8 +111,14 @@ namespace JIT
             m_gen_name = false;
             m_set_arg = false;
         }
-    };
 
+        void setArgs(std::vector<void *> &args)
+        {
+            if (m_set_arg) return;
+            args.push_back((void *)&m_val);
+            m_set_arg = true;
+        }
+    };
 }
 
 }

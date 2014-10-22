@@ -33,10 +33,11 @@ namespace JIT
             else m_child->replaceChild(prev, curr);
         }
 
-        void genParams(std::stringstream &kerStream)
+        void genParams(std::stringstream &kerStream,
+                       std::stringstream &annStream)
         {
             if (m_gen_param) return;
-            if (!(m_child->isGenParam())) m_child->genParams(kerStream);
+            if (!(m_child->isGenParam())) m_child->genParams(kerStream, annStream);
             m_gen_param = true;
         }
 
@@ -94,6 +95,13 @@ namespace JIT
             m_gen_param = false;
             m_gen_offset = false;
             m_child->resetFlags();
+        }
+
+        void setArgs(std::vector<void *> &args)
+        {
+            if (m_set_arg) return;
+            m_child->setArgs(args);
+            m_set_arg = true;
         }
     };
 

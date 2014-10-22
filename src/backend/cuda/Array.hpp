@@ -70,7 +70,6 @@ namespace cuda
         bool ready;
 
         Array(af::dim4 dims);
-        explicit Array(af::dim4 dims, T val);
         explicit Array(af::dim4 dims, const T * const in_data);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
         Array(Param<T> &tmp);

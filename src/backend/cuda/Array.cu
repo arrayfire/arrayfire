@@ -5,6 +5,7 @@
 #include <kernel/elwise.hpp> //set
 #include <err_cuda.hpp>
 #include <JIT/BufferNode.hpp>
+#include <scalar.hpp>
 
 using af::dim4;
 
@@ -27,15 +28,6 @@ namespace cuda
         data(cudaMallocWrapper<T>(dims.elements())),
         parent(), node(NULL), ready(true)
     {}
-
-    template<typename T>
-    Array<T>::Array(af::dim4 dims, T val) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(cudaMallocWrapper<T>(dims.elements())),
-        parent(), node(NULL), ready(true)
-    {
-        kernel::set(data, val, elements());
-    }
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data) :
@@ -111,8 +103,7 @@ namespace cuda
     Array<T>*
     createValueArray(const dim4 &size, const T& value)
     {
-        Array<T> *out = new Array<T>(size, value);
-        return out;
+        return createScalarNode<T>(size, value);
     }
 
     template<typename T>

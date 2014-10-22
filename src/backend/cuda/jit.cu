@@ -16,6 +16,7 @@
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
 #include <math.hpp>
+#include <nvvm.h>
 
 namespace cuda
 {
@@ -41,6 +42,7 @@ static string getKernelString(string funcName, Node *node)
 {
     stringstream kerStream;
     stringstream declStream;
+    stringstream annStream;
 
     int id = node->setId(0) - 1;
 
@@ -51,7 +53,7 @@ static string getKernelString(string funcName, Node *node)
     }
 
     kerStream << "define void " << funcName << " (" << std::endl;
-    node->genParams(kerStream);
+    node->genParams(kerStream, annStream);
     kerStream << node->getTypeStr() <<"* %out,\n"
               << "i32 %ostr0, i32 %ostr1, i32 %ostr2, i32 %ostr3,\n"
               << "i32 %odim0, i32 %odim1, i32 %odim2, i32 %odim3,\n"
@@ -68,35 +70,56 @@ static string getKernelString(string funcName, Node *node)
     kerStream << "\n\n";
     kerStream << "%id2 = sdiv i32 %bidx, %blkx\n";
     kerStream << "%id3 = sdiv i32 %bidy, %blky\n";
-    kerStream << "%id2m = smul i32 %id2, %blkx\n";
-    kerStream << "%id3m = smul i32 %id3, %blky\n";
+    kerStream << "%id2m = mul i32 %id2, %blkx\n";
+    kerStream << "%id3m = mul i32 %id3, %blky\n";
     kerStream << "%blk_x = sub i32 %bidx, %id2m\n";
     kerStream << "%blk_y = sub i32 %bidy, %id3m\n";
-    kerStream << "%id0m = smul i32 %blk_x, %bdmx\n";
-    kerStream << "%id1m = smul i32 %blk_y, %bdmy\n";
+    kerStream << "%id0m = mul i32 %blk_x, %bdmx\n";
+    kerStream << "%id1m = mul i32 %blk_y, %bdmy\n";
     kerStream << "%id0 = add i32 %tidx, %id0m\n";
     kerStream << "%id1 = add i32 %tidy, %id1m\n";
     kerStream << "\n\n";
 
-    node->genOffsets(kerStream);
-
-    kerStream << "%off3o = mul i32 %id3, ostr3\n";
-    kerStream << "%off2o = mul i32 %id2, ostr2\n";
-    kerStream << "%off1o = mul i32 %id1, ostr1\n";
+    kerStream << "%off3o = mul i32 %id3, %ostr3\n";
+    kerStream << "%off2o = mul i32 %id2, %ostr2\n";
+    kerStream << "%off1o = mul i32 %id1, %ostr1\n";
     kerStream << "%off23o = add i32 %off3o, %off2o\n";
-    kerStream << "%idxa = add i32 %off23o, %off1o\n";
+    kerStream << "%off123o = add i32 %off23o, %off1o\n";
+    kerStream << "%idxa = add i32 %off123o, %id0\n";
     kerStream << "%idx = sext i32 %idxa to i64\n";
     kerStream << "\n\n";
 
+    kerStream << "%cmp3 = icmp slt i32 %id3, %odim3\n";
+    kerStream << "%cmp2 = icmp slt i32 %id2, %odim2\n";
+    kerStream << "%cmp1 = icmp slt i32 %id1, %odim1\n";
+    kerStream << "%cmp0 = icmp slt i32 %id0, %odim0\n";
+
+    kerStream << "br i1 %cmp3, label %check2, label %end\n";
+    kerStream << "\ncheck2:\n";
+    kerStream << "br i1 %cmp2, label %check1, label %end\n";
+    kerStream << "\ncheck1:\n";
+    kerStream << "br i1 %cmp1, label %check0, label %end\n";
+    kerStream << "\ncheck0:\n";
+    kerStream << "br i1 %cmp0, label %core, label %end\n";
+
+    kerStream << "\n";
+    kerStream << "end:\n\n";
+    kerStream << "ret void\n";
+
+    kerStream <<"\n";
+    kerStream << "core:\n\n";
+    node->genOffsets(kerStream);
+
     node->genFuncs(kerStream, declStream);
 
-    kerStream << "%outIdx = getelementptr inbounds i32* %out, i64 %idx\n";
+    kerStream << "%outIdx = getelementptr inbounds " << node->getTypeStr() << "* %out, i64 %idx\n";
     kerStream << "store "
               << node->getTypeStr()
-              << " %val" << id << " "
+              << " %val" << id << ", "
               << node->getTypeStr()
-              << "* %idx, align 4\n";
+              << "* %outIdx\n";
 
+    kerStream << "\nret void\n";
     kerStream << "\n}\n\n";
 
     kerStream << declStream.str() << "\n";
@@ -112,17 +135,151 @@ static string getKernelString(string funcName, Node *node)
     kerStream << "\n";
 
     kerStream << "!nvvm.annotations = !{!1}\n"
-              << "!1 = metadata !{void (i32*)*"
-              << " " << funcName << " "
+              << "!1 = metadata !{void (\n"
+              << annStream.str()
+              << node->getTypeStr() << "*,\n"
+              << "i32, i32, i32, i32,\n"
+              << "i32, i32, i32, i32,\n"
+              << "i32, i32\n"
+              << ")* " << funcName << ",\n "
               << "metadata !\"kernel\", i32 1}\n";
 
     return kerStream.str();
+}
+
+#define NVVM_CHECK(fn, msg) do {                \
+        nvvmResult res = fn;                    \
+        if (res == NVVM_SUCCESS) break;         \
+        char nvvm_err_msg[1024];                \
+        snprintf(nvvm_err_msg,                  \
+                 sizeof(nvvm_err_msg),          \
+                 "NVVM Error (%d): %s\n",       \
+                 (int)(res), msg);              \
+        AF_ERROR(nvvm_err_msg,                  \
+                 AF_ERR_INTERNAL);              \
+                                                \
+    } while(0)
+
+static char *irToPtx(string IR, size_t *ptx_size)
+{
+    nvvmProgram prog;
+
+    NVVM_CHECK(nvvmCreateProgram(&prog), "Failed to create program");
+
+    NVVM_CHECK(nvvmAddModuleToProgram(prog, IR.c_str(), IR.size(), "generated kernel"),
+               "Failed to add module");
+
+//#ifndef NDEBUG
+#if 0
+    NVVM_CHECK(nvvmCompileProgram(prog, 0, NULL), "Failed to compile program");
+#else
+    nvvmResult comp_res = nvvmCompileProgram(prog, 0, NULL);
+    if (comp_res != NVVM_SUCCESS) {
+        size_t log_size = 0;
+        nvvmGetProgramLogSize(prog, &log_size);
+        printf("%d, %d\n", IR.size(), log_size);
+        char *log = new char[log_size];
+        nvvmGetProgramLog(prog, log);
+        printf("LOG:\n%s\n%s", log, IR.c_str());
+        delete[] log;
+        NVVM_CHECK(comp_res, "Failed to compile program");
+    }
+#endif
+
+    NVVM_CHECK(nvvmGetCompiledResultSize(prog, ptx_size), "Can not get ptx size");
+
+    char *ptx = new char[*ptx_size];
+    NVVM_CHECK(nvvmGetCompiledResult(prog, ptx), "Can not get ptx from NVVM IR");
+
+    NVVM_CHECK(nvvmDestroyProgram(&prog), "Failed to destroy program");
+    return ptx;
 }
 
 typedef struct {
     CUmodule prog;
     CUfunction ker;
 } kc_entry_t;
+
+#define CU_CHECK(fn) do {                       \
+        CUresult res = fn;                      \
+        if (res == CUDA_SUCCESS) break;         \
+        char cu_err_msg[1024];                  \
+        snprintf(cu_err_msg,                    \
+                 sizeof(cu_err_msg),            \
+                 "CU Error (%d)\n",             \
+                 (int)(res));                   \
+        AF_ERROR(cu_err_msg,                    \
+                 AF_ERR_INTERNAL);              \
+    } while(0)
+
+static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
+{
+    size_t ptx_size;
+    const char *ptx = irToPtx(jit_ker, &ptx_size);
+
+    CUlinkState linkState;
+
+    const size_t size = 1024;
+    char linkInfo[size];
+    char linkError[size];
+
+    linkInfo[0] = 0;
+    linkError[0] = 0;
+
+    CUjit_option linkOptions[] = {
+        CU_JIT_INFO_LOG_BUFFER,
+        CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES,
+        CU_JIT_ERROR_LOG_BUFFER,
+        CU_JIT_ERROR_LOG_BUFFER_SIZE_BYTES,
+        CU_JIT_LOG_VERBOSE
+    };
+
+    void *linkOptionValues[] = {
+        linkInfo,
+        reinterpret_cast<void*>(1024),
+        linkError,
+        reinterpret_cast<void*>(1024),
+        reinterpret_cast<void*>(1)
+    };
+
+    CU_CHECK(cuLinkCreate(5, linkOptions, linkOptionValues, &linkState));
+    CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)ptx,
+                           ptx_size, ker_name, 0, NULL, NULL));
+
+    CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)trig_ptx,
+                           trig_ptx_len, "trig", 0, NULL, NULL));
+
+    CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)arith_ptx,
+                           arith_ptx_len, "arith", 0, NULL, NULL));
+
+    CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)exp_ptx,
+                           exp_ptx_len, "exp", 0, NULL, NULL));
+
+    CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)hyper_ptx,
+                           hyper_ptx_len, "hyper", 0, NULL, NULL));
+
+    CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)logic_ptx,
+                           logic_ptx_len, "logic", 0, NULL, NULL));
+
+    CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)numeric_ptx,
+                           numeric_ptx_len, "numeric", 0, NULL, NULL));
+
+
+    void *cubin;
+    size_t cubinSize;
+
+    CUmodule module;
+    CUfunction kernel;
+
+    CU_CHECK(cuLinkComplete(linkState, &cubin, &cubinSize));
+    CU_CHECK(cuModuleLoadDataEx(&module, cubin, 0, 0, 0));
+    CU_CHECK(cuModuleGetFunction(&kernel, module, ker_name + 1));
+
+    kc_entry_t entry = {module, kernel};
+
+    delete[] ptx;
+    return entry;
+}
 
 static CUfunction getKernel(Node *node)
 {
@@ -138,6 +295,7 @@ static CUfunction getKernel(Node *node)
 
     if (idx == kernelCaches[device].end()) {
         string jit_ker = getKernelString(funcName, node);
+        entry = compileKernel(funcName.c_str(), jit_ker);
         kernelCaches[device][funcName] = entry;
     } else {
         entry = idx->second;
@@ -149,9 +307,45 @@ static CUfunction getKernel(Node *node)
 template<typename T>
 void evalNodes(Param<T> &out, Node *node)
 {
-    getKernel(node);
+    CUfunction ker = getKernel(node);
 
-    kernel::set((T *)out.ptr, scalar<T>(0), out.strides[3] * out.dims[3]);
+    std::vector<void *> args;
+    node->setArgs(args);
+
+    void *ptr = (void *)out.ptr;
+    int strides[] = {out.strides[0],
+                     out.strides[1],
+                     out.strides[2],
+                     out.strides[3]};
+    int dims[] = {out.dims[0],
+                  out.dims[1],
+                  out.dims[2],
+                  out.dims[3]};
+
+    args.push_back((void *)&ptr);
+    for (int i = 0; i < 4; i++) args.push_back((void *)(strides + i));
+    for (int i = 0; i < 4; i++) args.push_back((void *)(dims + i));
+
+    int threads_x = 32;
+    int threads_y =  8;
+
+    int blocks_x = divup(out.dims[0], threads_x);
+    int blocks_y = divup(out.dims[1], threads_y);
+
+    args.push_back((void *)&blocks_x);
+    args.push_back((void *)&blocks_y);
+
+    CU_CHECK(cuLaunchKernel(ker,
+                            blocks_x * out.dims[2],
+                            blocks_y * out.dims[3],
+                            1,
+                            threads_x,
+                            threads_y,
+                            1,
+                            0,
+                            NULL,
+                            &args.front(),
+                            NULL));
 }
 
 template void evalNodes<float  >(Param<float  > &out, Node *node);
