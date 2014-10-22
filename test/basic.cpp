@@ -61,7 +61,7 @@ TEST(BasicTests, constant100x100)
     }
 }
 
-#ifdef AF_OPENCL //FIXME: Remove this after adding CUDA and CPU JIT support
+#ifndef AF_CPU //FIXME: Remove this after adding CUDA and CPU JIT support
 //TODO: Test All The Types \o/
 TEST(BasicTests, AdditionSameType)
 {
@@ -102,36 +102,6 @@ TEST(BasicTests, AdditionSameType)
     ASSERT_NEAR(0.0f, err, 1e-8);
 }
 
-TEST(BasicTests, Additionf32f64)
-{
-    static const int ndims = 2;
-    static const int dim_size = 100;
-    dim_type d[ndims] = {dim_size, dim_size};
-
-    double valA = 3.9;
-    double valB = 5.7;
-    double valC = valA + valB;
-
-    af_array a, b, c;
-
-    ASSERT_EQ(AF_SUCCESS, af_constant(&a, valA, ndims, d, f32));
-    ASSERT_EQ(AF_SUCCESS, af_constant(&b, valB, ndims, d, f64));
-    ASSERT_EQ(AF_SUCCESS, af_add(&c, a, b));
-
-    vector<double> h_c(dim_size * dim_size);
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void **)&h_c[0], c));
-
-    double err = 0;
-
-    size_t elements = dim_size * dim_size;
-    for(size_t i = 0; i < elements; i++) {
-        double df = h_c[i] - (valC);
-        ASSERT_FLOAT_EQ(valA + valB, h_c[i]);
-        err = err + df * df;
-    }
-    ASSERT_NEAR(0.0f, err, 1e-8);
-}
-
 TEST(BasicTests, Additionf64f64)
 {
     static const int ndims = 2;
@@ -161,4 +131,36 @@ TEST(BasicTests, Additionf64f64)
     }
     ASSERT_NEAR(0.0f, err, 1e-8);
 }
+
+#ifndef AF_CUDA //FIXME: CUDA has problems with casting
+TEST(BasicTests, Additionf32f64)
+{
+    static const int ndims = 2;
+    static const int dim_size = 100;
+    dim_type d[ndims] = {dim_size, dim_size};
+
+    double valA = 3.9;
+    double valB = 5.7;
+    double valC = valA + valB;
+
+    af_array a, b, c;
+
+    ASSERT_EQ(AF_SUCCESS, af_constant(&a, valA, ndims, d, f32));
+    ASSERT_EQ(AF_SUCCESS, af_constant(&b, valB, ndims, d, f64));
+    ASSERT_EQ(AF_SUCCESS, af_add(&c, a, b));
+
+    vector<double> h_c(dim_size * dim_size);
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void **)&h_c[0], c));
+
+    double err = 0;
+
+    size_t elements = dim_size * dim_size;
+    for(size_t i = 0; i < elements; i++) {
+        double df = h_c[i] - (valC);
+        ASSERT_FLOAT_EQ(valA + valB, h_c[i]);
+        err = err + df * df;
+    }
+    ASSERT_NEAR(0.0f, err, 1e-8);
+}
+#endif
 #endif
