@@ -253,3 +253,30 @@ af_err af_destroy_array(af_array arr)
     CATCHALL
         return ret;
 }
+
+
+template<typename T>
+static af_array weakCopyHandle(const af_array in)
+{
+    detail::Array<T> *A = reinterpret_cast<detail::Array<T> *>(in);
+    detail::Array<T> *out = detail::createEmptyArray<T>(af::dim4());
+    *out= *A;
+    return reinterpret_cast<af_array>(out);
+}
+
+af_array weakCopy(const af_array in)
+{
+    switch(getInfo(in).getType()) {
+    case f32: return weakCopyHandle<float>(in);
+    case f64: return weakCopyHandle<double>(in);
+    case s32: return weakCopyHandle<int>(in);
+    case s8: return weakCopyHandle<char>(in);
+    case u32: return weakCopyHandle<unsigned int>(in);
+    case u8: return weakCopyHandle<unsigned char>(in);
+    case c32: return weakCopyHandle<detail::cfloat>(in);
+    case c64: return weakCopyHandle<detail::cdouble>(in);
+    case b8: return weakCopyHandle<unsigned char>(in);
+    default:
+        AF_ERROR("Invalid type", AF_ERR_INVALID_TYPE);
+    }
+}

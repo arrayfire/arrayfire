@@ -17,7 +17,7 @@ namespace cuda
     T* cudaMallocWrapper(const size_t &elements)
     {
         T* ptr = NULL;
-        CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&ptr), sizeof(T) * elements));
+        if (elements > 0) CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&ptr), sizeof(T) * elements));
         return ptr;
     }
 

@@ -13,6 +13,14 @@ using std::vector;
 using std::numeric_limits;
 using std::abs;
 
+dim4::dim4()
+{
+    dims[0] = 0;
+    dims[1] = 0;
+    dims[2] = 0;
+    dims[3] = 0;
+}
+
 dim4::dim4( dim_type first,
             dim_type second,
             dim_type third,
