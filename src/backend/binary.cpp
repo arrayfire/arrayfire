@@ -48,6 +48,32 @@ static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs)
     return AF_SUCCESS;
 }
 
+template<af_op_t op>
+static af_err af_arith_real(af_array *out, const af_array lhs, const af_array rhs)
+{
+    try {
+        const af_dtype otype = implicit(lhs, rhs);
+        const af_array left  = cast(lhs, otype);
+        const af_array right = cast(rhs, otype);
+
+        af_array res;
+        switch (otype) {
+        case f32: res = arithOp<float  , op>(left, right); break;
+        case f64: res = arithOp<double , op>(left, right); break;
+        case s32: res = arithOp<int    , op>(left, right); break;
+        case u32: res = arithOp<uint   , op>(left, right); break;
+        case s8 : res = arithOp<char   , op>(left, right); break;
+        case u8 : res = arithOp<uchar  , op>(left, right); break;
+        case b8 : res = arithOp<uchar  , op>(left, right); break;
+        default: TYPE_ERROR(0, otype);
+        }
+
+        std::swap(*out, res);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
 af_err af_add(af_array *out, const af_array lhs, const af_array rhs)
 {
     return af_arith<af_add_t>(out, lhs, rhs);
@@ -80,12 +106,12 @@ af_err af_minof(af_array *out, const af_array lhs, const af_array rhs)
 
 af_err af_rem(af_array *out, const af_array lhs, const af_array rhs)
 {
-    return af_arith<af_rem_t>(out, lhs, rhs);
+    return af_arith_real<af_rem_t>(out, lhs, rhs);
 }
 
 af_err af_mod(af_array *out, const af_array lhs, const af_array rhs)
 {
-    return af_arith<af_mod_t>(out, lhs, rhs);
+    return af_arith_real<af_mod_t>(out, lhs, rhs);
 }
 
 af_err af_pow(af_array *out, const af_array lhs, const af_array rhs)
@@ -105,13 +131,25 @@ af_err af_pow(af_array *out, const af_array lhs, const af_array rhs)
 af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs)
 {
     try {
-        ArrayInfo linfo = getInfo(lhs);
-        ArrayInfo rinfo = getInfo(rhs);
 
-        if (!(linfo.isRealFloating() || !(rinfo.isRealFloating()))) {
-            AF_ERROR("Only floating point arrays are supported for atan2 ", AF_ERR_NOT_SUPPORTED);
+        const af_dtype type = implicit(lhs, rhs);
+
+        const af_array left  = cast(lhs, type);
+        const af_array right = cast(rhs, type);
+
+        if (type != f32 && type != f64) {
+            AF_ERROR("Only floating point arrays are supported for atan2 ",
+                     AF_ERR_NOT_SUPPORTED);
         }
-        return af_arith<af_pow_t>(out, lhs, rhs);
+
+        af_array res;
+
+        switch (type) {
+        case f32: res = arithOp<float , af_atan2_t>(left, right); break;
+        case f64: res = arithOp<double, af_atan2_t>(left, right); break;
+        default: TYPE_ERROR(0, type);
+        }
+        std::swap(*out, res);
     }
     CATCHALL;
     return AF_SUCCESS;

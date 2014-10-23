@@ -61,7 +61,6 @@ TEST(BasicTests, constant100x100)
     }
 }
 
-#ifdef AF_OPENCL //FIXME: Remove this after adding CUDA and CPU JIT support
 //TODO: Test All The Types \o/
 TEST(BasicTests, AdditionSameType)
 {
@@ -161,4 +160,3 @@ TEST(BasicTests, Additionf64f64)
     }
     ASSERT_NEAR(0.0f, err, 1e-8);
 }
-#endif

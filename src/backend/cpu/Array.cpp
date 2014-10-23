@@ -2,6 +2,8 @@
 #include <Array.hpp>
 #include <copy.hpp>
 #include <iostream>
+#include <TNJ/BufferNode.hpp>
+#include <TNJ/ScalarNode.hpp>
 
 namespace cpu
 {
@@ -12,33 +14,50 @@ namespace cpu
     Array<T>::Array(dim4 dims):
         ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(dims.elements()),
-        parent(nullptr)
-    { }
-
-    template<typename T>
-    Array<T>::Array(dim4 dims, T val):
-        ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(dims.elements(), val),
-        parent(nullptr)
+        parent(nullptr), node(nullptr), ready(true)
     { }
 
     template<typename T>
     Array<T>::Array(dim4 dims, const T * const in_data):
         ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(in_data, in_data + dims.elements()),
-        parent(nullptr)
+        parent(nullptr), node(nullptr), ready(true)
     { }
+
+
+    template<typename T>
+    Array<T>::Array(af::dim4 dims, TNJ::Node *n) :
+        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        data(),
+        parent(nullptr), node(n), ready(false)
+    {
+    }
 
     template<typename T>
     Array<T>::Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
         ArrayInfo(dims, offset, stride, (af_dtype)dtype_traits<T>::af_type),
         data(0),
-        parent(&parnt)
+        parent(&parnt), node(nullptr), ready(true)
     { }
 
     template<typename T>
     Array<T>::~Array()
     { }
+
+    using TNJ::BufferNode;
+    using TNJ::Node;
+
+    template<typename T>
+    Node* Array<T>::getNode() const
+    {
+        if (node == NULL) {
+            dim_type strs[] = {strides()[0], strides()[1], strides()[2], strides()[3]};
+            BufferNode<T> *buf_node = new BufferNode<T>(get(), strs);
+            const_cast<Array<T> *>(this)->node = reinterpret_cast<Node *>(buf_node);
+        }
+
+        return node;
+    }
 
     template<typename T>
     Array<T> *
@@ -52,8 +71,8 @@ namespace cpu
     Array<T> *
     createValueArray(const dim4 &size, const T& value)
     {
-        Array<T> *out = new Array<T>(size, value);
-        return out;
+        TNJ::ScalarNode<T> *node = new TNJ::ScalarNode<T>(value);
+        return createNodeArray<T>(size, reinterpret_cast<TNJ::Node *>(node));
     }
 
     template<typename T>
@@ -62,6 +81,13 @@ namespace cpu
     {
         Array<T> *out = new Array<T>(size);
         return out;
+    }
+
+    template<typename T>
+    Array<T> *
+    createNodeArray(const dim4 &dims, Node *node)
+    {
+        return new Array<T>(dims, node);
     }
 
     template<typename T>
@@ -103,14 +129,63 @@ namespace cpu
         delete &A;
     }
 
+    template<typename T>
+    void Array<T>::eval()
+    {
+        if (isReady()) return;
+
+        data.resize(elements());
+        T *ptr = &data.front();
+
+        dim4 ostrs = strides();
+        dim4 odims = dims();
+
+        for (int w = 0; w < odims[3]; w++) {
+            dim_type offw = w * ostrs[3];
+
+            for (int z = 0; z < odims[2]; z++) {
+                dim_type offz = z * ostrs[2] + offw;
+
+                for (int y = 0; y < odims[1]; y++) {
+                    dim_type offy = y * ostrs[1] + offz;
+
+                    for (int x = 0; x < odims[0]; x++) {
+                        dim_type id = x + offy;
+
+                        ptr[id] = *(T *)node->calc(x, y, z, w);
+                    }
+                }
+            }
+        }
+
+
+        ready = true;
+        // Replace the current node in any JIT possible trees with the new BufferNode
+        Node *prev = node;
+        node = nullptr;
+        prev->reset();
+        prev->replace(getNode());
+    }
+
+    template<typename T>
+    void Array<T>::eval() const
+    {
+        if (isReady()) return;
+        const_cast<Array<T> *>(this)->eval();
+    }
+
 #define INSTANTIATE(T)                                                  \
     template       Array<T>*  createDataArray<T>  (const dim4 &size, const T * const data); \
     template       Array<T>*  createValueArray<T> (const dim4 &size, const T &value); \
     template       Array<T>*  createEmptyArray<T> (const dim4 &size);   \
     template       Array<T>*  createSubArray<T>   (const Array<T> &parent, const dim4 &dims, const dim4 &offset, const dim4 &stride); \
+    template       Array<T>*  createNodeArray<T>   (const dim4 &size, TNJ::Node *node); \
     template       void       scaleArray<T>       (Array<T> &arr, double factor); \
     template       void       destroyArray<T>     (Array<T> &A);        \
-    template                  Array<T>::~Array();
+    template       TNJ::Node* Array<T>::getNode() const;                \
+    template                  Array<T>::~Array();                       \
+    template       void Array<T>::eval();                               \
+    template       void Array<T>::eval() const;                         \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

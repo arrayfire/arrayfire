@@ -8,6 +8,7 @@
 #include <handle.hpp>
 #include <backend.hpp>
 #include <unary.hpp>
+#include <TNJ/UnaryNode.hpp>
 
 using namespace detail;
 
