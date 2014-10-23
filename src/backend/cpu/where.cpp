@@ -19,7 +19,7 @@ namespace cpu
         static const T zero = scalar<T>(0);
 
         const T *iptr = in.get();
-        vector<uint> out_vec(in.elements());
+        uint *out_vec  = new uint[in.elements()];
 
         dim_type count = 0;
         dim_type idx = 0;
@@ -45,7 +45,7 @@ namespace cpu
             }
         }
 
-        Array<uint> *out = createDataArray(dim4(count), &out_vec.front());
+        Array<uint> *out = createDataArray(dim4(count), out_vec);
         return out;
     }
 

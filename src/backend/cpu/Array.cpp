@@ -13,16 +13,18 @@ namespace cpu
     template<typename T>
     Array<T>::Array(dim4 dims):
         ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(dims.elements()),
+        data(new T[dims.elements()]),
         parent(nullptr), node(nullptr), ready(true)
     { }
 
     template<typename T>
     Array<T>::Array(dim4 dims, const T * const in_data):
         ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(in_data, in_data + dims.elements()),
+        data(new T[dims.elements()]),
         parent(nullptr), node(nullptr), ready(true)
-    { }
+    {
+        std::copy(in_data, in_data + dims.elements(), data.get());
+    }
 
 
     template<typename T>
@@ -36,7 +38,7 @@ namespace cpu
     template<typename T>
     Array<T>::Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
         ArrayInfo(dims, offset, stride, (af_dtype)dtype_traits<T>::af_type),
-        data(0),
+        data(),
         parent(&parnt), node(nullptr), ready(true)
     { }
 
@@ -141,8 +143,8 @@ namespace cpu
     {
         if (isReady()) return;
 
-        data.resize(elements());
-        T *ptr = &data.front();
+        data = std::shared_ptr<T>(new T[elements()]);
+        T *ptr = data.get();
 
         dim4 ostrs = strides();
         dim4 odims = dims();
