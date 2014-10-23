@@ -19,6 +19,9 @@ extern "C" {
                             const af_array lhs, const af_array rhs,
                             af_blas_transpose optLhs, af_blas_transpose optRhs);
 
+    // matrix transpose
+    AFAPI af_err af_transpose(af_array *out, af_array in);
+
 
 #ifdef __cplusplus
 }
