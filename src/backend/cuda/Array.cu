@@ -22,26 +22,33 @@ namespace cuda
         return ptr;
     }
 
+
+    template<typename T>
+    void cudaFreeWrapper(T *ptr)
+    {
+        CUDA_CHECK(cudaFree(ptr));
+    }
+
     template<typename T>
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(cudaMallocWrapper<T>(dims.elements())),
+        data(cudaMallocWrapper<T>(dims.elements()), cudaFreeWrapper<T>),
         parent(), node(NULL), ready(true)
     {}
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data) :
-    ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(cudaMallocWrapper<T>(dims.elements())),
+        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        data(cudaMallocWrapper<T>(dims.elements()), cudaFreeWrapper<T>),
         parent(), node(NULL), ready(true)
     {
-        CUDA_CHECK(cudaMemcpy(data, in_data, dims.elements() * sizeof(T), cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpy(data.get(), in_data, dims.elements() * sizeof(T), cudaMemcpyHostToDevice));
     }
 
     template<typename T>
     Array<T>::Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
         ArrayInfo(dims, offset, stride, (af_dtype)dtype_traits<T>::af_type),
-        data(NULL),
+        data(),
         parent(&parnt), node(NULL), ready(true)
     { }
 
@@ -51,7 +58,7 @@ namespace cuda
                   af::dim4(0, 0, 0, 0),
                   af::dim4(tmp.strides[0], tmp.strides[1], tmp.strides[2], tmp.strides[3]),
                   (af_dtype)dtype_traits<T>::af_type),
-        data(tmp.ptr),
+        data(tmp.ptr, cudaFreeWrapper<T>),
         parent(), node(NULL), ready(true)
     {
     }
@@ -59,13 +66,13 @@ namespace cuda
     template<typename T>
     Array<T>::Array(af::dim4 dims, JIT::Node *n) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(NULL),
+        data(),
         parent(), node(n), ready(false)
     {
     }
 
     template<typename T>
-    Array<T>::~Array() { if (!data) CUDA_CHECK(cudaFree(data)); }
+    Array<T>::~Array() {}
 
 
     using JIT::BufferNode;
@@ -170,10 +177,11 @@ namespace cuda
     {
         if (isReady()) return;
 
-        data = cudaMallocWrapper<T>(elements());
+        data = shared_ptr<T>(cudaMallocWrapper<T>(elements()),
+                             cudaFreeWrapper<T>);
 
         Param<T> res;
-        res.ptr = data;
+        res.ptr = data.get();
 
         for (int  i = 0; i < 4; i++) {
             res.dims[i] = dims()[i];

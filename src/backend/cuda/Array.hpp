@@ -9,11 +9,14 @@
 #include <cuda_runtime_api.h>
 #include <Param.hpp>
 #include <JIT/Node.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace cuda
 {
 
     using af::dim4;
+    using boost::shared_ptr;
+
     template<typename T> class Array;
 
     template<typename T>
@@ -68,7 +71,7 @@ namespace cuda
     template<typename T>
     class Array : public ArrayInfo
     {
-        T*      data;
+        shared_ptr<T> data;
         const Array*  parent;
 
         JIT::Node *node;
@@ -79,6 +82,7 @@ namespace cuda
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
         Array(Param<T> &tmp);
         Array(af::dim4 dims, JIT::Node *n);
+
     public:
 
         ~Array();
@@ -100,8 +104,8 @@ namespace cuda
         const   T* get(bool withOffset = true) const
         {
             if (!isReady()) eval();
-            if (isOwner()) return data;
-            return parent->data + (withOffset ? calcOffset(parent->strides(), this->offsets()) : 0);
+            if (isOwner()) return data.get();
+            return parent->data.get() + (withOffset ? calcOffset(parent->strides(), this->offsets()) : 0);
         }
 
         operator Param<T>()
