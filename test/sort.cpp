@@ -95,8 +95,8 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, bool 
     SORT_INIT(Sort1000False,  sort_1000,  false, 2);
     SORT_INIT(SortMedTrue,    sort_med1,  true,  0);
     SORT_INIT(SortMedFalse,   sort_med1,  false, 2);
-    SORT_INIT(SortMed5True,   sort_med,   true,  0);
-    SORT_INIT(SortMed5False,  sort_med,   false, 2);
     // Takes too much time in current implementation. Enable when everything is parallel
+    //SORT_INIT(SortMed5True,   sort_med,   true,  0);
+    //SORT_INIT(SortMed5False,  sort_med,   false, 2);
     //SORT_INIT(SortLargeTrue,  sort_large, true,  0);
     //SORT_INIT(SortLargeFalse, sort_large, false, 2);
