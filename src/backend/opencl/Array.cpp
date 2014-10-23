@@ -15,9 +15,12 @@ namespace opencl
     template<typename T>
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(getContext(), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
+        data(),
         parent(), node(NULL), ready(true)
     {
+        if (elements() > 0) data = cl::Buffer(getContext(),
+                                              CL_MEM_READ_WRITE,
+                                              ArrayInfo::elements()*sizeof(T));
     }
 
     template<typename T>
