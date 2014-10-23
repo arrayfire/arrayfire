@@ -79,7 +79,7 @@ ELSE (APPLE)
 
 		FIND_PATH(OPENCL_INCLUDE_DIRS CL/cl.h PATHS ${OPENCL_INCLUDE_SEARCH_PATHS})
 		FIND_PATH(_OPENCL_CPP_INCLUDE_DIRS CL/cl.hpp PATHS ${OPENCL_INCLUDE_SEARCH_PATHS})
-		
+
 		FIND_LIBRARY(_OPENCL_32_LIBRARIES OpenCL.lib HINTS ${OPENCL_LIBRARY_SEARCH_PATHS} PATHS ${OPENCL_LIB_DIR} ENV PATH)
 		FIND_LIBRARY(_OPENCL_64_LIBRARIES OpenCL.lib HINTS ${OPENCL_LIBRARY_64_SEARCH_PATHS} PATHS ${OPENCL_LIB_DIR} ENV PATH)
 
@@ -94,7 +94,7 @@ ELSE (APPLE)
 			#include <CL/cl.h>
 			#endif /* __APPLE__ */
 			int main()
-			{	
+			{
 			    cl_int result;
 			    cl_platform_id id;
 			    result = clGetPlatformIDs(1, &id, NULL);
@@ -129,7 +129,7 @@ ELSE (APPLE)
 
 
 	ELSE (WIN32)
-  
+
   		IF (CYGWIN)
     		SET (CMAKE_FIND_LIBRARY_SUFFIXES .lib)
     		SET (OCL_LIB_SUFFIX .lib)
@@ -146,8 +146,8 @@ ELSE (APPLE)
 		# The AMD SDK currently does not place its headers
 		# in /usr/include, therefore also search relative
 		# to the library
-		FIND_PATH(OPENCL_INCLUDE_DIRS CL/cl.h PATHS ${_OPENCL_INC_CAND} "/usr/local/cuda/include" "/opt/AMDAPP/include" ENV OpenCL_INCPATH)
-		FIND_PATH(_OPENCL_CPP_INCLUDE_DIRS CL/cl.hpp PATHS ${_OPENCL_INC_CAND} "/usr/local/cuda/include" "/opt/AMDAPP/include" ENV OpenCL_INCPATH)
+        FIND_PATH(OPENCL_INCLUDE_DIRS CL/cl.h PATHS ENV OpenCL_INCPATH ${_OPENCL_INC_CAND} "/usr/local/cuda/include" "/opt/AMDAPP/include" NO_DEFAULT_PATH)
+        FIND_PATH(_OPENCL_CPP_INCLUDE_DIRS CL/cl.hpp PATHS ENV OpenCL_INCPATH ${_OPENCL_INC_CAND} "/usr/local/cuda/include" "/opt/AMDAPP/include")
 
 	ENDIF (WIN32)
 
