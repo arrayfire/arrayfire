@@ -2,7 +2,6 @@
 #include <Array.hpp>
 #include <stdexcept>
 #include <copy.hpp>
-#include <kernel/elwise.hpp> //set
 #include <err_cuda.hpp>
 #include <JIT/BufferNode.hpp>
 #include <scalar.hpp>

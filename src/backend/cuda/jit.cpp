@@ -11,7 +11,6 @@
 #include <ptx_headers/numeric.hpp>
 #include <ptx_headers/trig.hpp>
 #include <ptx_headers/hyper.hpp>
-#include <kernel/elwise.hpp>
 #include <platform.hpp>
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
@@ -169,8 +168,7 @@ static char *irToPtx(string IR, size_t *ptx_size)
     NVVM_CHECK(nvvmAddModuleToProgram(prog, IR.c_str(), IR.size(), "generated kernel"),
                "Failed to add module");
 
-//#ifndef NDEBUG
-#if 0
+#ifndef NDEBUG
     NVVM_CHECK(nvvmCompileProgram(prog, 0, NULL), "Failed to compile program");
 #else
     nvvmResult comp_res = nvvmCompileProgram(prog, 0, NULL);
@@ -313,14 +311,14 @@ void evalNodes(Param<T> &out, Node *node)
     node->setArgs(args);
 
     void *ptr = (void *)out.ptr;
-    int strides[] = {out.strides[0],
-                     out.strides[1],
-                     out.strides[2],
-                     out.strides[3]};
-    int dims[] = {out.dims[0],
-                  out.dims[1],
-                  out.dims[2],
-                  out.dims[3]};
+    int strides[] = {(int)out.strides[0],
+                     (int)out.strides[1],
+                     (int)out.strides[2],
+                     (int)out.strides[3]};
+    int dims[] = {(int)out.dims[0],
+                  (int)out.dims[1],
+                  (int)out.dims[2],
+                  (int)out.dims[3]};
 
     args.push_back((void *)&ptr);
     for (int i = 0; i < 4; i++) args.push_back((void *)(strides + i));
