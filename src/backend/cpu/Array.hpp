@@ -6,9 +6,11 @@
 #include <backend.hpp>
 #include <types.hpp>
 #include <traits.hpp>
-
+#include <TNJ/Node.hpp>
 #include <memory>
 #include <vector>
+
+
 namespace cpu
 {
 
@@ -16,6 +18,11 @@ namespace cpu
     using af::dim4;
 
     template<typename T> class Array;
+
+    // Creates a new Array object on the heap and returns a reference to it.
+    template<typename T>
+    Array<T>*
+    createNodeArray(const af::dim4 &size, TNJ::Node *node);
 
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
@@ -69,19 +76,27 @@ namespace cpu
         //If parent is valid. use offset to get values
         const Array<T> *parent;
 
+        TNJ::Node *node;
+        bool ready;
+
         Array(dim4 dims);
-        explicit Array(dim4 dims, T val);
         explicit Array(dim4 dims, const T * const in_data);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
+        explicit Array(af::dim4 dims, TNJ::Node *n);
 
     public:
 
         ~Array();
 
+        bool isReady() const { return ready; }
+
         bool isOwner() const
         {
             return parent == nullptr;
         }
+
+        void eval();
+        void eval() const;
 
         //FIXME: This should do a copy if it is not owner. You do not want to overwrite parents data
         T* get(bool withOffset = true)
@@ -91,6 +106,8 @@ namespace cpu
 
         const T* get(bool withOffset = true) const
         {
+
+            if (!isReady()) eval();
 
             const T* ptr = nullptr;
             if(isOwner()) {
@@ -105,6 +122,8 @@ namespace cpu
             return ptr;
         }
 
+        TNJ::Node *getNode() const;
+
         friend Array<T>* createValueArray<T>(const af::dim4 &size, const T& value);
         friend Array<T>* createDataArray<T>(const af::dim4 &size, const T * const data);
         friend Array<T>* createEmptyArray<T>(const af::dim4 &size);
@@ -113,6 +132,7 @@ namespace cpu
         friend Array<T>* createRefArray<T>(const Array<T>& parent,
                                            const dim4 &dims, const dim4 &offset, const dim4 &stride);
         friend void      destroyArray<T>(Array<T> &arr);
+        friend Array<T>* createNodeArray<T>(const af::dim4 &dims, TNJ::Node *node);
     };
 
 }

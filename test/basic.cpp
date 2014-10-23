@@ -61,7 +61,6 @@ TEST(BasicTests, constant100x100)
     }
 }
 
-#ifndef AF_CPU //FIXME: Remove this after adding CUDA and CPU JIT support
 //TODO: Test All The Types \o/
 TEST(BasicTests, AdditionSameType)
 {
@@ -162,5 +161,4 @@ TEST(BasicTests, Additionf32f64)
     }
     ASSERT_NEAR(0.0f, err, 1e-8);
 }
-#endif
 #endif
