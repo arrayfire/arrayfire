@@ -2,6 +2,7 @@
 #include <af/array.h>
 #include <Array.hpp>
 #include <backend.hpp>
+#include <err_common.hpp>
 
 template<typename T>
 static const detail::Array<T> &
@@ -26,3 +27,5 @@ getHandle(const detail::Array<T> &A)
     af_array arr = reinterpret_cast<af_array>(&A);
     return arr;
 }
+
+af_array weakCopy(const af_array in);

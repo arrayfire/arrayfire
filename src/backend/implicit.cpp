@@ -51,7 +51,7 @@ af_array cast(const af_array in, const af_dtype type)
     const ArrayInfo info = getInfo(in);
 
     if (info.getType() == type) {
-        return in;
+        return weakCopy(in);
     }
 
     switch (type) {

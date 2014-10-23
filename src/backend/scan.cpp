@@ -29,10 +29,8 @@ af_err af_accum(af_array *out, const af_array in, const int dim)
         const ArrayInfo& in_info = getInfo(in);
 
         if (dim >= (int)in_info.ndims()) {
-            // FIXME: Implement a simple assignment function which increments the reference count of parent
-            // FIXME: Need to promote types for corner cases
-            const af_seq indx[] = {span, span, span, span};
-            return af_index(out, in, 4, indx);
+            *out = weakCopy(in);
+            return AF_SUCCESS;
         }
 
         af_dtype type = in_info.getType();

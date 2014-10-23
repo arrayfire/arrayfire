@@ -8,13 +8,11 @@
 #include <traits.hpp>
 #include <TNJ/Node.hpp>
 #include <memory>
-#include <vector>
-
 
 namespace cpu
 {
 
-    using std::vector;
+    using std::shared_ptr;
     using af::dim4;
 
     template<typename T> class Array;
@@ -71,7 +69,7 @@ namespace cpu
         //TODO: Generator based array
 
         //data if parent. empty if child
-        std::vector<T> data;
+        std::shared_ptr<T> data;
 
         //If parent is valid. use offset to get values
         const Array<T> *parent;
@@ -111,13 +109,13 @@ namespace cpu
 
             const T* ptr = nullptr;
             if(isOwner()) {
-                ptr = &data.front();
+                ptr = data.get();
             } else {
                 size_t offset = 0;
                 if(withOffset) {
                     offset = calcOffset(parent->strides(), this->offsets());
                 }
-                ptr = &parent->data.front() + offset;
+                ptr = parent->data.get() + offset;
             }
             return ptr;
         }

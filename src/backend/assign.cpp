@@ -77,6 +77,7 @@ af_err af_assign(af_array out, const unsigned ndims, const af_seq *index, const 
         ARG_ASSERT(3, (in!=0));
 
         if (in==out) {
+            //FIXME: This should check for *index and throw exception if not equal
             return AF_SUCCESS;
         }
 
