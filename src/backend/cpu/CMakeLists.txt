@@ -20,6 +20,7 @@ FILE(GLOB cpp_src
     "../*.hpp"
     "../*.h"
     "../*.cpp"
+    "../../array/*.cpp"
     )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")

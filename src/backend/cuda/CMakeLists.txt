@@ -27,6 +27,7 @@ FILE(GLOB cuda_src
     "kernel/*.cpp"
     "kernel/*.hpp"
     "kernel/*.h"
+    "../../array/*.cpp"
     )
 
 FILE(GLOB cuda_ptx "ptx/PTX64/sm_20/*.ptx")

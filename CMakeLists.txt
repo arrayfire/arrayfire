@@ -42,7 +42,6 @@ IF(${BUILD_OPENCL})
     ADD_SUBDIRECTORY(src/backend/opencl)
 ENDIF()
 
-ADD_SUBDIRECTORY(src/array)
 ADD_EXECUTABLE(bin2cpp common/bin2cpp.cpp)
 
 IF(${BUILD_TEST})

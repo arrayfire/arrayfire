@@ -53,7 +53,7 @@ static void print(af_array arr)
     delete[] data;
 }
 
-af_err af_print(af_array arr)
+af_err af_print_array(af_array arr)
 {
     try {
         ArrayInfo info = getInfo(arr);

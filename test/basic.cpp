@@ -162,3 +162,18 @@ TEST(BasicTests, Additionf32f64)
     ASSERT_NEAR(0.0f, err, 1e-8);
 }
 #endif
+
+TEST(BasicArrayTests, constant10x10)
+{
+    dim_type dim_size = 10;
+    double valA = 3.14;
+    af::array a = af::constant(valA, dim_size, dim_size, f32);
+
+    vector<float> h_a(dim_size * dim_size, 0);
+    a.host(&h_a.front());
+
+    size_t elements = dim_size * dim_size;
+    for(size_t i = 0; i < elements; i++) {
+        ASSERT_FLOAT_EQ(valA, h_a[i]);
+    }
+}
