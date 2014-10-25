@@ -82,8 +82,8 @@ namespace cuda
     template<> __device__  char   limit_min<char>()   { return 0x80; }
     template<> __device__  float  limit_max<float>()  { return  CUDART_INF_F; }
     template<> __device__  float  limit_min<float>()  { return -CUDART_INF_F; }
-    template<> __device__  double limit_max<double>() { return  CUDART_INF_F; }
-    template<> __device__  double limit_min<double>() { return -CUDART_INF_F; }
+    template<> __device__  double limit_max<double>() { return  CUDART_INF; }
+    template<> __device__  double limit_min<double>() { return -CUDART_INF; }
 #endif
 
 #define upcast cuComplexFloatToDouble
