@@ -2,6 +2,21 @@
 #include <af/array.h>
 
 #ifdef __cplusplus
+namespace af
+{
+
+AFAPI array convolve1(const array& signal, const array& filter, bool expand=true);
+
+AFAPI array convolve2(const array& signal, const array& filter, bool expand=true);
+
+AFAPI array convolve3(const array& signal, const array& filter, bool expand=true);
+
+AFAPI array convolve2_sep(const array& signal, const array& col_filter, const array& row_filter, bool expand=true);
+
+}
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 

@@ -1,6 +1,16 @@
 #pragma once
 
+#include <af/array.h>
 #include "af/defines.h"
+
+#ifdef __cplusplus
+namespace af
+{
+
+AFAPI array transpose(const array& in);
+
+}
+#endif
 
 #ifdef __cplusplus
 extern "C" {

@@ -2,6 +2,29 @@
 #include <af/array.h>
 
 #ifdef __cplusplus
+namespace af
+{
+
+AFAPI array bilateral(const array &in, const float spatial_sigma, const float chromatic_sigma, bool is_color=false);
+
+AFAPI array histogram(const array &in, const unsigned nbins, const double minval, const double maxval);
+
+AFAPI array meanshift(const array& in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color);
+
+AFAPI array medfilt(const array& in, dim_type wind_length, dim_type wind_width, af_pad_type edge_pad);
+
+AFAPI array dilate(const array& in, const array& mask);
+
+AFAPI array dilate3d(const array& in, const array& mask);
+
+AFAPI array erode(const array& in, const array& mask);
+
+AFAPI array erode3d(const array& in, const array& mask);
+
+}
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
     // Image IO: Load and Save Image functions
