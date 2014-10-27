@@ -3,6 +3,7 @@
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <af/traits.hpp>
+#include <af/image.h>
 #include <vector>
 #include <iostream>
 #include <string>
@@ -29,7 +30,7 @@ typedef ::testing::Types<float, double, int, unsigned> TestTypes;
 TYPED_TEST_CASE(Regions, TestTypes);
 
 template<typename T>
-void regionsTest(string pTestFile, const int connectivity, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
+void regionsTest(string pTestFile, af_connectivity_type connectivity, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
 {
     vector<af::dim4> numDims;
     vector<vector<uchar>> in;
@@ -73,13 +74,13 @@ void regionsTest(string pTestFile, const int connectivity, bool isSubRef = false
     if(tempArray != 0) af_destroy_array(tempArray);
 }
 
-#define REGIONS_INIT(desc, file, conn)                                                      \
+#define REGIONS_INIT(desc, file, conn, conn_type)                                           \
     TYPED_TEST(Regions, desc)                                                               \
     {                                                                                       \
-        regionsTest<TypeParam>(string(TEST_DIR"/regions/"#file"_"#conn".test"), conn);      \
+        regionsTest<TypeParam>(string(TEST_DIR"/regions/"#file"_"#conn".test"), conn_type); \
     }
 
-    REGIONS_INIT(Regions0, regions_8x8, 4);
-    REGIONS_INIT(Regions1, regions_8x8, 8);
-    REGIONS_INIT(Regions2, regions_128x128, 4);
-    REGIONS_INIT(Regions3, regions_128x128, 8);
+    REGIONS_INIT(Regions0, regions_8x8, 4, AF_CONNECTIVITY_4);
+    REGIONS_INIT(Regions1, regions_8x8, 8, AF_CONNECTIVITY_8);
+    REGIONS_INIT(Regions2, regions_128x128, 4, AF_CONNECTIVITY_4);
+    REGIONS_INIT(Regions3, regions_128x128, 8, AF_CONNECTIVITY_8);

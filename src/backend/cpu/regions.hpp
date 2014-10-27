@@ -4,6 +4,6 @@ namespace cpu
 {
 
 template<typename T>
-Array<T> * regions(const Array<uchar> &in, const unsigned connectivity);
+Array<T> * regions(const Array<uchar> &in, af_connectivity_type connectivity);
 
 }

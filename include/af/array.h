@@ -79,9 +79,6 @@ extern "C" {
     AFAPI af_err af_approx2(af_array *out, const af_array in, const af_array pos0, const af_array pos1,
                             const af_interp_type method, const float offGrid);
 
-    // Compute labels for connected regions from binary input arrays
-    AFAPI af_err af_regions(af_array *out, const af_array in, const int connectivity);
-
     // Sort
     AFAPI af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool dir);
 

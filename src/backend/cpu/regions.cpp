@@ -95,7 +95,7 @@ static void setUnion(LabelNode<T>* x, LabelNode<T>* y)
 }
 
 template<typename T>
-Array<T> * regions(const Array<uchar> &in, const unsigned connectivity)
+Array<T> * regions(const Array<uchar> &in, af_connectivity_type connectivity)
 {
     const dim4 in_dims = in.dims();
 
@@ -125,9 +125,9 @@ Array<T> * regions(const Array<uchar> &in, const unsigned connectivity)
                     l.push_back(out_ptr[j * in_dims[0] + i-1]);
                 if (j > 0 && out_ptr[(j-1) * in_dims[0] + i] > 0)
                     l.push_back(out_ptr[(j-1) * in_dims[0] + i]);
-                if (connectivity == 8 && i > 0 && j > 0 && out_ptr[(j-1) * in_dims[0] + i-1] > 0)
+                if (connectivity == AF_CONNECTIVITY_8 && i > 0 && j > 0 && out_ptr[(j-1) * in_dims[0] + i-1] > 0)
                     l.push_back(out_ptr[(j-1) * in_dims[0] + i-1]);
-                if (connectivity == 8 && i < in_dims[0] - 1 && j > 0 && out_ptr[(j-1) * in_dims[0] + i+1] != 0)
+                if (connectivity == AF_CONNECTIVITY_8 && i < in_dims[0] - 1 && j > 0 && out_ptr[(j-1) * in_dims[0] + i+1] != 0)
                     l.push_back(out_ptr[(j-1) * in_dims[0] + i+1]);
 
                 if (!l.empty()) {
@@ -193,7 +193,7 @@ Array<T> * regions(const Array<uchar> &in, const unsigned connectivity)
 }
 
 #define INSTANTIATE(T)\
-    template Array<T> * regions<T>(const Array<uchar> &in, const unsigned connectivity);
+    template Array<T> * regions<T>(const Array<uchar> &in, af_connectivity_type connectivity);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

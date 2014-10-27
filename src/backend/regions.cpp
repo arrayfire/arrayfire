@@ -1,5 +1,6 @@
 #include <af/dim4.hpp>
 #include <af/defines.h>
+#include <af/image.h>
 #include <handle.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>
@@ -9,15 +10,15 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
-static af_array regions(af_array const &in, const int connectivity)
+static af_array regions(af_array const &in, af_connectivity_type connectivity)
 {
     return getHandle<T>(*regions<T>(getArray<uchar>(in), connectivity));
 }
 
-af_err af_regions(af_array *out, const af_array in, const int connectivity)
+af_err af_regions(af_array *out, const af_array in, af_connectivity_type connectivity)
 {
     try {
-        ARG_ASSERT(2, (connectivity==4 || connectivity==8));
+        ARG_ASSERT(2, (connectivity==AF_CONNECTIVITY_4 || connectivity==AF_CONNECTIVITY_8));
 
         ArrayInfo info = getInfo(in);
         af::dim4 dims  = info.dims();
