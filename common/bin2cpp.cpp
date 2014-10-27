@@ -69,6 +69,7 @@ parse_options(const vector<string>& args) {
     options["--file"]       = "";
     options["--output"]     = "";
     options["--namespace"]  = "";
+    options["--eof"]        = "";
 
     //Parse Arguments
     string curr_opt;
@@ -112,6 +113,7 @@ parse_options(const vector<string>& args) {
 
 int main(int argc, const char * const * const argv)
 {
+
     vector<string> args(argv, argv+argc);
 
     opt_t&& options = parse_options(args);
@@ -164,10 +166,13 @@ int main(int argc, const char * const * const argv)
         }
     }
 
-    // Add end of file character
-    cout << "0x0};\n";
-    char_cnt++;
+    if (options["--eof"].c_str()[0] == '1') {
+        // Add end of file character
+        cout << "0x0";
+        char_cnt++;
+    }
 
+    cout << "};\n";
     add_tabs(--level);
     cout << "static const size_t " << options["--name"] << "_len" << " = " << std::dec << char_cnt << ";\n";
 
