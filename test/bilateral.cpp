@@ -143,3 +143,32 @@ TYPED_TEST(BilateralOnData, InvalidArgs)
     ASSERT_EQ(AF_ERR_SIZE, af_bilateral(&outArray, inArray, 0.12f, 0.34f, true));
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
+
+// C++ unit tests
+TEST(Bilateral, CPP)
+{
+    using af::array;
+
+    vector<af::dim4>      numDims;
+    vector<vector<float>>      in;
+    vector<vector<float>>   tests;
+
+    readTests<float, float, float>(string(TEST_DIR"/bilateral/rectangle.test"), numDims, in, tests);
+
+    af::dim4 dims      = numDims[0];
+
+    array a(dims, &(in[0].front()));
+    array b = bilateral(a, 2.25f, 25.56f, false);
+
+    float *outData = new float[dims.elements()];
+    b.host(outData);
+
+    for (size_t testIter=0; testIter<tests.size(); ++testIter) {
+        vector<float> currGoldBar = tests[testIter];
+        size_t nElems = currGoldBar.size();
+        ASSERT_EQ(true, compareArraysRMSD(nElems, &currGoldBar.front(), outData, 0.02f));
+    }
+
+    // cleanup
+    delete[] outData;
+}

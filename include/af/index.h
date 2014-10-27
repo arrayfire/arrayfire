@@ -1,5 +1,15 @@
 #pragma once
+#include <af/array.h>
 #include <af/defines.h>
+
+#if __cplusplus
+namespace af
+{
+
+AFAPI array moddims(const array& in, const unsigned ndims, const dim_type * const dims);
+
+}
+#endif
 
 #ifdef __cplusplus
 extern "C" {

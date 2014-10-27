@@ -17,7 +17,7 @@ namespace af
     }
 
     template<typename T>
-    static void initDataArray(af_array *arr, T *ptr, af_source_t src,
+    static void initDataArray(af_array *arr, const T *ptr, af_source_t src,
                                dim_type d0, dim_type d1=1, dim_type d2=1, dim_type d3=1)
     {
         af_dtype ty = (af_dtype)dtype_traits<T>::af_type;
@@ -55,34 +55,34 @@ namespace af
     template<typename T>
     array::array(const dim4 &dims, const T *ptr, af_source_t src, dim_type ngfor) : arr(0)
     {
-        initDataArray(&arr, ptr, src, dims[0], dims[1], dims[2], dims[3]);
+        initDataArray<T>(&arr, ptr, src, dims[0], dims[1], dims[2], dims[3]);
     }
 
     template<typename T>
     array::array(dim_type d0, const T *ptr, af_source_t src, dim_type ngfor) : arr(0)
     {
-        initDataArray(&arr, ptr, src, d0);
+        initDataArray<T>(&arr, ptr, src, d0);
     }
 
     template<typename T>
     array::array(dim_type d0, dim_type d1, const T *ptr,
                  af_source_t src, dim_type ngfor) : arr(0)
     {
-        initDataArray(&arr, ptr, src, d0, d1);
+        initDataArray<T>(&arr, ptr, src, d0, d1);
     }
 
     template<typename T>
     array::array(dim_type d0, dim_type d1, dim_type d2, const T *ptr,
                  af_source_t src, dim_type ngfor) : arr(0)
     {
-        initDataArray(&arr, ptr, src, d0, d1, d2);
+        initDataArray<T>(&arr, ptr, src, d0, d1, d2);
     }
 
     template<typename T>
     array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3,
                  const T *ptr, af_source_t src, dim_type ngfor) : arr(0)
     {
-        initDataArray(&arr, ptr, src, d0, d1, d2, d3);
+        initDataArray<T>(&arr, ptr, src, d0, d1, d2, d3);
     }
 
     array::~array()
@@ -319,4 +319,21 @@ namespace af
         return randn(dim4(d0, d1, d2, d3), ty);
     }
 
+#define INSTANTIATE(T)  \
+    template array::array<T>(const dim4 &dims, const T *ptr, af_source_t src, dim_type ngfor);\
+    template array::array<T>(dim_type d0, const T *ptr, af_source_t src, dim_type ngfor);\
+    template array::array<T>(dim_type d0, dim_type d1, const T *ptr, af_source_t src, dim_type ngfor);\
+    template array::array<T>(dim_type d0, dim_type d1, dim_type d2, const T *ptr, af_source_t src, dim_type ngfor);\
+    template array::array<T>(dim_type d0, dim_type d1, dim_type d2, dim_type d3, const T *ptr, af_source_t src, dim_type ngfor);\
+    template T *array::host<T>() const;
+
+
+    INSTANTIATE(af_cdouble)
+    INSTANTIATE(af_cfloat)
+    INSTANTIATE(double)
+    INSTANTIATE(float)
+    INSTANTIATE(unsigned)
+    INSTANTIATE(int)
+    INSTANTIATE(unsigned char)
+    INSTANTIATE(char)
 }
