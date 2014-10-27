@@ -15,17 +15,17 @@ namespace cpu
 { 
 
 template<typename T>
-class Node
+class LabelNode
 {
 private:
     T label;
     T minLabel;
     unsigned rank;
-    Node* parent;
+    LabelNode* parent;
 
 public:
-    Node() : label(0), minLabel(0), rank(0), parent(this) { }
-    Node(T label) : label(label), minLabel(label), rank(0), parent(this) { }
+    LabelNode() : label(0), minLabel(0), rank(0), parent(this) { }
+    LabelNode(T label) : label(label), minLabel(label), rank(0), parent(this) { }
 
     T getLabel()
     {
@@ -37,7 +37,7 @@ public:
         return minLabel;
     }
 
-    Node* getParent()
+    LabelNode* getParent()
     {
         return parent;
     }
@@ -52,7 +52,7 @@ public:
         minLabel = l;
     }
 
-    void setParent(Node* p)
+    void setParent(LabelNode* p)
     {
         parent = p;
     }
@@ -64,7 +64,7 @@ public:
 };
 
 template<typename T>
-static Node<T>* find(Node<T>* x)
+static LabelNode<T>* find(LabelNode<T>* x)
 {
     if (x->getParent() != x)
         x->setParent(find(x->getParent()));
@@ -72,10 +72,10 @@ static Node<T>* find(Node<T>* x)
 }
 
 template<typename T>
-static void setUnion(Node<T>* x, Node<T>* y)
+static void setUnion(LabelNode<T>* x, LabelNode<T>* y)
 {
-    Node<T>* xRoot = find(x);
-    Node<T>* yRoot = find(y);
+    LabelNode<T>* xRoot = find(x);
+    LabelNode<T>* yRoot = find(y);
     if (xRoot == yRoot)
         return;
 
@@ -97,14 +97,16 @@ static void setUnion(Node<T>* x, Node<T>* y)
 template<typename T>
 Array<T> * regions(const Array<uchar> &in, const unsigned connectivity)
 {
+    const dim4 in_dims = in.dims();
+
     // Create output placeholder
-    Array<T> *out = createValueArray(in.dims(), (T)0);
+    Array<T> *out = createValueArray(in_dims, (T)0);
 
     const uchar *in_ptr  = in.get();
           T     *out_ptr = out->get();
 
     // Map labels
-    typedef typename std::map<T, Node<T>* > label_map_t;
+    typedef typename std::map<T, LabelNode<T>* > label_map_t;
     typedef typename label_map_t::iterator label_map_iterator_t;
 
     label_map_t lmap;
@@ -112,30 +114,30 @@ Array<T> * regions(const Array<uchar> &in, const unsigned connectivity)
     // Initial label
     T label = (T)1;
 
-    for (int j = 0; j < in.dims()[1]; j++) {
-        for (int i = 0; i < in.dims()[0]; i++) {
-            int idx = j * in.dims()[0] + i;
+    for (int j = 0; j < in_dims[1]; j++) {
+        for (int i = 0; i < in_dims[0]; i++) {
+            int idx = j * in_dims[0] + i;
             if (in_ptr[idx] != 0) {
                 std::vector<T> l;
 
                 // Test neighbors
-                if (i > 0 && out_ptr[j * in.dims()[0] + i-1] > 0)
-                    l.push_back(out_ptr[j * in.dims()[0] + i-1]);
-                if (j > 0 && out_ptr[(j-1) * in.dims()[0] + i] > 0)
-                    l.push_back(out_ptr[(j-1) * in.dims()[0] + i]);
-                if (connectivity == 8 && i > 0 && j > 0 && out_ptr[(j-1) * in.dims()[0] + i-1] > 0)
-                    l.push_back(out_ptr[(j-1) * in.dims()[0] + i-1]);
-                if (connectivity == 8 && i < in.dims()[0] - 1 && j > 0 && out_ptr[(j-1) * in.dims()[0] + i+1] != 0)
-                    l.push_back(out_ptr[(j-1) * in.dims()[0] + i+1]);
+                if (i > 0 && out_ptr[j * in_dims[0] + i-1] > 0)
+                    l.push_back(out_ptr[j * in_dims[0] + i-1]);
+                if (j > 0 && out_ptr[(j-1) * in_dims[0] + i] > 0)
+                    l.push_back(out_ptr[(j-1) * in_dims[0] + i]);
+                if (connectivity == 8 && i > 0 && j > 0 && out_ptr[(j-1) * in_dims[0] + i-1] > 0)
+                    l.push_back(out_ptr[(j-1) * in_dims[0] + i-1]);
+                if (connectivity == 8 && i < in_dims[0] - 1 && j > 0 && out_ptr[(j-1) * in_dims[0] + i+1] != 0)
+                    l.push_back(out_ptr[(j-1) * in_dims[0] + i+1]);
 
                 if (!l.empty()) {
                     T minl = l[0];
                     for (size_t k = 0; k < l.size(); k++) {
                         minl = min(l[k], minl);
                         label_map_iterator_t cur_map = lmap.find(l[k]);
-                        Node<T> *node = cur_map->second;
+                        LabelNode<T> *node = cur_map->second;
                         // Group labels of the same region under a disjoint set
-                        for (size_t m = 0; m < l.size(); m++)
+                        for (size_t m = k+1; m < l.size(); m++)
                             setUnion(node, lmap.find(l[m])->second);
                     }
                     // Set label to smallest neighbor label
@@ -143,8 +145,8 @@ Array<T> * regions(const Array<uchar> &in, const unsigned connectivity)
                 }
                 else {
                     // Insert new label in map
-                    Node<T> *node = new Node<T>(label);
-                    lmap.insert(std::pair<T, Node<T>* >(label, node));
+                    LabelNode<T> *node = new LabelNode<T>(label);
+                    lmap.insert(std::pair<T, LabelNode<T>* >(label, node));
                     out_ptr[idx] = label++;
                 }
             }
@@ -153,17 +155,17 @@ Array<T> * regions(const Array<uchar> &in, const unsigned connectivity)
 
     std::set<T> removed;
 
-    for (int j = 0; j < in.dims()[1]; j++) {
-        for (int i = 0; i < in.dims()[0]; i++) {
-            int idx = j * in.dims()[0] + i;
+    for (int j = 0; j < in_dims[1]; j++) {
+        for (int i = 0; i < in_dims[0]; i++) {
+            int idx = j * in_dims[0] + i;
             if (in_ptr[idx] != 0) {
                 T l = out_ptr[idx];
                 label_map_iterator_t cur_map = lmap.find(l);
 
                 if (cur_map != lmap.end()) {
-                    Node<T>* node = cur_map->second;
+                    LabelNode<T>* node = cur_map->second;
 
-                    Node<T>* node_root = find(node);
+                    LabelNode<T>* node_root = find(node);
                     out_ptr[idx] = node_root->getMinLabel();
 
                     // Mark removed labels (those that are part of a region
@@ -178,9 +180,9 @@ Array<T> * regions(const Array<uchar> &in, const unsigned connectivity)
     }
 
     // Calculate final neighbors (ensure final labels are sequential)
-    for (int j = 0; j < in.dims()[1]; j++) {
-        for (int i = 0; i < in.dims()[0]; i++) {
-            int idx = j * in.dims()[0] + i;
+    for (int j = 0; j < in_dims[1]; j++) {
+        for (int i = 0; i < in_dims[0]; i++) {
+            int idx = j * in_dims[0] + i;
             if (out_ptr[idx] > 0) {
                 out_ptr[idx] -= distance(removed.begin(), removed.lower_bound(out_ptr[idx]));
             }
