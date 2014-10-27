@@ -131,7 +131,6 @@ TEST(BasicTests, Additionf64f64)
     ASSERT_NEAR(0.0f, err, 1e-8);
 }
 
-#ifndef AF_CUDA //FIXME: CUDA has problems with casting
 TEST(BasicTests, Additionf32f64)
 {
     static const int ndims = 2;
@@ -161,4 +160,3 @@ TEST(BasicTests, Additionf32f64)
     }
     ASSERT_NEAR(0.0f, err, 1e-8);
 }
-#endif

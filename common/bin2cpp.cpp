@@ -163,7 +163,11 @@ int main(int argc, const char * const * const argv)
             add_tabs(level);
         }
     }
-    cout << "};\n";
+
+    // Add end of file character
+    cout << "0x0};\n";
+    char_cnt++;
+
     add_tabs(--level);
     cout << "static const size_t " << options["--name"] << "_len" << " = " << std::dec << char_cnt << ";\n";
 
