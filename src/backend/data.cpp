@@ -37,6 +37,14 @@ static void copyData(T *data, const af_array &arr)
 }
 
 template<typename T>
+static void copyArray(af_array *out, const af_array in)
+{
+    const Array<T> &inArray = getArray<T>(in);
+    Array<T> *outArray = copyArray<T>(inArray);
+    *out = getHandle(*outArray);
+}
+
+template<typename T>
 static void destroyHandle(const af_array arr)
 {
     destroyArray(getWritableArray<T>(arr));
@@ -149,13 +157,46 @@ af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type *
         case u32:   out = createHandle<uint   >(d); break;
         case u8:    out = createHandle<uchar  >(d); break;
         case s8:    out = createHandle<char   >(d); break;
-        default:    ret = AF_ERR_NOT_SUPPORTED;    break;
+        default:    ret = AF_ERR_NOT_SUPPORTED;     break;
         }
         std::swap(*result, out);
         ret = AF_SUCCESS;
     }
     CATCHALL
+    return ret;
+}
+
+//Strong Exception Guarantee
+af_err af_copy_array(af_array *out, const af_array in)
+{
+    ArrayInfo info = getInfo(in);
+    const unsigned ndims = info.ndims();
+    const af::dim4 dims = info.dims();
+    const af_dtype type = info.getType();
+
+    af_err ret = AF_ERR_ARG;
+
+    ret = af_create_handle(out, ndims, dims.get(), type);
+    if(ret != AF_SUCCESS) {
         return ret;
+    }
+
+    try {
+        switch(type) {
+        case f32:   copyArray<float   >(out, in); break;
+        case c32:   copyArray<cfloat  >(out, in); break;
+        case f64:   copyArray<double  >(out, in); break;
+        case c64:   copyArray<cdouble >(out, in); break;
+        case b8:    copyArray<char    >(out, in); break;
+        case s32:   copyArray<int     >(out, in); break;
+        case u32:   copyArray<unsigned>(out, in); break;
+        case u8:    copyArray<uchar   >(out, in); break;
+        case s8:    copyArray<char    >(out, in); break;
+        default:    ret = AF_ERR_NOT_SUPPORTED;   break;
+        }
+    }
+    CATCHALL
+    return ret;
 }
 
 template<typename T>

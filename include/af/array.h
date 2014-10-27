@@ -143,6 +143,9 @@ extern "C" {
     // Create af_array handle without initializing values
     AFAPI af_err af_create_handle(af_array *arr, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
+    // Deep copy an array to another
+    AFAPI af_err af_copy_array(af_array *arr, const af_array in);
+
     // Copy data from an af_array to a C pointer.
     // Needs to used in conjunction with the two functions above
     AFAPI af_err af_get_data_ptr(void *data, const af_array arr);
