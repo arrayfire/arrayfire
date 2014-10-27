@@ -76,7 +76,12 @@ namespace af
         bool iscolumn() const;
         bool iscomplex() const;
         inline bool isreal() const { return !iscomplex(); }
-
+        bool isdouble() const;
+        bool issingle() const;
+        bool isrealfloating() const;
+        bool isfloating() const;
+        bool isinteger() const;
+        bool isbool() const;
         void eval();
         void unlock() const;
 

@@ -1,6 +1,7 @@
 #include <af/array.h>
 #include <af/traits.hpp>
 #include <af/util.h>
+#include <ArrayInfo.hpp>
 #include "error.hpp"
 
 namespace af
@@ -95,6 +96,7 @@ namespace af
         AF_THROW(af_get_type(&my_type, arr));
         return my_type;
     }
+
     dim_type array::elements() const
     {
         dim_type elems;
@@ -125,6 +127,104 @@ namespace af
         return arr;
     }
 
+    // Helper functions
+    dim4 array::dims() const
+    {
+        ArrayInfo info = getInfo(arr);
+        return info.dims();
+    }
+
+    dim_type array::dims(unsigned dim) const
+    {
+        ArrayInfo info = getInfo(arr);
+        return info.dims()[dim];
+    }
+
+    unsigned array::numdims() const
+    {
+        ArrayInfo info = getInfo(arr);
+        return info.ndims();
+    }
+
+    size_t array::bytes() const
+    {
+        ArrayInfo info = getInfo(arr);
+        return info.elements() * sizeof(type());
+    }
+
+    array array::copy() const
+    {
+        af_array *other = 0;
+        AF_THROW(af_copy_array(other, arr));
+        return array(*other);
+    }
+
+    bool array::isempty() const
+    {
+        ArrayInfo info = getInfo(arr);
+        return info.isEmpty();
+    }
+
+    bool array::isscalar() const
+    {
+        ArrayInfo info = getInfo(arr);
+        return info.isScalar();
+    }
+
+    bool array::isvector() const
+    {
+        ArrayInfo info = getInfo(arr);
+        return info.isVector();
+    }
+
+    bool array::isrow() const
+    {
+        ArrayInfo info = getInfo(arr);
+        return info.isRow();
+    }
+
+    bool array::iscolumn() const
+    {
+        ArrayInfo info = getInfo(arr);
+        return info.isColumn();
+    }
+
+    bool array::iscomplex() const
+    {
+        ArrayInfo info = getInfo(arr);
+        return info.isComplex();
+    }
+
+    bool array::isdouble() const
+    {
+        ArrayInfo info = getInfo(arr);
+        return info.isDouble();
+    }
+
+    bool array::issingle() const
+    {
+        ArrayInfo info = getInfo(arr);
+        return info.isSingle();
+    }
+
+    bool array::isrealfloating() const
+    {
+        ArrayInfo info = getInfo(arr);
+        return info.isRealFloating();
+    }
+
+    bool array::isfloating() const
+    {
+        ArrayInfo info = getInfo(arr);
+        return info.isFloating();
+    }
+
+    bool array::isinteger() const
+    {
+        ArrayInfo info = getInfo(arr);
+        return info.isInteger();
+    }
+
     array constant(double val, const dim4 &dims, af_dtype type)
     {
         af_array res;
@@ -146,14 +246,14 @@ namespace af
     array constant(double val, const dim_type d0,
                          const dim_type d1, const dim_type d2, af_dtype ty)
     {
-        return constant(val, dim4(d0, d2), ty);
+        return constant(val, dim4(d0, d1, d2), ty);
     }
 
     array constant(double val, const dim_type d0,
                          const dim_type d1, const dim_type d2,
                          const dim_type d3, af_dtype ty)
     {
-        return constant(val, dim4(d0, d1, d2), ty);
+        return constant(val, dim4(d0, d1, d2, d3), ty);
     }
 
 
