@@ -2,6 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT(ARRAYFIRE)
 
 OPTION(BUILD_TEST "Build Tests" ON)
+OPTION(BUILD_EXAMPLES "Build Examples" ON)
 OPTION(BUILD_GTEST "Download gtest and check for updates. Necessary if you change compilers" ON)
 
 OPTION(BUILD_CPU "Build ArrayFire with a CPU backend" ON)
@@ -47,4 +48,8 @@ ADD_EXECUTABLE(bin2cpp common/bin2cpp.cpp)
 IF(${BUILD_TEST})
     ENABLE_TESTING()
     ADD_SUBDIRECTORY(test)
+ENDIF()
+
+IF(${BUILD_EXAMPLES})
+    ADD_SUBDIRECTORY(examples)
 ENDIF()
