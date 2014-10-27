@@ -42,6 +42,7 @@ CL_KERNEL_TO_H(
     OUTPUT_DIR ${ptx_headers}
     TARGETS ptx_targets
     NAMESPACE "cuda"
+    EOF "1"
     )
 
 IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND "${APPLE}")

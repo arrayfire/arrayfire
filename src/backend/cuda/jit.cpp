@@ -11,6 +11,7 @@
 #include <ptx_headers/numeric.hpp>
 #include <ptx_headers/trig.hpp>
 #include <ptx_headers/hyper.hpp>
+#include <ptx_headers/cast.hpp>
 #include <platform.hpp>
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
@@ -244,11 +245,11 @@ static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
     CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)ptx,
                            ptx_size, ker_name, 0, NULL, NULL));
 
-    CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)trig_ptx,
-                           trig_ptx_len, "trig", 0, NULL, NULL));
-
     CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)arith_ptx,
                            arith_ptx_len, "arith", 0, NULL, NULL));
+
+    CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)cast_ptx,
+                           cast_ptx_len, "cast", 0, NULL, NULL));
 
     CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)exp_ptx,
                            exp_ptx_len, "exp", 0, NULL, NULL));
@@ -262,6 +263,8 @@ static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
     CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)numeric_ptx,
                            numeric_ptx_len, "numeric", 0, NULL, NULL));
 
+    CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)trig_ptx,
+                           trig_ptx_len, "trig", 0, NULL, NULL));
 
     void *cubin;
     size_t cubinSize;
