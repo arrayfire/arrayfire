@@ -1,7 +1,7 @@
 #include <af/array.h>
 #include <af/traits.hpp>
-#include <af/util.h>
 #include <ArrayInfo.hpp>
+#include <af/index.h>
 #include "error.hpp"
 
 namespace af
@@ -319,6 +319,14 @@ namespace af
         return randn(dim4(d0, d1, d2, d3), ty);
     }
 
+    array array::operator()(const af_seq& s0, const af_seq& s1, const af_seq& s2, const af_seq& s3)
+    {
+        af_array out = 0;
+        af_seq indices[] = {s0, s1, s2, s3};
+        AF_THROW(af_index(&out, this->get(), 4, indices));
+        return array(out);
+    }
+
     array& array::operator=(const array &other)
     {
         // FIXME
@@ -333,6 +341,11 @@ namespace af
         AF_THROW(af_weak_copy(&temp, other.get()));
         this->arr = temp;
         return *this;
+    }
+
+    array::array(const array &in) : arr(0)
+    {
+        AF_THROW(af_weak_copy(&arr, in.get()));
     }
 
 #define INSTANTIATE(T)  \

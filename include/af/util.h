@@ -3,7 +3,7 @@
 
 namespace af
 {
-    AFAPI void print(const char *exp, const array arr);
+    AFAPI void print(const char *exp, const array &arr);
 }
 
 #define af_print(exp) af::print(#exp, exp);

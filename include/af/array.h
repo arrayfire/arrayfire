@@ -24,6 +24,7 @@ namespace af
     public:
         array();
         array(const af_array handle);
+        array(const array &in);
 
         array(dim_type d0, af_dtype ty = f32);
         array(dim_type d0, dim_type d1, af_dtype ty = f32);
@@ -95,6 +96,9 @@ namespace af
         static void *pinned(size_t elements, af_dtype type);
 
         static void free(const void *);
+
+        array operator()(const af_seq& s0, const af_seq& s1=span, const af_seq& s2=span, const af_seq& s3=span);
+
         array& operator=(const array& a);  ///< array assignment
 
         ~array();

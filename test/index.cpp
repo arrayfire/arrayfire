@@ -364,3 +364,51 @@ TYPED_TEST(Indexing2D, StridedStrided)
 {
     DimCheck2D<TypeParam, 2>(this->strided_strided_seq, TEST_DIR"/index/StridedStrided.test");
 }
+
+vector<af_seq> make_vec(af_seq first, af_seq second) {
+    vector<af_seq> out;
+    out.push_back(first);
+    out.push_back(second);
+    return out;
+}
+
+TEST(Indexing2D, ColumnContiniousCPP)
+{
+    using af::array;
+
+    vector<vector<af_seq>> seqs;
+
+    seqs.push_back(make_vec(span, {  0,  6,  1}));
+    //seqs.push_back(make_vec(span, {  4,  9,  1}));
+    //seqs.push_back(make_vec(span, {  3,  8,  1}));
+
+    vector<af::dim4> numDims;
+
+    vector<vector<float>> hData;
+    vector<vector<float>> tests;
+    readTests<float, float, int>(TEST_DIR"/index/ColumnContinious.test", numDims, hData, tests);
+    af::dim4 dimensions = numDims[0];
+
+    array a(dimensions,&(hData[0].front()));
+
+    vector<array> sub;
+    for(size_t i = 0; i < seqs.size(); i++) {
+        vector<af_seq> seq = seqs[i];
+        sub.emplace_back(a(seq[0], seq[1]));
+    }
+
+    for(size_t i = 0; i < seqs.size(); i++) {
+        dim_type elems = sub[i].elements();
+        float *ptr = new float[elems];
+        sub[i].host(ptr);
+
+        if(false == equal(ptr, ptr + tests[i].size(), tests[i].begin())) {
+            cout << "index data: ";
+            copy(ptr, ptr + tests[i].size(), ostream_iterator<float>(cout, ", "));
+            cout << endl << "file data: ";
+            copy(tests[i].begin(), tests[i].end(), ostream_iterator<float>(cout, ", "));
+            FAIL() << "indexed_array[" << i << "] FAILED" << endl;
+        }
+        delete[] ptr;
+    }
+}

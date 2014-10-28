@@ -7,7 +7,7 @@ using namespace std;
 
 namespace af
 {
-    void print(const char *exp, const array arr)
+    void print(const char *exp, const array &arr)
     {
         std::cout << exp << std::endl;
         AF_THROW(af_print_array(arr.get()));
