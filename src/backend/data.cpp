@@ -321,3 +321,12 @@ af_array weakCopy(const af_array in)
         AF_ERROR("Invalid type", AF_ERR_INVALID_TYPE);
     }
 }
+
+af_err af_weak_copy(af_array *out, const af_array in)
+{
+    try {
+        *out = weakCopy(in);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}

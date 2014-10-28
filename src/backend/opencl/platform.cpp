@@ -1,3 +1,4 @@
+#include <af/version.h>
 #include <cl.hpp>
 #include <platform.hpp>
 #include <vector>
@@ -20,6 +21,23 @@ using cl::Device;
 
 namespace opencl
 {
+static const char *get_system(void)
+{
+    return
+#if defined(ARCH_32)
+    "32-bit "
+#elif defined(ARCH_64)
+    "64-bit "
+#endif
+
+#if defined(OS_LNX)
+    "Linux";
+#elif defined(OS_WIN)
+    "Windows";
+#elif defined(OS_MAC)
+    "Mac OSX";
+#endif
+}
 
 DeviceManager& DeviceManager::getInstance()
 {
@@ -53,6 +71,8 @@ DeviceManager::DeviceManager()
 std::string getInfo()
 {
     ostringstream info;
+    info << "ArrayFire v" << AF_VERSION << AF_VERSION_MINOR
+         << " (OpenCL, " << get_system() << ", build " << REVISION << ")" << std::endl;
 
     vector<string> pnames;
     for (auto platform: DeviceManager::getInstance().platforms) {
