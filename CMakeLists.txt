@@ -29,6 +29,28 @@ IF(${UNIX})
     ADD_DEFINITIONS(-Wall -std=c++0x -fvisibility=hidden)
 ENDIF()
 
+# OS Definitions
+IF(UNIX)
+  IF(APPLE)   #OSX
+    ADD_DEFINITIONS(-DOS_MAC)
+  ELSE(APPLE) #Linux
+    ADD_DEFINITIONS(-DOS_LNX)
+  ENDIF()
+ELSE(${UNIX}) #Windows
+  ADD_DEFINITIONS(-DOS_WIN)
+ENDIF()
+
+# Architechture Definitions
+INCLUDE(common/TargetArch.cmake)
+target_architecture(ARCH)
+IF(${ARCH} STREQUAL "x86_64")
+  ADD_DEFINITIONS(-DARCH_64)
+ELSE(${ARCH})
+  ADD_DEFINITIONS(-DARCH_32)
+ENDIF()
+
+INCLUDE(common/Version.cmake)
+
 IF(${BUILD_CPU})
   ADD_SUBDIRECTORY(src/backend/cpu)
 ENDIF()

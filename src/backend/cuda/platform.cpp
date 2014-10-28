@@ -1,3 +1,4 @@
+#include <af/version.h>
 #include <platform.hpp>
 #include <driver.h>
 #include <vector>
@@ -109,6 +110,24 @@ namespace cuda
         return 0;
     }
 
+    static const char *get_system(void)
+    {
+        return
+    #if defined(ARCH_32)
+        "32-bit "
+    #elif defined(ARCH_64)
+        "64-bit "
+    #endif
+
+    #if defined(OS_LNX)
+        "Linux";
+    #elif defined(OS_WIN)
+        "Windows";
+    #elif defined(OS_MAC)
+        "Mac OSX";
+    #endif
+    }
+
     template <typename T>
     static inline string toString(T val)
     {
@@ -122,11 +141,14 @@ namespace cuda
     ///////////////////////////////////////////////////////////////////////////
     string getInfo()
     {
-        string info = getPlatformInfo();
+        ostringstream info;
+        info << "ArrayFire v" << AF_VERSION << AF_VERSION_MINOR
+             << " (CUDA, " << get_system() << ", build " << REVISION << ")" << std::endl;
+        info << getPlatformInfo();
         for (int i = 0; i < getDeviceCount(); ++i) {
-            info += getDeviceInfo(i);
+            info << getDeviceInfo(i);
         }
-        return info;
+        return info.str();
     }
 
     string getDeviceInfo(int device)

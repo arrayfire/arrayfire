@@ -8,3 +8,4 @@ GTAGS
 GRTAGS
 GPATH
 .dir-locals.el
+include/af/version.h
