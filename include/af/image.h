@@ -2,8 +2,25 @@
 #include <af/array.h>
 
 #ifdef __cplusplus
+#include <utility>
 namespace af
 {
+
+AFAPI array loadImage(const char* filename, const bool is_color=false);
+
+AFAPI void saveImage(const char* filename, const array& in);
+
+AFAPI array resize(const array in, const dim_type odim0, const dim_type odim1, const af_interp_type method=AF_INTERP_NEAREST);
+
+AFAPI array transform(const array& in, const array& transform, const dim_type odim0, const dim_type odim1, const bool inverse=true);
+
+AFAPI array rotate(const array& in, const float theta, const bool crop=true, const bool recenter=true);
+
+AFAPI array translate(const array& in, const float trans0, const float trans1, const dim_type odim0, const dim_type odim1);
+
+AFAPI array scale(const array& in, const float scale0, const float scale1, const dim_type odim0, const dim_type odim1);
+
+AFAPI array skew(const array& in, const float skew0, const float skew1, const dim_type odim0, const dim_type odim1, const bool inverse=true);
 
 AFAPI array bilateral(const array &in, const float spatial_sigma, const float chromatic_sigma, bool is_color=false);
 
@@ -20,6 +37,8 @@ AFAPI array dilate3d(const array& in, const array& mask);
 AFAPI array erode(const array& in, const array& mask);
 
 AFAPI array erode3d(const array& in, const array& mask);
+
+AFAPI std::pair<array, array> gradient(const array& in);
 
 }
 #endif

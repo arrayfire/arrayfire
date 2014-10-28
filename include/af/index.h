@@ -6,6 +6,12 @@
 namespace af
 {
 
+AFAPI array tile(const array& in, const unsigned x, const unsigned y=1, const unsigned z=1, const unsigned w=1);
+
+AFAPI array reorder(const array& in, const unsigned x, const unsigned y=1, const unsigned z=2, const unsigned w=3);
+
+AFAPI array shift(const array& in, const int x, const int y=0, const int z=0, const int w=0);
+
 AFAPI array moddims(const array& in, const unsigned ndims, const dim_type * const dims);
 
 }

@@ -321,6 +321,7 @@ namespace af
 
     array& array::operator=(const array &other)
     {
+        //FIXME
         //if (*this == other) {
         //    return *this;
         //}

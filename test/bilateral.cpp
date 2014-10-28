@@ -158,7 +158,7 @@ TEST(Bilateral, CPP)
     af::dim4 dims      = numDims[0];
 
     array a(dims, &(in[0].front()));
-    array b = bilateral(a, 2.25f, 25.56f, false);
+    array b = af::bilateral(a, 2.25f, 25.56f, false);
 
     float *outData = new float[dims.elements()];
     b.host(outData);
