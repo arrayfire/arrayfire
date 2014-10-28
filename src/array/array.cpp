@@ -87,7 +87,7 @@ namespace af
 
     array::~array()
     {
-        if (!arr) AF_THROW(af_destroy_array(arr));
+        if (arr) AF_THROW(af_destroy_array(arr));
     }
 
     af_dtype array::type() const
