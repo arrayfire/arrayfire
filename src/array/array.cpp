@@ -319,6 +319,15 @@ namespace af
         return randn(dim4(d0, d1, d2, d3), ty);
     }
 
+    array& array::operator=(const array &other)
+    {
+        //if (*this == other) {
+        //    return *this;
+        //}
+        *this = other;
+        return *this;
+    }
+
 #define INSTANTIATE(T)  \
     template array::array<T>(const dim4 &dims, const T *ptr, af_source_t src, dim_type ngfor);\
     template array::array<T>(dim_type d0, const T *ptr, af_source_t src, dim_type ngfor);\

@@ -4,15 +4,6 @@
 #include "af/defines.h"
 
 #ifdef __cplusplus
-namespace af
-{
-
-AFAPI array transpose(const array& in);
-
-}
-#endif
-
-#ifdef __cplusplus
 extern "C" {
 #endif
     typedef enum transpose {
@@ -20,7 +11,28 @@ extern "C" {
         AF_TRANSPOSE,
         AF_CONJUGATE_TRANSPOSE
     } af_blas_transpose;
+#ifdef __cplusplus
+}
+#endif
 
+#ifdef __cplusplus
+namespace af
+{
+    AFAPI array matmul(const array &lhs, const array &rhs,
+                       af_blas_transpose optLhs = AF_NO_TRANSPOSE,
+                       af_blas_transpose optRhs = AF_NO_TRANSPOSE);
+
+    AFAPI array dot   (const array &lhs, const array &rhs,
+                       af_blas_transpose optLhs = AF_NO_TRANSPOSE,
+                       af_blas_transpose optRhs = AF_NO_TRANSPOSE);
+
+    AFAPI array transpose(const array& in);
+}
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
     AFAPI af_err af_matmul( af_array *out ,
                             const af_array lhs, const af_array rhs,
                             af_blas_transpose optLhs, af_blas_transpose optRhs);

@@ -2,6 +2,35 @@
 #include <af/defines.h>
 
 #ifdef __cplusplus
+namespace af
+{
+    class array;
+
+    AFAPI array diff1(const array &in, const int dim = 0);
+
+    AFAPI array diff2(const array &in, const int dim = 0);
+
+    AFAPI array accum(const array &in, const int dim = 0);
+
+    AFAPI array where(const array &in);
+
+    AFAPI array approx1(const array &in, const array &pos,
+                        const af_interp_type method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
+
+    AFAPI array approx2(const array &in, const array &pos0, const array &pos1,
+                        const af_interp_type method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
+
+    AFAPI array sort(const array &in, const unsigned dim = 0, const bool dir = true);
+
+    AFAPI void  sort_index(array &out, array &indices, const array &in,
+                           const unsigned dim = 0, const bool dir = true);
+
+    AFAPI void  sort_by_key(array &out_keys, array & out_values,
+                            const array &keys, const array &values, const unsigned dim = 0, const bool dir = true);
+}
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 
