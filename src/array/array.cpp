@@ -321,11 +321,17 @@ namespace af
 
     array& array::operator=(const array &other)
     {
-        //FIXME
-        //if (*this == other) {
-        //    return *this;
-        //}
-        *this = other;
+        // FIXME
+        if (this->get() == other.get()) {
+            return *this;
+        }
+        if(this->get() != 0) {
+            AF_THROW(af_destroy_array(this->get()));
+        }
+
+        af_array temp = 0;
+        AF_THROW(af_weak_copy(&temp, other.get()));
+        this->arr = temp;
         return *this;
     }
 

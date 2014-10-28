@@ -19,8 +19,10 @@ int main(int argc, char *argv[])
     array D(10, h_array, af::afHost);
     af_print(D);
 
-    array E = sort(D);
+    array E, F;
+    sort_index(E, F, D);
     af_print(E);
+    af_print(F);
 
     return 0;
 }
