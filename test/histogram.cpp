@@ -31,7 +31,7 @@ TYPED_TEST(Histogram,InvalidArgs)
     af_array outArray  = 0;
 
     // square test file is 100x100 originally
-    // usee new dimensions for this argument
+    // use new dimensions for this argument
     // unit test
     af::dim4 newDims(5,5,2,2);
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), newDims.ndims(), newDims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
