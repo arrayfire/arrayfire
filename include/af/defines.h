@@ -80,3 +80,8 @@ typedef enum {
     AF_ZERO = 0,
     AF_SYMMETRIC
 } af_pad_type;
+
+typedef enum {
+    AF_CONNECTIVITY_4 = 0,
+    AF_CONNECTIVITY_8
+} af_connectivity_type;
