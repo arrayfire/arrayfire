@@ -168,6 +168,9 @@ extern "C" {
     // error out in case of insufficient dimension lengths
     AFAPI af_err af_assign(af_array out, unsigned ndims, const af_seq* const index, const af_array in);
 
+    // weak copy array
+    AFAPI af_err af_weak_copy(af_array *out, const af_array in);
+
 #ifdef __cplusplus
 }
 #endif
