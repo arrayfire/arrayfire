@@ -259,6 +259,14 @@ namespace af
                       const dim_type d1, const dim_type d2,
                       const dim_type d3, af_dtype ty=f32);
 
+    AFAPI array iota(const dim4 &dims, const unsigned rep = 3, af_dtype ty=f32);
+    AFAPI array iota(const dim_type d0, const unsigned rep = 0, af_dtype ty=f32);
+    AFAPI array iota(const dim_type d0, const dim_type d1,
+                     const unsigned rep = 1, af_dtype ty=f32);
+    AFAPI array iota(const dim_type d0, const dim_type d1, const dim_type d2,
+                     const unsigned rep = 2, af_dtype ty=f32);
+    AFAPI array iota(const dim_type d0, const dim_type d1, const dim_type d2,
+                     const dim_type d3, const unsigned rep = 3, af_dtype ty=f32);
 }
 #endif
 
@@ -274,6 +282,10 @@ extern "C" {
 
     AFAPI af_err af_constant_c32(af_array *arr, const void* val,
                                  const unsigned ndims, const dim_type * const dims);
+
+    // Create sequence array
+    AFAPI af_err af_iota(af_array *arr, const unsigned ndims, const dim_type * const dims,
+                         const unsigned rep, const af_dtype type);
 
     // Create af_array from memory
     AFAPI af_err af_create_array(af_array *arr, const void * const data, const unsigned ndims, const dim_type * const dims, const af_dtype type);

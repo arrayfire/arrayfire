@@ -9,6 +9,7 @@
 #include <random.hpp>
 #include <math.hpp>
 #include <complex.hpp>
+#include <iota.hpp>
 
 using af::dim4;
 using namespace detail;
@@ -383,4 +384,36 @@ af_err af_weak_copy(af_array *out, const af_array in)
     }
     CATCHALL;
     return AF_SUCCESS;
+}
+
+template<typename T>
+static inline af_array iota_(const dim4& d, const unsigned rep)
+{
+    return getHandle(*iota<T>(d, rep));
+}
+
+//Strong Exception Guarantee
+af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const dims,
+               const unsigned rep, const af_dtype type)
+{
+    af_err ret = AF_ERR_ARG;
+    af_array out;
+    try {
+        dim4 d((size_t)dims[0]);
+        for(unsigned i = 1; i < ndims; i++) {
+            d[i] = dims[i];
+        }
+        switch(type) {
+        case f32:   out = iota_<float  >(d, rep); break;
+        case f64:   out = iota_<double >(d, rep); break;
+        case s32:   out = iota_<int    >(d, rep); break;
+        case u32:   out = iota_<uint   >(d, rep); break;
+        case u8:    out = iota_<uchar  >(d, rep); break;
+        default:    ret = AF_ERR_NOT_SUPPORTED;  break;
+        }
+        std::swap(*result, out);
+        ret = AF_SUCCESS;
+    }
+    CATCHALL
+        return ret;
 }
