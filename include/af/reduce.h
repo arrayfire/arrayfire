@@ -5,6 +5,29 @@
 #define AF_MAX_DIMS 4
 
 #ifdef __cplusplus
+namespace af
+{
+    // Add all the elements along a dimension
+    AFAPI array sum(const array &in, const int dim = 0);
+
+    // Get the minimum of all elements along a dimension
+    AFAPI array min(const array &in, const int dim = 0);
+
+    // Get the maximum of all elements along a dimension
+    AFAPI array max(const array &in, const int dim = 0);
+
+    // Check if all elements along a dimension are true
+    AFAPI array alltrue(const array &in, const int dim = 0);
+
+    // Check if any elements along a dimension are true
+    AFAPI array anytrue(const array &in, const int dim = 0);
+
+    // Count number of non zero elements along a dimension
+    AFAPI array count(const array &in, const int dim = 0);
+}
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
     // Add all the elements along a dimension

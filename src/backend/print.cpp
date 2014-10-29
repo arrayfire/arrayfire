@@ -7,6 +7,8 @@
 #include <backend.hpp>
 #include <type_util.hpp>
 
+#include <af/index.h>
+
 using namespace detail;
 using std::ostream;
 using std::cout;
@@ -40,20 +42,25 @@ static void print(af_array arr)
 {
     const ArrayInfo info = getInfo(arr);
     T *data = new T[info.elements()];
-    //FIXME: Use alternative function to avoid copies if possible
-    af_get_data_ptr(data, arr);
 
-    std::cout << "TRANSPOSED\n";
+    af_array arrT;
+    af_reorder(&arrT, arr, 1, 0, 2, 3);
+
+    //FIXME: Use alternative function to avoid copies if possible
+    af_get_data_ptr(data, arrT);
+    const ArrayInfo infoT = getInfo(arrT);
+
+    //std::cout << "TRANSPOSED\n";
     std::cout << "Dim:" << info.dims();
     std::cout << "Offset: " << info.offsets();
     std::cout << "Stride: " << info.strides();
 
-    printer(std::cout, data, info, info.ndims() - 1);
+    printer(std::cout, data, infoT, infoT.ndims() - 1);
 
     delete[] data;
 }
 
-af_err af_print(af_array arr)
+af_err af_print_array(af_array arr)
 {
     try {
         ArrayInfo info = getInfo(arr);

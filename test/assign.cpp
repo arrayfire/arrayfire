@@ -192,3 +192,37 @@ TEST(ArrayAssign, InvalidArgs)
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
 }
+
+TEST(ArrayAssign, CPP)
+{
+    using af::array;
+
+    vector<af_seq> seqv;
+    seqv.push_back({1,2,1});
+    seqv.push_back({1,2,1});
+
+    vector<af::dim4>  numDims;
+    vector<vector<float>>      in;
+    vector<vector<float>>   tests;
+
+    readTests<float, float, int>(string(TEST_DIR"/assign/2d_to_2d.test"), numDims, in, tests);
+
+    af::dim4 dims0     = numDims[0];
+    af::dim4 dims1     = numDims[1];
+
+    array a(dims0, &(in[0].front()));
+    array b(dims1, &(in[1].front()));
+
+    b(seqv[0],seqv[1]) = a;
+
+    float *outData = new float[dims1.elements()];
+    b.host(outData);
+
+    vector<float> currGoldBar = tests[0];
+    size_t nElems        = currGoldBar.size();
+    for (size_t elIter=0; elIter<nElems; ++elIter) {
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+    }
+
+    delete[] outData;
+}

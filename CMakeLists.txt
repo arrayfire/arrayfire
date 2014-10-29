@@ -2,6 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT(ARRAYFIRE)
 
 OPTION(BUILD_TEST "Build Tests" ON)
+OPTION(BUILD_EXAMPLES "Build Examples" ON)
 OPTION(BUILD_GTEST "Download gtest and check for updates. Necessary if you change compilers" ON)
 
 OPTION(BUILD_CPU "Build ArrayFire with a CPU backend" ON)
@@ -28,6 +29,28 @@ IF(${UNIX})
     ADD_DEFINITIONS(-Wall -std=c++0x -fvisibility=hidden)
 ENDIF()
 
+# OS Definitions
+IF(UNIX)
+  IF(APPLE)   #OSX
+    ADD_DEFINITIONS(-DOS_MAC)
+  ELSE(APPLE) #Linux
+    ADD_DEFINITIONS(-DOS_LNX)
+  ENDIF()
+ELSE(${UNIX}) #Windows
+  ADD_DEFINITIONS(-DOS_WIN)
+ENDIF()
+
+# Architechture Definitions
+INCLUDE(common/TargetArch.cmake)
+target_architecture(ARCH)
+IF(${ARCH} STREQUAL "x86_64")
+  ADD_DEFINITIONS(-DARCH_64)
+ELSE(${ARCH})
+  ADD_DEFINITIONS(-DARCH_32)
+ENDIF()
+
+INCLUDE(common/Version.cmake)
+
 IF(${BUILD_CPU})
   ADD_SUBDIRECTORY(src/backend/cpu)
 ENDIF()
@@ -42,10 +65,13 @@ IF(${BUILD_OPENCL})
     ADD_SUBDIRECTORY(src/backend/opencl)
 ENDIF()
 
-ADD_SUBDIRECTORY(src/array)
 ADD_EXECUTABLE(bin2cpp common/bin2cpp.cpp)
 
 IF(${BUILD_TEST})
     ENABLE_TESTING()
     ADD_SUBDIRECTORY(test)
+ENDIF()
+
+IF(${BUILD_EXAMPLES})
+    ADD_SUBDIRECTORY(examples)
 ENDIF()

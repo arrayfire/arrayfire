@@ -1,6 +1,6 @@
 #include <af/dim4.hpp>
 #include <af/defines.h>
-#include <af/array.h>
+#include <af/index.h>
 #include <ArrayInfo.hpp>
 #include <err_common.hpp>
 #include <handle.hpp>
