@@ -352,13 +352,48 @@ namespace af
         for(int i=0; i<4; ++i) s[i] = seqs[i];
     }
 
-    array array::operator()(const af_seq& s0, const af_seq& s1, const af_seq& s2, const af_seq& s3)
+    array array::operator()(const af_seq& s0, const af_seq& s1, const af_seq& s2, const af_seq& s3) const
     {
         af_array out = 0;
         af_seq indices[] = {s0, s1, s2, s3};
         //FIXME: check if this->s has same dimensions as numdims
         AF_THROW(af_weak_copy(&out, this->get()));
         return array(out, indices);
+    }
+    array array::row(size_t index) const
+    {
+        af_seq idx = {index, index, 1};
+        return this->operator()(idx, span, span, span);
+    }
+
+    array array::col(size_t index) const
+    {
+        af_seq idx = {index, index, 1};
+        return this->operator()(span, idx, span, span);
+    }
+
+    array array::slice(size_t index) const
+    {
+        af_seq idx = {index, index, 1};
+        return this->operator()(span, span, idx, span);
+    }
+
+    array array::rows(size_t first, size_t last) const
+    {
+        af_seq idx = {first, last, 1};
+        return this->operator()(idx, span, span, span);
+    }
+
+    array array::cols(size_t first, size_t last) const
+    {
+        af_seq idx = {first, last, 1};
+        return this->operator()(span, idx, span, span);
+    }
+
+    array array::slices(size_t first, size_t last) const
+    {
+        af_seq idx = {first, last, 1};
+        return this->operator()(span, span, idx, span);
     }
 
     array array::as(af_dtype type) const
