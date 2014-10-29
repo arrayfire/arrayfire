@@ -1,6 +1,13 @@
 #pragma once
 #include <af/defines.h>
 
+namespace af
+{
+    AFAPI void print(const char *exp, const array &arr);
+}
+
+#define af_print(exp) af::print(#exp, exp);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -12,7 +19,7 @@ extern "C" {
     AFAPI af_err af_get_type(af_dtype *type, const af_array arr);
 
     // Print contents of af_array to console
-    AFAPI af_err af_print(af_array arr);
+    AFAPI af_err af_print_array(af_array arr);
 
 #ifdef __cplusplus
 }

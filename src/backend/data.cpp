@@ -8,9 +8,12 @@
 #include <handle.hpp>
 #include <random.hpp>
 #include <math.hpp>
+#include <complex.hpp>
+#include <iota.hpp>
 
 using af::dim4;
 using namespace detail;
+using namespace std;
 
 template<typename T>
 static af_array createHandle(af::dim4 d)
@@ -34,6 +37,14 @@ template<typename T>
 static void copyData(T *data, const af_array &arr)
 {
     return copyData(data, getArray<T>(arr));
+}
+
+template<typename T>
+static void copyArray(af_array *out, const af_array in)
+{
+    const Array<T> &inArray = getArray<T>(in);
+    Array<T> *outArray = copyArray<T>(inArray);
+    *out = getHandle(*outArray);
 }
 
 template<typename T>
@@ -128,6 +139,58 @@ af_err af_constant(af_array *result, const double value,
         return ret;
 }
 
+template<typename To, typename Ti>
+static inline af_array complexOp(const af_array lhs, const af_array rhs)
+{
+    return getHandle(*complexOp<To, Ti>(getArray<Ti>(lhs), getArray<Ti>(rhs)));
+}
+
+af_err af_constant_c64(af_array *result, const void* value,
+                       const unsigned ndims, const dim_type * const dims)
+{
+    af_err ret = AF_ERR_ARG;
+    af_array out_real;
+    af_array out_imag;
+    af_array out;
+    try {
+        cdouble cval = *(cdouble*)value;
+        dim4 d((size_t)dims[0]);
+        for(unsigned i = 1; i < ndims; i++) {
+            d[i] = dims[i];
+        }
+        out_real = createHandle<double>(d, real(cval));
+        out_imag = createHandle<double>(d, imag(cval));
+        out = complexOp<cdouble, double>(out_real, out_imag);
+        std::swap(*result, out);
+        ret = AF_SUCCESS;
+    }
+    CATCHALL
+    return ret;
+}
+
+af_err af_constant_c32(af_array *result, const void* value,
+                       const unsigned ndims, const dim_type * const dims)
+{
+    af_err ret = AF_ERR_ARG;
+    af_array out_real;
+    af_array out_imag;
+    af_array out;
+    try {
+        cfloat cval = *(cfloat*)value;
+        dim4 d((size_t)dims[0]);
+        for(unsigned i = 1; i < ndims; i++) {
+            d[i] = dims[i];
+        }
+        out_real = createHandle<float>(d, real(cval));
+        out_imag = createHandle<float>(d, imag(cval));
+        out = complexOp<cfloat, float>(out_real, out_imag);
+        std::swap(*result, out);
+        ret = AF_SUCCESS;
+    }
+    CATCHALL
+    return ret;
+}
+
 //Strong Exception Guarantee
 af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type * const dims,
                         const af_dtype type)
@@ -149,13 +212,46 @@ af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type *
         case u32:   out = createHandle<uint   >(d); break;
         case u8:    out = createHandle<uchar  >(d); break;
         case s8:    out = createHandle<char   >(d); break;
-        default:    ret = AF_ERR_NOT_SUPPORTED;    break;
+        default:    ret = AF_ERR_NOT_SUPPORTED;     break;
         }
         std::swap(*result, out);
         ret = AF_SUCCESS;
     }
     CATCHALL
+    return ret;
+}
+
+//Strong Exception Guarantee
+af_err af_copy_array(af_array *out, const af_array in)
+{
+    ArrayInfo info = getInfo(in);
+    const unsigned ndims = info.ndims();
+    const af::dim4 dims = info.dims();
+    const af_dtype type = info.getType();
+
+    af_err ret = AF_ERR_ARG;
+
+    ret = af_create_handle(out, ndims, dims.get(), type);
+    if(ret != AF_SUCCESS) {
         return ret;
+    }
+
+    try {
+        switch(type) {
+        case f32:   copyArray<float   >(out, in); break;
+        case c32:   copyArray<cfloat  >(out, in); break;
+        case f64:   copyArray<double  >(out, in); break;
+        case c64:   copyArray<cdouble >(out, in); break;
+        case b8:    copyArray<char    >(out, in); break;
+        case s32:   copyArray<int     >(out, in); break;
+        case u32:   copyArray<unsigned>(out, in); break;
+        case u8:    copyArray<uchar   >(out, in); break;
+        case s8:    copyArray<char    >(out, in); break;
+        default:    ret = AF_ERR_NOT_SUPPORTED;   break;
+        }
+    }
+    CATCHALL
+    return ret;
 }
 
 template<typename T>
@@ -279,4 +375,45 @@ af_array weakCopy(const af_array in)
     default:
         AF_ERROR("Invalid type", AF_ERR_INVALID_TYPE);
     }
+}
+
+af_err af_weak_copy(af_array *out, const af_array in)
+{
+    try {
+        *out = weakCopy(in);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
+template<typename T>
+static inline af_array iota_(const dim4& d, const unsigned rep)
+{
+    return getHandle(*iota<T>(d, rep));
+}
+
+//Strong Exception Guarantee
+af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const dims,
+               const unsigned rep, const af_dtype type)
+{
+    af_err ret = AF_ERR_ARG;
+    af_array out;
+    try {
+        dim4 d((size_t)dims[0]);
+        for(unsigned i = 1; i < ndims; i++) {
+            d[i] = dims[i];
+        }
+        switch(type) {
+        case f32:   out = iota_<float  >(d, rep); break;
+        case f64:   out = iota_<double >(d, rep); break;
+        case s32:   out = iota_<int    >(d, rep); break;
+        case u32:   out = iota_<uint   >(d, rep); break;
+        case u8:    out = iota_<uchar  >(d, rep); break;
+        default:    ret = AF_ERR_NOT_SUPPORTED;  break;
+        }
+        std::swap(*result, out);
+        ret = AF_SUCCESS;
+    }
+    CATCHALL
+        return ret;
 }

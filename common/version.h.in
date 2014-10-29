@@ -1,0 +1,5 @@
+#pragma once
+
+#define AF_VERSION "@AF_VERSION@"
+#define AF_VERSION_MINOR "@AF_VERSION_MINOR@"
+#define REVISION "@GIT_COMMIT_HASH@"

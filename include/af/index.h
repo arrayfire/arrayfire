@@ -1,5 +1,21 @@
 #pragma once
+#include <af/array.h>
 #include <af/defines.h>
+
+#if __cplusplus
+namespace af
+{
+
+AFAPI array tile(const array& in, const unsigned x, const unsigned y=1, const unsigned z=1, const unsigned w=1);
+
+AFAPI array reorder(const array& in, const unsigned x, const unsigned y=1, const unsigned z=2, const unsigned w=3);
+
+AFAPI array shift(const array& in, const int x, const int y=0, const int z=0, const int w=0);
+
+AFAPI array moddims(const array& in, const unsigned ndims, const dim_type * const dims);
+
+}
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -8,6 +24,10 @@ extern "C" {
     // Create a new af_array by indexing from existing af_array.
     // This takes the form `out = in(seq_a, seq_b)`
     AFAPI af_err af_index(af_array *out, const af_array in, unsigned ndims, const af_seq* const index);
+
+    // copy an array into exiting array of larger dimensions
+    // error out in case of insufficient dimension lengths
+    AFAPI af_err af_assign(af_array out, unsigned ndims, const af_seq* const index, const af_array in);
 
     // Tile an Array
     AFAPI af_err af_tile(af_array *out, const af_array in,
