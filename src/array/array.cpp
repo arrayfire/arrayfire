@@ -6,8 +6,8 @@
 
 namespace af
 {
-    array::array() : arr(0) {}
-    array::array(const af_array handle): arr(handle) {}
+    array::array() : arr(0), isRef(false) {}
+    array::array(const af_array handle): arr(handle), isRef(false) {}
 
     static void initEmptyArray(af_array *arr, af_dtype ty,
                                dim_type d0, dim_type d1=1, dim_type d2=1, dim_type d3=1)
@@ -27,60 +27,60 @@ namespace af
         AF_THROW(af_create_array(arr, (const void * const)ptr, 4, my_dims, ty));
     }
 
-    array::array(const dim4 &dims, af_dtype ty) : arr(0)
+    array::array(const dim4 &dims, af_dtype ty) : arr(0), isRef(false)
     {
         initEmptyArray(&arr, ty, dims[0], dims[1], dims[2], dims[3]);
     }
 
-    array::array(dim_type d0, af_dtype ty) : arr(0)
+    array::array(dim_type d0, af_dtype ty) : arr(0), isRef(false)
     {
         initEmptyArray(&arr, ty, d0);
     }
 
-    array::array(dim_type d0, dim_type d1, af_dtype ty) : arr(0)
+    array::array(dim_type d0, dim_type d1, af_dtype ty) : arr(0), isRef(false)
     {
         initEmptyArray(&arr, ty, d0, d1);
     }
 
-    array::array(dim_type d0, dim_type d1, dim_type d2, af_dtype ty) : arr(0)
+    array::array(dim_type d0, dim_type d1, dim_type d2, af_dtype ty) : arr(0), isRef(false)
     {
         initEmptyArray(&arr, ty, d0, d1, d2);
     }
 
-    array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, af_dtype ty) : arr(0)
+    array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, af_dtype ty) : arr(0), isRef(false)
     {
         initEmptyArray(&arr, ty, d0, d1, d2, d3);
     }
 
     template<typename T>
-    array::array(const dim4 &dims, const T *ptr, af_source_t src, dim_type ngfor) : arr(0)
+    array::array(const dim4 &dims, const T *ptr, af_source_t src, dim_type ngfor) : arr(0), isRef(false)
     {
         initDataArray<T>(&arr, ptr, src, dims[0], dims[1], dims[2], dims[3]);
     }
 
     template<typename T>
-    array::array(dim_type d0, const T *ptr, af_source_t src, dim_type ngfor) : arr(0)
+    array::array(dim_type d0, const T *ptr, af_source_t src, dim_type ngfor) : arr(0), isRef(false)
     {
         initDataArray<T>(&arr, ptr, src, d0);
     }
 
     template<typename T>
     array::array(dim_type d0, dim_type d1, const T *ptr,
-                 af_source_t src, dim_type ngfor) : arr(0)
+                 af_source_t src, dim_type ngfor) : arr(0), isRef(false)
     {
         initDataArray<T>(&arr, ptr, src, d0, d1);
     }
 
     template<typename T>
     array::array(dim_type d0, dim_type d1, dim_type d2, const T *ptr,
-                 af_source_t src, dim_type ngfor) : arr(0)
+                 af_source_t src, dim_type ngfor) : arr(0), isRef(false)
     {
         initDataArray<T>(&arr, ptr, src, d0, d1, d2);
     }
 
     template<typename T>
     array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3,
-                 const T *ptr, af_source_t src, dim_type ngfor) : arr(0)
+                 const T *ptr, af_source_t src, dim_type ngfor) : arr(0), isRef(false)
     {
         initDataArray<T>(&arr, ptr, src, d0, d1, d2, d3);
     }
@@ -122,9 +122,20 @@ namespace af
         AF_THROW(af_get_data_ptr(data, arr));
     }
 
+    af_array array::get()
+    {
+        if (!isRef)
+            return arr;
+        af_array temp = 0;
+        AF_THROW(af_index(&temp, arr, 4, this->s));
+        arr = temp;
+        isRef = false;
+        return arr;
+    }
+
     af_array array::get() const
     {
-        return arr;
+        return ((array *)(this))->get();
     }
 
     // Helper functions
@@ -319,31 +330,41 @@ namespace af
         return randn(dim4(d0, d1, d2, d3), ty);
     }
 
+    array::array(af_array in, af_seq *seqs) : arr(in), isRef(true)
+    {
+        for(int i=0; i<4; ++i) s[i] = seqs[i];
+    }
+
     array array::operator()(const af_seq& s0, const af_seq& s1, const af_seq& s2, const af_seq& s3)
     {
         af_array out = 0;
         af_seq indices[] = {s0, s1, s2, s3};
-        AF_THROW(af_index(&out, this->get(), 4, indices));
-        return array(out);
+        //FIXME: check if this->s has same dimensions as numdims
+        AF_THROW(af_weak_copy(&out, this->get()));
+        return array(out, indices);
     }
 
     array& array::operator=(const array &other)
     {
-        // FIXME
-        if (this->get() == other.get()) {
-            return *this;
-        }
-        if(this->get() != 0) {
-            AF_THROW(af_destroy_array(this->get()));
-        }
+        if (isRef) {
+            AF_THROW(af_assign(arr, numdims(), s, other.get()));
+            isRef = false;
+        } else {
+            if (this->get() == other.get()) {
+                return *this;
+            }
+            if(this->get() != 0) {
+                AF_THROW(af_destroy_array(this->get()));
+            }
 
-        af_array temp = 0;
-        AF_THROW(af_weak_copy(&temp, other.get()));
-        this->arr = temp;
+            af_array temp = 0;
+            AF_THROW(af_weak_copy(&temp, other.get()));
+            this->arr = temp;
+        }
         return *this;
     }
 
-    array::array(const array &in) : arr(0)
+    array::array(const array &in) : arr(0), isRef(false)
     {
         AF_THROW(af_weak_copy(&arr, in.get()));
     }

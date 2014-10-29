@@ -25,6 +25,10 @@ extern "C" {
     // This takes the form `out = in(seq_a, seq_b)`
     AFAPI af_err af_index(af_array *out, const af_array in, unsigned ndims, const af_seq* const index);
 
+    // copy an array into exiting array of larger dimensions
+    // error out in case of insufficient dimension lengths
+    AFAPI af_err af_assign(af_array out, unsigned ndims, const af_seq* const index, const af_array in);
+
     // Tile an Array
     AFAPI af_err af_tile(af_array *out, const af_array in,
                          const unsigned x, const unsigned y, const unsigned z, const unsigned w);

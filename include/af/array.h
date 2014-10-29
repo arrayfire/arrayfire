@@ -19,7 +19,11 @@ namespace af
     class AFAPI array {
 
     private:
-        af_array arr;
+        af_array   arr;
+        bool     isRef;
+        af_seq    s[4];
+
+        array(af_array in, af_seq *seqs);
 
     public:
         array();
@@ -55,6 +59,7 @@ namespace af
             array(const dim4& dims,
                   const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
 
+        af_array get();
         af_array get() const;
         dim_type elements() const;
 
@@ -167,10 +172,6 @@ extern "C" {
 
     // Generate Random Numbers using normal distribution
     AFAPI af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);
-
-    // copy an array into exiting array of larger dimensions
-    // error out in case of insufficient dimension lengths
-    AFAPI af_err af_assign(af_array out, unsigned ndims, const af_seq* const index, const af_array in);
 
     // weak copy array
     AFAPI af_err af_weak_copy(af_array *out, const af_array in);
