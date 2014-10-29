@@ -1,3 +1,11 @@
+## Getting ArrayFire
+
+``` bash
+git clone --recursive git@github.com:arrayfire/arrayfire.git
+```
+
+Do not forget to include `--recursive` as this clones the dependent libraries.
+
 ## Requirements
 
 ### General
@@ -10,6 +18,7 @@
 ### CPU Backend
 * atlas on Linux (libatlas3gf-base, libatlas-dev)
 * Accelerate Framework on OSX
+* fftw3
 
 ### CUDA Backend
 * CUDA toolkit >= 6.5
