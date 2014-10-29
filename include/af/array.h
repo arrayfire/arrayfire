@@ -1,6 +1,7 @@
 #pragma once
 #include <af/defines.h>
 #include <af/dim4.hpp>
+#include <af/traits.hpp>
 
 
 #ifdef __cplusplus
@@ -101,6 +102,9 @@ namespace af
     };
 
     AFAPI array constant(double val, const dim4 &dims, af_dtype ty=f32);
+    AFAPI array constant(af_cdouble val, const dim4 &dims);
+    AFAPI array constant(af_cfloat val, const dim4 &dims);
+
     AFAPI array constant(double val, const dim_type d0, af_dtype ty=f32);
     AFAPI array constant(double val, const dim_type d0,
                          const dim_type d1, af_dtype ty=f32);
@@ -141,6 +145,12 @@ extern "C" {
 
     // Create af_array from a constant value
     AFAPI af_err af_constant(af_array *arr, const double val, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+
+    AFAPI af_err af_constant_c64(af_array *arr, const void* val,
+                                 const unsigned ndims, const dim_type * const dims);
+
+    AFAPI af_err af_constant_c32(af_array *arr, const void* val,
+                                 const unsigned ndims, const dim_type * const dims);
 
     // Create af_array from memory
     AFAPI af_err af_create_array(af_array *arr, const void * const data, const unsigned ndims, const dim_type * const dims, const af_dtype type);

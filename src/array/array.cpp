@@ -1,4 +1,5 @@
 #include <af/array.h>
+#include <af/arith.h>
 #include <af/traits.hpp>
 #include <af/util.h>
 #include <ArrayInfo.hpp>
@@ -229,6 +230,22 @@ namespace af
     {
         af_array res;
         AF_THROW(af_constant(&res, val, dims.ndims(), dims.get(), type));
+        return array(res);
+    }
+
+    array constant(af_cdouble val, const dim4 &dims)
+    {
+        double val_[] = {real(val), imag(val)};
+        af_array res;
+        AF_THROW(af_constant_c64(&res, val_, dims.ndims(), dims.get()));
+        return array(res);
+    }
+
+    array constant(af_cfloat val, const dim4 &dims)
+    {
+        float val_[] = {real(val), imag(val)};
+        af_array res;
+        AF_THROW(af_constant_c32(&res, val_, dims.ndims(), dims.get()));
         return array(res);
     }
 

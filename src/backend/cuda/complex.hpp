@@ -3,6 +3,7 @@
 #include <Array.hpp>
 #include <optypes.hpp>
 #include <err_cuda.hpp>
+#include <JIT/BinaryNode.hpp>
 
 namespace cuda
 {

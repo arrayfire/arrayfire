@@ -7,9 +7,6 @@
 
 namespace af {
 
-typedef std::complex<float> af_cfloat;
-typedef std::complex<double> af_cdouble;
-
 template<typename T> struct dtype_traits;
 
 template<>

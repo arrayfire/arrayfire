@@ -1,5 +1,23 @@
 #pragma once
 
+#ifdef __cplusplus
+#include <complex>
+namespace af{
+typedef std::complex<float> af_cfloat;
+typedef std::complex<double> af_cdouble;
+}
+#else
+typedef struct {
+    float x;
+    float y;
+} af_cfloat;
+
+typedef struct {
+    double x;
+    double y;
+} af_cdouble;
+#endif
+
 typedef enum {
     AF_SUCCESS=0,
     AF_ERR_INTERNAL,
