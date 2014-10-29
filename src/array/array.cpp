@@ -368,7 +368,7 @@ namespace af
         return array(out);
     }
 
-    array::array(const array &in) : arr(0), isRef(false)
+    array::array(const array& in) : arr(0), isRef(false)
     {
         AF_THROW(af_weak_copy(&arr, in.get()));
     }
@@ -420,42 +420,48 @@ namespace af
         return *this;
     }
 
-    array array::operator=(const double &value)
+    array& array::operator=(const double &value)
     {
-        if(this->get() != 0) {
-            AF_THROW(af_destroy_array(this->get()));
+        if (isRef) {
+            array cst = constant(value, this->dims(), this->type());
+            AF_THROW(af_assign(arr, numdims(), s, cst.get()));
+            isRef = false;
+        } else {
+            if(this->get() != 0) {
+                AF_THROW(af_destroy_array(this->get()));
+            }
+            AF_THROW(af_constant(&arr, value, numdims(), dims().get(), type()));
         }
-
-        af_array temp = 0;
-        array cst = constant(value, this->dims(), this->type());
-        AF_THROW(af_weak_copy(&temp, cst.get()));
-        this->arr = temp;
         return *this;
     }
 
-    array array::operator=(const af_cdouble &value)
+    array& array::operator=(const af_cdouble &value)
     {
-        if(this->get() != 0) {
-            AF_THROW(af_destroy_array(this->get()));
+        if (isRef) {
+            array cst = constant(value, this->dims());
+            AF_THROW(af_assign(arr, numdims(), s, cst.get()));
+            isRef = false;
+        } else {
+            if(this->get() != 0) {
+                AF_THROW(af_destroy_array(this->get()));
+            }
+            AF_THROW(af_constant_c64(&arr, (const void*)&value, numdims(), dims().get()));
         }
-
-        af_array temp = 0;
-        array cst = constant(value, this->dims());
-        AF_THROW(af_weak_copy(&temp, cst.get()));
-        this->arr = temp;
         return *this;
     }
 
-    array array::operator=(const af_cfloat &value)
+    array& array::operator=(const af_cfloat &value)
     {
-        if(this->get() != 0) {
-            AF_THROW(af_destroy_array(this->get()));
+        if (isRef) {
+            array cst = constant(value, this->dims());
+            AF_THROW(af_assign(arr, numdims(), s, cst.get()));
+            isRef = false;
+        } else {
+            if(this->get() != 0) {
+                AF_THROW(af_destroy_array(this->get()));
+            }
+            AF_THROW(af_constant_c32(&arr, (const void*)&value, numdims(), dims().get()));
         }
-
-        af_array temp = 0;
-        array cst = constant(value, this->dims());
-        AF_THROW(af_weak_copy(&temp, cst.get()));
-        this->arr = temp;
         return *this;
     }
 
@@ -463,21 +469,21 @@ namespace af
     // Operator +=, -=, *=, /=
     ///////////////////////////////////////////////////////////////////////////
 #define INSTANTIATE(op, func)                                               \
-    array array::operator op(const array &other)                            \
+    array& array::operator op(const array &other)                            \
     {                                                                       \
         return *this = *this op other;                                      \
     }                                                                       \
-    array array::operator op(const double &value)                           \
+    array& array::operator op(const double &value)                           \
     {                                                                       \
         array cst = constant(value, this->dims(), this->type());            \
         return *this = *this op cst;                                        \
     }                                                                       \
-    array array::operator op(const af_cdouble &value)                       \
+    array& array::operator op(const af_cdouble &value)                       \
     {                                                                       \
         array cst = constant(value, this->dims());                          \
         return *this = *this op cst;                                        \
     }                                                                       \
-    array array::operator op(const af_cfloat &value)                        \
+    array& array::operator op(const af_cfloat &value)                        \
     {                                                                       \
         array cst = constant(value, this->dims());                          \
         return *this = *this op cst;                                        \

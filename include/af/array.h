@@ -29,7 +29,7 @@ namespace af
     public:
         array();
         array(const af_array handle);
-        array(const array &in);
+        array(const array& in);
 
         array(dim_type d0, af_dtype ty = f32);
         array(dim_type d0, dim_type d1, af_dtype ty = f32);
@@ -110,15 +110,20 @@ namespace af
         ~array();
 
         array& operator= (const array &a);  ///< array assignment
-        array operator= (const double &value);
-        array operator= (const af_cfloat &value);
-        array operator= (const af_cdouble &value);
+        array& operator= (const double &value);
+        array& operator= (const af_cfloat &value);
+        array& operator= (const af_cdouble &value);
 
 #define SELF(op)                                                            \
-        array operator op(const array &a);                                  \
-        array operator op(const double &a);                                 \
-        array operator op(const af_cdouble &a);                             \
-        array operator op(const af_cfloat &a);                              \
+        array& operator op(const array &a);                                  \
+        array& operator op(const double &a);                                 \
+        array& operator op(const af_cdouble &a);                             \
+        array& operator op(const af_cfloat &a);                              \
+
+        SELF(+=)
+        SELF(-=)
+        SELF(*=)
+        SELF(/=)
 
 
 #define BIN(op)                                                             \
@@ -130,6 +135,10 @@ namespace af
         AFAPI friend array operator op(const af_cfloat&, const array&);     \
         AFAPI friend array operator op(const af_cdouble&, const array&);    \
 
+        BIN(+)
+        BIN(-)
+        BIN(*)
+        BIN(/)
 
 /*
 // FIXME
@@ -163,28 +172,16 @@ namespace af
         AFAPI friend array operator op(const af_cfloat&, const array&);    \
         AFAPI friend array operator op(const af_cdouble&, const array&);   \
 
-
-    SELF(+=)
-    SELF(-=)
-    SELF(*=)
-    SELF(/=)
-
-    BIN(+)
-    BIN(-)
-    BIN(*)
-    BIN(/)
-
-    COMP(==)
-    COMP(!=)
-    COMP(< )
-    COMP(<=)
-    COMP(> )
-    COMP(>=)
+        COMP(==)
+        COMP(!=)
+        COMP(< )
+        COMP(<=)
+        COMP(> )
+        COMP(>=)
 
 #undef SELF
 #undef BIN
 #undef COMP
-
     };
     // end of class array
 
@@ -193,13 +190,18 @@ namespace af
     AFAPI array operator op(const af_cfloat&, const array&);            \
     AFAPI array operator op(const af_cdouble&, const array&);           \
 
+    BIN(+)
+    BIN(-)
+    BIN(*)
+    BIN(/)
+
 /*
 //#define LOGIC(op)                                                       \
-//        AFAPI array operator op##op(const bool&, const array&);         \
-//        AFAPI array operator op##op(const int&, const array&);          \
-//        AFAPI array operator op##op(const unsigned&, const array&);     \
-//        AFAPI array operator op##op(const af_cfloat&, const array&);    \
-//        AFAPI array operator op##op(const af_cdouble&, const array&);   \
+//        AFAPI array& operator op##op(const bool&, const array&);         \
+//        AFAPI array& operator op##op(const int&, const array&);          \
+//        AFAPI array& operator op##op(const unsigned&, const array&);     \
+//        AFAPI array& operator op##op(const af_cfloat&, const array&);    \
+//        AFAPI array& operator op##op(const af_cdouble&, const array&);   \
  */
 
 
@@ -209,11 +211,6 @@ namespace af
     AFAPI array operator op(const double&, const array&);               \
     AFAPI array operator op(const af_cfloat&, const array&);            \
     AFAPI array operator op(const af_cdouble&, const array&);           \
-
-    BIN(+)
-    BIN(-)
-    BIN(*)
-    BIN(/)
 
     COMP(==)
     COMP(!=)
