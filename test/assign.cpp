@@ -193,7 +193,6 @@ TEST(ArrayAssign, InvalidArgs)
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
 }
 
-#if 0
 TEST(ArrayAssign, CPP)
 {
     using af::array;
@@ -210,8 +209,6 @@ TEST(ArrayAssign, CPP)
 
     af::dim4 dims0     = numDims[0];
     af::dim4 dims1     = numDims[1];
-    af_array outArray  = 0;
-    af_array inArray   = 0;
 
     array a(dims0, &(in[0].front()));
     array b(dims1, &(in[1].front()));
@@ -228,7 +225,4 @@ TEST(ArrayAssign, CPP)
     }
 
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
 }
-#endif

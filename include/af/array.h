@@ -1,6 +1,7 @@
 #pragma once
 #include <af/defines.h>
 #include <af/dim4.hpp>
+#include <af/traits.hpp>
 
 
 #ifdef __cplusplus
@@ -104,12 +105,132 @@ namespace af
 
         array operator()(const af_seq& s0, const af_seq& s1=span, const af_seq& s2=span, const af_seq& s3=span);
 
-        array& operator=(const array& a);  ///< array assignment
+        array as(af_dtype type) const;
 
         ~array();
+
+        array& operator= (const array &a);  ///< array assignment
+        array operator= (const double &value);
+        array operator= (const af_cfloat &value);
+        array operator= (const af_cdouble &value);
+
+#define SELF(op)                                                            \
+        array operator op(const array &a);                                  \
+        array operator op(const double &a);                                 \
+        array operator op(const af_cdouble &a);                             \
+        array operator op(const af_cfloat &a);                              \
+
+
+#define BIN(op)                                                             \
+        array operator op(const array&) const;                              \
+        array operator op(const double&) const;                             \
+        array operator op(const af_cfloat&) const;                          \
+        array operator op(const af_cdouble&) const;                         \
+        AFAPI friend array operator op(const double&, const array&);        \
+        AFAPI friend array operator op(const af_cfloat&, const array&);     \
+        AFAPI friend array operator op(const af_cdouble&, const array&);    \
+
+
+/*
+// FIXME
+//#define LOGIC(op)                                                           \
+//        array operator op(const array&) const;                              \
+//        array operator op##op(const array&) const;                          \
+//        array operator op##op(const bool&) const;                           \
+//        array operator op##op(const int&) const;                            \
+//        array operator op##op(const unsigned&) const;                       \
+//        array operator op##op(const double&) const;                         \
+//        array operator op##op(const af_cfloat&) const;                      \
+//        array operator op##op(const af_cdouble&) const;                     \
+//        AFAPI friend array operator op##op(const bool&, const array&);      \
+//        AFAPI friend array operator op##op(const int&, const array&);       \
+//        AFAPI friend array operator op##op(const unsigned&, const array&);  \
+//        AFAPI friend array operator op##op(const af_cfloat&, const array&); \
+//        AFAPI friend array operator op##op(const af_cdouble&, const array&);\
+*/
+
+
+#define COMP(op)                                                           \
+        array operator op(const array&) const;                             \
+        array operator op(const bool&) const;                              \
+        array operator op(const int&) const;                               \
+        array operator op(const double&) const;                            \
+        array operator op(const af_cfloat&) const;                         \
+        array operator op(const af_cdouble&) const;                        \
+        AFAPI friend array operator op(const bool&, const array&);         \
+        AFAPI friend array operator op(const int&, const array&);          \
+        AFAPI friend array operator op(const double&, const array&);       \
+        AFAPI friend array operator op(const af_cfloat&, const array&);    \
+        AFAPI friend array operator op(const af_cdouble&, const array&);   \
+
+
+    SELF(+=)
+    SELF(-=)
+    SELF(*=)
+    SELF(/=)
+
+    BIN(+)
+    BIN(-)
+    BIN(*)
+    BIN(/)
+
+    COMP(==)
+    COMP(!=)
+    COMP(< )
+    COMP(<=)
+    COMP(> )
+    COMP(>=)
+
+#undef SELF
+#undef BIN
+#undef COMP
+
     };
+    // end of class array
+
+#define BIN(op)                                                         \
+    AFAPI array operator op(const double&, const array&);               \
+    AFAPI array operator op(const af_cfloat&, const array&);            \
+    AFAPI array operator op(const af_cdouble&, const array&);           \
+
+/*
+//#define LOGIC(op)                                                       \
+//        AFAPI array operator op##op(const bool&, const array&);         \
+//        AFAPI array operator op##op(const int&, const array&);          \
+//        AFAPI array operator op##op(const unsigned&, const array&);     \
+//        AFAPI array operator op##op(const af_cfloat&, const array&);    \
+//        AFAPI array operator op##op(const af_cdouble&, const array&);   \
+ */
+
+
+#define COMP(op)                                                        \
+    AFAPI array operator op(const bool&, const array&);                 \
+    AFAPI array operator op(const int&, const array&);                  \
+    AFAPI array operator op(const double&, const array&);               \
+    AFAPI array operator op(const af_cfloat&, const array&);            \
+    AFAPI array operator op(const af_cdouble&, const array&);           \
+
+    BIN(+)
+    BIN(-)
+    BIN(*)
+    BIN(/)
+
+    COMP(==)
+    COMP(!=)
+    COMP(< )
+    COMP(<=)
+    COMP(> )
+    COMP(>=)
+
+#undef SELF
+#undef BIN
+#undef LOGIC
+#undef COMP
 
     AFAPI array constant(double val, const dim4 &dims, af_dtype ty=f32);
+    AFAPI array constant(af_cdouble val, const dim4 &dims);
+    AFAPI array constant(af_cfloat val, const dim4 &dims);
+
     AFAPI array constant(double val, const dim_type d0, af_dtype ty=f32);
     AFAPI array constant(double val, const dim_type d0,
                          const dim_type d1, af_dtype ty=f32);
@@ -150,6 +271,12 @@ extern "C" {
 
     // Create af_array from a constant value
     AFAPI af_err af_constant(af_array *arr, const double val, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+
+    AFAPI af_err af_constant_c64(af_array *arr, const void* val,
+                                 const unsigned ndims, const dim_type * const dims);
+
+    AFAPI af_err af_constant_c32(af_array *arr, const void* val,
+                                 const unsigned ndims, const dim_type * const dims);
 
     // Create af_array from memory
     AFAPI af_err af_create_array(af_array *arr, const void * const data, const unsigned ndims, const dim_type * const dims, const af_dtype type);

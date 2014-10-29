@@ -8,9 +8,11 @@
 #include <handle.hpp>
 #include <random.hpp>
 #include <math.hpp>
+#include <complex.hpp>
 
 using af::dim4;
 using namespace detail;
+using namespace std;
 
 template<typename T>
 static af_array createHandle(af::dim4 d)
@@ -134,6 +136,58 @@ af_err af_constant(af_array *result, const double value,
     }
     CATCHALL
         return ret;
+}
+
+template<typename To, typename Ti>
+static inline af_array complexOp(const af_array lhs, const af_array rhs)
+{
+    return getHandle(*complexOp<To, Ti>(getArray<Ti>(lhs), getArray<Ti>(rhs)));
+}
+
+af_err af_constant_c64(af_array *result, const void* value,
+                       const unsigned ndims, const dim_type * const dims)
+{
+    af_err ret = AF_ERR_ARG;
+    af_array out_real;
+    af_array out_imag;
+    af_array out;
+    try {
+        cdouble cval = *(cdouble*)value;
+        dim4 d((size_t)dims[0]);
+        for(unsigned i = 1; i < ndims; i++) {
+            d[i] = dims[i];
+        }
+        out_real = createHandle<double>(d, real(cval));
+        out_imag = createHandle<double>(d, imag(cval));
+        out = complexOp<cdouble, double>(out_real, out_imag);
+        std::swap(*result, out);
+        ret = AF_SUCCESS;
+    }
+    CATCHALL
+    return ret;
+}
+
+af_err af_constant_c32(af_array *result, const void* value,
+                       const unsigned ndims, const dim_type * const dims)
+{
+    af_err ret = AF_ERR_ARG;
+    af_array out_real;
+    af_array out_imag;
+    af_array out;
+    try {
+        cfloat cval = *(cfloat*)value;
+        dim4 d((size_t)dims[0]);
+        for(unsigned i = 1; i < ndims; i++) {
+            d[i] = dims[i];
+        }
+        out_real = createHandle<float>(d, real(cval));
+        out_imag = createHandle<float>(d, imag(cval));
+        out = complexOp<cfloat, float>(out_real, out_imag);
+        std::swap(*result, out);
+        ret = AF_SUCCESS;
+    }
+    CATCHALL
+    return ret;
 }
 
 //Strong Exception Guarantee

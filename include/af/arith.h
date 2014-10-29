@@ -2,6 +2,66 @@
 #include "array.h"
 
 #ifdef __cplusplus
+namespace af
+{
+    class array;
+
+    AFAPI array min    (const array &lhs, const array &rhs);
+    AFAPI array max    (const array &lhs, const array &rhs);
+
+    AFAPI array cplx2  (const array &lhs, const array &rhs);
+    AFAPI array atan2  (const array &lhs, const array &rhs);
+
+    AFAPI array pow    (const array &lhs, const array &rhs);
+    AFAPI array pow    (const array &lhs, const double rhs);
+    AFAPI array rem    (const array &lhs, const array &rhs);
+    AFAPI array mod    (const array &lhs, const array &rhs);
+
+    AFAPI array cplx   (const array &in);
+    AFAPI array abs    (const array &in);
+
+    AFAPI array round  (const array &in);
+    AFAPI array floor  (const array &in);
+    AFAPI array ceil   (const array &in);
+
+    AFAPI array sin    (const array &in);
+    AFAPI array cos    (const array &in);
+    AFAPI array tan    (const array &in);
+
+    AFAPI array asin   (const array &in);
+    AFAPI array acos   (const array &in);
+    AFAPI array atan   (const array &in);
+
+    AFAPI array sinh   (const array &in);
+    AFAPI array cosh   (const array &in);
+    AFAPI array tanh   (const array &in);
+
+    AFAPI array asinh  (const array &in);
+    AFAPI array acosh  (const array &in);
+    AFAPI array atanh  (const array &in);
+
+    AFAPI array exp    (const array &in);
+    AFAPI array expm1  (const array &in);
+    AFAPI array erf    (const array &in);
+    AFAPI array erfc   (const array &in);
+
+    AFAPI array log    (const array &in);
+    AFAPI array log1p  (const array &in);
+    AFAPI array log10  (const array &in);
+
+    AFAPI array sqrt   (const array &in);
+    AFAPI array cbrt   (const array &in);
+
+    AFAPI array iszero (const array &in);
+    AFAPI array isinf  (const array &in);
+    AFAPI array isnan  (const array &in);
+
+    AFAPI array tgamma (const array &in);
+    AFAPI array lgamma (const array &in);
+}
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -10,15 +70,15 @@ extern "C" {
     AFAPI af_err af_mul   (af_array *result, const af_array lhs, const af_array rhs);
     AFAPI af_err af_div   (af_array *result, const af_array lhs, const af_array rhs);
 
-    AFAPI af_err af_minof (af_array *result, const af_array lhs, const af_array rhs);
-    AFAPI af_err af_maxof (af_array *result, const af_array lhs, const af_array rhs);
-
     AFAPI af_err af_lt    (af_array *result, const af_array lhs, const af_array rhs);
     AFAPI af_err af_gt    (af_array *result, const af_array lhs, const af_array rhs);
     AFAPI af_err af_le    (af_array *result, const af_array lhs, const af_array rhs);
     AFAPI af_err af_ge    (af_array *result, const af_array lhs, const af_array rhs);
     AFAPI af_err af_eq    (af_array *result, const af_array lhs, const af_array rhs);
     AFAPI af_err af_neq   (af_array *result, const af_array lhs, const af_array rhs);
+
+    AFAPI af_err af_minof (af_array *result, const af_array lhs, const af_array rhs);
+    AFAPI af_err af_maxof (af_array *result, const af_array lhs, const af_array rhs);
 
     AFAPI af_err af_cplx2 (af_array *result, const af_array lhs, const af_array rhs);
     AFAPI af_err af_atan2 (af_array *result, const af_array lhs, const af_array rhs);
