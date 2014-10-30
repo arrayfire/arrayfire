@@ -167,3 +167,41 @@ TYPED_TEST(Transpose,SubRefBatch)
 {
     trsTest<TypeParam>(string(TEST_DIR"/transpose/offset_batch.test"),true,&(this->subMat3D));
 }
+
+
+////////////////////////////////////// CPP //////////////////////////////////
+//
+TEST(Transpose, CPP)
+{
+    vector<af::dim4> numDims;
+
+    vector<vector<float>>   in;
+    vector<vector<float>>   tests;
+    readTests<float,float,int>(string(TEST_DIR"/transpose/rectangle_batch2.test"),numDims,in,tests);
+    af::dim4 dims       = numDims[0];
+
+    int nDevices = af::getDeviceCount();
+
+    for(int d=0; d<nDevices; ++d) {
+
+        af::setDevice(d);
+        af::info();
+
+        af::array input(dims, &(in[0].front()));
+        af::array output = af::transpose(input);
+
+        float *outData = new float[dims.elements()];
+        output.host((void*)outData);
+
+        for (size_t testIter=0; testIter<tests.size(); ++testIter) {
+            vector<float> currGoldBar = tests[testIter];
+            size_t nElems = currGoldBar.size();
+            for (size_t elIter=0; elIter<nElems; ++elIter) {
+                ASSERT_EQ(currGoldBar[elIter],outData[elIter])<< "at: " << elIter<< std::endl;
+            }
+        }
+
+        // cleanup
+        delete[] outData;
+    }
+}

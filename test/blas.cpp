@@ -24,8 +24,7 @@ typedef ::testing::Types<float, af::af_cfloat, double, af::af_cdouble> TestTypes
 TYPED_TEST_CASE(MatrixMultiply, TestTypes);
 
 template<typename T, bool isBVector = false>
-void
-MatMulCheck(string TestFile)
+void MatMulCheck(string TestFile)
 {
     using std::vector;
     vector<af::dim4> numDims;
@@ -107,3 +106,81 @@ TYPED_TEST(MatrixMultiply, RectangleVector)
     MatMulCheck<TypeParam, true>(TEST_DIR"/blas/RectangleVector.test");
 }
 
+template<typename T, bool isBVector = false>
+void cppMatMulCheck(string TestFile)
+{
+    using std::vector;
+    vector<af::dim4> numDims;
+
+    vector<vector<T>> hData;
+    vector<vector<T>> tests;
+    readTests<T,T,int>(TestFile, numDims, hData, tests);
+
+    af::array a(numDims[0], &hData[0].front());
+    af::array b(numDims[1], &hData[1].front());
+
+    af::dim4 atdims = numDims[0];
+    {
+        dim_type f  =    atdims[0];
+        atdims[0]   =    atdims[1];
+        atdims[1]   =    f;
+    }
+    af::dim4 btdims = numDims[1];
+    {
+        dim_type f = btdims[0];
+        btdims[0] = btdims[1];
+        btdims[1] = f;
+    }
+
+    af::array aT = moddims(a, atdims.ndims(), atdims.get());
+    af::array bT = moddims(b, btdims.ndims(), btdims.get());
+
+    vector<af::array> out(tests.size());
+    if(isBVector) {
+        out[0] = af::matmul(aT, b,    AF_NO_TRANSPOSE,    AF_NO_TRANSPOSE);
+        out[1] = af::matmul(bT, a,   AF_NO_TRANSPOSE,    AF_NO_TRANSPOSE);
+        out[2] = af::matmul(b, a,    AF_TRANSPOSE,       AF_NO_TRANSPOSE);
+        out[3] = af::matmul(bT, aT,   AF_NO_TRANSPOSE,    AF_TRANSPOSE);
+        out[4] = af::matmul(b, aT,    AF_TRANSPOSE,       AF_TRANSPOSE);
+    }
+    else {
+        out[0] = af::matmul(a, b, AF_NO_TRANSPOSE,   AF_NO_TRANSPOSE);
+        out[1] = af::matmul(a, bT, AF_NO_TRANSPOSE,   AF_TRANSPOSE);
+        out[2] = af::matmul(a, bT, AF_TRANSPOSE,      AF_NO_TRANSPOSE);
+        out[3] = af::matmul(aT, bT, AF_TRANSPOSE,      AF_TRANSPOSE);
+    }
+
+    for(size_t i = 0; i < tests.size(); i++) {
+        dim_type elems = out[i].elements();
+        vector<T> h_out(elems);
+        out[i].host((void*)&h_out.front());
+
+        if (false == equal(h_out.begin(), h_out.end(), tests[i].begin())) {
+
+            cout << "Failed test " << i << "\nCalculated: " << endl;
+            cout << "Expected: " << endl;
+            copy(tests[i].begin(), tests[i].end(), ostream_iterator<T>(cout, ", "));
+            FAIL();
+        }
+    }
+}
+
+TYPED_TEST(MatrixMultiply, Square_CPP)
+{
+    cppMatMulCheck<TypeParam>(TEST_DIR"/blas/Basic.test");
+}
+
+TYPED_TEST(MatrixMultiply, NonSquare_CPP)
+{
+    cppMatMulCheck<TypeParam>(TEST_DIR"/blas/NonSquare.test");
+}
+
+TYPED_TEST(MatrixMultiply, SquareVector_CPP)
+{
+    cppMatMulCheck<TypeParam, true>(TEST_DIR"/blas/SquareVector.test");
+}
+
+TYPED_TEST(MatrixMultiply, RectangleVector_CPP)
+{
+    cppMatMulCheck<TypeParam, true>(TEST_DIR"/blas/RectangleVector.test");
+}

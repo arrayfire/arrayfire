@@ -326,3 +326,58 @@ TYPED_TEST(Morph, ErodeVolumeInvalidMask)
 {
     morph3DMaskTest<TypeParam,false>();
 }
+
+
+////////////////////////////////////// CPP //////////////////////////////////
+//
+template<typename T, bool isDilation, bool isColor>
+void cppMorphImageTest(string pTestFile)
+{
+    using af::dim4;
+
+    vector<dim4>       inDims;
+    vector<string>    inFiles;
+    vector<dim_type> outSizes;
+    vector<string>   outFiles;
+
+    readImageTests(pTestFile, inDims, inFiles, outSizes, outFiles);
+
+    size_t testCount = inDims.size();
+
+    for (size_t testId=0; testId<testCount; ++testId) {
+        inFiles[testId].insert(0,string(TEST_DIR"/morph/"));
+        outFiles[testId].insert(0,string(TEST_DIR"/morph/"));
+
+        af::array mask = af::constant(1.0, 3, 3);
+        af::array img = af::loadImage(inFiles[testId].c_str(), isColor);
+        af::array gold = af::loadImage(outFiles[testId].c_str(), isColor);
+        dim_type nElems   = gold.elements();
+        af::array output;
+
+        if (isDilation)
+            output = dilate(img, mask);
+        else
+            output = erode(img, mask);
+
+        T * outData = new T[nElems];
+        output.host((void*)outData);
+
+        T * goldData= new T[nElems];
+        gold.host((void*)goldData);
+
+        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData, outData, 0.018f));
+        //cleanup
+        delete[] outData;
+        delete[] goldData;
+    }
+}
+
+TEST(Morph, Grayscale_CPP)
+{
+    cppMorphImageTest<float, true, false>(string(TEST_DIR"/morph/gray.test"));
+}
+
+TEST(Morph, ColorImage_CPP)
+{
+    cppMorphImageTest<float, false, true>(string(TEST_DIR"/morph/color.test"));
+}

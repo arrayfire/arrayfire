@@ -98,3 +98,35 @@ TYPED_TEST(Histogram,256Bins0min255max_zeros)
 {
     histTest<TypeParam,uint>(string(TEST_DIR"/histogram/256bin0min0max.test"),256,0,255);
 }
+
+/////////////////////////////////// CPP //////////////////////////////////
+//
+TEST(Histogram, CPP)
+{
+    const unsigned nbins = 100;
+    const double minval = 0.0;
+    const double maxval = 99.0;
+
+    vector<af::dim4> numDims;
+
+    vector<vector<float>>  in;
+    vector<vector<uint>> tests;
+    readTests<float,uint,int>(string(TEST_DIR"/histogram/100bin0min99max.test"),numDims,in,tests);
+
+    af::array input(numDims[0], &(in[0].front()));
+    af::array output = histogram(input, nbins, minval, maxval);
+
+    uint *outData = new uint[output.elements()];
+    output.host((void*)outData);
+
+    for (size_t testIter=0; testIter<tests.size(); ++testIter) {
+        vector<uint> currGoldBar = tests[testIter];
+        size_t nElems        = currGoldBar.size();
+        for (size_t elIter=0; elIter<nElems; ++elIter) {
+            ASSERT_EQ(currGoldBar[elIter],outData[elIter])<< "at: " << elIter<< std::endl;
+        }
+    }
+
+    // cleanup
+    delete[] outData;
+}

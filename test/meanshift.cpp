@@ -104,3 +104,39 @@ void meanshiftTest(string pTestFile)
 
 IMAGE_TESTS(float )
 IMAGE_TESTS(double)
+
+
+//////////////////////////////////////// CPP ///////////////////////////////
+//
+TEST(Meanshift, Color_CPP)
+{
+    vector<dim4>       inDims;
+    vector<string>    inFiles;
+    vector<dim_type> outSizes;
+    vector<string>   outFiles;
+
+    readImageTests(string(TEST_DIR"/meanshift/color.test"), inDims, inFiles, outSizes, outFiles);
+
+    size_t testCount = inDims.size();
+
+    for (size_t testId=0; testId<testCount; ++testId) {
+        inFiles[testId].insert(0,string(TEST_DIR"/meanshift/"));
+        outFiles[testId].insert(0,string(TEST_DIR"/meanshift/"));
+
+        af::array img   = af::loadImage(inFiles[testId].c_str(), true);
+        af::array gold  = af::loadImage(outFiles[testId].c_str(), true);
+        dim_type nElems = gold.elements();
+        af::array output= af::meanshift(img, 2.25f, 25.56f, 5, true);
+
+        float * outData = new float[nElems];
+        output.host((void*)outData);
+
+        float * goldData= new float[nElems];
+        gold.host((void*)goldData);
+
+        ASSERT_EQ(true, compareArraysRMSD(nElems, goldData, outData, 0.07f));
+        // cleanup
+        delete[] outData;
+        delete[] goldData;
+    }
+}

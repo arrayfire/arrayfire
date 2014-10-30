@@ -98,3 +98,46 @@ void gradTest(string pTestFile, const unsigned resultIdx0, const unsigned result
     GRAD_INIT(Grad0, grad, 0, 1);
     GRAD_INIT(Grad1, grad2D, 0, 1);
     GRAD_INIT(Grad2, grad3D, 0, 1);
+
+
+/////////////////////////////////////// CPP ///////////////////////////////////////////
+//
+TEST(Grad, CPP)
+{
+    const unsigned resultIdx0 = 0;
+    const unsigned resultIdx1 = 1;
+
+    vector<af::dim4> numDims;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
+    readTests<float, float, float>(string(TEST_DIR"/grad/grad3D.test"),numDims,in,tests);
+
+    af::dim4 idims = numDims[0];
+
+    af::array input(idims, &(in[0].front()));
+    af::array g0, g1;
+    af::grad(g0, g1, input);
+
+    size_t nElems = tests[resultIdx0].size();
+    // Get result
+    float* grad0Data = new float[tests[resultIdx0].size()];
+    g0.host((void*)grad0Data);
+
+    // Compare result
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(tests[resultIdx0][elIter], grad0Data[elIter]) << "at: " << elIter << std::endl;
+    }
+
+    // Get result
+    float* grad1Data = new float[tests[resultIdx1].size()];
+    g1.host((void*)grad1Data);
+
+    // Compare result
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(tests[resultIdx1][elIter], grad1Data[elIter]) << "at: " << elIter << std::endl;
+    }
+
+    // Delete
+    delete[] grad0Data;
+    delete[] grad1Data;
+}
