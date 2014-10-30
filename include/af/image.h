@@ -38,7 +38,7 @@ AFAPI array erode(const array& in, const array& mask);
 
 AFAPI array erode3d(const array& in, const array& mask);
 
-AFAPI std::pair<array, array> gradient(const array& in);
+AFAPI void grad(array& rows, array& cols, const array& in);
 
 }
 #endif
