@@ -9,11 +9,13 @@ Do not forget to include `--recursive` as this clones the dependent libraries.
 ## Requirements
 
 ### General
+
 * gcc >= 4.7 (gcc, g++)
 * cmake >= 2.8.9 (cmake, cmake-curses-gui)
 * git >= 1.8
 * svn >= 1.6 (subversion)
 * freeimage (libfreeimage-dev)
+* Linux / OSX (Windows coming soon)
 
 ### CPU Backend
 * atlas on Linux (libatlas3gf-base, libatlas-dev)
