@@ -15,7 +15,7 @@ namespace af
     array& array::operator=(const array &other)
     {
         if (isRef) {
-            AF_THROW(af_assign(arr, other.numdims(), s, other.get()));
+            AF_THROW(af_assign(arr, numdims(), s, other.get()));
             isRef = false;
         } else {
             if (this->get() == other.get()) {
