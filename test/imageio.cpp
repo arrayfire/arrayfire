@@ -93,3 +93,30 @@ TYPED_TEST(ImageIO,InvalidArgsWrongExt)
 {
     loadimageArgsTest(string(TEST_DIR"/imageio/image.wrongext"), true);
 }
+
+////////////////////////////////// CPP //////////////////////////////////////
+//
+TEST(ImageIO, CPP)
+{
+    vector<af::dim4> numDims;
+
+    vector<vector<float>>   in;
+    vector<vector<float>>   tests;
+    readTests<float, float, float>(string(TEST_DIR"/imageio/color_small.test"),numDims,in,tests);
+
+    af::dim4 dims = numDims[0];
+    af::array img = af::loadImage(string(TEST_DIR"/imageio/color_small.png").c_str(), true);
+
+    // Get result
+    float *imgData = new float[dims.elements()];
+    img.host((void*)imgData);
+
+    // Compare result
+    size_t nElems = in[0].size();
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(in[0][elIter], imgData[elIter]) << "at: " << elIter << std::endl;
+    }
+
+    // Delete
+    delete[] imgData;
+}

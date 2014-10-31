@@ -84,3 +84,34 @@ void regionsTest(string pTestFile, af_connectivity_type connectivity, bool isSub
     REGIONS_INIT(Regions1, regions_8x8, 8, AF_CONNECTIVITY_8);
     REGIONS_INIT(Regions2, regions_128x128, 4, AF_CONNECTIVITY_4);
     REGIONS_INIT(Regions3, regions_128x128, 8, AF_CONNECTIVITY_8);
+
+
+///////////////////////////////////// CPP ////////////////////////////////
+//
+TEST(Regions, CPP)
+{
+    vector<af::dim4> numDims;
+    vector<vector<uchar>> in;
+    vector<vector<float>> tests;
+    readTests<uchar, float, unsigned>(string(TEST_DIR"/regions/regions_8x8_4.test"),numDims,in,tests);
+
+    af::dim4 idims = numDims[0];
+    af::array input(idims, (float*)&(in[0].front()));
+    af::array output = af::regions(input);
+
+    // Get result
+    float* outData = new float[idims.elements()];
+    output.host((void*)outData);
+
+    // Compare result
+    for (size_t testIter = 0; testIter < tests.size(); ++testIter) {
+        vector<float> currGoldBar = tests[testIter];
+        size_t nElems = currGoldBar.size();
+        for (size_t elIter = 0; elIter < nElems; ++elIter) {
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter << std::endl;
+        }
+    }
+
+    // Delete
+    delete[] outData;
+}

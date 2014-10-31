@@ -133,3 +133,14 @@ TYPED_TEST(Random,InvalidArgs)
 {
     randuArgsTest<TypeParam>();
 }
+
+////////////////////////////////////// CPP /////////////////////////////////////
+//
+TEST(Random, CPP)
+{
+    // TEST will fail if exception is thrown, which are thrown
+    // when only wrong inputs are thrown on bad access happens
+    af::dim4 dims(1, 2, 3, 1);
+    af::array out1 = af::randu(dims);
+    af::array out2 = af::randn(dims);
+}

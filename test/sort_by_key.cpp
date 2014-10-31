@@ -108,3 +108,49 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
     // Takes too much time in current implementation. Enable when everything is parallel
     //SORT_INIT(SortLargeTrue,  sort_by_key_large, true,  0, 1);
     //SORT_INIT(SortLargeFalse, sort_by_key_large, false, 2, 3);
+
+
+
+
+////////////////////////////////////// CPP ///////////////////////////////
+//
+TEST(SortByKey, CPP)
+{
+    const bool dir = true;
+    const unsigned resultIdx0 = 0;
+    const unsigned resultIdx1 = 1;
+
+    vector<af::dim4> numDims;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
+    readTests<float, float, int>(string(TEST_DIR"/sort/sort_by_key_tiny.test"),numDims,in,tests);
+
+    af::dim4 idims = numDims[0];
+    af::array keys(idims, &(in[0].front()));
+    af::array vals(idims, &(in[1].front()));
+    af::array out_keys, out_vals;
+    sort_by_key(out_keys, out_vals, keys, vals, 0, dir);
+
+    size_t nElems = tests[resultIdx0].size();
+    // Get result
+    float* keyData = new float[tests[resultIdx0].size()];
+    out_keys.host((void*)keyData);
+
+    // Compare result
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(tests[resultIdx0][elIter], keyData[elIter]) << "at: " << elIter << std::endl;
+    }
+
+    float* valData = new float[tests[resultIdx1].size()];
+    out_vals.host((void*)valData);
+
+    // Compare result
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(tests[resultIdx1][elIter], valData[elIter]) << "at: " << elIter << std::endl;
+    }
+
+    // Delete
+    delete[] keyData;
+    delete[] valData;
+}
+

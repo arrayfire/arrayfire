@@ -99,3 +99,37 @@ void shiftTest(string pTestFile, const unsigned resultIdx,
     SHIFT_INIT(Shift12, shift4d, 12,  -1, -1, -1, -1);
     SHIFT_INIT(Shift13, shift4d, 13,  21, 21, 21, 21);
     SHIFT_INIT(Shift14, shift4d, 14, -21,-21,-21,-21);
+
+
+////////////////////////////////// CPP ///////////////////////////////////
+//
+TEST(Shift, CPP)
+{
+    const unsigned resultIdx = 0;
+    const unsigned x = 2;
+    const unsigned y = 0;
+    const unsigned z = 0;
+    const unsigned w = 0;
+
+    vector<af::dim4> numDims;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
+    readTests<float, float, int>(string(TEST_DIR"/shift/shift4d.test"),numDims,in,tests);
+
+    af::dim4 idims = numDims[0];
+    af::array input(idims, &(in[0].front()));
+    af::array output = af::shift(input, x, y, z, w);
+
+    // Get result
+    float* outData = new float[tests[resultIdx].size()];
+    output.host((void*)outData);
+
+    // Compare result
+    size_t nElems = tests[resultIdx].size();
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
+    }
+
+    // Delete
+    delete[] outData;
+}

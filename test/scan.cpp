@@ -121,3 +121,50 @@ TEST(Scan,Test_Scan_Big1)
         1
         );
 }
+
+///////////////////////////////// CPP ////////////////////////////////////
+//
+TEST(Scan, CPP)
+{
+    vector<af::dim4> numDims;
+
+    vector<vector<int>> data;
+    vector<vector<int>> tests;
+    readTests<int,int,int> (string(TEST_DIR"/scan/accum.test"),numDims,data,tests);
+    af::dim4 dims       = numDims[0];
+
+    vector<float> in(data[0].begin(), data[0].end());
+
+    int nDevices = af::getDeviceCount();;
+
+    for (int dev = 0; dev < nDevices; dev++) {
+
+        af::setDevice(dev);
+
+        af::array input(dims, &(in.front()));
+
+        // Compare result
+        for (int d = 0; d < (int)tests.size(); ++d) {
+            vector<float> currGoldBar(tests[d].begin(), tests[d].end());
+
+            // Run sum
+            af::array output = af::accum(input, d);
+
+            // Get result
+            float *outData;
+            outData = new float[dims.elements()];
+            output.host((void*)outData);
+
+            size_t nElems = currGoldBar.size();
+            for (size_t elIter = 0; elIter < nElems; ++elIter) {
+                ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                                << " for dim " << d
+                                                                << " for device " << dev
+                                                                << std::endl;
+            }
+
+            // Delete
+            delete[] outData;
+        }
+    }
+}
