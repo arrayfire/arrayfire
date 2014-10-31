@@ -109,3 +109,37 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, bool 
     //SORT_INIT(SortMed5False,  sort_med,   false, 2);
     //SORT_INIT(SortLargeTrue,  sort_large, true,  0);
     //SORT_INIT(SortLargeFalse, sort_large, false, 2);
+
+
+////////////////////////////////////// CPP ////////////////////////////////
+//
+TEST(Sort, CPP)
+{
+    const bool dir = true;
+    const unsigned resultIdx0 = 0;
+
+    vector<af::dim4> numDims;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
+    readTests<float, float, int>(string(TEST_DIR"/sort/sort_10x10.test"),numDims,in,tests);
+
+    af::dim4 idims = numDims[0];
+    af::array input(idims, &(in[0].front()));
+
+    af::array output = af::sort(input, 0, dir);
+
+    size_t nElems = tests[resultIdx0].size();
+
+    // Get result
+    float* sxData = new float[tests[resultIdx0].size()];
+    output.host((void*)sxData);
+
+    // Compare result
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(tests[resultIdx0][elIter], sxData[elIter]) << "at: " << elIter << std::endl;
+    }
+
+    // Delete
+    delete[] sxData;
+}
+

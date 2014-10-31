@@ -44,8 +44,8 @@ void infoTest()
 
     for(int d = 0; d < nDevices; d++) {
 
-        ASSERT_EQ(AF_SUCCESS, af_set_device(d));
-        ASSERT_EQ(AF_SUCCESS, af_info());
+        af::setDevice(d);
+        af::info();
 
         af_array outArray = 0;
         af::dim4 dims(32, 32, 1, 1);

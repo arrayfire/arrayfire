@@ -204,3 +204,41 @@ void approx2ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const 
 
     APPROX2_ARGSP(Approx2NearestArgsPrecision, approx2, 0, AF_INTERP_NEAREST);
     APPROX2_ARGSP(Approx2LinearArgsPrecision, approx2, 1, AF_INTERP_LINEAR);
+
+
+//////////////////////////////////// CPP ////////////////////////////////////
+//
+TEST(Approx2, CPP)
+{
+    const unsigned resultIdx = 1;
+
+    typedef typename af::dtype_traits<float>::base_type BT;
+    vector<af::dim4> numDims;
+    vector<vector<BT>> in;
+    vector<vector<float>> tests;
+    readTests<BT, float, float>(string(TEST_DIR"/approx/approx2.test"),numDims,in,tests);
+
+    af::dim4 idims = numDims[0];
+    af::dim4 pdims = numDims[1];
+    af::dim4 qdims = numDims[2];
+
+    af::array input(idims,&(in[0].front()));
+    af::array pos0(pdims,&(in[1].front()));
+    af::array pos1(qdims,&(in[2].front()));
+    af::array output = af::approx2(input, pos0, pos1, AF_INTERP_LINEAR, 0);
+
+    // Get result
+    float* outData = new float[tests[resultIdx].size()];
+    output.host((void*)outData);
+
+    // Compare result
+    size_t nElems = tests[resultIdx].size();
+    bool ret = true;
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ret = (std::abs(tests[resultIdx][elIter] - outData[elIter]) < 0.0001);
+        ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
+    }
+
+    // Delete
+    delete[] outData;
+}

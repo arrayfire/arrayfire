@@ -36,15 +36,11 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
     ARG_ASSERT(0, (outDs.ndims()>=iDims.ndims()));
     ARG_ASSERT(1, (ndims==outDs.ndims()));
 
+    vector<af_seq> index_(index, index+ndims);
+
     dim4 const oStrides = oInfo.strides();
-    dim4 oDims(1);
-    dim4 oOffsets(0, 0, 0, 0);
-    for (dim_type i=0; i<ndims; ++i) {
-        dim_type step = index[i].step;
-        // do additional +1 since ends are included in sequence
-        oDims[i] = (step==0 ? iDims[i] : (index[i].end - index[i].begin + 1)/step);
-        oOffsets[i] = index[i].begin;
-    }
+    dim4 oDims = af::toDims(index_, iDims);
+    dim4 oOffsets = af::toOffset(index_);
 
     Array<T> *dst = createRefArray<T>(getArray<T>(out), oDims, oOffsets, oStrides);
 

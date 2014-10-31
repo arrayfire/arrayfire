@@ -246,128 +246,53 @@ namespace af
         return info.isInteger();
     }
 
-    array constant(double val, const dim4 &dims, af_dtype type)
-    {
-        af_array res;
-        AF_THROW(af_constant(&res, val, dims.ndims(), dims.get(), type));
-        return array(res);
-    }
-
-    array constant(af_cdouble val, const dim4 &dims)
-    {
-        double val_[] = {real(val), imag(val)};
-        af_array res;
-        AF_THROW(af_constant_c64(&res, val_, dims.ndims(), dims.get()));
-        return array(res);
-    }
-
-    array constant(af_cfloat val, const dim4 &dims)
-    {
-        float val_[] = {real(val), imag(val)};
-        af_array res;
-        AF_THROW(af_constant_c32(&res, val_, dims.ndims(), dims.get()));
-        return array(res);
-    }
-
-    array constant(double val, const dim_type d0, af_dtype ty)
-    {
-        return constant(val, dim4(d0), ty);
-    }
-
-    array constant(double val, const dim_type d0,
-                         const dim_type d1, af_dtype ty)
-    {
-        return constant(val, dim4(d0, d1), ty);
-    }
-
-    array constant(double val, const dim_type d0,
-                         const dim_type d1, const dim_type d2, af_dtype ty)
-    {
-        return constant(val, dim4(d0, d1, d2), ty);
-    }
-
-    array constant(double val, const dim_type d0,
-                         const dim_type d1, const dim_type d2,
-                         const dim_type d3, af_dtype ty)
-    {
-        return constant(val, dim4(d0, d1, d2, d3), ty);
-    }
-
-
-    array randu(const dim4 &dims, af_dtype type)
-    {
-        af_array res;
-        AF_THROW(af_randu(&res, dims.ndims(), dims.get(), type));
-        return array(res);
-    }
-
-    array randu(const dim_type d0, af_dtype ty)
-    {
-        return randu(dim4(d0), ty);
-    }
-
-    array randu(const dim_type d0,
-                const dim_type d1, af_dtype ty)
-    {
-        return randu(dim4(d0, d1), ty);
-    }
-
-    array randu(const dim_type d0,
-                const dim_type d1, const dim_type d2, af_dtype ty)
-    {
-        return randu(dim4(d0, d1, d2), ty);
-    }
-
-    array randu(const dim_type d0,
-                const dim_type d1, const dim_type d2,
-                const dim_type d3, af_dtype ty)
-    {
-        return randu(dim4(d0, d1, d2, d3), ty);
-    }
-
-    array randn(const dim4 &dims, af_dtype type)
-    {
-        af_array res;
-        AF_THROW(af_randn(&res, dims.ndims(), dims.get(), type));
-        return array(res);
-    }
-
-    array randn(const dim_type d0, af_dtype ty)
-    {
-        return randn(dim4(d0), ty);
-    }
-
-    array randn(const dim_type d0,
-                const dim_type d1, af_dtype ty)
-    {
-        return randn(dim4(d0, d1), ty);
-    }
-
-    array randn(const dim_type d0,
-                const dim_type d1, const dim_type d2, af_dtype ty)
-    {
-        return randn(dim4(d0, d1, d2), ty);
-    }
-
-    array randn(const dim_type d0,
-                const dim_type d1, const dim_type d2,
-                const dim_type d3, af_dtype ty)
-    {
-        return randn(dim4(d0, d1, d2, d3), ty);
-    }
-
     array::array(af_array in, af_seq *seqs) : arr(in), isRef(true)
     {
         for(int i=0; i<4; ++i) s[i] = seqs[i];
     }
 
-    array array::operator()(const af_seq& s0, const af_seq& s1, const af_seq& s2, const af_seq& s3)
+    array array::operator()(const af_seq& s0, const af_seq& s1, const af_seq& s2, const af_seq& s3) const
     {
         af_array out = 0;
         af_seq indices[] = {s0, s1, s2, s3};
         //FIXME: check if this->s has same dimensions as numdims
         AF_THROW(af_weak_copy(&out, this->get()));
         return array(out, indices);
+    }
+    array array::row(size_t index) const
+    {
+        af_seq idx = {index, index, 1};
+        return this->operator()(idx, span, span, span);
+    }
+
+    array array::col(size_t index) const
+    {
+        af_seq idx = {index, index, 1};
+        return this->operator()(span, idx, span, span);
+    }
+
+    array array::slice(size_t index) const
+    {
+        af_seq idx = {index, index, 1};
+        return this->operator()(span, span, idx, span);
+    }
+
+    array array::rows(size_t first, size_t last) const
+    {
+        af_seq idx = {first, last, 1};
+        return this->operator()(idx, span, span, span);
+    }
+
+    array array::cols(size_t first, size_t last) const
+    {
+        af_seq idx = {first, last, 1};
+        return this->operator()(span, idx, span, span);
+    }
+
+    array array::slices(size_t first, size_t last) const
+    {
+        af_seq idx = {first, last, 1};
+        return this->operator()(span, span, idx, span);
     }
 
     array array::as(af_dtype type) const
@@ -380,6 +305,74 @@ namespace af
     array::array(const array& in) : arr(0), isRef(false)
     {
         AF_THROW(af_weak_copy(&arr, in.get()));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Operator =
+    ///////////////////////////////////////////////////////////////////////////
+    array& array::operator=(const array &other)
+    {
+        if (isRef) {
+            AF_THROW(af_assign(arr, numdims(), s, other.get()));
+            isRef = false;
+        } else {
+            if (this->get() == other.get()) {
+                return *this;
+            }
+            if(this->get() != 0) {
+                AF_THROW(af_destroy_array(this->get()));
+            }
+
+            af_array temp = 0;
+            AF_THROW(af_weak_copy(&temp, other.get()));
+            this->arr = temp;
+        }
+        return *this;
+    }
+
+    array& array::operator=(const double &value)
+    {
+        if (isRef) {
+            array cst = constant(value, this->dims(), this->type());
+            AF_THROW(af_assign(arr, numdims(), s, cst.get()));
+            isRef = false;
+        } else {
+            if(this->get() != 0) {
+                AF_THROW(af_destroy_array(this->get()));
+            }
+            AF_THROW(af_constant(&arr, value, numdims(), dims().get(), type()));
+        }
+        return *this;
+    }
+
+    array& array::operator=(const af_cdouble &value)
+    {
+        if (isRef) {
+            array cst = constant(value, this->dims());
+            AF_THROW(af_assign(arr, numdims(), s, cst.get()));
+            isRef = false;
+        } else {
+            if(this->get() != 0) {
+                AF_THROW(af_destroy_array(this->get()));
+            }
+            AF_THROW(af_constant_c64(&arr, (const void*)&value, numdims(), dims().get()));
+        }
+        return *this;
+    }
+
+    array& array::operator=(const af_cfloat &value)
+    {
+        if (isRef) {
+            array cst = constant(value, this->dims());
+            AF_THROW(af_assign(arr, numdims(), s, cst.get()));
+            isRef = false;
+        } else {
+            if(this->get() != 0) {
+                AF_THROW(af_destroy_array(this->get()));
+            }
+            AF_THROW(af_constant_c32(&arr, (const void*)&value, numdims(), dims().get()));
+        }
+        return *this;
     }
 
 #define INSTANTIATE(T)  \
@@ -402,33 +395,4 @@ namespace af
 
 #undef INSTANTIATE
 
-    array iota(const dim4 &dims, const unsigned rep, af_dtype ty)
-    {
-        af_array out;
-        AF_THROW(af_iota(&out, dims.ndims(), dims.get(), rep, ty));
-        return array(out);
-    }
-
-    array iota(const dim_type d0, const unsigned rep, af_dtype ty)
-    {
-        return iota(dim4(d0), rep, ty);
-    }
-
-    array iota(const dim_type d0, const dim_type d1,
-               const unsigned rep, af_dtype ty)
-    {
-        return iota(dim4(d0, d1), rep, ty);
-    }
-
-    array iota(const dim_type d0, const dim_type d1, const dim_type d2,
-               const unsigned rep, af_dtype ty)
-    {
-        return iota(dim4(d0, d1, d2), rep, ty);
-    }
-
-    array iota(const dim_type d0, const dim_type d1, const dim_type d2,
-               const dim_type d3, const unsigned rep, af_dtype ty)
-    {
-        return iota(dim4(d0, d1, d2, d3), rep, ty);
-    }
 }

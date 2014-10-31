@@ -397,3 +397,61 @@ TEST(Convolve, Separable_DimCheck)
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(r_filter));
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(signal));
 }
+
+
+TEST(Convolve, CPP)
+{
+    using af::dim4;
+
+    vector<dim4>      numDims;
+    vector<vector<float>>      in;
+    vector<vector<float>>   tests;
+
+    readTests<float, float, int>(string(TEST_DIR"/convolve/cuboid_same_many2many.test"), numDims, in, tests);
+
+    af::array signal(numDims[0], &(in[0].front()));
+    af::array filter(numDims[1], &(in[1].front()));
+
+    af::array output = convolve3(signal, filter, false);
+
+    vector<float> currGoldBar = tests[0];
+    size_t nElems  = output.elements();
+    float *outData = new float[nElems];
+    output.host(outData);
+
+    for (size_t elIter=0; elIter<nElems; ++elIter) {
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+    }
+
+    delete[] outData;
+}
+
+TEST(Convolve, separable_CPP)
+{
+    using af::dim4;
+
+    vector<dim4>      numDims;
+    vector<vector<float>>      in;
+    vector<vector<float>>   tests;
+
+    readTests<float, float, int>(string(TEST_DIR"/convolve/separable_conv2d_same_rectangle_batch.test"),
+                                 numDims, in, tests);
+
+    af::array signal(numDims[0], &(in[0].front()));
+    af::array cFilter(numDims[1], &(in[1].front()));
+    af::array rFilter(numDims[2], &(in[2].front()));
+
+    af::array output = convolve2(signal, cFilter, rFilter, false);
+
+    vector<float> currGoldBar = tests[0];
+    size_t nElems  = output.elements();
+    float *outData = new float[nElems];
+
+    output.host((void*)outData);
+
+    for (size_t elIter=0; elIter<nElems; ++elIter) {
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+    }
+
+    delete[] outData;
+}

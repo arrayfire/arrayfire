@@ -160,3 +160,67 @@ TEST(Reduce,Test_Reduce_Big1)
         1
         );
 }
+
+/////////////////////////////////// CPP //////////////////////////////////
+//
+typedef af::array (*ReductionOp)(const af::array&, const int);
+
+using af::sum;
+using af::min;
+using af::max;
+using af::alltrue;
+using af::anytrue;
+using af::count;
+
+template<typename Ti, typename To, ReductionOp reduce>
+void cppReduceTest(string pTestFile)
+{
+    vector<af::dim4> numDims;
+
+    vector<vector<int>> data;
+    vector<vector<int>> tests;
+    readTests<int,int,int> (pTestFile,numDims,data,tests);
+    af::dim4 dims       = numDims[0];
+
+    vector<Ti> in(data[0].begin(), data[0].end());
+
+    af::array input(dims, &in.front());
+
+    // Compare result
+    for (int d = 0; d < (int)tests.size(); ++d) {
+
+        vector<To> currGoldBar(tests[d].begin(), tests[d].end());
+
+        // Run sum
+        af::array output = reduce(input, d);
+
+        // Get result
+        To *outData = new To[dims.elements()];
+        output.host((void*)outData);
+
+        size_t nElems = currGoldBar.size();
+        for (size_t elIter = 0; elIter < nElems; ++elIter) {
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                            << " for dim " << d << std::endl;
+        }
+
+        // Delete
+        delete[] outData;
+    }
+}
+
+
+#define CPP_REDUCE_TESTS(FN, Ti, To)               \
+    TEST(Reduce, Test_##FN##_CPP)                  \
+    {                                              \
+        cppReduceTest<Ti, To, FN>(                 \
+            string(TEST_DIR"/reduce/"#FN".test")   \
+            );                                     \
+    }
+
+CPP_REDUCE_TESTS(sum, float, float);
+CPP_REDUCE_TESTS(min, float, float);
+CPP_REDUCE_TESTS(max, float, float);
+CPP_REDUCE_TESTS(anytrue, float, unsigned char);
+CPP_REDUCE_TESTS(alltrue, float, unsigned char);
+CPP_REDUCE_TESTS(count, float, unsigned);

@@ -127,3 +127,38 @@ void reorderTest(string pTestFile, const unsigned resultIdx,
     REORDER_INIT(Reorder3201, reorder4d,21, 3, 2, 0, 1);
     REORDER_INIT(Reorder3012, reorder4d,22, 3, 0, 1, 2);
     REORDER_INIT(Reorder3021, reorder4d,23, 3, 0, 2, 1);
+
+////////////////////////////////// CPP ///////////////////////////////////
+//
+TEST(Reorder, CPP)
+{
+    const unsigned resultIdx = 0;
+    const unsigned x = 0;
+    const unsigned y = 1;
+    const unsigned z = 2;
+    const unsigned w = 3;
+
+    vector<af::dim4> numDims;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
+    readTests<float, float, int>(string(TEST_DIR"/reorder/reorder4d.test"),numDims,in,tests);
+
+    af::dim4 idims = numDims[0];
+
+    af::array input(idims, &(in[0].front()));
+    af::array output = af::reorder(input, x, y, z, w);
+
+    // Get result
+    float* outData = new float[tests[resultIdx].size()];
+    output.host((void*)outData);
+
+    // Compare result
+    size_t nElems = tests[resultIdx].size();
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
+    }
+
+    // Delete
+    delete[] outData;
+}
+

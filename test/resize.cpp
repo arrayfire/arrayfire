@@ -282,3 +282,31 @@ TYPED_TEST(Resize,InvalidArgsMethod)
     af::dim4 dims(10, 10, 1, 1);
     resizeArgsTest<TypeParam>(AF_ERR_ARG, string(TEST_DIR"/resize/square.test"), dims, AF_INTERP_CUBIC);
 }
+
+///////////////////////////////// CPP ////////////////////////////////////
+//
+TEST(Resize, CPP)
+{
+    vector<af::dim4> numDims;
+    vector<vector<float>>   in;
+    vector<vector<float>>   tests;
+    readTests<float, float, float>(string(TEST_DIR"/resize/square.test"),numDims,in,tests);
+
+    af::dim4 dims = numDims[0];
+    af::array input(dims, &(in[0].front()));
+    af::array output = af::resize(input, 16, 16);
+
+    // Get result
+    af::dim4 odims(16, 16, dims[2], dims[3]);
+    float* outData = new float[odims.elements()];
+    output.host((void*)outData);
+
+    // Compare result
+    size_t nElems = tests[0].size();
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_NEAR(tests[0][elIter], outData[elIter], 0.0001) << "at: " << elIter << std::endl;
+    }
+
+    // Delete
+    delete[] outData;
+}

@@ -97,3 +97,32 @@ WHERE_TESTS(int)
 WHERE_TESTS(uint)
 WHERE_TESTS(char)
 WHERE_TESTS(uchar)
+
+//////////////////////////////////// CPP /////////////////////////////////
+//
+TEST(Where, CPP)
+{
+    vector<af::dim4> numDims;
+
+    vector<vector<int>> data;
+    vector<vector<int>> tests;
+    readTests<int,int,int> (string(TEST_DIR"/where/where.test"),numDims,data,tests);
+    af::dim4 dims       = numDims[0];
+
+    vector<float> in(data[0].begin(), data[0].end());
+    af::array input(dims, &(in.front()));
+    af::array output = where(input);
+
+    // Compare result
+    vector<uint> currGoldBar(tests[0].begin(), tests[0].end());
+
+    // Get result
+    size_t nElems = currGoldBar.size();
+    vector<uint> outData(nElems);
+    output.host((void*)&(outData.front()));
+
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                        << std::endl;
+    }
+}

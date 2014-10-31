@@ -163,3 +163,48 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
     ROTATE_INIT(Rectangle00CropRecenter        , rotate2, 23,  0 , true , true);
     ROTATE_INIT(Rectangle45NoCropNoRecenter    , rotate2, 24, 45 , false, false);
     ROTATE_INIT(Rectangle45CropNoRecenter      , rotate2, 25, 45 , true , false);
+
+////////////////////////////////// CPP //////////////////////////////////////
+//
+TEST(Rotate, CPP)
+{
+    const unsigned resultIdx = 0;
+    const float angle = 180;
+    const bool crop = false;
+    const bool recenter =true;
+
+    vector<af::dim4> numDims;
+    vector<vector<float>>   in;
+    vector<vector<float>>   tests;
+    readTests<float, float, float>(string(TEST_DIR"/rotate/rotate1.test"),numDims,in,tests);
+
+    af::dim4 dims = numDims[0];
+    float theta = angle * PI / 180.0f;
+
+    af::array input(dims, &(in[0].front()));
+    af::array output = af::rotate(input, theta, crop, recenter);
+
+    // Get result
+    float* outData = new float[tests[resultIdx].size()];
+    output.host((void*)outData);
+
+    // Compare result
+    size_t nElems = tests[resultIdx].size();
+
+    // This is a temporary solution. The reason we need this is because of
+    // floating point error in the index computations on CPU/GPU, some
+    // elements of GPU(CUDA/OpenCL) versions are different from the CPU version.
+    // That is, the input index of CPU/GPU may differ by 1 (rounding error) on
+    // x or y, hence a different value is copied.
+    // We expect 99.99% values to be same between the CPU/GPU versions and
+    // ASSERT_EQ (in comments below) to pass for CUDA & OpenCL backends
+    size_t fail_count = 0;
+    for(size_t i = 0; i < nElems; i++) {
+        if(abs(tests[resultIdx][i] - outData[i]) > 0.0001)
+            fail_count++;
+    }
+    ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.01));
+
+    // Delete
+    delete[] outData;
+}

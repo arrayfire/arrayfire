@@ -177,3 +177,37 @@ TYPED_TEST(Diff1,InvalidArgs)
 {
     diff1ArgsTest<TypeParam>(string(TEST_DIR"/diff1/basic0.test"));
 }
+
+////////////////////////////////////// CPP ////////////////////////////////////
+//
+TEST(Diff1, CPP)
+{
+    const unsigned dim = 0;
+    vector<af::dim4> numDims;
+
+    vector<vector<float>>   in;
+    vector<vector<float>>   tests;
+    readTests<float,float,int>(string(TEST_DIR"/diff1/matrix0.test"),numDims,in,tests);
+    af::dim4 dims       = numDims[0];
+
+
+    af::array input(dims, &(in[0].front()));
+    af::array output = af::diff1(input, dim);
+
+    // Get result
+    float *outData = new float[dims.elements()];
+    output.host((void*)outData);
+
+    // Compare result
+    for (size_t testIter = 0; testIter < tests.size(); ++testIter) {
+        vector<float> currGoldBar = tests[testIter];
+        size_t nElems = currGoldBar.size();
+        for (size_t elIter = 0; elIter < nElems; ++elIter) {
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter << std::endl;
+        }
+    }
+
+    // Delete
+    delete[] outData;
+}
+

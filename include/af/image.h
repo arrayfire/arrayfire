@@ -47,7 +47,9 @@ AFAPI array erode(const array& in, const array& mask);
 
 AFAPI array erode3d(const array& in, const array& mask);
 
-AFAPI std::pair<array, array> gradient(const array& in);
+AFAPI void grad(array& rows, array& cols, const array& in);
+
+AFAPI array regions(const array& in, af_connectivity_type connectivity=AF_CONNECTIVITY_4);
 
 }
 #endif

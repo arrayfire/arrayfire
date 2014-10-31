@@ -305,3 +305,63 @@ INSTANTIATE_BATCH_TEST(fft2,  R2C_Float_Trunc, 2, false,  float,  af_cfloat, str
 INSTANTIATE_BATCH_TEST(fft2, R2C_Double_Trunc, 2, false, double, af_cdouble, string(TEST_DIR"/signal/fft2_r2c_trunc_batch.test"), 16, 16);
 INSTANTIATE_BATCH_TEST(fft2,  C2C_Float_Pad, 2, false,  af_cfloat,  af_cfloat, string(TEST_DIR"/signal/fft2_c2c_pad_batch.test"), 16, 16);
 INSTANTIATE_BATCH_TEST(fft2, C2C_Double_Pad, 2, false, af_cdouble, af_cdouble, string(TEST_DIR"/signal/fft2_c2c_pad_batch.test"), 16, 16);
+
+
+/////////////////////////////////////// CPP ////////////////////////////////////
+//
+template<typename inType, typename outType, bool isInverse>
+void cppFFTTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0)
+{
+    vector<af::dim4>        numDims;
+    vector<vector<inType>>       in;
+    vector<vector<outType>>   tests;
+
+    readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
+
+    af::dim4 dims = numDims[0];
+    af::array signal(dims, &(in[0].front()));
+    af::array output;
+
+    if (isInverse){
+        double norm_factor = 1.0;
+#if defined(AF_OPENCL)
+        norm_factor *= (dims.elements());
+#endif
+        output = ifft3(signal, norm_factor);
+    } else {
+        output = fft3(signal, 1.0);
+    }
+
+    size_t out_size = tests[0].size();
+    af_cfloat *outData= new af_cfloat[out_size];
+    output.host((void*)outData);
+
+    vector<af_cfloat> goldBar(begin(tests[0]), end(tests[0]));
+
+    size_t test_size = 0;
+    switch(dims.ndims()) {
+        case 1  : test_size = dims[0]/2+1;                       break;
+        case 2  : test_size = dims[1] * (dims[0]/2+1);           break;
+        case 3  : test_size = dims[2] * dims[1] * (dims[0]/2+1); break;
+        default : test_size = dims[0]/2+1;                       break;
+    }
+    for (size_t elIter=0; elIter<test_size; ++elIter) {
+        bool isUnderTolerance = std::abs(goldBar[elIter]-outData[elIter])<0.001;
+        ASSERT_EQ(true, isUnderTolerance)<<
+            "Expected value="<<goldBar[elIter] <<"\t Actual Value="<<
+            outData[elIter] << " at: " << elIter<< std::endl;
+    }
+    // cleanup
+    delete[] outData;
+}
+
+
+TEST(fft3, CPP)
+{
+    cppFFTTest<af_cfloat, af_cfloat, false>(string(TEST_DIR"/signal/fft3_c2c.test"));
+}
+
+TEST(ifft3, CPP)
+{
+    cppFFTTest<af_cfloat, af_cfloat, true>(string(TEST_DIR"/signal/ifft3_c2c.test"));
+}

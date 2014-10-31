@@ -112,7 +112,19 @@ namespace af
 
         static void free(const void *);
 
-        array operator()(const af_seq& s0, const af_seq& s1=span, const af_seq& s2=span, const af_seq& s3=span);
+        array operator()(const af_seq& s0, const af_seq& s1=span, const af_seq& s2=span, const af_seq& s3=span) const;
+
+        array row(size_t index) const;
+
+        array col(size_t index) const;
+
+        array slice(size_t index) const;
+
+        array rows(size_t first, size_t last) const;
+
+        array cols(size_t first, size_t last) const;
+
+        array slices(size_t first, size_t last) const;
 
         array as(af_dtype type) const;
 

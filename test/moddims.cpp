@@ -158,3 +158,67 @@ TYPED_TEST(Moddims,Mismatch)
 {
     moddimsMismatchTest<TypeParam>(string(TEST_DIR"/moddims/basic.test"));
 }
+
+
+/////////////////////////////////// CPP ///////////////////////////////////
+//
+template<typename T>
+void cppModdimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=nullptr)
+{
+    vector<af::dim4> numDims;
+
+    vector<vector<T>>   in;
+    vector<vector<T>>   tests;
+    readTests<T,T,int>(pTestFile,numDims,in,tests);
+    af::dim4 dims       = numDims[0];
+
+    T *outData;
+
+    if (isSubRef) {
+        af::array input(dims, &(in[0].front()));
+
+        af::array subArray = input(seqv->at(0), seqv->at(1));
+
+        af::dim4 newDims(1);
+        newDims[0] = 2;
+        newDims[1] = 3;
+        af::array output = af::moddims(subArray, newDims.ndims(), newDims.get());
+
+        dim_type nElems = output.elements();
+        outData = new T[nElems];
+        output.host((void*)outData);
+    } else {
+        af::array input(dims, &(in[0].front()));
+
+        af::dim4 newDims(1);
+        newDims[0] = dims[1];
+        newDims[1] = dims[0]*dims[2];
+
+        af::array output = af::moddims(input, newDims.ndims(), newDims.get());
+
+        outData = new T[dims.elements()];
+        output.host((void*)outData);
+    }
+
+    for (size_t testIter=0; testIter<tests.size(); ++testIter) {
+        vector<T> currGoldBar   = tests[testIter];
+        size_t nElems        = currGoldBar.size();
+        for (size_t elIter=0; elIter<nElems; ++elIter) {
+            ASSERT_EQ(currGoldBar[elIter],outData[elIter])<< "at: " << elIter<< std::endl;
+        }
+    }
+    delete[] outData;
+}
+
+TEST(Moddims,Basic_CPP)
+{
+    cppModdimsTest<float>(string(TEST_DIR"/moddims/basic.test"));
+}
+
+TEST(Moddims,Subref_CPP)
+{
+    vector<af_seq> subMat;
+    subMat.push_back({1,2,1});
+    subMat.push_back({1,3,1});
+    cppModdimsTest<float>(string(TEST_DIR"/moddims/subref.test"),true,&subMat);
+}

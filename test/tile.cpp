@@ -110,3 +110,37 @@ void tileTest(string pTestFile, const unsigned resultIdx, const uint x, const ui
     TILE_INIT(Tile2D312, tile_large2D, 3, 3, 1, 2, 1);
     TILE_INIT(Tile2D231, tile_large2D, 4, 2, 3, 1, 1);
 
+
+///////////////////////////////// CPP ////////////////////////////////////
+//
+TEST(Tile, CPP)
+{
+    const unsigned resultIdx = 0;
+    const unsigned x = 2;
+    const unsigned y = 2;
+    const unsigned z = 2;
+    const unsigned w = 1;
+
+    vector<af::dim4> numDims;
+    vector<vector<float>> in;
+    vector<vector<float>> tests;
+    readTests<float, float, int>(string(TEST_DIR"/tile/tile_large3D.test"),numDims,in,tests);
+
+    af::dim4 idims = numDims[0];
+    af::array input(idims, &(in[0].front()));
+    af::array output = af::tile(input, x, y, z, w);
+
+    // Get result
+    float* outData = new float[tests[resultIdx].size()];
+    output.host((void*)outData);
+
+    // Compare result
+    size_t nElems = tests[resultIdx].size();
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
+    }
+
+    // Delete
+    delete[] outData;
+}
+
