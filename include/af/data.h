@@ -31,11 +31,11 @@ namespace af
 
     AFAPI array sort(const array &in, const unsigned dim = 0, const bool dir = true);
 
-    AFAPI void  sort_index(array &out, array &indices, const array &in,
-                           const unsigned dim = 0, const bool dir = true);
+    AFAPI void  sort(array &out, array &indices, const array &in, const unsigned dim = 0,
+                     const bool dir = true);
 
-    AFAPI void  sort_by_key(array &out_keys, array & out_values,
-                            const array &keys, const array &values, const unsigned dim = 0, const bool dir = true);
+    AFAPI void  sort(array &out_keys, array & out_values, const array &keys, const array &values,
+                     const unsigned dim = 0, const bool dir = true);
 }
 #endif
 

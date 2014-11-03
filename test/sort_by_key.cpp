@@ -138,7 +138,7 @@ TEST(SortByKey, CPP)
     af::array keys(idims, &(in[0].front()));
     af::array vals(idims, &(in[1].front()));
     af::array out_keys, out_vals;
-    sort_by_key(out_keys, out_vals, keys, vals, 0, dir);
+    af::sort(out_keys, out_vals, keys, vals, 0, dir);
 
     size_t nElems = tests[resultIdx0].size();
     // Get result

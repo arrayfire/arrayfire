@@ -139,7 +139,7 @@ TEST(SortIndex, CPP)
     af::dim4 idims = numDims[0];
     af::array input(idims, &(in[0].front()));
     af::array outValues, outIndices;
-    af::sort_index(outValues, outIndices, input, 0, dir);
+    af::sort(outValues, outIndices, input, 0, dir);
 
     size_t nElems = tests[resultIdx0].size();
 

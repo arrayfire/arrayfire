@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     af_print(D);
 
     array E, F;
-    sort_index(E, F, D);
+    sort(E, F, D);
     af_print(E);
     af_print(F);
 
