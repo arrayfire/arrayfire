@@ -21,8 +21,9 @@
 
 namespace af
 {
-struct AFAPI dim4
+class AFAPI dim4
 {
+    public:
     dim_type dims[4]; //FIXME: Make this C compatiable
     dim4(); //deleted
 public:
