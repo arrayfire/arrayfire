@@ -9,7 +9,7 @@
 
 #include <complex>
 #include <af/dim4.hpp>
-#include <af/data.h>
+#include <af/algorithm.h>
 #include <err_common.hpp>
 #include <handle.hpp>
 #include <ops.hpp>

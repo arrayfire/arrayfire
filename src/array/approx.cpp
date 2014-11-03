@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <af/array.h>
-#include <af/data.h>
+#include <af/algorithm.h>
 #include "error.hpp"
 
 namespace af

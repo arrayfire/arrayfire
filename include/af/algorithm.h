@@ -15,6 +15,24 @@ namespace af
 {
     class array;
 
+        // Add all the elements along a dimension
+    AFAPI array sum(const array &in, const int dim = 0);
+
+    // Get the minimum of all elements along a dimension
+    AFAPI array min(const array &in, const int dim = 0);
+
+    // Get the maximum of all elements along a dimension
+    AFAPI array max(const array &in, const int dim = 0);
+
+    // Check if all elements along a dimension are true
+    AFAPI array alltrue(const array &in, const int dim = 0);
+
+    // Check if any elements along a dimension are true
+    AFAPI array anytrue(const array &in, const int dim = 0);
+
+    // Count number of non zero elements along a dimension
+    AFAPI array count(const array &in, const int dim = 0);
+
     AFAPI array diff1(const array &in, const int dim = 0);
 
     AFAPI array diff2(const array &in, const int dim = 0);
@@ -42,6 +60,23 @@ namespace af
 #ifdef __cplusplus
 extern "C" {
 #endif
+    // Add all the elements along a dimension
+    AFAPI af_err af_sum(af_array *out, const af_array in, const int dim);
+
+    // Get the minimum of all elements along a dimension
+    AFAPI af_err af_min(af_array *out, const af_array in, const int dim);
+
+    // Get the maximum of all elements along a dimension
+    AFAPI af_err af_max(af_array *out, const af_array in, const int dim);
+
+    // Check if all elements along a dimension are true
+    AFAPI af_err af_alltrue(af_array *out, const af_array in, const int dim);
+
+    // Check if any elements along a dimension are true
+    AFAPI af_err af_anytrue(af_array *out, const af_array in, const int dim);
+
+    // Count number of non zero elements along a dimension
+    AFAPI af_err af_count(af_array *out, const af_array in, const int dim);
 
     // Compute first order difference along a given dimension.
     AFAPI af_err af_diff1(af_array *out, const af_array in, const int dim);
