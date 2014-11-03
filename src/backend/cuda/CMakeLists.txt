@@ -1,5 +1,6 @@
 INCLUDE(${CMAKE_SOURCE_DIR}/common/CLKernelToH.cmake)
 INCLUDE(${CMAKE_SOURCE_DIR}/common/FindNVVM.cmake)
+INCLUDE(${CMAKE_SOURCE_DIR}/common/CUDACheckCompute.cmake)
 
 FIND_PACKAGE(Boost)
 INCLUDE_DIRECTORIES(${BOOST_INCLUDE_DIR})
@@ -30,7 +31,18 @@ FILE(GLOB cuda_src
     "../../array/*.cpp"
     )
 
-FILE(GLOB cuda_ptx "ptx/PTX64/sm_20/*.ptx")
+if(${CUDA_COMPUTE_CAPABILITY} STREQUAL "21")
+    SET(PTX_COMPUTE "20")
+elseif(${CUDA_COMPUTE_CAPABILITY} STREQUAL "32")
+    SET(PTX_COMPUTE "30")
+elseif(${CUDA_COMPUTE_CAPABILITY} STREQUAL "52")
+    SET(PTX_COMPUTE "50")
+else()
+  SET(PTX_COMPUTE ${CUDA_COMPUTE_CAPABILITY})
+endif()
+
+
+FILE(GLOB cuda_ptx "ptx/PTX64/sm_${PTX_COMPUTE}/*.ptx")
 
 SET( ptx_headers
     "ptx_headers")
@@ -52,7 +64,7 @@ IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND "${APPLE}")
     SET(CUDA_HOST_COMPILER "/usr/bin/clang++")
 ENDIF()
 
-CUDA_ADD_LIBRARY(afcuda SHARED ${cuda_src} OPTIONS "-arch=sm_20")
+CUDA_ADD_LIBRARY(afcuda SHARED ${cuda_src} OPTIONS ${CUDA_CODE_GENERATION})
 ADD_DEPENDENCIES(afcuda ${ptx_targets})
 
 
