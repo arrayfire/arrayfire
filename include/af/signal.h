@@ -26,6 +26,19 @@ AFAPI array ifft2(const array& in, double normalize, dim_type odim0=0, dim_type 
 
 AFAPI array ifft3(const array& in, double normalize, dim_type odim0=0, dim_type odim1=0, dim_type odim2=0);
 
+AFAPI array fft(const array& in, dim_type odim0=0);
+
+AFAPI array fft2(const array& in, dim_type odim0=0, dim_type odim1=0);
+
+AFAPI array fft3(const array& in, dim_type odim0=0, dim_type odim1=0, dim_type odim2=0);
+
+AFAPI array ifft(const array& in, dim_type odim0=0);
+
+AFAPI array ifft2(const array& in, dim_type odim0=0, dim_type odim1=0);
+
+AFAPI array ifft3(const array& in, dim_type odim0=0, dim_type odim1=0, dim_type odim2=0);
+
+
 AFAPI array convolve(const array& signal, const array& filter, bool expand=true);
 
 AFAPI array convolve(const array& signal, const array& col_filter, const array& row_filter, bool expand=true);
