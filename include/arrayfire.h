@@ -12,6 +12,7 @@
 #include "af/arith.h"
 #include "af/array.h"
 #include "af/blas.h"
+#include "af/data.h"
 #include "af/device.h"
 #include "af/exception.h"
 #include "af/image.h"

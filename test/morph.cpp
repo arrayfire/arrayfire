@@ -9,6 +9,7 @@
 
 #include <gtest/gtest.h>
 #include <arrayfire.h>
+#include <af/data.h>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
 #include <string>

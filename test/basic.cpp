@@ -9,6 +9,7 @@
 
 #include <gtest/gtest.h>
 #include <arrayfire.h>
+#include <af/data.h>
 #include <vector>
 
 using namespace std;
