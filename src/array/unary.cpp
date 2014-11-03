@@ -57,9 +57,22 @@ namespace af
     INSTANTIATE(cbrt  )
 
     INSTANTIATE(iszero)
-    INSTANTIATE(isinf )
-    INSTANTIATE(isnan )
 
     INSTANTIATE(tgamma)
     INSTANTIATE(lgamma)
+
+    // isinf and isnan are defined by C++.
+    // Thus we need a difference nomenclature.
+    array isInf(const array &in)
+    {
+        af_array out = 0;
+        af_isinf(&out, in.get());
+        return array(out);
+    }
+    array isNaN(const array &in)
+    {
+        af_array out = 0;
+        af_isnan(&out, in.get());
+        return array(out);
+    }
 }
