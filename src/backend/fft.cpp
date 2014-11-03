@@ -9,7 +9,7 @@
 
 #include <af/dim4.hpp>
 #include <af/defines.h>
-#include <af/fft.h>
+#include <af/signal.h>
 #include <handle.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>

@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/fft.h>
+#include <af/signal.h>
 #include "error.hpp"
 
 namespace af
