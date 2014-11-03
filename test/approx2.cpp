@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <gtest/gtest.h>
+#include <af/signal.h>
 #include <arrayfire.h>
 #include <af/dim4.hpp>
 #include <af/defines.h>
