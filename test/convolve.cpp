@@ -441,7 +441,7 @@ TEST(Convolve, separable_CPP)
     af::array cFilter(numDims[1], &(in[1].front()));
     af::array rFilter(numDims[2], &(in[2].front()));
 
-    af::array output = convolve2(signal, cFilter, rFilter, false);
+    af::array output = convolve(signal, cFilter, rFilter, false);
 
     vector<float> currGoldBar = tests[0];
     size_t nElems  = output.elements();
