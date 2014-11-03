@@ -26,14 +26,15 @@ AFAPI array ifft2(const array& in, double normalize, dim_type odim0=0, dim_type 
 
 AFAPI array ifft3(const array& in, double normalize, dim_type odim0=0, dim_type odim1=0, dim_type odim2=0);
 
+AFAPI array convolve(const array& signal, const array& filter, bool expand=true);
+
+AFAPI array convolve(const array& signal, const array& col_filter, const array& row_filter, bool expand=true);
 
 AFAPI array convolve1(const array& signal, const array& filter, bool expand=true);
 
 AFAPI array convolve2(const array& signal, const array& filter, bool expand=true);
 
 AFAPI array convolve3(const array& signal, const array& filter, bool expand=true);
-
-AFAPI array convolve2(const array& signal, const array& col_filter, const array& row_filter, bool expand=true);
 
 }
 #endif
