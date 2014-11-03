@@ -62,8 +62,8 @@ namespace af
     AFAPI array cbrt   (const array &in);
 
     AFAPI array iszero (const array &in);
-    AFAPI array isinf  (const array &in);
-    AFAPI array isnan  (const array &in);
+    AFAPI array isInf  (const array &in);
+    AFAPI array isNaN  (const array &in);
 
     AFAPI array tgamma (const array &in);
     AFAPI array lgamma (const array &in);
