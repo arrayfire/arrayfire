@@ -50,11 +50,11 @@ Array<T> * convolve(Array<T> const& signal, Array<T> const& filter, ConvolveBatc
                 callKernel = false;
             break;
         case 2:
-            if ((fDims[0]*fDims[1]) > std::pow(kernel::MAX_CONV2_FILTER_LEN,2ll))
+            if ((fDims[0]*fDims[1]) > std::pow(kernel::MAX_CONV2_FILTER_LEN,2.f))
                 callKernel = false;
             break;
         case 3:
-            if ((fDims[0]*fDims[1]*fDims[2]) > std::pow(kernel::MAX_CONV2_FILTER_LEN,3ll))
+            if ((fDims[0]*fDims[1]*fDims[2]) > std::pow(kernel::MAX_CONV2_FILTER_LEN,3.f))
                 callKernel = false;
             break;
     }
@@ -75,7 +75,7 @@ Array<T> * convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> 
     const dim4 cfDims   = c_filter.dims();
     const dim4 rfDims   = r_filter.dims();
 
-    if((cfDims[0]*rfDims[0]) > std::pow(kernel::MAX_CONV2_FILTER_LEN,2ll)) {
+    if((cfDims[0]*rfDims[0]) > std::pow(kernel::MAX_CONV2_FILTER_LEN,2.f)) {
         // call upon fft
         CUDA_NOT_SUPPORTED();
     }
