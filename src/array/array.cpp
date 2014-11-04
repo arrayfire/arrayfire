@@ -11,7 +11,7 @@
 #include <af/arith.h>
 #include <af/data.h>
 #include <af/traits.hpp>
-#include <ArrayInfo.hpp>
+#include <af/util.h>
 #include <af/index.h>
 #include "error.hpp"
 
@@ -152,26 +152,28 @@ namespace af
     // Helper functions
     dim4 array::dims() const
     {
-        ArrayInfo info = getInfo(arr);
-        return info.dims();
+        dim_type d0, d1, d2, d3;
+        AF_THROW(af_get_dims(&d0, &d1, &d2, &d3, arr));
+        return dim4(d0, d1, d2, d3);
     }
 
     dim_type array::dims(unsigned dim) const
     {
-        ArrayInfo info = getInfo(arr);
-        return info.dims()[dim];
+        return dims()[dim];
     }
 
     unsigned array::numdims() const
     {
-        ArrayInfo info = getInfo(arr);
-        return info.ndims();
+        unsigned nd;
+        AF_THROW(af_get_numdims(&nd, arr));
+        return nd;
     }
 
     size_t array::bytes() const
     {
-        ArrayInfo info = getInfo(arr);
-        return info.elements() * sizeof(type());
+        dim_type nElements;
+        AF_THROW(af_get_elements(&nElements, arr));
+        return nElements * sizeof(type());
     }
 
     array array::copy() const
@@ -181,71 +183,28 @@ namespace af
         return array(*other);
     }
 
-    bool array::isempty() const
-    {
-        ArrayInfo info = getInfo(arr);
-        return info.isEmpty();
+#undef INSTANTIATE
+#define INSTANTIATE(fn)                                                     \
+    bool array::is##fn() const                                              \
+    {                                                                       \
+        bool ret = false;                                                   \
+        AF_THROW(af_is_##fn(&ret, arr));                                    \
+        return ret;                                                         \
     }
 
-    bool array::isscalar() const
-    {
-        ArrayInfo info = getInfo(arr);
-        return info.isScalar();
-    }
+INSTANTIATE(empty)
+INSTANTIATE(scalar)
+INSTANTIATE(vector)
+INSTANTIATE(row)
+INSTANTIATE(column)
+INSTANTIATE(complex)
+INSTANTIATE(double)
+INSTANTIATE(single)
+INSTANTIATE(realfloating)
+INSTANTIATE(floating)
+INSTANTIATE(integer)
 
-    bool array::isvector() const
-    {
-        ArrayInfo info = getInfo(arr);
-        return info.isVector();
-    }
-
-    bool array::isrow() const
-    {
-        ArrayInfo info = getInfo(arr);
-        return info.isRow();
-    }
-
-    bool array::iscolumn() const
-    {
-        ArrayInfo info = getInfo(arr);
-        return info.isColumn();
-    }
-
-    bool array::iscomplex() const
-    {
-        ArrayInfo info = getInfo(arr);
-        return info.isComplex();
-    }
-
-    bool array::isdouble() const
-    {
-        ArrayInfo info = getInfo(arr);
-        return info.isDouble();
-    }
-
-    bool array::issingle() const
-    {
-        ArrayInfo info = getInfo(arr);
-        return info.isSingle();
-    }
-
-    bool array::isrealfloating() const
-    {
-        ArrayInfo info = getInfo(arr);
-        return info.isRealFloating();
-    }
-
-    bool array::isfloating() const
-    {
-        ArrayInfo info = getInfo(arr);
-        return info.isFloating();
-    }
-
-    bool array::isinteger() const
-    {
-        ArrayInfo info = getInfo(arr);
-        return info.isInteger();
-    }
+#undef INSTANTIATE
 
     array::array(af_array in, af_seq *seqs) : arr(in), isRef(true)
     {
