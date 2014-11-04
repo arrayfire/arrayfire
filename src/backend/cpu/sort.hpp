@@ -13,5 +13,5 @@
 namespace cpu
 {
     template<typename T, bool DIR>
-    void sort(Array<T> &val, const Array<T> &in, const unsigned dim);
+    Array<T>* sort(const Array<T> &in, const unsigned dim);
 }

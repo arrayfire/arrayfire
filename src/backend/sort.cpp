@@ -25,30 +25,14 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
-static inline void sort(af_array *val, const af_array in, const unsigned dim, const bool dir)
+static inline af_array sort(const af_array in, const unsigned dim, const bool dir)
 {
     const Array<T> &inArray = getArray<T>(in);
-    Array<T> *valArray = copyArray<T>(inArray);
     if(dir) {
-        sort<T, 1>(*valArray, inArray, dim);
+        return getHandle(*sort<T, 1>(inArray, dim));
     } else {
-        sort<T, 0>(*valArray, inArray, dim);
+        return getHandle(*sort<T, 0>(inArray, dim));
     }
-    *val = getHandle(*valArray);
-}
-
-template<typename T>
-static inline void sort_index(af_array *val, af_array *idx, const af_array in,
-                              const unsigned dim, const bool dir)
-{
-    const Array<T> &inArray = getArray<T>(in);
-    Array<T> *valArray = copyArray<T>(inArray);
-    if(dir) {
-        sort_index<T, 1>(*valArray, getWritableArray<unsigned>(*idx), inArray, dim);
-    } else {
-        sort_index<T, 0>(*valArray, getWritableArray<unsigned>(*idx), inArray, dim);
-    }
-    *val = getHandle(*valArray);
 }
 
 af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool dir)
@@ -64,12 +48,12 @@ af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool 
         af_array val;
 
         switch(type) {
-            case f32: sort<float  >(&val, in, dim, dir);  break;
-            case f64: sort<double >(&val, in, dim, dir);  break;
-            case s32: sort<int    >(&val, in, dim, dir);  break;
-            case u32: sort<uint   >(&val, in, dim, dir);  break;
-            case u8:  sort<uchar  >(&val, in, dim, dir);  break;
-         // case s8:  sort<char   >(&val, in, dim, dir);  break;
+            case f32: val = sort<float  >(in, dim, dir);  break;
+            case f64: val = sort<double >(in, dim, dir);  break;
+            case s32: val = sort<int    >(in, dim, dir);  break;
+            case u32: val = sort<uint   >(in, dim, dir);  break;
+            case u8:  val = sort<uchar  >(in, dim, dir);  break;
+         // case s8:  val = sort<char   >(in, dim, dir);  break;
             default:  TYPE_ERROR(1, type);
         }
         std::swap(*out, val);
@@ -79,12 +63,30 @@ af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool 
     return AF_SUCCESS;
 }
 
+template<typename T>
+static inline void sort_index(af_array *val, af_array *idx, const af_array in,
+                              const unsigned dim, const bool dir)
+{
+    const Array<T> &inArray = getArray<T>(in);
+
+    // Initialize Dummy Arrays
+    Array<T> *valArray = createEmptyArray<T>(af::dim4());
+    Array<uint> *idxArray = createEmptyArray<uint>(af::dim4());
+
+    if(dir) {
+        sort_index<T, 1>(*valArray, *idxArray, inArray, dim);
+    } else {
+        sort_index<T, 0>(*valArray, *idxArray, inArray, dim);
+    }
+    *val = getHandle(*valArray);
+    *idx = getHandle(*idxArray);
+}
+
 af_err af_sort_index(af_array *out, af_array *indices, const af_array in, const unsigned dim, const bool dir)
 {
     try {
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
-        af::dim4 idims = info.dims();
 
         DIM_ASSERT(2, info.elements() > 0);
         // Only Dim 0 supported
@@ -92,7 +94,6 @@ af_err af_sort_index(af_array *out, af_array *indices, const af_array in, const 
 
         af_array val;
         af_array idx;
-        af_create_handle(&idx, idims.ndims(), idims.get(), u32);
 
         switch(type) {
             case f32: sort_index<float  >(&val, &idx, in, dim, dir);  break;
@@ -117,8 +118,11 @@ static inline void sort_by_key(af_array *okey, af_array *oval, const af_array ik
 {
     const Array<Tk> &ikeyArray = getArray<Tk>(ikey);
     const Array<Tv> &ivalArray = getArray<Tv>(ival);
-    Array<Tk> *okeyArray = copyArray<Tk>(ikeyArray);
-    Array<Tv> *ovalArray = copyArray<Tv>(ivalArray);
+
+    // Initialize Dummy Arrays
+    Array<Tk> *okeyArray = createEmptyArray<Tk>(af::dim4());
+    Array<Tv> *ovalArray = createEmptyArray<Tv>(af::dim4());
+
     if(dir) {
         sort_by_key<Tk, Tv, 1>(*okeyArray, *ovalArray, ikeyArray, ivalArray, dim);
     } else {
