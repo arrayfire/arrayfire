@@ -63,6 +63,11 @@ public:
         dim_offsets = af::dim4(0,0,0,0);
     }
 
+    void resetDims(const af::dim4& dims)
+    {
+        dim_size = dims;
+    }
+
     void modDims(const af::dim4 &newDims);
 
     void modStrides(const af::dim4 &newStrides);
