@@ -14,6 +14,12 @@
 namespace af
 {
 
+AFAPI array approx1(const array &in, const array &pos,
+                    const af_interp_type method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
+
+AFAPI array approx2(const array &in, const array &pos0, const array &pos1,
+                    const af_interp_type method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
+
 AFAPI array fft(const array& in, double normalize, dim_type odim0=0);
 
 AFAPI array fft2(const array& in, double normalize, dim_type odim0=0, dim_type odim1=0);
@@ -55,6 +61,15 @@ AFAPI array convolve3(const array& signal, const array& filter, bool expand=true
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// Interpolation in 1D
+AFAPI af_err af_approx1(af_array *out, const af_array in, const af_array pos,
+                        const af_interp_type method, const float offGrid);
+
+// Interpolation in 2D
+AFAPI af_err af_approx2(af_array *out, const af_array in, const af_array pos0, const af_array pos1,
+                        const af_interp_type method, const float offGrid);
+
 
 AFAPI af_err af_fft(af_array *out, af_array in, double normalize, dim_type odim0);
 

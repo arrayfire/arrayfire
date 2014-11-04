@@ -15,61 +15,76 @@ namespace af
 {
     class array;
 
-    AFAPI array diff1(const array &in, const int dim = 0);
 
-    AFAPI array diff2(const array &in, const int dim = 0);
+    AFAPI array constant(double val, const dim4 &dims, af_dtype ty=f32);
+    AFAPI array constant(af_cdouble val, const dim4 &dims);
+    AFAPI array constant(af_cfloat val, const dim4 &dims);
 
-    AFAPI array accum(const array &in, const int dim = 0);
+    AFAPI array constant(double val, const dim_type d0, af_dtype ty=f32);
+    AFAPI array constant(double val, const dim_type d0,
+                         const dim_type d1, af_dtype ty=f32);
+    AFAPI array constant(double val, const dim_type d0,
+                         const dim_type d1, const dim_type d2, af_dtype ty=f32);
+    AFAPI array constant(double val, const dim_type d0,
+                         const dim_type d1, const dim_type d2,
+                         const dim_type d3, af_dtype ty=f32);
 
-    AFAPI array where(const array &in);
 
-    AFAPI array approx1(const array &in, const array &pos,
-                        const af_interp_type method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
+    AFAPI array randu(const dim4 &dims, af_dtype ty=f32);
+    AFAPI array randu(const dim_type d0, af_dtype ty=f32);
+    AFAPI array randu(const dim_type d0,
+                      const dim_type d1, af_dtype ty=f32);
+    AFAPI array randu(const dim_type d0,
+                      const dim_type d1, const dim_type d2, af_dtype ty=f32);
+    AFAPI array randu(const dim_type d0,
+                      const dim_type d1, const dim_type d2,
+                      const dim_type d3, af_dtype ty=f32);
 
-    AFAPI array approx2(const array &in, const array &pos0, const array &pos1,
-                        const af_interp_type method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
 
-    AFAPI array sort(const array &in, const unsigned dim = 0, const bool dir = true);
+    AFAPI array randn(const dim4 &dims, af_dtype ty=f32);
+    AFAPI array randn(const dim_type d0, af_dtype ty=f32);
+    AFAPI array randn(const dim_type d0,
+                      const dim_type d1, af_dtype ty=f32);
+    AFAPI array randn(const dim_type d0,
+                      const dim_type d1, const dim_type d2, af_dtype ty=f32);
+    AFAPI array randn(const dim_type d0,
+                      const dim_type d1, const dim_type d2,
+                      const dim_type d3, af_dtype ty=f32);
 
-    AFAPI void  sort(array &out, array &indices, const array &in, const unsigned dim = 0,
-                     const bool dir = true);
+    AFAPI array iota(const dim4 &dims, const unsigned rep = 3, af_dtype ty=f32);
+    AFAPI array iota(const dim_type d0, const unsigned rep = 0, af_dtype ty=f32);
+    AFAPI array iota(const dim_type d0, const dim_type d1,
+                     const unsigned rep = 1, af_dtype ty=f32);
+    AFAPI array iota(const dim_type d0, const dim_type d1, const dim_type d2,
+                     const unsigned rep = 2, af_dtype ty=f32);
+    AFAPI array iota(const dim_type d0, const dim_type d1, const dim_type d2,
+                     const dim_type d3, const unsigned rep = 3, af_dtype ty=f32);
 
-    AFAPI void  sort(array &out_keys, array & out_values, const array &keys, const array &values,
-                     const unsigned dim = 0, const bool dir = true);
 }
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+    // Create af_array from a constant value
+    AFAPI af_err af_constant(af_array *arr, const double val, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
-    // Compute first order difference along a given dimension.
-    AFAPI af_err af_diff1(af_array *out, const af_array in, const int dim);
+    AFAPI af_err af_constant_c64(af_array *arr, const void* val,
+                                 const unsigned ndims, const dim_type * const dims);
 
-    // Compute second order difference along a given dimension.
-    AFAPI af_err af_diff2(af_array *out, const af_array in, const int dim);
+    AFAPI af_err af_constant_c32(af_array *arr, const void* val,
+                                 const unsigned ndims, const dim_type * const dims);
 
-    // Inclusive sum of all the elements along an array
-    AFAPI af_err af_accum(af_array *out, const af_array in, const int dim);
+    // Create sequence array
+    AFAPI af_err af_iota(af_array *arr, const unsigned ndims, const dim_type * const dims,
+                         const unsigned rep, const af_dtype type);
 
-    AFAPI af_err af_where(af_array *idx, const af_array in);
+    // Generate Random Numbers using uniform distribution
+    AFAPI af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
-    // Interpolation in 1D
-    AFAPI af_err af_approx1(af_array *out, const af_array in, const af_array pos,
-                            const af_interp_type method, const float offGrid);
+    // Generate Random Numbers using normal distribution
+    AFAPI af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
-    // Interpolation in 2D
-    AFAPI af_err af_approx2(af_array *out, const af_array in, const af_array pos0, const af_array pos1,
-                            const af_interp_type method, const float offGrid);
-
-    // Sort
-    AFAPI af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool dir);
-
-    AFAPI af_err af_sort_index(af_array *out, af_array *indices, const af_array in,
-                               const unsigned dim, const bool dir);
-
-    AFAPI af_err af_sort_by_key(af_array *out_keys, af_array *out_values,
-                                const af_array keys, const af_array values, const unsigned dim, const bool dir);
 
 #ifdef __cplusplus
 }

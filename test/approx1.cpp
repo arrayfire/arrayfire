@@ -9,7 +9,7 @@
 
 #include <gtest/gtest.h>
 #include <af/array.h>
-#include <af/data.h>
+#include <af/signal.h>
 #include <af/index.h>
 #include <af/traits.hpp>
 #include <vector>

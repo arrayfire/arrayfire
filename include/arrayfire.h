@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+#include "af/algorithm.h"
 #include "af/arith.h"
 #include "af/array.h"
 #include "af/blas.h"
@@ -16,6 +17,5 @@
 #include "af/exception.h"
 #include "af/image.h"
 #include "af/index.h"
-#include "af/reduce.h"
 #include "af/signal.h"
 #include "af/util.h"

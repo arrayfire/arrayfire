@@ -1,7 +1,7 @@
 #include <af/array.h>
 #include <af/arith.h>
+#include <af/data.h>
 #include <af/traits.hpp>
-#include <ArrayInfo.hpp>
 #include <af/index.h>
 #include "error.hpp"
 
