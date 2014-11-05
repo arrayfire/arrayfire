@@ -73,9 +73,9 @@ namespace opencl
         compute::buffer out_data(out->get()());
 
         compute::buffer_iterator<T> first_begin(first_data, 0);
-        compute::buffer_iterator<T> first_end(first_data, first.dims()[0]);
+        compute::buffer_iterator<T> first_end(first_data, unique_first.dims()[0]);
         compute::buffer_iterator<T> second_begin(second_data, 0);
-        compute::buffer_iterator<T> second_end(second_data, second.dims()[0]);
+        compute::buffer_iterator<T> second_end(second_data, unique_second.dims()[0]);
         compute::buffer_iterator<T> out_begin(out_data, 0);
 
         compute::buffer_iterator<T> out_end = compute::set_union(
@@ -110,9 +110,9 @@ namespace opencl
         compute::buffer out_data(out->get()());
 
         compute::buffer_iterator<T> first_begin(first_data, 0);
-        compute::buffer_iterator<T> first_end(first_data, first.dims()[0]);
+        compute::buffer_iterator<T> first_end(first_data, unique_first.dims()[0]);
         compute::buffer_iterator<T> second_begin(second_data, 0);
-        compute::buffer_iterator<T> second_end(second_data, second.dims()[0]);
+        compute::buffer_iterator<T> second_end(second_data, unique_second.dims()[0]);
         compute::buffer_iterator<T> out_begin(out_data, 0);
 
         compute::buffer_iterator<T> out_end = compute::set_intersection(
