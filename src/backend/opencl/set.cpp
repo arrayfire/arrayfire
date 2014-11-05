@@ -6,6 +6,7 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <ArrayInfo.hpp>

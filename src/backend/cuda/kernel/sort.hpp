@@ -13,10 +13,6 @@
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
 #include <thrust/device_ptr.h>
-#include <thrust/device_vector.h>
-#include <thrust/tuple.h>
-#include <thrust/iterator/zip_iterator.h>
-#include <thrust/sequence.h>
 #include <thrust/sort.h>
 
 namespace cuda
