@@ -336,12 +336,12 @@ INSTANTIATE(integer)
     }
 
 #define INSTANTIATE(T)  \
-    template array::array<T>(const dim4 &dims, const T *ptr, af_source_t src, dim_type ngfor);\
-    template array::array<T>(dim_type d0, const T *ptr, af_source_t src, dim_type ngfor);\
-    template array::array<T>(dim_type d0, dim_type d1, const T *ptr, af_source_t src, dim_type ngfor);\
-    template array::array<T>(dim_type d0, dim_type d1, dim_type d2, const T *ptr, af_source_t src, dim_type ngfor);\
-    template array::array<T>(dim_type d0, dim_type d1, dim_type d2, dim_type d3, const T *ptr, af_source_t src, dim_type ngfor);\
-    template T *array::host<T>() const;
+    template array::array(const dim4 &dims, const T *ptr, af_source_t src, dim_type ngfor);\
+    template array::array(dim_type d0, const T *ptr, af_source_t src, dim_type ngfor);\
+    template array::array(dim_type d0, dim_type d1, const T *ptr, af_source_t src, dim_type ngfor);\
+    template array::array(dim_type d0, dim_type d1, dim_type d2, const T *ptr, af_source_t src, dim_type ngfor);\
+    template array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, const T *ptr, af_source_t src, dim_type ngfor);\
+    template T *array::host() const;
 
 
     INSTANTIATE(af_cdouble)
