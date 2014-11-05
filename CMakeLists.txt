@@ -5,13 +5,13 @@ OPTION(BUILD_TEST "Build Tests" ON)
 OPTION(BUILD_EXAMPLES "Build Examples" ON)
 OPTION(BUILD_GTEST "Download gtest and check for updates. Necessary if you change compilers" ON)
 
-OPTION(BUILD_CPU "Build ArrayFire with a CPU backend" ON)
-OPTION(BUILD_CUDA "Build ArrayFire with a CUDA backend" OFF)
+OPTION(BUILD_CPU "Build ArrayFire with a CPU backend" OFF)
+OPTION(BUILD_CUDA "Build ArrayFire with a CUDA backend" ON)
 OPTION(BUILD_OPENCL "Build ArrayFire with a OpenCL backend" OFF)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/common)
 
-FIND_PACKAGE(FreeImage)
+FIND_PACKAGE(FreeImage REQUIRED)
 IF(FREEIMAGE_FOUND)
     SET(lib_deps ${FREEIMAGE_LIBRARY} CACHE PATH "Library Dependencies")
 ELSE(FREEIMAGE_FOUND)
@@ -56,7 +56,6 @@ IF(${BUILD_CPU})
 ENDIF()
 
 IF(${BUILD_CUDA})
-    FIND_PACKAGE(CUDA)
     ADD_SUBDIRECTORY(src/backend/cuda)
 ENDIF()
 
