@@ -14,17 +14,40 @@
 #include <copy.hpp>
 #include <sort.hpp>
 #include <err_opencl.hpp>
+#include <boost/compute/algorithm/set_intersection.hpp>
+#include <boost/compute/algorithm/set_union.hpp>
+#include <boost/compute/algorithm/sort.hpp>
+#include <boost/compute/algorithm/unique.hpp>
+#include <boost/compute/iterator/buffer_iterator.hpp>
+
+namespace compute = boost::compute;
 
 namespace opencl
 {
-    using namespace std;
     using af::dim4;
 
     template<typename T>
     Array<T>* setUnique(const Array<T> &in,
                         const bool is_sorted)
     {
-        OPENCL_NOT_SUPPORTED();
+        Array<T> *out = copyArray<T>(in);
+
+        compute::command_queue queue(getQueue()());
+
+        compute::buffer out_data(out->get()());
+
+        compute::buffer_iterator<T> begin(out_data, 0);
+        compute::buffer_iterator<T> end(out_data, out->dims()[0]);
+
+        if (!is_sorted) {
+            compute::sort(begin, end, queue);
+        }
+
+        end = compute::unique(begin, end, queue);
+
+        out->resetDims(dim4(std::distance(begin, end), 1, 1, 1));
+
+        return out;
     }
 
     template<typename T>
@@ -32,7 +55,36 @@ namespace opencl
                        const Array<T> &second,
                        const bool is_unique)
     {
-        OPENCL_NOT_SUPPORTED();
+        Array<T> unique_first = first;
+        Array<T> unique_second = second;
+
+        if (!is_unique) {
+            unique_first  = *setUnique(first, false);
+            unique_second = *setUnique(second, false);
+        }
+
+        size_t out_size = unique_first.dims()[0] + unique_second.dims()[0];
+        Array<T> *out = createEmptyArray<T>(dim4(out_size, 1, 1, 1));
+
+        compute::command_queue queue(getQueue()());
+
+        compute::buffer first_data(unique_first.get()());
+        compute::buffer second_data(unique_second.get()());
+        compute::buffer out_data(out->get()());
+
+        compute::buffer_iterator<T> first_begin(first_data, 0);
+        compute::buffer_iterator<T> first_end(first_data, first.dims()[0]);
+        compute::buffer_iterator<T> second_begin(second_data, 0);
+        compute::buffer_iterator<T> second_end(second_data, second.dims()[0]);
+        compute::buffer_iterator<T> out_begin(out_data, 0);
+
+        compute::buffer_iterator<T> out_end = compute::set_union(
+            first_begin, first_end, second_begin, second_end, out_begin, queue
+        );
+
+        out->resetDims(dim4(std::distance(out_begin, out_end), 1, 1, 1));
+
+        return out;
     }
 
     template<typename T>
@@ -40,7 +92,36 @@ namespace opencl
                            const Array<T> &second,
                            const bool is_unique)
     {
-        OPENCL_NOT_SUPPORTED();
+        Array<T> unique_first = first;
+        Array<T> unique_second = second;
+
+        if (!is_unique) {
+            unique_first  = *setUnique(first, false);
+            unique_second = *setUnique(second, false);
+        }
+
+        size_t out_size = std::max(unique_first.dims()[0], unique_second.dims()[0]);
+        Array<T> *out = createEmptyArray<T>(dim4(out_size, 1, 1, 1));
+
+        compute::command_queue queue(getQueue()());
+
+        compute::buffer first_data(unique_first.get()());
+        compute::buffer second_data(unique_second.get()());
+        compute::buffer out_data(out->get()());
+
+        compute::buffer_iterator<T> first_begin(first_data, 0);
+        compute::buffer_iterator<T> first_end(first_data, first.dims()[0]);
+        compute::buffer_iterator<T> second_begin(second_data, 0);
+        compute::buffer_iterator<T> second_end(second_data, second.dims()[0]);
+        compute::buffer_iterator<T> out_begin(out_data, 0);
+
+        compute::buffer_iterator<T> out_end = compute::set_intersection(
+            first_begin, first_end, second_begin, second_end, out_begin, queue
+        );
+
+        out->resetDims(dim4(std::distance(out_begin, out_end), 1, 1, 1));
+
+        return out;
     }
 
 #define INSTANTIATE(T)                                                  \
