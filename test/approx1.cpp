@@ -196,8 +196,7 @@ TEST(Approx1, CPP)
 {
     const unsigned resultIdx = 1;
     const af_interp_type method = AF_INTERP_LINEAR;
-
-    typedef typename af::dtype_traits<float>::base_type BT;
+#define BT af::dtype_traits<float>::base_type
     vector<af::dim4> numDims;
     vector<vector<BT>> in;
     vector<vector<float>> tests;
@@ -225,4 +224,6 @@ TEST(Approx1, CPP)
 
     // Delete
     delete[] outData;
+
+#undef BT
 }

@@ -16,6 +16,7 @@
 #include <limits>
 
 typedef unsigned char uchar;
+typedef unsigned int uint;
 
 template<typename inType, typename outType, typename FileElementType>
 void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,

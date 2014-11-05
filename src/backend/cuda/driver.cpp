@@ -18,6 +18,7 @@
 
 int nvDriverVersion(char *result, int len)
 {
+#if 0
     LPCTSTR lptstrFilename = "nvcuda.dll";
     DWORD dwLen, dwHandle;
     LPVOID lpData = NULL;
@@ -46,7 +47,8 @@ int nvDriverVersion(char *result, int len)
     snprintf(result, len, "%.2f", fversion);
 
     free(lpData);
-
+#endif
+	snprintf(result, len, "%.2f", 0.0);
     return 1;
 }
 
