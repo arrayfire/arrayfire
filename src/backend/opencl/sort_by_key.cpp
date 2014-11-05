@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <copy.hpp>
 #include <sort_by_key.hpp>
 #include <kernel/sort_by_key.hpp>
 #include <math.hpp>
@@ -20,10 +21,12 @@ namespace opencl
     void sort_by_key(Array<Tk> &okey, Array<Tv> &oval,
                const Array<Tk> &ikey, const Array<Tv> &ival, const unsigned dim)
     {
+        okey = *copyArray<Tk>(ikey);
+        oval = *copyArray<Tv>(ival);
         switch(dim) {
-            case 0: kernel::sort0_by_key<Tk, Tv, DIR>(okey, oval, ikey, ival);
-                    break;
-            default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
+        case 0: kernel::sort0_by_key<Tk, Tv, DIR>(okey, oval);
+            break;
+        default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }
     }
 

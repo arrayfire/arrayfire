@@ -12,6 +12,8 @@
 #include <Array.hpp>
 #include <backend.hpp>
 #include <err_common.hpp>
+#include <math.hpp>
+#include <copy.hpp>
 
 template<typename T>
 static const detail::Array<T> &
@@ -35,6 +37,44 @@ getHandle(const detail::Array<T> &A)
 {
     af_array arr = reinterpret_cast<af_array>(&A);
     return arr;
+}
+
+template<typename T>
+static af_array createHandle(af::dim4 d)
+{
+    return getHandle(*detail::createEmptyArray<T>(d));
+}
+
+template<typename T>
+static af_array createHandle(af::dim4 d, double val)
+{
+    return getHandle(*detail::createValueArray<T>(d, detail::scalar<T>(val)));
+}
+
+template<typename T>
+static af_array createHandle(af::dim4 d, const T * const data)
+{
+    return getHandle(*detail::createDataArray<T>(d, data));
+}
+
+template<typename T>
+static void copyData(T *data, const af_array &arr)
+{
+    return detail::copyData(data, getArray<T>(arr));
+}
+
+template<typename T>
+static void copyArray(af_array *out, const af_array in)
+{
+    const detail::Array<T> &inArray = getArray<T>(in);
+    detail::Array<T> *outArray = detail::copyArray<T>(inArray);
+    *out = getHandle(*outArray);
+}
+
+template<typename T>
+static void destroyHandle(const af_array arr)
+{
+    detail::destroyArray(getWritableArray<T>(arr));
 }
 
 af_array weakCopy(const af_array in);

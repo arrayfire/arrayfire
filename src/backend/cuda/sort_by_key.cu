@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
+#include <copy.hpp>
 #include <sort_by_key.hpp>
 #include <kernel/sort_by_key.hpp>
 #include <math.hpp>
@@ -18,22 +19,24 @@ namespace cuda
 {
     template<typename Tk, typename Tv, bool DIR>
     void sort_by_key(Array<Tk> &okey, Array<Tv> &oval,
-               const Array<Tk> &ikey, const Array<Tv> &ival, const unsigned dim)
+               const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim)
     {
+        okey = *copyArray<Tk>(ikey);
+        oval = *copyArray<Tv>(ival);
         switch(dim) {
-            case 0: kernel::sort0_by_key<Tk, Tv, DIR>(okey, oval, ikey, ival);
-                    break;
-            default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
+        case 0: kernel::sort0_by_key<Tk, Tv, DIR>(okey, oval);
+            break;
+        default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }
     }
 
-#define INSTANTIATE(Tk, Tv)                                                                     \
-    template void                                                                               \
-    sort_by_key<Tk, Tv, true>(Array<Tk> &okey, Array<Tv> &oval,                                 \
-                        const Array<Tk> &ikey, const Array<Tv> &ival, const unsigned dim);      \
-    template void                                                                               \
-    sort_by_key<Tk, Tv,false>(Array<Tk> &okey, Array<Tv> &oval,                                 \
-                        const Array<Tk> &ikey, const Array<Tv> &ival, const unsigned dim);      \
+#define INSTANTIATE(Tk, Tv)                                             \
+    template void                                                       \
+    sort_by_key<Tk, Tv, true>(Array<Tk> &okey, Array<Tv> &oval,         \
+                              const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim); \
+    template void                                                       \
+    sort_by_key<Tk, Tv,false>(Array<Tk> &okey, Array<Tv> &oval,         \
+                              const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim); \
 
 #define INSTANTIATE1(Tk)       \
     INSTANTIATE(Tk, float)     \

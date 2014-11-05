@@ -25,44 +25,6 @@ using af::dim4;
 using namespace detail;
 using namespace std;
 
-template<typename T>
-static af_array createHandle(af::dim4 d)
-{
-    return getHandle(*createEmptyArray<T>(d));
-}
-
-template<typename T>
-static af_array createHandle(af::dim4 d, double val)
-{
-    return getHandle(*createValueArray<T>(d, scalar<T>(val)));
-}
-
-template<typename T>
-static af_array createHandle(af::dim4 d, const T * const data)
-{
-    return getHandle(*createDataArray<T>(d, data));
-}
-
-template<typename T>
-static void copyData(T *data, const af_array &arr)
-{
-    return copyData(data, getArray<T>(arr));
-}
-
-template<typename T>
-static void copyArray(af_array *out, const af_array in)
-{
-    const Array<T> &inArray = getArray<T>(in);
-    Array<T> *outArray = copyArray<T>(inArray);
-    *out = getHandle(*outArray);
-}
-
-template<typename T>
-static void destroyHandle(const af_array arr)
-{
-    destroyArray(getWritableArray<T>(arr));
-}
-
 af_err af_get_data_ptr(void *data, const af_array arr)
 {
     af_err ret = AF_SUCCESS;

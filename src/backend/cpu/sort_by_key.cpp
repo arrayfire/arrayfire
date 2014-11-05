@@ -37,14 +37,14 @@ namespace cpu
         if(DIR) { op = less<Tk>(); }
 
         // Get pointers and initialize original index locations
-        Array<unsigned> *oidx = createValueArray(ikey.dims(), 0u);
+        Array<uint> *oidx = createValueArray(ikey.dims(), 0u);
             uint *oidx_ptr = oidx->get();
               Tk *okey_ptr = okey.get();
               Tv *oval_ptr = oval.get();
         const Tk *ikey_ptr = ikey.get();
         const Tv *ival_ptr = ival.get();
 
-        std::vector<unsigned> seq_vec(oidx->dims()[0]);
+        std::vector<uint> seq_vec(oidx->dims()[0]);
         std::iota(seq_vec.begin(), seq_vec.end(), 0);
 
         const Tk *comp_ptr = nullptr;
@@ -95,8 +95,10 @@ namespace cpu
     ///////////////////////////////////////////////////////////////////////////
     template<typename Tk, typename Tv, bool DIR>
     void sort_by_key(Array<Tk> &okey, Array<Tv> &oval,
-               const Array<Tk> &ikey, const Array<Tv> &ival, const unsigned dim)
+               const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim)
     {
+        okey = *createEmptyArray<Tk>(ikey.dims());
+        oval = *createEmptyArray<Tv>(ival.dims());
         switch(dim) {
             case 0: sort0_by_key<Tk, Tv, DIR>(okey, oval, ikey, ival);
                     break;
@@ -104,13 +106,13 @@ namespace cpu
         }
     }
 
-#define INSTANTIATE(Tk, Tv)                                                                     \
-    template void                                                                               \
-    sort_by_key<Tk, Tv, true>(Array<Tk> &okey, Array<Tv> &oval,                                 \
-                        const Array<Tk> &ikey, const Array<Tv> &ival, const unsigned dim);      \
-    template void                                                                               \
-    sort_by_key<Tk, Tv,false>(Array<Tk> &okey, Array<Tv> &oval,                                 \
-                        const Array<Tk> &ikey, const Array<Tv> &ival, const unsigned dim);      \
+#define INSTANTIATE(Tk, Tv)                                             \
+    template void                                                       \
+    sort_by_key<Tk, Tv, true>(Array<Tk> &okey, Array<Tv> &oval,         \
+                              const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim); \
+    template void                                                       \
+    sort_by_key<Tk, Tv,false>(Array<Tk> &okey, Array<Tv> &oval,         \
+                              const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim); \
 
 #define INSTANTIATE1(Tk)       \
     INSTANTIATE(Tk, float)     \
