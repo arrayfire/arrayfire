@@ -6,6 +6,7 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+
 #include <complex>
 #include <algorithm>
 #include <af/dim4.hpp>
@@ -89,7 +90,7 @@ namespace cpu
 
         dim_type first_elements  = uFirst.elements();
         dim_type second_elements = uSecond.elements();
-        dim_type elements = first_elements + second_elements;
+        dim_type elements = std::max(first_elements, second_elements);
 
         out = createEmptyArray<T>(af::dim4(elements));
 
