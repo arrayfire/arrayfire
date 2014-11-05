@@ -8,7 +8,7 @@
  ********************************************************/
 
 // Workaround for BOOST_NOINLINE not being defined with nvcc / CUDA < 6.5
-#ifdef AF_CUDA_VERSION_LESS_6_5
+#if CUDA_VERSION < 6050
 #define BOOST_NOINLINE __attribute__ ((noinline))
 #endif
 

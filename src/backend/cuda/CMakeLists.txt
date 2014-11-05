@@ -9,12 +9,6 @@ INCLUDE(${CMAKE_SOURCE_DIR}/common/CUDACheckCompute.cmake)
 FIND_PACKAGE(Boost)
 INCLUDE_DIRECTORIES(${BOOST_INCLUDE_DIR})
 
-## Workaround for BOOST_NOINLINE not being defined with nvcc / CUDA < 6.5
-## Applied to Array.hpp
-if(${CUDA_VERSION_STRING} VERSION_LESS "6.5")
-    ADD_DEFINITIONS(-DAF_CUDA_VERSION_LESS_6_5)
-endif()
-
 ADD_DEFINITIONS(-DAF_CUDA)
 REMOVE_DEFINITIONS(-std=c++0x)
 
