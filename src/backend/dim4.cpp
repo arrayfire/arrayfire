@@ -14,6 +14,7 @@
 #include <iostream>
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
+#include <err_common.hpp>
 
 namespace af
 {
@@ -134,7 +135,10 @@ dim4::operator-=(const dim4 &other)
 }
 
 bool
-isSpan(const af_seq &seq)          { return (seq.step == 0); }
+isEnd(const af_seq &seq)    { return (seq.end == -1); }
+
+bool
+isSpan(const af_seq &seq)   { return (seq.step == 0 && seq.begin == 1 && seq.end == 1); }
 
 size_t
 seqElements(const af_seq &seq) {
@@ -151,19 +155,36 @@ toDims(const vector<af_seq>& seqs, dim4 parentDims)
 {
     dim4 out(1, 1, 1, 1);
     for(unsigned i = 0; i < seqs.size(); i++ ) {
-        if  (isSpan(seqs[i]))   { out[i] = parentDims[i];          }
-        else                    { out[i] = seqElements(seqs[i]);   }
+        if  (isSpan(seqs[i])) {
+            out[i] = parentDims[i];
+        } else if (isEnd(seqs[i])) {
+            if(seqs[i].begin == -1) {   // only end is passed as seq
+                out[i] = 1;
+            } else {    // end is passed as a part of seq
+                af_seq temp = {seqs[i].begin, parentDims[i] - 1., seqs[i].step};
+                out[i] = seqElements(temp);
+            }
+        } else if (seqs[i].begin < 0) {
+            // This will throw an error for invalid sequence
+            // FIXME
+            // Allow reverse sequence, ie. end, 0, -1.
+            // Check for seq out of bounds on greater side
+            AF_ERROR("Sequence out of bounds", AF_ERR_INVALID_ARG);
+        } else {
+            out[i] = seqElements(seqs[i]);
+        }
     }
     return out;
 }
 
 dim4
-toOffset(const vector<af_seq>& seqs)
+toOffset(const vector<af_seq>& seqs, dim4 parentDims)
 {
     dim4 out(0, 0, 0, 0);
     for(unsigned i = 0; i < seqs.size(); i++ ) {
         if      (seqs[i].step != 0) {   out[i] = seqs[i].begin; }
-        else                        {   out[i] = 0;             }
+        else if (isEnd(seqs[i]) && seqs[i].begin == -1) { out[i] = parentDims[i] - 1; }
+        else    { out[i] = 0; }
     }
     return out;
 }

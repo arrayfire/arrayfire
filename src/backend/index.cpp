@@ -33,7 +33,7 @@ static void indexArray(af_array &dest, const af_array &src, const unsigned ndims
     vector<af_seq> index_(index, index+ndims);
     Array<T>* dst =  createSubArray(    parent,
                                         toDims(index_, parent.dims()),
-                                        toOffset(index_),
+                                        toOffset(index_, parent.dims()),
                                         toStride(index_, parent.dims()) );
     dest = getHandle(*dst);
 }

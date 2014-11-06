@@ -33,7 +33,7 @@ namespace cpu
         // initialize original index locations
         T *val_ptr = val.get();
 
-        function<bool(dim_type, dim_type)> op = greater<T>();
+        function<bool(T, T)> op = greater<T>();
         if(DIR) { op = less<T>(); }
 
         T *comp_ptr = nullptr;

@@ -32,7 +32,7 @@ class Transpose : public ::testing::Test
 
             subMat3D.push_back({2,7,1});
             subMat3D.push_back({2,7,1});
-            subMat3D.push_back(span);
+            subMat3D.push_back(af_span);
         }
         vector<af_seq> subMat2D;
         vector<af_seq> subMat3D;
