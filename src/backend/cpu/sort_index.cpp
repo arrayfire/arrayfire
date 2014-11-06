@@ -36,7 +36,7 @@ namespace cpu
            uint *idx_ptr = idx.get();
               T *val_ptr = val.get();
         const T *in_ptr  = in.get();
-        function<bool(dim_type, dim_type)> op = greater<T>();
+        function<bool(T, T)> op = greater<T>();
         if(DIR) { op = less<T>(); }
 
         std::vector<uint> seq_vec(idx.dims()[0]);

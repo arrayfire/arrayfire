@@ -33,7 +33,7 @@ namespace cpu
     template<typename Tk, typename Tv, bool DIR>
     void sort0_by_key(Array<Tk> &okey, Array<Tv> &oval, const Array<Tk> &ikey, const Array<Tv> &ival)
     {
-        function<bool(dim_type, dim_type)> op = greater<Tk>();
+        function<bool(Tk, Tk)> op = greater<Tk>();
         if(DIR) { op = less<Tk>(); }
 
         // Get pointers and initialize original index locations
