@@ -10,6 +10,7 @@
 #pragma once
 #include <limits>
 #include <algorithm>
+#include <numeric>
 #include "types.hpp"
 
 namespace cpu

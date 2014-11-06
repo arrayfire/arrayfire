@@ -37,10 +37,10 @@ namespace cpu
            uint *idx_ptr = idx.get();
               T *val_ptr = val.get();
         const T *in_ptr  = in.get();
-        function<bool(dim_type, dim_type)> op = greater<T>();
+        function<bool(T, T)> op = greater<T>();
         if(DIR) { op = less<T>(); }
 
-        std::vector<unsigned> seq_vec(idx.dims()[0]);
+        std::vector<uint> seq_vec(idx.dims()[0]);
         std::iota(seq_vec.begin(), seq_vec.end(), 0);
 
         const T *comp_ptr = nullptr;
@@ -80,8 +80,10 @@ namespace cpu
     // Wrapper Functions
     ///////////////////////////////////////////////////////////////////////////
     template<typename T, bool DIR>
-    void sort_index(Array<T> &val, Array<unsigned> &idx, const Array<T> &in, const unsigned dim)
+    void sort_index(Array<T> &val, Array<uint> &idx, const Array<T> &in, const uint dim)
     {
+        val = *createEmptyArray<T>(in.dims());
+        idx = *createEmptyArray<uint>(in.dims());
         switch(dim) {
             case 0: sort0_index<T, DIR>(val, idx, in);
                     break;
@@ -89,11 +91,11 @@ namespace cpu
         }
     }
 
-#define INSTANTIATE(T)                                                                          \
-    template void sort_index<T, true>(Array<T> &val, Array<unsigned> &idx, const Array<T> &in,  \
-                                      const unsigned dim);                                      \
-    template void sort_index<T,false>(Array<T> &val, Array<unsigned> &idx, const Array<T> &in,  \
-                                      const unsigned dim);                                      \
+#define INSTANTIATE(T)                                                  \
+    template void sort_index<T, true>(Array<T> &val, Array<uint> &idx, const Array<T> &in, \
+                                      const uint dim);                  \
+    template void sort_index<T,false>(Array<T> &val, Array<uint> &idx, const Array<T> &in, \
+                                      const uint dim);                  \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

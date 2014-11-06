@@ -27,6 +27,37 @@ extern "C" {
     // Get the data type of an af_array
     AFAPI af_err af_get_type(af_dtype *type, const af_array arr);
 
+    AFAPI af_err af_get_dims(dim_type *d0, dim_type *d1, dim_type *d2, dim_type *d3,
+                             const af_array arr);
+
+    AFAPI af_err af_get_numdims(unsigned *result, const af_array arr);
+
+    AFAPI af_err af_is_empty        (bool *result, const af_array arr);
+
+    AFAPI af_err af_is_scalar       (bool *result, const af_array arr);
+
+    AFAPI af_err af_is_row          (bool *result, const af_array arr);
+
+    AFAPI af_err af_is_column       (bool *result, const af_array arr);
+
+    AFAPI af_err af_is_vector       (bool *result, const af_array arr);
+
+    AFAPI af_err af_is_complex      (bool *result, const af_array arr);
+
+    AFAPI af_err af_is_real         (bool *result, const af_array arr);
+
+    AFAPI af_err af_is_double       (bool *result, const af_array arr);
+
+    AFAPI af_err af_is_single       (bool *result, const af_array arr);
+
+    AFAPI af_err af_is_realfloating (bool *result, const af_array arr);
+
+    AFAPI af_err af_is_floating     (bool *result, const af_array arr);
+
+    AFAPI af_err af_is_integer      (bool *result, const af_array arr);
+
+    AFAPI af_err af_is_bool         (bool *result, const af_array arr);
+
     // Print contents of af_array to console
     AFAPI af_err af_print_array(af_array arr);
 

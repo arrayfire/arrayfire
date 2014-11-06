@@ -104,7 +104,7 @@ public:
         strided_reverse_seqs.push_back({  40,    5,   -3 }); // Reverse Three Step
         strided_reverse_seqs.push_back({  40,    5,   -4 }); // Reverse Four Step
 
-        span_seqs.push_back(span);
+        span_seqs.push_back(af_span);
     }
 
     virtual ~Indexing1D() {}
@@ -141,37 +141,37 @@ public:
     }
     virtual void SetUp() {
 
-        column_continuous_seq.push_back(make_vec(span, {  0,  6,  1}));
-        column_continuous_seq.push_back(make_vec(span, {  4,  9,  1}));
-        column_continuous_seq.push_back(make_vec(span, {  3,  8,  1}));
+        column_continuous_seq.push_back(make_vec(af_span, {  0,  6,  1}));
+        column_continuous_seq.push_back(make_vec(af_span, {  4,  9,  1}));
+        column_continuous_seq.push_back(make_vec(af_span, {  3,  8,  1}));
 
-        column_continuous_reverse_seq.push_back(make_vec(span, {  6,  0,  -1}));
-        column_continuous_reverse_seq.push_back(make_vec(span, {  9,  4,  -1}));
-        column_continuous_reverse_seq.push_back(make_vec(span, {  8,  3,  -1}));
+        column_continuous_reverse_seq.push_back(make_vec(af_span, {  6,  0,  -1}));
+        column_continuous_reverse_seq.push_back(make_vec(af_span, {  9,  4,  -1}));
+        column_continuous_reverse_seq.push_back(make_vec(af_span, {  8,  3,  -1}));
 
-        column_strided_seq.push_back(make_vec(span, {  0,    8,   2 })); // Two Step
-        column_strided_seq.push_back(make_vec(span, {  2,    9,   3 })); // Three Step
-        column_strided_seq.push_back(make_vec(span, {  0,    9,   4 })); // Four Step
+        column_strided_seq.push_back(make_vec(af_span, {  0,    8,   2 })); // Two Step
+        column_strided_seq.push_back(make_vec(af_span, {  2,    9,   3 })); // Three Step
+        column_strided_seq.push_back(make_vec(af_span, {  0,    9,   4 })); // Four Step
 
-        column_strided_reverse_seq.push_back(make_vec(span, {  8,   0,   -2 })); // Two Step
-        column_strided_reverse_seq.push_back(make_vec(span, {  9,   2,   -3 })); // Three Step
-        column_strided_reverse_seq.push_back(make_vec(span, {  9,   0,   -4 })); // Four Step
+        column_strided_reverse_seq.push_back(make_vec(af_span, {  8,   0,   -2 })); // Two Step
+        column_strided_reverse_seq.push_back(make_vec(af_span, {  9,   2,   -3 })); // Three Step
+        column_strided_reverse_seq.push_back(make_vec(af_span, {  9,   0,   -4 })); // Four Step
 
-        row_continuous_seq.push_back(make_vec({  0,  6,  1}, span));
-        row_continuous_seq.push_back(make_vec({  4,  9,  1}, span));
-        row_continuous_seq.push_back(make_vec({  3,  8,  1}, span));
+        row_continuous_seq.push_back(make_vec({  0,  6,  1}, af_span));
+        row_continuous_seq.push_back(make_vec({  4,  9,  1}, af_span));
+        row_continuous_seq.push_back(make_vec({  3,  8,  1}, af_span));
 
-        row_continuous_reverse_seq.push_back(make_vec({  6,  0,  -1}, span));
-        row_continuous_reverse_seq.push_back(make_vec({  9,  4,  -1}, span));
-        row_continuous_reverse_seq.push_back(make_vec({  8,  3,  -1}, span));
+        row_continuous_reverse_seq.push_back(make_vec({  6,  0,  -1}, af_span));
+        row_continuous_reverse_seq.push_back(make_vec({  9,  4,  -1}, af_span));
+        row_continuous_reverse_seq.push_back(make_vec({  8,  3,  -1}, af_span));
 
-        row_strided_seq.push_back(make_vec({  0,    8,   2 }, span));
-        row_strided_seq.push_back(make_vec({  2,    9,   3 }, span));
-        row_strided_seq.push_back(make_vec({  0,    9,   4 }, span));
+        row_strided_seq.push_back(make_vec({  0,    8,   2 }, af_span));
+        row_strided_seq.push_back(make_vec({  2,    9,   3 }, af_span));
+        row_strided_seq.push_back(make_vec({  0,    9,   4 }, af_span));
 
-        row_strided_reverse_seq.push_back(make_vec({  8,   0,   -2 }, span));
-        row_strided_reverse_seq.push_back(make_vec({  9,   2,   -3 }, span));
-        row_strided_reverse_seq.push_back(make_vec({  9,   0,   -4 }, span));
+        row_strided_reverse_seq.push_back(make_vec({  8,   0,   -2 }, af_span));
+        row_strided_reverse_seq.push_back(make_vec({  9,   2,   -3 }, af_span));
+        row_strided_reverse_seq.push_back(make_vec({  9,   0,   -4 }, af_span));
 
         continuous_continuous_seq.push_back(make_vec({  1,  6,  1}, {  0,  6,  1}));
         continuous_continuous_seq.push_back(make_vec({  3,  9,  1}, {  4,  9,  1}));
@@ -388,7 +388,7 @@ TEST(Indexing2D, ColumnContiniousCPP)
 
     vector<vector<af_seq>> seqs;
 
-    seqs.push_back(make_vec(span, {  0,  6,  1}));
+    seqs.push_back(make_vec(af_span, {  0,  6,  1}));
     //seqs.push_back(make_vec(span, {  4,  9,  1}));
     //seqs.push_back(make_vec(span, {  3,  8,  1}));
 

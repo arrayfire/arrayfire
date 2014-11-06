@@ -25,44 +25,6 @@ using af::dim4;
 using namespace detail;
 using namespace std;
 
-template<typename T>
-static af_array createHandle(af::dim4 d)
-{
-    return getHandle(*createEmptyArray<T>(d));
-}
-
-template<typename T>
-static af_array createHandle(af::dim4 d, double val)
-{
-    return getHandle(*createValueArray<T>(d, scalar<T>(val)));
-}
-
-template<typename T>
-static af_array createHandle(af::dim4 d, const T * const data)
-{
-    return getHandle(*createDataArray<T>(d, data));
-}
-
-template<typename T>
-static void copyData(T *data, const af_array &arr)
-{
-    return copyData(data, getArray<T>(arr));
-}
-
-template<typename T>
-static void copyArray(af_array *out, const af_array in)
-{
-    const Array<T> &inArray = getArray<T>(in);
-    Array<T> *outArray = copyArray<T>(inArray);
-    *out = getHandle(*outArray);
-}
-
-template<typename T>
-static void destroyHandle(const af_array arr)
-{
-    destroyArray(getWritableArray<T>(arr));
-}
-
 af_err af_get_data_ptr(void *data, const af_array arr)
 {
     af_err ret = AF_SUCCESS;
@@ -426,4 +388,91 @@ af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const di
     }
     CATCHALL
         return ret;
+}
+
+#undef INSTANTIATE
+#define INSTANTIATE(fn1, fn2)                                               \
+af_err fn1(bool *result, const af_array in)                                 \
+{                                                                           \
+    af_err ret = AF_ERR_ARG;                                                \
+    try {                                                                   \
+        ArrayInfo info = getInfo(in);                                       \
+        *result = info.fn2();                                               \
+        ret = AF_SUCCESS;                                                   \
+    }                                                                       \
+    CATCHALL                                                                \
+    return ret;                                                             \
+}
+
+INSTANTIATE(af_is_empty       , isEmpty       )
+INSTANTIATE(af_is_scalar      , isScalar      )
+INSTANTIATE(af_is_row         , isRow         )
+INSTANTIATE(af_is_column      , isColumn      )
+INSTANTIATE(af_is_vector      , isVector      )
+INSTANTIATE(af_is_complex     , isComplex     )
+INSTANTIATE(af_is_real        , isReal        )
+INSTANTIATE(af_is_double      , isDouble      )
+INSTANTIATE(af_is_single      , isSingle      )
+INSTANTIATE(af_is_realfloating, isRealFloating)
+INSTANTIATE(af_is_floating    , isFloating    )
+INSTANTIATE(af_is_integer     , isInteger     )
+INSTANTIATE(af_is_bool        , isBool        )
+
+#undef INSTANTIATE
+
+af_err af_get_dims(dim_type *d0, dim_type *d1, dim_type *d2, dim_type *d3,
+                   const af_array in)
+{
+    af_err ret = AF_ERR_ARG;
+    try {
+        ArrayInfo info = getInfo(in);
+        *d0 = info.dims()[0];
+        *d1 = info.dims()[1];
+        *d2 = info.dims()[2];
+        *d3 = info.dims()[3];
+        ret = AF_SUCCESS;
+    }
+    CATCHALL
+    return ret;
+}
+
+af_err af_get_numdims(unsigned *nd, const af_array in)
+{
+    af_err ret = AF_ERR_ARG;
+    try {
+        ArrayInfo info = getInfo(in);
+        *nd = info.ndims();
+        ret = AF_SUCCESS;
+    }
+    CATCHALL
+    return ret;
+}
+
+template<typename T>
+static inline void eval(af_array arr)
+{
+    getArray<T>(arr).eval();
+    return;
+}
+
+af_err af_eval(af_array arr)
+{
+    try {
+        af_dtype type = getInfo(arr).getType();
+        switch (type) {
+        case f32: eval<float  >(arr); break;
+        case f64: eval<double >(arr); break;
+        case c32: eval<cfloat >(arr); break;
+        case c64: eval<cdouble>(arr); break;
+        case s32: eval<int    >(arr); break;
+        case u32: eval<uint   >(arr); break;
+        case s8 : eval<char   >(arr); break;
+        case u8 : eval<uchar  >(arr); break;
+        case b8 : eval<uchar  >(arr); break;
+        default:
+            TYPE_ERROR(0, type);
+        }
+    } CATCHALL;
+
+    return AF_SUCCESS;
 }

@@ -55,4 +55,14 @@ namespace cpu {
         }
         return 1;
     }
+
+    int getActiveDeviceId()
+    {
+        return 0;
+    }
+
+    void sync(int device)
+    {
+        // Nothing here
+    }
 }

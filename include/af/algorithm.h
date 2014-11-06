@@ -48,6 +48,12 @@ namespace af
 
     AFAPI void  sort(array &out_keys, array & out_values, const array &keys, const array &values,
                      const unsigned dim = 0, const bool dir = true);
+
+    AFAPI array setunique(const array &in, bool is_sorted=false);
+
+    AFAPI array setunion(const array &first, const array &second, bool is_unique=false);
+
+    AFAPI array setintersect(const array &first, const array &second, bool is_unique=false);
 }
 #endif
 
@@ -91,6 +97,12 @@ extern "C" {
 
     AFAPI af_err af_sort_by_key(af_array *out_keys, af_array *out_values,
                                 const af_array keys, const af_array values, const unsigned dim, const bool dir);
+
+    AFAPI af_err af_set_unique(af_array *out, const af_array in, const bool is_sorted);
+
+    AFAPI af_err af_set_union(af_array *out, const af_array first, const af_array second, const bool is_unique);
+
+    AFAPI af_err af_set_intersect(af_array *out, const af_array first, const af_array second, const bool is_unique);
 
 #ifdef __cplusplus
 }

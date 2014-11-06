@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 #include <sort.hpp>
+#include <copy.hpp>
 #include <kernel/sort.hpp>
 #include <math.hpp>
 #include <stdexcept>
@@ -17,18 +18,20 @@
 namespace opencl
 {
     template<typename T, bool DIR>
-    void sort(Array<T> &val, const Array<T> &in, const unsigned dim)
+    Array<T>* sort(const Array<T> &in, const unsigned dim)
     {
+        Array<T> *out = copyArray<T>(in);
         switch(dim) {
-            case 0: kernel::sort0<T, DIR>(val, in);
+            case 0: kernel::sort0<T, DIR>(*out);
                     break;
             default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }
+        return out;
     }
 
-#define INSTANTIATE(T)                                                                          \
-    template void sort<T, true>(Array<T> &val, const Array<T> &in, const unsigned dim);         \
-    template void sort<T,false>(Array<T> &val, const Array<T> &in, const unsigned dim);         \
+#define INSTANTIATE(T)                                                  \
+    template Array<T>* sort<T, true>(const Array<T> &in, const unsigned dim); \
+    template Array<T>*  sort<T,false>(const Array<T> &in, const unsigned dim); \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

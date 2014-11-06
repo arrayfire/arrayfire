@@ -10,6 +10,7 @@
 #pragma once
 #include <af/defines.h>
 #include <af/dim4.hpp>
+#include <af/seq.h>
 #include <af/traits.hpp>
 
 
@@ -31,9 +32,10 @@ namespace af
     private:
         af_array   arr;
         bool     isRef;
-        af_seq    s[4];
+        seq      s[4];
+        void getSeq(af_seq* afs);
 
-        array(af_array in, af_seq *seqs);
+        array(af_array in, seq *seqs);
 
     public:
         array();
@@ -99,6 +101,8 @@ namespace af
         bool isinteger() const;
         bool isbool() const;
         void eval();
+
+#if 0 // FIXME: Add these functions to C++ wrapper
         void unlock() const;
 
         template<typename T> T scalar() const;
@@ -111,20 +115,66 @@ namespace af
         static void *pinned(size_t elements, af_dtype type);
 
         static void free(const void *);
+#endif
 
-        array operator()(const af_seq& s0, const af_seq& s1=span, const af_seq& s2=span, const af_seq& s3=span) const;
 
-        array row(size_t index) const;
+        // INDEXING
+    public:
+        // Single arguments
+        array operator()(const seq& s0) const;
+        array operator()(const int& s0) const
+                        { return this->operator()(seq(s0, s0)); }
 
-        array col(size_t index) const;
+        // Two arguments
+        array operator()(const seq& s0, const seq& s1) const;
 
-        array slice(size_t index) const;
+        array operator()(const int& s0, const int& s1) const
+                        { return this->operator()(seq(s0, s0), seq(s1, s1)); }
 
-        array rows(size_t first, size_t last) const;
+        array operator()(const int& s0, const seq& s1) const
+                        { return this->operator()(seq(s0, s0), s1); }
 
-        array cols(size_t first, size_t last) const;
+        array operator()(const seq& s0, const int& s1) const
+                        { return this->operator()(s0, seq(s1, s1)); }
 
-        array slices(size_t first, size_t last) const;
+        // Three arguments
+        array operator()(const seq& s0, const seq& s1, const seq& s2) const;
+
+        array operator()(const int& s0, const int& s1, const int& s2) const
+                        { return this->operator()(seq(s0, s0), seq(s1, s1), seq(s2, s2)); }
+
+        array operator()(const int& s0, const seq& s1, const seq& s2) const
+                        { return this->operator()(seq(s0, s0), s1, s2); }
+
+        array operator()(const int& s0, const int& s1, const seq& s2) const
+                        { return this->operator()(seq(s0, s0), seq(s1, s1), s2); }
+
+        array operator()(const seq& s0, const int& s1, const seq& s2) const
+                        { return this->operator()(s0, seq(s1, s1), s2); }
+
+        array operator()(const seq& s0, const int& s1, const int& s2) const
+                        { return this->operator()(s0, seq(s1, s1), seq(s2, s2)); }
+
+        array operator()(const seq& s0, const seq& s1, const int& s2) const
+                        { return this->operator()(s0, s1, seq(s2, s2)); }
+
+        // Four arguments
+        array operator()(const seq& s0, const seq& s1, const seq& s2, const seq& s3) const;
+
+        array operator()(const int& s0, const int& s1, const int& s2, const int& s3) const
+                        { return this->operator()(seq(s0, s0), seq(s1, s1), seq(s2, s2), seq(s3, s3)); }
+
+        array row(int index) const;
+
+        array col(int index) const;
+
+        array slice(int index) const;
+
+        array rows(int first, int last) const;
+
+        array cols(int first, int last) const;
+
+        array slices(int first, int last) const;
 
         array as(af_dtype type) const;
 
@@ -245,6 +295,14 @@ namespace af
 #undef LOGIC
 #undef COMP
 
+    /// Evaluate an expression (nonblocking).
+    inline array &eval(array &a) { a.eval(); return a; }
+    inline void eval(array &a, array &b) { eval(a); b.eval(); }
+    inline void eval(array &a, array &b, array &c) { eval(a, b); c.eval(); }
+    inline void eval(array &a, array &b, array &c, array &d) { eval(a, b, c); d.eval(); }
+    inline void eval(array &a, array &b, array &c, array &d, array &e) { eval(a, b, c, d); e.eval(); }
+    inline void eval(array &a, array &b, array &c, array &d, array &e, array &f) { eval(a, b, c, d, e); f.eval(); }
+
 }
 #endif
 
@@ -270,6 +328,9 @@ extern "C" {
 
     // weak copy array
     AFAPI af_err af_weak_copy(af_array *out, const af_array in);
+
+    // Evaluate any expressions in the Array
+    AFAPI af_err af_eval(af_array in);
 
 #ifdef __cplusplus
 }

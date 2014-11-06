@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#if defined(WITH_FREEIMAGE)
+
 #include <af/array.h>
 #include <af/image.h>
 #include <af/index.h>
@@ -57,10 +59,10 @@ static af_err channel_split(const af_array rgb, const af::dim4 dims,
                             af_array *outr, af_array *outg, af_array *outb, af_array *outa)
 {
     af_err ret = AF_SUCCESS;
-    af_seq idx[4][3] = {{span, span, {0, 0, 1}},
-                        {span, span, {1, 1, 1}},
-                        {span, span, {2, 2, 1}},
-                        {span, span, {3, 3, 1}}
+    af_seq idx[4][3] = {{af_span, af_span, {0, 0, 1}},
+                        {af_span, af_span, {1, 1, 1}},
+                        {af_span, af_span, {2, 2, 1}},
+                        {af_span, af_span, {3, 3, 1}}
                        };
 
     if (dims[2] == 4) {
@@ -434,3 +436,19 @@ af_err af_save_image(const char* filename, const af_array in_)
 
     return ret;
 }
+
+#else   // WITH_FREEIMAGE
+#include <af/image.h>
+#include <stdio.h>
+AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isColor)
+{
+    printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
+    return AF_ERR_NOT_CONFIGURED;
+}
+
+af_err af_save_image(const char* filename, const af_array in_)
+{
+    printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
+    return AF_ERR_NOT_CONFIGURED;
+}
+#endif  // WITH_FREEIMAGE

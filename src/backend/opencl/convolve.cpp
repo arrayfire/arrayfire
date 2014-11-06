@@ -43,17 +43,19 @@ Array<T> * convolve(Array<T> const& signal, Array<T> const& filter, ConvolveBatc
     Array<T> *out   = createEmptyArray<T>(oDims);
     bool callKernel = true;
 
+    dim_type MCFL2 = kernel::MAX_CONV2_FILTER_LEN;
+    dim_type MCFL3 = kernel::MAX_CONV3_FILTER_LEN;
     switch(baseDim) {
         case 1:
             if (fDims[0]>kernel::MAX_CONV1_FILTER_LEN)
                 callKernel = false;
             break;
         case 2:
-            if ((fDims[0]*fDims[1]) > std::pow(kernel::MAX_CONV2_FILTER_LEN,2ll))
+            if ((fDims[0]*fDims[1]) > (MCFL2 * MCFL2))
                 callKernel = false;
             break;
         case 3:
-            if ((fDims[0]*fDims[1]*fDims[2]) > std::pow(kernel::MAX_CONV2_FILTER_LEN,3ll))
+            if ((fDims[0]*fDims[1]*fDims[2]) > (MCFL3 * MCFL3 * MCFL3))
                 callKernel = false;
             break;
     }
@@ -74,7 +76,7 @@ Array<T> * convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> 
     const dim4 cfDims   = c_filter.dims();
     const dim4 rfDims   = r_filter.dims();
 
-    if((cfDims[0]*rfDims[0]) > std::pow(kernel::MAX_CONV2_FILTER_LEN,2ll)) {
+    if((cfDims[0]*rfDims[0]) > (kernel::MAX_CONV2_FILTER_LEN * kernel::MAX_CONV2_FILTER_LEN)) {
         // call upon fft
         OPENCL_NOT_SUPPORTED();
     }

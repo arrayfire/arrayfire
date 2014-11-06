@@ -16,7 +16,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <errorcodes.hpp>
-#include <../err_common.hpp>
+#include <err_opencl.hpp>
 
 using std::string;
 using std::vector;
@@ -96,7 +96,7 @@ std::string getInfo()
         vector<Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
 
         for(unsigned i = 0; i < devices.size(); i++) {
-            bool show_braces = (getActiveDeviceId() == nDevices);
+            bool show_braces = ((unsigned)getActiveDeviceId() == nDevices);
             string dstr;
             devices[i].getInfo(CL_DEVICE_NAME, &dstr);
 
@@ -116,7 +116,7 @@ int getDeviceCount()
     return DeviceManager::getInstance().queues.size();
 }
 
-unsigned getActiveDeviceId()
+int getActiveDeviceId()
 {
     return DeviceManager::getInstance().activeQId;
 }
@@ -153,6 +153,18 @@ int setDevice(int device)
             }
         }
         return old;
+    }
+}
+
+void sync(int device)
+{
+    try {
+        int currDevice = getActiveDeviceId();
+        setDevice(device);
+        getQueue().finish();
+        setDevice(currDevice);
+    } catch (cl::Error ex) {
+        CL_TO_AF_ERROR(ex);
     }
 }
 

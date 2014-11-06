@@ -48,10 +48,10 @@ Array<T> * regions(const Array<uchar> &in, af_connectivity_type connectivity)
 
     switch(connectivity) {
         case AF_CONNECTIVITY_4:
-            regions<T, false, 2>(*out, in, tex);
+            ::regions<T, false, 2>(*out, in, tex);
             break;
         case AF_CONNECTIVITY_8:
-            regions<T, true,  2>(*out, in, tex);
+            ::regions<T, true,  2>(*out, in, tex);
             break;
     }
 

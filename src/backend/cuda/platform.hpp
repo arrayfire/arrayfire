@@ -37,6 +37,8 @@ int getDeviceNativeId(int device);
 
 int setDevice(int device);
 
+void sync(int device);
+
 cudaDeviceProp getDeviceProp(int device);
 
 struct cudaDevice_t {

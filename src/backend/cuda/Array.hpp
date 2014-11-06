@@ -7,6 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+// Workaround for BOOST_NOINLINE not being defined with nvcc / CUDA < 6.5
+#if CUDA_VERSION < 6050
+#define BOOST_NOINLINE __attribute__ ((noinline))
+#endif
+
 #pragma once
 #include <af/array.h>
 #include <af/dim4.hpp>
