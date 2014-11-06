@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <err_cpu.hpp>
 #include <algorithm>
+#include <numeric>
 #include <queue>
 #include <future>
 

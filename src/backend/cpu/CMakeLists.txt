@@ -13,10 +13,10 @@ ENDIF()
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
     ${CMAKE_SOURCE_DIR}/src/backend/cpu
-    ${CBLAS_INCLUDE_DIR}
     ${FFTW_INCLUDES}
+	${CBLAS_INCLUDE_DIR}
     )
-
+	
 FILE(GLOB backend_headers
     "../*.hpp"
     "../*.h"

@@ -44,21 +44,21 @@ IF(FFTW_ROOT)
     #find libs
     FIND_LIBRARY(
         FFTW_LIB
-        NAMES "fftw3"
+        NAMES "fftw3" "libfftw3-3" "fftw3-3"
         PATHS ${FFTW_ROOT}
         PATH_SUFFIXES "lib" "lib64"
         NO_DEFAULT_PATH
         )
     FIND_LIBRARY(
         FFTWF_LIB
-        NAMES "fftw3f"
+        NAMES "fftw3f" "libfftw3f-3" "fftw3f-3"
         PATHS ${FFTW_ROOT}
         PATH_SUFFIXES "lib" "lib64"
         NO_DEFAULT_PATH
         )
     FIND_LIBRARY(
         FFTWL_LIB
-        NAMES "fftw3l"
+        NAMES "fftw3l" "libfftw3l-3" "fftw3l-3"
         PATHS ${FFTW_ROOT}
         PATH_SUFFIXES "lib" "lib64"
         NO_DEFAULT_PATH

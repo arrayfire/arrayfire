@@ -12,7 +12,7 @@
 #include <Array.hpp>
 #include <copy.hpp>
 #include <cstring>
-
+#include <algorithm>
 #include <complex>
 #include <vector>
 #include <cassert>
