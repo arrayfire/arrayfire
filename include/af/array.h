@@ -101,6 +101,8 @@ namespace af
         bool isinteger() const;
         bool isbool() const;
         void eval();
+
+#if 0 // FIXME: Add these functions to C++ wrapper
         void unlock() const;
 
         template<typename T> T scalar() const;
@@ -113,6 +115,7 @@ namespace af
         static void *pinned(size_t elements, af_dtype type);
 
         static void free(const void *);
+#endif
 
 
         // INDEXING
