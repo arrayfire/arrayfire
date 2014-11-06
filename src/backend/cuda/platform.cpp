@@ -17,6 +17,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <cstdio>
+#include <err_cuda.hpp>
 
 //Macro for checking cuda errors following a cuda launch or api call
 #define CUDA(call)                                                  \
@@ -312,5 +313,13 @@ namespace cuda
             activeDev = device;
             return old;
         }
+    }
+
+    void sync(int device)
+    {
+        int currDevice = getActiveDeviceId();
+        setDevice(device);
+        CUDA_CHECK(cudaDeviceSynchronize());
+        setDevice(currDevice);
     }
 }

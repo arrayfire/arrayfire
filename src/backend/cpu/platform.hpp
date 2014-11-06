@@ -15,4 +15,8 @@ namespace cpu {
     int getDeviceCount();
 
     int setDevice(int device);
+
+    int getActiveDeviceId();
+
+    void sync(int device);
 }
