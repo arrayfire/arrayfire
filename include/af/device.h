@@ -17,7 +17,11 @@ namespace af
 
     AFAPI int getDeviceCount();
 
+    AFAPI int getDevice();
+
     AFAPI void setDevice(const int device);
+
+    AFAPI void sync(int device = -1);
 }
 #endif
 
@@ -30,6 +34,10 @@ extern "C" {
     AFAPI af_err af_get_device_count(int *num_of_devices);
 
     AFAPI af_err af_set_device(const int device);
+
+    AFAPI af_err af_get_device(int *device);
+
+    AFAPI af_err af_sync(const int device);
 
 #ifdef __cplusplus
 }

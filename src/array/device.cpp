@@ -28,4 +28,16 @@ namespace af
     {
         AF_THROW(af_set_device(device));
     }
+
+    int getDevice()
+    {
+        int device = 0;
+        AF_THROW(af_get_device(&device));
+        return device;
+    }
+
+    void sync(int device)
+    {
+        AF_THROW(af_sync(device));
+    }
 }

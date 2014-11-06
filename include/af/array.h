@@ -101,6 +101,8 @@ namespace af
         bool isinteger() const;
         bool isbool() const;
         void eval();
+
+#if 0 // FIXME: Add these functions to C++ wrapper
         void unlock() const;
 
         template<typename T> T scalar() const;
@@ -113,6 +115,7 @@ namespace af
         static void *pinned(size_t elements, af_dtype type);
 
         static void free(const void *);
+#endif
 
 
         // INDEXING
@@ -292,6 +295,14 @@ namespace af
 #undef LOGIC
 #undef COMP
 
+    /// Evaluate an expression (nonblocking).
+    inline array &eval(array &a) { a.eval(); return a; }
+    inline void eval(array &a, array &b) { eval(a); b.eval(); }
+    inline void eval(array &a, array &b, array &c) { eval(a, b); c.eval(); }
+    inline void eval(array &a, array &b, array &c, array &d) { eval(a, b, c); d.eval(); }
+    inline void eval(array &a, array &b, array &c, array &d, array &e) { eval(a, b, c, d); e.eval(); }
+    inline void eval(array &a, array &b, array &c, array &d, array &e, array &f) { eval(a, b, c, d, e); f.eval(); }
+
 }
 #endif
 
@@ -317,6 +328,9 @@ extern "C" {
 
     // weak copy array
     AFAPI af_err af_weak_copy(af_array *out, const af_array in);
+
+    // Evaluate any expressions in the Array
+    AFAPI af_err af_eval(af_array in);
 
 #ifdef __cplusplus
 }

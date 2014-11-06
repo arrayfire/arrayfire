@@ -20,7 +20,7 @@ std::string getInfo();
 
 int getDeviceCount();
 
-unsigned getActiveDeviceId();
+int getActiveDeviceId();
 
 const cl::Context& getContext();
 
@@ -28,13 +28,15 @@ cl::CommandQueue& getQueue();
 
 int setDevice(int device);
 
+void sync(int device);
+
 class DeviceManager
 {
     friend std::string getInfo();
 
     friend int getDeviceCount();
 
-    friend unsigned getActiveDeviceId();
+    friend int getActiveDeviceId();
 
     friend const cl::Context& getContext();
 
