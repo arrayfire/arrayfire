@@ -447,3 +447,32 @@ af_err af_get_numdims(unsigned *nd, const af_array in)
     CATCHALL
     return ret;
 }
+
+template<typename T>
+static inline void eval(af_array arr)
+{
+    getArray<T>(arr).eval();
+    return;
+}
+
+af_err af_eval(af_array arr)
+{
+    try {
+        af_dtype type = getInfo(arr).getType();
+        switch (type) {
+        case f32: eval<float  >(arr); break;
+        case f64: eval<double >(arr); break;
+        case c32: eval<cfloat >(arr); break;
+        case c64: eval<cdouble>(arr); break;
+        case s32: eval<int    >(arr); break;
+        case u32: eval<uint   >(arr); break;
+        case s8 : eval<char   >(arr); break;
+        case u8 : eval<uchar  >(arr); break;
+        case b8 : eval<uchar  >(arr); break;
+        default:
+            TYPE_ERROR(0, type);
+        }
+    } CATCHALL;
+
+    return AF_SUCCESS;
+}

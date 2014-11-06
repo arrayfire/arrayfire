@@ -583,4 +583,9 @@ INSTANTIATE(integer)
 
 #undef INSTANTIATE
 
+    void array::eval()
+    {
+        AF_THROW(af_eval(get()));
+    }
+
 }
