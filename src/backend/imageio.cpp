@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#if defined(WITH_FREEIMAGE)
+
 #include <af/array.h>
 #include <af/image.h>
 #include <af/index.h>
@@ -434,3 +436,19 @@ af_err af_save_image(const char* filename, const af_array in_)
 
     return ret;
 }
+
+#else   // WITH_FREEIMAGE
+#include <af/image.h>
+#include <stdio.h>
+AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isColor)
+{
+    printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
+    return AF_ERR_NOT_CONFIGURED;
+}
+
+af_err af_save_image(const char* filename, const af_array in_)
+{
+    printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
+    return AF_ERR_NOT_CONFIGURED;
+}
+#endif  // WITH_FREEIMAGE
