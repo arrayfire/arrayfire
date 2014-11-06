@@ -15,15 +15,10 @@ IF(${BUILD_GTEST})
     SET(GTEST_BINARY_DIR ${BINARY_DIR})
     SET(GTEST_SOURCE_DIR ${SOURCE_DIR})
 
-    INCLUDE(${CMAKE_SOURCE_DIR}/common/GetTestData.cmake)
-    ExternalProject_Get_Property(arrayfire_data SOURCE_DIR)
-
-    SET(TESTDATA_SOURCE_DIR ${SOURCE_DIR})
 ELSE()
     SET(GTEST_SOURCE_DIR "${CMAKE_BINARY_DIR}/third_party/src/googletest")
     SET(GTEST_BINARY_DIR "${CMAKE_BINARY_DIR}/third_party/src/googletest-build")
 
-    SET(TESTDATA_SOURCE_DIR "${CMAKE_BINARY_DIR}/data/src/arrayfire_data")
 ENDIF()
 
 SET(GTEST_SRC               ${GTEST_SOURCE_DIR})
@@ -34,6 +29,7 @@ SET(GTEST_LIBRARY_DIRS      "${GTEST_BUILD}/ReleaseLibs")
 SET(GTEST_BOTH_LIBRARIES    "${GTEST_LIBRARY_DIRS}/libgtest.a"
                             "${GTEST_LIBRARY_DIRS}/libgtest_main.a")
 
+SET(TESTDATA_SOURCE_DIR "${CMAKE_SOURCE_DIR}/test/data")
 ADD_DEFINITIONS("-D TEST_DIR=\"\\\"${TESTDATA_SOURCE_DIR}\\\"\"")
 
 FILE(GLOB FILES "*.cpp")
@@ -47,7 +43,7 @@ MACRO(CREATE_TESTS BACKEND)
         ADD_TEST(Test_${TEST_NAME} ${TEST_NAME})
         ADD_EXECUTABLE(${TEST_NAME} ${FNAME}.cpp)
         IF (${BUILD_GTEST})
-            ADD_DEPENDENCIES(${TEST_NAME} googletest arrayfire_data)
+            ADD_DEPENDENCIES(${TEST_NAME} googletest)
         ENDIF()
         TARGET_LINK_LIBRARIES(${TEST_NAME} af${BACKEND} ${THREAD_LIB_FLAG} ${GTEST_BOTH_LIBRARIES})
         SET_TARGET_PROPERTIES(${TEST_NAME} PROPERTIES COMPILE_FLAGS -DAF_${DEF_NAME})
