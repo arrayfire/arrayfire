@@ -443,12 +443,12 @@ af_err af_save_image(const char* filename, const af_array in_)
 AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isColor)
 {
     printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
-    return AF_ERR_NOT_SUPPORTED;
+    return AF_ERR_NOT_CONFIGURED;
 }
 
 af_err af_save_image(const char* filename, const af_array in_)
 {
     printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
-    return AF_ERR_NOT_SUPPORTED;
+    return AF_ERR_NOT_CONFIGURED;
 }
 #endif  // WITH_FREEIMAGE
