@@ -20,20 +20,36 @@ INCLUDE_DIRECTORIES(
     ${CUDA_NVVM_INCLUDE_DIR}
     )
 
-FILE(GLOB cuda_src
-    "*.hpp"
-    "*.h"
-    "*.cpp"
-    "*.cu"
+FILE(GLOB backend_headers
     "../*.hpp"
     "../*.h"
+    )
+FILE(GLOB backend_sources
     "../*.cpp"
-    "kernel/*.cu"
-    "kernel/*.cpp"
-    "kernel/*.hpp"
-    "kernel/*.h"
+    )
+FILE(GLOB cpp_sources
     "../../array/*.cpp"
     )
+source_group(Headers FILES ${backend_headers})
+source_group(Sources FILES ${backend_sources})
+source_group(CPP\ Sources FILES ${cpp_sources})
+
+FILE(GLOB cuda_headers
+	"*.hpp"
+    "*.h")
+FILE(GLOB cuda_sources
+    "*.cu"
+	"*.cpp")
+source_group(cuda\\Headers FILES ${cuda_headers})
+source_group(cuda\\Sources FILES ${cuda_sources})
+
+FILE(GLOB jit_sources
+    "jit/*.hpp")
+source_group(cuda\\JIT FILES ${jit_sources})
+
+FILE(GLOB kernel_headers
+    "kernel/*.hpp")
+source_group(cuda\\kernel\\Headers FILES ${kernel_headers})
 
 if(${CUDA_COMPUTE_CAPABILITY} STREQUAL "21")
     SET(PTX_COMPUTE "20")
@@ -68,7 +84,14 @@ IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND "${APPLE}")
     SET(CUDA_HOST_COMPILER "/usr/bin/clang++")
 ENDIF()
 
-CUDA_ADD_LIBRARY(afcuda SHARED ${cuda_src} OPTIONS ${CUDA_CODE_GENERATION})
+CUDA_ADD_LIBRARY(afcuda SHARED ${cpp_sources}
+								${backend_headers}
+								${backend_sources}
+								${cuda_headers}
+								${cuda_sources}
+								${jit_sources}
+								${kernel_headers}
+						OPTIONS ${CUDA_CODE_GENERATION})
 ADD_DEPENDENCIES(afcuda ${ptx_targets})
 
 

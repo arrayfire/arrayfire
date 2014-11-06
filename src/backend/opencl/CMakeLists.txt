@@ -33,22 +33,43 @@ INCLUDE_DIRECTORIES(
     ${BoostCompute_INCLUDE_DIR}
     )
 
-FILE(GLOB opencl_src
-    "*.hpp"
-    "*.h"
-    "*.cpp"
-    "kernel/*.hpp"
-    "kernel/*.cl"
-    "jit/*.hpp"
+FILE(GLOB backend_headers
     "../*.hpp"
     "../*.h"
+    )
+FILE(GLOB backend_sources
     "../*.cpp"
-    "kernel/*.cpp"
+    )
+FILE(GLOB cpp_sources
     "../../array/*.cpp"
     )
+source_group(Headers FILES ${backend_headers})
+source_group(Sources FILES ${backend_sources})
+source_group(CPP\ Sources FILES ${cpp_sources})
 
-FILE(GLOB kernel_src "kernel/*.cl" "kernel/KParam.hpp")
+FILE(GLOB opencl_headers
+	"*.hpp"
+    "*.h")
+FILE(GLOB opencl_sources
+    "*.cpp")
+source_group(opencl\\Headers FILES ${opencl_headers})
+source_group(opencl\\Sources FILES ${opencl_sources})
 
+FILE(GLOB jit_sources
+    "jit/*.hpp")
+source_group(opencl\\JIT FILES ${jit_sources})
+
+FILE(GLOB kernel_headers
+    "kernel/*.hpp")
+FILE(GLOB opencl_kernels
+    "kernel/*.cl")
+FILE(GLOB kernel_sources
+     "kernel/*.cpp")
+source_group(opencl\\kernel\\Headers FILES ${kernel_headers})
+source_group(opencl\\kernel\\cl FILES ${opencl_kernels})
+source_group(opencl\\kernel\\Sources FILES ${kernel_sources})
+
+FILE(GLOB kernel_src ${opencl_kernels} "kernel/KParam.hpp")
 CL_KERNEL_TO_H(
     SOURCES ${kernel_src}
     VARNAME kernel_files
@@ -62,6 +83,17 @@ CL_KERNEL_TO_H(
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread")
 
 LINK_DIRECTORIES(${CLBLAS_LIBRARY_DIR})
-ADD_LIBRARY(afopencl SHARED ${opencl_src})
+
+ADD_LIBRARY(afopencl SHARED ${cpp_sources}
+							${backend_headers}
+							${backend_sources}
+							${opencl_headers}
+							${opencl_sources}
+							${jit_sources}
+							${kernel_headers}
+							${opencl_kernels}
+							${kernel_sources})
+							
 ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
+
 TARGET_LINK_LIBRARIES(afopencl ${OPENCL_LIBRARIES} ${lib_deps} ${CLBLAS_LIBRARIES} ${CLFFT_LIBRARIES} ${CMAKE_DL_LIBS} ${Boost_LIBRARIES})
