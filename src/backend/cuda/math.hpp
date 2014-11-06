@@ -33,32 +33,32 @@ namespace cuda
     template<typename T> static inline __DH__ T max(T lhs, T rhs) { return ::max(lhs, rhs);}
 #endif
 	
-	STATIC_ __DH__
+	static __DH__
     cfloat max(cfloat lhs, cfloat rhs)
     {
         return abs(lhs) > abs(rhs) ? lhs : rhs;
     }
 
-	STATIC_ __DH__
+	static __DH__
     cdouble max(cdouble lhs, cdouble rhs)
     {
         return abs(lhs) > abs(rhs) ? lhs : rhs;
     }
 
-	STATIC_ __DH__
+	static __DH__
     cfloat min(cfloat lhs, cfloat rhs)
     {
         return abs(lhs) < abs(rhs) ? lhs :  rhs;
     }
 
-	STATIC_ __DH__
+	static __DH__
     cdouble min(cdouble lhs, cdouble rhs)
     {
         return abs(lhs) < abs(rhs) ? lhs :  rhs;
     }
 
 	template<typename T> __DH__
-	STATIC_ T scalar(double val)
+	static T scalar(double val)
     {
         return (T)(val);
     }
