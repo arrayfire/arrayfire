@@ -37,7 +37,7 @@ typedef ::testing::Types<float> TestTypes;
 TYPED_TEST_CASE(ImageIO, TestTypes);
 
 // Disable tests if FreeImage is not found
-#if defined(FREEIMAGE_FOUND)
+#if defined(WITH_FREEIMAGE)
 void loadImageTest(string pTestFile, string pImageFile, const bool isColor)
 {
     vector<af::dim4> numDims;
@@ -130,4 +130,4 @@ TEST(ImageIO, CPP)
     // Delete
     delete[] imgData;
 }
-#endif // FREEIMAGE_FOUND
+#endif // WITH_FREEIMAGE
