@@ -138,7 +138,9 @@ namespace af
         if (!isRef)
             return arr;
         af_array temp = 0;
-        AF_THROW(af_index(&temp, arr, 4, this->s));
+        af_seq afs[4];
+        getSeq(afs);
+        AF_THROW(af_index(&temp, arr, 4, afs));
         arr = temp;
         isRef = false;
         return arr;
@@ -206,52 +208,88 @@ INSTANTIATE(integer)
 
 #undef INSTANTIATE
 
-    array::array(af_array in, af_seq *seqs) : arr(in), isRef(true)
+    array::array(af_array in, seq *seqs) : arr(in), isRef(true)
     {
         for(int i=0; i<4; ++i) s[i] = seqs[i];
     }
 
-    array array::operator()(const af_seq& s0, const af_seq& s1, const af_seq& s2, const af_seq& s3) const
+    void array::getSeq(af_seq* afs)
+    {
+        afs[0] = this->s[0].s;
+        afs[1] = this->s[1].s;
+        afs[2] = this->s[2].s;
+        afs[3] = this->s[3].s;
+    }
+
+    array array::operator()(const seq &s0) const
     {
         af_array out = 0;
-        af_seq indices[] = {s0, s1, s2, s3};
+        seq indices[] = {s0, span, span, span};
         //FIXME: check if this->s has same dimensions as numdims
         AF_THROW(af_weak_copy(&out, this->get()));
         return array(out, indices);
     }
-    array array::row(size_t index) const
+
+    array array::operator()(const seq &s0, const seq &s1) const
     {
-        af_seq idx = {index, index, 1};
+        af_array out = 0;
+        seq indices[] = {s0, s1, span, span};
+        //FIXME: check if this->s has same dimensions as numdims
+        AF_THROW(af_weak_copy(&out, this->get()));
+        return array(out, indices);
+    }
+
+    array array::operator()(const seq &s0, const seq &s1, const seq &s3) const
+    {
+        af_array out = 0;
+        seq indices[] = {s0, s1, s3, span};
+        //FIXME: check if this->s has same dimensions as numdims
+        AF_THROW(af_weak_copy(&out, this->get()));
+        return array(out, indices);
+    }
+
+    array array::operator()(const seq &s0, const seq &s1, const seq &s2, const seq &s3) const
+    {
+        af_array out = 0;
+        seq indices[] = {s0, s1, s2, s3};
+        //FIXME: check if this->s has same dimensions as numdims
+        AF_THROW(af_weak_copy(&out, this->get()));
+        return array(out, indices);
+    }
+
+    array array::row(int index) const
+    {
+        seq idx(index, index, 1);
         return this->operator()(idx, span, span, span);
     }
 
-    array array::col(size_t index) const
+    array array::col(int index) const
     {
-        af_seq idx = {index, index, 1};
+        seq idx(index, index, 1);
         return this->operator()(span, idx, span, span);
     }
 
-    array array::slice(size_t index) const
+    array array::slice(int index) const
     {
-        af_seq idx = {index, index, 1};
+        seq idx(index, index, 1);
         return this->operator()(span, span, idx, span);
     }
 
-    array array::rows(size_t first, size_t last) const
+    array array::rows(int first, int last) const
     {
-        af_seq idx = {first, last, 1};
+        seq idx(first, last, 1);
         return this->operator()(idx, span, span, span);
     }
 
-    array array::cols(size_t first, size_t last) const
+    array array::cols(int first, int last) const
     {
-        af_seq idx = {first, last, 1};
+        seq idx(first, last, 1);
         return this->operator()(span, idx, span, span);
     }
 
-    array array::slices(size_t first, size_t last) const
+    array array::slices(int first, int last) const
     {
-        af_seq idx = {first, last, 1};
+        seq idx(first, last, 1);
         return this->operator()(span, span, idx, span);
     }
 
@@ -273,7 +311,9 @@ INSTANTIATE(integer)
     array& array::operator=(const array &other)
     {
         if (isRef) {
-            AF_THROW(af_assign(arr, numdims(), s, other.get()));
+            af_seq afs[4];
+            getSeq(afs);
+            AF_THROW(af_assign(arr, numdims(), afs, other.get()));
             isRef = false;
         } else {
             if (this->get() == other.get()) {
@@ -294,7 +334,9 @@ INSTANTIATE(integer)
     {
         if (isRef) {
             array cst = constant(value, this->dims(), this->type());
-            AF_THROW(af_assign(arr, numdims(), s, cst.get()));
+            af_seq afs[4];
+            getSeq(afs);
+            AF_THROW(af_assign(arr, numdims(), afs, cst.get()));
             isRef = false;
         } else {
             if(this->get() != 0) {
@@ -309,7 +351,9 @@ INSTANTIATE(integer)
     {
         if (isRef) {
             array cst = constant(value, this->dims());
-            AF_THROW(af_assign(arr, numdims(), s, cst.get()));
+            af_seq afs[4];
+            getSeq(afs);
+            AF_THROW(af_assign(arr, numdims(), afs, cst.get()));
             isRef = false;
         } else {
             if(this->get() != 0) {
@@ -324,7 +368,9 @@ INSTANTIATE(integer)
     {
         if (isRef) {
             array cst = constant(value, this->dims());
-            AF_THROW(af_assign(arr, numdims(), s, cst.get()));
+            af_seq afs[4];
+            getSeq(afs);
+            AF_THROW(af_assign(arr, numdims(), afs, cst.get()));
             isRef = false;
         } else {
             if(this->get() != 0) {

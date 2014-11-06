@@ -38,9 +38,9 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
 
     vector<af_seq> index_(index, index+ndims);
 
-    dim4 const oStrides = oInfo.strides();
+    dim4 const oStrides = af::toStride(index_, outDs);
     dim4 oDims = af::toDims(index_, iDims);
-    dim4 oOffsets = af::toOffset(index_);
+    dim4 oOffsets = af::toOffset(index_, iDims);
 
     Array<T> *dst = createRefArray<T>(getArray<T>(out), oDims, oOffsets, oStrides);
 
@@ -87,8 +87,8 @@ af_err af_assign(af_array out, const unsigned ndims, const af_seq *index, const 
         }
 
         for(dim_type i=0; i<ndims; ++i) {
-            ARG_ASSERT(2, (index[i].begin>=0));
-            ARG_ASSERT(2, (index[i].end>=0));
+            ARG_ASSERT(2, (index[i].begin>=0 || index[i].begin == -1));
+            ARG_ASSERT(2, (index[i].end>=0 || index[i].end == -1));
             ARG_ASSERT(2, (index[i].step>=0));
         }
 

@@ -90,12 +90,6 @@ typedef size_t af_array;
 
 typedef long long dim_type;
 
-typedef struct af_seq {
-    size_t begin, end;
-    int    step;
-} af_seq;
-static const af_seq span = {1, 1, 0};
-
 typedef enum {
     AF_INTERP_NEAREST,
     AF_INTERP_LINEAR,
