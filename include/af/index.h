@@ -23,6 +23,10 @@ AFAPI array shift(const array& in, const int x, const int y=0, const int z=0, co
 
 AFAPI array moddims(const array& in, const unsigned ndims, const dim_type * const dims);
 
+AFAPI array moddims(const array& in, const dim4& dims);
+
+AFAPI array moddims(const array& in, dim_type d0, dim_type d1=1, dim_type d2=1, dim_type d3=1);
+
 }
 #endif
 
