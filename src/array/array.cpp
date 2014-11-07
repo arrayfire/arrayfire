@@ -241,6 +241,7 @@ INSTANTIATE(integer)
 
     array array::operator()(const seq &s0, const seq &s1) const
     {
+        eval();
         af_array out = 0;
         seq indices[] = {s0, s1, span, span};
         //FIXME: check if this->s has same dimensions as numdims
@@ -250,6 +251,7 @@ INSTANTIATE(integer)
 
     array array::operator()(const seq &s0, const seq &s1, const seq &s3) const
     {
+        eval();
         af_array out = 0;
         seq indices[] = {s0, s1, s3, span};
         //FIXME: check if this->s has same dimensions as numdims
@@ -259,6 +261,7 @@ INSTANTIATE(integer)
 
     array array::operator()(const seq &s0, const seq &s1, const seq &s2, const seq &s3) const
     {
+        eval();
         af_array out = 0;
         seq indices[] = {s0, s1, s2, s3};
         //FIXME: check if this->s has same dimensions as numdims
@@ -367,14 +370,15 @@ INSTANTIATE(integer)
 #define INSTANTIATE(op, op1, func)                                      \
     array& array::operator op(const array &other)                       \
     {                                                                   \
-        af_array tmp_arr;                                               \
         bool this_ref = isRef;                                          \
         if (this_ref) {                                                 \
+            af_array tmp_arr;                                           \
+            unsigned ndims = numdims();                                 \
             AF_THROW(af_weak_copy(&tmp_arr, this->arr));                \
             array tmp = *this op1 other;                                \
             af_seq afs[4];                                              \
             getSeq(afs);                                                \
-            AF_THROW(af_assign(tmp_arr, numdims(), afs, tmp.get()));    \
+            AF_THROW(af_assign(tmp_arr, ndims, afs, tmp.get()));        \
             AF_THROW(af_destroy_array(this->arr));                      \
             this->arr = tmp_arr;                                        \
         } else {                                                        \
@@ -555,7 +559,7 @@ INSTANTIATE(integer)
 
 #undef INSTANTIATE
 
-    void array::eval()
+    void array::eval() const
     {
         AF_THROW(af_eval(get()));
     }
