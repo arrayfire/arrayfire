@@ -54,8 +54,8 @@ void regions(Param out, Param in)
 
         int device = getActiveDeviceId();
 
-        const int block_dim = 16;
-        const int num_warps = 8;
+        static const int block_dim = 16;
+        static const int num_warps = 8;
 
         std::call_once( compileFlags[device], [device] () {
 

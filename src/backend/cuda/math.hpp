@@ -32,52 +32,51 @@ namespace cuda
     template<typename T> static inline __DH__ T min(T lhs, T rhs) { return ::min(lhs, rhs);}
     template<typename T> static inline __DH__ T max(T lhs, T rhs) { return ::max(lhs, rhs);}
 #endif
-
-    template<> __DH__
-    cfloat max<cfloat>(cfloat lhs, cfloat rhs)
+	
+	static __DH__
+    cfloat max(cfloat lhs, cfloat rhs)
     {
         return abs(lhs) > abs(rhs) ? lhs : rhs;
     }
 
-    template<> __DH__
-    cdouble max<cdouble>(cdouble lhs, cdouble rhs)
+	static __DH__
+    cdouble max(cdouble lhs, cdouble rhs)
     {
         return abs(lhs) > abs(rhs) ? lhs : rhs;
     }
 
-    template<> __DH__
-    cfloat min<cfloat>(cfloat lhs, cfloat rhs)
+	static __DH__
+    cfloat min(cfloat lhs, cfloat rhs)
     {
         return abs(lhs) < abs(rhs) ? lhs :  rhs;
     }
 
-    template<> __DH__
-    cdouble min<cdouble>(cdouble lhs, cdouble rhs)
+	static __DH__
+    cdouble min(cdouble lhs, cdouble rhs)
     {
         return abs(lhs) < abs(rhs) ? lhs :  rhs;
     }
 
-    template<typename T>
-    static __DH__
-    T scalar(double val)
+	template<typename T> __DH__
+	static T scalar(double val)
     {
         return (T)(val);
     }
 
     template<> __DH__
-    cfloat scalar<cfloat >(double val)
+	STATIC_ cfloat scalar<cfloat >(double val)
     {
         cfloat  cval = {(float)val, 0};
         return cval;
     }
 
     template<> __DH__
-    cdouble scalar<cdouble >(double val)
+	STATIC_ cdouble scalar<cdouble >(double val)
     {
         cdouble  cval = {val, 0};
         return cval;
     }
-
+	
 #ifndef __CUDA_ARCH__
     template <typename T> T limit_max() { return std::numeric_limits<T>::max(); }
     template <typename T> T limit_min() { return std::numeric_limits<T>::min(); }

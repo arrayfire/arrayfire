@@ -12,10 +12,12 @@
 #include <handle.hpp>
 #include <iostream>
 #include <cassert>
+#include <err_cpu.hpp>
 
 namespace cpu
 {
 
+#ifndef OS_WIN
     using std::add_const;
     using std::add_pointer;
     using std::enable_if;
@@ -103,6 +105,7 @@ toCblasTranspose(af_blas_transpose opt)
     }
     return out;
 }
+#endif
 
 #include <iostream>
 using namespace std;
@@ -111,6 +114,9 @@ template<typename T>
 Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
                     af_blas_transpose optLhs, af_blas_transpose optRhs)
 {
+#ifdef OS_WIN
+	CPU_NOT_SUPPORTED();
+#else
     CBLAS_TRANSPOSE lOpts = toCblasTranspose(optLhs);
     CBLAS_TRANSPOSE rOpts = toCblasTranspose(optRhs);
 
@@ -149,12 +155,16 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
     }
 
     return out;
+#endif
 }
 
 template<typename T>
 Array<T>* dot(const Array<T> &lhs, const Array<T> &rhs,
                     af_blas_transpose optLhs, af_blas_transpose optRhs)
 {
+#ifdef OS_WIN
+	CPU_NOT_SUPPORTED();
+#else
     int N = lhs.dims()[0];
 
     T out = dot_func<T>()(  N,
@@ -163,6 +173,7 @@ Array<T>* dot(const Array<T> &lhs, const Array<T> &rhs,
                             );
 
     return createValueArray(af::dim4(1), out);
+#endif
 }
 
 #define INSTANTIATE_BLAS(TYPE)                                                          \

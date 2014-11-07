@@ -1,4 +1,9 @@
 INCLUDE(${CMAKE_SOURCE_DIR}/common/CLKernelToH.cmake)
+
+IF(NOT UNIX)
+  ADD_DEFINITIONS(-DAFDLL)
+ENDIF()
+
 ADD_DEFINITIONS(-DAF_OPENCL)
 ADD_DEFINITIONS( -D__CL_ENABLE_EXCEPTIONS
                  -DCL_USE_DEPRECATED_OPENCL_1_1_APIS )
@@ -7,7 +12,11 @@ ADD_DEFINITIONS( -D__CL_ENABLE_EXCEPTIONS
 FIND_PACKAGE(CLBLAS REQUIRED)
 
 FIND_PACKAGE(clFFT REQUIRED)
-FIND_PACKAGE(Boost 1.48 REQUIRED)
+
+ADD_DEFINITIONS( -DBOOST_ALL_NO_LIB )
+SET(Boost_USE_STATIC_LIBS OFF)
+FIND_PACKAGE(Boost 1.48 COMPONENTS chrono REQUIRED)
+
 FIND_PACKAGE(BoostCompute REQUIRED)
 
 SET( cl_kernel_headers
@@ -20,25 +29,47 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CLBLAS_INCLUDE_DIR}
     ${CLFFT_INCLUDE_DIRS}
+	${Boost_INCLUDE_DIR}
     ${BoostCompute_INCLUDE_DIR}
     )
 
-FILE(GLOB opencl_src
-    "*.hpp"
-    "*.h"
-    "*.cpp"
-    "kernel/*.hpp"
-    "kernel/*.cl"
-    "jit/*.hpp"
+FILE(GLOB backend_headers
     "../*.hpp"
     "../*.h"
+    )
+FILE(GLOB backend_sources
     "../*.cpp"
-    "kernel/*.cpp"
+    )
+FILE(GLOB cpp_sources
     "../../array/*.cpp"
     )
+source_group(Headers FILES ${backend_headers})
+source_group(Sources FILES ${backend_sources})
+source_group(CPP\ Sources FILES ${cpp_sources})
 
-FILE(GLOB kernel_src "kernel/*.cl" "kernel/KParam.hpp")
+FILE(GLOB opencl_headers
+	"*.hpp"
+    "*.h")
+FILE(GLOB opencl_sources
+    "*.cpp")
+source_group(opencl\\Headers FILES ${opencl_headers})
+source_group(opencl\\Sources FILES ${opencl_sources})
 
+FILE(GLOB jit_sources
+    "jit/*.hpp")
+source_group(opencl\\JIT FILES ${jit_sources})
+
+FILE(GLOB kernel_headers
+    "kernel/*.hpp")
+FILE(GLOB opencl_kernels
+    "kernel/*.cl")
+FILE(GLOB kernel_sources
+     "kernel/*.cpp")
+source_group(opencl\\kernel\\Headers FILES ${kernel_headers})
+source_group(opencl\\kernel\\cl FILES ${opencl_kernels})
+source_group(opencl\\kernel\\Sources FILES ${kernel_sources})
+
+FILE(GLOB kernel_src ${opencl_kernels} "kernel/KParam.hpp")
 CL_KERNEL_TO_H(
     SOURCES ${kernel_src}
     VARNAME kernel_files
@@ -52,6 +83,17 @@ CL_KERNEL_TO_H(
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread")
 
 LINK_DIRECTORIES(${CLBLAS_LIBRARY_DIR})
-ADD_LIBRARY(afopencl SHARED ${opencl_src})
+
+ADD_LIBRARY(afopencl SHARED ${cpp_sources}
+							${backend_headers}
+							${backend_sources}
+							${opencl_headers}
+							${opencl_sources}
+							${jit_sources}
+							${kernel_headers}
+							${opencl_kernels}
+							${kernel_sources})
+							
 ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
-TARGET_LINK_LIBRARIES(afopencl ${OPENCL_LIBRARIES} ${lib_deps} ${CLBLAS_LIBRARIES} ${CLFFT_LIBRARIES} ${CMAKE_DL_LIBS})
+
+TARGET_LINK_LIBRARIES(afopencl ${OPENCL_LIBRARIES} ${lib_deps} ${CLBLAS_LIBRARIES} ${CLFFT_LIBRARIES} ${CMAKE_DL_LIBS} ${Boost_LIBRARIES})

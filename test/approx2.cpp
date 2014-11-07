@@ -212,8 +212,7 @@ void approx2ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const 
 TEST(Approx2, CPP)
 {
     const unsigned resultIdx = 1;
-
-    typedef typename af::dtype_traits<float>::base_type BT;
+#define BT af::dtype_traits<float>::base_type
     vector<af::dim4> numDims;
     vector<vector<BT>> in;
     vector<vector<float>> tests;
@@ -242,4 +241,6 @@ TEST(Approx2, CPP)
 
     // Delete
     delete[] outData;
+
+#undef BT
 }

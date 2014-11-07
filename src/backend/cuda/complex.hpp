@@ -17,8 +17,8 @@
 namespace cuda
 {
     template<typename T> static const char *cplx2_name() { return "___noop"; }
-    template<> const char *cplx2_name<cfloat>() { return "___cplxCss"; }
-    template<> const char *cplx2_name<cdouble>() { return "___cplxZdd"; }
+	template<> STATIC_ const char *cplx2_name<cfloat>() { return "___cplxCss"; }
+	template<> STATIC_ const char *cplx2_name<cdouble>() { return "___cplxZdd"; }
 
     template<typename To, typename Ti>
     Array<To>* complexOp(const Array<Ti> &lhs, const Array<Ti> &rhs)

@@ -63,38 +63,47 @@ namespace af
         initEmptyArray(&arr, ty, d0, d1, d2, d3);
     }
 
-    template<typename T>
-    array::array(const dim4 &dims, const T *ptr, af_source_t src, dim_type ngfor) : arr(0), isRef(false)
-    {
-        initDataArray<T>(&arr, ptr, src, dims[0], dims[1], dims[2], dims[3]);
-    }
+#define INSTANTIATE(T)																\
+	template<> AFAPI																\
+	array::array(const dim4 &dims, const T *ptr, af_source_t src, dim_type ngfor)	\
+		: arr(0), isRef(false)														\
+	{																				\
+		initDataArray<T>(&arr, ptr, src, dims[0], dims[1], dims[2], dims[3]);		\
+	}																				\
+	template<> AFAPI																\
+	array::array(dim_type d0, const T *ptr, af_source_t src, dim_type ngfor)		\
+		: arr(0), isRef(false)														\
+	{																				\
+		initDataArray<T>(&arr, ptr, src, d0);										\
+	}																				\
+	template<> AFAPI																\
+	array::array(dim_type d0, dim_type d1, const T *ptr, af_source_t src,			\
+				dim_type ngfor)	: arr(0), isRef(false)								\
+	{																				\
+		initDataArray<T>(&arr, ptr, src, d0, d1);									\
+	}																				\
+	template<> AFAPI																\
+	array::array(dim_type d0, dim_type d1, dim_type d2, const T *ptr,				\
+				af_source_t src, dim_type ngfor) : arr(0), isRef(false)				\
+	{																				\
+		initDataArray<T>(&arr, ptr, src, d0, d1, d2);								\
+	}																				\
+	template<> AFAPI																\
+	array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, const T *ptr,	\
+				af_source_t src, dim_type ngfor) : arr(0), isRef(false)				\
+	{																				\
+		initDataArray<T>(&arr, ptr, src, d0, d1, d2, d3);							\
+	}																				\
 
-    template<typename T>
-    array::array(dim_type d0, const T *ptr, af_source_t src, dim_type ngfor) : arr(0), isRef(false)
-    {
-        initDataArray<T>(&arr, ptr, src, d0);
-    }
-
-    template<typename T>
-    array::array(dim_type d0, dim_type d1, const T *ptr,
-                 af_source_t src, dim_type ngfor) : arr(0), isRef(false)
-    {
-        initDataArray<T>(&arr, ptr, src, d0, d1);
-    }
-
-    template<typename T>
-    array::array(dim_type d0, dim_type d1, dim_type d2, const T *ptr,
-                 af_source_t src, dim_type ngfor) : arr(0), isRef(false)
-    {
-        initDataArray<T>(&arr, ptr, src, d0, d1, d2);
-    }
-
-    template<typename T>
-    array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3,
-                 const T *ptr, af_source_t src, dim_type ngfor) : arr(0), isRef(false)
-    {
-        initDataArray<T>(&arr, ptr, src, d0, d1, d2, d3);
-    }
+	INSTANTIATE(af_cdouble)
+	INSTANTIATE(af_cfloat)
+	INSTANTIATE(double)
+	INSTANTIATE(float)
+	INSTANTIATE(unsigned)
+	INSTANTIATE(int)
+	INSTANTIATE(unsigned char)
+	INSTANTIATE(char)
+#undef INSTANTIATE
 
     array::~array()
     {
@@ -380,27 +389,6 @@ INSTANTIATE(integer)
         }
         return *this;
     }
-
-#define INSTANTIATE(T)  \
-    template array::array(const dim4 &dims, const T *ptr, af_source_t src, dim_type ngfor);\
-    template array::array(dim_type d0, const T *ptr, af_source_t src, dim_type ngfor);\
-    template array::array(dim_type d0, dim_type d1, const T *ptr, af_source_t src, dim_type ngfor);\
-    template array::array(dim_type d0, dim_type d1, dim_type d2, const T *ptr, af_source_t src, dim_type ngfor);\
-    template array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, const T *ptr, af_source_t src, dim_type ngfor);\
-    template T *array::host() const;
-
-
-    INSTANTIATE(af_cdouble)
-    INSTANTIATE(af_cfloat)
-    INSTANTIATE(double)
-    INSTANTIATE(float)
-    INSTANTIATE(unsigned)
-    INSTANTIATE(int)
-    INSTANTIATE(unsigned char)
-    INSTANTIATE(char)
-
-#undef INSTANTIATE
-
 
     ///////////////////////////////////////////////////////////////////////////
     // Operator +=, -=, *=, /=

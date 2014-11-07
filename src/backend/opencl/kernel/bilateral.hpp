@@ -13,6 +13,7 @@
 #include <traits.hpp>
 #include <string>
 #include <mutex>
+#include <algorithm>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -31,7 +32,8 @@ namespace opencl
 
 namespace kernel
 {
-
+#undef min
+#undef max
 static const dim_type THREADS_X = 16;
 static const dim_type THREADS_Y = 16;
 

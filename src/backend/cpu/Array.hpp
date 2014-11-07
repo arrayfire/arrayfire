@@ -17,6 +17,10 @@
 #include <traits.hpp>
 #include <TNJ/Node.hpp>
 #include <memory>
+#include <algorithm>
+
+#undef min
+#undef max
 
 namespace cpu
 {

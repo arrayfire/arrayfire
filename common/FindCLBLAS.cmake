@@ -29,13 +29,17 @@ FIND_PATH( CLBLAS_LIBRARY_DIR
     NAMES   libclBLAS${CMAKE_SHARED_LIBRARY_SUFFIX}
     DOC     "Location of the clBLAS library"
     PATHS   ${CLBLAS_PACKAGE_DIR}/lib64
-            ${CLBLAS_PACKAGE_DIR}/package/lib64)
+            ${CLBLAS_PACKAGE_DIR}/package/lib64
+			${CLBLAS_PACKAGE_DIR}/lib64/import
+			${CLBLAS_PACKAGE_DIR}/package/lib64/import)
 
 FIND_LIBRARY(CLBLAS_LIBRARIES
     NAMES   clBLAS
     DOC     "Library files"
     PATHS   ${CLBLAS_PACKAGE_DIR}/lib64
-            ${CLBLAS_PACKAGE_DIR}/package/lib64)
+            ${CLBLAS_PACKAGE_DIR}/package/lib64
+			${CLBLAS_PACKAGE_DIR}/lib64/import
+			${CLBLAS_PACKAGE_DIR}/package/lib64/import)
 
 IF(CLBLAS_INCLUDE_DIR AND CLBLAS_LIBRARIES AND CLBLAS_LIBRARY_DIR)
     SET( CLBLAS_FOUND ON CACHE BOOL "CLBLAS Found" )

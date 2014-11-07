@@ -8,13 +8,18 @@
  ********************************************************/
 
 #pragma once
+
 #include <complex>
 #include <limits>
+#include <algorithm>
 #include "backend.hpp"
 #include "types.hpp"
 
 namespace opencl
 {
+
+#undef min
+#undef max
 
     template<typename T> static inline T abs(T val)  { return std::abs(val); }
     template<typename T> static inline T min(T lhs, T rhs) { return std::min(lhs, rhs); }
@@ -23,25 +28,25 @@ namespace opencl
     static inline float  abs(cfloat  cval) { return std::sqrt(cval.s[0]*cval.s[0] + cval.s[1]*cval.s[1]); }
     static inline double abs(cdouble cval) { return std::sqrt(cval.s[0]*cval.s[0] + cval.s[1]*cval.s[1]); }
 
-    template<>
+    template<> STATIC_
     cfloat max<cfloat>(cfloat lhs, cfloat rhs)
     {
         return abs(lhs) > abs(rhs) ? lhs : rhs;
     }
 
-    template<>
+	template<> STATIC_
     cdouble max<cdouble>(cdouble lhs, cdouble rhs)
     {
         return abs(lhs) > abs(rhs) ? lhs : rhs;
     }
 
-    template<>
+	template<> STATIC_
     cfloat min<cfloat>(cfloat lhs, cfloat rhs)
     {
         return abs(lhs) < abs(rhs) ? lhs :  rhs;
     }
 
-    template<>
+	template<> STATIC_
     cdouble min<cdouble>(cdouble lhs, cdouble rhs)
     {
         return abs(lhs) < abs(rhs) ? lhs :  rhs;
@@ -53,7 +58,7 @@ namespace opencl
         return (T)(val);
     }
 
-    template<>
+	template<> STATIC_
     cfloat  scalar<cfloat >(double val)
     {
         cfloat  cval;
@@ -62,7 +67,7 @@ namespace opencl
         return cval;
     }
 
-    template<>
+	template<> STATIC_
     cdouble scalar<cdouble >(double val)
     {
         cdouble cval;

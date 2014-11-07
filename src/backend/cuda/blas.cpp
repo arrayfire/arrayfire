@@ -179,7 +179,7 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
                 &beta , out->get(), out->dims()[0]);
 
         if(err != CUBLAS_STATUS_SUCCESS) {
-            std::cout << __func__<< " ERROR: " << cublasErrorString(err) << std::endl;
+            std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cublasErrorString(err) << std::endl;
         }
     }
 

@@ -20,9 +20,9 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
-static inline af_array transpose(const af_array in)
+static inline af_array trs(const af_array in)
 {
-    return getHandle(*transpose<T>(getArray<T>(in)));
+	return getHandle<T>(*detail::transpose<T>(getArray<T>(in)));
 }
 
 af_err af_transpose(af_array *out, af_array in)
@@ -43,14 +43,14 @@ af_err af_transpose(af_array *out, af_array in)
 
         af_array output;
         switch(type) {
-            case f32: output = transpose<float>(in);          break;
-            case c32: output = transpose<cfloat>(in);         break;
-            case f64: output = transpose<double>(in);         break;
-            case c64: output = transpose<cdouble>(in);        break;
-            case b8 : output = transpose<char>(in);           break;
-            case s32: output = transpose<int>(in);            break;
-            case u32: output = transpose<uint>(in);           break;
-            case u8 : output = transpose<uchar>(in);          break;
+            case f32: output = trs<float>(in);          break;
+            case c32: output = trs<cfloat>(in);         break;
+            case f64: output = trs<double>(in);         break;
+            case c64: output = trs<cdouble>(in);        break;
+            case b8 : output = trs<char>(in);           break;
+            case s32: output = trs<int>(in);            break;
+            case u32: output = trs<uint>(in);           break;
+            case u8 : output = trs<uchar>(in);          break;
             default : TYPE_ERROR(1, type);
         }
         std::swap(*out,output);

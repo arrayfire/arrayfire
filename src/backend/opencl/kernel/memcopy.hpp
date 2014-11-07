@@ -14,6 +14,7 @@
 #include <traits.hpp>
 #include <sstream>
 #include <string>
+#include <algorithm>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -30,6 +31,9 @@ namespace opencl
 
 namespace kernel
 {
+
+#undef min
+#undef max
 
     typedef struct
     {

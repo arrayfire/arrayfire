@@ -9,6 +9,7 @@
 
 #pragma once
 #include <limits>
+#include <algorithm>
 #include <numeric>
 #include "types.hpp"
 
@@ -21,26 +22,26 @@ namespace cpu
     static inline float  abs(cfloat  cval) { return std::abs(cval); }
     static inline double abs(cdouble cval) { return std::abs(cval); }
 
-    template<>
-    cfloat max<cfloat>(cfloat lhs, cfloat rhs)
+    static
+    cfloat max(cfloat lhs, cfloat rhs)
     {
         return abs(lhs) > abs(rhs) ? lhs : rhs;
     }
 
-    template<>
-    cdouble max<cdouble>(cdouble lhs, cdouble rhs)
+	static
+    cdouble max(cdouble lhs, cdouble rhs)
     {
         return abs(lhs) > abs(rhs) ? lhs : rhs;
     }
 
-    template<>
-    cfloat min<cfloat>(cfloat lhs, cfloat rhs)
+	static
+    cfloat min(cfloat lhs, cfloat rhs)
     {
         return abs(lhs) < abs(rhs) ? lhs :  rhs;
     }
 
-    template<>
-    cdouble min<cdouble>(cdouble lhs, cdouble rhs)
+	static
+    cdouble min(cdouble lhs, cdouble rhs)
     {
         return abs(lhs) < abs(rhs) ? lhs :  rhs;
     }
@@ -51,14 +52,14 @@ namespace cpu
         return (T)(val);
     }
 
-    template<>
+	template<> STATIC_
     cfloat  scalar<cfloat >(double val)
     {
         cfloat  cval = {(float)val, 0};
         return cval;
     }
 
-    template<>
+	template<> STATIC_
     cdouble scalar<cdouble >(double val)
     {
         cdouble  cval = {val, 0};

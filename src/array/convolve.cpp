@@ -9,6 +9,7 @@
 
 #include <af/signal.h>
 #include "error.hpp"
+#include <algorithm>
 
 namespace af
 {
