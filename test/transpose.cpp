@@ -189,11 +189,11 @@ TEST(Transpose, CPP)
     readTests<float,float,int>(string(TEST_DIR"/transpose/rectangle_batch2.test"),numDims,in,tests);
     af::dim4 dims       = numDims[0];
 
-    int nDevices = af::getDeviceCount();
+    int nDevices = af::devicecount();
 
     for(int d=0; d<nDevices; ++d) {
 
-        af::setDevice(d);
+        af::deviceset(d);
         af::info();
 
         af::array input(dims, &(in[0].front()));

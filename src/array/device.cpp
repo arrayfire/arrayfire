@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/device.h>
+#include <af/compatible.h>
 #include "error.hpp"
 
 namespace af
@@ -24,10 +25,14 @@ namespace af
         return devices;
     }
 
+    int devicecount() { return getDeviceCount(); }
+
     void setDevice(const int device)
     {
         AF_THROW(af_set_device(device));
     }
+
+    void deviceset(const int device) { setDevice(device); }
 
     int getDevice()
     {
@@ -35,6 +40,8 @@ namespace af
         AF_THROW(af_get_device(&device));
         return device;
     }
+
+    int deviceget() { return getDevice(); }
 
     void sync(int device)
     {
