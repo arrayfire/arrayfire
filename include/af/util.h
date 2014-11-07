@@ -10,12 +10,17 @@
 #pragma once
 #include <af/defines.h>
 
+#ifdef __cplusplus
 namespace af
 {
+    class array;
+
     AFAPI void print(const char *exp, const array &arr);
 }
 
 #define af_print(exp) af::print(#exp, exp);
+
+#endif //__cplusplus
 
 #ifdef __cplusplus
 extern "C" {

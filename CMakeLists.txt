@@ -27,7 +27,7 @@ INCLUDE_DIRECTORIES(
     )
 
 IF(${UNIX})
-    ADD_DEFINITIONS(-Wall -std=c++0x -fvisibility=hidden)
+    ADD_DEFINITIONS(-Wall -std=c++11 -fvisibility=hidden)
 ENDIF()
 
 # OS Definitions

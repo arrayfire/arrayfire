@@ -393,31 +393,31 @@ INSTANTIATE(integer)
     ///////////////////////////////////////////////////////////////////////////
     // Operator +=, -=, *=, /=
     ///////////////////////////////////////////////////////////////////////////
-#define INSTANTIATE(op, func)                                               \
+#define INSTANTIATE(op, op1, func)                                          \
     array& array::operator op(const array &other)                           \
     {                                                                       \
-        return *this = *this op other;                                      \
+        return *this = *this op1 other;                                     \
     }                                                                       \
     array& array::operator op(const double &value)                          \
     {                                                                       \
         array cst = constant(value, this->dims(), this->type());            \
-        return *this = *this op cst;                                        \
+        return *this = *this op1 cst;                                       \
     }                                                                       \
     array& array::operator op(const af_cdouble &value)                      \
     {                                                                       \
         array cst = constant(value, this->dims());                          \
-        return *this = *this op cst;                                        \
+        return *this = *this op1 cst;                                       \
     }                                                                       \
     array& array::operator op(const af_cfloat &value)                       \
     {                                                                       \
         array cst = constant(value, this->dims());                          \
-        return *this = *this op cst;                                        \
+        return *this = *this op1 cst;                                       \
     }                                                                       \
 
-    INSTANTIATE(+=, af_add)
-    INSTANTIATE(-=, af_sub)
-    INSTANTIATE(*=, af_mul)
-    INSTANTIATE(/=, af_div)
+    INSTANTIATE(+=, +, af_add)
+    INSTANTIATE(-=, -, af_sub)
+    INSTANTIATE(*=, *, af_mul)
+    INSTANTIATE(/=, /, af_div)
 
 #undef INSTANTIATE
 
