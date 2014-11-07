@@ -8,15 +8,21 @@
  ********************************************************/
 
 #pragma once
-#include "af/compatible.h"
-#include "af/algorithm.h"
-#include "af/arith.h"
-#include "af/array.h"
-#include "af/blas.h"
-#include "af/data.h"
-#include "af/device.h"
-#include "af/exception.h"
-#include "af/image.h"
-#include "af/index.h"
-#include "af/signal.h"
-#include "af/util.h"
+#include <af/array.h>
+
+#ifdef __cplusplus
+namespace af
+{
+
+AFAPI int devicecount();
+
+AFAPI int deviceget();
+
+AFAPI void deviceset(const int device);
+
+AFAPI array loadimage(const char* filename, const bool is_color=false);
+
+AFAPI void saveimage(const char* filename, const array& in);
+
+}
+#endif

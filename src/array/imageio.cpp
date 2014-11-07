@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/image.h>
+#include <af/compatible.h>
 #include "error.hpp"
 
 namespace af
@@ -20,9 +21,19 @@ array loadImage(const char* filename, const bool is_color)
     return array(out);
 }
 
+array loadimage(const char* filename, const bool is_color)
+{
+    return loadImage(filename, is_color);
+}
+
 void saveImage(const char* filename, const array& in)
 {
     AF_THROW(af_save_image(filename, in.get()));
+}
+
+void saveimage(const char* filename, const array& in)
+{
+    return saveImage(filename, in);
 }
 
 }
