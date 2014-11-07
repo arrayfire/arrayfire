@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include <err_cpu.hpp>
 #include <algorithm>
+#include <functional>
 
 using std::greater;
 using std::less;
