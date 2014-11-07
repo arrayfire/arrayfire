@@ -47,3 +47,5 @@ ADD_LIBRARY(afcpu SHARED 	${cpp_sources}
 							${cpu_sources})
 
 TARGET_LINK_LIBRARIES(afcpu ${lib_deps} ${CBLAS_LIBRARIES} ${FFTW_LIBRARIES})
+
+INSTALL(TARGETS afcpu DESTINATION lib)

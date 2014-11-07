@@ -97,3 +97,5 @@ ADD_LIBRARY(afopencl SHARED ${cpp_sources}
 ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
 
 TARGET_LINK_LIBRARIES(afopencl ${OPENCL_LIBRARIES} ${lib_deps} ${CLBLAS_LIBRARIES} ${CLFFT_LIBRARIES} ${CMAKE_DL_LIBS} ${Boost_LIBRARIES})
+
+INSTALL(TARGETS afopencl DESTINATION lib)
