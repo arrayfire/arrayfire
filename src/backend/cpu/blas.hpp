@@ -13,9 +13,11 @@
 #ifdef __APPLE__
 #include <Accelerate/Accelerate.h>
 #else
+#ifndef OS_WIN
 extern "C" {
 #include <cblas.h>
 }
+#endif
 #endif
 
 namespace cpu
