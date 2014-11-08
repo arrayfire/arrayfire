@@ -15,7 +15,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    typedef enum transpose {
+    typedef enum af_transpose_enum {
         AF_NO_TRANSPOSE,
         AF_TRANSPOSE,
         AF_CONJUGATE_TRANSPOSE
