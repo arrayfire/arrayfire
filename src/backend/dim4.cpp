@@ -50,6 +50,14 @@ dim4::dim4(const dim4& other)
     dims[3] = other.dims[3];
 }
 
+dim4::dim4(const unsigned ndims_, const dim_type * const dims_)
+{
+    for (int i = 0; i < 4; i++) {
+        dims[i] = ndims_ > i ? dims_[i] : 1;
+    }
+}
+
+
 dim_type
 dim4::elements() const
 {
