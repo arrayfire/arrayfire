@@ -52,7 +52,7 @@ dim4::dim4(const dim4& other)
 
 dim4::dim4(const unsigned ndims_, const dim_type * const dims_)
 {
-    for (int i = 0; i < 4; i++) {
+    for (unsigned i = 0; i < 4; i++) {
         dims[i] = ndims_ > i ? dims_[i] : 1;
     }
 }

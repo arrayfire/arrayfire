@@ -1,8 +1,8 @@
 ## Description
 
-ArrayFire is a fast, hardware-neutral software library for GPU computing with 
-an easy-to-use API. Its array-based function set makes GPU programming simple. 
-A few lines of code in ArrayFire can replace dozens of lines of raw GPU code, 
+ArrayFire is a fast, hardware-neutral software library for GPU computing with
+an easy-to-use API. Its array-based function set makes GPU programming simple.
+A few lines of code in ArrayFire can replace dozens of lines of raw GPU code,
 saving you valuable time and lowering development costs.
 
 ## Prerequisites
@@ -41,7 +41,7 @@ Our CMake scripts expect the ArrayFire, clBLAS, and clFFT git clones to
 reside within the same parent folder. Prior to building ArrayFire's OpenCL backend
 both `clBLAS` and `clFFT` need to be built and have their `make install` steps
 executed to create packages against which ArrayFire may link.
-Complete the following steps for both `clBLAS` and `clFFT` (replacing the 
+Complete the following steps for both `clBLAS` and `clFFT` (replacing the
 epository names when needed):
 
 ```bash
@@ -70,12 +70,12 @@ make
 make test
 ```
 
-Note that only CPU backend is enabled by default. Enable the other backends as 
+Note that only CPU backend is enabled by default. Enable the other backends as
 necessary after running the ccmake command.
 
 ## Common Issues
-If your compiler cannot find the cblas_* symbols when linking, make sure the 
-cblas library that CMake found is correct. You can set the correct cblas 
+If your compiler cannot find the cblas_* symbols when linking, make sure the
+cblas library that CMake found is correct. You can set the correct cblas
 library in ccmake.
 
 ### CentOS 6.*
