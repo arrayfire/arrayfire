@@ -15,9 +15,6 @@
 #include <copy.hpp>
 #include <sort.hpp>
 #include <err_opencl.hpp>
-
-#undef min
-#undef max
 #include <boost/compute/algorithm/set_intersection.hpp>
 #include <boost/compute/algorithm/set_union.hpp>
 #include <boost/compute/algorithm/sort.hpp>

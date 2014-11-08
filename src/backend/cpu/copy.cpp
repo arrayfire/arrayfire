@@ -16,6 +16,7 @@
 #include <complex>
 #include <vector>
 #include <cassert>
+#include <err_cpu.hpp>
 
 namespace cpu
 {
@@ -146,5 +147,24 @@ namespace cpu
 
     INSTANTIATE_COMPLEX_COPY(cfloat )
     INSTANTIATE_COMPLEX_COPY(cdouble)
+
+#define INSTANTIATE_UNSUPPORTED_COMPLEX_COPY(cmplxType, T)              \
+    template<> void copy(Array<T> &dst, const Array<cfloat> &src,       \
+                                    T  default_value, double factor)    \
+    {                                                                   \
+        TYPE_ERROR(0,(af_dtype) af::dtype_traits<T>::af_type);          \
+    }                                                                   \
+    template<> void copy(Array<T> &dst, const Array<cdouble> &src,      \
+                                        T default_value, double factor) \
+    {                                                                   \
+        TYPE_ERROR(0,(af_dtype) af::dtype_traits<T>::af_type);          \
+    }                                                                   \
+
+    INSTANTIATE_UNSUPPORTED_COMPLEX_COPY(cfloat, double)
+    INSTANTIATE_UNSUPPORTED_COMPLEX_COPY(cfloat, float)
+    INSTANTIATE_UNSUPPORTED_COMPLEX_COPY(cfloat, int)
+    INSTANTIATE_UNSUPPORTED_COMPLEX_COPY(cfloat, uint)
+    INSTANTIATE_UNSUPPORTED_COMPLEX_COPY(cfloat, char)
+    INSTANTIATE_UNSUPPORTED_COMPLEX_COPY(cfloat, uchar)
 
 }

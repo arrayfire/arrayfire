@@ -18,9 +18,6 @@
 namespace opencl
 {
 
-#undef min
-#undef max
-
     template<typename T> static inline T abs(T val)  { return std::abs(val); }
     template<typename T> static inline T min(T lhs, T rhs) { return std::min(lhs, rhs); }
     template<typename T> static inline T max(T lhs, T rhs) { return std::max(lhs, rhs); }

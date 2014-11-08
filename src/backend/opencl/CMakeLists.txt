@@ -1,3 +1,8 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+PROJECT(ARRAYFIRE)
+
+FIND_PACKAGE(OpenCL REQUIRED)
+
 INCLUDE(${CMAKE_SOURCE_DIR}/common/CLKernelToH.cmake)
 
 IF(NOT UNIX)
@@ -8,10 +13,22 @@ ADD_DEFINITIONS(-DAF_OPENCL)
 ADD_DEFINITIONS( -D__CL_ENABLE_EXCEPTIONS
                  -DCL_USE_DEPRECATED_OPENCL_1_1_APIS )
 
-#INCLUDE(${CMAKE_SOURCE_DIR}/common/FindCLBLAS.cmake)
+# clBLAS and clFFT create packages when their `make install` step is executed,
+# rather than installing to system directories. Thus we have special find
+# and install methods for these libraries.
 FIND_PACKAGE(CLBLAS REQUIRED)
+INCLUDE_DIRECTORIES(${CLBLAS_INCLUDE_DIRS})
+LINK_DIRECTORIES(${CLBLAS_LIBRARY_DIR})
+# Custom install command
+INSTALL(DIRECTORY ${CLBLAS_PACKAGE_DIR}/include/ DESTINATION include)
+FILE(GLOB CLBLAS_LIBS ${CLBLAS_PACKAGE_DIR}/lib64/*.so*)
+INSTALL(FILES ${CLBLAS_LIBS} DESTINATION lib)
 
 FIND_PACKAGE(clFFT REQUIRED)
+# Custom install command
+INSTALL(DIRECTORY ${CLFFT_BUILD_DIR}/package/include/ DESTINATION include)
+FILE(GLOB CLFFT_LIBS ${CLFFT_BUILD_DIR}/package/lib64/*.so*)
+INSTALL(FILES ${CLFFT_LIBS} DESTINATION lib)
 
 ADD_DEFINITIONS( -DBOOST_ALL_NO_LIB )
 SET(Boost_USE_STATIC_LIBS OFF)
@@ -80,9 +97,13 @@ CL_KERNEL_TO_H(
     EOF "0"
     )
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread")
+# OS Definitions
+IF(UNIX)
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread")
+ELSE(${UNIX}) #Windows
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+ENDIF()
 
-LINK_DIRECTORIES(${CLBLAS_LIBRARY_DIR})
 
 ADD_LIBRARY(afopencl SHARED ${cpp_sources}
 							${backend_headers}
@@ -97,3 +118,5 @@ ADD_LIBRARY(afopencl SHARED ${cpp_sources}
 ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
 
 TARGET_LINK_LIBRARIES(afopencl ${OPENCL_LIBRARIES} ${lib_deps} ${CLBLAS_LIBRARIES} ${CLFFT_LIBRARIES} ${CMAKE_DL_LIBS} ${Boost_LIBRARIES})
+
+INSTALL(TARGETS afopencl DESTINATION lib)

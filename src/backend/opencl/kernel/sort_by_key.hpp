@@ -15,10 +15,11 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
+#include <boost/compute/core.hpp>
+#include <boost/compute/algorithm/sort_by_key.hpp>
+#include <boost/compute/functional/operator.hpp>
+#include <boost/compute/iterator/buffer_iterator.hpp>
 
-#undef min
-#undef max
-#include <boost/compute.hpp>
 namespace compute = boost::compute;
 
 using cl::Buffer;
