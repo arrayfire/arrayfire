@@ -21,5 +21,5 @@ submitting. This keeps the git history cleaner and easier to understand.
 
 ## Support ##
 
-Feel free to send an email to technical@gmail.com or support@gmail.com with any problems or
+Feel free to send an email to technical@arrayfire.com with any problems or
 questions.
