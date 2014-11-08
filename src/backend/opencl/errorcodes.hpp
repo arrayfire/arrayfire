@@ -11,4 +11,4 @@
 
 #include <string>
 
-const char *getErrorMessage(int error_code);
+std::string getErrorMessage(int error_code);
