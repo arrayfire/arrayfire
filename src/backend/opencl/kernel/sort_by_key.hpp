@@ -15,10 +15,8 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
-
-#undef min
-#undef max
 #include <boost/compute.hpp>
+
 namespace compute = boost::compute;
 
 using cl::Buffer;

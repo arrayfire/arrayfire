@@ -32,9 +32,6 @@ namespace opencl
 namespace kernel
 {
 
-#undef min
-#undef max
-
     typedef struct
     {
         dim_type dim[4];
