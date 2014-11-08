@@ -151,3 +151,10 @@ af_err processException();
     catch(...) {                                \
         return processException();              \
     }
+
+#define AF_CHECK(fn) do {                       \
+        af_err __err = fn;                      \
+        if (__err == AF_SUCCESS) break;         \
+        throw AfError(__FILE__, __LINE__,       \
+                      "\n", __err);             \
+    } while(0)

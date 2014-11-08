@@ -36,6 +36,7 @@ public:
             dim_type third = 1,
             dim_type fourth = 1);
     dim4(const dim4& other);
+    dim4(const unsigned ndims, const dim_type * const dims);
     dim_type elements();
     dim_type elements() const;
     dim_type ndims();

@@ -34,11 +34,13 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
     dim4 const iDims = iInfo.dims();
 
     ARG_ASSERT(0, (outDs.ndims()>=iDims.ndims()));
-    ARG_ASSERT(1, (ndims==outDs.ndims()));
+    ARG_ASSERT(1, (outDs.ndims()>=ndims));
+
+    AF_CHECK(af_eval(out));
 
     vector<af_seq> index_(index, index+ndims);
-
     dim4 const oStrides = af::toStride(index_, outDs);
+
     dim4 oDims = af::toDims(index_, iDims);
     dim4 oOffsets = af::toOffset(index_, iDims);
 

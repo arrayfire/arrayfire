@@ -27,12 +27,8 @@ array moddims(const array& in, const dim4& dims)
 
 array moddims(const array& in, dim_type d0, dim_type d1, dim_type d2, dim_type d3)
 {
-    unsigned ndims = 1;
-    dim_type dims[4] = {d0, 1, 1, 1};
-    ndims += (dims[1]>1 ? 1 : 0);
-    ndims += (dims[2]>1 ? 1 : 0);
-    ndims += (dims[3]>1 ? 1 : 0);
-    return af::moddims(in, ndims, dims);
+    dim_type dims[4] = {d0, d1, d2, d3};
+    return af::moddims(in, 4, dims);
 }
 
 array tile(const array& in, const unsigned x, const unsigned y, const unsigned z, const unsigned w)
