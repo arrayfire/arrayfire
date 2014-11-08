@@ -39,7 +39,13 @@ FILE(GLOB cpu_sources
 source_group(cpu\\Headers FILES ${cpu_headers})
 source_group(cpu\\Sources FILES ${cpu_sources})
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+# OS Definitions
+IF(UNIX)
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+ELSE(${UNIX}) #Windows
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+ENDIF()
+
 ADD_LIBRARY(afcpu SHARED 	${cpp_sources}
 							${backend_headers}
 							${backend_sources}
