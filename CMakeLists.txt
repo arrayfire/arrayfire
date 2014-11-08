@@ -61,7 +61,6 @@ IF(${BUILD_CUDA})
 ENDIF()
 
 IF(${BUILD_OPENCL})
-    FIND_PACKAGE(OpenCL)
     ADD_SUBDIRECTORY(src/backend/opencl)
 ENDIF()
 
@@ -75,3 +74,6 @@ ENDIF()
 IF(${BUILD_EXAMPLES})
     ADD_SUBDIRECTORY(examples)
 ENDIF()
+
+## Install step
+INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)
