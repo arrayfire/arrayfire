@@ -15,13 +15,11 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
-
-#undef min
-#undef max
 #include <boost/compute/core.hpp>
 #include <boost/compute/algorithm/stable_sort.hpp>
 #include <boost/compute/functional/operator.hpp>
 #include <boost/compute/iterator/buffer_iterator.hpp>
+
 namespace compute = boost::compute;
 
 using cl::Buffer;

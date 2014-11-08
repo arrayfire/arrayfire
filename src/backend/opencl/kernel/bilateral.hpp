@@ -32,8 +32,7 @@ namespace opencl
 
 namespace kernel
 {
-#undef min
-#undef max
+
 static const dim_type THREADS_X = 16;
 static const dim_type THREADS_Y = 16;
 

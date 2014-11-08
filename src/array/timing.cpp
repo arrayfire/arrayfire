@@ -1,6 +1,7 @@
 #include <af/timing.h>
 #include <af/device.h>
 #include <math.h>
+#include <algorithm>
 
 using namespace af;
 
@@ -18,8 +19,6 @@ static inline timer time_now(void)
 #endif
     return time;
 }
-
-
 
 // absolute difference between two times (in seconds)
 static inline double time_seconds(timer start, timer end)
