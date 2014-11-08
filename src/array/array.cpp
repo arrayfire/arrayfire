@@ -241,6 +241,7 @@ INSTANTIATE(integer)
 
     array array::operator()(const seq &s0, const seq &s1) const
     {
+        eval();
         af_array out = 0;
         seq indices[] = {s0, s1, span, span};
         //FIXME: check if this->s has same dimensions as numdims
@@ -250,6 +251,7 @@ INSTANTIATE(integer)
 
     array array::operator()(const seq &s0, const seq &s1, const seq &s3) const
     {
+        eval();
         af_array out = 0;
         seq indices[] = {s0, s1, s3, span};
         //FIXME: check if this->s has same dimensions as numdims
@@ -259,6 +261,7 @@ INSTANTIATE(integer)
 
     array array::operator()(const seq &s0, const seq &s1, const seq &s2, const seq &s3) const
     {
+        eval();
         af_array out = 0;
         seq indices[] = {s0, s1, s2, s3};
         //FIXME: check if this->s has same dimensions as numdims
@@ -320,11 +323,14 @@ INSTANTIATE(integer)
     array& array::operator=(const array &other)
     {
         if (isRef) {
+
             af_seq afs[4];
             getSeq(afs);
             AF_THROW(af_assign(arr, numdims(), afs, other.get()));
             isRef = false;
+
         } else {
+
             if (this->get() == other.get()) {
                 return *this;
             }
@@ -335,84 +341,66 @@ INSTANTIATE(integer)
             af_array temp = 0;
             AF_THROW(af_weak_copy(&temp, other.get()));
             this->arr = temp;
+
         }
         return *this;
     }
 
     array& array::operator=(const double &value)
     {
-        if (isRef) {
-            array cst = constant(value, this->dims(), this->type());
-            af_seq afs[4];
-            getSeq(afs);
-            AF_THROW(af_assign(arr, numdims(), afs, cst.get()));
-            isRef = false;
-        } else {
-            if(this->get() != 0) {
-                AF_THROW(af_destroy_array(this->get()));
-            }
-            AF_THROW(af_constant(&arr, value, numdims(), dims().get(), type()));
-        }
-        return *this;
+        array cst = constant(value, this->dims(), this->type());
+        return operator=(cst);
     }
 
     array& array::operator=(const af_cdouble &value)
     {
-        if (isRef) {
-            array cst = constant(value, this->dims());
-            af_seq afs[4];
-            getSeq(afs);
-            AF_THROW(af_assign(arr, numdims(), afs, cst.get()));
-            isRef = false;
-        } else {
-            if(this->get() != 0) {
-                AF_THROW(af_destroy_array(this->get()));
-            }
-            AF_THROW(af_constant_c64(&arr, (const void*)&value, numdims(), dims().get()));
-        }
-        return *this;
+        array cst = constant(value, this->dims());
+        return operator=(cst);
     }
 
     array& array::operator=(const af_cfloat &value)
     {
-        if (isRef) {
-            array cst = constant(value, this->dims());
-            af_seq afs[4];
-            getSeq(afs);
-            AF_THROW(af_assign(arr, numdims(), afs, cst.get()));
-            isRef = false;
-        } else {
-            if(this->get() != 0) {
-                AF_THROW(af_destroy_array(this->get()));
-            }
-            AF_THROW(af_constant_c32(&arr, (const void*)&value, numdims(), dims().get()));
-        }
-        return *this;
+        array cst = constant(value, this->dims());
+        return operator=(cst);
     }
 
     ///////////////////////////////////////////////////////////////////////////
     // Operator +=, -=, *=, /=
     ///////////////////////////////////////////////////////////////////////////
-#define INSTANTIATE(op, op1, func)                                          \
-    array& array::operator op(const array &other)                           \
-    {                                                                       \
-        return *this = *this op1 other;                                     \
-    }                                                                       \
-    array& array::operator op(const double &value)                          \
-    {                                                                       \
-        array cst = constant(value, this->dims(), this->type());            \
-        return *this = *this op1 cst;                                       \
-    }                                                                       \
-    array& array::operator op(const af_cdouble &value)                      \
-    {                                                                       \
-        array cst = constant(value, this->dims());                          \
-        return *this = *this op1 cst;                                       \
-    }                                                                       \
-    array& array::operator op(const af_cfloat &value)                       \
-    {                                                                       \
-        array cst = constant(value, this->dims());                          \
-        return *this = *this op1 cst;                                       \
-    }                                                                       \
+#define INSTANTIATE(op, op1, func)                                      \
+    array& array::operator op(const array &other)                       \
+    {                                                                   \
+        bool this_ref = isRef;                                          \
+        if (this_ref) {                                                 \
+            af_array tmp_arr;                                           \
+            unsigned ndims = numdims();                                 \
+            AF_THROW(af_weak_copy(&tmp_arr, this->arr));                \
+            array tmp = *this op1 other;                                \
+            af_seq afs[4];                                              \
+            getSeq(afs);                                                \
+            AF_THROW(af_assign(tmp_arr, ndims, afs, tmp.get()));        \
+            AF_THROW(af_destroy_array(this->arr));                      \
+            this->arr = tmp_arr;                                        \
+        } else {                                                        \
+            *this = *this op1 other;                                    \
+        }                                                               \
+        return *this;                                                   \
+    }                                                                   \
+    array& array::operator op(const double &value)                      \
+    {                                                                   \
+        array cst = constant(value, this->dims(), this->type());        \
+        return operator op(cst);                                        \
+    }                                                                   \
+    array& array::operator op(const af_cdouble &value)                  \
+    {                                                                   \
+        array cst = constant(value, this->dims());                      \
+        return operator op(cst);                                        \
+    }                                                                   \
+    array& array::operator op(const af_cfloat &value)                   \
+    {                                                                   \
+        array cst = constant(value, this->dims());                      \
+        return operator op(cst);                                        \
+    }                                                                   \
 
     INSTANTIATE(+=, +, af_add)
     INSTANTIATE(-=, -, af_sub)
@@ -571,7 +559,7 @@ INSTANTIATE(integer)
 
 #undef INSTANTIATE
 
-    void array::eval()
+    void array::eval() const
     {
         AF_THROW(af_eval(get()));
     }

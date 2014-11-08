@@ -37,14 +37,11 @@ af_err af_moddims(af_array *out, const af_array in, const unsigned ndims, const 
     af_array output = 0;
 
     try {
-        dim4 newDims((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            newDims[i] = dims[i];
-        }
-
+        dim4 newDims(ndims, dims);
         ArrayInfo info = getInfo(in);
 
         if (info.elements() != (size_t)newDims.elements()) {
+            printf("%d, %d\n", info.elements(), newDims.elements());
             return AF_ERR_SIZE;
         }
 
