@@ -21,7 +21,7 @@
         snprintf(opencl_err_msg,                        \
                  sizeof(opencl_err_msg),                \
                  "OpenCL Error: %s when calling %s",    \
-                 getErrorMessage(ERR.err()),            \
+                 getErrorMessage(ERR.err()).c_str(),    \
                  ERR.what());                           \
         AF_ERROR(opencl_err_msg,                        \
                  AF_ERR_INTERNAL);                      \
