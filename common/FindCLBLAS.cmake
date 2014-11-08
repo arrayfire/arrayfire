@@ -54,26 +54,24 @@ FIND_PATH(CLBLAS_PACKAGE_DIR
     NO_DEFAULT_PATH)
     
 FIND_PATH(_CLBLAS_INCLUDE_DIR
-    NAMES   clBLAS.h
-    DOC     "Location of the clBLAS include directory."
-    HINTS   ${CLBLAS_PACKAGE_DIR}/include
-            ${CLBLAS_PACKAGE_DIR}/package/include)
+    NAMES           clBLAS.h
+    DOC             "Location of the clBLAS include directory."
+    PATH_SUFFIXES   include package/include
+    HINTS           /usr/local
+                    ${CLBLAS_PACKAGE_DIR})
             
 FIND_PATH(CLBLAS_LIBRARY_DIR
-    NAMES   libclBLAS${CMAKE_SHARED_LIBRARY_SUFFIX}
-    DOC     "Location of the clBLAS library"
-    HINTS   ${CLBLAS_PACKAGE_DIR}/lib64
-            ${CLBLAS_PACKAGE_DIR}/package/lib64
-			${CLBLAS_PACKAGE_DIR}/lib64/import
-			${CLBLAS_PACKAGE_DIR}/package/lib64/import)
+    NAMES           libclBLAS${CMAKE_SHARED_LIBRARY_SUFFIX}
+    DOC             "Location of the clBLAS library"
+    PATH_SUFFIXES   lib64 package/lib64 lib64/import package/lib64/import
+    HINTS           ${CLBLAS_PACKAGE_DIR})
 
 FIND_LIBRARY(_CLBLAS_LIBRARY
-    NAMES   clBLAS
-    DOC     "Library files"
-    HINTS   ${CLBLAS_PACKAGE_DIR}/lib64
-            ${CLBLAS_PACKAGE_DIR}/package/lib64
-			${CLBLAS_PACKAGE_DIR}/lib64/import
-			${CLBLAS_PACKAGE_DIR}/package/lib64/import)
+    NAMES           clBLAS
+    DOC             "Library files"
+    PATH_SUFFIXES   lib lib64 package/lib64 lib64/import package/lib64/import
+    HINTS           /usr/local
+                    ${CLBLAS_PACKAGE_DIR})
 
 # Set up the includes and library directories
 SET(CLBLAS_LIBRARY ${_CLBLAS_LIBRARY})
