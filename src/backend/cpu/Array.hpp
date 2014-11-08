@@ -19,9 +19,6 @@
 #include <memory>
 #include <algorithm>
 
-#undef min
-#undef max
-
 namespace cpu
 {
 
