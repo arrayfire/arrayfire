@@ -20,6 +20,17 @@ array moddims(const array& in, const unsigned ndims, const dim_type * const dims
     return array(out);
 }
 
+array moddims(const array& in, const dim4& dims)
+{
+    return af::moddims(in, dims.ndims(), dims.get());
+}
+
+array moddims(const array& in, dim_type d0, dim_type d1, dim_type d2, dim_type d3)
+{
+    dim_type dims[4] = {d0, d1, d2, d3};
+    return af::moddims(in, 4, dims);
+}
+
 array tile(const array& in, const unsigned x, const unsigned y, const unsigned z, const unsigned w)
 {
     af_array out = 0;

@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+#include "af/compatible.h"
 #include "af/algorithm.h"
 #include "af/arith.h"
 #include "af/array.h"

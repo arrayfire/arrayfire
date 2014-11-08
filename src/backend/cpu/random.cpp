@@ -31,6 +31,9 @@ using is_complex_t          = typename enable_if< is_complex<T>::value,         
 template<typename T>
 using is_floating_point_t   = typename enable_if< is_floating_point<T>::value,  function<T()>>::type;
 
+static default_random_engine s_generator;
+static unsigned long long val_generated = 0;
+
 template<typename T, typename GenType>
 is_arithmetic_t<T>
 urand(GenType &generator)
@@ -74,8 +77,9 @@ Array<T>* randn(const af::dim4 &dims)
     Array<T> *outArray = createValueArray(dims, T(0));
     T *outPtr = outArray->get();
 
-    default_random_engine generator;
-    generate(outPtr, outPtr + outArray->elements(), nrand<T>(generator));
+    s_generator.discard(val_generated);
+    generate(outPtr, outPtr + outArray->elements(), nrand<T>(s_generator));
+    val_generated += outArray->elements();
 
     return outArray;
 }
@@ -86,8 +90,9 @@ Array<T>* randu(const af::dim4 &dims)
     Array<T> *outArray = createValueArray(dims, T(0));
     T *outPtr = outArray->get();
 
-    default_random_engine generator;
-    generate(outPtr, outPtr + outArray->elements(), urand<T>(generator));
+    s_generator.discard(val_generated);
+    generate(outPtr, outPtr + outArray->elements(), urand<T>(s_generator));
+    val_generated += outArray->elements();
 
     return outArray;
 }

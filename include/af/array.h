@@ -100,7 +100,7 @@ namespace af
         bool isfloating() const;
         bool isinteger() const;
         bool isbool() const;
-        void eval();
+        void eval() const;
 
 #if 0 // FIXME: Add these functions to C++ wrapper
         void unlock() const;
