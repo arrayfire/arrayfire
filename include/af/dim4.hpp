@@ -59,7 +59,7 @@ operator<<(std::ostream& ostr, const dim4& dims)
     ostr << dims[0] << " "
          << dims[1] << " "
          << dims[2] << " "
-         << dims[3] << "\n";
+         << dims[3];
     return ostr;
 }
 

@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <iostream>
+#include <iomanip>
 #include <af/array.h>
 #include <copy.hpp>
 #include <print.hpp>
@@ -33,7 +34,9 @@ static void printer(ostream &out, const T* ptr, const ArrayInfo &info, unsigned 
 
     if(dim == 0) {
         for(dim_type i = 0, j = 0; i < d; i++, j+=stride) {
-            out << toNum(ptr[j]) << "\t";
+            out<<   std::fixed <<
+                    std::setw(10) <<
+                    std::setprecision(4) << toNum(ptr[j]) << " ";
         }
         out << endl;
     }
@@ -59,14 +62,19 @@ static void print(af_array arr)
     af_get_data_ptr(data, arrT);
     const ArrayInfo infoT = getInfo(arrT);
 
-    //std::cout << "TRANSPOSED\n";
-    std::cout << "Dim:" << info.dims();
-    std::cout << "Offset: " << info.offsets();
-    std::cout << "Stride: " << info.strides();
+    std::ios_base::fmtflags backup = std::cout.flags();
+
+    std::cout << "[" << info.dims() << "]\n";
+#ifndef NDEBUG
+    std::cout <<"   Offsets: ["<<info.offsets()<<"]"<<std::endl;
+    std::cout <<"   Strides: ["<<info.strides()<<"]"<<std::endl;
+#endif
 
     printer(std::cout, data, infoT, infoT.ndims() - 1);
 
     delete[] data;
+
+    std::cout.flags(backup);
 }
 
 af_err af_print_array(af_array arr)
