@@ -79,15 +79,11 @@ Quick links:
 - [Tutorials](http://www.arrayfire.com/docs/gettingstarted.htm)
 - [Examples](http://www.arrayfire.com/docs/examples.htm)
 
-## Getting ArrayFire
-
-There are two ways to obtain ArrayFire. You can [build from source](#build-arrayfire-from-source) or [download installers](#download-arrayfire-installers)
-
-#### Build ArrayFire from source
+## Build ArrayFire from source
 
 To build ArrayFire from source, please follow the instructions on our [wiki](https://github.com/arrayfire/arrayfire/wiki).
 
-#### Download ArrayFire Installers
+## Download ArrayFire Installers
 
 Installers for the stable versions of ArrayFire can be freely downloaded from [here](https://arrayfire.com/download)
 
