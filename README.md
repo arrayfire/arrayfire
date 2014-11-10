@@ -6,6 +6,14 @@ ArrayFire's multiple backends (**CUDA**, **OpenCL** and native **CPU**) make it 
 
 A few lines of code in ArrayFire can replace dozens of lines of parallel computing code, saving you valuable time and lowering development costs.
 
+## Build Status (devel)
+|                 | Build           | Tests           |
+|-----------------|-----------------|-----------------|
+| Linux x86       | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/devel)](http://ci.arrayfire.org/job/arrayfire-linux/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux-test/devel)](http://ci.arrayfire.org/job/arrayfire-linux-test/branch/devel/)
+| Linux Tegra     | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegra/devel)](http://ci.arrayfire.org/job/arrayfire-tegra/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegra-test/devel)](http://ci.arrayfire.org/job/arrayfire-tegra-test/branch/devel/)
+| Windows         |                 |                 |
+| OSX             |                 |                 |
+
 ## Example
 
 ``` C++
