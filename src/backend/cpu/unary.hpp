@@ -43,6 +43,11 @@ UNARY_FN(asinh)
 UNARY_FN(acosh)
 UNARY_FN(atanh)
 
+UNARY_FN(round)
+UNARY_FN(floor)
+UNARY_FN(ceil)
+UNARY_FN(abs)
+
 UNARY_FN(exp)
 UNARY_FN(expm1)
 UNARY_FN(erf)
