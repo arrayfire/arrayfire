@@ -15,6 +15,7 @@
 #include <sstream>
 #include <iostream>
 #include <stdexcept>
+#include <cstring>
 #include <errorcodes.hpp>
 #include <err_opencl.hpp>
 
@@ -48,6 +49,17 @@ static const char *get_system(void)
 #endif
 }
 
+void setContext(DeviceManager& devMngr, int device)
+{
+    devMngr.activeQId = device;
+    for(int i=0; i< (int)devMngr.ctxOffsets.size(); ++i) {
+        if (device< (int)devMngr.ctxOffsets[i]) {
+            devMngr.activeCtxId = i;
+            break;
+        }
+    }
+}
+
 DeviceManager& DeviceManager::getInstance()
 {
     static DeviceManager my_instance;
@@ -74,6 +86,19 @@ DeviceManager::DeviceManager()
         }
 
         ctxOffsets.push_back(nDevices);
+    }
+
+    const char* deviceENV = getenv("AF_OPENCL_DEFAULT_DEVICE");
+    if(deviceENV) {
+        std::stringstream s(deviceENV);
+        int def_device = -1;
+        s >> def_device;
+        if(def_device < 0 || def_device >= (int)nDevices) {
+            printf("WARNING: AF_CUDA_DEFAULT_DEVICE is out of range\n");
+            printf("Setting default device as 0\n");
+        } else {
+            setContext(*this, def_device);
+        }
     }
 }
 
@@ -145,13 +170,7 @@ int setDevice(int device)
     }
     else {
         int old = devMngr.activeQId;
-        devMngr.activeQId = device;
-        for(int i=0; i< (int)devMngr.ctxOffsets.size(); ++i) {
-            if (device< (int)devMngr.ctxOffsets[i]) {
-                devMngr.activeCtxId = i;
-                break;
-            }
-        }
+        setContext(devMngr, device);
         return old;
     }
 }
