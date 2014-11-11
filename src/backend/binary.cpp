@@ -26,7 +26,10 @@ using namespace detail;
 template<typename T, af_op_t op>
 static inline af_array arithOp(const af_array lhs, const af_array rhs)
 {
-    return getHandle(*arithOp<T, op>(getArray<T>(lhs), getArray<T>(rhs)));
+    af_array res = getHandle(*arithOp<T, op>(getArray<T>(lhs), getArray<T>(rhs)));
+    destroyHandle<T>(lhs);
+    destroyHandle<T>(rhs);
+    return res;
 }
 
 template<af_op_t op>
@@ -158,6 +161,7 @@ af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs)
         case f64: res = arithOp<double, af_atan2_t>(left, right); break;
         default: TYPE_ERROR(0, type);
         }
+
         std::swap(*out, res);
     }
     CATCHALL;
@@ -167,7 +171,10 @@ af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs)
 template<typename T, af_op_t op>
 static inline af_array logicOp(const af_array lhs, const af_array rhs)
 {
-    return getHandle(*logicOp<T, op>(getArray<T>(lhs), getArray<T>(rhs)));
+    af_array res = getHandle(*logicOp<T, op>(getArray<T>(lhs), getArray<T>(rhs)));
+    destroyHandle<T>(lhs);
+    destroyHandle<T>(rhs);
+    return res;
 }
 
 template<af_op_t op>
@@ -232,7 +239,10 @@ af_err af_le(af_array *out, const af_array lhs, const af_array rhs)
 template<typename To, typename Ti>
 static inline af_array complexOp(const af_array lhs, const af_array rhs)
 {
-    return getHandle(*complexOp<To, Ti>(getArray<Ti>(lhs), getArray<Ti>(rhs)));
+    af_array res = getHandle(*complexOp<To, Ti>(getArray<Ti>(lhs), getArray<Ti>(rhs)));
+    destroyHandle<Ti>(lhs);
+    destroyHandle<Ti>(rhs);
+    return res;
 }
 
 af_err af_cplx2(af_array *out, const af_array lhs, const af_array rhs)
