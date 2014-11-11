@@ -1,103 +1,104 @@
-## Description
+## ArrayFire
 
-ArrayFire is a fast, hardware-neutral software library for GPU computing with
-an easy-to-use API. Its array-based function set makes GPU programming simple.
-A few lines of code in ArrayFire can replace dozens of lines of raw GPU code,
-saving you valuable time and lowering development costs.
+ArrayFire is a High Performance software library for parallel computing with an easy-to-use API. Its **array** based function set makes parallel programming simple.
 
-## Prerequisites
+ArrayFire's multiple backends (**CUDA**, **OpenCL** and native **CPU**) make it platform independent and highly portable.
 
-### General
+A few lines of code in ArrayFire can replace dozens of lines of parallel computing code, saving you valuable time and lowering development costs.
 
-* gcc >= 4.7 (gcc, g++)
-* cmake >= 2.8.9 (cmake, cmake-curses-gui)
-* git >= 1.8
-* svn >= 1.6 (subversion)
-* freeimage (libfreeimage-dev)
-* Linux / OSX (Windows coming soon)
+## Build Status
+|                 | Build           | Tests           |
+|-----------------|-----------------|-----------------|
+| Linux x86       | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/devel)](http://ci.arrayfire.org/job/arrayfire-linux/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux-test/devel)](http://ci.arrayfire.org/job/arrayfire-linux-test/branch/devel/)
+| Linux Tegra     | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegra/devel)](http://ci.arrayfire.org/job/arrayfire-tegra/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegra-test/devel)](http://ci.arrayfire.org/job/arrayfire-tegra-test/branch/devel/)
+| Windows         |                 |                 |
+| OSX             | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/devel)](http://ci.arrayfire.org/job/arrayfire-osx/branch/devel/)     |                 |
 
-### CPU Backend
-* atlas on Linux (libatlas3gf-base, libatlas-dev)
-* Accelerate Framework on OSX
-* fftw3
+## Example
 
-### CUDA Backend
+``` C++
 
-* CUDA toolkit >= 6.5
+#include <arrayfire.h>
+#include <cstdio>
 
-### OpenCL Backend
-* An OpenCL SDK
-  * [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) >= 6.5
-  * [AMDAPPSDK](http://developer.amd.com/tools-and-sdks/opencl-zone/amd-accelerated-parallel-processing-app-sdk/) >= 2.9
-  * [Intel OpenCL SDK](https://software.intel.com/en-us/intel-opencl) >= 4.4
-* ArrayFire fork of [clBLAS](http://github.com/arrayfire/clBLAS)
-* ArrayFire fork of [clFFT](http://github.com/arrayfire/clFFT)
-* [Boost.Compute](http://github.com/kylelutz/compute)
-* [Boost](http://boost.org) >= 1.48
+using namespace af;
 
-#### Building clBLAS and clFFT
+int main(int argc, char *argv[])
+{
+    try {
 
-Our CMake scripts expect the ArrayFire, clBLAS, and clFFT git clones to
-reside within the same parent folder. Prior to building ArrayFire's OpenCL backend
-both `clBLAS` and `clFFT` need to be built and have their `make install` steps
-executed to create packages against which ArrayFire may link.
-Complete the following steps for both `clBLAS` and `clFFT` (replacing the
-epository names when needed):
 
-```bash
-git clone http://github.com/arrayfire/clBLAS.git
-cd clBLAS
-mkdir build
-cd build
-cmake ../src -DCMAKE_BUILD_TYPE:STRING=Release
-make
-make install
+        // Select a device and display arrayfire info
+        int device = argc > 1 ? atoi(argv[1]) : 0;
+        af::setDevice(device);
+        af::info();
+
+        printf("Create a 5-by-3 matrix of random floats on the GPU\n");
+        array A = randu(5,3, f32);
+        af_print(A);
+
+        printf("Element-wise arithmetic\n");
+        array B = sin(A) + 1.5;
+        af_print(B);
+
+        printf("Negate the first three elements of second column\n");
+        B(seq(0, 2), 1) = B(seq(0, 2), 1) * -1;
+        af_print(B);
+
+        printf("Fourier transform the result\n");
+        array C = fft(B);
+        af_print(C);
+
+        printf("Grab last row\n");
+        array c = C.row(end);
+        af_print(c);
+
+        printf("Create 2-by-3 matrix from host data\n");
+        float d[] = { 1, 2, 3, 4, 5, 6 };
+        array D(2, 3, d, af::afHost);
+        af_print(D);
+
+        printf("Copy last column onto first\n");
+        D.col(0) = D.col(end);
+        af_print(D);
+
+        // Sort A
+        printf("Sort A and print sorted array and corresponding indices\n");
+        array vals, inds;
+        sort(vals, inds, A);
+        af_print(vals);
+        af_print(inds);
+
+    } catch (af::exception& e) {
+        fprintf(stderr, "%s\n", e.what());
+        throw;
+    }
+}
+
 ```
 
-## Getting ArrayFire
+## Documentation
 
-``` bash
-git clone --recursive git@github.com:arrayfire/arrayfire.git
-```
-Do not forget to include `--recursive` as this clones the dependent libraries.
+You can find our complete documentation over [here](http://www.arrayfire.com/docs/index.htm).
 
-## Building ArrayFire
+Quick links:
 
-```bash
-mkdir build && cd build
-ccmake ..
-make
-make test
-```
+- [List of functions](http://www.arrayfire.com/docs/group__arrayfire__func.htm)
+- [Tutorials](http://www.arrayfire.com/docs/gettingstarted.htm)
+- [Examples](http://www.arrayfire.com/docs/examples.htm)
 
-Note that only CPU backend is enabled by default. Enable the other backends as
-necessary after running the ccmake command.
+## Build ArrayFire from source
 
-## Common Issues
-If your compiler cannot find the cblas_* symbols when linking, make sure the
-cblas library that CMake found is correct. You can set the correct cblas
-library in ccmake.
+To build ArrayFire from source, please follow the instructions on our [wiki](https://github.com/arrayfire/arrayfire/wiki).
 
-### CentOS 6.*
-- Install devtoolset-2 using the instructions from [here](http://people.centos.org/tru/devtools-2/readme).
+## Download ArrayFire Installers
 
-```bash
-scl enable detoolset-2 bash
-ccmake ..
-make
-make test
-```
+Installers for the stable versions of ArrayFire can be freely downloaded from [here](https://arrayfire.com/download)
 
-- Required version of Boost (>=1.48) may not be available using the package
-  manager. It needs to be downloaded and installed. The following commands are
-  for version 1.55. For a different version, simply change the version number.
-  You may also choose a --perfix path of your choosing, but may need to
-  manually edit the cmake path if it is not in one of the standard locations.
+## Contribute
 
-```bash
-wget http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.gz
-tar -xvzf boost_1_55_0.tar.gz
-cd boost_1_55_0/
-./bootstrap.sh --prefix=/usr/local
-./b2 install --with-all
-```
+Contributions of any kind are welcome! Please refer to [this document](https://github.com/arrayfire/arrayfire/blob/master/CONTRIBUTING.md) to learn more about how you can get involved with ArrayFire.
+
+## Contact us
+
+email: technical@arrayfire.com

@@ -18,7 +18,7 @@ namespace af
 {
     void print(const char *exp, const array &arr)
     {
-        std::cout << exp << std::endl;
+        std::cout << exp << " ";
         AF_THROW(af_print_array(arr.get()));
         return;
     }
