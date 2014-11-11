@@ -17,6 +17,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <cstdio>
+#include <cstring>
 #include <err_cuda.hpp>
 
 //Macro for checking cuda errors following a cuda launch or api call
@@ -282,7 +283,21 @@ namespace cuda
 
         sortDevices();
 
-        setActiveDevice(0);
+        const char* deviceENV = getenv("AF_CUDA_DEFAULT_DEVICE");
+        if(!deviceENV) {
+            setActiveDevice(0);
+        } else {
+            stringstream s(deviceENV);
+            int def_device = -1;
+            s >> def_device;
+            if(def_device < 0 || def_device >= nDevices) {
+                printf("WARNING: AF_CUDA_DEFAULT_DEVICE is out of range\n");
+                printf("Setting default device as 0\n");
+                setActiveDevice(0);
+            } else {
+                setActiveDevice(def_device);
+            }
+        }
     }
 
     void DeviceManager::sortDevices(sort_mode mode)
