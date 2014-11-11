@@ -13,10 +13,27 @@
 #include <af/traits.hpp>
 #include <af/util.h>
 #include <af/index.h>
+#include <af/device.h>
 #include "error.hpp"
 
 namespace af
 {
+
+    static unsigned size_of(af_dtype type)
+    {
+        switch(type) {
+        case f32: return sizeof(float);
+        case f64: return sizeof(double);
+        case s32: return sizeof(int);
+        case u32: return sizeof(unsigned);
+        case s8 : return sizeof(char);
+        case u8 : return sizeof(unsigned char);
+        case b8 : return sizeof(unsigned char);
+        case c32: return sizeof(float) * 2;
+        case c64: return sizeof(double) * 2;
+        default: return sizeof(float);
+        }
+    }
     array::array() : arr(0), isRef(false) {}
     array::array(const af_array handle): arr(handle), isRef(false) {}
 
@@ -32,10 +49,12 @@ namespace af
                                dim_type d0, dim_type d1=1, dim_type d2=1, dim_type d3=1)
     {
         af_dtype ty = (af_dtype)dtype_traits<T>::af_type;
-        if (src != afHost) AF_THROW(AF_ERR_INVALID_ARG);
-
         dim_type my_dims[] = {d0, d1, d2, d3};
-        AF_THROW(af_create_array(arr, (const void * const)ptr, 4, my_dims, ty));
+        switch (src) {
+        case afHost:   AF_THROW(af_create_array(arr, (const void * const)ptr, 4, my_dims, ty)); break;
+        case afDevice: AF_THROW(af_device_array(arr, (const void *      )ptr, 4, my_dims, ty)); break;
+        default: AF_THROW(AF_ERR_INVALID_ARG);
+        }
     }
 
     array::array(const dim4 &dims, af_dtype ty) : arr(0), isRef(false)
@@ -124,19 +143,6 @@ namespace af
         return elems;
     }
 
-    template<typename T>
-    T *array::host() const
-    {
-        if (type() != (af_dtype)dtype_traits<T>::af_type) {
-            AF_THROW(AF_ERR_INVALID_TYPE);
-        }
-
-        T *res = new T[elements()];
-        AF_THROW(af_get_data_ptr((void *)res, arr));
-
-        return res;
-    }
-
     void array::host(void *data) const
     {
         AF_THROW(af_get_data_ptr(data, arr));
@@ -184,7 +190,7 @@ namespace af
     {
         dim_type nElements;
         AF_THROW(af_get_elements(&nElements, arr));
-        return nElements * sizeof(type());
+        return nElements * size_of(type());
     }
 
     array array::copy() const
@@ -564,4 +570,60 @@ INSTANTIATE(integer)
         AF_THROW(af_eval(get()));
     }
 
+#define INSTANTIATE(T)                                      \
+    template<> AFAPI T *array::host() const                 \
+    {                                                       \
+        if (type() != (af_dtype)dtype_traits<T>::af_type) { \
+            AF_THROW(AF_ERR_INVALID_TYPE);                  \
+        }                                                   \
+                                                            \
+        T *res = new T[elements()];                         \
+        AF_THROW(af_get_data_ptr((void *)res, arr));        \
+                                                            \
+        return res;                                         \
+    }                                                       \
+    template<> AFAPI T array::scalar() const                \
+    {                                                       \
+        T *h_ptr = host<T>();                               \
+        T scalar = h_ptr[0];                                \
+        delete[] h_ptr;                                     \
+        return scalar;                                      \
+    }                                                       \
+    template<> AFAPI T* array::device() const               \
+    {                                                       \
+        void *ptr = NULL;                                   \
+        AF_THROW(af_get_device_ptr(ptr, get(), true));      \
+        return (T *)ptr;                                    \
+    }                                                       \
+
+	INSTANTIATE(af_cdouble)
+	INSTANTIATE(af_cfloat)
+	INSTANTIATE(double)
+	INSTANTIATE(float)
+	INSTANTIATE(unsigned)
+	INSTANTIATE(int)
+	INSTANTIATE(unsigned char)
+	INSTANTIATE(char)
+
+    void *array::alloc(size_t elements, af_dtype type)
+    {
+        void *ptr;
+        AF_THROW(af_alloc_device(&ptr, elements * size_of(type)));
+        // FIXME: Add to map
+        return ptr;
+    }
+
+    void *array::pinned(size_t elements, af_dtype type)
+    {
+        void *ptr;
+        AF_THROW(af_alloc_pinned(&ptr, elements * size_of(type)));
+        // FIXME: Add to map
+        return ptr;
+    }
+
+    void array::free(const void *ptr)
+    {
+        //FIXME: look up map and call the right free
+        AF_THROW(af_free_device((void *)ptr));
+    }
 }

@@ -50,6 +50,14 @@ namespace opencl
     }
 
     template<typename T>
+    Array<T>::Array(af::dim4 dims, cl_mem mem) :
+        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        data(mem),
+        parent(), node(NULL), ready(true)
+    {
+    }
+
+    template<typename T>
     Array<T>::Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
         ArrayInfo(dims, offset, stride, (af_dtype)dtype_traits<T>::af_type),
         data(0),
@@ -124,9 +132,17 @@ namespace opencl
 
     template<typename T>
     Array<T> *
-    createDataArray(const dim4 &size, const T * const data)
+    createHostDataArray(const dim4 &size, const T * const data)
     {
         Array<T> *out = new Array<T>(size, data);
+        return out;
+    }
+
+    template<typename T>
+    Array<T> *
+    createDeviceDataArray(const dim4 &size, const void *data)
+    {
+        Array<T> *out = new Array<T>(size, (cl_mem)(data));
         return out;
     }
 
@@ -203,7 +219,8 @@ namespace opencl
 
 
 #define INSTANTIATE(T)                                                  \
-    template       Array<T>*  createDataArray<T>  (const dim4 &size, const T * const data); \
+    template       Array<T>*  createHostDataArray<T>  (const dim4 &size, const T * const data); \
+    template       Array<T>*  createDeviceDataArray<T>  (const dim4 &size, const void *data); \
     template       Array<T>*  createValueArray<T> (const dim4 &size, const T &value); \
     template       Array<T>*  createEmptyArray<T> (const dim4 &size);   \
     template       Array<T>*  createParamArray<T> (Param &tmp);         \
