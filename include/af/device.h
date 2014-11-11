@@ -39,6 +39,18 @@ extern "C" {
 
     AFAPI af_err af_sync(const int device);
 
+    AFAPI af_err af_device_array(af_array *arr, const void *data, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+
+    AFAPI af_err af_get_device_ptr(void *ptr, const af_array arr, bool read_only);
+
+    AFAPI af_err af_alloc_device(void **ptr, dim_type bytes);
+
+    AFAPI af_err af_alloc_pinned(void **ptr, dim_type bytes);
+
+    AFAPI af_err af_free_device(void *ptr);
+
+    AFAPI af_err af_free_pinned(void *ptr);
+
 #ifdef __cplusplus
 }
 #endif

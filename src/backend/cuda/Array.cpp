@@ -45,12 +45,14 @@ namespace cuda
     {}
 
     template<typename T>
-    Array<T>::Array(af::dim4 dims, const T * const in_data) :
+    Array<T>::Array(af::dim4 dims, const T * const in_data, bool is_device) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(cudaMallocWrapper<T>(dims.elements()), cudaFreeWrapper<T>),
+        data((is_device ? (T *)in_data : cudaMallocWrapper<T>(dims.elements())), cudaFreeWrapper<T>),
         parent(), node(NULL), ready(true)
     {
-        CUDA_CHECK(cudaMemcpy(data.get(), in_data, dims.elements() * sizeof(T), cudaMemcpyHostToDevice));
+        if (!is_device) {
+            CUDA_CHECK(cudaMemcpy(data.get(), in_data, dims.elements() * sizeof(T), cudaMemcpyHostToDevice));
+        }
     }
 
     template<typename T>
@@ -108,9 +110,17 @@ namespace cuda
 
     template<typename T>
     Array<T> *
-    createDataArray(const dim4 &size, const T * const data)
+    createHostDataArray(const dim4 &size, const T * const data)
     {
-        Array<T> *out = new Array<T>(size, data);
+        Array<T> *out = new Array<T>(size, data, false);
+        return out;
+    }
+
+    template<typename T>
+    Array<T> *
+    createDeviceDataArray(const dim4 &size, const void *data)
+    {
+        Array<T> *out = new Array<T>(size, (const T * const)data, true);
         return out;
     }
 
@@ -214,7 +224,8 @@ namespace cuda
     }
 
 #define INSTANTIATE(T)                                                  \
-    template       Array<T>*  createDataArray<T>  (const dim4 &size, const T * const data); \
+    template       Array<T>*  createHostDataArray<T>  (const dim4 &size, const T * const data); \
+    template       Array<T>*  createDeviceDataArray<T>  (const dim4 &size, const void *data); \
     template       Array<T>*  createValueArray<T> (const dim4 &size, const T &value); \
     template       Array<T>*  createEmptyArray<T> (const dim4 &size);   \
     template       Array<T>*  createParamArray<T> (Param<T> &tmp);      \
