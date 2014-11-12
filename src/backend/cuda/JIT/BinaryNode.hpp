@@ -74,15 +74,21 @@ namespace JIT
             m_rhs->genKerName(kerStream, genInputs);
         }
 
-        void genFuncs(std::stringstream &kerStream, std::stringstream &declStream)
+        void genFuncs(std::stringstream &kerStream, str_map_t &declStrs)
         {
             if (m_gen_func) return;
 
-            if (!(m_lhs->isGenFunc())) m_lhs->genFuncs(kerStream, declStream);
-            if (!(m_rhs->isGenFunc())) m_rhs->genFuncs(kerStream, declStream);
+            if (!(m_lhs->isGenFunc())) m_lhs->genFuncs(kerStream, declStrs);
+            if (!(m_rhs->isGenFunc())) m_rhs->genFuncs(kerStream, declStrs);
 
+            std::stringstream declStream;
             declStream << "declare " << m_type_str << " " << m_op_str
                        << "(" << m_lhs->getTypeStr() << " , " << m_rhs->getTypeStr() << ")\n";
+
+            str_map_iter loc = declStrs.find(declStream.str());
+            if (loc == declStrs.end()) {
+                declStrs[declStream.str()] = true;
+            }
 
             kerStream << "%val" << m_id << " = call "
                       << m_type_str << " "
@@ -114,6 +120,7 @@ namespace JIT
             m_gen_func = false;
             m_gen_param = false;
             m_gen_offset = false;
+            m_set_arg = false;
             m_lhs->resetFlags();
             m_rhs->resetFlags();
         }

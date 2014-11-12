@@ -44,6 +44,8 @@ class DeviceManager
 
     friend int setDevice(int device);
 
+    friend void setContext(DeviceManager& devMngr, int device);
+
     public:
         static const unsigned MAX_DEVICES = 16;
 
@@ -68,5 +70,7 @@ class DeviceManager
         unsigned activeCtxId;
         unsigned activeQId;
 };
+
+void setContext(DeviceManager& devMngr, int device);
 
 }

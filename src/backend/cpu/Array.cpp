@@ -72,9 +72,17 @@ namespace cpu
 
     template<typename T>
     Array<T> *
-    createDataArray(const dim4 &size, const T * const data)
+    createHostDataArray(const dim4 &size, const T * const data)
     {
         Array<T> *out = new Array<T>(size, data);
+        return out;
+    }
+
+    template<typename T>
+    Array<T> *
+    createDeviceDataArray(const dim4 &size, const void *data)
+    {
+        Array<T> *out = new Array<T>(size, (const T * const) data);
         return out;
     }
 
@@ -193,7 +201,8 @@ namespace cpu
     }
 
 #define INSTANTIATE(T)                                                  \
-    template       Array<T>*  createDataArray<T>  (const dim4 &size, const T * const data); \
+    template       Array<T>*  createHostDataArray<T>  (const dim4 &size, const T * const data); \
+    template       Array<T>*  createDeviceDataArray<T>  (const dim4 &size, const void *data); \
     template       Array<T>*  createValueArray<T> (const dim4 &size, const T &value); \
     template       Array<T>*  createEmptyArray<T> (const dim4 &size);   \
     template       Array<T>*  createSubArray<T>   (const Array<T> &parent, const dim4 &dims, const dim4 &offset, const dim4 &stride); \

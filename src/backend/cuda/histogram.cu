@@ -43,7 +43,7 @@ Array<outType> * histogram(const Array<inType> &in, const unsigned &nbins, const
     }
 
     dim4 minmax_dims(dims[2]*2);
-    Array<cfloat>* minmax = createDataArray<cfloat>(minmax_dims, h_minmax);
+    Array<cfloat>* minmax = createHostDataArray<cfloat>(minmax_dims, h_minmax);
 
     // cleanup the host memory used
     delete[] h_minmax;

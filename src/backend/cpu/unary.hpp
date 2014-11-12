@@ -9,7 +9,6 @@
 
 #include <Array.hpp>
 #include <optypes.hpp>
-#include <math.hpp>
 #include <err_cpu.hpp>
 #include <TNJ/UnaryNode.hpp>
 #include <cmath>
@@ -42,6 +41,11 @@ UNARY_FN(tanh)
 UNARY_FN(asinh)
 UNARY_FN(acosh)
 UNARY_FN(atanh)
+
+UNARY_FN(round)
+UNARY_FN(floor)
+UNARY_FN(ceil)
+UNARY_FN(abs)
 
 UNARY_FN(exp)
 UNARY_FN(expm1)
