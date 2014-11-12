@@ -39,22 +39,22 @@ using scale_type     =  typename conditional<   is_complex<T>::value,
 template<typename T, typename BT>
 using gemm_func_def = void (*)( const enum CBLAS_ORDER, const enum CBLAS_TRANSPOSE, const enum CBLAS_TRANSPOSE,
                                 const int, const int, const int,
-								scale_type<T, BT>, cptr_type<T, BT>, const int,
-								cptr_type<T, BT>, const int,
-								scale_type<T, BT>, ptr_type<T, BT>, const int);
+                                scale_type<T, BT>, cptr_type<T, BT>, const int,
+                                cptr_type<T, BT>, const int,
+                                scale_type<T, BT>, ptr_type<T, BT>, const int);
 
 template<typename T, typename BT>
 using gemv_func_def = void (*)( const enum CBLAS_ORDER, const enum CBLAS_TRANSPOSE,
                                 const int, const int,
-								scale_type<T, BT>, cptr_type<T, BT>, const int,
-								cptr_type<T, BT>, const int,
-								scale_type<T, BT>, ptr_type<T, BT>, const int);
+                                scale_type<T, BT>, cptr_type<T, BT>, const int,
+                                cptr_type<T, BT>, const int,
+                                scale_type<T, BT>, ptr_type<T, BT>, const int);
 
 template<typename T, typename BT>
 using dot_func_def = T (*) (    const int,
                                 cptr_type<T, BT>,
                                 const int,
-								cptr_type<T, BT>,
+                                cptr_type<T, BT>,
                                 const int);
 
 #define BLAS_FUNC_DEF( FUNC )                                                      \
@@ -179,19 +179,19 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
     dim4 rStrides = rhs.strides();
     if(rDims[bColDim] == 1) {
         N = lDims[aColDim];
-		gemv_func<T, BT>()(
+        gemv_func<T, BT>()(
             CblasColMajor, lOpts,
             M, N,
-			alpha, REINTERPRET_CAST(const BT*, lhs.get()), lStrides[1],
-			REINTERPRET_CAST(const BT*, rhs.get()), rStrides[0],
-			beta, REINTERPRET_CAST(BT*, out->get()), 1);
+            alpha, REINTERPRET_CAST(const BT*, lhs.get()), lStrides[1],
+            REINTERPRET_CAST(const BT*, rhs.get()), rStrides[0],
+            beta, REINTERPRET_CAST(BT*, out->get()), 1);
     } else {
-		gemm_func<T, BT>()(
+        gemm_func<T, BT>()(
             CblasColMajor, lOpts, rOpts,
             M, N, K,
-			alpha, REINTERPRET_CAST(const BT*, lhs.get()), lStrides[1],
-			REINTERPRET_CAST(const BT*, rhs.get()), rStrides[1],
-			beta, REINTERPRET_CAST(BT*, out->get()), out->dims()[0]);
+            alpha, REINTERPRET_CAST(const BT*, lhs.get()), lStrides[1],
+            REINTERPRET_CAST(const BT*, rhs.get()), rStrides[1],
+            beta, REINTERPRET_CAST(BT*, out->get()), out->dims()[0]);
     }
 
     return out;
@@ -203,7 +203,7 @@ Array<T>* dot(const Array<T> &lhs, const Array<T> &rhs,
 {
     int N = lhs.dims()[0];
 
-	T out = dot_func<T, BT>()(N,
+    T out = dot_func<T, BT>()(N,
                             lhs.get(), lhs.strides()[0],
                             rhs.get(), rhs.strides()[0]
                             );
