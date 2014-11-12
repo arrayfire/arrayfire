@@ -33,6 +33,8 @@ namespace cuda
 using JIT::Node;
 using std::string;
 using std::stringstream;
+using JIT::str_map_t;
+using JIT::str_map_iter;
 
 const char *layout64 = "target datalayout = \"e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v16:16:16-v32:32:32-v64:64:64-v128:128:128-n16:32:64\"\n\n\n";
 const char *layout32 = "target datalayout = \"e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v16:16:16-v32:32:32-v64:64:64-v128:128:128-n16:32:64\"\n\n\n";
@@ -50,8 +52,8 @@ static string getFuncName(Node *node)
 static string getKernelString(string funcName, Node *node)
 {
     stringstream kerStream;
-    stringstream declStream;
     stringstream annStream;
+    str_map_t declStrs;
 
     int id = node->setId(0) - 1;
 
@@ -119,7 +121,7 @@ static string getKernelString(string funcName, Node *node)
     kerStream << "core:\n\n";
     node->genOffsets(kerStream);
 
-    node->genFuncs(kerStream, declStream);
+    node->genFuncs(kerStream, declStrs);
 
     kerStream << "%outIdx = getelementptr inbounds " << node->getTypeStr() << "* %out, i64 %idx\n";
     kerStream << "store "
@@ -131,7 +133,9 @@ static string getKernelString(string funcName, Node *node)
     kerStream << "\nret void\n";
     kerStream << "\n}\n\n";
 
-    kerStream << declStream.str() << "\n";
+    for(str_map_iter iterator = declStrs.begin(); iterator != declStrs.end(); iterator++) {
+        kerStream << iterator->first << "\n";
+    }
 
     kerStream
         << "declare i32 @llvm.nvvm.read.ptx.sreg.tid.x() nounwind readnone\n"
