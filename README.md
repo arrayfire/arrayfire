@@ -1,4 +1,4 @@
-## ArrayFire
+<a href="url"><img src="http://arrayfire.com/logos/arrayfire_logo_whitebkgnd.png" width="300"></a>
 
 ArrayFire is a High Performance software library for parallel computing with an easy-to-use API. Its **array** based function set makes parallel programming simple.
 
@@ -6,7 +6,7 @@ ArrayFire's multiple backends (**CUDA**, **OpenCL** and native **CPU**) make it 
 
 A few lines of code in ArrayFire can replace dozens of lines of parallel computing code, saving you valuable time and lowering development costs.
 
-## Build Status
+### Build Status
 |                 | Build           | Tests           |
 |-----------------|-----------------|-----------------|
 | Linux x86       | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/devel)](http://ci.arrayfire.org/job/arrayfire-linux/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux-test/devel)](http://ci.arrayfire.org/job/arrayfire-linux-test/branch/devel/)
@@ -14,7 +14,7 @@ A few lines of code in ArrayFire can replace dozens of lines of parallel computi
 | Windows         |                 |                 |
 | OSX             | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/devel)](http://ci.arrayfire.org/job/arrayfire-osx/branch/devel/)     |                 |
 
-## Example
+### Example
 
 ``` C++
 
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 
 ```
 
-## Documentation
+### Documentation
 
 You can find our complete documentation over [here](http://www.arrayfire.com/docs/index.htm).
 
@@ -87,7 +87,7 @@ Quick links:
 - [Tutorials](http://www.arrayfire.com/docs/gettingstarted.htm)
 - [Examples](http://www.arrayfire.com/docs/examples.htm)
 
-## Build ArrayFire from source
+### Build ArrayFire from source
 
 To build ArrayFire from source, please follow the instructions on our [wiki](https://github.com/arrayfire/arrayfire/wiki).
 
@@ -95,10 +95,10 @@ To build ArrayFire from source, please follow the instructions on our [wiki](htt
 
 Installers for the stable versions of ArrayFire can be freely downloaded from [here](https://arrayfire.com/download)
 
-## Contribute
+### Contribute
 
 Contributions of any kind are welcome! Please refer to [this document](https://github.com/arrayfire/arrayfire/blob/master/CONTRIBUTING.md) to learn more about how you can get involved with ArrayFire.
 
-## Contact us
-
-email: technical@arrayfire.com
+### Contact us
+Google Groups: https://groups.google.com/forum/#!forum/arrayfire-users
+ArrayFire Forums: http://arrayfire.com/forums/
