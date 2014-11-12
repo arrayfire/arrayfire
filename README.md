@@ -1,6 +1,6 @@
 <a href="url"><img src="http://arrayfire.com/logos/arrayfire_logo_whitebkgnd.png" width="300"></a>
 
-ArrayFire is a High Performance software library for parallel computing with an easy-to-use API. Its **array** based function set makes parallel programming simple.
+ArrayFire is a high performance software library for parallel computing with an easy-to-use API. Its **array** based function set makes parallel programming simple.
 
 ArrayFire's multiple backends (**CUDA**, **OpenCL** and native **CPU**) make it platform independent and highly portable.
 
@@ -26,7 +26,6 @@ using namespace af;
 int main(int argc, char *argv[])
 {
     try {
-
 
         // Select a device and display arrayfire info
         int device = argc > 1 ? atoi(argv[1]) : 0;
