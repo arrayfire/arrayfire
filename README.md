@@ -91,7 +91,7 @@ Quick links:
 
 To build ArrayFire from source, please follow the instructions on our [wiki](https://github.com/arrayfire/arrayfire/wiki).
 
-## Download ArrayFire Installers
+### Download ArrayFire Installers
 
 Installers for the stable versions of ArrayFire can be freely downloaded from [here](https://arrayfire.com/download).
 
