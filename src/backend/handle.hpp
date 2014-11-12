@@ -54,7 +54,7 @@ static af_array createHandle(af::dim4 d, double val)
 template<typename T>
 static af_array createHandle(af::dim4 d, const T * const data)
 {
-    return getHandle(*detail::createDataArray<T>(d, data));
+    return getHandle(*detail::createHostDataArray<T>(d, data));
 }
 
 template<typename T>

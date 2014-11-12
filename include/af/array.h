@@ -102,21 +102,25 @@ namespace af
         bool isbool() const;
         void eval() const;
 
-#if 0 // FIXME: Add these functions to C++ wrapper
         void unlock() const;
 
         template<typename T> T scalar() const;
         template<typename T> T* device() const;
 
-        template<typename T> static T* alloc(size_t elements);
         static void *alloc(size_t elements, af_dtype type);
+        template<typename T> static T* alloc(size_t elements)
+        {
+            return alloc(elements, (af_dtype)dtype_traits<T>::af_type);
+        }
 
-        template<typename T> static T* pinned(size_t elements);
+
         static void *pinned(size_t elements, af_dtype type);
+        template<typename T> static T* pinned(size_t elements)
+        {
+            return pinned(elements, (af_dtype)dtype_traits<T>::af_type);
+        }
 
         static void free(const void *);
-#endif
-
 
         // INDEXING
     public:

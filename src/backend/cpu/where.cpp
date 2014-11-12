@@ -54,7 +54,7 @@ namespace cpu
             }
         }
 
-        Array<uint> *out = createDataArray(dim4(count), out_vec);
+        Array<uint> *out = createHostDataArray(dim4(count), out_vec);
         return out;
     }
 

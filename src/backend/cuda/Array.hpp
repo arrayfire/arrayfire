@@ -49,7 +49,11 @@ namespace cuda
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     Array<T>*
-    createDataArray(const af::dim4 &size, const T * const data);
+    createHostDataArray(const af::dim4 &size, const T * const data);
+
+    template<typename T>
+    Array<T>*
+    createDeviceDataArray(const af::dim4 &size, const void *data);
 
     // Create an Array object and do not assign any values to it
     template<typename T>
@@ -83,6 +87,12 @@ namespace cuda
     T* cudaMallocWrapper(const size_t &elements);
 
     template<typename T>
+    void *getDevicePtr(const Array<T>& arr)
+    {
+        return (void *)arr.get();
+    }
+
+    template<typename T>
     class Array : public ArrayInfo
     {
         shared_ptr<T> data;
@@ -92,7 +102,7 @@ namespace cuda
         bool ready;
 
         Array(af::dim4 dims);
-        explicit Array(af::dim4 dims, const T * const in_data);
+        explicit Array(af::dim4 dims, const T * const in_data, bool is_device = false);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
         Array(Param<T> &tmp);
         Array(af::dim4 dims, JIT::Node *n);
@@ -142,7 +152,9 @@ namespace cuda
         JIT::Node *getNode() const;
 
         friend Array<T>* createValueArray<T>(const af::dim4 &size, const T& value);
-        friend Array<T>* createDataArray<T>(const af::dim4 &size, const T * const data);
+        friend Array<T>* createHostDataArray<T>(const af::dim4 &size, const T * const data);
+        friend Array<T>* createDeviceDataArray<T>(const af::dim4 &size, const void *data);
+
         friend Array<T>* createEmptyArray<T>(const af::dim4 &size);
         friend Array<T>* createParamArray<T>(Param<T> &tmp);
         friend Array<T>* createNodeArray<T>(const af::dim4 &dims, JIT::Node *node);
@@ -151,6 +163,7 @@ namespace cuda
         friend Array<T>* createRefArray<T>(const Array<T>& parent,
                                            const dim4 &dims, const dim4 &offset, const dim4 &stride);
         friend void      destroyArray<T>(Array<T> &arr);
+        friend void *getDevicePtr<T>(const Array<T>& arr);
     };
 
 }

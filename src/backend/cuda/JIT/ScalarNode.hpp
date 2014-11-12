@@ -95,7 +95,7 @@ namespace JIT
             m_gen_offset = true;
         }
 
-        void genFuncs(std::stringstream &kerStream, std::stringstream &declStream)
+        void genFuncs(std::stringstream &kerStream, str_map_t &declStrs)
         {
             if (m_gen_func) return;
             m_gen_func = true;

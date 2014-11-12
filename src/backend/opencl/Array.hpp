@@ -41,7 +41,12 @@ namespace opencl
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     Array<T>*
-    createDataArray(const af::dim4 &size, const T * const data);
+    createHostDataArray(const af::dim4 &size, const T * const data);
+
+    // Creates a new Array object on the heap and returns a reference to it.
+    template<typename T>
+    Array<T>*
+    createDeviceDataArray(const af::dim4 &size, const void *data);
 
     // Create an Array object and do not assign any values to it
     template<typename T>
@@ -72,6 +77,12 @@ namespace opencl
     createPaddedArray(Array<inType> const &in, dim4 const &dims, outType default_value, double factor=1.0);
 
     template<typename T>
+    void *getDevicePtr(const Array<T>& arr)
+    {
+        return (void *)(arr.get()());
+    }
+
+    template<typename T>
     class Array : public ArrayInfo
     {
         cl::Buffer  data;
@@ -85,6 +96,7 @@ namespace opencl
         Array(Param &tmp);
         explicit Array(af::dim4 dims, JIT::Node *n);
         explicit Array(af::dim4 dims, const T * const in_data);
+        explicit Array(af::dim4 dims, cl_mem mem);
     public:
 
         ~Array();
@@ -128,7 +140,9 @@ namespace opencl
         JIT::Node *getNode() const;
 
         friend Array<T>* createValueArray<T>(const af::dim4 &size, const T& value);
-        friend Array<T>* createDataArray<T>(const af::dim4 &size, const T * const data);
+        friend Array<T>* createHostDataArray<T>(const af::dim4 &size, const T * const data);
+        friend Array<T>* createDeviceDataArray<T>(const af::dim4 &size, const void *data);
+
         friend Array<T>* createEmptyArray<T>(const af::dim4 &size);
         friend Array<T>* createSubArray<T>(const Array<T>& parent,
                                            const dim4 &dims, const dim4 &offset, const dim4 &stride);
@@ -137,5 +151,6 @@ namespace opencl
         friend Array<T>* createParamArray<T>(Param &tmp);
         friend Array<T>* createNodeArray<T>(const af::dim4 &dims, JIT::Node *node);
         friend void      destroyArray<T>(Array<T> &arr);
+        friend void *getDevicePtr<T>(const Array<T>& arr);
     };
 }

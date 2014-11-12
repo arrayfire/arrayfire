@@ -40,7 +40,12 @@ namespace cpu
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     Array<T>*
-    createDataArray(const af::dim4 &size, const T * const data);
+    createHostDataArray(const af::dim4 &size, const T * const data);
+
+    // Creates a new Array object on the heap and returns a reference to it.
+    template<typename T>
+    Array<T>*
+    createDeviceDataArray(const af::dim4 &size, const void *data);
 
     // Create an Array object and do not assign any values to it
     template<typename T>
@@ -71,6 +76,12 @@ namespace cpu
     template<typename T>
     void
     operator <<(std::ostream &out, const Array<T> &arr);
+
+    template<typename T>
+    void *getDevicePtr(const Array<T>& arr)
+    {
+        return (void *)arr.get();
+    }
 
     // Array Array Implementation
     template<typename T>
@@ -133,7 +144,8 @@ namespace cpu
         TNJ::Node *getNode() const;
 
         friend Array<T>* createValueArray<T>(const af::dim4 &size, const T& value);
-        friend Array<T>* createDataArray<T>(const af::dim4 &size, const T * const data);
+        friend Array<T>* createHostDataArray<T>(const af::dim4 &size, const T * const data);
+        friend Array<T>* createDeviceDataArray<T>(const af::dim4 &size, const void *data);
         friend Array<T>* createEmptyArray<T>(const af::dim4 &size);
         friend Array<T>* createSubArray<T>(const Array<T>& parent,
                                            const dim4 &dims, const dim4 &offset, const dim4 &stride);
@@ -141,6 +153,8 @@ namespace cpu
                                            const dim4 &dims, const dim4 &offset, const dim4 &stride);
         friend void      destroyArray<T>(Array<T> &arr);
         friend Array<T>* createNodeArray<T>(const af::dim4 &dims, TNJ::Node *node);
+
+        friend void *getDevicePtr<T>(const Array<T>& arr);
     };
 
 }
