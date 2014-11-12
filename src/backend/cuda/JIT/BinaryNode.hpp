@@ -120,6 +120,7 @@ namespace JIT
             m_gen_func = false;
             m_gen_param = false;
             m_gen_offset = false;
+            m_set_arg = false;
             m_lhs->resetFlags();
             m_rhs->resetFlags();
         }
