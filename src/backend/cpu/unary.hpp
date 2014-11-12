@@ -9,7 +9,6 @@
 
 #include <Array.hpp>
 #include <optypes.hpp>
-#include <math.hpp>
 #include <err_cpu.hpp>
 #include <TNJ/UnaryNode.hpp>
 #include <cmath>
