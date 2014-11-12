@@ -93,12 +93,13 @@ To build ArrayFire from source, please follow the instructions on our [wiki](htt
 
 ## Download ArrayFire Installers
 
-Installers for the stable versions of ArrayFire can be freely downloaded from [here](https://arrayfire.com/download)
+Installers for the stable versions of ArrayFire can be freely downloaded from [here](https://arrayfire.com/download).
 
 ### Contribute
 
 Contributions of any kind are welcome! Please refer to [this document](https://github.com/arrayfire/arrayfire/blob/master/CONTRIBUTING.md) to learn more about how you can get involved with ArrayFire.
 
 ### Contact us
-Google Groups: https://groups.google.com/forum/#!forum/arrayfire-users
-ArrayFire Forums: http://arrayfire.com/forums/
+
+* Google Groups: https://groups.google.com/forum/#!forum/arrayfire-users
+* ArrayFire Forums: http://arrayfire.com/forums/
