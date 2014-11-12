@@ -12,12 +12,16 @@
 #include <optypes.hpp>
 #include <string>
 #include <vector>
+#include <map>
 
 namespace cuda
 {
 
 namespace JIT
 {
+    typedef std::map<std::string, bool> str_map_t;
+    typedef str_map_t::iterator str_map_iter;
+
     class Node
     {
     protected:
@@ -46,7 +50,7 @@ namespace JIT
         virtual void genKerName(std::stringstream &kerStream, bool genInputs) {}
         virtual void genParams  (std::stringstream &kerStream, std::stringstream &annStream) {}
         virtual void genOffsets (std::stringstream &kerStream) {}
-        virtual void genFuncs   (std::stringstream &kerStream, std::stringstream &declStream)
+        virtual void genFuncs   (std::stringstream &kerStream, str_map_t &declStrs)
         { m_gen_func = true;}
 
         virtual int setId(int id) { m_set_id = true; return id; }
