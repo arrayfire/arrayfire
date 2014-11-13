@@ -23,8 +23,8 @@ void load2LocalMem(__local T *  shrd,
         dim_type dim0, dim_type dim1, dim_type gx, dim_type gy,
         dim_type ichStride, dim_type inStride1, dim_type inStride0)
 {
-    dim_type gx_  = clamp(gx, 0l, dim0-1);
-    dim_type gy_  = clamp(gy, 0l, dim1-1);
+    dim_type gx_  = clamp(gx, 0, dim0-1);
+    dim_type gy_  = clamp(gy, 0, dim1-1);
 #pragma unroll
     for(dim_type ch=0; ch<channels; ++ch)
         shrd[ lIdx(lx, ly, shrdStride, 1)+ch*schStride] = in[ lIdx(gx_, gy_, inStride1, inStride0)+ch*ichStride];
