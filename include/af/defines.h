@@ -97,7 +97,7 @@ typedef enum {
 
 typedef size_t af_array;
 
-typedef long long dim_type;
+typedef int dim_type;
 
 typedef enum {
 	AF_INTERP_NEAREST,

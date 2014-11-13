@@ -24,8 +24,8 @@ void load2LocalMem(__local T *  shrd,
         dim_type gx, dim_type gy,
         dim_type inStride1, dim_type inStride0)
 {
-    dim_type gx_  = clamp(gx, (long)0, dim0-1);
-    dim_type gy_  = clamp(gy, (long)0, dim1-1);
+    dim_type gx_  = clamp(gx, 0, dim0-1);
+    dim_type gy_  = clamp(gy, 0, dim1-1);
     shrd[ lIdx(lx, ly, shrdStride, 1) ] = in[ lIdx(gx_, gy_, inStride1, inStride0) ];
 }
 
@@ -130,9 +130,9 @@ void load2LocVolume(__local T * shrd,
         dim_type gx, dim_type gy, dim_type gz,
         dim_type inStride2, dim_type inStride1, dim_type inStride0)
 {
-    dim_type gx_  = clamp(gx, (long)0, dim0-1);
-    dim_type gy_  = clamp(gy, (long)0, dim1-1);
-    dim_type gz_  = clamp(gz, (long)0, dim2-1);
+    dim_type gx_  = clamp(gx, 0, dim0-1);
+    dim_type gy_  = clamp(gy, 0, dim1-1);
+    dim_type gz_  = clamp(gz, 0, dim2-1);
     dim_type shrdIdx = lx + ly*shrdStride1 + lz*shrdStride2;
     dim_type inIdx   = gx_*inStride0 + gy_*inStride1 + gz_*inStride2;
     shrd[ shrdIdx ] = in[ inIdx ];

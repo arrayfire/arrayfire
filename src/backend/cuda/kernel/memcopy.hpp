@@ -33,15 +33,15 @@ namespace kernel
                    const T *in, const dims_t idims,
                    const dims_t istrides, uint blocks_x, uint blocks_y)
     {
-        const uint tidx = threadIdx.x;
-        const uint tidy = threadIdx.y;
+        const int tidx = threadIdx.x;
+        const int tidy = threadIdx.y;
 
-        const uint zid = blockIdx.x / blocks_x;
-        const uint wid = blockIdx.y / blocks_y;
-        const uint blockIdx_x = blockIdx.x - (blocks_x) * zid;
-        const uint blockIdx_y = blockIdx.y - (blocks_y) * wid;
-        const uint xid = blockIdx_x * blockDim.x + tidx;
-        const uint yid = blockIdx_y * blockDim.y + tidy;
+        const int zid = blockIdx.x / blocks_x;
+        const int wid = blockIdx.y / blocks_y;
+        const int blockIdx_x = blockIdx.x - (blocks_x) * zid;
+        const int blockIdx_y = blockIdx.y - (blocks_y) * wid;
+        const int xid = blockIdx_x * blockDim.x + tidx;
+        const int yid = blockIdx_y * blockDim.y + tidy;
 
         // FIXME: Do more work per block
         out += wid * ostrides.dim[3] + zid * ostrides.dim[2] + yid * ostrides.dim[1];

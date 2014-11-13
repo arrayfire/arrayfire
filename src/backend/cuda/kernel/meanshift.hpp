@@ -196,23 +196,23 @@ void meanshift(Param<T> out, CParam<T> in, float s_sigma, float c_sigma, uint it
     dim_type blk_x = divup(in.dims[0], THREADS_X);
     dim_type blk_y = divup(in.dims[1], THREADS_Y);
 
-    const dim_type bIndex   = (is_color ? 3ll : 2ll);
+    const dim_type bIndex   = (is_color ? 3 : 2);
     const dim_type bCount   = in.dims[bIndex];
-    const dim_type channels = (is_color ? in.dims[2] : 1ll);
+    const dim_type channels = (is_color ? in.dims[2] : 1);
 
     dim3 blocks(blk_x * bCount, blk_y);
 
     // clamp spatical and chromatic sigma's
     float space_     = std::min(11.5f, s_sigma);
-    dim_type radius  = std::max((dim_type)(space_ * 1.5f), 1ll);
+    dim_type radius  = std::max((dim_type)(space_ * 1.5f), 1);
     dim_type padding = 2*radius+1;
     const float cvar = c_sigma*c_sigma;
     size_t shrd_size = channels*(threads.x + padding)*(threads.y+padding)*sizeof(T);
 
     if (is_color)
-        (meanshiftKernel<T, 3ll, 3ll>) <<<blocks, threads, shrd_size>>>(out, in, space_, radius, cvar, iter, blk_x);
+        (meanshiftKernel<T, 3, 3>) <<<blocks, threads, shrd_size>>>(out, in, space_, radius, cvar, iter, blk_x);
     else
-        (meanshiftKernel<T, 1ll, 2ll>) <<<blocks, threads, shrd_size>>>(out, in, space_, radius, cvar, iter, blk_x);
+        (meanshiftKernel<T, 1, 2>) <<<blocks, threads, shrd_size>>>(out, in, space_, radius, cvar, iter, blk_x);
 
     POST_LAUNCH_CHECK();
 }

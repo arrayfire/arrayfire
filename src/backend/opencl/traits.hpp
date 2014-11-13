@@ -33,7 +33,7 @@ struct dtype_traits<size_t> {
 
 template<>
 struct dtype_traits<long long> {
-    static const char* getName() { return "long"; };
+    static const char* getName() { return "int"; };
 };
 
 template<typename T> static bool iscplx() { return false; }
