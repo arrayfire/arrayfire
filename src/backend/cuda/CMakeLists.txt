@@ -1,12 +1,26 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 FIND_PACKAGE(CUDA REQUIRED)
+FIND_PACKAGE(Boost REQUIRED)
 
 INCLUDE(${CMAKE_SOURCE_DIR}/common/CLKernelToH.cmake)
 INCLUDE(${CMAKE_SOURCE_DIR}/common/FindNVVM.cmake)
-INCLUDE(${CMAKE_SOURCE_DIR}/common/CUDACheckCompute.cmake)
 
-FIND_PACKAGE(Boost REQUIRED)
+# Disables running cuda_compute_check.c when build windows using remote
+IF(NOT WINDOWS_REMOTE)
+  INCLUDE(${CMAKE_SOURCE_DIR}/common/CUDACheckCompute.cmake)
+ELSE(NOT WINDOWS_REMOTE)
+  IF(NOT DEFINED CUDA_COMPUTE_CAPABILITY)
+    MESSAGE(WARNING "CUDA_COMPUTE_CAPABILITY not defined. Fall back to compute 20")
+    SET(CUDA_COMPUTE_CAPABILITY "20")
+  ENDIF(NOT DEFINED CUDA_COMPUTE_CAPABILITY)
+
+  IF(NOT DEFINED CUDA_GENERATE_CODE)
+    SET(CUDA_GENERATE_CODE "arch=compute_${CUDA_COMPUTE_CAPABILITY},code=sm_${CUDA_COMPUTE_CAPABILITY}")
+  ENDIF()
+
+  SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -arch compute_${CUDA_COMPUTE_CAPABILITY})
+ENDIF()
 
 IF(NOT UNIX)
   ADD_DEFINITIONS(-DAFDLL)
@@ -95,7 +109,7 @@ CUDA_ADD_LIBRARY(afcuda SHARED ${cpp_sources}
 								${cuda_sources}
 								${jit_sources}
 								${kernel_headers}
-						OPTIONS ${CUDA_CODE_GENERATION})
+                OPTIONS "-gencode "${CUDA_GENERATE_CODE})
 ADD_DEPENDENCIES(afcuda ${ptx_targets})
 
 
