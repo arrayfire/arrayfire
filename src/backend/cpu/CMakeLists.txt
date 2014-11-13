@@ -12,7 +12,7 @@ ENDIF()
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
-    ${CMAKE_SOURCE_DIR}/src/backend/cpu
+    "${CMAKE_SOURCE_DIR}/src/backend/cpu"
     ${FFTW_INCLUDES}
 	${CBLAS_INCLUDE_DIR}
     )

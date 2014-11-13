@@ -31,11 +31,11 @@ ELSE()
 ENDIF()
 
 IF(${BUILD_GTEST})
-    INCLUDE(${CMAKE_SOURCE_DIR}/common/build_gtest.cmake)
+    INCLUDE("${CMAKE_SOURCE_DIR}/common/build_gtest.cmake")
     ExternalProject_Get_Property(googletest SOURCE_DIR BINARY_DIR)
 
-    SET(GTEST_BINARY_DIR ${BINARY_DIR})
-    SET(GTEST_SOURCE_DIR ${SOURCE_DIR})
+    SET(GTEST_BINARY_DIR "${BINARY_DIR}")
+    SET(GTEST_SOURCE_DIR "${SOURCE_DIR}")
 
 ELSE()
     SET(GTEST_SOURCE_DIR "${CMAKE_BINARY_DIR}/third_party/src/googletest")
@@ -74,5 +74,5 @@ IF(${BUILD_OPENCL})
 ENDIF()
 
 INCLUDE_DIRECTORIES(
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    "${CMAKE_CURRENT_SOURCE_DIR}"
     ${GTEST_INCLUDE_DIRS})
