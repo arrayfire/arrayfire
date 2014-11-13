@@ -1,12 +1,21 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 FIND_PACKAGE(CUDA REQUIRED)
+FIND_PACKAGE(Boost REQUIRED)
 
 INCLUDE(${CMAKE_SOURCE_DIR}/common/CLKernelToH.cmake)
 INCLUDE(${CMAKE_SOURCE_DIR}/common/FindNVVM.cmake)
-INCLUDE(${CMAKE_SOURCE_DIR}/common/CUDACheckCompute.cmake)
 
-FIND_PACKAGE(Boost REQUIRED)
+# Disables running cuda_compute_check.c when build windows using remote
+IF(NOT DEFINED CUDA_COMPUTE_CAPABILITY)
+  INCLUDE(${CMAKE_SOURCE_DIR}/common/CUDACheckCompute.cmake)
+ELSE(NOT DEFINED CUDA_COMPUTE_CAPABILITY)
+  IF(NOT DEFINED CUDA_GENERATE_CODE)
+    SET(CUDA_GENERATE_CODE "arch=compute_${CUDA_COMPUTE_CAPABILITY},code=sm_${CUDA_COMPUTE_CAPABILITY}")
+  ENDIF(NOT DEFINED CUDA_GENERATE_CODE)
+
+  SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -arch compute_${CUDA_COMPUTE_CAPABILITY})
+ENDIF()
 
 IF(NOT UNIX)
   ADD_DEFINITIONS(-DAFDLL)
@@ -17,7 +26,7 @@ REMOVE_DEFINITIONS(-std=c++0x)
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
-	${Boost_INCLUDE_DIR}
+  ${Boost_INCLUDE_DIR}
     ${CUDA_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/src/backend/cuda
     ${CMAKE_CURRENT_BINARY_DIR}
@@ -39,11 +48,11 @@ source_group(Sources FILES ${backend_sources})
 source_group(CPP\ Sources FILES ${cpp_sources})
 
 FILE(GLOB cuda_headers
-	"*.hpp"
+  "*.hpp"
     "*.h")
 FILE(GLOB cuda_sources
     "*.cu"
-	"*.cpp")
+  "*.cpp")
 source_group(cuda\\Headers FILES ${cuda_headers})
 source_group(cuda\\Sources FILES ${cuda_sources})
 
@@ -55,15 +64,15 @@ FILE(GLOB kernel_headers
     "kernel/*.hpp")
 source_group(cuda\\kernel\\Headers FILES ${kernel_headers})
 
-if(${CUDA_COMPUTE_CAPABILITY} STREQUAL "21")
+IF(${CUDA_COMPUTE_CAPABILITY} STREQUAL "21")
     SET(PTX_COMPUTE "20")
-elseif(${CUDA_COMPUTE_CAPABILITY} STREQUAL "32")
+ELSEIF(${CUDA_COMPUTE_CAPABILITY} STREQUAL "32")
     SET(PTX_COMPUTE "30")
-elseif(${CUDA_COMPUTE_CAPABILITY} STREQUAL "52")
+ELSEIF(${CUDA_COMPUTE_CAPABILITY} STREQUAL "52")
     SET(PTX_COMPUTE "50")
-else()
+ELSE()
   SET(PTX_COMPUTE ${CUDA_COMPUTE_CAPABILITY})
-endif()
+ENDIF()
 
 
 FILE(GLOB cuda_ptx "ptx/PTX64/sm_${PTX_COMPUTE}/*.ptx")
@@ -89,13 +98,13 @@ IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND "${APPLE}")
 ENDIF()
 
 CUDA_ADD_LIBRARY(afcuda SHARED ${cpp_sources}
-								${backend_headers}
-								${backend_sources}
-								${cuda_headers}
-								${cuda_sources}
-								${jit_sources}
-								${kernel_headers}
-						OPTIONS ${CUDA_CODE_GENERATION})
+                ${backend_headers}
+                ${backend_sources}
+                ${cuda_headers}
+                ${cuda_sources}
+                ${jit_sources}
+                ${kernel_headers}
+                OPTIONS "-gencode "${CUDA_GENERATE_CODE})
 ADD_DEPENDENCIES(afcuda ${ptx_targets})
 
 
