@@ -22,7 +22,7 @@ namespace cpu
 {
 
     template<typename T>
-    static void stridedCopy(T* dst, const T* src, const dim4 &dims, const dim4 &strides, unsigned dim)
+    static void stridedCopy(T* dst, const dim4& ostrides, const T* src, const dim4 &dims, const dim4 &strides, unsigned dim)
     {
         if(dim == 0) {
             if(strides[dim] == 1) {
@@ -35,9 +35,9 @@ namespace cpu
             }
         } else {
             for(dim_type i = dims[dim]; i > 0; i--) {
-                stridedCopy<T>(dst, src, dims, strides, dim - 1);
+                stridedCopy<T>(dst, ostrides, src, dims, strides, dim - 1);
                 src += strides[dim];
-                dst += dims[dim-1];
+                dst += ostrides[dim];
             }
         }
     }
@@ -50,10 +50,10 @@ namespace cpu
             // FIXME: Check for errors / exceptions
             memcpy(to, from.get(), from.elements()*sizeof(T));
         } else {
-            stridedCopy<T>(to, from.get(), from.dims(), from.strides(), from.ndims() - 1);
+            dim4 ostrides = calcStrides(from.dims());
+            stridedCopy<T>(to, ostrides, from.get(), from.dims(), from.strides(), from.ndims() - 1);
         }
     }
-
 
     template<typename T>
     Array<T> *copyArray(const Array<T> &A)
