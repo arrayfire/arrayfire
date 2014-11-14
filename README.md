@@ -9,9 +9,9 @@ A few lines of code in ArrayFire can replace dozens of lines of parallel computi
 ### Build Status
 |                 | Build           | Tests           |
 |-----------------|-----------------|-----------------|
-| Linux x86       | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/devel)](http://ci.arrayfire.org/job/arrayfire-linux/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux-test/devel)](http://ci.arrayfire.org/job/arrayfire-linux-test/branch/devel/)
-| Linux Tegra     | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegra/devel)](http://ci.arrayfire.org/job/arrayfire-tegra/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegra-test/devel)](http://ci.arrayfire.org/job/arrayfire-tegra-test/branch/devel/)
-| Windows         | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows/devel)](http://ci.arrayfire.org/job/arrayfire-windows/branch/devel/)  |                 |
+| Linux x86       | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/devel)](http://ci.arrayfire.org/job/arrayfire-linux/branch/devel/)      | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux-test/devel)](http://ci.arrayfire.org/job/arrayfire-linux-test/branch/devel/)
+| Linux Tegra     | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegra/devel)](http://ci.arrayfire.org/job/arrayfire-tegra/branch/devel/)      | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegra-test/devel)](http://ci.arrayfire.org/job/arrayfire-tegra-test/branch/devel/)
+| Windows         | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows/devel)](http://ci.arrayfire.org/job/arrayfire-windows/branch/devel/)  | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows-test/devel)](http://ci.arrayfire.org/job/arrayfire-windows-test/branch/devel/)                     |
 | OSX             | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/devel)](http://ci.arrayfire.org/job/arrayfire-osx/branch/devel/)          |                 |
 
 ### Example
