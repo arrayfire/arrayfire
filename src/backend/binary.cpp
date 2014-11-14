@@ -27,6 +27,8 @@ template<typename T, af_op_t op>
 static inline af_array arithOp(const af_array lhs, const af_array rhs)
 {
     af_array res = getHandle(*arithOp<T, op>(getArray<T>(lhs), getArray<T>(rhs)));
+    // All inputs to this function are temporary references
+    // Delete the temporary references
     destroyHandle<T>(lhs);
     destroyHandle<T>(rhs);
     return res;
@@ -172,6 +174,8 @@ template<typename T, af_op_t op>
 static inline af_array logicOp(const af_array lhs, const af_array rhs)
 {
     af_array res = getHandle(*logicOp<T, op>(getArray<T>(lhs), getArray<T>(rhs)));
+    // All inputs to this function are temporary references
+    // Delete the temporary references
     destroyHandle<T>(lhs);
     destroyHandle<T>(rhs);
     return res;
@@ -240,6 +244,8 @@ template<typename To, typename Ti>
 static inline af_array complexOp(const af_array lhs, const af_array rhs)
 {
     af_array res = getHandle(*complexOp<To, Ti>(getArray<Ti>(lhs), getArray<Ti>(rhs)));
+    // All inputs to this function are temporary references
+    // Delete the temporary references
     destroyHandle<Ti>(lhs);
     destroyHandle<Ti>(rhs);
     return res;

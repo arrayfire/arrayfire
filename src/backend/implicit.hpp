@@ -20,6 +20,7 @@
 using namespace detail;
 
 af_dtype implicit(const af_array lhs, const af_array rhs);
+af_dtype implicit(const af_dtype lty, const af_dtype rty);
 
 template<typename To> af_array cast(const af_array in)
 {

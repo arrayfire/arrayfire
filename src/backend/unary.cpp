@@ -17,13 +17,18 @@
 #include <handle.hpp>
 #include <backend.hpp>
 #include <unary.hpp>
+#include <implicit.hpp>
 
 using namespace detail;
 
 template<typename T, af_op_t op>
 static inline af_array unaryOp(const af_array in)
 {
-    return getHandle(*unaryOp<T, op>(getArray<T>(in)));
+    af_array res = getHandle(*unaryOp<T, op>(getArray<T>(in)));
+    // All inputs to this function are temporary references
+    // Delete the temporary references
+    destroyHandle<T>(in);
+    return res;
 }
 
 template<af_op_t op>
@@ -38,13 +43,17 @@ static af_err af_unary(af_array *out, const af_array in)
         af_dtype in_type = in_info.getType();
         af_array res;
 
-        switch (in_type) {
-        case f32 : res = unaryOp<float  , op>(in); break;
-        case f64 : res = unaryOp<double , op>(in); break;
-        case s32 : res = unaryOp<int    , op>(in); break;
-        case u32 : res = unaryOp<uint   , op>(in); break;
-        case s8  : res = unaryOp<char   , op>(in); break;
-        case u8  : res = unaryOp<uchar  , op>(in); break;
+        // Convert all inputs to floats / doubles
+        af_dtype type = implicit(in_type, f32);
+        af_array input = cast(in, type);
+
+        switch (type) {
+        case f32 : res = unaryOp<float  , op>(input); break;
+        case f64 : res = unaryOp<double , op>(input); break;
+        case s32 : res = unaryOp<int    , op>(input); break;
+        case u32 : res = unaryOp<uint   , op>(input); break;
+        case s8  : res = unaryOp<char   , op>(input); break;
+        case u8  : res = unaryOp<uchar  , op>(input); break;
         default:
             TYPE_ERROR(1, in_type); break;
         }
