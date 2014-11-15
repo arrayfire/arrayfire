@@ -19,6 +19,8 @@ into the stable `master` branch.
 Please try to rebase your changes on the current master branch before
 submitting. This keeps the git history cleaner and easier to understand.
 
+If you are adding a new feature, please add unit tests for the new function. If you are unfamiliar with GoogleTest framework, you can follow the guidelines [here](https://github.com/arrayfire/arrayfire/wiki/Writing-Unit-Tests) to write unit tests.
+
 ## Support ##
 
 Feel free to send an email to technical@arrayfire.com with any problems or
