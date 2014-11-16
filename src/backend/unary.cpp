@@ -10,6 +10,7 @@
 #include <af/array.h>
 #include <af/defines.h>
 #include <af/arith.h>
+#include <af/data.h>
 #include <ArrayInfo.hpp>
 #include <optypes.hpp>
 #include <implicit.hpp>
@@ -38,7 +39,6 @@ static af_err af_unary(af_array *out, const af_array in)
 
         ArrayInfo in_info = getInfo(in);
         ARG_ASSERT(1, in_info.isReal());
-        ARG_ASSERT(1, !in_info.isBool());
 
         af_dtype in_type = in_info.getType();
         af_array res;
@@ -52,7 +52,7 @@ static af_err af_unary(af_array *out, const af_array in)
         case f64 : res = unaryOp<double , op>(input); break;
         case s32 : res = unaryOp<int    , op>(input); break;
         case u32 : res = unaryOp<uint   , op>(input); break;
-        case s8  : res = unaryOp<char   , op>(input); break;
+        case b8  : res = unaryOp<char   , op>(input); break;
         case u8  : res = unaryOp<uchar  , op>(input); break;
         default:
             TYPE_ERROR(1, in_type); break;
@@ -110,3 +110,22 @@ UNARY(cbrt)
 
 UNARY(tgamma)
 UNARY(lgamma)
+
+af_err af_not(af_array *out, const af_array in)
+{
+    try {
+
+        af_array tmp;
+        ArrayInfo in_info = getInfo(in);
+
+        AF_CHECK(af_constant(&tmp, 0,
+                             in_info.ndims(),
+                             in_info.dims().get(), in_info.getType()));
+
+        AF_CHECK(af_neq(out, in, tmp));
+
+        AF_CHECK(af_destroy_array(tmp));
+    } CATCHALL;
+
+    return AF_SUCCESS;
+}

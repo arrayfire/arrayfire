@@ -35,6 +35,8 @@ LOGIC_FN(af_lt_t, <)
 LOGIC_FN(af_gt_t, >)
 LOGIC_FN(af_le_t, <=)
 LOGIC_FN(af_ge_t, >=)
+LOGIC_FN(af_and_t, &&)
+LOGIC_FN(af_or_t, ||)
 
 #undef LOGIC_FN
 
@@ -53,12 +55,16 @@ LOGIC_CPLX_FN(float, af_lt_t, <)
 LOGIC_CPLX_FN(float, af_le_t, <=)
 LOGIC_CPLX_FN(float, af_gt_t, >)
 LOGIC_CPLX_FN(float, af_ge_t, >=)
+LOGIC_CPLX_FN(float, af_and_t, &&)
+LOGIC_CPLX_FN(float, af_or_t, ||)
 
 
 LOGIC_CPLX_FN(double, af_lt_t, <)
 LOGIC_CPLX_FN(double, af_le_t, <=)
 LOGIC_CPLX_FN(double, af_gt_t, >)
 LOGIC_CPLX_FN(double, af_ge_t, >=)
+LOGIC_CPLX_FN(double, af_and_t, &&)
+LOGIC_CPLX_FN(double, af_or_t, ||)
 
 #undef LOGIC_CPLX_FN
 

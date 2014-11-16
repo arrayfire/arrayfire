@@ -16,7 +16,7 @@ INCLUDE_DIRECTORIES(
     ${FFTW_INCLUDES}
 	${CBLAS_INCLUDE_DIR}
     )
-	
+
 FILE(GLOB backend_headers
     "../*.hpp"
     "../*.h"
@@ -25,7 +25,7 @@ FILE(GLOB backend_sources
     "../*.cpp"
     )
 FILE(GLOB cpp_sources
-    "../../array/*.cpp"
+    "../../frontend/cpp/*.cpp"
     )
 source_group(Headers FILES ${backend_headers})
 source_group(Sources FILES ${backend_sources})

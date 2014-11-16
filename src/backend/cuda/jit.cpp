@@ -212,6 +212,24 @@ typedef struct {
     CUfunction ker;
 } kc_entry_t;
 
+
+const size_t size = 1024;
+char linkInfo[size];
+char linkError[size];
+
+#ifndef NDEBUG
+#define CU_CHECK(fn) do {                       \
+        CUresult res = fn;                      \
+        if (res == CUDA_SUCCESS) break;         \
+        char cu_err_msg[1024];                  \
+        snprintf(cu_err_msg,                    \
+                 sizeof(cu_err_msg),            \
+                 "CU Error (%d)\n%s\n",         \
+                 (int)(res), linkError);        \
+        AF_ERROR(cu_err_msg,                    \
+                 AF_ERR_INTERNAL);              \
+    } while(0)
+#else
 #define CU_CHECK(fn) do {                       \
         CUresult res = fn;                      \
         if (res == CUDA_SUCCESS) break;         \
@@ -223,6 +241,7 @@ typedef struct {
         AF_ERROR(cu_err_msg,                    \
                  AF_ERR_INTERNAL);              \
     } while(0)
+#endif
 
 static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
 {
@@ -230,10 +249,6 @@ static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
     const char *ptx = irToPtx(jit_ker, &ptx_size);
 
     CUlinkState linkState;
-
-    const size_t size = 1024;
-    char linkInfo[size];
-    char linkError[size];
 
     linkInfo[0] = 0;
     linkError[0] = 0;

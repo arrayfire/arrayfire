@@ -16,15 +16,32 @@ namespace af
     class array;
 
     AFAPI array min    (const array &lhs, const array &rhs);
+    AFAPI array min    (const array &lhs, const double rhs);
+    AFAPI array min    (const double lhs, const array &rhs);
+
     AFAPI array max    (const array &lhs, const array &rhs);
+    AFAPI array max    (const array &lhs, const double rhs);
+    AFAPI array max    (const double lhs, const array &rhs);
 
     AFAPI array cplx2  (const array &lhs, const array &rhs);
+    AFAPI array cplx2  (const array &lhs, const double rhs);
+    AFAPI array cplx2  (const double lhs, const array &rhs);
+
     AFAPI array atan2  (const array &lhs, const array &rhs);
+    AFAPI array atan2  (const array &lhs, const double rhs);
+    AFAPI array atan2  (const double lhs, const array &rhs);
 
     AFAPI array pow    (const array &lhs, const array &rhs);
     AFAPI array pow    (const array &lhs, const double rhs);
+    AFAPI array pow    (const double lhs, const array &rhs);
+
     AFAPI array rem    (const array &lhs, const array &rhs);
+    AFAPI array rem    (const array &lhs, const double rhs);
+    AFAPI array rem    (const double lhs, const array &rhs);
+
     AFAPI array mod    (const array &lhs, const array &rhs);
+    AFAPI array mod    (const array &lhs, const double rhs);
+    AFAPI array mod    (const double lhs, const array &rhs);
 
     AFAPI array cplx   (const array &in);
     AFAPI array abs    (const array &in);
@@ -85,6 +102,10 @@ extern "C" {
     AFAPI af_err af_ge    (af_array *result, const af_array lhs, const af_array rhs);
     AFAPI af_err af_eq    (af_array *result, const af_array lhs, const af_array rhs);
     AFAPI af_err af_neq   (af_array *result, const af_array lhs, const af_array rhs);
+
+    AFAPI af_err af_and   (af_array *result, const af_array lhs, const af_array rhs);
+    AFAPI af_err af_or    (af_array *result, const af_array lhs, const af_array rhs);
+    AFAPI af_err af_not   (af_array *result, const af_array in);
 
     AFAPI af_err af_minof (af_array *result, const af_array lhs, const af_array rhs);
     AFAPI af_err af_maxof (af_array *result, const af_array lhs, const af_array rhs);

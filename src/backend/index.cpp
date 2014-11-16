@@ -55,7 +55,6 @@ af_err af_index(af_array *result, const af_array in, const unsigned ndims, const
             case s32:    indexArray<int>     (out, in, ndims, index);  break;
             case u32:    indexArray<unsigned>(out, in, ndims, index);  break;
             case u8:     indexArray<uchar>   (out, in, ndims, index);  break;
-            case s8:     indexArray<char>    (out, in, ndims, index);  break;
             default:    ret = AF_ERR_NOT_SUPPORTED;                    break;
         }
         if(ret !=AF_ERR_NOT_SUPPORTED)

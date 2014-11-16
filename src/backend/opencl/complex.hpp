@@ -11,9 +11,13 @@
 #include <af/array.h>
 #include <Array.hpp>
 #include <optypes.hpp>
+#include <binary.hpp>
 
 namespace opencl
 {
     template<typename To, typename Ti>
-    Array<To>* complexOp(const Array<Ti> &lhs, const Array<Ti> &rhs);
+    Array<To>* complexOp(const Array<Ti> &lhs, const Array<Ti> &rhs)
+    {
+        return createBinaryNode<To, Ti, af_cplx2_t>(lhs, rhs);
+    }
 }

@@ -13,6 +13,8 @@
 #define __sub(lhs, rhs) (lhs) - (rhs)
 #define __mul(lhs, rhs) (lhs) * (rhs)
 #define __div(lhs, rhs) (lhs) / (rhs)
+#define __and(lhs, rhs) (lhs) && (rhs)
+#define __or(lhs, rhs) (lhs) || (rhs)
 
 #define __lt(lhs, rhs) (lhs) < (rhs)
 #define __gt(lhs, rhs) (lhs) > (rhs)
@@ -114,6 +116,12 @@ double2 __cdiv(double2 lhs, double2 rhs)
     return out;
 }
 
+#define __candf(lhs, rhs) __cabsf2(lhs) && __cabsf2(rhs)
+#define __cand(lhs, rhs) __cabs2(lhs) && __cabs2(rhs)
+
+#define __corf(lhs, rhs) __cabsf2(lhs) || __cabsf2(rhs)
+#define __cor(lhs, rhs) __cabs2(lhs) || __cabs2(rhs)
+
 #define __ceqf(lhs, rhs) (((lhs).x == (rhs).x) && ((lhs).y == (rhs).y))
 #define __cneqf(lhs, rhs) !__ceqf((lhs), (rhs))
 #define __cltf(lhs, rhs) (__cabsf2(lhs) < __cabsf2(rhs))
@@ -170,6 +178,8 @@ double2 __convert_cdouble(double in)
 {
     double2 out = {in, 0};
 }
+
+#define __convert_char(val) (char)(convert_char((val)) != 0)
 
 #define fpow(lhs, rhs) pow((lhs), (rhs))
 

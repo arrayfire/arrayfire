@@ -43,6 +43,8 @@ BINARY(add)
 BINARY(sub)
 BINARY(mul)
 BINARY(div)
+BINARY(and)
+BINARY(or)
 
 BINARY(lt)
 BINARY(gt)

@@ -19,7 +19,6 @@ const char *getName(af_dtype type)
     case u32: return "unsigned int";
     case s32: return "int";
     case u8: return "unsigned char";
-    case s8: return "char";
     case b8: return "bool";
     default: return "unknown type";
     }

@@ -44,9 +44,6 @@ af_dtype implicit(const af_dtype lty, const af_dtype rty)
     if ((lty == u8 ) ||
         (rty == u8 )) return u8;
 
-    if ((lty == s8 ) ||
-        (rty == s8 )) return s8;
-
     if ((lty == b8 ) &&
         (rty == b8 )) return b8;
 
@@ -76,9 +73,8 @@ af_array cast(const af_array in, const af_dtype type)
     case c64: return cast<cdouble >(in);
     case s32: return cast<int     >(in);
     case u32: return cast<uint    >(in);
-    case s8 : return cast<char    >(in);
     case u8 : return cast<uchar   >(in);
-    case b8 : return cast<uchar   >(in);
+    case b8 : return cast<char    >(in);
     default: TYPE_ERROR(2, type);
     }
 }

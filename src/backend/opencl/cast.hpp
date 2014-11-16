@@ -42,7 +42,6 @@ struct CastOp
 
 CAST_FN(int)
 CAST_FN(uint)
-CAST_FN(char)
 CAST_FN(uchar)
 CAST_FN(float)
 CAST_FN(double)
@@ -60,6 +59,7 @@ CAST_FN(double)
 
 CAST_CFN(cfloat)
 CAST_CFN(cdouble)
+CAST_CFN(char)
 
 #undef CAST_FN
 #undef CAST_CFN
