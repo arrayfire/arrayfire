@@ -94,7 +94,7 @@ af_err af_device_array(af_array *arr, const void *data,
     return AF_SUCCESS;
 }
 
-af_err af_get_device_ptr(void *data, const af_array arr, bool read_only)
+af_err af_get_device_ptr(void **data, const af_array arr, bool read_only)
 {
     if (!read_only) {
         //FIXME: Implement a lock / unlock mechanism
@@ -106,15 +106,15 @@ af_err af_get_device_ptr(void *data, const af_array arr, bool read_only)
 
         switch (type) {
             //FIXME: Perform copy if memory not continuous
-        case f32: data = getDevicePtr(getArray<float  >(arr)); break;
-        case f64: data = getDevicePtr(getArray<double >(arr)); break;
-        case c32: data = getDevicePtr(getArray<cfloat >(arr)); break;
-        case c64: data = getDevicePtr(getArray<cdouble>(arr)); break;
-        case s32: data = getDevicePtr(getArray<int    >(arr)); break;
-        case u32: data = getDevicePtr(getArray<uint   >(arr)); break;
-        case s8 : data = getDevicePtr(getArray<char   >(arr)); break;
-        case u8 : data = getDevicePtr(getArray<uchar  >(arr)); break;
-        case b8 : data = getDevicePtr(getArray<uchar  >(arr)); break;
+        case f32: *data = getDevicePtr(getArray<float  >(arr)); break;
+        case f64: *data = getDevicePtr(getArray<double >(arr)); break;
+        case c32: *data = getDevicePtr(getArray<cfloat >(arr)); break;
+        case c64: *data = getDevicePtr(getArray<cdouble>(arr)); break;
+        case s32: *data = getDevicePtr(getArray<int    >(arr)); break;
+        case u32: *data = getDevicePtr(getArray<uint   >(arr)); break;
+        case s8 : *data = getDevicePtr(getArray<char   >(arr)); break;
+        case u8 : *data = getDevicePtr(getArray<uchar  >(arr)); break;
+        case b8 : *data = getDevicePtr(getArray<uchar  >(arr)); break;
         default: TYPE_ERROR(4, type);
         }
     } CATCHALL;

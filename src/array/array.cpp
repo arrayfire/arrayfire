@@ -592,7 +592,7 @@ INSTANTIATE(integer)
     template<> AFAPI T* array::device() const               \
     {                                                       \
         void *ptr = NULL;                                   \
-        AF_THROW(af_get_device_ptr(ptr, get(), true));      \
+        AF_THROW(af_get_device_ptr(&ptr, get(), true));      \
         return (T *)ptr;                                    \
     }                                                       \
 
