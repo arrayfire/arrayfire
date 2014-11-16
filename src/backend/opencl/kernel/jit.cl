@@ -171,6 +171,8 @@ double2 __convert_cdouble(double in)
     double2 out = {in, 0};
 }
 
+#define __convert_char(val) (char)(convert_char((val)) != 0)
+
 #define fpow(lhs, rhs) pow((lhs), (rhs))
 
 #define frem(lhs, rhs) remainder((lhs), (rhs))
