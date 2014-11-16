@@ -53,7 +53,6 @@ af_err af_diff1(af_array *out, const af_array in, const int dim)
             case s32: output = diff1<int    >(in,dim);  break;
             case u32: output = diff1<uint   >(in,dim);  break;
             case u8:  output = diff1<uchar  >(in,dim);  break;
-            case s8:  output = diff1<char   >(in,dim);  break;
             default:  TYPE_ERROR(1, type);
         }
         std::swap(*out,output);
@@ -87,7 +86,6 @@ af_err af_diff2(af_array *out, const af_array in, const int dim)
             case s32: output = diff2<int    >(in,dim);  break;
             case u32: output = diff2<uint   >(in,dim);  break;
             case u8:  output = diff2<uchar  >(in,dim);  break;
-            case s8:  output = diff2<char   >(in,dim);  break;
             default:  TYPE_ERROR(1, type);
         }
         std::swap(*out,output);

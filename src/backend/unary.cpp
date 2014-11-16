@@ -52,7 +52,7 @@ static af_err af_unary(af_array *out, const af_array in)
         case f64 : res = unaryOp<double , op>(input); break;
         case s32 : res = unaryOp<int    , op>(input); break;
         case u32 : res = unaryOp<uint   , op>(input); break;
-        case s8  : res = unaryOp<char   , op>(input); break;
+        case b8  : res = unaryOp<char   , op>(input); break;
         case u8  : res = unaryOp<uchar  , op>(input); break;
         default:
             TYPE_ERROR(1, in_type); break;

@@ -56,7 +56,6 @@ af_err af_moddims(af_array *out, const af_array in, const unsigned ndims, const 
             case s32: output = modDims<int    >(in, newDims); break;
             case u32: output = modDims<uint   >(in, newDims); break;
             case u8:  output = modDims<uchar  >(in, newDims); break;
-            case s8:  output = modDims<char>(in,newDims);     break;
             default:  ret = AF_ERR_NOT_SUPPORTED;             break;
         }
         if (ret!=AF_ERR_NOT_SUPPORTED) {

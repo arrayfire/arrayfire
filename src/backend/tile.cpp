@@ -43,7 +43,6 @@ af_err af_tile(af_array *out, const af_array in, const af::dim4 &tileDims)
             case s32: output = tile<int    >(in, tileDims);  break;
             case u32: output = tile<uint   >(in, tileDims);  break;
             case u8:  output = tile<uchar  >(in, tileDims);  break;
-            case s8:  output = tile<char   >(in, tileDims);  break;
             default:  TYPE_ERROR(1, type);
         }
         std::swap(*out,output);

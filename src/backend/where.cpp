@@ -38,8 +38,7 @@ af_err af_where(af_array *idx, const af_array in)
         case s32: res = where<int    >(in); break;
         case u32: res = where<uint   >(in); break;
         case u8 : res = where<uchar  >(in); break;
-        case s8 : res = where<char   >(in); break;
-        case b8 : res = where<uchar  >(in); break;
+        case b8 : res = where<char   >(in); break;
         default:
             TYPE_ERROR(1, type);
         }

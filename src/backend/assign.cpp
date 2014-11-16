@@ -65,7 +65,6 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
             case u32: copy<uint   , T>(*dst, getArray<uint  >(in), scalar<T>(0), 1.0);  break;
             case u8 : copy<uchar  , T>(*dst, getArray<uchar >(in), scalar<T>(0), 1.0);  break;
             case b8 : copy<char   , T>(*dst, getArray<char  >(in), scalar<T>(0), 1.0);  break;
-            case s8 : copy<char   , T>(*dst, getArray<char  >(in), scalar<T>(0), 1.0);  break;
             default : noCaseExecuted = true; break;
         }
     }
@@ -105,7 +104,6 @@ af_err af_assign(af_array out, const unsigned ndims, const af_seq *index, const 
             case u32: assign<uint   , false>(out, ndims, index, in);  break;
             case u8 : assign<uchar  , false>(out, ndims, index, in);  break;
             case b8 : assign<char   , false>(out, ndims, index, in);  break;
-            case s8 : assign<char   , false>(out, ndims, index, in);  break;
             default : TYPE_ERROR(1, oType); break;
         }
     }

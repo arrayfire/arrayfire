@@ -50,9 +50,8 @@ static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs)
         case c64: res = arithOp<cdouble, op>(left, right); break;
         case s32: res = arithOp<int    , op>(left, right); break;
         case u32: res = arithOp<uint   , op>(left, right); break;
-        case s8 : res = arithOp<char   , op>(left, right); break;
         case u8 : res = arithOp<uchar  , op>(left, right); break;
-        case b8 : res = arithOp<uchar  , op>(left, right); break;
+        case b8 : res = arithOp<char   , op>(left, right); break;
         default: TYPE_ERROR(0, otype);
         }
 
@@ -76,9 +75,8 @@ static af_err af_arith_real(af_array *out, const af_array lhs, const af_array rh
         case f64: res = arithOp<double , op>(left, right); break;
         case s32: res = arithOp<int    , op>(left, right); break;
         case u32: res = arithOp<uint   , op>(left, right); break;
-        case s8 : res = arithOp<char   , op>(left, right); break;
         case u8 : res = arithOp<uchar  , op>(left, right); break;
-        case b8 : res = arithOp<uchar  , op>(left, right); break;
+        case b8 : res = arithOp<char   , op>(left, right); break;
         default: TYPE_ERROR(0, otype);
         }
 
@@ -198,9 +196,8 @@ static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs)
         case c64: res = logicOp<cdouble, op>(left, right); break;
         case s32: res = logicOp<int    , op>(left, right); break;
         case u32: res = logicOp<uint   , op>(left, right); break;
-        case s8 : res = logicOp<char   , op>(left, right); break;
         case u8 : res = logicOp<uchar  , op>(left, right); break;
-        case b8 : res = logicOp<uchar  , op>(left, right); break;
+        case b8 : res = logicOp<char   , op>(left, right); break;
         default: TYPE_ERROR(0, type);
         }
 
