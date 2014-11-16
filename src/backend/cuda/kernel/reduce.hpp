@@ -167,6 +167,44 @@ namespace kernel
 
     }
 
+
+    template<typename To>
+    __inline__ __device__ void assign_vol(volatile To *s_ptr_vol, To &tmp)
+    {
+        *s_ptr_vol = tmp;
+    }
+
+    template<> __inline__ __device__
+    void assign_vol<cfloat>(volatile cfloat *s_ptr_vol, cfloat &tmp)
+    {
+        s_ptr_vol->x = tmp.x;
+        s_ptr_vol->y = tmp.y;
+    }
+
+    template<> __inline__ __device__
+    void assign_vol<cdouble>(volatile cdouble *s_ptr_vol, cdouble &tmp)
+    {
+        s_ptr_vol->x = tmp.x;
+        s_ptr_vol->y = tmp.y;
+    }
+
+    template<typename To, af_op_t op>
+    __device__ void warp_reduce(To *s_ptr, uint tidx)
+    {
+        Binary<To, op> reduce;
+        volatile To *s_ptr_vol = s_ptr + tidx;
+        To tmp = *s_ptr;
+
+#pragma unroll
+        for (int n = 16; n >= 1; n >>= 1) {
+            if (tidx < n) {
+                tmp = reduce(*s_ptr_vol, *(s_ptr_vol + n));
+                assign_vol(s_ptr_vol, tmp);
+            }
+        }
+    }
+
+
     template<typename Ti, typename To, af_op_t op, uint DIMX>
     __global__
     static void reduce_first_kernel(Param<To> out,
@@ -224,12 +262,7 @@ namespace kernel
             __syncthreads();
         }
 
-        if (tidx < 16) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx + 16]);
-        if (tidx <  8) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx +  8]);
-        if (tidx <  4) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx +  4]);
-        if (tidx <  2) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx +  2]);
-        if (tidx <  1) s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx +  1]);
-
+        warp_reduce<To, op>(s_ptr, tidx);
         if (tidx == 0) {
             optr[blockIdx_x] = s_ptr[0];
         }
