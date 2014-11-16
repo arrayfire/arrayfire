@@ -34,17 +34,16 @@ namespace TNJ
     {
 
     protected:
-        Node *m_child;
+        Node_ptr m_child;
         UnOp <To, Ti, op> m_op;
         To m_val;
 
     public:
-        UnaryNode(Node *in) :
+        UnaryNode(Node_ptr in) :
             Node(),
             m_child(in),
             m_val(0)
         {
-            m_child->addParent(this);
         }
 
         void *calc(int x, int y, int z, int w)
@@ -58,12 +57,6 @@ namespace TNJ
         void reset()
         {
             m_is_eval = false;
-        }
-
-        void replaceChild(Node *prev, Node *curr)
-        {
-            if (m_child == prev) m_child = curr;
-            else m_child->replaceChild(prev, curr);
         }
     };
 

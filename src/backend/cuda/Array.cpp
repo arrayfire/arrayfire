@@ -74,7 +74,7 @@ namespace cuda
     }
 
     template<typename T>
-    Array<T>::Array(af::dim4 dims, JIT::Node *n) :
+    Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(),
         parent(), node(n), ready(false)
@@ -87,15 +87,17 @@ namespace cuda
 
     using JIT::BufferNode;
     using JIT::Node;
+    using JIT::Node_ptr;
 
     template<typename T>
-    Node* Array<T>::getNode() const
+    Node_ptr Array<T>::getNode() const
     {
-        if (node == NULL) {
+        if (!node) {
             CParam<T> this_param = *this;
             BufferNode<T> *buf_node = new BufferNode<T>(irname<T>(),
-                                                        shortname<T>(true), this_param);
-            const_cast<Array<T> *>(this)->node = reinterpret_cast<Node *>(buf_node);
+                                                        shortname<T>(true), data,
+                                                        strides().get());
+            const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
         }
 
         return node;
@@ -103,7 +105,7 @@ namespace cuda
 
     template<typename T>
     Array<T> *
-    createNodeArray(const dim4 &dims, Node *node)
+    createNodeArray(const dim4 &dims, Node_ptr node)
     {
         return new Array<T>(dims, node);
     }
@@ -206,14 +208,13 @@ namespace cuda
             res.strides[i] = strides()[i];
         }
 
-        evalNodes(res, this->getNode());
+        evalNodes(res, this->getNode().get());
         ready = true;
 
-        // Replace the current node in any JIT possible trees with the new BufferNode
-        Node *prev = node;
-        node = NULL;
+        Node_ptr prev = node;
         prev->resetFlags();
-        prev->replace(getNode());
+        // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
+        node.reset();
     }
 
     template<typename T>
@@ -232,7 +233,7 @@ namespace cuda
     template       Array<T>*  createSubArray<T>       (const Array<T> &parent, const dim4 &dims, const dim4 &offset, const dim4 &stride); \
     template       Array<T>*  createRefArray<T>   (const Array<T> &parent, const dim4 &dims, const dim4 &offset, const dim4 &stride); \
     template       void       destroyArray<T>     (Array<T> &A);        \
-    template       Array<T>*  createNodeArray<T>   (const dim4 &size, JIT::Node *node); \
+    template       Array<T>*  createNodeArray<T>   (const dim4 &size, JIT::Node_ptr node); \
     template                  Array<T>::~Array();                       \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \

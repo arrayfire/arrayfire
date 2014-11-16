@@ -30,7 +30,7 @@ namespace cpu
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     Array<T>*
-    createNodeArray(const af::dim4 &size, TNJ::Node *node);
+    createNodeArray(const af::dim4 &size, TNJ::Node_ptr node);
 
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
@@ -95,13 +95,13 @@ namespace cpu
         //If parent is valid. use offset to get values
         const Array<T> *parent;
 
-        TNJ::Node *node;
+        TNJ::Node_ptr node;
         bool ready;
 
         Array(dim4 dims);
         explicit Array(dim4 dims, const T * const in_data);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
-        explicit Array(af::dim4 dims, TNJ::Node *n);
+        explicit Array(af::dim4 dims, TNJ::Node_ptr n);
 
     public:
 
@@ -141,7 +141,7 @@ namespace cpu
             return ptr;
         }
 
-        TNJ::Node *getNode() const;
+        TNJ::Node_ptr getNode() const;
 
         friend Array<T>* createValueArray<T>(const af::dim4 &size, const T& value);
         friend Array<T>* createHostDataArray<T>(const af::dim4 &size, const T * const data);
@@ -152,7 +152,7 @@ namespace cpu
         friend Array<T>* createRefArray<T>(const Array<T>& parent,
                                            const dim4 &dims, const dim4 &offset, const dim4 &stride);
         friend void      destroyArray<T>(Array<T> &arr);
-        friend Array<T>* createNodeArray<T>(const af::dim4 &dims, TNJ::Node *node);
+        friend Array<T>* createNodeArray<T>(const af::dim4 &dims, TNJ::Node_ptr node);
 
         friend void *getDevicePtr<T>(const Array<T>& arr);
     };

@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <boost/shared_ptr.hpp>
 
 namespace cuda
 {
@@ -21,6 +22,7 @@ namespace JIT
 {
     typedef std::map<std::string, bool> str_map_t;
     typedef str_map_t::iterator str_map_iter;
+    using boost::shared_ptr;
 
     class Node
     {
@@ -32,7 +34,6 @@ namespace JIT
         bool m_gen_param;
         bool m_gen_offset;
         bool m_set_arg;
-        std::vector<Node *> m_parents;
 
     public:
 
@@ -42,11 +43,9 @@ namespace JIT
               m_gen_func(false),
               m_gen_param(false),
               m_gen_offset(false),
-              m_set_arg(false),
-              m_parents()
+              m_set_arg(false)
         {}
 
-        virtual void replaceChild(Node *prev, Node *curr) {};
         virtual void genKerName(std::stringstream &kerStream, bool genInputs) {}
         virtual void genParams  (std::stringstream &kerStream, std::stringstream &annStream) {}
         virtual void genOffsets (std::stringstream &kerStream) {}
@@ -66,21 +65,10 @@ namespace JIT
 
         int getId()  { return m_id; }
 
-
-        void addParent(Node *node)
-        {
-            m_parents.push_back(node);
-        }
-
-        void replace(Node *node)
-        {
-            for (size_t i = 0; i < m_parents.size(); i++) {
-                m_parents[i]->replaceChild(this, node);
-            }
-        }
-
         virtual ~Node() {}
     };
+
+    typedef shared_ptr<Node> Node_ptr;
 
 }
 

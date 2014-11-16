@@ -33,7 +33,7 @@ namespace opencl
     }
 
     template<typename T>
-    Array<T>::Array(af::dim4 dims, JIT::Node *n) :
+    Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(),
         parent(), node(n), ready(false)
@@ -83,14 +83,15 @@ namespace opencl
 
     using JIT::BufferNode;
     using JIT::Node;
+    using JIT::Node_ptr;
 
     template<typename T>
-    Node* Array<T>::getNode() const
+    Node_ptr Array<T>::getNode() const
     {
-        if (node == NULL) {
+        if (!node) {
             BufferNode *buf_node = new BufferNode(dtype_traits<T>::getName(),
                                                   shortname<T>(true), *this);
-            const_cast<Array<T> *>(this)->node = reinterpret_cast<Node *>(buf_node);
+            const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
         }
 
         return node;
@@ -100,7 +101,7 @@ namespace opencl
 
     template<typename T>
     Array<T> *
-    createNodeArray(const dim4 &dims, Node *node)
+    createNodeArray(const dim4 &dims, Node_ptr node)
     {
         return new Array<T>(dims, node);
     }
@@ -200,14 +201,13 @@ namespace opencl
                        0};
         Param res = {data, info};
 
-        evalNodes(res, this->getNode());
+        evalNodes(res, this->getNode().get());
         ready = true;
 
-        // Replace the current node in any JIT possible trees with the new BufferNode
-        Node *prev = node;
-        node = nullptr;
+        Node_ptr prev = node;
         prev->resetFlags();
-        prev->replace(getNode());
+        // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
+        node.reset();
     }
 
     template<typename T>
@@ -228,8 +228,8 @@ namespace opencl
                                                    const dim4 &offset, const dim4 &stride); \
     template       Array<T>*  createRefArray<T>   (const Array<T> &parent, const dim4 &dims, \
                                                    const dim4 &offset, const dim4 &stride); \
-    template       Array<T>*  createNodeArray<T>   (const dim4 &size, JIT::Node *node); \
-    template       JIT::Node* Array<T>::getNode() const;                \
+    template       Array<T>*  createNodeArray<T>   (const dim4 &size, JIT::Node_ptr node); \
+    template       JIT::Node_ptr Array<T>::getNode() const;             \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
     template       void       destroyArray<T>     (Array<T> &A);        \

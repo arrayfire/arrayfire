@@ -67,10 +67,11 @@ UNARY_FN(lgamma)
     template<typename T, af_op_t op>
     Array<T>* unaryOp(const Array<T> &in)
     {
-        TNJ::Node *in_node = in.getNode();
+        TNJ::Node_ptr in_node = in.getNode();
         TNJ::UnaryNode<T, T, op> *node = new TNJ::UnaryNode<T, T, op>(in_node);
 
-        return createNodeArray<T>(in.dims(), reinterpret_cast<TNJ::Node *>(node));
+        return createNodeArray<T>(in.dims(),
+                                  TNJ::Node_ptr(reinterpret_cast<TNJ::Node *>(node)));
     }
 
 }

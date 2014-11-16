@@ -51,10 +51,11 @@ struct UnOp<To, std::complex<double>, af_cast_t>
 template<typename To, typename Ti>
 Array<To>* cast(const Array<Ti> &in)
 {
-    TNJ::Node *in_node = in.getNode();
+    TNJ::Node_ptr in_node = in.getNode();
     TNJ::UnaryNode<To, Ti, af_cast_t> *node = new TNJ::UnaryNode<To, Ti, af_cast_t>(in_node);
 
-    return createNodeArray<To>(in.dims(), reinterpret_cast<TNJ::Node *>(node));
+    return createNodeArray<To>(in.dims(), TNJ::Node_ptr(
+                                   reinterpret_cast<TNJ::Node *>(node)));
 }
 
 }
