@@ -237,6 +237,31 @@ af_err af_le(af_array *out, const af_array lhs, const af_array rhs)
     return af_logic<af_le_t>(out, lhs, rhs);
 }
 
+af_err af_and(af_array *out, const af_array lhs, const af_array rhs)
+{
+    return af_logic<af_and_t>(out, lhs, rhs);
+}
+
+af_err af_or(af_array *out, const af_array lhs, const af_array rhs)
+{
+    return af_logic<af_or_t>(out, lhs, rhs);
+}
+
+af_err af_bitand(af_array *out, const af_array lhs, const af_array rhs)
+{
+    return AF_ERR_NOT_SUPPORTED;
+}
+
+af_err af_bitor(af_array *out, const af_array lhs, const af_array rhs)
+{
+    return AF_ERR_NOT_SUPPORTED;
+}
+
+af_err af_bitxor(af_array *out, const af_array lhs, const af_array rhs)
+{
+    return AF_ERR_NOT_SUPPORTED;
+}
+
 template<typename To, typename Ti>
 static inline af_array complexOp(const af_array lhs, const af_array rhs)
 {

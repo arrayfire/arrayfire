@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
 #include <Array.hpp>
 #include <optypes.hpp>
 #include <math.hpp>
@@ -63,6 +64,8 @@ BINARY_TYPE_1(add)
 BINARY_TYPE_1(sub)
 BINARY_TYPE_1(mul)
 BINARY_TYPE_1(div)
+BINARY_TYPE_1(and)
+BINARY_TYPE_1(or)
 
 #undef BINARY_TYPE_1
 

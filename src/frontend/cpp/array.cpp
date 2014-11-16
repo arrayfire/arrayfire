@@ -561,6 +561,25 @@ INSTANTIATE(integer)
         INSTANTIATE(<=, af_le)
         INSTANTIATE(> , af_gt)
         INSTANTIATE(>=, af_ge)
+        INSTANTIATE(&&, af_and)
+        INSTANTIATE(||, af_or)
+        INSTANTIATE(%, af_mod)
+
+    array array::operator-() const
+    {
+        af_array out;
+        array cst = constant(0, this->dims(), this->type());
+        AF_THROW(af_sub(&out, cst.get(), this->get()));
+        return array(out);
+    }
+
+    array array::operator!() const
+    {
+        af_array out;
+        array cst = constant(0, this->dims(), this->type());
+        AF_THROW(af_eq(&out, cst.get(), this->get()));
+        return array(out);
+    }
 
 #undef INSTANTIATE
 
