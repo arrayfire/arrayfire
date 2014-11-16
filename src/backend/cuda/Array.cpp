@@ -41,14 +41,14 @@ namespace cuda
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(cudaMallocWrapper<T>(dims.elements()), cudaFreeWrapper<T>),
-        parent(), node(NULL), ready(true)
+        parent(), node(), ready(true)
     {}
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data, bool is_device) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data((is_device ? (T *)in_data : cudaMallocWrapper<T>(dims.elements())), cudaFreeWrapper<T>),
-        parent(), node(NULL), ready(true)
+        parent(), node(), ready(true)
     {
         if (!is_device) {
             CUDA_CHECK(cudaMemcpy(data.get(), in_data, dims.elements() * sizeof(T), cudaMemcpyHostToDevice));
@@ -59,7 +59,7 @@ namespace cuda
     Array<T>::Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
         ArrayInfo(dims, offset, stride, (af_dtype)dtype_traits<T>::af_type),
         data(),
-        parent(&parnt), node(NULL), ready(true)
+        parent(&parnt), node(), ready(true)
     { }
 
     template<typename T>
@@ -69,7 +69,7 @@ namespace cuda
                   af::dim4(tmp.strides[0], tmp.strides[1], tmp.strides[2], tmp.strides[3]),
                   (af_dtype)dtype_traits<T>::af_type),
         data(tmp.ptr, cudaFreeWrapper<T>),
-        parent(), node(NULL), ready(true)
+        parent(), node(), ready(true)
     {
     }
 

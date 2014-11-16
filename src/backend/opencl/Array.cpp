@@ -25,7 +25,7 @@ namespace opencl
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(),
-        parent(), node(NULL), ready(true)
+        parent(), node(), ready(true)
     {
         if (elements() > 0) data = cl::Buffer(getContext(),
                                               CL_MEM_READ_WRITE,
@@ -44,7 +44,7 @@ namespace opencl
     Array<T>::Array(af::dim4 dims, const T * const in_data) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(getContext(), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
-        parent(), node(NULL), ready(true)
+        parent(), node(), ready(true)
     {
         getQueue().enqueueWriteBuffer(data,CL_TRUE,0,sizeof(T)*ArrayInfo::elements(),in_data);
     }
@@ -53,7 +53,7 @@ namespace opencl
     Array<T>::Array(af::dim4 dims, cl_mem mem) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(mem),
-        parent(), node(NULL), ready(true)
+        parent(), node(), ready(true)
     {
     }
 
@@ -61,7 +61,7 @@ namespace opencl
     Array<T>::Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
         ArrayInfo(dims, offset, stride, (af_dtype)dtype_traits<T>::af_type),
         data(0),
-        parent(&parnt), node(NULL), ready(true)
+        parent(&parnt), node(), ready(true)
     { }
 
 
@@ -73,7 +73,7 @@ namespace opencl
                            tmp.info.strides[2], tmp.info.strides[3]),
                   (af_dtype)dtype_traits<T>::af_type),
         data(tmp.data),
-        parent(), node(NULL), ready(true)
+        parent(), node(), ready(true)
     {
     }
 

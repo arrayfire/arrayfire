@@ -23,14 +23,14 @@ namespace cpu
     Array<T>::Array(dim4 dims):
         ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(new T[dims.elements()]),
-        parent(nullptr), node(nullptr), ready(true)
+        parent(nullptr), node(), ready(true)
     { }
 
     template<typename T>
     Array<T>::Array(dim4 dims, const T * const in_data):
         ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(new T[dims.elements()]),
-        parent(nullptr), node(nullptr), ready(true)
+        parent(nullptr), node(), ready(true)
     {
         std::copy(in_data, in_data + dims.elements(), data.get());
     }
@@ -48,7 +48,7 @@ namespace cpu
     Array<T>::Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
         ArrayInfo(dims, offset, stride, (af_dtype)dtype_traits<T>::af_type),
         data(),
-        parent(&parnt), node(nullptr), ready(true)
+        parent(&parnt), node(), ready(true)
     { }
 
     template<typename T>
