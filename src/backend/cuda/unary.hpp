@@ -83,13 +83,13 @@ UNARY_FN(abs)
 
         UnOp<T, op> uop;
 
-        JIT::Node *in_node = in.getNode();
+        JIT::Node_ptr in_node = in.getNode();
 
         JIT::UnaryNode *node = new JIT::UnaryNode(irname<T>(),
                                                   uop.name(),
                                                   in_node, op);
 
-        return createNodeArray<T>(in.dims(), reinterpret_cast<JIT::Node *>(node));
+        return createNodeArray<T>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
     }
 
 }

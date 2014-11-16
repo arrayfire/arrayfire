@@ -23,14 +23,14 @@ namespace cuda
     template<typename To, typename Ti>
     Array<To>* complexOp(const Array<Ti> &lhs, const Array<Ti> &rhs)
     {
-        JIT::Node *lhs_node = lhs.getNode();
-        JIT::Node *rhs_node = rhs.getNode();
+        JIT::Node_ptr lhs_node = lhs.getNode();
+        JIT::Node_ptr rhs_node = rhs.getNode();
 
         JIT::BinaryNode *node = new JIT::BinaryNode(irname<To>(),
                                                     cplx2_name<To>(),
                                                     lhs_node,
                                                     rhs_node, (int)(af_cplx2_t));
 
-        return createNodeArray<To>(lhs.dims(), reinterpret_cast<JIT::Node *>(node));
+        return createNodeArray<To>(lhs.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
     }
 }
