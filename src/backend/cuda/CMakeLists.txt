@@ -104,7 +104,7 @@ CUDA_ADD_LIBRARY(afcuda SHARED ${cpp_sources}
                 ${cuda_sources}
                 ${jit_sources}
                 ${kernel_headers}
-                OPTIONS "-gencode "${CUDA_GENERATE_CODE})
+                OPTIONS "-gencode" ${CUDA_GENERATE_CODE})
 ADD_DEPENDENCIES(afcuda ${ptx_targets})
 
 

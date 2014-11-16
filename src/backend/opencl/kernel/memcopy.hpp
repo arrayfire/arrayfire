@@ -77,7 +77,7 @@ namespace kernel
         auto memcopy_kernel = make_kernel< Buffer, dims_t,
                                            Buffer, dims_t,
                                            dims_t, dim_type,
-                                           uint, uint >(prog, "memcopy_kernel");
+                                           dim_type, dim_type >(prog, "memcopy_kernel");
 
         memcopy_kernel(EnqueueArgs(getQueue(), global, local),
                        out, _ostrides, in, _idims, _istrides, offset, groups_0, groups_1);

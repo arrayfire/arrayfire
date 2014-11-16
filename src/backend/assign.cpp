@@ -88,7 +88,7 @@ af_err af_assign(af_array out, const unsigned ndims, const af_seq *index, const 
             return AF_SUCCESS;
         }
 
-        for(dim_type i=0; i<ndims; ++i) {
+        for(dim_type i=0; i<(dim_type)ndims; ++i) {
             ARG_ASSERT(2, (index[i].begin>=0 || index[i].begin == -1));
             ARG_ASSERT(2, (index[i].end>=0 || index[i].end == -1));
             ARG_ASSERT(2, (index[i].step>=0));

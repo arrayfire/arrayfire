@@ -36,13 +36,13 @@ Array<T> * meanshift(const Array<T> &in, const float &s_sigma, const float &c_si
     Array<T>* out       = createEmptyArray<T>(dims);
     const dim4 ostrides = out->strides();
 
-    const dim_type bIndex   = (is_color ? 3ll : 2ll);
+    const dim_type bIndex   = (is_color ? 3 : 2);
     const dim_type bCount   = dims[bIndex];
-    const dim_type channels = (is_color ? dims[2] : 1ll);
+    const dim_type channels = (is_color ? dims[2] : 1);
 
     // clamp spatical and chromatic sigma's
     float space_          = std::min(11.5f, s_sigma);
-    const dim_type radius = std::max((dim_type)(space_ * 1.5f), 1ll);
+    const dim_type radius = std::max((dim_type)(space_ * 1.5f), 1);
     const float cvar      = c_sigma*c_sigma;
 
     vector<float> means(channels);
