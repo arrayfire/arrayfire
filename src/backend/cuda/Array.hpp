@@ -39,7 +39,7 @@ namespace cuda
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     Array<T>*
-    createNodeArray(const af::dim4 &size, JIT::Node *node);
+    createNodeArray(const af::dim4 &size, JIT::Node_ptr node);
 
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
@@ -98,14 +98,14 @@ namespace cuda
         shared_ptr<T> data;
         const Array*  parent;
 
-        JIT::Node *node;
+        JIT::Node_ptr node;
         bool ready;
 
         Array(af::dim4 dims);
         explicit Array(af::dim4 dims, const T * const in_data, bool is_device = false);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
         Array(Param<T> &tmp);
-        Array(af::dim4 dims, JIT::Node *n);
+        Array(af::dim4 dims, JIT::Node_ptr n);
 
     public:
 
@@ -149,7 +149,7 @@ namespace cuda
             return out;
         }
 
-        JIT::Node *getNode() const;
+        JIT::Node_ptr getNode() const;
 
         friend Array<T>* createValueArray<T>(const af::dim4 &size, const T& value);
         friend Array<T>* createHostDataArray<T>(const af::dim4 &size, const T * const data);
@@ -157,7 +157,7 @@ namespace cuda
 
         friend Array<T>* createEmptyArray<T>(const af::dim4 &size);
         friend Array<T>* createParamArray<T>(Param<T> &tmp);
-        friend Array<T>* createNodeArray<T>(const af::dim4 &dims, JIT::Node *node);
+        friend Array<T>* createNodeArray<T>(const af::dim4 &dims, JIT::Node_ptr node);
         friend Array<T>* createSubArray<T>(const Array<T>& parent,
                                            const dim4 &dims, const dim4 &offset, const dim4 &stride);
         friend Array<T>* createRefArray<T>(const Array<T>& parent,

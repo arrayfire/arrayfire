@@ -21,30 +21,19 @@ namespace JIT
     {
     private:
         std::string m_op_str;
-        Node *m_lhs, *m_rhs;
+        Node_ptr m_lhs, m_rhs;
         int m_op;
 
     public:
         BinaryNode(const char *out_type_str,
                    const char *op_str,
-                   Node *lhs, Node *rhs, int op)
+                   Node_ptr lhs, Node_ptr rhs, int op)
             : Node(out_type_str),
               m_op_str(op_str),
               m_lhs(lhs),
               m_rhs(rhs),
               m_op(op)
         {
-            lhs->addParent(this);
-            rhs->addParent(this);
-        }
-
-        void replaceChild(Node *prev, Node *curr)
-        {
-            if (m_lhs == prev) m_lhs = curr;
-            else m_lhs->replaceChild(prev, curr);
-
-            if (m_rhs == prev) m_rhs = curr;
-            else m_rhs->replaceChild(prev, curr);
         }
 
         void genParams(std::stringstream &kerStream,

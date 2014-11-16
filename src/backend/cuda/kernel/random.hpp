@@ -11,6 +11,7 @@
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
 #include <platform.hpp>
+#include <debug_cuda.hpp>
 
 namespace cuda
 {
@@ -86,14 +87,10 @@ namespace kernel
     }
 
     __global__ static void
-    setup_kernel(curandState_t *states, unsigned long long seed, size_t elements)
+    setup_kernel(curandState_t *states, unsigned long long seed)
     {
         unsigned tid = blockDim.x * blockIdx.x + threadIdx.x;
-        if (tid < elements) {
-            curandState_t state;
-            curand_init(seed, tid, 0, &state);
-            states[tid] = state;
-        }
+        curand_init(seed, tid, 0, &states[tid]);
     }
 
     template<typename T>
@@ -136,10 +133,12 @@ namespace kernel
         static curandState_t *states[DeviceManager::MAX_DEVICES];
         if (!states[device]) {
             CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
-            setup_kernel<<<THREADS, BLOCKS>>>(states[device], uniform_seed, BLOCKS * THREADS);
+            setup_kernel<<<BLOCKS, THREADS>>>(states[device], uniform_seed);
         }
 
-        uniform_kernel<<<threads, blocks>>>(out, states[device], elements);
+        uniform_kernel<<<blocks, threads>>>(out, states[device], elements);
+
+        POST_LAUNCH_CHECK();
     }
 
     template<typename T>
@@ -154,10 +153,12 @@ namespace kernel
         static curandState_t *states[DeviceManager::MAX_DEVICES];
         if (!states[device]) {
             CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
-            setup_kernel<<<THREADS, BLOCKS>>>(states[device], uniform_seed, BLOCKS * THREADS);
+            setup_kernel<<<BLOCKS, THREADS>>>(states[device], uniform_seed);
         }
 
-        normal_kernel<<<threads, blocks>>>(out, states[device], elements);
+        normal_kernel<<<blocks, threads>>>(out, states[device], elements);
+
+        POST_LAUNCH_CHECK();
     }
 }
 }

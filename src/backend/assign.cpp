@@ -34,7 +34,7 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
     dim4 const iDims = iInfo.dims();
 
     ARG_ASSERT(0, (outDs.ndims()>=iDims.ndims()));
-    ARG_ASSERT(1, (outDs.ndims()>=ndims));
+    ARG_ASSERT(1, (outDs.ndims()>=(int)ndims));
 
     AF_CHECK(af_eval(out));
 

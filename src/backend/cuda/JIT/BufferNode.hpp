@@ -31,23 +31,23 @@ namespace JIT
         std::string m_name_str;
         bool m_gen_name;
         bool m_set_arg;
-        void *ptr;
+        shared_ptr<T> ptr;
         int str0, str1, str2, str3;
     public:
 
         BufferNode(const char *type_str,
                    const char *name_str,
-                   CParam<T> &param)
+                   shared_ptr<T> data, const dim_type *strides)
             : Node(type_str),
               m_name_str(name_str),
               m_gen_name(false),
-              m_set_arg(false)
+              m_set_arg(false),
+              ptr(data)
         {
-            ptr = (void *)param.ptr;
-            str0 = (int)param.strides[0];
-            str1 = (int)param.strides[1];
-            str2 = (int)param.strides[2];
-            str3 = (int)param.strides[3];
+            str0 = (int)strides[0];
+            str1 = (int)strides[1];
+            str2 = (int)strides[2];
+            str3 = (int)strides[3];
         }
 
         void genKerName(std::stringstream &kerStream, bool genInputs)

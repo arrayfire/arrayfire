@@ -29,12 +29,13 @@ namespace cpu
     template<typename To, typename Ti>
     Array<To>* complexOp(const Array<Ti> &lhs, const Array<Ti> &rhs)
     {
-        TNJ::Node *lhs_node = lhs.getNode();
-        TNJ::Node *rhs_node = rhs.getNode();
+        TNJ::Node_ptr lhs_node = lhs.getNode();
+        TNJ::Node_ptr rhs_node = rhs.getNode();
 
         TNJ::BinaryNode<To, Ti, af_cplx2_t> *node =
             new TNJ::BinaryNode<To, Ti, af_cplx2_t>(lhs_node, rhs_node);
 
-        return createNodeArray<To>(lhs.dims(), reinterpret_cast<TNJ::Node *>(node));
+        return createNodeArray<To>(lhs.dims(), TNJ::Node_ptr(
+                                       reinterpret_cast<TNJ::Node *>(node)));
     }
 }

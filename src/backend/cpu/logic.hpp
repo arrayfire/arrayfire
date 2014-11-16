@@ -65,11 +65,12 @@ LOGIC_CPLX_FN(double, af_ge_t, >=)
     template<typename T, af_op_t op>
     Array<uchar>* logicOp(const Array<T> &lhs, const Array<T> &rhs)
     {
-        TNJ::Node *lhs_node = lhs.getNode();
-        TNJ::Node *rhs_node = rhs.getNode();
+        TNJ::Node_ptr lhs_node = lhs.getNode();
+        TNJ::Node_ptr rhs_node = rhs.getNode();
 
         TNJ::BinaryNode<uchar, T, op> *node = new TNJ::BinaryNode<uchar, T, op>(lhs_node, rhs_node);
 
-        return createNodeArray<uchar>(lhs.dims(), reinterpret_cast<TNJ::Node *>(node));
+        return createNodeArray<uchar>(lhs.dims(), TNJ::Node_ptr(
+                                          reinterpret_cast<TNJ::Node *>(node)));
     }
 }

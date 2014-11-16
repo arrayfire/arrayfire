@@ -38,13 +38,13 @@ template<typename To, typename Ti>
 Array<To>* cast(const Array<Ti> &in)
 {
     CastOp<To, Ti> cop;
-    JIT::Node *in_node = in.getNode();
+    JIT::Node_ptr in_node = in.getNode();
 
     JIT::UnaryNode *node = new JIT::UnaryNode(irname<To>(),
                                               cop.name(),
                                               in_node, af_cast_t);
 
-    return createNodeArray<To>(in.dims(), reinterpret_cast<JIT::Node *>(node));
+    return createNodeArray<To>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
 }
 
 }
