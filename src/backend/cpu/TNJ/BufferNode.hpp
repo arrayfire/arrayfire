@@ -31,19 +31,19 @@ namespace TNJ
 
     public:
 
-        BufferNode(shared_ptr<T> data, dim_type *strs) :
+        BufferNode(shared_ptr<T> data, dim_type *strs, dim_type data_off) :
             Node(),
             ptr(data),
-            off(0)
+            off(data_off)
         {
             for (int i = 0; i < 4; i++) strides[i] = strs[i];
         }
 
         void *calc(int x, int y, int z, int w)
         {
-            off = x + y * strides[1] + z * strides[2] + w * strides[3];
+            dim_type l_off = x + y * strides[1] + z * strides[2] + w * strides[3];
             m_is_eval = true;
-            return (void *)(ptr.get() + off);
+            return (void *)(ptr.get() + off + l_off);
         }
 
         void reset()

@@ -31,23 +31,29 @@ namespace JIT
         std::string m_name_str;
         bool m_gen_name;
         bool m_set_arg;
-        shared_ptr<T> ptr;
         int str0, str1, str2, str3;
+
+        // Keep the shared pointer for reference counting
+        shared_ptr<T> sptr;
+        // Keep the actual pointer for launching kernels
+        T *ptr;
     public:
 
         BufferNode(const char *type_str,
                    const char *name_str,
-                   shared_ptr<T> data, const dim_type *strides)
+                   shared_ptr<T> data, const dim_type *strides, dim_type off)
             : Node(type_str),
               m_name_str(name_str),
               m_gen_name(false),
               m_set_arg(false),
-              ptr(data)
+              sptr(data),
+              ptr(NULL)
         {
             str0 = (int)strides[0];
             str1 = (int)strides[1];
             str2 = (int)strides[2];
             str3 = (int)strides[3];
+            ptr = sptr.get() + off;
         }
 
         void genKerName(std::stringstream &kerStream, bool genInputs)

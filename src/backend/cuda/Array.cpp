@@ -93,10 +93,13 @@ namespace cuda
     Node_ptr Array<T>::getNode() const
     {
         if (!node) {
-            CParam<T> this_param = *this;
+            shared_ptr<T> sptr = isOwner() ? data : parent->data;
+            dim_type offset = isOwner() ? 0 : calcOffset(parent->strides(), this->offsets());
+
             BufferNode<T> *buf_node = new BufferNode<T>(irname<T>(),
-                                                        shortname<T>(true), data,
-                                                        strides().get());
+                                                        shortname<T>(true), sptr,
+                                                        strides().get(), offset);
+
             const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
         }
 

@@ -62,9 +62,13 @@ namespace cpu
     template<typename T>
     Node_ptr Array<T>::getNode() const
     {
-        if (node == NULL) {
+        if (!node) {
             dim_type strs[] = {strides()[0], strides()[1], strides()[2], strides()[3]};
-            BufferNode<T> *buf_node = new BufferNode<T>(data, strs);
+
+            shared_ptr<T> sptr = isOwner() ? data : parent->data;
+            dim_type offset = isOwner() ? 0 : calcOffset(parent->strides(), this->offsets());
+
+            BufferNode<T> *buf_node = new BufferNode<T>(sptr, strs, offset);
             const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
         }
 
