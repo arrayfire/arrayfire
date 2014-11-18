@@ -188,6 +188,26 @@ namespace kernel
         s_ptr_vol->y = tmp.y;
     }
 
+    template<typename To>
+    __inline__ __device__ void assign_vol(To &dst, volatile To *s_ptr_vol)
+    {
+        dst = *s_ptr_vol;
+    }
+
+    template<> __inline__ __device__
+    void assign_vol<cfloat>(cfloat &dst, volatile cfloat *s_ptr_vol)
+    {
+        dst.x = s_ptr_vol->x;
+        dst.y = s_ptr_vol->y;
+    }
+
+    template<> __inline__ __device__
+    void assign_vol<cdouble>(cdouble &dst, volatile cdouble *s_ptr_vol)
+    {
+        dst.x = s_ptr_vol->x;
+        dst.y = s_ptr_vol->y;
+    }
+
     template<typename To, af_op_t op>
     __device__ void warp_reduce(To *s_ptr, uint tidx)
     {
@@ -198,7 +218,10 @@ namespace kernel
 #pragma unroll
         for (int n = 16; n >= 1; n >>= 1) {
             if (tidx < n) {
-                tmp = reduce(*s_ptr_vol, *(s_ptr_vol + n));
+                To op1, op2;
+                assign_vol(op1, s_ptr_vol);
+                assign_vol(op2, s_ptr_vol + n);
+                tmp = reduce(op1, op2);
                 assign_vol(s_ptr_vol, tmp);
             }
         }
