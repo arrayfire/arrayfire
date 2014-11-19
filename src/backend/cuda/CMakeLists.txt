@@ -43,9 +43,9 @@ FILE(GLOB backend_sources
 FILE(GLOB cpp_sources
     "../../frontend/cpp/*.cpp"
     )
-source_group(Headers FILES ${backend_headers})
-source_group(Sources FILES ${backend_sources})
-source_group(CPP\ Sources FILES ${cpp_sources})
+source_group(backend\\Headers FILES ${backend_headers})
+source_group(backend\\Sources FILES ${backend_sources})
+source_group(frontend\\Sources FILES ${cpp_sources})
 
 FILE(GLOB cuda_headers
   "*.hpp"
@@ -53,16 +53,16 @@ FILE(GLOB cuda_headers
 FILE(GLOB cuda_sources
     "*.cu"
   "*.cpp")
-source_group(cuda\\Headers FILES ${cuda_headers})
-source_group(cuda\\Sources FILES ${cuda_sources})
+source_group(backend\\cuda\\Headers FILES ${cuda_headers})
+source_group(backend\\cuda\\Sources FILES ${cuda_sources})
 
 FILE(GLOB jit_sources
     "jit/*.hpp")
-source_group(cuda\\JIT FILES ${jit_sources})
+source_group(backend\\cuda\\JIT FILES ${jit_sources})
 
 FILE(GLOB kernel_headers
     "kernel/*.hpp")
-source_group(cuda\\kernel\\Headers FILES ${kernel_headers})
+source_group(backend\\cuda\\kernel\\Headers FILES ${kernel_headers})
 
 IF(${CUDA_COMPUTE_CAPABILITY} STREQUAL "21")
     SET(PTX_COMPUTE "20")
