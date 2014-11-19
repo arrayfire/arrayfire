@@ -218,10 +218,10 @@ namespace kernel
 #pragma unroll
         for (int n = 16; n >= 1; n >>= 1) {
             if (tidx < n) {
-                To op1, op2;
-                assign_vol(op1, s_ptr_vol);
-                assign_vol(op2, s_ptr_vol + n);
-                tmp = reduce(op1, op2);
+                To val1, val2;
+                assign_vol(val1, s_ptr_vol);
+                assign_vol(val2, s_ptr_vol + n);
+                tmp = reduce(val1, val2);
                 assign_vol(s_ptr_vol, tmp);
             }
         }
