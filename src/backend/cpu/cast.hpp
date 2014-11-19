@@ -48,13 +48,31 @@ struct UnOp<To, std::complex<double>, af_cast_t>
     }
 };
 
+
+#define CAST_B8(T)                              \
+    template<>                                  \
+    struct UnOp<char, T, af_cast_t>             \
+    {                                           \
+        char eval(T in)                         \
+        {                                       \
+            return char(in != 0);               \
+        }                                       \
+    };                                          \
+
+CAST_B8(float)
+CAST_B8(double)
+CAST_B8(int)
+CAST_B8(uchar)
+CAST_B8(char)
+
 template<typename To, typename Ti>
 Array<To>* cast(const Array<Ti> &in)
 {
-    TNJ::Node *in_node = in.getNode();
+    TNJ::Node_ptr in_node = in.getNode();
     TNJ::UnaryNode<To, Ti, af_cast_t> *node = new TNJ::UnaryNode<To, Ti, af_cast_t>(in_node);
 
-    return createNodeArray<To>(in.dims(), reinterpret_cast<TNJ::Node *>(node));
+    return createNodeArray<To>(in.dims(), TNJ::Node_ptr(
+                                   reinterpret_cast<TNJ::Node *>(node)));
 }
 
 }

@@ -23,4 +23,3 @@
 #include "af/signal.h"
 #include "af/timing.h"
 #include "af/util.h"
-#include "af/version.h"

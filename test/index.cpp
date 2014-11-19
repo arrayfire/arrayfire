@@ -119,7 +119,6 @@ public:
 };
 
 typedef ::testing::Types<float, double, int, unsigned, char, unsigned char> TestTypes;
-//typedef ::testing::Types<float> TestTypes;
 TYPED_TEST_CASE(Indexing1D, TestTypes);
 
 TYPED_TEST(Indexing1D, Continious)          { DimCheck<TypeParam>(this->continuous_seqs);           }
@@ -382,6 +381,104 @@ vector<af_seq> make_vec(af_seq first, af_seq second) {
     return out;
 }
 
+
+template<typename T>
+class Indexing : public ::testing::Test
+{
+    vector<af_seq> make_vec3(af_seq first, af_seq second, af_seq third) {
+        vector<af_seq> out;
+        out.push_back(first);
+        out.push_back(second);
+        out.push_back(third);
+        return out;
+    }
+
+    vector<af_seq> make_vec4(af_seq first, af_seq second, af_seq third, af_seq fourth) {
+        vector<af_seq> out;
+        out.push_back(first);
+        out.push_back(second);
+        out.push_back(third);
+        out.push_back(fourth);
+        return out;
+    }
+
+    public:
+
+    virtual void SetUp() {
+        continuous3d_to_3d.push_back(make_vec3({ 0, 4, 1}, { 0,  6,  1}, af_span));
+        continuous3d_to_3d.push_back(make_vec3({ 4, 8, 1}, { 4,  9,  1}, af_span));
+        continuous3d_to_3d.push_back(make_vec3({ 6, 9, 1}, { 3,  8,  1}, af_span));
+
+        continuous3d_to_2d.push_back(make_vec3(af_span, { 0,  6,  1}, { 0, 0, 1}));
+        continuous3d_to_2d.push_back(make_vec3(af_span, { 4,  9,  1}, { 1, 1, 1}));
+        continuous3d_to_2d.push_back(make_vec3(af_span, { 3,  8,  1}, { 0, 0, 1}));
+
+        continuous3d_to_1d.push_back(make_vec3(af_span, { 0,  0,  1}, { 0, 0, 1}));
+        continuous3d_to_1d.push_back(make_vec3(af_span, { 6,  6,  1}, { 1, 1, 1}));
+        continuous3d_to_1d.push_back(make_vec3(af_span, { 9,  9,  1}, { 0, 0, 1}));
+
+        continuous4d_to_4d.push_back(make_vec4({ 2, 6, 1}, { 2,  6,  1}, af_span, af_span));
+        continuous4d_to_3d.push_back(make_vec4({ 2, 6, 1}, { 2,  6,  1}, af_span, {0, 0, 1}));
+        continuous4d_to_2d.push_back(make_vec4({ 2, 6, 1}, { 2,  6,  1}, { 0, 0, 1}, {0, 0, 1}));
+        continuous4d_to_1d.push_back(make_vec4({ 2, 6, 1}, { 2,  2,  1}, { 0, 0, 1}, {0, 0, 1}));
+    }
+
+    vector<vector<af_seq>> continuous3d_to_3d;
+    vector<vector<af_seq>> continuous3d_to_2d;
+    vector<vector<af_seq>> continuous3d_to_1d;
+
+    vector<vector<af_seq>> continuous4d_to_4d;
+    vector<vector<af_seq>> continuous4d_to_3d;
+    vector<vector<af_seq>> continuous4d_to_2d;
+    vector<vector<af_seq>> continuous4d_to_1d;
+};
+
+template<typename T, size_t NDims>
+void DimCheckND(const vector<vector<af_seq>> &seqs,string TestFile)
+{
+    // DimCheck2D function is generalized enough
+    // to check 3d and 4d indexing
+    DimCheck2D<T, NDims>(seqs, TestFile);
+}
+
+TYPED_TEST_CASE(Indexing, TestTypes);
+
+TYPED_TEST(Indexing, 4D_to_4D)
+{
+    DimCheckND<TypeParam, 4>(this->continuous4d_to_4d, TEST_DIR"/index/Continuous4Dto4D.test");
+}
+
+TYPED_TEST(Indexing, 4D_to_3D)
+{
+    DimCheckND<TypeParam, 4>(this->continuous4d_to_3d, TEST_DIR"/index/Continuous4Dto3D.test");
+}
+
+TYPED_TEST(Indexing, 4D_to_2D)
+{
+    DimCheckND<TypeParam, 4>(this->continuous4d_to_2d, TEST_DIR"/index/Continuous4Dto2D.test");
+}
+
+TYPED_TEST(Indexing, 4D_to_1D)
+{
+    DimCheckND<TypeParam, 4>(this->continuous4d_to_1d, TEST_DIR"/index/Continuous4Dto1D.test");
+}
+
+TYPED_TEST(Indexing, 3D_to_3D)
+{
+    DimCheckND<TypeParam, 3>(this->continuous3d_to_3d, TEST_DIR"/index/Continuous3Dto3D.test");
+}
+
+TYPED_TEST(Indexing, 3D_to_2D)
+{
+    DimCheckND<TypeParam, 3>(this->continuous3d_to_2d, TEST_DIR"/index/Continuous3Dto2D.test");
+}
+
+TYPED_TEST(Indexing, 3D_to_1D)
+{
+    DimCheckND<TypeParam, 3>(this->continuous3d_to_1d, TEST_DIR"/index/Continuous3Dto1D.test");
+}
+
+//////////////////////////////// CPP ////////////////////////////////
 TEST(Indexing2D, ColumnContiniousCPP)
 {
     using af::array;

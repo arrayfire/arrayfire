@@ -57,9 +57,7 @@ typedef enum {
 	s32,
 	u32,
 	u8,
-	s8,
 	u8x4,
-	s8x4,
 } af_dtype;
 
 typedef enum {
@@ -97,7 +95,7 @@ typedef enum {
 
 typedef size_t af_array;
 
-typedef long long dim_type;
+typedef int dim_type;
 
 typedef enum {
 	AF_INTERP_NEAREST,

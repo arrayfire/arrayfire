@@ -52,9 +52,8 @@ static af_err reduce_type(af_array *out, const af_array in, const int dim)
         case c64:  res = reduce<op, cdouble, To>(in, dim); break;
         case u32:  res = reduce<op, uint   , To>(in, dim); break;
         case s32:  res = reduce<op, int    , To>(in, dim); break;
-        case b8:   res = reduce<op, uchar  , To>(in, dim); break;
+        case b8:   res = reduce<op, char   , To>(in, dim); break;
         case u8:   res = reduce<op, uchar  , To>(in, dim); break;
-        case s8:   res = reduce<op, char   , To>(in, dim); break;
         default:   TYPE_ERROR(1, type);
         }
 
@@ -90,9 +89,8 @@ static af_err reduce_common(af_array *out, const af_array in, const int dim)
         case c64:  res = reduce<op, cdouble, cdouble>(in, dim); break;
         case u32:  res = reduce<op, uint   , uint   >(in, dim); break;
         case s32:  res = reduce<op, int    , int    >(in, dim); break;
-        case b8:   res = reduce<op, uchar  , uchar  >(in, dim); break;
+        case b8:   res = reduce<op, char   , char   >(in, dim); break;
         case u8:   res = reduce<op, uchar  , uchar  >(in, dim); break;
-        case s8:   res = reduce<op, char   , char   >(in, dim); break;
         default:   TYPE_ERROR(1, type);
         }
 
@@ -129,9 +127,8 @@ static af_err reduce_promote(af_array *out, const af_array in, const int dim)
         case u32:  res = reduce<op, uint   , uint   >(in, dim); break;
         case s32:  res = reduce<op, int    , int    >(in, dim); break;
         case u8:   res = reduce<op, uchar  , uint   >(in, dim); break;
-        case s8:   res = reduce<op, char   , int    >(in, dim); break;
             // Make sure you are adding only "1" for every non zero value, even if op == af_add_t
-        case b8:   res = reduce<af_notzero_t, uchar  , uint   >(in, dim); break;
+        case b8:   res = reduce<af_notzero_t, char  , uint   >(in, dim); break;
         default:   TYPE_ERROR(1, type);
         }
         std::swap(*out, res);

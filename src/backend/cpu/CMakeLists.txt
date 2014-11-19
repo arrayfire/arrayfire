@@ -12,11 +12,11 @@ ENDIF()
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
-    ${CMAKE_SOURCE_DIR}/src/backend/cpu
+    "${CMAKE_SOURCE_DIR}/src/backend/cpu"
     ${FFTW_INCLUDES}
 	${CBLAS_INCLUDE_DIR}
     )
-	
+
 FILE(GLOB backend_headers
     "../*.hpp"
     "../*.h"
@@ -25,19 +25,19 @@ FILE(GLOB backend_sources
     "../*.cpp"
     )
 FILE(GLOB cpp_sources
-    "../../array/*.cpp"
+    "../../frontend/cpp/*.cpp"
     )
-source_group(Headers FILES ${backend_headers})
-source_group(Sources FILES ${backend_sources})
-source_group(CPP\ Sources FILES ${cpp_sources})
+source_group(backend\\Headers FILES ${backend_headers})
+source_group(backend\\Sources FILES ${backend_sources})
+source_group(frontend\\Sources FILES ${cpp_sources})
 
 FILE(GLOB cpu_headers
 	"*.hpp"
     "*.h")
 FILE(GLOB cpu_sources
     "*.cpp")
-source_group(cpu\\Headers FILES ${cpu_headers})
-source_group(cpu\\Sources FILES ${cpu_sources})
+source_group(backend\\cpu\\Headers FILES ${cpu_headers})
+source_group(backend\\cpu\\Sources FILES ${cpu_sources})
 
 # OS Definitions
 IF(UNIX)

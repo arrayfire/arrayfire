@@ -1,6 +1,6 @@
-<a href="url"><img src="http://arrayfire.com/logos/arrayfire_logo_whitebkgnd.png" width="300"></a>
+<a href="http://arrayfire.com/"><img src="http://arrayfire.com/logos/arrayfire_logo_whitebkgnd.png" width="300"></a>
 
-ArrayFire is a High Performance software library for parallel computing with an easy-to-use API. Its **array** based function set makes parallel programming simple.
+ArrayFire is a high performance software library for parallel computing with an easy-to-use API. Its **array** based function set makes parallel programming simple.
 
 ArrayFire's multiple backends (**CUDA**, **OpenCL** and native **CPU**) make it platform independent and highly portable.
 
@@ -9,10 +9,10 @@ A few lines of code in ArrayFire can replace dozens of lines of parallel computi
 ### Build Status
 |                 | Build           | Tests           |
 |-----------------|-----------------|-----------------|
-| Linux x86       | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/devel)](http://ci.arrayfire.org/job/arrayfire-linux/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux-test/devel)](http://ci.arrayfire.org/job/arrayfire-linux-test/branch/devel/)
-| Linux Tegra     | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegra/devel)](http://ci.arrayfire.org/job/arrayfire-tegra/branch/devel/) | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegra-test/devel)](http://ci.arrayfire.org/job/arrayfire-tegra-test/branch/devel/)
-| Windows         |                 |                 |
-| OSX             | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/devel)](http://ci.arrayfire.org/job/arrayfire-osx/branch/devel/)     |                 |
+| Linux x86       | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/devel)](http://ci.arrayfire.org/job/arrayfire-linux/branch/devel/)      | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux-test/devel)](http://ci.arrayfire.org/job/arrayfire-linux-test/branch/devel/)
+| Linux Tegra     | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegra/devel)](http://ci.arrayfire.org/job/arrayfire-tegra/branch/devel/)      | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegra-test/devel)](http://ci.arrayfire.org/job/arrayfire-tegra-test/branch/devel/)
+| Windows         | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows/devel)](http://ci.arrayfire.org/job/arrayfire-windows/branch/devel/)  | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows-test/devel)](http://ci.arrayfire.org/job/arrayfire-windows-test/branch/devel/)                     |
+| OSX             | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/devel)](http://ci.arrayfire.org/job/arrayfire-osx/branch/devel/)          |                 |
 
 ### Example
 
@@ -26,7 +26,6 @@ using namespace af;
 int main(int argc, char *argv[])
 {
     try {
-
 
         // Select a device and display arrayfire info
         int device = argc > 1 ? atoi(argv[1]) : 0;
@@ -91,9 +90,11 @@ Quick links:
 
 To build ArrayFire from source, please follow the instructions on our [wiki](https://github.com/arrayfire/arrayfire/wiki).
 
-## Download ArrayFire Installers
+### Download ArrayFire Installers
 
-Installers for the stable versions of ArrayFire can be freely downloaded from [here](https://arrayfire.com/download).
+We are currently working on bring out installers for the open source version. Please try to build this using our [wiki](https://github.com/arrayfire/arrayfire/wiki) page.
+
+Installers for the older (commercial) versions of ArrayFire can be freely downloaded from [here](https://arrayfire.com/download). This will require licensing.
 
 ### Contribute
 
