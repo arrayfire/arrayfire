@@ -32,43 +32,33 @@ int main(int argc, char *argv[])
         af::setDevice(device);
         af::info();
 
-        printf("Create a 5-by-3 matrix of random floats on the GPU\n");
+        // Create a 5-by-3 matrix of random floats on the GPU
         array A = randu(5,3, f32);
-        af_print(A);
 
-        printf("Element-wise arithmetic\n");
+        // Element-wise arithmetic
         array B = sin(A) + 1.5;
-        af_print(B);
 
-        printf("Negate the first three elements of second column\n");
+        // Negate the first three elements of second column
         B(seq(0, 2), 1) = B(seq(0, 2), 1) * -1;
-        af_print(B);
 
-        printf("Fourier transform the result\n");
+        // Fourier transform the result
         array C = fft(B);
-        af_print(C);
 
-        printf("Grab last row\n");
+        // Grab last row
         array c = C.row(end);
-        af_print(c);
 
-        printf("Create 2-by-3 matrix from host data\n");
+        // Create 2-by-3 matrix from host data
         float d[] = { 1, 2, 3, 4, 5, 6 };
         array D(2, 3, d, af::afHost);
-        af_print(D);
 
-        printf("Copy last column onto first\n");
+        // Copy last column onto first
         D.col(0) = D.col(end);
-        af_print(D);
-
-        // Sort A
-        printf("Sort A and print sorted array and corresponding indices\n");
+        
+        // Sort A and print sorted array and corresponding indices
         array vals, inds;
         sort(vals, inds, A);
-        af_print(vals);
-        af_print(inds);
 
-    } catch (af::exception& e) {
+    } catch (const af::exception& e) {
         fprintf(stderr, "%s\n", e.what());
         throw;
     }
@@ -78,7 +68,7 @@ int main(int argc, char *argv[])
 
 ### Documentation
 
-You can find our complete documentation over [here](http://www.arrayfire.com/docs/index.htm).
+You can find our complete documentation [here](http://www.arrayfire.com/docs/index.htm).
 
 Quick links:
 
