@@ -49,7 +49,7 @@ AFAPI array erode3d(const array& in, const array& mask);
 
 AFAPI void grad(array& rows, array& cols, const array& in);
 
-AFAPI array regions(const array& in, af_connectivity_type connectivity=AF_CONNECTIVITY_4);
+AFAPI array regions(const array& in, af_connectivity_type connectivity=AF_CONNECTIVITY_4, af_dtype type=f32);
 
 }
 #endif
@@ -108,7 +108,7 @@ extern "C" {
     AFAPI af_err af_medfilt(af_array *out, const af_array in, dim_type wind_length, dim_type wind_width, af_pad_type edge_pad);
 
     // Compute labels for connected regions from binary input arrays
-    AFAPI af_err af_regions(af_array *out, const af_array in, af_connectivity_type connectivity);
+    AFAPI af_err af_regions(af_array *out, const af_array in, af_connectivity_type connectivity, af_dtype ty);
 
 #ifdef __cplusplus
 }
