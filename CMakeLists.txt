@@ -4,6 +4,7 @@ PROJECT(ARRAYFIRE)
 OPTION(BUILD_TEST "Build Tests" ON)
 OPTION(BUILD_EXAMPLES "Build Examples" ON)
 OPTION(BUILD_GTEST "Download gtest and check for updates. Necessary if you change compilers" ON)
+OPTION(USE_SYSTEM_GTEST "Use libgtest already present on the system" OFF)
 
 OPTION(BUILD_CPU "Build ArrayFire with a CPU backend" ON)
 OPTION(BUILD_CUDA "Build ArrayFire with a CUDA backend" OFF)
@@ -76,7 +77,7 @@ IF(${BUILD_EXAMPLES})
 ENDIF()
 
 ## Install step
-INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/" DESTINATION include 
+INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/" DESTINATION include
     FILES_MATCHING
     PATTERN "*.h"
     PATTERN "*.hpp"
