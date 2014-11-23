@@ -58,7 +58,6 @@ af_err af_reorder(af_array *out, const af_array in, const af::dim4 &rdims)
             case s32: output = reorder<int    >(in, rdims);  break;
             case u32: output = reorder<uint   >(in, rdims);  break;
             case u8:  output = reorder<uchar  >(in, rdims);  break;
-            case s8:  output = reorder<char   >(in, rdims);  break;
             default:  TYPE_ERROR(1, type);
         }
         std::swap(*out,output);

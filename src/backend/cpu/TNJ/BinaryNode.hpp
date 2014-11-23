@@ -33,20 +33,18 @@ namespace TNJ
     {
 
     protected:
-        Node *m_lhs;
-        Node *m_rhs;
+        Node_ptr m_lhs;
+        Node_ptr m_rhs;
         BinOp<To, Ti, op> m_op;
         To m_val;
 
     public:
-        BinaryNode(Node *lhs, Node *rhs) :
+        BinaryNode(Node_ptr lhs, Node_ptr rhs) :
             Node(),
             m_lhs(lhs),
             m_rhs(rhs),
             m_val(0)
         {
-            m_lhs->addParent(this);
-            m_rhs->addParent(this);
         }
 
         void *calc(int x, int y, int z, int w)
@@ -61,15 +59,6 @@ namespace TNJ
         void reset()
         {
             m_is_eval = false;
-        }
-
-        void replaceChild(Node *prev, Node *curr)
-        {
-            if (m_lhs == prev) m_lhs = curr;
-            else m_lhs->replaceChild(prev, curr);
-
-            if (m_rhs == prev) m_rhs = curr;
-            else m_rhs->replaceChild(prev, curr);
         }
     };
 

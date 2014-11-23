@@ -43,6 +43,8 @@ BINARY(add)
 BINARY(sub)
 BINARY(mul)
 BINARY(div)
+BINARY(and)
+BINARY(or)
 
 BINARY(lt)
 BINARY(gt)
@@ -64,15 +66,15 @@ Array<To> *createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs)
 {
     BinOp<To, Ti, op> bop;
 
-    JIT::Node *lhs_node = lhs.getNode();
-    JIT::Node *rhs_node = rhs.getNode();
+    JIT::Node_ptr lhs_node = lhs.getNode();
+    JIT::Node_ptr rhs_node = rhs.getNode();
 
     JIT::BinaryNode *node = new JIT::BinaryNode(irname<To>(),
                                                 bop.name(),
                                                 lhs_node,
                                                 rhs_node, (int)(op));
 
-    return createNodeArray<To>(lhs.dims(), reinterpret_cast<JIT::Node *>(node));
+    return createNodeArray<To>(lhs.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
 }
 
 }

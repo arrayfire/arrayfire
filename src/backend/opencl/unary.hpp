@@ -68,13 +68,13 @@ UNARY_FN(floor)
 template<typename T, af_op_t op>
 Array<T>* unaryOp(const Array<T> &in)
 {
-    JIT::Node *in_node = in.getNode();
+    JIT::Node_ptr in_node = in.getNode();
 
     JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<T>::getName(),
                                               unaryName<op>(),
                                               in_node, op);
 
-    return createNodeArray<T>(in.dims(), reinterpret_cast<JIT::Node *>(node));
+    return createNodeArray<T>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
 }
 
 }

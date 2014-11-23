@@ -42,7 +42,6 @@ af_err af_shift(af_array *out, const af_array in, const af::dim4 &sdims)
             case s32: output = shift<int    >(in, sdims);  break;
             case u32: output = shift<uint   >(in, sdims);  break;
             case u8:  output = shift<uchar  >(in, sdims);  break;
-            case s8:  output = shift<char   >(in, sdims);  break;
             default:  TYPE_ERROR(1, type);
         }
         std::swap(*out,output);

@@ -31,7 +31,7 @@ namespace opencl
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     Array<T>*
-    createNodeArray(const af::dim4 &size, JIT::Node *node);
+    createNodeArray(const af::dim4 &size, JIT::Node_ptr node);
 
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
@@ -88,13 +88,13 @@ namespace opencl
         cl::Buffer  data;
         const Array*      parent;
 
-        JIT::Node *node;
+        JIT::Node_ptr node;
         bool ready;
 
         Array(af::dim4 dims);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
         Array(Param &tmp);
-        explicit Array(af::dim4 dims, JIT::Node *n);
+        explicit Array(af::dim4 dims, JIT::Node_ptr n);
         explicit Array(af::dim4 dims, const T * const in_data);
         explicit Array(af::dim4 dims, cl_mem mem);
     public:
@@ -137,7 +137,7 @@ namespace opencl
             return out;
         }
 
-        JIT::Node *getNode() const;
+        JIT::Node_ptr getNode() const;
 
         friend Array<T>* createValueArray<T>(const af::dim4 &size, const T& value);
         friend Array<T>* createHostDataArray<T>(const af::dim4 &size, const T * const data);
@@ -149,7 +149,7 @@ namespace opencl
         friend Array<T>* createRefArray<T>(const Array<T>& parent,
                                            const dim4 &dims, const dim4 &offset, const dim4 &stride);
         friend Array<T>* createParamArray<T>(Param &tmp);
-        friend Array<T>* createNodeArray<T>(const af::dim4 &dims, JIT::Node *node);
+        friend Array<T>* createNodeArray<T>(const af::dim4 &dims, JIT::Node_ptr node);
         friend void      destroyArray<T>(Array<T> &arr);
         friend void *getDevicePtr<T>(const Array<T>& arr);
     };

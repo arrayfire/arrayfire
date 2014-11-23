@@ -32,9 +32,8 @@ template<typename To> af_array cast(const af_array in)
     case c64: return getHandle(*cast<To, cdouble>(getArray<cdouble>(in)));
     case s32: return getHandle(*cast<To, int    >(getArray<int    >(in)));
     case u32: return getHandle(*cast<To, uint   >(getArray<uint   >(in)));
-    case s8 : return getHandle(*cast<To, char   >(getArray<char   >(in)));
     case u8 : return getHandle(*cast<To, uchar  >(getArray<uchar  >(in)));
-    case b8 : return getHandle(*cast<To, uchar  >(getArray<uchar  >(in)));
+    case b8 : return getHandle(*cast<To, char   >(getArray<char   >(in)));
     default: TYPE_ERROR(1, info.getType());
     }
 }

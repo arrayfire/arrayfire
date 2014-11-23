@@ -26,7 +26,6 @@ namespace af
         case f64: return sizeof(double);
         case s32: return sizeof(int);
         case u32: return sizeof(unsigned);
-        case s8 : return sizeof(char);
         case u8 : return sizeof(unsigned char);
         case b8 : return sizeof(unsigned char);
         case c32: return sizeof(float) * 2;
@@ -562,6 +561,25 @@ INSTANTIATE(integer)
         INSTANTIATE(<=, af_le)
         INSTANTIATE(> , af_gt)
         INSTANTIATE(>=, af_ge)
+        INSTANTIATE(&&, af_and)
+        INSTANTIATE(||, af_or)
+        INSTANTIATE(%, af_mod)
+
+    array array::operator-() const
+    {
+        af_array out;
+        array cst = constant(0, this->dims(), this->type());
+        AF_THROW(af_sub(&out, cst.get(), this->get()));
+        return array(out);
+    }
+
+    array array::operator!() const
+    {
+        af_array out;
+        array cst = constant(0, this->dims(), this->type());
+        AF_THROW(af_eq(&out, cst.get(), this->get()));
+        return array(out);
+    }
 
 #undef INSTANTIATE
 
@@ -592,7 +610,7 @@ INSTANTIATE(integer)
     template<> AFAPI T* array::device() const               \
     {                                                       \
         void *ptr = NULL;                                   \
-        AF_THROW(af_get_device_ptr(ptr, get(), true));      \
+        AF_THROW(af_get_device_ptr(&ptr, get(), true));      \
         return (T *)ptr;                                    \
     }                                                       \
 

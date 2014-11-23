@@ -42,7 +42,6 @@ struct CastOp
 
 CAST_FN(int)
 CAST_FN(uint)
-CAST_FN(char)
 CAST_FN(uchar)
 CAST_FN(float)
 CAST_FN(double)
@@ -60,6 +59,7 @@ CAST_FN(double)
 
 CAST_CFN(cfloat)
 CAST_CFN(cdouble)
+CAST_CFN(char)
 
 #undef CAST_FN
 #undef CAST_CFN
@@ -68,13 +68,13 @@ template<typename To, typename Ti>
 Array<To>* cast(const Array<Ti> &in)
 {
     CastOp<To> cop;
-    JIT::Node *in_node = in.getNode();
+    JIT::Node_ptr in_node = in.getNode();
 
     JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<To>::getName(),
                                               cop.name(),
                                               in_node, af_cast_t);
 
-    return createNodeArray<To>(in.dims(), reinterpret_cast<JIT::Node *>(node));
+    return createNodeArray<To>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
 }
 
 }

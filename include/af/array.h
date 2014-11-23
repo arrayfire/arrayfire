@@ -215,26 +215,7 @@ namespace af
         BIN(*)
         BIN(/)
 
-/*
-// FIXME
-//#define LOGIC(op)                                                           \
-//        array operator op(const array&) const;                              \
-//        array operator op##op(const array&) const;                          \
-//        array operator op##op(const bool&) const;                           \
-//        array operator op##op(const int&) const;                            \
-//        array operator op##op(const unsigned&) const;                       \
-//        array operator op##op(const double&) const;                         \
-//        array operator op##op(const af_cfloat&) const;                      \
-//        array operator op##op(const af_cdouble&) const;                     \
-//        AFAPI friend array operator op##op(const bool&, const array&);      \
-//        AFAPI friend array operator op##op(const int&, const array&);       \
-//        AFAPI friend array operator op##op(const unsigned&, const array&);  \
-//        AFAPI friend array operator op##op(const af_cfloat&, const array&); \
-//        AFAPI friend array operator op##op(const af_cdouble&, const array&);\
-*/
-
-
-#define COMP(op)                                                           \
+#define LOGIC(op)                                                           \
         array operator op(const array&) const;                             \
         array operator op(const bool&) const;                              \
         array operator op(const int&) const;                               \
@@ -247,16 +228,22 @@ namespace af
         AFAPI friend array operator op(const af_cfloat&, const array&);    \
         AFAPI friend array operator op(const af_cdouble&, const array&);   \
 
-        COMP(==)
-        COMP(!=)
-        COMP(< )
-        COMP(<=)
-        COMP(> )
-        COMP(>=)
+        LOGIC(==)
+        LOGIC(!=)
+        LOGIC(< )
+        LOGIC(<=)
+        LOGIC(> )
+        LOGIC(>=)
+        LOGIC(&&)
+        LOGIC(||)
+        LOGIC(%)
 
 #undef SELF
 #undef BIN
-#undef COMP
+#undef LOGIC
+
+       array operator -() const;
+       array operator !() const;
     };
     // end of class array
 
@@ -270,34 +257,25 @@ namespace af
     BIN(*)
     BIN(/)
 
-/*
-//#define LOGIC(op)                                                       \
-//        AFAPI array& operator op##op(const bool&, const array&);         \
-//        AFAPI array& operator op##op(const int&, const array&);          \
-//        AFAPI array& operator op##op(const unsigned&, const array&);     \
-//        AFAPI array& operator op##op(const af_cfloat&, const array&);    \
-//        AFAPI array& operator op##op(const af_cdouble&, const array&);   \
- */
+#define LOGIC(op)                                                   \
+        AFAPI array operator op(const bool&, const array&);         \
+        AFAPI array operator op(const int&, const array&);          \
+        AFAPI array operator op(const double&, const array&);       \
+        AFAPI array operator op(const af_cfloat&, const array&);    \
+        AFAPI array operator op(const af_cdouble&, const array&);   \
 
-
-#define COMP(op)                                                        \
-    AFAPI array operator op(const bool&, const array&);                 \
-    AFAPI array operator op(const int&, const array&);                  \
-    AFAPI array operator op(const double&, const array&);               \
-    AFAPI array operator op(const af_cfloat&, const array&);            \
-    AFAPI array operator op(const af_cdouble&, const array&);           \
-
-    COMP(==)
-    COMP(!=)
-    COMP(< )
-    COMP(<=)
-    COMP(> )
-    COMP(>=)
+        LOGIC(==)
+        LOGIC(!=)
+        LOGIC(< )
+        LOGIC(<=)
+        LOGIC(> )
+        LOGIC(>=)
+        LOGIC(&&)
+        LOGIC(||)
 
 #undef SELF
 #undef BIN
 #undef LOGIC
-#undef COMP
 
     /// Evaluate an expression (nonblocking).
     inline array &eval(array &a) { a.eval(); return a; }
