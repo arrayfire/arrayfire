@@ -24,6 +24,14 @@ af_err af_info()
     return AF_SUCCESS;
 }
 
+af_err af_deviceprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
+{
+    try {
+        devprop(d_name, d_platform, d_toolkit, d_compute);
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
 af_err af_get_device_count(int *nDevices)
 {
     try {
