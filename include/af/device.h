@@ -15,6 +15,8 @@ namespace af
 {
     AFAPI void info();
 
+    AFAPI void deviceprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+
     AFAPI int getDeviceCount();
 
     AFAPI int getDevice();
@@ -30,6 +32,8 @@ extern "C" {
 #endif
 
     AFAPI af_err af_info();
+
+    AFAPI af_err af_deviceprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
     AFAPI af_err af_get_device_count(int *num_of_devices);
 
