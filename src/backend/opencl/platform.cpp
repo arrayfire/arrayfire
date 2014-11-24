@@ -106,7 +106,7 @@ std::string getInfo()
 {
     ostringstream info;
     info << "ArrayFire v" << AF_VERSION << AF_VERSION_MINOR
-         << " (OpenCL, " << get_system() << ", build " << REVISION << ")" << std::endl;
+         << " (OpenCL, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
 
     vector<string> pnames;
     for (auto platform: DeviceManager::getInstance().platforms) {

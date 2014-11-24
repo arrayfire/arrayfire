@@ -37,7 +37,7 @@ namespace cpu {
     {
         ostringstream info;
         info << "ArrayFire v" << AF_VERSION << AF_VERSION_MINOR
-             << " (CPU, " << get_system() << ", build " << REVISION << ")" << std::endl;
+             << " (CPU, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
         return info.str();
     }
 
