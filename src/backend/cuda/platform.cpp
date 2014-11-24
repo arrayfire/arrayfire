@@ -154,7 +154,7 @@ namespace cuda
     {
         ostringstream info;
         info << "ArrayFire v" << AF_VERSION << AF_VERSION_MINOR
-             << " (CUDA, " << get_system() << ", build " << REVISION << ")" << std::endl;
+             << " (CUDA, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
         info << getPlatformInfo();
         for (int i = 0; i < getDeviceCount(); ++i) {
             info << getDeviceInfo(i);
@@ -197,6 +197,35 @@ namespace cuda
         }
         platform.append("\n");
         return platform;
+    }
+
+    void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
+    {
+        if (getDeviceCount() <= 0) {
+            printf("No CUDA-capable devices detected.\n");
+            return;
+        }
+
+        cudaDeviceProp dev = getDeviceProp(getActiveDeviceId());
+
+        // Name
+        snprintf(d_name, 32, "%s", dev.name);
+
+        //Platform
+        std::string cudaRuntime = getCUDARuntimeVersion();
+        snprintf(d_platform, 10, "CUDA");
+        snprintf(d_toolkit, 64, "v%s", cudaRuntime.c_str());
+
+        // Compute Version
+        snprintf(d_compute, 10, "%d.%d", dev.major, dev.minor);
+
+        // Sanitize input
+        for (int i = 0; i < 31; i++) {
+            if (d_name[i] == ' ') {
+                if (d_name[i + 1] == 0 || d_name[i + 1] == ' ') d_name[i] = 0;
+                else d_name[i] = '_';
+            }
+        }
     }
 
     string getDriverVersion()

@@ -29,6 +29,8 @@ std::string getCUDARuntimeVersion();
 
 std::string getInfo();
 
+void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+
 int getDeviceCount();
 
 int getActiveDeviceId();
