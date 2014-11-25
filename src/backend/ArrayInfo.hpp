@@ -11,7 +11,7 @@
 #include <af/array.h>
 #include <af/util.h>
 #include <af/dim4.hpp>
-
+#include <af/device.h>
 
 
 dim_type
@@ -37,7 +37,7 @@ public:
         dim_size(size),
         dim_offsets(offset),
         dim_strides(stride)
-    { }
+    { af_init(); }
 
 #if __cplusplus > 199711L
     //Copy constructors are deprecated if there is a

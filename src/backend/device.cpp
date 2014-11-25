@@ -18,6 +18,18 @@
 
 using namespace detail;
 
+af_err af_init()
+{
+    try {
+        static bool first = true;
+        if(first) {
+            getInfo();
+            first = false;
+        }
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
 af_err af_info()
 {
     std::cout << getInfo();
