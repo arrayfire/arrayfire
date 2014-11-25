@@ -59,7 +59,7 @@ ENDIF()
 # Find the ArrayFire install directories and headers:
 FIND_PATH(ArrayFire_ROOT_DIR
     NAMES include/arrayfire.h
-    HINTS /usr/local/ "${ArrayFire_ROOT_DIR}"
+    HINTS "${CMAKE_INSTALL_PREFIX}" "${ArrayFire_ROOT_DIR}" "${ArrayFire_ROOT_DIR}/lib64"
     DOC "ArrayFire root directory.")
     
 FIND_PATH(ArrayFire_INCLUDE_DIRS
@@ -74,8 +74,9 @@ FIND_LIBRARY(_ArrayFire_CPU_LIBRARY
 
 IF(_ArrayFire_CPU_LIBRARY)
     FIND_PACKAGE(FFTW REQUIRED)
+    FIND_PACKAGE(BLAS REQUIRED)
     
-    SET(ArrayFire_CPU_LIBRARIES ${_ArrayFire_CPU_LIBRARY} ${FFTW_LIBRARIES} 
+    SET(ArrayFire_CPU_LIBRARIES ${_ArrayFire_CPU_LIBRARY} ${FFTW_LIBRARIES} ${BLAS_LIBRARIES}
         CACHE INTERNAL "All libraries required for ArrayFire's CPU implementation")
     SET(ArrayFire_CPU_FOUND TRUE CACHE BOOL "Whether or not ArrayFire's CPU library has been located.")
     SET(_ArrayFire_LIBRARIES ${ArrayFire_CPU_LIBRARIES})
@@ -90,7 +91,6 @@ IF(_ArrayFire_OPENCL_LIBRARY)
     FIND_PACKAGE(OpenCL REQUIRED)
     FIND_PACKAGE(CLBLAS REQUIRED)
     FIND_PACKAGE(clFFT REQUIRED)
-    FIND_PACKAGE(BoostCompute REQUIRED)
     FIND_PACKAGE(Boost 1.48 COMPONENTS chrono REQUIRED)
     
     SET(ArrayFire_OPENCL_LIBRARIES ${_ArrayFire_OPENCL_LIBRARY} ${OPENCL_LIBRARIES}
