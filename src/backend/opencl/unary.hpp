@@ -65,6 +65,10 @@ UNARY_FN(round)
 UNARY_FN(ceil)
 UNARY_FN(floor)
 
+UNARY_FN(isinf)
+UNARY_FN(isnan)
+UNARY_FN(iszero)
+
 template<typename T, af_op_t op>
 Array<T>* unaryOp(const Array<T> &in)
 {
@@ -75,6 +79,18 @@ Array<T>* unaryOp(const Array<T> &in)
                                               in_node, op);
 
     return createNodeArray<T>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+}
+
+template<typename T, af_op_t op>
+Array<char>* checkOp(const Array<T> &in)
+{
+    JIT::Node_ptr in_node = in.getNode();
+
+    JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<char>::getName(),
+                                              unaryName<op>(),
+                                              in_node, op);
+
+    return createNodeArray<char>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
 }
 
 }

@@ -10,6 +10,7 @@
 #include <af/array.h>
 #include <af/defines.h>
 #include <af/arith.h>
+#include <af/data.h>
 #include <ArrayInfo.hpp>
 #include <optypes.hpp>
 #include <implicit.hpp>
@@ -260,43 +261,4 @@ af_err af_bitor(af_array *out, const af_array lhs, const af_array rhs)
 af_err af_bitxor(af_array *out, const af_array lhs, const af_array rhs)
 {
     return AF_ERR_NOT_SUPPORTED;
-}
-
-template<typename To, typename Ti>
-static inline af_array complexOp(const af_array lhs, const af_array rhs)
-{
-    af_array res = getHandle(*complexOp<To, Ti>(getArray<Ti>(lhs), getArray<Ti>(rhs)));
-    // All inputs to this function are temporary references
-    // Delete the temporary references
-    destroyHandle<Ti>(lhs);
-    destroyHandle<Ti>(rhs);
-    return res;
-}
-
-af_err af_cplx2(af_array *out, const af_array lhs, const af_array rhs)
-{
-    try {
-
-        af_dtype type = implicit(lhs, rhs);
-
-        if (type == c32 || type == c64) {
-            AF_ERROR("Inputs to cplx2 can not be of complex type", AF_ERR_ARG);
-        }
-
-        if (type != f64) type = f32;
-
-        const af_array left  = cast(lhs, type);
-        const af_array right = cast(rhs, type);
-
-        af_array res;
-        switch (type) {
-        case f32: res = complexOp<cfloat , float>(left, right); break;
-        case f64: res = complexOp<cdouble, double>(left, right); break;
-        default: TYPE_ERROR(0, type);
-        }
-
-        std::swap(*out, res);
-    }
-    CATCHALL;
-    return AF_SUCCESS;
 }

@@ -92,4 +92,35 @@ UNARY_FN(abs)
         return createNodeArray<T>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
     }
 
+
+#define UNARY2_FN(op, fn)                       \
+    template<typename T>                        \
+    struct UnOp<T, af_##op##_t>                 \
+    {                                           \
+        std::string sn;                         \
+        UnOp() : sn(shortname<T>(false)) {      \
+            sn = std::string("@___"#fn) + sn;   \
+        }                                       \
+        const char *name()                      \
+        {                                       \
+            return sn.c_str();                  \
+        }                                       \
+    };                                          \
+
+
+UNARY2_FN(isnan, isNaN)
+UNARY2_FN(isinf, isINF)
+UNARY2_FN(iszero, iszero)
+
+    template<typename T, af_op_t op>
+    Array<char>* checkOp(const Array<T> &in)
+    {
+        UnOp<T, op> uop;
+
+        JIT::Node_ptr in_node = in.getNode();
+        JIT::UnaryNode *node = new JIT::UnaryNode(irname<char>(),
+                                                  uop.name(),
+                                                  in_node, op);
+        return createNodeArray<char>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+    }
 }

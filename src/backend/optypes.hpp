@@ -65,6 +65,7 @@ typedef enum {
     af_cplx_t,
     af_real_t,
     af_imag_t,
+    af_conj_t,
 
     af_floor_t,
     af_ceil_t,
