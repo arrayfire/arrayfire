@@ -368,5 +368,82 @@ namespace kernel
         case 3: return reduce_dim  <Ti, To, op, 3>(out, in);
         }
     }
+
+    template<typename Ti, typename To, af_op_t op>
+    To reduce_global(CParam<Ti> in)
+    {
+        dim_type in_elements = in.strides[3] * in.dims[3];
+
+        // FIXME: Use better heuristics to get to the optimum number
+        if (in_elements > 4096) {
+
+            bool is_linear = (in.strides[0] == 1);
+            for (int k = 1; k < 4; k++) {
+                is_linear &= (in.strides[k] == (in.strides[k - 1] * in.dims[k - 1]));
+            }
+
+            if (is_linear) {
+                in.dims[0] = in_elements;
+                for (int k = 1; k < 4; k++) {
+                    in.dims[k] = 1;
+                    in.strides[k] = in_elements;
+                }
+            }
+
+            uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
+            threads_x = std::min(threads_x, THREADS_PER_BLOCK);
+            uint threads_y = THREADS_PER_BLOCK / threads_x;
+
+            Param<To> tmp;
+            To *h_ptr = NULL;
+
+            uint blocks_x = divup(in.dims[0], threads_x * REPEAT);
+            uint blocks_y = divup(in.dims[1], threads_y);
+
+            tmp.dims[0] = blocks_x;
+            tmp.strides[0] = 1;
+
+            for (int k = 1; k < 4; k++) {
+                tmp.dims[k] = in.dims[k];
+                tmp.strides[k] = tmp.dims[k - 1] * tmp.strides[k - 1];
+            }
+
+            dim_type tmp_elements = tmp.strides[3] * tmp.dims[3];
+
+            CUDA_CHECK(cudaMalloc(&(tmp.ptr), tmp_elements * sizeof(To)));
+            reduce_first_launcher<Ti, To, op>(tmp, in, blocks_x, blocks_y, threads_x);
+
+            h_ptr = new To[tmp_elements];
+
+            CUDA_CHECK(cudaMemcpy(h_ptr, tmp.ptr, tmp_elements * sizeof(To), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaFree(tmp.ptr));
+
+            Binary<To, op> reduce;
+            To out = reduce.init();
+            for (int i = 0; i < tmp_elements; i++) {
+                out = reduce(out, h_ptr[i]);
+            }
+
+            delete[] h_ptr;
+            return out;
+
+        } else {
+
+            Ti *h_ptr = new Ti[in_elements];
+            CUDA_CHECK(cudaMemcpy(h_ptr, in.ptr, in_elements * sizeof(Ti), cudaMemcpyDeviceToHost));
+
+            Transform<Ti, To, op> transform;
+            Binary<To, op> reduce;
+            To out = reduce.init();
+
+            for (int i = 0; i < in_elements; i++) {
+                out = reduce(out, transform(h_ptr[i]));
+            }
+
+            delete[] h_ptr;
+            return out;
+        }
+    }
+
 }
 }
