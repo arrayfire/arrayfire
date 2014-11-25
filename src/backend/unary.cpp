@@ -50,10 +50,6 @@ static af_err af_unary(af_array *out, const af_array in)
         switch (type) {
         case f32 : res = unaryOp<float  , op>(input); break;
         case f64 : res = unaryOp<double , op>(input); break;
-        case s32 : res = unaryOp<int    , op>(input); break;
-        case u32 : res = unaryOp<uint   , op>(input); break;
-        case b8  : res = unaryOp<char   , op>(input); break;
-        case u8  : res = unaryOp<uchar  , op>(input); break;
         default:
             TYPE_ERROR(1, in_type); break;
         }
@@ -91,9 +87,6 @@ UNARY(round)
 UNARY(floor)
 UNARY(ceil)
 UNARY(abs)
-UNARY(isinf)
-UNARY(isnan)
-UNARY(iszero)
 
 UNARY(exp)
 UNARY(expm1)
@@ -128,3 +121,52 @@ af_err af_not(af_array *out, const af_array in)
 
     return AF_SUCCESS;
 }
+
+template<typename T, af_op_t op>
+static inline af_array checkOp(const af_array in)
+{
+    af_array res = getHandle(*checkOp<T, op>(getArray<T>(in)));
+    // All inputs to this function are temporary references
+    // Delete the temporary references
+    destroyHandle<T>(in);
+    return res;
+}
+
+template<af_op_t op>
+static af_err af_check(af_array *out, const af_array in)
+{
+    try {
+
+        ArrayInfo in_info = getInfo(in);
+        ARG_ASSERT(1, in_info.isReal());
+
+        af_dtype in_type = in_info.getType();
+        af_array res;
+
+        // Convert all inputs to floats / doubles
+        af_dtype type = implicit(in_type, f32);
+        af_array input = cast(in, type);
+
+        switch (type) {
+        case f32 : res = checkOp<float  , op>(input); break;
+        case f64 : res = checkOp<double , op>(input); break;
+        default:
+            TYPE_ERROR(1, in_type); break;
+        }
+
+        std::swap(*out, res);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
+#define CHECK(fn)                                       \
+    af_err af_##fn(af_array *out, const af_array in)    \
+    {                                                   \
+        return af_check<af_##fn##_t>(out, in);          \
+    }
+
+
+CHECK(isinf)
+CHECK(isnan)
+CHECK(iszero)

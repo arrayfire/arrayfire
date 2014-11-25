@@ -184,3 +184,5 @@ double2 __convert_cdouble(double in)
 #define fpow(lhs, rhs) pow((lhs), (rhs))
 
 #define frem(lhs, rhs) remainder((lhs), (rhs))
+
+#define iszero(a) ((a) == 0)

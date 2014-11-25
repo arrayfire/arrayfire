@@ -76,10 +76,12 @@ namespace af
         AF_THROW(af_isinf(&out, in.get()));
         return array(out);
     }
+
     array isNaN(const array &in)
     {
         af_array out = 0;
         AF_THROW(af_isnan(&out, in.get()));
         return array(out);
     }
+
 }
