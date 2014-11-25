@@ -25,6 +25,10 @@ namespace opencl
     static inline float  abs(cfloat  cval) { return std::sqrt(cval.s[0]*cval.s[0] + cval.s[1]*cval.s[1]); }
     static inline double abs(cdouble cval) { return std::sqrt(cval.s[0]*cval.s[0] + cval.s[1]*cval.s[1]); }
 
+#ifndef STATIC_
+#define STATIC_
+#endif
+
     template<> STATIC_
     cfloat max<cfloat>(cfloat lhs, cfloat rhs)
     {
@@ -92,4 +96,11 @@ namespace opencl
     {
         return in.s[1];
     }
+
+    bool operator ==(cfloat a, cfloat b);
+    bool operator !=(cfloat a, cfloat b);
+    bool operator ==(cdouble a, cdouble b);
+    bool operator !=(cdouble a, cdouble b);
+    cfloat operator +(cfloat a, cfloat b);
+    cdouble operator +(cdouble a, cdouble b);
 }

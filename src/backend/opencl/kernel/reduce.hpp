@@ -220,7 +220,6 @@ namespace kernel
         Param tmp = out;
 
         if (groups_x > 1) {
-            // FIXME: DO I need to free this ?
             tmp.data = cl::Buffer(getContext(), CL_MEM_READ_WRITE,
                                   groups_x *
                                   in.info.dims[1] *
@@ -260,6 +259,87 @@ namespace kernel
             CL_TO_AF_ERROR(ex);
         }
     }
+
+    template<typename Ti, typename To, af_op_t op>
+    To reduce_all(Param in)
+    {
+        try {
+            dim_type in_elements = in.info.dims[3] * in.info.strides[3];
+
+            // FIXME: Use better heuristics to get to the optimum number
+            if (in_elements > 4096) {
+
+                bool is_linear = (in.info.strides[0] == 1);
+                for (int k = 1; k < 4; k++) {
+                    is_linear &= (in.info.strides[k] == (in.info.strides[k - 1] * in.info.dims[k - 1]));
+                }
+
+                if (is_linear) {
+                    in.info.dims[0] = in_elements;
+                    for (int k = 1; k < 4; k++) {
+                        in.info.dims[k] = 1;
+                        in.info.strides[k] = in_elements;
+                    }
+                }
+
+                uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
+                threads_x = std::min(threads_x, THREADS_PER_GROUP);
+                uint threads_y = THREADS_PER_GROUP / threads_x;
+
+                Param tmp;
+                To *h_ptr = NULL;
+
+                uint groups_x = divup(in.info.dims[0], threads_x * REPEAT);
+                uint groups_y = divup(in.info.dims[1], threads_y);
+
+                tmp.info.offset = 0;
+                tmp.info.dims[0] = groups_x;
+                tmp.info.strides[0] = 1;
+
+                for (int k = 1; k < 4; k++) {
+                    tmp.info.dims[k] = in.info.dims[k];
+                    tmp.info.strides[k] = tmp.info.dims[k - 1] * tmp.info.strides[k - 1];
+                }
+
+                dim_type tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
+                tmp.data = cl::Buffer(getContext(), CL_MEM_READ_WRITE,
+                                      tmp_elements * sizeof(To));
+
+                reduce_first_fn<Ti, To, op>(tmp, in, groups_x, groups_y, threads_x);
+
+                h_ptr = new To[tmp_elements];
+                getQueue().enqueueReadBuffer(tmp.data, CL_TRUE, 0, sizeof(To) * tmp_elements, h_ptr);
+
+                Binary<To, op> reduce;
+                To out = reduce.init();
+                for (int i = 0; i < tmp_elements; i++) {
+                    out = reduce(out, h_ptr[i]);
+                }
+
+                delete[] h_ptr;
+                return out;
+
+            } else {
+
+                Ti *h_ptr = new Ti[in_elements];
+                getQueue().enqueueReadBuffer(in.data, CL_TRUE, 0, sizeof(Ti) * in_elements, h_ptr);
+
+                Transform<Ti, To, op> transform;
+                Binary<To, op> reduce;
+                To out = reduce.init();
+
+                for (int i = 0; i < in_elements; i++) {
+                    out = reduce(out, transform(h_ptr[i]));
+                }
+
+                delete[] h_ptr;
+                return out;
+            }
+        } catch(cl::Error ex) {
+            CL_TO_AF_ERROR(ex);
+        }
+    }
+
 
 }
 

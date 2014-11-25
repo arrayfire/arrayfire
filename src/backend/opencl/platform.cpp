@@ -130,16 +130,13 @@ std::string getInfo()
             info << id << " " << *pIter << " " << dstr << " ";
             info << devices[i].getInfo<CL_DEVICE_VERSION>();
             info << " Device driver " << devices[i].getInfo<CL_DRIVER_VERSION>() <<std::endl;
-            
+
             nDevices++;
         }
         pIter++;
     }
     return info.str();
 }
-
-#include <iostream>
-using namespace std;
 
 void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
 {
@@ -162,7 +159,7 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
                 devices[i].getInfo(CL_DEVICE_NAME, &dev_str);
                 string com_str = devices[i].getInfo<CL_DEVICE_VERSION>();
                 com_str = com_str.substr(7, 3);
-                
+
                 // strip out whitespace from the device string:
                 const std::string& whitespace = " \t";
                 const auto strBegin = dev_str.find_first_not_of(whitespace);
@@ -177,10 +174,11 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
                 snprintf(d_compute, 10, "%s", com_str.c_str());
                 devset = true;
             }
+
             if(devset) break;
-            
             nDevices++;
         }
+
         if(devset) break;
         pIter++;
     }
