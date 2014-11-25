@@ -93,8 +93,44 @@ namespace cpu
         return out;
     }
 
+    template<af_op_t op, typename Ti, typename To>
+    To reduce_global(const Array<Ti> &in)
+    {
+        Transform<Ti, To, op> transform;
+        Binary<To, op> reduce;
+
+        To out = reduce.init();
+
+        // Decrement dimension of select dimension
+        af::dim4 dims = in.dims();
+        af::dim4 strides = in.strides();
+        const Ti *inPtr = in.get();
+
+        for(dim_type l = 0; l < dims[3]; l++) {
+            dim_type off3 = l * strides[3];
+
+            for(dim_type k = 0; k < dims[2]; k++) {
+                dim_type off2 = k * strides[2];
+
+                for(dim_type j = 0; j < dims[1]; j++) {
+                    dim_type off1 = j * strides[1];
+
+                    for(dim_type i = 0; i < dims[0]; i++) {
+                        dim_type idx = i + off1 + off2 + off3;
+
+                        To val = transform(inPtr[idx]);
+                        out = reduce(val, out);
+                    }
+                }
+            }
+        }
+
+        return out;
+    }
+
 #define INSTANTIATE(ROp, Ti, To)                                        \
     template Array<To>* reduce<ROp, Ti, To>(const Array<Ti> &in, const int dim); \
+    template To reduce_global<ROp, Ti, To>(const Array<Ti> &in);
 
     //min
     INSTANTIATE(af_min_t, float  , float  )

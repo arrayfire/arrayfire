@@ -15,4 +15,7 @@ namespace cpu
 {
     template<af_op_t op, typename Ti, typename To>
     Array<To>* reduce(const Array<Ti> &in, const int dim);
+
+    template<af_op_t op, typename Ti, typename To>
+    To reduce_global(const Array<Ti> &in);
 }

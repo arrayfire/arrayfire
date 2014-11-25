@@ -55,4 +55,40 @@ namespace af
         return array(out);
     }
 
+#define INSTANTIATE_REAL(fn, T)                             \
+    template<> AFAPI                                        \
+    T fn(const array &in)                                   \
+    {                                                       \
+        double rval, ival;                                  \
+        AF_THROW(af_##fn##_global(&rval, &ival, in.get())); \
+        return (T)(rval);                                   \
+    }                                                       \
+
+
+#define INSTANTIATE_CPLX(fn, T, Tr)                         \
+    template<> AFAPI                                        \
+    T fn(const array &in)                                   \
+    {                                                       \
+        double rval, ival;                                  \
+        AF_THROW(af_##fn##_global(&rval, &ival, in.get())); \
+        T out = {(Tr)rval, (Tr)ival};                       \
+        return out;                                         \
+    }                                                       \
+
+#define INSTANTIATE(fn)                         \
+    INSTANTIATE_REAL(fn, float)                 \
+    INSTANTIATE_REAL(fn, double)                \
+    INSTANTIATE_REAL(fn, int)                   \
+    INSTANTIATE_REAL(fn, unsigned)              \
+    INSTANTIATE_REAL(fn, char)                  \
+    INSTANTIATE_REAL(fn, unsigned char)         \
+    INSTANTIATE_CPLX(fn, af_cfloat, float)      \
+    INSTANTIATE_CPLX(fn, af_cdouble, double)    \
+
+    INSTANTIATE(sum)
+    INSTANTIATE(min)
+    INSTANTIATE(max)
+    INSTANTIATE(alltrue)
+    INSTANTIATE(anytrue)
+    INSTANTIATE(count)
 }
