@@ -33,7 +33,7 @@ namespace opencl
     template<af_op_t op, typename Ti, typename To>
     To reduce_global(const Array<Ti> &in)
     {
-        OPENCL_NOT_SUPPORTED();
+        return kernel::reduce_global<Ti, To, op>(in);
     }
 }
 
