@@ -37,8 +37,17 @@ namespace cpu {
     {
         ostringstream info;
         info << "ArrayFire v" << AF_VERSION << AF_VERSION_MINOR
-             << " (CPU, " << get_system() << ", build " << REVISION << ")" << std::endl;
+             << " (CPU, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
         return info.str();
+    }
+
+    void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
+    {
+        static bool flag;
+        if(!flag) {
+            std::cout << "WARNING: af_devprop not supported for CPU" << std::endl;
+            flag = 1;
+        }
     }
 
     int getDeviceCount()

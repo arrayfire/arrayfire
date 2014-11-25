@@ -18,9 +18,29 @@
 
 using namespace detail;
 
+af_err af_init()
+{
+    try {
+        static bool first = true;
+        if(first) {
+            getInfo();
+            first = false;
+        }
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
 af_err af_info()
 {
     std::cout << getInfo();
+    return AF_SUCCESS;
+}
+
+af_err af_deviceprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
+{
+    try {
+        devprop(d_name, d_platform, d_toolkit, d_compute);
+    } CATCHALL;
     return AF_SUCCESS;
 }
 

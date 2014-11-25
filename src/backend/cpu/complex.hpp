@@ -7,12 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <complex>
 #include <af/defines.h>
 #include <af/array.h>
 #include <Array.hpp>
 #include <optypes.hpp>
 #include <err_cpu.hpp>
 #include <TNJ/BinaryNode.hpp>
+#include <TNJ/UnaryNode.hpp>
 
 namespace cpu
 {
@@ -27,7 +29,7 @@ namespace cpu
     };
 
     template<typename To, typename Ti>
-    Array<To>* complexOp(const Array<Ti> &lhs, const Array<Ti> &rhs)
+    Array<To>* cplx(const Array<Ti> &lhs, const Array<Ti> &rhs)
     {
         TNJ::Node_ptr lhs_node = lhs.getNode();
         TNJ::Node_ptr rhs_node = rhs.getNode();
@@ -37,5 +39,53 @@ namespace cpu
 
         return createNodeArray<To>(lhs.dims(), TNJ::Node_ptr(
                                        reinterpret_cast<TNJ::Node *>(node)));
+    }
+
+
+    using std::real;
+    using std::imag;
+
+#define CPLX_UNARY_FN(op)                       \
+    template<typename To, typename Ti>          \
+    struct UnOp<To, Ti, af_##op##_t>            \
+    {                                           \
+        To eval(Ti in)                          \
+        {                                       \
+            return op(in);                      \
+        }                                       \
+    };                                          \
+
+    CPLX_UNARY_FN(real)
+    CPLX_UNARY_FN(imag)
+    CPLX_UNARY_FN(conj)
+
+    template<typename To, typename Ti>
+    Array<To>* real(const Array<Ti> &in)
+    {
+        TNJ::Node_ptr in_node = in.getNode();
+        TNJ::UnaryNode<To, Ti, af_real_t> *node = new TNJ::UnaryNode<To, Ti, af_real_t>(in_node);
+
+        return createNodeArray<To>(in.dims(),
+                                   TNJ::Node_ptr(reinterpret_cast<TNJ::Node *>(node)));
+    }
+
+    template<typename To, typename Ti>
+    Array<To>* imag(const Array<Ti> &in)
+    {
+        TNJ::Node_ptr in_node = in.getNode();
+        TNJ::UnaryNode<To, Ti, af_imag_t> *node = new TNJ::UnaryNode<To, Ti, af_imag_t>(in_node);
+
+        return createNodeArray<To>(in.dims(),
+                                   TNJ::Node_ptr(reinterpret_cast<TNJ::Node *>(node)));
+    }
+
+    template<typename T>
+    Array<T>* conj(const Array<T> &in)
+    {
+        TNJ::Node_ptr in_node = in.getNode();
+        TNJ::UnaryNode<T, T, af_conj_t> *node = new TNJ::UnaryNode<T, T, af_conj_t>(in_node);
+
+        return createNodeArray<T>(in.dims(),
+                                  TNJ::Node_ptr(reinterpret_cast<TNJ::Node *>(node)));
     }
 }

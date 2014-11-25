@@ -23,9 +23,9 @@ namespace af
     AFAPI array max    (const array &lhs, const double rhs);
     AFAPI array max    (const double lhs, const array &rhs);
 
-    AFAPI array cplx2  (const array &lhs, const array &rhs);
-    AFAPI array cplx2  (const array &lhs, const double rhs);
-    AFAPI array cplx2  (const double lhs, const array &rhs);
+    AFAPI array complex(const array &lhs, const array &rhs);
+    AFAPI array complex(const array &lhs, const double rhs);
+    AFAPI array complex(const double lhs, const array &rhs);
 
     AFAPI array atan2  (const array &lhs, const array &rhs);
     AFAPI array atan2  (const array &lhs, const double rhs);
@@ -43,7 +43,10 @@ namespace af
     AFAPI array mod    (const array &lhs, const double rhs);
     AFAPI array mod    (const double lhs, const array &rhs);
 
-    AFAPI array cplx   (const array &in);
+    AFAPI array complex(const array &in);
+    AFAPI array real   (const array &in);
+    AFAPI array imag   (const array &in);
+    AFAPI array conjg  (const array &in);
     AFAPI array abs    (const array &in);
 
     AFAPI array round  (const array &in);
@@ -119,6 +122,9 @@ extern "C" {
 
     AFAPI af_err af_cast    (af_array *out, const af_array in, af_dtype type);
     AFAPI af_err af_cplx    (af_array *out, const af_array in);
+    AFAPI af_err af_real    (af_array *out, const af_array in);
+    AFAPI af_err af_imag    (af_array *out, const af_array in);
+    AFAPI af_err af_conjg   (af_array *out, const af_array in);
     AFAPI af_err af_abs     (af_array *out, const af_array in);
 
     AFAPI af_err af_round   (af_array *out, const af_array in);

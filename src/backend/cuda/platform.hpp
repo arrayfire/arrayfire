@@ -29,6 +29,8 @@ std::string getCUDARuntimeVersion();
 
 std::string getInfo();
 
+void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+
 int getDeviceCount();
 
 int getActiveDeviceId();
@@ -45,11 +47,6 @@ struct cudaDevice_t {
     cudaDeviceProp prop;
     size_t flops;
     int nativeId;
-
-    //cudaDevice_t(cudaDeviceProp p, size_t f, int nId)
-    //    : prop(p), flops(f), nativeId(nId)
-    //{
-    //}
 };
 
 class DeviceManager

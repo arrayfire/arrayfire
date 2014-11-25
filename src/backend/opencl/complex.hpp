@@ -12,12 +12,50 @@
 #include <Array.hpp>
 #include <optypes.hpp>
 #include <binary.hpp>
+#include <JIT/UnaryNode.hpp>
 
 namespace opencl
 {
     template<typename To, typename Ti>
-    Array<To>* complexOp(const Array<Ti> &lhs, const Array<Ti> &rhs)
+    Array<To>* cplx(const Array<Ti> &lhs, const Array<Ti> &rhs)
     {
         return createBinaryNode<To, Ti, af_cplx2_t>(lhs, rhs);
+    }
+
+    template<typename To, typename Ti>
+    Array<To>* real(const Array<Ti> &in)
+    {
+        JIT::Node_ptr in_node = in.getNode();
+        JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<To>::getName(),
+                                                  "__creal",
+                                                  in_node, af_real_t);
+
+        return createNodeArray<To>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+    }
+
+    template<typename To, typename Ti>
+    Array<To>* imag(const Array<Ti> &in)
+    {
+        JIT::Node_ptr in_node = in.getNode();
+        JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<To>::getName(),
+                                                  "__cimag",
+                                                  in_node, af_imag_t);
+
+        return createNodeArray<To>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+    }
+
+    template<typename T> static const char *conj_name() { return "__noop"; }
+    template<> STATIC_ const char *conj_name<cfloat>() { return "__cconjf"; }
+    template<> STATIC_ const char *conj_name<cdouble>() { return "__cconj"; }
+
+    template<typename T>
+    Array<T>* conj(const Array<T> &in)
+    {
+        JIT::Node_ptr in_node = in.getNode();
+        JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<T>::getName(),
+                                                  conj_name<T>(),
+                                                  in_node, af_conj_t);
+
+        return createNodeArray<T>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
     }
 }

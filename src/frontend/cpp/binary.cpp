@@ -29,7 +29,7 @@ namespace af
     INSTANTIATE(rem, af_rem  )
     INSTANTIATE(mod, af_mod  )
 
-    INSTANTIATE(cplx2, af_cplx2)
+    INSTANTIATE(complex, af_cplx2)
     INSTANTIATE(atan2, af_atan2)
 
 #define WRAPPER(func)                                               \
@@ -47,6 +47,6 @@ namespace af
     WRAPPER(pow)
     WRAPPER(rem)
     WRAPPER(mod)
-    WRAPPER(cplx2)
+    WRAPPER(complex)
     WRAPPER(atan2)
 }

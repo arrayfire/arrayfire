@@ -17,17 +17,17 @@ namespace af
 
     array constant(af_cdouble val, const dim4 &dims)
     {
-        double val_[] = {real(val), imag(val)};
         af_array res;
-        AF_THROW(af_constant_c64(&res, val_, dims.ndims(), dims.get()));
+        AF_THROW(af_constant_complex(&res, real(val), imag(val),
+                                     dims.ndims(), dims.get(), c64));
         return array(res);
     }
 
     array constant(af_cfloat val, const dim4 &dims)
     {
-        float val_[] = {real(val), imag(val)};
         af_array res;
-        AF_THROW(af_constant_c32(&res, val_, dims.ndims(), dims.get()));
+        AF_THROW(af_constant_complex(&res, real(val), imag(val),
+                                     dims.ndims(), dims.get(), c32));
         return array(res);
     }
 
