@@ -370,7 +370,7 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op>
-    To reduce_global(CParam<Ti> in)
+    To reduce_all(CParam<Ti> in)
     {
         dim_type in_elements = in.strides[3] * in.dims[3];
 

@@ -60,7 +60,7 @@ namespace af
     T fn(const array &in)                                   \
     {                                                       \
         double rval, ival;                                  \
-        AF_THROW(af_##fn##_global(&rval, &ival, in.get())); \
+        AF_THROW(af_##fn##_all(&rval, &ival, in.get()));    \
         return (T)(rval);                                   \
     }                                                       \
 
@@ -70,7 +70,7 @@ namespace af
     T fn(const array &in)                                   \
     {                                                       \
         double rval, ival;                                  \
-        AF_THROW(af_##fn##_global(&rval, &ival, in.get())); \
+        AF_THROW(af_##fn##_all(&rval, &ival, in.get()));    \
         T out = {(Tr)rval, (Tr)ival};                       \
         return out;                                         \
     }                                                       \

@@ -261,7 +261,7 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op>
-    To reduce_global(Param in)
+    To reduce_all(Param in)
     {
         try {
             dim_type in_elements = in.info.dims[3] * in.info.strides[3];

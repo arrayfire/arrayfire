@@ -17,5 +17,5 @@ namespace cuda
     Array<To>* reduce(const Array<Ti> &in, const int dim);
 
     template<af_op_t op, typename Ti, typename To>
-    To reduce_global(const Array<Ti> &in);
+    To reduce_all(const Array<Ti> &in);
 }

@@ -170,13 +170,13 @@ af_err af_anytrue(af_array *out, const af_array in, const int dim)
 }
 
 template<af_op_t op, typename Ti, typename To>
-static inline To reduce_global(const af_array in)
+static inline To reduce_all(const af_array in)
 {
-    return reduce_global<op,Ti,To>(getArray<Ti>(in));
+    return reduce_all<op,Ti,To>(getArray<Ti>(in));
 }
 
 template<af_op_t op, typename To>
-static af_err reduce_global_type(double *real, double *imag, const af_array in)
+static af_err reduce_all_type(double *real, double *imag, const af_array in)
 {
     try {
 
@@ -188,14 +188,14 @@ static af_err reduce_global_type(double *real, double *imag, const af_array in)
         if (!imag) *imag = 0;
 
         switch(type) {
-        case f32:  *real = (double)reduce_global<op, float  , To>(in); break;
-        case f64:  *real = (double)reduce_global<op, double , To>(in); break;
-        case c32:  *real = (double)reduce_global<op, cfloat , To>(in); break;
-        case c64:  *real = (double)reduce_global<op, cdouble, To>(in); break;
-        case u32:  *real = (double)reduce_global<op, uint   , To>(in); break;
-        case s32:  *real = (double)reduce_global<op, int    , To>(in); break;
-        case b8:   *real = (double)reduce_global<op, char   , To>(in); break;
-        case u8:   *real = (double)reduce_global<op, uchar  , To>(in); break;
+        case f32:  *real = (double)reduce_all<op, float  , To>(in); break;
+        case f64:  *real = (double)reduce_all<op, double , To>(in); break;
+        case c32:  *real = (double)reduce_all<op, cfloat , To>(in); break;
+        case c64:  *real = (double)reduce_all<op, cdouble, To>(in); break;
+        case u32:  *real = (double)reduce_all<op, uint   , To>(in); break;
+        case s32:  *real = (double)reduce_all<op, int    , To>(in); break;
+        case b8:   *real = (double)reduce_all<op, char   , To>(in); break;
+        case u8:   *real = (double)reduce_all<op, uchar  , To>(in); break;
         default:   TYPE_ERROR(1, type);
         }
 
@@ -206,7 +206,7 @@ static af_err reduce_global_type(double *real, double *imag, const af_array in)
 }
 
 template<af_op_t op>
-static af_err reduce_global_common(double *real_val, double *imag_val, const af_array in)
+static af_err reduce_all_common(double *real_val, double *imag_val, const af_array in)
 {
     try {
 
@@ -221,22 +221,22 @@ static af_err reduce_global_common(double *real_val, double *imag_val, const af_
         cdouble cdval;
 
         switch(type) {
-        case f32:  *real_val = (double)reduce_global<op, float  , float  >(in); break;
-        case f64:  *real_val = (double)reduce_global<op, double , double >(in); break;
-        case u32:  *real_val = (double)reduce_global<op, uint   , uint   >(in); break;
-        case s32:  *real_val = (double)reduce_global<op, int    , int    >(in); break;
-        case b8:   *real_val = (double)reduce_global<op, char   , char   >(in); break;
-        case u8:   *real_val = (double)reduce_global<op, uchar  , uchar  >(in); break;
+        case f32:  *real_val = (double)reduce_all<op, float  , float  >(in); break;
+        case f64:  *real_val = (double)reduce_all<op, double , double >(in); break;
+        case u32:  *real_val = (double)reduce_all<op, uint   , uint   >(in); break;
+        case s32:  *real_val = (double)reduce_all<op, int    , int    >(in); break;
+        case b8:   *real_val = (double)reduce_all<op, char   , char   >(in); break;
+        case u8:   *real_val = (double)reduce_all<op, uchar  , uchar  >(in); break;
 
         case c32:
-            cfval = reduce_global<op, cfloat, cfloat>(in);
+            cfval = reduce_all<op, cfloat, cfloat>(in);
             ARG_ASSERT(1, imag_val != NULL);
             *real_val = real(cfval);
             *imag_val = imag(cfval);
             break;
 
         case c64:
-            cdval = reduce_global<op, cdouble, cdouble>(in);
+            cdval = reduce_all<op, cdouble, cdouble>(in);
             ARG_ASSERT(1, imag_val != NULL);
             *real_val = real(cdval);
             *imag_val = imag(cdval);
@@ -252,7 +252,7 @@ static af_err reduce_global_common(double *real_val, double *imag_val, const af_
 }
 
 template<af_op_t op>
-static af_err reduce_global_promote(double *real_val, double *imag_val, const af_array in)
+static af_err reduce_all_promote(double *real_val, double *imag_val, const af_array in)
 {
     try {
 
@@ -267,23 +267,23 @@ static af_err reduce_global_promote(double *real_val, double *imag_val, const af
         cdouble cdval;
 
         switch(type) {
-        case f32: *real_val = (double)reduce_global<op, float  , float  >(in); break;
-        case f64: *real_val = (double)reduce_global<op, double , double >(in); break;
-        case u32: *real_val = (double)reduce_global<op, uint   , uint   >(in); break;
-        case s32: *real_val = (double)reduce_global<op, int    , int    >(in); break;
-        case u8:  *real_val = (double)reduce_global<op, uchar  , uint   >(in); break;
+        case f32: *real_val = (double)reduce_all<op, float  , float  >(in); break;
+        case f64: *real_val = (double)reduce_all<op, double , double >(in); break;
+        case u32: *real_val = (double)reduce_all<op, uint   , uint   >(in); break;
+        case s32: *real_val = (double)reduce_all<op, int    , int    >(in); break;
+        case u8:  *real_val = (double)reduce_all<op, uchar  , uint   >(in); break;
             // Make sure you are adding only "1" for every non zero value, even if op == af_add_t
-        case b8:  *real_val = (double)reduce_global<af_notzero_t, char  , uint   >(in); break;
+        case b8:  *real_val = (double)reduce_all<af_notzero_t, char  , uint   >(in); break;
 
         case c32:
-            cfval = reduce_global<op, cfloat, cfloat>(in);
+            cfval = reduce_all<op, cfloat, cfloat>(in);
             ARG_ASSERT(1, imag_val != NULL);
             *real_val = real(cfval);
             *imag_val = imag(cfval);
             break;
 
         case c64:
-            cdval = reduce_global<op, cdouble, cdouble>(in);
+            cdval = reduce_all<op, cdouble, cdouble>(in);
             ARG_ASSERT(1, imag_val != NULL);
             *real_val = real(cdval);
             *imag_val = imag(cdval);
@@ -297,32 +297,32 @@ static af_err reduce_global_promote(double *real_val, double *imag_val, const af
     return AF_SUCCESS;
 }
 
-af_err af_min_global(double *real, double *imag, const af_array in)
+af_err af_min_all(double *real, double *imag, const af_array in)
 {
-    return reduce_global_common<af_min_t>(real, imag, in);
+    return reduce_all_common<af_min_t>(real, imag, in);
 }
 
-af_err af_max_global(double *real, double *imag, const af_array in)
+af_err af_max_all(double *real, double *imag, const af_array in)
 {
-    return reduce_global_common<af_max_t>(real, imag, in);
+    return reduce_all_common<af_max_t>(real, imag, in);
 }
 
-af_err af_sum_global(double *real, double *imag, const af_array in)
+af_err af_sum_all(double *real, double *imag, const af_array in)
 {
-    return reduce_global_promote<af_add_t>(real, imag, in);
+    return reduce_all_promote<af_add_t>(real, imag, in);
 }
 
-af_err af_count_global(double *real, double *imag, const af_array in)
+af_err af_count_all(double *real, double *imag, const af_array in)
 {
-    return reduce_global_type<af_notzero_t, uint>(real, imag, in);
+    return reduce_all_type<af_notzero_t, uint>(real, imag, in);
 }
 
-af_err af_alltrue_global(double *real, double *imag, const af_array in)
+af_err af_alltrue_all(double *real, double *imag, const af_array in)
 {
-    return reduce_global_type<af_and_t, uchar>(real, imag, in);
+    return reduce_all_type<af_and_t, uchar>(real, imag, in);
 }
 
-af_err af_anytrue_global(double *real, double *imag, const af_array in)
+af_err af_anytrue_all(double *real, double *imag, const af_array in)
 {
-    return reduce_global_type<af_or_t, uchar>(real, imag, in);
+    return reduce_all_type<af_or_t, uchar>(real, imag, in);
 }

@@ -94,7 +94,7 @@ namespace cpu
     }
 
     template<af_op_t op, typename Ti, typename To>
-    To reduce_global(const Array<Ti> &in)
+    To reduce_all(const Array<Ti> &in)
     {
         Transform<Ti, To, op> transform;
         Binary<To, op> reduce;
@@ -130,7 +130,7 @@ namespace cpu
 
 #define INSTANTIATE(ROp, Ti, To)                                        \
     template Array<To>* reduce<ROp, Ti, To>(const Array<Ti> &in, const int dim); \
-    template To reduce_global<ROp, Ti, To>(const Array<Ti> &in);
+    template To reduce_all<ROp, Ti, To>(const Array<Ti> &in);
 
     //min
     INSTANTIATE(af_min_t, float  , float  )

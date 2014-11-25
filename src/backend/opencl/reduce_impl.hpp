@@ -31,12 +31,12 @@ namespace opencl
     }
 
     template<af_op_t op, typename Ti, typename To>
-    To reduce_global(const Array<Ti> &in)
+    To reduce_all(const Array<Ti> &in)
     {
-        return kernel::reduce_global<Ti, To, op>(in);
+        return kernel::reduce_all<Ti, To, op>(in);
     }
 }
 
 #define INSTANTIATE(Op, Ti, To)                                         \
     template Array<To>* reduce<Op, Ti, To>(const Array<Ti> &in, const int dim); \
-    template To reduce_global<Op, Ti, To>(const Array<Ti> &in);
+    template To reduce_all<Op, Ti, To>(const Array<Ti> &in);
