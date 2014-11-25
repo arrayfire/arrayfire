@@ -19,30 +19,31 @@ namespace cpu
 namespace TNJ
 {
 
+    using std::shared_ptr;
     template<typename T>
     class BufferNode : public Node
     {
 
     protected:
-        const T *ptr;
+        shared_ptr<T> ptr;
         dim_type off;
         dim_type strides[4];
 
     public:
 
-        BufferNode(const T *data, dim_type *strs) :
+        BufferNode(shared_ptr<T> data, dim_type *strs, dim_type data_off) :
             Node(),
             ptr(data),
-            off(0)
+            off(data_off)
         {
             for (int i = 0; i < 4; i++) strides[i] = strs[i];
         }
 
         void *calc(int x, int y, int z, int w)
         {
-            off = x + y * strides[1] + z * strides[2] + w * strides[3];
+            dim_type l_off = x + y * strides[1] + z * strides[2] + w * strides[3];
             m_is_eval = true;
-            return (void *)(ptr + off);
+            return (void *)(ptr.get() + off + l_off);
         }
 
         void reset()

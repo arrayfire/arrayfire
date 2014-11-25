@@ -53,14 +53,14 @@ void regionsTest(string pTestFile, af_connectivity_type connectivity, bool isSub
     af_array outArray = 0;
 
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<uchar>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<uchar>::af_type));
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_regions(&outArray, inArray, connectivity));
+    ASSERT_EQ(AF_SUCCESS, af_regions(&outArray, inArray, connectivity, (af_dtype) af::dtype_traits<T>::af_type));
 
     // Get result
     T* outData = new T[idims.elements()];

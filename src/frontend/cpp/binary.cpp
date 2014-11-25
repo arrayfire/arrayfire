@@ -36,6 +36,10 @@ namespace af
     array func(const array &lhs, const double rhs)                  \
     {                                                               \
         return func(lhs, constant(rhs, lhs.dims(), lhs.type()));    \
+    }                                                               \
+    array func(const double lhs, const array &rhs)                  \
+    {                                                               \
+        return func(constant(lhs, rhs.dims(), rhs.type()), rhs);    \
     }
 
     WRAPPER(min)
@@ -43,4 +47,6 @@ namespace af
     WRAPPER(pow)
     WRAPPER(rem)
     WRAPPER(mod)
+    WRAPPER(cplx2)
+    WRAPPER(atan2)
 }

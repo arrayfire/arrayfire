@@ -30,48 +30,48 @@ namespace kernel
                    dim_type nonBatchBlkSize)
     {
         __shared__ T shrdMem[TILE_DIM][TILE_DIM+1];
-
         // create variables to hold output dimensions
-        const dim_type oDim0 = in.dims[1];
-        const dim_type oDim1 = in.dims[0];
+        const int oDim0 = out.dims[0];
+        const int oDim1 = out.dims[1];
+        const int iDim0 = in.dims[0];
+        const int iDim1 = in.dims[1];
 
         // calculate strides
-        const dim_type oStride1 = oDim0;
-        const dim_type iStride1 = in.strides[1];
+        const int oStride1 = out.strides[1];
+        const int iStride1 = in.strides[1];
 
-        const dim_type iDim0 = in.dims[0];
-        const dim_type iDim1 = in.dims[1];
-
-        // TODO: Launch multiple blocks along x dimension
-        //       to handle batch later, for loop is just for now
-        dim_type lx      = threadIdx.x;
-        dim_type ly      = threadIdx.y;
+        const int lx = threadIdx.x;
+        const int ly = threadIdx.y;
 
         // batch based block Id
-        dim_type batchId = blockIdx.x / nonBatchBlkSize;
-        dim_type blkIdx_x= (blockIdx.x-batchId*nonBatchBlkSize);
+        const int batchId = blockIdx.x / nonBatchBlkSize;
+        const int blockIdx_x = (blockIdx.x-batchId*nonBatchBlkSize);
+
+        const int x0 = TILE_DIM * blockIdx_x;
+        const int y0 = TILE_DIM * blockIdx.y;
 
         // calculate global indices
-        dim_type gx      = lx + blockDim.x * blkIdx_x;
-        dim_type gy      = ly + TILE_DIM * blockIdx.y;
+        int gx      = lx + x0;
+        int gy      = ly + y0;
 
         // offset in and out based on batch id
         in.ptr  += batchId * in.strides[2];
-        out.ptr += batchId * oDim0 * oDim1;
+        out.ptr += batchId * out.strides[2];
 
 #pragma unroll
-        for (dim_type repeat = 0; repeat < TILE_DIM; repeat += blockDim.y) {
-            dim_type gy_ = gy+repeat;
+        for (int repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
+            int gy_ = gy+repeat;
             if (is32Multiple || (gx<iDim0 && gy_<iDim1))
                 shrdMem[ly + repeat][lx] = in.ptr[gy_ * iStride1 + gx];
         }
         __syncthreads();
 
-        gx          = lx + blockDim.x * blockIdx.y;
-        gy          = ly + TILE_DIM * blkIdx_x;
+        gx = lx + y0;
+        gy = ly + x0;
 
-        for (dim_type repeat = 0; repeat < TILE_DIM; repeat += blockDim.y) {
-            dim_type gy_ = gy+repeat;
+#pragma unroll
+        for (int repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
+            int gy_ = gy+repeat;
             if (is32Multiple || (gx<oDim0 && gy_<oDim1))
                 out.ptr[gy_ * oStride1 + gx] = shrdMem[lx][ly + repeat];
         }

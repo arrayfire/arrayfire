@@ -3,7 +3,7 @@ PROJECT(ARRAYFIRE)
 
 FIND_PACKAGE(OpenCL REQUIRED)
 
-INCLUDE(${CMAKE_SOURCE_DIR}/common/CLKernelToH.cmake)
+INCLUDE("${CMAKE_SOURCE_DIR}/common/CLKernelToH.cmake")
 
 IF(NOT UNIX)
   ADD_DEFINITIONS(-DAFDLL)
@@ -20,14 +20,14 @@ FIND_PACKAGE(CLBLAS REQUIRED)
 INCLUDE_DIRECTORIES(${CLBLAS_INCLUDE_DIRS})
 LINK_DIRECTORIES(${CLBLAS_LIBRARY_DIR})
 # Custom install command
-INSTALL(DIRECTORY ${CLBLAS_PACKAGE_DIR}/include/ DESTINATION include)
-FILE(GLOB CLBLAS_LIBS ${CLBLAS_PACKAGE_DIR}/lib64/*.so*)
+INSTALL(DIRECTORY "${CLBLAS_PACKAGE_DIR}/include/" DESTINATION include)
+FILE(GLOB CLBLAS_LIBS "${CLBLAS_PACKAGE_DIR}/lib64/*.so*")
 INSTALL(FILES ${CLBLAS_LIBS} DESTINATION lib)
 
 FIND_PACKAGE(clFFT REQUIRED)
 # Custom install command
-INSTALL(DIRECTORY ${CLFFT_BUILD_DIR}/package/include/ DESTINATION include)
-FILE(GLOB CLFFT_LIBS ${CLFFT_BUILD_DIR}/package/lib64/*.so*)
+INSTALL(DIRECTORY "${CLFFT_BUILD_DIR}/package/include/" DESTINATION include)
+FILE(GLOB CLFFT_LIBS "${CLFFT_BUILD_DIR}/package/lib64/*.so*")
 INSTALL(FILES ${CLFFT_LIBS} DESTINATION lib)
 
 ADD_DEFINITIONS( -DBOOST_ALL_NO_LIB )
@@ -41,9 +41,9 @@ SET( cl_kernel_headers
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
-    ${CMAKE_SOURCE_DIR}/src/backend/opencl
+    "${CMAKE_SOURCE_DIR}/src/backend/opencl"
     ${OPENCL_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_BINARY_DIR}
+    "${CMAKE_CURRENT_BINARY_DIR}"
     ${CLBLAS_INCLUDE_DIR}
     ${CLFFT_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIR}
@@ -58,23 +58,23 @@ FILE(GLOB backend_sources
     "../*.cpp"
     )
 FILE(GLOB cpp_sources
-    "../../array/*.cpp"
+    "../../frontend/cpp/*.cpp"
     )
-source_group(Headers FILES ${backend_headers})
-source_group(Sources FILES ${backend_sources})
-source_group(CPP\ Sources FILES ${cpp_sources})
+source_group(backend\\Headers FILES ${backend_headers})
+source_group(backend\\Sources FILES ${backend_sources})
+source_group(frontend\\Sources FILES ${cpp_sources})
 
 FILE(GLOB opencl_headers
 	"*.hpp"
     "*.h")
 FILE(GLOB opencl_sources
     "*.cpp")
-source_group(opencl\\Headers FILES ${opencl_headers})
-source_group(opencl\\Sources FILES ${opencl_sources})
+source_group(backend\\opencl\\Headers FILES ${opencl_headers})
+source_group(backend\\opencl\\Sources FILES ${opencl_sources})
 
 FILE(GLOB jit_sources
     "jit/*.hpp")
-source_group(opencl\\JIT FILES ${jit_sources})
+source_group(backend\\opencl\\JIT FILES ${jit_sources})
 
 FILE(GLOB kernel_headers
     "kernel/*.hpp")
@@ -82,9 +82,9 @@ FILE(GLOB opencl_kernels
     "kernel/*.cl")
 FILE(GLOB kernel_sources
      "kernel/*.cpp")
-source_group(opencl\\kernel\\Headers FILES ${kernel_headers})
-source_group(opencl\\kernel\\cl FILES ${opencl_kernels})
-source_group(opencl\\kernel\\Sources FILES ${kernel_sources})
+source_group(backend\\opencl\\kernel\\Headers FILES ${kernel_headers})
+source_group(backend\\opencl\\kernel\\cl FILES ${opencl_kernels})
+source_group(backend\\opencl\\kernel\\Sources FILES ${kernel_sources})
 
 FILE(GLOB kernel_src ${opencl_kernels} "kernel/KParam.hpp")
 CL_KERNEL_TO_H(

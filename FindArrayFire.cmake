@@ -67,8 +67,6 @@ FIND_PATH(ArrayFire_INCLUDE_DIRS
     HINTS "${ArrayFire_ROOT_DIR}/include"
     DOC "ArrayFire Include directory")
 
-# Find all libraries used by all backends first
-
 # Find all libraries required for the CPU backend
 FIND_LIBRARY(_ArrayFire_CPU_LIBRARY
     NAMES afcpu

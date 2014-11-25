@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
 #include <Array.hpp>
 #include <optypes.hpp>
 #include <math.hpp>
@@ -63,6 +64,8 @@ BINARY_TYPE_1(add)
 BINARY_TYPE_1(sub)
 BINARY_TYPE_1(mul)
 BINARY_TYPE_1(div)
+BINARY_TYPE_1(and)
+BINARY_TYPE_1(or)
 
 #undef BINARY_TYPE_1
 
@@ -133,14 +136,15 @@ Array<To> *createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs)
 {
     BinOp<To, Ti, op> bop;
 
-    JIT::Node *lhs_node = lhs.getNode();
-    JIT::Node *rhs_node = rhs.getNode();
+    JIT::Node_ptr lhs_node = lhs.getNode();
+    JIT::Node_ptr rhs_node = rhs.getNode();
     JIT::BinaryNode *node = new JIT::BinaryNode(dtype_traits<To>::getName(),
                                                 bop.name(),
                                                 lhs_node,
                                                 rhs_node, (int)(op));
 
-    return createNodeArray<To>(lhs.dims(), reinterpret_cast<JIT::Node *>(node));
+    return createNodeArray<To>(lhs.dims(), JIT::Node_ptr(
+                                   reinterpret_cast<JIT::Node *>(node)));
 }
 
 }

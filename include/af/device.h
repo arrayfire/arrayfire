@@ -15,6 +15,8 @@ namespace af
 {
     AFAPI void info();
 
+    AFAPI void deviceprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+
     AFAPI int getDeviceCount();
 
     AFAPI int getDevice();
@@ -31,6 +33,8 @@ extern "C" {
 
     AFAPI af_err af_info();
 
+    AFAPI af_err af_deviceprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+
     AFAPI af_err af_get_device_count(int *num_of_devices);
 
     AFAPI af_err af_set_device(const int device);
@@ -41,7 +45,7 @@ extern "C" {
 
     AFAPI af_err af_device_array(af_array *arr, const void *data, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
-    AFAPI af_err af_get_device_ptr(void *ptr, const af_array arr, bool read_only);
+    AFAPI af_err af_get_device_ptr(void **ptr, const af_array arr, bool read_only);
 
     AFAPI af_err af_alloc_device(void **ptr, dim_type bytes);
 

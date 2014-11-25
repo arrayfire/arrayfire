@@ -53,7 +53,7 @@ af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool 
             case s32: val = sort<int    >(in, dim, dir);  break;
             case u32: val = sort<uint   >(in, dim, dir);  break;
             case u8:  val = sort<uchar  >(in, dim, dir);  break;
-         // case s8:  val = sort<char   >(in, dim, dir);  break;
+            case b8:  val = sort<char   >(in, dim, dir);  break;
             default:  TYPE_ERROR(1, type);
         }
         std::swap(*out, val);
@@ -101,7 +101,7 @@ af_err af_sort_index(af_array *out, af_array *indices, const af_array in, const 
             case s32: sort_index<int    >(&val, &idx, in, dim, dir);  break;
             case u32: sort_index<uint   >(&val, &idx, in, dim, dir);  break;
             case u8:  sort_index<uchar  >(&val, &idx, in, dim, dir);  break;
-         // case s8:  sort_index<char   >(&val, &idx, in, dim, dir);  break;
+            case b8:  sort_index<char   >(&val, &idx, in, dim, dir);  break;
             default:  TYPE_ERROR(1, type);
         }
         std::swap(*out , val);
@@ -146,7 +146,7 @@ af_err sort_by_key_tmplt(af_array *okey, af_array *oval, const af_array ikey, co
             case s32: sort_by_key<Tk, int    >(okey, oval, ikey, ival, dim, dir);  break;
             case u32: sort_by_key<Tk, uint   >(okey, oval, ikey, ival, dim, dir);  break;
             case u8:  sort_by_key<Tk, uchar  >(okey, oval, ikey, ival, dim, dir);  break;
-         // case s8:  sort_by_key<Tk, char   >(okey, oval, ikey, ival, dim, dir);  break;
+            case b8:  sort_by_key<Tk, char   >(okey, oval, ikey, ival, dim, dir);  break;
             default:  TYPE_ERROR(1, vtype);
         }
     }
@@ -179,7 +179,7 @@ af_err af_sort_by_key(af_array *out_keys, af_array *out_values,
             case s32: sort_by_key_tmplt<int    >(&oKey, &oVal, keys, values, dim, dir);  break;
             case u32: sort_by_key_tmplt<uint   >(&oKey, &oVal, keys, values, dim, dir);  break;
             case u8:  sort_by_key_tmplt<uchar  >(&oKey, &oVal, keys, values, dim, dir);  break;
-         // case s8:  sort_by_key_tmplt<char   >(&oKey, &oVal, keys, values, dim, dir);  break;
+            case b8:  sort_by_key_tmplt<char   >(&oKey, &oVal, keys, values, dim, dir);  break;
             default:  TYPE_ERROR(1, type);
         }
         std::swap(*out_keys , oKey);

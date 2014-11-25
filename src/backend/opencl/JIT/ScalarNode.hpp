@@ -10,6 +10,7 @@
 #pragma once
 #include "Node.hpp"
 #include <math.hpp>
+#include <types.hpp>
 
 namespace opencl
 {
@@ -17,46 +18,24 @@ namespace opencl
 namespace JIT
 {
 
+    template <typename T>
     class ScalarNode : public Node
     {
     private:
-        const cl_double2 m_val;
-        const bool m_double;
-        const bool m_complex;
+        const T m_val;
         std::string m_name_str;
         bool m_gen_name;
         bool m_set_arg;
 
     public:
 
-        ScalarNode(const double val, bool isDouble)
-            : Node("float"),
-              m_val(scalar<cdouble>(val)),
-              m_double(isDouble),
-              m_complex(false),
-              m_name_str("f"),
-              m_gen_name(false),
-              m_set_arg(false)
-        {
-            if (isDouble) {
-                m_type_str = std::string("double");
-                m_name_str = std::string("d");
-            }
-        }
-
-        ScalarNode(const cl_double2 val, bool isDouble)
-            : Node("float2"),
+        ScalarNode(T val)
+            : Node(dtype_traits<T>::getName()),
               m_val(val),
-              m_double(isDouble),
-              m_complex(true),
-              m_name_str("c"),
+              m_name_str(shortname<T>(false)),
               m_gen_name(false),
               m_set_arg(false)
         {
-            if (isDouble) {
-                m_type_str = std::string("double2");
-                m_name_str = std::string("z");
-            }
         }
 
         void genKerName(std::stringstream &kerStream, bool genInputs)
@@ -78,28 +57,7 @@ namespace JIT
         int setArgs(cl::Kernel &ker, int id)
         {
             if (m_set_arg) return id;
-
-            if (!m_complex) {
-
-                if (m_double) {
-                    ker.setArg(id, (double)(m_val.s[0]));
-                } else {
-                    ker.setArg(id, (float)(m_val.s[0]));
-                }
-
-            } else {
-
-                if (m_double) {
-                    ker.setArg(id, (m_val));
-                } else {
-                    cl_float2 valf;
-                    valf.s[0] = (float)m_val.s[0];
-                    valf.s[1] = (float)m_val.s[1];
-                    ker.setArg(id, valf);
-                }
-
-            }
-
+            ker.setArg(id, m_val);
             m_set_arg = true;
             return id + 1;
         }

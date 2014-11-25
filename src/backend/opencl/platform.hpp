@@ -18,6 +18,8 @@ namespace opencl
 
 std::string getInfo();
 
+void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+
 int getDeviceCount();
 
 int getActiveDeviceId();
@@ -33,6 +35,8 @@ void sync(int device);
 class DeviceManager
 {
     friend std::string getInfo();
+
+    friend void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
     friend int getDeviceCount();
 

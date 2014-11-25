@@ -4,12 +4,13 @@ PROJECT(ARRAYFIRE)
 OPTION(BUILD_TEST "Build Tests" ON)
 OPTION(BUILD_EXAMPLES "Build Examples" ON)
 OPTION(BUILD_GTEST "Download gtest and check for updates. Necessary if you change compilers" ON)
+OPTION(USE_SYSTEM_GTEST "Use libgtest already present on the system" OFF)
 
 OPTION(BUILD_CPU "Build ArrayFire with a CPU backend" ON)
 OPTION(BUILD_CUDA "Build ArrayFire with a CUDA backend" OFF)
 OPTION(BUILD_OPENCL "Build ArrayFire with a OpenCL backend" OFF)
 
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/common)
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/common")
 
 FIND_PACKAGE(FreeImage)
 IF(FREEIMAGE_FOUND)
@@ -21,8 +22,8 @@ ENDIF(FREEIMAGE_FOUND)
 
 
 INCLUDE_DIRECTORIES(
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/backend
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/backend"
     ${FREEIMAGE_INCLUDE_PATH}
     )
 
@@ -76,7 +77,7 @@ IF(${BUILD_EXAMPLES})
 ENDIF()
 
 ## Install step
-INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include 
+INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/" DESTINATION include
     FILES_MATCHING
     PATTERN "*.h"
     PATTERN "*.hpp"

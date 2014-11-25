@@ -18,6 +18,11 @@ namespace af
         AF_THROW(af_info());
     }
 
+    void deviceprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
+    {
+        AF_THROW(af_deviceprop(d_name, d_platform, d_toolkit, d_compute));
+    }
+
     int getDeviceCount()
     {
         int devices = -1;
