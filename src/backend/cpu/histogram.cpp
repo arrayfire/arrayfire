@@ -37,8 +37,8 @@ Array<outType> * histogram(const Array<inType> &in, const unsigned &nbins, const
 
     // set all bin elements to zero
     outType *temp = outData;
-    for(dim_type batchId=0; batchId<batchCount; batchId++) {
-        for(dim_type i=0;i<nbins; i++)
+    for(int batchId=0; batchId<batchCount; batchId++) {
+        for(int i=0;i<nbins; i++)
             temp[i] = 0;
         temp += nbins;
     }

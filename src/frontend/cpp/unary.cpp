@@ -14,16 +14,22 @@
 
 namespace af
 {
+
+#define af_complex(...) af_cplx(__VA_ARGS__)
+
 #define INSTANTIATE(func)                                           \
     array func(const array &in)                                     \
     {                                                               \
         af_array out = 0;                                           \
-        af_##func(&out, in.get());                                  \
+        AF_THROW(af_##func(&out, in.get()));                        \
         return array(out);                                          \
     }
 
-    INSTANTIATE(cplx  )
+    INSTANTIATE(complex)
+    INSTANTIATE(real  )
+    INSTANTIATE(imag  )
     INSTANTIATE(abs   )
+    INSTANTIATE(conjg )
 
     INSTANTIATE(round )
     INSTANTIATE(floor )
@@ -67,13 +73,13 @@ namespace af
     array isInf(const array &in)
     {
         af_array out = 0;
-        af_isinf(&out, in.get());
+        AF_THROW(af_isinf(&out, in.get()));
         return array(out);
     }
     array isNaN(const array &in)
     {
         af_array out = 0;
-        af_isnan(&out, in.get());
+        AF_THROW(af_isnan(&out, in.get()));
         return array(out);
     }
 }

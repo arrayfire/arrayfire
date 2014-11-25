@@ -109,9 +109,9 @@ af_err af_constant(af_array *result, const double value,
 }
 
 template<typename To, typename Ti>
-static inline af_array complexOp(const af_array lhs, const af_array rhs)
+static inline af_array cplx(const af_array lhs, const af_array rhs)
 {
-    return getHandle(*complexOp<To, Ti>(getArray<Ti>(lhs), getArray<Ti>(rhs)));
+    return getHandle(*cplx<To, Ti>(getArray<Ti>(lhs), getArray<Ti>(rhs)));
 }
 
 af_err af_constant_c64(af_array *result, const void* value,
@@ -129,7 +129,7 @@ af_err af_constant_c64(af_array *result, const void* value,
         }
         out_real = createHandle<double>(d, real(cval));
         out_imag = createHandle<double>(d, imag(cval));
-        out = complexOp<cdouble, double>(out_real, out_imag);
+        out = cplx<cdouble, double>(out_real, out_imag);
         std::swap(*result, out);
         ret = AF_SUCCESS;
     }
@@ -152,7 +152,7 @@ af_err af_constant_c32(af_array *result, const void* value,
         }
         out_real = createHandle<float>(d, real(cval));
         out_imag = createHandle<float>(d, imag(cval));
-        out = complexOp<cfloat, float>(out_real, out_imag);
+        out = cplx<cfloat, float>(out_real, out_imag);
         std::swap(*result, out);
         ret = AF_SUCCESS;
     }

@@ -94,7 +94,6 @@ UNARY(abs)
 UNARY(isinf)
 UNARY(isnan)
 UNARY(iszero)
-UNARY(cplx)
 
 UNARY(exp)
 UNARY(expm1)
