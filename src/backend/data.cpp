@@ -11,6 +11,7 @@
 #include <af/dim4.hpp>
 #include <af/array.h>
 #include <af/data.h>
+#include <af/device.h>
 #include <af/util.h>
 #include <copy.hpp>
 #include <err_common.hpp>
@@ -53,6 +54,7 @@ af_err af_create_array(af_array *result, const void * const data,
                        const unsigned ndims, const dim_type * const dims,
                        const af_dtype type)
 {
+    af_init();
     af_err ret = AF_ERR_ARG;
     af_array out;
     try {
@@ -83,6 +85,7 @@ af_err af_constant(af_array *result, const double value,
                    const unsigned ndims, const dim_type * const dims,
                    const af_dtype type)
 {
+    af_init();
     af_err ret = AF_ERR_ARG;
     af_array out;
     try {
@@ -117,6 +120,7 @@ static inline af_array cplx(const af_array lhs, const af_array rhs)
 af_err af_constant_c64(af_array *result, const void* value,
                        const unsigned ndims, const dim_type * const dims)
 {
+    af_init();
     af_err ret = AF_ERR_ARG;
     af_array out_real;
     af_array out_imag;
@@ -140,6 +144,7 @@ af_err af_constant_c64(af_array *result, const void* value,
 af_err af_constant_c32(af_array *result, const void* value,
                        const unsigned ndims, const dim_type * const dims)
 {
+    af_init();
     af_err ret = AF_ERR_ARG;
     af_array out_real;
     af_array out_imag;
@@ -164,6 +169,7 @@ af_err af_constant_c32(af_array *result, const void* value,
 af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type * const dims,
                         const af_dtype type)
 {
+    af_init();
     af_err ret = AF_ERR_ARG;
     af_array out;
     try {
@@ -235,6 +241,7 @@ static inline af_array randu_(const af::dim4 &dims)
 
 af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
 {
+    af_init();
     af_err ret = AF_SUCCESS;
     af_array result;
     try {
@@ -266,6 +273,7 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims
 
 af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
 {
+    af_init();
     af_err ret = AF_SUCCESS;
     af_array result;
     try {
@@ -360,6 +368,7 @@ static inline af_array iota_(const dim4& d, const unsigned rep)
 af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const dims,
                const unsigned rep, const af_dtype type)
 {
+    af_init();
     af_err ret = AF_ERR_ARG;
     af_array out;
     try {
