@@ -1,5 +1,8 @@
 #Downloads and installs GTest into the third_party directory
 
+# We apply a patch to subversion, thus we need to find it.
+FIND_PACKAGE(Subversion REQUIRED)
+
 # Create patch file for gtest with MSVC 2012
 if(MSVC_VERSION EQUAL 1700)
   file(WRITE  "${CMAKE_BINARY_DIR}/gtest.patch" "Index: cmake/internal_utils.cmake\n")
