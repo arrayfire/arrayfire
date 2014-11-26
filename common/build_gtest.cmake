@@ -37,7 +37,7 @@ ExternalProject_Add(
     SVN_REPOSITORY http://googletest.googlecode.com/svn/trunk/
     SVN_REVISION -r 660
     TIMEOUT 10
-    PATCH_COMMAND "${Subversion_SVN_EXECUTABLE}" patch "${CMAKE_BINARY_DIR}/gtest.patch" "${CMAKE_BINARY_DIR}/third_party/src/googletest" patch "${CMAKE_BINARY_DIR}/gtest.patch" "${CMAKE_BINARY_DIR}/third_party/src/googletest"
+    PATCH_COMMAND "${Subversion_SVN_EXECUTABLE}" patch "${CMAKE_BINARY_DIR}/gtest.patch" "${CMAKE_BINARY_DIR}/third_party/src/googletest"
     # Force separate output paths for debug and release builds to allow easy
     # identification of correct lib in subsequent TARGET_LINK_LIBRARIES commands
     CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
