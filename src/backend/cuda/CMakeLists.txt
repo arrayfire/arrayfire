@@ -33,36 +33,54 @@ INCLUDE_DIRECTORIES(
     ${CUDA_NVVM_INCLUDE_DIR}
     )
 
+FILE(GLOB cuda_headers
+     "*.hpp"
+     "*.h")
+
+FILE(GLOB cuda_sources
+    "*.cu"
+    "*.cpp")
+
+FILE(GLOB jit_sources
+    "jit/*.hpp")
+
+FILE(GLOB kernel_headers
+    "kernel/*.hpp")
+
+source_group(backend\\cuda\\Headers FILES ${cuda_headers})
+source_group(backend\\cuda\\Sources FILES ${cuda_sources})
+source_group(backend\\cuda\\JIT FILES ${jit_sources})
+source_group(backend\\cuda\\kernel\\Headers FILES ${kernel_headers})
+
 FILE(GLOB backend_headers
     "../*.hpp"
     "../*.h"
     )
+
 FILE(GLOB backend_sources
     "../*.cpp"
     )
-FILE(GLOB cpp_sources
-    "../../frontend/cpp/*.cpp"
-    )
+
 source_group(backend\\Headers FILES ${backend_headers})
 source_group(backend\\Sources FILES ${backend_sources})
-source_group(frontend\\Sources FILES ${cpp_sources})
 
-FILE(GLOB cuda_headers
-  "*.hpp"
-    "*.h")
-FILE(GLOB cuda_sources
-    "*.cu"
-  "*.cpp")
-source_group(backend\\cuda\\Headers FILES ${cuda_headers})
-source_group(backend\\cuda\\Sources FILES ${cuda_sources})
+FILE(GLOB c_headers
+    "../../api/c/*.hpp"
+    "../../api/c/*.h"
+    )
 
-FILE(GLOB jit_sources
-    "jit/*.hpp")
-source_group(backend\\cuda\\JIT FILES ${jit_sources})
+FILE(GLOB c_sources
+    "../../api/c/*.cpp"
+    )
 
-FILE(GLOB kernel_headers
-    "kernel/*.hpp")
-source_group(backend\\cuda\\kernel\\Headers FILES ${kernel_headers})
+source_group(api\\c\\Headers FILES ${c_headers})
+source_group(api\\c\\Sources FILES ${c_sources})
+
+FILE(GLOB cpp_sources
+    "../../api/cpp/*.cpp"
+    )
+
+source_group(api\\cpp\\Sources FILES ${cpp_sources})
 
 IF(${CUDA_COMPUTE_CAPABILITY} STREQUAL "21")
     SET(PTX_COMPUTE "20")
@@ -97,14 +115,18 @@ IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND "${APPLE}")
     SET(CUDA_HOST_COMPILER "/usr/bin/clang++")
 ENDIF()
 
-CUDA_ADD_LIBRARY(afcuda SHARED ${cpp_sources}
-                ${backend_headers}
-                ${backend_sources}
+CUDA_ADD_LIBRARY(afcuda SHARED
                 ${cuda_headers}
                 ${cuda_sources}
                 ${jit_sources}
                 ${kernel_headers}
+                ${backend_headers}
+                ${backend_sources}
+                ${c_headers}
+                ${c_sources}
+                ${cpp_sources}
                 OPTIONS "-gencode" ${CUDA_GENERATE_CODE})
+
 ADD_DEPENDENCIES(afcuda ${ptx_targets})
 
 
