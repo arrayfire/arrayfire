@@ -17,27 +17,45 @@ INCLUDE_DIRECTORIES(
 	${CBLAS_INCLUDE_DIR}
     )
 
+FILE(GLOB cpu_headers
+	"*.hpp"
+    "*.h")
+
+FILE(GLOB cpu_sources
+    "*.cpp")
+
+source_group(backend\\cpu\\Headers FILES ${cpu_headers})
+source_group(backend\\cpu\\Sources FILES ${cpu_sources})
+
 FILE(GLOB backend_headers
     "../*.hpp"
     "../*.h"
     )
+
 FILE(GLOB backend_sources
     "../*.cpp"
     )
-FILE(GLOB cpp_sources
-    "../../frontend/cpp/*.cpp"
-    )
+
 source_group(backend\\Headers FILES ${backend_headers})
 source_group(backend\\Sources FILES ${backend_sources})
-source_group(frontend\\Sources FILES ${cpp_sources})
 
-FILE(GLOB cpu_headers
-	"*.hpp"
-    "*.h")
-FILE(GLOB cpu_sources
-    "*.cpp")
-source_group(backend\\cpu\\Headers FILES ${cpu_headers})
-source_group(backend\\cpu\\Sources FILES ${cpu_sources})
+FILE(GLOB c_headers
+    "../../api/c/*.hpp"
+    "../../api/c/*.h"
+    )
+
+FILE(GLOB c_sources
+    "../../api/c/*.cpp"
+    )
+
+source_group(api\\c\\Headers FILES ${c_headers})
+source_group(api\\c\\Sources FILES ${c_sources})
+
+FILE(GLOB cpp_sources
+    "../../api/cpp/*.cpp"
+    )
+
+source_group(api\\cpp\\Sources FILES ${cpp_sources})
 
 # OS Definitions
 IF(UNIX)
@@ -46,11 +64,14 @@ ELSE(${UNIX}) #Windows
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 ENDIF()
 
-ADD_LIBRARY(afcpu SHARED 	${cpp_sources}
-							${backend_headers}
-							${backend_sources}
-							${cpu_headers}
-							${cpu_sources})
+ADD_LIBRARY(afcpu SHARED
+           ${cpu_headers}
+		   ${cpu_sources}
+           ${backend_headers}
+		   ${backend_sources}
+           ${c_headers}
+		   ${c_sources}
+		   ${cpp_sources})
 
 TARGET_LINK_LIBRARIES(afcpu ${lib_deps} ${CBLAS_LIBRARIES} ${FFTW_LIBRARIES})
 

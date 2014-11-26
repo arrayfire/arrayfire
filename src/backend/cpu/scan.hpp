@@ -9,7 +9,7 @@
 
 #include <af/array.h>
 #include <Array.hpp>
-#include "../ops.hpp"
+#include <ops.hpp>
 
 namespace cpu
 {
