@@ -32,7 +32,7 @@ namespace opencl
         static const dim_type TX = 16;
         static const dim_type TY = 16;
 
-        template<typename T, bool isInverse>
+        template<typename T, bool isInverse, af_interp_type method>
         void transform(Param out, const Param in, const Param tf)
         {
             try {
@@ -46,6 +46,22 @@ namespace opencl
                     std::ostringstream options;
                     options << " -D T="        << dtype_traits<T>::getName()
                             << " -D INVERSE="  << (isInverse ? 1 : 0);
+
+                    if((af_dtype) dtype_traits<T>::af_type == c32 ||
+                       (af_dtype) dtype_traits<T>::af_type == c64) {
+                        options << " -D CPLX=1";
+                    } else {
+                        options << " -D CPLX=0";
+                    }
+
+                    switch(method) {
+                        case AF_INTERP_NEAREST: options << " -D INTERP=NEAREST";
+                            break;
+                        case AF_INTERP_BILINEAR:  options << " -D INTERP=BILINEAR";
+                            break;
+                        default:
+                            break;
+                    }
 
                     buildProgram(transformProgs[device],
                                  transform_cl,
