@@ -89,7 +89,7 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
         if(abs((double)(tests[resultIdx][i] - outData[i])) > 0.0001)
             fail_count++;
     }
-    ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.01));
+    ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.02));
 
     //for (size_t elIter = 0; elIter < nElems; ++elIter) {
     //    ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
@@ -140,7 +140,7 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
     ROTATE_INIT(Rectangle180NoCropRecenter     , rotatelinear2,  0, 180, false, true);
     ROTATE_INIT(Rectangle180CropRecenter       , rotatelinear2,  1, 180, true , true);
     ROTATE_INIT(Rectangle90NoCropRecenter      , rotatelinear2,  2, 90 , false, true);
-  //ROTATE_INIT(Rectangle90CropRecenter        , rotatelinear2,  3, 90 , true , true);
+    ROTATE_INIT(Rectangle90CropRecenter        , rotatelinear2,  3, 90 , true , true);
     ROTATE_INIT(Rectangle45NoCropRecenter      , rotatelinear2,  4, 45 , false, true);
     ROTATE_INIT(Rectangle45CropRecenter        , rotatelinear2,  5, 45 , true , true);
     ROTATE_INIT(Rectanglem45NoCropRecenter     , rotatelinear2,  6,-45 , false, true);
