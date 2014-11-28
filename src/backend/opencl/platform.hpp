@@ -55,6 +55,8 @@ class DeviceManager
 
         static DeviceManager& getInstance();
 
+        ~DeviceManager();
+
     private:
         DeviceManager();
 
@@ -66,13 +68,14 @@ class DeviceManager
         void operator=(DeviceManager const&);
 
         // Attributes
-        std::vector<cl::CommandQueue>     queues;
-        std::vector<cl::Platform>      platforms;
-        std::vector<cl::Context>        contexts;
-        std::vector<unsigned>         ctxOffsets;
+        std::vector<cl::CommandQueue*>  mQueues;
+        std::vector<cl::Device*>       mDevices;
+        std::vector<cl::Context*>     mContexts;
+        std::vector<cl::Platform*>   mPlatforms;
+        std::vector<unsigned>       mCtxOffsets;
 
-        unsigned activeCtxId;
-        unsigned activeQId;
+        unsigned mActiveCtxId;
+        unsigned mActiveQId;
 };
 
 void setContext(DeviceManager& devMngr, int device);
