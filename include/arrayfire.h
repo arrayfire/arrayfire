@@ -16,6 +16,7 @@
 #include "af/data.h"
 #include "af/device.h"
 #include "af/exception.h"
+#include "af/graphics.h"
 #include "af/image.h"
 #include "af/index.h"
 #include "af/reduce.h"
