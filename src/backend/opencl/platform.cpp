@@ -49,17 +49,6 @@ static const char *get_system(void)
 #endif
 }
 
-void setContext(DeviceManager& devMngr, int device)
-{
-    devMngr.mActiveQId = device;
-    for (int i = 0; i< (int)devMngr.mCtxOffsets.size(); ++i) {
-        if (device< (int)devMngr.mCtxOffsets[i]) {
-            devMngr.mActiveCtxId = i;
-            break;
-        }
-    }
-}
-
 DeviceManager& DeviceManager::getInstance()
 {
     static DeviceManager my_instance;
@@ -81,6 +70,17 @@ DeviceManager::~DeviceManager()
     for (auto c : mContexts) delete c;
     for (auto p : mPlatforms) delete p;
 #endif
+}
+
+void DeviceManager::setContext(int device)
+{
+    mActiveQId = device;
+    for (int i = 0; i< (int)mCtxOffsets.size(); ++i) {
+        if (device< (int)mCtxOffsets[i]) {
+            mActiveCtxId = i;
+            break;
+        }
+    }
 }
 
 DeviceManager::DeviceManager()
@@ -117,7 +117,7 @@ DeviceManager::DeviceManager()
             printf("WARNING: AF_OPENCL_DEFAULT_DEVICE is out of range\n");
             printf("Setting default device as 0\n");
         } else {
-            setContext(*this, def_device);
+            setContext(def_device);
         }
     }
 }
@@ -156,6 +156,28 @@ std::string getInfo()
         pIter++;
     }
     return info.str();
+}
+
+int getDeviceCount()
+{
+    return DeviceManager::getInstance().mQueues.size();
+}
+
+int getActiveDeviceId()
+{
+    return DeviceManager::getInstance().mActiveQId;
+}
+
+const Context& getContext()
+{
+    DeviceManager& devMngr = DeviceManager::getInstance();
+    return *(devMngr.mContexts[devMngr.mActiveCtxId]);
+}
+
+CommandQueue& getQueue()
+{
+    DeviceManager& devMngr = DeviceManager::getInstance();
+    return *(devMngr.mQueues[devMngr.mActiveQId]);
 }
 
 void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
@@ -212,29 +234,6 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
     }
 }
 
-int getDeviceCount()
-{
-    return DeviceManager::getInstance().mQueues.size();
-}
-
-int getActiveDeviceId()
-{
-    return DeviceManager::getInstance().mActiveQId;
-}
-
-
-const Context& getContext()
-{
-    DeviceManager& devMngr = DeviceManager::getInstance();
-    return *(devMngr.mContexts[devMngr.mActiveCtxId]);
-}
-
-CommandQueue& getQueue()
-{
-    DeviceManager& devMngr = DeviceManager::getInstance();
-    return *(devMngr.mQueues[devMngr.mActiveQId]);
-}
-
 int setDevice(int device)
 {
     DeviceManager& devMngr = DeviceManager::getInstance();
@@ -246,7 +245,7 @@ int setDevice(int device)
     }
     else {
         int old = devMngr.mActiveQId;
-        setContext(devMngr, device);
+        devMngr.setContext(device);
         return old;
     }
 }
