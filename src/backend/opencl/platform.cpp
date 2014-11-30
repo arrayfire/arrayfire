@@ -149,7 +149,10 @@ std::string getInfo()
                         (show_braces ? string("]") : "-");
             info << id << " " << *pIter << " " << dstr << " ";
             info << devices[i].getInfo<CL_DEVICE_VERSION>();
-            info << " Device driver " << devices[i].getInfo<CL_DRIVER_VERSION>() <<std::endl;
+            info << " Device driver " << devices[i].getInfo<CL_DRIVER_VERSION>();
+            info << " FP64 Support("
+                 << (devices[i].getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0 ? "True" : "False")
+                 << ")" << std::endl;
 
             nDevices++;
         }
@@ -178,6 +181,12 @@ CommandQueue& getQueue()
 {
     DeviceManager& devMngr = DeviceManager::getInstance();
     return *(devMngr.mQueues[devMngr.mActiveQId]);
+}
+
+bool isDoubleSupported(int device)
+{
+    DeviceManager& devMngr = DeviceManager::getInstance();
+    return (devMngr.mDevices[device]->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0);
 }
 
 void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
