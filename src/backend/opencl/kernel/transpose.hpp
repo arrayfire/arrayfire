@@ -13,6 +13,7 @@
 #include <traits.hpp>
 #include <string>
 #include <mutex>
+#include <map>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -40,21 +41,27 @@ void transpose(Param out, const Param in)
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static Program            trsProgs[DeviceManager::MAX_DEVICES];
-        static Kernel           trsKernels[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program>  trsProgs;
+        static std::map<int, Kernel> trsKernels;
 
         int device = getActiveDeviceId();
 
-        std::call_once( compileFlags[device], [device] () {
+        std::call_once(compileFlags[device], [device] () {
 
                 std::ostringstream options;
-                options << " -D T=" << dtype_traits<T>::getName()
-                        << " -D TILE_DIM=" << TILE_DIM;
+                options << " -D TILE_DIM=" << TILE_DIM
+                        << " -D USE_DOUBLE="<< (std::is_same<T, double>::value ||
+                                                std::is_same<T, cdouble>::value);
 
-                buildProgram(trsProgs[device],
-                             transpose_cl,
-                             transpose_cl_len,
-                             options.str());
+                switch (dtype_traits<T>::af_type) {
+                case c64: options << " -D T=real2_t"; break;
+                case f64: options << " -D T=real_t" ; break;
+                default: options << " -D T=" << dtype_traits<T>::getName(); break;
+                }
+
+                cl::Program prog;
+                buildProgram(prog, transpose_cl, transpose_cl_len, options.str());
+                trsProgs[device] = prog;
 
                 trsKernels[device] = Kernel(trsProgs[device], "transpose");
             });

@@ -13,6 +13,7 @@
 #include <af/traits.hpp>
 #include <string>
 #include <vector>
+#include <type_traits>
 #include <testHelpers.hpp>
 
 #include <af/device.h>
@@ -47,6 +48,9 @@ TYPED_TEST_CASE(Transpose, TestTypes);
 template<typename T>
 void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=nullptr)
 {
+    if (noDoubleTests<T>())
+        return;
+
     vector<af::dim4> numDims;
 
     vector<vector<T>>   in;
@@ -170,29 +174,46 @@ TYPED_TEST(Transpose,SubRefBatch)
 
 ////////////////////////////////////// CPP //////////////////////////////////
 //
-TEST(Transpose, CPP)
+template<typename T>
+void trsCPPTest(string pFileName)
 {
     vector<af::dim4> numDims;
 
-    vector<vector<float>>   in;
-    vector<vector<float>>   tests;
-    readTests<float,float,int>(string(TEST_DIR"/transpose/rectangle_batch2.test"),numDims,in,tests);
-    af::dim4 dims       = numDims[0];
+    vector<vector<T>>   in;
+    vector<vector<T>>   tests;
+    readTests<T, T, int>(pFileName, numDims, in, tests);
+    af::dim4 dims = numDims[0];
 
-    af::array input(dims, &(in[0].front()));
-    af::array output = af::transpose(input);
+    for (int i = 0; i < af::getDeviceCount(); ++i) {
+        af::setDevice(i);
+        if (noDoubleTests<T>()) continue;
 
-    float *outData = new float[dims.elements()];
-    output.host((void*)outData);
+        af::array input(dims, &(in[0].front()));
+        af::array output = af::transpose(input);
 
-    for (size_t testIter=0; testIter<tests.size(); ++testIter) {
-        vector<float> currGoldBar = tests[testIter];
-        size_t nElems = currGoldBar.size();
-        for (size_t elIter=0; elIter<nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter],outData[elIter])<< "at: " << elIter<< std::endl;
+        T *outData = new T[dims.elements()];
+        output.host((void*)outData);
+
+        for (size_t testIter = 0; testIter < tests.size(); ++testIter) {
+            vector<T> currGoldBar = tests[testIter];
+            size_t nElems = currGoldBar.size();
+            for (size_t elIter = 0; elIter < nElems; ++elIter) {
+                ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter << std::endl;
+            }
         }
-    }
 
-    // cleanup
-    delete[] outData;
+        // cleanup
+        delete[] outData;
+        printf("Device %d done\n",i);
+    }
+}
+
+TEST(Transpose, CPP_f64)
+{
+    trsCPPTest<double>(string(TEST_DIR"/transpose/rectangle_batch2.test"));
+}
+
+TEST(Transpose, CPP_f32)
+{
+    trsCPPTest<float>(string(TEST_DIR"/transpose/rectangle_batch2.test"));
 }
