@@ -16,8 +16,6 @@
 #include <type_traits>
 #include <testHelpers.hpp>
 
-#include <af/device.h>
-
 using std::string;
 using std::vector;
 using af::af_cfloat;
@@ -204,7 +202,6 @@ void trsCPPTest(string pFileName)
 
         // cleanup
         delete[] outData;
-        printf("Device %d done\n",i);
     }
 }
 
