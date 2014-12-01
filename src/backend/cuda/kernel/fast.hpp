@@ -101,11 +101,13 @@ double max_val(const double x, const double y)
 // Returns absolute difference of x and y
 inline __device__ int abs_diff(const int x, const int y)
 {
-    return abs(x - y);
+    int i = x - y;
+    return max(-i, i);
 }
 inline __device__ unsigned abs_diff(const unsigned x, const unsigned y)
 {
-    return (unsigned)abs((int)x - (int)y);
+    int i = (int)x - (int)y;
+    return max(-i, i);
 }
 inline __device__ float abs_diff(const float x, const float y)
 {
@@ -226,7 +228,6 @@ void locate_features_core(
     // Checks LUT to verify if there is a segment for which all pixels are much
     // brighter or much darker than central pixel p.
     if ((int)FAST_LUT[bright] >= arc_length || (int)FAST_LUT[dark] >= arc_length)
-    //if (bright >= arc_length || dark >= arc_length)
         score[x + idim0 * y] = max_val(s_bright, s_dark);
 }
 
@@ -420,7 +421,6 @@ void fast(unsigned* out_feat,
 {
     const unsigned max_feat = ceil(in.dims[0] * in.dims[1] * feature_ratio);
 
-    //dim3threads(BLOCK_SIZE, BLOCK_SIZE);
     dim3 threads(16, 16);
     dim3 blocks(divup(in.dims[0]-6, threads.x), divup(in.dims[1]-6, threads.y));
 
