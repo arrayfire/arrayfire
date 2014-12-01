@@ -9,6 +9,7 @@
 
 #include <af/features.h>
 #include <af/array.h>
+#include <handle.hpp>
 
 namespace af
 {
@@ -40,29 +41,29 @@ namespace af
         return feat->n;
     }
 
-    af_array features::getX()
+    array features::getX()
     {
-        return feat->x;
+        return array(feat->x);
     }
 
-    af_array features::getY()
+    array features::getY()
     {
-        return feat->y;
+        return array(feat->y);
     }
 
-    af_array features::getScore()
+    array features::getScore()
     {
-        return feat->score;
+        return array(feat->score);
     }
 
-    af_array features::getOrientation()
+    array features::getOrientation()
     {
-        return feat->orientation;
+        return array(feat->orientation);
     }
 
-    af_array features::getSize()
+    array features::getSize()
     {
-        return feat->size;
+        return array(feat->size);
     }
 
     void features::setNumFeatures(const size_t n)
@@ -70,9 +71,19 @@ namespace af
         feat->n = n;
     }
 
+    void features::setX(const array x)
+    {
+        feat->x = x.get();
+    }
+
     void features::setX(const af_array x)
     {
         feat->x = x;
+    }
+
+    void features::setY(const array y)
+    {
+        feat->y = y.get();
     }
 
     void features::setY(const af_array y)
@@ -80,14 +91,29 @@ namespace af
         feat->y = y;
     }
 
+    void features::setScore(const array score)
+    {
+        feat->score = score.get();
+    }
+
     void features::setScore(const af_array score)
     {
         feat->score = score;
     }
 
+    void features::setOrientation(const array orientation)
+    {
+        feat->orientation = orientation.get();
+    }
+
     void features::setOrientation(const af_array orientation)
     {
         feat->orientation = orientation;
+    }
+
+    void features::setSize(const array size)
+    {
+        feat->size = size.get();
     }
 
     void features::setSize(const af_array size)

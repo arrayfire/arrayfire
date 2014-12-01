@@ -29,17 +29,22 @@ namespace af
         features(af_features* f);
 
         size_t getNumFeatures();
-        af_array getX();
-        af_array getY();
-        af_array getScore();
-        af_array getOrientation();
-        af_array getSize();
+        array getX();
+        array getY();
+        array getScore();
+        array getOrientation();
+        array getSize();
 
         void setNumFeatures(const size_t n);
+        void setX(const array x);
         void setX(const af_array x);
+        void setY(const array y);
         void setY(const af_array y);
+        void setScore(const array score);
         void setScore(const af_array score);
+        void setOrientation(const array orientation);
         void setOrientation(const af_array orientation);
+        void setSize(const array size);
         void setSize(const af_array size);
 
         af_features * get();
