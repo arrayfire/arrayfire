@@ -34,7 +34,9 @@ namespace cuda
     template<typename T>
     void cudaFreeWrapper(T *ptr)
     {
-        CUDA_CHECK(cudaFree(ptr));
+	cudaError_t err = cudaFree(ptr);
+	if (err != cudaErrorCudartUnloading) // see issue #167
+		CUDA_CHECK(err);
     }
 
     template<typename T>
