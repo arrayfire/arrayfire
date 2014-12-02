@@ -21,12 +21,12 @@ namespace af
 
     class AFAPI features {
     private:
-        af_features * feat;
+        af_features feat;
 
     public:
         features();
         features(const size_t n);
-        features(af_features* f);
+        features(af_features f);
 
         size_t getNumFeatures();
         array getX();
@@ -47,7 +47,7 @@ namespace af
         void setSize(const array size);
         void setSize(const af_array size);
 
-        af_features * get();
+        af_features get();
     };
 
 }

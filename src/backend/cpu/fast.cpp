@@ -241,8 +241,8 @@ void non_maximal(
 }
 
 template<typename T>
-features * fast(const Array<T> &in, const float thr, const unsigned arc_length,
-                const bool nonmax, const float feature_ratio)
+features fast(const Array<T> &in, const float thr, const unsigned arc_length,
+              const bool nonmax, const float feature_ratio)
 {
     dim4 in_dims = in.dims();
     const unsigned max_feat = ceil(in.elements() * feature_ratio);
@@ -337,20 +337,20 @@ features * fast(const Array<T> &in, const float thr, const unsigned arc_length,
         }
     }
 
-    features * feat = new features;
-    feat->setNumFeatures(feat_found);
-    feat->setX(getHandle<float>(*x_out));
-    feat->setY(getHandle<float>(*y_out));
-    feat->setScore(getHandle<float>(*score_out));
-    feat->setOrientation(getHandle<float>(*orientation_out));
-    feat->setSize(getHandle<float>(*size_out));
+    features feat;
+    feat.setNumFeatures(feat_found);
+    feat.setX(getHandle<float>(*x_out));
+    feat.setY(getHandle<float>(*y_out));
+    feat.setScore(getHandle<float>(*score_out));
+    feat.setOrientation(getHandle<float>(*orientation_out));
+    feat.setSize(getHandle<float>(*size_out));
 
     return feat;
 }
 
 #define INSTANTIATE(T)\
-    template features * fast<T>(const Array<T> &in, const float thr, const unsigned arc_length, \
-                                const bool nonmax, const float feature_ratio);
+    template features fast<T>(const Array<T> &in, const float thr, const unsigned arc_length, \
+                              const bool nonmax, const float feature_ratio);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

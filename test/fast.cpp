@@ -114,7 +114,7 @@ void fastTest(string pTestFile, bool nonmax)
         dim_type nElems       = 0;
         af_array inArray_f32  = 0;
         af_array inArray      = 0;
-        af_features * outFeat = NULL;
+        af_features outFeat;
 
         inFiles[testId].insert(0,string(TEST_DIR"/fast/"));
 
@@ -122,24 +122,21 @@ void fastTest(string pTestFile, bool nonmax)
         ASSERT_EQ(AF_SUCCESS, conv_image<T>(&inArray, inArray_f32));
 
         ASSERT_EQ(AF_SUCCESS, af_fast(&outFeat, inArray, 20.0f, 9, nonmax, 0.05f));
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, outFeat->x));
-
-        dim_type oriElems = 0;
-        ASSERT_EQ(AF_SUCCESS, af_get_elements(&oriElems, outFeat->orientation));
+        ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, outFeat.x));
 
         float * outX           = new float[gold[0].size()];
         float * outY           = new float[gold[1].size()];
         float * outScore       = new float[gold[2].size()];
         float * outOrientation = new float[gold[3].size()];
         float * outSize        = new float[gold[4].size()];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outX, outFeat->x));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outY, outFeat->y));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outScore, outFeat->score));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outOrientation, outFeat->orientation));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outSize, outFeat->size));
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outX, outFeat.x));
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outY, outFeat.y));
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outScore, outFeat.score));
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outOrientation, outFeat.orientation));
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outSize, outFeat.size));
 
         vector<feat_t> out_feat;
-        array_to_feat(out_feat, outX, outY, outScore, outOrientation, outSize, outFeat->n);
+        array_to_feat(out_feat, outX, outY, outScore, outOrientation, outSize, outFeat.n);
 
         vector<feat_t> gold_feat;
         array_to_feat(gold_feat, &gold[0].front(), &gold[1].front(), &gold[2].front(), &gold[3].front(), &gold[4].front(), gold[0].size());
@@ -157,7 +154,6 @@ void fastTest(string pTestFile, bool nonmax)
 
         ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 
-        delete outFeat;
         delete outX;
         delete outY;
         delete outScore;
@@ -196,21 +192,21 @@ TEST(FloatFAST, CPP)
 
     af::array in = af::loadimage(inFiles[0].c_str(), false);
 
-    af::features * out = fast(in, 20.0f, 9, true, 0.05f);
+    af::features out = fast(in, 20.0f, 9, true, 0.05f);
 
     float * outX           = new float[gold[0].size()];
     float * outY           = new float[gold[1].size()];
     float * outScore       = new float[gold[2].size()];
     float * outOrientation = new float[gold[3].size()];
     float * outSize        = new float[gold[4].size()];
-    out->getX().host(outX);
-    out->getY().host(outY);
-    out->getScore().host(outScore);
-    out->getOrientation().host(outOrientation);
-    out->getSize().host(outSize);
+    out.getX().host(outX);
+    out.getY().host(outY);
+    out.getScore().host(outScore);
+    out.getOrientation().host(outOrientation);
+    out.getSize().host(outSize);
 
     vector<feat_t> out_feat;
-    array_to_feat(out_feat, outX, outY, outScore, outOrientation, outSize, out->getNumFeatures());
+    array_to_feat(out_feat, outX, outY, outScore, outOrientation, outSize, out.getNumFeatures());
 
     vector<feat_t> gold_feat;
     array_to_feat(gold_feat, &gold[0].front(), &gold[1].front(), &gold[2].front(), &gold[3].front(), &gold[4].front(), gold[0].size());
@@ -218,7 +214,7 @@ TEST(FloatFAST, CPP)
     std::sort(out_feat.begin(), out_feat.end(), feat_cmp);
     std::sort(gold_feat.begin(), gold_feat.end(), feat_cmp);
 
-    for (unsigned elIter = 0; elIter < out->getNumFeatures(); elIter++) {
+    for (unsigned elIter = 0; elIter < out.getNumFeatures(); elIter++) {
         ASSERT_EQ(out_feat[elIter].f[0], gold_feat[elIter].f[0]) << "at: " << elIter << std::endl;
         ASSERT_EQ(out_feat[elIter].f[1], gold_feat[elIter].f[1]) << "at: " << elIter << std::endl;
         ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e-3) << "at: " << elIter << std::endl;

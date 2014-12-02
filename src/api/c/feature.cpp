@@ -16,112 +16,110 @@ namespace af
 
     features::features()
     {
-        feat = new af_features;
-        feat->n = 0;
+        feat.n = 0;
     }
 
     features::features(const size_t n)
     {
-        feat = new af_features;
-        feat->n = n;
-        feat->x = array(n, f32).get();
-        feat->y = array(n, f32).get();
-        feat->score = array(n, f32).get();
-        feat->orientation = array(n, f32).get();
-        feat->size = array(n, f32).get();
+        feat.n = n;
+        feat.x = array(n, f32).get();
+        feat.y = array(n, f32).get();
+        feat.score = array(n, f32).get();
+        feat.orientation = array(n, f32).get();
+        feat.size = array(n, f32).get();
     }
 
-    features::features(af_features* f) : feat(f)
+    features::features(af_features f) : feat(f)
     {
-        feat->n = f->n;
+        feat.n = f.n;
     }
 
     size_t features::getNumFeatures()
     {
-        return feat->n;
+        return feat.n;
     }
 
     array features::getX()
     {
-        return array(feat->x);
+        return array(feat.x);
     }
 
     array features::getY()
     {
-        return array(feat->y);
+        return array(feat.y);
     }
 
     array features::getScore()
     {
-        return array(feat->score);
+        return array(feat.score);
     }
 
     array features::getOrientation()
     {
-        return array(feat->orientation);
+        return array(feat.orientation);
     }
 
     array features::getSize()
     {
-        return array(feat->size);
+        return array(feat.size);
     }
 
     void features::setNumFeatures(const size_t n)
     {
-        feat->n = n;
+        feat.n = n;
     }
 
     void features::setX(const array x)
     {
-        feat->x = x.get();
+        feat.x = x.get();
     }
 
     void features::setX(const af_array x)
     {
-        feat->x = x;
+        feat.x = x;
     }
 
     void features::setY(const array y)
     {
-        feat->y = y.get();
+        feat.y = y.get();
     }
 
     void features::setY(const af_array y)
     {
-        feat->y = y;
+        feat.y = y;
     }
 
     void features::setScore(const array score)
     {
-        feat->score = score.get();
+        feat.score = score.get();
     }
 
     void features::setScore(const af_array score)
     {
-        feat->score = score;
+        feat.score = score;
     }
 
     void features::setOrientation(const array orientation)
     {
-        feat->orientation = orientation.get();
+        feat.orientation = orientation.get();
     }
 
     void features::setOrientation(const af_array orientation)
     {
-        feat->orientation = orientation;
+        feat.orientation = orientation;
     }
 
     void features::setSize(const array size)
     {
-        feat->size = size.get();
+        feat.size = size.get();
     }
 
     void features::setSize(const af_array size)
     {
-        feat->size = size;
+        feat.size = size;
     }
 
-    af_features * features::get()
+    af_features features::get()
     {
         return feat;
     }

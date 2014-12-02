@@ -23,7 +23,7 @@ namespace cuda
 {
 
 template<typename T>
-features * fast(const Array<T> &in, const float thr, const unsigned arc_length,
+features fast(const Array<T> &in, const float thr, const unsigned arc_length,
                 const bool non_max, const float feature_ratio)
 {
     const dim4 dims = in.dims();
@@ -44,20 +44,20 @@ features * fast(const Array<T> &in, const float thr, const unsigned arc_length,
     Array<float> * orientation = createValueArray<float>(out_dims, 0.0f);
     Array<float> * size = createValueArray<float>(out_dims, 1.0f);
 
-    features * feat = new features;
-    feat->setNumFeatures(nfeat);
-    feat->setX(getHandle<float>(*x));
-    feat->setY(getHandle<float>(*y));
-    feat->setScore(getHandle<float>(*score));
-    feat->setOrientation(getHandle<float>(*orientation));
-    feat->setSize(getHandle<float>(*size));
+    features feat;
+    feat.setNumFeatures(nfeat);
+    feat.setX(getHandle<float>(*x));
+    feat.setY(getHandle<float>(*y));
+    feat.setScore(getHandle<float>(*score));
+    feat.setOrientation(getHandle<float>(*orientation));
+    feat.setSize(getHandle<float>(*size));
 
     return feat;
 }
 
 #define INSTANTIATE(T)\
-    template features * fast<T>(const Array<T> &in, const float thr, const unsigned arc_length,  \
-                                const bool non_max, const float feature_ratio);
+    template features fast<T>(const Array<T> &in, const float thr, const unsigned arc_length,  \
+                              const bool non_max, const float feature_ratio);
 
 INSTANTIATE(float )
 INSTANTIATE(double)
