@@ -191,7 +191,7 @@ TEST(FloatFAST, CPP)
     vector<string>     inFiles;
     vector<vector<float>> gold;
 
-    readImageTests(string(TEST_DIR"/fast/square_nonmax_f32.test"), inDims, inFiles, gold);
+    readImageTests(string(TEST_DIR"/fast/square_nonmax_float.test"), inDims, inFiles, gold);
     inFiles[0].insert(0,string(TEST_DIR"/fast/"));
 
     af::array in = af::loadimage(inFiles[0].c_str(), false);
