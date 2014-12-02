@@ -13,12 +13,12 @@
 namespace af
 {
 
-features * fast(const array& in, const float thr, const unsigned arc_length,
+features fast(const array& in, const float thr, const unsigned arc_length,
                 const bool non_max, const float feature_ratio)
 {
-    af_features * temp = 0;
+    af_features temp;
     AF_THROW(af_fast(&temp, in.get(), thr, arc_length, non_max, feature_ratio));
-    features * out = new features(temp);
+    features out(temp);
     return out;
 }
 

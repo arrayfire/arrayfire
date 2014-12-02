@@ -52,7 +52,7 @@ AFAPI void grad(array& rows, array& cols, const array& in);
 
 AFAPI array regions(const array& in, af_connectivity_type connectivity=AF_CONNECTIVITY_4, af_dtype type=f32);
 
-AFAPI features * fast(const array& in, const float thr=20.0f, const unsigned arc_length=9, const bool non_max=true, const float feature_ratio=0.05);
+AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_length=9, const bool non_max=true, const float feature_ratio=0.05);
 
 }
 #endif
@@ -118,7 +118,7 @@ extern "C" {
     AFAPI af_err af_regions(af_array *out, const af_array in, af_connectivity_type connectivity, af_dtype ty);
 
     // Compute FAST corners from input image
-    AFAPI af_err af_fast(af_features **out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio);
+    AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio);
 
 #ifdef __cplusplus
 }

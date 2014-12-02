@@ -23,8 +23,8 @@ namespace opencl
 {
 
 template<typename T>
-features * fast(const Array<T> &in, const float thr, const unsigned arc_length,
-                const bool nonmax, const float feature_ratio)
+features fast(const Array<T> &in, const float thr, const unsigned arc_length,
+              const bool nonmax, const float feature_ratio)
 {
     unsigned nfeat;
 
@@ -106,20 +106,20 @@ features * fast(const Array<T> &in, const float thr, const unsigned arc_length,
 
     const dim4 out_dims(nfeat);
 
-    features * feat = new features;
-    feat->setNumFeatures(nfeat);
-    feat->setX(getHandle<float>(*createParamArray<float>(x)));
-    feat->setY(getHandle<float>(*createParamArray<float>(y)));
-    feat->setScore(getHandle<float>(*createParamArray<float>(score)));
-    feat->setOrientation(getHandle<float>(*createValueArray<float>(out_dims, 0.0f)));
-    feat->setSize(getHandle<float>(*createValueArray<float>(out_dims, 1.0f)));
+    features feat;
+    feat.setNumFeatures(nfeat);
+    feat.setX(getHandle<float>(*createParamArray<float>(x)));
+    feat.setY(getHandle<float>(*createParamArray<float>(y)));
+    feat.setScore(getHandle<float>(*createParamArray<float>(score)));
+    feat.setOrientation(getHandle<float>(*createValueArray<float>(out_dims, 0.0f)));
+    feat.setSize(getHandle<float>(*createValueArray<float>(out_dims, 1.0f)));
 
     return feat;
 }
 
 #define INSTANTIATE(T)\
-    template features * fast<T>(const Array<T> &in, const float thr, const unsigned arc_length, \
-                                const bool non_max, const float feature_ratio);
+    template features fast<T>(const Array<T> &in, const float thr, const unsigned arc_length, \
+                              const bool non_max, const float feature_ratio);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

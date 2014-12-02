@@ -20,12 +20,12 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
-static af_features * fast(af_array const &in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio)
+static af_features fast(af_array const &in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio)
 {
-    return fast<T>(getArray<T>(in), thr, arc_length, non_max, feature_ratio)->get();
+    return fast<T>(getArray<T>(in), thr, arc_length, non_max, feature_ratio).get();
 }
 
-af_err af_fast(af_features **out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio)
+af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio)
 {
     try {
         ArrayInfo info = getInfo(in);
@@ -39,18 +39,16 @@ af_err af_fast(af_features **out, const af_array in, const float thr, const unsi
         dim_type in_ndims = dims.ndims();
         DIM_ASSERT(1, (in_ndims <= 3 && in_ndims >= 2));
 
-        af_features * output;
         af_dtype type  = info.getType();
         switch(type) {
-            case f32: output = fast<float >(in, thr, arc_length, non_max, feature_ratio); break;
-            case f64: output = fast<double>(in, thr, arc_length, non_max, feature_ratio); break;
-            case b8 : output = fast<char  >(in, thr, arc_length, non_max, feature_ratio); break;
-            case s32: output = fast<int   >(in, thr, arc_length, non_max, feature_ratio); break;
-            case u32: output = fast<uint  >(in, thr, arc_length, non_max, feature_ratio); break;
-            case u8 : output = fast<uchar >(in, thr, arc_length, non_max, feature_ratio); break;
+            case f32: *out = fast<float >(in, thr, arc_length, non_max, feature_ratio); break;
+            case f64: *out = fast<double>(in, thr, arc_length, non_max, feature_ratio); break;
+            case b8 : *out = fast<char  >(in, thr, arc_length, non_max, feature_ratio); break;
+            case s32: *out = fast<int   >(in, thr, arc_length, non_max, feature_ratio); break;
+            case u32: *out = fast<uint  >(in, thr, arc_length, non_max, feature_ratio); break;
+            case u8 : *out = fast<uchar >(in, thr, arc_length, non_max, feature_ratio); break;
             default : TYPE_ERROR(1, type);
         }
-        *out = output;
     }
     CATCHALL;
 
