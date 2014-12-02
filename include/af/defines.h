@@ -97,6 +97,15 @@ typedef size_t af_array;
 
 typedef int dim_type;
 
+typedef struct {
+    size_t n;
+    af_array x;
+    af_array y;
+    af_array score;
+    af_array orientation;
+    af_array size;
+} af_features;
+
 typedef enum {
 	AF_INTERP_NEAREST,
 	AF_INTERP_LINEAR,
