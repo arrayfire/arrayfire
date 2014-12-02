@@ -329,11 +329,16 @@ namespace cpu
 
 #else   // WITH_GRAPHICS
 // No Graphics
-#include <af/image.h>
+#include <Array.hpp>
+#include <graphics.hpp>
+#include <err_cpu.hpp>
 #include <stdio.h>
-int image(const Array<float> &in, const int wId, const char *title)
+namespace cpu
 {
-    printf("Error: Graphics requirements not available. See https://github.com/arrayfire/arrayfire\n");
-    AF_ERROR("Graphics not Available", AF_ERR_NOT_CONFIGURED);
+    int image(const Array<float> &in, const int wId, const char *title)
+    {
+        printf("Error: Graphics requirements not available. See https://github.com/arrayfire/arrayfire\n");
+        AF_ERROR("Graphics not Available", AF_ERR_NOT_CONFIGURED);
+    }
 }
 #endif  // WITH_GRAPHICS
