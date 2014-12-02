@@ -23,9 +23,14 @@ INCLUDE_DIRECTORIES(
     "${CMAKE_SOURCE_DIR}/src/backend/cpu"
     ${FFTW_INCLUDES}
     ${CBLAS_INCLUDE_DIR}
-    ${GLEW_INCLUDE_DIR}
-    ${GLFW_INCLUDE_DIR}
     )
+
+IF(${GRAPHICS_FOUND})
+    INCLUDE_DIRECTORIES(
+        ${GLEW_INCLUDE_DIR}
+        ${GLFW_INCLUDE_DIR}
+        )
+ENDIF()
 
 FILE(GLOB cpu_headers
   "*.hpp"

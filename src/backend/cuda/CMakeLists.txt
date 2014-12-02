@@ -39,9 +39,14 @@ INCLUDE_DIRECTORIES(
     "${CMAKE_SOURCE_DIR}/src/backend/cuda"
     "${CMAKE_CURRENT_BINARY_DIR}"
     ${CUDA_NVVM_INCLUDE_DIR}
-    ${GLEW_INCLUDE_DIR}
-    ${GLFW_INCLUDE_DIR}
     )
+
+IF(${GRAPHICS_FOUND})
+    INCLUDE_DIRECTORIES(
+        ${GLEW_INCLUDE_DIR}
+        ${GLFW_INCLUDE_DIR}
+        )
+ENDIF()
 
 FILE(GLOB cuda_headers
      "*.hpp"
