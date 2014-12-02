@@ -7,25 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if USE_DOUBLE
-#if defined(cl_khr_fp64)
+#ifdef USE_DOUBLE
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#define DOUBLE_SUPPORT_AVAILABLE
-#elif defined(cl_amd_fp64)
-#pragma OPENCL EXTENSION cl_amd_fp64 : enable
-#define DOUBLE_SUPPORT_AVAILABLE
-#endif
 #endif // USE_DOUBLE
-
-#if defined(DOUBLE_SUPPORT_AVAILABLE)
-// double
-typedef double real_t;
-typedef double2 real2_t;
-#else
-// float
-typedef float real_t;
-typedef float2 real2_t;
-#endif
 
 __kernel
 void transpose(__global T *oData,

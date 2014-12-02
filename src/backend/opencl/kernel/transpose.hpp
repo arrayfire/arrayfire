@@ -41,8 +41,8 @@ void transpose(Param out, const Param in)
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static std::map<int, Program>  trsProgs;
-        static std::map<int, Kernel> trsKernels;
+        static std::map<int, Program*>  trsProgs;
+        static std::map<int, Kernel*> trsKernels;
 
         int device = getActiveDeviceId();
 
@@ -50,20 +50,17 @@ void transpose(Param out, const Param in)
 
                 std::ostringstream options;
                 options << " -D TILE_DIM=" << TILE_DIM
-                        << " -D USE_DOUBLE="<< (std::is_same<T, double>::value ||
-                                                std::is_same<T, cdouble>::value);
-
-                switch (dtype_traits<T>::af_type) {
-                case c64: options << " -D T=real2_t"; break;
-                case f64: options << " -D T=real_t" ; break;
-                default: options << " -D T=" << dtype_traits<T>::getName(); break;
+                        << " -D T=" << dtype_traits<T>::getName();
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
                 }
 
                 cl::Program prog;
                 buildProgram(prog, transpose_cl, transpose_cl_len, options.str());
-                trsProgs[device] = prog;
+                trsProgs[device] = new Program(prog);
 
-                trsKernels[device] = Kernel(trsProgs[device], "transpose");
+                trsKernels[device] = new Kernel(*trsProgs[device], "transpose");
             });
 
 
@@ -77,7 +74,7 @@ void transpose(Param out, const Param in)
 
         auto transposeOp = make_kernel<Buffer, KParam,
                                        Buffer, KParam,
-                                       dim_type> (trsKernels[device]);
+                                       dim_type> (*trsKernels[device]);
 
 
         transposeOp(EnqueueArgs(getQueue(), global, local),
