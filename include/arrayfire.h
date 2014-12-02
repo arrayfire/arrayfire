@@ -21,5 +21,6 @@
 #include "af/reduce.h"
 #include "af/seq.h"
 #include "af/signal.h"
+#include "af/statistics.h"
 #include "af/timing.h"
 #include "af/util.h"
