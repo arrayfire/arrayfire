@@ -69,12 +69,8 @@ extern "C" {
     // Create af_array from a constant value
     AFAPI af_err af_constant(af_array *arr, const double val, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
-    AFAPI af_err af_constant_c64(af_array *arr, const void* val,
-                                 const unsigned ndims, const dim_type * const dims);
-
-    AFAPI af_err af_constant_c32(af_array *arr, const void* val,
-                                 const unsigned ndims, const dim_type * const dims);
-
+    AFAPI af_err af_constant_complex(af_array *arr, const double real, const double imag,
+                                     const unsigned ndims, const dim_type * const dims, const af_dtype type);
     // Create sequence array
     AFAPI af_err af_iota(af_array *arr, const unsigned ndims, const dim_type * const dims,
                          const unsigned rep, const af_dtype type);

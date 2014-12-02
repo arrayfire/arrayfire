@@ -125,11 +125,13 @@ std::string getInfo()
             string dstr;
             devices[i].getInfo(CL_DEVICE_NAME, &dstr);
 
-            string id = (show_braces ? string("[") : "-") + std::to_string(nDevices++) +
+            string id = (show_braces ? string("[") : "-") + std::to_string(nDevices) +
                         (show_braces ? string("]") : "-");
             info << id << " " << *pIter << " " << dstr << " ";
             info << devices[i].getInfo<CL_DEVICE_VERSION>();
             info << " Device driver " << devices[i].getInfo<CL_DRIVER_VERSION>() <<std::endl;
+
+            nDevices++;
         }
         pIter++;
     }
@@ -158,14 +160,25 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
                 string com_str = devices[i].getInfo<CL_DEVICE_VERSION>();
                 com_str = com_str.substr(7, 3);
 
-                snprintf(d_name, 32, "%s", dev_str.c_str());
+                // strip out whitespace from the device string:
+                const std::string& whitespace = " \t";
+                const auto strBegin = dev_str.find_first_not_of(whitespace);
+                const auto strEnd = dev_str.find_last_not_of(whitespace);
+                const auto strRange = strEnd - strBegin + 1;
+                dev_str = dev_str.substr(strBegin, strRange);
+
+                // copy to output
+                snprintf(d_name, 64, "%s", dev_str.c_str());
                 snprintf(d_platform, 10, "OpenCL");
                 snprintf(d_toolkit, 64, "%s", pIter->c_str());
                 snprintf(d_compute, 10, "%s", com_str.c_str());
                 devset = true;
             }
+
             if(devset) break;
+            nDevices++;
         }
+
         if(devset) break;
         pIter++;
     }

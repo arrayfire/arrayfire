@@ -36,7 +36,7 @@ class Rotate : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, int, unsigned int, unsigned char> TestTypes;
+typedef ::testing::Types<float, double> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Rotate, TestTypes);
@@ -68,7 +68,7 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
         ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_rotate(&outArray, inArray, theta, AF_INTERP_NEAREST, crop, recenter));
+    ASSERT_EQ(AF_SUCCESS, af_rotate(&outArray, inArray, theta, AF_INTERP_BILINEAR, crop, recenter));
 
     // Get result
     T* outData = new T[tests[resultIdx].size()];
@@ -89,7 +89,7 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
         if(abs((double)(tests[resultIdx][i] - outData[i])) > 0.0001)
             fail_count++;
     }
-    ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.01));
+    ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.02));
 
     //for (size_t elIter = 0; elIter < nElems; ++elIter) {
     //    ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
@@ -110,62 +110,62 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
         rotateTest<TypeParam>(string(TEST_DIR"/rotate/"#file".test"), resultIdx, angle, crop, recenter);\
     }
 
-    ROTATE_INIT(Square180NoCropRecenter     , rotate1,  0, 180, false, true);
-    ROTATE_INIT(Square180CropRecenter       , rotate1,  1, 180, true , true);
-    ROTATE_INIT(Square90NoCropRecenter      , rotate1,  2, 90 , false, true);
-    ROTATE_INIT(Square90CropRecenter        , rotate1,  3, 90 , true , true);
-    ROTATE_INIT(Square45NoCropRecenter      , rotate1,  4, 45 , false, true);
-    ROTATE_INIT(Square45CropRecenter        , rotate1,  5, 45 , true , true);
-    ROTATE_INIT(Squarem45NoCropRecenter     , rotate1,  6,-45 , false, true);
-    ROTATE_INIT(Squarem45CropRecenter       , rotate1,  7,-45 , true , true);
-    ROTATE_INIT(Square60NoCropRecenter      , rotate1,  8, 60 , false, true);
-    ROTATE_INIT(Square60CropRecenter        , rotate1,  9, 60 , true , true);
-    ROTATE_INIT(Square30NoCropRecenter      , rotate1, 10, 30 , false, true);
-    ROTATE_INIT(Square30CropRecenter        , rotate1, 11, 30 , true , true);
-    ROTATE_INIT(Square15NoCropRecenter      , rotate1, 12, 15 , false, true);
-    ROTATE_INIT(Square15CropRecenter        , rotate1, 13, 15 , true , true);
-    ROTATE_INIT(Square10NoCropRecenter      , rotate1, 14, 10 , false, true);
-    ROTATE_INIT(Square10CropRecenter        , rotate1, 15, 10 , true , true);
-    ROTATE_INIT(Square01NoCropRecenter      , rotate1, 16,  1 , false, true);
-    ROTATE_INIT(Square01CropRecenter        , rotate1, 17,  1 , true , true);
-    ROTATE_INIT(Square360NoCropRecenter     , rotate1, 18, 360, false, true);
-    ROTATE_INIT(Square360CropRecenter       , rotate1, 19, 360, true , true);
-    ROTATE_INIT(Squarem180NoCropRecenter    , rotate1, 20,-180, false, true);
-    ROTATE_INIT(Squarem180CropRecenter      , rotate1, 21,-180, false, true);
-    ROTATE_INIT(Square00NoCropRecenter      , rotate1, 22,  0 , false, true);
-    ROTATE_INIT(Square00CropRecenter        , rotate1, 23,  0 , true , true);
-    ROTATE_INIT(Square45NoCropNoRecenter    , rotate1, 24, 45 , false, false);
-    ROTATE_INIT(Square45CropNoRecenter      , rotate1, 25, 45 , true , false);
+    ROTATE_INIT(Square180NoCropRecenter     , rotatelinear1,  0, 180, false, true);
+    ROTATE_INIT(Square180CropRecenter       , rotatelinear1,  1, 180, true , true);
+    ROTATE_INIT(Square90NoCropRecenter      , rotatelinear1,  2, 90 , false, true);
+    ROTATE_INIT(Square90CropRecenter        , rotatelinear1,  3, 90 , true , true);
+    ROTATE_INIT(Square45NoCropRecenter      , rotatelinear1,  4, 45 , false, true);
+    ROTATE_INIT(Square45CropRecenter        , rotatelinear1,  5, 45 , true , true);
+    ROTATE_INIT(Squarem45NoCropRecenter     , rotatelinear1,  6,-45 , false, true);
+    ROTATE_INIT(Squarem45CropRecenter       , rotatelinear1,  7,-45 , true , true);
+    ROTATE_INIT(Square60NoCropRecenter      , rotatelinear1,  8, 60 , false, true);
+    ROTATE_INIT(Square60CropRecenter        , rotatelinear1,  9, 60 , true , true);
+    ROTATE_INIT(Square30NoCropRecenter      , rotatelinear1, 10, 30 , false, true);
+    ROTATE_INIT(Square30CropRecenter        , rotatelinear1, 11, 30 , true , true);
+    ROTATE_INIT(Square15NoCropRecenter      , rotatelinear1, 12, 15 , false, true);
+    ROTATE_INIT(Square15CropRecenter        , rotatelinear1, 13, 15 , true , true);
+    ROTATE_INIT(Square10NoCropRecenter      , rotatelinear1, 14, 10 , false, true);
+    ROTATE_INIT(Square10CropRecenter        , rotatelinear1, 15, 10 , true , true);
+    ROTATE_INIT(Square01NoCropRecenter      , rotatelinear1, 16,  1 , false, true);
+    ROTATE_INIT(Square01CropRecenter        , rotatelinear1, 17,  1 , true , true);
+    ROTATE_INIT(Square360NoCropRecenter     , rotatelinear1, 18, 360, false, true);
+    ROTATE_INIT(Square360CropRecenter       , rotatelinear1, 19, 360, true , true);
+    ROTATE_INIT(Squarem180NoCropRecenter    , rotatelinear1, 20,-180, false, true);
+    ROTATE_INIT(Squarem180CropRecenter      , rotatelinear1, 21,-180, false, true);
+    ROTATE_INIT(Square00NoCropRecenter      , rotatelinear1, 22,  0 , false, true);
+    ROTATE_INIT(Square00CropRecenter        , rotatelinear1, 23,  0 , true , true);
+    ROTATE_INIT(Square45NoCropNoRecenter    , rotatelinear1, 24, 45 , false, false);
+    ROTATE_INIT(Square45CropNoRecenter      , rotatelinear1, 25, 45 , true , false);
 
-    ROTATE_INIT(Rectangle180NoCropRecenter     , rotate2,  0, 180, false, true);
-    ROTATE_INIT(Rectangle180CropRecenter       , rotate2,  1, 180, true , true);
-    ROTATE_INIT(Rectangle90NoCropRecenter      , rotate2,  2, 90 , false, true);
-    ROTATE_INIT(Rectangle90CropRecenter        , rotate2,  3, 90 , true , true);
-    ROTATE_INIT(Rectangle45NoCropRecenter      , rotate2,  4, 45 , false, true);
-    ROTATE_INIT(Rectangle45CropRecenter        , rotate2,  5, 45 , true , true);
-    ROTATE_INIT(Rectanglem45NoCropRecenter     , rotate2,  6,-45 , false, true);
-    ROTATE_INIT(Rectanglem45CropRecenter       , rotate2,  7,-45 , true , true);
-    ROTATE_INIT(Rectangle60NoCropRecenter      , rotate2,  8, 60 , false, true);
-    ROTATE_INIT(Rectangle60CropRecenter        , rotate2,  9, 60 , true , true);
-    ROTATE_INIT(Rectangle30NoCropRecenter      , rotate2, 10, 30 , false, true);
-    ROTATE_INIT(Rectangle30CropRecenter        , rotate2, 11, 30 , true , true);
-    ROTATE_INIT(Rectangle15NoCropRecenter      , rotate2, 12, 15 , false, true);
-    ROTATE_INIT(Rectangle15CropRecenter        , rotate2, 13, 15 , true , true);
-    ROTATE_INIT(Rectangle10NoCropRecenter      , rotate2, 14, 10 , false, true);
-    ROTATE_INIT(Rectangle10CropRecenter        , rotate2, 15, 10 , true , true);
-    ROTATE_INIT(Rectangle01NoCropRecenter      , rotate2, 16,  1 , false, true);
-    ROTATE_INIT(Rectangle01CropRecenter        , rotate2, 17,  1 , true , true);
-    ROTATE_INIT(Rectangle360NoCropRecenter     , rotate2, 18, 360, false, true);
-    ROTATE_INIT(Rectangle360CropRecenter       , rotate2, 19, 360, true , true);
-    ROTATE_INIT(Rectanglem180NoCropRecenter    , rotate2, 20,-180, false, true);
-    ROTATE_INIT(Rectanglem180CropRecenter      , rotate2, 21,-180, false, true);
-    ROTATE_INIT(Rectangle00NoCropRecenter      , rotate2, 22,  0 , false, true);
-    ROTATE_INIT(Rectangle00CropRecenter        , rotate2, 23,  0 , true , true);
-    ROTATE_INIT(Rectangle45NoCropNoRecenter    , rotate2, 24, 45 , false, false);
-    ROTATE_INIT(Rectangle45CropNoRecenter      , rotate2, 25, 45 , true , false);
+    ROTATE_INIT(Rectangle180NoCropRecenter     , rotatelinear2,  0, 180, false, true);
+    ROTATE_INIT(Rectangle180CropRecenter       , rotatelinear2,  1, 180, true , true);
+    ROTATE_INIT(Rectangle90NoCropRecenter      , rotatelinear2,  2, 90 , false, true);
+    ROTATE_INIT(Rectangle90CropRecenter        , rotatelinear2,  3, 90 , true , true);
+    ROTATE_INIT(Rectangle45NoCropRecenter      , rotatelinear2,  4, 45 , false, true);
+    ROTATE_INIT(Rectangle45CropRecenter        , rotatelinear2,  5, 45 , true , true);
+    ROTATE_INIT(Rectanglem45NoCropRecenter     , rotatelinear2,  6,-45 , false, true);
+    ROTATE_INIT(Rectanglem45CropRecenter       , rotatelinear2,  7,-45 , true , true);
+    ROTATE_INIT(Rectangle60NoCropRecenter      , rotatelinear2,  8, 60 , false, true);
+    ROTATE_INIT(Rectangle60CropRecenter        , rotatelinear2,  9, 60 , true , true);
+    ROTATE_INIT(Rectangle30NoCropRecenter      , rotatelinear2, 10, 30 , false, true);
+    ROTATE_INIT(Rectangle30CropRecenter        , rotatelinear2, 11, 30 , true , true);
+    ROTATE_INIT(Rectangle15NoCropRecenter      , rotatelinear2, 12, 15 , false, true);
+    ROTATE_INIT(Rectangle15CropRecenter        , rotatelinear2, 13, 15 , true , true);
+    ROTATE_INIT(Rectangle10NoCropRecenter      , rotatelinear2, 14, 10 , false, true);
+    ROTATE_INIT(Rectangle10CropRecenter        , rotatelinear2, 15, 10 , true , true);
+    ROTATE_INIT(Rectangle01NoCropRecenter      , rotatelinear2, 16,  1 , false, true);
+    ROTATE_INIT(Rectangle01CropRecenter        , rotatelinear2, 17,  1 , true , true);
+    ROTATE_INIT(Rectangle360NoCropRecenter     , rotatelinear2, 18, 360, false, true);
+    ROTATE_INIT(Rectangle360CropRecenter       , rotatelinear2, 19, 360, true , true);
+    ROTATE_INIT(Rectanglem180NoCropRecenter    , rotatelinear2, 20,-180, false, true);
+    ROTATE_INIT(Rectanglem180CropRecenter      , rotatelinear2, 21,-180, false, true);
+    ROTATE_INIT(Rectangle00NoCropRecenter      , rotatelinear2, 22,  0 , false, true);
+    ROTATE_INIT(Rectangle00CropRecenter        , rotatelinear2, 23,  0 , true , true);
+    ROTATE_INIT(Rectangle45NoCropNoRecenter    , rotatelinear2, 24, 45 , false, false);
+    ROTATE_INIT(Rectangle45CropNoRecenter      , rotatelinear2, 25, 45 , true , false);
 
 ////////////////////////////////// CPP //////////////////////////////////////
-//
+
 TEST(Rotate, CPP)
 {
     const unsigned resultIdx = 0;
@@ -176,13 +176,13 @@ TEST(Rotate, CPP)
     vector<af::dim4> numDims;
     vector<vector<float>>   in;
     vector<vector<float>>   tests;
-    readTests<float, float, float>(string(TEST_DIR"/rotate/rotate1.test"),numDims,in,tests);
+    readTests<float, float, float>(string(TEST_DIR"/rotate/rotatelinear1.test"),numDims,in,tests);
 
     af::dim4 dims = numDims[0];
     float theta = angle * PI / 180.0f;
 
     af::array input(dims, &(in[0].front()));
-    af::array output = af::rotate(input, theta, AF_INTERP_NEAREST, crop, recenter);
+    af::array output = af::rotate(input, theta, AF_INTERP_BILINEAR, crop, recenter);
 
     // Get result
     float* outData = new float[tests[resultIdx].size()];

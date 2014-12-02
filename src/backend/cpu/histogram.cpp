@@ -37,15 +37,15 @@ Array<outType> * histogram(const Array<inType> &in, const unsigned &nbins, const
 
     // set all bin elements to zero
     outType *temp = outData;
-    for(dim_type batchId=0; batchId<batchCount; batchId++) {
-        for(dim_type i=0;i<nbins; i++)
+    for(int batchId = 0; batchId < batchCount; batchId++) {
+        for(int i=0; i < (int)nbins; i++)
             temp[i] = 0;
         temp += nbins;
     }
 
     float step = (maxval - minval)/(float)nbins;
 
-    for(dim_type batchId=0; batchId<batchCount; batchId++) {
+    for(dim_type batchId = 0; batchId < batchCount; batchId++) {
         for(dim_type i=0; i<numElements; i++) {
             int bin = (int)((inData[i] - minval) / step);
             bin = std::max(bin, 0);

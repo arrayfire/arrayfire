@@ -74,4 +74,30 @@ UNARY_FN(lgamma)
                                   TNJ::Node_ptr(reinterpret_cast<TNJ::Node *>(node)));
     }
 
+#define iszero(a) ((a) == 0)
+
+#define CHECK_FN(op)                            \
+    template<typename T>                        \
+    struct UnOp<char, T, af_##op##_t>           \
+    {                                           \
+        char eval(T in)                         \
+        {                                       \
+            return op(in);                      \
+        }                                       \
+    };                                          \
+
+    CHECK_FN(isinf)
+    CHECK_FN(isnan)
+    CHECK_FN(iszero)
+
+    template<typename T, af_op_t op>
+    Array<char> *checkOp(const Array<T> &in)
+    {
+        TNJ::Node_ptr in_node = in.getNode();
+        TNJ::UnaryNode<char, T, op> *node = new TNJ::UnaryNode<char, T, op>(in_node);
+
+        return createNodeArray<char>(in.dims(),
+                                     TNJ::Node_ptr(reinterpret_cast<TNJ::Node *>(node)));
+    }
+
 }

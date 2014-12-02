@@ -1,5 +1,8 @@
 #Downloads and installs GTest into the third_party directory
 
+# We apply a patch to subversion, thus we need to find it.
+FIND_PACKAGE(Subversion REQUIRED)
+
 # Create patch file for gtest with MSVC 2012
 if(MSVC_VERSION EQUAL 1700)
   file(WRITE  "${CMAKE_BINARY_DIR}/gtest.patch" "Index: cmake/internal_utils.cmake\n")
@@ -37,7 +40,7 @@ ExternalProject_Add(
     SVN_REPOSITORY http://googletest.googlecode.com/svn/trunk/
     SVN_REVISION -r 660
     TIMEOUT 10
-    PATCH_COMMAND svn patch "${CMAKE_BINARY_DIR}/gtest.patch" "${CMAKE_BINARY_DIR}/third_party/src/googletest"
+    PATCH_COMMAND "${Subversion_SVN_EXECUTABLE}" patch "${CMAKE_BINARY_DIR}/gtest.patch" "${CMAKE_BINARY_DIR}/third_party/src/googletest"
     # Force separate output paths for debug and release builds to allow easy
     # identification of correct lib in subsequent TARGET_LINK_LIBRARIES commands
     CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

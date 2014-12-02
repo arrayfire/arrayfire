@@ -13,10 +13,10 @@
 namespace af
 {
 
-array scale(const array& in, const float scale0, const float scale1, const dim_type odim0, const dim_type odim1)
+array transform(const array& in, const array& transform, const dim_type odim0, const dim_type odim1, const af_interp_type method, const bool inverse)
 {
     af_array out = 0;
-    AF_THROW(af_scale(&out, in.get(), scale0, scale1, odim0, odim1));
+    AF_THROW(af_transform(&out, in.get(), transform.get(), odim0, odim1, method, inverse));
     return array(out);
 }
 

@@ -13,10 +13,10 @@
 namespace af
 {
 
-array transform(const array& in, const array& transform, const dim_type odim0, const dim_type odim1, const bool inverse)
+array skew(const array& in, const float skew0, const float skew1, const dim_type odim0, const dim_type odim1, const bool inverse, const af_interp_type method)
 {
     af_array out = 0;
-    AF_THROW(af_transform(&out, in.get(), transform.get(), odim0, odim1, inverse));
+    AF_THROW(af_skew(&out, in.get(), skew0, skew1, odim0, odim1, method, inverse));
     return array(out);
 }
 

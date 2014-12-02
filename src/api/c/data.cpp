@@ -11,6 +11,7 @@
 #include <af/dim4.hpp>
 #include <af/array.h>
 #include <af/data.h>
+#include <af/device.h>
 #include <af/util.h>
 #include <copy.hpp>
 #include <err_common.hpp>
@@ -53,6 +54,7 @@ af_err af_create_array(af_array *result, const void * const data,
                        const unsigned ndims, const dim_type * const dims,
                        const af_dtype type)
 {
+    af_init();
     af_err ret = AF_ERR_ARG;
     af_array out;
     try {
@@ -83,6 +85,7 @@ af_err af_constant(af_array *result, const double value,
                    const unsigned ndims, const dim_type * const dims,
                    const af_dtype type)
 {
+    af_init();
     af_err ret = AF_ERR_ARG;
     af_array out;
     try {
@@ -109,50 +112,38 @@ af_err af_constant(af_array *result, const double value,
 }
 
 template<typename To, typename Ti>
-static inline af_array complexOp(const af_array lhs, const af_array rhs)
+static inline af_array createCplx(dim4 dims, const Ti real, const Ti imag)
 {
-    return getHandle(*complexOp<To, Ti>(getArray<Ti>(lhs), getArray<Ti>(rhs)));
+    Array<Ti> *Real = createValueArray<Ti>(dims, real);
+    Array<Ti> *Imag = createValueArray<Ti>(dims, imag);
+    Array<To> *Cplx = cplx<To, Ti>(*Real, *Imag);
+    af_array out = getHandle(*Cplx);
+
+    destroyArray(*Real);
+    destroyArray(*Imag);
+
+    return out;
 }
 
-af_err af_constant_c64(af_array *result, const void* value,
-                       const unsigned ndims, const dim_type * const dims)
+af_err af_constant_complex(af_array *result, const double real, const double imag,
+                           const unsigned ndims, const dim_type * const dims, af_dtype type)
 {
+    af_init();
     af_err ret = AF_ERR_ARG;
-    af_array out_real;
-    af_array out_imag;
     af_array out;
     try {
-        cdouble cval = *(cdouble*)value;
+
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
         }
-        out_real = createHandle<double>(d, real(cval));
-        out_imag = createHandle<double>(d, imag(cval));
-        out = complexOp<cdouble, double>(out_real, out_imag);
-        std::swap(*result, out);
-        ret = AF_SUCCESS;
-    }
-    CATCHALL
-    return ret;
-}
 
-af_err af_constant_c32(af_array *result, const void* value,
-                       const unsigned ndims, const dim_type * const dims)
-{
-    af_err ret = AF_ERR_ARG;
-    af_array out_real;
-    af_array out_imag;
-    af_array out;
-    try {
-        cfloat cval = *(cfloat*)value;
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
+        switch (type) {
+        case c32: out = createCplx<cfloat , float >(d, real, imag); break;
+        case c64: out = createCplx<cdouble, double>(d, real, imag); break;
+        default:   TYPE_ERROR(1, type);
         }
-        out_real = createHandle<float>(d, real(cval));
-        out_imag = createHandle<float>(d, imag(cval));
-        out = complexOp<cfloat, float>(out_real, out_imag);
+
         std::swap(*result, out);
         ret = AF_SUCCESS;
     }
@@ -164,6 +155,7 @@ af_err af_constant_c32(af_array *result, const void* value,
 af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type * const dims,
                         const af_dtype type)
 {
+    af_init();
     af_err ret = AF_ERR_ARG;
     af_array out;
     try {
@@ -235,6 +227,7 @@ static inline af_array randu_(const af::dim4 &dims)
 
 af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
 {
+    af_init();
     af_err ret = AF_SUCCESS;
     af_array result;
     try {
@@ -266,6 +259,7 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims
 
 af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
 {
+    af_init();
     af_err ret = AF_SUCCESS;
     af_array result;
     try {
@@ -360,6 +354,7 @@ static inline af_array iota_(const dim4& d, const unsigned rep)
 af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const dims,
                const unsigned rep, const af_dtype type)
 {
+    af_init();
     af_err ret = AF_ERR_ARG;
     af_array out;
     try {

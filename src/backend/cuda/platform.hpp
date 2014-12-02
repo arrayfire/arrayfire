@@ -47,11 +47,6 @@ struct cudaDevice_t {
     cudaDeviceProp prop;
     size_t flops;
     int nativeId;
-
-    //cudaDevice_t(cudaDeviceProp p, size_t f, int nId)
-    //    : prop(p), flops(f), nativeId(nId)
-    //{
-    //}
 };
 
 class DeviceManager
