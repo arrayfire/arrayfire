@@ -9,6 +9,7 @@
 
 #pragma once
 #include <af/array.h>
+#include <af/features.h>
 
 #ifdef __cplusplus
 #include <utility>
@@ -19,7 +20,7 @@ AFAPI array loadImage(const char* filename, const bool is_color=false);
 
 AFAPI void saveImage(const char* filename, const array& in);
 
-AFAPI array resize(const array in, const dim_type odim0, const dim_type odim1, const af_interp_type method=AF_INTERP_NEAREST);
+AFAPI array resize(const array& in, const dim_type odim0, const dim_type odim1, const af_interp_type method=AF_INTERP_NEAREST);
 
 AFAPI array transform(const array& in, const array& transform, const dim_type odim0, const dim_type odim1, const af_interp_type method=AF_INTERP_NEAREST, const bool inverse=true);
 
@@ -50,6 +51,8 @@ AFAPI array erode3d(const array& in, const array& mask);
 AFAPI void grad(array& rows, array& cols, const array& in);
 
 AFAPI array regions(const array& in, af_connectivity_type connectivity=AF_CONNECTIVITY_4, af_dtype type=f32);
+
+AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_length=9, const bool non_max=true, const float feature_ratio=0.05);
 
 }
 #endif
@@ -113,6 +116,9 @@ extern "C" {
 
     // Compute labels for connected regions from binary input arrays
     AFAPI af_err af_regions(af_array *out, const af_array in, af_connectivity_type connectivity, af_dtype ty);
+
+    // Compute FAST corners from input image
+    AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio);
 
 #ifdef __cplusplus
 }
