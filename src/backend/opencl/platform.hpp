@@ -28,6 +28,8 @@ class DeviceManager
 
     friend cl::CommandQueue& getQueue();
 
+    friend const cl::Device& getDevice();
+
     friend bool isDoubleSupported(int device);
 
     friend void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
@@ -74,6 +76,8 @@ int getActiveDeviceId();
 const cl::Context& getContext();
 
 cl::CommandQueue& getQueue();
+
+const cl::Device& getDevice();
 
 bool isDoubleSupported(int device);
 

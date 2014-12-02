@@ -183,6 +183,12 @@ CommandQueue& getQueue()
     return *(devMngr.mQueues[devMngr.mActiveQId]);
 }
 
+const cl::Device& getDevice()
+{
+    DeviceManager& devMngr = DeviceManager::getInstance();
+    return *(devMngr.mDevices[devMngr.mActiveQId]);
+}
+
 bool isDoubleSupported(int device)
 {
     DeviceManager& devMngr = DeviceManager::getInstance();
