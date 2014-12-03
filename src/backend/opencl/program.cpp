@@ -37,19 +37,19 @@ namespace opencl
     void buildProgram(cl::Program &prog, const int num_files,
                       const char **ker_strs, const int *ker_lens, std::string options)
     {
-        Program::Sources setSrc;
-        setSrc.emplace_back(USE_DBL_SRC_STR.c_str(), USE_DBL_SRC_STR.length());
-        setSrc.emplace_back(KParam_hpp, KParam_hpp_len);
-
-        for (int i = 0; i < num_files; i++) {
-            setSrc.emplace_back(ker_strs[i], ker_lens[i]);
-        }
-
-        static std::string defaults =
-            std::string(" -cl-std=CL1.1") + std::string(" -D dim_type=") +
-            std::string(dtype_traits<dim_type>::getName());
-
         try {
+            Program::Sources setSrc;
+            setSrc.emplace_back(USE_DBL_SRC_STR.c_str(), USE_DBL_SRC_STR.length());
+            setSrc.emplace_back(KParam_hpp, KParam_hpp_len);
+
+            for (int i = 0; i < num_files; i++) {
+                setSrc.emplace_back(ker_strs[i], ker_lens[i]);
+            }
+
+            static std::string defaults =
+                std::string(" -cl-std=CL1.1") + std::string(" -D dim_type=") +
+                std::string(dtype_traits<dim_type>::getName());
+
 
             prog = cl::Program(getContext(), setSrc);
             std::vector<cl::Device> targetDevices;
@@ -57,7 +57,6 @@ namespace opencl
             prog.build(targetDevices, (defaults + options).c_str());
 
         } catch (...) {
-
             SHOW_BUILD_INFO(prog);
             throw;
         }

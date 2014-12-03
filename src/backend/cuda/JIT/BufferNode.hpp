@@ -31,6 +31,7 @@ namespace JIT
         std::string m_name_str;
         bool m_gen_name;
         bool m_set_arg;
+        bool m_linear;
         int str0, str1, str2, str3;
 
         // Keep the shared pointer for reference counting
@@ -41,11 +42,15 @@ namespace JIT
 
         BufferNode(const char *type_str,
                    const char *name_str,
-                   shared_ptr<T> data, const dim_type *strides, dim_type off)
+                   shared_ptr<T> data,
+                   const dim_type *strides,
+                   dim_type off,
+                   bool is_linear)
             : Node(type_str),
               m_name_str(name_str),
               m_gen_name(false),
               m_set_arg(false),
+              m_linear(is_linear),
               sptr(data),
               ptr(NULL)
         {
@@ -54,6 +59,11 @@ namespace JIT
             str2 = (int)strides[2];
             str3 = (int)strides[3];
             ptr = sptr.get() + off;
+        }
+
+        bool isLinear()
+        {
+            return m_linear;
         }
 
         void genKerName(std::stringstream &kerStream, bool genInputs)
@@ -79,38 +89,43 @@ namespace JIT
             m_gen_param = true;
         }
 
-        void genOffsets(std::stringstream &kerStream)
+        void genOffsets(std::stringstream &kerStream, bool is_linear)
         {
             if (m_gen_offset) return;
 
-            std::string idx_str = std::string("int idx") + toString(m_id);
-            std::string info_str = std::string("iInfo") + toString(m_id);;
+            if (!is_linear) {
+                std::string idx_str = std::string("int idx") + toString(m_id);
+                std::string info_str = std::string("iInfo") + toString(m_id);;
 
-            kerStream << "%off3i" << m_id << " = mul i32 %id3, %str3" << m_id << "\n";
-            kerStream << "%off2i" << m_id << " = mul i32 %id2, %str2" << m_id << "\n";
-            kerStream << "%off1i" << m_id << " = mul i32 %id1, %str1" << m_id << "\n";
+                kerStream << "%off3i" << m_id << " = mul i32 %id3, %str3" << m_id << "\n";
+                kerStream << "%off2i" << m_id << " = mul i32 %id2, %str2" << m_id << "\n";
+                kerStream << "%off1i" << m_id << " = mul i32 %id1, %str1" << m_id << "\n";
 
-            kerStream << "%off23i" << m_id << " = add i32 %off2i"
-                      << m_id << ", %off3i" << m_id << "\n";
+                kerStream << "%off23i" << m_id << " = add i32 %off2i"
+                          << m_id << ", %off3i" << m_id << "\n";
 
-            kerStream << "%off123i" << m_id << " = add i32 %off23i"
-                      << m_id << ", %off1i" << m_id << "\n";
+                kerStream << "%off123i" << m_id << " = add i32 %off23i"
+                          << m_id << ", %off1i" << m_id << "\n";
 
-            kerStream << "%idxa" << m_id << " = add i32 %off123i"
-                      << m_id << ", %id0" << "\n";
+                kerStream << "%idxa" << m_id << " = add i32 %off123i"
+                          << m_id << ", %id0" << "\n";
 
-            kerStream << "%idx" << m_id << " = sext i32 %idxa" << m_id <<" to i64\n\n";
+                kerStream << "%idx" << m_id << " = sext i32 %idxa" << m_id <<" to i64\n\n";
+            }
 
             m_gen_offset = true;
         }
 
-        void genFuncs(std::stringstream &kerStream, str_map_t &declStrs)
+        void genFuncs(std::stringstream &kerStream, str_map_t &declStrs, bool is_linear)
         {
             if (m_gen_func) return;
 
             kerStream << "%inIdx" << m_id << " = "
                       << "getelementptr inbounds " << m_type_str << "* %in" << m_id
-                      << ", i64 %idx"<< m_id << "\n";
+                      << ", i64 %idx";
+
+            if (!is_linear) kerStream << m_id;
+            kerStream << "\n";
 
             kerStream << "%val" << m_id << " = " << "load "
                       << m_type_str << "* %inIdx" << m_id << "\n\n";

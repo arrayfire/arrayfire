@@ -33,69 +33,85 @@ using cl::NDRange;
 using std::string;
 using std::stringstream;
 
-static string getFuncName(Node *node)
+static string getFuncName(Node *node, bool is_linear)
 {
     stringstream funcName;
-    funcName << "K_";
+
+    if (is_linear) {
+        funcName << "KL_";
+    } else {
+        funcName << "KG_";
+    }
+
     node->genKerName(funcName, false);
     funcName << "_";
     node->genKerName(funcName, true);
     return funcName.str();
 }
 
-static string getKernelString(string funcName, Node *node)
+static string getKernelString(string funcName, Node *node, bool is_linear)
 {
     stringstream kerStream;
     int id = node->setId(0) - 1;
 
-    kerStream << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable" << std::endl << std::endl;
-    kerStream << "__kernel void" << std::endl;
+    kerStream << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable" << "\n" << "\n";
+    kerStream << "__kernel void" << "\n";
 
     kerStream << funcName;
-    kerStream << "(" << std::endl;
+    kerStream << "(" << "\n";
 
     node->genParams(kerStream);
-    kerStream << "__global " << node->getTypeStr() << " *out, KParam oInfo," << std::endl;
-    kerStream << "uint groups_0, uint groups_1)" << std::endl;
+    kerStream << "__global " << node->getTypeStr() << " *out, KParam oInfo," << "\n";
+    kerStream << "uint groups_0, uint groups_1)" << "\n";
 
-    kerStream << "{" << std::endl << std::endl;
+    kerStream << "{" << "\n" << "\n";
 
-    kerStream << "uint id2 = get_group_id(0) / groups_0;" << std::endl;
-    kerStream << "uint id3 = get_group_id(1) / groups_1;" << std::endl;
-    kerStream << "uint groupId_0 = get_group_id(0) - id2 * groups_0;" << std::endl;
-    kerStream << "uint groupId_1 = get_group_id(1) - id3 * groups_1;" << std::endl;
-    kerStream << "uint id1 = get_local_id(1) + groupId_1 * get_local_size(1);" << std::endl;
-    kerStream << "uint id0 = get_local_id(0) + groupId_0 * get_local_size(0);" << std::endl;
-    kerStream << std::endl;
+    if (!is_linear) {
 
-    kerStream << "bool cond = " << std::endl;
-    kerStream << "id0 < oInfo.dims[0] && " << std::endl;
-    kerStream << "id1 < oInfo.dims[1] && " << std::endl;
-    kerStream << "id2 < oInfo.dims[2] && " << std::endl;
-    kerStream << "id3 < oInfo.dims[3];" << std::endl << std::endl;
+        kerStream << "uint id2 = get_group_id(0) / groups_0;" << "\n";
+        kerStream << "uint id3 = get_group_id(1) / groups_1;" << "\n";
+        kerStream << "uint groupId_0 = get_group_id(0) - id2 * groups_0;" << "\n";
+        kerStream << "uint groupId_1 = get_group_id(1) - id3 * groups_1;" << "\n";
+        kerStream << "uint id1 = get_local_id(1) + groupId_1 * get_local_size(1);" << "\n";
+        kerStream << "uint id0 = get_local_id(0) + groupId_0 * get_local_size(0);" << "\n";
+        kerStream << "\n";
 
-    kerStream << "if (!cond) return;" << std::endl << std::endl;
+        kerStream << "bool cond = " << "\n";
+        kerStream << "id0 < oInfo.dims[0] && " << "\n";
+        kerStream << "id1 < oInfo.dims[1] && " << "\n";
+        kerStream << "id2 < oInfo.dims[2] && " << "\n";
+        kerStream << "id3 < oInfo.dims[3];" << "\n" << "\n";
 
-    node->genOffsets(kerStream);
-    kerStream << "int idx = ";
-    kerStream << "oInfo.strides[3] * id3 + oInfo.strides[2] * id2 + ";
-    kerStream << "oInfo.strides[1] * id1 + id0 + oInfo.offset;" << std::endl << std::endl;
+        kerStream << "if (!cond) return;" << "\n" << "\n";
 
-    node->genFuncs(kerStream);
-    kerStream << std::endl;
+        kerStream << "int idx = ";
+        kerStream << "oInfo.strides[3] * id3 + oInfo.strides[2] * id2 + ";
+        kerStream << "oInfo.strides[1] * id1 + id0 + oInfo.offset;" << "\n" << "\n";
+
+    } else {
+
+        kerStream << "uint groupId  = get_group_id(1) * get_num_groups(0) + get_group_id(0);" << "\n";
+        kerStream << "uint threadId = get_local_id(0);" << "\n";
+        kerStream << "int idx = groupId * get_local_size(0) * get_local_size(1) + threadId;" << "\n";
+        kerStream << "if (idx >= oInfo.dims[3] * oInfo.strides[3]) return;" << "\n";
+    }
+
+    node->genOffsets(kerStream, is_linear);
+    node->genFuncs(kerStream, is_linear);
+    kerStream << "\n";
 
     kerStream << "out[idx] = val"
-           << id << ";"  << std::endl;
+           << id << ";"  << "\n";
 
-    kerStream << "}" << std::endl;
+    kerStream << "}" << "\n";
 
     return kerStream.str();
 }
 
-static Kernel getKernel(Node *node)
+static Kernel getKernel(Node *node, bool is_linear)
 {
 
-    string funcName = getFuncName(node);
+    string funcName = getFuncName(node, is_linear);
 
     typedef struct {
         Program prog;
@@ -110,7 +126,7 @@ static Kernel getKernel(Node *node)
     kc_entry_t entry;
 
     if (idx == kernelCaches[device].end()) {
-        string jit_ker = getKernelString(funcName, node);
+        string jit_ker = getKernelString(funcName, node, is_linear);
 
         const char *ker_strs[] = {jit_cl, jit_ker.c_str()};
         const int ker_lens[] = {jit_cl_len, (int)jit_ker.size()};
@@ -130,15 +146,37 @@ void evalNodes(Param &out, Node *node)
 {
     try {
 
-        Kernel ker = getKernel(node);
+        bool is_linear = node->isLinear();
+        Kernel ker = getKernel(node, is_linear);
 
-        NDRange local(32, 8);
+        uint local_0 = 1;
+        uint local_1 = 1;
+        uint global_0 = 1;
+        uint global_1 = 1;
+        uint groups_0 = 1;
+        uint groups_1 = 1;
 
-        uint groups_0 = divup(out.info.dims[0], local[0]);
-        uint groups_1 = divup(out.info.dims[1], local[1]);
+        if (is_linear) {
+            local_0 = 256;
+            uint out_elements = out.info.dims[3] * out.info.strides[3];
+            uint groups = divup(out_elements, local_0);
 
-        NDRange global(groups_0 * local[0] * out.info.dims[2],
-                       groups_1 * local[1] * out.info.dims[3]);
+            global_1 = divup(groups,     1000) * local_1;
+            global_0 = divup(groups, global_1) * local_0;
+
+        } else {
+            local_0 = 32;
+            local_1 = 8;
+
+            groups_0 = divup(out.info.dims[0], local_0);
+            groups_1 = divup(out.info.dims[1], local_1);
+
+            global_0 = groups_0 * local_0 * out.info.dims[2];
+            global_1 = groups_1 * local_1 * out.info.dims[3];
+        }
+
+        NDRange local(local_0, local_1);
+        NDRange global(global_0, global_1);
 
         int args = node->setArgs(ker, 0);
         ker.setArg(args + 0, out.data);
