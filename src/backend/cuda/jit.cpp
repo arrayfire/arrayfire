@@ -39,17 +39,20 @@ using JIT::str_map_iter;
 const char *layout64 = "target datalayout = \"e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v16:16:16-v32:32:32-v64:64:64-v128:128:128-n16:32:64\"\n\n\n";
 const char *layout32 = "target datalayout = \"e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v16:16:16-v32:32:32-v64:64:64-v128:128:128-n16:32:64\"\n\n\n";
 
-static string getFuncName(Node *node)
+static string getFuncName(Node *node, bool is_linear)
 {
     stringstream funcName;
-    funcName << "@K_";
+
+    if (is_linear) funcName << "@KL_"; //Kernel Linear
+    else           funcName << "@KG_"; //Kernel General
+
     node->genKerName(funcName, false);
     funcName << "_";
     node->genKerName(funcName, true);
     return funcName.str();
 }
 
-static string getKernelString(string funcName, Node *node)
+static string getKernelString(string funcName, Node *node, bool is_linear)
 {
     stringstream kerStream;
     stringstream annStream;
@@ -73,45 +76,64 @@ static string getKernelString(string funcName, Node *node)
 
     kerStream << "entry:\n\n";
     kerStream << "%tidx = call i32 @llvm.nvvm.read.ptx.sreg.tid.x()\n";
-    kerStream << "%tidy = call i32 @llvm.nvvm.read.ptx.sreg.tid.y()\n";
     kerStream << "%bdmx = call i32 @llvm.nvvm.read.ptx.sreg.ntid.x()\n";
-    kerStream << "%bdmy = call i32 @llvm.nvvm.read.ptx.sreg.ntid.y()\n";
     kerStream << "%bidx = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.x()\n";
     kerStream << "%bidy = call i32 @llvm.nvvm.read.ptx.sreg.ctaid.y()\n";
-    kerStream << "\n\n";
-    kerStream << "%id2 = sdiv i32 %bidx, %blkx\n";
-    kerStream << "%id3 = sdiv i32 %bidy, %blky\n";
-    kerStream << "%id2m = mul i32 %id2, %blkx\n";
-    kerStream << "%id3m = mul i32 %id3, %blky\n";
-    kerStream << "%blk_x = sub i32 %bidx, %id2m\n";
-    kerStream << "%blk_y = sub i32 %bidy, %id3m\n";
-    kerStream << "%id0m = mul i32 %blk_x, %bdmx\n";
-    kerStream << "%id1m = mul i32 %blk_y, %bdmy\n";
-    kerStream << "%id0 = add i32 %tidx, %id0m\n";
-    kerStream << "%id1 = add i32 %tidy, %id1m\n";
+    kerStream << "%gdmx = call i32 @llvm.nvvm.read.ptx.sreg.nctaid.x()\n";
     kerStream << "\n\n";
 
-    kerStream << "%off3o = mul i32 %id3, %ostr3\n";
-    kerStream << "%off2o = mul i32 %id2, %ostr2\n";
-    kerStream << "%off1o = mul i32 %id1, %ostr1\n";
-    kerStream << "%off23o = add i32 %off3o, %off2o\n";
-    kerStream << "%off123o = add i32 %off23o, %off1o\n";
-    kerStream << "%idxa = add i32 %off123o, %id0\n";
-    kerStream << "%idx = sext i32 %idxa to i64\n";
-    kerStream << "\n\n";
+    if (!is_linear) {
 
-    kerStream << "%cmp3 = icmp slt i32 %id3, %odim3\n";
-    kerStream << "%cmp2 = icmp slt i32 %id2, %odim2\n";
-    kerStream << "%cmp1 = icmp slt i32 %id1, %odim1\n";
-    kerStream << "%cmp0 = icmp slt i32 %id0, %odim0\n";
+        kerStream << "%tidy = call i32 @llvm.nvvm.read.ptx.sreg.tid.y()\n";
+        kerStream << "%bdmy = call i32 @llvm.nvvm.read.ptx.sreg.ntid.y()\n";
 
-    kerStream << "br i1 %cmp3, label %check2, label %end\n";
-    kerStream << "\ncheck2:\n";
-    kerStream << "br i1 %cmp2, label %check1, label %end\n";
-    kerStream << "\ncheck1:\n";
-    kerStream << "br i1 %cmp1, label %check0, label %end\n";
-    kerStream << "\ncheck0:\n";
-    kerStream << "br i1 %cmp0, label %core, label %end\n";
+        kerStream << "%id2 = sdiv i32 %bidx, %blkx\n";
+        kerStream << "%id3 = sdiv i32 %bidy, %blky\n";
+        kerStream << "%id2m = mul i32 %id2, %blkx\n";
+        kerStream << "%id3m = mul i32 %id3, %blky\n";
+        kerStream << "%blk_x = sub i32 %bidx, %id2m\n";
+        kerStream << "%blk_y = sub i32 %bidy, %id3m\n";
+        kerStream << "%id0m = mul i32 %blk_x, %bdmx\n";
+        kerStream << "%id1m = mul i32 %blk_y, %bdmy\n";
+        kerStream << "%id0 = add i32 %tidx, %id0m\n";
+        kerStream << "%id1 = add i32 %tidy, %id1m\n";
+        kerStream << "\n\n";
+
+        kerStream << "%off3o = mul i32 %id3, %ostr3\n";
+        kerStream << "%off2o = mul i32 %id2, %ostr2\n";
+        kerStream << "%off1o = mul i32 %id1, %ostr1\n";
+        kerStream << "%off23o = add i32 %off3o, %off2o\n";
+        kerStream << "%off123o = add i32 %off23o, %off1o\n";
+        kerStream << "%idxa = add i32 %off123o, %id0\n";
+        kerStream << "%idx = sext i32 %idxa to i64\n";
+        kerStream << "\n\n";
+
+        kerStream << "%cmp3 = icmp slt i32 %id3, %odim3\n";
+        kerStream << "%cmp2 = icmp slt i32 %id2, %odim2\n";
+        kerStream << "%cmp1 = icmp slt i32 %id1, %odim1\n";
+        kerStream << "%cmp0 = icmp slt i32 %id0, %odim0\n";
+
+        kerStream << "br i1 %cmp3, label %check2, label %end\n";
+        kerStream << "\ncheck2:\n";
+        kerStream << "br i1 %cmp2, label %check1, label %end\n";
+        kerStream << "\ncheck1:\n";
+        kerStream << "br i1 %cmp1, label %check0, label %end\n";
+        kerStream << "\ncheck0:\n";
+        kerStream << "br i1 %cmp0, label %core, label %end\n";
+
+    } else {
+
+        kerStream << "%boff = mul i32 %bidy, %gdmx\n";
+        kerStream << "%bid  = add i32 %boff, %bidx\n";
+        kerStream << "%goff = mul i32 %bid , %bdmx\n";
+        kerStream << "%gid  = add i32 %goff ,%tidx\n";
+        kerStream << "%idx  = sext i32 %gid to i64\n";
+        kerStream << "%el1  = mul i32 %odim0, %odim1\n";
+        kerStream << "%el2  = mul i32 %el1  , %odim2\n";
+        kerStream << "%el3  = mul i32 %el2  , %odim3\n";
+        kerStream << "%cmp0 = icmp slt i32 %gid, %el1\n";
+        kerStream << "br i1 %cmp0, label %core, label %end\n";
+    }
 
     kerStream << "\n";
     kerStream << "end:\n\n";
@@ -119,9 +141,9 @@ static string getKernelString(string funcName, Node *node)
 
     kerStream <<"\n";
     kerStream << "core:\n\n";
-    node->genOffsets(kerStream);
+    node->genOffsets(kerStream, is_linear);
 
-    node->genFuncs(kerStream, declStrs);
+    node->genFuncs(kerStream, declStrs, is_linear);
 
     kerStream << "%outIdx = getelementptr inbounds " << node->getTypeStr() << "* %out, i64 %idx\n";
     kerStream << "store "
@@ -143,7 +165,8 @@ static string getKernelString(string funcName, Node *node)
         << "declare i32 @llvm.nvvm.read.ptx.sreg.ntid.x() nounwind readnone\n"
         << "declare i32 @llvm.nvvm.read.ptx.sreg.ntid.y() nounwind readnone\n"
         << "declare i32 @llvm.nvvm.read.ptx.sreg.ctaid.x() nounwind readnone\n"
-        << "declare i32 @llvm.nvvm.read.ptx.sreg.ctaid.y() nounwind readnone\n";
+        << "declare i32 @llvm.nvvm.read.ptx.sreg.ctaid.y() nounwind readnone\n"
+        << "declare i32 @llvm.nvvm.read.ptx.sreg.nctaid.x() nounwind readnone\n";
 
     kerStream << "\n";
 
@@ -182,7 +205,7 @@ static char *irToPtx(string IR, size_t *ptx_size)
     NVVM_CHECK(nvvmAddModuleToProgram(prog, IR.c_str(), IR.size(), "generated kernel"),
                "Failed to add module");
 
-#ifndef NDEBUG
+#ifdef NDEBUG
     NVVM_CHECK(nvvmCompileProgram(prog, 0, NULL), "Failed to compile program");
 #else
     nvvmResult comp_res = nvvmCompileProgram(prog, 0, NULL);
@@ -310,10 +333,10 @@ static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
     return entry;
 }
 
-static CUfunction getKernel(Node *node)
+static CUfunction getKernel(Node *node, bool is_linear)
 {
 
-    string funcName = getFuncName(node);
+    string funcName = getFuncName(node, is_linear);
 
     typedef std::map<string, kc_entry_t> kc_t;
     static kc_t kernelCaches[DeviceManager::MAX_DEVICES];
@@ -323,7 +346,7 @@ static CUfunction getKernel(Node *node)
     kc_entry_t entry = {NULL, NULL};
 
     if (idx == kernelCaches[device].end()) {
-        string jit_ker = getKernelString(funcName, node);
+        string jit_ker = getKernelString(funcName, node, is_linear);
         entry = compileKernel(funcName.c_str(), jit_ker);
         kernelCaches[device][funcName] = entry;
     } else {
@@ -336,8 +359,8 @@ static CUfunction getKernel(Node *node)
 template<typename T>
 void evalNodes(Param<T> &out, Node *node)
 {
-    CUfunction ker = getKernel(node);
-
+    bool is_linear = node->isLinear();
+    CUfunction ker = getKernel(node, is_linear);
     std::vector<void *> args;
     node->setArgs(args);
 
@@ -346,6 +369,7 @@ void evalNodes(Param<T> &out, Node *node)
                      (int)out.strides[1],
                      (int)out.strides[2],
                      (int)out.strides[3]};
+
     int dims[] = {(int)out.dims[0],
                   (int)out.dims[1],
                   (int)out.dims[2],
@@ -355,18 +379,44 @@ void evalNodes(Param<T> &out, Node *node)
     for (int i = 0; i < 4; i++) args.push_back((void *)(strides + i));
     for (int i = 0; i < 4; i++) args.push_back((void *)(dims + i));
 
-    int threads_x = 32;
-    int threads_y =  8;
+    int threads_x = 1, threads_y = 1;
+    int blocks_x_ = 1, blocks_y_ = 1;
+    int blocks_x  = 1, blocks_y = 1;
 
-    int blocks_x = divup(out.dims[0], threads_x);
-    int blocks_y = divup(out.dims[1], threads_y);
+    if (is_linear) {
 
-    args.push_back((void *)&blocks_x);
-    args.push_back((void *)&blocks_y);
+        threads_x = 256;
+        threads_y =  1;
+
+        int blocks = divup((out.dims[0] *
+                            out.dims[1] *
+                            out.dims[2] *
+                            out.dims[3]), threads_x);
+
+        blocks_y_ = divup(blocks, 65535);
+        blocks_x_ = divup(blocks, blocks_y_);
+
+        blocks_x = blocks_x_;
+        blocks_y = blocks_y_;
+
+    } else {
+
+        threads_x = 32;
+        threads_y =  8;
+
+        blocks_x_ = divup(out.dims[0], threads_x);
+        blocks_y_ = divup(out.dims[1], threads_y);
+
+        blocks_x = blocks_x_ * out.dims[2];
+        blocks_y = blocks_y_ * out.dims[3];
+    }
+
+    args.push_back((void *)&blocks_x_);
+    args.push_back((void *)&blocks_y_);
 
     CU_CHECK(cuLaunchKernel(ker,
-                            blocks_x * out.dims[2],
-                            blocks_y * out.dims[3],
+                            blocks_x,
+                            blocks_y,
                             1,
                             threads_x,
                             threads_y,

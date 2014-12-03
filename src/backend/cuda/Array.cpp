@@ -98,9 +98,11 @@ namespace cuda
             shared_ptr<T> sptr = isOwner() ? data : parent->data;
             dim_type offset = isOwner() ? 0 : calcOffset(parent->strides(), this->offsets());
 
+            bool is_linear = isOwner() || (this->ndims() == 1);
+
             BufferNode<T> *buf_node = new BufferNode<T>(irname<T>(),
                                                         shortname<T>(true), sptr,
-                                                        strides().get(), offset);
+                                                        strides().get(), offset, is_linear);
 
             const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
         }
