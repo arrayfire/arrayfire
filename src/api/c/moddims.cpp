@@ -45,7 +45,6 @@ af_err af_moddims(af_array *out, const af_array in, const unsigned ndims, const 
         }
 
         af_dtype type = info.getType();
-        af_get_type(&type, in);
 
         switch(type) {
             case f32: output = modDims<float  >(in, newDims); break;

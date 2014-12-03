@@ -56,10 +56,10 @@ static void print(af_array arr)
     T *data = new T[info.elements()];
 
     af_array arrT;
-    af_reorder(&arrT, arr, 1, 0, 2, 3);
+    AF_CHECK(af_reorder(&arrT, arr, 1, 0, 2, 3));
 
     //FIXME: Use alternative function to avoid copies if possible
-    af_get_data_ptr(data, arrT);
+    AF_CHECK(af_get_data_ptr(data, arrT));
     const ArrayInfo infoT = getInfo(arrT);
 
     std::ios_base::fmtflags backup = std::cout.flags();
