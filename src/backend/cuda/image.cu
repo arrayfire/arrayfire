@@ -53,24 +53,43 @@ namespace cuda
     static unsigned int g_uiWindowCounter = 0;
 
     static std::vector<WindowHandle> windows;
+    static std::vector<int> closedWindows;
 
     static WindowHandle current = NULL;
 
     // Print for OpenGL errors
     // Returns 1 if an OpenGL error occurred, 0 otherwise.
-    #define CheckGL() printOglError(__FILE__, __LINE__)
-    int printOglError(char *file, int line)
+
+    #define CheckGL(msg)      glErrorCheck     (msg, __FILE__, __LINE__)
+    #define ForceCheckGL(msg) glForceErrorCheck(msg, __FILE__, __LINE__)
+    #define CheckGLSkip(msg)  glErrorSkip      (msg, __FILE__, __LINE__)
+
+    inline void glErrorSkip(const char *msg, const char* file, int line)
     {
-        GLenum glErr;
-        int retCode = 0;
-        glErr = glGetError();
-        if (glErr != GL_NO_ERROR)
-        {
-            printf("glError in file %s @ line %d: %s\n",
-                    file, line, gluErrorString(glErr));
-            retCode = 1;
+        GLenum x = glGetError();
+    }
+
+    inline GLenum glErrorCheck(const char *msg, const char* file, int line)
+    {
+    // Skipped in release mode
+    #ifndef NDEBUG
+        GLenum x = glGetError();
+
+        if (x != GL_NO_ERROR) {
+            printf("GL Error at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
         }
-        return retCode;
+        return x;
+    #endif
+    }
+
+    inline GLenum glForceErrorCheck(const char *msg, const char* file, int line)
+    {
+        GLenum x = glGetError();
+
+        if (x != GL_NO_ERROR) {
+            printf("GL Error at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
+        }
+        return x;
     }
 
     // Required to be defined for GLEW MX to work, along with the GLEW_MX define in the perprocessor!
@@ -121,17 +140,18 @@ namespace cuda
 
     void MakeContextCurrent(WindowHandle wh)
     {
+        CheckGL("Before MakeContextCurrent");
         if (wh != NULL)
         {
             glfwMakeContextCurrent(wh->pWindow);
             current = wh;
         }
+        CheckGL("In MakeContextCurrent");
     }
 
     void Draw()
     {
-        // Safety check
-        //MakeContextCurrent(current);
+        CheckGL("Before Draw");
 
         // load texture from PBO
         glBindTexture(GL_TEXTURE_2D, current->gl_Tex);
@@ -163,6 +183,8 @@ namespace cuda
         // Complete render
         glfwSwapBuffers(current->pWindow);
         glfwPollEvents();
+
+        ForceCheckGL("In Draw");
     }
 
     void CopyArrayToPBO(const Array<float> &X)
@@ -250,6 +272,7 @@ namespace cuda
 
         glfwSetKeyCallback(newWindow->pWindow, key_callback);
 
+        CheckGL("Before Texture Initialization");
         // Initialize OpenGL Items
         glEnable(GL_TEXTURE_2D);
         glGenTextures(1, &(newWindow->gl_Tex));
@@ -261,6 +284,7 @@ namespace cuda
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, newWindow->uiWidth, newWindow->uiHeight, 0, GL_RGB, GL_FLOAT, NULL);
 
+        CheckGL("Before PBO Initialization");
         glGenBuffers(1, &(newWindow->gl_PBO));
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, newWindow->gl_PBO);
         glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, newWindow->uiWidth * newWindow->uiHeight * 3 * sizeof(float), NULL, GL_STREAM_COPY);
@@ -268,6 +292,8 @@ namespace cuda
         // Register PBO with CUDA
         cudaGraphicsGLRegisterBuffer(&newWindow->cudaPBOResource, newWindow->gl_PBO,
                                      cudaGraphicsMapFlagsWriteDiscard);
+
+        CheckGL("Before Shader Initialization");
         // load shader program
         newWindow->gl_Shader = compileASMShader(GL_FRAGMENT_PROGRAM_ARB, shader_code);
 
@@ -276,11 +302,14 @@ namespace cuda
 
         windows.push_back(newWindow);
         MakeContextCurrent(newWindow);
+
+        CheckGL("At End of Create Window");
         return newWindow;
     }
 
     void DeleteWindow(WindowHandle window)
     {
+        CheckGL("Before Delete Window");
         // Cleanup
         MakeContextCurrent(window);
 
@@ -288,6 +317,8 @@ namespace cuda
         glDeleteBuffers(1, &window->gl_PBO);
         glDeleteTextures(1, &window->gl_Tex);
         glDeleteProgramsARB(1, &window->gl_Shader);
+
+        CheckGL("In Delete Window");
 
         // Delete GLEW context and GLFW window
         delete window->pGLEWContext;
@@ -297,6 +328,8 @@ namespace cuda
         cudaGraphicsUnregisterResource(window->cudaPBOResource);
 
         // Delete memory
+        closedWindows.push_back(window->uiID);
+
         delete window;
         windows.erase(std::find(windows.begin(), windows.end(), window));
     }
@@ -309,14 +342,16 @@ namespace cuda
         glfwTerminate();
     }
 
-    void CopyAndDraw(const Array<float> &in, WindowHandle window)
+    int CopyAndDraw(const Array<float> &in, WindowHandle window)
     {
         if(!glfwWindowShouldClose(window->pWindow)) {
             MakeContextCurrent(window);
             CopyArrayToPBO(in);
             Draw();
+            return window->uiID;
         } else {
             DeleteWindow(window);
+            return -2;
         }
     }
 
@@ -332,15 +367,17 @@ namespace cuda
             for(int i = 0; i <= wId; i++) {
                 if(windows[i]->uiID == wId) {
                     window = windows[i];
-                    CopyAndDraw(in, window);
-                    ret = window->uiID;
+                    ret = CopyAndDraw(in, window);
                     break;
                 }
             }
-            if(ret == -1)
-                AF_ERROR("Invalide Window ID", AF_ERR_INVALID_ARG);
+            if(ret == -1) {
+                if(std::find(closedWindows.begin(), closedWindows.end(), wId) != closedWindows.end())
+                    return -2;
+                else
+                    AF_ERROR("Invalid Window ID", AF_ERR_INVALID_ARG);
+            }
         }
-
         return ret;
     }
 }
