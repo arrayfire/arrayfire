@@ -17,6 +17,7 @@
 #include <sstream>
 #include <string>
 #include <mutex>
+#include <map>
 #include <iostream>
 #include <dispatch.hpp>
 
@@ -78,8 +79,8 @@ namespace opencl
             static unsigned counter;
 
             static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-            static Program            ranProgs[DeviceManager::MAX_DEVICES];
-            static Kernel           ranKernels[DeviceManager::MAX_DEVICES];
+            static std::map<int, Program*> ranProgs;
+            static std::map<int, Kernel*> ranKernels;
 
             int device = getActiveDeviceId();
 
@@ -87,18 +88,22 @@ namespace opencl
                         Program::Sources setSrc;
                         setSrc.emplace_back(random_cl, random_cl_len);
 
-                        ranProgs[device] = Program(getContext(), setSrc);
+                        ranProgs[device] = new Program(getContext(), setSrc);
 
                         std::ostringstream options;
                         options << " -D T=" << dtype_traits<T>::getName()
                                 << " -D repeat="<< REPEAT
-                                << " -D "<< random_name<T, isRandu>().name();
-                        ranProgs[device].build(options.str().c_str());
+                                << " -D " << random_name<T, isRandu>().name();
+                        if (std::is_same<T, double>::value ||
+                            std::is_same<T, cdouble>::value) {
+                            options << " -D USE_DOUBLE";
+                        }
+                        ranProgs[device]->build(options.str().c_str());
 
-                        ranKernels[device] = Kernel(ranProgs[device], "random");
+                        ranKernels[device] = new Kernel(*ranProgs[device], "random");
                     });
 
-            auto randomOp = make_kernel<cl::Buffer, uint, uint, uint, uint>(ranKernels[device]);
+            auto randomOp = make_kernel<cl::Buffer, uint, uint, uint, uint>(*ranKernels[device]);
 
             uint groups = divup(elements, THREADS * REPEAT);
             counter += divup(elements, THREADS * groups);

@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if Tp == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 #define NEAREST core_nearest2
 #define LINEAR core_linear2
 

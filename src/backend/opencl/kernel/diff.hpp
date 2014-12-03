@@ -13,6 +13,7 @@
 #include <traits.hpp>
 #include <string>
 #include <mutex>
+#include <map>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -37,8 +38,8 @@ namespace opencl
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static Program           diffProgs[DeviceManager::MAX_DEVICES];
-                static Kernel          diffKernels[DeviceManager::MAX_DEVICES];
+                static std::map<int, Program*>   diffProgs;
+                static std::map<int, Kernel*>  diffKernels;
 
                 int device = getActiveDeviceId();
 
@@ -46,19 +47,20 @@ namespace opencl
                     std::ostringstream options;
                     options << " -D T="        << dtype_traits<T>::getName()
                             << " -D DIM="      << dim
-                            << " -D isDiff2="  << isDiff2;
-
-                    buildProgram(diffProgs[device],
-                                 diff_cl,
-                                 diff_cl_len,
-                                 options.str());
-
-                    diffKernels[device] = Kernel(diffProgs[device], "diff_kernel");
+                            << " -D isDiff2=" << isDiff2;
+                    if (std::is_same<T, double>::value ||
+                        std::is_same<T, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
+                    Program prog;
+                    buildProgram(prog, diff_cl, diff_cl_len, options.str());
+                    diffProgs[device]   = new Program(prog);
+                    diffKernels[device] = new Kernel(*diffProgs[device], "diff_kernel");
                 });
 
                 auto diffOp = make_kernel<Buffer, const Buffer, const KParam, const KParam,
                                           const dim_type, const dim_type, const dim_type>
-                                          (diffKernels[device]);
+                                          (*diffKernels[device]);
 
                 NDRange local(TX, TY, 1);
                 if(dim == 0 && indims == 1) {

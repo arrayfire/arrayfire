@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if T == double || T == double2
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 #if CPLX
 #define isZero(val) ((val.x ==0) && (val.y == 0))
 #else

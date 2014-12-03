@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if T == double || U == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 dim_type lIdx(dim_type x, dim_type y,
         dim_type stride1, dim_type stride0)
 {

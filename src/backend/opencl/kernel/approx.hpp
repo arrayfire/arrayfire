@@ -14,6 +14,7 @@
 #include <traits.hpp>
 #include <string>
 #include <mutex>
+#include <map>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -43,8 +44,8 @@ namespace opencl
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static Program         approxProgs[DeviceManager::MAX_DEVICES];
-                static Kernel        approxKernels[DeviceManager::MAX_DEVICES];
+                static std::map<int, Program*>  approxProgs;
+                static std::map<int, Kernel*> approxKernels;
 
                 int device = getActiveDeviceId();
 
@@ -59,6 +60,10 @@ namespace opencl
                     } else {
                         options << " -D CPLX=0";
                     }
+                    if (std::is_same<Ty, double>::value ||
+                        std::is_same<Ty, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
 
                     switch(method) {
                         case AF_INTERP_NEAREST: options << " -D INTERP=NEAREST";
@@ -68,18 +73,17 @@ namespace opencl
                         default:
                             break;
                     }
-                    buildProgram(approxProgs[device],
-                                 approx1_cl,
-                                 approx1_cl_len,
-                                 options.str());
+                    Program prog;
+                    buildProgram(prog, approx1_cl, approx1_cl_len, options.str());
+                    approxProgs[device] = new Program(prog);
 
-                    approxKernels[device] = Kernel(approxProgs[device], "approx1_kernel");
+                    approxKernels[device] = new Kernel(*approxProgs[device], "approx1_kernel");
                 });
 
 
                 auto approx1Op = make_kernel<Buffer, const KParam, const Buffer, const KParam,
                                        const Buffer, const KParam, const float, const dim_type>
-                                      (approxKernels[device]);
+                                      (*approxKernels[device]);
 
                 NDRange local(THREADS, 1, 1);
                 dim_type blocksPerMat = divup(out.info.dims[0], local[0]);
@@ -103,8 +107,8 @@ namespace opencl
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static Program         approxProgs[DeviceManager::MAX_DEVICES];
-                static Kernel        approxKernels[DeviceManager::MAX_DEVICES];
+                static std::map<int, Program*>       approxProgs;
+                static std::map<int, Kernel*>      approxKernels;
 
                 int device = getActiveDeviceId();
 
@@ -119,6 +123,10 @@ namespace opencl
                     } else {
                         options << " -D CPLX=0";
                     }
+                    if (std::is_same<Ty, double>::value ||
+                        std::is_same<Ty, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
 
                     switch(method) {
                         case AF_INTERP_NEAREST: options << " -D INTERP=NEAREST";
@@ -128,18 +136,17 @@ namespace opencl
                         default:
                             break;
                     }
-                    buildProgram(approxProgs[device],
-                                 approx2_cl,
-                                 approx2_cl_len,
-                                 options.str());
+                    Program prog;
+                    buildProgram(prog, approx2_cl, approx2_cl_len, options.str());
+                    approxProgs[device] = new Program(prog);
 
-                    approxKernels[device] = Kernel(approxProgs[device], "approx2_kernel");
+                    approxKernels[device] = new Kernel(*approxProgs[device], "approx2_kernel");
                 });
 
                 auto approx2Op = make_kernel<Buffer, const KParam, const Buffer, const KParam,
                                        const Buffer, const KParam, const Buffer, const KParam,
                                        const float, const dim_type, const dim_type>
-                                       (approxKernels[device]);
+                                       (*approxKernels[device]);
 
                 NDRange local(TX, TY, 1);
                 dim_type blocksPerMatX = divup(out.info.dims[0], local[0]);

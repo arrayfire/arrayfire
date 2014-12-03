@@ -13,6 +13,7 @@
 #include <traits.hpp>
 #include <string>
 #include <mutex>
+#include <map>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -40,25 +41,26 @@ namespace opencl
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static Program           tileProgs[DeviceManager::MAX_DEVICES];
-                static Kernel          tileKernels[DeviceManager::MAX_DEVICES];
+                static std::map<int, Program*>   tileProgs;
+                static std::map<int, Kernel *> tileKernels;
 
                 int device = getActiveDeviceId();
 
                 std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
                     options << " -D T=" << dtype_traits<T>::getName();
-
-                    buildProgram(tileProgs[device],
-                                 tile_cl,
-                                 tile_cl_len,
-                                 options.str());
-
-                    tileKernels[device] = Kernel(tileProgs[device], "tile_kernel");
+                    if (std::is_same<T, double>::value ||
+                        std::is_same<T, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
+                    Program prog;
+                    buildProgram(prog, tile_cl, tile_cl_len, options.str());
+                    tileProgs[device] = new Program(prog);
+                    tileKernels[device] = new Kernel(*tileProgs[device], "tile_kernel");
                 });
 
                 auto tileOp = make_kernel<Buffer, const Buffer, const KParam, const KParam,
-                                          const dim_type, const dim_type> (tileKernels[device]);
+                                          const dim_type, const dim_type> (*tileKernels[device]);
 
                 NDRange local(TX, TY, 1);
 

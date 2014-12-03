@@ -13,6 +13,7 @@
 #include <traits.hpp>
 #include <string>
 #include <mutex>
+#include <map>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -41,26 +42,27 @@ namespace opencl
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static Program          shiftProgs[DeviceManager::MAX_DEVICES];
-                static Kernel         shiftKernels[DeviceManager::MAX_DEVICES];
+                static std::map<int, Program*>   shiftProgs;
+                static std::map<int, Kernel *> shiftKernels;
 
                 int device = getActiveDeviceId();
 
                 std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
                     options << " -D T=" << dtype_traits<T>::getName();
-
-                    buildProgram(shiftProgs[device],
-                                 shift_cl,
-                                 shift_cl_len,
-                                 options.str());
-
-                    shiftKernels[device] = Kernel(shiftProgs[device], "shift_kernel");
+                    if (std::is_same<T, double>::value ||
+                        std::is_same<T, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
+                    Program prog;
+                    buildProgram(prog, shift_cl, shift_cl_len, options.str());
+                    shiftProgs[device] = new Program(prog);
+                    shiftKernels[device] = new Kernel(*shiftProgs[device], "shift_kernel");
                 });
 
                 auto shiftOp = make_kernel<Buffer, const Buffer, const KParam, const KParam,
                                           const dim_type, const dim_type, const dim_type, const dim_type,
-                                          const dim_type, const dim_type> (shiftKernels[device]);
+                                          const dim_type, const dim_type> (*shiftKernels[device]);
 
                 NDRange local(TX, TY, 1);
 

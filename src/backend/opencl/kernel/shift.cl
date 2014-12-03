@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if T == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 static inline dim_type simple_mod(const dim_type i, const dim_type dim)
 {
     return (i < dim) ? i : (i - dim);

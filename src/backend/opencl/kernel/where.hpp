@@ -10,6 +10,7 @@
 #pragma once
 #include <string>
 #include <mutex>
+#include <map>
 #include <kernel_headers/where.hpp>
 #include <program.hpp>
 #include <traits.hpp>
@@ -41,8 +42,8 @@ namespace kernel
                             uint groups_x, uint groups_y)
     {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static Program          whereProgs[DeviceManager::MAX_DEVICES];
-        static Kernel           whereKerns[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*> whereProgs;
+        static std::map<int, Kernel *> whereKerns;
 
         int device= getActiveDeviceId();
 
@@ -54,10 +55,14 @@ namespace kernel
                 options << " -D T=" << dtype_traits<T>::getName()
                         << " -D zero=" << toNum(scalar<T>(0))
                         << " -D CPLX=" << af::iscplx<T>();
-
-                buildProgram(whereProgs[device], where_cl, where_cl_len, options.str());
-
-                whereKerns[device] = Kernel(whereProgs[device], "get_out_idx_kernel");
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
+                Program prog;
+                buildProgram(prog, where_cl, where_cl_len, options.str());
+                whereProgs[device] = new Program(prog);
+                whereKerns[device] = new Kernel(*whereProgs[device], "get_out_idx_kernel");
             });
 
         NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
@@ -70,7 +75,7 @@ namespace kernel
                                    Buffer, KParam,
                                    Buffer, KParam,
                                    Buffer, KParam,
-                                   uint, uint, uint>(whereKerns[device]);
+                                   uint, uint, uint>(*whereKerns[device]);
 
         whereOp(EnqueueArgs(getQueue(), global, local),
                 out_data,
