@@ -10,6 +10,7 @@
 #pragma once
 #include <string>
 #include <mutex>
+#include <map>
 #include <kernel_headers/scan_dim.hpp>
 #include <kernel_headers/ops.hpp>
 #include <program.hpp>
@@ -34,12 +35,12 @@ namespace opencl
 namespace kernel
 {
     template<typename Ti, typename To, af_op_t op, int dim, bool isFinalPass, uint threads_y>
-    static Kernel get_scan_dim_kernels(int kerIdx)
+    static Kernel* get_scan_dim_kernels(int kerIdx)
     {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static Program           scanProgs[DeviceManager::MAX_DEVICES];
-        static Kernel            scanKerns[DeviceManager::MAX_DEVICES];
-        static Kernel           bcastKerns[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*> scanProgs;
+        static std::map<int, Kernel*>  scanKerns;
+        static std::map<int, Kernel*>  bcastKerns;
 
         int device= getActiveDeviceId();
 
@@ -59,13 +60,19 @@ namespace kernel
                         << " -D " << binOpName<op>()
                         << " -D CPLX=" << af::iscplx<Ti>()
                         << " -D isFinalPass=" << (int)(isFinalPass);
+                if (std::is_same<Ti, double>::value ||
+                    std::is_same<Ti, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
 
                 const char *ker_strs[] = {ops_cl, scan_dim_cl};
                 const int   ker_lens[] = {ops_cl_len, scan_dim_cl_len};
-                buildProgram(scanProgs[device], 2, ker_strs, ker_lens, options.str());
+                cl::Program prog;
+                buildProgram(prog, 2, ker_strs, ker_lens, options.str());
+                scanProgs[device] = new Program(prog);
 
-                scanKerns[device] = Kernel(scanProgs[device],  "scan_dim_kernel");
-                bcastKerns[device] = Kernel(scanProgs[device],  "bcast_dim_kernel");
+                scanKerns[device] = new Kernel(*scanProgs[device],  "scan_dim_kernel");
+                bcastKerns[device] = new Kernel(*scanProgs[device],  "bcast_dim_kernel");
 
             });
 
@@ -78,7 +85,7 @@ namespace kernel
                                   const Param &in,
                                   const uint groups_all[4])
     {
-        Kernel ker = get_scan_dim_kernels<Ti, To, op, dim, isFinalPass, threads_y>(0);
+        Kernel* ker = get_scan_dim_kernels<Ti, To, op, dim, isFinalPass, threads_y>(0);
 
         NDRange local(THREADS_X, threads_y);
         NDRange global(groups_all[0] * groups_all[2] * local[0],
@@ -90,7 +97,7 @@ namespace kernel
                                   Buffer, KParam,
                                   Buffer, KParam,
                                   uint, uint,
-                                  uint, uint>(ker);
+                                  uint, uint>(*ker);
 
 
         scanOp(EnqueueArgs(getQueue(), global, local),
@@ -106,7 +113,7 @@ namespace kernel
                                    const uint groups_all[4])
     {
 
-        Kernel ker = get_scan_dim_kernels<Ti, To, op, dim, isFinalPass, threads_y>(1);
+        Kernel* ker = get_scan_dim_kernels<Ti, To, op, dim, isFinalPass, threads_y>(1);
 
         NDRange local(THREADS_X, threads_y);
         NDRange global(groups_all[0] * groups_all[2] * local[0],
@@ -117,7 +124,7 @@ namespace kernel
         auto bcastOp = make_kernel<Buffer, KParam,
                                    Buffer, KParam,
                                    uint, uint,
-                                   uint, uint>(ker);
+                                   uint, uint>(*ker);
 
         bcastOp(EnqueueArgs(getQueue(), global, local),
                 out.data, out.info, tmp.data, tmp.info,

@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if Ti == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 __kernel
 void scan_dim_kernel(__global To *oData, KParam oInfo,
                      __global To *tData, KParam tInfo,
@@ -20,16 +16,16 @@ void scan_dim_kernel(__global To *oData, KParam oInfo,
                      uint groups_dim,
                      uint lim)
 {
-    const uint lidx = get_local_id(0);
-    const uint lidy = get_local_id(1);
-    const  int lid  = lidy * THREADS_X + lidx;
+    const int lidx = get_local_id(0);
+    const int lidy = get_local_id(1);
+    const int lid  = lidy * THREADS_X + lidx;
 
-    const uint zid = get_group_id(0) / groups_x;
-    const uint wid = get_group_id(1) / groups_y;
-    const uint groupId_x = get_group_id(0) - (groups_x) * zid;
-    const uint groupId_y = get_group_id(1) - (groups_y) * wid;
-    const uint xid = groupId_x * get_local_size(0) + lidx;
-    const uint yid = groupId_y;
+    const int zid = get_group_id(0) / groups_x;
+    const int wid = get_group_id(1) / groups_y;
+    const int groupId_x = get_group_id(0) - (groups_x) * zid;
+    const int groupId_y = get_group_id(1) - (groups_y) * wid;
+    const int xid = groupId_x * get_local_size(0) + lidx;
+    const int yid = groupId_y;
 
     uint ids[4] = {xid, yid, zid, wid};
 
@@ -37,13 +33,13 @@ void scan_dim_kernel(__global To *oData, KParam oInfo,
     // There are DIMY elements per group for in
     // Hence increment ids[dim] just after offseting out and before offsetting in
     tData += ids[3] * tInfo.strides[3] + ids[2] * tInfo.strides[2] + ids[1] * tInfo.strides[1] + ids[0];
-    const uint groupId_dim = ids[dim];
+    const int groupId_dim = ids[dim];
 
     ids[dim] = ids[dim] * DIMY * lim + lidy;
     oData  += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] + ids[1] * oInfo.strides[1] + ids[0];
     iData  += ids[3] *  iInfo.strides[3] + ids[2] *  iInfo.strides[2] + ids[1] *  iInfo.strides[1] + ids[0];
-    uint id_dim = ids[dim];
-    const uint out_dim = oInfo.dims[dim];
+    int id_dim = ids[dim];
+    const int out_dim = oInfo.dims[dim];
 
     bool is_valid =
         (ids[0] < oInfo.dims[0]) &&
@@ -51,8 +47,8 @@ void scan_dim_kernel(__global To *oData, KParam oInfo,
         (ids[2] < oInfo.dims[2]) &&
         (ids[3] < oInfo.dims[3]);
 
-    const uint ostride_dim = oInfo.strides[dim];
-    const uint istride_dim =  iInfo.strides[dim];
+    const int ostride_dim = oInfo.strides[dim];
+    const int istride_dim =  iInfo.strides[dim];
 
     __local To l_val0[THREADS_X * DIMY];
     __local To l_val1[THREADS_X * DIMY];
@@ -109,16 +105,16 @@ void bcast_dim_kernel(__global To *oData, KParam oInfo,
                       uint groups_dim,
                       uint lim)
 {
-    const uint lidx = get_local_id(0);
-    const uint lidy = get_local_id(1);
-    const uint lid  = lidy * THREADS_X + lidx;
+    const int lidx = get_local_id(0);
+    const int lidy = get_local_id(1);
+    const int lid  = lidy * THREADS_X + lidx;
 
-    const uint zid = get_group_id(0) / groups_x;
-    const uint wid = get_group_id(1) / groups_y;
-    const uint groupId_x = get_group_id(0) - (groups_x) * zid;
-    const uint groupId_y = get_group_id(1) - (groups_y) * wid;
-    const uint xid = groupId_x * get_local_size(0) + lidx;
-    const uint yid = groupId_y;
+    const int zid = get_group_id(0) / groups_x;
+    const int wid = get_group_id(1) / groups_y;
+    const int groupId_x = get_group_id(0) - (groups_x) * zid;
+    const int groupId_y = get_group_id(1) - (groups_y) * wid;
+    const int xid = groupId_x * get_local_size(0) + lidx;
+    const int yid = groupId_y;
 
     uint ids[4] = {xid, yid, zid, wid};
 
@@ -126,13 +122,13 @@ void bcast_dim_kernel(__global To *oData, KParam oInfo,
     // There are DIMY elements per group for in
     // Hence increment ids[dim] just after offseting out and before offsetting in
     tData += ids[3] * tInfo.strides[3] + ids[2] * tInfo.strides[2] + ids[1] * tInfo.strides[1] + ids[0];
-    const uint groupId_dim = ids[dim];
+    const int groupId_dim = ids[dim];
 
     ids[dim] = ids[dim] * DIMY * lim + lidy;
     oData  += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] + ids[1] * oInfo.strides[1] + ids[0];
 
-    const uint id_dim = ids[dim];
-    const uint out_dim = oInfo.dims[dim];
+    const int id_dim = ids[dim];
+    const int out_dim = oInfo.dims[dim];
 
     bool is_valid =
         (ids[0] < oInfo.dims[0]) &&
@@ -145,7 +141,7 @@ void bcast_dim_kernel(__global To *oData, KParam oInfo,
 
     To accum = *(tData - tInfo.strides[dim]);
 
-    const uint ostride_dim = oInfo.strides[dim];
+    const int ostride_dim = oInfo.strides[dim];
 
     for (int k = 0, id = id_dim;
          is_valid && k < lim && (id < out_dim);

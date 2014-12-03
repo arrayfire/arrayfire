@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if T == double || Ti == double || To == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 #ifdef ADD_OP
 T binOp(T lhs, T rhs)
 {

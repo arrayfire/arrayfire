@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#ifdef USE_DOUBLE
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif // USE_DOUBLE
-
 __kernel
 void transpose(__global T *oData,
                KParam oInfo,

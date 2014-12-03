@@ -24,6 +24,10 @@ using std::string;
 
 namespace opencl
 {
+    const static std::string USE_DBL_SRC_STR("\n\
+                                           #ifdef USE_DOUBLE\n\
+                                           #pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
+                                           #endif\n");
     void buildProgram(cl::Program &prog,
                       const char *ker_str, const int ker_len, std::string options)
     {
@@ -34,6 +38,7 @@ namespace opencl
                       const char **ker_strs, const int *ker_lens, std::string options)
     {
         Program::Sources setSrc;
+        setSrc.emplace_back(USE_DBL_SRC_STR.c_str(), USE_DBL_SRC_STR.length());
         setSrc.emplace_back(KParam_hpp, KParam_hpp_len);
 
         for (int i = 0; i < num_files; i++) {
