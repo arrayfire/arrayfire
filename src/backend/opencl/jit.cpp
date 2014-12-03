@@ -33,7 +33,7 @@ using cl::NDRange;
 using std::string;
 using std::stringstream;
 
-static string getFuncName(Node *node, bool is_linear)
+static string getFuncName(Node *node, bool is_linear, bool *is_double)
 {
     stringstream funcName;
 
@@ -45,7 +45,18 @@ static string getFuncName(Node *node, bool is_linear)
 
     node->genKerName(funcName, false);
     funcName << "_";
-    node->genKerName(funcName, true);
+
+    stringstream inNames;
+    node->genKerName(inNames, true);
+
+    string inStr = inNames.str();
+    string dblChars = "dDzZ";
+
+
+    size_t loc = inStr.find_first_of(dblChars);
+    *is_double = (loc != std::string::npos);
+
+    funcName << inStr;
     return funcName.str();
 }
 
@@ -54,7 +65,6 @@ static string getKernelString(string funcName, Node *node, bool is_linear)
     stringstream kerStream;
     int id = node->setId(0) - 1;
 
-    kerStream << "#pragma OPENCL EXTENSION cl_khr_fp64 : enable" << "\n" << "\n";
     kerStream << "__kernel void" << "\n";
 
     kerStream << funcName;
@@ -111,7 +121,8 @@ static string getKernelString(string funcName, Node *node, bool is_linear)
 static Kernel getKernel(Node *node, bool is_linear)
 {
 
-    string funcName = getFuncName(node, is_linear);
+    bool is_dbl = false;
+    string funcName = getFuncName(node, is_linear, &is_dbl);
 
     typedef struct {
         Program prog;
@@ -131,7 +142,7 @@ static Kernel getKernel(Node *node, bool is_linear)
         const char *ker_strs[] = {jit_cl, jit_ker.c_str()};
         const int ker_lens[] = {jit_cl_len, (int)jit_ker.size()};
 
-        buildProgram(entry.prog, 2, ker_strs, ker_lens, string(""));
+        buildProgram(entry.prog, 2, ker_strs, ker_lens, is_dbl ? string(" -D USE_DOUBLE") :  string(""));
         entry.ker = Kernel(entry.prog, funcName.c_str());
 
         kernelCaches[device][funcName] = entry;
