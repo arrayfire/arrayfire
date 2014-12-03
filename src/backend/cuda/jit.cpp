@@ -131,7 +131,7 @@ static string getKernelString(string funcName, Node *node, bool is_linear)
         kerStream << "%el1  = mul i32 %odim0, %odim1\n";
         kerStream << "%el2  = mul i32 %el1  , %odim2\n";
         kerStream << "%el3  = mul i32 %el2  , %odim3\n";
-        kerStream << "%cmp0 = icmp slt i32 %gid, %el1\n";
+        kerStream << "%cmp0 = icmp slt i32 %gid, %el3\n";
         kerStream << "br i1 %cmp0, label %core, label %end\n";
     }
 
