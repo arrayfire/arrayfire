@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if Ti == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 __kernel
 void scan_first_kernel(__global To *oData, KParam oInfo,
                        __global To *tData, KParam tInfo,
@@ -18,16 +14,16 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
                        uint groups_x, uint groups_y,
                        uint lim)
 {
-    const uint lidx = get_local_id(0);
-    const uint lidy = get_local_id(1);
-    const  int lid  = lidy * get_local_size(0) + lidx;
+    const int lidx = get_local_id(0);
+    const int lidy = get_local_id(1);
+    const int lid  = lidy * get_local_size(0) + lidx;
 
-    const uint zid = get_group_id(0) / groups_x;
-    const uint wid = get_group_id(1) / groups_y;
-    const uint groupId_x = get_group_id(0) - (groups_x) * zid;
-    const uint groupId_y = get_group_id(1) - (groups_y) * wid;
-    const uint xid = groupId_x * get_local_size(0) * lim + lidx;
-    const uint yid = groupId_y * get_local_size(1) + lidy;
+    const int zid = get_group_id(0) / groups_x;
+    const int wid = get_group_id(1) / groups_y;
+    const int groupId_x = get_group_id(0) - (groups_x) * zid;
+    const int groupId_y = get_group_id(1) - (groups_y) * wid;
+    const int xid = groupId_x * get_local_size(0) * lim + lidx;
+    const int yid = groupId_y * get_local_size(1) + lidy;
 
     iData += wid * iInfo.strides[3] + zid * iInfo.strides[2] +
         yid * iInfo.strides[1] + iInfo.offset;
@@ -86,16 +82,16 @@ void bcast_first_kernel(__global To *oData, KParam oInfo,
                         const __global To *tData, KParam tInfo,
                         uint groups_x, uint groups_y, uint lim)
 {
-    const uint lidx = get_local_id(0);
-    const uint lidy = get_local_id(1);
-    const uint lid  = lidy * get_local_size(0) + lidx;
+    const int lidx = get_local_id(0);
+    const int lidy = get_local_id(1);
+    const int lid  = lidy * get_local_size(0) + lidx;
 
-    const uint zid = get_group_id(0) / groups_x;
-    const uint wid = get_group_id(1) / groups_y;
-    const uint groupId_x = get_group_id(0) - (groups_x) * zid;
-    const uint groupId_y = get_group_id(1) - (groups_y) * wid;
-    const uint xid = groupId_x * get_local_size(0) * lim + lidx;
-    const uint yid = groupId_y * get_local_size(1) + lidy;
+    const int zid = get_group_id(0) / groups_x;
+    const int wid = get_group_id(1) / groups_y;
+    const int groupId_x = get_group_id(0) - (groups_x) * zid;
+    const int groupId_y = get_group_id(1) - (groups_y) * wid;
+    const int xid = groupId_x * get_local_size(0) * lim + lidx;
+    const int yid = groupId_y * get_local_size(1) + lidy;
 
     tData += wid * tInfo.strides[3] + zid * tInfo.strides[2] +
         yid * tInfo.strides[1] + tInfo.offset;

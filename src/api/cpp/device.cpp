@@ -46,6 +46,13 @@ namespace af
         return device;
     }
 
+    bool isDoubleAvailable(const int device)
+    {
+        bool temp;
+        AF_THROW(af_get_dbl_support(&temp, device));
+        return temp;
+    }
+
     int deviceget() { return getDevice(); }
 
     void sync(int device)

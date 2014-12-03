@@ -23,6 +23,10 @@ namespace opencl
 template<typename T, bool is_color>
 Array<T> * meanshift(const Array<T> &in, const float &s_sigma, const float &c_sigma, const unsigned iter)
 {
+    if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
+        !isDoubleSupported(getActiveDeviceId())) {
+        OPENCL_NOT_SUPPORTED();
+    }
     const dim4 dims = in.dims();
 
     Array<T>* out   = createEmptyArray<T>(dims);

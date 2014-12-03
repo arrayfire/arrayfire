@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if T == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 __kernel
 void iota_kernel(__global T *out, const KParam op,
                  const dim_type blocksPerMatX, const dim_type blocksPerMatY)

@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if T == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 #if CPLX
 #define set(a, b) a = b
 #define set_scalar(a, b) do {                   \

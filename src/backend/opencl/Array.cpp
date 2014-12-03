@@ -14,6 +14,7 @@
 #include <copy.hpp>
 #include <scalar.hpp>
 #include <JIT/BufferNode.hpp>
+#include <err_opencl.hpp>
 
 using af::dim4;
 
@@ -136,6 +137,10 @@ namespace opencl
     Array<T> *
     createHostDataArray(const dim4 &size, const T * const data)
     {
+        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
+            !opencl::isDoubleSupported(opencl::getActiveDeviceId())) {
+            TYPE_ERROR(1, (std::is_same<T, double>::value ? f64 : c64));
+        }
         Array<T> *out = new Array<T>(size, data);
         return out;
     }
@@ -144,6 +149,10 @@ namespace opencl
     Array<T> *
     createDeviceDataArray(const dim4 &size, const void *data)
     {
+        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
+            !opencl::isDoubleSupported(opencl::getActiveDeviceId())) {
+            TYPE_ERROR(1, (std::is_same<T, double>::value ? f64 : c64));
+        }
         Array<T> *out = new Array<T>(size, (cl_mem)(data));
         return out;
     }
@@ -152,6 +161,10 @@ namespace opencl
     Array<T>*
     createValueArray(const dim4 &size, const T& value)
     {
+        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
+            !opencl::isDoubleSupported(opencl::getActiveDeviceId())) {
+            TYPE_ERROR(1, (std::is_same<T, double>::value ? f64 : c64));
+        }
         return createScalarNode<T>(size, value);
     }
 
@@ -159,6 +172,10 @@ namespace opencl
     Array<T>*
     createEmptyArray(const dim4 &size)
     {
+        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
+            !opencl::isDoubleSupported(opencl::getActiveDeviceId())) {
+            TYPE_ERROR(1, (std::is_same<T, double>::value ? f64 : c64));
+        }
         Array<T> *out = new Array<T>(size);
         return out;
     }
@@ -178,6 +195,10 @@ namespace opencl
     Array<T>*
     createParamArray(Param &tmp)
     {
+        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
+            !opencl::isDoubleSupported(opencl::getActiveDeviceId())) {
+            TYPE_ERROR(1, (std::is_same<T, double>::value ? f64 : c64));
+        }
         Array<T> *out = new Array<T>(tmp);
         return out;
     }

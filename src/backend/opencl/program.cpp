@@ -24,6 +24,10 @@ using std::string;
 
 namespace opencl
 {
+    const static std::string USE_DBL_SRC_STR("\n\
+                                           #ifdef USE_DOUBLE\n\
+                                           #pragma OPENCL EXTENSION cl_khr_fp64 : enable\n\
+                                           #endif\n");
     void buildProgram(cl::Program &prog,
                       const char *ker_str, const int ker_len, std::string options)
     {
@@ -35,6 +39,7 @@ namespace opencl
     {
         try {
             Program::Sources setSrc;
+            setSrc.emplace_back(USE_DBL_SRC_STR.c_str(), USE_DBL_SRC_STR.length());
             setSrc.emplace_back(KParam_hpp, KParam_hpp_len);
 
             for (int i = 0; i < num_files; i++) {
@@ -42,11 +47,14 @@ namespace opencl
             }
 
             static std::string defaults =
-                std::string(" -D dim_type=") +
+                std::string(" -cl-std=CL1.1") + std::string(" -D dim_type=") +
                 std::string(dtype_traits<dim_type>::getName());
 
+
             prog = cl::Program(getContext(), setSrc);
-            prog.build((defaults + options).c_str());
+            std::vector<cl::Device> targetDevices;
+            targetDevices.push_back(getDevice());
+            prog.build(targetDevices, (defaults + options).c_str());
 
         } catch (...) {
             SHOW_BUILD_INFO(prog);

@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if T == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 void diff_this(__global T* out, __global const T* in, const dim_type oMem,
                const dim_type iMem0, const dim_type iMem1, const dim_type iMem2)
 {

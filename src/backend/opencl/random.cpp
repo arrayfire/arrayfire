@@ -13,12 +13,17 @@
 #include <random.hpp>
 #include <cassert>
 #include <kernel/random.hpp>
+#include <err_opencl.hpp>
 
 namespace opencl
 {
     template<typename T>
     Array<T>* randu(const af::dim4 &dims)
     {
+        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
+            !isDoubleSupported(getActiveDeviceId())) {
+            OPENCL_NOT_SUPPORTED();
+        }
         Array<T> *out = createEmptyArray<T>(dims);
         kernel::random<T, true>(out->get(), out->elements());
         return out;
@@ -27,6 +32,10 @@ namespace opencl
     template<typename T>
     Array<T>* randn(const af::dim4 &dims)
     {
+        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
+            !isDoubleSupported(getActiveDeviceId())) {
+            OPENCL_NOT_SUPPORTED();
+        }
         Array<T> *out = createEmptyArray<T>(dims);
         kernel::random<T, false>(out->get(), out->elements());
         return out;

@@ -17,13 +17,16 @@
 #ifndef NDEBUG
 #define CL_DEBUG_FINISH(Q) Q.finish()
 
-#define SHOW_BUILD_INFO(PROG) do {                              \
-    std::cout << PROG.getBuildInfo<CL_PROGRAM_BUILD_LOG>(       \
-        PROG.getInfo<CL_PROGRAM_DEVICES>()[0]) << std::endl;    \
-                                                                \
-    std::cout << PROG.getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(   \
-        PROG.getInfo<CL_PROGRAM_DEVICES>()[0]) << std::endl;    \
-    } while(0)                                                  \
+#define SHOW_BUILD_INFO(PROG) do {                                  \
+    cl_uint numDevices = PROG.getInfo<CL_PROGRAM_NUM_DEVICES>();    \
+    for (int i = 0; i<numDevices; ++i) {                            \
+        std::cout << PROG.getBuildInfo<CL_PROGRAM_BUILD_LOG>(       \
+            PROG.getInfo<CL_PROGRAM_DEVICES>()[i]) << std::endl;    \
+                                                                    \
+        std::cout << PROG.getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(   \
+            PROG.getInfo<CL_PROGRAM_DEVICES>()[i]) << std::endl;    \
+    }                                                               \
+    } while(0)                                                      \
 
 #else
 

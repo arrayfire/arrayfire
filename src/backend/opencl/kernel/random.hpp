@@ -17,6 +17,7 @@
 #include <sstream>
 #include <string>
 #include <mutex>
+#include <map>
 #include <iostream>
 #include <dispatch.hpp>
 #include <err_opencl.hpp>
@@ -96,9 +97,15 @@ namespace opencl
 
                         std::ostringstream options;
                         options << " -D T=" << dtype_traits<T>::getName()
-                                << " -D IS_DOUBLE=" << (int)(isDouble<T>())
                                 << " -D repeat="<< REPEAT
-                                << " -D "<< random_name<T, isRandu>().name();
+                                << " -D " << random_name<T, isRandu>().name();
+
+                        if (std::is_same<T, double>::value ||
+                            std::is_same<T, cdouble>::value) {
+                            options << " -D USE_DOUBLE";
+                        }
+
+                        options << " -D "<< random_name<T, isRandu>().name();
 
                         buildProgram(ranProgs[device], random_cl, random_cl_len, options.str());
                         ranKernels[device] = Kernel(ranProgs[device], "random");

@@ -21,6 +21,8 @@ namespace af
 
     AFAPI int getDevice();
 
+    AFAPI bool isDoubleAvailable(const int device);
+
     AFAPI void setDevice(const int device);
 
     AFAPI void sync(int device = -1);
@@ -38,6 +40,8 @@ extern "C" {
     AFAPI af_err af_deviceprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
     AFAPI af_err af_get_device_count(int *num_of_devices);
+
+    AFAPI af_err af_get_dbl_support(bool* available, const int device);
 
     AFAPI af_err af_set_device(const int device);
 

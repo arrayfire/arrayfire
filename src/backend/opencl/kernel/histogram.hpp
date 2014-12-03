@@ -13,6 +13,7 @@
 #include <traits.hpp>
 #include <string>
 #include <mutex>
+#include <map>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -34,8 +35,8 @@ void histogram(Param out, const Param in, const Param minmax, dim_type nbins)
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static Program            histProgs[DeviceManager::MAX_DEVICES];
-        static Kernel           histKernels[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*> histProgs;
+        static std::map<int, Kernel *> histKernels;
 
         int device = getActiveDeviceId();
 
@@ -44,16 +45,20 @@ void histogram(Param out, const Param in, const Param minmax, dim_type nbins)
                     options << " -D inType=" << dtype_traits<inType>::getName()
                             << " -D outType=" << dtype_traits<outType>::getName()
                             << " -D THRD_LOAD=" << THRD_LOAD;
-
-                    buildProgram(histProgs[device], histogram_cl, histogram_cl_len, options.str());
-
-                    histKernels[device] = Kernel(histProgs[device], "histogram");
+                    if (std::is_same<inType, double>::value ||
+                        std::is_same<inType, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
+                    Program prog;
+                    buildProgram(prog, histogram_cl, histogram_cl_len, options.str());
+                    histProgs[device]   = new Program(prog);
+                    histKernels[device] = new Kernel(*histProgs[device], "histogram");
                 });
 
         auto histogramOp = make_kernel<Buffer, KParam, Buffer, KParam,
                                        Buffer, cl::LocalSpaceArg,
                                        dim_type, dim_type, dim_type
-                                      >(histKernels[device]);
+                                      >(*histKernels[device]);
 
         NDRange local(THREADS_X, 1);
 
