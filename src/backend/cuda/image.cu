@@ -64,9 +64,15 @@ namespace cuda
     #define ForceCheckGL(msg) glForceErrorCheck(msg, __FILE__, __LINE__)
     #define CheckGLSkip(msg)  glErrorSkip      (msg, __FILE__, __LINE__)
 
-    inline void glErrorSkip(const char *msg, const char* file, int line)
+    inline GLenum glErrorSkip(const char *msg, const char* file, int line)
     {
+    #ifndef NDEBUG
         GLenum x = glGetError();
+        if (x != GL_NO_ERROR) {
+            printf("GL Error Skipped at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
+        }
+        return x;
+    #endif
     }
 
     inline GLenum glErrorCheck(const char *msg, const char* file, int line)
