@@ -76,6 +76,7 @@ namespace cpu
 
         if (x != GL_NO_ERROR) {
             printf("GL Error at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
+            AF_ERROR("Error in Graphics", AF_ERR_GL_ERROR);
         }
         return x;
     #endif
@@ -87,6 +88,7 @@ namespace cpu
 
         if (x != GL_NO_ERROR) {
             printf("GL Error at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
+            AF_ERROR("Error in Graphics", AF_ERR_GL_ERROR);
         }
         return x;
     }
@@ -128,6 +130,7 @@ namespace cpu
     static void error_callback(int error, const char* description)
     {
         fputs(description, stderr);
+        AF_ERROR("Error in GLFW", AF_ERR_GL_ERROR);
     }
 
     static void key_callback(GLFWwindow* wind, int key, int scancode, int action, int mods)

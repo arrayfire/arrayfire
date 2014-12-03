@@ -17,6 +17,7 @@
 #include <graphics.hpp>
 #include <stdexcept>
 #include <err_cuda.hpp>
+#include <debug_cuda.hpp>
 
 #include <iostream>
 #include <cstring>
@@ -83,6 +84,7 @@ namespace cuda
 
         if (x != GL_NO_ERROR) {
             printf("GL Error at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
+            AF_ERROR("Error in Graphics", AF_ERR_GL_ERROR);
         }
         return x;
     #endif
@@ -94,6 +96,7 @@ namespace cuda
 
         if (x != GL_NO_ERROR) {
             printf("GL Error at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
+            AF_ERROR("Error in Graphics", AF_ERR_GL_ERROR);
         }
         return x;
     }
@@ -134,6 +137,7 @@ namespace cuda
     static void error_callback(int error, const char* description)
     {
         fputs(description, stderr);
+        AF_ERROR("Error in GLFW", AF_ERR_GL_ERROR);
     }
 
     static void key_callback(GLFWwindow* wind, int key, int scancode, int action, int mods)
@@ -208,6 +212,8 @@ namespace cuda
         // Unlock array
         // Not implemented yet
         // X.unlock();
+
+        POST_LAUNCH_CHECK();
     }
 
     WindowHandle CreateWindow(const int width, const int height, const char *title)
@@ -298,6 +304,7 @@ namespace cuda
         // Register PBO with CUDA
         cudaGraphicsGLRegisterBuffer(&newWindow->cudaPBOResource, newWindow->gl_PBO,
                                      cudaGraphicsMapFlagsWriteDiscard);
+        POST_LAUNCH_CHECK();
 
         CheckGL("Before Shader Initialization");
         // load shader program
@@ -332,6 +339,7 @@ namespace cuda
 
         // Delete CUDA Resource
         cudaGraphicsUnregisterResource(window->cudaPBOResource);
+        POST_LAUNCH_CHECK();
 
         // Delete memory
         closedWindows.push_back(window->uiID);
