@@ -40,6 +40,7 @@ ELSE (WIN32)
         /usr/lib64
         /usr/lib
         /usr/lib/x86_64-linux-gnu
+        /usr/lib/arm-linux-gnueabihf
         /usr/local/lib64
         /usr/local/lib
         /sw/lib
