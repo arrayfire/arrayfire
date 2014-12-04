@@ -12,6 +12,7 @@
 #include <platform.hpp>
 #include <traits.hpp>
 #include <mutex>
+#include <map>
 #include <backend.hpp>
 
 using cl::Buffer;
@@ -32,8 +33,8 @@ void
 set(Buffer &ptr, T val, const size_t &elements)
 {
     static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-    static Program            setProgs[DeviceManager::MAX_DEVICES];
-    static Kernel           setKernels[DeviceManager::MAX_DEVICES];
+    static std::map<int, Program*>   setProgs;
+    static std::map<int, Kernel *> setKernels;
 
     int device = getActiveDeviceId();
 
@@ -41,12 +42,16 @@ set(Buffer &ptr, T val, const size_t &elements)
                 Program::Sources setSrc;
                 setSrc.emplace_back(set_cl, set_cl_len);
 
-                setProgs[device] = Program(getContext(), setSrc);
+                setProgs[device] = new Program(getContext(), setSrc);
 
                 string opt = string("-D T=") + dtype_traits<T>::getName();
-                setProgs[device].build(opt.c_str());
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    opt << " -D USE_DOUBLE";
+                }
+                setProgs[device]->build(opt.c_str());
 
-                setKernels[device] = Kernel(setProgs[device], "set");
+                setKernels[device] = new Kernel(*setProgs[device], "set");
             });
 
     auto setKern = make_kernel<Buffer, T, const unsigned long>(setKernels[device]);

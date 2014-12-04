@@ -12,8 +12,9 @@
 #include <iterator>
 #include <vector>
 #include <algorithm>
-#include <af/dim4.hpp>
 #include <limits>
+#include <arrayfire.h>
+#include <af/dim4.hpp>
 
 typedef unsigned char uchar;
 typedef unsigned int uint;
@@ -271,4 +272,15 @@ bool compareArraysRMSD(dim_type data_size, T *gold, T *data, double tolerance)
         return false;
 
     return true;
+}
+
+template<typename T>
+bool noDoubleTests()
+{
+    bool isTypeDouble = std::is_same<T, double>::value || std::is_same<T, af::af_cdouble>::value;
+
+    int dev = af::getDevice();
+    bool isDoubleSupported = af::isDoubleAvailable(dev);
+
+    return ((isTypeDouble && !isDoubleSupported) ? true : false);
 }

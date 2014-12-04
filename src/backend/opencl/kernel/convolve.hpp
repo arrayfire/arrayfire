@@ -13,6 +13,7 @@
 #include <traits.hpp>
 #include <string>
 #include <mutex>
+#include <map>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -103,8 +104,8 @@ void convolve_nd(Param out, const Param signal, const Param filter, ConvolveBatc
 
     try {
         static std::once_flag  compileFlags[DeviceManager::MAX_DEVICES];
-        static Program            convProgs[DeviceManager::MAX_DEVICES];
-        static Kernel           convKernels[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*> convProgs;
+        static std::map<int, Kernel*>  convKernels;
 
         int device = getActiveDeviceId();
 
@@ -113,14 +114,15 @@ void convolve_nd(Param out, const Param signal, const Param filter, ConvolveBatc
                     options << " -D T=" << dtype_traits<T>::getName()
                             << " -D accType="<< dtype_traits<T>::getName()
                             << " -D BASE_DIM="<< baseDim
-                            << " -D EXPAND="<< expand;
-
-                    buildProgram(convProgs[device],
-                        convolve_cl,
-                        convolve_cl_len,
-                        options.str());
-
-                    convKernels[device] = Kernel(convProgs[device], "convolve");
+                            << " -D EXPAND=" << expand;
+                    if (std::is_same<T, double>::value ||
+                        std::is_same<T, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
+                    Program prog;
+                    buildProgram(prog, convolve_cl, convolve_cl_len, options.str());
+                    convProgs[device]   = new Program(prog);
+                    convKernels[device] = new Kernel(*convProgs[device], "convolve");
                 });
 
         // prepare launch parameters
@@ -132,7 +134,7 @@ void convolve_nd(Param out, const Param signal, const Param filter, ConvolveBatc
 
         auto convOp = make_kernel<Buffer, KParam, Buffer, KParam,
                                   cl::LocalSpaceArg, Buffer, KParam,
-                                  dim_type, dim_type, dim_type>(convKernels[device]);
+                                  dim_type, dim_type, dim_type>(*convKernels[device]);
 
         cl_int se_size;
         switch(baseDim) {
@@ -162,8 +164,8 @@ void convolve2(Param out, const Param signal, const Param filter)
 {
     try {
         static std::once_flag  compileFlags[DeviceManager::MAX_DEVICES];
-        static Program            convProgs[DeviceManager::MAX_DEVICES];
-        static Kernel           convKernels[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*>   convProgs;
+        static std::map<int, Kernel*>  convKernels;
 
         int device = getActiveDeviceId();
 
@@ -174,17 +176,18 @@ void convolve2(Param out, const Param signal, const Param filter)
                             << " -D CONV_DIM="<< conv_dim
                             << " -D EXPAND="<< expand
                             << " -D SEPARABLE_CONV";
-
-                    buildProgram(convProgs[device],
-                        convolve_cl,
-                        convolve_cl_len,
-                        options.str());
-
-                    convKernels[device] = Kernel(convProgs[device], "convolve");
+                    if (std::is_same<T, double>::value ||
+                        std::is_same<T, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
+                    Program prog;
+                    buildProgram(prog, convolve_cl, convolve_cl_len, options.str());
+                    convProgs[device]   = new Program(prog);
+                    convKernels[device] = new Kernel(*convProgs[device], "convolve");
                 });
 
         auto convOp = make_kernel<Buffer, KParam, Buffer, KParam, cl::LocalSpaceArg,
-                                  Buffer, dim_type, dim_type>(convKernels[device]);
+                                  Buffer, dim_type, dim_type>(*convKernels[device]);
 
         NDRange local(THREADS_X, THREADS_Y);
 

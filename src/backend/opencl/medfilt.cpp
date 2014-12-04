@@ -23,6 +23,10 @@ namespace opencl
 template<typename T, af_pad_type pad>
 Array<T> * medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
 {
+    if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
+        !isDoubleSupported(getActiveDeviceId())) {
+        OPENCL_NOT_SUPPORTED();
+    }
     ARG_ASSERT(2, (w_len<=kernel::MAX_MEDFILTER_LEN));
 
     const dim4 dims     = in.dims();

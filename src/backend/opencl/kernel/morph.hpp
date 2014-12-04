@@ -13,6 +13,7 @@
 #include <traits.hpp>
 #include <string>
 #include <mutex>
+#include <map>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -46,8 +47,8 @@ void morph(Param         out,
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static Program            morProgs[DeviceManager::MAX_DEVICES];
-        static Kernel           morKernels[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*> morProgs;
+        static std::map<int, Kernel*> morKernels;
 
         int device = getActiveDeviceId();
 
@@ -56,17 +57,21 @@ void morph(Param         out,
                     options << " -D T=" << dtype_traits<T>::getName()
                             << " -D isDilation="<< isDilation
                             << " -D windLen=" << windLen;
-
-                    buildProgram(morProgs[device], morph_cl, morph_cl_len, options.str());
-
-                    morKernels[device] = Kernel(morProgs[device], "morph");
+                    if (std::is_same<T, double>::value ||
+                        std::is_same<T, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
+                    Program prog;
+                    buildProgram(prog, morph_cl, morph_cl_len, options.str());
+                    morProgs[device]   = new Program(prog);
+                    morKernels[device] = new Kernel(*morProgs[device], "morph");
                 });
 
         auto morphOp = make_kernel<Buffer, KParam,
                                    Buffer, KParam,
                                    Buffer, cl::LocalSpaceArg,
                                    dim_type
-                                  >(morKernels[device]);
+                                  >(*morKernels[device]);
 
         NDRange local(THREADS_X, THREADS_Y);
 
@@ -105,8 +110,8 @@ void morph3d(Param       out,
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static Program            morProgs[DeviceManager::MAX_DEVICES];
-        static Kernel           morKernels[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*>  morProgs;
+        static std::map<int, Kernel*> morKernels;
 
         int device = getActiveDeviceId();
 
@@ -115,16 +120,20 @@ void morph3d(Param       out,
                     options << " -D T=" << dtype_traits<T>::getName()
                             << " -D isDilation="<< isDilation
                             << " -D windLen=" << windLen;
-
-                    buildProgram(morProgs[device], morph_cl, morph_cl_len, options.str());
-
-                    morKernels[device] = Kernel(morProgs[device], "morph3d");
+                    if (std::is_same<T, double>::value ||
+                        std::is_same<T, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
+                    Program prog;
+                    buildProgram(prog, morph_cl, morph_cl_len, options.str());
+                    morProgs[device]   = new Program(prog);
+                    morKernels[device] = new Kernel(*morProgs[device], "morph3d");
                 });
 
         auto morphOp = make_kernel<Buffer, KParam,
                                    Buffer, KParam,
                                    Buffer, cl::LocalSpaceArg
-                                  >(morKernels[device]);
+                                  >(*morKernels[device]);
 
         NDRange local(CUBE_X, CUBE_Y, CUBE_Z);
 

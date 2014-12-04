@@ -49,6 +49,7 @@ void scanTest(string pTestFile, int off = 0, bool isSubRef=false, const vector<a
     for (int dev = 0; dev < nDevices; dev++) {
 
         ASSERT_EQ(AF_SUCCESS, af_set_device(dev));
+        if (noDoubleTests<Ti>()) continue;
 
         // Get input array
         if (isSubRef) {
@@ -149,6 +150,7 @@ TEST(Scan, CPP)
     for (int dev = 0; dev < nDevices; dev++) {
 
         af::setDevice(dev);
+        if (noDoubleTests<float>()) continue;
 
         af::array input(dims, &(in.front()));
 

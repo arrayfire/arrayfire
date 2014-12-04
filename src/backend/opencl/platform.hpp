@@ -16,27 +16,9 @@
 namespace opencl
 {
 
-std::string getInfo();
-
-void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
-
-int getDeviceCount();
-
-int getActiveDeviceId();
-
-const cl::Context& getContext();
-
-cl::CommandQueue& getQueue();
-
-int setDevice(int device);
-
-void sync(int device);
-
 class DeviceManager
 {
     friend std::string getInfo();
-
-    friend void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
     friend int getDeviceCount();
 
@@ -46,16 +28,24 @@ class DeviceManager
 
     friend cl::CommandQueue& getQueue();
 
-    friend int setDevice(int device);
+    friend const cl::Device& getDevice();
 
-    friend void setContext(DeviceManager& devMngr, int device);
+    friend bool isDoubleSupported(int device);
+
+    friend void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+
+    friend int setDevice(int device);
 
     public:
         static const unsigned MAX_DEVICES = 16;
 
         static DeviceManager& getInstance();
 
-    private:
+        ~DeviceManager();
+
+    protected:
+        void setContext(int device);
+
         DeviceManager();
 
         // Following two declarations are required to
@@ -65,16 +55,36 @@ class DeviceManager
         DeviceManager(DeviceManager const&);
         void operator=(DeviceManager const&);
 
+    private:
         // Attributes
-        std::vector<cl::CommandQueue>     queues;
-        std::vector<cl::Platform>      platforms;
-        std::vector<cl::Context>        contexts;
-        std::vector<unsigned>         ctxOffsets;
+        std::vector<cl::CommandQueue*>  mQueues;
+        std::vector<cl::Device*>       mDevices;
+        std::vector<cl::Context*>     mContexts;
+        std::vector<cl::Platform*>   mPlatforms;
+        std::vector<unsigned>       mCtxOffsets;
 
-        unsigned activeCtxId;
-        unsigned activeQId;
+        unsigned mActiveCtxId;
+        unsigned mActiveQId;
 };
 
-void setContext(DeviceManager& devMngr, int device);
+std::string getInfo();
+
+int getDeviceCount();
+
+int getActiveDeviceId();
+
+const cl::Context& getContext();
+
+cl::CommandQueue& getQueue();
+
+const cl::Device& getDevice();
+
+bool isDoubleSupported(int device);
+
+void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+
+int setDevice(int device);
+
+void sync(int device);
 
 }

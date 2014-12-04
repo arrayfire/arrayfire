@@ -7,15 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if inType == double || inType == double2
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 typedef struct {
     dim_type dim[4];
 } dims_t;
 
-inType scale(inType value, double factor)
+inType scale(inType value, float factor)
 {
 #ifdef inType_float2
     return (inType)(value.s0*factor, value.s1*factor);
@@ -58,7 +54,7 @@ void copy(__global outType * dst,
           __global const inType * src,
           KParam iInfo,
           outType default_value,
-          double factor, dims_t trgt,
+          float factor, dims_t trgt,
           dim_type blk_x, dim_type blk_y)
 {
     uint lx = get_local_id(0);

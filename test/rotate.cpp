@@ -68,7 +68,7 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
         ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_rotate(&outArray, inArray, theta, AF_INTERP_NEAREST, crop, recenter));
+    ASSERT_EQ(AF_SUCCESS, af_rotate(&outArray, inArray, theta, AF_INTERP_NEAREST, crop));
 
     // Get result
     T* outData = new T[tests[resultIdx].size()];
@@ -134,8 +134,6 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
     ROTATE_INIT(Squarem180CropRecenter      , rotate1, 21,-180, false, true);
     ROTATE_INIT(Square00NoCropRecenter      , rotate1, 22,  0 , false, true);
     ROTATE_INIT(Square00CropRecenter        , rotate1, 23,  0 , true , true);
-    ROTATE_INIT(Square45NoCropNoRecenter    , rotate1, 24, 45 , false, false);
-    ROTATE_INIT(Square45CropNoRecenter      , rotate1, 25, 45 , true , false);
 
     ROTATE_INIT(Rectangle180NoCropRecenter     , rotate2,  0, 180, false, true);
     ROTATE_INIT(Rectangle180CropRecenter       , rotate2,  1, 180, true , true);
@@ -161,8 +159,6 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
     ROTATE_INIT(Rectanglem180CropRecenter      , rotate2, 21,-180, false, true);
     ROTATE_INIT(Rectangle00NoCropRecenter      , rotate2, 22,  0 , false, true);
     ROTATE_INIT(Rectangle00CropRecenter        , rotate2, 23,  0 , true , true);
-    ROTATE_INIT(Rectangle45NoCropNoRecenter    , rotate2, 24, 45 , false, false);
-    ROTATE_INIT(Rectangle45CropNoRecenter      , rotate2, 25, 45 , true , false);
 
 ////////////////////////////////// CPP //////////////////////////////////////
 //
@@ -171,7 +167,6 @@ TEST(Rotate, CPP)
     const unsigned resultIdx = 0;
     const float angle = 180;
     const bool crop = false;
-    const bool recenter =true;
 
     vector<af::dim4> numDims;
     vector<vector<float>>   in;
@@ -182,7 +177,7 @@ TEST(Rotate, CPP)
     float theta = angle * PI / 180.0f;
 
     af::array input(dims, &(in[0].front()));
-    af::array output = af::rotate(input, theta, AF_INTERP_NEAREST, crop, recenter);
+    af::array output = af::rotate(input, theta, AF_INTERP_NEAREST, crop);
 
     // Get result
     float* outData = new float[tests[resultIdx].size()];

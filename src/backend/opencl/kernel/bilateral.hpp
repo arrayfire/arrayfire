@@ -13,6 +13,7 @@
 #include <traits.hpp>
 #include <string>
 #include <mutex>
+#include <map>
 #include <algorithm>
 #include <dispatch.hpp>
 #include <Param.hpp>
@@ -41,19 +42,25 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static Program            bilProgs[DeviceManager::MAX_DEVICES];
-        static Kernel           bilKernels[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*>  bilProgs;
+        static std::map<int, Kernel*> bilKernels;
 
         int device = getActiveDeviceId();
 
         std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
                     options << " -D inType=" << dtype_traits<inType>::getName()
-                            << " -D outType="<< dtype_traits<outType>::getName();
+                            << " -D outType=" << dtype_traits<outType>::getName();
+                    if (std::is_same<inType, double>::value ||
+                        std::is_same<inType, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
 
-                    buildProgram(bilProgs[device], bilateral_cl, bilateral_cl_len, options.str());
+                    Program prog;
+                    buildProgram(prog, bilateral_cl, bilateral_cl_len, options.str());
+                    bilProgs[device] = new Program(prog);
 
-                    bilKernels[device] = Kernel(bilProgs[device], "bilateral");
+                    bilKernels[device] = new Kernel(*bilProgs[device], "bilateral");
                 });
 
         auto bilateralOp = make_kernel<Buffer, KParam,
@@ -62,7 +69,7 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
                                        LocalSpaceArg,
                                        float, float,
                                        dim_type, dim_type
-                                      >(bilKernels[device]);
+                                      >(*bilKernels[device]);
 
         NDRange local(THREADS_X, THREADS_Y);
 

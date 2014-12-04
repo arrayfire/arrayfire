@@ -10,6 +10,7 @@
 #pragma once
 #include <string>
 #include <mutex>
+#include <map>
 #include <kernel_headers/reduce_first.hpp>
 #include <kernel_headers/reduce_dim.hpp>
 #include <kernel_headers/ops.hpp>
@@ -41,8 +42,8 @@ namespace kernel
                        const uint groups_all[4])
     {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static Program         reduceProgs[DeviceManager::MAX_DEVICES];
-        static Kernel          reduceKerns[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*> reduceProgs;
+        static std::map<int, Kernel*> reduceKerns;
 
         int device= getActiveDeviceId();
         std::call_once(compileFlags[device], [device] () {
@@ -60,12 +61,18 @@ namespace kernel
                         << " -D init=" << toNum(reduce.init())
                         << " -D " << binOpName<op>()
                         << " -D CPLX=" << af::iscplx<Ti>();
+                if (std::is_same<Ti, double>::value ||
+                    std::is_same<Ti, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
 
                 const char *ker_strs[] = {ops_cl, reduce_dim_cl};
                 const int   ker_lens[] = {ops_cl_len, reduce_dim_cl_len};
-                buildProgram(reduceProgs[device], 2, ker_strs, ker_lens, options.str());
+                Program prog;
+                buildProgram(prog, 2, ker_strs, ker_lens, options.str());
+                reduceProgs[device] = new Program(prog);
 
-                reduceKerns[device] = Kernel(reduceProgs[device], "reduce_dim_kernel");
+                reduceKerns[device] = new Kernel(*reduceProgs[device], "reduce_dim_kernel");
             });
 
         NDRange local(THREADS_X, threads_y);
@@ -74,7 +81,7 @@ namespace kernel
 
         auto reduceOp = make_kernel<Buffer, KParam,
                                     Buffer, KParam,
-                                    uint, uint, uint>(reduceKerns[device]);
+                                    uint, uint, uint>(*reduceKerns[device]);
 
         reduceOp(EnqueueArgs(getQueue(), global, local),
                  out.data, out.info,
@@ -147,8 +154,8 @@ namespace kernel
                                const uint groups_y)
     {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static Program         reduceProgs[DeviceManager::MAX_DEVICES];
-        static Kernel          reduceKerns[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*> reduceProgs;
+        static std::map<int, Kernel*>  reduceKerns;
 
         int device= getActiveDeviceId();
         std::call_once(compileFlags[device], [device] () {
@@ -165,12 +172,18 @@ namespace kernel
                         << " -D init=" << toNum(reduce.init())
                         << " -D " << binOpName<op>()
                         << " -D CPLX=" << af::iscplx<Ti>();
+                if (std::is_same<Ti, double>::value ||
+                    std::is_same<Ti, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
 
                 const char *ker_strs[] = {ops_cl, reduce_first_cl};
                 const int   ker_lens[] = {ops_cl_len, reduce_first_cl_len};
-                buildProgram(reduceProgs[device], 2, ker_strs, ker_lens, options.str());
+                Program prog;
+                buildProgram(prog, 2, ker_strs, ker_lens, options.str());
+                reduceProgs[device] = new Program(prog);
 
-                reduceKerns[device] = Kernel(reduceProgs[device], "reduce_first_kernel");
+                reduceKerns[device] = new Kernel(*reduceProgs[device], "reduce_first_kernel");
             });
 
         NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
@@ -179,7 +192,7 @@ namespace kernel
 
         auto reduceOp = make_kernel<Buffer, KParam,
                                     Buffer, KParam,
-                                    uint, uint>(reduceKerns[device]);
+                                    uint, uint>(*reduceKerns[device]);
 
         reduceOp(EnqueueArgs(getQueue(), global, local),
                  out.data, out.info, in.data, in.info, groups_x, groups_y);

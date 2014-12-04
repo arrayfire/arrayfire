@@ -36,6 +36,11 @@ namespace JIT
         {
         }
 
+        bool isLinear()
+        {
+            return m_lhs->isLinear() && m_rhs->isLinear();
+        }
+
         void genParams(std::stringstream &kerStream)
         {
             if (m_gen_param) return;
@@ -51,11 +56,11 @@ namespace JIT
             return id;
         }
 
-        void genOffsets(std::stringstream &kerStream)
+        void genOffsets(std::stringstream &kerStream, bool is_linear)
         {
             if (m_gen_offset) return;
-            if (!(m_lhs->isGenOffset())) m_lhs->genOffsets(kerStream);
-            if (!(m_rhs->isGenOffset())) m_rhs->genOffsets(kerStream);
+            if (!(m_lhs->isGenOffset())) m_lhs->genOffsets(kerStream, is_linear);
+            if (!(m_rhs->isGenOffset())) m_rhs->genOffsets(kerStream, is_linear);
             m_gen_offset = true;
         }
 
@@ -69,17 +74,17 @@ namespace JIT
             m_rhs->genKerName(kerStream, genInputs);
         }
 
-        void genFuncs(std::stringstream &kerStream)
+        void genFuncs(std::stringstream &kerStream, bool is_linear)
         {
             if (m_gen_func) return;
 
-            if (!(m_lhs->isGenFunc())) m_lhs->genFuncs(kerStream);
-            if (!(m_rhs->isGenFunc())) m_rhs->genFuncs(kerStream);
+            if (!(m_lhs->isGenFunc())) m_lhs->genFuncs(kerStream, is_linear);
+            if (!(m_rhs->isGenFunc())) m_rhs->genFuncs(kerStream, is_linear);
 
             kerStream << m_type_str << " val" << m_id << " = "
                       << m_op_str << "(val" << m_lhs->getId()
                       << ", val" << m_rhs->getId() << ");"
-                      << std::endl;
+                      << "\n";
 
             m_gen_func = true;
         }

@@ -12,6 +12,7 @@
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
+#include <map>
 #include <mutex>
 #include <dispatch.hpp>
 #include <Param.hpp>
@@ -37,8 +38,8 @@ namespace opencl
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static Program         resizeProgs[DeviceManager::MAX_DEVICES];
-                static Kernel        resizeKernels[DeviceManager::MAX_DEVICES];
+                static std::map<int, Program*>   resizeProgs;
+                static std::map<int, Kernel *> resizeKernels;
 
                 int device = getActiveDeviceId();
 
@@ -51,19 +52,20 @@ namespace opencl
                         case AF_INTERP_BILINEAR: options<<" -D INTERP=BILINEAR"; break;
                         default: break;
                     }
-
-                    buildProgram(resizeProgs[device],
-                                 resize_cl,
-                                 resize_cl_len,
-                                 options.str());
-
-                    resizeKernels[device] = Kernel(resizeProgs[device], "resize_kernel");
+                    if (std::is_same<T, double>::value ||
+                        std::is_same<T, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
+                    Program prog;
+                    buildProgram(prog, resize_cl, resize_cl_len, options.str());
+                    resizeProgs[device] = new Program(prog);
+                    resizeKernels[device] = new Kernel(*resizeProgs[device], "resize_kernel");
                 });
 
                 auto resizeOp = make_kernel<Buffer, const KParam,
                                       const Buffer, const KParam,
                                       const dim_type, const float, const float>
-                                      (resizeKernels[device]);
+                                      (*resizeKernels[device]);
 
                 NDRange local(TX, TY, 1);
 

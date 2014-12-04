@@ -29,6 +29,8 @@ std::string getCUDARuntimeVersion();
 
 std::string getInfo();
 
+bool isDoubleSupported(int device);
+
 void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
 int getDeviceCount();

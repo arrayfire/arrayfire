@@ -14,6 +14,7 @@
 #include <traits.hpp>
 #include <sstream>
 #include <string>
+#include <map>
 #include <algorithm>
 #include <dispatch.hpp>
 #include <Param.hpp>
@@ -45,42 +46,55 @@ namespace kernel
                  const cl::Buffer in, const dim_type *idims,
                  const dim_type *istrides, dim_type offset, uint ndims)
     {
+        try {
+            static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+            static std::map<int, Program*>    cpyProgs;
+            static std::map<int, Kernel*>   cpyKernels;
 
-        dims_t _ostrides = {{ostrides[0], ostrides[1], ostrides[2], ostrides[3]}};
-        dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
-        dims_t _idims = {{idims[0], idims[1], idims[2], idims[3]}};
+            int device = getActiveDeviceId();
 
-        size_t local_size[2] = {DIM0, DIM1};
-        if (ndims == 1) {
-            local_size[0] *= local_size[1];
-            local_size[1]  = 1;
-       }
+            std::call_once(compileFlags[device], [&]() {
+                std::ostringstream options;
+                options << " -D T=" << dtype_traits<T>::getName();
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
+                Program prog;
+                buildProgram(prog, memcopy_cl, memcopy_cl_len, options.str());
+                cpyProgs[device]   = new Program(prog);
+                cpyKernels[device] = new Kernel(*cpyProgs[device], "memcopy_kernel");
+            });
 
-        dim_type groups_0 = divup(idims[0], local_size[0]);
-        dim_type groups_1 = divup(idims[1], local_size[1]);
+            dims_t _ostrides = {{ostrides[0], ostrides[1], ostrides[2], ostrides[3]}};
+            dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
+            dims_t _idims = {{idims[0], idims[1], idims[2], idims[3]}};
 
-        NDRange local(local_size[0], local_size[1]);
-        NDRange global(groups_0 * idims[2] * local_size[0],
-                       groups_1 * idims[3] * local_size[1]);
+            size_t local_size[2] = {DIM0, DIM1};
+            if (ndims == 1) {
+                local_size[0] *= local_size[1];
+                local_size[1]  = 1;
+            }
 
-        Program::Sources src;
-        src.emplace_back(memcopy_cl, memcopy_cl_len);
+            dim_type groups_0 = divup(idims[0], local_size[0]);
+            dim_type groups_1 = divup(idims[1], local_size[1]);
 
-        Program prog(getContext(), src);
+            NDRange local(local_size[0], local_size[1]);
+            NDRange global(groups_0 * idims[2] * local_size[0],
+                           groups_1 * idims[3] * local_size[1]);
 
-        std::ostringstream options;
-        options << " -D T=" << dtype_traits<T>::getName()
-                << " -D dim_type=" << dtype_traits<dim_type>::getName();
+            auto memcopy_kernel = make_kernel< Buffer, dims_t,
+                                               Buffer, dims_t,
+                                               dims_t, dim_type,
+                                               dim_type, dim_type >(*cpyKernels[device]);
 
-        prog.build(options.str().c_str());
-
-        auto memcopy_kernel = make_kernel< Buffer, dims_t,
-                                           Buffer, dims_t,
-                                           dims_t, dim_type,
-                                           dim_type, dim_type >(prog, "memcopy_kernel");
-
-        memcopy_kernel(EnqueueArgs(getQueue(), global, local),
-                       out, _ostrides, in, _idims, _istrides, offset, groups_0, groups_1);
+            memcopy_kernel(EnqueueArgs(getQueue(), global, local),
+                out, _ostrides, in, _idims, _istrides, offset, groups_0, groups_1);
+        }
+        catch (cl::Error err) {
+            CL_TO_AF_ERROR(err);
+            throw;
+        }
     }
 
     template<typename inType, typename outType, bool same_dims>
@@ -88,27 +102,30 @@ namespace kernel
     {
         try {
             static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-            static Program            cpyProgs[DeviceManager::MAX_DEVICES];
-            static Kernel           cpyKernels[DeviceManager::MAX_DEVICES];
+            static std::map<int, Program*>    cpyProgs;
+            static std::map<int, Kernel*>   cpyKernels;
 
             int device = getActiveDeviceId();
 
-            std::ostringstream options;
-            options << " -D inType=" << dtype_traits<inType>::getName()
-                    << " -D outType="<< dtype_traits<outType>::getName()
-                    << " -D inType_" << dtype_traits<inType>::getName()
-                    << " -D outType_"<< dtype_traits<outType>::getName()
-                    << " -D SAME_DIMS="<< same_dims;
+            std::call_once(compileFlags[device], [&]() {
 
+                        std::ostringstream options;
+                        options << " -D inType=" << dtype_traits<inType>::getName()
+                            << " -D outType=" << dtype_traits<outType>::getName()
+                            << " -D inType_" << dtype_traits<inType>::getName()
+                            << " -D outType_" << dtype_traits<outType>::getName()
+                            << " -D SAME_DIMS=" << same_dims;
+                        if (std::is_same<inType, double>::value  ||
+                            std::is_same<inType, cdouble>::value ||
+                            std::is_same<outType, double>::value ||
+                            std::is_same<outType, cdouble>::value) {
+                            options << " -D USE_DOUBLE";
+                        }
 
-            std::call_once(compileFlags[device], [&] () {
-
-                        buildProgram(cpyProgs[device],
-                            copy_cl,
-                            copy_cl_len,
-                            options.str());
-
-                        cpyKernels[device] = Kernel(cpyProgs[device], "copy");
+                        Program prog;
+                        buildProgram(prog, copy_cl, copy_cl_len, options.str());
+                        cpyProgs[device]   = new Program(prog);
+                        cpyKernels[device] = new Kernel(*cpyProgs[device], "copy");
                     });
 
             NDRange local(DIM0, DIM1);
@@ -137,13 +154,13 @@ namespace kernel
             }
 
             auto copyOp = make_kernel<Buffer, KParam, Buffer, KParam,
-                                      outType, double, dims_t,
+                                      outType, float, dims_t,
                                       dim_type, dim_type
-                                     >(cpyKernels[device]);
+                                     >(*cpyKernels[device]);
 
             copyOp(EnqueueArgs(getQueue(), global, local),
                    dst.data, dst.info, src.data, src.info,
-                   default_value, factor, trgt_dims, blk_x, blk_y);
+                   default_value, (float)factor, trgt_dims, blk_x, blk_y);
         } catch (cl::Error err) {
             CL_TO_AF_ERROR(err);
             throw;
