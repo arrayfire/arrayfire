@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 #include <join.hpp>
+#include <kernel/join.hpp>
 #include <stdexcept>
 #include <err_opencl.hpp>
 
@@ -17,7 +18,28 @@ namespace opencl
     template<typename Tx, typename Ty>
     Array<Tx> *join(const int dim, const Array<Tx> &first, const Array<Ty> &second, const af::dim4 &odims)
     {
+        if ((std::is_same<Tx, double>::value || std::is_same<Tx, cdouble>::value) &&
+            !isDoubleSupported(getActiveDeviceId())) {
+            OPENCL_NOT_SUPPORTED();
+        }
+        if ((std::is_same<Ty, double>::value || std::is_same<Ty, cdouble>::value) &&
+            !isDoubleSupported(getActiveDeviceId())) {
+            OPENCL_NOT_SUPPORTED();
+        }
+
         Array<Tx> *out = createEmptyArray<Tx>(odims);
+
+        switch(dim) {
+            case 0: kernel::join<Tx, Ty, 0>(*out, first, second);
+                    break;
+            case 1: kernel::join<Tx, Ty, 1>(*out, first, second);
+                    break;
+            case 2: kernel::join<Tx, Ty, 2>(*out, first, second);
+                    break;
+            case 3: kernel::join<Tx, Ty, 3>(*out, first, second);
+                    break;
+        }
+
         return out;
     }
 

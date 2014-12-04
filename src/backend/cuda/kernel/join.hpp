@@ -52,6 +52,11 @@ namespace cuda
             dim_type odx[] = {xx, yy, oz, ow};
             dim_type idx[] = {xx, yy, oz, ow};
 
+            // These if(dim == <dimensions>) conditions are used to check which array
+            // (X or Y) to use. 3 out of the 4 if conditions will not be executed
+            // since the kernel is templated.
+            // These if-conds decide whether to use X or Y based on the output index
+            // They also compute the corrent input index if Y is chosen
             Tx const *in = X.ptr;
             dim_type *str = X.strides;
             if(dim == 2) {
