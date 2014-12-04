@@ -14,6 +14,7 @@
 #include <err_cuda.hpp>
 #include <JIT/BufferNode.hpp>
 #include <scalar.hpp>
+#include <memory.hpp>
 
 using af::dim4;
 
@@ -23,33 +24,16 @@ namespace cuda
     using std::ostream;
 
     template<typename T>
-    T* cudaMallocWrapper(const size_t &elements)
-    {
-        T* ptr = NULL;
-        if (elements > 0) CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&ptr), sizeof(T) * elements));
-        return ptr;
-    }
-
-
-    template<typename T>
-    void cudaFreeWrapper(T *ptr)
-    {
-	cudaError_t err = cudaFree(ptr);
-	if (err != cudaErrorCudartUnloading) // see issue #167
-		CUDA_CHECK(err);
-    }
-
-    template<typename T>
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(cudaMallocWrapper<T>(dims.elements()), cudaFreeWrapper<T>),
+        data(memAlloc<T>(dims.elements()), memFree<T>),
         parent(), node(), ready(true)
     {}
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data, bool is_device) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data((is_device ? (T *)in_data : cudaMallocWrapper<T>(dims.elements())), cudaFreeWrapper<T>),
+        data((is_device ? (T *)in_data : memAlloc<T>(dims.elements())), memFree<T>),
         parent(), node(), ready(true)
     {
         if (!is_device) {
@@ -70,7 +54,7 @@ namespace cuda
                   af::dim4(0, 0, 0, 0),
                   af::dim4(tmp.strides[0], tmp.strides[1], tmp.strides[2], tmp.strides[3]),
                   (af_dtype)dtype_traits<T>::af_type),
-        data(tmp.ptr, cudaFreeWrapper<T>),
+        data(tmp.ptr, memFree<T>),
         parent(), node(), ready(true)
     {
     }
@@ -204,8 +188,8 @@ namespace cuda
     {
         if (isReady()) return;
 
-        data = shared_ptr<T>(cudaMallocWrapper<T>(elements()),
-                             cudaFreeWrapper<T>);
+        data = shared_ptr<T>(memAlloc<T>(elements()),
+                             memFree<T>);
 
         Param<T> res;
         res.ptr = data.get();
