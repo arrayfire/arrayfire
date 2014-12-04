@@ -8,16 +8,11 @@
  ********************************************************/
 
 #include <af/image.h>
-#include "error.hpp"
+#include <Array.hpp>
 
-namespace af
+namespace cuda
 {
-
-array rotate(const array& in, const float theta, const af_interp_type method, const bool crop)
-{
-    af_array out = 0;
-    AF_THROW(af_rotate(&out, in.get(), theta, method, crop));
-    return array(out);
-}
-
+    template<typename T>
+    Array<T> *rotate(const Array<T> &in, const float theta, const af::dim4 &odims,
+                     const af_interp_type method);
 }
