@@ -22,9 +22,13 @@ AFAPI void saveImage(const char* filename, const array& in);
 
 AFAPI array resize(const array& in, const dim_type odim0, const dim_type odim1, const af_interp_type method=AF_INTERP_NEAREST);
 
-AFAPI array transform(const array& in, const array& transform, const dim_type odim0, const dim_type odim1, const af_interp_type method=AF_INTERP_NEAREST, const bool inverse=true);
+AFAPI array resize(const array& in, const float scale0, const float scale1, const af_interp_type method=AF_INTERP_NEAREST);
+
+AFAPI array resize(const array& in, const float scale, const af_interp_type method=AF_INTERP_NEAREST);
 
 AFAPI array rotate(const array& in, const float theta, const af_interp_type method=AF_INTERP_NEAREST, const bool crop=true);
+
+AFAPI array transform(const array& in, const array& transform, const dim_type odim0, const dim_type odim1, const af_interp_type method=AF_INTERP_NEAREST, const bool inverse=true);
 
 AFAPI array translate(const array& in, const float trans0, const float trans1, const dim_type odim0, const dim_type odim1, const af_interp_type method=AF_INTERP_NEAREST);
 
