@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 #include <join.hpp>
+#include <kernel/join.hpp>
 #include <stdexcept>
 #include <err_cuda.hpp>
 
@@ -18,6 +19,18 @@ namespace cuda
     Array<Tx> *join(const int dim, const Array<Tx> &first, const Array<Ty> &second, const af::dim4 &odims)
     {
         Array<Tx> *out = createEmptyArray<Tx>(odims);
+
+        switch(dim) {
+            case 0: kernel::join<Tx, Ty, 0>(*out, first, second);
+                    break;
+            case 1: kernel::join<Tx, Ty, 1>(*out, first, second);
+                    break;
+            case 2: kernel::join<Tx, Ty, 2>(*out, first, second);
+                    break;
+            case 3: kernel::join<Tx, Ty, 3>(*out, first, second);
+                    break;
+        }
+
         return out;
     }
 
