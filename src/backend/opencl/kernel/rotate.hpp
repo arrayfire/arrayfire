@@ -9,7 +9,7 @@
 
 #pragma once
 #include <kernel_headers/transform_interp.hpp>
-#include <kernel_headers/transform.hpp>
+#include <kernel_headers/rotate.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
@@ -34,20 +34,23 @@ namespace opencl
         static const dim_type TX = 16;
         static const dim_type TY = 16;
 
-        template<typename T, bool isInverse, af_interp_type method>
-        void transform(Param out, const Param in, const Param tf)
+        typedef struct {
+            float tmat[6];
+        } tmat_t;
+
+        template<typename T, af_interp_type method>
+        void rotate(Param out, const Param in, const float theta)
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   transformProgs;
-                static std::map<int, Kernel *> transformKernels;
+                static std::map<int, Program*>   rotateProgs;
+                static std::map<int, Kernel *> rotateKernels;
 
                 int device = getActiveDeviceId();
 
                 std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
-                    options << " -D T="        << dtype_traits<T>::getName()
-                            << " -D INVERSE="  << (isInverse ? 1 : 0);
+                    options << " -D T="        << dtype_traits<T>::getName();
 
                     if((af_dtype) dtype_traits<T>::af_type == c32 ||
                        (af_dtype) dtype_traits<T>::af_type == c64) {
@@ -69,30 +72,48 @@ namespace opencl
                             break;
                     }
 
-                    const char *ker_strs[] = {transform_interp_cl, transform_cl};
-                    const int   ker_lens[] = {transform_interp_cl_len, transform_cl_len};
+                    const char *ker_strs[] = {transform_interp_cl, rotate_cl};
+                    const int   ker_lens[] = {transform_interp_cl_len, rotate_cl_len};
                     Program prog;
                     buildProgram(prog, 2, ker_strs, ker_lens, options.str());
-                    transformProgs[device] = new Program(prog);
-                    transformKernels[device] = new Kernel(*transformProgs[device], "transform_kernel");
+                    rotateProgs[device] = new Program(prog);
+                    rotateKernels[device] = new Kernel(*rotateProgs[device], "rotate_kernel");
                 });
 
-                auto transformOp = make_kernel<Buffer, const KParam,
-                                         const Buffer, const KParam, const Buffer, const KParam,
-                                         const dim_type, const dim_type>
-                                         (*transformKernels[device]);
+                auto rotateOp = make_kernel<Buffer, const KParam, const Buffer, const KParam,
+                                             const tmat_t, const dim_type>
+                                           (*rotateKernels[device]);
 
                 const dim_type nimages = in.info.dims[2];
-                // Multiplied in src/backend/transform.cpp
-                const dim_type ntransforms = out.info.dims[2] / in.info.dims[2];
-                NDRange local(TX, TY, 1);
 
+                const float c = cos(-theta), s = sin(-theta);
+                float tx, ty;
+                {
+                    const float nx = 0.5 * (in.info.dims[0] - 1);
+                    const float ny = 0.5 * (in.info.dims[1] - 1);
+                    const float mx = 0.5 * (out.info.dims[0] - 1);
+                    const float my = 0.5 * (out.info.dims[1] - 1);
+                    const float sx = (mx * c + my *-s);
+                    const float sy = (mx * s + my * c);
+                    tx = -(sx - nx);
+                    ty = -(sy - ny);
+                }
+
+                tmat_t t;
+                t.tmat[0] =  c;
+                t.tmat[1] = -s;
+                t.tmat[2] = tx;
+                t.tmat[3] =  s;
+                t.tmat[4] =  c;
+                t.tmat[5] = ty;
+
+                NDRange local(TX, TY, 1);
                 NDRange global(local[0] * divup(out.info.dims[0], local[0]),
-                               local[1] * divup(out.info.dims[1], local[1]) * ntransforms,
+                               local[1] * divup(out.info.dims[1], local[1]),
                                1);
 
-                transformOp(EnqueueArgs(getQueue(), global, local),
-                         out.data, out.info, in.data, in.info, tf.data, tf.info, nimages, ntransforms);
+                rotateOp(EnqueueArgs(getQueue(), global, local),
+                         out.data, out.info, in.data, in.info, t, nimages);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
@@ -102,3 +123,4 @@ namespace opencl
         }
     }
 }
+
