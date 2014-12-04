@@ -9,6 +9,7 @@
 
 #pragma once
 #include <af/array.h>
+#include <af/features.h>
 
 #ifdef __cplusplus
 #include <utility>
@@ -19,17 +20,17 @@ AFAPI array loadImage(const char* filename, const bool is_color=false);
 
 AFAPI void saveImage(const char* filename, const array& in);
 
-AFAPI array resize(const array in, const dim_type odim0, const dim_type odim1, const af_interp_type method=AF_INTERP_NEAREST);
+AFAPI array resize(const array& in, const dim_type odim0, const dim_type odim1, const af_interp_type method=AF_INTERP_NEAREST);
 
-AFAPI array transform(const array& in, const array& transform, const dim_type odim0, const dim_type odim1, const bool inverse=true);
+AFAPI array transform(const array& in, const array& transform, const dim_type odim0, const dim_type odim1, const af_interp_type method=AF_INTERP_NEAREST, const bool inverse=true);
 
-AFAPI array rotate(const array& in, const float theta, const bool crop=true, const bool recenter=true);
+AFAPI array rotate(const array& in, const float theta, const af_interp_type method=AF_INTERP_NEAREST, const bool crop=true);
 
-AFAPI array translate(const array& in, const float trans0, const float trans1, const dim_type odim0, const dim_type odim1);
+AFAPI array translate(const array& in, const float trans0, const float trans1, const dim_type odim0, const dim_type odim1, const af_interp_type method=AF_INTERP_NEAREST);
 
-AFAPI array scale(const array& in, const float scale0, const float scale1, const dim_type odim0, const dim_type odim1);
+AFAPI array scale(const array& in, const float scale0, const float scale1, const dim_type odim0, const dim_type odim1, const af_interp_type method=AF_INTERP_NEAREST);
 
-AFAPI array skew(const array& in, const float skew0, const float skew1, const dim_type odim0, const dim_type odim1, const bool inverse=true);
+AFAPI array skew(const array& in, const float skew0, const float skew1, const dim_type odim0, const dim_type odim1, const bool inverse=true, const af_interp_type method=AF_INTERP_NEAREST);
 
 AFAPI array bilateral(const array &in, const float spatial_sigma, const float chromatic_sigma, bool is_color=false);
 
@@ -51,6 +52,8 @@ AFAPI void grad(array& rows, array& cols, const array& in);
 
 AFAPI array regions(const array& in, af_connectivity_type connectivity=AF_CONNECTIVITY_4, af_dtype type=f32);
 
+AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_length=9, const bool non_max=true, const float feature_ratio=0.05);
+
 }
 #endif
 
@@ -68,19 +71,23 @@ extern "C" {
     // Transform an image using a 3x2 transformation matrix.
     // If the transform matrix is a forward transformation matrix, then inverse is false.
     // If the transform martix is an inverse transformation matrix, then inverse is true;
-    AFAPI af_err af_transform(af_array *out, const af_array in, const af_array transform, const dim_type odim0, const dim_type odim1, const bool inverse);
+    AFAPI af_err af_transform(af_array *out, const af_array in, const af_array transform,
+                              const dim_type odim0, const dim_type odim1,
+                              const af_interp_type method, const bool inverse);
 
     // Rotate
-    AFAPI af_err af_rotate(af_array *out, const af_array in, const float theta, const bool crop, const bool recenter);
+    AFAPI af_err af_rotate(af_array *out, const af_array in, const float theta,
+                           const af_interp_type method, const bool crop);
     // Translate
     AFAPI af_err af_translate(af_array *out, const af_array in, const float trans0, const float trans1,
-                              const dim_type odim0, const dim_type odim1);
+                              const dim_type odim0, const dim_type odim1, const af_interp_type method);
     // Scale
     AFAPI af_err af_scale(af_array *out, const af_array in, const float scale0, const float scale1,
-                          const dim_type odim0, const dim_type odim1);
+                          const dim_type odim0, const dim_type odim1, const af_interp_type method);
     // Skew
     AFAPI af_err af_skew(af_array *out, const af_array in, const float skew0, const float skew1,
-                         const dim_type odim0, const dim_type odim1, const bool inverse);
+                         const dim_type odim0, const dim_type odim1, const af_interp_type method,
+                         const bool inverse);
 
     // histogram: return af_array will have elements of type u32
     AFAPI af_err af_histogram(af_array *out, const af_array in, const unsigned nbins, const double minval, const double maxval);
@@ -109,6 +116,9 @@ extern "C" {
 
     // Compute labels for connected regions from binary input arrays
     AFAPI af_err af_regions(af_array *out, const af_array in, af_connectivity_type connectivity, af_dtype ty);
+
+    // Compute FAST corners from input image
+    AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio);
 
 #ifdef __cplusplus
 }

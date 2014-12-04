@@ -13,11 +13,13 @@
 namespace af
 {
 
-array resize(const array in, const dim_type odim0, const dim_type odim1, const af_interp_type method)
+features fast(const array& in, const float thr, const unsigned arc_length,
+                const bool non_max, const float feature_ratio)
 {
-    af_array out = 0;
-    AF_THROW(af_resize(&out, in.get(), odim0, odim1, method));
-    return array(out);
+    af_features temp;
+    AF_THROW(af_fast(&temp, in.get(), thr, arc_length, non_max, feature_ratio));
+    features out(temp);
+    return out;
 }
 
 }

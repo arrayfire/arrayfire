@@ -7,17 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/image.h>
-#include "error.hpp"
+#include <af/features.h>
+#include <Array.hpp>
 
-namespace af
+using af::features;
+
+namespace cpu
 {
 
-array scale(const array& in, const float scale0, const float scale1, const dim_type odim0, const dim_type odim1)
-{
-    af_array out = 0;
-    AF_THROW(af_scale(&out, in.get(), scale0, scale1, odim0, odim1));
-    return array(out);
-}
+template<typename T>
+features fast(const Array<T> &in, const float thr, const unsigned arc_length,
+              const bool non_max, const float feature_ratio);
 
 }

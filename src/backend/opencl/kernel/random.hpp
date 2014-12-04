@@ -17,8 +17,11 @@
 #include <sstream>
 #include <string>
 #include <mutex>
+#include <map>
 #include <iostream>
 #include <dispatch.hpp>
+#include <err_opencl.hpp>
+#include <program.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -72,42 +75,55 @@ namespace opencl
             }
         };
 
+        template<typename> static bool isDouble() { return false; }
+        template<> STATIC_ bool isDouble<double>() { return true; }
+        template<> STATIC_ bool isDouble<cdouble>() { return true; }
+
         template<typename T, bool isRandu>
         void random(cl::Buffer out, dim_type elements)
         {
-            static unsigned counter;
+            try {
+                static unsigned counter;
 
-            static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-            static Program            ranProgs[DeviceManager::MAX_DEVICES];
-            static Kernel           ranKernels[DeviceManager::MAX_DEVICES];
+                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+                static Program            ranProgs[DeviceManager::MAX_DEVICES];
+                static Kernel           ranKernels[DeviceManager::MAX_DEVICES];
 
-            int device = getActiveDeviceId();
+                int device = getActiveDeviceId();
 
-            std::call_once( compileFlags[device], [device] () {
+                std::call_once( compileFlags[device], [device] () {
                         Program::Sources setSrc;
                         setSrc.emplace_back(random_cl, random_cl_len);
-
-                        ranProgs[device] = Program(getContext(), setSrc);
 
                         std::ostringstream options;
                         options << " -D T=" << dtype_traits<T>::getName()
                                 << " -D repeat="<< REPEAT
-                                << " -D "<< random_name<T, isRandu>().name();
-                        ranProgs[device].build(options.str().c_str());
+                                << " -D " << random_name<T, isRandu>().name();
 
+                        if (std::is_same<T, double>::value ||
+                            std::is_same<T, cdouble>::value) {
+                            options << " -D USE_DOUBLE";
+                        }
+
+                        options << " -D "<< random_name<T, isRandu>().name();
+
+                        buildProgram(ranProgs[device], random_cl, random_cl_len, options.str());
                         ranKernels[device] = Kernel(ranProgs[device], "random");
                     });
 
-            auto randomOp = make_kernel<cl::Buffer, uint, uint, uint, uint>(ranKernels[device]);
+                auto randomOp = make_kernel<cl::Buffer, uint, uint, uint, uint>(ranKernels[device]);
 
-            uint groups = divup(elements, THREADS * REPEAT);
-            counter += divup(elements, THREADS * groups);
+                uint groups = divup(elements, THREADS * REPEAT);
+                counter += divup(elements, THREADS * groups);
 
-            NDRange local(THREADS, 1);
-            NDRange global(THREADS * groups, 1);
+                NDRange local(THREADS, 1);
+                NDRange global(THREADS * groups, 1);
 
-            randomOp(EnqueueArgs(getQueue(), global, local),
-                     out, elements, counter, random_seed[0], random_seed[1]);
+                randomOp(EnqueueArgs(getQueue(), global, local),
+                         out, elements, counter, random_seed[0], random_seed[1]);
+            } catch(cl::Error ex) {
+                CL_TO_AF_ERROR(ex);
+            }
         }
     }
 }

@@ -7,10 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <math.hpp>
 #include <Param.hpp>
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
+#include "transform_interp.hpp"
 
 namespace cuda
 {
@@ -40,7 +42,7 @@ namespace cuda
         ///////////////////////////////////////////////////////////////////////////
         // Transform Kernel
         ///////////////////////////////////////////////////////////////////////////
-        template<typename T, bool inverse>
+        template<typename T, bool inverse, af_interp_type method>
         __global__ static void
         transform_kernel(Param<T> out, CParam<T> in,
                          const dim_type nimages, const dim_type ntransforms)
@@ -49,21 +51,22 @@ namespace cuda
             const dim_type xx = blockIdx.x * blockDim.x + threadIdx.x;
             const dim_type yy = blockIdx.y * blockDim.y + threadIdx.y;
 
-            if(xx >= out.dims[0] * nimages || yy >= out.dims[1] * ntransforms)
+            if(xx >= out.dims[0] || yy >= out.dims[1] * ntransforms)
                 return;
 
             // Index of channel of images and transform
-            const dim_type i_idx = xx / out.dims[0];
+            //const dim_type i_idx = xx / out.dims[0];
             const dim_type t_idx = yy / out.dims[1];
 
             // Index in local channel -> This is output index
-            const dim_type xido = xx - i_idx * out.dims[0];
+            //const dim_type xido = xx - i_idx * out.dims[0];
+            const dim_type xido = xx;
             const dim_type yido = yy - t_idx * out.dims[1];
 
             // Global offset
             //          Offset for transform channel + Offset for image channel.
-            T *optr = out.ptr + t_idx * nimages * out.strides[2] + i_idx * out.strides[2];
-            const T *iptr = in.ptr + i_idx * in.strides[2];
+            T *optr = out.ptr + t_idx * nimages * out.strides[2];// + i_idx * out.strides[2];
+            const T *iptr = in.ptr;                              // + i_idx * in.strides[2];
 
             // Transform is in constant memory.
             const float *tmat_ptr = c_tmat + t_idx * 6;
@@ -81,29 +84,19 @@ namespace cuda
 
             if (xido >= out.dims[0] && yido >= out.dims[1]) return;
 
-            // Compute input index
-            const dim_type xidi = round(xido * tmat[0]
-                                      + yido * tmat[1]
-                                             + tmat[2]);
-            const dim_type yidi = round(xido * tmat[3]
-                                      + yido * tmat[4]
-                                             + tmat[5]);
-
-            // Compute memory location of indices
-            dim_type loci = (yidi * in.strides[1]  + xidi);
-            dim_type loco = (yido * out.strides[1] + xido);
-
-            // Copy to output
-            T val = 0;
-            if (xidi < in.dims[0] && yidi < in.dims[1] && xidi >= 0 && yidi >= 0) val = iptr[loci];
-
-            optr[loco] = val;
+            switch(method) {
+                case AF_INTERP_NEAREST:
+                    transform_n(optr, out, iptr, in, tmat, xido, yido, nimages); break;
+                case AF_INTERP_BILINEAR:
+                    transform_b(optr, out, iptr, in, tmat, xido, yido, nimages); break;
+                default: break;
+            }
         }
 
         ///////////////////////////////////////////////////////////////////////////
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
-        template <class T>
+        template <typename T, af_interp_type method>
         void transform(Param<T> out, CParam<T> in, CParam<float> tf,
                        const bool inverse)
         {
@@ -118,13 +111,14 @@ namespace cuda
             dim3 threads(TX, TY, 1);
             dim3 blocks(divup(out.dims[0], threads.x), divup(out.dims[1], threads.y));
 
-            if (nimages > 1)     { blocks.x *= nimages;   }
             if (ntransforms > 1) { blocks.y *= ntransforms; }
 
             if(inverse) {
-                transform_kernel<T, true><<<blocks, threads>>>(out, in, nimages, ntransforms);
+                transform_kernel<T, true, method><<<blocks, threads>>>
+                                (out, in, nimages, ntransforms);
             } else {
-                transform_kernel<T, false><<<blocks, threads>>>(out, in, nimages, ntransforms);
+                transform_kernel<T, false, method><<<blocks, threads>>>
+                                (out, in, nimages, ntransforms);
             }
             POST_LAUNCH_CHECK();
         }

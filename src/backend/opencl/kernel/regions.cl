@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if T == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 // The initial label kernel distinguishes between valid (nonzero)
 // pixels and "background" (zero) pixels.
 __kernel

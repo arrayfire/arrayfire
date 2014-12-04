@@ -9,8 +9,10 @@
 
 #include <Array.hpp>
 #include <transform.hpp>
+#include <math.hpp>
 #include <stdexcept>
 #include <err_cpu.hpp>
+#include "transform_interp.hpp"
 
 namespace cpu
 {
@@ -42,38 +44,7 @@ namespace cpu
         }
     }
 
-    template<typename T>
-    void Transform(T *out, const T *in, const float *tmat, const af::dim4 &idims,
-                      const af::dim4 &ostrides, const af::dim4 &istrides,
-                      const dim_type nimages, const dim_type o_offset,
-                      const dim_type xx, const dim_type yy)
-    {
-        // Compute output index
-        const dim_type xi = round(xx * tmat[0]
-                                + yy * tmat[1]
-                                     + tmat[2]);
-        const dim_type yi = round(xx * tmat[3]
-                                + yy * tmat[4]
-                                     + tmat[5]);
-
-        // Compute memory location of indices
-        dim_type loci = (yi * istrides[1] + xi);
-        dim_type loco = (yy * ostrides[1] + xx);
-
-        // Copy to output
-        for(int i_idx = 0; i_idx < nimages; i_idx++) {
-            T val = 0;
-            dim_type i_off = i_idx * istrides[2];
-            dim_type o_off = o_offset + i_idx * ostrides[2];
-
-            if (xi < idims[0] && yi < idims[1] && xi >= 0 && yi >= 0)
-                val = in[i_off + loci];
-
-            out[o_off + loco] = val;
-        }
-    }
-
-    template<typename T>
+    template<typename T, af_interp_type method>
     void transform_(T *out, const T *in, const float *tf,
                     const af::dim4 &odims, const af::dim4 &idims,
                     const af::dim4 &ostrides, const af::dim4 &istrides,
@@ -82,6 +53,23 @@ namespace cpu
         dim_type nimages     = idims[2];
         // Multiplied in src/backend/transform.cpp
         dim_type ntransforms = odims[2] / idims[2];
+
+        void (*t_fn)(T *, const T *, const float *, const af::dim4 &,
+                     const af::dim4 &, const af::dim4 &,
+                     const dim_type, const dim_type, const dim_type, const dim_type);
+
+        switch(method) {
+            case AF_INTERP_NEAREST:
+                t_fn = &transform_n;
+                break;
+            case AF_INTERP_BILINEAR:
+                t_fn = &transform_b;
+                break;
+            default:
+                AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
+                break;
+        }
+
 
         // For each transform channel
         for(int t_idx = 0; t_idx < ntransforms; t_idx++) {
@@ -96,8 +84,7 @@ namespace cpu
             // Do transform for image
             for(int yy = 0; yy < odims[1]; yy++) {
                 for(int xx = 0; xx < odims[0]; xx++) {
-                    Transform(out, in, tmat, idims, ostrides, istrides,
-                                 nimages, o_offset, xx, yy);
+                    t_fn(out, in, tmat, idims, ostrides, istrides, nimages, o_offset, xx, yy);
                 }
             }
         }
@@ -105,28 +92,43 @@ namespace cpu
 
     template<typename T>
     Array<T>* transform(const Array<T> &in, const Array<float> &transform, const af::dim4 &odims,
-                        const bool inverse)
+                        const af_interp_type method, const bool inverse)
     {
         const af::dim4 idims = in.dims();
 
         Array<T> *out = createEmptyArray<T>(odims);
 
-        transform_<T>(out->get(), in.get(), transform.get(), odims, idims,
-                      out->strides(), in.strides(), transform.strides(), inverse);
+        switch(method) {
+            case AF_INTERP_NEAREST:
+                transform_<T, AF_INTERP_NEAREST>
+                          (out->get(), in.get(), transform.get(), odims, idims,
+                           out->strides(), in.strides(), transform.strides(), inverse);
+                break;
+            case AF_INTERP_BILINEAR:
+                transform_<T, AF_INTERP_BILINEAR>
+                          (out->get(), in.get(), transform.get(), odims, idims,
+                           out->strides(), in.strides(), transform.strides(), inverse);
+                break;
+            default:
+                AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
+                break;
+        }
 
         return out;
     }
 
 
-#define INSTANTIATE(T)                                                                         \
-    template Array<T>* transform(const Array<T> &in, const Array<float> &transform,            \
-                                 const af::dim4 &odims, const bool inverse);                   \
+#define INSTANTIATE(T)                                                                          \
+    template Array<T>* transform(const Array<T> &in, const Array<float> &transform,             \
+                                 const af::dim4 &odims, const af_interp_type method,            \
+                                 const bool inverse);                                           \
 
 
     INSTANTIATE(float)
     INSTANTIATE(double)
+    INSTANTIATE(cfloat)
+    //INSTANTIATE(cdouble)
     INSTANTIATE(int)
     INSTANTIATE(uint)
     INSTANTIATE(uchar)
 }
-

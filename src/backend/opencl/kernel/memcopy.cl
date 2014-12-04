@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if T == double || U == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 typedef struct {
     dim_type dim[4];
 } dims_t;

@@ -13,5 +13,6 @@
 namespace cuda
 {
     template<typename T>
-    Array<T> *transform(const Array<T> &in, const Array<float> &tf, const af::dim4 &odims, const bool inverse);
+    Array<T> *transform(const Array<T> &in, const Array<float> &tf, const af::dim4 &odims,
+                        const af_interp_type method, const bool inverse);
 }

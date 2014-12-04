@@ -13,6 +13,7 @@
 #include <traits.hpp>
 #include <string>
 #include <mutex>
+#include <map>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -40,26 +41,27 @@ namespace opencl
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static Program        reorderProgs[DeviceManager::MAX_DEVICES];
-                static Kernel       reorderKernels[DeviceManager::MAX_DEVICES];
+                static std::map<int, Program*>   reorderProgs;
+                static std::map<int, Kernel *> reorderKernels;
 
                 int device = getActiveDeviceId();
 
                 std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
                     options << " -D T=" << dtype_traits<T>::getName();
-
-                    buildProgram(reorderProgs[device],
-                                 reorder_cl,
-                                 reorder_cl_len,
-                                 options.str());
-
-                    reorderKernels[device] = Kernel(reorderProgs[device], "reorder_kernel");
+                    if (std::is_same<T, double>::value ||
+                        std::is_same<T, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
+                    Program prog;
+                    buildProgram(prog, reorder_cl, reorder_cl_len, options.str());
+                    reorderProgs[device] = new Program(prog);
+                    reorderKernels[device] = new Kernel(*reorderProgs[device], "reorder_kernel");
                 });
 
                 auto reorderOp = make_kernel<Buffer, const Buffer, const KParam, const KParam,
                                           const dim_type, const dim_type, const dim_type, const dim_type,
-                                          const dim_type, const dim_type> (reorderKernels[device]);
+                                          const dim_type, const dim_type> (*reorderKernels[device]);
 
                 NDRange local(TX, TY, 1);
 

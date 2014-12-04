@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if T == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 __kernel
 void reorder_kernel(__global T *out, __global const T *in, const KParam op, const KParam ip,
                     const dim_type d0, const dim_type d1, const dim_type d2, const dim_type d3,

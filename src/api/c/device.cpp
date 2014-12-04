@@ -44,6 +44,14 @@ af_err af_deviceprop(char* d_name, char* d_platform, char *d_toolkit, char* d_co
     return AF_SUCCESS;
 }
 
+af_err af_get_dbl_support(bool* available, const int device)
+{
+    try {
+        *available = isDoubleSupported(device);
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
 af_err af_get_device_count(int *nDevices)
 {
     try {

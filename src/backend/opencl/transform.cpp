@@ -18,14 +18,42 @@ namespace opencl
 {
     template<typename T>
     Array<T>* transform(const Array<T> &in, const Array<float> &transform, const af::dim4 &odims,
-                        const bool inverse)
+                        const af_interp_type method, const bool inverse)
     {
+        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
+            !isDoubleSupported(getActiveDeviceId())) {
+            OPENCL_NOT_SUPPORTED();
+        }
         Array<T> *out = createEmptyArray<T>(odims);
 
-        if (inverse) {
-            kernel::transform<T, true> (*out, in, transform);
+        if(inverse) {
+            switch(method) {
+                case AF_INTERP_NEAREST:
+                    kernel::transform<T, true, AF_INTERP_NEAREST>
+                                     (*out, in, transform);
+                    break;
+                case AF_INTERP_BILINEAR:
+                    kernel::transform<T, true, AF_INTERP_BILINEAR>
+                                     (*out, in, transform);
+                    break;
+                default:
+                    AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
+                    break;
+            }
         } else {
-            kernel::transform<T, false>(*out, in, transform);
+            switch(method) {
+                case AF_INTERP_NEAREST:
+                    kernel::transform<T, false, AF_INTERP_NEAREST>
+                                     (*out, in, transform);
+                    break;
+                case AF_INTERP_BILINEAR:
+                    kernel::transform<T, false, AF_INTERP_BILINEAR>
+                                     (*out, in, transform);
+                    break;
+                default:
+                    AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
+                    break;
+            }
         }
 
         return out;
@@ -34,11 +62,14 @@ namespace opencl
 
 #define INSTANTIATE(T)                                                                          \
     template Array<T>* transform(const Array<T> &in, const Array<float> &transform,             \
-                                 const af::dim4 &odims, const bool inverse);                    \
+                                 const af::dim4 &odims, const af_interp_type method,            \
+                                 const bool inverse);                                           \
 
 
     INSTANTIATE(float)
     INSTANTIATE(double)
+    INSTANTIATE(cfloat)
+    INSTANTIATE(cdouble)
     INSTANTIATE(int)
     INSTANTIATE(uint)
     INSTANTIATE(uchar)

@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if T == double || U == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 // Exchange trick: Morgan McGuire, ShaderX 2008
 #define swap(a,b)    { T tmp = a; a = min(a,b); b = max(tmp,b); }
 

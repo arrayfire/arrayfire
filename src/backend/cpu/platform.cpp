@@ -41,6 +41,11 @@ namespace cpu {
         return info.str();
     }
 
+    bool isDoubleSupported(int device)
+    {
+        return true;
+    }
+
     void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
     {
         static bool flag;

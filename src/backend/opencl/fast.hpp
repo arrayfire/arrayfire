@@ -7,17 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/image.h>
-#include "error.hpp"
+#include <af/features.h>
+#include <Array.hpp>
 
-namespace af
+using af::features;
+
+namespace opencl
 {
 
-array rotate(const array& in, const float theta, const bool crop, const bool recenter)
-{
-    af_array out = 0;
-    AF_THROW(af_rotate(&out, in.get(), theta, crop, recenter));
-    return array(out);
-}
+template<typename T>
+features fast(const Array<T> &in, const float thr, const unsigned arc_length,
+              const bool non_max, const float feature_ratio);
 
 }

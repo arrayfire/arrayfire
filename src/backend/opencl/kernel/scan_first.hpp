@@ -10,6 +10,7 @@
 #pragma once
 #include <string>
 #include <mutex>
+#include <map>
 #include <kernel_headers/scan_first.hpp>
 #include <kernel_headers/ops.hpp>
 #include <program.hpp>
@@ -35,12 +36,12 @@ namespace kernel
 {
 
     template<typename Ti, typename To, af_op_t op, bool isFinalPass, uint threads_x>
-    static Kernel get_scan_first_kernels(int kerIdx)
+    static Kernel* get_scan_first_kernels(int kerIdx)
     {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static Program           scanProgs[DeviceManager::MAX_DEVICES];
-        static Kernel            scanKerns[DeviceManager::MAX_DEVICES];
-        static Kernel           bcastKerns[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*> scanProgs;
+        static std::map<int, Kernel* > scanKerns;
+        static std::map<int, Kernel* > bcastKerns;
 
         int device= getActiveDeviceId();
 
@@ -63,13 +64,19 @@ namespace kernel
                         << " -D " << binOpName<op>()
                         << " -D CPLX=" << af::iscplx<Ti>()
                         << " -D isFinalPass=" << (int)(isFinalPass);
+                if (std::is_same<Ti, double>::value ||
+                    std::is_same<Ti, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
 
                 const char *ker_strs[] = {ops_cl, scan_first_cl};
                 const int   ker_lens[] = {ops_cl_len, scan_first_cl_len};
-                buildProgram(scanProgs[device], 2, ker_strs, ker_lens, options.str());
+                cl::Program prog;
+                buildProgram(prog, 2, ker_strs, ker_lens, options.str());
+                scanProgs[device] = new Program(prog);
 
-                scanKerns[device] = Kernel(scanProgs[device],  "scan_first_kernel");
-                bcastKerns[device] = Kernel(scanProgs[device],  "bcast_first_kernel");
+                scanKerns[device] = new Kernel(*scanProgs[device],  "scan_first_kernel");
+                bcastKerns[device] = new Kernel(*scanProgs[device],  "bcast_first_kernel");
 
             });
 
@@ -83,7 +90,7 @@ namespace kernel
                                     const uint groups_x,
                                     const uint groups_y)
     {
-        Kernel ker = get_scan_first_kernels<Ti, To, op, isFinalPass, threads_x>(0);
+        Kernel* ker = get_scan_first_kernels<Ti, To, op, isFinalPass, threads_x>(0);
 
         NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
         NDRange global(groups_x * out.info.dims[2] * local[0],
@@ -94,7 +101,7 @@ namespace kernel
         auto scanOp = make_kernel<Buffer, KParam,
                                   Buffer, KParam,
                                   Buffer, KParam,
-                                  uint, uint, uint>(ker);
+                                  uint, uint, uint>(*ker);
 
         scanOp(EnqueueArgs(getQueue(), global, local),
                out.data, out.info, tmp.data, tmp.info, in.data, in.info,
@@ -110,7 +117,7 @@ namespace kernel
                                      const uint groups_y)
     {
 
-        Kernel ker = get_scan_first_kernels<Ti, To, op, isFinalPass, threads_x>(1);
+        Kernel* ker = get_scan_first_kernels<Ti, To, op, isFinalPass, threads_x>(1);
 
         NDRange local(threads_x, THREADS_PER_GROUP / threads_x);
         NDRange global(groups_x * out.info.dims[2] * local[0],
@@ -120,7 +127,7 @@ namespace kernel
 
         auto bcastOp = make_kernel<Buffer, KParam,
                                    Buffer, KParam,
-                                   uint, uint, uint>(ker);
+                                   uint, uint, uint>(*ker);
 
         bcastOp(EnqueueArgs(getQueue(), global, local),
                 out.data, out.info, tmp.data, tmp.info,

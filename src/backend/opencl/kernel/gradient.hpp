@@ -13,6 +13,7 @@
 #include <traits.hpp>
 #include <string>
 #include <mutex>
+#include <map>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -38,8 +39,8 @@ namespace opencl
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static Program           gradProgs[DeviceManager::MAX_DEVICES];
-                static Kernel          gradKernels[DeviceManager::MAX_DEVICES];
+                static std::map<int, Program*>  gradProgs;
+                static std::map<int, Kernel*> gradKernels;
 
                 int device = getActiveDeviceId();
 
@@ -55,18 +56,19 @@ namespace opencl
                     } else {
                         options << " -D CPLX=0";
                     }
-
-                    buildProgram(gradProgs[device],
-                                 gradient_cl,
-                                 gradient_cl_len,
-                                 options.str());
-
-                    gradKernels[device] = Kernel(gradProgs[device], "gradient_kernel");
+                    if (std::is_same<T, double>::value ||
+                        std::is_same<T, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
+                    Program prog;
+                    buildProgram(prog, gradient_cl, gradient_cl_len, options.str());
+                    gradProgs[device]   = new Program(prog);
+                    gradKernels[device] = new Kernel(*gradProgs[device], "gradient_kernel");
                 });
 
                 auto gradOp = make_kernel<Buffer, const KParam, Buffer, const KParam,
                                     const Buffer, const KParam, const dim_type, const dim_type>
-                                        (gradKernels[device]);
+                                        (*gradKernels[device]);
 
                 NDRange local(TX, TY, 1);
 

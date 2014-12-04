@@ -13,6 +13,7 @@
 #include <traits.hpp>
 #include <string>
 #include <mutex>
+#include <map>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -40,23 +41,26 @@ void transpose(Param out, const Param in)
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static Program            trsProgs[DeviceManager::MAX_DEVICES];
-        static Kernel           trsKernels[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*>  trsProgs;
+        static std::map<int, Kernel*> trsKernels;
 
         int device = getActiveDeviceId();
 
-        std::call_once( compileFlags[device], [device] () {
+        std::call_once(compileFlags[device], [device] () {
 
                 std::ostringstream options;
-                options << " -D T=" << dtype_traits<T>::getName()
-                        << " -D TILE_DIM=" << TILE_DIM;
+                options << " -D TILE_DIM=" << TILE_DIM
+                        << " -D T=" << dtype_traits<T>::getName();
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
 
-                buildProgram(trsProgs[device],
-                             transpose_cl,
-                             transpose_cl_len,
-                             options.str());
+                cl::Program prog;
+                buildProgram(prog, transpose_cl, transpose_cl_len, options.str());
+                trsProgs[device] = new Program(prog);
 
-                trsKernels[device] = Kernel(trsProgs[device], "transpose");
+                trsKernels[device] = new Kernel(*trsProgs[device], "transpose");
             });
 
 
@@ -70,7 +74,7 @@ void transpose(Param out, const Param in)
 
         auto transposeOp = make_kernel<Buffer, KParam,
                                        Buffer, KParam,
-                                       dim_type> (trsKernels[device]);
+                                       dim_type> (*trsKernels[device]);
 
 
         transposeOp(EnqueueArgs(getQueue(), global, local),

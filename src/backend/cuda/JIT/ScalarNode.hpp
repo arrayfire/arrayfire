@@ -36,6 +36,11 @@ namespace JIT
         {
         }
 
+        bool isLinear()
+        {
+            return true;
+        }
+
         void genKerName(std::stringstream &kerStream, bool genInputs)
         {
             if (!genInputs) return;
@@ -54,13 +59,13 @@ namespace JIT
             m_gen_param = true;
         }
 
-        void genOffsets(std::stringstream &kerStream)
+        void genOffsets(std::stringstream &kerStream, bool is_linear)
         {
             if (m_gen_offset) return;
             m_gen_offset = true;
         }
 
-        void genFuncs(std::stringstream &kerStream, str_map_t &declStrs)
+        void genFuncs(std::stringstream &kerStream, str_map_t &declStrs, bool is_linear)
         {
             if (m_gen_func) return;
             m_gen_func = true;

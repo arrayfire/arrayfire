@@ -13,6 +13,7 @@
 #include <traits.hpp>
 #include <string>
 #include <mutex>
+#include <map>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -40,8 +41,8 @@ namespace opencl
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static Program           iotaProgs[DeviceManager::MAX_DEVICES];
-                static Kernel          iotaKernels[DeviceManager::MAX_DEVICES];
+                static std::map<int, Program*>  iotaProgs;
+                static std::map<int, Kernel*> iotaKernels;
 
                 int device = getActiveDeviceId();
 
@@ -49,17 +50,18 @@ namespace opencl
                     std::ostringstream options;
                     options << " -D T=" << dtype_traits<T>::getName();
                     options << " -D rep=" << rep;
-
-                    buildProgram(iotaProgs[device],
-                                 iota_cl,
-                                 iota_cl_len,
-                                 options.str());
-
-                    iotaKernels[device] = Kernel(iotaProgs[device], "iota_kernel");
+                    if (std::is_same<T, double>::value ||
+                        std::is_same<T, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
+                    Program prog;
+                    buildProgram(prog, iota_cl, iota_cl_len, options.str());
+                    iotaProgs[device]   = new Program(prog);
+                    iotaKernels[device] = new Kernel(*iotaProgs[device], "iota_kernel");
                 });
 
                 auto iotaOp = make_kernel<Buffer, const KParam, const dim_type, const dim_type>
-                                         (iotaKernels[device]);
+                                         (*iotaKernels[device]);
 
                 NDRange local(TX, TY, 1);
 
