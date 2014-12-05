@@ -21,6 +21,10 @@ namespace opencl
     template<typename T>
     Array<uint>* where(const Array<T> &in)
     {
+        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
+            !isDoubleSupported(getActiveDeviceId())) {
+            OPENCL_NOT_SUPPORTED();
+        }
         Param Out;
         Param In = in;
         kernel::where<T>(Out, In);

@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if T == double || U == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 dim_type index(dim_type i, dim_type j, dim_type k, dim_type jstride, dim_type kstride)
 {
     return i+j*jstride+k*kstride;

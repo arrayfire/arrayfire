@@ -36,29 +36,37 @@ IF(CLFFT_INCLUDE_DIRS)
 ENDIF (CLFFT_INCLUDE_DIRS)
 
 FIND_PATH(CLFFT_SOURCE_DIR
-        NAMES src/include/clFFT.h
-        HINTS ${CMAKE_SOURCE_DIR}/clFFT ${CMAKE_SOURCE_DIR}/../clFFT ${CMAKE_SOURCE_DIR}/../../clFFT
-        DOC "clFFT source directory.")
+    NAMES src/include/clFFT.h
+    HINTS   "${CMAKE_SOURCE_DIR}/clFFT"
+            "${CMAKE_SOURCE_DIR}/../clFFT"
+            "${CMAKE_SOURCE_DIR}/../../clFFT"
+    DOC "clFFT source directory.")
 
 FIND_PATH(CLFFT_BUILD_DIR
-        NAMES ./install_manifest.txt
-        HINTS ${CLFFT_SOURCE_DIR}/build ${CLFFT_SOURCE_DIR}/src/build
-        DOC "clFFT build directory.")
+    NAMES ./install_manifest.txt
+    HINTS   "${CLFFT_SOURCE_DIR}/build"
+            "${CLFFT_SOURCE_DIR}/src/build"
+    DOC "clFFT build directory.")
 
 FIND_PATH(CLFFT_ROOT_DIR
     NAMES include/clFFT.h
-    HINTS /usr/local/ $ENV{CLFFT_ROOT} ${CMAKE_SOURCE_DIR}/..  ${CMAKE_SOURCE_DIR}/../.. ${CLFFT_BUILD_DIR}/package
+    HINTS   "$ENV{CLFFT_ROOT}"
+            "${CMAKE_SOURCE_DIR}/.."
+            "${CMAKE_SOURCE_DIR}/../.."
+            "${CLFFT_BUILD_DIR}/package"
+            "${CMAKE_INSTALL_PREFIX}"
     DOC "clFFT root directory.")
 
 FIND_PATH(_CLFFT_INCLUDE_DIRS
     NAMES clFFT.h
-    HINTS ${CLFFT_ROOT_DIR}/include
+    HINTS "${CLFFT_ROOT_DIR}/include"
     DOC "clFFT Include directory")
 
 FIND_LIBRARY(_CLFFT_LIBRARY
     NAMES clFFT
-    HINTS 	${CLFFT_ROOT_DIR}/lib64
-			${CLFFT_ROOT_DIR}/lib64/import)
+    HINTS 	"${CLFFT_ROOT_DIR}/lib64"
+		    "${CLFFT_ROOT_DIR}/lib64/import"
+		    "${CMAKE_INSTALL_PREFIX}")
 
 SET(CLFFT_INCLUDE_DIRS ${_CLFFT_INCLUDE_DIRS})
 SET(CLFFT_LIBRARIES ${_CLFFT_LIBRARY})

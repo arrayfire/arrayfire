@@ -48,12 +48,13 @@ namespace JIT
 
         virtual void genKerName(std::stringstream &kerStream, bool genInputs) {}
         virtual void genParams  (std::stringstream &kerStream, std::stringstream &annStream) {}
-        virtual void genOffsets (std::stringstream &kerStream) {}
-        virtual void genFuncs   (std::stringstream &kerStream, str_map_t &declStrs)
+        virtual void genOffsets (std::stringstream &kerStream, bool is_linear) {}
+        virtual void genFuncs   (std::stringstream &kerStream, str_map_t &declStrs, bool is_linear)
         { m_gen_func = true;}
 
         virtual int setId(int id) { m_set_id = true; return id; }
         virtual void setArgs(std::vector<void *> &args) { m_set_arg = true; }
+        virtual bool isLinear() { return true; }
 
         virtual void resetFlags() {}
 

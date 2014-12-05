@@ -13,10 +13,24 @@
 namespace af
 {
 
-array resize(const array in, const dim_type odim0, const dim_type odim1, const af_interp_type method)
+array resize(const array &in, const dim_type odim0, const dim_type odim1, const af_interp_type method)
 {
     af_array out = 0;
     AF_THROW(af_resize(&out, in.get(), odim0, odim1, method));
+    return array(out);
+}
+
+array resize(const array &in, const float scale0, const float scale1, const af_interp_type method)
+{
+    af_array out = 0;
+    AF_THROW(af_resize(&out, in.get(), in.dims(0) * scale0, in.dims(1) * scale1, method));
+    return array(out);
+}
+
+array resize(const array &in, const float scale, const af_interp_type method)
+{
+    af_array out = 0;
+    AF_THROW(af_resize(&out, in.get(), in.dims(0) * scale, in.dims(1) * scale, method));
     return array(out);
 }
 

@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if Ti == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 __kernel
 void reduce_dim_kernel(__global To *oData,
                        KParam oInfo,

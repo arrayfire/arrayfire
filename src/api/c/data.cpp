@@ -31,8 +31,7 @@ af_err af_get_data_ptr(void *data, const af_array arr)
     af_err ret = AF_SUCCESS;
 
     try {
-        af_dtype type;
-        af_get_type(&type, arr);
+        af_dtype type = getInfo(arr).getType();
         switch(type) {
         case f32:   copyData(static_cast<float    *>(data), arr);  break;
         case c32:   copyData(static_cast<cfloat   *>(data), arr);  break;
@@ -54,7 +53,7 @@ af_err af_create_array(af_array *result, const void * const data,
                        const unsigned ndims, const dim_type * const dims,
                        const af_dtype type)
 {
-    af_init();
+    AF_CHECK(af_init());
     af_err ret = AF_ERR_ARG;
     af_array out;
     try {
@@ -85,7 +84,7 @@ af_err af_constant(af_array *result, const double value,
                    const unsigned ndims, const dim_type * const dims,
                    const af_dtype type)
 {
-    af_init();
+    AF_CHECK(af_init());
     af_err ret = AF_ERR_ARG;
     af_array out;
     try {
@@ -128,7 +127,7 @@ static inline af_array createCplx(dim4 dims, const Ti real, const Ti imag)
 af_err af_constant_complex(af_array *result, const double real, const double imag,
                            const unsigned ndims, const dim_type * const dims, af_dtype type)
 {
-    af_init();
+    AF_CHECK(af_init());
     af_err ret = AF_ERR_ARG;
     af_array out;
     try {
@@ -155,7 +154,7 @@ af_err af_constant_complex(af_array *result, const double real, const double ima
 af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type * const dims,
                         const af_dtype type)
 {
-    af_init();
+    AF_CHECK(af_init());
     af_err ret = AF_ERR_ARG;
     af_array out;
     try {
@@ -227,7 +226,7 @@ static inline af_array randu_(const af::dim4 &dims)
 
 af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
 {
-    af_init();
+    AF_CHECK(af_init());
     af_err ret = AF_SUCCESS;
     af_array result;
     try {
@@ -259,7 +258,7 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims
 
 af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
 {
-    af_init();
+    AF_CHECK(af_init());
     af_err ret = AF_SUCCESS;
     af_array result;
     try {
@@ -288,8 +287,7 @@ af_err af_destroy_array(af_array arr)
 {
     af_err ret = AF_ERR_ARG;
     try {
-        af_dtype type;
-        af_get_type(&type, arr);
+        af_dtype type = getInfo(arr).getType();
 
         switch(type) {
         case f32:   destroyHandle<float   >(arr); break;
@@ -306,7 +304,8 @@ af_err af_destroy_array(af_array arr)
         ret = AF_SUCCESS;
     }
     CATCHALL
-        return ret;
+
+    return ret;
 }
 
 
@@ -354,7 +353,7 @@ static inline af_array iota_(const dim4& d, const unsigned rep)
 af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const dims,
                const unsigned rep, const af_dtype type)
 {
-    af_init();
+    AF_CHECK(af_init());
     af_err ret = AF_ERR_ARG;
     af_array out;
     try {

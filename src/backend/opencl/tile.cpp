@@ -17,6 +17,10 @@ namespace opencl
     template<typename T>
     Array<T> *tile(const Array<T> &in, const af::dim4 &tileDims)
     {
+        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
+            !isDoubleSupported(getActiveDeviceId())) {
+            OPENCL_NOT_SUPPORTED();
+        }
         const af::dim4 iDims = in.dims();
         af::dim4 oDims = iDims;
         oDims *= tileDims;

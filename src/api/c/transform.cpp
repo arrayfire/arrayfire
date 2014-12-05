@@ -67,64 +67,6 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
     return AF_SUCCESS;
 }
 
-af_err af_rotate(af_array *out, const af_array in, const float theta, const af_interp_type method,
-                 const bool crop, const bool recenter)
-{
-    af_err ret = AF_SUCCESS;
-    try {
-        unsigned odims0 = 0, odims1 = 0;
-        float c = std::cos(-theta), s = std::sin(-theta);
-        float tx = 0, ty = 0;
-
-        ArrayInfo info = getInfo(in);
-        af::dim4 idims = info.dims();
-
-        if(!crop) {
-            odims0 = idims[0] * fabs(std::cos(theta)) + idims[1] * fabs(std::sin(theta));
-            odims1 = idims[1] * fabs(std::cos(theta)) + idims[0] * fabs(std::sin(theta));
-        } else {
-            odims0 = idims[0];
-            odims1 = idims[1];
-        }
-
-        if (recenter) { //Find new coordintates of center and translate it
-            float nx = 0.5 * (idims[0] - 1);
-            float ny = 0.5 * (idims[1] - 1);
-            float mx = 0.5 * (odims0 - 1);
-            float my = 0.5 * (odims1 - 1);
-            float sx = (mx * c + my *-s);
-            float sy = (mx * s + my * c);
-            tx = -(sx - nx);
-            ty = -(sy - ny);
-        }
-
-        //Correct transform matrix for forward rotation
-        static float trans_mat[6] = {1, 0, 0,
-                                     0, 1, 0};
-        trans_mat[0] =  c;
-        trans_mat[1] = -s;
-        trans_mat[2] = tx;
-        trans_mat[3] =  s;
-        trans_mat[4] =  c;
-        trans_mat[5] = ty;
-
-        //If inverse, generated inverse matrix
-        //if(inverse)
-        //    calc_transform_inverse(trans_mat);
-
-        static af::dim4 tdims(3, 2, 1, 1);
-        af_array t = 0;
-        ret = af_create_array(&t, trans_mat, tdims.ndims(), tdims.get(), f32);
-
-        if (ret == AF_SUCCESS) {
-            return af_transform(out, in, t, odims0, odims1, method, true);
-        }
-    }
-    CATCHALL;
-
-    return ret;
-}
-
 af_err af_translate(af_array *out, const af_array in, const float trans0, const float trans1,
                     const dim_type odim0, const dim_type odim1, const af_interp_type method)
 {

@@ -49,43 +49,79 @@ static const char *get_system(void)
 #endif
 }
 
-void setContext(DeviceManager& devMngr, int device)
-{
-    devMngr.activeQId = device;
-    for(int i=0; i< (int)devMngr.ctxOffsets.size(); ++i) {
-        if (device< (int)devMngr.ctxOffsets[i]) {
-            devMngr.activeCtxId = i;
-            break;
-        }
-    }
-}
-
 DeviceManager& DeviceManager::getInstance()
 {
     static DeviceManager my_instance;
     return my_instance;
 }
 
-DeviceManager::DeviceManager()
-    : activeCtxId(0), activeQId(0)
+DeviceManager::~DeviceManager()
 {
+    //TODO: FIXME:
+    // OpenCL libs on Windows platforms
+    // are crashing the application at program exit
+    // most probably a reference counting issue based
+    // on the investigation done so far. This problem
+    // doesn't seem to happen on Linux or MacOSX.
+    // So, clean up OpenCL resources on non-Windows platforms
+#ifndef OS_WIN
+    for (auto q: mQueues) delete q;
+    for (auto d : mDevices) delete d;
+    for (auto c : mContexts) delete c;
+    for (auto p : mPlatforms) delete p;
+#endif
+}
+
+void DeviceManager::setContext(int device)
+{
+    mActiveQId = device;
+    for (int i = 0; i< (int)mCtxOffsets.size(); ++i) {
+        if (device< (int)mCtxOffsets[i]) {
+            mActiveCtxId = i;
+            break;
+        }
+    }
+}
+
+DeviceManager::DeviceManager()
+    : mActiveCtxId(0), mActiveQId(0)
+{
+    std::vector<cl::Platform>   platforms;
     Platform::get(&platforms);
 
-    for (auto platform: platforms) {
-        cl_context_properties cps[3] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platform)(), 0};
-        contexts.emplace_back(CL_DEVICE_TYPE_ALL, cps);
+    cl_device_type DEVC_TYPES[3] = {CL_DEVICE_TYPE_GPU,
+                                    CL_DEVICE_TYPE_ACCELERATOR,
+                                    CL_DEVICE_TYPE_CPU};
+
+    for (auto &platform : platforms)
+        mPlatforms.push_back(new Platform(platform));
+
+    for (auto devType : DEVC_TYPES) {
+        for (auto &platform : platforms) {
+            cl_context_properties cps[3] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platform()), 0};
+            Context *temp = nullptr;
+            try {
+                temp = new Context(devType, cps);
+                mContexts.push_back(temp);
+            }
+            catch (const cl::Error &error) {
+                if (error.err() != CL_DEVICE_NOT_FOUND)
+                    CL_TO_AF_ERROR(error);
+            }
+        }
     }
 
     unsigned nDevices = 0;
-    for (auto context: contexts) {
-        vector<Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
+    for (auto context : mContexts) {
+        vector<Device> devices = context->getInfo<CL_CONTEXT_DEVICES>();
 
-        for(auto dev : devices) {
+        for(auto &dev : devices) {
             nDevices++;
-            queues.emplace_back(context, dev);
+            mDevices.push_back(new Device(dev));
+            mQueues.push_back(new CommandQueue(*context, dev));
         }
 
-        ctxOffsets.push_back(nDevices);
+        mCtxOffsets.push_back(nDevices);
     }
 
     const char* deviceENV = getenv("AF_OPENCL_DEFAULT_DEVICE");
@@ -97,7 +133,7 @@ DeviceManager::DeviceManager()
             printf("WARNING: AF_OPENCL_DEFAULT_DEVICE is out of range\n");
             printf("Setting default device as 0\n");
         } else {
-            setContext(*this, def_device);
+            setContext(def_device);
         }
     }
 }
@@ -108,56 +144,83 @@ std::string getInfo()
     info << "ArrayFire v" << AF_VERSION << AF_VERSION_MINOR
          << " (OpenCL, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
 
-    vector<string> pnames;
-    for (auto platform: DeviceManager::getInstance().platforms) {
-        string pstr;
-        platform.getInfo(CL_PLATFORM_NAME, &pstr);
-        pnames.push_back(pstr);
-    }
-
     unsigned nDevices = 0;
-    vector<string>::iterator pIter = pnames.begin();
-    for (auto context: DeviceManager::getInstance().contexts) {
-        vector<Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
+    for (auto context : DeviceManager::getInstance().mContexts) {
+        vector<Device> devices = context->getInfo<CL_CONTEXT_DEVICES>();
 
-        for(unsigned i = 0; i < devices.size(); i++) {
+        for(auto &device:devices) {
+            const Platform &platform = device.getInfo<CL_DEVICE_PLATFORM>();
+            string platStr = platform.getInfo<CL_PLATFORM_NAME>();
             bool show_braces = ((unsigned)getActiveDeviceId() == nDevices);
             string dstr;
-            devices[i].getInfo(CL_DEVICE_NAME, &dstr);
+            device.getInfo(CL_DEVICE_NAME, &dstr);
 
             string id = (show_braces ? string("[") : "-") + std::to_string(nDevices) +
                         (show_braces ? string("]") : "-");
-            info << id << " " << *pIter << " " << dstr << " ";
-            info << devices[i].getInfo<CL_DEVICE_VERSION>();
-            info << " Device driver " << devices[i].getInfo<CL_DRIVER_VERSION>() <<std::endl;
+            info << id << " " << platStr << " " << dstr << " ";
+            info << device.getInfo<CL_DEVICE_VERSION>();
+            info << " Device driver " << device.getInfo<CL_DRIVER_VERSION>();
+            info << " FP64 Support("
+                 << (device.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0 ? "True" : "False")
+                 << ")" << std::endl;
 
             nDevices++;
         }
-        pIter++;
     }
     return info.str();
 }
 
+int getDeviceCount()
+{
+    return DeviceManager::getInstance().mQueues.size();
+}
+
+int getActiveDeviceId()
+{
+    return DeviceManager::getInstance().mActiveQId;
+}
+
+const Context& getContext()
+{
+    DeviceManager& devMngr = DeviceManager::getInstance();
+    return *(devMngr.mContexts[devMngr.mActiveCtxId]);
+}
+
+CommandQueue& getQueue()
+{
+    DeviceManager& devMngr = DeviceManager::getInstance();
+    return *(devMngr.mQueues[devMngr.mActiveQId]);
+}
+
+const cl::Device& getDevice()
+{
+    DeviceManager& devMngr = DeviceManager::getInstance();
+    return *(devMngr.mDevices[devMngr.mActiveQId]);
+}
+
+bool isDoubleSupported(int device)
+{
+    DeviceManager& devMngr = DeviceManager::getInstance();
+    return (devMngr.mDevices[device]->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0);
+}
+
 void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
 {
-    vector<string> pnames;
-    for (auto platform: DeviceManager::getInstance().platforms) {
-        string pstr;
-        platform.getInfo(CL_PLATFORM_NAME, &pstr);
-        pnames.push_back(pstr);
-    }
-
     unsigned nDevices = 0;
+    unsigned currActiveDevId = (unsigned)getActiveDeviceId();
     bool devset = false;
-    vector<string>::iterator pIter = pnames.begin();
-    for (auto context: DeviceManager::getInstance().contexts) {
-        vector<Device> devices = context.getInfo<CL_CONTEXT_DEVICES>();
 
-        for(unsigned i = 0; i < devices.size(); i++) {
-            if((unsigned)getActiveDeviceId() == nDevices) {
+    for (auto context : DeviceManager::getInstance().mContexts) {
+        vector<Device> devices = context->getInfo<CL_CONTEXT_DEVICES>();
+
+        for (auto &device : devices) {
+            const Platform &platform = device.getInfo<CL_DEVICE_PLATFORM>();
+            string platStr = platform.getInfo<CL_PLATFORM_NAME>();
+
+            if (currActiveDevId == nDevices) {
                 string dev_str;
-                devices[i].getInfo(CL_DEVICE_NAME, &dev_str);
-                string com_str = devices[i].getInfo<CL_DEVICE_VERSION>();
+                device.getInfo(CL_DEVICE_NAME, &dev_str);
+                string com_str = device.getInfo<CL_DEVICE_VERSION>();
                 com_str = com_str.substr(7, 3);
 
                 // strip out whitespace from the device string:
@@ -170,17 +233,14 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
                 // copy to output
                 snprintf(d_name, 64, "%s", dev_str.c_str());
                 snprintf(d_platform, 10, "OpenCL");
-                snprintf(d_toolkit, 64, "%s", pIter->c_str());
+                snprintf(d_toolkit, 64, "%s", platStr.c_str());
                 snprintf(d_compute, 10, "%s", com_str.c_str());
                 devset = true;
             }
-
             if(devset) break;
             nDevices++;
         }
-
         if(devset) break;
-        pIter++;
     }
 
     // Sanitize input
@@ -192,41 +252,18 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
     }
 }
 
-int getDeviceCount()
-{
-    return DeviceManager::getInstance().queues.size();
-}
-
-int getActiveDeviceId()
-{
-    return DeviceManager::getInstance().activeQId;
-}
-
-
-const Context& getContext()
-{
-    DeviceManager& devMngr = DeviceManager::getInstance();
-    return devMngr.contexts[devMngr.activeCtxId];
-}
-
-CommandQueue& getQueue()
-{
-    DeviceManager& devMngr = DeviceManager::getInstance();
-    return devMngr.queues[devMngr.activeQId];
-}
-
 int setDevice(int device)
 {
     DeviceManager& devMngr = DeviceManager::getInstance();
 
-    if (device>= (int)devMngr.queues.size() ||
+    if (device >= (int)devMngr.mQueues.size() ||
             device>= (int)DeviceManager::MAX_DEVICES) {
         //throw runtime_error("@setDevice: invalid device index");
         return -1;
     }
     else {
-        int old = devMngr.activeQId;
-        setContext(devMngr, device);
+        int old = devMngr.mActiveQId;
+        devMngr.setContext(device);
         return old;
     }
 }

@@ -58,7 +58,6 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage) {
 static af_err channel_split(const af_array rgb, const af::dim4 dims,
                             af_array *outr, af_array *outg, af_array *outb, af_array *outa)
 {
-    af_err ret = AF_SUCCESS;
     af_seq idx[4][3] = {{af_span, af_span, {0, 0, 1}},
                         {af_span, af_span, {1, 1, 1}},
                         {af_span, af_span, {2, 2, 1}},
@@ -66,26 +65,18 @@ static af_err channel_split(const af_array rgb, const af::dim4 dims,
                        };
 
     if (dims[2] == 4) {
-        ret = af_index(outr, rgb, dims.ndims(), idx[0]);
-        if(ret != AF_SUCCESS) return ret;
-        ret = af_index(outg, rgb, dims.ndims(), idx[1]);
-        if(ret != AF_SUCCESS) return ret;
-        ret = af_index(outb, rgb, dims.ndims(), idx[2]);
-        if(ret != AF_SUCCESS) return ret;
-        ret = af_index(outa, rgb, dims.ndims(), idx[3]);
-        if(ret != AF_SUCCESS) return ret;
+        AF_CHECK(af_index(outr, rgb, dims.ndims(), idx[0]));
+        AF_CHECK(af_index(outg, rgb, dims.ndims(), idx[1]));
+        AF_CHECK(af_index(outb, rgb, dims.ndims(), idx[2]));
+        AF_CHECK(af_index(outa, rgb, dims.ndims(), idx[3]));
     } else if (dims[2] == 3) {
-        ret = af_index(outr, rgb, dims.ndims(), idx[0]);
-        if(ret != AF_SUCCESS) return ret;
-        ret = af_index(outg, rgb, dims.ndims(), idx[1]);
-        if(ret != AF_SUCCESS) return ret;
-        ret = af_index(outb, rgb, dims.ndims(), idx[2]);
-        if(ret != AF_SUCCESS) return ret;
+        AF_CHECK(af_index(outr, rgb, dims.ndims(), idx[0]));
+        AF_CHECK(af_index(outg, rgb, dims.ndims(), idx[1]));
+        AF_CHECK(af_index(outb, rgb, dims.ndims(), idx[2]));
     } else {
-        ret = af_index(outr, rgb, dims.ndims(), idx[0]);
-        if(ret != AF_SUCCESS) return ret;
+        AF_CHECK(af_index(outr, rgb, dims.ndims(), idx[0]));
     }
-    return ret;
+    return AF_SUCCESS;
 }
 
 template<typename T, int fi_color, int fo_color>
@@ -331,27 +322,22 @@ af_err af_save_image(const char* filename, const af_array in_)
 
     af_array rrT = 0, ggT = 0, bbT = 0, aaT = 0;
     if(channels == 4) {
-        ret = af_transpose(&rrT, rr);
-        if(ret != AF_SUCCESS) return ret;
-        ret = af_transpose(&ggT, gg);
-        if(ret != AF_SUCCESS) return ret;
-        ret = af_transpose(&bbT, bb);
-        if(ret != AF_SUCCESS) return ret;
-        ret = af_transpose(&aaT, aa);
-        if(ret != AF_SUCCESS) return ret;
+
+        AF_CHECK(af_transpose(&rrT, rr));
+        AF_CHECK(af_transpose(&ggT, gg));
+        AF_CHECK(af_transpose(&bbT, bb));
+        AF_CHECK(af_transpose(&aaT, aa));
+
         ArrayInfo cinfo = getInfo(rrT);
         float* pSrc0 = new float[cinfo.elements()];
         float* pSrc1 = new float[cinfo.elements()];
         float* pSrc2 = new float[cinfo.elements()];
         float* pSrc3 = new float[cinfo.elements()];
-        ret = af_get_data_ptr((void*)pSrc0, rrT);
-        if(ret != AF_SUCCESS) return ret;
-        ret = af_get_data_ptr((void*)pSrc1, ggT);
-        if(ret != AF_SUCCESS) return ret;
-        ret = af_get_data_ptr((void*)pSrc2, bbT);
-        if(ret != AF_SUCCESS) return ret;
-        ret = af_get_data_ptr((void*)pSrc3, aaT);
-        if(ret != AF_SUCCESS) return ret;
+
+        AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
+        AF_CHECK(af_get_data_ptr((void*)pSrc1, ggT));
+        AF_CHECK(af_get_data_ptr((void*)pSrc2, bbT));
+        AF_CHECK(af_get_data_ptr((void*)pSrc3, aaT));
 
         // Copy the array into FreeImage buffer
         for (uint y = 0; y < fi_h; ++y) {
@@ -369,22 +355,18 @@ af_err af_save_image(const char* filename, const af_array in_)
         delete [] pSrc2;
         delete [] pSrc3;
     } else if(channels == 3) {
-        af_transpose(&rrT, rr);
-        if(ret != AF_SUCCESS) return ret;
-        af_transpose(&ggT, gg);
-        if(ret != AF_SUCCESS) return ret;
-        af_transpose(&bbT, bb);
-        if(ret != AF_SUCCESS) return ret;
+        AF_CHECK(af_transpose(&rrT, rr));
+        AF_CHECK(af_transpose(&ggT, gg));
+        AF_CHECK(af_transpose(&bbT, bb));
+
         ArrayInfo cinfo = getInfo(rrT);
         float* pSrc0 = new float[cinfo.elements()];
         float* pSrc1 = new float[cinfo.elements()];
         float* pSrc2 = new float[cinfo.elements()];
-        ret = af_get_data_ptr((void*)pSrc0, rrT);
-        if(ret != AF_SUCCESS) return ret;
-        ret = af_get_data_ptr((void*)pSrc1, ggT);
-        if(ret != AF_SUCCESS) return ret;
-        ret = af_get_data_ptr((void*)pSrc2, bbT);
-        if(ret != AF_SUCCESS) return ret;
+
+        AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
+        AF_CHECK(af_get_data_ptr((void*)pSrc1, ggT));
+        AF_CHECK(af_get_data_ptr((void*)pSrc2, bbT));
 
         // Copy the array into FreeImage buffer
         for (uint y = 0; y < fi_h; ++y) {
@@ -400,12 +382,10 @@ af_err af_save_image(const char* filename, const af_array in_)
         delete [] pSrc1;
         delete [] pSrc2;
     } else {
-        af_transpose(&rrT, rr);
-        if(ret != AF_SUCCESS) return ret;
+        AF_CHECK(af_transpose(&rrT, rr));
         ArrayInfo cinfo = getInfo(rrT);
         float* pSrc0 = new float[cinfo.elements()];
-        ret = af_get_data_ptr((void*)pSrc0, rrT);
-        if(ret != AF_SUCCESS) return ret;
+        AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
 
         for (uint y = 0; y < fi_h; ++y) {
             for (uint x = 0; x < fi_w; ++x) {
@@ -416,14 +396,16 @@ af_err af_save_image(const char* filename, const af_array in_)
         }
         delete [] pSrc0;
     }
-    if(rr != 0) ret = af_destroy_array(rr );
-    if(gg != 0) ret = af_destroy_array(gg );
-    if(bb != 0) ret = af_destroy_array(bb );
-    if(aa != 0) ret = af_destroy_array(aa );
-    if(rrT!= 0) ret = af_destroy_array(rrT);
-    if(ggT!= 0) ret = af_destroy_array(ggT);
-    if(bbT!= 0) ret = af_destroy_array(bbT);
-    if(aaT!= 0) ret = af_destroy_array(aaT);
+
+    if(rr != 0) AF_CHECK(af_destroy_array(rr ));
+    if(gg != 0) AF_CHECK(af_destroy_array(gg ));
+    if(bb != 0) AF_CHECK(af_destroy_array(bb ));
+    if(aa != 0) AF_CHECK(af_destroy_array(aa ));
+    if(rrT!= 0) AF_CHECK(af_destroy_array(rrT));
+    if(ggT!= 0) AF_CHECK(af_destroy_array(ggT));
+    if(bbT!= 0) AF_CHECK(af_destroy_array(bbT));
+    if(aaT!= 0) AF_CHECK(af_destroy_array(aaT));
+
     // now save the result image
     if (!(FreeImage_Save(fif, pResultBitmap, filename, 0) == TRUE)) {
         printf("ERROR: Failed to save result image.\n");

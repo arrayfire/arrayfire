@@ -23,6 +23,10 @@ namespace opencl
     template<af_op_t op, typename Ti, typename To>
     Array<To>* scan(const Array<Ti>& in, const int dim)
     {
+        if ((std::is_same<Ti, double>::value || std::is_same<Ti, cdouble>::value) &&
+            !isDoubleSupported(getActiveDeviceId())) {
+            OPENCL_NOT_SUPPORTED();
+        }
         Array<To> *out = createEmptyArray<To>(in.dims());
 
         try {
@@ -54,5 +58,5 @@ namespace opencl
     INSTANTIATE(af_add_t, uint   , uint   )
     INSTANTIATE(af_add_t, char   , int    )
     INSTANTIATE(af_add_t, uchar  , uint   )
-    INSTANTIATE(af_notzero_t, char  , uint   )
+    INSTANTIATE(af_notzero_t, char  , uint)
 }

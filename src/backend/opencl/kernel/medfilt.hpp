@@ -13,6 +13,7 @@
 #include <traits.hpp>
 #include <string>
 #include <mutex>
+#include <map>
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -41,8 +42,8 @@ void medfilt(Param out, const Param in)
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static Program            mfProgs[DeviceManager::MAX_DEVICES];
-        static Kernel           mfKernels[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*>  mfProgs;
+        static std::map<int, Kernel*> mfKernels;
 
         int device = getActiveDeviceId();
 
@@ -57,14 +58,15 @@ void medfilt(Param out, const Param in)
                         << " -D AF_SYMMETRIC="<< AF_SYMMETRIC
                         << " -D ARR_SIZE="<< ARR_SIZE
                         << " -D w_len="<< w_len
-                        << " -D w_wid="<< w_wid;
-
-                buildProgram(mfProgs[device],
-                             medfilt_cl,
-                             medfilt_cl_len,
-                             options.str());
-
-                mfKernels[device] = Kernel(mfProgs[device], "medfilt");
+                        << " -D w_wid=" << w_wid;
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
+                Program prog;
+                buildProgram(prog, medfilt_cl, medfilt_cl_len, options.str());
+                mfProgs[device]   = new Program(prog);
+                mfKernels[device] = new Kernel(*mfProgs[device], "medfilt");
             });
 
 
@@ -79,7 +81,7 @@ void medfilt(Param out, const Param in)
         auto transposeOp = make_kernel<Buffer, KParam,
                                        Buffer, KParam,
                                        cl::LocalSpaceArg,
-                                       dim_type> (mfKernels[device]);
+                                       dim_type> (*mfKernels[device]);
 
         size_t loc_size = (THREADS_X+w_len-1)*(THREADS_Y+w_wid-1)*sizeof(T);
 

@@ -16,6 +16,7 @@
 #include <debug_opencl.hpp>
 #include <math.hpp>
 #include <stdio.h>
+#include <map>
 
 #include <boost/compute/container/vector.hpp>
 #include <boost/compute/algorithm/adjacent_difference.hpp>
@@ -47,10 +48,10 @@ void regions(Param out, Param in)
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static Program        regionsProgs[DeviceManager::MAX_DEVICES];
-        static Kernel             ilKernel[DeviceManager::MAX_DEVICES];
-        static Kernel             frKernel[DeviceManager::MAX_DEVICES];
-        static Kernel             ueKernel[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*> regionsProgs;
+        static std::map<int, Kernel *>     ilKernel;
+        static std::map<int, Kernel *>     frKernel;
+        static std::map<int, Kernel *>     ueKernel;
 
         int device = getActiveDeviceId();
 
@@ -75,15 +76,18 @@ void regions(Param out, Param in)
                             << " -D N_PER_THREAD=" << n_per_thread
                             << " -D LIMIT_MAX=" << limit_max<T>();
                 }
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
 
-                buildProgram(regionsProgs[device],
-                             regions_cl,
-                             regions_cl_len,
-                             options.str());
+                Program prog;
+                buildProgram(prog, regions_cl, regions_cl_len, options.str());
+                regionsProgs[device] = new Program(prog);
 
-                ilKernel[device] = Kernel(regionsProgs[device], "initial_label");
-                frKernel[device] = Kernel(regionsProgs[device], "final_relabel");
-                ueKernel[device] = Kernel(regionsProgs[device], "update_equiv");
+                ilKernel[device] = new Kernel(*regionsProgs[device], "initial_label");
+                frKernel[device] = new Kernel(*regionsProgs[device], "final_relabel");
+                ueKernel[device] = new Kernel(*regionsProgs[device], "update_equiv");
             });
 
         const NDRange local(THREADS_X, THREADS_Y);
@@ -94,7 +98,7 @@ void regions(Param out, Param in)
         const NDRange global(blk_x * THREADS_X, blk_y * THREADS_Y);
 
         auto ilOp = make_kernel<Buffer, KParam,
-                                Buffer, KParam> (ilKernel[device]);
+                                Buffer, KParam> (*ilKernel[device]);
 
         ilOp(EnqueueArgs(getQueue(), global, local),
              out.data, out.info, in.data, in.info);
@@ -109,7 +113,7 @@ void regions(Param out, Param in)
             getQueue().enqueueWriteBuffer(d_continue, CL_TRUE, 0, sizeof(int), &h_continue);
 
             auto ueOp = make_kernel<Buffer, KParam,
-                                    Buffer> (ueKernel[device]);
+                                    Buffer> (*ueKernel[device]);
 
             ueOp(EnqueueArgs(getQueue(), global, local),
                  out.data, out.info, d_continue);
@@ -193,7 +197,7 @@ void regions(Param out, Param in)
         // Apply the correct labels to the equivalency map
         auto frOp = make_kernel<Buffer, KParam,
                                 Buffer, KParam,
-                                Buffer> (frKernel[device]);
+                                Buffer> (*frKernel[device]);
 
         //Buffer labels_buf(tmp.get_buffer().get());
         frOp(EnqueueArgs(getQueue(), global, local),
