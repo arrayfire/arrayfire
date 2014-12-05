@@ -89,10 +89,26 @@ DeviceManager::DeviceManager()
     std::vector<cl::Platform>   platforms;
     Platform::get(&platforms);
 
-    for (auto &platform : platforms) {
+    cl_device_type DEVC_TYPES[3] = {CL_DEVICE_TYPE_GPU,
+                                    CL_DEVICE_TYPE_ACCELERATOR,
+                                    CL_DEVICE_TYPE_CPU};
+
+    for (auto &platform : platforms)
         mPlatforms.push_back(new Platform(platform));
-        cl_context_properties cps[3] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platform()), 0};
-        mContexts.push_back(new Context(CL_DEVICE_TYPE_ALL, cps));
+
+    for (auto devType : DEVC_TYPES) {
+        for (auto &platform : platforms) {
+            cl_context_properties cps[3] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platform()), 0};
+            Context *temp = nullptr;
+            try {
+                temp = new Context(devType, cps);
+                mContexts.push_back(temp);
+            }
+            catch (const cl::Error &error) {
+                if (error.err() != CL_DEVICE_NOT_FOUND)
+                    CL_TO_AF_ERROR(error);
+            }
+        }
     }
 
     unsigned nDevices = 0;
@@ -128,35 +144,28 @@ std::string getInfo()
     info << "ArrayFire v" << AF_VERSION << AF_VERSION_MINOR
          << " (OpenCL, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
 
-    vector<string> pnames;
-    for (auto platform: DeviceManager::getInstance().mPlatforms) {
-        string pstr;
-        platform->getInfo(CL_PLATFORM_NAME, &pstr);
-        pnames.push_back(pstr);
-    }
-
     unsigned nDevices = 0;
-    vector<string>::iterator pIter = pnames.begin();
     for (auto context : DeviceManager::getInstance().mContexts) {
         vector<Device> devices = context->getInfo<CL_CONTEXT_DEVICES>();
 
-        for(unsigned i = 0; i < devices.size(); i++) {
+        for(auto &device:devices) {
+            const Platform &platform = device.getInfo<CL_DEVICE_PLATFORM>();
+            string platStr = platform.getInfo<CL_PLATFORM_NAME>();
             bool show_braces = ((unsigned)getActiveDeviceId() == nDevices);
             string dstr;
-            devices[i].getInfo(CL_DEVICE_NAME, &dstr);
+            device.getInfo(CL_DEVICE_NAME, &dstr);
 
             string id = (show_braces ? string("[") : "-") + std::to_string(nDevices) +
                         (show_braces ? string("]") : "-");
-            info << id << " " << *pIter << " " << dstr << " ";
-            info << devices[i].getInfo<CL_DEVICE_VERSION>();
-            info << " Device driver " << devices[i].getInfo<CL_DRIVER_VERSION>();
+            info << id << " " << platStr << " " << dstr << " ";
+            info << device.getInfo<CL_DEVICE_VERSION>();
+            info << " Device driver " << device.getInfo<CL_DRIVER_VERSION>();
             info << " FP64 Support("
-                 << (devices[i].getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0 ? "True" : "False")
+                 << (device.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0 ? "True" : "False")
                  << ")" << std::endl;
 
             nDevices++;
         }
-        pIter++;
     }
     return info.str();
 }
@@ -197,24 +206,21 @@ bool isDoubleSupported(int device)
 
 void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
 {
-    vector<string> pnames;
-    for (auto platform : DeviceManager::getInstance().mPlatforms) {
-        string pstr;
-        platform->getInfo(CL_PLATFORM_NAME, &pstr);
-        pnames.push_back(pstr);
-    }
-
     unsigned nDevices = 0;
+    unsigned currActiveDevId = (unsigned)getActiveDeviceId();
     bool devset = false;
-    vector<string>::iterator pIter = pnames.begin();
+
     for (auto context : DeviceManager::getInstance().mContexts) {
         vector<Device> devices = context->getInfo<CL_CONTEXT_DEVICES>();
 
-        for(unsigned i = 0; i < devices.size(); i++) {
-            if((unsigned)getActiveDeviceId() == nDevices) {
+        for (auto &device : devices) {
+            const Platform &platform = device.getInfo<CL_DEVICE_PLATFORM>();
+            string platStr = platform.getInfo<CL_PLATFORM_NAME>();
+
+            if (currActiveDevId == nDevices) {
                 string dev_str;
-                devices[i].getInfo(CL_DEVICE_NAME, &dev_str);
-                string com_str = devices[i].getInfo<CL_DEVICE_VERSION>();
+                device.getInfo(CL_DEVICE_NAME, &dev_str);
+                string com_str = device.getInfo<CL_DEVICE_VERSION>();
                 com_str = com_str.substr(7, 3);
 
                 // strip out whitespace from the device string:
@@ -227,17 +233,14 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
                 // copy to output
                 snprintf(d_name, 64, "%s", dev_str.c_str());
                 snprintf(d_platform, 10, "OpenCL");
-                snprintf(d_toolkit, 64, "%s", pIter->c_str());
+                snprintf(d_toolkit, 64, "%s", platStr.c_str());
                 snprintf(d_compute, 10, "%s", com_str.c_str());
                 devset = true;
             }
-
             if(devset) break;
             nDevices++;
         }
-
         if(devset) break;
-        pIter++;
     }
 
     // Sanitize input
