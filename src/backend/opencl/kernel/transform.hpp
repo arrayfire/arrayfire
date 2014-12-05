@@ -33,6 +33,8 @@ namespace opencl
     {
         static const dim_type TX = 16;
         static const dim_type TY = 16;
+        // Used for batching images
+        static const dim_type TI = 4;
 
         template<typename T, bool isInverse, af_interp_type method>
         void transform(Param out, const Param in, const Param tf)
@@ -79,20 +81,31 @@ namespace opencl
 
                 auto transformOp = make_kernel<Buffer, const KParam,
                                          const Buffer, const KParam, const Buffer, const KParam,
-                                         const dim_type, const dim_type>
+                                         const dim_type, const dim_type, const dim_type>
                                          (*transformKernels[device]);
 
-                const dim_type nimages = in.info.dims[2];
-                // Multiplied in src/backend/transform.cpp
-                const dim_type ntransforms = out.info.dims[2] / in.info.dims[2];
                 NDRange local(TX, TY, 1);
 
-                NDRange global(local[0] * divup(out.info.dims[0], local[0]),
+                dim_type nimages = in.info.dims[2];
+                dim_type global_x = local[0] * divup(out.info.dims[0], local[0]);
+                const dim_type blocksXPerImage = global_x / local[0];
+
+                if(nimages > TI) {
+                    dim_type tile_images = divup(nimages, TI);
+                    nimages = TI;
+                    global_x = global_x * tile_images;
+                }
+
+                // Multiplied in src/backend/transform.cpp
+                const dim_type ntransforms = out.info.dims[2] / in.info.dims[2];
+
+                NDRange global(global_x,
                                local[1] * divup(out.info.dims[1], local[1]) * ntransforms,
                                1);
 
                 transformOp(EnqueueArgs(getQueue(), global, local),
-                         out.data, out.info, in.data, in.info, tf.data, tf.info, nimages, ntransforms);
+                         out.data, out.info, in.data, in.info, tf.data, tf.info,
+                         nimages, ntransforms, blocksXPerImage);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
