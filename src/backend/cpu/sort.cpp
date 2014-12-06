@@ -28,14 +28,14 @@ namespace cpu
     ///////////////////////////////////////////////////////////////////////////
 
     // Based off of http://stackoverflow.com/a/12399290
-    template<typename T, bool DIR>
+    template<typename T, bool isAscending>
     void sort0(Array<T> &val)
     {
         // initialize original index locations
         T *val_ptr = val.get();
 
         function<bool(T, T)> op = greater<T>();
-        if(DIR) { op = less<T>(); }
+        if(isAscending) { op = less<T>(); }
 
         T *comp_ptr = nullptr;
         for(dim_type w = 0; w < val.dims()[3]; w++) {
@@ -57,12 +57,12 @@ namespace cpu
     ///////////////////////////////////////////////////////////////////////////
     // Wrapper Functions
     ///////////////////////////////////////////////////////////////////////////
-    template<typename T, bool DIR>
+    template<typename T, bool isAscending>
     Array<T>* sort(const Array<T> &in, const unsigned dim)
     {
         Array<T> *out = copyArray<T>(in);
         switch(dim) {
-            case 0: sort0<T, DIR>(*out);
+            case 0: sort0<T, isAscending>(*out);
                     break;
             default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }

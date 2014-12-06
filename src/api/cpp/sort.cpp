@@ -13,26 +13,26 @@
 
 namespace af
 {
-    array sort(const array& in, const unsigned dim, const bool dir)
+    array sort(const array& in, const unsigned dim, const bool isAscending)
     {
         af_array out = 0;
-        AF_THROW(af_sort(&out, in.get(), dim, dir));
+        AF_THROW(af_sort(&out, in.get(), dim, isAscending));
         return array(out);
     }
 
-    void sort(array &out, array &indices, const array& in, const unsigned dim, const bool dir)
+    void sort(array &out, array &indices, const array& in, const unsigned dim, const bool isAscending)
     {
         af_array out_, indices_;
-        AF_THROW(af_sort_index(&out_, &indices_, in.get(), dim, dir));
+        AF_THROW(af_sort_index(&out_, &indices_, in.get(), dim, isAscending));
         out = array(out_);
         indices = array(indices_);
     }
 
     void sort(array &out_keys, array &out_values, const array &keys, const array &values,
-              const unsigned dim, const bool dir)
+              const unsigned dim, const bool isAscending)
     {
         af_array okeys, ovalues;
-        AF_THROW(af_sort_by_key(&okeys, &ovalues, keys.get(), values.get(), dim, dir));
+        AF_THROW(af_sort_by_key(&okeys, &ovalues, keys.get(), values.get(), dim, isAscending));
         out_keys = array(okeys);
         out_values = array(ovalues);
     }

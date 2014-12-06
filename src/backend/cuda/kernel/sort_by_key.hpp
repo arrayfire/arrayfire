@@ -26,7 +26,7 @@ namespace cuda
         ///////////////////////////////////////////////////////////////////////////
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
-        template<typename Tk, typename Tv, bool DIR>
+        template<typename Tk, typename Tv, bool isAscending>
         void sort0_by_key(Param<Tk> okey, Param<Tv> oval)
         {
             thrust::device_ptr<Tk>       okey_ptr = thrust::device_pointer_cast(okey.ptr);
@@ -43,7 +43,7 @@ namespace cuda
                         dim_type okeyOffset = okeyWZ + y * okey.strides[1];
                         dim_type ovalOffset = ovalWZ + y * oval.strides[1];
 
-                        if(DIR) {
+                        if(isAscending) {
                             thrust::sort_by_key(okey_ptr + okeyOffset, okey_ptr + okeyOffset + okey.dims[0],
                                                 oval_ptr + ovalOffset);
                         } else {

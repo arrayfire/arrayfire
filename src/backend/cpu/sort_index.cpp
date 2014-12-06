@@ -30,7 +30,7 @@ namespace cpu
     ///////////////////////////////////////////////////////////////////////////
     // Kernel Functions
     ///////////////////////////////////////////////////////////////////////////
-    template<typename T, bool DIR>
+    template<typename T, bool isAscending>
     void sort0_index(Array<T> &val, Array<uint> &idx, const Array<T> &in)
     {
         // initialize original index locations
@@ -38,7 +38,7 @@ namespace cpu
               T *val_ptr = val.get();
         const T *in_ptr  = in.get();
         function<bool(T, T)> op = greater<T>();
-        if(DIR) { op = less<T>(); }
+        if(isAscending) { op = less<T>(); }
 
         std::vector<uint> seq_vec(idx.dims()[0]);
         std::iota(seq_vec.begin(), seq_vec.end(), 0);
@@ -79,13 +79,13 @@ namespace cpu
     ///////////////////////////////////////////////////////////////////////////
     // Wrapper Functions
     ///////////////////////////////////////////////////////////////////////////
-    template<typename T, bool DIR>
+    template<typename T, bool isAscending>
     void sort_index(Array<T> &val, Array<uint> &idx, const Array<T> &in, const uint dim)
     {
         val = *createEmptyArray<T>(in.dims());
         idx = *createEmptyArray<uint>(in.dims());
         switch(dim) {
-            case 0: sort0_index<T, DIR>(val, idx, in);
+            case 0: sort0_index<T, isAscending>(val, idx, in);
                     break;
             default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }
