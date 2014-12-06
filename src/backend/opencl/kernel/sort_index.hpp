@@ -39,7 +39,7 @@ namespace opencl
         static const dim_type TX = 32;
         static const dim_type TY = 8;
 
-        template<typename T, bool DIR>
+        template<typename T, bool isAscending>
         void sort0_index(Param val, Param idx)
         {
             try {
@@ -62,7 +62,7 @@ namespace opencl
                             compute::buffer_iterator<unsigned> idx_begin(idx_buf, idxOffset);
                             compute::iota(idx_begin, idx_begin + val.info.dims[0], 0, c_queue);
 
-                            if(DIR) {
+                            if(isAscending) {
                                 compute::sort_by_key(
                                         compute::make_buffer_iterator<T>(val_buf, valOffset),
                                         compute::make_buffer_iterator<T>(val_buf, valOffset + val.info.dims[0]),
