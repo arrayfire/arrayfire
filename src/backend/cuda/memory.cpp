@@ -15,9 +15,38 @@
 #include <types.hpp>
 #include <map>
 #include <dispatch.hpp>
+#include <platform.hpp>
 
 namespace cuda
 {
+    template<typename T>
+    void cudaFreeWrapper(T *ptr)
+    {
+        cudaError_t err = cudaFree(ptr);
+        if (err != cudaErrorCudartUnloading) // see issue #167
+            CUDA_CHECK(err);
+    }
+
+#ifdef CUDA_MEM_DEBUG
+
+    template<typename T>
+    T* memAlloc(const size_t &elements)
+    {
+        T* ptr = NULL;
+        CUDA_CHECK(cudaMalloc(&ptr, elements * sizeof(T)));
+        return ptr;
+    }
+
+    template<typename T>
+    void memFree(T *ptr)
+    {
+        cudaFreeWrapper(ptr); // Free it because we are not sure what the size is
+    }
+
+#else
+
+    const int MAX_BUFFERS = 100;
+
     typedef struct
     {
         bool is_free;
@@ -28,28 +57,21 @@ namespace cuda
     typedef std::map<void *, mem_info> mem_t;
     typedef mem_t::iterator mem_iter;
 
-    mem_t memory_map;
-
-    template<typename T>
-    void cudaFreeWrapper(T *ptr)
-    {
-        cudaError_t err = cudaFree(ptr);
-        if (err != cudaErrorCudartUnloading) // see issue #167
-            CUDA_CHECK(err);
-    }
+    mem_t memory_maps[DeviceManager::MAX_DEVICES];
 
     void garbageCollect()
     {
-        for(mem_iter iter = memory_map.begin(); iter != memory_map.end(); iter++) {
+        int n = getActiveDeviceId();
+        for(mem_iter iter = memory_maps[n].begin(); iter != memory_maps[n].end(); iter++) {
             if ((iter->second).is_free) cudaFreeWrapper(iter->first);
         }
 
-        mem_iter memory_curr = memory_map.begin();
-        mem_iter memory_end  = memory_map.end();
+        mem_iter memory_curr = memory_maps[n].begin();
+        mem_iter memory_end  = memory_maps[n].end();
 
         while(memory_curr != memory_end) {
             if (memory_curr->second.is_free) {
-                memory_map.erase(memory_curr++);
+                memory_maps[n].erase(memory_curr++);
             } else {
                 ++memory_curr;
             }
@@ -59,6 +81,7 @@ namespace cuda
     template<typename T>
     T* memAlloc(const size_t &elements)
     {
+        int n = getActiveDeviceId();
         T* ptr = NULL;
         size_t alloc_bytes = divup(sizeof(T) * elements, 1024) * 1024;
 
@@ -66,11 +89,11 @@ namespace cuda
 
             // FIXME: Add better checks for garbage collection
             // Perhaps look at total memory available as a metric
-            if (memory_map.size() > 100 || used_bytes >= (1 << 30)) {
+            if (memory_maps[n].size() >= MAX_BUFFERS || used_bytes >= (1 << 30)) {
                 garbageCollect();
             }
 
-            for(mem_iter iter = memory_map.begin(); iter != memory_map.end(); iter++) {
+            for(mem_iter iter = memory_maps[n].begin(); iter != memory_maps[n].end(); iter++) {
                 mem_info info = iter->second;
                 if (info.is_free && info.bytes == alloc_bytes) {
                     iter->second.is_free = false;
@@ -86,7 +109,7 @@ namespace cuda
             }
 
             mem_info info = {false, alloc_bytes};
-            memory_map[ptr] = info;
+            memory_maps[n][ptr] = info;
 
             used_bytes += alloc_bytes;
         }
@@ -96,15 +119,17 @@ namespace cuda
     template<typename T>
     void memFree(T *ptr)
     {
-        mem_iter iter = memory_map.find((void *)ptr);
+        int n = getActiveDeviceId();
+        mem_iter iter = memory_maps[n].find((void *)ptr);
 
-        if (iter != memory_map.end()) {
+        if (iter != memory_maps[n].end()) {
             iter->second.is_free = true;
             used_bytes -= iter->second.bytes;
         } else {
             cudaFreeWrapper(ptr); // Free it because we are not sure what the size is
         }
     }
+#endif
 
 #define INSTANTIATE(T)                              \
     template T* memAlloc(const size_t &elements); \
