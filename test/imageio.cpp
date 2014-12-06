@@ -86,23 +86,23 @@ TYPED_TEST(ImageIO, ColorSeq)
     loadImageTest(string(TEST_DIR"/imageio/color_seq.test"), string(TEST_DIR"/imageio/color_seq.png"), true);
 }
 
-void loadimageArgsTest(string pImageFile, const bool isColor)
+void loadimageArgsTest(string pImageFile, const bool isColor, af_err err)
 {
     af_array imgArray = 0;
 
-    ASSERT_EQ(AF_ERR_ARG, af_load_image(&imgArray, pImageFile.c_str(), isColor));
+    ASSERT_EQ(err, af_load_image(&imgArray, pImageFile.c_str(), isColor));
 
     if(imgArray != 0) af_destroy_array(imgArray);
 }
 
 TYPED_TEST(ImageIO,InvalidArgsMissingFile)
 {
-    loadimageArgsTest(string(TEST_DIR"/imageio/nofile.png"), false);
+    loadimageArgsTest(string(TEST_DIR"/imageio/nofile.png"), false, AF_ERR_RUNTIME);
 }
 
 TYPED_TEST(ImageIO,InvalidArgsWrongExt)
 {
-    loadimageArgsTest(string(TEST_DIR"/imageio/image.wrongext"), true);
+    loadimageArgsTest(string(TEST_DIR"/imageio/image.wrongext"), true, AF_ERR_NOT_SUPPORTED);
 }
 
 ////////////////////////////////// CPP //////////////////////////////////////
