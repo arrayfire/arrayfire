@@ -30,7 +30,7 @@ namespace cpu
     template<typename T>
     void freeWrapper(T *ptr)
     {
-        delete[] ptr;
+        free((void *)ptr);
     }
 
     void garbageCollect()
@@ -75,7 +75,7 @@ namespace cpu
             }
 
             // Perform garbage collection if memory can not be allocated
-            ptr = new T[elements];
+            ptr = (T *)malloc(alloc_bytes);
 
             mem_info info = {false, alloc_bytes};
             memory_map[ptr] = info;
