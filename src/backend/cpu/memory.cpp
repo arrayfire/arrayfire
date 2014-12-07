@@ -12,9 +12,12 @@
 #include <types.hpp>
 #include <map>
 #include <dispatch.hpp>
+#include <cstdlib>
 
 namespace cpu
 {
+    const int MAX_BUFFERS = 100;
+    const int MAX_BYTES = 100 * (1 << 20);
     typedef struct
     {
         bool is_free;
@@ -61,7 +64,7 @@ namespace cpu
 
             // FIXME: Add better checks for garbage collection
             // Perhaps look at total memory available as a metric
-            if (memory_map.size() > 100 || used_bytes >= 100 * (1 << 20)) {
+            if (memory_map.size() > MAX_BUFFERS || used_bytes >= MAX_BYTES) {
                 garbageCollect();
             }
 

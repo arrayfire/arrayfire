@@ -46,6 +46,7 @@ namespace cuda
 #else
 
     const int MAX_BUFFERS = 100;
+    const int MAX_BYTES = (1 << 30);
 
     typedef struct
     {
@@ -89,7 +90,7 @@ namespace cuda
 
             // FIXME: Add better checks for garbage collection
             // Perhaps look at total memory available as a metric
-            if (memory_maps[n].size() >= MAX_BUFFERS || used_bytes >= (1 << 30)) {
+            if (memory_maps[n].size() >= MAX_BUFFERS || used_bytes >= MAX_BYTES) {
                 garbageCollect();
             }
 
