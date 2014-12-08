@@ -11,6 +11,6 @@ EXECUTE_PROCESS(
 )
 
 CONFIGURE_FILE(
-    ${CMAKE_SOURCE_DIR}/common/version.h.in
+    ${CMAKE_MODULE_PATH}/version.h.in
     ${CMAKE_SOURCE_DIR}/include/af/version.h
 )
