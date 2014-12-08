@@ -44,7 +44,7 @@ ELSE(${UNIX}) #Windows
 ENDIF()
 
 # Architechture Definitions
-INCLUDE(common/TargetArch.cmake)
+INCLUDE(${CMAKE_MODULE_PATH}/TargetArch.cmake)
 target_architecture(ARCH)
 IF(${ARCH} STREQUAL "x86_64")
   ADD_DEFINITIONS(-DARCH_64)
@@ -52,7 +52,7 @@ ELSE(${ARCH})
   ADD_DEFINITIONS(-DARCH_32)
 ENDIF()
 
-INCLUDE(common/Version.cmake)
+INCLUDE(${CMAKE_MODULE_PATH}/Version.cmake)
 
 IF(${BUILD_CPU})
   ADD_SUBDIRECTORY(src/backend/cpu)
@@ -66,7 +66,7 @@ IF(${BUILD_OPENCL})
     ADD_SUBDIRECTORY(src/backend/opencl)
 ENDIF()
 
-ADD_EXECUTABLE(bin2cpp common/bin2cpp.cpp)
+ADD_EXECUTABLE(bin2cpp ${CMAKE_MODULE_PATH}/bin2cpp.cpp)
 
 IF(${BUILD_TEST})
     ENABLE_TESTING()

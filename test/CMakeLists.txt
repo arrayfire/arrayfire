@@ -12,12 +12,12 @@ MACRO(CREATE_TESTS BACKEND)
         IF (${BUILD_GTEST} AND NOT ${USE_SYSTEM_GTEST})
             ADD_DEPENDENCIES(${TEST_NAME} googletest)
         ENDIF()
-        TARGET_LINK_LIBRARIES(${TEST_NAME} 	af${BACKEND}
-											${THREAD_LIB_FLAG}
-											optimized ${GTEST_RELEASE_LIB}
-											optimized ${GTEST_RELEASE_MAIN_LIB}
-											debug ${GTEST_DEBUG_LIB}
-											debug ${GTEST_DEBUG_MAIN_LIB})
+        TARGET_LINK_LIBRARIES(${TEST_NAME}  af${BACKEND}
+                      ${THREAD_LIB_FLAG}
+                      optimized ${GTEST_RELEASE_LIB}
+                      optimized ${GTEST_RELEASE_MAIN_LIB}
+                      debug ${GTEST_DEBUG_LIB}
+                      debug ${GTEST_DEBUG_MAIN_LIB})
         SET_TARGET_PROPERTIES(${TEST_NAME} PROPERTIES COMPILE_FLAGS -DAF_${DEF_NAME})
     ENDFOREACH()
 
@@ -44,7 +44,7 @@ ELSE()
 
     IF(${BUILD_GTEST})
 
-        INCLUDE("${CMAKE_SOURCE_DIR}/common/build_gtest.cmake")
+      INCLUDE("${CMAKE_MODULE_PATH}/build_gtest.cmake")
         ExternalProject_Get_Property(googletest SOURCE_DIR BINARY_DIR)
 
         SET(GTEST_BINARY_DIR "${BINARY_DIR}")
