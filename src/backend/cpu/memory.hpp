@@ -7,16 +7,9 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#pragma once
-#include <cl.hpp>
-#include <kernel/KParam.hpp>
-
-namespace opencl
+#include <af/defines.h>
+namespace cpu
 {
-
-    typedef struct
-    {
-        cl::Buffer *data;
-        KParam info;
-    } Param;
+    template<typename T> T* memAlloc(const size_t &elements);
+    template<typename T> void memFree(T* ptr);
 }

@@ -190,10 +190,10 @@ void evalNodes(Param &out, Node *node)
         NDRange global(global_0, global_1);
 
         int args = node->setArgs(ker, 0);
-        ker.setArg(args + 0, out.data);
-        ker.setArg(args + 1, out.info);
-        ker.setArg(args + 2, groups_0);
-        ker.setArg(args + 3, groups_1);
+        ker.setArg(args + 0, *out.data);
+        ker.setArg(args + 1,  out.info);
+        ker.setArg(args + 2,  groups_0);
+        ker.setArg(args + 3,  groups_1);
 
         getQueue().enqueueNDRangeKernel(ker, cl::NullRange, global, local);
 

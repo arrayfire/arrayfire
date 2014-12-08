@@ -39,7 +39,7 @@ namespace opencl
 
         compute::command_queue queue(getQueue()());
 
-        compute::buffer out_data(out->get()());
+        compute::buffer out_data((*out->get())());
 
         compute::buffer_iterator<T> begin(out_data, 0);
         compute::buffer_iterator<T> end(out_data, out->dims()[0]);
@@ -77,9 +77,9 @@ namespace opencl
 
         compute::command_queue queue(getQueue()());
 
-        compute::buffer first_data(unique_first.get()());
-        compute::buffer second_data(unique_second.get()());
-        compute::buffer out_data(out->get()());
+        compute::buffer first_data((*unique_first.get())());
+        compute::buffer second_data((*unique_second.get())());
+        compute::buffer out_data((*out->get())());
 
         compute::buffer_iterator<T> first_begin(first_data, 0);
         compute::buffer_iterator<T> first_end(first_data, unique_first.dims()[0]);
@@ -118,9 +118,9 @@ namespace opencl
 
         compute::command_queue queue(getQueue()());
 
-        compute::buffer first_data(unique_first.get()());
-        compute::buffer second_data(unique_second.get()());
-        compute::buffer out_data(out->get()());
+        compute::buffer first_data((*unique_first.get())());
+        compute::buffer second_data((*unique_second.get())());
+        compute::buffer out_data((*out->get())());
 
         compute::buffer_iterator<T> first_begin(first_data, 0);
         compute::buffer_iterator<T> first_end(first_data, unique_first.dims()[0]);

@@ -81,8 +81,10 @@ namespace opencl
                     assert(sdims_[i] >= 0 && sdims_[i] <= out.info.dims[i]);
                 }
 
-                shiftOp(EnqueueArgs(getQueue(), global, local), out.data, in.data, out.info, in.info,
-                       sdims_[0], sdims_[1], sdims_[2], sdims_[3], blocksPerMatX, blocksPerMatY);
+                shiftOp(EnqueueArgs(getQueue(), global, local),
+                        *out.data, *in.data, out.info, in.info,
+                        sdims_[0], sdims_[1], sdims_[2], sdims_[3],
+                        blocksPerMatX, blocksPerMatY);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {

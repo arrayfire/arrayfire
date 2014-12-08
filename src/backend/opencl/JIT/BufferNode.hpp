@@ -64,8 +64,8 @@ namespace JIT
         {
             if (m_set_arg) return id;
 
-            ker.setArg(id + 0, m_param.data);
-            ker.setArg(id + 1, m_param.info);
+            ker.setArg(id + 0, *m_param.data);
+            ker.setArg(id + 1,  m_param.info);
 
             m_set_arg = true;
             return id + 2;

@@ -15,6 +15,7 @@
 #include <scalar.hpp>
 #include <JIT/BufferNode.hpp>
 #include <err_opencl.hpp>
+#include <memory.hpp>
 
 using af::dim4;
 
@@ -25,12 +26,9 @@ namespace opencl
     template<typename T>
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(),
+        data(bufferAlloc(ArrayInfo::elements() * sizeof(T)), bufferFree),
         parent(), node(), ready(true)
     {
-        if (elements() > 0) data = cl::Buffer(getContext(),
-                                              CL_MEM_READ_WRITE,
-                                              ArrayInfo::elements()*sizeof(T));
     }
 
     template<typename T>
@@ -44,16 +42,16 @@ namespace opencl
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(getContext(), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
+        data(bufferAlloc(ArrayInfo::elements()*sizeof(T)), bufferFree),
         parent(), node(), ready(true)
     {
-        getQueue().enqueueWriteBuffer(data,CL_TRUE,0,sizeof(T)*ArrayInfo::elements(),in_data);
+        getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T)*ArrayInfo::elements(), in_data);
     }
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, cl_mem mem) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(mem),
+        data(new cl::Buffer(mem), bufferFree),
         parent(), node(), ready(true)
     {
     }
@@ -215,13 +213,14 @@ namespace opencl
     {
         if (isReady()) return;
 
-        data = cl::Buffer(getContext(), CL_MEM_READ_WRITE, elements() * sizeof(T));
+        data = Buffer_ptr(bufferAlloc(elements() * sizeof(T)), bufferFree);
 
         // Do not replace this with cast operator
         KParam info = {{dims()[0], dims()[1], dims()[2], dims()[3]},
                        {strides()[0], strides()[1], strides()[2], strides()[3]},
                        0};
-        Param res = {data, info};
+
+        Param res = {data.get(), info};
 
         evalNodes(res, this->getNode().get());
         ready = true;
