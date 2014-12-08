@@ -14,7 +14,8 @@
 
 namespace opencl
 {
-    int image(const Array<float> &in, const int wId, const char *title)
+    int image(const Array<float> &in, const int wId, const char *title,
+              const dim_type disp_w, const dim_type disp_h)
     {
         AF_ERROR("Graphics not implemented on OpenCL backend", AF_ERR_NOT_SUPPORTED);
         return -1;

@@ -32,6 +32,8 @@ namespace cpu
     {
         GLFWwindow*     pWindow;
         GLEWContext*    pGLEWContext;
+        int             arrWidth;
+        int             arrHeight;
         int             uiWidth;
         int             uiHeight;
         int             uiID;
@@ -65,6 +67,8 @@ namespace cpu
             printf("GL Error Skipped at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
         }
         return x;
+    #else
+        return 0;
     #endif
     }
 
@@ -79,6 +83,8 @@ namespace cpu
             AF_ERROR("Error in Graphics", AF_ERR_GL_ERROR);
         }
         return x;
+    #else
+        return 0;
     #endif
     }
 
@@ -158,7 +164,7 @@ namespace cpu
 
         // load texture from PBO
         glBindTexture(GL_TEXTURE_2D, current->gl_Tex);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, current->uiWidth, current->uiHeight, GL_RGB, GL_FLOAT, 0);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, current->arrWidth, current->arrHeight, GL_RGB, GL_FLOAT, 0);
 
         // fragment program is required to display floating point texture
         glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, current->gl_Shader);
@@ -195,7 +201,7 @@ namespace cpu
         CheckGL("Before CopyArrayToPBO");
         const float *d_X = X.get();
 
-        glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, current->uiWidth * current->uiHeight * 3 * sizeof(float),
+        glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, current->arrWidth * current->arrHeight * 3 * sizeof(float),
                      d_X, GL_STREAM_COPY);
 
         // Unlock array
@@ -204,7 +210,8 @@ namespace cpu
         CheckGL("In CopyArrayToPBO");
     }
 
-    WindowHandle CreateWindow(const int width, const int height, const char *title)
+    WindowHandle CreateWindow(const int width, const int height, const char *title,
+                              const dim_type disp_w, const dim_type disp_h)
     {
         // save current active context info so we can restore it later!
         //WindowHandle previous = current;
@@ -218,8 +225,10 @@ namespace cpu
         newWindow->pGLEWContext = NULL;
         newWindow->pWindow      = NULL;
         newWindow->uiID         = g_uiWindowCounter++;        //set ID and Increment Counter!
-        newWindow->uiWidth      = width;
-        newWindow->uiHeight     = height;
+        newWindow->arrWidth     = width;
+        newWindow->arrHeight    = height;
+        newWindow->uiWidth      = disp_w;
+        newWindow->uiHeight     = disp_h;
 
         // Initalize GLFW
         glfwSetErrorCallback(error_callback);
@@ -233,7 +242,7 @@ namespace cpu
         glfwWindowHint(GLFW_RESIZABLE, false);
 
         // Create the window itself
-        newWindow->pWindow = glfwCreateWindow(width, height, title, NULL, NULL);
+        newWindow->pWindow = glfwCreateWindow(newWindow->uiWidth, newWindow->uiHeight, title, NULL, NULL);
 
         // Confirm window was created successfully:
         if (newWindow->pWindow == NULL)
@@ -264,8 +273,8 @@ namespace cpu
             return NULL;
         }
 
-        int b_width = width;
-        int b_height = height;
+        int b_width  = newWindow->uiWidth;
+        int b_height = newWindow->uiHeight;
         glfwGetFramebufferSize(newWindow->pWindow, &b_width, &b_height);
 
         glViewport(0, 0, b_width, b_height);
@@ -282,12 +291,12 @@ namespace cpu
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, newWindow->uiWidth, newWindow->uiHeight, 0, GL_RGB, GL_FLOAT, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, newWindow->arrWidth, newWindow->arrHeight, 0, GL_RGB, GL_FLOAT, NULL);
 
         CheckGL("Before PBO Initialization");
         glGenBuffers(1, &(newWindow->gl_PBO));
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, newWindow->gl_PBO);
-        glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, newWindow->uiWidth * newWindow->uiHeight * 3 * sizeof(float), NULL, GL_STREAM_COPY);
+        glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, newWindow->arrWidth * newWindow->arrHeight * 3 * sizeof(float), NULL, GL_STREAM_COPY);
 
         CheckGL("Before Shader Initialization");
         // load shader program
@@ -348,12 +357,13 @@ namespace cpu
         }
     }
 
-    int image(const Array<float> &in, const int wId, const char* title)
+    int image(const Array<float> &in, const int wId, const char* title,
+              const dim_type disp_w, const dim_type disp_h)
     {
         WindowHandle window = NULL;
         int ret = -1;
         if(wId == -1) {
-            window = CreateWindow(in.dims()[1], in.dims()[2], title);
+            window = CreateWindow(in.dims()[1], in.dims()[2], title, disp_w, disp_h);
             CopyAndDraw(in, window);
             ret = window->uiID;
         } else {
@@ -383,7 +393,8 @@ namespace cpu
 #include <stdio.h>
 namespace cpu
 {
-    int image(const Array<float> &in, const int wId, const char *title)
+    int image(const Array<float> &in, const int wId, const char *title,
+              const dim_type disp_w, const dim_type disp_h)
     {
         printf("Error: Graphics requirements not available. See https://github.com/arrayfire/arrayfire\n");
         AF_ERROR("Graphics not Available", AF_ERR_NOT_CONFIGURED);

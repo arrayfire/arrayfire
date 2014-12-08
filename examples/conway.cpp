@@ -18,16 +18,21 @@ int main(int argc, char *argv[])
         // Initialize the kernel array just once
         static const float h_kernel[] = {1, 1, 1, 1, 0, 1, 1, 1, 1};
         static const af::array kernel(3, 3, h_kernel, af::afHost);
+
         static const int reset = 600;
+        static const int game_w = 160, game_h = 120;
         int frame_count = 0;
         int wId = -1;
 
-        static const int game_w = 100, game_h = 100;
         array state;
+        state = (af::randu(game_h, game_w, f32) > 0.5).as(f32);
         while(wId != -2) {
+            wId = image(state, wId, "Conway Using ArrayFire", 4.0);
+            frame_count++;
+
             // Generate a random starting state
             if(frame_count % reset == 0)
-                state = (af::randu(game_w, game_h, f32) > 0.33).as(f32);
+                state = (af::randu(game_h, game_w, f32) > 0.5).as(f32);
 
             // Convolve gets neighbors
             af::array nHood = convolve(state, kernel, false);
@@ -42,9 +47,6 @@ int main(int argc, char *argv[])
 
             // Update state
             state = state * C0 + C1;
-
-            frame_count++;
-            wId = image(state, wId, "Conway Using ArrayFire");
         }
     } catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());
