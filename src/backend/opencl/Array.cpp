@@ -26,7 +26,7 @@ namespace opencl
     template<typename T>
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(memAlloc(ArrayInfo::elements() * sizeof(T)), memFree),
+        data(bufferAlloc(ArrayInfo::elements() * sizeof(T)), bufferFree),
         parent(), node(), ready(true)
     {
     }
@@ -42,7 +42,7 @@ namespace opencl
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(memAlloc(ArrayInfo::elements()*sizeof(T)), memFree),
+        data(bufferAlloc(ArrayInfo::elements()*sizeof(T)), bufferFree),
         parent(), node(), ready(true)
     {
         getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T)*ArrayInfo::elements(), in_data);
@@ -51,7 +51,7 @@ namespace opencl
     template<typename T>
     Array<T>::Array(af::dim4 dims, cl_mem mem) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(new cl::Buffer(mem), memFree),
+        data(new cl::Buffer(mem), bufferFree),
         parent(), node(), ready(true)
     {
     }
@@ -213,7 +213,7 @@ namespace opencl
     {
         if (isReady()) return;
 
-        data = Buffer_ptr(memAlloc(elements() * sizeof(T)), memFree);
+        data = Buffer_ptr(bufferAlloc(elements() * sizeof(T)), bufferFree);
 
         // Do not replace this with cast operator
         KParam info = {{dims()[0], dims()[1], dims()[2], dims()[3]},

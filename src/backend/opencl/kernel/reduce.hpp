@@ -129,7 +129,7 @@ namespace kernel
 
             for (int k = 0; k < 4; k++) tmp_elements *= tmp.info.dims[k];
 
-            tmp.data = memAlloc(tmp_elements * sizeof(To));
+            tmp.data = bufferAlloc(tmp_elements * sizeof(To));
 
             for (int k = dim + 1; k < 4; k++) tmp.info.strides[k] *= groups_all[dim];
         }
@@ -144,7 +144,7 @@ namespace kernel
             } else {
                 reduce_dim_fn<To, To,       op, dim>(out, tmp, threads_y, groups_all);
             }
-            memFree(tmp.data);
+            bufferFree(tmp.data);
         }
 
     }
@@ -235,7 +235,7 @@ namespace kernel
         Param tmp = out;
 
         if (groups_x > 1) {
-            tmp.data = memAlloc(groups_x *
+            tmp.data = bufferAlloc(groups_x *
                                 in.info.dims[1] *
                                 in.info.dims[2] *
                                 in.info.dims[3] *
@@ -256,7 +256,7 @@ namespace kernel
                 reduce_first_fn<To, To,       op>(out, tmp, 1, groups_y, threads_x);
             }
 
-            memFree(tmp.data);
+            bufferFree(tmp.data);
         }
     }
 
@@ -317,7 +317,7 @@ namespace kernel
                 }
 
                 dim_type tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
-                tmp.data = memAlloc(tmp_elements * sizeof(To));
+                tmp.data = bufferAlloc(tmp_elements * sizeof(To));
 
                 reduce_first_fn<Ti, To, op>(tmp, in, groups_x, groups_y, threads_x);
 
@@ -331,7 +331,7 @@ namespace kernel
                 }
 
                 delete[] h_ptr;
-                memFree(tmp.data);
+                bufferFree(tmp.data);
                 return out;
 
             } else {

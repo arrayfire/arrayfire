@@ -214,7 +214,7 @@ namespace kernel
 
             dim_type tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
 
-            tmp.data = memAlloc(tmp_elements * sizeof(To));
+            tmp.data = bufferAlloc(tmp_elements * sizeof(To));
 
             scan_first_fn<Ti, To, op, false>(out, tmp, in,
                                              groups_x, groups_y,
@@ -235,7 +235,7 @@ namespace kernel
                                              groups_y,
                                              threads_x);
 
-            memFree(tmp.data);
+            bufferFree(tmp.data);
 
         }
     }

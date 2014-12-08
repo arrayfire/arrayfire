@@ -12,6 +12,9 @@
 namespace opencl
 {
 
-    cl::Buffer *memAlloc(const size_t &bytes);
-    void memFree(cl::Buffer *buf);
+    cl::Buffer *bufferAlloc(const size_t &bytes);
+    void bufferFree(cl::Buffer *buf);
+
+    template<typename T> T *memAlloc(const size_t &elements);
+    template<typename T> void memFree(T *ptr);
 }

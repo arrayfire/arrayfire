@@ -121,10 +121,10 @@ namespace kernel
             }
 
             dim_type rtmp_elements = rtmp.info.strides[3] * rtmp.info.dims[3];
-            rtmp.data = memAlloc(rtmp_elements * sizeof(uint));
+            rtmp.data = bufferAlloc(rtmp_elements * sizeof(uint));
 
             dim_type otmp_elements = otmp.info.strides[3] * otmp.info.dims[3];
-            otmp.data = memAlloc(otmp_elements * sizeof(uint));
+            otmp.data = bufferAlloc(otmp_elements * sizeof(uint));
 
             scan_first_fn<T, uint, af_notzero_t, false>(otmp, rtmp, in,
                                                         groups_x, groups_y,
@@ -149,7 +149,7 @@ namespace kernel
                                          &total);
 
 
-            out.data = memAlloc(total * sizeof(uint));
+            out.data = bufferAlloc(total * sizeof(uint));
 
             out.info.dims[0] = total;
             out.info.strides[0] = 1;
@@ -160,8 +160,8 @@ namespace kernel
 
             get_out_idx<T>(out.data, otmp, rtmp, in, threads_x, groups_x, groups_y);
 
-            memFree(rtmp.data);
-            memFree(otmp.data);
+            bufferFree(rtmp.data);
+            bufferFree(otmp.data);
         } catch (cl::Error err) {
             CL_TO_AF_ERROR(err);
         }

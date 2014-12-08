@@ -107,7 +107,7 @@ void regions(Param out, Param in)
         CL_DEBUG_FINISH(getQueue());
 
         int h_continue = 1;
-        cl::Buffer *d_continue = memAlloc(sizeof(int));
+        cl::Buffer *d_continue = bufferAlloc(sizeof(int));
 
         while (h_continue) {
             h_continue = 0;
@@ -122,7 +122,7 @@ void regions(Param out, Param in)
             getQueue().enqueueReadBuffer(*d_continue, CL_TRUE, 0, sizeof(int), &h_continue);
         }
 
-        memFree(d_continue);
+        bufferFree(d_continue);
 
         // Now, perform the final relabeling.  This converts the equivalency
         // map from having unique labels based on the lowest pixel in the

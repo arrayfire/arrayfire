@@ -84,7 +84,7 @@ void morph(Param         out,
 
         // copy mask/filter to constant memory
         cl_int se_size   = sizeof(T)*windLen*windLen;
-        cl::Buffer *mBuff = memAlloc(se_size);
+        cl::Buffer *mBuff = bufferAlloc(se_size);
         getQueue().enqueueCopyBuffer(*mask.data, *mBuff, 0, 0, se_size);
 
         // calculate shared memory size
@@ -97,7 +97,7 @@ void morph(Param         out,
                 *out.data, out.info, *in.data, in.info, *mBuff,
                 cl::Local(locSize*sizeof(T)), blk_x);
 
-        memFree(mBuff);
+        bufferFree(mBuff);
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {
@@ -150,7 +150,7 @@ void morph3d(Param       out,
 
         // copy mask/filter to constant memory
         cl_int se_size   = sizeof(T)*windLen*windLen*windLen;
-        cl::Buffer *mBuff = memAlloc(se_size);
+        cl::Buffer *mBuff = bufferAlloc(se_size);
         getQueue().enqueueCopyBuffer(*mask.data, *mBuff, 0, 0, se_size);
 
         // calculate shared memory size
@@ -164,7 +164,7 @@ void morph3d(Param       out,
                 *out.data, out.info, *in.data, in.info,
                 *mBuff, cl::Local(locSize*sizeof(T)));
 
-        memFree(mBuff);
+        bufferFree(mBuff);
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {
         CL_TO_AF_ERROR(err);

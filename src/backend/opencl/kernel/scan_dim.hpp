@@ -212,7 +212,7 @@ namespace kernel
 
             dim_type tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
             // FIXME: Do I need to free this ?
-            tmp.data = memAlloc(tmp_elements * sizeof(To));
+            tmp.data = bufferAlloc(tmp_elements * sizeof(To));
 
             scan_dim_fn<Ti, To, op, dim, false>(out, tmp, in,
                                                 threads_y,
@@ -235,7 +235,7 @@ namespace kernel
             bcast_dim_fn<To, To, op, dim, true>(out, tmp,
                                                 threads_y,
                                                 groups_all);
-            memFree(tmp.data);
+            bufferFree(tmp.data);
         }
     }
 }

@@ -14,6 +14,7 @@
 #include <iostream>
 #include <Array.hpp>
 #include <handle.hpp>
+#include <memory.hpp>
 #include "err_common.hpp"
 
 using namespace detail;
@@ -151,7 +152,9 @@ af_err af_get_device_ptr(void **data, const af_array arr, bool read_only)
 
 af_err af_alloc_device(void **ptr, dim_type bytes)
 {
-    AF_ERROR("Memory manager not yet implemented", AF_ERR_NOT_SUPPORTED);
+    try {
+        *ptr = (void *)memAlloc<char>(bytes);
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
@@ -163,7 +166,9 @@ af_err af_alloc_pinned(void **ptr, dim_type bytes)
 
 af_err af_free_device(void *ptr)
 {
-    AF_ERROR("Memory manager not yet implemented", AF_ERR_NOT_SUPPORTED);
+    try {
+        memFree<char>((char *)ptr);
+    } CATCHALL;
     return AF_SUCCESS;
 }
 

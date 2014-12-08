@@ -72,13 +72,13 @@ void fast(unsigned* out_feat,
 
         // Matrix containing scores for detected features, scores are stored in the
         // same coordinates as features, dimensions should be equal to in.
-        cl::Buffer *d_score = memAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(T));
+        cl::Buffer *d_score = bufferAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(T));
         std::vector<T> score_init(in.info.dims[0] * in.info.dims[1], (T)0);
         getQueue().enqueueWriteBuffer(*d_score, CL_TRUE, 0, in.info.dims[0] * in.info.dims[1] * sizeof(T), &score_init[0]);
 
         cl::Buffer *d_flags = d_score;
         if (nonmax) {
-            d_flags = memAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(T));
+            d_flags = bufferAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(T));
         }
 
         const dim_type blk_x = divup(in.info.dims[0]-6, THREADS_X);
@@ -105,13 +105,13 @@ void fast(unsigned* out_feat,
         const NDRange global_nonmax(blk_nonmax_x * THREADS_NONMAX_X, blk_nonmax_y * THREADS_NONMAX_Y);
 
         unsigned count_init = 0;
-        cl::Buffer *d_total = memAlloc(sizeof(unsigned));
+        cl::Buffer *d_total = bufferAlloc(sizeof(unsigned));
         getQueue().enqueueWriteBuffer(*d_total, CL_TRUE, 0, sizeof(unsigned), &count_init);
 
         //size_t *global_nonmax_dims = global_nonmax();
         size_t blocks_sz = blk_nonmax_x * THREADS_NONMAX_X * blk_nonmax_y * THREADS_NONMAX_Y * sizeof(unsigned);
-        cl::Buffer *d_counts  = memAlloc(blocks_sz);
-        cl::Buffer *d_offsets = memAlloc(blocks_sz);
+        cl::Buffer *d_counts  = bufferAlloc(blocks_sz);
+        cl::Buffer *d_offsets = bufferAlloc(blocks_sz);
 
         auto nmOp = make_kernel<Buffer, Buffer, Buffer,
                                 Buffer, Buffer,
@@ -126,9 +126,9 @@ void fast(unsigned* out_feat,
 
         if (total > 0) {
             size_t out_sz = total * sizeof(float);
-            x_out.data = memAlloc(out_sz);
-            y_out.data = memAlloc(out_sz);
-            score_out.data = memAlloc(out_sz);
+            x_out.data = bufferAlloc(out_sz);
+            y_out.data = bufferAlloc(out_sz);
+            score_out.data = bufferAlloc(out_sz);
 
             auto gfOp = make_kernel<Buffer, Buffer, Buffer,
                                     Buffer, Buffer, Buffer,
@@ -158,11 +158,11 @@ void fast(unsigned* out_feat,
             score_out.info.strides[k] = total;
         }
 
-        memFree(d_score);
-        if (nonmax) memFree(d_flags);
-        memFree(d_total);
-        memFree(d_counts);
-        memFree(d_offsets);
+        bufferFree(d_score);
+        if (nonmax) bufferFree(d_flags);
+        bufferFree(d_total);
+        bufferFree(d_counts);
+        bufferFree(d_offsets);
     } catch (cl::Error err) {
         CL_TO_AF_ERROR(err);
         throw;

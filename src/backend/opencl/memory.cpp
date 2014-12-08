@@ -11,6 +11,7 @@
 #include <platform.hpp>
 #include <dispatch.hpp>
 #include <map>
+#include <types.hpp>
 
 namespace opencl
 {
@@ -52,7 +53,7 @@ namespace opencl
         }
     }
 
-    cl::Buffer *memAlloc(const size_t &bytes)
+    cl::Buffer *bufferAlloc(const size_t &bytes)
     {
         int n = getActiveDeviceId();
         cl::Buffer *ptr = NULL;
@@ -91,7 +92,7 @@ namespace opencl
         return ptr;
     }
 
-    void memFree(cl::Buffer *ptr)
+    void bufferFree(cl::Buffer *ptr)
     {
         int n = getActiveDeviceId();
         mem_iter iter = memory_maps[n].find(ptr);
@@ -103,4 +104,29 @@ namespace opencl
             destroy(ptr); // Free it because we are not sure what the size is
         }
     }
+
+    template<typename T>
+    T *memAlloc(const size_t &elements)
+    {
+        return (T *)bufferAlloc(elements * sizeof(T));
+    }
+
+    template<typename T>
+    void memFree(T *ptr)
+    {
+        return bufferFree((cl::Buffer *)ptr);
+    }
+
+#define INSTANTIATE(T)                              \
+    template T* memAlloc(const size_t &elements);   \
+    template void memFree(T* ptr);                  \
+
+    INSTANTIATE(float)
+    INSTANTIATE(cfloat)
+    INSTANTIATE(double)
+    INSTANTIATE(cdouble)
+    INSTANTIATE(int)
+    INSTANTIATE(uint)
+    INSTANTIATE(char)
+    INSTANTIATE(uchar)
 }

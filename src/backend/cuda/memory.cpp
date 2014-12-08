@@ -134,8 +134,8 @@ namespace cuda
 #endif
 
 #define INSTANTIATE(T)                              \
-    template T* memAlloc(const size_t &elements); \
-    template void memFree(T* ptr);                \
+    template T* memAlloc(const size_t &elements);   \
+    template void memFree(T* ptr);                  \
 
     INSTANTIATE(float)
     INSTANTIATE(cfloat)
