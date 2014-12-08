@@ -92,7 +92,8 @@ namespace opencl
                                1);
 
                 transformOp(EnqueueArgs(getQueue(), global, local),
-                         out.data, out.info, in.data, in.info, tf.data, tf.info, nimages, ntransforms);
+                            *out.data, out.info, *in.data, in.info,
+                            *tf.data, tf.info, nimages, ntransforms);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {

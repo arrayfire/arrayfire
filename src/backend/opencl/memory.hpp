@@ -7,16 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#pragma once
+#include <af/defines.h>
 #include <cl.hpp>
-#include <kernel/KParam.hpp>
-
 namespace opencl
 {
 
-    typedef struct
-    {
-        cl::Buffer *data;
-        KParam info;
-    } Param;
+    cl::Buffer *memAlloc(const size_t &bytes);
+    void memFree(cl::Buffer *buf);
 }

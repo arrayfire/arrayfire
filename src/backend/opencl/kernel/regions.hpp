@@ -101,7 +101,7 @@ void regions(Param out, Param in)
                                 Buffer, KParam> (*ilKernel[device]);
 
         ilOp(EnqueueArgs(getQueue(), global, local),
-             out.data, out.info, in.data, in.info);
+             *out.data, out.info, *in.data, in.info);
 
         CL_DEBUG_FINISH(getQueue());
 
@@ -116,7 +116,7 @@ void regions(Param out, Param in)
                                     Buffer> (*ueKernel[device]);
 
             ueOp(EnqueueArgs(getQueue(), global, local),
-                 out.data, out.info, d_continue);
+                 *out.data, out.info, d_continue);
 
             getQueue().enqueueReadBuffer(d_continue, CL_TRUE, 0, sizeof(int), &h_continue);
         }
@@ -132,7 +132,7 @@ void regions(Param out, Param in)
         // Wrap raw device ptr
         compute::context context(getContext()());
         compute::vector<T> tmp(size, context);
-        clEnqueueCopyBuffer(getQueue()(), out.data(), tmp.get_buffer().get(), 0, 0, size * sizeof(T), 0, NULL, NULL);
+        clEnqueueCopyBuffer(getQueue()(), (*out.data)(), tmp.get_buffer().get(), 0, 0, size * sizeof(T), 0, NULL, NULL);
 
         // Sort the copy
         compute::sort(tmp.begin(), tmp.end(), c_queue);
@@ -201,7 +201,7 @@ void regions(Param out, Param in)
 
         //Buffer labels_buf(tmp.get_buffer().get());
         frOp(EnqueueArgs(getQueue(), global, local),
-             out.data, out.info, in.data, in.info, labels);
+             *out.data, out.info, *in.data, in.info, labels);
     } catch (cl::Error err) {
         CL_TO_AF_ERROR(err);
         throw;

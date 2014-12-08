@@ -77,7 +77,8 @@ namespace opencl
                                      * out.info.dims[2] * out.info.dims[3];
 
                 diffOp(EnqueueArgs(getQueue(), global, local),
-                       out.data, in.data, out.info, in.info, oElem, blocksPerMatX, blocksPerMatY);
+                       *out.data, *in.data, out.info, in.info,
+                       oElem, blocksPerMatX, blocksPerMatY);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {

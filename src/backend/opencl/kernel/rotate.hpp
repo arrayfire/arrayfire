@@ -113,7 +113,7 @@ namespace opencl
                                1);
 
                 rotateOp(EnqueueArgs(getQueue(), global, local),
-                         out.data, out.info, in.data, in.info, t, nimages);
+                         *out.data, out.info, *in.data, in.info, t, nimages);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
@@ -123,4 +123,3 @@ namespace opencl
         }
     }
 }
-

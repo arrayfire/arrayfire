@@ -101,7 +101,7 @@ namespace kernel
 
 
         scanOp(EnqueueArgs(getQueue(), global, local),
-               out.data, out.info, tmp.data, tmp.info, in.data, in.info,
+               *out.data, out.info, *tmp.data, tmp.info, *in.data, in.info,
                groups_all[0], groups_all[1], groups_all[dim], lim);
 
         CL_DEBUG_FINISH(getQueue());
@@ -127,7 +127,7 @@ namespace kernel
                                    uint, uint>(*ker);
 
         bcastOp(EnqueueArgs(getQueue(), global, local),
-                out.data, out.info, tmp.data, tmp.info,
+                *out.data, out.info, *tmp.data, tmp.info,
                 groups_all[0], groups_all[1], groups_all[dim], lim);
 
         CL_DEBUG_FINISH(getQueue());
@@ -212,7 +212,7 @@ namespace kernel
 
             dim_type tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
             // FIXME: Do I need to free this ?
-            tmp.data = cl::Buffer(getContext(), CL_MEM_READ_WRITE, tmp_elements * sizeof(To));
+            tmp.data = memAlloc(tmp_elements * sizeof(To));
 
             scan_dim_fn<Ti, To, op, dim, false>(out, tmp, in,
                                                 threads_y,
@@ -235,7 +235,7 @@ namespace kernel
             bcast_dim_fn<To, To, op, dim, true>(out, tmp,
                                                 threads_y,
                                                 groups_all);
-
+            memFree(tmp.data);
         }
     }
 }

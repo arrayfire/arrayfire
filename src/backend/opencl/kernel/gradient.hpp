@@ -79,8 +79,8 @@ namespace opencl
                                1);
 
                 gradOp(EnqueueArgs(getQueue(), global, local),
-                        grad0.data, grad0.info, grad1.data, grad1.info,
-                        in.data, in.info, blocksPerMatX, blocksPerMatY);
+                        *grad0.data, grad0.info, *grad1.data, grad1.info,
+                        *in.data, in.info, blocksPerMatX, blocksPerMatY);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {

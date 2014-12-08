@@ -44,8 +44,8 @@ namespace opencl
             try {
                 compute::command_queue c_queue(getQueue()());
 
-                compute::buffer okey_buf(okey.data());
-                compute::buffer oval_buf(oval.data());
+                compute::buffer okey_buf((*okey.data)());
+                compute::buffer oval_buf((*oval.data)());
 
                 for(dim_type w = 0; w < okey.info.dims[3]; w++) {
                     dim_type okeyW = w * okey.info.strides[3];

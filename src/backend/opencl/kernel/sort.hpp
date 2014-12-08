@@ -44,7 +44,7 @@ namespace opencl
             try {
                 compute::command_queue c_queue(getQueue()());
 
-                compute::buffer val_buf(val.data());
+                compute::buffer val_buf((*val.data)());
 
                 for(dim_type w = 0; w < val.info.dims[3]; w++) {
                     dim_type valW = w * val.info.strides[3];

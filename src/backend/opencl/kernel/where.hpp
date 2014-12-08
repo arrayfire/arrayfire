@@ -21,6 +21,7 @@
 #include "names.hpp"
 #include "config.hpp"
 #include "scan_first.hpp"
+#include <memory.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -36,7 +37,7 @@ namespace kernel
 {
 
     template<typename T>
-    static void get_out_idx(Buffer out_data,
+    static void get_out_idx(Buffer *out_data,
                             Param &otmp, Param &rtmp,
                             Param &in, uint threads_x,
                             uint groups_x, uint groups_y)
@@ -78,10 +79,10 @@ namespace kernel
                                    uint, uint, uint>(*whereKerns[device]);
 
         whereOp(EnqueueArgs(getQueue(), global, local),
-                out_data,
-                otmp.data, otmp.info,
-                rtmp.data, rtmp.info,
-                in.data, in.info,
+                *out_data,
+                *otmp.data, otmp.info,
+                *rtmp.data, rtmp.info,
+                *in.data, in.info,
                 groups_x, groups_y, lim);
 
         CL_DEBUG_FINISH(getQueue());
@@ -120,14 +121,10 @@ namespace kernel
             }
 
             dim_type rtmp_elements = rtmp.info.strides[3] * rtmp.info.dims[3];
-            rtmp.data = cl::Buffer(getContext(),
-                                   CL_MEM_READ_WRITE,
-                                   rtmp_elements * sizeof(uint));
+            rtmp.data = memAlloc(rtmp_elements * sizeof(uint));
 
             dim_type otmp_elements = otmp.info.strides[3] * otmp.info.dims[3];
-            otmp.data = cl::Buffer(getContext(),
-                                   CL_MEM_READ_WRITE,
-                                   otmp_elements * sizeof(uint));
+            otmp.data = memAlloc(otmp_elements * sizeof(uint));
 
             scan_first_fn<T, uint, af_notzero_t, false>(otmp, rtmp, in,
                                                         groups_x, groups_y,
@@ -146,14 +143,13 @@ namespace kernel
 
             // Get output size and allocate output
             uint total;
-            getQueue().enqueueReadBuffer(rtmp.data, CL_TRUE,
+            getQueue().enqueueReadBuffer(*rtmp.data, CL_TRUE,
                                          sizeof(uint) * (rtmp_elements - 1),
                                          sizeof(uint),
                                          &total);
 
 
-            out.data = cl::Buffer(getContext(), CL_MEM_READ_WRITE,
-                                  total * sizeof(uint));
+            out.data = memAlloc(total * sizeof(uint));
 
             out.info.dims[0] = total;
             out.info.strides[0] = 1;
@@ -163,6 +159,9 @@ namespace kernel
             }
 
             get_out_idx<T>(out.data, otmp, rtmp, in, threads_x, groups_x, groups_y);
+
+            memFree(rtmp.data);
+            memFree(otmp.data);
         } catch (cl::Error err) {
             CL_TO_AF_ERROR(err);
         }

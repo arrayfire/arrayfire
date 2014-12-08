@@ -92,8 +92,8 @@ namespace opencl
                                1);
 
                 approx1Op(EnqueueArgs(getQueue(), global, local),
-                              out.data, out.info, in.data, in.info,
-                              pos.data, pos.info, offGrid, blocksPerMat);
+                          *out.data, out.info, *in.data, in.info,
+                          *pos.data, pos.info, offGrid, blocksPerMat);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
@@ -157,8 +157,11 @@ namespace opencl
 
 
                 approx2Op(EnqueueArgs(getQueue(), global, local),
-                              out.data, out.info, in.data, in.info, pos.data, pos.info,
-                              qos.data, qos.info, offGrid, blocksPerMatX, blocksPerMatY);
+                          *out.data, out.info,
+                          *in.data, in.info,
+                          *pos.data, pos.info,
+                          *qos.data, qos.info,
+                          offGrid, blocksPerMatX, blocksPerMatY);
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
                 CL_TO_AF_ERROR(err);

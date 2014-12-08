@@ -147,10 +147,10 @@ void convolve_nd(Param out, const Param signal, const Param filter, ConvolveBatc
 
         for (dim_type b=0; b<bCount; ++b) {
             // FIX ME: if the filter array is strided, direct copy might cause issues
-            getQueue().enqueueCopyBuffer(filter.data, mBuff, b*steps[2]*sizeof(T), 0, se_size);
+            getQueue().enqueueCopyBuffer(*filter.data, mBuff, b*steps[2]*sizeof(T), 0, se_size);
 
             convOp(EnqueueArgs(getQueue(), global, local),
-                    out.data, out.info, signal.data, signal.info, cl::Local(loc_size),
+                    *out.data, out.info, *signal.data, signal.info, cl::Local(loc_size),
                     mBuff, filter.info, blk_x, b*steps[0], b*steps[1]);
         }
     } catch (cl::Error err) {
@@ -205,10 +205,10 @@ void convolve2(Param out, const Param signal, const Param filter)
 
         cl::Buffer mBuff = cl::Buffer(getContext(), CL_MEM_READ_ONLY, fLen*sizeof(T));
         // FIX ME: if the filter array is strided, direct might cause issues
-        getQueue().enqueueCopyBuffer(filter.data, mBuff, 0, 0, fLen*sizeof(T));
+        getQueue().enqueueCopyBuffer(*filter.data, mBuff, 0, 0, fLen*sizeof(T));
 
         convOp(EnqueueArgs(getQueue(), global, local),
-               out.data, out.info, signal.data, signal.info,
+               *out.data, out.info, *signal.data, signal.info,
                cl::Local(loc_size), mBuff, fLen, blk_x);
     } catch (cl::Error err) {
         CL_TO_AF_ERROR(err);

@@ -73,7 +73,7 @@ void histogram(Param out, const Param in, const Param minmax, dim_type nbins)
         dim_type locSize = nbins * sizeof(outType);
 
         histogramOp(EnqueueArgs(getQueue(), global, local),
-                out.data, out.info, in.data, in.info, minmax.data,
+                *out.data, out.info, *in.data, in.info, *minmax.data,
                 cl::Local(locSize), numElements, nbins, blk_x);
 
         CL_DEBUG_FINISH(getQueue());

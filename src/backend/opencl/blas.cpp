@@ -113,18 +113,22 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
         err = gemv(
             clblasColumnMajor, lOpts,
             M, N,
-            alpha,  lhs.get()(),    lhs.getOffset(),   lStrides[1],
-                    rhs.get()(),    rhs.getOffset(),   rStrides[0],
-            beta ,  out->get()(),   out->getOffset(),             1,
+            alpha,
+            (*lhs.get())(),    lhs.getOffset(),   lStrides[1],
+            (*rhs.get())(),    rhs.getOffset(),   rStrides[0],
+            beta ,
+            (*out->get())(),   out->getOffset(),             1,
             1, &getQueue()(), 0, nullptr, &event());
     } else {
         gemm_func<T> gemm;
         err = gemm(
                 clblasColumnMajor, lOpts, rOpts,
                 M, N, K,
-                alpha,  lhs.get()(),    lhs.getOffset(),   lStrides[1],
-                        rhs.get()(),    rhs.getOffset(),   rStrides[1],
-                beta,   out->get()(),   out->getOffset(),   out->dims()[0],
+                alpha,
+                (*lhs.get())(),    lhs.getOffset(),   lStrides[1],
+                (*rhs.get())(),    rhs.getOffset(),   rStrides[1],
+                beta,
+                (*out->get())(),   out->getOffset(),  out->dims()[0],
                 1, &getQueue()(), 0, nullptr, &event());
 
     }
@@ -147,12 +151,12 @@ Array<T>* dot(const Array<T> &lhs, const Array<T> &rhs,
     auto out = createEmptyArray<T>(af::dim4(1));
     cl::Buffer scratch(getContext(), CL_MEM_READ_WRITE, sizeof(T) * N);
     clblasStatus err;
-    err = dot(    N,
-            out->get()(), out->getOffset(),
-            lhs.get()(),  lhs.getOffset(), lhs.strides()[0],
-            rhs.get()(),  rhs.getOffset(), rhs.strides()[0],
-            scratch(),
-            1, &getQueue()(), 0, nullptr, &event());
+    err = dot(N,
+              (*out->get())(), out->getOffset(),
+              (*lhs.get())(),  lhs.getOffset(), lhs.strides()[0],
+              (*rhs.get())(),  rhs.getOffset(), rhs.strides()[0],
+              scratch(),
+              1, &getQueue()(), 0, nullptr, &event());
 
     if(err) {
         throw runtime_error(std::string("CLBLAS error: ") + std::to_string(err));

@@ -13,6 +13,7 @@
 #include <err_opencl.hpp>
 #include <debug_opencl.hpp>
 #include <kernel_headers/fast.hpp>
+#include <memory.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -92,7 +93,7 @@ void fast(unsigned* out_feat,
                                 LocalSpaceArg> (lfKernel[device]);
 
         lfOp(EnqueueArgs(getQueue(), global, local),
-             in.data, in.info, d_score, thr,
+             *in.data, in.info, d_score, thr,
              cl::Local((THREADS_X + 6) * (THREADS_Y + 6) * sizeof(T)));
         CL_DEBUG_FINISH(getQueue());
 
@@ -125,15 +126,15 @@ void fast(unsigned* out_feat,
 
         if (total > 0) {
             size_t out_sz = total * sizeof(float);
-            x_out.data = cl::Buffer(getContext(), CL_MEM_READ_WRITE, out_sz);
-            y_out.data = cl::Buffer(getContext(), CL_MEM_READ_WRITE, out_sz);
-            score_out.data = cl::Buffer(getContext(), CL_MEM_READ_WRITE, out_sz);
+            x_out.data = memAlloc(out_sz);
+            y_out.data = memAlloc(out_sz);
+            score_out.data = memAlloc(out_sz);
 
             auto gfOp = make_kernel<Buffer, Buffer, Buffer,
                                     Buffer, Buffer, Buffer,
                                     KParam, const unsigned> (gfKernel[device]);
             gfOp(EnqueueArgs(getQueue(), global_nonmax, local_nonmax),
-                             x_out.data, y_out.data, score_out.data,
+                             *x_out.data, *y_out.data, *score_out.data,
                              d_flags, d_counts, d_offsets,
                              in.info, total);
             CL_DEBUG_FINISH(getQueue());
