@@ -17,6 +17,7 @@
 #include <math.hpp>
 #include <stdio.h>
 #include <map>
+#include <memory.hpp>
 
 #include <boost/compute/container/vector.hpp>
 #include <boost/compute/algorithm/adjacent_difference.hpp>
@@ -106,20 +107,22 @@ void regions(Param out, Param in)
         CL_DEBUG_FINISH(getQueue());
 
         int h_continue = 1;
-        cl::Buffer d_continue = cl::Buffer(getContext(), CL_MEM_READ_WRITE, sizeof(int));
+        cl::Buffer *d_continue = memAlloc(sizeof(int));
 
         while (h_continue) {
             h_continue = 0;
-            getQueue().enqueueWriteBuffer(d_continue, CL_TRUE, 0, sizeof(int), &h_continue);
+            getQueue().enqueueWriteBuffer(*d_continue, CL_TRUE, 0, sizeof(int), &h_continue);
 
             auto ueOp = make_kernel<Buffer, KParam,
                                     Buffer> (*ueKernel[device]);
 
             ueOp(EnqueueArgs(getQueue(), global, local),
-                 *out.data, out.info, d_continue);
+                 *out.data, out.info, *d_continue);
 
-            getQueue().enqueueReadBuffer(d_continue, CL_TRUE, 0, sizeof(int), &h_continue);
+            getQueue().enqueueReadBuffer(*d_continue, CL_TRUE, 0, sizeof(int), &h_continue);
         }
+
+        memFree(d_continue);
 
         // Now, perform the final relabeling.  This converts the equivalency
         // map from having unique labels based on the lowest pixel in the

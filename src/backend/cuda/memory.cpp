@@ -20,7 +20,7 @@
 namespace cuda
 {
     template<typename T>
-    void cudaFreeWrapper(T *ptr)
+    static void cudaFreeWrapper(T *ptr)
     {
         cudaError_t err = cudaFree(ptr);
         if (err != cudaErrorCudartUnloading) // see issue #167
@@ -60,7 +60,7 @@ namespace cuda
 
     mem_t memory_maps[DeviceManager::MAX_DEVICES];
 
-    void garbageCollect()
+    static void garbageCollect()
     {
         int n = getActiveDeviceId();
         for(mem_iter iter = memory_maps[n].begin(); iter != memory_maps[n].end(); iter++) {
@@ -94,7 +94,9 @@ namespace cuda
                 garbageCollect();
             }
 
-            for(mem_iter iter = memory_maps[n].begin(); iter != memory_maps[n].end(); iter++) {
+            for(mem_iter iter = memory_maps[n].begin();
+                iter != memory_maps[n].end(); iter++) {
+
                 mem_info info = iter->second;
                 if (info.is_free && info.bytes == alloc_bytes) {
                     iter->second.is_free = false;
@@ -111,7 +113,6 @@ namespace cuda
 
             mem_info info = {false, alloc_bytes};
             memory_maps[n][ptr] = info;
-
             used_bytes += alloc_bytes;
         }
         return ptr;

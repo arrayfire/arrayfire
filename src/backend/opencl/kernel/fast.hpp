@@ -72,13 +72,13 @@ void fast(unsigned* out_feat,
 
         // Matrix containing scores for detected features, scores are stored in the
         // same coordinates as features, dimensions should be equal to in.
-        cl::Buffer d_score = cl::Buffer(getContext(), CL_MEM_READ_WRITE, in.info.dims[0] * in.info.dims[1] * sizeof(T));
+        cl::Buffer *d_score = memAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(T));
         std::vector<T> score_init(in.info.dims[0] * in.info.dims[1], (T)0);
-        getQueue().enqueueWriteBuffer(d_score, CL_TRUE, 0, in.info.dims[0] * in.info.dims[1] * sizeof(T), &score_init[0]);
+        getQueue().enqueueWriteBuffer(*d_score, CL_TRUE, 0, in.info.dims[0] * in.info.dims[1] * sizeof(T), &score_init[0]);
 
-        cl::Buffer d_flags = d_score;
+        cl::Buffer *d_flags = d_score;
         if (nonmax) {
-            d_flags = cl::Buffer(getContext(), CL_MEM_READ_WRITE, in.info.dims[0] * in.info.dims[1] * sizeof(T));
+            d_flags = memAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(T));
         }
 
         const dim_type blk_x = divup(in.info.dims[0]-6, THREADS_X);
@@ -93,7 +93,7 @@ void fast(unsigned* out_feat,
                                 LocalSpaceArg> (lfKernel[device]);
 
         lfOp(EnqueueArgs(getQueue(), global, local),
-             *in.data, in.info, d_score, thr,
+             *in.data, in.info, *d_score, thr,
              cl::Local((THREADS_X + 6) * (THREADS_Y + 6) * sizeof(T)));
         CL_DEBUG_FINISH(getQueue());
 
@@ -105,23 +105,23 @@ void fast(unsigned* out_feat,
         const NDRange global_nonmax(blk_nonmax_x * THREADS_NONMAX_X, blk_nonmax_y * THREADS_NONMAX_Y);
 
         unsigned count_init = 0;
-        cl::Buffer d_total = cl::Buffer(getContext(), CL_MEM_READ_WRITE, sizeof(unsigned));
-        getQueue().enqueueWriteBuffer(d_total, CL_TRUE, 0, sizeof(unsigned), &count_init);
+        cl::Buffer *d_total = memAlloc(sizeof(unsigned));
+        getQueue().enqueueWriteBuffer(*d_total, CL_TRUE, 0, sizeof(unsigned), &count_init);
 
         //size_t *global_nonmax_dims = global_nonmax();
         size_t blocks_sz = blk_nonmax_x * THREADS_NONMAX_X * blk_nonmax_y * THREADS_NONMAX_Y * sizeof(unsigned);
-        cl::Buffer d_counts  = cl::Buffer(getContext(), CL_MEM_READ_WRITE, blocks_sz);
-        cl::Buffer d_offsets = cl::Buffer(getContext(), CL_MEM_READ_WRITE, blocks_sz);
+        cl::Buffer *d_counts  = memAlloc(blocks_sz);
+        cl::Buffer *d_offsets = memAlloc(blocks_sz);
 
         auto nmOp = make_kernel<Buffer, Buffer, Buffer,
                                 Buffer, Buffer,
                                 KParam> (nmKernel[device]);
         nmOp(EnqueueArgs(getQueue(), global_nonmax, local_nonmax),
-                         d_counts, d_offsets, d_total, d_flags, d_score, in.info);
+                         *d_counts, *d_offsets, *d_total, *d_flags, *d_score, in.info);
         CL_DEBUG_FINISH(getQueue());
 
         unsigned total;
-        getQueue().enqueueReadBuffer(d_total, CL_TRUE, 0, sizeof(unsigned), &total);
+        getQueue().enqueueReadBuffer(*d_total, CL_TRUE, 0, sizeof(unsigned), &total);
         total = total < max_feat ? total : max_feat;
 
         if (total > 0) {
@@ -135,7 +135,7 @@ void fast(unsigned* out_feat,
                                     KParam, const unsigned> (gfKernel[device]);
             gfOp(EnqueueArgs(getQueue(), global_nonmax, local_nonmax),
                              *x_out.data, *y_out.data, *score_out.data,
-                             d_flags, d_counts, d_offsets,
+                             *d_flags, *d_counts, *d_offsets,
                              in.info, total);
             CL_DEBUG_FINISH(getQueue());
         }
@@ -157,6 +157,12 @@ void fast(unsigned* out_feat,
             score_out.info.dims[k] = 1;
             score_out.info.strides[k] = total;
         }
+
+        memFree(d_score);
+        if (nonmax) memFree(d_flags);
+        memFree(d_total);
+        memFree(d_counts);
+        memFree(d_offsets);
     } catch (cl::Error err) {
         CL_TO_AF_ERROR(err);
         throw;
