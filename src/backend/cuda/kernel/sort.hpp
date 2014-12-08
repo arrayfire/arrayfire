@@ -26,7 +26,7 @@ namespace cuda
         ///////////////////////////////////////////////////////////////////////////
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
-        template<typename T, bool DIR>
+        template<typename T, bool isAscending>
         void sort0(Param<T> val)
         {
             thrust::device_ptr<T> val_ptr = thrust::device_pointer_cast(val.ptr);
@@ -39,7 +39,7 @@ namespace cuda
 
                         dim_type valOffset = valWZ + y * val.strides[1];
 
-                        if(DIR) {
+                        if(isAscending) {
                             thrust::sort(val_ptr + valOffset, val_ptr + valOffset + val.dims[0]);
                         } else {
                             thrust::sort(val_ptr + valOffset, val_ptr + valOffset + val.dims[0],

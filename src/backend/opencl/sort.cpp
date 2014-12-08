@@ -17,12 +17,12 @@
 
 namespace opencl
 {
-    template<typename T, bool DIR>
+    template<typename T, bool isAscending>
     Array<T>* sort(const Array<T> &in, const unsigned dim)
     {
         Array<T> *out = copyArray<T>(in);
         switch(dim) {
-            case 0: kernel::sort0<T, DIR>(*out);
+            case 0: kernel::sort0<T, isAscending>(*out);
                     break;
             default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }
@@ -35,8 +35,6 @@ namespace opencl
 
     INSTANTIATE(float)
     INSTANTIATE(double)
-    //INSTANTIATE(cfloat)
-    //INSTANTIATE(cdouble)
     INSTANTIATE(int)
     INSTANTIATE(uint)
     INSTANTIATE(char)

@@ -21,6 +21,8 @@ namespace cuda
         // Kernel Launch Config Values
         static const unsigned TX = 16;
         static const unsigned TY = 16;
+        // Used for batching images
+        static const unsigned TI = 4;
 
         __constant__ float c_tmat[6 * 256];
 
@@ -44,12 +46,18 @@ namespace cuda
         ///////////////////////////////////////////////////////////////////////////
         template<typename T, bool inverse, af_interp_type method>
         __global__ static void
-        transform_kernel(Param<T> out, CParam<T> in,
-                         const dim_type nimages, const dim_type ntransforms)
+        transform_kernel(Param<T> out, CParam<T> in, const dim_type nimages,
+                         const dim_type ntransforms, const dim_type blocksXPerImage)
         {
+            // Compute which image set
+            const dim_type setId = blockIdx.x / blocksXPerImage;
+            const dim_type blockIdx_x = blockIdx.x - setId * blocksXPerImage;
+
             // Get thread indices
-            const dim_type xx = blockIdx.x * blockDim.x + threadIdx.x;
+            const dim_type xx = blockIdx_x * blockDim.x + threadIdx.x;
             const dim_type yy = blockIdx.y * blockDim.y + threadIdx.y;
+
+            const dim_type limages = min(out.dims[2] - setId * nimages, nimages);
 
             if(xx >= out.dims[0] || yy >= out.dims[1] * ntransforms)
                 return;
@@ -65,8 +73,8 @@ namespace cuda
 
             // Global offset
             //          Offset for transform channel + Offset for image channel.
-            T *optr = out.ptr + t_idx * nimages * out.strides[2];// + i_idx * out.strides[2];
-            const T *iptr = in.ptr;                              // + i_idx * in.strides[2];
+                  T *optr = out.ptr + t_idx * nimages * out.strides[2] + setId * nimages * out.strides[2];
+            const T *iptr = in.ptr  + setId * nimages * in.strides[2];
 
             // Transform is in constant memory.
             const float *tmat_ptr = c_tmat + t_idx * 6;
@@ -86,9 +94,9 @@ namespace cuda
 
             switch(method) {
                 case AF_INTERP_NEAREST:
-                    transform_n(optr, out, iptr, in, tmat, xido, yido, nimages); break;
+                    transform_n(optr, out, iptr, in, tmat, xido, yido, limages); break;
                 case AF_INTERP_BILINEAR:
-                    transform_b(optr, out, iptr, in, tmat, xido, yido, nimages); break;
+                    transform_b(optr, out, iptr, in, tmat, xido, yido, limages); break;
                 default: break;
             }
         }
@@ -100,7 +108,7 @@ namespace cuda
         void transform(Param<T> out, CParam<T> in, CParam<float> tf,
                        const bool inverse)
         {
-            const dim_type nimages = in.dims[2];
+            dim_type nimages = in.dims[2];
             // Multiplied in src/backend/transform.cpp
             const dim_type ntransforms = out.dims[2] / in.dims[2];
 
@@ -111,14 +119,21 @@ namespace cuda
             dim3 threads(TX, TY, 1);
             dim3 blocks(divup(out.dims[0], threads.x), divup(out.dims[1], threads.y));
 
+            const dim_type blocksXPerImage = blocks.x;
+            if(nimages > TI) {
+                dim_type tile_images = divup(nimages, TI);
+                nimages = TI;
+                blocks.x = blocks.x * tile_images;
+            }
+
             if (ntransforms > 1) { blocks.y *= ntransforms; }
 
             if(inverse) {
                 transform_kernel<T, true, method><<<blocks, threads>>>
-                                (out, in, nimages, ntransforms);
+                                (out, in, nimages, ntransforms, blocksXPerImage);
             } else {
                 transform_kernel<T, false, method><<<blocks, threads>>>
-                                (out, in, nimages, ntransforms);
+                                (out, in, nimages, ntransforms, blocksXPerImage);
             }
             POST_LAUNCH_CHECK();
         }

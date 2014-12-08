@@ -10,8 +10,9 @@
 #include <af/array.h>
 #include <Array.hpp>
 
-namespace cpu
+namespace cuda
 {
-    template<typename T, bool isAscending>
-    Array<T>* sort(const Array<T> &in, const unsigned dim);
+    template<typename Tx, typename Ty>
+    Array<Tx> *join(const int dim, const Array<Tx> &first, const Array<Ty> &second, const af::dim4 &odims);
 }
+

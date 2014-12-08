@@ -12,6 +12,6 @@
 
 namespace opencl
 {
-    template<typename T, bool DIR>
+    template<typename T, bool isAscending>
     void sort_index(Array<T> &val, Array<unsigned> &idx, const Array<T> &in, const unsigned dim);
 }
