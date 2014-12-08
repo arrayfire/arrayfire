@@ -77,8 +77,8 @@ namespace opencl
                                local[1] * blocksPerMatY * out.info.dims[3],
                                1);
 
-                joinOp(EnqueueArgs(getQueue(), global, local), out.data, out.info,
-                        X.data, X.info, Y.data, Y.info, blocksPerMatX, blocksPerMatY);
+                joinOp(EnqueueArgs(getQueue(), global, local), *out.data, out.info,
+                       *X.data, X.info, *Y.data, Y.info, blocksPerMatX, blocksPerMatY);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {

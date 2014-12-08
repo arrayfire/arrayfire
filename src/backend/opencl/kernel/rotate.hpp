@@ -33,6 +33,8 @@ namespace opencl
     {
         static const dim_type TX = 16;
         static const dim_type TY = 16;
+        // Used for batching images
+        static const dim_type TI = 4;
 
         typedef struct {
             float tmat[6];
@@ -81,10 +83,8 @@ namespace opencl
                 });
 
                 auto rotateOp = make_kernel<Buffer, const KParam, const Buffer, const KParam,
-                                             const tmat_t, const dim_type>
+                                             const tmat_t, const dim_type, const dim_type>
                                            (*rotateKernels[device]);
-
-                const dim_type nimages = in.info.dims[2];
 
                 const float c = cos(-theta), s = sin(-theta);
                 float tx, ty;
@@ -108,12 +108,22 @@ namespace opencl
                 t.tmat[5] = ty;
 
                 NDRange local(TX, TY, 1);
+
+                dim_type nimages = in.info.dims[2];
+                dim_type global_y = local[1] * divup(out.info.dims[1], local[1]);
+                const dim_type blocksYPerImage = global_y / local[1];
+
+                if(nimages > TI) {
+                    dim_type tile_images = divup(nimages, TI);
+                    nimages = TI;
+                    global_y = global_y * tile_images;
+                }
+
                 NDRange global(local[0] * divup(out.info.dims[0], local[0]),
-                               local[1] * divup(out.info.dims[1], local[1]),
-                               1);
+                               global_y, 1);
 
                 rotateOp(EnqueueArgs(getQueue(), global, local),
-                         out.data, out.info, in.data, in.info, t, nimages);
+                         *out.data, out.info, *in.data, in.info, t, nimages, blocksYPerImage);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
@@ -123,4 +133,3 @@ namespace opencl
         }
     }
 }
-

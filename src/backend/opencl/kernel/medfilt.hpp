@@ -87,7 +87,7 @@ void medfilt(Param out, const Param in)
 
 
         transposeOp(EnqueueArgs(getQueue(), global, local),
-                    out.data, out.info, in.data, in.info, cl::Local(loc_size), blk_x);
+                    *out.data, out.info, *in.data, in.info, cl::Local(loc_size), blk_x);
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {

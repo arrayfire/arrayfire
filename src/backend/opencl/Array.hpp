@@ -19,10 +19,12 @@
 #include <traits.hpp>
 #include <Param.hpp>
 #include <JIT/Node.hpp>
+#include <memory>
 
 namespace opencl
 {
     using af::dim4;
+    typedef std::shared_ptr<cl::Buffer> Buffer_ptr;
 
     template<typename T> class Array;
 
@@ -79,13 +81,13 @@ namespace opencl
     template<typename T>
     void *getDevicePtr(const Array<T>& arr)
     {
-        return (void *)(arr.get()());
+        return (void *)((*arr.get())());
     }
 
     template<typename T>
     class Array : public ArrayInfo
     {
-        cl::Buffer  data;
+        Buffer_ptr  data;
         const Array*      parent;
 
         JIT::Node_ptr node;
@@ -97,6 +99,7 @@ namespace opencl
         explicit Array(af::dim4 dims, JIT::Node_ptr n);
         explicit Array(af::dim4 dims, const T * const in_data);
         explicit Array(af::dim4 dims, cl_mem mem);
+
     public:
 
         ~Array();
@@ -108,18 +111,18 @@ namespace opencl
         void eval() const;
 
         //FIXME: This should do a copy if it is not owner. You do not want to overwrite parents data
-        cl::Buffer& get()
+        cl::Buffer *get()
         {
             if (!isReady()) eval();
-            if (isOwner()) return data;
-            return (cl::Buffer &)parent->data;
+            if (isOwner()) return data.get();
+            return parent->data.get();
         }
 
-        const   cl::Buffer& get() const
+        const cl::Buffer *get() const
         {
             if (!isReady()) eval();
-            if (isOwner()) return data;
-            return parent->data;
+            if (isOwner()) return data.get();
+            return parent->data.get();
         }
 
         const dim_type getOffset() const
@@ -133,7 +136,7 @@ namespace opencl
                            {strides()[0], strides()[1], strides()[2], strides()[3]},
                            getOffset()};
 
-            Param out = {this->get(), info};
+            Param out = {(cl::Buffer *)this->get(), info};
             return out;
         }
 

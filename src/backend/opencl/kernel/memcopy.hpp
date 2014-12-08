@@ -159,7 +159,7 @@ namespace kernel
                                      >(*cpyKernels[device]);
 
             copyOp(EnqueueArgs(getQueue(), global, local),
-                   dst.data, dst.info, src.data, src.info,
+                   *dst.data, dst.info, *src.data, src.info,
                    default_value, (float)factor, trgt_dims, blk_x, blk_y);
         } catch (cl::Error err) {
             CL_TO_AF_ERROR(err);

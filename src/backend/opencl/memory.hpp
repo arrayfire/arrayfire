@@ -7,11 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/array.h>
-#include <Array.hpp>
-
-namespace cpu
+#include <af/defines.h>
+#include <cl.hpp>
+namespace opencl
 {
-    template<typename T, bool isAscending>
-    Array<T>* sort(const Array<T> &in, const unsigned dim);
+
+    cl::Buffer *bufferAlloc(const size_t &bytes);
+    void bufferFree(cl::Buffer *buf);
+
+    template<typename T> T *memAlloc(const size_t &elements);
+    template<typename T> void memFree(T *ptr);
 }
