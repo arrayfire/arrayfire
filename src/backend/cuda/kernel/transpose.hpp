@@ -31,36 +31,36 @@ namespace kernel
     {
         __shared__ T shrdMem[TILE_DIM][TILE_DIM+1];
         // create variables to hold output dimensions
-        const int oDim0 = out.dims[0];
-        const int oDim1 = out.dims[1];
-        const int iDim0 = in.dims[0];
-        const int iDim1 = in.dims[1];
+        const dim_type oDim0 = out.dims[0];
+        const dim_type oDim1 = out.dims[1];
+        const dim_type iDim0 = in.dims[0];
+        const dim_type iDim1 = in.dims[1];
 
         // calculate strides
-        const int oStride1 = out.strides[1];
-        const int iStride1 = in.strides[1];
+        const dim_type oStride1 = out.strides[1];
+        const dim_type iStride1 = in.strides[1];
 
-        const int lx = threadIdx.x;
-        const int ly = threadIdx.y;
+        const dim_type lx = threadIdx.x;
+        const dim_type ly = threadIdx.y;
 
         // batch based block Id
-        const int batchId = blockIdx.x / nonBatchBlkSize;
-        const int blockIdx_x = (blockIdx.x-batchId*nonBatchBlkSize);
+        const dim_type batchId = blockIdx.x / nonBatchBlkSize;
+        const dim_type blockIdx_x = (blockIdx.x-batchId*nonBatchBlkSize);
 
-        const int x0 = TILE_DIM * blockIdx_x;
-        const int y0 = TILE_DIM * blockIdx.y;
+        const dim_type x0 = TILE_DIM * blockIdx_x;
+        const dim_type y0 = TILE_DIM * blockIdx.y;
 
         // calculate global indices
-        int gx      = lx + x0;
-        int gy      = ly + y0;
+        dim_type gx      = lx + x0;
+        dim_type gy      = ly + y0;
 
         // offset in and out based on batch id
         in.ptr  += batchId * in.strides[2];
         out.ptr += batchId * out.strides[2];
 
 #pragma unroll
-        for (int repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
-            int gy_ = gy+repeat;
+        for (dim_type repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
+            dim_type gy_ = gy+repeat;
             if (is32Multiple || (gx<iDim0 && gy_<iDim1))
                 shrdMem[ly + repeat][lx] = in.ptr[gy_ * iStride1 + gx];
         }
@@ -70,8 +70,8 @@ namespace kernel
         gy = ly + x0;
 
 #pragma unroll
-        for (int repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
-            int gy_ = gy+repeat;
+        for (dim_type repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
+            dim_type gy_ = gy+repeat;
             if (is32Multiple || (gx<oDim0 && gy_<oDim1))
                 out.ptr[gy_ * oStride1 + gx] = shrdMem[lx][ly + repeat];
         }
