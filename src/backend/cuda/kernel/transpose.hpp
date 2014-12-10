@@ -12,6 +12,7 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_cuda.hpp>
+#include <math.hpp>
 
 namespace cuda
 {
@@ -23,8 +24,15 @@ namespace kernel
     static const dim_type THREADS_X = TILE_DIM;
     static const dim_type THREADS_Y = TILE_DIM/4;
 
+    template<typename T, bool conjugate>
+    __device__ T doOp(T in)
+    {
+        if (conjugate) return conj(in);
+        else return in;
+    }
+
     // Kernel is going access original data in colleased format
-    template<typename T, bool is32Multiple>
+    template<typename T, bool conjugate, bool is32Multiple>
     __global__
     void transpose(Param<T> out, CParam<T> in,
                    dim_type nonBatchBlkSize)
@@ -73,11 +81,11 @@ namespace kernel
         for (dim_type repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
             dim_type gy_ = gy+repeat;
             if (is32Multiple || (gx<oDim0 && gy_<oDim1))
-                out.ptr[gy_ * oStride1 + gx] = shrdMem[lx][ly + repeat];
+                out.ptr[gy_ * oStride1 + gx] = doOp<T, conjugate>(shrdMem[lx][ly + repeat]);
         }
     }
 
-    template<typename T>
+    template<typename T, bool conjugate>
     void transpose(Param<T> out, CParam<T> in, const dim_type ndims)
     {
         // dimensions passed to this function should be input dimensions
@@ -92,9 +100,9 @@ namespace kernel
         dim3 blocks(blk_x*in.dims[2],blk_y);
 
         if (in.dims[0]%TILE_DIM==0 && in.dims[1]%TILE_DIM==0)
-            (transpose< T, true >)<<< blocks,threads >>>(out, in, blk_x);
+            (transpose<T, conjugate, true >)<<< blocks,threads >>>(out, in, blk_x);
         else
-            (transpose< T, false>)<<< blocks,threads >>>(out, in, blk_x);
+            (transpose<T, conjugate, false>)<<< blocks,threads >>>(out, in, blk_x);
 
         POST_LAUNCH_CHECK();
     }

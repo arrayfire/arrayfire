@@ -36,7 +36,7 @@ static const dim_type TILE_DIM  = 32;
 static const dim_type THREADS_X = TILE_DIM;
 static const dim_type THREADS_Y = TILE_DIM / 4;
 
-template<typename T, bool IS32MULTIPLE>
+template<typename T, bool conjugate, bool IS32MULTIPLE>
 void transpose(Param out, const Param in)
 {
     try {
@@ -52,6 +52,7 @@ void transpose(Param out, const Param in)
                 options << " -D TILE_DIM=" << TILE_DIM
                         << " -D THREADS_Y=" << THREADS_Y
                         << " -D IS32MULTIPLE=" << IS32MULTIPLE
+                        << " -D DOCONJUGATE=" << (conjugate && af::iscplx<T>())
                         << " -D T=" << dtype_traits<T>::getName();
 
                 if (std::is_same<T, double>::value ||

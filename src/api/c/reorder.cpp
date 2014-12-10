@@ -43,7 +43,7 @@ af_err af_reorder(af_array *out, const af_array in, const af::dim4 &rdims)
         if(info.dims()[3] == 1) {
             if(rdims[0] == 1 && rdims[1] == 0 &&
                rdims[2] == 2 && rdims[3] == 3) {
-                return af_transpose(out, in);
+                return af_transpose(out, in, false);
             }
         }
 

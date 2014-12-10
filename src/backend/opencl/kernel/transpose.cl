@@ -6,6 +6,15 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#if DOCONJUGATE
+T doOp(T in)
+{
+    T out = {in.x, -in.y};
+    return out;
+}
+#else
+#define doOp(in) in
+#endif
 
 __kernel
 void transpose(__global T *oData, const KParam out,
@@ -55,7 +64,8 @@ void transpose(__global T *oData, const KParam out,
 
     for (dim_type repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
         dim_type gy_ = gy + repeat;
-        if (IS32MULTIPLE || (gx < oDim0 && gy_ < oDim1))
-            oData[gy_ * oStride1 + gx] = shrdMem[lx * shrdStride + ly + repeat];
+        if (IS32MULTIPLE || (gx < oDim0 && gy_ < oDim1)) {
+            oData[gy_ * oStride1 + gx] = doOp(shrdMem[lx * shrdStride + ly + repeat]);
+        }
     }
 }
