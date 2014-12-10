@@ -184,6 +184,10 @@ namespace af
 
         ~array();
 
+        // Transpose and Conjugate Tranpose
+        array T() const;
+        array H() const;
+
         array& operator= (const array &a);  ///< array assignment
         array& operator= (const double &value);
         array& operator= (const af_cfloat &value);
