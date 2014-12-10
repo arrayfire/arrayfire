@@ -8,58 +8,54 @@
  ********************************************************/
 
 __kernel
-void transpose(__global T *oData,
-               KParam oInfo,
-               const __global T *iData,
-               KParam iInfo,
-               dim_type nonBatchBlkSize)
+void transpose(__global T *oData, const KParam out,
+               const __global T *iData, const KParam in,
+               const dim_type nonBatchBlkSize)
 {
     __local T shrdMem[TILE_DIM*(TILE_DIM+1)];
 
     const dim_type shrdStride = TILE_DIM+1;
     // create variables to hold output dimensions
-    const dim_type iDim0 = iInfo.dims[0];
-    const dim_type iDim1 = iInfo.dims[1];
-
-    const dim_type oDim0 = iDim1;
-    const dim_type oDim1 = iDim0;
+    const dim_type oDim0 = out.dims[0];
+    const dim_type oDim1 = out.dims[1];
+    const dim_type iDim0 = in.dims[0];
+    const dim_type iDim1 = in.dims[1];
 
     // calculate strides
-    const dim_type oStride1 = oInfo.strides[1];
-    const dim_type iStride1 = iInfo.strides[1];
-    const dim_type iStride2 = iInfo.strides[2];
+    const dim_type oStride1 = out.strides[1];
+    const dim_type iStride1 = in.strides[1];
 
-    dim_type lx      = get_local_id(0);
-    dim_type ly      = get_local_id(1);
+    const dim_type lx = get_local_id(0);
+    const dim_type ly = get_local_id(1);
 
     // batch based block Id
-    dim_type batchId = get_group_id(0) / nonBatchBlkSize;
-    dim_type blkIdx_x= (get_group_id(0)-batchId*nonBatchBlkSize);
+    const dim_type batchId  = get_group_id(0) / nonBatchBlkSize;
+    const dim_type blkIdx_x = (get_group_id(0) - batchId * nonBatchBlkSize);
+    const dim_type x0 = TILE_DIM * blkIdx_x;
+    const dim_type y0 = TILE_DIM * get_group_id(1);
 
     // calculate global indices
-    dim_type gx      = lx + TILE_DIM * blkIdx_x;
-    dim_type gy      = ly + TILE_DIM * get_group_id(1);
+    dim_type gx = lx + x0;
+    dim_type gy = ly + y0;
 
     // offset in and out based on batch id
     // also add the subBuffer offsets
-    iData += batchId * iStride2 + iInfo.offset;
-    oData += batchId * oDim0 * oDim1 + oInfo.offset;
+    iData += batchId *  in.strides[2] + in.offset;
+    oData += batchId * out.strides[2] + out.offset;
 
-    for (dim_type repeat = 0; repeat < TILE_DIM; repeat += get_local_size(1)) {
+    for (dim_type repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
         dim_type gy_ = gy + repeat;
-
-        if (gx < iDim0 && gy_< iDim1)
+        if (IS32MULTIPLE || (gx < iDim0 && gy_< iDim1))
             shrdMem[(ly + repeat) * shrdStride + lx] = iData[gy_ * iStride1 + gx];
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    gx          = lx + TILE_DIM * get_group_id(1);
-    gy          = ly + TILE_DIM * blkIdx_x;
+    gx = lx + y0;
+    gy = ly + x0;
 
-    for (dim_type repeat = 0; repeat < TILE_DIM; repeat += get_local_size(1)) {
+    for (dim_type repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
         dim_type gy_ = gy + repeat;
-
-        if (gx < oDim0 && gy_ < oDim1)
+        if (IS32MULTIPLE || (gx < oDim0 && gy_ < oDim1))
             oData[gy_ * oStride1 + gx] = shrdMem[lx * shrdStride + ly + repeat];
     }
 }

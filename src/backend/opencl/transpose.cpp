@@ -27,7 +27,12 @@ Array<T> * transpose(const Array<T> &in)
     const dim4 inDims   = in.dims();
     dim4 outDims  = dim4(inDims[1],inDims[0],inDims[2],inDims[3]);
     Array<T>* out  = createEmptyArray<T>(outDims);
-    kernel::transpose<T>(*out, in);
+
+    if(inDims[0] % kernel::TILE_DIM == 0 && inDims[1] % kernel::TILE_DIM == 0)
+        kernel::transpose<T, true>(*out, in);
+    else
+        kernel::transpose<T, false>(*out, in);
+
     return out;
 }
 
