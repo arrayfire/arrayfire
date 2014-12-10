@@ -16,6 +16,7 @@
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
 #include "config.hpp"
+#include <memory.hpp>
 
 namespace cuda
 {
@@ -145,8 +146,7 @@ namespace kernel
             tmp.dims[dim] = blocks_dim[dim];
 
             for (int k = 0; k < 4; k++) tmp_elements *= tmp.dims[k];
-
-            CUDA_CHECK(cudaMalloc(&tmp.ptr, tmp_elements * sizeof(To)));
+            tmp.ptr = memAlloc<To>(tmp_elements);
 
             for (int k = dim + 1; k < 4; k++) tmp.strides[k] *= blocks_dim[dim];
         }
@@ -162,7 +162,7 @@ namespace kernel
                 reduce_dim_launcher<To, To,       op, dim>(out, tmp, threads_y, blocks_dim);
             }
 
-            CUDA_CHECK(cudaFree(tmp.ptr));
+            memFree(tmp.ptr);
         }
 
     }
@@ -331,13 +331,10 @@ namespace kernel
         Param<To> tmp = out;
 
         if (blocks_x > 1) {
-
-            CUDA_CHECK(cudaMalloc(&(tmp.ptr),
-                                  blocks_x *
-                                  in.dims[1] *
-                                  in.dims[2] *
-                                  in.dims[3] *
-                                  sizeof(To)));
+            tmp.ptr = memAlloc<To>(blocks_x *
+                                   in.dims[1] *
+                                   in.dims[2] *
+                                   in.dims[3]);
 
             tmp.dims[0] = blocks_x;
             for (int k = 1; k < 4; k++) tmp.strides[k] *= blocks_x;
@@ -354,7 +351,7 @@ namespace kernel
                 reduce_first_launcher<To, To,       op>(out, tmp, 1, blocks_y, threads_x);
             }
 
-            CUDA_CHECK(cudaFree(tmp.ptr));
+            memFree(tmp.ptr);
         }
     }
 
@@ -410,13 +407,13 @@ namespace kernel
 
             dim_type tmp_elements = tmp.strides[3] * tmp.dims[3];
 
-            CUDA_CHECK(cudaMalloc(&(tmp.ptr), tmp_elements * sizeof(To)));
+            tmp.ptr = memAlloc<To>(tmp_elements);
             reduce_first_launcher<Ti, To, op>(tmp, in, blocks_x, blocks_y, threads_x);
 
             h_ptr = new To[tmp_elements];
 
             CUDA_CHECK(cudaMemcpy(h_ptr, tmp.ptr, tmp_elements * sizeof(To), cudaMemcpyDeviceToHost));
-            CUDA_CHECK(cudaFree(tmp.ptr));
+            memFree(tmp.ptr);
 
             Binary<To, op> reduce;
             To out = reduce.init();

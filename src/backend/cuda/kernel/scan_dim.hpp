@@ -15,6 +15,7 @@
 #include <math.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
+#include <memory.hpp>
 #include "config.hpp"
 
 namespace cuda
@@ -255,7 +256,7 @@ namespace kernel
             for (int k = 1; k < 4; k++) tmp.strides[k] = tmp.strides[k - 1] * tmp.dims[k - 1];
 
             dim_type tmp_elements = tmp.strides[3] * tmp.dims[3];
-            CUDA_CHECK(cudaMalloc(&tmp.ptr, tmp_elements * sizeof(To)));
+            tmp.ptr = memAlloc<To>(tmp_elements);
 
             scan_dim_launcher<Ti, To, op, dim, false>(out, tmp, in,
                                                       threads_y,
@@ -278,7 +279,7 @@ namespace kernel
             blocks_all[dim] = bdim;
             bcast_dim_launcher<To, op, dim>(out, tmp, threads_y, blocks_all);
 
-            CUDA_CHECK(cudaFree(tmp.ptr));
+            memFree(tmp.ptr);
         }
     }
 
