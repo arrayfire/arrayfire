@@ -13,6 +13,6 @@ namespace cuda
 {
 
 template<typename T>
-Array<T> * transpose(const Array<T> &in);
+Array<T> * transpose(const Array<T> &in, const bool conjugate);
 
 }

@@ -116,9 +116,10 @@ __SDH__ double real(cdouble c) { return cuCreal(c);  }
 __SDH__ float  imag(cfloat  c) { return cuCimagf(c); }
 __SDH__ double imag(cdouble c) { return cuCimag(c);  }
 
+template<typename T> T
+__SDH__  conj(T  x) { return x; }
 __SDH__ cfloat  conj(cfloat  c) { return cuConjf(c);}
 __SDH__ cdouble conj(cdouble c) { return cuConj(c); }
-__SDH__ double  conj(double  x) { return x;         }
 
 __SDH__ cfloat make_cfloat(bool     x) { return make_cuComplex(x,0);     }
 __SDH__ cfloat make_cfloat(int      x) { return make_cuComplex(x,0);     }

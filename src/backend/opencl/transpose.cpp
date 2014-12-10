@@ -18,7 +18,7 @@ namespace opencl
 {
 
 template<typename T>
-Array<T> * transpose(const Array<T> &in)
+Array<T> * transpose(const Array<T> &in, const bool conjugate)
 {
     if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
         !isDoubleSupported(getActiveDeviceId())) {
@@ -27,12 +27,24 @@ Array<T> * transpose(const Array<T> &in)
     const dim4 inDims   = in.dims();
     dim4 outDims  = dim4(inDims[1],inDims[0],inDims[2],inDims[3]);
     Array<T>* out  = createEmptyArray<T>(outDims);
-    kernel::transpose<T>(*out, in);
+
+    if(conjugate) {
+        if(inDims[0] % kernel::TILE_DIM == 0 && inDims[1] % kernel::TILE_DIM == 0)
+            kernel::transpose<T, true, true>(*out, in);
+        else
+            kernel::transpose<T, true, false>(*out, in);
+    } else {
+        if(inDims[0] % kernel::TILE_DIM == 0 && inDims[1] % kernel::TILE_DIM == 0)
+            kernel::transpose<T, false, true>(*out, in);
+        else
+            kernel::transpose<T, false, false>(*out, in);
+    }
+
     return out;
 }
 
 #define INSTANTIATE(T)\
-    template Array<T> * transpose(const Array<T> &in);
+    template Array<T> * transpose(const Array<T> &in, const bool conjugate);
 
 INSTANTIATE(float  )
 INSTANTIATE(cfloat )

@@ -333,10 +333,10 @@ af_err af_save_image(const char* filename, const af_array in_)
         af_array rrT = 0, ggT = 0, bbT = 0, aaT = 0;
         if(channels == 4) {
 
-            AF_CHECK(af_transpose(&rrT, rr));
-            AF_CHECK(af_transpose(&ggT, gg));
-            AF_CHECK(af_transpose(&bbT, bb));
-            AF_CHECK(af_transpose(&aaT, aa));
+            AF_CHECK(af_transpose(&rrT, rr, false));
+            AF_CHECK(af_transpose(&ggT, gg, false));
+            AF_CHECK(af_transpose(&bbT, bb, false));
+            AF_CHECK(af_transpose(&aaT, aa, false));
 
             ArrayInfo cinfo = getInfo(rrT);
             float* pSrc0 = new float[cinfo.elements()];
@@ -365,9 +365,9 @@ af_err af_save_image(const char* filename, const af_array in_)
             delete [] pSrc2;
             delete [] pSrc3;
         } else if(channels == 3) {
-            AF_CHECK(af_transpose(&rrT, rr));
-            AF_CHECK(af_transpose(&ggT, gg));
-            AF_CHECK(af_transpose(&bbT, bb));
+            AF_CHECK(af_transpose(&rrT, rr, false));
+            AF_CHECK(af_transpose(&ggT, gg, false));
+            AF_CHECK(af_transpose(&bbT, bb, false));
 
             ArrayInfo cinfo = getInfo(rrT);
             float* pSrc0 = new float[cinfo.elements()];
@@ -392,7 +392,7 @@ af_err af_save_image(const char* filename, const af_array in_)
             delete [] pSrc1;
             delete [] pSrc2;
         } else {
-            AF_CHECK(af_transpose(&rrT, rr));
+            AF_CHECK(af_transpose(&rrT, rr, false));
             ArrayInfo cinfo = getInfo(rrT);
             float* pSrc0 = new float[cinfo.elements()];
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
