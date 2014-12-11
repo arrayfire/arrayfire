@@ -46,6 +46,8 @@ TYPED_TEST_CASE(Approx1, TestTypes);
 template<typename T>
 void approx1Test(string pTestFile, const unsigned resultIdx, const af_interp_type method, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
 {
+    if (noDoubleTests<T>()) return;
+
     typedef typename af::dtype_traits<T>::base_type BT;
     vector<af::dim4> numDims;
     vector<vector<BT>> in;
@@ -110,6 +112,7 @@ void approx1Test(string pTestFile, const unsigned resultIdx, const af_interp_typ
 template<typename T>
 void approx1ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp_type method, const af_err err)
 {
+    if (noDoubleTests<T>()) return;
     typedef typename af::dtype_traits<T>::base_type BT;
     vector<af::dim4> numDims;
     vector<vector<BT>> in;
@@ -150,6 +153,7 @@ void approx1ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp
 template<typename T>
 void approx1ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const af_interp_type method)
 {
+    if (noDoubleTests<T>()) return;
     vector<af::dim4> numDims;
     vector<vector<T>> in;
     vector<vector<T>> tests;
@@ -194,6 +198,7 @@ void approx1ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const 
 //
 TEST(Approx1, CPP)
 {
+    if (noDoubleTests<float>()) return;
     const unsigned resultIdx = 1;
     const af_interp_type method = AF_INTERP_LINEAR;
 #define BT af::dtype_traits<float>::base_type

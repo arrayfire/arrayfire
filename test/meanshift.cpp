@@ -33,6 +33,8 @@ TYPED_TEST_CASE(Meanshift, TestTypes);
 
 TYPED_TEST(Meanshift, InvalidArgs)
 {
+    if (noDoubleTests<TypeParam>()) return;
+
     vector<TypeParam>   in(100,1);
 
     af_array inArray   = 0;
@@ -56,6 +58,8 @@ TYPED_TEST(Meanshift, InvalidArgs)
 template<typename T, bool isColor>
 void meanshiftTest(string pTestFile)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<dim4>       inDims;
     vector<string>    inFiles;
     vector<dim_type> outSizes;
@@ -119,6 +123,8 @@ IMAGE_TESTS(double)
 //
 TEST(Meanshift, Color_CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     vector<dim4>       inDims;
     vector<string>    inFiles;
     vector<dim_type> outSizes;

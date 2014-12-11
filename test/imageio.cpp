@@ -40,6 +40,8 @@ TYPED_TEST_CASE(ImageIO, TestTypes);
 #if defined(WITH_FREEIMAGE)
 void loadImageTest(string pTestFile, string pImageFile, const bool isColor)
 {
+    if (noDoubleTests<float>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<float>>   in;
@@ -108,6 +110,8 @@ TYPED_TEST(ImageIO,InvalidArgsWrongExt)
 ////////////////////////////////// CPP //////////////////////////////////////
 TEST(ImageIO, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<float>>   in;

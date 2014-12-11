@@ -46,6 +46,8 @@ TYPED_TEST_CASE(Grad, TestTypes);
 template<typename T>
 void gradTest(string pTestFile, const unsigned resultIdx0, const unsigned resultIdx1, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
     vector<vector<T>> in;
     vector<vector<T>> tests;
@@ -113,6 +115,8 @@ void gradTest(string pTestFile, const unsigned resultIdx0, const unsigned result
 //
 TEST(Grad, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     const unsigned resultIdx0 = 0;
     const unsigned resultIdx1 = 1;
 

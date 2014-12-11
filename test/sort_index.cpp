@@ -46,6 +46,8 @@ TYPED_TEST_CASE(Sort, TestTypes);
 template<typename T>
 void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const unsigned resultIdx1, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
     vector<vector<T>> in;
     vector<vector<float>> tests;
@@ -127,6 +129,8 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
 //
 TEST(SortIndex, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     const bool dir = true;
     const unsigned resultIdx0 = 0;
     const unsigned resultIdx1 = 1;
