@@ -102,6 +102,8 @@ af_err conv_image(af_array *out, af_array in)
 template<typename T>
 void fastTest(string pTestFile, bool nonmax)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<dim4>        inDims;
     vector<string>     inFiles;
     vector<vector<float>> gold;
@@ -183,6 +185,8 @@ void fastTest(string pTestFile, bool nonmax)
 //
 TEST(FloatFAST, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     vector<dim4>        inDims;
     vector<string>     inFiles;
     vector<vector<float>> gold;

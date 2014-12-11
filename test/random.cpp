@@ -41,6 +41,8 @@ TYPED_TEST_CASE(Random, TestTypes);
 template<typename T>
 void randuTest(af::dim4 & dims)
 {
+    if (noDoubleTests<T>()) return;
+
     af_array outArray = 0;
     ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
@@ -49,6 +51,8 @@ void randuTest(af::dim4 & dims)
 template<typename T>
 void randnTest(af::dim4 &dims)
 {
+    if (noDoubleTests<T>()) return;
+
     af_array outArray = 0;
     ASSERT_EQ(AF_SUCCESS, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
@@ -58,6 +62,8 @@ void randnTest(af::dim4 &dims)
 template<>
 void randnTest<int>(af::dim4 &dims)
 {
+    if (noDoubleTests<int>()) return;
+
     af_array outArray = 0;
     ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<int>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
@@ -66,6 +72,8 @@ void randnTest<int>(af::dim4 &dims)
 template<>
 void randnTest<unsigned>(af::dim4 &dims)
 {
+    if (noDoubleTests<unsigned>()) return;
+
     af_array outArray = 0;
     ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<unsigned>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
@@ -74,6 +82,8 @@ void randnTest<unsigned>(af::dim4 &dims)
 template<>
 void randnTest<char>(af::dim4 &dims)
 {
+    if (noDoubleTests<char>()) return;
+
     af_array outArray = 0;
     ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<char>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
@@ -82,6 +92,8 @@ void randnTest<char>(af::dim4 &dims)
 template<>
 void randnTest<unsigned char>(af::dim4 &dims)
 {
+    if (noDoubleTests<unsigned char>()) return;
+
     af_array outArray = 0;
     ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<unsigned char>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
@@ -133,6 +145,8 @@ RAND(  45,    1,    1,    1);
 template<typename T>
 void randuArgsTest()
 {
+    if (noDoubleTests<T>()) return;
+
     af::dim4 dims(1, 2, 3, 0);
     af_array outArray = 0;
     ASSERT_EQ(AF_ERR_ARG, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<char>::af_type));
@@ -148,6 +162,8 @@ TYPED_TEST(Random,InvalidArgs)
 //
 TEST(Random, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     // TEST will fail if exception is thrown, which are thrown
     // when only wrong inputs are thrown on bad access happens
     af::dim4 dims(1, 2, 3, 1);

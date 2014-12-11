@@ -29,6 +29,9 @@ typedef af_err (*reduceFunc)(af_array *, const af_array, const int);
 template<typename Ti, typename To, reduceFunc af_reduce>
 void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector<af_seq> seqv=vector<af_seq>())
 {
+    if (noDoubleTests<Ti>()) return;
+    if (noDoubleTests<To>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<int>> data;
@@ -147,6 +150,8 @@ REDUCE_TESTS(count, uchar   , unsigned char, unsigned);
 
 TEST(Reduce,Test_Reduce_Big0)
 {
+    if (noDoubleTests<int>()) return;
+
     reduceTest<int, int, af_sum>(
         string(TEST_DIR"/reduce/big0.test"),
         0
@@ -155,6 +160,8 @@ TEST(Reduce,Test_Reduce_Big0)
 
 TEST(Reduce,Test_Reduce_Big1)
 {
+    if (noDoubleTests<int>()) return;
+
     reduceTest<int, int, af_sum>(
         string(TEST_DIR"/reduce/big1.test"),
         1
@@ -175,6 +182,9 @@ using af::count;
 template<typename Ti, typename To, ReductionOp reduce>
 void cppReduceTest(string pTestFile)
 {
+    if (noDoubleTests<Ti>()) return;
+    if (noDoubleTests<To>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<int>> data;

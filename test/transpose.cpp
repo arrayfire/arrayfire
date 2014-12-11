@@ -141,6 +141,8 @@ TYPED_TEST(Transpose,Square512x512)
 
 TYPED_TEST(Transpose,InvalidArgs)
 {
+    if (noDoubleTests<TypeParam>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<TypeParam>>   in;
@@ -182,27 +184,24 @@ void trsCPPTest(string pFileName)
     readTests<T, T, int>(pFileName, numDims, in, tests);
     af::dim4 dims = numDims[0];
 
-    for (int i = 0; i < af::getDeviceCount(); ++i) {
-        af::setDevice(i);
-        if (noDoubleTests<T>()) continue;
+    if (noDoubleTests<T>()) return;
 
-        af::array input(dims, &(in[0].front()));
-        af::array output = af::transpose(input);
+    af::array input(dims, &(in[0].front()));
+    af::array output = af::transpose(input);
 
-        T *outData = new T[dims.elements()];
-        output.host((void*)outData);
+    T *outData = new T[dims.elements()];
+    output.host((void*)outData);
 
-        for (size_t testIter = 0; testIter < tests.size(); ++testIter) {
-            vector<T> currGoldBar = tests[testIter];
-            size_t nElems = currGoldBar.size();
-            for (size_t elIter = 0; elIter < nElems; ++elIter) {
-                ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter << std::endl;
-            }
+    for (size_t testIter = 0; testIter < tests.size(); ++testIter) {
+        vector<T> currGoldBar = tests[testIter];
+        size_t nElems = currGoldBar.size();
+        for (size_t elIter = 0; elIter < nElems; ++elIter) {
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter << std::endl;
         }
-
-        // cleanup
-        delete[] outData;
     }
+
+    // cleanup
+    delete[] outData;
 }
 
 TEST(Transpose, CPP_f64)
@@ -222,28 +221,26 @@ void trsCPPConjTest()
 
     af::dim4 dims(40, 40);
 
-    for (int i = 0; i < af::getDeviceCount(); ++i) {
-        af::setDevice(i);
-        if (noDoubleTests<T>()) continue;
+    if (noDoubleTests<T>()) return;
 
-        af::array input = randu(dims, (af_dtype) af::dtype_traits<T>::af_type);
-        af::array output_t = af::transpose(input, false);
-        af::array output_c = af::transpose(input, true);
+    af::array input = randu(dims, (af_dtype) af::dtype_traits<T>::af_type);
+    af::array output_t = af::transpose(input, false);
+    af::array output_c = af::transpose(input, true);
 
-        T *tData  = new T[dims.elements()];
-        T *cData = new T[dims.elements()];
-        output_t.host((void*)tData);
-        output_c.host((void*)cData);
+    T *tData  = new T[dims.elements()];
+    T *cData = new T[dims.elements()];
+    output_t.host((void*)tData);
+    output_c.host((void*)cData);
 
-        size_t nElems = dims.elements();
-        for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            ASSERT_EQ(std::conj(tData[elIter]), cData[elIter])<< "at: " << elIter << std::endl;
-        }
-
-        // cleanup
-        delete[] tData;
-        delete[] cData;
+    size_t nElems = dims.elements();
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_NEAR(tData[elIter].real(), cData[elIter].real(), 1e-6)<< "at: " << elIter << std::endl;
+        ASSERT_NEAR(-tData[elIter].imag(), cData[elIter].imag(), 1e-6)<< "at: " << elIter << std::endl;
     }
+
+    // cleanup
+    delete[] tData;
+    delete[] cData;
 }
 
 TEST(Transpose, CPP_c32_CONJ)

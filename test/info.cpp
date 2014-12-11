@@ -20,8 +20,6 @@
 
 using std::string;
 using std::vector;
-using af::af_cfloat;
-using af::af_cdouble;
 
 template<typename T>
 class Info : public ::testing::Test
@@ -40,6 +38,8 @@ TYPED_TEST_CASE(Info, TestTypes);
 template<typename T>
 void infoTest()
 {
+    if (noDoubleTests<T>()) return;
+
     int nDevices = 0;
     ASSERT_EQ(AF_SUCCESS, af_get_device_count(&nDevices));
 

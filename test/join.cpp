@@ -48,6 +48,8 @@ template<typename T>
 void joinTest(string pTestFile, const unsigned dim, const unsigned in0, const unsigned in1, const unsigned resultIdx,
         bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
     vector<vector<T>> in;
     vector<vector<T>> tests;
@@ -116,6 +118,8 @@ void joinTest(string pTestFile, const unsigned dim, const unsigned in0, const un
 //
 TEST(Join, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     const unsigned resultIdx = 2;
     const unsigned dim = 2;
 

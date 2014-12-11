@@ -40,6 +40,8 @@ checkValues(const af_seq &seq, const T* data, const T* indexed_data, OP compair_
 template<typename T>
 void
 DimCheck(const vector<af_seq> &seqs) {
+    if (noDoubleTests<T>()) return;
+
     static const int ndims = 1;
     static const size_t dims = 100;
 
@@ -248,6 +250,8 @@ template<typename T, size_t NDims>
 void
 DimCheck2D(const vector<vector<af_seq>> &seqs,string TestFile)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<T>> hData;
@@ -436,6 +440,8 @@ class Indexing : public ::testing::Test
 template<typename T, size_t NDims>
 void DimCheckND(const vector<vector<af_seq>> &seqs,string TestFile)
 {
+    if (noDoubleTests<T>()) return;
+
     // DimCheck2D function is generalized enough
     // to check 3d and 4d indexing
     DimCheck2D<T, NDims>(seqs, TestFile);
@@ -481,6 +487,8 @@ TYPED_TEST(Indexing, 3D_to_1D)
 //////////////////////////////// CPP ////////////////////////////////
 TEST(Indexing2D, ColumnContiniousCPP)
 {
+    if (noDoubleTests<float>()) return;
+
     using af::array;
 
     vector<vector<af_seq>> seqs;

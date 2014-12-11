@@ -34,6 +34,8 @@ TYPED_TEST_CASE(MedianFilter, TestTypes);
 template<typename T>
 void medfiltTest(string pTestFile, dim_type w_len, dim_type w_wid, af_pad_type pad)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4>  numDims;
     vector<vector<T>>      in;
     vector<vector<T>>   tests;
@@ -88,6 +90,8 @@ TYPED_TEST(MedianFilter, BATCH_SYMMETRIC_PAD_3x3)
 template<typename T,bool isColor>
 void medfiltImageTest(string pTestFile, dim_type w_len, dim_type w_wid)
 {
+    if (noDoubleTests<T>()) return;
+
     using af::dim4;
 
     vector<dim4>       inDims;
@@ -132,6 +136,8 @@ void medfiltImageTest(string pTestFile, dim_type w_len, dim_type w_wid)
 template<typename T>
 void medfiltInputTest(void)
 {
+    if (noDoubleTests<T>()) return;
+
     af_array inArray   = 0;
     af_array outArray  = 0;
 
@@ -166,6 +172,8 @@ TYPED_TEST(MedianFilter, InvalidArray)
 template<typename T>
 void medfiltWindowTest(void)
 {
+    if (noDoubleTests<T>()) return;
+
     af_array inArray   = 0;
     af_array outArray  = 0;
 
@@ -192,6 +200,8 @@ TYPED_TEST(MedianFilter, InvalidWindow)
 template<typename T>
 void medfiltPadTest(void)
 {
+    if (noDoubleTests<T>()) return;
+
     af_array inArray   = 0;
     af_array outArray  = 0;
 
@@ -220,6 +230,8 @@ TYPED_TEST(MedianFilter, InvalidPadType)
 //
 TEST(MedianFilter, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     const dim_type w_len = 3;
     const dim_type w_wid = 3;
 
