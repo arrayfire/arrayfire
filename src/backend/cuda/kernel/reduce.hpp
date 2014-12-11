@@ -232,7 +232,7 @@ namespace kernel
     __global__
     static void reduce_first_kernel(Param<To> out,
                                     CParam<Ti>  in,
-                                    uint blocks_x, uint blocks_y)
+                                    uint blocks_x, uint blocks_y, uint repeat)
     {
         const uint tidx = threadIdx.x;
         const uint tidy = threadIdx.y;
@@ -242,7 +242,7 @@ namespace kernel
         const uint wid = blockIdx.y / blocks_y;
         const uint blockIdx_x = blockIdx.x - (blocks_x) * zid;
         const uint blockIdx_y = blockIdx.y - (blocks_y) * wid;
-        const uint xid = blockIdx_x * blockDim.x + tidx;
+        const uint xid = blockIdx_x * blockDim.x * repeat + tidx;
         const uint yid = blockIdx_y * blockDim.y + tidy;
 
         const Ti *iptr = in.ptr;
@@ -261,7 +261,9 @@ namespace kernel
         __shared__ To s_val[THREADS_PER_BLOCK];
 
         To out_val = reduce.init();
-        for (int id = xid; id < in.dims[0]; id += blockDim.x * blocks_x) {
+        int lim = min((int)(xid + repeat * DIMX), in.dims[0]);
+
+        for (int id = xid; id < lim; id += DIMX) {
             To in_val = transform(iptr[id]);
             out_val = reduce(in_val, out_val);
         }
@@ -300,19 +302,21 @@ namespace kernel
         dim3 blocks(blocks_x * in.dims[2],
                     blocks_y * in.dims[3]);
 
+        uint repeat = divup(in.dims[0], (blocks_x * threads_x));
+
         switch (threads_x) {
         case 32:
             (reduce_first_kernel<Ti, To, op,  32>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y); break;
+                out, in, blocks_x, blocks_y, repeat); break;
         case 64:
             (reduce_first_kernel<Ti, To, op,  64>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y); break;
+                out, in, blocks_x, blocks_y, repeat); break;
         case 128:
             (reduce_first_kernel<Ti, To, op,  128>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y); break;
+                out, in, blocks_x, blocks_y, repeat); break;
         case 256:
             (reduce_first_kernel<Ti, To, op,  256>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y); break;
+                out, in, blocks_x, blocks_y, repeat); break;
         }
 
         POST_LAUNCH_CHECK();
@@ -329,7 +333,6 @@ namespace kernel
         uint blocks_y = divup(in.dims[1], threads_y);
 
         Param<To> tmp = out;
-
         if (blocks_x > 1) {
             tmp.ptr = memAlloc<To>(blocks_x *
                                    in.dims[1] *
