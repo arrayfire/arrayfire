@@ -16,6 +16,7 @@
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
 #include "config.hpp"
+#include <memory.hpp>
 
 namespace cuda
 {
@@ -145,8 +146,7 @@ namespace kernel
             tmp.dims[dim] = blocks_dim[dim];
 
             for (int k = 0; k < 4; k++) tmp_elements *= tmp.dims[k];
-
-            CUDA_CHECK(cudaMalloc(&tmp.ptr, tmp_elements * sizeof(To)));
+            tmp.ptr = memAlloc<To>(tmp_elements);
 
             for (int k = dim + 1; k < 4; k++) tmp.strides[k] *= blocks_dim[dim];
         }
@@ -162,7 +162,7 @@ namespace kernel
                 reduce_dim_launcher<To, To,       op, dim>(out, tmp, threads_y, blocks_dim);
             }
 
-            CUDA_CHECK(cudaFree(tmp.ptr));
+            memFree(tmp.ptr);
         }
 
     }
@@ -232,7 +232,7 @@ namespace kernel
     __global__
     static void reduce_first_kernel(Param<To> out,
                                     CParam<Ti>  in,
-                                    uint blocks_x, uint blocks_y)
+                                    uint blocks_x, uint blocks_y, uint repeat)
     {
         const uint tidx = threadIdx.x;
         const uint tidy = threadIdx.y;
@@ -242,7 +242,7 @@ namespace kernel
         const uint wid = blockIdx.y / blocks_y;
         const uint blockIdx_x = blockIdx.x - (blocks_x) * zid;
         const uint blockIdx_y = blockIdx.y - (blocks_y) * wid;
-        const uint xid = blockIdx_x * blockDim.x + tidx;
+        const uint xid = blockIdx_x * blockDim.x * repeat + tidx;
         const uint yid = blockIdx_y * blockDim.y + tidy;
 
         const Ti *iptr = in.ptr;
@@ -261,7 +261,9 @@ namespace kernel
         __shared__ To s_val[THREADS_PER_BLOCK];
 
         To out_val = reduce.init();
-        for (int id = xid; id < in.dims[0]; id += blockDim.x * blocks_x) {
+        int lim = min((int)(xid + repeat * DIMX), in.dims[0]);
+
+        for (int id = xid; id < lim; id += DIMX) {
             To in_val = transform(iptr[id]);
             out_val = reduce(in_val, out_val);
         }
@@ -300,19 +302,21 @@ namespace kernel
         dim3 blocks(blocks_x * in.dims[2],
                     blocks_y * in.dims[3]);
 
+        uint repeat = divup(in.dims[0], (blocks_x * threads_x));
+
         switch (threads_x) {
         case 32:
             (reduce_first_kernel<Ti, To, op,  32>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y); break;
+                out, in, blocks_x, blocks_y, repeat); break;
         case 64:
             (reduce_first_kernel<Ti, To, op,  64>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y); break;
+                out, in, blocks_x, blocks_y, repeat); break;
         case 128:
             (reduce_first_kernel<Ti, To, op,  128>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y); break;
+                out, in, blocks_x, blocks_y, repeat); break;
         case 256:
             (reduce_first_kernel<Ti, To, op,  256>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y); break;
+                out, in, blocks_x, blocks_y, repeat); break;
         }
 
         POST_LAUNCH_CHECK();
@@ -329,15 +333,11 @@ namespace kernel
         uint blocks_y = divup(in.dims[1], threads_y);
 
         Param<To> tmp = out;
-
         if (blocks_x > 1) {
-
-            CUDA_CHECK(cudaMalloc(&(tmp.ptr),
-                                  blocks_x *
-                                  in.dims[1] *
-                                  in.dims[2] *
-                                  in.dims[3] *
-                                  sizeof(To)));
+            tmp.ptr = memAlloc<To>(blocks_x *
+                                   in.dims[1] *
+                                   in.dims[2] *
+                                   in.dims[3]);
 
             tmp.dims[0] = blocks_x;
             for (int k = 1; k < 4; k++) tmp.strides[k] *= blocks_x;
@@ -354,7 +354,7 @@ namespace kernel
                 reduce_first_launcher<To, To,       op>(out, tmp, 1, blocks_y, threads_x);
             }
 
-            CUDA_CHECK(cudaFree(tmp.ptr));
+            memFree(tmp.ptr);
         }
     }
 
@@ -410,13 +410,13 @@ namespace kernel
 
             dim_type tmp_elements = tmp.strides[3] * tmp.dims[3];
 
-            CUDA_CHECK(cudaMalloc(&(tmp.ptr), tmp_elements * sizeof(To)));
+            tmp.ptr = memAlloc<To>(tmp_elements);
             reduce_first_launcher<Ti, To, op>(tmp, in, blocks_x, blocks_y, threads_x);
 
             h_ptr = new To[tmp_elements];
 
             CUDA_CHECK(cudaMemcpy(h_ptr, tmp.ptr, tmp_elements * sizeof(To), cudaMemcpyDeviceToHost));
-            CUDA_CHECK(cudaFree(tmp.ptr));
+            memFree(tmp.ptr);
 
             Binary<To, op> reduce;
             To out = reduce.init();

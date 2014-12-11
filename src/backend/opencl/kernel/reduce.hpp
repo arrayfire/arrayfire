@@ -191,13 +191,15 @@ namespace kernel
         NDRange global(groups_x * in.info.dims[2] * local[0],
                        groups_y * in.info.dims[3] * local[1]);
 
+        uint repeat = divup(in.info.dims[0], (local[0] * groups_x));
+
         auto reduceOp = make_kernel<Buffer, KParam,
                                     Buffer, KParam,
-                                    uint, uint>(*reduceKerns[device]);
+                                    uint, uint, uint>(*reduceKerns[device]);
 
         reduceOp(EnqueueArgs(getQueue(), global, local),
                  *out.data, out.info,
-                 *in.data, in.info, groups_x, groups_y);
+                 *in.data, in.info, groups_x, groups_y, repeat);
 
         CL_DEBUG_FINISH(getQueue());
     }
