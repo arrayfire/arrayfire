@@ -44,6 +44,21 @@ namespace opencl
         return createNodeArray<To>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
     }
 
+    template<typename T> static const char *abs_name() { return "fabs"; }
+    template<> STATIC_ const char *abs_name<cfloat>() { return "__cabsf"; }
+    template<> STATIC_ const char *abs_name<cdouble>() { return "__cabs"; }
+
+    template<typename To, typename Ti>
+    Array<To>* abs(const Array<Ti> &in)
+    {
+        JIT::Node_ptr in_node = in.getNode();
+        JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<To>::getName(),
+                                                  abs_name<Ti>(),
+                                                  in_node, af_abs_t);
+
+        return createNodeArray<To>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+    }
+
     template<typename T> static const char *conj_name() { return "__noop"; }
     template<> STATIC_ const char *conj_name<cfloat>() { return "__cconjf"; }
     template<> STATIC_ const char *conj_name<cdouble>() { return "__cconj"; }
