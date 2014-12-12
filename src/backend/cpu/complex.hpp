@@ -41,18 +41,13 @@ namespace cpu
                                        reinterpret_cast<TNJ::Node *>(node)));
     }
 
-
-    using std::real;
-    using std::imag;
-    using std::abs;
-
 #define CPLX_UNARY_FN(op)                       \
     template<typename To, typename Ti>          \
     struct UnOp<To, Ti, af_##op##_t>            \
     {                                           \
         To eval(Ti in)                          \
         {                                       \
-            return op(in);                      \
+            return std::op(in);                 \
         }                                       \
     };                                          \
 
