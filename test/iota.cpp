@@ -46,6 +46,8 @@ TYPED_TEST_CASE(Iota, TestTypes);
 template<typename T>
 void iotaTest(const uint x, const uint y, const uint z, const uint w, const uint rep)
 {
+    if (noDoubleTests<T>()) return;
+
     af::dim4 idims(x, y, z, w);
 
     af_array outArray = 0;
@@ -106,6 +108,8 @@ void iotaTest(const uint x, const uint y, const uint z, const uint w, const uint
 //
 TEST(Iota, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     const unsigned x = 23;
     const unsigned y = 15;
     const unsigned z = 4;

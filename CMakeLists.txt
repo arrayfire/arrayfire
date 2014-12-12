@@ -10,7 +10,7 @@ OPTION(BUILD_CPU "Build ArrayFire with a CPU backend" ON)
 OPTION(BUILD_CUDA "Build ArrayFire with a CUDA backend" OFF)
 OPTION(BUILD_OPENCL "Build ArrayFire with a OpenCL backend" OFF)
 
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/common")
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 
 FIND_PACKAGE(FreeImage)
 IF(FREEIMAGE_FOUND)
@@ -44,7 +44,7 @@ ELSE(${UNIX}) #Windows
 ENDIF()
 
 # Architechture Definitions
-INCLUDE(common/TargetArch.cmake)
+INCLUDE(${CMAKE_MODULE_PATH}/TargetArch.cmake)
 target_architecture(ARCH)
 IF(${ARCH} STREQUAL "x86_64")
   ADD_DEFINITIONS(-DARCH_64)
@@ -52,7 +52,7 @@ ELSE(${ARCH})
   ADD_DEFINITIONS(-DARCH_32)
 ENDIF()
 
-INCLUDE(common/Version.cmake)
+INCLUDE(${CMAKE_MODULE_PATH}/Version.cmake)
 
 IF(${BUILD_CPU})
   ADD_SUBDIRECTORY(src/backend/cpu)
@@ -66,7 +66,7 @@ IF(${BUILD_OPENCL})
     ADD_SUBDIRECTORY(src/backend/opencl)
 ENDIF()
 
-ADD_EXECUTABLE(bin2cpp common/bin2cpp.cpp)
+ADD_EXECUTABLE(bin2cpp ${CMAKE_MODULE_PATH}/bin2cpp.cpp)
 
 IF(${BUILD_TEST})
     ENABLE_TESTING()

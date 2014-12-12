@@ -35,6 +35,8 @@ TYPED_TEST_CASE(Morph, TestTypes);
 template<typename inType, bool isDilation, bool isVolume=false>
 void morphTest(string pTestFile)
 {
+    if (noDoubleTests<inType>()) return;
+
     vector<af::dim4>       numDims;
     vector<vector<inType>>      in;
     vector<vector<inType>>   tests;
@@ -118,6 +120,8 @@ TYPED_TEST(Morph, Erode3x3x3)
 template<typename T, bool isDilation, bool isColor>
 void morphImageTest(string pTestFile)
 {
+    if (noDoubleTests<T>()) return;
+
     using af::dim4;
 
     vector<dim4>       inDims;
@@ -181,6 +185,8 @@ TEST(Morph, ColorImage)
 template<typename T, bool isDilation>
 void morphInputTest(void)
 {
+    if (noDoubleTests<T>()) return;
+
     af_array inArray   = 0;
     af_array maskArray = 0;
     af_array outArray  = 0;
@@ -234,6 +240,8 @@ TYPED_TEST(Morph, ErodeInvalidInput)
 template<typename T, bool isDilation>
 void morphMaskTest(void)
 {
+    if (noDoubleTests<T>()) return;
+
     af_array inArray   = 0;
     af_array maskArray = 0;
     af_array outArray  = 0;
@@ -287,6 +295,8 @@ TYPED_TEST(Morph, ErodeInvalidMask)
 template<typename T, bool isDilation>
 void morph3DMaskTest(void)
 {
+    if (noDoubleTests<T>()) return;
+
     af_array inArray   = 0;
     af_array maskArray = 0;
     af_array outArray  = 0;
@@ -343,6 +353,8 @@ TYPED_TEST(Morph, ErodeVolumeInvalidMask)
 template<typename T, bool isDilation, bool isColor>
 void cppMorphImageTest(string pTestFile)
 {
+    if (noDoubleTests<T>()) return;
+
     using af::dim4;
 
     vector<dim4>       inDims;

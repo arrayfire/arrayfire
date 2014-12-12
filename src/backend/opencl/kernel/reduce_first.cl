@@ -12,7 +12,7 @@ void reduce_first_kernel(__global To *oData,
                          KParam oInfo,
                          const __global Ti *iData,
                          KParam iInfo,
-                         uint groups_x, uint groups_y)
+                         uint groups_x, uint groups_y, uint repeat)
 {
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);
@@ -22,7 +22,7 @@ void reduce_first_kernel(__global To *oData,
     const uint wid = get_group_id(1) / groups_y;
     const uint groupId_x = get_group_id(0) - (groups_x) * zid;
     const uint groupId_y = get_group_id(1) - (groups_y) * wid;
-    const uint xid = groupId_x * get_local_size(0) + lidx;
+    const uint xid = groupId_x * get_local_size(0) * repeat + lidx;
     const uint yid = groupId_y * get_local_size(1) + lidy;
 
     iData += wid * iInfo.strides[3] + zid * iInfo.strides[2] +
@@ -34,10 +34,11 @@ void reduce_first_kernel(__global To *oData,
 
     __local To s_val[THREADS_PER_GROUP];
 
+    int last = (xid + repeat * DIMX);
+    int lim = last > iInfo.dims[0] ? iInfo.dims[0] : last;
     To out_val = init;
-    for (int id = xid; cond && id < iInfo.dims[0];
-         id += get_local_size(0) * groups_x) {
 
+    for (int id = xid; cond && id < lim; id += DIMX) {
         To in_val = transform(iData[id]);
         out_val = binOp(in_val, out_val);
     }

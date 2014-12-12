@@ -48,6 +48,8 @@ void reorderTest(string pTestFile, const unsigned resultIdx,
                  const uint x, const uint y, const uint z, const uint w,
                  bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
     vector<vector<T>> in;
     vector<vector<T>> tests;
@@ -132,6 +134,8 @@ void reorderTest(string pTestFile, const unsigned resultIdx,
 //
 TEST(Reorder, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     const unsigned resultIdx = 0;
     const unsigned x = 0;
     const unsigned y = 1;

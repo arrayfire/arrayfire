@@ -35,7 +35,7 @@ namespace af
                        af_blas_transpose optLhs = AF_NO_TRANSPOSE,
                        af_blas_transpose optRhs = AF_NO_TRANSPOSE);
 
-    AFAPI array transpose(const array& in);
+    AFAPI array transpose(const array& in, const bool conjugate = false);
 }
 #endif
 
@@ -51,7 +51,7 @@ extern "C" {
                             af_blas_transpose optLhs, af_blas_transpose optRhs);
 
     // matrix transpose
-    AFAPI af_err af_transpose(af_array *out, af_array in);
+    AFAPI af_err af_transpose(af_array *out, af_array in, const bool conjugate);
 
 
 #ifdef __cplusplus

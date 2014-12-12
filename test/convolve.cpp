@@ -36,6 +36,8 @@ TYPED_TEST_CASE(Convolve, TestTypes);
 template<typename T, int baseDim>
 void convolveTest(string pTestFile, bool expand)
 {
+    if (noDoubleTests<T>()) return;
+
     using af::dim4;
 
     vector<dim4>      numDims;
@@ -199,6 +201,8 @@ TYPED_TEST(Convolve, Same_Cuboid_One2Many)
 
 TEST(Convolve, TypeCheck)
 {
+    if (noDoubleTests<float>()) return;
+    if (noDoubleTests<int>()) return;
     using af::dim4;
 
     dim4 sDims(10, 1, 1, 1);
@@ -224,6 +228,8 @@ TEST(Convolve, TypeCheck)
 
 TEST(Convolve, DimCheck)
 {
+    if (noDoubleTests<float>()) return;
+    if (noDoubleTests<int>()) return;
     using af::dim4;
 
     dim4 sDims(10, 1, 1, 1);
@@ -258,6 +264,8 @@ TEST(Convolve, DimCheck)
 template<typename T>
 void sepConvolveTest(string pTestFile, bool expand)
 {
+    if (noDoubleTests<T>()) return;
+
     using af::dim4;
 
     vector<dim4>      numDims;
@@ -342,6 +350,8 @@ TYPED_TEST(Convolve, Separable2D_Same_Rectangle_Batch)
 
 TEST(Convolve, Separable_TypeCheck)
 {
+    if (noDoubleTests<float>()) return;
+    if (noDoubleTests<int>()) return;
     using af::dim4;
 
     dim4 sDims(10, 1, 1, 1);
@@ -371,6 +381,9 @@ TEST(Convolve, Separable_TypeCheck)
 
 TEST(Convolve, Separable_DimCheck)
 {
+    if (noDoubleTests<float>()) return;
+    if (noDoubleTests<int>()) return;
+
     using af::dim4;
 
     dim4 sDims(10, 1, 1, 1);
@@ -401,6 +414,8 @@ TEST(Convolve, Separable_DimCheck)
 
 TEST(Convolve, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     using af::dim4;
 
     vector<dim4>      numDims;
@@ -428,6 +443,8 @@ TEST(Convolve, CPP)
 
 TEST(Convolve, separable_CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     using af::dim4;
 
     vector<dim4>      numDims;

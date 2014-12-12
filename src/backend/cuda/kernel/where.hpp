@@ -15,6 +15,7 @@
 #include <math.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
+#include <memory.hpp>
 #include "config.hpp"
 #include "scan_first.hpp"
 
@@ -95,10 +96,10 @@ namespace kernel
         }
 
         dim_type rtmp_elements = rtmp.strides[3] * rtmp.dims[3];
-        CUDA_CHECK(cudaMalloc(&(rtmp.ptr), rtmp_elements * sizeof(uint)));
+        rtmp.ptr = memAlloc<uint>(rtmp_elements);
 
         dim_type otmp_elements = otmp.strides[3] * otmp.dims[3];
-        CUDA_CHECK(cudaMalloc(&(otmp.ptr), otmp_elements * sizeof(uint)));
+        otmp.ptr = memAlloc<uint>(otmp_elements);
 
         scan_first_launcher<T, uint, af_notzero_t, false>(otmp, rtmp, in,
                                                           blocks_x, blocks_y,
@@ -119,7 +120,7 @@ namespace kernel
         CUDA_CHECK(cudaMemcpy(&total, rtmp.ptr + rtmp_elements - 1,
                               sizeof(uint), cudaMemcpyDeviceToHost));
 
-        CUDA_CHECK(cudaMalloc(&(out.ptr), total * sizeof(uint)));
+        out.ptr = memAlloc<uint>(total);
 
         out.dims[0] = total;
         out.strides[0] = 1;
@@ -137,8 +138,8 @@ namespace kernel
         (get_out_idx<T>)<<<blocks, threads>>>(out.ptr, otmp, rtmp, in, blocks_x, blocks_y, lim);
         POST_LAUNCH_CHECK();
 
-        CUDA_CHECK(cudaFree(rtmp.ptr));
-        CUDA_CHECK(cudaFree(otmp.ptr));
+        memFree(rtmp.ptr);
+        memFree(otmp.ptr);
     }
 }
 }

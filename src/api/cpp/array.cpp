@@ -9,6 +9,7 @@
 
 #include <af/array.h>
 #include <af/arith.h>
+#include <af/blas.h>
 #include <af/data.h>
 #include <af/traits.hpp>
 #include <af/util.h>
@@ -81,46 +82,46 @@ namespace af
         initEmptyArray(&arr, ty, d0, d1, d2, d3);
     }
 
-#define INSTANTIATE(T)																\
-	template<> AFAPI																\
-	array::array(const dim4 &dims, const T *ptr, af_source_t src, dim_type ngfor)	\
-		: arr(0), isRef(false)														\
-	{																				\
-		initDataArray<T>(&arr, ptr, src, dims[0], dims[1], dims[2], dims[3]);		\
-	}																				\
-	template<> AFAPI																\
-	array::array(dim_type d0, const T *ptr, af_source_t src, dim_type ngfor)		\
-		: arr(0), isRef(false)														\
-	{																				\
-		initDataArray<T>(&arr, ptr, src, d0);										\
-	}																				\
-	template<> AFAPI																\
-	array::array(dim_type d0, dim_type d1, const T *ptr, af_source_t src,			\
-				dim_type ngfor)	: arr(0), isRef(false)								\
-	{																				\
-		initDataArray<T>(&arr, ptr, src, d0, d1);									\
-	}																				\
-	template<> AFAPI																\
-	array::array(dim_type d0, dim_type d1, dim_type d2, const T *ptr,				\
-				af_source_t src, dim_type ngfor) : arr(0), isRef(false)				\
-	{																				\
-		initDataArray<T>(&arr, ptr, src, d0, d1, d2);								\
-	}																				\
-	template<> AFAPI																\
-	array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, const T *ptr,	\
-				af_source_t src, dim_type ngfor) : arr(0), isRef(false)				\
-	{																				\
-		initDataArray<T>(&arr, ptr, src, d0, d1, d2, d3);							\
-	}																				\
+#define INSTANTIATE(T)                                                              \
+    template<> AFAPI                                                                \
+    array::array(const dim4 &dims, const T *ptr, af_source_t src, dim_type ngfor)   \
+        : arr(0), isRef(false)                                                      \
+    {                                                                               \
+        initDataArray<T>(&arr, ptr, src, dims[0], dims[1], dims[2], dims[3]);       \
+    }                                                                               \
+    template<> AFAPI                                                                \
+    array::array(dim_type d0, const T *ptr, af_source_t src, dim_type ngfor)        \
+        : arr(0), isRef(false)                                                      \
+    {                                                                               \
+        initDataArray<T>(&arr, ptr, src, d0);                                       \
+    }                                                                               \
+    template<> AFAPI                                                                \
+    array::array(dim_type d0, dim_type d1, const T *ptr, af_source_t src,           \
+                dim_type ngfor) : arr(0), isRef(false)                              \
+    {                                                                               \
+        initDataArray<T>(&arr, ptr, src, d0, d1);                                   \
+    }                                                                               \
+    template<> AFAPI                                                                \
+    array::array(dim_type d0, dim_type d1, dim_type d2, const T *ptr,               \
+                af_source_t src, dim_type ngfor) : arr(0), isRef(false)             \
+    {                                                                               \
+        initDataArray<T>(&arr, ptr, src, d0, d1, d2);                               \
+    }                                                                               \
+    template<> AFAPI                                                                \
+    array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, const T *ptr,  \
+                af_source_t src, dim_type ngfor) : arr(0), isRef(false)             \
+    {                                                                               \
+        initDataArray<T>(&arr, ptr, src, d0, d1, d2, d3);                           \
+    }                                                                               \
 
-	INSTANTIATE(af_cdouble)
-	INSTANTIATE(af_cfloat)
-	INSTANTIATE(double)
-	INSTANTIATE(float)
-	INSTANTIATE(unsigned)
-	INSTANTIATE(int)
-	INSTANTIATE(unsigned char)
-	INSTANTIATE(char)
+    INSTANTIATE(af_cdouble)
+    INSTANTIATE(af_cfloat)
+    INSTANTIATE(double)
+    INSTANTIATE(float)
+    INSTANTIATE(unsigned)
+    INSTANTIATE(int)
+    INSTANTIATE(unsigned char)
+    INSTANTIATE(char)
 #undef INSTANTIATE
 
     array::~array()
@@ -322,6 +323,17 @@ INSTANTIATE(integer)
         AF_THROW(af_weak_copy(&arr, in.get()));
     }
 
+    // Transpose and Conjugate Transpose
+    array array::T() const
+    {
+        return transpose(*this);
+    }
+
+    array array::H() const
+    {
+        return transpose(*this, true);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // Operator =
     ///////////////////////////////////////////////////////////////////////////
@@ -449,21 +461,21 @@ INSTANTIATE(integer)
     {                                                               \
         af_array out;                                               \
         array cst = constant(value, other.dims(), other.type());    \
-        AF_THROW(func(&out, other.get(), cst.get()));               \
+        AF_THROW(func(&out, cst.get(), other.get()));               \
         return array(out);                                          \
     }                                                               \
     array operator op(const af_cdouble &value, const array& other)  \
     {                                                               \
         af_array out;                                               \
         array cst = constant(value, other.dims());                  \
-        AF_THROW(func(&out, other.get(), cst.get()));               \
+        AF_THROW(func(&out, cst.get(), other.get()));               \
         return array(out);                                          \
     }                                                               \
     array operator op(const af_cfloat &value, const array& other)   \
     {                                                               \
         af_array out;                                               \
         array cst = constant(value, other.dims());                  \
-        AF_THROW(func(&out, other.get(), cst.get()));               \
+        AF_THROW(func(&out, cst.get(), other.get()));               \
         return array(out);                                          \
     }                                                               \
 
@@ -480,17 +492,17 @@ INSTANTIATE(integer)
 #define INSTANTIATE(op, func)                                       \
     array array::operator op(const array &other) const              \
     {                                                               \
-    af_array out;                                                   \
-    AF_THROW(func(&out, this->get(), other.get()));                 \
-    return array(out);                                              \
-}                                                                   \
+        af_array out;                                               \
+        AF_THROW(func(&out, this->get(), other.get()));             \
+        return array(out);                                          \
+    }                                                               \
     array array::operator op(const bool &value) const               \
     {                                                               \
-    af_array out;                                                   \
-    array cst = constant(value, this->dims(), this->type());        \
-    AF_THROW(func(&out, this->get(), cst.get()));                   \
-    return array(out);                                              \
-}                                                                   \
+        af_array out;                                               \
+        array cst = constant(value, this->dims(), this->type());    \
+        AF_THROW(func(&out, this->get(), cst.get()));               \
+        return array(out);                                          \
+    }                                                               \
     array array::operator op(const int &value) const                \
     {                                                               \
         af_array out;                                               \
@@ -523,35 +535,35 @@ INSTANTIATE(integer)
     {                                                               \
         af_array out;                                               \
         array cst = constant(value, other.dims(), other.type());    \
-        AF_THROW(func(&out, other.get(), cst.get()));               \
+        AF_THROW(func(&out, cst.get(), other.get()));               \
         return array(out);                                          \
     }                                                               \
     array operator op(const int &value, const array &other)         \
     {                                                               \
         af_array out;                                               \
         array cst = constant(value, other.dims(), other.type());    \
-        AF_THROW(func(&out, other.get(), cst.get()));               \
+        AF_THROW(func(&out, cst.get(), other.get()));               \
         return array(out);                                          \
     }                                                               \
     array operator op(const double &value, const array &other)      \
     {                                                               \
         af_array out;                                               \
         array cst = constant(value, other.dims(), other.type());    \
-        AF_THROW(func(&out, other.get(), cst.get()));               \
+        AF_THROW(func(&out, cst.get(), other.get()));               \
         return array(out);                                          \
     }                                                               \
     array operator op(const af_cdouble &value, const array& other)  \
     {                                                               \
         af_array out;                                               \
         array cst = constant(value, other.dims());                  \
-        AF_THROW(func(&out, other.get(), cst.get()));               \
+        AF_THROW(func(&out, cst.get(), other.get()));               \
         return array(out);                                          \
     }                                                               \
     array operator op(const af_cfloat &value, const array& other)   \
     {                                                               \
         af_array out;                                               \
         array cst = constant(value, other.dims());                  \
-        AF_THROW(func(&out, other.get(), cst.get()));               \
+        AF_THROW(func(&out, cst.get(), other.get()));               \
         return array(out);                                          \
     }                                                               \
 
@@ -614,14 +626,14 @@ INSTANTIATE(integer)
         return (T *)ptr;                                    \
     }                                                       \
 
-	INSTANTIATE(af_cdouble)
-	INSTANTIATE(af_cfloat)
-	INSTANTIATE(double)
-	INSTANTIATE(float)
-	INSTANTIATE(unsigned)
-	INSTANTIATE(int)
-	INSTANTIATE(unsigned char)
-	INSTANTIATE(char)
+    INSTANTIATE(af_cdouble)
+    INSTANTIATE(af_cfloat)
+    INSTANTIATE(double)
+    INSTANTIATE(float)
+    INSTANTIATE(unsigned)
+    INSTANTIATE(int)
+    INSTANTIATE(unsigned char)
+    INSTANTIATE(char)
 
     void *array::alloc(size_t elements, af_dtype type)
     {

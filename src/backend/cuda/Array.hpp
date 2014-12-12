@@ -84,9 +84,6 @@ namespace cuda
     createPaddedArray(Array<inType> const &in, dim4 const &dims, outType default_value, double factor=1.0);
 
     template<typename T>
-    T* cudaMallocWrapper(const size_t &elements);
-
-    template<typename T>
     void *getDevicePtr(const Array<T>& arr)
     {
         return (void *)arr.get();

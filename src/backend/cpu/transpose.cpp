@@ -30,7 +30,52 @@ static inline unsigned getIdx(const dim4 &strides,
 }
 
 template<typename T>
-Array<T> * transpose(const Array<T> &in)
+T getConjugate(const T in)
+{
+    // For non-complex types return same
+    return in;
+}
+
+template<>
+cfloat getConjugate(const cfloat in)
+{
+    return std::conj(in);
+}
+
+template<>
+cdouble getConjugate(const cdouble in)
+{
+    return std::conj(in);
+}
+
+template<typename T, bool conjugate>
+void transpose_(T *out, const T *in, const af::dim4 &odims, const af::dim4 &idims,
+                const af::dim4 &ostrides, const af::dim4 &istrides)
+{
+    for (dim_type k = 0; k < odims[2]; ++k) {
+        // Outermost loop handles batch mode
+        // if input has no data along third dimension
+        // this loop runs only once
+        for (dim_type j = 0; j < odims[1]; ++j) {
+            for (dim_type i = 0; i < odims[0]; ++i) {
+                // calculate array indices based on offsets and strides
+                // the helper getIdx takes care of indices
+                const dim_type inIdx  = getIdx(istrides,j,i,k);
+                const dim_type outIdx = getIdx(ostrides,i,j,k);
+                if(conjugate)
+                    out[outIdx] = getConjugate(in[inIdx]);
+                else
+                    out[outIdx] = in[inIdx];
+            }
+        }
+        // outData and inData pointers doesn't need to be
+        // offset as the getIdx function is taking care
+        // of the batch parameter
+    }
+}
+
+template<typename T>
+Array<T> * transpose(const Array<T> &in, const bool conjugate)
 {
     const dim4 inDims = in.dims();
 
@@ -43,28 +88,22 @@ Array<T> * transpose(const Array<T> &in)
     T* outData          = out->get();
     const T*   inData   = in.get();
 
-    for (int k=0; k<outDims[2]; ++k) {
-        // Outermost loop handles batch mode
-        // if input has no data along third dimension
-        // this loop runs only once
-        for (int j=0; j<outDims[1]; ++j) {
-            for (int i=0; i<outDims[0]; ++i) {
-                // calculate array indices based on offsets and strides
-                // the helper getIdx takes care of indices
-                int inIdx  = getIdx(in.strides(),j,i,k);
-                int outIdx = getIdx(out->strides(),i,j,k);
-                outData[outIdx]  = inData[inIdx];
-            }
-        }
-        // outData and inData pointers doesn't need to be
-        // offset as the getIdx function is taking care
-        // of the batch parameter
+    switch(conjugate) {
+        case true:
+            transpose_<T, true>(outData, inData,
+                                out->dims(), in.dims(), out->strides(), in.strides());
+            break;
+        case false:
+            transpose_<T, false>(outData, inData,
+                                 out->dims(), in.dims(), out->strides(), in.strides());
+            break;
     }
+
     return out;
 }
 
 #define INSTANTIATE(T)\
-    template Array<T> * transpose(const Array<T> &in);
+    template Array<T> * transpose(const Array<T> &in, const bool conjugate);
 
 INSTANTIATE(float  )
 INSTANTIATE(cfloat )

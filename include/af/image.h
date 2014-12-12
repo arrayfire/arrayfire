@@ -42,7 +42,7 @@ AFAPI array histogram(const array &in, const unsigned nbins, const double minval
 
 AFAPI array meanshift(const array& in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color);
 
-AFAPI array medfilt(const array& in, dim_type wind_length, dim_type wind_width, af_pad_type edge_pad);
+AFAPI array medfilt(const array& in, dim_type wind_length = 3, dim_type wind_width = 3, af_pad_type edge_pad = AF_ZERO);
 
 AFAPI array dilate(const array& in, const array& mask);
 

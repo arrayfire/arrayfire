@@ -33,6 +33,8 @@ TYPED_TEST_CASE(Histogram, TestTypes);
 
 TYPED_TEST(Histogram,InvalidArgs)
 {
+    if (noDoubleTests<TypeParam>()) return;
+
     af::dim4            dims(1);
     vector<TypeParam>   in(100,1);
 
@@ -51,6 +53,9 @@ TYPED_TEST(Histogram,InvalidArgs)
 template<typename inType, typename outType>
 void histTest(string pTestFile, unsigned nbins, double minval, double maxval)
 {
+    if (noDoubleTests<inType>()) return;
+    if (noDoubleTests<outType>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<inType>>  in;
@@ -112,6 +117,9 @@ TYPED_TEST(Histogram,256Bins0min255max_zeros)
 //
 TEST(Histogram, CPP)
 {
+    if (noDoubleTests<float>()) return;
+    if (noDoubleTests<int>()) return;
+
     const unsigned nbins = 100;
     const double minval = 0.0;
     const double maxval = 99.0;
