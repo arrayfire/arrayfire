@@ -13,6 +13,7 @@
 #include <iostream>
 #include <TNJ/BufferNode.hpp>
 #include <TNJ/ScalarNode.hpp>
+#include <memory.hpp>
 
 namespace cpu
 {
@@ -22,14 +23,14 @@ namespace cpu
     template<typename T>
     Array<T>::Array(dim4 dims):
         ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(new T[dims.elements()]),
+        data(memAlloc<T>(dims.elements()), memFree<T>),
         parent(nullptr), node(), ready(true)
     { }
 
     template<typename T>
     Array<T>::Array(dim4 dims, const T * const in_data):
         ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(new T[dims.elements()]),
+        data(memAlloc<T>(dims.elements()), memFree<T>),
         parent(nullptr), node(), ready(true)
     {
         std::copy(in_data, in_data + dims.elements(), data.get());
@@ -166,7 +167,7 @@ namespace cpu
     {
         if (isReady()) return;
 
-        data = std::shared_ptr<T>(new T[elements()]);
+        data = std::shared_ptr<T>(memAlloc<T>(elements()), memFree<T>);
         T *ptr = data.get();
 
         dim4 ostrs = strides();

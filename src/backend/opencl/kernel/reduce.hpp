@@ -22,6 +22,7 @@
 #include <type_util.hpp>
 #include "names.hpp"
 #include "config.hpp"
+#include <memory.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -84,8 +85,8 @@ namespace kernel
                                     uint, uint, uint>(*reduceKerns[device]);
 
         reduceOp(EnqueueArgs(getQueue(), global, local),
-                 out.data, out.info,
-                 in.data, in.info,
+                 *out.data, out.info,
+                 *in.data, in.info,
                  groups_all[0],
                  groups_all[1],
                  groups_all[dim]);
@@ -128,8 +129,7 @@ namespace kernel
 
             for (int k = 0; k < 4; k++) tmp_elements *= tmp.info.dims[k];
 
-            tmp.data = cl::Buffer(getContext(), CL_MEM_READ_WRITE,
-                                  tmp_elements * sizeof(To));
+            tmp.data = bufferAlloc(tmp_elements * sizeof(To));
 
             for (int k = dim + 1; k < 4; k++) tmp.info.strides[k] *= groups_all[dim];
         }
@@ -144,6 +144,7 @@ namespace kernel
             } else {
                 reduce_dim_fn<To, To,       op, dim>(out, tmp, threads_y, groups_all);
             }
+            bufferFree(tmp.data);
         }
 
     }
@@ -190,12 +191,15 @@ namespace kernel
         NDRange global(groups_x * in.info.dims[2] * local[0],
                        groups_y * in.info.dims[3] * local[1]);
 
+        uint repeat = divup(in.info.dims[0], (local[0] * groups_x));
+
         auto reduceOp = make_kernel<Buffer, KParam,
                                     Buffer, KParam,
-                                    uint, uint>(*reduceKerns[device]);
+                                    uint, uint, uint>(*reduceKerns[device]);
 
         reduceOp(EnqueueArgs(getQueue(), global, local),
-                 out.data, out.info, in.data, in.info, groups_x, groups_y);
+                 *out.data, out.info,
+                 *in.data, in.info, groups_x, groups_y, repeat);
 
         CL_DEBUG_FINISH(getQueue());
     }
@@ -233,12 +237,11 @@ namespace kernel
         Param tmp = out;
 
         if (groups_x > 1) {
-            tmp.data = cl::Buffer(getContext(), CL_MEM_READ_WRITE,
-                                  groups_x *
-                                  in.info.dims[1] *
-                                  in.info.dims[2] *
-                                  in.info.dims[3] *
-                                  sizeof(To));
+            tmp.data = bufferAlloc(groups_x *
+                                in.info.dims[1] *
+                                in.info.dims[2] *
+                                in.info.dims[3] *
+                                sizeof(To));
 
             tmp.info.dims[0] = groups_x;
             for (int k = 1; k < 4; k++) tmp.info.strides[k] *= groups_x;
@@ -255,6 +258,7 @@ namespace kernel
                 reduce_first_fn<To, To,       op>(out, tmp, 1, groups_y, threads_x);
             }
 
+            bufferFree(tmp.data);
         }
     }
 
@@ -315,13 +319,12 @@ namespace kernel
                 }
 
                 dim_type tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
-                tmp.data = cl::Buffer(getContext(), CL_MEM_READ_WRITE,
-                                      tmp_elements * sizeof(To));
+                tmp.data = bufferAlloc(tmp_elements * sizeof(To));
 
                 reduce_first_fn<Ti, To, op>(tmp, in, groups_x, groups_y, threads_x);
 
                 h_ptr = new To[tmp_elements];
-                getQueue().enqueueReadBuffer(tmp.data, CL_TRUE, 0, sizeof(To) * tmp_elements, h_ptr);
+                getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(To) * tmp_elements, h_ptr);
 
                 Binary<To, op> reduce;
                 To out = reduce.init();
@@ -330,12 +333,13 @@ namespace kernel
                 }
 
                 delete[] h_ptr;
+                bufferFree(tmp.data);
                 return out;
 
             } else {
 
                 Ti *h_ptr = new Ti[in_elements];
-                getQueue().enqueueReadBuffer(in.data, CL_TRUE, 0, sizeof(Ti) * in_elements, h_ptr);
+                getQueue().enqueueReadBuffer(*in.data, CL_TRUE, 0, sizeof(Ti) * in_elements, h_ptr);
 
                 Transform<Ti, To, op> transform;
                 Binary<To, op> reduce;

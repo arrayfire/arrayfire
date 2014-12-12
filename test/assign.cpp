@@ -87,6 +87,9 @@ TYPED_TEST_CASE(ArrayAssign, TestTypes);
 template<typename inType, typename outType>
 void assignTest(string pTestFile, const vector<af_seq> *seqv)
 {
+    if (noDoubleTests<inType>()) return;
+    if (noDoubleTests<outType>()) return;
+
     vector<af::dim4>  numDims;
     vector<vector<inType>>      in;
     vector<vector<outType>>   tests;
@@ -204,6 +207,8 @@ TEST(ArrayAssign, InvalidArgs)
 
 TEST(ArrayAssign, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     using af::array;
 
     vector<af_seq> seqv;

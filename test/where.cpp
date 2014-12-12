@@ -27,6 +27,8 @@ using af::af_cdouble;
 template<typename T>
 void whereTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=vector<af_seq>())
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<int>> data;
@@ -102,6 +104,8 @@ WHERE_TESTS(uchar)
 //
 TEST(Where, CPP)
 {
+    if (noDoubleTests<int>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<int>> data;

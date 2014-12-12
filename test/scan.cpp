@@ -30,6 +30,8 @@ typedef af_err (*scanFunc)(af_array *, const af_array, const int);
 template<typename Ti, typename To, scanFunc af_scan>
 void scanTest(string pTestFile, int off = 0, bool isSubRef=false, const vector<af_seq> seqv=vector<af_seq>())
 {
+    if (noDoubleTests<Ti>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<int>> data;
@@ -43,51 +45,41 @@ void scanTest(string pTestFile, int off = 0, bool isSubRef=false, const vector<a
     af_array outArray  = 0;
     af_array tempArray = 0;
 
-    int nDevices = 0;
-    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&nDevices));
+    // Get input array
+    if (isSubRef) {
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv.size(), &seqv.front()));
+    } else {
 
-    for (int dev = 0; dev < nDevices; dev++) {
-
-        ASSERT_EQ(AF_SUCCESS, af_set_device(dev));
-        if (noDoubleTests<Ti>()) continue;
-
-        // Get input array
-        if (isSubRef) {
-            ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
-            ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv.size(), &seqv.front()));
-        } else {
-
-            ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
-        }
-
-        // Compare result
-        for (int d = 0; d < (int)tests.size(); ++d) {
-            vector<To> currGoldBar(tests[d].begin(), tests[d].end());
-
-            // Run sum
-            ASSERT_EQ(AF_SUCCESS, af_scan(&outArray, inArray, d + off));
-
-            // Get result
-            To *outData;
-            outData = new To[dims.elements()];
-            ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
-
-            size_t nElems = currGoldBar.size();
-            for (size_t elIter = 0; elIter < nElems; ++elIter) {
-                ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
-                                                                << " for dim " << d +off
-                                                                << " for device " << dev
-                                                                << std::endl;
-            }
-
-            // Delete
-            delete[] outData;
-        }
-
-        if(inArray   != 0) af_destroy_array(inArray);
-        if(outArray  != 0) af_destroy_array(outArray);
-        if(tempArray != 0) af_destroy_array(tempArray);
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
     }
+
+    // Compare result
+    for (int d = 0; d < (int)tests.size(); ++d) {
+        vector<To> currGoldBar(tests[d].begin(), tests[d].end());
+
+        // Run sum
+        ASSERT_EQ(AF_SUCCESS, af_scan(&outArray, inArray, d + off));
+
+        // Get result
+        To *outData;
+        outData = new To[dims.elements()];
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+
+        size_t nElems = currGoldBar.size();
+        for (size_t elIter = 0; elIter < nElems; ++elIter) {
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                << " for dim " << d +off
+                << std::endl;
+        }
+
+        // Delete
+        delete[] outData;
+    }
+
+    if(inArray   != 0) af_destroy_array(inArray);
+    if(outArray  != 0) af_destroy_array(outArray);
+    if(tempArray != 0) af_destroy_array(tempArray);
 }
 
 vector<af_seq> init_subs()
@@ -145,37 +137,30 @@ TEST(Scan, CPP)
 
     vector<float> in(data[0].begin(), data[0].end());
 
-    int nDevices = af::getDeviceCount();;
+    if (noDoubleTests<float>()) return;
 
-    for (int dev = 0; dev < nDevices; dev++) {
+    af::array input(dims, &(in.front()));
 
-        af::setDevice(dev);
-        if (noDoubleTests<float>()) continue;
+    // Compare result
+    for (int d = 0; d < (int)tests.size(); ++d) {
+        vector<float> currGoldBar(tests[d].begin(), tests[d].end());
 
-        af::array input(dims, &(in.front()));
+        // Run sum
+        af::array output = af::accum(input, d);
 
-        // Compare result
-        for (int d = 0; d < (int)tests.size(); ++d) {
-            vector<float> currGoldBar(tests[d].begin(), tests[d].end());
+        // Get result
+        float *outData;
+        outData = new float[dims.elements()];
+        output.host((void*)outData);
 
-            // Run sum
-            af::array output = af::accum(input, d);
-
-            // Get result
-            float *outData;
-            outData = new float[dims.elements()];
-            output.host((void*)outData);
-
-            size_t nElems = currGoldBar.size();
-            for (size_t elIter = 0; elIter < nElems; ++elIter) {
-                ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
-                                                                << " for dim " << d
-                                                                << " for device " << dev
-                                                                << std::endl;
-            }
-
-            // Delete
-            delete[] outData;
+        size_t nElems = currGoldBar.size();
+        for (size_t elIter = 0; elIter < nElems; ++elIter) {
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                << " for dim " << d
+                << std::endl;
         }
+
+        // Delete
+        delete[] outData;
     }
 }

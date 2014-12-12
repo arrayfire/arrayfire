@@ -88,9 +88,9 @@ void meanshift(Param out, const Param in, float s_sigma, float c_sigma, uint ite
         size_t loc_size  = channels*(local[0]+padding)*(local[1]+padding)*sizeof(T);
 
         meanshiftOp(EnqueueArgs(getQueue(), global, local),
-                out.data, out.info, in.data, in.info,
-                cl::Local(loc_size), bIndex, channels,
-                space_, radius, cvar, iter, blk_x);
+                    *out.data, out.info, *in.data, in.info,
+                    cl::Local(loc_size), bIndex, channels,
+                    space_, radius, cvar, iter, blk_x);
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {

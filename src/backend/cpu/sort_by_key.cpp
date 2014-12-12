@@ -31,11 +31,11 @@ namespace cpu
     // Kernel Functions
     ///////////////////////////////////////////////////////////////////////////
 
-    template<typename Tk, typename Tv, bool DIR>
+    template<typename Tk, typename Tv, bool isAscending>
     void sort0_by_key(Array<Tk> &okey, Array<Tv> &oval, const Array<Tk> &ikey, const Array<Tv> &ival)
     {
         function<bool(Tk, Tk)> op = greater<Tk>();
-        if(DIR) { op = less<Tk>(); }
+        if(isAscending) { op = less<Tk>(); }
 
         // Get pointers and initialize original index locations
         Array<uint> *oidx = createValueArray(ikey.dims(), 0u);
@@ -94,14 +94,14 @@ namespace cpu
     ///////////////////////////////////////////////////////////////////////////
     // Wrapper Functions
     ///////////////////////////////////////////////////////////////////////////
-    template<typename Tk, typename Tv, bool DIR>
+    template<typename Tk, typename Tv, bool isAscending>
     void sort_by_key(Array<Tk> &okey, Array<Tv> &oval,
                const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim)
     {
         okey = *createEmptyArray<Tk>(ikey.dims());
         oval = *createEmptyArray<Tv>(ival.dims());
         switch(dim) {
-            case 0: sort0_by_key<Tk, Tv, DIR>(okey, oval, ikey, ival);
+            case 0: sort0_by_key<Tk, Tv, isAscending>(okey, oval, ikey, ival);
                     break;
             default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }

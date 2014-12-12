@@ -17,6 +17,7 @@
 #include <math.hpp>
 #include <stdio.h>
 #include <map>
+#include <memory.hpp>
 
 #include <boost/compute/container/vector.hpp>
 #include <boost/compute/algorithm/adjacent_difference.hpp>
@@ -101,25 +102,27 @@ void regions(Param out, Param in)
                                 Buffer, KParam> (*ilKernel[device]);
 
         ilOp(EnqueueArgs(getQueue(), global, local),
-             out.data, out.info, in.data, in.info);
+             *out.data, out.info, *in.data, in.info);
 
         CL_DEBUG_FINISH(getQueue());
 
         int h_continue = 1;
-        cl::Buffer d_continue = cl::Buffer(getContext(), CL_MEM_READ_WRITE, sizeof(int));
+        cl::Buffer *d_continue = bufferAlloc(sizeof(int));
 
         while (h_continue) {
             h_continue = 0;
-            getQueue().enqueueWriteBuffer(d_continue, CL_TRUE, 0, sizeof(int), &h_continue);
+            getQueue().enqueueWriteBuffer(*d_continue, CL_TRUE, 0, sizeof(int), &h_continue);
 
             auto ueOp = make_kernel<Buffer, KParam,
                                     Buffer> (*ueKernel[device]);
 
             ueOp(EnqueueArgs(getQueue(), global, local),
-                 out.data, out.info, d_continue);
+                 *out.data, out.info, *d_continue);
 
-            getQueue().enqueueReadBuffer(d_continue, CL_TRUE, 0, sizeof(int), &h_continue);
+            getQueue().enqueueReadBuffer(*d_continue, CL_TRUE, 0, sizeof(int), &h_continue);
         }
+
+        bufferFree(d_continue);
 
         // Now, perform the final relabeling.  This converts the equivalency
         // map from having unique labels based on the lowest pixel in the
@@ -132,7 +135,7 @@ void regions(Param out, Param in)
         // Wrap raw device ptr
         compute::context context(getContext()());
         compute::vector<T> tmp(size, context);
-        clEnqueueCopyBuffer(getQueue()(), out.data(), tmp.get_buffer().get(), 0, 0, size * sizeof(T), 0, NULL, NULL);
+        clEnqueueCopyBuffer(getQueue()(), (*out.data)(), tmp.get_buffer().get(), 0, 0, size * sizeof(T), 0, NULL, NULL);
 
         // Sort the copy
         compute::sort(tmp.begin(), tmp.end(), c_queue);
@@ -201,7 +204,7 @@ void regions(Param out, Param in)
 
         //Buffer labels_buf(tmp.get_buffer().get());
         frOp(EnqueueArgs(getQueue(), global, local),
-             out.data, out.info, in.data, in.info, labels);
+             *out.data, out.info, *in.data, in.info, labels);
     } catch (cl::Error err) {
         CL_TO_AF_ERROR(err);
         throw;

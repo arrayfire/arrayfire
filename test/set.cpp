@@ -27,6 +27,8 @@ using af::af_cdouble;
 template<typename T>
 void uniqueTest(string pTestFile)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<int>> data;
@@ -89,6 +91,8 @@ typedef af_err (*setFunc)(af_array *, const af_array, const af_array, const bool
 template<typename T, setFunc af_set_func>
 void setTest(string pTestFile)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<int>> data;

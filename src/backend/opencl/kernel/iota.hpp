@@ -72,7 +72,7 @@ namespace opencl
                                1);
 
                 iotaOp(EnqueueArgs(getQueue(), global, local),
-                       out.data, out.info, blocksPerMatX, blocksPerMatY);
+                       *out.data, out.info, blocksPerMatX, blocksPerMatY);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {

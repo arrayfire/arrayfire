@@ -31,6 +31,13 @@ array moddims(const array& in, dim_type d0, dim_type d1, dim_type d2, dim_type d
     return af::moddims(in, 4, dims);
 }
 
+array join(const int dim, const array& first, const array& second)
+{
+    af_array out = 0;
+    AF_THROW(af_join(&out, dim, first.get(), second.get()));
+    return array(out);
+}
+
 array tile(const array& in, const unsigned x, const unsigned y, const unsigned z, const unsigned w)
 {
     af_array out = 0;

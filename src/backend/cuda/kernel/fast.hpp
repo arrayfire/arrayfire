@@ -12,6 +12,7 @@
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
 #include <kernel/fast_lut.hpp>
+#include <memory.hpp>
 
 namespace cuda
 {
@@ -428,12 +429,12 @@ void fast(unsigned* out_feat,
     // same coordinates as features, dimensions should be equal to in.
     T *d_score = NULL;
     size_t score_bytes = in.dims[0] * in.dims[1] * sizeof(T) + sizeof(unsigned);
-    CUDA_CHECK(cudaMalloc((void **)&d_score, score_bytes));
+    d_score = (T *)memAlloc<char>(score_bytes);
     CUDA_CHECK(cudaMemset(d_score, 0, score_bytes));
 
     T *d_flags = d_score;
     if (nonmax) {
-        CUDA_CHECK(cudaMalloc((void **)&d_flags, score_bytes));
+        d_flags = memAlloc<T>(in.dims[0] * in.dims[1]);
     }
 
     // Shared memory size
@@ -474,11 +475,9 @@ void fast(unsigned* out_feat,
     blocks.x = divup(in.dims[0], 64);
     blocks.y = divup(in.dims[1], 64);
 
-    unsigned *d_counts = NULL, *d_offsets = NULL;
     unsigned *d_total = (unsigned *)(d_score + in.dims[0] * in.dims[1]);
-    size_t blocks_bytes = blocks.x * blocks.y * sizeof(unsigned);
-    CUDA_CHECK(cudaMalloc((void **)&d_counts , blocks_bytes));
-    CUDA_CHECK(cudaMalloc((void **)&d_offsets, blocks_bytes));
+    unsigned *d_counts  = memAlloc<unsigned>(blocks.x * blocks.y);
+    unsigned *d_offsets =memAlloc<unsigned>(blocks.x * blocks.y);
 
     if (nonmax)
         non_max_counts<T, true ><<<blocks, threads>>>(d_counts, d_offsets, d_total, d_flags,
@@ -495,10 +494,9 @@ void fast(unsigned* out_feat,
     total = total < max_feat ? total : max_feat;
 
     if (total > 0) {
-        size_t bytes = total * sizeof(float);
-        CUDA_CHECK(cudaMalloc((void **)x_out, bytes));
-        CUDA_CHECK(cudaMalloc((void **)y_out, bytes));
-        CUDA_CHECK(cudaMalloc((void **)score_out, bytes));
+        *x_out     = memAlloc<float>(total);
+        *y_out     = memAlloc<float>(total);
+        *score_out = memAlloc<float>(total);
 
         get_features<T><<<blocks, threads>>>(*x_out, *y_out, *score_out, d_flags, d_counts,
                                              d_offsets, total, in.dims[0], in.dims[1]);
@@ -508,11 +506,11 @@ void fast(unsigned* out_feat,
 
     *out_feat = total;
 
-    CUDA_CHECK(cudaFree(d_score));
-    CUDA_CHECK(cudaFree(d_counts));
-    CUDA_CHECK(cudaFree(d_offsets));
+    memFree<uchar>((uchar *)d_score);
+    memFree(d_counts);
+    memFree(d_offsets);
     if (nonmax) {
-        CUDA_CHECK(cudaFree(d_flags));
+        memFree(d_flags);
     }
 }
 

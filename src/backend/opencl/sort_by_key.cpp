@@ -17,14 +17,14 @@
 
 namespace opencl
 {
-    template<typename Tk, typename Tv, bool DIR>
+    template<typename Tk, typename Tv, bool isAscending>
     void sort_by_key(Array<Tk> &okey, Array<Tv> &oval,
                const Array<Tk> &ikey, const Array<Tv> &ival, const unsigned dim)
     {
         okey = *copyArray<Tk>(ikey);
         oval = *copyArray<Tv>(ival);
         switch(dim) {
-        case 0: kernel::sort0_by_key<Tk, Tv, DIR>(okey, oval);
+        case 0: kernel::sort0_by_key<Tk, Tv, isAscending>(okey, oval);
             break;
         default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }

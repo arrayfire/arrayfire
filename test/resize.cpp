@@ -63,6 +63,8 @@ TYPED_TEST_CASE(ResizeI, TestTypesI);
 template<typename T>
 void resizeTest(string pTestFile, const unsigned resultIdx, const dim_type odim0, const dim_type odim1, const af_interp_type method, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
     vector<vector<T>>   in;
     vector<vector<T>>   tests;
@@ -254,6 +256,8 @@ TYPED_TEST(ResizeI, Resize1CLargeDownLinear)
 template<typename T>
 void resizeArgsTest(af_err err, string pTestFile, const af::dim4 odims, const af_interp_type method)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
     vector<vector<T>>   in;
     vector<vector<T>>   tests;
@@ -287,6 +291,8 @@ TYPED_TEST(Resize,InvalidArgsMethod)
 //
 TEST(Resize, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     vector<af::dim4> numDims;
     vector<vector<float>>   in;
     vector<vector<float>>   tests;

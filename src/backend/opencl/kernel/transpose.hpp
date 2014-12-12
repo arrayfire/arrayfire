@@ -34,9 +34,9 @@ namespace kernel
 
 static const dim_type TILE_DIM  = 32;
 static const dim_type THREADS_X = TILE_DIM;
-static const dim_type THREADS_Y = (256 / TILE_DIM);
+static const dim_type THREADS_Y = TILE_DIM / 4;
 
-template<typename T>
+template<typename T, bool conjugate, bool IS32MULTIPLE>
 void transpose(Param out, const Param in)
 {
     try {
@@ -50,7 +50,11 @@ void transpose(Param out, const Param in)
 
                 std::ostringstream options;
                 options << " -D TILE_DIM=" << TILE_DIM
+                        << " -D THREADS_Y=" << THREADS_Y
+                        << " -D IS32MULTIPLE=" << IS32MULTIPLE
+                        << " -D DOCONJUGATE=" << (conjugate && af::iscplx<T>())
                         << " -D T=" << dtype_traits<T>::getName();
+
                 if (std::is_same<T, double>::value ||
                     std::is_same<T, cdouble>::value) {
                     options << " -D USE_DOUBLE";
@@ -70,15 +74,15 @@ void transpose(Param out, const Param in)
         dim_type blk_y = divup(in.info.dims[1], TILE_DIM);
 
         // launch batch * blk_x blocks along x dimension
-        NDRange global(blk_x * TILE_DIM * in.info.dims[2], blk_y * TILE_DIM);
+        NDRange global(blk_x * local[0] * in.info.dims[2],
+                       blk_y * local[1]);
 
-        auto transposeOp = make_kernel<Buffer, KParam,
-                                       Buffer, KParam,
-                                       dim_type> (*trsKernels[device]);
-
+        auto transposeOp = make_kernel<Buffer, const KParam,
+                                       const Buffer, const KParam,
+                                       const dim_type> (*trsKernels[device]);
 
         transposeOp(EnqueueArgs(getQueue(), global, local),
-                    out.data, out.info, in.data, in.info, blk_x);
+                    *out.data, out.info, *in.data, in.info, blk_x);
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {

@@ -38,14 +38,14 @@ namespace opencl
         static const dim_type TX = 32;
         static const dim_type TY = 8;
 
-        template<typename Tk, typename Tv, bool DIR>
+        template<typename Tk, typename Tv, bool isAscending>
         void sort0_by_key(Param okey, Param oval)
         {
             try {
                 compute::command_queue c_queue(getQueue()());
 
-                compute::buffer okey_buf(okey.data());
-                compute::buffer oval_buf(oval.data());
+                compute::buffer okey_buf((*okey.data)());
+                compute::buffer oval_buf((*oval.data)());
 
                 for(dim_type w = 0; w < okey.info.dims[3]; w++) {
                     dim_type okeyW = w * okey.info.strides[3];
@@ -58,7 +58,7 @@ namespace opencl
                             dim_type okeyOffset = okeyWZ + y * okey.info.strides[1];
                             dim_type ovalOffset = ovalWZ + y * oval.info.strides[1];
 
-                            if(DIR) {
+                            if(isAscending) {
                                 compute::sort_by_key(
                                         compute::make_buffer_iterator<Tk>(okey_buf, okeyOffset),
                                         compute::make_buffer_iterator<Tk>(okey_buf, okeyOffset + okey.info.dims[0]),

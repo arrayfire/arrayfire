@@ -71,8 +71,10 @@ namespace opencl
                                local[1] * blocksPerMatY * out.info.dims[3],
                                1);
 
-                reorderOp(EnqueueArgs(getQueue(), global, local), out.data, in.data, out.info, in.info,
-                       rdims[0], rdims[1], rdims[2], rdims[3], blocksPerMatX, blocksPerMatY);
+                reorderOp(EnqueueArgs(getQueue(), global, local),
+                          *out.data, *in.data, out.info, in.info,
+                          rdims[0], rdims[1], rdims[2], rdims[3],
+                          blocksPerMatX, blocksPerMatY);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {

@@ -17,6 +17,7 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
+#include <memory.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -83,8 +84,8 @@ void morph(Param         out,
 
         // copy mask/filter to constant memory
         cl_int se_size   = sizeof(T)*windLen*windLen;
-        cl::Buffer mBuff = cl::Buffer(getContext(), CL_MEM_READ_ONLY, se_size);
-        getQueue().enqueueCopyBuffer(mask.data, mBuff, 0, 0, se_size);
+        cl::Buffer *mBuff = bufferAlloc(se_size);
+        getQueue().enqueueCopyBuffer(*mask.data, *mBuff, 0, 0, se_size);
 
         // calculate shared memory size
         const int halo    = windLen/2;
@@ -93,8 +94,10 @@ void morph(Param         out,
         const int locSize = locLen * (THREADS_Y+padding);
 
         morphOp(EnqueueArgs(getQueue(), global, local),
-                out.data, out.info, in.data, in.info, mBuff,
+                *out.data, out.info, *in.data, in.info, *mBuff,
                 cl::Local(locSize*sizeof(T)), blk_x);
+
+        bufferFree(mBuff);
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {
@@ -147,8 +150,8 @@ void morph3d(Param       out,
 
         // copy mask/filter to constant memory
         cl_int se_size   = sizeof(T)*windLen*windLen*windLen;
-        cl::Buffer mBuff = cl::Buffer(getContext(), CL_MEM_READ_ONLY, se_size);
-        getQueue().enqueueCopyBuffer(mask.data, mBuff, 0, 0, se_size);
+        cl::Buffer *mBuff = bufferAlloc(se_size);
+        getQueue().enqueueCopyBuffer(*mask.data, *mBuff, 0, 0, se_size);
 
         // calculate shared memory size
         const int halo    = windLen/2;
@@ -158,8 +161,10 @@ void morph3d(Param       out,
         const int locSize = locArea*(CUBE_Z+padding);
 
         morphOp(EnqueueArgs(getQueue(), global, local),
-                out.data, out.info, in.data, in.info, mBuff, cl::Local(locSize*sizeof(T)));
+                *out.data, out.info, *in.data, in.info,
+                *mBuff, cl::Local(locSize*sizeof(T)));
 
+        bufferFree(mBuff);
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {
         CL_TO_AF_ERROR(err);

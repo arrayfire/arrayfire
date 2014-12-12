@@ -38,13 +38,13 @@ namespace opencl
         static const dim_type TX = 32;
         static const dim_type TY = 8;
 
-        template<typename T, bool DIR>
+        template<typename T, bool isAscending>
         void sort0(Param val)
         {
             try {
                 compute::command_queue c_queue(getQueue()());
 
-                compute::buffer val_buf(val.data());
+                compute::buffer val_buf((*val.data)());
 
                 for(dim_type w = 0; w < val.info.dims[3]; w++) {
                     dim_type valW = w * val.info.strides[3];
@@ -54,7 +54,7 @@ namespace opencl
 
                             dim_type valOffset = valWZ + y * val.info.strides[1];
 
-                            if(DIR) {
+                            if(isAscending) {
                                 compute::stable_sort(
                                         compute::make_buffer_iterator<T>(val_buf, valOffset),
                                         compute::make_buffer_iterator<T>(val_buf, valOffset + val.info.dims[0]),
