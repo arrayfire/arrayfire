@@ -29,6 +29,12 @@ namespace cuda
     template<> STATIC_ const char *imag_name<cfloat>() { return "@___imagc"; }
     template<> STATIC_ const char *imag_name<cdouble>() { return "@___imagz"; }
 
+    template<typename T> static const char *abs_name() { return "@___noop"; }
+    template<> STATIC_ const char *abs_name<float>() { return "@___abss"; }
+    template<> STATIC_ const char *abs_name<double>() { return "@___absd"; }
+    template<> STATIC_ const char *abs_name<cfloat>() { return "@___absc"; }
+    template<> STATIC_ const char *abs_name<cdouble>() { return "@___absz"; }
+
     template<typename T> static const char *conj_name() { return "@___noop"; }
     template<> STATIC_ const char *conj_name<cfloat>() { return "@___conjc"; }
     template<> STATIC_ const char *conj_name<cdouble>() { return "@___conjz"; }
@@ -65,6 +71,17 @@ namespace cuda
         JIT::UnaryNode *node = new JIT::UnaryNode(irname<To>(),
                                                   imag_name<Ti>(),
                                                   in_node, af_imag_t);
+
+        return createNodeArray<To>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+    }
+
+    template<typename To, typename Ti>
+    Array<To>* abs(const Array<Ti> &in)
+    {
+        JIT::Node_ptr in_node = in.getNode();
+        JIT::UnaryNode *node = new JIT::UnaryNode(irname<To>(),
+                                                  abs_name<Ti>(),
+                                                  in_node, af_abs_t);
 
         return createNodeArray<To>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
     }

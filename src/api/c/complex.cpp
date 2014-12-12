@@ -174,3 +174,31 @@ af_err af_conjg(af_array *out, const af_array in)
     CATCHALL;
     return AF_SUCCESS;
 }
+
+af_err af_abs(af_array *out, const af_array in)
+{
+    try {
+
+        ArrayInfo in_info = getInfo(in);
+        af_dtype in_type = in_info.getType();
+        af_array res;
+
+        // Convert all inputs to floats / doubles
+        af_dtype type = implicit(in_type, f32);
+        af_array input = cast(in, type);
+
+        switch (type) {
+        case f32: res = getHandle(*abs<float ,  float >(getArray<float  >(input))); break;
+        case f64: res = getHandle(*abs<double,  double>(getArray<double >(input))); break;
+        case c32: res = getHandle(*abs<float , cfloat >(getArray<cfloat >(input))); break;
+        case c64: res = getHandle(*abs<double, cdouble>(getArray<cdouble>(input))); break;
+        default:
+            TYPE_ERROR(1, in_type); break;
+        }
+
+        AF_CHECK(af_destroy_array(input));
+        std::swap(*out, res);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
