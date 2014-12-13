@@ -634,26 +634,4 @@ INSTANTIATE(integer)
     INSTANTIATE(int)
     INSTANTIATE(unsigned char)
     INSTANTIATE(char)
-
-    void *array::alloc(size_t elements, af_dtype type)
-    {
-        void *ptr;
-        AF_THROW(af_alloc_device(&ptr, elements * size_of(type)));
-        // FIXME: Add to map
-        return ptr;
-    }
-
-    void *array::pinned(size_t elements, af_dtype type)
-    {
-        void *ptr;
-        AF_THROW(af_alloc_pinned(&ptr, elements * size_of(type)));
-        // FIXME: Add to map
-        return ptr;
-    }
-
-    void array::free(const void *ptr)
-    {
-        //FIXME: look up map and call the right free
-        AF_THROW(af_free_device((void *)ptr));
-    }
 }

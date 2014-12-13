@@ -107,21 +107,6 @@ namespace af
         template<typename T> T scalar() const;
         template<typename T> T* device() const;
 
-        static void *alloc(size_t elements, af_dtype type);
-        template<typename T> static T* alloc(size_t elements)
-        {
-            return alloc(elements, (af_dtype)dtype_traits<T>::af_type);
-        }
-
-
-        static void *pinned(size_t elements, af_dtype type);
-        template<typename T> static T* pinned(size_t elements)
-        {
-            return pinned(elements, (af_dtype)dtype_traits<T>::af_type);
-        }
-
-        static void free(const void *);
-
         // INDEXING
     public:
         // Single arguments

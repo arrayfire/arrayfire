@@ -101,9 +101,23 @@ namespace cpu
         }
     }
 
+    template<typename T>
+    T* pinnedAlloc(const size_t &elements)
+    {
+        return memAlloc<T>(elements);
+    }
+
+    template<typename T>
+    void pinnedFree(T* ptr)
+    {
+        memFree<T>(ptr);
+    }
+
 #define INSTANTIATE(T)                              \
     template T* memAlloc(const size_t &elements);   \
     template void memFree(T* ptr);                  \
+    template T* pinnedAlloc(const size_t &elements);\
+    template void pinnedFree(T* ptr);               \
 
     INSTANTIATE(float)
     INSTANTIATE(cfloat)

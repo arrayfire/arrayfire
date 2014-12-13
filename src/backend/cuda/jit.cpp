@@ -212,7 +212,7 @@ static char *irToPtx(string IR, size_t *ptx_size)
     if (comp_res != NVVM_SUCCESS) {
         size_t log_size = 0;
         nvvmGetProgramLogSize(prog, &log_size);
-        printf("%d, %d\n", IR.size(), log_size);
+        printf("%ld, %ld\n", IR.size(), log_size);
         char *log = new char[log_size];
         nvvmGetProgramLog(prog, log);
         printf("LOG:\n%s\n%s", log, IR.c_str());
