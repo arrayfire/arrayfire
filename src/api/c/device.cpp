@@ -160,7 +160,9 @@ af_err af_alloc_device(void **ptr, dim_type bytes)
 
 af_err af_alloc_pinned(void **ptr, dim_type bytes)
 {
-    AF_ERROR("Allocating pinned memory not supported yet", AF_ERR_NOT_SUPPORTED);
+    try {
+        *ptr = (void *)pinnedAlloc<char>(bytes);
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
@@ -174,6 +176,8 @@ af_err af_free_device(void *ptr)
 
 af_err af_free_pinned(void *ptr)
 {
-    AF_ERROR("Allocating pinned memory not supported yet", AF_ERR_NOT_SUPPORTED);
+    try {
+        pinnedFree<char>((char *)ptr);
+    } CATCHALL;
     return AF_SUCCESS;
 }

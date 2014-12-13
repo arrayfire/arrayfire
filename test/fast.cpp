@@ -94,7 +94,7 @@ af_err conv_image(af_array *out, af_array in)
 
     std::swap(*out, outArray);
 
-    delete in_data;
+    delete [] in_data;
 
     return AF_SUCCESS;
 }
@@ -156,11 +156,11 @@ void fastTest(string pTestFile, bool nonmax)
 
         ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 
-        delete outX;
-        delete outY;
-        delete outScore;
-        delete outOrientation;
-        delete outSize;
+        delete [] outX;
+        delete [] outY;
+        delete [] outScore;
+        delete [] outOrientation;
+        delete [] outSize;
     }
 }
 
