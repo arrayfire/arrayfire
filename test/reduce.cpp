@@ -219,7 +219,6 @@ void cppReduceTest(string pTestFile)
     }
 }
 
-
 #define CPP_REDUCE_TESTS(FN, Ti, To)               \
     TEST(Reduce, Test_##FN##_CPP)                  \
     {                                              \
@@ -234,3 +233,106 @@ CPP_REDUCE_TESTS(max, float, float);
 CPP_REDUCE_TESTS(anytrue, float, unsigned char);
 CPP_REDUCE_TESTS(alltrue, float, unsigned char);
 CPP_REDUCE_TESTS(count, float, unsigned);
+
+TEST(Reuce, Test_Sum_Global)
+{
+    int num = 10000;
+    af::array a = af::round(2 * af::randu(num, 1));
+
+    float res = af::sum<float>(a);
+    float *h_a = a.host<float>();
+    float gold = 0;
+
+    for (int i = 0; i < num; i++) {
+        gold += h_a[i];
+    }
+
+    ASSERT_EQ(gold, res);
+    delete[] h_a;
+}
+
+TEST(Reuce, Test_Count_Global)
+{
+    int num = 10000;
+    af::array a = af::round(2 * af::randu(num, 1));
+    af::array b = a.as(b8);
+
+    int res = af::count<int>(b);
+    char *h_b = b.host<char>();
+    int gold = 0;
+
+    for (int i = 0; i < num; i++) {
+        gold += h_b[i];
+    }
+
+    ASSERT_EQ(gold, res);
+    delete[] h_b;
+}
+
+TEST(Reuce, Test_min_Global)
+{
+    int num = 10000;
+    af::array a = af::randu(num, 1, f64);
+    double res = af::min<double>(a);
+    double *h_a = a.host<double>();
+    double gold = std::numeric_limits<double>::max();
+
+    if (noDoubleTests<double>()) return;
+
+    for (int i = 0; i < num; i++) {
+        gold = std::min(gold, h_a[i]);
+    }
+
+    ASSERT_EQ(gold, res);
+    delete[] h_a;
+}
+
+TEST(Reuce, Test_max_Global)
+{
+    int num = 10000;
+    af::array a = af::randu(num, 1);
+    float res = af::max<float>(a);
+    float *h_a = a.host<float>();
+    float gold = -std::numeric_limits<float>::max();
+
+    for (int i = 0; i < num; i++) {
+        gold = std::max(gold, h_a[i]);
+    }
+
+    ASSERT_EQ(gold, res);
+    delete[] h_a;
+}
+
+TEST(Reuce, Test_All_Global)
+{
+    int num = 10000;
+    af::array a = af::round(2 * af::randu(num, 1));
+
+    char res = af::alltrue<char>(a);
+    float *h_a = a.host<float>();
+    char gold = 1;
+
+    for (int i = 0; i < num; i++) {
+        gold = gold && h_a[i];
+    }
+
+    ASSERT_EQ(gold, res);
+    delete[] h_a;
+}
+
+TEST(Reuce, Test_Any_Global)
+{
+    int num = 10000;
+    af::array a = af::round(2 * af::randu(num, 1));
+
+    char res = af::anytrue<char>(a);
+    float *h_a = a.host<float>();
+    char gold = 0;
+
+    for (int i = 0; i < num; i++) {
+        gold = gold || h_a[i];
+    }
+
+    ASSERT_EQ(gold, res);
+    delete[] h_a;
+}
