@@ -21,8 +21,8 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
-using af::af_cfloat;
-using af::af_cdouble;
+using af::cfloat;
+using af::cdouble;
 
 typedef af_err (*reduceFunc)(af_array *, const af_array, const int);
 
@@ -103,48 +103,48 @@ vector<af_seq> init_subs()
 REDUCE_TESTS(sum, float   , float     , float     );
 REDUCE_TESTS(sum, double  , double    , double    );
 REDUCE_TESTS(sum, int     , int       , int       );
-REDUCE_TESTS(sum, cfloat  , af_cfloat , af_cfloat );
-REDUCE_TESTS(sum, cdouble , af_cdouble, af_cdouble);
+REDUCE_TESTS(sum, cfloat  , cfloat , cfloat );
+REDUCE_TESTS(sum, cdouble , cdouble, cdouble);
 REDUCE_TESTS(sum, unsigned, unsigned  , unsigned  );
 REDUCE_TESTS(sum, uchar   , unsigned char, unsigned);
 
 REDUCE_TESTS(min, float   , float     , float     );
 REDUCE_TESTS(min, double  , double    , double    );
 REDUCE_TESTS(min, int     , int       , int       );
-REDUCE_TESTS(min, cfloat  , af_cfloat , af_cfloat );
-REDUCE_TESTS(min, cdouble , af_cdouble, af_cdouble);
+REDUCE_TESTS(min, cfloat  , cfloat , cfloat );
+REDUCE_TESTS(min, cdouble , cdouble, cdouble);
 REDUCE_TESTS(min, unsigned, unsigned  , unsigned  );
 REDUCE_TESTS(min, uchar   , unsigned char, unsigned char);
 
 REDUCE_TESTS(max, float   , float     , float     );
 REDUCE_TESTS(max, double  , double    , double    );
 REDUCE_TESTS(max, int     , int       , int       );
-REDUCE_TESTS(max, cfloat  , af_cfloat , af_cfloat );
-REDUCE_TESTS(max, cdouble , af_cdouble, af_cdouble);
+REDUCE_TESTS(max, cfloat  , cfloat , cfloat );
+REDUCE_TESTS(max, cdouble , cdouble, cdouble);
 REDUCE_TESTS(max, unsigned, unsigned  , unsigned  );
 REDUCE_TESTS(max, uchar   , unsigned char, unsigned char);
 
 REDUCE_TESTS(anytrue, float   , float     , unsigned char);
 REDUCE_TESTS(anytrue, double  , double    , unsigned char);
 REDUCE_TESTS(anytrue, int     , int       , unsigned char);
-REDUCE_TESTS(anytrue, cfloat  , af_cfloat , unsigned char);
-REDUCE_TESTS(anytrue, cdouble , af_cdouble, unsigned char);
+REDUCE_TESTS(anytrue, cfloat  , cfloat , unsigned char);
+REDUCE_TESTS(anytrue, cdouble , cdouble, unsigned char);
 REDUCE_TESTS(anytrue, unsigned, unsigned  , unsigned char);
 REDUCE_TESTS(anytrue, uchar   , unsigned char, unsigned char);
 
 REDUCE_TESTS(alltrue, float   , float     , unsigned char);
 REDUCE_TESTS(alltrue, double  , double    , unsigned char);
 REDUCE_TESTS(alltrue, int     , int       , unsigned char);
-REDUCE_TESTS(alltrue, cfloat  , af_cfloat , unsigned char);
-REDUCE_TESTS(alltrue, cdouble , af_cdouble, unsigned char);
+REDUCE_TESTS(alltrue, cfloat  , cfloat , unsigned char);
+REDUCE_TESTS(alltrue, cdouble , cdouble, unsigned char);
 REDUCE_TESTS(alltrue, unsigned, unsigned  , unsigned char);
 REDUCE_TESTS(alltrue, uchar   , unsigned char, unsigned char);
 
 REDUCE_TESTS(count, float   , float     , unsigned);
 REDUCE_TESTS(count, double  , double    , unsigned);
 REDUCE_TESTS(count, int     , int       , unsigned);
-REDUCE_TESTS(count, cfloat  , af_cfloat , unsigned);
-REDUCE_TESTS(count, cdouble , af_cdouble, unsigned);
+REDUCE_TESTS(count, cfloat  , cfloat , unsigned);
+REDUCE_TESTS(count, cdouble , cdouble, unsigned);
 REDUCE_TESTS(count, unsigned, unsigned  , unsigned);
 REDUCE_TESTS(count, uchar   , unsigned char, unsigned);
 

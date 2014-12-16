@@ -21,8 +21,8 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
-using af::af_cfloat;
-using af::af_cdouble;
+using af::cfloat;
+using af::cdouble;
 
 template<typename T>
 void uniqueTest(string pTestFile)

@@ -119,8 +119,8 @@ namespace af
 
     INSTANTIATE(float)
     INSTANTIATE(double)
-    INSTANTIATE(af_cfloat)
-    INSTANTIATE(af_cdouble)
+    INSTANTIATE(cfloat)
+    INSTANTIATE(cdouble)
     INSTANTIATE(int)
     INSTANTIATE(unsigned)
     INSTANTIATE(unsigned char)

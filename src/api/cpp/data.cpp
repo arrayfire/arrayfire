@@ -15,7 +15,7 @@ namespace af
         return array(res);
     }
 
-    array constant(af_cdouble val, const dim4 &dims)
+    array constant(cdouble val, const dim4 &dims)
     {
         af_array res;
         AF_THROW(af_constant_complex(&res, real(val), imag(val),
@@ -23,7 +23,7 @@ namespace af
         return array(res);
     }
 
-    array constant(af_cfloat val, const dim4 &dims)
+    array constant(cfloat val, const dim4 &dims)
     {
         af_array res;
         AF_THROW(af_constant_complex(&res, real(val), imag(val),

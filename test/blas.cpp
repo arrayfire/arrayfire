@@ -29,7 +29,7 @@ class MatrixMultiply : public ::testing::Test
 
 };
 
-typedef ::testing::Types<float, af::af_cfloat, double, af::af_cdouble> TestTypes;
+typedef ::testing::Types<float, af::cfloat, double, af::cdouble> TestTypes;
 TYPED_TEST_CASE(MatrixMultiply, TestTypes);
 
 template<typename T, bool isBVector = false>

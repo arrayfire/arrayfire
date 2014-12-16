@@ -277,7 +277,7 @@ bool compareArraysRMSD(dim_type data_size, T *gold, T *data, double tolerance)
 template<typename T>
 bool noDoubleTests()
 {
-    bool isTypeDouble = std::is_same<T, double>::value || std::is_same<T, af::af_cdouble>::value;
+    bool isTypeDouble = std::is_same<T, double>::value || std::is_same<T, af::cdouble>::value;
 
     int dev = af::getDevice();
     bool isDoubleSupported = af::isDoubleAvailable(dev);

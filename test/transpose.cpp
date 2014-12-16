@@ -18,8 +18,8 @@
 
 using std::string;
 using std::vector;
-using af::af_cfloat;
-using af::af_cdouble;
+using af::cfloat;
+using af::cdouble;
 
 template<typename T>
 class Transpose : public ::testing::Test
@@ -38,7 +38,7 @@ class Transpose : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, af_cfloat, double, af_cdouble, int, uint, char, uchar> TestTypes;
+typedef ::testing::Types<float, cfloat, double, cdouble, int, uint, char, uchar> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Transpose, TestTypes);
@@ -245,6 +245,6 @@ void trsCPPConjTest()
 
 TEST(Transpose, CPP_c32_CONJ)
 {
-    trsCPPConjTest<af_cfloat>();
+    trsCPPConjTest<cfloat>();
 }
 
