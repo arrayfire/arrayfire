@@ -19,7 +19,7 @@
 
 #define SHOW_BUILD_INFO(PROG) do {                                  \
     cl_uint numDevices = PROG.getInfo<CL_PROGRAM_NUM_DEVICES>();    \
-    for (int i = 0; i<numDevices; ++i) {                            \
+    for (unsigned int i = 0; i<numDevices; ++i) {                            \
         std::cout << PROG.getBuildInfo<CL_PROGRAM_BUILD_LOG>(       \
             PROG.getInfo<CL_PROGRAM_DEVICES>()[i]) << std::endl;    \
                                                                     \
