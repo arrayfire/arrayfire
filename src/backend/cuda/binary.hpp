@@ -58,6 +58,7 @@ BINARY(min)
 BINARY(pow)
 BINARY(mod)
 BINARY(rem)
+BINARY(atan2)
 
 #undef BINARY
 
