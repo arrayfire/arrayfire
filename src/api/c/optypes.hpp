@@ -33,6 +33,7 @@ typedef enum {
     af_cplx2_t,
     af_atan2_t,
     af_pow_t,
+    af_hypot_t,
 
     af_sin_t,
     af_cos_t,

@@ -52,6 +52,7 @@ NUMERIC_FN(af_mod_t, fmod)
 NUMERIC_FN(af_pow_t, pow)
 NUMERIC_FN(af_rem_t, remainder)
 NUMERIC_FN(af_atan2_t, atan2)
+NUMERIC_FN(af_hypot_t, hypot)
 
     template<typename T, af_op_t op>
     Array<T>* arithOp(const Array<T> &lhs, const Array<T> &rhs)

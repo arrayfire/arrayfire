@@ -31,6 +31,10 @@ namespace af
     AFAPI array atan2  (const array &lhs, const double rhs);
     AFAPI array atan2  (const double lhs, const array &rhs);
 
+    AFAPI array hypot  (const array &lhs, const array &rhs);
+    AFAPI array hypot  (const array &lhs, const double rhs);
+    AFAPI array hypot  (const double lhs, const array &rhs);
+
     AFAPI array pow    (const array &lhs, const array &rhs);
     AFAPI array pow    (const array &lhs, const double rhs);
     AFAPI array pow    (const double lhs, const array &rhs);
@@ -115,6 +119,7 @@ extern "C" {
 
     AFAPI af_err af_cplx2 (af_array *result, const af_array lhs, const af_array rhs);
     AFAPI af_err af_atan2 (af_array *result, const af_array lhs, const af_array rhs);
+    AFAPI af_err af_hypot (af_array *result, const af_array lhs, const af_array rhs);
 
     AFAPI af_err af_pow   (af_array *result, const af_array lhs, const af_array rhs);
     AFAPI af_err af_rem   (af_array *result, const af_array lhs, const af_array rhs);

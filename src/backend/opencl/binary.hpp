@@ -140,6 +140,15 @@ struct BinOp<To, Ti, af_atan2_t>
     }
 };
 
+template<typename To, typename Ti>
+struct BinOp<To, Ti, af_hypot_t>
+{
+    const char *name()
+    {
+        return "hypot";
+    }
+};
+
 template<typename To, typename Ti, af_op_t op>
 Array<To> *createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs)
 {
