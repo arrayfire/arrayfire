@@ -133,26 +133,23 @@ static inline void sort_by_key(af_array *okey, af_array *oval, const af_array ik
 }
 
 template<typename Tk>
-af_err sort_by_key_tmplt(af_array *okey, af_array *oval, const af_array ikey, const af_array ival,
-                         const unsigned dim, const bool isAscending)
+void sort_by_key_tmplt(af_array *okey, af_array *oval, const af_array ikey, const af_array ival,
+                       const unsigned dim, const bool isAscending)
 {
-    try {
-        ArrayInfo info = getInfo(ival);
-        af_dtype vtype = info.getType();
+    ArrayInfo info = getInfo(ival);
+    af_dtype vtype = info.getType();
 
-        switch(vtype) {
-            case f32: sort_by_key<Tk, float  >(okey, oval, ikey, ival, dim, isAscending);  break;
-            case f64: sort_by_key<Tk, double >(okey, oval, ikey, ival, dim, isAscending);  break;
-            case s32: sort_by_key<Tk, int    >(okey, oval, ikey, ival, dim, isAscending);  break;
-            case u32: sort_by_key<Tk, uint   >(okey, oval, ikey, ival, dim, isAscending);  break;
-            case u8:  sort_by_key<Tk, uchar  >(okey, oval, ikey, ival, dim, isAscending);  break;
-            case b8:  sort_by_key<Tk, char   >(okey, oval, ikey, ival, dim, isAscending);  break;
-            default:  TYPE_ERROR(1, vtype);
-        }
+    switch(vtype) {
+    case f32: sort_by_key<Tk, float  >(okey, oval, ikey, ival, dim, isAscending);  break;
+    case f64: sort_by_key<Tk, double >(okey, oval, ikey, ival, dim, isAscending);  break;
+    case s32: sort_by_key<Tk, int    >(okey, oval, ikey, ival, dim, isAscending);  break;
+    case u32: sort_by_key<Tk, uint   >(okey, oval, ikey, ival, dim, isAscending);  break;
+    case u8:  sort_by_key<Tk, uchar  >(okey, oval, ikey, ival, dim, isAscending);  break;
+    case b8:  sort_by_key<Tk, char   >(okey, oval, ikey, ival, dim, isAscending);  break;
+    default:  TYPE_ERROR(1, vtype);
     }
-    CATCHALL;
 
-    return AF_SUCCESS;
+    return;
 }
 
 af_err af_sort_by_key(af_array *out_keys, af_array *out_values,
