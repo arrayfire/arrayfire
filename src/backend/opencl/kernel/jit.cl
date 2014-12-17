@@ -171,13 +171,16 @@ double2 __cplx2(double lhs, double rhs)
 float2 __convert_cfloat(float in)
 {
     float2 out = {in, 0};
+    return out;
 }
-
 
 double2 __convert_cdouble(double in)
 {
     double2 out = {in, 0};
+    return out;
 }
+
+#define __convert_cdouble(in) ___convert_cdouble((double)in)
 
 #define __convert_char(val) (char)(convert_char((val)) != 0)
 
@@ -186,3 +189,6 @@ double2 __convert_cdouble(double in)
 #define frem(lhs, rhs) remainder((lhs), (rhs))
 
 #define iszero(a) ((a) == 0)
+
+float2  __convert_z2c(double2 in) { float2  out = {in.x, in.y}; return out; }
+double2 __convert_c2z(float2  in) { double2 out = {in.x, in.y}; return out; }
