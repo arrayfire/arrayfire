@@ -107,6 +107,20 @@ ELSE()
   SET(PTX_COMPUTE ${CUDA_COMPUTE_CAPABILITY})
 ENDIF()
 
+# Check if PTX data exists
+IF (EXISTS "${CMAKE_SOURCE_DIR}/src/backend/cuda/ptx/PTX64"
+    AND IS_DIRECTORY "${CMAKE_SOURCE_DIR}/src/backend/cuda/ptx/PTX64")
+    # PTX data is available
+    # Do Nothing
+ELSE (EXISTS "${CMAKE_SOURCE_DIR}/src/backend/cuda/ptx/PTX64"
+      AND IS_DIRECTORY "${CMAKE_SOURCE_DIR}/src/backend/cuda/ptx/PTX64")
+    MESSAGE(WARNING "PTX data is not available. CUDA Backend will give compiler errors.")
+    MESSAGE("Did you miss the --recursive option when cloning?")
+    MESSAGE("Run the following commands to correct this:")
+    MESSAGE("git submodule init")
+    MESSAGE("git submodule update")
+    MESSAGE("git submodule foreach git pull origin master")
+ENDIF()
 
 FILE(GLOB cuda_ptx "ptx/PTX64/sm_${PTX_COMPUTE}/*.ptx")
 

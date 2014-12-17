@@ -131,11 +131,30 @@ namespace cuda
             cudaFreeWrapper(ptr); // Free it because we are not sure what the size is
         }
     }
+
+    template<typename T>
+    T* pinnedAlloc(const size_t &elements)
+    {
+        void *ptr = NULL;
+        CUDA_CHECK(cudaMallocHost(&ptr, elements));
+        return (T*)ptr;
+    }
+
+    template<typename T>
+    void pinnedFree(T* ptr)
+    {
+        cudaError_t err = cudaFreeHost((void*) ptr);
+        if (err != cudaErrorCudartUnloading) // see issue #167
+            CUDA_CHECK(err);
+    }
+
 #endif
 
 #define INSTANTIATE(T)                              \
     template T* memAlloc(const size_t &elements);   \
     template void memFree(T* ptr);                  \
+    template T* pinnedAlloc(const size_t &elements);\
+    template void pinnedFree(T* ptr);               \
 
     INSTANTIATE(float)
     INSTANTIATE(cfloat)

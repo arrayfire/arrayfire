@@ -14,8 +14,10 @@
 
 namespace af
 {
-	typedef std::complex<float> af_cfloat;
-	typedef std::complex<double> af_cdouble;
+	typedef std::complex<float> cfloat;
+	typedef std::complex<double> cdouble;
+    typedef cfloat af_cfloat;
+    typedef cdouble  af_cdouble;
 }
 
 #else

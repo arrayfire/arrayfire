@@ -17,8 +17,8 @@ namespace af
 
 
     AFAPI array constant(double val, const dim4 &dims, af_dtype ty=f32);
-    AFAPI array constant(af_cdouble val, const dim4 &dims);
-    AFAPI array constant(af_cfloat val, const dim4 &dims);
+    AFAPI array constant(cdouble val, const dim4 &dims);
+    AFAPI array constant(cfloat val, const dim4 &dims);
 
     AFAPI array constant(double val, const dim_type d0, af_dtype ty=f32);
     AFAPI array constant(double val, const dim_type d0,

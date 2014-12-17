@@ -20,13 +20,17 @@ namespace opencl
     template<typename T, bool isAscending>
     Array<T>* sort(const Array<T> &in, const unsigned dim)
     {
-        Array<T> *out = copyArray<T>(in);
-        switch(dim) {
+        try {
+            Array<T> *out = copyArray<T>(in);
+            switch(dim) {
             case 0: kernel::sort0<T, isAscending>(*out);
-                    break;
+                break;
             default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
+            }
+            return out;
+        } catch (std::exception &ex) {
+            AF_ERROR(ex.what(), AF_ERR_INTERNAL);
         }
-        return out;
     }
 
 #define INSTANTIATE(T)                                                  \

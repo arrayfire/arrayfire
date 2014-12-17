@@ -22,8 +22,8 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
-using af::af_cfloat;
-using af::af_cdouble;
+using af::cfloat;
+using af::cdouble;
 
 typedef af_err (*scanFunc)(af_array *, const af_array, const int);
 
@@ -103,8 +103,8 @@ vector<af_seq> init_subs()
 SCAN_TESTS(accum, float   , float     , float     );
 SCAN_TESTS(accum, double  , double    , double    );
 SCAN_TESTS(accum, int     , int       , int       );
-SCAN_TESTS(accum, cfloat  , af_cfloat , af_cfloat );
-SCAN_TESTS(accum, cdouble , af_cdouble, af_cdouble);
+SCAN_TESTS(accum, cfloat  , cfloat , cfloat );
+SCAN_TESTS(accum, cdouble , cdouble, cdouble);
 SCAN_TESTS(accum, unsigned, unsigned  , unsigned  );
 SCAN_TESTS(accum, uchar   , unsigned char, unsigned);
 

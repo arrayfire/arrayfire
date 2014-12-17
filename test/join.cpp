@@ -23,8 +23,8 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
-using af::af_cfloat;
-using af::af_cdouble;
+using af::cfloat;
+using af::cdouble;
 
 template<typename T>
 class Join : public ::testing::Test
@@ -39,7 +39,7 @@ class Join : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, af_cfloat, af_cdouble, int, unsigned int, char, unsigned char> TestTypes;
+typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int, char, unsigned char> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Join, TestTypes);

@@ -20,7 +20,6 @@
 
 #include <arith.hpp>
 #include <logic.hpp>
-#include <complex.hpp>
 
 using namespace detail;
 
@@ -160,6 +159,34 @@ af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs)
         switch (type) {
         case f32: res = arithOp<float , af_atan2_t>(left, right); break;
         case f64: res = arithOp<double, af_atan2_t>(left, right); break;
+        default: TYPE_ERROR(0, type);
+        }
+
+        std::swap(*out, res);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs)
+{
+    try {
+
+        const af_dtype type = implicit(lhs, rhs);
+
+        const af_array left  = cast(lhs, type);
+        const af_array right = cast(rhs, type);
+
+        if (type != f32 && type != f64) {
+            AF_ERROR("Only floating point arrays are supported for hypot ",
+                     AF_ERR_NOT_SUPPORTED);
+        }
+
+        af_array res;
+
+        switch (type) {
+        case f32: res = arithOp<float , af_hypot_t>(left, right); break;
+        case f64: res = arithOp<double, af_hypot_t>(left, right); break;
         default: TYPE_ERROR(0, type);
         }
 

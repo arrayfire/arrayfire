@@ -26,7 +26,7 @@ struct dtype_traits<float> {
 };
 
 template<>
-struct dtype_traits<af_cfloat> {
+struct dtype_traits<af::cfloat> {
     enum { af_type = c32 };
     typedef float base_type;
     static const char* getName() { return "std::complex<float>"; }
@@ -40,7 +40,7 @@ struct dtype_traits<double> {
 };
 
 template<>
-struct dtype_traits<af_cdouble> {
+struct dtype_traits<af::cdouble> {
     enum { af_type = c64 };
     typedef double base_type;
     static const char* getName() { return "std::complex<double>"; }
