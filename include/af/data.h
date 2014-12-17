@@ -40,7 +40,6 @@ namespace af
                       const dim_type d1, const dim_type d2,
                       const dim_type d3, af_dtype ty=f32);
 
-
     AFAPI array randn(const dim4 &dims, af_dtype ty=f32);
     AFAPI array randn(const dim_type d0, af_dtype ty=f32);
     AFAPI array randn(const dim_type d0,
@@ -50,6 +49,16 @@ namespace af
     AFAPI array randn(const dim_type d0,
                       const dim_type d1, const dim_type d2,
                       const dim_type d3, af_dtype ty=f32);
+
+    AFAPI array identity(const dim4 &dims, af_dtype ty=f32);
+    AFAPI array identity(const dim_type d0, af_dtype ty=f32);
+    AFAPI array identity(const dim_type d0,
+                         const dim_type d1, af_dtype ty=f32);
+    AFAPI array identity(const dim_type d0,
+                         const dim_type d1, const dim_type d2, af_dtype ty=f32);
+    AFAPI array identity(const dim_type d0,
+                         const dim_type d1, const dim_type d2,
+                         const dim_type d3, af_dtype ty=f32);
 
     AFAPI array iota(const dim4 &dims, const unsigned rep = 3, af_dtype ty=f32);
     AFAPI array iota(const dim_type d0, const unsigned rep = 0, af_dtype ty=f32);
@@ -80,6 +89,9 @@ extern "C" {
 
     // Generate Random Numbers using normal distribution
     AFAPI af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+
+        // Generate Random Numbers using normal distribution
+    AFAPI af_err af_identity(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
 
 #ifdef __cplusplus

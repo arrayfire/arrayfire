@@ -148,4 +148,34 @@ namespace af
         return iota(dim4(d0, d1, d2, d3), rep, ty);
     }
 
+    array identity(const dim4 &dims, af_dtype type)
+    {
+        af_array res;
+        AF_THROW(af_identity(&res, dims.ndims(), dims.get(), type));
+        return array(res);
+    }
+
+    array identity(const dim_type d0, af_dtype ty)
+    {
+        return identity(dim4(d0), ty);
+    }
+
+    array identity(const dim_type d0,
+                const dim_type d1, af_dtype ty)
+    {
+        return identity(dim4(d0, d1), ty);
+    }
+
+    array identity(const dim_type d0,
+                const dim_type d1, const dim_type d2, af_dtype ty)
+    {
+        return identity(dim4(d0, d1, d2), ty);
+    }
+
+    array identity(const dim_type d0,
+                const dim_type d1, const dim_type d2,
+                const dim_type d3, af_dtype ty)
+    {
+        return identity(dim4(d0, d1, d2, d3), ty);
+    }
 }

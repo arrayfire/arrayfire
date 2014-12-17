@@ -21,6 +21,7 @@
 #include <math.hpp>
 #include <complex.hpp>
 #include <iota.hpp>
+#include <identity.hpp>
 
 using af::dim4;
 using namespace detail;
@@ -224,6 +225,12 @@ static inline af_array randu_(const af::dim4 &dims)
     return getHandle(*randu<T>(dims));
 }
 
+template<typename T>
+static inline af_array identity_(const af::dim4 &dims)
+{
+    return getHandle(*identity<T>(dims));
+}
+
 af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
 {
     AF_CHECK(af_init());
@@ -274,6 +281,38 @@ af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims
             case c32:   result = randn_<cfloat >(d);    break;
             case f64:   result = randn_<double >(d);    break;
             case c64:   result = randn_<cdouble>(d);    break;
+            default:    ret    = AF_ERR_NOT_SUPPORTED; break;
+        }
+        if(ret == AF_SUCCESS)
+            std::swap(*out, result);
+    }
+    CATCHALL
+    return ret;
+}
+
+af_err af_identity(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
+{
+    AF_CHECK(af_init());
+    af_err ret = AF_SUCCESS;
+    af_array result;
+    try {
+        dim4 d((size_t)dims[0]);
+        for(unsigned i = 1; i < ndims; i++) {
+            d[i] = dims[i];
+            if(d[i] < 1) {
+                return AF_ERR_ARG;
+            }
+        }
+        switch(type) {
+            case f32:   result = identity_<float  >(d);    break;
+            case c32:   result = identity_<cfloat >(d);    break;
+            case f64:   result = identity_<double >(d);    break;
+            case c64:   result = identity_<cdouble>(d);    break;
+            case s32:   result = identity_<int    >(d);    break;
+            case u32:   result = identity_<uint   >(d);    break;
+            case u8:    result = identity_<uchar  >(d);    break;
+            // Removed because of bool type. Functions implementations exist.
+            //case b8:    result = identity_<char   >(d);    break;
             default:    ret    = AF_ERR_NOT_SUPPORTED; break;
         }
         if(ret == AF_SUCCESS)
