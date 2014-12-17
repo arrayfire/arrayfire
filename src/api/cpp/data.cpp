@@ -178,4 +178,16 @@ namespace af
     {
         return identity(dim4(d0, d1, d2, d3), ty);
     }
+
+    array diag(const array &in, const int num, const bool extract)
+    {
+        af_array res;
+        if (extract) {
+            AF_THROW(af_diag_extract(&res, in.get(), num));
+        } else {
+            AF_THROW(af_diag_create(&res, in.get(), num));
+        }
+
+        return array(res);
+    }
 }

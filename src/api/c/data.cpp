@@ -22,6 +22,7 @@
 #include <complex.hpp>
 #include <iota.hpp>
 #include <identity.hpp>
+#include <diagonal.hpp>
 
 using af::dim4;
 using namespace detail;
@@ -312,7 +313,7 @@ af_err af_identity(af_array *out, const unsigned ndims, const dim_type * const d
             case u32:   result = identity_<uint   >(d);    break;
             case u8:    result = identity_<uchar  >(d);    break;
             // Removed because of bool type. Functions implementations exist.
-            //case b8:    result = identity_<char   >(d);    break;
+            case b8:    result = identity_<char   >(d);    break;
             default:    ret    = AF_ERR_NOT_SUPPORTED; break;
         }
         if(ret == AF_SUCCESS)
@@ -496,6 +497,72 @@ af_err af_eval(af_array arr)
         default:
             TYPE_ERROR(0, type);
         }
+    } CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+template<typename T>
+static inline af_array diagCreate(const af_array in, const int num)
+{
+    return getHandle(*diagCreate<T>(getArray<T>(in), num));
+}
+
+template<typename T>
+static inline af_array diagExtract(const af_array in, const int num)
+{
+    return getHandle(*diagExtract<T>(getArray<T>(in), num));
+}
+
+af_err af_diag_create(af_array *out, const af_array in, const int num)
+{
+    try {
+        ArrayInfo in_info = getInfo(in);
+        DIM_ASSERT(1, in_info.ndims() <= 2);
+        af_dtype type = in_info.getType();
+
+        af_array result;
+        switch(type) {
+        case f32:   result = diagCreate<float  >(in, num);    break;
+        case c32:   result = diagCreate<cfloat >(in, num);    break;
+        case f64:   result = diagCreate<double >(in, num);    break;
+        case c64:   result = diagCreate<cdouble>(in, num);    break;
+        case s32:   result = diagCreate<int    >(in, num);    break;
+        case u32:   result = diagCreate<uint   >(in, num);    break;
+        case u8:    result = diagCreate<uchar  >(in, num);    break;
+            // Removed because of bool type. Functions implementations exist.
+        case b8:    result = diagCreate<char   >(in, num);    break;
+        default:    TYPE_ERROR(1, type);
+        }
+
+        std::swap(*out, result);
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_diag_extract(af_array *out, const af_array in, const int num)
+{
+
+    try {
+        ArrayInfo in_info = getInfo(in);
+        DIM_ASSERT(1, in_info.ndims() >= 2);
+        af_dtype type = in_info.getType();
+
+        af_array result;
+        switch(type) {
+        case f32:   result = diagExtract<float  >(in, num);    break;
+        case c32:   result = diagExtract<cfloat >(in, num);    break;
+        case f64:   result = diagExtract<double >(in, num);    break;
+        case c64:   result = diagExtract<cdouble>(in, num);    break;
+        case s32:   result = diagExtract<int    >(in, num);    break;
+        case u32:   result = diagExtract<uint   >(in, num);    break;
+        case u8:    result = diagExtract<uchar  >(in, num);    break;
+            // Removed because of bool type. Functions implementations exist.
+        case b8:    result = diagExtract<char   >(in, num);    break;
+        default:    TYPE_ERROR(1, type);
+        }
+
+        std::swap(*out, result);
     } CATCHALL;
 
     return AF_SUCCESS;

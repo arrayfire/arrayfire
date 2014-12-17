@@ -25,16 +25,16 @@ namespace cuda
         return out;
     }
 
-#define INSTANTIATE_UNIFORM(T)                              \
+#define INSTANTIATE_IDENTITY(T)                              \
     template Array<T>*  identity<T>    (const af::dim4 &dims);
 
-    INSTANTIATE_UNIFORM(float)
-    INSTANTIATE_UNIFORM(double)
-    INSTANTIATE_UNIFORM(cfloat)
-    INSTANTIATE_UNIFORM(cdouble)
-    INSTANTIATE_UNIFORM(int)
-    INSTANTIATE_UNIFORM(uint)
-    INSTANTIATE_UNIFORM(char)
-    INSTANTIATE_UNIFORM(uchar)
+    INSTANTIATE_IDENTITY(float)
+    INSTANTIATE_IDENTITY(double)
+    INSTANTIATE_IDENTITY(cfloat)
+    INSTANTIATE_IDENTITY(cdouble)
+    INSTANTIATE_IDENTITY(int)
+    INSTANTIATE_IDENTITY(uint)
+    INSTANTIATE_IDENTITY(char)
+    INSTANTIATE_IDENTITY(uchar)
 
 }

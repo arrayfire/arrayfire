@@ -69,6 +69,8 @@ namespace af
     AFAPI array iota(const dim_type d0, const dim_type d1, const dim_type d2,
                      const dim_type d3, const unsigned rep = 3, af_dtype ty=f32);
 
+    AFAPI array diag(const array &in, const int num = 0, const bool extract = true);
+
 }
 #endif
 
@@ -90,9 +92,14 @@ extern "C" {
     // Generate Random Numbers using normal distribution
     AFAPI af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
-        // Generate Random Numbers using normal distribution
+    // Generate identity matrix
     AFAPI af_err af_identity(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
+    // Create a diagonal matrix from input
+    AFAPI af_err af_diag_create(af_array *out, const af_array in, const int num);
+
+    // Extract a diagonal matrix from input
+    AFAPI af_err af_diag_extract(af_array *out, const af_array in, const int num);
 
 #ifdef __cplusplus
 }
