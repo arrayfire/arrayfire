@@ -189,3 +189,6 @@ double2 __convert_cdouble(double in)
 #define frem(lhs, rhs) remainder((lhs), (rhs))
 
 #define iszero(a) ((a) == 0)
+
+float2  __convert_z2c(double2 in) { float2  out = {in.x, in.y}; return out; }
+double2 __convert_c2z(float2  in) { double2 out = {in.x, in.y}; return out; }
