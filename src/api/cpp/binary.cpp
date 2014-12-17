@@ -31,6 +31,7 @@ namespace af
 
     INSTANTIATE(complex, af_cplx2)
     INSTANTIATE(atan2, af_atan2)
+    INSTANTIATE(hypot, af_hypot)
 
 #define WRAPPER(func)                                               \
     array func(const array &lhs, const double rhs)                  \
@@ -49,4 +50,5 @@ namespace af
     WRAPPER(mod)
     WRAPPER(complex)
     WRAPPER(atan2)
+    WRAPPER(hypot)
 }

@@ -59,6 +59,7 @@ BINARY(pow)
 BINARY(mod)
 BINARY(rem)
 BINARY(atan2)
+BINARY(hypot)
 
 #undef BINARY
 
