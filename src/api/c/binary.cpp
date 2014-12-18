@@ -42,6 +42,10 @@ static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs)
         const af_array left  = cast(lhs, otype);
         const af_array right = cast(rhs, otype);
 
+        ArrayInfo linfo = getInfo(lhs);
+        ArrayInfo rinfo = getInfo(rhs);
+        DIM_ASSERT(1, linfo.dims() == rinfo.dims());
+
         af_array res;
         switch (otype) {
         case f32: res = arithOp<float  , op>(left, right); break;
@@ -68,6 +72,10 @@ static af_err af_arith_real(af_array *out, const af_array lhs, const af_array rh
         const af_dtype otype = implicit(lhs, rhs);
         const af_array left  = cast(lhs, otype);
         const af_array right = cast(rhs, otype);
+
+        ArrayInfo linfo = getInfo(lhs);
+        ArrayInfo rinfo = getInfo(rhs);
+        DIM_ASSERT(1, linfo.dims() == rinfo.dims());
 
         af_array res;
         switch (otype) {
@@ -154,6 +162,10 @@ af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs)
                      AF_ERR_NOT_SUPPORTED);
         }
 
+        ArrayInfo linfo = getInfo(lhs);
+        ArrayInfo rinfo = getInfo(rhs);
+        DIM_ASSERT(1, linfo.dims() == rinfo.dims());
+
         af_array res;
 
         switch (type) {
@@ -181,6 +193,10 @@ af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs)
             AF_ERROR("Only floating point arrays are supported for hypot ",
                      AF_ERR_NOT_SUPPORTED);
         }
+
+        ArrayInfo linfo = getInfo(lhs);
+        ArrayInfo rinfo = getInfo(rhs);
+        DIM_ASSERT(1, linfo.dims() == rinfo.dims());
 
         af_array res;
 
@@ -215,6 +231,10 @@ static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs)
 
         const af_array left  = cast(lhs, type);
         const af_array right = cast(rhs, type);
+
+        ArrayInfo linfo = getInfo(lhs);
+        ArrayInfo rinfo = getInfo(rhs);
+        DIM_ASSERT(1, linfo.dims() == rinfo.dims());
 
         af_array res;
         switch (type) {
