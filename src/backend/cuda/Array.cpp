@@ -80,10 +80,9 @@ namespace cuda
     Node_ptr Array<T>::getNode() const
     {
         if (!node) {
-            shared_ptr<T> sptr = data;
             bool is_linear = isOwner() || (this->ndims() == 1);
             BufferNode<T> *buf_node = new BufferNode<T>(irname<T>(),
-                                                        shortname<T>(true), sptr,
+                                                        shortname<T>(true), data,
                                                         strides().get(), offset, is_linear);
             const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
         }
