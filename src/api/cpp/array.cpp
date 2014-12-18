@@ -195,9 +195,9 @@ namespace af
 
     array array::copy() const
     {
-        af_array *other = 0;
-        AF_THROW(af_copy_array(other, arr));
-        return array(*other);
+        af_array other = 0;
+        AF_THROW(af_copy_array(&other, arr));
+        return array(other);
     }
 
 #undef INSTANTIATE
