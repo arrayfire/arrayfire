@@ -156,6 +156,7 @@ namespace af
         af_seq afs[4];
         getSeq(afs);
         AF_THROW(af_index(&temp, arr, 4, afs));
+        AF_THROW(af_destroy_array(arr));
         arr = temp;
         isRef = false;
         return arr;
@@ -577,7 +578,7 @@ namespace af
         INSTANTIATE(||, af_or)
         INSTANTIATE(%, af_mod)
 
-        array array::operator-() const
+    array array::operator-() const
     {
         af_array out;
         array cst = constant(0, this->dims(), this->type());
