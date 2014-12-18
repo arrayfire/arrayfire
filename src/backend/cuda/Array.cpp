@@ -27,14 +27,14 @@ namespace cuda
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>),
-        parent(), node(), ready(true)
+        node(), ready(true), offset(0)
     {}
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data, bool is_device) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data((is_device ? (T *)in_data : memAlloc<T>(dims.elements())), memFree<T>),
-        parent(), node(), ready(true)
+        node(), ready(true), offset(0)
     {
         if (!is_device) {
             CUDA_CHECK(cudaMemcpy(data.get(), in_data, dims.elements() * sizeof(T), cudaMemcpyHostToDevice));
@@ -42,10 +42,11 @@ namespace cuda
     }
 
     template<typename T>
-    Array<T>::Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
-        ArrayInfo(dims, offset, stride, (af_dtype)dtype_traits<T>::af_type),
-        data(),
-        parent(&parnt), node(), ready(true)
+    Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &strides) :
+        ArrayInfo(dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
+        data(parent.getData()),
+        node(), ready(true),
+        offset(parent.getOffset() + calcOffset(parent.strides(), offsets))
     { }
 
     template<typename T>
@@ -55,7 +56,7 @@ namespace cuda
                   af::dim4(tmp.strides[0], tmp.strides[1], tmp.strides[2], tmp.strides[3]),
                   (af_dtype)dtype_traits<T>::af_type),
         data(tmp.ptr, memFree<T>),
-        parent(), node(), ready(true)
+        node(), ready(true), offset(0)
     {
     }
 
@@ -63,7 +64,7 @@ namespace cuda
     Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(),
-        parent(), node(n), ready(false)
+        node(n), ready(false), offset(0)
     {
     }
 
@@ -79,15 +80,11 @@ namespace cuda
     Node_ptr Array<T>::getNode() const
     {
         if (!node) {
-            shared_ptr<T> sptr = isOwner() ? data : parent->data;
-            dim_type offset = isOwner() ? 0 : calcOffset(parent->strides(), this->offsets());
-
+            shared_ptr<T> sptr = data;
             bool is_linear = isOwner() || (this->ndims() == 1);
-
             BufferNode<T> *buf_node = new BufferNode<T>(irname<T>(),
                                                         shortname<T>(true), sptr,
                                                         strides().get(), offset, is_linear);
-
             const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
         }
 
