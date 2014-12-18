@@ -229,7 +229,7 @@ static inline af_array randu_(const af::dim4 &dims)
 template<typename T>
 static inline af_array identity_(const af::dim4 &dims)
 {
-    return getHandle(*identity<T>(dims));
+    return getHandle(*detail::identity<T>(dims));
 }
 
 af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
