@@ -92,11 +92,9 @@ namespace cpu
         //data if parent. empty if child
         std::shared_ptr<T> data;
 
-        //If parent is valid. use offset to get values
-        const Array<T> *parent;
-
         TNJ::Node_ptr node;
         bool ready;
+        dim_type offset;
 
         Array(dim4 dims);
         explicit Array(dim4 dims, const T * const in_data);
@@ -111,13 +109,15 @@ namespace cpu
 
         bool isOwner() const
         {
-            return parent == nullptr;
+            return offset == 0;
         }
 
         void eval();
         void eval() const;
 
-        //FIXME: This should do a copy if it is not owner. You do not want to overwrite parents data
+        dim_type getOffset() const { return offset; }
+        shared_ptr<T> getData() const {return data; }
+
         T* get(bool withOffset = true)
         {
             return const_cast<T*>(static_cast<const Array<T>*>(this)->get(withOffset));
@@ -125,20 +125,8 @@ namespace cpu
 
         const T* get(bool withOffset = true) const
         {
-
             if (!isReady()) eval();
-
-            const T* ptr = nullptr;
-            if(isOwner()) {
-                ptr = data.get();
-            } else {
-                size_t offset = 0;
-                if(withOffset) {
-                    offset = calcOffset(parent->strides(), this->offsets());
-                }
-                ptr = parent->data.get() + offset;
-            }
-            return ptr;
+            return data.get() + (withOffset ? offset : 0);
         }
 
         TNJ::Node_ptr getNode() const;
