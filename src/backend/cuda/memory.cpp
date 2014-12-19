@@ -19,10 +19,50 @@
 
 namespace cuda
 {
+    static void garbageCollect();
+    static void pinnedGarbageCollect();
+
+    // Manager Class
+    // Dummy used to call garbage collection at the end of the program
+    class Manager
+    {
+        public:
+        static bool initialized;
+        Manager()
+        {
+            initialized = true;
+        }
+
+        ~Manager()
+        {
+            for(int i = 0; i < getDeviceCount(); i++) {
+                setDevice(i);
+                garbageCollect();
+            }
+            pinnedGarbageCollect();
+        }
+    };
+
+    bool Manager::initialized = false;
+
+    static void managerInit()
+    {
+        if(Manager::initialized == false)
+            static Manager pm = Manager();
+    }
+
     template<typename T>
     static void cudaFreeWrapper(T *ptr)
     {
         cudaError_t err = cudaFree(ptr);
+        if (err != cudaErrorCudartUnloading) // see issue #167
+            CUDA_CHECK(err);
+    }
+
+    template<typename T>
+    static void pinnedFreeWrapper(T *ptr)
+    {
+        cudaError_t err = cudaFreeHost(ptr);
         if (err != cudaErrorCudartUnloading) // see issue #167
             CUDA_CHECK(err);
     }
@@ -41,6 +81,20 @@ namespace cuda
     void memFree(T *ptr)
     {
         cudaFreeWrapper(ptr); // Free it because we are not sure what the size is
+    }
+
+    template<typename T>
+    T* pinnedAlloc(const size_t &elements)
+    {
+        T* ptr = NULL;
+        CUDA_CHECK(cudaMallocHost((void **)(&ptr), alloc_bytes));
+        return (T*)ptr;
+    }
+
+    template<typename T>
+    void pinnedFree(T *ptr)
+    {
+        pinnedFreeWrapper(ptr); // Free it because we are not sure what the size is
     }
 
 #else
@@ -82,6 +136,7 @@ namespace cuda
     template<typename T>
     T* memAlloc(const size_t &elements)
     {
+        managerInit();
         int n = getActiveDeviceId();
         T* ptr = NULL;
         size_t alloc_bytes = divup(sizeof(T) * elements, 1024) * 1024;
@@ -132,20 +187,80 @@ namespace cuda
         }
     }
 
+    //////////////////////////////////////////////////////////////////////////////
+    mem_t pinned_maps;
+    static size_t pinned_used_bytes = 0;
+
+    static void pinnedGarbageCollect()
+    {
+        for(mem_iter iter = pinned_maps.begin(); iter != pinned_maps.end(); iter++) {
+            if ((iter->second).is_free) pinnedFreeWrapper(iter->first);
+        }
+
+        mem_iter memory_curr = pinned_maps.begin();
+        mem_iter memory_end  = pinned_maps.end();
+
+        while(memory_curr != memory_end) {
+            if (memory_curr->second.is_free) {
+                pinned_maps.erase(memory_curr++);
+            } else {
+                ++memory_curr;
+            }
+        }
+    }
+
     template<typename T>
     T* pinnedAlloc(const size_t &elements)
     {
-        void *ptr = NULL;
-        CUDA_CHECK(cudaMallocHost(&ptr, elements));
+        managerInit();
+        T* ptr = NULL;
+        // Allocate the higher megabyte. Overhead of creating pinned memory is
+        // more so we want more resuable memory.
+        size_t alloc_bytes = divup(sizeof(T) * elements, 1048576) * 1048576;
+
+        if (elements > 0) {
+
+            // FIXME: Add better checks for garbage collection
+            // Perhaps look at total memory available as a metric
+            if (pinned_maps.size() >= MAX_BUFFERS || pinned_used_bytes >= MAX_BYTES) {
+                pinnedGarbageCollect();
+            }
+
+            for(mem_iter iter = pinned_maps.begin();
+                iter != pinned_maps.end(); iter++) {
+
+                mem_info info = iter->second;
+                if (info.is_free && info.bytes == alloc_bytes) {
+                    iter->second.is_free = false;
+                    pinned_used_bytes += alloc_bytes;
+                    return (T *)iter->first;
+                }
+            }
+
+            // Perform garbage collection if memory can not be allocated
+            if (cudaMallocHost((void **)&ptr, alloc_bytes) != cudaSuccess) {
+                pinnedGarbageCollect();
+                CUDA_CHECK(cudaMallocHost((void **)(&ptr), alloc_bytes));
+            }
+
+            mem_info info = {false, alloc_bytes};
+            pinned_maps[ptr] = info;
+            pinned_used_bytes += alloc_bytes;
+        }
         return (T*)ptr;
     }
 
     template<typename T>
-    void pinnedFree(T* ptr)
+    void pinnedFree(T *ptr)
     {
-        cudaError_t err = cudaFreeHost((void*) ptr);
-        if (err != cudaErrorCudartUnloading) // see issue #167
-            CUDA_CHECK(err);
+        mem_iter iter = pinned_maps.find((void *)ptr);
+
+        if (iter != pinned_maps.end()) {
+            iter->second.is_free = true;
+            pinned_used_bytes -= iter->second.bytes;
+        } else {
+            pinnedFreeWrapper(ptr); // Free it because we are not sure what the size is
+        }
     }
 
 #endif
