@@ -34,7 +34,6 @@ namespace af
         default: return sizeof(float);
         }
     }
-    array::array() : arr(0), isRef(false) {}
     array::array(const af_array handle): arr(handle), isRef(false) {}
 
     static void initEmptyArray(af_array *arr, af_dtype ty,
@@ -57,6 +56,10 @@ namespace af
         }
     }
 
+    array::array() : arr(0), isRef(false)
+    {
+        initEmptyArray(&arr, f32, 0, 0, 0, 0);
+    }
     array::array(const dim4 &dims, af_dtype ty) : arr(0), isRef(false)
     {
         initEmptyArray(&arr, ty, dims[0], dims[1], dims[2], dims[3]);
