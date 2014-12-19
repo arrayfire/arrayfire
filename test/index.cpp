@@ -527,3 +527,77 @@ TEST(Indexing2D, ColumnContiniousCPP)
         delete[] ptr;
     }
 }
+
+/************************ Array Based indexing tests from here on ******************/
+
+template<typename T>
+class ArrayIndex : public ::testing::Test
+{
+    public:
+        virtual void SetUp() {
+        }
+};
+
+typedef ::testing::Types<float, double, int, unsigned, unsigned char> ArrIdxTestTypes;
+TYPED_TEST_CASE(ArrayIndex, ArrIdxTestTypes);
+
+template<typename T>
+void arrayIndexTest(string pTestFile, int dim)
+{
+    if (noDoubleTests<T>()) return;
+
+    vector<af::dim4>  numDims;
+    vector<vector<T>>      in;
+    vector<vector<T>>   tests;
+
+    readTests<T, T, int>(pTestFile, numDims, in, tests);
+
+    af::dim4 dims0     = numDims[0];
+    af::dim4 dims1     = numDims[1];
+    af_array outArray  = 0;
+    af_array inArray   = 0;
+    af_array idxArray  = 0;
+
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
+                dims0.ndims(), dims0.get(), (af_dtype)af::dtype_traits<T>::af_type));
+
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray, &(in[1].front()),
+                dims1.ndims(), dims1.get(), (af_dtype)af::dtype_traits<T>::af_type));
+
+    ASSERT_EQ(AF_SUCCESS, af_array_index(&outArray, inArray, idxArray, dim));
+
+    vector<T> currGoldBar = tests[0];
+    size_t nElems = currGoldBar.size();
+    T *outData = new T[nElems];
+
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+
+    for (size_t elIter=0; elIter<nElems; ++elIter) {
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+    }
+
+    delete[] outData;
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(idxArray));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+}
+
+TYPED_TEST(ArrayIndex, Dim0)
+{
+    arrayIndexTest<TypeParam>(string(TEST_DIR"/arrayindex/dim0.test"), 0);
+}
+
+TYPED_TEST(ArrayIndex, Dim1)
+{
+    arrayIndexTest<TypeParam>(string(TEST_DIR"/arrayindex/dim1.test"), 1);
+}
+
+TYPED_TEST(ArrayIndex, Dim2)
+{
+    arrayIndexTest<TypeParam>(string(TEST_DIR"/arrayindex/dim2.test"), 2);
+}
+
+TYPED_TEST(ArrayIndex, Dim3)
+{
+    arrayIndexTest<TypeParam>(string(TEST_DIR"/arrayindex/dim3.test"), 3);
+}
