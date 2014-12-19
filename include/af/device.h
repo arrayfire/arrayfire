@@ -26,6 +26,20 @@ namespace af
     AFAPI void setDevice(const int device);
 
     AFAPI void sync(int device = -1);
+
+    AFAPI void *alloc(size_t elements, af_dtype type);
+
+    template<typename T>
+    T* alloc(size_t elements);
+
+    AFAPI void *pinned(size_t elements, af_dtype type);
+
+    template<typename T>
+    T* pinned(size_t elements);
+
+    AFAPI void free(const void *);
+
+    AFAPI void freePinned(const void *);
 }
 #endif
 

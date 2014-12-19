@@ -21,8 +21,8 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
-using af::af_cfloat;
-using af::af_cdouble;
+using af::cfloat;
+using af::cdouble;
 
 template<typename T>
 class Random : public ::testing::Test
@@ -33,7 +33,7 @@ class Random : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, af_cfloat, double, af_cdouble, int, unsigned, unsigned char> TestTypes;
+typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, unsigned char> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Random, TestTypes);

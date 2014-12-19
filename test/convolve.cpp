@@ -17,8 +17,8 @@
 
 using std::vector;
 using std::string;
-using af::af_cfloat;
-using af::af_cdouble;
+using af::cfloat;
+using af::cdouble;
 
 template<typename T>
 class Convolve : public ::testing::Test
@@ -28,7 +28,7 @@ class Convolve : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<af_cdouble, af_cfloat, float, double, int, uint, char, uchar> TestTypes;
+typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, char, uchar> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Convolve, TestTypes);

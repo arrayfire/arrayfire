@@ -73,7 +73,6 @@ UNARY_FN(cbrt)
 UNARY_FN(round)
 UNARY_FN(ceil)
 UNARY_FN(floor)
-UNARY_FN(abs)
 
 #undef UNARY_FN
 

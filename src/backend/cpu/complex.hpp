@@ -41,23 +41,20 @@ namespace cpu
                                        reinterpret_cast<TNJ::Node *>(node)));
     }
 
-
-    using std::real;
-    using std::imag;
-
 #define CPLX_UNARY_FN(op)                       \
     template<typename To, typename Ti>          \
     struct UnOp<To, Ti, af_##op##_t>            \
     {                                           \
         To eval(Ti in)                          \
         {                                       \
-            return op(in);                      \
+            return std::op(in);                 \
         }                                       \
     };                                          \
 
     CPLX_UNARY_FN(real)
     CPLX_UNARY_FN(imag)
     CPLX_UNARY_FN(conj)
+    CPLX_UNARY_FN(abs)
 
     template<typename To, typename Ti>
     Array<To>* real(const Array<Ti> &in)
@@ -74,6 +71,16 @@ namespace cpu
     {
         TNJ::Node_ptr in_node = in.getNode();
         TNJ::UnaryNode<To, Ti, af_imag_t> *node = new TNJ::UnaryNode<To, Ti, af_imag_t>(in_node);
+
+        return createNodeArray<To>(in.dims(),
+                                   TNJ::Node_ptr(reinterpret_cast<TNJ::Node *>(node)));
+    }
+
+    template<typename To, typename Ti>
+    Array<To>* abs(const Array<Ti> &in)
+    {
+        TNJ::Node_ptr in_node = in.getNode();
+        TNJ::UnaryNode<To, Ti, af_abs_t> *node = new TNJ::UnaryNode<To, Ti, af_abs_t>(in_node);
 
         return createNodeArray<To>(in.dims(),
                                    TNJ::Node_ptr(reinterpret_cast<TNJ::Node *>(node)));

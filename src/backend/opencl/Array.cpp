@@ -27,7 +27,7 @@ namespace opencl
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(bufferAlloc(ArrayInfo::elements() * sizeof(T)), bufferFree),
-        parent(), node(), ready(true)
+        node(), ready(true), offset(0), owner(true)
     {
     }
 
@@ -35,7 +35,7 @@ namespace opencl
     Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(),
-        parent(), node(n), ready(false)
+        node(n), ready(false), offset(0), owner(true)
     {
     }
 
@@ -43,7 +43,7 @@ namespace opencl
     Array<T>::Array(af::dim4 dims, const T * const in_data) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(bufferAlloc(ArrayInfo::elements()*sizeof(T)), bufferFree),
-        parent(), node(), ready(true)
+        node(), ready(true), offset(0), owner(true)
     {
         getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T)*ArrayInfo::elements(), in_data);
     }
@@ -52,15 +52,16 @@ namespace opencl
     Array<T>::Array(af::dim4 dims, cl_mem mem) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(new cl::Buffer(mem), bufferFree),
-        parent(), node(), ready(true)
+        node(), ready(true), offset(0), owner(true)
     {
     }
 
     template<typename T>
-    Array<T>::Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
-        ArrayInfo(dims, offset, stride, (af_dtype)dtype_traits<T>::af_type),
-        data(0),
-        parent(&parnt), node(), ready(true)
+    Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &stride) :
+        ArrayInfo(dims, offsets, stride, (af_dtype)dtype_traits<T>::af_type),
+        data(parent.getData()), node(), ready(true),
+        offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
+        owner(false)
     { }
 
 
@@ -72,7 +73,7 @@ namespace opencl
                            tmp.info.strides[2], tmp.info.strides[3]),
                   (af_dtype)dtype_traits<T>::af_type),
         data(tmp.data),
-        parent(), node(), ready(true)
+        node(), ready(true), offset(0), owner(true)
     {
     }
 

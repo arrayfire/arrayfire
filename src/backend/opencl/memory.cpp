@@ -117,9 +117,43 @@ namespace opencl
         return bufferFree((cl::Buffer *)ptr);
     }
 
+
+    typedef std::map<void*, cl::Buffer *> pinned_t;
+    typedef pinned_t::iterator pinned_iter;
+    pinned_t pinned_maps[DeviceManager::MAX_DEVICES];
+
+    template<typename T>
+    T* pinnedAlloc(const size_t &elements)
+    {
+        void *ptr = NULL;
+        cl::Buffer *buf = new cl::Buffer(getContext(), CL_MEM_ALLOC_HOST_PTR, elements * sizeof(T));
+
+        ptr = getQueue().enqueueMapBuffer(*buf, true, CL_MAP_READ|CL_MAP_WRITE,
+                                          0, elements * sizeof(T));
+
+        pinned_maps[getActiveDeviceId()][ptr] = buf;
+
+        return (T*)ptr;
+    }
+
+    template<typename T>
+    void pinnedFree(T* ptr)
+    {
+        int n = getActiveDeviceId();
+        pinned_iter loc = pinned_maps[n].find((void *)ptr);
+        if(loc != pinned_maps[n].end()) {
+            cl::Buffer *buf = loc->second;
+            getQueue().enqueueUnmapMemObject(*buf, (void *)ptr);
+            delete buf;
+            pinned_maps[n].erase(loc);
+        }
+    }
+
 #define INSTANTIATE(T)                              \
     template T* memAlloc(const size_t &elements);   \
     template void memFree(T* ptr);                  \
+    template T* pinnedAlloc(const size_t &elements);\
+    template void pinnedFree(T* ptr);               \
 
     INSTANTIATE(float)
     INSTANTIATE(cfloat)

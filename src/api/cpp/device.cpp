@@ -59,4 +59,70 @@ namespace af
     {
         AF_THROW(af_sync(device));
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Alloc and free host, pinned, zero copy
+    static unsigned size_of(af_dtype type)
+    {
+        switch(type) {
+        case f32: return sizeof(float);
+        case f64: return sizeof(double);
+        case s32: return sizeof(int);
+        case u32: return sizeof(unsigned);
+        case u8 : return sizeof(unsigned char);
+        case b8 : return sizeof(unsigned char);
+        case c32: return sizeof(float) * 2;
+        case c64: return sizeof(double) * 2;
+        default: return sizeof(float);
+        }
+    }
+
+    void *alloc(size_t elements, af_dtype type)
+    {
+        void *ptr;
+        AF_THROW(af_alloc_device(&ptr, elements * size_of(type)));
+        // FIXME: Add to map
+        return ptr;
+    }
+
+    void *pinned(size_t elements, af_dtype type)
+    {
+        void *ptr;
+        AF_THROW(af_alloc_pinned(&ptr, elements * size_of(type)));
+        // FIXME: Add to map
+        return ptr;
+    }
+
+    void free(const void *ptr)
+    {
+        //FIXME: look up map and call the right free
+        AF_THROW(af_free_device((void *)ptr));
+    }
+
+    void freePinned(const void *ptr)
+    {
+        //FIXME: look up map and call the right free
+        AF_THROW(af_free_pinned((void *)ptr));
+    }
+
+#define INSTANTIATE(T)                                                      \
+    template<> AFAPI                                                        \
+    T* alloc(size_t elements)                                               \
+    {                                                                       \
+        return (T*)alloc(elements, (af_dtype)dtype_traits<T>::af_type);     \
+    }                                                                       \
+    template<> AFAPI                                                        \
+    T* pinned(size_t elements)                                              \
+    {                                                                       \
+        return (T*)pinned(elements, (af_dtype)dtype_traits<T>::af_type);    \
+    }
+
+    INSTANTIATE(float)
+    INSTANTIATE(double)
+    INSTANTIATE(cfloat)
+    INSTANTIATE(cdouble)
+    INSTANTIATE(int)
+    INSTANTIATE(unsigned)
+    INSTANTIATE(unsigned char)
+    INSTANTIATE(char)
 }

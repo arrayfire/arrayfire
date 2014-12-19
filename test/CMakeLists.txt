@@ -72,6 +72,21 @@ ENDIF()
 SET(TESTDATA_SOURCE_DIR "${CMAKE_SOURCE_DIR}/test/data")
 ADD_DEFINITIONS("-D TEST_DIR=\"\\\"${TESTDATA_SOURCE_DIR}\\\"\"")
 
+# Check if data exists
+IF (EXISTS "${TESTDATA_SOURCE_DIR}" AND IS_DIRECTORY "${TESTDATA_SOURCE_DIR}"
+    AND EXISTS "${TESTDATA_SOURCE_DIR}/README.md")
+    # Test data is available
+    # Do Nothing
+ELSE (EXISTS "${TESTDATA_SOURCE_DIR}" AND IS_DIRECTORY "${TESTDATA_SOURCE_DIR}"
+    AND EXISTS "${TESTDATA_SOURCE_DIR}/README.md")
+    MESSAGE(WARNING "Test Data is not available. Tests will build but fail when run.")
+    MESSAGE("Did you miss the --recursive option when cloning?")
+    MESSAGE("Run the following commands to correct this:")
+    MESSAGE("git submodule init")
+    MESSAGE("git submodule update")
+    MESSAGE("git submodule foreach git pull origin master")
+ENDIF()
+
 FILE(GLOB FILES "*.cpp")
 
 IF(${BUILD_CPU})

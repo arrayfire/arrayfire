@@ -86,7 +86,6 @@ UNARY(atanh)
 UNARY(round)
 UNARY(floor)
 UNARY(ceil)
-UNARY(abs)
 
 UNARY(exp)
 UNARY(expm1)
