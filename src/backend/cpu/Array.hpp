@@ -95,6 +95,7 @@ namespace cpu
         TNJ::Node_ptr node;
         bool ready;
         dim_type offset;
+        bool owner;
 
         Array(dim4 dims);
         explicit Array(dim4 dims, const T * const in_data);
@@ -107,10 +108,7 @@ namespace cpu
 
         bool isReady() const { return ready; }
 
-        bool isOwner() const
-        {
-            return offset == 0;
-        }
+        bool isOwner() const { return owner; }
 
         void eval();
         void eval() const;

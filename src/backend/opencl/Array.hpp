@@ -92,6 +92,7 @@ namespace opencl
         JIT::Node_ptr node;
         bool ready;
         dim_type offset;
+        bool owner;
 
         Array(af::dim4 dims);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
@@ -105,10 +106,7 @@ namespace opencl
         ~Array();
 
         bool isReady() const { return ready; }
-        bool isOwner() const
-        {
-            return offset == 0;
-        }
+        bool isOwner() const { return owner; }
 
         void eval();
         void eval() const;
@@ -129,6 +127,11 @@ namespace opencl
         const dim_type getOffset() const
         {
             return offset;
+        }
+
+        Buffer_ptr getData() const
+        {
+            return data;
         }
 
         operator Param() const

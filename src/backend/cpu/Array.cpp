@@ -24,14 +24,14 @@ namespace cpu
     Array<T>::Array(dim4 dims):
         ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>),
-        node(), ready(true), offset(0)
+        node(), ready(true), offset(0), owner(true)
     { }
 
     template<typename T>
     Array<T>::Array(dim4 dims, const T * const in_data):
         ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>),
-        node(), ready(true), offset(0)
+        node(), ready(true), offset(0), owner(true)
     {
         std::copy(in_data, in_data + dims.elements(), data.get());
     }
@@ -41,7 +41,7 @@ namespace cpu
     Array<T>::Array(af::dim4 dims, TNJ::Node_ptr n) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(),
-        node(n), ready(false), offset(0)
+        node(n), ready(false), offset(0), owner(true)
     {
     }
 
@@ -50,7 +50,8 @@ namespace cpu
         ArrayInfo(dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
         data(parent.getData()),
         node(), ready(true),
-        offset(parent.getOffset() + calcOffset(parent.strides(), offsets))
+        offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
+        owner(false)
     { }
 
     template<typename T>

@@ -27,14 +27,14 @@ namespace cuda
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>),
-        node(), ready(true), offset(0)
+        node(), ready(true), offset(0), owner(true)
     {}
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data, bool is_device) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data((is_device ? (T *)in_data : memAlloc<T>(dims.elements())), memFree<T>),
-        node(), ready(true), offset(0)
+        node(), ready(true), offset(0), owner(true)
     {
         if (!is_device) {
             CUDA_CHECK(cudaMemcpy(data.get(), in_data, dims.elements() * sizeof(T), cudaMemcpyHostToDevice));
@@ -46,7 +46,8 @@ namespace cuda
         ArrayInfo(dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
         data(parent.getData()),
         node(), ready(true),
-        offset(parent.getOffset() + calcOffset(parent.strides(), offsets))
+        offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
+        owner(false)
     { }
 
     template<typename T>
@@ -56,7 +57,7 @@ namespace cuda
                   af::dim4(tmp.strides[0], tmp.strides[1], tmp.strides[2], tmp.strides[3]),
                   (af_dtype)dtype_traits<T>::af_type),
         data(tmp.ptr, memFree<T>),
-        node(), ready(true), offset(0)
+        node(), ready(true), offset(0), owner(true)
     {
     }
 
@@ -64,7 +65,7 @@ namespace cuda
     Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(),
-        node(n), ready(false), offset(0)
+        node(n), ready(false), offset(0), owner(true)
     {
     }
 

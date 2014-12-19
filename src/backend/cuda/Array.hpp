@@ -97,6 +97,7 @@ namespace cuda
         JIT::Node_ptr node;
         bool ready;
         dim_type offset;
+        bool owner;
 
         Array(af::dim4 dims);
         explicit Array(af::dim4 dims, const T * const in_data, bool is_device = false);
@@ -109,7 +110,7 @@ namespace cuda
         ~Array();
 
         bool isReady() const { return ready; }
-        bool isOwner() const { return offset == 0; }
+        bool isOwner() const { return owner; }
 
         void eval();
         void eval() const;
