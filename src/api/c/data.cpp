@@ -391,7 +391,7 @@ static inline af_array iota_(const dim4& d, const unsigned rep)
 
 //Strong Exception Guarantee
 af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const dims,
-               const unsigned rep, const af_dtype type)
+               const int rep, const af_dtype type)
 {
     AF_CHECK(af_init());
     af_err ret = AF_ERR_ARG;
@@ -401,13 +401,22 @@ af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const di
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
         }
+
+        // Repeat highest dimension, ie. creates a single sequence from
+        // 0...elements - 1
+        int rep_ = rep;
+        if(rep < 0)
+        {
+            rep_ = ndims - 1; // ndims = [1,4] => rep = [0, 4]
+        }
+
         switch(type) {
-        case f32:   out = iota_<float  >(d, rep); break;
-        case f64:   out = iota_<double >(d, rep); break;
-        case s32:   out = iota_<int    >(d, rep); break;
-        case u32:   out = iota_<uint   >(d, rep); break;
-        case u8:    out = iota_<uchar  >(d, rep); break;
-        default:    ret = AF_ERR_NOT_SUPPORTED;  break;
+        case f32:   out = iota_<float  >(d, rep_); break;
+        case f64:   out = iota_<double >(d, rep_); break;
+        case s32:   out = iota_<int    >(d, rep_); break;
+        case u32:   out = iota_<uint   >(d, rep_); break;
+        case u8:    out = iota_<uchar  >(d, rep_); break;
+        default:    ret = AF_ERR_NOT_SUPPORTED;    break;
         }
         std::swap(*result, out);
         ret = AF_SUCCESS;

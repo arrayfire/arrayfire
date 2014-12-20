@@ -118,32 +118,15 @@ namespace af
         return randn(dim4(d0, d1, d2, d3), ty);
     }
 
-    array iota(const dim4 &dims, const unsigned rep, af_dtype ty)
+    array iota(const dim4 &dims, const int rep, af_dtype ty)
     {
         af_array out;
         AF_THROW(af_iota(&out, dims.ndims(), dims.get(), rep, ty));
         return array(out);
     }
 
-    array iota(const dim_type d0, const unsigned rep, af_dtype ty)
-    {
-        return iota(dim4(d0), rep, ty);
-    }
-
-    array iota(const dim_type d0, const dim_type d1,
-               const unsigned rep, af_dtype ty)
-    {
-        return iota(dim4(d0, d1), rep, ty);
-    }
-
     array iota(const dim_type d0, const dim_type d1, const dim_type d2,
-               const unsigned rep, af_dtype ty)
-    {
-        return iota(dim4(d0, d1, d2), rep, ty);
-    }
-
-    array iota(const dim_type d0, const dim_type d1, const dim_type d2,
-               const dim_type d3, const unsigned rep, af_dtype ty)
+               const dim_type d3, const int rep, af_dtype ty)
     {
         return iota(dim4(d0, d1, d2, d3), rep, ty);
     }
