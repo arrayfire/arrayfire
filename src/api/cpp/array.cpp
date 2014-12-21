@@ -26,7 +26,7 @@ namespace af
         return toDims(av, parentDims);
     }
 
-    static unsigned size_of(af_dtype type)
+    static unsigned size_of(af::dtype type)
     {
         switch(type) {
         case f32: return sizeof(float);
@@ -42,7 +42,7 @@ namespace af
     }
     array::array(const af_array handle): arr(handle), isRef(false) {}
 
-    static void initEmptyArray(af_array *arr, af_dtype ty,
+    static void initEmptyArray(af_array *arr, af::dtype ty,
                                dim_type d0, dim_type d1=1, dim_type d2=1, dim_type d3=1)
     {
         dim_type my_dims[] = {d0, d1, d2, d3};
@@ -53,7 +53,7 @@ namespace af
     static void initDataArray(af_array *arr, const T *ptr, af_source_t src,
                               dim_type d0, dim_type d1=1, dim_type d2=1, dim_type d3=1)
     {
-        af_dtype ty = (af_dtype)dtype_traits<T>::af_type;
+        af::dtype ty = (af::dtype)dtype_traits<T>::af_type;
         dim_type my_dims[] = {d0, d1, d2, d3};
         switch (src) {
         case afHost:   AF_THROW(af_create_array(arr, (const void * const)ptr, 4, my_dims, ty)); break;
@@ -66,27 +66,27 @@ namespace af
     {
         initEmptyArray(&arr, f32, 0, 0, 0, 0);
     }
-    array::array(const dim4 &dims, af_dtype ty) : arr(0), isRef(false)
+    array::array(const dim4 &dims, af::dtype ty) : arr(0), isRef(false)
     {
         initEmptyArray(&arr, ty, dims[0], dims[1], dims[2], dims[3]);
     }
 
-    array::array(dim_type d0, af_dtype ty) : arr(0), isRef(false)
+    array::array(dim_type d0, af::dtype ty) : arr(0), isRef(false)
     {
         initEmptyArray(&arr, ty, d0);
     }
 
-    array::array(dim_type d0, dim_type d1, af_dtype ty) : arr(0), isRef(false)
+    array::array(dim_type d0, dim_type d1, af::dtype ty) : arr(0), isRef(false)
     {
         initEmptyArray(&arr, ty, d0, d1);
     }
 
-    array::array(dim_type d0, dim_type d1, dim_type d2, af_dtype ty) : arr(0), isRef(false)
+    array::array(dim_type d0, dim_type d1, dim_type d2, af::dtype ty) : arr(0), isRef(false)
     {
         initEmptyArray(&arr, ty, d0, d1, d2);
     }
 
-    array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, af_dtype ty) : arr(0), isRef(false)
+    array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, af::dtype ty) : arr(0), isRef(false)
     {
         initEmptyArray(&arr, ty, d0, d1, d2, d3);
     }
@@ -138,9 +138,9 @@ namespace af
         if (arr) AF_THROW(af_destroy_array(arr));
     }
 
-    af_dtype array::type() const
+    af::dtype array::type() const
     {
-        af_dtype my_type;
+        af::dtype my_type;
         AF_THROW(af_get_type(&my_type, arr));
         return my_type;
     }
@@ -321,7 +321,7 @@ namespace af
         return this->operator()(span, span, idx, span);
     }
 
-    array array::as(af_dtype type) const
+    array array::as(af::dtype type) const
     {
         af_array out;
         AF_THROW(af_cast(&out, this->get(), type));
@@ -651,7 +651,7 @@ namespace af
 #define INSTANTIATE(T)                                      \
     template<> AFAPI T *array::host() const                 \
     {                                                       \
-        if (type() != (af_dtype)dtype_traits<T>::af_type) { \
+        if (type() != (af::dtype)dtype_traits<T>::af_type) { \
             AF_THROW(AF_ERR_INVALID_TYPE);                  \
         }                                                   \
                                                             \

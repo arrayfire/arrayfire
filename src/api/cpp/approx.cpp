@@ -13,7 +13,7 @@
 
 namespace af
 {
-    array approx1(const array& in, const array &pos, const af_interp_type method, const float offGrid)
+    array approx1(const array& in, const array &pos, const interpType method, const float offGrid)
     {
         af_array out = 0;
         AF_THROW(af_approx1(&out, in.get(), pos.get(), method, offGrid));
@@ -21,7 +21,7 @@ namespace af
     }
 
     array approx2(const array& in, const array &pos0, const array &pos1,
-                  const af_interp_type method, const float offGrid)
+                  const interpType method, const float offGrid)
     {
         af_array out = 0;
         AF_THROW(af_approx2(&out, in.get(), pos0.get(), pos1.get(), method, offGrid));

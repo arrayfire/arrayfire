@@ -39,7 +39,7 @@ typedef ::testing::Types<float, double, int, unsigned> TestTypes;
 TYPED_TEST_CASE(Regions, TestTypes);
 
 template<typename T>
-void regionsTest(string pTestFile, af_connectivity_type connectivity, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
+void regionsTest(string pTestFile, af_connectivity connectivity, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
 {
     if (noDoubleTests<T>()) return;
 

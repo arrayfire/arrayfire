@@ -62,7 +62,7 @@ namespace af
 
     ///////////////////////////////////////////////////////////////////////////
     // Alloc and free host, pinned, zero copy
-    static unsigned size_of(af_dtype type)
+    static unsigned size_of(af::dtype type)
     {
         switch(type) {
         case f32: return sizeof(float);
@@ -77,7 +77,7 @@ namespace af
         }
     }
 
-    void *alloc(size_t elements, af_dtype type)
+    void *alloc(size_t elements, af::dtype type)
     {
         void *ptr;
         AF_THROW(af_alloc_device(&ptr, elements * size_of(type)));
@@ -85,7 +85,7 @@ namespace af
         return ptr;
     }
 
-    void *pinned(size_t elements, af_dtype type)
+    void *pinned(size_t elements, af::dtype type)
     {
         void *ptr;
         AF_THROW(af_alloc_pinned(&ptr, elements * size_of(type)));
@@ -109,12 +109,12 @@ namespace af
     template<> AFAPI                                                        \
     T* alloc(size_t elements)                                               \
     {                                                                       \
-        return (T*)alloc(elements, (af_dtype)dtype_traits<T>::af_type);     \
+        return (T*)alloc(elements, (af::dtype)dtype_traits<T>::af_type);     \
     }                                                                       \
     template<> AFAPI                                                        \
     T* pinned(size_t elements)                                              \
     {                                                                       \
-        return (T*)pinned(elements, (af_dtype)dtype_traits<T>::af_type);    \
+        return (T*)pinned(elements, (af::dtype)dtype_traits<T>::af_type);    \
     }
 
     INSTANTIATE(float)
