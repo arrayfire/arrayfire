@@ -631,3 +631,33 @@ TEST(ArrayIndex, CPP)
 
     delete[] outData;
 }
+
+TEST(ArrayIndex, CPPLarge)
+{
+    using af::array;
+
+    vector<af::dim4>      numDims;
+    vector<vector<float>>      in;
+    vector<vector<float>>   tests;
+
+    readTests<float, float, int>(string(TEST_DIR"/arrayindex/dim0Large.test"), numDims, in, tests);
+
+    af::dim4 dims0     = numDims[0];
+    af::dim4 dims1     = numDims[1];
+
+    array input(dims0, &(in[0].front()));
+    array indices(dims1, &(in[1].front()));
+    array output = input(indices, 0);
+
+    vector<float> currGoldBar = tests[0];
+    size_t nElems = currGoldBar.size();
+    float *outData = new float[nElems];
+
+    output.host((void*)outData);
+
+    for (size_t elIter=0; elIter<nElems; ++elIter) {
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+    }
+
+    delete[] outData;
+}

@@ -107,12 +107,6 @@ af_err af_array_index(af_array *out, const af_array in, const af_array indices, 
         ARG_ASSERT(2, (idxType!=c64));
         ARG_ASSERT(2, (idxType!=b8));
 
-        const dim4 inDims = inInfo.dims();
-
-        // TODO: when batched operations are added
-        // below condition might go away
-        ARG_ASSERT(1, ((dim_type)idxInfo.elements()<=inDims[dim]));
-
         switch(idxType) {
             case f32: output = arrayIndex<float   >(in, indices, dim); break;
             case f64: output = arrayIndex<double  >(in, indices, dim); break;
