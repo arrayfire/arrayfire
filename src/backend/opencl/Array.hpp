@@ -88,10 +88,11 @@ namespace opencl
     class Array : public ArrayInfo
     {
         Buffer_ptr  data;
-        const Array*      parent;
 
         JIT::Node_ptr node;
         bool ready;
+        dim_type offset;
+        bool owner;
 
         Array(af::dim4 dims);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
@@ -105,7 +106,7 @@ namespace opencl
         ~Array();
 
         bool isReady() const { return ready; }
-        bool isOwner() const { return (parent == nullptr); }
+        bool isOwner() const { return owner; }
 
         void eval();
         void eval() const;
@@ -114,20 +115,23 @@ namespace opencl
         cl::Buffer *get()
         {
             if (!isReady()) eval();
-            if (isOwner()) return data.get();
-            return parent->data.get();
+            return data.get();
         }
 
         const cl::Buffer *get() const
         {
             if (!isReady()) eval();
-            if (isOwner()) return data.get();
-            return parent->data.get();
+            return data.get();
         }
 
         const dim_type getOffset() const
         {
-            return isOwner() ? 0 : calcOffset(parent->strides(), this->offsets());
+            return offset;
+        }
+
+        Buffer_ptr getData() const
+        {
+            return data;
         }
 
         operator Param() const

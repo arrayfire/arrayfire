@@ -20,6 +20,7 @@
 #include <backend.hpp>
 #include <ArrayInfo.hpp>
 #include <traits.hpp>
+#include <memory.hpp>
 
 #include <FreeImage.h>
 #include <iostream>
@@ -74,7 +75,7 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
                         const uint fi_w, const uint fi_h)
 {
     // create an array to receive the loaded image data.
-    float* pDst = (float*)malloc(fi_w * fi_h * sizeof(float) * 4); //4 channels is max
+    float *pDst = pinnedAlloc<float>(fi_w * fi_h * 4); // 4 channels is max
     float* pDst0 = pDst;
     float* pDst1 = pDst + (fi_w * fi_h * 1);
     float* pDst2 = pDst + (fi_w * fi_h * 2);
@@ -101,7 +102,7 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
     // TODO
     af::dim4 dims(fi_h, fi_w, fo_color, 1);
     af_err err = af_create_array(rImage, pDst, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type);
-    free(pDst);
+    pinnedFree(pDst);
     return err;
 }
 
@@ -110,7 +111,7 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
                         const uint fi_w, const uint fi_h)
 {
     // create an array to receive the loaded image data.
-    float* pDst = (float*)malloc(fi_w * fi_h * sizeof(float)); //only gray channel
+    float *pDst = pinnedAlloc<float>(fi_w * fi_h);
 
     uint indx = 0;
     uint step = nSrcPitch / (fi_w * sizeof(T));
@@ -132,7 +133,7 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
 
     af::dim4 dims(fi_h, fi_w, 1, 1);
     af_err err = af_create_array(rImage, pDst, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type);
-    free(pDst);
+    pinnedFree(pDst);
     return err;
 }
 
@@ -144,9 +145,8 @@ AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isCol
         ARG_ASSERT(1, filename != NULL);
 
         // for statically linked FI
-    #if defined(_WIN32) || defined(_MSC_VER)
         FreeImage_Initialise();
-    #endif
+
         // set your own FreeImage error handler
         FreeImage_SetOutputMessage(FreeImageErrorHandler);
 
@@ -202,8 +202,6 @@ AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isCol
                     ret = readImage<ushort, 4, 4>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
                 else if(fi_bpc == 32)
                     ret = readImage<float, 4, 4>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
-                else
-                    AF_ERROR("FreeImage Error: Bits per channel not supported", AF_ERR_NOT_SUPPORTED);
             } else if (fi_color == 1) {
                 if(fi_bpc == 8)
                     ret = readImage<uchar, 1, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
@@ -211,8 +209,6 @@ AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isCol
                     ret = readImage<ushort, 1, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
                 else if(fi_bpc == 32)
                     ret = readImage<float, 1, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
-                else
-                    AF_ERROR("FreeImage Error: Bits per channel not supported", AF_ERR_NOT_SUPPORTED);
             } else {             //3 channel image
                 if(fi_bpc == 8)
                     ret = readImage<uchar, 3, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
@@ -220,8 +216,6 @@ AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isCol
                     ret = readImage<ushort, 3, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
                 else if(fi_bpc == 32)
                     ret = readImage<float, 3, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
-                else
-                    AF_ERROR("FreeImage Error: Bits per channel not supported", AF_ERR_NOT_SUPPORTED);
             }
         } else {                    //output gray irrespective
             if(fi_color == 1) {     //4 channel image
@@ -231,8 +225,6 @@ AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isCol
                     ret = readImage<ushort, 1>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
                 else if(fi_bpc == 32)
                     ret = readImage<float, 1>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
-                else
-                    AF_ERROR("FreeImage Error: Bits per channel not supported", AF_ERR_NOT_SUPPORTED);
             } else if (fi_color == 3 || fi_color == 4) {
                 if(fi_bpc == 8)
                     ret = readImage<uchar, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
@@ -240,18 +232,14 @@ AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isCol
                     ret = readImage<ushort, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
                 else if(fi_bpc == 32)
                     ret = readImage<float, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
-                else
-                    AF_ERROR("FreeImage Error: Bits per channel not supported", AF_ERR_NOT_SUPPORTED);
             }
         }
 
+        FreeImage_Unload(pBitmap);
+        FreeImage_DeInitialise();
         if(ret == AF_SUCCESS) {
             std::swap(*out,rImage);
         }
-    // for statically linked FI
-    #if defined(_WIN32) || defined(_MSC_VER)
-        FreeImage_DeInitialise();
-    #endif
     } CATCHALL;
 
     return ret;
@@ -266,10 +254,7 @@ af_err af_save_image(const char* filename, const af_array in_)
 
         ARG_ASSERT(0, filename != NULL);
 
-        // for statically linked FI
-#if defined(_WIN32) || defined(_MSC_VER)
         FreeImage_Initialise();
-#endif
 
         // set your own FreeImage error handler
         FreeImage_SetOutputMessage(FreeImageErrorHandler);
@@ -339,10 +324,10 @@ af_err af_save_image(const char* filename, const af_array in_)
             AF_CHECK(af_transpose(&aaT, aa, false));
 
             ArrayInfo cinfo = getInfo(rrT);
-            float* pSrc0 = new float[cinfo.elements()];
-            float* pSrc1 = new float[cinfo.elements()];
-            float* pSrc2 = new float[cinfo.elements()];
-            float* pSrc3 = new float[cinfo.elements()];
+            float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc1 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc2 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc3 = pinnedAlloc<float>(cinfo.elements());
 
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
             AF_CHECK(af_get_data_ptr((void*)pSrc1, ggT));
@@ -370,9 +355,9 @@ af_err af_save_image(const char* filename, const af_array in_)
             AF_CHECK(af_transpose(&bbT, bb, false));
 
             ArrayInfo cinfo = getInfo(rrT);
-            float* pSrc0 = new float[cinfo.elements()];
-            float* pSrc1 = new float[cinfo.elements()];
-            float* pSrc2 = new float[cinfo.elements()];
+            float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc1 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc2 = pinnedAlloc<float>(cinfo.elements());
 
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
             AF_CHECK(af_get_data_ptr((void*)pSrc1, ggT));
@@ -394,7 +379,7 @@ af_err af_save_image(const char* filename, const af_array in_)
         } else {
             AF_CHECK(af_transpose(&rrT, rr, false));
             ArrayInfo cinfo = getInfo(rrT);
-            float* pSrc0 = new float[cinfo.elements()];
+            float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
 
             for (uint y = 0; y < fi_h; ++y) {
@@ -422,10 +407,9 @@ af_err af_save_image(const char* filename, const af_array in_)
             AF_ERROR("FreeImage Error: Failed to save image", AF_ERR_RUNTIME);
         }
 
-        // for statically linked FI
-#if defined(_WIN32) || defined(_MSC_VER)
+        FreeImage_Unload(pResultBitmap);
+
         FreeImage_DeInitialise();
-#endif
     } CATCHALL
 
     return ret;

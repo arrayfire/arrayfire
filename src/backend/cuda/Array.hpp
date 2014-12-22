@@ -93,10 +93,11 @@ namespace cuda
     class Array : public ArrayInfo
     {
         shared_ptr<T> data;
-        const Array*  parent;
 
         JIT::Node_ptr node;
         bool ready;
+        dim_type offset;
+        bool owner;
 
         Array(af::dim4 dims);
         explicit Array(af::dim4 dims, const T * const in_data, bool is_device = false);
@@ -109,12 +110,14 @@ namespace cuda
         ~Array();
 
         bool isReady() const { return ready; }
-        bool isOwner() const { return parent == NULL; }
+        bool isOwner() const { return owner; }
 
         void eval();
         void eval() const;
 
-        //FIXME: This should do a copy if it is not owner. You do not want to overwrite parents data
+        dim_type getOffset() const { return offset; }
+        shared_ptr<T> getData() const { return data; }
+
         T* get(bool withOffset = true)
         {
             if (!isReady()) eval();
@@ -125,8 +128,7 @@ namespace cuda
         const   T* get(bool withOffset = true) const
         {
             if (!isReady()) eval();
-            if (isOwner()) return data.get();
-            return parent->data.get() + (withOffset ? calcOffset(parent->strides(), this->offsets()) : 0);
+            return data.get() + (withOffset ? offset : 0);
         }
 
         operator Param<T>()

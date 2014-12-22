@@ -105,8 +105,6 @@ namespace opencl
                             options << " -D USE_DOUBLE";
                         }
 
-                        options << " -D "<< random_name<T, isRandu>().name();
-
                         buildProgram(ranProgs[device], random_cl, random_cl_len, options.str());
                         ranKernels[device] = Kernel(ranProgs[device], "random");
                     });

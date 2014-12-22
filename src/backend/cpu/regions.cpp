@@ -104,7 +104,7 @@ static void setUnion(LabelNode<T>* x, LabelNode<T>* y)
 }
 
 template<typename T>
-Array<T> * regions(const Array<uchar> &in, af_connectivity_type connectivity)
+Array<T> * regions(const Array<uchar> &in, af_connectivity connectivity)
 {
     const dim4 in_dims = in.dims();
 
@@ -202,7 +202,7 @@ Array<T> * regions(const Array<uchar> &in, af_connectivity_type connectivity)
 }
 
 #define INSTANTIATE(T)\
-    template Array<T> * regions<T>(const Array<uchar> &in, af_connectivity_type connectivity);
+    template Array<T> * regions<T>(const Array<uchar> &in, af_connectivity connectivity);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

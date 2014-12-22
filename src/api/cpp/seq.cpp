@@ -1,4 +1,6 @@
 #include <af/seq.h>
+#include <af/array.h>
+#include <af/data.h>
 #include "error.hpp"
 
 namespace af
@@ -66,6 +68,13 @@ seq::seq(double begin, double end, double step)
         AF_THROW(AF_ERR_INVALID_ARG);
         //AF_THROW("step must match direction of sequence");
     init(begin, end, step);
+}
+
+seq::operator array() const
+{
+    dim_type len = (int)((s.end - s.begin + 1) / s.step);
+    array res = s.begin + s.step * iota(len);
+    return res;
 }
 
 }
