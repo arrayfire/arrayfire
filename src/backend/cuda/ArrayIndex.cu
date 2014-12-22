@@ -9,6 +9,7 @@
 
 #include <ArrayIndex.hpp>
 #include <err_cuda.hpp>
+#include <kernel/ArrayIndex.hpp>
 
 namespace cuda
 {
@@ -16,7 +17,24 @@ namespace cuda
 template<typename in_t, typename idx_t>
 Array<in_t>* arrayIndex(const Array<in_t> &input, const Array<idx_t> &indices, const unsigned dim)
 {
-    CUDA_NOT_SUPPORTED();
+    const dim4 iDims = input.dims();
+
+    dim4 oDims(1);
+    for (dim_type d=0; d<4; ++d)
+        oDims[d] = (d==dim ? indices.elements() : iDims[d]);
+
+    Array<in_t> *out = createEmptyArray<in_t>(oDims);
+
+    dim_type nDims = iDims.ndims();
+
+    switch(dim) {
+        case 0: kernel::arrayIndex<in_t, idx_t, 0>(*out, input, indices, nDims); break;
+        case 1: kernel::arrayIndex<in_t, idx_t, 1>(*out, input, indices, nDims); break;
+        case 2: kernel::arrayIndex<in_t, idx_t, 2>(*out, input, indices, nDims); break;
+        case 3: kernel::arrayIndex<in_t, idx_t, 3>(*out, input, indices, nDims); break;
+    }
+
+    return out;
 }
 
 #define INSTANTIATE(T)  \
