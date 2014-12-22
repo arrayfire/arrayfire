@@ -237,6 +237,13 @@ namespace af
         afs[3] = this->s[3].s;
     }
 
+    array array::operator()(const array& idx, unsigned dim) const
+    {
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, this->get(), idx.get(), dim));
+        return array(out);
+    }
+
     array array::operator()(const seq &s0) const
     {
         af_array out = 0;
