@@ -120,10 +120,6 @@ float2 __convert_cfloat(float in)
     return out;
 }
 
-#ifdef USE_DOUBLE
-
-#define __convert_cdouble(in) ___convert_cdouble((double)in)
-
 #define __convert_char(val) (char)(convert_char((val)) != 0)
 
 #define fpow(lhs, rhs) pow((lhs), (rhs))
@@ -131,6 +127,10 @@ float2 __convert_cfloat(float in)
 #define frem(lhs, rhs) remainder((lhs), (rhs))
 
 #define iszero(a) ((a) == 0)
+
+#ifdef USE_DOUBLE
+
+#define __convert_cdouble(in) ___convert_cdouble((double)in)
 
 float2  __convert_z2c(double2 in) { float2  out = {in.x, in.y}; return out; }
 
