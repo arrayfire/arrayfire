@@ -130,8 +130,6 @@ float2 __convert_cfloat(float in)
 
 #ifdef USE_DOUBLE
 
-#define __convert_cdouble(in) ___convert_cdouble((double)in)
-
 float2  __convert_z2c(double2 in) { float2  out = {in.x, in.y}; return out; }
 
 double2 __cconj(double2 in)
