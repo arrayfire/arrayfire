@@ -27,11 +27,10 @@ Array<T> * transpose(const Array<T> &in, const bool conjugate)
 
     Array<T>* out  = createEmptyArray<T>(outDims);
 
-    switch(conjugate) {
-        case true: kernel::transpose<T, true>(*out, in, inDims.ndims());
-            break;
-        case false: kernel::transpose<T, false>(*out, in, inDims.ndims());
-            break;
+    if (conjugate) {
+        kernel::transpose<T, true>(*out, in, inDims.ndims());
+    } else {
+        kernel::transpose<T, false>(*out, in, inDims.ndims());
     }
 
     return out;
