@@ -45,21 +45,9 @@ float2 __cconjf(float2 in)
     return out;
 }
 
-double2 __cconj(double2 in)
-{
-    double2 out = {in.x, -in.y};
-    return out;
-}
-
 float2 __caddf(float2 lhs, float2 rhs)
 {
     float2 out = {lhs.x + rhs.x, lhs.y + rhs.y};
-    return out;
-}
-
-double2 __cadd(double2 lhs, double2 rhs)
-{
-    double2 out = {lhs.x + rhs.x, lhs.y + rhs.y};
     return out;
 }
 
@@ -69,24 +57,9 @@ float2 __csubf(float2 lhs, float2 rhs)
     return out;
 }
 
-double2 __csub(double2 lhs, double2 rhs)
-{
-    double2 out = {lhs.x - rhs.x, lhs.y - rhs.y};
-    return out;
-}
-
-
 float2 __cmulf(float2 lhs, float2 rhs)
 {
     float2 out;
-    out.x = lhs.x * rhs.x - lhs.y * rhs.y;
-    out.y = lhs.x * rhs.y + lhs.y * rhs.x;
-    return out;
-}
-
-double2 __cmul(double2 lhs, double2 rhs)
-{
-    double2 out;
     out.x = lhs.x * rhs.x - lhs.y * rhs.y;
     out.y = lhs.x * rhs.y + lhs.y * rhs.x;
     return out;
@@ -102,17 +75,6 @@ float2 __cdivf(float2 lhs, float2 rhs)
     out.x = num.x / den;
     out.y = num.y / den;
 
-    return out;
-}
-
-double2 __cdiv(double2 lhs, double2 rhs)
-{
-    double2 out;
-    double den = (rhs.x * rhs.x + rhs.y * rhs.y);
-    double2 num = __cmul(lhs, __cconj(rhs));
-
-    out.x = num.x / den;
-    out.y = num.y / den;
     return out;
 }
 
@@ -146,6 +108,69 @@ float2 __cmaxf(float2 lhs, float2 rhs)
     return __abs2(lhs) > __abs2(rhs) ? lhs : rhs;
 }
 
+float2 __cplx2f(float lhs, float rhs)
+{
+    float2 out = {lhs, rhs};
+    return out;
+}
+
+float2 __convert_cfloat(float in)
+{
+    float2 out = {in, 0};
+    return out;
+}
+
+#define __convert_char(val) (char)(convert_char((val)) != 0)
+
+#define fpow(lhs, rhs) pow((lhs), (rhs))
+
+#define frem(lhs, rhs) remainder((lhs), (rhs))
+
+#define iszero(a) ((a) == 0)
+
+#ifdef USE_DOUBLE
+
+#define __convert_cdouble(in) ___convert_cdouble((double)in)
+
+float2  __convert_z2c(double2 in) { float2  out = {in.x, in.y}; return out; }
+
+double2 __cconj(double2 in)
+{
+    double2 out = {in.x, -in.y};
+    return out;
+}
+
+double2 __cadd(double2 lhs, double2 rhs)
+{
+    double2 out = {lhs.x + rhs.x, lhs.y + rhs.y};
+    return out;
+}
+
+double2 __csub(double2 lhs, double2 rhs)
+{
+    double2 out = {lhs.x - rhs.x, lhs.y - rhs.y};
+    return out;
+}
+
+double2 __cmul(double2 lhs, double2 rhs)
+{
+    double2 out;
+    out.x = lhs.x * rhs.x - lhs.y * rhs.y;
+    out.y = lhs.x * rhs.y + lhs.y * rhs.x;
+    return out;
+}
+
+double2 __cdiv(double2 lhs, double2 rhs)
+{
+    double2 out;
+    double den = (rhs.x * rhs.x + rhs.y * rhs.y);
+    double2 num = __cmul(lhs, __cconj(rhs));
+
+    out.x = num.x / den;
+    out.y = num.y / den;
+    return out;
+}
+
 double2 __cmin(double2 lhs, double2 rhs)
 {
     return __abs2(lhs) < __abs2(rhs) ? lhs : rhs;
@@ -156,21 +181,9 @@ double2 __cmax(double2 lhs, double2 rhs)
     return __abs2(lhs) > __abs2(rhs) ? lhs : rhs;
 }
 
-float2 __cplx2f(float lhs, float rhs)
-{
-    float2 out = {lhs, rhs};
-    return out;
-}
-
 double2 __cplx2(double lhs, double rhs)
 {
     double2 out = {lhs, rhs};
-    return out;
-}
-
-float2 __convert_cfloat(float in)
-{
-    float2 out = {in, 0};
     return out;
 }
 
@@ -180,15 +193,6 @@ double2 __convert_cdouble(double in)
     return out;
 }
 
-#define __convert_cdouble(in) ___convert_cdouble((double)in)
-
-#define __convert_char(val) (char)(convert_char((val)) != 0)
-
-#define fpow(lhs, rhs) pow((lhs), (rhs))
-
-#define frem(lhs, rhs) remainder((lhs), (rhs))
-
-#define iszero(a) ((a) == 0)
-
-float2  __convert_z2c(double2 in) { float2  out = {in.x, in.y}; return out; }
 double2 __convert_c2z(float2  in) { double2 out = {in.x, in.y}; return out; }
+
+#endif // USE_DOUBLE
