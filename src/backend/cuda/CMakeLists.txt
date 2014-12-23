@@ -3,12 +3,12 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 FIND_PACKAGE(CUDA REQUIRED)
 FIND_PACKAGE(Boost REQUIRED)
 
-INCLUDE("${CMAKE_SOURCE_DIR}/common/CLKernelToH.cmake")
-INCLUDE("${CMAKE_SOURCE_DIR}/common/FindNVVM.cmake")
+INCLUDE("${CMAKE_MODULE_PATH}/CLKernelToH.cmake")
+INCLUDE("${CMAKE_MODULE_PATH}/FindNVVM.cmake")
 
 # Disables running cuda_compute_check.c when build windows using remote
 IF(NOT DEFINED CUDA_COMPUTE_CAPABILITY)
-  INCLUDE("${CMAKE_SOURCE_DIR}/common/CUDACheckCompute.cmake")
+  INCLUDE("${CMAKE_MODULE_PATH}/CUDACheckCompute.cmake")
 ELSE(NOT DEFINED CUDA_COMPUTE_CAPABILITY)
   IF(NOT DEFINED CUDA_GENERATE_CODE)
     SET(CUDA_GENERATE_CODE "arch=compute_${CUDA_COMPUTE_CAPABILITY},code=sm_${CUDA_COMPUTE_CAPABILITY}")
@@ -92,6 +92,20 @@ ELSE()
   SET(PTX_COMPUTE ${CUDA_COMPUTE_CAPABILITY})
 ENDIF()
 
+# Check if PTX data exists
+IF (EXISTS "${CMAKE_SOURCE_DIR}/src/backend/cuda/ptx/PTX64"
+    AND IS_DIRECTORY "${CMAKE_SOURCE_DIR}/src/backend/cuda/ptx/PTX64")
+    # PTX data is available
+    # Do Nothing
+ELSE (EXISTS "${CMAKE_SOURCE_DIR}/src/backend/cuda/ptx/PTX64"
+      AND IS_DIRECTORY "${CMAKE_SOURCE_DIR}/src/backend/cuda/ptx/PTX64")
+    MESSAGE(WARNING "PTX data is not available. CUDA Backend will give compiler errors.")
+    MESSAGE("Did you miss the --recursive option when cloning?")
+    MESSAGE("Run the following commands to correct this:")
+    MESSAGE("git submodule init")
+    MESSAGE("git submodule update")
+    MESSAGE("git submodule foreach git pull origin master")
+ENDIF()
 
 FILE(GLOB cuda_ptx "ptx/PTX64/sm_${PTX_COMPUTE}/*.ptx")
 

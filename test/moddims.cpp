@@ -20,8 +20,8 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
-using af::af_cfloat;
-using af::af_cdouble;
+using af::cfloat;
+using af::cdouble;
 
 template<typename T>
 class Moddims : public ::testing::Test
@@ -44,6 +44,8 @@ TYPED_TEST_CASE(Moddims, TestTypes);
 template<typename T>
 void moddimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=nullptr)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<T>>   in;
@@ -111,6 +113,8 @@ TYPED_TEST(Moddims,Subref)
 template<typename T>
 void moddimsArgsTest(string pTestFile)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<T>>   in;
@@ -137,6 +141,8 @@ TYPED_TEST(Moddims,InvalidArgs)
 template<typename T>
 void moddimsMismatchTest(string pTestFile)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<T>>   in;
@@ -165,6 +171,8 @@ TYPED_TEST(Moddims,Mismatch)
 template<typename T>
 void cppModdimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=nullptr)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<T>>   in;

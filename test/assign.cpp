@@ -79,7 +79,7 @@ class ArrayAssign : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<af::af_cdouble, af::af_cfloat, double, float, int, uint, char, uchar> TestTypes;
+typedef ::testing::Types<af::cdouble, af::cfloat, double, float, int, uint, char, uchar> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(ArrayAssign, TestTypes);
@@ -87,6 +87,9 @@ TYPED_TEST_CASE(ArrayAssign, TestTypes);
 template<typename inType, typename outType>
 void assignTest(string pTestFile, const vector<af_seq> *seqv)
 {
+    if (noDoubleTests<inType>()) return;
+    if (noDoubleTests<outType>()) return;
+
     vector<af::dim4>  numDims;
     vector<vector<inType>>      in;
     vector<vector<outType>>   tests;
@@ -173,7 +176,7 @@ TYPED_TEST(ArrayAssign, Cube2HyperCube)
 
 TEST(ArrayAssign, InvalidArgs)
 {
-    vector<af::af_cfloat> in(10, af::af_cfloat(0,0));
+    vector<af::cfloat> in(10, af::cfloat(0,0));
     vector<float> tests(100, float(1));
 
     af::dim4 dims0(10, 1, 1, 1);
@@ -187,7 +190,7 @@ TEST(ArrayAssign, InvalidArgs)
     ASSERT_EQ(AF_ERR_ARG, af_assign(outArray, seqv.size(), &seqv.front(), inArray));
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
-                dims0.ndims(), dims0.get(), (af_dtype)af::dtype_traits<af::af_cfloat>::af_type));
+                dims0.ndims(), dims0.get(), (af_dtype)af::dtype_traits<af::cfloat>::af_type));
 
     ASSERT_EQ(AF_ERR_ARG, af_assign(outArray, seqv.size(), &seqv.front(), inArray));
 
@@ -204,6 +207,8 @@ TEST(ArrayAssign, InvalidArgs)
 
 TEST(ArrayAssign, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     using af::array;
 
     vector<af_seq> seqv;

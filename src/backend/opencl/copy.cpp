@@ -32,12 +32,12 @@ namespace opencl
         if (A.isOwner() || // No offsets, No strides
             A.ndims() == 1 // Simple offset, no strides.
             ) {
-            buf = A.get();
+            buf = *A.get();
             offset = A.getOffset();
         } else {
             //FIXME: Think about implementing eval
             out = copyArray(A);
-            buf = out->get();
+            buf = *out->get();
             offset = 0;
         }
 
@@ -59,11 +59,11 @@ namespace opencl
 
         if (A.isOwner()) {
             // FIXME: Add checks
-            getQueue().enqueueCopyBuffer(A.get(), out->get(),
-                                          sizeof(T) * offset, 0,
-                                          A.elements() * sizeof(T));
+            getQueue().enqueueCopyBuffer(*A.get(), *out->get(),
+                                         sizeof(T) * offset, 0,
+                                         A.elements() * sizeof(T));
         } else {
-            kernel::memcopy<T>(out->get(), out->strides().get(), A.get(), A.dims().get(),
+            kernel::memcopy<T>(*out->get(), out->strides().get(), *A.get(), A.dims().get(),
                                A.strides().get(), offset, (uint)A.ndims());
         }
         return out;

@@ -22,8 +22,8 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
-using af::af_cfloat;
-using af::af_cdouble;
+using af::cfloat;
+using af::cdouble;
 
 template<typename T>
 class Regions : public ::testing::Test
@@ -39,8 +39,10 @@ typedef ::testing::Types<float, double, int, unsigned> TestTypes;
 TYPED_TEST_CASE(Regions, TestTypes);
 
 template<typename T>
-void regionsTest(string pTestFile, af_connectivity_type connectivity, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
+void regionsTest(string pTestFile, af_connectivity connectivity, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
     vector<vector<uchar>> in;
     vector<vector<T>> tests;
@@ -99,6 +101,8 @@ void regionsTest(string pTestFile, af_connectivity_type connectivity, bool isSub
 //
 TEST(Regions, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     vector<af::dim4> numDims;
     vector<vector<uchar>> in;
     vector<vector<float>> tests;

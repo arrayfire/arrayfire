@@ -15,6 +15,7 @@
 #include <scalar.hpp>
 #include <JIT/BufferNode.hpp>
 #include <err_opencl.hpp>
+#include <memory.hpp>
 
 using af::dim4;
 
@@ -25,44 +26,42 @@ namespace opencl
     template<typename T>
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(),
-        parent(), node(), ready(true)
+        data(bufferAlloc(ArrayInfo::elements() * sizeof(T)), bufferFree),
+        node(), ready(true), offset(0), owner(true)
     {
-        if (elements() > 0) data = cl::Buffer(getContext(),
-                                              CL_MEM_READ_WRITE,
-                                              ArrayInfo::elements()*sizeof(T));
     }
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(),
-        parent(), node(n), ready(false)
+        node(n), ready(false), offset(0), owner(true)
     {
     }
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(getContext(), CL_MEM_READ_WRITE, ArrayInfo::elements()*sizeof(T)),
-        parent(), node(), ready(true)
+        data(bufferAlloc(ArrayInfo::elements()*sizeof(T)), bufferFree),
+        node(), ready(true), offset(0), owner(true)
     {
-        getQueue().enqueueWriteBuffer(data,CL_TRUE,0,sizeof(T)*ArrayInfo::elements(),in_data);
+        getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T)*ArrayInfo::elements(), in_data);
     }
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, cl_mem mem) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(mem),
-        parent(), node(), ready(true)
+        data(new cl::Buffer(mem), bufferFree),
+        node(), ready(true), offset(0), owner(true)
     {
     }
 
     template<typename T>
-    Array<T>::Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
-        ArrayInfo(dims, offset, stride, (af_dtype)dtype_traits<T>::af_type),
-        data(0),
-        parent(&parnt), node(), ready(true)
+    Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &stride) :
+        ArrayInfo(dims, offsets, stride, (af_dtype)dtype_traits<T>::af_type),
+        data(parent.getData()), node(), ready(true),
+        offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
+        owner(false)
     { }
 
 
@@ -74,7 +73,7 @@ namespace opencl
                            tmp.info.strides[2], tmp.info.strides[3]),
                   (af_dtype)dtype_traits<T>::af_type),
         data(tmp.data),
-        parent(), node(), ready(true)
+        node(), ready(true), offset(0), owner(true)
     {
     }
 
@@ -215,13 +214,14 @@ namespace opencl
     {
         if (isReady()) return;
 
-        data = cl::Buffer(getContext(), CL_MEM_READ_WRITE, elements() * sizeof(T));
+        data = Buffer_ptr(bufferAlloc(elements() * sizeof(T)), bufferFree);
 
         // Do not replace this with cast operator
         KParam info = {{dims()[0], dims()[1], dims()[2], dims()[3]},
                        {strides()[0], strides()[1], strides()[2], strides()[3]},
                        0};
-        Param res = {data, info};
+
+        Param res = {data.get(), info};
 
         evalNodes(res, this->getNode().get());
         ready = true;

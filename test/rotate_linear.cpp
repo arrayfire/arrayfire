@@ -20,8 +20,8 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
-using af::af_cfloat;
-using af::af_cdouble;
+using af::cfloat;
+using af::cdouble;
 
 template<typename T>
 class Rotate : public ::testing::Test
@@ -46,6 +46,8 @@ TYPED_TEST_CASE(Rotate, TestTypes);
 template<typename T>
 void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, const bool crop, const bool recenter, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
     vector<vector<T>>   in;
     vector<vector<T>>   tests;
@@ -164,6 +166,8 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
 
 TEST(Rotate, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     const unsigned resultIdx = 0;
     const float angle = 180;
     const bool crop = false;

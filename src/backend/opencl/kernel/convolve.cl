@@ -68,9 +68,12 @@ void convolve(global T *out, KParam oInfo,
 {
     dim_type fLen0    = fInfo.dims[0];
     dim_type fLen1    = fInfo.dims[1];
-    dim_type pad0     = fLen0-1;
-    dim_type pad1     = fLen1-1;
-    dim_type shrdLen0 = get_local_size(0) + 2*pad0;
+    dim_type radius0  = fLen0-1;
+    dim_type radius1  = fLen1-1;
+    dim_type padding0 = 2*radius0;
+    dim_type padding1 = 2*radius1;
+    dim_type shrdLen0 = get_local_size(0) + padding0;
+
     unsigned batchId  = get_group_id(0)/nonBatchBlkSize;
 
     global T *dst = out + oStep +(batchId*oInfo.strides[2]);
@@ -80,39 +83,29 @@ void convolve(global T *out, KParam oInfo,
     dim_type ly = get_local_id(1);
     dim_type gx = get_local_size(0) * (get_group_id(0)-batchId*nonBatchBlkSize) + lx;
     dim_type gy = get_local_size(1) * get_group_id(1) + ly;
-    dim_type i = lx + pad0;
-    dim_type j = ly + pad1;
 
-    localMem[j*shrdLen0+i] = readSrc(src, gx, gy, 0, sInfo.dims, sInfo.strides);
+    dim_type lx2= lx + get_local_size(0);
+    dim_type ly2= ly + get_local_size(1);
+    dim_type gx2= gx + get_local_size(0);
+    dim_type gy2= gy + get_local_size(1);
 
-    if (lx < pad0) {
-        dim_type gx2 = gx + get_local_size(0);
-        dim_type lx2 = i  + get_local_size(0);
-        localMem[j*shrdLen0+ lx] = readSrc(src, gx-pad0, gy, 0, sInfo.dims, sInfo.strides);
-        localMem[j*shrdLen0+lx2] = readSrc(src, gx2    , gy, 0, sInfo.dims, sInfo.strides);
+    localMem[ly*shrdLen0+lx] = readSrc(src, gx-radius0, gy-radius1, 0, sInfo.dims, sInfo.strides);
+
+    if (lx < padding0) {
+        localMem[ly*shrdLen0+lx2] = readSrc(src, gx2-radius0, gy-radius1, 0, sInfo.dims, sInfo.strides);
     }
-    if (ly < pad1) {
-        dim_type gy2 = gy + get_local_size(1);
-        dim_type ly2 = j  + get_local_size(1);
-        localMem[ly*shrdLen0 +i] = readSrc(src, gx, gy-pad1, 0, sInfo.dims, sInfo.strides);
-        localMem[ly2*shrdLen0+i] = readSrc(src, gx, gy2    , 0, sInfo.dims, sInfo.strides);
+    if (ly < padding1) {
+        localMem[ly2*shrdLen0+lx] = readSrc(src, gx-radius0, gy2-radius1, 0, sInfo.dims, sInfo.strides);
     }
-    if (lx < pad0 && ly < pad1) {
-        dim_type gx2 = gx + get_local_size(0);
-        dim_type lx2 = i  + get_local_size(0);
-        dim_type gy2 = gy + get_local_size(1);
-        dim_type ly2 = j  + get_local_size(1);
-        // 4 corner regions
-        localMem[ly*shrdLen0+lx  ] = readSrc(src, gx-pad0, gy-pad1, 0, sInfo.dims, sInfo.strides);
-        localMem[ly*shrdLen0+lx2 ] = readSrc(src, gx2    , gy-pad1, 0, sInfo.dims, sInfo.strides);
-        localMem[ly2*shrdLen0+lx ] = readSrc(src, gx-pad0, gy2    , 0, sInfo.dims, sInfo.strides);
-        localMem[ly2*shrdLen0+lx2] = readSrc(src, gx2    , gy2    , 0, sInfo.dims, sInfo.strides);
+    if (lx < padding0 && ly < padding1) {
+        localMem[ly2*shrdLen0+lx2] = readSrc(src, gx2-radius0, gy2-radius1, 0, sInfo.dims, sInfo.strides);
     }
+
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    if (gx>=0 && gx<oInfo.dims[0] && gy>=0 && gy<oInfo.dims[1]) {
-        dim_type ci = i + (EXPAND ? 0 : fLen0/2);
-        dim_type cj = j + (EXPAND ? 0 : fLen1/2);
+    if (gx<oInfo.dims[0] && gy<oInfo.dims[1]) {
+        dim_type ci = lx + radius0 + (EXPAND ? 0 : fLen0/2);
+        dim_type cj = ly + radius1 + (EXPAND ? 0 : fLen1/2);
 
         accType accum = (accType)(0);
         for(dim_type fj=0; fj<fLen1; ++fj) {

@@ -20,8 +20,8 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
-using af::af_cfloat;
-using af::af_cdouble;
+using af::cfloat;
+using af::cdouble;
 
 template<typename T>
 class Diff1 : public ::testing::Test
@@ -46,7 +46,7 @@ class Diff1 : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, af_cfloat, double, af_cdouble, int, unsigned, char, unsigned char> TestTypes;
+typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char, unsigned char> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Diff1, TestTypes);
@@ -54,6 +54,8 @@ TYPED_TEST_CASE(Diff1, TestTypes);
 template<typename T, unsigned dim>
 void diff1Test(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=nullptr)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<T>>   in;
@@ -154,6 +156,8 @@ TYPED_TEST(Diff1,Subref2)
 template<typename T>
 void diff1ArgsTest(string pTestFile)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<T>> in;
@@ -182,6 +186,8 @@ TYPED_TEST(Diff1,InvalidArgs)
 //
 TEST(Diff1, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     const unsigned dim = 0;
     vector<af::dim4> numDims;
 

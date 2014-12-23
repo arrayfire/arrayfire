@@ -21,7 +21,7 @@
 namespace opencl
 {
 
-template<typename To>
+template<typename To, typename Ti>
 struct CastOp
 {
     const char *name()
@@ -31,8 +31,8 @@ struct CastOp
 };
 
 #define CAST_FN(TYPE)                           \
-    template<>                                  \
-    struct CastOp<TYPE>                         \
+    template<typename Ti>                       \
+    struct CastOp<TYPE, Ti>                     \
     {                                           \
         const char *name()                      \
         {                                       \
@@ -47,8 +47,8 @@ CAST_FN(float)
 CAST_FN(double)
 
 #define CAST_CFN(TYPE)                          \
-    template<>                                  \
-    struct CastOp<TYPE>                         \
+    template<typename Ti>                       \
+    struct CastOp<TYPE, Ti>                     \
     {                                           \
         const char *name()                      \
         {                                       \
@@ -61,13 +61,34 @@ CAST_CFN(cfloat)
 CAST_CFN(cdouble)
 CAST_CFN(char)
 
+
+template<>
+struct CastOp<cfloat, cdouble>
+{
+    const char *name()
+    {
+        return "__convert_z2c";
+    }
+};
+
+
+template<>
+struct CastOp<cdouble, cfloat>
+{
+    const char *name()
+    {
+        return "__convert_c2z";
+    }
+};
+
+
 #undef CAST_FN
 #undef CAST_CFN
 
 template<typename To, typename Ti>
 Array<To>* cast(const Array<Ti> &in)
 {
-    CastOp<To> cop;
+    CastOp<To, Ti> cop;
     JIT::Node_ptr in_node = in.getNode();
 
     JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<To>::getName(),

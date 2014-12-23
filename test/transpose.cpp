@@ -18,8 +18,8 @@
 
 using std::string;
 using std::vector;
-using af::af_cfloat;
-using af::af_cdouble;
+using af::cfloat;
+using af::cdouble;
 
 template<typename T>
 class Transpose : public ::testing::Test
@@ -38,7 +38,7 @@ class Transpose : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, af_cfloat, double, af_cdouble, int, uint, char, uchar> TestTypes;
+typedef ::testing::Types<float, cfloat, double, cdouble, int, uint, char, uchar> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Transpose, TestTypes);
@@ -66,7 +66,7 @@ void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=n
         af::dim4 newDims(dims[1]-4,dims[0]-4,dims[2],dims[3]);
         af_array subArray = 0;
         ASSERT_EQ(AF_SUCCESS, af_index(&subArray,inArray,seqv->size(),&seqv->front()));
-        ASSERT_EQ(AF_SUCCESS, af_transpose(&outArray,subArray));
+        ASSERT_EQ(AF_SUCCESS, af_transpose(&outArray,subArray, false));
         // destroy the temporary indexed Array
         ASSERT_EQ(AF_SUCCESS, af_destroy_array(subArray));
 
@@ -74,7 +74,7 @@ void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=n
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems,outArray));
         outData = new T[nElems];
     } else {
-        ASSERT_EQ(AF_SUCCESS,af_transpose(&outArray,inArray));
+        ASSERT_EQ(AF_SUCCESS,af_transpose(&outArray,inArray, false));
         outData = new T[dims.elements()];
     }
 
@@ -141,6 +141,8 @@ TYPED_TEST(Transpose,Square512x512)
 
 TYPED_TEST(Transpose,InvalidArgs)
 {
+    if (noDoubleTests<TypeParam>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<TypeParam>>   in;
@@ -156,7 +158,7 @@ TYPED_TEST(Transpose,InvalidArgs)
     af::dim4 newDims(5,5,2,2);
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), newDims.ndims(), newDims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
 
-    ASSERT_EQ(AF_ERR_SIZE, af_transpose(&outArray,inArray));
+    ASSERT_EQ(AF_ERR_SIZE, af_transpose(&outArray,inArray, false));
 }
 
 TYPED_TEST(Transpose,SubRef)
@@ -182,27 +184,24 @@ void trsCPPTest(string pFileName)
     readTests<T, T, int>(pFileName, numDims, in, tests);
     af::dim4 dims = numDims[0];
 
-    for (int i = 0; i < af::getDeviceCount(); ++i) {
-        af::setDevice(i);
-        if (noDoubleTests<T>()) continue;
+    if (noDoubleTests<T>()) return;
 
-        af::array input(dims, &(in[0].front()));
-        af::array output = af::transpose(input);
+    af::array input(dims, &(in[0].front()));
+    af::array output = af::transpose(input);
 
-        T *outData = new T[dims.elements()];
-        output.host((void*)outData);
+    T *outData = new T[dims.elements()];
+    output.host((void*)outData);
 
-        for (size_t testIter = 0; testIter < tests.size(); ++testIter) {
-            vector<T> currGoldBar = tests[testIter];
-            size_t nElems = currGoldBar.size();
-            for (size_t elIter = 0; elIter < nElems; ++elIter) {
-                ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter << std::endl;
-            }
+    for (size_t testIter = 0; testIter < tests.size(); ++testIter) {
+        vector<T> currGoldBar = tests[testIter];
+        size_t nElems = currGoldBar.size();
+        for (size_t elIter = 0; elIter < nElems; ++elIter) {
+            ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter << std::endl;
         }
-
-        // cleanup
-        delete[] outData;
     }
+
+    // cleanup
+    delete[] outData;
 }
 
 TEST(Transpose, CPP_f64)
@@ -214,3 +213,38 @@ TEST(Transpose, CPP_f32)
 {
     trsCPPTest<float>(string(TEST_DIR"/transpose/rectangle_batch2.test"));
 }
+
+template<typename T>
+void trsCPPConjTest()
+{
+    vector<af::dim4> numDims;
+
+    af::dim4 dims(40, 40);
+
+    if (noDoubleTests<T>()) return;
+
+    af::array input = randu(dims, (af_dtype) af::dtype_traits<T>::af_type);
+    af::array output_t = af::transpose(input, false);
+    af::array output_c = af::transpose(input, true);
+
+    T *tData  = new T[dims.elements()];
+    T *cData = new T[dims.elements()];
+    output_t.host((void*)tData);
+    output_c.host((void*)cData);
+
+    size_t nElems = dims.elements();
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_NEAR(tData[elIter].real(), cData[elIter].real(), 1e-6)<< "at: " << elIter << std::endl;
+        ASSERT_NEAR(-tData[elIter].imag(), cData[elIter].imag(), 1e-6)<< "at: " << elIter << std::endl;
+    }
+
+    // cleanup
+    delete[] tData;
+    delete[] cData;
+}
+
+TEST(Transpose, CPP_c32_CONJ)
+{
+    trsCPPConjTest<cfloat>();
+}
+

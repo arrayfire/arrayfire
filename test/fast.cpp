@@ -94,7 +94,7 @@ af_err conv_image(af_array *out, af_array in)
 
     std::swap(*out, outArray);
 
-    delete in_data;
+    delete [] in_data;
 
     return AF_SUCCESS;
 }
@@ -102,6 +102,8 @@ af_err conv_image(af_array *out, af_array in)
 template<typename T>
 void fastTest(string pTestFile, bool nonmax)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<dim4>        inDims;
     vector<string>     inFiles;
     vector<vector<float>> gold;
@@ -154,11 +156,11 @@ void fastTest(string pTestFile, bool nonmax)
 
         ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 
-        delete outX;
-        delete outY;
-        delete outScore;
-        delete outOrientation;
-        delete outSize;
+        delete [] outX;
+        delete [] outY;
+        delete [] outScore;
+        delete [] outOrientation;
+        delete [] outSize;
     }
 }
 
@@ -183,6 +185,8 @@ void fastTest(string pTestFile, bool nonmax)
 //
 TEST(FloatFAST, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     vector<dim4>        inDims;
     vector<string>     inFiles;
     vector<vector<float>> gold;

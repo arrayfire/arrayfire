@@ -13,6 +13,7 @@
 #include <math.hpp>
 #include <debug_cuda.hpp>
 #include <stdio.h>
+#include <memory.hpp>
 
 #include <thrust/adjacent_difference.h>
 #include <thrust/binary_search.h>
@@ -73,7 +74,7 @@ static void initial_label(cuda::Param<T> equiv_map, cuda::CParam<cuda::uchar> bi
         }
     }
 }
-                          
+
 template<typename T, int n_per_thread>
 __global__
 static void final_relabel(cuda::Param<T> equiv_map, cuda::CParam<cuda::uchar> bin, const T* d_tmp)
@@ -430,10 +431,9 @@ void regions(cuda::Param<T> out, cuda::CParam<cuda::uchar> in, cudaTextureObject
     // component to being sequentially numbered components starting at
     // 1.
     int size = in.dims[0] * in.dims[1];
-    T* tmp;
-    CUDA_CHECK(cudaMalloc((void **)&tmp,  size * sizeof(T)));
+    T* tmp = cuda::memAlloc<T>(size);
     CUDA_CHECK(cudaMemcpy(tmp, out.ptr, size * sizeof(T),
-            cudaMemcpyDeviceToDevice));
+                          cudaMemcpyDeviceToDevice));
 
     // Wrap raw device ptr
     thrust::device_ptr<T> wrapped_tmp = thrust::device_pointer_cast(tmp);
@@ -472,7 +472,7 @@ void regions(cuda::Param<T> out, cuda::CParam<cuda::uchar> in, cudaTextureObject
                                                         in,
                                                         thrust::raw_pointer_cast(&labels[0]));
 
-    CUDA_CHECK(cudaFree(tmp));
+    cuda::memFree(tmp);
 }
 
 #endif // __CUDACC__

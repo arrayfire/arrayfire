@@ -13,10 +13,10 @@
 namespace af
 {
 
-array transpose(const array& in)
+array transpose(const array& in, const bool conjugate)
 {
     af_array out = 0;
-    AF_THROW(af_transpose(&out, in.get()));
+    AF_THROW(af_transpose(&out, in.get(), conjugate));
     return array(out);
 }
 

@@ -24,6 +24,8 @@ using af::dim4;
 template<typename T, bool isColor>
 void bilateralTest(string pTestFile)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<dim4>       inDims;
     vector<string>    inFiles;
     vector<dim_type> outSizes;
@@ -87,6 +89,8 @@ TYPED_TEST_CASE(BilateralOnData, DataTestTypes);
 template<typename inType>
 void bilateralDataTest(string pTestFile)
 {
+    if (noDoubleTests<inType>()) return;
+
     typedef typename std::conditional<std::is_same<inType, double>::value, double, float>::type outType;
 
     vector<af::dim4>        numDims;
@@ -133,6 +137,8 @@ TYPED_TEST(BilateralOnData, Rectangle_Batch)
 
 TYPED_TEST(BilateralOnData, InvalidArgs)
 {
+    if (noDoubleTests<TypeParam>()) return;
+
     vector<TypeParam>   in(100,1);
 
     af_array inArray   = 0;
@@ -156,6 +162,8 @@ TYPED_TEST(BilateralOnData, InvalidArgs)
 // C++ unit tests
 TEST(Bilateral, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     using af::array;
 
     vector<af::dim4>      numDims;

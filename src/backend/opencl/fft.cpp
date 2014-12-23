@@ -198,7 +198,7 @@ void clfft_common(Array<T> &arr)
                     (clfftPrecision)Precision<T>::type,
                     dims[rank]);
 
-    CLFFT_ERROR_CHECK( clfftEnqueueTransform(plan, direction, 1, &(getQueue()()), 0, NULL, NULL, &(arr.get()()), NULL, NULL) );
+    CLFFT_ERROR_CHECK( clfftEnqueueTransform(plan, direction, 1, &(getQueue()()), 0, NULL, NULL, &((*arr.get())()), NULL, NULL) );
 }
 
 template<int rank>

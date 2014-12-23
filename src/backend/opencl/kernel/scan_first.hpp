@@ -21,6 +21,7 @@
 #include <type_util.hpp>
 #include "names.hpp"
 #include "config.hpp"
+#include <memory.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -104,7 +105,7 @@ namespace kernel
                                   uint, uint, uint>(*ker);
 
         scanOp(EnqueueArgs(getQueue(), global, local),
-               out.data, out.info, tmp.data, tmp.info, in.data, in.info,
+               *out.data, out.info, *tmp.data, tmp.info, *in.data, in.info,
                groups_x, groups_y, lim);
 
         CL_DEBUG_FINISH(getQueue());
@@ -130,7 +131,7 @@ namespace kernel
                                    uint, uint, uint>(*ker);
 
         bcastOp(EnqueueArgs(getQueue(), global, local),
-                out.data, out.info, tmp.data, tmp.info,
+                *out.data, out.info, *tmp.data, tmp.info,
                 groups_x, groups_y, lim);
 
         CL_DEBUG_FINISH(getQueue());
@@ -212,9 +213,8 @@ namespace kernel
             }
 
             dim_type tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
-            // FIXME: Do I need to free this ?
-            tmp.data = cl::Buffer(getContext(), CL_MEM_READ_WRITE, tmp_elements * sizeof(To));
 
+            tmp.data = bufferAlloc(tmp_elements * sizeof(To));
 
             scan_first_fn<Ti, To, op, false>(out, tmp, in,
                                              groups_x, groups_y,
@@ -234,6 +234,8 @@ namespace kernel
                                              groups_x,
                                              groups_y,
                                              threads_x);
+
+            bufferFree(tmp.data);
 
         }
     }

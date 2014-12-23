@@ -19,10 +19,12 @@
 #include <traits.hpp>
 #include <Param.hpp>
 #include <JIT/Node.hpp>
+#include <memory>
 
 namespace opencl
 {
     using af::dim4;
+    typedef std::shared_ptr<cl::Buffer> Buffer_ptr;
 
     template<typename T> class Array;
 
@@ -79,17 +81,18 @@ namespace opencl
     template<typename T>
     void *getDevicePtr(const Array<T>& arr)
     {
-        return (void *)(arr.get()());
+        return (void *)((*arr.get())());
     }
 
     template<typename T>
     class Array : public ArrayInfo
     {
-        cl::Buffer  data;
-        const Array*      parent;
+        Buffer_ptr  data;
 
         JIT::Node_ptr node;
         bool ready;
+        dim_type offset;
+        bool owner;
 
         Array(af::dim4 dims);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
@@ -97,34 +100,38 @@ namespace opencl
         explicit Array(af::dim4 dims, JIT::Node_ptr n);
         explicit Array(af::dim4 dims, const T * const in_data);
         explicit Array(af::dim4 dims, cl_mem mem);
+
     public:
 
         ~Array();
 
         bool isReady() const { return ready; }
-        bool isOwner() const { return (parent == nullptr); }
+        bool isOwner() const { return owner; }
 
         void eval();
         void eval() const;
 
         //FIXME: This should do a copy if it is not owner. You do not want to overwrite parents data
-        cl::Buffer& get()
+        cl::Buffer *get()
         {
             if (!isReady()) eval();
-            if (isOwner()) return data;
-            return (cl::Buffer &)parent->data;
+            return data.get();
         }
 
-        const   cl::Buffer& get() const
+        const cl::Buffer *get() const
         {
             if (!isReady()) eval();
-            if (isOwner()) return data;
-            return parent->data;
+            return data.get();
         }
 
         const dim_type getOffset() const
         {
-            return isOwner() ? 0 : calcOffset(parent->strides(), this->offsets());
+            return offset;
+        }
+
+        Buffer_ptr getData() const
+        {
+            return data;
         }
 
         operator Param() const
@@ -133,7 +140,7 @@ namespace opencl
                            {strides()[0], strides()[1], strides()[2], strides()[3]},
                            getOffset()};
 
-            Param out = {this->get(), info};
+            Param out = {(cl::Buffer *)this->get(), info};
             return out;
         }
 

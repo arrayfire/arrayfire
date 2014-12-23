@@ -21,14 +21,17 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
-using af::af_cfloat;
-using af::af_cdouble;
+using af::cfloat;
+using af::cdouble;
 
 typedef af_err (*reduceFunc)(af_array *, const af_array, const int);
 
 template<typename Ti, typename To, reduceFunc af_reduce>
 void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector<af_seq> seqv=vector<af_seq>())
 {
+    if (noDoubleTests<Ti>()) return;
+    if (noDoubleTests<To>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<int>> data;
@@ -100,53 +103,55 @@ vector<af_seq> init_subs()
 REDUCE_TESTS(sum, float   , float     , float     );
 REDUCE_TESTS(sum, double  , double    , double    );
 REDUCE_TESTS(sum, int     , int       , int       );
-REDUCE_TESTS(sum, cfloat  , af_cfloat , af_cfloat );
-REDUCE_TESTS(sum, cdouble , af_cdouble, af_cdouble);
+REDUCE_TESTS(sum, cfloat  , cfloat , cfloat );
+REDUCE_TESTS(sum, cdouble , cdouble, cdouble);
 REDUCE_TESTS(sum, unsigned, unsigned  , unsigned  );
 REDUCE_TESTS(sum, uchar   , unsigned char, unsigned);
 
 REDUCE_TESTS(min, float   , float     , float     );
 REDUCE_TESTS(min, double  , double    , double    );
 REDUCE_TESTS(min, int     , int       , int       );
-REDUCE_TESTS(min, cfloat  , af_cfloat , af_cfloat );
-REDUCE_TESTS(min, cdouble , af_cdouble, af_cdouble);
+REDUCE_TESTS(min, cfloat  , cfloat , cfloat );
+REDUCE_TESTS(min, cdouble , cdouble, cdouble);
 REDUCE_TESTS(min, unsigned, unsigned  , unsigned  );
 REDUCE_TESTS(min, uchar   , unsigned char, unsigned char);
 
 REDUCE_TESTS(max, float   , float     , float     );
 REDUCE_TESTS(max, double  , double    , double    );
 REDUCE_TESTS(max, int     , int       , int       );
-REDUCE_TESTS(max, cfloat  , af_cfloat , af_cfloat );
-REDUCE_TESTS(max, cdouble , af_cdouble, af_cdouble);
+REDUCE_TESTS(max, cfloat  , cfloat , cfloat );
+REDUCE_TESTS(max, cdouble , cdouble, cdouble);
 REDUCE_TESTS(max, unsigned, unsigned  , unsigned  );
 REDUCE_TESTS(max, uchar   , unsigned char, unsigned char);
 
 REDUCE_TESTS(anytrue, float   , float     , unsigned char);
 REDUCE_TESTS(anytrue, double  , double    , unsigned char);
 REDUCE_TESTS(anytrue, int     , int       , unsigned char);
-REDUCE_TESTS(anytrue, cfloat  , af_cfloat , unsigned char);
-REDUCE_TESTS(anytrue, cdouble , af_cdouble, unsigned char);
+REDUCE_TESTS(anytrue, cfloat  , cfloat , unsigned char);
+REDUCE_TESTS(anytrue, cdouble , cdouble, unsigned char);
 REDUCE_TESTS(anytrue, unsigned, unsigned  , unsigned char);
 REDUCE_TESTS(anytrue, uchar   , unsigned char, unsigned char);
 
 REDUCE_TESTS(alltrue, float   , float     , unsigned char);
 REDUCE_TESTS(alltrue, double  , double    , unsigned char);
 REDUCE_TESTS(alltrue, int     , int       , unsigned char);
-REDUCE_TESTS(alltrue, cfloat  , af_cfloat , unsigned char);
-REDUCE_TESTS(alltrue, cdouble , af_cdouble, unsigned char);
+REDUCE_TESTS(alltrue, cfloat  , cfloat , unsigned char);
+REDUCE_TESTS(alltrue, cdouble , cdouble, unsigned char);
 REDUCE_TESTS(alltrue, unsigned, unsigned  , unsigned char);
 REDUCE_TESTS(alltrue, uchar   , unsigned char, unsigned char);
 
 REDUCE_TESTS(count, float   , float     , unsigned);
 REDUCE_TESTS(count, double  , double    , unsigned);
 REDUCE_TESTS(count, int     , int       , unsigned);
-REDUCE_TESTS(count, cfloat  , af_cfloat , unsigned);
-REDUCE_TESTS(count, cdouble , af_cdouble, unsigned);
+REDUCE_TESTS(count, cfloat  , cfloat , unsigned);
+REDUCE_TESTS(count, cdouble , cdouble, unsigned);
 REDUCE_TESTS(count, unsigned, unsigned  , unsigned);
 REDUCE_TESTS(count, uchar   , unsigned char, unsigned);
 
 TEST(Reduce,Test_Reduce_Big0)
 {
+    if (noDoubleTests<int>()) return;
+
     reduceTest<int, int, af_sum>(
         string(TEST_DIR"/reduce/big0.test"),
         0
@@ -155,6 +160,8 @@ TEST(Reduce,Test_Reduce_Big0)
 
 TEST(Reduce,Test_Reduce_Big1)
 {
+    if (noDoubleTests<int>()) return;
+
     reduceTest<int, int, af_sum>(
         string(TEST_DIR"/reduce/big1.test"),
         1
@@ -175,6 +182,9 @@ using af::count;
 template<typename Ti, typename To, ReductionOp reduce>
 void cppReduceTest(string pTestFile)
 {
+    if (noDoubleTests<Ti>()) return;
+    if (noDoubleTests<To>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<int>> data;
@@ -209,7 +219,6 @@ void cppReduceTest(string pTestFile)
     }
 }
 
-
 #define CPP_REDUCE_TESTS(FN, Ti, To)               \
     TEST(Reduce, Test_##FN##_CPP)                  \
     {                                              \
@@ -224,3 +233,106 @@ CPP_REDUCE_TESTS(max, float, float);
 CPP_REDUCE_TESTS(anytrue, float, unsigned char);
 CPP_REDUCE_TESTS(alltrue, float, unsigned char);
 CPP_REDUCE_TESTS(count, float, unsigned);
+
+TEST(Reuce, Test_Sum_Global)
+{
+    int num = 10000;
+    af::array a = af::round(2 * af::randu(num, 1));
+
+    float res = af::sum<float>(a);
+    float *h_a = a.host<float>();
+    float gold = 0;
+
+    for (int i = 0; i < num; i++) {
+        gold += h_a[i];
+    }
+
+    ASSERT_EQ(gold, res);
+    delete[] h_a;
+}
+
+TEST(Reuce, Test_Count_Global)
+{
+    int num = 10000;
+    af::array a = af::round(2 * af::randu(num, 1));
+    af::array b = a.as(b8);
+
+    int res = af::count<int>(b);
+    char *h_b = b.host<char>();
+    int gold = 0;
+
+    for (int i = 0; i < num; i++) {
+        gold += h_b[i];
+    }
+
+    ASSERT_EQ(gold, res);
+    delete[] h_b;
+}
+
+TEST(Reuce, Test_min_Global)
+{
+    int num = 10000;
+    af::array a = af::randu(num, 1, f64);
+    double res = af::min<double>(a);
+    double *h_a = a.host<double>();
+    double gold = std::numeric_limits<double>::max();
+
+    if (noDoubleTests<double>()) return;
+
+    for (int i = 0; i < num; i++) {
+        gold = std::min(gold, h_a[i]);
+    }
+
+    ASSERT_EQ(gold, res);
+    delete[] h_a;
+}
+
+TEST(Reuce, Test_max_Global)
+{
+    int num = 10000;
+    af::array a = af::randu(num, 1);
+    float res = af::max<float>(a);
+    float *h_a = a.host<float>();
+    float gold = -std::numeric_limits<float>::max();
+
+    for (int i = 0; i < num; i++) {
+        gold = std::max(gold, h_a[i]);
+    }
+
+    ASSERT_EQ(gold, res);
+    delete[] h_a;
+}
+
+TEST(Reuce, Test_All_Global)
+{
+    int num = 10000;
+    af::array a = af::round(2 * af::randu(num, 1));
+
+    char res = af::alltrue<char>(a);
+    float *h_a = a.host<float>();
+    char gold = 1;
+
+    for (int i = 0; i < num; i++) {
+        gold = gold && h_a[i];
+    }
+
+    ASSERT_EQ(gold, res);
+    delete[] h_a;
+}
+
+TEST(Reuce, Test_Any_Global)
+{
+    int num = 10000;
+    af::array a = af::round(2 * af::randu(num, 1));
+
+    char res = af::anytrue<char>(a);
+    float *h_a = a.host<float>();
+    char gold = 0;
+
+    for (int i = 0; i < num; i++) {
+        gold = gold || h_a[i];
+    }
+
+    ASSERT_EQ(gold, res);
+    delete[] h_a;
+}

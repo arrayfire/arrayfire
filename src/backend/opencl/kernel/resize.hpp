@@ -81,7 +81,7 @@ namespace opencl
                 float xf = (float)xd, yf = (float)yd;
 
                 resizeOp(EnqueueArgs(getQueue(), global, local),
-                         out.data, out.info, in.data, in.info, blocksPerMatX, xf, yf);
+                         *out.data, out.info, *in.data, in.info, blocksPerMatX, xf, yf);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {

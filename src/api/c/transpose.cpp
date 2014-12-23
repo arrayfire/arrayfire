@@ -20,12 +20,12 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
-static inline af_array trs(const af_array in)
+static inline af_array trs(const af_array in, const bool conjugate)
 {
-	return getHandle<T>(*detail::transpose<T>(getArray<T>(in)));
+    return getHandle<T>(*detail::transpose<T>(getArray<T>(in), conjugate));
 }
 
-af_err af_transpose(af_array *out, af_array in)
+af_err af_transpose(af_array *out, af_array in, const bool conjugate)
 {
     try {
         ArrayInfo info = getInfo(in);
@@ -43,14 +43,14 @@ af_err af_transpose(af_array *out, af_array in)
 
         af_array output;
         switch(type) {
-            case f32: output = trs<float>(in);          break;
-            case c32: output = trs<cfloat>(in);         break;
-            case f64: output = trs<double>(in);         break;
-            case c64: output = trs<cdouble>(in);        break;
-            case b8 : output = trs<char>(in);           break;
-            case s32: output = trs<int>(in);            break;
-            case u32: output = trs<uint>(in);           break;
-            case u8 : output = trs<uchar>(in);          break;
+            case f32: output = trs<float>  (in, conjugate);    break;
+            case c32: output = trs<cfloat> (in, conjugate);    break;
+            case f64: output = trs<double> (in, conjugate);    break;
+            case c64: output = trs<cdouble>(in, conjugate);    break;
+            case b8 : output = trs<char>   (in, conjugate);    break;
+            case s32: output = trs<int>    (in, conjugate);    break;
+            case u32: output = trs<uint>   (in, conjugate);    break;
+            case u8 : output = trs<uchar>  (in, conjugate);    break;
             default : TYPE_ERROR(1, type);
         }
         std::swap(*out,output);

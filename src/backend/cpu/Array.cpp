@@ -13,6 +13,7 @@
 #include <iostream>
 #include <TNJ/BufferNode.hpp>
 #include <TNJ/ScalarNode.hpp>
+#include <memory.hpp>
 
 namespace cpu
 {
@@ -22,15 +23,15 @@ namespace cpu
     template<typename T>
     Array<T>::Array(dim4 dims):
         ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(new T[dims.elements()]),
-        parent(nullptr), node(), ready(true)
+        data(memAlloc<T>(dims.elements()), memFree<T>),
+        node(), ready(true), offset(0), owner(true)
     { }
 
     template<typename T>
     Array<T>::Array(dim4 dims, const T * const in_data):
         ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(new T[dims.elements()]),
-        parent(nullptr), node(), ready(true)
+        data(memAlloc<T>(dims.elements()), memFree<T>),
+        node(), ready(true), offset(0), owner(true)
     {
         std::copy(in_data, in_data + dims.elements(), data.get());
     }
@@ -40,15 +41,17 @@ namespace cpu
     Array<T>::Array(af::dim4 dims, TNJ::Node_ptr n) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(),
-        parent(nullptr), node(n), ready(false)
+        node(n), ready(false), offset(0), owner(true)
     {
     }
 
     template<typename T>
-    Array<T>::Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride) :
-        ArrayInfo(dims, offset, stride, (af_dtype)dtype_traits<T>::af_type),
-        data(),
-        parent(&parnt), node(), ready(true)
+    Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &strides) :
+        ArrayInfo(dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
+        data(parent.getData()),
+        node(), ready(true),
+        offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
+        owner(false)
     { }
 
     template<typename T>
@@ -65,10 +68,7 @@ namespace cpu
         if (!node) {
             dim_type strs[] = {strides()[0], strides()[1], strides()[2], strides()[3]};
 
-            shared_ptr<T> sptr = isOwner() ? data : parent->data;
-            dim_type offset = isOwner() ? 0 : calcOffset(parent->strides(), this->offsets());
-
-            BufferNode<T> *buf_node = new BufferNode<T>(sptr, strs, offset);
+            BufferNode<T> *buf_node = new BufferNode<T>(data, strs, offset);
             const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
         }
 
@@ -166,7 +166,7 @@ namespace cpu
     {
         if (isReady()) return;
 
-        data = std::shared_ptr<T>(new T[elements()]);
+        data = std::shared_ptr<T>(memAlloc<T>(elements()), memFree<T>);
         T *ptr = data.get();
 
         dim4 ostrs = strides();

@@ -20,21 +20,21 @@ AFAPI array loadImage(const char* filename, const bool is_color=false);
 
 AFAPI void saveImage(const char* filename, const array& in);
 
-AFAPI array resize(const array& in, const dim_type odim0, const dim_type odim1, const af_interp_type method=AF_INTERP_NEAREST);
+AFAPI array resize(const array& in, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST);
 
-AFAPI array resize(const array& in, const float scale0, const float scale1, const af_interp_type method=AF_INTERP_NEAREST);
+AFAPI array resize(const array& in, const float scale0, const float scale1, const interpType method=AF_INTERP_NEAREST);
 
-AFAPI array resize(const array& in, const float scale, const af_interp_type method=AF_INTERP_NEAREST);
+AFAPI array resize(const array& in, const float scale, const interpType method=AF_INTERP_NEAREST);
 
-AFAPI array rotate(const array& in, const float theta, const af_interp_type method=AF_INTERP_NEAREST, const bool crop=true);
+AFAPI array rotate(const array& in, const float theta, const interpType method=AF_INTERP_NEAREST, const bool crop=true);
 
-AFAPI array transform(const array& in, const array& transform, const dim_type odim0, const dim_type odim1, const af_interp_type method=AF_INTERP_NEAREST, const bool inverse=true);
+AFAPI array transform(const array& in, const array& transform, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST, const bool inverse=true);
 
-AFAPI array translate(const array& in, const float trans0, const float trans1, const dim_type odim0, const dim_type odim1, const af_interp_type method=AF_INTERP_NEAREST);
+AFAPI array translate(const array& in, const float trans0, const float trans1, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST);
 
-AFAPI array scale(const array& in, const float scale0, const float scale1, const dim_type odim0, const dim_type odim1, const af_interp_type method=AF_INTERP_NEAREST);
+AFAPI array scale(const array& in, const float scale0, const float scale1, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST);
 
-AFAPI array skew(const array& in, const float skew0, const float skew1, const dim_type odim0, const dim_type odim1, const bool inverse=true, const af_interp_type method=AF_INTERP_NEAREST);
+AFAPI array skew(const array& in, const float skew0, const float skew1, const dim_type odim0, const dim_type odim1, const bool inverse=true, const interpType method=AF_INTERP_NEAREST);
 
 AFAPI array bilateral(const array &in, const float spatial_sigma, const float chromatic_sigma, bool is_color=false);
 
@@ -42,7 +42,7 @@ AFAPI array histogram(const array &in, const unsigned nbins, const double minval
 
 AFAPI array meanshift(const array& in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color);
 
-AFAPI array medfilt(const array& in, dim_type wind_length, dim_type wind_width, af_pad_type edge_pad);
+AFAPI array medfilt(const array& in, dim_type wind_length = 3, dim_type wind_width = 3, padType edge_pad = AF_ZERO);
 
 AFAPI array dilate(const array& in, const array& mask);
 
@@ -54,7 +54,7 @@ AFAPI array erode3d(const array& in, const array& mask);
 
 AFAPI void grad(array& rows, array& cols, const array& in);
 
-AFAPI array regions(const array& in, af_connectivity_type connectivity=AF_CONNECTIVITY_4, af_dtype type=f32);
+AFAPI array regions(const array& in, af::connectivity connectivity=AF_CONNECTIVITY_4, dtype type=f32);
 
 AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_length=9, const bool non_max=true, const float feature_ratio=0.05);
 
@@ -119,7 +119,7 @@ extern "C" {
     AFAPI af_err af_medfilt(af_array *out, const af_array in, dim_type wind_length, dim_type wind_width, af_pad_type edge_pad);
 
     // Compute labels for connected regions from binary input arrays
-    AFAPI af_err af_regions(af_array *out, const af_array in, af_connectivity_type connectivity, af_dtype ty);
+    AFAPI af_err af_regions(af_array *out, const af_array in, af_connectivity connectivity, af_dtype ty);
 
     // Compute FAST corners from input image
     AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio);

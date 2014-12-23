@@ -88,7 +88,7 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
         dim_type num_gauss_elems   = (2*radius+1)*(2*radius+1);
 
         bilateralOp(EnqueueArgs(getQueue(), global, local),
-                    out.data, out.info, in.data, in.info,
+                    *out.data, out.info, *in.data, in.info,
                     cl::Local(num_shrd_elems*sizeof(outType)),
                     cl::Local(num_gauss_elems*sizeof(outType)),
                     s_sigma, c_sigma, num_shrd_elems, blk_x);

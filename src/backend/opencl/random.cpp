@@ -25,7 +25,7 @@ namespace opencl
             OPENCL_NOT_SUPPORTED();
         }
         Array<T> *out = createEmptyArray<T>(dims);
-        kernel::random<T, true>(out->get(), out->elements());
+        kernel::random<T, true>(*out->get(), out->elements());
         return out;
     }
 
@@ -37,7 +37,7 @@ namespace opencl
             OPENCL_NOT_SUPPORTED();
         }
         Array<T> *out = createEmptyArray<T>(dims);
-        kernel::random<T, false>(out->get(), out->elements());
+        kernel::random<T, false>(*out->get(), out->elements());
         return out;
     }
 
@@ -56,7 +56,7 @@ namespace opencl
     {                                                       \
         Array<T> *out = createEmptyArray<T>(dims);          \
         dim_type elements = out->elements() * 2;            \
-        kernel::random<TR, false>(out->get(), elements);    \
+        kernel::random<TR, false>(*out->get(), elements);   \
         return out;                                         \
     }                                                       \
 

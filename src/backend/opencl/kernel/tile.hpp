@@ -71,7 +71,8 @@ namespace opencl
                                1);
 
                 tileOp(EnqueueArgs(getQueue(), global, local),
-                       out.data, in.data, out.info, in.info, blocksPerMatX, blocksPerMatY);
+                       *out.data, *in.data, out.info, in.info,
+                       blocksPerMatX, blocksPerMatY);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {

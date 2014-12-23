@@ -12,12 +12,12 @@ MACRO(CREATE_TESTS BACKEND)
         IF (${BUILD_GTEST} AND NOT ${USE_SYSTEM_GTEST})
             ADD_DEPENDENCIES(${TEST_NAME} googletest)
         ENDIF()
-        TARGET_LINK_LIBRARIES(${TEST_NAME} 	af${BACKEND}
-											${THREAD_LIB_FLAG}
-											optimized ${GTEST_RELEASE_LIB}
-											optimized ${GTEST_RELEASE_MAIN_LIB}
-											debug ${GTEST_DEBUG_LIB}
-											debug ${GTEST_DEBUG_MAIN_LIB})
+        TARGET_LINK_LIBRARIES(${TEST_NAME}  af${BACKEND}
+                      ${THREAD_LIB_FLAG}
+                      optimized ${GTEST_RELEASE_LIB}
+                      optimized ${GTEST_RELEASE_MAIN_LIB}
+                      debug ${GTEST_DEBUG_LIB}
+                      debug ${GTEST_DEBUG_MAIN_LIB})
         SET_TARGET_PROPERTIES(${TEST_NAME} PROPERTIES COMPILE_FLAGS -DAF_${DEF_NAME})
     ENDFOREACH()
 
@@ -44,7 +44,7 @@ ELSE()
 
     IF(${BUILD_GTEST})
 
-        INCLUDE("${CMAKE_SOURCE_DIR}/common/build_gtest.cmake")
+      INCLUDE("${CMAKE_MODULE_PATH}/build_gtest.cmake")
         ExternalProject_Get_Property(googletest SOURCE_DIR BINARY_DIR)
 
         SET(GTEST_BINARY_DIR "${BINARY_DIR}")
@@ -71,6 +71,21 @@ ENDIF()
 
 SET(TESTDATA_SOURCE_DIR "${CMAKE_SOURCE_DIR}/test/data")
 ADD_DEFINITIONS("-D TEST_DIR=\"\\\"${TESTDATA_SOURCE_DIR}\\\"\"")
+
+# Check if data exists
+IF (EXISTS "${TESTDATA_SOURCE_DIR}" AND IS_DIRECTORY "${TESTDATA_SOURCE_DIR}"
+    AND EXISTS "${TESTDATA_SOURCE_DIR}/README.md")
+    # Test data is available
+    # Do Nothing
+ELSE (EXISTS "${TESTDATA_SOURCE_DIR}" AND IS_DIRECTORY "${TESTDATA_SOURCE_DIR}"
+    AND EXISTS "${TESTDATA_SOURCE_DIR}/README.md")
+    MESSAGE(WARNING "Test Data is not available. Tests will build but fail when run.")
+    MESSAGE("Did you miss the --recursive option when cloning?")
+    MESSAGE("Run the following commands to correct this:")
+    MESSAGE("git submodule init")
+    MESSAGE("git submodule update")
+    MESSAGE("git submodule foreach git pull origin master")
+ENDIF()
 
 FILE(GLOB FILES "*.cpp")
 

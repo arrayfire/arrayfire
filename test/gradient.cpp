@@ -22,8 +22,8 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
-using af::af_cfloat;
-using af::af_cdouble;
+using af::cfloat;
+using af::cdouble;
 
 template<typename T>
 class Grad : public ::testing::Test
@@ -38,7 +38,7 @@ class Grad : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, af_cfloat, af_cdouble> TestTypes;
+typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Grad, TestTypes);
@@ -46,6 +46,8 @@ TYPED_TEST_CASE(Grad, TestTypes);
 template<typename T>
 void gradTest(string pTestFile, const unsigned resultIdx0, const unsigned resultIdx1, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
     vector<vector<T>> in;
     vector<vector<T>> tests;
@@ -113,6 +115,8 @@ void gradTest(string pTestFile, const unsigned resultIdx0, const unsigned result
 //
 TEST(Grad, CPP)
 {
+    if (noDoubleTests<float>()) return;
+
     const unsigned resultIdx0 = 0;
     const unsigned resultIdx1 = 1;
 

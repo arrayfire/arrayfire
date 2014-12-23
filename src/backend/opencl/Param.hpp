@@ -10,8 +10,13 @@
 #pragma once
 #include <cl.hpp>
 #include <kernel/KParam.hpp>
-typedef struct
+
+namespace opencl
 {
-    cl::Buffer data;
-    KParam info;
-} Param;
+
+    typedef struct
+    {
+        cl::Buffer *data;
+        KParam info;
+    } Param;
+}

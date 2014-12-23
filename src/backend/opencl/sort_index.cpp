@@ -17,16 +17,20 @@
 
 namespace opencl
 {
-    template<typename T, bool DIR>
+    template<typename T, bool isAscending>
     void sort_index(Array<T> &val, Array<uint> &idx, const Array<T> &in, const uint dim)
     {
-        val = *copyArray<T>(in);
-        idx = *createEmptyArray<uint>(in.dims());
+        try {
+            val = *copyArray<T>(in);
+            idx = *createEmptyArray<uint>(in.dims());
 
-        switch(dim) {
-        case 0: kernel::sort0_index<T, DIR>(val, idx);
-            break;
-        default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
+            switch(dim) {
+            case 0: kernel::sort0_index<T, isAscending>(val, idx);
+                break;
+            default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
+            }
+        }         catch (std::exception &ex) {
+            AF_ERROR(ex.what(), AF_ERR_INTERNAL);
         }
     }
 #define INSTANTIATE(T)                                                  \
@@ -37,8 +41,6 @@ namespace opencl
 
     INSTANTIATE(float)
     INSTANTIATE(double)
-    //INSTANTIATE(cfloat)
-    //INSTANTIATE(cdouble)
     INSTANTIATE(int)
     INSTANTIATE(uint)
     INSTANTIATE(char)

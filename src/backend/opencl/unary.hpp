@@ -25,9 +25,6 @@ static const char *unaryName() { return "noop"; }
         return FNAME;                           \
     }                                           \
 
-
-UNARY_DECL(abs, "fabs")
-
 #define UNARY_FN(OP) UNARY_DECL(OP, #OP)
 
 UNARY_FN(sin)

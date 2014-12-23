@@ -42,11 +42,11 @@ namespace af
         array(const af_array handle);
         array(const array& in);
 
-        array(dim_type d0, af_dtype ty = f32);
-        array(dim_type d0, dim_type d1, af_dtype ty = f32);
-        array(dim_type d0, dim_type d1, dim_type d2, af_dtype ty = f32);
-        array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, af_dtype ty = f32);
-        array(const dim4& dims, af_dtype ty = f32);
+        array(dim_type d0, dtype ty = f32);
+        array(dim_type d0, dim_type d1, dtype ty = f32);
+        array(dim_type d0, dim_type d1, dim_type d2, dtype ty = f32);
+        array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, dtype ty = f32);
+        array(const dim4& dims, dtype ty = f32);
 
         template<typename T>
             array(dim_type d0,
@@ -77,7 +77,7 @@ namespace af
 
         template<typename T> T* host() const;
         void host(void *ptr) const;
-        af_dtype type() const;
+        dtype type() const;
 
         // FIXME: Everything below this has not been implemented
         dim4 dims() const;
@@ -106,21 +106,6 @@ namespace af
 
         template<typename T> T scalar() const;
         template<typename T> T* device() const;
-
-        static void *alloc(size_t elements, af_dtype type);
-        template<typename T> static T* alloc(size_t elements)
-        {
-            return alloc(elements, (af_dtype)dtype_traits<T>::af_type);
-        }
-
-
-        static void *pinned(size_t elements, af_dtype type);
-        template<typename T> static T* pinned(size_t elements)
-        {
-            return pinned(elements, (af_dtype)dtype_traits<T>::af_type);
-        }
-
-        static void free(const void *);
 
         // INDEXING
     public:
@@ -154,19 +139,19 @@ namespace af
                         { return this->operator()(seq(s0, s0), seq(s1, s1), s2); }
 
         array operator()(const seq& s0, const int& s1, const seq& s2) const
-                        { return this->operator()(s0, seq(s1, s1), s2); }
+        { return this->operator()(s0, seq(s1, s1), s2); }
 
         array operator()(const seq& s0, const int& s1, const int& s2) const
-                        { return this->operator()(s0, seq(s1, s1), seq(s2, s2)); }
+        { return this->operator()(s0, seq(s1, s1), seq(s2, s2)); }
 
         array operator()(const seq& s0, const seq& s1, const int& s2) const
-                        { return this->operator()(s0, s1, seq(s2, s2)); }
+        { return this->operator()(s0, s1, seq(s2, s2)); }
 
         // Four arguments
         array operator()(const seq& s0, const seq& s1, const seq& s2, const seq& s3) const;
 
         array operator()(const int& s0, const int& s1, const int& s2, const int& s3) const
-                        { return this->operator()(seq(s0, s0), seq(s1, s1), seq(s2, s2), seq(s3, s3)); }
+        { return this->operator()(seq(s0, s0), seq(s1, s1), seq(s2, s2), seq(s3, s3)); }
 
         array row(int index) const;
 
@@ -180,89 +165,93 @@ namespace af
 
         array slices(int first, int last) const;
 
-        array as(af_dtype type) const;
+        array as(dtype type) const;
 
         ~array();
 
+        // Transpose and Conjugate Tranpose
+        array T() const;
+        array H() const;
+
         array& operator= (const array &a);  ///< array assignment
         array& operator= (const double &value);
-        array& operator= (const af_cfloat &value);
-        array& operator= (const af_cdouble &value);
+        array& operator= (const cfloat &value);
+        array& operator= (const cdouble &value);
 
-#define SELF(op)                                                            \
-        array& operator op(const array &a);                                  \
-        array& operator op(const double &a);                                 \
-        array& operator op(const af_cdouble &a);                             \
-        array& operator op(const af_cfloat &a);                              \
+#define SELF(op)                                \
+        array& operator op(const array &a);     \
+        array& operator op(const double &a);    \
+        array& operator op(const cdouble &a);   \
+        array& operator op(const cfloat &a);    \
 
         SELF(+=)
-        SELF(-=)
-        SELF(*=)
-        SELF(/=)
+            SELF(-=)
+            SELF(*=)
+            SELF(/=)
 
 
-#define BIN(op)                                                             \
-        array operator op(const array&) const;                              \
-        array operator op(const double&) const;                             \
-        array operator op(const af_cfloat&) const;                          \
-        array operator op(const af_cdouble&) const;                         \
-        AFAPI friend array operator op(const double&, const array&);        \
-        AFAPI friend array operator op(const af_cfloat&, const array&);     \
-        AFAPI friend array operator op(const af_cdouble&, const array&);    \
+#define BIN(op)                                                         \
+            array operator op(const array&) const;                      \
+            array operator op(const double&) const;                     \
+            array operator op(const cfloat&) const;                     \
+            array operator op(const cdouble&) const;                    \
+            AFAPI friend array operator op(const double&, const array&); \
+            AFAPI friend array operator op(const cfloat&, const array&); \
+            AFAPI friend array operator op(const cdouble&, const array&); \
 
-        BIN(+)
-        BIN(-)
-        BIN(*)
-        BIN(/)
+            BIN(+)
+            BIN(-)
+            BIN(*)
+            BIN(/)
 
-#define LOGIC(op)                                                           \
-        array operator op(const array&) const;                             \
-        array operator op(const bool&) const;                              \
-        array operator op(const int&) const;                               \
-        array operator op(const double&) const;                            \
-        array operator op(const af_cfloat&) const;                         \
-        array operator op(const af_cdouble&) const;                        \
-        AFAPI friend array operator op(const bool&, const array&);         \
-        AFAPI friend array operator op(const int&, const array&);          \
-        AFAPI friend array operator op(const double&, const array&);       \
-        AFAPI friend array operator op(const af_cfloat&, const array&);    \
-        AFAPI friend array operator op(const af_cdouble&, const array&);   \
+#define LOGIC(op)                                                       \
+            array operator op(const array&) const;                      \
+            array operator op(const bool&) const;                       \
+            array operator op(const int&) const;                        \
+            array operator op(const double&) const;                     \
+            array operator op(const cfloat&) const;                     \
+            array operator op(const cdouble&) const;                    \
+            AFAPI friend array operator op(const bool&, const array&);  \
+            AFAPI friend array operator op(const int&, const array&);   \
+            AFAPI friend array operator op(const double&, const array&); \
+            AFAPI friend array operator op(const cfloat&, const array&); \
+            AFAPI friend array operator op(const cdouble&, const array&); \
 
-        LOGIC(==)
-        LOGIC(!=)
-        LOGIC(< )
-        LOGIC(<=)
-        LOGIC(> )
-        LOGIC(>=)
-        LOGIC(&&)
-        LOGIC(||)
-        LOGIC(%)
+            LOGIC(==)
+            LOGIC(!=)
+            LOGIC(< )
+            LOGIC(<=)
+            LOGIC(> )
+            LOGIC(>=)
+            LOGIC(&&)
+            LOGIC(||)
+            LOGIC(%)
 
 #undef SELF
 #undef BIN
 #undef LOGIC
 
-       array operator -() const;
-       array operator !() const;
+            array operator -() const;
+        array operator !() const;
     };
     // end of class array
 
-#define BIN(op)                                                         \
-    AFAPI array operator op(const double&, const array&);               \
-    AFAPI array operator op(const af_cfloat&, const array&);            \
-    AFAPI array operator op(const af_cdouble&, const array&);           \
+#define BIN(op)                                             \
+    AFAPI array operator op(const double&, const array&);   \
+    AFAPI array operator op(const cfloat&, const array&);   \
+    AFAPI array operator op(const cdouble&, const array&);  \
 
     BIN(+)
-    BIN(-)
-    BIN(*)
-    BIN(/)
+        BIN(-)
+        BIN(*)
+        BIN(/)
 
-#define LOGIC(op)                                                   \
-        AFAPI array operator op(const bool&, const array&);         \
-        AFAPI array operator op(const int&, const array&);          \
-        AFAPI array operator op(const double&, const array&);       \
-        AFAPI array operator op(const af_cfloat&, const array&);    \
-        AFAPI array operator op(const af_cdouble&, const array&);   \
+#define LOGIC(op)                                               \
+        AFAPI array operator op(const bool&, const array&);     \
+        AFAPI array operator op(const int&, const array&);      \
+        AFAPI array operator op(const double&, const array&);   \
+        AFAPI array operator op(const cfloat&, const array&);   \
+        AFAPI array operator op(const cdouble&, const array&);  \
 
         LOGIC(==)
         LOGIC(!=)

@@ -21,12 +21,14 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
-using af::af_cfloat;
-using af::af_cdouble;
+using af::cfloat;
+using af::cdouble;
 
 template<typename T>
 void whereTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=vector<af_seq>())
 {
+    if (noDoubleTests<T>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<int>> data;
@@ -91,8 +93,8 @@ vector<af_seq> init_subs()
 
 WHERE_TESTS(float)
 WHERE_TESTS(double)
-WHERE_TESTS(af_cfloat)
-WHERE_TESTS(af_cdouble)
+WHERE_TESTS(cfloat)
+WHERE_TESTS(cdouble)
 WHERE_TESTS(int)
 WHERE_TESTS(uint)
 WHERE_TESTS(char)
@@ -102,6 +104,8 @@ WHERE_TESTS(uchar)
 //
 TEST(Where, CPP)
 {
+    if (noDoubleTests<int>()) return;
+
     vector<af::dim4> numDims;
 
     vector<vector<int>> data;

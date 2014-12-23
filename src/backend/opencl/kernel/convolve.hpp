@@ -17,6 +17,7 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
+#include <memory.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -143,16 +144,18 @@ void convolve_nd(Param out, const Param signal, const Param filter, ConvolveBatc
             case 3: se_size = sizeof(T)*filter.info.dims[0]*filter.info.dims[1]*filter.info.dims[2]; break;
         }
 
-        cl::Buffer mBuff = cl::Buffer(getContext(), CL_MEM_READ_ONLY, se_size);
+        cl::Buffer *mBuff = bufferAlloc(se_size);
 
         for (dim_type b=0; b<bCount; ++b) {
             // FIX ME: if the filter array is strided, direct copy might cause issues
-            getQueue().enqueueCopyBuffer(filter.data, mBuff, b*steps[2]*sizeof(T), 0, se_size);
+            getQueue().enqueueCopyBuffer(*filter.data, *mBuff, b*steps[2]*sizeof(T), 0, se_size);
 
             convOp(EnqueueArgs(getQueue(), global, local),
-                    out.data, out.info, signal.data, signal.info, cl::Local(loc_size),
-                    mBuff, filter.info, blk_x, b*steps[0], b*steps[1]);
+                    *out.data, out.info, *signal.data, signal.info, cl::Local(loc_size),
+                    *mBuff, filter.info, blk_x, b*steps[0], b*steps[1]);
         }
+        bufferFree(mBuff);
+
     } catch (cl::Error err) {
         CL_TO_AF_ERROR(err);
         throw;
@@ -203,13 +206,15 @@ void convolve2(Param out, const Param signal, const Param filter)
         else if(conv_dim==1)
            loc_size = (THREADS_Y+2*(fLen-1))*THREADS_X * sizeof(T);
 
-        cl::Buffer mBuff = cl::Buffer(getContext(), CL_MEM_READ_ONLY, fLen*sizeof(T));
+        cl::Buffer *mBuff = bufferAlloc(fLen*sizeof(T));
         // FIX ME: if the filter array is strided, direct might cause issues
-        getQueue().enqueueCopyBuffer(filter.data, mBuff, 0, 0, fLen*sizeof(T));
+        getQueue().enqueueCopyBuffer(*filter.data, *mBuff, 0, 0, fLen*sizeof(T));
 
         convOp(EnqueueArgs(getQueue(), global, local),
-               out.data, out.info, signal.data, signal.info,
-               cl::Local(loc_size), mBuff, fLen, blk_x);
+               *out.data, out.info, *signal.data, signal.info,
+               cl::Local(loc_size), *mBuff, fLen, blk_x);
+
+        bufferFree(mBuff);
     } catch (cl::Error err) {
         CL_TO_AF_ERROR(err);
         throw;
