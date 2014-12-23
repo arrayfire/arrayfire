@@ -110,34 +110,45 @@ namespace af
         // INDEXING
     public:
         // Single arguments
-        array operator()(const array& idx) const;
-        array operator()(const seq& s0) const;
-        array operator()(const int& s0) const
-                        { return this->operator()(seq(s0, s0)); }
+        array operator()(const seq   &s0  ) const;
+        array operator()(const array &arg0) const;
+
+        array operator()(const int &s0) const
+        { return this->operator()(seq(s0, s0)); }
 
         // Two arguments
-        array operator()(const seq& s0, const seq& s1) const;
+        array operator()(const seq   &s0  , const seq   &s1  ) const;
+        array operator()(const seq   &arg0, const array &arg1) const;
+        array operator()(const array &arg0, const seq   &arg1) const;
+        array operator()(const array &arg0, const array &arg1) const;
 
-        array operator()(const int& s0, const int& s1) const
-                        { return this->operator()(seq(s0, s0), seq(s1, s1)); }
+        array operator()(const int &s0, const int &s1) const
+        { return this->operator()(seq(s0, s0), seq(s1, s1)); }
 
-        array operator()(const int& s0, const seq& s1) const
-                        { return this->operator()(seq(s0, s0), s1); }
+        array operator()(const int &s0, const seq &s1) const
+        { return this->operator()(seq(s0, s0), s1); }
 
-        array operator()(const seq& s0, const int& s1) const
-                        { return this->operator()(s0, seq(s1, s1)); }
+        array operator()(const seq &s0, const int &s1) const
+        { return this->operator()(s0, seq(s1, s1)); }
 
         // Three arguments
-        array operator()(const seq& s0, const seq& s1, const seq& s2) const;
+        array operator()(const seq   &s0  , const seq   &s1  , const seq    &s2  ) const;
+        array operator()(const array &arg0, const seq   &arg1, const seq    &arg2) const;
+        array operator()(const seq   &arg0, const array &arg1, const seq    &arg2) const;
+        array operator()(const seq   &arg0, const seq   &arg1, const array  &arg2) const;
+        array operator()(const array &arg0, const array &arg1, const seq    &arg2) const;
+        array operator()(const seq   &arg0, const array &arg1, const array  &arg2) const;
+        array operator()(const array &arg0, const seq   &arg1, const array  &arg2) const;
+        array operator()(const array &arg0, const array &arg1, const array  &arg2) const;
 
         array operator()(const int& s0, const int& s1, const int& s2) const
-                        { return this->operator()(seq(s0, s0), seq(s1, s1), seq(s2, s2)); }
+        { return this->operator()(seq(s0, s0), seq(s1, s1), seq(s2, s2)); }
 
         array operator()(const int& s0, const seq& s1, const seq& s2) const
-                        { return this->operator()(seq(s0, s0), s1, s2); }
+        { return this->operator()(seq(s0, s0), s1, s2); }
 
         array operator()(const int& s0, const int& s1, const seq& s2) const
-                        { return this->operator()(seq(s0, s0), seq(s1, s1), s2); }
+        { return this->operator()(seq(s0, s0), seq(s1, s1), s2); }
 
         array operator()(const seq& s0, const int& s1, const seq& s2) const
         { return this->operator()(s0, seq(s1, s1), s2); }
@@ -149,7 +160,22 @@ namespace af
         { return this->operator()(s0, s1, seq(s2, s2)); }
 
         // Four arguments
-        array operator()(const seq& s0, const seq& s1, const seq& s2, const seq& s3) const;
+        array operator()(const seq   &s0  , const seq   &s1  , const seq   &s2  , const seq   &s3  ) const;
+        array operator()(const array &arg0, const seq   &arg1, const seq   &arg2, const seq   &arg3) const;
+        array operator()(const seq   &arg0, const array &arg1, const seq   &arg2, const seq   &arg3) const;
+        array operator()(const seq   &arg0, const seq   &arg1, const array &arg2, const seq   &arg3) const;
+        array operator()(const seq   &arg0, const seq   &arg1, const seq   &arg2, const array &arg3) const;
+        array operator()(const array &arg0, const array &arg1, const seq   &arg2, const seq   &arg3) const;
+        array operator()(const seq   &arg0, const array &arg1, const array &arg2, const seq   &arg3) const;
+        array operator()(const seq   &arg0, const seq   &arg1, const array &arg2, const array &arg3) const;
+        array operator()(const array &arg0, const seq   &arg1, const seq   &arg2, const array &arg3) const;
+        array operator()(const array &arg0, const seq   &arg1, const array &arg2, const seq   &arg3) const;
+        array operator()(const seq   &arg0, const array &arg1, const seq   &arg2, const array &arg3) const;
+        array operator()(const array &arg0, const array &arg1, const array &arg2, const seq   &arg3) const;
+        array operator()(const array &arg0, const array &arg1, const seq   &arg2, const array &arg3) const;
+        array operator()(const array &arg0, const seq   &arg1, const array &arg2, const array &arg3) const;
+        array operator()(const seq   &arg0, const array &arg1, const array &arg2, const array &arg3) const;
+        array operator()(const array &arg0, const array &arg1, const array &arg2, const array &arg3) const;
 
         array operator()(const int& s0, const int& s1, const int& s2, const int& s3) const
         { return this->operator()(seq(s0, s0), seq(s1, s1), seq(s2, s2), seq(s3, s3)); }

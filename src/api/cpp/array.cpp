@@ -237,13 +237,6 @@ namespace af
         afs[3] = this->s[3].s;
     }
 
-    array array::operator()(const array& idx) const
-    {
-        af_array out = 0;
-        AF_THROW(af_array_index(&out, this->get(), idx.get(), 0));
-        return array(out);
-    }
-
     array array::operator()(const seq &s0) const
     {
         af_array out = 0;
@@ -251,6 +244,13 @@ namespace af
         //FIXME: check if this->s has same dimensions as numdims
         AF_THROW(af_weak_copy(&out, this->get()));
         return array(out, indices);
+    }
+
+    array array::operator()(const array& arg0) const
+    {
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, this->get(), arg0.get(), 0));
+        return array(out);
     }
 
     array array::operator()(const seq &s0, const seq &s1) const
@@ -263,6 +263,28 @@ namespace af
         return array(out, indices);
     }
 
+    array array::operator()(const seq &arg0, const array &arg1) const
+    {
+        array temp = this->operator()(arg0);
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, temp.get(), arg1.get(), 1));
+        return array(out);
+    }
+
+    array array::operator()(const array &arg0, const seq &arg1) const
+    {
+        array temp = this->operator()(span, arg1);
+        return temp(arg0);
+    }
+
+    array array::operator()(const array &arg0, const array &arg1) const
+    {
+        array temp = this->operator()(arg0);
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, temp.get(), arg1.get(), 1));
+        return array(out);
+    }
+
     array array::operator()(const seq &s0, const seq &s1, const seq &s3) const
     {
         eval();
@@ -271,6 +293,166 @@ namespace af
         //FIXME: check if this->s has same dimensions as numdims
         AF_THROW(af_weak_copy(&out, this->get()));
         return array(out, indices);
+    }
+
+    array array::operator()(const array &arg0, const seq &arg1, const seq &arg2) const
+    {
+        array temp = this->operator()(span, arg1, arg2);
+        return temp(arg0);
+    }
+
+    array array::operator()(const seq &arg0, const array &arg1, const seq &arg2) const
+    {
+        array temp = this->operator()(arg0, span, arg2);
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, temp.get(), arg1.get(), 1));
+        return array(out);
+    }
+
+    array array::operator()(const seq &arg0, const seq &arg1, const array &arg2) const
+    {
+        array temp = this->operator()(arg0, arg1, span);
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, temp.get(), arg2.get(), 2));
+        return array(out);
+    }
+
+    array array::operator()(const array &arg0, const array &arg1, const seq &arg2) const
+    {
+        array temp = this->operator()(arg0, arg1);
+        return temp(span, span, arg2);
+    }
+
+    array array::operator()(const seq &arg0, const array &arg1, const array &arg2) const
+    {
+        array temp = this->operator()(arg0, arg1);
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, temp.get(), arg2.get(), 2));
+        return array(out);
+    }
+
+    array array::operator()(const array &arg0, const seq &arg1, const array &arg2) const
+    {
+        array temp = this->operator()(arg0, arg1);
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, temp.get(), arg2.get(), 2));
+        return array(out);
+    }
+
+    array array::operator()(const array &arg0, const array &arg1, const array &arg2) const
+    {
+        array temp = this->operator()(span, arg1, arg2);
+        return temp(arg0);
+    }
+
+    array array::operator()(const array &arg0, const seq &arg1, const seq &arg2, const seq &arg3) const
+    {
+        array temp = this->operator()(span, arg1, arg2, arg3);
+        return temp(arg0);
+    }
+
+    array array::operator()(const seq &arg0, const array &arg1, const seq &arg2, const seq &arg3) const
+    {
+        array temp = this->operator()(arg0, span, arg2, arg3);
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, temp.get(), arg1.get(), 1));
+        return array(out);
+    }
+
+    array array::operator()(const seq &arg0, const seq &arg1, const array &arg2, const seq &arg3) const
+    {
+        array temp = this->operator()(arg0, arg1, span, arg3);
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, temp.get(), arg2.get(), 2));
+        return array(out);
+    }
+
+    array array::operator()(const seq &arg0, const seq &arg1, const seq &arg2, const array &arg3) const
+    {
+        array temp = this->operator()(arg0, arg1, arg2, span);
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, temp.get(), arg3.get(), 3));
+        return array(out);
+    }
+
+    array array::operator()(const array &arg0, const array &arg1, const seq &arg2, const seq &arg3) const
+    {
+        array temp = this->operator()(span, span, arg2, arg3);
+        return temp(arg0, arg1);
+    }
+
+    array array::operator()(const seq &arg0, const array &arg1, const array &arg2, const seq &arg3) const
+    {
+        array temp = this->operator()(arg0, span, span, arg3);
+        return temp(span, arg1, arg2);
+    }
+
+    array array::operator()(const seq &arg0, const seq &arg1, const array &arg2, const array &arg3) const
+    {
+        array temp = this->operator()(arg0, arg1, arg2);
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, temp.get(), arg3.get(), 3));
+        return array(out);
+    }
+
+    array array::operator()(const array &arg0, const seq &arg1, const seq &arg2, const array &arg3) const
+    {
+        array temp = this->operator()(arg0, arg1, arg2);
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, temp.get(), arg3.get(), 3));
+        return array(out);
+    }
+
+    array array::operator()(const array &arg0, const seq &arg1, const array &arg2, const seq &arg3) const
+    {
+        array temp = this->operator()(span, arg1, span, arg3);
+        return temp(arg0, span, arg2);
+    }
+
+    array array::operator()(const seq &arg0, const array &arg1, const seq &arg2, const array &arg3) const
+    {
+        array temp = this->operator()(arg0, arg1, arg2);
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, temp.get(), arg3.get(), 3));
+        return array(out);
+    }
+
+    array array::operator()(const array &arg0, const array &arg1, const array &arg2, const seq &arg3) const
+    {
+        array temp = this->operator()(span, span, span, arg3);
+        return temp(arg0, arg1, arg2);
+    }
+
+    array array::operator()(const array &arg0, const array &arg1, const seq &arg2, const array &arg3) const
+    {
+        array temp = this->operator()(arg0, arg1, arg2);
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, temp.get(), arg3.get(), 3));
+        return array(out);
+    }
+
+    array array::operator()(const array &arg0, const seq &arg1, const array &arg2, const array &arg3) const
+    {
+        array temp = this->operator()(arg0, arg1, arg2);
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, temp.get(), arg3.get(), 3));
+        return array(out);
+    }
+
+    array array::operator()(const seq &arg0, const array &arg1, const array &arg2, const array &arg3) const
+    {
+        array temp = this->operator()(arg0, arg1, arg2);
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, temp.get(), arg3.get(), 3));
+        return array(out);
+    }
+
+    array array::operator()(const array &arg0, const array &arg1, const array &arg2, const array &arg3) const
+    {
+        array temp = this->operator()(arg0, arg1, arg2);
+        af_array out = 0;
+        AF_THROW(af_array_index(&out, temp.get(), arg3.get(), 3));
+        return array(out);
     }
 
     array array::operator()(const seq &s0, const seq &s1, const seq &s2, const seq &s3) const
