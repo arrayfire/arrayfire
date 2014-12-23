@@ -28,7 +28,7 @@ extern "C" {
 
 AFAPI af_err af_mean(af_array *out, const af_array in, dim_type dim);
 
-AFAPI af_err af_mean_all(double *mean, const af_array in);
+AFAPI af_err af_mean_all(double *real, double *imag, const af_array in);
 
 #ifdef __cplusplus
 }

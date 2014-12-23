@@ -21,13 +21,27 @@ array mean(const array &in, dim_type dim)
     return array(temp);
 }
 
-#define INSTANTIATE_MEAN(T)                         \
-    template<> AFAPI T mean(const array& in)        \
-    {                                               \
-        double ret_val;                             \
-        AF_THROW(af_mean_all(&ret_val, in.get()));  \
-        return (T)ret_val;                          \
-    }                                               \
+#define INSTANTIATE_MEAN(T)                               \
+    template<> AFAPI T mean(const array& in)              \
+    {                                                     \
+        double ret_val;                                   \
+        AF_THROW(af_mean_all(&ret_val, NULL, in.get()));  \
+        return (T)ret_val;                                \
+    }                                                     \
+
+template<> AFAPI af_cfloat mean(const array& in)
+{
+    double real, imag;
+    AF_THROW(af_mean_all(&real, &imag, in.get()));
+    return std::complex<float>((float)real, (float)imag);
+}
+
+template<> AFAPI af_cdouble mean(const array& in)
+{
+    double real, imag;
+    AF_THROW(af_mean_all(&real, &imag, in.get()));
+    return std::complex<double>(real, imag);
+}
 
 
 INSTANTIATE_MEAN(float);

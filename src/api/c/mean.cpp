@@ -21,7 +21,7 @@ template<typename inType, typename outType>
 static outType mean(const af_array &in)
 {
     const Array<inType> &input = getArray<inType>(in);
-    return reduce_all<af_add_t, inType, outType>(input)/input.elements();
+    return reduce_all<af_add_t, inType, outType>(input)/(outType)input.elements();
 }
 
 template<typename inType, typename outType>
@@ -50,12 +50,14 @@ af_err af_mean(af_array *out, const af_array in, dim_type dim)
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
         switch(type) {
-            case f64: output = mean<double, double>(in, dim); break;
-            case f32: output = mean<float , float >(in, dim); break;
-            case s32: output = mean<int   , int   >(in, dim); break;
-            case u32: output = mean<uint  , uint  >(in, dim); break;
-            case  u8: output = mean<uchar , uint  >(in, dim); break;
-            case  b8: output = mean<char  , int   >(in, dim); break;
+            case f64: output = mean<double, double >(in, dim); break;
+            case f32: output = mean<float , float  >(in, dim); break;
+            case s32: output = mean<int   , int    >(in, dim); break;
+            case u32: output = mean<uint  , uint   >(in, dim); break;
+            case  u8: output = mean<uchar , uint   >(in, dim); break;
+            case  b8: output = mean<char  , int    >(in, dim); break;
+            case c32: output = mean<cfloat, cfloat >(in, dim); break;
+            case c64: output = mean<cdouble,cdouble>(in, dim); break;
             default : TYPE_ERROR(1, type);
         }
         std::swap(*out, output);
@@ -64,18 +66,28 @@ af_err af_mean(af_array *out, const af_array in, dim_type dim)
     return AF_SUCCESS;
 }
 
-af_err af_mean_all(double *out, const af_array in)
+af_err af_mean_all(double *real, double *imag, const af_array in)
 {
     try {
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
         switch(type) {
-            case f64: *out = mean<double, double>(in); break;
-            case f32: *out = mean<float ,  float>(in); break;
-            case s32: *out = mean<int   ,    int>(in); break;
-            case u32: *out = mean<uint  ,   uint>(in); break;
-            case  u8: *out = mean<uchar ,   uint>(in); break;
-            case  b8: *out = mean<char  ,    int>(in); break;
+            case f64: *real = mean<double, double>(in); break;
+            case f32: *real = mean<float ,  float>(in); break;
+            case s32: *real = mean<int   ,    int>(in); break;
+            case u32: *real = mean<uint  ,   uint>(in); break;
+            case  u8: *real = mean<uchar ,   uint>(in); break;
+            case  b8: *real = mean<char  ,    int>(in); break;
+            case c32: {
+                std::complex<float> tmp = mean<cfloat,cfloat>(in);
+                *real = tmp.real();
+                *imag = tmp.imag();
+                } break;
+            case c64: {
+                std::complex<double> tmp = mean<cdouble,cdouble>(in);
+                *real = tmp.real();
+                *imag = tmp.imag();
+                } break;
             default : TYPE_ERROR(1, type);
         }
     }
