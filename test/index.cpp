@@ -610,14 +610,14 @@ TEST(ArrayIndex, CPP)
     vector<vector<float>>      in;
     vector<vector<float>>   tests;
 
-    readTests<float, float, int>(string(TEST_DIR"/arrayindex/dim1.test"), numDims, in, tests);
+    readTests<float, float, int>(string(TEST_DIR"/arrayindex/dim0.test"), numDims, in, tests);
 
     af::dim4 dims0     = numDims[0];
     af::dim4 dims1     = numDims[1];
 
     array input(dims0, &(in[0].front()));
     array indices(dims1, &(in[1].front()));
-    array output = input(indices, 1);
+    array output = input(indices);
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
@@ -647,7 +647,7 @@ TEST(ArrayIndex, CPPLarge)
 
     array input(dims0, &(in[0].front()));
     array indices(dims1, &(in[1].front()));
-    array output = input(indices, 0);
+    array output = input(indices);
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
