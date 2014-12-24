@@ -122,11 +122,14 @@ CL_KERNEL_TO_H(
     EOF "1"
     )
 
-IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND "${APPLE}")
-    ADD_DEFINITIONS(-stdlib=libstdc++)
-    SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libstdc++")
-    SET(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libstdc++")
-    SET(CUDA_HOST_COMPILER "/usr/bin/clang++")
+IF("${APPLE}")
+    ADD_DEFINITIONS(-D__STRICT_ANSI__)
+    IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+        ADD_DEFINITIONS(-stdlib=libstdc++)
+        SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libstdc++")
+        SET(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libstdc++")
+        SET(CUDA_HOST_COMPILER "/usr/bin/clang++")
+    ENDIF()
 ENDIF()
 
 CUDA_ADD_LIBRARY(afcuda SHARED
