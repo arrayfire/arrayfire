@@ -20,6 +20,7 @@
 #include <backend.hpp>
 #include <ArrayInfo.hpp>
 #include <traits.hpp>
+#include <memory.hpp>
 
 #include <FreeImage.h>
 #include <iostream>
@@ -74,7 +75,7 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
                         const uint fi_w, const uint fi_h)
 {
     // create an array to receive the loaded image data.
-    float* pDst = (float*)malloc(fi_w * fi_h * sizeof(float) * 4); //4 channels is max
+    float *pDst = pinnedAlloc<float>(fi_w * fi_h * 4); // 4 channels is max
     float* pDst0 = pDst;
     float* pDst1 = pDst + (fi_w * fi_h * 1);
     float* pDst2 = pDst + (fi_w * fi_h * 2);
@@ -101,7 +102,7 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
     // TODO
     af::dim4 dims(fi_h, fi_w, fo_color, 1);
     af_err err = af_create_array(rImage, pDst, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type);
-    free(pDst);
+    pinnedFree(pDst);
     return err;
 }
 
@@ -110,7 +111,7 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
                         const uint fi_w, const uint fi_h)
 {
     // create an array to receive the loaded image data.
-    float* pDst = (float*)malloc(fi_w * fi_h * sizeof(float)); //only gray channel
+    float *pDst = pinnedAlloc<float>(fi_w * fi_h);
 
     uint indx = 0;
     uint step = nSrcPitch / (fi_w * sizeof(T));
@@ -132,7 +133,7 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
 
     af::dim4 dims(fi_h, fi_w, 1, 1);
     af_err err = af_create_array(rImage, pDst, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type);
-    free(pDst);
+    pinnedFree(pDst);
     return err;
 }
 
@@ -323,10 +324,10 @@ af_err af_save_image(const char* filename, const af_array in_)
             AF_CHECK(af_transpose(&aaT, aa, false));
 
             ArrayInfo cinfo = getInfo(rrT);
-            float* pSrc0 = new float[cinfo.elements()];
-            float* pSrc1 = new float[cinfo.elements()];
-            float* pSrc2 = new float[cinfo.elements()];
-            float* pSrc3 = new float[cinfo.elements()];
+            float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc1 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc2 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc3 = pinnedAlloc<float>(cinfo.elements());
 
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
             AF_CHECK(af_get_data_ptr((void*)pSrc1, ggT));
@@ -354,9 +355,9 @@ af_err af_save_image(const char* filename, const af_array in_)
             AF_CHECK(af_transpose(&bbT, bb, false));
 
             ArrayInfo cinfo = getInfo(rrT);
-            float* pSrc0 = new float[cinfo.elements()];
-            float* pSrc1 = new float[cinfo.elements()];
-            float* pSrc2 = new float[cinfo.elements()];
+            float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc1 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc2 = pinnedAlloc<float>(cinfo.elements());
 
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
             AF_CHECK(af_get_data_ptr((void*)pSrc1, ggT));
@@ -378,7 +379,7 @@ af_err af_save_image(const char* filename, const af_array in_)
         } else {
             AF_CHECK(af_transpose(&rrT, rr, false));
             ArrayInfo cinfo = getInfo(rrT);
-            float* pSrc0 = new float[cinfo.elements()];
+            float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
 
             for (uint y = 0; y < fi_h; ++y) {

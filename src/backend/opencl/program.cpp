@@ -47,9 +47,8 @@ namespace opencl
             }
 
             static std::string defaults =
-                std::string(" -cl-std=CL1.1") + std::string(" -D dim_type=") +
+                std::string(" -D dim_type=") +
                 std::string(dtype_traits<dim_type>::getName());
-
 
             prog = cl::Program(getContext(), setSrc);
             std::vector<cl::Device> targetDevices;

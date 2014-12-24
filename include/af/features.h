@@ -14,6 +14,14 @@
 #include <af/seq.h>
 #include <af/traits.hpp>
 
+typedef struct {
+    size_t n;
+    af_array x;
+    af_array y;
+    af_array score;
+    af_array orientation;
+    af_array size;
+} af_features;
 
 #ifdef __cplusplus
 namespace af

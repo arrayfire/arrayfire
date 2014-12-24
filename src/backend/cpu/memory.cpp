@@ -16,6 +16,31 @@
 
 namespace cpu
 {
+    void garbageCollect();
+
+    class Manager
+    {
+        public:
+        static bool initialized;
+        Manager()
+        {
+            initialized = true;
+        }
+
+        ~Manager()
+        {
+            garbageCollect();
+        }
+    };
+
+    bool Manager::initialized = false;
+
+    static void managerInit()
+    {
+        if(Manager::initialized == false)
+            static Manager pm = Manager();
+    }
+
     const int MAX_BUFFERS = 100;
     const int MAX_BYTES = 100 * (1 << 20);
     typedef struct
@@ -57,6 +82,8 @@ namespace cpu
     template<typename T>
     T* memAlloc(const size_t &elements)
     {
+        managerInit();
+
         T* ptr = NULL;
         size_t alloc_bytes = divup(sizeof(T) * elements, 1024) * 1024;
 

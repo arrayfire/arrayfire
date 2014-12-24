@@ -27,12 +27,12 @@ namespace af
 
     AFAPI void sync(int device = -1);
 
-    AFAPI void *alloc(size_t elements, af_dtype type);
+    AFAPI void *alloc(size_t elements, dtype type);
 
     template<typename T>
     T* alloc(size_t elements);
 
-    AFAPI void *pinned(size_t elements, af_dtype type);
+    AFAPI void *pinned(size_t elements, dtype type);
 
     template<typename T>
     T* pinned(size_t elements);
