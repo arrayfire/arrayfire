@@ -9,9 +9,8 @@ IF(NOT UNIX)
   ADD_DEFINITIONS(-DAFDLL)
 ENDIF()
 
-ADD_DEFINITIONS(-DAF_OPENCL)
-ADD_DEFINITIONS( -D__CL_ENABLE_EXCEPTIONS
-                 -DCL_USE_DEPRECATED_OPENCL_1_1_APIS )
+ADD_DEFINITIONS(-DAF_OPENCL
+                -D__CL_ENABLE_EXCEPTIONS)
 
 # clBLAS and clFFT create packages when their `make install` step is executed,
 # rather than installing to system directories. Thus we have special find
