@@ -81,6 +81,7 @@ UNARY_FN(lgamma)
     {                                           \
         char eval(T in)                         \
         {                                       \
+            using namespace std;                \
             return op(in);                      \
         }                                       \
     };                                          \
