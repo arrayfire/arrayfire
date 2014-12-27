@@ -99,8 +99,8 @@ namespace cuda
 
 #else
 
-    const int MAX_BUFFERS = 100;
-    const int MAX_BYTES = (1 << 30);
+    static const unsigned MAX_BUFFERS   = 100;
+    static const unsigned MAX_BYTES     = (1 << 30);
 
     typedef struct
     {

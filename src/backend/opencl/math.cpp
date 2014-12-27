@@ -9,13 +9,13 @@ namespace opencl
 
     cfloat operator +(cfloat a, cfloat b)
     {
-        cfloat res = {a.s[0] + b.s[0], a.s[1] + b.s[1]};
+        cfloat res = {{a.s[0] + b.s[0], a.s[1] + b.s[1]}};
         return res;
     }
 
     cdouble operator +(cdouble a, cdouble b)
     {
-        cdouble res = {a.s[0] + b.s[0], a.s[1] + b.s[1]};
+        cdouble res = {{a.s[0] + b.s[0], a.s[1] + b.s[1]}};
         return res;
     }
 }
