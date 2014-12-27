@@ -17,6 +17,8 @@
 
 using std::string;
 using std::vector;
+using af::cdouble;
+using af::cfloat;
 
 template<typename T>
 class Mean : public ::testing::Test
@@ -26,7 +28,7 @@ class Mean : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, int, uint, char, uchar> TestTypes;
+typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, char, uchar> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Mean, TestTypes);
@@ -44,7 +46,8 @@ template<typename T, dim_type dim>
 void meanDimTest(string pFileName)
 {
     typedef meanOutType<T> outType;
-    bool isFP = std::is_same<outType, float>::value || std::is_same<outType, double>::value;
+    bool isFP = std::is_same<outType, float>::value  || std::is_same<outType, double>::value ||
+		std::is_same<outType, cfloat>::value || std::is_same<outType, cdouble>::value;
 
     vector<af::dim4>      numDims;
     vector<vector<int>>        in;
@@ -71,7 +74,8 @@ void meanDimTest(string pFileName)
     size_t nElems = currGoldBar.size();
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         if (isFP) {
-            ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1.0e-3)<< "at: " << elIter<< std::endl;
+            ASSERT_NEAR(std::real(currGoldBar[elIter]), std::real(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
+            ASSERT_NEAR(std::imag(currGoldBar[elIter]), std::imag(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
         } else {
             ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
         }
@@ -116,6 +120,8 @@ TYPED_TEST(Mean, Dim2HyperCube)
 //////////////////////////////// CPP ////////////////////////////////////
 // test mean_all interface using cpp api
 
+#include <iostream>
+
 template<typename T>
 void testCPPMean(T const_value, af::dim4 dims)
 {
@@ -132,7 +138,8 @@ void testCPPMean(T const_value, af::dim4 dims)
     array a(dims, &(hundred.front()));
     outType output = mean<outType>(a);
 
-    ASSERT_EQ(true, output==gold);
+    ASSERT_NEAR(std::real(output), std::real(gold), 1.0e-3);
+    ASSERT_NEAR(std::imag(output), std::imag(gold), 1.0e-3);
 }
 
 TEST(Mean, CPP_f64)
@@ -163,4 +170,14 @@ TEST(Mean, CPP_s8)
 TEST(Mean, CPP_u8)
 {
     testCPPMean<uchar>(2, af::dim4(100, 1, 1, 1));
+}
+
+TEST(Mean, CPP_cfloat)
+{
+    testCPPMean<cfloat>(cfloat(2.1f), af::dim4(10, 5, 2, 1));
+}
+
+TEST(Mean, CPP_cdouble)
+{
+    testCPPMean<cdouble>(cdouble(2.1), af::dim4(10, 10, 1, 1));
 }
