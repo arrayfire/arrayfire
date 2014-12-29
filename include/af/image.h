@@ -22,11 +22,11 @@ AFAPI void saveImage(const char* filename, const array& in);
 
 AFAPI array resize(const array& in, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST);
 
-AFAPI array resize(const array& in, const float scale0, const float scale1, const interpType method=AF_INTERP_NEAREST);
+AFAPI array resize(const float scale0, const float scale1, const array& in, const interpType method=AF_INTERP_NEAREST);
 
-AFAPI array resize(const array& in, const float scale, const interpType method=AF_INTERP_NEAREST);
+AFAPI array resize(const float scale, const array& in, const interpType method=AF_INTERP_NEAREST);
 
-AFAPI array rotate(const array& in, const float theta, const interpType method=AF_INTERP_NEAREST, const bool crop=true);
+AFAPI array rotate(const array& in, const float theta, const bool crop=true, const interpType method=AF_INTERP_NEAREST);
 
 AFAPI array transform(const array& in, const array& transform, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST, const bool inverse=true);
 
@@ -40,7 +40,9 @@ AFAPI array bilateral(const array &in, const float spatial_sigma, const float ch
 
 AFAPI array histogram(const array &in, const unsigned nbins, const double minval, const double maxval);
 
-AFAPI array meanshift(const array& in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color);
+AFAPI array histogram(const array &in, const unsigned nbins);
+
+AFAPI array meanshift(const array& in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color=false);
 
 AFAPI array medfilt(const array& in, dim_type wind_length = 3, dim_type wind_width = 3, padType edge_pad = AF_ZERO);
 
@@ -81,7 +83,7 @@ extern "C" {
 
     // Rotate
     AFAPI af_err af_rotate(af_array *out, const af_array in, const float theta,
-                           const af_interp_type method, const bool crop);
+                           const bool crop, const af_interp_type method);
     // Translate
     AFAPI af_err af_translate(af_array *out, const af_array in, const float trans0, const float trans1,
                               const dim_type odim0, const dim_type odim1, const af_interp_type method);
