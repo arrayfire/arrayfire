@@ -25,8 +25,9 @@ static inline af_array rotate(const af_array in, const float theta, const af::di
 }
 
 
-af_err af_rotate(af_array *out, const af_array in, const float theta, const af_interp_type method,
-                 const bool crop)
+af_err af_rotate(af_array *out, const af_array in, const float theta,
+                 const bool crop,
+                 const af_interp_type method)
 {
     af_err ret = AF_SUCCESS;
     try {
@@ -65,4 +66,3 @@ af_err af_rotate(af_array *out, const af_array in, const float theta, const af_i
 
     return ret;
 }
-
