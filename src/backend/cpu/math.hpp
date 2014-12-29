@@ -17,8 +17,8 @@
 namespace cpu
 {
     template<typename T> static inline T abs(T val) { return std::abs(val); }
-    template<> STATIC_ uint abs(uint val) { return val; }
-    template<> STATIC_ uchar abs(uchar val) { return val; }
+    uint abs(uint val);
+    uchar abs(uchar val);
 
     template<typename T> static inline T min(T lhs, T rhs) { return std::min(lhs, rhs); }
     cfloat min(cfloat lhs, cfloat rhs);
@@ -41,17 +41,7 @@ namespace cpu
         return (T)(val);
     }
 
-	template<> STATIC_
-    cfloat  scalar<cfloat >(double val)
-    {
-        cfloat  cval = {(float)val, 0};
-        return cval;
-    }
+    cfloat  scalar(float val);
 
-	template<> STATIC_
-    cdouble scalar<cdouble >(double val)
-    {
-        cdouble  cval = {val, 0};
-        return cval;
-    }
+    cdouble scalar(double val);
 }

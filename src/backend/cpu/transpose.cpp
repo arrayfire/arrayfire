@@ -89,11 +89,11 @@ Array<T> * transpose(const Array<T> &in, const bool conjugate)
     const T*   inData   = in.get();
 
     if(conjugate) {
-            transpose_<T, true>(outData, inData,
-                                out->dims(), in.dims(), out->strides(), in.strides());
+        transpose_<T, true>(outData, inData,
+                            out->dims(), in.dims(), out->strides(), in.strides());
     } else {
-            transpose_<T, false>(outData, inData,
-                                 out->dims(), in.dims(), out->strides(), in.strides());
+        transpose_<T, false>(outData, inData,
+                             out->dims(), in.dims(), out->strides(), in.strides());
     }
 
     return out;
