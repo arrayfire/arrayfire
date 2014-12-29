@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/image.h>
+#include <af/algorithm.h>
 #include "error.hpp"
 
 namespace af
@@ -17,6 +18,13 @@ array histogram(const array &in, const unsigned nbins, const double minval, cons
 {
     af_array out = 0;
     AF_THROW(af_histogram(&out, in.get(), nbins, minval, maxval));
+    return array(out);
+}
+
+array histogram(const array &in, const unsigned nbins)
+{
+    af_array out = 0;
+    AF_THROW(af_histogram(&out, in.get(), nbins, min<double>(in), max<double>(in)));
     return array(out);
 }
 
