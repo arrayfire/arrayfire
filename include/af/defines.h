@@ -114,6 +114,7 @@ typedef enum {
 
 
 #ifdef __cplusplus
+#include <limits>
 namespace af
 {
     typedef af_cfloat cfloat;
@@ -123,5 +124,9 @@ namespace af
     typedef af_interp_type interpType;
     typedef af_pad_type padType;
     typedef af_connectivity connectivity;
+
+    const double NaN = std::numeric_limits<double>::quiet_NaN();
+    const double Inf = std::numeric_limits<double>::infinity();
+    const double Pi = 3.1415926535897932384626433832795028841971693993751;
 }
 #endif
