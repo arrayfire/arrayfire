@@ -33,8 +33,19 @@ af_err af_reorder(af_array *out, const af_array in, const af::dim4 &rdims)
         DIM_ASSERT(1, info.elements() > 0);
 
         // Check that dimensions are not repeated
+        // allDims is to check if all dimensions are there exactly once
+        // If all dimensions are present, the allDims will be -1, -1, -1, -1
+        // after the loop
+        // Example:
+        // rdims = {2, 0, 3, 1}
+        // i = 0 => 2 found and cond is true so alldims[2] = -1
+        // i = 1 => 0 found and cond is true so alldims[0] = -1
+        // i = 2 => 3 found and cond is true so alldims[3] = -1
+        // i = 3 => 1 found and cond is true so alldims[1] = -1
+        // rdims = {2, 0, 3, 2} // Failure case
+        // i = 3 => 2 found so cond is false (since alldims[2] = -1 when i = 0) so failed.
         int allDims[] = {0, 1, 2, 3};
-        for(int i = 0; i < 3; i++) {
+        for(int i = 0; i < 4; i++) {
             DIM_ASSERT(i + 2, rdims[i] == allDims[rdims[i]]);
             allDims[rdims[i]] = -1;
         }
