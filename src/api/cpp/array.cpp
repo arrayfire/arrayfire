@@ -40,6 +40,14 @@ namespace af
         default: return sizeof(float);
         }
     }
+
+    static unsigned numDims(const af_array arr)
+    {
+        unsigned nd;
+        AF_THROW(af_get_numdims(&nd, arr));
+        return nd;
+    }
+
     array::array(const af_array handle): arr(handle), isRef(false) {}
 
     static void initEmptyArray(af_array *arr, af::dtype ty,
@@ -141,7 +149,7 @@ namespace af
     af::dtype array::type() const
     {
         af::dtype my_type;
-        AF_THROW(af_get_type(&my_type, get()));
+        AF_THROW(af_get_type(&my_type, arr));
         return my_type;
     }
 
@@ -191,9 +199,7 @@ namespace af
 
     unsigned array::numdims() const
     {
-        unsigned nd;
-        AF_THROW(af_get_numdims(&nd, get()));
-        return nd;
+        return numDims(get());
     }
 
     size_t array::bytes() const
@@ -353,7 +359,8 @@ namespace af
 
             af_seq afs[4];
             getSeq(afs);
-            AF_THROW(af_assign(arr, numdims(), afs, other.get()));
+            unsigned nd = numDims(arr);
+            AF_THROW(af_assign(arr, nd, afs, other.get()));
             isRef = false;
 
         } else {
@@ -409,8 +416,8 @@ namespace af
         bool this_ref = isRef;                                                  \
         if (this_ref) {                                                         \
             af_array tmp_arr;                                                   \
-            unsigned ndims = numdims();                                         \
             AF_THROW(af_weak_copy(&tmp_arr, this->arr));                        \
+            unsigned ndims = numDims(tmp_arr);                                  \
             array tmp = *this op1 other;                                        \
             af_seq afs[4];                                                      \
             getSeq(afs);                                                        \
