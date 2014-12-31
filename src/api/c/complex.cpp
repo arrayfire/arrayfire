@@ -35,7 +35,7 @@ static inline af_array cplx(const af_array lhs, const af_array rhs, bool destroy
     return res;
 }
 
-af_err af_cplx2(af_array *out, const af_array lhs, const af_array rhs)
+af_err af_cplx2(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
 {
     try {
 
@@ -47,7 +47,8 @@ af_err af_cplx2(af_array *out, const af_array lhs, const af_array rhs)
 
         if (type != f64) type = f32;
 
-        DIM_ASSERT(1, getInfo(lhs).dims() == getInfo(rhs).dims());
+        if (!batchMode) DIM_ASSERT(1, getInfo(lhs).dims() == getInfo(rhs).dims());
+        else AF_ERROR("Batch mode not supported yet", AF_ERR_NOT_SUPPORTED);
 
         const af_array left  = cast(lhs, type);
         const af_array right = cast(rhs, type);

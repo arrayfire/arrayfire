@@ -98,32 +98,36 @@ namespace af
 extern "C" {
 #endif
 
-    AFAPI af_err af_add   (af_array *result, const af_array lhs, const af_array rhs);
-    AFAPI af_err af_sub   (af_array *result, const af_array lhs, const af_array rhs);
-    AFAPI af_err af_mul   (af_array *result, const af_array lhs, const af_array rhs);
-    AFAPI af_err af_div   (af_array *result, const af_array lhs, const af_array rhs);
+    AFAPI af_err af_add   (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
+    AFAPI af_err af_sub   (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
+    AFAPI af_err af_mul   (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
+    AFAPI af_err af_div   (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
 
-    AFAPI af_err af_lt    (af_array *result, const af_array lhs, const af_array rhs);
-    AFAPI af_err af_gt    (af_array *result, const af_array lhs, const af_array rhs);
-    AFAPI af_err af_le    (af_array *result, const af_array lhs, const af_array rhs);
-    AFAPI af_err af_ge    (af_array *result, const af_array lhs, const af_array rhs);
-    AFAPI af_err af_eq    (af_array *result, const af_array lhs, const af_array rhs);
-    AFAPI af_err af_neq   (af_array *result, const af_array lhs, const af_array rhs);
+    AFAPI af_err af_lt    (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
+    AFAPI af_err af_gt    (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
+    AFAPI af_err af_le    (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
+    AFAPI af_err af_ge    (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
+    AFAPI af_err af_eq    (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
+    AFAPI af_err af_neq   (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
 
-    AFAPI af_err af_and   (af_array *result, const af_array lhs, const af_array rhs);
-    AFAPI af_err af_or    (af_array *result, const af_array lhs, const af_array rhs);
+    AFAPI af_err af_and   (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
+    AFAPI af_err af_or    (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
     AFAPI af_err af_not   (af_array *result, const af_array in);
 
-    AFAPI af_err af_minof (af_array *result, const af_array lhs, const af_array rhs);
-    AFAPI af_err af_maxof (af_array *result, const af_array lhs, const af_array rhs);
+    AFAPI af_err af_minof (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
+    AFAPI af_err af_maxof (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
 
-    AFAPI af_err af_cplx2 (af_array *result, const af_array lhs, const af_array rhs);
-    AFAPI af_err af_atan2 (af_array *result, const af_array lhs, const af_array rhs);
-    AFAPI af_err af_hypot (af_array *result, const af_array lhs, const af_array rhs);
+    AFAPI af_err af_cplx2 (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
+    AFAPI af_err af_atan2 (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
+    AFAPI af_err af_hypot (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
 
-    AFAPI af_err af_pow   (af_array *result, const af_array lhs, const af_array rhs);
-    AFAPI af_err af_rem   (af_array *result, const af_array lhs, const af_array rhs);
-    AFAPI af_err af_mod   (af_array *result, const af_array lhs, const af_array rhs);
+    AFAPI af_err af_pow   (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
+    AFAPI af_err af_rem   (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
+    AFAPI af_err af_mod   (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
+
+    AFAPI af_err af_bitand(af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
+    AFAPI af_err af_bitor (af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
+    AFAPI af_err af_bitxor(af_array *result, const af_array lhs, const af_array rhs, bool batchMode);
 
     AFAPI af_err af_cast    (af_array *out, const af_array in, af_dtype type);
     AFAPI af_err af_cplx    (af_array *out, const af_array in);

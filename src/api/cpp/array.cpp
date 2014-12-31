@@ -410,7 +410,7 @@ namespace af
     ///////////////////////////////////////////////////////////////////////////
     // Operator +=, -=, *=, /=
     ///////////////////////////////////////////////////////////////////////////
-#define INSTANTIATE(op, op1, func)                                              \
+#define INSTANTIATE(op, op1)                                                    \
     array& array::operator op(const array &other)                               \
     {                                                                           \
         bool this_ref = isRef;                                                  \
@@ -454,10 +454,10 @@ namespace af
         return operator op(cst);                                                \
     }                                                                           \
 
-    INSTANTIATE(+=, +, af_add)
-    INSTANTIATE(-=, -, af_sub)
-    INSTANTIATE(*=, *, af_mul)
-    INSTANTIATE(/=, /, af_div)
+    INSTANTIATE(+=, +)
+    INSTANTIATE(-=, -)
+    INSTANTIATE(*=, *)
+    INSTANTIATE(/=, /)
 
 #undef INSTANTIATE
 
@@ -469,7 +469,7 @@ namespace af
     {                                                               \
         af_array lhs = this->get();                                 \
         af_array out;                                               \
-        AF_THROW(func(&out, lhs, other.get()));                     \
+        AF_THROW(func(&out, lhs, other.get(), false));              \
         return array(out);                                          \
     }                                                               \
     array array::operator op(const double &value) const             \
@@ -477,7 +477,7 @@ namespace af
         af_array lhs = this->get();                                 \
         af_array out;                                               \
         array cst = constant(value, this->dims(), this->type());    \
-        AF_THROW(func(&out, lhs, cst.get()));                       \
+        AF_THROW(func(&out, lhs, cst.get(), false));                \
         return array(out);                                          \
     }                                                               \
     array array::operator op(const cdouble &value) const            \
@@ -485,7 +485,7 @@ namespace af
         af_array lhs = this->get();                                 \
         af_array out;                                               \
         array cst = constant(value, this->dims());                  \
-        AF_THROW(func(&out, lhs, cst.get()));                       \
+        AF_THROW(func(&out, lhs, cst.get(), false));                \
         return array(out);                                          \
     }                                                               \
     array array::operator op(const cfloat &value) const             \
@@ -493,7 +493,7 @@ namespace af
         af_array lhs = this->get();                                 \
         af_array out;                                               \
         array cst = constant(value, this->dims());                  \
-        AF_THROW(func(&out, lhs, cst.get()));                       \
+        AF_THROW(func(&out, lhs, cst.get(), false));                \
         return array(out);                                          \
     }                                                               \
     array operator op(const double &value, const array &other)      \
@@ -501,7 +501,7 @@ namespace af
         af_array rhs = other.get();                                 \
         af_array out;                                               \
         array cst = constant(value, other.dims(), other.type());    \
-        AF_THROW(func(&out, cst.get(), rhs));                       \
+        AF_THROW(func(&out, cst.get(), rhs, false));                \
         return array(out);                                          \
     }                                                               \
     array operator op(const cdouble &value, const array& other)     \
@@ -509,7 +509,7 @@ namespace af
         af_array rhs = other.get();                                 \
         af_array out;                                               \
         array cst = constant(value, other.dims());                  \
-        AF_THROW(func(&out, cst.get(), rhs));                       \
+        AF_THROW(func(&out, cst.get(), rhs, false));                \
         return array(out);                                          \
     }                                                               \
     array operator op(const cfloat &value, const array& other)      \
@@ -517,7 +517,7 @@ namespace af
         af_array rhs = other.get();                                 \
         af_array out;                                               \
         array cst = constant(value, other.dims());                  \
-        AF_THROW(func(&out, cst.get(), rhs));                       \
+        AF_THROW(func(&out, cst.get(), rhs, false));                \
         return array(out);                                          \
     }                                                               \
 
@@ -525,117 +525,71 @@ namespace af
     INSTANTIATE(-, af_sub)
     INSTANTIATE(*, af_mul)
     INSTANTIATE(/, af_div)
+    INSTANTIATE(==, af_eq)
+    INSTANTIATE(!=, af_neq)
+    INSTANTIATE(< , af_lt)
+    INSTANTIATE(<=, af_le)
+    INSTANTIATE(> , af_gt)
+    INSTANTIATE(>=, af_ge)
+    INSTANTIATE(&&, af_and)
+    INSTANTIATE(||, af_or)
+    INSTANTIATE(%, af_mod)
 
 #undef INSTANTIATE
 
     ///////////////////////////////////////////////////////////////////////////
     // Operator ==, !=, < <=, >, >=
     ///////////////////////////////////////////////////////////////////////////
-#define INSTANTIATE(op, func)                                       \
-    array array::operator op(const array &other) const              \
-    {                                                               \
-        af_array lhs = this->get();                                 \
-        af_array out;                                               \
-        AF_THROW(func(&out, lhs, other.get()));                     \
-        return array(out);                                          \
-    }                                                               \
-    array array::operator op(const bool &value) const               \
-    {                                                               \
-        af_array lhs = this->get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, this->dims(), this->type());    \
-        AF_THROW(func(&out, lhs, cst.get()));                       \
-        return array(out);                                          \
-    }                                                               \
-    array array::operator op(const int &value) const                \
-    {                                                               \
-        af_array lhs = this->get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, this->dims(), this->type());    \
-        AF_THROW(func(&out, lhs, cst.get()));                       \
-        return array(out);                                          \
-    }                                                               \
-    array array::operator op(const double &value) const             \
-    {                                                               \
-        af_array lhs = this->get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, this->dims(), this->type());    \
-        AF_THROW(func(&out, lhs, cst.get()));                       \
-        return array(out);                                          \
-    }                                                               \
-    array array::operator op(const cdouble &value) const            \
-    {                                                               \
-        af_array lhs = this->get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, this->dims());                  \
-        AF_THROW(func(&out, lhs, cst.get()));                       \
-        return array(out);                                          \
-    }                                                               \
-    array array::operator op(const cfloat &value) const             \
-    {                                                               \
-        af_array lhs = this->get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, this->dims());                  \
-        AF_THROW(func(&out, lhs, cst.get()));                       \
-        return array(out);                                          \
-    }                                                               \
-    array operator op(const bool &value, const array &other)        \
-    {                                                               \
-        af_array rhs = other.get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, other.dims(), other.type());    \
-        AF_THROW(func(&out, cst.get(), rhs));                       \
-        return array(out);                                          \
-    }                                                               \
-    array operator op(const int &value, const array &other)         \
-    {                                                               \
-        af_array rhs = other.get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, other.dims(), other.type());    \
-        AF_THROW(func(&out, cst.get(), rhs));                       \
-        return array(out);                                          \
-    }                                                               \
-    array operator op(const double &value, const array &other)      \
-    {                                                               \
-        af_array rhs = other.get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, other.dims(), other.type());    \
-        AF_THROW(func(&out, cst.get(), rhs));                       \
-        return array(out);                                          \
-    }                                                               \
-    array operator op(const cdouble &value, const array& other)     \
-    {                                                               \
-        af_array rhs = other.get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, other.dims());                  \
-        AF_THROW(func(&out, cst.get(), rhs));                       \
-        return array(out);                                          \
-    }                                                               \
-    array operator op(const cfloat &value, const array& other)      \
-    {                                                               \
-        af_array rhs = other.get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, other.dims());                  \
-        AF_THROW(func(&out, cst.get(), rhs));                       \
-        return array(out);                                          \
-    }                                                               \
+#define INSTANTIATE(op, func)                                   \
+    array array::operator op(const bool &value) const           \
+    {                                                           \
+        af_array lhs = this->get();                             \
+        af_array out;                                           \
+        array cst = constant(value, this->dims(), b8);          \
+        AF_THROW(func(&out, lhs, cst.get(), false));            \
+        return array(out);                                      \
+    }                                                           \
+    array array::operator op(const int &value) const            \
+    {                                                           \
+        af_array lhs = this->get();                             \
+        af_array out;                                           \
+        array cst = constant(value, this->dims(), s32);         \
+        AF_THROW(func(&out, lhs, cst.get(), false));            \
+        return array(out);                                      \
+    }                                                           \
+    array operator op(const bool &value, const array &other)    \
+    {                                                           \
+        af_array rhs = other.get();                             \
+        af_array out;                                           \
+        array cst = constant(value, other.dims(), b8);          \
+        AF_THROW(func(&out, cst.get(), rhs, false));            \
+        return array(out);                                      \
+    }                                                           \
+    array operator op(const int &value, const array &other)     \
+    {                                                           \
+        af_array rhs = other.get();                             \
+        af_array out;                                           \
+        array cst = constant(value, other.dims(), s32);         \
+        AF_THROW(func(&out, cst.get(), rhs, false));            \
+        return array(out);                                      \
+    }                                                           \
 
-        INSTANTIATE(==, af_eq)
-        INSTANTIATE(!=, af_neq)
-        INSTANTIATE(< , af_lt)
-        INSTANTIATE(<=, af_le)
-        INSTANTIATE(> , af_gt)
-        INSTANTIATE(>=, af_ge)
-        INSTANTIATE(&&, af_and)
-        INSTANTIATE(||, af_or)
-        INSTANTIATE(%, af_mod)
+    INSTANTIATE(==, af_eq)
+    INSTANTIATE(!=, af_neq)
+    INSTANTIATE(< , af_lt)
+    INSTANTIATE(<=, af_le)
+    INSTANTIATE(> , af_gt)
+    INSTANTIATE(>=, af_ge)
+    INSTANTIATE(&&, af_and)
+    INSTANTIATE(||, af_or)
+    INSTANTIATE(%, af_mod)
 
     array array::operator-() const
     {
         af_array lhs = this->get();
         af_array out;
         array cst = constant(0, this->dims(), this->type());
-        AF_THROW(af_sub(&out, cst.get(), lhs));
+        AF_THROW(af_sub(&out, cst.get(), lhs, false));
         return array(out);
     }
 
@@ -644,7 +598,7 @@ namespace af
         af_array lhs = this->get();
         af_array out;
         array cst = constant(0, this->dims(), this->type());
-        AF_THROW(af_eq(&out, cst.get(), lhs));
+        AF_THROW(af_eq(&out, cst.get(), lhs, false));
         return array(out);
     }
 

@@ -19,7 +19,7 @@ namespace af
     array cppfunc(const array &lhs, const array &rhs)               \
     {                                                               \
         af_array out = 0;                                           \
-        cfunc(&out, lhs.get(), rhs.get());                          \
+        cfunc(&out, lhs.get(), rhs.get(), false);                   \
         return array(out);                                          \
     }
 
@@ -33,14 +33,14 @@ namespace af
     INSTANTIATE(atan2, af_atan2)
     INSTANTIATE(hypot, af_hypot)
 
-#define WRAPPER(func)                                               \
-    array func(const array &lhs, const double rhs)                  \
-    {                                                               \
-        return func(lhs, constant(rhs, lhs.dims(), lhs.type()));    \
-    }                                                               \
-    array func(const double lhs, const array &rhs)                  \
-    {                                                               \
-        return func(constant(lhs, rhs.dims(), rhs.type()), rhs);    \
+#define WRAPPER(func)                                                   \
+    array func(const array &lhs, const double rhs)                      \
+    {                                                                   \
+        return func(lhs, constant(rhs, lhs.dims(), lhs.type()));        \
+    }                                                                   \
+    array func(const double lhs, const array &rhs)                      \
+    {                                                                   \
+        return func(constant(lhs, rhs.dims(), rhs.type()), rhs);        \
     }
 
     WRAPPER(min)
