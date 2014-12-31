@@ -47,6 +47,8 @@ af_err af_cplx2(af_array *out, const af_array lhs, const af_array rhs)
 
         if (type != f64) type = f32;
 
+        DIM_ASSERT(1, getInfo(lhs).dims() == getInfo(rhs).dims());
+
         const af_array left  = cast(lhs, type);
         const af_array right = cast(rhs, type);
 
