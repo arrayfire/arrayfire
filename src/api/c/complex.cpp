@@ -21,11 +21,23 @@
 #include <complex.hpp>
 
 using namespace detail;
+using af::dim4;
+
+static dim4 getOutDims(const dim4 ldims, const dim4 rdims, bool batchMode)
+{
+    if (!batchMode) {
+        DIM_ASSERT(1, ldims == rdims);
+        return ldims;
+    }
+
+    AF_ERROR("Batch mode not supported yet", AF_ERR_NOT_SUPPORTED);
+}
 
 template<typename To, typename Ti>
-static inline af_array cplx(const af_array lhs, const af_array rhs, bool destroy=true)
+static inline af_array cplx(const af_array lhs, const af_array rhs,
+                            const dim4 &odims, bool destroy=true)
 {
-    af_array res = getHandle(*cplx<To, Ti>(getArray<Ti>(lhs), getArray<Ti>(rhs)));
+    af_array res = getHandle(*cplx<To, Ti>(getArray<Ti>(lhs), getArray<Ti>(rhs), odims));
     if (destroy) {
         // All inputs to this function are temporary references
         // Delete the temporary references
@@ -47,16 +59,15 @@ af_err af_cplx2(af_array *out, const af_array lhs, const af_array rhs, bool batc
 
         if (type != f64) type = f32;
 
-        if (!batchMode) DIM_ASSERT(1, getInfo(lhs).dims() == getInfo(rhs).dims());
-        else AF_ERROR("Batch mode not supported yet", AF_ERR_NOT_SUPPORTED);
+        dim4 odims = getOutDims(getInfo(lhs).dims(), getInfo(rhs).dims(), batchMode);
 
         const af_array left  = cast(lhs, type);
         const af_array right = cast(rhs, type);
 
         af_array res;
         switch (type) {
-        case f32: res = cplx<cfloat , float>(left, right); break;
-        case f64: res = cplx<cdouble, double>(left, right); break;
+        case f32: res = cplx<cfloat , float >(left, right, odims); break;
+        case f64: res = cplx<cdouble, double>(left, right, odims); break;
         default: TYPE_ERROR(0, type);
         }
 
@@ -86,8 +97,8 @@ af_err af_cplx(af_array *out, const af_array in)
         af_array res;
         switch (type) {
 
-        case f32: res = cplx<cfloat , float >(in, tmp, false); break;
-        case f64: res = cplx<cdouble, double>(in, tmp, false); break;
+        case f32: res = cplx<cfloat , float >(in, tmp, info.dims(), false); break;
+        case f64: res = cplx<cdouble, double>(in, tmp, info.dims(), false); break;
 
         default: TYPE_ERROR(0, type);
         }

@@ -117,7 +117,7 @@ static inline af_array createCplx(dim4 dims, const Ti real, const Ti imag)
 {
     Array<Ti> *Real = createValueArray<Ti>(dims, real);
     Array<Ti> *Imag = createValueArray<Ti>(dims, imag);
-    Array<To> *Cplx = cplx<To, Ti>(*Real, *Imag);
+    Array<To> *Cplx = cplx<To, Ti>(*Real, *Imag, dims);
     af_array out = getHandle(*Cplx);
 
     destroyArray(*Real);

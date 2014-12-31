@@ -22,11 +22,23 @@
 #include <logic.hpp>
 
 using namespace detail;
+using af::dim4;
+
+static dim4 getOutDims(const dim4 ldims, const dim4 rdims, bool batchMode)
+{
+    if (!batchMode) {
+        DIM_ASSERT(1, ldims == rdims);
+        return ldims;
+    }
+
+    AF_ERROR("Batch mode not supported yet", AF_ERR_NOT_SUPPORTED);
+}
 
 template<typename T, af_op_t op>
-static inline af_array arithOp(const af_array lhs, const af_array rhs)
+static inline af_array arithOp(const af_array lhs, const af_array rhs,
+                               const dim4 &odims)
 {
-    af_array res = getHandle(*arithOp<T, op>(getArray<T>(lhs), getArray<T>(rhs)));
+    af_array res = getHandle(*arithOp<T, op>(getArray<T>(lhs), getArray<T>(rhs), odims));
     // All inputs to this function are temporary references
     // Delete the temporary references
     destroyHandle<T>(lhs);
@@ -45,19 +57,18 @@ static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs, bo
         ArrayInfo linfo = getInfo(lhs);
         ArrayInfo rinfo = getInfo(rhs);
 
-        if (!batchMode) DIM_ASSERT(1, linfo.dims() == rinfo.dims());
-        else AF_ERROR("Batch mode not supported yet", AF_ERR_NOT_SUPPORTED);
+        dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
         af_array res;
         switch (otype) {
-        case f32: res = arithOp<float  , op>(left, right); break;
-        case f64: res = arithOp<double , op>(left, right); break;
-        case c32: res = arithOp<cfloat , op>(left, right); break;
-        case c64: res = arithOp<cdouble, op>(left, right); break;
-        case s32: res = arithOp<int    , op>(left, right); break;
-        case u32: res = arithOp<uint   , op>(left, right); break;
-        case u8 : res = arithOp<uchar  , op>(left, right); break;
-        case b8 : res = arithOp<char   , op>(left, right); break;
+        case f32: res = arithOp<float  , op>(left, right, odims); break;
+        case f64: res = arithOp<double , op>(left, right, odims); break;
+        case c32: res = arithOp<cfloat , op>(left, right, odims); break;
+        case c64: res = arithOp<cdouble, op>(left, right, odims); break;
+        case s32: res = arithOp<int    , op>(left, right, odims); break;
+        case u32: res = arithOp<uint   , op>(left, right, odims); break;
+        case u8 : res = arithOp<uchar  , op>(left, right, odims); break;
+        case b8 : res = arithOp<char   , op>(left, right, odims); break;
         default: TYPE_ERROR(0, otype);
         }
 
@@ -78,17 +89,16 @@ static af_err af_arith_real(af_array *out, const af_array lhs, const af_array rh
         ArrayInfo linfo = getInfo(lhs);
         ArrayInfo rinfo = getInfo(rhs);
 
-        if (!batchMode) DIM_ASSERT(1, linfo.dims() == rinfo.dims());
-        else AF_ERROR("Batch mode not supported yet", AF_ERR_NOT_SUPPORTED);
+        dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
         af_array res;
         switch (otype) {
-        case f32: res = arithOp<float  , op>(left, right); break;
-        case f64: res = arithOp<double , op>(left, right); break;
-        case s32: res = arithOp<int    , op>(left, right); break;
-        case u32: res = arithOp<uint   , op>(left, right); break;
-        case u8 : res = arithOp<uchar  , op>(left, right); break;
-        case b8 : res = arithOp<char   , op>(left, right); break;
+        case f32: res = arithOp<float  , op>(left, right, odims); break;
+        case f64: res = arithOp<double , op>(left, right, odims); break;
+        case s32: res = arithOp<int    , op>(left, right, odims); break;
+        case u32: res = arithOp<uint   , op>(left, right, odims); break;
+        case u8 : res = arithOp<uchar  , op>(left, right, odims); break;
+        case b8 : res = arithOp<char   , op>(left, right, odims); break;
         default: TYPE_ERROR(0, otype);
         }
 
@@ -169,14 +179,12 @@ af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs, bool batc
         ArrayInfo linfo = getInfo(lhs);
         ArrayInfo rinfo = getInfo(rhs);
 
-        if (!batchMode) DIM_ASSERT(1, linfo.dims() == rinfo.dims());
-        else AF_ERROR("Batch mode not supported yet", AF_ERR_NOT_SUPPORTED);
+        dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
         af_array res;
-
         switch (type) {
-        case f32: res = arithOp<float , af_atan2_t>(left, right); break;
-        case f64: res = arithOp<double, af_atan2_t>(left, right); break;
+        case f32: res = arithOp<float , af_atan2_t>(left, right, odims); break;
+        case f64: res = arithOp<double, af_atan2_t>(left, right, odims); break;
         default: TYPE_ERROR(0, type);
         }
 
@@ -203,14 +211,12 @@ af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs, bool batc
         ArrayInfo linfo = getInfo(lhs);
         ArrayInfo rinfo = getInfo(rhs);
 
-        if (!batchMode) DIM_ASSERT(1, linfo.dims() == rinfo.dims());
-        else AF_ERROR("Batch mode not supported yet", AF_ERR_NOT_SUPPORTED);
+        dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
         af_array res;
-
         switch (type) {
-        case f32: res = arithOp<float , af_hypot_t>(left, right); break;
-        case f64: res = arithOp<double, af_hypot_t>(left, right); break;
+        case f32: res = arithOp<float , af_hypot_t>(left, right, odims); break;
+        case f64: res = arithOp<double, af_hypot_t>(left, right, odims); break;
         default: TYPE_ERROR(0, type);
         }
 
@@ -221,9 +227,9 @@ af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs, bool batc
 }
 
 template<typename T, af_op_t op>
-static inline af_array logicOp(const af_array lhs, const af_array rhs)
+static inline af_array logicOp(const af_array lhs, const af_array rhs, const dim4 &odims)
 {
-    af_array res = getHandle(*logicOp<T, op>(getArray<T>(lhs), getArray<T>(rhs)));
+    af_array res = getHandle(*logicOp<T, op>(getArray<T>(lhs), getArray<T>(rhs), odims));
     // All inputs to this function are temporary references
     // Delete the temporary references
     destroyHandle<T>(lhs);
@@ -243,19 +249,18 @@ static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs, bo
         ArrayInfo linfo = getInfo(lhs);
         ArrayInfo rinfo = getInfo(rhs);
 
-        if (!batchMode) DIM_ASSERT(1, linfo.dims() == rinfo.dims());
-        else AF_ERROR("Batch mode not supported yet", AF_ERR_NOT_SUPPORTED);
+        dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
 
         af_array res;
         switch (type) {
-        case f32: res = logicOp<float  , op>(left, right); break;
-        case f64: res = logicOp<double , op>(left, right); break;
-        case c32: res = logicOp<cfloat , op>(left, right); break;
-        case c64: res = logicOp<cdouble, op>(left, right); break;
-        case s32: res = logicOp<int    , op>(left, right); break;
-        case u32: res = logicOp<uint   , op>(left, right); break;
-        case u8 : res = logicOp<uchar  , op>(left, right); break;
-        case b8 : res = logicOp<char   , op>(left, right); break;
+        case f32: res = logicOp<float  , op>(left, right, odims); break;
+        case f64: res = logicOp<double , op>(left, right, odims); break;
+        case c32: res = logicOp<cfloat , op>(left, right, odims); break;
+        case c64: res = logicOp<cdouble, op>(left, right, odims); break;
+        case s32: res = logicOp<int    , op>(left, right, odims); break;
+        case u32: res = logicOp<uint   , op>(left, right, odims); break;
+        case u8 : res = logicOp<uchar  , op>(left, right, odims); break;
+        case b8 : res = logicOp<char   , op>(left, right, odims); break;
         default: TYPE_ERROR(0, type);
         }
 

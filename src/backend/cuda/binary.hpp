@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <af/dim4.hpp>
 #include <Array.hpp>
 #include <optypes.hpp>
 #include <math.hpp>
@@ -64,7 +65,7 @@ BINARY(hypot)
 #undef BINARY
 
 template<typename To, typename Ti, af_op_t op>
-Array<To> *createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs)
+Array<To> *createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs, const af::dim4 &odims)
 {
     BinOp<To, Ti, op> bop;
 
@@ -76,7 +77,7 @@ Array<To> *createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs)
                                                 lhs_node,
                                                 rhs_node, (int)(op));
 
-    return createNodeArray<To>(lhs.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+    return createNodeArray<To>(odims, JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
 }
 
 }
