@@ -72,7 +72,8 @@ seq::seq(double begin, double end, double step)
 
 seq::operator array() const
 {
-    dim_type len = (int)((s.end - s.begin + 1) / s.step);
+    dim_type diff = s.end - s.begin;
+    dim_type len = (int)((diff + 1 * signbit(diff)) / s.step);
     array res = s.begin + s.step * iota(len);
     return res;
 }
