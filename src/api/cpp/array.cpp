@@ -40,6 +40,14 @@ namespace af
         default: return sizeof(float);
         }
     }
+
+    static unsigned numDims(const af_array arr)
+    {
+        unsigned nd;
+        AF_THROW(af_get_numdims(&nd, arr));
+        return nd;
+    }
+
     array::array(const af_array handle): arr(handle), isRef(false) {}
 
     static void initEmptyArray(af_array *arr, af::dtype ty,
@@ -135,7 +143,7 @@ namespace af
 
     array::~array()
     {
-        if (arr) AF_THROW(af_destroy_array(arr));
+        if (get()) AF_THROW(af_destroy_array(arr));
     }
 
     af::dtype array::type() const
@@ -148,13 +156,13 @@ namespace af
     dim_type array::elements() const
     {
         dim_type elems;
-        AF_THROW(af_get_elements(&elems, arr));
+        AF_THROW(af_get_elements(&elems, get()));
         return elems;
     }
 
     void array::host(void *data) const
     {
-        AF_THROW(af_get_data_ptr(data, arr));
+        AF_THROW(af_get_data_ptr(data, get()));
     }
 
     af_array array::get()
@@ -191,22 +199,20 @@ namespace af
 
     unsigned array::numdims() const
     {
-        unsigned nd;
-        AF_THROW(af_get_numdims(&nd, arr));
-        return nd;
+        return numDims(get());
     }
 
     size_t array::bytes() const
     {
         dim_type nElements;
-        AF_THROW(af_get_elements(&nElements, arr));
+        AF_THROW(af_get_elements(&nElements, get()));
         return nElements * size_of(type());
     }
 
     array array::copy() const
     {
         af_array other = 0;
-        AF_THROW(af_copy_array(&other, arr));
+        AF_THROW(af_copy_array(&other, get()));
         return array(other);
     }
 
@@ -215,7 +221,7 @@ namespace af
     bool array::is##fn() const                  \
     {                                           \
         bool ret = false;                       \
-        AF_THROW(af_is_##fn(&ret, arr));        \
+        AF_THROW(af_is_##fn(&ret, get()));      \
         return ret;                             \
     }
 
@@ -353,7 +359,8 @@ namespace af
 
             af_seq afs[4];
             getSeq(afs);
-            AF_THROW(af_assign(arr, numdims(), afs, other.get()));
+            unsigned nd = numDims(arr);
+            AF_THROW(af_assign(arr, nd, afs, other.get()));
             isRef = false;
 
         } else {
@@ -409,8 +416,8 @@ namespace af
         bool this_ref = isRef;                                                  \
         if (this_ref) {                                                         \
             af_array tmp_arr;                                                   \
-            unsigned ndims = numdims();                                         \
             AF_THROW(af_weak_copy(&tmp_arr, this->arr));                        \
+            unsigned ndims = numDims(tmp_arr);                                  \
             array tmp = *this op1 other;                                        \
             af_seq afs[4];                                                      \
             getSeq(afs);                                                        \
@@ -648,31 +655,31 @@ namespace af
         AF_THROW(af_eval(get()));
     }
 
-#define INSTANTIATE(T)                                      \
-    template<> AFAPI T *array::host() const                 \
-    {                                                       \
-        if (type() != (af::dtype)dtype_traits<T>::af_type) { \
-            AF_THROW(AF_ERR_INVALID_TYPE);                  \
-        }                                                   \
-                                                            \
-        T *res = new T[elements()];                         \
-        AF_THROW(af_get_data_ptr((void *)res, arr));        \
-                                                            \
-        return res;                                         \
-    }                                                       \
-    template<> AFAPI T array::scalar() const                \
-    {                                                       \
-        T *h_ptr = host<T>();                               \
-        T scalar = h_ptr[0];                                \
-        delete[] h_ptr;                                     \
-        return scalar;                                      \
-    }                                                       \
-    template<> AFAPI T* array::device() const               \
-    {                                                       \
-        void *ptr = NULL;                                   \
-        AF_THROW(af_get_device_ptr(&ptr, get(), true));     \
-        return (T *)ptr;                                    \
-    }                                                       \
+#define INSTANTIATE(T)                                          \
+    template<> AFAPI T *array::host() const                     \
+    {                                                           \
+        if (type() != (af::dtype)dtype_traits<T>::af_type) {    \
+            AF_THROW(AF_ERR_INVALID_TYPE);                      \
+        }                                                       \
+                                                                \
+        T *res = new T[elements()];                             \
+        AF_THROW(af_get_data_ptr((void *)res, get()));          \
+                                                                \
+        return res;                                             \
+    }                                                           \
+    template<> AFAPI T array::scalar() const                    \
+    {                                                           \
+        T *h_ptr = host<T>();                                   \
+        T scalar = h_ptr[0];                                    \
+        delete[] h_ptr;                                         \
+        return scalar;                                          \
+    }                                                           \
+    template<> AFAPI T* array::device() const                   \
+    {                                                           \
+        void *ptr = NULL;                                       \
+        AF_THROW(af_get_device_ptr(&ptr, get(), true));         \
+        return (T *)ptr;                                        \
+    }                                                           \
 
     INSTANTIATE(cdouble)
     INSTANTIATE(cfloat)

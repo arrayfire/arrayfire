@@ -58,7 +58,7 @@ template<typename T> T mod(T a, T b)
                                                                         \
         af_dtype ta = (af_dtype)dtype_traits<Ta>::af_type;              \
         af::array a = randu(num, ta);                                   \
-        Tb h_b = 0.3;                                                   \
+        Tb h_b = 3.0;                                                   \
         af::array c = func(a, h_b);                                     \
         Ta *h_a = a.host<Ta>();                                         \
         Ta *h_c = c.host<Ta>();                                         \
@@ -75,7 +75,7 @@ template<typename T> T mod(T a, T b)
         if (noDoubleTests<Tb>()) return;                                \
                                                                         \
         af_dtype tb = (af_dtype)dtype_traits<Tb>::af_type;              \
-        Ta h_a = 0.3;                                                   \
+        Ta h_a = 5.0;                                                   \
         af::array b = randu(num, tb);                                   \
         af::array c = func(h_a, b);                                     \
         Tb *h_b = b.host<Tb>();                                         \
@@ -164,7 +164,7 @@ BINARY_TESTS_FLOAT(mul)
 BINARY_TESTS_NEAR(float, float, float, div, 1e-3) // FIXME
 BINARY_TESTS_FLOAT(min)
 BINARY_TESTS_FLOAT(max)
-BINARY_TESTS_FLOAT(mod)
+BINARY_TESTS_NEAR(float, float, float, mod, 1e-5) // FIXME
 
 BINARY_TESTS_DOUBLE(add)
 BINARY_TESTS_DOUBLE(sub)

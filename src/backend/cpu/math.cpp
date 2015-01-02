@@ -10,6 +10,21 @@
 
 namespace cpu
 {
+    uint abs(uint val) { return val; }
+    uchar abs(uchar val) { return val; }
+
+    cfloat  scalar(float val)
+    {
+        cfloat  cval = {(float)val, 0};
+        return cval;
+    }
+
+    cdouble scalar(double val)
+    {
+        cdouble  cval = {val, 0};
+        return cval;
+    }
+
     cfloat min(cfloat lhs, cfloat rhs)
     {
         return abs(lhs) < abs(rhs) ? lhs : rhs;

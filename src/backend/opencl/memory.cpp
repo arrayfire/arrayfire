@@ -47,8 +47,8 @@ namespace opencl
             static Manager pm = Manager();
     }
 
-    const int MAX_BUFFERS = 100;
-    const int MAX_BYTES = (1 << 30);
+    static const unsigned MAX_BUFFERS   = 100;
+    static const unsigned MAX_BYTES     = (1 << 30);
 
     typedef struct
     {
@@ -150,7 +150,6 @@ namespace opencl
         return bufferFree((cl::Buffer *)ptr);
     }
 
-    //////////////////////////////////////////////////////////////////////////////
     // pinned memory manager
     typedef struct {
         cl::Buffer *buf;

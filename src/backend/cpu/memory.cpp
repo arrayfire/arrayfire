@@ -41,8 +41,8 @@ namespace cpu
             static Manager pm = Manager();
     }
 
-    const int MAX_BUFFERS = 100;
-    const int MAX_BYTES = 100 * (1 << 20);
+    static const unsigned MAX_BUFFERS = 100;
+    static const unsigned MAX_BYTES = 100 * (1 << 20);
     typedef struct
     {
         bool is_free;

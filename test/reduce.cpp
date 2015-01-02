@@ -271,6 +271,8 @@ TEST(Reuce, Test_Count_Global)
 
 TEST(Reuce, Test_min_Global)
 {
+    if (noDoubleTests<double>()) return;
+
     int num = 10000;
     af::array a = af::randu(num, 1, f64);
     double res = af::min<double>(a);

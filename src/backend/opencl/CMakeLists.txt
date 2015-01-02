@@ -9,9 +9,8 @@ IF(NOT UNIX)
   ADD_DEFINITIONS(-DAFDLL)
 ENDIF()
 
-ADD_DEFINITIONS(-DAF_OPENCL)
-ADD_DEFINITIONS( -D__CL_ENABLE_EXCEPTIONS
-                 -DCL_USE_DEPRECATED_OPENCL_1_1_APIS )
+ADD_DEFINITIONS(-DAF_OPENCL
+                -D__CL_ENABLE_EXCEPTIONS)
 
 # clBLAS and clFFT create packages when their `make install` step is executed,
 # rather than installing to system directories. Thus we have special find
@@ -32,7 +31,7 @@ INSTALL(FILES ${CLFFT_LIBS} DESTINATION lib)
 
 ADD_DEFINITIONS( -DBOOST_ALL_NO_LIB )
 SET(Boost_USE_STATIC_LIBS OFF)
-FIND_PACKAGE(Boost 1.48 COMPONENTS chrono REQUIRED)
+FIND_PACKAGE(Boost 1.48 REQUIRED)
 
 FIND_PACKAGE(BoostCompute REQUIRED)
 
@@ -46,7 +45,7 @@ INCLUDE_DIRECTORIES(
     "${CMAKE_CURRENT_BINARY_DIR}"
     ${CLBLAS_INCLUDE_DIR}
     ${CLFFT_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIR}
+    ${Boost_INCLUDE_DIR}
     ${BoostCompute_INCLUDE_DIR}
     )
 
