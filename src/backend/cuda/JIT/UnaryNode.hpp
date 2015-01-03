@@ -35,16 +35,16 @@ namespace JIT
         {
         }
 
-        bool isLinear()
+        bool isLinear(dim_type dims[4])
         {
-            return m_child->isLinear();
+            return m_child->isLinear(dims);
         }
 
         void genParams(std::stringstream &kerStream,
-                       std::stringstream &annStream)
+                       std::stringstream &annStream, bool is_linear)
         {
             if (m_gen_param) return;
-            if (!(m_child->isGenParam())) m_child->genParams(kerStream, annStream);
+            if (!(m_child->isGenParam())) m_child->genParams(kerStream, annStream, is_linear);
             m_gen_param = true;
         }
 
@@ -111,10 +111,10 @@ namespace JIT
             m_child->resetFlags();
         }
 
-        void setArgs(std::vector<void *> &args)
+        void setArgs(std::vector<void *> &args, bool is_linear)
         {
             if (m_set_arg) return;
-            m_child->setArgs(args);
+            m_child->setArgs(args, is_linear);
             m_set_arg = true;
         }
     };

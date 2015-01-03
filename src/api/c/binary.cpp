@@ -24,16 +24,6 @@
 using namespace detail;
 using af::dim4;
 
-static dim4 getOutDims(const dim4 ldims, const dim4 rdims, bool batchMode)
-{
-    if (!batchMode) {
-        DIM_ASSERT(1, ldims == rdims);
-        return ldims;
-    }
-
-    AF_ERROR("Batch mode not supported yet", AF_ERR_NOT_SUPPORTED);
-}
-
 template<typename T, af_op_t op>
 static inline af_array arithOp(const af_array lhs, const af_array rhs,
                                const dim4 &odims)

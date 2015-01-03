@@ -107,7 +107,7 @@ static string getKernelString(string funcName, Node *node, bool is_linear)
     }
 
     node->genOffsets(kerStream, is_linear);
-    node->genFuncs(kerStream, is_linear);
+    node->genFuncs(kerStream);
     kerStream << "\n";
 
     kerStream << "out[idx] = val"
@@ -157,7 +157,7 @@ void evalNodes(Param &out, Node *node)
 {
     try {
 
-        bool is_linear = node->isLinear();
+        bool is_linear = node->isLinear(out.info.dims);
         Kernel ker = getKernel(node, is_linear);
 
         uint local_0 = 1;

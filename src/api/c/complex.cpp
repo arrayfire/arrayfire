@@ -23,16 +23,6 @@
 using namespace detail;
 using af::dim4;
 
-static dim4 getOutDims(const dim4 ldims, const dim4 rdims, bool batchMode)
-{
-    if (!batchMode) {
-        DIM_ASSERT(1, ldims == rdims);
-        return ldims;
-    }
-
-    AF_ERROR("Batch mode not supported yet", AF_ERR_NOT_SUPPORTED);
-}
-
 template<typename To, typename Ti>
 static inline af_array cplx(const af_array lhs, const af_array rhs,
                             const dim4 &odims, bool destroy=true)

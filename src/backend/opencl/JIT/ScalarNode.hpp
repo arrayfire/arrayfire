@@ -38,7 +38,7 @@ namespace JIT
         {
         }
 
-        bool isLinear()
+        bool isLinear(dim_type dims[4])
         {
             return true;
         }
@@ -73,7 +73,7 @@ namespace JIT
             m_gen_offset = true;
         }
 
-        void genFuncs(std::stringstream &kerStream, bool is_linear)
+        void genFuncs(std::stringstream &kerStream)
         {
             if (m_gen_func) return;
 
