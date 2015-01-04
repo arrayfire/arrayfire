@@ -21,6 +21,23 @@
 namespace af
 {
 
+    static int gforDim(seq s[4])
+    {
+        for (int i = 0; i < 4; i++) {
+            if (s[i].m_gfor) return i;
+        }
+        return -1;
+    }
+
+    static af_array gforReorder(const af_array in, unsigned dim)
+    {
+        unsigned order[4] = {0, 1, 2, dim};
+        order[dim] = 3;
+        af_array out;
+        AF_THROW(af_reorder(&out, in, order[0], order[1], order[2], order[3]));
+        return out;
+    }
+
     static af::dim4 seqToDims(af_seq *afs, af::dim4 parentDims)
     {
         std::vector<af_seq> av(afs, afs + 4);
@@ -175,7 +192,15 @@ namespace af
         getSeq(afs);
         AF_THROW(af_index(&temp, arr, 4, afs));
         AF_THROW(af_destroy_array(arr));
-        arr = temp;
+
+        int dim = gforDim(this->s);
+        if (dim >= 0) {
+            arr = gforReorder(temp, dim);
+            AF_THROW(af_destroy_array(temp));
+        } else {
+            arr = temp;
+        }
+
         isRef = false;
         return arr;
     }
@@ -361,7 +386,14 @@ namespace af
             af_seq afs[4];
             getSeq(afs);
             unsigned nd = numDims(arr);
-            AF_THROW(af_assign(arr, nd, afs, other.get()));
+            int dim = gforDim(this->s);
+            af_array other_arr = other.get();
+            other_arr = (dim == -1) ? other_arr : gforReorder(other_arr, dim);
+
+            AF_THROW(af_assign(arr, nd, afs, other_arr));
+
+            if (dim >= 0) AF_THROW(af_destroy_array(other_arr));
+
             isRef = false;
 
         } else {
@@ -411,49 +443,54 @@ namespace af
     ///////////////////////////////////////////////////////////////////////////
     // Operator +=, -=, *=, /=
     ///////////////////////////////////////////////////////////////////////////
-#define INSTANTIATE(op, op1)                                                    \
-    array& array::operator op(const array &other)                               \
-    {                                                                           \
-        bool this_ref = isRef;                                                  \
-        if (this_ref) {                                                         \
-            af_array tmp_arr;                                                   \
-            AF_THROW(af_weak_copy(&tmp_arr, this->arr));                        \
-            unsigned ndims = numDims(tmp_arr);                                  \
-            array tmp = *this op1 other;                                        \
-            af_seq afs[4];                                                      \
-            getSeq(afs);                                                        \
-            AF_THROW(af_assign(tmp_arr, ndims, afs, tmp.get()));                \
-            AF_THROW(af_destroy_array(this->arr));                              \
-            this->arr = tmp_arr;                                                \
-        } else {                                                                \
-            *this = *this op1 other;                                            \
-        }                                                                       \
-        return *this;                                                           \
-    }                                                                           \
-    array& array::operator op(const double &value)                              \
-    {                                                                           \
-        af_seq afs[4];                                                          \
-        getSeq(afs);                                                            \
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims();   \
-        array cst = constant(value, cdims, this->type());                       \
-        return operator op(cst);                                                \
-    }                                                                           \
-    array& array::operator op(const cdouble &value)                             \
-    {                                                                           \
-        af_seq afs[4];                                                          \
-        getSeq(afs);                                                            \
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims();   \
-        array cst = constant(value, cdims);                                     \
-        return operator op(cst);                                                \
-    }                                                                           \
-    array& array::operator op(const cfloat &value)                              \
-    {                                                                           \
-        af_seq afs[4];                                                          \
-        getSeq(afs);                                                            \
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims();   \
-        array cst = constant(value, cdims);                                     \
-        return operator op(cst);                                                \
-    }                                                                           \
+#define INSTANTIATE(op, op1)                                            \
+    array& array::operator op(const array &other)                       \
+    {                                                                   \
+        bool this_ref = isRef;                                          \
+        if (this_ref) {                                                 \
+            af_array lhs;                                               \
+            int dim = gforDim(this->s);                                 \
+            AF_THROW(af_weak_copy(&lhs, this->arr));                    \
+            unsigned ndims = numDims(lhs);                              \
+            /* FIXME: Unify with other af_assign */                     \
+            array tmp = *this op1 other;                                \
+            af_seq afs[4];                                              \
+            getSeq(afs);                                                \
+            af_array tmp_arr = tmp.get();                               \
+            tmp_arr = (dim == -1) ? tmp_arr : gforReorder(tmp_arr, dim); \
+            AF_THROW(af_assign(lhs, ndims, afs, tmp_arr));              \
+            AF_THROW(af_destroy_array(this->arr));                      \
+            if (dim >= 0) AF_THROW(af_destroy_array(tmp_arr));          \
+            this->arr = lhs;                                            \
+        } else {                                                        \
+            *this = *this op1 other;                                    \
+        }                                                               \
+        return *this;                                                   \
+    }                                                                   \
+    array& array::operator op(const double &value)                      \
+    {                                                                   \
+        af_seq afs[4];                                                  \
+        getSeq(afs);                                                    \
+        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims(); \
+        array cst = constant(value, cdims, this->type());               \
+        return operator op(cst);                                        \
+    }                                                                   \
+    array& array::operator op(const cdouble &value)                     \
+    {                                                                   \
+        af_seq afs[4];                                                  \
+        getSeq(afs);                                                    \
+        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims(); \
+        array cst = constant(value, cdims);                             \
+        return operator op(cst);                                        \
+    }                                                                   \
+    array& array::operator op(const cfloat &value)                      \
+    {                                                                   \
+        af_seq afs[4];                                                  \
+        getSeq(afs);                                                    \
+        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims(); \
+        array cst = constant(value, cdims);                             \
+        return operator op(cst);                                        \
+    }                                                                   \
 
     INSTANTIATE(+=, +)
     INSTANTIATE(-=, -)
