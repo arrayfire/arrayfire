@@ -12,15 +12,31 @@
 #include <af/seq.h>
 #include <af/array.h>
 #include <af/gfor.h>
+#include "error.hpp"
 
 namespace af
 {
 
-    bool gfor_toggle()
+    static bool gforStatus;
+
+    bool gforGet() { return gforStatus; }
+    void gforSet(bool val) { gforStatus = val; }
+
+    bool gforToggle()
     {
-        static bool gfor_flag;
-        gfor_flag ^= 1;
-        return gfor_flag;
+        bool status = gforGet();
+        status ^= 1;
+        gforSet(status);
+        return status;
+    }
+
+    array batchFunc(const array &lhs, const array &rhs, batchFunc_t func)
+    {
+        if (gforGet()) AF_THROW(AF_ERR_INVALID_ARG);
+        gforSet(true);
+        array res = func(lhs, rhs);
+        gforSet(false);
+        return res;
     }
 
 }

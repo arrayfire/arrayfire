@@ -15,6 +15,7 @@
 #include <af/util.h>
 #include <af/index.h>
 #include <af/device.h>
+#include <af/gfor.h>
 #include "error.hpp"
 
 namespace af
@@ -469,7 +470,7 @@ namespace af
     {                                                               \
         af_array lhs = this->get();                                 \
         af_array out;                                               \
-        AF_THROW(func(&out, lhs, other.get(), false));              \
+        AF_THROW(func(&out, lhs, other.get(), gforGet()));          \
         return array(out);                                          \
     }                                                               \
     array array::operator op(const double &value) const             \
@@ -477,7 +478,7 @@ namespace af
         af_array lhs = this->get();                                 \
         af_array out;                                               \
         array cst = constant(value, this->dims(), this->type());    \
-        AF_THROW(func(&out, lhs, cst.get(), false));                \
+        AF_THROW(func(&out, lhs, cst.get(), gforGet()));            \
         return array(out);                                          \
     }                                                               \
     array array::operator op(const cdouble &value) const            \
@@ -485,7 +486,7 @@ namespace af
         af_array lhs = this->get();                                 \
         af_array out;                                               \
         array cst = constant(value, this->dims());                  \
-        AF_THROW(func(&out, lhs, cst.get(), false));                \
+        AF_THROW(func(&out, lhs, cst.get(), gforGet()));            \
         return array(out);                                          \
     }                                                               \
     array array::operator op(const cfloat &value) const             \
@@ -493,7 +494,7 @@ namespace af
         af_array lhs = this->get();                                 \
         af_array out;                                               \
         array cst = constant(value, this->dims());                  \
-        AF_THROW(func(&out, lhs, cst.get(), false));                \
+        AF_THROW(func(&out, lhs, cst.get(), gforGet()));            \
         return array(out);                                          \
     }                                                               \
     array operator op(const double &value, const array &other)      \
@@ -501,7 +502,7 @@ namespace af
         af_array rhs = other.get();                                 \
         af_array out;                                               \
         array cst = constant(value, other.dims(), other.type());    \
-        AF_THROW(func(&out, cst.get(), rhs, false));                \
+        AF_THROW(func(&out, cst.get(), rhs, gforGet()));            \
         return array(out);                                          \
     }                                                               \
     array operator op(const cdouble &value, const array& other)     \
@@ -509,7 +510,7 @@ namespace af
         af_array rhs = other.get();                                 \
         af_array out;                                               \
         array cst = constant(value, other.dims());                  \
-        AF_THROW(func(&out, cst.get(), rhs, false));                \
+        AF_THROW(func(&out, cst.get(), rhs, gforGet()));            \
         return array(out);                                          \
     }                                                               \
     array operator op(const cfloat &value, const array& other)      \
@@ -517,7 +518,7 @@ namespace af
         af_array rhs = other.get();                                 \
         af_array out;                                               \
         array cst = constant(value, other.dims());                  \
-        AF_THROW(func(&out, cst.get(), rhs, false));                \
+        AF_THROW(func(&out, cst.get(), rhs, gforGet()));            \
         return array(out);                                          \
     }                                                               \
 
@@ -546,7 +547,7 @@ namespace af
         af_array lhs = this->get();                             \
         af_array out;                                           \
         array cst = constant(value, this->dims(), b8);          \
-        AF_THROW(func(&out, lhs, cst.get(), false));            \
+        AF_THROW(func(&out, lhs, cst.get(), gforGet()));        \
         return array(out);                                      \
     }                                                           \
     array array::operator op(const int &value) const            \
@@ -554,7 +555,7 @@ namespace af
         af_array lhs = this->get();                             \
         af_array out;                                           \
         array cst = constant(value, this->dims(), s32);         \
-        AF_THROW(func(&out, lhs, cst.get(), false));            \
+        AF_THROW(func(&out, lhs, cst.get(), gforGet()));        \
         return array(out);                                      \
     }                                                           \
     array operator op(const bool &value, const array &other)    \
@@ -562,7 +563,7 @@ namespace af
         af_array rhs = other.get();                             \
         af_array out;                                           \
         array cst = constant(value, other.dims(), b8);          \
-        AF_THROW(func(&out, cst.get(), rhs, false));            \
+        AF_THROW(func(&out, cst.get(), rhs, gforGet()));        \
         return array(out);                                      \
     }                                                           \
     array operator op(const int &value, const array &other)     \
@@ -570,7 +571,7 @@ namespace af
         af_array rhs = other.get();                             \
         af_array out;                                           \
         array cst = constant(value, other.dims(), s32);         \
-        AF_THROW(func(&out, cst.get(), rhs, false));            \
+        AF_THROW(func(&out, cst.get(), rhs, gforGet()));        \
         return array(out);                                      \
     }                                                           \
 
@@ -589,7 +590,7 @@ namespace af
         af_array lhs = this->get();
         af_array out;
         array cst = constant(0, this->dims(), this->type());
-        AF_THROW(af_sub(&out, cst.get(), lhs, false));
+        AF_THROW(af_sub(&out, cst.get(), lhs, gforGet()));
         return array(out);
     }
 
@@ -598,7 +599,7 @@ namespace af
         af_array lhs = this->get();
         af_array out;
         array cst = constant(0, this->dims(), this->type());
-        AF_THROW(af_eq(&out, cst.get(), lhs, false));
+        AF_THROW(af_eq(&out, cst.get(), lhs, gforGet()));
         return array(out);
     }
 

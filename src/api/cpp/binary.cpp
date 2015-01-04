@@ -10,17 +10,18 @@
 #include <af/array.h>
 #include <af/arith.h>
 #include <af/data.h>
+#include <af/gfor.h>
 #include "error.hpp"
 
 namespace af
 {
 
-#define INSTANTIATE(cppfunc, cfunc)                                 \
-    array cppfunc(const array &lhs, const array &rhs)               \
-    {                                                               \
-        af_array out = 0;                                           \
-        cfunc(&out, lhs.get(), rhs.get(), false);                   \
-        return array(out);                                          \
+#define INSTANTIATE(cppfunc, cfunc)                     \
+    array cppfunc(const array &lhs, const array &rhs)   \
+    {                                                   \
+        af_array out = 0;                               \
+        cfunc(&out, lhs.get(), rhs.get(), gforGet());   \
+        return array(out);                              \
     }
 
     INSTANTIATE(min, af_minof)
