@@ -69,24 +69,21 @@ void medfilt(Param out, const Param in)
                 mfKernels[device] = new Kernel(*mfProgs[device], "medfilt");
             });
 
-
         NDRange local(THREADS_X, THREADS_Y);
 
         dim_type blk_x = divup(in.info.dims[0], THREADS_X);
         dim_type blk_y = divup(in.info.dims[1], THREADS_Y);
 
-        // launch batch * blk_x blocks along x dimension
         NDRange global(blk_x * in.info.dims[2] * THREADS_X, blk_y * THREADS_Y);
 
-        auto transposeOp = make_kernel<Buffer, KParam,
-                                       Buffer, KParam,
-                                       cl::LocalSpaceArg,
-                                       dim_type> (*mfKernels[device]);
+        auto medfiltOp = make_kernel<Buffer, KParam,
+                                     Buffer, KParam,
+                                     cl::LocalSpaceArg,
+                                     dim_type> (*mfKernels[device]);
 
         size_t loc_size = (THREADS_X+w_len-1)*(THREADS_Y+w_wid-1)*sizeof(T);
 
-
-        transposeOp(EnqueueArgs(getQueue(), global, local),
+        medfiltOp(EnqueueArgs(getQueue(), global, local),
                     *out.data, out.info, *in.data, in.info, cl::Local(loc_size), blk_x);
 
         CL_DEBUG_FINISH(getQueue());
