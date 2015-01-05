@@ -191,11 +191,11 @@ namespace af
         af_array temp = 0;
         af_seq afs[4];
         getSeq(afs);
-        AF_THROW(af_index(&temp, arr, 4, afs));
+        af_err err = af_index(&temp, arr, 4, afs);
         AF_THROW(af_destroy_array(arr));
 
         int dim = gforDim(this->s);
-        if (dim >= 0) {
+        if (temp && dim >= 0) {
             arr = gforReorder(temp, dim);
             AF_THROW(af_destroy_array(temp));
         } else {
@@ -203,6 +203,7 @@ namespace af
         }
 
         isRef = false;
+        AF_THROW(err);
         return arr;
     }
 
