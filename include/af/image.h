@@ -60,6 +60,8 @@ AFAPI array regions(const array& in, af::connectivity connectivity=AF_CONNECTIVI
 
 AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_length=9, const bool non_max=true, const float feature_ratio=0.05);
 
+AFAPI array matchTemplate(const array &searchImg, const array &templateImg, matchType mType=AF_SAD);
+
 }
 #endif
 

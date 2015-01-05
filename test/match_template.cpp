@@ -110,3 +110,22 @@ TEST(MatchTemplate, InvalidMatchType)
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(tArray));
 }
+
+///////////////////////////////// CPP TESTS /////////////////////////////
+//
+TEST(MatchTemplate, CPP)
+{
+    vector<float>   in(100, 1);
+
+    af::dim4 sDims(10, 10, 1, 1);
+    af::dim4 tDims(4, 4, 1, 1);
+
+    try {
+        af::array input(sDims, &in.front());
+        af::array tmplt(tDims, &in.front());
+
+        af::array out = matchTemplate(input, tmplt);
+    } catch(af::exception &e) {
+        std::cout<<"Invalid Match test: "<<e.what()<<std::endl;
+    }
+}
