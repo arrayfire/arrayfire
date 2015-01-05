@@ -21,6 +21,7 @@ class AFAPI exception
     exception(const char *msg);
     exception(const char *file, unsigned line);
     exception(const char *file, unsigned line, af_err err);
+    exception(const char *msg, const char *file, unsigned line, af_err err);
     virtual ~exception() throw() {}
     virtual const char *what() const throw() { return m_msg; }
 
