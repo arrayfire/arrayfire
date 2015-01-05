@@ -65,7 +65,7 @@ void randnTest<int>(af::dim4 &dims)
     if (noDoubleTests<int>()) return;
 
     af_array outArray = 0;
-    ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<int>::af_type));
+    ASSERT_EQ(AF_ERR_INVALID_TYPE, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<int>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
 }
 
@@ -75,7 +75,7 @@ void randnTest<unsigned>(af::dim4 &dims)
     if (noDoubleTests<unsigned>()) return;
 
     af_array outArray = 0;
-    ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<unsigned>::af_type));
+    ASSERT_EQ(AF_ERR_INVALID_TYPE, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<unsigned>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
 }
 
@@ -85,7 +85,7 @@ void randnTest<char>(af::dim4 &dims)
     if (noDoubleTests<char>()) return;
 
     af_array outArray = 0;
-    ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<char>::af_type));
+    ASSERT_EQ(AF_ERR_INVALID_TYPE, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<char>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
 }
 
@@ -95,7 +95,7 @@ void randnTest<unsigned char>(af::dim4 &dims)
     if (noDoubleTests<unsigned char>()) return;
 
     af_array outArray = 0;
-    ASSERT_EQ(AF_ERR_NOT_SUPPORTED, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<unsigned char>::af_type));
+    ASSERT_EQ(AF_ERR_INVALID_TYPE, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<unsigned char>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
 }
 
@@ -149,7 +149,7 @@ void randuArgsTest()
 
     af::dim4 dims(1, 2, 3, 0);
     af_array outArray = 0;
-    ASSERT_EQ(AF_ERR_ARG, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<char>::af_type));
+    ASSERT_EQ(AF_ERR_SIZE, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<char>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
 }
 

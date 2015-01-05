@@ -84,7 +84,8 @@ namespace af
         switch (src) {
         case afHost:   AF_THROW(af_create_array(arr, (const void * const)ptr, 4, my_dims, ty)); break;
         case afDevice: AF_THROW(af_device_array(arr, (const void *      )ptr, 4, my_dims, ty)); break;
-        default: AF_THROW(AF_ERR_INVALID_ARG);
+        default: AF_THROW_MSG("Can not create array from the requested source pointer",
+                              AF_ERR_INVALID_ARG);
         }
     }
 
@@ -190,11 +191,11 @@ namespace af
         af_array temp = 0;
         af_seq afs[4];
         getSeq(afs);
-        AF_THROW(af_index(&temp, arr, 4, afs));
+        af_err err = af_index(&temp, arr, 4, afs);
         AF_THROW(af_destroy_array(arr));
 
         int dim = gforDim(this->s);
-        if (dim >= 0) {
+        if (temp && dim >= 0) {
             arr = gforReorder(temp, dim);
             AF_THROW(af_destroy_array(temp));
         } else {
@@ -202,6 +203,7 @@ namespace af
         }
 
         isRef = false;
+        AF_THROW(err);
         return arr;
     }
 
@@ -647,31 +649,32 @@ namespace af
         AF_THROW(af_eval(get()));
     }
 
-#define INSTANTIATE(T)                                          \
-    template<> AFAPI T *array::host() const                     \
-    {                                                           \
-        if (type() != (af::dtype)dtype_traits<T>::af_type) {    \
-            AF_THROW(AF_ERR_INVALID_TYPE);                      \
-        }                                                       \
-                                                                \
-        T *res = new T[elements()];                             \
-        AF_THROW(af_get_data_ptr((void *)res, get()));          \
-                                                                \
-        return res;                                             \
-    }                                                           \
-    template<> AFAPI T array::scalar() const                    \
-    {                                                           \
-        T *h_ptr = host<T>();                                   \
-        T scalar = h_ptr[0];                                    \
-        delete[] h_ptr;                                         \
-        return scalar;                                          \
-    }                                                           \
-    template<> AFAPI T* array::device() const                   \
-    {                                                           \
-        void *ptr = NULL;                                       \
-        AF_THROW(af_get_device_ptr(&ptr, get(), true));         \
-        return (T *)ptr;                                        \
-    }                                                           \
+#define INSTANTIATE(T)                                              \
+    template<> AFAPI T *array::host() const                         \
+    {                                                               \
+        if (type() != (af::dtype)dtype_traits<T>::af_type) {        \
+            AF_THROW_MSG("Requested type does'nt match with array", \
+                         AF_ERR_INVALID_TYPE);                      \
+        }                                                           \
+                                                                    \
+        T *res = new T[elements()];                                 \
+        AF_THROW(af_get_data_ptr((void *)res, get()));              \
+                                                                    \
+        return res;                                                 \
+    }                                                               \
+    template<> AFAPI T array::scalar() const                        \
+    {                                                               \
+        T *h_ptr = host<T>();                                       \
+        T scalar = h_ptr[0];                                        \
+        delete[] h_ptr;                                             \
+        return scalar;                                              \
+    }                                                               \
+    template<> AFAPI T* array::device() const                       \
+    {                                                               \
+        void *ptr = NULL;                                           \
+        AF_THROW(af_get_device_ptr(&ptr, get(), true));             \
+        return (T *)ptr;                                            \
+    }                                                               \
 
     INSTANTIATE(cdouble)
     INSTANTIATE(cfloat)

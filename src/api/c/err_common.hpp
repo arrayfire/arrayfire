@@ -144,6 +144,13 @@ af_err processException();
                       MSG, ERR_TYPE);           \
     } while(0)
 
+#define TYPE_ASSERT(COND) do {                  \
+        if ((COND) == false) {                  \
+            AF_ERROR("Type mismatch inputs",    \
+                     AF_ERR_DIFF_TYPE);         \
+        }                                       \
+    } while(0)
+
 #define AF_ASSERT(COND, MESSAGE)                \
     assert(MESSAGE && COND)
 

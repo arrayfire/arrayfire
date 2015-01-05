@@ -31,6 +31,7 @@ static void indexArray(af_array &dest, const af_array &src, const unsigned ndims
 
     const Array<T> &parent = getArray<T>(src);
     vector<af_seq> index_(index, index+ndims);
+
     Array<T>* dst =  createSubArray(    parent,
                                         toDims(index_, parent.dims()),
                                         toOffset(index_, parent.dims()),
@@ -42,8 +43,6 @@ af_err af_index(af_array *result, const af_array in, const unsigned ndims, const
 {
     af_array out;
     try {
-        if(result)  { out = *result; }
-
         af_dtype in_type = getInfo(in).getType();
 
         switch(in_type) {

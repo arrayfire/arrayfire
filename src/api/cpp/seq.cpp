@@ -62,10 +62,10 @@ seq::seq(double begin, double end, double step): m_gfor(false)
 
     if (step == 0) {
         if (begin != end)   // Span
-            AF_THROW(AF_ERR_INVALID_ARG);
+            AF_THROW_MSG("Invalid step size", AF_ERR_INVALID_ARG);
     }
     if (end >= 0 && begin >= 0 && signbit(end-begin) != signbit(step))
-        AF_THROW(AF_ERR_INVALID_ARG);
+        AF_THROW_MSG("Sequence is invalid", AF_ERR_INVALID_ARG);
         //AF_THROW("step must match direction of sequence");
     init(begin, end, step);
 }
