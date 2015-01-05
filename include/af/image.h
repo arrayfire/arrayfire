@@ -126,6 +126,9 @@ extern "C" {
     // Compute FAST corners from input image
     AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio);
 
+    // object detection algorithm, matching pattern image to target image and giving disparity results
+    AFAPI af_err af_match_template(af_array *out, const af_array search_img, const af_array template_img, af_match_type m_type);
+
 #ifdef __cplusplus
 }
 #endif
