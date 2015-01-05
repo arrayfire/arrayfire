@@ -9,6 +9,7 @@
 
 #include <af/defines.h>
 #include <af/array.h>
+#include <af/dim4.hpp>
 #include <Array.hpp>
 #include <optypes.hpp>
 #include <err_cuda.hpp>
@@ -16,8 +17,8 @@
 namespace cuda
 {
     template<typename T, af_op_t op>
-    Array<uchar>* logicOp(const Array<T> &lhs, const Array<T> &rhs)
+    Array<uchar>* logicOp(const Array<T> &lhs, const Array<T> &rhs, const af::dim4 &odims)
     {
-        return createBinaryNode<uchar, T, op>(lhs, rhs);
+        return createBinaryNode<uchar, T, op>(lhs, rhs, odims);
     }
 }

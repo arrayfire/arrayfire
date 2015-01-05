@@ -101,8 +101,8 @@ TEST(BasicTests, AdditionSameType)
     ASSERT_EQ(AF_SUCCESS, af_constant(&bf32, valB, ndims, d, f32));
     ASSERT_EQ(AF_SUCCESS, af_constant(&bf64, valB, ndims, d, f64));
 
-    ASSERT_EQ(AF_SUCCESS, af_add(&cf32, af32, bf32));
-    ASSERT_EQ(AF_SUCCESS, af_add(&cf64, af64, bf64));
+    ASSERT_EQ(AF_SUCCESS, af_add(&cf32, af32, bf32, false));
+    ASSERT_EQ(AF_SUCCESS, af_add(&cf64, af64, bf64, false));
 
     vector<float>  h_cf32 (dim_size * dim_size);
     vector<double> h_cf64 (dim_size * dim_size);
@@ -137,7 +137,7 @@ TEST(BasicTests, Additionf64f64)
 
     ASSERT_EQ(AF_SUCCESS, af_constant(&a, valA, ndims, d, f64));
     ASSERT_EQ(AF_SUCCESS, af_constant(&b, valB, ndims, d, f64));
-    ASSERT_EQ(AF_SUCCESS, af_add(&c, a, b));
+    ASSERT_EQ(AF_SUCCESS, af_add(&c, a, b, false));
 
     vector<double> h_c(dim_size * dim_size, 0);
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void **)&h_c[0], c));
@@ -170,7 +170,7 @@ TEST(BasicTests, Additionf32f64)
 
     ASSERT_EQ(AF_SUCCESS, af_constant(&a, valA, ndims, d, f32));
     ASSERT_EQ(AF_SUCCESS, af_constant(&b, valB, ndims, d, f64));
-    ASSERT_EQ(AF_SUCCESS, af_add(&c, a, b));
+    ASSERT_EQ(AF_SUCCESS, af_add(&c, a, b, false));
 
     vector<double> h_c(dim_size * dim_size);
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void **)&h_c[0], c));

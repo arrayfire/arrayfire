@@ -296,7 +296,7 @@ af_err af_save_image(const char* filename, const af_array in_)
         if (max_real <= 1) {
             af_array c255;
             AF_CHECK(af_constant(&c255, 255.0, info.ndims(), info.dims().get(), f32));
-            AF_CHECK(af_mul(&in, in_, c255));
+            AF_CHECK(af_mul(&in, in_, c255, false));
             AF_CHECK(af_destroy_array(c255));
             free_in = true;
         } else {

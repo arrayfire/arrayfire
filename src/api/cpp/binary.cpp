@@ -10,17 +10,18 @@
 #include <af/array.h>
 #include <af/arith.h>
 #include <af/data.h>
+#include <af/gfor.h>
 #include "error.hpp"
 
 namespace af
 {
 
-#define INSTANTIATE(cppfunc, cfunc)                                 \
-    array cppfunc(const array &lhs, const array &rhs)               \
-    {                                                               \
-        af_array out = 0;                                           \
-        cfunc(&out, lhs.get(), rhs.get());                          \
-        return array(out);                                          \
+#define INSTANTIATE(cppfunc, cfunc)                     \
+    array cppfunc(const array &lhs, const array &rhs)   \
+    {                                                   \
+        af_array out = 0;                               \
+        cfunc(&out, lhs.get(), rhs.get(), gforGet());   \
+        return array(out);                              \
     }
 
     INSTANTIATE(min, af_minof)
@@ -33,14 +34,14 @@ namespace af
     INSTANTIATE(atan2, af_atan2)
     INSTANTIATE(hypot, af_hypot)
 
-#define WRAPPER(func)                                               \
-    array func(const array &lhs, const double rhs)                  \
-    {                                                               \
-        return func(lhs, constant(rhs, lhs.dims(), lhs.type()));    \
-    }                                                               \
-    array func(const double lhs, const array &rhs)                  \
-    {                                                               \
-        return func(constant(lhs, rhs.dims(), rhs.type()), rhs);    \
+#define WRAPPER(func)                                                   \
+    array func(const array &lhs, const double rhs)                      \
+    {                                                                   \
+        return func(lhs, constant(rhs, lhs.dims(), lhs.type()));        \
+    }                                                                   \
+    array func(const double lhs, const array &rhs)                      \
+    {                                                                   \
+        return func(constant(lhs, rhs.dims(), rhs.type()), rhs);        \
     }
 
     WRAPPER(min)

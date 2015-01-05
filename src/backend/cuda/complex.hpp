@@ -9,6 +9,7 @@
 
 #include <af/defines.h>
 #include <af/array.h>
+#include <af/dim4.hpp>
 #include <Array.hpp>
 #include <optypes.hpp>
 #include <err_cuda.hpp>
@@ -40,7 +41,7 @@ namespace cuda
     template<> STATIC_ const char *conj_name<cdouble>() { return "@___conjz"; }
 
     template<typename To, typename Ti>
-    Array<To>* cplx(const Array<Ti> &lhs, const Array<Ti> &rhs)
+    Array<To>* cplx(const Array<Ti> &lhs, const Array<Ti> &rhs, const af::dim4 &odims)
     {
         JIT::Node_ptr lhs_node = lhs.getNode();
         JIT::Node_ptr rhs_node = rhs.getNode();
@@ -50,7 +51,7 @@ namespace cuda
                                                     lhs_node,
                                                     rhs_node, (int)(af_cplx2_t));
 
-        return createNodeArray<To>(lhs.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+        return createNodeArray<To>(odims, JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
     }
 
     template<typename To, typename Ti>
