@@ -148,7 +148,7 @@ dim4 getOutDims(const dim4 ldims, const dim4 rdims, bool batchMode)
 
     dim_type odims[] = {1, 1, 1, 1};
     for (int i = 0; i < 4; i++) {
-        DIM_ASSERT(1, ldims[i] == rdims[i] or ldims[i] == 1 or rdims[i] == 1);
+        DIM_ASSERT(1, ldims[i] == rdims[i] || ldims[i] == 1 || rdims[i] == 1);
         odims[i] = std::max(ldims[i], rdims[i]);
     }
 
