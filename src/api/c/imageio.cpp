@@ -75,6 +75,7 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
                         const uint fi_w, const uint fi_h)
 {
     // create an array to receive the loaded image data.
+    AF_CHECK(af_init());
     float *pDst = pinnedAlloc<float>(fi_w * fi_h * 4); // 4 channels is max
     float* pDst0 = pDst;
     float* pDst1 = pDst + (fi_w * fi_h * 1);
@@ -111,6 +112,7 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
                         const uint fi_w, const uint fi_h)
 {
     // create an array to receive the loaded image data.
+    AF_CHECK(af_init());
     float *pDst = pinnedAlloc<float>(fi_w * fi_h);
 
     uint indx = 0;
@@ -412,7 +414,6 @@ af_err af_save_image(const char* filename, const af_array in_)
 #include <stdio.h>
 AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isColor)
 {
-
     printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
     return AF_ERR_NOT_CONFIGURED;
 }
