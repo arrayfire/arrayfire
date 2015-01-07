@@ -45,7 +45,7 @@ namespace JIT
         virtual void genKerName(std::stringstream &kerStream, bool genInputs) {}
         virtual void genParams  (std::stringstream &kerStream) {}
         virtual void genOffsets (std::stringstream &kerStream, bool is_linear) {}
-        virtual void genFuncs   (std::stringstream &kerStream, bool is_linear) { m_gen_func = true;}
+        virtual void genFuncs   (std::stringstream &kerStream) { m_gen_func = true;}
 
         virtual int setArgs (cl::Kernel &ker, int id) { return id; }
 
@@ -53,7 +53,7 @@ namespace JIT
 
         virtual void resetFlags() {}
 
-        virtual bool isLinear() { return true; }
+        virtual bool isLinear(dim_type dims[4]) { return true; }
 
         std::string getTypeStr() { return m_type_str; }
 

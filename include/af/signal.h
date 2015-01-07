@@ -15,10 +15,10 @@ namespace af
 {
 
 AFAPI array approx1(const array &in, const array &pos,
-                    const af_interp_type method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
+                    const interpType method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
 
 AFAPI array approx2(const array &in, const array &pos0, const array &pos1,
-                    const af_interp_type method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
+                    const interpType method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
 
 AFAPI array fft(const array& in, double normalize, dim_type odim0=0);
 

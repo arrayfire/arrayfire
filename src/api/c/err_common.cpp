@@ -174,7 +174,7 @@ af_err processException()
         err = AF_ERR_INVALID_TYPE;
     } catch (const AfError &ex) {
 
-        ss << "Internal error in " << ex.getFunctionName()
+        ss << "Error in " << ex.getFunctionName()
            << "(" << ex.getLine() << "):\n"
            << ex.what() << "\n";
 

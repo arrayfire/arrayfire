@@ -32,6 +32,7 @@ static void indexArray(af_array &dest, const af_array &src, const unsigned ndims
 
     const Array<T> &parent = getArray<T>(src);
     vector<af_seq> index_(index, index+ndims);
+
     Array<T>* dst =  createSubArray(    parent,
                                         toDims(index_, parent.dims()),
                                         toOffset(index_, parent.dims()),
@@ -41,30 +42,26 @@ static void indexArray(af_array &dest, const af_array &src, const unsigned ndims
 
 af_err af_index(af_array *result, const af_array in, const unsigned ndims, const af_seq* index)
 {
-    //TODO: Check ndims agains max_dims
-    af_err ret = AF_ERR_INTERNAL;
     af_array out;
     try {
-        if(result)  { out = *result; }
+        af_dtype in_type = getInfo(in).getType();
 
-        switch(getInfo(in).getType()) {
-            case f32:    indexArray<float>   (out, in, ndims, index);  break;
-            case c32:    indexArray<cfloat>  (out, in, ndims, index);  break;
-            case f64:    indexArray<double>  (out, in, ndims, index);  break;
-            case c64:    indexArray<cdouble> (out, in, ndims, index);  break;
-            case b8:     indexArray<char>    (out, in, ndims, index);  break;
-            case s32:    indexArray<int>     (out, in, ndims, index);  break;
-            case u32:    indexArray<unsigned>(out, in, ndims, index);  break;
-            case u8:     indexArray<uchar>   (out, in, ndims, index);  break;
-            default:    ret = AF_ERR_NOT_SUPPORTED;                    break;
+        switch(in_type) {
+        case f32:    indexArray<float>   (out, in, ndims, index);  break;
+        case c32:    indexArray<cfloat>  (out, in, ndims, index);  break;
+        case f64:    indexArray<double>  (out, in, ndims, index);  break;
+        case c64:    indexArray<cdouble> (out, in, ndims, index);  break;
+        case b8:     indexArray<char>    (out, in, ndims, index);  break;
+        case s32:    indexArray<int>     (out, in, ndims, index);  break;
+        case u32:    indexArray<unsigned>(out, in, ndims, index);  break;
+        case u8:     indexArray<uchar>   (out, in, ndims, index);  break;
+        default:    TYPE_ERROR(1, in_type);
         }
-        if(ret !=AF_ERR_NOT_SUPPORTED)
-            ret = AF_SUCCESS;
     }
     CATCHALL
 
     swap(*result, out);
-    return ret;
+    return AF_SUCCESS;
 }
 
 template<typename idx_t>

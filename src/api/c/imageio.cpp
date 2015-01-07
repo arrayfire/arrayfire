@@ -20,6 +20,7 @@
 #include <backend.hpp>
 #include <ArrayInfo.hpp>
 #include <traits.hpp>
+#include <memory.hpp>
 
 #include <FreeImage.h>
 #include <iostream>
@@ -74,7 +75,8 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
                         const uint fi_w, const uint fi_h)
 {
     // create an array to receive the loaded image data.
-    float* pDst = (float*)malloc(fi_w * fi_h * sizeof(float) * 4); //4 channels is max
+    AF_CHECK(af_init());
+    float *pDst = pinnedAlloc<float>(fi_w * fi_h * 4); // 4 channels is max
     float* pDst0 = pDst;
     float* pDst1 = pDst + (fi_w * fi_h * 1);
     float* pDst2 = pDst + (fi_w * fi_h * 2);
@@ -101,7 +103,7 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
     // TODO
     af::dim4 dims(fi_h, fi_w, fo_color, 1);
     af_err err = af_create_array(rImage, pDst, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type);
-    free(pDst);
+    pinnedFree(pDst);
     return err;
 }
 
@@ -110,7 +112,8 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
                         const uint fi_w, const uint fi_h)
 {
     // create an array to receive the loaded image data.
-    float* pDst = (float*)malloc(fi_w * fi_h * sizeof(float)); //only gray channel
+    AF_CHECK(af_init());
+    float *pDst = pinnedAlloc<float>(fi_w * fi_h);
 
     uint indx = 0;
     uint step = nSrcPitch / (fi_w * sizeof(T));
@@ -132,14 +135,13 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
 
     af::dim4 dims(fi_h, fi_w, 1, 1);
     af_err err = af_create_array(rImage, pDst, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type);
-    free(pDst);
+    pinnedFree(pDst);
     return err;
 }
 
 /// Load a gray-scale image from disk.
 AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isColor)
 {
-    af_err ret = AF_SUCCESS;
     try {
         ARG_ASSERT(1, filename != NULL);
 
@@ -196,59 +198,55 @@ AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isCol
         if (isColor) {
             if(fi_color == 4) {     //4 channel image
                 if(fi_bpc == 8)
-                    ret = readImage<uchar, 4, 4>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
+                    AF_CHECK((readImage<uchar, 4, 4>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 16)
-                    ret = readImage<ushort, 4, 4>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
+                    AF_CHECK((readImage<ushort, 4, 4>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    ret = readImage<float, 4, 4>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
+                    AF_CHECK((readImage<float, 4, 4>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             } else if (fi_color == 1) {
                 if(fi_bpc == 8)
-                    ret = readImage<uchar, 1, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
+                    AF_CHECK((readImage<uchar, 1, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 16)
-                    ret = readImage<ushort, 1, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
+                    AF_CHECK((readImage<ushort, 1, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    ret = readImage<float, 1, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
+                    AF_CHECK((readImage<float, 1, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             } else {             //3 channel image
                 if(fi_bpc == 8)
-                    ret = readImage<uchar, 3, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
+                    AF_CHECK((readImage<uchar, 3, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 16)
-                    ret = readImage<ushort, 3, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
+                    AF_CHECK((readImage<ushort, 3, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    ret = readImage<float, 3, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
+                    AF_CHECK((readImage<float, 3, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             }
         } else {                    //output gray irrespective
             if(fi_color == 1) {     //4 channel image
                 if(fi_bpc == 8)
-                    ret = readImage<uchar, 1>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
+                    AF_CHECK((readImage<uchar, 1>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 16)
-                    ret = readImage<ushort, 1>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
+                    AF_CHECK((readImage<ushort, 1>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    ret = readImage<float, 1>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
+                    AF_CHECK((readImage<float, 1>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             } else if (fi_color == 3 || fi_color == 4) {
                 if(fi_bpc == 8)
-                    ret = readImage<uchar, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
+                    AF_CHECK((readImage<uchar, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 16)
-                    ret = readImage<ushort, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
+                    AF_CHECK((readImage<ushort, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    ret = readImage<float, 3>(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h);
+                    AF_CHECK((readImage<float, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             }
         }
 
         FreeImage_Unload(pBitmap);
         FreeImage_DeInitialise();
-        if(ret == AF_SUCCESS) {
-            std::swap(*out,rImage);
-        }
+        std::swap(*out,rImage);
     } CATCHALL;
 
-    return ret;
+    return AF_SUCCESS;
 }
 
 // Save an image to disk.
 af_err af_save_image(const char* filename, const af_array in_)
 {
-    af_err ret = AF_SUCCESS;
-
     try {
 
         ARG_ASSERT(0, filename != NULL);
@@ -295,7 +293,7 @@ af_err af_save_image(const char* filename, const af_array in_)
         if (max_real <= 1) {
             af_array c255;
             AF_CHECK(af_constant(&c255, 255.0, info.ndims(), info.dims().get(), f32));
-            AF_CHECK(af_mul(&in, in_, c255));
+            AF_CHECK(af_mul(&in, in_, c255, false));
             AF_CHECK(af_destroy_array(c255));
             free_in = true;
         } else {
@@ -306,10 +304,7 @@ af_err af_save_image(const char* filename, const af_array in_)
         uint nDstPitch = FreeImage_GetPitch(pResultBitmap);
         uchar* pDstLine = FreeImage_GetBits(pResultBitmap) + nDstPitch * (fi_h - 1);
         af_array rr = 0, gg = 0, bb = 0, aa = 0;
-        ret = channel_split(in, info.dims(), &rr, &gg, &bb, &aa); // convert array to 3 channels if needed
-        if(ret != AF_SUCCESS) {
-            AF_ERROR("ImageIO Error: Error in channel split", ret);
-        }
+        AF_CHECK(channel_split(in, info.dims(), &rr, &gg, &bb, &aa)); // convert array to 3 channels if needed
 
         uint step = channels; // force 3 channels saving
         uint indx = 0;
@@ -323,10 +318,10 @@ af_err af_save_image(const char* filename, const af_array in_)
             AF_CHECK(af_transpose(&aaT, aa, false));
 
             ArrayInfo cinfo = getInfo(rrT);
-            float* pSrc0 = new float[cinfo.elements()];
-            float* pSrc1 = new float[cinfo.elements()];
-            float* pSrc2 = new float[cinfo.elements()];
-            float* pSrc3 = new float[cinfo.elements()];
+            float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc1 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc2 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc3 = pinnedAlloc<float>(cinfo.elements());
 
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
             AF_CHECK(af_get_data_ptr((void*)pSrc1, ggT));
@@ -354,9 +349,9 @@ af_err af_save_image(const char* filename, const af_array in_)
             AF_CHECK(af_transpose(&bbT, bb, false));
 
             ArrayInfo cinfo = getInfo(rrT);
-            float* pSrc0 = new float[cinfo.elements()];
-            float* pSrc1 = new float[cinfo.elements()];
-            float* pSrc2 = new float[cinfo.elements()];
+            float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc1 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc2 = pinnedAlloc<float>(cinfo.elements());
 
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
             AF_CHECK(af_get_data_ptr((void*)pSrc1, ggT));
@@ -378,7 +373,7 @@ af_err af_save_image(const char* filename, const af_array in_)
         } else {
             AF_CHECK(af_transpose(&rrT, rr, false));
             ArrayInfo cinfo = getInfo(rrT);
-            float* pSrc0 = new float[cinfo.elements()];
+            float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
             AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
 
             for (uint y = 0; y < fi_h; ++y) {
@@ -411,7 +406,7 @@ af_err af_save_image(const char* filename, const af_array in_)
         FreeImage_DeInitialise();
     } CATCHALL
 
-    return ret;
+    return AF_SUCCESS;
 }
 
 #else   // WITH_FREEIMAGE

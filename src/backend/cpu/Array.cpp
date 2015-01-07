@@ -66,9 +66,12 @@ namespace cpu
     Node_ptr Array<T>::getNode() const
     {
         if (!node) {
-            dim_type strs[] = {strides()[0], strides()[1], strides()[2], strides()[3]};
 
-            BufferNode<T> *buf_node = new BufferNode<T>(data, strs, offset);
+            BufferNode<T> *buf_node = new BufferNode<T>(data,
+                                                        dims().get(),
+                                                        strides().get(),
+                                                        offset);
+
             const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
         }
 

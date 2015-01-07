@@ -131,9 +131,14 @@ void find_clfft_plan(clfftPlanHandle &plan,
     // and finally set it to output plan variable
     int slot_index = planner.mAvailSlotIndex;
 
-    clfftStatus res= clfftDestroyPlan(&planner.mHandles[slot_index]);
+    clfftStatus res = CLFFT_SUCCESS;
 
-    if (res==CLFFT_SUCCESS || res==CLFFT_INVALID_PLAN) {
+    if (planner.mHandles[slot_index]) {
+        res = clfftDestroyPlan(&planner.mHandles[slot_index]);
+        planner.mHandles[slot_index] = 0;
+    }
+
+    if (res==CLFFT_SUCCESS) {
         clfftPlanHandle temp;
 
         // getContext() returns object of type Context

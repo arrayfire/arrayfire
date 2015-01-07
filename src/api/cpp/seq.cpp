@@ -1,4 +1,6 @@
 #include <af/seq.h>
+#include <af/array.h>
+#include <af/data.h>
 #include "error.hpp"
 
 namespace af
@@ -32,7 +34,7 @@ seq::~seq()
 {
 }
 
-seq::seq(double n)
+seq::seq(double n): m_gfor(false)
 {
     if (n == end) {
         init(-1, -1, 0);
@@ -41,7 +43,7 @@ seq::seq(double n)
     }
 }
 
-seq::seq(const af_seq& s_)
+seq::seq(const af_seq& s_): m_gfor(false)
 {
     init(s_.begin, s_.end, s_.step);
 }
@@ -52,7 +54,7 @@ seq& seq::operator=(const af_seq& s_)
     return *this;
 }
 
-seq::seq(double begin, double end, double step)
+seq::seq(double begin, double end, double step): m_gfor(false)
 {
     if(begin == -1 && end == -1) {
         step = 0;           // end
@@ -60,12 +62,26 @@ seq::seq(double begin, double end, double step)
 
     if (step == 0) {
         if (begin != end)   // Span
-            AF_THROW(AF_ERR_INVALID_ARG);
+            AF_THROW_MSG("Invalid step size", AF_ERR_INVALID_ARG);
     }
     if (end >= 0 && begin >= 0 && signbit(end-begin) != signbit(step))
-        AF_THROW(AF_ERR_INVALID_ARG);
+        AF_THROW_MSG("Sequence is invalid", AF_ERR_INVALID_ARG);
         //AF_THROW("step must match direction of sequence");
     init(begin, end, step);
+}
+
+seq::seq(seq other, bool is_gfor): m_gfor(is_gfor)
+{
+    this->s = other.s;
+    this->size = other.size;
+}
+
+seq::operator array() const
+{
+    dim_type diff = s.end - s.begin;
+    dim_type len = (int)((diff + 1 * signbit(diff)) / s.step);
+    array res = s.begin + s.step * iota(len);
+    return res;
 }
 
 }

@@ -70,7 +70,7 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
         ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_rotate(&outArray, inArray, theta, AF_INTERP_NEAREST, crop));
+    ASSERT_EQ(AF_SUCCESS, af_rotate(&outArray, inArray, theta, crop, AF_INTERP_NEAREST));
 
     // Get result
     T* outData = new T[tests[resultIdx].size()];
@@ -181,7 +181,7 @@ TEST(Rotate, CPP)
     float theta = angle * PI / 180.0f;
 
     af::array input(dims, &(in[0].front()));
-    af::array output = af::rotate(input, theta, AF_INTERP_NEAREST, crop);
+    af::array output = af::rotate(input, theta, crop, AF_INTERP_NEAREST);
 
     // Get result
     float* outData = new float[tests[resultIdx].size()];

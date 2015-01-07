@@ -42,11 +42,11 @@ namespace af
         array(const af_array handle);
         array(const array& in);
 
-        array(dim_type d0, af_dtype ty = f32);
-        array(dim_type d0, dim_type d1, af_dtype ty = f32);
-        array(dim_type d0, dim_type d1, dim_type d2, af_dtype ty = f32);
-        array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, af_dtype ty = f32);
-        array(const dim4& dims, af_dtype ty = f32);
+        array(dim_type d0, dtype ty = f32);
+        array(dim_type d0, dim_type d1, dtype ty = f32);
+        array(dim_type d0, dim_type d1, dim_type d2, dtype ty = f32);
+        array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, dtype ty = f32);
+        array(const dim4& dims, dtype ty = f32);
 
         template<typename T>
             array(dim_type d0,
@@ -77,7 +77,7 @@ namespace af
 
         template<typename T> T* host() const;
         void host(void *ptr) const;
-        af_dtype type() const;
+        dtype type() const;
 
         // FIXME: Everything below this has not been implemented
         dim4 dims() const;
@@ -166,7 +166,7 @@ namespace af
 
         array slices(int first, int last) const;
 
-        array as(af_dtype type) const;
+        array as(dtype type) const;
 
         ~array();
 

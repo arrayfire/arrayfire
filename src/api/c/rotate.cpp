@@ -25,10 +25,10 @@ static inline af_array rotate(const af_array in, const float theta, const af::di
 }
 
 
-af_err af_rotate(af_array *out, const af_array in, const float theta, const af_interp_type method,
-                 const bool crop)
+af_err af_rotate(af_array *out, const af_array in, const float theta,
+                 const bool crop,
+                 const af_interp_type method)
 {
-    af_err ret = AF_SUCCESS;
     try {
         unsigned odims0 = 0, odims1 = 0;
 
@@ -63,6 +63,5 @@ af_err af_rotate(af_array *out, const af_array in, const float theta, const af_i
         std::swap(*out,output);
     } CATCHALL
 
-    return ret;
+    return AF_SUCCESS;
 }
-

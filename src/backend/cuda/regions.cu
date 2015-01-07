@@ -21,7 +21,7 @@ namespace cuda
 {
 
 template<typename T>
-Array<T> * regions(const Array<uchar> &in, af_connectivity_type connectivity)
+Array<T> * regions(const Array<uchar> &in, af_connectivity connectivity)
 {
     ARG_ASSERT(2, (connectivity==AF_CONNECTIVITY_4 || connectivity==AF_CONNECTIVITY_8));
 
@@ -59,7 +59,7 @@ Array<T> * regions(const Array<uchar> &in, af_connectivity_type connectivity)
 }
 
 #define INSTANTIATE(T)\
-    template Array<T> * regions<T>(const Array<uchar> &in, af_connectivity_type connectivity);
+    template Array<T> * regions<T>(const Array<uchar> &in, af_connectivity connectivity);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

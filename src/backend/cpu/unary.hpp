@@ -75,9 +75,9 @@ UNARY_FN(lgamma)
 
 #define iszero(a) ((a) == 0)
 
-#define CHECK_FN(op)                            \
+#define CHECK_FN(name ,op)                      \
     template<typename T>                        \
-    struct UnOp<char, T, af_##op##_t>           \
+    struct UnOp<char, T, af_##name##_t>         \
     {                                           \
         char eval(T in)                         \
         {                                       \
@@ -85,9 +85,9 @@ UNARY_FN(lgamma)
         }                                       \
     };                                          \
 
-    CHECK_FN(isinf)
-    CHECK_FN(isnan)
-    CHECK_FN(iszero)
+    CHECK_FN(isinf, std::isinf)
+    CHECK_FN(isnan, std::isnan)
+    CHECK_FN(iszero, iszero)
 
     template<typename T, af_op_t op>
     Array<char> *checkOp(const Array<T> &in)

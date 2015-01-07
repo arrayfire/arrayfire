@@ -161,40 +161,46 @@ seqElements(const af_seq &seq) {
 dim4
 toDims(const vector<af_seq>& seqs, dim4 parentDims)
 {
-    dim4 out(1, 1, 1, 1);
+    dim4 outDims(1, 1, 1, 1);
     for(unsigned i = 0; i < seqs.size(); i++ ) {
         if  (isSpan(seqs[i])) {
-            out[i] = parentDims[i];
+            outDims[i] = parentDims[i];
         } else if (isEnd(seqs[i])) {
             if(seqs[i].begin == -1) {   // only end is passed as seq
-                out[i] = 1;
+                outDims[i] = 1;
             } else {    // end is passed as a part of seq
                 af_seq temp = {seqs[i].begin, parentDims[i] - 1., seqs[i].step};
-                out[i] = seqElements(temp);
+                outDims[i] = seqElements(temp);
             }
         } else if (seqs[i].begin < 0) {
             // This will throw an error for invalid sequence
             // FIXME
             // Allow reverse sequence, ie. end, 0, -1.
-            // Check for seq out of bounds on greater side
+            // Check for seq outDims of bounds on greater side
             AF_ERROR("Sequence out of bounds", AF_ERR_INVALID_ARG);
         } else {
-            out[i] = seqElements(seqs[i]);
+            outDims[i] = seqElements(seqs[i]);
         }
+
+        if (outDims[i] > parentDims[i])
+            AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
     }
-    return out;
+
+    return outDims;
 }
 
 dim4
 toOffset(const vector<af_seq>& seqs, dim4 parentDims)
 {
-    dim4 out(0, 0, 0, 0);
+    dim4 outOffsets(0, 0, 0, 0);
     for(unsigned i = 0; i < seqs.size(); i++ ) {
-        if      (seqs[i].step != 0) {   out[i] = seqs[i].begin; }
-        else if (isEnd(seqs[i]) && seqs[i].begin == -1) { out[i] = parentDims[i] - 1; }
-        else    { out[i] = 0; }
+        if      (seqs[i].step != 0) {   outOffsets[i] = seqs[i].begin; }
+        else if (isEnd(seqs[i]) && seqs[i].begin == -1) { outOffsets[i] = parentDims[i] - 1; }
+        else    { outOffsets[i] = 0; }
+        if (outOffsets[i] >= parentDims[i])
+            AF_ERROR("Index out of range", AF_ERR_SIZE);
     }
-    return out;
+    return outOffsets;
 }
 
 dim4

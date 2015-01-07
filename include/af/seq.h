@@ -20,17 +20,22 @@ static const af_seq af_span = {1, 1, 0};
 #ifdef __cplusplus
 namespace af
 {
+class array;
+
 class AFAPI seq
 {
 public:
     af_seq s;
     size_t size;
+    bool m_gfor;
 
     seq(double = 0);
     ~seq();
 
     // begin, end, step
     seq(double begin, double end, double step = 1);
+
+    seq(seq afs, bool is_gfor);
 
     seq(const af_seq& s_);
 
@@ -49,6 +54,8 @@ public:
     friend inline seq operator-(double x, seq y) { return -y + x; }
 
     friend inline seq operator*(double x, seq y) { return  y * x; }
+
+    operator array() const;
 
     private:
     void init(double begin, double end, double step);
