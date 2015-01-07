@@ -130,6 +130,5 @@ namespace cuda
             resize_kernel<T, method><<<blocks, threads>>>(out, in, blocksPerMatX, blocksPerMatY, xf, yf);
             POST_LAUNCH_CHECK();
         }
-
     }
 }

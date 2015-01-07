@@ -82,8 +82,8 @@ namespace opencl
                     rotateKernels[device] = new Kernel(*rotateProgs[device], "rotate_kernel");
                 });
 
-                auto rotateOp = make_kernel<Buffer, const KParam, const Buffer, const KParam,
-                                             const tmat_t, const dim_type, const dim_type>
+                auto rotateOp = make_kernel<Buffer, const KParam, const Buffer, const KParam, const tmat_t,
+                                            const dim_type, const dim_type, const dim_type, const dim_type>
                                            (*rotateKernels[device]);
 
                 const float c = cos(-theta), s = sin(-theta);
@@ -109,20 +109,25 @@ namespace opencl
 
                 NDRange local(TX, TY, 1);
 
-                dim_type nimages = in.info.dims[2];
+                dim_type nimages  = in.info.dims[2];
+                dim_type nbatches = in.info.dims[3];
                 dim_type global_x = local[0] * divup(out.info.dims[0], local[0]);
+                dim_type global_y = local[1] * divup(out.info.dims[1], local[1]);
                 const dim_type blocksXPerImage = global_x / local[0];
+                const dim_type blocksYPerImage = global_y / local[1];
 
                 if(nimages > TI) {
                     dim_type tile_images = divup(nimages, TI);
                     nimages = TI;
                     global_x = global_x * tile_images;
                 }
+                global_y *= nbatches;
 
-                NDRange global(global_x, local[1] * divup(out.info.dims[1], local[1]), 1);
+                NDRange global(global_x, global_y, 1);
 
                 rotateOp(EnqueueArgs(getQueue(), global, local),
-                         *out.data, out.info, *in.data, in.info, t, nimages, blocksXPerImage);
+                         *out.data, out.info, *in.data, in.info, t, nimages, nbatches,
+                         blocksXPerImage, blocksYPerImage);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {

@@ -47,9 +47,8 @@ af_err af_rotate(af_array *out, const af_array in, const float theta,
 
         ARG_ASSERT(3, method == AF_INTERP_NEAREST || method == AF_INTERP_BILINEAR);
         DIM_ASSERT(1, idims.elements() > 0);
-        DIM_ASSERT(1, (idims.ndims() == 2 || idims.ndims() == 3));
 
-        af::dim4 odims(odims0, odims1, idims[2], 1);
+        af::dim4 odims(odims0, odims1, idims[2], idims[3]);
 
         af_array output = 0;
         switch(itype) {

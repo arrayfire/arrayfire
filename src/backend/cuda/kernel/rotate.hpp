@@ -33,15 +33,20 @@ namespace cuda
         ///////////////////////////////////////////////////////////////////////////
         template<typename T, af_interp_type method>
         __global__ static void
-        rotate_kernel(Param<T> out, CParam<T> in, const tmat_t t, const dim_type nimages, const dim_type blocksXPerImage)
+        rotate_kernel(Param<T> out, CParam<T> in, const tmat_t t,
+                      const dim_type nimages, const dim_type nbatches,
+                      const dim_type blocksXPerImage, const dim_type blocksYPerImage)
         {
             // Compute which image set
             const dim_type setId = blockIdx.x / blocksXPerImage;
             const dim_type blockIdx_x = blockIdx.x - setId * blocksXPerImage;
 
+            const dim_type batch = blockIdx.y / blocksYPerImage;
+            const dim_type blockIdx_y = blockIdx.y - batch * blocksYPerImage;
+
             // Get thread indices
             const dim_type xx = blockIdx_x * blockDim.x + threadIdx.x;
-            const dim_type yy = blockIdx.y * blockDim.y + threadIdx.y;
+            const dim_type yy = blockIdx_y * blockDim.y + threadIdx.y;
 
             const dim_type limages = min(out.dims[2] - setId * nimages, nimages);
 
@@ -50,8 +55,8 @@ namespace cuda
 
             // Global offset
             //          Offset for transform channel + Offset for image channel.
-                  T *optr = out.ptr + setId * nimages * out.strides[2];
-            const T *iptr = in.ptr  + setId * nimages * in.strides[2];
+                  T *optr = out.ptr + setId * nimages * out.strides[2] + batch * out.strides[3];
+            const T *iptr = in.ptr  + setId * nimages * in.strides[2]  + batch * in.strides[3];
 
             switch(method) {
                 case AF_INTERP_NEAREST:
@@ -90,11 +95,13 @@ namespace cuda
             t.tmat[5] = ty;
 
             dim_type nimages = in.dims[2];
+            dim_type nbatches = in.dims[3];
 
             dim3 threads(TX, TY, 1);
             dim3 blocks(divup(out.dims[0], threads.x), divup(out.dims[1], threads.y));
 
             const dim_type blocksXPerImage = blocks.x;
+            const dim_type blocksYPerImage = blocks.y;
 
             if(nimages > TI) {
                 dim_type tile_images = divup(nimages, TI);
@@ -102,7 +109,10 @@ namespace cuda
                 blocks.x = blocks.x * tile_images;
             }
 
-            rotate_kernel<T, method><<<blocks, threads>>> (out, in, t, nimages, blocksXPerImage);
+            blocks.y = blocks.y * nbatches;
+
+            rotate_kernel<T, method><<<blocks, threads>>> (out, in, t, nimages, nbatches,
+                                    blocksXPerImage, blocksYPerImage);
 
             POST_LAUNCH_CHECK();
         }
