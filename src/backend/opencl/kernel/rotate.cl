@@ -17,15 +17,15 @@ typedef struct {
 __kernel
 void rotate_kernel(__global T *d_out, const KParam out,
                    __global const T *d_in, const KParam in,
-                   const tmat_t t, const dim_type nimages, const dim_type blocksYPerImage)
+                   const tmat_t t, const dim_type nimages, const dim_type blocksXPerImage)
 {
     // Compute which image set
-    const dim_type setId = get_group_id(1) / blocksYPerImage;
-    const dim_type blockIdx_y = get_group_id(1) - setId * blocksYPerImage;
+    const dim_type setId = get_group_id(0) / blocksXPerImage;
+    const dim_type blockIdx_x = get_group_id(0) - setId * blocksXPerImage;
 
     // Get thread indices
-    const dim_type xx = get_global_id(0);
-    const dim_type yy = get_local_id(1) + blockIdx_y * get_local_size(1);
+    const dim_type xx = get_local_id(0) + blockIdx_x * get_local_size(0);
+    const dim_type yy = get_global_id(1);
 
     const dim_type limages = min(out.dims[2] - setId * nimages, nimages);
 

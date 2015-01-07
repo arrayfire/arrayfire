@@ -110,20 +110,19 @@ namespace opencl
                 NDRange local(TX, TY, 1);
 
                 dim_type nimages = in.info.dims[2];
-                dim_type global_y = local[1] * divup(out.info.dims[1], local[1]);
-                const dim_type blocksYPerImage = global_y / local[1];
+                dim_type global_x = local[0] * divup(out.info.dims[0], local[0]);
+                const dim_type blocksXPerImage = global_x / local[0];
 
                 if(nimages > TI) {
                     dim_type tile_images = divup(nimages, TI);
                     nimages = TI;
-                    global_y = global_y * tile_images;
+                    global_x = global_x * tile_images;
                 }
 
-                NDRange global(local[0] * divup(out.info.dims[0], local[0]),
-                               global_y, 1);
+                NDRange global(global_x, local[1] * divup(out.info.dims[1], local[1]), 1);
 
                 rotateOp(EnqueueArgs(getQueue(), global, local),
-                         *out.data, out.info, *in.data, in.info, t, nimages, blocksYPerImage);
+                         *out.data, out.info, *in.data, in.info, t, nimages, blocksXPerImage);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
