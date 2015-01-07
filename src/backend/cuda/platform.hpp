@@ -95,7 +95,7 @@ class DeviceManager
 
         void sortDevices(sort_mode mode = flops);
 
-        int setActiveDevice(int device);
+        int setActiveDevice(int device, int native = -1);
 
         int activeDev;
         int nDevices;

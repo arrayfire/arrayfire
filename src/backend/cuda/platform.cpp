@@ -319,7 +319,7 @@ namespace cuda
 
         const char* deviceENV = getenv("AF_CUDA_DEFAULT_DEVICE");
         if(!deviceENV) {
-            setActiveDevice(0);
+            setActiveDevice(0, cuDevices[0].nativeId);
         } else {
             stringstream s(deviceENV);
             int def_device = -1;
@@ -327,9 +327,9 @@ namespace cuda
             if(def_device < 0 || def_device >= nDevices) {
                 printf("WARNING: AF_CUDA_DEFAULT_DEVICE is out of range\n");
                 printf("Setting default device as 0\n");
-                setActiveDevice(0);
+                setActiveDevice(0, cuDevices[0].nativeId);
             } else {
-                setActiveDevice(def_device);
+                setActiveDevice(def_device, cuDevices[def_device].nativeId);
             }
         }
     }
@@ -352,13 +352,14 @@ namespace cuda
         }
     }
 
-    int DeviceManager::setActiveDevice(int device)
+    int DeviceManager::setActiveDevice(int device, int nId)
     {
         if(device > (int)cuDevices.size()) {
             return -1;
         } else {
             int old = activeDev;
-            CUDA(cudaSetDevice(device));
+            if(nId == -1) nId = getDeviceNativeId(device);
+            CUDA(cudaSetDevice(nId));
             activeDev = device;
             return old;
         }
