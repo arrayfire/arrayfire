@@ -56,8 +56,12 @@ namespace cpu
             dim_type i_off = i_y * istrides[1] + i_x;
             dim_type o_off =   y * ostrides[1] + x;
             // Copy values from all channels
-            for(dim_type z = 0; z < odims[2]; z++) {
-                outPtr[o_off + z * ostrides[2]] = inPtr[i_off + z * istrides[2]];
+            for(dim_type w = 0; w < odims[3]; w++) {
+                dim_type wost = w * ostrides[3];
+                dim_type wist = w * istrides[3];
+                for(dim_type z = 0; z < odims[2]; z++) {
+                    outPtr[o_off + z * ostrides[2] + wost] = inPtr[i_off + z * istrides[2] + wist];
+                }
             }
         }
     };
@@ -87,17 +91,22 @@ namespace cpu
 
             dim_type o_off = y * ostrides[1] + x;
             // Copy values from all channels
-            for(dim_type z = 0; z < odims[2]; z++) {
-                T p1 = inPtr[i1_y * istrides[1] + i1_x + z * istrides[2]];
-                T p2 = inPtr[i2_y * istrides[1] + i1_x + z * istrides[2]];
-                T p3 = inPtr[i1_y * istrides[1] + i2_x + z * istrides[2]];
-                T p4 = inPtr[i2_y * istrides[1] + i2_x + z * istrides[2]];
+            for(dim_type w = 0; w < odims[3]; w++) {
+                dim_type wst = w * istrides[3];
+                for(dim_type z = 0; z < odims[2]; z++) {
+                    dim_type zst = z * istrides[2];
+                    dim_type channel_off = zst + wst;
+                    T p1 = inPtr[i1_y * istrides[1] + i1_x + channel_off];
+                    T p2 = inPtr[i2_y * istrides[1] + i1_x + channel_off];
+                    T p3 = inPtr[i1_y * istrides[1] + i2_x + channel_off];
+                    T p4 = inPtr[i2_y * istrides[1] + i2_x + channel_off];
 
-                outPtr[o_off + z * ostrides[2]] =
-                                (1.0f - a) * (1.0f - b) * p1 +
-                                     a     * (1.0f - b) * p2 +
-                                (1.0f - a) *      b     * p3 +
-                                     a     *      b     * p4;
+                    outPtr[o_off + z * ostrides[2] + w * ostrides[3]] =
+                                    (1.0f - a) * (1.0f - b) * p1 +
+                                         a     * (1.0f - b) * p2 +
+                                    (1.0f - a) *      b     * p3 +
+                                         a     *      b     * p4;
+                }
             }
         }
     };

@@ -139,28 +139,6 @@ TYPED_TEST(Transpose,Square512x512)
     trsTest<TypeParam>(string(TEST_DIR"/transpose/square2.test"));
 }
 
-TYPED_TEST(Transpose,InvalidArgs)
-{
-    if (noDoubleTests<TypeParam>()) return;
-
-    vector<af::dim4> numDims;
-
-    vector<vector<TypeParam>>   in;
-    vector<vector<TypeParam>>   tests;
-    readTests<TypeParam,TypeParam,int>(string(TEST_DIR"/transpose/square.test"),numDims,in,tests);
-
-    af_array inArray   = 0;
-    af_array outArray  = 0;
-
-    // square test file is 100x100 originally
-    // usee new dimensions for this argument
-    // unit test
-    af::dim4 newDims(5,5,2,2);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), newDims.ndims(), newDims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
-
-    ASSERT_EQ(AF_ERR_SIZE, af_transpose(&outArray,inArray, false));
-}
-
 TYPED_TEST(Transpose,SubRef)
 {
     trsTest<TypeParam>(string(TEST_DIR"/transpose/offset.test"),true,&(this->subMat2D));

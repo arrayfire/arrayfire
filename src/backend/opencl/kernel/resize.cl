@@ -14,10 +14,11 @@
 // nearest-neighbor resampling
 void resize_n_(__global T* d_out, const KParam out,
                __global const T* d_in, const KParam in,
-               const dim_type blockIdx_x, const float xf, const float yf)
+               const dim_type blockIdx_x, const dim_type blockIdx_y,
+               const float xf, const float yf)
 {
     int const ox = get_local_id(0) + blockIdx_x * get_local_size(0);
-    int const oy = get_global_id(1);
+    int const oy = get_local_id(1) + blockIdx_y * get_local_size(1);
 
     //int ix = convert_int_rtp(ox * xf);
     //int iy = convert_int_rtp(oy * yf);
@@ -35,10 +36,11 @@ void resize_n_(__global T* d_out, const KParam out,
 // bilinear resampling
 void resize_b_(__global T* d_out, const KParam out,
                __global const T* d_in, const KParam in,
-               const dim_type blockIdx_x, const float xf_, const float yf_)
+               const dim_type blockIdx_x, const dim_type blockIdx_y,
+               const float xf_, const float yf_)
 {
     int const ox = get_local_id(0) + blockIdx_x * get_local_size(0);
-    int const oy = get_global_id(1);
+    int const oy = get_local_id(1) + blockIdx_y * get_local_size(1);
 
     float xf = ox * xf_;
     float yf = oy * yf_;
@@ -74,15 +76,15 @@ void resize_b_(__global T* d_out, const KParam out,
 __kernel
 void resize_kernel(__global T *d_out, const KParam out,
                    __global const T *d_in, const KParam in,
-                   const dim_type b0, const float xf, const float yf)
+                   const dim_type b0, const dim_type b1, const float xf, const float yf)
 {
-    dim_type id = get_group_id(0) / b0;
+    dim_type bIdx = get_group_id(0) / b0;
+    dim_type bIdy = get_group_id(1) / b1;
     // batch adjustment
-    int i_off = id *  in.strides[2] + in.offset;
-    int o_off = id * out.strides[2];
-    dim_type blockIdx_x =  get_group_id(0) - id * b0;
+    int i_off = bIdy *  in.strides[3] + bIdx *  in.strides[2] + in.offset;
+    int o_off = bIdy * out.strides[3] + bIdx * out.strides[2];
+    dim_type blockIdx_x =  get_group_id(0) - bIdx * b0;
+    dim_type blockIdx_y =  get_group_id(1) - bIdy * b1;
 
-    INTERP(d_out + o_off, out, d_in + i_off, in, blockIdx_x, xf, yf);
+    INTERP(d_out + o_off, out, d_in + i_off, in, blockIdx_x, blockIdx_y, xf, yf);
 }
-
-////////////////////////////////////////////////////////////////////////////////////

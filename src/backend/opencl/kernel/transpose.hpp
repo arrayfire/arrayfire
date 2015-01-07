@@ -75,14 +75,14 @@ void transpose(Param out, const Param in)
 
         // launch batch * blk_x blocks along x dimension
         NDRange global(blk_x * local[0] * in.info.dims[2],
-                       blk_y * local[1]);
+                       blk_y * local[1] * in.info.dims[3]);
 
         auto transposeOp = make_kernel<Buffer, const KParam,
                                        const Buffer, const KParam,
-                                       const dim_type> (*trsKernels[device]);
+                                       const dim_type, const dim_type> (*trsKernels[device]);
 
         transposeOp(EnqueueArgs(getQueue(), global, local),
-                    *out.data, out.info, *in.data, in.info, blk_x);
+                    *out.data, out.info, *in.data, in.info, blk_x, blk_y);
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {
