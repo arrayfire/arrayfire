@@ -99,10 +99,8 @@ af_err af_array_index(af_array *out, const af_array in, const af_array indices, 
 
         ARG_ASSERT(2, (idxInfo.ndims()==1));
 
-        af_dtype inType  = inInfo.getType();
         af_dtype idxType = idxInfo.getType();
 
-        ARG_ASSERT(1, (inType==idxType));
         ARG_ASSERT(2, (idxType!=c32));
         ARG_ASSERT(2, (idxType!=c64));
         ARG_ASSERT(2, (idxType!=b8));
