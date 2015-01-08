@@ -35,7 +35,7 @@ namespace kernel
     template<typename T, bool conjugate, bool is32Multiple>
     __global__
     void transpose(Param<T> out, CParam<T> in,
-                   dim_type nonBatchBlkSize)
+                   const dim_type blocksPerMatX, const dim_type blocksPerMatY)
     {
         __shared__ T shrdMem[TILE_DIM][TILE_DIM+1];
         // create variables to hold output dimensions
@@ -52,19 +52,22 @@ namespace kernel
         const dim_type ly = threadIdx.y;
 
         // batch based block Id
-        const dim_type batchId = blockIdx.x / nonBatchBlkSize;
-        const dim_type blockIdx_x = (blockIdx.x-batchId*nonBatchBlkSize);
+        const dim_type batchId_x = blockIdx.x / blocksPerMatX;
+        const dim_type blockIdx_x = (blockIdx.x - batchId_x * blocksPerMatX);
+
+        const dim_type batchId_y = blockIdx.y / blocksPerMatY;
+        const dim_type blockIdx_y = (blockIdx.y - batchId_y * blocksPerMatY);
 
         const dim_type x0 = TILE_DIM * blockIdx_x;
-        const dim_type y0 = TILE_DIM * blockIdx.y;
+        const dim_type y0 = TILE_DIM * blockIdx_y;
 
         // calculate global indices
         dim_type gx      = lx + x0;
         dim_type gy      = ly + y0;
 
         // offset in and out based on batch id
-        in.ptr  += batchId * in.strides[2];
-        out.ptr += batchId * out.strides[2];
+        in.ptr  += batchId_x *  in.strides[2] + batchId_y *  in.strides[3];
+        out.ptr += batchId_x * out.strides[2] + batchId_y * out.strides[3];
 
 #pragma unroll
         for (dim_type repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
@@ -97,16 +100,15 @@ namespace kernel
         dim_type blk_x = divup(in.dims[0],TILE_DIM);
         dim_type blk_y = divup(in.dims[1],TILE_DIM);
         // launch batch * blk_x blocks along x dimension
-        dim3 blocks(blk_x*in.dims[2],blk_y);
+        dim3 blocks(blk_x * in.dims[2], blk_y * in.dims[3]);
 
-        if (in.dims[0]%TILE_DIM==0 && in.dims[1]%TILE_DIM==0)
-            (transpose<T, conjugate, true >)<<< blocks,threads >>>(out, in, blk_x);
+        if (in.dims[0] % TILE_DIM == 0 && in.dims[1] % TILE_DIM == 0)
+            (transpose<T, conjugate, true >)<<<blocks, threads>>>(out, in, blk_x, blk_y);
         else
-            (transpose<T, conjugate, false>)<<< blocks,threads >>>(out, in, blk_x);
+            (transpose<T, conjugate, false>)<<<blocks, threads>>>(out, in, blk_x, blk_y);
 
         POST_LAUNCH_CHECK();
     }
-
 }
 
 }

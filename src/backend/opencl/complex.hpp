@@ -9,6 +9,7 @@
 
 #include <af/defines.h>
 #include <af/array.h>
+#include <af/dim4.hpp>
 #include <Array.hpp>
 #include <optypes.hpp>
 #include <binary.hpp>
@@ -17,9 +18,9 @@
 namespace opencl
 {
     template<typename To, typename Ti>
-    Array<To>* cplx(const Array<Ti> &lhs, const Array<Ti> &rhs)
+    Array<To>* cplx(const Array<Ti> &lhs, const Array<Ti> &rhs, const af::dim4 &odims)
     {
-        return createBinaryNode<To, Ti, af_cplx2_t>(lhs, rhs);
+        return createBinaryNode<To, Ti, af_cplx2_t>(lhs, rhs, odims);
     }
 
     template<typename To, typename Ti>

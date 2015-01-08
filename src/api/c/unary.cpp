@@ -113,7 +113,7 @@ af_err af_not(af_array *out, const af_array in)
                              in_info.ndims(),
                              in_info.dims().get(), in_info.getType()));
 
-        AF_CHECK(af_neq(out, in, tmp));
+        AF_CHECK(af_neq(out, in, tmp, false));
 
         AF_CHECK(af_destroy_array(tmp));
     } CATCHALL;

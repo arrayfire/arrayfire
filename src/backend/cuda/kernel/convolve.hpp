@@ -174,88 +174,76 @@ void convolve3(Param<T> out, CParam<T> signal, dim_type fLen0, dim_type fLen1,
     SharedMemory<T> shared;
 
     T * shrdMem       = shared.getPointer();
-    dim_type pad0     = fLen0-1;
-    dim_type pad1     = fLen1-1;
-    dim_type pad2     = fLen2-1;
-    dim_type shrdLen0 = blockDim.x + 2*pad0;
-    dim_type skStride = shrdLen0 * (blockDim.y + 2*pad1);
+    dim_type radius0  = fLen0-1;
+    dim_type radius1  = fLen1-1;
+    dim_type radius2  = fLen2-1;
+    dim_type padding0 = 2*radius0;
+    dim_type padding1 = 2*radius1;
+    dim_type padding2 = 2*radius2;
+    dim_type shrdLen0 = blockDim.x + padding0;
+    dim_type skStride = shrdLen0 * (blockDim.y + padding1);
     dim_type fStride  = fLen0 * fLen1;
     unsigned batchId  = blockIdx.x/nonBatchBlkSize;
+
     T *dst            = (T *)out.ptr          + oStep + (batchId*out.strides[3]);
     const T *src      = (const T *)signal.ptr + sStep + (batchId*signal.strides[3]);
     const T *impulse  = (const T *)cFilter;
 
-    dim_type lx = threadIdx.x;
-    dim_type ly = threadIdx.y;
-    dim_type lz = threadIdx.z;
-    dim_type gx = blockDim.x * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
-    dim_type gy = blockDim.y * blockIdx.y + ly;
-    dim_type gz = blockDim.z * blockIdx.z + lz;
-    dim_type i = lx + pad0;
-    dim_type j = ly + pad1;
-    dim_type k = lz + pad2;
+    dim_type lx  = threadIdx.x;
+    dim_type ly  = threadIdx.y;
+    dim_type lz  = threadIdx.z;
+    dim_type gx  = blockDim.x * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
+    dim_type gy  = blockDim.y * blockIdx.y + ly;
+    dim_type gz  = blockDim.z * blockIdx.z + lz;
+    dim_type lx2 = lx  + blockDim.x;
+    dim_type ly2 = ly  + blockDim.y;
+    dim_type lz2 = lz  + blockDim.z;
+    dim_type gx2 = gx + blockDim.x;
+    dim_type gy2 = gy + blockDim.y;
+    dim_type gz2 = gz + blockDim.z;
 
-    shrdMem[index(i, j, k, shrdLen0, skStride)] = readSrc(src, gx, gy, gz, signal.dims, signal.strides);
+    shrdMem[index(lx, ly, lz, shrdLen0, skStride)] =
+        readSrc(src, gx-radius0, gy-radius1, gz-radius2, signal.dims, signal.strides);
 
-    { //in the hope of limiting scope of l*2 and g*2 variables
-        dim_type gx2 = gx + blockDim.x;
-        dim_type lx2 = i  + blockDim.x;
-        dim_type gy2 = gy + blockDim.y;
-        dim_type ly2 = j  + blockDim.y;
-        dim_type gz2 = gz + blockDim.z;
-        dim_type lz2 = k  + blockDim.z;
-        if (lx < pad0) {
-            shrdMem[index( lx, j, k, shrdLen0, skStride)] = readSrc(src, gx-pad0, gy, gz, signal.dims, signal.strides);
-            shrdMem[index(lx2, j, k, shrdLen0, skStride)] = readSrc(src, gx2    , gy, gz, signal.dims, signal.strides);
-        }
-        if (ly < pad1) {
-            shrdMem[index(i,  ly, k, shrdLen0, skStride)] = readSrc(src, gx, gy-pad1, gz, signal.dims, signal.strides);
-            shrdMem[index(i, ly2, k, shrdLen0, skStride)] = readSrc(src, gx, gy2    , gz, signal.dims, signal.strides);
-        }
-        if (lz < pad2) {
-            shrdMem[index(i, j,  lz, shrdLen0, skStride)] = readSrc(src, gx, gy, gz-pad2, signal.dims, signal.strides);
-            shrdMem[index(i, j, lz2, shrdLen0, skStride)] = readSrc(src, gx, gy, gz2    , signal.dims, signal.strides);
-        }
-
-        if (lx < pad0 && ly < pad1) {
-            shrdMem[index( lx,  ly, k, shrdLen0, skStride)] = readSrc(src, gx-pad0, gy-pad1, gz, signal.dims, signal.strides);
-            shrdMem[index(lx2,  ly, k, shrdLen0, skStride)] = readSrc(src,     gx2, gy-pad1, gz, signal.dims, signal.strides);
-            shrdMem[index( lx, ly2, k, shrdLen0, skStride)] = readSrc(src, gx-pad0,     gy2, gz, signal.dims, signal.strides);
-            shrdMem[index(lx2, ly2, k, shrdLen0, skStride)] = readSrc(src,     gx2,     gy2, gz, signal.dims, signal.strides);
-        }
-
-        if (ly < pad1 && lz < pad2) {
-            shrdMem[index(i,  ly,  lz, shrdLen0, skStride)] = readSrc(src, gx, gy-pad1, gz-pad2, signal.dims, signal.strides);
-            shrdMem[index(i, ly2,  lz, shrdLen0, skStride)] = readSrc(src, gx,     gy2, gz-pad2, signal.dims, signal.strides);
-            shrdMem[index(i,  ly, lz2, shrdLen0, skStride)] = readSrc(src, gx, gy-pad1,     gz2, signal.dims, signal.strides);
-            shrdMem[index(i, ly2, lz2, shrdLen0, skStride)] = readSrc(src, gx,     gy2,     gz2, signal.dims, signal.strides);
-        }
-
-        if (lz < pad2 && lx < pad0) {
-            shrdMem[index( lx, j,  lz, shrdLen0, skStride)] = readSrc(src, gx-pad0, gy, gz-pad2, signal.dims, signal.strides);
-            shrdMem[index(lx2, j,  lz, shrdLen0, skStride)] = readSrc(src,     gx2, gy, gz-pad2, signal.dims, signal.strides);
-            shrdMem[index( lx, j, lz2, shrdLen0, skStride)] = readSrc(src, gx-pad0, gy,     gz2, signal.dims, signal.strides);
-            shrdMem[index(lx2, j, lz2, shrdLen0, skStride)] = readSrc(src,     gx2, gy,     gz2, signal.dims, signal.strides);
-        }
-
-        if (lx < pad0 && ly < pad1 && lz < pad2) {
-            shrdMem[index( lx,  ly, lz, shrdLen0, skStride)] = readSrc(src, gx-pad0, gy-pad1, gz-pad2, signal.dims, signal.strides);
-            shrdMem[index(lx2,  ly, lz, shrdLen0, skStride)] = readSrc(src, gx2    , gy-pad1, gz-pad2, signal.dims, signal.strides);
-            shrdMem[index( lx, ly2, lz, shrdLen0, skStride)] = readSrc(src, gx-pad0, gy2    , gz-pad2, signal.dims, signal.strides);
-            shrdMem[index(lx2, ly2, lz, shrdLen0, skStride)] = readSrc(src, gx2    , gy2    , gz-pad2, signal.dims, signal.strides);
-
-            shrdMem[index( lx,  ly, lz2, shrdLen0, skStride)] = readSrc(src, gx-pad0, gy-pad1, gz2, signal.dims, signal.strides);
-            shrdMem[index(lx2,  ly, lz2, shrdLen0, skStride)] = readSrc(src, gx2    , gy-pad1, gz2, signal.dims, signal.strides);
-            shrdMem[index( lx, ly2, lz2, shrdLen0, skStride)] = readSrc(src, gx-pad0, gy2    , gz2, signal.dims, signal.strides);
-            shrdMem[index(lx2, ly2, lz2, shrdLen0, skStride)] = readSrc(src, gx2    , gy2    , gz2, signal.dims, signal.strides);
-        }
+    if (lx < padding0) {
+        shrdMem[index(lx2, ly, lz, shrdLen0, skStride)] =
+            readSrc(src, gx2-radius0, gy-radius1, gz-radius2, signal.dims, signal.strides);
     }
+    if (ly < padding1) {
+        shrdMem[index(lx, ly2, lz, shrdLen0, skStride)] =
+            readSrc(src, gx-radius0, gy2-radius1, gz-radius2, signal.dims, signal.strides);
+    }
+    if (lz < padding2) {
+        shrdMem[index(lx, ly, lz2, shrdLen0, skStride)] =
+            readSrc(src, gx-radius0, gy-radius1, gz2-radius2, signal.dims, signal.strides);
+    }
+
+    if (lx < padding0 && ly < padding1) {
+        shrdMem[index(lx2, ly2, lz, shrdLen0, skStride)] =
+            readSrc(src, gx2-radius0, gy2-radius1, gz-radius2, signal.dims, signal.strides);
+    }
+
+    if (ly < padding1 && lz < padding2) {
+        shrdMem[index(lx, ly2, lz2, shrdLen0, skStride)] =
+            readSrc(src, gx-radius0, gy2-radius1, gz2-radius2, signal.dims, signal.strides);
+    }
+
+    if (lz < padding2 && lx < padding0) {
+        shrdMem[index(lx2, ly, lz2, shrdLen0, skStride)] =
+            readSrc(src, gx2-radius0, gy-radius1, gz2-radius2, signal.dims, signal.strides);
+    }
+
+    if (lx < padding0 && ly < padding1 && lz < padding2) {
+        shrdMem[index(lx2, ly2, lz2, shrdLen0, skStride)] =
+            readSrc(src, gx2-radius0, gy2-radius1, gz2-radius2, signal.dims, signal.strides);
+    }
+
     __syncthreads();
 
     if (gx<out.dims[0] && gy<out.dims[1] && gz<out.dims[2]) {
-        dim_type ci = i + (expand ? 0 : fLen0/2);
-        dim_type cj = j + (expand ? 0 : fLen1/2);
-        dim_type ck = k + (expand ? 0 : fLen2/2);
+        dim_type ci = lx + radius0 + (expand ? 0 : fLen0/2);
+        dim_type cj = ly + radius1 + (expand ? 0 : fLen1/2);
+        dim_type ck = lz + radius2 + (expand ? 0 : fLen2/2);
 
         accType accum = scalar<accType>(0);
         for(dim_type fk=0; fk<fLen2; ++fk) {
@@ -331,7 +319,7 @@ void convolve_nd(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatch
     for(int i=1; i<baseDim; ++i) filterLen *= filter.dims[i];
 
     for (dim_type b=0; b<bCount; ++b) {
-        // FIX ME: if the filter array is strided, direct copy of symbols
+        // FIXME: if the filter array is strided, direct copy of symbols
         // might cause issues
         CUDA_CHECK(cudaMemcpyToSymbol(kernel::cFilter, filter.ptr+b*steps[2], filterLen*sizeof(T), 0, cudaMemcpyDeviceToDevice));
 
@@ -362,12 +350,13 @@ void convolve2_separable(Param<T> out, CParam<T> signal, dim_type fLen, dim_type
     SharedMemory<T> shared;
 
     T * shrdMem       = shared.getPointer();
-    dim_type start    = (expand ? 0 : fLen/2);
-    dim_type pad      = fLen-1;
+    dim_type radius   = fLen-1;
+    dim_type padding  = 2*radius;
     dim_type shrdLen  = blockDim.x;
     if (conv_dim==0) {
-        shrdLen += 2*pad;
+        shrdLen += padding;
     }
+
     unsigned batchId  = blockIdx.x/nonBatchBlkSize;
     T *dst            = (T *)out.ptr          + (batchId*out.strides[2]);
     const T *src      = (const T *)signal.ptr + (batchId*signal.strides[2]);
@@ -375,30 +364,32 @@ void convolve2_separable(Param<T> out, CParam<T> signal, dim_type fLen, dim_type
 
     dim_type lx = threadIdx.x;
     dim_type ly = threadIdx.y;
-    dim_type gx = blockDim.x * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
-    dim_type gy = blockDim.y * blockIdx.y + ly;
-    dim_type i  = (conv_dim==0 ? lx : ly) + pad;
+    dim_type ox = blockDim.x * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
+    dim_type oy = blockDim.y * blockIdx.y + ly;
+    dim_type gx = ox;
+    dim_type gy = oy;
 
     if (conv_dim==0) {
-        shrdMem[ly*shrdLen+i] = readSrc(src, gx+start, gy+start, signal.dims, signal.strides);
-        if (lx < pad) {
+        gx += (expand ? 0 : fLen/2);
+        shrdMem[ly*shrdLen+lx] = readSrc(src, gx-radius, gy, signal.dims, signal.strides);
+        if (lx < padding) {
             dim_type gx2 = gx + blockDim.x;
-            dim_type lx2 = i  + blockDim.x;
-            shrdMem[ly*shrdLen+ lx] = readSrc(src, gx-pad+start, gy+start, signal.dims, signal.strides);
-            shrdMem[ly*shrdLen+lx2] = readSrc(src, gx2+start   , gy+start, signal.dims, signal.strides);
+            dim_type lx2 = lx + blockDim.x;
+            shrdMem[ly*shrdLen+lx2] = readSrc(src, gx2-radius, gy, signal.dims, signal.strides);
         }
     } else if (conv_dim==1) {
-        shrdMem[i*shrdLen+lx] = readSrc(src, gx+start, gy+start, signal.dims, signal.strides);
-        if (ly < pad) {
+        gy += (expand ? 0 : fLen/2);
+        shrdMem[ly*shrdLen+lx] = readSrc(src, gx, gy-radius, signal.dims, signal.strides);
+        if (ly < padding) {
             dim_type gy2 = gy + blockDim.y;
-            dim_type ly2 = i  + blockDim.y;
-            shrdMem[ ly*shrdLen+lx] = readSrc(src, gx+start, gy-pad+start, signal.dims, signal.strides);
-            shrdMem[ly2*shrdLen+lx] = readSrc(src, gx+start,    gy2+start, signal.dims, signal.strides);
+            dim_type ly2 = ly + blockDim.y;
+            shrdMem[ly2*shrdLen+lx] = readSrc(src, gx, gy2-radius, signal.dims, signal.strides);
         }
     }
     __syncthreads();
 
-    if (gx>=0 && gx<out.dims[0] && gy>=0 && gy<out.dims[1]) {
+    if (ox<out.dims[0] && oy<out.dims[1]) {
+        dim_type i  = (conv_dim==0 ? lx : ly) + radius;
         accType accum = scalar<accType>(0);
         for(dim_type f=0; f<fLen; ++f) {
             T f_val = impulse[f];
@@ -406,7 +397,7 @@ void convolve2_separable(Param<T> out, CParam<T> signal, dim_type fLen, dim_type
             T s_val = shrdMem[s_idx];
             accum   = accum + s_val*f_val;
         }
-        dst[gy*out.strides[1]+gx] = (T)accum;
+        dst[oy*out.strides[1]+ox] = (T)accum;
     }
 }
 
@@ -434,6 +425,8 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<T> filter)
 
    (convolve2_separable<T, accType, conv_dim, expand>)
        <<<blocks, threads, sharedSize>>>(out, signal, fLen, blk_x);
+
+   POST_LAUNCH_CHECK();
 }
 
 }

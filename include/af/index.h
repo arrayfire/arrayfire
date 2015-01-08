@@ -40,6 +40,9 @@ extern "C" {
     // This takes the form `out = in(seq_a, seq_b)`
     AFAPI af_err af_index(af_array *out, const af_array in, unsigned ndims, const af_seq* const index);
 
+    // create a new af_array by indexing existing af_array using another af_array
+    AFAPI af_err af_array_index(af_array *out, const af_array in, const af_array indices, const unsigned dim);
+
     // copy an array into exiting array of larger dimensions
     // error out in case of insufficient dimension lengths
     AFAPI af_err af_assign(af_array out, unsigned ndims, const af_seq* const index, const af_array in);

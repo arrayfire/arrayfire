@@ -67,7 +67,7 @@ static string getKernelString(string funcName, Node *node, bool is_linear)
     }
 
     kerStream << "define void " << funcName << " (" << std::endl;
-    node->genParams(kerStream, annStream);
+    node->genParams(kerStream, annStream, is_linear);
     kerStream << node->getTypeStr() <<"* %out,\n"
               << "i32 %ostr0, i32 %ostr1, i32 %ostr2, i32 %ostr3,\n"
               << "i32 %odim0, i32 %odim1, i32 %odim2, i32 %odim3,\n"
@@ -205,7 +205,8 @@ static char *irToPtx(string IR, size_t *ptx_size)
     NVVM_CHECK(nvvmAddModuleToProgram(prog, IR.c_str(), IR.size(), "generated kernel"),
                "Failed to add module");
 
-#ifdef NDEBUG
+//#ifdef NDEBUG
+#if 0
     NVVM_CHECK(nvvmCompileProgram(prog, 0, NULL), "Failed to compile program");
 #else
     nvvmResult comp_res = nvvmCompileProgram(prog, 0, NULL);
@@ -359,10 +360,10 @@ static CUfunction getKernel(Node *node, bool is_linear)
 template<typename T>
 void evalNodes(Param<T> &out, Node *node)
 {
-    bool is_linear = node->isLinear();
+    bool is_linear = node->isLinear(out.dims);
     CUfunction ker = getKernel(node, is_linear);
     std::vector<void *> args;
-    node->setArgs(args);
+    node->setArgs(args, is_linear);
 
     void *ptr = (void *)out.ptr;
     int strides[] = {(int)out.strides[0],

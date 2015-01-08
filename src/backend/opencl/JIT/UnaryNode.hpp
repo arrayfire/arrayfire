@@ -35,9 +35,9 @@ namespace JIT
         {
         }
 
-        bool isLinear()
+        bool isLinear(dim_type dims[4])
         {
-            return m_child->isLinear();
+            return m_child->isLinear(dims);
         }
 
         void genParams(std::stringstream &kerStream)
@@ -68,11 +68,11 @@ namespace JIT
             m_child->genKerName(kerStream, genInputs);
         }
 
-        void genFuncs(std::stringstream &kerStream, bool is_linear)
+        void genFuncs(std::stringstream &kerStream)
         {
             if (m_gen_func) return;
 
-            if (!(m_child->isGenFunc())) m_child->genFuncs(kerStream, is_linear);
+            if (!(m_child->isGenFunc())) m_child->genFuncs(kerStream);
 
             kerStream << m_type_str << " val" << m_id << " = "
                       << m_op_str << "(val" << m_child->getId() << ");"

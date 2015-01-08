@@ -28,15 +28,19 @@ namespace cpu
         dim_type loco = (yy * ostrides[1] + xx);
 
         // Copy to output
-        for(int i_idx = 0; i_idx < nimages; i_idx++) {
-            T val = scalar<T>(0.0f);
-            dim_type i_off = i_idx * istrides[2];
-            dim_type o_off = o_offset + i_idx * ostrides[2];
+        for(int batch = 0; batch < idims[3]; batch++) {
+            dim_type i__ = batch * istrides[3];
+            dim_type o__ = batch * ostrides[3];
+            for(int i_idx = 0; i_idx < nimages; i_idx++) {
+                T val = scalar<T>(0.0f);
+                dim_type i_off = i_idx * istrides[2] + i__;
+                dim_type o_off = o_offset + i_idx * ostrides[2] + o__;
 
-            if (xi < idims[0] && yi < idims[1] && xi >= 0 && yi >= 0)
-                val = in[i_off + loci];
+                if (xi < idims[0] && yi < idims[1] && xi >= 0 && yi >= 0)
+                    val = in[i_off + loci];
 
-            out[o_off + loco] = val;
+                out[o_off + loco] = val;
+            }
         }
     }
 
@@ -80,18 +84,22 @@ namespace cpu
 
         float wt = wt00 + wt10 + wt01 + wt11;
 
-        for(int i_idx = 0; i_idx < nimages; i_idx++) {
-            const dim_type i_off = i_idx * istrides[2] + loci;
-            const dim_type o_off = o_offset + i_idx * ostrides[2] + loco;
-            // Compute Weighted Values
-            T zero = scalar<T>(0.0f);
-            T v00 =                    wt00 * in[i_off];
-            T v10 = (condY) ?          wt10 * in[i_off + istrides[1]]     : zero;
-            T v01 = (condX) ?          wt01 * in[i_off + 1]               : zero;
-            T v11 = (condX && condY) ? wt11 * in[i_off + istrides[1] + 1] : zero;
-            T vo = v00 + v10 + v01 + v11;
+        for(int batch = 0; batch < idims[3]; batch++) {
+            dim_type i__ = batch * istrides[3];
+            dim_type o__ = batch * ostrides[3];
+            for(int i_idx = 0; i_idx < nimages; i_idx++) {
+                const dim_type i_off = i_idx * istrides[2] + loci + i__;
+                const dim_type o_off = o_offset + i_idx * ostrides[2] + loco + o__;
+                // Compute Weighted Values
+                T zero = scalar<T>(0.0f);
+                T v00 =                    wt00 * in[i_off];
+                T v10 = (condY) ?          wt10 * in[i_off + istrides[1]]     : zero;
+                T v01 = (condX) ?          wt01 * in[i_off + 1]               : zero;
+                T v11 = (condX && condY) ? wt11 * in[i_off + istrides[1] + 1] : zero;
+                T vo = v00 + v10 + v01 + v11;
 
-            out[o_off] = (vo / wt);
+                out[o_off] = (vo / wt);
+            }
         }
     }
 }

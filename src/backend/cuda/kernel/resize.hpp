@@ -27,10 +27,11 @@ namespace cuda
         __host__ __device__
         void resize_n(Param<T> out, CParam<T> in,
                       const dim_type o_off, const dim_type i_off,
-                      const dim_type blockIdx_x, const float xf, const float yf)
+                      const dim_type blockIdx_x, const dim_type blockIdx_y,
+                      const float xf, const float yf)
         {
             const dim_type ox = threadIdx.x + blockIdx_x * blockDim.x;
-            const dim_type oy = threadIdx.y + blockIdx.y * blockDim.y;
+            const dim_type oy = threadIdx.y + blockIdx_y * blockDim.y;
 
             dim_type ix = round(ox * xf);
             dim_type iy = round(oy * yf);
@@ -49,10 +50,11 @@ namespace cuda
         __host__ __device__
         void resize_b(Param<T> out, CParam<T> in,
                       const dim_type o_off, const dim_type i_off,
-                      const dim_type blockIdx_x, const float xf_, const float yf_)
+                      const dim_type blockIdx_x, const dim_type blockIdx_y,
+                      const float xf_, const float yf_)
         {
             const dim_type ox = threadIdx.x + blockIdx_x * blockDim.x;
-            const dim_type oy = threadIdx.y + blockIdx.y * blockDim.y;
+            const dim_type oy = threadIdx.y + blockIdx_y * blockDim.y;
 
             float xf = ox * xf_;
             float yf = oy * yf_;
@@ -91,19 +93,21 @@ namespace cuda
         template<typename T, af_interp_type method>
         __global__
         void resize_kernel(Param<T> out, CParam<T> in,
-                           const dim_type b0, const float xf, const float yf)
+                           const dim_type b0, const dim_type b1, const float xf, const float yf)
         {
-            const dim_type id = blockIdx.x / b0;
+            const dim_type bIdx = blockIdx.x / b0;
+            const dim_type bIdy = blockIdx.y / b1;
             // channel adjustment
-            const dim_type i_off = id * in.strides[2];
-            const dim_type o_off = id * out.strides[2];
-            const dim_type blockIdx_x =  blockIdx.x - id * b0;
+            const dim_type i_off = bIdx * in.strides[2]  + bIdy * in.strides[3];
+            const dim_type o_off = bIdx * out.strides[2] + bIdy * out.strides[3];
+            const dim_type blockIdx_x =  blockIdx.x - bIdx * b0;
+            const dim_type blockIdx_y =  blockIdx.y - bIdy * b1;
 
             // core
             if(method == AF_INTERP_NEAREST) {
-                resize_n(out, in, o_off, i_off, blockIdx_x, xf, yf);
+                resize_n(out, in, o_off, i_off, blockIdx_x, blockIdx_y, xf, yf);
             } else if(method == AF_INTERP_BILINEAR) {
-                resize_b(out, in, o_off, i_off, blockIdx_x, xf, yf);
+                resize_b(out, in, o_off, i_off, blockIdx_x, blockIdx_y, xf, yf);
             }
         }
 
@@ -116,14 +120,15 @@ namespace cuda
             dim3 threads(TX, TY, 1);
             dim3 blocks(divup(out.dims[0], threads.x), divup(out.dims[1], threads.y));
             dim_type blocksPerMatX = blocks.x;
+            dim_type blocksPerMatY = blocks.y;
 
             if (in.dims[2] > 1) { blocks.x *= in.dims[2]; }
+            if (in.dims[3] > 1) { blocks.y *= in.dims[3]; }
             float xf = (float)in.dims[0] / (float)out.dims[0];
             float yf = (float)in.dims[1] / (float)out.dims[1];
 
-            resize_kernel<T, method><<<blocks, threads>>>(out, in, blocksPerMatX, xf, yf);
+            resize_kernel<T, method><<<blocks, threads>>>(out, in, blocksPerMatX, blocksPerMatY, xf, yf);
             POST_LAUNCH_CHECK();
         }
-
     }
 }
