@@ -23,7 +23,7 @@ Array<in_t>* arrayIndex(const Array<in_t> &input, const Array<idx_t> &indices, c
 
     dim4 oDims(1);
     for (dim_type d=0; d<4; ++d)
-        oDims[d] = (d==dim ? indices.elements() : iDims[d]);
+        oDims[d] = (d==int(dim) ? indices.elements() : iDims[d]);
 
     Array<in_t> *out = createEmptyArray<in_t>(oDims);
 
