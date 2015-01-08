@@ -79,7 +79,7 @@ seq::seq(seq other, bool is_gfor): m_gfor(is_gfor)
 seq::operator array() const
 {
     dim_type diff = s.end - s.begin;
-    dim_type len = (int)((diff + 1 * signbit(diff)) / s.step);
+    dim_type len = (int)((diff + (signbit(diff) == 0 ? 1 : -1)) / s.step);
     array res = s.begin + s.step * iota(len);
     return res;
 }
