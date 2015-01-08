@@ -90,7 +90,6 @@ Array<T> * convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> 
     }
 
     const dim4 sDims = signal.dims();
-    dim4 tDims(sDims[0]+cfDims[0]-1, sDims[1]+rfDims[0]-1, sDims[2], sDims[3]);
     dim4 oDims(1);
     if (expand) {
         oDims[0] = sDims[0]+cfDims[0]-1;
@@ -100,10 +99,10 @@ Array<T> * convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> 
         oDims = sDims;
     }
 
-    Array<T> *temp= createEmptyArray<T>(tDims);
+    Array<T> *temp= createEmptyArray<T>(oDims);
     Array<T> *out = createEmptyArray<T>(oDims);
 
-    kernel::convolve2<T, accT, 0, true>(*temp, signal, c_filter);
+    kernel::convolve2<T, accT, 0, expand>(*temp, signal, c_filter);
     kernel::convolve2<T, accT, 1, expand>(*out, *temp, r_filter);
 
     destroyArray<T>(*temp);
