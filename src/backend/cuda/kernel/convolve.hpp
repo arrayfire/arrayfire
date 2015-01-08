@@ -350,12 +350,13 @@ void convolve2_separable(Param<T> out, CParam<T> signal, dim_type fLen, dim_type
     SharedMemory<T> shared;
 
     T * shrdMem       = shared.getPointer();
-    dim_type start    = (expand ? 0 : fLen/2);
-    dim_type pad      = fLen-1;
+    dim_type radius   = fLen-1;
+    dim_type padding  = 2*radius;
     dim_type shrdLen  = blockDim.x;
     if (conv_dim==0) {
-        shrdLen += 2*pad;
+        shrdLen += padding;
     }
+
     unsigned batchId  = blockIdx.x/nonBatchBlkSize;
     T *dst            = (T *)out.ptr          + (batchId*out.strides[2]);
     const T *src      = (const T *)signal.ptr + (batchId*signal.strides[2]);
@@ -363,30 +364,32 @@ void convolve2_separable(Param<T> out, CParam<T> signal, dim_type fLen, dim_type
 
     dim_type lx = threadIdx.x;
     dim_type ly = threadIdx.y;
-    dim_type gx = blockDim.x * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
-    dim_type gy = blockDim.y * blockIdx.y + ly;
-    dim_type i  = (conv_dim==0 ? lx : ly) + pad;
+    dim_type ox = blockDim.x * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
+    dim_type oy = blockDim.y * blockIdx.y + ly;
+    dim_type gx = ox;
+    dim_type gy = oy;
 
     if (conv_dim==0) {
-        shrdMem[ly*shrdLen+i] = readSrc(src, gx+start, gy+start, signal.dims, signal.strides);
-        if (lx < pad) {
+        gx += (expand ? 0 : fLen/2);
+        shrdMem[ly*shrdLen+lx] = readSrc(src, gx-radius, gy, signal.dims, signal.strides);
+        if (lx < padding) {
             dim_type gx2 = gx + blockDim.x;
-            dim_type lx2 = i  + blockDim.x;
-            shrdMem[ly*shrdLen+ lx] = readSrc(src, gx-pad+start, gy+start, signal.dims, signal.strides);
-            shrdMem[ly*shrdLen+lx2] = readSrc(src, gx2+start   , gy+start, signal.dims, signal.strides);
+            dim_type lx2 = lx + blockDim.x;
+            shrdMem[ly*shrdLen+lx2] = readSrc(src, gx2-radius, gy, signal.dims, signal.strides);
         }
     } else if (conv_dim==1) {
-        shrdMem[i*shrdLen+lx] = readSrc(src, gx+start, gy+start, signal.dims, signal.strides);
-        if (ly < pad) {
+        gy += (expand ? 0 : fLen/2);
+        shrdMem[ly*shrdLen+lx] = readSrc(src, gx, gy-radius, signal.dims, signal.strides);
+        if (ly < padding) {
             dim_type gy2 = gy + blockDim.y;
-            dim_type ly2 = i  + blockDim.y;
-            shrdMem[ ly*shrdLen+lx] = readSrc(src, gx+start, gy-pad+start, signal.dims, signal.strides);
-            shrdMem[ly2*shrdLen+lx] = readSrc(src, gx+start,    gy2+start, signal.dims, signal.strides);
+            dim_type ly2 = ly + blockDim.y;
+            shrdMem[ly2*shrdLen+lx] = readSrc(src, gx, gy2-radius, signal.dims, signal.strides);
         }
     }
     __syncthreads();
 
-    if (gx>=0 && gx<out.dims[0] && gy>=0 && gy<out.dims[1]) {
+    if (ox<out.dims[0] && oy<out.dims[1]) {
+        dim_type i  = (conv_dim==0 ? lx : ly) + radius;
         accType accum = scalar<accType>(0);
         for(dim_type f=0; f<fLen; ++f) {
             T f_val = impulse[f];
@@ -394,7 +397,7 @@ void convolve2_separable(Param<T> out, CParam<T> signal, dim_type fLen, dim_type
             T s_val = shrdMem[s_idx];
             accum   = accum + s_val*f_val;
         }
-        dst[gy*out.strides[1]+gx] = (T)accum;
+        dst[oy*out.strides[1]+ox] = (T)accum;
     }
 }
 
@@ -422,6 +425,8 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<T> filter)
 
    (convolve2_separable<T, accType, conv_dim, expand>)
        <<<blocks, threads, sharedSize>>>(out, signal, fLen, blk_x);
+
+   POST_LAUNCH_CHECK();
 }
 
 }

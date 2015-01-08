@@ -231,42 +231,45 @@ void convolve(global T *out, KParam oInfo, global T const *signal,
               KParam sInfo, local T *localMem, constant T const *impulse,
               dim_type fLen, dim_type nonBatchBlkSize)
 {
-    dim_type start    = (EXPAND ? 0 : fLen/2);
-    dim_type pad      = fLen-1;
+    dim_type radius   = fLen-1;
+    dim_type padding  = 2*radius;
     dim_type shrdLen  = get_local_size(0);
     if (CONV_DIM==0) {
-        shrdLen += 2*pad;
+        shrdLen += padding;
     }
+
     unsigned batchId  = get_group_id(0)/nonBatchBlkSize;
     global T *dst = out + (batchId*oInfo.strides[2]);
     global const T *src = signal + (batchId*sInfo.strides[2]) + sInfo.offset;
 
     dim_type lx = get_local_id(0);
     dim_type ly = get_local_id(1);
-    dim_type gx = get_local_size(0) * (get_group_id(0)-batchId*nonBatchBlkSize) + lx;
-    dim_type gy = get_local_size(1) * get_group_id(1) + ly;
-    dim_type i  = (CONV_DIM==0 ? lx : ly) + pad;
+    dim_type ox = get_local_size(0) * (get_group_id(0)-batchId*nonBatchBlkSize) + lx;
+    dim_type oy = get_local_size(1) * get_group_id(1) + ly;
+    dim_type gx = ox;
+    dim_type gy = oy;
 
     if (CONV_DIM==0) {
-        localMem[ly*shrdLen+i] = readSrc2(src, gx+start, gy+start, sInfo.dims, sInfo.strides);
-        if (lx < pad) {
+        gx += (EXPAND ? 0 : fLen/2);
+        localMem[ly*shrdLen+lx] = readSrc2(src, gx-radius, gy, sInfo.dims, sInfo.strides);
+        if (lx < padding) {
             dim_type gx2 = gx + get_local_size(0);
-            dim_type lx2 = i  + get_local_size(0);
-            localMem[ly*shrdLen+ lx] = readSrc2(src, gx-pad+start, gy+start, sInfo.dims, sInfo.strides);
-            localMem[ly*shrdLen+lx2] = readSrc2(src, gx2+start   , gy+start, sInfo.dims, sInfo.strides);
+            dim_type lx2 = lx + get_local_size(0);
+            localMem[ly*shrdLen+lx2] = readSrc2(src, gx2-radius, gy, sInfo.dims, sInfo.strides);
         }
     } else if (CONV_DIM==1) {
-        localMem[i*shrdLen+lx] = readSrc2(src, gx+start, gy+start, sInfo.dims, sInfo.strides);
-        if (ly < pad) {
+        gy += (EXPAND ? 0 : fLen/2);
+        localMem[ly*shrdLen+lx] = readSrc2(src, gx, gy-radius, sInfo.dims, sInfo.strides);
+        if (ly < padding) {
             dim_type gy2 = gy + get_local_size(1);
-            dim_type ly2 = i  + get_local_size(1);
-            localMem[ ly*shrdLen+lx] = readSrc2(src, gx+start, gy-pad+start, sInfo.dims, sInfo.strides);
-            localMem[ly2*shrdLen+lx] = readSrc2(src, gx+start,    gy2+start, sInfo.dims, sInfo.strides);
+            dim_type ly2 = ly + get_local_size(1);
+            localMem[ly2*shrdLen+lx] = readSrc2(src, gx, gy2-radius, sInfo.dims, sInfo.strides);
         }
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    if (gx>=0 && gx<oInfo.dims[0] && gy>=0 && gy<oInfo.dims[1]) {
+    if (ox<oInfo.dims[0] && oy<oInfo.dims[1]) {
+        dim_type i  = (CONV_DIM==0 ? lx : ly) + radius;
         accType accum = (accType)(0);
         for(dim_type f=0; f<fLen; ++f) {
             T f_val = impulse[f];
@@ -274,7 +277,7 @@ void convolve(global T *out, KParam oInfo, global T const *signal,
             T s_val = localMem[s_idx];
             accum   = accum + ((accType)s_val*(accType)f_val);
         }
-        dst[gy*oInfo.strides[1]+gx] = (T)accum;
+        dst[oy*oInfo.strides[1]+ox] = (T)accum;
     }
 }
 #endif
