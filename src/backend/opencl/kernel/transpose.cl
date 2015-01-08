@@ -19,7 +19,7 @@ T doOp(T in)
 __kernel
 void transpose(__global T *oData, const KParam out,
                const __global T *iData, const KParam in,
-               const dim_type nonBatchBlkSize)
+               const dim_type blocksPerMatX, const dim_type blocksPerMatY)
 {
     __local T shrdMem[TILE_DIM*(TILE_DIM+1)];
 
@@ -38,10 +38,14 @@ void transpose(__global T *oData, const KParam out,
     const dim_type ly = get_local_id(1);
 
     // batch based block Id
-    const dim_type batchId  = get_group_id(0) / nonBatchBlkSize;
-    const dim_type blkIdx_x = (get_group_id(0) - batchId * nonBatchBlkSize);
-    const dim_type x0 = TILE_DIM * blkIdx_x;
-    const dim_type y0 = TILE_DIM * get_group_id(1);
+    const dim_type batchId_x  = get_group_id(0) / blocksPerMatX;
+    const dim_type blockIdx_x = (get_group_id(0) - batchId_x * blocksPerMatX);
+
+    const dim_type batchId_y  = get_group_id(1) / blocksPerMatY;
+    const dim_type blockIdx_y = (get_group_id(1) - batchId_y * blocksPerMatY);
+
+    const dim_type x0 = TILE_DIM * blockIdx_x;
+    const dim_type y0 = TILE_DIM * blockIdx_y;
 
     // calculate global indices
     dim_type gx = lx + x0;
@@ -49,8 +53,8 @@ void transpose(__global T *oData, const KParam out,
 
     // offset in and out based on batch id
     // also add the subBuffer offsets
-    iData += batchId *  in.strides[2] + in.offset;
-    oData += batchId * out.strides[2] + out.offset;
+    iData += batchId_x *  in.strides[2] + batchId_y *  in.strides[3] +  in.offset;
+    oData += batchId_x * out.strides[2] + batchId_y * out.strides[3] + out.offset;
 
     for (dim_type repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
         dim_type gy_ = gy + repeat;

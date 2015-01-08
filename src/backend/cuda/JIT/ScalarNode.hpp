@@ -36,7 +36,7 @@ namespace JIT
         {
         }
 
-        bool isLinear()
+        bool isLinear(dim_type dims[4])
         {
             return true;
         }
@@ -51,7 +51,8 @@ namespace JIT
         }
 
         void genParams(std::stringstream &kerStream,
-                       std::stringstream &annStream)
+                       std::stringstream &annStream,
+                       bool is_linear)
         {
             if (m_gen_param) return;
             kerStream << m_type_str << " %val" << m_id << ", " << std::endl;
@@ -91,7 +92,7 @@ namespace JIT
             m_set_arg = false;
         }
 
-        void setArgs(std::vector<void *> &args)
+        void setArgs(std::vector<void *> &args, bool is_linear)
         {
             if (m_set_arg) return;
             args.push_back((void *)&m_val);

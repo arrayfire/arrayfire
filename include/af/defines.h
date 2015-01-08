@@ -113,6 +113,17 @@ typedef enum {
 	AF_CONNECTIVITY_8 = 8
 } af_connectivity;
 
+typedef enum {
+    AF_SAD = 0,
+    AF_ZSAD, // 1
+    AF_LSAD, // 2
+    AF_SSD,  // 3
+    AF_ZSSD, // 4
+    AF_LSSD, // 5
+    AF_NCC,  // 6
+    AF_ZNCC, // 7
+    AF_SHD   // 8
+} af_match_type;
 
 #ifdef __cplusplus
 #include <limits>
@@ -125,9 +136,11 @@ namespace af
     typedef af_interp_type interpType;
     typedef af_pad_type padType;
     typedef af_connectivity connectivity;
+    typedef af_match_type matchType;
 
     const double NaN = std::numeric_limits<double>::quiet_NaN();
     const double Inf = std::numeric_limits<double>::infinity();
     const double Pi = 3.1415926535897932384626433832795028841971693993751;
 }
+
 #endif

@@ -36,17 +36,17 @@ namespace JIT
         {
         }
 
-        bool isLinear()
+        bool isLinear(dim_type dims[4])
         {
-            return m_lhs->isLinear() && m_rhs->isLinear();
+            return m_lhs->isLinear(dims) && m_rhs->isLinear(dims);
         }
 
         void genParams(std::stringstream &kerStream,
-                       std::stringstream &annStream)
+                       std::stringstream &annStream, bool is_linear)
         {
             if (m_gen_param) return;
-            if (!(m_lhs->isGenParam())) m_lhs->genParams(kerStream, annStream);
-            if (!(m_rhs->isGenParam())) m_rhs->genParams(kerStream, annStream);
+            if (!(m_lhs->isGenParam())) m_lhs->genParams(kerStream, annStream, is_linear);
+            if (!(m_rhs->isGenParam())) m_rhs->genParams(kerStream, annStream, is_linear);
             m_gen_param = true;
         }
 
@@ -119,12 +119,12 @@ namespace JIT
             m_rhs->resetFlags();
         }
 
-        void setArgs(std::vector<void *> &args)
+        void setArgs(std::vector<void *> &args, bool is_linear)
         {
             if (m_set_arg) return;
 
-            m_lhs->setArgs(args);
-            m_rhs->setArgs(args);
+            m_lhs->setArgs(args, is_linear);
+            m_rhs->setArgs(args, is_linear);
 
             m_set_arg = true;
         }

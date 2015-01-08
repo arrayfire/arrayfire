@@ -38,9 +38,13 @@ namespace JIT
               m_linear(is_linear)
         {}
 
-        bool isLinear()
+        bool isLinear(dim_type dims[4])
         {
-            return m_linear;
+            bool same_dims = true;
+            for (int i = 0; same_dims && i < 4; i++) {
+                same_dims &= (dims[i] == m_param.info.dims[i]);
+            }
+            return m_linear && same_dims;
         }
 
         void genKerName(std::stringstream &kerStream, bool genInputs)
@@ -80,9 +84,13 @@ namespace JIT
 
             if (!is_linear) {
                 kerStream << idx_str << " = "
+                          << "(id3 < " << info_str << ".dims[3]) * "
                           << info_str << ".strides[3] * id3 + "
+                          << "(id2 < " << info_str << ".dims[2]) * "
                           << info_str << ".strides[2] * id2 + "
+                          << "(id1 < " << info_str << ".dims[1]) * "
                           << info_str << ".strides[1] * id1 + "
+                          << "(id0 < " << info_str << ".dims[0]) * "
                           << "id0 + " << info_str << ".offset;"
                           << "\n";
             } else {
@@ -92,7 +100,7 @@ namespace JIT
             m_gen_offset = true;
         }
 
-        void genFuncs(std::stringstream &kerStream, bool is_linear)
+        void genFuncs(std::stringstream &kerStream)
         {
             if (m_gen_func) return;
 

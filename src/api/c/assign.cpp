@@ -41,10 +41,15 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
     vector<af_seq> index_(index, index+ndims);
     dim4 const oStrides = af::toStride(index_, outDs);
 
-    dim4 oDims = af::toDims(index_, iDims);
-    dim4 oOffsets = af::toOffset(index_, iDims);
+    dim4 oDims = af::toDims(index_, outDs);
+    dim4 oOffsets = af::toOffset(index_, outDs);
 
     Array<T> *dst = createRefArray<T>(getArray<T>(out), oDims, oOffsets, oStrides);
+
+    for (int i = 0; i < 4; i++) {
+        if (oDims[i] != iDims[i])
+            AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
+    }
 
     bool noCaseExecuted = true;
     if (isComplex) {

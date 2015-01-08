@@ -29,4 +29,17 @@ namespace cuda
         default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }
     }
+
+#define INSTANTIATE(Tk, Tv, dr)                                         \
+    template void                                                       \
+    sort_by_key<Tk, Tv, dr>(Array<Tk> &okey, Array<Tv> &oval,           \
+                            const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim); \
+
+#define INSTANTIATE1(Tk,    dr) \
+    INSTANTIATE(Tk, float,  dr) \
+    INSTANTIATE(Tk, double, dr) \
+    INSTANTIATE(Tk, int,    dr) \
+    INSTANTIATE(Tk, uint,   dr) \
+    INSTANTIATE(Tk, char,   dr) \
+    INSTANTIATE(Tk, uchar,  dr)
 }

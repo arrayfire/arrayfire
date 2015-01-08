@@ -23,33 +23,33 @@ namespace kernel
 static const dim_type THREADS_X = 16;
 static const dim_type THREADS_Y = 16;
 
-__forceinline__ __device__ dim_type lIdx(dim_type x, dim_type y,
-        dim_type stride1, dim_type stride0)
+inline __device__
+dim_type lIdx(dim_type x, dim_type y, dim_type stride1, dim_type stride0)
 {
     return (y*stride1 + x*stride0);
 }
 
-__forceinline__ __device__ dim_type clamp(dim_type f, dim_type a, dim_type b)
+inline __device__
+dim_type clamp(dim_type f, dim_type a, dim_type b)
 {
     return max(a, min(f, b));
 }
 
-__forceinline__ __device__ float gaussian1d(float x, float variance)
+inline __device__
+float gaussian1d(float x, float variance)
 {
-    const float exponent = (x * x) / (-2.f * variance);
-    return exp(exponent);
+    return exp((x * x) / (-2.f * variance));
 }
 
 template<typename inType, typename outType>
-inline __device__ void load2ShrdMem(outType * shrd, const inType * const in,
-                                    dim_type lx, dim_type ly, dim_type shrdStride,
-                                    dim_type dim0, dim_type dim1,
-                                    dim_type gx, dim_type gy,
-                                    dim_type inStride1, dim_type inStride0)
+inline __device__
+void load2ShrdMem(outType * shrd, const inType * const in,
+                  dim_type lx, dim_type ly, dim_type shrdStride,
+                  dim_type dim0, dim_type dim1,
+                  dim_type gx, dim_type gy,
+                  dim_type inStride1, dim_type inStride0)
 {
-    int gx_  = clamp(gx, 0, dim0-1);
-    int gy_  = clamp(gy, 0, dim1-1);
-    shrd[lIdx(lx, ly, shrdStride, 1)] = (outType)in[lIdx(gx_, gy_, inStride1, inStride0)];
+    shrd[ly*shrdStride+lx] = in[lIdx(clamp(gx, 0, dim0-1), clamp(gy, 0, dim1-1), inStride1, inStride0)];
 }
 
 template<typename inType, typename outType>
@@ -65,7 +65,7 @@ void bilateralKernel(Param<outType> out, CParam<inType> in,
     const dim_type radius      = max((int)(sigma_space * 1.5f), 1);
     const dim_type padding     = 2 * radius;
     const dim_type window_size = padding + 1;
-    const dim_type shrdLen     = blockDim.x + padding;
+    const dim_type shrdLen     = THREADS_X + padding;
     const float variance_range = sigma_color * sigma_color;
     const float variance_space = sigma_space * sigma_space;
 
@@ -74,18 +74,11 @@ void bilateralKernel(Param<outType> out, CParam<inType> in,
     const inType* iptr  = (const inType *) in.ptr + (batchId * in.strides[2]);
     outType*       optr = (outType *     )out.ptr + (batchId * out.strides[2]);
 
-    const dim_type lx = threadIdx.x;
-    const dim_type ly = threadIdx.y;
+    dim_type lx = threadIdx.x;
+    dim_type ly = threadIdx.y;
 
-    const dim_type gx = blockDim.x * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
-    const dim_type gy = blockDim.y * blockIdx.y + ly;
-
-    dim_type gx2 = gx + blockDim.x;
-    dim_type gy2 = gy + blockDim.y;
-    dim_type lx2 = lx + blockDim.x;
-    dim_type ly2 = ly + blockDim.y;
-    dim_type i   = lx + radius;
-    dim_type j   = ly + radius;
+    const dim_type gx = THREADS_X * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
+    const dim_type gy = THREADS_Y * blockIdx.y + ly;
 
     // generate gauss2d spatial variance values for block
     if (lx<window_size && ly<window_size) {
@@ -96,45 +89,47 @@ void bilateralKernel(Param<outType> out, CParam<inType> in,
 
     // pull image to local memory
     load2ShrdMem<inType, outType>(localMem, iptr, lx, ly, shrdLen,
-                 in.dims[0], in.dims[1], gx-radius,
-                 gy-radius, in.strides[1], in.strides[0]);
+            in.dims[0], in.dims[1], gx-radius, gy-radius, in.strides[1], in.strides[0]);
+
+    dim_type lx2 = lx + THREADS_X;
+    dim_type ly2 = ly + THREADS_Y;
+    dim_type gx2 = gx + THREADS_X;
+    dim_type gy2 = gy + THREADS_Y;
+
     if (lx<padding) {
         load2ShrdMem<inType, outType>(localMem, iptr, lx2, ly, shrdLen,
-                     in.dims[0], in.dims[1], gx2-radius,
-                     gy-radius, in.strides[1], in.strides[0]);
+                in.dims[0], in.dims[1], gx2-radius, gy-radius, in.strides[1], in.strides[0]);
     }
     if (ly<padding) {
         load2ShrdMem<inType, outType>(localMem, iptr, lx, ly2, shrdLen,
-                     in.dims[0], in.dims[1], gx-radius,
-                     gy2-radius, in.strides[1], in.strides[0]);
+                in.dims[0], in.dims[1], gx-radius, gy2-radius, in.strides[1], in.strides[0]);
     }
     if (lx<padding && ly<padding) {
         load2ShrdMem<inType, outType>(localMem, iptr, lx2, ly2, shrdLen,
-                     in.dims[0], in.dims[1], gx2-radius,
-                     gy2-radius, in.strides[1], in.strides[0]);
+                in.dims[0], in.dims[1], gx2-radius, gy2-radius, in.strides[1], in.strides[0]);
     }
     __syncthreads();
 
     if (gx<in.dims[0] && gy<in.dims[1]) {
-        const outType center_color = localMem[j*shrdLen+i];
+        lx += radius;
+        ly += radius;
+        const outType center_color = localMem[ly*shrdLen+lx];
         outType res  = 0;
         outType norm = 0;
 #pragma unroll
         for(dim_type wj=0; wj<window_size; ++wj) {
-            dim_type joff = (j+wj-radius)*shrdLen;
+            dim_type joff = (ly+wj-radius)*shrdLen + (lx-radius);
             dim_type goff = wj*window_size;
 #pragma unroll
             for(dim_type wi=0; wi<window_size; ++wi) {
-                const outType tmp_color   = localMem[joff+i+wi-radius];
-                const outType gauss_space = gauss2d[goff+wi];
+                const outType tmp_color   = localMem[joff+wi];
                 const outType gauss_range = gaussian1d(center_color - tmp_color, variance_range);
-                const outType weight      = gauss_space * gauss_range;
+                const outType weight      = gauss2d[goff+wi] * gauss_range;
                 norm += weight;
                 res  += tmp_color * weight;
             }
         }
-        dim_type oIdx = gy*out.strides[1] + gx*out.strides[0];
-        optr[oIdx] = res / norm;
+        optr[gy*out.strides[1]+gx] = res / norm;
     }
 }
 

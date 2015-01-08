@@ -9,6 +9,7 @@
 
 #include <af/defines.h>
 #include <af/array.h>
+#include <af/dim4.hpp>
 #include <Array.hpp>
 #include <optypes.hpp>
 #include <err_cpu.hpp>
@@ -69,14 +70,14 @@ LOGIC_CPLX_FN(double, af_or_t, ||)
 #undef LOGIC_CPLX_FN
 
     template<typename T, af_op_t op>
-    Array<uchar>* logicOp(const Array<T> &lhs, const Array<T> &rhs)
+    Array<uchar>* logicOp(const Array<T> &lhs, const Array<T> &rhs, const af::dim4 &odims)
     {
         TNJ::Node_ptr lhs_node = lhs.getNode();
         TNJ::Node_ptr rhs_node = rhs.getNode();
 
         TNJ::BinaryNode<uchar, T, op> *node = new TNJ::BinaryNode<uchar, T, op>(lhs_node, rhs_node);
 
-        return createNodeArray<uchar>(lhs.dims(), TNJ::Node_ptr(
+        return createNodeArray<uchar>(odims, TNJ::Node_ptr(
                                           reinterpret_cast<TNJ::Node *>(node)));
     }
 }

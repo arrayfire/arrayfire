@@ -110,6 +110,7 @@ namespace af
         // INDEXING
     public:
         // Single arguments
+        array operator()(const array& idx) const;
         array operator()(const seq& s0) const;
         array operator()(const int& s0) const
                         { return this->operator()(seq(s0, s0)); }
