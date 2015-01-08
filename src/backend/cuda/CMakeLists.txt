@@ -41,7 +41,8 @@ FILE(GLOB cuda_headers
 
 FILE(GLOB cuda_sources
     "*.cu"
-    "*.cpp")
+    "*.cpp"
+    "sort_by_key/*.cu")
 
 FILE(GLOB jit_sources
     "jit/*.hpp")
