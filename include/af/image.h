@@ -22,11 +22,11 @@ AFAPI void saveImage(const char* filename, const array& in);
 
 AFAPI array resize(const array& in, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST);
 
-AFAPI array resize(const array& in, const float scale0, const float scale1, const interpType method=AF_INTERP_NEAREST);
+AFAPI array resize(const float scale0, const float scale1, const array& in, const interpType method=AF_INTERP_NEAREST);
 
-AFAPI array resize(const array& in, const float scale, const interpType method=AF_INTERP_NEAREST);
+AFAPI array resize(const float scale, const array& in, const interpType method=AF_INTERP_NEAREST);
 
-AFAPI array rotate(const array& in, const float theta, const interpType method=AF_INTERP_NEAREST, const bool crop=true);
+AFAPI array rotate(const array& in, const float theta, const bool crop=true, const interpType method=AF_INTERP_NEAREST);
 
 AFAPI array transform(const array& in, const array& transform, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST, const bool inverse=true);
 
@@ -40,7 +40,9 @@ AFAPI array bilateral(const array &in, const float spatial_sigma, const float ch
 
 AFAPI array histogram(const array &in, const unsigned nbins, const double minval, const double maxval);
 
-AFAPI array meanshift(const array& in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color);
+AFAPI array histogram(const array &in, const unsigned nbins);
+
+AFAPI array meanshift(const array& in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color=false);
 
 AFAPI array medfilt(const array& in, dim_type wind_length = 3, dim_type wind_width = 3, padType edge_pad = AF_ZERO);
 
@@ -57,6 +59,8 @@ AFAPI void grad(array& rows, array& cols, const array& in);
 AFAPI array regions(const array& in, af::connectivity connectivity=AF_CONNECTIVITY_4, dtype type=f32);
 
 AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_length=9, const bool non_max=true, const float feature_ratio=0.05);
+
+AFAPI array matchTemplate(const array &searchImg, const array &templateImg, matchType mType=AF_SAD);
 
 }
 #endif
@@ -81,7 +85,7 @@ extern "C" {
 
     // Rotate
     AFAPI af_err af_rotate(af_array *out, const af_array in, const float theta,
-                           const af_interp_type method, const bool crop);
+                           const bool crop, const af_interp_type method);
     // Translate
     AFAPI af_err af_translate(af_array *out, const af_array in, const float trans0, const float trans1,
                               const dim_type odim0, const dim_type odim1, const af_interp_type method);
@@ -123,6 +127,9 @@ extern "C" {
 
     // Compute FAST corners from input image
     AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio);
+
+    // object detection algorithm, matching pattern image to target image and giving disparity results
+    AFAPI af_err af_match_template(af_array *out, const af_array search_img, const af_array template_img, af_match_type m_type);
 
 #ifdef __cplusplus
 }

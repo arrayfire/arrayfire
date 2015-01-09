@@ -13,10 +13,10 @@
 namespace af
 {
 
-array rotate(const array& in, const float theta, const interpType method, const bool crop)
+array rotate(const array& in, const float theta, const bool crop, const interpType method)
 {
     af_array out = 0;
-    AF_THROW(af_rotate(&out, in.get(), theta, method, crop));
+    AF_THROW(af_rotate(&out, in.get(), theta, crop, method));
     return array(out);
 }
 

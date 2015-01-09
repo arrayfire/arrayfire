@@ -32,18 +32,17 @@ namespace JIT
         bool m_gen_name;
         bool m_set_arg;
         bool m_linear;
-        int str0, str1, str2, str3;
 
         // Keep the shared pointer for reference counting
         shared_ptr<T> sptr;
-        // Keep the actual pointer for launching kernels
-        T *ptr;
+        CParam<T> m_param;
+
     public:
 
         BufferNode(const char *type_str,
                    const char *name_str,
                    shared_ptr<T> data,
-                   const dim_type *strides,
+                   CParam<T> param,
                    dim_type off,
                    bool is_linear)
             : Node(type_str),
@@ -52,18 +51,17 @@ namespace JIT
               m_set_arg(false),
               m_linear(is_linear),
               sptr(data),
-              ptr(NULL)
+              m_param(param)
         {
-            str0 = (int)strides[0];
-            str1 = (int)strides[1];
-            str2 = (int)strides[2];
-            str3 = (int)strides[3];
-            ptr = sptr.get() + off;
         }
 
-        bool isLinear()
+        bool isLinear(dim_type dims[4])
         {
-            return m_linear;
+            bool same_dims = true;
+            for (int i = 0; same_dims && i < 4; i++) {
+                same_dims &= (dims[i] == m_param.dims[i]);
+            }
+            return m_linear && same_dims;
         }
 
         void genKerName(std::stringstream &kerStream, bool genInputs)
@@ -76,16 +74,27 @@ namespace JIT
         }
 
         void genParams(std::stringstream &kerStream,
-                       std::stringstream &annStream)
+                       std::stringstream &annStream, bool is_linear)
         {
             if (m_gen_param) return;
-            kerStream <<  m_type_str << "* %in" << m_id << ","
-                      << "i32 %str1"     << m_id << ","
-                      << "i32 %str2"     << m_id << ","
-                      << "i32 %str3"     << m_id << ","
-                      << std::endl;
+            kerStream << m_type_str << "* %in" << m_id << ",\n";
             annStream << m_type_str << "*,\n";
-            annStream << "i32, i32, i32,\n";
+
+            if (!is_linear) {
+                kerStream << "i32 %dim0"     << m_id << ","
+                          << "i32 %dim1"     << m_id << ","
+                          << "i32 %dim2"     << m_id << ","
+                          << "i32 %dim3"     << m_id << ","
+                          << "\n"
+                          << "i32 %str1"     << m_id << ","
+                          << "i32 %str2"     << m_id << ","
+                          << "i32 %str3"     << m_id << ","
+                          << "\n";
+
+                annStream << "i32, i32, i32, i32,\n"
+                          << "i32, i32, i32,\n";
+            }
+
             m_gen_param = true;
         }
 
@@ -94,12 +103,32 @@ namespace JIT
             if (m_gen_offset) return;
 
             if (!is_linear) {
-                std::string idx_str = std::string("int idx") + toString(m_id);
+                std::string idx_str  = std::string("int idx") + toString(m_id);
                 std::string info_str = std::string("iInfo") + toString(m_id);;
 
-                kerStream << "%off3i" << m_id << " = mul i32 %id3, %str3" << m_id << "\n";
-                kerStream << "%off2i" << m_id << " = mul i32 %id2, %str2" << m_id << "\n";
-                kerStream << "%off1i" << m_id << " = mul i32 %id1, %str1" << m_id << "\n";
+                kerStream << "%b3" << m_id << " = icmp slt i32 %id3, %dim3" << m_id << "\n";
+                kerStream << "%b2" << m_id << " = icmp slt i32 %id2, %dim2" << m_id << "\n";
+                kerStream << "%b1" << m_id << " = icmp slt i32 %id1, %dim1" << m_id << "\n";
+                kerStream << "%b0" << m_id << " = icmp slt i32 %id0, %dim0" << m_id << "\n";
+
+                kerStream << "%c3" << m_id << " = zext i1 %b3" << m_id << " to i32\n";
+                kerStream << "%c2" << m_id << " = zext i1 %b2" << m_id << " to i32\n";
+                kerStream << "%c1" << m_id << " = zext i1 %b1" << m_id << " to i32\n";
+                kerStream << "%c0" << m_id << " = zext i1 %b0" << m_id << " to i32\n";
+
+                kerStream << "%d3" << m_id << " = mul i32 %c3" << m_id << ", %id3\n";
+                kerStream << "%d2" << m_id << " = mul i32 %c2" << m_id << ", %id2\n";
+                kerStream << "%d1" << m_id << " = mul i32 %c1" << m_id << ", %id1\n";
+                kerStream << "%d0" << m_id << " = mul i32 %c0" << m_id << ", %id0\n";
+
+                kerStream << "%off3i" << m_id << " = mul i32 %d3" << m_id
+                          << ", %str3" << m_id << "\n";
+
+                kerStream << "%off2i" << m_id << " = mul i32 %d2" << m_id
+                          << ", %str2" << m_id << "\n";
+
+                kerStream << "%off1i" << m_id << " = mul i32 %d1" << m_id
+                          << ", %str1" << m_id << "\n";
 
                 kerStream << "%off23i" << m_id << " = add i32 %off2i"
                           << m_id << ", %off3i" << m_id << "\n";
@@ -108,7 +137,7 @@ namespace JIT
                           << m_id << ", %off1i" << m_id << "\n";
 
                 kerStream << "%idxa" << m_id << " = add i32 %off123i"
-                          << m_id << ", %id0" << "\n";
+                          << m_id << ", %d0" << m_id << "\n";
 
                 kerStream << "%idx" << m_id << " = sext i32 %idxa" << m_id <<" to i64\n\n";
             }
@@ -153,13 +182,20 @@ namespace JIT
             m_set_arg = false;
         }
 
-        void setArgs(std::vector<void *> &args)
+        void setArgs(std::vector<void *> &args, bool is_linear)
         {
             if (m_set_arg) return;
-            args.push_back((void *)&ptr);
-            args.push_back((void *)&str1);
-            args.push_back((void *)&str2);
-            args.push_back((void *)&str3);
+            args.push_back((void *)&m_param.ptr);
+
+            if (!is_linear) {
+                args.push_back((void *)&m_param.dims[0]);
+                args.push_back((void *)&m_param.dims[1]);
+                args.push_back((void *)&m_param.dims[2]);
+                args.push_back((void *)&m_param.dims[3]);
+                args.push_back((void *)&m_param.strides[1]);
+                args.push_back((void *)&m_param.strides[2]);
+                args.push_back((void *)&m_param.strides[3]);
+            }
             m_set_arg = true;
         }
     };

@@ -27,12 +27,15 @@ class AFAPI seq
 public:
     af_seq s;
     size_t size;
+    bool m_gfor;
 
     seq(double = 0);
     ~seq();
 
     // begin, end, step
     seq(double begin, double end, double step = 1);
+
+    seq(seq afs, bool is_gfor);
 
     seq(const af_seq& s_);
 

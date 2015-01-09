@@ -11,6 +11,7 @@
 #include <numeric>
 #include <algorithm>
 #include <functional>
+#include <err_common.hpp>
 
 using af::dim4;
 
@@ -136,4 +137,20 @@ bool ArrayInfo::isInteger() const
 bool ArrayInfo::isBool() const
 {
     return (type == b8);
+}
+
+dim4 getOutDims(const dim4 ldims, const dim4 rdims, bool batchMode)
+{
+    if (!batchMode) {
+        DIM_ASSERT(1, ldims == rdims);
+        return ldims;
+    }
+
+    dim_type odims[] = {1, 1, 1, 1};
+    for (int i = 0; i < 4; i++) {
+        DIM_ASSERT(1, ldims[i] == rdims[i] || ldims[i] == 1 || rdims[i] == 1);
+        odims[i] = std::max(ldims[i], rdims[i]);
+    }
+
+    return dim4(4, odims);
 }

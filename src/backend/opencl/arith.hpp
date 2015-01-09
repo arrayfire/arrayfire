@@ -9,6 +9,7 @@
 
 #include <af/defines.h>
 #include <af/array.h>
+#include <af/dim4.hpp>
 #include <Array.hpp>
 #include <optypes.hpp>
 #include <binary.hpp>
@@ -16,8 +17,8 @@
 namespace opencl
 {
     template<typename T, af_op_t op>
-    Array<T>* arithOp(const Array<T> &lhs, const Array<T> &rhs)
+    Array<T>* arithOp(const Array<T> &lhs, const Array<T> &rhs, const af::dim4 &odims)
     {
-        return createBinaryNode<T, T, op>(lhs, rhs);
+        return createBinaryNode<T, T, op>(lhs, rhs, odims);
     }
 }

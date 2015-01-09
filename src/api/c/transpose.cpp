@@ -32,8 +32,6 @@ af_err af_transpose(af_array *out, af_array in, const bool conjugate)
         af_dtype type = info.getType();
         af::dim4 dims = info.dims();
 
-        DIM_ASSERT(1, (dims.ndims()<=3));
-
         if (dims[0]==1 || dims[1]==1) {
             // for a vector OR a batch of vectors
             // we can use modDims to transpose

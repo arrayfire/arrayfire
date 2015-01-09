@@ -10,6 +10,7 @@
 #include <complex>
 #include <af/defines.h>
 #include <af/array.h>
+#include <af/dim4.hpp>
 #include <Array.hpp>
 #include <optypes.hpp>
 #include <err_cpu.hpp>
@@ -29,7 +30,7 @@ namespace cpu
     };
 
     template<typename To, typename Ti>
-    Array<To>* cplx(const Array<Ti> &lhs, const Array<Ti> &rhs)
+    Array<To>* cplx(const Array<Ti> &lhs, const Array<Ti> &rhs, const af::dim4 &odims)
     {
         TNJ::Node_ptr lhs_node = lhs.getNode();
         TNJ::Node_ptr rhs_node = rhs.getNode();
@@ -37,7 +38,7 @@ namespace cpu
         TNJ::BinaryNode<To, Ti, af_cplx2_t> *node =
             new TNJ::BinaryNode<To, Ti, af_cplx2_t>(lhs_node, rhs_node);
 
-        return createNodeArray<To>(lhs.dims(), TNJ::Node_ptr(
+        return createNodeArray<To>(odims, TNJ::Node_ptr(
                                        reinterpret_cast<TNJ::Node *>(node)));
     }
 

@@ -64,7 +64,7 @@ namespace opencl
 
                 auto resizeOp = make_kernel<Buffer, const KParam,
                                       const Buffer, const KParam,
-                                      const dim_type, const float, const float>
+                                      const dim_type, const dim_type, const float, const float>
                                       (*resizeKernels[device]);
 
                 NDRange local(TX, TY, 1);
@@ -72,7 +72,7 @@ namespace opencl
                 dim_type blocksPerMatX = divup(out.info.dims[0], local[0]);
                 dim_type blocksPerMatY = divup(out.info.dims[1], local[1]);
                 NDRange global(local[0] * blocksPerMatX * in.info.dims[2],
-                               local[1] * blocksPerMatY,
+                               local[1] * blocksPerMatY * in.info.dims[3],
                                1);
 
                 double xd = (double)in.info.dims[0] / (double)out.info.dims[0];
@@ -81,7 +81,7 @@ namespace opencl
                 float xf = (float)xd, yf = (float)yd;
 
                 resizeOp(EnqueueArgs(getQueue(), global, local),
-                         *out.data, out.info, *in.data, in.info, blocksPerMatX, xf, yf);
+                         *out.data, out.info, *in.data, in.info, blocksPerMatX, blocksPerMatY, xf, yf);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {

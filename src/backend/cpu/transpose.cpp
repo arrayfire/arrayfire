@@ -52,25 +52,27 @@ template<typename T, bool conjugate>
 void transpose_(T *out, const T *in, const af::dim4 &odims, const af::dim4 &idims,
                 const af::dim4 &ostrides, const af::dim4 &istrides)
 {
-    for (dim_type k = 0; k < odims[2]; ++k) {
-        // Outermost loop handles batch mode
-        // if input has no data along third dimension
-        // this loop runs only once
-        for (dim_type j = 0; j < odims[1]; ++j) {
-            for (dim_type i = 0; i < odims[0]; ++i) {
-                // calculate array indices based on offsets and strides
-                // the helper getIdx takes care of indices
-                const dim_type inIdx  = getIdx(istrides,j,i,k);
-                const dim_type outIdx = getIdx(ostrides,i,j,k);
-                if(conjugate)
-                    out[outIdx] = getConjugate(in[inIdx]);
-                else
-                    out[outIdx] = in[inIdx];
+    for (dim_type l = 0; l < odims[3]; ++l) {
+        for (dim_type k = 0; k < odims[2]; ++k) {
+            // Outermost loop handles batch mode
+            // if input has no data along third dimension
+            // this loop runs only once
+            for (dim_type j = 0; j < odims[1]; ++j) {
+                for (dim_type i = 0; i < odims[0]; ++i) {
+                    // calculate array indices based on offsets and strides
+                    // the helper getIdx takes care of indices
+                    const dim_type inIdx  = getIdx(istrides,j,i,k,l);
+                    const dim_type outIdx = getIdx(ostrides,i,j,k,l);
+                    if(conjugate)
+                        out[outIdx] = getConjugate(in[inIdx]);
+                    else
+                        out[outIdx] = in[inIdx];
+                }
             }
+            // outData and inData pointers doesn't need to be
+            // offset as the getIdx function is taking care
+            // of the batch parameter
         }
-        // outData and inData pointers doesn't need to be
-        // offset as the getIdx function is taking care
-        // of the batch parameter
     }
 }
 
@@ -88,15 +90,12 @@ Array<T> * transpose(const Array<T> &in, const bool conjugate)
     T* outData          = out->get();
     const T*   inData   = in.get();
 
-    switch(conjugate) {
-        case true:
-            transpose_<T, true>(outData, inData,
-                                out->dims(), in.dims(), out->strides(), in.strides());
-            break;
-        case false:
-            transpose_<T, false>(outData, inData,
-                                 out->dims(), in.dims(), out->strides(), in.strides());
-            break;
+    if(conjugate) {
+        transpose_<T, true>(outData, inData,
+                            out->dims(), in.dims(), out->strides(), in.strides());
+    } else {
+        transpose_<T, false>(outData, inData,
+                             out->dims(), in.dims(), out->strides(), in.strides());
     }
 
     return out;
