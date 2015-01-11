@@ -19,24 +19,6 @@
 
 using namespace detail;
 
-template<typename T> static T division(T val, double elem) { return val / elem; }
-
-cfloat division(cfloat val, double elem)
-{
-    float resReal = real(val) / elem;
-    float resImag = imag(val) / elem;
-    cfloat res = (cfloat){resReal, resImag};
-    return res;
-}
-
-cdouble division(cdouble val, double elem)
-{
-    float resReal = real(val) / elem;
-    float resImag = imag(val) / elem;
-    cdouble res = (cdouble){resReal, resImag};
-    return res;
-}
-
 template<typename inType, typename outType>
 static outType mean(const af_array &in)
 {
@@ -56,7 +38,7 @@ static af_array mean(const af_array &in, dim_type dim)
     dim4 oDims = output->dims();
 
     Array<outType> *cnstArray = createValueArray<outType>(oDims, scalar<outType>(iDims[dim]));
-    Array<outType> *retVal    = detail::arithOp<outType, af_div_t>(*output, *cnstArray);
+    Array<outType> *retVal    = detail::arithOp<outType, af_div_t>(*output, *cnstArray, oDims);
 
     destroyArray<outType>(*cnstArray);
     destroyArray<outType>(*output);

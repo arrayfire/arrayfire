@@ -28,6 +28,9 @@ namespace cpu
     cfloat max(cfloat lhs, cfloat rhs);
     cdouble max(cdouble lhs, cdouble rhs);
 
+    template<typename T> static inline T division(T lhs, double rhs) { return lhs / rhs; }
+    cfloat division(cfloat lhs, double rhs);
+    cdouble division(cdouble lhs, double rhs);
 
     template <typename T> static inline T limit_max()
     { return std::numeric_limits<T>::max(); }
