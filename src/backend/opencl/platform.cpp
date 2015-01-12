@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/version.h>
+#include <af/opencl.h>
 #include <cl.hpp>
 #include <platform.hpp>
 #include <vector>
@@ -280,4 +281,22 @@ void sync(int device)
     }
 }
 
+}
+
+namespace afcl
+{
+    cl_context getContext()
+    {
+        return opencl::getContext()();
+    }
+
+    cl_command_queue getQueue()
+    {
+        return opencl::getQueue()();
+    }
+
+    cl_device_id getDeviceId()
+    {
+        return opencl::getDevice()();
+    }
 }
