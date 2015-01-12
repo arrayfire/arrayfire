@@ -18,6 +18,7 @@
 #include "af/exception.h"
 #include "af/features.h"
 #include "af/gfor.h"
+#include "af/graphics.h"
 #include "af/image.h"
 #include "af/index.h"
 #include "af/reduce.h"
