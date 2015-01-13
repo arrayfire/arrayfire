@@ -146,10 +146,9 @@ af_err af_pow(af_array *out, const af_array lhs, const af_array rhs, bool batchM
         if (linfo.isComplex() || rinfo.isComplex()) {
             AF_ERROR("Powers of Complex numbers not supported", AF_ERR_NOT_SUPPORTED);
         }
-        return af_arith<af_pow_t>(out, lhs, rhs, batchMode);
-    }
-    CATCHALL;
-    return AF_SUCCESS;
+    } CATCHALL;
+
+    return af_arith<af_pow_t>(out, lhs, rhs, batchMode);
 }
 
 af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
