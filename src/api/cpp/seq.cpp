@@ -80,7 +80,8 @@ seq::operator array() const
 {
     dim_type diff = s.end - s.begin;
     dim_type len = (int)((diff + (signbit(diff) == 0 ? 1 : -1)) / s.step);
-    array res = s.begin + s.step * iota(len);
+    array tmp = (m_gfor) ? iota(1, 1, 1, len) : iota(len);
+    array res = s.begin + s.step * tmp;
     return res;
 }
 
