@@ -397,11 +397,16 @@ namespace af
             unsigned nd = numDims(arr);
             int dim = gforDim(this->s);
             af_array other_arr = other.get();
-            other_arr = (dim == -1) ? other_arr : gforReorder(other_arr, dim);
+
+            // HACK: This is a quick check to see if other has been reordered inside gfor
+            // TODO: Figure out if this breaks and implement a cleaner method
+            bool is_reordered = (dims() != other.dims());
+
+            other_arr = (dim == -1 || !is_reordered) ? other_arr : gforReorder(other_arr, dim);
 
             AF_THROW(af_assign(arr, nd, afs, other_arr));
 
-            if (dim >= 0) AF_THROW(af_destroy_array(other_arr));
+            if (dim >= 0 && is_reordered) AF_THROW(af_destroy_array(other_arr));
 
             isRef = false;
 
