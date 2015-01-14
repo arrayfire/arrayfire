@@ -62,6 +62,10 @@ AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_l
 
 AFAPI array matchTemplate(const array &searchImg, const array &templateImg, matchType mType=AF_SAD);
 
+AFAPI void sobel(array &dx, array &dy, const array &img, const unsigned ker_size=3);
+
+AFAPI array sobel(const array &img, const unsigned ker_size=3);
+
 }
 #endif
 
