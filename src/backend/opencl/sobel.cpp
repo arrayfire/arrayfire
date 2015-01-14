@@ -12,6 +12,7 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <sobel.hpp>
+#include <kernel/sobel.hpp>
 #include <err_opencl.hpp>
 
 using af::dim4;
@@ -23,7 +24,14 @@ template<typename T>
 std::pair< Array<T>*, Array<T>* >
 sobelDerivatives(const Array<T> &img, const unsigned &ker_size)
 {
-    OPENCL_NOT_SUPPORTED();
+    Array<T> *dx = createEmptyArray<T>(img.dims());
+    Array<T> *dy = createEmptyArray<T>(img.dims());
+
+    switch(ker_size) {
+        case 3: kernel::sobel<T, 3>(*dx, *dy, img); break;
+    }
+
+    return std::make_pair(dx, dy);
 }
 
 #define INSTANTIATE(T)\
@@ -33,8 +41,6 @@ INSTANTIATE(float )
 INSTANTIATE(double)
 INSTANTIATE(char  )
 INSTANTIATE(int   )
-INSTANTIATE(uint  )
-INSTANTIATE(uchar )
 
 }
 
