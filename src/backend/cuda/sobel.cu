@@ -12,6 +12,7 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <sobel.hpp>
+#include <kernel/sobel.hpp>
 #include <err_cuda.hpp>
 
 using af::dim4;
@@ -23,7 +24,12 @@ template<typename T>
 std::pair< Array<T>*, Array<T>* >
 sobelDerivatives(const Array<T> &img, const unsigned &ker_size)
 {
-    CUDA_NOT_SUPPORTED();
+    Array<T> *dx = createEmptyArray<T>(img.dims());
+    Array<T> *dy = createEmptyArray<T>(img.dims());
+
+    kernel::sobel<T>(*dx, *dy, img, ker_size);
+
+    return std::make_pair(dx, dy);
 }
 
 #define INSTANTIATE(T)\
@@ -33,7 +39,5 @@ INSTANTIATE(float )
 INSTANTIATE(double)
 INSTANTIATE(char  )
 INSTANTIATE(int   )
-INSTANTIATE(uint  )
-INSTANTIATE(uchar )
 
 }
