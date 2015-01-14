@@ -131,6 +131,9 @@ extern "C" {
     // object detection algorithm, matching pattern image to target image and giving disparity results
     AFAPI af_err af_match_template(af_array *out, const af_array search_img, const af_array template_img, af_match_type m_type);
 
+    // sobel operator for images
+    AFAPI af_err af_sobel_dxdy(af_array *dx, af_array *dy, const af_array img, const unsigned ker_size);
+
 #ifdef __cplusplus
 }
 #endif
