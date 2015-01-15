@@ -60,6 +60,8 @@ AFAPI array regions(const array& in, af::connectivity connectivity=AF_CONNECTIVI
 
 AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_length=9, const bool non_max=true, const float feature_ratio=0.05);
 
+AFAPI void orb(features& feat, array& desc, const array& image, const float fast_thr=20.f, const unsigned max_feat=400, const float scl_fctr=1.5f, const unsigned levels=4);
+
 AFAPI array matchTemplate(const array &searchImg, const array &templateImg, matchType mType=AF_SAD);
 
 }
@@ -127,6 +129,9 @@ extern "C" {
 
     // Compute FAST corners from input image
     AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio);
+
+    // Compute FAST corners and ORB descriptors from input image
+    AFAPI af_err af_orb(af_features *feat, af_array *desc, const af_array in, const float fast_thr, const unsigned max_feat, const float scl_fctr, const unsigned levels);
 
     // object detection algorithm, matching pattern image to target image and giving disparity results
     AFAPI af_err af_match_template(af_array *out, const af_array search_img, const af_array template_img, af_match_type m_type);
