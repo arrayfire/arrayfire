@@ -30,8 +30,8 @@ namespace opencl
 {
     namespace kernel
     {
-        static const dim_type TX = 16;
-        static const dim_type TY = 16;
+        static const dim_type RESIZE_TX = 16;
+        static const dim_type RESIZE_TY = 16;
 
         template<typename T, af_interp_type method>
         void resize(Param out, const Param in)
@@ -67,7 +67,7 @@ namespace opencl
                                       const dim_type, const dim_type, const float, const float>
                                       (*resizeKernels[device]);
 
-                NDRange local(TX, TY, 1);
+                NDRange local(RESIZE_TX, RESIZE_TY, 1);
 
                 dim_type blocksPerMatX = divup(out.info.dims[0], local[0]);
                 dim_type blocksPerMatY = divup(out.info.dims[1], local[1]);
