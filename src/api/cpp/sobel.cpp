@@ -14,16 +14,16 @@
 namespace af
 {
 
-void sobel(array &dx, array &dy, const array &img, const unsigned ker_size=3)
+void sobel(array &dx, array &dy, const array &img, const unsigned ker_size)
 {
     af_array af_dx = 0;
     af_array af_dy = 0;
-    AF_THROW(af_sobel_dxdy(&af_dx, &af_dy, img.get(), ker_size));
+    AF_THROW(af_sobel_operator(&af_dx, &af_dy, img.get(), ker_size));
     dx = array(af_dx);
     dy = array(af_dy);
 }
 
-array sobel(const array &img, const unsigned ker_size=3, bool isFast=false)
+array sobel(const array &img, const unsigned ker_size, bool isFast)
 {
     array dx;
     array dy;
@@ -36,4 +36,3 @@ array sobel(const array &img, const unsigned ker_size=3, bool isFast=false)
 }
 
 }
-

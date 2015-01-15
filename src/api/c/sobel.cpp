@@ -30,7 +30,7 @@ ArrayPair sobelDerivatives(const af_array &in, const unsigned &ker_size)
                           getHandle<T>(*out.second));
 }
 
-af_err af_sobel_dxdy(af_array *dx, af_array *dy, const af_array img, const unsigned ker_size)
+af_err af_sobel_operator(af_array *dx, af_array *dy, const af_array img, const unsigned ker_size)
 {
     try {
         //FIXME: ADD SUPPORT FOR OTHER KERNEL SIZES

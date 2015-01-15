@@ -50,7 +50,7 @@ void testSobelDerivatives(string pTestFile)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
                 dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_sobel_dxdy(&dxArray, &dyArray, inArray, 3));
+    ASSERT_EQ(AF_SUCCESS, af_sobel_operator(&dxArray, &dyArray, inArray, 3));
 
     T *dxData = new T[dims.elements()];
     T *dyData = new T[dims.elements()];
