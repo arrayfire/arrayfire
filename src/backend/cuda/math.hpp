@@ -9,6 +9,7 @@
 
 #pragma once
 #include <limits>
+#include <algorithm>
 #include "backend.hpp"
 #include "types.hpp"
 
