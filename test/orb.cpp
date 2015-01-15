@@ -230,7 +230,7 @@ void orbTest(string pTestFile)
         split_feat_desc(out_feat_desc, out_feat, v_out_desc);
         split_feat_desc(gold_feat_desc, gold_feat, v_gold_desc);
 
-        for (int elIter = 0; elIter < feat.n; elIter++) {
+        for (int elIter = 0; elIter < (int)feat.n; elIter++) {
             ASSERT_EQ(out_feat[elIter].f[0], gold_feat[elIter].f[0]) << "at: " << elIter << std::endl;
             ASSERT_EQ(out_feat[elIter].f[1], gold_feat[elIter].f[1]) << "at: " << elIter << std::endl;
             ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e-3) << "at: " << elIter << std::endl;
@@ -250,7 +250,7 @@ void orbTest(string pTestFile)
         ASSERT_EQ(AF_SUCCESS, af_destroy_array(feat.orientation));
         ASSERT_EQ(AF_SUCCESS, af_destroy_array(feat.size));
         ASSERT_EQ(AF_SUCCESS, af_destroy_array(desc));
- 
+
         delete[] outX;
         delete[] outY;
         delete[] outScore;

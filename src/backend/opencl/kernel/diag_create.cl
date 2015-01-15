@@ -15,7 +15,7 @@ void diagCreateKernel(__global T *oData, KParam oInfo,
     unsigned idz = get_group_id(0) / groups_x;
     unsigned groupId_x = get_group_id(0) - idz * groups_x;
 
-    unsigned idx = get_local_id(0) + groupId_x * get_num_groups(0);
+    unsigned idx = get_local_id(0) + groupId_x * get_local_size(0);
     unsigned idy = get_global_id(1);
 
     if (idx >= oInfo.dims[0] ||
@@ -24,7 +24,7 @@ void diagCreateKernel(__global T *oData, KParam oInfo,
 
 
     __global T *optr = oData + idz * oInfo.strides[2] + idy * oInfo.strides[1] + idx;
-    const __global T *iptr = iData  + idz *  iInfo.strides[1] + ((num > 0) ? idx : idy);
+    const __global T *iptr = iData  + idz *  iInfo.strides[1] + ((num > 0) ? idx : idy) + iInfo.offset;
 
     T val = (idx == (idy - num)) ? *iptr : ZERO;
     *optr = val;

@@ -52,7 +52,7 @@ void gaussian1D(T* out, const int dim, double sigma=0.0)
 
     T sum = (T)0;
     for(int i=0;i<dim;i++)
-    {   
+    {
         int x = i-(dim-1)/2;
         T el = 1. / sqrt(2 * M_PI * sigma*sigma) * exp(-((x*x)/(2*(sigma*sigma))));
         out[i] = el;
@@ -125,10 +125,10 @@ void orb(unsigned* out_feat,
         std::vector<cl::Buffer*> d_ori_pyr(max_levels);
         std::vector<cl::Buffer*> d_size_pyr(max_levels);
         std::vector<cl::Buffer*> d_desc_pyr(max_levels);
-    
+
         std::vector<unsigned> feat_pyr(max_levels);
         unsigned total_feat = 0;
-    
+
         // Compute number of features to keep for each level
         std::vector<unsigned> lvl_best(max_levels);
         unsigned feat_sum = 0;
@@ -346,7 +346,7 @@ void orb(unsigned* out_feat,
             // Compute ORB descriptors
             cl::Buffer* d_desc_lvl = bufferAlloc(usable_feat * 8 * sizeof(unsigned));
             unsigned* h_desc_lvl = new unsigned[usable_feat * 8];
-            for (int j = 0; j < usable_feat * 8; j++)
+            for (int j = 0; j < (int)usable_feat * 8; j++)
                 h_desc_lvl[j] = 0;
             getQueue().enqueueWriteBuffer(*d_desc_lvl, CL_TRUE, 0, usable_feat * 8 * sizeof(unsigned), h_desc_lvl);
             delete[] h_desc_lvl;

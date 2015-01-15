@@ -28,7 +28,7 @@ void diagExtractKernel(__global T *oData, KParam oInfo,
         return;
     }
 
-    int i_off = (num > 0) ? (num * iInfo.strides[1] + idx) : (idx - num);
+    int i_off = (num > 0) ? (num * iInfo.strides[1] + idx) : (idx - num) + iInfo.offset;
 
     const __global T *iptr = iData  +
         idz *  iInfo.strides[2] +
