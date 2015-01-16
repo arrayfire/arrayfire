@@ -36,8 +36,8 @@ seq::~seq()
 
 seq::seq(double n): m_gfor(false)
 {
-    if (n == end) {
-        init(-1, -1, 0);
+    if (n < 0) {
+        init(-1, n, 0);
     } else {
         init(0, n - 1, 1);
     }
@@ -56,7 +56,7 @@ seq& seq::operator=(const af_seq& s_)
 
 seq::seq(double begin, double end, double step): m_gfor(false)
 {
-    if(begin == -1 && end == -1) {
+    if(begin == -1 && end <= -1) {
         step = 0;           // end
     }
 

@@ -176,24 +176,22 @@ af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type *
 af_err af_copy_array(af_array *out, const af_array in)
 {
     ArrayInfo info = getInfo(in);
-    const unsigned ndims = info.ndims();
-    const af::dim4 dims = info.dims();
     const af_dtype type = info.getType();
 
-    AF_CHECK(af_create_handle(out, ndims, dims.get(), type));
-
+    af_array res;
     try {
         switch(type) {
-        case f32:   copyArray<float   >(out, in); break;
-        case c32:   copyArray<cfloat  >(out, in); break;
-        case f64:   copyArray<double  >(out, in); break;
-        case c64:   copyArray<cdouble >(out, in); break;
-        case b8:    copyArray<char    >(out, in); break;
-        case s32:   copyArray<int     >(out, in); break;
-        case u32:   copyArray<unsigned>(out, in); break;
-        case u8:    copyArray<uchar   >(out, in); break;
+        case f32:   res = copyArray<float   >(in); break;
+        case c32:   res = copyArray<cfloat  >(in); break;
+        case f64:   res = copyArray<double  >(in); break;
+        case c64:   res = copyArray<cdouble >(in); break;
+        case b8:    res = copyArray<char    >(in); break;
+        case s32:   res = copyArray<int     >(in); break;
+        case u32:   res = copyArray<unsigned>(in); break;
+        case u8:    res = copyArray<uchar   >(in); break;
         default:    TYPE_ERROR(1, type);
         }
+        std::swap(*out, res);
     }
     CATCHALL
     return AF_SUCCESS;
