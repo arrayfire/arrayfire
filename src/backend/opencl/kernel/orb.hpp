@@ -37,6 +37,8 @@ static const dim_type ORB_THREADS   = 256;
 static const dim_type ORB_THREADS_X = 16;
 static const dim_type ORB_THREADS_Y = 16;
 
+static const float PI_VAL = 3.14159265358979323846f;
+
 // Reference pattern, generated for a patch size of 31x31, as suggested by
 // original ORB paper
 #define REF_PAT_SIZE 31
@@ -54,7 +56,7 @@ void gaussian1D(T* out, const int dim, double sigma=0.0)
     for(int i=0;i<dim;i++)
     {
         int x = i-(dim-1)/2;
-        T el = 1. / sqrt(2 * M_PI * sigma*sigma) * exp(-((x*x)/(2*(sigma*sigma))));
+        T el = 1. / sqrt(2 * PI_VAL * sigma*sigma) * exp(-((x*x)/(2*(sigma*sigma))));
         out[i] = el;
         sum   += el;
     }
