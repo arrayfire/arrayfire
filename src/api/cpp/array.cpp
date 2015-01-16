@@ -287,6 +287,7 @@ namespace af
 
     array array::operator()(const array& idx) const
     {
+        eval();
         af_array out = 0;
         AF_THROW(af_array_index(&out, this->get(), idx.get(), 0));
         return array(out);
@@ -294,6 +295,7 @@ namespace af
 
     array array::operator()(const seq &s0) const
     {
+        eval();
         af_array out = 0;
         seq indices[] = {s0, span, span, span};
         //FIXME: check if this->s has same dimensions as numdims
