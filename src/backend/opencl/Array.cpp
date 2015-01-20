@@ -91,7 +91,7 @@ namespace opencl
         if (!node) {
             bool is_linear = isOwner() || (this->ndims() == 1);
             BufferNode *buf_node = new BufferNode(dtype_traits<T>::getName(),
-                                                  shortname<T>(true), *this, is_linear);
+                                                  shortname<T>(true), *this, is_linear, data);
             const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
         }
 

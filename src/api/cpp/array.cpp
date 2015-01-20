@@ -66,6 +66,13 @@ namespace af
         return nd;
     }
 
+    static dim4 getDims(const af_array arr)
+    {
+        dim_type d0, d1, d2, d3;
+        AF_THROW(af_get_dims(&d0, &d1, &d2, &d3, arr));
+        return dim4(d0, d1, d2, d3);
+    }
+
     array::array(const af_array handle): arr(handle), isRef(false) {}
 
     static void initEmptyArray(af_array *arr, af::dtype ty,
@@ -215,9 +222,7 @@ namespace af
     // Helper functions
     dim4 array::dims() const
     {
-        dim_type d0, d1, d2, d3;
-        AF_THROW(af_get_dims(&d0, &d1, &d2, &d3, arr));
-        return dim4(d0, d1, d2, d3);
+        return getDims(get());
     }
 
     dim_type array::dims(unsigned dim) const
@@ -282,6 +287,7 @@ namespace af
 
     array array::operator()(const array& idx) const
     {
+        eval();
         af_array out = 0;
         AF_THROW(af_array_index(&out, this->get(), idx.get(), 0));
         return array(out);
@@ -289,6 +295,7 @@ namespace af
 
     array array::operator()(const seq &s0) const
     {
+        eval();
         af_array out = 0;
         seq indices[] = {s0, span, span, span};
         //FIXME: check if this->s has same dimensions as numdims
@@ -397,11 +404,17 @@ namespace af
             unsigned nd = numDims(arr);
             int dim = gforDim(this->s);
             af_array other_arr = other.get();
-            other_arr = (dim == -1) ? other_arr : gforReorder(other_arr, dim);
+
+            // HACK: This is a quick check to see if other has been reordered inside gfor
+            // TODO: Figure out if this breaks and implement a cleaner method
+            bool is_reordered = (getDims(arr) != other.dims());
+
+            other_arr = (dim == -1 || !is_reordered) ? other_arr : gforReorder(other_arr, dim);
 
             AF_THROW(af_assign(arr, nd, afs, other_arr));
 
-            if (dim >= 0) AF_THROW(af_destroy_array(other_arr));
+
+            if (dim >= 0 && is_reordered) AF_THROW(af_destroy_array(other_arr));
 
             isRef = false;
 
@@ -426,7 +439,7 @@ namespace af
     {
         af_seq afs[4];
         getSeq(afs);
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims();
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims();
         array cst = constant(value, cdims, this->type());
         return operator=(cst);
     }
@@ -435,7 +448,7 @@ namespace af
     {
         af_seq afs[4];
         getSeq(afs);
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims();
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims();
         array cst = constant(value, cdims);
         return operator=(cst);
     }
@@ -444,7 +457,7 @@ namespace af
     {
         af_seq afs[4];
         getSeq(afs);
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims();
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims();
         array cst = constant(value, cdims);
         return operator=(cst);
     }
@@ -480,7 +493,7 @@ namespace af
     {                                                                   \
         af_seq afs[4];                                                  \
         getSeq(afs);                                                    \
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims(); \
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims(); \
         array cst = constant(value, cdims, this->type());               \
         return operator op(cst);                                        \
     }                                                                   \
@@ -488,7 +501,7 @@ namespace af
     {                                                                   \
         af_seq afs[4];                                                  \
         getSeq(afs);                                                    \
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims(); \
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims(); \
         array cst = constant(value, cdims);                             \
         return operator op(cst);                                        \
     }                                                                   \
@@ -496,7 +509,7 @@ namespace af
     {                                                                   \
         af_seq afs[4];                                                  \
         getSeq(afs);                                                    \
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims(); \
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims(); \
         array cst = constant(value, cdims);                             \
         return operator op(cst);                                        \
     }                                                                   \

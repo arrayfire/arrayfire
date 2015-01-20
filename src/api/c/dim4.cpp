@@ -143,7 +143,7 @@ dim4::operator-=(const dim4 &other)
 }
 
 bool
-isEnd(const af_seq &seq)    { return (seq.end == -1); }
+isEnd(const af_seq &seq)    { return (seq.end <= -1); }
 
 bool
 isSpan(const af_seq &seq)   { return (seq.step == 0 && seq.begin == 1 && seq.end == 1); }
@@ -169,7 +169,7 @@ toDims(const vector<af_seq>& seqs, dim4 parentDims)
             if(seqs[i].begin == -1) {   // only end is passed as seq
                 outDims[i] = 1;
             } else {    // end is passed as a part of seq
-                af_seq temp = {seqs[i].begin, parentDims[i] - 1., seqs[i].step};
+                af_seq temp = {seqs[i].begin, parentDims[i] + seqs[i].end, seqs[i].step};
                 outDims[i] = seqElements(temp);
             }
         } else if (seqs[i].begin < 0) {
