@@ -272,7 +272,7 @@ namespace af
 
 #undef INSTANTIATE
 
-    array::array(af_array in, seq *seqs) : arr(in), isRef(true)
+    array::array(af_array in, const array *par, seq *seqs) : arr(in), parent(par), isRef(true)
     {
         for(int i=0; i<4; ++i) s[i] = seqs[i];
     }
@@ -300,7 +300,7 @@ namespace af
         seq indices[] = {s0, span, span, span};
         //FIXME: check if this->s has same dimensions as numdims
         AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, indices);
+        return array(out, this, indices);
     }
 
     array array::operator()(const seq &s0, const seq &s1) const
@@ -310,7 +310,7 @@ namespace af
         seq indices[] = {s0, s1, span, span};
         //FIXME: check if this->s has same dimensions as numdims
         AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, indices);
+        return array(out, this, indices);
     }
 
     array array::operator()(const seq &s0, const seq &s1, const seq &s3) const
@@ -320,7 +320,7 @@ namespace af
         seq indices[] = {s0, s1, s3, span};
         //FIXME: check if this->s has same dimensions as numdims
         AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, indices);
+        return array(out, this, indices);
     }
 
     array array::operator()(const seq &s0, const seq &s1, const seq &s2, const seq &s3) const
@@ -330,7 +330,7 @@ namespace af
         seq indices[] = {s0, s1, s2, s3};
         //FIXME: check if this->s has same dimensions as numdims
         AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, indices);
+        return array(out, this, indices);
     }
 
     array array::row(int index) const
@@ -392,6 +392,17 @@ namespace af
         return transpose(*this, true);
     }
 
+    void array::set(af_array tmp)
+    {
+        AF_THROW(af_destroy_array(arr));
+        arr = tmp;
+    }
+
+    void array::set(af_array tmp) const
+    {
+        ((array *)(this))->set(tmp);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // Operator =
     ///////////////////////////////////////////////////////////////////////////
@@ -411,8 +422,9 @@ namespace af
 
             other_arr = (dim == -1 || !is_reordered) ? other_arr : gforReorder(other_arr, dim);
 
-            AF_THROW(af_assign(arr, nd, afs, other_arr));
-
+            af_array tmp;
+            AF_THROW(af_assign(&tmp, arr, nd, afs, other_arr));
+            parent->set(tmp);
 
             if (dim >= 0 && is_reordered) AF_THROW(af_destroy_array(other_arr));
 
@@ -479,11 +491,13 @@ namespace af
             af_seq afs[4];                                              \
             getSeq(afs);                                                \
             af_array tmp_arr = tmp.get();                               \
+            af_array out = 0;                                           \
             tmp_arr = (dim == -1) ? tmp_arr : gforReorder(tmp_arr, dim); \
-            AF_THROW(af_assign(lhs, ndims, afs, tmp_arr));              \
+            AF_THROW(af_assign(&out, lhs, ndims, afs, tmp_arr));        \
             AF_THROW(af_destroy_array(this->arr));                      \
             if (dim >= 0) AF_THROW(af_destroy_array(tmp_arr));          \
             this->arr = lhs;                                            \
+            parent->set(out);                                           \
         } else {                                                        \
             *this = *this op1 other;                                    \
         }                                                               \
