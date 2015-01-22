@@ -633,18 +633,22 @@ TEST(ArrayIndex, CPP)
     delete[] outData;
 }
 
-TEST(ArrayIndex, CPP_END_SPAN)
+TEST(ArrayIndex, CPP_END)
 {
     using af::array;
 
-    array a = af::randu(5, 5);
-    array b = a(af::end, af::span);
+    const int n = 5;
+    const int m = 5;
+    const int end_off = 2;
+
+    array a = af::randu(n, m);
+    array b = a(af::end - end_off, af::span);
 
     float *hA = a.host<float>();
     float *hB = b.host<float>();
 
-    for (int i = 0; i < 5; i++) {
-        ASSERT_EQ(hA[i * 5 + 4], hB[i]);
+    for (int i = 0; i < m; i++) {
+        ASSERT_EQ(hA[i * n + end_off], hB[i]);
     }
 
 
@@ -652,6 +656,53 @@ TEST(ArrayIndex, CPP_END_SPAN)
     delete[] hB;
 }
 
+
+TEST(ArrayIndex, CPP_END_SEQ)
+{
+    using af::array;
+
+    const int num = 20;
+    const int end_begin = 10;
+    const int end_end = 0;
+
+    array a = af::randu(num);
+    array b = a(af::seq(af::end - end_begin, af::end - end_end));
+
+    float *hA = a.host<float>();
+    float *hB = b.host<float>();
+
+    for (int i = 0; i < end_begin - end_end + 1; i++) {
+        ASSERT_EQ(hA[i + end_begin - 1], hB[i]);
+    }
+
+    delete[] hA;
+    delete[] hB;
+}
+
+af::array cpp_scope_test(const int num, const float val, const af::seq s)
+{
+    af::array a = af::constant(val, num);
+    return a(s);
+}
+
+TEST(ArrayIndex, CPP_SCOPE)
+{
+    using af::array;
+
+    const int num = 20;
+    const int seq_begin = 3;
+    const int seq_end = 10;
+    const float val = 133.33;
+
+    array b = cpp_scope_test(num, val, af::seq(seq_begin, seq_end));
+    float *hB = b.host<float>();
+
+    for (int i = 0; i < seq_end - seq_begin + 1; i++) {
+        ASSERT_EQ(hB[i], val);
+    }
+
+    delete[] hB;
+}
 
 TEST(ArrayIndex, CPPLarge)
 {
