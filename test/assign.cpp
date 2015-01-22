@@ -246,3 +246,129 @@ TEST(ArrayAssign, CPP)
 
     delete[] outData;
 }
+
+TEST(ArrayAssign, CPP_END)
+{
+    using af::array;
+
+    const int n = 5;
+    const int m = 5;
+    const int end_off = 2;
+
+    array a = af::randu(n, m);
+    array b = af::randu(1, m);
+    a(af::end - end_off, af::span) = b;
+
+    float *hA = a.host<float>();
+    float *hB = b.host<float>();
+
+    for (int i = 0; i < m; i++) {
+        ASSERT_EQ(hA[i * n + end_off], hB[i]);
+    }
+
+
+    delete[] hA;
+    delete[] hB;
+}
+
+TEST(ArrayAssign, CPP_END_SEQ)
+{
+    using af::array;
+
+    const int num = 20;
+    const int end_begin = 10;
+    const int end_end = 0;
+    const int len = end_begin - end_end + 1;
+
+    array a = af::randu(num);
+    array b = af::randu(len);
+    a(af::seq(af::end - end_begin, af::end - end_end)) = b;
+
+    float *hA = a.host<float>();
+    float *hB = b.host<float>();
+
+    for (int i = 0; i < len; i++) {
+        ASSERT_EQ(hA[i + end_begin - 1], hB[i]);
+    }
+
+    delete[] hA;
+    delete[] hB;
+}
+
+TEST(ArrayAssign, CPP_COPY_ON_WRITE)
+{
+    using af::array;
+
+    const int num = 20;
+    const int len = 10;
+
+    array a = af::randu(num);
+    float *hAO = a.host<float>();
+
+    array a_copy = a;
+    array b = af::randu(len);
+    a(af::seq(len)) = b;
+
+    float *hA = a.host<float>();
+    float *hB = b.host<float>();
+    float *hAC = a_copy.host<float>();
+
+    // first half should be from B
+    for (int i = 0; i < len; i++) {
+        ASSERT_EQ(hA[i], hB[i]);
+    }
+
+    // Second half should be same as original
+    for (int i = 0; i < num - len; i++) {
+        ASSERT_EQ(hA[i + len], hAO[i + len]);
+    }
+
+    // hAC should not be modified, i.e. same as original
+    for (int i = 0; i < num; i++) {
+        ASSERT_EQ(hAO[i], hAC[i]);
+    }
+
+    delete[] hA;
+    delete[] hB;
+    delete[] hAC;
+    delete[] hAO;
+}
+
+TEST(ArrayAssign, CPP_ASSIGN_BINOP)
+{
+    using af::array;
+
+    const int num = 20;
+    const int len = 10;
+
+    array a = af::randu(num);
+    float *hAO = a.host<float>();
+
+    array a_copy = a;
+    array b = af::randu(len);
+    a(af::seq(len)) += b;
+
+    float *hA = a.host<float>();
+    float *hB = b.host<float>();
+    float *hAC = a_copy.host<float>();
+
+    // first half should be hAO + hB
+    for (int i = 0; i < len; i++) {
+        ASSERT_EQ(hA[i], hAO[i] + hB[i]);
+    }
+
+    // Second half should be same as original
+    for (int i = 0; i < num - len; i++) {
+        ASSERT_EQ(hA[i + len], hAO[i + len]);
+    }
+
+    // hAC should not be modified, i.e. same as original
+    for (int i = 0; i < num; i++) {
+        ASSERT_EQ(hAO[i], hAC[i]);
+    }
+
+    delete[] hA;
+    delete[] hB;
+    delete[] hAC;
+    delete[] hAO;
+}
