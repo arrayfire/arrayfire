@@ -148,6 +148,7 @@ void orb(unsigned* out_feat,
         unsigned gauss_len = 9;
         T* h_gauss = nullptr;
         Param gauss_filter;
+        gauss_filter.data = nullptr;
 
         for (unsigned i = 0; i < max_levels; i++) {
             const float lvl_scl = (float)pow(scl_fctr,(float)i);
@@ -381,8 +382,10 @@ void orb(unsigned* out_feat,
                 bufferFree(lvl_img.data);
         }
 
-        bufferFree(gauss_filter.data);
-        delete[] h_gauss;
+        if (gauss_filter.data != nullptr)
+            bufferFree(gauss_filter.data);
+        if (h_gauss != nullptr)
+            delete[] h_gauss;
 
         // If no features are found, set found features to 0 and return
         if (total_feat == 0) {

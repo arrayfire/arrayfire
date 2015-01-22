@@ -53,6 +53,12 @@ void orb(features& feat, Array<unsigned>** desc, const Array<T>& image,
 
     if (nfeat_out == 0) {
         feat.setNumFeatures(0);
+        feat.setX(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setY(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setScore(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setOrientation(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setSize(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        *desc = createEmptyArray<unsigned>(af::dim4());
         return;
     }
     if (x_out == NULL || y_out == NULL || score_out == NULL || orientation_out == NULL ||
