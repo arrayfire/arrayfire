@@ -719,6 +719,12 @@ void orb(features& feat,
     // If no features are found, set found features to 0 and return
     if (total_feat == 0) {
         feat.setNumFeatures(0);
+        feat.setX(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setY(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setScore(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setOrientation(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setSize(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        *desc = createEmptyArray<unsigned>(af::dim4());
         return;
     }
 
@@ -770,7 +776,7 @@ void orb(features& feat,
 #define INSTANTIATE(T, convAccT)\
     template void orb<T, convAccT>(features& feat, Array<unsigned>** desc, const Array<T>& image,   \
                                    const float fast_thr, const unsigned max_feat,                   \
-                                   const float scl_fctr, const unsigned levels);              
+                                   const float scl_fctr, const unsigned levels);
 
 INSTANTIATE(float , float )
 INSTANTIATE(double, double)
