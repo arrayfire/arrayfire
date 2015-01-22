@@ -12,6 +12,7 @@
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <af/traits.hpp>
+#include <af/data.h>
 
 #include <vector>
 #include <algorithm>
@@ -631,6 +632,26 @@ TEST(ArrayIndex, CPP)
 
     delete[] outData;
 }
+
+TEST(ArrayIndex, CPP_END_SPAN)
+{
+    using af::array;
+
+    array a = af::randu(5, 5);
+    array b = a(af::end, af::span);
+
+    float *hA = a.host<float>();
+    float *hB = b.host<float>();
+
+    for (int i = 0; i < 5; i++) {
+        ASSERT_EQ(hA[i * 5 + 4], hB[i]);
+    }
+
+
+    delete[] hA;
+    delete[] hB;
+}
+
 
 TEST(ArrayIndex, CPPLarge)
 {

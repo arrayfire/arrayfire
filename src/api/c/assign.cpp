@@ -61,15 +61,16 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
         }
     }
 
+    static const T ZERO = scalar<T>(0);
     if(noCaseExecuted) {
         noCaseExecuted = false;
         switch(iType) {
-            case f64: copy<double , T>(*dst, getArray<double>(in), scalar<T>(0), 1.0);  break;
-            case f32: copy<float  , T>(*dst, getArray<float >(in), scalar<T>(0), 1.0);  break;
-            case s32: copy<int    , T>(*dst, getArray<int   >(in), scalar<T>(0), 1.0);  break;
-            case u32: copy<uint   , T>(*dst, getArray<uint  >(in), scalar<T>(0), 1.0);  break;
-            case u8 : copy<uchar  , T>(*dst, getArray<uchar >(in), scalar<T>(0), 1.0);  break;
-            case b8 : copy<char   , T>(*dst, getArray<char  >(in), scalar<T>(0), 1.0);  break;
+            case f64: copy<double , T>(*dst, getArray<double>(in), ZERO, 1.0);  break;
+            case f32: copy<float  , T>(*dst, getArray<float >(in), ZERO, 1.0);  break;
+            case s32: copy<int    , T>(*dst, getArray<int   >(in), ZERO, 1.0);  break;
+            case u32: copy<uint   , T>(*dst, getArray<uint  >(in), ZERO, 1.0);  break;
+            case u8 : copy<uchar  , T>(*dst, getArray<uchar >(in), ZERO, 1.0);  break;
+            case b8 : copy<char   , T>(*dst, getArray<char  >(in), ZERO, 1.0);  break;
             default : noCaseExecuted = true; break;
         }
     }
@@ -80,35 +81,40 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
     delete dst;
 }
 
-af_err af_assign(af_array out, const unsigned ndims, const af_seq *index, const af_array in)
+af_err af_assign(af_array *out,
+                 const af_array lhs, const unsigned ndims,
+                 const af_seq *index, const af_array rhs)
 {
     try {
-        ARG_ASSERT(0, (out!=0));
+        ARG_ASSERT(0, (lhs!=0));
         ARG_ASSERT(1, (ndims>0));
-        ARG_ASSERT(3, (in!=0));
-
-        if (in==out) {
-            //FIXME: This should check for *index and throw exception if not equal
-            return AF_SUCCESS;
-        }
+        ARG_ASSERT(3, (rhs!=0));
 
         for(dim_type i=0; i<(dim_type)ndims; ++i) {
             ARG_ASSERT(2, (index[i].step>=0));
         }
 
-        ArrayInfo oInfo = getInfo(out);
-        af_dtype oType  = oInfo.getType();
-        switch(oType) {
-            case c64: assign<cdouble, true >(out, ndims, index, in);  break;
-            case c32: assign<cfloat , true >(out, ndims, index, in);  break;
-            case f64: assign<double , false>(out, ndims, index, in);  break;
-            case f32: assign<float  , false>(out, ndims, index, in);  break;
-            case s32: assign<int    , false>(out, ndims, index, in);  break;
-            case u32: assign<uint   , false>(out, ndims, index, in);  break;
-            case u8 : assign<uchar  , false>(out, ndims, index, in);  break;
-            case b8 : assign<char   , false>(out, ndims, index, in);  break;
+        af_array res;
+        if (*out != lhs) AF_CHECK(af_copy_array(&res, lhs));
+        else             res = lhs;
+
+        if (lhs != rhs) {
+            ArrayInfo oInfo = getInfo(lhs);
+            af_dtype oType  = oInfo.getType();
+            switch(oType) {
+            case c64: assign<cdouble, true >(res, ndims, index, rhs);  break;
+            case c32: assign<cfloat , true >(res, ndims, index, rhs);  break;
+            case f64: assign<double , false>(res, ndims, index, rhs);  break;
+            case f32: assign<float  , false>(res, ndims, index, rhs);  break;
+            case s32: assign<int    , false>(res, ndims, index, rhs);  break;
+            case u32: assign<uint   , false>(res, ndims, index, rhs);  break;
+            case u8 : assign<uchar  , false>(res, ndims, index, rhs);  break;
+            case b8 : assign<char   , false>(res, ndims, index, rhs);  break;
             default : TYPE_ERROR(1, oType); break;
+            }
         }
+
+        std::swap(*out, res);
     }
     CATCHALL;
 

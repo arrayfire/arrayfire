@@ -31,11 +31,16 @@ namespace af
 
     private:
         af_array   arr;
+
+        //FIXME: Put the following in a different class
+        const array   *parent;
         bool     isRef;
         seq      s[4];
         void getSeq(af_seq* afs);
-
-        array(af_array in, seq *seqs);
+        array(af_array in, const array *par, seq *seqs);
+        void set(af_array tmp);
+        void set(af_array tmp) const;
+        //END FIXME
 
     public:
         array();

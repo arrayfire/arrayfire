@@ -98,16 +98,17 @@ void assignTest(string pTestFile, const vector<af_seq> *seqv)
 
     af::dim4 dims0     = numDims[0];
     af::dim4 dims1     = numDims[1];
+    af_array lhsArray  = 0;
+    af_array rhsArray  = 0;
     af_array outArray  = 0;
-    af_array inArray   = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&rhsArray, &(in[0].front()),
                 dims0.ndims(), dims0.get(), (af_dtype)af::dtype_traits<inType>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&outArray, &(in[1].front()),
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&lhsArray, &(in[1].front()),
                 dims1.ndims(), dims1.get(), (af_dtype)af::dtype_traits<outType>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_assign(outArray, seqv->size(), &seqv->front(), inArray));
+    ASSERT_EQ(AF_SUCCESS, af_assign(&outArray, lhsArray, seqv->size(), &seqv->front(), rhsArray));
 
     outType *outData = new outType[dims1.elements()];
 
@@ -120,7 +121,8 @@ void assignTest(string pTestFile, const vector<af_seq> *seqv)
     }
 
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(rhsArray));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(lhsArray));
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
 }
 
@@ -181,28 +183,32 @@ TEST(ArrayAssign, InvalidArgs)
 
     af::dim4 dims0(10, 1, 1, 1);
     af::dim4 dims1(100, 1, 1, 1);
-    af_array outArray  = 0;
-    af_array inArray   = 0;
+    af_array lhsArray = 0;
+    af_array rhsArray = 0;
+    af_array outArray = 0;
 
     vector<af_seq> seqv;
     seqv.push_back({5,14,1});
 
-    ASSERT_EQ(AF_ERR_ARG, af_assign(outArray, seqv.size(), &seqv.front(), inArray));
+    ASSERT_EQ(AF_ERR_ARG, af_assign(&outArray,
+                                    lhsArray, seqv.size(), &seqv.front(), rhsArray));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&rhsArray, &(in.front()),
                 dims0.ndims(), dims0.get(), (af_dtype)af::dtype_traits<af::cfloat>::af_type));
 
-    ASSERT_EQ(AF_ERR_ARG, af_assign(outArray, seqv.size(), &seqv.front(), inArray));
+    ASSERT_EQ(AF_ERR_ARG, af_assign(&outArray,
+                                    lhsArray, seqv.size(), &seqv.front(), rhsArray));
 
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&outArray, &(in.front()),
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&lhsArray, &(in.front()),
                 dims1.ndims(), dims1.get(), (af_dtype)af::dtype_traits<float>::af_type));
 
-    ASSERT_EQ(AF_ERR_ARG, af_assign(outArray, 0, &seqv.front(), inArray));
+    ASSERT_EQ(AF_ERR_ARG, af_assign(&outArray, lhsArray, 0, &seqv.front(), rhsArray));
 
-    ASSERT_EQ(AF_ERR_INVALID_TYPE, af_assign(outArray, seqv.size(), &seqv.front(), inArray));
+    ASSERT_EQ(AF_ERR_INVALID_TYPE, af_assign(&outArray,
+                                             lhsArray, seqv.size(), &seqv.front(), rhsArray));
 
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(rhsArray));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(lhsArray));
 }
 
 TEST(ArrayAssign, CPP)
