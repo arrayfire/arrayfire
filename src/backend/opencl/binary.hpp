@@ -67,6 +67,9 @@ BINARY_TYPE_1(mul)
 BINARY_TYPE_1(div)
 BINARY_TYPE_1(and)
 BINARY_TYPE_1(or)
+BINARY_TYPE_1(bitand)
+BINARY_TYPE_1(bitor)
+BINARY_TYPE_1(bitxor)
 
 #undef BINARY_TYPE_1
 

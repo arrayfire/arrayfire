@@ -201,3 +201,33 @@ BINARY_TESTS_NEAR(float, double, double, add, 1e-5)
 BINARY_TESTS_NEAR(float, double, double, sub, 1e-5)
 BINARY_TESTS_NEAR(float, double, double, mul, 1e-5)
 BINARY_TESTS_NEAR(float, double, double, div, 1e-5)
+
+#define BITOP(func, T, op)                                  \
+    TEST(BinaryTests, Test_##func##_##T)                    \
+    {                                                       \
+        af_dtype ty = (af_dtype)dtype_traits<T>::af_type;   \
+        const T vala = 4095 - 31;                           \
+        const T valb = 1023 + 63;                           \
+        const T valc = vala op valb;                        \
+        const int num = 10;                                 \
+        af::array a = af::constant(vala, num, ty);          \
+        af::array b = af::constant(valb, num, ty);          \
+        af::array c = a op b;                               \
+        T *h_a = a.host<T>();                               \
+        T *h_b = b.host<T>();                               \
+        T *h_c = c.host<T>();                               \
+        for (int i = 0; i < num; i++)                       \
+            ASSERT_EQ(h_c[i], valc) <<                      \
+                "for values: " << h_a[i]  <<                \
+                "," << h_b[i] << std::endl;                 \
+        delete[] h_a;                                       \
+        delete[] h_b;                                       \
+        delete[] h_c;                                       \
+    }                                                       \
+
+BITOP(bitor, int, |)
+BITOP(bitand, int, &)
+BITOP(bitxor, int, ^)
+BITOP(bitor, uint, |)
+BITOP(bitand, uint, &)
+BITOP(bitxor, uint, ^)

@@ -258,6 +258,9 @@ namespace af
             LOGIC(&&)
             LOGIC(||)
             LOGIC(%)
+            LOGIC(&)
+            LOGIC(|)
+            LOGIC(^)
 
 #undef SELF
 #undef BIN

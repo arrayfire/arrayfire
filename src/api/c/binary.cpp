@@ -299,17 +299,57 @@ af_err af_or(af_array *out, const af_array lhs, const af_array rhs, bool batchMo
     return af_logic<af_or_t>(out, lhs, rhs, batchMode);
 }
 
+template<typename T, af_op_t op>
+static inline af_array bitOp(const af_array lhs, const af_array rhs, const dim4 &odims)
+{
+    af_array res = getHandle(*bitOp<T, op>(getArray<T>(lhs), getArray<T>(rhs), odims));
+    // All inputs to this function are temporary references
+    // Delete the temporary references
+    destroyHandle<T>(lhs);
+    destroyHandle<T>(rhs);
+    return res;
+}
+
+template<af_op_t op>
+static af_err af_bitwise(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+{
+    try {
+        const af_dtype type = implicit(lhs, rhs);
+
+        const af_array left  = cast(lhs, type);
+        const af_array right = cast(rhs, type);
+
+        ArrayInfo linfo = getInfo(lhs);
+        ArrayInfo rinfo = getInfo(rhs);
+
+        dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
+
+        af_array res;
+        switch (type) {
+        case s32: res = bitOp<int    , op>(left, right, odims); break;
+        case u32: res = bitOp<uint   , op>(left, right, odims); break;
+        case u8 : res = bitOp<uchar  , op>(left, right, odims); break;
+        case b8 : res = bitOp<char   , op>(left, right, odims); break;
+        default: TYPE_ERROR(0, type);
+        }
+
+        std::swap(*out, res);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
 af_err af_bitand(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
 {
-    return AF_ERR_NOT_SUPPORTED;
+    return af_bitwise<af_bitand_t>(out, lhs, rhs, batchMode);
 }
 
 af_err af_bitor(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
 {
-    return AF_ERR_NOT_SUPPORTED;
+    return af_bitwise<af_bitor_t>(out, lhs, rhs, batchMode);
 }
 
 af_err af_bitxor(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
 {
-    return AF_ERR_NOT_SUPPORTED;
+    return af_bitwise<af_bitxor_t>(out, lhs, rhs, batchMode);
 }

@@ -80,4 +80,34 @@ LOGIC_CPLX_FN(double, af_or_t, ||)
         return createNodeArray<uchar>(odims, TNJ::Node_ptr(
                                           reinterpret_cast<TNJ::Node *>(node)));
     }
+
+
+
+#define BITWISE_FN(OP, op)                      \
+    template<typename T>                        \
+    struct BinOp<T, T, OP>                      \
+    {                                           \
+        T eval(T lhs, T rhs)                    \
+        {                                       \
+            return lhs op rhs;                  \
+        }                                       \
+    };                                          \
+
+    BITWISE_FN(af_bitor_t, |)
+    BITWISE_FN(af_bitand_t, &)
+    BITWISE_FN(af_bitxor_t, ^)
+
+#undef BITWISE_FN
+
+    template<typename T, af_op_t op>
+    Array<T>* bitOp(const Array<T> &lhs, const Array<T> &rhs, const af::dim4 &odims)
+    {
+        TNJ::Node_ptr lhs_node = lhs.getNode();
+        TNJ::Node_ptr rhs_node = rhs.getNode();
+
+        TNJ::BinaryNode<T, T, op> *node = new TNJ::BinaryNode<T, T, op>(lhs_node, rhs_node);
+
+        return createNodeArray<T>(odims, TNJ::Node_ptr(
+                                      reinterpret_cast<TNJ::Node *>(node)));
+    }
 }
