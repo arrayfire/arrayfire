@@ -91,6 +91,8 @@ static af_err af_arith_real(af_array *out, const af_array lhs, const af_array rh
         case u32: res = arithOp<uint   , op>(left, right, odims); break;
         case u8 : res = arithOp<uchar  , op>(left, right, odims); break;
         case b8 : res = arithOp<char   , op>(left, right, odims); break;
+        case s64: res = arithOp<intl   , op>(left, right, odims); break;
+        case u64: res = arithOp<uintl  , op>(left, right, odims); break;
         default: TYPE_ERROR(0, otype);
         }
 
