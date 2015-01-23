@@ -79,6 +79,22 @@ BINARY_TYPE_1(bitxor)
     {                                           \
         const char *name()                      \
         {                                       \
+            return "__"#fn;                     \
+        }                                       \
+    };                                          \
+    template<typename To>                       \
+    struct BinOp<To, float, af_##fn##_t>        \
+    {                                           \
+        const char *name()                      \
+        {                                       \
+            return "f"#fn;                      \
+        }                                       \
+    };                                          \
+    template<typename To>                       \
+    struct BinOp<To, double, af_##fn##_t>       \
+    {                                           \
+        const char *name()                      \
+        {                                       \
             return "f"#fn;                      \
         }                                       \
     };                                          \
@@ -101,7 +117,6 @@ BINARY_TYPE_1(bitxor)
     };                                          \
 
 
-// FIXME: call #fn instead of "f"#fn for int types
 BINARY_TYPE_2(min)
 BINARY_TYPE_2(max)
 BINARY_TYPE_2(pow)

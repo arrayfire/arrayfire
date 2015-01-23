@@ -102,6 +102,12 @@ float2 __cdivf(float2 lhs, float2 rhs)
 #define __bitand(lhs, rhs) ((lhs) & (rhs))
 #define __bitxor(lhs, rhs) ((lhs) ^ (rhs))
 
+#define __min(lhs, rhs) ((lhs) < (rhs)) ? (lhs) : (rhs)
+#define __max(lhs, rhs) ((lhs) > (rhs)) ? (lhs) : (rhs)
+#define __rem(lhs, rhs) ((lhs) % (rhs))
+#define __mod(lhs, rhs) ((lhs) % (rhs))
+#define __pow(lhs, rhs) fpow((float)lhs, (float)rhs)
+
 float2 __cminf(float2 lhs, float2 rhs)
 {
     return __abs2(lhs) < __abs2(rhs) ? lhs : rhs;
