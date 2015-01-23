@@ -165,6 +165,9 @@ namespace af
     INSTANTIATE(int)
     INSTANTIATE(unsigned char)
     INSTANTIATE(char)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
+
 #undef INSTANTIATE
 
     array::~array()
@@ -721,4 +724,7 @@ namespace af
     INSTANTIATE(int)
     INSTANTIATE(unsigned char)
     INSTANTIATE(char)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
+
 }

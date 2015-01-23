@@ -7,6 +7,7 @@
 * http://arrayfire.com/licenses/BSD-3-Clause
 ********************************************************/
 
+#include <af/defines.h>
 #include "types.hpp"
 
 namespace cuda
@@ -20,6 +21,8 @@ namespace cuda
 	template<> const char *shortname<uint    >(bool caps) { return caps ? "U" : "u"; }
 	template<> const char *shortname<char    >(bool caps) { return caps ? "J" : "j"; }
 	template<> const char *shortname<uchar   >(bool caps) { return caps ? "V" : "v"; }
+	template<> const char *shortname<intl    >(bool caps) { return caps ? "L" : "l"; }
+	template<> const char *shortname<uintl   >(bool caps) { return caps ? "K" : "k"; }
 
 	template<typename T > const char *irname() { return  "i32"; }
 	template<> const char *irname<float   >() { return  "float"; }
@@ -28,6 +31,8 @@ namespace cuda
 	template<> const char *irname<cdouble >() { return  "<2 x double>"; }
 	template<> const char *irname<int     >() { return  "i32"; }
 	template<> const char *irname<uint    >() { return  "i32"; }
+	template<> const char *irname<intl    >() { return  "i64"; }
+	template<> const char *irname<uintl   >() { return  "i64"; }
 	template<> const char *irname<char    >() { return  "i8"; }
 	template<> const char *irname<uchar   >() { return  "i8"; }
 }

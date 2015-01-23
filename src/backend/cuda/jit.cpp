@@ -436,6 +436,8 @@ template void evalNodes<int    >(Param<int    > &out, Node *node);
 template void evalNodes<uint   >(Param<uint   > &out, Node *node);
 template void evalNodes<char   >(Param<char   > &out, Node *node);
 template void evalNodes<uchar  >(Param<uchar  > &out, Node *node);
+template void evalNodes<intl   >(Param<intl   > &out, Node *node);
+template void evalNodes<uintl  >(Param<uintl  > &out, Node *node);
 
 
 }
