@@ -12,7 +12,7 @@
 
 namespace cuda
 {
-	template<typename T > const char *shortname(bool caps) { return caps ? "X" : "x"; }
+	template<typename T > const char *shortname(bool caps) { return caps ? "Q" : "q"; }
 	template<> const char *shortname<float   >(bool caps) { return caps ? "S" : "s"; }
 	template<> const char *shortname<double  >(bool caps) { return caps ? "D" : "d"; }
 	template<> const char *shortname<cfloat  >(bool caps) { return caps ? "C" : "c"; }
@@ -21,8 +21,8 @@ namespace cuda
 	template<> const char *shortname<uint    >(bool caps) { return caps ? "U" : "u"; }
 	template<> const char *shortname<char    >(bool caps) { return caps ? "J" : "j"; }
 	template<> const char *shortname<uchar   >(bool caps) { return caps ? "V" : "v"; }
-	template<> const char *shortname<intl    >(bool caps) { return caps ? "L" : "l"; }
-	template<> const char *shortname<uintl   >(bool caps) { return caps ? "K" : "k"; }
+	template<> const char *shortname<intl    >(bool caps) { return caps ? "X" : "x"; }
+	template<> const char *shortname<uintl   >(bool caps) { return caps ? "Y" : "y"; }
 
 	template<typename T > const char *irname() { return  "i32"; }
 	template<> const char *irname<float   >() { return  "float"; }
