@@ -85,7 +85,7 @@ template<>
 struct dtype_traits<unsigned long long> {
     enum { af_type = u64 };
     typedef unsigned char base_type;
-    static const char* getName() { return "unsigned long"; }
+    static const char* getName() { return "ulong"; }
 };
 
 }
