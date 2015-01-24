@@ -482,6 +482,8 @@ af_err af_eval(af_array arr)
         case u32: eval<uint   >(arr); break;
         case u8 : eval<uchar  >(arr); break;
         case b8 : eval<char   >(arr); break;
+        case s64: eval<intl   >(arr); break;
+        case u64: eval<uintl  >(arr); break;
         default:
             TYPE_ERROR(0, type);
         }
