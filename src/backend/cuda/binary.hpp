@@ -49,6 +49,8 @@ BINARY(or)
 BINARY(bitand)
 BINARY(bitor)
 BINARY(bitxor)
+BINARY(bitshiftl)
+BINARY(bitshiftr)
 
 BINARY(lt)
 BINARY(gt)

@@ -361,3 +361,13 @@ af_err af_bitxor(af_array *out, const af_array lhs, const af_array rhs, bool bat
 {
     return af_bitwise<af_bitxor_t>(out, lhs, rhs, batchMode);
 }
+
+af_err af_bitshiftl(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+{
+    return af_bitwise<af_bitshiftl_t>(out, lhs, rhs, batchMode);
+}
+
+af_err af_bitshiftr(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+{
+    return af_bitwise<af_bitshiftr_t>(out, lhs, rhs, batchMode);
+}

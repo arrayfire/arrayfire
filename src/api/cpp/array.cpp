@@ -614,6 +614,8 @@ namespace af
     INSTANTIATE(&, af_bitand)
     INSTANTIATE(|, af_bitor)
     INSTANTIATE(^, af_bitxor)
+    INSTANTIATE(<<, af_bitshiftl)
+    INSTANTIATE(>>, af_bitshiftr)
 
 #undef INSTANTIATE
 

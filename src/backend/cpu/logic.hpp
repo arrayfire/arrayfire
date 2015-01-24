@@ -96,6 +96,8 @@ LOGIC_CPLX_FN(double, af_or_t, ||)
     BITWISE_FN(af_bitor_t, |)
     BITWISE_FN(af_bitand_t, &)
     BITWISE_FN(af_bitxor_t, ^)
+    BITWISE_FN(af_bitshiftl_t, <<)
+    BITWISE_FN(af_bitshiftr_t, >>)
 
 #undef BITWISE_FN
 

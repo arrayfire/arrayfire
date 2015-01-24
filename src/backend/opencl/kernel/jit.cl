@@ -101,6 +101,8 @@ float2 __cdivf(float2 lhs, float2 rhs)
 #define __bitor(lhs, rhs) ((lhs) | (rhs))
 #define __bitand(lhs, rhs) ((lhs) & (rhs))
 #define __bitxor(lhs, rhs) ((lhs) ^ (rhs))
+#define __bitshiftl(lhs, rhs) ((lhs) << (rhs))
+#define __bitshiftr(lhs, rhs) ((lhs) >> (rhs))
 
 #define __min(lhs, rhs) ((lhs) < (rhs)) ? (lhs) : (rhs)
 #define __max(lhs, rhs) ((lhs) > (rhs)) ? (lhs) : (rhs)

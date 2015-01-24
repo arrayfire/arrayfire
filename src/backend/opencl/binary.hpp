@@ -70,6 +70,8 @@ BINARY_TYPE_1(or)
 BINARY_TYPE_1(bitand)
 BINARY_TYPE_1(bitor)
 BINARY_TYPE_1(bitxor)
+BINARY_TYPE_1(bitshiftl)
+BINARY_TYPE_1(bitshiftr)
 
 #undef BINARY_TYPE_1
 
