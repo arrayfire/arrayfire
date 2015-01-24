@@ -59,6 +59,8 @@ static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs, bo
         case u32: res = arithOp<uint   , op>(left, right, odims); break;
         case u8 : res = arithOp<uchar  , op>(left, right, odims); break;
         case b8 : res = arithOp<char   , op>(left, right, odims); break;
+        case s64: res = arithOp<intl   , op>(left, right, odims); break;
+        case u64: res = arithOp<uintl  , op>(left, right, odims); break;
         default: TYPE_ERROR(0, otype);
         }
 
@@ -89,6 +91,8 @@ static af_err af_arith_real(af_array *out, const af_array lhs, const af_array rh
         case u32: res = arithOp<uint   , op>(left, right, odims); break;
         case u8 : res = arithOp<uchar  , op>(left, right, odims); break;
         case b8 : res = arithOp<char   , op>(left, right, odims); break;
+        case s64: res = arithOp<intl   , op>(left, right, odims); break;
+        case u64: res = arithOp<uintl  , op>(left, right, odims); break;
         default: TYPE_ERROR(0, otype);
         }
 
@@ -148,7 +152,7 @@ af_err af_pow(af_array *out, const af_array lhs, const af_array rhs, bool batchM
         }
     } CATCHALL;
 
-    return af_arith<af_pow_t>(out, lhs, rhs, batchMode);
+    return af_arith_real<af_pow_t>(out, lhs, rhs, batchMode);
 }
 
 af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
@@ -250,6 +254,8 @@ static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs, bo
         case u32: res = logicOp<uint   , op>(left, right, odims); break;
         case u8 : res = logicOp<uchar  , op>(left, right, odims); break;
         case b8 : res = logicOp<char   , op>(left, right, odims); break;
+        case s64: res = logicOp<intl   , op>(left, right, odims); break;
+        case u64: res = logicOp<uintl  , op>(left, right, odims); break;
         default: TYPE_ERROR(0, type);
         }
 
@@ -299,17 +305,69 @@ af_err af_or(af_array *out, const af_array lhs, const af_array rhs, bool batchMo
     return af_logic<af_or_t>(out, lhs, rhs, batchMode);
 }
 
+template<typename T, af_op_t op>
+static inline af_array bitOp(const af_array lhs, const af_array rhs, const dim4 &odims)
+{
+    af_array res = getHandle(*bitOp<T, op>(getArray<T>(lhs), getArray<T>(rhs), odims));
+    // All inputs to this function are temporary references
+    // Delete the temporary references
+    destroyHandle<T>(lhs);
+    destroyHandle<T>(rhs);
+    return res;
+}
+
+template<af_op_t op>
+static af_err af_bitwise(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+{
+    try {
+        const af_dtype type = implicit(lhs, rhs);
+
+        const af_array left  = cast(lhs, type);
+        const af_array right = cast(rhs, type);
+
+        ArrayInfo linfo = getInfo(lhs);
+        ArrayInfo rinfo = getInfo(rhs);
+
+        dim4 odims = getOutDims(linfo.dims(), rinfo.dims(), batchMode);
+
+        af_array res;
+        switch (type) {
+        case s32: res = bitOp<int    , op>(left, right, odims); break;
+        case u32: res = bitOp<uint   , op>(left, right, odims); break;
+        case u8 : res = bitOp<uchar  , op>(left, right, odims); break;
+        case b8 : res = bitOp<char   , op>(left, right, odims); break;
+        case s64: res = bitOp<intl   , op>(left, right, odims); break;
+        case u64: res = bitOp<uintl  , op>(left, right, odims); break;
+        default: TYPE_ERROR(0, type);
+        }
+
+        std::swap(*out, res);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
 af_err af_bitand(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
 {
-    return AF_ERR_NOT_SUPPORTED;
+    return af_bitwise<af_bitand_t>(out, lhs, rhs, batchMode);
 }
 
 af_err af_bitor(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
 {
-    return AF_ERR_NOT_SUPPORTED;
+    return af_bitwise<af_bitor_t>(out, lhs, rhs, batchMode);
 }
 
 af_err af_bitxor(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
 {
-    return AF_ERR_NOT_SUPPORTED;
+    return af_bitwise<af_bitxor_t>(out, lhs, rhs, batchMode);
+}
+
+af_err af_bitshiftl(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+{
+    return af_bitwise<af_bitshiftl_t>(out, lhs, rhs, batchMode);
+}
+
+af_err af_bitshiftr(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+{
+    return af_bitwise<af_bitshiftr_t>(out, lhs, rhs, batchMode);
 }

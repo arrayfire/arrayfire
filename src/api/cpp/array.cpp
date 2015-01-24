@@ -165,6 +165,9 @@ namespace af
     INSTANTIATE(int)
     INSTANTIATE(unsigned char)
     INSTANTIATE(char)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
+
 #undef INSTANTIATE
 
     array::~array()
@@ -607,7 +610,12 @@ namespace af
     INSTANTIATE(>=, af_ge)
     INSTANTIATE(&&, af_and)
     INSTANTIATE(||, af_or)
-    INSTANTIATE(%, af_mod)
+    INSTANTIATE(%, af_rem)
+    INSTANTIATE(&, af_bitand)
+    INSTANTIATE(|, af_bitor)
+    INSTANTIATE(^, af_bitxor)
+    INSTANTIATE(<<, af_bitshiftl)
+    INSTANTIATE(>>, af_bitshiftr)
 
 #undef INSTANTIATE
 
@@ -718,4 +726,7 @@ namespace af
     INSTANTIATE(int)
     INSTANTIATE(unsigned char)
     INSTANTIATE(char)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
+
 }

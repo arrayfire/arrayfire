@@ -7,6 +7,7 @@
 * http://arrayfire.com/licenses/BSD-3-Clause
 ********************************************************/
 
+#include <af/defines.h>
 #include "types.hpp"
 
 namespace opencl
@@ -22,5 +23,7 @@ namespace opencl
 	template<> const char *shortname<uint    >(bool caps) { return caps ? "U" : "u"; }
 	template<> const char *shortname<char    >(bool caps) { return caps ? "J" : "j"; }
 	template<> const char *shortname<uchar   >(bool caps) { return caps ? "V" : "v"; }
+	template<> const char *shortname<intl    >(bool caps) { return caps ? "L" : "l"; }
+	template<> const char *shortname<uintl   >(bool caps) { return caps ? "K" : "k"; }
 
 }
