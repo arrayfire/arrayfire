@@ -99,6 +99,9 @@ namespace opencl
     INSTANTIATE(uint)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
+
 
 #define INSTANTIATE_COPY(SRC_T)                                                       \
     template void copy<SRC_T, float  >(Array<float  > &dst, const Array<SRC_T> &src, float   default_value, double factor); \

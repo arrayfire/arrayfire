@@ -49,6 +49,8 @@ af_err af_transpose(af_array *out, af_array in, const bool conjugate)
             case s32: output = trs<int>    (in, conjugate);    break;
             case u32: output = trs<uint>   (in, conjugate);    break;
             case u8 : output = trs<uchar>  (in, conjugate);    break;
+            case s64: output = trs<intl>   (in, conjugate);    break;
+            case u64: output = trs<uintl>  (in, conjugate);    break;
             default : TYPE_ERROR(1, type);
         }
         std::swap(*out,output);

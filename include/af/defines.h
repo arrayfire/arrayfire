@@ -34,15 +34,17 @@
 	#define STATIC_
 #endif
 
-#include <cstddef>
 
 #ifdef __cplusplus
 #include <complex>
+#include <cstddef>
 
 typedef std::complex<float> af_cfloat;
 typedef std::complex<double> af_cdouble;
 
 #else
+#include <stdlib.h>
+
 typedef struct {
 	float x;
 	float y;
@@ -54,6 +56,9 @@ typedef struct {
 } af_cdouble;
 
 #endif
+
+typedef long long intl;
+typedef unsigned long long uintl;
 
 typedef enum {
     AF_SUCCESS=0,
@@ -81,7 +86,8 @@ typedef enum {
 	s32,
 	u32,
 	u8,
-	u8x4,
+    s64,
+    u64
 } af_dtype;
 
 typedef enum {

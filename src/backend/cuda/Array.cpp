@@ -234,6 +234,8 @@ namespace cuda
     INSTANTIATE(uint)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
 
 #define INSTANTIATE_CREATE_PADDED_ARRAY(SRC_T) \
     template Array<float  >* createPaddedArray<SRC_T, float  >(Array<SRC_T> const &src, dim4 const &dims, float   default_value, double factor); \

@@ -53,6 +53,8 @@ af_err af_moddims(af_array *out, const af_array in,
         case s32: output = modDims<int    >(in, newDims); break;
         case u32: output = modDims<uint   >(in, newDims); break;
         case u8:  output = modDims<uchar  >(in, newDims); break;
+        case s64: output = modDims<intl   >(in, newDims); break;
+        case u64: output = modDims<uintl  >(in, newDims); break;
         default: TYPE_ERROR(1, type);
         }
         std::swap(*out,output);

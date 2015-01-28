@@ -45,7 +45,7 @@ extern "C" {
 
     // copy an array into exiting array of larger dimensions
     // error out in case of insufficient dimension lengths
-    AFAPI af_err af_assign(af_array out, unsigned ndims, const af_seq* const index, const af_array in);
+    AFAPI af_err af_assign(af_array *out, const af_array lhs, unsigned ndims, const af_seq* const index, const af_array rhs);
 
     // Join 2 Arrays
     AFAPI af_err af_join(af_array *out, const int dim, const af_array first, const af_array second);
