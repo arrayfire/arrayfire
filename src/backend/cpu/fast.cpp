@@ -249,7 +249,6 @@ features fast(const Array<T> &in, const float thr, const unsigned arc_length,
 
     // Matrix containing scores for detected features, scores are stored in the
     // same coordinates as features, dimensions should be equal to in.
-    //T* V = NULL;
     Array<T> *V = NULL;
     if (nonmax == 1) {
         dim4 V_dims(in_dims[0], in_dims[1]);
@@ -290,6 +289,8 @@ features fast(const Array<T> &in, const float thr, const unsigned arc_length,
                        *x_nonmax, *y_nonmax, *score_nonmax,
                        &count, feat_found);
 
+        delete V;
+
         feat_found = std::min(max_feat, count);
         feat_found_dims = dim4(feat_found);
 
@@ -315,6 +316,9 @@ features fast(const Array<T> &in, const float thr, const unsigned arc_length,
         delete x;
         delete y;
         delete score;
+        delete x_nonmax;
+        delete y_nonmax;
+        delete score_nonmax;
     }
     else {
         // TODO: improve output copy, use af_index?
@@ -335,6 +339,10 @@ features fast(const Array<T> &in, const float thr, const unsigned arc_length,
             y_out_ptr[i] = y_ptr[i];
             score_out_ptr[i] = score_ptr[i];
         }
+
+        delete x;
+        delete y;
+        delete score;
     }
 
     features feat;
@@ -344,6 +352,13 @@ features fast(const Array<T> &in, const float thr, const unsigned arc_length,
     feat.setScore(getHandle<float>(*score_out));
     feat.setOrientation(getHandle<float>(*orientation_out));
     feat.setSize(getHandle<float>(*size_out));
+
+    // Delete weak copies
+    delete x_out;
+    delete y_out;
+    delete score_out;
+    delete orientation_out;
+    delete size_out;
 
     return feat;
 }
