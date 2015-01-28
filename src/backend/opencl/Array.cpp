@@ -72,7 +72,7 @@ namespace opencl
                   af::dim4(tmp.info.strides[0], tmp.info.strides[1],
                            tmp.info.strides[2], tmp.info.strides[3]),
                   (af_dtype)dtype_traits<T>::af_type),
-        data(tmp.data),
+        data(tmp.data, bufferFree),
         node(), ready(true), offset(0), owner(true)
     {
     }
