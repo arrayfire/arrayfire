@@ -36,6 +36,10 @@ namespace af
         features(const size_t n);
         features(af_features f);
 
+        ~features();
+
+        features& operator= (features f);
+
         size_t getNumFeatures();
         array getX();
         array getY();
@@ -58,5 +62,16 @@ namespace af
         af_features get();
     };
 
+}
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    // Destroy af_features
+    AFAPI af_err af_destroy_features(af_features feat);
+
+#ifdef __cplusplus
 }
 #endif
