@@ -104,15 +104,30 @@ features fast(const Array<T> &in, const float thr, const unsigned arc_length,
         }
     }
 
+    features feat;
+
+    if (nfeat == 0) {
+        feat.setNumFeatures(0);
+        feat.setX(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setY(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setScore(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setOrientation(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setSize(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        return feat;
+    }
+
     const dim4 out_dims(nfeat);
 
-    features feat;
     feat.setNumFeatures(nfeat);
     feat.setX(getHandle<float>(*createParamArray<float>(x)));
     feat.setY(getHandle<float>(*createParamArray<float>(y)));
     feat.setScore(getHandle<float>(*createParamArray<float>(score)));
     feat.setOrientation(getHandle<float>(*createValueArray<float>(out_dims, 0.0f)));
     feat.setSize(getHandle<float>(*createValueArray<float>(out_dims, 1.0f)));
+
+    bufferFree(x.data);
+    bufferFree(y.data);
+    bufferFree(score.data);
 
     return feat;
 }
