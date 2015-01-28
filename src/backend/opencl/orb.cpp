@@ -61,6 +61,12 @@ void orb(features& feat, Array<unsigned>** desc, const Array<T>& in,
     feat.setSize(getHandle<float>(*createParamArray<float>(size)));
 
     *desc = createParamArray<unsigned>(desc_tmp);
+
+    bufferFree(x.data);
+    bufferFree(y.data);
+    bufferFree(score.data);
+    bufferFree(ori.data);
+    bufferFree(size.data);
 }
 
 #define INSTANTIATE(T, convAccT)\
