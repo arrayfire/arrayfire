@@ -68,5 +68,8 @@ namespace cpu
     INSTANTIATE(uint)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
+
 
 }

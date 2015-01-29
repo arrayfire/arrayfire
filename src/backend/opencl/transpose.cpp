@@ -54,5 +54,7 @@ INSTANTIATE(char   )
 INSTANTIATE(int    )
 INSTANTIATE(uint   )
 INSTANTIATE(uchar  )
+INSTANTIATE(intl   )
+INSTANTIATE(uintl  )
 
 }

@@ -93,6 +93,8 @@ af_err af_print_array(af_array arr)
         case s32:   print<int>(arr);      break;
         case u32:   print<unsigned>(arr); break;
         case u8:    print<uchar>(arr);    break;
+        case s64:   print<intl>(arr);     break;
+        case u64:   print<uintl>(arr);    break;
         default:    TYPE_ERROR(1, type);
         }
     }

@@ -192,7 +192,7 @@ void orb(unsigned* out_feat,
             if (lvl_feat == 0) {
                 feat_pyr[i] = 0;
 
-                if (i == max_levels-1)
+                if (i > 0 && i == max_levels-1)
                     bufferFree(lvl_img.data);
 
                 continue;
@@ -233,6 +233,7 @@ void orb(unsigned* out_feat,
 
             bufferFree(d_x_feat.data);
             bufferFree(d_y_feat.data);
+            bufferFree(d_usable_feat);
 
             if (usable_feat == 0) {
                 feat_pyr[i] = 0;
@@ -240,7 +241,8 @@ void orb(unsigned* out_feat,
                 bufferFree(d_x_harris);
                 bufferFree(d_y_harris);
                 bufferFree(d_score_harris);
-                if (i == max_levels-1)
+
+                if (i > 0 && i == max_levels-1)
                     bufferFree(lvl_img.data);
 
                 continue;
@@ -264,15 +266,10 @@ void orb(unsigned* out_feat,
 
             d_harris_sorted.info.offset = 0;
             d_harris_idx.info.offset = 0;
-            d_harris_sorted.data = bufferAlloc(d_harris_sorted.info.dims[0] * sizeof(float));
-            d_harris_idx.data = bufferAlloc(d_harris_idx.info.dims[0] * sizeof(unsigned));
+            d_harris_sorted.data = d_score_harris;
+            d_harris_idx.data = bufferAlloc((d_harris_idx.info.dims[0]) * sizeof(unsigned));
 
-            getQueue().enqueueCopyBuffer(*d_score_harris, *d_harris_sorted.data, 0, 0, d_harris_sorted.info.dims[0] * sizeof(float));
-
-            // Sorting in ascending order, no support for descending yet
             sort0_index<float, false>(d_harris_sorted, d_harris_idx);
-
-            bufferFree(d_score_harris);
 
             cl::Buffer* d_x_lvl = bufferAlloc(usable_feat * sizeof(float));
             cl::Buffer* d_y_lvl = bufferAlloc(usable_feat * sizeof(float));
@@ -378,7 +375,7 @@ void orb(unsigned* out_feat,
             d_size_pyr[i] = d_size_lvl;
             d_desc_pyr[i] = d_desc_lvl;
 
-            if (i == max_levels-1)
+            if (i > 0 && i == max_levels-1)
                 bufferFree(lvl_img.data);
         }
 

@@ -281,4 +281,6 @@ namespace opencl
     INSTANTIATE(uint)
     INSTANTIATE(char)
     INSTANTIATE(uchar)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
 }
