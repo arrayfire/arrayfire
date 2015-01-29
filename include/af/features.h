@@ -38,14 +38,14 @@ namespace af
 
         ~features();
 
-        features& operator= (features f);
+        features& operator= (const features& f);
 
-        size_t getNumFeatures();
-        array getX();
-        array getY();
-        array getScore();
-        array getOrientation();
-        array getSize();
+        size_t getNumFeatures() const;
+        array getX() const;
+        array getY() const;
+        array getScore() const;
+        array getOrientation() const;
+        array getSize() const;
 
         void setNumFeatures(const size_t n);
         void setX(const array x);

@@ -60,7 +60,7 @@ namespace af
         af_weak_copy(&feat.size, f.size);
     }
 
-    features& features::operator= (features f)
+    features& features::operator= (const features& f)
     {
         if (this != &f) {
             setNumFeatures(f.getNumFeatures());
@@ -79,32 +79,32 @@ namespace af
         af_destroy_features(feat);
     }
 
-    size_t features::getNumFeatures()
+    size_t features::getNumFeatures() const
     {
         return feat.n;
     }
 
-    array features::getX()
+    array features::getX() const
     {
         return weakCopy(feat.x);
     }
 
-    array features::getY()
+    array features::getY() const
     {
         return weakCopy(feat.y);
     }
 
-    array features::getScore()
+    array features::getScore() const
     {
         return weakCopy(feat.score);
     }
 
-    array features::getOrientation()
+    array features::getOrientation() const
     {
         return weakCopy(feat.orientation);
     }
 
-    array features::getSize()
+    array features::getSize() const
     {
         return weakCopy(feat.size);
     }
