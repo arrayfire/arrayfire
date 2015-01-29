@@ -52,6 +52,10 @@ features fast(const Array<T> &in, const float thr, const unsigned arc_length,
     feat.setOrientation(getHandle<float>(*orientation));
     feat.setSize(getHandle<float>(*size));
 
+    memFree(x_out);
+    memFree(y_out);
+    memFree(score_out);
+
     return feat;
 }
 

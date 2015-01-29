@@ -82,6 +82,12 @@ void orb(features& feat, Array<unsigned>** desc, const Array<T>& image,
     feat.setScore(getHandle<float>(*score));
     feat.setOrientation(getHandle<float>(*orientation));
     feat.setSize(getHandle<float>(*size));
+
+    memFree(x_out);
+    memFree(y_out);
+    memFree(score_out);
+    memFree(orientation_out);
+    memFree(size_out);
 }
 
 #define INSTANTIATE(T, convAccT)\
