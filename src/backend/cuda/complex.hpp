@@ -6,7 +6,6 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-
 #include <af/defines.h>
 #include <af/array.h>
 #include <af/dim4.hpp>
@@ -18,27 +17,27 @@
 
 namespace cuda
 {
-    template<typename T> static const char *cplx_name() { return "@___noop"; }
-	template<> STATIC_ const char *cplx_name<cfloat>() { return "@___cplxss"; }
-	template<> STATIC_ const char *cplx_name<cdouble>() { return "@___cplxdd"; }
+    template<typename T> static const std::string cplx_name() { return "@___noop"; }
+	template<> STATIC_ const std::string cplx_name<cfloat >() { return cuMangledName<float , true>("___cplx"); }
+	template<> STATIC_ const std::string cplx_name<cdouble>() { return cuMangledName<double, true>("___cplx"); }
 
-    template<typename T> static const char *real_name() { return "@___noop"; }
-    template<> STATIC_ const char *real_name<cfloat>() { return "@___realc"; }
-    template<> STATIC_ const char *real_name<cdouble>() { return "@___realz"; }
+    template<typename T> static const std::string real_name() { return "@___noop"; }
+    template<> STATIC_ const std::string real_name<cfloat >() { return cuMangledName<cfloat , false>("___real"); }
+    template<> STATIC_ const std::string real_name<cdouble>() { return cuMangledName<cdouble, false>("___real"); }
 
-    template<typename T> static const char *imag_name() { return "@___noop"; }
-    template<> STATIC_ const char *imag_name<cfloat>() { return "@___imagc"; }
-    template<> STATIC_ const char *imag_name<cdouble>() { return "@___imagz"; }
+    template<typename T> static const std::string imag_name() { return "@___noop"; }
+    template<> STATIC_ const std::string imag_name<cfloat >() { return cuMangledName<cfloat , false>("___imag"); }
+    template<> STATIC_ const std::string imag_name<cdouble>() { return cuMangledName<cdouble, false>("___imag"); }
 
-    template<typename T> static const char *abs_name() { return "@___noop"; }
-    template<> STATIC_ const char *abs_name<float>() { return "@___abss"; }
-    template<> STATIC_ const char *abs_name<double>() { return "@___absd"; }
-    template<> STATIC_ const char *abs_name<cfloat>() { return "@___absc"; }
-    template<> STATIC_ const char *abs_name<cdouble>() { return "@___absz"; }
+    template<typename T> static const std::string abs_name() { return "@___noop"; }
+    template<> STATIC_ const std::string abs_name<float  >() { return cuMangledName<float  , false>("___abs"); }
+    template<> STATIC_ const std::string abs_name<double >() { return cuMangledName<double , false>("___abs"); }
+    template<> STATIC_ const std::string abs_name<cfloat >() { return cuMangledName<cfloat , false>("___abs"); }
+    template<> STATIC_ const std::string abs_name<cdouble>() { return cuMangledName<cdouble, false>("___abs"); }
 
-    template<typename T> static const char *conj_name() { return "@___noop"; }
-    template<> STATIC_ const char *conj_name<cfloat>() { return "@___conjc"; }
-    template<> STATIC_ const char *conj_name<cdouble>() { return "@___conjz"; }
+    template<typename T> static const std::string conj_name() { return "@___noop"; }
+    template<> STATIC_ const std::string conj_name<cfloat >() { return cuMangledName<cfloat , false>("___conj"); }
+    template<> STATIC_ const std::string conj_name<cdouble>() { return cuMangledName<cdouble, false>("___conj"); }
 
     template<typename To, typename Ti>
     Array<To>* cplx(const Array<Ti> &lhs, const Array<Ti> &rhs, const af::dim4 &odims)

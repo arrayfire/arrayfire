@@ -30,7 +30,7 @@ namespace JIT
         ScalarNode(T val)
             : Node(irname<T>()),
               m_val(val),
-              m_name_str(shortname<T>(false)),
+              m_name_str(afShortName<T>(false)),
               m_gen_name(false),
               m_set_arg(false)
         {

@@ -9,6 +9,7 @@
 
 #pragma once
 #include <cuComplex.h>
+#include <string>
 
 namespace cuda
 {
@@ -21,7 +22,7 @@ namespace cuda
     template<> struct           is_complex<cfloat>  { static const bool value = true;   };
     template<> struct           is_complex<cdouble> { static const bool value = true;   };
 
-	template<typename T > const char *shortname(bool caps = false);
-
+	template<typename T, bool binary> const std::string cuMangledName(const char *fn);
+	template<typename T > const char *afShortName(bool caps = true);
 	template<typename T > const char *irname();
 }
