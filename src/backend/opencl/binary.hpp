@@ -67,12 +67,33 @@ BINARY_TYPE_1(mul)
 BINARY_TYPE_1(div)
 BINARY_TYPE_1(and)
 BINARY_TYPE_1(or)
+BINARY_TYPE_1(bitand)
+BINARY_TYPE_1(bitor)
+BINARY_TYPE_1(bitxor)
+BINARY_TYPE_1(bitshiftl)
+BINARY_TYPE_1(bitshiftr)
 
 #undef BINARY_TYPE_1
 
 #define BINARY_TYPE_2(fn)                       \
     template<typename To, typename Ti>          \
     struct BinOp<To, Ti, af_##fn##_t>           \
+    {                                           \
+        const char *name()                      \
+        {                                       \
+            return "__"#fn;                     \
+        }                                       \
+    };                                          \
+    template<typename To>                       \
+    struct BinOp<To, float, af_##fn##_t>        \
+    {                                           \
+        const char *name()                      \
+        {                                       \
+            return "f"#fn;                      \
+        }                                       \
+    };                                          \
+    template<typename To>                       \
+    struct BinOp<To, double, af_##fn##_t>       \
     {                                           \
         const char *name()                      \
         {                                       \
@@ -98,7 +119,6 @@ BINARY_TYPE_1(or)
     };                                          \
 
 
-// FIXME: call #fn instead of "f"#fn for int types
 BINARY_TYPE_2(min)
 BINARY_TYPE_2(max)
 BINARY_TYPE_2(pow)

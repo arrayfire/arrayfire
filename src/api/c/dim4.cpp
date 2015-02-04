@@ -143,7 +143,7 @@ dim4::operator-=(const dim4 &other)
 }
 
 bool
-isEnd(const af_seq &seq)    { return (seq.end == -1); }
+isEnd(const af_seq &seq)    { return (seq.end <= -1); }
 
 bool
 isSpan(const af_seq &seq)   { return (seq.step == 0 && seq.begin == 1 && seq.end == 1); }
@@ -168,16 +168,15 @@ toDims(const vector<af_seq>& seqs, dim4 parentDims)
         } else if (isEnd(seqs[i])) {
             if(seqs[i].begin == -1) {   // only end is passed as seq
                 outDims[i] = 1;
+            } else if (seqs[i].begin < 0) {
+                af_seq temp = {parentDims[i] + seqs[i].begin,
+                               parentDims[i] + seqs[i].end,
+                               seqs[i].step};
+                outDims[i] = seqElements(temp);
             } else {    // end is passed as a part of seq
-                af_seq temp = {seqs[i].begin, parentDims[i] - 1., seqs[i].step};
+                af_seq temp = {seqs[i].begin, parentDims[i] + seqs[i].end, seqs[i].step};
                 outDims[i] = seqElements(temp);
             }
-        } else if (seqs[i].begin < 0) {
-            // This will throw an error for invalid sequence
-            // FIXME
-            // Allow reverse sequence, ie. end, 0, -1.
-            // Check for seq outDims of bounds on greater side
-            AF_ERROR("Sequence out of bounds", AF_ERR_INVALID_ARG);
         } else {
             outDims[i] = seqElements(seqs[i]);
         }
@@ -194,9 +193,14 @@ toOffset(const vector<af_seq>& seqs, dim4 parentDims)
 {
     dim4 outOffsets(0, 0, 0, 0);
     for(unsigned i = 0; i < seqs.size(); i++ ) {
-        if      (seqs[i].step != 0) {   outOffsets[i] = seqs[i].begin; }
-        else if (isEnd(seqs[i]) && seqs[i].begin == -1) { outOffsets[i] = parentDims[i] - 1; }
-        else    { outOffsets[i] = 0; }
+        if (seqs[i].step !=0 && seqs[i].begin >= 0) {
+            outOffsets[i] = seqs[i].begin;
+        } else if (seqs[i].begin <= -1) {
+            outOffsets[i] = parentDims[i] + seqs[i].begin;
+        } else {
+            outOffsets[i] = 0;
+        }
+
         if (outOffsets[i] >= parentDims[i])
             AF_ERROR("Index out of range", AF_ERR_SIZE);
     }

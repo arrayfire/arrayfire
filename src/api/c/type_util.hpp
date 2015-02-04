@@ -29,5 +29,5 @@ struct ToNum<unsigned char>
 template<>
 struct ToNum<char>
 {
-    inline int operator()(unsigned char val) { return static_cast<int>(val); }
+    inline int operator()(char val) { return static_cast<int>(val); }
 };

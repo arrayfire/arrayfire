@@ -14,7 +14,7 @@ Implicit type mimics C/C++ behavior.
 
 Order of precedence:
 - complex > real
-- double > float > uint > int > uchar > char
+- double > float > uintl > intl > uint > int > uchar > char
 */
 
 af_dtype implicit(const af_dtype lty, const af_dtype rty)
@@ -34,6 +34,12 @@ af_dtype implicit(const af_dtype lty, const af_dtype rty)
 
     if (lty == f64 || rty == f64) return f64;
     if (lty == f32 || rty == f32) return f32;
+
+    if ((lty == u64) ||
+        (rty == u64)) return u64;
+
+    if ((lty == s64) ||
+        (rty == s64)) return s64;
 
     if ((lty == u32) ||
         (rty == u32)) return u32;
@@ -75,6 +81,8 @@ af_array cast(const af_array in, const af_dtype type)
     case u32: return cast<uint    >(in);
     case u8 : return cast<uchar   >(in);
     case b8 : return cast<char    >(in);
+    case s64: return cast<intl    >(in);
+    case u64: return cast<uintl   >(in);
     default: TYPE_ERROR(2, type);
     }
 }

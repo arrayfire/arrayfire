@@ -66,6 +66,13 @@ namespace af
         return nd;
     }
 
+    static dim4 getDims(const af_array arr)
+    {
+        dim_type d0, d1, d2, d3;
+        AF_THROW(af_get_dims(&d0, &d1, &d2, &d3, arr));
+        return dim4(d0, d1, d2, d3);
+    }
+
     array::array(const af_array handle): arr(handle), isRef(false) {}
 
     static void initEmptyArray(af_array *arr, af::dtype ty,
@@ -158,6 +165,9 @@ namespace af
     INSTANTIATE(int)
     INSTANTIATE(unsigned char)
     INSTANTIATE(char)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
+
 #undef INSTANTIATE
 
     array::~array()
@@ -215,9 +225,7 @@ namespace af
     // Helper functions
     dim4 array::dims() const
     {
-        dim_type d0, d1, d2, d3;
-        AF_THROW(af_get_dims(&d0, &d1, &d2, &d3, arr));
-        return dim4(d0, d1, d2, d3);
+        return getDims(get());
     }
 
     dim_type array::dims(unsigned dim) const
@@ -267,7 +275,7 @@ namespace af
 
 #undef INSTANTIATE
 
-    array::array(af_array in, seq *seqs) : arr(in), isRef(true)
+    array::array(af_array in, const array *par, seq *seqs) : arr(in), parent(par), isRef(true)
     {
         for(int i=0; i<4; ++i) s[i] = seqs[i];
     }
@@ -282,6 +290,7 @@ namespace af
 
     array array::operator()(const array& idx) const
     {
+        eval();
         af_array out = 0;
         AF_THROW(af_array_index(&out, this->get(), idx.get(), 0));
         return array(out);
@@ -289,11 +298,12 @@ namespace af
 
     array array::operator()(const seq &s0) const
     {
+        eval();
         af_array out = 0;
         seq indices[] = {s0, span, span, span};
         //FIXME: check if this->s has same dimensions as numdims
         AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, indices);
+        return array(out, this, indices);
     }
 
     array array::operator()(const seq &s0, const seq &s1) const
@@ -303,7 +313,7 @@ namespace af
         seq indices[] = {s0, s1, span, span};
         //FIXME: check if this->s has same dimensions as numdims
         AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, indices);
+        return array(out, this, indices);
     }
 
     array array::operator()(const seq &s0, const seq &s1, const seq &s3) const
@@ -313,7 +323,7 @@ namespace af
         seq indices[] = {s0, s1, s3, span};
         //FIXME: check if this->s has same dimensions as numdims
         AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, indices);
+        return array(out, this, indices);
     }
 
     array array::operator()(const seq &s0, const seq &s1, const seq &s2, const seq &s3) const
@@ -323,7 +333,7 @@ namespace af
         seq indices[] = {s0, s1, s2, s3};
         //FIXME: check if this->s has same dimensions as numdims
         AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, indices);
+        return array(out, this, indices);
     }
 
     array array::row(int index) const
@@ -385,6 +395,17 @@ namespace af
         return transpose(*this, true);
     }
 
+    void array::set(af_array tmp)
+    {
+        AF_THROW(af_destroy_array(arr));
+        arr = tmp;
+    }
+
+    void array::set(af_array tmp) const
+    {
+        ((array *)(this))->set(tmp);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // Operator =
     ///////////////////////////////////////////////////////////////////////////
@@ -397,11 +418,18 @@ namespace af
             unsigned nd = numDims(arr);
             int dim = gforDim(this->s);
             af_array other_arr = other.get();
-            other_arr = (dim == -1) ? other_arr : gforReorder(other_arr, dim);
 
-            AF_THROW(af_assign(arr, nd, afs, other_arr));
+            // HACK: This is a quick check to see if other has been reordered inside gfor
+            // TODO: Figure out if this breaks and implement a cleaner method
+            bool is_reordered = (getDims(arr) != other.dims());
 
-            if (dim >= 0) AF_THROW(af_destroy_array(other_arr));
+            other_arr = (dim == -1 || !is_reordered) ? other_arr : gforReorder(other_arr, dim);
+
+            af_array tmp;
+            AF_THROW(af_assign(&tmp, arr, nd, afs, other_arr));
+            parent->set(tmp);
+
+            if (dim >= 0 && is_reordered) AF_THROW(af_destroy_array(other_arr));
 
             isRef = false;
 
@@ -426,7 +454,7 @@ namespace af
     {
         af_seq afs[4];
         getSeq(afs);
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims();
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims();
         array cst = constant(value, cdims, this->type());
         return operator=(cst);
     }
@@ -435,7 +463,7 @@ namespace af
     {
         af_seq afs[4];
         getSeq(afs);
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims();
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims();
         array cst = constant(value, cdims);
         return operator=(cst);
     }
@@ -444,7 +472,7 @@ namespace af
     {
         af_seq afs[4];
         getSeq(afs);
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims();
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims();
         array cst = constant(value, cdims);
         return operator=(cst);
     }
@@ -466,11 +494,13 @@ namespace af
             af_seq afs[4];                                              \
             getSeq(afs);                                                \
             af_array tmp_arr = tmp.get();                               \
+            af_array out = 0;                                           \
             tmp_arr = (dim == -1) ? tmp_arr : gforReorder(tmp_arr, dim); \
-            AF_THROW(af_assign(lhs, ndims, afs, tmp_arr));              \
+            AF_THROW(af_assign(&out, lhs, ndims, afs, tmp_arr));        \
             AF_THROW(af_destroy_array(this->arr));                      \
             if (dim >= 0) AF_THROW(af_destroy_array(tmp_arr));          \
             this->arr = lhs;                                            \
+            parent->set(out);                                           \
         } else {                                                        \
             *this = *this op1 other;                                    \
         }                                                               \
@@ -480,7 +510,7 @@ namespace af
     {                                                                   \
         af_seq afs[4];                                                  \
         getSeq(afs);                                                    \
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims(); \
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims(); \
         array cst = constant(value, cdims, this->type());               \
         return operator op(cst);                                        \
     }                                                                   \
@@ -488,7 +518,7 @@ namespace af
     {                                                                   \
         af_seq afs[4];                                                  \
         getSeq(afs);                                                    \
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims(); \
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims(); \
         array cst = constant(value, cdims);                             \
         return operator op(cst);                                        \
     }                                                                   \
@@ -496,7 +526,7 @@ namespace af
     {                                                                   \
         af_seq afs[4];                                                  \
         getSeq(afs);                                                    \
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims(); \
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims(); \
         array cst = constant(value, cdims);                             \
         return operator op(cst);                                        \
     }                                                                   \
@@ -580,7 +610,12 @@ namespace af
     INSTANTIATE(>=, af_ge)
     INSTANTIATE(&&, af_and)
     INSTANTIATE(||, af_or)
-    INSTANTIATE(%, af_mod)
+    INSTANTIATE(%, af_rem)
+    INSTANTIATE(&, af_bitand)
+    INSTANTIATE(|, af_bitor)
+    INSTANTIATE(^, af_bitxor)
+    INSTANTIATE(<<, af_bitshiftl)
+    INSTANTIATE(>>, af_bitshiftr)
 
 #undef INSTANTIATE
 
@@ -691,4 +726,7 @@ namespace af
     INSTANTIATE(int)
     INSTANTIATE(unsigned char)
     INSTANTIATE(char)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
+
 }
