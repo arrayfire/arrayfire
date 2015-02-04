@@ -25,10 +25,10 @@ namespace JIT
         int m_op;
 
     public:
-        UnaryNode(const char *out_type_str,
+        UnaryNode(const char *out_type_str, const char *name_str,
                   const std::string op_str,
                   Node_ptr child, int op)
-            : Node(out_type_str),
+            : Node(out_type_str, name_str),
               m_op_str(op_str),
               m_child(child),
               m_op(op)

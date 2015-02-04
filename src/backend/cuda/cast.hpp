@@ -43,6 +43,7 @@ Array<To>* cast(const Array<Ti> &in)
     JIT::Node_ptr in_node = in.getNode();
 
     JIT::UnaryNode *node = new JIT::UnaryNode(irname<To>(),
+                                              afShortName<To>(),
                                               cop.name(),
                                               in_node, af_cast_t);
 

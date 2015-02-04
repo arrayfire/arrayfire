@@ -46,6 +46,8 @@ static string getFuncName(Node *node, bool is_linear)
     if (is_linear) funcName << "@KL_"; //Kernel Linear
     else           funcName << "@KG_"; //Kernel General
 
+    funcName << node->getNameStr() << "_";
+
     node->genKerName(funcName, false);
     funcName << "_";
     node->genKerName(funcName, true);

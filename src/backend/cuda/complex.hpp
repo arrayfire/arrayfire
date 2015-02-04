@@ -46,6 +46,7 @@ namespace cuda
         JIT::Node_ptr rhs_node = rhs.getNode();
 
         JIT::BinaryNode *node = new JIT::BinaryNode(irname<To>(),
+                                                    afShortName<To>(),
                                                     cplx_name<To>(),
                                                     lhs_node,
                                                     rhs_node, (int)(af_cplx2_t));
@@ -58,6 +59,7 @@ namespace cuda
     {
         JIT::Node_ptr in_node = in.getNode();
         JIT::UnaryNode *node = new JIT::UnaryNode(irname<To>(),
+                                                  afShortName<To>(),
                                                   real_name<Ti>(),
                                                   in_node, af_real_t);
 
@@ -69,6 +71,7 @@ namespace cuda
     {
         JIT::Node_ptr in_node = in.getNode();
         JIT::UnaryNode *node = new JIT::UnaryNode(irname<To>(),
+                                                  afShortName<To>(),
                                                   imag_name<Ti>(),
                                                   in_node, af_imag_t);
 
@@ -80,6 +83,7 @@ namespace cuda
     {
         JIT::Node_ptr in_node = in.getNode();
         JIT::UnaryNode *node = new JIT::UnaryNode(irname<To>(),
+                                                  afShortName<To>(),
                                                   abs_name<Ti>(),
                                                   in_node, af_abs_t);
 
@@ -91,6 +95,7 @@ namespace cuda
     {
         JIT::Node_ptr in_node = in.getNode();
         JIT::UnaryNode *node = new JIT::UnaryNode(irname<T>(),
+                                                  afShortName<T>(),
                                                   conj_name<T>(),
                                                   in_node, af_conj_t);
 

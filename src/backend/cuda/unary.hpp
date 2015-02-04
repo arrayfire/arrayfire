@@ -86,6 +86,7 @@ UNARY_FN(floor)
         JIT::Node_ptr in_node = in.getNode();
 
         JIT::UnaryNode *node = new JIT::UnaryNode(irname<T>(),
+                                                  afShortName<T>(),
                                                   uop.name(),
                                                   in_node, op);
 
@@ -120,6 +121,7 @@ UNARY2_FN(iszero, iszero)
 
         JIT::Node_ptr in_node = in.getNode();
         JIT::UnaryNode *node = new JIT::UnaryNode(irname<char>(),
+                                                  afShortName<char>(),
                                                   uop.name(),
                                                   in_node, op);
         return createNodeArray<char>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));

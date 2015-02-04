@@ -78,6 +78,7 @@ Array<To> *createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs, const af
     JIT::Node_ptr rhs_node = rhs.getNode();
 
     JIT::BinaryNode *node = new JIT::BinaryNode(irname<To>(),
+                                                afShortName<To>(),
                                                 bop.name(),
                                                 lhs_node,
                                                 rhs_node, (int)(op));
