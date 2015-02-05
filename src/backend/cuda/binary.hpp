@@ -30,13 +30,13 @@ struct BinOp
     template<typename To, typename Ti>              \
     struct BinOp<To, Ti, af_##fn##_t>               \
     {                                               \
-        std::string sn;                             \
-        BinOp() : sn(shortname<Ti>(false)) {        \
-            sn = std::string("@___"#fn) + sn + sn;  \
-        }                                           \
-        const char *name()                          \
+        std::string res;                            \
+        BinOp() :                                   \
+            res(cuMangledName<Ti, true>("___"#fn))  \
+        {}                                          \
+        const std::string name()                    \
         {                                           \
-            return sn.c_str();                      \
+            return res;                             \
         }                                           \
     };
 
@@ -78,6 +78,7 @@ Array<To> *createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs, const af
     JIT::Node_ptr rhs_node = rhs.getNode();
 
     JIT::BinaryNode *node = new JIT::BinaryNode(irname<To>(),
+                                                afShortName<To>(),
                                                 bop.name(),
                                                 lhs_node,
                                                 rhs_node, (int)(op));

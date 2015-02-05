@@ -20,7 +20,6 @@ namespace JIT
     class BufferNode : public Node
     {
     private:
-        std::string m_name_str;
         const std::shared_ptr<cl::Buffer> m_data;
         const Param m_param;
         bool m_gen_name;
@@ -33,8 +32,7 @@ namespace JIT
                    const char *name_str,
                    const Param param, const bool is_linear,
                    const std::shared_ptr<cl::Buffer> data)
-            : Node(type_str),
-              m_name_str(name_str),
+            : Node(type_str, name_str),
               m_data(data),
               m_param(param),
               m_gen_name(false),

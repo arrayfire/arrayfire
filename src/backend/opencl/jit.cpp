@@ -43,20 +43,22 @@ static string getFuncName(Node *node, bool is_linear, bool *is_double)
         funcName << "KG_";
     }
 
+    std::string outName = node->getNameStr();
+    funcName << node->getNameStr() << "_";
+
     node->genKerName(funcName, false);
     funcName << "_";
 
-    stringstream inNames;
-    node->genKerName(inNames, true);
+    stringstream names;
+    node->genKerName(names, true);
+    string nameStr = names.str();
+    funcName << nameStr;
 
-    string inStr = inNames.str();
+    nameStr = nameStr + outName;
     string dblChars = "dDzZ";
-
-
-    size_t loc = inStr.find_first_of(dblChars);
+    size_t loc = nameStr.find_first_of(dblChars);
     *is_double = (loc != std::string::npos);
 
-    funcName << inStr;
     return funcName.str();
 }
 

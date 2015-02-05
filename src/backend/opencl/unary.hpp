@@ -72,6 +72,7 @@ Array<T>* unaryOp(const Array<T> &in)
     JIT::Node_ptr in_node = in.getNode();
 
     JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<T>::getName(),
+                                              shortname<T>(true),
                                               unaryName<op>(),
                                               in_node, op);
 
@@ -84,6 +85,7 @@ Array<char>* checkOp(const Array<T> &in)
     JIT::Node_ptr in_node = in.getNode();
 
     JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<char>::getName(),
+                                              shortname<char>(true),
                                               unaryName<op>(),
                                               in_node, op);
 

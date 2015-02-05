@@ -28,6 +28,7 @@ namespace JIT
     {
     protected:
         std::string m_type_str;
+        std::string m_name_str;
         int m_id;
         bool m_set_id;
         bool m_gen_func;
@@ -37,8 +38,10 @@ namespace JIT
 
     public:
 
-        Node(const char *type_str)
-            : m_type_str(type_str), m_id(-1),
+        Node(const char *type_str, const char *name_str)
+            : m_type_str(type_str),
+              m_name_str(name_str),
+              m_id(-1),
               m_set_id(false),
               m_gen_func(false),
               m_gen_param(false),
@@ -66,6 +69,7 @@ namespace JIT
         bool isGenOffset() { return m_gen_offset; }
 
         int getId()  { return m_id; }
+        std::string getNameStr() { return m_name_str; }
 
         virtual ~Node() {}
     };
