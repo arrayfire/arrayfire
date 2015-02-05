@@ -26,7 +26,7 @@ namespace JIT
 
     public:
         UnaryNode(const char *out_type_str, const char *name_str,
-                  const std::string op_str,
+                  const std::string &op_str,
                   Node_ptr child, int op)
             : Node(out_type_str, name_str),
               m_op_str(op_str),
