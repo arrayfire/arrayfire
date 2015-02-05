@@ -22,15 +22,13 @@ namespace JIT
     {
     private:
         T m_val;
-        std::string m_name_str;
         bool m_gen_name;
         bool m_set_arg;
     public:
 
         ScalarNode(T val)
-            : Node(irname<T>()),
+            : Node(irname<T>(), afShortName<T>(false)),
               m_val(val),
-              m_name_str(shortname<T>(false)),
               m_gen_name(false),
               m_set_arg(false)
         {

@@ -1,6 +1,3 @@
-[submodule "src/backend/cuda/ptx"]
-	path = src/backend/cuda/ptx
-	url = https://github.com/arrayfire/math_ptx
 [submodule "test/data"]
 	path = test/data
 	url = https://github.com/arrayfire/arrayfire_data
