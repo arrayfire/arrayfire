@@ -39,6 +39,9 @@ using JIT::str_map_iter;
 const char *layout64 = "target datalayout = \"e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v16:16:16-v32:32:32-v64:64:64-v128:128:128-n16:32:64\"\n\n\n";
 const char *layout32 = "target datalayout = \"e-p:32:32:32-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v16:16:16-v32:32:32-v64:64:64-v128:128:128-n16:32:64\"\n\n\n";
 
+const char *triple64 = "target triple = \"nvptx64-unknown-cuda\"\n\n";
+const char *triple32 = "target triple = \"nvptx-unknown-cuda\"\n\n";
+
 static string getFuncName(Node *node, bool is_linear)
 {
     stringstream funcName;
@@ -64,8 +67,10 @@ static string getKernelString(string funcName, Node *node, bool is_linear)
 
     if (sizeof(void *) == 8) {
         kerStream << layout64;
+        kerStream << triple64;
     } else {
         kerStream << layout32;
+        kerStream << triple32;
     }
 
     kerStream << "define void " << funcName << " (" << std::endl;
