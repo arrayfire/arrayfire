@@ -28,6 +28,7 @@ namespace opencl
     {
         JIT::Node_ptr in_node = in.getNode();
         JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<To>::getName(),
+                                                  shortname<To>(true),
                                                   "__creal",
                                                   in_node, af_real_t);
 
@@ -39,6 +40,7 @@ namespace opencl
     {
         JIT::Node_ptr in_node = in.getNode();
         JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<To>::getName(),
+                                                  shortname<To>(true),
                                                   "__cimag",
                                                   in_node, af_imag_t);
 
@@ -54,6 +56,7 @@ namespace opencl
     {
         JIT::Node_ptr in_node = in.getNode();
         JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<To>::getName(),
+                                                  shortname<To>(true),
                                                   abs_name<Ti>(),
                                                   in_node, af_abs_t);
 
@@ -69,6 +72,7 @@ namespace opencl
     {
         JIT::Node_ptr in_node = in.getNode();
         JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<T>::getName(),
+                                                  shortname<T>(true),
                                                   conj_name<T>(),
                                                   in_node, af_conj_t);
 
