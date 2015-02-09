@@ -66,7 +66,8 @@ void sobel3x3(global T * dx,
                                          gx2-radius, gy2-radius,
                                          iInfo.strides[1], iInfo.strides[0]);
     }
-    __syncthreads();
+
+    barrier(CLK_LOCAL_MEM_FENCE);
 
     if (gx < iInfo.dims[0] && gy < iInfo.dims[1]) {
         dim_type i = lx + radius;
