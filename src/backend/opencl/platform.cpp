@@ -11,6 +11,9 @@
 #include <af/opencl.h>
 #include <cl.hpp>
 #include <platform.hpp>
+#include <functional>
+#include <algorithm>
+#include <cctype>
 #include <vector>
 #include <string>
 #include <sstream>
