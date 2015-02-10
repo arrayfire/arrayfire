@@ -21,7 +21,7 @@
 namespace af
 {
 
-    static int gforDim(seq s[4])
+    static int gforDim(std::vector<seq> &s)
     {
         for (int i = 0; i < 4; i++) {
             if (s[i].m_gfor) return i;
@@ -73,7 +73,9 @@ namespace af
         return dim4(d0, d1, d2, d3);
     }
 
-    array::array(const af_array handle): arr(handle), isRef(false) {}
+    array::array(const af_array handle): arr(handle), parent(NULL), isRef(false), s(4)
+    {
+    }
 
     static void initEmptyArray(af_array *arr, af::dtype ty,
                                dim_type d0, dim_type d1=1, dim_type d2=1, dim_type d3=1)
@@ -96,31 +98,33 @@ namespace af
         }
     }
 
-    array::array() : arr(0), isRef(false)
+    array::array() : arr(0),  parent(NULL), isRef(false), s(4)
     {
         initEmptyArray(&arr, f32, 0, 0, 0, 0);
     }
-    array::array(const dim4 &dims, af::dtype ty) : arr(0), isRef(false)
+    array::array(const dim4 &dims, af::dtype ty) : arr(0), parent(NULL), isRef(false), s(4)
     {
         initEmptyArray(&arr, ty, dims[0], dims[1], dims[2], dims[3]);
     }
 
-    array::array(dim_type d0, af::dtype ty) : arr(0), isRef(false)
+    array::array(dim_type d0, af::dtype ty) : arr(0), parent(NULL), isRef(false), s(4)
     {
         initEmptyArray(&arr, ty, d0);
     }
 
-    array::array(dim_type d0, dim_type d1, af::dtype ty) : arr(0), isRef(false)
+    array::array(dim_type d0, dim_type d1, af::dtype ty) : arr(0), parent(NULL), isRef(false), s(4)
     {
         initEmptyArray(&arr, ty, d0, d1);
     }
 
-    array::array(dim_type d0, dim_type d1, dim_type d2, af::dtype ty) : arr(0), isRef(false)
+    array::array(dim_type d0, dim_type d1, dim_type d2, af::dtype ty) :
+        arr(0), parent(NULL), isRef(false), s(4)
     {
         initEmptyArray(&arr, ty, d0, d1, d2);
     }
 
-    array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, af::dtype ty) : arr(0), isRef(false)
+    array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, af::dtype ty) :
+        arr(0), parent(NULL), isRef(false), s(4)
     {
         initEmptyArray(&arr, ty, d0, d1, d2, d3);
     }
@@ -128,31 +132,34 @@ namespace af
 #define INSTANTIATE(T)                                                  \
     template<> AFAPI                                                    \
     array::array(const dim4 &dims, const T *ptr, af_source_t src, dim_type ngfor) \
-        : arr(0), isRef(false)                                          \
+        : arr(0), parent(NULL), isRef(false), s(4)                      \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, dims[0], dims[1], dims[2], dims[3]); \
     }                                                                   \
     template<> AFAPI                                                    \
     array::array(dim_type d0, const T *ptr, af_source_t src, dim_type ngfor) \
-        : arr(0), isRef(false)                                          \
+        : arr(0), parent(NULL), isRef(false), s(4)                      \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0);                           \
     }                                                                   \
     template<> AFAPI                                                    \
     array::array(dim_type d0, dim_type d1, const T *ptr, af_source_t src, \
-                 dim_type ngfor) : arr(0), isRef(false)                 \
+                 dim_type ngfor) : arr(0), parent(NULL), isRef(false), s(4) \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0, d1);                       \
     }                                                                   \
     template<> AFAPI                                                    \
     array::array(dim_type d0, dim_type d1, dim_type d2, const T *ptr,   \
-                 af_source_t src, dim_type ngfor) : arr(0), isRef(false) \
+                 af_source_t src, dim_type ngfor) :                     \
+        arr(0), parent(NULL), isRef(false), s(4)                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0, d1, d2);                   \
     }                                                                   \
     template<> AFAPI                                                    \
     array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, const T *ptr, \
-                 af_source_t src, dim_type ngfor) : arr(0), isRef(false) \
+                 af_source_t src, dim_type ngfor) :                     \
+        arr(0), parent(NULL), isRef(false), s(4)                        \
+                                                                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0, d1, d2, d3);               \
     }                                                                   \
@@ -172,7 +179,8 @@ namespace af
 
     array::~array()
     {
-        if (get()) AF_THROW(af_destroy_array(arr));
+        af_array tmp = get();
+        if (tmp != 0) AF_THROW(af_destroy_array(tmp));
     }
 
     af::dtype array::type() const
@@ -275,7 +283,7 @@ namespace af
 
 #undef INSTANTIATE
 
-    array::array(af_array in, const array *par, seq *seqs) : arr(in), parent(par), isRef(true)
+    array::array(af_array in, const array *par, seq *seqs) : arr(in), parent(par), isRef(true), s(4)
     {
         for(int i=0; i<4; ++i) s[i] = seqs[i];
     }
@@ -379,7 +387,7 @@ namespace af
         return array(out);
     }
 
-    array::array(const array& in) : arr(0), isRef(false)
+    array::array(const array& in) : arr(0), parent(NULL), isRef(false), s(4)
     {
         AF_THROW(af_weak_copy(&arr, in.get()));
     }
@@ -438,14 +446,13 @@ namespace af
             if (this->get() == other.get()) {
                 return *this;
             }
-            if(this->get() != 0) {
-                AF_THROW(af_destroy_array(this->get()));
+            if(this->arr != 0) {
+                AF_THROW(af_destroy_array(this->arr));
             }
 
             af_array temp = 0;
             AF_THROW(af_weak_copy(&temp, other.get()));
             this->arr = temp;
-
         }
         return *this;
     }
