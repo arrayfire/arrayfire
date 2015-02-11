@@ -18,6 +18,7 @@
 #include <program.hpp>
 #include <dispatch.hpp>
 #include <err_opencl.hpp>
+#include <functional>
 
 namespace opencl
 {
@@ -37,6 +38,7 @@ static string getFuncName(Node *node, bool is_linear, bool *is_double)
 {
     node->setId(0);
 
+    stringstream hashName;
     stringstream funcName;
 
     if (is_linear) {
@@ -49,7 +51,6 @@ static string getFuncName(Node *node, bool is_linear, bool *is_double)
     funcName << outName;
 
     node->genKerName(funcName);
-    funcName << "_KER";
 
     string nameStr = funcName.str();
     funcName << nameStr;
@@ -59,7 +60,9 @@ static string getFuncName(Node *node, bool is_linear, bool *is_double)
     size_t loc = nameStr.find_first_of(dblChars);
     *is_double = (loc != std::string::npos);
 
-    return funcName.str();
+    std::hash<std::string> hash_fn;
+    hashName << "KER" << hash_fn(funcName.str());
+    return hashName.str();
 }
 
 static string getKernelString(string funcName, Node *node, bool is_linear)

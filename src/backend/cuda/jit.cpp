@@ -26,6 +26,7 @@
 #include <err_cuda.hpp>
 #include <math.hpp>
 #include <nvvm.h>
+#include <boost/functional/hash.hpp>
 
 namespace cuda
 {
@@ -45,16 +46,22 @@ const char *triple32 = "target triple = \"nvptx-unknown-cuda\"\n\n";
 static string getFuncName(Node *node, bool is_linear)
 {
     node->setId(0);
-    stringstream funcName;
 
-    if (is_linear) funcName << "@L_"; //Kernel Linear
-    else           funcName << "@G_"; //Kernel General
+    stringstream funcName;
+    stringstream hashName;
+
+    if (is_linear) funcName << "L_"; //Kernel Linear
+    else           funcName << "G_"; //Kernel General
 
     funcName << node->getNameStr();
     node->genKerName(funcName);
+    funcName.str();
 
-    funcName << "_KER";
-    return funcName.str();
+    boost::hash<std::string> hash_fn;
+
+    hashName << "@KER";
+    hashName << hash_fn(funcName.str());
+    return hashName.str();
 }
 
 static string getKernelString(string funcName, Node *node, bool is_linear)
