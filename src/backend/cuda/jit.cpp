@@ -44,16 +44,16 @@ const char *triple32 = "target triple = \"nvptx-unknown-cuda\"\n\n";
 
 static string getFuncName(Node *node, bool is_linear)
 {
+    node->setId(0);
     stringstream funcName;
 
-    if (is_linear) funcName << "@KL_"; //Kernel Linear
-    else           funcName << "@KG_"; //Kernel General
+    if (is_linear) funcName << "@L_"; //Kernel Linear
+    else           funcName << "@G_"; //Kernel General
 
-    funcName << node->getNameStr() << "_";
+    funcName << node->getNameStr();
+    node->genKerName(funcName);
 
-    node->genKerName(funcName, false);
-    funcName << "_";
-    node->genKerName(funcName, true);
+    funcName << "_KER";
     return funcName.str();
 }
 
@@ -63,7 +63,7 @@ static string getKernelString(string funcName, Node *node, bool is_linear)
     stringstream annStream;
     str_map_t declStrs;
 
-    int id = node->setId(0) - 1;
+    int id = node->getId();
 
     if (sizeof(void *) == 8) {
         kerStream << layout64;
