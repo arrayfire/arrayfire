@@ -92,6 +92,7 @@ Array<To>* cast(const Array<Ti> &in)
     JIT::Node_ptr in_node = in.getNode();
 
     JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<To>::getName(),
+                                              shortname<To>(true),
                                               cop.name(),
                                               in_node, af_cast_t);
 

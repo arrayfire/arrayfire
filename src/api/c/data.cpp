@@ -41,6 +41,8 @@ af_err af_get_data_ptr(void *data, const af_array arr)
         case s32:   copyData(static_cast<int      *>(data), arr);  break;
         case u32:   copyData(static_cast<unsigned *>(data), arr);  break;
         case u8:    copyData(static_cast<uchar    *>(data), arr);  break;
+        case s64:   copyData(static_cast<intl     *>(data), arr);  break;
+        case u64:   copyData(static_cast<uintl    *>(data), arr);  break;
         default:    TYPE_ERROR(1, type);
         }
     }
@@ -69,6 +71,8 @@ af_err af_create_array(af_array *result, const void * const data,
         case s32:   out = createHandle(d, static_cast<const int     *>(data)); break;
         case u32:   out = createHandle(d, static_cast<const uint    *>(data)); break;
         case u8:    out = createHandle(d, static_cast<const uchar   *>(data)); break;
+        case s64:   out = createHandle(d, static_cast<const intl    *>(data)); break;
+        case u64:   out = createHandle(d, static_cast<const uintl   *>(data)); break;
         default:    TYPE_ERROR(4, type);
         }
         std::swap(*result, out);
@@ -98,6 +102,8 @@ af_err af_constant(af_array *result, const double value,
         case s32:   out = createHandle<int    >(d, value); break;
         case u32:   out = createHandle<uint   >(d, value); break;
         case u8:    out = createHandle<uchar  >(d, value); break;
+        case s64:   out = createHandle<intl   >(d, value); break;
+        case u64:   out = createHandle<uintl  >(d, value); break;
         default:    TYPE_ERROR(4, type);
         }
         std::swap(*result, out);
@@ -164,6 +170,8 @@ af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type *
         case s32:   out = createHandle<int    >(d); break;
         case u32:   out = createHandle<uint   >(d); break;
         case u8:    out = createHandle<uchar  >(d); break;
+        case s64:   out = createHandle<intl   >(d); break;
+        case u64:   out = createHandle<uintl  >(d); break;
         default:    TYPE_ERROR(3, type);
         }
         std::swap(*result, out);
@@ -176,24 +184,24 @@ af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type *
 af_err af_copy_array(af_array *out, const af_array in)
 {
     ArrayInfo info = getInfo(in);
-    const unsigned ndims = info.ndims();
-    const af::dim4 dims = info.dims();
     const af_dtype type = info.getType();
 
-    AF_CHECK(af_create_handle(out, ndims, dims.get(), type));
-
+    af_array res;
     try {
         switch(type) {
-        case f32:   copyArray<float   >(out, in); break;
-        case c32:   copyArray<cfloat  >(out, in); break;
-        case f64:   copyArray<double  >(out, in); break;
-        case c64:   copyArray<cdouble >(out, in); break;
-        case b8:    copyArray<char    >(out, in); break;
-        case s32:   copyArray<int     >(out, in); break;
-        case u32:   copyArray<unsigned>(out, in); break;
-        case u8:    copyArray<uchar   >(out, in); break;
+        case f32:   res = copyArray<float   >(in); break;
+        case c32:   res = copyArray<cfloat  >(in); break;
+        case f64:   res = copyArray<double  >(in); break;
+        case c64:   res = copyArray<cdouble >(in); break;
+        case b8:    res = copyArray<char    >(in); break;
+        case s32:   res = copyArray<int     >(in); break;
+        case u32:   res = copyArray<uint    >(in); break;
+        case u8:    res = copyArray<uchar   >(in); break;
+        case s64:   res = copyArray<intl    >(in); break;
+        case u64:   res = copyArray<uintl   >(in); break;
         default:    TYPE_ERROR(1, type);
         }
+        std::swap(*out, res);
     }
     CATCHALL
     return AF_SUCCESS;
@@ -314,6 +322,8 @@ af_err af_destroy_array(af_array arr)
         case s32:   destroyHandle<int     >(arr); break;
         case u32:   destroyHandle<uint    >(arr); break;
         case u8:    destroyHandle<uchar   >(arr); break;
+        case s64:   destroyHandle<intl    >(arr); break;
+        case u64:   destroyHandle<uintl   >(arr); break;
         default:    TYPE_ERROR(0, type);
         }
     }
@@ -338,11 +348,13 @@ af_array weakCopy(const af_array in)
     case f32: return weakCopyHandle<float           >(in);
     case f64: return weakCopyHandle<double          >(in);
     case s32: return weakCopyHandle<int             >(in);
-    case u32: return weakCopyHandle<unsigned int    >(in);
-    case u8:  return weakCopyHandle<unsigned char   >(in);
+    case u32: return weakCopyHandle<uint            >(in);
+    case u8:  return weakCopyHandle<uchar           >(in);
     case c32: return weakCopyHandle<detail::cfloat  >(in);
     case c64: return weakCopyHandle<detail::cdouble >(in);
     case b8:  return weakCopyHandle<char            >(in);
+    case s64: return weakCopyHandle<intl            >(in);
+    case u64: return weakCopyHandle<uintl           >(in);
     default:
         AF_ERROR("Invalid type", AF_ERR_INVALID_TYPE);
     }
@@ -470,6 +482,8 @@ af_err af_eval(af_array arr)
         case u32: eval<uint   >(arr); break;
         case u8 : eval<uchar  >(arr); break;
         case b8 : eval<char   >(arr); break;
+        case s64: eval<intl   >(arr); break;
+        case u64: eval<uintl  >(arr); break;
         default:
             TYPE_ERROR(0, type);
         }

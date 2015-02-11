@@ -38,19 +38,34 @@ features fast(const Array<T> &in, const float thr, const unsigned arc_length,
 
     const dim4 out_dims(nfeat);
 
-    Array<float> * x = createDeviceDataArray<float>(out_dims, x_out);
-    Array<float> * y = createDeviceDataArray<float>(out_dims, y_out);
-    Array<float> * score = createDeviceDataArray<float>(out_dims, score_out);
-    Array<float> * orientation = createValueArray<float>(out_dims, 0.0f);
-    Array<float> * size = createValueArray<float>(out_dims, 1.0f);
-
     features feat;
-    feat.setNumFeatures(nfeat);
-    feat.setX(getHandle<float>(*x));
-    feat.setY(getHandle<float>(*y));
-    feat.setScore(getHandle<float>(*score));
-    feat.setOrientation(getHandle<float>(*orientation));
-    feat.setSize(getHandle<float>(*size));
+
+    if (nfeat == 0) {
+        feat.setNumFeatures(0);
+        feat.setX(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setY(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setScore(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setOrientation(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setSize(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+    }
+    else {
+        Array<float> * x = createDeviceDataArray<float>(out_dims, x_out);
+        Array<float> * y = createDeviceDataArray<float>(out_dims, y_out);
+        Array<float> * score = createDeviceDataArray<float>(out_dims, score_out);
+        Array<float> * orientation = createValueArray<float>(out_dims, 0.0f);
+        Array<float> * size = createValueArray<float>(out_dims, 1.0f);
+
+        feat.setNumFeatures(nfeat);
+        feat.setX(getHandle<float>(*x));
+        feat.setY(getHandle<float>(*y));
+        feat.setScore(getHandle<float>(*score));
+        feat.setOrientation(getHandle<float>(*orientation));
+        feat.setSize(getHandle<float>(*size));
+
+        memFree(x_out);
+        memFree(y_out);
+        memFree(score_out);
+    }
 
     return feat;
 }

@@ -83,7 +83,7 @@ namespace cuda
         if (!node) {
             bool is_linear = isOwner() || (this->ndims() == 1);
             BufferNode<T> *buf_node = new BufferNode<T>(irname<T>(),
-                                                        shortname<T>(true), data,
+                                                        afShortName<T>(), data,
                                                         *this, offset, is_linear);
             const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
         }
@@ -234,6 +234,8 @@ namespace cuda
     INSTANTIATE(uint)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
 
 #define INSTANTIATE_CREATE_PADDED_ARRAY(SRC_T) \
     template Array<float  >* createPaddedArray<SRC_T, float  >(Array<SRC_T> const &src, dim4 const &dims, float   default_value, double factor); \

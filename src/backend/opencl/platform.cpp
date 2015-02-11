@@ -8,14 +8,20 @@
  ********************************************************/
 
 #include <af/version.h>
+#include <af/opencl.h>
 #include <cl.hpp>
 #include <platform.hpp>
+#include <functional>
+#include <algorithm>
+#include <cctype>
 #include <vector>
 #include <string>
 #include <sstream>
 #include <iostream>
 #include <stdexcept>
 #include <cstring>
+#include <algorithm>
+#include <map>
 #include <errorcodes.hpp>
 #include <err_opencl.hpp>
 
@@ -138,6 +144,40 @@ DeviceManager::DeviceManager()
     }
 }
 
+
+// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring/217605#217605
+// trim from start
+static inline std::string &ltrim(std::string &s)
+{
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+                                    std::not1(std::ptr_fun<int, int>(std::isspace))));
+    return s;
+}
+
+static std::string platformMap(std::string &platStr)
+{
+    static bool isFirst = true;
+
+    typedef std::map<std::string, std::string> strmap_t;
+    static strmap_t platMap;
+    if (isFirst) {
+        platMap["NVIDIA CUDA"] = "NVIDIA  ";
+        platMap["Intel(R) OpenCL"] = "INTEL   ";
+        platMap["AMD Accelerated Parallel Processing"] = "AMD     ";
+        platMap["Intel Gen OCL Driver"] = "BEIGNET ";
+        platMap["Apple"] = "APPLE   ";
+        isFirst = false;
+    }
+
+    strmap_t::iterator idx = platMap.find(platStr);
+
+    if (idx == platMap.end()) {
+        return platStr;
+    } else {
+        return idx->second;
+    }
+}
+
 std::string getInfo()
 {
     ostringstream info;
@@ -152,17 +192,19 @@ std::string getInfo()
             const Platform &platform = device.getInfo<CL_DEVICE_PLATFORM>();
             string platStr = platform.getInfo<CL_PLATFORM_NAME>();
             bool show_braces = ((unsigned)getActiveDeviceId() == nDevices);
-            string dstr;
-            device.getInfo(CL_DEVICE_NAME, &dstr);
+            string dstr = device.getInfo<CL_DEVICE_NAME>();
 
             string id = (show_braces ? string("[") : "-") + std::to_string(nDevices) +
                         (show_braces ? string("]") : "-");
-            info << id << " " << platStr << " " << dstr << " ";
+            info << id << " " << platformMap(platStr) << ": " << ltrim(dstr) << " ";
+#ifndef NDEBUG
             info << device.getInfo<CL_DEVICE_VERSION>();
             info << " Device driver " << device.getInfo<CL_DRIVER_VERSION>();
             info << " FP64 Support("
                  << (device.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0 ? "True" : "False")
-                 << ")" << std::endl;
+                 << ")";
+#endif
+            info << std::endl;
 
             nDevices++;
         }
@@ -280,4 +322,22 @@ void sync(int device)
     }
 }
 
+}
+
+namespace afcl
+{
+    cl_context getContext()
+    {
+        return opencl::getContext()();
+    }
+
+    cl_command_queue getQueue()
+    {
+        return opencl::getQueue()();
+    }
+
+    cl_device_id getDeviceId()
+    {
+        return opencl::getDevice()();
+    }
 }

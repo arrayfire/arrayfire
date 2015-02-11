@@ -15,6 +15,7 @@
 
 
 #ifdef __cplusplus
+#include <vector>
 namespace af
 {
 
@@ -31,11 +32,16 @@ namespace af
 
     private:
         af_array   arr;
-        bool     isRef;
-        seq      s[4];
-        void getSeq(af_seq* afs);
 
-        array(af_array in, seq *seqs);
+        //FIXME: Put the following in a different class
+        const array   *parent;
+        bool     isRef;
+        std::vector<seq> s;
+        void getSeq(af_seq* afs);
+        array(af_array in, const array *par, seq *seqs);
+        void set(af_array tmp);
+        void set(af_array tmp) const;
+        //END FIXME
 
     public:
         array();
@@ -150,7 +156,33 @@ namespace af
 
         // Four arguments
         array operator()(const seq& s0, const seq& s1, const seq& s2, const seq& s3) const;
+        array operator()(const seq& s0, const seq& s1, const seq& s2, const int& s3) const
+        { return this->operator()(s0, s1, s2, seq(s3, s3)); }
+        array operator()(const seq& s0, const seq& s1, const int& s2, const seq& s3) const
+        { return this->operator()(s0, s1, seq(s2, s2), s3); }
+        array operator()(const seq& s0, const seq& s1, const int& s2, const int& s3) const
+        { return this->operator()(s0, s1, seq(s2, s2), seq(s3, s3)); }
+        array operator()(const seq& s0, const int& s1, const seq& s2, const seq& s3) const
+        { return this->operator()(s0, seq(s1, s1), s2, s3); }
+        array operator()(const seq& s0, const int& s1, const seq& s2, const int& s3) const
+        { return this->operator()(s0, seq(s1, s1), s2, seq(s3, s3)); }
+        array operator()(const seq& s0, const int& s1, const int& s2, const seq& s3) const
+        { return this->operator()(s0, seq(s1, s1), seq(s2, s2), s3); }
+        array operator()(const seq& s0, const int& s1, const int& s2, const int& s3) const
+        { return this->operator()(s0, seq(s1, s1), seq(s2, s2), seq(s3, s3)); }
 
+        array operator()(const int& s0, const seq& s1, const seq& s2, const int& s3) const
+        { return this->operator()(seq(s0, s0), s1, s2, seq(s3, s3)); }
+        array operator()(const int& s0, const seq& s1, const int& s2, const seq& s3) const
+        { return this->operator()(seq(s0, s0), s1, seq(s2, s2), s3); }
+        array operator()(const int& s0, const seq& s1, const int& s2, const int& s3) const
+        { return this->operator()(seq(s0, s0), s1, seq(s2, s2), seq(s3, s3)); }
+        array operator()(const int& s0, const int& s1, const seq& s2, const seq& s3) const
+        { return this->operator()(seq(s0, s0), seq(s1, s1), s2, s3); }
+        array operator()(const int& s0, const int& s1, const seq& s2, const int& s3) const
+        { return this->operator()(seq(s0, s0), seq(s1, s1), s2, seq(s3, s3)); }
+        array operator()(const int& s0, const int& s1, const int& s2, const seq& s3) const
+        { return this->operator()(seq(s0, s0), seq(s1, s1), seq(s2, s2), s3); }
         array operator()(const int& s0, const int& s1, const int& s2, const int& s3) const
         { return this->operator()(seq(s0, s0), seq(s1, s1), seq(s2, s2), seq(s3, s3)); }
 
@@ -227,6 +259,11 @@ namespace af
             LOGIC(&&)
             LOGIC(||)
             LOGIC(%)
+            LOGIC(&)
+            LOGIC(|)
+            LOGIC(^)
+            LOGIC(<<)
+            LOGIC(>>)
 
 #undef SELF
 #undef BIN

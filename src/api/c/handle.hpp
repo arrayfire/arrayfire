@@ -64,11 +64,10 @@ static void copyData(T *data, const af_array &arr)
 }
 
 template<typename T>
-static void copyArray(af_array *out, const af_array in)
+static af_array copyArray(const af_array in)
 {
     const detail::Array<T> &inArray = getArray<T>(in);
-    detail::Array<T> *outArray = detail::copyArray<T>(inArray);
-    *out = getHandle(*outArray);
+    return getHandle<T>(*detail::copyArray<T>(inArray));
 }
 
 template<typename T>

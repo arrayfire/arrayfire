@@ -20,13 +20,29 @@ INCLUDE_DIRECTORIES(${CLBLAS_INCLUDE_DIRS})
 LINK_DIRECTORIES(${CLBLAS_LIBRARY_DIR})
 # Custom install command
 INSTALL(DIRECTORY "${CLBLAS_PACKAGE_DIR}/include/" DESTINATION include)
-FILE(GLOB CLBLAS_LIBS "${CLBLAS_PACKAGE_DIR}/lib64/*.so*")
+IF(UNIX)
+    FILE(GLOB CLBLAS_LIBS "${CLBLAS_PACKAGE_DIR}/lib64/*${CMAKE_SHARED_LIBRARY_SUFFIX}*")
+ELSEIF(WIN32)
+    FILE(GLOB CLBLAS_LIB "${CLBLAS_PACKAGE_DIR}/lib64/import/*${CMAKE_STATIC_LIBRARY_SUFFIX}")
+    FILE(GLOB CLBLAS_DLL "${CLBLAS_PACKAGE_DIR}/bin/*${CMAKE_SHARED_LIBRARY_SUFFIX}")
+  LIST(APPEND CLBLAS_LIBS ${CLBLAS_LIB} ${CLBLAS_DLL})
+ENDIF(UNIX)
 INSTALL(FILES ${CLBLAS_LIBS} DESTINATION lib)
 
 FIND_PACKAGE(clFFT REQUIRED)
+INCLUDE_DIRECTORIES(${CLFFT_INCLUDE_DIRS})
+LINK_DIRECTORIES(${CLFFT_LIBRARY_DIR})
 # Custom install command
 INSTALL(DIRECTORY "${CLFFT_BUILD_DIR}/package/include/" DESTINATION include)
-FILE(GLOB CLFFT_LIBS "${CLFFT_BUILD_DIR}/package/lib64/*.so*")
+IF(UNIX)
+  FILE(GLOB CLFFT_LIBS "${CLFFT_BUILD_DIR}/package/lib64/*${CMAKE_SHARED_LIBRARY_SUFFIX}*")
+ELSE(UNIX)
+  IF(WIN32)
+    FILE(GLOB CLFFT_LIB "${CLFFT_BUILD_DIR}/package/lib64/import/*${CMAKE_STATIC_LIBRARY_SUFFIX}")
+    FILE(GLOB CLFFT_DLL "${CLFFT_BUILD_DIR}/package/bin/*${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    LIST(APPEND CLFFT_LIBS ${CLFFT_LIB} ${CLFFT_DLL})
+  ENDIF(WIN32)
+ENDIF(UNIX)
 INSTALL(FILES ${CLFFT_LIBS} DESTINATION lib)
 
 ADD_DEFINITIONS( -DBOOST_ALL_NO_LIB )
@@ -50,7 +66,7 @@ INCLUDE_DIRECTORIES(
     )
 
 FILE(GLOB opencl_headers
-	"*.hpp"
+  "*.hpp"
     "*.h")
 FILE(GLOB opencl_sources
     "*.cpp")
@@ -116,21 +132,21 @@ CL_KERNEL_TO_H(
 
 # OS Definitions
 IF(UNIX)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread")
 ELSE(${UNIX}) #Windows
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 ENDIF()
 
 
 ADD_LIBRARY(afopencl SHARED
             ${opencl_headers}
-			${opencl_sources}
-			${jit_sources}
-			${kernel_headers}
-			${opencl_kernels}
-			${kernel_sources}
-			${backend_headers}
-			${backend_sources}
+            ${opencl_sources}
+            ${jit_sources}
+            ${kernel_headers}
+            ${opencl_kernels}
+            ${kernel_sources}
+            ${backend_headers}
+            ${backend_sources}
             ${c_sources}
             ${c_headers}
             ${cpp_sources}

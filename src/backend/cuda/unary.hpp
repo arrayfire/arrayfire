@@ -25,19 +25,20 @@ struct UnOp
     }
 };
 
-#define UNARY_FN(fn)                            \
-    template<typename T>                        \
-    struct UnOp<T, af_##fn##_t>                 \
-    {                                           \
-        std::string sn;                         \
-        UnOp() : sn(shortname<T>(false)) {      \
-            sn = std::string("@___"#fn) + sn;   \
-        }                                       \
-        const char *name()                      \
-        {                                       \
-            return sn.c_str();                  \
-        }                                       \
-    };                                          \
+#define UNARY_FN(fn)                                \
+    template<typename T>                            \
+    struct UnOp<T, af_##fn##_t>                     \
+    {                                               \
+        std::string res;                            \
+        UnOp() :                                    \
+            res(cuMangledName<T, false>("___"#fn))  \
+        {                                           \
+        }                                           \
+        const std::string name()                    \
+        {                                           \
+            return res;                             \
+        }                                           \
+    };                                              \
 
 UNARY_FN(sin)
 UNARY_FN(cos)
@@ -85,6 +86,7 @@ UNARY_FN(floor)
         JIT::Node_ptr in_node = in.getNode();
 
         JIT::UnaryNode *node = new JIT::UnaryNode(irname<T>(),
+                                                  afShortName<T>(),
                                                   uop.name(),
                                                   in_node, op);
 
@@ -92,19 +94,20 @@ UNARY_FN(floor)
     }
 
 
-#define UNARY2_FN(op, fn)                       \
-    template<typename T>                        \
-    struct UnOp<T, af_##op##_t>                 \
-    {                                           \
-        std::string sn;                         \
-        UnOp() : sn(shortname<T>(false)) {      \
-            sn = std::string("@___"#fn) + sn;   \
-        }                                       \
-        const char *name()                      \
-        {                                       \
-            return sn.c_str();                  \
-        }                                       \
-    };                                          \
+#define UNARY2_FN(op, fn)                           \
+    template<typename T>                            \
+    struct UnOp<T, af_##op##_t>                     \
+    {                                               \
+        std::string res;                            \
+        UnOp() :                                    \
+            res(cuMangledName<T, false>("___"#fn))  \
+        {                                           \
+        }                                           \
+        const std::string name()                    \
+        {                                           \
+            return res;                             \
+        }                                           \
+    };                                              \
 
 
 UNARY2_FN(isnan, isNaN)
@@ -118,6 +121,7 @@ UNARY2_FN(iszero, iszero)
 
         JIT::Node_ptr in_node = in.getNode();
         JIT::UnaryNode *node = new JIT::UnaryNode(irname<char>(),
+                                                  afShortName<char>(),
                                                   uop.name(),
                                                   in_node, op);
         return createNodeArray<char>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));

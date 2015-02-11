@@ -233,6 +233,68 @@ void readImageTests(const std::string                 &pFileName,
     }
 }
 
+template<typename descType>
+void readImageFeaturesDescriptors(const std::string                  &pFileName,
+                                  std::vector<af::dim4>              &pInputDims,
+                                  std::vector<std::string>           &pTestInputs,
+                                  std::vector<std::vector<float>>    &pTestFeats,
+                                  std::vector<std::vector<descType>> &pTestDescs)
+{
+    using std::vector;
+
+    std::ifstream testFile(pFileName);
+    if(testFile.good()) {
+        unsigned inputCount;
+        testFile >> inputCount;
+        for(unsigned i=0; i<inputCount; i++) {
+            af::dim4 temp(1);
+            testFile >> temp;
+            pInputDims.push_back(temp);
+        }
+
+        unsigned attrCount, featCount, descLen;
+        testFile >> featCount;
+        testFile >> attrCount;
+        testFile >> descLen;
+        pTestFeats.resize(attrCount);
+
+        pTestInputs.resize(inputCount, "");
+        for(unsigned k=0; k<inputCount; k++) {
+            std::string temp = "";
+            while(std::getline(testFile, temp)) {
+                if (temp!="")
+                    break;
+            }
+            if (temp=="")
+                throw std::runtime_error("Test file might not be per format, please check.");
+            pTestInputs[k] = temp;
+        }
+
+        pTestFeats.resize(attrCount, vector<float>(0));
+        for(unsigned i = 0; i < attrCount; i++) {
+            pTestFeats[i].resize(featCount);
+            float tmp;
+            for(unsigned j = 0; j < featCount; j++) {
+                testFile >> tmp;
+                pTestFeats[i][j] = tmp;
+            }
+        }
+
+        pTestDescs.resize(featCount, vector<descType>(0));
+        for(unsigned i = 0; i < featCount; i++) {
+            pTestDescs[i].resize(descLen);
+            descType tmp;
+            for(unsigned j = 0; j < descLen; j++) {
+                testFile >> tmp;
+                pTestDescs[i][j] = tmp;
+            }
+        }
+    }
+    else {
+        FAIL() << "TEST FILE NOT FOUND";
+    }
+}
+
 /**
  * Below is not a pair wise comparition method, rather
  * it computes the accumulated error of the computed

@@ -26,16 +26,6 @@ struct dtype_traits<cl_double2> {
     static const char* getName() { return "double2"; }
 };
 
-template<>
-struct dtype_traits<size_t> {
-    static const char* getName() { return "size_t"; };
-};
-
-template<>
-struct dtype_traits<long long> {
-    static const char* getName() { return "int"; };
-};
-
 template<typename T> static bool iscplx() { return false; }
 template<> STATIC_ bool iscplx<cl_float2>() { return true; }
 template<> STATIC_ bool iscplx<cl_double2>() { return true; }

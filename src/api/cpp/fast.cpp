@@ -19,6 +19,13 @@ features fast(const array& in, const float thr, const unsigned arc_length,
     af_features temp;
     AF_THROW(af_fast(&temp, in.get(), thr, arc_length, non_max, feature_ratio));
     features out(temp);
+
+    af_destroy_array(temp.x);
+    af_destroy_array(temp.y);
+    af_destroy_array(temp.score);
+    af_destroy_array(temp.orientation);
+    af_destroy_array(temp.size);
+
     return out;
 }
 

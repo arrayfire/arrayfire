@@ -28,7 +28,6 @@ namespace JIT
     class BufferNode : public Node
     {
     private:
-        std::string m_name_str;
         bool m_gen_name;
         bool m_set_arg;
         bool m_linear;
@@ -45,8 +44,7 @@ namespace JIT
                    CParam<T> param,
                    dim_type off,
                    bool is_linear)
-            : Node(type_str),
-              m_name_str(name_str),
+            : Node(type_str, name_str),
               m_gen_name(false),
               m_set_arg(false),
               m_linear(is_linear),

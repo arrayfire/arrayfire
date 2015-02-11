@@ -125,9 +125,11 @@ extern "C" {
     AFAPI af_err af_rem   (af_array *result, const af_array lhs, const af_array rhs, bool batch);
     AFAPI af_err af_mod   (af_array *result, const af_array lhs, const af_array rhs, bool batch);
 
-    AFAPI af_err af_bitand(af_array *result, const af_array lhs, const af_array rhs, bool batch);
-    AFAPI af_err af_bitor (af_array *result, const af_array lhs, const af_array rhs, bool batch);
-    AFAPI af_err af_bitxor(af_array *result, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_bitand   (af_array *result, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_bitor    (af_array *result, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_bitxor   (af_array *result, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_bitshiftl(af_array *result, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_bitshiftr(af_array *result, const af_array lhs, const af_array rhs, bool batch);
 
     AFAPI af_err af_cast    (af_array *out, const af_array in, af_dtype type);
     AFAPI af_err af_cplx    (af_array *out, const af_array in);

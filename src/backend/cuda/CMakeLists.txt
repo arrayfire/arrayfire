@@ -42,13 +42,17 @@ FILE(GLOB cuda_headers
 FILE(GLOB cuda_sources
     "*.cu"
     "*.cpp"
-    "sort_by_key/*.cu")
+    "sort_by_key/*.cu"
+    "kernel/*.cu")
 
 FILE(GLOB jit_sources
-    "jit/*.hpp")
+    "JIT/*.hpp")
 
 FILE(GLOB kernel_headers
     "kernel/*.hpp")
+
+FILE(GLOB ptx_sources
+    "JIT/*.cu")
 
 source_group(backend\\cuda\\Headers FILES ${cuda_headers})
 source_group(backend\\cuda\\Sources FILES ${cuda_sources})
@@ -95,22 +99,25 @@ ELSE()
   SET(PTX_COMPUTE ${CUDA_COMPUTE_CAPABILITY})
 ENDIF()
 
-# Check if PTX data exists
-IF (EXISTS "${CMAKE_SOURCE_DIR}/src/backend/cuda/ptx/PTX64"
-    AND IS_DIRECTORY "${CMAKE_SOURCE_DIR}/src/backend/cuda/ptx/PTX64")
-    # PTX data is available
-    # Do Nothing
-ELSE (EXISTS "${CMAKE_SOURCE_DIR}/src/backend/cuda/ptx/PTX64"
-      AND IS_DIRECTORY "${CMAKE_SOURCE_DIR}/src/backend/cuda/ptx/PTX64")
-    MESSAGE(WARNING "PTX data is not available. CUDA Backend will give compiler errors.")
-    MESSAGE("Did you miss the --recursive option when cloning?")
-    MESSAGE("Run the following commands to correct this:")
-    MESSAGE("git submodule init")
-    MESSAGE("git submodule update")
-    MESSAGE("git submodule foreach git pull origin master")
-ENDIF()
+CUDA_COMPILE_PTX(ptx_files ${ptx_sources})
 
-FILE(GLOB cuda_ptx "ptx/PTX64/sm_${PTX_COMPUTE}/*.ptx")
+set(cuda_ptx "")
+foreach(ptx_src_file ${ptx_sources})
+
+      get_filename_component(_name "${ptx_src_file}" NAME_WE)
+
+      set(_gen_file_name
+        "${CMAKE_BINARY_DIR}/src/backend/cuda/cuda_compile_ptx_generated_${_name}.cu.ptx")
+      set(_out_file_name
+        "${CMAKE_BINARY_DIR}/src/backend/cuda/${_name}.ptx")
+
+      ADD_CUSTOM_COMMAND(
+        OUTPUT "${_out_file_name}"
+        DEPENDS "${_gen_file_name}"
+        COMMAND ${CMAKE_COMMAND} -E rename "${_gen_file_name}" "${_out_file_name}")
+
+      list(APPEND cuda_ptx "${_out_file_name}")
+endforeach()
 
 SET( ptx_headers
     "ptx_headers")
@@ -128,9 +135,15 @@ CL_KERNEL_TO_H(
 IF("${APPLE}")
     ADD_DEFINITIONS(-D__STRICT_ANSI__)
     IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-        ADD_DEFINITIONS(-stdlib=libstdc++)
-        SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libstdc++")
-        SET(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libstdc++")
+        IF(${CUDA_VERSION_MAJOR} VERSION_LESS 7)
+            SET(STD_LIB_BINDING "-stdlib=libstdc++")
+        ELSE(${CUDA_VERSION_MAJOR} VERSION_LESS 7)
+            SET(STD_LIB_BINDING "-stdlib=libc++")
+        ENDIF()
+
+        ADD_DEFINITIONS("${STD_LIB_BINDING}")
+        SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${STD_LIB_BINDING}")
+        SET(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${STD_LIB_BINDING}")
         SET(CUDA_HOST_COMPILER "/usr/bin/clang++")
     ENDIF()
 ENDIF()
