@@ -35,23 +35,23 @@ using std::stringstream;
 
 static string getFuncName(Node *node, bool is_linear, bool *is_double)
 {
+    node->setId(0);
+
     stringstream funcName;
 
     if (is_linear) {
-        funcName << "KL_";
+        funcName << "L_";
     } else {
-        funcName << "KG_";
+        funcName << "G_";
     }
 
     std::string outName = node->getNameStr();
-    funcName << node->getNameStr() << "_";
+    funcName << outName;
 
-    node->genKerName(funcName, false);
-    funcName << "_";
+    node->genKerName(funcName);
+    funcName << "_KER";
 
-    stringstream names;
-    node->genKerName(names, true);
-    string nameStr = names.str();
+    string nameStr = funcName.str();
     funcName << nameStr;
 
     nameStr = nameStr + outName;
@@ -65,7 +65,7 @@ static string getFuncName(Node *node, bool is_linear, bool *is_double)
 static string getKernelString(string funcName, Node *node, bool is_linear)
 {
     stringstream kerStream;
-    int id = node->setId(0) - 1;
+    int id = node->getId();
 
     kerStream << "__kernel void" << "\n";
 
