@@ -16,7 +16,7 @@
 using namespace std;
 using namespace af;
 
-TEST(ArrayAssign, CPP_ASSIGN_BINOP)
+TEST(JIT, CPP_JIT_HASH)
 {
     using af::array;
 
