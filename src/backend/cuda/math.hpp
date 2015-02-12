@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+#include <af/defines.h>
 #include <limits>
 #include <algorithm>
 #include "backend.hpp"
