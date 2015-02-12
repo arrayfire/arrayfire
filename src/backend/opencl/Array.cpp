@@ -72,7 +72,7 @@ namespace opencl
                   af::dim4(tmp.info.strides[0], tmp.info.strides[1],
                            tmp.info.strides[2], tmp.info.strides[3]),
                   (af_dtype)dtype_traits<T>::af_type),
-        data(tmp.data),
+        data(tmp.data, bufferFree),
         node(), ready(true), offset(0), owner(true)
     {
     }
@@ -91,7 +91,7 @@ namespace opencl
         if (!node) {
             bool is_linear = isOwner() || (this->ndims() == 1);
             BufferNode *buf_node = new BufferNode(dtype_traits<T>::getName(),
-                                                  shortname<T>(true), *this, is_linear);
+                                                  shortname<T>(true), *this, is_linear, data);
             const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
         }
 
@@ -265,6 +265,8 @@ namespace opencl
     INSTANTIATE(uint)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
 
 #define INSTANTIATE_CREATE_PADDED_ARRAY(SRC_T) \
     template Array<float  >* createPaddedArray<SRC_T, float  >(Array<SRC_T> const &src, dim4 const &dims, float   default_value, double factor); \

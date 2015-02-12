@@ -28,10 +28,10 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type THREADS_X = 16;
-static const dim_type THREADS_Y = 16;
-static const dim_type THREADS_NONMAX_X = 32;
-static const dim_type THREADS_NONMAX_Y = 8;
+static const dim_type FAST_THREADS_X = 16;
+static const dim_type FAST_THREADS_Y = 16;
+static const dim_type FAST_THREADS_NONMAX_X = 32;
+static const dim_type FAST_THREADS_NONMAX_Y = 8;
 
 template<typename T, const unsigned arc_length, const bool nonmax>
 void fast(unsigned* out_feat,
@@ -81,12 +81,12 @@ void fast(unsigned* out_feat,
             d_flags = bufferAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(T));
         }
 
-        const dim_type blk_x = divup(in.info.dims[0]-6, THREADS_X);
-        const dim_type blk_y = divup(in.info.dims[1]-6, THREADS_Y);
+        const dim_type blk_x = divup(in.info.dims[0]-6, FAST_THREADS_X);
+        const dim_type blk_y = divup(in.info.dims[1]-6, FAST_THREADS_Y);
 
         // Locate features kernel sizes
-        const NDRange local(THREADS_X, THREADS_Y);
-        const NDRange global(blk_x * THREADS_X, blk_y * THREADS_Y);
+        const NDRange local(FAST_THREADS_X, FAST_THREADS_Y);
+        const NDRange global(blk_x * FAST_THREADS_X, blk_y * FAST_THREADS_Y);
 
         auto lfOp = make_kernel<Buffer, KParam,
                                 Buffer, const float,
@@ -94,22 +94,22 @@ void fast(unsigned* out_feat,
 
         lfOp(EnqueueArgs(getQueue(), global, local),
              *in.data, in.info, *d_score, thr,
-             cl::Local((THREADS_X + 6) * (THREADS_Y + 6) * sizeof(T)));
+             cl::Local((FAST_THREADS_X + 6) * (FAST_THREADS_Y + 6) * sizeof(T)));
         CL_DEBUG_FINISH(getQueue());
 
         const dim_type blk_nonmax_x = divup(in.info.dims[0], 64);
         const dim_type blk_nonmax_y = divup(in.info.dims[1], 64);
 
         // Nonmax kernel sizes
-        const NDRange local_nonmax(THREADS_NONMAX_X, THREADS_NONMAX_Y);
-        const NDRange global_nonmax(blk_nonmax_x * THREADS_NONMAX_X, blk_nonmax_y * THREADS_NONMAX_Y);
+        const NDRange local_nonmax(FAST_THREADS_NONMAX_X, FAST_THREADS_NONMAX_Y);
+        const NDRange global_nonmax(blk_nonmax_x * FAST_THREADS_NONMAX_X, blk_nonmax_y * FAST_THREADS_NONMAX_Y);
 
         unsigned count_init = 0;
         cl::Buffer *d_total = bufferAlloc(sizeof(unsigned));
         getQueue().enqueueWriteBuffer(*d_total, CL_TRUE, 0, sizeof(unsigned), &count_init);
 
         //size_t *global_nonmax_dims = global_nonmax();
-        size_t blocks_sz = blk_nonmax_x * THREADS_NONMAX_X * blk_nonmax_y * THREADS_NONMAX_Y * sizeof(unsigned);
+        size_t blocks_sz = blk_nonmax_x * FAST_THREADS_NONMAX_X * blk_nonmax_y * FAST_THREADS_NONMAX_Y * sizeof(unsigned);
         cl::Buffer *d_counts  = bufferAlloc(blocks_sz);
         cl::Buffer *d_offsets = bufferAlloc(blocks_sz);
 

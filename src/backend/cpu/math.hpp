@@ -19,6 +19,7 @@ namespace cpu
     template<typename T> static inline T abs(T val) { return std::abs(val); }
     uint abs(uint val);
     uchar abs(uchar val);
+    uintl abs(uintl val);
 
     template<typename T> static inline T min(T lhs, T rhs) { return std::min(lhs, rhs); }
     cfloat min(cfloat lhs, cfloat rhs);

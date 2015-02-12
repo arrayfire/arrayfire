@@ -86,6 +86,9 @@ namespace cuda
     INSTANTIATE(uint)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
+    INSTANTIATE(intl   )
+    INSTANTIATE(uintl  )
+
 
 
 #define INSTANTIATE_COPY(SRC_T)                                                       \

@@ -12,6 +12,7 @@ namespace cpu
 {
     uint abs(uint val) { return val; }
     uchar abs(uchar val) { return val; }
+    uintl abs(uintl val) { return val; }
 
     cfloat  scalar(float val)
     {

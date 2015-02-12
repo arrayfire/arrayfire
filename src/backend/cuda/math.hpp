@@ -9,7 +9,7 @@
 
 #pragma once
 #include <limits>
-#include <af/defines.h>
+#include <algorithm>
 #include "backend.hpp"
 #include "types.hpp"
 

@@ -36,8 +36,8 @@ seq::~seq()
 
 seq::seq(double n): m_gfor(false)
 {
-    if (n == end) {
-        init(-1, -1, 0);
+    if (n < 0) {
+        init(-1, n, 0);
     } else {
         init(0, n - 1, 1);
     }
@@ -56,7 +56,7 @@ seq& seq::operator=(const af_seq& s_)
 
 seq::seq(double begin, double end, double step): m_gfor(false)
 {
-    if(begin == -1 && end == -1) {
+    if(begin == -1 && end <= -1) {
         step = 0;           // end
     }
 
@@ -79,8 +79,9 @@ seq::seq(seq other, bool is_gfor): m_gfor(is_gfor)
 seq::operator array() const
 {
     dim_type diff = s.end - s.begin;
-    dim_type len = (int)((diff + 1 * signbit(diff)) / s.step);
-    array res = s.begin + s.step * iota(len);
+    dim_type len = (int)((diff + (signbit(diff) == 0 ? 1 : -1)) / s.step);
+    array tmp = (m_gfor) ? iota(1, 1, 1, len) : iota(len);
+    array res = s.begin + s.step * tmp;
     return res;
 }
 

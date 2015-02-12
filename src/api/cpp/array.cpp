@@ -21,7 +21,7 @@
 namespace af
 {
 
-    static int gforDim(seq s[4])
+    static int gforDim(std::vector<seq> &s)
     {
         for (int i = 0; i < 4; i++) {
             if (s[i].m_gfor) return i;
@@ -66,7 +66,16 @@ namespace af
         return nd;
     }
 
-    array::array(const af_array handle): arr(handle), isRef(false) {}
+    static dim4 getDims(const af_array arr)
+    {
+        dim_type d0, d1, d2, d3;
+        AF_THROW(af_get_dims(&d0, &d1, &d2, &d3, arr));
+        return dim4(d0, d1, d2, d3);
+    }
+
+    array::array(const af_array handle): arr(handle), parent(NULL), isRef(false), s(4)
+    {
+    }
 
     static void initEmptyArray(af_array *arr, af::dtype ty,
                                dim_type d0, dim_type d1=1, dim_type d2=1, dim_type d3=1)
@@ -89,31 +98,33 @@ namespace af
         }
     }
 
-    array::array() : arr(0), isRef(false)
+    array::array() : arr(0),  parent(NULL), isRef(false), s(4)
     {
         initEmptyArray(&arr, f32, 0, 0, 0, 0);
     }
-    array::array(const dim4 &dims, af::dtype ty) : arr(0), isRef(false)
+    array::array(const dim4 &dims, af::dtype ty) : arr(0), parent(NULL), isRef(false), s(4)
     {
         initEmptyArray(&arr, ty, dims[0], dims[1], dims[2], dims[3]);
     }
 
-    array::array(dim_type d0, af::dtype ty) : arr(0), isRef(false)
+    array::array(dim_type d0, af::dtype ty) : arr(0), parent(NULL), isRef(false), s(4)
     {
         initEmptyArray(&arr, ty, d0);
     }
 
-    array::array(dim_type d0, dim_type d1, af::dtype ty) : arr(0), isRef(false)
+    array::array(dim_type d0, dim_type d1, af::dtype ty) : arr(0), parent(NULL), isRef(false), s(4)
     {
         initEmptyArray(&arr, ty, d0, d1);
     }
 
-    array::array(dim_type d0, dim_type d1, dim_type d2, af::dtype ty) : arr(0), isRef(false)
+    array::array(dim_type d0, dim_type d1, dim_type d2, af::dtype ty) :
+        arr(0), parent(NULL), isRef(false), s(4)
     {
         initEmptyArray(&arr, ty, d0, d1, d2);
     }
 
-    array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, af::dtype ty) : arr(0), isRef(false)
+    array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, af::dtype ty) :
+        arr(0), parent(NULL), isRef(false), s(4)
     {
         initEmptyArray(&arr, ty, d0, d1, d2, d3);
     }
@@ -121,31 +132,34 @@ namespace af
 #define INSTANTIATE(T)                                                  \
     template<> AFAPI                                                    \
     array::array(const dim4 &dims, const T *ptr, af_source_t src, dim_type ngfor) \
-        : arr(0), isRef(false)                                          \
+        : arr(0), parent(NULL), isRef(false), s(4)                      \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, dims[0], dims[1], dims[2], dims[3]); \
     }                                                                   \
     template<> AFAPI                                                    \
     array::array(dim_type d0, const T *ptr, af_source_t src, dim_type ngfor) \
-        : arr(0), isRef(false)                                          \
+        : arr(0), parent(NULL), isRef(false), s(4)                      \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0);                           \
     }                                                                   \
     template<> AFAPI                                                    \
     array::array(dim_type d0, dim_type d1, const T *ptr, af_source_t src, \
-                 dim_type ngfor) : arr(0), isRef(false)                 \
+                 dim_type ngfor) : arr(0), parent(NULL), isRef(false), s(4) \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0, d1);                       \
     }                                                                   \
     template<> AFAPI                                                    \
     array::array(dim_type d0, dim_type d1, dim_type d2, const T *ptr,   \
-                 af_source_t src, dim_type ngfor) : arr(0), isRef(false) \
+                 af_source_t src, dim_type ngfor) :                     \
+        arr(0), parent(NULL), isRef(false), s(4)                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0, d1, d2);                   \
     }                                                                   \
     template<> AFAPI                                                    \
     array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, const T *ptr, \
-                 af_source_t src, dim_type ngfor) : arr(0), isRef(false) \
+                 af_source_t src, dim_type ngfor) :                     \
+        arr(0), parent(NULL), isRef(false), s(4)                        \
+                                                                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0, d1, d2, d3);               \
     }                                                                   \
@@ -158,11 +172,15 @@ namespace af
     INSTANTIATE(int)
     INSTANTIATE(unsigned char)
     INSTANTIATE(char)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
+
 #undef INSTANTIATE
 
     array::~array()
     {
-        if (get()) AF_THROW(af_destroy_array(arr));
+        af_array tmp = get();
+        if (tmp != 0) AF_THROW(af_destroy_array(tmp));
     }
 
     af::dtype array::type() const
@@ -215,9 +233,7 @@ namespace af
     // Helper functions
     dim4 array::dims() const
     {
-        dim_type d0, d1, d2, d3;
-        AF_THROW(af_get_dims(&d0, &d1, &d2, &d3, arr));
-        return dim4(d0, d1, d2, d3);
+        return getDims(get());
     }
 
     dim_type array::dims(unsigned dim) const
@@ -267,7 +283,7 @@ namespace af
 
 #undef INSTANTIATE
 
-    array::array(af_array in, seq *seqs) : arr(in), isRef(true)
+    array::array(af_array in, const array *par, seq *seqs) : arr(in), parent(par), isRef(true), s(4)
     {
         for(int i=0; i<4; ++i) s[i] = seqs[i];
     }
@@ -282,6 +298,7 @@ namespace af
 
     array array::operator()(const array& idx) const
     {
+        eval();
         af_array out = 0;
         AF_THROW(af_array_index(&out, this->get(), idx.get(), 0));
         return array(out);
@@ -289,11 +306,12 @@ namespace af
 
     array array::operator()(const seq &s0) const
     {
+        eval();
         af_array out = 0;
         seq indices[] = {s0, span, span, span};
         //FIXME: check if this->s has same dimensions as numdims
         AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, indices);
+        return array(out, this, indices);
     }
 
     array array::operator()(const seq &s0, const seq &s1) const
@@ -303,7 +321,7 @@ namespace af
         seq indices[] = {s0, s1, span, span};
         //FIXME: check if this->s has same dimensions as numdims
         AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, indices);
+        return array(out, this, indices);
     }
 
     array array::operator()(const seq &s0, const seq &s1, const seq &s3) const
@@ -313,7 +331,7 @@ namespace af
         seq indices[] = {s0, s1, s3, span};
         //FIXME: check if this->s has same dimensions as numdims
         AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, indices);
+        return array(out, this, indices);
     }
 
     array array::operator()(const seq &s0, const seq &s1, const seq &s2, const seq &s3) const
@@ -323,7 +341,7 @@ namespace af
         seq indices[] = {s0, s1, s2, s3};
         //FIXME: check if this->s has same dimensions as numdims
         AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, indices);
+        return array(out, this, indices);
     }
 
     array array::row(int index) const
@@ -369,7 +387,7 @@ namespace af
         return array(out);
     }
 
-    array::array(const array& in) : arr(0), isRef(false)
+    array::array(const array& in) : arr(0), parent(NULL), isRef(false), s(4)
     {
         AF_THROW(af_weak_copy(&arr, in.get()));
     }
@@ -385,6 +403,17 @@ namespace af
         return transpose(*this, true);
     }
 
+    void array::set(af_array tmp)
+    {
+        AF_THROW(af_destroy_array(arr));
+        arr = tmp;
+    }
+
+    void array::set(af_array tmp) const
+    {
+        ((array *)(this))->set(tmp);
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // Operator =
     ///////////////////////////////////////////////////////////////////////////
@@ -397,11 +426,18 @@ namespace af
             unsigned nd = numDims(arr);
             int dim = gforDim(this->s);
             af_array other_arr = other.get();
-            other_arr = (dim == -1) ? other_arr : gforReorder(other_arr, dim);
 
-            AF_THROW(af_assign(arr, nd, afs, other_arr));
+            // HACK: This is a quick check to see if other has been reordered inside gfor
+            // TODO: Figure out if this breaks and implement a cleaner method
+            bool is_reordered = (getDims(arr) != other.dims());
 
-            if (dim >= 0) AF_THROW(af_destroy_array(other_arr));
+            other_arr = (dim == -1 || !is_reordered) ? other_arr : gforReorder(other_arr, dim);
+
+            af_array tmp;
+            AF_THROW(af_assign(&tmp, arr, nd, afs, other_arr));
+            parent->set(tmp);
+
+            if (dim >= 0 && is_reordered) AF_THROW(af_destroy_array(other_arr));
 
             isRef = false;
 
@@ -410,14 +446,13 @@ namespace af
             if (this->get() == other.get()) {
                 return *this;
             }
-            if(this->get() != 0) {
-                AF_THROW(af_destroy_array(this->get()));
+            if(this->arr != 0) {
+                AF_THROW(af_destroy_array(this->arr));
             }
 
             af_array temp = 0;
             AF_THROW(af_weak_copy(&temp, other.get()));
             this->arr = temp;
-
         }
         return *this;
     }
@@ -426,7 +461,7 @@ namespace af
     {
         af_seq afs[4];
         getSeq(afs);
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims();
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims();
         array cst = constant(value, cdims, this->type());
         return operator=(cst);
     }
@@ -435,7 +470,7 @@ namespace af
     {
         af_seq afs[4];
         getSeq(afs);
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims();
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims();
         array cst = constant(value, cdims);
         return operator=(cst);
     }
@@ -444,7 +479,7 @@ namespace af
     {
         af_seq afs[4];
         getSeq(afs);
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims();
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims();
         array cst = constant(value, cdims);
         return operator=(cst);
     }
@@ -466,11 +501,13 @@ namespace af
             af_seq afs[4];                                              \
             getSeq(afs);                                                \
             af_array tmp_arr = tmp.get();                               \
+            af_array out = 0;                                           \
             tmp_arr = (dim == -1) ? tmp_arr : gforReorder(tmp_arr, dim); \
-            AF_THROW(af_assign(lhs, ndims, afs, tmp_arr));              \
+            AF_THROW(af_assign(&out, lhs, ndims, afs, tmp_arr));        \
             AF_THROW(af_destroy_array(this->arr));                      \
             if (dim >= 0) AF_THROW(af_destroy_array(tmp_arr));          \
             this->arr = lhs;                                            \
+            parent->set(out);                                           \
         } else {                                                        \
             *this = *this op1 other;                                    \
         }                                                               \
@@ -480,7 +517,7 @@ namespace af
     {                                                                   \
         af_seq afs[4];                                                  \
         getSeq(afs);                                                    \
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims(); \
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims(); \
         array cst = constant(value, cdims, this->type());               \
         return operator op(cst);                                        \
     }                                                                   \
@@ -488,7 +525,7 @@ namespace af
     {                                                                   \
         af_seq afs[4];                                                  \
         getSeq(afs);                                                    \
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims(); \
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims(); \
         array cst = constant(value, cdims);                             \
         return operator op(cst);                                        \
     }                                                                   \
@@ -496,7 +533,7 @@ namespace af
     {                                                                   \
         af_seq afs[4];                                                  \
         getSeq(afs);                                                    \
-        af::dim4 cdims = isRef ? seqToDims(afs, this->dims()) : this->dims(); \
+        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims(); \
         array cst = constant(value, cdims);                             \
         return operator op(cst);                                        \
     }                                                                   \
@@ -580,7 +617,12 @@ namespace af
     INSTANTIATE(>=, af_ge)
     INSTANTIATE(&&, af_and)
     INSTANTIATE(||, af_or)
-    INSTANTIATE(%, af_mod)
+    INSTANTIATE(%, af_rem)
+    INSTANTIATE(&, af_bitand)
+    INSTANTIATE(|, af_bitor)
+    INSTANTIATE(^, af_bitxor)
+    INSTANTIATE(<<, af_bitshiftl)
+    INSTANTIATE(>>, af_bitshiftr)
 
 #undef INSTANTIATE
 
@@ -691,4 +733,7 @@ namespace af
     INSTANTIATE(int)
     INSTANTIATE(unsigned char)
     INSTANTIATE(char)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
+
 }

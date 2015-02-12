@@ -249,7 +249,6 @@ features fast(const Array<T> &in, const float thr, const unsigned arc_length,
 
     // Matrix containing scores for detected features, scores are stored in the
     // same coordinates as features, dimensions should be equal to in.
-    //T* V = NULL;
     Array<T> *V = NULL;
     if (nonmax == 1) {
         dim4 V_dims(in_dims[0], in_dims[1]);
@@ -290,60 +289,91 @@ features fast(const Array<T> &in, const float thr, const unsigned arc_length,
                        *x_nonmax, *y_nonmax, *score_nonmax,
                        &count, feat_found);
 
+        delete V;
+
         feat_found = std::min(max_feat, count);
-        feat_found_dims = dim4(feat_found);
 
-        // TODO: improve output copy, use af_index?
-        x_out = createEmptyArray<float>(feat_found_dims);
-        y_out = createEmptyArray<float>(feat_found_dims);
-        score_out = createEmptyArray<float>(feat_found_dims);
-        orientation_out = createValueArray<float>(feat_found_dims, 0.0f);
-        size_out = createValueArray<float>(feat_found_dims, 1.0f);
+        if (feat_found > 0) {
+            feat_found_dims = dim4(feat_found);
 
-        float *x_nonmax_ptr = x_nonmax->get();
-        float *y_nonmax_ptr = y_nonmax->get();
-        float *score_nonmax_ptr = score_nonmax->get();
-        float *x_out_ptr = x_out->get();
-        float *y_out_ptr = y_out->get();
-        float *score_out_ptr = score_out->get();
-        for (size_t i = 0; i < feat_found; i++) {
-            x_out_ptr[i] = x_nonmax_ptr[i];
-            y_out_ptr[i] = y_nonmax_ptr[i];
-            score_out_ptr[i] = score_nonmax_ptr[i];
+            // TODO: improve output copy, use af_index?
+            x_out = createEmptyArray<float>(feat_found_dims);
+            y_out = createEmptyArray<float>(feat_found_dims);
+            score_out = createEmptyArray<float>(feat_found_dims);
+            orientation_out = createValueArray<float>(feat_found_dims, 0.0f);
+            size_out = createValueArray<float>(feat_found_dims, 1.0f);
+
+            float *x_nonmax_ptr = x_nonmax->get();
+            float *y_nonmax_ptr = y_nonmax->get();
+            float *score_nonmax_ptr = score_nonmax->get();
+            float *x_out_ptr = x_out->get();
+            float *y_out_ptr = y_out->get();
+            float *score_out_ptr = score_out->get();
+            for (size_t i = 0; i < feat_found; i++) {
+                x_out_ptr[i] = x_nonmax_ptr[i];
+                y_out_ptr[i] = y_nonmax_ptr[i];
+                score_out_ptr[i] = score_nonmax_ptr[i];
+            }
+        }
+
+        delete x;
+        delete y;
+        delete score;
+        delete x_nonmax;
+        delete y_nonmax;
+        delete score_nonmax;
+    }
+    else {
+        if (feat_found > 0) {
+            // TODO: improve output copy, use af_index?
+            x_out = createEmptyArray<float>(feat_found_dims);
+            y_out = createEmptyArray<float>(feat_found_dims);
+            score_out = createEmptyArray<float>(feat_found_dims);
+            orientation_out = createValueArray<float>(feat_found_dims, 0.0f);
+            size_out = createValueArray<float>(feat_found_dims, 1.0f);
+
+            float *x_ptr = x->get();
+            float *y_ptr = y->get();
+            float *score_ptr = score->get();
+            float *x_out_ptr = x_out->get();
+            float *y_out_ptr = y_out->get();
+            float *score_out_ptr = score_out->get();
+            for (size_t i = 0; i < feat_found; i++) {
+                x_out_ptr[i] = x_ptr[i];
+                y_out_ptr[i] = y_ptr[i];
+                score_out_ptr[i] = score_ptr[i];
+            }
         }
 
         delete x;
         delete y;
         delete score;
     }
-    else {
-        // TODO: improve output copy, use af_index?
-        x_out = createEmptyArray<float>(feat_found_dims);
-        y_out = createEmptyArray<float>(feat_found_dims);
-        score_out = createEmptyArray<float>(feat_found_dims);
-        orientation_out = createValueArray<float>(feat_found_dims, 0.0f);
-        size_out = createValueArray<float>(feat_found_dims, 1.0f);
-
-        float *x_ptr = x->get();
-        float *y_ptr = y->get();
-        float *score_ptr = score->get();
-        float *x_out_ptr = x_out->get();
-        float *y_out_ptr = y_out->get();
-        float *score_out_ptr = score_out->get();
-        for (size_t i = 0; i < feat_found; i++) {
-            x_out_ptr[i] = x_ptr[i];
-            y_out_ptr[i] = y_ptr[i];
-            score_out_ptr[i] = score_ptr[i];
-        }
-    }
 
     features feat;
-    feat.setNumFeatures(feat_found);
-    feat.setX(getHandle<float>(*x_out));
-    feat.setY(getHandle<float>(*y_out));
-    feat.setScore(getHandle<float>(*score_out));
-    feat.setOrientation(getHandle<float>(*orientation_out));
-    feat.setSize(getHandle<float>(*size_out));
+    if (feat_found == 0) {
+        feat.setNumFeatures(0);
+        feat.setX(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setY(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setScore(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setOrientation(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+        feat.setSize(getHandle<float>(*createEmptyArray<float>(af::dim4())));
+    }
+    else {
+        feat.setNumFeatures(feat_found);
+        feat.setX(getHandle<float>(*x_out));
+        feat.setY(getHandle<float>(*y_out));
+        feat.setScore(getHandle<float>(*score_out));
+        feat.setOrientation(getHandle<float>(*orientation_out));
+        feat.setSize(getHandle<float>(*size_out));
+
+        // Delete weak copies
+        delete x_out;
+        delete y_out;
+        delete score_out;
+        delete orientation_out;
+        delete size_out;
+    }
 
     return feat;
 }
