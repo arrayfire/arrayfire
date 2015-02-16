@@ -34,20 +34,23 @@ typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, char, uchar>
 TYPED_TEST_CASE(Mean, TestTypes);
 
 template<typename T>
-using helperType = typename std::conditional<std::is_same<T, uchar>::value,
-                                             uint,
-                                             T>::type;
+using f32HelperType = typename std::conditional<std::is_same<T, double>::value,
+                                             double,
+                                             float>::type;
+
 template<typename T>
-using meanOutType = typename std::conditional<std::is_same<T, char>::value,
-                                              int,
-                                              helperType<T>>::type;
+using c32HelperType = typename std::conditional<std::is_same<T, cfloat>::value,
+                                             cfloat,
+                                             f32HelperType<T>>::type;
+template<typename T>
+using meanOutType = typename std::conditional<std::is_same<T, cdouble>::value,
+                                              cdouble,
+                                              c32HelperType<T>>::type;
 
 template<typename T, dim_type dim>
 void meanDimTest(string pFileName)
 {
     typedef meanOutType<T> outType;
-    bool isFP = std::is_same<outType, float>::value  || std::is_same<outType, double>::value ||
-		std::is_same<outType, cfloat>::value || std::is_same<outType, cdouble>::value;
 
     vector<af::dim4>      numDims;
     vector<vector<int>>        in;
@@ -73,12 +76,8 @@ void meanDimTest(string pFileName)
     vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
     size_t nElems = currGoldBar.size();
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        if (isFP) {
-            ASSERT_NEAR(std::real(currGoldBar[elIter]), std::real(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
-            ASSERT_NEAR(std::imag(currGoldBar[elIter]), std::imag(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
-        } else {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
-        }
+        ASSERT_NEAR(std::real(currGoldBar[elIter]), std::real(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
+        ASSERT_NEAR(std::imag(currGoldBar[elIter]), std::imag(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
     }
 
     // cleanup

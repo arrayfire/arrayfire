@@ -21,13 +21,27 @@ array mean(const array &in, dim_type dim)
     return array(temp);
 }
 
-#define INSTANTIATE_MEAN(T)                               \
-    template<> AFAPI T mean(const array& in)              \
-    {                                                     \
-        double ret_val;                                   \
-        AF_THROW(af_mean_all(&ret_val, NULL, in.get()));  \
-        return (T)ret_val;                                \
-    }                                                     \
+array mean(const array &in, const array &weights, dim_type dim)
+{
+    af_array temp = 0;
+    AF_THROW(af_mean_weighted(&temp, in.get(), weights.get(), dim));
+    return array(temp);
+}
+
+#define INSTANTIATE_MEAN(T)                                     \
+    template<> AFAPI T mean(const array& in)                    \
+    {                                                           \
+        double ret_val;                                         \
+        AF_THROW(af_mean_all(&ret_val, NULL, in.get()));        \
+        return (T)ret_val;                                      \
+    }                                                           \
+    template<> AFAPI T mean(const array& in, const array& wts)  \
+    {                                                           \
+        double ret_val;                                         \
+        AF_THROW(af_mean_all_weighted(&ret_val, NULL,           \
+                    in.get(), wts.get()));                      \
+        return (T)ret_val;                                      \
+    }                                                           \
 
 template<> AFAPI af_cfloat mean(const array& in)
 {
@@ -43,6 +57,19 @@ template<> AFAPI af_cdouble mean(const array& in)
     return std::complex<double>(real, imag);
 }
 
+template<> AFAPI af_cfloat mean(const array& in, const array& weights)
+{
+    double real, imag;
+    AF_THROW(af_mean_all_weighted(&real, &imag, in.get(), weights.get()));
+    return std::complex<float>((float)real, (float)imag);
+}
+
+template<> AFAPI af_cdouble mean(const array& in, const array& weights)
+{
+    double real, imag;
+    AF_THROW(af_mean_all_weighted(&real, &imag, in.get(), weights.get()));
+    return std::complex<double>(real, imag);
+}
 
 INSTANTIATE_MEAN(float);
 INSTANTIATE_MEAN(double);
