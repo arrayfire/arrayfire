@@ -13,8 +13,8 @@
 namespace opencl
 {
 
-template<typename T>
-std::pair< Array<T>*, Array<T>* > 
-sobelDerivatives(const Array<T> &img, const unsigned &ker_size);
+template<typename Ti, typename To>
+std::pair< Array<To>*, Array<To>* >
+sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size);
 
 }
