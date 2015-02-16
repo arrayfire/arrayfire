@@ -38,9 +38,9 @@ sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size)
 
 INSTANTIATE(float , float)
 INSTANTIATE(double, double)
-INSTANTIATE(int   , float)
-INSTANTIATE(uint  , float)
-INSTANTIATE(char  , float)
-INSTANTIATE(uchar , float)
+INSTANTIATE(int   , int)
+INSTANTIATE(uint  , int)
+INSTANTIATE(char  , int)
+INSTANTIATE(uchar , int)
 
 }

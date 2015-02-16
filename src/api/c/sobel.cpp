@@ -46,10 +46,10 @@ af_err af_sobel_operator(af_array *dx, af_array *dy, const af_array img, const u
         switch(type) {
             case f32: output = sobelDerivatives<float , float> (img, ker_size); break;
             case f64: output = sobelDerivatives<double, double>(img, ker_size); break;
-            case s32: output = sobelDerivatives<int   , float> (img, ker_size); break;
-            case u32: output = sobelDerivatives<uint  , float> (img, ker_size); break;
-            case u8:  output = sobelDerivatives<uchar , float> (img, ker_size); break;
-            case b8 : output = sobelDerivatives<char  , float> (img, ker_size); break;
+            case s32: output = sobelDerivatives<int   , int>   (img, ker_size); break;
+            case u32: output = sobelDerivatives<uint  , int>   (img, ker_size); break;
+            case b8 : output = sobelDerivatives<char  , int>   (img, ker_size); break;
+            case u8:  output = sobelDerivatives<uchar , int>   (img, ker_size); break;
             default : TYPE_ERROR(1, type);
         }
         std::swap(*dx, output.first);

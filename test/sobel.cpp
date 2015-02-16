@@ -25,11 +25,20 @@ class Sobel : public ::testing::Test
         virtual void SetUp() {}
 };
 
+template<typename T>
+class Sobel_Integer : public ::testing::Test
+{
+    public:
+        virtual void SetUp() {}
+};
+
 // create a list of types to be tested
-typedef ::testing::Types<float, int, uint, char, uchar> TestTypes;
+typedef ::testing::Types<float, double> TestTypes;
+typedef ::testing::Types<int, unsigned, char, unsigned char> TestTypesInt;
 
 // register the type list
 TYPED_TEST_CASE(Sobel, TestTypes);
+TYPED_TEST_CASE(Sobel_Integer, TestTypesInt);
 
 template<typename Ti, typename To>
 void testSobelDerivatives(string pTestFile)
@@ -79,10 +88,10 @@ void testSobelDerivatives(string pTestFile)
 
 TYPED_TEST(Sobel, Rectangle)
 {
-    testSobelDerivatives<TypeParam, float>(string(TEST_DIR"/sobel/rectangle.test"));
+    testSobelDerivatives<TypeParam, TypeParam>(string(TEST_DIR"/sobel/rectangle.test"));
 }
 
-TEST(Sobel, Rectangle_Double)
+TYPED_TEST(Sobel_Integer, Rectangle)
 {
-    testSobelDerivatives<double, double>(string(TEST_DIR"/sobel/rectangle.test"));
+    testSobelDerivatives<TypeParam, int>(string(TEST_DIR"/sobel/rectangle.test"));
 }
