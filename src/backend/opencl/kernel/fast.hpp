@@ -58,6 +58,11 @@ void fast(unsigned* out_feat,
                         << " -D ARC_LENGTH=" << arc_length
                         << " -D NONMAX=" << static_cast<unsigned>(nonmax);
 
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
+
                 buildProgram(fastProgs[device],
                              fast_cl,
                              fast_cl_len,

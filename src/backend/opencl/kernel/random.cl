@@ -8,7 +8,6 @@
  ********************************************************/
 
 #ifdef USE_DOUBLE
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
 #define SKEIN_KS_PARITY SKEIN_KS_PARITY64
 #define RotL RotL_64
 #define uint_t uint64_t

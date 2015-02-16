@@ -45,7 +45,7 @@ namespace JIT
             if (m_gen_name) return;
 
             kerStream << "_" << m_name_str;
-            kerStream << std::setw(2) << std::setfill('0') << std::hex << m_id << std::dec;
+            kerStream << std::setw(3) << std::setfill('0') << std::dec << m_id << std::dec;
             m_gen_name = true;
         }
 

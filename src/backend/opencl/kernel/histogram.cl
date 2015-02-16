@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if T == double || U == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 __kernel
 void histogram(__global outType *         d_dst,
                KParam                     oInfo,

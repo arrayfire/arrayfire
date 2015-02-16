@@ -63,10 +63,10 @@ namespace JIT
         {
             m_child->genKerName(kerStream);
 
-            // Make the hex representation of enum part of the Kernel name
-            kerStream << "_" << std::setw(2) << std::setfill('0') << std::hex << m_op;
-            kerStream << std::setw(2) << std::setfill('0') << std::hex << m_child->getId();
-            kerStream << std::setw(2) << std::setfill('0') << std::hex << m_id << std::dec;
+            // Make the dec representation of enum part of the Kernel name
+            kerStream << "_" << std::setw(3) << std::setfill('0') << std::dec << m_op;
+            kerStream << std::setw(3) << std::setfill('0') << std::dec << m_child->getId();
+            kerStream << std::setw(3) << std::setfill('0') << std::dec << m_id << std::dec;
             m_gen_name = true;
         }
 
