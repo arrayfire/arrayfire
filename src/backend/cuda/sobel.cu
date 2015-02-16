@@ -20,24 +20,27 @@ using af::dim4;
 namespace cuda
 {
 
-template<typename T>
-std::pair< Array<T>*, Array<T>* >
-sobelDerivatives(const Array<T> &img, const unsigned &ker_size)
+template<typename Ti, typename To>
+std::pair< Array<To>*, Array<To>* >
+sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size)
 {
-    Array<T> *dx = createEmptyArray<T>(img.dims());
-    Array<T> *dy = createEmptyArray<T>(img.dims());
+    Array<To> *dx = createEmptyArray<To>(img.dims());
+    Array<To> *dy = createEmptyArray<To>(img.dims());
 
-    kernel::sobel<T>(*dx, *dy, img, ker_size);
+    kernel::sobel<Ti, To>(*dx, *dy, img, ker_size);
 
     return std::make_pair(dx, dy);
 }
 
-#define INSTANTIATE(T)\
-    template std::pair< Array<T>*, Array<T>* > sobelDerivatives(const Array<T> &img, const unsigned &ker_size);
+#define INSTANTIATE(Ti, To)                                                 \
+    template std::pair< Array<To>*, Array<To>* >                            \
+    sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size);
 
-INSTANTIATE(float )
-INSTANTIATE(double)
-INSTANTIATE(char  )
-INSTANTIATE(int   )
+INSTANTIATE(float , float)
+INSTANTIATE(double, double)
+INSTANTIATE(int   , float)
+INSTANTIATE(uint  , float)
+INSTANTIATE(char  , float)
+INSTANTIATE(uchar , float)
 
 }

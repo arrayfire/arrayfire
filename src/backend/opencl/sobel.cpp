@@ -20,27 +20,30 @@ using af::dim4;
 namespace opencl
 {
 
-template<typename T>
-std::pair< Array<T>*, Array<T>* >
-sobelDerivatives(const Array<T> &img, const unsigned &ker_size)
+template<typename Ti, typename To>
+std::pair< Array<To>*, Array<To>* >
+sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size)
 {
-    Array<T> *dx = createEmptyArray<T>(img.dims());
-    Array<T> *dy = createEmptyArray<T>(img.dims());
+    Array<To> *dx = createEmptyArray<To>(img.dims());
+    Array<To> *dy = createEmptyArray<To>(img.dims());
 
     switch(ker_size) {
-        case 3: kernel::sobel<T, 3>(*dx, *dy, img); break;
+        case 3: kernel::sobel<Ti, To, 3>(*dx, *dy, img); break;
     }
 
     return std::make_pair(dx, dy);
 }
 
-#define INSTANTIATE(T)\
-    template std::pair< Array<T>*, Array<T>* > sobelDerivatives(const Array<T> &img, const unsigned &ker_size);
+#define INSTANTIATE(Ti, To)                                                 \
+    template std::pair< Array<To>*, Array<To>* >                            \
+    sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size);
 
-INSTANTIATE(float )
-INSTANTIATE(double)
-INSTANTIATE(char  )
-INSTANTIATE(int   )
+INSTANTIATE(float , float)
+INSTANTIATE(double, double)
+INSTANTIATE(int   , float)
+INSTANTIATE(uint  , float)
+INSTANTIATE(char  , float)
+INSTANTIATE(uchar , float)
 
 }
 
