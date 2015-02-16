@@ -7,25 +7,22 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-T load2LocalMem(global const T * in,
+Ti load2LocalMem(global const Ti * in,
                dim_type dim0, dim_type dim1,
                dim_type gx, dim_type gy,
                dim_type inStride1, dim_type inStride0)
 {
     if (gx<0 || gx>=dim0 || gy<0 || gy>=dim1)
-        return (T)0;
+        return (Ti)0;
     else
         return in[gx*inStride0+gy*inStride1];
 }
 
 kernel
-void sobel3x3(global T * dx,
-              KParam     dxInfo,
-              global T * dy,
-              KParam     dyInfo,
-              global const T * in,
-              KParam     iInfo,
-              local T *  localMem,
+void sobel3x3(global To * dx, KParam dxInfo,
+              global To * dy, KParam dyInfo,
+              global const Ti * in, KParam iInfo,
+              local        Ti * localMem,
               dim_type nBBS)
 {
     const dim_type radius  = 1;
@@ -33,9 +30,9 @@ void sobel3x3(global T * dx,
     const dim_type shrdLen = get_local_size(0) + padding;
 
     unsigned batchId = get_group_id(0) / nBBS;
-    global const T* iptr = in + (batchId * iInfo.strides[2] + iInfo.offset);
-    global T*      dxptr = dx + (batchId * dxInfo.strides[2]);
-    global T*      dyptr = dy + (batchId * dyInfo.strides[2]);
+    global const Ti* iptr = in + (batchId * iInfo.strides[2] + iInfo.offset);
+    global To*      dxptr = dx + (batchId * dxInfo.strides[2]);
+    global To*      dyptr = dy + (batchId * dyInfo.strides[2]);
 
     dim_type lx = get_local_id(0);
     dim_type ly = get_local_id(1);
@@ -84,11 +81,11 @@ void sobel3x3(global T * dx,
 
         float t1 = localMem[i+shrdLen*_j];
         float t2 = localMem[i+shrdLen*j_];
-        dxptr[gy*dxInfo.strides[1]+gx] = (T)(NW+SW - (NE+SE) + 2*(t1-t2));
+        dxptr[gy*dxInfo.strides[1]+gx] = (NW+SW - (NE+SE) + 2*(t1-t2));
 
         t1 = localMem[_i+shrdLen*j];
         t2 = localMem[i_+shrdLen*j];
-        dyptr[gy*dyInfo.strides[1]+gx] = (T)(NW+NE - (SW+SE) + 2*(t1-t2));
+        dyptr[gy*dyInfo.strides[1]+gx] = (NW+NE - (SW+SE) + 2*(t1-t2));
 
     }
 }

@@ -25,22 +25,31 @@ class Sobel : public ::testing::Test
         virtual void SetUp() {}
 };
 
+template<typename T>
+class Sobel_Integer : public ::testing::Test
+{
+    public:
+        virtual void SetUp() {}
+};
+
 // create a list of types to be tested
-typedef ::testing::Types<float, double, int, char> TestTypes;
+typedef ::testing::Types<float, double> TestTypes;
+typedef ::testing::Types<int, unsigned, char, unsigned char> TestTypesInt;
 
 // register the type list
 TYPED_TEST_CASE(Sobel, TestTypes);
+TYPED_TEST_CASE(Sobel_Integer, TestTypesInt);
 
-template<typename T>
+template<typename Ti, typename To>
 void testSobelDerivatives(string pTestFile)
 {
-    if (noDoubleTests<T>()) return;
+    if (noDoubleTests<Ti>()) return;
 
     vector<af::dim4>  numDims;
-    vector<vector<T>>      in;
-    vector<vector<T>>   tests;
+    vector<vector<Ti>>      in;
+    vector<vector<To>>   tests;
 
-    readTests<T,T,int>(pTestFile, numDims, in, tests);
+    readTests<Ti,To,int>(pTestFile, numDims, in, tests);
 
     af::dim4 dims    = numDims[0];
     af_array dxArray = 0;
@@ -48,18 +57,18 @@ void testSobelDerivatives(string pTestFile)
     af_array inArray = 0;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
-                dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<Ti>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_sobel_operator(&dxArray, &dyArray, inArray, 3));
 
-    T *dxData = new T[dims.elements()];
-    T *dyData = new T[dims.elements()];
+    To *dxData = new To[dims.elements()];
+    To *dyData = new To[dims.elements()];
 
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)dxData, dxArray));
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)dyData, dyArray));
 
-    vector<T> currDXGoldBar = tests[0];
-    vector<T> currDYGoldBar = tests[1];
+    vector<To> currDXGoldBar = tests[0];
+    vector<To> currDYGoldBar = tests[1];
     size_t nElems = currDXGoldBar.size();
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currDXGoldBar[elIter], dxData[elIter])<< "at: " << elIter<< std::endl;
@@ -79,6 +88,10 @@ void testSobelDerivatives(string pTestFile)
 
 TYPED_TEST(Sobel, Rectangle)
 {
-    testSobelDerivatives<TypeParam>(string(TEST_DIR"/sobel/rectangle.test"));
+    testSobelDerivatives<TypeParam, TypeParam>(string(TEST_DIR"/sobel/rectangle.test"));
+}
 
+TYPED_TEST(Sobel_Integer, Rectangle)
+{
+    testSobelDerivatives<TypeParam, int>(string(TEST_DIR"/sobel/rectangle.test"));
 }

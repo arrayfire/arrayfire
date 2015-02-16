@@ -59,13 +59,15 @@ namespace JIT
             m_gen_offset = true;
         }
 
-        void genKerName(std::stringstream &kerStream, bool genInputs)
+        void genKerName(std::stringstream &kerStream)
         {
-            if (!genInputs) {
-                // Make the hex representation of enum part of the Kernel name
-                kerStream << std::setw(2) << std::setfill('0') << std::hex << m_op << std::dec;
-            }
-            m_child->genKerName(kerStream, genInputs);
+            m_child->genKerName(kerStream);
+
+            // Make the hex representation of enum part of the Kernel name
+            kerStream << "_" << std::setw(2) << std::setfill('0') << std::hex << m_op;
+            kerStream << std::setw(2) << std::setfill('0') << std::hex << m_child->getId();
+            kerStream << std::setw(2) << std::setfill('0') << std::hex << m_id << std::dec;
+            m_gen_name = true;
         }
 
         void genFuncs(std::stringstream &kerStream)

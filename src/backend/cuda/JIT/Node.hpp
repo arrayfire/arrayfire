@@ -35,6 +35,7 @@ namespace JIT
         bool m_gen_param;
         bool m_gen_offset;
         bool m_set_arg;
+        bool m_gen_name;
 
     public:
 
@@ -46,10 +47,11 @@ namespace JIT
               m_gen_func(false),
               m_gen_param(false),
               m_gen_offset(false),
-              m_set_arg(false)
+              m_set_arg(false),
+              m_gen_name(false)
         {}
 
-        virtual void genKerName(std::stringstream &kerStream, bool genInputs) {}
+        virtual void genKerName(std::stringstream &kerStream) {}
         virtual void genParams  (std::stringstream &kerStream,
                                  std::stringstream &annStream, bool is_linear) {}
         virtual void genOffsets (std::stringstream &kerStream, bool is_linear) {}
