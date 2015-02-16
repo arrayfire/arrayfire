@@ -11,6 +11,7 @@
 #include <types.hpp>
 #include "Node.hpp"
 #include <math.hpp>
+#include <iomanip>
 
 namespace cuda
 {
@@ -22,14 +23,12 @@ namespace JIT
     {
     private:
         T m_val;
-        bool m_gen_name;
         bool m_set_arg;
     public:
 
         ScalarNode(T val)
             : Node(irname<T>(), afShortName<T>(false)),
               m_val(val),
-              m_gen_name(false),
               m_set_arg(false)
         {
         }
@@ -39,12 +38,12 @@ namespace JIT
             return true;
         }
 
-        void genKerName(std::stringstream &kerStream, bool genInputs)
+        void genKerName(std::stringstream &kerStream)
         {
-            if (!genInputs) return;
             if (m_gen_name) return;
 
-            kerStream << m_name_str;
+            kerStream << "_" << m_name_str;
+            kerStream << std::setw(2) << std::setfill('0') << std::hex << m_id << std::dec;
             m_gen_name = true;
         }
 

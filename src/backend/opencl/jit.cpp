@@ -18,6 +18,7 @@
 #include <program.hpp>
 #include <dispatch.hpp>
 #include <err_opencl.hpp>
+#include <functional>
 
 namespace opencl
 {
@@ -35,23 +36,23 @@ using std::stringstream;
 
 static string getFuncName(Node *node, bool is_linear, bool *is_double)
 {
+    node->setId(0);
+
+    stringstream hashName;
     stringstream funcName;
 
     if (is_linear) {
-        funcName << "KL_";
+        funcName << "L_";
     } else {
-        funcName << "KG_";
+        funcName << "G_";
     }
 
     std::string outName = node->getNameStr();
-    funcName << node->getNameStr() << "_";
+    funcName << outName;
 
-    node->genKerName(funcName, false);
-    funcName << "_";
+    node->genKerName(funcName);
 
-    stringstream names;
-    node->genKerName(names, true);
-    string nameStr = names.str();
+    string nameStr = funcName.str();
     funcName << nameStr;
 
     nameStr = nameStr + outName;
@@ -59,13 +60,15 @@ static string getFuncName(Node *node, bool is_linear, bool *is_double)
     size_t loc = nameStr.find_first_of(dblChars);
     *is_double = (loc != std::string::npos);
 
-    return funcName.str();
+    std::hash<std::string> hash_fn;
+    hashName << "KER" << hash_fn(funcName.str());
+    return hashName.str();
 }
 
 static string getKernelString(string funcName, Node *node, bool is_linear)
 {
     stringstream kerStream;
-    int id = node->setId(0) - 1;
+    int id = node->getId();
 
     kerStream << "__kernel void" << "\n";
 

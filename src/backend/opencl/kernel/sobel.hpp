@@ -35,7 +35,7 @@ namespace kernel
 static const dim_type THREADS_X = 16;
 static const dim_type THREADS_Y = 16;
 
-template<typename T, unsigned ker_size>
+template<typename Ti, typename To, unsigned ker_size>
 void sobel(Param dx, Param dy, const Param in)
 {
     try {
@@ -48,9 +48,10 @@ void sobel(Param dx, Param dy, const Param in)
         std::call_once( compileFlags[device], [device] () {
 
                 std::ostringstream options;
-                options << " -D T=" << dtype_traits<T>::getName()
+                options << " -D Ti=" << dtype_traits<Ti>::getName()
+                        << " -D To=" << dtype_traits<To>::getName()
                         << " -D KER_SIZE="<< ker_size;
-                if (std::is_same<T, double>::value) {
+                if (std::is_same<Ti, double>::value) {
                     options << " -D USE_DOUBLE";
                 }
                 Program prog;
@@ -64,7 +65,7 @@ void sobel(Param dx, Param dy, const Param in)
         dim_type blk_x = divup(in.info.dims[0], THREADS_X);
         dim_type blk_y = divup(in.info.dims[1], THREADS_Y);
 
-        NDRange global(blk_x * in.info.dims[2] * in.info.dims[3] * THREADS_X, 
+        NDRange global(blk_x * in.info.dims[2] * in.info.dims[3] * THREADS_X,
                        blk_y * THREADS_Y);
 
         auto sobelOp = make_kernel<Buffer, KParam,
@@ -73,10 +74,10 @@ void sobel(Param dx, Param dy, const Param in)
                                    cl::LocalSpaceArg,
                                    dim_type> (*sobKernels[device]);
 
-        size_t loc_size = (THREADS_X+ker_size-1)*(THREADS_Y+ker_size-1)*sizeof(T);
+        size_t loc_size = (THREADS_X+ker_size-1)*(THREADS_Y+ker_size-1)*sizeof(Ti);
 
         sobelOp(EnqueueArgs(getQueue(), global, local),
-                    *dx.data, dx.info, *dy.data, dy.info, 
+                    *dx.data, dx.info, *dy.data, dy.info,
                     *in.data, in.info, cl::Local(loc_size), blk_x);
 
         CL_DEBUG_FINISH(getQueue());
