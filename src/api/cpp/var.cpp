@@ -13,15 +13,17 @@
 namespace af
 {
 
-array var(const array& in, bool isbiased, int dim)
+array var(const array& in, bool isbiased, dim_type dim)
 {
     af_array temp = 0;
+    AF_THROW(af_var(&temp, in.get(), isbiased, dim));
     return array(temp);
 }
 
-array var(const array& in, const array weights, int dim)
+array var(const array& in, const array weights, dim_type dim)
 {
     af_array temp = 0;
+    AF_THROW(af_var_weighted(&temp, in.get(), weights.get(), dim));
     return array(temp);
 }
 
@@ -29,13 +31,15 @@ array var(const array& in, const array weights, int dim)
     template<> AFAPI T var(const array& in, bool isbiased)          \
     {                                                               \
         double ret_val;                                             \
-        af_var_all(&ret_val, NULL, in.get(), isbiased);             \
+        AF_THROW(af_var_all(&ret_val, NULL, in.get(), isbiased));   \
         return (T) ret_val;                                         \
     }                                                               \
                                                                     \
     template<> AFAPI T var(const array& in, const array weights)    \
     {                                                               \
         double ret_val;                                             \
+        AF_THROW(af_var_all_weighted(&ret_val, NULL,                \
+                                    in.get(), weights.get()));      \
         return (T) ret_val;                                         \
     }                                                               \
 
@@ -56,12 +60,14 @@ template<> AFAPI af_cdouble var(const array& in, bool isbiased)
 template<> AFAPI af_cfloat var(const array& in, const array weights)
 {
     double real, imag;
+    AF_THROW(af_var_all_weighted(&real, &imag, in.get(), weights.get()));
     return std::complex<float>((float)real, (float)imag);
 }
 
 template<> AFAPI af_cdouble var(const array& in, const array weights)
 {
     double real, imag;
+    AF_THROW(af_var_all_weighted(&real, &imag, in.get(), weights.get()));
     return std::complex<double>(real, imag);
 }
 

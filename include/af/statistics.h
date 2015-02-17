@@ -24,9 +24,10 @@ AFAPI T mean(const array& in);
 template<typename T>
 AFAPI T mean(const array& in, const array& weights);
 
-AFAPI array var(const array& in, bool isbiased=false, int dim=-1);
 
-AFAPI array var(const array& in, const array weights, int dim=-1);
+AFAPI array var(const array& in, bool isbiased=false, dim_type dim=-1);
+
+AFAPI array var(const array& in, const array weights, dim_type dim=-1);
 
 template<typename T>
 AFAPI T var(const array& in, bool isbiased=false);
@@ -49,9 +50,10 @@ AFAPI af_err af_mean_all(double *real, double *imag, const af_array in);
 
 AFAPI af_err af_mean_all_weighted(double *real, double *imag, const af_array in, const af_array weights);
 
-AFAPI af_err af_var(af_array *out, const af_array& in, bool isbiased, int dim);
 
-AFAPI af_err af_var_weighted(af_array *out, const af_array& in, const af_array weights);
+AFAPI af_err af_var(af_array *out, const af_array in, bool isbiased, dim_type dim);
+
+AFAPI af_err af_var_weighted(af_array *out, const af_array in, const af_array weights, dim_type dim);
 
 AFAPI af_err af_var_all(double *realVal, double *imagVal, const af_array in, bool isbiased);
 
