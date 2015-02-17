@@ -1,3 +1,6 @@
 [submodule "test/data"]
 	path = test/data
 	url = https://github.com/arrayfire/arrayfire_data
+[submodule "docs/assets"]
+	path = docs/assets
+	url = ssh://git@github.com/arrayfire/assets
