@@ -91,9 +91,13 @@ DeviceManager::DeviceManager()
         std::vector<cl::Platform>   platforms;
         Platform::get(&platforms);
 
-        cl_device_type DEVC_TYPES[3] = {CL_DEVICE_TYPE_GPU,
-                                        CL_DEVICE_TYPE_ACCELERATOR,
-                                        CL_DEVICE_TYPE_CPU};
+        cl_device_type DEVC_TYPES[] = {
+            CL_DEVICE_TYPE_GPU,
+#ifndef OS_MAC
+            CL_DEVICE_TYPE_ACCELERATOR,
+            CL_DEVICE_TYPE_CPU
+#endif
+        };
 
         for (auto &platform : platforms)
             mPlatforms.push_back(new Platform(platform));
