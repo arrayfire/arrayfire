@@ -67,6 +67,15 @@ namespace opencl
         };
 
         template<>
+        struct random_name<char, true>
+        {
+            const char *name()
+            {
+                return "randu";
+            }
+        };
+
+        template<>
         struct random_name<double, true>
         {
             const char *name()
@@ -100,9 +109,13 @@ namespace opencl
                                 << " -D repeat="<< REPEAT
                                 << " -D " << random_name<T, isRandu>().name();
 
-                        if (std::is_same<T, double>::value ||
-                            std::is_same<T, cdouble>::value) {
+                        if (std::is_same<T, double>::value) {
                             options << " -D USE_DOUBLE";
+                            options << " -D IS_64";
+                        }
+
+                        if (std::is_same<T, char>::value) {
+                            options << " -D IS_BOOL";
                         }
 
                         buildProgram(ranProgs[device], random_cl, random_cl_len, options.str());

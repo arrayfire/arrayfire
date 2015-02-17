@@ -5,12 +5,22 @@
  * This file is distributed under 3-clause BSD license.
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
+ *
  ********************************************************/
 
-#ifdef USE_DOUBLE
+typedef ulong uint64_t;
+typedef uint  uint32_t;
+
+#define PI_VAL 3.1415926535897932384626433832795028841971693993751058209749445923078164
+#define R123_STATIC_INLINE inline
+#define R123_0x1p_32f (1.f/4294967296.f)
+#define R123_0x1p_64 (1./(4294967296.*4294967296.))
+
+#ifdef IS_64
 #define SKEIN_KS_PARITY SKEIN_KS_PARITY64
 #define RotL RotL_64
 #define uint_t uint64_t
+
 #define result(a) (a)*R123_0x1p_64
 
 enum r123_enum_threefry64x2 {
@@ -41,7 +51,12 @@ enum r123_enum_threefry64x2 {
 #define SKEIN_KS_PARITY SKEIN_KS_PARITY32
 #define RotL RotL_32
 #define uint_t uint32_t
+
+#ifdef IS_BOOL
+#define result(a) ((a)*R123_0x1p_32f) > 0.5
+#else
 #define result(a) (a)*R123_0x1p_32f
+#endif
 
 enum r123_enum_threefry32x2 {
     /* Output from skein_rot_search (srs2-X5000.out)
@@ -68,77 +83,17 @@ enum r123_enum_threefry32x2 {
 };
 #endif
 
-typedef ulong uint64_t;
-typedef uint  uint32_t;
-
-//TODO: Add reference to Random123 License
-
-#define PI_VAL 3.1415926535897932384626433832795028841971693993751058209749445923078164
-
-#ifndef R123_STATIC_INLINE
-#define R123_STATIC_INLINE inline
-#endif
-
-#ifndef R123_FORCE_INLINE
-#define R123_FORCE_INLINE(decl) decl __attribute__((always_inline))
-#endif
-
-#ifndef R123_CUDA_DEVICE
-#define R123_CUDA_DEVICE
-#endif
-
-#ifndef R123_ASSERT
-#define R123_ASSERT(x)
-#endif
-
-#ifndef R123_BUILTIN_EXPECT
-#define R123_BUILTIN_EXPECT(expr,likely) expr
-#endif
-
-#ifndef R123_USE_GNU_UINT128
-#define R123_USE_GNU_UINT128 0
-#endif
-
-#ifndef R123_USE_MULHILO64_ASM
-#define R123_USE_MULHILO64_ASM 0
-#endif
-
-#ifndef R123_USE_MULHILO64_MSVC_INTRIN
-#define R123_USE_MULHILO64_MSVC_INTRIN 0
-#endif
-
-#ifndef R123_USE_MULHILO64_CUDA_INTRIN
-#define R123_USE_MULHILO64_CUDA_INTRIN 0
-#endif
-
-#ifndef R123_USE_MULHILO64_OPENCL_INTRIN
-#define R123_USE_MULHILO64_OPENCL_INTRIN 1
-#endif
-
-#ifndef R123_USE_AES_NI
-#define R123_USE_AES_NI 0
-#endif
-
-#define R123_0x1p_32f (1.f/4294967296.f)
-#define R123_0x1p_24f (1.f/16777216.f)
-#define R123_0x1fffffep_25f (16777215.f * R123_0x1p_24f * R123_0x1p_24f)
-#define R123_0x1p_64 (1./(4294967296.*4294967296.))
-#define R123_0x1p_53 (1./(4294967296.*2097152.))
-#define R123_0x1fffffffffffffp_54 (9007199254740991.*R123_0x1p_53*R123_0x1p_53)
-#define R123_0x1p_32 (1./4294967296.)
-#define R123_0x100000001p_32 (4294967297.*R123_0x1p_32*R123_0x1p_32)
-
 enum r123_enum_threefry_wcnt {
     WCNT2=2,
     WCNT4=4
 };
 
-R123_CUDA_DEVICE R123_STATIC_INLINE uint64_t RotL_64(uint64_t x, uint64_t N)
+R123_STATIC_INLINE uint64_t RotL_64(uint64_t x, uint64_t N)
 {
     return (x << (N & 63)) | (x >> ((64-N) & 63));
 }
 
-R123_CUDA_DEVICE R123_STATIC_INLINE uint32_t RotL_32(uint32_t x, uint32_t N)
+R123_STATIC_INLINE uint32_t RotL_32(uint32_t x, uint32_t N)
 {
     return (x << (N & 31)) | (x >> ((32-N) & 31));
 }
@@ -149,8 +104,7 @@ R123_CUDA_DEVICE R123_STATIC_INLINE uint32_t RotL_32(uint32_t x, uint32_t N)
 
 
 // http://www.thesalmons.org/john/random123/releases/1.06/docs/structr123_1_1Threefry2x32__R.html#af5be46f8426cfcd86e75327e4b3750b0
-#define THREEFRY2_DEFAULT_ROUNDS 16
-#define Nrounds THREEFRY2_DEFAULT_ROUNDS
+#define Nrounds 16
 
 struct r123array2
 {
@@ -161,10 +115,10 @@ typedef struct r123array2 threefry2_ctr_t;
 typedef struct r123array2 threefry2_key_t;
 typedef struct r123array2 threefry2_ukey_t;
 
-R123_CUDA_DEVICE R123_STATIC_INLINE
+R123_STATIC_INLINE
 threefry2_key_t threefry2keyinit(threefry2_ukey_t uk) { return uk; }
 
-R123_CUDA_DEVICE R123_STATIC_INLINE
+R123_STATIC_INLINE
 threefry2_ctr_t threefry2_R(threefry2_ctr_t in, threefry2_key_t k)
 {
     threefry2_ctr_t X;
