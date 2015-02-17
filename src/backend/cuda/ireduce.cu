@@ -13,7 +13,10 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <ireduce.hpp>
-#include <ops.hpp>
+
+#undef _GLIBCXX_USE_INT128
+#include <complex>
+#include <kernel/ireduce.hpp>
 #include <err_cuda.hpp>
 
 using af::dim4;
@@ -25,13 +28,13 @@ namespace cuda
     void ireduce(Array<T> &out, Array<uint> &loc,
                  const Array<T> &in, const int dim)
     {
-        CUDA_NOT_SUPPORTED();
+        kernel::ireduce<T, op>(out, loc.get(), in, dim);
     }
 
     template<af_op_t op, typename T>
     T ireduce_all(unsigned *loc, const Array<T> &in)
     {
-        CUDA_NOT_SUPPORTED();
+        return kernel::ireduce_all<T, op>(loc, in);
     }
 
 #define INSTANTIATE(ROp, T)                                             \
