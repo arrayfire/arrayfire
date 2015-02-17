@@ -51,18 +51,18 @@ namespace opencl
     template Array<float>  * randn<float>   (const af::dim4 &dims);
     template Array<double> * randn<double>  (const af::dim4 &dims);
 
-#define COMPLEX_RANDOM(fn, T, TR)                           \
-    template<> Array<T>* fn<T>(const af::dim4 &dims)        \
-    {                                                       \
-        Array<T> *out = createEmptyArray<T>(dims);          \
-        dim_type elements = out->elements() * 2;            \
-        kernel::random<TR, false>(*out->get(), elements);   \
-        return out;                                         \
-    }                                                       \
+#define COMPLEX_RANDOM(fn, T, TR, is_randu)                     \
+    template<> Array<T>* fn<T>(const af::dim4 &dims)            \
+    {                                                           \
+        Array<T> *out = createEmptyArray<T>(dims);              \
+        dim_type elements = out->elements() * 2;                \
+        kernel::random<TR, is_randu>(*out->get(), elements);    \
+        return out;                                             \
+    }                                                           \
 
-    COMPLEX_RANDOM(randu, cfloat, float)
-    COMPLEX_RANDOM(randu, cdouble, double)
-    COMPLEX_RANDOM(randn, cfloat, float)
-    COMPLEX_RANDOM(randn, cdouble, double)
+    COMPLEX_RANDOM(randu, cfloat, float, true)
+    COMPLEX_RANDOM(randu, cdouble, double, true)
+    COMPLEX_RANDOM(randn, cfloat, float, false)
+    COMPLEX_RANDOM(randn, cdouble, double, false)
 
 }
