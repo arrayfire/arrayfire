@@ -11,12 +11,17 @@
 #include <af/opencl.h>
 #include <cl.hpp>
 #include <platform.hpp>
+#include <functional>
+#include <algorithm>
+#include <cctype>
 #include <vector>
 #include <string>
 #include <sstream>
 #include <iostream>
 #include <stdexcept>
 #include <cstring>
+#include <algorithm>
+#include <map>
 #include <errorcodes.hpp>
 #include <err_opencl.hpp>
 
@@ -76,66 +81,102 @@ DeviceManager::~DeviceManager()
 void DeviceManager::setContext(int device)
 {
     mActiveQId = device;
-    for (int i = 0; i< (int)mCtxOffsets.size(); ++i) {
-        if (device< (int)mCtxOffsets[i]) {
-            mActiveCtxId = i;
-            break;
-        }
-    }
+    mActiveCtxId = device;
 }
 
 DeviceManager::DeviceManager()
     : mActiveCtxId(0), mActiveQId(0)
 {
-    std::vector<cl::Platform>   platforms;
-    Platform::get(&platforms);
+    try {
+        std::vector<cl::Platform>   platforms;
+        Platform::get(&platforms);
 
-    cl_device_type DEVC_TYPES[3] = {CL_DEVICE_TYPE_GPU,
-                                    CL_DEVICE_TYPE_ACCELERATOR,
-                                    CL_DEVICE_TYPE_CPU};
+        cl_device_type DEVC_TYPES[] = {
+            CL_DEVICE_TYPE_GPU,
+#ifndef OS_MAC
+            CL_DEVICE_TYPE_ACCELERATOR,
+            CL_DEVICE_TYPE_CPU
+#endif
+        };
 
-    for (auto &platform : platforms)
-        mPlatforms.push_back(new Platform(platform));
+        for (auto &platform : platforms)
+            mPlatforms.push_back(new Platform(platform));
 
-    for (auto devType : DEVC_TYPES) {
-        for (auto &platform : platforms) {
-            cl_context_properties cps[3] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platform()), 0};
-            Context *temp = nullptr;
-            try {
-                temp = new Context(devType, cps);
-                mContexts.push_back(temp);
-            }
-            catch (const cl::Error &error) {
-                if (error.err() != CL_DEVICE_NOT_FOUND)
-                    CL_TO_AF_ERROR(error);
+        unsigned nDevices = 0;
+        for (auto devType : DEVC_TYPES) {
+            for (auto &platform : platforms) {
+                cl_context_properties cps[3] = {CL_CONTEXT_PLATFORM,
+                                                (cl_context_properties)(platform()),
+                                                0};
+                std::vector<Device> devs;
+                try {
+                    platform.getDevices(devType, &devs);
+                } catch(const cl::Error &err) {
+                    if (err.err() != CL_DEVICE_NOT_FOUND) {
+                        throw;
+                    }
+                }
+
+                for (auto dev : devs) {
+                    nDevices++;
+                    Context *ctx = new Context(dev, cps);
+                    CommandQueue *cq = new CommandQueue(*ctx, dev);
+                    mDevices.push_back(new Device(dev));
+                    mContexts.push_back(ctx);
+                    mQueues.push_back(cq);
+                    mCtxOffsets.push_back(nDevices);
+                }
             }
         }
+
+        const char* deviceENV = getenv("AF_OPENCL_DEFAULT_DEVICE");
+        if(deviceENV) {
+            std::stringstream s(deviceENV);
+            int def_device = -1;
+            s >> def_device;
+            if(def_device < 0 || def_device >= (int)nDevices) {
+                printf("WARNING: AF_OPENCL_DEFAULT_DEVICE is out of range\n");
+                printf("Setting default device as 0\n");
+            } else {
+                setContext(def_device);
+            }
+        }
+    } catch (const cl::Error &error) {
+            CL_TO_AF_ERROR(error);
+    }
+}
+
+
+// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring/217605#217605
+// trim from start
+static inline std::string &ltrim(std::string &s)
+{
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+                                    std::not1(std::ptr_fun<int, int>(std::isspace))));
+    return s;
+}
+
+static std::string platformMap(std::string &platStr)
+{
+    static bool isFirst = true;
+
+    typedef std::map<std::string, std::string> strmap_t;
+    static strmap_t platMap;
+    if (isFirst) {
+        platMap["NVIDIA CUDA"] = "NVIDIA  ";
+        platMap["Intel(R) OpenCL"] = "INTEL   ";
+        platMap["AMD Accelerated Parallel Processing"] = "AMD     ";
+        platMap["Intel Gen OCL Driver"] = "BEIGNET ";
+        platMap["Apple"] = "APPLE   ";
+        isFirst = false;
     }
 
-    unsigned nDevices = 0;
-    for (auto context : mContexts) {
-        vector<Device> devices = context->getInfo<CL_CONTEXT_DEVICES>();
+    strmap_t::iterator idx = platMap.find(platStr);
 
-        for(auto &dev : devices) {
-            nDevices++;
-            mDevices.push_back(new Device(dev));
-            mQueues.push_back(new CommandQueue(*context, dev));
-        }
-
-        mCtxOffsets.push_back(nDevices);
-    }
-
-    const char* deviceENV = getenv("AF_OPENCL_DEFAULT_DEVICE");
-    if(deviceENV) {
-        std::stringstream s(deviceENV);
-        int def_device = -1;
-        s >> def_device;
-        if(def_device < 0 || def_device >= (int)nDevices) {
-            printf("WARNING: AF_OPENCL_DEFAULT_DEVICE is out of range\n");
-            printf("Setting default device as 0\n");
-        } else {
-            setContext(def_device);
-        }
+    if (idx == platMap.end()) {
+        return platStr;
+    } else {
+        return idx->second;
     }
 }
 
@@ -153,17 +194,19 @@ std::string getInfo()
             const Platform &platform = device.getInfo<CL_DEVICE_PLATFORM>();
             string platStr = platform.getInfo<CL_PLATFORM_NAME>();
             bool show_braces = ((unsigned)getActiveDeviceId() == nDevices);
-            string dstr;
-            device.getInfo(CL_DEVICE_NAME, &dstr);
+            string dstr = device.getInfo<CL_DEVICE_NAME>();
 
             string id = (show_braces ? string("[") : "-") + std::to_string(nDevices) +
                         (show_braces ? string("]") : "-");
-            info << id << " " << platStr << " " << dstr << " ";
+            info << id << " " << platformMap(platStr) << ": " << ltrim(dstr) << " ";
+#ifndef NDEBUG
             info << device.getInfo<CL_DEVICE_VERSION>();
             info << " Device driver " << device.getInfo<CL_DRIVER_VERSION>();
             info << " FP64 Support("
                  << (device.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0 ? "True" : "False")
-                 << ")" << std::endl;
+                 << ")";
+#endif
+            info << std::endl;
 
             nDevices++;
         }

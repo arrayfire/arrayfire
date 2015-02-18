@@ -9,7 +9,6 @@
 
 #include <af/dim4.hpp>
 #include <Array.hpp>
-#include <stdexcept>
 #include <copy.hpp>
 #include <err_cuda.hpp>
 #include <JIT/BufferNode.hpp>
@@ -20,9 +19,6 @@ using af::dim4;
 
 namespace cuda
 {
-
-    using std::ostream;
-
     template<typename T>
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
@@ -83,7 +79,7 @@ namespace cuda
         if (!node) {
             bool is_linear = isOwner() || (this->ndims() == 1);
             BufferNode<T> *buf_node = new BufferNode<T>(irname<T>(),
-                                                        shortname<T>(true), data,
+                                                        afShortName<T>(), data,
                                                         *this, offset, is_linear);
             const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
         }

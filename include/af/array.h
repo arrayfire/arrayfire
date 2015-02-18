@@ -15,6 +15,7 @@
 
 
 #ifdef __cplusplus
+#include <vector>
 namespace af
 {
 
@@ -35,7 +36,7 @@ namespace af
         //FIXME: Put the following in a different class
         const array   *parent;
         bool     isRef;
-        seq      s[4];
+        std::vector<seq> s;
         void getSeq(af_seq* afs);
         array(af_array in, const array *par, seq *seqs);
         void set(af_array tmp);

@@ -25,10 +25,10 @@ namespace JIT
         int m_op;
 
     public:
-        UnaryNode(const char *out_type_str,
+        UnaryNode(const char *out_type_str, const char *name_str,
                   const char *op_str,
                   Node_ptr child, int op)
-            : Node(out_type_str),
+            : Node(out_type_str, name_str),
               m_op_str(op_str),
               m_child(child),
               m_op(op)
@@ -59,13 +59,15 @@ namespace JIT
             m_gen_offset = true;
         }
 
-        void genKerName(std::stringstream &kerStream, bool genInputs)
+        void genKerName(std::stringstream &kerStream)
         {
-            if (!genInputs) {
-                // Make the hex representation of enum part of the Kernel name
-                kerStream << std::setw(2) << std::setfill('0') << std::hex << m_op << std::dec;
-            }
-            m_child->genKerName(kerStream, genInputs);
+            m_child->genKerName(kerStream);
+
+            // Make the dec representation of enum part of the Kernel name
+            kerStream << "_" << std::setw(3) << std::setfill('0') << std::dec << m_op;
+            kerStream << std::setw(3) << std::setfill('0') << std::dec << m_child->getId();
+            kerStream << std::setw(3) << std::setfill('0') << std::dec << m_id << std::dec;
+            m_gen_name = true;
         }
 
         void genFuncs(std::stringstream &kerStream)

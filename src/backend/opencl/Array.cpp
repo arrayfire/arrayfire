@@ -9,8 +9,6 @@
 
 #include <af/dim4.hpp>
 #include <Array.hpp>
-#include <iostream>
-#include <stdexcept>
 #include <copy.hpp>
 #include <scalar.hpp>
 #include <JIT/BufferNode.hpp>
@@ -21,8 +19,6 @@ using af::dim4;
 
 namespace opencl
 {
-    using std::ostream;
-
     template<typename T>
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),

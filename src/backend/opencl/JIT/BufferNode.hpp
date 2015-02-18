@@ -9,6 +9,7 @@
 
 #pragma once
 #include "Node.hpp"
+#include <iomanip>
 
 namespace opencl
 {
@@ -20,10 +21,8 @@ namespace JIT
     class BufferNode : public Node
     {
     private:
-        std::string m_name_str;
         const std::shared_ptr<cl::Buffer> m_data;
         const Param m_param;
-        bool m_gen_name;
         bool m_set_arg;
         bool m_linear;
 
@@ -33,11 +32,9 @@ namespace JIT
                    const char *name_str,
                    const Param param, const bool is_linear,
                    const std::shared_ptr<cl::Buffer> data)
-            : Node(type_str),
-              m_name_str(name_str),
+            : Node(type_str, name_str),
               m_data(data),
               m_param(param),
-              m_gen_name(false),
               m_set_arg(false),
               m_linear(is_linear)
         {}
@@ -51,12 +48,12 @@ namespace JIT
             return m_linear && same_dims;
         }
 
-        void genKerName(std::stringstream &kerStream, bool genInputs)
+        void genKerName(std::stringstream &kerStream)
         {
-            if (!genInputs) return;
             if (m_gen_name) return;
 
-            kerStream << m_name_str;
+            kerStream << "_" << m_name_str;
+            kerStream << std::setw(3) << std::setfill('0') << std::dec << m_id << std::dec;
             m_gen_name = true;
         }
 

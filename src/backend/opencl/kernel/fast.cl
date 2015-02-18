@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if T == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 #define MAX_VAL(A,B) (A<B) ? (B) : (A)
 
 inline int idx_y(const int i)

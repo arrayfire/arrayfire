@@ -26,23 +26,28 @@ namespace JIT
     {
     protected:
         std::string m_type_str;
+        std::string m_name_str;
         int m_id;
         bool m_set_id;
         bool m_gen_func;
         bool m_gen_param;
         bool m_gen_offset;
+        bool m_gen_name;
 
     public:
 
-        Node(const char *type_str)
-            : m_type_str(type_str), m_id(-1),
+        Node(const char *type_str, const char *name_str)
+            : m_type_str(type_str),
+              m_name_str(name_str),
+              m_id(-1),
               m_set_id(false),
               m_gen_func(false),
               m_gen_param(false),
-              m_gen_offset(false)
+              m_gen_offset(false),
+              m_gen_name(false)
         {}
 
-        virtual void genKerName(std::stringstream &kerStream, bool genInputs) {}
+        virtual void genKerName(std::stringstream &kerStream) {}
         virtual void genParams  (std::stringstream &kerStream) {}
         virtual void genOffsets (std::stringstream &kerStream, bool is_linear) {}
         virtual void genFuncs   (std::stringstream &kerStream) { m_gen_func = true;}
@@ -62,6 +67,7 @@ namespace JIT
         bool isGenOffset() { return m_gen_offset; }
 
         int getId()  { return m_id; }
+        std::string getNameStr() { return m_name_str; }
 
         virtual ~Node() {}
     };

@@ -9,6 +9,7 @@
 
 #pragma once
 #include "Node.hpp"
+#include <iomanip>
 
 namespace cuda
 {
@@ -28,8 +29,6 @@ namespace JIT
     class BufferNode : public Node
     {
     private:
-        std::string m_name_str;
-        bool m_gen_name;
         bool m_set_arg;
         bool m_linear;
 
@@ -45,9 +44,7 @@ namespace JIT
                    CParam<T> param,
                    dim_type off,
                    bool is_linear)
-            : Node(type_str),
-              m_name_str(name_str),
-              m_gen_name(false),
+            : Node(type_str, name_str),
               m_set_arg(false),
               m_linear(is_linear),
               sptr(data),
@@ -64,12 +61,12 @@ namespace JIT
             return m_linear && same_dims;
         }
 
-        void genKerName(std::stringstream &kerStream, bool genInputs)
+        void genKerName(std::stringstream &kerStream)
         {
-            if (!genInputs) return;
             if (m_gen_name) return;
 
-            kerStream << m_name_str;
+            kerStream << "_" << m_name_str;
+            kerStream << std::setw(2) << std::setfill('0') << std::hex << m_id << std::dec;
             m_gen_name = true;
         }
 

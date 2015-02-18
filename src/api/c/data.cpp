@@ -245,8 +245,7 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims
         case s32:   result = randu_<int    >(d);    break;
         case u32:   result = randu_<uint   >(d);    break;
         case u8:    result = randu_<uchar  >(d);    break;
-            // Removed because of bool type. Functions implementations exist.
-            //case b8:    result = randu_<char   >(d);    break;
+        case b8:    result = randu_<char  >(d);    break;
         default:    TYPE_ERROR(3, type);
         }
         std::swap(*out, result);

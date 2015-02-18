@@ -24,13 +24,15 @@ namespace cuda
 template<typename To, typename Ti>
 struct CastOp
 {
-    std::string to, from, func;
-    CastOp(): to(shortname<To>(true)), from(shortname<Ti>(false)) {
-        func = std::string("@___mk") + to + from;
+    std::string func;
+    CastOp() {
+        std::string tmp = std::string("___mk") + afShortName<To>();
+        func = cuMangledName<Ti, false>(tmp.c_str());
     }
-    const char *name()
+
+    const std::string name()
     {
-        return func.c_str();
+        return func;
     }
 };
 
@@ -41,6 +43,7 @@ Array<To>* cast(const Array<Ti> &in)
     JIT::Node_ptr in_node = in.getNode();
 
     JIT::UnaryNode *node = new JIT::UnaryNode(irname<To>(),
+                                              afShortName<To>(),
                                               cop.name(),
                                               in_node, af_cast_t);
 

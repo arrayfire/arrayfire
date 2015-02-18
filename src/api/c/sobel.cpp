@@ -20,14 +20,13 @@ using af::dim4;
 using namespace detail;
 
 typedef std::pair<af_array, af_array> ArrayPair;
-
-template<typename T>
+template<typename Ti, typename To>
 ArrayPair sobelDerivatives(const af_array &in, const unsigned &ker_size)
 {
-    typedef std::pair< Array<T>*, Array<T>* > BAPair;
-    BAPair  out = sobelDerivatives<T>(getArray<T>(in), ker_size);
-    return std::make_pair(getHandle<T>(*out.first),
-                          getHandle<T>(*out.second));
+    typedef std::pair< Array<To>*, Array<To>* > BAPair;
+    BAPair  out = sobelDerivatives<Ti, To>(getArray<Ti>(in), ker_size);
+    return std::make_pair(getHandle<To>(*out.first),
+                          getHandle<To>(*out.second));
 }
 
 af_err af_sobel_operator(af_array *dx, af_array *dy, const af_array img, const unsigned ker_size)
@@ -45,10 +44,12 @@ af_err af_sobel_operator(af_array *dx, af_array *dy, const af_array img, const u
         ArrayPair output;
         af_dtype type  = info.getType();
         switch(type) {
-            case f32: output = sobelDerivatives<float >(img, ker_size); break;
-            case f64: output = sobelDerivatives<double>(img, ker_size); break;
-            case b8 : output = sobelDerivatives<char  >(img, ker_size); break;
-            case s32: output = sobelDerivatives<int   >(img, ker_size); break;
+            case f32: output = sobelDerivatives<float , float> (img, ker_size); break;
+            case f64: output = sobelDerivatives<double, double>(img, ker_size); break;
+            case s32: output = sobelDerivatives<int   , int>   (img, ker_size); break;
+            case u32: output = sobelDerivatives<uint  , int>   (img, ker_size); break;
+            case b8 : output = sobelDerivatives<char  , int>   (img, ker_size); break;
+            case u8:  output = sobelDerivatives<uchar , int>   (img, ker_size); break;
             default : TYPE_ERROR(1, type);
         }
         std::swap(*dx, output.first);
