@@ -8,13 +8,13 @@
  ********************************************************/
 
 __kernel
-void reduce_dim_kernel(__global T *oData,
-                       KParam oInfo,
-                       __global uint *olData,
-                       const __global T *iData,
-                       KParam iInfo,
-                       const __global uint *ilData,
-                       uint groups_x, uint groups_y, uint group_dim)
+void ireduce_dim_kernel(__global T *oData,
+                        KParam oInfo,
+                        __global uint *olData,
+                        const __global T *iData,
+                        KParam iInfo,
+                        const __global uint *ilData,
+                        uint groups_x, uint groups_y, uint group_dim)
 {
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);
@@ -86,16 +86,16 @@ void reduce_dim_kernel(__global T *oData,
     s_val[lid] = out_val;
     s_idx[lid] = out_idx;
 
-    __local T *s_ptr = s_val + lid;
-    __local uint *s_idx = s_idx + lid;
+    __local T *s_vptr = s_val + lid;
+    __local uint *s_iptr = s_idx + lid;
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if (DIMY == 8) {
         if (lidy < 4) {
             binOp(&out_val, &out_idx,
-                  s_ptr[THREADS_X * 4], s_idx[THREADS_X * 4]);
-            *s_ptr = out_val;
-            *s_idx = out_idx;
+                  s_vptr[THREADS_X * 4], s_iptr[THREADS_X * 4]);
+            *s_vptr = out_val;
+            *s_iptr = out_idx;
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
@@ -103,9 +103,9 @@ void reduce_dim_kernel(__global T *oData,
     if (DIMY >= 4) {
         if (lidy < 2) {
             binOp(&out_val, &out_idx,
-                  s_ptr[THREADS_X * 2], s_idx[THREADS_X * 2]);
-            *s_ptr = out_val;
-            *s_idx = out_idx;
+                  s_vptr[THREADS_X * 2], s_iptr[THREADS_X * 2]);
+            *s_vptr = out_val;
+            *s_iptr = out_idx;
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
@@ -113,17 +113,17 @@ void reduce_dim_kernel(__global T *oData,
     if (DIMY >= 2) {
         if (lidy < 1) {
             binOp(&out_val, &out_idx,
-                  s_ptr[THREADS_X * 1], s_idx[THREADS_X * 1]);
-            *s_ptr = out_val;
-            *s_idx = out_idx;
+                  s_vptr[THREADS_X * 1], s_iptr[THREADS_X * 1]);
+            *s_vptr = out_val;
+            *s_iptr = out_idx;
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
 
     if (lidy == 0 && is_valid &&
         (id_dim_out < oInfo.dims[dim])) {
-        *oData = *s_ptr;
-        *olData = *s_idx;
+        *oData = *s_vptr;
+        *olData = *s_iptr;
     }
 
 }
