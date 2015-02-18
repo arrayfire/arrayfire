@@ -16,18 +16,25 @@ int main(int argc, char *argv[])
 {
     try {
         // Initialize the kernel array just once
+        af::info();
         static const float h_kernel[] = {1, 1, 1, 1, 0, 1, 1, 1, 1};
         static const af::array kernel(3, 3, h_kernel, af::afHost);
 
-        static const int reset = 600;
+        static const int reset = 500;
         static const int game_w = 160, game_h = 120;
         int frame_count = 0;
-        int wId = -1;
 
         array state;
         state = (af::randu(game_h, game_w, f32) > 0.5).as(f32);
-        while(wId != -2) {
-            wId = image(state, wId, "Conway Using ArrayFire", 4.0);
+
+        WindowHandle window;
+        ImageHandle image;
+        afgfx_create_window(&window, 4 * state.dims(1), 4 * state.dims(0), "Conway", AFGFX_RED, GL_FLOAT);
+        afgfx_setup_image(&image, window, state.dims(1), state.dims(0));
+
+        while(frame_count <= 1500) {
+
+            drawImage(state, image);
             frame_count++;
 
             // Generate a random starting state
@@ -48,6 +55,10 @@ int main(int argc, char *argv[])
             // Update state
             state = state * C0 + C1;
         }
+
+        afgfx_destroy_image(image);
+        afgfx_destroy_window(window);
+
     } catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());
         throw;

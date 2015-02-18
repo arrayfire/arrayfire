@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#if defined(WITH_GRAPHICS)
+
 #include <Array.hpp>
 #include <graphics.hpp>
 #include <stdexcept>
@@ -14,10 +16,22 @@
 
 namespace opencl
 {
-    int image(const Array<float> &in, const int wId, const char *title,
-              const dim_type disp_w, const dim_type disp_h)
+    template<typename T>
+    void draw_image(const Array<T> &in, const ImageHandle &image)
     {
-        AF_ERROR("Graphics not implemented on OpenCL backend", AF_ERR_NOT_SUPPORTED);
-        return -1;
+        printf("Error: Graphics not available for OpenCL backend.\n");
+        AF_ERROR("Graphics not Available", AF_ERR_NOT_CONFIGURED);
     }
+
+    #define INSTANTIATE(T)      \
+        template void draw_image<T>(const Array<T> &in, const ImageHandle &image);
+
+    INSTANTIATE(float)
+    INSTANTIATE(double)
+    INSTANTIATE(int)
+    INSTANTIATE(uint)
+    INSTANTIATE(uchar)
+    INSTANTIATE(char)
 }
+
+#endif

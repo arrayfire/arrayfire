@@ -7,11 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/array.h>
+#if defined (WITH_GRAPHICS)
+
+#include <af/graphics.h>
 #include <Array.hpp>
 
 namespace cuda
 {
-    int image(const Array<float> &in, const int wId, const char *title,
-              const dim_type disp_w, const dim_type disp_h);
+    template<typename T>
+    void draw_image(const Array<T> &in, const ImageHandle &image);
 }
+
+#endif

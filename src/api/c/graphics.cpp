@@ -7,8 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#if defined (WITH_GRAPHICS)
+
 #include <af/graphics.h>
 #include <af/index.h>
+#include <af/data.h>
 #include <graphics.hpp>
 #include <err_common.hpp>
 #include <handle.hpp>
@@ -18,78 +21,95 @@
 using af::dim4;
 using namespace detail;
 
-af_err af_image_s(int *out, const af_array in, const int wId, const char *title,
-                  const float scale_w, const float scale_h)
+template<typename T>
+static inline void draw_image(const af_array in, const ImageHandle &image)
+{
+    draw_image(getArray<T>(in), image);
+}
+
+static af_array convert_data(const af_array in, const ArrayInfo &info, const ImageHandle &image)
+{
+    af_array X;
+    // Tile if needed
+    // Interleave values and transpose
+
+    dim_type i2 = info.dims()[2];
+    dim_type o2 = image->window->mode;
+
+    af_array c1;
+    af_constant(&c1, 1, 2, info.dims().get(), info.getType());
+
+    if (i2 == 1) {
+        if (o2 == 1) {
+            af_reorder(&X, in, 2, 1, 0, 3);
+        } else if (o2 == 3) {
+            af_array Y;
+            af_tile(&Y, in, 1, 1, 3, 1);
+            af_reorder(&X, Y, 2, 1, 0, 3);
+        } else if (o2 == 4) {
+            af_array Y, Z;
+            af_tile(&Y, in, 1, 1, 3, 1);
+            af_join(&Z, 2, Y, c1);
+            af_reorder(&X, Z, 2, 1, 0, 3);
+        }
+    } else if (i2 == 3) {
+        if (o2 == 1) {
+            //FIXME Use Colorspace Conversion
+        } else if (o2 == 3) {
+            af_reorder(&X, in, 2, 1, 0, 3);
+        } else if (o2 == 4) {
+            af_array Y;
+            af_join(&Y, 2, in, c1);
+            af_reorder(&X, Y, 2, 1, 0, 3);
+        }
+    } else if (i2 == 4) {
+        if (o2 == 1) {
+            //FIXME Use Colorspace Conversion
+        } else if (o2 == 3) {
+            af_seq s[3] = {af_span, af_span, {0, 2, 1}};
+            af_array Y;
+            af_index(&Y, in, 3, s);
+            af_reorder(&X, Y, 2, 1, 0, 3);
+        } else if (o2 == 4) {
+            af_reorder(&X, in, 2, 1, 0, 3);
+        }
+    }
+
+    return X;
+}
+
+af_err af_draw_image(const af_array in, const ImageHandle &image)
 {
     try {
         ArrayInfo info = getInfo(in);
 
         af::dim4 in_dims = info.dims();
-        DIM_ASSERT(1, in_dims[2] == 1 || in_dims[2] == 3 || in_dims[2] == 4);
-        DIM_ASSERT(1, in_dims[3] == 1);
-        ARG_ASSERT(1, info.getType() == f32);
-        ARG_ASSERT(4, scale_w > 0.0f);
-        ARG_ASSERT(5, scale_h > 0.0f);
+        af_dtype type    = info.getType();
+        DIM_ASSERT(0, in_dims[2] == 1 || in_dims[2] == 3);   // Correct Number of Channels
+        DIM_ASSERT(0, in_dims[3] == 1);
 
-        // Tile if needed
-        // Interleave values and transpose
-        af_array X, Y;
-        if(in_dims[2] == 1) {
-            af_tile(&Y, in, 1, 1, 3, 1);
-            af_reorder(&X, Y, 2, 1, 0, 3);
-        } else if (in_dims[2] == 4) {
-            //FIXME
-            //Y = in(span, span, seq(2));
-        } else {
-            af_reorder(&X, in, 2, 1, 0, 3);
+        // Test to make sure window GLenum type and in.type() are compatible
+        ARG_ASSERT(0, type == f32);
+
+        af_array X = convert_data(in, info, image);
+
+        afgfx_make_window_current(image->window);
+
+        switch(type) {
+            case f32: draw_image<float  >(X, image);  break;
+            case f64: draw_image<double >(X, image);  break;
+            case b8:  draw_image<char   >(X, image);  break;
+            case s32: draw_image<int    >(X, image);  break;
+            case u32: draw_image<uint   >(X, image);  break;
+            case u8:  draw_image<uchar  >(X, image);  break;
+            default:  TYPE_ERROR(1, type);
         }
 
-        int output = image(getArray<float>(X), wId, title, in_dims[1] * scale_w, in_dims[0] * scale_h);
-
-        std::swap(*out,output);
+        afgfx_draw_image(image);
     }
     CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_image_d(int *out, const af_array in, const int wId, const char *title,
-                  const dim_type disp_w, const dim_type disp_h)
-{
-    try {
-        ArrayInfo info = getInfo(in);
-
-        af::dim4 in_dims = info.dims();
-        DIM_ASSERT(1, in_dims[2] == 1 || in_dims[2] == 3 || in_dims[2] == 4);
-        DIM_ASSERT(1, in_dims[3] == 1);
-        ARG_ASSERT(1, info.getType() == f32);
-        ARG_ASSERT(4, disp_w > 0 || disp_w == -1);
-        ARG_ASSERT(5, disp_h > 0 || disp_h == -1);
-
-        // Tile if needed
-        // Interleave values and transpose
-        af_array X, Y;
-        if(in_dims[2] == 1) {
-            af_tile(&Y, in, 1, 1, 3, 1);
-            af_reorder(&X, Y, 2, 1, 0, 3);
-        } else if (in_dims[2] == 4) {
-            //FIXME
-            //Y = in(span, span, seq(2));
-        } else {
-            af_reorder(&X, in, 2, 1, 0, 3);
-        }
-
-        dim_type dw = disp_w, dh = disp_h;
-        if(dw == -1)
-            dw = in_dims[1];
-        if(dh == -1)
-            dh = in_dims[0];
-
-        int output = image(getArray<float>(X), wId, title, dw, dh);
-
-        std::swap(*out,output);
-    }
-    CATCHALL;
-
-    return AF_SUCCESS;
-}
+#endif

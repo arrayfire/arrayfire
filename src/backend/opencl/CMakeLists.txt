@@ -65,6 +65,13 @@ INCLUDE_DIRECTORIES(
     ${BoostCompute_INCLUDE_DIR}
     )
 
+IF(FireWorks_FOUND})
+    INCLUDE_DIRECTORIES(
+        ${FireWorks_INCLUDE_DIRS}
+        ${GLEW_INCLUDE_DIR}
+        )
+ENDIF()
+
 FILE(GLOB opencl_headers
   "*.hpp"
     "*.h")
@@ -155,5 +162,11 @@ ADD_LIBRARY(afopencl SHARED
 ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
 
 TARGET_LINK_LIBRARIES(afopencl ${OPENCL_LIBRARIES} ${lib_deps} ${CLBLAS_LIBRARIES} ${CLFFT_LIBRARIES} ${CMAKE_DL_LIBS} ${Boost_LIBRARIES})
+
+IF(AFGFX_FOUND})
+  TARGET_LINK_LIBRARIES(afopencl
+                        ${AFGFX_LIBRARIES}
+                       )
+ENDIF()
 
 INSTALL(TARGETS afopencl DESTINATION lib)
