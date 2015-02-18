@@ -24,6 +24,7 @@ namespace kernel
 {
 
     template<typename T> __host__ __device__ double cabs(const T in) { return (double)in; }
+    static double __host__ __device__ cabs(const char in) { return (double)(in > 0); }
     static double __host__ __device__ cabs(const cfloat in) { return (double)abs(in); }
     static double __host__ __device__ cabs(const cdouble in) { return (double)abs(in); }
 

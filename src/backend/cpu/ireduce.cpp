@@ -19,6 +19,7 @@ using af::dim4;
 namespace cpu
 {
     template<typename T> double cabs(const T in) { return (double)in; }
+    static double cabs(const char in) { return (double)(in > 0); }
     static double cabs(const cfloat in) { return (double)abs(in); }
     static double cabs(const cdouble in) { return (double)abs(in); }
 
