@@ -672,6 +672,11 @@ namespace af
     INSTANTIATE(&&, af_and)
     INSTANTIATE(||, af_or)
     INSTANTIATE(%, af_mod)
+    INSTANTIATE(&, af_bitand)
+    INSTANTIATE(|, af_bitor)
+    INSTANTIATE(^, af_bitxor)
+    INSTANTIATE(<<, af_bitshiftl)
+    INSTANTIATE(>>, af_bitshiftr)
 
     array array::operator-() const
     {
