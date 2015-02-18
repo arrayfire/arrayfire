@@ -68,7 +68,7 @@ void ireduce_dim_kernel(__global T *oData,
         if (!IS_FIRST) out_idx = *ilData;
     }
 
-    const uint id_dim_in_start = id_dim_in + group_dim + get_local_size(1);
+    const uint id_dim_in_start = id_dim_in + group_dim * get_local_size(1);
 
     for (int id = id_dim_in_start; is_valid && (id < iInfo.dims[dim]);
          id += group_dim * get_local_size(1)) {
