@@ -68,6 +68,10 @@ AFAPI void sobel(array &dx, array &dy, const array &img, const unsigned ker_size
 
 AFAPI array sobel(const array &img, const unsigned ker_size=3, bool isFast=false);
 
+AFAPI array rgb2gray(const array& in, const float rPercent=0.2126f, const float gPercent=0.7152f, const float bPercent=0.0722f);
+
+AFAPI array gray2rgb(const array& in, const float rFactor=1.0, const float gFactor=1.0, const float bFactor=1.0);
+
 }
 #endif
 
@@ -142,6 +146,10 @@ extern "C" {
 
     // sobel operator for images
     AFAPI af_err af_sobel_operator(af_array *dx, af_array *dy, const af_array img, const unsigned ker_size);
+
+    AFAPI af_err af_rgb2gray(af_array* out, const af_array in, const float rPercent, const float gPercent, const float bPercent);
+
+    AFAPI af_err af_gray2rgb(af_array* out, const af_array in, const float rFactor, const float gFactor, const float bFactor);
 
 #ifdef __cplusplus
 }

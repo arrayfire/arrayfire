@@ -98,12 +98,6 @@ namespace cuda
 #define upcast cuComplexFloatToDouble
 #define downcast cuComplexDoubleToFloat
 
-#define cdivf cuCdivf
-#define cabs  cuCabs
-#define creal cuCreal
-#define cimag cuCimag
-#define cdiv cuCdiv
-
 #ifdef __GNUC__
 //This suprresses unused function warnings in gcc
 //FIXME: Check if the warnings exist in other compilers
