@@ -50,6 +50,10 @@ AFAPI T median(const array& in);
 
 AFAPI array median(const array& in, dim_type dim=-1);
 
+
+template<typename T>
+AFAPI T corrcoef(const array& X, const array& Y);
+
 }
 #endif
 
@@ -86,6 +90,9 @@ AFAPI af_err af_cov(af_array* out, const af_array X, const af_array Y, bool isbi
 AFAPI af_err af_median_all(double *realVal, double *imagVal, const af_array in);
 
 AFAPI af_err af_median(af_array* out, const af_array in, dim_type dim);
+
+
+AFAPI af_err af_corrcoef(double *realVal, double *imagVal, const af_array X, const af_array Y);
 
 #ifdef __cplusplus
 }
