@@ -17,14 +17,14 @@
 #include <utility>
 namespace af
 {
-    AFAPI void drawImage(const array &in, const ImageHandle &image);
+    AFAPI void drawImage(const array &in, const afgfx_image image);
 }
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-    AFAPI af_err af_draw_image(const af_array in, const ImageHandle &image);
+    AFAPI af_err af_draw_image(const af_array in, const afgfx_image image);
 #ifdef __cplusplus
 }
 #endif

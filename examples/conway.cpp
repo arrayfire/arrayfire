@@ -27,8 +27,8 @@ int main(int argc, char *argv[])
         array state;
         state = (af::randu(game_h, game_w, f32) > 0.5).as(f32);
 
-        WindowHandle window;
-        ImageHandle image;
+        afgfx_window window;
+        afgfx_image image;
         afgfx_create_window(&window, 4 * state.dims(1), 4 * state.dims(0), "Conway", AFGFX_RED, GL_FLOAT);
         afgfx_setup_image(&image, window, state.dims(1), state.dims(0));
 

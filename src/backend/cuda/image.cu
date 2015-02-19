@@ -27,7 +27,7 @@ using af::dim4;
 
 namespace cuda
 {
-    typedef std::map<ImageHandle, cudaGraphicsResource *> interop_t;
+    typedef std::map<afgfx_image, cudaGraphicsResource *> interop_t;
     typedef interop_t::iterator iter_t;
     interop_t interop_maps[DeviceManager::MAX_DEVICES];
     static void destroyResources();
@@ -69,7 +69,7 @@ namespace cuda
     }
 
     template<typename T>
-    void draw_image(const Array<T> &in, const ImageHandle &image)
+    void draw_image(const Array<T> &in, const afgfx_image image)
     {
         interopManagerInit();
 
@@ -107,7 +107,7 @@ namespace cuda
     }
 
     #define INSTANTIATE(T)      \
-        template void draw_image<T>(const Array<T> &in, const ImageHandle &image);
+        template void draw_image<T>(const Array<T> &in, const afgfx_image image);
 
     INSTANTIATE(float)
     INSTANTIATE(double)

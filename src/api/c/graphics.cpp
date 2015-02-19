@@ -23,12 +23,12 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
-static inline void draw_image(const af_array in, const ImageHandle &image)
+static inline void draw_image(const af_array in, const afgfx_image image)
 {
     draw_image(getArray<T>(in), image);
 }
 
-static af_array convert_data(const af_array in, const ArrayInfo &info, const ImageHandle &image)
+static af_array convert_data(const af_array in, const ArrayInfo &info, const afgfx_image image)
 {
     af_array X = 0;
     af_array Y = 0;
@@ -87,7 +87,7 @@ static af_array convert_data(const af_array in, const ArrayInfo &info, const Ima
     return X;
 }
 
-af_err af_draw_image(const af_array in, const ImageHandle &image)
+af_err af_draw_image(const af_array in, const afgfx_image image)
 {
     try {
         ArrayInfo info = getInfo(in);

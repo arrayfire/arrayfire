@@ -15,7 +15,7 @@
 
 namespace af
 {
-    void drawImage(const array &in, const ImageHandle &image)
+    void drawImage(const array &in, const afgfx_image image)
     {
         AF_THROW(af_draw_image(in.get(), image));
     }

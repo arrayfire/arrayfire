@@ -15,7 +15,7 @@
 namespace cpu
 {
     template<typename T>
-    void draw_image(const Array<T> &in, const ImageHandle &image);
+    void draw_image(const Array<T> &in, const afgfx_image image);
 }
 
 #endif
