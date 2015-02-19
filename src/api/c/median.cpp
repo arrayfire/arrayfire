@@ -98,7 +98,7 @@ static af_array median(const af_array& in, dim_type dim)
         af_array carr   = 0;
         af_array result = 0;
 
-        AF_CHECK(af_constant(&carr, 2.0, dims.ndims(), dims.get(), input.getType()));
+        AF_CHECK(af_constant(&carr, 0.5, dims.ndims(), dims.get(), input.getType()));
         AF_CHECK(af_add(&sumarr, left, right, false));
         AF_CHECK(af_mul(&result, sumarr, carr, false));
 
