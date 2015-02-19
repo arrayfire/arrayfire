@@ -35,8 +35,8 @@ af_err af_gradient(af_array *grows, af_array *gcols, const af_array in)
 
         af_array grad0;
         af_array grad1;
-        af_create_handle(&grad0, idims.ndims(), idims.get(), type);
-        af_create_handle(&grad1, idims.ndims(), idims.get(), type);
+        AF_CHECK(af_create_handle(&grad0, idims.ndims(), idims.get(), type));
+        AF_CHECK(af_create_handle(&grad1, idims.ndims(), idims.get(), type));
 
         switch(type) {
             case f32: gradient<float  >(&grad0, &grad1, in);  break;

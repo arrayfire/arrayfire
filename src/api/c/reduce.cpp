@@ -17,6 +17,7 @@
 #include <ops.hpp>
 #include <backend.hpp>
 #include <reduce.hpp>
+#include <ireduce.hpp>
 #include <math.hpp>
 
 using af::dim4;
@@ -325,4 +326,131 @@ af_err af_alltrue_all(double *real, double *imag, const af_array in)
 af_err af_anytrue_all(double *real, double *imag, const af_array in)
 {
     return reduce_all_type<af_or_t, uchar>(real, imag, in);
+}
+
+template<af_op_t op, typename T>
+static inline void ireduce(af_array *res, af_array *loc,
+                           const af_array in, const int dim)
+{
+    const Array<T> In = getArray<T>(in);
+    dim4 odims = In.dims();
+    odims[dim] = 1;
+
+    Array<T> *Res = createEmptyArray<T>(odims);
+    Array<uint> *Loc = createEmptyArray<uint>(odims);
+    ireduce<op, T>(*Res, *Loc, In, dim);
+
+    *res = getHandle(*Res);
+    *loc = getHandle(*Loc);
+}
+
+template<af_op_t op>
+static af_err ireduce_common(af_array *val, af_array *idx, const af_array in, const int dim)
+{
+    try {
+
+        ARG_ASSERT(2, dim >= 0);
+        ARG_ASSERT(2, dim <  4);
+
+        const ArrayInfo in_info = getInfo(in);
+
+        if (dim >= (int)in_info.ndims()) {
+            *val = weakCopy(in);
+            return AF_SUCCESS;
+        }
+
+        af_dtype type = in_info.getType();
+        af_array res, loc;
+
+        switch(type) {
+        case f32:  ireduce<op, float  >(&res, &loc, in, dim); break;
+        case f64:  ireduce<op, double >(&res, &loc, in, dim); break;
+        case c32:  ireduce<op, cfloat >(&res, &loc, in, dim); break;
+        case c64:  ireduce<op, cdouble>(&res, &loc, in, dim); break;
+        case u32:  ireduce<op, uint   >(&res, &loc, in, dim); break;
+        case s32:  ireduce<op, int    >(&res, &loc, in, dim); break;
+        case b8:   ireduce<op, char   >(&res, &loc, in, dim); break;
+        case u8:   ireduce<op, uchar  >(&res, &loc, in, dim); break;
+        default:   TYPE_ERROR(1, type);
+        }
+
+        std::swap(*val, res);
+        std::swap(*idx, loc);
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_imin(af_array *val, af_array *idx, const af_array in, const int dim)
+{
+    return ireduce_common<af_min_t>(val, idx, in, dim);
+}
+
+af_err af_imax(af_array *val, af_array *idx, const af_array in, const int dim)
+{
+    return ireduce_common<af_max_t>(val, idx, in, dim);
+}
+
+template<af_op_t op, typename T>
+static inline T ireduce_all(unsigned *loc, const af_array in)
+{
+    return ireduce_all<op, T>(loc, getArray<T>(in));
+}
+
+template<af_op_t op>
+static af_err ireduce_all_common(double *real_val, double *imag_val,
+                                 unsigned *loc, const af_array in)
+{
+    try {
+
+        const ArrayInfo in_info = getInfo(in);
+        af_dtype type = in_info.getType();
+
+        ARG_ASSERT(0, real_val != NULL);
+        *real_val = 0;
+        if (!imag_val) *imag_val = 0;
+
+        cfloat  cfval;
+        cdouble cdval;
+
+        switch(type) {
+        case f32:  *real_val = (double)ireduce_all<op, float >(loc, in); break;
+        case f64:  *real_val = (double)ireduce_all<op, double>(loc, in); break;
+        case u32:  *real_val = (double)ireduce_all<op, uint  >(loc, in); break;
+        case s32:  *real_val = (double)ireduce_all<op, int   >(loc, in); break;
+        case b8:   *real_val = (double)ireduce_all<op, char  >(loc, in); break;
+        case u8:   *real_val = (double)ireduce_all<op, uchar >(loc, in); break;
+
+        case c32:
+            cfval = ireduce_all<op, cfloat>(loc, in);
+            ARG_ASSERT(1, imag_val != NULL);
+            *real_val = real(cfval);
+            *imag_val = imag(cfval);
+            break;
+
+        case c64:
+            cdval = ireduce_all<op, cdouble>(loc, in);
+            ARG_ASSERT(1, imag_val != NULL);
+            *real_val = real(cdval);
+            *imag_val = imag(cdval);
+            break;
+
+        default:   TYPE_ERROR(1, type);
+        }
+
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_imin_all(double *real, double *imag, unsigned *idx, const af_array in)
+{
+    return ireduce_all_common<af_min_t>(real, imag, idx, in);
+}
+
+af_err af_imax_all(double *real, double *imag, unsigned *idx, const af_array in)
+{
+    return ireduce_all_common<af_max_t>(real, imag, idx, in);
 }

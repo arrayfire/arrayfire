@@ -31,6 +31,12 @@ namespace kernel
     }
 
     template<> __device__
+    void generate_uniform<char>(char *val, curandState_t *state)
+    {
+        *val = curand_uniform(state) > 0.5;
+    }
+
+    template<> __device__
     void generate_uniform<float>(float *val, curandState_t *state)
     {
         *val = curand_uniform(state);

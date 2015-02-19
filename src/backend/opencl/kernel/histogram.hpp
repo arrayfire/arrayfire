@@ -45,10 +45,12 @@ void histogram(Param out, const Param in, const Param minmax, dim_type nbins)
                     options << " -D inType=" << dtype_traits<inType>::getName()
                             << " -D outType=" << dtype_traits<outType>::getName()
                             << " -D THRD_LOAD=" << THRD_LOAD;
+
                     if (std::is_same<inType, double>::value ||
                         std::is_same<inType, cdouble>::value) {
                         options << " -D USE_DOUBLE";
                     }
+
                     Program prog;
                     buildProgram(prog, histogram_cl, histogram_cl_len, options.str());
                     histProgs[device]   = new Program(prog);
