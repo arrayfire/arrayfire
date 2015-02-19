@@ -26,7 +26,7 @@ static inline dim_type getFNSD(af::dim4 dims)
 namespace af
 {
 
-#define INSTANTIATE_VAR(T)                                \
+#define INSTANTIATE_STDEV(T)                              \
     template<> AFAPI T stdev(const array& in)             \
     {                                                     \
         double ret_val;                                   \
@@ -48,14 +48,14 @@ template<> AFAPI af_cdouble stdev(const array& in)
     return std::complex<double>(real, imag);
 }
 
-INSTANTIATE_VAR(float);
-INSTANTIATE_VAR(double);
-INSTANTIATE_VAR(int);
-INSTANTIATE_VAR(unsigned int);
-INSTANTIATE_VAR(char);
-INSTANTIATE_VAR(unsigned char);
+INSTANTIATE_STDEV(float);
+INSTANTIATE_STDEV(double);
+INSTANTIATE_STDEV(int);
+INSTANTIATE_STDEV(unsigned int);
+INSTANTIATE_STDEV(char);
+INSTANTIATE_STDEV(unsigned char);
 
-#undef INSTANTIATE_VAR
+#undef INSTANTIATE_STDEV
 
 array stdev(const array& in, dim_type dim)
 {

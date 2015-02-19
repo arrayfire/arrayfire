@@ -44,6 +44,12 @@ AFAPI T var(const array& in, const array weights);
 
 AFAPI array cov(const array& X, const array& Y, bool isbiased=false);
 
+
+template<typename T>
+AFAPI T median(const array& in);
+
+AFAPI array median(const array& in, dim_type dim=-1);
+
 }
 #endif
 
@@ -75,6 +81,11 @@ AFAPI af_err af_var_all_weighted(double *realVal, double *imagVal, const af_arra
 
 
 AFAPI af_err af_cov(af_array* out, const af_array X, const af_array Y, bool isbiased);
+
+
+AFAPI af_err af_median_all(double *realVal, double *imagVal, const af_array in);
+
+AFAPI af_err af_median(af_array* out, const af_array in, dim_type dim);
 
 #ifdef __cplusplus
 }
