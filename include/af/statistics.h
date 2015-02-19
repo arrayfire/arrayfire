@@ -41,6 +41,9 @@ AFAPI T var(const array& in, bool isbiased=false);
 template<typename T>
 AFAPI T var(const array& in, const array weights);
 
+
+AFAPI array cov(const array& X, const array& Y, bool isbiased=false);
+
 }
 #endif
 
@@ -69,6 +72,9 @@ AFAPI af_err af_var_weighted(af_array *out, const af_array in, const af_array we
 AFAPI af_err af_var_all(double *realVal, double *imagVal, const af_array in, bool isbiased);
 
 AFAPI af_err af_var_all_weighted(double *realVal, double *imagVal, const af_array in, const af_array weights);
+
+
+AFAPI af_err af_cov(af_array* out, const af_array X, const af_array Y, bool isbiased);
 
 #ifdef __cplusplus
 }
