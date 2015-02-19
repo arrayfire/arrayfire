@@ -7,10 +7,23 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <af/dim4.hpp>
 #include <af/statistics.h>
 #include "error.hpp"
 
- namespace af
+static inline dim_type getFNSD(af::dim4 dims)
+{
+    dim_type fNSD = 0;
+    for (dim_type i=0; i<4; ++i) {
+        if (dims[i]>1) {
+            fNSD = i;
+            break;
+        }
+    }
+    return fNSD;
+}
+
+namespace af
 {
 
 #define INSTANTIATE_VAR(T)                                \
@@ -46,16 +59,8 @@ INSTANTIATE_VAR(unsigned char);
 
 array stdev(const array& in, dim_type dim)
 {
-    dim4 iDims = in.dims();
-    dim_type fNSD = 0;
-    for (dim_type i=0; i<4; ++i) {
-        if (iDims[i]>1) {
-            fNSD = i;
-            break;
-        }
-    }
     af_array temp = 0;
-    AF_THROW(af_stdev(&temp, in.get(), fNSD));
+    AF_THROW(af_stdev(&temp, in.get(), getFNSD(in.dims())));
     return array(temp);
 }
 

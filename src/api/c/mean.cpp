@@ -8,15 +8,17 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
-#include <af/defines.h>
 #include <af/statistics.h>
-#include <handle.hpp>
+#include <af/defines.h>
 #include <err_common.hpp>
 #include <backend.hpp>
+#include <handle.hpp>
 #include <reduce.hpp>
 #include <arith.hpp>
 #include <math.hpp>
 #include <cast.hpp>
+
+#include "stats.h"
 
 using namespace detail;
 
@@ -24,8 +26,7 @@ template<typename inType, typename outType>
 static outType mean(const af_array &in)
 {
     Array<outType> *input = cast<outType>(getArray<inType>(in));
-    outType retVal = reduce_all<af_add_t, outType, outType>(*input);
-    outType result = division(retVal, input->elements());
+    outType result = mean<outType>(*input); /* defined in stats.h */
     destroyArray<outType>(*input);
     return result;
 }
@@ -33,63 +34,39 @@ static outType mean(const af_array &in)
 template<typename inType, typename outType>
 static outType mean(const af_array &in, const af_array &weights)
 {
+    typedef baseOutType<outType> bType;
+
     Array<outType> *input = cast<outType>(getArray<inType>(in));
-    Array<outType> *wts   = cast<outType>(getArray<inType>(weights));
+    Array<outType> *wts   = cast<outType>(getArray<bType>(weights));
 
-    dim4 iDims = input->dims();
+    outType result = mean<outType, bType>(*input, getArray<bType>(weights));
 
-    Array<outType>* wtdInput = detail::arithOp<outType, af_mul_t>(*input, *wts, iDims);
-
-    outType wtdSum = reduce_all<af_add_t, outType, outType>(*wtdInput);
-    outType wtsSum = reduce_all<af_add_t, outType, outType>(*wts);
-
-    destroyArray<outType>(*wtdInput);
     destroyArray<outType>(*input);
     destroyArray<outType>(*wts);
 
-    return division(wtdSum, wtsSum);
+    return result;
 }
 
 template<typename inType, typename outType>
 static af_array mean(const af_array &in, dim_type dim)
 {
     Array<outType> *input = cast<outType>(getArray<inType>(in));
-    dim4 iDims = input->dims();
+    Array<outType>* result= mean<outType>(*input, dim);
 
-    Array<outType>* output = reduce<af_add_t, outType, outType>(*input, dim);
-
-    dim4 oDims = output->dims();
-
-    Array<outType> *cnstArray = createValueArray<outType>(oDims, scalar<outType>(iDims[dim]));
-    Array<outType> *retVal    = detail::arithOp<outType, af_div_t>(*output, *cnstArray, oDims);
-
-    destroyArray<outType>(*cnstArray);
-    destroyArray<outType>(*output);
     destroyArray<outType>(*input);
 
-    return getHandle<outType>(*retVal);
+    return getHandle<outType>(*result);
 }
 
 template<typename inType, typename outType>
 static af_array mean(const af_array &in, const af_array &weights, dim_type dim)
 {
+    typedef baseOutType<outType> bType;
+
     Array<outType> *input = cast<outType>(getArray<inType>(in));
-    Array<outType> *wts   = cast<outType>(getArray<inType>(weights));
+    Array<outType> *wts   = cast<outType>(getArray<bType>(weights));
+    Array<outType> *retVal= mean<outType>(*input, *wts, dim);
 
-    dim4 iDims = input->dims();
-
-    Array<outType>* wtdInput = detail::arithOp<outType, af_mul_t>(*input, *wts, iDims);
-
-    Array<outType>* output = reduce<af_add_t, outType, outType>(*wtdInput, dim);
-
-    Array<outType>* wtsSum = reduce<af_add_t, outType, outType>(*wts, dim);
-
-    dim4 oDims = output->dims();
-
-    Array<outType> *retVal    = detail::arithOp<outType, af_div_t>(*output, *wtsSum, oDims);
-
-    destroyArray<outType>(*wtsSum);
-    destroyArray<outType>(*output);
     destroyArray<outType>(*input);
     destroyArray<outType>(*wts);
 
@@ -99,6 +76,8 @@ static af_array mean(const af_array &in, const af_array &weights, dim_type dim)
 af_err af_mean(af_array *out, const af_array in, dim_type dim)
 {
     try {
+        ARG_ASSERT(2, (dim>=0 && dim<=3));
+
         af_array output = 0;
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
@@ -122,6 +101,8 @@ af_err af_mean(af_array *out, const af_array in, dim_type dim)
 af_err af_mean_weighted(af_array *out, const af_array in, const af_array weights, dim_type dim)
 {
     try {
+        ARG_ASSERT(2, (dim>=0 && dim<=3));
+
         af_array output = 0;
         ArrayInfo iInfo = getInfo(in);
         ArrayInfo wInfo = getInfo(weights);

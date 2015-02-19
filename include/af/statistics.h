@@ -14,9 +14,9 @@
 namespace af
 {
 
-AFAPI array mean(const array& in, dim_type dim=0);
+AFAPI array mean(const array& in, dim_type dim=-1);
 
-AFAPI array mean(const array& in, const array& weights, dim_type dim=0);
+AFAPI array mean(const array& in, const array& weights, dim_type dim=-1);
 
 template<typename T>
 AFAPI T mean(const array& in);

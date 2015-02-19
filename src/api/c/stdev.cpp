@@ -21,6 +21,8 @@
 #include <cmath>
 #include <complex>
 
+#include "stats.h"
+
 using namespace detail;
 
 template<typename inType, typename outType>
@@ -28,9 +30,7 @@ static outType stdev(const af_array& in)
 {
     Array<outType> *input = cast<outType>(getArray<inType>(in));
 
-    outType mean = division(reduce_all<af_add_t, outType, outType>(*input), input->elements());
-
-    Array<outType> *meanCnst= createValueArray<outType>(input->dims(), mean);
+    Array<outType> *meanCnst= createValueArray<outType>(input->dims(), mean<outType>(*input));
 
     Array<outType> *diff    = detail::arithOp<outType, af_sub_t>(*input, *meanCnst, input->dims());
 
@@ -52,11 +52,8 @@ static af_array stdev(const af_array& in, int dim)
     Array<outType> *input = cast<outType>(getArray<inType>(in));
     dim4 iDims = input->dims();
 
-    Array<outType> *redArr  = reduce<af_add_t, outType, outType>(*input, dim);
-    dim4 oDims = redArr->dims();
-
-    Array<outType> *cnstArr = createValueArray<outType>(oDims, scalar<outType>(iDims[dim]));
-    Array<outType> *meanArr = detail::arithOp<outType, af_div_t>(*redArr, *cnstArr, oDims);
+    Array<outType> *meanArr = mean<outType>(*input, dim);
+    dim4 oDims = meanArr->dims();
 
     /* now tile meanArr along dim and use it for variance computation */
     dim4 tileDims(1);
@@ -80,8 +77,6 @@ static af_array stdev(const af_array& in, int dim)
     destroyArray<outType>(*diff);
     destroyArray<outType>(*tMeanArr);
     destroyArray<outType>(*meanArr);
-    destroyArray<outType>(*cnstArr);
-    destroyArray<outType>(*redArr);
     destroyArray<outType>(*input);
 
     return getHandle<outType>(*result);

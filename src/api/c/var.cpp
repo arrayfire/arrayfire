@@ -10,13 +10,16 @@
 #include <af/dim4.hpp>
 #include <af/statistics.h>
 #include <af/defines.h>
+#include <err_common.hpp>
 #include <backend.hpp>
-#include <reduce.hpp>
 #include <handle.hpp>
+#include <reduce.hpp>
 #include <arith.hpp>
 #include <math.hpp>
 #include <cast.hpp>
 #include <tile.hpp>
+
+#include "stats.h"
 
 using namespace detail;
 
@@ -25,9 +28,7 @@ static outType varAll(const af_array& in, bool isbiased)
 {
     Array<outType> *input = cast<outType>(getArray<inType>(in));
 
-    outType mean = division(reduce_all<af_add_t, outType, outType>(*input), input->elements());
-
-    Array<outType> *meanCnst= createValueArray<outType>(input->dims(), mean);
+    Array<outType> *meanCnst= createValueArray<outType>(input->dims(), mean<outType>(*input));
 
     Array<outType> *diff    = detail::arithOp<outType, af_sub_t>(*input, *meanCnst, input->dims());
 
@@ -44,12 +45,6 @@ static outType varAll(const af_array& in, bool isbiased)
     return result;
 }
 
-template<typename T>
-using baseOutType = typename std::conditional<  std::is_same<T, cdouble>::value ||
-                                                std::is_same<T, double>::value,
-                                              double,
-                                              float>::type;
-
 template<typename inType, typename outType>
 static outType varAll(const af_array& in, const af_array weights)
 {
@@ -58,13 +53,8 @@ static outType varAll(const af_array& in, const af_array weights)
     Array<outType> *input = cast<outType>(getArray<inType>(in));
     Array<outType> *wts   = cast<outType>(getArray<bType>(weights));
 
-    dim4 iDims = input->dims();
-
-    Array<outType>* wtdIn= detail::arithOp<outType, af_mul_t>(*input, *wts, iDims);
-
-    outType wtdSum  = reduce_all<af_add_t, outType, outType>(*wtdIn);
     bType wtsSum    = reduce_all<af_add_t, bType, bType>(getArray<bType>(weights));
-    outType wtdMean = division(wtdSum, wtsSum);
+    outType wtdMean = mean<outType, bType>(*input, getArray<bType>(weights));
 
     Array<outType> *meanArr = createValueArray<outType>(input->dims(), wtdMean);
     Array<outType> *diff    = detail::arithOp<outType, af_sub_t>(*input, *meanArr, input->dims());
@@ -78,7 +68,6 @@ static outType varAll(const af_array& in, const af_array weights)
     destroyArray<outType>(*diffSq);
     destroyArray<outType>(*diff);
     destroyArray<outType>(*meanArr);
-    destroyArray<outType>(*wtdIn);
     destroyArray<outType>(*wts);
     destroyArray<outType>(*input);
 
@@ -91,11 +80,8 @@ static af_array var(const af_array& in, bool isbiased, int dim)
     Array<outType> *input = cast<outType>(getArray<inType>(in));
     dim4 iDims = input->dims();
 
-    Array<outType> *redArr  = reduce<af_add_t, outType, outType>(*input, dim);
-    dim4 oDims = redArr->dims();
-
-    Array<outType> *cnstArr = createValueArray<outType>(oDims, scalar<outType>(iDims[dim]));
-    Array<outType> *meanArr = detail::arithOp<outType, af_div_t>(*redArr, *cnstArr, oDims);
+    Array<outType> *meanArr = mean<outType>(*input, dim);
+    dim4 oDims = meanArr->dims();
 
     /* now tile meanArr along dim and use it for variance computation */
     dim4 tileDims(1);
@@ -117,8 +103,6 @@ static af_array var(const af_array& in, bool isbiased, int dim)
     destroyArray<outType>(*diff);
     destroyArray<outType>(*tMeanArr);
     destroyArray<outType>(*meanArr);
-    destroyArray<outType>(*cnstArr);
-    destroyArray<outType>(*redArr);
     destroyArray<outType>(*input);
 
     return getHandle<outType>(*result);
@@ -133,12 +117,7 @@ static af_array var(const af_array& in, const af_array& weights, dim_type dim)
     Array<outType> *wts   = cast<outType>(getArray<bType>(weights));
     dim4 iDims = input->dims();
 
-    Array<outType> *prodArr = detail::arithOp<outType, af_mul_t>(*input, *wts, iDims);
-    Array<outType> *sumArr  = reduce<af_add_t, outType, outType>(*prodArr, dim);
-    Array<outType> *wSumArr = reduce<af_add_t, outType, outType>(*wts, dim);
-    dim4 oDims = sumArr->dims();
-
-    Array<outType> *meanArr   = detail::arithOp<outType, af_div_t>(*sumArr, *wSumArr, oDims);
+    Array<outType> *meanArr = mean<outType>(*input, *wts, dim);
 
     /* now tile meanArr along dim and use it for variance computation */
     dim4 tileDims(1);
@@ -155,9 +134,6 @@ static af_array var(const af_array& in, const af_array& weights, dim_type dim)
 
     destroyArray<outType>(*input);
     destroyArray<outType>(*wts);
-    destroyArray<outType>(*prodArr);
-    destroyArray<outType>(*sumArr);
-    destroyArray<outType>(*wSumArr);
     destroyArray<outType>(*meanArr);
     destroyArray<outType>(*tMeanArr);
     destroyArray<outType>(*diff);
@@ -172,6 +148,8 @@ static af_array var(const af_array& in, const af_array& weights, dim_type dim)
 af_err af_var(af_array *out, const af_array in, bool isbiased, dim_type dim)
 {
     try {
+        ARG_ASSERT(2, (dim>=0 && dim<=3));
+
         af_array output = 0;
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
@@ -195,6 +173,8 @@ af_err af_var(af_array *out, const af_array in, bool isbiased, dim_type dim)
 af_err af_var_weighted(af_array *out, const af_array in, const af_array weights, dim_type dim)
 {
     try {
+        ARG_ASSERT(2, (dim>=0 && dim<=3));
+
         af_array output = 0;
         ArrayInfo iInfo = getInfo(in);
         ArrayInfo wInfo = getInfo(weights);
