@@ -10,6 +10,7 @@
 #if defined (WITH_GRAPHICS)
 
 #include <af/graphics.h>
+#include <af/image.h>
 #include <af/index.h>
 #include <af/data.h>
 #include <graphics.hpp>
@@ -29,51 +30,59 @@ static inline void draw_image(const af_array in, const ImageHandle &image)
 
 static af_array convert_data(const af_array in, const ArrayInfo &info, const ImageHandle &image)
 {
-    af_array X;
+    af_array X = 0;
+    af_array Y = 0;
+    af_array Z = 0;
     // Tile if needed
     // Interleave values and transpose
 
     dim_type i2 = info.dims()[2];
     dim_type o2 = image->window->mode;
 
-    af_array c1;
-    af_constant(&c1, 1, 2, info.dims().get(), info.getType());
-
     if (i2 == 1) {
         if (o2 == 1) {
             af_reorder(&X, in, 2, 1, 0, 3);
         } else if (o2 == 3) {
-            af_array Y;
             af_tile(&Y, in, 1, 1, 3, 1);
             af_reorder(&X, Y, 2, 1, 0, 3);
         } else if (o2 == 4) {
-            af_array Y, Z;
+            af_array c1;
+            af_constant(&c1, 1, 2, info.dims().get(), info.getType());
             af_tile(&Y, in, 1, 1, 3, 1);
             af_join(&Z, 2, Y, c1);
             af_reorder(&X, Z, 2, 1, 0, 3);
+            if(c1!= 0) af_destroy_array(c1);
         }
     } else if (i2 == 3) {
         if (o2 == 1) {
-            //FIXME Use Colorspace Conversion
+            af_rgb2gray(&Y, in, 0.2126f, 0.7152f, 0.0722f);
+            af_reorder(&X, Y, 2, 1, 0, 3);
         } else if (o2 == 3) {
             af_reorder(&X, in, 2, 1, 0, 3);
         } else if (o2 == 4) {
-            af_array Y;
+            af_array c1;
+            af_constant(&c1, 1, 2, info.dims().get(), info.getType());
             af_join(&Y, 2, in, c1);
             af_reorder(&X, Y, 2, 1, 0, 3);
+            if(c1!= 0) af_destroy_array(c1);
         }
     } else if (i2 == 4) {
+        af_seq s[3] = {af_span, af_span, {0, 2, 1}};
         if (o2 == 1) {
+            af_index(&Y, in, 3, s);
+            af_rgb2gray(&Z, Y, 0.2126f, 0.7152f, 0.0722f);
+            af_reorder(&X, Z, 2, 1, 0, 3);
             //FIXME Use Colorspace Conversion
         } else if (o2 == 3) {
-            af_seq s[3] = {af_span, af_span, {0, 2, 1}};
-            af_array Y;
             af_index(&Y, in, 3, s);
             af_reorder(&X, Y, 2, 1, 0, 3);
         } else if (o2 == 4) {
             af_reorder(&X, in, 2, 1, 0, 3);
         }
     }
+
+    if(Y != 0) af_destroy_array(Y);
+    if(Z != 0) af_destroy_array(Z);
 
     return X;
 }
@@ -106,6 +115,8 @@ af_err af_draw_image(const af_array in, const ImageHandle &image)
         }
 
         afgfx_draw_image(image);
+
+        if(X != 0) af_destroy_array(X);
     }
     CATCHALL;
 
