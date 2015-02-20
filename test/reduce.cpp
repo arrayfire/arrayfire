@@ -234,7 +234,7 @@ CPP_REDUCE_TESTS(anytrue, float, unsigned char);
 CPP_REDUCE_TESTS(alltrue, float, unsigned char);
 CPP_REDUCE_TESTS(count, float, unsigned);
 
-TEST(Reuce, Test_Sum_Global)
+TEST(Reduce, Test_Sum_Global)
 {
     int num = 10000;
     af::array a = af::round(2 * af::randu(num, 1));
@@ -251,7 +251,7 @@ TEST(Reuce, Test_Sum_Global)
     delete[] h_a;
 }
 
-TEST(Reuce, Test_Count_Global)
+TEST(Reduce, Test_Count_Global)
 {
     int num = 10000;
     af::array a = af::round(2 * af::randu(num, 1));
@@ -269,7 +269,7 @@ TEST(Reuce, Test_Count_Global)
     delete[] h_b;
 }
 
-TEST(Reuce, Test_min_Global)
+TEST(Reduce, Test_min_Global)
 {
     if (noDoubleTests<double>()) return;
 
@@ -289,7 +289,7 @@ TEST(Reuce, Test_min_Global)
     delete[] h_a;
 }
 
-TEST(Reuce, Test_max_Global)
+TEST(Reduce, Test_max_Global)
 {
     int num = 10000;
     af::array a = af::randu(num, 1);
@@ -305,7 +305,7 @@ TEST(Reuce, Test_max_Global)
     delete[] h_a;
 }
 
-TEST(Reuce, Test_All_Global)
+TEST(Reduce, Test_All_Global)
 {
     int num = 10000;
     af::array a = af::round(2 * af::randu(num, 1));
@@ -322,7 +322,7 @@ TEST(Reuce, Test_All_Global)
     delete[] h_a;
 }
 
-TEST(Reuce, Test_Any_Global)
+TEST(Reduce, Test_Any_Global)
 {
     int num = 10000;
     af::array a = af::round(2 * af::randu(num, 1));

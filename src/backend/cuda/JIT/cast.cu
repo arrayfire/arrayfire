@@ -49,10 +49,20 @@ CAST_BASIC_BOOL(___mkJ, char, uintl)
 CPLX_CAST(cfloat, float, C)
 CPLX_CAST(cdouble, double, Z)
 
+__device__ cfloat ___mkC(cfloat C)
+{
+    return C;
+}
+
 __device__ cfloat ___mkC(cdouble C)
 {
     cfloat res = {C.x, C.y};
     return res;
+}
+
+__device__ cdouble ___mkZ(cdouble C)
+{
+    return C;
 }
 
 __device__ cdouble ___mkZ(cfloat C)

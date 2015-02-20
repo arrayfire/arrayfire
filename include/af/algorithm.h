@@ -51,6 +51,19 @@ namespace af
     // Count number of non zero elements in an array
     template<typename T> T count(const array &in);
 
+    // Get the minimum of all elements along a dimension
+    AFAPI void min(array &val, array &idx, const array &in, const int dim = 0);
+
+    // Get the maximum of all elements along a dimension
+    AFAPI void max(array &val, array &idx, const array &in, const int dim = 0);
+
+    // Get the minimum of all elements in an array
+    template<typename T> void min(T *val, unsigned *idx, const array &in);
+
+    // Get the maximum of all elements in an array
+    template<typename T> void max(T *val, unsigned *idx, const array &in);
+
+
     AFAPI array diff1(const array &in, const int dim = 0);
 
     AFAPI array diff2(const array &in, const int dim = 0);
@@ -96,23 +109,35 @@ extern "C" {
     // Count number of non zero elements along a dimension
     AFAPI af_err af_count(af_array *out, const af_array in, const int dim);
 
-    // Add all the elements along a dimension
+    // Add all the elements
     AFAPI af_err af_sum_all(double *real, double *imag, const af_array in);
 
-    // Get the minimum of all elements along a dimension
+    // Get the minimum of all elements
     AFAPI af_err af_min_all(double *real, double *imag, const af_array in);
 
-    // Get the maximum of all elements along a dimension
+    // Get the maximum of all elements
     AFAPI af_err af_max_all(double *real, double *imag, const af_array in);
 
-    // Check if all elements along a dimension are true
+    // Check if all elements are true
     AFAPI af_err af_alltrue_all(double *real, double *imag, const af_array in);
 
-    // Check if any elements along a dimension are true
+    // Check if any elements are true
     AFAPI af_err af_anytrue_all(double *real, double *imag, const af_array in);
 
-    // Count number of non zero elements along a dimension
+    // Count number of non zero elements
     AFAPI af_err af_count_all(double *real, double *imag, const af_array in);
+
+        // Get the minimum values and their indices along a dimension
+    AFAPI af_err af_imin(af_array *out, af_array *idx, const af_array in, const int dim);
+
+    // Get the maximum values and their indices along a dimension
+    AFAPI af_err af_imax(af_array *out, af_array *idx, const af_array in, const int dim);
+
+     // Get the minimum of all elements and its location
+    AFAPI af_err af_imin_all(double *real, double *imag, unsigned *idx, const af_array in);
+
+    // Get the maximum of all elements and its location
+    AFAPI af_err af_imax_all(double *real, double *imag, unsigned *idx, const af_array in);
 
     // Compute first order difference along a given dimension.
     AFAPI af_err af_diff1(af_array *out, const af_array in, const int dim);

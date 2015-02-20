@@ -81,6 +81,24 @@ struct CastOp<cdouble, cfloat>
     }
 };
 
+template<>
+struct CastOp<cfloat, cfloat>
+{
+    const char *name()
+    {
+        return "__convert_c2c";
+    }
+};
+
+
+template<>
+struct CastOp<cdouble, cdouble>
+{
+    const char *name()
+    {
+        return "__convert_z2z";
+    }
+};
 
 #undef CAST_FN
 #undef CAST_CFN
