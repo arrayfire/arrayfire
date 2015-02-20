@@ -19,7 +19,7 @@ template<af_op_t op>
 static const char *unaryName() { return "noop"; }
 
 #define UNARY_DECL(OP, FNAME)                   \
-    template<>                                  \
+    template<> STATIC_                          \
     const char *unaryName<af_##OP##_t>()        \
     {                                           \
         return FNAME;                           \
