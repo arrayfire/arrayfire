@@ -28,7 +28,7 @@ static T median(const af_array& in)
 {
     const Array<T> input  = getArray<T>(in);
     dim_type nElems = input.elements();
-    int mid         = (nElems + 1) / 2;
+    double mid      = (nElems + 1) / 2;
     af_seq mdSpan[1]= {mid-1, mid-1, 1};
     dim4 dims(nElems, 1, 1, 1);
 
@@ -74,7 +74,7 @@ static af_array median(const af_array& in, dim_type dim)
     Array<T>* sortedIn   = detail::sort<T, true>(input, dim);
 
     int nElems    = input.elements();
-    int mid       = (nElems + 1) / 2;
+    double mid    = (nElems + 1) / 2;
     af_array left = 0;
 
     af_seq slices[4] = {af_span, af_span, af_span, af_span};
