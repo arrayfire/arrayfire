@@ -33,7 +33,7 @@ af_err af_image_s(int *out, const af_array in, const int wId, const char *title,
 
         // Tile if needed
         // Interleave values and transpose
-        af_array X, Y;
+        af_array X = 0, Y = 0;
         if(in_dims[2] == 1) {
             af_tile(&Y, in, 1, 1, 3, 1);
             af_reorder(&X, Y, 2, 1, 0, 3);
@@ -47,6 +47,8 @@ af_err af_image_s(int *out, const af_array in, const int wId, const char *title,
         int output = image(getArray<float>(X), wId, title, in_dims[1] * scale_w, in_dims[0] * scale_h);
 
         std::swap(*out,output);
+        if(X != 0) af_destroy_array(X);
+        if(Y != 0) af_destroy_array(Y);
     }
     CATCHALL;
 
@@ -88,6 +90,8 @@ af_err af_image_d(int *out, const af_array in, const int wId, const char *title,
         int output = image(getArray<float>(X), wId, title, dw, dh);
 
         std::swap(*out,output);
+        if(X != 0) af_destroy_array(X);
+        if(Y != 0) af_destroy_array(Y);
     }
     CATCHALL;
 

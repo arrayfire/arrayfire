@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
         static const af::array kernel(3, 3, h_kernel, af::afHost);
 
         static const int reset = 600;
-        static const int game_w = 160, game_h = 120;
+        static const int game_w = 200, game_h = 200;
         int frame_count = 0;
         int wId = -1;
 
