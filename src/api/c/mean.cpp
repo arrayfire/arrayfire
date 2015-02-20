@@ -39,7 +39,7 @@ static outType mean(const af_array &in, const af_array &weights)
     Array<outType> *input = cast<outType>(getArray<inType>(in));
     Array<outType> *wts   = cast<outType>(getArray<bType>(weights));
 
-    outType result = mean<outType, bType>(*input, getArray<bType>(weights));
+    outType result = mean<outType, bType>(*input, getArray<bType>(weights)); /* defined in stats.h */
 
     destroyArray<outType>(*input);
     destroyArray<outType>(*wts);
@@ -51,7 +51,7 @@ template<typename inType, typename outType>
 static af_array mean(const af_array &in, dim_type dim)
 {
     Array<outType> *input = cast<outType>(getArray<inType>(in));
-    Array<outType>* result= mean<outType>(*input, dim);
+    Array<outType>* result= mean<outType>(*input, dim); /* defined in stats.h */
 
     destroyArray<outType>(*input);
 
@@ -65,7 +65,7 @@ static af_array mean(const af_array &in, const af_array &weights, dim_type dim)
 
     Array<outType> *input = cast<outType>(getArray<inType>(in));
     Array<outType> *wts   = cast<outType>(getArray<bType>(weights));
-    Array<outType> *retVal= mean<outType>(*input, *wts, dim);
+    Array<outType> *retVal= mean<outType>(*input, *wts, dim); /* defined in stats.h */
 
     destroyArray<outType>(*input);
     destroyArray<outType>(*wts);

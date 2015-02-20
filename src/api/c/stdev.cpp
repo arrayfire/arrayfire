@@ -127,8 +127,9 @@ af_err af_stdev(af_array *out, const af_array in, dim_type dim)
             case u32: output = stdev<uint  ,  float >(in, dim); break;
             case  u8: output = stdev<uchar ,  float >(in, dim); break;
             case  b8: output = stdev<char  ,  float >(in, dim); break;
-            case c32: output = stdev<cfloat,  cfloat>(in, dim); break;
-            case c64: output = stdev<cdouble,cdouble>(in, dim); break;
+            // TODO: FIXME: sqrt(complex) is not present in cuda/opencl backend
+            //case c32: output = stdev<cfloat,  cfloat>(in, dim); break;
+            //case c64: output = stdev<cdouble,cdouble>(in, dim); break;
             default : TYPE_ERROR(1, type);
         }
         std::swap(*out, output);

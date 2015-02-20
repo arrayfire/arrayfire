@@ -29,7 +29,7 @@ static T median(const af_array& in)
     const Array<T> input  = getArray<T>(in);
     dim_type nElems = input.elements();
     double mid      = (nElems + 1) / 2;
-    af_seq mdSpan[1]= {mid-1, mid-1, 1};
+    af_seq mdSpan[1]= {mid-1, mid, 1};
     dim4 dims(nElems, 1, 1, 1);
 
     af_array temp = 0;
@@ -37,7 +37,7 @@ static T median(const af_array& in)
     Array<T>* sortedArr = detail::sort<T, true>(input, 0);
 
     T result;
-    T* resPtr = 0;
+    T resPtr[2];
     af_array res = 0;
     AF_CHECK(af_index(&res, getHandle<T>(*sortedArr), 1, mdSpan));
     AF_CHECK(af_get_data_ptr((void*)&resPtr, res));
@@ -45,24 +45,12 @@ static T median(const af_array& in)
     if (nElems % 2 == 1) {
         result = *resPtr;
     } else {
-        AF_CHECK(af_destroy_array(res));
-        res = 0;
-        mdSpan[1] = {mid, mid, 1};
-
-        AF_CHECK(af_index(&res, getHandle<T>(*sortedArr), 1, mdSpan));
-
-        T* resPtr2 = 0;
-        AF_CHECK(af_get_data_ptr((void*)&resPtr2, res));
-
-        result = division(*resPtr + *resPtr2, 2);
-
-        delete resPtr2;
+        result = division(*resPtr + *(resPtr+1), 2);
     }
 
     AF_CHECK(af_destroy_array(res));
     destroyArray<T>(*sortedArr);
     AF_CHECK(af_destroy_array(temp));
-    delete resPtr;
 
     return result;
 }
@@ -134,7 +122,7 @@ af_err af_median_all(double *realVal, double *imagVal, const af_array in)
 af_err af_median(af_array* out, const af_array in, dim_type dim)
 {
     try {
-        ARG_ASSERT(2, (dim>=0 && dim<=3));
+        ARG_ASSERT(2, (dim>=0 && dim<=0));
 
         af_array output = 0;
         ArrayInfo info = getInfo(in);
