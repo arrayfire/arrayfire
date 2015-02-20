@@ -138,6 +138,8 @@ float2 __convert_cfloat(float in)
 
 #define iszero(a) ((a) == 0)
 
+float2  __convert_c2c(float2 in) { return in; }
+
 #ifdef USE_DOUBLE
 
 float2  __convert_z2c(double2 in) { float2  out = {in.x, in.y}; return out; }
@@ -202,5 +204,7 @@ double2 __convert_cdouble(double in)
 }
 
 double2 __convert_c2z(float2  in) { double2 out = {in.x, in.y}; return out; }
+
+double2 __convert_z2z(double2 in) { return in; }
 
 #endif // USE_DOUBLE
