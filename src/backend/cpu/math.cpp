@@ -48,15 +48,13 @@ namespace cpu
 
     cfloat division(cfloat lhs, double rhs)
     {
-        float resReal = real(lhs) / rhs;
-        float resImag = imag(lhs) / rhs;
-        return (cfloat){resReal, resImag};
+        cfloat retVal( real(lhs)/rhs, imag(lhs)/rhs );
+        return retVal;
     }
 
     cdouble division(cdouble lhs, double rhs)
     {
-        double resReal = real(lhs) / rhs;
-        double resImag = imag(lhs) / rhs;
-        return (cdouble){resReal, resImag};
+        cdouble retVal( real(lhs)/rhs, imag(lhs)/rhs );
+        return retVal;
     }
 }
