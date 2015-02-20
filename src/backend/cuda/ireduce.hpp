@@ -7,14 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <af/array.h>
 #include <Array.hpp>
-#include <utility>
+#include <ops.hpp>
 
-namespace opencl
+namespace cuda
 {
+    template<af_op_t op, typename T>
+    void ireduce(Array<T> &out, Array<uint> &loc,
+                 const Array<T> &in, const int dim);
 
-template<typename Ti, typename To>
-std::pair< Array<To>*, Array<To>* >
-sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size);
-
+    template<af_op_t op, typename T>
+    T ireduce_all(unsigned *loc, const Array<T> &in);
 }

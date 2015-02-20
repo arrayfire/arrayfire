@@ -114,7 +114,7 @@ foreach(ptx_src_file ${ptx_sources})
       ADD_CUSTOM_COMMAND(
         OUTPUT "${_out_file_name}"
         DEPENDS "${_gen_file_name}"
-        COMMAND ${CMAKE_COMMAND} -E rename "${_gen_file_name}" "${_out_file_name}")
+        COMMAND ${CMAKE_COMMAND} -E copy "${_gen_file_name}" "${_out_file_name}")
 
       list(APPEND cuda_ptx "${_out_file_name}")
 endforeach()

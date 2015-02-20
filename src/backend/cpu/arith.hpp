@@ -61,8 +61,8 @@ template<> STATIC_ double __rem<double>(double lhs, double rhs) { return remaind
         }                                       \
     };                                          \
 
-NUMERIC_FN(af_max_t, ::max)
-NUMERIC_FN(af_min_t, ::min)
+NUMERIC_FN(af_max_t, max)
+NUMERIC_FN(af_min_t, min)
 NUMERIC_FN(af_mod_t, __mod)
 NUMERIC_FN(af_pow_t, pow)
 NUMERIC_FN(af_rem_t, __rem)

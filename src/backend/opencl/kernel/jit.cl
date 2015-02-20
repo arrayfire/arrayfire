@@ -7,8 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-
 #define __add(lhs, rhs) (lhs) + (rhs)
 #define __sub(lhs, rhs) (lhs) - (rhs)
 #define __mul(lhs, rhs) (lhs) * (rhs)

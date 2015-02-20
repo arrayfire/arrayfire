@@ -139,6 +139,33 @@ struct Binary<T, af_max_t>
     }
 };
 
+template<>
+struct Binary<char, af_max_t>
+{
+    __DH__ char init()
+    {
+        return 0;
+    }
+
+    __DH__ char operator() (char lhs, char rhs)
+    {
+        return detail::max(lhs > 0, rhs > 0);
+    }
+};
+
+template<>
+struct Binary<char, af_min_t>
+{
+    __DH__ char init()
+    {
+        return 1;
+    }
+
+    __DH__ char operator() (char lhs, char rhs)
+    {
+        return detail::max(lhs > 0, rhs > 0);
+    }
+};
 
 #define SPECIALIZE_FLOATING_MAX(T, Tr)          \
     template<>                                  \
