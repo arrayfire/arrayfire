@@ -68,8 +68,22 @@ namespace cpu
     }
 
     template<typename Tx, typename Ty>
-    Array<Tx> *join(const int dim, const Array<Tx> &first, const Array<Ty> &second, const af::dim4 &odims)
+    Array<Tx> *join(const int dim, const Array<Tx> &first, const Array<Ty> &second)
     {
+        // All dimensions except join dimension must be equal
+        // Compute output dims
+        af::dim4 odims;
+        af::dim4 fdims = first.dims();
+        af::dim4 sdims = second.dims();
+
+        for(int i = 0; i < 4; i++) {
+            if(i == dim) {
+                odims[i] = fdims[i] + sdims[i];
+            } else {
+                odims[i] = fdims[i];
+            }
+        }
+
         Array<Tx> *out = createEmptyArray<Tx>(odims);
 
         Tx* outPtr = out->get();
@@ -77,20 +91,16 @@ namespace cpu
         const Ty* sptr = second.get();
 
         switch(dim) {
-            case 0: join_<Tx, Ty, 0>(outPtr, fptr, sptr,
-                                     out->dims(), first.dims(), second.dims(),
+            case 0: join_<Tx, Ty, 0>(outPtr, fptr, sptr, odims, fdims, sdims,
                                      out->strides(), first.strides(), second.strides());
                     break;
-            case 1: join_<Tx, Ty, 1>(outPtr, fptr, sptr,
-                                     out->dims(), first.dims(), second.dims(),
+            case 1: join_<Tx, Ty, 1>(outPtr, fptr, sptr, odims, fdims, sdims,
                                      out->strides(), first.strides(), second.strides());
                     break;
-            case 2: join_<Tx, Ty, 2>(outPtr, fptr, sptr,
-                                     out->dims(), first.dims(), second.dims(),
+            case 2: join_<Tx, Ty, 2>(outPtr, fptr, sptr, odims, fdims, sdims,
                                      out->strides(), first.strides(), second.strides());
                     break;
-            case 3: join_<Tx, Ty, 3>(outPtr, fptr, sptr,
-                                     out->dims(), first.dims(), second.dims(),
+            case 3: join_<Tx, Ty, 3>(outPtr, fptr, sptr, odims, fdims, sdims,
                                      out->strides(), first.strides(), second.strides());
                     break;
         }
@@ -98,9 +108,8 @@ namespace cpu
         return out;
     }
 
-#define INSTANTIATE(Tx, Ty)                                                             \
-    template Array<Tx>* join<Tx, Ty>(const int dim, const Array<Tx> &first,             \
-                                     const Array<Ty> &second, const af::dim4 &odims);   \
+#define INSTANTIATE(Tx, Ty)                                                                             \
+    template Array<Tx>* join<Tx, Ty>(const int dim, const Array<Tx> &first, const Array<Ty> &second);   \
 
     INSTANTIATE(float,   float)
     INSTANTIATE(double,  double)
