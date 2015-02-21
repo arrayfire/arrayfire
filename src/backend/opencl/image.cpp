@@ -17,14 +17,14 @@
 namespace opencl
 {
     template<typename T>
-    void draw_image(const Array<T> &in, const afgfx_image image)
+    void copy_image(const Array<T> &in, const afgfx_image image)
     {
         printf("Error: Graphics not available for OpenCL backend.\n");
         AF_ERROR("Graphics not Available", AF_ERR_NOT_CONFIGURED);
     }
 
     #define INSTANTIATE(T)      \
-        template void draw_image<T>(const Array<T> &in, const afgfx_image image);
+        template void copy_image<T>(const Array<T> &in, const afgfx_image image);
 
     INSTANTIATE(float)
     INSTANTIATE(double)

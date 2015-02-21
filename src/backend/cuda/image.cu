@@ -69,7 +69,7 @@ namespace cuda
     }
 
     template<typename T>
-    void draw_image(const Array<T> &in, const afgfx_image image)
+    void copy_image(const Array<T> &in, const afgfx_image image)
     {
         interopManagerInit();
 
@@ -107,7 +107,7 @@ namespace cuda
     }
 
     #define INSTANTIATE(T)      \
-        template void draw_image<T>(const Array<T> &in, const afgfx_image image);
+        template void copy_image<T>(const Array<T> &in, const afgfx_image image);
 
     INSTANTIATE(float)
     INSTANTIATE(double)
