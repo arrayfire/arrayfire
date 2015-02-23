@@ -19,7 +19,6 @@
 #include <handle.hpp>
 #include <random.hpp>
 #include <math.hpp>
-#include <complex.hpp>
 #include <iota.hpp>
 #include <identity.hpp>
 #include <diagonal.hpp>
@@ -55,24 +54,24 @@ af_err af_create_array(af_array *result, const void * const data,
                        const unsigned ndims, const dim_type * const dims,
                        const af_dtype type)
 {
-    AF_CHECK(af_init());
     af_array out;
     try {
+        AF_CHECK(af_init());
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
         }
         switch(type) {
-        case f32:   out = createHandle(d, static_cast<const float   *>(data)); break;
-        case c32:   out = createHandle(d, static_cast<const cfloat  *>(data)); break;
-        case f64:   out = createHandle(d, static_cast<const double  *>(data)); break;
-        case c64:   out = createHandle(d, static_cast<const cdouble *>(data)); break;
-        case b8:    out = createHandle(d, static_cast<const char    *>(data)); break;
-        case s32:   out = createHandle(d, static_cast<const int     *>(data)); break;
-        case u32:   out = createHandle(d, static_cast<const uint    *>(data)); break;
-        case u8:    out = createHandle(d, static_cast<const uchar   *>(data)); break;
-        case s64:   out = createHandle(d, static_cast<const intl    *>(data)); break;
-        case u64:   out = createHandle(d, static_cast<const uintl   *>(data)); break;
+        case f32:   out = createHandleFromData(d, static_cast<const float   *>(data)); break;
+        case c32:   out = createHandleFromData(d, static_cast<const cfloat  *>(data)); break;
+        case f64:   out = createHandleFromData(d, static_cast<const double  *>(data)); break;
+        case c64:   out = createHandleFromData(d, static_cast<const cdouble *>(data)); break;
+        case b8:    out = createHandleFromData(d, static_cast<const char    *>(data)); break;
+        case s32:   out = createHandleFromData(d, static_cast<const int     *>(data)); break;
+        case u32:   out = createHandleFromData(d, static_cast<const uint    *>(data)); break;
+        case u8:    out = createHandleFromData(d, static_cast<const uchar   *>(data)); break;
+        case s64:   out = createHandleFromData(d, static_cast<const intl    *>(data)); break;
+        case u64:   out = createHandleFromData(d, static_cast<const uintl   *>(data)); break;
         default:    TYPE_ERROR(4, type);
         }
         std::swap(*result, out);
@@ -86,24 +85,24 @@ af_err af_constant(af_array *result, const double value,
                    const unsigned ndims, const dim_type * const dims,
                    const af_dtype type)
 {
-    AF_CHECK(af_init());
     af_array out;
     try {
+        AF_CHECK(af_init());
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
         }
         switch(type) {
-        case f32:   out = createHandle<float  >(d, value); break;
-        case c32:   out = createHandle<cfloat >(d, value); break;
-        case f64:   out = createHandle<double >(d, value); break;
-        case c64:   out = createHandle<cdouble>(d, value); break;
-        case b8:    out = createHandle<char   >(d, value); break;
-        case s32:   out = createHandle<int    >(d, value); break;
-        case u32:   out = createHandle<uint   >(d, value); break;
-        case u8:    out = createHandle<uchar  >(d, value); break;
-        case s64:   out = createHandle<intl   >(d, value); break;
-        case u64:   out = createHandle<uintl  >(d, value); break;
+        case f32:   out = createHandleFromValue<float  >(d, value); break;
+        case c32:   out = createHandleFromValue<cfloat >(d, value); break;
+        case f64:   out = createHandleFromValue<double >(d, value); break;
+        case c64:   out = createHandleFromValue<cdouble>(d, value); break;
+        case b8:    out = createHandleFromValue<char   >(d, value); break;
+        case s32:   out = createHandleFromValue<int    >(d, value); break;
+        case u32:   out = createHandleFromValue<uint   >(d, value); break;
+        case u8:    out = createHandleFromValue<uchar  >(d, value); break;
+        case s64:   out = createHandleFromValue<intl   >(d, value); break;
+        case u64:   out = createHandleFromValue<uintl  >(d, value); break;
         default:    TYPE_ERROR(4, type);
         }
         std::swap(*result, out);
@@ -115,23 +114,17 @@ af_err af_constant(af_array *result, const double value,
 template<typename To, typename Ti>
 static inline af_array createCplx(dim4 dims, const Ti real, const Ti imag)
 {
-    Array<Ti> *Real = createValueArray<Ti>(dims, real);
-    Array<Ti> *Imag = createValueArray<Ti>(dims, imag);
-    Array<To> *Cplx = cplx<To, Ti>(*Real, *Imag, dims);
-    af_array out = getHandle(*Cplx);
-
-    destroyArray(*Real);
-    destroyArray(*Imag);
-
+    To cval = scalar<To, Ti>(real, imag);
+    af_array out = getHandle(*createValueArray<To>(dims, cval));
     return out;
 }
 
 af_err af_constant_complex(af_array *result, const double real, const double imag,
                            const unsigned ndims, const dim_type * const dims, af_dtype type)
 {
-    AF_CHECK(af_init());
     af_array out;
     try {
+        AF_CHECK(af_init());
 
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
@@ -150,13 +143,53 @@ af_err af_constant_complex(af_array *result, const double real, const double ima
     return AF_SUCCESS;
 }
 
+af_err af_constant_long(af_array *result, const intl val,
+                        const unsigned ndims, const dim_type * const dims)
+{
+    af_array out;
+    try {
+        AF_CHECK(af_init());
+
+        dim4 d((size_t)dims[0]);
+        for(unsigned i = 1; i < ndims; i++) {
+            d[i] = dims[i];
+        }
+
+        out = getHandle(*createValueArray<intl>(d, val));
+
+        std::swap(*result, out);
+    } CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_constant_ulong(af_array *result, const uintl val,
+                         const unsigned ndims, const dim_type * const dims)
+{
+    af_array out;
+    try {
+        AF_CHECK(af_init());
+
+        dim4 d((size_t)dims[0]);
+        for(unsigned i = 1; i < ndims; i++) {
+            d[i] = dims[i];
+        }
+
+        out = getHandle(*createValueArray<uintl>(d, val));
+
+        std::swap(*result, out);
+    } CATCHALL;
+
+    return AF_SUCCESS;
+}
+
 //Strong Exception Guarantee
 af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type * const dims,
                         const af_dtype type)
 {
-    AF_CHECK(af_init());
     af_array out;
     try {
+        AF_CHECK(af_init());
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
@@ -227,9 +260,9 @@ static inline af_array identity_(const af::dim4 &dims)
 
 af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
 {
-    AF_CHECK(af_init());
     af_array result;
     try {
+        AF_CHECK(af_init());
 
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
@@ -256,9 +289,10 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims
 
 af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
 {
-    AF_CHECK(af_init());
     af_array result;
     try {
+        AF_CHECK(af_init());
+
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
@@ -279,9 +313,9 @@ af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims
 
 af_err af_identity(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
 {
-    AF_CHECK(af_init());
     af_array result;
     try {
+        AF_CHECK(af_init());
         dim4 d((size_t)dims[0]);
 
         for(unsigned i = 1; i < ndims; i++) {
@@ -378,9 +412,10 @@ static inline af_array iota_(const dim4& d, const unsigned rep)
 af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const dims,
                const int rep, const af_dtype type)
 {
-    AF_CHECK(af_init());
     af_array out;
     try {
+        AF_CHECK(af_init());
+
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];

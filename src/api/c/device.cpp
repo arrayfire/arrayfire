@@ -96,8 +96,8 @@ af_err af_device_array(af_array *arr, const void *data,
                        const dim_type * const dims,
                        const af_dtype type)
 {
-    AF_CHECK(af_init());
     try {
+        AF_CHECK(af_init());
 
         af_array res;
         af::dim4 d((size_t)dims[0]);
@@ -153,8 +153,8 @@ af_err af_get_device_ptr(void **data, const af_array arr, bool read_only)
 
 af_err af_alloc_device(void **ptr, dim_type bytes)
 {
-    AF_CHECK(af_init());
     try {
+        AF_CHECK(af_init());
         *ptr = (void *)memAlloc<char>(bytes);
     } CATCHALL;
     return AF_SUCCESS;
@@ -162,8 +162,8 @@ af_err af_alloc_device(void **ptr, dim_type bytes)
 
 af_err af_alloc_pinned(void **ptr, dim_type bytes)
 {
-    AF_CHECK(af_init());
     try {
+        AF_CHECK(af_init());
         *ptr = (void *)pinnedAlloc<char>(bytes);
     } CATCHALL;
     return AF_SUCCESS;
