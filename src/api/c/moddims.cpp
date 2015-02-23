@@ -63,3 +63,22 @@ af_err af_moddims(af_array *out, const af_array in,
 
     return AF_SUCCESS;
 }
+
+af_err af_flat(af_array *out, const af_array in)
+{
+    af_array res;
+    try {
+
+        ArrayInfo in_info = getInfo(in);
+
+        if (in_info.ndims() == 1) {
+            AF_CHECK(af_weak_copy(&res, in));
+        } else {
+            const dim_type num = (dim_type)(in_info.elements());
+            AF_CHECK(af_moddims(&res, in, 1, &num));
+        }
+
+        std::swap(*out, res);
+    } CATCHALL;
+    return AF_SUCCESS;
+}

@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+#include <af/defines.h>
 #include <limits>
 #include <algorithm>
 #include "backend.hpp"
@@ -75,6 +76,13 @@ namespace cuda
 	STATIC_ cdouble scalar<cdouble >(double val)
     {
         cdouble  cval = {val, 0};
+        return cval;
+    }
+
+    template<typename To, typename Ti> __DH__
+	static To scalar(Ti real, Ti imag)
+    {
+        To  cval = {real, imag};
         return cval;
     }
 
@@ -191,5 +199,9 @@ __SDH__ bool operator ==(cfloat a, cfloat b) { return (a.x == b.x) && (a.y == b.
 __SDH__ bool operator !=(cfloat a, cfloat b) { return !(a == b); }
 __SDH__ bool operator ==(cdouble a, cdouble b) { return (a.x == b.x) && (a.y == b.y); }
 __SDH__ bool operator !=(cdouble a, cdouble b) { return !(a == b); }
+
+    template<typename T> static inline T division(T lhs, double rhs) { return lhs / rhs; }
+    cfloat division(cfloat lhs, double rhs);
+    cdouble division(cdouble lhs, double rhs);
 
 }

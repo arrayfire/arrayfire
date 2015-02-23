@@ -94,12 +94,10 @@ static af_array gray2rgb(const af_array& in, const float r, const float g, const
         Array<cType>* expr2 = detail::arithOp<cType, af_mul_t>(*input, *gCnst, matDims);
         //b*Slice2
         Array<cType>* expr3 = detail::arithOp<cType, af_mul_t>(*input, *bCnst, matDims);
-        // join channel 0 and channel 1
-        dim4 oDims = dim4(matDims[0], matDims[1], 2, 1);
-        Array<cType>* expr4 = detail::join<cType, cType>(2, *expr1, *expr2, oDims);
 
-        oDims[2] = 3;
-        result= detail::join<cType, cType>(2, *expr3, *expr4, oDims);
+        // join channels
+        Array<cType>* expr4 = detail::join<cType, cType>(2, *expr1, *expr2);
+        result= detail::join<cType, cType>(2, *expr3, *expr4);
 
         destroyArray<cType>(*expr4);
         destroyArray<cType>(*expr3);

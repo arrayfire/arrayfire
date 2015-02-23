@@ -42,12 +42,13 @@ template<typename T> static T __mod(T lhs, T rhs)
     T res = lhs % rhs;
     return (res < 0) ? abs(rhs - res) : res;
 }
+
 template<typename T> static T __rem(T lhs, T rhs) { return lhs % rhs; }
+
 template<> STATIC_ float __mod<float>(float lhs, float rhs) { return fmod(lhs, rhs); }
 template<> STATIC_ double __mod<double>(double lhs, double rhs) { return fmod(lhs, rhs); }
 template<> STATIC_ float __rem<float>(float lhs, float rhs) { return remainder(lhs, rhs); }
 template<> STATIC_ double __rem<double>(double lhs, double rhs) { return remainder(lhs, rhs); }
-
 
 
 #define NUMERIC_FN(OP, FN)                      \
@@ -68,17 +69,16 @@ NUMERIC_FN(af_rem_t, __rem)
 NUMERIC_FN(af_atan2_t, atan2)
 NUMERIC_FN(af_hypot_t, hypot)
 
+template<typename T, af_op_t op>
+Array<T>* arithOp(const Array<T> &lhs, const Array<T> &rhs, const af::dim4 &odims)
+{
+    TNJ::Node_ptr lhs_node = lhs.getNode();
+    TNJ::Node_ptr rhs_node = rhs.getNode();
 
+    TNJ::BinaryNode<T, T, op> *node = new TNJ::BinaryNode<T, T, op>(lhs_node, rhs_node);
 
-    template<typename T, af_op_t op>
-    Array<T>* arithOp(const Array<T> &lhs, const Array<T> &rhs, const af::dim4 &odims)
-    {
-        TNJ::Node_ptr lhs_node = lhs.getNode();
-        TNJ::Node_ptr rhs_node = rhs.getNode();
+    return createNodeArray<T>(odims, TNJ::Node_ptr(
+                                  reinterpret_cast<TNJ::Node *>(node)));
+}
 
-        TNJ::BinaryNode<T, T, op> *node = new TNJ::BinaryNode<T, T, op>(lhs_node, rhs_node);
-
-        return createNodeArray<T>(odims, TNJ::Node_ptr(
-                                      reinterpret_cast<TNJ::Node *>(node)));
-    }
 }

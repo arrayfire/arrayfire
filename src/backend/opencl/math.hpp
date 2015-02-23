@@ -25,6 +25,10 @@ namespace opencl
     static inline float  abs(cfloat  cval) { return std::sqrt(cval.s[0]*cval.s[0] + cval.s[1]*cval.s[1]); }
     static inline double abs(cdouble cval) { return std::sqrt(cval.s[0]*cval.s[0] + cval.s[1]*cval.s[1]); }
 
+    template<typename T> static inline T division(T lhs, double rhs) { return lhs / rhs; }
+    cfloat division(cfloat lhs, double rhs);
+    cdouble division(cdouble lhs, double rhs);
+
 #ifndef STATIC_
 #define STATIC_
 #endif
@@ -74,6 +78,15 @@ namespace opencl
         cdouble cval;
         cval.s[0]= val;
         cval.s[1] = 0;
+        return cval;
+    }
+
+    template<typename To, typename Ti>
+	static To scalar(Ti real, Ti imag)
+    {
+        To  cval;
+        cval.s[0] = real;
+        cval.s[1] = imag;
         return cval;
     }
 

@@ -7,12 +7,17 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/array.h>
-#include <Array.hpp>
+#include <af/statistics.h>
+#include "error.hpp"
 
-namespace opencl
+namespace af
 {
-    template<typename Tx, typename Ty>
-    Array<Tx> *join(const int dim, const Array<Tx> &first, const Array<Ty> &second);
+
+array cov(const array& X, const array& Y, bool isbiased)
+{
+    af_array temp = 0;
+    AF_THROW(af_cov(&temp, X.get(), Y.get(), isbiased));
+    return array(temp);
 }
 
+}

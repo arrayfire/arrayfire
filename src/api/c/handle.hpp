@@ -46,13 +46,13 @@ static af_array createHandle(af::dim4 d)
 }
 
 template<typename T>
-static af_array createHandle(af::dim4 d, double val)
+static af_array createHandleFromValue(af::dim4 d, double val)
 {
     return getHandle(*detail::createValueArray<T>(d, detail::scalar<T>(val)));
 }
 
 template<typename T>
-static af_array createHandle(af::dim4 d, const T * const data)
+static af_array createHandleFromData(af::dim4 d, const T * const data)
 {
     return getHandle(*detail::createHostDataArray<T>(d, data));
 }
