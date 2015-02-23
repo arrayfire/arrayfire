@@ -22,9 +22,18 @@ using namespace detail;
 template<typename T>
 af_array modDims(const af_array in, const af::dim4 &newDims)
 {
-    Array<T> *out = copyArray(getArray<T>(in));
-    out->modDims(newDims);
-    return getHandle(*out);
+    const Array<T> &In = getArray<T>(in);
+    Array<T> *Out = createEmptyArray<T>(dim4());
+
+    if (In.isLinear()) {
+        // Increments ref count on shared_ptr of raw data
+        *Out = In;
+    } else {
+        *Out = *copyArray<T>(In);
+    }
+
+    Out->modDims(newDims);
+    return getHandle(*Out);
 }
 
 af_err af_moddims(af_array *out, const af_array in,
