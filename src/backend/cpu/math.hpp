@@ -45,6 +45,13 @@ namespace cpu
         return (T)(val);
     }
 
+    template<typename To, typename Ti>
+	static To scalar(Ti real, Ti imag)
+    {
+        To  cval = {real, imag};
+        return cval;
+    }
+
     cfloat  scalar(float val);
 
     cdouble scalar(double val);
