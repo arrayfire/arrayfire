@@ -139,6 +139,20 @@ bool ArrayInfo::isBool() const
     return (type == b8);
 }
 
+bool ArrayInfo::isLinear() const
+{
+    if (ndims() == 1) {
+        return dim_strides[0] == 1;
+    }
+
+    dim_type count = 1;
+    for (int i = 0; i < 4; i++) {
+        if (count != dim_strides[i]) return false;
+        count *= dim_size[i];
+    }
+    return true;
+}
+
 dim4 getOutDims(const dim4 ldims, const dim4 rdims, bool batchMode)
 {
     if (!batchMode) {
