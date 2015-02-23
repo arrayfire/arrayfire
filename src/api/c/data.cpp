@@ -143,6 +143,46 @@ af_err af_constant_complex(af_array *result, const double real, const double ima
     return AF_SUCCESS;
 }
 
+af_err af_constant_long(af_array *result, const intl val,
+                        const unsigned ndims, const dim_type * const dims)
+{
+    af_array out;
+    try {
+        AF_CHECK(af_init());
+
+        dim4 d((size_t)dims[0]);
+        for(unsigned i = 1; i < ndims; i++) {
+            d[i] = dims[i];
+        }
+
+        out = getHandle(*createValueArray<intl>(d, val));
+
+        std::swap(*result, out);
+    } CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_constant_ulong(af_array *result, const uintl val,
+                         const unsigned ndims, const dim_type * const dims)
+{
+    af_array out;
+    try {
+        AF_CHECK(af_init());
+
+        dim4 d((size_t)dims[0]);
+        for(unsigned i = 1; i < ndims; i++) {
+            d[i] = dims[i];
+        }
+
+        out = getHandle(*createValueArray<uintl>(d, val));
+
+        std::swap(*result, out);
+    } CATCHALL;
+
+    return AF_SUCCESS;
+}
+
 //Strong Exception Guarantee
 af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type * const dims,
                         const af_dtype type)
