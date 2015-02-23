@@ -114,14 +114,8 @@ af_err af_constant(af_array *result, const double value,
 template<typename To, typename Ti>
 static inline af_array createCplx(dim4 dims, const Ti real, const Ti imag)
 {
-    Array<Ti> *Real = createValueArray<Ti>(dims, real);
-    Array<Ti> *Imag = createValueArray<Ti>(dims, imag);
-    Array<To> *Cplx = cplx<To, Ti>(*Real, *Imag, dims);
-    af_array out = getHandle(*Cplx);
-
-    destroyArray(*Real);
-    destroyArray(*Imag);
-
+    To cval = scalar<To, Ti>(real, imag);
+    af_array out = getHandle(*createValueArray<To>(dims, cval));
     return out;
 }
 
