@@ -163,7 +163,7 @@ ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
 
 TARGET_LINK_LIBRARIES(afopencl ${OPENCL_LIBRARIES} ${lib_deps} ${CLBLAS_LIBRARIES} ${CLFFT_LIBRARIES} ${CMAKE_DL_LIBS} ${Boost_LIBRARIES})
 
-IF(AFGFX_FOUND})
+IF(AFGFX_FOUND)
   TARGET_LINK_LIBRARIES(afopencl
                         ${AFGFX_LIBRARIES}
                        )

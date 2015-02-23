@@ -9,10 +9,12 @@
 
 #if defined(WITH_GRAPHICS)
 
+#include <GL/glew.h>
 #include <Array.hpp>
 #include <graphics.hpp>
-#include <stdexcept>
 #include <err_opencl.hpp>
+#include <stdexcept>
+#include <cstdio>
 
 namespace opencl
 {

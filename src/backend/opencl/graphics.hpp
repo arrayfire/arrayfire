@@ -12,7 +12,7 @@
 #include <af/graphics.h>
 #include <Array.hpp>
 
-namespace cuda
+namespace opencl
 {
     template<typename T>
     void copy_image(const Array<T> &in, const afgfx_image image);
