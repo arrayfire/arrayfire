@@ -13,6 +13,6 @@
 namespace cuda
 {
     template<typename Tx, typename Ty>
-    Array<Tx> *join(const int dim, const Array<Tx> &first, const Array<Ty> &second, const af::dim4 &odims);
+    Array<Tx> *join(const int dim, const Array<Tx> &first, const Array<Ty> &second);
 }
 

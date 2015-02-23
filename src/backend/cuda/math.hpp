@@ -79,6 +79,13 @@ namespace cuda
         return cval;
     }
 
+    template<typename To, typename Ti> __DH__
+	static To scalar(Ti real, Ti imag)
+    {
+        To  cval = {real, imag};
+        return cval;
+    }
+
 #ifndef __CUDA_ARCH__
     template <typename T> T limit_max() { return std::numeric_limits<T>::max(); }
     template <typename T> T limit_min() { return std::numeric_limits<T>::min(); }

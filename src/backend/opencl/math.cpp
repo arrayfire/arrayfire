@@ -21,15 +21,17 @@ namespace opencl
 
     cfloat division(cfloat lhs, double rhs)
     {
-        float resReal = real(lhs) / rhs;
-        float resImag = imag(lhs) / rhs;
-        return (cfloat){resReal, resImag};
+        cfloat retVal;
+        retVal.s[0] = real(lhs) / rhs;
+        retVal.s[1] = imag(lhs) / rhs;
+        return retVal;
     }
 
     cdouble division(cdouble lhs, double rhs)
     {
-        double resReal = real(lhs) / rhs;
-        double resImag = imag(lhs) / rhs;
-        return (cdouble){resReal, resImag};
+        cdouble retVal;
+        retVal.s[0] = real(lhs) / rhs;
+        retVal.s[1] = imag(lhs) / rhs;
+        return retVal;
     }
 }

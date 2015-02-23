@@ -78,7 +78,7 @@ namespace opencl
 
         while(memory_curr != memory_end) {
             if (memory_curr->second.is_free) {
-                memory_maps[n].erase(memory_curr++);
+                memory_curr = memory_maps[n].erase(memory_curr);
             } else {
                 ++memory_curr;
             }
@@ -161,24 +161,17 @@ namespace opencl
     pinned_t pinned_maps[DeviceManager::MAX_DEVICES];
     static size_t pinned_used_bytes = 0;
 
-    static void pinnedDestroy(void *ptr)
+    static void pinnedDestroy(cl::Buffer *buf, void *ptr)
     {
-        int n = getActiveDeviceId();
-        pinned_iter loc = pinned_maps[n].find(ptr);
-
-        if(loc != pinned_maps[n].end()) {
-            cl::Buffer *buf = loc->second.buf;
-            getQueue().enqueueUnmapMemObject(*buf, (void *)ptr);
-            delete buf;
-            pinned_maps[n].erase(loc);
-        }
+        getQueue().enqueueUnmapMemObject(*buf, (void *)ptr);
+        destroy(buf);
     }
 
     static void pinnedGarbageCollect()
     {
         int n = getActiveDeviceId();
-        for(pinned_iter iter = pinned_maps[n].begin(); iter != pinned_maps[n].end(); iter++) {
-            if ((iter->second).info.is_free) pinnedDestroy(iter->first);
+        for(auto &iter : pinned_maps[n]) {
+            if ((iter.second).info.is_free) pinnedDestroy(iter.second.buf, iter.first);
         }
 
         pinned_iter memory_curr = pinned_maps[n].begin();
@@ -186,7 +179,7 @@ namespace opencl
 
         while(memory_curr != memory_end) {
             if (memory_curr->second.info.is_free) {
-                pinned_maps[n].erase(memory_curr++);
+                memory_curr = pinned_maps[n].erase(memory_curr);
             } else {
                 ++memory_curr;
             }
@@ -250,7 +243,8 @@ namespace opencl
             iter->second.info.is_free = true;
             pinned_used_bytes -= iter->second.info.bytes;
         } else {
-            pinnedDestroy(ptr); // Free it because we are not sure what the size is
+            pinnedDestroy(iter->second.buf, ptr); // Free it because we are not sure what the size is
+            pinned_maps[n].erase(iter);
         }
     }
 
