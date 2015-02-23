@@ -40,6 +40,7 @@ namespace af
     CONSTANT(unsigned long      , u64);
     CONSTANT(long long          , s64);
     CONSTANT(unsigned long long , u64);
+    CONSTANT(bool               ,  b8);
 
 #undef CONSTANT
 

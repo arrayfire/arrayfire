@@ -59,6 +59,7 @@ namespace af
 
     CONSTANT_DOUBLE(double)
     CONSTANT_DOUBLE(float)
+    CONSTANT_DOUBLE(bool)
     CONSTANT_DOUBLE(int)
     CONSTANT_DOUBLE(unsigned)
     CONSTANT_DOUBLE(char)
