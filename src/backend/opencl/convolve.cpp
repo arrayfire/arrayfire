@@ -84,7 +84,8 @@ Array<T> * convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> 
     const dim4 cfDims   = c_filter.dims();
     const dim4 rfDims   = r_filter.dims();
 
-    if((cfDims[0]*rfDims[0]) > (kernel::MAX_CONV2_FILTER_LEN * kernel::MAX_CONV2_FILTER_LEN)) {
+    if ((cfDims[0] > kernel::MAX_SCONV_FILTER_LEN) ||
+            (rfDims[0] > kernel::MAX_SCONV_FILTER_LEN)) {
         // call upon fft
         OPENCL_NOT_SUPPORTED();
     }
