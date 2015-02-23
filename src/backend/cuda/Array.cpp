@@ -77,7 +77,7 @@ namespace cuda
     Node_ptr Array<T>::getNode() const
     {
         if (!node) {
-            bool is_linear = isOwner() || (this->ndims() == 1);
+            bool is_linear = isLinear();
             BufferNode<T> *buf_node = new BufferNode<T>(irname<T>(),
                                                         afShortName<T>(), data,
                                                         *this, offset, is_linear);
