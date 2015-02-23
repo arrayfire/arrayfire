@@ -72,6 +72,8 @@ AFAPI array rgb2gray(const array& in, const float rPercent=0.2126f, const float 
 
 AFAPI array gray2rgb(const array& in, const float rFactor=1.0, const float gFactor=1.0, const float bFactor=1.0);
 
+AFAPI array histequal(const array& in, const array& hist);
+
 }
 #endif
 
@@ -150,6 +152,8 @@ extern "C" {
     AFAPI af_err af_rgb2gray(af_array* out, const af_array in, const float rPercent, const float gPercent, const float bPercent);
 
     AFAPI af_err af_gray2rgb(af_array* out, const af_array in, const float rFactor, const float gFactor, const float bFactor);
+
+    AFAPI af_err af_histequal(af_array *out, const af_array in, const af_array hist);
 
 #ifdef __cplusplus
 }

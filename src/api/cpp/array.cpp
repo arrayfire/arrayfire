@@ -288,7 +288,7 @@ namespace af
         for(int i=0; i<4; ++i) s[i] = seqs[i];
     }
 
-    void array::getSeq(af_seq* afs)
+    void array::getSeq(af_seq* afs) const
     {
         afs[0] = this->s[0].s;
         afs[1] = this->s[1].s;
@@ -457,37 +457,7 @@ namespace af
         return *this;
     }
 
-    array& array::operator=(const double &value)
-    {
-        af_seq afs[4];
-        getSeq(afs);
-        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims();
-        array cst = constant(value, cdims, this->type());
-        return operator=(cst);
-    }
-
-    array& array::operator=(const cdouble &value)
-    {
-        af_seq afs[4];
-        getSeq(afs);
-        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims();
-        array cst = constant(value, cdims);
-        return operator=(cst);
-    }
-
-    array& array::operator=(const cfloat &value)
-    {
-        af_seq afs[4];
-        getSeq(afs);
-        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims();
-        array cst = constant(value, cdims);
-        return operator=(cst);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Operator +=, -=, *=, /=
-    ///////////////////////////////////////////////////////////////////////////
-#define INSTANTIATE(op, op1)                                            \
+#define SELF_OP(op, op1)                                                \
     array& array::operator op(const array &other)                       \
     {                                                                   \
         bool this_ref = isRef;                                          \
@@ -513,50 +483,51 @@ namespace af
         }                                                               \
         return *this;                                                   \
     }                                                                   \
-    array& array::operator op(const double &value)                      \
-    {                                                                   \
-        af_seq afs[4];                                                  \
-        getSeq(afs);                                                    \
-        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims(); \
-        array cst = constant(value, cdims, this->type());               \
-        return operator op(cst);                                        \
-    }                                                                   \
-    array& array::operator op(const cdouble &value)                     \
-    {                                                                   \
-        af_seq afs[4];                                                  \
-        getSeq(afs);                                                    \
-        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims(); \
-        array cst = constant(value, cdims);                             \
-        return operator op(cst);                                        \
-    }                                                                   \
-    array& array::operator op(const cfloat &value)                      \
-    {                                                                   \
-        af_seq afs[4];                                                  \
-        getSeq(afs);                                                    \
-        af::dim4 cdims = isRef ? seqToDims(afs, getDims(arr)) : this->dims(); \
-        array cst = constant(value, cdims);                             \
-        return operator op(cst);                                        \
-    }                                                                   \
 
-    INSTANTIATE(+=, +)
-    INSTANTIATE(-=, -)
-    INSTANTIATE(*=, *)
-    INSTANTIATE(/=, /)
+    SELF_OP(+=, +)
+    SELF_OP(-=, -)
+    SELF_OP(*=, *)
+    SELF_OP(/=, /)
 
-#undef INSTANTIATE
+#undef SELF_OP
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Operator +, -, *, /
-    ///////////////////////////////////////////////////////////////////////////
-#define INSTANTIATE(op, func)                                       \
-    array array::operator op(const array &other) const              \
-    {                                                               \
-        af_array lhs = this->get();                                 \
-        af_array out;                                               \
-        AF_THROW(func(&out, lhs, other.get(), gforGet()));          \
-        return array(out);                                          \
-    }                                                               \
-    array array::operator op(const double &value) const             \
+#define ASSIGN_TYPE(TY, OP)                                 \
+    array& array::operator OP(const TY &value)              \
+    {                                                       \
+        af_seq afs[4];                                      \
+        getSeq(afs);                                        \
+        af::dim4 dims = isRef ?                             \
+            seqToDims(afs, getDims(arr)) : this->dims();    \
+        array cst = constant(value, dims, this->type());    \
+        return operator OP(cst);                            \
+    }                                                       \
+
+#define ASSIGN_OP(OP)                           \
+    ASSIGN_TYPE(double, OP)                     \
+    ASSIGN_TYPE(float, OP)                      \
+    ASSIGN_TYPE(cdouble, OP)                    \
+    ASSIGN_TYPE(cfloat, OP)                     \
+    ASSIGN_TYPE(int, OP)                        \
+    ASSIGN_TYPE(unsigned, OP)                   \
+    ASSIGN_TYPE(long, OP)                       \
+    ASSIGN_TYPE(unsigned long, OP)              \
+    ASSIGN_TYPE(long long, OP)                  \
+    ASSIGN_TYPE(unsigned long long, OP)         \
+    ASSIGN_TYPE(char, OP)                       \
+    ASSIGN_TYPE(unsigned char, OP)              \
+    ASSIGN_TYPE(bool, OP)                       \
+
+    ASSIGN_OP(= )
+    ASSIGN_OP(+=)
+    ASSIGN_OP(-=)
+    ASSIGN_OP(*=)
+    ASSIGN_OP(/=)
+
+#undef ASSIGN_OP
+#undef ASSIGN_TYPE
+
+#define BINARY_TYPE(TY, OP, func)                                   \
+    array array::operator OP(const TY &value) const                 \
     {                                                               \
         af_array lhs = this->get();                                 \
         af_array out;                                               \
@@ -564,23 +535,7 @@ namespace af
         AF_THROW(func(&out, lhs, cst.get(), gforGet()));            \
         return array(out);                                          \
     }                                                               \
-    array array::operator op(const cdouble &value) const            \
-    {                                                               \
-        af_array lhs = this->get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, this->dims());                  \
-        AF_THROW(func(&out, lhs, cst.get(), gforGet()));            \
-        return array(out);                                          \
-    }                                                               \
-    array array::operator op(const cfloat &value) const             \
-    {                                                               \
-        af_array lhs = this->get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, this->dims());                  \
-        AF_THROW(func(&out, lhs, cst.get(), gforGet()));            \
-        return array(out);                                          \
-    }                                                               \
-    array operator op(const double &value, const array &other)      \
+    array operator OP(const TY &value, const array &other)          \
     {                                                               \
         af_array rhs = other.get();                                 \
         af_array out;                                               \
@@ -588,95 +543,51 @@ namespace af
         AF_THROW(func(&out, cst.get(), rhs, gforGet()));            \
         return array(out);                                          \
     }                                                               \
-    array operator op(const cdouble &value, const array& other)     \
-    {                                                               \
-        af_array rhs = other.get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, other.dims());                  \
-        AF_THROW(func(&out, cst.get(), rhs, gforGet()));            \
-        return array(out);                                          \
-    }                                                               \
-    array operator op(const cfloat &value, const array& other)      \
-    {                                                               \
-        af_array rhs = other.get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, other.dims());                  \
-        AF_THROW(func(&out, cst.get(), rhs, gforGet()));            \
-        return array(out);                                          \
-    }                                                               \
 
-    INSTANTIATE(+, af_add)
-    INSTANTIATE(-, af_sub)
-    INSTANTIATE(*, af_mul)
-    INSTANTIATE(/, af_div)
-    INSTANTIATE(==, af_eq)
-    INSTANTIATE(!=, af_neq)
-    INSTANTIATE(< , af_lt)
-    INSTANTIATE(<=, af_le)
-    INSTANTIATE(> , af_gt)
-    INSTANTIATE(>=, af_ge)
-    INSTANTIATE(&&, af_and)
-    INSTANTIATE(||, af_or)
-    INSTANTIATE(%, af_rem)
-    INSTANTIATE(&, af_bitand)
-    INSTANTIATE(|, af_bitor)
-    INSTANTIATE(^, af_bitxor)
-    INSTANTIATE(<<, af_bitshiftl)
-    INSTANTIATE(>>, af_bitshiftr)
+#define BINARY_OP(OP, func)                                 \
+    array array::operator OP(const array &other) const      \
+    {                                                       \
+        af_array lhs = this->get();                         \
+        af_array out;                                       \
+        AF_THROW(func(&out, lhs, other.get(), gforGet()));  \
+        return array(out);                                  \
+    }                                                       \
+    BINARY_TYPE(double             , OP, func)              \
+    BINARY_TYPE(float              , OP, func)              \
+    BINARY_TYPE(cdouble            , OP, func)              \
+    BINARY_TYPE(cfloat             , OP, func)              \
+    BINARY_TYPE(int                , OP, func)              \
+    BINARY_TYPE(unsigned           , OP, func)              \
+    BINARY_TYPE(long               , OP, func)              \
+    BINARY_TYPE(unsigned long      , OP, func)              \
+    BINARY_TYPE(long long          , OP, func)              \
+    BINARY_TYPE(unsigned long long , OP, func)              \
+    BINARY_TYPE(char               , OP, func)              \
+    BINARY_TYPE(unsigned char      , OP, func)              \
+    BINARY_TYPE(bool               , OP, func)              \
 
-#undef INSTANTIATE
+    BINARY_OP(+, af_add)
+    BINARY_OP(-, af_sub)
+    BINARY_OP(*, af_mul)
+    BINARY_OP(/, af_div)
+    BINARY_OP(==, af_eq)
+    BINARY_OP(!=, af_neq)
+    BINARY_OP(< , af_lt)
+    BINARY_OP(<=, af_le)
+    BINARY_OP(> , af_gt)
+    BINARY_OP(>=, af_ge)
+    BINARY_OP(&&, af_and)
+    BINARY_OP(||, af_or)
+    BINARY_OP(%, af_rem)
+    BINARY_OP(&, af_bitand)
+    BINARY_OP(|, af_bitor)
+    BINARY_OP(^, af_bitxor)
+    BINARY_OP(<<, af_bitshiftl)
+    BINARY_OP(>>, af_bitshiftr)
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Operator ==, !=, < <=, >, >=
-    ///////////////////////////////////////////////////////////////////////////
-#define INSTANTIATE(op, func)                                   \
-    array array::operator op(const bool &value) const           \
-    {                                                           \
-        af_array lhs = this->get();                             \
-        af_array out;                                           \
-        array cst = constant(value, this->dims(), b8);          \
-        AF_THROW(func(&out, lhs, cst.get(), gforGet()));        \
-        return array(out);                                      \
-    }                                                           \
-    array array::operator op(const int &value) const            \
-    {                                                           \
-        af_array lhs = this->get();                             \
-        af_array out;                                           \
-        array cst = constant(value, this->dims(), s32);         \
-        AF_THROW(func(&out, lhs, cst.get(), gforGet()));        \
-        return array(out);                                      \
-    }                                                           \
-    array operator op(const bool &value, const array &other)    \
-    {                                                           \
-        af_array rhs = other.get();                             \
-        af_array out;                                           \
-        array cst = constant(value, other.dims(), b8);          \
-        AF_THROW(func(&out, cst.get(), rhs, gforGet()));        \
-        return array(out);                                      \
-    }                                                           \
-    array operator op(const int &value, const array &other)     \
-    {                                                           \
-        af_array rhs = other.get();                             \
-        af_array out;                                           \
-        array cst = constant(value, other.dims(), s32);         \
-        AF_THROW(func(&out, cst.get(), rhs, gforGet()));        \
-        return array(out);                                      \
-    }                                                           \
+#undef BINARY_TYPE
+#undef BINARY_OP
 
-    INSTANTIATE(==, af_eq)
-    INSTANTIATE(!=, af_neq)
-    INSTANTIATE(< , af_lt)
-    INSTANTIATE(<=, af_le)
-    INSTANTIATE(> , af_gt)
-    INSTANTIATE(>=, af_ge)
-    INSTANTIATE(&&, af_and)
-    INSTANTIATE(||, af_or)
-    INSTANTIATE(%, af_mod)
-    INSTANTIATE(&, af_bitand)
-    INSTANTIATE(|, af_bitor)
-    INSTANTIATE(^, af_bitxor)
-    INSTANTIATE(<<, af_bitshiftl)
-    INSTANTIATE(>>, af_bitshiftr)
 
     array array::operator-() const
     {
@@ -695,8 +606,6 @@ namespace af
         AF_THROW(af_eq(&out, cst.get(), lhs, gforGet()));
         return array(out);
     }
-
-#undef INSTANTIATE
 
     void array::eval() const
     {

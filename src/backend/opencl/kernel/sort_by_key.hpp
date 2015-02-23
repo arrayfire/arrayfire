@@ -58,18 +58,14 @@ namespace opencl
                             dim_type okeyOffset = okeyWZ + y * okey.info.strides[1];
                             dim_type ovalOffset = ovalWZ + y * oval.info.strides[1];
 
+                            compute::buffer_iterator<Tk> start= compute::make_buffer_iterator<Tk>(okey_buf, okeyOffset);
+                            compute::buffer_iterator<Tk> end = compute::make_buffer_iterator<Tk>(okey_buf, okeyOffset + okey.info.dims[0]);
+                            compute::buffer_iterator<Tv> vals = compute::make_buffer_iterator<Tv>(oval_buf, ovalOffset);
                             if(isAscending) {
-                                compute::sort_by_key(
-                                        compute::make_buffer_iterator<Tk>(okey_buf, okeyOffset),
-                                        compute::make_buffer_iterator<Tk>(okey_buf, okeyOffset + okey.info.dims[0]),
-                                        compute::make_buffer_iterator<Tv>(oval_buf, ovalOffset),
-                                        compute::less<Tk>(), c_queue);
+                                compute::sort_by_key(start, end, vals, c_queue);
                             } else {
-                                compute::sort_by_key(
-                                        compute::make_buffer_iterator<Tk>(okey_buf, okeyOffset),
-                                        compute::make_buffer_iterator<Tk>(okey_buf, okeyOffset + okey.info.dims[0]),
-                                        compute::make_buffer_iterator<Tv>(oval_buf, ovalOffset),
-                                        compute::greater<Tk>(), c_queue);
+                                compute::sort_by_key(start, end, vals,
+                                                     compute::greater<Tk>(), c_queue);
                             }
                         }
                     }

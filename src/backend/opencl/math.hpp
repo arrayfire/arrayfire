@@ -81,6 +81,15 @@ namespace opencl
         return cval;
     }
 
+    template<typename To, typename Ti>
+	static To scalar(Ti real, Ti imag)
+    {
+        To  cval;
+        cval.s[0] = real;
+        cval.s[1] = imag;
+        return cval;
+    }
+
     template <typename T> T limit_max() { return std::numeric_limits<T>::max(); }
     template <typename T> T limit_min() { return std::numeric_limits<T>::min(); }
 
