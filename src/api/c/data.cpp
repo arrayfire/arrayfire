@@ -54,9 +54,9 @@ af_err af_create_array(af_array *result, const void * const data,
                        const unsigned ndims, const dim_type * const dims,
                        const af_dtype type)
 {
-    AF_CHECK(af_init());
     af_array out;
     try {
+        AF_CHECK(af_init());
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
@@ -85,9 +85,9 @@ af_err af_constant(af_array *result, const double value,
                    const unsigned ndims, const dim_type * const dims,
                    const af_dtype type)
 {
-    AF_CHECK(af_init());
     af_array out;
     try {
+        AF_CHECK(af_init());
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
@@ -128,9 +128,9 @@ static inline af_array createCplx(dim4 dims, const Ti real, const Ti imag)
 af_err af_constant_complex(af_array *result, const double real, const double imag,
                            const unsigned ndims, const dim_type * const dims, af_dtype type)
 {
-    AF_CHECK(af_init());
     af_array out;
     try {
+        AF_CHECK(af_init());
 
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
@@ -153,9 +153,9 @@ af_err af_constant_complex(af_array *result, const double real, const double ima
 af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type * const dims,
                         const af_dtype type)
 {
-    AF_CHECK(af_init());
     af_array out;
     try {
+        AF_CHECK(af_init());
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
@@ -226,9 +226,9 @@ static inline af_array identity_(const af::dim4 &dims)
 
 af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
 {
-    AF_CHECK(af_init());
     af_array result;
     try {
+        AF_CHECK(af_init());
 
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
@@ -255,9 +255,10 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims
 
 af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
 {
-    AF_CHECK(af_init());
     af_array result;
     try {
+        AF_CHECK(af_init());
+
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
@@ -278,9 +279,9 @@ af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims
 
 af_err af_identity(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
 {
-    AF_CHECK(af_init());
     af_array result;
     try {
+        AF_CHECK(af_init());
         dim4 d((size_t)dims[0]);
 
         for(unsigned i = 1; i < ndims; i++) {
@@ -377,9 +378,10 @@ static inline af_array iota_(const dim4& d, const unsigned rep)
 af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const dims,
                const int rep, const af_dtype type)
 {
-    AF_CHECK(af_init());
     af_array out;
     try {
+        AF_CHECK(af_init());
+
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
