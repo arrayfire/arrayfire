@@ -95,6 +95,11 @@ void orb(unsigned* out_feat,
                 options << " -D T=" << dtype_traits<T>::getName()
                         << " -D BLOCK_SIZE=" << ORB_THREADS_X;
 
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
+
                 buildProgram(orbProgs[device],
                              orb_cl,
                              orb_cl_len,

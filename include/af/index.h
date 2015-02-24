@@ -29,6 +29,8 @@ AFAPI array moddims(const array& in, const dim4& dims);
 
 AFAPI array moddims(const array& in, dim_type d0, dim_type d1=1, dim_type d2=1, dim_type d3=1);
 
+AFAPI array flat(const array &in);
+
 }
 #endif
 
@@ -63,6 +65,8 @@ extern "C" {
 
     // re-shape the the dimensions of the input array
     AFAPI af_err af_moddims(af_array *out, const af_array in, const unsigned ndims, const dim_type * const dims);
+
+    AFAPI af_err af_flat(af_array *out, const af_array in);
 
 #ifdef __cplusplus
 }

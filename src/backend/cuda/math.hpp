@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+#include <af/defines.h>
 #include <limits>
 #include <algorithm>
 #include "backend.hpp"
@@ -78,6 +79,13 @@ namespace cuda
         return cval;
     }
 
+    template<typename To, typename Ti> __DH__
+	static To scalar(Ti real, Ti imag)
+    {
+        To  cval = {real, imag};
+        return cval;
+    }
+
 #ifndef __CUDA_ARCH__
     template <typename T> T limit_max() { return std::numeric_limits<T>::max(); }
     template <typename T> T limit_min() { return std::numeric_limits<T>::min(); }
@@ -97,12 +105,6 @@ namespace cuda
 
 #define upcast cuComplexFloatToDouble
 #define downcast cuComplexDoubleToFloat
-
-#define cdivf cuCdivf
-#define cabs  cuCabs
-#define creal cuCreal
-#define cimag cuCimag
-#define cdiv cuCdiv
 
 #ifdef __GNUC__
 //This suprresses unused function warnings in gcc
@@ -197,5 +199,9 @@ __SDH__ bool operator ==(cfloat a, cfloat b) { return (a.x == b.x) && (a.y == b.
 __SDH__ bool operator !=(cfloat a, cfloat b) { return !(a == b); }
 __SDH__ bool operator ==(cdouble a, cdouble b) { return (a.x == b.x) && (a.y == b.y); }
 __SDH__ bool operator !=(cdouble a, cdouble b) { return !(a == b); }
+
+    template<typename T> static inline T division(T lhs, double rhs) { return lhs / rhs; }
+    cfloat division(cfloat lhs, double rhs);
+    cdouble division(cdouble lhs, double rhs);
 
 }

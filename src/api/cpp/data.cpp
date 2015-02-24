@@ -8,53 +8,110 @@
 namespace af
 {
 
-    array constant(double val, const dim4 &dims, af::dtype type)
-    {
-        af_array res;
-        AF_THROW(af_constant(&res, val, dims.ndims(), dims.get(), type));
-        return array(res);
-    }
+#define CONSTANT(TYPE)                                                  \
+    array constant(TYPE val, const dim_type d0, af::dtype ty)           \
+    {                                                                   \
+        return constant(val, dim4(d0), ty);                             \
+    }                                                                   \
+                                                                        \
+    array constant(TYPE val, const dim_type d0,                         \
+                   const dim_type d1, af::dtype ty)                     \
+    {                                                                   \
+        return constant(val, dim4(d0, d1), ty);                         \
+    }                                                                   \
+                                                                        \
+    array constant(TYPE val, const dim_type d0,                         \
+                   const dim_type d1, const dim_type d2, af::dtype ty)  \
+    {                                                                   \
+        return constant(val, dim4(d0, d1, d2), ty);                     \
+    }                                                                   \
+                                                                        \
+    array constant(TYPE val, const dim_type d0,                         \
+                   const dim_type d1, const dim_type d2,                \
+                   const dim_type d3, af::dtype ty)                     \
+    {                                                                   \
+        return constant(val, dim4(d0, d1, d2, d3), ty);                 \
+    }                                                                   \
 
-    array constant(cdouble val, const dim4 &dims)
-    {
-        af_array res;
-        AF_THROW(af_constant_complex(&res, real(val), imag(val),
-                                     dims.ndims(), dims.get(), c64));
-        return array(res);
-    }
+    CONSTANT(double);
+    CONSTANT(float);
+    CONSTANT(int);
+    CONSTANT(unsigned);
+    CONSTANT(char);
+    CONSTANT(unsigned char);
+    CONSTANT(cfloat);
+    CONSTANT(cdouble);
+    CONSTANT(long);
+    CONSTANT(unsigned long);
+    CONSTANT(long long);
+    CONSTANT(unsigned long long);
 
-    array constant(cfloat val, const dim4 &dims)
-    {
-        af_array res;
-        AF_THROW(af_constant_complex(&res, real(val), imag(val),
-                                     dims.ndims(), dims.get(), c32));
-        return array(res);
-    }
+#undef CONSTANT
 
-    array constant(double val, const dim_type d0, af::dtype ty)
-    {
-        return constant(val, dim4(d0), ty);
-    }
+#define CONSTANT_DOUBLE(TYPE)                                   \
+    array constant(TYPE val, const dim4 &dims, af::dtype type)  \
+    {                                                           \
+        af_array res;                                           \
+        AF_THROW(af_constant(&res, val,                         \
+                             dims.ndims(), dims.get(), type));  \
+        return array(res);                                      \
+    }                                                           \
 
-    array constant(double val, const dim_type d0,
-                         const dim_type d1, af::dtype ty)
-    {
-        return constant(val, dim4(d0, d1), ty);
-    }
+    CONSTANT_DOUBLE(double)
+    CONSTANT_DOUBLE(float)
+    CONSTANT_DOUBLE(bool)
+    CONSTANT_DOUBLE(int)
+    CONSTANT_DOUBLE(unsigned)
+    CONSTANT_DOUBLE(char)
+    CONSTANT_DOUBLE(unsigned char)
 
-    array constant(double val, const dim_type d0,
-                         const dim_type d1, const dim_type d2, af::dtype ty)
-    {
-        return constant(val, dim4(d0, d1, d2), ty);
-    }
+#undef CONSTANT_DOUBLE
 
-    array constant(double val, const dim_type d0,
-                         const dim_type d1, const dim_type d2,
-                         const dim_type d3, af::dtype ty)
-    {
-        return constant(val, dim4(d0, d1, d2, d3), ty);
-    }
+#define CONSTANT_LONG(TYPE, DTYPE)                              \
+    array constant(TYPE val, const dim4 &dims, af::dtype type)  \
+    {                                                           \
+        if (type != s64 && type != u64) {                       \
+            return constant((double)val, dims, type);           \
+        }                                                       \
+        af_array res;                                           \
+        if (DTYPE == s64) {                                     \
+            AF_THROW(af_constant_long (&res, ( intl)val,        \
+                                       dims.ndims(),            \
+                                       dims.get()));            \
+        } else {                                                \
+            AF_THROW(af_constant_ulong(&res, (uintl)val,        \
+                                       dims.ndims(),            \
+                                       dims.get()));            \
+        }                                                       \
+        return array(res);                                      \
+    }                                                           \
 
+    CONSTANT_LONG(long, s64)
+    CONSTANT_LONG(long long, s64)
+    CONSTANT_LONG(unsigned long, u64)
+    CONSTANT_LONG(unsigned long long, u64)
+
+#undef CONSTANT_LONG
+
+#define CONSTANT_COMPLEX(TYPE)                                  \
+    array constant(TYPE val, const dim4 &dims, af::dtype type)  \
+    {                                                           \
+        if (type != c32 && type != c64) {                       \
+            return constant(real(val), dims, type);             \
+        }                                                       \
+        af_array res;                                           \
+        AF_THROW(af_constant_complex(&res,                      \
+                                     real(val),                 \
+                                     imag(val),                 \
+                                     dims.ndims(),              \
+                                     dims.get(), type));        \
+        return array(res);                                      \
+    }                                                           \
+
+    CONSTANT_COMPLEX(cdouble)
+    CONSTANT_COMPLEX(cfloat)
+
+#undef CONSTANT_COMPLEX
 
     array randu(const dim4 &dims, af::dtype type)
     {

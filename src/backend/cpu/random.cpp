@@ -103,7 +103,6 @@ INSTANTIATE_UNIFORM(cfloat)
 INSTANTIATE_UNIFORM(cdouble)
 INSTANTIATE_UNIFORM(int)
 INSTANTIATE_UNIFORM(uint)
-INSTANTIATE_UNIFORM(char)
 INSTANTIATE_UNIFORM(uchar)
 
 #define INSTANTIATE_NORMAL(T)                              \
@@ -113,5 +112,20 @@ INSTANTIATE_NORMAL(float)
 INSTANTIATE_NORMAL(double)
 INSTANTIATE_NORMAL(cfloat)
 INSTANTIATE_NORMAL(cdouble)
+
+
+template<>
+Array<char> *randu(const af::dim4 &dims)
+{
+    static default_random_engine generator;
+    static auto gen = urand<float>(generator);
+
+    Array<char> *outArray = createEmptyArray<char>(dims);
+    char *outPtr = outArray->get();
+    for (int i = 0; i < (int)outArray->elements(); i++) {
+        outPtr[i] = gen() > 0.5;
+    }
+    return outArray;
+}
 
 }

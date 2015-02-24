@@ -272,11 +272,11 @@ features fast(const Array<T> &in, const float thr, const unsigned arc_length,
     unsigned feat_found = std::min(max_feat, count);
     dim4 feat_found_dims(feat_found);
 
-    Array<float> *x_out;
-    Array<float> *y_out;
-    Array<float> *score_out;
-    Array<float> *orientation_out;
-    Array<float> *size_out;
+    Array<float> *x_out = NULL;
+    Array<float> *y_out = NULL;
+    Array<float> *score_out = NULL;
+    Array<float> *orientation_out = NULL;
+    Array<float> *size_out = NULL;
 
     if (nonmax == 1) {
         count = 0;

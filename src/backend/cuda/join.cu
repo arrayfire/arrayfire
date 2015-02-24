@@ -16,8 +16,21 @@
 namespace cuda
 {
     template<typename Tx, typename Ty>
-    Array<Tx> *join(const int dim, const Array<Tx> &first, const Array<Ty> &second, const af::dim4 &odims)
+    Array<Tx> *join(const int dim, const Array<Tx> &first, const Array<Ty> &second)
     {
+        // All dimensions except join dimension must be equal
+        // Compute output dims
+        af::dim4 odims;
+        af::dim4 fdims = first.dims();
+        af::dim4 sdims = second.dims();
+
+        for(int i = 0; i < 4; i++) {
+            if(i == dim) {
+                odims[i] = fdims[i] + sdims[i];
+            } else {
+                odims[i] = fdims[i];
+            }
+        }
         Array<Tx> *out = createEmptyArray<Tx>(odims);
 
         switch(dim) {
@@ -34,9 +47,8 @@ namespace cuda
         return out;
     }
 
-#define INSTANTIATE(Tx, Ty)                                                             \
-    template Array<Tx>* join<Tx, Ty>(const int dim, const Array<Tx> &first,             \
-                                     const Array<Ty> &second, const af::dim4 &odims);   \
+#define INSTANTIATE(Tx, Ty)                                                                             \
+    template Array<Tx>* join<Tx, Ty>(const int dim, const Array<Tx> &first, const Array<Ty> &second);   \
 
     INSTANTIATE(float,   float)
     INSTANTIATE(double,  double)

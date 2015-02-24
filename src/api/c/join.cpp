@@ -18,9 +18,9 @@ using af::dim4;
 using namespace detail;
 
 template<typename Tx, typename Ty>
-static inline af_array join(const int dim, const af_array first, const af_array second, const af::dim4 odims)
+static inline af_array join(const int dim, const af_array first, const af_array second)
 {
-    return getHandle(*join<Tx, Ty>(dim, getArray<Tx>(first), getArray<Ty>(second), odims));
+    return getHandle(*join<Tx, Ty>(dim, getArray<Tx>(first), getArray<Ty>(second)));
 }
 
 af_err af_join(af_array *out, const int dim, const af_array first, const af_array second)
@@ -41,25 +41,19 @@ af_err af_join(af_array *out, const int dim, const af_array first, const af_arra
         af::dim4 odims;
         for(int i = 0; i < 4; i++) {
             if(i != dim) DIM_ASSERT(2, fdims[i] == sdims[i]);
-
-            if(i == dim) {
-                odims[i] = fdims[i] + sdims[i];
-            } else {
-                odims[i] = fdims[i];
-            }
         }
 
         af_array output;
 
         switch(finfo.getType()) {
-            case f32: output = join<float  , float  >(dim, first, second, odims);  break;
-            case c32: output = join<cfloat , cfloat >(dim, first, second, odims);  break;
-            case f64: output = join<double , double >(dim, first, second, odims);  break;
-            case c64: output = join<cdouble, cdouble>(dim, first, second, odims);  break;
-            case b8:  output = join<char   , char   >(dim, first, second, odims);  break;
-            case s32: output = join<int    , int    >(dim, first, second, odims);  break;
-            case u32: output = join<uint   , uint   >(dim, first, second, odims);  break;
-            case u8:  output = join<uchar  , uchar  >(dim, first, second, odims);  break;
+            case f32: output = join<float  , float  >(dim, first, second);  break;
+            case c32: output = join<cfloat , cfloat >(dim, first, second);  break;
+            case f64: output = join<double , double >(dim, first, second);  break;
+            case c64: output = join<cdouble, cdouble>(dim, first, second);  break;
+            case b8:  output = join<char   , char   >(dim, first, second);  break;
+            case s32: output = join<int    , int    >(dim, first, second);  break;
+            case u32: output = join<uint   , uint   >(dim, first, second);  break;
+            case u8:  output = join<uchar  , uchar  >(dim, first, second);  break;
             default:  TYPE_ERROR(1, finfo.getType());
         }
         std::swap(*out,output);
