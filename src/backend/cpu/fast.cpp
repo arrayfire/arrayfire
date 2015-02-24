@@ -9,7 +9,6 @@
 
 #include <af/dim4.hpp>
 #include <af/defines.h>
-#include <af/features.h>
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <err_cpu.hpp>
@@ -241,7 +240,8 @@ void non_maximal(
 }
 
 template<typename T>
-features fast(const Array<T> &in, const float thr, const unsigned arc_length,
+unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
+              const Array<T> &in, const float thr, const unsigned arc_length,
               const bool nonmax, const float feature_ratio)
 {
     dim4 in_dims = in.dims();
@@ -272,115 +272,67 @@ features fast(const Array<T> &in, const float thr, const unsigned arc_length,
     unsigned feat_found = std::min(max_feat, count);
     dim4 feat_found_dims(feat_found);
 
-    Array<float> *x_out = NULL;
-    Array<float> *y_out = NULL;
-    Array<float> *score_out = NULL;
-    Array<float> *orientation_out = NULL;
-    Array<float> *size_out = NULL;
+    Array<float> *x_total = NULL;
+    Array<float> *y_total = NULL;
+    Array<float> *score_total = NULL;
 
     if (nonmax == 1) {
+
+        x_total     = createEmptyArray<float>(feat_found_dims);
+        y_total     = createEmptyArray<float>(feat_found_dims);
+        score_total = createEmptyArray<float>(feat_found_dims);
+
         count = 0;
-
-        Array<float> *x_nonmax = createEmptyArray<float>(feat_found_dims);
-        Array<float> *y_nonmax = createEmptyArray<float>(feat_found_dims);
-        Array<float> *score_nonmax = createEmptyArray<float>(feat_found_dims);
-
         non_maximal<T>(*V, *x, *y,
-                       *x_nonmax, *y_nonmax, *score_nonmax,
+                       *x_total, *y_total, *score_total,
                        &count, feat_found);
 
-        delete V;
+        destroyArray<T>(*V);
+        destroyArray<float>(*x);
+        destroyArray<float>(*y);
+        destroyArray<float>(*score);
 
         feat_found = std::min(max_feat, count);
+    } else {
+        x_total = x;
+        y_total = y;
+        score_total = score;
+    }
 
-        if (feat_found > 0) {
-            feat_found_dims = dim4(feat_found);
+    if (feat_found > 0) {
+        feat_found_dims = dim4(feat_found);
 
-            // TODO: improve output copy, use af_index?
-            x_out = createEmptyArray<float>(feat_found_dims);
-            y_out = createEmptyArray<float>(feat_found_dims);
-            score_out = createEmptyArray<float>(feat_found_dims);
-            orientation_out = createValueArray<float>(feat_found_dims, 0.0f);
-            size_out = createValueArray<float>(feat_found_dims, 1.0f);
+        x_out = *createEmptyArray<float>(feat_found_dims);
+        y_out = *createEmptyArray<float>(feat_found_dims);
+        score_out = *createEmptyArray<float>(feat_found_dims);
 
-            float *x_nonmax_ptr = x_nonmax->get();
-            float *y_nonmax_ptr = y_nonmax->get();
-            float *score_nonmax_ptr = score_nonmax->get();
-            float *x_out_ptr = x_out->get();
-            float *y_out_ptr = y_out->get();
-            float *score_out_ptr = score_out->get();
-            for (size_t i = 0; i < feat_found; i++) {
-                x_out_ptr[i] = x_nonmax_ptr[i];
-                y_out_ptr[i] = y_nonmax_ptr[i];
-                score_out_ptr[i] = score_nonmax_ptr[i];
-            }
+        float *x_total_ptr = x_total->get();
+        float *y_total_ptr = y_total->get();
+        float *score_total_ptr = score_total->get();
+
+
+        float *x_out_ptr = x_out.get();
+        float *y_out_ptr = y_out.get();
+        float *score_out_ptr = score_out.get();
+
+        for (size_t i = 0; i < feat_found; i++) {
+            x_out_ptr[i] = x_total_ptr[i];
+            y_out_ptr[i] = y_total_ptr[i];
+            score_out_ptr[i] = score_total_ptr[i];
         }
-
-        delete x;
-        delete y;
-        delete score;
-        delete x_nonmax;
-        delete y_nonmax;
-        delete score_nonmax;
-    }
-    else {
-        if (feat_found > 0) {
-            // TODO: improve output copy, use af_index?
-            x_out = createEmptyArray<float>(feat_found_dims);
-            y_out = createEmptyArray<float>(feat_found_dims);
-            score_out = createEmptyArray<float>(feat_found_dims);
-            orientation_out = createValueArray<float>(feat_found_dims, 0.0f);
-            size_out = createValueArray<float>(feat_found_dims, 1.0f);
-
-            float *x_ptr = x->get();
-            float *y_ptr = y->get();
-            float *score_ptr = score->get();
-            float *x_out_ptr = x_out->get();
-            float *y_out_ptr = y_out->get();
-            float *score_out_ptr = score_out->get();
-            for (size_t i = 0; i < feat_found; i++) {
-                x_out_ptr[i] = x_ptr[i];
-                y_out_ptr[i] = y_ptr[i];
-                score_out_ptr[i] = score_ptr[i];
-            }
-        }
-
-        delete x;
-        delete y;
-        delete score;
     }
 
-    features feat;
-    if (feat_found == 0) {
-        feat.setNumFeatures(0);
-        feat.setX(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        feat.setY(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        feat.setScore(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        feat.setOrientation(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        feat.setSize(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-    }
-    else {
-        feat.setNumFeatures(feat_found);
-        feat.setX(getHandle<float>(*x_out));
-        feat.setY(getHandle<float>(*y_out));
-        feat.setScore(getHandle<float>(*score_out));
-        feat.setOrientation(getHandle<float>(*orientation_out));
-        feat.setSize(getHandle<float>(*size_out));
+    destroyArray<float>(*x_total);
+    destroyArray<float>(*y_total);
+    destroyArray<float>(*score_total);
 
-        // Delete weak copies
-        delete x_out;
-        delete y_out;
-        delete score_out;
-        delete orientation_out;
-        delete size_out;
-    }
-
-    return feat;
+    return feat_found;
 }
 
-#define INSTANTIATE(T)\
-    template features fast<T>(const Array<T> &in, const float thr, const unsigned arc_length, \
-                              const bool nonmax, const float feature_ratio);
+#define INSTANTIATE(T)                                                  \
+    template unsigned fast<T>(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out, \
+                              const Array<T> &in, const float thr, const unsigned arc_length, \
+                              const bool nonmax, const float feature_ratio); \
 
 INSTANTIATE(float )
 INSTANTIATE(double)

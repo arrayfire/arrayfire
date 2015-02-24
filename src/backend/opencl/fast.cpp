@@ -23,8 +23,9 @@ namespace opencl
 {
 
 template<typename T>
-features fast(const Array<T> &in, const float thr, const unsigned arc_length,
-              const bool nonmax, const float feature_ratio)
+unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
+              const Array<T> &in, const float thr, const unsigned arc_length,
+              const bool non_max, const float feature_ratio)
 {
     unsigned nfeat;
 
@@ -32,109 +33,23 @@ features fast(const Array<T> &in, const float thr, const unsigned arc_length,
     Param y;
     Param score;
 
-    if (!nonmax) {
-        switch (arc_length) {
-        case 9:
-            kernel::fast<T,  9, 0>(&nfeat, x, y, score, in,
-                                   thr, feature_ratio);
-            break;
-        case 10:
-            kernel::fast<T, 10, 0>(&nfeat, x, y, score, in,
-                                   thr, feature_ratio);
-            break;
-        case 11:
-            kernel::fast<T, 11, 0>(&nfeat, x, y, score, in,
-                                   thr, feature_ratio);
-            break;
-        case 12:
-            kernel::fast<T, 12, 0>(&nfeat, x, y, score, in,
-                                   thr, feature_ratio);
-            break;
-        case 13:
-            kernel::fast<T, 13, 0>(&nfeat, x, y, score, in,
-                                   thr, feature_ratio);
-            break;
-        case 14:
-            kernel::fast<T, 14, 0>(&nfeat, x, y, score, in,
-                                   thr, feature_ratio);
-            break;
-        case 15:
-            kernel::fast<T, 15, 0>(&nfeat, x, y, score, in,
-                                   thr, feature_ratio);
-            break;
-        case 16:
-            kernel::fast<T, 16, 0>(&nfeat, x, y, score, in,
-                                   thr, feature_ratio);
-            break;
-        }
-    } else {
-        switch (arc_length) {
-        case 9:
-            kernel::fast<T,  9, 1>(&nfeat, x, y, score, in,
-                                   thr, feature_ratio);
-            break;
-        case 10:
-            kernel::fast<T, 10, 1>(&nfeat, x, y, score, in,
-                                   thr, feature_ratio);
-            break;
-        case 11:
-            kernel::fast<T, 11, 1>(&nfeat, x, y, score, in,
-                                   thr, feature_ratio);
-            break;
-        case 12:
-            kernel::fast<T, 12, 1>(&nfeat, x, y, score, in,
-                                   thr, feature_ratio);
-            break;
-        case 13:
-            kernel::fast<T, 13, 1>(&nfeat, x, y, score, in,
-                                   thr, feature_ratio);
-            break;
-        case 14:
-            kernel::fast<T, 14, 1>(&nfeat, x, y, score, in,
-                                   thr, feature_ratio);
-            break;
-        case 15:
-            kernel::fast<T, 15, 1>(&nfeat, x, y, score, in,
-                                   thr, feature_ratio);
-            break;
-        case 16:
-            kernel::fast<T, 16, 1>(&nfeat, x, y, score, in,
-                                   thr, feature_ratio);
-            break;
-        }
+    kernel::fast_dispatch<T>(arc_length, non_max,
+                             &nfeat, x, y, score, in,
+                             thr, feature_ratio);
+
+    if (nfeat > 0) {
+        x_out = *createParamArray<float>(x);
+        y_out = *createParamArray<float>(y);
+        score_out = *createParamArray<float>(score);
     }
 
-    features feat;
-
-    if (nfeat == 0) {
-        feat.setNumFeatures(0);
-        feat.setX(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        feat.setY(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        feat.setScore(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        feat.setOrientation(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        feat.setSize(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        return feat;
-    }
-
-    const dim4 out_dims(nfeat);
-
-    feat.setNumFeatures(nfeat);
-    feat.setX(getHandle<float>(*createParamArray<float>(x)));
-    feat.setY(getHandle<float>(*createParamArray<float>(y)));
-    feat.setScore(getHandle<float>(*createParamArray<float>(score)));
-    feat.setOrientation(getHandle<float>(*createValueArray<float>(out_dims, 0.0f)));
-    feat.setSize(getHandle<float>(*createValueArray<float>(out_dims, 1.0f)));
-
-    bufferFree(x.data);
-    bufferFree(y.data);
-    bufferFree(score.data);
-
-    return feat;
+    return nfeat;
 }
 
-#define INSTANTIATE(T)\
-    template features fast<T>(const Array<T> &in, const float thr, const unsigned arc_length, \
-                              const bool non_max, const float feature_ratio);
+#define INSTANTIATE(T)                                                  \
+    template unsigned fast<T>(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out, \
+                              const Array<T> &in, const float thr, const unsigned arc_length, \
+                              const bool nonmax, const float feature_ratio); \
 
 INSTANTIATE(float )
 INSTANTIATE(double)
