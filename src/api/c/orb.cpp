@@ -32,7 +32,7 @@ static void orb(af_features& feat, af_array& descriptor,
     Array<float> *size  = createEmptyArray<float>(dim4());
     Array<uint > *desc  = createEmptyArray<uint >(dim4());
 
-    feat.n = orb<T, convAccT>(*x, *y, *score, *ori, *size, *desc,
+    feat.n = orb<T, convAccT>(&x, &y, &score, &ori, &size, &desc,
                               getArray<T>(in), fast_thr, max_feat,
                               scl_fctr, levels);
 

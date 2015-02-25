@@ -29,7 +29,7 @@ static af_features fast(af_array const &in, const float thr,
     Array<float> *score = createEmptyArray<float>(dim4());
 
     af_features feat;
-    feat.n = fast<T>(*x, *y, *score,
+    feat.n = fast<T>(&x, &y, &score,
                      getArray<T>(in), thr,
                      arc_length, non_max, feature_ratio);
 
