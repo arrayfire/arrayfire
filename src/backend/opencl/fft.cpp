@@ -286,6 +286,9 @@ Array<T> * ifft(Array<T> const &in, double normalize, dim_type const npad, dim_t
     const dim4 dims = in.dims();
     dim4 pdims(1);
 
+    for (int i=0; i<rank; i++)
+        normalize *= dims[i];
+
     switch(rank) {
         case 1 :
             ARG_ASSERT(1, (rank==1 && isSupLen(dims[0])));
