@@ -49,6 +49,7 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
     if (isSubRef) {
         ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv.size(), &seqv.front()));
+        ASSERT_EQ(AF_SUCCESS, af_destroy_array(tempArray));
     } else {
         ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
     }
@@ -77,9 +78,8 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
     }
 
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
 }
 
 vector<af_seq> init_subs()

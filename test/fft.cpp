@@ -35,6 +35,8 @@ TEST(fft, Invalid_Array)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_fft(&outArray, inArray, 1.0, 0));
+
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 
 TEST(fft2, Invalid_Array)
@@ -51,6 +53,7 @@ TEST(fft2, Invalid_Array)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_fft2(&outArray, inArray, 1.0, 0, 0));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 
 TEST(fft3, Invalid_Array)
@@ -67,6 +70,7 @@ TEST(fft3, Invalid_Array)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_fft3(&outArray, inArray, 1.0, 0, 0, 0));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 
 TEST(ifft1, Invalid_Array)
@@ -83,6 +87,7 @@ TEST(ifft1, Invalid_Array)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<cfloat>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_ifft(&outArray, inArray, 0.01, 0));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 
 TEST(ifft2, Invalid_Array)
@@ -99,6 +104,7 @@ TEST(ifft2, Invalid_Array)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<cfloat>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_ifft2(&outArray, inArray, 0.01, 0, 0));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 
 TEST(ifft3, Invalid_Array)
@@ -115,6 +121,7 @@ TEST(ifft3, Invalid_Array)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<cfloat>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_ifft3(&outArray, inArray, 0.01, 0, 0, 0));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 
 template<typename inType, typename outType, bool isInverse>
@@ -137,7 +144,7 @@ void fftTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0
                 dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<inType>::af_type));
 
     if (isInverse){
-        switch(dims.ndims()) {
+        switch (dims.ndims()) {
             case 1 : ASSERT_EQ(AF_SUCCESS, af_ifft (&outArray, inArray, 1.0, pad0));              break;
             case 2 : ASSERT_EQ(AF_SUCCESS, af_ifft2(&outArray, inArray, 1.0, pad0, pad1));        break;
             case 3 : ASSERT_EQ(AF_SUCCESS, af_ifft3(&outArray, inArray, 1.0, pad0, pad1, pad2));  break;
