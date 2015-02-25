@@ -46,20 +46,7 @@ namespace af
         array getScore() const;
         array getOrientation() const;
         array getSize() const;
-
-        void setNumFeatures(const size_t n);
-        void setX(const array x);
-        void setX(const af_array x);
-        void setY(const array y);
-        void setY(const af_array y);
-        void setScore(const array score);
-        void setScore(const af_array score);
-        void setOrientation(const array orientation);
-        void setOrientation(const af_array orientation);
-        void setSize(const array size);
-        void setSize(const af_array size);
-
-        af_features get();
+        af_features get() const;
     };
 
 }
