@@ -14,7 +14,7 @@
 #include <Array.hpp>
 #include <ireduce.hpp>
 #include <ops.hpp>
-//#include <kernel/ireduce.hpp>
+#include <kernel/ireduce.hpp>
 #include <err_opencl.hpp>
 
 using af::dim4;
@@ -26,15 +26,13 @@ namespace opencl
     void ireduce(Array<T> &out, Array<uint> &loc,
                  const Array<T> &in, const int dim)
     {
-        OPENCL_NOT_SUPPORTED();
-        //kernel::ireduce<T, op>(out, loc.get(), in, dim);
+        kernel::ireduce<T, op>(out, loc.get(), in, dim);
     }
 
     template<af_op_t op, typename T>
     T ireduce_all(unsigned *loc, const Array<T> &in)
     {
-        OPENCL_NOT_SUPPORTED();
-        //return kernel::ireduce_all<T, op>(loc, in);
+        return kernel::ireduce_all<T, op>(loc, in);
     }
 
 #define INSTANTIATE(ROp, T)                                             \
