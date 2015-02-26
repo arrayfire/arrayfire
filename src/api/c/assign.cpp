@@ -94,22 +94,30 @@ af_err af_assign(af_array *out,
         if (*out != lhs) AF_CHECK(af_copy_array(&res, lhs));
         else             res = lhs;
 
-        if (lhs != rhs) {
-            ArrayInfo oInfo = getInfo(lhs);
-            af_dtype oType  = oInfo.getType();
-            switch(oType) {
-            case c64: assign<cdouble, true >(res, ndims, index, rhs);  break;
-            case c32: assign<cfloat , true >(res, ndims, index, rhs);  break;
-            case f64: assign<double , false>(res, ndims, index, rhs);  break;
-            case f32: assign<float  , false>(res, ndims, index, rhs);  break;
-            case s32: assign<int    , false>(res, ndims, index, rhs);  break;
-            case u32: assign<uint   , false>(res, ndims, index, rhs);  break;
-            case u8 : assign<uchar  , false>(res, ndims, index, rhs);  break;
-            case b8 : assign<char   , false>(res, ndims, index, rhs);  break;
-            default : TYPE_ERROR(1, oType); break;
-            }
-        }
+        try {
 
+            if (lhs != rhs) {
+                ArrayInfo oInfo = getInfo(lhs);
+                af_dtype oType  = oInfo.getType();
+                switch(oType) {
+                case c64: assign<cdouble, true >(res, ndims, index, rhs);  break;
+                case c32: assign<cfloat , true >(res, ndims, index, rhs);  break;
+                case f64: assign<double , false>(res, ndims, index, rhs);  break;
+                case f32: assign<float  , false>(res, ndims, index, rhs);  break;
+                case s32: assign<int    , false>(res, ndims, index, rhs);  break;
+                case u32: assign<uint   , false>(res, ndims, index, rhs);  break;
+                case u8 : assign<uchar  , false>(res, ndims, index, rhs);  break;
+                case b8 : assign<char   , false>(res, ndims, index, rhs);  break;
+                default : TYPE_ERROR(1, oType); break;
+                }
+            }
+
+        } catch(...) {
+            if (*out != lhs) {
+                AF_CHECK(af_destroy_array(res));
+            }
+            throw;
+        }
         std::swap(*out, res);
     }
     CATCHALL;
