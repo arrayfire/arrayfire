@@ -49,34 +49,9 @@ dim_type index(dim_type i, dim_type j, dim_type k, dim_type jstride, dim_type ks
     return i+j*jstride+k*kstride;
 }
 
-template<typename T>
-__device__
-T readSrc(T const *src, dim_type i, dim_type j, dim_type k, dim_type dims[], dim_type strides[])
-{
-    bool is_i = i>=0 && i<dims[0];
-    bool is_j = j>=0 && j<dims[1];
-    bool is_k = k>=0 && k<dims[2];
-    if (is_i && is_j && is_k)
-        return src[(i*strides[0] + j*strides[1] + k*strides[2])];
-    else
-        return scalar<T>(0);
-}
-
-template<typename T>
-__device__
-T readSrc(T const *src, dim_type i, dim_type j, dim_type dims[], dim_type strides[])
-{
-    bool is_i = i>=0 && i<dims[0];
-    bool is_j = j>=0 && j<dims[1];
-    if (is_i && is_j)
-        return src[i*strides[0] + j*strides[1]];
-    else
-        return scalar<T>(0);
-}
-
 template<typename T, typename accType, bool expand>
 __global__
-void convolve1(Param<T> out, CParam<T> signal, dim_type fLen, dim_type nonBatchBlkSize,
+void convolve1(Param<T> out, CParam<T> signal, dim_type fLen, dim_type nBBS,
                dim_type oStep, dim_type sStep)
 {
     SharedMemory<T> shared;
@@ -84,23 +59,25 @@ void convolve1(Param<T> out, CParam<T> signal, dim_type fLen, dim_type nonBatchB
 
     const dim_type padding = fLen-1;
     const dim_type shrdLen = blockDim.x + 2*padding;
-    const unsigned batchId = blockIdx.x/nonBatchBlkSize;
+    const unsigned batchId = blockIdx.x/nBBS;
 
     T *dst           = (T *)out.ptr          + oStep +(batchId*out.strides[1]);
     const T *src     = (const T *)signal.ptr + sStep +(batchId*signal.strides[1]);
     const T *impulse = (const T *)cFilter;
 
-    dim_type gx  = blockDim.x*(blockIdx.x-batchId*nonBatchBlkSize);
+    dim_type gx  = blockDim.x*(blockIdx.x-batchId*nBBS);
 
+    dim_type s0 = signal.strides[0];
+    dim_type d0 = signal.dims[0];
     for (dim_type i=threadIdx.x; i<shrdLen; i+=blockDim.x) {
         dim_type idx= gx-padding + i;
-        shrdMem[i]  = (idx>=0 && idx<signal.dims[0]) ? src[idx*signal.strides[0]] : scalar<T>(0);
+        shrdMem[i]  = (idx>=0 && idx<d0) ? src[idx*s0] : scalar<T>(0);
     }
     __syncthreads();
-    gx+= threadIdx.x;
+    gx += threadIdx.x;
 
     if (gx<out.dims[0]) {
-        dim_type lx   = threadIdx.x + padding + (expand ? 0 : fLen/2);
+        dim_type lx   = threadIdx.x + padding + (expand ? 0 : fLen>>1);
         accType accum = scalar<accType>(0);
         for(dim_type f=0; f<fLen; ++f) {
             accum = accum + (shrdMem[lx-f]*impulse[f]);
@@ -112,7 +89,7 @@ void convolve1(Param<T> out, CParam<T> signal, dim_type fLen, dim_type nonBatchB
 template<typename T, typename accType, bool expand>
 __global__
 void convolve2(Param<T> out, CParam<T> signal, dim_type fLen0, dim_type fLen1,
-               dim_type nonBatchBlkSize, dim_type oStep, dim_type sStep)
+               dim_type nBBS, dim_type oStep, dim_type sStep)
 {
     SharedMemory<T> shared;
     T * shrdMem       = shared.getPointer();
@@ -124,28 +101,37 @@ void convolve2(Param<T> out, CParam<T> signal, dim_type fLen0, dim_type fLen1,
     const dim_type shrdLen0 = THREADS_X + padding0;
     const dim_type shrdLen1 = THREADS_Y + padding1;
 
-    unsigned batchId  = blockIdx.x/nonBatchBlkSize;
+    unsigned batchId  = blockIdx.x/nBBS;
     T *dst            = (T *)out.ptr          + oStep + (batchId*out.strides[2]);
     const T *src      = (const T *)signal.ptr + sStep + (batchId*signal.strides[2]);
     const T *impulse  = (const T *)cFilter;
 
     dim_type lx  = threadIdx.x;
     dim_type ly  = threadIdx.y;
-    dim_type gx  = THREADS_X * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
+    dim_type gx  = THREADS_X * (blockIdx.x-batchId*nBBS) + lx;
     dim_type gy  = THREADS_Y * blockIdx.y + ly;
 
+    dim_type s0 = signal.strides[0];
+    dim_type s1 = signal.strides[1];
+    dim_type d0 = signal.dims[0];
+    dim_type d1 = signal.dims[1];
     // below loops are traditional loops, they only run multiple
     // times filter length is more than launch size
     for (dim_type b=ly, gy2=gy; b<shrdLen1; b+=THREADS_Y, gy2+=THREADS_Y) {
+        dim_type j = gy2-radius1;
+        bool is_j  = j>=0 && j<d1;
         // move row_set THREADS_Y along coloumns
-        for (dim_type a=lx, gx2=gx; a<shrdLen0; a+=THREADS_X, gx2+=THREADS_X)
-            shrdMem[b*shrdLen0+a] = readSrc(src, gx2-radius0, gy2-radius1, signal.dims, signal.strides);
+        for (dim_type a=lx, gx2=gx; a<shrdLen0; a+=THREADS_X, gx2+=THREADS_X) {
+            dim_type i = gx2-radius0;
+            bool is_i  = i>=0 && i<d0;
+            shrdMem[b*shrdLen0+a] = (is_i && is_j ? src[i*s0+j*s1] : scalar<T>(0));
+        }
     }
     __syncthreads();
 
     if (gx<out.dims[0] && gy<out.dims[1]) {
-        dim_type ci = lx + radius0 + (expand ? 0 : fLen0/2);
-        dim_type cj = ly + radius1 + (expand ? 0 : fLen1/2);
+        dim_type ci = lx + radius0 + (expand ? 0 : fLen0>>1);
+        dim_type cj = ly + radius1 + (expand ? 0 : fLen1>>1);
 
         accType accum = scalar<accType>(0);
 #pragma unroll
@@ -161,10 +147,23 @@ void convolve2(Param<T> out, CParam<T> signal, dim_type fLen0, dim_type fLen1,
     }
 }
 
+template<typename T>
+__device__
+T readSrc(T const *src, dim_type i, dim_type j, dim_type k, dim_type dims[], dim_type strides[])
+{
+    bool is_i = i>=0 && i<dims[0];
+    bool is_j = j>=0 && j<dims[1];
+    bool is_k = k>=0 && k<dims[2];
+    if (is_i && is_j && is_k)
+        return src[(i*strides[0] + j*strides[1] + k*strides[2])];
+    else
+        return scalar<T>(0);
+}
+
 template<typename T, typename accType, bool expand>
 __global__
 void convolve3(Param<T> out, CParam<T> signal, dim_type fLen0, dim_type fLen1,
-               dim_type fLen2, dim_type nonBatchBlkSize, dim_type oStep, dim_type sStep)
+               dim_type fLen2, dim_type nBBS, dim_type oStep, dim_type sStep)
 {
     SharedMemory<T> shared;
 
@@ -178,7 +177,7 @@ void convolve3(Param<T> out, CParam<T> signal, dim_type fLen0, dim_type fLen1,
     dim_type shrdLen0 = blockDim.x + padding0;
     dim_type skStride = shrdLen0 * (blockDim.y + padding1);
     dim_type fStride  = fLen0 * fLen1;
-    unsigned batchId  = blockIdx.x/nonBatchBlkSize;
+    unsigned batchId  = blockIdx.x/nBBS;
 
     T *dst            = (T *)out.ptr          + oStep + (batchId*out.strides[3]);
     const T *src      = (const T *)signal.ptr + sStep + (batchId*signal.strides[3]);
@@ -187,7 +186,7 @@ void convolve3(Param<T> out, CParam<T> signal, dim_type fLen0, dim_type fLen1,
     dim_type lx  = threadIdx.x;
     dim_type ly  = threadIdx.y;
     dim_type lz  = threadIdx.z;
-    dim_type gx  = blockDim.x * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
+    dim_type gx  = blockDim.x * (blockIdx.x-batchId*nBBS) + lx;
     dim_type gy  = blockDim.y * blockIdx.y + ly;
     dim_type gz  = blockDim.z * blockIdx.z + lz;
     dim_type lx2 = lx  + blockDim.x;
@@ -236,13 +235,16 @@ void convolve3(Param<T> out, CParam<T> signal, dim_type fLen0, dim_type fLen1,
     __syncthreads();
 
     if (gx<out.dims[0] && gy<out.dims[1] && gz<out.dims[2]) {
-        dim_type ci = lx + radius0 + (expand ? 0 : fLen0/2);
-        dim_type cj = ly + radius1 + (expand ? 0 : fLen1/2);
-        dim_type ck = lz + radius2 + (expand ? 0 : fLen2/2);
+        dim_type ci = lx + radius0 + (expand ? 0 : fLen0>>1);
+        dim_type cj = ly + radius1 + (expand ? 0 : fLen1>>1);
+        dim_type ck = lz + radius2 + (expand ? 0 : fLen2>>1);
 
         accType accum = scalar<accType>(0);
+#pragma unroll
         for(dim_type fk=0; fk<fLen2; ++fk) {
+#pragma unroll
             for(dim_type fj=0; fj<fLen1; ++fj) {
+#pragma unroll
                 for(dim_type fi=0; fi<fLen0; ++fi) {
                     T f_val = impulse[index(fi, fj, fk, fLen0, fStride)];
                     T s_val = shrdMem[index(ci-fi, cj-fj, ck-fk, shrdLen0, skStride)];
@@ -363,51 +365,69 @@ void convolve_nd(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatch
 
 template<typename T, typename accType, dim_type conv_dim, bool expand>
 __global__
-void convolve2_separable(Param<T> out, CParam<T> signal, dim_type fLen, dim_type nonBatchBlkSize)
+void convolve2_separable(Param<T> out, CParam<T> signal, dim_type fLen, dim_type nBBS)
 {
     SharedMemory<T> shared;
+    T * shrdMem = shared.getPointer();
 
-    T * shrdMem       = shared.getPointer();
-    dim_type radius   = fLen-1;
-    dim_type padding  = 2*radius;
-    dim_type shrdLen  = THREADS_X;
+    const dim_type radius  = fLen-1;
+    const dim_type padding = 2*radius;
+    const dim_type s0      = signal.strides[0];
+    const dim_type s1      = signal.strides[1];
+    const dim_type d0      = signal.dims[0];
+    const dim_type d1      = signal.dims[1];
+
+    dim_type shrdLen = THREADS_X;
     if (conv_dim==0) {
         shrdLen += padding;
     }
 
-    unsigned batchId  = blockIdx.x/nonBatchBlkSize;
+    unsigned batchId  = blockIdx.x/nBBS;
     T *dst            = (T *)out.ptr          + (batchId*out.strides[2]);
     const T *src      = (const T *)signal.ptr + (batchId*signal.strides[2]);
     const T *impulse  = (const T *)cFilter;
 
     dim_type lx = threadIdx.x;
     dim_type ly = threadIdx.y;
-    dim_type ox = THREADS_X * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
+    dim_type ox = THREADS_X * (blockIdx.x-batchId*nBBS) + lx;
     dim_type oy = THREADS_Y * blockIdx.y + ly;
     dim_type gx = ox;
     dim_type gy = oy;
 
+    // below if-else statement is based on template parameter
     if (conv_dim==0) {
-        gx += (expand ? 0 : fLen/2);
-        dim_type endX = 2*(fLen-1) + THREADS_X;
+        gx += (expand ? 0 : fLen>>1);
+        dim_type endX = ((fLen-1)<<1) + THREADS_X;
 
-        for(dim_type lx = threadIdx.x, glb_x = gx; lx<endX; lx += THREADS_X, glb_x += THREADS_X)
-            shrdMem[ly*shrdLen+lx] = readSrc(src, glb_x-radius, gy, signal.dims, signal.strides);
+        for(dim_type lx = threadIdx.x, glb_x = gx; lx<endX; lx += THREADS_X, glb_x += THREADS_X) {
+            dim_type i = glb_x - radius;
+            dim_type j = gy;
+            bool is_i  = i>=0 && i<d0;
+            bool is_j  = j>=0 && j<d1;
+            shrdMem[ly*shrdLen+lx] = (is_i && is_j ? src[i*s0 + j*s1] : scalar<T>(0));
+        }
 
     } else if (conv_dim==1) {
-        gy += (expand ? 0 : fLen/2);
-        dim_type endY = 2*(fLen-1) + THREADS_Y;
+        gy += (expand ? 0 : fLen>>1);
+        dim_type endY = ((fLen-1)<<1) + THREADS_Y;
 
-        for(dim_type ly = threadIdx.y, glb_y = gy; ly<endY; ly += THREADS_Y, glb_y += THREADS_Y)
-            shrdMem[ly*shrdLen+lx] = readSrc(src, gx, glb_y-radius, signal.dims, signal.strides);
+        for(dim_type ly = threadIdx.y, glb_y = gy; ly<endY; ly += THREADS_Y, glb_y += THREADS_Y) {
+            dim_type i = gx;
+            dim_type j = glb_y - radius;
+            bool is_i  = i>=0 && i<d0;
+            bool is_j  = j>=0 && j<d1;
+            shrdMem[ly*shrdLen+lx] = (is_i && is_j ? src[i*s0 + j*s1] : scalar<T>(0));
+        }
     }
     __syncthreads();
 
     if (ox<out.dims[0] && oy<out.dims[1]) {
+        // below conditional statement is based on template parameter
         dim_type i  = (conv_dim==0 ? lx : ly) + radius;
         accType accum = scalar<accType>(0);
         for(dim_type f=0; f<fLen; ++f) {
             T f_val = impulse[f];
+            // below conditional statement is based on template parameter
             dim_type s_idx = (conv_dim==0 ? (ly*shrdLen+(i-f)) : ((i-f)*shrdLen+lx));
             T s_val = shrdMem[s_idx];
             accum   = accum + s_val*f_val;

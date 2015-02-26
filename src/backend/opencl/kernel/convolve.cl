@@ -48,7 +48,7 @@ void convolve(global T *out, KParam oInfo,
     gx += get_local_id(0);
 
     if (gx>=0 && gx<oInfo.dims[0]) {
-        dim_type lx   = get_local_id(0) + padding + (EXPAND ? 0 : fLen/2);
+        dim_type lx   = get_local_id(0) + padding + (EXPAND ? 0 : fLen>>1);
         accType accum = (accType)(0);
         for(dim_type f=0; f<fLen; ++f) {
             accum = accum + ((accType)localMem[lx-f] * (accType)impulse[f]);
@@ -94,8 +94,8 @@ void convolve(global T *out, KParam oInfo,
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if (gx<oInfo.dims[0] && gy<oInfo.dims[1]) {
-        dim_type ci = lx + radius0 + (EXPAND ? 0 : fLen0/2);
-        dim_type cj = ly + radius1 + (EXPAND ? 0 : fLen1/2);
+        dim_type ci = lx + radius0 + (EXPAND ? 0 : fLen0>>1);
+        dim_type cj = ly + radius1 + (EXPAND ? 0 : fLen1>>1);
 
         accType accum = (accType)(0);
         for(dim_type fj=0; fj<fLen1; ++fj) {
@@ -186,9 +186,9 @@ void convolve(global T *out, KParam oInfo, global T const *signal,
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if (gx<oInfo.dims[0] && gy<oInfo.dims[1] && gz<oInfo.dims[2]) {
-        dim_type ci = lx + radius0 + (EXPAND ? 0 : fLen0/2);
-        dim_type cj = ly + radius1 + (EXPAND ? 0 : fLen1/2);
-        dim_type ck = lz + radius2 + (EXPAND ? 0 : fLen2/2);
+        dim_type ci = lx + radius0 + (EXPAND ? 0 : fLen0>>1);
+        dim_type cj = ly + radius1 + (EXPAND ? 0 : fLen1>>1);
+        dim_type ck = lz + radius2 + (EXPAND ? 0 : fLen2>>1);
 
         accType accum = (accType)(0);
         for(dim_type fk=0; fk<fLen2; ++fk) {
@@ -206,23 +206,18 @@ void convolve(global T *out, KParam oInfo, global T const *signal,
 #endif
 
 #if defined(SEPARABLE_CONV)
-T readSrc2(global T const *src, dim_type i, dim_type j, dim_type dims[], dim_type strides[])
-{
-    bool is_i = i>=0 && i<dims[0];
-    bool is_j = j>=0 && j<dims[1];
-    if (is_i && is_j)
-        return src[i*strides[0] + j*strides[1]];
-    else
-        return (T)(0);
-}
-
 kernel
 void convolve(global T *out, KParam oInfo, global T const *signal,
               KParam sInfo, local T *localMem, constant T const *impulse,
               dim_type fLen, dim_type nonBatchBlkSize)
 {
-    dim_type radius   = fLen-1;
-    dim_type padding  = 2*radius;
+    const dim_type radius  = fLen-1;
+    const dim_type padding = 2*radius;
+    const dim_type s0      = sInfo.strides[0];
+    const dim_type s1      = sInfo.strides[1];
+    const dim_type d0      = sInfo.dims[0];
+    const dim_type d1      = sInfo.dims[1];
+
     dim_type shrdLen  = get_local_size(0);
     if (CONV_DIM==0) {
         shrdLen += padding;
@@ -239,27 +234,40 @@ void convolve(global T *out, KParam oInfo, global T const *signal,
     dim_type gx = ox;
     dim_type gy = oy;
 
+    // below if-else statement is based on MACRO value passed while kernel compilation
     if (CONV_DIM==0) {
-        gx += (EXPAND ? 0 : fLen/2);
-        dim_type endX = 2*(fLen-1) + get_local_size(0);
+        gx += (EXPAND ? 0 : fLen>>1);
+        dim_type endX = ((fLen-1)<<1) + get_local_size(0);
 
-        for(dim_type lx = get_local_id(0), glb_x = gx; lx<endX; lx += get_local_size(0), glb_x += get_local_size(0))
-            localMem[ly*shrdLen+lx] = readSrc2(src, glb_x-radius, gy, sInfo.dims, sInfo.strides);
+        for(dim_type lx = get_local_id(0), glb_x = gx; lx<endX; lx += get_local_size(0), glb_x += get_local_size(0)) {
+            dim_type i = glb_x - radius;
+            dim_type j = gy;
+            bool is_i  = i>=0 && i<d0;
+            bool is_j  = j>=0 && j<d1;
+            localMem[ly*shrdLen+lx] = (is_i && is_j ? src[i*s0 + j*s1] : (T)(0));
+        }
 
     } else if (CONV_DIM==1) {
-        gy += (EXPAND ? 0 : fLen/2);
-        dim_type endY = 2*(fLen-1) + get_local_size(1);
+        gy += (EXPAND ? 0 : fLen>>1);
+        dim_type endY = ((fLen-1)<<1) + get_local_size(1);
 
-        for(dim_type ly = get_local_id(1), glb_y = gy; ly<endY; ly += get_local_size(1), glb_y += get_local_size(1))
-            localMem[ly*shrdLen+lx] = readSrc2(src, gx, glb_y-radius, sInfo.dims, sInfo.strides);
+        for(dim_type ly = get_local_id(1), glb_y = gy; ly<endY; ly += get_local_size(1), glb_y += get_local_size(1)) {
+            dim_type i = gx;
+            dim_type j = glb_y - radius;
+            bool is_i  = i>=0 && i<d0;
+            bool is_j  = j>=0 && j<d1;
+            localMem[ly*shrdLen+lx] = (is_i && is_j ? src[i*s0 + j*s1] : (T)(0));
+        }
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if (ox<oInfo.dims[0] && oy<oInfo.dims[1]) {
+        // below conditional statement is based on MACRO value passed while kernel compilation
         dim_type i  = (CONV_DIM==0 ? lx : ly) + radius;
         accType accum = (accType)(0);
         for(dim_type f=0; f<fLen; ++f) {
             T f_val = impulse[f];
+            // below conditional statement is based on MACRO value passed while kernel compilation
             dim_type s_idx = (CONV_DIM==0 ? (ly*shrdLen+(i-f)) : ((i-f)*shrdLen+lx));
             T s_val = localMem[s_idx];
             accum   = accum + ((accType)s_val*(accType)f_val);
