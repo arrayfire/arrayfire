@@ -171,13 +171,12 @@ void convolve_nd(T *optr, T const *iptr, T const *fptr,
 }
 
 template<typename T, typename accT, dim_type baseDim, bool expand>
-Array<T> * convolve(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind)
+Array<T> convolve(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind)
 {
     auto sDims    = signal.dims();
     auto fDims    = filter.dims();
     auto sStrides = signal.strides();
 
-    Array<T> *out = nullptr;
     dim4 oDims(1);
 
     if (expand) {
@@ -192,10 +191,11 @@ Array<T> * convolve(Array<T> const& signal, Array<T> const& filter, ConvolveBatc
         oDims = sDims;
         if (kind==ONE2ALL) oDims[baseDim] = fDims[baseDim];
     }
-    out = createEmptyArray<T>(oDims);
 
-    convolve_nd<T, accT, baseDim, expand>(out->get(), signal.get(), filter.get(),
-            oDims, sDims, fDims, out->strides(), sStrides, filter.strides(), kind);
+    Array<T> out = createEmptyArray<T>(oDims);
+
+    convolve_nd<T, accT, baseDim, expand>(out.get(), signal.get(), filter.get(),
+            oDims, sDims, fDims, out.strides(), sStrides, filter.strides(), kind);
 
     return out;
 }
@@ -246,14 +246,13 @@ void convolve2_separable(T *optr, T const *iptr, T const *fptr,
 }
 
 template<typename T, typename accT, bool expand>
-Array<T> * convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> const& r_filter)
+Array<T> convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> const& r_filter)
 {
     auto sDims    = signal.dims();
     auto cfDims   = c_filter.dims();
     auto rfDims   = r_filter.dims();
     auto sStrides = signal.strides();
 
-    Array<T> *out = nullptr;
 
     dim4 tDims(sDims[0]+cfDims[0]-1, sDims[1]+rfDims[0]-1, sDims[2],sDims[3]);
     dim4 oDims(1);
@@ -267,16 +266,16 @@ Array<T> * convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> 
         oDims = sDims;
     }
 
-    Array<T> *temp= createEmptyArray<T>(tDims);
-    out           = createEmptyArray<T>(oDims);
-    auto tStrides = temp->strides();
-    auto oStrides = out->strides();
+    Array<T> temp = createEmptyArray<T>(tDims);
+    Array<T> out  = createEmptyArray<T>(oDims);
+    auto tStrides = temp.strides();
+    auto oStrides = out.strides();
 
 
     for (dim_type b=0; b<oDims[2]; ++b) {
         T const *iptr = signal.get()+ b*sStrides[2];
-        T *tptr = temp->get() + b*tStrides[2];
-        T *optr = out->get()  + b*oStrides[2];
+        T *tptr = temp.get() + b*tStrides[2];
+        T *optr = out.get()  + b*oStrides[2];
 
         convolve2_separable<T, accT, 0, true>(tptr, iptr, c_filter.get(),
                 tDims, sDims, sDims, cfDims[0],
@@ -287,20 +286,18 @@ Array<T> * convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> 
                 oStrides, tStrides, r_filter.strides()[0]);
     }
 
-    destroyArray<T>(*temp);
-
     return out;
 }
 
 #define INSTANTIATE(T, accT)  \
-    template Array<T> * convolve <T, accT, 1, true >(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
-    template Array<T> * convolve <T, accT, 1, false>(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
-    template Array<T> * convolve <T, accT, 2, true >(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
-    template Array<T> * convolve <T, accT, 2, false>(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
-    template Array<T> * convolve <T, accT, 3, true >(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
-    template Array<T> * convolve <T, accT, 3, false>(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
-    template Array<T> * convolve2<T, accT, true >(Array<T> const& signal, Array<T> const& c_filter, Array<T> const& r_filter);  \
-    template Array<T> * convolve2<T, accT, false>(Array<T> const& signal, Array<T> const& c_filter, Array<T> const& r_filter);
+    template Array<T> convolve <T, accT, 1, true >(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
+    template Array<T> convolve <T, accT, 1, false>(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
+    template Array<T> convolve <T, accT, 2, true >(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
+    template Array<T> convolve <T, accT, 2, false>(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
+    template Array<T> convolve <T, accT, 3, true >(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
+    template Array<T> convolve <T, accT, 3, false>(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
+    template Array<T> convolve2<T, accT, true >(Array<T> const& signal, Array<T> const& c_filter, Array<T> const& r_filter);  \
+    template Array<T> convolve2<T, accT, false>(Array<T> const& signal, Array<T> const& c_filter, Array<T> const& r_filter);
 
 INSTANTIATE(cdouble, cdouble)
 INSTANTIATE(cfloat ,  cfloat)

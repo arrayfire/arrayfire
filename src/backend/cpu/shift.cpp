@@ -21,18 +21,18 @@ namespace cpu
     }
 
     template<typename T>
-    Array<T> *shift(const Array<T> &in, const af::dim4 &sdims)
+    Array<T> shift(const Array<T> &in, const af::dim4 &sdims)
     {
         const af::dim4 iDims = in.dims();
         af::dim4 oDims = iDims;
 
-        Array<T> *out = createEmptyArray<T>(oDims);
+        Array<T> out = createEmptyArray<T>(oDims);
 
-        T* outPtr = out->get();
+        T* outPtr = out.get();
         const T* inPtr = in.get();
 
         const af::dim4 ist = in.strides();
-        const af::dim4 ost = out->strides();
+        const af::dim4 ost = out.strides();
 
         dim_type sdims_[4];
         // Need to do this because we are mapping output to input in the kernel
@@ -69,8 +69,8 @@ namespace cpu
         return out;
     }
 
-#define INSTANTIATE(T)                                                          \
-    template Array<T>* shift<T>(const Array<T> &in, const af::dim4 &sdims);     \
+#define INSTANTIATE(T)                                                  \
+    template Array<T> shift<T>(const Array<T> &in, const af::dim4 &sdims); \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

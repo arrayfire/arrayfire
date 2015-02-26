@@ -21,14 +21,14 @@ namespace cpu
 {
 
 template<typename T, af_pad_type pad>
-Array<T> * medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
+Array<T> medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
 {
     const dim4 dims     = in.dims();
     const dim4 istrides = in.strides();
 
-    Array<T> * out      = createEmptyArray<T>(dims);
+    Array<T> out      = createEmptyArray<T>(dims);
 
-    const dim4 ostrides = out->strides();
+    const dim4 ostrides = out.strides();
 
     std::vector<T> wind_vals;
     wind_vals.reserve(w_len*w_wid);
@@ -36,7 +36,7 @@ Array<T> * medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
     for(dim_type batchId=0; batchId<dims[2]; batchId++) {
 
         T const * in_ptr = in.get() + batchId*istrides[2];
-        T * out_ptr = out->get() + batchId*ostrides[2];
+        T * out_ptr = out.get() + batchId*ostrides[2];
 
         for(dim_type col=0; col<dims[1]; col++) {
 
@@ -133,8 +133,8 @@ Array<T> * medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
 }
 
 #define INSTANTIATE(T)\
-    template Array<T> * medfilt<T, AF_ZERO     >(const Array<T> &in, dim_type w_len, dim_type w_wid); \
-    template Array<T> * medfilt<T, AF_SYMMETRIC>(const Array<T> &in, dim_type w_len, dim_type w_wid);
+    template Array<T> medfilt<T, AF_ZERO     >(const Array<T> &in, dim_type w_len, dim_type w_wid); \
+    template Array<T> medfilt<T, AF_SYMMETRIC>(const Array<T> &in, dim_type w_len, dim_type w_wid);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

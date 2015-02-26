@@ -106,14 +106,14 @@ af_err af_device_array(af_array *arr, const void *data,
         }
 
         switch (type) {
-        case f32: res = getHandle(*createDeviceDataArray<float  >(d, data)); break;
-        case f64: res = getHandle(*createDeviceDataArray<double >(d, data)); break;
-        case c32: res = getHandle(*createDeviceDataArray<cfloat >(d, data)); break;
-        case c64: res = getHandle(*createDeviceDataArray<cdouble>(d, data)); break;
-        case s32: res = getHandle(*createDeviceDataArray<int    >(d, data)); break;
-        case u32: res = getHandle(*createDeviceDataArray<uint   >(d, data)); break;
-        case u8 : res = getHandle(*createDeviceDataArray<uchar  >(d, data)); break;
-        case b8 : res = getHandle(*createDeviceDataArray<char   >(d, data)); break;
+        case f32: res = getHandle(createDeviceDataArray<float  >(d, data)); break;
+        case f64: res = getHandle(createDeviceDataArray<double >(d, data)); break;
+        case c32: res = getHandle(createDeviceDataArray<cfloat >(d, data)); break;
+        case c64: res = getHandle(createDeviceDataArray<cdouble>(d, data)); break;
+        case s32: res = getHandle(createDeviceDataArray<int    >(d, data)); break;
+        case u32: res = getHandle(createDeviceDataArray<uint   >(d, data)); break;
+        case u8 : res = getHandle(createDeviceDataArray<uchar  >(d, data)); break;
+        case b8 : res = getHandle(createDeviceDataArray<char   >(d, data)); break;
         default: TYPE_ERROR(4, type);
         }
 

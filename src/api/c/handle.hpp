@@ -35,26 +35,28 @@ template<typename T>
 static af_array
 getHandle(const detail::Array<T> &A)
 {
-    af_array arr = reinterpret_cast<af_array>(&A);
+    detail::Array<T> *ret = detail::initArray<T>();
+    *ret = A;
+    af_array arr = reinterpret_cast<af_array>(ret);
     return arr;
 }
 
 template<typename T>
 static af_array createHandle(af::dim4 d)
 {
-    return getHandle(*detail::createEmptyArray<T>(d));
+    return getHandle(detail::createEmptyArray<T>(d));
 }
 
 template<typename T>
 static af_array createHandleFromValue(af::dim4 d, double val)
 {
-    return getHandle(*detail::createValueArray<T>(d, detail::scalar<T>(val)));
+    return getHandle(detail::createValueArray<T>(d, detail::scalar<T>(val)));
 }
 
 template<typename T>
 static af_array createHandleFromData(af::dim4 d, const T * const data)
 {
-    return getHandle(*detail::createHostDataArray<T>(d, data));
+    return getHandle(detail::createHostDataArray<T>(d, data));
 }
 
 template<typename T>
@@ -67,13 +69,13 @@ template<typename T>
 static af_array copyArray(const af_array in)
 {
     const detail::Array<T> &inArray = getArray<T>(in);
-    return getHandle<T>(*detail::copyArray<T>(inArray));
+    return getHandle<T>(detail::copyArray<T>(inArray));
 }
 
 template<typename T>
 static void destroyHandle(const af_array arr)
 {
-    detail::destroyArray(getWritableArray<T>(arr));
+    detail::destroyArray(reinterpret_cast<detail::Array<T>*>(arr));
 }
 
 af_array weakCopy(const af_array in);

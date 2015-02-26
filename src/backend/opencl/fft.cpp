@@ -11,6 +11,7 @@
 #include <af/defines.h>
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
+#include <copy.hpp>
 #include <fft.hpp>
 #include <err_opencl.hpp>
 #include <clFFT.h>
@@ -246,7 +247,7 @@ inline bool isSupLen(dim_type length)
 }
 
 template<typename inType, typename outType, int rank, bool isR2C>
-Array<outType> * fft(Array<inType> const &in, double normalize, dim_type const npad, dim_type const * const pad)
+Array<outType> fft(Array<inType> const &in, double normalize, dim_type const npad, dim_type const * const pad)
 {
     ARG_ASSERT(1, (in.isOwner()==true));
 
@@ -271,15 +272,15 @@ Array<outType> * fft(Array<inType> const &in, double normalize, dim_type const n
 
     pdims[rank] = in.dims()[rank];
 
-    Array<outType> *ret = createPaddedArray<inType, outType>(in, (npad>0 ? pdims : in.dims()), zero<outType>(), normalize);
+    Array<outType> ret = padArray<inType, outType>(in, (npad>0 ? pdims : in.dims()), zero<outType>(), normalize);
 
-    clfft_common<outType, rank, CLFFT_FORWARD>(*ret);
+    clfft_common<outType, rank, CLFFT_FORWARD>(ret);
 
     return ret;
 }
 
 template<typename T, int rank>
-Array<T> * ifft(Array<T> const &in, double normalize, dim_type const npad, dim_type const * const pad)
+Array<T> ifft(Array<T> const &in, double normalize, dim_type const npad, dim_type const * const pad)
 {
     ARG_ASSERT(1, (in.isOwner()==true));
 
@@ -307,28 +308,28 @@ Array<T> * ifft(Array<T> const &in, double normalize, dim_type const npad, dim_t
 
     pdims[rank] = in.dims()[rank];
 
-    Array<T> *ret = createPaddedArray<T, T>(in, (npad>0 ? pdims : in.dims()), zero<T>(), normalize);
+    Array<T> ret = padArray<T, T>(in, (npad>0 ? pdims : in.dims()), zero<T>(), normalize);
 
-    clfft_common<T, rank, CLFFT_BACKWARD>(*ret);
+    clfft_common<T, rank, CLFFT_BACKWARD>(ret);
 
     return ret;
 }
 
 #define INSTANTIATE1(T1, T2)\
-    template Array<T2> * fft <T1, T2, 1, true >(const Array<T1> &in, double normalize, dim_type const npad, dim_type const * const pad); \
-    template Array<T2> * fft <T1, T2, 2, true >(const Array<T1> &in, double normalize, dim_type const npad, dim_type const * const pad); \
-    template Array<T2> * fft <T1, T2, 3, true >(const Array<T1> &in, double normalize, dim_type const npad, dim_type const * const pad);
+    template Array<T2> fft <T1, T2, 1, true >(const Array<T1> &in, double normalize, dim_type const npad, dim_type const * const pad); \
+    template Array<T2> fft <T1, T2, 2, true >(const Array<T1> &in, double normalize, dim_type const npad, dim_type const * const pad); \
+    template Array<T2> fft <T1, T2, 3, true >(const Array<T1> &in, double normalize, dim_type const npad, dim_type const * const pad);
 
 INSTANTIATE1(float  , cfloat )
 INSTANTIATE1(double , cdouble)
 
 #define INSTANTIATE2(T)\
-    template Array<T> * fft <T, T, 1, false>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad); \
-    template Array<T> * fft <T, T, 2, false>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad); \
-    template Array<T> * fft <T, T, 3, false>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad); \
-    template Array<T> * ifft<T, 1>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad); \
-    template Array<T> * ifft<T, 2>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad); \
-    template Array<T> * ifft<T, 3>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad);
+    template Array<T> fft <T, T, 1, false>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad); \
+    template Array<T> fft <T, T, 2, false>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad); \
+    template Array<T> fft <T, T, 3, false>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad); \
+    template Array<T> ifft<T, 1>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad); \
+    template Array<T> ifft<T, 2>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad); \
+    template Array<T> ifft<T, 3>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad);
 
 INSTANTIATE2(cfloat )
 INSTANTIATE2(cdouble)

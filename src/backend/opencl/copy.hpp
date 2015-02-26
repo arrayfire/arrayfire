@@ -17,9 +17,12 @@ namespace opencl
     void copyData(T *data, const Array<T> &A);
 
     template<typename T>
-    Array<T>* copyArray(const Array<T> &A);
+    Array<T> copyArray(const Array<T> &A);
 
     template<typename inType, typename outType>
-    void copy(Array<outType> &dst, const Array<inType> &src, outType default_value, double factor);
+    void copyArray(Array<outType> &out, const Array<inType> &in);
 
+    template<typename inType, typename outType>
+    Array<outType> padArray(Array<inType> const &in, dim4 const &dims,
+                            outType default_value, double factor=1.0);
 }

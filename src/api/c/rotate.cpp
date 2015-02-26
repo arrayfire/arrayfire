@@ -21,7 +21,7 @@ template<typename T>
 static inline af_array rotate(const af_array in, const float theta, const af::dim4 &odims,
                               const af_interp_type method)
 {
-    return getHandle(*rotate<T>(getArray<T>(in), theta, odims, method));
+    return getHandle(rotate<T>(getArray<T>(in), theta, odims, method));
 }
 
 

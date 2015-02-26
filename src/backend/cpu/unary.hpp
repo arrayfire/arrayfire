@@ -64,7 +64,7 @@ UNARY_FN(lgamma)
 #undef UNARY_FN
 
     template<typename T, af_op_t op>
-    Array<T>* unaryOp(const Array<T> &in)
+    Array<T> unaryOp(const Array<T> &in)
     {
         TNJ::Node_ptr in_node = in.getNode();
         TNJ::UnaryNode<T, T, op> *node = new TNJ::UnaryNode<T, T, op>(in_node);
@@ -90,7 +90,7 @@ UNARY_FN(lgamma)
     CHECK_FN(iszero, iszero)
 
     template<typename T, af_op_t op>
-    Array<char> *checkOp(const Array<T> &in)
+    Array<char> checkOp(const Array<T> &in)
     {
         TNJ::Node_ptr in_node = in.getNode();
         TNJ::UnaryNode<char, T, op> *node = new TNJ::UnaryNode<char, T, op>(in_node);

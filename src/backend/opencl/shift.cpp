@@ -16,7 +16,7 @@
 namespace opencl
 {
     template<typename T>
-    Array<T> *shift(const Array<T> &in, const af::dim4 &sdims)
+    Array<T> shift(const Array<T> &in, const af::dim4 &sdims)
     {
         if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
             !isDoubleSupported(getActiveDeviceId())) {
@@ -25,15 +25,15 @@ namespace opencl
         const af::dim4 iDims = in.dims();
         af::dim4 oDims = iDims;
 
-        Array<T> *out = createEmptyArray<T>(oDims);
+        Array<T> out = createEmptyArray<T>(oDims);
 
-        kernel::shift<T>(*out, in, sdims.get());
+        kernel::shift<T>(out, in, sdims.get());
 
         return out;
     }
 
 #define INSTANTIATE(T)                                                          \
-    template Array<T>* shift<T>(const Array<T> &in, const af::dim4 &sdims);     \
+    template Array<T> shift<T>(const Array<T> &in, const af::dim4 &sdims);     \
 
     INSTANTIATE(float)
     INSTANTIATE(double)
@@ -44,4 +44,3 @@ namespace opencl
     INSTANTIATE(uchar)
     INSTANTIATE(char)
 }
-

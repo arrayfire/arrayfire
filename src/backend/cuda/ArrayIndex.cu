@@ -15,7 +15,7 @@ namespace cuda
 {
 
 template<typename in_t, typename idx_t>
-Array<in_t>* arrayIndex(const Array<in_t> &input, const Array<idx_t> &indices, const unsigned dim)
+Array<in_t> arrayIndex(const Array<in_t> &input, const Array<idx_t> &indices, const unsigned dim)
 {
     const dim4 iDims = input.dims();
 
@@ -23,26 +23,26 @@ Array<in_t>* arrayIndex(const Array<in_t> &input, const Array<idx_t> &indices, c
     for (dim_type d=0; d<4; ++d)
         oDims[d] = (d==dim ? indices.elements() : iDims[d]);
 
-    Array<in_t> *out = createEmptyArray<in_t>(oDims);
+    Array<in_t> out = createEmptyArray<in_t>(oDims);
 
     dim_type nDims = iDims.ndims();
 
     switch(dim) {
-        case 0: kernel::arrayIndex<in_t, idx_t, 0>(*out, input, indices, nDims); break;
-        case 1: kernel::arrayIndex<in_t, idx_t, 1>(*out, input, indices, nDims); break;
-        case 2: kernel::arrayIndex<in_t, idx_t, 2>(*out, input, indices, nDims); break;
-        case 3: kernel::arrayIndex<in_t, idx_t, 3>(*out, input, indices, nDims); break;
+        case 0: kernel::arrayIndex<in_t, idx_t, 0>(out, input, indices, nDims); break;
+        case 1: kernel::arrayIndex<in_t, idx_t, 1>(out, input, indices, nDims); break;
+        case 2: kernel::arrayIndex<in_t, idx_t, 2>(out, input, indices, nDims); break;
+        case 3: kernel::arrayIndex<in_t, idx_t, 3>(out, input, indices, nDims); break;
     }
 
     return out;
 }
 
 #define INSTANTIATE(T)  \
-    template Array<T> * arrayIndex<T, float   >(const Array<T> &input, const Array<float   > &indices, const unsigned dim); \
-    template Array<T> * arrayIndex<T, double  >(const Array<T> &input, const Array<double  > &indices, const unsigned dim); \
-    template Array<T> * arrayIndex<T, int     >(const Array<T> &input, const Array<int     > &indices, const unsigned dim); \
-    template Array<T> * arrayIndex<T, unsigned>(const Array<T> &input, const Array<unsigned> &indices, const unsigned dim); \
-    template Array<T> * arrayIndex<T, uchar   >(const Array<T> &input, const Array<uchar   > &indices, const unsigned dim);
+    template Array<T> arrayIndex<T, float   >(const Array<T> &input, const Array<float   > &indices, const unsigned dim); \
+    template Array<T> arrayIndex<T, double  >(const Array<T> &input, const Array<double  > &indices, const unsigned dim); \
+    template Array<T> arrayIndex<T, int     >(const Array<T> &input, const Array<int     > &indices, const unsigned dim); \
+    template Array<T> arrayIndex<T, unsigned>(const Array<T> &input, const Array<unsigned> &indices, const unsigned dim); \
+    template Array<T> arrayIndex<T, uchar   >(const Array<T> &input, const Array<uchar   > &indices, const unsigned dim);
 
 INSTANTIATE(float   );
 INSTANTIATE(cfloat  );

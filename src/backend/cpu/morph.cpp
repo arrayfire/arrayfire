@@ -29,7 +29,7 @@ static inline unsigned getIdx(const dim4 &strides,
 }
 
 template<typename T, bool isDilation>
-Array<T> * morph(const Array<T> &in, const Array<T> &mask)
+Array<T> morph(const Array<T> &in, const Array<T> &mask)
 {
     const dim4 dims       = in.dims();
     const dim4 window     = mask.dims();
@@ -39,10 +39,10 @@ Array<T> * morph(const Array<T> &in, const Array<T> &mask)
     const dim4 fstrides   = mask.strides();
     const dim_type bCount = dims[2];
 
-    Array<T>* out         = createEmptyArray<T>(dims);
-    const dim4 ostrides   = out->strides();
+    Array<T> out         = createEmptyArray<T>(dims);
+    const dim4 ostrides   = out.strides();
 
-    T* outData            = out->get();
+    T* outData            = out.get();
     const T*   inData     = in.get();
     const T*   filter     = mask.get();
 
@@ -89,7 +89,7 @@ Array<T> * morph(const Array<T> &in, const Array<T> &mask)
 }
 
 template<typename T, bool isDilation>
-Array<T> * morph3d(const Array<T> &in, const Array<T> &mask)
+Array<T> morph3d(const Array<T> &in, const Array<T> &mask)
 {
     const dim4 dims       = in.dims();
     const dim4 window     = mask.dims();
@@ -100,10 +100,10 @@ Array<T> * morph3d(const Array<T> &in, const Array<T> &mask)
     const dim4 fstrides   = mask.strides();
     const dim_type bCount = dims[3];
 
-    Array<T>* out         = createEmptyArray<T>(dims);
-    const dim4 ostrides   = out->strides();
+    Array<T> out         = createEmptyArray<T>(dims);
+    const dim4 ostrides   = out.strides();
 
-    T* outData            = out->get();
+    T* outData            = out.get();
     const T*   inData     = in.get();
     const T*   filter     = mask.get();
 
@@ -156,10 +156,10 @@ Array<T> * morph3d(const Array<T> &in, const Array<T> &mask)
 }
 
 #define INSTANTIATE(T)\
-    template Array<T> * morph  <T, true >(const Array<T> &in, const Array<T> &mask);\
-    template Array<T> * morph  <T, false>(const Array<T> &in, const Array<T> &mask);\
-    template Array<T> * morph3d<T, true >(const Array<T> &in, const Array<T> &mask);\
-    template Array<T> * morph3d<T, false>(const Array<T> &in, const Array<T> &mask);
+    template Array<T> morph  <T, true >(const Array<T> &in, const Array<T> &mask);\
+    template Array<T> morph  <T, false>(const Array<T> &in, const Array<T> &mask);\
+    template Array<T> morph3d<T, true >(const Array<T> &in, const Array<T> &mask);\
+    template Array<T> morph3d<T, false>(const Array<T> &in, const Array<T> &mask);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

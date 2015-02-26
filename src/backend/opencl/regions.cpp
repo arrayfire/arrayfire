@@ -21,7 +21,7 @@ namespace opencl
 {
 
 template<typename T>
-Array<T> * regions(const Array<uchar> &in, af_connectivity connectivity)
+Array<T> regions(const Array<uchar> &in, af_connectivity connectivity)
 {
     if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
         !isDoubleSupported(getActiveDeviceId())) {
@@ -31,14 +31,14 @@ Array<T> * regions(const Array<uchar> &in, af_connectivity connectivity)
 
     const af::dim4 dims = in.dims();
 
-    Array<T> * out  = createEmptyArray<T>(dims);
+    Array<T> out  = createEmptyArray<T>(dims);
 
     switch(connectivity) {
         case AF_CONNECTIVITY_4:
-            kernel::regions<T, false, 2>(*out, in);
+            kernel::regions<T, false, 2>(out, in);
             break;
         case AF_CONNECTIVITY_8:
-            kernel::regions<T, true,  2>(*out, in);
+            kernel::regions<T, true,  2>(out, in);
             break;
     }
 
@@ -46,7 +46,7 @@ Array<T> * regions(const Array<uchar> &in, af_connectivity connectivity)
 }
 
 #define INSTANTIATE(T)                                                                          \
-    template Array<T> * regions<T>(const Array<uchar> &in, af_connectivity connectivity);
+    template Array<T> regions<T>(const Array<uchar> &in, af_connectivity connectivity);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

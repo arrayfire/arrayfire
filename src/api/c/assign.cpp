@@ -39,46 +39,42 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
     AF_CHECK(af_eval(out));
 
     vector<af_seq> index_(index, index+ndims);
-    dim4 const oStrides = af::toStride(index_, outDs);
 
     dim4 oDims = af::toDims(index_, outDs);
-    dim4 oOffsets = af::toOffset(index_, outDs);
-
-    Array<T> *dst = createRefArray<T>(getArray<T>(out), oDims, oOffsets, oStrides);
 
     for (int i = 0; i < 4; i++) {
         if (oDims[i] != iDims[i])
             AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
     }
 
+
+    Array<T> dst = createSubArray<T>(getArray<T>(out), index_, false);
+
     bool noCaseExecuted = true;
     if (isComplex) {
         noCaseExecuted = false;
         switch(iType) {
-            case c64: copy<cdouble, T>(*dst, getArray<cdouble>(in), scalar<T>(0), 1.0);  break;
-            case c32: copy<cfloat , T>(*dst, getArray<cfloat >(in), scalar<T>(0), 1.0);  break;
+            case c64: copyArray<cdouble, T>(dst, getArray<cdouble>(in));  break;
+            case c32: copyArray<cfloat , T>(dst, getArray<cfloat >(in));  break;
             default : noCaseExecuted = true; break;
         }
     }
 
-    static const T ZERO = scalar<T>(0);
     if(noCaseExecuted) {
         noCaseExecuted = false;
         switch(iType) {
-            case f64: copy<double , T>(*dst, getArray<double>(in), ZERO, 1.0);  break;
-            case f32: copy<float  , T>(*dst, getArray<float >(in), ZERO, 1.0);  break;
-            case s32: copy<int    , T>(*dst, getArray<int   >(in), ZERO, 1.0);  break;
-            case u32: copy<uint   , T>(*dst, getArray<uint  >(in), ZERO, 1.0);  break;
-            case u8 : copy<uchar  , T>(*dst, getArray<uchar >(in), ZERO, 1.0);  break;
-            case b8 : copy<char   , T>(*dst, getArray<char  >(in), ZERO, 1.0);  break;
+            case f64: copyArray<double , T>(dst, getArray<double>(in));  break;
+            case f32: copyArray<float  , T>(dst, getArray<float >(in));  break;
+            case s32: copyArray<int    , T>(dst, getArray<int   >(in));  break;
+            case u32: copyArray<uint   , T>(dst, getArray<uint  >(in));  break;
+            case u8 : copyArray<uchar  , T>(dst, getArray<uchar >(in));  break;
+            case b8 : copyArray<char   , T>(dst, getArray<char  >(in));  break;
             default : noCaseExecuted = true; break;
         }
     }
 
     if (noCaseExecuted)
         TYPE_ERROR(1, iType);
-
-    delete dst;
 }
 
 af_err af_assign(af_array *out,

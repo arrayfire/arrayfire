@@ -21,22 +21,22 @@ namespace cuda
 {
 
 template<typename T, af_pad_type pad>
-Array<T> * medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
+Array<T> medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
 {
     ARG_ASSERT(2, (w_len<=kernel::MAX_MEDFILTER_LEN));
 
     const dim4 dims     = in.dims();
 
-    Array<T> * out      = createEmptyArray<T>(dims);
+    Array<T> out      = createEmptyArray<T>(dims);
 
-    kernel::medfilt<T, pad>(*out, in, w_len, w_wid);
+    kernel::medfilt<T, pad>(out, in, w_len, w_wid);
 
     return out;
 }
 
 #define INSTANTIATE(T)\
-    template Array<T> * medfilt<T, AF_ZERO     >(const Array<T> &in, dim_type w_len, dim_type w_wid); \
-    template Array<T> * medfilt<T, AF_SYMMETRIC>(const Array<T> &in, dim_type w_len, dim_type w_wid);
+    template Array<T> medfilt<T, AF_ZERO     >(const Array<T> &in, dim_type w_len, dim_type w_wid); \
+    template Array<T> medfilt<T, AF_SYMMETRIC>(const Array<T> &in, dim_type w_len, dim_type w_wid);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

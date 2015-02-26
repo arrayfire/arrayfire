@@ -22,7 +22,7 @@ template<typename T>
 static inline af_array transform(const af_array in, const af_array tf, const af::dim4 &odims,
                                  const af_interp_type method, const bool inverse)
 {
-    return getHandle(*transform<T>(getArray<T>(in), getArray<float>(tf), odims, method, inverse));
+    return getHandle(transform<T>(getArray<T>(in), getArray<float>(tf), odims, method, inverse));
 }
 
 af_err af_transform(af_array *out, const af_array in, const af_array tf,

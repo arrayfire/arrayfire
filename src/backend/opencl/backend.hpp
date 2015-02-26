@@ -8,11 +8,17 @@
  ********************************************************/
 
 #pragma once
-#if __APPLE__
-#include <OpenCL/cl.h>
+#ifdef __DH__
+#undef __DH__
+#endif
+
+#ifdef __CUDACC__
+#include <opencl_runtime.h>
+#define __DH__ __device__ __host__
 #else
-#include <CL/cl.h>
+#define __DH__
 #endif
 
 #include "types.hpp"
+
 namespace detail = opencl;

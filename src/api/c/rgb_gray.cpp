@@ -27,13 +27,13 @@ using namespace detail;
 template<typename T, typename cType>
 static af_array rgb2gray(const af_array& in, const float r, const float g, const float b)
 {
-    Array<cType>* input = cast<cType>(getArray<T>(in));
-    dim4 inputDims = input->dims();
+    Array<cType> input = cast<cType>(getArray<T>(in));
+    dim4 inputDims = input.dims();
     dim4 matDims(inputDims[0], inputDims[1], 1 , 1);
 
-    Array<cType>* rCnst = createValueArray<cType>(matDims, scalar<cType>(r));
-    Array<cType>* gCnst = createValueArray<cType>(matDims, scalar<cType>(g));
-    Array<cType>* bCnst = createValueArray<cType>(matDims, scalar<cType>(b));
+    Array<cType> rCnst = createValueArray<cType>(matDims, scalar<cType>(r));
+    Array<cType> gCnst = createValueArray<cType>(matDims, scalar<cType>(g));
+    Array<cType> bCnst = createValueArray<cType>(matDims, scalar<cType>(b));
 
     // extract three channels as three slices
     af_seq slice1[3] = { af_span, af_span, {0, 0, 1} };
@@ -46,70 +46,46 @@ static af_array rgb2gray(const af_array& in, const float r, const float g, const
     AF_CHECK(af_index(&ch3Temp, in, 3, slice3));
 
     // r*Slice0
-    Array<cType>* expr1 = detail::arithOp<cType, af_mul_t>(getArray<cType>(ch1Temp), *rCnst, matDims);
+    Array<cType> expr1 = arithOp<cType, af_mul_t>(getArray<cType>(ch1Temp), rCnst, matDims);
     //g*Slice1
-    Array<cType>* expr2 = detail::arithOp<cType, af_mul_t>(getArray<cType>(ch2Temp), *gCnst, matDims);
+    Array<cType> expr2 = arithOp<cType, af_mul_t>(getArray<cType>(ch2Temp), gCnst, matDims);
     //b*Slice2
-    Array<cType>* expr3 = detail::arithOp<cType, af_mul_t>(getArray<cType>(ch3Temp), *bCnst, matDims);
+    Array<cType> expr3 = arithOp<cType, af_mul_t>(getArray<cType>(ch3Temp), bCnst, matDims);
     //r*Slice0 + g*Slice1
-    Array<cType>* expr4 = detail::arithOp<cType, af_add_t>(*expr1, *expr2, matDims);
+    Array<cType> expr4 = arithOp<cType, af_add_t>(expr1, expr2, matDims);
     //r*Slice0 + g*Slice1 + b*Slice2
-    Array<cType>* result= detail::arithOp<cType, af_add_t>(*expr3, *expr4, matDims);
+    Array<cType> result= arithOp<cType, af_add_t>(expr3, expr4, matDims);
 
-    destroyArray<cType>(*expr4);
-    destroyArray<cType>(*expr3);
-    destroyArray<cType>(*expr2);
-    destroyArray<cType>(*expr1);
     AF_CHECK(af_destroy_array(ch1Temp));
     AF_CHECK(af_destroy_array(ch2Temp));
     AF_CHECK(af_destroy_array(ch3Temp));
-    destroyArray<cType>(*rCnst);
-    destroyArray<cType>(*gCnst);
-    destroyArray<cType>(*bCnst);
-    destroyArray<cType>(*input);
 
-    return getHandle<cType>(*result);
+    return getHandle<cType>(result);
 }
 
 template<typename T, typename cType>
 static af_array gray2rgb(const af_array& in, const float r, const float g, const float b)
 {
-    Array<cType>* input = cast<cType>(getArray<T>(in));
-    dim4 inputDims = input->dims();
-
-    Array<cType> *result;
+    Array<cType> input = cast<cType>(getArray<T>(in));
+    dim4 inputDims = input.dims();
 
     if (r==1.0 && g==1.0 && b==1.0) {
         dim4 tileDims(1, 1, 3, 1);
-        result = detail::tile(*input, tileDims);
-    } else {
-        dim4 matDims(inputDims[0], inputDims[1], 1 , 1);
-        Array<cType>* rCnst = createValueArray<cType>(matDims, scalar<cType>(r));
-        Array<cType>* gCnst = createValueArray<cType>(matDims, scalar<cType>(g));
-        Array<cType>* bCnst = createValueArray<cType>(matDims, scalar<cType>(b));
-
-        // r*Slice0
-        Array<cType>* expr1 = detail::arithOp<cType, af_mul_t>(*input, *rCnst, matDims);
-        //g*Slice1
-        Array<cType>* expr2 = detail::arithOp<cType, af_mul_t>(*input, *gCnst, matDims);
-        //b*Slice2
-        Array<cType>* expr3 = detail::arithOp<cType, af_mul_t>(*input, *bCnst, matDims);
-
-        // join channels
-        Array<cType>* expr4 = detail::join<cType, cType>(2, *expr1, *expr2);
-        result= detail::join<cType, cType>(2, *expr3, *expr4);
-
-        destroyArray<cType>(*expr4);
-        destroyArray<cType>(*expr3);
-        destroyArray<cType>(*expr2);
-        destroyArray<cType>(*expr1);
-        destroyArray<cType>(*rCnst);
-        destroyArray<cType>(*gCnst);
-        destroyArray<cType>(*bCnst);
-        destroyArray<cType>(*input);
+        return getHandle(tile(input, tileDims));
     }
 
-    return getHandle<cType>(*result);
+    dim4 matDims(inputDims[0], inputDims[1], 1 , 1);
+    Array<cType> rCnst = createValueArray<cType>(matDims, scalar<cType>(r));
+    Array<cType> gCnst = createValueArray<cType>(matDims, scalar<cType>(g));
+    Array<cType> bCnst = createValueArray<cType>(matDims, scalar<cType>(b));
+
+    Array<cType> expr1 = arithOp<cType, af_mul_t>(input, rCnst, matDims);
+    Array<cType> expr2 = arithOp<cType, af_mul_t>(input, gCnst, matDims);
+    Array<cType> expr3 = arithOp<cType, af_mul_t>(input, bCnst, matDims);
+
+    // join channels
+    Array<cType> expr4 = join<cType, cType>(2, expr1, expr2);
+    return getHandle(join<cType, cType>(2, expr3, expr4));
 }
 
 template<typename T, typename cType, bool isRGB2GRAY>
