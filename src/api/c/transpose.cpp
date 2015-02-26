@@ -22,7 +22,7 @@ using namespace detail;
 template<typename T>
 static inline af_array trs(const af_array in, const bool conjugate)
 {
-    return getHandle<T>(*detail::transpose<T>(getArray<T>(in), conjugate));
+    return getHandle<T>(detail::transpose<T>(getArray<T>(in), conjugate));
 }
 
 af_err af_transpose(af_array *out, af_array in, const bool conjugate)

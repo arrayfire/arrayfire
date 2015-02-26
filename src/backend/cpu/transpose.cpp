@@ -77,32 +77,32 @@ void transpose_(T *out, const T *in, const af::dim4 &odims, const af::dim4 &idim
 }
 
 template<typename T>
-Array<T> * transpose(const Array<T> &in, const bool conjugate)
+Array<T> transpose(const Array<T> &in, const bool conjugate)
 {
     const dim4 inDims = in.dims();
 
     dim4 outDims   = dim4(inDims[1],inDims[0],inDims[2],inDims[3]);
 
     // create an array with first two dimensions swapped
-    Array<T>* out  = createEmptyArray<T>(outDims);
+    Array<T> out  = createEmptyArray<T>(outDims);
 
     // get data pointers for input and output Arrays
-    T* outData          = out->get();
+    T* outData          = out.get();
     const T*   inData   = in.get();
 
     if(conjugate) {
         transpose_<T, true>(outData, inData,
-                            out->dims(), in.dims(), out->strides(), in.strides());
+                            out.dims(), in.dims(), out.strides(), in.strides());
     } else {
         transpose_<T, false>(outData, inData,
-                             out->dims(), in.dims(), out->strides(), in.strides());
+                             out.dims(), in.dims(), out.strides(), in.strides());
     }
 
     return out;
 }
 
 #define INSTANTIATE(T)\
-    template Array<T> * transpose(const Array<T> &in, const bool conjugate);
+    template Array<T> transpose(const Array<T> &in, const bool conjugate);
 
 INSTANTIATE(float  )
 INSTANTIATE(cfloat )

@@ -21,8 +21,8 @@ namespace cuda
     void sort_by_key(Array<Tk> &okey, Array<Tv> &oval,
                const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim)
     {
-        okey = *copyArray<Tk>(ikey);
-        oval = *copyArray<Tv>(ival);
+        okey = copyArray<Tk>(ikey);
+        oval = copyArray<Tv>(ival);
         switch(dim) {
         case 0: kernel::sort0_by_key<Tk, Tv, isAscending>(okey, oval);
             break;

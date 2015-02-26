@@ -24,23 +24,23 @@ static af_features fast(af_array const &in, const float thr,
                         const unsigned arc_length, const bool non_max,
                         const float feature_ratio)
 {
-    Array<float> *x = createEmptyArray<float>(dim4());
-    Array<float> *y = createEmptyArray<float>(dim4());
-    Array<float> *score = createEmptyArray<float>(dim4());
+    Array<float> x = createEmptyArray<float>(dim4());
+    Array<float> y = createEmptyArray<float>(dim4());
+    Array<float> score = createEmptyArray<float>(dim4());
 
     af_features feat;
-    feat.n = fast<T>(*x, *y, *score,
+    feat.n = fast<T>(x, y, score,
                      getArray<T>(in), thr,
                      arc_length, non_max, feature_ratio);
 
-    Array<float> *orientation = createValueArray<float>(feat.n, 0.0);
-    Array<float> *size = createValueArray<float>(feat.n, 1.0);
+    Array<float> orientation = createValueArray<float>(feat.n, 0.0);
+    Array<float> size = createValueArray<float>(feat.n, 1.0);
 
-    feat.x           = getHandle(*x);
-    feat.y           = getHandle(*y);
-    feat.score       = getHandle(*score);
-    feat.orientation = getHandle(*orientation);
-    feat.size        = getHandle(*size);
+    feat.x           = getHandle(x);
+    feat.y           = getHandle(y);
+    feat.score       = getHandle(score);
+    feat.orientation = getHandle(orientation);
+    feat.size        = getHandle(size);
 
     return feat;
 }

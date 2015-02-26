@@ -23,14 +23,14 @@ template<typename Ty, typename Tp>
 static inline af_array approx1(const af_array in, const af_array pos,
                                const af_interp_type method, const float offGrid)
 {
-    return getHandle(*approx1<Ty>(getArray<Ty>(in), getArray<Tp>(pos), method, offGrid));
+    return getHandle(approx1<Ty>(getArray<Ty>(in), getArray<Tp>(pos), method, offGrid));
 }
 
 template<typename Ty, typename Tp>
 static inline af_array approx2(const af_array in, const af_array pos0, const af_array pos1,
                                const af_interp_type method, const float offGrid)
 {
-    return getHandle(*approx2<Ty>(getArray<Ty>(in), getArray<Tp>(pos0), getArray<Tp>(pos1),
+    return getHandle(approx2<Ty>(getArray<Ty>(in), getArray<Tp>(pos0), getArray<Tp>(pos1),
                                  method, offGrid));
 }
 

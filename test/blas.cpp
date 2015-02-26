@@ -95,6 +95,15 @@ void MatMulCheck(string TestFile)
             FAIL();
         }
     }
+
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(a));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(aT));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(b));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(bT));
+
+    for (size_t i = 0; i <  out.size(); i++) {
+        ASSERT_EQ(AF_SUCCESS, af_destroy_array(out[i]));
+    }
 }
 
 TYPED_TEST(MatrixMultiply, Square)

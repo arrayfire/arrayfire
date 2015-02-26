@@ -17,7 +17,7 @@ namespace cuda
 {
 
     template<typename T, bool isDiff2>
-    static Array<T> *diff(const Array<T> &in, const int dim)
+    static Array<T> diff(const Array<T> &in, const int dim)
     {
         const af::dim4 iDims = in.dims();
         af::dim4 oDims = iDims;
@@ -27,16 +27,16 @@ namespace cuda
             AF_ERROR("Elements are 0", AF_ERR_SIZE);
         }
 
-        Array<T> *out = createEmptyArray<T>(oDims);
+        Array<T> out = createEmptyArray<T>(oDims);
 
         switch (dim) {
-            case (0):   kernel::diff<T, 0, isDiff2>(*out, in, in.ndims());
+            case (0):   kernel::diff<T, 0, isDiff2>(out, in, in.ndims());
                 break;
-            case (1):   kernel::diff<T, 1, isDiff2>(*out, in, in.ndims());
+            case (1):   kernel::diff<T, 1, isDiff2>(out, in, in.ndims());
                 break;
-            case (2):   kernel::diff<T, 2, isDiff2>(*out, in, in.ndims());
+            case (2):   kernel::diff<T, 2, isDiff2>(out, in, in.ndims());
                 break;
-            case (3):   kernel::diff<T, 3, isDiff2>(*out, in, in.ndims());
+            case (3):   kernel::diff<T, 3, isDiff2>(out, in, in.ndims());
                 break;
         }
 
@@ -44,20 +44,20 @@ namespace cuda
     }
 
     template<typename T>
-    Array<T> *diff1(const Array<T> &in, const int dim)
+    Array<T> diff1(const Array<T> &in, const int dim)
     {
         return diff<T, false>(in, dim);
     }
 
     template<typename T>
-    Array<T> *diff2(const Array<T> &in, const int dim)
+    Array<T> diff2(const Array<T> &in, const int dim)
     {
         return diff<T, true>(in, dim);
     }
 
 #define INSTANTIATE(T)                                                  \
-    template Array<T>* diff1<T>  (const Array<T> &in, const int dim);   \
-    template Array<T>* diff2<T>  (const Array<T> &in, const int dim);   \
+    template Array<T> diff1<T>  (const Array<T> &in, const int dim);   \
+    template Array<T> diff2<T>  (const Array<T> &in, const int dim);   \
 
 
     INSTANTIATE(float)

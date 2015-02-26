@@ -16,22 +16,22 @@
 namespace cuda
 {
     template<typename Ty, typename Tp>
-    Array<Ty> *approx1(const Array<Ty> &in, const Array<Tp> &pos,
-                       const af_interp_type method, const float offGrid)
+    Array<Ty> approx1(const Array<Ty> &in, const Array<Tp> &pos,
+                      const af_interp_type method, const float offGrid)
     {
         af::dim4 idims = in.dims();
         af::dim4 odims = in.dims();
         odims[0] = pos.dims()[0];
 
         // Create output placeholder
-        Array<Ty> *out = createEmptyArray<Ty>(odims);
+        Array<Ty> out = createEmptyArray<Ty>(odims);
 
         switch(method) {
             case AF_INTERP_NEAREST:
-                kernel::approx1<Ty, Tp, AF_INTERP_NEAREST> (*out, in, pos, offGrid);
+                kernel::approx1<Ty, Tp, AF_INTERP_NEAREST> (out, in, pos, offGrid);
                 break;
             case AF_INTERP_LINEAR:
-                kernel::approx1<Ty, Tp, AF_INTERP_LINEAR> (*out, in, pos, offGrid);
+                kernel::approx1<Ty, Tp, AF_INTERP_LINEAR> (out, in, pos, offGrid);
                 break;
             default:
                 break;
@@ -40,8 +40,8 @@ namespace cuda
     }
 
     template<typename Ty, typename Tp>
-    Array<Ty> *approx2(const Array<Ty> &in, const Array<Tp> &pos0, const Array<Tp> &pos1,
-                       const af_interp_type method, const float offGrid)
+    Array<Ty> approx2(const Array<Ty> &in, const Array<Tp> &pos0, const Array<Tp> &pos1,
+                      const af_interp_type method, const float offGrid)
     {
         af::dim4 idims = in.dims();
         af::dim4 odims = pos0.dims();
@@ -49,14 +49,14 @@ namespace cuda
         odims[3] = in.dims()[3];
 
         // Create output placeholder
-        Array<Ty> *out = createEmptyArray<Ty>(odims);
+        Array<Ty> out = createEmptyArray<Ty>(odims);
 
         switch(method) {
             case AF_INTERP_NEAREST:
-                kernel::approx2<Ty, Tp, AF_INTERP_NEAREST> (*out, in, pos0, pos1, offGrid);
+                kernel::approx2<Ty, Tp, AF_INTERP_NEAREST> (out, in, pos0, pos1, offGrid);
                 break;
             case AF_INTERP_LINEAR:
-                kernel::approx2<Ty, Tp, AF_INTERP_LINEAR> (*out, in, pos0, pos1, offGrid);
+                kernel::approx2<Ty, Tp, AF_INTERP_LINEAR> (out, in, pos0, pos1, offGrid);
                 break;
             default:
                 break;
@@ -64,12 +64,12 @@ namespace cuda
         return out;
     }
 
-#define INSTANTIATE(Ty, Tp)                                                                     \
-    template Array<Ty>* approx1<Ty, Tp>(const Array<Ty> &in, const Array<Tp> &pos,              \
-                                        const af_interp_type method, const float offGrid);      \
-    template Array<Ty>* approx2<Ty, Tp>(const Array<Ty> &in, const Array<Tp> &pos0,             \
-                                        const Array<Tp> &pos1, const af_interp_type method,     \
-                                        const float offGrid);                                   \
+#define INSTANTIATE(Ty, Tp)                                             \
+    template Array<Ty> approx1<Ty, Tp>(const Array<Ty> &in, const Array<Tp> &pos, \
+                                       const af_interp_type method, const float offGrid); \
+    template Array<Ty> approx2<Ty, Tp>(const Array<Ty> &in, const Array<Tp> &pos0, \
+                                       const Array<Tp> &pos1, const af_interp_type method, \
+                                       const float offGrid);            \
 
     INSTANTIATE(float  , float )
     INSTANTIATE(double , double)

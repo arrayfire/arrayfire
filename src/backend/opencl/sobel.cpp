@@ -21,21 +21,21 @@ namespace opencl
 {
 
 template<typename Ti, typename To>
-std::pair< Array<To>*, Array<To>* >
+std::pair< Array<To>, Array<To> >
 sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size)
 {
-    Array<To> *dx = createEmptyArray<To>(img.dims());
-    Array<To> *dy = createEmptyArray<To>(img.dims());
+    Array<To> dx = createEmptyArray<To>(img.dims());
+    Array<To> dy = createEmptyArray<To>(img.dims());
 
     switch(ker_size) {
-        case 3: kernel::sobel<Ti, To, 3>(*dx, *dy, img); break;
+        case 3: kernel::sobel<Ti, To, 3>(dx, dy, img); break;
     }
 
     return std::make_pair(dx, dy);
 }
 
-#define INSTANTIATE(Ti, To)                                                 \
-    template std::pair< Array<To>*, Array<To>* >                            \
+#define INSTANTIATE(Ti, To)                                             \
+    template std::pair< Array<To>, Array<To> >                            \
     sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size);
 
 INSTANTIATE(float , float)
@@ -46,4 +46,3 @@ INSTANTIATE(char  , int)
 INSTANTIATE(uchar , int)
 
 }
-

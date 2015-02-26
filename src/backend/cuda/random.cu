@@ -17,33 +17,33 @@
 namespace cuda
 {
     template<typename T>
-    Array<T>* randu(const af::dim4 &dims)
+    Array<T> randu(const af::dim4 &dims)
     {
-        Array<T>* out = createEmptyArray<T>(dims);
-        kernel::randu(out->get(), out->elements());
+        Array<T> out = createEmptyArray<T>(dims);
+        kernel::randu(out.get(), out.elements());
         return out;
     }
 
     template<typename T>
-    Array<T>* randn(const af::dim4 &dims)
+    Array<T> randn(const af::dim4 &dims)
     {
-        Array<T>* out  = createEmptyArray<T>(dims);
-        kernel::randn(out->get(), out->elements());
+        Array<T> out  = createEmptyArray<T>(dims);
+        kernel::randn(out.get(), out.elements());
         return out;
     }
 
-    template Array<float>  * randu<float>   (const af::dim4 &dims);
-    template Array<double> * randu<double>  (const af::dim4 &dims);
-    template Array<cfloat> * randu<cfloat>  (const af::dim4 &dims);
-    template Array<cdouble>* randu<cdouble> (const af::dim4 &dims);
-    template Array<int>    * randu<int>     (const af::dim4 &dims);
-    template Array<uint>   * randu<uint>    (const af::dim4 &dims);
-    template Array<char>   * randu<char>    (const af::dim4 &dims);
-    template Array<uchar>  * randu<uchar>   (const af::dim4 &dims);
+    template Array<float>   randu<float>   (const af::dim4 &dims);
+    template Array<double>  randu<double>  (const af::dim4 &dims);
+    template Array<cfloat>  randu<cfloat>  (const af::dim4 &dims);
+    template Array<cdouble> randu<cdouble> (const af::dim4 &dims);
+    template Array<int>     randu<int>     (const af::dim4 &dims);
+    template Array<uint>    randu<uint>    (const af::dim4 &dims);
+    template Array<char>    randu<char>    (const af::dim4 &dims);
+    template Array<uchar>   randu<uchar>   (const af::dim4 &dims);
 
-    template Array<float>  * randn<float>   (const af::dim4 &dims);
-    template Array<double> * randn<double>  (const af::dim4 &dims);
-    template Array<cfloat> * randn<cfloat>  (const af::dim4 &dims);
-    template Array<cdouble>* randn<cdouble> (const af::dim4 &dims);
+    template Array<float>   randn<float>   (const af::dim4 &dims);
+    template Array<double>  randn<double>  (const af::dim4 &dims);
+    template Array<cfloat>  randn<cfloat>  (const af::dim4 &dims);
+    template Array<cdouble> randn<cdouble> (const af::dim4 &dims);
 
 }

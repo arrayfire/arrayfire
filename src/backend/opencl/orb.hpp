@@ -22,4 +22,5 @@ unsigned orb(Array<float> &x, Array<float> &y, Array<float> &score,
              const Array<T>& image,
              const float fast_thr, const unsigned max_feat,
              const float scl_fctr, const unsigned levels);
+
 }

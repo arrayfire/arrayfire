@@ -16,7 +16,7 @@ namespace cuda
 {
 
 template<typename T>
-Array<T>* createScalarNode(const dim4 &size, const T val)
+Array<T> createScalarNode(const dim4 &size, const T val)
 {
     JIT::ScalarNode<T> *node = new JIT::ScalarNode<T>(val);
     return createNodeArray<T>(size, JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));

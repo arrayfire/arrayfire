@@ -20,7 +20,7 @@ using namespace detail;
 template<typename Tx, typename Ty>
 static inline af_array join(const int dim, const af_array first, const af_array second)
 {
-    return getHandle(*join<Tx, Ty>(dim, getArray<Tx>(first), getArray<Ty>(second)));
+    return getHandle(join<Tx, Ty>(dim, getArray<Tx>(first), getArray<Ty>(second)));
 }
 
 af_err af_join(af_array *out, const int dim, const af_array first, const af_array second)

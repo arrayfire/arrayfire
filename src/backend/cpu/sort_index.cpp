@@ -82,8 +82,8 @@ namespace cpu
     template<typename T, bool isAscending>
     void sort_index(Array<T> &val, Array<uint> &idx, const Array<T> &in, const uint dim)
     {
-        val = *createEmptyArray<T>(in.dims());
-        idx = *createEmptyArray<uint>(in.dims());
+        val = createEmptyArray<T>(in.dims());
+        idx = createEmptyArray<uint>(in.dims());
         switch(dim) {
             case 0: sort0_index<T, isAscending>(val, idx, in);
                     break;

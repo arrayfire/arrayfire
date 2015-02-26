@@ -25,24 +25,24 @@ static void orb(af_features& feat, af_array& descriptor,
                 const unsigned max_feat, const float scl_fctr,
                 const unsigned levels)
 {
-    Array<float> *x     = createEmptyArray<float>(dim4());
-    Array<float> *y     = createEmptyArray<float>(dim4());
-    Array<float> *score = createEmptyArray<float>(dim4());
-    Array<float> *ori   = createEmptyArray<float>(dim4());
-    Array<float> *size  = createEmptyArray<float>(dim4());
-    Array<uint > *desc  = createEmptyArray<uint >(dim4());
+    Array<float> x     = createEmptyArray<float>(dim4());
+    Array<float> y     = createEmptyArray<float>(dim4());
+    Array<float> score = createEmptyArray<float>(dim4());
+    Array<float> ori   = createEmptyArray<float>(dim4());
+    Array<float> size  = createEmptyArray<float>(dim4());
+    Array<uint > desc  = createEmptyArray<uint >(dim4());
 
-    feat.n = orb<T, convAccT>(*x, *y, *score, *ori, *size, *desc,
+    feat.n = orb<T, convAccT>(x, y, score, ori, size, desc,
                               getArray<T>(in), fast_thr, max_feat,
                               scl_fctr, levels);
 
-    feat.x           = getHandle(*x);
-    feat.y           = getHandle(*y);
-    feat.score       = getHandle(*score);
-    feat.orientation = getHandle(*ori);
-    feat.size        = getHandle(*size);
+    feat.x           = getHandle(x);
+    feat.y           = getHandle(y);
+    feat.score       = getHandle(score);
+    feat.orientation = getHandle(ori);
+    feat.size        = getHandle(size);
 
-    descriptor = getHandle<unsigned>(*desc);
+    descriptor = getHandle<unsigned>(desc);
 }
 
 af_err af_orb(af_features* feat, af_array* desc,

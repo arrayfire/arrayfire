@@ -68,7 +68,7 @@ namespace cpu
     }
 
     template<typename Tx, typename Ty>
-    Array<Tx> *join(const int dim, const Array<Tx> &first, const Array<Ty> &second)
+    Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second)
     {
         // All dimensions except join dimension must be equal
         // Compute output dims
@@ -84,24 +84,24 @@ namespace cpu
             }
         }
 
-        Array<Tx> *out = createEmptyArray<Tx>(odims);
+        Array<Tx> out = createEmptyArray<Tx>(odims);
 
-        Tx* outPtr = out->get();
+        Tx* outPtr = out.get();
         const Tx* fptr = first.get();
         const Ty* sptr = second.get();
 
         switch(dim) {
             case 0: join_<Tx, Ty, 0>(outPtr, fptr, sptr, odims, fdims, sdims,
-                                     out->strides(), first.strides(), second.strides());
+                                     out.strides(), first.strides(), second.strides());
                     break;
             case 1: join_<Tx, Ty, 1>(outPtr, fptr, sptr, odims, fdims, sdims,
-                                     out->strides(), first.strides(), second.strides());
+                                     out.strides(), first.strides(), second.strides());
                     break;
             case 2: join_<Tx, Ty, 2>(outPtr, fptr, sptr, odims, fdims, sdims,
-                                     out->strides(), first.strides(), second.strides());
+                                     out.strides(), first.strides(), second.strides());
                     break;
             case 3: join_<Tx, Ty, 3>(outPtr, fptr, sptr, odims, fdims, sdims,
-                                     out->strides(), first.strides(), second.strides());
+                                     out.strides(), first.strides(), second.strides());
                     break;
         }
 
@@ -109,7 +109,7 @@ namespace cpu
     }
 
 #define INSTANTIATE(Tx, Ty)                                                                             \
-    template Array<Tx>* join<Tx, Ty>(const int dim, const Array<Tx> &first, const Array<Ty> &second);   \
+    template Array<Tx> join<Tx, Ty>(const int dim, const Array<Tx> &first, const Array<Ty> &second);   \
 
     INSTANTIATE(float,   float)
     INSTANTIATE(double,  double)

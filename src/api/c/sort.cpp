@@ -29,9 +29,9 @@ static inline af_array sort(const af_array in, const unsigned dim, const bool is
 {
     const Array<T> &inArray = getArray<T>(in);
     if(isAscending) {
-        return getHandle(*sort<T, 1>(inArray, dim));
+        return getHandle(sort<T, 1>(inArray, dim));
     } else {
-        return getHandle(*sort<T, 0>(inArray, dim));
+        return getHandle(sort<T, 0>(inArray, dim));
     }
 }
 
@@ -70,16 +70,16 @@ static inline void sort_index(af_array *val, af_array *idx, const af_array in,
     const Array<T> &inArray = getArray<T>(in);
 
     // Initialize Dummy Arrays
-    Array<T> *valArray = createEmptyArray<T>(af::dim4());
-    Array<uint> *idxArray = createEmptyArray<uint>(af::dim4());
+    Array<T> valArray = createEmptyArray<T>(af::dim4());
+    Array<uint> idxArray = createEmptyArray<uint>(af::dim4());
 
     if(isAscending) {
-        sort_index<T, 1>(*valArray, *idxArray, inArray, dim);
+        sort_index<T, 1>(valArray, idxArray, inArray, dim);
     } else {
-        sort_index<T, 0>(*valArray, *idxArray, inArray, dim);
+        sort_index<T, 0>(valArray, idxArray, inArray, dim);
     }
-    *val = getHandle(*valArray);
-    *idx = getHandle(*idxArray);
+    *val = getHandle(valArray);
+    *idx = getHandle(idxArray);
 }
 
 af_err af_sort_index(af_array *out, af_array *indices, const af_array in, const unsigned dim, const bool isAscending)
@@ -120,16 +120,16 @@ static inline void sort_by_key(af_array *okey, af_array *oval, const af_array ik
     const Array<Tv> &ivalArray = getArray<Tv>(ival);
 
     // Initialize Dummy Arrays
-    Array<Tk> *okeyArray = createEmptyArray<Tk>(af::dim4());
-    Array<Tv> *ovalArray = createEmptyArray<Tv>(af::dim4());
+    Array<Tk> okeyArray = createEmptyArray<Tk>(af::dim4());
+    Array<Tv> ovalArray = createEmptyArray<Tv>(af::dim4());
 
     if(isAscending) {
-        sort_by_key<Tk, Tv, 1>(*okeyArray, *ovalArray, ikeyArray, ivalArray, dim);
+        sort_by_key<Tk, Tv, 1>(okeyArray, ovalArray, ikeyArray, ivalArray, dim);
     } else {
-        sort_by_key<Tk, Tv, 0>(*okeyArray, *ovalArray, ikeyArray, ivalArray, dim);
+        sort_by_key<Tk, Tv, 0>(okeyArray, ovalArray, ikeyArray, ivalArray, dim);
     }
-    *okey = getHandle(*okeyArray);
-    *oval = getHandle(*ovalArray);
+    *okey = getHandle(okeyArray);
+    *oval = getHandle(ovalArray);
 }
 
 template<typename Tk>
