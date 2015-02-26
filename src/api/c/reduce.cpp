@@ -26,7 +26,7 @@ using namespace detail;
 template<af_op_t op, typename Ti, typename To>
 static inline af_array reduce(const af_array in, const int dim)
 {
-    return getHandle(*reduce<op,Ti,To>(getArray<Ti>(in), dim));
+    return getHandle(reduce<op,Ti,To>(getArray<Ti>(in), dim));
 }
 
 template<af_op_t op, typename To>
@@ -336,12 +336,12 @@ static inline void ireduce(af_array *res, af_array *loc,
     dim4 odims = In.dims();
     odims[dim] = 1;
 
-    Array<T> *Res = createEmptyArray<T>(odims);
-    Array<uint> *Loc = createEmptyArray<uint>(odims);
-    ireduce<op, T>(*Res, *Loc, In, dim);
+    Array<T> Res = createEmptyArray<T>(odims);
+    Array<uint> Loc = createEmptyArray<uint>(odims);
+    ireduce<op, T>(Res, Loc, In, dim);
 
-    *res = getHandle(*Res);
-    *loc = getHandle(*Loc);
+    *res = getHandle(Res);
+    *loc = getHandle(Loc);
 }
 
 template<af_op_t op>

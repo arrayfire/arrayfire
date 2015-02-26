@@ -37,7 +37,7 @@ struct CastOp
 };
 
 template<typename To, typename Ti>
-Array<To>* cast(const Array<Ti> &in)
+Array<To> cast(const Array<Ti> &in)
 {
     CastOp<To, Ti> cop;
     JIT::Node_ptr in_node = in.getNode();

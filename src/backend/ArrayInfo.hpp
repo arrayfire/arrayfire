@@ -99,6 +99,8 @@ public:
     bool isInteger() const;
 
     bool isBool() const;
+
+    bool isLinear() const;
 };
 
 // Returns size and time info for an array object.

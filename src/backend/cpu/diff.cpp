@@ -23,7 +23,7 @@ namespace cpu
     }
 
     template<typename T>
-    Array<T>* diff1(const Array<T> &in, const int dim)
+    Array<T>  diff1(const Array<T> &in, const int dim)
     {
         // Bool for dimension
         bool is_dim0 = dim == 0;
@@ -36,11 +36,11 @@ namespace cpu
         dims[dim]--;
 
         // Create output placeholder
-        Array<T> *outArray = createValueArray(dims, (T)0);
+        Array<T> outArray = createValueArray(dims, (T)0);
 
         // Get pointers to raw data
         const T *inPtr = in.get();
-              T *outPtr = outArray->get();
+              T *outPtr = outArray.get();
 
         // TODO: Improve this
         for(dim_type l = 0; l < dims[3]; l++) {
@@ -52,7 +52,7 @@ namespace cpu
                         int jdx = getIdx(in.strides(), in.offsets(),
                                          i + is_dim0, j + is_dim1,
                                          k + is_dim2, l + is_dim3);
-                        int odx = getIdx(outArray->strides(), outArray->offsets(), i, j, k, l);
+                        int odx = getIdx(outArray.strides(), outArray.offsets(), i, j, k, l);
                         outPtr[odx] = inPtr[jdx] - inPtr[idx];
                     }
                 }
@@ -63,7 +63,7 @@ namespace cpu
     }
 
     template<typename T>
-    Array<T>* diff2(const Array<T> &in, const int dim)
+    Array<T>  diff2(const Array<T> &in, const int dim)
     {
         // Bool for dimension
         bool is_dim0 = dim == 0;
@@ -76,11 +76,11 @@ namespace cpu
         dims[dim] -= 2;
 
         // Create output placeholder
-        Array<T> *outArray = createValueArray(dims, (T)0);
+        Array<T> outArray = createValueArray(dims, (T)0);
 
         // Get pointers to raw data
         const T *inPtr = in.get();
-              T *outPtr = outArray->get();
+              T *outPtr = outArray.get();
 
         // TODO: Improve this
         for(dim_type l = 0; l < dims[3]; l++) {
@@ -95,7 +95,7 @@ namespace cpu
                         int kdx = getIdx(in.strides(), in.offsets(),
                                          i + 2 * is_dim0, j + 2 * is_dim1,
                                          k + 2 * is_dim2, l + 2 * is_dim3);
-                        int odx = getIdx(outArray->strides(), outArray->offsets(), i, j, k, l);
+                        int odx = getIdx(outArray.strides(), outArray.offsets(), i, j, k, l);
                         outPtr[odx] = inPtr[kdx] + inPtr[idx] - inPtr[jdx] - inPtr[jdx];
                     }
                 }
@@ -106,8 +106,8 @@ namespace cpu
     }
 
 #define INSTANTIATE(T)                                                  \
-    template Array<T>* diff1<T>  (const Array<T> &in, const int dim);   \
-    template Array<T>* diff2<T>  (const Array<T> &in, const int dim);   \
+    template Array<T>  diff1<T>  (const Array<T> &in, const int dim);   \
+    template Array<T>  diff2<T>  (const Array<T> &in, const int dim);   \
 
 
     INSTANTIATE(float)

@@ -21,16 +21,16 @@
 namespace opencl
 {
     template<af_op_t op, typename Ti, typename To>
-    Array<To>* scan(const Array<Ti>& in, const int dim)
+    Array<To> scan(const Array<Ti>& in, const int dim)
     {
         if ((std::is_same<Ti, double>::value || std::is_same<Ti, cdouble>::value) &&
             !isDoubleSupported(getActiveDeviceId())) {
             OPENCL_NOT_SUPPORTED();
         }
-        Array<To> *out = createEmptyArray<To>(in.dims());
+        Array<To> out = createEmptyArray<To>(in.dims());
 
         try {
-            Param Out = *out;
+            Param Out = out;
             Param In  =   in;
             switch (dim) {
             case 0: kernel::scan_first<Ti, To, op   >(Out, In); break;
@@ -47,7 +47,7 @@ namespace opencl
     }
 
 #define INSTANTIATE(ROp, Ti, To)                                        \
-    template Array<To>* scan<ROp, Ti, To>(const Array<Ti>& in, const int dim); \
+    template Array<To> scan<ROp, Ti, To>(const Array<Ti>& in, const int dim); \
 
     //accum
     INSTANTIATE(af_add_t, float  , float  )

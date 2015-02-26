@@ -21,7 +21,7 @@ using namespace detail;
 template<typename inType, typename outType, bool isColor>
 static inline af_array bilateral(const af_array &in, const float &sp_sig, const float &chr_sig)
 {
-    return getHandle(*bilateral<inType, outType, isColor>(getArray<inType>(in), sp_sig, chr_sig));
+    return getHandle(bilateral<inType, outType, isColor>(getArray<inType>(in), sp_sig, chr_sig));
 }
 
 template<bool isColor>

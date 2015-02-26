@@ -21,7 +21,7 @@ using namespace detail;
 template<typename T>
 static inline af_array setUnique(const af_array in, const bool is_sorted)
 {
-    return getHandle(*setUnique(getArray<T>(in), is_sorted));
+    return getHandle(setUnique(getArray<T>(in), is_sorted));
 }
 
 af_err af_set_unique(af_array *out, const af_array in, const bool is_sorted)
@@ -51,7 +51,7 @@ af_err af_set_unique(af_array *out, const af_array in, const bool is_sorted)
 template<typename T>
 static inline af_array setUnion(const af_array first, const af_array second, const bool is_unique)
 {
-    return getHandle(*setUnion(getArray<T>(first), getArray<T>(second), is_unique));
+    return getHandle(setUnion(getArray<T>(first), getArray<T>(second), is_unique));
 }
 
 af_err af_set_union(af_array *out, const af_array first, const af_array second, const bool is_unique)
@@ -83,7 +83,7 @@ af_err af_set_union(af_array *out, const af_array first, const af_array second, 
 template<typename T>
 static inline af_array setIntersect(const af_array first, const af_array second, const bool is_unique)
 {
-    return getHandle(*setIntersect(getArray<T>(first), getArray<T>(second), is_unique));
+    return getHandle(setIntersect(getArray<T>(first), getArray<T>(second), is_unique));
 }
 
 af_err af_set_intersect(af_array *out, const af_array first, const af_array second, const bool is_unique)

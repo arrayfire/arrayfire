@@ -21,7 +21,7 @@ using namespace detail;
 template<typename T>
 static af_array regions(af_array const &in, af_connectivity connectivity)
 {
-    return getHandle<T>(*regions<T>(getArray<uchar>(in), connectivity));
+    return getHandle<T>(regions<T>(getArray<uchar>(in), connectivity));
 }
 
 af_err af_regions(af_array *out, const af_array in, af_connectivity connectivity, af_dtype type)

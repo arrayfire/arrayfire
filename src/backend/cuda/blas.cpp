@@ -139,8 +139,8 @@ BLAS_FUNC(dot, double, D)
 using namespace std;
 
 template<typename T>
-Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
-                    af_blas_transpose optLhs, af_blas_transpose optRhs)
+Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
+                af_blas_transpose optLhs, af_blas_transpose optRhs)
 {
     cublasOperation_t lOpts = toCblasTranspose(optLhs);
     cublasOperation_t rOpts = toCblasTranspose(optRhs);
@@ -155,7 +155,7 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
     int N = rDims[bColDim];
     int K = lDims[aColDim];
 
-    Array<T> *out = createEmptyArray<T>(af::dim4(M, N, 1, 1));
+    Array<T> out = createEmptyArray<T>(af::dim4(M, N, 1, 1));
     T alpha = scalar<T>(1);
     T beta  = scalar<T>(0);
 
@@ -168,7 +168,7 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
             M, N,
             &alpha, lhs.get(),   lStrides[1],
                     rhs.get(),   rStrides[0],
-            &beta , out->get(),            1);
+            &beta , out.get(),            1);
     } else {
         cublasStatus_t err =
             gemm_func<T>()(
@@ -176,7 +176,7 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
                 M, N, K,
                 &alpha, lhs.get(),  lStrides[1],
                         rhs.get(),  rStrides[1],
-                &beta , out->get(), out->dims()[0]);
+                &beta , out.get(), out.dims()[0]);
 
         if(err != CUBLAS_STATUS_SUCCESS) {
             std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cublasErrorString(err) << std::endl;
@@ -188,8 +188,8 @@ Array<T>* matmul(const Array<T> &lhs, const Array<T> &rhs,
 }
 
 template<typename T>
-Array<T>* dot(const Array<T> &lhs, const Array<T> &rhs,
-                    af_blas_transpose optLhs, af_blas_transpose optRhs)
+Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
+             af_blas_transpose optLhs, af_blas_transpose optRhs)
 {
     int N = lhs.dims()[0];
 
@@ -203,8 +203,8 @@ Array<T>* dot(const Array<T> &lhs, const Array<T> &rhs,
 }
 
 #define INSTANTIATE_BLAS(TYPE)                                                          \
-    template Array<TYPE>* matmul<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs,  \
-                    af_blas_transpose optLhs, af_blas_transpose optRhs);
+    template Array<TYPE> matmul<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs,  \
+                                      af_blas_transpose optLhs, af_blas_transpose optRhs);
 
 INSTANTIATE_BLAS(float)
 INSTANTIATE_BLAS(cfloat)
@@ -212,12 +212,8 @@ INSTANTIATE_BLAS(double)
 INSTANTIATE_BLAS(cdouble)
 
 #define INSTANTIATE_DOT(TYPE)                                                       \
-    template Array<TYPE>* dot<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs, \
-                    af_blas_transpose optLhs, af_blas_transpose optRhs);
-
-template<typename T>
-Array<T>* dot(const Array<T> &lhs, const Array<T> &rhs,
-                    af_blas_transpose optLhs, af_blas_transpose optRhs);
+    template Array<TYPE> dot<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs, \
+                                   af_blas_transpose optLhs, af_blas_transpose optRhs);
 
 INSTANTIATE_DOT(float)
 INSTANTIATE_DOT(double)

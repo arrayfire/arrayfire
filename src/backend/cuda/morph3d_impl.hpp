@@ -21,7 +21,7 @@ namespace cuda
 {
 
 template<typename T, bool isDilation>
-Array<T> * morph3d(const Array<T> &in, const Array<T> &mask)
+Array<T> morph3d(const Array<T> &in, const Array<T> &mask)
 {
     const dim4 mdims = mask.dims();
 
@@ -35,16 +35,16 @@ Array<T> * morph3d(const Array<T> &in, const Array<T> &mask)
         AF_ERROR("Batch not supported for volumetic morph operations in CUDA backend",
                  AF_ERR_NOT_SUPPORTED);
 
-    Array<T>* out       = createEmptyArray<T>(in.dims());
+    Array<T> out       = createEmptyArray<T>(in.dims());
 
     CUDA_CHECK(cudaMemcpyToSymbol(kernel::cFilter, mask.get(),
                                   mdims[0] * mdims[1] *mdims[2] * sizeof(T),
                                   0, cudaMemcpyDeviceToDevice));
 
     if (isDilation)
-        kernel::morph3d<T, true >(*out, in, mdims[0]);
+        kernel::morph3d<T, true >(out, in, mdims[0]);
     else
-        kernel::morph3d<T, false>(*out, in, mdims[0]);
+        kernel::morph3d<T, false>(out, in, mdims[0]);
 
     return out;
 }
@@ -52,4 +52,4 @@ Array<T> * morph3d(const Array<T> &in, const Array<T> &mask)
 }
 
 #define INSTANTIATE(T, ISDILATE)                                        \
-    template Array<T> * morph3d<T, ISDILATE>(const Array<T> &in, const Array<T> &mask);
+    template Array<T> morph3d<T, ISDILATE>(const Array<T> &in, const Array<T> &mask);

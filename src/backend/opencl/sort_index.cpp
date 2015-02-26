@@ -26,8 +26,8 @@ namespace opencl
         }
 
         try {
-            val = *copyArray<T>(in);
-            idx = *createEmptyArray<uint>(in.dims());
+            val = copyArray<T>(in);
+            idx = createEmptyArray<uint>(in.dims());
 
             switch(dim) {
             case 0: kernel::sort0_index<T, isAscending>(val, idx);

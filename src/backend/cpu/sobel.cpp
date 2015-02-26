@@ -80,20 +80,20 @@ void derivative(To *optr, Ti const *iptr, dim4 const &dims, dim4 const &strides)
 }
 
 template<typename Ti, typename To>
-std::pair< Array<To>*, Array<To>* >
+std::pair< Array<To>, Array<To> >
 sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size)
 {
-    Array<To> *dx = createEmptyArray<To>(img.dims());
-    Array<To> *dy = createEmptyArray<To>(img.dims());
+    Array<To> dx = createEmptyArray<To>(img.dims());
+    Array<To> dy = createEmptyArray<To>(img.dims());
 
-    derivative<Ti, To, true >(dx->get(), img.get(), img.dims(), img.strides());
-    derivative<Ti, To, false>(dy->get(), img.get(), img.dims(), img.strides());
+    derivative<Ti, To, true >(dx.get(), img.get(), img.dims(), img.strides());
+    derivative<Ti, To, false>(dy.get(), img.get(), img.dims(), img.strides());
 
     return std::make_pair(dx, dy);
 }
 
 #define INSTANTIATE(Ti, To)                                                 \
-    template std::pair< Array<To>*, Array<To>* >                            \
+    template std::pair< Array<To>, Array<To> >                            \
     sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size);
 
 INSTANTIATE(float , float)

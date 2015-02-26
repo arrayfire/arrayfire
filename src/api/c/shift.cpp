@@ -20,7 +20,7 @@ using namespace detail;
 template<typename T>
 static inline af_array shift(const af_array in, const af::dim4 &sdims)
 {
-    return getHandle(*shift<T>(getArray<T>(in), sdims));
+    return getHandle(shift<T>(getArray<T>(in), sdims));
 }
 
 af_err af_shift(af_array *out, const af_array in, const af::dim4 &sdims)

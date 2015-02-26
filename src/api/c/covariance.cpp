@@ -27,34 +27,24 @@ using namespace detail;
 template<typename T, typename cType>
 static af_array cov(const af_array& X, const af_array& Y, bool isbiased)
 {
-    Array<cType> *xArr = cast<cType>(getArray<T>(X));
-    Array<cType> *yArr = cast<cType>(getArray<T>(Y));
+    Array<cType> xArr = cast<cType>(getArray<T>(X));
+    Array<cType> yArr = cast<cType>(getArray<T>(Y));
 
-    dim4 xDims = xArr->dims();
+    dim4 xDims = xArr.dims();
     dim_type N = isbiased ? xDims[0] : xDims[0]-1;
 
-    Array<cType>* xmArr = createValueArray<cType>(xDims, mean<cType>(*xArr));
-    Array<cType>* ymArr = createValueArray<cType>(xDims, mean<cType>(*yArr));
-    Array<cType>* nArr  = createValueArray<cType>(xDims, scalar<cType>(N));
+    Array<cType> xmArr = createValueArray<cType>(xDims, mean<cType>(xArr));
+    Array<cType> ymArr = createValueArray<cType>(xDims, mean<cType>(yArr));
+    Array<cType> nArr  = createValueArray<cType>(xDims, scalar<cType>(N));
 
-    Array<cType>* diffX = detail::arithOp<cType, af_sub_t>(*xArr, *xmArr, xDims);
-    Array<cType>* diffY = detail::arithOp<cType, af_sub_t>(*yArr, *ymArr, xDims);
-    Array<cType>* mulXY = detail::arithOp<cType, af_mul_t>(*diffX, *diffY, xDims);
-    Array<cType>* redArr= detail::reduce<af_add_t, cType, cType>(*mulXY, 0);
+    Array<cType> diffX = detail::arithOp<cType, af_sub_t>(xArr, xmArr, xDims);
+    Array<cType> diffY = detail::arithOp<cType, af_sub_t>(yArr, ymArr, xDims);
+    Array<cType> mulXY = detail::arithOp<cType, af_mul_t>(diffX, diffY, xDims);
+    Array<cType> redArr= detail::reduce<af_add_t, cType, cType>(mulXY, 0);
     xDims[0] = 1;
-    Array<cType>* result= detail::arithOp<cType, af_div_t>(*redArr, *nArr, xDims);
+    Array<cType> result= detail::arithOp<cType, af_div_t>(redArr, nArr, xDims);
 
-    destroyArray<cType>(*redArr);
-    destroyArray<cType>(*mulXY);
-    destroyArray<cType>(*diffY);
-    destroyArray<cType>(*diffX);
-    destroyArray<cType>(*nArr);
-    destroyArray<cType>(*ymArr);
-    destroyArray<cType>(*xmArr);
-    destroyArray<cType>(*yArr);
-    destroyArray<cType>(*xArr);
-
-    return getHandle<cType>(*result);
+    return getHandle<cType>(result);
 }
 
 af_err af_cov(af_array* out, const af_array X, const af_array Y, bool isbiased)

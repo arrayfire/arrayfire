@@ -19,32 +19,32 @@
 namespace cuda
 {
     template<typename T>
-    Array<T>* diagCreate(const Array<T> &in, const int num)
+    Array<T> diagCreate(const Array<T> &in, const int num)
     {
         int size = in.dims()[0] + std::abs(num);
         int batch = in.dims()[1];
-        Array<T> *out = createEmptyArray<T>(dim4(size, size, batch));
+        Array<T> out = createEmptyArray<T>(dim4(size, size, batch));
 
-        kernel::diagCreate<T>(*out, in, num);
+        kernel::diagCreate<T>(out, in, num);
 
         return out;
     }
 
     template<typename T>
-    Array<T>* diagExtract(const Array<T> &in, const int num)
+    Array<T> diagExtract(const Array<T> &in, const int num)
     {
         const dim_type *idims = in.dims().get();
         dim_type size = std::max(idims[0], idims[1]) - std::abs(num);
-        Array<T> *out = createEmptyArray<T>(dim4(size, 1, idims[2], idims[3]));
+        Array<T> out = createEmptyArray<T>(dim4(size, 1, idims[2], idims[3]));
 
-        kernel::diagExtract<T>(*out, in, num);
+        kernel::diagExtract<T>(out, in, num);
 
         return out;
     }
 
 #define INSTANTIATE_DIAGONAL(T)                                          \
-    template Array<T>*  diagExtract<T>    (const Array<T> &in, const int num); \
-    template Array<T>*  diagCreate <T>    (const Array<T> &in, const int num);
+    template Array<T>  diagExtract<T>    (const Array<T> &in, const int num); \
+    template Array<T>  diagCreate <T>    (const Array<T> &in, const int num);
 
     INSTANTIATE_DIAGONAL(float)
     INSTANTIATE_DIAGONAL(double)

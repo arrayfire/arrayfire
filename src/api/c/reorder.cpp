@@ -21,7 +21,7 @@ using namespace detail;
 template<typename T>
 static inline af_array reorder(const af_array in, const af::dim4 &rdims)
 {
-    return getHandle(*reorder<T>(getArray<T>(in), rdims));
+    return getHandle(reorder<T>(getArray<T>(in), rdims));
 }
 
 af_err af_reorder(af_array *out, const af_array in, const af::dim4 &rdims)

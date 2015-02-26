@@ -115,7 +115,7 @@ template<typename To, typename Ti>
 static inline af_array createCplx(dim4 dims, const Ti real, const Ti imag)
 {
     To cval = scalar<To, Ti>(real, imag);
-    af_array out = getHandle(*createValueArray<To>(dims, cval));
+    af_array out = getHandle(createValueArray<To>(dims, cval));
     return out;
 }
 
@@ -155,7 +155,7 @@ af_err af_constant_long(af_array *result, const intl val,
             d[i] = dims[i];
         }
 
-        out = getHandle(*createValueArray<intl>(d, val));
+        out = getHandle(createValueArray<intl>(d, val));
 
         std::swap(*result, out);
     } CATCHALL;
@@ -175,7 +175,7 @@ af_err af_constant_ulong(af_array *result, const uintl val,
             d[i] = dims[i];
         }
 
-        out = getHandle(*createValueArray<uintl>(d, val));
+        out = getHandle(createValueArray<uintl>(d, val));
 
         std::swap(*result, out);
     } CATCHALL;
@@ -243,19 +243,19 @@ af_err af_copy_array(af_array *out, const af_array in)
 template<typename T>
 static inline af_array randn_(const af::dim4 &dims)
 {
-    return getHandle(*randn<T>(dims));
+    return getHandle(randn<T>(dims));
 }
 
 template<typename T>
 static inline af_array randu_(const af::dim4 &dims)
 {
-    return getHandle(*randu<T>(dims));
+    return getHandle(randu<T>(dims));
 }
 
 template<typename T>
 static inline af_array identity_(const af::dim4 &dims)
 {
-    return getHandle(*detail::identity<T>(dims));
+    return getHandle(detail::identity<T>(dims));
 }
 
 af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
@@ -370,7 +370,7 @@ template<typename T>
 static af_array weakCopyHandle(const af_array in)
 {
     detail::Array<T> *A = reinterpret_cast<detail::Array<T> *>(in);
-    detail::Array<T> *out = detail::createEmptyArray<T>(af::dim4());
+    detail::Array<T> *out = detail::initArray<T>();
     *out= *A;
     return reinterpret_cast<af_array>(out);
 }
@@ -405,7 +405,7 @@ af_err af_weak_copy(af_array *out, const af_array in)
 template<typename T>
 static inline af_array iota_(const dim4& d, const unsigned rep)
 {
-    return getHandle(*iota<T>(d, rep));
+    return getHandle(iota<T>(d, rep));
 }
 
 //Strong Exception Guarantee
@@ -499,7 +499,7 @@ af_err af_get_numdims(unsigned *nd, const af_array in)
 template<typename T>
 static inline void eval(af_array arr)
 {
-    getArray<T>(arr).eval();
+    evalArray(getArray<T>(arr));
     return;
 }
 
@@ -529,13 +529,13 @@ af_err af_eval(af_array arr)
 template<typename T>
 static inline af_array diagCreate(const af_array in, const int num)
 {
-    return getHandle(*diagCreate<T>(getArray<T>(in), num));
+    return getHandle(diagCreate<T>(getArray<T>(in), num));
 }
 
 template<typename T>
 static inline af_array diagExtract(const af_array in, const int num)
 {
-    return getHandle(*diagExtract<T>(getArray<T>(in), num));
+    return getHandle(diagExtract<T>(getArray<T>(in), num));
 }
 
 af_err af_diag_create(af_array *out, const af_array in, const int num)

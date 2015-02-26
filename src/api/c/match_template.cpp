@@ -22,16 +22,16 @@ static
 af_array match_template(const af_array &sImg, const af_array tImg, af_match_type mType)
 {
     switch(mType) {
-        case AF_SAD : return getHandle(*match_template<inType, outType, AF_SAD >(getArray<inType>(sImg), getArray<inType>(tImg)));
-        case AF_ZSAD: return getHandle(*match_template<inType, outType, AF_ZSAD>(getArray<inType>(sImg), getArray<inType>(tImg)));
-        case AF_LSAD: return getHandle(*match_template<inType, outType, AF_LSAD>(getArray<inType>(sImg), getArray<inType>(tImg)));
-        case AF_SSD : return getHandle(*match_template<inType, outType, AF_SSD >(getArray<inType>(sImg), getArray<inType>(tImg)));
-        case AF_ZSSD: return getHandle(*match_template<inType, outType, AF_ZSSD>(getArray<inType>(sImg), getArray<inType>(tImg)));
-        case AF_LSSD: return getHandle(*match_template<inType, outType, AF_LSSD>(getArray<inType>(sImg), getArray<inType>(tImg)));
-        case AF_NCC : return getHandle(*match_template<inType, outType, AF_NCC >(getArray<inType>(sImg), getArray<inType>(tImg)));
-        case AF_ZNCC: return getHandle(*match_template<inType, outType, AF_ZNCC>(getArray<inType>(sImg), getArray<inType>(tImg)));
-        case AF_SHD : return getHandle(*match_template<inType, outType, AF_SHD >(getArray<inType>(sImg), getArray<inType>(tImg)));
-        default:      return getHandle(*match_template<inType, outType, AF_SAD >(getArray<inType>(sImg), getArray<inType>(tImg)));
+        case AF_SAD : return getHandle(match_template<inType, outType, AF_SAD >(getArray<inType>(sImg), getArray<inType>(tImg)));
+        case AF_ZSAD: return getHandle(match_template<inType, outType, AF_ZSAD>(getArray<inType>(sImg), getArray<inType>(tImg)));
+        case AF_LSAD: return getHandle(match_template<inType, outType, AF_LSAD>(getArray<inType>(sImg), getArray<inType>(tImg)));
+        case AF_SSD : return getHandle(match_template<inType, outType, AF_SSD >(getArray<inType>(sImg), getArray<inType>(tImg)));
+        case AF_ZSSD: return getHandle(match_template<inType, outType, AF_ZSSD>(getArray<inType>(sImg), getArray<inType>(tImg)));
+        case AF_LSSD: return getHandle(match_template<inType, outType, AF_LSSD>(getArray<inType>(sImg), getArray<inType>(tImg)));
+        case AF_NCC : return getHandle(match_template<inType, outType, AF_NCC >(getArray<inType>(sImg), getArray<inType>(tImg)));
+        case AF_ZNCC: return getHandle(match_template<inType, outType, AF_ZNCC>(getArray<inType>(sImg), getArray<inType>(tImg)));
+        case AF_SHD : return getHandle(match_template<inType, outType, AF_SHD >(getArray<inType>(sImg), getArray<inType>(tImg)));
+        default:      return getHandle(match_template<inType, outType, AF_SAD >(getArray<inType>(sImg), getArray<inType>(tImg)));
     }
 }
 

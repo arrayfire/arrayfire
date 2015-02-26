@@ -13,5 +13,5 @@
 namespace cpu
 {
     template<typename T>
-    Array<T> *identity(const dim4& dim);
+    Array<T> identity(const dim4& dim);
 }
