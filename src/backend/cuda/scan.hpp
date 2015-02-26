@@ -14,5 +14,5 @@
 namespace cuda
 {
     template<af_op_t op, typename Ti, typename To>
-    Array<To>* scan(const Array<Ti>& in, const int dim);
+    Array<To> scan(const Array<Ti>& in, const int dim);
 }

@@ -48,6 +48,7 @@ static const dim_type CUBE_Z    =  4;
 static const dim_type MAX_CONV1_FILTER_LEN = 129;
 static const dim_type MAX_CONV2_FILTER_LEN = 17;
 static const dim_type MAX_CONV3_FILTER_LEN = 5;
+static const dim_type MAX_SCONV_FILTER_LEN = 81;
 
 template<typename T, dim_type baseDim>
 void prepareKernelArgs(NDRange &global, NDRange &local, size_t &loc_size, dim_type &blk_x,

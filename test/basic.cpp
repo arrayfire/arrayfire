@@ -34,6 +34,8 @@ TEST(BasicTests, constant1000x1000)
     for(size_t i = 0; i < elements; i++) {
         ASSERT_FLOAT_EQ(valA, h_a[i]);
     }
+
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(a));
 }
 
 TEST(BasicTests, constant10x10)
@@ -55,6 +57,8 @@ TEST(BasicTests, constant10x10)
     for(size_t i = 0; i < elements; i++) {
         ASSERT_FLOAT_EQ(valA, h_a[i]);
     }
+
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(a));
 }
 
 TEST(BasicTests, constant100x100)
@@ -76,6 +80,8 @@ TEST(BasicTests, constant100x100)
     for(size_t i = 0; i < elements; i++) {
         ASSERT_FLOAT_EQ(valA, h_a[i]);
     }
+
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(a));
 }
 
 //TODO: Test All The Types \o/
@@ -119,6 +125,13 @@ TEST(BasicTests, AdditionSameType)
         err = err + df * df;
     }
     ASSERT_NEAR(0.0f, err, 1e-8);
+
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(af32));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(af64));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(bf32));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(bf64));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(cf32));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(cf64));
 }
 
 TEST(BasicTests, Additionf64f64)
@@ -151,6 +164,11 @@ TEST(BasicTests, Additionf64f64)
         err = err + df * df;
     }
     ASSERT_NEAR(0.0f, err, 1e-8);
+
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(a));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(b));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(c));
+
 }
 
 TEST(BasicTests, Additionf32f64)
@@ -184,6 +202,10 @@ TEST(BasicTests, Additionf32f64)
         err = err + df * df;
     }
     ASSERT_NEAR(0.0f, err, 1e-8);
+
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(a));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(b));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(c));
 }
 
 TEST(BasicArrayTests, constant10x10)

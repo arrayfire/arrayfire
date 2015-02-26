@@ -17,8 +17,8 @@
 namespace opencl
 {
     template<typename T>
-    Array<T>* resize(const Array<T> &in, const dim_type odim0, const dim_type odim1,
-                     const af_interp_type method)
+    Array<T> resize(const Array<T> &in, const dim_type odim0, const dim_type odim1,
+                    const af_interp_type method)
     {
         if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
             !isDoubleSupported(getActiveDeviceId())) {
@@ -31,14 +31,14 @@ namespace opencl
             throw std::runtime_error("Elements is 0");
         }
 
-        Array<T> *out = createEmptyArray<T>(oDims);
+        Array<T> out = createEmptyArray<T>(oDims);
 
         switch(method) {
             case AF_INTERP_NEAREST:
-                kernel::resize<T, AF_INTERP_NEAREST> (*out, in);
+                kernel::resize<T, AF_INTERP_NEAREST> (out, in);
                 break;
             case AF_INTERP_BILINEAR:
-                kernel::resize<T, AF_INTERP_BILINEAR>(*out, in);
+                kernel::resize<T, AF_INTERP_BILINEAR>(out, in);
                 break;
             default:
                 break;
@@ -47,9 +47,10 @@ namespace opencl
     }
 
 
-#define INSTANTIATE(T)                                                                            \
-    template Array<T>* resize<T> (const Array<T> &in, const dim_type odim0, const dim_type odim1, \
-                                  const af_interp_type method);
+#define INSTANTIATE(T)                                                  \
+    template Array<T> resize<T> (const Array<T> &in,                    \
+                                 const dim_type odim0, const dim_type odim1, \
+                                 const af_interp_type method);
 
 
     INSTANTIATE(float)

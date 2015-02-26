@@ -17,24 +17,25 @@
 namespace opencl
 {
     template<typename T>
-    Array<T>* transform(const Array<T> &in, const Array<float> &transform, const af::dim4 &odims,
-                        const af_interp_type method, const bool inverse)
+    Array<T> transform(const Array<T> &in, const Array<float> &transform,
+                       const af::dim4 &odims,
+                       const af_interp_type method, const bool inverse)
     {
         if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
             !isDoubleSupported(getActiveDeviceId())) {
             OPENCL_NOT_SUPPORTED();
         }
-        Array<T> *out = createEmptyArray<T>(odims);
+        Array<T> out = createEmptyArray<T>(odims);
 
         if(inverse) {
             switch(method) {
                 case AF_INTERP_NEAREST:
                     kernel::transform<T, true, AF_INTERP_NEAREST>
-                                     (*out, in, transform);
+                                     (out, in, transform);
                     break;
                 case AF_INTERP_BILINEAR:
                     kernel::transform<T, true, AF_INTERP_BILINEAR>
-                                     (*out, in, transform);
+                                     (out, in, transform);
                     break;
                 default:
                     AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
@@ -44,11 +45,11 @@ namespace opencl
             switch(method) {
                 case AF_INTERP_NEAREST:
                     kernel::transform<T, false, AF_INTERP_NEAREST>
-                                     (*out, in, transform);
+                                     (out, in, transform);
                     break;
                 case AF_INTERP_BILINEAR:
                     kernel::transform<T, false, AF_INTERP_BILINEAR>
-                                     (*out, in, transform);
+                                     (out, in, transform);
                     break;
                 default:
                     AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
@@ -60,10 +61,10 @@ namespace opencl
     }
 
 
-#define INSTANTIATE(T)                                                                          \
-    template Array<T>* transform(const Array<T> &in, const Array<float> &transform,             \
-                                 const af::dim4 &odims, const af_interp_type method,            \
-                                 const bool inverse);                                           \
+#define INSTANTIATE(T)                                                  \
+    template Array<T> transform(const Array<T> &in, const Array<float> &transform, \
+                                const af::dim4 &odims, const af_interp_type method, \
+                                const bool inverse);                    \
 
 
     INSTANTIATE(float)
@@ -74,4 +75,3 @@ namespace opencl
     INSTANTIATE(uint)
     INSTANTIATE(uchar)
 }
-

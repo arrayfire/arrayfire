@@ -22,7 +22,7 @@ namespace opencl
 {
 
 template<typename T, bool isDilation>
-Array<T> * morph(const Array<T> &in, const Array<T> &mask)
+Array<T> morph(const Array<T> &in, const Array<T> &mask)
 {
     if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
         !isDoubleSupported(getActiveDeviceId())) {
@@ -36,19 +36,19 @@ Array<T> * morph(const Array<T> &in, const Array<T> &mask)
         AF_ERROR("Upto 19x19 square kernels are only supported in opencl currently", AF_ERR_SIZE);
 
     const dim4 dims = in.dims();
-    Array<T>* out   = createEmptyArray<T>(dims);
+    Array<T> out   = createEmptyArray<T>(dims);
 
     switch(mdims[0]) {
-        case  3: kernel::morph<T, isDilation,  3>(*out, in, mask); break;
-        case  5: kernel::morph<T, isDilation,  5>(*out, in, mask); break;
-        case  7: kernel::morph<T, isDilation,  7>(*out, in, mask); break;
-        case  9: kernel::morph<T, isDilation,  9>(*out, in, mask); break;
-        case 11: kernel::morph<T, isDilation, 11>(*out, in, mask); break;
-        case 13: kernel::morph<T, isDilation, 13>(*out, in, mask); break;
-        case 15: kernel::morph<T, isDilation, 15>(*out, in, mask); break;
-        case 17: kernel::morph<T, isDilation, 17>(*out, in, mask); break;
-        case 19: kernel::morph<T, isDilation, 19>(*out, in, mask); break;
-        default: kernel::morph<T, isDilation,  3>(*out, in, mask); break;
+        case  3: kernel::morph<T, isDilation,  3>(out, in, mask); break;
+        case  5: kernel::morph<T, isDilation,  5>(out, in, mask); break;
+        case  7: kernel::morph<T, isDilation,  7>(out, in, mask); break;
+        case  9: kernel::morph<T, isDilation,  9>(out, in, mask); break;
+        case 11: kernel::morph<T, isDilation, 11>(out, in, mask); break;
+        case 13: kernel::morph<T, isDilation, 13>(out, in, mask); break;
+        case 15: kernel::morph<T, isDilation, 15>(out, in, mask); break;
+        case 17: kernel::morph<T, isDilation, 17>(out, in, mask); break;
+        case 19: kernel::morph<T, isDilation, 19>(out, in, mask); break;
+        default: kernel::morph<T, isDilation,  3>(out, in, mask); break;
     }
 
     return out;
@@ -57,4 +57,4 @@ Array<T> * morph(const Array<T> &in, const Array<T> &mask)
 }
 
 #define INSTANTIATE(T, ISDILATE)                                                 \
-    template Array<T> * morph  <T, ISDILATE>(const Array<T> &in, const Array<T> &mask);
+    template Array<T> morph  <T, ISDILATE>(const Array<T> &in, const Array<T> &mask);

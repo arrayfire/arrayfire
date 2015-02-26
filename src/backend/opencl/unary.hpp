@@ -67,7 +67,7 @@ UNARY_FN(isnan)
 UNARY_FN(iszero)
 
 template<typename T, af_op_t op>
-Array<T>* unaryOp(const Array<T> &in)
+Array<T> unaryOp(const Array<T> &in)
 {
     JIT::Node_ptr in_node = in.getNode();
 
@@ -80,7 +80,7 @@ Array<T>* unaryOp(const Array<T> &in)
 }
 
 template<typename T, af_op_t op>
-Array<char>* checkOp(const Array<T> &in)
+Array<char> checkOp(const Array<T> &in)
 {
     JIT::Node_ptr in_node = in.getNode();
 

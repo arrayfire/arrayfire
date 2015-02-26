@@ -63,30 +63,30 @@ namespace cpu
     };
 
     template<af_op_t op, typename Ti, typename To>
-    Array<To>* scan(const Array<Ti>& in, const int dim)
+    Array<To> scan(const Array<Ti>& in, const int dim)
     {
         dim4 dims = in.dims();
 
-        Array<To> *out = createValueArray<To>(dims, 0);
+        Array<To> out = createValueArray<To>(dims, 0);
 
         switch (in.ndims()) {
         case 1:
-            scan_dim<op, Ti, To, 1>()(out->get(), out->strides(), out->dims(),
+            scan_dim<op, Ti, To, 1>()(out.get(), out.strides(), out.dims(),
                                       in.get(), in.strides(), in.dims(), dim);
             break;
 
         case 2:
-            scan_dim<op, Ti, To, 2>()(out->get(), out->strides(), out->dims(),
+            scan_dim<op, Ti, To, 2>()(out.get(), out.strides(), out.dims(),
                                       in.get(), in.strides(), in.dims(), dim);
             break;
 
         case 3:
-            scan_dim<op, Ti, To, 3>()(out->get(), out->strides(), out->dims(),
+            scan_dim<op, Ti, To, 3>()(out.get(), out.strides(), out.dims(),
                                       in.get(), in.strides(), in.dims(), dim);
             break;
 
         case 4:
-            scan_dim<op, Ti, To, 4>()(out->get(), out->strides(), out->dims(),
+            scan_dim<op, Ti, To, 4>()(out.get(), out.strides(), out.dims(),
                                       in.get(), in.strides(), in.dims(), dim);
             break;
         }
@@ -95,7 +95,7 @@ namespace cpu
     }
 
 #define INSTANTIATE(ROp, Ti, To)                                        \
-    template Array<To>* scan<ROp, Ti, To>(const Array<Ti> &in, const int dim); \
+    template Array<To> scan<ROp, Ti, To>(const Array<Ti> &in, const int dim); \
 
     //accum
     INSTANTIATE(af_add_t, float  , float  )

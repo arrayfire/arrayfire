@@ -38,15 +38,14 @@ void convolve(global T *out, KParam oInfo,
     global T *dst = out + oStep +(batchId*oInfo.strides[1]);
     global T const *src = signal + sStep +(batchId*sInfo.strides[1]) + sInfo.offset;
 
-    dim_type gx  = get_local_size(0)*(get_group_id(0)-batchId*nonBatchBlkSize) + get_local_id(0);
+    dim_type gx  = get_local_size(0)*(get_group_id(0)-batchId*nonBatchBlkSize);
 
-    for (dim_type i=0; i<shrdLen; i+=get_local_size(0)) {
+    for (dim_type i=get_local_id(0); i<shrdLen; i+=get_local_size(0)) {
         dim_type idx = gx-padding + i;
-        dim_type lx  = get_local_id(0)+ i;
-        if (lx<shrdLen)
-            localMem[lx]  = (idx>=0 && idx<sInfo.dims[0]) ? src[idx*sInfo.strides[0]] : (T)(0);
+        localMem[i]  = (idx>=0 && idx<sInfo.dims[0]) ? src[idx*sInfo.strides[0]] : (T)(0);
     }
     barrier(CLK_LOCAL_MEM_FENCE);
+    gx += get_local_id(0);
 
     if (gx>=0 && gx<oInfo.dims[0]) {
         dim_type lx   = get_local_id(0) + padding + (EXPAND ? 0 : fLen/2);
@@ -73,6 +72,7 @@ void convolve(global T *out, KParam oInfo,
     dim_type padding0 = 2*radius0;
     dim_type padding1 = 2*radius1;
     dim_type shrdLen0 = get_local_size(0) + padding0;
+    dim_type shrdLen1 = get_local_size(1) + padding1;
 
     unsigned batchId  = get_group_id(0)/nonBatchBlkSize;
 
@@ -84,23 +84,13 @@ void convolve(global T *out, KParam oInfo,
     dim_type gx = get_local_size(0) * (get_group_id(0)-batchId*nonBatchBlkSize) + lx;
     dim_type gy = get_local_size(1) * get_group_id(1) + ly;
 
-    dim_type lx2= lx + get_local_size(0);
-    dim_type ly2= ly + get_local_size(1);
-    dim_type gx2= gx + get_local_size(0);
-    dim_type gy2= gy + get_local_size(1);
-
-    localMem[ly*shrdLen0+lx] = readSrc(src, gx-radius0, gy-radius1, 0, sInfo.dims, sInfo.strides);
-
-    if (lx < padding0) {
-        localMem[ly*shrdLen0+lx2] = readSrc(src, gx2-radius0, gy-radius1, 0, sInfo.dims, sInfo.strides);
+    // below loops are traditional loops, they only run multiple
+    // times filter length is more than launch size
+    for (dim_type b=ly, gy2=gy; b<shrdLen1; b+=get_local_size(1), gy2+=get_local_size(1)) {
+        // move row_set get_local_size(1) along coloumns
+        for (dim_type a=lx, gx2=gx; a<shrdLen0; a+=get_local_size(0), gx2+=get_local_size(0))
+            localMem[b*shrdLen0+a] = readSrc(src, gx2-radius0, gy2-radius1, 0, sInfo.dims, sInfo.strides);
     }
-    if (ly < padding1) {
-        localMem[ly2*shrdLen0+lx] = readSrc(src, gx-radius0, gy2-radius1, 0, sInfo.dims, sInfo.strides);
-    }
-    if (lx < padding0 && ly < padding1) {
-        localMem[ly2*shrdLen0+lx2] = readSrc(src, gx2-radius0, gy2-radius1, 0, sInfo.dims, sInfo.strides);
-    }
-
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if (gx<oInfo.dims[0] && gy<oInfo.dims[1]) {
@@ -251,20 +241,17 @@ void convolve(global T *out, KParam oInfo, global T const *signal,
 
     if (CONV_DIM==0) {
         gx += (EXPAND ? 0 : fLen/2);
-        localMem[ly*shrdLen+lx] = readSrc2(src, gx-radius, gy, sInfo.dims, sInfo.strides);
-        if (lx < padding) {
-            dim_type gx2 = gx + get_local_size(0);
-            dim_type lx2 = lx + get_local_size(0);
-            localMem[ly*shrdLen+lx2] = readSrc2(src, gx2-radius, gy, sInfo.dims, sInfo.strides);
-        }
+        dim_type endX = 2*(fLen-1) + get_local_size(0);
+
+        for(dim_type lx = get_local_id(0), glb_x = gx; lx<endX; lx += get_local_size(0), glb_x += get_local_size(0))
+            localMem[ly*shrdLen+lx] = readSrc2(src, glb_x-radius, gy, sInfo.dims, sInfo.strides);
+
     } else if (CONV_DIM==1) {
         gy += (EXPAND ? 0 : fLen/2);
-        localMem[ly*shrdLen+lx] = readSrc2(src, gx, gy-radius, sInfo.dims, sInfo.strides);
-        if (ly < padding) {
-            dim_type gy2 = gy + get_local_size(1);
-            dim_type ly2 = ly + get_local_size(1);
-            localMem[ly2*shrdLen+lx] = readSrc2(src, gx, gy2-radius, sInfo.dims, sInfo.strides);
-        }
+        dim_type endY = 2*(fLen-1) + get_local_size(1);
+
+        for(dim_type ly = get_local_id(1), glb_y = gy; ly<endY; ly += get_local_size(1), glb_y += get_local_size(1))
+            localMem[ly*shrdLen+lx] = readSrc2(src, gx, glb_y-radius, sInfo.dims, sInfo.strides);
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 

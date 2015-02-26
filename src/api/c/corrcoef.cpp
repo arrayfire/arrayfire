@@ -26,30 +26,24 @@ using namespace detail;
 template<typename Ti, typename To>
 static To corrcoef(const af_array& X, const af_array& Y)
 {
-    Array<To>* xIn = cast<To>(getArray<Ti>(X));
-    Array<To>* yIn = cast<To>(getArray<Ti>(Y));
+    Array<To> xIn = cast<To>(getArray<Ti>(X));
+    Array<To> yIn = cast<To>(getArray<Ti>(Y));
 
-    dim4 dims = xIn->dims();
-    dim_type n= xIn->elements();
+    dim4 dims = xIn.dims();
+    dim_type n= xIn.elements();
 
-    To xSum = detail::reduce_all<af_add_t, To, To>(*xIn);
-    To ySum = detail::reduce_all<af_add_t, To, To>(*yIn);
+    To xSum = detail::reduce_all<af_add_t, To, To>(xIn);
+    To ySum = detail::reduce_all<af_add_t, To, To>(yIn);
 
-    Array<To>* xSq = detail::arithOp<To, af_mul_t>(*xIn, *xIn, dims);
-    Array<To>* ySq = detail::arithOp<To, af_mul_t>(*yIn, *yIn, dims);
-    Array<To>* xy  = detail::arithOp<To, af_mul_t>(*xIn, *yIn, dims);
+    Array<To> xSq = detail::arithOp<To, af_mul_t>(xIn, xIn, dims);
+    Array<To> ySq = detail::arithOp<To, af_mul_t>(yIn, yIn, dims);
+    Array<To> xy  = detail::arithOp<To, af_mul_t>(xIn, yIn, dims);
 
-    To xSqSum = detail::reduce_all<af_add_t, To, To>(*xSq);
-    To ySqSum = detail::reduce_all<af_add_t, To, To>(*ySq);
-    To xySum  = detail::reduce_all<af_add_t, To, To>(*xy);
+    To xSqSum = detail::reduce_all<af_add_t, To, To>(xSq);
+    To ySqSum = detail::reduce_all<af_add_t, To, To>(ySq);
+    To xySum  = detail::reduce_all<af_add_t, To, To>(xy);
 
     To result = (n*xySum - xSum*ySum)/(sqrt(n*xSqSum-xSum*xSum)*sqrt(n*ySqSum-ySum*ySum));
-
-    destroyArray<To>(*xy);
-    destroyArray<To>(*ySq);
-    destroyArray<To>(*xSq);
-    destroyArray<To>(*yIn);
-    destroyArray<To>(*xIn);
 
     return result;
 }

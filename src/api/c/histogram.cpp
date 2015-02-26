@@ -21,7 +21,7 @@ template<typename inType,typename outType>
 static inline af_array histogram(const af_array in, const unsigned &nbins,
                                  const double &minval, const double &maxval)
 {
-    return getHandle(*histogram<inType,outType>(getArray<inType>(in),nbins,minval,maxval));
+    return getHandle(histogram<inType,outType>(getArray<inType>(in),nbins,minval,maxval));
 }
 
 af_err af_histogram(af_array *out, const af_array in,

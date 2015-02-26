@@ -30,7 +30,7 @@ namespace cpu
     };
 
     template<typename To, typename Ti>
-    Array<To>* cplx(const Array<Ti> &lhs, const Array<Ti> &rhs, const af::dim4 &odims)
+    Array<To> cplx(const Array<Ti> &lhs, const Array<Ti> &rhs, const af::dim4 &odims)
     {
         TNJ::Node_ptr lhs_node = lhs.getNode();
         TNJ::Node_ptr rhs_node = rhs.getNode();
@@ -58,7 +58,7 @@ namespace cpu
     CPLX_UNARY_FN(abs)
 
     template<typename To, typename Ti>
-    Array<To>* real(const Array<Ti> &in)
+    Array<To> real(const Array<Ti> &in)
     {
         TNJ::Node_ptr in_node = in.getNode();
         TNJ::UnaryNode<To, Ti, af_real_t> *node = new TNJ::UnaryNode<To, Ti, af_real_t>(in_node);
@@ -68,7 +68,7 @@ namespace cpu
     }
 
     template<typename To, typename Ti>
-    Array<To>* imag(const Array<Ti> &in)
+    Array<To> imag(const Array<Ti> &in)
     {
         TNJ::Node_ptr in_node = in.getNode();
         TNJ::UnaryNode<To, Ti, af_imag_t> *node = new TNJ::UnaryNode<To, Ti, af_imag_t>(in_node);
@@ -78,7 +78,7 @@ namespace cpu
     }
 
     template<typename To, typename Ti>
-    Array<To>* abs(const Array<Ti> &in)
+    Array<To> abs(const Array<Ti> &in)
     {
         TNJ::Node_ptr in_node = in.getNode();
         TNJ::UnaryNode<To, Ti, af_abs_t> *node = new TNJ::UnaryNode<To, Ti, af_abs_t>(in_node);
@@ -88,7 +88,7 @@ namespace cpu
     }
 
     template<typename T>
-    Array<T>* conj(const Array<T> &in)
+    Array<T> conj(const Array<T> &in)
     {
         TNJ::Node_ptr in_node = in.getNode();
         TNJ::UnaryNode<T, T, af_conj_t> *node = new TNJ::UnaryNode<T, T, af_conj_t>(in_node);

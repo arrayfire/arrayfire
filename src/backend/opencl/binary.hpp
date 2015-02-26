@@ -171,7 +171,7 @@ struct BinOp<To, Ti, af_hypot_t>
 };
 
 template<typename To, typename Ti, af_op_t op>
-Array<To> *createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs, const af::dim4 &odims)
+Array<To> createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs, const af::dim4 &odims)
 {
     BinOp<To, Ti, op> bop;
 

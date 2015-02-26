@@ -16,7 +16,7 @@
 namespace cuda
 {
     template<typename Tx, typename Ty>
-    Array<Tx> *join(const int dim, const Array<Tx> &first, const Array<Ty> &second)
+    Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second)
     {
         // All dimensions except join dimension must be equal
         // Compute output dims
@@ -31,16 +31,16 @@ namespace cuda
                 odims[i] = fdims[i];
             }
         }
-        Array<Tx> *out = createEmptyArray<Tx>(odims);
+        Array<Tx> out = createEmptyArray<Tx>(odims);
 
         switch(dim) {
-            case 0: kernel::join<Tx, Ty, 0>(*out, first, second);
+            case 0: kernel::join<Tx, Ty, 0>(out, first, second);
                     break;
-            case 1: kernel::join<Tx, Ty, 1>(*out, first, second);
+            case 1: kernel::join<Tx, Ty, 1>(out, first, second);
                     break;
-            case 2: kernel::join<Tx, Ty, 2>(*out, first, second);
+            case 2: kernel::join<Tx, Ty, 2>(out, first, second);
                     break;
-            case 3: kernel::join<Tx, Ty, 3>(*out, first, second);
+            case 3: kernel::join<Tx, Ty, 3>(out, first, second);
                     break;
         }
 
@@ -48,7 +48,7 @@ namespace cuda
     }
 
 #define INSTANTIATE(Tx, Ty)                                                                             \
-    template Array<Tx>* join<Tx, Ty>(const int dim, const Array<Tx> &first, const Array<Ty> &second);   \
+    template Array<Tx> join<Tx, Ty>(const int dim, const Array<Tx> &first, const Array<Ty> &second);   \
 
     INSTANTIATE(float,   float)
     INSTANTIATE(double,  double)

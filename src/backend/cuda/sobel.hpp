@@ -14,7 +14,7 @@ namespace cuda
 {
 
 template<typename Ti, typename To>
-std::pair< Array<To>*, Array<To>* >
+std::pair< Array<To>, Array<To> >
 sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size);
 
 }

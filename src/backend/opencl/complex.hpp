@@ -18,13 +18,13 @@
 namespace opencl
 {
     template<typename To, typename Ti>
-    Array<To>* cplx(const Array<Ti> &lhs, const Array<Ti> &rhs, const af::dim4 &odims)
+    Array<To> cplx(const Array<Ti> &lhs, const Array<Ti> &rhs, const af::dim4 &odims)
     {
         return createBinaryNode<To, Ti, af_cplx2_t>(lhs, rhs, odims);
     }
 
     template<typename To, typename Ti>
-    Array<To>* real(const Array<Ti> &in)
+    Array<To> real(const Array<Ti> &in)
     {
         JIT::Node_ptr in_node = in.getNode();
         JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<To>::getName(),
@@ -36,7 +36,7 @@ namespace opencl
     }
 
     template<typename To, typename Ti>
-    Array<To>* imag(const Array<Ti> &in)
+    Array<To> imag(const Array<Ti> &in)
     {
         JIT::Node_ptr in_node = in.getNode();
         JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<To>::getName(),
@@ -52,7 +52,7 @@ namespace opencl
     template<> STATIC_ const char *abs_name<cdouble>() { return "__cabs"; }
 
     template<typename To, typename Ti>
-    Array<To>* abs(const Array<Ti> &in)
+    Array<To> abs(const Array<Ti> &in)
     {
         JIT::Node_ptr in_node = in.getNode();
         JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<To>::getName(),
@@ -68,7 +68,7 @@ namespace opencl
     template<> STATIC_ const char *conj_name<cdouble>() { return "__cconj"; }
 
     template<typename T>
-    Array<T>* conj(const Array<T> &in)
+    Array<T> conj(const Array<T> &in)
     {
         JIT::Node_ptr in_node = in.getNode();
         JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<T>::getName(),

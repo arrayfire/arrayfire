@@ -24,13 +24,13 @@ using namespace detail;
 template<typename T, typename accT, dim_type baseDim, bool expand>
 inline static af_array convolve(const af_array &s, const af_array &f, ConvolveBatchKind kind)
 {
-    return getHandle(*convolve<T, accT, baseDim, expand>(getArray<T>(s), getArray<T>(f), kind));
+    return getHandle(convolve<T, accT, baseDim, expand>(getArray<T>(s), getArray<T>(f), kind));
 }
 
 template<typename T, typename accT, bool expand>
 inline static af_array convolve2(const af_array &s, const af_array &c_f, const af_array &r_f)
 {
-    return getHandle(*convolve2<T, accT, expand>(getArray<T>(s), getArray<T>(c_f), getArray<T>(r_f)));
+    return getHandle(convolve2<T, accT, expand>(getArray<T>(s), getArray<T>(c_f), getArray<T>(r_f)));
 }
 
 template<dim_type baseDim>

@@ -28,7 +28,7 @@ template<typename T, af_op_t op>
 static inline af_array arithOp(const af_array lhs, const af_array rhs,
                                const dim4 &odims)
 {
-    af_array res = getHandle(*arithOp<T, op>(getArray<T>(lhs), getArray<T>(rhs), odims));
+    af_array res = getHandle(arithOp<T, op>(getArray<T>(lhs), getArray<T>(rhs), odims));
     // All inputs to this function are temporary references
     // Delete the temporary references
     destroyHandle<T>(lhs);
@@ -222,7 +222,7 @@ af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs, bool batc
 template<typename T, af_op_t op>
 static inline af_array logicOp(const af_array lhs, const af_array rhs, const dim4 &odims)
 {
-    af_array res = getHandle(*logicOp<T, op>(getArray<T>(lhs), getArray<T>(rhs), odims));
+    af_array res = getHandle(logicOp<T, op>(getArray<T>(lhs), getArray<T>(rhs), odims));
     // All inputs to this function are temporary references
     // Delete the temporary references
     destroyHandle<T>(lhs);
@@ -308,7 +308,7 @@ af_err af_or(af_array *out, const af_array lhs, const af_array rhs, bool batchMo
 template<typename T, af_op_t op>
 static inline af_array bitOp(const af_array lhs, const af_array rhs, const dim4 &odims)
 {
-    af_array res = getHandle(*bitOp<T, op>(getArray<T>(lhs), getArray<T>(rhs), odims));
+    af_array res = getHandle(bitOp<T, op>(getArray<T>(lhs), getArray<T>(rhs), odims));
     // All inputs to this function are temporary references
     // Delete the temporary references
     destroyHandle<T>(lhs);

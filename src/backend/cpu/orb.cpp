@@ -9,7 +9,6 @@
 
 #include <af/dim4.hpp>
 #include <af/defines.h>
-#include <af/features.h>
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <err_cpu.hpp>
@@ -535,14 +534,14 @@ void extract_orb(
 
 
 template<typename T, typename convAccT>
-void orb(features& feat,
-         Array<unsigned>** desc,
-         const Array<T>& image,
-         const float fast_thr,
-         const unsigned max_feat,
-         const float scl_fctr,
-         const unsigned levels)
+unsigned orb(Array<float> &x, Array<float> &y,
+             Array<float> &score, Array<float> &ori,
+             Array<float> &size, Array<uint> &desc,
+             const Array<T>& image,
+             const float fast_thr, const unsigned max_feat,
+             const float scl_fctr, const unsigned levels)
 {
+
     unsigned patch_size = REF_PAT_SIZE;
 
     const af::dim4 idims = image.dims();
@@ -581,24 +580,24 @@ void orb(features& feat,
     lvl_best[max_levels-1] = max_feat - feat_sum;
 
     // Maintain a reference to previous level image
-    const Array<T>* prev_img = nullptr;
+    Array<T> prev_img = createEmptyArray<T>(af::dim4());
     af::dim4 prev_ldims;
 
     af::dim4 gauss_dims(9);
     T* h_gauss = nullptr;
-    Array<T>* gauss_filter = nullptr;
+    Array<T> gauss_filter = createEmptyArray<T>(af::dim4());
 
     for (unsigned i = 0; i < max_levels; i++) {
         af::dim4 ldims;
         const float lvl_scl = (float)std::pow(scl_fctr,(float)i);
-        const Array<T>* lvl_img = nullptr;
+        Array<T> lvl_img = createEmptyArray<T>(af::dim4());
 
         if (i == 0) {
             // First level is used in its original size
-            lvl_img = &image;
+            lvl_img = image;
             ldims = image.dims();
 
-            prev_img = &image;
+            prev_img = image;
             prev_ldims = image.dims();
         }
         else {
@@ -606,29 +605,27 @@ void orb(features& feat,
             ldims[0] = round(idims[0] / lvl_scl);
             ldims[1] = round(idims[1] / lvl_scl);
 
-            lvl_img = resize<T>(*prev_img, ldims[0], ldims[1], AF_INTERP_BILINEAR);
-
-            if (i > 1)
-                delete prev_img;
+            lvl_img = resize<T>(prev_img, ldims[0], ldims[1], AF_INTERP_BILINEAR);
 
             prev_img = lvl_img;
-            prev_ldims = lvl_img->dims();
+            prev_ldims = lvl_img.dims();
         }
 
-        features fast_feat = fast(*lvl_img, fast_thr, 9, 1, 0.15f);
 
-        unsigned lvl_feat = fast_feat.getNumFeatures();
+        Array<float> x_feat = createEmptyArray<float>(dim4());
+        Array<float> y_feat = createEmptyArray<float>(dim4());
+        Array<float> score_feat = createEmptyArray<float>(dim4());
+
+        unsigned lvl_feat = fast(x_feat, y_feat, score_feat,
+                                 lvl_img, fast_thr, 9, 1, 0.15f);
+
 
         if (lvl_feat == 0) {
-            if (i > 0 && i == max_levels-1)
-                delete lvl_img;
-
             continue;
         }
 
-        float* h_x_feat = fast_feat.getX().host<float>();
-        float* h_y_feat = fast_feat.getY().host<float>();
-        float* h_score_feat = fast_feat.getScore().host<float>();
+        float* h_x_feat = x_feat.get();
+        float* h_y_feat = y_feat.get();
 
         float* h_x_harris = memAlloc<float>(lvl_feat);
         float* h_y_harris = memAlloc<float>(lvl_feat);
@@ -640,45 +637,32 @@ void orb(features& feat,
         harris_response<T, false>(h_x_harris, h_y_harris, h_score_harris, nullptr,
                                   h_x_feat, h_y_feat, nullptr,
                                   lvl_feat, &usable_feat,
-                                  *lvl_img,
+                                  lvl_img,
                                   7, 0.04f, patch_size);
-
-        memFree(h_x_feat);
-        memFree(h_y_feat);
-        memFree(h_score_feat);
 
         if (usable_feat == 0) {
             memFree(h_x_harris);
             memFree(h_y_harris);
             memFree(h_score_harris);
 
-            if (i > 0 && i == max_levels-1)
-                delete lvl_img;
-
             continue;
         }
 
         // Sort features according to Harris responses
         af::dim4 usable_feat_dims(usable_feat);
-        Array<float> score_harris = *createHostDataArray(usable_feat_dims, h_score_harris);
-        Array<float> harris_sorted = *createEmptyArray<float>(af::dim4());
-        Array<unsigned> harris_idx = *createEmptyArray<unsigned>(af::dim4());
+        Array<float> score_harris = createHostDataArray(usable_feat_dims, h_score_harris);
+        Array<float> harris_sorted = createEmptyArray<float>(af::dim4());
+        Array<unsigned> harris_idx = createEmptyArray<unsigned>(af::dim4());
 
         sort_index<float, false>(harris_sorted, harris_idx, score_harris, 0);
 
         memFree(h_score_harris);
-        memFree(score_harris.get());
 
         usable_feat = std::min(usable_feat, lvl_best[i]);
 
         if (usable_feat == 0) {
             memFree(h_x_harris);
             memFree(h_y_harris);
-            memFree(harris_sorted.get());
-            memFree(harris_idx.get());
-
-            if (i > 0 && i == max_levels-1)
-                delete lvl_img;
 
             continue;
         }
@@ -694,15 +678,13 @@ void orb(features& feat,
 
         memFree(h_x_harris);
         memFree(h_y_harris);
-        memFree(harris_sorted.get());
-        memFree(harris_idx.get());
 
         float* h_ori_lvl = memAlloc<float>(usable_feat);
         float* h_size_lvl = memAlloc<float>(usable_feat);
 
         // Compute orientation of features
         centroid_angle<T>(h_x_lvl, h_y_lvl, h_ori_lvl, usable_feat,
-                          *lvl_img, patch_size);
+                          lvl_img, patch_size);
 
         // Calculate a separable Gaussian kernel, if one is not already stored
         if (!h_gauss) {
@@ -712,7 +694,7 @@ void orb(features& feat,
         }
 
         // Filter level image with Gaussian kernel to reduce noise sensitivity
-        Array<T> lvl_filt = *convolve2<T, convAccT, false>(*lvl_img, *gauss_filter, *gauss_filter);
+        Array<T> lvl_filt = convolve2<T, convAccT, false>(lvl_img, gauss_filter, gauss_filter);
 
         // Compute ORB descriptors
         unsigned* h_desc_lvl = memAlloc<unsigned>(usable_feat * 8);
@@ -721,7 +703,6 @@ void orb(features& feat,
                        h_x_lvl, h_y_lvl, h_ori_lvl, h_size_lvl,
                        lvl_filt, lvl_scl, patch_size);
 
-        memFree(lvl_filt.get());
 
         // Store results to pyramids
         total_feat += usable_feat;
@@ -733,92 +714,67 @@ void orb(features& feat,
         h_size_pyr[i] = h_size_lvl;
         h_desc_pyr[i] = h_desc_lvl;
 
-        if (i > 0 && i == max_levels-1)
-            delete lvl_img;
     }
 
     if (h_gauss != nullptr)
         memFree(h_gauss);
-    if (gauss_filter != nullptr)
-        delete gauss_filter;
 
-    // If no features are found, set found features to 0 and return
-    if (total_feat == 0) {
-        feat.setNumFeatures(0);
-        feat.setX(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        feat.setY(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        feat.setScore(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        feat.setOrientation(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        feat.setSize(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        *desc = createEmptyArray<unsigned>(af::dim4());
-        return;
+    if (total_feat > 0 ) {
+
+        // Allocate feature Arrays
+        const af::dim4 total_feat_dims(total_feat);
+        const af::dim4 desc_dims(8, total_feat);
+
+        x     = createEmptyArray<float>(total_feat_dims);
+        y     = createEmptyArray<float>(total_feat_dims);
+        score = createEmptyArray<float>(total_feat_dims);
+        ori   = createEmptyArray<float>(total_feat_dims);
+        size  = createEmptyArray<float>(total_feat_dims);
+        desc  = createEmptyArray<uint >(desc_dims);
+
+        float* h_x = x.get();
+        float* h_y = y.get();
+        float* h_score = score.get();
+        float* h_ori = ori.get();
+        float* h_size = size.get();
+
+        unsigned* h_desc = desc.get();
+
+        unsigned offset = 0;
+        for (unsigned i = 0; i < max_levels; i++) {
+            if (feat_pyr[i] == 0)
+                continue;
+
+            if (i > 0)
+                offset += feat_pyr[i-1];
+
+            memcpy(h_x+offset, h_x_pyr[i], feat_pyr[i] * sizeof(float));
+            memcpy(h_y+offset, h_y_pyr[i], feat_pyr[i] * sizeof(float));
+            memcpy(h_score+offset, h_score_pyr[i], feat_pyr[i] * sizeof(float));
+            memcpy(h_ori+offset, h_ori_pyr[i], feat_pyr[i] * sizeof(float));
+            memcpy(h_size+offset, h_size_pyr[i], feat_pyr[i] * sizeof(float));
+
+            memcpy(h_desc+(offset*8), h_desc_pyr[i], feat_pyr[i] * 8 * sizeof(unsigned));
+
+            memFree(h_x_pyr[i]);
+            memFree(h_y_pyr[i]);
+            memFree(h_score_pyr[i]);
+            memFree(h_ori_pyr[i]);
+            memFree(h_size_pyr[i]);
+            memFree(h_desc_pyr[i]);
+        }
     }
 
-    // Allocate feature Arrays
-    const af::dim4 total_feat_dims(total_feat);
-    Array<float>* x = createEmptyArray<float>(total_feat_dims);
-    Array<float>* y = createEmptyArray<float>(total_feat_dims);
-    Array<float>* score = createEmptyArray<float>(total_feat_dims);
-    Array<float>* ori = createEmptyArray<float>(total_feat_dims);
-    Array<float>* size = createEmptyArray<float>(total_feat_dims);
-
-    float* h_x = x->get();
-    float* h_y = y->get();
-    float* h_score = score->get();
-    float* h_ori = ori->get();
-    float* h_size = size->get();
-
-    // Allocate descriptor Array
-    const af::dim4 desc_dims(8, total_feat);
-    *desc = createEmptyArray<unsigned>(desc_dims);
-
-    unsigned* h_desc = (*desc)->get();
-
-    unsigned offset = 0;
-    for (unsigned i = 0; i < max_levels; i++) {
-        if (feat_pyr[i] == 0)
-            continue;
-
-        if (i > 0)
-            offset += feat_pyr[i-1];
-
-        memcpy(h_x+offset, h_x_pyr[i], feat_pyr[i] * sizeof(float));
-        memcpy(h_y+offset, h_y_pyr[i], feat_pyr[i] * sizeof(float));
-        memcpy(h_score+offset, h_score_pyr[i], feat_pyr[i] * sizeof(float));
-        memcpy(h_ori+offset, h_ori_pyr[i], feat_pyr[i] * sizeof(float));
-        memcpy(h_size+offset, h_size_pyr[i], feat_pyr[i] * sizeof(float));
-
-        memcpy(h_desc+(offset*8), h_desc_pyr[i], feat_pyr[i] * 8 * sizeof(unsigned));
-
-        memFree(h_x_pyr[i]);
-        memFree(h_y_pyr[i]);
-        memFree(h_score_pyr[i]);
-        memFree(h_ori_pyr[i]);
-        memFree(h_size_pyr[i]);
-        memFree(h_desc_pyr[i]);
-    }
-
-    // Sets number of output features
-    feat.setNumFeatures(total_feat);
-
-    feat.setX(getHandle<float>(*x));
-    feat.setY(getHandle<float>(*y));
-    feat.setScore(getHandle<float>(*score));
-    feat.setOrientation(getHandle<float>(*ori));
-    feat.setSize(getHandle<float>(*size));
-
-    // Free weak copies
-    memFree(h_x);
-    memFree(h_y);
-    memFree(h_score);
-    memFree(h_ori);
-    memFree(h_size);
+    return total_feat;
 }
 
-#define INSTANTIATE(T, convAccT)\
-    template void orb<T, convAccT>(features& feat, Array<unsigned>** desc, const Array<T>& image,   \
-                                   const float fast_thr, const unsigned max_feat,                   \
-                                   const float scl_fctr, const unsigned levels);
+#define INSTANTIATE(T, convAccT)                                        \
+    template unsigned orb<T, convAccT>(Array<float> &x, Array<float> &y, \
+                                       Array<float> &score, Array<float> &ori, \
+                                       Array<float> &size, Array<uint> &desc, \
+                                       const Array<T>& image,           \
+                                       const float fast_thr, const unsigned max_feat, \
+                                       const float scl_fctr, const unsigned levels); \
 
 INSTANTIATE(float , float )
 INSTANTIATE(double, double)

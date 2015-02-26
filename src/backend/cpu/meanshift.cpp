@@ -28,13 +28,13 @@ inline dim_type clamp(dim_type a, dim_type mn, dim_type mx)
 }
 
 template<typename T, bool is_color>
-Array<T> * meanshift(const Array<T> &in, const float &s_sigma, const float &c_sigma, const unsigned iter)
+Array<T>  meanshift(const Array<T> &in, const float &s_sigma, const float &c_sigma, const unsigned iter)
 {
     const dim4 dims     = in.dims();
     const dim4 istrides = in.strides();
 
-    Array<T>* out       = createEmptyArray<T>(dims);
-    const dim4 ostrides = out->strides();
+    Array<T> out       = createEmptyArray<T>(dims);
+    const dim4 ostrides = out.strides();
 
     const dim_type bIndex   = (is_color ? 3 : 2);
     const dim_type bCount   = dims[bIndex];
@@ -51,7 +51,7 @@ Array<T> * meanshift(const Array<T> &in, const float &s_sigma, const float &c_si
 
     for(dim_type batchId=0; batchId<bCount; ++batchId) {
 
-        T *outData       = out->get() + batchId*ostrides[bIndex];
+        T *outData       = out.get() + batchId*ostrides[bIndex];
         const T * inData = in.get()   + batchId*istrides[bIndex];
 
         for(dim_type j=0; j<dims[1]; ++j) {
@@ -141,8 +141,8 @@ Array<T> * meanshift(const Array<T> &in, const float &s_sigma, const float &c_si
 }
 
 #define INSTANTIATE(T) \
-    template Array<T> * meanshift<T, true >(const Array<T> &in, const float &s_sigma, const float &c_sigma, const unsigned iter); \
-    template Array<T> * meanshift<T, false>(const Array<T> &in, const float &s_sigma, const float &c_sigma, const unsigned iter);
+    template Array<T>  meanshift<T, true >(const Array<T> &in, const float &s_sigma, const float &c_sigma, const unsigned iter); \
+    template Array<T>  meanshift<T, false>(const Array<T> &in, const float &s_sigma, const float &c_sigma, const unsigned iter);
 
 INSTANTIATE(float )
 INSTANTIATE(double)
