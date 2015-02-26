@@ -62,12 +62,12 @@ unsigned orb(Array<float> &x, Array<float> &y,
         const dim4 feat_dims(nfeat_out);
         const dim4 desc_dims(8, nfeat_out);
 
-        x     = *createDeviceDataArray<float>(feat_dims, x_out);
-        y     = *createDeviceDataArray<float>(feat_dims, y_out);
-        score = *createDeviceDataArray<float>(feat_dims, score_out);
-        ori   = *createDeviceDataArray<float>(feat_dims, orientation_out);
-        size  = *createDeviceDataArray<float>(feat_dims, size_out);
-        desc  = *createDeviceDataArray<unsigned>(desc_dims, desc_out);
+        x     = createDeviceDataArray<float>(feat_dims, x_out);
+        y     = createDeviceDataArray<float>(feat_dims, y_out);
+        score = createDeviceDataArray<float>(feat_dims, score_out);
+        ori   = createDeviceDataArray<float>(feat_dims, orientation_out);
+        size  = createDeviceDataArray<float>(feat_dims, size_out);
+        desc  = createDeviceDataArray<unsigned>(desc_dims, desc_out);
 
     }
 

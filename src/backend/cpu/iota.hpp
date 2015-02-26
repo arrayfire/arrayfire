@@ -13,5 +13,5 @@
 namespace cpu
 {
     template<typename T>
-    Array<T> *iota(const dim4& dim, const unsigned rep);
+    Array<T> iota(const dim4& dim, const unsigned rep);
 }

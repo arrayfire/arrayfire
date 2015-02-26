@@ -19,7 +19,7 @@
 namespace opencl
 {
     template<typename T>
-    Array<uint>* where(const Array<T> &in)
+    Array<uint> where(const Array<T> &in)
     {
         if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
             !isDoubleSupported(getActiveDeviceId())) {
@@ -33,7 +33,7 @@ namespace opencl
 
 
 #define INSTANTIATE(T)                                  \
-    template Array<uint>* where<T>(const Array<T> &in);    \
+    template Array<uint> where<T>(const Array<T> &in);  \
 
     INSTANTIATE(float  )
     INSTANTIATE(cfloat )

@@ -48,6 +48,7 @@ TYPED_TEST(Histogram,InvalidArgs)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), newDims.ndims(), newDims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_histogram(&outArray,inArray,256,0,255));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 
 template<typename inType, typename outType>

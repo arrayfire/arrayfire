@@ -580,24 +580,24 @@ unsigned orb(Array<float> &x, Array<float> &y,
     lvl_best[max_levels-1] = max_feat - feat_sum;
 
     // Maintain a reference to previous level image
-    const Array<T>* prev_img = nullptr;
+    Array<T> prev_img = createEmptyArray<T>(af::dim4());
     af::dim4 prev_ldims;
 
     af::dim4 gauss_dims(9);
     T* h_gauss = nullptr;
-    Array<T>* gauss_filter = nullptr;
+    Array<T> gauss_filter = createEmptyArray<T>(af::dim4());
 
     for (unsigned i = 0; i < max_levels; i++) {
         af::dim4 ldims;
         const float lvl_scl = (float)std::pow(scl_fctr,(float)i);
-        const Array<T>* lvl_img = nullptr;
+        Array<T> lvl_img = createEmptyArray<T>(af::dim4());
 
         if (i == 0) {
             // First level is used in its original size
-            lvl_img = &image;
+            lvl_img = image;
             ldims = image.dims();
 
-            prev_img = &image;
+            prev_img = image;
             prev_ldims = image.dims();
         }
         else {
@@ -605,27 +605,22 @@ unsigned orb(Array<float> &x, Array<float> &y,
             ldims[0] = round(idims[0] / lvl_scl);
             ldims[1] = round(idims[1] / lvl_scl);
 
-            lvl_img = resize<T>(*prev_img, ldims[0], ldims[1], AF_INTERP_BILINEAR);
-
-            if (i > 1)
-                delete prev_img;
+            lvl_img = resize<T>(prev_img, ldims[0], ldims[1], AF_INTERP_BILINEAR);
 
             prev_img = lvl_img;
-            prev_ldims = lvl_img->dims();
+            prev_ldims = lvl_img.dims();
         }
 
 
-        Array<float> x_feat = *createEmptyArray<float>(dim4());
-        Array<float> y_feat = *createEmptyArray<float>(dim4());
-        Array<float> score_feat = *createEmptyArray<float>(dim4());
+        Array<float> x_feat = createEmptyArray<float>(dim4());
+        Array<float> y_feat = createEmptyArray<float>(dim4());
+        Array<float> score_feat = createEmptyArray<float>(dim4());
 
         unsigned lvl_feat = fast(x_feat, y_feat, score_feat,
-                                 *lvl_img, fast_thr, 9, 1, 0.15f);
+                                 lvl_img, fast_thr, 9, 1, 0.15f);
 
 
         if (lvl_feat == 0) {
-            if (i > 0 && i == max_levels-1)
-                delete lvl_img;
             continue;
         }
 
@@ -642,7 +637,7 @@ unsigned orb(Array<float> &x, Array<float> &y,
         harris_response<T, false>(h_x_harris, h_y_harris, h_score_harris, nullptr,
                                   h_x_feat, h_y_feat, nullptr,
                                   lvl_feat, &usable_feat,
-                                  *lvl_img,
+                                  lvl_img,
                                   7, 0.04f, patch_size);
 
         if (usable_feat == 0) {
@@ -650,17 +645,14 @@ unsigned orb(Array<float> &x, Array<float> &y,
             memFree(h_y_harris);
             memFree(h_score_harris);
 
-            if (i > 0 && i == max_levels-1)
-                delete lvl_img;
-
             continue;
         }
 
         // Sort features according to Harris responses
         af::dim4 usable_feat_dims(usable_feat);
-        Array<float> score_harris = *createHostDataArray(usable_feat_dims, h_score_harris);
-        Array<float> harris_sorted = *createEmptyArray<float>(af::dim4());
-        Array<unsigned> harris_idx = *createEmptyArray<unsigned>(af::dim4());
+        Array<float> score_harris = createHostDataArray(usable_feat_dims, h_score_harris);
+        Array<float> harris_sorted = createEmptyArray<float>(af::dim4());
+        Array<unsigned> harris_idx = createEmptyArray<unsigned>(af::dim4());
 
         sort_index<float, false>(harris_sorted, harris_idx, score_harris, 0);
 
@@ -671,9 +663,6 @@ unsigned orb(Array<float> &x, Array<float> &y,
         if (usable_feat == 0) {
             memFree(h_x_harris);
             memFree(h_y_harris);
-
-            if (i > 0 && i == max_levels-1)
-                delete lvl_img;
 
             continue;
         }
@@ -695,7 +684,7 @@ unsigned orb(Array<float> &x, Array<float> &y,
 
         // Compute orientation of features
         centroid_angle<T>(h_x_lvl, h_y_lvl, h_ori_lvl, usable_feat,
-                          *lvl_img, patch_size);
+                          lvl_img, patch_size);
 
         // Calculate a separable Gaussian kernel, if one is not already stored
         if (!h_gauss) {
@@ -705,7 +694,7 @@ unsigned orb(Array<float> &x, Array<float> &y,
         }
 
         // Filter level image with Gaussian kernel to reduce noise sensitivity
-        Array<T> lvl_filt = *convolve2<T, convAccT, false>(*lvl_img, *gauss_filter, *gauss_filter);
+        Array<T> lvl_filt = convolve2<T, convAccT, false>(lvl_img, gauss_filter, gauss_filter);
 
         // Compute ORB descriptors
         unsigned* h_desc_lvl = memAlloc<unsigned>(usable_feat * 8);
@@ -725,14 +714,10 @@ unsigned orb(Array<float> &x, Array<float> &y,
         h_size_pyr[i] = h_size_lvl;
         h_desc_pyr[i] = h_desc_lvl;
 
-        if (i > 0 && i == max_levels-1)
-            delete lvl_img;
     }
 
     if (h_gauss != nullptr)
         memFree(h_gauss);
-    if (gauss_filter != nullptr)
-        delete gauss_filter;
 
     if (total_feat > 0 ) {
 
@@ -740,12 +725,12 @@ unsigned orb(Array<float> &x, Array<float> &y,
         const af::dim4 total_feat_dims(total_feat);
         const af::dim4 desc_dims(8, total_feat);
 
-        x     = *createEmptyArray<float>(total_feat_dims);
-        y     = *createEmptyArray<float>(total_feat_dims);
-        score = *createEmptyArray<float>(total_feat_dims);
-        ori   = *createEmptyArray<float>(total_feat_dims);
-        size  = *createEmptyArray<float>(total_feat_dims);
-        desc  = *createEmptyArray<uint >(desc_dims);
+        x     = createEmptyArray<float>(total_feat_dims);
+        y     = createEmptyArray<float>(total_feat_dims);
+        score = createEmptyArray<float>(total_feat_dims);
+        ori   = createEmptyArray<float>(total_feat_dims);
+        size  = createEmptyArray<float>(total_feat_dims);
+        desc  = createEmptyArray<uint >(desc_dims);
 
         float* h_x = x.get();
         float* h_y = y.get();

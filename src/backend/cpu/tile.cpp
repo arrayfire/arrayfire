@@ -15,7 +15,7 @@
 namespace cpu
 {
     template<typename T>
-    Array<T> *tile(const Array<T> &in, const af::dim4 &tileDims)
+    Array<T> tile(const Array<T> &in, const af::dim4 &tileDims)
     {
         const af::dim4 iDims = in.dims();
         af::dim4 oDims = iDims;
@@ -25,13 +25,13 @@ namespace cpu
             throw std::runtime_error("Elements are 0");
         }
 
-        Array<T> *out = createEmptyArray<T>(oDims);
+        Array<T> out = createEmptyArray<T>(oDims);
 
-        T* outPtr = out->get();
+        T* outPtr = out.get();
         const T* inPtr = in.get();
 
         const af::dim4 ist = in.strides();
-        const af::dim4 ost = out->strides();
+        const af::dim4 ost = out.strides();
 
         for(dim_type ow = 0; ow < oDims[3]; ow++) {
             const dim_type iw = ow % iDims[3];
@@ -59,7 +59,7 @@ namespace cpu
     }
 
 #define INSTANTIATE(T)                                                         \
-    template Array<T>* tile<T>(const Array<T> &in, const af::dim4 &tileDims);  \
+    template Array<T> tile<T>(const Array<T> &in, const af::dim4 &tileDims);  \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

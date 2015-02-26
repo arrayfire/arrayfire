@@ -78,7 +78,7 @@ UNARY_FN(floor)
 #undef UNARY_FN
 
     template<typename T, af_op_t op>
-    Array<T>* unaryOp(const Array<T> &in)
+    Array<T> unaryOp(const Array<T> &in)
     {
 
         UnOp<T, op> uop;
@@ -115,7 +115,7 @@ UNARY2_FN(isinf, isINF)
 UNARY2_FN(iszero, iszero)
 
     template<typename T, af_op_t op>
-    Array<char>* checkOp(const Array<T> &in)
+    Array<char> checkOp(const Array<T> &in)
     {
         UnOp<T, op> uop;
 

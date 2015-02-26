@@ -29,40 +29,33 @@ static af_array histequal(const af_array& in, const af_array& hist)
     af_array vInput = 0;
     AF_CHECK(af_flat(&vInput, in));
 
-    Array<float>* fHist  = cast<float>(getArray<hType>(hist));
+    Array<float> fHist  = cast<float>(getArray<hType>(hist));
 
-    dim4 hDims = fHist->dims();
-    dim_type grayLevels = fHist->elements();
+    dim4 hDims = fHist.dims();
+    dim_type grayLevels = fHist.elements();
 
-    Array<float>* cdf = detail::scan<af_add_t, float, float>(*fHist, 0);
+    Array<float> cdf = scan<af_add_t, float, float>(fHist, 0);
 
-    float minCdf = detail::reduce_all<af_min_t, float, float>(*cdf);
-    float maxCdf = detail::reduce_all<af_max_t, float, float>(*cdf);
+    float minCdf = reduce_all<af_min_t, float, float>(cdf);
+    float maxCdf = reduce_all<af_max_t, float, float>(cdf);
     float factor = (float)(grayLevels-1)/(maxCdf - minCdf);
 
     // constant array of min value from cdf
-    Array<float>* minCnst = createValueArray<float>(hDims, minCdf);
+    Array<float> minCnst = createValueArray<float>(hDims, minCdf);
     // constant array of factor variable
-    Array<float>* facCnst = createValueArray<float>(hDims, factor);
+    Array<float> facCnst = createValueArray<float>(hDims, factor);
     // cdf(i) - min for all elements
-    Array<float>* diff    = detail::arithOp<float, af_sub_t>(*cdf, *minCnst, hDims);
+    Array<float> diff    = arithOp<float, af_sub_t>(cdf, minCnst, hDims);
     // multiply factor with difference
-    Array<float>* normCdf = detail::arithOp<float, af_mul_t>(*diff, *facCnst, hDims);
+    Array<float> normCdf = arithOp<float, af_mul_t>(diff, facCnst, hDims);
     // index input array with normalized cdf array
-    Array<float>* idxArr  = detail::arrayIndex<float, T>(*normCdf, getArray<T>(vInput), 0);
+    Array<float> idxArr  = arrayIndex<float, T>(normCdf, getArray<T>(vInput), 0);
 
-    Array<T>* result = cast<T>(*idxArr);
+    Array<T> result = cast<T>(idxArr);
 
-    destroyArray<float>(*idxArr);
-    destroyArray<float>(*normCdf);
-    destroyArray<float>(*diff);
-    destroyArray<float>(*facCnst);
-    destroyArray<float>(*minCnst);
-    destroyArray<float>(*cdf);
-    destroyArray<float>(*fHist);
     AF_CHECK(af_destroy_array(vInput));
 
-    return getHandle<T>(*result);
+    return getHandle<T>(result);
 }
 
 af_err af_histequal(af_array *out, const af_array in, const af_array hist)

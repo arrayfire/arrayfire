@@ -40,9 +40,9 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
     if (nfeat > 0) {
         const dim4 out_dims(nfeat);
 
-        x_out = *createDeviceDataArray<float>(out_dims, d_x_out);
-        y_out = *createDeviceDataArray<float>(out_dims, d_y_out);
-        score_out = *createDeviceDataArray<float>(out_dims, d_score_out);
+        x_out = createDeviceDataArray<float>(out_dims, d_x_out);
+        y_out = createDeviceDataArray<float>(out_dims, d_y_out);
+        score_out = createDeviceDataArray<float>(out_dims, d_score_out);
     }
 
     return nfeat;

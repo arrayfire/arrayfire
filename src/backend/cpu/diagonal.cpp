@@ -18,14 +18,14 @@
 namespace cpu
 {
     template<typename T>
-    Array<T>* diagCreate(const Array<T> &in, const int num)
+    Array<T> diagCreate(const Array<T> &in, const int num)
     {
         int size = in.dims()[0] + std::abs(num);
         int batch = in.dims()[1];
-        Array<T> *out = createEmptyArray<T>(dim4(size, size, batch));
+        Array<T> out = createEmptyArray<T>(dim4(size, size, batch));
 
         const T *iptr = in.get();
-        T *optr = out->get();
+        T *optr = out.get();
 
         for (int k = 0; k < batch; k++) {
             for (int j = 0; j < size; j++) {
@@ -34,10 +34,10 @@ namespace cpu
                     if (i == j - num) {
                         val = (num > 0) ? iptr[i] : iptr[j];
                     }
-                    optr[i + j * out->strides()[1]] = val;
+                    optr[i + j * out.strides()[1]] = val;
                 }
             }
-            optr += out->strides()[2];
+            optr += out.strides()[2];
             iptr += in.strides()[1];
         }
 
@@ -45,13 +45,13 @@ namespace cpu
     }
 
     template<typename T>
-    Array<T>* diagExtract(const Array<T> &in, const int num)
+    Array<T> diagExtract(const Array<T> &in, const int num)
     {
         const dim_type *idims = in.dims().get();
         dim_type size = std::max(idims[0], idims[1]) - std::abs(num);
-        Array<T> *out = createEmptyArray<T>(dim4(size, 1, idims[2], idims[3]));
+        Array<T> out = createEmptyArray<T>(dim4(size, 1, idims[2], idims[3]));
 
-        const dim_type *odims = out->dims().get();
+        const dim_type *odims = out.dims().get();
 
         const int i_off = (num > 0) ? (num * in.strides()[1]) : (-num);
 
@@ -59,7 +59,7 @@ namespace cpu
 
             for (int k = 0; k < odims[2]; k++) {
                 const T *iptr = in.get() + l * in.strides()[3] + k * in.strides()[2] + i_off;
-                T *optr = out->get() + l * out->strides()[3] + k * out->strides()[2];
+                T *optr = out.get() + l * out.strides()[3] + k * out.strides()[2];
 
                 for (int i = 0; i < odims[0]; i++) {
                     T val = scalar<T>(0);
@@ -73,8 +73,8 @@ namespace cpu
     }
 
 #define INSTANTIATE_DIAGONAL(T)                                          \
-    template Array<T>*  diagExtract<T>    (const Array<T> &in, const int num); \
-    template Array<T>*  diagCreate <T>    (const Array<T> &in, const int num);
+    template Array<T>  diagExtract<T>    (const Array<T> &in, const int num); \
+    template Array<T>  diagCreate <T>    (const Array<T> &in, const int num);
 
     INSTANTIATE_DIAGONAL(float)
     INSTANTIATE_DIAGONAL(double)

@@ -46,12 +46,12 @@ unsigned orb(Array<float> &x_out, Array<float> &y_out,
         const dim4 out_dims(nfeat);
         const dim4 desc_dims(8, nfeat);
 
-        x_out     = *createParamArray<float>(x);
-        y_out     = *createParamArray<float>(y);
-        score_out = *createParamArray<float>(score);
-        ori_out   = *createParamArray<float>(ori);
-        size_out  = *createParamArray<float>(size);
-        desc_out  = *createParamArray<unsigned>(desc);
+        x_out     = createParamArray<float>(x);
+        y_out     = createParamArray<float>(y);
+        score_out = createParamArray<float>(score);
+        ori_out   = createParamArray<float>(ori);
+        size_out  = createParamArray<float>(size);
+        desc_out  = createParamArray<unsigned>(desc);
     }
 
     return nfeat;
