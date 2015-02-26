@@ -13,14 +13,16 @@
 
 af_err af_destroy_features(af_features feat)
 {
-    feat.n = 0;
 
     try {
-        if (feat.x != 0)           AF_CHECK(af_destroy_array(feat.x));
-        if (feat.y != 0)           AF_CHECK(af_destroy_array(feat.y));
-        if (feat.score != 0)       AF_CHECK(af_destroy_array(feat.score));
-        if (feat.orientation != 0) AF_CHECK(af_destroy_array(feat.orientation));
-        if (feat.size != 0)        AF_CHECK(af_destroy_array(feat.size));
+        if (feat.n > 0) {
+            if (feat.x != 0)           AF_CHECK(af_destroy_array(feat.x));
+            if (feat.y != 0)           AF_CHECK(af_destroy_array(feat.y));
+            if (feat.score != 0)       AF_CHECK(af_destroy_array(feat.score));
+            if (feat.orientation != 0) AF_CHECK(af_destroy_array(feat.orientation));
+            if (feat.size != 0)        AF_CHECK(af_destroy_array(feat.size));
+            feat.n = 0;
+        }
     }
     CATCHALL;
     return AF_SUCCESS;

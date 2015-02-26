@@ -24,7 +24,7 @@ using namespace detail;
 template<af_op_t op, typename Ti, typename To>
 static inline af_array scan(const af_array in, const int dim)
 {
-    return getHandle(*scan<op,Ti,To>(getArray<Ti>(in), dim));
+    return getHandle(scan<op,Ti,To>(getArray<Ti>(in), dim));
 }
 
 

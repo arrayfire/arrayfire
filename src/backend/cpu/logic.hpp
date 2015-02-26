@@ -70,7 +70,7 @@ LOGIC_CPLX_FN(double, af_or_t, ||)
 #undef LOGIC_CPLX_FN
 
     template<typename T, af_op_t op>
-    Array<uchar>* logicOp(const Array<T> &lhs, const Array<T> &rhs, const af::dim4 &odims)
+    Array<uchar> logicOp(const Array<T> &lhs, const Array<T> &rhs, const af::dim4 &odims)
     {
         TNJ::Node_ptr lhs_node = lhs.getNode();
         TNJ::Node_ptr rhs_node = rhs.getNode();
@@ -102,7 +102,7 @@ LOGIC_CPLX_FN(double, af_or_t, ||)
 #undef BITWISE_FN
 
     template<typename T, af_op_t op>
-    Array<T>* bitOp(const Array<T> &lhs, const Array<T> &rhs, const af::dim4 &odims)
+    Array<T> bitOp(const Array<T> &lhs, const Array<T> &rhs, const af::dim4 &odims)
     {
         TNJ::Node_ptr lhs_node = lhs.getNode();
         TNJ::Node_ptr rhs_node = rhs.getNode();

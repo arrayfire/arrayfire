@@ -7,13 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#pragma once
+#include <af/array.h>
+#include <Array.hpp>
 
 namespace cpu
 {
     template<typename T>
-    Array<T> *randu(const af::dim4 &dims);
+    Array<T> randu(const af::dim4 &dims);
 
     template<typename T>
-    Array<T> *randn(const af::dim4 &dims);
+    Array<T> randn(const af::dim4 &dims);
 }

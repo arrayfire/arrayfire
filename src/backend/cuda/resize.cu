@@ -16,7 +16,7 @@
 namespace cuda
 {
     template<typename T>
-    Array<T>* resize(const Array<T> &in, const dim_type odim0, const dim_type odim1,
+    Array<T> resize(const Array<T> &in, const dim_type odim0, const dim_type odim1,
                      const af_interp_type method)
     {
         const af::dim4 iDims = in.dims();
@@ -26,14 +26,14 @@ namespace cuda
             AF_ERROR("Elements are 0", AF_ERR_SIZE);
         }
 
-        Array<T> *out = createEmptyArray<T>(oDims);
+        Array<T> out = createEmptyArray<T>(oDims);
 
         switch(method) {
             case AF_INTERP_NEAREST:
-                kernel::resize<T, AF_INTERP_NEAREST >(*out, in);
+                kernel::resize<T, AF_INTERP_NEAREST >(out, in);
                 break;
             case AF_INTERP_BILINEAR:
-                kernel::resize<T, AF_INTERP_BILINEAR>(*out, in);
+                kernel::resize<T, AF_INTERP_BILINEAR>(out, in);
                 break;
             default:
                 break;
@@ -44,8 +44,8 @@ namespace cuda
 
 
 #define INSTANTIATE(T)                                                                            \
-    template Array<T>* resize<T> (const Array<T> &in, const dim_type odim0, const dim_type odim1, \
-                                  const af_interp_type method);
+    template Array<T> resize<T> (const Array<T> &in, const dim_type odim0, const dim_type odim1, \
+                                 const af_interp_type method);
 
 
     INSTANTIATE(float)

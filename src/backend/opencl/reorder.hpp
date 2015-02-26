@@ -13,5 +13,5 @@
 namespace opencl
 {
     template<typename T>
-    Array<T> *reorder(const Array<T> &in, const af::dim4 &rdims);
+    Array<T> reorder(const Array<T> &in, const af::dim4 &rdims);
 }

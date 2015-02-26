@@ -17,11 +17,11 @@
 namespace cpu
 {
     template<typename T>
-    Array<T> *identity(const dim4& dims)
+    Array<T> identity(const dim4& dims)
     {
-        Array<T> *out = createEmptyArray<T>(dims);
-        T *ptr = out->get();
-        const dim_type *out_dims  = out->dims().get();
+        Array<T> out = createEmptyArray<T>(dims);
+        T *ptr = out.get();
+        const dim_type *out_dims  = out.dims().get();
 
         for (int k = 0; k < out_dims[2] * out_dims[3]; k++) {
 
@@ -36,7 +36,7 @@ namespace cpu
     }
 
 #define INSTANTIATE_IDENTITY(T)                              \
-    template Array<T>*  identity<T>    (const af::dim4 &dims);
+    template Array<T>  identity<T>    (const af::dim4 &dims);
 
     INSTANTIATE_IDENTITY(float)
     INSTANTIATE_IDENTITY(double)

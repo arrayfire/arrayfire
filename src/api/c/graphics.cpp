@@ -33,9 +33,9 @@ static inline void convert_and_copy_image(const af_array in, const afgfx_image i
 
     const Array<T> _in = getArray<T>(in);
 
-    Array<T> *X = createEmptyArray<T>(dim4());
-    Array<T> *Y = createEmptyArray<T>(dim4());
-    Array<T> *Z = createEmptyArray<T>(dim4());
+    Array<T> X = createEmptyArray<T>(dim4());
+    Array<T> Y = createEmptyArray<T>(dim4());
+    Array<T> Z = createEmptyArray<T>(dim4());
     af_array x = 0;
     af_array y = 0;
     af_array z = 0;
@@ -50,48 +50,46 @@ static inline void convert_and_copy_image(const af_array in, const afgfx_image i
             X = reorder(_in, rdims);
         } else if (o2 == 3) {
             Y = tile(_in, tdims);
-            X = reorder(*Y, rdims);
+            X = reorder(Y, rdims);
         } else if (o2 == 4) {
-            Array<T> *c1 = createValueArray<T>(info.dims(), 1);
+            Array<T> c1 = createValueArray<T>(info.dims(), 1);
             Z = tile(_in, tdims);
-            Y = join(2, *Z, *c1);
-            X = reorder(*Y, rdims);
-            destroyArray<T>(*c1);
+            Y = join(2, Z, c1);
+            X = reorder(Y, rdims);
         }
     } else if (i2 == 3) {
         if (o2 == 1) {
             AF_CHECK(af_rgb2gray(&y, in, 0.2126f, 0.7152f, 0.0722f));
-            *Y = getArray<T>(y);
-            X = reorder(*Y, rdims);
+            Y = getArray<T>(y);
+            X = reorder(Y, rdims);
         } else if (o2 == 3) {
             X = reorder(_in, rdims);
         } else if (o2 == 4) {
-            Array<T> *c1 = createValueArray<T>(info.dims(), 1);
-            Y = join(2, _in, *c1);
-            X = reorder(*Y, rdims);
-            destroyArray<T>(*c1);
+            Array<T> c1 = createValueArray<T>(info.dims(), 1);
+            Y = join(2, _in, c1);
+            X = reorder(Y, rdims);
         }
     } else if (i2 == 4) {
+
         af_seq s[3] = {af_span, af_span, {0, 2, 1}};
+        std::vector<af_seq> s_vec(s, s + sizeof(s) / sizeof(s[0]));
+
         if (o2 == 1) {
-            AF_CHECK(af_index(&z, in, 3, s));
+            Z = createSubArray(_in, s_vec, false);
+            z = getHandle<T>(Z);
             AF_CHECK(af_rgb2gray(&y, z, 0.2126f, 0.7152f, 0.0722f));
-            *Y = getArray<T>(y);
-            X = reorder(*Y, rdims);
+            Y = getArray<T>(y);
+            X = reorder(Y, rdims);
         } else if (o2 == 3) {
-            AF_CHECK(af_index(&y, in, 3, s));
-            *Y = getArray<T>(y);
-            X = reorder(*Y, rdims);
+            Y = createSubArray(_in, s_vec, false);
+            X = reorder(Y, rdims);
         } else if (o2 == 4) {
             X = reorder(_in, rdims);
         }
     }
 
-    copy_image<T>(*X, image);
+    copy_image<T>(X, image);
 
-    destroyArray<T>(*X);
-    destroyArray<T>(*Y);
-    destroyArray<T>(*Z);
     if(x != 0) AF_CHECK(af_destroy_array(x));
     if(y != 0) AF_CHECK(af_destroy_array(y));
     if(z != 0) AF_CHECK(af_destroy_array(z));

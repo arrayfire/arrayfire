@@ -21,7 +21,7 @@
 namespace cuda
 {
     template<typename T>
-    Array<uint>* where(const Array<T> &in)
+    Array<uint> where(const Array<T> &in)
     {
         Param<uint> out;
         kernel::where<T>(out, in);
@@ -30,7 +30,7 @@ namespace cuda
 
 
 #define INSTANTIATE(T)                                  \
-    template Array<uint>* where<T>(const Array<T> &in);    \
+    template Array<uint> where<T>(const Array<T> &in);    \
 
     INSTANTIATE(float  )
     INSTANTIATE(cfloat )

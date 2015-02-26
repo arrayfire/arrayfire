@@ -91,23 +91,23 @@ namespace cpu
     }
 
     template<typename T>
-    Array<T>* transform(const Array<T> &in, const Array<float> &transform, const af::dim4 &odims,
+    Array<T> transform(const Array<T> &in, const Array<float> &transform, const af::dim4 &odims,
                         const af_interp_type method, const bool inverse)
     {
         const af::dim4 idims = in.dims();
 
-        Array<T> *out = createEmptyArray<T>(odims);
+        Array<T> out = createEmptyArray<T>(odims);
 
         switch(method) {
             case AF_INTERP_NEAREST:
                 transform_<T, AF_INTERP_NEAREST>
-                          (out->get(), in.get(), transform.get(), odims, idims,
-                           out->strides(), in.strides(), transform.strides(), inverse);
+                          (out.get(), in.get(), transform.get(), odims, idims,
+                           out.strides(), in.strides(), transform.strides(), inverse);
                 break;
             case AF_INTERP_BILINEAR:
                 transform_<T, AF_INTERP_BILINEAR>
-                          (out->get(), in.get(), transform.get(), odims, idims,
-                           out->strides(), in.strides(), transform.strides(), inverse);
+                          (out.get(), in.get(), transform.get(), odims, idims,
+                           out.strides(), in.strides(), transform.strides(), inverse);
                 break;
             default:
                 AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
@@ -119,9 +119,9 @@ namespace cpu
 
 
 #define INSTANTIATE(T)                                                                          \
-    template Array<T>* transform(const Array<T> &in, const Array<float> &transform,             \
-                                 const af::dim4 &odims, const af_interp_type method,            \
-                                 const bool inverse);                                           \
+    template Array<T> transform(const Array<T> &in, const Array<float> &transform,             \
+                                const af::dim4 &odims, const af_interp_type method, \
+                                const bool inverse);                    \
 
 
     INSTANTIATE(float)

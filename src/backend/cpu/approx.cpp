@@ -130,27 +130,27 @@ namespace cpu
     }
 
     template<typename Ty, typename Tp>
-    Array<Ty> *approx1(const Array<Ty> &in, const Array<Tp> &pos,
+    Array<Ty> approx1(const Array<Ty> &in, const Array<Tp> &pos,
                        const af_interp_type method, const float offGrid)
     {
         af::dim4 odims = in.dims();
         odims[0] = pos.dims()[0];
 
         // Create output placeholder
-        Array<Ty> *out = createEmptyArray<Ty>(odims);
+        Array<Ty> out = createEmptyArray<Ty>(odims);
 
         switch(method) {
             case AF_INTERP_NEAREST:
                 approx1_<Ty, Tp, AF_INTERP_NEAREST>
-                        (out->get(), out->dims(), out->elements(),
+                        (out.get(), out.dims(), out.elements(),
                          in.get(), in.dims(), in.elements(), pos.get(), pos.dims(),
-                         out->strides(), in.strides(), pos.strides(), offGrid);
+                         out.strides(), in.strides(), pos.strides(), offGrid);
                 break;
             case AF_INTERP_LINEAR:
                 approx1_<Ty, Tp, AF_INTERP_LINEAR>
-                        (out->get(), out->dims(), out->elements(),
+                        (out.get(), out.dims(), out.elements(),
                          in.get(), in.dims(), in.elements(), pos.get(), pos.dims(),
-                         out->strides(), in.strides(), pos.strides(), offGrid);
+                         out.strides(), in.strides(), pos.strides(), offGrid);
                 break;
             default:
                 break;
@@ -292,7 +292,7 @@ namespace cpu
     }
 
     template<typename Ty, typename Tp>
-    Array<Ty> *approx2(const Array<Ty> &in, const Array<Tp> &pos0, const Array<Tp> &pos1,
+    Array<Ty> approx2(const Array<Ty> &in, const Array<Tp> &pos0, const Array<Tp> &pos1,
                        const af_interp_type method, const float offGrid)
     {
         af::dim4 odims = in.dims();
@@ -300,23 +300,23 @@ namespace cpu
         odims[1] = pos0.dims()[1];
 
         // Create output placeholder
-        Array<Ty> *out = createEmptyArray<Ty>(odims);
+        Array<Ty> out = createEmptyArray<Ty>(odims);
 
         switch(method) {
             case AF_INTERP_NEAREST:
                 approx2_<Ty, Tp, AF_INTERP_NEAREST>
-                        (out->get(), out->dims(), out->elements(),
+                        (out.get(), out.dims(), out.elements(),
                          in.get(), in.dims(), in.elements(),
                          pos0.get(), pos0.dims(), pos1.get(), pos1.dims(),
-                         out->strides(), in.strides(), pos0.strides(), pos1.strides(),
+                         out.strides(), in.strides(), pos0.strides(), pos1.strides(),
                          offGrid);
                 break;
             case AF_INTERP_LINEAR:
                 approx2_<Ty, Tp, AF_INTERP_LINEAR>
-                        (out->get(), out->dims(), out->elements(),
+                        (out.get(), out.dims(), out.elements(),
                          in.get(), in.dims(), in.elements(),
                          pos0.get(), pos0.dims(), pos1.get(), pos1.dims(),
-                         out->strides(), in.strides(), pos0.strides(), pos1.strides(),
+                         out.strides(), in.strides(), pos0.strides(), pos1.strides(),
                          offGrid);
                 break;
             default:
@@ -326,9 +326,9 @@ namespace cpu
     }
 
 #define INSTANTIATE(Ty, Tp)                                                                     \
-    template Array<Ty>* approx1<Ty, Tp>(const Array<Ty> &in, const Array<Tp> &pos,              \
+    template Array<Ty> approx1<Ty, Tp>(const Array<Ty> &in, const Array<Tp> &pos,              \
                                         const af_interp_type method, const float offGrid);      \
-    template Array<Ty>* approx2<Ty, Tp>(const Array<Ty> &in, const Array<Tp> &pos0,             \
+    template Array<Ty> approx2<Ty, Tp>(const Array<Ty> &in, const Array<Tp> &pos0,             \
                                         const Array<Tp> &pos1, const af_interp_type method,     \
                                         const float offGrid);                                   \
 

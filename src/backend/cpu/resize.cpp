@@ -124,20 +124,20 @@ namespace cpu
     }
 
     template<typename T>
-    Array<T>* resize(const Array<T> &in, const dim_type odim0, const dim_type odim1,
-                     const af_interp_type method)
+    Array<T> resize(const Array<T> &in, const dim_type odim0, const dim_type odim1,
+                    const af_interp_type method)
     {
         af::dim4 idims = in.dims();
         af::dim4 odims(odim0, odim1, idims[2], idims[3]);
 
         // Create output placeholder
-        Array<T> *outArray = createValueArray(odims, (T)0);
+        Array<T> outArray = createValueArray(odims, (T)0);
 
         // Get pointers to raw data
         const T *inPtr = in.get();
-              T *outPtr = outArray->get();
+              T *outPtr = outArray.get();
 
-        af::dim4 ostrides = outArray->strides();
+        af::dim4 ostrides = outArray.strides();
         af::dim4 istrides = in.strides();
 
         switch(method) {
@@ -155,8 +155,8 @@ namespace cpu
 
 
 #define INSTANTIATE(T)                                                                            \
-    template Array<T>* resize<T> (const Array<T> &in, const dim_type odim0, const dim_type odim1, \
-                                  const af_interp_type method);
+    template Array<T> resize<T> (const Array<T> &in, const dim_type odim0, const dim_type odim1, \
+                                 const af_interp_type method);
 
 
     INSTANTIATE(float)

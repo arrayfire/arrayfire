@@ -31,8 +31,8 @@ namespace opencl
         }
 
         try {
-            okey = *copyArray<Tk>(ikey);
-            oval = *copyArray<Tv>(ival);
+            okey = copyArray<Tk>(ikey);
+            oval = copyArray<Tv>(ival);
             switch(dim) {
             case 0: kernel::sort0_by_key<Tk, Tv, isAscending>(okey, oval);
                 break;
@@ -43,13 +43,15 @@ namespace opencl
         }
     }
 
-#define INSTANTIATE(Tk, Tv)                                                                     \
-    template void                                                                               \
-    sort_by_key<Tk, Tv, true>(Array<Tk> &okey, Array<Tv> &oval,                                 \
-                        const Array<Tk> &ikey, const Array<Tv> &ival, const unsigned dim);      \
-    template void                                                                               \
-    sort_by_key<Tk, Tv,false>(Array<Tk> &okey, Array<Tv> &oval,                                 \
-                        const Array<Tk> &ikey, const Array<Tv> &ival, const unsigned dim);      \
+#define INSTANTIATE(Tk, Tv)                                             \
+    template void                                                       \
+    sort_by_key<Tk, Tv, true>(Array<Tk> &okey, Array<Tv> &oval,         \
+                              const Array<Tk> &ikey, const Array<Tv> &ival, \
+                              const unsigned dim);                      \
+    template void                                                       \
+    sort_by_key<Tk, Tv,false>(Array<Tk> &okey, Array<Tv> &oval,         \
+                              const Array<Tk> &ikey, const Array<Tv> &ival, \
+                              const unsigned dim);                      \
 
 #define INSTANTIATE1(Tk)       \
     INSTANTIATE(Tk, float)     \
