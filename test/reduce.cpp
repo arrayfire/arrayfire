@@ -75,11 +75,11 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
 
         // Delete
         delete[] outData;
+        ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
     }
 
 
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
 }
 
 vector<af_seq> init_subs()
