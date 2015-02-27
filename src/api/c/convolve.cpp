@@ -6,7 +6,6 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <af/signal.h>
@@ -88,7 +87,7 @@ af_err convolve(af_array *out, af_array signal, af_array filter)
 }
 
 template<bool expand>
-af_err convolve2_sep(af_array *out, af_array signal, af_array col_filter, af_array row_filter)
+af_err convolve2_sep(af_array *out, af_array col_filter, af_array row_filter, af_array signal)
 {
     try {
         ArrayInfo sInfo = getInfo(signal);
@@ -103,12 +102,10 @@ af_err convolve2_sep(af_array *out, af_array signal, af_array col_filter, af_arr
         ARG_ASSERT(2, (colFiltType==rowFiltType));
 
         dim4 signalDims = sInfo.dims();
-        dim4 colFiltDims= cfInfo.dims();
-        dim4 rowFiltDims= rfInfo.dims();
 
         ARG_ASSERT(1, (signalDims.ndims()==2 || signalDims.ndims()==3));
-        ARG_ASSERT(2, (colFiltDims.ndims()==1));
-        ARG_ASSERT(3, (rowFiltDims.ndims()==1));
+        ARG_ASSERT(2, cfInfo.isVector());
+        ARG_ASSERT(3, rfInfo.isVector());
 
         af_array output;
         switch(signalType) {

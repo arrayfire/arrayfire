@@ -18,6 +18,9 @@ namespace af
     // Add all the elements along a dimension
     AFAPI array sum(const array &in, const int dim = 0);
 
+    // Add all the elements along a dimension
+    AFAPI array product(const array &in, const int dim = 0);
+
     // Get the minimum of all elements along a dimension
     AFAPI array min(const array &in, const int dim = 0);
 
@@ -35,6 +38,9 @@ namespace af
 
     // Add all the elements in an array
     template<typename T> T sum(const array &in);
+
+    // Add all the elements in an array
+    template<typename T> T product(const array &in);
 
     // Get the minimum of all elements in an array
     template<typename T> T min(const array &in);
@@ -94,6 +100,9 @@ extern "C" {
     // Add all the elements along a dimension
     AFAPI af_err af_sum(af_array *out, const af_array in, const int dim);
 
+    // multiply all the elements along a dimension
+    AFAPI af_err af_product(af_array *out, const af_array in, const int dim);
+
     // Get the minimum of all elements along a dimension
     AFAPI af_err af_min(af_array *out, const af_array in, const int dim);
 
@@ -111,6 +120,9 @@ extern "C" {
 
     // Add all the elements
     AFAPI af_err af_sum_all(double *real, double *imag, const af_array in);
+
+    // multiply all the elements
+    AFAPI af_err af_product_all(double *real, double *imag, const af_array in);
 
     // Get the minimum of all elements
     AFAPI af_err af_min_all(double *real, double *imag, const af_array in);

@@ -20,6 +20,13 @@ namespace af
         return array(out);
     }
 
+    array product(const array &in, const int dim)
+    {
+        af_array out = 0;
+        AF_THROW(af_product(&out, in.get(), dim));
+        return array(out);
+    }
+
     array min(const array &in, const int dim)
     {
         af_array out = 0;
@@ -104,6 +111,7 @@ namespace af
     INSTANTIATE_CPLX(fn, af_cdouble, double)    \
 
     INSTANTIATE(sum)
+    INSTANTIATE(product)
     INSTANTIATE(min)
     INSTANTIATE(max)
     INSTANTIATE(alltrue)

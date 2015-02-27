@@ -19,6 +19,22 @@ namespace opencl
         return res;
     }
 
+    cfloat operator *(cfloat lhs, cfloat rhs)
+    {
+        cfloat out;
+        out.s[0] = lhs.s[0] * rhs.s[0] - lhs.s[1] * rhs.s[1];
+        out.s[1] = lhs.s[0] * rhs.s[1] + lhs.s[1] * rhs.s[0];
+        return out;
+    }
+
+    cdouble operator *(cdouble lhs, cdouble rhs)
+    {
+        cdouble out;
+        out.s[0] = lhs.s[0] * rhs.s[0] - lhs.s[1] * rhs.s[1];
+        out.s[1] = lhs.s[0] * rhs.s[1] + lhs.s[1] * rhs.s[0];
+        return out;
+    }
+
     cfloat division(cfloat lhs, double rhs)
     {
         cfloat retVal;

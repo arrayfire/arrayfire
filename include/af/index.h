@@ -31,6 +31,8 @@ AFAPI array moddims(const array& in, dim_type d0, dim_type d1=1, dim_type d2=1, 
 
 AFAPI array flat(const array &in);
 
+AFAPI array flip(const array &in, const unsigned dim);
+
 }
 #endif
 
@@ -67,6 +69,8 @@ extern "C" {
     AFAPI af_err af_moddims(af_array *out, const af_array in, const unsigned ndims, const dim_type * const dims);
 
     AFAPI af_err af_flat(af_array *out, const af_array in);
+
+    AFAPI af_err af_flip(af_array *out, const af_array in, const unsigned dim);
 
 #ifdef __cplusplus
 }
