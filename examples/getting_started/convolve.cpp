@@ -41,8 +41,6 @@ int main(int argc, char **argv)
 
         // ensure values are all the same across versions
         if (fail(full_out, dsep_out)) { throw af::exception("full != dsep"); }
-        if (fail(full_out, hsep_out)) { throw af::exception("full != hsep"); }
-
     } catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());
     }
