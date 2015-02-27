@@ -14,18 +14,18 @@ template<class ty, bool use_barrier>
 static ty monte_carlo_barrier(int N, ty K, ty t, ty vol, ty r, ty strike, int steps, ty B)
 {
     dtype pres = get_dtype<ty>();
-    array payoff = constant(0, 1, N, pres);
+    array payoff = constant(0, N, 1, pres);
 
     ty dt = t / (ty)(steps - 1);
-    array s = strike * constant(1, 1, N, pres);
+    array s = constant(strike, N, 1, pres);
 
-    array randmat = randn(steps - 1, N, pres);
+    array randmat = randn(N, steps - 1, pres);
     randmat = exp((r - (vol * vol * 0.5)) * dt + vol * sqrt(dt) * randmat);
 
-    array S = product(join(0, s, randmat));
+    array S = product(join(1, s, randmat), 1);
 
     if (use_barrier) {
-        S = S * alltrue(S < B);
+        S = S * alltrue(S < B, 1);
     }
 
     payoff = max(0.0, S - K);
@@ -60,7 +60,7 @@ int main()
         monte_carlo_bench<float, false>(1000);
         monte_carlo_bench<float, true>(1000);
 
-        for (int n = 25000; n <= 250000; n += 25000) {
+        for (int n = 10000; n <= 100000; n += 10000) {
             printf("Time for %7d paths - "
                    "vanilla method: %4.3f ms,  "
                    "barrier method: %4.3f ms\n", n,
