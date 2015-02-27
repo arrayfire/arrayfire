@@ -97,6 +97,7 @@ typedef enum {
 
 #define AF_MAX_DIMS 4
 
+// A handle for an internal array object
 typedef size_t af_array;
 
 typedef int dim_type;
