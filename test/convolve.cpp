@@ -289,7 +289,7 @@ void sepConvolveTest(string pTestFile, bool expand)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&r_filter, &(in[2].front()),
                 rfDims.ndims(), rfDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_convolve2_sep(&outArray, signal, c_filter, r_filter, expand));
+    ASSERT_EQ(AF_SUCCESS, af_convolve2_sep(&outArray, c_filter, r_filter, signal, expand));
 
     vector<T> currGoldBar = tests[0];
     size_t nElems         = currGoldBar.size();
@@ -372,7 +372,7 @@ TEST(Convolve, Separable_TypeCheck)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&r_filter, &(filt.front()),
                 fDims.ndims(), fDims.get(), (af_dtype)af::dtype_traits<int>::af_type));
 
-    ASSERT_EQ(AF_ERR_ARG, af_convolve2_sep(&outArray, signal, c_filter, r_filter, true));
+    ASSERT_EQ(AF_ERR_ARG, af_convolve2_sep(&outArray, c_filter, r_filter, signal, true));
 
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(signal));
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(c_filter));
@@ -404,7 +404,7 @@ TEST(Convolve, Separable_DimCheck)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&r_filter, &(filt.front()),
                 fDims.ndims(), fDims.get(), (af_dtype)af::dtype_traits<int>::af_type));
 
-    ASSERT_EQ(AF_ERR_ARG, af_convolve2_sep(&outArray, signal, c_filter, r_filter, true));
+    ASSERT_EQ(AF_ERR_ARG, af_convolve2_sep(&outArray, c_filter, r_filter, signal, true));
 
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(c_filter));
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(r_filter));
@@ -458,7 +458,7 @@ TEST(Convolve, separable_CPP)
     af::array cFilter(numDims[1], &(in[1].front()));
     af::array rFilter(numDims[2], &(in[2].front()));
 
-    af::array output = convolve(signal, cFilter, rFilter, false);
+    af::array output = convolve(cFilter, rFilter, signal, false);
 
     vector<float> currGoldBar = tests[0];
     size_t nElems  = output.elements();

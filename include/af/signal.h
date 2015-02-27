@@ -47,7 +47,7 @@ AFAPI array ifft3(const array& in, dim_type odim0=0, dim_type odim1=0, dim_type 
 
 AFAPI array convolve(const array& signal, const array& filter, bool expand=false);
 
-AFAPI array convolve(const array& signal, const array& col_filter, const array& row_filter, bool expand=false);
+AFAPI array convolve(const array& col_filter, const array& row_filter, const array& signal, bool expand=false);
 
 AFAPI array convolve1(const array& signal, const array& filter, bool expand=false);
 
@@ -90,7 +90,7 @@ AFAPI af_err af_convolve2(af_array *out, af_array signal, af_array filter, bool 
 
 AFAPI af_err af_convolve3(af_array *out, af_array signal, af_array filter, bool expand);
 
-AFAPI af_err af_convolve2_sep(af_array *out, af_array signal, af_array col_filter, af_array row_filter, bool expand);
+AFAPI af_err af_convolve2_sep(af_array *out, af_array col_filter, af_array row_filter, af_array signal, bool expand);
 
 #ifdef __cplusplus
 }
