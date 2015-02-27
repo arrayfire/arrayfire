@@ -21,7 +21,7 @@ using namespace detail;
 template<typename T, bool is_color>
 static inline af_array meanshift(const af_array &in, const float &s_sigma, const float &c_sigma, const unsigned iter)
 {
-    return getHandle(*meanshift<T, is_color>(getArray<T>(in), s_sigma, c_sigma, iter));
+    return getHandle(meanshift<T, is_color>(getArray<T>(in), s_sigma, c_sigma, iter));
 }
 
 template<bool is_color>

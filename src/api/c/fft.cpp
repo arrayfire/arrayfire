@@ -21,13 +21,13 @@ using namespace detail;
 template<typename inType, typename outType, int rank, bool isR2C>
 static af_array fft(af_array in, double normalize, dim_type const npad, dim_type const * const pad)
 {
-    return getHandle(*fft<inType, outType, rank, isR2C>(getArray<inType>(in), normalize, npad, pad));
+    return getHandle(fft<inType, outType, rank, isR2C>(getArray<inType>(in), normalize, npad, pad));
 }
 
 template<typename T, int rank>
 static af_array ifft(af_array in, double normalize, dim_type const npad, dim_type const * const pad)
 {
-    return getHandle(*ifft<T, rank>(getArray<T>(in), normalize, npad, pad));
+    return getHandle(ifft<T, rank>(getArray<T>(in), normalize, npad, pad));
 }
 
 template<int rank>

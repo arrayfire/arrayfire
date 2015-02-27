@@ -55,6 +55,24 @@ namespace af
         return array(out);
     }
 
+    void min(array &val, array &idx, const array &in, const int dim)
+    {
+        af_array out = 0;
+        af_array loc = 0;
+        AF_THROW(af_imin(&out, &loc, in.get(), dim));
+        val = array(out);
+        idx = array(loc);
+    }
+
+    void max(array &val, array &idx, const array &in, const int dim)
+    {
+        af_array out = 0;
+        af_array loc = 0;
+        AF_THROW(af_imax(&out, &loc, in.get(), dim));
+        val = array(out);
+        idx = array(loc);
+    }
+
 #define INSTANTIATE_REAL(fn, T)                             \
     template<> AFAPI                                        \
     T fn(const array &in)                                   \
@@ -91,4 +109,40 @@ namespace af
     INSTANTIATE(alltrue)
     INSTANTIATE(anytrue)
     INSTANTIATE(count)
+
+#undef INSTANTIATE
+#undef INSTANTIATE_REAL
+#undef INSTANTIATE_CPLX
+
+#define INSTANTIATE_REAL(fn, T)                                 \
+    template<> AFAPI                                            \
+    void fn(T *val, unsigned *idx, const array &in)             \
+    {                                                           \
+        double rval, ival;                                      \
+        AF_THROW(af_i##fn##_all(&rval, &ival, idx, in.get()));  \
+        *val = (T)(rval);                                       \
+    }                                                           \
+
+
+#define INSTANTIATE_CPLX(fn, T, Tr)                             \
+    template<> AFAPI                                            \
+    void fn(T *val, unsigned *idx, const array &in)             \
+    {                                                           \
+        double rval, ival;                                      \
+        AF_THROW(af_i##fn##_all(&rval, &ival, idx, in.get()));  \
+        *val = {(Tr)rval, (Tr)ival};                            \
+    }                                                           \
+
+#define INSTANTIATE(fn)                         \
+    INSTANTIATE_REAL(fn, float)                 \
+    INSTANTIATE_REAL(fn, double)                \
+    INSTANTIATE_REAL(fn, int)                   \
+    INSTANTIATE_REAL(fn, unsigned)              \
+    INSTANTIATE_REAL(fn, char)                  \
+    INSTANTIATE_REAL(fn, unsigned char)         \
+    INSTANTIATE_CPLX(fn, af_cfloat, float)      \
+    INSTANTIATE_CPLX(fn, af_cdouble, double)    \
+
+    INSTANTIATE(min)
+    INSTANTIATE(max)
 }

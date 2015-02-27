@@ -22,15 +22,15 @@
 namespace cuda
 {
     template<af_op_t op, typename Ti, typename To>
-    Array<To>* scan(const Array<Ti> &in, const int dim)
+    Array<To> scan(const Array<Ti> &in, const int dim)
     {
-        Array<To> *out = createEmptyArray<To>(in.dims());
+        Array<To> out = createEmptyArray<To>(in.dims());
 
         switch (dim) {
-        case 0: kernel::scan_first<Ti, To, op   >(*out, in); break;
-        case 1: kernel::scan_dim  <Ti, To, op, 1>(*out, in); break;
-        case 2: kernel::scan_dim  <Ti, To, op, 2>(*out, in); break;
-        case 3: kernel::scan_dim  <Ti, To, op, 3>(*out, in); break;
+        case 0: kernel::scan_first<Ti, To, op   >(out, in); break;
+        case 1: kernel::scan_dim  <Ti, To, op, 1>(out, in); break;
+        case 2: kernel::scan_dim  <Ti, To, op, 2>(out, in); break;
+        case 3: kernel::scan_dim  <Ti, To, op, 3>(out, in); break;
         }
 
         return out;
@@ -38,7 +38,7 @@ namespace cuda
 
 
 #define INSTANTIATE(ROp, Ti, To)                                        \
-    template Array<To>* scan<ROp, Ti, To>(const Array<Ti> &in, const int dim); \
+    template Array<To> scan<ROp, Ti, To>(const Array<Ti> &in, const int dim); \
 
     //accum
     INSTANTIATE(af_add_t, float  , float  )

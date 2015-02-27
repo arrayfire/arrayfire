@@ -16,19 +16,33 @@ namespace af
     class array;
 
 
-    AFAPI array constant(double val, const dim4 &dims, dtype ty=f32);
-    AFAPI array constant(cdouble val, const dim4 &dims);
-    AFAPI array constant(cfloat val, const dim4 &dims);
+#define CONSTANT(TYPE, TY)                                          \
+    AFAPI array constant(TYPE val, const dim4 &dims, dtype ty=TY);  \
+    AFAPI array constant(TYPE val, const dim_type d0, dtype ty=TY); \
+    AFAPI array constant(TYPE val, const dim_type d0,               \
+                         const dim_type d1, dtype ty=TY);           \
+    AFAPI array constant(TYPE val, const dim_type d0,               \
+                         const dim_type d1, const dim_type d2,      \
+                         dtype ty=TY);                              \
+    AFAPI array constant(TYPE val, const dim_type d0,               \
+                         const dim_type d1, const dim_type d2,      \
+                         const dim_type d3, dtype ty=TY);           \
 
-    AFAPI array constant(double val, const dim_type d0, dtype ty=f32);
-    AFAPI array constant(double val, const dim_type d0,
-                         const dim_type d1, dtype ty=f32);
-    AFAPI array constant(double val, const dim_type d0,
-                         const dim_type d1, const dim_type d2, dtype ty=f32);
-    AFAPI array constant(double val, const dim_type d0,
-                         const dim_type d1, const dim_type d2,
-                         const dim_type d3, dtype ty=f32);
+    CONSTANT(double             , f32);
+    CONSTANT(float              , f32);
+    CONSTANT(int                , f32);
+    CONSTANT(unsigned           , f32);
+    CONSTANT(char               , f32);
+    CONSTANT(unsigned char      , f32);
+    CONSTANT(cfloat             , c32);
+    CONSTANT(cdouble            , c64);
+    CONSTANT(long               , s64);
+    CONSTANT(unsigned long      , u64);
+    CONSTANT(long long          , s64);
+    CONSTANT(unsigned long long , u64);
+    CONSTANT(bool               ,  b8);
 
+#undef CONSTANT
 
     AFAPI array randu(const dim4 &dims, dtype ty=f32);
     AFAPI array randu(const dim_type d0, dtype ty=f32);
@@ -77,6 +91,11 @@ extern "C" {
 
     AFAPI af_err af_constant_complex(af_array *arr, const double real, const double imag,
                                      const unsigned ndims, const dim_type * const dims, const af_dtype type);
+
+    AFAPI af_err af_constant_long (af_array *arr, const  intl val, const unsigned ndims, const dim_type * const dims);
+
+    AFAPI af_err af_constant_ulong(af_array *arr, const uintl val, const unsigned ndims, const dim_type * const dims);
+
     // Create sequence array
     AFAPI af_err af_iota(af_array *arr, const unsigned ndims, const dim_type * const dims,
                          const int rep, const af_dtype type);

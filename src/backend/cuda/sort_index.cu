@@ -20,8 +20,8 @@ namespace cuda
     template<typename T, bool isAscending>
     void sort_index(Array<T> &val, Array<uint> &idx, const Array<T> &in, const uint dim)
     {
-        val = *copyArray<T>(in);
-        idx = *createEmptyArray<uint>(in.dims());
+        val = copyArray<T>(in);
+        idx = createEmptyArray<uint>(in.dims());
         switch(dim) {
             case 0: kernel::sort0_index<T, isAscending>(val, idx);
                     break;

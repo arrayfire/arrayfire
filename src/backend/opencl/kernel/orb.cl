@@ -7,10 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if T == double
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#endif
-
 // Reference pattern, generated for a patch size of 31x31, as suggested by
 // original ORB paper
 #define REF_PAT_SAMPLES 256

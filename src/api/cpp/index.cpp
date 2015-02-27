@@ -31,6 +31,13 @@ array moddims(const array& in, dim_type d0, dim_type d1, dim_type d2, dim_type d
     return af::moddims(in, 4, dims);
 }
 
+array flat(const array& in)
+{
+    af_array out = 0;
+    AF_THROW(af_flat(&out, in.get()));
+    return array(out);
+}
+
 array join(const int dim, const array& first, const array& second)
 {
     af_array out = 0;

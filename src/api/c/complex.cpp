@@ -27,7 +27,7 @@ template<typename To, typename Ti>
 static inline af_array cplx(const af_array lhs, const af_array rhs,
                             const dim4 &odims, bool destroy=true)
 {
-    af_array res = getHandle(*cplx<To, Ti>(getArray<Ti>(lhs), getArray<Ti>(rhs), odims));
+    af_array res = getHandle(cplx<To, Ti>(getArray<Ti>(lhs), getArray<Ti>(rhs), odims));
     if (destroy) {
         // All inputs to this function are temporary references
         // Delete the temporary references
@@ -115,8 +115,8 @@ af_err af_real(af_array *out, const af_array in)
         af_array res;
         switch (type) {
 
-        case c32: res = getHandle(*real<float , cfloat >(getArray<cfloat >(in))); break;
-        case c64: res = getHandle(*real<double, cdouble>(getArray<cdouble>(in))); break;
+        case c32: res = getHandle(real<float , cfloat >(getArray<cfloat >(in))); break;
+        case c64: res = getHandle(real<double, cdouble>(getArray<cdouble>(in))); break;
 
         default: TYPE_ERROR(0, type);
         }
@@ -141,8 +141,8 @@ af_err af_imag(af_array *out, const af_array in)
         af_array res;
         switch (type) {
 
-        case c32: res = getHandle(*imag<float , cfloat >(getArray<cfloat >(in))); break;
-        case c64: res = getHandle(*imag<double, cdouble>(getArray<cdouble>(in))); break;
+        case c32: res = getHandle(imag<float , cfloat >(getArray<cfloat >(in))); break;
+        case c64: res = getHandle(imag<double, cdouble>(getArray<cdouble>(in))); break;
 
         default: TYPE_ERROR(0, type);
         }
@@ -167,8 +167,8 @@ af_err af_conjg(af_array *out, const af_array in)
         af_array res;
         switch (type) {
 
-        case c32: res = getHandle(*conj<cfloat >(getArray<cfloat >(in))); break;
-        case c64: res = getHandle(*conj<cdouble>(getArray<cdouble>(in))); break;
+        case c32: res = getHandle(conj<cfloat >(getArray<cfloat >(in))); break;
+        case c64: res = getHandle(conj<cdouble>(getArray<cdouble>(in))); break;
 
         default: TYPE_ERROR(0, type);
         }
@@ -192,10 +192,10 @@ af_err af_abs(af_array *out, const af_array in)
         af_array input = cast(in, type);
 
         switch (type) {
-        case f32: res = getHandle(*abs<float ,  float >(getArray<float  >(input))); break;
-        case f64: res = getHandle(*abs<double,  double>(getArray<double >(input))); break;
-        case c32: res = getHandle(*abs<float , cfloat >(getArray<cfloat >(input))); break;
-        case c64: res = getHandle(*abs<double, cdouble>(getArray<cdouble>(input))); break;
+        case f32: res = getHandle(abs<float ,  float >(getArray<float  >(input))); break;
+        case f64: res = getHandle(abs<double,  double>(getArray<double >(input))); break;
+        case c32: res = getHandle(abs<float , cfloat >(getArray<cfloat >(input))); break;
+        case c64: res = getHandle(abs<double, cdouble>(getArray<cdouble>(input))); break;
         default:
             TYPE_ERROR(1, in_type); break;
         }

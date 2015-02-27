@@ -15,17 +15,17 @@
 namespace cuda
 {
     template<typename T>
-    Array<T> *rotate(const Array<T> &in, const float theta, const af::dim4 &odims,
+    Array<T> rotate(const Array<T> &in, const float theta, const af::dim4 &odims,
                      const af_interp_type method)
     {
-        Array<T> *out = createEmptyArray<T>(odims);
+        Array<T> out = createEmptyArray<T>(odims);
 
         switch(method) {
             case AF_INTERP_NEAREST:
-                kernel::rotate<T, AF_INTERP_NEAREST> (*out, in, theta);
+                kernel::rotate<T, AF_INTERP_NEAREST> (out, in, theta);
                 break;
             case AF_INTERP_BILINEAR:
-                kernel::rotate<T, AF_INTERP_BILINEAR>(*out, in, theta);
+                kernel::rotate<T, AF_INTERP_BILINEAR>(out, in, theta);
                 break;
             default:
                 AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
@@ -36,8 +36,8 @@ namespace cuda
 
 
 #define INSTANTIATE(T)                                                                          \
-    template Array<T> *rotate(const Array<T> &in, const float theta,                            \
-                              const af::dim4 &odims, const af_interp_type method);              \
+    template Array<T> rotate(const Array<T> &in, const float theta,                            \
+                             const af::dim4 &odims, const af_interp_type method); \
 
 
     INSTANTIATE(float)

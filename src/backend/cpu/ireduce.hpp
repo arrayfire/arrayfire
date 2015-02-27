@@ -7,17 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-kernel
-void
-binaryOp(   global  R*      out,
-            global  T*      lhs,
-            global  U*      rhs,
-            const   unsigned long elements)
+#include <af/array.h>
+#include <Array.hpp>
+#include <ops.hpp>
+
+namespace cpu
 {
-    size_t idx = get_global_id(0);
-    if(idx < elements) {
-        out[idx] = lhs[idx] OP rhs[idx];
+    template<af_op_t op, typename T>
+    void ireduce(Array<T> &out, Array<uint> &loc,
+                 const Array<T> &in, const int dim);
 
-    }
+    template<af_op_t op, typename T>
+    T ireduce_all(unsigned *loc, const Array<T> &in);
 }
-

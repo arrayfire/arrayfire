@@ -25,7 +25,7 @@ using namespace detail;
 template<typename T, af_op_t op>
 static inline af_array unaryOp(const af_array in)
 {
-    af_array res = getHandle(*unaryOp<T, op>(getArray<T>(in)));
+    af_array res = getHandle(unaryOp<T, op>(getArray<T>(in)));
     // All inputs to this function are temporary references
     // Delete the temporary references
     destroyHandle<T>(in);
@@ -124,7 +124,7 @@ af_err af_not(af_array *out, const af_array in)
 template<typename T, af_op_t op>
 static inline af_array checkOp(const af_array in)
 {
-    af_array res = getHandle(*checkOp<T, op>(getArray<T>(in)));
+    af_array res = getHandle(checkOp<T, op>(getArray<T>(in)));
     // All inputs to this function are temporary references
     // Delete the temporary references
     destroyHandle<T>(in);

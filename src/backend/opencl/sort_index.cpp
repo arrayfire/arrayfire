@@ -20,9 +20,14 @@ namespace opencl
     template<typename T, bool isAscending>
     void sort_index(Array<T> &val, Array<uint> &idx, const Array<T> &in, const uint dim)
     {
+        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
+            !isDoubleSupported(getActiveDeviceId())) {
+            OPENCL_NOT_SUPPORTED();
+        }
+
         try {
-            val = *copyArray<T>(in);
-            idx = *createEmptyArray<uint>(in.dims());
+            val = copyArray<T>(in);
+            idx = createEmptyArray<uint>(in.dims());
 
             switch(dim) {
             case 0: kernel::sort0_index<T, isAscending>(val, idx);

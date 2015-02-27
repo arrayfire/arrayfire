@@ -16,8 +16,11 @@ namespace cpu
 {
 
 template<typename T, typename convAccT>
-void orb(features &feat, Array<unsigned>** desc, const Array<T>& image,
-         const float fast_thr, const unsigned max_feat,
-         const float scl_fctr, const unsigned levels);
+unsigned orb(Array<float> &x, Array<float> &y, Array<float> &score,
+             Array<float> &orientation, Array<float> &size,
+             Array<unsigned> &desc,
+             const Array<T>& image,
+             const float fast_thr, const unsigned max_feat,
+             const float scl_fctr, const unsigned levels);
 
 }

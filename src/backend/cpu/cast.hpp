@@ -66,7 +66,7 @@ CAST_B8(uchar)
 CAST_B8(char)
 
 template<typename To, typename Ti>
-Array<To>* cast(const Array<Ti> &in)
+Array<To> cast(const Array<Ti> &in)
 {
     TNJ::Node_ptr in_node = in.getNode();
     TNJ::UnaryNode<To, Ti, af_cast_t> *node = new TNJ::UnaryNode<To, Ti, af_cast_t>(in_node);

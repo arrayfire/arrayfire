@@ -81,12 +81,30 @@ struct CastOp<cdouble, cfloat>
     }
 };
 
+template<>
+struct CastOp<cfloat, cfloat>
+{
+    const char *name()
+    {
+        return "__convert_c2c";
+    }
+};
+
+
+template<>
+struct CastOp<cdouble, cdouble>
+{
+    const char *name()
+    {
+        return "__convert_z2z";
+    }
+};
 
 #undef CAST_FN
 #undef CAST_CFN
 
 template<typename To, typename Ti>
-Array<To>* cast(const Array<Ti> &in)
+Array<To> cast(const Array<Ti> &in)
 {
     CastOp<To, Ti> cop;
     JIT::Node_ptr in_node = in.getNode();

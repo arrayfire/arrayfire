@@ -21,7 +21,7 @@ using af::dim4;
 namespace cpu
 {
     template<typename T>
-    Array<uint> *where(const Array<T> &in)
+    Array<uint> where(const Array<T> &in)
     {
         const dim_type *dims    = in.dims().get();
         const dim_type *strides = in.strides().get();
@@ -54,12 +54,12 @@ namespace cpu
             }
         }
 
-        Array<uint> *out = createHostDataArray(dim4(count), out_vec);
+        Array<uint> out = createHostDataArray(dim4(count), out_vec);
         return out;
     }
 
 #define INSTANTIATE(T)                                  \
-    template Array<uint>* where<T>(const Array<T> &in);    \
+    template Array<uint> where<T>(const Array<T> &in);    \
 
     INSTANTIATE(float  )
     INSTANTIATE(cfloat )

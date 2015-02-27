@@ -24,8 +24,8 @@ void memcopy_kernel(__global T *out, dims_t ostrides,
     const dim_type id3 = get_group_id(1) / groups_1;
     const dim_type group_id_0 = get_group_id(0) - groups_0 * id2;
     const dim_type group_id_1 = get_group_id(1) - groups_1 * id3;
-    const dim_type id0 = group_id_0 * get_num_groups(0) + lid0;
-    const dim_type id1 = group_id_1 * get_num_groups(1) + lid1;
+    const dim_type id0 = group_id_0 * get_local_size(0) + lid0;
+    const dim_type id1 = group_id_1 * get_local_size(1) + lid1;
 
     in += offset;
 

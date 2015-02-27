@@ -21,14 +21,14 @@ template<typename T>
 static inline af_array matmul(const af_array lhs, const af_array rhs,
                     af_blas_transpose optLhs, af_blas_transpose optRhs)
 {
-    return getHandle(*detail::matmul<T>(getArray<T>(lhs), getArray<T>(rhs), optLhs, optRhs));
+    return getHandle(detail::matmul<T>(getArray<T>(lhs), getArray<T>(rhs), optLhs, optRhs));
 }
 
 template<typename T>
 static inline af_array dot(const af_array lhs, const af_array rhs,
                     af_blas_transpose optLhs, af_blas_transpose optRhs)
 {
-    return getHandle(*detail::dot<T>(getArray<T>(lhs), getArray<T>(rhs), optLhs, optRhs));
+    return getHandle(detail::dot<T>(getArray<T>(lhs), getArray<T>(rhs), optLhs, optRhs));
 }
 
 af_err af_matmul(   af_array *out,

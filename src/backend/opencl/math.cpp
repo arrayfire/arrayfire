@@ -18,4 +18,20 @@ namespace opencl
         cdouble res = {{a.s[0] + b.s[0], a.s[1] + b.s[1]}};
         return res;
     }
+
+    cfloat division(cfloat lhs, double rhs)
+    {
+        cfloat retVal;
+        retVal.s[0] = real(lhs) / rhs;
+        retVal.s[1] = imag(lhs) / rhs;
+        return retVal;
+    }
+
+    cdouble division(cdouble lhs, double rhs)
+    {
+        cdouble retVal;
+        retVal.s[0] = real(lhs) / rhs;
+        retVal.s[1] = imag(lhs) / rhs;
+        return retVal;
+    }
 }

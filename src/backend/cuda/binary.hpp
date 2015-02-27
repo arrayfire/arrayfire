@@ -70,7 +70,7 @@ BINARY(hypot)
 #undef BINARY
 
 template<typename To, typename Ti, af_op_t op>
-Array<To> *createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs, const af::dim4 &odims)
+Array<To> createBinaryNode(const Array<Ti> &lhs, const Array<Ti> &rhs, const af::dim4 &odims)
 {
     BinOp<To, Ti, op> bop;
 

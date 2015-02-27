@@ -21,7 +21,7 @@ namespace cuda
 {
 
 template<typename T, bool isDilation>
-Array<T> * morph(const Array<T> &in, const Array<T> &mask)
+Array<T>  morph(const Array<T> &in, const Array<T> &mask)
 {
     const dim4 mdims = mask.dims();
 
@@ -30,16 +30,16 @@ Array<T> * morph(const Array<T> &in, const Array<T> &mask)
     if (mdims[0] > 19)
         AF_ERROR("Upto 19x19 square kernels are only supported in cuda currently", AF_ERR_SIZE);
 
-    Array<T>* out = createEmptyArray<T>(in.dims());
+    Array<T> out = createEmptyArray<T>(in.dims());
 
     CUDA_CHECK(cudaMemcpyToSymbol(kernel::cFilter, mask.get(),
                                   mdims[0] * mdims[1] * sizeof(T),
                                   0, cudaMemcpyDeviceToDevice));
 
     if (isDilation)
-        kernel::morph<T, true >(*out, in, mdims[0]);
+        kernel::morph<T, true >(out, in, mdims[0]);
     else
-        kernel::morph<T, false>(*out, in, mdims[0]);
+        kernel::morph<T, false>(out, in, mdims[0]);
 
     return out;
 }
@@ -47,4 +47,4 @@ Array<T> * morph(const Array<T> &in, const Array<T> &mask)
 }
 
 #define INSTANTIATE(T, ISDILATE)                                        \
-    template Array<T> * morph  <T, ISDILATE>(const Array<T> &in, const Array<T> &mask);
+    template Array<T> morph  <T, ISDILATE>(const Array<T> &in, const Array<T> &mask);

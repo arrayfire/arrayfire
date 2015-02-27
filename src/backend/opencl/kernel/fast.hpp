@@ -58,6 +58,11 @@ void fast(unsigned* out_feat,
                         << " -D ARC_LENGTH=" << arc_length
                         << " -D NONMAX=" << static_cast<unsigned>(nonmax);
 
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
+
                 buildProgram(fastProgs[device],
                              fast_cl,
                              fast_cl_len,
@@ -166,6 +171,71 @@ void fast(unsigned* out_feat,
     } catch (cl::Error err) {
         CL_TO_AF_ERROR(err);
         throw;
+    }
+}
+
+template<typename T, bool nonmax>
+void fast_dispatch_nonmax(const unsigned arc_length,
+                          unsigned* out_feat,
+                          Param &x_out,
+                          Param &y_out,
+                          Param &score_out,
+                          Param in,
+                          const float thr,
+                          const float feature_ratio)
+{
+    switch (arc_length) {
+    case 9:
+        fast<T,  9, nonmax>(out_feat, x_out, y_out, score_out, in,
+                            thr, feature_ratio);
+        break;
+    case 10:
+        fast<T, 10, nonmax>(out_feat, x_out, y_out, score_out, in,
+                            thr, feature_ratio);
+        break;
+    case 11:
+        fast<T, 11, nonmax>(out_feat, x_out, y_out, score_out, in,
+                            thr, feature_ratio);
+        break;
+    case 12:
+        fast<T, 12, nonmax>(out_feat, x_out, y_out, score_out, in,
+                            thr, feature_ratio);
+        break;
+    case 13:
+        fast<T, 13, nonmax>(out_feat, x_out, y_out, score_out, in,
+                            thr, feature_ratio);
+        break;
+    case 14:
+        fast<T, 14, nonmax>(out_feat, x_out, y_out, score_out, in,
+                            thr, feature_ratio);
+        break;
+    case 15:
+        fast<T, 15, nonmax>(out_feat, x_out, y_out, score_out, in,
+                            thr, feature_ratio);
+        break;
+    case 16:
+        fast<T, 16, nonmax>(out_feat, x_out, y_out, score_out, in,
+                            thr, feature_ratio);
+        break;
+    }
+}
+
+template<typename T>
+void fast_dispatch(const unsigned arc_length, const bool nonmax,
+                   unsigned* out_feat,
+                   Param &x_out,
+                   Param &y_out,
+                   Param &score_out,
+                   Param in,
+                   const float thr,
+                   const float feature_ratio)
+{
+    if (!nonmax) {
+        fast_dispatch_nonmax<T, 0>(arc_length, out_feat, x_out, y_out, score_out, in,
+                                   thr, feature_ratio);
+    } else {
+        fast_dispatch_nonmax<T, 1>(arc_length, out_feat, x_out, y_out, score_out, in,
+                                   thr, feature_ratio);
     }
 }
 

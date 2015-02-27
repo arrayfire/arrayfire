@@ -13,6 +13,6 @@ namespace cpu
 {
 
 template<typename T>
-Array<T> * transpose(const Array<T> &in, const bool conjugate);
+Array<T>  transpose(const Array<T> &in, const bool conjugate);
 
 }

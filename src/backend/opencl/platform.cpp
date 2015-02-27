@@ -81,66 +81,68 @@ DeviceManager::~DeviceManager()
 void DeviceManager::setContext(int device)
 {
     mActiveQId = device;
-    for (int i = 0; i< (int)mCtxOffsets.size(); ++i) {
-        if (device< (int)mCtxOffsets[i]) {
-            mActiveCtxId = i;
-            break;
-        }
-    }
+    mActiveCtxId = device;
 }
 
 DeviceManager::DeviceManager()
     : mActiveCtxId(0), mActiveQId(0)
 {
-    std::vector<cl::Platform>   platforms;
-    Platform::get(&platforms);
+    try {
+        std::vector<cl::Platform>   platforms;
+        Platform::get(&platforms);
 
-    cl_device_type DEVC_TYPES[3] = {CL_DEVICE_TYPE_GPU,
-                                    CL_DEVICE_TYPE_ACCELERATOR,
-                                    CL_DEVICE_TYPE_CPU};
+        cl_device_type DEVC_TYPES[] = {
+            CL_DEVICE_TYPE_GPU,
+#ifndef OS_MAC
+            CL_DEVICE_TYPE_ACCELERATOR,
+            CL_DEVICE_TYPE_CPU
+#endif
+        };
 
-    for (auto &platform : platforms)
-        mPlatforms.push_back(new Platform(platform));
+        for (auto &platform : platforms)
+            mPlatforms.push_back(new Platform(platform));
 
-    for (auto devType : DEVC_TYPES) {
-        for (auto &platform : platforms) {
-            cl_context_properties cps[3] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platform()), 0};
-            Context *temp = nullptr;
-            try {
-                temp = new Context(devType, cps);
-                mContexts.push_back(temp);
+        unsigned nDevices = 0;
+        for (auto devType : DEVC_TYPES) {
+            for (auto &platform : platforms) {
+                cl_context_properties cps[3] = {CL_CONTEXT_PLATFORM,
+                                                (cl_context_properties)(platform()),
+                                                0};
+                std::vector<Device> devs;
+                try {
+                    platform.getDevices(devType, &devs);
+                } catch(const cl::Error &err) {
+                    if (err.err() != CL_DEVICE_NOT_FOUND) {
+                        throw;
+                    }
+                }
+
+                for (auto dev : devs) {
+                    nDevices++;
+                    Context *ctx = new Context(dev, cps);
+                    CommandQueue *cq = new CommandQueue(*ctx, dev);
+                    mDevices.push_back(new Device(dev));
+                    mContexts.push_back(ctx);
+                    mQueues.push_back(cq);
+                    mCtxOffsets.push_back(nDevices);
+                }
             }
-            catch (const cl::Error &error) {
-                if (error.err() != CL_DEVICE_NOT_FOUND)
-                    CL_TO_AF_ERROR(error);
+        }
+
+        const char* deviceENV = getenv("AF_OPENCL_DEFAULT_DEVICE");
+        if(deviceENV) {
+            std::stringstream s(deviceENV);
+            int def_device = -1;
+            s >> def_device;
+            if(def_device < 0 || def_device >= (int)nDevices) {
+                printf("WARNING: AF_OPENCL_DEFAULT_DEVICE is out of range\n");
+                printf("Setting default device as 0\n");
+            } else {
+                setContext(def_device);
             }
         }
-    }
-
-    unsigned nDevices = 0;
-    for (auto context : mContexts) {
-        vector<Device> devices = context->getInfo<CL_CONTEXT_DEVICES>();
-
-        for(auto &dev : devices) {
-            nDevices++;
-            mDevices.push_back(new Device(dev));
-            mQueues.push_back(new CommandQueue(*context, dev));
-        }
-
-        mCtxOffsets.push_back(nDevices);
-    }
-
-    const char* deviceENV = getenv("AF_OPENCL_DEFAULT_DEVICE");
-    if(deviceENV) {
-        std::stringstream s(deviceENV);
-        int def_device = -1;
-        s >> def_device;
-        if(def_device < 0 || def_device >= (int)nDevices) {
-            printf("WARNING: AF_OPENCL_DEFAULT_DEVICE is out of range\n");
-            printf("Setting default device as 0\n");
-        } else {
-            setContext(def_device);
-        }
+    } catch (const cl::Error &error) {
+            CL_TO_AF_ERROR(error);
     }
 }
 

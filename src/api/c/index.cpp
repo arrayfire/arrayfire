@@ -26,18 +26,11 @@ using std::swap;
 template<typename T>
 static void indexArray(af_array &dest, const af_array &src, const unsigned ndims, const af_seq *index)
 {
-    using af::toOffset;
-    using af::toDims;
-    using af::toStride;
-
     const Array<T> &parent = getArray<T>(src);
     vector<af_seq> index_(index, index+ndims);
+    Array<T> dst =  createSubArray(parent, index_);
 
-    Array<T>* dst =  createSubArray(    parent,
-                                        toDims(index_, parent.dims()),
-                                        toOffset(index_, parent.dims()),
-                                        toStride(index_, parent.dims()) );
-    dest = getHandle(*dst);
+    dest = getHandle(dst);
 }
 
 af_err af_index(af_array *result, const af_array in, const unsigned ndims, const af_seq* index)
@@ -72,14 +65,14 @@ static af_array arrayIndex(const af_array &in, const af_array &idx, const unsign
     af_dtype inType  = inInfo.getType();
 
     switch(inType) {
-        case f32: return getHandle(*arrayIndex<float   , idx_t > (getArray<float   >(in), getArray<idx_t>(idx), dim));
-        case c32: return getHandle(*arrayIndex<cfloat  , idx_t > (getArray<cfloat  >(in), getArray<idx_t>(idx), dim));
-        case f64: return getHandle(*arrayIndex<double  , idx_t > (getArray<double  >(in), getArray<idx_t>(idx), dim));
-        case c64: return getHandle(*arrayIndex<cdouble , idx_t > (getArray<cdouble >(in), getArray<idx_t>(idx), dim));
-        case s32: return getHandle(*arrayIndex<int     , idx_t > (getArray<int     >(in), getArray<idx_t>(idx), dim));
-        case u32: return getHandle(*arrayIndex<unsigned, idx_t > (getArray<unsigned>(in), getArray<idx_t>(idx), dim));
-        case  u8: return getHandle(*arrayIndex<uchar   , idx_t > (getArray<uchar   >(in), getArray<idx_t>(idx), dim));
-        case  b8: return getHandle(*arrayIndex<char    , idx_t > (getArray<char    >(in), getArray<idx_t>(idx), dim));
+        case f32: return getHandle(arrayIndex<float   , idx_t > (getArray<float   >(in), getArray<idx_t>(idx), dim));
+        case c32: return getHandle(arrayIndex<cfloat  , idx_t > (getArray<cfloat  >(in), getArray<idx_t>(idx), dim));
+        case f64: return getHandle(arrayIndex<double  , idx_t > (getArray<double  >(in), getArray<idx_t>(idx), dim));
+        case c64: return getHandle(arrayIndex<cdouble , idx_t > (getArray<cdouble >(in), getArray<idx_t>(idx), dim));
+        case s32: return getHandle(arrayIndex<int     , idx_t > (getArray<int     >(in), getArray<idx_t>(idx), dim));
+        case u32: return getHandle(arrayIndex<unsigned, idx_t > (getArray<unsigned>(in), getArray<idx_t>(idx), dim));
+        case  u8: return getHandle(arrayIndex<uchar   , idx_t > (getArray<uchar   >(in), getArray<idx_t>(idx), dim));
+        case  b8: return getHandle(arrayIndex<char    , idx_t > (getArray<char    >(in), getArray<idx_t>(idx), dim));
         default : TYPE_ERROR(1, inType);
     }
 }
