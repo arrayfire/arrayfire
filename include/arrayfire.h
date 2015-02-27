@@ -37,8 +37,6 @@
      @defgroup data Device memory management, access
      @defgroup gfor Parallelized loops: gfor
      @defgroup device_mat Device management
-     @defgroup gfx_mat Visualizing data
-     @defgroup licensing Licensing
      @defgroup disp Displaying variables
    @}
 
@@ -79,6 +77,12 @@
    @}
 
 @}
+
+\defgroup c_interface C Interface
+@{
+    \defgroup arr_basic Basic Functions(Allocation, Copy, Destroy)
+@}
+
 */
 
 #include "af/compatible.h"

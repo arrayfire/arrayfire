@@ -47,25 +47,26 @@ namespace af
 
     public:
         /**
+            \ingroup array_construct
+            @{
+        */
+        /**
             Create non-dimensioned array (no data, undefined size)
 
             \code
             array A, B, C;   // creates three arrays called A, B and C
             \endcode
-            \ingroup array_construct
         */
         array();
         /**
             Creates an array from an \ref af_array handle
             \param handle the af_array object.
-            \ingroup array_construct
          */
         array(const af_array handle);
         /**
             Creates an arra
             TODO: Copy or reference semantics?
             \param in The input \ref array
-            \ingroup array_construct
          */
         array(const array& in);
 
@@ -88,7 +89,6 @@ namespace af
             \param[in] dim0 number of columns in the array
             \param[in] ty optional label describing the data type
                        (default is f32)
-            \ingroup array_construct
 
         */
         array(dim_type dim0, dtype ty = f32);
@@ -113,7 +113,6 @@ namespace af
             \param[in] dim1 number of rows in the array
             \param[in] ty optional label describing the data type
                        (default is f32)
-            \ingroup array_construct
 
         */
         array(dim_type dim0, dim_type dim1, dtype ty = f32);
@@ -139,7 +138,6 @@ namespace af
             \param[in] dim2 third dimension of the array
             \param[in] ty optional label describing the data type
                        (default is f32)
-            \ingroup array_construct
 
         */
         array(dim_type dim0, dim_type dim1, dim_type dim2, dtype ty = f32);
@@ -166,7 +164,6 @@ namespace af
             \param[in] ty optional label describing the data type
                        (default is f32)
 
-            \ingroup array_construct
         */
         array(dim_type dim0, dim_type dim1, dim_type dim2, dim_type dim3, dtype ty = f32);
 
@@ -194,7 +191,6 @@ namespace af
             \param[in] dims size of the array
             \param[in] ty optional label describing the data type
                        (default is f32)
-            \ingroup array_construct
         */
         array(const dim4& dims, dtype ty = f32);
 
@@ -227,7 +223,6 @@ namespace af
                                     //   = 99
 
             \endcode
-            \ingroup array_construct
         */
         template<typename T>
             array(dim_type dim0,
@@ -257,7 +252,6 @@ namespace af
             \endcode
 
             \image html 2dArray.png
-            \ingroup array_construct
         */
         template<typename T>
             array(dim_type dim0, dim_type dim1,
@@ -286,7 +280,6 @@ namespace af
             \endcode
 
             \image html 3dArray.png
-            \ingroup array_construct
         */
         template<typename T>
             array(dim_type dim0, dim_type dim1, dim_type dim2,
@@ -316,7 +309,6 @@ namespace af
 
             array A(2, 2, 2, 2, h_buffer);   // copy host data to 4D device array
             \endcode
-            \ingroup array_construct
         */
         template<typename T>
             array(dim_type dim0, dim_type dim1, dim_type dim2, dim_type dim3,
@@ -350,12 +342,14 @@ namespace af
                                              // Note the "column-major" ordering
                                              // used in ArrayFire
             \endcode
-            \ingroup array_construct
         */
         template<typename T>
             array(const dim4& dims,
                   const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
 
+        /**
+            @}
+        */
         af_array get();
         af_array get() const;
         dim_type elements() const;
@@ -373,16 +367,16 @@ namespace af
         array copy() const;
 
         /**
-         * \brief Returns true of the array is empty
-         *
-         * \returns true if the array does not contain any elements. False otherwise
+           \brief Returns true of the array is empty
+
+           \returns true if the array does not contain any elements. False otherwise
          */
         bool isempty() const;
 
         /**
-         * \brief Returns true of the array contains one value
-         *
-         * \returns true if the array does not contain any elements. False otherwise
+           \brief Returns true of the array contains one value
+
+           \returns true if the array does not contain any elements. False otherwise
          */
         bool isscalar() const;
         bool isvector() const;
@@ -608,28 +602,68 @@ namespace af
 #ifdef __cplusplus
 extern "C" {
 #endif
+    /**
+       \ingroup arr_basic
+       @{
+    */
 
-    // Create af_array from memory
+    /**
+       Create an \ref af_array handle initialized with user defined data
+
+       This function will create an \ref af_array handle from the memory provided in \p data
+
+       \param[out]  arr The pointer to the retured object.
+       \param[in]   data The data which will be loaded into the array
+       \param[in]   ndims The number of dimensions read from the \p dims parameter
+       \param[in]   dims A C pointer with \p ndims elements. Each value represents the size of that dimension
+       \param[in]   type The type of the \ref af_array object
+
+       \returns \ref AF_SUCCESS if the operation was a success
+    */
     AFAPI af_err af_create_array(af_array *arr, const void * const data, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
-    // Create af_array handle without initializing values
+    /**
+       Create af_array handle
+
+       \param[out]  arr The pointer to the retured object.
+       \param[in]   ndims The number of dimensions read from the \p dims parameter
+       \param[in]   dims A C pointer with \p ndims elements. Each value represents the size of that dimension
+       \param[in]   type The type of the \ref af_array object
+
+       \returns \ref AF_SUCCESS if the operation was a success
+    */
     AFAPI af_err af_create_handle(af_array *arr, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
-    // Deep copy an array to another
+    /**
+       Deep copy an array to another
+    */
     AFAPI af_err af_copy_array(af_array *arr, const af_array in);
 
-    // Copy data from an af_array to a C pointer.
-    // Needs to used in conjunction with the two functions above
+    /**
+       Copy data from an af_array to a C pointer.
+
+       Needs to used in conjunction with the two functions above
+    */
     AFAPI af_err af_get_data_ptr(void *data, const af_array arr);
 
-    // Destroy af_array
+    /**
+       \brief Destroy af_array
+    */
     AFAPI af_err af_destroy_array(af_array arr);
 
-    // weak copy array
+    /**
+       weak copy array
+    */
     AFAPI af_err af_weak_copy(af_array *out, const af_array in);
 
-    // Evaluate any expressions in the Array
+    /**
+       Evaluate any expressions in the Array
+    */
     AFAPI af_err af_eval(af_array in);
+
+    /**
+      @}
+    */
 
 #ifdef __cplusplus
 }
