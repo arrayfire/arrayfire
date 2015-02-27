@@ -23,6 +23,10 @@ template<typename T>
 af_array modDims(const af_array in, const af::dim4 &newDims)
 {
     const Array<T> &In = getArray<T>(in);
+
+    //FIXME: Figure out a better way
+    evalArray<T>(In);
+
     Array<T> Out = In;
 
     if (!In.isLinear()) {
