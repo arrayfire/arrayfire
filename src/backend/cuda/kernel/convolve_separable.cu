@@ -116,7 +116,7 @@ void conv2Helper(dim3 blks, dim3 thrds, Param<T> out, CParam<T> sig, dim_type nB
 template<typename T, typename accType, dim_type conv_dim, bool expand>
 void convolve2(Param<T> out, CParam<T> signal, CParam<T> filter)
 {
-    dim_type fLen = filter.strides[3] * filter.dims[3];
+    dim_type fLen = filter.dims[0] * filter.dims[1] * filter.dims[2] * filter.dims[3];
     if(fLen > kernel::MAX_SCONV_FILTER_LEN) {
         // call upon fft
         CUDA_NOT_SUPPORTED();
