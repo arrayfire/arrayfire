@@ -65,11 +65,12 @@ Array<T> convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> co
         !isDoubleSupported(getActiveDeviceId())) {
         OPENCL_NOT_SUPPORTED();
     }
-    const dim4 cfDims   = c_filter.dims();
-    const dim4 rfDims   = r_filter.dims();
 
-    if ((cfDims[0] > kernel::MAX_SCONV_FILTER_LEN) ||
-            (rfDims[0] > kernel::MAX_SCONV_FILTER_LEN)) {
+    const dim_type cflen = (dim_type)c_filter.elements();
+    const dim_type rflen = (dim_type)r_filter.elements();
+
+    if ((cflen > kernel::MAX_SCONV_FILTER_LEN) ||
+            (rflen > kernel::MAX_SCONV_FILTER_LEN)) {
         // call upon fft
         OPENCL_NOT_SUPPORTED();
     }
@@ -77,8 +78,8 @@ Array<T> convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> co
     const dim4 sDims = signal.dims();
     dim4 oDims(1);
     if (expand) {
-        oDims[0] = sDims[0]+cfDims.elements() - 1;
-        oDims[1] = sDims[1]+rfDims.elements() - 1;
+        oDims[0] = sDims[0] + cflen - 1;
+        oDims[1] = sDims[1] + rflen - 1;
         oDims[2] = sDims[2];
     } else {
         oDims = sDims;
@@ -87,8 +88,8 @@ Array<T> convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> co
     Array<T> temp= createEmptyArray<T>(oDims);
     Array<T> out = createEmptyArray<T>(oDims);
 
-    conv2Helper<T, accT, 0, expand>(temp, signal, c_filter, cfDims[0]);
-    conv2Helper<T, accT, 1, expand>(out, temp, r_filter, rfDims[0]);
+    conv2Helper<T, accT, 0, expand>(temp, signal, c_filter, cflen);
+    conv2Helper<T, accT, 1, expand>( out,   temp, r_filter, rflen);
 
     return out;
 }
