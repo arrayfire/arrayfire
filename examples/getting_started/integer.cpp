@@ -44,22 +44,18 @@ int main(int argc, char ** argv)
         af_print(A);
         af_print(A.T());
 
-#if 0 // FIXME: Enable this after flip
         printf("\n--Flip Vertically / Horizontally\n");
         af_print(A);
         af_print(flip(A,0));
         af_print(flip(A,1));
-#endif
 
         printf("\n--Sum along columns\n");
         af_print(A);
         af_print(sum(A));
 
-#if 0   // FIXME: Enable this after mul
         printf("\n--Product along columns\n");
         af_print(A);
-        af_print(mul(A));
-#endif
+        af_print(product(A));
 
         printf("\n--Minimum along columns\n");
         af_print(A);

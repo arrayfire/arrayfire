@@ -22,12 +22,7 @@ static ty monte_carlo_barrier(int N, ty K, ty t, ty vol, ty r, ty strike, int st
     array randmat = randn(steps - 1, N, pres);
     randmat = exp((r - (vol * vol * 0.5)) * dt + vol * sqrt(dt) * randmat);
 
-    // FIXME: Change when "mul" is implemented
-#if 1
-    array S = exp(sum(log(join(0, s, randmat))));
-#else
-    array S = mul(join(0, s, randmat));
-#endif
+    array S = product(join(0, s, randmat));
 
     if (use_barrier) {
         S = S * alltrue(S < B);
