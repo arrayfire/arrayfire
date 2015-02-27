@@ -51,7 +51,7 @@ PROJECT_BRIEF          = ""
 # and the maximum width should not exceed 200 pixels. Doxygen will copy the logo
 # to the output directory.
 
-PROJECT_LOGO           = ${DOCS_DIR}/assets/arrayfire_logo.png
+PROJECT_LOGO           = ${ASSETS_DIR}/arrayfire_logo.png
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
@@ -773,7 +773,7 @@ INPUT                  = ${DOCS_DIR}/pages \
 						 ${INCLUDE_DIR}/ \
                          ${INCLUDE_DIR}/af/ \
                          ${INCLUDE_DIR}/../src/api/c/ \
-						 ${CMAKE_SOURCE_DIR}/docs/func
+						 ${DOCS_DIR}/details
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -862,8 +862,7 @@ EXAMPLE_RECURSIVE      = YES
 # that contain images that are to be included in the documentation (see the
 # \image command).
 
-IMAGE_PATH             = ${DOCS_DIR} \
-                         ${DOCS_DIR}/assets
+IMAGE_PATH             = ${ASSETS_DIR}
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program
