@@ -254,16 +254,19 @@ Array<T> convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> co
     auto sStrides = signal.strides();
 
 
-    dim4 tDims(sDims[0]+cfDims[0]-1, sDims[1]+rfDims[0]-1, sDims[2],sDims[3]);
-    dim4 oDims(1);
+    dim_type cflen = (dim_type)cfDims.elements();
+    dim_type rflen = (dim_type)rfDims.elements();
+
+    dim4 tDims(sDims[0], sDims[1], sDims[2], sDims[3]);
+    dim4 oDims(sDims[0], sDims[1], sDims[2], sDims[3]);
+
+    //FIXME: This needs to go inside expand
+    tDims[0] += cflen - 1;
 
     if (expand) {
         // separable convolve only does ONE2ONE and standard batch(MANY2ONE)
-        oDims[0] = sDims[0]+cfDims[0]-1;
-        oDims[1] = sDims[1]+rfDims[0]-1;
-        oDims[2] = sDims[2];
-    } else {
-        oDims = sDims;
+        oDims[0] += cflen - 1;
+        oDims[1] += rflen - 1;
     }
 
     Array<T> temp = createEmptyArray<T>(tDims);
@@ -277,13 +280,14 @@ Array<T> convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> co
         T *tptr = temp.get() + b*tStrides[2];
         T *optr = out.get()  + b*oStrides[2];
 
+        // FIXME: This need not be true
         convolve2_separable<T, accT, 0, true>(tptr, iptr, c_filter.get(),
-                tDims, sDims, sDims, cfDims[0],
-                tStrides, sStrides, c_filter.strides()[0]);
+                                                tDims, sDims, sDims, cflen,
+                                                tStrides, sStrides, c_filter.strides()[0]);
 
         convolve2_separable<T, accT, 1, expand>(optr, tptr, r_filter.get(),
-                oDims, tDims, sDims, rfDims[0],
-                oStrides, tStrides, r_filter.strides()[0]);
+                                                oDims, tDims, sDims, rflen,
+                                                oStrides, tStrides, r_filter.strides()[0]);
     }
 
     return out;

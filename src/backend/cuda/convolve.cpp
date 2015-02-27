@@ -56,8 +56,8 @@ Array<T> convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> co
     const dim4 sDims = signal.dims();
     dim4 oDims(1);
     if (expand) {
-        oDims[0] = sDims[0]+cfDims[0]-1;
-        oDims[1] = sDims[1]+rfDims[0]-1;
+        oDims[0] = sDims[0]+cfDims.elements() - 1;
+        oDims[1] = sDims[1]+rfDims.elements() - 1;
         oDims[2] = sDims[2];
     } else {
         oDims = sDims;
