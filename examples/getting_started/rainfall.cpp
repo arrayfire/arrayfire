@@ -33,9 +33,11 @@ int main(int argc, char **argv)
         array site(n,site_);
         array measurement(n,measurement_);
 
-        array rainfall = constant(0,1,sites);
-        gfor (seq s, sites)
+        array rainfall = constant(0, sites);
+        gfor (seq s, sites) {
             rainfall(s) = sum(measurement * (site == s));
+        }
+
         printf("total rainfall at each site:\n");
         af_print(rainfall);
 
@@ -45,17 +47,19 @@ int main(int argc, char **argv)
 
         printf("number of days with rain: %g\n", sum<float>(diff1(day) > 0) + 1);
 
-        array per_day = constant(0,1,days);
+        array per_day = constant(0, days);
         gfor (seq d, days)
             per_day(d) = sum(measurement * (day == d));
+
         printf("total rainfall each day:\n");
         af_print(per_day);
 
         printf("number of days over five: %g\n", sum<float>(per_day > 5));
 
-        array per_site = constant(0,1,sites);
+        array per_site = constant(0, sites);
         gfor (seq s, sites)
             per_site(s) = sum(measurement * (site == s));
+
         printf("total rainfall at each site:\n");
         af_print(per_site);
 
