@@ -6,6 +6,7 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#pragma once
 
 #include <af/array.h>
 #include <Array.hpp>
@@ -13,5 +14,5 @@
 namespace opencl
 {
     template<typename T>
-    Array<T> iota(const dim4& dim, const unsigned rep);
+    Array<T> iota(const dim4& dim, const int rep = -1);
 }
