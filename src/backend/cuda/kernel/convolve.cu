@@ -37,7 +37,6 @@ static const dim_type CUBE_Z    =  4;
 static const dim_type MAX_CONV1_FILTER_LEN = 129;
 static const dim_type MAX_CONV2_FILTER_LEN = 17;
 static const dim_type MAX_CONV3_FILTER_LEN = 5;
-static const dim_type MAX_SCONV_FILTER_LEN = 81;
 
 // we shall declare the maximum size required of above all three cases
 // and re-use the same constant memory locations for every case
@@ -49,34 +48,9 @@ dim_type index(dim_type i, dim_type j, dim_type k, dim_type jstride, dim_type ks
     return i+j*jstride+k*kstride;
 }
 
-template<typename T>
-__device__
-T readSrc(T const *src, dim_type i, dim_type j, dim_type k, dim_type dims[], dim_type strides[])
-{
-    bool is_i = i>=0 && i<dims[0];
-    bool is_j = j>=0 && j<dims[1];
-    bool is_k = k>=0 && k<dims[2];
-    if (is_i && is_j && is_k)
-        return src[(i*strides[0] + j*strides[1] + k*strides[2])];
-    else
-        return scalar<T>(0);
-}
-
-template<typename T>
-__device__
-T readSrc(T const *src, dim_type i, dim_type j, dim_type dims[], dim_type strides[])
-{
-    bool is_i = i>=0 && i<dims[0];
-    bool is_j = j>=0 && j<dims[1];
-    if (is_i && is_j)
-        return src[i*strides[0] + j*strides[1]];
-    else
-        return scalar<T>(0);
-}
-
 template<typename T, typename accType, bool expand>
 __global__
-void convolve1(Param<T> out, CParam<T> signal, dim_type fLen, dim_type nonBatchBlkSize,
+void convolve1(Param<T> out, CParam<T> signal, dim_type fLen, dim_type nBBS,
                dim_type oStep, dim_type sStep)
 {
     SharedMemory<T> shared;
@@ -84,23 +58,25 @@ void convolve1(Param<T> out, CParam<T> signal, dim_type fLen, dim_type nonBatchB
 
     const dim_type padding = fLen-1;
     const dim_type shrdLen = blockDim.x + 2*padding;
-    const unsigned batchId = blockIdx.x/nonBatchBlkSize;
+    const unsigned batchId = blockIdx.x/nBBS;
 
     T *dst           = (T *)out.ptr          + oStep +(batchId*out.strides[1]);
     const T *src     = (const T *)signal.ptr + sStep +(batchId*signal.strides[1]);
     const T *impulse = (const T *)cFilter;
 
-    dim_type gx  = blockDim.x*(blockIdx.x-batchId*nonBatchBlkSize);
+    dim_type gx  = blockDim.x*(blockIdx.x-batchId*nBBS);
 
+    dim_type s0 = signal.strides[0];
+    dim_type d0 = signal.dims[0];
     for (dim_type i=threadIdx.x; i<shrdLen; i+=blockDim.x) {
         dim_type idx= gx-padding + i;
-        shrdMem[i]  = (idx>=0 && idx<signal.dims[0]) ? src[idx*signal.strides[0]] : scalar<T>(0);
+        shrdMem[i]  = (idx>=0 && idx<d0) ? src[idx*s0] : scalar<T>(0);
     }
     __syncthreads();
-    gx+= threadIdx.x;
+    gx += threadIdx.x;
 
     if (gx<out.dims[0]) {
-        dim_type lx   = threadIdx.x + padding + (expand ? 0 : fLen/2);
+        dim_type lx   = threadIdx.x + padding + (expand ? 0 : fLen>>1);
         accType accum = scalar<accType>(0);
         for(dim_type f=0; f<fLen; ++f) {
             accum = accum + (shrdMem[lx-f]*impulse[f]);
@@ -109,13 +85,12 @@ void convolve1(Param<T> out, CParam<T> signal, dim_type fLen, dim_type nonBatchB
     }
 }
 
-template<typename T, typename accType, bool expand>
+template<typename T, typename accType, bool expand, dim_type fLen0, dim_type fLen1>
 __global__
-void convolve2(Param<T> out, CParam<T> signal, dim_type fLen0, dim_type fLen1,
-               dim_type nonBatchBlkSize, dim_type oStep, dim_type sStep)
+void convolve2(Param<T> out, CParam<T> signal, dim_type nBBS, dim_type oStep, dim_type sStep)
 {
-    SharedMemory<T> shared;
-    T * shrdMem       = shared.getPointer();
+    const size_t C_SIZE  = (THREADS_X+2*(fLen0-1))* (THREADS_Y+2*(fLen1-1));
+    __shared__ T shrdMem[C_SIZE];
 
     const dim_type radius0  = fLen0-1;
     const dim_type radius1  = fLen1-1;
@@ -124,28 +99,39 @@ void convolve2(Param<T> out, CParam<T> signal, dim_type fLen0, dim_type fLen1,
     const dim_type shrdLen0 = THREADS_X + padding0;
     const dim_type shrdLen1 = THREADS_Y + padding1;
 
-    unsigned batchId  = blockIdx.x/nonBatchBlkSize;
+    unsigned batchId  = blockIdx.x/nBBS;
     T *dst            = (T *)out.ptr          + oStep + (batchId*out.strides[2]);
     const T *src      = (const T *)signal.ptr + sStep + (batchId*signal.strides[2]);
     const T *impulse  = (const T *)cFilter;
 
     dim_type lx  = threadIdx.x;
     dim_type ly  = threadIdx.y;
-    dim_type gx  = THREADS_X * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
+    dim_type gx  = THREADS_X * (blockIdx.x-batchId*nBBS) + lx;
     dim_type gy  = THREADS_Y * blockIdx.y + ly;
 
+    dim_type s0 = signal.strides[0];
+    dim_type s1 = signal.strides[1];
+    dim_type d0 = signal.dims[0];
+    dim_type d1 = signal.dims[1];
     // below loops are traditional loops, they only run multiple
     // times filter length is more than launch size
+#pragma unroll
     for (dim_type b=ly, gy2=gy; b<shrdLen1; b+=THREADS_Y, gy2+=THREADS_Y) {
+        dim_type j = gy2-radius1;
+        bool is_j  = j>=0 && j<d1;
         // move row_set THREADS_Y along coloumns
-        for (dim_type a=lx, gx2=gx; a<shrdLen0; a+=THREADS_X, gx2+=THREADS_X)
-            shrdMem[b*shrdLen0+a] = readSrc(src, gx2-radius0, gy2-radius1, signal.dims, signal.strides);
+#pragma unroll
+        for (dim_type a=lx, gx2=gx; a<shrdLen0; a+=THREADS_X, gx2+=THREADS_X) {
+            dim_type i = gx2-radius0;
+            bool is_i  = i>=0 && i<d0;
+            shrdMem[b*shrdLen0+a] = (is_i && is_j ? src[i*s0+j*s1] : scalar<T>(0));
+        }
     }
     __syncthreads();
 
     if (gx<out.dims[0] && gy<out.dims[1]) {
-        dim_type ci = lx + radius0 + (expand ? 0 : fLen0/2);
-        dim_type cj = ly + radius1 + (expand ? 0 : fLen1/2);
+        dim_type ci = lx + radius0 + (expand ? 0 : fLen0>>1);
+        dim_type cj = ly + radius1 + (expand ? 0 : fLen1>>1);
 
         accType accum = scalar<accType>(0);
 #pragma unroll
@@ -161,10 +147,23 @@ void convolve2(Param<T> out, CParam<T> signal, dim_type fLen0, dim_type fLen1,
     }
 }
 
+template<typename T>
+__device__
+T readSrc(T const *src, dim_type i, dim_type j, dim_type k, dim_type dims[], dim_type strides[])
+{
+    bool is_i = i>=0 && i<dims[0];
+    bool is_j = j>=0 && j<dims[1];
+    bool is_k = k>=0 && k<dims[2];
+    if (is_i && is_j && is_k)
+        return src[(i*strides[0] + j*strides[1] + k*strides[2])];
+    else
+        return scalar<T>(0);
+}
+
 template<typename T, typename accType, bool expand>
 __global__
 void convolve3(Param<T> out, CParam<T> signal, dim_type fLen0, dim_type fLen1,
-               dim_type fLen2, dim_type nonBatchBlkSize, dim_type oStep, dim_type sStep)
+               dim_type fLen2, dim_type nBBS, dim_type oStep, dim_type sStep)
 {
     SharedMemory<T> shared;
 
@@ -178,7 +177,7 @@ void convolve3(Param<T> out, CParam<T> signal, dim_type fLen0, dim_type fLen1,
     dim_type shrdLen0 = blockDim.x + padding0;
     dim_type skStride = shrdLen0 * (blockDim.y + padding1);
     dim_type fStride  = fLen0 * fLen1;
-    unsigned batchId  = blockIdx.x/nonBatchBlkSize;
+    unsigned batchId  = blockIdx.x/nBBS;
 
     T *dst            = (T *)out.ptr          + oStep + (batchId*out.strides[3]);
     const T *src      = (const T *)signal.ptr + sStep + (batchId*signal.strides[3]);
@@ -187,7 +186,7 @@ void convolve3(Param<T> out, CParam<T> signal, dim_type fLen0, dim_type fLen1,
     dim_type lx  = threadIdx.x;
     dim_type ly  = threadIdx.y;
     dim_type lz  = threadIdx.z;
-    dim_type gx  = blockDim.x * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
+    dim_type gx  = blockDim.x * (blockIdx.x-batchId*nBBS) + lx;
     dim_type gy  = blockDim.y * blockIdx.y + ly;
     dim_type gz  = blockDim.z * blockIdx.z + lz;
     dim_type lx2 = lx  + blockDim.x;
@@ -236,13 +235,16 @@ void convolve3(Param<T> out, CParam<T> signal, dim_type fLen0, dim_type fLen1,
     __syncthreads();
 
     if (gx<out.dims[0] && gy<out.dims[1] && gz<out.dims[2]) {
-        dim_type ci = lx + radius0 + (expand ? 0 : fLen0/2);
-        dim_type cj = ly + radius1 + (expand ? 0 : fLen1/2);
-        dim_type ck = lz + radius2 + (expand ? 0 : fLen2/2);
+        dim_type ci = lx + radius0 + (expand ? 0 : fLen0>>1);
+        dim_type cj = ly + radius1 + (expand ? 0 : fLen1>>1);
+        dim_type ck = lz + radius2 + (expand ? 0 : fLen2>>1);
 
         accType accum = scalar<accType>(0);
+#pragma unroll
         for(dim_type fk=0; fk<fLen2; ++fk) {
+#pragma unroll
             for(dim_type fj=0; fj<fLen1; ++fj) {
+#pragma unroll
                 for(dim_type fi=0; fi<fLen0; ++fi) {
                     T f_val = impulse[index(fi, fj, fk, fLen0, fStride)];
                     T s_val = shrdMem[index(ci-fi, cj-fj, ck-fk, shrdLen0, skStride)];
@@ -273,7 +275,6 @@ void prepareKernelArgs(dim3 &blocks, dim3 &threads, size_t &sharedSize, dim_type
         blocks  = dim3(blk_x, blk_y);
         if (kind==MANY2ONE)
             blocks.x *= sDims[2];
-        sharedSize = (threads.x+2*(fDims[0]-1))*(threads.y+2*(fDims[1]-1)) * sizeof(T);
     } else if (baseDim==3) {
         threads = dim3(CUBE_X, CUBE_Y, CUBE_Z);
         blk_x   = divup(oDims[0], threads.x);
@@ -284,6 +285,63 @@ void prepareKernelArgs(dim3 &blocks, dim3 &threads, size_t &sharedSize, dim_type
             blocks.x *= sDims[3];
         sharedSize = (threads.x+2*(fDims[0]-1)) * (threads.y+2*(fDims[1]-1)) *
                      (threads.z+2*(fDims[2]-1)) * sizeof(T);
+    }
+}
+
+template<typename T, typename aT, bool expand, dim_type f0, dim_type f1>
+void conv2Helper(dim3 blks, dim3 thrds, Param<T> out, CParam<T> sig,
+                dim_type nBBS, dim_type oStp, dim_type sStp)
+{
+    (convolve2<T, aT, expand, f0, f1>)<<<blks, thrds>>>(out, sig, nBBS, oStp, sStp);
+}
+
+template<typename T, typename aT, bool expand, dim_type f0>
+void conv2Helper(dim3 blks, dim3 thrds, Param<T> out, CParam<T> sig,
+                dim_type f1, dim_type nBBS, dim_type oStp, dim_type sStp)
+{
+    switch(f1) {
+        case  2: conv2Helper<T, aT, expand, f0,  2>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+        case  3: conv2Helper<T, aT, expand, f0,  3>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+        case  4: conv2Helper<T, aT, expand, f0,  4>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+        case  5: conv2Helper<T, aT, expand, f0,  5>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+        case  6: conv2Helper<T, aT, expand, f0,  6>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+        case  7: conv2Helper<T, aT, expand, f0,  7>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+        case  8: conv2Helper<T, aT, expand, f0,  8>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+        case  9: conv2Helper<T, aT, expand, f0,  9>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+        case 10: conv2Helper<T, aT, expand, f0, 10>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+        case 11: conv2Helper<T, aT, expand, f0, 11>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+        case 12: conv2Helper<T, aT, expand, f0, 12>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+        case 13: conv2Helper<T, aT, expand, f0, 13>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+        case 14: conv2Helper<T, aT, expand, f0, 14>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+        case 15: conv2Helper<T, aT, expand, f0, 15>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+        case 16: conv2Helper<T, aT, expand, f0, 16>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+        case 17: conv2Helper<T, aT, expand, f0, 17>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+        default: CUDA_NOT_SUPPORTED();
+    }
+}
+
+template<typename T, typename aT, bool expand>
+void conv2Helper(dim3 blks, dim3 thrds, Param<T> out, CParam<T> sig,
+                dim_type f0, dim_type f1, dim_type nBBS, dim_type oStp, dim_type sStp)
+{
+    switch(f0) {
+        case  2: conv2Helper<T, aT, expand,  2>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
+        case  3: conv2Helper<T, aT, expand,  3>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
+        case  4: conv2Helper<T, aT, expand,  4>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
+        case  5: conv2Helper<T, aT, expand,  5>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
+        case  6: conv2Helper<T, aT, expand,  6>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
+        case  7: conv2Helper<T, aT, expand,  7>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
+        case  8: conv2Helper<T, aT, expand,  8>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
+        case  9: conv2Helper<T, aT, expand,  9>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
+        case 10: conv2Helper<T, aT, expand, 10>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
+        case 11: conv2Helper<T, aT, expand, 11>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
+        case 12: conv2Helper<T, aT, expand, 12>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
+        case 13: conv2Helper<T, aT, expand, 13>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
+        case 14: conv2Helper<T, aT, expand, 14>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
+        case 15: conv2Helper<T, aT, expand, 15>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
+        case 16: conv2Helper<T, aT, expand, 16>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
+        case 17: conv2Helper<T, aT, expand, 17>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
+        default: CUDA_NOT_SUPPORTED();
     }
 }
 
@@ -347,9 +405,8 @@ void convolve_nd(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatch
                     <<<blocks, threads, sharedSize>>>(out, signal, filter.dims[0], blk_x, b*steps[0], b*steps[1]);
                 break;
             case 2:
-                (convolve2<T, accType, expand>)
-                    <<<blocks, threads, sharedSize>>>(out, signal, filter.dims[0], filter.dims[1], blk_x,
-                                                      b*steps[0], b*steps[1]);
+                conv2Helper<T, accType, expand>(blocks, threads, out, signal, filter.dims[0],
+                                                filter.dims[1], blk_x, b*steps[0], b*steps[1]);
                 break;
             case 3:
                 (convolve3<T, accType, expand>)
@@ -361,105 +418,13 @@ void convolve_nd(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatch
     POST_LAUNCH_CHECK();
 }
 
-template<typename T, typename accType, dim_type conv_dim, bool expand>
-__global__
-void convolve2_separable(Param<T> out, CParam<T> signal, dim_type fLen, dim_type nonBatchBlkSize)
-{
-    SharedMemory<T> shared;
-
-    T * shrdMem       = shared.getPointer();
-    dim_type radius   = fLen-1;
-    dim_type padding  = 2*radius;
-    dim_type shrdLen  = THREADS_X;
-    if (conv_dim==0) {
-        shrdLen += padding;
-    }
-
-    unsigned batchId  = blockIdx.x/nonBatchBlkSize;
-    T *dst            = (T *)out.ptr          + (batchId*out.strides[2]);
-    const T *src      = (const T *)signal.ptr + (batchId*signal.strides[2]);
-    const T *impulse  = (const T *)cFilter;
-
-    dim_type lx = threadIdx.x;
-    dim_type ly = threadIdx.y;
-    dim_type ox = THREADS_X * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
-    dim_type oy = THREADS_Y * blockIdx.y + ly;
-    dim_type gx = ox;
-    dim_type gy = oy;
-
-    if (conv_dim==0) {
-        gx += (expand ? 0 : fLen/2);
-        dim_type endX = 2*(fLen-1) + THREADS_X;
-
-        for(dim_type lx = threadIdx.x, glb_x = gx; lx<endX; lx += THREADS_X, glb_x += THREADS_X)
-            shrdMem[ly*shrdLen+lx] = readSrc(src, glb_x-radius, gy, signal.dims, signal.strides);
-
-    } else if (conv_dim==1) {
-        gy += (expand ? 0 : fLen/2);
-        dim_type endY = 2*(fLen-1) + THREADS_Y;
-
-        for(dim_type ly = threadIdx.y, glb_y = gy; ly<endY; ly += THREADS_Y, glb_y += THREADS_Y)
-            shrdMem[ly*shrdLen+lx] = readSrc(src, gx, glb_y-radius, signal.dims, signal.strides);
-    }
-    __syncthreads();
-
-    if (ox<out.dims[0] && oy<out.dims[1]) {
-        dim_type i  = (conv_dim==0 ? lx : ly) + radius;
-        accType accum = scalar<accType>(0);
-        for(dim_type f=0; f<fLen; ++f) {
-            T f_val = impulse[f];
-            dim_type s_idx = (conv_dim==0 ? (ly*shrdLen+(i-f)) : ((i-f)*shrdLen+lx));
-            T s_val = shrdMem[s_idx];
-            accum   = accum + s_val*f_val;
-        }
-        dst[oy*out.strides[1]+ox] = (T)accum;
-    }
-}
-
-template<typename T, typename accType, dim_type conv_dim, bool expand>
-void convolve2(Param<T> out, CParam<T> signal, CParam<T> filter)
-{
-   if(filter.dims[0] > kernel::MAX_SCONV_FILTER_LEN) {
-        // call upon fft
-        CUDA_NOT_SUPPORTED();
-    }
-
-    dim3 threads(THREADS_X, THREADS_Y);
-
-    dim_type blk_x = divup(out.dims[0], threads.x);
-    dim_type blk_y = divup(out.dims[1], threads.y);
-
-    dim3 blocks(blk_x*signal.dims[2], blk_y);
-
-    dim_type fLen = filter.dims[0];
-    size_t sharedSize = 0;
-   if (conv_dim==0)
-      sharedSize = (threads.x+2*(fLen-1))*threads.y * sizeof(T);
-   else if(conv_dim==1)
-      sharedSize = (threads.y+2*(fLen-1))*threads.x * sizeof(T);
-
-   // FIX ME: if the filter array is strided, direct copy of symbols
-   // might cause issues
-   CUDA_CHECK(cudaMemcpyToSymbol(kernel::cFilter, filter.ptr,
-               fLen*sizeof(T), 0, cudaMemcpyDeviceToDevice));
-
-   (convolve2_separable<T, accType, conv_dim, expand>)
-       <<<blocks, threads, sharedSize>>>(out, signal, fLen, blk_x);
-
-   POST_LAUNCH_CHECK();
-}
-
 #define INSTANTIATE(T, accT)  \
-	template void convolve_nd<T, accT, 1, true>(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatchKind kind);\
+	template void convolve_nd<T, accT, 1, true >(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatchKind kind);\
 	template void convolve_nd<T, accT, 1, false>(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatchKind kind);\
-	template void convolve_nd<T, accT, 2, true>(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatchKind kind);\
+	template void convolve_nd<T, accT, 2, true >(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatchKind kind);\
 	template void convolve_nd<T, accT, 2, false>(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatchKind kind);\
-	template void convolve_nd<T, accT, 3, true>(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatchKind kind);\
+	template void convolve_nd<T, accT, 3, true >(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatchKind kind);\
 	template void convolve_nd<T, accT, 3, false>(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatchKind kind);\
-	template void convolve2<T, accT, 0, true>(Param<T> out, CParam<T> signal, CParam<T> filter);\
-	template void convolve2<T, accT, 0, false>(Param<T> out, CParam<T> signal, CParam<T> filter);\
-	template void convolve2<T, accT, 1, true>(Param<T> out, CParam<T> signal, CParam<T> filter);\
-	template void convolve2<T, accT, 1, false>(Param<T> out, CParam<T> signal, CParam<T> filter);\
 
 
 INSTANTIATE(cdouble, cdouble)

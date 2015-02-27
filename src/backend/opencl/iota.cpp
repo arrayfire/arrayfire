@@ -17,14 +17,22 @@
 namespace opencl
 {
     template<typename T>
-    Array<T> iota(const dim4& dim, const unsigned rep)
+    Array<T> iota(const dim4& dim, const int rep)
     {
         if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
             !isDoubleSupported(getActiveDeviceId())) {
             OPENCL_NOT_SUPPORTED();
         }
+
+        // Repeat highest dimension, ie. creates a single sequence from
+        // 0...elements - 1
+        int rep_ = rep;
+        if(rep < 0) {
+            rep_ = dim.ndims() - 1; // ndims = [1,4] => rep = [0, 3]
+        }
+
         Array<T> out = createEmptyArray<T>(dim);
-        switch(rep) {
+        switch(rep_) {
             case 0: kernel::iota<T, 0>(out); break;
             case 1: kernel::iota<T, 1>(out); break;
             case 2: kernel::iota<T, 2>(out); break;
@@ -34,8 +42,8 @@ namespace opencl
         return out;
     }
 
-#define INSTANTIATE(T)                                                         \
-    template Array<T> iota<T>(const af::dim4 &dims, const unsigned rep);      \
+#define INSTANTIATE(T)                                                  \
+    template Array<T> iota<T>(const af::dim4 &dims, const int rep);     \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

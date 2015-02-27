@@ -6,13 +6,17 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-#pragma once
 
-#include <af/array.h>
-#include <Array.hpp>
+#include <kernel/convolve/conv2_impl.hpp>
 
-namespace cpu
+namespace opencl
 {
-    template<typename T>
-    Array<T> iota(const dim4& dim, const int rep = -1);
+
+namespace kernel
+{
+
+INSTANTIATE(uint, float)
+
+}
+
 }

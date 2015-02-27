@@ -403,7 +403,7 @@ af_err af_weak_copy(af_array *out, const af_array in)
 }
 
 template<typename T>
-static inline af_array iota_(const dim4& d, const unsigned rep)
+static inline af_array iota_(const dim4& d, const int rep)
 {
     return getHandle(iota<T>(d, rep));
 }
@@ -422,20 +422,12 @@ af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const di
             DIM_ASSERT(2, d[i] >= 1);
         }
 
-        // Repeat highest dimension, ie. creates a single sequence from
-        // 0...elements - 1
-        int rep_ = rep;
-        if(rep < 0)
-        {
-            rep_ = ndims - 1; // ndims = [1,4] => rep = [0, 4]
-        }
-
         switch(type) {
-        case f32:   out = iota_<float  >(d, rep_); break;
-        case f64:   out = iota_<double >(d, rep_); break;
-        case s32:   out = iota_<int    >(d, rep_); break;
-        case u32:   out = iota_<uint   >(d, rep_); break;
-        case u8:    out = iota_<uchar  >(d, rep_); break;
+        case f32:   out = iota_<float  >(d, rep); break;
+        case f64:   out = iota_<double >(d, rep); break;
+        case s32:   out = iota_<int    >(d, rep); break;
+        case u32:   out = iota_<uint   >(d, rep); break;
+        case u8:    out = iota_<uchar  >(d, rep); break;
         default:    TYPE_ERROR(4, type);
         }
         std::swap(*result, out);
