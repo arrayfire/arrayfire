@@ -87,6 +87,22 @@ ELSE (EXISTS "${TESTDATA_SOURCE_DIR}" AND IS_DIRECTORY "${TESTDATA_SOURCE_DIR}"
     MESSAGE("git submodule foreach git pull origin master")
 ENDIF()
 
+# Check if Google Test exists
+SET(GTEST_SOURCE_DIR "${CMAKE_SOURCE_DIR}/test/gtest")
+IF (EXISTS "${GTEST_SOURCE_DIR}" AND IS_DIRECTORY "${GTEST_SOURCE_DIR}"
+    AND EXISTS "${GTEST_SOURCE_DIR}/README")
+    # GTest source is available
+    # Do Nothing
+ELSE (EXISTS "${GTEST_SOURCE_DIR}" AND IS_DIRECTORY "${GTEST_SOURCE_DIR}"
+    AND EXISTS "${GTEST_SOURCE_DIR}/README")
+    MESSAGE(WARNING "GTest Source is not available. Tests will not build.")
+    MESSAGE("Did you miss the --recursive option when cloning?")
+    MESSAGE("Run the following commands to correct this:")
+    MESSAGE("git submodule init")
+    MESSAGE("git submodule update")
+    MESSAGE("git submodule foreach git pull origin master")
+ENDIF()
+
 FILE(GLOB FILES "*.cpp")
 
 IF(${BUILD_CPU})
