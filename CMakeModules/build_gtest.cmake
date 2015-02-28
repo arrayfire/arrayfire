@@ -12,7 +12,6 @@ set_directory_properties(PROPERTIES EP_PREFIX "${CMAKE_BINARY_DIR}/third_party")
 # Add gtest
 ExternalProject_Add(
     googletest
-    GIT_SUBMODULES test/gtest
     SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../test/gtest"
     TIMEOUT 10
     CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
