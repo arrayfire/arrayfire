@@ -1,3 +1,6 @@
 [submodule "test/data"]
 	path = test/data
 	url = https://github.com/arrayfire/arrayfire_data
+[submodule "test/gtest"]
+	path = test/gtest
+	url = http://git.chromium.org/external/googletest.git

@@ -1,29 +1,4 @@
-#Downloads and installs GTest into the third_party directory
-
-# We apply a patch to subversion, thus we need to find it.
-FIND_PACKAGE(Subversion REQUIRED)
-
-# Create patch file for gtest with MSVC 2012
-if(MSVC_VERSION EQUAL 1700)
-  file(WRITE  "${CMAKE_BINARY_DIR}/gtest.patch" "Index: cmake/internal_utils.cmake\n")
-  file(APPEND "${CMAKE_BINARY_DIR}/gtest.patch" "===================================================================\n")
-  file(APPEND "${CMAKE_BINARY_DIR}/gtest.patch" "--- cmake/internal_utils.cmake   (revision 660)\n")
-  file(APPEND "${CMAKE_BINARY_DIR}/gtest.patch" "+++ cmake/internal_utils.cmake   (working copy)\n")
-  file(APPEND "${CMAKE_BINARY_DIR}/gtest.patch" "@@ -66,6 +66,9 @@\n")
-  file(APPEND "${CMAKE_BINARY_DIR}/gtest.patch" "       # Resolved overload was found by argument-dependent lookup.\n")
-  file(APPEND "${CMAKE_BINARY_DIR}/gtest.patch" "       set(cxx_base_flags \"\${cxx_base_flags} -wd4675\")\n")
-  file(APPEND "${CMAKE_BINARY_DIR}/gtest.patch" "     endif()\n")
-  file(APPEND "${CMAKE_BINARY_DIR}/gtest.patch" "+    if (MSVC_VERSION EQUAL 1700)\n")
-  file(APPEND "${CMAKE_BINARY_DIR}/gtest.patch" "+      set(cxx_base_flags \"\${cxx_base_flags} -D_VARIADIC_MAX=10\")\n")
-  file(APPEND "${CMAKE_BINARY_DIR}/gtest.patch" "+    endif ()\n")
-  file(APPEND "${CMAKE_BINARY_DIR}/gtest.patch" "     set(cxx_base_flags \"\${cxx_base_flags} -D_UNICODE -DUNICODE -DWIN32 -D_WIN32\")\n")
-  file(APPEND "${CMAKE_BINARY_DIR}/gtest.patch" "     set(cxx_base_flags \"\${cxx_base_flags} -DSTRICT -DWIN32_LEAN_AND_MEAN\")\n")
-  file(APPEND "${CMAKE_BINARY_DIR}/gtest.patch" "     set(cxx_exception_flags \"-EHsc -D_HAS_EXCEPTIONS=1\")\n")
-else()
-  file(WRITE  "${CMAKE_BINARY_DIR}/gtest.patch" "")
-endif()
-
-# Enable ExternalProject CMake module
+# Build the gtest libraries
 include(ExternalProject)
 
 # Set the build type if it isn't already
@@ -37,12 +12,9 @@ set_directory_properties(PROPERTIES EP_PREFIX "${CMAKE_BINARY_DIR}/third_party")
 # Add gtest
 ExternalProject_Add(
     googletest
-    SVN_REPOSITORY http://googletest.googlecode.com/svn/trunk/
-    SVN_REVISION -r 660
+    GIT_SUBMODULES test/gtest
+    SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../test/gtest"
     TIMEOUT 10
-    PATCH_COMMAND "${Subversion_SVN_EXECUTABLE}" patch "${CMAKE_BINARY_DIR}/gtest.patch" "${CMAKE_BINARY_DIR}/third_party/src/googletest"
-    # Force separate output paths for debug and release builds to allow easy
-    # identification of correct lib in subsequent TARGET_LINK_LIBRARIES commands
     CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG:PATH=DebugLibs
                -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE:PATH=ReleaseLibs
