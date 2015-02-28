@@ -77,6 +77,7 @@ namespace opencl
     class Array : public ArrayInfo
     {
         Buffer_ptr  data;
+        af::dim4 data_dims;
 
         JIT::Node_ptr node;
         bool ready;
@@ -121,6 +122,11 @@ namespace opencl
         Buffer_ptr getData() const
         {
             return data;
+        }
+
+        dim4 getDataDims() const
+        {
+            return data_dims;
         }
 
         operator Param() const
