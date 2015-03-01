@@ -106,7 +106,6 @@ TEST(FlipTests, Test_flip_1D_index)
     delete[] h_out;
 }
 
-#if 0 // FIXME: Enable when this is fixed https://github.com/arrayfire/arrayfire/issues/418
 TEST(FlipTests, Test_flip_2D_index00)
 {
     const int nx = 200;
@@ -208,8 +207,8 @@ TEST(FlipTests, Test_flip_2D_index11)
 
     for (int j = st; j <= en; j++) {
 
-        const int in_off = (en - j) * nx;
-        const int out_off = (j - st) * nx;
+        const int in_off = j * nx;
+        const int out_off = (en - j) * nx;
 
         for (int i = 0; i < nx; i++) {
             ASSERT_EQ(h_in[i + in_off], h_out[i + out_off])
@@ -220,4 +219,3 @@ TEST(FlipTests, Test_flip_2D_index11)
     delete[] h_in;
     delete[] h_out;
 }
-#endif
