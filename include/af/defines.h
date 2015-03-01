@@ -130,6 +130,12 @@ typedef enum {
     AF_SHD   // 8
 } af_match_type;
 
+typedef enum {
+    AF_GRAY = 0,
+    AF_RGB,// 1
+    AF_HSV // 2
+} af_cspace_t;
+
 #ifdef __cplusplus
 #include <limits>
 namespace af
@@ -142,6 +148,7 @@ namespace af
     typedef af_pad_type padType;
     typedef af_connectivity connectivity;
     typedef af_match_type matchType;
+    typedef af_cspace_t CSpace;
 
     const double NaN = std::numeric_limits<double>::quiet_NaN();
     const double Inf = std::numeric_limits<double>::infinity();

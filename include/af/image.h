@@ -80,6 +80,8 @@ AFAPI array hsv2rgb(const array& in);
 
 AFAPI array rgb2hsv(const array& in);
 
+AFAPI array colorspace(const array& image, CSpace to, CSpace from);
+
 }
 #endif
 
@@ -168,6 +170,8 @@ extern "C" {
     AFAPI af_err af_hsv2rgb(af_array* out, const af_array in);
 
     AFAPI af_err af_rgb2hsv(af_array* out, const af_array in);
+
+    AFAPI af_err af_colorspace(af_array *out, const af_array image, af_cspace_t to, af_cspace_t from);
 
 #ifdef __cplusplus
 }
