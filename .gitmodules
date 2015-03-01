@@ -4,3 +4,6 @@
 [submodule "assets"]
 	path = assets
 	url = ./assets
+[submodule "test/gtest"]
+	path = test/gtest
+	url = http://git.chromium.org/external/googletest.git

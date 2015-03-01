@@ -26,14 +26,14 @@ namespace cpu
     template<typename T>
     Array<T>::Array(dim4 dims):
         ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(memAlloc<T>(dims.elements()), memFree<T>),
+        data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
         node(), ready(true), offset(0), owner(true)
     { }
 
     template<typename T>
     Array<T>::Array(dim4 dims, const T * const in_data):
         ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(memAlloc<T>(dims.elements()), memFree<T>),
+        data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
         node(), ready(true), offset(0), owner(true)
     {
         std::copy(in_data, in_data + dims.elements(), data.get());
@@ -43,7 +43,7 @@ namespace cpu
     template<typename T>
     Array<T>::Array(af::dim4 dims, TNJ::Node_ptr n) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(),
+        data(), data_dims(dims),
         node(n), ready(false), offset(0), owner(true)
     {
     }
@@ -51,13 +51,13 @@ namespace cpu
     template<typename T>
     Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &strides) :
         ArrayInfo(dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
-        data(parent.getData()),
+        data(parent.getData()), data_dims(parent.getDataDims()),
         node(), ready(true),
         offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
         owner(false)
     { }
 
-        template<typename T>
+    template<typename T>
     void Array<T>::eval()
     {
         if (isReady()) return;
@@ -169,9 +169,12 @@ namespace cpu
                             const std::vector<af_seq> &index,
                             bool copy)
     {
-        dim4 dims   = af::toDims  (index, parent.dims());
-        dim4 offset = af::toOffset(index, parent.dims());
-        dim4 stride = af::toStride (index, parent.dims());
+        dim4 dDims = parent.getDataDims();
+        dim4 pDims = parent.dims();
+
+        dim4 dims   = af::toDims  (index, pDims);
+        dim4 offset = af::toOffset(index, dDims);
+        dim4 stride = af::toStride (index, dDims);
 
         Array<T> out = Array<T>(parent, dims, offset, stride);
 

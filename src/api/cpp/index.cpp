@@ -66,4 +66,12 @@ array shift(const array& in, const int x, const int y, const int z, const int w)
     return array(out);
 }
 
+array flip(const array &in, const unsigned dim)
+{
+    af_array out = 0;
+    AF_THROW(af_flip(&out, in.get(), dim));
+    return array(out);
+}
+
+
 }
