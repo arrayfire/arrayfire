@@ -3,7 +3,7 @@
 	url = https://github.com/arrayfire/arrayfire_data
 [submodule "assets"]
 	path = assets
-	url = ./assets
+	url = https://github.com/arrayfire/assets
 [submodule "test/gtest"]
 	path = test/gtest
 	url = http://git.chromium.org/external/googletest.git
