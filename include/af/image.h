@@ -76,6 +76,10 @@ AFAPI array histequal(const array& in, const array& hist);
 
 AFAPI array gaussianKernel(const int rows, const int cols, const double sig_r = 0, const double sig_c = 0);
 
+AFAPI array hsv2rgb(const array& in);
+
+AFAPI array rgb2hsv(const array& in);
+
 }
 #endif
 
@@ -160,6 +164,10 @@ extern "C" {
     AFAPI af_err af_gaussian_kernel(af_array *out,
                                     const int rows, const int cols,
                                     const double sigma_r, const double sigma_c);
+
+    AFAPI af_err af_hsv2rgb(af_array* out, const af_array in);
+
+    AFAPI af_err af_rgb2hsv(af_array* out, const af_array in);
 
 #ifdef __cplusplus
 }
