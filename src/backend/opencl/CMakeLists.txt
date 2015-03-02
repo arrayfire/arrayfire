@@ -90,12 +90,20 @@ FILE(GLOB opencl_kernels
 FILE(GLOB kernel_sources
      "kernel/*.cpp")
 
+FILE(GLOB conv_ker_headers
+    "kernel/convolve/*.hpp")
+
+FILE(GLOB conv_ker_sources
+     "kernel/convolve/*.cpp")
+
 source_group(backend\\opencl\\Headers FILES ${opencl_headers})
 source_group(backend\\opencl\\Sources FILES ${opencl_sources})
 source_group(backend\\opencl\\JIT FILES ${jit_sources})
 source_group(backend\\opencl\\kernel\\Headers FILES ${kernel_headers})
 source_group(backend\\opencl\\kernel\\cl FILES ${opencl_kernels})
 source_group(backend\\opencl\\kernel\\Sources FILES ${kernel_sources})
+source_group(backend\\opencl\\kernel\\convolve\\Headers FILES ${conv_ker_headers})
+source_group(backend\\opencl\\kernel\\convolve\\Sources FILES ${conv_ker_sources})
 
 FILE(GLOB backend_headers
     "../*.hpp"
@@ -152,6 +160,8 @@ ADD_LIBRARY(afopencl SHARED
             ${kernel_headers}
             ${opencl_kernels}
             ${kernel_sources}
+            ${conv_ker_headers}
+            ${conv_ker_sources}
             ${backend_headers}
             ${backend_sources}
             ${c_sources}

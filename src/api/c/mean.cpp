@@ -33,7 +33,7 @@ static outType mean(const af_array &in)
 template<typename inType, typename outType>
 static outType mean(const af_array &in, const af_array &weights)
 {
-    typedef baseOutType<outType> bType;
+    typedef typename baseOutType<outType>::type bType;
 
     Array<outType> input = cast<outType>(getArray<inType>(in));
     Array<outType> wts   = cast<outType>(getArray<bType>(weights));
@@ -55,7 +55,7 @@ static af_array mean(const af_array &in, dim_type dim)
 template<typename inType, typename outType>
 static af_array mean(const af_array &in, const af_array &weights, dim_type dim)
 {
-    typedef baseOutType<outType> bType;
+    typedef typename baseOutType<outType>::type bType;
 
     Array<outType> input = cast<outType>(getArray<inType>(in));
     Array<outType> wts   = cast<outType>(getArray<bType>(weights));

@@ -155,6 +155,11 @@ af_err af_sum(af_array *out, const af_array in, const int dim)
     return reduce_promote<af_add_t>(out, in, dim);
 }
 
+af_err af_product(af_array *out, const af_array in, const int dim)
+{
+    return reduce_promote<af_mul_t>(out, in, dim);
+}
+
 af_err af_count(af_array *out, const af_array in, const int dim)
 {
     return reduce_type<af_notzero_t, uint>(out, in, dim);
@@ -311,6 +316,11 @@ af_err af_max_all(double *real, double *imag, const af_array in)
 af_err af_sum_all(double *real, double *imag, const af_array in)
 {
     return reduce_all_promote<af_add_t>(real, imag, in);
+}
+
+af_err af_product_all(double *real, double *imag, const af_array in)
+{
+    return reduce_all_promote<af_mul_t>(real, imag, in);
 }
 
 af_err af_count_all(double *real, double *imag, const af_array in)

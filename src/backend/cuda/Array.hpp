@@ -84,6 +84,7 @@ namespace cuda
     class Array : public ArrayInfo
     {
         shared_ptr<T> data;
+        af::dim4 data_dims;
 
         JIT::Node_ptr node;
         bool ready;
@@ -107,6 +108,7 @@ namespace cuda
 
         dim_type getOffset() const { return offset; }
         shared_ptr<T> getData() const { return data; }
+        dim4 getDataDims() const { return data_dims; }
 
         T* get(bool withOffset = true)
         {

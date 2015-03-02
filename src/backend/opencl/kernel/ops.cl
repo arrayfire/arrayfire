@@ -19,6 +19,28 @@ To transform(Ti in)
 }
 #endif
 
+#ifdef MUL_OP
+#if CPLX
+T binOp(T lhs, T rhs)
+{
+    T out;
+    out.x = lhs.x * rhs.x - lhs.y * rhs.y;
+    out.y = lhs.x * rhs.y + lhs.y * rhs.x;
+    return out;
+}
+#else
+T binOp(T lhs, T rhs)
+{
+    return lhs + rhs;
+}
+#endif
+
+To transform(Ti in)
+{
+    return(To)(in);
+}
+#endif
+
 #ifdef OR_OP
 uchar binOp(uchar lhs, uchar rhs)
 {

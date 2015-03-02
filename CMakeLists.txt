@@ -10,6 +10,8 @@ OPTION(BUILD_CPU "Build ArrayFire with a CPU backend" ON)
 OPTION(BUILD_CUDA "Build ArrayFire with a CUDA backend" OFF)
 OPTION(BUILD_OPENCL "Build ArrayFire with a OpenCL backend" OFF)
 
+OPTION(BUILD_DOCS "Create ArrayFire Documentation" OFF)
+
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 
 FIND_PACKAGE(FreeImage)
@@ -86,6 +88,10 @@ ENDIF()
 
 IF(${BUILD_OPENCL})
     ADD_SUBDIRECTORY(src/backend/opencl)
+ENDIF()
+
+IF(${BUILD_DOCS})
+    ADD_SUBDIRECTORY(docs)
 ENDIF()
 
 ADD_EXECUTABLE(bin2cpp ${CMAKE_MODULE_PATH}/bin2cpp.cpp)

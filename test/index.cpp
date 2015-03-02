@@ -575,7 +575,7 @@ void arrayIndexTest(string pTestFile, int dim)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray, &(in[1].front()),
                 dims1.ndims(), dims1.get(), (af_dtype)af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_array_index(&outArray, inArray, idxArray, dim));
+    ASSERT_EQ(AF_SUCCESS, af_lookup(&outArray, inArray, idxArray, dim));
 
     vector<T> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
@@ -643,7 +643,7 @@ TEST(ArrayIndex, CPP)
     delete[] outData;
 }
 
-TEST(ArrayIndex, CPP_END)
+TEST(SeqIndex, CPP_END)
 {
     using af::array;
 
@@ -667,7 +667,7 @@ TEST(ArrayIndex, CPP_END)
 }
 
 
-TEST(ArrayIndex, CPP_END_SEQ)
+TEST(SeqIndex, CPP_END_SEQ)
 {
     using af::array;
 
@@ -695,7 +695,7 @@ af::array cpp_scope_test(const int num, const float val, const af::seq s)
     return a(s);
 }
 
-TEST(ArrayIndex, CPP_SCOPE)
+TEST(SeqIndex, CPP_SCOPE)
 {
     using af::array;
 
@@ -714,7 +714,7 @@ TEST(ArrayIndex, CPP_SCOPE)
     delete[] hB;
 }
 
-TEST(ArrayIndex, CPPLarge)
+TEST(SeqIndex, CPPLarge)
 {
     using af::array;
 
@@ -742,4 +742,189 @@ TEST(ArrayIndex, CPPLarge)
     }
 
     delete[] outData;
+}
+
+TEST(SeqIndex, Cascade00)
+{
+    using af::seq;
+    using af::span;
+
+    const int nx = 200;
+    const int ny = 200;
+
+    const int stb = 21;
+    const int enb = 180;
+
+    const int stc = 3;   // Should be less than nx - stb
+    const int enc = 109; // Should be less than ny - enb
+
+    const int st = stb + stc;
+    const int en = stb + enc;
+    const int nxc = en - st + 1;
+
+    af::array a = af::randu(nx, ny);
+    af::array b = a(seq(stb, enb), span);
+    af::array c = b(seq(stc, enc), span);
+
+    ASSERT_EQ(c.dims(1), ny );
+    ASSERT_EQ(c.dims(0), nxc);
+
+    float *h_a = a.host<float>();
+    float *h_b = b.host<float>();
+    float *h_c = c.host<float>();
+
+    for (int j = 0; j < ny; j++) {
+
+        int a_off = j * nx;
+        int c_off = j * nxc;
+
+        for (int i = st; i < en; i++) {
+            ASSERT_EQ(h_a[a_off + i],
+                      h_c[c_off + i - st])
+                << "at (" << i << "," << j << ")";
+        }
+    }
+
+    delete[] h_a;
+    delete[] h_b;
+    delete[] h_c;
+}
+
+TEST(SeqIndex, Cascade01)
+{
+    using af::seq;
+    using af::span;
+
+    const int nx = 200;
+    const int ny = 200;
+
+    const int stb = 54;
+    const int enb = 196;
+
+    const int stc = 39;
+    const int enc = 123;
+
+    const int nxc = enb - stb + 1;
+    const int nyc = enc - stc + 1;
+
+    af::array a = af::randu(nx, ny);
+    af::array b = a(seq(stb, enb), span);
+    af::array c = b(span, seq(stc, enc));
+
+    ASSERT_EQ(c.dims(1), nyc);
+    ASSERT_EQ(c.dims(0), nxc);
+
+    float *h_a = a.host<float>();
+    float *h_b = b.host<float>();
+    float *h_c = c.host<float>();
+
+    for (int j = stc; j < enc; j++) {
+
+        int a_off = j * nx;
+        int c_off = (j - stc) * nxc;
+
+        for (int i = stb; i < enb; i++) {
+
+            ASSERT_EQ(h_a[a_off + i],
+                      h_c[c_off + i - stb])
+                << "at (" << i << "," << j << ")";
+        }
+    }
+
+    delete[] h_a;
+    delete[] h_b;
+    delete[] h_c;
+}
+
+TEST(SeqIndex, Cascade10)
+{
+    using af::seq;
+    using af::span;
+
+    const int nx = 200;
+    const int ny = 200;
+
+    const int stb = 71;
+    const int enb = 188;
+
+    const int stc = 33;
+    const int enc = 155;
+
+    const int nxc = enc - stc + 1;
+    const int nyc = enb - stb + 1;
+
+    af::array a = af::randu(nx, ny);
+    af::array b = a(span, seq(stb, enb));
+    af::array c = b(seq(stc, enc), span);
+
+    ASSERT_EQ(c.dims(1), nyc);
+    ASSERT_EQ(c.dims(0), nxc);
+
+    float *h_a = a.host<float>();
+    float *h_b = b.host<float>();
+    float *h_c = c.host<float>();
+
+    for (int j = stb; j < enb; j++) {
+
+        int a_off = j * nx;
+        int c_off = (j - stb) * nxc;
+
+        for (int i = stc; i < enc; i++) {
+
+            ASSERT_EQ(h_a[a_off + i],
+                      h_c[c_off + i - stc])
+                << "at (" << i << "," << j << ")";
+        }
+    }
+
+    delete[] h_a;
+    delete[] h_b;
+    delete[] h_c;
+}
+
+TEST(SeqIndex, Cascade11)
+{
+    using af::seq;
+    using af::span;
+
+    const int nx = 200;
+    const int ny = 200;
+
+    const int stb = 50;
+    const int enb = 150;
+
+    const int stc = 20; // Should be less than nx - stb
+    const int enc = 80; // Should be less than ny - enb
+
+    const int st = stb + stc;
+    const int en = stb + enc;
+    const int nyc = en - st + 1;
+
+    af::array a = af::randu(nx, ny);
+    af::array b = a(span, seq(stb, enb));
+    af::array c = b(span, seq(stc, enc));
+
+    ASSERT_EQ(c.dims(1), nyc);
+    ASSERT_EQ(c.dims(0), nx );
+
+    float *h_a = a.host<float>();
+    float *h_b = b.host<float>();
+    float *h_c = c.host<float>();
+
+    for (int j = st; j < en; j++) {
+
+        int a_off = j * nx;
+        int c_off = (j - st) * nx;
+
+        for (int i = 0; i < nx; i++) {
+
+            ASSERT_EQ(h_a[a_off + i],
+                      h_c[c_off + i])
+                << "at (" << i << "," << j << ")";
+        }
+    }
+
+    delete[] h_a;
+    delete[] h_b;
+    delete[] h_c;
 }

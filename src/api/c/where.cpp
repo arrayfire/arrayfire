@@ -22,7 +22,8 @@ using namespace detail;
 template<typename T>
 static inline af_array where(const af_array in)
 {
-    return getHandle(where<T>(getArray<T>(in)));
+    // Making it more explicit that the output is uint
+    return getHandle<uint>(where<T>(getArray<T>(in)));
 }
 
 af_err af_where(af_array *idx, const af_array in)

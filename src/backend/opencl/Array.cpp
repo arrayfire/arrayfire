@@ -28,6 +28,7 @@ namespace opencl
     Array<T>::Array(af::dim4 dims) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(bufferAlloc(ArrayInfo::elements() * sizeof(T)), bufferFree),
+        data_dims(dims),
         node(), ready(true), offset(0), owner(true)
     {
     }
@@ -36,6 +37,7 @@ namespace opencl
     Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(),
+        data_dims(dims),
         node(n), ready(false), offset(0), owner(true)
     {
     }
@@ -44,6 +46,7 @@ namespace opencl
     Array<T>::Array(af::dim4 dims, const T * const in_data) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(bufferAlloc(ArrayInfo::elements()*sizeof(T)), bufferFree),
+        data_dims(dims),
         node(), ready(true), offset(0), owner(true)
     {
         getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T)*ArrayInfo::elements(), in_data);
@@ -53,6 +56,7 @@ namespace opencl
     Array<T>::Array(af::dim4 dims, cl_mem mem) :
         ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(new cl::Buffer(mem), bufferFree),
+        data_dims(dims),
         node(), ready(true), offset(0), owner(true)
     {
     }
@@ -60,7 +64,10 @@ namespace opencl
     template<typename T>
     Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &stride) :
         ArrayInfo(dims, offsets, stride, (af_dtype)dtype_traits<T>::af_type),
-        data(parent.getData()), node(), ready(true),
+        data(parent.getData()),
+        data_dims(parent.getDataDims()),
+        node(),
+        ready(true),
         offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
         owner(false)
     { }
@@ -74,6 +81,7 @@ namespace opencl
                            tmp.info.strides[2], tmp.info.strides[3]),
                   (af_dtype)dtype_traits<T>::af_type),
         data(tmp.data, bufferFree),
+        data_dims(af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3])),
         node(), ready(true), offset(0), owner(true)
     {
     }
@@ -140,9 +148,12 @@ namespace opencl
                             const std::vector<af_seq> &index,
                             bool copy)
     {
-        dim4 dims   = af::toDims  (index, parent.dims());
-        dim4 offset = af::toOffset(index, parent.dims());
-        dim4 stride = af::toStride (index, parent.dims());
+        dim4 dDims = parent.getDataDims();
+        dim4 pDims = parent.dims();
+
+        dim4 dims   = af::toDims  (index, pDims);
+        dim4 offset = af::toOffset(index, dDims);
+        dim4 stride = af::toStride (index, dDims);
 
         Array<T> out = Array<T>(parent, dims, offset, stride);
 

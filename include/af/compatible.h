@@ -9,6 +9,7 @@
 
 #pragma once
 #include <af/array.h>
+#include <af/image.h>
 
 #ifdef __cplusplus
 namespace af
@@ -23,6 +24,9 @@ AFAPI void deviceset(const int device);
 AFAPI array loadimage(const char* filename, const bool is_color=false);
 
 AFAPI void saveimage(const char* filename, const array& in);
+
+AFAPI array gaussiankernel(const int rows, const int cols, const double sig_r = 0, const double sig_c = 0);
+
 
 }
 #endif
