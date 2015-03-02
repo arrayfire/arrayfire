@@ -61,7 +61,7 @@ void arrayIndex1D(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, dim_t
 
 template<typename in_t, typename idx_t, unsigned dim>
 __global__
-void arrayIndexND(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, 
+void arrayIndexND(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices,
                     dim_type nBBS0, dim_type nBBS1)
 {
     dim_type lx = threadIdx.x;
