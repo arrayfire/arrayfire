@@ -43,19 +43,18 @@ template<typename in_t, typename idx_t>
 __global__
 void arrayIndex1D(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, dim_type vDim)
 {
-    dim_type idx = (threadIdx.x + blockIdx.x * THREADS) * THRD_LOAD;
+    dim_type idx = threadIdx.x + blockIdx.x * THREADS * THRD_LOAD;
 
     const in_t* inPtr   = (const in_t*)in.ptr;
     const idx_t* idxPtr = (const idx_t*)indices.ptr;
 
     in_t* outPtr  = (in_t*)out.ptr;
 
-    for (dim_type i=0; i<THRD_LOAD; i+=THREADS_Y) {
-        dim_type oIdx = idx + i;
-        if (oIdx < out.dims[vDim]) {
-            dim_type iIdx = trimIndex(idxPtr[oIdx], in.dims[vDim]);
-            outPtr[oIdx] = inPtr[iIdx];
-        }
+    dim_type en = min(out.dims[vDim], idx + THRD_LOAD * THREADS);
+
+    for (dim_type oIdx = idx; oIdx < en; oIdx += THREADS) {
+        dim_type iIdx = trimIndex(idxPtr[oIdx], in.dims[vDim]);
+        outPtr[oIdx] = inPtr[iIdx];
     }
 }
 
@@ -103,7 +102,7 @@ void arrayIndex(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, dim_typ
                 break;
         }
 
-        dim_type blks = divup(out.dims[vDim], threads.x*THRD_LOAD);
+        dim_type blks = divup(out.dims[vDim], THREADS*THRD_LOAD);
 
         dim3 blocks(blks, 1);
 

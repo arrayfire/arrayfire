@@ -51,8 +51,8 @@ void arrayIndex(Param out, const Param in, const Param indices, dim_type nDims)
                             << " -D idx_t=" << dtype_traits<idx_t>::getName()
                             << " -D DIM=" <<dim;
 
-                    if (std::is_same<in_t, double>::value || 
-                        std::is_same<in_t, cdouble>::value || 
+                    if (std::is_same<in_t, double>::value ||
+                        std::is_same<in_t, cdouble>::value ||
                         std::is_same<idx_t, double>::value) {
                         options << " -D USE_DOUBLE";
                     }
@@ -68,7 +68,7 @@ void arrayIndex(Param out, const Param in, const Param indices, dim_type nDims)
         dim_type blk_x = divup(out.info.dims[0], THREADS_X);
         dim_type blk_y = divup(out.info.dims[1], THREADS_Y);
 
-        NDRange global(blk_x * out.info.dims[2] * THREADS_X, 
+        NDRange global(blk_x * out.info.dims[2] * THREADS_X,
                        blk_y * out.info.dims[3] * THREADS_Y);
 
         auto arrIdxOp = make_kernel<Buffer, KParam,
