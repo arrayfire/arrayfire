@@ -20,8 +20,12 @@ af_err af_colorspace(af_array *out, const af_array image, af_cspace_t to, af_csp
 
     ARG_ASSERT(2, (hsv2rgb || rgb2hsv || gray2rgb || rgb2gray));
 
-    if (hsv2rgb)  return  af_hsv2rgb(out, image);
-    if (rgb2hsv)  return  af_rgb2hsv(out, image);
-    if (gray2rgb) return af_gray2rgb(out, image, 1.0f, 1.0f, 1.0f);
-    if (rgb2gray) return af_rgb2gray(out, image, 0.2126f, 0.7152f, 0.0722f);
+    af_err result = AF_SUCCESS;
+
+    if (hsv2rgb)  result = af_hsv2rgb(out, image);
+    if (rgb2hsv)  result = af_rgb2hsv(out, image);
+    if (gray2rgb) result = af_gray2rgb(out, image, 1.0f, 1.0f, 1.0f);
+    if (rgb2gray) result = af_rgb2gray(out, image, 0.2126f, 0.7152f, 0.0722f);
+
+    return result;
 }
