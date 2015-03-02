@@ -1,3 +1,12 @@
+/*******************************************************
+ * Copyright (c) 2014, ArrayFire
+ * All rights reserved.
+ *
+ * This file is distributed under 3-clause BSD license.
+ * The complete license agreement can be obtained at:
+ * http://arrayfire.com/licenses/BSD-3-Clause
+ ********************************************************/
+
 
 float C1[] = {
     5.000000f, 10.000000f, 100.000000f, 100.000000f, 60.000000f, 100.000000f, 100.000000f, 100.000000f, 100.000000f, 100.000000f,
