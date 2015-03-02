@@ -300,7 +300,7 @@ namespace af
     {
         eval();
         af_array out = 0;
-        AF_THROW(af_array_index(&out, this->get(), idx.get(), 0));
+        AF_THROW(af_lookup(&out, this->get(), idx.get(), 0));
         return array(out);
     }
 

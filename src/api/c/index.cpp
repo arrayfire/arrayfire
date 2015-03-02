@@ -77,7 +77,7 @@ static af_array arrayIndex(const af_array &in, const af_array &idx, const unsign
     }
 }
 
-af_err af_array_index(af_array *out, const af_array in, const af_array indices, const unsigned dim)
+af_err af_lookup(af_array *out, const af_array in, const af_array indices, const unsigned dim)
 {
     af_array output = 0;
 
