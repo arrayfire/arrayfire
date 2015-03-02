@@ -71,22 +71,11 @@ template<typename T, typename aT, bool expand, dim_type f>
 void conv2Helper(const conv_kparam_t& p, Param out, const Param sig, const Param filt)
 {
     switch(filt.info.dims[1]) {
+        case  1: conv2Helper<T, aT, expand, f,  1>(p, out, sig, filt); break;
         case  2: conv2Helper<T, aT, expand, f,  2>(p, out, sig, filt); break;
         case  3: conv2Helper<T, aT, expand, f,  3>(p, out, sig, filt); break;
         case  4: conv2Helper<T, aT, expand, f,  4>(p, out, sig, filt); break;
         case  5: conv2Helper<T, aT, expand, f,  5>(p, out, sig, filt); break;
-        case  6: conv2Helper<T, aT, expand, f,  6>(p, out, sig, filt); break;
-        case  7: conv2Helper<T, aT, expand, f,  7>(p, out, sig, filt); break;
-        case  8: conv2Helper<T, aT, expand, f,  8>(p, out, sig, filt); break;
-        case  9: conv2Helper<T, aT, expand, f,  9>(p, out, sig, filt); break;
-        case 10: conv2Helper<T, aT, expand, f, 10>(p, out, sig, filt); break;
-        case 11: conv2Helper<T, aT, expand, f, 11>(p, out, sig, filt); break;
-        case 12: conv2Helper<T, aT, expand, f, 12>(p, out, sig, filt); break;
-        case 13: conv2Helper<T, aT, expand, f, 13>(p, out, sig, filt); break;
-        case 14: conv2Helper<T, aT, expand, f, 14>(p, out, sig, filt); break;
-        case 15: conv2Helper<T, aT, expand, f, 15>(p, out, sig, filt); break;
-        case 16: conv2Helper<T, aT, expand, f, 16>(p, out, sig, filt); break;
-        case 17: conv2Helper<T, aT, expand, f, 17>(p, out, sig, filt); break;
         default: OPENCL_NOT_SUPPORTED();
     }
 }
@@ -94,24 +83,28 @@ void conv2Helper(const conv_kparam_t& p, Param out, const Param sig, const Param
 template<typename T, typename aT, bool expand>
 void conv2(const conv_kparam_t& p, Param& out, const Param& sig, const Param& filt)
 {
-    switch(filt.info.dims[0]) {
+    dim_type f0 = filt.info.dims[0];
+    dim_type f1 = filt.info.dims[1];
+    switch(f0) {
+        case  1: conv2Helper<T, aT, expand,  1>(p, out, sig, filt); break;
         case  2: conv2Helper<T, aT, expand,  2>(p, out, sig, filt); break;
         case  3: conv2Helper<T, aT, expand,  3>(p, out, sig, filt); break;
         case  4: conv2Helper<T, aT, expand,  4>(p, out, sig, filt); break;
         case  5: conv2Helper<T, aT, expand,  5>(p, out, sig, filt); break;
-        case  6: conv2Helper<T, aT, expand,  6>(p, out, sig, filt); break;
-        case  7: conv2Helper<T, aT, expand,  7>(p, out, sig, filt); break;
-        case  8: conv2Helper<T, aT, expand,  8>(p, out, sig, filt); break;
-        case  9: conv2Helper<T, aT, expand,  9>(p, out, sig, filt); break;
-        case 10: conv2Helper<T, aT, expand, 10>(p, out, sig, filt); break;
-        case 11: conv2Helper<T, aT, expand, 11>(p, out, sig, filt); break;
-        case 12: conv2Helper<T, aT, expand, 12>(p, out, sig, filt); break;
-        case 13: conv2Helper<T, aT, expand, 13>(p, out, sig, filt); break;
-        case 14: conv2Helper<T, aT, expand, 14>(p, out, sig, filt); break;
-        case 15: conv2Helper<T, aT, expand, 15>(p, out, sig, filt); break;
-        case 16: conv2Helper<T, aT, expand, 16>(p, out, sig, filt); break;
-        case 17: conv2Helper<T, aT, expand, 17>(p, out, sig, filt); break;
-        default: OPENCL_NOT_SUPPORTED();
+        default: {
+                     if (f0==f1) {
+                         switch(f1) {
+                             case  6: conv2Helper<T, aT, expand,  6,  6>(p, out, sig, filt); break;
+                             case  7: conv2Helper<T, aT, expand,  7,  7>(p, out, sig, filt); break;
+                             case  8: conv2Helper<T, aT, expand,  8,  8>(p, out, sig, filt); break;
+                             case  9: conv2Helper<T, aT, expand,  9,  9>(p, out, sig, filt); break;
+                             case 10: conv2Helper<T, aT, expand, 10, 10>(p, out, sig, filt); break;
+                             case 11: conv2Helper<T, aT, expand, 11, 11>(p, out, sig, filt); break;
+                             default: OPENCL_NOT_SUPPORTED();
+                         }
+                     } else
+                         OPENCL_NOT_SUPPORTED();
+                 } break;
     }
 }
 

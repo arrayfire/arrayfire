@@ -300,22 +300,11 @@ void conv2Helper(dim3 blks, dim3 thrds, Param<T> out, CParam<T> sig,
                 dim_type f1, dim_type nBBS, dim_type oStp, dim_type sStp)
 {
     switch(f1) {
+        case  1: conv2Helper<T, aT, expand, f0,  1>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
         case  2: conv2Helper<T, aT, expand, f0,  2>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
         case  3: conv2Helper<T, aT, expand, f0,  3>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
         case  4: conv2Helper<T, aT, expand, f0,  4>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
         case  5: conv2Helper<T, aT, expand, f0,  5>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
-        case  6: conv2Helper<T, aT, expand, f0,  6>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
-        case  7: conv2Helper<T, aT, expand, f0,  7>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
-        case  8: conv2Helper<T, aT, expand, f0,  8>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
-        case  9: conv2Helper<T, aT, expand, f0,  9>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
-        case 10: conv2Helper<T, aT, expand, f0, 10>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
-        case 11: conv2Helper<T, aT, expand, f0, 11>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
-        case 12: conv2Helper<T, aT, expand, f0, 12>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
-        case 13: conv2Helper<T, aT, expand, f0, 13>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
-        case 14: conv2Helper<T, aT, expand, f0, 14>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
-        case 15: conv2Helper<T, aT, expand, f0, 15>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
-        case 16: conv2Helper<T, aT, expand, f0, 16>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
-        case 17: conv2Helper<T, aT, expand, f0, 17>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
         default: CUDA_NOT_SUPPORTED();
     }
 }
@@ -325,23 +314,25 @@ void conv2Helper(dim3 blks, dim3 thrds, Param<T> out, CParam<T> sig,
                 dim_type f0, dim_type f1, dim_type nBBS, dim_type oStp, dim_type sStp)
 {
     switch(f0) {
+        case  1: conv2Helper<T, aT, expand,  1>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
         case  2: conv2Helper<T, aT, expand,  2>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
         case  3: conv2Helper<T, aT, expand,  3>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
         case  4: conv2Helper<T, aT, expand,  4>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
         case  5: conv2Helper<T, aT, expand,  5>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
-        case  6: conv2Helper<T, aT, expand,  6>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
-        case  7: conv2Helper<T, aT, expand,  7>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
-        case  8: conv2Helper<T, aT, expand,  8>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
-        case  9: conv2Helper<T, aT, expand,  9>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
-        case 10: conv2Helper<T, aT, expand, 10>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
-        case 11: conv2Helper<T, aT, expand, 11>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
-        case 12: conv2Helper<T, aT, expand, 12>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
-        case 13: conv2Helper<T, aT, expand, 13>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
-        case 14: conv2Helper<T, aT, expand, 14>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
-        case 15: conv2Helper<T, aT, expand, 15>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
-        case 16: conv2Helper<T, aT, expand, 16>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
-        case 17: conv2Helper<T, aT, expand, 17>(blks, thrds, out, sig, f1, nBBS, oStp, sStp); break;
-        default: CUDA_NOT_SUPPORTED();
+        default: {
+                     if (f0==f1) {
+                         switch(f1) {
+                             case  6: conv2Helper<T, aT, expand,  6,  6>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+                             case  7: conv2Helper<T, aT, expand,  7,  7>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+                             case  8: conv2Helper<T, aT, expand,  8,  8>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+                             case  9: conv2Helper<T, aT, expand,  9,  9>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+                             case 10: conv2Helper<T, aT, expand, 10, 10>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+                             case 11: conv2Helper<T, aT, expand, 11, 11>(blks, thrds, out, sig, nBBS, oStp, sStp); break;
+                             default: CUDA_NOT_SUPPORTED();
+                         }
+                     } else
+                         CUDA_NOT_SUPPORTED();
+                 } break;
     }
 }
 
