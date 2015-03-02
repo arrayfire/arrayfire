@@ -9,11 +9,37 @@
 
 #pragma once
 
+template<typename T, typename Other>
+struct is_same{
+    static const bool value = false;
+};
+
 template<typename T>
-using baseOutType = typename std::conditional<  std::is_same<T, cdouble>::value ||
-                                                std::is_same<T, double>::value,
-                                              double,
-                                              float>::type;
+struct is_same<T, T> {
+    static const bool value = true;
+};
+
+template<bool, typename T, typename O>
+struct cond_type;
+
+template<typename T, typename Other>
+struct cond_type<true, T, Other> {
+    typedef T type;
+};
+
+template<typename T, typename Other>
+struct cond_type<false, T, Other> {
+    typedef Other type;
+};
+
+template<typename T>
+struct baseOutType {
+    typedef typename cond_type< is_same<T, cdouble>::value ||
+                                is_same<T, double>::value,
+                                double,
+                                float>::type type;
+};
+
 template<typename T>
 inline T mean(const Array<T>& in)
 {

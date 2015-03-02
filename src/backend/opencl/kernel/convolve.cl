@@ -48,7 +48,7 @@ void convolve(global T *out, KParam oInfo,
     gx += get_local_id(0);
 
     if (gx>=0 && gx<oInfo.dims[0]) {
-        dim_type lx   = get_local_id(0) + padding + (EXPAND ? 0 : fLen/2);
+        dim_type lx   = get_local_id(0) + padding + (EXPAND ? 0 : fLen>>1);
         accType accum = (accType)(0);
         for(dim_type f=0; f<fLen; ++f) {
             accum = accum + ((accType)localMem[lx-f] * (accType)impulse[f]);
@@ -60,15 +60,14 @@ void convolve(global T *out, KParam oInfo,
 
 #if BASE_DIM==2
 kernel
-void convolve(global T *out, KParam oInfo,
-              global T const *signal, KParam sInfo, local T *localMem,
+void convolve(global T *out, KParam oInfo, global T const *signal, KParam sInfo,
               constant T const *impulse, KParam fInfo, dim_type nonBatchBlkSize,
               dim_type oStep, dim_type sStep)
 {
-    dim_type fLen0    = fInfo.dims[0];
-    dim_type fLen1    = fInfo.dims[1];
-    dim_type radius0  = fLen0-1;
-    dim_type radius1  = fLen1-1;
+    local T localMem[C_SIZE];
+
+    dim_type radius0  = FLEN0-1;
+    dim_type radius1  = FLEN1-1;
     dim_type padding0 = 2*radius0;
     dim_type padding1 = 2*radius1;
     dim_type shrdLen0 = get_local_size(0) + padding0;
@@ -94,13 +93,13 @@ void convolve(global T *out, KParam oInfo,
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if (gx<oInfo.dims[0] && gy<oInfo.dims[1]) {
-        dim_type ci = lx + radius0 + (EXPAND ? 0 : fLen0/2);
-        dim_type cj = ly + radius1 + (EXPAND ? 0 : fLen1/2);
+        dim_type ci = lx + radius0 + (EXPAND ? 0 : FLEN0>>1);
+        dim_type cj = ly + radius1 + (EXPAND ? 0 : FLEN1>>1);
 
         accType accum = (accType)(0);
-        for(dim_type fj=0; fj<fLen1; ++fj) {
-            for(dim_type fi=0; fi<fLen0; ++fi) {
-                T f_val = impulse[fj*fLen0+fi];
+        for(dim_type fj=0; fj<FLEN1; ++fj) {
+            for(dim_type fi=0; fi<FLEN0; ++fi) {
+                T f_val = impulse[fj*FLEN0+fi];
                 T s_val = localMem[(cj-fj)*shrdLen0+(ci-fi)];
                 accum   = accum + ((accType)s_val*(accType)f_val);
             }
@@ -186,9 +185,9 @@ void convolve(global T *out, KParam oInfo, global T const *signal,
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if (gx<oInfo.dims[0] && gy<oInfo.dims[1] && gz<oInfo.dims[2]) {
-        dim_type ci = lx + radius0 + (EXPAND ? 0 : fLen0/2);
-        dim_type cj = ly + radius1 + (EXPAND ? 0 : fLen1/2);
-        dim_type ck = lz + radius2 + (EXPAND ? 0 : fLen2/2);
+        dim_type ci = lx + radius0 + (EXPAND ? 0 : fLen0>>1);
+        dim_type cj = ly + radius1 + (EXPAND ? 0 : fLen1>>1);
+        dim_type ck = lz + radius2 + (EXPAND ? 0 : fLen2>>1);
 
         accType accum = (accType)(0);
         for(dim_type fk=0; fk<fLen2; ++fk) {
@@ -201,70 +200,6 @@ void convolve(global T *out, KParam oInfo, global T const *signal,
             }
         }
         dst[index(gx, gy, gz, oInfo.strides[1], oInfo.strides[2])] = (T)accum;
-    }
-}
-#endif
-
-#if defined(SEPARABLE_CONV)
-T readSrc2(global T const *src, dim_type i, dim_type j, dim_type dims[], dim_type strides[])
-{
-    bool is_i = i>=0 && i<dims[0];
-    bool is_j = j>=0 && j<dims[1];
-    if (is_i && is_j)
-        return src[i*strides[0] + j*strides[1]];
-    else
-        return (T)(0);
-}
-
-kernel
-void convolve(global T *out, KParam oInfo, global T const *signal,
-              KParam sInfo, local T *localMem, constant T const *impulse,
-              dim_type fLen, dim_type nonBatchBlkSize)
-{
-    dim_type radius   = fLen-1;
-    dim_type padding  = 2*radius;
-    dim_type shrdLen  = get_local_size(0);
-    if (CONV_DIM==0) {
-        shrdLen += padding;
-    }
-
-    unsigned batchId  = get_group_id(0)/nonBatchBlkSize;
-    global T *dst = out + (batchId*oInfo.strides[2]);
-    global const T *src = signal + (batchId*sInfo.strides[2]) + sInfo.offset;
-
-    dim_type lx = get_local_id(0);
-    dim_type ly = get_local_id(1);
-    dim_type ox = get_local_size(0) * (get_group_id(0)-batchId*nonBatchBlkSize) + lx;
-    dim_type oy = get_local_size(1) * get_group_id(1) + ly;
-    dim_type gx = ox;
-    dim_type gy = oy;
-
-    if (CONV_DIM==0) {
-        gx += (EXPAND ? 0 : fLen/2);
-        dim_type endX = 2*(fLen-1) + get_local_size(0);
-
-        for(dim_type lx = get_local_id(0), glb_x = gx; lx<endX; lx += get_local_size(0), glb_x += get_local_size(0))
-            localMem[ly*shrdLen+lx] = readSrc2(src, glb_x-radius, gy, sInfo.dims, sInfo.strides);
-
-    } else if (CONV_DIM==1) {
-        gy += (EXPAND ? 0 : fLen/2);
-        dim_type endY = 2*(fLen-1) + get_local_size(1);
-
-        for(dim_type ly = get_local_id(1), glb_y = gy; ly<endY; ly += get_local_size(1), glb_y += get_local_size(1))
-            localMem[ly*shrdLen+lx] = readSrc2(src, gx, glb_y-radius, sInfo.dims, sInfo.strides);
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    if (ox<oInfo.dims[0] && oy<oInfo.dims[1]) {
-        dim_type i  = (CONV_DIM==0 ? lx : ly) + radius;
-        accType accum = (accType)(0);
-        for(dim_type f=0; f<fLen; ++f) {
-            T f_val = impulse[f];
-            dim_type s_idx = (CONV_DIM==0 ? (ly*shrdLen+(i-f)) : ((i-f)*shrdLen+lx));
-            T s_val = localMem[s_idx];
-            accum   = accum + ((accType)s_val*(accType)f_val);
-        }
-        dst[oy*oInfo.strides[1]+ox] = (T)accum;
     }
 }
 #endif

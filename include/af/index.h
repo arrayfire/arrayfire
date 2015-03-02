@@ -31,6 +31,10 @@ AFAPI array moddims(const array& in, dim_type d0, dim_type d1=1, dim_type d2=1, 
 
 AFAPI array flat(const array &in);
 
+AFAPI array flip(const array &in, const unsigned dim);
+
+AFAPI array lookup(const array &in, const array &idx, const int dim = -1);
+
 }
 #endif
 
@@ -43,7 +47,7 @@ extern "C" {
     AFAPI af_err af_index(af_array *out, const af_array in, unsigned ndims, const af_seq* const index);
 
     // create a new af_array by indexing existing af_array using another af_array
-    AFAPI af_err af_array_index(af_array *out, const af_array in, const af_array indices, const unsigned dim);
+    AFAPI af_err af_lookup(af_array *out, const af_array in, const af_array indices, const unsigned dim);
 
     // copy an array into exiting array of larger dimensions
     // error out in case of insufficient dimension lengths
@@ -67,6 +71,8 @@ extern "C" {
     AFAPI af_err af_moddims(af_array *out, const af_array in, const unsigned ndims, const dim_type * const dims);
 
     AFAPI af_err af_flat(af_array *out, const af_array in);
+
+    AFAPI af_err af_flip(af_array *out, const af_array in, const unsigned dim);
 
 #ifdef __cplusplus
 }

@@ -53,17 +53,20 @@ Array<T> convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> co
     const dim4 cfDims   = c_filter.dims();
     const dim4 rfDims   = r_filter.dims();
 
+    const dim_type cfLen= cfDims.elements();
+    const dim_type rfLen= rfDims.elements();
+
     const dim4 sDims = signal.dims();
-    dim4 oDims(1);
+    dim4 tDims = sDims;
+    dim4 oDims = sDims;
+
     if (expand) {
-        oDims[0] = sDims[0]+cfDims[0]-1;
-        oDims[1] = sDims[1]+rfDims[0]-1;
-        oDims[2] = sDims[2];
-    } else {
-        oDims = sDims;
+        tDims[0] += cfLen - 1;
+        oDims[0] += cfLen - 1;
+        oDims[1] += rfLen - 1;
     }
 
-    Array<T> temp= createEmptyArray<T>(oDims);
+    Array<T> temp= createEmptyArray<T>(tDims);
     Array<T> out = createEmptyArray<T>(oDims);
 
     kernel::convolve2<T, accT, 0, expand>(temp, signal, c_filter);

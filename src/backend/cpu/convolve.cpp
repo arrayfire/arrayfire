@@ -13,6 +13,7 @@
 #include <Array.hpp>
 #include <convolve.hpp>
 #include <err_cpu.hpp>
+#include <math.hpp>
 
 using af::dim4;
 
@@ -205,42 +206,37 @@ void convolve2_separable(T *optr, T const *iptr, T const *fptr,
                         dim4 const &oDims, dim4 const &sDims, dim4 const &orgDims, dim_type fDim,
                         dim4 const &oStrides, dim4 const &sStrides, dim_type fStride)
 {
-    const dim_type outr_dim = (conv_dim+1)%2;
-    dim_type iStart = (expand ? 0 : fDim/2);
-    dim_type iEnd   = (expand ? oDims[conv_dim] : (iStart + std::min(sDims[conv_dim], orgDims[conv_dim])));
-    dim_type jStart = (expand ? 0 : fDim/2);
-    dim_type jEnd   = (expand ? oDims[outr_dim] : (jStart + std::min(sDims[outr_dim], orgDims[outr_dim])));
+    for(dim_type j=0; j<oDims[1]; ++j) {
 
-    for(dim_type j=jStart; j<jEnd; ++j) {
-        dim_type joff = (j-jStart)*oStrides[outr_dim];
+        dim_type jOff = j*oStrides[1];
+        dim_type cj = j + (conv_dim==1)*(expand ? 0: fDim>>1);
 
-        for(dim_type i=iStart; i<iEnd; ++i) {
-            dim_type ioff = (i-iStart)*oStrides[conv_dim];
+        for(dim_type i=0; i<oDims[0]; ++i) {
 
-            accType accum = accType(0);
+            dim_type iOff = i*oStrides[0];
+            dim_type ci = i + (conv_dim==0)*(expand ? 0 : fDim>>1);
 
-            dim_type s_joff = j * sStrides[outr_dim];
-            bool isJValid = (j>=0 && j<sDims[outr_dim]);
+            accType accum = scalar<accType>(0);
 
-            for(dim_type w=0; w<fDim; ++w) {
-                // offset right index: we have already
-                // choosen the changing index to be pointed
-                // by i, therefore no need to check that here
-                dim_type idx = i-w;
+            for(dim_type f=0; f<fDim; ++f) {
+                T f_val = fptr[f];
+                T s_val;
 
-                dim_type off = idx * sStrides[conv_dim];
-
-                T s_val = T(0);
-                if (isJValid && (idx>=0 && idx<sDims[conv_dim])) {
-                    // we have already offseted the convolving
-                    // dimension, we just need to offset the j offset
-                    // to reach corresponding 2d element
-                    s_val = iptr[s_joff+off];
+                if (conv_dim==0) {
+                    dim_type offi = ci - f;
+                    bool isCIValid = offi>=0 && offi<sDims[0];
+                    bool isCJValid = cj>=0 && cj<sDims[1];
+                    s_val = (isCJValid && isCIValid ? iptr[cj*sDims[0]+offi] : scalar<T>(0));
+                } else {
+                    dim_type offj = cj - f;
+                    bool isCIValid = ci>=0 && ci<sDims[0];
+                    bool isCJValid = offj>=0 && offj<sDims[1];
+                    s_val = (isCJValid && isCIValid ? iptr[offj*sDims[0]+ci] : scalar<T>(0));
                 }
 
-                accum += accType(s_val * fptr[w*fStride]);
+                accum += accType(s_val * f_val);
             }
-            optr[joff+ioff] = T(accum);
+            optr[iOff+jOff] = T(accum);
         }
     }
 }
@@ -253,17 +249,17 @@ Array<T> convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> co
     auto rfDims   = r_filter.dims();
     auto sStrides = signal.strides();
 
+    dim_type cflen = (dim_type)cfDims.elements();
+    dim_type rflen = (dim_type)rfDims.elements();
 
-    dim4 tDims(sDims[0]+cfDims[0]-1, sDims[1]+rfDims[0]-1, sDims[2],sDims[3]);
-    dim4 oDims(1);
+    dim4 tDims = sDims;
+    dim4 oDims = sDims;
 
     if (expand) {
         // separable convolve only does ONE2ONE and standard batch(MANY2ONE)
-        oDims[0] = sDims[0]+cfDims[0]-1;
-        oDims[1] = sDims[1]+rfDims[0]-1;
-        oDims[2] = sDims[2];
-    } else {
-        oDims = sDims;
+        tDims[0] += cflen - 1;
+        oDims[0] += cflen - 1;
+        oDims[1] += rflen - 1;
     }
 
     Array<T> temp = createEmptyArray<T>(tDims);
@@ -271,19 +267,18 @@ Array<T> convolve2(Array<T> const& signal, Array<T> const& c_filter, Array<T> co
     auto tStrides = temp.strides();
     auto oStrides = out.strides();
 
-
     for (dim_type b=0; b<oDims[2]; ++b) {
         T const *iptr = signal.get()+ b*sStrides[2];
         T *tptr = temp.get() + b*tStrides[2];
         T *optr = out.get()  + b*oStrides[2];
 
-        convolve2_separable<T, accT, 0, true>(tptr, iptr, c_filter.get(),
-                tDims, sDims, sDims, cfDims[0],
-                tStrides, sStrides, c_filter.strides()[0]);
+        convolve2_separable<T, accT, 0, expand>(tptr, iptr, c_filter.get(),
+                                                tDims, sDims, sDims, cflen,
+                                                tStrides, sStrides, c_filter.strides()[0]);
 
         convolve2_separable<T, accT, 1, expand>(optr, tptr, r_filter.get(),
-                oDims, tDims, sDims, rfDims[0],
-                oStrides, tStrides, r_filter.strides()[0]);
+                                                oDims, tDims, sDims, rflen,
+                                                oStrides, tStrides, r_filter.strides()[0]);
     }
 
     return out;

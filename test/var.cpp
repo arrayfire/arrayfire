@@ -37,6 +37,8 @@ using varOutType = typename std::conditional<std::is_same<T, char>::value,
 template<typename T>
 void testCPPVar(T const_value, af::dim4 dims)
 {
+    if (noDoubleTests<T>()) return;
+
     typedef varOutType<T> outType;
     using af::array;
     using af::var;
