@@ -73,7 +73,7 @@ static void setup_mnist(int *num_classes, int *num_train, int *num_test,
         }
 
         for (int ii = 0; ii < *num_test; ii++) {
-            train_labels(ldata[ h_test_idx[ii]], ii) = 1;
+            test_labels(ldata[ h_test_idx[ii]], ii) = 1;
         }
 
         delete[] h_train_idx;
