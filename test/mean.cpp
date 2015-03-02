@@ -50,6 +50,8 @@ using meanOutType = typename std::conditional<std::is_same<T, cdouble>::value,
 template<typename T, dim_type dim>
 void meanDimTest(string pFileName)
 {
+    if (noDoubleTests<T>()) return;
+
     typedef meanOutType<T> outType;
 
     vector<af::dim4>      numDims;
@@ -124,6 +126,8 @@ TYPED_TEST(Mean, Dim2HyperCube)
 template<typename T>
 void testCPPMean(T const_value, af::dim4 dims)
 {
+    if (noDoubleTests<T>()) return;
+
     typedef meanOutType<T> outType;
     using af::array;
     using af::mean;

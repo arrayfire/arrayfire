@@ -19,7 +19,7 @@ using std::vector;
 
 TEST(hsv_rgb, InvalidArray)
 {
-    vector<double> in(100, 1);
+    vector<float> in(100, 1);
 
     af::dim4 dims(100);
     af::array input(dims, &(in.front()));
