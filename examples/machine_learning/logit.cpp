@@ -16,7 +16,6 @@
 #include "mnist_common.h"
 
 using namespace af;
-using namespace std;
 
 float accuracy(const array& predicted, const array& target)
 {
