@@ -575,7 +575,7 @@ void arrayIndexTest(string pTestFile, int dim)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray, &(in[1].front()),
                 dims1.ndims(), dims1.get(), (af_dtype)af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_array_index(&outArray, inArray, idxArray, dim));
+    ASSERT_EQ(AF_SUCCESS, af_lookup(&outArray, inArray, idxArray, dim));
 
     vector<T> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();

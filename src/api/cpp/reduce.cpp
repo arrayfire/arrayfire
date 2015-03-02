@@ -105,6 +105,10 @@ namespace af
     INSTANTIATE_REAL(fn, double)                \
     INSTANTIATE_REAL(fn, int)                   \
     INSTANTIATE_REAL(fn, unsigned)              \
+    INSTANTIATE_REAL(fn, long)                  \
+    INSTANTIATE_REAL(fn, unsigned long)         \
+    INSTANTIATE_REAL(fn, long long)             \
+    INSTANTIATE_REAL(fn, unsigned long long)    \
     INSTANTIATE_REAL(fn, char)                  \
     INSTANTIATE_REAL(fn, unsigned char)         \
     INSTANTIATE_CPLX(fn, af_cfloat, float)      \
@@ -117,6 +121,9 @@ namespace af
     INSTANTIATE(alltrue)
     INSTANTIATE(anytrue)
     INSTANTIATE(count)
+
+    INSTANTIATE_REAL(alltrue, bool);
+    INSTANTIATE_REAL(anytrue, bool);
 
 #undef INSTANTIATE
 #undef INSTANTIATE_REAL
