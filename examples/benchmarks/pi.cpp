@@ -1,12 +1,3 @@
-/*******************************************************
- * Copyright (c) 2014, ArrayFire
- * All rights reserved.
- *
- * This file is distributed under 3-clause BSD license.
- * The complete license agreement can be obtained at:
- * http://arrayfire.com/licenses/BSD-3-Clause
- ********************************************************/
-
 /*
    monte-carlo estimation of PI
 
@@ -26,7 +17,6 @@ static int samples = 20e6;
 /* Self-contained code to run host and device estimates of PI.  Note that
    each is generating its own random values, so the estimates of PI
    will differ. */
-
 static double pi_device()
 {
     array x = randu(samples,f32), y = randu(samples,f32);
@@ -45,9 +35,12 @@ static double pi_host()
     return 4.0 * count / samples;
 }
 
+
+
 // void wrappers for timeit()
 static void device_wrapper() { pi_device(); }
 static void host_wrapper() { pi_host(); }
+
 
 int main(int argc, char ** argv)
 {
@@ -62,5 +55,13 @@ int main(int argc, char ** argv)
         fprintf(stderr, "%s\n", e.what());
         throw;
     }
+
+    #ifdef WIN32 // pause in Windows
+    if (!(argc == 2 && argv[1][0] == '-')) {
+        printf("hit [enter]...");
+        fflush(stdout);
+        getchar();
+    }
+    #endif
     return 0;
 }

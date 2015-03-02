@@ -37,10 +37,10 @@ template<typename T, typename accType, dim_type conv_dim, bool expand, dim_type 
 __global__
 void convolve2_separable(Param<T> out, CParam<T> signal, dim_type nBBS)
 {
-    const size_t C0_SIZE  = (THREADS_X+2*(fLen-1))* THREADS_Y;
-    const size_t C1_SIZE  = (THREADS_Y+2*(fLen-1))* THREADS_X;
-
-    __shared__ T shrdMem[(conv_dim==0 ? C0_SIZE : C1_SIZE)];
+    const dim_type smem_len =   (conv_dim==0 ?
+                                (THREADS_X+2*(fLen-1))* THREADS_Y:
+                                (THREADS_Y+2*(fLen-1))* THREADS_X);
+    __shared__ T shrdMem[smem_len];
 
     const dim_type radius  = fLen-1;
     const dim_type padding = 2*radius;
@@ -116,7 +116,8 @@ void conv2Helper(dim3 blks, dim3 thrds, Param<T> out, CParam<T> sig, dim_type nB
 template<typename T, typename accType, dim_type conv_dim, bool expand>
 void convolve2(Param<T> out, CParam<T> signal, CParam<T> filter)
 {
-   if(filter.dims[0] > kernel::MAX_SCONV_FILTER_LEN) {
+    dim_type fLen = filter.dims[0] * filter.dims[1] * filter.dims[2] * filter.dims[3];
+    if(fLen > kernel::MAX_SCONV_FILTER_LEN) {
         // call upon fft
         CUDA_NOT_SUPPORTED();
     }
@@ -128,7 +129,6 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<T> filter)
 
     dim3 blocks(blk_x*signal.dims[2], blk_y);
 
-    dim_type fLen = filter.dims[0];
 
    // FIX ME: if the filter array is strided, direct copy of symbols
    // might cause issues

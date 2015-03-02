@@ -234,6 +234,23 @@ CPP_REDUCE_TESTS(anytrue, float, unsigned char);
 CPP_REDUCE_TESTS(alltrue, float, unsigned char);
 CPP_REDUCE_TESTS(count, float, unsigned);
 
+TEST(Reduce, Test_Product_Global)
+{
+    int num = 100;
+    af::array a = 1 + af::round(5 * af::randu(num, 1)) / 100;
+
+    float res = af::product<float>(a);
+    float *h_a = a.host<float>();
+    float gold = 1;
+
+    for (int i = 0; i < num; i++) {
+        gold *= h_a[i];
+    }
+
+    ASSERT_EQ(gold, res);
+    delete[] h_a;
+}
+
 TEST(Reduce, Test_Sum_Global)
 {
     int num = 10000;
