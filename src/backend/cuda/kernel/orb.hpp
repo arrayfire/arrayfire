@@ -322,7 +322,8 @@ void orb(unsigned* out_feat,
          const float fast_thr,
          const unsigned max_feat,
          const float scl_fctr,
-         const unsigned levels)
+         const unsigned levels,
+         const bool blur_img)
 {
     unsigned patch_size = REF_PAT_SIZE;
 
@@ -341,23 +342,25 @@ void orb(unsigned* out_feat,
     unsigned total_feat = 0;
 
     // Calculate a separable Gaussian kernel
-    unsigned gauss_len = 9;
-    convAccT* h_gauss = new convAccT[gauss_len];
-    gaussian1D(h_gauss, gauss_len, 2.f);
     Param<convAccT> gauss_filter;
-    gauss_filter.dims[0] = gauss_len;
-    gauss_filter.strides[0] = 1;
+    if (blur_img) {
+        unsigned gauss_len = 9;
+        convAccT* h_gauss = new convAccT[gauss_len];
+        gaussian1D(h_gauss, gauss_len, 2.f);
+        gauss_filter.dims[0] = gauss_len;
+        gauss_filter.strides[0] = 1;
 
-    for (int k = 1; k < 4; k++) {
-        gauss_filter.dims[k] = 1;
-        gauss_filter.strides[k] = gauss_filter.dims[k - 1] * gauss_filter.strides[k - 1];
+        for (int k = 1; k < 4; k++) {
+            gauss_filter.dims[k] = 1;
+            gauss_filter.strides[k] = gauss_filter.dims[k - 1] * gauss_filter.strides[k - 1];
+        }
+
+        dim_type gauss_elem = gauss_filter.strides[3] * gauss_filter.dims[3];
+        gauss_filter.ptr = memAlloc<convAccT>(gauss_elem);
+        CUDA_CHECK(cudaMemcpy(gauss_filter.ptr, h_gauss, gauss_elem * sizeof(convAccT), cudaMemcpyHostToDevice));
+
+        delete[] h_gauss;
     }
-
-    dim_type gauss_elem = gauss_filter.strides[3] * gauss_filter.dims[3];
-    gauss_filter.ptr = memAlloc<convAccT>(gauss_elem);
-    CUDA_CHECK(cudaMemcpy(gauss_filter.ptr, h_gauss, gauss_elem * sizeof(convAccT), cudaMemcpyHostToDevice));
-
-    delete[] h_gauss;
 
     for (int i = 0; i < (int)max_levels; i++) {
         if (feat_pyr[i] == 0 || lvl_best[i] == 0) {
@@ -452,30 +455,31 @@ void orb(unsigned* out_feat,
         Param<T> lvl_tmp;
         Param<T> lvl_filt;
 
-        for (int k = 0; k < 4; k++) {
-            lvl_tmp.dims[k] = img_pyr[i].dims[k];
-            lvl_tmp.strides[k] = img_pyr[i].strides[k];
-            lvl_filt.dims[k] = img_pyr[i].dims[k];
-            lvl_filt.strides[k] = img_pyr[i].strides[k];
-        }
+        if (blur_img) {
+            for (int k = 0; k < 4; k++) {
+                lvl_tmp.dims[k] = img_pyr[i].dims[k];
+                lvl_tmp.strides[k] = img_pyr[i].strides[k];
+                lvl_filt.dims[k] = img_pyr[i].dims[k];
+                lvl_filt.strides[k] = img_pyr[i].strides[k];
+            }
 
-        dim_type lvl_elem = img_pyr[i].strides[3] * img_pyr[i].dims[3];
-        lvl_tmp.ptr = memAlloc<T>(lvl_elem);
-        lvl_filt.ptr = memAlloc<T>(lvl_elem);
+            dim_type lvl_elem = img_pyr[i].strides[3] * img_pyr[i].dims[3];
+            lvl_tmp.ptr = memAlloc<T>(lvl_elem);
+            lvl_filt.ptr = memAlloc<T>(lvl_elem);
 
-        // Separable Gaussian filtering to reduce noise sensitivity
-        convolve2<T, convAccT, 0, false>(lvl_tmp, img_pyr[i], gauss_filter);
-        convolve2<T, convAccT, 1, false>(lvl_filt, CParam<T>(lvl_tmp), gauss_filter);
+            // Separable Gaussian filtering to reduce noise sensitivity
+            convolve2<T, convAccT, 0, false>(lvl_tmp, img_pyr[i], gauss_filter);
+            convolve2<T, convAccT, 1, false>(lvl_filt, CParam<T>(lvl_tmp), gauss_filter);
 
-        memFree(lvl_tmp.ptr);
-        if (i > 0) {
-            memFree((T*)img_pyr[i].ptr);
-        }
+            memFree(lvl_tmp.ptr);
+            if (i > 0)
+                memFree((T*)img_pyr[i].ptr);
 
-        img_pyr[i].ptr = lvl_filt.ptr;
-        for (int k = 0; k < 4; k++) {
-            img_pyr[i].dims[k] = lvl_filt.dims[k];
-            img_pyr[i].strides[k] = lvl_filt.strides[k];
+            img_pyr[i].ptr = lvl_filt.ptr;
+            for (int k = 0; k < 4; k++) {
+                img_pyr[i].dims[k] = lvl_filt.dims[k];
+                img_pyr[i].strides[k] = lvl_filt.strides[k];
+            }
         }
 
         float* d_size_lvl = memAlloc<float>(feat_pyr[i]);
@@ -491,7 +495,8 @@ void orb(unsigned* out_feat,
                                             img_pyr[i], lvl_scl[i], patch_size);
         POST_LAUNCH_CHECK();
 
-        memFree((T*)img_pyr[i].ptr);
+        //if (blur_img || i > 0)
+        //    memFree((T*)img_pyr[i].ptr);
 
         // Store results to pyramids
         total_feat += feat_pyr[i];
@@ -503,7 +508,8 @@ void orb(unsigned* out_feat,
         d_desc_pyr[i] = d_desc_lvl;
     }
 
-    memFree((T*)gauss_filter.ptr);
+    if (blur_img)
+        memFree((T*)gauss_filter.ptr);
 
     // If no features are found, set found features to 0 and return
     if (total_feat == 0) {

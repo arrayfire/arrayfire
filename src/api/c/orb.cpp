@@ -23,7 +23,7 @@ template<typename T, typename convAccT>
 static void orb(af_features& feat, af_array& descriptor,
                 const af_array& in, const float fast_thr,
                 const unsigned max_feat, const float scl_fctr,
-                const unsigned levels)
+                const unsigned levels, const bool blur_img)
 {
     Array<float> x     = createEmptyArray<float>(dim4());
     Array<float> y     = createEmptyArray<float>(dim4());
@@ -34,7 +34,7 @@ static void orb(af_features& feat, af_array& descriptor,
 
     feat.n = orb<T, convAccT>(x, y, score, ori, size, desc,
                               getArray<T>(in), fast_thr, max_feat,
-                              scl_fctr, levels);
+                              scl_fctr, levels, blur_img);
 
     feat.x           = getHandle(x);
     feat.y           = getHandle(y);
@@ -48,7 +48,7 @@ static void orb(af_features& feat, af_array& descriptor,
 af_err af_orb(af_features* feat, af_array* desc,
               const af_array in, const float fast_thr,
               const unsigned max_feat, const float scl_fctr,
-              const unsigned levels)
+              const unsigned levels, const bool blur_img)
 {
     try {
         ArrayInfo info = getInfo(in);
@@ -66,8 +66,10 @@ af_err af_orb(af_features* feat, af_array* desc,
         af_array tmp_desc;
         af_dtype type  = info.getType();
         switch(type) {
-            case f32: orb<float , float >(*feat, tmp_desc, in, fast_thr, max_feat, scl_fctr, levels); break;
-            case f64: orb<double, double>(*feat, tmp_desc, in, fast_thr, max_feat, scl_fctr, levels); break;
+            case f32: orb<float , float >(*feat, tmp_desc, in, fast_thr, max_feat,
+                                          scl_fctr, levels, blur_img); break;
+            case f64: orb<double, double>(*feat, tmp_desc, in, fast_thr, max_feat,
+                                          scl_fctr, levels, blur_img); break;
             default : TYPE_ERROR(1, type);
         }
         std::swap(*desc, tmp_desc);
