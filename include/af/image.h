@@ -38,8 +38,41 @@ AFAPI array skew(const array& in, const float skew0, const float skew1, const di
 
 AFAPI array bilateral(const array &in, const float spatial_sigma, const float chromatic_sigma, bool is_color=false);
 
+/**
+   C++ interface for histogram
+
+   This function uses the min and max to create an output array consisting of
+   nbins that are equally spaced bins between min and max. In the output
+   array, the index represents the bin number and the value at the index
+   represents the frequency of the data in that bin. For all elements, the
+   bin it belongs to is computed and incremented. All elements less than
+   min are placed in the min bin and all elements greated than max are
+   placed in the max bin.
+
+   \param[in]  in is the input array
+   \param[in]  nbins  Number of bins to populate between min and max
+   \param[in]  minval minimum bin value (accumulates -inf to min)
+   \param[in]  maxval minimum bin value (accumulates max to +inf)
+   \return     histogram array
+   \ingroup image_func_histogram
+ */
 AFAPI array histogram(const array &in, const unsigned nbins, const double minval, const double maxval);
 
+/**
+   C++ interface for histogram
+
+    Histogram takes in the input array data and computes the minimum and maximum of the range.
+
+    This range is then divided up into nbins number of equally spaced bins. In the
+    output array, the index represents the bin number and the value at the index
+    represents the frequency of the data in that bin. For all elements, the bin it
+    belongs to is computed and incremented.
+
+   \param[in]  in is the input array
+   \param[in]  nbins  Number of bins to populate between min and max
+   \return     histogram array
+   \ingroup image_func_histogram
+ */
 AFAPI array histogram(const array &in, const unsigned nbins);
 
 AFAPI array meanshift(const array& in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color=false);
@@ -110,6 +143,16 @@ AFAPI array rgb2gray(const array& in, const float rPercent=0.2126f, const float 
  */
 AFAPI array gray2rgb(const array& in, const float rFactor=1.0, const float gFactor=1.0, const float bFactor=1.0);
 
+/**
+   C++ interface for histogram equalization
+
+    Input array should be 2D dimensional.
+
+   \param[in]  in is the input array, non-normalized input (!! assumes values [0-255] !!)
+   \param[in]  hist target histogram to approximate in output (based on # of bins)
+   \return     data with histogram approximately equal to histogram
+   \ingroup image_func_histequal
+ */
 AFAPI array histequal(const array& in, const array& hist);
 
 AFAPI array gaussianKernel(const int rows, const int cols, const double sig_r = 0, const double sig_c = 0);
@@ -186,7 +229,26 @@ extern "C" {
                          const dim_type odim0, const dim_type odim1, const af_interp_type method,
                          const bool inverse);
 
-    // histogram: return af_array will have elements of type u32
+    /**
+       C interface for histogram
+
+       This function uses the min and max to create an output array consisting of
+       nbins that are equally spaced bins between min and max. In the output
+       array, the index represents the bin number and the value at the index
+       represents the frequency of the data in that bin. For all elements, the
+       bin it belongs to is computed and incremented. All elements less than
+       min are placed in the min bin and all elements greated than max are
+       placed in the max bin.
+
+       \param[out] out is the histogram for input array in
+       \param[in]  in is the input array
+       \param[in]  nbins  Number of bins to populate between min and max
+       \param[in]  minval minimum bin value (accumulates -inf to min)
+       \param[in]  maxval minimum bin value (accumulates max to +inf)
+       \return     AF_SUCCESS if the histogram is successfully created,
+       otherwise an appropriate error code is returned.
+       \ingroup image_func_histogram
+     */
     AFAPI af_err af_histogram(af_array *out, const af_array in, const unsigned nbins, const double minval, const double maxval);
 
     // image dilation operation
@@ -268,6 +330,18 @@ extern "C" {
      */
     AFAPI af_err af_gray2rgb(af_array* out, const af_array in, const float rFactor, const float gFactor, const float bFactor);
 
+    /**
+       C interface for histogram equalization
+
+        Input array should be 2D dimensional.
+
+       \param[out] out is an array with data that has histogram approximately equal to histogram
+       \param[in]  in is the input array, non-normalized input (!! assumes values [0-255] !!)
+       \param[in]  hist target histogram to approximate in output (based on # of bins)
+       \return     AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+       \ingroup image_func_histequal
+     */
     AFAPI af_err af_histequal(af_array *out, const af_array in, const af_array hist);
 
     AFAPI af_err af_gaussian_kernel(af_array *out,

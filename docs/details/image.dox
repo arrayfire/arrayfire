@@ -87,5 +87,54 @@ Grayscale to RGB colorspace converter
 
 =======================================================================
 
+\defgroup image_func_histogram histogram
+\ingroup hist_mat
+
+A histogram is a representation of the distribution of given data. This
+representation is essentially a graph consisting of the data range or domain on
+one axis and frequency of occurence on the other axis. All the data in the
+domain is counted in the appropriate bin. The total number of elements
+belonging to each bin is known as the bin's frequency.
+
+The regular histogram function creates bins of equal size between the minimum
+and maximum of the input data (calculated internally). The histogram min-max
+function takes input parameters minimum and maximum, and divides the bins into
+equal sizes within the range specified by min and max parameters. All values
+less than min in the data range are placed in the first (min) bin and all
+values greater than max will be placed in the last (max) bin.
+
+\code
+    // Create a histogram using 256 bins
+    array hist_out = histogram(hist_in, 256);
+    // Histogram with explicit min/max
+    // generate sample input data
+    // generates an array with 50 elements from -25 to 24.
+    array hist_in = seq(-25, 24)
+    // Create histogram using 10 bins,with bins scaled from 1 to 10
+    // bin[0] gets -inf to 1
+    // bin[9] gets   10 to inf
+    array hist_out = histogram(img_in, 10, 0, 10);
+    // hist_out will be [26, 1, 1, 1, 1, 1, 1, 1, 1, 16]
+\endcode
+
+=======================================================================
+
+\defgroup image_func_histequal histequal
+\ingroup hist_mat
+
+Histogram equalization is a method in image processing of contrast adjustment
+using the image's histogram.
+
+Data normalization via histogram equalization
+
+\code
+    // img_in and img_out are single channel images
+    array ihist = histogram(img_in, 256);
+    array img_out = histequal(img_in, ihist);
+\endcode
+
+
+=======================================================================
+
 @}
 */
