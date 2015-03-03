@@ -196,7 +196,7 @@ void orbTest(string pTestFile)
         ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
         ASSERT_EQ(AF_SUCCESS, conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_EQ(AF_SUCCESS, af_orb(&feat, &desc, inArray, 20.0f, 400, 1.2f, 8));
+        ASSERT_EQ(AF_SUCCESS, af_orb(&feat, &desc, inArray, 20.0f, 400, 1.2f, 8, true));
 
         float * outX           = new float[feat.n];
         float * outY           = new float[feat.n];
@@ -287,7 +287,7 @@ TEST(ORB, CPP)
 
     af::features feat;
     af::array desc;
-    af::orb(feat, desc, in, 20.0f, 400, 1.2f, 8);
+    af::orb(feat, desc, in, 20.0f, 400, 1.2f, 8, true);
 
     float * outX           = new float[feat.getNumFeatures()];
     float * outY           = new float[feat.getNumFeatures()];
