@@ -77,7 +77,8 @@ void orb(unsigned* out_feat,
          const float fast_thr,
          const unsigned max_feat,
          const float scl_fctr,
-         const unsigned levels)
+         const unsigned levels,
+         const bool blur_img)
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -320,33 +321,39 @@ void orb(unsigned* out_feat,
                  patch_size);
             CL_DEBUG_FINISH(getQueue());
 
-            Param lvl_tmp = lvl_img;
-            Param lvl_filt = lvl_img;
-            lvl_tmp.data = bufferAlloc(lvl_tmp.info.dims[0] * lvl_tmp.info.dims[1] * sizeof(T));
-            lvl_filt.data = bufferAlloc(lvl_filt.info.dims[0] * lvl_filt.info.dims[1] * sizeof(T));
+            Param lvl_filt;
+            Param lvl_tmp;
 
-            // Calculate a separable Gaussian kernel
-            if (h_gauss == nullptr) {
-                h_gauss = new T[gauss_len];
-                gaussian1D(h_gauss, gauss_len, 2.f);
-                gauss_filter.info.dims[0] = gauss_len;
-                gauss_filter.info.strides[0] = 1;
+            if (blur_img) {
+                lvl_filt = lvl_img;
+                lvl_tmp = lvl_img;
 
-                for (int k = 1; k < 4; k++) {
-                    gauss_filter.info.dims[k] = 1;
-                    gauss_filter.info.strides[k] = gauss_filter.info.dims[k - 1] * gauss_filter.info.strides[k - 1];
+                lvl_filt.data = bufferAlloc(lvl_filt.info.dims[0] * lvl_filt.info.dims[1] * sizeof(T));
+                lvl_tmp.data = bufferAlloc(lvl_tmp.info.dims[0] * lvl_tmp.info.dims[1] * sizeof(T));
+
+                // Calculate a separable Gaussian kernel
+                if (h_gauss == nullptr) {
+                    h_gauss = new T[gauss_len];
+                    gaussian1D(h_gauss, gauss_len, 2.f);
+                    gauss_filter.info.dims[0] = gauss_len;
+                    gauss_filter.info.strides[0] = 1;
+
+                    for (int k = 1; k < 4; k++) {
+                        gauss_filter.info.dims[k] = 1;
+                        gauss_filter.info.strides[k] = gauss_filter.info.dims[k - 1] * gauss_filter.info.strides[k - 1];
+                    }
+
+                    dim_type gauss_elem = gauss_filter.info.strides[3] * gauss_filter.info.dims[3];
+                    gauss_filter.data = bufferAlloc(gauss_elem * sizeof(T));
+                    getQueue().enqueueWriteBuffer(*gauss_filter.data, CL_TRUE, 0, gauss_elem * sizeof(T), h_gauss);
                 }
 
-                dim_type gauss_elem = gauss_filter.info.strides[3] * gauss_filter.info.dims[3];
-                gauss_filter.data = bufferAlloc(gauss_elem * sizeof(T));
-                getQueue().enqueueWriteBuffer(*gauss_filter.data, CL_TRUE, 0, gauss_elem * sizeof(T), h_gauss);
+                // Filter level image with Gaussian kernel to reduce noise sensitivity
+                convolve2<T, convAccT, 0, false, gauss_len>(lvl_tmp, lvl_img, gauss_filter);
+                convolve2<T, convAccT, 1, false, gauss_len>(lvl_filt, lvl_tmp, gauss_filter);
+
+                bufferFree(lvl_tmp.data);
             }
-
-            // Filter level image with Gaussian kernel to reduce noise sensitivity
-            convolve2<T, convAccT, 0, false, gauss_len>(lvl_tmp, lvl_img, gauss_filter);
-            convolve2<T, convAccT, 1, false, gauss_len>(lvl_filt, lvl_tmp, gauss_filter);
-
-            bufferFree(lvl_tmp.data);
 
             // Compute ORB descriptors
             cl::Buffer* d_desc_lvl = bufferAlloc(usable_feat * 8 * sizeof(unsigned));
@@ -361,14 +368,24 @@ void orb(unsigned* out_feat,
                                     Buffer, KParam,
                                     const float, const unsigned> (eoKernel[device]);
 
-            eoOp(EnqueueArgs(getQueue(), global_centroid, local_centroid),
-                 *d_desc_lvl, usable_feat,
-                 *d_x_lvl, *d_y_lvl, *d_ori_lvl, *d_size_lvl,
-                 *lvl_filt.data, lvl_filt.info,
-                 lvl_scl, patch_size);
-            CL_DEBUG_FINISH(getQueue());
+            if (blur_img) {
+                eoOp(EnqueueArgs(getQueue(), global_centroid, local_centroid),
+                     *d_desc_lvl, usable_feat,
+                     *d_x_lvl, *d_y_lvl, *d_ori_lvl, *d_size_lvl,
+                     *lvl_filt.data, lvl_filt.info,
+                     lvl_scl, patch_size);
+                CL_DEBUG_FINISH(getQueue());
 
-            bufferFree(lvl_filt.data);
+                bufferFree(lvl_filt.data);
+            }
+            else {
+                eoOp(EnqueueArgs(getQueue(), global_centroid, local_centroid),
+                     *d_desc_lvl, usable_feat,
+                     *d_x_lvl, *d_y_lvl, *d_ori_lvl, *d_size_lvl,
+                     *lvl_img.data, lvl_img.info,
+                     lvl_scl, patch_size);
+                CL_DEBUG_FINISH(getQueue());
+            }
 
             // Store results to pyramids
             total_feat += usable_feat;
