@@ -24,7 +24,7 @@ using af::dim4;
 namespace cpu
 {
     template<typename T>
-    void copy_image(const Array<T> &in, const afgfx_image image)
+    void copy_image(const Array<T> &in, const fg_image_handle image)
     {
         CheckGL("Before CopyArrayToPBO");
         const T *d_X = in.get();
@@ -39,7 +39,7 @@ namespace cpu
     }
 
     #define INSTANTIATE(T)  \
-        template void copy_image<T>(const Array<T> &in, const afgfx_image image);
+        template void copy_image<T>(const Array<T> &in, const fg_image_handle image);
 
     INSTANTIATE(float)
     INSTANTIATE(double)

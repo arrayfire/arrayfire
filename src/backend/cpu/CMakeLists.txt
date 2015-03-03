@@ -79,9 +79,9 @@ ADD_LIBRARY(afcpu SHARED
 
 TARGET_LINK_LIBRARIES(afcpu ${lib_deps} ${CBLAS_LIBRARIES} ${FFTW_LIBRARIES})
 
-IF(AFGFX_FOUND)
+IF(FORGE_FOUND)
   TARGET_LINK_LIBRARIES(afcpu
-                        ${AFGFX_LIBRARIES}
+                        ${FORGE_LIBRARIES}
                         )
 ENDIF()
 

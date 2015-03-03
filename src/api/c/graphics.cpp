@@ -27,7 +27,7 @@ using af::dim4;
 using namespace detail;
 
 template<typename T, int i2, int o2>
-static void convert_and_copy_image(const af_array in, const afgfx_image image)
+static void convert_and_copy_image(const af_array in, const fg_image_handle image)
 {
     ArrayInfo info = getInfo(in);
 
@@ -93,7 +93,7 @@ static void convert_and_copy_image(const af_array in, const afgfx_image image)
 }
 
 template<typename T, int i2>
-static void convert_and_copy_image(const af_array in, const afgfx_image image)
+static void convert_and_copy_image(const af_array in, const fg_image_handle image)
 {
     dim_type o2 = image->window->mode;
     switch(o2) {
@@ -104,7 +104,7 @@ static void convert_and_copy_image(const af_array in, const afgfx_image image)
 }
 
 template<typename T>
-static void convert_and_copy_image(const af_array in, const afgfx_image image)
+static void convert_and_copy_image(const af_array in, const fg_image_handle image)
 {
     ArrayInfo info = getInfo(in);
     dim_type i2 = info.dims()[2];
@@ -115,7 +115,7 @@ static void convert_and_copy_image(const af_array in, const afgfx_image image)
     }
 }
 
-af_err af_draw_image(const af_array in, const afgfx_image image)
+af_err af_draw_image(const af_array in, const fg_image_handle image)
 {
     try {
         ArrayInfo info = getInfo(in);
@@ -128,7 +128,7 @@ af_err af_draw_image(const af_array in, const afgfx_image image)
         // Test to make sure window GLenum type and in.type() are compatible
         ARG_ASSERT(0, type == f32);
 
-        afgfx_make_window_current(image->window);
+        fg_make_window_current(image->window);
 
         switch(type) {
             case f32:
@@ -152,7 +152,7 @@ af_err af_draw_image(const af_array in, const afgfx_image image)
             default:  TYPE_ERROR(1, type);
         }
 
-        afgfx_draw_image(image);
+        fg_draw_image(image);
     }
     CATCHALL;
 

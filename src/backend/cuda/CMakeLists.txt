@@ -171,9 +171,9 @@ TARGET_LINK_LIBRARIES(afcuda
                      ${CUDA_NVVM_LIBRARIES}
                      ${CUDA_CUDA_LIBRARY})
 
-IF(AFGFX_FOUND)
+IF(FORGE_FOUND)
   TARGET_LINK_LIBRARIES(afcuda
-                        ${AFGFX_LIBRARIES}
+                        ${FORGE_LIBRARIES}
                        )
 ENDIF()
 

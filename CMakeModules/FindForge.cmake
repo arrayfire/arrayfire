@@ -1,17 +1,18 @@
-# - Find ArrayFire GFX
+# - Find Forge
 
 # Defines the following variables:
-# AFGFX_INCLUDE_DIRS    - Location of AFGFX's include directory.
-# AFGFX_LIBRARIES       - Location of AFGFX's libraries.
-# AFGFX_FOUND           - True if AFGFX has been located
+# FORGE_INCLUDE_DIRS    - Location of FORGE's include directory.
+# FORGE_LIBRARIES       - Location of FORGE's libraries.
+# FORGE_DIR             - Location of FORGE.
+# FORGE_FOUND           - True if FORGE has been located
 #
-# You may provide a hint to where AFGFX's root directory may be located
-# by setting AFGFX_ROOT_DIR before calling this script.
+# You may provide a hint to where FORGE's root directory may be located
+# by setting FORGE_ROOT_DIR before calling this script.
 #
 # ----------------------------------------------------------------------------
 #
-# AFGFX_FOUND        - True of the AFGFX library has been found.
-# AFGFX_LIBRARIES    - Location of AFGFX library, if found
+# FORGE_FOUND        - True of the FORGE library has been found.
+# FORGE_LIBRARIES    - Location of FORGE library, if found
 #
 # Variables used by this module, they can change the default behaviour and
 # need to be set before calling find_package:
@@ -46,32 +47,32 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
-IF(AFGFX_INCLUDE_DIRS)
+IF(FORGE_INCLUDE_DIRS)
   # Already in cache, be silent
-  set (AFGFX_FIND_QUIETLY TRUE)
+  set (FORGE_FIND_QUIETLY TRUE)
 ENDIF()
 
-# Find the AFGFX install directories and headers:
-FIND_PATH(AFGFX_ROOT_DIR
-    NAMES include/afgfx.h
-    PATH_SUFFIXES afgfx AFGFX AFGFX
-    HINTS "${CMAKE_INSTALL_PREFIX}" "${AFGFX_ROOT_DIR}" "${AFGFX_ROOT_DIR}/lib" "${AFGFX_ROOT_DIR}/lib64" "${CMAKE_SOURCE_DIR}/.." "${CMAKE_SOURCE_DIR}/../.."
-    DOC "AFGFX root directory.")
+# Find the FORGE install directories and headers:
+FIND_PATH(FORGE_ROOT_DIR
+    NAMES include/forge.h
+    PATH_SUFFIXES forge FORGE FORGE
+    HINTS "${CMAKE_INSTALL_PREFIX}" "${FORGE_ROOT_DIR}" "${FORGE_ROOT_DIR}/lib" "${FORGE_ROOT_DIR}/lib64" "${CMAKE_SOURCE_DIR}/.." "${CMAKE_SOURCE_DIR}/../.."
+    DOC "FORGE root directory.")
 
-FIND_PATH(AFGFX_PACKAGE_DIR
-    NAMES include/afgfx.h lib
-    HINTS "${AFGFX_ROOT_DIR}/package" "${AFGFX_ROOT_DIR}/build/package" "${AFGFX_ROOT_DIR}"
-    DOC "AFGFX Package directory.")
+FIND_PATH(FORGE_PACKAGE_DIR
+    NAMES include/forge.h lib
+    HINTS "${FORGE_ROOT_DIR}/package" "${FORGE_ROOT_DIR}/build/package" "${FORGE_ROOT_DIR}"
+    DOC "FORGE Package directory.")
 
-FIND_PATH(_AFGFX_INCLUDE_DIRS
-    NAMES afgfx.h
-    HINTS "${AFGFX_PACKAGE_DIR}/include"
-    DOC "AFGFX Include directory")
+FIND_PATH(_FORGE_INCLUDE_DIRS
+    NAMES forge.h
+    HINTS "${FORGE_PACKAGE_DIR}/include"
+    DOC "FORGE Include directory")
 
-# Find all libraries required for the AFGFX
-FIND_LIBRARY(_AFGFX_LIBRARY
-    NAMES afgfx
-    HINTS "${AFGFX_PACKAGE_DIR}/lib")
+# Find all libraries required for the FORGE
+FIND_LIBRARY(_FORGE_LIBRARY
+    NAMES forge
+    HINTS "${FORGE_PACKAGE_DIR}/lib")
 
 INCLUDE("${CMAKE_MODULE_PATH}/FindGLEWmx.cmake")
 INCLUDE("${CMAKE_MODULE_PATH}/FindGLFW.cmake")
@@ -89,20 +90,22 @@ ELSE(GLFW_FOUND AND GLEWmx_FOUND AND OPENGL_FOUND)
     ENDIF()
 ENDIF(GLFW_FOUND AND GLEWmx_FOUND AND OPENGL_FOUND)
 
-IF(_AFGFX_INCLUDE_DIRS)
-    SET(AFGFX_INCLUDE_DIRS ${_AFGFX_INCLUDE_DIRS} ${GLFW_INCLUDE_DIR} ${GLEW_INCLUDE_DIR}
-        CACHE INTERNAL "All include dirs required for AFGFX'")
+IF(_FORGE_INCLUDE_DIRS)
+    SET(FORGE_INCLUDE_DIRS ${_FORGE_INCLUDE_DIRS} ${GLFW_INCLUDE_DIR} ${GLEW_INCLUDE_DIR}
+        CACHE INTERNAL "All include dirs required for FORGE'")
 ENDIF()
 
-IF(_AFGFX_LIBRARY)
-    SET(AFGFX_LIBRARIES ${_AFGFX_LIBRARY} ${GLFW_LIBRARY} ${GLEWmx_LIBRARY} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY}
-        CACHE INTERNAL "All libraries required for AFGFX'")
-    SET(AFGFX_FOUND TRUE CACHE BOOL "Whether or not AFGFX' library has been located.")
+IF(_FORGE_LIBRARY)
+    SET(FORGE_LIBRARIES ${_FORGE_LIBRARY} ${GLFW_LIBRARY} ${GLEWmx_LIBRARY} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY}
+        CACHE INTERNAL "All libraries required for FORGE'")
+    SET(FORGE_FOUND TRUE CACHE BOOL "Whether or not FORGE' library has been located.")
 ENDIF()
 
-# handle the QUIETLY and REQUIRED arguments and set AFGFX_FOUND to TRUE if
+SET(FORGE_DIR ${FORGE_PACKAGE_DIR})
+
+# handle the QUIETLY and REQUIRED arguments and set FORGE_FOUND to TRUE if
 # all listed variables are TRUE
 INCLUDE (FindPackageHandleStandardArgs)
 
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(AFGFX DEFAULT_MSG AFGFX_LIBRARIES AFGFX_INCLUDE_DIRS)
-MARK_AS_ADVANCED(AFGFX_LIBRARIES AFGFX_INCLUDE_DIRS)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(FORGE DEFAULT_MSG FORGE_DIR FORGE_LIBRARIES FORGE_INCLUDE_DIRS)
+MARK_AS_ADVANCED(FORGE_DIR FORGE_LIBRARIES FORGE_INCLUDE_DIRS)
