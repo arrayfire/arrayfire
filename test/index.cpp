@@ -542,7 +542,7 @@ TEST(Indexing2D, ColumnContiniousCPP)
 /************************ Array Based indexing tests from here on ******************/
 
 template<typename T>
-class ArrayIndex : public ::testing::Test
+class lookup : public ::testing::Test
 {
     public:
         virtual void SetUp() {
@@ -550,7 +550,7 @@ class ArrayIndex : public ::testing::Test
 };
 
 typedef ::testing::Types<float, double, int, unsigned, unsigned char> ArrIdxTestTypes;
-TYPED_TEST_CASE(ArrayIndex, ArrIdxTestTypes);
+TYPED_TEST_CASE(lookup, ArrIdxTestTypes);
 
 template<typename T>
 void arrayIndexTest(string pTestFile, int dim)
@@ -593,27 +593,27 @@ void arrayIndexTest(string pTestFile, int dim)
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
 }
 
-TYPED_TEST(ArrayIndex, Dim0)
+TYPED_TEST(lookup, Dim0)
 {
     arrayIndexTest<TypeParam>(string(TEST_DIR"/arrayindex/dim0.test"), 0);
 }
 
-TYPED_TEST(ArrayIndex, Dim1)
+TYPED_TEST(lookup, Dim1)
 {
     arrayIndexTest<TypeParam>(string(TEST_DIR"/arrayindex/dim1.test"), 1);
 }
 
-TYPED_TEST(ArrayIndex, Dim2)
+TYPED_TEST(lookup, Dim2)
 {
     arrayIndexTest<TypeParam>(string(TEST_DIR"/arrayindex/dim2.test"), 2);
 }
 
-TYPED_TEST(ArrayIndex, Dim3)
+TYPED_TEST(lookup, Dim3)
 {
     arrayIndexTest<TypeParam>(string(TEST_DIR"/arrayindex/dim3.test"), 3);
 }
 
-TEST(ArrayIndex, CPP)
+TEST(lookup, CPP)
 {
     using af::array;
 

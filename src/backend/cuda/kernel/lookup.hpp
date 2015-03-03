@@ -41,7 +41,7 @@ dim_type trimIndex(dim_type idx, const dim_type &len)
 
 template<typename in_t, typename idx_t>
 __global__
-void arrayIndex1D(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, dim_type vDim)
+void lookup1D(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, dim_type vDim)
 {
     dim_type idx = threadIdx.x + blockIdx.x * THREADS * THRD_LOAD;
 
@@ -60,7 +60,7 @@ void arrayIndex1D(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, dim_t
 
 template<typename in_t, typename idx_t, unsigned dim>
 __global__
-void arrayIndexND(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices,
+void lookupND(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices,
                     dim_type nBBS0, dim_type nBBS1)
 {
     dim_type lx = threadIdx.x;
@@ -89,7 +89,7 @@ void arrayIndexND(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices,
 }
 
 template<typename in_t, typename idx_t, unsigned dim>
-void arrayIndex(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, dim_type nDims)
+void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, dim_type nDims)
 {
     if (nDims==1) {
         const dim3 threads(THREADS, 1);
@@ -106,7 +106,7 @@ void arrayIndex(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, dim_typ
 
         dim3 blocks(blks, 1);
 
-        arrayIndex1D<in_t, idx_t> <<<blocks, threads>>> (out, in, indices, vDim);
+        lookup1D<in_t, idx_t> <<<blocks, threads>>> (out, in, indices, vDim);
     } else {
         const dim3 threads(THREADS_X, THREADS_Y);
 
@@ -115,7 +115,7 @@ void arrayIndex(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, dim_typ
 
         dim3 blocks(blks_x*out.dims[2], blks_y*out.dims[3]);
 
-        arrayIndexND<in_t, idx_t, dim> <<<blocks, threads>>> (out, in, indices, blks_x, blks_y);
+        lookupND<in_t, idx_t, dim> <<<blocks, threads>>> (out, in, indices, blks_x, blks_y);
     }
 
     POST_LAUNCH_CHECK();

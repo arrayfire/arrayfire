@@ -17,7 +17,7 @@
 #include <scan.hpp>
 #include <arith.hpp>
 #include <reduce.hpp>
-#include <ArrayIndex.hpp>
+#include <lookup.hpp>
 
 using namespace detail;
 
@@ -49,7 +49,7 @@ static af_array histequal(const af_array& in, const af_array& hist)
     // multiply factor with difference
     Array<float> normCdf = arithOp<float, af_mul_t>(diff, facCnst, hDims);
     // index input array with normalized cdf array
-    Array<float> idxArr  = arrayIndex<float, T>(normCdf, getArray<T>(vInput), 0);
+    Array<float> idxArr  = lookup<float, T>(normCdf, getArray<T>(vInput), 0);
 
     Array<T> result = cast<T>(idxArr);
 
