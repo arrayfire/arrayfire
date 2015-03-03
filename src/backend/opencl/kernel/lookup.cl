@@ -20,7 +20,7 @@ dim_type trimIndex(dim_type idx, const dim_type len)
 }
 
 kernel
-void arrayIndexND(global in_t * out,
+void lookupND(global in_t * out,
                   KParam oInfo,
                   global const in_t * in,
                   KParam iInfo,
