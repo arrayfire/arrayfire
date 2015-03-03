@@ -68,18 +68,87 @@ AFAPI void sobel(array &dx, array &dy, const array &img, const unsigned ker_size
 
 AFAPI array sobel(const array &img, const unsigned ker_size=3, bool isFast=false);
 
+/**
+   RGB to Grayscale color space converter
+
+   Input array must be 3 dimensional. The grayscale internsity of a pixel is calculated using the
+   following formula:
+
+       \f$gray = R*rPercent + G*gPercent + B*bPercent\f$
+
+   Parameters rPercent, gPercent & bPercent use default values if not provided.
+
+   \param[in]  in is an array in the RGB colorspace
+   \param[in]  rPercent is % of red channel value contributing to grayscale intensity
+   \param[in]  gPercent is % of green channel value contributing to grayscale intensity
+   \param[in]  bPercent is % of blue channel value contributing to grayscale intensity
+   \return     array in Grayscale colorspace
+   \ingroup image_func_rgb2gray
+ */
 AFAPI array rgb2gray(const array& in, const float rPercent=0.2126f, const float gPercent=0.7152f, const float bPercent=0.0722f);
 
+/**
+   Grayscale to RGB color space converter
+
+   Input array must be two dimensional. The grayscale internsity of a pixel is calculated using the
+   following formula:
+
+   \f$R = rFactor * intensity\f$
+
+   \f$G = gFactor * intensity\f$
+
+   \f$B = bFactor * intensity\f$
+
+   Parameters rFactor, gFactor & bFactor use default values if not provided.
+
+   \param[in]  in is an array in the Grayscale colorspace
+   \param[in]  rFactor is % of intensity value contributing to red channel
+   \param[in]  gFactor is % of intensity value contributing to green channel
+   \param[in]  bFactor is % of intensity value contributing to blue channel
+   \return     array in RGB colorspace
+   \ingroup image_func_gray2rgb
+ */
 AFAPI array gray2rgb(const array& in, const float rFactor=1.0, const float gFactor=1.0, const float bFactor=1.0);
 
 AFAPI array histequal(const array& in, const array& hist);
 
 AFAPI array gaussianKernel(const int rows, const int cols, const double sig_r = 0, const double sig_c = 0);
 
+/**
+   HSV to RGB color space converter
+
+   Input array must be 3 dimensional.
+
+   \param[in]  in is an array in the HSV colorspace
+   \return     array in RGB colorspace
+   \ingroup image_func_hsv2rgb
+ */
 AFAPI array hsv2rgb(const array& in);
 
+/**
+   RGB to HSV color space converter
+
+   Input array must be 3 dimensional.
+
+   \param[in]  in is an array in the RGB colorspace
+   \return     array in HSV colorspace
+   \ingroup image_func_rgb2hsv
+ */
 AFAPI array rgb2hsv(const array& in);
 
+/**
+   Colorspace conversion function
+
+   Input array must be 3 dimensional for AF_HSV to AF_RGB, AF_RGB to
+   AF_HSV, & AF_RGB to AF_GRAY transformations. For AF_GRAY to AF_RGB
+   transformation, 2D array is expected.
+
+   \param[in]  image is the input array
+   \param[in]  to is the target array colorspace
+   \param[in]  from is the input array colorspace
+   \return     array in target colorspace
+   \ingroup image_func_colorspace
+ */
 AFAPI array colorspace(const array& image, CSpace to, CSpace from);
 
 }
@@ -157,8 +226,46 @@ extern "C" {
     // sobel operator for images
     AFAPI af_err af_sobel_operator(af_array *dx, af_array *dy, const af_array img, const unsigned ker_size);
 
+    /**
+       RGB to Grayscale color space converter
+
+       Input array must be 3 dimensional. The grayscale internsity of a pixel is calculated using the
+       following formula:
+
+       \f$gray = R*rPercent + G*gPercent + B*bPercent\f$
+
+       \param[out] out is an array in target colorspace
+       \param[in]  in is an array in the RGB colorspace
+       \param[in]  rPercent is % of red channel value contributing to grayscale intensity
+       \param[in]  gPercent is % of green channel value contributing to grayscale intensity
+       \param[in]  bPercent is % of blue channel value contributing to grayscale intensity
+       \return     AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+       \ingroup image_func_rgb2gray
+     */
     AFAPI af_err af_rgb2gray(af_array* out, const af_array in, const float rPercent, const float gPercent, const float bPercent);
 
+    /**
+       Grayscale to RGB color space converter
+
+       Input array must be two dimensional. The grayscale internsity of a pixel is calculated using the
+       following formula
+
+       \f$R = rFactor * intensity\f$
+
+       \f$G = gFactor * intensity\f$
+
+       \f$B = bFactor * intensity\f$
+
+       \param[out] out is an array in target colorspace
+       \param[in]  in is an array in the Grayscale colorspace
+       \param[in]  rFactor is % of intensity value contributing to red channel
+       \param[in]  gFactor is % of intensity value contributing to green channel
+       \param[in]  bFactor is % of intensity value contributing to blue channel
+       \return     AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+       \ingroup image_func_gray2rgb
+     */
     AFAPI af_err af_gray2rgb(af_array* out, const af_array in, const float rFactor, const float gFactor, const float bFactor);
 
     AFAPI af_err af_histequal(af_array *out, const af_array in, const af_array hist);
@@ -167,10 +274,47 @@ extern "C" {
                                     const int rows, const int cols,
                                     const double sigma_r, const double sigma_c);
 
+    /**
+       HSV to RGB color space converter
+
+       Input array must be 3 dimensional.
+
+       \param[out] out is an array in the RGB colorspace
+       \param[in]  in is an array in the HSV colorspace
+       \return     AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+       \ingroup image_func_hsv2rgb
+     */
     AFAPI af_err af_hsv2rgb(af_array* out, const af_array in);
 
+    /**
+       RGB to HSV color space converter
+
+       Input array must be 3 dimensional.
+
+       \param[out] out is an array in the HSV colorspace
+       \param[in]  in is an array in the RGB colorspace
+       \return     AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+       \ingroup image_func_rgb2hsv
+     */
     AFAPI af_err af_rgb2hsv(af_array* out, const af_array in);
 
+    /**
+       Colorspace conversion function
+
+       Input array must be 3 dimensional for AF_HSV to AF_RGB, AF_RGB to
+       AF_HSV, & AF_RGB to AF_GRAY transformations. For AF_GRAY to AF_RGB
+       transformation, 2D array is expected.
+
+       \param[out] out is an array in target colorspace
+       \param[in]  image is the input array
+       \param[in]  to is the target array colorspace
+       \param[in]  from is the input array colorspace
+       \return     AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+       \ingroup image_func_colorspace
+     */
     AFAPI af_err af_colorspace(af_array *out, const af_array image, af_cspace_t to, af_cspace_t from);
 
 #ifdef __cplusplus

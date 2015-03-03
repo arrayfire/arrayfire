@@ -1,0 +1,91 @@
+
+/*!
+\page image_func_hsv HSV
+
+HSV (Hue, Saturation, Value), also known as HSB (hue, saturation, brightness),
+is often used by artists because it is more natural to think about a color in
+terms of hue and saturation than in terms of additive or subtractive color
+components (as in RGB). HSV is a transformation of an RGB colorspace, and its
+components and colorimetry are relative to the RGB colorspace from which it was
+derived. Like RGB, HSV also uses 3 values per pixel.
+
+\page image_func_rgb RGB
+
+RGB (Red, Green, Blue) is the most common format used in computer imaging. RGB
+stores individual values for red, green and blue, and hence the 3 values per
+pixel. A combination of these three values produces the gamut of unique colors.
+
+\page image_func_gray GRAY
+
+Grayscale is a single channel color space where 0 represents black and 1
+represents white for normalized range.
+
+*/
+//=================================================================================
+/**
+
+\addtogroup  arrayfire_func
+@{
+
+\defgroup image_func_colorspace colorspace
+\ingroup colorconv_mat
+
+Colorspace conversion function
+
+\copydoc image_func_rgb
+\copydoc image_func_hsv
+\copydoc image_func_gray
+
+Supported conversions
+
+| From     | To      |
+|:--------:|:-------:|
+| AF_RGB   | AF_GRAY |
+| AF_GRAY  | AF_RGB  |
+| AF_RGB   | AF_HSV  |
+| AF_HSV   | AF_RGB  |
+
+=======================================================================
+
+\defgroup image_func_rgb2hsv rgb2hsv
+\ingroup colorconv_mat
+
+RGB to HSV colorspace converter
+
+\copydoc image_func_rgb
+\copydoc image_func_hsv
+
+=======================================================================
+
+\defgroup image_func_hsv2rgb hsv2rgb
+\ingroup colorconv_mat
+
+HSV to RGB colorspace converter
+
+\copydoc image_func_hsv
+\copydoc image_func_rgb
+
+=======================================================================
+
+\defgroup image_func_rgb2gray rgb2gray
+\ingroup colorconv_mat
+
+RGB to Grayscale colorspace converter
+
+\copydoc image_func_rgb
+\copydoc image_func_gray
+
+=======================================================================
+
+\defgroup image_func_gray2rgb gray2rgb
+\ingroup colorconv_mat
+
+Grayscale to RGB colorspace converter
+
+\copydoc image_func_gray
+\copydoc image_func_rgb
+
+=======================================================================
+
+@}
+*/
