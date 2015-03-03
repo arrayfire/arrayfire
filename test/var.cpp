@@ -76,6 +76,7 @@ void testCPPVar(T const_value, af::dim4 dims)
 
 TEST(Var, CPP_f64)
 {
+    if (noDoubleTests<cdouble>()) return;
     testCPPVar<double>(2.1, af::dim4(10, 10, 1, 1));
 }
 
@@ -111,5 +112,6 @@ TEST(Var, CPP_cfloat)
 
 TEST(Var, CPP_cdouble)
 {
+    if (noDoubleTests<cdouble>()) return;
     testCPPVar<cdouble>(cdouble(2.1), af::dim4(10, 10, 1, 1));
 }
