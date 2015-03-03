@@ -35,6 +35,7 @@ template<typename T>
 void matchTemplateTest(string pTestFile, af_match_type pMatchType)
 {
     typedef typename std::conditional<std::is_same<T, double>::value, double, float>::type outType;
+    if (noDoubleTests<T>()) return;
 
     vector<af::dim4>  numDims;
     vector<vector<T>>      in;

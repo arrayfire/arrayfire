@@ -51,6 +51,7 @@ template<typename T, dim_type dim>
 void meanDimTest(string pFileName)
 {
     typedef meanOutType<T> outType;
+    if (noDoubleTests<T>()) return;
 
     vector<af::dim4>      numDims;
     vector<vector<int>>        in;
@@ -125,6 +126,8 @@ template<typename T>
 void testCPPMean(T const_value, af::dim4 dims)
 {
     typedef meanOutType<T> outType;
+    if (noDoubleTests<T>()) return;
+
     using af::array;
     using af::mean;
 
