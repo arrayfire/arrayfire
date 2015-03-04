@@ -70,9 +70,10 @@ public:
 
     // Method to trian the neural net
     double train(const array &input, const array &target,
-                 double alpha = 0.1,
-                 int max_epochs=1000, int batch_size = 100,
-                 double maxerr=0.01,
+                 double alpha = 1.0,
+                 int max_epochs = 300,
+                 int batch_size = 100,
+                 double maxerr = 1.0,
                  bool verbose = false);
 };
 
@@ -148,15 +149,16 @@ double ann::train(const array &input, const array &target,
 
     const int num_samples = input.dims(0);
     const int num_batches = num_samples / batch_size;
+
     double err = 0;
 
     // Training the entire network
     for (int i = 0; i < max_epochs; i++) {
-        err = 0;
-        for (int j = 0; j < num_batches; j++) {
+
+        for (int j = 0; j < num_batches - 1; j++) {
 
             int st = j * batch_size;
-            int en = std::min(num_samples - 1, st + batch_size);
+            int en = st + batch_size;
 
             array x = input(seq(st, en), span);
             array y = target(seq(st, en), span);
@@ -165,15 +167,22 @@ double ann::train(const array &input, const array &target,
             vector<array> signals = forward_propagate(x);
             array out = signals[num_layers - 1];
 
-            // Check if training criterion have been met
-            err += error(out, y);
 
             // Propagate the error backward
             back_propagate(signals, y, alpha);
         }
 
-        err /= num_batches;
-        if (err < maxerr) return err;
+        // Validate with last batch
+        int st = (num_batches - 1) * batch_size;
+        int en = num_samples - 1;
+        array out = predict(input(seq(st, en), span));
+        err = error(out, target(seq(st, en), span));
+
+        // Check if convergence criteria has been met
+        if (err < maxerr) {
+            printf("Converged on Epoch: %4d\n", i + 1);
+            return err;
+        }
 
         if (verbose) {
             if ((i + 1) % 10 == 0) printf("Epoch: %4d, Error: %0.4f\n", i+1, err);
@@ -207,7 +216,8 @@ int ann_demo(bool console, int perc)
     // Network parameters
     vector<int> layers;
     layers.push_back(train_feats.dims(1));
-    layers.push_back(7 * 7);
+    layers.push_back(100);
+    layers.push_back(50);
     layers.push_back(num_classes);
 
     // Create network
@@ -215,7 +225,12 @@ int ann_demo(bool console, int perc)
 
     // Train network
     timer::start();
-    network.train(train_feats, train_target, 2.0, 250, 100, 1, true);
+    network.train(train_feats, train_target,
+                  2.0, // learning rate / alpha
+                  250, // max epochs
+                  100, // batch size
+                  0.5, // max error
+                  true); // verbose
     af::sync();
     double train_time = timer::stop();
 
@@ -241,8 +256,8 @@ int ann_demo(bool console, int perc)
     printf("Accuracy on testing  data: %2.2f\n",
            accuracy(test_output , test_target ));
 
-    printf("Training time: %4.4lf s\n", train_time);
-    printf("Prediction time: %4.4lf s\n", test_time);
+    printf("\nTraining time: %4.4lf s\n", train_time);
+    printf("Prediction time: %4.4lf s\n\n", test_time);
 
     if (!console) {
         // Get 20 random test images.

@@ -46,8 +46,9 @@ double error(const array &out,
     return sqrt((double)(sum<float>(dif * dif)));
 }
 
-array sigmoid_rnd(const array in)
+array sigmoid_binary(const array in)
 {
+    // Choosing "1" with probability sigmoid(in)
     return (sigmoid(in) > randu(in.dims())).as(f32);
 }
 
@@ -71,7 +72,7 @@ public:
         return transpose(join(1, weights, transpose(h_bias)));
     }
 
-    void train(const array &in, int batch_size, int num_epochs, double alpha, bool verbose)
+    void train(const array &in, double lr, int num_epochs, int batch_size, bool verbose)
     {
         const int num_samples = in.dims(0);
         const int num_batches = num_samples / batch_size;
@@ -80,7 +81,7 @@ public:
 
             double err = 0;
 
-            for (int j = 0; j < num_batches; j++) {
+            for (int j = 0; j < num_batches - 1; j++) {
 
                 int st = j * batch_size;
                 int en = std::min(num_samples - 1, st + batch_size);
@@ -88,22 +89,22 @@ public:
 
                 array v_pos = in(seq(st, en), span);
 
-                array h_pos = sigmoid_rnd(tile(h_bias, num) +
-                                          matmul(v_pos, transpose(weights)));
+                array h_pos = sigmoid_binary(tile(h_bias, num) +
+                                             matmulNT(v_pos, weights));
 
-                array v_neg = sigmoid_rnd(tile(v_bias, num) +
-                                          matmul(h_pos, weights));
+                array v_neg = sigmoid_binary(tile(v_bias, num) +
+                                             matmul(h_pos, weights));
 
-                array h_neg = sigmoid_rnd(tile(h_bias, num) +
-                                          matmul(v_neg, transpose(weights)));
+                array h_neg = sigmoid_binary(tile(h_bias, num) +
+                                             matmulNT(v_neg, weights));
 
 
-                array c_pos = matmul(transpose(h_pos), v_pos);
-                array c_neg = matmul(transpose(h_neg), v_neg);
+                array c_pos = matmulTN(h_pos, v_pos);
+                array c_neg = matmulTN(h_neg, v_neg);
 
-                array delta_w = alpha * (c_pos - c_neg) / num;
-                array delta_vb = alpha * sum(v_pos - v_neg) / num;
-                array delta_hb = alpha * sum(h_pos - h_neg) / num;
+                array delta_w = lr * (c_pos - c_neg) / num;
+                array delta_vb = lr * sum(v_pos - v_neg) / num;
+                array delta_hb = lr * sum(h_pos - h_neg) / num;
 
                 weights += delta_w;
                 v_bias += delta_vb;
@@ -123,7 +124,7 @@ public:
     array prop_up(const array &in)
     {
         return sigmoid(tile(h_bias, in.dims(0)) +
-                       matmul(in, transpose(weights)));
+                       matmulNT(in, weights));
     }
 };
 
@@ -199,10 +200,12 @@ public:
     }
 
     void train(const array &input, const array &target,
+               double lr_rbm = 1.0,
+               double lr_nn  = 1.0,
+               const int epochs_rbm = 15,
+               const int epochs_nn = 300,
                const int batch_size = 100,
-               const int rbm_epochs = 15,
-               const int nn_epochs = 2,
-               double alpha = 0.1, double maxerr = 0.01, bool verbose=false)
+               double maxerr = 1.0, bool verbose=false)
     {
 
         // Pre-training hidden layers
@@ -216,7 +219,7 @@ public:
             int visible = (i == 0) ? in_size : hidden[i - 1];
 
             rbm r(visible, hidden[i]);
-            r.train(X, batch_size, rbm_epochs, alpha, verbose);
+            r.train(X, lr_rbm, epochs_rbm, batch_size, verbose);
 
             X = r.prop_up(X);
             weights[i] = r.get_weights();
@@ -232,9 +235,8 @@ public:
         const int num_batches = num_samples / batch_size;
 
         // Training the entire network
-        for (int i = 0; i < nn_epochs; i++) {
+        for (int i = 0; i < epochs_nn; i++) {
 
-            double err = 0;
             for (int j = 0; j < num_batches; j++) {
 
                 int st = j * batch_size;
@@ -247,18 +249,25 @@ public:
                 vector<array> signals = forward_propagate(x);
                 array out = signals[num_total - 1];
 
-                // Check if training criterion have been met
-                err += error(out, y);
-
                 // Propagate the error backward
-                back_propagate(signals, y, alpha);
+                back_propagate(signals, y, lr_nn);
             }
 
-            err /= num_batches;
-            if (err < maxerr) break;
+
+            // Validate with last batch
+            int st = (num_batches - 1) * batch_size;
+            int en = num_samples - 1;
+            array out = predict(input(seq(st, en), span));
+            double err = error(out, target(seq(st, en), span));
+
+            // Check if convergence criteria has been met
+            if (err < maxerr) {
+                printf("Converged on Epoch: %4d\n", i + 1);
+                return;
+            }
 
             if (verbose) {
-                if ((i + 1) % 10 == 0) printf("NN Epoch: %4d, Error: %0.4f\n", i+1, err);
+                if ((i + 1) % 10 == 0) printf("Epoch: %4d, Error: %0.4f\n", i+1, err);
             }
         }
     }
@@ -304,7 +313,14 @@ int dbn_demo(bool console, int perc)
 
     // Train network
     timer::start();
-    network.train(train_feats, train_target, 100, 15, 250, 2.0, 1, true);
+    network.train(train_feats, train_target,
+                  0.2,  // rbm learning rate
+                  4.0,  // nn learning rate
+                  15,   // rbm epochs
+                  250,  // nn epochs
+                  100,  // batch_size
+                  0.5,  // max error
+                  true);// verbose
     af::sync();
     double train_time = timer::stop();
 
@@ -330,8 +346,8 @@ int dbn_demo(bool console, int perc)
     printf("Accuracy on testing  data: %2.2f\n",
            accuracy(test_output , test_target ));
 
-    printf("Training time: %4.4lf s\n", train_time);
-    printf("Prediction time: %4.4lf s\n", test_time);
+    printf("\nTraining time: %4.4lf s\n", train_time);
+    printf("Prediction time: %4.4lf s\n\n", test_time);
 
     if (!console) {
         // Get 20 random test images.
