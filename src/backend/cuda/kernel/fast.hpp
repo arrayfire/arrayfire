@@ -212,6 +212,10 @@ void locate_features_core(
 
     int bright = 0, dark = 0;
     T s_bright = 0, s_dark = 0;
+
+    // Force less loop unrolls to control maximum number of registers and
+    // launch more blocks
+    #pragma unroll 4
     for (int i = 0; i < 16; i++) {
         // Get pixel from the circle
         T p_x = local_image[idx(idx_x(i),idx_y(i))];
