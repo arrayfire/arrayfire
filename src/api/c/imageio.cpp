@@ -49,24 +49,26 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage)
 static af_err channel_split(const af_array rgb, const af::dim4 dims,
                             af_array *outr, af_array *outg, af_array *outb, af_array *outa)
 {
-    af_seq idx[4][3] = {{af_span, af_span, {0, 0, 1}},
-                        {af_span, af_span, {1, 1, 1}},
-                        {af_span, af_span, {2, 2, 1}},
-                        {af_span, af_span, {3, 3, 1}}
-                       };
+    try {
+        af_seq idx[4][3] = {{af_span, af_span, {0, 0, 1}},
+                            {af_span, af_span, {1, 1, 1}},
+                            {af_span, af_span, {2, 2, 1}},
+                            {af_span, af_span, {3, 3, 1}}
+                           };
 
-    if (dims[2] == 4) {
-        AF_CHECK(af_index(outr, rgb, dims.ndims(), idx[0]));
-        AF_CHECK(af_index(outg, rgb, dims.ndims(), idx[1]));
-        AF_CHECK(af_index(outb, rgb, dims.ndims(), idx[2]));
-        AF_CHECK(af_index(outa, rgb, dims.ndims(), idx[3]));
-    } else if (dims[2] == 3) {
-        AF_CHECK(af_index(outr, rgb, dims.ndims(), idx[0]));
-        AF_CHECK(af_index(outg, rgb, dims.ndims(), idx[1]));
-        AF_CHECK(af_index(outb, rgb, dims.ndims(), idx[2]));
-    } else {
-        AF_CHECK(af_index(outr, rgb, dims.ndims(), idx[0]));
-    }
+        if (dims[2] == 4) {
+            AF_CHECK(af_index(outr, rgb, dims.ndims(), idx[0]));
+            AF_CHECK(af_index(outg, rgb, dims.ndims(), idx[1]));
+            AF_CHECK(af_index(outb, rgb, dims.ndims(), idx[2]));
+            AF_CHECK(af_index(outa, rgb, dims.ndims(), idx[3]));
+        } else if (dims[2] == 3) {
+            AF_CHECK(af_index(outr, rgb, dims.ndims(), idx[0]));
+            AF_CHECK(af_index(outg, rgb, dims.ndims(), idx[1]));
+            AF_CHECK(af_index(outb, rgb, dims.ndims(), idx[2]));
+        } else {
+            AF_CHECK(af_index(outr, rgb, dims.ndims(), idx[0]));
+        }
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
@@ -339,10 +341,10 @@ af_err af_save_image(const char* filename, const af_array in_)
                 }
                 pDstLine -= nDstPitch;
             }
-            delete [] pSrc0;
-            delete [] pSrc1;
-            delete [] pSrc2;
-            delete [] pSrc3;
+            pinnedFree(pSrc0);
+            pinnedFree(pSrc1);
+            pinnedFree(pSrc2);
+            pinnedFree(pSrc3);
         } else if(channels == 3) {
             AF_CHECK(af_transpose(&rrT, rr, false));
             AF_CHECK(af_transpose(&ggT, gg, false));
@@ -367,9 +369,9 @@ af_err af_save_image(const char* filename, const af_array in_)
                 }
                 pDstLine -= nDstPitch;
             }
-            delete [] pSrc0;
-            delete [] pSrc1;
-            delete [] pSrc2;
+            pinnedFree(pSrc0);
+            pinnedFree(pSrc1);
+            pinnedFree(pSrc2);
         } else {
             AF_CHECK(af_transpose(&rrT, rr, false));
             ArrayInfo cinfo = getInfo(rrT);
@@ -383,8 +385,15 @@ af_err af_save_image(const char* filename, const af_array in_)
                 }
                 pDstLine -= nDstPitch;
             }
-            delete [] pSrc0;
+            pinnedFree(pSrc0);
         }
+
+        // now save the result image
+        if (!(FreeImage_Save(fif, pResultBitmap, filename, 0) == TRUE)) {
+            AF_ERROR("FreeImage Error: Failed to save image", AF_ERR_RUNTIME);
+        }
+
+        FreeImage_Unload(pResultBitmap);
 
         if(free_in) AF_CHECK(af_destroy_array(in ));
         if(rr != 0) AF_CHECK(af_destroy_array(rr ));
@@ -396,14 +405,8 @@ af_err af_save_image(const char* filename, const af_array in_)
         if(bbT!= 0) AF_CHECK(af_destroy_array(bbT));
         if(aaT!= 0) AF_CHECK(af_destroy_array(aaT));
 
-        // now save the result image
-        if (!(FreeImage_Save(fif, pResultBitmap, filename, 0) == TRUE)) {
-            AF_ERROR("FreeImage Error: Failed to save image", AF_ERR_RUNTIME);
-        }
-
-        FreeImage_Unload(pResultBitmap);
-
         FreeImage_DeInitialise();
+
     } CATCHALL
 
     return AF_SUCCESS;
