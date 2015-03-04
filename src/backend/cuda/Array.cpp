@@ -163,6 +163,8 @@ namespace cuda
                             const std::vector<af_seq> &index,
                             bool copy)
     {
+        parent.eval();
+
         dim4 dDims = parent.getDataDims();
         dim4 pDims = parent.dims();
 
