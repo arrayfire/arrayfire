@@ -123,7 +123,7 @@ void fastTest(string pTestFile, bool nonmax)
         ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
         ASSERT_EQ(AF_SUCCESS, conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_EQ(AF_SUCCESS, af_fast(&outFeat, inArray, 20.0f, 9, nonmax, 0.05f));
+        ASSERT_EQ(AF_SUCCESS, af_fast(&outFeat, inArray, 20.0f, 9, nonmax, 0.05f, 3));
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, outFeat.x));
 
         float * outX           = new float[gold[0].size()];
@@ -203,7 +203,7 @@ TEST(FloatFAST, CPP)
 
     af::array in = af::loadimage(inFiles[0].c_str(), false);
 
-    af::features out = fast(in, 20.0f, 9, true, 0.05f);
+    af::features out = fast(in, 20.0f, 9, true, 0.05f, 3);
 
     float * outX           = new float[gold[0].size()];
     float * outY           = new float[gold[1].size()];

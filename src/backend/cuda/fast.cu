@@ -25,7 +25,7 @@ namespace cuda
 template<typename T>
 unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
               const Array<T> &in, const float thr, const unsigned arc_length,
-              const bool non_max, const float feature_ratio)
+              const bool non_max, const float feature_ratio, const unsigned edge)
 {
     const dim4 dims = in.dims();
 
@@ -35,7 +35,7 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
     float *d_score_out;
 
     kernel::fast<T>(&nfeat, &d_x_out, &d_y_out, &d_score_out, in,
-                    thr, arc_length, non_max, feature_ratio);
+                    thr, arc_length, non_max, feature_ratio, edge);
 
     if (nfeat > 0) {
         const dim4 out_dims(nfeat);
@@ -48,10 +48,10 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
     return nfeat;
 }
 
-#define INSTANTIATE(T)                                                  \
-    template unsigned fast<T>(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out, \
-                              const Array<T> &in, const float thr, const unsigned arc_length, \
-                              const bool nonmax, const float feature_ratio); \
+#define INSTANTIATE(T)                                                                              \
+    template unsigned fast<T>(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,    \
+                              const Array<T> &in, const float thr, const unsigned arc_length,       \
+                              const bool nonmax, const float feature_ratio, const unsigned edge);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

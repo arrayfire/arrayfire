@@ -25,7 +25,7 @@ namespace opencl
 template<typename T>
 unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
               const Array<T> &in, const float thr, const unsigned arc_length,
-              const bool non_max, const float feature_ratio)
+              const bool non_max, const float feature_ratio, const unsigned edge)
 {
     unsigned nfeat;
 
@@ -35,7 +35,7 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
 
     kernel::fast_dispatch<T>(arc_length, non_max,
                              &nfeat, x, y, score, in,
-                             thr, feature_ratio);
+                             thr, feature_ratio, edge);
 
     if (nfeat > 0) {
         x_out = createParamArray<float>(x);
@@ -46,10 +46,10 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
     return nfeat;
 }
 
-#define INSTANTIATE(T)                                                  \
-    template unsigned fast<T>(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out, \
-                              const Array<T> &in, const float thr, const unsigned arc_length, \
-                              const bool nonmax, const float feature_ratio); \
+#define INSTANTIATE(T)                                                                              \
+    template unsigned fast<T>(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,    \
+                              const Array<T> &in, const float thr, const unsigned arc_length,       \
+                              const bool nonmax, const float feature_ratio, const unsigned edge);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

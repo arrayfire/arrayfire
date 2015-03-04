@@ -14,10 +14,12 @@ namespace af
 {
 
 features fast(const array& in, const float thr, const unsigned arc_length,
-                const bool non_max, const float feature_ratio)
+                const bool non_max, const float feature_ratio,
+                const unsigned edge)
 {
     af_features temp;
-    AF_THROW(af_fast(&temp, in.get(), thr, arc_length, non_max, feature_ratio));
+    AF_THROW(af_fast(&temp, in.get(), thr, arc_length,
+                     non_max, feature_ratio, edge));
     return features(temp);
 }
 
