@@ -41,13 +41,7 @@ AFAPI array bilateral(const array &in, const float spatial_sigma, const float ch
 /**
    C++ interface for histogram
 
-   This function uses the min and max to create an output array consisting of
-   nbins that are equally spaced bins between min and max. In the output
-   array, the index represents the bin number and the value at the index
-   represents the frequency of the data in that bin. For all elements, the
-   bin it belongs to is computed and incremented. All elements less than
-   min are placed in the min bin and all elements greated than max are
-   placed in the max bin.
+   \copydoc image_func_histogram_desc
 
    \param[in]  in is the input array
    \param[in]  nbins  Number of bins to populate between min and max
@@ -104,10 +98,7 @@ AFAPI array sobel(const array &img, const unsigned ker_size=3, bool isFast=false
 /**
    RGB to Grayscale color space converter
 
-   Input array must be 3 dimensional. The grayscale internsity of a pixel is calculated using the
-   following formula:
-
-       \f$gray = R*rPercent + G*gPercent + B*bPercent\f$
+   \copydoc image_func_rgb2gray_desc
 
    Parameters rPercent, gPercent & bPercent use default values if not provided.
 
@@ -123,14 +114,7 @@ AFAPI array rgb2gray(const array& in, const float rPercent=0.2126f, const float 
 /**
    Grayscale to RGB color space converter
 
-   Input array must be two dimensional. The grayscale internsity of a pixel is calculated using the
-   following formula:
-
-   \f$R = rFactor * intensity\f$
-
-   \f$G = gFactor * intensity\f$
-
-   \f$B = bFactor * intensity\f$
+   \copydoc image_func_gray2rgb_desc
 
    Parameters rFactor, gFactor & bFactor use default values if not provided.
 
@@ -146,7 +130,7 @@ AFAPI array gray2rgb(const array& in, const float rFactor=1.0, const float gFact
 /**
    C++ interface for histogram equalization
 
-    Input array should be 2D dimensional.
+   \copydoc image_func_histequal_desc
 
    \param[in]  in is the input array, non-normalized input (!! assumes values [0-255] !!)
    \param[in]  hist target histogram to approximate in output (based on # of bins)
@@ -160,7 +144,7 @@ AFAPI array gaussianKernel(const int rows, const int cols, const double sig_r = 
 /**
    HSV to RGB color space converter
 
-   Input array must be 3 dimensional.
+   \copydoc image_func_hsv_rgb_desc
 
    \param[in]  in is an array in the HSV colorspace
    \return     array in RGB colorspace
@@ -171,7 +155,7 @@ AFAPI array hsv2rgb(const array& in);
 /**
    RGB to HSV color space converter
 
-   Input array must be 3 dimensional.
+   \copydoc image_func_hsv_rgb_desc
 
    \param[in]  in is an array in the RGB colorspace
    \return     array in HSV colorspace
@@ -182,9 +166,7 @@ AFAPI array rgb2hsv(const array& in);
 /**
    Colorspace conversion function
 
-   Input array must be 3 dimensional for AF_HSV to AF_RGB, AF_RGB to
-   AF_HSV, & AF_RGB to AF_GRAY transformations. For AF_GRAY to AF_RGB
-   transformation, 2D array is expected.
+   \copydoc image_func_colorspace_desc
 
    \param[in]  image is the input array
    \param[in]  to is the target array colorspace
@@ -232,13 +214,7 @@ extern "C" {
     /**
        C interface for histogram
 
-       This function uses the min and max to create an output array consisting of
-       nbins that are equally spaced bins between min and max. In the output
-       array, the index represents the bin number and the value at the index
-       represents the frequency of the data in that bin. For all elements, the
-       bin it belongs to is computed and incremented. All elements less than
-       min are placed in the min bin and all elements greated than max are
-       placed in the max bin.
+       \copydoc image_func_histogram_desc
 
        \param[out] out is the histogram for input array in
        \param[in]  in is the input array
@@ -291,10 +267,7 @@ extern "C" {
     /**
        RGB to Grayscale color space converter
 
-       Input array must be 3 dimensional. The grayscale internsity of a pixel is calculated using the
-       following formula:
-
-       \f$gray = R*rPercent + G*gPercent + B*bPercent\f$
+       \copydoc image_func_rgb2gray_desc
 
        \param[out] out is an array in target colorspace
        \param[in]  in is an array in the RGB colorspace
@@ -310,14 +283,7 @@ extern "C" {
     /**
        Grayscale to RGB color space converter
 
-       Input array must be two dimensional. The grayscale internsity of a pixel is calculated using the
-       following formula
-
-       \f$R = rFactor * intensity\f$
-
-       \f$G = gFactor * intensity\f$
-
-       \f$B = bFactor * intensity\f$
+       \copydoc image_func_gray2rgb_desc
 
        \param[out] out is an array in target colorspace
        \param[in]  in is an array in the Grayscale colorspace
@@ -333,7 +299,7 @@ extern "C" {
     /**
        C interface for histogram equalization
 
-        Input array should be 2D dimensional.
+       \copydoc image_func_histequal_desc
 
        \param[out] out is an array with data that has histogram approximately equal to histogram
        \param[in]  in is the input array, non-normalized input (!! assumes values [0-255] !!)
@@ -351,7 +317,7 @@ extern "C" {
     /**
        HSV to RGB color space converter
 
-       Input array must be 3 dimensional.
+       \copydoc image_func_hsv_rgb_desc
 
        \param[out] out is an array in the RGB colorspace
        \param[in]  in is an array in the HSV colorspace
@@ -364,7 +330,7 @@ extern "C" {
     /**
        RGB to HSV color space converter
 
-       Input array must be 3 dimensional.
+       \copydoc image_func_hsv_rgb_desc
 
        \param[out] out is an array in the HSV colorspace
        \param[in]  in is an array in the RGB colorspace
@@ -377,9 +343,7 @@ extern "C" {
     /**
        Colorspace conversion function
 
-       Input array must be 3 dimensional for AF_HSV to AF_RGB, AF_RGB to
-       AF_HSV, & AF_RGB to AF_GRAY transformations. For AF_GRAY to AF_RGB
-       transformation, 2D array is expected.
+       \copydoc image_func_colorspace_desc
 
        \param[out] out is an array in target colorspace
        \param[in]  image is the input array

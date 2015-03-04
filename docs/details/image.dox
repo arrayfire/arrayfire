@@ -1,11 +1,59 @@
 
 /*!
+\page image_func_rgb2gray_desc RGB2GRAY_DESC
+
+Input array must be 3 dimensional. The grayscale internsity of a pixel is calculated using the
+following formula:
+
+    \f$gray = R*rPercent + G*gPercent + B*bPercent\f$
+
+
+\page image_func_gray2rgb_desc GRAY2RGB_DESC
+
+Input array must be two dimensional. The grayscale internsity of a pixel is calculated using the
+following formula
+
+       \f$R = rFactor * intensity\f$
+
+       \f$G = gFactor * intensity\f$
+
+       \f$B = bFactor * intensity\f$
+
+
+\page image_func_hsv_rgb_desc HSV_RGB_DESC
+
+Input array must be 3 dimensional.
+
+
+\page image_func_colorspace_desc COLORSPACE_DESC
+
+Input array must be 3 dimensional for AF_HSV to AF_RGB, AF_RGB to
+AF_HSV, & AF_RGB to AF_GRAY transformations. For AF_GRAY to AF_RGB
+transformation, 2D array is expected.
+
+
+\page image_func_histequal_desc HISTEQUAL_DESC
+
+Input array must be two dimensional.
+
+
+\page image_func_histogram_desc HISTOGRAM_DESC
+
+This function uses the min and max to create an output array consisting of
+nbins that are equally spaced bins between min and max. In the output
+array, the index represents the bin number and the value at the index
+represents the frequency of the data in that bin. For all elements, the
+bin it belongs to is computed and incremented. All elements less than
+min are placed in the min bin and all elements greated than max are
+placed in the max bin.
+
+
 \page image_func_hsv HSV
 
 HSV (Hue, Saturation, Value), also known as HSB (hue, saturation, brightness),
 is often used by artists because it is more natural to think about a color in
 terms of hue and saturation than in terms of additive or subtractive color
-components (as in RGB). HSV is a transformation of an RGB colorspace, and its
+components (as in RGB). HSV is a transformation of RGB colorspace; its
 components and colorimetry are relative to the RGB colorspace from which it was
 derived. Like RGB, HSV also uses 3 values per pixel.
 
@@ -17,8 +65,9 @@ pixel. A combination of these three values produces the gamut of unique colors.
 
 \page image_func_gray GRAY
 
-Grayscale is a single channel color space where 0 represents black and 1
-represents white for normalized range.
+Grayscale is a single channel color space where pixel value ranges from 0 to 1.
+Zero represents black, one represent white and any value between zero & one is 
+a gray value
 
 */
 //=================================================================================
