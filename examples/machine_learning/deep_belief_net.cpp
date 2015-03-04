@@ -46,8 +46,9 @@ double error(const array &out,
     return sqrt((double)(sum<float>(dif * dif)));
 }
 
-array sigmoid_rnd(const array in)
+array sigmoid_binary(const array in)
 {
+    // Choosing "1" with probability sigmoid(in)
     return (sigmoid(in) > randu(in.dims())).as(f32);
 }
 
@@ -80,7 +81,7 @@ public:
 
             double err = 0;
 
-            for (int j = 0; j < num_batches; j++) {
+            for (int j = 0; j < num_batches - 1; j++) {
 
                 int st = j * batch_size;
                 int en = std::min(num_samples - 1, st + batch_size);
@@ -88,18 +89,18 @@ public:
 
                 array v_pos = in(seq(st, en), span);
 
-                array h_pos = sigmoid_rnd(tile(h_bias, num) +
-                                          matmul(v_pos, transpose(weights)));
+                array h_pos = sigmoid_binary(tile(h_bias, num) +
+                                             matmulNT(v_pos, weights));
 
-                array v_neg = sigmoid_rnd(tile(v_bias, num) +
-                                          matmul(h_pos, weights));
+                array v_neg = sigmoid_binary(tile(v_bias, num) +
+                                             matmul(h_pos, weights));
 
-                array h_neg = sigmoid_rnd(tile(h_bias, num) +
-                                          matmul(v_neg, transpose(weights)));
+                array h_neg = sigmoid_binary(tile(h_bias, num) +
+                                             matmulNT(v_neg, weights));
 
 
-                array c_pos = matmul(transpose(h_pos), v_pos);
-                array c_neg = matmul(transpose(h_neg), v_neg);
+                array c_pos = matmulTN(h_pos, v_pos);
+                array c_neg = matmulTN(h_neg, v_neg);
 
                 array delta_w = lr * (c_pos - c_neg) / num;
                 array delta_vb = lr * sum(v_pos - v_neg) / num;
@@ -123,7 +124,7 @@ public:
     array prop_up(const array &in)
     {
         return sigmoid(tile(h_bias, in.dims(0)) +
-                       matmul(in, transpose(weights)));
+                       matmulNT(in, weights));
     }
 };
 
@@ -254,12 +255,12 @@ public:
 
 
             // Validate with last batch
-            // Check if training criterion have been met
             int st = (num_batches - 1) * batch_size;
             int en = num_samples - 1;
             array out = predict(input(seq(st, en), span));
             double err = error(out, target(seq(st, en), span));
 
+            // Check if convergence criteria has been met
             if (err < maxerr) {
                 printf("Converged on Epoch: %4d\n", i + 1);
                 return;

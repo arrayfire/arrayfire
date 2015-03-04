@@ -173,12 +173,12 @@ double ann::train(const array &input, const array &target,
         }
 
         // Validate with last batch
-        // Check if training criterion have been met
         int st = (num_batches - 1) * batch_size;
         int en = num_samples - 1;
         array out = predict(input(seq(st, en), span));
         err = error(out, target(seq(st, en), span));
 
+        // Check if convergence criteria has been met
         if (err < maxerr) {
             printf("Converged on Epoch: %4d\n", i + 1);
             return err;
