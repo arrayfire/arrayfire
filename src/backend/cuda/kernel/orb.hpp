@@ -97,15 +97,12 @@ __global__ void keep_features(
 
 template<typename T, bool use_scl>
 __global__ void harris_response(
-        float* x_out,
-        float* y_out,
         float* score_out,
         float* size_out,
         const float* x_in,
         const float* y_in,
         const float* scl_in,
         const unsigned total_feat,
-        unsigned* usable_feat,
         CParam<T> image,
         const unsigned block_size,
         const float k_thr,
@@ -161,25 +158,20 @@ __global__ void harris_response(
         ixy = block_reduce_sum(ixy);
 
         if (threadIdx.y == 0) {
-            unsigned idx = atomicAdd(usable_feat, 1u);
-            if (idx < total_feat) {
-                float tr = ixx + iyy;
-                float det = ixx*iyy - ixy*ixy;
+            float tr = ixx + iyy;
+            float det = ixx*iyy - ixy*ixy;
 
-                // Calculate Harris responses
-                float resp = det - k_thr * (tr*tr);
+            // Calculate Harris responses
+            float resp = det - k_thr * (tr*tr);
 
-                // Scale factor
-                // TODO: improve response scaling
-                float rscale = 0.001f;
-                rscale = rscale * rscale * rscale * rscale;
+            // Scale factor
+            // TODO: improve response scaling
+            float rscale = 0.001f;
+            rscale = rscale * rscale * rscale * rscale;
 
-                x_out[idx] = x;
-                y_out[idx] = y;
-                score_out[idx] = resp * rscale;
-                if (use_scl)
-                    size_out[idx] = size;
-            }
+            score_out[f] = resp * rscale;
+            if (use_scl)
+                size_out[f] = size;
         }
     }
 }
@@ -369,40 +361,17 @@ void orb(unsigned* out_feat,
             continue;
         }
 
-        unsigned* d_usable_feat = memAlloc<unsigned>(1);
-        CUDA_CHECK(cudaMemset(d_usable_feat, 0, sizeof(unsigned)));
-
-        float* d_x_harris = memAlloc<float>(feat_pyr[i]);
-        float* d_y_harris = memAlloc<float>(feat_pyr[i]);
         float* d_score_harris = memAlloc<float>(feat_pyr[i]);
 
         // Calculate Harris responses
         // Good block_size >= 7 (must be an odd number)
         dim3 threads(THREADS_X, THREADS_Y);
         dim3 blocks(divup(feat_pyr[i], threads.x), 1);
-        harris_response<T,false><<<blocks, threads>>>(d_x_harris, d_y_harris, d_score_harris, NULL,
+        harris_response<T,false><<<blocks, threads>>>(d_score_harris, NULL,
                                                       d_x_pyr[i], d_y_pyr[i], NULL,
-                                                      feat_pyr[i], d_usable_feat,
+                                                      feat_pyr[i],
                                                       img_pyr[i], 7, 0.04f, patch_size);
         POST_LAUNCH_CHECK();
-
-        unsigned usable_feat = 0;
-        CUDA_CHECK(cudaMemcpy(&usable_feat, d_usable_feat, sizeof(unsigned), cudaMemcpyDeviceToHost));
-
-        memFree(d_x_pyr[i]);
-        memFree(d_y_pyr[i]);
-        memFree(d_usable_feat);
-
-        feat_pyr[i] = usable_feat;
-
-        if (feat_pyr[i] == 0) {
-            memFree(d_x_harris);
-            memFree(d_y_harris);
-            memFree(d_score_harris);
-            if (i > 0)
-                memFree((T*)img_pyr[i].ptr);
-            continue;
-        }
 
         Param<float> harris_sorted;
         Param<unsigned> harris_idx;
@@ -434,12 +403,12 @@ void orb(unsigned* out_feat,
         threads = dim3(THREADS, 1);
         blocks = dim3(divup(feat_pyr[i], threads.x), 1);
         keep_features<T><<<blocks, threads>>>(d_x_lvl, d_y_lvl, d_score_lvl, NULL,
-                                              d_x_harris, d_y_harris, harris_sorted.ptr, harris_idx.ptr,
+                                              d_x_pyr[i], d_y_pyr[i], harris_sorted.ptr, harris_idx.ptr,
                                               NULL, feat_pyr[i]);
         POST_LAUNCH_CHECK();
 
-        memFree(d_x_harris);
-        memFree(d_y_harris);
+        memFree(d_x_pyr[i]);
+        memFree(d_y_pyr[i]);
         memFree(harris_sorted.ptr);
         memFree(harris_idx.ptr);
 
@@ -495,8 +464,8 @@ void orb(unsigned* out_feat,
                                             img_pyr[i], lvl_scl[i], patch_size);
         POST_LAUNCH_CHECK();
 
-        //if (blur_img || i > 0)
-        //    memFree((T*)img_pyr[i].ptr);
+        if (i > 0)
+            memFree((T*)img_pyr[i].ptr);
 
         // Store results to pyramids
         total_feat += feat_pyr[i];
