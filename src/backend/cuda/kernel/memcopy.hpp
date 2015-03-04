@@ -83,6 +83,7 @@ namespace kernel
         (memcopy_kernel<T>)<<<blocks, threads>>>(out, _ostrides,
                                                  in, _idims, _istrides,
                                                  blocks_x, blocks_y);
+        POST_LAUNCH_CHECK();
     }
 
 
