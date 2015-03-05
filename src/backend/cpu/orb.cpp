@@ -617,8 +617,16 @@ unsigned orb(Array<float> &x, Array<float> &y,
         Array<float> y_feat = createEmptyArray<float>(dim4());
         Array<float> score_feat = createEmptyArray<float>(dim4());
 
+        // Round feature size to nearest odd integer
+        float size = 2.f * floor(patch_size / 2.f) + 1.f;
+
+        // Avoid keeping features that might be too wide and might not fit on
+        // the image, sqrt(2.f) is the radius when angle is 45 degrees and
+        // represents widest case possible
+        unsigned edge = ceil(size * sqrt(2.f) / 2.f);
+
         unsigned lvl_feat = fast(x_feat, y_feat, score_feat,
-                                 lvl_img, fast_thr, 9, 1, 0.15f);
+                                 lvl_img, fast_thr, 9, 1, 0.15f, edge);
 
 
         if (lvl_feat == 0) {

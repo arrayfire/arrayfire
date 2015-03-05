@@ -54,9 +54,10 @@ void locate_features_core(
     __global T* score,
     KParam iInfo,
     const float thr,
-    int x, int y)
+    int x, int y,
+    const unsigned edge)
 {
-    if (x >= iInfo.dims[0] - 3 || y >= iInfo.dims[1] - 3) return;
+    if (x >= iInfo.dims[0] - edge || y >= iInfo.dims[1] - edge) return;
 
     T p = local_image[idx( 0, 0)];
 
@@ -134,7 +135,7 @@ void load_shared_image(
     unsigned  x, unsigned  y,
     unsigned lx, unsigned ly)
 {
-    // Copy an image patch to shared memory, with a 3-pixel border
+    // Copy an image patch to shared memory, with a 3-pixel edge
     if (ix < lx && iy < ly && x - 3 < iInfo.dims[0] && y - 3 < iInfo.dims[1]) {
         local_image[(ix)      + (bx+6) * (iy)]    = in[(x-3)    + iInfo.dims[0] * (y-3)];
         if (x + lx - 3 < iInfo.dims[0])
@@ -152,21 +153,22 @@ void locate_features(
     KParam          iInfo,
     __global T* score,
     const float thr,
+    const unsigned edge,
     __local T* local_image)
 {
     unsigned ix = get_local_id(0);
     unsigned iy = get_local_id(1);
     unsigned bx = get_local_size(0);
     unsigned by = get_local_size(1);
-    unsigned x = bx * get_group_id(0) + ix + 3;
-    unsigned y = by * get_group_id(1) + iy + 3;
+    unsigned x = bx * get_group_id(0) + ix + edge;
+    unsigned y = by * get_group_id(1) + iy + edge;
     unsigned lx = bx / 2 + 3;
     unsigned ly = by / 2 + 3;
 
     load_shared_image(in, iInfo, local_image, ix, iy, bx, by, x, y, lx, ly);
     barrier(CLK_LOCAL_MEM_FENCE);
     locate_features_core(local_image, score,
-                         iInfo, thr, x, y);
+                         iInfo, thr, x, y, edge);
 }
 
 __kernel

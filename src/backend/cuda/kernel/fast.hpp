@@ -185,9 +185,10 @@ void locate_features_core(
     const unsigned idim0,
     const unsigned idim1,
     const float thr,
-    int x, int y)
+    int x, int y,
+    const unsigned edge)
 {
-    if (x >= idim0 - 3 || y >= idim1 - 3) return;
+    if (x >= idim0 - edge || y >= idim1 - edge) return;
 
     T p = local_image[idx( 0, 0)];
 
@@ -245,7 +246,7 @@ void load_shared_image(CParam<T> in,
                        unsigned x, unsigned y,
                        unsigned lx, unsigned ly)
 {
-    // Copy an image patch to shared memory, with a 3-pixel border
+    // Copy an image patch to shared memory, with a 3-pixel edge
     if (ix < lx && iy < ly && x - 3 < in.dims[0] && y - 3 < in.dims[1]) {
         local_image[(ix)      + (bx+6) * (iy)]    = in.ptr[(x-3)    + in.dims[0] * (y-3)];
         if (x + lx - 3 < in.dims[0])
@@ -262,14 +263,15 @@ __global__
 void locate_features(
     CParam<T> in,
     T* score,
-    const float thr)
+    const float thr,
+    const unsigned edge)
 {
     unsigned ix = threadIdx.x;
     unsigned iy = threadIdx.y;
     unsigned bx = blockDim.x;
     unsigned by = blockDim.y;
-    unsigned x = bx * blockIdx.x + ix + 3;
-    unsigned y = by * blockIdx.y + iy + 3;
+    unsigned x = bx * blockIdx.x + ix + edge;
+    unsigned y = by * blockIdx.y + iy + edge;
     unsigned lx = bx / 2 + 3;
     unsigned ly = by / 2 + 3;
 
@@ -278,7 +280,7 @@ void locate_features(
     load_shared_image(in, local_image_curr, ix, iy, bx, by, x, y, lx, ly);
     __syncthreads();
     locate_features_core<T, arc_length>(local_image_curr, score,
-                                        in.dims[0], in.dims[1], thr, x, y);
+                                        in.dims[0], in.dims[1], thr, x, y, edge);
 }
 
 template<class T, bool nonmax>
@@ -422,12 +424,13 @@ void fast(unsigned* out_feat,
           const float thr,
           const unsigned arc_length,
           const unsigned nonmax,
-          const float feature_ratio)
+          const float feature_ratio,
+          const unsigned edge)
 {
     const unsigned max_feat = ceil(in.dims[0] * in.dims[1] * feature_ratio);
 
     dim3 threads(16, 16);
-    dim3 blocks(divup(in.dims[0]-6, threads.x), divup(in.dims[1]-6, threads.y));
+    dim3 blocks(divup(in.dims[0]-edge*2, threads.x), divup(in.dims[1]-edge*2, threads.y));
 
     // Matrix containing scores for detected features, scores are stored in the
     // same coordinates as features, dimensions should be equal to in.
@@ -446,28 +449,28 @@ void fast(unsigned* out_feat,
 
     switch(arc_length) {
     case 9:
-        locate_features<T, 9><<<blocks, threads, shared_size>>>(in, d_score, thr);
+        locate_features<T, 9><<<blocks, threads, shared_size>>>(in, d_score, thr, edge);
         break;
     case 10:
-        locate_features<T,10><<<blocks, threads, shared_size>>>(in, d_score, thr);
+        locate_features<T,10><<<blocks, threads, shared_size>>>(in, d_score, thr, edge);
         break;
     case 11:
-        locate_features<T,11><<<blocks, threads, shared_size>>>(in, d_score, thr);
+        locate_features<T,11><<<blocks, threads, shared_size>>>(in, d_score, thr, edge);
         break;
     case 12:
-        locate_features<T,12><<<blocks, threads, shared_size>>>(in, d_score, thr);
+        locate_features<T,12><<<blocks, threads, shared_size>>>(in, d_score, thr, edge);
         break;
     case 13:
-        locate_features<T,13><<<blocks, threads, shared_size>>>(in, d_score, thr);
+        locate_features<T,13><<<blocks, threads, shared_size>>>(in, d_score, thr, edge);
         break;
     case 14:
-        locate_features<T,14><<<blocks, threads, shared_size>>>(in, d_score, thr);
+        locate_features<T,14><<<blocks, threads, shared_size>>>(in, d_score, thr, edge);
         break;
     case 15:
-        locate_features<T,15><<<blocks, threads, shared_size>>>(in, d_score, thr);
+        locate_features<T,15><<<blocks, threads, shared_size>>>(in, d_score, thr, edge);
         break;
     case 16:
-        locate_features<T,16><<<blocks, threads, shared_size>>>(in, d_score, thr);
+        locate_features<T,16><<<blocks, threads, shared_size>>>(in, d_score, thr, edge);
         break;
     }
 

@@ -102,13 +102,14 @@ void locate_features(
     const float thr,
     const unsigned arc_length,
     const unsigned nonmax,
-    const unsigned max_feat)
+    const unsigned max_feat,
+    const unsigned edge)
 {
     dim4 in_dims = in.dims();
     const T* in_ptr = in.get();
 
-    for (int y = 3; y < (int)(in_dims[0] - 3); y++) {
-        for (int x = 3; x < (int)(in_dims[1] - 3); x++) {
+    for (int y = edge; y < (int)(in_dims[0] - edge); y++) {
+        for (int x = edge; x < (int)(in_dims[1] - edge); x++) {
             T p = in_ptr[idx(y, x, in_dims[0])];
 
             // Start by testing opposite pixels of the circle that will result in
@@ -242,7 +243,8 @@ void non_maximal(
 template<typename T>
 unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
               const Array<T> &in, const float thr, const unsigned arc_length,
-              const bool nonmax, const float feature_ratio)
+              const bool nonmax, const float feature_ratio,
+              const unsigned edge)
 {
     dim4 in_dims = in.dims();
     const unsigned max_feat = ceil(in.elements() * feature_ratio);
@@ -264,7 +266,8 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
     // Feature counter
     unsigned count = 0;
 
-    locate_features<T>(in, V, x, y, score, &count, thr, arc_length, nonmax, max_feat);
+    locate_features<T>(in, V, x, y, score, &count, thr, arc_length,
+                       nonmax, max_feat, edge);
 
     // If more features than max_feat were detected, feat wasn't populated
     // with them anyway, so the real number of features will be that of
@@ -320,10 +323,10 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
     return feat_found;
 }
 
-#define INSTANTIATE(T)                                                  \
-    template unsigned fast<T>(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out, \
-                              const Array<T> &in, const float thr, const unsigned arc_length, \
-                              const bool nonmax, const float feature_ratio); \
+#define INSTANTIATE(T)                                                                              \
+    template unsigned fast<T>(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,    \
+                              const Array<T> &in, const float thr, const unsigned arc_length,       \
+                              const bool nonmax, const float feature_ratio, const unsigned edge);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

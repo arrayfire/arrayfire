@@ -191,9 +191,17 @@ void orb(unsigned* out_feat,
             unsigned lvl_feat = 0;
             Param d_x_feat, d_y_feat, d_score_feat;
 
+            // Round feature size to nearest odd integer
+            float size = 2.f * floor(patch_size / 2.f) + 1.f;
+
+            // Avoid keeping features that might be too wide and might not fit on
+            // the image, sqrt(2.f) is the radius when angle is 45 degrees and
+            // represents widest case possible
+            unsigned edge = ceil(size * sqrt(2.f) / 2.f);
+
             // Detect FAST features
             fast<T, 9, true>(&lvl_feat, d_x_feat, d_y_feat, d_score_feat,
-                             lvl_img, fast_thr, 0.15f);
+                             lvl_img, fast_thr, 0.15f, edge);
 
             if (lvl_feat == 0) {
                 feat_pyr[i] = 0;
