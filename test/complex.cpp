@@ -40,7 +40,7 @@ const int num = 10;
         delete[] h_b;                                                   \
         delete[] h_c;                                                   \
     }                                                                   \
-    TEST(ComplexTests, Test_##func##_##Ta##_##Tb##_left)                \
+    TEST(ComplexTests, Test_cplx_##Ta##_##Tb##_left)                    \
     {                                                                   \
         if (noDoubleTests<Ta>()) return;                                \
         if (noDoubleTests<Tb>()) return;                                \
@@ -58,7 +58,7 @@ const int num = 10;
         delete[] h_c;                                                   \
     }                                                                   \
                                                                         \
-    TEST(ComplexTests, Test_##func##_##Ta##_##Tb##_right)               \
+    TEST(ComplexTests, Test_cplx_##Ta##_##Tb##_right)                   \
     {                                                                   \
         if (noDoubleTests<Ta>()) return;                                \
         if (noDoubleTests<Tb>()) return;                                \
