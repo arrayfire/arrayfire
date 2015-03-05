@@ -23,6 +23,7 @@ namespace JIT
     private:
         const std::shared_ptr<cl::Buffer> m_data;
         const Param m_param;
+        const unsigned m_bytes;
         bool m_set_arg;
         bool m_linear;
 
@@ -30,11 +31,14 @@ namespace JIT
 
         BufferNode(const char *type_str,
                    const char *name_str,
-                   const Param param, const bool is_linear,
-                   const std::shared_ptr<cl::Buffer> data)
+                   const Param param,
+                   const std::shared_ptr<cl::Buffer> data,
+                   const unsigned bytes,
+                   const bool is_linear)
             : Node(type_str, name_str),
               m_data(data),
               m_param(param),
+              m_bytes(bytes),
               m_set_arg(false),
               m_linear(is_linear)
         {}
@@ -121,6 +125,18 @@ namespace JIT
 
             return m_id + 1;
         }
+
+        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
+        {
+            if (m_set_id) return;
+
+            len++;
+            buf_count++;
+            bytes += m_bytes;
+            m_set_id = true;
+            return;
+        }
+
 
         void resetFlags()
         {

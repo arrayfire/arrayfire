@@ -48,10 +48,19 @@ namespace TNJ
 
         void *calc(int x, int y, int z, int w)
         {
-            if (!m_is_eval) {
-                m_val = m_op.eval(*(Ti *)m_child->calc(x, y, z, w));
-            }
+            m_val = m_op.eval(*(Ti *)m_child->calc(x, y, z, w));
             return (void *)(&m_val);
+        }
+
+        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
+        {
+            if (m_is_eval) return;
+
+            m_child->getInfo(len, buf_count, bytes);
+            len++;
+
+            m_is_eval = true;
+            return;
         }
 
         void reset()

@@ -35,6 +35,13 @@ namespace TNJ
             return NULL;
         }
 
+        virtual void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
+        {
+            len = 0;
+            buf_count = 0;
+            bytes = 0;
+        }
+
         virtual void reset() { m_is_eval = false;}
 
         virtual ~Node() {}
