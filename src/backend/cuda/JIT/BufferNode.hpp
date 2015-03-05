@@ -29,26 +29,27 @@ namespace JIT
     class BufferNode : public Node
     {
     private:
-        bool m_set_arg;
-        bool m_linear;
-
         // Keep the shared pointer for reference counting
         shared_ptr<T> sptr;
         CParam<T> m_param;
+        unsigned m_bytes;
 
+        bool m_set_arg;
+        bool m_linear;
     public:
 
         BufferNode(const char *type_str,
                    const char *name_str,
                    shared_ptr<T> data,
                    CParam<T> param,
-                   dim_type off,
+                   unsigned bytes,
                    bool is_linear)
             : Node(type_str, name_str),
-              m_set_arg(false),
-              m_linear(is_linear),
               sptr(data),
-              m_param(param)
+              m_param(param),
+              m_bytes(bytes),
+              m_set_arg(false),
+              m_linear(is_linear)
         {
         }
 
@@ -169,6 +170,17 @@ namespace JIT
             return m_id + 1;
         }
 
+        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
+        {
+            if (m_set_id) return;
+
+            len++;
+            buf_count++;
+            bytes += m_bytes;
+            m_set_id = true;
+            return;
+        }
+
         void resetFlags()
         {
             m_set_id = false;
@@ -182,7 +194,7 @@ namespace JIT
         void setArgs(std::vector<void *> &args, bool is_linear)
         {
             if (m_set_arg) return;
-            args.push_back((void *)&m_param.ptr);
+            args.push_back((void *)&(m_param.ptr));
 
             if (!is_linear) {
                 args.push_back((void *)&m_param.dims[0]);
