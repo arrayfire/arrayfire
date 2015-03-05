@@ -28,19 +28,19 @@ namespace af
                          const dim_type d1, const dim_type d2,      \
                          const dim_type d3, dtype ty=TY);           \
 
-    CONSTANT(double             , f32);
-    CONSTANT(float              , f32);
-    CONSTANT(int                , f32);
-    CONSTANT(unsigned           , f32);
-    CONSTANT(char               , f32);
-    CONSTANT(unsigned char      , f32);
-    CONSTANT(cfloat             , c32);
-    CONSTANT(cdouble            , c64);
-    CONSTANT(long               , s64);
-    CONSTANT(unsigned long      , u64);
-    CONSTANT(long long          , s64);
-    CONSTANT(unsigned long long , u64);
-    CONSTANT(bool               ,  b8);
+    CONSTANT(double             , f32)
+    CONSTANT(float              , f32)
+    CONSTANT(int                , f32)
+    CONSTANT(unsigned           , f32)
+    CONSTANT(char               , f32)
+    CONSTANT(unsigned char      , f32)
+    CONSTANT(cfloat             , c32)
+    CONSTANT(cdouble            , c64)
+    CONSTANT(long               , s64)
+    CONSTANT(unsigned long      , u64)
+    CONSTANT(long long          , s64)
+    CONSTANT(unsigned long long , u64)
+    CONSTANT(bool               ,  b8)
 
 #undef CONSTANT
 
