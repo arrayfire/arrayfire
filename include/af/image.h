@@ -39,32 +39,29 @@ AFAPI array skew(const array& in, const float skew0, const float skew1, const di
 AFAPI array bilateral(const array &in, const float spatial_sigma, const float chromatic_sigma, bool is_color=false);
 
 /**
-   C++ interface for histogram
+   C++ Interface
 
-   \copydoc image_func_histogram_desc
+   \snippet test/histogram.cpp ex_image_hist_minmax
 
    \param[in]  in is the input array
    \param[in]  nbins  Number of bins to populate between min and max
    \param[in]  minval minimum bin value (accumulates -inf to min)
    \param[in]  maxval minimum bin value (accumulates max to +inf)
    \return     histogram array
+
    \ingroup image_func_histogram
  */
 AFAPI array histogram(const array &in, const unsigned nbins, const double minval, const double maxval);
 
 /**
-   C++ interface for histogram
+   C++ Interface
 
-    Histogram takes in the input array data and computes the minimum and maximum of the range.
-
-    This range is then divided up into nbins number of equally spaced bins. In the
-    output array, the index represents the bin number and the value at the index
-    represents the frequency of the data in that bin. For all elements, the bin it
-    belongs to is computed and incremented.
+   \snippet test/histogram.cpp ex_image_hist_nominmax
 
    \param[in]  in is the input array
    \param[in]  nbins  Number of bins to populate between min and max
    \return     histogram array
+
    \ingroup image_func_histogram
  */
 AFAPI array histogram(const array &in, const unsigned nbins);
@@ -96,45 +93,46 @@ AFAPI void sobel(array &dx, array &dy, const array &img, const unsigned ker_size
 AFAPI array sobel(const array &img, const unsigned ker_size=3, bool isFast=false);
 
 /**
-   RGB to Grayscale color space converter
-
-   \copydoc image_func_rgb2gray_desc
-
-   Parameters rPercent, gPercent & bPercent use default values if not provided.
+   C++ Interface
 
    \param[in]  in is an array in the RGB colorspace
-   \param[in]  rPercent is % of red channel value contributing to grayscale intensity
-   \param[in]  gPercent is % of green channel value contributing to grayscale intensity
-   \param[in]  bPercent is % of blue channel value contributing to grayscale intensity
+   \param[in]  rPercent is percentage of red channel value contributing to grayscale intensity
+   \param[in]  gPercent is percentage of green channel value contributing to grayscale intensity
+   \param[in]  bPercent is percentage of blue channel value contributing to grayscale intensity
    \return     array in Grayscale colorspace
+
+   \note \p in must be three dimensional for RGB to Grayscale conversion.
+
    \ingroup image_func_rgb2gray
  */
 AFAPI array rgb2gray(const array& in, const float rPercent=0.2126f, const float gPercent=0.7152f, const float bPercent=0.0722f);
 
 /**
-   Grayscale to RGB color space converter
-
-   \copydoc image_func_gray2rgb_desc
-
-   Parameters rFactor, gFactor & bFactor use default values if not provided.
+   C++ Interface
 
    \param[in]  in is an array in the Grayscale colorspace
-   \param[in]  rFactor is % of intensity value contributing to red channel
-   \param[in]  gFactor is % of intensity value contributing to green channel
-   \param[in]  bFactor is % of intensity value contributing to blue channel
+   \param[in]  rFactor is percentage of intensity value contributing to red channel
+   \param[in]  gFactor is percentage of intensity value contributing to green channel
+   \param[in]  bFactor is percentage of intensity value contributing to blue channel
    \return     array in RGB colorspace
+
+   \note \p in must be two dimensional for Grayscale to RGB conversion.
+
    \ingroup image_func_gray2rgb
  */
 AFAPI array gray2rgb(const array& in, const float rFactor=1.0, const float gFactor=1.0, const float bFactor=1.0);
 
 /**
-   C++ interface for histogram equalization
+   C++ Interface
 
-   \copydoc image_func_histequal_desc
+   \snippet test/histogram.cpp ex_image_histequal
 
    \param[in]  in is the input array, non-normalized input (!! assumes values [0-255] !!)
    \param[in]  hist target histogram to approximate in output (based on # of bins)
    \return     data with histogram approximately equal to histogram
+
+   \note \p in must be two dimensional.
+
    \ingroup image_func_histequal
  */
 AFAPI array histequal(const array& in, const array& hist);
@@ -142,36 +140,41 @@ AFAPI array histequal(const array& in, const array& hist);
 AFAPI array gaussianKernel(const int rows, const int cols, const double sig_r = 0, const double sig_c = 0);
 
 /**
-   HSV to RGB color space converter
-
-   \copydoc image_func_hsv_rgb_desc
+   C++ Interface
 
    \param[in]  in is an array in the HSV colorspace
    \return     array in RGB colorspace
+
+   \note \p in must be three dimensional
+
    \ingroup image_func_hsv2rgb
  */
 AFAPI array hsv2rgb(const array& in);
 
 /**
-   RGB to HSV color space converter
-
-   \copydoc image_func_hsv_rgb_desc
+   C++ Interface
 
    \param[in]  in is an array in the RGB colorspace
    \return     array in HSV colorspace
+
+   \note \p in must be three dimensional
+
    \ingroup image_func_rgb2hsv
  */
 AFAPI array rgb2hsv(const array& in);
 
 /**
-   Colorspace conversion function
-
-   \copydoc image_func_colorspace_desc
+   C++ Interface
 
    \param[in]  image is the input array
    \param[in]  to is the target array colorspace
    \param[in]  from is the input array colorspace
    \return     array in target colorspace
+
+   \note  \p image must be 3 dimensional for \ref AF_HSV to \ref AF_RGB, \ref AF_RGB to
+   \ref AF_HSV, & \ref AF_RGB to \ref AF_GRAY transformations. For \ref AF_GRAY to \ref AF_RGB
+   transformation, 2D array is expected.
+
    \ingroup image_func_colorspace
  */
 AFAPI array colorspace(const array& image, CSpace to, CSpace from);
@@ -212,17 +215,16 @@ extern "C" {
                          const bool inverse);
 
     /**
-       C interface for histogram
-
-       \copydoc image_func_histogram_desc
+       C Interface
 
        \param[out] out is the histogram for input array in
        \param[in]  in is the input array
        \param[in]  nbins  Number of bins to populate between min and max
        \param[in]  minval minimum bin value (accumulates -inf to min)
        \param[in]  maxval minimum bin value (accumulates max to +inf)
-       \return     AF_SUCCESS if the histogram is successfully created,
+       \return     \ref AF_SUCCESS if the histogram is successfully created,
        otherwise an appropriate error code is returned.
+
        \ingroup image_func_histogram
      */
     AFAPI af_err af_histogram(af_array *out, const af_array in, const unsigned nbins, const double minval, const double maxval);
@@ -265,47 +267,50 @@ extern "C" {
     AFAPI af_err af_sobel_operator(af_array *dx, af_array *dy, const af_array img, const unsigned ker_size);
 
     /**
-       RGB to Grayscale color space converter
-
-       \copydoc image_func_rgb2gray_desc
+       C Interface
 
        \param[out] out is an array in target colorspace
        \param[in]  in is an array in the RGB colorspace
-       \param[in]  rPercent is % of red channel value contributing to grayscale intensity
-       \param[in]  gPercent is % of green channel value contributing to grayscale intensity
-       \param[in]  bPercent is % of blue channel value contributing to grayscale intensity
-       \return     AF_SUCCESS if the color transformation is successful,
+       \param[in]  rPercent is percentage of red channel value contributing to grayscale intensity
+       \param[in]  gPercent is percentage of green channel value contributing to grayscale intensity
+       \param[in]  bPercent is percentage of blue channel value contributing to grayscale intensity
+       \return     \ref AF_SUCCESS if the color transformation is successful,
        otherwise an appropriate error code is returned.
+
+       \note \p in must be three dimensional for RGB to Grayscale conversion.
+
        \ingroup image_func_rgb2gray
      */
     AFAPI af_err af_rgb2gray(af_array* out, const af_array in, const float rPercent, const float gPercent, const float bPercent);
 
     /**
-       Grayscale to RGB color space converter
-
-       \copydoc image_func_gray2rgb_desc
+       C Interface
 
        \param[out] out is an array in target colorspace
        \param[in]  in is an array in the Grayscale colorspace
-       \param[in]  rFactor is % of intensity value contributing to red channel
-       \param[in]  gFactor is % of intensity value contributing to green channel
-       \param[in]  bFactor is % of intensity value contributing to blue channel
-       \return     AF_SUCCESS if the color transformation is successful,
+       \param[in]  rFactor is percentage of intensity value contributing to red channel
+       \param[in]  gFactor is percentage of intensity value contributing to green channel
+       \param[in]  bFactor is percentage of intensity value contributing to blue channel
+       \return     \ref AF_SUCCESS if the color transformation is successful,
        otherwise an appropriate error code is returned.
+
+       \note \p in must be two dimensional for Grayscale to RGB conversion.
+
        \ingroup image_func_gray2rgb
      */
     AFAPI af_err af_gray2rgb(af_array* out, const af_array in, const float rFactor, const float gFactor, const float bFactor);
 
     /**
-       C interface for histogram equalization
-
-       \copydoc image_func_histequal_desc
+       C Interface
 
        \param[out] out is an array with data that has histogram approximately equal to histogram
        \param[in]  in is the input array, non-normalized input (!! assumes values [0-255] !!)
        \param[in]  hist target histogram to approximate in output (based on # of bins)
-       \return     AF_SUCCESS if the color transformation is successful,
+       \return     \ref AF_SUCCESS if the color transformation is successful,
        otherwise an appropriate error code is returned.
+
+       \note \p in must be two dimensional.
+
        \ingroup image_func_histequal
      */
     AFAPI af_err af_histequal(af_array *out, const af_array in, const af_array hist);
@@ -315,42 +320,46 @@ extern "C" {
                                     const double sigma_r, const double sigma_c);
 
     /**
-       HSV to RGB color space converter
-
-       \copydoc image_func_hsv_rgb_desc
+       C Interface
 
        \param[out] out is an array in the RGB colorspace
        \param[in]  in is an array in the HSV colorspace
-       \return     AF_SUCCESS if the color transformation is successful,
+       \return     \ref AF_SUCCESS if the color transformation is successful,
        otherwise an appropriate error code is returned.
+
+       \note \p in must be three dimensional
+
        \ingroup image_func_hsv2rgb
      */
     AFAPI af_err af_hsv2rgb(af_array* out, const af_array in);
 
     /**
-       RGB to HSV color space converter
-
-       \copydoc image_func_hsv_rgb_desc
+       C Interface
 
        \param[out] out is an array in the HSV colorspace
        \param[in]  in is an array in the RGB colorspace
-       \return     AF_SUCCESS if the color transformation is successful,
+       \return     \ref AF_SUCCESS if the color transformation is successful,
        otherwise an appropriate error code is returned.
+
+       \note \p in must be three dimensional
+
        \ingroup image_func_rgb2hsv
      */
     AFAPI af_err af_rgb2hsv(af_array* out, const af_array in);
 
     /**
-       Colorspace conversion function
+       C Interface
 
-       \copydoc image_func_colorspace_desc
+       \param[out] out is an array in target colorspace \param[in]  image is
+       the input array \param[in]  to is the target array colorspace \param[in]
+       from is the input array colorspace \return     \ref AF_SUCCESS if the
+       color transformation is successful, otherwise an appropriate error code
+       is returned.
 
-       \param[out] out is an array in target colorspace
-       \param[in]  image is the input array
-       \param[in]  to is the target array colorspace
-       \param[in]  from is the input array colorspace
-       \return     AF_SUCCESS if the color transformation is successful,
-       otherwise an appropriate error code is returned.
+       \note  \p image must be 3 dimensional for \ref AF_HSV to \ref AF_RGB, \ref
+       AF_RGB to \ref AF_HSV, & \ref AF_RGB to \ref AF_GRAY transformations.
+       For \ref AF_GRAY to \ref AF_RGB transformation, 2D array is expected.
+
        \ingroup image_func_colorspace
      */
     AFAPI af_err af_colorspace(af_array *out, const af_array image, af_cspace_t to, af_cspace_t from);
