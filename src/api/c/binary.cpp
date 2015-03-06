@@ -28,11 +28,7 @@ template<typename T, af_op_t op>
 static inline af_array arithOp(const af_array lhs, const af_array rhs,
                                const dim4 &odims)
 {
-    af_array res = getHandle(arithOp<T, op>(getArray<T>(lhs), getArray<T>(rhs), odims));
-    // All inputs to this function are temporary references
-    // Delete the temporary references
-    destroyHandle<T>(lhs);
-    destroyHandle<T>(rhs);
+    af_array res = getHandle(arithOp<T, op>(castArray<T>(lhs), castArray<T>(rhs), odims));
     return res;
 }
 
@@ -41,8 +37,6 @@ static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs, bo
 {
     try {
         const af_dtype otype = implicit(lhs, rhs);
-        const af_array left  = cast(lhs, otype);
-        const af_array right = cast(rhs, otype);
 
         ArrayInfo linfo = getInfo(lhs);
         ArrayInfo rinfo = getInfo(rhs);
@@ -51,16 +45,16 @@ static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs, bo
 
         af_array res;
         switch (otype) {
-        case f32: res = arithOp<float  , op>(left, right, odims); break;
-        case f64: res = arithOp<double , op>(left, right, odims); break;
-        case c32: res = arithOp<cfloat , op>(left, right, odims); break;
-        case c64: res = arithOp<cdouble, op>(left, right, odims); break;
-        case s32: res = arithOp<int    , op>(left, right, odims); break;
-        case u32: res = arithOp<uint   , op>(left, right, odims); break;
-        case u8 : res = arithOp<uchar  , op>(left, right, odims); break;
-        case b8 : res = arithOp<char   , op>(left, right, odims); break;
-        case s64: res = arithOp<intl   , op>(left, right, odims); break;
-        case u64: res = arithOp<uintl  , op>(left, right, odims); break;
+        case f32: res = arithOp<float  , op>(lhs, rhs, odims); break;
+        case f64: res = arithOp<double , op>(lhs, rhs, odims); break;
+        case c32: res = arithOp<cfloat , op>(lhs, rhs, odims); break;
+        case c64: res = arithOp<cdouble, op>(lhs, rhs, odims); break;
+        case s32: res = arithOp<int    , op>(lhs, rhs, odims); break;
+        case u32: res = arithOp<uint   , op>(lhs, rhs, odims); break;
+        case u8 : res = arithOp<uchar  , op>(lhs, rhs, odims); break;
+        case b8 : res = arithOp<char   , op>(lhs, rhs, odims); break;
+        case s64: res = arithOp<intl   , op>(lhs, rhs, odims); break;
+        case u64: res = arithOp<uintl  , op>(lhs, rhs, odims); break;
         default: TYPE_ERROR(0, otype);
         }
 
@@ -75,8 +69,6 @@ static af_err af_arith_real(af_array *out, const af_array lhs, const af_array rh
 {
     try {
         const af_dtype otype = implicit(lhs, rhs);
-        const af_array left  = cast(lhs, otype);
-        const af_array right = cast(rhs, otype);
 
         ArrayInfo linfo = getInfo(lhs);
         ArrayInfo rinfo = getInfo(rhs);
@@ -85,14 +77,14 @@ static af_err af_arith_real(af_array *out, const af_array lhs, const af_array rh
 
         af_array res;
         switch (otype) {
-        case f32: res = arithOp<float  , op>(left, right, odims); break;
-        case f64: res = arithOp<double , op>(left, right, odims); break;
-        case s32: res = arithOp<int    , op>(left, right, odims); break;
-        case u32: res = arithOp<uint   , op>(left, right, odims); break;
-        case u8 : res = arithOp<uchar  , op>(left, right, odims); break;
-        case b8 : res = arithOp<char   , op>(left, right, odims); break;
-        case s64: res = arithOp<intl   , op>(left, right, odims); break;
-        case u64: res = arithOp<uintl  , op>(left, right, odims); break;
+        case f32: res = arithOp<float  , op>(lhs, rhs, odims); break;
+        case f64: res = arithOp<double , op>(lhs, rhs, odims); break;
+        case s32: res = arithOp<int    , op>(lhs, rhs, odims); break;
+        case u32: res = arithOp<uint   , op>(lhs, rhs, odims); break;
+        case u8 : res = arithOp<uchar  , op>(lhs, rhs, odims); break;
+        case b8 : res = arithOp<char   , op>(lhs, rhs, odims); break;
+        case s64: res = arithOp<intl   , op>(lhs, rhs, odims); break;
+        case u64: res = arithOp<uintl  , op>(lhs, rhs, odims); break;
         default: TYPE_ERROR(0, otype);
         }
 
@@ -161,9 +153,6 @@ af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs, bool batc
 
         const af_dtype type = implicit(lhs, rhs);
 
-        const af_array left  = cast(lhs, type);
-        const af_array right = cast(rhs, type);
-
         if (type != f32 && type != f64) {
             AF_ERROR("Only floating point arrays are supported for atan2 ",
                      AF_ERR_NOT_SUPPORTED);
@@ -176,8 +165,8 @@ af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs, bool batc
 
         af_array res;
         switch (type) {
-        case f32: res = arithOp<float , af_atan2_t>(left, right, odims); break;
-        case f64: res = arithOp<double, af_atan2_t>(left, right, odims); break;
+        case f32: res = arithOp<float , af_atan2_t>(lhs, rhs, odims); break;
+        case f64: res = arithOp<double, af_atan2_t>(lhs, rhs, odims); break;
         default: TYPE_ERROR(0, type);
         }
 
@@ -193,9 +182,6 @@ af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs, bool batc
 
         const af_dtype type = implicit(lhs, rhs);
 
-        const af_array left  = cast(lhs, type);
-        const af_array right = cast(rhs, type);
-
         if (type != f32 && type != f64) {
             AF_ERROR("Only floating point arrays are supported for hypot ",
                      AF_ERR_NOT_SUPPORTED);
@@ -208,8 +194,8 @@ af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs, bool batc
 
         af_array res;
         switch (type) {
-        case f32: res = arithOp<float , af_hypot_t>(left, right, odims); break;
-        case f64: res = arithOp<double, af_hypot_t>(left, right, odims); break;
+        case f32: res = arithOp<float , af_hypot_t>(lhs, rhs, odims); break;
+        case f64: res = arithOp<double, af_hypot_t>(lhs, rhs, odims); break;
         default: TYPE_ERROR(0, type);
         }
 
@@ -223,10 +209,6 @@ template<typename T, af_op_t op>
 static inline af_array logicOp(const af_array lhs, const af_array rhs, const dim4 &odims)
 {
     af_array res = getHandle(logicOp<T, op>(getArray<T>(lhs), getArray<T>(rhs), odims));
-    // All inputs to this function are temporary references
-    // Delete the temporary references
-    destroyHandle<T>(lhs);
-    destroyHandle<T>(rhs);
     return res;
 }
 
@@ -236,9 +218,6 @@ static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs, bo
     try {
         const af_dtype type = implicit(lhs, rhs);
 
-        const af_array left  = cast(lhs, type);
-        const af_array right = cast(rhs, type);
-
         ArrayInfo linfo = getInfo(lhs);
         ArrayInfo rinfo = getInfo(rhs);
 
@@ -246,16 +225,16 @@ static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs, bo
 
         af_array res;
         switch (type) {
-        case f32: res = logicOp<float  , op>(left, right, odims); break;
-        case f64: res = logicOp<double , op>(left, right, odims); break;
-        case c32: res = logicOp<cfloat , op>(left, right, odims); break;
-        case c64: res = logicOp<cdouble, op>(left, right, odims); break;
-        case s32: res = logicOp<int    , op>(left, right, odims); break;
-        case u32: res = logicOp<uint   , op>(left, right, odims); break;
-        case u8 : res = logicOp<uchar  , op>(left, right, odims); break;
-        case b8 : res = logicOp<char   , op>(left, right, odims); break;
-        case s64: res = logicOp<intl   , op>(left, right, odims); break;
-        case u64: res = logicOp<uintl  , op>(left, right, odims); break;
+        case f32: res = logicOp<float  , op>(lhs, rhs, odims); break;
+        case f64: res = logicOp<double , op>(lhs, rhs, odims); break;
+        case c32: res = logicOp<cfloat , op>(lhs, rhs, odims); break;
+        case c64: res = logicOp<cdouble, op>(lhs, rhs, odims); break;
+        case s32: res = logicOp<int    , op>(lhs, rhs, odims); break;
+        case u32: res = logicOp<uint   , op>(lhs, rhs, odims); break;
+        case u8 : res = logicOp<uchar  , op>(lhs, rhs, odims); break;
+        case b8 : res = logicOp<char   , op>(lhs, rhs, odims); break;
+        case s64: res = logicOp<intl   , op>(lhs, rhs, odims); break;
+        case u64: res = logicOp<uintl  , op>(lhs, rhs, odims); break;
         default: TYPE_ERROR(0, type);
         }
 
@@ -309,10 +288,6 @@ template<typename T, af_op_t op>
 static inline af_array bitOp(const af_array lhs, const af_array rhs, const dim4 &odims)
 {
     af_array res = getHandle(bitOp<T, op>(getArray<T>(lhs), getArray<T>(rhs), odims));
-    // All inputs to this function are temporary references
-    // Delete the temporary references
-    destroyHandle<T>(lhs);
-    destroyHandle<T>(rhs);
     return res;
 }
 
@@ -322,9 +297,6 @@ static af_err af_bitwise(af_array *out, const af_array lhs, const af_array rhs, 
     try {
         const af_dtype type = implicit(lhs, rhs);
 
-        const af_array left  = cast(lhs, type);
-        const af_array right = cast(rhs, type);
-
         ArrayInfo linfo = getInfo(lhs);
         ArrayInfo rinfo = getInfo(rhs);
 
@@ -332,12 +304,12 @@ static af_err af_bitwise(af_array *out, const af_array lhs, const af_array rhs, 
 
         af_array res;
         switch (type) {
-        case s32: res = bitOp<int    , op>(left, right, odims); break;
-        case u32: res = bitOp<uint   , op>(left, right, odims); break;
-        case u8 : res = bitOp<uchar  , op>(left, right, odims); break;
-        case b8 : res = bitOp<char   , op>(left, right, odims); break;
-        case s64: res = bitOp<intl   , op>(left, right, odims); break;
-        case u64: res = bitOp<uintl  , op>(left, right, odims); break;
+        case s32: res = bitOp<int    , op>(lhs, rhs, odims); break;
+        case u32: res = bitOp<uint   , op>(lhs, rhs, odims); break;
+        case u8 : res = bitOp<uchar  , op>(lhs, rhs, odims); break;
+        case b8 : res = bitOp<char   , op>(lhs, rhs, odims); break;
+        case s64: res = bitOp<intl   , op>(lhs, rhs, odims); break;
+        case u64: res = bitOp<uintl  , op>(lhs, rhs, odims); break;
         default: TYPE_ERROR(0, type);
         }
 

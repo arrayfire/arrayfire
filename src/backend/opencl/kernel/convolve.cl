@@ -27,7 +27,7 @@ T readSrc(global T const *src, dim_type i, dim_type j, dim_type k, dim_type dims
 kernel
 void convolve(global T *out, KParam oInfo,
               global T const *signal, KParam sInfo, local T *localMem,
-              constant T const *impulse, KParam fInfo, dim_type nonBatchBlkSize,
+              constant accType const *impulse, KParam fInfo, dim_type nonBatchBlkSize,
               dim_type oStep, dim_type sStep)
 {
     dim_type fLen    = fInfo.dims[0];
@@ -61,7 +61,7 @@ void convolve(global T *out, KParam oInfo,
 #if BASE_DIM==2
 kernel
 void convolve(global T *out, KParam oInfo, global T const *signal, KParam sInfo,
-              constant T const *impulse, KParam fInfo, dim_type nonBatchBlkSize,
+              constant accType const *impulse, KParam fInfo, dim_type nonBatchBlkSize,
               dim_type oStep, dim_type sStep)
 {
     local T localMem[C_SIZE];
@@ -99,7 +99,7 @@ void convolve(global T *out, KParam oInfo, global T const *signal, KParam sInfo,
         accType accum = (accType)(0);
         for(dim_type fj=0; fj<FLEN1; ++fj) {
             for(dim_type fi=0; fi<FLEN0; ++fi) {
-                T f_val = impulse[fj*FLEN0+fi];
+                accType f_val = impulse[fj*FLEN0+fi];
                 T s_val = localMem[(cj-fj)*shrdLen0+(ci-fi)];
                 accum   = accum + ((accType)s_val*(accType)f_val);
             }
@@ -112,7 +112,7 @@ void convolve(global T *out, KParam oInfo, global T const *signal, KParam sInfo,
 #if BASE_DIM==3
 kernel
 void convolve(global T *out, KParam oInfo, global T const *signal,
-              KParam sInfo, local T *localMem, constant T const *impulse,
+              KParam sInfo, local T *localMem, constant accType const *impulse,
               KParam fInfo, dim_type nonBatchBlkSize,
               dim_type oStep, dim_type sStep)
 {
@@ -193,7 +193,7 @@ void convolve(global T *out, KParam oInfo, global T const *signal,
         for(dim_type fk=0; fk<fLen2; ++fk) {
             for(dim_type fj=0; fj<fLen1; ++fj) {
                 for(dim_type fi=0; fi<fLen0; ++fi) {
-                    T f_val = impulse[index(fi, fj, fk, fLen0, fStride)];
+                    accType f_val = impulse[index(fi, fj, fk, fLen0, fStride)];
                     T s_val = localMem[index(ci-fi, cj-fj, ck-fk, shrdLen0, skStride)];
                     accum   = accum + ((accType)s_val*(accType)f_val);
                 }

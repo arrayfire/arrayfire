@@ -17,6 +17,7 @@
 #include <optypes.hpp>
 #include <types.hpp>
 #include <JIT/UnaryNode.hpp>
+#include <Array.hpp>
 
 namespace cuda
 {
@@ -36,18 +37,36 @@ struct CastOp
     }
 };
 
+
+template<typename To, typename Ti>
+struct CastWrapper
+{
+    Array<To> operator()(const Array<Ti> &in)
+    {
+        CastOp<To, Ti> cop;
+        JIT::Node_ptr in_node = in.getNode();
+        JIT::UnaryNode *node = new JIT::UnaryNode(irname<To>(),
+                                                  afShortName<To>(),
+                                                  cop.name(),
+                                                  in_node, af_cast_t);
+        return createNodeArray<To>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+    }
+};
+
+template<typename T>
+struct CastWrapper<T, T>
+{
+    Array<T> operator()(const Array<T> &in)
+    {
+        return in;
+    }
+};
+
 template<typename To, typename Ti>
 Array<To> cast(const Array<Ti> &in)
 {
-    CastOp<To, Ti> cop;
-    JIT::Node_ptr in_node = in.getNode();
-
-    JIT::UnaryNode *node = new JIT::UnaryNode(irname<To>(),
-                                              afShortName<To>(),
-                                              cop.name(),
-                                              in_node, af_cast_t);
-
-    return createNodeArray<To>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+    CastWrapper<To, Ti> cast_op;
+    return cast_op(in);
 }
 
 }
