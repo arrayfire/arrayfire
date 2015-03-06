@@ -22,12 +22,11 @@ namespace kernel
 {
 
 template<typename T, typename accType, dim_type baseDim, bool expand>
-void convolve_nd(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatchKind kind);
+void convolve_nd(Param<T> out, CParam<T> signal, CParam<accType> filter, ConvolveBatchKind kind);
 
 template<typename T, typename accType, dim_type conv_dim, bool expand>
-void convolve2(Param<T> out, CParam<T> signal, CParam<T> filter);
+void convolve2(Param<T> out, CParam<T> signal, CParam<accType> filter);
 
 }
 
 }
-
