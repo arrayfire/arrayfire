@@ -25,10 +25,7 @@ using namespace detail;
 template<typename T, af_op_t op>
 static inline af_array unaryOp(const af_array in)
 {
-    af_array res = getHandle(unaryOp<T, op>(getArray<T>(in)));
-    // All inputs to this function are temporary references
-    // Delete the temporary references
-    destroyHandle<T>(in);
+    af_array res = getHandle(unaryOp<T, op>(castArray<T>(in)));
     return res;
 }
 
@@ -45,11 +42,10 @@ static af_err af_unary(af_array *out, const af_array in)
 
         // Convert all inputs to floats / doubles
         af_dtype type = implicit(in_type, f32);
-        af_array input = cast(in, type);
 
         switch (type) {
-        case f32 : res = unaryOp<float  , op>(input); break;
-        case f64 : res = unaryOp<double , op>(input); break;
+        case f32 : res = unaryOp<float  , op>(in); break;
+        case f64 : res = unaryOp<double , op>(in); break;
         default:
             TYPE_ERROR(1, in_type); break;
         }
@@ -124,10 +120,7 @@ af_err af_not(af_array *out, const af_array in)
 template<typename T, af_op_t op>
 static inline af_array checkOp(const af_array in)
 {
-    af_array res = getHandle(checkOp<T, op>(getArray<T>(in)));
-    // All inputs to this function are temporary references
-    // Delete the temporary references
-    destroyHandle<T>(in);
+    af_array res = getHandle(checkOp<T, op>(castArray<T>(in)));
     return res;
 }
 
@@ -144,11 +137,10 @@ static af_err af_check(af_array *out, const af_array in)
 
         // Convert all inputs to floats / doubles
         af_dtype type = implicit(in_type, f32);
-        af_array input = cast(in, type);
 
         switch (type) {
-        case f32 : res = checkOp<float  , op>(input); break;
-        case f64 : res = checkOp<double , op>(input); break;
+        case f32 : res = checkOp<float  , op>(in); break;
+        case f64 : res = checkOp<double , op>(in); break;
         default:
             TYPE_ERROR(1, in_type); break;
         }

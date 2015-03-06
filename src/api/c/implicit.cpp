@@ -63,26 +63,3 @@ af_dtype implicit(const af_array lhs, const af_array rhs)
 
     return implicit(lInfo.getType(), rInfo.getType());
 }
-
-af_array cast(const af_array in, const af_dtype type)
-{
-    const ArrayInfo info = getInfo(in);
-
-    if (info.getType() == type) {
-        return weakCopy(in);
-    }
-
-    switch (type) {
-    case f32: return cast<float   >(in);
-    case f64: return cast<double  >(in);
-    case c32: return cast<cfloat  >(in);
-    case c64: return cast<cdouble >(in);
-    case s32: return cast<int     >(in);
-    case u32: return cast<uint    >(in);
-    case u8 : return cast<uchar   >(in);
-    case b8 : return cast<char    >(in);
-    case s64: return cast<intl    >(in);
-    case u64: return cast<uintl   >(in);
-    default: TYPE_ERROR(2, type);
-    }
-}
