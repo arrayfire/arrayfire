@@ -11,7 +11,7 @@ A few lines of code in ArrayFire can replace dozens of lines of parallel computi
 * Google Groups: https://groups.google.com/forum/#!forum/arrayfire-users
 * ArrayFire Services:  [Consulting](http://arrayfire.com/consulting/)  |  [Support](http://arrayfire.com/support/)   |  [Training](http://arrayfire.com/training/) 
 * ArrayFire Blogs: http://arrayfire.com/blog/
-* Contact us <mailto:technical@arrayfire.com>
+* Email: <mailto:technical@arrayfire.com>
 
 
 ### Build Status
