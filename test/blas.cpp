@@ -90,6 +90,7 @@ void MatMulCheck(string TestFile)
         if( false == equal(h_out.begin(), h_out.end(), tests[i].begin()) ) {
 
             cout << "Failed test " << i << "\nCalculated: " << endl;
+            copy(h_out.begin(), h_out.end(), ostream_iterator<T>(cout, ", "));
             cout << "Expected: " << endl;
             copy(tests[i].begin(), tests[i].end(), ostream_iterator<T>(cout, ", "));
             FAIL();
@@ -180,6 +181,7 @@ void cppMatMulCheck(string TestFile)
         if (false == equal(h_out.begin(), h_out.end(), tests[i].begin())) {
 
             cout << "Failed test " << i << "\nCalculated: " << endl;
+            copy(h_out.begin(), h_out.end(), ostream_iterator<T>(cout, ", "));
             cout << "Expected: " << endl;
             copy(tests[i].begin(), tests[i].end(), ostream_iterator<T>(cout, ", "));
             FAIL();

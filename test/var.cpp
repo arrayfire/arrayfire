@@ -37,9 +37,9 @@ using varOutType = typename std::conditional<std::is_same<T, char>::value,
 template<typename T>
 void testCPPVar(T const_value, af::dim4 dims)
 {
+    typedef varOutType<T> outType;
     if (noDoubleTests<T>()) return;
 
-    typedef varOutType<T> outType;
     using af::array;
     using af::var;
 
@@ -76,7 +76,6 @@ void testCPPVar(T const_value, af::dim4 dims)
 
 TEST(Var, CPP_f64)
 {
-    if (noDoubleTests<cdouble>()) return;
     testCPPVar<double>(2.1, af::dim4(10, 10, 1, 1));
 }
 

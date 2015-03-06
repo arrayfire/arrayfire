@@ -61,7 +61,7 @@ private:
 
 public:
     rbm(int v_size, int h_size) :
-        weights(constant(0, h_size, v_size)),
+        weights(randu(h_size, v_size)/100.f),
         h_bias(constant(0, 1, h_size)),
         v_bias(constant(0, 1, v_size))
     {
