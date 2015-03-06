@@ -112,6 +112,5 @@ TEST(Var, CPP_cfloat)
 
 TEST(Var, CPP_cdouble)
 {
-    if (noDoubleTests<cdouble>()) return;
     testCPPVar<cdouble>(cdouble(2.1), af::dim4(10, 10, 1, 1));
 }
