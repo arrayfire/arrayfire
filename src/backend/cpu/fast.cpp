@@ -48,16 +48,14 @@ inline int idx(int y, int x, unsigned idim0)
 
 // test_greater()
 // Tests if a pixel x > p + thr
-template<typename T>
-inline int test_greater(T x, T p, float thr)
+inline int test_greater(float x, float p, float thr)
 {
     return (x >= p + thr);
 }
 
 // test_smaller()
 // Tests if a pixel x < p - thr
-template<typename T>
-inline int test_smaller(T x, T p, float thr)
+inline int test_smaller(float x, float p, float thr)
 {
     return (x <= p - thr);
 }
@@ -67,9 +65,9 @@ inline int test_smaller(T x, T p, float thr)
 // Returns  0 when x >= p - thr && x <= p + thr
 // Returns  1 when x > p + thr
 template<typename T>
-inline int test_pixel(const T* image, const T p, float thr, int y, int x, unsigned idim0)
+inline int test_pixel(const T* image, const float p, float thr, int y, int x, unsigned idim0)
 {
-    return -test_smaller<T>(image[idx(y,x,idim0)], p, thr) | test_greater<T>(image[idx(y,x,idim0)], p, thr);
+    return -test_smaller((float)image[idx(y,x,idim0)], p, thr) | test_greater((float)image[idx(y,x,idim0)], p, thr);
 }
 
 // abs_diff()
@@ -94,7 +92,7 @@ inline double abs_diff(double x, double y)
 template<typename T>
 void locate_features(
     const Array<T> &in,
-    Array<T> &score,
+    Array<float> &score,
     Array<float> &x_out,
     Array<float> &y_out,
     Array<float> &score_out,
@@ -110,7 +108,7 @@ void locate_features(
 
     for (int y = edge; y < (int)(in_dims[0] - edge); y++) {
         for (int x = edge; x < (int)(in_dims[1] - edge); x++) {
-            T p = in_ptr[idx(y, x, in_dims[0])];
+            float p = in_ptr[idx(y, x, in_dims[0])];
 
             // Start by testing opposite pixels of the circle that will result in
             // a non-kepoint
@@ -161,12 +159,12 @@ void locate_features(
                 min_sum = std::min(min_sum, sum);
             }
 
-            T s_bright = 0, s_dark = 0;
+            float s_bright = 0, s_dark = 0;
             for (int i = 0; i < 16; i++) {
-                s_bright += test_greater<T>(in_ptr[idx(y+idx_y(i), x+idx_x(i), in_dims[0])], p, thr) *
-                            (abs_diff(in_ptr[idx(y+idx_y(i), x+idx_x(i), in_dims[0])], p) - thr);
-                s_dark   += test_smaller<T>(in_ptr[idx(y+idx_y(i), x+idx_x(i), in_dims[0])], p, thr) *
-                            (abs_diff(p, in_ptr[idx(y+idx_y(i), x+idx_x(i), in_dims[0])]) - thr);
+                float p_x = (float)in_ptr[idx(y+idx_y(i), x+idx_x(i), in_dims[0])];
+
+                s_bright += test_greater(p_x, p, thr) * (abs_diff(p_x, p) - thr);
+                s_dark   += test_smaller(p_x, p, thr) * (abs_diff(p, p_x) - thr);
             }
 
             // If sum at some point was equal to (+-)arc_length, there is a segment
@@ -183,7 +181,7 @@ void locate_features(
                     y_out_ptr[j]     = static_cast<float>(y);
                     score_out_ptr[j] = static_cast<float>(std::max(s_bright, s_dark));
                     if (nonmax == 1) {
-                        T* score_ptr = score.get();
+                        float* score_ptr = score.get();
                         score_ptr[idx(y, x, in_dims[0])] = std::max(s_bright, s_dark);
                     }
                 }
@@ -192,9 +190,8 @@ void locate_features(
     }
 }
 
-template<typename T>
 void non_maximal(
-    const Array<T> &score,
+    const Array<float> &score,
     const Array<float> &x_in,
     const Array<float> &y_in,
     Array<float> &x_out,
@@ -203,7 +200,7 @@ void non_maximal(
     unsigned* count,
     const unsigned total_feat)
 {
-    const T *score_ptr = score.get();
+    const float *score_ptr = score.get();
     const float *x_in_ptr = x_in.get();
     const float *y_in_ptr = y_in.get();
 
@@ -213,8 +210,8 @@ void non_maximal(
         unsigned x = static_cast<unsigned>(round(x_in_ptr[k]));
         unsigned y = static_cast<unsigned>(round(y_in_ptr[k]));
 
-        T v = score_ptr[y + score_dims[0] * x];
-        T max_v;
+        float v = score_ptr[y + score_dims[0] * x];
+        float max_v;
         max_v = std::max(score_ptr[y-1 + score_dims[0] * (x-1)], score_ptr[y-1 + score_dims[0] * x]);
         max_v = std::max(max_v, score_ptr[y-1 + score_dims[0] * (x+1)]);
         max_v = std::max(max_v, score_ptr[y   + score_dims[0] * (x-1)]);
@@ -251,10 +248,10 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
 
     // Matrix containing scores for detected features, scores are stored in the
     // same coordinates as features, dimensions should be equal to in.
-    Array<T> V = createEmptyArray<T>(dim4());
+    Array<float> V = createEmptyArray<float>(dim4());
     if (nonmax == 1) {
         dim4 V_dims(in_dims[0], in_dims[1]);
-        V = createValueArray<T>(V_dims, (T)0);
+        V = createValueArray<float>(V_dims, (float)0);
     }
 
     // Arrays containing all features detected before non-maximal suppression.
@@ -286,9 +283,9 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
         score_total = createEmptyArray<float>(feat_found_dims);
 
         count = 0;
-        non_maximal<T>(V, x, y,
-                       x_total, y_total, score_total,
-                       &count, feat_found);
+        non_maximal(V, x, y,
+                    x_total, y_total, score_total,
+                    &count, feat_found);
 
         feat_found = std::min(max_feat, count);
     } else {
