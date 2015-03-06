@@ -26,7 +26,7 @@ using af::cfloat;
 using af::cdouble;
 
 template<typename T>
-class Iota : public ::testing::Test
+class Range : public ::testing::Test
 {
     public:
         virtual void SetUp() {
@@ -41,10 +41,10 @@ class Iota : public ::testing::Test
 typedef ::testing::Types<float, double, int, unsigned int, unsigned char> TestTypes;
 
 // register the type list
-TYPED_TEST_CASE(Iota, TestTypes);
+TYPED_TEST_CASE(Range, TestTypes);
 
 template<typename T>
-void iotaTest(const uint x, const uint y, const uint z, const uint w, const uint rep)
+void rangeTest(const uint x, const uint y, const uint z, const uint w, const uint rep)
 {
     if (noDoubleTests<T>()) return;
 
@@ -52,7 +52,7 @@ void iotaTest(const uint x, const uint y, const uint z, const uint w, const uint
 
     af_array outArray = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_iota(&outArray, idims.ndims(), idims.get(), rep, (af_dtype) af::dtype_traits<T>::af_type));
+    ASSERT_EQ(AF_SUCCESS, af_range(&outArray, idims.ndims(), idims.get(), rep, (af_dtype) af::dtype_traits<T>::af_type));
 
     // Get result
     T* outData = new T[idims.elements()];
@@ -84,29 +84,29 @@ void iotaTest(const uint x, const uint y, const uint z, const uint w, const uint
     if(outArray  != 0) af_destroy_array(outArray);
 }
 
-#define IOTA_INIT(desc, x, y, z, w, rep)                                                    \
-    TYPED_TEST(Iota, desc)                                                                  \
+#define RANGE_INIT(desc, x, y, z, w, rep)                                                    \
+    TYPED_TEST(Range, desc)                                                                  \
     {                                                                                       \
-        iotaTest<TypeParam>(x, y, z, w, rep);                                               \
+        rangeTest<TypeParam>(x, y, z, w, rep);                                               \
     }
 
-    IOTA_INIT(Iota1D0, 100,  1, 1, 1, 0);
+    RANGE_INIT(Range1D0, 100,  1, 1, 1, 0);
 
-    IOTA_INIT(Iota2D0,  10, 20, 1, 1, 0);
-    IOTA_INIT(Iota2D1, 100,  5, 1, 1, 1);
+    RANGE_INIT(Range2D0,  10, 20, 1, 1, 0);
+    RANGE_INIT(Range2D1, 100,  5, 1, 1, 1);
 
-    IOTA_INIT(Iota3D0,  20,  6, 3, 1, 0);
-    IOTA_INIT(Iota3D1,  10, 12, 5, 1, 1);
-    IOTA_INIT(Iota3D2,  25, 30, 2, 1, 2);
+    RANGE_INIT(Range3D0,  20,  6, 3, 1, 0);
+    RANGE_INIT(Range3D1,  10, 12, 5, 1, 1);
+    RANGE_INIT(Range3D2,  25, 30, 2, 1, 2);
 
-    IOTA_INIT(Iota4D0,  20,  6, 3, 2, 0);
-    IOTA_INIT(Iota4D1,  10, 12, 5, 2, 1);
-    IOTA_INIT(Iota4D2,  25, 30, 2, 2, 2);
-    IOTA_INIT(Iota4D3,  25, 30, 2, 2, 3);
+    RANGE_INIT(Range4D0,  20,  6, 3, 2, 0);
+    RANGE_INIT(Range4D1,  10, 12, 5, 2, 1);
+    RANGE_INIT(Range4D2,  25, 30, 2, 2, 2);
+    RANGE_INIT(Range4D3,  25, 30, 2, 2, 3);
 
 ///////////////////////////////// CPP ////////////////////////////////////
 //
-TEST(Iota, CPP)
+TEST(Range, CPP)
 {
     if (noDoubleTests<float>()) return;
 
@@ -117,7 +117,7 @@ TEST(Iota, CPP)
     const unsigned rep = 2;
 
     af::dim4 idims(x, y, z, w);
-    af::array output = af::iota(x, y, z, w, rep, f32);
+    af::array output = af::range(x, y, z, w, rep, f32);
 
     // Get result
     float* outData = new float[idims.elements()];
