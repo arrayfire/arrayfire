@@ -13,7 +13,7 @@ namespace af
 /// Get the first non-zero dimension
 static inline dim_type getFNSD(const int dim, af::dim4 dims)
 {
-    if(dims[dim] > 1)
+    if(dim >= 0)
         return dim;
 
     dim_type fNSD = 0;
