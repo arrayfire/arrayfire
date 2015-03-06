@@ -841,7 +841,8 @@ EXCLUDE_SYMBOLS        = APPROX
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           = ${CMAKE_SOURCE_DIR}/examples/
+EXAMPLE_PATH           = ${CMAKE_SOURCE_DIR}/examples/ \
+						 ${SNIPPETS_DIR}
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
