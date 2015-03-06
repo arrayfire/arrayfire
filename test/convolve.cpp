@@ -199,68 +199,6 @@ TYPED_TEST(Convolve, Same_Cuboid_One2Many)
     convolveTest<TypeParam, 3>(string(TEST_DIR"/convolve/cuboid_same_one2many.test"), false);
 }
 
-TEST(Convolve, TypeCheck)
-{
-    if (noDoubleTests<float>()) return;
-    if (noDoubleTests<int>()) return;
-    using af::dim4;
-
-    dim4 sDims(10, 1, 1, 1);
-    dim4 fDims(4, 1, 1, 1);
-
-    vector<float> in(10,1);
-    vector<int>   filt(4,1);
-
-    af_array signal   = 0;
-    af_array filter   = 0;
-    af_array outArray = 0;
-
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&signal, &(in.front()),
-                sDims.ndims(), sDims.get(), (af_dtype)af::dtype_traits<float>::af_type));
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&filter, &(filt.front()),
-                fDims.ndims(), fDims.get(), (af_dtype)af::dtype_traits<int>::af_type));
-
-    ASSERT_EQ(AF_ERR_ARG, af_convolve1(&outArray, signal, filter, true));
-
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(signal));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(filter));
-}
-
-TEST(Convolve, DimCheck)
-{
-    if (noDoubleTests<float>()) return;
-    if (noDoubleTests<int>()) return;
-    using af::dim4;
-
-    dim4 sDims(10, 1, 1, 1);
-    dim4 fDims(4, 1, 1, 1);
-
-    vector<float> in(10,1);
-    vector<int>   filt(4,1);
-
-    af_array signal   = 0;
-    af_array filter   = 0;
-    af_array outArray = 0;
-
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&signal, &(in.front()),
-                sDims.ndims(), sDims.get(), (af_dtype)af::dtype_traits<float>::af_type));
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&filter, &(filt.front()),
-                fDims.ndims(), fDims.get(), (af_dtype)af::dtype_traits<int>::af_type));
-
-    ASSERT_EQ(AF_ERR_ARG, af_convolve2(&outArray, signal, filter, true));
-
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(filter));
-
-    fDims[0] = fDims[2] = 2;
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&filter, &(filt.front()),
-                fDims.ndims(), fDims.get(), (af_dtype)af::dtype_traits<int>::af_type));
-
-    ASSERT_EQ(AF_ERR_ARG, af_convolve1(&outArray, signal, filter, true));
-
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(filter));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(signal));
-}
-
 template<typename T>
 void sepConvolveTest(string pTestFile, bool expand)
 {

@@ -17,6 +17,7 @@
 #include <optypes.hpp>
 #include <types.hpp>
 #include <TNJ/UnaryNode.hpp>
+#include <Array.hpp>
 
 namespace cpu
 {
@@ -66,13 +67,31 @@ CAST_B8(uchar)
 CAST_B8(char)
 
 template<typename To, typename Ti>
+struct CastWrapper
+{
+    Array<To> operator()(const Array<Ti> &in)
+    {
+        TNJ::Node_ptr in_node = in.getNode();
+        TNJ::UnaryNode<To, Ti, af_cast_t> *node = new TNJ::UnaryNode<To, Ti, af_cast_t>(in_node);
+        return createNodeArray<To>(in.dims(), TNJ::Node_ptr(
+                                       reinterpret_cast<TNJ::Node *>(node)));
+    }
+};
+
+template<typename T>
+struct CastWrapper<T, T>
+{
+    Array<T> operator()(const Array<T> &in)
+    {
+        return in;
+    }
+};
+
+template<typename To, typename Ti>
 Array<To> cast(const Array<Ti> &in)
 {
-    TNJ::Node_ptr in_node = in.getNode();
-    TNJ::UnaryNode<To, Ti, af_cast_t> *node = new TNJ::UnaryNode<To, Ti, af_cast_t>(in_node);
-
-    return createNodeArray<To>(in.dims(), TNJ::Node_ptr(
-                                   reinterpret_cast<TNJ::Node *>(node)));
+    CastWrapper<To, Ti> cast_op;
+    return cast_op(in);
 }
 
 }

@@ -25,15 +25,9 @@ using af::dim4;
 
 template<typename To, typename Ti>
 static inline af_array cplx(const af_array lhs, const af_array rhs,
-                            const dim4 &odims, bool destroy=true)
+                            const dim4 &odims)
 {
-    af_array res = getHandle(cplx<To, Ti>(getArray<Ti>(lhs), getArray<Ti>(rhs), odims));
-    if (destroy) {
-        // All inputs to this function are temporary references
-        // Delete the temporary references
-        destroyHandle<Ti>(lhs);
-        destroyHandle<Ti>(rhs);
-    }
+    af_array res = getHandle(cplx<To, Ti>(castArray<Ti>(lhs), castArray<Ti>(rhs), odims));
     return res;
 }
 
@@ -51,13 +45,10 @@ af_err af_cplx2(af_array *out, const af_array lhs, const af_array rhs, bool batc
 
         dim4 odims = getOutDims(getInfo(lhs).dims(), getInfo(rhs).dims(), batchMode);
 
-        const af_array left  = cast(lhs, type);
-        const af_array right = cast(rhs, type);
-
         af_array res;
         switch (type) {
-        case f32: res = cplx<cfloat , float >(left, right, odims); break;
-        case f64: res = cplx<cdouble, double>(left, right, odims); break;
+        case f32: res = cplx<cfloat , float >(lhs, rhs, odims); break;
+        case f64: res = cplx<cdouble, double>(lhs, rhs, odims); break;
         default: TYPE_ERROR(0, type);
         }
 
@@ -87,8 +78,8 @@ af_err af_cplx(af_array *out, const af_array in)
         af_array res;
         switch (type) {
 
-        case f32: res = cplx<cfloat , float >(in, tmp, info.dims(), false); break;
-        case f64: res = cplx<cdouble, double>(in, tmp, info.dims(), false); break;
+        case f32: res = cplx<cfloat , float >(in, tmp, info.dims()); break;
+        case f64: res = cplx<cdouble, double>(in, tmp, info.dims()); break;
 
         default: TYPE_ERROR(0, type);
         }
@@ -189,18 +180,16 @@ af_err af_abs(af_array *out, const af_array in)
 
         // Convert all inputs to floats / doubles
         af_dtype type = implicit(in_type, f32);
-        af_array input = cast(in, type);
 
         switch (type) {
-        case f32: res = getHandle(abs<float ,  float >(getArray<float  >(input))); break;
-        case f64: res = getHandle(abs<double,  double>(getArray<double >(input))); break;
-        case c32: res = getHandle(abs<float , cfloat >(getArray<cfloat >(input))); break;
-        case c64: res = getHandle(abs<double, cdouble>(getArray<cdouble>(input))); break;
+        case f32: res = getHandle(abs<float ,  float >(castArray<float  >(in))); break;
+        case f64: res = getHandle(abs<double,  double>(castArray<double >(in))); break;
+        case c32: res = getHandle(abs<float , cfloat >(castArray<cfloat >(in))); break;
+        case c64: res = getHandle(abs<double, cdouble>(castArray<cdouble>(in))); break;
         default:
             TYPE_ERROR(1, in_type); break;
         }
 
-        AF_CHECK(af_destroy_array(input));
         std::swap(*out, res);
     }
     CATCHALL;

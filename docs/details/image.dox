@@ -1,0 +1,134 @@
+
+/*!
+\page image_func_hsv HSV
+
+HSV (Hue, Saturation, Value), also known as HSB (hue, saturation, brightness),
+is often used by artists because it is more natural to think about a color in
+terms of hue and saturation than in terms of additive or subtractive color
+components (as in RGB). HSV is a transformation of RGB colorspace; its
+components and colorimetry are relative to the RGB colorspace from which it was
+derived. Like RGB, HSV also uses 3 values per pixel.
+
+\page image_func_rgb RGB
+
+RGB (Red, Green, Blue) is the most common format used in computer imaging. RGB
+stores individual values for red, green and blue, and hence the 3 values per
+pixel. A combination of these three values produces the gamut of unique colors.
+
+\page image_func_gray GRAY
+
+Grayscale is a single channel color space where pixel value ranges from 0 to 1.
+Zero represents black, one represent white and any value between zero & one is 
+a gray value
+
+*/
+//=================================================================================
+/**
+
+\addtogroup  arrayfire_func
+@{
+
+\defgroup image_func_colorspace colorspace
+\ingroup colorconv_mat
+
+Colorspace conversion function
+
+\copydoc image_func_rgb
+\copydoc image_func_hsv
+\copydoc image_func_gray
+
+Supported conversions
+
+| From     | To      |
+|:--------:|:-------:|
+| AF_RGB   | AF_GRAY |
+| AF_GRAY  | AF_RGB  |
+| AF_RGB   | AF_HSV  |
+| AF_HSV   | AF_RGB  |
+
+=======================================================================
+
+\defgroup image_func_rgb2hsv rgb2hsv
+\ingroup colorconv_mat
+
+RGB to HSV colorspace converter
+
+\copydoc image_func_rgb
+\copydoc image_func_hsv
+
+=======================================================================
+
+\defgroup image_func_hsv2rgb hsv2rgb
+\ingroup colorconv_mat
+
+HSV to RGB colorspace converter
+
+\copydoc image_func_hsv
+\copydoc image_func_rgb
+
+=======================================================================
+
+\defgroup image_func_rgb2gray rgb2gray
+\ingroup colorconv_mat
+
+RGB to Grayscale colorspace converter
+
+\copydoc image_func_rgb
+\copydoc image_func_gray
+
+The grayscale internsity of a pixel is calculated using the
+following formula:
+
+    \f$gray = R*rPercent + G*gPercent + B*bPercent\f$
+
+=======================================================================
+
+\defgroup image_func_gray2rgb gray2rgb
+\ingroup colorconv_mat
+
+Grayscale to RGB colorspace converter
+
+\copydoc image_func_gray
+\copydoc image_func_rgb
+
+The grayscale internsity of a pixel is calculated using the
+following formula
+
+       \f$R = rFactor * intensity\f$
+
+       \f$G = gFactor * intensity\f$
+
+       \f$B = bFactor * intensity\f$
+
+=======================================================================
+
+\defgroup image_func_histogram histogram
+\ingroup hist_mat
+
+A histogram is a representation of the distribution of given data. This
+representation is essentially a graph consisting of the data range or domain on
+one axis and frequency of occurence on the other axis. All the data in the
+domain is counted in the appropriate bin. The total number of elements
+belonging to each bin is known as the bin's frequency.
+
+The regular histogram function creates bins of equal size between the minimum
+and maximum of the input data (min and max are calculated internally). The histogram min-max
+function takes input parameters minimum and maximum, and divides the bins into
+equal sizes within the range specified by min and max parameters. All values
+less than min in the data range are placed in the first (min) bin and all
+values greater than max will be placed in the last (max) bin.
+
+=======================================================================
+
+\defgroup image_func_histequal histequal
+\ingroup hist_mat
+
+Histogram equalization is a method in image processing of contrast adjustment
+using the image's histogram.
+
+Data normalization via histogram equalization
+
+=======================================================================
+
+@}
+*/

@@ -21,7 +21,7 @@ namespace opencl
 {
 
 template<typename T, typename accT, dim_type baseDim, bool expand>
-Array<T> convolve(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind)
+Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBatchKind kind)
 {
     if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
         !isDoubleSupported(getActiveDeviceId())) {
@@ -74,13 +74,13 @@ Array<T> convolve(Array<T> const& signal, Array<T> const& filter, ConvolveBatchK
     return out;
 }
 
-#define INSTANTIATE(T, accT)  \
-    template Array<T> convolve <T, accT, 1, true >(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
-    template Array<T> convolve <T, accT, 1, false>(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
-    template Array<T> convolve <T, accT, 2, true >(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
-    template Array<T> convolve <T, accT, 2, false>(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
-    template Array<T> convolve <T, accT, 3, true >(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
-    template Array<T> convolve <T, accT, 3, false>(Array<T> const& signal, Array<T> const& filter, ConvolveBatchKind kind);   \
+#define INSTANTIATE(T, accT)                                            \
+    template Array<T> convolve <T, accT, 1, true >(Array<T> const& signal, Array<accT> const& filter, ConvolveBatchKind kind); \
+    template Array<T> convolve <T, accT, 1, false>(Array<T> const& signal, Array<accT> const& filter, ConvolveBatchKind kind); \
+    template Array<T> convolve <T, accT, 2, true >(Array<T> const& signal, Array<accT> const& filter, ConvolveBatchKind kind); \
+    template Array<T> convolve <T, accT, 2, false>(Array<T> const& signal, Array<accT> const& filter, ConvolveBatchKind kind); \
+    template Array<T> convolve <T, accT, 3, true >(Array<T> const& signal, Array<accT> const& filter, ConvolveBatchKind kind); \
+    template Array<T> convolve <T, accT, 3, false>(Array<T> const& signal, Array<accT> const& filter, ConvolveBatchKind kind); \
 
 INSTANTIATE(cdouble, cdouble)
 INSTANTIATE(cfloat ,  cfloat)

@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <iota.hpp>
+#include <range.hpp>
 #include <math.hpp>
 #include <stdexcept>
 #include <err_cpu.hpp>
@@ -21,7 +21,7 @@ namespace cpu
     // Kernel Functions
     ///////////////////////////////////////////////////////////////////////////
     template<typename T, unsigned rep>
-    void iota(T *out, const dim4 &dim, const dim4 &strides)
+    void range(T *out, const dim4 &dim, const dim4 &strides)
     {
         unsigned mul1 = rep > 0;
         unsigned mul2 = rep > 1;
@@ -48,7 +48,7 @@ namespace cpu
     // Wrapper Functions
     ///////////////////////////////////////////////////////////////////////////
     template<typename T>
-    Array<T> iota(const dim4& dim, const int rep)
+    Array<T> range(const dim4& dim, const int rep)
     {
         // Repeat highest dimension, ie. creates a single sequence from
         // 0...elements - 1
@@ -59,10 +59,10 @@ namespace cpu
 
         Array<T> out = createEmptyArray<T>(dim);
         switch(rep_) {
-            case 0: iota<T, 0>(out.get(), out.dims(), out.strides()); break;
-            case 1: iota<T, 1>(out.get(), out.dims(), out.strides()); break;
-            case 2: iota<T, 2>(out.get(), out.dims(), out.strides()); break;
-            case 3: iota<T, 3>(out.get(), out.dims(), out.strides()); break;
+            case 0: range<T, 0>(out.get(), out.dims(), out.strides()); break;
+            case 1: range<T, 1>(out.get(), out.dims(), out.strides()); break;
+            case 2: range<T, 2>(out.get(), out.dims(), out.strides()); break;
+            case 3: range<T, 3>(out.get(), out.dims(), out.strides()); break;
             default: AF_ERROR("Invalid rep selection", AF_ERR_INVALID_ARG);
         }
 
@@ -70,7 +70,7 @@ namespace cpu
     }
 
 #define INSTANTIATE(T)                                                  \
-    template Array<T> iota<T>(const af::dim4 &dims, const int rep);     \
+    template Array<T> range<T>(const af::dim4 &dims, const int rep);     \
 
     INSTANTIATE(float)
     INSTANTIATE(double)
