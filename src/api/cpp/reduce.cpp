@@ -10,55 +10,56 @@
 #include <af/array.h>
 #include <af/algorithm.h>
 #include "error.hpp"
+#include "common.hpp"
 
 namespace af
 {
     array sum(const array &in, const int dim)
     {
         af_array out = 0;
-        AF_THROW(af_sum(&out, in.get(), dim));
+        AF_THROW(af_sum(&out, in.get(), getFNSD(dim, in.dims())));
         return array(out);
     }
 
     array product(const array &in, const int dim)
     {
         af_array out = 0;
-        AF_THROW(af_product(&out, in.get(), dim));
+        AF_THROW(af_product(&out, in.get(), getFNSD(dim, in.dims())));
         return array(out);
     }
 
     array min(const array &in, const int dim)
     {
         af_array out = 0;
-        AF_THROW(af_min(&out, in.get(), dim));
+        AF_THROW(af_min(&out, in.get(), getFNSD(dim, in.dims())));
         return array(out);
     }
 
     array max(const array &in, const int dim)
     {
         af_array out = 0;
-        AF_THROW(af_max(&out, in.get(), dim));
+        AF_THROW(af_max(&out, in.get(), getFNSD(dim, in.dims())));
         return array(out);
     }
 
     array alltrue(const array &in, const int dim)
     {
         af_array out = 0;
-        AF_THROW(af_alltrue(&out, in.get(), dim));
+        AF_THROW(af_alltrue(&out, in.get(), getFNSD(dim, in.dims())));
         return array(out);
     }
 
     array anytrue(const array &in, const int dim)
     {
         af_array out = 0;
-        AF_THROW(af_anytrue(&out, in.get(), dim));
+        AF_THROW(af_anytrue(&out, in.get(), getFNSD(dim, in.dims())));
         return array(out);
     }
 
     array count(const array &in, const int dim)
     {
         af_array out = 0;
-        AF_THROW(af_count(&out, in.get(), dim));
+        AF_THROW(af_count(&out, in.get(), getFNSD(dim, in.dims())));
         return array(out);
     }
 
@@ -66,7 +67,7 @@ namespace af
     {
         af_array out = 0;
         af_array loc = 0;
-        AF_THROW(af_imin(&out, &loc, in.get(), dim));
+        AF_THROW(af_imin(&out, &loc, in.get(), getFNSD(dim, in.dims())));
         val = array(out);
         idx = array(loc);
     }
@@ -75,7 +76,7 @@ namespace af
     {
         af_array out = 0;
         af_array loc = 0;
-        AF_THROW(af_imax(&out, &loc, in.get(), dim));
+        AF_THROW(af_imax(&out, &loc, in.get(), getFNSD(dim, in.dims())));
         val = array(out);
         idx = array(loc);
     }
