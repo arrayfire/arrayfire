@@ -30,8 +30,18 @@ namespace cpu
     cdouble max(cdouble lhs, cdouble rhs);
 
     template<typename T> static inline T division(T lhs, double rhs) { return lhs / rhs; }
-    cfloat division(cfloat lhs, double rhs);
-    cdouble division(cdouble lhs, double rhs);
+
+    template<> STATIC_ cfloat division<cfloat>(cfloat lhs, double rhs)
+    {
+        cfloat retVal(real(lhs) / rhs, imag(lhs) / rhs);
+        return retVal;
+    }
+
+    template<> STATIC_ cdouble division<cdouble>(cdouble lhs, double rhs)
+    {
+        cdouble retVal(real(lhs) / rhs, imag(lhs) / rhs);
+        return retVal;
+    }
 
     template <typename T> static inline T limit_max()
     { return std::numeric_limits<T>::max(); }

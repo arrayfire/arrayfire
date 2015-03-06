@@ -43,7 +43,9 @@ struct baseOutType {
 template<typename T>
 inline T mean(const Array<T>& in)
 {
-    return division(reduce_all<af_add_t, T, T>(in), in.elements());
+    T out = reduce_all<af_add_t, T, T>(in);
+    T result = division(out, in.elements());
+    return result;
 }
 
 template<typename T, typename wType>

@@ -45,16 +45,4 @@ namespace cpu
     {
         return abs(lhs) > abs(rhs) ? lhs : rhs;
     }
-
-    cfloat division(cfloat lhs, double rhs)
-    {
-        cfloat retVal( real(lhs)/rhs, imag(lhs)/rhs );
-        return retVal;
-    }
-
-    cdouble division(cdouble lhs, double rhs)
-    {
-        cdouble retVal( real(lhs)/rhs, imag(lhs)/rhs );
-        return retVal;
-    }
 }
