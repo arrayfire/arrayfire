@@ -188,6 +188,8 @@ void locate_features_core(
 {
     if (x >= idim0 - edge || y >= idim1 - edge) return;
 
+    score[y * idim0 + x] = 0.f;
+
     float p = local_image[idx( 0, 0)];
 
     // Start by testing opposite pixels of the circle that will result in
@@ -291,7 +293,8 @@ void non_max_counts(
     float *flags,
     const float* score,
     const unsigned idim0,
-    const unsigned idim1)
+    const unsigned idim1,
+    const unsigned edge)
 {
     const int xid = blockIdx.x * blockDim.x * 2 + threadIdx.x;
     const int yid = blockIdx.y * blockDim.y * 8 + threadIdx.y;
@@ -308,9 +311,9 @@ void non_max_counts(
 
     unsigned count = 0;
     for (int y = yid; y < yend; y += yoff) {
-        if (y >= idim1 - 1 || y <= 1) continue;
+        if (y >= idim1 - edge-1 || y <= edge+1) continue;
         for (int x = xid; x < xend; x += xoff) {
-            if (x >= idim0 - 1 || x <= 1) continue;
+            if (x >= idim0 - edge-1 || x <= edge+1) continue;
 
             float v = score[y * idim0 + x];
             if (v == 0) {
@@ -330,11 +333,10 @@ void non_max_counts(
 
                 v = (v > max_v) ? v : 0;
                 flags[y * idim0 + x] = v;
-                //if (v == 0) continue;
+                if (v == 0) continue;
             }
 
-            //count++;
-            count = count + (v!=0);
+            count++;
         }
     }
 
@@ -373,7 +375,8 @@ void get_features(
     const unsigned *d_offsets,
     const unsigned total,
     const unsigned idim0,
-    const unsigned idim1)
+    const unsigned idim1,
+    const unsigned edge)
 {
     const int xid = blockIdx.x * blockDim.x * 2 + threadIdx.x;
     const int yid = blockIdx.y * blockDim.y * 8 + threadIdx.y;
@@ -399,9 +402,9 @@ void get_features(
     // Blocks that are empty, please bail
     if (s_count == 0) return;
     for (int y = yid; y < yend; y += yoff) {
-        if (y >= idim1 - 1 || y <= 1) continue;
+        if (y >= idim1 - edge-1 || y <= edge+1) continue;
         for (int x = xid; x < xend; x += xoff) {
-            if (x >= idim0 - 1 || x <= 1) continue;
+            if (x >= idim0 - edge-1 || x <= edge+1) continue;
 
             float v = flags[y * idim0 + x];
             if (v == 0) continue;
@@ -437,7 +440,6 @@ void fast(unsigned* out_feat,
     float *d_score = NULL;
     size_t score_bytes = in.dims[0] * in.dims[1] * sizeof(float) + sizeof(unsigned);
     d_score = (float *)memAlloc<char>(score_bytes);
-    CUDA_CHECK(cudaMemset(d_score, 0, score_bytes));
 
     float *d_flags = d_score;
     if (nonmax) {
@@ -483,15 +485,16 @@ void fast(unsigned* out_feat,
     blocks.y = divup(in.dims[1], 64);
 
     unsigned *d_total = (unsigned *)(d_score + in.dims[0] * in.dims[1]);
+    CUDA_CHECK(cudaMemset(d_total, 0, sizeof(unsigned)));
     unsigned *d_counts  = memAlloc<unsigned>(blocks.x * blocks.y);
-    unsigned *d_offsets =memAlloc<unsigned>(blocks.x * blocks.y);
+    unsigned *d_offsets = memAlloc<unsigned>(blocks.x * blocks.y);
 
     if (nonmax)
         non_max_counts<true ><<<blocks, threads>>>(d_counts, d_offsets, d_total, d_flags,
-                                                   d_score, in.dims[0], in.dims[1]);
+                                                   d_score, in.dims[0], in.dims[1], edge);
     else
         non_max_counts<false><<<blocks, threads>>>(d_counts, d_offsets, d_total, d_flags,
-                                                   d_score, in.dims[0], in.dims[1]);
+                                                   d_score, in.dims[0], in.dims[1], edge);
 
     POST_LAUNCH_CHECK();
 
@@ -506,7 +509,7 @@ void fast(unsigned* out_feat,
         *score_out = memAlloc<float>(total);
 
         get_features<float><<<blocks, threads>>>(*x_out, *y_out, *score_out, d_flags, d_counts,
-                                                 d_offsets, total, in.dims[0], in.dims[1]);
+                                                 d_offsets, total, in.dims[0], in.dims[1], edge);
 
         POST_LAUNCH_CHECK();
     }
