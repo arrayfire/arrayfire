@@ -78,9 +78,9 @@ void fast(unsigned* out_feat,
 
         // Matrix containing scores for detected features, scores are stored in the
         // same coordinates as features, dimensions should be equal to in.
-        cl::Buffer *d_score = bufferAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(T));
-        std::vector<T> score_init(in.info.dims[0] * in.info.dims[1], (T)0);
-        getQueue().enqueueWriteBuffer(*d_score, CL_TRUE, 0, in.info.dims[0] * in.info.dims[1] * sizeof(T), &score_init[0]);
+        cl::Buffer *d_score = bufferAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(float));
+        std::vector<float> score_init(in.info.dims[0] * in.info.dims[1], (float)0);
+        getQueue().enqueueWriteBuffer(*d_score, CL_TRUE, 0, in.info.dims[0] * in.info.dims[1] * sizeof(float), &score_init[0]);
 
         cl::Buffer *d_flags = d_score;
         if (nonmax) {

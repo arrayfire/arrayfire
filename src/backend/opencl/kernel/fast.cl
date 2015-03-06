@@ -28,14 +28,14 @@ inline int idx(const int x, const int y)
 
 // test_greater()
 // Tests if a pixel x > p + thr
-inline int test_greater(const T x, const T p, const float thr)
+inline int test_greater(const float x, const float p, const float thr)
 {
     return (x >= p + thr);
 }
 
 // test_smaller()
 // Tests if a pixel x < p - thr
-inline int test_smaller(const T x, const T p, const float thr)
+inline int test_smaller(const float x, const float p, const float thr)
 {
     return (x <= p - thr);
 }
@@ -44,14 +44,14 @@ inline int test_smaller(const T x, const T p, const float thr)
 // Returns -1 when x < p - thr
 // Returns  0 when x >= p - thr && x <= p + thr
 // Returns  1 when x > p + thr
-inline int test_pixel(__local T* local_image, const T p, const float thr, const int x, const int y)
+inline int test_pixel(__local T* local_image, const float p, const float thr, const int x, const int y)
 {
-    return -test_smaller(local_image[idx(x,y)], p, thr) | test_greater(local_image[idx(x,y)], p, thr);
+    return -test_smaller((float)local_image[idx(x,y)], p, thr) | test_greater((float)local_image[idx(x,y)], p, thr);
 }
 
 void locate_features_core(
     __local T* local_image,
-    __global T* score,
+    __global float* score,
     KParam iInfo,
     const float thr,
     int x, int y,
@@ -59,7 +59,7 @@ void locate_features_core(
 {
     if (x >= iInfo.dims[0] - edge || y >= iInfo.dims[1] - edge) return;
 
-    T p = local_image[idx( 0, 0)];
+    float p = local_image[idx( 0, 0)];
 
     // Start by testing opposite pixels of the circle that will result in
     // a non-kepoint
@@ -114,10 +114,10 @@ void locate_features_core(
     // pixel p.
     if (max_sum == ARC_LENGTH || min_sum == -ARC_LENGTH) {
         // Compute scores for brighter and darker pixels
-        T s_bright = 0, s_dark = 0;
+        float s_bright = 0, s_dark = 0;
         for (int i = 0; i < 16; i++) {
-            T p_x    = local_image[idx(idx_x(i), idx_y(i))];
-            T weight = fabs((float)p_x - (float)p) - thr;
+            float p_x    = local_image[idx(idx_x(i), idx_y(i))];
+            float weight = fabs((float)p_x - (float)p) - thr;
             s_bright += test_greater(p_x, p, thr) * weight;
             s_dark   += test_smaller(p_x, p, thr) * weight;
         }
@@ -151,7 +151,7 @@ __kernel
 void locate_features(
     __global const T* in,
     KParam          iInfo,
-    __global T* score,
+    __global float* score,
     const float thr,
     const unsigned edge,
     __local T* local_image)
@@ -176,8 +176,8 @@ void non_max_counts(
     __global unsigned *d_counts,
     __global unsigned *d_offsets,
     __global unsigned *d_total,
-    __global T *flags,
-    __global const T* score,
+    __global float *flags,
+    __global const float* score,
     KParam iInfo)
 {
     __local unsigned s_counts[256];
@@ -199,7 +199,7 @@ void non_max_counts(
         for (int x = xid; x < xend; x += get_local_size(0)) {
             if (x >= max0 || x <= 1) continue;
 
-            T v = score[y * iInfo.dims[0] + x];
+            float v = score[y * iInfo.dims[0] + x];
             if (v == 0) {
 #if NONMAX
                 flags[y * iInfo.dims[0] + x] = 0;
@@ -208,7 +208,7 @@ void non_max_counts(
             }
 
 #if NONMAX
-                T max_v = v;
+                float max_v = v;
                 max_v = MAX_VAL(score[x-1 + iInfo.dims[0] * (y-1)], score[x-1 + iInfo.dims[0] * y]);
                 max_v = MAX_VAL(max_v, score[x-1 + iInfo.dims[0] * (y+1)]);
                 max_v = MAX_VAL(max_v, score[x   + iInfo.dims[0] * (y-1)]);
@@ -252,7 +252,7 @@ __kernel void get_features(
     __global float* x_out,
     __global float* y_out,
     __global float* score_out,
-    __global const T* flags,
+    __global const float* flags,
     __global const unsigned* d_counts,
     __global const unsigned* d_offsets,
     KParam iInfo,
@@ -286,7 +286,7 @@ __kernel void get_features(
         for (int x = xid; x < xend; x += xoff) {
             if (x >= iInfo.dims[0] - 1 || x <= 1) continue;
 
-            T v = flags[y * iInfo.dims[0] + x];
+            float v = flags[y * iInfo.dims[0] + x];
             if (v == 0) continue;
 
             unsigned id = atomic_inc(&s_idx);
