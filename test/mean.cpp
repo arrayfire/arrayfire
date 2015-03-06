@@ -130,7 +130,6 @@ void testCPPMean(T const_value, af::dim4 dims)
     if (noDoubleTests<T>()) return;
 
     typedef meanOutType<T> outType;
-    if (noDoubleTests<T>()) return;
 
     using af::array;
     using af::mean;
