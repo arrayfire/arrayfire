@@ -9,15 +9,9 @@ MACRO(CREATE_TESTS BACKEND)
 
         ADD_TEST(Test_${TEST_NAME} ${TEST_NAME})
         ADD_EXECUTABLE(${TEST_NAME} ${FNAME}.cpp)
-        IF (${BUILD_GTEST} AND NOT ${USE_SYSTEM_GTEST})
-            ADD_DEPENDENCIES(${TEST_NAME} googletest)
-        ENDIF()
         TARGET_LINK_LIBRARIES(${TEST_NAME}  af${BACKEND}
                       ${THREAD_LIB_FLAG}
-                      optimized ${GTEST_RELEASE_LIB}
-                      optimized ${GTEST_RELEASE_MAIN_LIB}
-                      debug ${GTEST_DEBUG_LIB}
-                      debug ${GTEST_DEBUG_MAIN_LIB})
+                      ${GTEST_LIBRARIES})
         SET_TARGET_PROPERTIES(${TEST_NAME} PROPERTIES COMPILE_FLAGS -DAF_${DEF_NAME})
     ENDFOREACH()
 
@@ -31,43 +25,11 @@ ELSE()
 ENDIF()
 
 IF(${USE_SYSTEM_GTEST})
-
     FIND_PACKAGE(GTest REQUIRED)
-
-    SET(GTEST_RELEASE_LIB "${GTEST_LIBRARIES}")
-    SET(GTEST_RELEASE_MAIN_LIB "${GTEST_MAIN_LIBRARIES}")
-
-    SET(GTEST_DEBUG_LIB "${GTEST_LIBRARIES}")
-    SET(GTEST_DEBUG_MAIN_LIB "${GTEST_MAIN_LIBRARIES}")
-
 ELSE()
-
-    IF(${BUILD_GTEST})
-
-      INCLUDE("${CMAKE_MODULE_PATH}/build_gtest.cmake")
-        ExternalProject_Get_Property(googletest SOURCE_DIR BINARY_DIR)
-
-        SET(GTEST_BINARY_DIR "${BINARY_DIR}")
-        SET(GTEST_SOURCE_DIR "${SOURCE_DIR}")
-
-    ELSE()
-
-        SET(GTEST_SOURCE_DIR "${CMAKE_BINARY_DIR}/third_party/src/googletest")
-        SET(GTEST_BINARY_DIR "${CMAKE_BINARY_DIR}/third_party/src/googletest-build")
-
-    ENDIF()
-
-    SET(GTEST_INCLUDE_DIRS         "${GTEST_SOURCE_DIR}/include")
-    SET(GTEST_RELEASE_LIBRARY_DIRS "${GTEST_BINARY_DIR}/ReleaseLibs")
-    SET(GTEST_DEBUG_LIBRARY_DIRS   "${GTEST_BINARY_DIR}/DebugLibs")
-
-    SET(GTEST_RELEASE_LIB "${GTEST_RELEASE_LIBRARY_DIRS}/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}")
-    SET(GTEST_RELEASE_MAIN_LIB "${GTEST_RELEASE_LIBRARY_DIRS}/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}")
-
-    SET(GTEST_DEBUG_LIB "${GTEST_DEBUG_LIBRARY_DIRS}/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}")
-    SET(GTEST_DEBUG_MAIN_LIB "${GTEST_DEBUG_LIBRARY_DIRS}/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX}")
-
+    INCLUDE("${CMAKE_MODULE_PATH}/build_gtest.cmake")
 ENDIF()
+INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
 
 SET(TESTDATA_SOURCE_DIR "${CMAKE_SOURCE_DIR}/test/data")
 ADD_DEFINITIONS("-D TEST_DIR=\"\\\"${TESTDATA_SOURCE_DIR}\\\"\"")
@@ -87,22 +49,7 @@ ELSE (EXISTS "${TESTDATA_SOURCE_DIR}" AND IS_DIRECTORY "${TESTDATA_SOURCE_DIR}"
     MESSAGE("git submodule foreach git pull origin master")
 ENDIF()
 
-# Check if Google Test exists
-SET(GTEST_SOURCE_DIR "${CMAKE_SOURCE_DIR}/test/gtest")
-IF (EXISTS "${GTEST_SOURCE_DIR}" AND IS_DIRECTORY "${GTEST_SOURCE_DIR}"
-    AND EXISTS "${GTEST_SOURCE_DIR}/README")
-    # GTest source is available
-    # Do Nothing
-ELSE (EXISTS "${GTEST_SOURCE_DIR}" AND IS_DIRECTORY "${GTEST_SOURCE_DIR}"
-    AND EXISTS "${GTEST_SOURCE_DIR}/README")
-    MESSAGE(WARNING "GTest Source is not available. Tests will not build.")
-    MESSAGE("Did you miss the --recursive option when cloning?")
-    MESSAGE("Run the following commands to correct this:")
-    MESSAGE("git submodule init")
-    MESSAGE("git submodule update")
-    MESSAGE("git submodule foreach git pull origin master")
-ENDIF()
-
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 FILE(GLOB FILES "*.cpp")
 
 IF(${BUILD_CPU})
@@ -116,7 +63,3 @@ ENDIF()
 IF(${BUILD_OPENCL})
     CREATE_TESTS(opencl)
 ENDIF()
-
-INCLUDE_DIRECTORIES(
-    "${CMAKE_CURRENT_SOURCE_DIR}"
-    ${GTEST_INCLUDE_DIRS})
