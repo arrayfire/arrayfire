@@ -145,9 +145,13 @@ ELSE (APPLE)
 		# The AMD SDK currently does not place its headers
 		# in /usr/include, therefore also search relative
 		# to the library
-        FIND_PATH(OPENCL_INCLUDE_DIRS CL/cl.h PATHS ENV OpenCL_INCPATH ${_OPENCL_INC_CAND} "/usr/local/cuda/include" "/opt/AMDAPP/include" NO_DEFAULT_PATH)
-        FIND_PATH(_OPENCL_CPP_INCLUDE_DIRS CL/cl.hpp PATHS ENV OpenCL_INCPATH ${_OPENCL_INC_CAND} "/usr/local/cuda/include" "/opt/AMDAPP/include")
-
+                FIND_PATH(OPENCL_INCLUDE_DIRS CL/cl.h PATHS ENV OpenCL_INCPATH
+                                             ${_OPENCL_INC_CAND}
+                                             "/usr/local/cuda/include"
+                                             "/opt/AMDAPP/include"
+                                             "/usr/local/include"
+                                             "/usr/include"
+                                             NO_DEFAULT_PATH)
 	ENDIF (WIN32)
 
 ENDIF (APPLE)
