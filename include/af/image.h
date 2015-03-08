@@ -82,6 +82,29 @@ AFAPI void grad(array& rows, array& cols, const array& in);
 
 AFAPI array regions(const array& in, af::connectivity connectivity=AF_CONNECTIVITY_4, dtype type=f32);
 
+/**
+    C++ Interface
+
+    \param[in] in array containing a grayscale image (color images are not
+               supported)
+    \param[in] thr FAST threshold for which a pixel of the circle around
+               the central pixel is considered to be greater or smaller
+    \param[in] arc_length length of arc (or sequential segment) to be tested,
+               must be within range [9-16]
+    \param[in] nonmax performs non-maximal suppression if true
+    \param[in] feature_ratio maximum ratio of features to detect, the maximum
+               number of features is calculated by feature_ratio * in.elements().
+               The maximum number of features is not based on the score, instead
+               features detected after the limit is reached are discarded
+    \param[in] edge is the length of the edges in the image to be discarded
+               by FAST (minimum is 3, as the radius of the circle)
+    \return    features object containing arrays for x and y coordinates and
+               score, while array orientation is set to 0 as FAST does not
+               compute orientation, and size is set to 1 as FAST does not
+               compute multiple scales
+
+    \ingroup image_func_fast
+ */
 AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_length=9, const bool non_max=true, const float feature_ratio=0.05, const unsigned edge=3);
 
 AFAPI void orb(features& feat, array& desc, const array& image, const float fast_thr=20.f, const unsigned max_feat=400, const float scl_fctr=1.5f, const unsigned levels=4, const bool blur_img=false);
@@ -254,7 +277,31 @@ extern "C" {
     // Compute labels for connected regions from binary input arrays
     AFAPI af_err af_regions(af_array *out, const af_array in, af_connectivity connectivity, af_dtype ty);
 
-    // Compute FAST corners from input image
+    /**
+        C Interface
+
+        \param[out] af_features struct containing arrays for x and y
+                    coordinates and score, while array orientation is set to 0
+                    as FAST does not compute orientation, and size is set to 1
+                    as FAST does not compute multiple scales
+        \param[in]  in array containing a grayscale image (color images are
+                    not supported)
+        \param[in]  thr FAST threshold for which a pixel of the circle around
+                    the central pixel is considered to be greater or smaller
+        \param[in]  arc_length length of arc (or sequential segment) to be
+                    tested, must be within range [9-16]
+        \param[in]  nonmax performs non-maximal suppression if true
+        \param[in]  feature_ratio maximum ratio of features to detect, the
+                    maximum number of features is calculated by
+                    feature_ratio * in.elements(). The maximum number of
+                    features is not based on the score, instead features
+                    detected after the limit is reached are discarded
+        \param[in]  edge is the length of the edges in the image to be
+                    discarded by FAST (minimum is 3, as the radius of the
+                    circle)
+
+        \ingroup image_func_fast
+     */
     AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio, const unsigned edge);
 
     // Compute FAST corners and ORB descriptors from input image
