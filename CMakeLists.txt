@@ -66,6 +66,12 @@ ENDIF()
 
 INCLUDE(${CMAKE_MODULE_PATH}/Version.cmake)
 
+IF(WIN32)
+    SET(ARRAYFIRE_CMAKE_DIR cmake)
+ELSE()
+    SET(ARRAYFIRE_CMAKE_DIR share/ArrayFire)
+ENDIF()
+
 IF(${BUILD_CPU})
   ADD_SUBDIRECTORY(src/backend/cpu)
 ENDIF()
@@ -106,3 +112,28 @@ INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/" DESTINATION include
 INSTALL(FILES 
     ${CMAKE_SOURCE_DIR}/include/af/version.h DESTINATION include/af/
 )
+
+## configuration to be used from the binary directory directly
+SET(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
+SET(BACKEND_DIR "src/backend/\${lowerbackend}")
+CONFIGURE_FILE(
+    ${CMAKE_CURRENT_SOURCE_DIR}/ArrayFireConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/ArrayFireConfig.cmake
+    @ONLY)
+
+## installed cmake configuration
+# use a relative dir to keep arrayfire relocatable
+STRING(REGEX REPLACE "[^/]+" ".." reldir "${ARRAYFIRE_CMAKE_DIR}")
+SET(INCLUDE_DIR "\${CMAKE_CURRENT_LIST_DIR}/${reldir}/include")
+set(BACKEND_DIR)
+CONFIGURE_FILE(
+    ${CMAKE_CURRENT_SOURCE_DIR}/ArrayFireConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
+    @ONLY)
+CONFIGURE_FILE(
+    ${CMAKE_CURRENT_SOURCE_DIR}/ArrayFireConfigVersion.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/ArrayFireConfigVersion.cmake
+    @ONLY)
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/ArrayFireConfigVersion.cmake
+    DESTINATION ${ARRAYFIRE_CMAKE_DIR})
