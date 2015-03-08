@@ -130,5 +130,19 @@ Data normalization via histogram equalization
 
 =======================================================================
 
+\defgroup image_func_fast fast
+\ingroup featdetect_mat
+
+A circle of radius 3 pixels, translating into a total of 16 pixels, is checked
+for sequential segments of pixels much brighter or much darker than the central
+one. For a pixel p to be considered a feature, there must exist a sequential
+segment of arc_length pixels in the circle around it such that all are greather
+than (p + thr) or smaller than (p - thr). After all features in the image are
+detected, if nonmax is true, the non-maximal suppression is applied, checking
+all detected features and the features detected in its 8-neighborhood and
+discard it if its score is non maximal.
+
+=======================================================================
+
 @}
 */

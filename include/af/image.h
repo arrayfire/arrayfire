@@ -85,15 +85,23 @@ AFAPI array regions(const array& in, af::connectivity connectivity=AF_CONNECTIVI
 /**
     C++ Interface
 
-    A circle of radius 3 pixels, translating into a total of 16 pixels, is checked for sequential segments of pixels much brighter or much darker than the central one. For a pixel p to be considered a feature, there must exist a sequential segment of arc_length pixels in the circle around it such that all are greather than (p + thr) or smaller than (p - thr). After all features in the image are detected, if nonmax is true, the non-maximal suppression is applied, checking all detected features and the features detected in its 8-neighborhood and discard it if its score is non maximal.
-
-    \param[in] in array containing a grayscale image (color images are not supported)
-    \param[in] thr FAST threshold for which a pixel of the circle around the central pixel is considered to be greater or smaller
-    \param[in] arc_length length of arc (or sequential segment) to be tested, must be within range [9-16]
+    \param[in] in array containing a grayscale image (color images are not
+               supported)
+    \param[in] thr FAST threshold for which a pixel of the circle around
+               the central pixel is considered to be greater or smaller
+    \param[in] arc_length length of arc (or sequential segment) to be tested,
+               must be within range [9-16]
     \param[in] nonmax performs non-maximal suppression if true
-    \param[in] feature_ratio maximum ratio of features to detect, the maximum number of features is calculated by feature_ratio * in.elements(). The maximum number of features is not based on the score, instead features detected after the limit is reached are discarded
-    \param[in] edge is the length of the edges in the image to be discarded by FAST (minimum is 3, as the radius of the circle)
-    \return features object containing arrays for x and y coordinates and score, while array orientation is set to 0 as FAST does not compute orientation, and size is set to 1 as FAST does not compute multiple scales
+    \param[in] feature_ratio maximum ratio of features to detect, the maximum
+               number of features is calculated by feature_ratio * in.elements().
+               The maximum number of features is not based on the score, instead
+               features detected after the limit is reached are discarded
+    \param[in] edge is the length of the edges in the image to be discarded
+               by FAST (minimum is 3, as the radius of the circle)
+    \return    features object containing arrays for x and y coordinates and
+               score, while array orientation is set to 0 as FAST does not
+               compute orientation, and size is set to 1 as FAST does not
+               compute multiple scales
 
     \ingroup image_func_fast
  */
@@ -271,17 +279,27 @@ extern "C" {
 
     /**
         C Interface
-    
-        A circle of radius 3 pixels, translating into a total of 16 pixels, is checked for sequential segments of pixels much brighter or much darker than the central one. For a pixel p to be considered a feature, there must exist a sequential segment of arc_length pixels in the circle around it such that all are greather than (p + thr) or smaller than (p - thr). After all features in the image are detected, if nonmax is true, the non-maximal suppression is applied, checking all detected features and the features detected in its 8-neighborhood and discard it if its score is non maximal.
-    
-        \param[out] af_features struct containing arrays for x and y coordinates and score, while array orientation is set to 0 as FAST does not compute orientation, and size is set to 1 as FAST does not compute multiple scales
-        \param[in] in array containing a grayscale image (color images are not supported)
-        \param[in] thr FAST threshold for which a pixel of the circle around the central pixel is considered to be greater or smaller
-        \param[in] arc_length length of arc (or sequential segment) to be tested, must be within range [9-16]
-        \param[in] nonmax performs non-maximal suppression if true
-        \param[in] feature_ratio maximum ratio of features to detect, the maximum number of features is calculated by feature_ratio * in.elements(). The maximum number of features is not based on the score, instead features detected after the limit is reached are discarded
-        \param[in] edge is the length of the edges in the image to be discarded by FAST (minimum is 3, as the radius of the circle)
-    
+
+        \param[out] af_features struct containing arrays for x and y
+                    coordinates and score, while array orientation is set to 0
+                    as FAST does not compute orientation, and size is set to 1
+                    as FAST does not compute multiple scales
+        \param[in]  in array containing a grayscale image (color images are
+                    not supported)
+        \param[in]  thr FAST threshold for which a pixel of the circle around
+                    the central pixel is considered to be greater or smaller
+        \param[in]  arc_length length of arc (or sequential segment) to be
+                    tested, must be within range [9-16]
+        \param[in]  nonmax performs non-maximal suppression if true
+        \param[in]  feature_ratio maximum ratio of features to detect, the
+                    maximum number of features is calculated by
+                    feature_ratio * in.elements(). The maximum number of
+                    features is not based on the score, instead features
+                    detected after the limit is reached are discarded
+        \param[in]  edge is the length of the edges in the image to be
+                    discarded by FAST (minimum is 3, as the radius of the
+                    circle)
+
         \ingroup image_func_fast
      */
     AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio, const unsigned edge);
