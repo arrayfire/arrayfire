@@ -31,8 +31,8 @@ void uniqueTest(string pTestFile)
 
     vector<af::dim4> numDims;
 
-    vector<vector<int>> data;
-    vector<vector<int>> tests;
+    vector<vector<int> > data;
+    vector<vector<int> > tests;
     readTests<int,int,int> (pTestFile,numDims,data,tests);
 
 
@@ -95,8 +95,8 @@ void setTest(string pTestFile)
 
     vector<af::dim4> numDims;
 
-    vector<vector<int>> data;
-    vector<vector<int>> tests;
+    vector<vector<int> > data;
+    vector<vector<int> > tests;
     readTests<int,int,int> (pTestFile,numDims,data,tests);
 
 

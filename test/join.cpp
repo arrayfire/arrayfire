@@ -31,9 +31,9 @@ class Join : public ::testing::Test
 {
     public:
         virtual void SetUp() {
-            subMat0.push_back({0, 4, 1});
-            subMat0.push_back({2, 6, 1});
-            subMat0.push_back({0, 2, 1});
+            subMat0.push_back(af_make_seq(0, 4, 1));
+            subMat0.push_back(af_make_seq(2, 6, 1));
+            subMat0.push_back(af_make_seq(0, 2, 1));
         }
         vector<af_seq> subMat0;
 };
@@ -46,13 +46,13 @@ TYPED_TEST_CASE(Join, TestTypes);
 
 template<typename T>
 void joinTest(string pTestFile, const unsigned dim, const unsigned in0, const unsigned in1, const unsigned resultIdx,
-        bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
+        bool isSubRef = false, const vector<af_seq> * seqv = NULL)
 {
     if (noDoubleTests<T>()) return;
 
     vector<af::dim4> numDims;
-    vector<vector<T>> in;
-    vector<vector<T>> tests;
+    vector<vector<T> > in;
+    vector<vector<T> > tests;
     readTests<T, T, int>(pTestFile,numDims,in,tests);
 
     af::dim4 i0dims = numDims[in0];
@@ -124,8 +124,8 @@ TEST(Join, CPP)
     const unsigned dim = 2;
 
     vector<af::dim4> numDims;
-    vector<vector<float>> in;
-    vector<vector<float>> tests;
+    vector<vector<float> > in;
+    vector<vector<float> > tests;
     readTests<float, float, int>(string(TEST_DIR"/join/join_big.test"),numDims,in,tests);
 
     af::dim4 i0dims = numDims[0];

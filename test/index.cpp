@@ -49,8 +49,7 @@ DimCheck(const vector<af_seq> &seqs) {
     dim_type d[1] = {dims};
 
     vector<T> hData(dims);
-    T n(0);
-    generate(hData.begin(), hData.end(), [&] () { return n++; });
+    for(int i = 0; i < dims; i++) { hData[i] = i; }
 
     af_array a = 0;
     ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &hData.front(), ndims, d, (af_dtype) dtype_traits<T>::af_type));
@@ -96,21 +95,21 @@ class Indexing1D : public ::testing::Test
 {
 public:
     virtual void SetUp() {
-        continuous_seqs.push_back({  0,    20,   1 }); // Begin Continious
-        continuous_seqs.push_back({  80,   99,   1 }); // End Continious
-        continuous_seqs.push_back({  10,   89,   1 }); // Mid Continious
+        continuous_seqs.push_back(af_make_seq(  0,    20,   1 )); // Begin Continious
+        continuous_seqs.push_back(af_make_seq(  80,   99,   1 )); // End Continious
+        continuous_seqs.push_back(af_make_seq(  10,   89,   1 )); // Mid Continious
 
-        continuous_reverse_seqs.push_back({  20,   0,    -1 }); // Begin Reverse Continious
-        continuous_reverse_seqs.push_back({  99,   80,   -1 }); // End Reverse Continious
-        continuous_reverse_seqs.push_back({  89,   10,   -1 }); // Mid Reverse Continious
+        continuous_reverse_seqs.push_back(af_make_seq(  20,   0,    -1 )); // Begin Reverse Continious
+        continuous_reverse_seqs.push_back(af_make_seq(  99,   80,   -1 )); // End Reverse Continious
+        continuous_reverse_seqs.push_back(af_make_seq(  89,   10,   -1 )); // Mid Reverse Continious
 
-        strided_seqs.push_back({  5,    40,   2 }); // Two Step
-        strided_seqs.push_back({  5,    40,   3 }); // Three Step
-        strided_seqs.push_back({  5,    40,   4 }); // Four Step
+        strided_seqs.push_back(af_make_seq(  5,    40,   2 )); // Two Step
+        strided_seqs.push_back(af_make_seq(  5,    40,   3 )); // Three Step
+        strided_seqs.push_back(af_make_seq(  5,    40,   4 )); // Four Step
 
-        strided_reverse_seqs.push_back({  40,    5,   -2 }); // Reverse Two Step
-        strided_reverse_seqs.push_back({  40,    5,   -3 }); // Reverse Three Step
-        strided_reverse_seqs.push_back({  40,    5,   -4 }); // Reverse Four Step
+        strided_reverse_seqs.push_back(af_make_seq(  40,    5,   -2 )); // Reverse Two Step
+        strided_reverse_seqs.push_back(af_make_seq(  40,    5,   -3 )); // Reverse Three Step
+        strided_reverse_seqs.push_back(af_make_seq(  40,    5,   -4 )); // Reverse Four Step
 
         span_seqs.push_back(af_span);
     }
@@ -148,120 +147,120 @@ public:
     }
     virtual void SetUp() {
 
-        column_continuous_seq.push_back(make_vec(af_span, {  0,  6,  1}));
-        column_continuous_seq.push_back(make_vec(af_span, {  4,  9,  1}));
-        column_continuous_seq.push_back(make_vec(af_span, {  3,  8,  1}));
+        column_continuous_seq.push_back(make_vec(af_span, af_make_seq(  0,  6,  1)));
+        column_continuous_seq.push_back(make_vec(af_span, af_make_seq(  4,  9,  1)));
+        column_continuous_seq.push_back(make_vec(af_span, af_make_seq(  3,  8,  1)));
 
-        column_continuous_reverse_seq.push_back(make_vec(af_span, {  6,  0,  -1}));
-        column_continuous_reverse_seq.push_back(make_vec(af_span, {  9,  4,  -1}));
-        column_continuous_reverse_seq.push_back(make_vec(af_span, {  8,  3,  -1}));
+        column_continuous_reverse_seq.push_back(make_vec(af_span, af_make_seq(  6,  0,  -1)));
+        column_continuous_reverse_seq.push_back(make_vec(af_span, af_make_seq(  9,  4,  -1)));
+        column_continuous_reverse_seq.push_back(make_vec(af_span, af_make_seq(  8,  3,  -1)));
 
-        column_strided_seq.push_back(make_vec(af_span, {  0,    8,   2 })); // Two Step
-        column_strided_seq.push_back(make_vec(af_span, {  2,    9,   3 })); // Three Step
-        column_strided_seq.push_back(make_vec(af_span, {  0,    9,   4 })); // Four Step
+        column_strided_seq.push_back(make_vec(af_span, af_make_seq(  0,    8,   2 ))); // Two Step
+        column_strided_seq.push_back(make_vec(af_span, af_make_seq(  2,    9,   3 ))); // Three Step
+        column_strided_seq.push_back(make_vec(af_span, af_make_seq(  0,    9,   4 ))); // Four Step
 
-        column_strided_reverse_seq.push_back(make_vec(af_span, {  8,   0,   -2 })); // Two Step
-        column_strided_reverse_seq.push_back(make_vec(af_span, {  9,   2,   -3 })); // Three Step
-        column_strided_reverse_seq.push_back(make_vec(af_span, {  9,   0,   -4 })); // Four Step
+        column_strided_reverse_seq.push_back(make_vec(af_span, af_make_seq(  8,   0,   -2 ))); // Two Step
+        column_strided_reverse_seq.push_back(make_vec(af_span, af_make_seq(  9,   2,   -3 ))); // Three Step
+        column_strided_reverse_seq.push_back(make_vec(af_span, af_make_seq(  9,   0,   -4 ))); // Four Step
 
-        row_continuous_seq.push_back(make_vec({  0,  6,  1}, af_span));
-        row_continuous_seq.push_back(make_vec({  4,  9,  1}, af_span));
-        row_continuous_seq.push_back(make_vec({  3,  8,  1}, af_span));
+        row_continuous_seq.push_back(make_vec(af_make_seq(  0,  6,  1), af_span));
+        row_continuous_seq.push_back(make_vec(af_make_seq(  4,  9,  1), af_span));
+        row_continuous_seq.push_back(make_vec(af_make_seq(  3,  8,  1), af_span));
 
-        row_continuous_reverse_seq.push_back(make_vec({  6,  0,  -1}, af_span));
-        row_continuous_reverse_seq.push_back(make_vec({  9,  4,  -1}, af_span));
-        row_continuous_reverse_seq.push_back(make_vec({  8,  3,  -1}, af_span));
+        row_continuous_reverse_seq.push_back(make_vec(af_make_seq(  6,  0,  -1), af_span));
+        row_continuous_reverse_seq.push_back(make_vec(af_make_seq(  9,  4,  -1), af_span));
+        row_continuous_reverse_seq.push_back(make_vec(af_make_seq(  8,  3,  -1), af_span));
 
-        row_strided_seq.push_back(make_vec({  0,    8,   2 }, af_span));
-        row_strided_seq.push_back(make_vec({  2,    9,   3 }, af_span));
-        row_strided_seq.push_back(make_vec({  0,    9,   4 }, af_span));
+        row_strided_seq.push_back(make_vec(af_make_seq(  0,    8,   2 ), af_span));
+        row_strided_seq.push_back(make_vec(af_make_seq(  2,    9,   3 ), af_span));
+        row_strided_seq.push_back(make_vec(af_make_seq(  0,    9,   4 ), af_span));
 
-        row_strided_reverse_seq.push_back(make_vec({  8,   0,   -2 }, af_span));
-        row_strided_reverse_seq.push_back(make_vec({  9,   2,   -3 }, af_span));
-        row_strided_reverse_seq.push_back(make_vec({  9,   0,   -4 }, af_span));
+        row_strided_reverse_seq.push_back(make_vec(af_make_seq(  8,   0,   -2 ), af_span));
+        row_strided_reverse_seq.push_back(make_vec(af_make_seq(  9,   2,   -3 ), af_span));
+        row_strided_reverse_seq.push_back(make_vec(af_make_seq(  9,   0,   -4 ), af_span));
 
-        continuous_continuous_seq.push_back(make_vec({  1,  6,  1}, {  0,  6,  1}));
-        continuous_continuous_seq.push_back(make_vec({  3,  9,  1}, {  4,  9,  1}));
-        continuous_continuous_seq.push_back(make_vec({  5,  8,  1}, {  3,  8,  1}));
+        continuous_continuous_seq.push_back(make_vec(af_make_seq(  1,  6,  1), af_make_seq(  0,  6,  1)));
+        continuous_continuous_seq.push_back(make_vec(af_make_seq(  3,  9,  1), af_make_seq(  4,  9,  1)));
+        continuous_continuous_seq.push_back(make_vec(af_make_seq(  5,  8,  1), af_make_seq(  3,  8,  1)));
 
-        continuous_reverse_seq.push_back(make_vec({  1,  6,  1}, {  6,  0,  -1}));
-        continuous_reverse_seq.push_back(make_vec({  3,  9,  1}, {  9,  4,  -1}));
-        continuous_reverse_seq.push_back(make_vec({  5,  8,  1}, {  8,  3,  -1}));
+        continuous_reverse_seq.push_back(make_vec(af_make_seq(  1,  6,  1), af_make_seq(  6,  0,  -1)));
+        continuous_reverse_seq.push_back(make_vec(af_make_seq(  3,  9,  1), af_make_seq(  9,  4,  -1)));
+        continuous_reverse_seq.push_back(make_vec(af_make_seq(  5,  8,  1), af_make_seq(  8,  3,  -1)));
 
-        continuous_strided_seq.push_back(make_vec({  1,  6,  1}, {  0,  8,  2}));
-        continuous_strided_seq.push_back(make_vec({  3,  9,  1}, {  2,  9,  3}));
-        continuous_strided_seq.push_back(make_vec({  5,  8,  1}, {  1,  9,  4}));
+        continuous_strided_seq.push_back(make_vec(af_make_seq(  1,  6,  1), af_make_seq(  0,  8,  2)));
+        continuous_strided_seq.push_back(make_vec(af_make_seq(  3,  9,  1), af_make_seq(  2,  9,  3)));
+        continuous_strided_seq.push_back(make_vec(af_make_seq(  5,  8,  1), af_make_seq(  1,  9,  4)));
 
-        continuous_strided_reverse_seq.push_back(make_vec({  1,  6,  1}, {  8,  0,  -2}));
-        continuous_strided_reverse_seq.push_back(make_vec({  3,  9,  1}, {  9,  2,  -3}));
-        continuous_strided_reverse_seq.push_back(make_vec({  5,  8,  1}, {  9,  1,  -4}));
+        continuous_strided_reverse_seq.push_back(make_vec(af_make_seq(  1,  6,  1), af_make_seq(  8,  0,  -2)));
+        continuous_strided_reverse_seq.push_back(make_vec(af_make_seq(  3,  9,  1), af_make_seq(  9,  2,  -3)));
+        continuous_strided_reverse_seq.push_back(make_vec(af_make_seq(  5,  8,  1), af_make_seq(  9,  1,  -4)));
 
-        reverse_continuous_seq.push_back(make_vec({  6,  1,  -1}, {  0,  6,  1}));
-        reverse_continuous_seq.push_back(make_vec({  9,  3,  -1}, {  4,  9,  1}));
-        reverse_continuous_seq.push_back(make_vec({  8,  5,  -1}, {  3,  8,  1}));
+        reverse_continuous_seq.push_back(make_vec(af_make_seq(  6,  1,  -1), af_make_seq(  0,  6,  1)));
+        reverse_continuous_seq.push_back(make_vec(af_make_seq(  9,  3,  -1), af_make_seq(  4,  9,  1)));
+        reverse_continuous_seq.push_back(make_vec(af_make_seq(  8,  5,  -1), af_make_seq(  3,  8,  1)));
 
-        reverse_reverse_seq.push_back(make_vec({  6,  1,  -1}, {  6,  0,  -1}));
-        reverse_reverse_seq.push_back(make_vec({  9,  3,  -1}, {  9,  4,  -1}));
-        reverse_reverse_seq.push_back(make_vec({  8,  5,  -1}, {  8,  3,  -1}));
+        reverse_reverse_seq.push_back(make_vec(af_make_seq(  6,  1,  -1), af_make_seq(  6,  0,  -1)));
+        reverse_reverse_seq.push_back(make_vec(af_make_seq(  9,  3,  -1), af_make_seq(  9,  4,  -1)));
+        reverse_reverse_seq.push_back(make_vec(af_make_seq(  8,  5,  -1), af_make_seq(  8,  3,  -1)));
 
-        reverse_strided_seq.push_back(make_vec({  6,  1,  -1}, {  0,  8,  2}));
-        reverse_strided_seq.push_back(make_vec({  9,  3,  -1}, {  2,  9,  3}));
-        reverse_strided_seq.push_back(make_vec({  8,  5,  -1}, {  1,  9,  4}));
+        reverse_strided_seq.push_back(make_vec(af_make_seq(  6,  1,  -1), af_make_seq(  0,  8,  2)));
+        reverse_strided_seq.push_back(make_vec(af_make_seq(  9,  3,  -1), af_make_seq(  2,  9,  3)));
+        reverse_strided_seq.push_back(make_vec(af_make_seq(  8,  5,  -1), af_make_seq(  1,  9,  4)));
 
-        reverse_strided_reverse_seq.push_back(make_vec({  6,  1,  -1}, {  8,  0,  -2}));
-        reverse_strided_reverse_seq.push_back(make_vec({  9,  3,  -1}, {  9,  2,  -3}));
-        reverse_strided_reverse_seq.push_back(make_vec({  8,  5,  -1}, {  9,  1,  -4}));
+        reverse_strided_reverse_seq.push_back(make_vec(af_make_seq(  6,  1,  -1), af_make_seq(  8,  0,  -2)));
+        reverse_strided_reverse_seq.push_back(make_vec(af_make_seq(  9,  3,  -1), af_make_seq(  9,  2,  -3)));
+        reverse_strided_reverse_seq.push_back(make_vec(af_make_seq(  8,  5,  -1), af_make_seq(  9,  1,  -4)));
 
-        strided_continuous_seq.push_back(make_vec({  0,  8,  2}, {  0,  6,  1}));
-        strided_continuous_seq.push_back(make_vec({  2,  9,  3}, {  4,  9,  1}));
-        strided_continuous_seq.push_back(make_vec({  1,  9,  4}, {  3,  8,  1}));
+        strided_continuous_seq.push_back(make_vec(af_make_seq(  0,  8,  2), af_make_seq(  0,  6,  1)));
+        strided_continuous_seq.push_back(make_vec(af_make_seq(  2,  9,  3), af_make_seq(  4,  9,  1)));
+        strided_continuous_seq.push_back(make_vec(af_make_seq(  1,  9,  4), af_make_seq(  3,  8,  1)));
 
-        strided_strided_seq.push_back(make_vec({  1,  6,  2}, {  0,  8,  2}));
-        strided_strided_seq.push_back(make_vec({  3,  9,  2}, {  2,  9,  3}));
-        strided_strided_seq.push_back(make_vec({  5,  8,  2}, {  1,  9,  4}));
-        strided_strided_seq.push_back(make_vec({  1,  6,  3}, {  0,  8,  2}));
-        strided_strided_seq.push_back(make_vec({  3,  9,  3}, {  2,  9,  3}));
-        strided_strided_seq.push_back(make_vec({  5,  8,  3}, {  1,  9,  4}));
-        strided_strided_seq.push_back(make_vec({  1,  6,  4}, {  0,  8,  2}));
-        strided_strided_seq.push_back(make_vec({  3,  9,  4}, {  2,  9,  3}));
-        strided_strided_seq.push_back(make_vec({  3,  8,  4}, {  1,  9,  4}));
-        strided_strided_seq.push_back(make_vec({  3,  6,  4}, {  1,  9,  4}));
+        strided_strided_seq.push_back(make_vec(af_make_seq(  1,  6,  2), af_make_seq(  0,  8,  2)));
+        strided_strided_seq.push_back(make_vec(af_make_seq(  3,  9,  2), af_make_seq(  2,  9,  3)));
+        strided_strided_seq.push_back(make_vec(af_make_seq(  5,  8,  2), af_make_seq(  1,  9,  4)));
+        strided_strided_seq.push_back(make_vec(af_make_seq(  1,  6,  3), af_make_seq(  0,  8,  2)));
+        strided_strided_seq.push_back(make_vec(af_make_seq(  3,  9,  3), af_make_seq(  2,  9,  3)));
+        strided_strided_seq.push_back(make_vec(af_make_seq(  5,  8,  3), af_make_seq(  1,  9,  4)));
+        strided_strided_seq.push_back(make_vec(af_make_seq(  1,  6,  4), af_make_seq(  0,  8,  2)));
+        strided_strided_seq.push_back(make_vec(af_make_seq(  3,  9,  4), af_make_seq(  2,  9,  3)));
+        strided_strided_seq.push_back(make_vec(af_make_seq(  3,  8,  4), af_make_seq(  1,  9,  4)));
+        strided_strided_seq.push_back(make_vec(af_make_seq(  3,  6,  4), af_make_seq(  1,  9,  4)));
     }
 
-    vector<vector<af_seq>> column_continuous_seq;
-    vector<vector<af_seq>> column_continuous_reverse_seq;
-    vector<vector<af_seq>> column_strided_seq;
-    vector<vector<af_seq>> column_strided_reverse_seq;
+    vector<vector<af_seq> > column_continuous_seq;
+    vector<vector<af_seq> > column_continuous_reverse_seq;
+    vector<vector<af_seq> > column_strided_seq;
+    vector<vector<af_seq> > column_strided_reverse_seq;
 
-    vector<vector<af_seq>> row_continuous_seq;
-    vector<vector<af_seq>> row_continuous_reverse_seq;
-    vector<vector<af_seq>> row_strided_seq;
-    vector<vector<af_seq>> row_strided_reverse_seq;
+    vector<vector<af_seq> > row_continuous_seq;
+    vector<vector<af_seq> > row_continuous_reverse_seq;
+    vector<vector<af_seq> > row_strided_seq;
+    vector<vector<af_seq> > row_strided_reverse_seq;
 
-    vector<vector<af_seq>> continuous_continuous_seq;
-    vector<vector<af_seq>> continuous_strided_seq;
-    vector<vector<af_seq>> continuous_reverse_seq;
-    vector<vector<af_seq>> continuous_strided_reverse_seq;
+    vector<vector<af_seq> > continuous_continuous_seq;
+    vector<vector<af_seq> > continuous_strided_seq;
+    vector<vector<af_seq> > continuous_reverse_seq;
+    vector<vector<af_seq> > continuous_strided_reverse_seq;
 
-    vector<vector<af_seq>> reverse_continuous_seq;
-    vector<vector<af_seq>> reverse_reverse_seq;
-    vector<vector<af_seq>> reverse_strided_seq;
-    vector<vector<af_seq>> reverse_strided_reverse_seq;
+    vector<vector<af_seq> > reverse_continuous_seq;
+    vector<vector<af_seq> > reverse_reverse_seq;
+    vector<vector<af_seq> > reverse_strided_seq;
+    vector<vector<af_seq> > reverse_strided_reverse_seq;
 
-    vector<vector<af_seq>> strided_continuous_seq;
-    vector<vector<af_seq>> strided_strided_seq;
+    vector<vector<af_seq> > strided_continuous_seq;
+    vector<vector<af_seq> > strided_strided_seq;
 };
 
 template<typename T, size_t NDims>
 void
-DimCheck2D(const vector<vector<af_seq>> &seqs,string TestFile)
+DimCheck2D(const vector<vector<af_seq> > &seqs,string TestFile)
 {
     if (noDoubleTests<T>()) return;
 
     vector<af::dim4> numDims;
 
-    vector<vector<T>> hData;
-    vector<vector<T>> tests;
+    vector<vector<T> > hData;
+    vector<vector<T> > tests;
     readTests<T,T,int>(TestFile, numDims, hData, tests);
     af::dim4 dimensions = numDims[0];
 
@@ -273,7 +272,7 @@ DimCheck2D(const vector<vector<af_seq>> &seqs,string TestFile)
         ASSERT_EQ(AF_SUCCESS, af_index(&(indexed_arrays[i]), a, NDims, seqs[i].data()));
     }
 
-    vector<T*> h_indexed(seqs.size(), nullptr);
+    vector<T*> h_indexed(seqs.size(), NULL);
     for(size_t i = 0; i < seqs.size(); i++) {
         dim_type elems;
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&elems, indexed_arrays[i]));
@@ -420,36 +419,36 @@ class Indexing : public ::testing::Test
     public:
 
     virtual void SetUp() {
-        continuous3d_to_3d.push_back(make_vec3({ 0, 4, 1}, { 0,  6,  1}, af_span));
-        continuous3d_to_3d.push_back(make_vec3({ 4, 8, 1}, { 4,  9,  1}, af_span));
-        continuous3d_to_3d.push_back(make_vec3({ 6, 9, 1}, { 3,  8,  1}, af_span));
+        continuous3d_to_3d.push_back(make_vec3(af_make_seq( 0, 4, 1), af_make_seq( 0,  6,  1), af_span));
+        continuous3d_to_3d.push_back(make_vec3(af_make_seq( 4, 8, 1), af_make_seq( 4,  9,  1), af_span));
+        continuous3d_to_3d.push_back(make_vec3(af_make_seq( 6, 9, 1), af_make_seq( 3,  8,  1), af_span));
 
-        continuous3d_to_2d.push_back(make_vec3(af_span, { 0,  6,  1}, { 0, 0, 1}));
-        continuous3d_to_2d.push_back(make_vec3(af_span, { 4,  9,  1}, { 1, 1, 1}));
-        continuous3d_to_2d.push_back(make_vec3(af_span, { 3,  8,  1}, { 0, 0, 1}));
+        continuous3d_to_2d.push_back(make_vec3(af_span, af_make_seq( 0,  6,  1), af_make_seq( 0, 0, 1)));
+        continuous3d_to_2d.push_back(make_vec3(af_span, af_make_seq( 4,  9,  1), af_make_seq( 1, 1, 1)));
+        continuous3d_to_2d.push_back(make_vec3(af_span, af_make_seq( 3,  8,  1), af_make_seq( 0, 0, 1)));
 
-        continuous3d_to_1d.push_back(make_vec3(af_span, { 0,  0,  1}, { 0, 0, 1}));
-        continuous3d_to_1d.push_back(make_vec3(af_span, { 6,  6,  1}, { 1, 1, 1}));
-        continuous3d_to_1d.push_back(make_vec3(af_span, { 9,  9,  1}, { 0, 0, 1}));
+        continuous3d_to_1d.push_back(make_vec3(af_span, af_make_seq( 0,  0,  1), af_make_seq( 0, 0, 1)));
+        continuous3d_to_1d.push_back(make_vec3(af_span, af_make_seq( 6,  6,  1), af_make_seq( 1, 1, 1)));
+        continuous3d_to_1d.push_back(make_vec3(af_span, af_make_seq( 9,  9,  1), af_make_seq( 0, 0, 1)));
 
-        continuous4d_to_4d.push_back(make_vec4({ 2, 6, 1}, { 2,  6,  1}, af_span, af_span));
-        continuous4d_to_3d.push_back(make_vec4({ 2, 6, 1}, { 2,  6,  1}, af_span, {0, 0, 1}));
-        continuous4d_to_2d.push_back(make_vec4({ 2, 6, 1}, { 2,  6,  1}, { 0, 0, 1}, {0, 0, 1}));
-        continuous4d_to_1d.push_back(make_vec4({ 2, 6, 1}, { 2,  2,  1}, { 0, 0, 1}, {0, 0, 1}));
+        continuous4d_to_4d.push_back(make_vec4(af_make_seq( 2, 6, 1), af_make_seq( 2,  6,  1), af_span, af_span));
+        continuous4d_to_3d.push_back(make_vec4(af_make_seq( 2, 6, 1), af_make_seq( 2,  6,  1), af_span, af_make_seq(0, 0, 1)));
+        continuous4d_to_2d.push_back(make_vec4(af_make_seq( 2, 6, 1), af_make_seq( 2,  6,  1), af_make_seq( 0, 0, 1), af_make_seq(0, 0, 1)));
+        continuous4d_to_1d.push_back(make_vec4(af_make_seq( 2, 6, 1), af_make_seq( 2,  2,  1), af_make_seq( 0, 0, 1), af_make_seq(0, 0, 1)));
     }
 
-    vector<vector<af_seq>> continuous3d_to_3d;
-    vector<vector<af_seq>> continuous3d_to_2d;
-    vector<vector<af_seq>> continuous3d_to_1d;
+    vector<vector<af_seq> > continuous3d_to_3d;
+    vector<vector<af_seq> > continuous3d_to_2d;
+    vector<vector<af_seq> > continuous3d_to_1d;
 
-    vector<vector<af_seq>> continuous4d_to_4d;
-    vector<vector<af_seq>> continuous4d_to_3d;
-    vector<vector<af_seq>> continuous4d_to_2d;
-    vector<vector<af_seq>> continuous4d_to_1d;
+    vector<vector<af_seq> > continuous4d_to_4d;
+    vector<vector<af_seq> > continuous4d_to_3d;
+    vector<vector<af_seq> > continuous4d_to_2d;
+    vector<vector<af_seq> > continuous4d_to_1d;
 };
 
 template<typename T, size_t NDims>
-void DimCheckND(const vector<vector<af_seq>> &seqs,string TestFile)
+void DimCheckND(const vector<vector<af_seq> > &seqs,string TestFile)
 {
     if (noDoubleTests<T>()) return;
 
@@ -502,16 +501,16 @@ TEST(Indexing2D, ColumnContiniousCPP)
 
     using af::array;
 
-    vector<vector<af_seq>> seqs;
+    vector<vector<af_seq> > seqs;
 
-    seqs.push_back(make_vec(af_span, {  0,  6,  1}));
-    //seqs.push_back(make_vec(span, {  4,  9,  1}));
-    //seqs.push_back(make_vec(span, {  3,  8,  1}));
+    seqs.push_back(make_vec(af_span, af_make_seq(  0,  6,  1)));
+    //seqs.push_back(make_vec(span, af_make_seq(  4,  9,  1)));
+    //seqs.push_back(make_vec(span, af_make_seq(  3,  8,  1)));
 
     vector<af::dim4> numDims;
 
-    vector<vector<float>> hData;
-    vector<vector<float>> tests;
+    vector<vector<float> > hData;
+    vector<vector<float> > tests;
     readTests<float, float, int>(TEST_DIR"/index/ColumnContinious.test", numDims, hData, tests);
     af::dim4 dimensions = numDims[0];
 
@@ -520,7 +519,7 @@ TEST(Indexing2D, ColumnContiniousCPP)
     vector<array> sub;
     for(size_t i = 0; i < seqs.size(); i++) {
         vector<af_seq> seq = seqs[i];
-        sub.emplace_back(a(seq[0], seq[1]));
+        sub.push_back(a(seq[0], seq[1]));
     }
 
     for(size_t i = 0; i < seqs.size(); i++) {
@@ -558,8 +557,8 @@ void arrayIndexTest(string pTestFile, int dim)
     if (noDoubleTests<T>()) return;
 
     vector<af::dim4>  numDims;
-    vector<vector<T>>      in;
-    vector<vector<T>>   tests;
+    vector<vector<T> >      in;
+    vector<vector<T> >   tests;
 
     readTests<T, T, int>(pTestFile, numDims, in, tests);
 
@@ -618,8 +617,8 @@ TEST(lookup, CPP)
     using af::array;
 
     vector<af::dim4>      numDims;
-    vector<vector<float>>      in;
-    vector<vector<float>>   tests;
+    vector<vector<float> >      in;
+    vector<vector<float> >   tests;
 
     readTests<float, float, int>(string(TEST_DIR"/arrayindex/dim0.test"), numDims, in, tests);
 
@@ -719,8 +718,8 @@ TEST(SeqIndex, CPPLarge)
     using af::array;
 
     vector<af::dim4>      numDims;
-    vector<vector<float>>      in;
-    vector<vector<float>>   tests;
+    vector<vector<float> >      in;
+    vector<vector<float> >   tests;
 
     readTests<float, float, int>(string(TEST_DIR"/arrayindex/dim0Large.test"), numDims, in, tests);
 

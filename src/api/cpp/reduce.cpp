@@ -97,7 +97,7 @@ namespace af
     {                                                       \
         double rval, ival;                                  \
         AF_THROW(af_##fn##_all(&rval, &ival, in.get()));    \
-        T out = {(Tr)rval, (Tr)ival};                       \
+        T out((Tr)rval, (Tr)ival);                       \
         return out;                                         \
     }                                                       \
 
@@ -146,7 +146,7 @@ namespace af
     {                                                           \
         double rval, ival;                                      \
         AF_THROW(af_i##fn##_all(&rval, &ival, idx, in.get()));  \
-        *val = {(Tr)rval, (Tr)ival};                            \
+        *val = T((Tr)rval, (Tr)ival);                            \
     }                                                           \
 
 #define INSTANTIATE(fn)                         \

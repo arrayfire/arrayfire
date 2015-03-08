@@ -38,8 +38,8 @@ void morphTest(string pTestFile)
     if (noDoubleTests<inType>()) return;
 
     vector<af::dim4>       numDims;
-    vector<vector<inType>>      in;
-    vector<vector<inType>>   tests;
+    vector<vector<inType> >      in;
+    vector<vector<inType> >   tests;
 
     readTests<inType,inType,int>(pTestFile, numDims, in, tests);
 

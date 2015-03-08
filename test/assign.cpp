@@ -23,45 +23,45 @@ class ArrayAssign : public ::testing::Test
 {
     public:
         virtual void SetUp() {
-            subMat1D.push_back({5,20,1});
+            subMat1D.push_back(af_make_seq(5,20,1));
 
-            subMat2D.push_back({1,2,1});
-            subMat2D.push_back({1,2,1});
+            subMat2D.push_back(af_make_seq(1,2,1));
+            subMat2D.push_back(af_make_seq(1,2,1));
 
-            subMat3D.push_back({3,4,1});
-            subMat3D.push_back({0,1,1});
-            subMat3D.push_back({1,2,1});
+            subMat3D.push_back(af_make_seq(3,4,1));
+            subMat3D.push_back(af_make_seq(0,1,1));
+            subMat3D.push_back(af_make_seq(1,2,1));
 
-            subMat4D.push_back({3,4,1});
-            subMat4D.push_back({0,1,1});
-            subMat4D.push_back({0,1,1});
-            subMat4D.push_back({1,2,1});
+            subMat4D.push_back(af_make_seq(3,4,1));
+            subMat4D.push_back(af_make_seq(0,1,1));
+            subMat4D.push_back(af_make_seq(0,1,1));
+            subMat4D.push_back(af_make_seq(1,2,1));
 
-            subMat1D_to_2D.push_back({1,2,1});
-            subMat1D_to_2D.push_back({1,1,1});
+            subMat1D_to_2D.push_back(af_make_seq(1,2,1));
+            subMat1D_to_2D.push_back(af_make_seq(1,1,1));
 
-            subMat1D_to_3D.push_back({5,20,1});
-            subMat1D_to_3D.push_back({1,1,1});
-            subMat1D_to_3D.push_back({2,2,1});
+            subMat1D_to_3D.push_back(af_make_seq(5,20,1));
+            subMat1D_to_3D.push_back(af_make_seq(1,1,1));
+            subMat1D_to_3D.push_back(af_make_seq(2,2,1));
 
-            subMat2D_to_3D.push_back({3,4,1});
-            subMat2D_to_3D.push_back({0,1,1});
-            subMat2D_to_3D.push_back({1,1,1});
+            subMat2D_to_3D.push_back(af_make_seq(3,4,1));
+            subMat2D_to_3D.push_back(af_make_seq(0,1,1));
+            subMat2D_to_3D.push_back(af_make_seq(1,1,1));
 
-            subMat1D_to_4D.push_back({3,4,1});
-            subMat1D_to_4D.push_back({0,0,1});
-            subMat1D_to_4D.push_back({0,0,1});
-            subMat1D_to_4D.push_back({1,1,1});
+            subMat1D_to_4D.push_back(af_make_seq(3,4,1));
+            subMat1D_to_4D.push_back(af_make_seq(0,0,1));
+            subMat1D_to_4D.push_back(af_make_seq(0,0,1));
+            subMat1D_to_4D.push_back(af_make_seq(1,1,1));
 
-            subMat2D_to_4D.push_back({3,4,1});
-            subMat2D_to_4D.push_back({0,1,1});
-            subMat2D_to_4D.push_back({0,0,1});
-            subMat2D_to_4D.push_back({1,1,1});
+            subMat2D_to_4D.push_back(af_make_seq(3,4,1));
+            subMat2D_to_4D.push_back(af_make_seq(0,1,1));
+            subMat2D_to_4D.push_back(af_make_seq(0,0,1));
+            subMat2D_to_4D.push_back(af_make_seq(1,1,1));
 
-            subMat3D_to_4D.push_back({3,4,1});
-            subMat3D_to_4D.push_back({0,1,1});
-            subMat3D_to_4D.push_back({0,1,1});
-            subMat3D_to_4D.push_back({1,1,1});
+            subMat3D_to_4D.push_back(af_make_seq(3,4,1));
+            subMat3D_to_4D.push_back(af_make_seq(0,1,1));
+            subMat3D_to_4D.push_back(af_make_seq(0,1,1));
+            subMat3D_to_4D.push_back(af_make_seq(1,1,1));
         }
         vector<af_seq> subMat1D;
 
@@ -91,8 +91,8 @@ void assignTest(string pTestFile, const vector<af_seq> *seqv)
     if (noDoubleTests<outType>()) return;
 
     vector<af::dim4>  numDims;
-    vector<vector<inType>>      in;
-    vector<vector<outType>>   tests;
+    vector<vector<inType> >      in;
+    vector<vector<outType> >   tests;
 
     readTests<inType, outType, int>(pTestFile, numDims, in, tests);
 
@@ -188,7 +188,7 @@ TEST(ArrayAssign, InvalidArgs)
     af_array outArray = 0;
 
     vector<af_seq> seqv;
-    seqv.push_back({5,14,1});
+    seqv.push_back(af_make_seq(5,14,1));
 
     ASSERT_EQ(AF_ERR_ARG, af_assign(&outArray,
                                     lhsArray, seqv.size(), &seqv.front(), rhsArray));
@@ -218,12 +218,12 @@ TEST(ArrayAssign, CPP)
     using af::array;
 
     vector<af_seq> seqv;
-    seqv.push_back({1,2,1});
-    seqv.push_back({1,2,1});
+    seqv.push_back(af_make_seq(1,2,1));
+    seqv.push_back(af_make_seq(1,2,1));
 
     vector<af::dim4>  numDims;
-    vector<vector<float>>      in;
-    vector<vector<float>>   tests;
+    vector<vector<float> >      in;
+    vector<vector<float> >   tests;
 
     readTests<float, float, int>(string(TEST_DIR"/assign/2d_to_2d.test"), numDims, in, tests);
 

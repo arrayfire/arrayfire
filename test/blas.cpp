@@ -40,8 +40,8 @@ void MatMulCheck(string TestFile)
     using std::vector;
     vector<af::dim4> numDims;
 
-    vector<vector<T>> hData;
-    vector<vector<T>> tests;
+    vector<vector<T> > hData;
+    vector<vector<T> > tests;
     readTests<T,T,int>(TestFile, numDims, hData, tests);
 
     af_array a, aT, b, bT;
@@ -135,8 +135,8 @@ void cppMatMulCheck(string TestFile)
     using std::vector;
     vector<af::dim4> numDims;
 
-    vector<vector<T>> hData;
-    vector<vector<T>> tests;
+    vector<vector<T> > hData;
+    vector<vector<T> > tests;
     readTests<T,T,int>(TestFile, numDims, hData, tests);
 
     af::array a(numDims[0], &hData[0].front());

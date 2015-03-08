@@ -21,12 +21,12 @@ typedef unsigned int uint;
 
 template<typename inType, typename outType, typename FileElementType>
 void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
-                std::vector<std::vector<inType>>  &testInputs,
-                std::vector<std::vector<outType>> &testOutputs)
+                std::vector<std::vector<inType> >   &testInputs,
+                std::vector<std::vector<outType> > &testOutputs)
 {
     using std::vector;
 
-    std::ifstream testFile(FileName);
+    std::ifstream testFile(FileName.c_str());
     if(testFile.good()) {
         unsigned inputCount;
         testFile >> inputCount;
@@ -73,12 +73,12 @@ void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
 
 template<typename inType, typename outType>
 void readTestsFromFile(const std::string &FileName, std::vector<af::dim4> &inputDims,
-                std::vector<std::vector<inType>>  &testInputs,
-                std::vector<std::vector<outType>> &testOutputs)
+                std::vector<std::vector<inType> >  &testInputs,
+                std::vector<std::vector<outType> > &testOutputs)
 {
     using std::vector;
 
-    std::ifstream testFile(FileName);
+    std::ifstream testFile(FileName.c_str());
     if(testFile.good()) {
         unsigned inputCount;
         testFile >> inputCount;
@@ -131,7 +131,7 @@ void readImageTests(const std::string        &pFileName,
 {
     using std::vector;
 
-    std::ifstream testFile(pFileName);
+    std::ifstream testFile(pFileName.c_str());
     if(testFile.good()) {
         unsigned inputCount;
         testFile >> inputCount;
@@ -183,11 +183,11 @@ template<typename outType>
 void readImageTests(const std::string                 &pFileName,
                     std::vector<af::dim4>             &pInputDims,
                     std::vector<std::string>          &pTestInputs,
-                    std::vector<std::vector<outType>> &pTestOutputs)
+                    std::vector<std::vector<outType> > &pTestOutputs)
 {
     using std::vector;
 
-    std::ifstream testFile(pFileName);
+    std::ifstream testFile(pFileName.c_str());
     if(testFile.good()) {
         unsigned inputCount;
         testFile >> inputCount;
@@ -237,12 +237,12 @@ template<typename descType>
 void readImageFeaturesDescriptors(const std::string                  &pFileName,
                                   std::vector<af::dim4>              &pInputDims,
                                   std::vector<std::string>           &pTestInputs,
-                                  std::vector<std::vector<float>>    &pTestFeats,
-                                  std::vector<std::vector<descType>> &pTestDescs)
+                                  std::vector<std::vector<float> >    &pTestFeats,
+                                  std::vector<std::vector<descType> > &pTestDescs)
 {
     using std::vector;
 
-    std::ifstream testFile(pFileName);
+    std::ifstream testFile(pFileName.c_str());
     if(testFile.good()) {
         unsigned inputCount;
         testFile >> inputCount;
@@ -313,8 +313,8 @@ template<typename T>
 bool compareArraysRMSD(dim_type data_size, T *gold, T *data, double tolerance)
 {
     double accum  = 0.0;
-    double maxion = (double)std::numeric_limits<T>::lowest();
-    double minion = (double)std::numeric_limits<T>::max();
+    double maxion = FLT_MAX;//(double)std::numeric_limits<T>::lowest();
+    double minion = FLT_MAX;//(double)std::numeric_limits<T>::max();
 
     for(dim_type i=0;i<data_size;i++)
     {
@@ -336,13 +336,59 @@ bool compareArraysRMSD(dim_type data_size, T *gold, T *data, double tolerance)
     return true;
 }
 
+template<typename T, typename Other>
+struct is_same{
+    static const bool value = false;
+};
+
+template<typename T>
+struct is_same<T, T> {
+    static const bool value = true;
+};
+
+template<bool, typename T, typename O>
+struct cond_type;
+
+template<typename T, typename Other>
+struct cond_type<true, T, Other> {
+    typedef T type;
+};
+
+template<typename T, typename Other>
+struct cond_type<false, T, Other> {
+    typedef Other type;
+};
+
+template<typename T>
+double real(T val) { return val.real(); }
+template<>
+double real<double>(double val) { return val; }
+template<>
+double real<float>(float val) { return val; }
+template<>
+double real<int>(int val) { return val; }
+template<>
+double real<uint>(uint val) { return val; }
+
+template<typename T>
+double imag(T val) { return val.imag(); }
+template<>
+double imag<double>(double val) { return 0; }
+template<>
+double imag<float>(float val) { return 0; }
+template<>
+double imag<int>(int val) { return 0; }
+template<>
+double imag<uint>(uint val) { return 0; }
+
 template<typename T>
 bool noDoubleTests()
 {
-    bool isTypeDouble = std::is_same<T, double>::value || std::is_same<T, af::cdouble>::value;
+    bool isTypeDouble = is_same<T, double>::value || is_same<T, af::cdouble>::value;
 
     int dev = af::getDevice();
     bool isDoubleSupported = af::isDoubleAvailable(dev);
 
     return ((isTypeDouble && !isDoubleSupported) ? true : false);
 }
+
