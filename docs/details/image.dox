@@ -144,5 +144,16 @@ discard it if its score is non maximal.
 
 =======================================================================
 
+\defgroup image_func_orb orb
+\ingroup featdescriptor_mat
+
+Extract ORB descriptors from FAST features that hold higher Harris responses.
+FAST does not compute orientation, thus, orientation of features is calculated
+using the intensity centroid. As FAST is also not multi-scale enabled, a
+multi-scale pyramid is calculated by downsampling the input image multiple
+times followed by FAST feature detection on each scale.
+
+=======================================================================
+
 @}
 */
