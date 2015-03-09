@@ -178,7 +178,8 @@ void non_max_counts(
     __global unsigned *d_total,
     __global float *flags,
     __global const float* score,
-    KParam iInfo)
+    KParam iInfo,
+    const unsigned edge)
 {
     __local unsigned s_counts[256];
 
@@ -188,16 +189,16 @@ void non_max_counts(
 
     unsigned count = 0;
 
-    const int max1 = (int)iInfo.dims[1] - 1;
+    const int max1 = (int)iInfo.dims[1] - edge - 1;
     for (int y = yid; y < yend; y += yoff) {
-        if (y >= max1 || y <= 1) continue;
+        if (y >= max1 || y <= (int)(edge+1)) continue;
 
         const int xid = get_group_id(0) * get_local_size(0) * 2 + get_local_id(0);
         const int xend = (get_group_id(0) + 1) * get_local_size(0) * 2;
 
-        const int max0 = (int)iInfo.dims[0] - 1;
+        const int max0 = (int)iInfo.dims[0] - edge - 1;
         for (int x = xid; x < xend; x += get_local_size(0)) {
-            if (x >= max0 || x <= 1) continue;
+            if (x >= max0 || x <= (int)(edge+1)) continue;
 
             float v = score[y * iInfo.dims[0] + x];
             if (v == 0) {
@@ -256,7 +257,8 @@ __kernel void get_features(
     __global const unsigned* d_counts,
     __global const unsigned* d_offsets,
     KParam iInfo,
-    const unsigned total)
+    const unsigned total,
+    const unsigned edge)
 {
     const int xid = get_group_id(0) * get_local_size(0) * 2 + get_local_id(0);
     const int yid = get_group_id(1) * get_local_size(1) * 8 + get_local_id(1);
@@ -282,9 +284,9 @@ __kernel void get_features(
     // Blocks that are empty, please bail
     if (s_count == 0) return;
     for (int y = yid; y < yend; y += yoff) {
-        if (y >= iInfo.dims[1] - 1 || y <= 1) continue;
+        if (y >= iInfo.dims[1] - edge - 1 || y <= edge+1) continue;
         for (int x = xid; x < xend; x += xoff) {
-            if (x >= iInfo.dims[0] - 1 || x <= 1) continue;
+            if (x >= iInfo.dims[0] - edge - 1 || x <= edge+1) continue;
 
             float v = flags[y * iInfo.dims[0] + x];
             if (v == 0) continue;

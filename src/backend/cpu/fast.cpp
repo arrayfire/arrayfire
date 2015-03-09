@@ -198,7 +198,8 @@ void non_maximal(
     Array<float> &y_out,
     Array<float> &score_out,
     unsigned* count,
-    const unsigned total_feat)
+    const unsigned total_feat,
+    const unsigned edge)
 {
     const float *score_ptr = score.get();
     const float *x_in_ptr = x_in.get();
@@ -219,6 +220,10 @@ void non_maximal(
         max_v = std::max(max_v, score_ptr[y+1 + score_dims[0] * (x-1)]);
         max_v = std::max(max_v, score_ptr[y+1 + score_dims[0] * (x)  ]);
         max_v = std::max(max_v, score_ptr[y+1 + score_dims[0] * (x+1)]);
+
+        if (y >= score_dims[1] - edge - 1 || y <= edge + 1 ||
+            x >= score_dims[0] - edge - 1 || x <= edge + 1)
+            continue;
 
         // Stores keypoint to feat_out if it's response is maximum compared to
         // its 8-neighborhood
@@ -285,7 +290,7 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
         count = 0;
         non_maximal(V, x, y,
                     x_total, y_total, score_total,
-                    &count, feat_found);
+                    &count, feat_found, edge);
 
         feat_found = std::min(max_feat, count);
     } else {
