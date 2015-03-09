@@ -121,9 +121,9 @@ void fast(unsigned* out_feat,
 
         auto nmOp = make_kernel<Buffer, Buffer, Buffer,
                                 Buffer, Buffer,
-                                KParam> (nmKernel[device]);
+                                KParam, const unsigned> (nmKernel[device]);
         nmOp(EnqueueArgs(getQueue(), global_nonmax, local_nonmax),
-                         *d_counts, *d_offsets, *d_total, *d_flags, *d_score, in.info);
+                         *d_counts, *d_offsets, *d_total, *d_flags, *d_score, in.info, edge);
         CL_DEBUG_FINISH(getQueue());
 
         unsigned total;
@@ -138,11 +138,12 @@ void fast(unsigned* out_feat,
 
             auto gfOp = make_kernel<Buffer, Buffer, Buffer,
                                     Buffer, Buffer, Buffer,
-                                    KParam, const unsigned> (gfKernel[device]);
+                                    KParam, const unsigned,
+                                    const unsigned> (gfKernel[device]);
             gfOp(EnqueueArgs(getQueue(), global_nonmax, local_nonmax),
                              *x_out.data, *y_out.data, *score_out.data,
                              *d_flags, *d_counts, *d_offsets,
-                             in.info, total);
+                             in.info, total, edge);
             CL_DEBUG_FINISH(getQueue());
         }
 
