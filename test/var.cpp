@@ -22,7 +22,7 @@ using af::cfloat;
 
 template<typename T>
 struct helperType {
-    typedef typename cond_type<is_same<T, uchar>::value,
+    typedef typename cond_type<is_same_type<T, uchar>::value,
                                          uint,
                                          T>::type type;
 };
@@ -30,7 +30,7 @@ struct helperType {
 
 template<typename T>
 struct varOutType {
-   typedef typename cond_type<is_same<T, char>::value,
+   typedef typename cond_type<is_same_type<T, char>::value,
                                               int,
                                               typename helperType<T>::type >::type type;
 };

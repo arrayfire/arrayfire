@@ -90,7 +90,7 @@ void bilateralDataTest(string pTestFile)
 {
     if (noDoubleTests<inType>()) return;
 
-    typedef typename cond_type<is_same<inType, double>::value, double, float>::type outType;
+    typedef typename cond_type<is_same_type<inType, double>::value, double, float>::type outType;
 
     vector<af::dim4>        numDims;
     vector<vector<inType> >       in;

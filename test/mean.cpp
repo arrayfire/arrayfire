@@ -35,21 +35,21 @@ TYPED_TEST_CASE(Mean, TestTypes);
 
 template<typename T>
 struct f32HelperType {
-   typedef typename cond_type<is_same<T, double>::value,
+   typedef typename cond_type<is_same_type<T, double>::value,
                                              double,
                                              float>::type type;
 };
 
 template<typename T>
 struct c32HelperType {
-   typedef typename cond_type<is_same<T, cfloat>::value,
+   typedef typename cond_type<is_same_type<T, cfloat>::value,
                                              cfloat,
                                              typename f32HelperType<T>::type >::type type;
 };
 
 template<typename T>
 struct meanOutType {
-    typedef typename cond_type<is_same<T, cdouble>::value,
+    typedef typename cond_type<is_same_type<T, cdouble>::value,
                                               cdouble,
                                               typename c32HelperType<T>::type >::type type;
 };

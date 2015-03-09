@@ -337,12 +337,12 @@ bool compareArraysRMSD(dim_type data_size, T *gold, T *data, double tolerance)
 }
 
 template<typename T, typename Other>
-struct is_same{
+struct is_same_type{
     static const bool value = false;
 };
 
 template<typename T>
-struct is_same<T, T> {
+struct is_same_type<T, T> {
     static const bool value = true;
 };
 
@@ -384,7 +384,7 @@ double imag<uint>(uint val) { return 0; }
 template<typename T>
 bool noDoubleTests()
 {
-    bool isTypeDouble = is_same<T, double>::value || is_same<T, af::cdouble>::value;
+    bool isTypeDouble = is_same_type<T, double>::value || is_same_type<T, af::cdouble>::value;
 
     int dev = af::getDevice();
     bool isDoubleSupported = af::isDoubleAvailable(dev);
