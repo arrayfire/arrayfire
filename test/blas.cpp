@@ -32,7 +32,7 @@ class MatrixMultiply : public ::testing::Test
 typedef ::testing::Types<float, af::cfloat, double, af::cdouble> TestTypes;
 TYPED_TEST_CASE(MatrixMultiply, TestTypes);
 
-template<typename T, bool isBVector = false>
+template<typename T, bool isBVector>
 void MatMulCheck(string TestFile)
 {
     if (noDoubleTests<T>()) return;
@@ -40,8 +40,8 @@ void MatMulCheck(string TestFile)
     using std::vector;
     vector<af::dim4> numDims;
 
-    vector<vector<T>> hData;
-    vector<vector<T>> tests;
+    vector<vector<T> > hData;
+    vector<vector<T> > tests;
     readTests<T,T,int>(TestFile, numDims, hData, tests);
 
     af_array a, aT, b, bT;
@@ -109,12 +109,12 @@ void MatMulCheck(string TestFile)
 
 TYPED_TEST(MatrixMultiply, Square)
 {
-    MatMulCheck<TypeParam>(TEST_DIR"/blas/Basic.test");
+    MatMulCheck<TypeParam, false>(TEST_DIR"/blas/Basic.test");
 }
 
 TYPED_TEST(MatrixMultiply, NonSquare)
 {
-    MatMulCheck<TypeParam>(TEST_DIR"/blas/NonSquare.test");
+    MatMulCheck<TypeParam, false>(TEST_DIR"/blas/NonSquare.test");
 }
 
 TYPED_TEST(MatrixMultiply, SquareVector)
@@ -127,7 +127,7 @@ TYPED_TEST(MatrixMultiply, RectangleVector)
     MatMulCheck<TypeParam, true>(TEST_DIR"/blas/RectangleVector.test");
 }
 
-template<typename T, bool isBVector = false>
+template<typename T, bool isBVector>
 void cppMatMulCheck(string TestFile)
 {
     if (noDoubleTests<T>()) return;
@@ -135,8 +135,8 @@ void cppMatMulCheck(string TestFile)
     using std::vector;
     vector<af::dim4> numDims;
 
-    vector<vector<T>> hData;
-    vector<vector<T>> tests;
+    vector<vector<T> > hData;
+    vector<vector<T> > tests;
     readTests<T,T,int>(TestFile, numDims, hData, tests);
 
     af::array a(numDims[0], &hData[0].front());
@@ -191,12 +191,12 @@ void cppMatMulCheck(string TestFile)
 
 TYPED_TEST(MatrixMultiply, Square_CPP)
 {
-    cppMatMulCheck<TypeParam>(TEST_DIR"/blas/Basic.test");
+    cppMatMulCheck<TypeParam, false>(TEST_DIR"/blas/Basic.test");
 }
 
 TYPED_TEST(MatrixMultiply, NonSquare_CPP)
 {
-    cppMatMulCheck<TypeParam>(TEST_DIR"/blas/NonSquare.test");
+    cppMatMulCheck<TypeParam, false>(TEST_DIR"/blas/NonSquare.test");
 }
 
 TYPED_TEST(MatrixMultiply, SquareVector_CPP)

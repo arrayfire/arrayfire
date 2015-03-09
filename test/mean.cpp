@@ -34,28 +34,35 @@ typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, char, uchar>
 TYPED_TEST_CASE(Mean, TestTypes);
 
 template<typename T>
-using f32HelperType = typename std::conditional<std::is_same<T, double>::value,
+struct f32HelperType {
+   typedef typename cond_type<is_same<T, double>::value,
                                              double,
-                                             float>::type;
+                                             float>::type type;
+};
 
 template<typename T>
-using c32HelperType = typename std::conditional<std::is_same<T, cfloat>::value,
+struct c32HelperType {
+   typedef typename cond_type<is_same<T, cfloat>::value,
                                              cfloat,
-                                             f32HelperType<T>>::type;
+                                             typename f32HelperType<T>::type >::type type;
+};
+
 template<typename T>
-using meanOutType = typename std::conditional<std::is_same<T, cdouble>::value,
+struct meanOutType {
+    typedef typename cond_type<is_same<T, cdouble>::value,
                                               cdouble,
-                                              c32HelperType<T>>::type;
+                                              typename c32HelperType<T>::type >::type type;
+};
 
 template<typename T, dim_type dim>
 void meanDimTest(string pFileName)
 {
-    typedef meanOutType<T> outType;
+    typedef typename meanOutType<T>::type outType;
     if (noDoubleTests<T>()) return;
 
     vector<af::dim4>      numDims;
-    vector<vector<int>>        in;
-    vector<vector<float>>   tests;
+    vector<vector<int> >        in;
+    vector<vector<float> >   tests;
 
     readTestsFromFile<int,float>(pFileName, numDims, in, tests);
 
@@ -77,8 +84,8 @@ void meanDimTest(string pFileName)
     vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
     size_t nElems = currGoldBar.size();
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_NEAR(std::real(currGoldBar[elIter]), std::real(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
-        ASSERT_NEAR(std::imag(currGoldBar[elIter]), std::imag(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
+        ASSERT_NEAR(::real(currGoldBar[elIter]), ::real(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
+        ASSERT_NEAR(::imag(currGoldBar[elIter]), ::imag(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
     }
 
     // cleanup
@@ -125,7 +132,7 @@ TYPED_TEST(Mean, Dim2HyperCube)
 template<typename T>
 void testCPPMean(T const_value, af::dim4 dims)
 {
-    typedef meanOutType<T> outType;
+    typedef typename meanOutType<T>::type outType;
     if (noDoubleTests<T>()) return;
 
     using af::array;
@@ -134,14 +141,17 @@ void testCPPMean(T const_value, af::dim4 dims)
     vector<T> hundred(dims.elements(), const_value);
 
     outType gold = outType(0);
-    for(auto i:hundred) gold += i;
+    //for(auto i:hundred) gold += i;
+    for(int i = 0; i < hundred.size(); i++) {
+        gold += hundred[i];
+    }
     gold /= dims.elements();
 
     array a(dims, &(hundred.front()));
     outType output = mean<outType>(a);
 
-    ASSERT_NEAR(std::real(output), std::real(gold), 1.0e-3);
-    ASSERT_NEAR(std::imag(output), std::imag(gold), 1.0e-3);
+    ASSERT_NEAR(::real(output), ::real(gold), 1.0e-3);
+    ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-3);
 }
 
 TEST(Mean, CPP_f64)

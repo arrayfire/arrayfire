@@ -41,8 +41,8 @@ void convolveTest(string pTestFile, bool expand)
     using af::dim4;
 
     vector<dim4>      numDims;
-    vector<vector<T>>      in;
-    vector<vector<T>>   tests;
+    vector<vector<T> >      in;
+    vector<vector<T> >   tests;
 
     readTests<T, T, int>(pTestFile, numDims, in, tests);
 
@@ -207,8 +207,8 @@ void sepConvolveTest(string pTestFile, bool expand)
     using af::dim4;
 
     vector<dim4>      numDims;
-    vector<vector<T>>      in;
-    vector<vector<T>>   tests;
+    vector<vector<T> >      in;
+    vector<vector<T> >   tests;
 
     readTests<T, T, int>(pTestFile, numDims, in, tests);
 
@@ -357,8 +357,8 @@ TEST(Convolve, CPP)
     using af::dim4;
 
     vector<dim4>      numDims;
-    vector<vector<float>>      in;
-    vector<vector<float>>   tests;
+    vector<vector<float> >      in;
+    vector<vector<float> >   tests;
 
     readTests<float, float, int>(string(TEST_DIR"/convolve/cuboid_same_many2many.test"), numDims, in, tests);
 
@@ -386,8 +386,8 @@ TEST(Convolve, separable_CPP)
     using af::dim4;
 
     vector<dim4>      numDims;
-    vector<vector<float>>      in;
-    vector<vector<float>>   tests;
+    vector<vector<float> >      in;
+    vector<vector<float> >   tests;
 
     readTests<float, float, int>(string(TEST_DIR"/convolve/separable_conv2d_same_rectangle_batch.test"),
                                  numDims, in, tests);

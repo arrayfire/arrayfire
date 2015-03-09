@@ -28,9 +28,9 @@ class Resize : public ::testing::Test
 {
     public:
         virtual void SetUp() {
-            subMat0.push_back({0, 4, 1});
-            subMat0.push_back({2, 6, 1});
-            subMat0.push_back({0, 2, 1});
+            subMat0.push_back(af_make_seq(0, 4, 1));
+            subMat0.push_back(af_make_seq(2, 6, 1));
+            subMat0.push_back(af_make_seq(0, 2, 1));
         }
         vector<af_seq> subMat0;
 };
@@ -40,13 +40,13 @@ class ResizeI : public ::testing::Test
 {
     public:
         virtual void SetUp() {
-            subMat0.push_back({0, 4, 1});
-            subMat0.push_back({2, 6, 1});
-            subMat0.push_back({0, 2, 1});
+            subMat0.push_back(af_make_seq(0, 4, 1));
+            subMat0.push_back(af_make_seq(2, 6, 1));
+            subMat0.push_back(af_make_seq(0, 2, 1));
 
-            subMat1.push_back({0, 5, 1});
-            subMat1.push_back({0, 5, 1});
-            subMat1.push_back({0, 2, 1});
+            subMat1.push_back(af_make_seq(0, 5, 1));
+            subMat1.push_back(af_make_seq(0, 5, 1));
+            subMat1.push_back(af_make_seq(0, 2, 1));
         }
         vector<af_seq> subMat0;
         vector<af_seq> subMat1;
@@ -61,13 +61,13 @@ TYPED_TEST_CASE(Resize, TestTypesF);
 TYPED_TEST_CASE(ResizeI, TestTypesI);
 
 template<typename T>
-void resizeTest(string pTestFile, const unsigned resultIdx, const dim_type odim0, const dim_type odim1, const af_interp_type method, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
+void resizeTest(string pTestFile, const unsigned resultIdx, const dim_type odim0, const dim_type odim1, const af_interp_type method, bool isSubRef = false, const vector<af_seq> * seqv = NULL)
 {
     if (noDoubleTests<T>()) return;
 
     vector<af::dim4> numDims;
-    vector<vector<T>>   in;
-    vector<vector<T>>   tests;
+    vector<vector<T> >   in;
+    vector<vector<T> >   tests;
     readTests<T, T, float>(pTestFile,numDims,in,tests);
 
     af::dim4 dims = numDims[0];
@@ -259,8 +259,8 @@ void resizeArgsTest(af_err err, string pTestFile, const af::dim4 odims, const af
     if (noDoubleTests<T>()) return;
 
     vector<af::dim4> numDims;
-    vector<vector<T>>   in;
-    vector<vector<T>>   tests;
+    vector<vector<T> >   in;
+    vector<vector<T> >   tests;
     readTests<T, T, float>(pTestFile,numDims,in,tests);
 
     af::dim4 dims = numDims[0];
@@ -294,8 +294,8 @@ TEST(Resize, CPP)
     if (noDoubleTests<float>()) return;
 
     vector<af::dim4> numDims;
-    vector<vector<float>>   in;
-    vector<vector<float>>   tests;
+    vector<vector<float> >   in;
+    vector<vector<float> >   tests;
     readTests<float, float, float>(string(TEST_DIR"/resize/square.test"),numDims,in,tests);
 
     af::dim4 dims = numDims[0];

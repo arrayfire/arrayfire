@@ -31,8 +31,8 @@ void whereTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=
 
     vector<af::dim4> numDims;
 
-    vector<vector<int>> data;
-    vector<vector<int>> tests;
+    vector<vector<int> > data;
+    vector<vector<int> > tests;
     readTests<int,int,int> (pTestFile,numDims,data,tests);
     af::dim4 dims       = numDims[0];
 
@@ -75,10 +75,10 @@ void whereTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=
 vector<af_seq> init_subs()
 {
     vector<af_seq> subs;
-    subs.push_back({2, 6, 1});
-    subs.push_back({1, 5, 1});
-    subs.push_back({1, 3, 1});
-    subs.push_back({1, 2, 1});
+    subs.push_back(af_make_seq(2, 6, 1));
+    subs.push_back(af_make_seq(1, 5, 1));
+    subs.push_back(af_make_seq(1, 3, 1));
+    subs.push_back(af_make_seq(1, 2, 1));
     return subs;
 }
 
@@ -108,8 +108,8 @@ TEST(Where, CPP)
 
     vector<af::dim4> numDims;
 
-    vector<vector<int>> data;
-    vector<vector<int>> tests;
+    vector<vector<int> > data;
+    vector<vector<int> > tests;
     readTests<int,int,int> (string(TEST_DIR"/where/where.test"),numDims,data,tests);
     af::dim4 dims       = numDims[0];
 

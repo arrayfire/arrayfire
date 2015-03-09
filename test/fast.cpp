@@ -15,7 +15,6 @@
 #include <string>
 #include <vector>
 #include <cmath>
-#include <type_traits>
 #include <testHelpers.hpp>
 #include <typeinfo>
 
@@ -106,7 +105,7 @@ void fastTest(string pTestFile, bool nonmax)
 
     vector<dim4>        inDims;
     vector<string>     inFiles;
-    vector<vector<float>> gold;
+    vector<vector<float> > gold;
 
     readImageTests(pTestFile, inDims, inFiles, gold);
 
@@ -196,7 +195,7 @@ TEST(FloatFAST, CPP)
 
     vector<dim4>        inDims;
     vector<string>     inFiles;
-    vector<vector<float>> gold;
+    vector<vector<float> > gold;
 
     readImageTests(string(TEST_DIR"/fast/square_nonmax_float.test"), inDims, inFiles, gold);
     inFiles[0].insert(0,string(TEST_DIR"/fast/"));
