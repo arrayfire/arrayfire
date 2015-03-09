@@ -35,12 +35,6 @@ af::array randgen(const int num, af::dtype ty)
     return tmp;
 }
 
-template<typename T>
-cfloat
-operator-(cfloat a, cfloat b) {
-    return a;
-}
-
 #define BINARY_TESTS(Ta, Tb, Tc, func)                                  \
     TEST(BinaryTests, Test_##func##_##Ta##_##Tb)                        \
     {                                                                   \

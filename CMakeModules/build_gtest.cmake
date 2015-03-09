@@ -35,7 +35,6 @@ set(GTEST_LIBRARIES_STDLIB gtest_stdlib gtest_main_stdlib)
 set(byproducts)
 set(byproducts_libstdcpp)
 foreach(lib ${GTEST_LIBRARIES})
-    message(${lib})
     set(${lib}_location
         ${binary_dir}/${CMAKE_CFG_INTDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}${lib}${CMAKE_STATIC_LIBRARY_SUFFIX})
     set(${lib}_location_libstdcpp
@@ -76,25 +75,22 @@ ENDFUNCTION(GTEST_BUILD)
 
 GTEST_BUILD(googletest              ${CMAKE_BUILD_TYPE} ${binary_dir} ${byproducts})
 
-IF("${APPLE}")
-    IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-        GTEST_BUILD(googletest_libstdcpp    LibStdCpp           ${stdlib_binary_dir} ${byproducts_libstdcpp})
-    ENDIF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-ENDIF("${APPLE}")
-
+# If we are on OSX and using the clang compiler go ahead and build
+# GTest using libstdc++ just in case we compile the CUDA backend
+IF("${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+    GTEST_BUILD(googletest_libstdcpp    LibStdCpp           ${stdlib_binary_dir} ${byproducts_libstdcpp})
+ENDIF("${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 
 foreach(lib ${GTEST_LIBRARIES})
     add_library(${lib} IMPORTED STATIC)
     add_dependencies(${lib} googletest)
     set_target_properties(${lib} PROPERTIES IMPORTED_LOCATION ${${lib}_location})
 
-    IF("${APPLE}")
-        IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-            add_library(${lib}_stdlib IMPORTED STATIC)
-            add_dependencies(${lib}_stdlib googletest_libstdcpp)
-            set_target_properties(${lib}_stdlib PROPERTIES IMPORTED_LOCATION ${${lib}_location_libstdcpp})
-        ENDIF(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-    ENDIF("${APPLE}")
+    IF("${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+        add_library(${lib}_stdlib IMPORTED STATIC)
+        add_dependencies(${lib}_stdlib googletest_libstdcpp)
+        set_target_properties(${lib}_stdlib PROPERTIES IMPORTED_LOCATION ${${lib}_location_libstdcpp})
+    ENDIF("${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 endforeach()
 
 # Specify include dir
