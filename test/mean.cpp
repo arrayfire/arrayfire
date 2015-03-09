@@ -141,7 +141,10 @@ void testCPPMean(T const_value, af::dim4 dims)
     vector<T> hundred(dims.elements(), const_value);
 
     outType gold = outType(0);
-    for(auto i:hundred) gold += i;
+    //for(auto i:hundred) gold += i;
+    for(int i = 0; i < hundred.size(); i++) {
+        gold += hundred[i];
+    }
     gold /= dims.elements();
 
     array a(dims, &(hundred.front()));

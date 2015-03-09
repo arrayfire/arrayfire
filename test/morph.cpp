@@ -32,7 +32,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar> TestTypes;
 // register the type list
 TYPED_TEST_CASE(Morph, TestTypes);
 
-template<typename inType, bool isDilation, bool isVolume=false>
+template<typename inType, bool isDilation, bool isVolume>
 void morphTest(string pTestFile)
 {
     if (noDoubleTests<inType>()) return;
@@ -89,22 +89,22 @@ void morphTest(string pTestFile)
 
 TYPED_TEST(Morph, Dilate3x3)
 {
-    morphTest<TypeParam, true>(string(TEST_DIR"/morph/dilate3x3.test"));
+    morphTest<TypeParam, true, false>(string(TEST_DIR"/morph/dilate3x3.test"));
 }
 
 TYPED_TEST(Morph, Erode3x3)
 {
-    morphTest<TypeParam, false>(string(TEST_DIR"/morph/erode3x3.test"));
+    morphTest<TypeParam, false, false>(string(TEST_DIR"/morph/erode3x3.test"));
 }
 
 TYPED_TEST(Morph, Dilate3x3_Batch)
 {
-    morphTest<TypeParam, true>(string(TEST_DIR"/morph/dilate3x3_batch.test"));
+    morphTest<TypeParam, true, false>(string(TEST_DIR"/morph/dilate3x3_batch.test"));
 }
 
 TYPED_TEST(Morph, Erode3x3_Batch)
 {
-    morphTest<TypeParam, false>(string(TEST_DIR"/morph/erode3x3_batch.test"));
+    morphTest<TypeParam, false, false>(string(TEST_DIR"/morph/erode3x3_batch.test"));
 }
 
 TYPED_TEST(Morph, Dilate3x3x3)
