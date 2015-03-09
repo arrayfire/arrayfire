@@ -112,7 +112,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
         gemv_func<T> gemv;
         err = gemv(
             clblasColumnMajor, lOpts,
-            M, N,
+            lDims[0], lDims[1],
             alpha,
             (*lhs.get())(),    lhs.getOffset(),   lStrides[1],
             (*rhs.get())(),    rhs.getOffset(),   rStrides[0],

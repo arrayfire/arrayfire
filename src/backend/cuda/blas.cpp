@@ -165,7 +165,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
         N = lDims[aColDim];
         gemv_func<T>()(
             getHandle(), lOpts,
-            M, N,
+            lDims[0], lDims[1],
             &alpha, lhs.get(),   lStrides[1],
                     rhs.get(),   rStrides[0],
             &beta , out.get(),            1);
