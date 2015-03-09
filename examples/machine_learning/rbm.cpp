@@ -52,12 +52,6 @@ array binary(const array in)
     return (in > randu(in.dims())).as(f32);
 }
 
-array sigmoid_binary(const array in)
-{
-    // Choosing "1" with probability sigmoid(in)
-    return (sigmoid(in) > randu(in.dims())).as(f32);
-}
-
 class rbm {
 
 private:
@@ -78,8 +72,10 @@ private:
 
 public:
 
+    rbm() {}
+
     rbm(int v_size, int h_size) :
-        weights(constant(0, h_size, v_size)),
+        weights(randu(h_size, v_size)/100 - 0.05),
         h_bias(constant(0, 1, h_size)),
         v_bias(constant(0, 1, v_size))
     {
