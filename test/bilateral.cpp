@@ -14,7 +14,6 @@
 #include <string>
 #include <vector>
 #include <cmath>
-#include <type_traits>
 #include <testHelpers.hpp>
 
 using std::string;
@@ -91,11 +90,11 @@ void bilateralDataTest(string pTestFile)
 {
     if (noDoubleTests<inType>()) return;
 
-    typedef typename std::conditional<std::is_same<inType, double>::value, double, float>::type outType;
+    typedef typename cond_type<is_same_type<inType, double>::value, double, float>::type outType;
 
     vector<af::dim4>        numDims;
-    vector<vector<inType>>       in;
-    vector<vector<outType>>   tests;
+    vector<vector<inType> >       in;
+    vector<vector<outType> >   tests;
 
     readTests<inType, outType, float>(pTestFile, numDims, in, tests);
 
@@ -167,8 +166,8 @@ TEST(Bilateral, CPP)
     using af::array;
 
     vector<af::dim4>      numDims;
-    vector<vector<float>>      in;
-    vector<vector<float>>   tests;
+    vector<vector<float> >      in;
+    vector<vector<float> >   tests;
 
     readTests<float, float, float>(string(TEST_DIR"/bilateral/rectangle.test"), numDims, in, tests);
 

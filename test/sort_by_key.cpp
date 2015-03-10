@@ -30,9 +30,9 @@ class Sort : public ::testing::Test
 {
     public:
         virtual void SetUp() {
-            subMat0.push_back({0, 4, 1});
-            subMat0.push_back({2, 6, 1});
-            subMat0.push_back({0, 2, 1});
+            subMat0.push_back(af_make_seq(0, 4, 1));
+            subMat0.push_back(af_make_seq(2, 6, 1));
+            subMat0.push_back(af_make_seq(0, 2, 1));
         }
         vector<af_seq> subMat0;
 };
@@ -44,13 +44,13 @@ typedef ::testing::Types<float, double, uint, int, uchar> TestTypes;
 TYPED_TEST_CASE(Sort, TestTypes);
 
 template<typename T>
-void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const unsigned resultIdx1, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
+void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const unsigned resultIdx1, bool isSubRef = false, const vector<af_seq> * seqv = NULL)
 {
     if (noDoubleTests<T>()) return;
 
     vector<af::dim4> numDims;
-    vector<vector<T>> in;
-    vector<vector<float>> tests;
+    vector<vector<T> > in;
+    vector<vector<float> > tests;
     readTests<T, float, int>(pTestFile,numDims,in,tests);
 
     af::dim4 idims = numDims[0];
@@ -136,8 +136,8 @@ TEST(SortByKey, CPP)
     const unsigned resultIdx1 = 1;
 
     vector<af::dim4> numDims;
-    vector<vector<float>> in;
-    vector<vector<float>> tests;
+    vector<vector<float> > in;
+    vector<vector<float> > tests;
     readTests<float, float, int>(string(TEST_DIR"/sort/sort_by_key_tiny.test"),numDims,in,tests);
 
     af::dim4 idims = numDims[0];

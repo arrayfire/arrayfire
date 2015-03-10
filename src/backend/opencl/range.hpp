@@ -11,8 +11,8 @@
 #include <af/array.h>
 #include <Array.hpp>
 
-namespace cpu
+namespace opencl
 {
     template<typename T>
-    Array<T> iota(const dim4& dim, const int rep = -1);
+    Array<T> range(const dim4& dim, const int rep = -1);
 }

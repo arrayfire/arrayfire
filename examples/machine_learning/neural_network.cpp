@@ -49,7 +49,7 @@ double error(const array &out,
 class ann {
 
 private:
-    int m_num_layers;
+    int num_layers;
     vector<array> weights;
 
     // Add bias input to the output from previous layer
@@ -63,14 +63,17 @@ private:
 public:
 
     // Create a network with given parameters
-    ann(int num_layers, vector<int> layers, double range=0.05);
+    ann(vector<int> layers, double range=0.05);
 
     // Output after single pass of forward propagation
     array predict(const array &input);
 
     // Method to trian the neural net
     double train(const array &input, const array &target,
-                 double alpha = 0.1, int maxiter=1000, double maxerr=0.01,
+                 double alpha = 1.0,
+                 int max_epochs = 300,
+                 int batch_size = 100,
+                 double maxerr = 1.0,
                  bool verbose = false);
 };
 
@@ -83,10 +86,10 @@ array ann::add_bias(const array &in)
 vector<array> ann::forward_propagate(const array& input)
 {
     // Get activations at each layer
-    vector<array> signal(m_num_layers);
+    vector<array> signal(num_layers);
     signal[0] = input;
 
-    for (int i = 0; i < m_num_layers - 1; i++) {
+    for (int i = 0; i < num_layers - 1; i++) {
         array in = add_bias(signal[i]);
         array out = matmul(in, weights[i]);
         signal[i + 1] = sigmoid(out);
@@ -101,11 +104,11 @@ void ann::back_propagate(const vector<array> signal,
 {
 
     // Get error for output layer
-    array out = signal[m_num_layers  - 1];
+    array out = signal[num_layers  - 1];
     array err = (out - target);
     int m = target.dims(0);
 
-    for (int i = m_num_layers - 2; i >= 0; i--) {
+    for (int i = num_layers - 2; i >= 0; i--) {
         array in = add_bias(signal[i]);
         array delta = (deriv(out) * err).T();
 
@@ -122,8 +125,9 @@ void ann::back_propagate(const vector<array> signal,
     }
 }
 
-ann::ann(int num_layers, vector<int> layers, double range) :
-    m_num_layers(num_layers), weights(num_layers - 1)
+ann::ann(vector<int> layers, double range) :
+    num_layers(layers.size()),
+    weights(layers.size() - 1)
 {
     // Generate uniformly distributed random numbers between [-range/2,range/2]
     for (int i = 0; i < num_layers - 1; i++) {
@@ -134,35 +138,56 @@ ann::ann(int num_layers, vector<int> layers, double range) :
 array ann::predict(const array &input)
 {
     vector<array> signal = forward_propagate(input);
-    array out = signal[m_num_layers - 1];
+    array out = signal[num_layers - 1];
     return out;
 }
 
 double ann::train(const array &input, const array &target,
-                  double alpha, int maxiter, double maxerr, bool verbose)
+                  double alpha, int max_epochs, int batch_size,
+                  double maxerr, bool verbose)
 {
-    double err = 100;
 
-    for (int i = 0; i < maxiter; i++) {
+    const int num_samples = input.dims(0);
+    const int num_batches = num_samples / batch_size;
 
-        // Propagate the inputs forward
-        vector<array> signals = forward_propagate(input);
-        array out = signals[m_num_layers - 1];
+    double err = 0;
 
-        // Check if training criterion have been met
-        err = error(out, target);
-        if (err < maxerr) break;
+    // Training the entire network
+    for (int i = 0; i < max_epochs; i++) {
+
+        for (int j = 0; j < num_batches - 1; j++) {
+
+            int st = j * batch_size;
+            int en = st + batch_size;
+
+            array x = input(seq(st, en), span);
+            array y = target(seq(st, en), span);
+
+            // Propagate the inputs forward
+            vector<array> signals = forward_propagate(x);
+            array out = signals[num_layers - 1];
 
 
-        // Print iteration count only if in verbose mode
-        if (verbose && !((i + 1)%100)) {
-            printf("Iteration: %4d, Err: %2.2e\n", i+1, err);
+            // Propagate the error backward
+            back_propagate(signals, y, alpha);
         }
 
-        // Propagate the error backward
-        back_propagate(signals, target, alpha);
-    }
+        // Validate with last batch
+        int st = (num_batches - 1) * batch_size;
+        int en = num_samples - 1;
+        array out = predict(input(seq(st, en), span));
+        err = error(out, target(seq(st, en), span));
 
+        // Check if convergence criteria has been met
+        if (err < maxerr) {
+            printf("Converged on Epoch: %4d\n", i + 1);
+            return err;
+        }
+
+        if (verbose) {
+            if ((i + 1) % 10 == 0) printf("Epoch: %4d, Error: %0.4f\n", i+1, err);
+        }
+    }
     return err;
 }
 
@@ -189,18 +214,23 @@ int ann_demo(bool console, int perc)
     test_target  = test_target.T();
 
     // Network parameters
-    int num_layers = 3;
-    vector<int> layers(num_layers);
-    layers[0] = train_feats.dims(1);
-    layers[1] = 7 * 7;
-    layers[2] = num_classes;
+    vector<int> layers;
+    layers.push_back(train_feats.dims(1));
+    layers.push_back(100);
+    layers.push_back(50);
+    layers.push_back(num_classes);
 
     // Create network
-    ann network(num_layers, layers);
+    ann network(layers);
 
     // Train network
     timer::start();
-    network.train(train_feats, train_target, 2.0, 3000, 1, true);
+    network.train(train_feats, train_target,
+                  2.0, // learning rate / alpha
+                  250, // max epochs
+                  100, // batch size
+                  0.5, // max error
+                  true); // verbose
     af::sync();
     double train_time = timer::stop();
 
@@ -226,8 +256,8 @@ int ann_demo(bool console, int perc)
     printf("Accuracy on testing  data: %2.2f\n",
            accuracy(test_output , test_target ));
 
-    printf("Training time: %4.4lf s\n", train_time);
-    printf("Prediction time: %4.4lf s\n", test_time);
+    printf("\nTraining time: %4.4lf s\n", train_time);
+    printf("Prediction time: %4.4lf s\n\n", test_time);
 
     if (!console) {
         // Get 20 random test images.

@@ -181,7 +181,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
         N = lDims[aColDim];
         gemv_func<T, BT>()(
             CblasColMajor, lOpts,
-            M, N,
+            lDims[0], lDims[1],
             alpha, REINTERPRET_CAST(const BT*, lhs.get()), lStrides[1],
             REINTERPRET_CAST(const BT*, rhs.get()), rStrides[0],
             beta, REINTERPRET_CAST(BT*, out.get()), 1);

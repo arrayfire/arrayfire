@@ -30,9 +30,9 @@ class Approx2 : public ::testing::Test
 {
     public:
         virtual void SetUp() {
-            subMat0.push_back({0, 4, 1});
-            subMat0.push_back({2, 6, 1});
-            subMat0.push_back({0, 2, 1});
+            subMat0.push_back(af_make_seq(0, 4, 1));
+            subMat0.push_back(af_make_seq(2, 6, 1));
+            subMat0.push_back(af_make_seq(0, 2, 1));
         }
         vector<af_seq> subMat0;
 };
@@ -44,13 +44,13 @@ typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 TYPED_TEST_CASE(Approx2, TestTypes);
 
 template<typename T>
-void approx2Test(string pTestFile, const unsigned resultIdx, const af_interp_type method, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
+void approx2Test(string pTestFile, const unsigned resultIdx, const af_interp_type method, bool isSubRef = false, const vector<af_seq> * seqv = NULL)
 {
     if (noDoubleTests<T>()) return;
     typedef typename af::dtype_traits<T>::base_type BT;
     vector<af::dim4> numDims;
-    vector<vector<BT>> in;
-    vector<vector<T>> tests;
+    vector<vector<BT> > in;
+    vector<vector<T> > tests;
     readTests<BT, T, float>(pTestFile,numDims,in,tests);
 
     af::dim4 idims = numDims[0];
@@ -120,8 +120,8 @@ void approx2ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp
     if (noDoubleTests<T>()) return;
     typedef typename af::dtype_traits<T>::base_type BT;
     vector<af::dim4> numDims;
-    vector<vector<BT>> in;
-    vector<vector<T>> tests;
+    vector<vector<BT> > in;
+    vector<vector<T> > tests;
     readTests<BT, T, float>(pTestFile,numDims,in,tests);
 
     af::dim4 idims = numDims[0];
@@ -165,8 +165,8 @@ void approx2ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const 
 {
     if (noDoubleTests<T>()) return;
     vector<af::dim4> numDims;
-    vector<vector<T>> in;
-    vector<vector<T>> tests;
+    vector<vector<T> > in;
+    vector<vector<T> > tests;
     readTests<T, T, float>(pTestFile,numDims,in,tests);
 
     af::dim4 idims = numDims[0];
@@ -218,8 +218,8 @@ TEST(Approx2, CPP)
     const unsigned resultIdx = 1;
 #define BT af::dtype_traits<float>::base_type
     vector<af::dim4> numDims;
-    vector<vector<BT>> in;
-    vector<vector<float>> tests;
+    vector<vector<BT> > in;
+    vector<vector<float> > tests;
     readTests<BT, float, float>(string(TEST_DIR"/approx/approx2.test"),numDims,in,tests);
 
     af::dim4 idims = numDims[0];

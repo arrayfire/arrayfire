@@ -53,7 +53,7 @@ void convolve2_separable(Param<T> out, CParam<T> signal, dim_type nBBS)
     unsigned batchId  = blockIdx.x/nBBS;
     T *dst            = (T *)out.ptr          + (batchId*out.strides[2]);
     const T *src      = (const T *)signal.ptr + (batchId*signal.strides[2]);
-    const T *impulse  = (const T *)sFilter;
+    const accType *impulse  = (const accType *)sFilter;
 
     dim_type lx = threadIdx.x;
     dim_type ly = threadIdx.y;
@@ -97,7 +97,7 @@ void convolve2_separable(Param<T> out, CParam<T> signal, dim_type nBBS)
         accType accum = scalar<accType>(0);
 #pragma unroll
         for(dim_type f=0; f<fLen; ++f) {
-            T f_val = impulse[f];
+            accType f_val = impulse[f];
             // below conditional statement is based on template parameter
             dim_type s_idx = (conv_dim==0 ? (ly*shrdLen+(i-f)) : ((i-f)*shrdLen+lx));
             T s_val = shrdMem[s_idx];
@@ -114,7 +114,7 @@ void conv2Helper(dim3 blks, dim3 thrds, Param<T> out, CParam<T> sig, dim_type nB
 }
 
 template<typename T, typename accType, dim_type conv_dim, bool expand>
-void convolve2(Param<T> out, CParam<T> signal, CParam<T> filter)
+void convolve2(Param<T> out, CParam<T> signal, CParam<accType> filter)
 {
     dim_type fLen = filter.dims[0] * filter.dims[1] * filter.dims[2] * filter.dims[3];
     if(fLen > kernel::MAX_SCONV_FILTER_LEN) {
@@ -132,7 +132,7 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<T> filter)
 
    // FIX ME: if the filter array is strided, direct copy of symbols
    // might cause issues
-   CUDA_CHECK(cudaMemcpyToSymbol(kernel::sFilter, filter.ptr, fLen*sizeof(T), 0, cudaMemcpyDeviceToDevice));
+   CUDA_CHECK(cudaMemcpyToSymbol(kernel::sFilter, filter.ptr, fLen*sizeof(accType), 0, cudaMemcpyDeviceToDevice));
 
     switch(fLen) {
         case  2: conv2Helper<T, accType, conv_dim, expand,  2>(blocks, threads, out, signal, blk_x); break;
@@ -171,11 +171,11 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<T> filter)
    POST_LAUNCH_CHECK();
 }
 
-#define INSTANTIATE(T, accT)  \
-	template void convolve2<T, accT, 0, true >(Param<T> out, CParam<T> signal, CParam<T> filter);\
-	template void convolve2<T, accT, 0, false>(Param<T> out, CParam<T> signal, CParam<T> filter);\
-	template void convolve2<T, accT, 1, true >(Param<T> out, CParam<T> signal, CParam<T> filter);\
-	template void convolve2<T, accT, 1, false>(Param<T> out, CParam<T> signal, CParam<T> filter);\
+#define INSTANTIATE(T, accType)                                         \
+	template void convolve2<T, accType, 0, true >(Param<T> out, CParam<T> signal, CParam<accType> filter); \
+	template void convolve2<T, accType, 0, false>(Param<T> out, CParam<T> signal, CParam<accType> filter); \
+	template void convolve2<T, accType, 1, true >(Param<T> out, CParam<T> signal, CParam<accType> filter); \
+	template void convolve2<T, accType, 1, false>(Param<T> out, CParam<T> signal, CParam<accType> filter); \
 
 
 INSTANTIATE(cdouble, cdouble)

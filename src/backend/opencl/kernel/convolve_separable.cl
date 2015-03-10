@@ -9,7 +9,7 @@
 
 kernel
 void convolve(global T *out, KParam oInfo, global T const *signal,
-              KParam sInfo, constant T const *impulse, dim_type nBBS)
+              KParam sInfo, constant accType const *impulse, dim_type nBBS)
 {
     local T localMem[LOCAL_MEM_SIZE];
 
@@ -65,7 +65,7 @@ void convolve(global T *out, KParam oInfo, global T const *signal,
         accType accum = (accType)(0);
 #pragma unroll
         for(dim_type f=0; f<FLEN; ++f) {
-            T f_val = impulse[f];
+            accType f_val = impulse[f];
             // below conditional statement is based on MACRO value passed while kernel compilation
             dim_type s_idx = (CONV_DIM==0 ? (ly*shrdLen+(i-f)) : ((i-f)*shrdLen+lx));
             T s_val = localMem[s_idx];

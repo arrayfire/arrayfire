@@ -9,6 +9,7 @@
 
 #include <af/index.h>
 #include "error.hpp"
+#include "common.hpp"
 
 namespace af
 {
@@ -75,15 +76,8 @@ array flip(const array &in, const unsigned dim)
 
 array lookup(const array &in, const array &idx, const int dim)
 {
-    int idim = dim;
-    if (idim == -1) {
-        dim4 idims = in.dims();
-        for (idim = 0; idim < idims.ndims(); idim++) {
-            if (idims[idim] != 1) break;
-        }
-    }
     af_array out = 0;
-    AF_THROW(af_lookup(&out, in.get(), idx.get(), dim));
+    AF_THROW(af_lookup(&out, in.get(), idx.get(), getFNSD(dim, in.dims())));
     return array(out);
 }
 

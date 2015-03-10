@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <kernel_headers/ArrayIndex.hpp>
+#include <kernel_headers/lookup.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
@@ -36,7 +36,7 @@ static const dim_type THREADS_X = 32;
 static const dim_type THREADS_Y = 8;
 
 template<typename in_t, typename idx_t, unsigned dim>
-void arrayIndex(Param out, const Param in, const Param indices, dim_type nDims)
+void lookup(Param out, const Param in, const Param indices, dim_type nDims)
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -58,9 +58,9 @@ void arrayIndex(Param out, const Param in, const Param indices, dim_type nDims)
                     }
 
                     Program prog;
-                    buildProgram(prog, ArrayIndex_cl, ArrayIndex_cl_len, options.str());
+                    buildProgram(prog, lookup_cl, lookup_cl_len, options.str());
                     aiProgs[device]   = new Program(prog);
-                    aiKernels[device] = new Kernel(*aiProgs[device], "arrayIndexND");
+                    aiKernels[device] = new Kernel(*aiProgs[device], "lookupND");
                 });
 
         NDRange local(THREADS_X, THREADS_Y);

@@ -113,9 +113,17 @@ void fast_pyramid(std::vector<unsigned>& feat_pyr,
         float* d_y_feat = NULL;
         float* d_score_feat = NULL;
 
+        // Round feature size to nearest odd integer
+        float size = 2.f * floor(patch_size / 2.f) + 1.f;
+
+        // Avoid keeping features that are too wide and might not fit the image,
+        // sqrt(2.f) is the radius when angle is 45 degrees and represents
+        // widest case possible
+        unsigned edge = ceil(size * sqrt(2.f) / 2.f);
+
         // Detects FAST features
         fast(&lvl_feat, &d_x_feat, &d_y_feat, &d_score_feat,
-             img_pyr[i], fast_thr, 9, 1, 0.15f);
+             img_pyr[i], fast_thr, 9, 1, 0.15f, edge);
 
         // FAST score is not used
         memFree(d_score_feat);

@@ -21,15 +21,19 @@ using af::cdouble;
 using af::cfloat;
 
 template<typename T>
-using helperType = typename std::conditional<std::is_same<T, uchar>::value,
-                                             uint,
-                                             T>::type;
+struct helperType {
+    typedef typename cond_type<is_same_type<T, uchar>::value,
+                                         uint,
+                                         T>::type type;
+};
 
 
 template<typename T>
-using varOutType = typename std::conditional<std::is_same<T, char>::value,
+struct varOutType {
+   typedef typename cond_type<is_same_type<T, char>::value,
                                               int,
-                                              helperType<T>>::type;
+                                              typename helperType<T>::type >::type type;
+};
 
 //////////////////////////////// CPP ////////////////////////////////////
 // test var_all interface using cpp api
@@ -37,9 +41,9 @@ using varOutType = typename std::conditional<std::is_same<T, char>::value,
 template<typename T>
 void testCPPVar(T const_value, af::dim4 dims)
 {
+    typedef typename varOutType<T>::type outType;
     if (noDoubleTests<T>()) return;
 
-    typedef varOutType<T> outType;
     using af::array;
     using af::var;
 
@@ -50,13 +54,13 @@ void testCPPVar(T const_value, af::dim4 dims)
     array a(dims, &(hundred.front()));
     outType output = var<outType>(a, false);
 
-    ASSERT_NEAR(std::real(output), std::real(gold), 1.0e-3);
-    ASSERT_NEAR(std::imag(output), std::imag(gold), 1.0e-3);
+    ASSERT_NEAR(::real(output), ::real(gold), 1.0e-3);
+    ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-3);
 
     output = var<outType>(a, true);
 
-    ASSERT_NEAR(std::real(output), std::real(gold), 1.0e-3);
-    ASSERT_NEAR(std::imag(output), std::imag(gold), 1.0e-3);
+    ASSERT_NEAR(::real(output), ::real(gold), 1.0e-3);
+    ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-3);
 
     gold = outType(2.5);
     outType tmp[] = { outType(0), outType(1), outType(2), outType(3),
@@ -64,14 +68,14 @@ void testCPPVar(T const_value, af::dim4 dims)
     array b(5, tmp);
     output = var<outType>(b, false);
 
-    ASSERT_NEAR(std::real(output), std::real(gold), 1.0e-3);
-    ASSERT_NEAR(std::imag(output), std::imag(gold), 1.0e-3);
+    ASSERT_NEAR(::real(output), ::real(gold), 1.0e-3);
+    ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-3);
 
     gold = outType(2);
     output = var<outType>(b, true);
 
-    ASSERT_NEAR(std::real(output), std::real(gold), 1.0e-3);
-    ASSERT_NEAR(std::imag(output), std::imag(gold), 1.0e-3);
+    ASSERT_NEAR(::real(output), ::real(gold), 1.0e-3);
+    ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-3);
 }
 
 TEST(Var, CPP_f64)

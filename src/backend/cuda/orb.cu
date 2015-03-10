@@ -28,7 +28,8 @@ unsigned orb(Array<float> &x, Array<float> &y,
              Array<float> &size, Array<uint> &desc,
              const Array<T>& image,
              const float fast_thr, const unsigned max_feat,
-             const float scl_fctr, const unsigned levels)
+             const float scl_fctr, const unsigned levels,
+             const bool blur_img)
 {
     const dim4 dims = image.dims();
 
@@ -50,7 +51,7 @@ unsigned orb(Array<float> &x, Array<float> &y,
 
     kernel::orb<T, convAccT>(&nfeat_out, &x_out, &y_out, &score_out, &orientation_out, &size_out,
                              &desc_out, feat_pyr, d_x_pyr, d_y_pyr, lvl_best, lvl_scl, img_pyr,
-                             fast_thr, max_feat, scl_fctr, levels);
+                             fast_thr, max_feat, scl_fctr, levels, blur_img);
 
     if (nfeat_out > 0) {
 
@@ -74,13 +75,14 @@ unsigned orb(Array<float> &x, Array<float> &y,
     return nfeat_out;
 }
 
-#define INSTANTIATE(T, convAccT)                                        \
-    template unsigned orb<T, convAccT>(Array<float> &x, Array<float> &y, \
-                                       Array<float> &score, Array<float> &ori, \
-                                       Array<float> &size, Array<uint> &desc, \
-                                       const Array<T>& image,           \
-                                       const float fast_thr, const unsigned max_feat, \
-                                       const float scl_fctr, const unsigned levels); \
+#define INSTANTIATE(T, convAccT)                                                        \
+    template unsigned orb<T, convAccT>(Array<float> &x, Array<float> &y,                \
+                                       Array<float> &score, Array<float> &ori,          \
+                                       Array<float> &size, Array<uint> &desc,           \
+                                       const Array<T>& image,                           \
+                                       const float fast_thr, const unsigned max_feat,   \
+                                       const float scl_fctr, const unsigned levels,     \
+                                       const bool blur_img);
 
 INSTANTIATE(float , float )
 INSTANTIATE(double, double)

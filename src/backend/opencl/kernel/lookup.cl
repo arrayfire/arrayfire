@@ -20,7 +20,7 @@ dim_type trimIndex(dim_type idx, const dim_type len)
 }
 
 kernel
-void arrayIndexND(global in_t * out,
+void lookupND(global in_t * out,
                   KParam oInfo,
                   global const in_t * in,
                   KParam iInfo,
@@ -35,8 +35,8 @@ void arrayIndexND(global in_t * out,
     dim_type gz = get_group_id(0)/nBBS0;
     dim_type gw = get_group_id(1)/nBBS1;
 
-    dim_type gx = get_num_groups(0) * (get_group_id(0) - gz*nBBS0) + lx;
-    dim_type gy = get_num_groups(1) * (get_group_id(1) - gw*nBBS1) + ly;
+    dim_type gx = get_local_size(0) * (get_group_id(0) - gz*nBBS0) + lx;
+    dim_type gy = get_local_size(1) * (get_group_id(1) - gw*nBBS1) + ly;
 
     global const idx_t *idxPtr = indices;
 

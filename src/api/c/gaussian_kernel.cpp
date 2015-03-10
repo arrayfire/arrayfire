@@ -17,7 +17,7 @@
 #include <arith.hpp>
 #include <math.hpp>
 #include <unary.hpp>
-#include <iota.hpp>
+#include <range.hpp>
 #include <reduce.hpp>
 #include <transpose.hpp>
 
@@ -34,7 +34,7 @@ Array<T> gaussianKernel(const int rows, const int cols, const double sigma_r, co
     Array<T> zero = createValueArray<T>(odims, scalar<T>(0));
 
     if (cols > 1) {
-        Array<T> wt = iota<T>(dim4(cols, rows), 0);
+        Array<T> wt = range<T>(dim4(cols, rows), 0);
         Array<T> w  = transpose<T>(wt, false);
 
         Array<T> c = createValueArray<T>(odims, scalar<T>((double)(cols - 1) / 2.0));
@@ -49,7 +49,7 @@ Array<T> gaussianKernel(const int rows, const int cols, const double sigma_r, co
     }
 
     if (rows > 1) {
-        Array<T> w = iota<T>(dim4(rows, cols), 0);
+        Array<T> w = range<T>(dim4(rows, cols), 0);
 
         Array<T> r = createValueArray<T>(odims, scalar<T>((double)(rows - 1) / 2.0));
         w = arithOp<T, af_sub_t>(w, r, odims);

@@ -17,6 +17,7 @@
 
 namespace cpu
 {
+    const int MAX_TNJ_LEN = 20;
     using TNJ::BufferNode;
     using TNJ::Node;
     using TNJ::Node_ptr;
@@ -111,10 +112,13 @@ namespace cpu
     {
         if (!node) {
 
+            unsigned bytes = this->getDataDims().elements() * sizeof(T);
+
             BufferNode<T> *buf_node = new BufferNode<T>(data,
+                                                        bytes,
+                                                        offset,
                                                         dims().get(),
-                                                        strides().get(),
-                                                        offset);
+                                                        strides().get());
 
             const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
         }
@@ -160,7 +164,21 @@ namespace cpu
     Array<T>
     createNodeArray(const dim4 &dims, Node_ptr node)
     {
-        return Array<T>(dims, node);
+        Array<T> out =  Array<T>(dims, node);
+
+        unsigned length =0, buf_count = 0, bytes = 0;
+
+        Node *n = node.get();
+        n->getInfo(length, buf_count, bytes);
+        n->reset();
+
+        if (length > MAX_TNJ_LEN ||
+            buf_count >= MAX_BUFFERS ||
+            bytes >= MAX_BYTES) {
+            out.eval();
+        }
+
+        return out;
     }
 
 
@@ -169,6 +187,8 @@ namespace cpu
                             const std::vector<af_seq> &index,
                             bool copy)
     {
+        parent.eval();
+
         dim4 dDims = parent.getDataDims();
         dim4 pDims = parent.dims();
 

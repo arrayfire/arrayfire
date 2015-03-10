@@ -37,8 +37,8 @@ void medfiltTest(string pTestFile, dim_type w_len, dim_type w_wid, af_pad_type p
     if (noDoubleTests<T>()) return;
 
     vector<af::dim4>  numDims;
-    vector<vector<T>>      in;
-    vector<vector<T>>   tests;
+    vector<vector<T> >      in;
+    vector<vector<T> >   tests;
 
     readTests<T,T,int>(pTestFile, numDims, in, tests);
 
@@ -236,8 +236,8 @@ TEST(MedianFilter, CPP)
     const dim_type w_wid = 3;
 
     vector<af::dim4>  numDims;
-    vector<vector<float>>      in;
-    vector<vector<float>>   tests;
+    vector<vector<float> >      in;
+    vector<vector<float> >   tests;
 
     readTests<float,float,int>(string(TEST_DIR"/medianfilter/batch_symmetric_pad_3x3_window.test"),
                                numDims, in, tests);
