@@ -38,55 +38,38 @@ array predict(const array &X, const array &Weights)
     return sigmoid(matmul(X, Weights));
 }
 
-void cost(array &J, array &dJ, const array &Weights,
-          const array &X, const array &Y, double lambda = 1.0)
-{
-    // Number of samples
-    int m = Y.dims(0);
-
-    // Make the lambda corresponding to Weights(0) == 0
-    array lambdat = constant(lambda, Weights.dims());
-    lambdat(0, span) = 0;
-
-    // Get the prediction
-    array H = predict(X, Weights);
-
-    // Calculate cost
-    J =  -sum(Y * log(H) + (1 - Y) * log(1 - H)) / m;
-    J = J + 0.5 * sum(lambdat * Weights * Weights) / m;
-
-    // Find the gradient of cost
-    array D = (H - Y);
-    dJ = (matmul(X.T(), D) + lambdat * Weights) / m;
-}
-
 array train(const array &X, const array &Y,
-            double alpha = 0.1, double lambda = 1.0, int maxiter = 1000)
+            double alpha = 0.1,
+            double maxerr = 0.05,
+            int maxiter = 1000, bool verbose = false)
 {
 
     // Initialize parameters to 0
     array Weights = constant(0, X.dims(1), Y.dims(1));
 
-    array J, dJ;
     for (int i = 0; i < maxiter; i++) {
+        array P = predict(X, Weights);
+        array err = Y - P;
 
-        // Get the cost and gradient
-        cost(J, dJ, Weights, X, Y, lambda);
-        if (alltrue<bool>(J < 0.1)) break;
+        float mean_abs_err = mean<float>(abs(err));
+        if (mean_abs_err  < maxerr) break;
 
-        // Update the parameters via gradient descent
-        Weights = Weights - alpha * dJ;
+        if (verbose && (i + 1) % 25 == 0) {
+            printf("Iter :%d, Err: %.4f\n", i + 1, mean_abs_err);
+        }
+
+        Weights = Weights + alpha * matmul(transpose(X), err);
     }
 
     return Weights;
 }
 
-void benchmark_lr(const array &train_feats,
+void benchmark_perceptron(const array &train_feats,
                           const array &train_targets,
                           const array test_feats)
 {
     timer::start();
-    array Weights = train(train_feats, train_targets, 1.0, 1.0, 500);
+    array Weights = train(train_feats, train_targets, 0.1, 0.01, 1000);
     af::sync();
     printf("Training time: %4.4lf s\n", timer::stop());
 
@@ -100,9 +83,8 @@ void benchmark_lr(const array &train_feats,
     printf("Prediction time: %4.4lf s\n", timer::stop() / iter);
 }
 
-
 // Demo of one vs all logistic regression
-int lr_demo(bool console, int perc)
+int perceptron_demo(bool console, int perc)
 {
     array train_images, train_targets;
     array test_images, test_targets;
@@ -127,7 +109,7 @@ int lr_demo(bool console, int perc)
     test_feats  = join(1, constant(1, num_test , 1), test_feats );
 
     // Train logistic regression parameters
-    array Weights = train(train_feats, train_targets, 1.0, 1.0, 500);
+    array Weights = train(train_feats, train_targets, 0.1, 0.01, 1000, true);
 
     // Predict the results
     array train_outputs = predict(train_feats, Weights);
@@ -139,7 +121,7 @@ int lr_demo(bool console, int perc)
     printf("Accuracy on testing data: %2.2f\n",
            accuracy(test_outputs , test_targets ));
 
-    benchmark_lr(train_feats, train_targets, test_feats);
+    benchmark_perceptron(train_feats, train_targets, test_feats);
 
     if (!console) {
         test_outputs = test_outputs.T();
@@ -160,7 +142,7 @@ int main(int argc, char** argv)
 
         af::deviceset(device);
         af::info();
-        return lr_demo(console, perc);
+        return perceptron_demo(console, perc);
 
     } catch (af::exception &ae) {
         std::cout << ae.what() << std::endl;

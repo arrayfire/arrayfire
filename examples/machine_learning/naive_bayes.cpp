@@ -35,6 +35,7 @@ void naive_bayes_train(float *priors,
     // Get mean and variance from trianing data
     mu  = constant(0, feat_len, num_classes);
     sig2 = constant(0, feat_len, num_classes);
+
     for (int ii = 0; ii < num_classes; ii++) {
         array idx = where(train_classes == ii);
         array train_feats_ii = lookup(train_feats, idx, 1);
@@ -61,16 +62,18 @@ array naive_bayes_predict(float *priors,
     // Predict the probabilities for testing data
     // Using log of probabilities to reduce rounding errors
     array log_probs = constant(1, num_test, num_classes);
+
     for (int ii = 0; ii < num_classes; ii++) {
 
         // Tile the current mean and variance to the testing data size
         array Mu  = tile(mu (span, ii), 1, num_test);
         array Sig2 = tile(sig2(span, ii), 1, num_test);
 
+        // This is the same as log of the CDF of the normal distribution
         array Df = test_feats - Mu;
-        array log_P =  (-(Df * Df) / (2 * Sig2))  - log(sqrt(Sig2));
+        array log_P =  (-(Df * Df) / (2 * Sig2))  - log(sqrt(2 * af::Pi * Sig2));
 
-        // Accumulate the probabilities
+        // Accumulate the probabilities, multiply with priors (add log of priors)
         log_probs(span, ii) = log(priors[ii]) + sum(log_P).T();
     }
 

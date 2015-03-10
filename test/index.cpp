@@ -49,7 +49,7 @@ DimCheck(const vector<af_seq> &seqs) {
     dim_type d[1] = {dims};
 
     vector<T> hData(dims);
-    for(int i = 0; i < dims; i++) { hData[i] = i; }
+    for(int i = 0; i < (int)dims; i++) { hData[i] = i; }
 
     af_array a = 0;
     ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &hData.front(), ndims, d, (af_dtype) dtype_traits<T>::af_type));
