@@ -56,6 +56,14 @@ namespace JIT
 
         virtual int setId(int id) { m_set_id = true; return id; }
 
+        virtual void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
+        {
+            len = 0;
+            buf_count = 0;
+            bytes = 0;
+        }
+
+
         virtual void resetFlags() {}
 
         virtual bool isLinear(dim_type dims[4]) { return true; }

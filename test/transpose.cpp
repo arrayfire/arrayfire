@@ -13,7 +13,6 @@
 #include <af/traits.hpp>
 #include <string>
 #include <vector>
-#include <type_traits>
 #include <testHelpers.hpp>
 
 using std::string;
@@ -26,11 +25,11 @@ class Transpose : public ::testing::Test
 {
     public:
         virtual void SetUp() {
-            subMat2D.push_back({2,7,1});
-            subMat2D.push_back({2,7,1});
+            subMat2D.push_back(af_make_seq(2,7,1));
+            subMat2D.push_back(af_make_seq(2,7,1));
 
-            subMat3D.push_back({2,7,1});
-            subMat3D.push_back({2,7,1});
+            subMat3D.push_back(af_make_seq(2,7,1));
+            subMat3D.push_back(af_make_seq(2,7,1));
             subMat3D.push_back(af_span);
         }
         vector<af_seq> subMat2D;
@@ -44,15 +43,15 @@ typedef ::testing::Types<float, cfloat, double, cdouble, int, uint, char, uchar>
 TYPED_TEST_CASE(Transpose, TestTypes);
 
 template<typename T>
-void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=nullptr)
+void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=NULL)
 {
     if (noDoubleTests<T>())
         return;
 
     vector<af::dim4> numDims;
 
-    vector<vector<T>>   in;
-    vector<vector<T>>   tests;
+    vector<vector<T> >   in;
+    vector<vector<T> >   tests;
     readTests<T,T,int>(pTestFile,numDims,in,tests);
     af::dim4 dims       = numDims[0];
 
@@ -157,8 +156,8 @@ void trsCPPTest(string pFileName)
 {
     vector<af::dim4> numDims;
 
-    vector<vector<T>>   in;
-    vector<vector<T>>   tests;
+    vector<vector<T> >   in;
+    vector<vector<T> >   tests;
     readTests<T, T, int>(pFileName, numDims, in, tests);
     af::dim4 dims = numDims[0];
 

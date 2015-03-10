@@ -6,6 +6,7 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#pragma once
 
 #include <af/defines.h>
 #include <cl.hpp>
@@ -20,4 +21,7 @@ namespace opencl
 
     template<typename T> T* pinnedAlloc(const size_t &elements);
     template<typename T> void pinnedFree(T* ptr);
+
+    static const unsigned MAX_BUFFERS   = 100;
+    static const unsigned MAX_BYTES     = (1 << 30);
 }

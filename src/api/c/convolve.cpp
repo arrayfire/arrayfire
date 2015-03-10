@@ -23,13 +23,15 @@ using namespace detail;
 template<typename T, typename accT, dim_type baseDim, bool expand>
 inline static af_array convolve(const af_array &s, const af_array &f, ConvolveBatchKind kind)
 {
-    return getHandle(convolve<T, accT, baseDim, expand>(getArray<T>(s), getArray<T>(f), kind));
+    return getHandle(convolve<T, accT, baseDim, expand>(getArray<T>(s), castArray<accT>(f), kind));
 }
 
 template<typename T, typename accT, bool expand>
 inline static af_array convolve2(const af_array &s, const af_array &c_f, const af_array &r_f)
 {
-    return getHandle(convolve2<T, accT, expand>(getArray<T>(s), getArray<T>(c_f), getArray<T>(r_f)));
+    return getHandle(convolve2<T, accT, expand>(getArray<T>(s),
+                                                castArray<accT>(c_f),
+                                                castArray<accT>(r_f)));
 }
 
 template<dim_type baseDim>
@@ -54,9 +56,6 @@ af_err convolve(af_array *out, af_array signal, af_array filter)
         ArrayInfo fInfo = getInfo(filter);
 
         af_dtype stype  = sInfo.getType();
-        af_dtype ftype  = fInfo.getType();
-
-        ARG_ASSERT(1, (stype==ftype));
 
         dim4 sdims = sInfo.dims();
         dim4 fdims = fInfo.dims();
@@ -95,11 +94,6 @@ af_err convolve2_sep(af_array *out, af_array col_filter, af_array row_filter, af
         ArrayInfo rfInfo= getInfo(row_filter);
 
         af_dtype signalType  = sInfo.getType();
-        af_dtype colFiltType = cfInfo.getType();
-        af_dtype rowFiltType = rfInfo.getType();
-
-        ARG_ASSERT(1, (signalType==colFiltType));
-        ARG_ASSERT(2, (colFiltType==rowFiltType));
 
         dim4 signalDims = sInfo.dims();
 

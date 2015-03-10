@@ -6,13 +6,24 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-#pragma once
-
-#include <af/array.h>
-#include <Array.hpp>
-
-namespace opencl
+ 
+namespace af
 {
-    template<typename T>
-    Array<T> iota(const dim4& dim, const int rep = -1);
+ 
+/// Get the first non-zero dimension
+static inline dim_type getFNSD(const int dim, af::dim4 dims)
+{
+    if(dim >= 0)
+        return dim;
+
+    dim_type fNSD = 0;
+    for (dim_type i=0; i<4; ++i) {
+        if (dims[i]>1) {
+            fNSD = i;
+            break;
+        }
+    }
+    return fNSD;
+}
+
 }

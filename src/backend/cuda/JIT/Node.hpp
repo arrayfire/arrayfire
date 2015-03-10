@@ -63,6 +63,12 @@ namespace JIT
         virtual bool isLinear(dim_type dims[4]) { return true; }
 
         virtual void resetFlags() {}
+        virtual void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
+        {
+            len = 0;
+            buf_count = 0;
+            bytes = 0;
+        }
 
         std::string getTypeStr() { return m_type_str; }
 

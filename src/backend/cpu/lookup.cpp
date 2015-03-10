@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <ArrayIndex.hpp>
+#include <lookup.hpp>
 #include <err_cpu.hpp>
 #include <cstdlib>
 
@@ -27,7 +27,7 @@ dim_type trimIndex(dim_type idx, const dim_type &len)
 }
 
 template<typename in_t, typename idx_t>
-Array<in_t> arrayIndex(const Array<in_t> &input, const Array<idx_t> &indices, const unsigned dim)
+Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices, const unsigned dim)
 {
     const dim4 iDims = input.dims();
     const dim4 iStrides = input.strides();
@@ -75,11 +75,11 @@ Array<in_t> arrayIndex(const Array<in_t> &input, const Array<idx_t> &indices, co
 }
 
 #define INSTANTIATE(T)  \
-    template Array<T>  arrayIndex<T, float   >(const Array<T> &input, const Array<float   > &indices, const unsigned dim); \
-    template Array<T>  arrayIndex<T, double  >(const Array<T> &input, const Array<double  > &indices, const unsigned dim); \
-    template Array<T>  arrayIndex<T, int     >(const Array<T> &input, const Array<int     > &indices, const unsigned dim); \
-    template Array<T>  arrayIndex<T, unsigned>(const Array<T> &input, const Array<unsigned> &indices, const unsigned dim); \
-    template Array<T>  arrayIndex<T, uchar   >(const Array<T> &input, const Array<uchar   > &indices, const unsigned dim);
+    template Array<T>  lookup<T, float   >(const Array<T> &input, const Array<float   > &indices, const unsigned dim); \
+    template Array<T>  lookup<T, double  >(const Array<T> &input, const Array<double  > &indices, const unsigned dim); \
+    template Array<T>  lookup<T, int     >(const Array<T> &input, const Array<int     > &indices, const unsigned dim); \
+    template Array<T>  lookup<T, unsigned>(const Array<T> &input, const Array<unsigned> &indices, const unsigned dim); \
+    template Array<T>  lookup<T, uchar   >(const Array<T> &input, const Array<uchar   > &indices, const unsigned dim);
 
 INSTANTIATE(float   );
 INSTANTIATE(cfloat  );

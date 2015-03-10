@@ -26,16 +26,21 @@ namespace TNJ
 
     protected:
         shared_ptr<T> ptr;
+        unsigned m_bytes;
         dim_type off;
         dim_type strides[4];
         dim_type dims[4];
 
     public:
 
-        BufferNode(shared_ptr<T> data, const dim_type *dms,
-                   const dim_type *strs, dim_type data_off) :
+        BufferNode(shared_ptr<T> data,
+                   unsigned bytes,
+                   dim_type data_off,
+                   const dim_type *dms,
+                   const dim_type *strs) :
             Node(),
             ptr(data),
+            m_bytes(bytes),
             off(data_off)
         {
             for (int i = 0; i < 4; i++) {
@@ -51,8 +56,18 @@ namespace TNJ
             l_off += (z < dims[2]) * z * strides[2];
             l_off += (y < dims[1]) * y * strides[1];
             l_off += (x < dims[0]) * x;
-            m_is_eval = true;
             return (void *)(ptr.get() + off + l_off);
+        }
+
+        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
+        {
+            if (m_is_eval) return;
+
+            len++;
+            buf_count++;
+            bytes += m_bytes;
+            m_is_eval = true;
+            return;
         }
 
         void reset()

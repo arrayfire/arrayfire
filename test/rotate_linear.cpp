@@ -28,9 +28,9 @@ class Rotate : public ::testing::Test
 {
     public:
         virtual void SetUp() {
-            subMat0.push_back({0, 4, 1});
-            subMat0.push_back({2, 6, 1});
-            subMat0.push_back({0, 2, 1});
+            subMat0.push_back(af_make_seq(0, 4, 1));
+            subMat0.push_back(af_make_seq(2, 6, 1));
+            subMat0.push_back(af_make_seq(0, 2, 1));
         }
         vector<af_seq> subMat0;
 };
@@ -44,13 +44,13 @@ TYPED_TEST_CASE(Rotate, TestTypes);
 #define PI 3.1415926535897931f
 
 template<typename T>
-void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, const bool crop, const bool recenter, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
+void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, const bool crop, const bool recenter, bool isSubRef = false, const vector<af_seq> * seqv = NULL)
 {
     if (noDoubleTests<T>()) return;
 
     vector<af::dim4> numDims;
-    vector<vector<T>>   in;
-    vector<vector<T>>   tests;
+    vector<vector<T> >   in;
+    vector<vector<T> >   tests;
     readTests<T, T, float>(pTestFile,numDims,in,tests);
 
     af::dim4 dims = numDims[0];
@@ -173,8 +173,8 @@ TEST(Rotate, CPP)
     const bool crop = false;
 
     vector<af::dim4> numDims;
-    vector<vector<float>>   in;
-    vector<vector<float>>   tests;
+    vector<vector<float> >   in;
+    vector<vector<float> >   tests;
     readTests<float, float, float>(string(TEST_DIR"/rotate/rotatelinear1.test"),numDims,in,tests);
 
     af::dim4 dims = numDims[0];

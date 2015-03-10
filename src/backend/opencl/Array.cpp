@@ -20,6 +20,7 @@ using af::dim4;
 namespace opencl
 {
 
+    const int MAX_JIT_LEN = 20;
     using JIT::BufferNode;
     using JIT::Node;
     using JIT::Node_ptr;
@@ -126,8 +127,12 @@ namespace opencl
     {
         if (!node) {
             bool is_linear = isLinear();
+            unsigned bytes = this->getDataDims().elements() * sizeof(T);
             BufferNode *buf_node = new BufferNode(dtype_traits<T>::getName(),
-                                                  shortname<T>(true), *this, is_linear, data);
+                                                  shortname<T>(true),
+                                                  *this, data,
+                                                  bytes,
+                                                  is_linear);
             const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
         }
 
@@ -137,10 +142,23 @@ namespace opencl
     using af::dim4;
 
     template<typename T>
-    Array<T>
-    createNodeArray(const dim4 &dims, Node_ptr node)
+    Array<T> createNodeArray(const dim4 &dims, Node_ptr node)
     {
-        return Array<T>(dims, node);
+        Array<T> out =  Array<T>(dims, node);
+
+        unsigned length =0, buf_count = 0, bytes = 0;
+
+        Node *n = node.get();
+        n->getInfo(length, buf_count, bytes);
+        n->resetFlags();
+
+        if (length > MAX_JIT_LEN ||
+            buf_count >= MAX_BUFFERS ||
+            bytes >= MAX_BYTES) {
+            out.eval();
+        }
+
+        return out;
     }
 
     template<typename T>
@@ -148,6 +166,8 @@ namespace opencl
                             const std::vector<af_seq> &index,
                             bool copy)
     {
+        parent.eval();
+
         dim4 dDims = parent.getDataDims();
         dim4 pDims = parent.dims();
 

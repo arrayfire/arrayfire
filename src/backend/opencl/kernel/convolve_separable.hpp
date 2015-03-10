@@ -59,7 +59,7 @@ void convolve2(Param out, const Param signal, const Param filter)
 
                     std::ostringstream options;
                     options << " -D T=" << dtype_traits<T>::getName()
-                            << " -D accType="<< dtype_traits<T>::getName()
+                            << " -D accType="<< dtype_traits<accType>::getName()
                             << " -D CONV_DIM="<< conv_dim
                             << " -D EXPAND="<< expand
                             << " -D FLEN="<< fLen
@@ -83,9 +83,9 @@ void convolve2(Param out, const Param signal, const Param filter)
 
         NDRange global(blk_x*signal.info.dims[2]*THREADS_X, blk_y*THREADS_Y);
 
-        cl::Buffer *mBuff = bufferAlloc(fLen*sizeof(T));
+        cl::Buffer *mBuff = bufferAlloc(fLen*sizeof(accType));
         // FIX ME: if the filter array is strided, direct might cause issues
-        getQueue().enqueueCopyBuffer(*filter.data, *mBuff, 0, 0, fLen*sizeof(T));
+        getQueue().enqueueCopyBuffer(*filter.data, *mBuff, 0, 0, fLen*sizeof(accType));
 
         convOp(EnqueueArgs(getQueue(), global, local),
                *out.data, out.info, *signal.data, signal.info, *mBuff, blk_x);

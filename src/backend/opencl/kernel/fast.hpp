@@ -40,7 +40,8 @@ void fast(unsigned* out_feat,
           Param &score_out,
           Param in,
           const float thr,
-          const float feature_ratio)
+          const float feature_ratio,
+          const unsigned edge)
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -77,28 +78,28 @@ void fast(unsigned* out_feat,
 
         // Matrix containing scores for detected features, scores are stored in the
         // same coordinates as features, dimensions should be equal to in.
-        cl::Buffer *d_score = bufferAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(T));
-        std::vector<T> score_init(in.info.dims[0] * in.info.dims[1], (T)0);
-        getQueue().enqueueWriteBuffer(*d_score, CL_TRUE, 0, in.info.dims[0] * in.info.dims[1] * sizeof(T), &score_init[0]);
+        cl::Buffer *d_score = bufferAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(float));
+        std::vector<float> score_init(in.info.dims[0] * in.info.dims[1], (float)0);
+        getQueue().enqueueWriteBuffer(*d_score, CL_TRUE, 0, in.info.dims[0] * in.info.dims[1] * sizeof(float), &score_init[0]);
 
         cl::Buffer *d_flags = d_score;
         if (nonmax) {
             d_flags = bufferAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(T));
         }
 
-        const dim_type blk_x = divup(in.info.dims[0]-6, FAST_THREADS_X);
-        const dim_type blk_y = divup(in.info.dims[1]-6, FAST_THREADS_Y);
+        const dim_type blk_x = divup(in.info.dims[0]-edge*2, FAST_THREADS_X);
+        const dim_type blk_y = divup(in.info.dims[1]-edge*2, FAST_THREADS_Y);
 
         // Locate features kernel sizes
         const NDRange local(FAST_THREADS_X, FAST_THREADS_Y);
         const NDRange global(blk_x * FAST_THREADS_X, blk_y * FAST_THREADS_Y);
 
         auto lfOp = make_kernel<Buffer, KParam,
-                                Buffer, const float,
+                                Buffer, const float, const unsigned,
                                 LocalSpaceArg> (lfKernel[device]);
 
         lfOp(EnqueueArgs(getQueue(), global, local),
-             *in.data, in.info, *d_score, thr,
+             *in.data, in.info, *d_score, thr, edge,
              cl::Local((FAST_THREADS_X + 6) * (FAST_THREADS_Y + 6) * sizeof(T)));
         CL_DEBUG_FINISH(getQueue());
 
@@ -120,9 +121,9 @@ void fast(unsigned* out_feat,
 
         auto nmOp = make_kernel<Buffer, Buffer, Buffer,
                                 Buffer, Buffer,
-                                KParam> (nmKernel[device]);
+                                KParam, const unsigned> (nmKernel[device]);
         nmOp(EnqueueArgs(getQueue(), global_nonmax, local_nonmax),
-                         *d_counts, *d_offsets, *d_total, *d_flags, *d_score, in.info);
+                         *d_counts, *d_offsets, *d_total, *d_flags, *d_score, in.info, edge);
         CL_DEBUG_FINISH(getQueue());
 
         unsigned total;
@@ -137,11 +138,12 @@ void fast(unsigned* out_feat,
 
             auto gfOp = make_kernel<Buffer, Buffer, Buffer,
                                     Buffer, Buffer, Buffer,
-                                    KParam, const unsigned> (gfKernel[device]);
+                                    KParam, const unsigned,
+                                    const unsigned> (gfKernel[device]);
             gfOp(EnqueueArgs(getQueue(), global_nonmax, local_nonmax),
                              *x_out.data, *y_out.data, *score_out.data,
                              *d_flags, *d_counts, *d_offsets,
-                             in.info, total);
+                             in.info, total, edge);
             CL_DEBUG_FINISH(getQueue());
         }
 
@@ -182,40 +184,41 @@ void fast_dispatch_nonmax(const unsigned arc_length,
                           Param &score_out,
                           Param in,
                           const float thr,
-                          const float feature_ratio)
+                          const float feature_ratio,
+                          const unsigned edge)
 {
     switch (arc_length) {
     case 9:
         fast<T,  9, nonmax>(out_feat, x_out, y_out, score_out, in,
-                            thr, feature_ratio);
+                            thr, feature_ratio, edge);
         break;
     case 10:
         fast<T, 10, nonmax>(out_feat, x_out, y_out, score_out, in,
-                            thr, feature_ratio);
+                            thr, feature_ratio, edge);
         break;
     case 11:
         fast<T, 11, nonmax>(out_feat, x_out, y_out, score_out, in,
-                            thr, feature_ratio);
+                            thr, feature_ratio, edge);
         break;
     case 12:
         fast<T, 12, nonmax>(out_feat, x_out, y_out, score_out, in,
-                            thr, feature_ratio);
+                            thr, feature_ratio, edge);
         break;
     case 13:
         fast<T, 13, nonmax>(out_feat, x_out, y_out, score_out, in,
-                            thr, feature_ratio);
+                            thr, feature_ratio, edge);
         break;
     case 14:
         fast<T, 14, nonmax>(out_feat, x_out, y_out, score_out, in,
-                            thr, feature_ratio);
+                            thr, feature_ratio, edge);
         break;
     case 15:
         fast<T, 15, nonmax>(out_feat, x_out, y_out, score_out, in,
-                            thr, feature_ratio);
+                            thr, feature_ratio, edge);
         break;
     case 16:
         fast<T, 16, nonmax>(out_feat, x_out, y_out, score_out, in,
-                            thr, feature_ratio);
+                            thr, feature_ratio, edge);
         break;
     }
 }
@@ -228,14 +231,15 @@ void fast_dispatch(const unsigned arc_length, const bool nonmax,
                    Param &score_out,
                    Param in,
                    const float thr,
-                   const float feature_ratio)
+                   const float feature_ratio,
+                   const unsigned edge)
 {
     if (!nonmax) {
         fast_dispatch_nonmax<T, 0>(arc_length, out_feat, x_out, y_out, score_out, in,
-                                   thr, feature_ratio);
+                                   thr, feature_ratio, edge);
     } else {
         fast_dispatch_nonmax<T, 1>(arc_length, out_feat, x_out, y_out, score_out, in,
-                                   thr, feature_ratio);
+                                   thr, feature_ratio, edge);
     }
 }
 

@@ -36,8 +36,8 @@ TEST(hsv_rgb, InvalidArray)
 TEST(hsv2rgb, CPP)
 {
     vector<af::dim4>      numDims;
-    vector<vector<float>>      in;
-    vector<vector<float>>   tests;
+    vector<vector<float> >      in;
+    vector<vector<float> >   tests;
 
     readTestsFromFile<float,float>(string(TEST_DIR"/hsv_rgb/hsv2rgb.test"), numDims, in, tests);
 
@@ -61,8 +61,8 @@ TEST(hsv2rgb, CPP)
 TEST(rgb2hsv, CPP)
 {
     vector<af::dim4>      numDims;
-    vector<vector<float>>      in;
-    vector<vector<float>>   tests;
+    vector<vector<float> >      in;
+    vector<vector<float> >   tests;
 
     readTestsFromFile<float,float>(string(TEST_DIR"/hsv_rgb/rgb2hsv.test"), numDims, in, tests);
 

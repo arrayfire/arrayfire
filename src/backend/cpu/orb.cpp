@@ -539,7 +539,8 @@ unsigned orb(Array<float> &x, Array<float> &y,
              Array<float> &size, Array<uint> &desc,
              const Array<T>& image,
              const float fast_thr, const unsigned max_feat,
-             const float scl_fctr, const unsigned levels)
+             const float scl_fctr, const unsigned levels,
+             const bool blur_img)
 {
 
     unsigned patch_size = REF_PAT_SIZE;
@@ -616,8 +617,16 @@ unsigned orb(Array<float> &x, Array<float> &y,
         Array<float> y_feat = createEmptyArray<float>(dim4());
         Array<float> score_feat = createEmptyArray<float>(dim4());
 
+        // Round feature size to nearest odd integer
+        float size = 2.f * floor(patch_size / 2.f) + 1.f;
+
+        // Avoid keeping features that might be too wide and might not fit on
+        // the image, sqrt(2.f) is the radius when angle is 45 degrees and
+        // represents widest case possible
+        unsigned edge = ceil(size * sqrt(2.f) / 2.f);
+
         unsigned lvl_feat = fast(x_feat, y_feat, score_feat,
-                                 lvl_img, fast_thr, 9, 1, 0.15f);
+                                 lvl_img, fast_thr, 9, 1, 0.15f, edge);
 
 
         if (lvl_feat == 0) {
@@ -686,23 +695,31 @@ unsigned orb(Array<float> &x, Array<float> &y,
         centroid_angle<T>(h_x_lvl, h_y_lvl, h_ori_lvl, usable_feat,
                           lvl_img, patch_size);
 
-        // Calculate a separable Gaussian kernel, if one is not already stored
-        if (!h_gauss) {
-            h_gauss = memAlloc<T>(gauss_dims[0]);
-            gaussian1D(h_gauss, gauss_dims[0], 2.f);
-            gauss_filter = createHostDataArray(gauss_dims, h_gauss);
-        }
+        Array<T> lvl_filt = createEmptyArray<T>(dim4());
 
-        // Filter level image with Gaussian kernel to reduce noise sensitivity
-        Array<T> lvl_filt = convolve2<T, convAccT, false>(lvl_img, gauss_filter, gauss_filter);
+        if (blur_img) {
+            // Calculate a separable Gaussian kernel, if one is not already stored
+            if (!h_gauss) {
+                h_gauss = memAlloc<T>(gauss_dims[0]);
+                gaussian1D(h_gauss, gauss_dims[0], 2.f);
+                gauss_filter = createHostDataArray(gauss_dims, h_gauss);
+            }
+
+            // Filter level image with Gaussian kernel to reduce noise sensitivity
+            lvl_filt = convolve2<T, convAccT, false>(lvl_img, gauss_filter, gauss_filter);
+        }
 
         // Compute ORB descriptors
         unsigned* h_desc_lvl = memAlloc<unsigned>(usable_feat * 8);
         memset(h_desc_lvl, 0, usable_feat * 8 * sizeof(unsigned));
-        extract_orb<T>(h_desc_lvl, usable_feat,
-                       h_x_lvl, h_y_lvl, h_ori_lvl, h_size_lvl,
-                       lvl_filt, lvl_scl, patch_size);
-
+        if (blur_img)
+            extract_orb<T>(h_desc_lvl, usable_feat,
+                           h_x_lvl, h_y_lvl, h_ori_lvl, h_size_lvl,
+                           lvl_filt, lvl_scl, patch_size);
+        else
+            extract_orb<T>(h_desc_lvl, usable_feat,
+                           h_x_lvl, h_y_lvl, h_ori_lvl, h_size_lvl,
+                           lvl_img, lvl_scl, patch_size);
 
         // Store results to pyramids
         total_feat += usable_feat;
@@ -768,13 +785,14 @@ unsigned orb(Array<float> &x, Array<float> &y,
     return total_feat;
 }
 
-#define INSTANTIATE(T, convAccT)                                        \
-    template unsigned orb<T, convAccT>(Array<float> &x, Array<float> &y, \
-                                       Array<float> &score, Array<float> &ori, \
-                                       Array<float> &size, Array<uint> &desc, \
-                                       const Array<T>& image,           \
-                                       const float fast_thr, const unsigned max_feat, \
-                                       const float scl_fctr, const unsigned levels); \
+#define INSTANTIATE(T, convAccT)                                                        \
+    template unsigned orb<T, convAccT>(Array<float> &x, Array<float> &y,                \
+                                       Array<float> &score, Array<float> &ori,          \
+                                       Array<float> &size, Array<uint> &desc,           \
+                                       const Array<T>& image,                           \
+                                       const float fast_thr, const unsigned max_feat,   \
+                                       const float scl_fctr, const unsigned levels,     \
+                                       const bool blur_img);
 
 INSTANTIATE(float , float )
 INSTANTIATE(double, double)

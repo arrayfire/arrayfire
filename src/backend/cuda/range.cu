@@ -8,22 +8,17 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <iota.hpp>
-#include <kernel/iota.hpp>
+#include <range.hpp>
+#include <kernel/range.hpp>
 #include <math.hpp>
 #include <stdexcept>
-#include <err_opencl.hpp>
+#include <err_cuda.hpp>
 
-namespace opencl
+namespace cuda
 {
     template<typename T>
-    Array<T> iota(const dim4& dim, const int rep)
+    Array<T> range(const dim4& dim, const int rep)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
-
         // Repeat highest dimension, ie. creates a single sequence from
         // 0...elements - 1
         int rep_ = rep;
@@ -33,17 +28,17 @@ namespace opencl
 
         Array<T> out = createEmptyArray<T>(dim);
         switch(rep_) {
-            case 0: kernel::iota<T, 0>(out); break;
-            case 1: kernel::iota<T, 1>(out); break;
-            case 2: kernel::iota<T, 2>(out); break;
-            case 3: kernel::iota<T, 3>(out); break;
+            case 0: kernel::range<T, 0>(out); break;
+            case 1: kernel::range<T, 1>(out); break;
+            case 2: kernel::range<T, 2>(out); break;
+            case 3: kernel::range<T, 3>(out); break;
             default: AF_ERROR("Invalid rep selection", AF_ERR_INVALID_ARG);
         }
         return out;
     }
 
 #define INSTANTIATE(T)                                                  \
-    template Array<T> iota<T>(const af::dim4 &dims, const int rep);     \
+    template Array<T> range<T>(const af::dim4 &dims, const int rep);     \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

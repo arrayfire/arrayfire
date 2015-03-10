@@ -35,7 +35,6 @@ af::array randgen(const int num, af::dtype ty)
     return tmp;
 }
 
-
 #define BINARY_TESTS(Ta, Tb, Tc, func)                                  \
     TEST(BinaryTests, Test_##func##_##Ta##_##Tb)                        \
     {                                                                   \

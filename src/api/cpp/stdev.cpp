@@ -10,18 +10,7 @@
 #include <af/dim4.hpp>
 #include <af/statistics.h>
 #include "error.hpp"
-
-static inline dim_type getFNSD(af::dim4 dims)
-{
-    dim_type fNSD = 0;
-    for (dim_type i=0; i<4; ++i) {
-        if (dims[i]>1) {
-            fNSD = i;
-            break;
-        }
-    }
-    return fNSD;
-}
+#include "common.hpp"
 
 namespace af
 {
@@ -60,7 +49,7 @@ INSTANTIATE_STDEV(unsigned char);
 array stdev(const array& in, dim_type dim)
 {
     af_array temp = 0;
-    AF_THROW(af_stdev(&temp, in.get(), getFNSD(in.dims())));
+    AF_THROW(af_stdev(&temp, in.get(), getFNSD(dim, in.dims())));
     return array(temp);
 }
 

@@ -7,9 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+// Include this before af/opencl.h
+// Causes conflict between system cl.hpp and opencl/cl.hpp
+#include <cl.hpp>
+
 #include <af/version.h>
 #include <af/opencl.h>
-#include <cl.hpp>
 #include <platform.hpp>
 #include <functional>
 #include <algorithm>

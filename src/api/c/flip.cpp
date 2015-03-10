@@ -18,7 +18,7 @@
 #include <handle.hpp>
 #include <backend.hpp>
 #include <Array.hpp>
-#include <ArrayIndex.hpp>
+#include <lookup.hpp>
 
 using namespace detail;
 using std::vector;

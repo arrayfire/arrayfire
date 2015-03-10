@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <kernel_headers/iota.hpp>
+#include <kernel_headers/range.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
@@ -37,12 +37,12 @@ namespace opencl
         static const dim_type TILEY = 32;
 
         template<typename T, unsigned rep>
-        void iota(Param out)
+        void range(Param out)
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>  iotaProgs;
-                static std::map<int, Kernel*> iotaKernels;
+                static std::map<int, Program*>  rangeProgs;
+                static std::map<int, Kernel*> rangeKernels;
 
                 int device = getActiveDeviceId();
 
@@ -55,13 +55,13 @@ namespace opencl
                         options << " -D USE_DOUBLE";
                     }
                     Program prog;
-                    buildProgram(prog, iota_cl, iota_cl_len, options.str());
-                    iotaProgs[device]   = new Program(prog);
-                    iotaKernels[device] = new Kernel(*iotaProgs[device], "iota_kernel");
+                    buildProgram(prog, range_cl, range_cl_len, options.str());
+                    rangeProgs[device]   = new Program(prog);
+                    rangeKernels[device] = new Kernel(*rangeProgs[device], "range_kernel");
                 });
 
-                auto iotaOp = make_kernel<Buffer, const KParam, const dim_type, const dim_type>
-                                         (*iotaKernels[device]);
+                auto rangeOp = make_kernel<Buffer, const KParam, const dim_type, const dim_type>
+                                         (*rangeKernels[device]);
 
                 NDRange local(TX, TY, 1);
 
@@ -71,7 +71,7 @@ namespace opencl
                                local[1] * blocksPerMatY * out.info.dims[3],
                                1);
 
-                iotaOp(EnqueueArgs(getQueue(), global, local),
+                rangeOp(EnqueueArgs(getQueue(), global, local),
                        *out.data, out.info, blocksPerMatX, blocksPerMatY);
 
                 CL_DEBUG_FINISH(getQueue());
