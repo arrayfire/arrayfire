@@ -62,7 +62,7 @@ void convolve1(Param<T> out, CParam<T> signal, dim_type fLen, dim_type nBBS,
 
     T *dst           = (T *)out.ptr          + oStep +(batchId*out.strides[1]);
     const T *src     = (const T *)signal.ptr + sStep +(batchId*signal.strides[1]);
-    const T *impulse = (const T *)cFilter;
+    const accType *impulse = (const accType *)cFilter;
 
     dim_type gx  = blockDim.x*(blockIdx.x-batchId*nBBS);
 
@@ -102,7 +102,7 @@ void convolve2(Param<T> out, CParam<T> signal, dim_type nBBS, dim_type oStep, di
     unsigned batchId  = blockIdx.x/nBBS;
     T *dst            = (T *)out.ptr          + oStep + (batchId*out.strides[2]);
     const T *src      = (const T *)signal.ptr + sStep + (batchId*signal.strides[2]);
-    const T *impulse  = (const T *)cFilter;
+    const accType *impulse  = (const accType *)cFilter;
 
     dim_type lx  = threadIdx.x;
     dim_type ly  = threadIdx.y;
@@ -138,7 +138,7 @@ void convolve2(Param<T> out, CParam<T> signal, dim_type nBBS, dim_type oStep, di
         for(dim_type fj=0; fj<fLen1; ++fj) {
 #pragma unroll
             for(dim_type fi=0; fi<fLen0; ++fi) {
-                T f_val = impulse[fj*fLen0+fi];
+                accType f_val = impulse[fj*fLen0+fi];
                 T s_val = shrdMem[(cj-fj)*shrdLen0 + (ci-fi)];
                 accum   = accum + s_val*f_val;
             }
@@ -181,7 +181,7 @@ void convolve3(Param<T> out, CParam<T> signal, dim_type fLen0, dim_type fLen1,
 
     T *dst            = (T *)out.ptr          + oStep + (batchId*out.strides[3]);
     const T *src      = (const T *)signal.ptr + sStep + (batchId*signal.strides[3]);
-    const T *impulse  = (const T *)cFilter;
+    const accType *impulse  = (const accType *)cFilter;
 
     dim_type lx  = threadIdx.x;
     dim_type ly  = threadIdx.y;
@@ -246,7 +246,7 @@ void convolve3(Param<T> out, CParam<T> signal, dim_type fLen0, dim_type fLen1,
             for(dim_type fj=0; fj<fLen1; ++fj) {
 #pragma unroll
                 for(dim_type fi=0; fi<fLen0; ++fi) {
-                    T f_val = impulse[index(fi, fj, fk, fLen0, fStride)];
+                    accType f_val = impulse[index(fi, fj, fk, fLen0, fStride)];
                     T s_val = shrdMem[index(ci-fi, cj-fj, ck-fk, shrdLen0, skStride)];
                     accum   = accum + s_val*f_val;
                 }
@@ -337,7 +337,7 @@ void conv2Helper(dim3 blks, dim3 thrds, Param<T> out, CParam<T> sig,
 }
 
 template<typename T, typename accType, dim_type baseDim, bool expand>
-void convolve_nd(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatchKind kind)
+void convolve_nd(Param<T> out, CParam<T> signal, CParam<accType> filter, ConvolveBatchKind kind)
 {
     bool callKernel = true;
 
@@ -388,7 +388,7 @@ void convolve_nd(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatch
     for (dim_type b=0; b<bCount; ++b) {
         // FIXME: if the filter array is strided, direct copy of symbols
         // might cause issues
-        CUDA_CHECK(cudaMemcpyToSymbol(kernel::cFilter, filter.ptr+b*steps[2], filterLen*sizeof(T), 0, cudaMemcpyDeviceToDevice));
+        CUDA_CHECK(cudaMemcpyToSymbol(kernel::cFilter, filter.ptr+b*steps[2], filterLen*sizeof(accType), 0, cudaMemcpyDeviceToDevice));
 
         switch(baseDim) {
             case 1:
@@ -409,13 +409,13 @@ void convolve_nd(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatch
     POST_LAUNCH_CHECK();
 }
 
-#define INSTANTIATE(T, accT)  \
-	template void convolve_nd<T, accT, 1, true >(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatchKind kind);\
-	template void convolve_nd<T, accT, 1, false>(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatchKind kind);\
-	template void convolve_nd<T, accT, 2, true >(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatchKind kind);\
-	template void convolve_nd<T, accT, 2, false>(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatchKind kind);\
-	template void convolve_nd<T, accT, 3, true >(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatchKind kind);\
-	template void convolve_nd<T, accT, 3, false>(Param<T> out, CParam<T> signal, CParam<T> filter, ConvolveBatchKind kind);\
+#define INSTANTIATE(T, accType)  \
+	template void convolve_nd<T, accType, 1, true >(Param<T> out, CParam<T> signal, CParam<accType> filter, ConvolveBatchKind kind);\
+	template void convolve_nd<T, accType, 1, false>(Param<T> out, CParam<T> signal, CParam<accType> filter, ConvolveBatchKind kind);\
+	template void convolve_nd<T, accType, 2, true >(Param<T> out, CParam<T> signal, CParam<accType> filter, ConvolveBatchKind kind);\
+	template void convolve_nd<T, accType, 2, false>(Param<T> out, CParam<T> signal, CParam<accType> filter, ConvolveBatchKind kind);\
+	template void convolve_nd<T, accType, 3, true >(Param<T> out, CParam<T> signal, CParam<accType> filter, ConvolveBatchKind kind);\
+	template void convolve_nd<T, accType, 3, false>(Param<T> out, CParam<T> signal, CParam<accType> filter, ConvolveBatchKind kind);\
 
 
 INSTANTIATE(cdouble, cdouble)

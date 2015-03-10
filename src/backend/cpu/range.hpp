@@ -6,13 +6,13 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#pragma once
 
+#include <af/array.h>
 #include <Array.hpp>
 
 namespace cpu
 {
-
-template<typename in_t, typename idx_t>
-Array<in_t> arrayIndex(const Array<in_t> &input, const Array<idx_t> &indices, const unsigned dim);
-
+    template<typename T>
+    Array<T> range(const dim4& dim, const int rep = -1);
 }

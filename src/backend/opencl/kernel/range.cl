@@ -8,7 +8,7 @@
  ********************************************************/
 
 __kernel
-void iota_kernel(__global T *out, const KParam op,
+void range_kernel(__global T *out, const KParam op,
                  const dim_type blocksPerMatX, const dim_type blocksPerMatY)
 {
     const bool mul1 = rep > 0;

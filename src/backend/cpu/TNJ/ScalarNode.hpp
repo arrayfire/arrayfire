@@ -34,7 +34,15 @@ namespace TNJ
             return (void *)(&m_val);
         }
 
-        void reset() {}
+        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
+        {
+            if (m_is_eval) return;
+            len++;
+            m_is_eval = true;
+            return;
+        }
+
+        void reset() { m_is_eval = false; }
     };
 }
 

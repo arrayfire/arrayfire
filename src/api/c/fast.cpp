@@ -22,7 +22,7 @@ using namespace detail;
 template<typename T>
 static af_features fast(af_array const &in, const float thr,
                         const unsigned arc_length, const bool non_max,
-                        const float feature_ratio)
+                        const float feature_ratio, const unsigned edge)
 {
     Array<float> x = createEmptyArray<float>(dim4());
     Array<float> y = createEmptyArray<float>(dim4());
@@ -31,7 +31,7 @@ static af_features fast(af_array const &in, const float thr,
     af_features feat;
     feat.n = fast<T>(x, y, score,
                      getArray<T>(in), thr,
-                     arc_length, non_max, feature_ratio);
+                     arc_length, non_max, feature_ratio, edge);
 
     Array<float> orientation = createValueArray<float>(feat.n, 0.0);
     Array<float> size = createValueArray<float>(feat.n, 1.0);
@@ -48,13 +48,13 @@ static af_features fast(af_array const &in, const float thr,
 
 af_err af_fast(af_features *out, const af_array in, const float thr,
                const unsigned arc_length, const bool non_max,
-               const float feature_ratio)
+               const float feature_ratio, const unsigned edge)
 {
     try {
         ArrayInfo info = getInfo(in);
         af::dim4 dims  = info.dims();
 
-        ARG_ASSERT(2, (dims[0] >= 7 || dims[1] >= 7));
+        ARG_ASSERT(2, (dims[0] >= (2*edge+1) || dims[1] >= (2*edge+1)));
         ARG_ASSERT(3, thr > 0.0f);
         ARG_ASSERT(4, (arc_length >= 9 && arc_length <= 16));
         ARG_ASSERT(6, (feature_ratio > 0.0f && feature_ratio <= 1.0f));
@@ -64,12 +64,12 @@ af_err af_fast(af_features *out, const af_array in, const float thr,
 
         af_dtype type  = info.getType();
         switch(type) {
-            case f32: *out = fast<float >(in, thr, arc_length, non_max, feature_ratio); break;
-            case f64: *out = fast<double>(in, thr, arc_length, non_max, feature_ratio); break;
-            case b8 : *out = fast<char  >(in, thr, arc_length, non_max, feature_ratio); break;
-            case s32: *out = fast<int   >(in, thr, arc_length, non_max, feature_ratio); break;
-            case u32: *out = fast<uint  >(in, thr, arc_length, non_max, feature_ratio); break;
-            case u8 : *out = fast<uchar >(in, thr, arc_length, non_max, feature_ratio); break;
+            case f32: *out = fast<float >(in, thr, arc_length, non_max, feature_ratio, edge); break;
+            case f64: *out = fast<double>(in, thr, arc_length, non_max, feature_ratio, edge); break;
+            case b8 : *out = fast<char  >(in, thr, arc_length, non_max, feature_ratio, edge); break;
+            case s32: *out = fast<int   >(in, thr, arc_length, non_max, feature_ratio, edge); break;
+            case u32: *out = fast<uint  >(in, thr, arc_length, non_max, feature_ratio, edge); break;
+            case u8 : *out = fast<uchar >(in, thr, arc_length, non_max, feature_ratio, edge); break;
             default : TYPE_ERROR(1, type);
         }
     }

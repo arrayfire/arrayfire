@@ -607,24 +607,24 @@ namespace af
     AFAPI array operator op(const cfloat&, const array&);               \
     AFAPI array operator op(const cdouble&, const array&);              \
 
-    BIN_OP(+ );
-    BIN_OP(- );
-    BIN_OP(* );
-    BIN_OP(/ );
-    BIN_OP(==);
-    BIN_OP(!=);
-    BIN_OP(< );
-    BIN_OP(<=);
-    BIN_OP(> );
-    BIN_OP(>=);
-    BIN_OP(&&);
-    BIN_OP(||);
-    BIN_OP(% );
-    BIN_OP(& );
-    BIN_OP(| );
-    BIN_OP(^ );
-    BIN_OP(<<);
-    BIN_OP(>>);
+    BIN_OP(+ )
+    BIN_OP(- )
+    BIN_OP(* )
+    BIN_OP(/ )
+    BIN_OP(==)
+    BIN_OP(!=)
+    BIN_OP(< )
+    BIN_OP(<=)
+    BIN_OP(> )
+    BIN_OP(>=)
+    BIN_OP(&&)
+    BIN_OP(||)
+    BIN_OP(% )
+    BIN_OP(& )
+    BIN_OP(| )
+    BIN_OP(^ )
+    BIN_OP(<<)
+    BIN_OP(>>)
 
 #undef BIN_OP
 

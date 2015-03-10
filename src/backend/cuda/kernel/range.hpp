@@ -25,7 +25,7 @@ namespace cuda
 
         template<typename T, unsigned rep>
         __global__
-        void iota_kernel(Param<T> out, const dim_type blocksPerMatX, const dim_type blocksPerMatY)
+        void range_kernel(Param<T> out, const dim_type blocksPerMatX, const dim_type blocksPerMatY)
         {
             const bool mul1 = rep > 0;
             const bool mul2 = rep > 1;
@@ -70,7 +70,7 @@ namespace cuda
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
         template<typename T, unsigned rep>
-        void iota(Param<T> out)
+        void range(Param<T> out)
         {
             dim3 threads(TX, TY, 1);
 
@@ -80,7 +80,7 @@ namespace cuda
                         blocksPerMatY * out.dims[3],
                         1);
 
-            iota_kernel<T, rep><<<blocks, threads>>>(out, blocksPerMatX, blocksPerMatY);
+            range_kernel<T, rep><<<blocks, threads>>>(out, blocksPerMatX, blocksPerMatY);
             POST_LAUNCH_CHECK();
         }
     }

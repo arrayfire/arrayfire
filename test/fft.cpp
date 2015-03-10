@@ -131,8 +131,8 @@ void fftTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0
     if (noDoubleTests<outType>()) return;
 
     vector<af::dim4>        numDims;
-    vector<vector<inType>>       in;
-    vector<vector<outType>>   tests;
+    vector<vector<inType> >       in;
+    vector<vector<outType> >   tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
@@ -163,7 +163,7 @@ void fftTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0
     outType *outData= new outType[out_size];
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
 
-    vector<outType> goldBar(begin(tests[0]), end(tests[0]));
+    vector<outType> goldBar(tests[0].begin(), tests[0].end());
 
     size_t test_size = 0;
     switch(dims.ndims()) {
@@ -231,8 +231,8 @@ void fftBatchTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type p
     if (noDoubleTests<outType>()) return;
 
     vector<af::dim4>        numDims;
-    vector<vector<inType>>       in;
-    vector<vector<outType>>   tests;
+    vector<vector<inType> >       in;
+    vector<vector<outType> >   tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
@@ -263,7 +263,7 @@ void fftBatchTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type p
     outType *outData= new outType[out_size];
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
 
-    vector<outType> goldBar(begin(tests[0]), end(tests[0]));
+    vector<outType> goldBar(tests[0].begin(), tests[0].end());
 
     size_t test_size = 0;
     size_t batch_count = dims[rank];
@@ -331,8 +331,8 @@ void cppFFTTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad
     if (noDoubleTests<outType>()) return;
 
     vector<af::dim4>        numDims;
-    vector<vector<inType>>       in;
-    vector<vector<outType>>   tests;
+    vector<vector<inType> >       in;
+    vector<vector<outType> >   tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
@@ -350,7 +350,7 @@ void cppFFTTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad
     cfloat *outData= new cfloat[out_size];
     output.host((void*)outData);
 
-    vector<cfloat> goldBar(begin(tests[0]), end(tests[0]));
+    vector<cfloat> goldBar(tests[0].begin(), tests[0].end());
 
     size_t test_size = 0;
     switch(dims.ndims()) {

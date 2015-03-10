@@ -15,7 +15,6 @@
 #include <string>
 #include <vector>
 #include <cmath>
-#include <type_traits>
 #include <testHelpers.hpp>
 #include <typeinfo>
 
@@ -62,7 +61,7 @@ void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y, float* sc
     }
 }
 
-void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y, float* score, float* ori, float* size, vector<vector<unsigned>>& desc, unsigned nfeat)
+void array_to_feat_desc(vector<feat_desc_t>& feat, float* x, float* y, float* score, float* ori, float* size, vector<vector<unsigned> >& desc, unsigned nfeat)
 {
     feat.resize(nfeat);
     for (size_t i = 0; i < feat.size(); i++) {
@@ -178,8 +177,8 @@ void orbTest(string pTestFile)
 
     vector<dim4>             inDims;
     vector<string>           inFiles;
-    vector<vector<float>>    goldFeat;
-    vector<vector<unsigned>> goldDesc;
+    vector<vector<float> >    goldFeat;
+    vector<vector<unsigned> > goldDesc;
 
     readImageFeaturesDescriptors<unsigned>(pTestFile, inDims, inFiles, goldFeat, goldDesc);
 
@@ -196,7 +195,7 @@ void orbTest(string pTestFile)
         ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
         ASSERT_EQ(AF_SUCCESS, conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_EQ(AF_SUCCESS, af_orb(&feat, &desc, inArray, 20.0f, 400, 1.2f, 8));
+        ASSERT_EQ(AF_SUCCESS, af_orb(&feat, &desc, inArray, 20.0f, 400, 1.2f, 8, true));
 
         float * outX           = new float[feat.n];
         float * outY           = new float[feat.n];
@@ -277,8 +276,8 @@ TEST(ORB, CPP)
 
     vector<dim4>             inDims;
     vector<string>           inFiles;
-    vector<vector<float>>    goldFeat;
-    vector<vector<unsigned>> goldDesc;
+    vector<vector<float> >    goldFeat;
+    vector<vector<unsigned> > goldDesc;
 
     readImageFeaturesDescriptors<unsigned>(string(TEST_DIR"/orb/square.test"), inDims, inFiles, goldFeat, goldDesc);
     inFiles[0].insert(0,string(TEST_DIR"/orb/"));
@@ -287,7 +286,7 @@ TEST(ORB, CPP)
 
     af::features feat;
     af::array desc;
-    af::orb(feat, desc, in, 20.0f, 400, 1.2f, 8);
+    af::orb(feat, desc, in, 20.0f, 400, 1.2f, 8, true);
 
     float * outX           = new float[feat.getNumFeatures()];
     float * outY           = new float[feat.getNumFeatures()];

@@ -15,7 +15,7 @@ namespace opencl
 namespace kernel
 {
 
-template<typename T, typename aT, bool expand, dim_type f0, dim_type f1>
+template<typename T, typename accType, bool expand, dim_type f0, dim_type f1>
 void conv2Helper(const conv_kparam_t& param, Param out, const Param signal, const Param filter)
 {
     try {
@@ -30,7 +30,7 @@ void conv2Helper(const conv_kparam_t& param, Param out, const Param signal, cons
 
                     std::ostringstream options;
                     options << " -D T=" << dtype_traits<T>::getName()
-                            << " -D accType="<< dtype_traits<T>::getName()
+                            << " -D accType="<< dtype_traits<accType>::getName()
                             << " -D BASE_DIM="<< 2 /* hard constant specific to this convolution type */
                             << " -D FLEN0=" << f0
                             << " -D FLEN1=" << f1
@@ -49,12 +49,12 @@ void conv2Helper(const conv_kparam_t& param, Param out, const Param signal, cons
         auto convOp = make_kernel<Buffer, KParam, Buffer, KParam,
                                   Buffer, KParam, dim_type, dim_type, dim_type>(*convKernels[device]);
 
-        cl_int se_size    = sizeof(T)*filter.info.dims[0]*filter.info.dims[1];
+        cl_int se_size    = sizeof(accType)*filter.info.dims[0]*filter.info.dims[1];
         cl::Buffer *mBuff = bufferAlloc(se_size);
 
         for (dim_type b=0; b<param.bCount; ++b) {
             // FIX ME: if the filter array is strided, direct copy might cause issues
-            getQueue().enqueueCopyBuffer(*filter.data, *mBuff, b*param.steps[2]*sizeof(T), 0, se_size);
+            getQueue().enqueueCopyBuffer(*filter.data, *mBuff, b*param.steps[2]*sizeof(accType), 0, se_size);
 
             convOp(EnqueueArgs(getQueue(), param.global, param.local),
                     *out.data, out.info, *signal.data, signal.info,

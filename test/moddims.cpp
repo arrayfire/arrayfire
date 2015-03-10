@@ -28,8 +28,8 @@ class Moddims : public ::testing::Test
 {
     public:
         virtual void SetUp() {
-            subMat.push_back({1,2,1});
-            subMat.push_back({1,3,1});
+            subMat.push_back(af_make_seq(1,2,1));
+            subMat.push_back(af_make_seq(1,3,1));
         }
         vector<af_seq> subMat;
 };
@@ -42,14 +42,14 @@ typedef ::testing::Types<float, double, int, unsigned, char, unsigned char> Test
 TYPED_TEST_CASE(Moddims, TestTypes);
 
 template<typename T>
-void moddimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=nullptr)
+void moddimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=NULL)
 {
     if (noDoubleTests<T>()) return;
 
     vector<af::dim4> numDims;
 
-    vector<vector<T>>   in;
-    vector<vector<T>>   tests;
+    vector<vector<T> >   in;
+    vector<vector<T> >   tests;
     readTests<T,T,int>(pTestFile,numDims,in,tests);
     af::dim4 dims       = numDims[0];
 
@@ -124,8 +124,8 @@ void moddimsArgsTest(string pTestFile)
 
     vector<af::dim4> numDims;
 
-    vector<vector<T>>   in;
-    vector<vector<T>>   tests;
+    vector<vector<T> >   in;
+    vector<vector<T> >   tests;
     readTests<T,T,int>(pTestFile,numDims,in,tests);
     af::dim4 dims       = numDims[0];
 
@@ -137,7 +137,7 @@ void moddimsArgsTest(string pTestFile)
     newDims[0] = dims[1];
     newDims[1] = dims[0]*dims[2];
     ASSERT_EQ(AF_ERR_ARG, af_moddims(&outArray,inArray,0,newDims.get()));
-    ASSERT_EQ(AF_ERR_ARG, af_moddims(&outArray,inArray,newDims.ndims(),nullptr));
+    ASSERT_EQ(AF_ERR_ARG, af_moddims(&outArray,inArray,newDims.ndims(),NULL));
 
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
@@ -154,8 +154,8 @@ void moddimsMismatchTest(string pTestFile)
 
     vector<af::dim4> numDims;
 
-    vector<vector<T>>   in;
-    vector<vector<T>>   tests;
+    vector<vector<T> >   in;
+    vector<vector<T> >   tests;
     readTests<T,T,int>(pTestFile,numDims,in,tests);
     af::dim4 dims       = numDims[0];
 
@@ -180,14 +180,14 @@ TYPED_TEST(Moddims,Mismatch)
 /////////////////////////////////// CPP ///////////////////////////////////
 //
 template<typename T>
-void cppModdimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=nullptr)
+void cppModdimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=NULL)
 {
     if (noDoubleTests<T>()) return;
 
     vector<af::dim4> numDims;
 
-    vector<vector<T>>   in;
-    vector<vector<T>>   tests;
+    vector<vector<T> >   in;
+    vector<vector<T> >   tests;
     readTests<T,T,int>(pTestFile,numDims,in,tests);
     af::dim4 dims       = numDims[0];
 
@@ -237,7 +237,7 @@ TEST(Moddims,Basic_CPP)
 TEST(Moddims,Subref_CPP)
 {
     vector<af_seq> subMat;
-    subMat.push_back({1,2,1});
-    subMat.push_back({1,3,1});
+    subMat.push_back(af_make_seq(1,2,1));
+    subMat.push_back(af_make_seq(1,3,1));
     cppModdimsTest<float>(string(TEST_DIR"/moddims/subref.test"),true,&subMat);
 }

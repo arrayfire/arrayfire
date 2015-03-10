@@ -46,8 +46,8 @@ void testSobelDerivatives(string pTestFile)
     if (noDoubleTests<Ti>()) return;
 
     vector<af::dim4>  numDims;
-    vector<vector<Ti>>      in;
-    vector<vector<To>>   tests;
+    vector<vector<Ti> >      in;
+    vector<vector<To> >   tests;
 
     readTests<Ti,To,int>(pTestFile, numDims, in, tests);
 

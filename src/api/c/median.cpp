@@ -29,7 +29,7 @@ static T median(const af_array& in)
     const Array<T> input  = getArray<T>(in);
     dim_type nElems = input.elements();
     double mid      = (nElems + 1) / 2;
-    af_seq mdSpan[1]= {mid-1, mid, 1};
+    af_seq mdSpan[1]= {af_make_seq(mid-1, mid, 1)};
     dim4 dims(nElems, 1, 1, 1);
 
     af_array temp = 0;
@@ -65,7 +65,7 @@ static af_array median(const af_array& in, dim_type dim)
     af_array left = 0;
 
     af_seq slices[4] = {af_span, af_span, af_span, af_span};
-    slices[dim] = {mid-1, mid-1, 1};
+    slices[dim] = af_make_seq(mid-1.0, mid-1.0, 1.0);
 
     AF_CHECK(af_index(&left, getHandle<T>(sortedIn), input.ndims(), slices));
 
@@ -76,7 +76,7 @@ static af_array median(const af_array& in, dim_type dim)
         // ((mid-1)+mid)/2 is our guy
         dim4  dims = input.dims();
         af_array right = 0;
-        slices[dim] = {mid, mid, 1};
+        slices[dim] = af_make_seq(mid, mid, 1.0);
 
         AF_CHECK(af_index(&right, getHandle<T>(sortedIn), dims.ndims(), slices));
 

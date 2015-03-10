@@ -59,7 +59,7 @@ struct conv_kparam_t {
 };
 
 template<typename T, dim_type baseDim>
-void prepareKernelArgs(conv_kparam_t& param, ConvolveBatchKind kind, 
+void prepareKernelArgs(conv_kparam_t& param, ConvolveBatchKind kind,
                        dim_type *oDims, const dim_type *sDims, const dim_type *fDims,
                        dim_type *oStrides, const dim_type *sStrides, const dim_type *fStrides)
 {
@@ -119,7 +119,7 @@ void prepareKernelArgs(conv_kparam_t& param, ConvolveBatchKind kind,
     }
 }
 
-template<typename T, typename aT, dim_type bDim, bool expand>
+template<typename T, typename accType, dim_type bDim, bool expand>
 void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal, const Param& filter)
 {
     try {
@@ -132,7 +132,7 @@ void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal, co
         std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
                     options << " -D T=" << dtype_traits<T>::getName()
-                            << " -D accType="<< dtype_traits<T>::getName()
+                            << " -D accType="<< dtype_traits<accType>::getName()
                             << " -D BASE_DIM="<< bDim
                             << " -D EXPAND=" << expand;
                     if (std::is_same<T, double>::value ||
@@ -151,15 +151,15 @@ void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal, co
 
         cl_int se_size;
         switch(bDim) {
-            case 1: se_size = sizeof(T)*filter.info.dims[0]; break;
-            case 3: se_size = sizeof(T)*filter.info.dims[0]*filter.info.dims[1]*filter.info.dims[2]; break;
+            case 1: se_size = sizeof(accType)*filter.info.dims[0]; break;
+            case 3: se_size = sizeof(accType)*filter.info.dims[0]*filter.info.dims[1]*filter.info.dims[2]; break;
         }
 
         cl::Buffer *mBuff = bufferAlloc(se_size);
 
         for (dim_type b=0; b<param.bCount; ++b) {
             // FIX ME: if the filter array is strided, direct copy might cause issues
-            getQueue().enqueueCopyBuffer(*filter.data, *mBuff, b*param.steps[2]*sizeof(T), 0, se_size);
+            getQueue().enqueueCopyBuffer(*filter.data, *mBuff, b*param.steps[2]*sizeof(accType), 0, se_size);
 
             convOp(EnqueueArgs(getQueue(), param.global, param.local),
                     *out.data, out.info, *signal.data, signal.info, cl::Local(param.loc_size),
@@ -174,13 +174,13 @@ void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal, co
     }
 }
 
-template<typename T, typename aT, bool expand>
+template<typename T, typename accType, bool expand>
 void conv1(const conv_kparam_t& p, Param& out, const Param& sig, const Param& filt);
 
-template<typename T, typename aT, bool expand>
+template<typename T, typename accType, bool expand>
 void conv2(const conv_kparam_t& p, Param& out, const Param& sig, const Param& filt);
 
-template<typename T, typename aT, bool expand>
+template<typename T, typename accType, bool expand>
 void conv3(const conv_kparam_t& p, Param& out, const Param& sig, const Param& filt);
 
 }

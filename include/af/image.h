@@ -38,8 +38,32 @@ AFAPI array skew(const array& in, const float skew0, const float skew1, const di
 
 AFAPI array bilateral(const array &in, const float spatial_sigma, const float chromatic_sigma, bool is_color=false);
 
+/**
+   C++ Interface
+
+   \snippet test/histogram.cpp ex_image_hist_minmax
+
+   \param[in]  in is the input array
+   \param[in]  nbins  Number of bins to populate between min and max
+   \param[in]  minval minimum bin value (accumulates -inf to min)
+   \param[in]  maxval minimum bin value (accumulates max to +inf)
+   \return     histogram array
+
+   \ingroup image_func_histogram
+ */
 AFAPI array histogram(const array &in, const unsigned nbins, const double minval, const double maxval);
 
+/**
+   C++ Interface
+
+   \snippet test/histogram.cpp ex_image_hist_nominmax
+
+   \param[in]  in is the input array
+   \param[in]  nbins  Number of bins to populate between min and max
+   \return     histogram array
+
+   \ingroup image_func_histogram
+ */
 AFAPI array histogram(const array &in, const unsigned nbins);
 
 AFAPI array meanshift(const array& in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color=false);
@@ -58,9 +82,54 @@ AFAPI void grad(array& rows, array& cols, const array& in);
 
 AFAPI array regions(const array& in, af::connectivity connectivity=AF_CONNECTIVITY_4, dtype type=f32);
 
-AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_length=9, const bool non_max=true, const float feature_ratio=0.05);
+/**
+    C++ Interface
 
-AFAPI void orb(features& feat, array& desc, const array& image, const float fast_thr=20.f, const unsigned max_feat=400, const float scl_fctr=1.5f, const unsigned levels=4);
+    \param[in] in array containing a grayscale image (color images are not
+               supported)
+    \param[in] thr FAST threshold for which a pixel of the circle around
+               the central pixel is considered to be greater or smaller
+    \param[in] arc_length length of arc (or sequential segment) to be tested,
+               must be within range [9-16]
+    \param[in] nonmax performs non-maximal suppression if true
+    \param[in] feature_ratio maximum ratio of features to detect, the maximum
+               number of features is calculated by feature_ratio * in.elements().
+               The maximum number of features is not based on the score, instead
+               features detected after the limit is reached are discarded
+    \param[in] edge is the length of the edges in the image to be discarded
+               by FAST (minimum is 3, as the radius of the circle)
+    \return    features object containing arrays for x and y coordinates and
+               score, while array orientation is set to 0 as FAST does not
+               compute orientation, and size is set to 1 as FAST does not
+               compute multiple scales
+
+    \ingroup image_func_fast
+ */
+AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_length=9, const bool non_max=true, const float feature_ratio=0.05, const unsigned edge=3);
+
+/**
+    C++ Interface
+
+    \param[out] feat features object composed of arrays for x and y
+                coordinates, score, orientation and size of selected features
+    \param[out] desc Nx8 array containing extracted descriptors, where N is the
+                number of selected features
+    \param[in]  image array containing a grayscale image (color images are not
+                supported)
+    \param[in]  fast_thr FAST threshold for which a pixel of the circle around
+                the central pixel is considered to be brighter or darker
+    \param[in]  max_feat Maximum number of features to hold (will only keep the
+                max_feat features with higher Harris responses)
+    \param[in]  scl_fctr Factor to downsample the input image, meaning that
+                each level will hold prior level dimensions divided by scl_fctr
+    \param[in]  levels Number of levels to be computed for the image pyramid
+    \param[in]  blur_img Blur image with a Gaussian filter with sigma=2 before
+                computing descriptors to increase robustness against noise if
+                true
+
+    \ingroup image_func_orb
+ */
+AFAPI void orb(features& feat, array& desc, const array& image, const float fast_thr=20.f, const unsigned max_feat=400, const float scl_fctr=1.5f, const unsigned levels=4, const bool blur_img=false);
 
 AFAPI array matchTemplate(const array &searchImg, const array &templateImg, matchType mType=AF_SAD);
 
@@ -68,18 +137,91 @@ AFAPI void sobel(array &dx, array &dy, const array &img, const unsigned ker_size
 
 AFAPI array sobel(const array &img, const unsigned ker_size=3, bool isFast=false);
 
+/**
+   C++ Interface
+
+   \param[in]  in is an array in the RGB colorspace
+   \param[in]  rPercent is percentage of red channel value contributing to grayscale intensity
+   \param[in]  gPercent is percentage of green channel value contributing to grayscale intensity
+   \param[in]  bPercent is percentage of blue channel value contributing to grayscale intensity
+   \return     array in Grayscale colorspace
+
+   \note \p in must be three dimensional for RGB to Grayscale conversion.
+
+   \ingroup image_func_rgb2gray
+ */
 AFAPI array rgb2gray(const array& in, const float rPercent=0.2126f, const float gPercent=0.7152f, const float bPercent=0.0722f);
 
+/**
+   C++ Interface
+
+   \param[in]  in is an array in the Grayscale colorspace
+   \param[in]  rFactor is percentage of intensity value contributing to red channel
+   \param[in]  gFactor is percentage of intensity value contributing to green channel
+   \param[in]  bFactor is percentage of intensity value contributing to blue channel
+   \return     array in RGB colorspace
+
+   \note \p in must be two dimensional for Grayscale to RGB conversion.
+
+   \ingroup image_func_gray2rgb
+ */
 AFAPI array gray2rgb(const array& in, const float rFactor=1.0, const float gFactor=1.0, const float bFactor=1.0);
 
+/**
+   C++ Interface
+
+   \snippet test/histogram.cpp ex_image_histequal
+
+   \param[in]  in is the input array, non-normalized input (!! assumes values [0-255] !!)
+   \param[in]  hist target histogram to approximate in output (based on # of bins)
+   \return     data with histogram approximately equal to histogram
+
+   \note \p in must be two dimensional.
+
+   \ingroup image_func_histequal
+ */
 AFAPI array histequal(const array& in, const array& hist);
 
 AFAPI array gaussianKernel(const int rows, const int cols, const double sig_r = 0, const double sig_c = 0);
 
+/**
+   C++ Interface
+
+   \param[in]  in is an array in the HSV colorspace
+   \return     array in RGB colorspace
+
+   \note \p in must be three dimensional
+
+   \ingroup image_func_hsv2rgb
+ */
 AFAPI array hsv2rgb(const array& in);
 
+/**
+   C++ Interface
+
+   \param[in]  in is an array in the RGB colorspace
+   \return     array in HSV colorspace
+
+   \note \p in must be three dimensional
+
+   \ingroup image_func_rgb2hsv
+ */
 AFAPI array rgb2hsv(const array& in);
 
+/**
+   C++ Interface
+
+   \param[in]  image is the input array
+   \param[in]  to is the target array colorspace
+   \param[in]  from is the input array colorspace
+   \return     array in target colorspace
+
+   \note  \p image must be 3 dimensional for \ref AF_HSV to \ref AF_RGB, \ref AF_RGB to
+   \ref AF_HSV, & \ref AF_RGB to \ref AF_GRAY transformations. For \ref AF_GRAY to \ref AF_RGB
+   transformation, 2D array is expected.
+
+   \ingroup image_func_colorspace
+ */
 AFAPI array colorspace(const array& image, CSpace to, CSpace from);
 
 }
@@ -117,7 +259,19 @@ extern "C" {
                          const dim_type odim0, const dim_type odim1, const af_interp_type method,
                          const bool inverse);
 
-    // histogram: return af_array will have elements of type u32
+    /**
+       C Interface
+
+       \param[out] out is the histogram for input array in
+       \param[in]  in is the input array
+       \param[in]  nbins  Number of bins to populate between min and max
+       \param[in]  minval minimum bin value (accumulates -inf to min)
+       \param[in]  maxval minimum bin value (accumulates max to +inf)
+       \return     \ref AF_SUCCESS if the histogram is successfully created,
+       otherwise an appropriate error code is returned.
+
+       \ingroup image_func_histogram
+     */
     AFAPI af_err af_histogram(af_array *out, const af_array in, const unsigned nbins, const double minval, const double maxval);
 
     // image dilation operation
@@ -145,11 +299,56 @@ extern "C" {
     // Compute labels for connected regions from binary input arrays
     AFAPI af_err af_regions(af_array *out, const af_array in, af_connectivity connectivity, af_dtype ty);
 
-    // Compute FAST corners from input image
-    AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio);
+    /**
+        C Interface
 
-    // Compute FAST corners and ORB descriptors from input image
-    AFAPI af_err af_orb(af_features *feat, af_array *desc, const af_array in, const float fast_thr, const unsigned max_feat, const float scl_fctr, const unsigned levels);
+        \param[out] af_features struct containing arrays for x and y
+                    coordinates and score, while array orientation is set to 0
+                    as FAST does not compute orientation, and size is set to 1
+                    as FAST does not compute multiple scales
+        \param[in]  in array containing a grayscale image (color images are
+                    not supported)
+        \param[in]  thr FAST threshold for which a pixel of the circle around
+                    the central pixel is considered to be greater or smaller
+        \param[in]  arc_length length of arc (or sequential segment) to be
+                    tested, must be within range [9-16]
+        \param[in]  nonmax performs non-maximal suppression if true
+        \param[in]  feature_ratio maximum ratio of features to detect, the
+                    maximum number of features is calculated by
+                    feature_ratio * in.elements(). The maximum number of
+                    features is not based on the score, instead features
+                    detected after the limit is reached are discarded
+        \param[in]  edge is the length of the edges in the image to be
+                    discarded by FAST (minimum is 3, as the radius of the
+                    circle)
+
+        \ingroup image_func_fast
+     */
+    AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio, const unsigned edge);
+
+    /**
+        C Interface
+
+        \param[out] feat af_features struct composed of arrays for x and y
+                    coordinates, score, orientation and size of selected features
+        \param[out] desc Nx8 array containing extracted descriptors, where N is the
+                    number of selected features
+        \param[in]  image array containing a grayscale image (color images are not
+                    supported)
+        \param[in]  fast_thr FAST threshold for which a pixel of the circle around
+                    the central pixel is considered to be brighter or darker
+        \param[in]  max_feat Maximum number of features to hold (will only keep the
+                    max_feat features with higher Harris responses)
+        \param[in]  scl_fctr Factor to downsample the input image, meaning that
+                    each level will hold prior level dimensions divided by scl_fctr
+        \param[in]  levels Number of levels to be computed for the image pyramid
+        \param[in]  blur_img Blur image with a Gaussian filter with sigma=2 before
+                    computing descriptors to increase robustness against noise if
+                    true
+
+        \ingroup image_func_orb
+     */
+    AFAPI af_err af_orb(af_features *feat, af_array *desc, const af_array in, const float fast_thr, const unsigned max_feat, const float scl_fctr, const unsigned levels, const bool blur_img);
 
     // object detection algorithm, matching pattern image to target image and giving disparity results
     AFAPI af_err af_match_template(af_array *out, const af_array search_img, const af_array template_img, af_match_type m_type);
@@ -157,20 +356,102 @@ extern "C" {
     // sobel operator for images
     AFAPI af_err af_sobel_operator(af_array *dx, af_array *dy, const af_array img, const unsigned ker_size);
 
+    /**
+       C Interface
+
+       \param[out] out is an array in target colorspace
+       \param[in]  in is an array in the RGB colorspace
+       \param[in]  rPercent is percentage of red channel value contributing to grayscale intensity
+       \param[in]  gPercent is percentage of green channel value contributing to grayscale intensity
+       \param[in]  bPercent is percentage of blue channel value contributing to grayscale intensity
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \note \p in must be three dimensional for RGB to Grayscale conversion.
+
+       \ingroup image_func_rgb2gray
+     */
     AFAPI af_err af_rgb2gray(af_array* out, const af_array in, const float rPercent, const float gPercent, const float bPercent);
 
+    /**
+       C Interface
+
+       \param[out] out is an array in target colorspace
+       \param[in]  in is an array in the Grayscale colorspace
+       \param[in]  rFactor is percentage of intensity value contributing to red channel
+       \param[in]  gFactor is percentage of intensity value contributing to green channel
+       \param[in]  bFactor is percentage of intensity value contributing to blue channel
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \note \p in must be two dimensional for Grayscale to RGB conversion.
+
+       \ingroup image_func_gray2rgb
+     */
     AFAPI af_err af_gray2rgb(af_array* out, const af_array in, const float rFactor, const float gFactor, const float bFactor);
 
+    /**
+       C Interface
+
+       \param[out] out is an array with data that has histogram approximately equal to histogram
+       \param[in]  in is the input array, non-normalized input (!! assumes values [0-255] !!)
+       \param[in]  hist target histogram to approximate in output (based on # of bins)
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \note \p in must be two dimensional.
+
+       \ingroup image_func_histequal
+     */
     AFAPI af_err af_histequal(af_array *out, const af_array in, const af_array hist);
 
     AFAPI af_err af_gaussian_kernel(af_array *out,
                                     const int rows, const int cols,
                                     const double sigma_r, const double sigma_c);
 
+    /**
+       C Interface
+
+       \param[out] out is an array in the RGB colorspace
+       \param[in]  in is an array in the HSV colorspace
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \note \p in must be three dimensional
+
+       \ingroup image_func_hsv2rgb
+     */
     AFAPI af_err af_hsv2rgb(af_array* out, const af_array in);
 
+    /**
+       C Interface
+
+       \param[out] out is an array in the HSV colorspace
+       \param[in]  in is an array in the RGB colorspace
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \note \p in must be three dimensional
+
+       \ingroup image_func_rgb2hsv
+     */
     AFAPI af_err af_rgb2hsv(af_array* out, const af_array in);
 
+    /**
+       C Interface
+
+       \param[out] out is an array in target colorspace \param[in]  image is
+       the input array \param[in]  to is the target array colorspace \param[in]
+       from is the input array colorspace \return     \ref AF_SUCCESS if the
+       color transformation is successful, otherwise an appropriate error code
+       is returned.
+
+       \note  \p image must be 3 dimensional for \ref AF_HSV to \ref AF_RGB, \ref
+       AF_RGB to \ref AF_HSV, & \ref AF_RGB to \ref AF_GRAY transformations.
+       For \ref AF_GRAY to \ref AF_RGB transformation, 2D array is expected.
+
+       \ingroup image_func_colorspace
+     */
     AFAPI af_err af_colorspace(af_array *out, const af_array image, af_cspace_t to, af_cspace_t from);
 
 #ifdef __cplusplus

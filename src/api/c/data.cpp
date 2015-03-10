@@ -19,7 +19,7 @@
 #include <handle.hpp>
 #include <random.hpp>
 #include <math.hpp>
-#include <iota.hpp>
+#include <range.hpp>
 #include <identity.hpp>
 #include <diagonal.hpp>
 
@@ -403,13 +403,13 @@ af_err af_weak_copy(af_array *out, const af_array in)
 }
 
 template<typename T>
-static inline af_array iota_(const dim4& d, const int rep)
+static inline af_array range_(const dim4& d, const int rep)
 {
-    return getHandle(iota<T>(d, rep));
+    return getHandle(range<T>(d, rep));
 }
 
 //Strong Exception Guarantee
-af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const dims,
+af_err af_range(af_array *result, const unsigned ndims, const dim_type * const dims,
                const int rep, const af_dtype type)
 {
     af_array out;
@@ -423,11 +423,11 @@ af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const di
         }
 
         switch(type) {
-        case f32:   out = iota_<float  >(d, rep); break;
-        case f64:   out = iota_<double >(d, rep); break;
-        case s32:   out = iota_<int    >(d, rep); break;
-        case u32:   out = iota_<uint   >(d, rep); break;
-        case u8:    out = iota_<uchar  >(d, rep); break;
+        case f32:   out = range_<float  >(d, rep); break;
+        case f64:   out = range_<double >(d, rep); break;
+        case s32:   out = range_<int    >(d, rep); break;
+        case u32:   out = range_<uint   >(d, rep); break;
+        case u8:    out = range_<uchar  >(d, rep); break;
         default:    TYPE_ERROR(4, type);
         }
         std::swap(*result, out);

@@ -39,13 +39,13 @@ typedef ::testing::Types<float, double, int, unsigned> TestTypes;
 TYPED_TEST_CASE(Regions, TestTypes);
 
 template<typename T>
-void regionsTest(string pTestFile, af_connectivity connectivity, bool isSubRef = false, const vector<af_seq> * seqv = nullptr)
+void regionsTest(string pTestFile, af_connectivity connectivity, bool isSubRef = false, const vector<af_seq> * seqv = NULL)
 {
     if (noDoubleTests<T>()) return;
 
     vector<af::dim4> numDims;
-    vector<vector<uchar>> in;
-    vector<vector<T>> tests;
+    vector<vector<uchar> > in;
+    vector<vector<T> > tests;
     readTests<uchar, T, unsigned>(pTestFile,numDims,in,tests);
 
     af::dim4 idims = numDims[0];
@@ -104,8 +104,8 @@ TEST(Regions, CPP)
     if (noDoubleTests<float>()) return;
 
     vector<af::dim4> numDims;
-    vector<vector<uchar>> in;
-    vector<vector<float>> tests;
+    vector<vector<uchar> > in;
+    vector<vector<float> > tests;
     readTests<uchar, float, unsigned>(string(TEST_DIR"/regions/regions_8x8_4.test"),numDims,in,tests);
 
     af::dim4 idims = numDims[0];

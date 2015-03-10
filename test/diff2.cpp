@@ -28,17 +28,17 @@ class Diff2 : public ::testing::Test
 {
     public:
         virtual void SetUp() {
-            subMat0.push_back({0, 4, 1});
-            subMat0.push_back({0, 2, 1});
-            subMat0.push_back({0, 1, 1});
+            subMat0.push_back(af_make_seq(0, 4, 1));
+            subMat0.push_back(af_make_seq(0, 2, 1));
+            subMat0.push_back(af_make_seq(0, 1, 1));
 
-            subMat1.push_back({1, 4, 1});
-            subMat1.push_back({0, 2, 1});
-            subMat1.push_back({0, 1, 1});
+            subMat1.push_back(af_make_seq(1, 4, 1));
+            subMat1.push_back(af_make_seq(0, 2, 1));
+            subMat1.push_back(af_make_seq(0, 1, 1));
 
-            subMat2.push_back({1, 4, 1});
-            subMat2.push_back({0, 3, 1});
-            subMat2.push_back({0, 2, 1});
+            subMat2.push_back(af_make_seq(1, 4, 1));
+            subMat2.push_back(af_make_seq(0, 3, 1));
+            subMat2.push_back(af_make_seq(0, 2, 1));
         }
         vector<af_seq> subMat0;
         vector<af_seq> subMat1;
@@ -52,14 +52,14 @@ typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char, un
 TYPED_TEST_CASE(Diff2, TestTypes);
 
 template<typename T, unsigned dim>
-void diff2Test(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=nullptr)
+void diff2Test(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=NULL)
 {
     if (noDoubleTests<T>()) return;
 
     vector<af::dim4> numDims;
 
-    vector<vector<T>>   in;
-    vector<vector<T>>   tests;
+    vector<vector<T> >   in;
+    vector<vector<T> >   tests;
     readTests<T,T,int>(pTestFile,numDims,in,tests);
     af::dim4 dims       = numDims[0];
 
@@ -157,8 +157,8 @@ void diff2ArgsTest(string pTestFile)
 
     vector<af::dim4> numDims;
 
-    vector<vector<T>> in;
-    vector<vector<T>> tests;
+    vector<vector<T> > in;
+    vector<vector<T> > tests;
     readTests<T,T,int>(pTestFile,numDims,in,tests);
     af::dim4 dims       = numDims[0];
 
@@ -188,8 +188,8 @@ TEST(Diff2, CPP)
     const unsigned dim = 1;
     vector<af::dim4> numDims;
 
-    vector<vector<float>>   in;
-    vector<vector<float>>   tests;
+    vector<vector<float> >   in;
+    vector<vector<float> >   tests;
     readTests<float,float,int>(string(TEST_DIR"/diff2/matrix1.test"),numDims,in,tests);
     af::dim4 dims       = numDims[0];
     af::array input(dims, &(in[0].front()));

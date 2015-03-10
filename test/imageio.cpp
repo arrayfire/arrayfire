@@ -44,8 +44,8 @@ void loadImageTest(string pTestFile, string pImageFile, const bool isColor)
 
     vector<af::dim4> numDims;
 
-    vector<vector<float>>   in;
-    vector<vector<float>>   tests;
+    vector<vector<float> >   in;
+    vector<vector<float> >   tests;
     readTests<float, float, float>(pTestFile,numDims,in,tests);
     af::dim4 dims       = numDims[0];
 
@@ -114,8 +114,8 @@ TEST(ImageIO, CPP)
 
     vector<af::dim4> numDims;
 
-    vector<vector<float>>   in;
-    vector<vector<float>>   tests;
+    vector<vector<float> >   in;
+    vector<vector<float> >   tests;
     readTests<float, float, float>(string(TEST_DIR"/imageio/color_small.test"),numDims,in,tests);
 
     af::dim4 dims = numDims[0];
