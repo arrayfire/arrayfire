@@ -142,7 +142,7 @@ void testCPPMean(T const_value, af::dim4 dims)
 
     outType gold = outType(0);
     //for(auto i:hundred) gold += i;
-    for(int i = 0; i < hundred.size(); i++) {
+    for(int i = 0; i < (int)hundred.size(); i++) {
         gold += hundred[i];
     }
     gold /= dims.elements();
