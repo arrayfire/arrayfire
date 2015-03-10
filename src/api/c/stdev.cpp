@@ -28,20 +28,15 @@ using namespace detail;
 template<typename inType, typename outType>
 static outType stdev(const af_array& in)
 {
-    Array<outType> *input = cast<outType>(getArray<inType>(in));
+    Array<outType> input = cast<outType>(getArray<inType>(in));
 
-    Array<outType> *meanCnst= createValueArray<outType>(input->dims(), mean<outType>(*input));
+    Array<outType> meanCnst= createValueArray<outType>(input.dims(), mean<outType>(input));
 
-    Array<outType> *diff    = detail::arithOp<outType, af_sub_t>(*input, *meanCnst, input->dims());
+    Array<outType> diff    = detail::arithOp<outType, af_sub_t>(input, meanCnst, input.dims());
 
-    Array<outType> *diffSq  = detail::arithOp<outType, af_mul_t>(*diff, *diff, diff->dims());
+    Array<outType> diffSq  = detail::arithOp<outType, af_mul_t>(diff, diff, diff.dims());
 
-    outType result = division(reduce_all<af_add_t, outType, outType>(*diffSq), input->elements());
-
-    destroyArray<outType>(*diffSq);
-    destroyArray<outType>(*diff);
-    destroyArray<outType>(*meanCnst);
-    destroyArray<outType>(*input);
+    outType result = division(reduce_all<af_add_t, outType, outType>(diffSq), input.elements());
 
     return sqrt(result);
 }
@@ -49,37 +44,28 @@ static outType stdev(const af_array& in)
 template<typename inType, typename outType>
 static af_array stdev(const af_array& in, int dim)
 {
-    Array<outType> *input = cast<outType>(getArray<inType>(in));
-    dim4 iDims = input->dims();
+    Array<outType> input = cast<outType>(getArray<inType>(in));
+    dim4 iDims = input.dims();
 
-    Array<outType> *meanArr = mean<outType>(*input, dim);
-    dim4 oDims = meanArr->dims();
+    Array<outType> meanArr = mean<outType>(input, dim);
+    dim4 oDims = meanArr.dims();
 
     /* now tile meanArr along dim and use it for variance computation */
     dim4 tileDims(1);
     tileDims[dim] = iDims[dim];
-    Array<outType> *tMeanArr = detail::tile<outType>(*meanArr, tileDims);
+    Array<outType> tMeanArr = detail::tile<outType>(meanArr, tileDims);
     /* now mean array is ready */
 
-    Array<outType> *diff    = detail::arithOp<outType, af_sub_t>(*input, *tMeanArr, tMeanArr->dims());
-    Array<outType> *diffSq  = detail::arithOp<outType, af_mul_t>(*diff, *diff, diff->dims());
-    Array<outType> *redDiff = reduce<af_add_t, outType, outType>(*diffSq, dim);
-    oDims = redDiff->dims();
+    Array<outType> diff    = detail::arithOp<outType, af_sub_t>(input, tMeanArr, tMeanArr.dims());
+    Array<outType> diffSq  = detail::arithOp<outType, af_mul_t>(diff, diff, diff.dims());
+    Array<outType> redDiff = reduce<af_add_t, outType, outType>(diffSq, dim);
+    oDims = redDiff.dims();
 
-    Array<outType> *divArr = createValueArray<outType>(oDims, scalar<outType>(iDims[dim]));
-    Array<outType> *varArr = detail::arithOp<outType, af_div_t>(*redDiff, *divArr, redDiff->dims());
-    Array<outType> *result = detail::unaryOp<outType, af_sqrt_t>(*varArr);
+    Array<outType> divArr = createValueArray<outType>(oDims, scalar<outType>(iDims[dim]));
+    Array<outType> varArr = detail::arithOp<outType, af_div_t>(redDiff, divArr, redDiff.dims());
+    Array<outType> result = detail::unaryOp<outType, af_sqrt_t>(varArr);
 
-    destroyArray<outType>(*varArr);
-    destroyArray<outType>(*divArr);
-    destroyArray<outType>(*redDiff);
-    destroyArray<outType>(*diffSq);
-    destroyArray<outType>(*diff);
-    destroyArray<outType>(*tMeanArr);
-    destroyArray<outType>(*meanArr);
-    destroyArray<outType>(*input);
-
-    return getHandle<outType>(*result);
+    return getHandle<outType>(result);
 }
 
 af_err af_stdev_all(double *realVal, double *imagVal, const af_array in)

@@ -18,8 +18,8 @@ void matchTemplate(global outType * out,
 {
     unsigned batchId = get_group_id(0) / nBBS;
 
-    dim_type gx = get_local_id(0) + (get_group_id(0) - batchId*nBBS) * get_num_groups(0);
-    dim_type gy = get_local_id(1) + get_group_id(1) * get_num_groups(1);
+    dim_type gx = get_local_id(0) + (get_group_id(0) - batchId*nBBS) * get_local_size(0);
+    dim_type gy = get_local_id(1) + get_group_id(1) * get_local_size(1);
 
     if (gx < sInfo.dims[0] && gy < sInfo.dims[1]) {
 

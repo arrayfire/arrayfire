@@ -34,11 +34,12 @@ TYPED_TEST_CASE(MatchTemplate, TestTypes);
 template<typename T>
 void matchTemplateTest(string pTestFile, af_match_type pMatchType)
 {
-    typedef typename std::conditional<std::is_same<T, double>::value, double, float>::type outType;
+    typedef typename cond_type<is_same_type<T, double>::value, double, float>::type outType;
+    if (noDoubleTests<T>()) return;
 
     vector<af::dim4>  numDims;
-    vector<vector<T>>      in;
-    vector<vector<outType>>   tests;
+    vector<vector<T> >      in;
+    vector<vector<outType> >   tests;
 
     readTests<T, outType, float>(pTestFile, numDims, in, tests);
 

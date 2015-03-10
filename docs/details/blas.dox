@@ -1,0 +1,63 @@
+/**
+\addtogroup arrayfire_func
+@{
+\defgroup blas_func_dot dot
+\ingroup blas_mat
+
+\brief Calculate the dot product of a vector
+
+Scalar dot product between two vectors.  Also referred to as the inner
+product.
+
+This function returns the scalar product of two equal sized vectors or
+between a matrix and a vector. The second operand needs to be a vector
+in either case.
+
+\democode{
+// compute scalar dot product of two vectors
+float a[] = {1, 2, 3};
+float b[] = {2, 3, 4};
+array A(3,a);
+array B(3,b);
+print(A);
+print(B);
+print(dot<float>(A,B));
+}
+
+The dot product between a matrix and a vector is defined in a similar
+fashion:
+
+\democode{
+float a_buff[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1};
+float b_buff[] = {0, 1, 2, 3};
+
+array A(4, 3, a_buff);
+array B(4, b_buff);
+print(A);
+print(B);
+print(dot(A, B));
+}
+
+\image html matrix_vector_dot_product.png
+
+=======================================================================
+
+\defgroup blas_func_matmul matmul
+\ingroup blas_mat
+
+\brief Matrix multiplication using array
+
+Performs a matrix multiplication on two arrays.
+
+=======================================================================
+
+\defgroup blas_func_transpose transpose
+\ingroup blas_mat
+
+\brief Matrix Transpose
+
+Transposes a matrix
+
+=======================================================================
+@}
+*/

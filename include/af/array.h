@@ -27,7 +27,9 @@ namespace af
         afHost    ///< Host-memory pointer
     } af_source_t;
 
-    /// GPU array container
+    ///
+    /// \brief A multi dimensional data container
+    ///
     class AFAPI array {
 
     private:
@@ -44,39 +46,310 @@ namespace af
         //END FIXME
 
     public:
+        /**
+            \ingroup array_construct
+            @{
+        */
+        /**
+            Create non-dimensioned array (no data, undefined size)
+
+            \code
+            array A, B, C;   // creates three arrays called A, B and C
+            \endcode
+        */
         array();
+        /**
+            Creates an array from an \ref af_array handle
+            \param handle the af_array object.
+         */
         array(const af_array handle);
+        /**
+            Creates an arra
+            TODO: Copy or reference semantics?
+            \param in The input \ref array
+         */
         array(const array& in);
 
-        array(dim_type d0, dtype ty = f32);
-        array(dim_type d0, dim_type d1, dtype ty = f32);
-        array(dim_type d0, dim_type d1, dim_type d2, dtype ty = f32);
-        array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, dtype ty = f32);
+        /**
+            Allocate a one-dimensional array of a specified size with undefined contents
+
+            Declare a two-dimensional array by passing the
+            number of rows and the number of columns as the first two parameters.
+            The (optional) third parameter is the type of the array. The default type is f32
+            or 4-byte single-precision floating-point numbers.
+
+            \code
+            // allocate space for an array with 10 rows
+            array A(10);          // type is the default f32
+
+            // allocate space for a column vector with 100 rows
+            array A(100, f64);    // f64 = double precision
+            \endcode
+
+            \param[in] dim0 number of columns in the array
+            \param[in] ty optional label describing the data type
+                       (default is f32)
+
+        */
+        array(dim_type dim0, dtype ty = f32);
+
+        /**
+            Allocate a two-dimensional array of a specified size with undefined contents
+
+            Declare a two-dimensional array by passing the
+            number of rows and the number of columns as the first two parameters.
+            The (optional) third parameter is the type of the array. The default type is f32
+            or 4-byte single-precision floating-point numbers.
+
+            \code
+            // allocate space for an array with 10 rows and 8 columns
+            array A(10, 8);          // type is the default f32
+
+            // allocate space for a column vector with 100 rows (and 1 column)
+            array A(100, 1, f64);    // f64 = double precision
+            \endcode
+
+            \param[in] dim0 number of columns in the array
+            \param[in] dim1 number of rows in the array
+            \param[in] ty optional label describing the data type
+                       (default is f32)
+
+        */
+        array(dim_type dim0, dim_type dim1, dtype ty = f32);
+
+        /**
+            Allocate a three-dimensional (3D) array of a specified size with undefined contents
+
+            This is useful to quickly declare a three-dimensional array by passing
+            the size as the first three parameters. The (optional) fourth parameter
+            is the type of the array. The default type is f32 or 4-byte
+            single-precision floating point numbers.
+
+            \code
+            // allocate space for a 10 x 10 x 10 array
+            array A(10, 10, 10);          // type is the default f32
+
+            // allocate space for a 3D, double precision array
+            array A(10, 10, 10, f64);     // f64 = double precision
+            \endcode
+
+            \param[in] dim0 first dimension of the array
+            \param[in] dim1 second dimension of the array
+            \param[in] dim2 third dimension of the array
+            \param[in] ty optional label describing the data type
+                       (default is f32)
+
+        */
+        array(dim_type dim0, dim_type dim1, dim_type dim2, dtype ty = f32);
+
+        /**
+            Allocate a four-dimensional (4D) array of a specified size with undefined contents
+
+            This is useful to quickly declare a four-dimensional array by passing the
+            size as the first four parameters. The (optional) fifth parameter is the
+            type of the array. The default type is f32 or 4-byte floating point numbers.
+
+            \code
+            // allocate space for a 10 x 10 x 10 x 20 array
+            array A(10, 10, 10, 20);          // type is the default f32
+
+            // allocate space for a 4D, double precision array
+            array A(10, 10, 10, 20, f64);     // f64 = double precision
+            \endcode
+
+            \param[in] dim0 first dimension of the array
+            \param[in] dim1 second dimension of the array
+            \param[in] dim2 third dimension of the array
+            \param[in] dim3 fourth dimension of the array
+            \param[in] ty optional label describing the data type
+                       (default is f32)
+
+        */
+        array(dim_type dim0, dim_type dim1, dim_type dim2, dim_type dim3, dtype ty = f32);
+
+        /**
+            Allocate an array of a specified size with undefined contents
+
+            This can be useful when the dimensions of the array are calculated
+            somewhere else within the code. The first parameter specifies the
+            size of the array via dim4(). The second parameter is
+            the type of the array. The default type is f32 or 4-byte
+            single-precision floating point numbers.
+
+            \code
+
+            // create a two-dimensional 10 x 10 array
+            dim4 dims(10, 10);       // converted to (10, 10, 1, 1)
+            array a1(dims);          // create the array (type is f32, the default)
+
+            // create a three-dimensional 10 x 10 x 20 array
+            dim4 dims(10, 10, 20);   // converted to (10, 10, 20, 1)
+            array a2(dims,f64);      // f64 = double precision
+
+            \endcode
+
+            \param[in] dims size of the array
+            \param[in] ty optional label describing the data type
+                       (default is f32)
+        */
         array(const dim4& dims, dtype ty = f32);
 
+        /**
+            Create a column vector on the device using a host/device pointer
+
+            This function can be used to transfer data from a host or device pointer
+            to an array object on the device with one column. The type of the array
+            is automatically matched to the type of the data.
+
+            Depending on the specified size of the column vector, the data will be
+            copied partially or completely. However, the user needs to be careful to
+            ensure that the array size is not larger than the number of elements in
+            the input buffer.
+
+            \param[in] dim0    number of elements in the column vector
+            \param[in] pointer pointer (points to a buffer on the host/device)
+            \param[in] src     source of the data (default is afHost, can also be afDevice)
+            \param[in] ngfor   number of gfor tiles (default is ZERO)
+
+            \code
+            // allocate data on the host
+            int h_buffer[] = {23, 34, 18, 99, 34};
+
+            array A(4, h_buffer);   // copy host data to device
+                                    //
+                                    // A = 23
+                                    //   = 34
+                                    //   = 18
+                                    //   = 99
+
+            \endcode
+        */
         template<typename T>
-            array(dim_type d0,
+            array(dim_type dim0,
                   const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
 
 
+        /**
+            Create a 2D array on the device using a host/device pointer
+
+            This function copies data from the location specified by the pointer
+            to a 2D array on the device. The data is arranged in "column-major"
+            format (similar to that used by FORTRAN).
+
+            Note that this is an synchronous copy. The elements are not actually
+            filled until this array is evaluated or used in the evaluation of some
+            other expression that uses this array object.
+
+            \param[in] dim0    number of rows
+            \param[in] dim1    number of columns
+            \param[in] pointer pointer (points to a buffer on the host/device)
+            \param[in] src     source of the data (default is afHost, can also be afDevice)
+            \param[in] ngfor   number of gfor tiles (default is ZERO)
+
+            \code
+            int h_buffer[] = {0, 1, 2, 3, 4, 5};  // host array
+            array A(2, 3, h_buffer);              // copy host data to device
+            \endcode
+
+            \image html 2dArray.png
+        */
         template<typename T>
-            array(dim_type d0, dim_type d1,
+            array(dim_type dim0, dim_type dim1,
                   const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
 
 
+        /**
+            Create a 3D array on the device using a host/device pointer
+
+            This function copies data from the location specified by the pointer
+            to a 3D array on the device. The data is arranged in "column-major"
+            format (similar to that used by FORTRAN).
+
+            \param[in] dim0    first dimension
+            \param[in] dim1    second dimension
+            \param[in] dim2    third dimension
+            \param[in] pointer pointer (points to a buffer on the host/device)
+            \param[in] src     source of the data (default is \ref afHost, can also be \ref afDevice)
+            \param[in] ngfor   number of gfor tiles (default is ZERO)
+
+            \code
+            int h_buffer[] = {0, 1, 2, 3, 4, 5, 6, 7, 8
+                              9, 0, 1, 2, 3, 4, 5, 6, 7};   // host array
+
+            array A(3, 3, 2,  h_buffer);   // copy host data to 3D device array
+            \endcode
+
+            \image html 3dArray.png
+        */
         template<typename T>
-            array(dim_type d0, dim_type d1, dim_type d2,
+            array(dim_type dim0, dim_type dim1, dim_type dim2,
                   const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
 
 
+        /**
+            Create a 4D array on the device using a host/device pointer
+
+            This function copies data from the location specified by the pointer
+            to a 4D array on the device. The data is arranged in "column-major"
+            format (similar to that used by FORTRAN).
+
+            \param[in] dim0    first dimension
+            \param[in] dim1    second dimension
+            \param[in] dim2    third dimension
+            \param[in] dim3    fourth dimension
+            \param[in] pointer pointer (points to a buffer on the host/device)
+            \param[in] src     source of the data (default is afHost, can also be afDevice)
+            \param[in] ngfor   number of gfor tiles (default is ZERO)
+
+            \code
+            int h_buffer[] = {0, 1, 2, 3,
+                              4, 5, 6, 7,
+                              8, 9, 0, 1,
+                              2, 3, 4, 5};   // host array with 16 elements
+
+            array A(2, 2, 2, 2, h_buffer);   // copy host data to 4D device array
+            \endcode
+        */
         template<typename T>
-            array(dim_type d0, dim_type d1, dim_type d2, dim_type d3,
+            array(dim_type dim0, dim_type dim1, dim_type dim2, dim_type dim3,
                   const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
 
+        /**
+            Create an array of specified size on the device using a host/device pointer
+
+            This function copies data from the location specified by the pointer
+            to a 1D/2D/3D/4D array on the device. The data is arranged in "column-major"
+            format (similar to that used by FORTRAN).
+
+            \param[in] dims    vector data type containing the dimension of the array
+            \param[in] pointer pointer (points to a buffer on the host/device)
+            \param[in] src     source of the data (default is afHost, can also be afDevice)
+            \param[in] ngfor   number of gfor tiles (default is ZERO)
+
+            \code
+            int h_buffer[] = {0, 1, 2, 3,    // host array with 16 elements
+                              4, 5, 6, 7,    // written in "row-major" format
+                              8, 9, 0, 1,
+                              2, 3, 4, 5};
+
+            dim4 dims(4, 4);
+
+            array A(dims, h_buffer);         // A  =  0  4  8  2
+                                             //       1  5  9  3
+                                             //       2  6  0  4
+                                             //       3  7  1  5
+
+                                             // Note the "column-major" ordering
+                                             // used in ArrayFire
+            \endcode
+        */
         template<typename T>
             array(const dim4& dims,
                   const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
 
+        /**
+            @}
+        */
         af_array get();
         af_array get() const;
         dim_type elements() const;
@@ -93,7 +366,18 @@ namespace af
 
         array copy() const;
 
+        /**
+           \brief Returns true of the array is empty
+
+           \returns true if the array does not contain any elements. False otherwise
+         */
         bool isempty() const;
+
+        /**
+           \brief Returns true of the array contains one value
+
+           \returns true if the array does not contain any elements. False otherwise
+         */
         bool isscalar() const;
         bool isvector() const;
         bool isrow() const;
@@ -323,24 +607,24 @@ namespace af
     AFAPI array operator op(const cfloat&, const array&);               \
     AFAPI array operator op(const cdouble&, const array&);              \
 
-    BIN_OP(+ );
-    BIN_OP(- );
-    BIN_OP(* );
-    BIN_OP(/ );
-    BIN_OP(==);
-    BIN_OP(!=);
-    BIN_OP(< );
-    BIN_OP(<=);
-    BIN_OP(> );
-    BIN_OP(>=);
-    BIN_OP(&&);
-    BIN_OP(||);
-    BIN_OP(% );
-    BIN_OP(& );
-    BIN_OP(| );
-    BIN_OP(^ );
-    BIN_OP(<<);
-    BIN_OP(>>);
+    BIN_OP(+ )
+    BIN_OP(- )
+    BIN_OP(* )
+    BIN_OP(/ )
+    BIN_OP(==)
+    BIN_OP(!=)
+    BIN_OP(< )
+    BIN_OP(<=)
+    BIN_OP(> )
+    BIN_OP(>=)
+    BIN_OP(&&)
+    BIN_OP(||)
+    BIN_OP(% )
+    BIN_OP(& )
+    BIN_OP(| )
+    BIN_OP(^ )
+    BIN_OP(<<)
+    BIN_OP(>>)
 
 #undef BIN_OP
 
@@ -359,28 +643,68 @@ namespace af
 #ifdef __cplusplus
 extern "C" {
 #endif
+    /**
+       \ingroup arr_basic
+       @{
+    */
 
-    // Create af_array from memory
+    /**
+       Create an \ref af_array handle initialized with user defined data
+
+       This function will create an \ref af_array handle from the memory provided in \p data
+
+       \param[out]  arr The pointer to the retured object.
+       \param[in]   data The data which will be loaded into the array
+       \param[in]   ndims The number of dimensions read from the \p dims parameter
+       \param[in]   dims A C pointer with \p ndims elements. Each value represents the size of that dimension
+       \param[in]   type The type of the \ref af_array object
+
+       \returns \ref AF_SUCCESS if the operation was a success
+    */
     AFAPI af_err af_create_array(af_array *arr, const void * const data, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
-    // Create af_array handle without initializing values
+    /**
+       Create af_array handle
+
+       \param[out]  arr The pointer to the retured object.
+       \param[in]   ndims The number of dimensions read from the \p dims parameter
+       \param[in]   dims A C pointer with \p ndims elements. Each value represents the size of that dimension
+       \param[in]   type The type of the \ref af_array object
+
+       \returns \ref AF_SUCCESS if the operation was a success
+    */
     AFAPI af_err af_create_handle(af_array *arr, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
-    // Deep copy an array to another
+    /**
+       Deep copy an array to another
+    */
     AFAPI af_err af_copy_array(af_array *arr, const af_array in);
 
-    // Copy data from an af_array to a C pointer.
-    // Needs to used in conjunction with the two functions above
+    /**
+       Copy data from an af_array to a C pointer.
+
+       Needs to used in conjunction with the two functions above
+    */
     AFAPI af_err af_get_data_ptr(void *data, const af_array arr);
 
-    // Destroy af_array
+    /**
+       \brief Destroy af_array
+    */
     AFAPI af_err af_destroy_array(af_array arr);
 
-    // weak copy array
+    /**
+       weak copy array
+    */
     AFAPI af_err af_weak_copy(af_array *out, const af_array in);
 
-    // Evaluate any expressions in the Array
+    /**
+       Evaluate any expressions in the Array
+    */
     AFAPI af_err af_eval(af_array in);
+
+    /**
+      @}
+    */
 
 #ifdef __cplusplus
 }

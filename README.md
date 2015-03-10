@@ -6,6 +6,14 @@ ArrayFire's multiple backends (**CUDA**, **OpenCL** and native **CPU**) make it 
 
 A few lines of code in ArrayFire can replace dozens of lines of parallel computing code, saving you valuable time and lowering development costs.
 
+### Support and Contact Info
+
+* Google Groups: https://groups.google.com/forum/#!forum/arrayfire-users
+* ArrayFire Services:  [Consulting](http://arrayfire.com/consulting/)  |  [Support](http://arrayfire.com/support/)   |  [Training](http://arrayfire.com/training/) 
+* ArrayFire Blogs: http://arrayfire.com/blog/
+* Email: <mailto:technical@arrayfire.com>
+
+
 ### Build Status
 |                 | Build           | Tests           |
 |-----------------|-----------------|-----------------|
@@ -100,7 +108,4 @@ Installers for the older (commercial) versions of ArrayFire can be freely downlo
 
 Contributions of any kind are welcome! Please refer to [this document](https://github.com/arrayfire/arrayfire/blob/master/CONTRIBUTING.md) to learn more about how you can get involved with ArrayFire.
 
-### Contact us
 
-* Google Groups: https://groups.google.com/forum/#!forum/arrayfire-users
-* ArrayFire Forums: http://arrayfire.com/forums/

@@ -21,19 +21,19 @@ namespace cuda
 {
 
 template<typename Ti, typename To>
-std::pair< Array<To>*, Array<To>* >
+std::pair< Array<To>, Array<To> >
 sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size)
 {
-    Array<To> *dx = createEmptyArray<To>(img.dims());
-    Array<To> *dy = createEmptyArray<To>(img.dims());
+    Array<To> dx = createEmptyArray<To>(img.dims());
+    Array<To> dy = createEmptyArray<To>(img.dims());
 
-    kernel::sobel<Ti, To>(*dx, *dy, img, ker_size);
+    kernel::sobel<Ti, To>(dx, dy, img, ker_size);
 
     return std::make_pair(dx, dy);
 }
 
-#define INSTANTIATE(Ti, To)                                                 \
-    template std::pair< Array<To>*, Array<To>* >                            \
+#define INSTANTIATE(Ti, To)                                             \
+    template std::pair< Array<To>, Array<To> >                          \
     sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size);
 
 INSTANTIATE(float , float)

@@ -6,7 +6,6 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <af/signal.h>
@@ -24,13 +23,15 @@ using namespace detail;
 template<typename T, typename accT, dim_type baseDim, bool expand>
 inline static af_array convolve(const af_array &s, const af_array &f, ConvolveBatchKind kind)
 {
-    return getHandle(*convolve<T, accT, baseDim, expand>(getArray<T>(s), getArray<T>(f), kind));
+    return getHandle(convolve<T, accT, baseDim, expand>(getArray<T>(s), castArray<accT>(f), kind));
 }
 
 template<typename T, typename accT, bool expand>
 inline static af_array convolve2(const af_array &s, const af_array &c_f, const af_array &r_f)
 {
-    return getHandle(*convolve2<T, accT, expand>(getArray<T>(s), getArray<T>(c_f), getArray<T>(r_f)));
+    return getHandle(convolve2<T, accT, expand>(getArray<T>(s),
+                                                castArray<accT>(c_f),
+                                                castArray<accT>(r_f)));
 }
 
 template<dim_type baseDim>
@@ -55,9 +56,6 @@ af_err convolve(af_array *out, af_array signal, af_array filter)
         ArrayInfo fInfo = getInfo(filter);
 
         af_dtype stype  = sInfo.getType();
-        af_dtype ftype  = fInfo.getType();
-
-        ARG_ASSERT(1, (stype==ftype));
 
         dim4 sdims = sInfo.dims();
         dim4 fdims = fInfo.dims();
@@ -88,7 +86,7 @@ af_err convolve(af_array *out, af_array signal, af_array filter)
 }
 
 template<bool expand>
-af_err convolve2_sep(af_array *out, af_array signal, af_array col_filter, af_array row_filter)
+af_err convolve2_sep(af_array *out, af_array col_filter, af_array row_filter, af_array signal)
 {
     try {
         ArrayInfo sInfo = getInfo(signal);
@@ -96,19 +94,12 @@ af_err convolve2_sep(af_array *out, af_array signal, af_array col_filter, af_arr
         ArrayInfo rfInfo= getInfo(row_filter);
 
         af_dtype signalType  = sInfo.getType();
-        af_dtype colFiltType = cfInfo.getType();
-        af_dtype rowFiltType = rfInfo.getType();
-
-        ARG_ASSERT(1, (signalType==colFiltType));
-        ARG_ASSERT(2, (colFiltType==rowFiltType));
 
         dim4 signalDims = sInfo.dims();
-        dim4 colFiltDims= cfInfo.dims();
-        dim4 rowFiltDims= rfInfo.dims();
 
         ARG_ASSERT(1, (signalDims.ndims()==2 || signalDims.ndims()==3));
-        ARG_ASSERT(2, (colFiltDims.ndims()==1));
-        ARG_ASSERT(3, (rowFiltDims.ndims()==1));
+        ARG_ASSERT(2, cfInfo.isVector());
+        ARG_ASSERT(3, rfInfo.isVector());
 
         af_array output;
         switch(signalType) {

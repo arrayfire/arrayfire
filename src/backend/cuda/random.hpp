@@ -13,8 +13,8 @@
 namespace cuda
 {
     template<typename T>
-    Array<T>* randu(const af::dim4 &dims);
+    Array<T> randu(const af::dim4 &dims);
 
     template<typename T>
-    Array<T>* randn(const af::dim4 &dims);
+    Array<T> randn(const af::dim4 &dims);
 }

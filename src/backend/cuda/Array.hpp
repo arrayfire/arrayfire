@@ -6,13 +6,13 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
+#pragma once
 
 // Workaround for BOOST_NOINLINE not being defined with nvcc / CUDA < 6.5
 #if CUDA_VERSION < 6050
 #define BOOST_NOINLINE __attribute__ ((noinline))
 #endif
 
-#pragma once
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
@@ -24,6 +24,7 @@
 #include <Param.hpp>
 #include <JIT/Node.hpp>
 #include <boost/shared_ptr.hpp>
+#include <vector>
 
 namespace cuda
 {
@@ -38,50 +39,40 @@ namespace cuda
 
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
-    Array<T>*
-    createNodeArray(const af::dim4 &size, JIT::Node_ptr node);
+    Array<T> createNodeArray(const af::dim4 &size, JIT::Node_ptr node);
 
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
-    Array<T>*
-    createValueArray(const af::dim4 &size, const T& value);
+    Array<T> createValueArray(const af::dim4 &size, const T& value);
 
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
-    Array<T>*
-    createHostDataArray(const af::dim4 &size, const T * const data);
+    Array<T> createHostDataArray(const af::dim4 &size, const T * const data);
 
     template<typename T>
-    Array<T>*
-    createDeviceDataArray(const af::dim4 &size, const void *data);
+    Array<T> createDeviceDataArray(const af::dim4 &size, const void *data);
 
     // Create an Array object and do not assign any values to it
+    template<typename T> Array<T> *initArray();
+
     template<typename T>
-    Array<T>*
-    createEmptyArray(const af::dim4 &size);
+    Array<T> createEmptyArray(const af::dim4 &size);
 
     // Create an Array object from Param<T>
     template<typename T>
-    Array<T>*
-    createParamArray(Param<T> &tmp);
+    Array<T> createParamArray(Param<T> &tmp);
+
+    template<typename T>
+    Array<T> createSubArray(const Array<T>& parent,
+                            const std::vector<af_seq> &index,
+                            bool copy=true);
+
+    template<typename T>
+    void evalArray(const Array<T> &A);
 
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
-    void
-    destroyArray(Array<T> &A);
-
-    template<typename T>
-    Array<T> *
-    createSubArray(const Array<T>& parent, const af::dim4 &dims, const af::dim4 &offset, const af::dim4 &stride);
-
-    // Creates a pure reference Array - a virtual view, no copies are made
-    template<typename T>
-    Array<T> *
-    createRefArray(const Array<T>& parent, const dim4 &dims, const dim4 &offset, const dim4 &stride);
-
-    template<typename inType, typename outType>
-    Array<outType> *
-    createPaddedArray(Array<inType> const &in, dim4 const &dims, outType default_value, double factor=1.0);
+    void destroyArray(Array<T> *A);
 
     template<typename T>
     void *getDevicePtr(const Array<T>& arr)
@@ -93,6 +84,7 @@ namespace cuda
     class Array : public ArrayInfo
     {
         shared_ptr<T> data;
+        af::dim4 data_dims;
 
         JIT::Node_ptr node;
         bool ready;
@@ -104,7 +96,6 @@ namespace cuda
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
         Array(Param<T> &tmp);
         Array(af::dim4 dims, JIT::Node_ptr n);
-
     public:
 
         ~Array();
@@ -117,6 +108,7 @@ namespace cuda
 
         dim_type getOffset() const { return offset; }
         shared_ptr<T> getData() const { return data; }
+        dim4 getDataDims() const { return data_dims; }
 
         T* get(bool withOffset = true)
         {
@@ -150,18 +142,21 @@ namespace cuda
 
         JIT::Node_ptr getNode() const;
 
-        friend Array<T>* createValueArray<T>(const af::dim4 &size, const T& value);
-        friend Array<T>* createHostDataArray<T>(const af::dim4 &size, const T * const data);
-        friend Array<T>* createDeviceDataArray<T>(const af::dim4 &size, const void *data);
+        friend Array<T> createValueArray<T>(const af::dim4 &size, const T& value);
+        friend Array<T> createHostDataArray<T>(const af::dim4 &size, const T * const data);
+        friend Array<T> createDeviceDataArray<T>(const af::dim4 &size, const void *data);
 
-        friend Array<T>* createEmptyArray<T>(const af::dim4 &size);
-        friend Array<T>* createParamArray<T>(Param<T> &tmp);
-        friend Array<T>* createNodeArray<T>(const af::dim4 &dims, JIT::Node_ptr node);
-        friend Array<T>* createSubArray<T>(const Array<T>& parent,
-                                           const dim4 &dims, const dim4 &offset, const dim4 &stride);
-        friend Array<T>* createRefArray<T>(const Array<T>& parent,
-                                           const dim4 &dims, const dim4 &offset, const dim4 &stride);
-        friend void      destroyArray<T>(Array<T> &arr);
+        friend Array<T> *initArray<T>();
+        friend Array<T> createEmptyArray<T>(const af::dim4 &size);
+        friend Array<T> createParamArray<T>(Param<T> &tmp);
+        friend Array<T> createNodeArray<T>(const af::dim4 &dims, JIT::Node_ptr node);
+
+        friend Array<T> createSubArray<T>(const Array<T>& parent,
+                                          const std::vector<af_seq> &index,
+                                          bool copy);
+
+        friend void destroyArray<T>(Array<T> *arr);
+        friend void evalArray<T>(const Array<T> &arr);
         friend void *getDevicePtr<T>(const Array<T>& arr);
     };
 

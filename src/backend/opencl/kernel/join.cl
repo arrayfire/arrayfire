@@ -13,11 +13,11 @@ void join_kernel(__global Tx *d_out, const KParam out,
                  __global const Ty *d_Y, const KParam Y,
                  const dim_type blocksPerMatX, const dim_type blocksPerMatY)
 {
-    dim_type offset[4];
-    offset[0] = (dim == 0) ? X.dims[0] : 0;
-    offset[1] = (dim == 1) ? X.dims[1] : 0;
-    offset[2] = (dim == 2) ? X.dims[2] : 0;
-    offset[3] = (dim == 3) ? X.dims[3] : 0;
+    dim_type offset[4] = {0, 0, 0, 0};
+    if(dim == 0) offset[0] = X.dims[0];
+    if(dim == 1) offset[1] = X.dims[1];
+    if(dim == 2) offset[2] = X.dims[2];
+    if(dim == 3) offset[3] = X.dims[3];
 
     const dim_type oz = get_group_id(0) / blocksPerMatX;
     const dim_type ow = get_group_id(1) / blocksPerMatY;
@@ -28,79 +28,28 @@ void join_kernel(__global Tx *d_out, const KParam out,
     const dim_type xx = get_local_id(0) + blockIdx_x * get_local_size(0);
     const dim_type yy = get_local_id(1) + blockIdx_y * get_local_size(1);
 
-    if(xx >= out.dims[0] ||
-       yy >= out.dims[1] ||
-       oz >= out.dims[2] ||
-       ow >= out.dims[3])
-        return;
-
-    dim_type odx[] = {xx, yy, oz, ow};
-    dim_type idx[] = {xx, yy, oz, ow};
-
-    // These if(dim == <dimensions>) conditions are used to check which array
-    // (X or Y) to use. 3 out of the 4 if conditions will not be executed
-    // since the kernel is templated.
-    // These if-conds decide whether to use X or Y based on the output index
-    // They also compute the corrent input index if Y is chosen
-    __global Tx const *in = d_X;
-    dim_type const *str = X.strides;
-    dim_type p_off = X.offset;
-    if(dim == 2) {
-        if(odx[2] >= X.dims[2]) {
-            in = d_Y;
-            str = Y.strides;
-            p_off = Y.offset;
-            idx[2] = odx[2] - offset[2];
-        }
-    } else if (dim == 3) {
-        if(odx[3] >= X.dims[3]) {
-            in = d_Y;
-            str = Y.strides;
-            p_off = Y.offset;
-            idx[3] = odx[3] - offset[3];
-        }
-    }
-
     const dim_type incy = blocksPerMatY * get_local_size(1);
     const dim_type incx = blocksPerMatX * get_local_size(0);
 
-    const dim_type ozw = odx[3] * out.strides[3] + odx[2] * out.strides[2];
+    d_X = d_X + X.offset;
+    d_Y = d_Y + Y.offset;
 
-    for(dim_type oy = yy; oy < out.dims[1]; oy += incy) {
-        odx[1] = oy;
-        idx[1] = oy;
-        if(dim == 1) {
-            in = d_X;
-            str = X.strides;
-            p_off = X.offset;
-            if(odx[1] >= X.dims[1]) {
-                in = d_Y;
-                str = Y.strides;
-                p_off = Y.offset;
-                idx[1] = odx[1] - offset[1];
+    if (oz < out.dims[2] && ow < out.dims[3]) {
+        d_out = d_out + oz * out.strides[2] + ow * out.strides[3];
+        d_X = d_X + oz * X.strides[2] + ow * X.strides[3];
+        d_Y = d_Y + (oz - offset[2]) * Y.strides[2] + (ow - offset[3]) * Y.strides[3];
+        bool cond2 = oz < X.dims[2] && ow < X.dims[3];
+
+        for (dim_type oy = yy; oy < out.dims[1]; oy += incy) {
+            bool cond1 = cond2 && oy < X.dims[1];
+            __global Tx *d_X_ = d_X + oy * X.strides[1];
+            __global Ty *d_Y_ = d_Y + (oy - offset[1]) * Y.strides[1];
+            __global Tx *d_out_ = d_out + oy * out.strides[1];
+
+            for (dim_type ox = xx; ox < out.dims[0]; ox += incx) {
+                bool cond0 = cond1 && ox < X.dims[0];
+                d_out_[ox] = cond0 ? d_X_[ox] : d_Y_[ox - offset[0]];
             }
-        }
-
-        for(dim_type ox = xx; ox < out.dims[0]; ox += incx) {
-            odx[0] = ox;
-            idx[0] = ox;
-            if(dim == 0) {
-                in = d_X;
-                str = X.strides;
-                p_off = X.offset;
-                if(odx[0] >= X.dims[0]) {
-                    in = d_Y;
-                    str = Y.strides;
-                    p_off = Y.offset;
-                    idx[0] = odx[0] - offset[0];
-                }
-            }
-
-            const dim_type izw = idx[3] * str[3] + idx[2] * str[2];
-            dim_type iMem = izw + idx[1] * str[1] + idx[0];
-            dim_type oMem = ozw + odx[1] * out.strides[1] + odx[0];
-
-            d_out[oMem] = in[p_off + iMem];
         }
     }
 }

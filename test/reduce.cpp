@@ -34,8 +34,8 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
 
     vector<af::dim4> numDims;
 
-    vector<vector<int>> data;
-    vector<vector<int>> tests;
+    vector<vector<int> > data;
+    vector<vector<int> > tests;
     readTests<int,int,int> (pTestFile,numDims,data,tests);
     af::dim4 dims       = numDims[0];
 
@@ -49,6 +49,7 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
     if (isSubRef) {
         ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv.size(), &seqv.front()));
+        ASSERT_EQ(AF_SUCCESS, af_destroy_array(tempArray));
     } else {
         ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
     }
@@ -74,21 +75,20 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
 
         // Delete
         delete[] outData;
+        ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
     }
 
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 
 vector<af_seq> init_subs()
 {
     vector<af_seq> subs;
-    subs.push_back({2, 6, 1});
-    subs.push_back({1, 5, 1});
-    subs.push_back({1, 3, 1});
-    subs.push_back({1, 2, 1});
+    subs.push_back(af_make_seq(2, 6, 1));
+    subs.push_back(af_make_seq(1, 5, 1));
+    subs.push_back(af_make_seq(1, 3, 1));
+    subs.push_back(af_make_seq(1, 2, 1));
     return subs;
 }
 
@@ -187,8 +187,8 @@ void cppReduceTest(string pTestFile)
 
     vector<af::dim4> numDims;
 
-    vector<vector<int>> data;
-    vector<vector<int>> tests;
+    vector<vector<int> > data;
+    vector<vector<int> > tests;
     readTests<int,int,int> (pTestFile,numDims,data,tests);
     af::dim4 dims       = numDims[0];
 
@@ -233,6 +233,23 @@ CPP_REDUCE_TESTS(max, float, float);
 CPP_REDUCE_TESTS(anytrue, float, unsigned char);
 CPP_REDUCE_TESTS(alltrue, float, unsigned char);
 CPP_REDUCE_TESTS(count, float, unsigned);
+
+TEST(Reduce, Test_Product_Global)
+{
+    int num = 100;
+    af::array a = 1 + af::round(5 * af::randu(num, 1)) / 100;
+
+    float res = af::product<float>(a);
+    float *h_a = a.host<float>();
+    float gold = 1;
+
+    for (int i = 0; i < num; i++) {
+        gold *= h_a[i];
+    }
+
+    ASSERT_EQ(gold, res);
+    delete[] h_a;
+}
 
 TEST(Reduce, Test_Sum_Global)
 {

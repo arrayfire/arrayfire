@@ -47,9 +47,6 @@ namespace opencl
             static Manager pm = Manager();
     }
 
-    static const unsigned MAX_BUFFERS   = 100;
-    static const unsigned MAX_BYTES     = (1 << 30);
-
     typedef struct
     {
         bool is_free;

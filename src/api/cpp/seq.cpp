@@ -37,7 +37,7 @@ seq::~seq()
 seq::seq(double n): m_gfor(false)
 {
     if (n < 0) {
-        init(-1, n, 0);
+        init(n + 1, 0, 1);  // seq(-4) = -3, -2, -1, 0
     } else {
         init(0, n - 1, 1);
     }
@@ -79,8 +79,8 @@ seq::seq(seq other, bool is_gfor): m_gfor(is_gfor)
 seq::operator array() const
 {
     dim_type diff = s.end - s.begin;
-    dim_type len = (int)((diff + (signbit(diff) == 0 ? 1 : -1)) / s.step);
-    array tmp = (m_gfor) ? iota(1, 1, 1, len) : iota(len);
+    dim_type len = (int)((diff + abs(s.step) * (signbit(diff) == 0 ? 1 : -1)) / s.step);
+    array tmp = (m_gfor) ? range(1, 1, 1, len) : range(len);
     array res = s.begin + s.step * tmp;
     return res;
 }

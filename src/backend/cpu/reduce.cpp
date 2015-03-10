@@ -61,31 +61,31 @@ namespace cpu
     };
 
     template<af_op_t op, typename Ti, typename To>
-    Array<To>* reduce(const Array<Ti> &in, const int dim)
+    Array<To> reduce(const Array<Ti> &in, const int dim)
     {
         dim4 odims = in.dims();
         odims[dim] = 1;
 
-        Array<To> *out = createEmptyArray<To>(odims);
+        Array<To> out = createEmptyArray<To>(odims);
 
         switch (in.ndims()) {
         case 1:
-            reduce_dim<op, Ti, To, 1>()(out->get(), out->strides(), out->dims(),
+            reduce_dim<op, Ti, To, 1>()(out.get(), out.strides(), out.dims(),
                                         in.get(), in.strides(), in.dims(), dim);
             break;
 
         case 2:
-            reduce_dim<op, Ti, To, 2>()(out->get(), out->strides(), out->dims(),
+            reduce_dim<op, Ti, To, 2>()(out.get(), out.strides(), out.dims(),
                                         in.get(), in.strides(), in.dims(), dim);
             break;
 
         case 3:
-            reduce_dim<op, Ti, To, 3>()(out->get(), out->strides(), out->dims(),
+            reduce_dim<op, Ti, To, 3>()(out.get(), out.strides(), out.dims(),
                                         in.get(), in.strides(), in.dims(), dim);
             break;
 
         case 4:
-            reduce_dim<op, Ti, To, 4>()(out->get(), out->strides(), out->dims(),
+            reduce_dim<op, Ti, To, 4>()(out.get(), out.strides(), out.dims(),
                                         in.get(), in.strides(), in.dims(), dim);
             break;
         }
@@ -129,7 +129,7 @@ namespace cpu
     }
 
 #define INSTANTIATE(ROp, Ti, To)                                        \
-    template Array<To>* reduce<ROp, Ti, To>(const Array<Ti> &in, const int dim); \
+    template Array<To> reduce<ROp, Ti, To>(const Array<Ti> &in, const int dim); \
     template To reduce_all<ROp, Ti, To>(const Array<Ti> &in);
 
     //min
@@ -161,6 +161,16 @@ namespace cpu
     INSTANTIATE(af_add_t, uint   , uint   )
     INSTANTIATE(af_add_t, char   , int    )
     INSTANTIATE(af_add_t, uchar  , uint   )
+
+    //sum
+    INSTANTIATE(af_mul_t, float  , float  )
+    INSTANTIATE(af_mul_t, double , double )
+    INSTANTIATE(af_mul_t, cfloat , cfloat )
+    INSTANTIATE(af_mul_t, cdouble, cdouble)
+    INSTANTIATE(af_mul_t, int    , int    )
+    INSTANTIATE(af_mul_t, uint   , uint   )
+    INSTANTIATE(af_mul_t, char   , int    )
+    INSTANTIATE(af_mul_t, uchar  , uint   )
 
     // count
     INSTANTIATE(af_notzero_t, float  , uint)

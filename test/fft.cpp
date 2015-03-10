@@ -35,6 +35,8 @@ TEST(fft, Invalid_Array)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_fft(&outArray, inArray, 1.0, 0));
+
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 
 TEST(fft2, Invalid_Array)
@@ -51,6 +53,7 @@ TEST(fft2, Invalid_Array)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_fft2(&outArray, inArray, 1.0, 0, 0));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 
 TEST(fft3, Invalid_Array)
@@ -67,6 +70,7 @@ TEST(fft3, Invalid_Array)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_fft3(&outArray, inArray, 1.0, 0, 0, 0));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 
 TEST(ifft1, Invalid_Array)
@@ -83,6 +87,7 @@ TEST(ifft1, Invalid_Array)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<cfloat>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_ifft(&outArray, inArray, 0.01, 0));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 
 TEST(ifft2, Invalid_Array)
@@ -99,6 +104,7 @@ TEST(ifft2, Invalid_Array)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<cfloat>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_ifft2(&outArray, inArray, 0.01, 0, 0));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 
 TEST(ifft3, Invalid_Array)
@@ -115,6 +121,7 @@ TEST(ifft3, Invalid_Array)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<cfloat>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_ifft3(&outArray, inArray, 0.01, 0, 0, 0));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 
 template<typename inType, typename outType, bool isInverse>
@@ -124,8 +131,8 @@ void fftTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0
     if (noDoubleTests<outType>()) return;
 
     vector<af::dim4>        numDims;
-    vector<vector<inType>>       in;
-    vector<vector<outType>>   tests;
+    vector<vector<inType> >       in;
+    vector<vector<outType> >   tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
@@ -137,14 +144,10 @@ void fftTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0
                 dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<inType>::af_type));
 
     if (isInverse){
-        double norm_factor = 1.0;
-#if defined(AF_OPENCL)
-        norm_factor *= (dims.elements());
-#endif
-        switch(dims.ndims()) {
-            case 1 : ASSERT_EQ(AF_SUCCESS, af_ifft (&outArray, inArray, norm_factor, pad0));              break;
-            case 2 : ASSERT_EQ(AF_SUCCESS, af_ifft2(&outArray, inArray, norm_factor, pad0, pad1));        break;
-            case 3 : ASSERT_EQ(AF_SUCCESS, af_ifft3(&outArray, inArray, norm_factor, pad0, pad1, pad2));  break;
+        switch (dims.ndims()) {
+            case 1 : ASSERT_EQ(AF_SUCCESS, af_ifft (&outArray, inArray, 1.0, pad0));              break;
+            case 2 : ASSERT_EQ(AF_SUCCESS, af_ifft2(&outArray, inArray, 1.0, pad0, pad1));        break;
+            case 3 : ASSERT_EQ(AF_SUCCESS, af_ifft3(&outArray, inArray, 1.0, pad0, pad1, pad2));  break;
             default: throw std::runtime_error("This error shouldn't happen, pls check");
         }
     } else {
@@ -160,7 +163,7 @@ void fftTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0
     outType *outData= new outType[out_size];
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
 
-    vector<outType> goldBar(begin(tests[0]), end(tests[0]));
+    vector<outType> goldBar(tests[0].begin(), tests[0].end());
 
     size_t test_size = 0;
     switch(dims.ndims()) {
@@ -228,8 +231,8 @@ void fftBatchTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type p
     if (noDoubleTests<outType>()) return;
 
     vector<af::dim4>        numDims;
-    vector<vector<inType>>       in;
-    vector<vector<outType>>   tests;
+    vector<vector<inType> >       in;
+    vector<vector<outType> >   tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
@@ -241,16 +244,10 @@ void fftBatchTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type p
                 dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<inType>::af_type));
 
     if(isInverse) {
-        double norm_factor = 1.0;
-#if defined(AF_OPENCL)
-        dim_type cnt = dims.ndims();
-        for(dim_type r=0; r<cnt-1; r++)
-            norm_factor *= dims[r];
-#endif
         switch(rank) {
-            case 1 : ASSERT_EQ(AF_SUCCESS, af_ifft (&outArray, inArray, norm_factor, pad0));              break;
-            case 2 : ASSERT_EQ(AF_SUCCESS, af_ifft2(&outArray, inArray, norm_factor, pad0, pad1));        break;
-            case 3 : ASSERT_EQ(AF_SUCCESS, af_ifft3(&outArray, inArray, norm_factor, pad0, pad1, pad2));  break;
+            case 1 : ASSERT_EQ(AF_SUCCESS, af_ifft (&outArray, inArray, 1.0, pad0));              break;
+            case 2 : ASSERT_EQ(AF_SUCCESS, af_ifft2(&outArray, inArray, 1.0, pad0, pad1));        break;
+            case 3 : ASSERT_EQ(AF_SUCCESS, af_ifft3(&outArray, inArray, 1.0, pad0, pad1, pad2));  break;
             default: throw std::runtime_error("This error shouldn't happen, pls check");
         }
     } else {
@@ -266,7 +263,7 @@ void fftBatchTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type p
     outType *outData= new outType[out_size];
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
 
-    vector<outType> goldBar(begin(tests[0]), end(tests[0]));
+    vector<outType> goldBar(tests[0].begin(), tests[0].end());
 
     size_t test_size = 0;
     size_t batch_count = dims[rank];
@@ -334,8 +331,8 @@ void cppFFTTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad
     if (noDoubleTests<outType>()) return;
 
     vector<af::dim4>        numDims;
-    vector<vector<inType>>       in;
-    vector<vector<outType>>   tests;
+    vector<vector<inType> >       in;
+    vector<vector<outType> >   tests;
 
     readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
 
@@ -344,11 +341,7 @@ void cppFFTTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad
     af::array output;
 
     if (isInverse){
-        double norm_factor = 1.0;
-#if defined(AF_OPENCL)
-        norm_factor *= (dims.elements());
-#endif
-        output = ifft3(signal, norm_factor);
+        output = ifft3(signal, 1.0);
     } else {
         output = fft3(signal, 1.0);
     }
@@ -357,7 +350,7 @@ void cppFFTTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad
     cfloat *outData= new cfloat[out_size];
     output.host((void*)outData);
 
-    vector<cfloat> goldBar(begin(tests[0]), end(tests[0]));
+    vector<cfloat> goldBar(tests[0].begin(), tests[0].end());
 
     size_t test_size = 0;
     switch(dims.ndims()) {

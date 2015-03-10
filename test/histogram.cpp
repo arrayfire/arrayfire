@@ -13,6 +13,7 @@
 #include <af/traits.hpp>
 #include <string>
 #include <vector>
+#include <iostream>
 #include <testHelpers.hpp>
 
 using std::string;
@@ -48,6 +49,7 @@ TYPED_TEST(Histogram,InvalidArgs)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), newDims.ndims(), newDims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_histogram(&outArray,inArray,256,0,255));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 
 template<typename inType, typename outType>
@@ -58,8 +60,8 @@ void histTest(string pTestFile, unsigned nbins, double minval, double maxval)
 
     vector<af::dim4> numDims;
 
-    vector<vector<inType>>  in;
-    vector<vector<outType>> tests;
+    vector<vector<inType> >  in;
+    vector<vector<outType> > tests;
     readTests<inType,uint,int>(pTestFile,numDims,in,tests);
     af::dim4 dims       = numDims[0];
 
@@ -126,12 +128,14 @@ TEST(Histogram, CPP)
 
     vector<af::dim4> numDims;
 
-    vector<vector<float>>  in;
-    vector<vector<uint>> tests;
+    vector<vector<float> >  in;
+    vector<vector<uint> > tests;
     readTests<float,uint,int>(string(TEST_DIR"/histogram/100bin0min99max.test"),numDims,in,tests);
 
+//! [hist_nominmax]
     af::array input(numDims[0], &(in[0].front()));
     af::array output = histogram(input, nbins, minval, maxval);
+//! [hist_nominmax]
 
     uint *outData = new uint[output.elements()];
     output.host((void*)outData);
@@ -146,4 +150,109 @@ TEST(Histogram, CPP)
 
     // cleanup
     delete[] outData;
+}
+
+/////////////////////////////////// Documentation Snippets //////////////////////////////////
+//
+TEST(Histogram, SNIPPET_hist_nominmax)
+{
+    using af::array;
+    using af::histogram;
+    using std::ostream_iterator;
+    using std::cout;
+    using std::endl;
+
+    unsigned output[] = {3, 1, 2, 0, 0, 0, 0, 1, 1, 1};
+
+    //! [ex_image_hist_nominmax]
+    float input[]  = {1, 2, 1, 1, 3, 6, 7, 8, 3};
+    int nbins = 10;
+
+    size_t nElems = sizeof(input)/sizeof(float);
+    array hist_in(nElems, input);
+
+    array hist_out = histogram(hist_in, nbins);
+    // hist_out = {3, 1, 2, 0, 0, 0, 0, 1, 1, 1}
+    //! [ex_image_hist_nominmax]
+
+    vector<unsigned> h_out(nbins);
+    hist_out.host((void*)h_out.data());
+
+    if( false == equal(h_out.begin(), h_out.end(), output) ) {
+        cout << "Expected: ";
+        copy(output, output + nbins, ostream_iterator<unsigned>(cout, ", "));
+        cout << endl << "Actual: ";
+        copy(h_out.begin(), h_out.end(), ostream_iterator<unsigned>(cout, ", "));
+        FAIL() << "Output did not match";
+    }
+}
+
+TEST(Histogram, SNIPPET_hist_minmax)
+{
+    using af::array;
+    using af::histogram;
+    using std::ostream_iterator;
+    using std::cout;
+    using std::endl;
+
+    unsigned output[] = {0, 3, 1, 2, 0, 0, 1, 1, 1, 0};
+
+    //! [ex_image_hist_minmax]
+    float input[]  = {1, 2, 1, 1, 3, 6, 7, 8, 3};
+    int nbins = 10;
+
+    size_t nElems = sizeof(input)/sizeof(float);
+    array hist_in(nElems, input);
+
+    array hist_out = histogram(hist_in, nbins, 0, 9);
+    // hist_out = {0, 3, 1, 2, 0, 0, 1, 1, 1, 0}
+    //! [ex_image_hist_minmax]
+
+    vector<unsigned> h_out(nbins);
+    hist_out.host((void*)h_out.data());
+
+    if( false == equal(h_out.begin(), h_out.end(), output) ) {
+        cout << "Expected: ";
+        copy(output, output + nbins, ostream_iterator<unsigned>(cout, ", "));
+        cout << endl << "Actual: ";
+        copy(h_out.begin(), h_out.end(), ostream_iterator<unsigned>(cout, ", "));
+        FAIL() << "Output did not match";
+    }
+}
+
+TEST(Histogram, SNIPPET_histequal)
+{
+    using af::array;
+    using af::histogram;
+    using std::ostream_iterator;
+    using std::cout;
+    using std::endl;
+
+    float output[] = { 1.5, 4.5,  1.5, 1.5, 4.5, 4.5, 6.0, 7.5, 4.5 };
+
+    //! [ex_image_histequal]
+    float input[]  = {1, 2, 1, 1, 3, 6, 7, 8, 3};
+    int nbins = 10;
+
+    size_t nElems = sizeof(input)/sizeof(float);
+    array hist_in(nElems, input);
+
+    array hist_out = histogram(hist_in, nbins);
+
+    // input after histogram equalization or normalization
+    // based on histogram provided
+    array eq_out = histequal(hist_in, hist_out);
+    // eq_out = { 1.5, 4.5,  1.5, 1.5, 4.5, 4.5, 6.0, 7.5, 4.5 }
+    //! [ex_image_histequal]
+
+    vector<float> h_out(nElems);
+    eq_out.host((void*)h_out.data());
+
+    if( false == equal(h_out.begin(), h_out.end(), output) ) {
+        cout << "Expected: ";
+        copy(output, output + nbins, ostream_iterator<float>(cout, ", "));
+        cout << endl << "Actual: ";
+        copy(h_out.begin(), h_out.end(), ostream_iterator<float>(cout, ", "));
+        FAIL() << "Output did not match";
+    }
 }

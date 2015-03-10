@@ -13,5 +13,5 @@
 namespace cuda
 {
     template<typename T, bool isAscending>
-    Array<T>* sort(const Array<T> &in, const unsigned dim);
+    Array<T> sort(const Array<T> &in, const unsigned dim);
 }

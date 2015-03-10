@@ -20,16 +20,35 @@ using af::dim4;
 using namespace detail;
 
 template<typename T, typename convAccT>
-static void orb(af_features& feat, af_array& desc, const af_array& in, const float fast_thr, const unsigned max_feat, const float scl_fctr, const unsigned levels)
+static void orb(af_features& feat, af_array& descriptor,
+                const af_array& in, const float fast_thr,
+                const unsigned max_feat, const float scl_fctr,
+                const unsigned levels, const bool blur_img)
 {
-    af::features temp_feat;
-    Array<unsigned>* temp_desc = NULL;
-    orb<T, convAccT>(temp_feat, &temp_desc, getArray<T>(in), fast_thr, max_feat, scl_fctr, levels);
-    feat = temp_feat.get();
-    desc = getHandle<unsigned>(*temp_desc);
+    Array<float> x     = createEmptyArray<float>(dim4());
+    Array<float> y     = createEmptyArray<float>(dim4());
+    Array<float> score = createEmptyArray<float>(dim4());
+    Array<float> ori   = createEmptyArray<float>(dim4());
+    Array<float> size  = createEmptyArray<float>(dim4());
+    Array<uint > desc  = createEmptyArray<uint >(dim4());
+
+    feat.n = orb<T, convAccT>(x, y, score, ori, size, desc,
+                              getArray<T>(in), fast_thr, max_feat,
+                              scl_fctr, levels, blur_img);
+
+    feat.x           = getHandle(x);
+    feat.y           = getHandle(y);
+    feat.score       = getHandle(score);
+    feat.orientation = getHandle(ori);
+    feat.size        = getHandle(size);
+
+    descriptor = getHandle<unsigned>(desc);
 }
 
-af_err af_orb(af_features* feat, af_array* desc, const af_array in, const float fast_thr, const unsigned max_feat, const float scl_fctr, const unsigned levels)
+af_err af_orb(af_features* feat, af_array* desc,
+              const af_array in, const float fast_thr,
+              const unsigned max_feat, const float scl_fctr,
+              const unsigned levels, const bool blur_img)
 {
     try {
         ArrayInfo info = getInfo(in);
@@ -47,8 +66,10 @@ af_err af_orb(af_features* feat, af_array* desc, const af_array in, const float 
         af_array tmp_desc;
         af_dtype type  = info.getType();
         switch(type) {
-            case f32: orb<float , float >(*feat, tmp_desc, in, fast_thr, max_feat, scl_fctr, levels); break;
-            case f64: orb<double, double>(*feat, tmp_desc, in, fast_thr, max_feat, scl_fctr, levels); break;
+            case f32: orb<float , float >(*feat, tmp_desc, in, fast_thr, max_feat,
+                                          scl_fctr, levels, blur_img); break;
+            case f64: orb<double, double>(*feat, tmp_desc, in, fast_thr, max_feat,
+                                          scl_fctr, levels, blur_img); break;
             default : TYPE_ERROR(1, type);
         }
         std::swap(*desc, tmp_desc);

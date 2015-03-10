@@ -20,7 +20,7 @@ namespace cpu
 {
 
 template<typename inType, typename outType, af_match_type mType>
-Array<outType>* match_template(const Array<inType> &sImg, const Array<inType> &tImg)
+Array<outType> match_template(const Array<inType> &sImg, const Array<inType> &tImg)
 {
     const dim4 sDims = sImg.dims();
     const dim4 tDims = tImg.dims();
@@ -32,8 +32,8 @@ Array<outType>* match_template(const Array<inType> &sImg, const Array<inType> &t
     const dim_type sDim0  = sDims[0];
     const dim_type sDim1  = sDims[1];
 
-    Array<outType> *out = createEmptyArray<outType>(sDims);
-    const dim4 oStrides = out->strides();
+    Array<outType> out = createEmptyArray<outType>(sDims);
+    const dim4 oStrides = out.strides();
 
     const dim_type batchNum = sDims[2];
 
@@ -56,7 +56,7 @@ Array<outType>* match_template(const Array<inType> &sImg, const Array<inType> &t
     }
 
     for(dim_type b=0; b<batchNum; ++b) {
-        outType * dst      = out->get() + b*oStrides[2];
+        outType * dst      = out.get() + b*oStrides[2];
         const inType * src = sImg.get() + b*sStrides[2];
 
         // slide through image window after window
@@ -138,15 +138,15 @@ Array<outType>* match_template(const Array<inType> &sImg, const Array<inType> &t
 }
 
 #define INSTANTIATE(in_t, out_t)\
-    template Array<out_t> * match_template<in_t, out_t, AF_SAD >(const Array<in_t> &sImg, const Array<in_t> &tImg); \
-    template Array<out_t> * match_template<in_t, out_t, AF_LSAD>(const Array<in_t> &sImg, const Array<in_t> &tImg); \
-    template Array<out_t> * match_template<in_t, out_t, AF_ZSAD>(const Array<in_t> &sImg, const Array<in_t> &tImg); \
-    template Array<out_t> * match_template<in_t, out_t, AF_SSD >(const Array<in_t> &sImg, const Array<in_t> &tImg); \
-    template Array<out_t> * match_template<in_t, out_t, AF_LSSD>(const Array<in_t> &sImg, const Array<in_t> &tImg); \
-    template Array<out_t> * match_template<in_t, out_t, AF_ZSSD>(const Array<in_t> &sImg, const Array<in_t> &tImg); \
-    template Array<out_t> * match_template<in_t, out_t, AF_NCC >(const Array<in_t> &sImg, const Array<in_t> &tImg); \
-    template Array<out_t> * match_template<in_t, out_t, AF_ZNCC>(const Array<in_t> &sImg, const Array<in_t> &tImg); \
-    template Array<out_t> * match_template<in_t, out_t, AF_SHD >(const Array<in_t> &sImg, const Array<in_t> &tImg);
+    template Array<out_t> match_template<in_t, out_t, AF_SAD >(const Array<in_t> &sImg, const Array<in_t> &tImg); \
+    template Array<out_t> match_template<in_t, out_t, AF_LSAD>(const Array<in_t> &sImg, const Array<in_t> &tImg); \
+    template Array<out_t> match_template<in_t, out_t, AF_ZSAD>(const Array<in_t> &sImg, const Array<in_t> &tImg); \
+    template Array<out_t> match_template<in_t, out_t, AF_SSD >(const Array<in_t> &sImg, const Array<in_t> &tImg); \
+    template Array<out_t> match_template<in_t, out_t, AF_LSSD>(const Array<in_t> &sImg, const Array<in_t> &tImg); \
+    template Array<out_t> match_template<in_t, out_t, AF_ZSSD>(const Array<in_t> &sImg, const Array<in_t> &tImg); \
+    template Array<out_t> match_template<in_t, out_t, AF_NCC >(const Array<in_t> &sImg, const Array<in_t> &tImg); \
+    template Array<out_t> match_template<in_t, out_t, AF_ZNCC>(const Array<in_t> &sImg, const Array<in_t> &tImg); \
+    template Array<out_t> match_template<in_t, out_t, AF_SHD >(const Array<in_t> &sImg, const Array<in_t> &tImg);
 
 INSTANTIATE(double, double)
 INSTANTIATE(float ,  float)

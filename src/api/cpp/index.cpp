@@ -9,6 +9,7 @@
 
 #include <af/index.h>
 #include "error.hpp"
+#include "common.hpp"
 
 namespace af
 {
@@ -63,6 +64,20 @@ array shift(const array& in, const int x, const int y, const int z, const int w)
 {
     af_array out = 0;
     AF_THROW(af_shift(&out, in.get(), x, y, z, w));
+    return array(out);
+}
+
+array flip(const array &in, const unsigned dim)
+{
+    af_array out = 0;
+    AF_THROW(af_flip(&out, in.get(), dim));
+    return array(out);
+}
+
+array lookup(const array &in, const array &idx, const int dim)
+{
+    af_array out = 0;
+    AF_THROW(af_lookup(&out, in.get(), idx.get(), getFNSD(dim, in.dims())));
     return array(out);
 }
 

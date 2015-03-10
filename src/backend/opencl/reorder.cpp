@@ -16,7 +16,7 @@
 namespace opencl
 {
     template<typename T>
-    Array<T> *reorder(const Array<T> &in, const af::dim4 &rdims)
+    Array<T> reorder(const Array<T> &in, const af::dim4 &rdims)
     {
         if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
             !isDoubleSupported(getActiveDeviceId())) {
@@ -27,15 +27,15 @@ namespace opencl
         for(int i = 0; i < 4; i++)
             oDims[i] = iDims[rdims[i]];
 
-        Array<T> *out = createEmptyArray<T>(oDims);
+        Array<T> out = createEmptyArray<T>(oDims);
 
-        kernel::reorder<T>(*out, in, rdims.get());
+        kernel::reorder<T>(out, in, rdims.get());
 
         return out;
     }
 
 #define INSTANTIATE(T)                                                         \
-    template Array<T>* reorder<T>(const Array<T> &in, const af::dim4 &rdims);  \
+    template Array<T> reorder<T>(const Array<T> &in, const af::dim4 &rdims);  \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

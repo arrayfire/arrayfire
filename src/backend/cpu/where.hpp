@@ -13,5 +13,5 @@
 namespace cpu
 {
     template<typename T>
-    Array<uint>* where(const Array<T>& in);
+    Array<uint> where(const Array<T>& in);
 }

@@ -17,6 +17,7 @@
 #include <optypes.hpp>
 #include <JIT/UnaryNode.hpp>
 #include <types.hpp>
+#include <Array.hpp>
 
 namespace opencl
 {
@@ -104,17 +105,34 @@ struct CastOp<cdouble, cdouble>
 #undef CAST_CFN
 
 template<typename To, typename Ti>
-Array<To>* cast(const Array<Ti> &in)
+struct CastWrapper
 {
-    CastOp<To, Ti> cop;
-    JIT::Node_ptr in_node = in.getNode();
+    Array<To> operator()(const Array<Ti> &in)
+    {
+        CastOp<To, Ti> cop;
+        JIT::Node_ptr in_node = in.getNode();
+        JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<To>::getName(),
+                                                  shortname<To>(true),
+                                                  cop.name(),
+                                                  in_node, af_cast_t);
+        return createNodeArray<To>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+    }
+};
 
-    JIT::UnaryNode *node = new JIT::UnaryNode(dtype_traits<To>::getName(),
-                                              shortname<To>(true),
-                                              cop.name(),
-                                              in_node, af_cast_t);
+template<typename T>
+struct CastWrapper<T, T>
+{
+    Array<T> operator()(const Array<T> &in)
+    {
+        return in;
+    }
+};
 
-    return createNodeArray<To>(in.dims(), JIT::Node_ptr(reinterpret_cast<JIT::Node *>(node)));
+template<typename To, typename Ti>
+Array<To> cast(const Array<Ti> &in)
+{
+    CastWrapper<To, Ti> cast_op;
+    return cast_op(in);
 }
 
 }

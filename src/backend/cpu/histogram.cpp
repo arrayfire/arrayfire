@@ -19,16 +19,16 @@ namespace cpu
 {
 
 template<typename inType, typename outType>
-Array<outType> * histogram(const Array<inType> &in, const unsigned &nbins, const double &minval, const double &maxval)
+Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const double &minval, const double &maxval)
 {
     const dim4 inDims   = in.dims();
     dim4 outDims        = dim4(nbins,1,inDims[2],inDims[3]);
 
     // create an array with first two dimensions swapped
-    Array<outType>* out = createEmptyArray<outType>(outDims);
+    Array<outType> out = createEmptyArray<outType>(outDims);
 
     // get data pointers for input and output Arrays
-    outType *outData    = out->get();
+    outType *outData    = out.get();
     const inType* inData= in.get();
 
     dim_type batchCount = inDims[2];
@@ -60,7 +60,7 @@ Array<outType> * histogram(const Array<inType> &in, const unsigned &nbins, const
 }
 
 #define INSTANTIATE(in_t,out_t)\
-template Array<out_t> * histogram(const Array<in_t> &in, const unsigned &nbins, const double &minval, const double &maxval);
+template Array<out_t> histogram(const Array<in_t> &in, const unsigned &nbins, const double &minval, const double &maxval);
 
 INSTANTIATE(float , uint)
 INSTANTIATE(double, uint)

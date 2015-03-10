@@ -29,17 +29,17 @@ static T median(const af_array& in)
     const Array<T> input  = getArray<T>(in);
     dim_type nElems = input.elements();
     double mid      = (nElems + 1) / 2;
-    af_seq mdSpan[1]= {mid-1, mid, 1};
+    af_seq mdSpan[1]= {af_make_seq(mid-1, mid, 1)};
     dim4 dims(nElems, 1, 1, 1);
 
     af_array temp = 0;
     AF_CHECK(af_moddims(&temp, in, 1, dims.get()));
-    Array<T>* sortedArr = detail::sort<T, true>(input, 0);
+    Array<T> sortedArr = sort<T, true>(input, 0);
 
     T result;
     T resPtr[2];
     af_array res = 0;
-    AF_CHECK(af_index(&res, getHandle<T>(*sortedArr), 1, mdSpan));
+    AF_CHECK(af_index(&res, getHandle<T>(sortedArr), 1, mdSpan));
     AF_CHECK(af_get_data_ptr((void*)&resPtr, res));
 
     if (nElems % 2 == 1) {
@@ -49,7 +49,6 @@ static T median(const af_array& in)
     }
 
     AF_CHECK(af_destroy_array(res));
-    destroyArray<T>(*sortedArr);
     AF_CHECK(af_destroy_array(temp));
 
     return result;
@@ -59,28 +58,27 @@ template<typename T>
 static af_array median(const af_array& in, dim_type dim)
 {
     const Array<T> input = getArray<T>(in);
-    Array<T>* sortedIn   = detail::sort<T, true>(input, dim);
+    Array<T> sortedIn   = sort<T, true>(input, dim);
 
     int nElems    = input.elements();
     double mid    = (nElems + 1) / 2;
     af_array left = 0;
 
     af_seq slices[4] = {af_span, af_span, af_span, af_span};
-    slices[dim] = {mid-1, mid-1, 1};
+    slices[dim] = af_make_seq(mid-1.0, mid-1.0, 1.0);
 
-    AF_CHECK(af_index(&left, getHandle<T>(*sortedIn), input.ndims(), slices));
+    AF_CHECK(af_index(&left, getHandle<T>(sortedIn), input.ndims(), slices));
 
     if (nElems % 2 == 1) {
         // mid-1 is our guy
-        destroyArray<T>(*sortedIn);
         return left;
     } else {
         // ((mid-1)+mid)/2 is our guy
         dim4  dims = input.dims();
         af_array right = 0;
-        slices[dim] = {mid, mid, 1};
+        slices[dim] = af_make_seq(mid, mid, 1.0);
 
-        AF_CHECK(af_index(&right, getHandle<T>(*sortedIn), dims.ndims(), slices));
+        AF_CHECK(af_index(&right, getHandle<T>(sortedIn), dims.ndims(), slices));
 
         af_array sumarr = 0;
         af_array carr   = 0;
@@ -94,8 +92,6 @@ static af_array median(const af_array& in, dim_type dim)
         AF_CHECK(af_destroy_array(right));
         AF_CHECK(af_destroy_array(sumarr));
         AF_CHECK(af_destroy_array(carr));
-        destroyArray<T>(*sortedIn);
-
         return result;
     }
 }

@@ -13,5 +13,5 @@
 namespace cpu
 {
     template<typename T>
-    Array<T> *tile(const Array<T> &in, const af::dim4 &tileDims);
+    Array<T> tile(const Array<T> &in, const af::dim4 &tileDims);
 }

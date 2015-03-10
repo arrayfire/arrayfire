@@ -18,23 +18,23 @@ namespace cuda
 {
 
 template<typename T>
-Array<T> * transpose(const Array<T> &in, const bool conjugate)
+Array<T>  transpose(const Array<T> &in, const bool conjugate)
 {
     const dim4 inDims   = in.dims();
     const dim4 inStrides= in.strides();
 
     dim4 outDims  = dim4(inDims[1],inDims[0],inDims[2],inDims[3]);
 
-    Array<T>* out  = createEmptyArray<T>(outDims);
+    Array<T> out  = createEmptyArray<T>(outDims);
 
-    if(conjugate)   { kernel::transpose<T, true>(*out, in, inDims.ndims()); }
-    else            { kernel::transpose<T, false>(*out, in, inDims.ndims());}
+    if(conjugate)   { kernel::transpose<T, true>(out, in, inDims.ndims()); }
+    else            { kernel::transpose<T, false>(out, in, inDims.ndims());}
 
     return out;
 }
 
 #define INSTANTIATE(T)\
-    template Array<T> * transpose(const Array<T> &in, const bool conjugate);
+    template Array<T>  transpose(const Array<T> &in, const bool conjugate);
 
 INSTANTIATE(float  )
 INSTANTIATE(cfloat )

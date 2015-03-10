@@ -20,6 +20,7 @@ using namespace af;
 #define CONSTANT_TESTS(TY, VAL)                         \
     TEST(ConstantTests, Test_##TY)                      \
     {                                                   \
+        if (noDoubleTests<TY>()) return;                \
         const int num = 1000;                           \
         TY val = VAL;                                   \
         dtype dty = (dtype) dtype_traits<TY>::af_type;  \

@@ -32,7 +32,7 @@ class MatrixMultiply : public ::testing::Test
 typedef ::testing::Types<float, af::cfloat, double, af::cdouble> TestTypes;
 TYPED_TEST_CASE(MatrixMultiply, TestTypes);
 
-template<typename T, bool isBVector = false>
+template<typename T, bool isBVector>
 void MatMulCheck(string TestFile)
 {
     if (noDoubleTests<T>()) return;
@@ -40,8 +40,8 @@ void MatMulCheck(string TestFile)
     using std::vector;
     vector<af::dim4> numDims;
 
-    vector<vector<T>> hData;
-    vector<vector<T>> tests;
+    vector<vector<T> > hData;
+    vector<vector<T> > tests;
     readTests<T,T,int>(TestFile, numDims, hData, tests);
 
     af_array a, aT, b, bT;
@@ -90,21 +90,31 @@ void MatMulCheck(string TestFile)
         if( false == equal(h_out.begin(), h_out.end(), tests[i].begin()) ) {
 
             cout << "Failed test " << i << "\nCalculated: " << endl;
+            copy(h_out.begin(), h_out.end(), ostream_iterator<T>(cout, ", "));
             cout << "Expected: " << endl;
             copy(tests[i].begin(), tests[i].end(), ostream_iterator<T>(cout, ", "));
             FAIL();
         }
     }
+
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(a));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(aT));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(b));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(bT));
+
+    for (size_t i = 0; i <  out.size(); i++) {
+        ASSERT_EQ(AF_SUCCESS, af_destroy_array(out[i]));
+    }
 }
 
 TYPED_TEST(MatrixMultiply, Square)
 {
-    MatMulCheck<TypeParam>(TEST_DIR"/blas/Basic.test");
+    MatMulCheck<TypeParam, false>(TEST_DIR"/blas/Basic.test");
 }
 
 TYPED_TEST(MatrixMultiply, NonSquare)
 {
-    MatMulCheck<TypeParam>(TEST_DIR"/blas/NonSquare.test");
+    MatMulCheck<TypeParam, false>(TEST_DIR"/blas/NonSquare.test");
 }
 
 TYPED_TEST(MatrixMultiply, SquareVector)
@@ -117,7 +127,7 @@ TYPED_TEST(MatrixMultiply, RectangleVector)
     MatMulCheck<TypeParam, true>(TEST_DIR"/blas/RectangleVector.test");
 }
 
-template<typename T, bool isBVector = false>
+template<typename T, bool isBVector>
 void cppMatMulCheck(string TestFile)
 {
     if (noDoubleTests<T>()) return;
@@ -125,8 +135,8 @@ void cppMatMulCheck(string TestFile)
     using std::vector;
     vector<af::dim4> numDims;
 
-    vector<vector<T>> hData;
-    vector<vector<T>> tests;
+    vector<vector<T> > hData;
+    vector<vector<T> > tests;
     readTests<T,T,int>(TestFile, numDims, hData, tests);
 
     af::array a(numDims[0], &hData[0].front());
@@ -171,6 +181,7 @@ void cppMatMulCheck(string TestFile)
         if (false == equal(h_out.begin(), h_out.end(), tests[i].begin())) {
 
             cout << "Failed test " << i << "\nCalculated: " << endl;
+            copy(h_out.begin(), h_out.end(), ostream_iterator<T>(cout, ", "));
             cout << "Expected: " << endl;
             copy(tests[i].begin(), tests[i].end(), ostream_iterator<T>(cout, ", "));
             FAIL();
@@ -180,12 +191,12 @@ void cppMatMulCheck(string TestFile)
 
 TYPED_TEST(MatrixMultiply, Square_CPP)
 {
-    cppMatMulCheck<TypeParam>(TEST_DIR"/blas/Basic.test");
+    cppMatMulCheck<TypeParam, false>(TEST_DIR"/blas/Basic.test");
 }
 
 TYPED_TEST(MatrixMultiply, NonSquare_CPP)
 {
-    cppMatMulCheck<TypeParam>(TEST_DIR"/blas/NonSquare.test");
+    cppMatMulCheck<TypeParam, false>(TEST_DIR"/blas/NonSquare.test");
 }
 
 TYPED_TEST(MatrixMultiply, SquareVector_CPP)

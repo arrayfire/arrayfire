@@ -21,13 +21,13 @@ namespace cuda
 {
 
 template<typename T>
-Array<T> * regions(const Array<uchar> &in, af_connectivity connectivity)
+Array<T>  regions(const Array<uchar> &in, af_connectivity connectivity)
 {
     ARG_ASSERT(2, (connectivity==AF_CONNECTIVITY_4 || connectivity==AF_CONNECTIVITY_8));
 
     const dim4 dims = in.dims();
 
-    Array<T> * out  = createEmptyArray<T>(dims);
+    Array<T>  out  = createEmptyArray<T>(dims);
 
     // Create bindless texture object for the equiv map.
     cudaTextureObject_t tex = 0;
@@ -48,10 +48,10 @@ Array<T> * regions(const Array<uchar> &in, af_connectivity connectivity)
 
     switch(connectivity) {
         case AF_CONNECTIVITY_4:
-            ::regions<T, false, 2>(*out, in, tex);
+            ::regions<T, false, 2>(out, in, tex);
             break;
         case AF_CONNECTIVITY_8:
-            ::regions<T, true,  2>(*out, in, tex);
+            ::regions<T, true,  2>(out, in, tex);
             break;
     }
 
@@ -59,7 +59,7 @@ Array<T> * regions(const Array<uchar> &in, af_connectivity connectivity)
 }
 
 #define INSTANTIATE(T)\
-    template Array<T> * regions<T>(const Array<uchar> &in, af_connectivity connectivity);
+    template Array<T>  regions<T>(const Array<uchar> &in, af_connectivity connectivity);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

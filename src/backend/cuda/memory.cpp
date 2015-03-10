@@ -19,7 +19,55 @@
 
 namespace cuda
 {
-    static void garbageCollect();
+    template<typename T>
+    static void cudaFreeWrapper(T *ptr)
+    {
+        cudaError_t err = cudaFree(ptr);
+        if (err != cudaErrorCudartUnloading) // see issue #167
+            CUDA_CHECK(err);
+    }
+
+    template<typename T>
+    static void pinnedFreeWrapper(T *ptr)
+    {
+        cudaError_t err = cudaFreeHost(ptr);
+        if (err != cudaErrorCudartUnloading) // see issue #167
+            CUDA_CHECK(err);
+    }
+
+#ifdef AF_CUDA_MEM_DEBUG
+
+    template<typename T>
+    T* memAlloc(const size_t &elements)
+    {
+        T* ptr = NULL;
+        CUDA_CHECK(cudaMalloc(&ptr, elements * sizeof(T)));
+        return ptr;
+    }
+
+    template<typename T>
+    void memFree(T *ptr)
+    {
+        cudaFreeWrapper(ptr); // Free it because we are not sure what the size is
+    }
+
+    template<typename T>
+    T* pinnedAlloc(const size_t &elements)
+    {
+        T* ptr = NULL;
+        CUDA_CHECK(cudaMallocHost((void **)(&ptr), elements * sizeof(T)));
+        return (T*)ptr;
+    }
+
+    template<typename T>
+    void pinnedFree(T *ptr)
+    {
+        pinnedFreeWrapper(ptr); // Free it because we are not sure what the size is
+    }
+
+#else
+
+        static void garbageCollect();
     static void pinnedGarbageCollect();
 
     // Manager Class
@@ -50,57 +98,6 @@ namespace cuda
         if(Manager::initialized == false)
             static Manager pm = Manager();
     }
-
-    template<typename T>
-    static void cudaFreeWrapper(T *ptr)
-    {
-        cudaError_t err = cudaFree(ptr);
-        if (err != cudaErrorCudartUnloading) // see issue #167
-            CUDA_CHECK(err);
-    }
-
-    template<typename T>
-    static void pinnedFreeWrapper(T *ptr)
-    {
-        cudaError_t err = cudaFreeHost(ptr);
-        if (err != cudaErrorCudartUnloading) // see issue #167
-            CUDA_CHECK(err);
-    }
-
-#ifdef CUDA_MEM_DEBUG
-
-    template<typename T>
-    T* memAlloc(const size_t &elements)
-    {
-        T* ptr = NULL;
-        CUDA_CHECK(cudaMalloc(&ptr, elements * sizeof(T)));
-        return ptr;
-    }
-
-    template<typename T>
-    void memFree(T *ptr)
-    {
-        cudaFreeWrapper(ptr); // Free it because we are not sure what the size is
-    }
-
-    template<typename T>
-    T* pinnedAlloc(const size_t &elements)
-    {
-        T* ptr = NULL;
-        CUDA_CHECK(cudaMallocHost((void **)(&ptr), alloc_bytes));
-        return (T*)ptr;
-    }
-
-    template<typename T>
-    void pinnedFree(T *ptr)
-    {
-        pinnedFreeWrapper(ptr); // Free it because we are not sure what the size is
-    }
-
-#else
-
-    static const unsigned MAX_BUFFERS   = 100;
-    static const unsigned MAX_BYTES     = (1 << 30);
 
     typedef struct
     {

@@ -25,24 +25,20 @@ using namespace detail;
 template<typename inType, typename outType>
 static outType mean(const af_array &in)
 {
-    Array<outType> *input = cast<outType>(getArray<inType>(in));
-    outType result = mean<outType>(*input); /* defined in stats.h */
-    destroyArray<outType>(*input);
+    Array<outType> input = cast<outType>(getArray<inType>(in));
+    outType result = mean<outType>(input); /* defined in stats.h */
     return result;
 }
 
 template<typename inType, typename outType>
 static outType mean(const af_array &in, const af_array &weights)
 {
-    typedef baseOutType<outType> bType;
+    typedef typename baseOutType<outType>::type bType;
 
-    Array<outType> *input = cast<outType>(getArray<inType>(in));
-    Array<outType> *wts   = cast<outType>(getArray<bType>(weights));
+    Array<outType> input = cast<outType>(getArray<inType>(in));
+    Array<outType> wts   = cast<outType>(getArray<bType>(weights));
 
-    outType result = mean<outType, bType>(*input, getArray<bType>(weights)); /* defined in stats.h */
-
-    destroyArray<outType>(*input);
-    destroyArray<outType>(*wts);
+    outType result = mean<outType, bType>(input, getArray<bType>(weights)); /* defined in stats.h */
 
     return result;
 }
@@ -50,27 +46,22 @@ static outType mean(const af_array &in, const af_array &weights)
 template<typename inType, typename outType>
 static af_array mean(const af_array &in, dim_type dim)
 {
-    Array<outType> *input = cast<outType>(getArray<inType>(in));
-    Array<outType>* result= mean<outType>(*input, dim); /* defined in stats.h */
+    Array<outType> input = cast<outType>(getArray<inType>(in));
+    Array<outType>  result= mean<outType>(input, dim); /* defined in stats.h */
 
-    destroyArray<outType>(*input);
-
-    return getHandle<outType>(*result);
+    return getHandle<outType>(result);
 }
 
 template<typename inType, typename outType>
 static af_array mean(const af_array &in, const af_array &weights, dim_type dim)
 {
-    typedef baseOutType<outType> bType;
+    typedef typename baseOutType<outType>::type bType;
 
-    Array<outType> *input = cast<outType>(getArray<inType>(in));
-    Array<outType> *wts   = cast<outType>(getArray<bType>(weights));
-    Array<outType> *retVal= mean<outType>(*input, *wts, dim); /* defined in stats.h */
+    Array<outType> input = cast<outType>(getArray<inType>(in));
+    Array<outType> wts   = cast<outType>(getArray<bType>(weights));
+    Array<outType> retVal= mean<outType>(input, wts, dim); /* defined in stats.h */
 
-    destroyArray<outType>(*input);
-    destroyArray<outType>(*wts);
-
-    return getHandle<outType>(*retVal);
+    return getHandle<outType>(retVal);
 }
 
 af_err af_mean(af_array *out, const af_array in, dim_type dim)

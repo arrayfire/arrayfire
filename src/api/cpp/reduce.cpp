@@ -10,48 +10,56 @@
 #include <af/array.h>
 #include <af/algorithm.h>
 #include "error.hpp"
+#include "common.hpp"
 
 namespace af
 {
     array sum(const array &in, const int dim)
     {
         af_array out = 0;
-        AF_THROW(af_sum(&out, in.get(), dim));
+        AF_THROW(af_sum(&out, in.get(), getFNSD(dim, in.dims())));
+        return array(out);
+    }
+
+    array product(const array &in, const int dim)
+    {
+        af_array out = 0;
+        AF_THROW(af_product(&out, in.get(), getFNSD(dim, in.dims())));
         return array(out);
     }
 
     array min(const array &in, const int dim)
     {
         af_array out = 0;
-        AF_THROW(af_min(&out, in.get(), dim));
+        AF_THROW(af_min(&out, in.get(), getFNSD(dim, in.dims())));
         return array(out);
     }
 
     array max(const array &in, const int dim)
     {
         af_array out = 0;
-        AF_THROW(af_max(&out, in.get(), dim));
+        AF_THROW(af_max(&out, in.get(), getFNSD(dim, in.dims())));
         return array(out);
     }
 
     array alltrue(const array &in, const int dim)
     {
         af_array out = 0;
-        AF_THROW(af_alltrue(&out, in.get(), dim));
+        AF_THROW(af_alltrue(&out, in.get(), getFNSD(dim, in.dims())));
         return array(out);
     }
 
     array anytrue(const array &in, const int dim)
     {
         af_array out = 0;
-        AF_THROW(af_anytrue(&out, in.get(), dim));
+        AF_THROW(af_anytrue(&out, in.get(), getFNSD(dim, in.dims())));
         return array(out);
     }
 
     array count(const array &in, const int dim)
     {
         af_array out = 0;
-        AF_THROW(af_count(&out, in.get(), dim));
+        AF_THROW(af_count(&out, in.get(), getFNSD(dim, in.dims())));
         return array(out);
     }
 
@@ -59,7 +67,7 @@ namespace af
     {
         af_array out = 0;
         af_array loc = 0;
-        AF_THROW(af_imin(&out, &loc, in.get(), dim));
+        AF_THROW(af_imin(&out, &loc, in.get(), getFNSD(dim, in.dims())));
         val = array(out);
         idx = array(loc);
     }
@@ -68,7 +76,7 @@ namespace af
     {
         af_array out = 0;
         af_array loc = 0;
-        AF_THROW(af_imax(&out, &loc, in.get(), dim));
+        AF_THROW(af_imax(&out, &loc, in.get(), getFNSD(dim, in.dims())));
         val = array(out);
         idx = array(loc);
     }
@@ -89,7 +97,7 @@ namespace af
     {                                                       \
         double rval, ival;                                  \
         AF_THROW(af_##fn##_all(&rval, &ival, in.get()));    \
-        T out = {(Tr)rval, (Tr)ival};                       \
+        T out((Tr)rval, (Tr)ival);                       \
         return out;                                         \
     }                                                       \
 
@@ -98,17 +106,25 @@ namespace af
     INSTANTIATE_REAL(fn, double)                \
     INSTANTIATE_REAL(fn, int)                   \
     INSTANTIATE_REAL(fn, unsigned)              \
+    INSTANTIATE_REAL(fn, long)                  \
+    INSTANTIATE_REAL(fn, unsigned long)         \
+    INSTANTIATE_REAL(fn, long long)             \
+    INSTANTIATE_REAL(fn, unsigned long long)    \
     INSTANTIATE_REAL(fn, char)                  \
     INSTANTIATE_REAL(fn, unsigned char)         \
     INSTANTIATE_CPLX(fn, af_cfloat, float)      \
     INSTANTIATE_CPLX(fn, af_cdouble, double)    \
 
     INSTANTIATE(sum)
+    INSTANTIATE(product)
     INSTANTIATE(min)
     INSTANTIATE(max)
     INSTANTIATE(alltrue)
     INSTANTIATE(anytrue)
     INSTANTIATE(count)
+
+    INSTANTIATE_REAL(alltrue, bool);
+    INSTANTIATE_REAL(anytrue, bool);
 
 #undef INSTANTIATE
 #undef INSTANTIATE_REAL
@@ -130,7 +146,7 @@ namespace af
     {                                                           \
         double rval, ival;                                      \
         AF_THROW(af_i##fn##_all(&rval, &ival, idx, in.get()));  \
-        *val = {(Tr)rval, (Tr)ival};                            \
+        *val = T((Tr)rval, (Tr)ival);                            \
     }                                                           \
 
 #define INSTANTIATE(fn)                         \

@@ -35,18 +35,18 @@ static inline unsigned getIdx(const dim4 &strides,
 }
 
 template<typename inType, typename outType, bool isColor>
-Array<outType> * bilateral(const Array<inType> &in, const float &s_sigma, const float &c_sigma)
+Array<outType> bilateral(const Array<inType> &in, const float &s_sigma, const float &c_sigma)
 {
     const dim4 dims     = in.dims();
     const dim4 istrides = in.strides();
 
-    Array<outType>* out = createEmptyArray<outType>(dims);
-    const dim4 ostrides = out->strides();
+    Array<outType> out = createEmptyArray<outType>(dims);
+    const dim4 ostrides = out.strides();
 
     dim_type bCount     = dims[2];
     if (isColor) bCount*= dims[3];
 
-    outType *outData    = out->get();
+    outType *outData    = out.get();
     const inType * inData = in.get();
 
     // clamp spatical and chromatic sigma's
@@ -92,8 +92,8 @@ Array<outType> * bilateral(const Array<inType> &in, const float &s_sigma, const 
 }
 
 #define INSTANTIATE(inT, outT)\
-template Array<outT> * bilateral<inT, outT,true >(const Array<inT> &in, const float &s_sigma, const float &c_sigma);\
-template Array<outT> * bilateral<inT, outT,false>(const Array<inT> &in, const float &s_sigma, const float &c_sigma);
+template Array<outT> bilateral<inT, outT,true >(const Array<inT> &in, const float &s_sigma, const float &c_sigma);\
+template Array<outT> bilateral<inT, outT,false>(const Array<inT> &in, const float &s_sigma, const float &c_sigma);
 
 INSTANTIATE(double, double)
 INSTANTIATE(float ,  float)

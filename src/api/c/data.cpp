@@ -19,7 +19,7 @@
 #include <handle.hpp>
 #include <random.hpp>
 #include <math.hpp>
-#include <iota.hpp>
+#include <range.hpp>
 #include <identity.hpp>
 #include <diagonal.hpp>
 
@@ -115,7 +115,7 @@ template<typename To, typename Ti>
 static inline af_array createCplx(dim4 dims, const Ti real, const Ti imag)
 {
     To cval = scalar<To, Ti>(real, imag);
-    af_array out = getHandle(*createValueArray<To>(dims, cval));
+    af_array out = getHandle(createValueArray<To>(dims, cval));
     return out;
 }
 
@@ -155,7 +155,7 @@ af_err af_constant_long(af_array *result, const intl val,
             d[i] = dims[i];
         }
 
-        out = getHandle(*createValueArray<intl>(d, val));
+        out = getHandle(createValueArray<intl>(d, val));
 
         std::swap(*result, out);
     } CATCHALL;
@@ -175,7 +175,7 @@ af_err af_constant_ulong(af_array *result, const uintl val,
             d[i] = dims[i];
         }
 
-        out = getHandle(*createValueArray<uintl>(d, val));
+        out = getHandle(createValueArray<uintl>(d, val));
 
         std::swap(*result, out);
     } CATCHALL;
@@ -243,19 +243,19 @@ af_err af_copy_array(af_array *out, const af_array in)
 template<typename T>
 static inline af_array randn_(const af::dim4 &dims)
 {
-    return getHandle(*randn<T>(dims));
+    return getHandle(randn<T>(dims));
 }
 
 template<typename T>
 static inline af_array randu_(const af::dim4 &dims)
 {
-    return getHandle(*randu<T>(dims));
+    return getHandle(randu<T>(dims));
 }
 
 template<typename T>
 static inline af_array identity_(const af::dim4 &dims)
 {
-    return getHandle(*detail::identity<T>(dims));
+    return getHandle(detail::identity<T>(dims));
 }
 
 af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
@@ -370,7 +370,7 @@ template<typename T>
 static af_array weakCopyHandle(const af_array in)
 {
     detail::Array<T> *A = reinterpret_cast<detail::Array<T> *>(in);
-    detail::Array<T> *out = detail::createEmptyArray<T>(af::dim4());
+    detail::Array<T> *out = detail::initArray<T>();
     *out= *A;
     return reinterpret_cast<af_array>(out);
 }
@@ -403,13 +403,13 @@ af_err af_weak_copy(af_array *out, const af_array in)
 }
 
 template<typename T>
-static inline af_array iota_(const dim4& d, const unsigned rep)
+static inline af_array range_(const dim4& d, const int rep)
 {
-    return getHandle(*iota<T>(d, rep));
+    return getHandle(range<T>(d, rep));
 }
 
 //Strong Exception Guarantee
-af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const dims,
+af_err af_range(af_array *result, const unsigned ndims, const dim_type * const dims,
                const int rep, const af_dtype type)
 {
     af_array out;
@@ -422,20 +422,12 @@ af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const di
             DIM_ASSERT(2, d[i] >= 1);
         }
 
-        // Repeat highest dimension, ie. creates a single sequence from
-        // 0...elements - 1
-        int rep_ = rep;
-        if(rep < 0)
-        {
-            rep_ = ndims - 1; // ndims = [1,4] => rep = [0, 4]
-        }
-
         switch(type) {
-        case f32:   out = iota_<float  >(d, rep_); break;
-        case f64:   out = iota_<double >(d, rep_); break;
-        case s32:   out = iota_<int    >(d, rep_); break;
-        case u32:   out = iota_<uint   >(d, rep_); break;
-        case u8:    out = iota_<uchar  >(d, rep_); break;
+        case f32:   out = range_<float  >(d, rep); break;
+        case f64:   out = range_<double >(d, rep); break;
+        case s32:   out = range_<int    >(d, rep); break;
+        case u32:   out = range_<uint   >(d, rep); break;
+        case u8:    out = range_<uchar  >(d, rep); break;
         default:    TYPE_ERROR(4, type);
         }
         std::swap(*result, out);
@@ -499,7 +491,7 @@ af_err af_get_numdims(unsigned *nd, const af_array in)
 template<typename T>
 static inline void eval(af_array arr)
 {
-    getArray<T>(arr).eval();
+    evalArray(getArray<T>(arr));
     return;
 }
 
@@ -529,13 +521,13 @@ af_err af_eval(af_array arr)
 template<typename T>
 static inline af_array diagCreate(const af_array in, const int num)
 {
-    return getHandle(*diagCreate<T>(getArray<T>(in), num));
+    return getHandle(diagCreate<T>(getArray<T>(in), num));
 }
 
 template<typename T>
 static inline af_array diagExtract(const af_array in, const int num)
 {
-    return getHandle(*diagExtract<T>(getArray<T>(in), num));
+    return getHandle(diagExtract<T>(getArray<T>(in), num));
 }
 
 af_err af_diag_create(af_array *out, const af_array in, const int num)

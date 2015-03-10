@@ -105,6 +105,17 @@ namespace JIT
             return m_id + 1;
         }
 
+        void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
+        {
+            if (m_set_id) return;
+
+            m_child->getInfo(len, buf_count, bytes);
+            len++;
+
+            m_set_id = true;
+            return;
+        }
+
         void resetFlags()
         {
             m_set_id = false;

@@ -23,9 +23,13 @@ namespace opencl
 {
 
 template<typename T, typename convAccT>
-void orb(features& feat, Array<unsigned>** desc, const Array<T>& in,
-         const float fast_thr, const unsigned max_feat,
-         const float scl_fctr, const unsigned levels)
+unsigned orb(Array<float> &x_out, Array<float> &y_out,
+             Array<float> &score_out, Array<float> &ori_out,
+             Array<float> &size_out, Array<uint> &desc_out,
+             const Array<T>& image,
+             const float fast_thr, const unsigned max_feat,
+             const float scl_fctr, const unsigned levels,
+             const bool blur_img)
 {
     unsigned nfeat;
 
@@ -34,51 +38,38 @@ void orb(features& feat, Array<unsigned>** desc, const Array<T>& in,
     Param score;
     Param ori;
     Param size;
-    Param desc_tmp;
+    Param desc;
 
-    kernel::orb<T,convAccT>(&nfeat, x, y, score, ori, size, desc_tmp,
-                            in, fast_thr, max_feat, scl_fctr, levels);
+    kernel::orb<T,convAccT>(&nfeat, x, y, score, ori, size, desc,
+                            image, fast_thr, max_feat, scl_fctr,
+                            levels, blur_img);
 
-    if (nfeat == 0) {
-        feat.setNumFeatures(0);
-        feat.setX(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        feat.setY(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        feat.setScore(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        feat.setOrientation(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        feat.setSize(getHandle<float>(*createEmptyArray<float>(af::dim4())));
-        *desc = createEmptyArray<unsigned>(af::dim4());
-        return;
+    if (nfeat > 0) {
+        const dim4 out_dims(nfeat);
+        const dim4 desc_dims(8, nfeat);
+
+        x_out     = createParamArray<float>(x);
+        y_out     = createParamArray<float>(y);
+        score_out = createParamArray<float>(score);
+        ori_out   = createParamArray<float>(ori);
+        size_out  = createParamArray<float>(size);
+        desc_out  = createParamArray<unsigned>(desc);
     }
 
-    const dim4 out_dims(nfeat);
-    const dim4 desc_dims(8, nfeat);
-
-    feat.setNumFeatures(nfeat);
-    feat.setX(getHandle<float>(*createParamArray<float>(x)));
-    feat.setY(getHandle<float>(*createParamArray<float>(y)));
-    feat.setScore(getHandle<float>(*createParamArray<float>(score)));
-    feat.setOrientation(getHandle<float>(*createParamArray<float>(ori)));
-    feat.setSize(getHandle<float>(*createParamArray<float>(size)));
-
-    *desc = createParamArray<unsigned>(desc_tmp);
-
-    bufferFree(x.data);
-    bufferFree(y.data);
-    bufferFree(score.data);
-    bufferFree(ori.data);
-    bufferFree(size.data);
+    return nfeat;
 }
 
-#define INSTANTIATE(T, convAccT)\
-    template void orb<T, convAccT>(features& feat, Array<unsigned>** desc, const Array<T>& in,  \
-                                   const float fast_thr, const unsigned max_feat,               \
-                                   const float scl_fctr, const unsigned levels);
 
-INSTANTIATE(float , float)
+#define INSTANTIATE(T, convAccT)                                                        \
+    template unsigned orb<T, convAccT>(Array<float> &x, Array<float> &y,                \
+                                       Array<float> &score, Array<float> &ori,          \
+                                       Array<float> &size, Array<uint> &desc,           \
+                                       const Array<T>& image,                           \
+                                       const float fast_thr, const unsigned max_feat,   \
+                                       const float scl_fctr, const unsigned levels,     \
+                                       const bool blur_img);
+
+INSTANTIATE(float , float )
 INSTANTIATE(double, double)
-INSTANTIATE(char  , float)
-INSTANTIATE(int   , float)
-INSTANTIATE(uint  , float)
-INSTANTIATE(uchar , float)
 
 }

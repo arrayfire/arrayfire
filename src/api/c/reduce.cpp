@@ -26,7 +26,7 @@ using namespace detail;
 template<af_op_t op, typename Ti, typename To>
 static inline af_array reduce(const af_array in, const int dim)
 {
-    return getHandle(*reduce<op,Ti,To>(getArray<Ti>(in), dim));
+    return getHandle(reduce<op,Ti,To>(getArray<Ti>(in), dim));
 }
 
 template<af_op_t op, typename To>
@@ -153,6 +153,11 @@ af_err af_max(af_array *out, const af_array in, const int dim)
 af_err af_sum(af_array *out, const af_array in, const int dim)
 {
     return reduce_promote<af_add_t>(out, in, dim);
+}
+
+af_err af_product(af_array *out, const af_array in, const int dim)
+{
+    return reduce_promote<af_mul_t>(out, in, dim);
 }
 
 af_err af_count(af_array *out, const af_array in, const int dim)
@@ -313,6 +318,11 @@ af_err af_sum_all(double *real, double *imag, const af_array in)
     return reduce_all_promote<af_add_t>(real, imag, in);
 }
 
+af_err af_product_all(double *real, double *imag, const af_array in)
+{
+    return reduce_all_promote<af_mul_t>(real, imag, in);
+}
+
 af_err af_count_all(double *real, double *imag, const af_array in)
 {
     return reduce_all_type<af_notzero_t, uint>(real, imag, in);
@@ -336,12 +346,12 @@ static inline void ireduce(af_array *res, af_array *loc,
     dim4 odims = In.dims();
     odims[dim] = 1;
 
-    Array<T> *Res = createEmptyArray<T>(odims);
-    Array<uint> *Loc = createEmptyArray<uint>(odims);
-    ireduce<op, T>(*Res, *Loc, In, dim);
+    Array<T> Res = createEmptyArray<T>(odims);
+    Array<uint> Loc = createEmptyArray<uint>(odims);
+    ireduce<op, T>(Res, Loc, In, dim);
 
-    *res = getHandle(*Res);
-    *loc = getHandle(*Loc);
+    *res = getHandle(Res);
+    *loc = getHandle(Loc);
 }
 
 template<af_op_t op>

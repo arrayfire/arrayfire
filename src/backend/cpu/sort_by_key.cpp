@@ -38,14 +38,14 @@ namespace cpu
         if(isAscending) { op = less<Tk>(); }
 
         // Get pointers and initialize original index locations
-        Array<uint> *oidx = createValueArray(ikey.dims(), 0u);
-            uint *oidx_ptr = oidx->get();
+        Array<uint> oidx = createValueArray(ikey.dims(), 0u);
+            uint *oidx_ptr = oidx.get();
               Tk *okey_ptr = okey.get();
               Tv *oval_ptr = oval.get();
         const Tk *ikey_ptr = ikey.get();
         const Tv *ival_ptr = ival.get();
 
-        std::vector<uint> seq_vec(oidx->dims()[0]);
+        std::vector<uint> seq_vec(oidx.dims()[0]);
         std::iota(seq_vec.begin(), seq_vec.end(), 0);
 
         const Tk *comp_ptr = nullptr;
@@ -54,14 +54,14 @@ namespace cpu
         for(dim_type w = 0; w < ikey.dims()[3]; w++) {
             dim_type okeyW = w * okey.strides()[3];
             dim_type ovalW = w * oval.strides()[3];
-            dim_type oidxW = w * oidx->strides()[3];
+            dim_type oidxW = w * oidx.strides()[3];
             dim_type ikeyW = w * ikey.strides()[3];
             dim_type ivalW = w * ival.strides()[3];
 
             for(dim_type z = 0; z < ikey.dims()[2]; z++) {
                 dim_type okeyWZ = okeyW + z * okey.strides()[2];
                 dim_type ovalWZ = ovalW + z * oval.strides()[2];
-                dim_type oidxWZ = oidxW + z * oidx->strides()[2];
+                dim_type oidxWZ = oidxW + z * oidx.strides()[2];
                 dim_type ikeyWZ = ikeyW + z * ikey.strides()[2];
                 dim_type ivalWZ = ivalW + z * ival.strides()[2];
 
@@ -69,7 +69,7 @@ namespace cpu
 
                     dim_type okeyOffset = okeyWZ + y * okey.strides()[1];
                     dim_type ovalOffset = ovalWZ + y * oval.strides()[1];
-                    dim_type oidxOffset = oidxWZ + y * oidx->strides()[1];
+                    dim_type oidxOffset = oidxWZ + y * oidx.strides()[1];
                     dim_type ikeyOffset = ikeyWZ + y * ikey.strides()[1];
                     dim_type ivalOffset = ivalWZ + y * ival.strides()[1];
 
@@ -98,8 +98,8 @@ namespace cpu
     void sort_by_key(Array<Tk> &okey, Array<Tv> &oval,
                const Array<Tk> &ikey, const Array<Tv> &ival, const uint dim)
     {
-        okey = *createEmptyArray<Tk>(ikey.dims());
-        oval = *createEmptyArray<Tv>(ival.dims());
+        okey = createEmptyArray<Tk>(ikey.dims());
+        oval = createEmptyArray<Tv>(ival.dims());
         switch(dim) {
             case 0: sort0_by_key<Tk, Tv, isAscending>(okey, oval, ikey, ival);
                     break;
