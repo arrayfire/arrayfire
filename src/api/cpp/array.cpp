@@ -434,7 +434,7 @@ namespace af
             other_arr = (dim == -1 || !is_reordered) ? other_arr : gforReorder(other_arr, dim);
 
             af_array tmp;
-            AF_THROW(af_assign(&tmp, arr, nd, afs, other_arr));
+            AF_THROW(af_assign_seq(&tmp, arr, nd, afs, other_arr));
             parent->set(tmp);
 
             if (dim >= 0 && is_reordered) AF_THROW(af_destroy_array(other_arr));
@@ -466,14 +466,14 @@ namespace af
             int dim = gforDim(this->s);                                 \
             AF_THROW(af_weak_copy(&lhs, this->arr));                    \
             unsigned ndims = numDims(lhs);                              \
-            /* FIXME: Unify with other af_assign */                     \
+            /* FIXME: Unify with other af_assign_seq */                     \
             array tmp = *this op1 other;                                \
             af_seq afs[4];                                              \
             getSeq(afs);                                                \
             af_array tmp_arr = tmp.get();                               \
             af_array out = 0;                                           \
             tmp_arr = (dim == -1) ? tmp_arr : gforReorder(tmp_arr, dim); \
-            AF_THROW(af_assign(&out, lhs, ndims, afs, tmp_arr));        \
+            AF_THROW(af_assign_seq(&out, lhs, ndims, afs, tmp_arr));        \
             AF_THROW(af_destroy_array(this->arr));                      \
             if (dim >= 0) AF_THROW(af_destroy_array(tmp_arr));          \
             this->arr = lhs;                                            \

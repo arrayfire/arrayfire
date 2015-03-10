@@ -77,7 +77,7 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
         TYPE_ERROR(1, iType);
 }
 
-af_err af_assign(af_array *out,
+af_err af_assign_seq(af_array *out,
                  const af_array lhs, const unsigned ndims,
                  const af_seq *index, const af_array rhs)
 {
