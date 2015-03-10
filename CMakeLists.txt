@@ -101,3 +101,9 @@ INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/" DESTINATION include
     PATTERN "*.hpp"
     PATTERN ".gitignore" EXCLUDE
 )
+
+## The ArrayFire version file is generated and won't be included above, install
+## it separately.
+INSTALL(FILES 
+    ${CMAKE_SOURCE_DIR}/include/af/version.h DESTINATION include/af/
+)
