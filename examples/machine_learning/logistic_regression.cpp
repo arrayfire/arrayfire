@@ -33,33 +33,31 @@ array sigmoid(const array &val)
 }
 
 // Predict based on given parameters
-array predict(const array &X, const array &Theta)
+array predict(const array &X, const array &Weights)
 {
-    array Z = matmul(X, Theta);
-    array H = sigmoid(Z);
-    return H;
+    return sigmoid(matmul(X, Weights));
 }
 
-void cost(array &J, array &dJ, const array &Theta,
+void cost(array &J, array &dJ, const array &Weights,
           const array &X, const array &Y, double lambda = 1.0)
 {
     // Number of samples
     int m = Y.dims(0);
 
-    // Make the lambda corresponding to Theta(0) == 0
-    array lambdat = constant(lambda, Theta.dims());
+    // Make the lambda corresponding to Weights(0) == 0
+    array lambdat = constant(lambda, Weights.dims());
     lambdat(0, span) = 0;
 
     // Get the prediction
-    array H = predict(X, Theta);
+    array H = predict(X, Weights);
 
     // Calculate cost
     J =  -sum(Y * log(H) + (1 - Y) * log(1 - H)) / m;
-    J = J + 0.5 * sum(lambdat * Theta * Theta) / m;
+    J = J + 0.5 * sum(lambdat * Weights * Weights) / m;
 
     // Find the gradient of cost
     array D = (H - Y);
-    dJ = (matmul(X.T(), D) + lambdat * Theta) / m;
+    dJ = (matmul(X.T(), D) + lambdat * Weights) / m;
 }
 
 array train(const array &X, const array &Y,
@@ -67,24 +65,44 @@ array train(const array &X, const array &Y,
 {
 
     // Initialize parameters to 0
-    array Theta = constant(0, X.dims(1), Y.dims(1));
+    array Weights = constant(0, X.dims(1), Y.dims(1));
 
     array J, dJ;
     for (int i = 0; i < maxiter; i++) {
 
         // Get the cost and gradient
-        cost(J, dJ, Theta, X, Y, lambda);
+        cost(J, dJ, Weights, X, Y, lambda);
         if (alltrue<bool>(J < 0.1)) break;
 
         // Update the parameters via gradient descent
-        Theta = Theta - alpha * dJ;
+        Weights = Weights - alpha * dJ;
     }
 
-    return Theta;
+    return Weights;
 }
 
+void benchmark_lr(const array &train_feats,
+                          const array &train_targets,
+                          const array test_feats)
+{
+    timer::start();
+    array Weights = train(train_feats, train_targets, 1.0, 1.0, 500);
+    af::sync();
+    printf("Training time: %4.4lf s\n", timer::stop());
+
+    timer::start();
+    const int iter = 100;
+    for (int i = 0; i < iter; i++) {
+        array test_outputs  = predict(test_feats , Weights);
+        test_outputs.eval();
+    }
+    af::sync();
+    printf("Prediction time: %4.4lf s\n", timer::stop() / iter);
+}
+
+
 // Demo of one vs all logistic regression
-int logit_demo(bool console, int perc)
+int lr_demo(bool console, int perc)
 {
     array train_images, train_targets;
     array test_images, test_targets;
@@ -109,17 +127,19 @@ int logit_demo(bool console, int perc)
     test_feats  = join(1, constant(1, num_test , 1), test_feats );
 
     // Train logistic regression parameters
-    array Theta = train(train_feats, train_targets, 1.0, 1.0, 500);
+    array Weights = train(train_feats, train_targets, 1.0, 1.0, 500);
 
     // Predict the results
-    array train_outputs = predict(train_feats, Theta);
-    array test_outputs  = predict(test_feats , Theta);
+    array train_outputs = predict(train_feats, Weights);
+    array test_outputs  = predict(test_feats , Weights);
 
     printf("Accuracy on training data: %2.2f\n",
            accuracy(train_outputs, train_targets ));
 
     printf("Accuracy on testing data: %2.2f\n",
            accuracy(test_outputs , test_targets ));
+
+    benchmark_lr(train_feats, train_targets, test_feats);
 
     if (!console) {
         test_outputs = test_outputs.T();
@@ -140,7 +160,7 @@ int main(int argc, char** argv)
 
         af::deviceset(device);
         af::info();
-        return logit_demo(console, perc);
+        return lr_demo(console, perc);
 
     } catch (af::exception &ae) {
         std::cout << ae.what() << std::endl;
