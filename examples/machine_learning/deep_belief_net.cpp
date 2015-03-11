@@ -352,7 +352,7 @@ int dbn_demo(bool console, int perc)
     if (!console) {
         // Get 20 random test images.
         test_output = test_output.T();
-        display_results<true>(test_images, test_output, 20);
+        display_results<true>(test_images, test_output, test_target.T(), 20);
     }
 
     return 0;
