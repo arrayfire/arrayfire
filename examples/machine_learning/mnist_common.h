@@ -25,7 +25,7 @@ std::string classify(af::array arr, int k)
 {
     std::stringstream ss;
     if (expand_labels) {
-        af::array vec = arr(af::span, k);
+        af::array vec = arr(af::span, k).as(f32);
         float *h_vec = vec.host<float>();
         std::vector<sort_type> data;
 
@@ -36,7 +36,7 @@ std::string classify(af::array arr, int k)
 
         ss << data[0].second;
     } else {
-        ss << (int)(arr(k).scalar<float>());
+        ss << (int)(arr(k).as(f32).scalar<float>());
     }
     return ss.str();
 }
@@ -108,9 +108,12 @@ static af::array randidx(int num, int total)
 }
 #endif
 
+
+
 template<bool expand_labels>
-static void display_results(af::array &test_images,
-                            af::array &test_output,
+static void display_results(const af::array &test_images,
+                            const af::array &test_output,
+                            const af::array &test_actual,
                             int num_display)
 {
 #if 0
@@ -137,6 +140,20 @@ static void display_results(af::array &test_images,
         getchar();
     }
 #else
-    printf("Graphics not implemented yet\n");
+    using namespace af;
+    for(int i = 0; i < num_display; i++) {
+        std::cout << "Predicted: " << classify<expand_labels>(test_output, i) << std::endl;
+        std::cout << "Actual: " << classify<expand_labels>(test_actual, i) << std::endl;
+
+        unsigned char* img = (test_images(span, span, i) > 0.1f).as(u8).host<unsigned char>();
+        for(int j = 0; j < 28; j++) {
+            for(int k = 0; k < 28; k++) {
+                std::cout << (img[j*28+k] ? "\u2588" : " ") << " ";
+            }
+            std::cout << std::endl;
+        }
+        delete[] img;
+        getchar();
+    }
 #endif
 }
