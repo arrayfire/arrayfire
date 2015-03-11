@@ -101,6 +101,7 @@ ENDIF()
 
 ## Install step
 INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/" DESTINATION include
+    COMPONENT headers
     FILES_MATCHING
     PATTERN "*.h"
     PATTERN "*.hpp"
@@ -111,6 +112,7 @@ INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/" DESTINATION include
 ## it separately.
 INSTALL(FILES 
     ${CMAKE_SOURCE_DIR}/include/af/version.h DESTINATION include/af/
+    COMPONENT headers
 )
 
 ## configuration to be used from the binary directory directly
@@ -136,4 +138,40 @@ CONFIGURE_FILE(
     @ONLY)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/ArrayFireConfigVersion.cmake
-    DESTINATION ${ARRAYFIRE_CMAKE_DIR})
+    DESTINATION ${ARRAYFIRE_CMAKE_DIR}
+    COMPONENT cmake)
+
+# CPack package generation
+# General settings
+SET(CPACK_GENERATOR "TGZ")
+SET(CPACK_PACKAGE_NAME "arrayfire")
+SET(CPACK_PACKAGE_VERSION 3.0beta)
+SET(CPACK_PACKAGE_VERSION_MAJOR "3")
+SET(CPACK_PACKAGE_VERSION_MINOR "0")
+SET(CPACK_PACKAGE_VERSION_PATCH "beta")
+SET(CPACK_PACKAGE_CONTACT "ArrayFire Development Group <technical@arrayfire.com>")
+# Long description of the package
+SET(CPACK_PACKAGE_DESCRIPTION 
+"ArrayFire is a high performance software library for parallel computing 
+with an easy-to-use API. Its array based function set makes parallel 
+programming simple.
+
+ArrayFire's multiple backends (CUDA, OpenCL and native CPU) make it 
+platform independent and highly portable.
+
+A few lines of code in ArrayFire can replace dozens of lines of parallel 
+computing code, saving you valuable time and lowering development costs.")
+# Short description of the package
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A high performance library for parallel
+computing with an easy-to-use API.")
+
+# Useful descriptions for components 
+SET(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "ArrayFire libraries")
+SET(CPACK_COMPONENT_DOCUMENTATION_NAME "Doxygen documentation")
+SET(CPACK_COMPONENT_HEADERS_NAME "C/C++ headers")
+SET(CPACK_COMPONENT_CMAKE_NAME "CMake support")
+# Set the default components installed in the package 
+SET(CPACK_COMPONENTS_ALL libraries headers documentation cmake)
+
+# Call to CPACK
+INCLUDE(CPack)

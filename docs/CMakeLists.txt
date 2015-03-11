@@ -24,5 +24,16 @@ ADD_CUSTOM_TARGET(docs
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Generating Documentation"
     VERBATIM)
-INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ DESTINATION share/doc)
 
+# Install Doxygen documentation
+INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ DESTINATION share/doc/arrayfire
+    COMPONENT documentation
+    PATTERN "*"
+    PATTERN "CMakeFiles" EXCLUDE
+    PATTERN "man" EXCLUDE
+)
+
+# Install man pages
+#INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/man DESTINATION share/
+#    COMPONENT documentation
+#)
