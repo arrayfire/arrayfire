@@ -31,19 +31,19 @@ FOREACH(FILE ${FILES})
 
     # Next we build each example using every backend.
     if(${ArrayFire_CPU_FOUND})  # variable defined by FIND(ArrayFire ...)
-        BUILD_EXAMPLE(${EXAMPLE} ${FILE} cpu ${AF_CPU_LIBRARIES})
+        BUILD_EXAMPLE(${EXAMPLE} ${FILE} cpu ${ArrayFire_CPU_LIBRARIES})
     elseif(TARGET afcpu)        # variable defined by the ArrayFire build tree
         BUILD_EXAMPLE(${EXAMPLE} ${FILE} cpu afcpu)
     endif()
 
     if(${ArrayFire_CUDA_FOUND})  # variable defined by FIND(ArrayFire ...)
-        BUILD_EXAMPLE(${EXAMPLE} ${FILE} cuda ${AF_CUDA_LIBRARIES})
+        BUILD_EXAMPLE(${EXAMPLE} ${FILE} cuda ${ArrayFire_CUDA_LIBRARIES})
     elseif(TARGET afcuda)        # variable defined by the ArrayFire build tree
         BUILD_EXAMPLE(${EXAMPLE} ${FILE} cuda afcuda)
     endif()
     
     if(${ArrayFire_OPENCL_FOUND})  # variable defined by FIND(ArrayFire ...)
-        BUILD_EXAMPLE(${EXAMPLE} ${FILE} opencl ${AF_OPENCL_LIBRARIES})
+        BUILD_EXAMPLE(${EXAMPLE} ${FILE} opencl ${ArrayFire_OPENCL_LIBRARIES})
     elseif(TARGET afopencl)        # variable defined by the ArrayFire build tree
         BUILD_EXAMPLE(${EXAMPLE} ${FILE} opencl afopencl)
     endif()
