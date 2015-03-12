@@ -78,6 +78,8 @@ namespace af
     AFAPI array range(const dim_type d0, const dim_type d1 = 1, const dim_type d2 = 1,
                       const dim_type d3 = 1, const int seq_dim = -1, dtype ty=f32);
 
+    AFAPI array iota(const dim4 dims, const dim4 tile_dims = dim4(1), dtype ty=f32);
+
     AFAPI array diag(const array &in, const int num = 0, const bool extract = true);
 
 }
@@ -99,6 +101,9 @@ extern "C" {
     // Create sequence array
     AFAPI af_err af_range(af_array *arr, const unsigned ndims, const dim_type * const dims,
                           const int seq_dim, const af_dtype type);
+
+    AFAPI af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const dims,
+                         const unsigned t_ndims, const dim_type * const tdims, const af_dtype type);
 
     // Generate Random Numbers using uniform distribution
     AFAPI af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);

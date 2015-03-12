@@ -20,6 +20,7 @@
 #include <random.hpp>
 #include <math.hpp>
 #include <range.hpp>
+#include <iota.hpp>
 #include <identity.hpp>
 #include <diagonal.hpp>
 
@@ -429,6 +430,47 @@ af_err af_range(af_array *result, const unsigned ndims, const dim_type * const d
         case s32:   out = range_<int    >(d, seq_dim); break;
         case u32:   out = range_<uint   >(d, seq_dim); break;
         case u8:    out = range_<uchar  >(d, seq_dim); break;
+        default:    TYPE_ERROR(4, type);
+        }
+        std::swap(*result, out);
+    }
+    CATCHALL
+    return AF_SUCCESS;
+}
+
+template<typename T>
+static inline af_array iota_(const dim4 &dims, const dim4 &tile_dims)
+{
+    return getHandle(iota<T>(dims, tile_dims));
+}
+
+//Strong Exception Guarantee
+af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const dims,
+               const unsigned t_ndims, const dim_type * const tdims, const af_dtype type)
+{
+    af_array out;
+    try {
+        AF_CHECK(af_init());
+
+        DIM_ASSERT(1, ndims > 0 && ndims <= 4);
+        DIM_ASSERT(3, t_ndims > 0 && t_ndims <= 4);
+        dim4 d;
+        dim4 t;
+        for(unsigned i = 0; i < 4; i++) {
+            d[i] = dims[i];
+            DIM_ASSERT(2, d[i] >= 1);
+        }
+        for(unsigned i = 0; i < 4; i++) {
+            t[i] = tdims[i];
+            DIM_ASSERT(4, t[i] >= 1);
+        }
+
+        switch(type) {
+        case f32:   out = iota_<float  >(d, t); break;
+        case f64:   out = iota_<double >(d, t); break;
+        case s32:   out = iota_<int    >(d, t); break;
+        case u32:   out = iota_<uint   >(d, t); break;
+        case u8:    out = iota_<uchar  >(d, t); break;
         default:    TYPE_ERROR(4, type);
         }
         std::swap(*result, out);
