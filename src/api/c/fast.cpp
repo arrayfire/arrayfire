@@ -54,7 +54,7 @@ af_err af_fast(af_features *out, const af_array in, const float thr,
         ArrayInfo info = getInfo(in);
         af::dim4 dims  = info.dims();
 
-        ARG_ASSERT(2, (dims[0] >= (2*edge+1) || dims[1] >= (2*edge+1)));
+        ARG_ASSERT(2, (dims[0] >= (int)(2*edge+1) || dims[1] >= (int)(2*edge+1)));
         ARG_ASSERT(3, thr > 0.0f);
         ARG_ASSERT(4, (arc_length >= 9 && arc_length <= 16));
         ARG_ASSERT(6, (feature_ratio > 0.0f && feature_ratio <= 1.0f));
