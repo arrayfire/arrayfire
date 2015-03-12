@@ -25,14 +25,11 @@ namespace cuda
 
         template<typename T>
         __global__
-        void range_kernel(Param<T> out, const int dim,
-                          const dim_type blocksPerMatX, const dim_type blocksPerMatY)
+        void iota_kernel(Param<T> out,
+                         const dim_type s0, const dim_type s1, const dim_type s2, const dim_type s3,
+                         const dim_type t0, const dim_type t1, const dim_type t2, const dim_type t3,
+                         const dim_type blocksPerMatX, const dim_type blocksPerMatY)
         {
-            const int mul0 = (dim == 0);
-            const int mul1 = (dim == 1);
-            const int mul2 = (dim == 2);
-            const int mul3 = (dim == 3);
-
             const dim_type oz = blockIdx.x / blocksPerMatX;
             const dim_type ow = blockIdx.y / blocksPerMatY;
 
@@ -50,19 +47,19 @@ namespace cuda
 
             const dim_type ozw = ow * out.strides[3] + oz * out.strides[2];
 
-            T val = mul3 * ow + mul2 * oz;
+            T val = (ow / t3) * s2 * s1 * s0;
+            val  += (oz / t2) * s1 * s0;
 
             const dim_type incy = blocksPerMatY * blockDim.y;
             const dim_type incx = blocksPerMatX * blockDim.x;
 
             for(dim_type oy = yy; oy < out.dims[1]; oy += incy) {
-                val += mul1 * oy;
                 dim_type oyzw = ozw + oy * out.strides[1];
+                T valY = val + (oy / t1) * s0;
                 for(dim_type ox = xx; ox < out.dims[0]; ox += incx) {
                     dim_type oidx = oyzw + ox;
-                    val += ox * mul0;
 
-                    out.ptr[oidx] = val;
+                    out.ptr[oidx] = valY + (ox % s0);
                 }
             }
         }
@@ -72,7 +69,7 @@ namespace cuda
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
         template<typename T>
-        void range(Param<T> out, const int dim)
+        void iota(Param<T> out, const dim4 &sdims, const dim4 &tdims)
         {
             dim3 threads(TX, TY, 1);
 
@@ -82,7 +79,8 @@ namespace cuda
                         blocksPerMatY * out.dims[3],
                         1);
 
-            range_kernel<T><<<blocks, threads>>>(out, dim, blocksPerMatX, blocksPerMatY);
+            iota_kernel<T><<<blocks, threads>>>(out, sdims[0], sdims[1], sdims[2], sdims[3],
+                        tdims[0], tdims[1], tdims[2], tdims[3], blocksPerMatX, blocksPerMatY);
             POST_LAUNCH_CHECK();
         }
     }

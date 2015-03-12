@@ -14,5 +14,7 @@
 namespace opencl
 {
     template<typename T>
-    Array<T> range(const dim4& dim, const int seq_dim = -1);
+    Array<T> iota(const dim4 &dim, const dim4 &tile_dims = dim4(1));
 }
+
+

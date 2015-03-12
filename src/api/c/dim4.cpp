@@ -142,6 +142,34 @@ dim4::operator-=(const dim4 &other)
     return *this;
 }
 
+dim4 operator+(const dim4& first, const dim4& second)
+{
+    dim4 dims;
+    for(unsigned i = 0; i < 4; i++) {
+        dims[i] = first[i] + second[i];
+    }
+    return dims;
+}
+
+dim4 operator-(const dim4& first, const dim4& second)
+{
+    dim4 dims;
+    for(unsigned i = 0; i < 4; i++) {
+        dims[i] = first[i] - second[i];
+    }
+    return dims;
+}
+
+dim4 operator*(const dim4& first, const dim4& second)
+{
+    dim4 dims;
+    for(unsigned i = 0; i < 4; i++) {
+        dims[i] = first[i] * second[i];
+    }
+    return dims;
+}
+
+
 bool
 isEnd(const af_seq &seq)    { return (seq.end <= -1); }
 

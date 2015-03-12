@@ -8,38 +8,36 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <range.hpp>
+#include <iota.hpp>
 #include <math.hpp>
 #include <stdexcept>
 #include <err_cpu.hpp>
 #include <algorithm>
 #include <numeric>
 
+#include <iostream>
+using namespace std;
+
 namespace cpu
 {
     ///////////////////////////////////////////////////////////////////////////
     // Kernel Functions
     ///////////////////////////////////////////////////////////////////////////
-    template<typename T, int dim>
-    void range(T *out, const dim4 &dims, const dim4 &strides)
+    template<typename T>
+    void iota(T *out, const dim4 &dims, const dim4 &strides, const dim4 &sdims, const dim4 &tdims)
     {
         for(dim_type w = 0; w < dims[3]; w++) {
             dim_type offW = w * strides[3];
+            T valW = (w / tdims[3]) * sdims[2] * sdims[1] * sdims[0];
             for(dim_type z = 0; z < dims[2]; z++) {
                 dim_type offWZ = offW + z * strides[2];
+                T valZ = valW + (z / tdims[2]) * sdims[1] * sdims[0];
                 for(dim_type y = 0; y < dims[1]; y++) {
                     dim_type offWZY = offWZ + y * strides[1];
+                    T valY = valZ + (y / tdims[1]) * sdims[0];
                     for(dim_type x = 0; x < dims[0]; x++) {
                         dim_type id = offWZY + x;
-                        if(dim == 0) {
-                            out[id] = x;
-                        } else if(dim == 1) {
-                            out[id] = y;
-                        } else if(dim == 2) {
-                            out[id] = z;
-                        } else if(dim == 3) {
-                            out[id] = w;
-                        }
+                        out[id] = valY + (x % sdims[0]);
                     }
                 }
             }
@@ -50,30 +48,18 @@ namespace cpu
     // Wrapper Functions
     ///////////////////////////////////////////////////////////////////////////
     template<typename T>
-    Array<T> range(const dim4& dims, const int seq_dim)
+    Array<T> iota(const dim4 &dims, const dim4 &tile_dims)
     {
-        // Set dimension along which the sequence should be
-        // Other dimensions are simply tiled
-        int _seq_dim = seq_dim;
-        if(seq_dim < 0) {
-            _seq_dim = 0;   // column wise sequence
-        }
+        dim4 outdims = dims * tile_dims;
 
-        Array<T> out = createEmptyArray<T>(dims);
-        switch(_seq_dim) {
-            case 0: range<T, 0>(out.get(), out.dims(), out.strides()); break;
-            case 1: range<T, 1>(out.get(), out.dims(), out.strides()); break;
-            case 2: range<T, 2>(out.get(), out.dims(), out.strides()); break;
-            case 3: range<T, 3>(out.get(), out.dims(), out.strides()); break;
-            default : AF_ERROR("Invalid rep selection", AF_ERR_INVALID_ARG);
-        }
-
+        Array<T> out = createEmptyArray<T>(outdims);
+        iota<T>(out.get(), out.dims(), out.strides(), dims, tile_dims);
 
         return out;
     }
 
-#define INSTANTIATE(T)                                                      \
-    template Array<T> range<T>(const af::dim4 &dims, const int seq_dims);   \
+#define INSTANTIATE(T)                                                          \
+    template Array<T> iota<T>(const af::dim4 &dims, const af::dim4 &tile_dims); \
 
     INSTANTIATE(float)
     INSTANTIATE(double)
