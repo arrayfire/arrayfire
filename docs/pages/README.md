@@ -24,12 +24,12 @@ kernels.
 #### Support for multiple domains
 
 ArrayFire contains [hundreds of functions](modules.htm) across various domains including:
-- [Matrix Arithmetic]()
-- [Vector Algorithms]()
-- [Signal Processing]()
-- [Linear Algebra]()
-- [Statistics]()
-- [Image Processing and Computer Vision]()
+- [Vector Algorithms](\ref vector_mat)
+- [Image Processing](\ref image_mat)
+- [Computer Vision](\ref cv_mat)
+- [Signal Processing](\ref signal_mat)
+- [Linear Algebra](\ref linalg_mat)
+- [Statistics](\ref stats_mat)
 - and more.
 
 Each function is hand-tuned by ArrayFire
