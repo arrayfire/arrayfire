@@ -4,66 +4,54 @@ Release Notes {#releasenotes}
 Major Updates
 -------------
 
-* Support for Mac OS X
-* New Language support ([available on github](https://github.com/arrayfire))
-    * [ArrayFire for R!](https://github.com/arrayfire/arrayfire_r)
-    * [ArrayFire for Fortran](https://github.com/arrayfire/arrayfire_fortran)<sup>#</sup>
-    * [ArrayFire for Java](https://github.com/arrayfire/arrayfire_java)
-* [ArrayFire Extras on Github](https://github.com/arrayfire)
-    * [Rolling updates to examples](https://github.com/arrayfire/arrayfire_examples)
-    * [OpenGL interop example](https://github.com/arrayfire/arrayfire_opengl_interop)
-
-<sup>#</sup> ArrayFire for Fortan has been removed from the installed library,
-but can be downloaded from the ArrayFire Extras GitHub page linked above.
+* ArrayFire is now open source
+* New backend: CPU fallback for systems without GPUs
+* A new and improved C api
+* Support for 64 bit integers
 
 Function Additions
 ------------------
-* Image transformation (warp affine) functions
-    * transform()
-        * affine and inverse affine transform of an image
-    * translate()
-        * translate an image using affine transforms
-    * scale()
-        * scale an image using affine transforms
-    * skew()
-        * skew an image using affine transforms
-* Coordinate transformation (homogeneous transformation) functions
-    * transform_coords()
-        * Upto 3D homogeneous transformations
-    * rotate_coords()
-        * rotation matrix wrapper for homogeneous coordinate transformation
+* Data generation functions
+    * range()
+    * iota()
+
+* Computer Vision Algorithms
+    * fast()
+        * FAST feature detector
+    * orb()
+        * ORB A feature descriptor extractor
+
+* Image Processing
+    * convolve1(), convolve2(), convolve3()
+        * Specialized versions of convolve() to enable better batch support
+    * matchTemplate()
+        * Match a kernel in an image
+    * sobel()
+        * Get sobel gradients of an image
+
+* Matrix Multiply
+    * matmulNT(), matmulTN(), matmulTT()
+        * Specialized versions of matmul() for transposed inputs
+
+* Other functions
+    * lookup() - lookup indices from a table
+
+Deprecated Function APIs
+------------------------
+
+Deprecated APIs are in af/compatible.h
+
+* devicecount() changed to getDeviceCount()
+* deviceset() changed to setDevice()
+* deviceget() changed to getDevice()
+* loadimage() changed to loadImage()
+* saveimage() changed to saveImage()
+* gaussiankernel() changed to gaussianKernel()
 
 API Changes
 ---------------------
-* rotate()
-    * Added optional 4th parameter `recenter`
-* af_filter removed
-
-Feature Improvements
---------------------
-* approx1() and approx2() now support nearest interpolation
-* rotate(), resize(), convolve() work for stack of images(3D) and gfor
-* new indexing functions to add support for 4-th dimension gfor
-* host pinned memory support for OpenCL
-
-Bug Fixes
----------
-* loadimage()
-    * fixed bug with grayscale image reading
-* gaussiankernel()
-    * fixed computation of gaussian kernel values
-* resize()
-    * fixed resize in OpenCL
-* medfilt()
-    * fixed to handle more data types
-* rotate()
-    * fixed rounding issue on Tahiti GPUs
-* approx1()
-    * fixed for gfor use
-* flip()
-    * fixed launch configuration
-* indexing now works on intel GPUs
+* `print` is now af_print()
 
 Performance Improvements
 ------------------------
-* rotate() rewritten to improve performance
+* Improvements across the board for OpenCL backend

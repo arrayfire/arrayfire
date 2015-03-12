@@ -3,124 +3,119 @@ Overview {#mainpage}
 
 [TOC]
 
-Make your code run faster
--------------------------
+## About ArrayFire
 
-ArrayFire will make your code run as fast as possible. It beats
-efforts to manually write CUDA or OpenCL kernels. It beats compiler
-optimizations. It beats other libraries. ArrayFire is the best way to
-accelerate your code.
+ArrayFire is a high performance software library for parallel computing with an easy-to-use API. Its array based function set makes parallel programming more accessible.
 
-ArrayFire developers are amazingly talented at accelerating code;
-that's all we do - ever!
+## Easy to use
 
-With minimal effort
--------------------
-
-The [array](\ref construct) object is beautifully simple. It's fun to
-use!
+The [array](\ref construct) object is beautifully simple.
 
 Array-based notation effectively expresses computational algorithms in
 readable math-resembling notation. You _do not_ need expertise in
-parallel programming to use ArrayFire. A few lines of ArrayFire code
+parallel programming to use ArrayFire.
+
+A few lines of ArrayFire code
 accomplishes what can take 100s of complicated lines in CUDA or OpenCL
 kernels.
 
-Save yourself from verbose templates, ineffective and complicated
-compiler directives, and time-wasting low-level development. Arrays
-are the best possible way to accelerate your code.
+## ArrayFire is extensive!
 
-On CUDA or OpenCL devices (e.g. GPUs, CPUs, APUs, FPGAs)
---------------------------------------------------------
+#### Support for multiple domains
 
-ArrayFire supports CUDA and OpenCL capable devices. Each ArrayFire
-installation comes with a CUDA version (named 'libafcu') for [NVIDIA
-GPUs](https://developer.nvidia.com/cuda-gpus) and an OpenCL version
-(named 'libafcl') for [OpenCL
-devices](http://www.khronos.org/conformance/adopters/conformant-products#opencl).
+ArrayFire contains [hundreds of functions](modules.htm) across various domains including:
+- [Matrix Arithmetic]()
+- [Vector Algorithms]()
+- [Signal Processing]()
+- [Linear Algebra]()
+- [Statistics]()
+- [Image Processing and Computer Vision]()
+- and more.
 
-You can easily switch between CUDA or OpenCL with ArrayFire, without
-changing your code.
-
-For common science, engineering, and financial functions
-------------------------------------------------------------
-
-ArrayFire contains [hundreds of functions](modules.htm) for matrix
-arithmetic, signal processing, linear algebra, statistics, image
-processing, and more. Each function is hand-tuned by ArrayFire
+Each function is hand-tuned by ArrayFire
 developers with all possible low-level optimizations.
 
-For common data shapes, sizes, and types
---------------------------------------------
+#### Support for various data types and sizes
 
 ArrayFire operates on common [data shapes and sizes](\ref gettingstarted_indexing),
 including vectors, matrices, volumes, and
-N-dimensional arrays. It supports common [data types](\ref gettingstarted_datatypes),
+
+It supports common [data types](\ref gettingstarted_datatypes),
 including single and double precision floating
 point values, complex numbers, booleans, and 32-bit signed and
 unsigned integers.
 
-With available integration into CUDA or OpenCL kernel code
----------------------------------------------------------------
+#### Extending ArrayFire
 
 ArrayFire can be used as a stand-alone application or integrated with
 existing CUDA or OpenCL code. All ArrayFire `arrays` can be
 interchanged with other CUDA or OpenCL data structures.
 
-With awesome automatic optimizations
-------------------------------------
+## Code once, run anywhere!
+
+With support for x86, ARM, CUDA, and OpenCL devices, ArrayFire supports for a comprehensive list of devices.
+
+Each ArrayFire installation comes with:
+ - a CUDA version (named 'libafcuda') for [NVIDIA
+ GPUs](https://developer.nvidia.com/cuda-gpus),
+ - an OpenCL version (named 'libafopencl') for [OpenCL devices](http://www.khronos.org/conformance/adopters/conformant-products#opencl)
+ - a CPU version (named 'libafcpu') to fall back to when CUDA or OpenCL devices are not available.
+
+## ArrayFire is highly efficient
+
+#### Vectorized and Batched Operations
+
+ArrayFire supports batched operations on N-dimensional arrays.
+Batch operations in ArrayFire are run in parallel ensuring an optimal usage of your CUDA or OpenCL device.
+
+You can get the best performance out of ArrayFire using [vectorization techniques]().
+
+ArrayFire can also execute loop iterations in parallel with
+[the gfor function](\ref gfor).
+
+#### Just in Time compilation
 
 ArrayFire performs run-time analysis of your code to increase
 arithmetic intensity and memory throughput, while avoiding unnecessary
 temporary allocations. It has an awesome internal JIT compiler to make
 optimizations for you.
 
-With parallel for-loops
------------------------
+Read more about how [ArrayFire JIT](\ref jit) can improve the performance in your application.
 
-ArrayFire can also execute loop iterations in parallel with
-[the gfor function](\ref gfor).
-
-With multi-GPU or multi-device scalability
-------------------------------------------
-
-ArrayFire supports easy [multi-GPU or multi-device](\ref device_mat)
-scaling.
-
-Simple Example {#simpleexample}
-==============
+## Simple Example
 
 Here's a live example to let you see ArrayFire code. You create [arrays](\ref
 construct) which reside on CUDA or OpenCL devices. Then you can use
 [ArrayFire functions](modules.htm) on those [arrays](\ref construct).
 
-<div class="AF_div" style="height: 160px"><pre>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 // sample 40 million points on the GPU
 array x = randu(20e6), y = randu(20e6);
 array dist = sqrt(x * x + y * y);
-|
+
 // pi is ratio of how many fell in the unit circle
-array pi = 4.0 * sum(dist < 1) / 20e6;
-print(pi);</pre></div>
+float num_inside = sum<float>(dist < 1);
+float pi = 4.0 * num_inside / 20e6;
+af_print(pi);
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+## Product Support
 
+#### Free Community Options
 
-Product Support {#support}
-===============
-
-Free Community Options
-----------------------
-
-* [ArrayFire Forums](http://forums.accelereyes.com) (recommended)
+* [ArrayFire mailing list](https://groups.google.com/forum/#!forum/arrayfire-users) (recommended)
 * [StackOverflow](http://stackoverflow.com/questions/tagged/arrayfire)
 
-Premium Support
----------------
+#### Premium Support
 
 * Phone Support - available for purchase ([request a quote](mailto:sales@arrayfire.com))
 
-Contact Us
-----------
+#### Contact Us
 
 * If you need to contact us, visit our
 [contact us page](http://arrayfire.com/company/#contact).
+
+#### Email
+
+* Engineering: technical@arrayfire.com
+* Sales: sales@arrayfire.com
