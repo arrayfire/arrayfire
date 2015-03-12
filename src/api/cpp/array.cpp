@@ -299,6 +299,14 @@ namespace af
     array array::operator()(const array& idx) const
     {
         eval();
+
+        // Special case of indexing linearly
+        // Flatten the current array and index accordingly
+        if (this->numdims() > 1) {
+            array tmp = flat(*this);
+            return tmp(idx);
+        }
+
         af_array out = 0;
         AF_THROW(af_lookup(&out, this->get(), idx.get(), 0));
         return array(out);
@@ -307,6 +315,14 @@ namespace af
     array array::operator()(const seq &s0) const
     {
         eval();
+
+        // Special case of indexing linearly
+        // Flatten the current array and index accordingly
+        if (this->numdims() > 1) {
+            array tmp = flat(*this);
+            return tmp(s0);
+        }
+
         af_array out = 0;
         seq indices[] = {s0, span, span, span};
         //FIXME: check if this->s has same dimensions as numdims

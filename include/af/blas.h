@@ -16,15 +16,16 @@
 
 #pragma once
 
-/// \defgroup blas_funcs BLAS Functions
-/// @{
-
 #include <af/array.h>
 #include "af/defines.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+    /**
+       \ingroup blas_func_matmul
+    */
+
     typedef enum af_transpose_enum {
         AF_NO_TRANSPOSE,
         AF_TRANSPOSE,
@@ -61,9 +62,9 @@ namespace af
 
        \param lhs The array object on the left hand side
        \param rhs The array object on the right hand side
-       \returns The result of the matrix multiplication of lhs, transpose(rhs)
+       \returns The result of the matrix multiplication of \p lhs, transpose(\p rhs)
 
-       \ingroup blas_func_matmulnt
+       \ingroup blas_func_matmul
     */
     AFAPI array matmulNT(const array &lhs, const array &rhs);
 
@@ -74,9 +75,9 @@ namespace af
 
        \param lhs The array object on the left hand side
        \param rhs The array object on the right hand side
-       \returns The result of the matrix multiplication of transpose(lhs), rhs
+       \returns The result of the matrix multiplication of transpose(\p lhs), \p rhs
 
-       \ingroup blas_func_matmultn
+       \ingroup blas_func_matmul
     */
     AFAPI array matmulTN(const array &lhs, const array &rhs);
 
@@ -87,9 +88,9 @@ namespace af
 
        \param lhs The array object on the left hand side
        \param rhs The array object on the right hand side
-       \returns The result of the matrix multiplication of transpose(lhs), transpose(rhs)
+       \returns The result of the matrix multiplication of transpose(\p lhs), transpose(\p rhs)
 
-       \ingroup blas_func_matmultt
+       \ingroup blas_func_matmul
     */
     AFAPI array matmulTT(const array &lhs, const array &rhs);
 
@@ -102,7 +103,7 @@ namespace af
         \democode{
         // compute scalar dot product
         array x = randu(100), y = randu(100);
-        print(dot<float>(x,y));
+        af_print(dot(x,y));
         }
         \ingroup blas_func_dot
     */
@@ -143,7 +144,7 @@ extern "C" {
         \param optRhs Transpose operation before the function is performed
 
         \returns AF_SUCCESS if the process is successful.
-        \ingroup matmul_ptr blas_func_matmul
+        \ingroup blas_func_matmul
      */
     AFAPI af_err af_matmul( af_array *out ,
                             const af_array lhs, const af_array rhs,
@@ -159,7 +160,7 @@ extern "C" {
         array x = randu(100), y = randu(100);
         print(dot<float>(x,y));
         }
-        \ingroup matmul_ptr blas_func_dot
+        \ingroup blas_func_dot
     */
 
     AFAPI af_err af_dot(    af_array *out,
@@ -183,6 +184,3 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-///
-/// @}
-///

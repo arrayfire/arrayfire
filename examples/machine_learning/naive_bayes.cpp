@@ -140,7 +140,10 @@ void naive_bayes_demo(bool console, int perc)
     benchmark_nb(train_feats, test_feats, train_labels, num_classes);
 
     if (!console) {
-        display_results<false>(test_images, res_labels, 20);
+        test_images = test_images.T();
+        test_labels = test_labels.T();
+        // FIXME: Crashing in mnist_common.h::classify
+        //display_results<false>(test_images, res_labels, test_labels , 20);
     }
 }
 

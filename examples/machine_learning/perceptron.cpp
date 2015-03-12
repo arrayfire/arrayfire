@@ -125,8 +125,9 @@ int perceptron_demo(bool console, int perc)
 
     if (!console) {
         test_outputs = test_outputs.T();
+        test_targets = test_targets.T();
         // Get 20 random test images.
-        display_results<true>(test_images, test_outputs, 20);
+        display_results<true>(test_images, test_outputs, test_targets, 20);
     }
 
     return 0;

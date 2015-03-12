@@ -56,7 +56,7 @@ namespace opencl
         Array<T> out = createEmptyArray<T>(A.dims());
         dim_type offset = A.getOffset();
 
-        if (A.isOwner()) {
+        if (A.isLinear()) {
             // FIXME: Add checks
             getQueue().enqueueCopyBuffer(*A.get(), *out.get(),
                                          sizeof(T) * offset, 0,
@@ -81,12 +81,44 @@ namespace opencl
     }
 
     template<typename inType, typename outType>
+    struct copyWrapper {
+        void operator()(Array<outType> &out, Array<inType> const &in)
+        {
+            if (in.dims() == out.dims())
+                kernel::copy<inType, outType, true >(out, in, in.ndims(), scalar<outType>(0), 1);
+            else
+                kernel::copy<inType, outType, false>(out, in, in.ndims(), scalar<outType>(0), 1);
+        }
+    };
+
+    template<typename T>
+    struct copyWrapper<T, T> {
+        void operator()(Array<T> &out, Array<T> const &in)
+        {
+            if (out.isLinear() &&
+                in.isLinear() &&
+                out.elements() == in.elements())
+            {
+                dim_type in_offset = in.getOffset() * sizeof(T);
+                dim_type out_offset = out.getOffset() * sizeof(T);
+
+                getQueue().enqueueCopyBuffer(*in.get(), *out.get(),
+                                             in_offset, out_offset,
+                                             in.elements() * sizeof(T));
+            } else {
+                if (in.dims() == out.dims())
+                    kernel::copy<T, T, true >(out, in, in.ndims(), scalar<T>(0), 1);
+                else
+                    kernel::copy<T, T, false>(out, in, in.ndims(), scalar<T>(0), 1);
+            }
+        }
+    };
+
+    template<typename inType, typename outType>
     void copyArray(Array<outType> &out, Array<inType> const &in)
     {
-        if (in.dims() == out.dims())
-            kernel::copy<inType, outType, true >(out, in, in.ndims(), scalar<outType>(0), 1);
-        else
-            kernel::copy<inType, outType, false>(out, in, in.ndims(), scalar<outType>(0), 1);
+        copyWrapper<inType, outType> copyFn;
+        copyFn(out, in);
     }
 
 #define INSTANTIATE(T)                                              \

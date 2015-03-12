@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <kernel_headers/range.hpp>
+#include <kernel_headers/iota.hpp>
 #include <program.hpp>
 #include <traits.hpp>
 #include <string>
@@ -37,12 +37,12 @@ namespace opencl
         static const dim_type TILEY = 32;
 
         template<typename T>
-        void range(Param out, const int dim)
+        void iota(Param out, const dim4 &sdims, const dim4 &tdims)
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>  rangeProgs;
-                static std::map<int, Kernel*> rangeKernels;
+                static std::map<int, Program*>  iotaProgs;
+                static std::map<int, Kernel*> iotaKernels;
 
                 int device = getActiveDeviceId();
 
@@ -54,13 +54,15 @@ namespace opencl
                         options << " -D USE_DOUBLE";
                     }
                     Program prog;
-                    buildProgram(prog, range_cl, range_cl_len, options.str());
-                    rangeProgs[device]   = new Program(prog);
-                    rangeKernels[device] = new Kernel(*rangeProgs[device], "range_kernel");
+                    buildProgram(prog, iota_cl, iota_cl_len, options.str());
+                    iotaProgs[device]   = new Program(prog);
+                    iotaKernels[device] = new Kernel(*iotaProgs[device], "iota_kernel");
                 });
 
-                auto rangeOp = make_kernel<Buffer, const KParam, const int,
-                                           const dim_type, const dim_type> (*rangeKernels[device]);
+                auto iotaOp = make_kernel<Buffer, const KParam,
+                                          const dim_type, const dim_type, const dim_type, const dim_type,
+                                          const dim_type, const dim_type, const dim_type, const dim_type,
+                                          const dim_type, const dim_type> (*iotaKernels[device]);
 
                 NDRange local(TX, TY, 1);
 
@@ -70,8 +72,9 @@ namespace opencl
                                local[1] * blocksPerMatY * out.info.dims[3],
                                1);
 
-                rangeOp(EnqueueArgs(getQueue(), global, local),
-                       *out.data, out.info, dim, blocksPerMatX, blocksPerMatY);
+                iotaOp(EnqueueArgs(getQueue(), global, local),
+                       *out.data, out.info, sdims[0], sdims[1], sdims[2], sdims[3],
+                       tdims[0], tdims[1], tdims[2], tdims[3], blocksPerMatX, blocksPerMatY);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {

@@ -8,8 +8,8 @@
  ********************************************************/
 
 #include <Array.hpp>
-#include <range.hpp>
-#include <kernel/range.hpp>
+#include <iota.hpp>
+#include <kernel/iota.hpp>
 #include <math.hpp>
 #include <stdexcept>
 #include <err_opencl.hpp>
@@ -17,31 +17,22 @@
 namespace opencl
 {
     template<typename T>
-    Array<T> range(const dim4& dim, const int seq_dim)
+    Array<T> iota(const dim4 &dims, const dim4 &tile_dims)
     {
         if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
             !isDoubleSupported(getActiveDeviceId())) {
             OPENCL_NOT_SUPPORTED();
         }
+        dim4 outdims = dims * tile_dims;
 
-        // Set dimension along which the sequence should be
-        // Other dimensions are simply tiled
-        int _seq_dim = seq_dim;
-        if(seq_dim < 0) {
-            _seq_dim = 0;   // column wise sequence
-        }
-
-        if(_seq_dim < 0 || _seq_dim > 3)
-            AF_ERROR("Invalid rep selection", AF_ERR_INVALID_ARG);
-
-        Array<T> out = createEmptyArray<T>(dim);
-        kernel::range<T>(out, _seq_dim);
+        Array<T> out = createEmptyArray<T>(outdims);
+        kernel::iota<T>(out, dims, tile_dims);
 
         return out;
     }
 
-#define INSTANTIATE(T)                                                      \
-    template Array<T> range<T>(const af::dim4 &dims, const int seq_dims);   \
+#define INSTANTIATE(T)                                                          \
+    template Array<T> iota<T>(const af::dim4 &dims, const af::dim4 &tile_dims); \
 
     INSTANTIATE(float)
     INSTANTIATE(double)
@@ -49,3 +40,4 @@ namespace opencl
     INSTANTIATE(uint)
     INSTANTIATE(uchar)
 }
+

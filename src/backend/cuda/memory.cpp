@@ -67,7 +67,7 @@ namespace cuda
 
 #else
 
-        static void garbageCollect();
+    static void garbageCollect();
     static void pinnedGarbageCollect();
 
     // Manager Class
