@@ -79,6 +79,11 @@ extern "C" {
     // output array
     AFAPI af_err af_index_gen(af_array *out, const af_array in, const dim_type ndims, const af_index_t* indexers);
 
+    // generalized indexing function that accepts either af_array or af_seq
+    // along a dimension to index the input array and create the corresponding
+    // output array
+    AFAPI af_err af_assign_gen(af_array *out, const af_array lhs, const dim_type ndims, const af_index_t* indexers, const af_array rhs);
+
 #ifdef __cplusplus
 }
 #endif
