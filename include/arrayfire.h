@@ -15,72 +15,81 @@
 @{
 @}
 
-@defgroup cpp_interface C++ Interface
+@defgroup func_categories Function Categories
 @{
 
-   @defgroup array_mem Array Member Functions
+   @defgroup array_mat Functions to create Arrays
    @{
-    @defgroup array_construct Constructors
-    @defgroup array_operator Operator Overloads
-    @defgroup array_mem_func Member Functions
-    @defgroup array_indexing Indexing
+      // array constructors
+      // data generators
    @}
 
-   @defgroup basics_mat Basic operations
+   @defgroup manip_mat Manipulating Arrays
    @{
-     @defgroup construct Array allocation, initialization
-     @defgroup gen Generate and fill Arrays
-     @defgroup arith Element-wise arithmetic
-     @defgroup indexing Subscripted array indexing
-     @defgroup props Array info (dimensions, type, complexity, ...)
-     @defgroup manip_mat Array manipulation (transpose, join, tile, shift, ...)
-     @defgroup data Device memory management, access
-     @defgroup gfor Parallelized loops: gfor
-     @defgroup device_mat Device management
-     @defgroup disp Displaying variables
+      // Indexing
+      // moddims, flat
+      // reorder, transpose
+      // join
+      // flip
    @}
 
-   @defgroup data_mat Data Analysis
+   @defgroup arith_mat Mathematical functions
    @{
-     @defgroup summul_mat Sum and Product values
-     @defgroup minmax_mat Minimum and Maximum values
-     @defgroup test_mat Test if any/all true
-     @defgroup where_mat Index or count nonzero elements
-     @defgroup accum_mat Cumulative and segmented Sum
-     @defgroup stats_mat Statistics: average, median, variance, histogram, etc.
-     @defgroup grad_mat Gradient or grid construction
-     @defgroup set_mat Set operations: union, unique, intersection, ...
-     @defgroup sort_mat Sorting (vectors, columns, rows)
-     @defgroup hist_mat Histograms
+     // arithmetic (+, -, /, *)
+     // logical
+     // numeric (round, ceil, floor, min, max etc)
+     // trigonometric
+     // exponential / logarithmic
+     // complex
+   @}
+
+   @defgroup vector_mat Vector Algorithms
+   @{
+      // Reductions
+      // Scan
+      // Set operations
+      // diff, gradient
+      // sort
    @}
 
    @defgroup linalg_mat Linear Algebra
    @{
-     @defgroup blas_mat Matrix multiply, dot product, BLAS
-     @defgroup linsolve_mat Solving linear systems
-     @defgroup factor_mat Factorizations: LU, QR, Cholesky, singular values, eigenvalues, Hessenberg
-     @defgroup matops_mat Matrix Operations
+     @defgroup blas_mat Matrix multiply, dot product, transpose
    @}
 
-   @defgroup image_mat Image and Signal Processing
+   @defgroup image_mat Image Processing
    @{
-     @defgroup morph_mat Morphing: erosion, dilation, ...
-     @defgroup transform_mat Image transformations
      @defgroup colorconv_mat Colorspace conversions
      @defgroup hist_mat Histograms
-     @defgroup filter_mat Signal filtering
-     @defgroup props_mat Connected components, labeling, centroids, ...
-     @defgroup fft_mat Fourier transforms (1D, 2D, 3D)
-     @defgroup convolution_mat Image filtering & convolutions
-     @defgroup interpolation Interpolation and rescaling
-     @defgroup image_util Utility Image Functions
+     // Image transformations
+     // Morph
+     // filters: sobel, bilateral, meanshift
    @}
 
-@}
+   @defgroup cv_mat Computer Vision
+   @{
+     @defgroup featdetect_mat Feature detectors
+     @defgroup featdescriptor_mat Feature descriptors
+     // template matching
+   @}
 
-\defgroup c_interface C Interface
-@{
-    \defgroup arr_basic Basic Functions(Allocation, Copy, Destroy)
+   @defgroup signal_mat Signal Processing
+   @{
+      // Convolve
+      // FFT
+      // approx
+   @}
+
+   @defgroup stats_mat Statistics
+   @{
+      // for now just one group with mean, var, std etc
+   @}
+
+   @defgroup io_mat Input and Output functions
+   @{
+   // af_print
+   // loadImage and saveImage
+   @}
 @}
 
 */
