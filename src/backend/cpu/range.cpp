@@ -20,25 +20,27 @@ namespace cpu
     ///////////////////////////////////////////////////////////////////////////
     // Kernel Functions
     ///////////////////////////////////////////////////////////////////////////
-    template<typename T, unsigned rep>
-    void range(T *out, const dim4 &dim, const dim4 &strides)
+    template<typename T, int dim>
+    void range(T *out, const dim4 &dims, const dim4 &strides)
     {
-        unsigned mul1 = rep > 0;
-        unsigned mul2 = rep > 1;
-        unsigned mul3 = rep > 2;
-        for(dim_type w = 0; w < dim[3]; w++) {
+        for(dim_type w = 0; w < dims[3]; w++) {
             dim_type offW = w * strides[3];
-            for(dim_type z = 0; z < dim[2]; z++) {
+            for(dim_type z = 0; z < dims[2]; z++) {
                 dim_type offWZ = offW + z * strides[2];
-                for(dim_type y = 0; y < dim[1]; y++) {
-                    dim_type offOffset = offWZ + y * strides[1];
-
-                    T *ptr = out + offOffset;
-                    std::iota(ptr, ptr + dim[0],
-                             (mul3 * w * dim[0] * dim[1] * dim[2]) +
-                             (mul2 * z * dim[0] * dim[1]) +
-                             (mul1 * y * dim[0])
-                             );
+                for(dim_type y = 0; y < dims[1]; y++) {
+                    dim_type offWZY = offWZ + y * strides[1];
+                    for(dim_type x = 0; x < dims[0]; x++) {
+                        dim_type id = offWZY + x;
+                        if(dim == 0) {
+                            out[id] = x;
+                        } else if(dim == 1) {
+                            out[id] = y;
+                        } else if(dim == 2) {
+                            out[id] = z;
+                        } else if(dim == 3) {
+                            out[id] = w;
+                        }
+                    }
                 }
             }
         }
@@ -48,29 +50,30 @@ namespace cpu
     // Wrapper Functions
     ///////////////////////////////////////////////////////////////////////////
     template<typename T>
-    Array<T> range(const dim4& dim, const int rep)
+    Array<T> range(const dim4& dims, const int seq_dim)
     {
-        // Repeat highest dimension, ie. creates a single sequence from
-        // 0...elements - 1
-        int rep_ = rep;
-        if(rep < 0) {
-            rep_ = dim.ndims() - 1; // ndims = [1,4] => rep = [0, 3]
+        // Set dimension along which the sequence should be
+        // Other dimensions are simply tiled
+        int _seq_dim = seq_dim;
+        if(seq_dim < 0) {
+            _seq_dim = 0;   // column wise sequence
         }
 
-        Array<T> out = createEmptyArray<T>(dim);
-        switch(rep_) {
+        Array<T> out = createEmptyArray<T>(dims);
+        switch(_seq_dim) {
             case 0: range<T, 0>(out.get(), out.dims(), out.strides()); break;
             case 1: range<T, 1>(out.get(), out.dims(), out.strides()); break;
             case 2: range<T, 2>(out.get(), out.dims(), out.strides()); break;
             case 3: range<T, 3>(out.get(), out.dims(), out.strides()); break;
-            default: AF_ERROR("Invalid rep selection", AF_ERR_INVALID_ARG);
+            default : AF_ERROR("Invalid rep selection", AF_ERR_INVALID_ARG);
         }
+
 
         return out;
     }
 
-#define INSTANTIATE(T)                                                  \
-    template Array<T> range<T>(const af::dim4 &dims, const int rep);     \
+#define INSTANTIATE(T)                                                      \
+    template Array<T> range<T>(const af::dim4 &dims, const int seq_dims);   \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

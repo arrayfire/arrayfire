@@ -403,19 +403,20 @@ af_err af_weak_copy(af_array *out, const af_array in)
 }
 
 template<typename T>
-static inline af_array range_(const dim4& d, const int rep)
+static inline af_array range_(const dim4& d, const int seq_dim)
 {
-    return getHandle(range<T>(d, rep));
+    return getHandle(range<T>(d, seq_dim));
 }
 
 //Strong Exception Guarantee
 af_err af_range(af_array *result, const unsigned ndims, const dim_type * const dims,
-               const int rep, const af_dtype type)
+               const int seq_dim, const af_dtype type)
 {
     af_array out;
     try {
         AF_CHECK(af_init());
 
+        DIM_ASSERT(1, ndims > 0 && ndims <= 4);
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
@@ -423,17 +424,17 @@ af_err af_range(af_array *result, const unsigned ndims, const dim_type * const d
         }
 
         switch(type) {
-        case f32:   out = range_<float  >(d, rep); break;
-        case f64:   out = range_<double >(d, rep); break;
-        case s32:   out = range_<int    >(d, rep); break;
-        case u32:   out = range_<uint   >(d, rep); break;
-        case u8:    out = range_<uchar  >(d, rep); break;
+        case f32:   out = range_<float  >(d, seq_dim); break;
+        case f64:   out = range_<double >(d, seq_dim); break;
+        case s32:   out = range_<int    >(d, seq_dim); break;
+        case u32:   out = range_<uint   >(d, seq_dim); break;
+        case u8:    out = range_<uchar  >(d, seq_dim); break;
         default:    TYPE_ERROR(4, type);
         }
         std::swap(*result, out);
     }
     CATCHALL
-        return AF_SUCCESS;
+    return AF_SUCCESS;
 }
 
 #undef INSTANTIATE

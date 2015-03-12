@@ -36,8 +36,8 @@ namespace opencl
         static const dim_type TILEX = 512;
         static const dim_type TILEY = 32;
 
-        template<typename T, unsigned rep>
-        void range(Param out)
+        template<typename T>
+        void range(Param out, const int dim)
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -49,7 +49,6 @@ namespace opencl
                 std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
                     options << " -D T=" << dtype_traits<T>::getName();
-                    options << " -D rep=" << rep;
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
                         options << " -D USE_DOUBLE";
@@ -60,8 +59,8 @@ namespace opencl
                     rangeKernels[device] = new Kernel(*rangeProgs[device], "range_kernel");
                 });
 
-                auto rangeOp = make_kernel<Buffer, const KParam, const dim_type, const dim_type>
-                                         (*rangeKernels[device]);
+                auto rangeOp = make_kernel<Buffer, const KParam, const int,
+                                           const dim_type, const dim_type> (*rangeKernels[device]);
 
                 NDRange local(TX, TY, 1);
 
@@ -72,7 +71,7 @@ namespace opencl
                                1);
 
                 rangeOp(EnqueueArgs(getQueue(), global, local),
-                       *out.data, out.info, blocksPerMatX, blocksPerMatY);
+                       *out.data, out.info, dim, blocksPerMatX, blocksPerMatY);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
