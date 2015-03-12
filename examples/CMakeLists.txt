@@ -49,3 +49,6 @@ FOREACH(FILE ${FILES})
     endif()
 ENDFOREACH()
 
+INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" 
+    DESTINATION share/doc/arrayfire/ 
+    COMPONENT examples)
