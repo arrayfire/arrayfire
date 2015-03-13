@@ -600,6 +600,7 @@ extern "C" {
        \param[out] out will contain exclusive sums of the input
        \param[in] in is the input array
        \param[in] dim The dimension along which exclusive sum is performed
+       \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup scan_func_accum
     */
@@ -610,6 +611,7 @@ extern "C" {
 
        \param[out] idx will contain indices where \p in is non-zero
        \param[in] in is the input array.
+       \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup scan_func_where
     */
@@ -621,6 +623,7 @@ extern "C" {
        \param[out] out will contain the first order numerical differences of \p in
        \param[in] in is the input array
        \param[in] dim The dimension along which numerical difference is performed
+       \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup calc_func_diff1
     */
@@ -632,6 +635,7 @@ extern "C" {
        \param[out] out will contain the second order numerical differences of \p in
        \param[in] in is the input array
        \param[in] dim The dimension along which numerical difference is performed
+       \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup calc_func_diff2
     */
@@ -644,6 +648,7 @@ extern "C" {
        \param[in] in is the input array
        \param[in] dim The dimension along which numerical difference is performed
        \param[in] isAscending specifies the sorting order
+       \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup sort_func_sort
 
@@ -659,6 +664,7 @@ extern "C" {
        \param[in] in is the input array
        \param[in] dim The dimension along which numerical difference is performed
        \param[in] isAscending specifies the sorting order
+       \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup sort_func_sort
 
@@ -675,6 +681,7 @@ extern "C" {
        \param[in] values The dimension along which numerical difference is performed
        \param[in] dim The dimension along which numerical difference is performed
        \param[in] isAscending specifies the sorting order
+       \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup sort_func_sort
 
@@ -690,6 +697,7 @@ extern "C" {
        \param[out] out will contain the unique values from \p in
        \param[in] in is the input array
        \param[in] is_sorted if true, skips the sorting steps internally
+       \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup set_func_unique
     */
@@ -702,6 +710,7 @@ extern "C" {
        \param[in] first is the first array
        \param[in] second is the second array
        \param[in] is_unique if true, skips calling unique internally
+       \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup set_func_union
     */
@@ -714,6 +723,7 @@ extern "C" {
        \param[in] first is the first array
        \param[in] second is the second array
        \param[in] is_unique if true, skips calling unique internally
+       \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup set_func_intersect
     */
