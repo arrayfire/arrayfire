@@ -145,8 +145,32 @@ AFAPI void orb(features& feat, array& desc, const array& image, const float fast
 
 AFAPI array matchTemplate(const array &searchImg, const array &templateImg, matchType mType=AF_SAD);
 
+/**
+   C++ Interface
+
+   \param[out] dx is derivate along horizontal direction
+   \param[out] dy is derivate along vertical direction
+   \param[in]  img is an array with image data
+   \param[in]  ker_size sobel kernel size or window size
+
+   \note If \p img is 3d array, a batch operation will be performed.
+
+   \ingroup image_func_sobel
+ */
 AFAPI void sobel(array &dx, array &dy, const array &img, const unsigned ker_size=3);
 
+/**
+   C++ Interface
+
+   \param[in]  img is an array with image data
+   \param[in]  ker_size sobel kernel size or window size
+   \param[in]  isFast = true uses \f$G=G_x+G_y\f$, otherwise \f$G=\sqrt (G_x^2+G_y^2)\f$
+   \return     an array with sobel gradient values
+
+   \note If \p img is 3d array, a batch operation will be performed.
+
+   \ingroup image_func_sobel
+ */
 AFAPI array sobel(const array &img, const unsigned ker_size=3, bool isFast=false);
 
 /**
@@ -387,7 +411,20 @@ extern "C" {
     // object detection algorithm, matching pattern image to target image and giving disparity results
     AFAPI af_err af_match_template(af_array *out, const af_array search_img, const af_array template_img, af_match_type m_type);
 
-    // sobel operator for images
+    /**
+       C Interface
+
+       \param[out] dx is derivate along horizontal direction
+       \param[out] dy is derivate along vertical direction
+       \param[in]  img is an array with image data
+       \param[in]  ker_size sobel kernel size or window size
+       \return     \ref AF_SUCCESS if sobel derivates are computed successfully,
+       otherwise an appropriate error code is returned.
+
+       \note If \p img is 3d array, a batch operation will be performed.
+
+       \ingroup image_func_sobel
+     */
     AFAPI af_err af_sobel_operator(af_array *dx, af_array *dy, const af_array img, const unsigned ker_size);
 
     /**

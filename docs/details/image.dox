@@ -195,5 +195,12 @@ weights in the y and x directions, respectively.
 Changing sigma causes the weights in each direction to vary. Sigma is calculated
 internally as (0.25 * rows + 0.75) for rows and similarly for columns.
 
+=======================================================================
+
+\defgroup image_func_sobel sobel
+\ingroup imageflt_mat
+
+\brief Sobel Operators
+
 @}
 */
