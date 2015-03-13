@@ -80,6 +80,18 @@ AFAPI array erode3d(const array& in, const array& mask);
 
 AFAPI void grad(array& rows, array& cols, const array& in);
 
+/**
+    C++ Interface
+
+    \snippet test/regions.cpp ex_image_regions
+
+    \param[out] out array will have labels indicating different regions
+    \param[in]  in array should be binary/grayscale image of type uchar \ref u8
+    \param[in]  connectivity can take one of the following [\ref AF_CONNECTIVITY_4 | \ref AF_CONNECTIVITY_8]
+    \param[in]  ty is type of output array
+
+    \ingroup image_func_regions
+*/
 AFAPI array regions(const array& in, af::connectivity connectivity=AF_CONNECTIVITY_4, dtype type=f32);
 
 /**
@@ -296,7 +308,16 @@ extern "C" {
     // image median filter
     AFAPI af_err af_medfilt(af_array *out, const af_array in, dim_type wind_length, dim_type wind_width, af_pad_type edge_pad);
 
-    // Compute labels for connected regions from binary input arrays
+    /**
+        C Interface
+
+        \param[out] out array will have labels indicating different regions
+        \param[in]  in array should be binary/grayscale image of type uchar \ref u8
+        \param[in]  connectivity can take one of the following [\ref AF_CONNECTIVITY_4 | \ref AF_CONNECTIVITY_8]
+        \param[in]  ty is type of output array
+
+        \ingroup image_func_regions
+    */
     AFAPI af_err af_regions(af_array *out, const af_array in, af_connectivity connectivity, af_dtype ty);
 
     /**

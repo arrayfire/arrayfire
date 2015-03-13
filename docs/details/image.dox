@@ -163,5 +163,20 @@ times followed by FAST feature detection on each scale.
 
 =======================================================================
 
+\defgroup image_func_regions regions
+\ingroup connected_comps_mat
+
+\brief Find blobs in given image.
+
+Given a binary image (with zero representing background pixels), regions
+computes a floating point image where each connected component is labeled
+from 1 to N, the total number of components in the image.
+
+A component is defined as one or more nonzero pixels that are connected by
+the specified connectivity (either 4-way(\ref AF_CONNECTIVITY_4) or
+8-way(\ref AF_CONNECTIVITY_8)) in two dimensions.
+
+The default connectivity is \ref AF_CONNECTIVITY_4.
+
 @}
 */

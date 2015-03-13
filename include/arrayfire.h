@@ -101,6 +101,9 @@
 
      @defgroup imageflt_mat Image filtering operators
      bilateral, sobel, mean shift, etc
+
+     @defgroup connected_comps_mat Connected Components & Labeling
+     regions
    @}
 
    @defgroup cv_mat Computer Vision
