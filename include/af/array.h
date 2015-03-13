@@ -644,7 +644,7 @@ namespace af
 extern "C" {
 #endif
     /**
-       \ingroup arr_basic
+       \ingroup array_basic
        @{
     */
 
