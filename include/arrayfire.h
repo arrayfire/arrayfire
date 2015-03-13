@@ -96,10 +96,10 @@
      @defgroup transform_mat Image transformations
      rotate, skew, etc
 
-     @defgroup morph_mat Image morphing operations
+     @defgroup morph_mat Morphological Operations
      erode, dilate, etc
 
-     @defgroup imageflt_mat Image filtering operators
+     @defgroup imageflt_mat Filters
      bilateral, sobel, mean shift, etc
 
      @defgroup connected_comps_mat Connected Components & Labeling

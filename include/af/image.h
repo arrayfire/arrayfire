@@ -85,10 +85,10 @@ AFAPI void grad(array& rows, array& cols, const array& in);
 
     \snippet test/regions.cpp ex_image_regions
 
-    \param[out] out array will have labels indicating different regions
     \param[in]  in array should be binary/grayscale image of type uchar \ref u8
     \param[in]  connectivity can take one of the following [\ref AF_CONNECTIVITY_4 | \ref AF_CONNECTIVITY_8]
     \param[in]  ty is type of output array
+    \return     returns array with labels indicating different regions. Throws exceptions if any issue occur.
 
     \ingroup image_func_regions
 */
@@ -315,6 +315,8 @@ extern "C" {
         \param[in]  in array should be binary/grayscale image of type uchar \ref u8
         \param[in]  connectivity can take one of the following [\ref AF_CONNECTIVITY_4 | \ref AF_CONNECTIVITY_8]
         \param[in]  ty is type of output array
+        \return     \ref AF_SUCCESS if the regions are identified successfully,
+        otherwise an appropriate error code is returned.
 
         \ingroup image_func_regions
     */
