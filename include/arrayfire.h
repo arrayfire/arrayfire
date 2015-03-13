@@ -45,11 +45,11 @@
 
    @defgroup vector_mat Vector Algorithms
    @{
-      // Reductions
-      // Scan
-      // Set operations
-      // diff, gradient
-      // sort
+      @defgroup reduce_mat Reduction operations (Sum, Min, Max, etc)
+      @defgroup sort_mat Sort operations
+      @defgroup scan_mat Inclusive scan operations (accum, where, etc)
+      @defgroup set_mat Set operations (unique, union, intersect)
+      @defgroup calc_mat Numerical differentiation (diff, gradient)
    @}
 
    @defgroup linalg_mat Linear Algebra

@@ -1,0 +1,82 @@
+/*!
+\page reduce_detail reductions
+
+This function performs the operation across all batches present in the input simultaneously.
+
+*/
+
+
+/**
+\addtogroup arrayfire_func
+@{
+\defgroup reduce_func_sum sum
+
+\ingroup reduce_mat
+
+Find the sum of values in the input
+
+\copydoc reduce_detail
+
+========================================================
+
+\defgroup reduce_func_product product
+
+\ingroup reduce_mat
+
+Find the product of values in the input
+
+\copydoc reduce_detail
+
+========================================================
+
+\defgroup reduce_func_min min
+
+\ingroup reduce_mat
+
+Find the minimum values and their locations
+
+\copydoc reduce_detail
+
+========================================================
+
+\defgroup reduce_func_max max
+
+\ingroup reduce_mat
+
+Find the maximum values and their locations
+
+\copydoc reduce_detail
+
+========================================================
+
+\defgroup reduce_func_alltrue alltrue
+
+\ingroup reduce_mat
+
+Find if of all of the values in input are true
+
+\copydoc reduce_detail
+
+========================================================
+
+\defgroup reduce_func_anytrue anytrue
+
+\ingroup reduce_mat
+
+Find if of any of the values in input are true
+
+\copydoc reduce_detail
+
+========================================================
+
+\defgroup reduce_func_count count
+
+\ingroup reduce_mat
+
+Count the number of non-zero elements in the input
+
+\copydoc reduce_detail
+
+========================================================
+@}
+*/
