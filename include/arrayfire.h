@@ -104,6 +104,9 @@
 
      @defgroup connected_comps_mat Connected Components & Labeling
      regions
+
+     @defgroup utility_mat Utility Functions
+     loadImage, saveImage, gaussianKernel
    @}
 
    @defgroup cv_mat Computer Vision

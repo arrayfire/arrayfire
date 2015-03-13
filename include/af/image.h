@@ -194,6 +194,17 @@ AFAPI array gray2rgb(const array& in, const float rFactor=1.0, const float gFact
  */
 AFAPI array histequal(const array& in, const array& hist);
 
+/**
+   C++ Interface
+
+   \param[in]  rows
+   \param[in]  cols
+   \param[in]  rows (default 0) (calculated internally as 0.25 * rows + 0.75)
+   \param[in]  cols (default 0) (calculated internally as 0.25 * cols + 0.75)
+   \return     an array with values generated using gaussian function
+
+   \ingroup image_func_gauss
+ */
 AFAPI array gaussianKernel(const int rows, const int cols, const double sig_r = 0, const double sig_c = 0);
 
 /**
@@ -428,6 +439,19 @@ extern "C" {
      */
     AFAPI af_err af_histequal(af_array *out, const af_array in, const af_array hist);
 
+    /**
+       C Interface
+
+       \param[out] out is an array with values generated using gaussian function
+       \param[in]  rows
+       \param[in]  cols
+       \param[in]  rows (default 0) (calculated internally as 0.25 * rows + 0.75)
+       \param[in]  cols (default 0) (calculated internally as 0.25 * cols + 0.75)
+       \return     \ref AF_SUCCESS if gaussian distribution values are generated successfully,
+       otherwise an appropriate error code is returned.
+
+       \ingroup image_func_gauss
+     */
     AFAPI af_err af_gaussian_kernel(af_array *out,
                                     const int rows, const int cols,
                                     const double sigma_r, const double sigma_c);

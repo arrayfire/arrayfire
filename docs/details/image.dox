@@ -178,5 +178,22 @@ the specified connectivity (either 4-way(\ref AF_CONNECTIVITY_4) or
 
 The default connectivity is \ref AF_CONNECTIVITY_4.
 
+=======================================================================
+
+\defgroup image_func_gauss gaussiankernel
+\ingroup utility_mat
+
+\brief Creates a Gaussian Kernel
+
+This function creates a kernel of a specified size that contains a Gaussian
+distribution. This distribution is normalized to one. This is most commonly
+used when performing a Gaussian blur on an image. The function takes two sets
+of arguments, the size of the kernel (width and height in pixels) and the
+sigma parameters (for row and column) which effect the distribution of the
+weights in the y and x directions, respectively.
+
+Changing sigma causes the weights in each direction to vary. Sigma is calculated
+internally as (0.25 * rows + 0.75) for rows and similarly for columns.
+
 @}
 */
