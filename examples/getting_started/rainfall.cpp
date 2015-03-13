@@ -24,6 +24,7 @@
 #include <arrayfire.h>
 #include <af/util.h>
 #include <stdio.h>
+#include <cstdlib>
 using namespace af;
 
 int main(int argc, char **argv)
