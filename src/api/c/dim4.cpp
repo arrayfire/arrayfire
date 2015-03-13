@@ -206,6 +206,8 @@ toDims(const vector<af_seq>& seqs, dim4 parentDims)
                 outDims[i] = seqElements(temp);
             }
         } else {
+            DIM_ASSERT(1, seqs[i].begin >= 0 && seqs[i].begin < parentDims[i]);
+            DIM_ASSERT(1, seqs[i].end < parentDims[i]);
             outDims[i] = seqElements(seqs[i]);
         }
 
