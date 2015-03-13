@@ -106,7 +106,6 @@
 #include "af/gfor.h"
 #include "af/image.h"
 #include "af/index.h"
-#include "af/reduce.h"
 #include "af/seq.h"
 #include "af/signal.h"
 #include "af/statistics.h"
