@@ -35,13 +35,13 @@ Array<T> exampleFunction(const Array<T> &in, const af_someenum_t method)
                                         // file to know what are the different types you
                                         // can create.
 
-    //dim4 in_dims    = in.dims();        // you can retrieved dimensions
+    //dim4 in_dims    = in.dims();        // you can retrieve dimensions
 
-    //dim4 in_offsets = in.offsets();     // you can retrieved offsets - used when given array
+    //dim4 in_offsets = in.offsets();     // you can retrieve offsets - used when given array
                                         // is an sub-array pointing to some other array and
                                         // doesn't have memory of its own
 
-    //dim4 in_strides = in.strides();     // you can retrieved strides
+    //dim4 in_strides = in.strides();     // you can retrieve strides
 
     //const T* src = in.get();            // cpu::Array<T>::get returns the pointer to the
                                         // memory allocated for that Array

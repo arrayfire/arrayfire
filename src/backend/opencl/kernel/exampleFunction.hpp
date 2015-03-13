@@ -113,12 +113,11 @@ void exampleFunc(Param out, const Param in, const af_someenum_t p)
                     *out.data, out.info, *in.data, in.info, (int)p);
 
         // Below Macro activates validations ONLY in DEBUG
-        // mode as it's name indicates
+        // mode as its name indicates
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) { // Catch all cl::Errors and convert them
                               // to appropriate ArrayFire error codes
         CL_TO_AF_ERROR(err);
-        throw;
     }
 }
 

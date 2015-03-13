@@ -27,7 +27,7 @@
                                 // (typedef in defines.h) handle.
 
 #include <exampleFunction.hpp>  // This is the backend specific header
-                                // where the your new function declaration
+                                // where your new function declaration
                                 // is written
 
 using namespace detail;         // detail is an alias to appropriate backend
@@ -55,17 +55,21 @@ af_err af_example_function(af_array* out,
     af_array output = 0;
 
     try {
-        //ARG_ASSERT(2, (dim>=0 && dim<=3));  // defined in err_common.hpp
-                                            // there are other useful Macros
-                                            // for different purposes, feel free
-                                            // to look at the header
-
         ArrayInfo info = getInfo(in);       // ArrayInfo is the base class which
                                             // each backend specific Array inherits
                                             // This class stores the basic array meta-data
                                             // such as type of data, dimensions,
                                             // offsets and strides. This class is declared
                                             // in src/backend/ArrayInfo.hpp
+
+        af::dim4 dims = info.dims();
+
+
+        ARG_ASSERT(2, (dims.ndims()>=0 && dims.ndims()<=3));
+                                            // defined in err_common.hpp
+                                            // there are other useful Macros
+                                            // for different purposes, feel free
+                                            // to look at the header
 
         af_dtype type = info.getType();
 
