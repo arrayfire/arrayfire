@@ -179,8 +179,8 @@ namespace af
     /**
        C++ Interface
 
-       \param[out] val contains the minimum values along dimension \p dim
-       \param[out] idx contains the locations of minimum all values along dimension \p dim
+       \param[out] val will contain the minimum values along dimension \p dim
+       \param[out] idx will contain the locations of minimum all values along dimension \p dim
        \param[in]  in is the input array
        \paran[in]  dim The dimension along which the minimum value needs to be extracted
 
@@ -188,13 +188,13 @@ namespace af
 
        \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
     */
-    AFAPI void min(array &val, array &idx, const array &in, const int dim = 0);
+    AFAPI void min(array &val, array &idx, const array &in, const int dim = -1);
 
     /**
        C++ Interface
 
-       \param[out] val contains the maximum values along dimension \p dim
-       \param[out] idx contains the locations of maximum all values along dimension \p dim
+       \param[out] val will contain the maximum values along dimension \p dim
+       \param[out] idx will contain the locations of maximum all values along dimension \p dim
        \param[in]  in is the input array
        \paran[in]  dim The dimension along which the maximum value needs to be extracted
 
@@ -202,13 +202,13 @@ namespace af
 
        \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
     */
-    AFAPI void max(array &val, array &idx, const array &in, const int dim = 0);
+    AFAPI void max(array &val, array &idx, const array &in, const int dim = -1);
 
     /**
        C++ Interface
 
-       \param[out] val contains the minimum values in the input
-       \param[out] idx contains the locations of minimum all values in the input
+       \param[out] val will contain the minimum values in the input
+       \param[out] idx will contain the locations of minimum all values in the input
        \param[in]  in is the input array
 
        \ingroup reduce_func_min
@@ -226,27 +226,128 @@ namespace af
     */
     template<typename T> void max(T *val, unsigned *idx, const array &in);
 
+    /**
+       C++ Interface
 
-    AFAPI array diff1(const array &in, const int dim = 0);
+       \param[in] in is the input array
+       \param[in] dim The dimension along which exclusive sum is performed
+       \return the output containing exclusive sums of the input
 
-    AFAPI array diff2(const array &in, const int dim = 0);
-
+       \ingroup scan_func_accum
+    */
     AFAPI array accum(const array &in, const int dim = 0);
 
+    /**
+       C++ Interface
+
+       \param[in] in is the input array.
+       \return linear indices where \p in is non-zero
+
+       \ingroup scan_func_where
+    */
     AFAPI array where(const array &in);
 
+    /**
+       C++ Interface
+
+       \param[in] in is the input array
+       \param[in] dim The dimension along which numerical difference is performed
+       \return output of first order numerical difference
+
+       \ingroup calc_func_diff1
+    */
+    AFAPI array diff1(const array &in, const int dim = 0);
+
+    /**
+       C++ Interface
+
+       \param[in] in is the input array
+       \param[in] dim The dimension along which numerical difference is performed
+       \return output of second order numerical difference
+
+       \ingroup calc_func_diff2
+    */
+    AFAPI array diff2(const array &in, const int dim = 0);
+
+    /**
+       C++ Interface
+
+       \param[in] in is the input array
+       \param[in] dim The dimension along which numerical difference is performed
+       \param[in] isAscending specifies the sorting order
+       \return the sorted output
+
+       \ingroup sort_func_sort
+
+       \note \p dim is currently restricted to 0.
+    */
     AFAPI array sort(const array &in, const unsigned dim = 0, const bool isAscending = true);
 
+    /**
+       C++ Interface
+
+       \param[out] out will contain the sorted output
+       \param[out] indices will contain the indices in the original input
+       \param[in] in is the input array
+       \param[in] dim The dimension along which numerical difference is performed
+       \param[in] isAscending specifies the sorting order
+
+       \ingroup sort_func_sort
+
+       \note \p dim is currently restricted to 0.
+    */
     AFAPI void  sort(array &out, array &indices, const array &in, const unsigned dim = 0,
                      const bool isAscending = true);
+    /**
+       C++ Interface
 
-    AFAPI void  sort(array &out_keys, array & out_values, const array &keys, const array &values,
+       \param[out] out_keys will contain the keys based on sorted values
+       \param[out] out_values will contain the sorted values
+       \param[in] keys is the input array
+       \param[in] values The dimension along which numerical difference is performed
+       \param[in] dim The dimension along which numerical difference is performed
+       \param[in] isAscending specifies the sorting order
+
+       \ingroup sort_func_sort
+
+       \note \p dim is currently restricted to 0.
+    */
+    AFAPI void  sort(array &out_keys, array &out_values, const array &keys, const array &values,
                      const unsigned dim = 0, const bool isAscending = true);
 
+    /**
+       C++ Interface
+
+       \param[in] in is the input array
+       \param[in] is_sorted if true, skips the sorting steps internally
+       \return the unique values from \p in
+
+       \ingroup set_func_unique
+    */
     AFAPI array setunique(const array &in, bool is_sorted=false);
 
+    /**
+       C++ Interface
+
+       \param[in] first is the first array
+       \param[in] second is the second array
+       \param[in] is_unique if true, skips calling unique internally
+       \return the union of \p first and \p second
+
+       \ingroup set_func_union
+    */
     AFAPI array setunion(const array &first, const array &second, bool is_unique=false);
 
+    /**
+       C++ Interface
+
+       \param[in] first is the first array
+       \param[in] second is the second array
+       \param[in] is_unique if true, skips calling unique internally
+       \return the intersection of \p first and \p second
+
+       \ingroup set_func_intersect
+    */
     AFAPI array setintersect(const array &first, const array &second, bool is_unique=false);
 }
 #endif
@@ -258,7 +359,7 @@ extern "C" {
     /**
        C Interface
 
-       \param[out] out contains the sum of all values in \p in along \p dim
+       \param[out] out will contain the sum of all values in \p in along \p dim
        \param[in] in is the input array
        \paran[in] dim The dimension along which the add operation occurs
        \return \ref AF_SUCCESS if the execution completes properly
@@ -270,7 +371,7 @@ extern "C" {
     /**
        C Interface
 
-       \param[out] out contains the product of all values in \p in along \p dim
+       \param[out] out will contain the product of all values in \p in along \p dim
        \param[in] in is the input array
        \paran[in] dim The dimension along which the multiply operation occurs
        \return \ref AF_SUCCESS if the execution completes properly
@@ -282,7 +383,7 @@ extern "C" {
     /**
        C Interface
 
-       \param[out] out contains the minimum of all values in \p in along \p dim
+       \param[out] out will contain the minimum of all values in \p in along \p dim
        \param[in] in is the input array
        \paran[in] dim The dimension along which the minimum value is extracted
        \return \ref AF_SUCCESS if the execution completes properly
@@ -294,7 +395,7 @@ extern "C" {
     /**
        C Interface
 
-       \param[out] out contains the maximum of all values in \p in along \p dim
+       \param[out] out will contain the maximum of all values in \p in along \p dim
        \param[in] in is the input array
        \paran[in] dim The dimension along which the maximum value is extracted
        \return \ref AF_SUCCESS if the execution completes properly
@@ -306,7 +407,7 @@ extern "C" {
     /**
        C Interface
 
-       \param[out] out contains the result of "and" operation all values in \p in along \p dim
+       \param[out] out will contain the result of "and" operation all values in \p in along \p dim
        \param[in] in is the input array
        \paran[in] dim The dimension along which the "and" operation occurs
        \return \ref AF_SUCCESS if the execution completes properly
@@ -318,7 +419,7 @@ extern "C" {
     /**
        C Interface
 
-       \param[out] out contains the result of "or" operation all values in \p in along \p dim
+       \param[out] out will contain the result of "or" operation all values in \p in along \p dim
        \param[in] in is the input array
        \paran[in] dim The dimension along which the "or" operation occurs
        \return \ref AF_SUCCESS if the execution completes properly
@@ -330,7 +431,7 @@ extern "C" {
     /**
        C Interface
 
-       \param[out] out contains the number of non-zero values in \p in along \p dim
+       \param[out] out will contain the number of non-zero values in \p in along \p dim
        \param[in] in is the input array
        \paran[in] dim The dimension along which the non-zero values are counted
        \return \ref AF_SUCCESS if the execution completes properly
@@ -342,8 +443,8 @@ extern "C" {
     /**
        C Interface
 
-       \param[out] real contains the real part of adding all elements in input \p in
-       \param[out] imag contains the imaginary part of adding all elements in input \p in
+       \param[out] real will contain the real part of adding all elements in input \p in
+       \param[out] imag will contain the imaginary part of adding all elements in input \p in
        \param[in] in is the input array
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -356,8 +457,8 @@ extern "C" {
     /**
        C Interface
 
-       \param[out] real contains the real part of multiplying all elements in input \p in
-       \param[out] imag contains the imaginary part of multiplying all elements in input \p in
+       \param[out] real will contain the real part of multiplying all elements in input \p in
+       \param[out] imag will contain the imaginary part of multiplying all elements in input \p in
        \param[in] in is the input array
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -370,8 +471,8 @@ extern "C" {
     /**
        C Interface
 
-       \param[out] real contains the real part of minimum value of all elements in input \p in
-       \param[out] imag contains the imaginary part of minimum value of all elements in input \p in
+       \param[out] real will contain the real part of minimum value of all elements in input \p in
+       \param[out] imag will contain the imaginary part of minimum value of all elements in input \p in
        \param[in] in is the input array
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -384,8 +485,8 @@ extern "C" {
     /**
        C Interface
 
-       \param[out] real contains the real part of maximum value of all elements in input \p in
-       \param[out] imag contains the imaginary part of maximum value of all elements in input \p in
+       \param[out] real will contain the real part of maximum value of all elements in input \p in
+       \param[out] imag will contain the imaginary part of maximum value of all elements in input \p in
        \param[in] in is the input array
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -426,7 +527,7 @@ extern "C" {
     /**
        C Interface
 
-       \param[out] real contains the number of non-zero values in \p in.
+       \param[out] real will contain the number of non-zero values in \p in.
        \param[out] imag is always set to 0.
        \param[in] in is the input array
        \return \ref AF_SUCCESS if the execution completes properly
@@ -440,8 +541,8 @@ extern "C" {
     /**
        C Interface
 
-       \param[out] out contains the minimum of all values in \p in along \p dim
-       \param[out] idx contains the location of minimum of all values in \p in along \p dim
+       \param[out] out will contain the minimum of all values in \p in along \p dim
+       \param[out] idx will contain the location of minimum of all values in \p in along \p dim
        \param[in] in is the input array
        \paran[in] dim The dimension along which the minimum value is extracted
        \return \ref AF_SUCCESS if the execution completes properly
@@ -453,8 +554,8 @@ extern "C" {
     /**
        C Interface
 
-       \param[out] out contains the maximum of all values in \p in along \p dim
-       \param[out] idx contains the location of maximum of all values in \p in along \p dim
+       \param[out] out will contain the maximum of all values in \p in along \p dim
+       \param[out] idx will contain the location of maximum of all values in \p in along \p dim
        \param[in] in is the input array
        \paran[in] dim The dimension along which the maximum value is extracted
        \return \ref AF_SUCCESS if the execution completes properly
@@ -466,9 +567,9 @@ extern "C" {
     /**
        C Interface
 
-       \param[out] real contains the real part of minimum value of all elements in input \p in
-       \param[out] imag contains the imaginary part of minimum value of all elements in input \p in
-       \param[out] idx idx contains the location of minimum of all values in \p in
+       \param[out] real will contain the real part of minimum value of all elements in input \p in
+       \param[out] imag will contain the imaginary part of minimum value of all elements in input \p in
+       \param[out] idx will contain the location of minimum of all values in \p in
        \param[in] in is the input array
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -481,9 +582,9 @@ extern "C" {
     /**
        C Interface
 
-       \param[out] real contains the real part of maximum value of all elements in input \p in
-       \param[out] imag contains the imaginary part of maximum value of all elements in input \p in
-       \param[out] idx idx contains the location of maximum of all values in \p in
+       \param[out] real will contain the real part of maximum value of all elements in input \p in
+       \param[out] imag will contain the imaginary part of maximum value of all elements in input \p in
+       \param[out] idx will contain the location of maximum of all values in \p in
        \param[in] in is the input array
        \return \ref AF_SUCCESS if the execution completes properly
 
@@ -493,30 +594,129 @@ extern "C" {
     */
     AFAPI af_err af_imax_all(double *real, double *imag, unsigned *idx, const af_array in);
 
-    // Compute first order difference along a given dimension.
-    AFAPI af_err af_diff1(af_array *out, const af_array in, const int dim);
+    /**
+       C Interface
 
-    // Compute second order difference along a given dimension.
-    AFAPI af_err af_diff2(af_array *out, const af_array in, const int dim);
+       \param[out] out will contain exclusive sums of the input
+       \param[in] in is the input array
+       \param[in] dim The dimension along which exclusive sum is performed
 
-    // Inclusive sum of all the elements along an array
+       \ingroup scan_func_accum
+    */
     AFAPI af_err af_accum(af_array *out, const af_array in, const int dim);
 
+   /**
+       C Interface
+
+       \param[out] idx will contain indices where \p in is non-zero
+       \param[in] in is the input array.
+
+       \ingroup scan_func_where
+    */
     AFAPI af_err af_where(af_array *idx, const af_array in);
 
-    // Sort
+    /**
+       C Interface
+
+       \param[out] out will contain the first order numerical differences of \p in
+       \param[in] in is the input array
+       \param[in] dim The dimension along which numerical difference is performed
+
+       \ingroup calc_func_diff1
+    */
+    AFAPI af_err af_diff1(af_array *out, const af_array in, const int dim);
+
+    /**
+       C Interface
+
+       \param[out] out will contain the second order numerical differences of \p in
+       \param[in] in is the input array
+       \param[in] dim The dimension along which numerical difference is performed
+
+       \ingroup calc_func_diff2
+    */
+    AFAPI af_err af_diff2(af_array *out, const af_array in, const int dim);
+
+    /**
+       C Interface
+
+       \param[out] out will contain the sorted output
+       \param[in] in is the input array
+       \param[in] dim The dimension along which numerical difference is performed
+       \param[in] isAscending specifies the sorting order
+
+       \ingroup sort_func_sort
+
+       \note \p dim is currently restricted to 0.
+    */
     AFAPI af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool isAscending);
 
+    /**
+       C Interface
+
+       \param[out] out will contain the sorted output
+       \param[out] indices will contain the indices in the original input
+       \param[in] in is the input array
+       \param[in] dim The dimension along which numerical difference is performed
+       \param[in] isAscending specifies the sorting order
+
+       \ingroup sort_func_sort
+
+       \note \p dim is currently restricted to 0.
+    */
     AFAPI af_err af_sort_index(af_array *out, af_array *indices, const af_array in,
                                const unsigned dim, const bool isAscending);
+    /**
+       C Interface
 
+       \param[out] out_keys will contain the keys based on sorted values
+       \param[out] out_values will contain the sorted values
+       \param[in] keys is the input array
+       \param[in] values The dimension along which numerical difference is performed
+       \param[in] dim The dimension along which numerical difference is performed
+       \param[in] isAscending specifies the sorting order
+
+       \ingroup sort_func_sort
+
+       \note \p dim is currently restricted to 0.
+    */
     AFAPI af_err af_sort_by_key(af_array *out_keys, af_array *out_values,
-                                const af_array keys, const af_array values, const unsigned dim, const bool isAscending);
+                                const af_array keys, const af_array values,
+                                const unsigned dim, const bool isAscending);
 
+    /**
+       C Interface
+
+       \param[out] out will contain the unique values from \p in
+       \param[in] in is the input array
+       \param[in] is_sorted if true, skips the sorting steps internally
+
+       \ingroup set_func_unique
+    */
     AFAPI af_err af_set_unique(af_array *out, const af_array in, const bool is_sorted);
 
+    /**
+       C Interface
+
+       \param[out] out will contain the union of \p first and \p second
+       \param[in] first is the first array
+       \param[in] second is the second array
+       \param[in] is_unique if true, skips calling unique internally
+
+       \ingroup set_func_union
+    */
     AFAPI af_err af_set_union(af_array *out, const af_array first, const af_array second, const bool is_unique);
 
+    /**
+       C Interface
+
+       \param[out] out will contain the intersection of \p first and \p second
+       \param[in] first is the first array
+       \param[in] second is the second array
+       \param[in] is_unique if true, skips calling unique internally
+
+       \ingroup set_func_intersect
+    */
     AFAPI af_err af_set_intersect(af_array *out, const af_array first, const af_array second, const bool is_unique);
 
 #ifdef __cplusplus

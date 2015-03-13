@@ -1,5 +1,5 @@
 /*!
-\page reduce_detail reductions
+\page batch_detail reductions
 
 This function performs the operation across all batches present in the input simultaneously.
 
@@ -15,7 +15,7 @@ This function performs the operation across all batches present in the input sim
 
 Find the sum of values in the input
 
-\copydoc reduce_detail
+\copydoc batch_detail
 
 ========================================================
 
@@ -25,7 +25,7 @@ Find the sum of values in the input
 
 Find the product of values in the input
 
-\copydoc reduce_detail
+\copydoc batch_detail
 
 ========================================================
 
@@ -35,7 +35,7 @@ Find the product of values in the input
 
 Find the minimum values and their locations
 
-\copydoc reduce_detail
+\copydoc batch_detail
 
 ========================================================
 
@@ -45,7 +45,7 @@ Find the minimum values and their locations
 
 Find the maximum values and their locations
 
-\copydoc reduce_detail
+\copydoc batch_detail
 
 ========================================================
 
@@ -55,7 +55,7 @@ Find the maximum values and their locations
 
 Find if of all of the values in input are true
 
-\copydoc reduce_detail
+\copydoc batch_detail
 
 ========================================================
 
@@ -65,7 +65,7 @@ Find if of all of the values in input are true
 
 Find if of any of the values in input are true
 
-\copydoc reduce_detail
+\copydoc batch_detail
 
 ========================================================
 
@@ -75,8 +75,89 @@ Find if of any of the values in input are true
 
 Count the number of non-zero elements in the input
 
-\copydoc reduce_detail
+\copydoc batch_detail
 
 ========================================================
+
+\defgroup scan_func_accum accum
+
+\ingroup scan_mat
+
+Perform exclusive sum along specified dimension
+
+\copydoc batch_detail
+
+========================================================
+
+\defgroup scan_func_where where
+
+\ingroup scan_mat
+
+Locate the indices of non-zero elements
+
+The locations are provided by flattening the input into a linear array.
+
+========================================================
+
+\defgroup calc_func_diff1 diff1
+
+\ingroup calc_mat
+
+First order numerical difference along specified dimension
+
+\copydoc batch_detail
+
+========================================================
+
+\defgroup calc_func_diff2 diff2
+
+\ingroup calc_mat
+
+Second order numerical difference along specified dimension
+
+\copydoc batch_detail
+
+========================================================
+
+\defgroup sort_func_sort sort
+
+\ingroup sort_mat
+
+Sort input arrays
+
+Optionally return original indices and keys
+
+========================================================
+
+\defgroup set_func_unique setunique
+
+\ingroup set_mat
+
+Find unique values from an input
+
+.
+
+========================================================
+
+\defgroup set_func_union setunion
+
+\ingroup set_mat
+
+Find union of two inputs
+
+.
+
+========================================================
+
+\defgroup set_func_intersect setintersect
+
+\ingroup set_mat
+
+Find intersection of two inputs
+
+.
+
+========================================================
+
 @}
 */
