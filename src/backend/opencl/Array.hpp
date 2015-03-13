@@ -126,7 +126,9 @@ namespace opencl
 
         dim4 getDataDims() const
         {
-            return data_dims;
+            // This is for moddims
+            // dims and data_dims are different when moddims is used
+            return isOwner() ? dims() : data_dims;
         }
 
         operator Param() const

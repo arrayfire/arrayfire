@@ -6,23 +6,15 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-
 #pragma once
-#include <af/defines.h>
+
 #include <af/array.h>
+#include <Array.hpp>
 
-#define AF_MAX_DIMS 4
-
-#ifdef __cplusplus
-namespace af
+namespace opencl
 {
+    template<typename T>
+    Array<T> iota(const dim4 &dim, const dim4 &tile_dims = dim4(1));
 }
-#endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-#ifdef __cplusplus
-}
-#endif

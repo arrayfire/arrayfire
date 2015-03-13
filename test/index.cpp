@@ -29,6 +29,7 @@ using std::endl;
 using std::ostream_iterator;
 using af::dtype_traits;
 
+
 template<typename T, typename OP>
 void
 checkValues(const af_seq &seq, const T* data, const T* indexed_data, OP compair_op) {
@@ -49,7 +50,7 @@ DimCheck(const vector<af_seq> &seqs) {
     dim_type d[1] = {dims};
 
     vector<T> hData(dims);
-    for(int i = 0; i < dims; i++) { hData[i] = i; }
+    for(int i = 0; i < (int)dims; i++) { hData[i] = i; }
 
     af_array a = 0;
     ASSERT_EQ(AF_SUCCESS, af_create_array(&a, &hData.front(), ndims, d, (af_dtype) dtype_traits<T>::af_type));
@@ -627,7 +628,7 @@ TEST(lookup, CPP)
 
     array input(dims0, &(in[0].front()));
     array indices(dims1, &(in[1].front()));
-    array output = input(indices);
+    array output = af::lookup(input, indices, 0);
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
@@ -728,7 +729,7 @@ TEST(SeqIndex, CPPLarge)
 
     array input(dims0, &(in[0].front()));
     array indices(dims1, &(in[1].front()));
-    array output = input(indices);
+    array output = af::lookup(input, indices, 0);
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();

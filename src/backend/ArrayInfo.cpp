@@ -146,8 +146,10 @@ bool ArrayInfo::isLinear() const
     }
 
     dim_type count = 1;
-    for (int i = 0; i < 4; i++) {
-        if (count != dim_strides[i]) return false;
+    for (int i = 0; i < (int)ndims(); i++) {
+        if (count != dim_strides[i]) {
+            return false;
+        }
         count *= dim_size[i];
     }
     return true;

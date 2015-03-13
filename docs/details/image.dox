@@ -18,7 +18,7 @@ pixel. A combination of these three values produces the gamut of unique colors.
 \page image_func_gray GRAY
 
 Grayscale is a single channel color space where pixel value ranges from 0 to 1.
-Zero represents black, one represent white and any value between zero & one is 
+Zero represents black, one represent white and any value between zero & one is
 a gray value
 
 */
@@ -105,6 +105,8 @@ following formula
 \defgroup image_func_histogram histogram
 \ingroup hist_mat
 
+\brief Histogram of input data
+
 A histogram is a representation of the distribution of given data. This
 representation is essentially a graph consisting of the data range or domain on
 one axis and frequency of occurence on the other axis. All the data in the
@@ -123,6 +125,8 @@ values greater than max will be placed in the last (max) bin.
 \defgroup image_func_histequal histequal
 \ingroup hist_mat
 
+\brief Histogram equalization of input image
+
 Histogram equalization is a method in image processing of contrast adjustment
 using the image's histogram.
 
@@ -132,6 +136,8 @@ Data normalization via histogram equalization
 
 \defgroup image_func_fast fast
 \ingroup featdetect_mat
+
+\brief FAST feature detector
 
 A circle of radius 3 pixels, translating into a total of 16 pixels, is checked
 for sequential segments of pixels much brighter or much darker than the central
@@ -146,6 +152,8 @@ discard it if its score is non maximal.
 
 \defgroup image_func_orb orb
 \ingroup featdescriptor_mat
+
+\brief ORB Feature descriptor
 
 Extract ORB descriptors from FAST features that hold higher Harris responses.
 FAST does not compute orientation, thus, orientation of features is calculated

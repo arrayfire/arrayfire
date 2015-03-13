@@ -5,6 +5,11 @@ body, table, div, p, dl
     font            :   400 12px/22px Lucida Grande, Verdana, Geneva, Arial, sans-serif;
 }
 
+p
+{
+    padding-left    :   10px;
+}
+
 /* @group Heading Levels */
 /* Increase the size of the page title */
 .title
@@ -19,9 +24,9 @@ ul
 }
 
 /* Slightly pad subsections */
-h2
+h2, h3, h4, h5
 {
-    padding-left    :   20px;
+    padding-left    :   10px;
     margin-bottom   :   0px;
 }
 

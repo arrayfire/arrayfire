@@ -1,0 +1,46 @@
+/**
+\addtogroup arrayfire_func
+@{
+\defgroup numeric_func_min min
+
+\ingroup numeric_mat
+
+Minimum of two inputs.
+
+.
+
+========================================================
+
+\defgroup numeric_func_max max
+
+\ingroup numeric_mat
+
+Maximum of two inputs.
+
+.
+
+========================================================
+
+\defgroup numeric_func_rem rem
+
+\ingroup numeric_mat
+
+Remainder operation
+
+.
+
+========================================================
+
+\defgroup numeric_func_mod mod
+
+\ingroup numeric_mat
+
+Remainder operation
+
+.
+
+========================================================
+
+
+@}
+*/

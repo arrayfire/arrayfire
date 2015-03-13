@@ -100,7 +100,13 @@ namespace cpu
 
         dim_type getOffset() const { return offset; }
         shared_ptr<T> getData() const {return data; }
-        dim4 getDataDims() const { return data_dims; }
+
+        dim4 getDataDims() const
+        {
+            // This is for moddims
+            // dims and data_dims are different when moddims is used
+            return isOwner() ? dims() : data_dims;
+        }
 
         T* get(bool withOffset = true)
         {
