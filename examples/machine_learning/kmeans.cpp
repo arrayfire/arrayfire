@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <arrayfire.h>
 #include <af/util.h>
+#include <cstdlib>
 
 using namespace af;
 

@@ -8,12 +8,13 @@
  ********************************************************/
 
 __kernel
-void range_kernel(__global T *out, const KParam op,
+void range_kernel(__global T *out, const KParam op, const int dim,
                  const dim_type blocksPerMatX, const dim_type blocksPerMatY)
 {
-    const bool mul1 = rep > 0;
-    const bool mul2 = rep > 1;
-    const bool mul3 = rep > 2;
+    const int mul0 = (dim == 0);
+    const int mul1 = (dim == 1);
+    const int mul2 = (dim == 2);
+    const int mul3 = (dim == 3);
 
     const dim_type oz = get_group_id(0) / blocksPerMatX;
     const dim_type ow = get_group_id(1) / blocksPerMatY;
@@ -35,14 +36,14 @@ void range_kernel(__global T *out, const KParam op,
     const dim_type incy = blocksPerMatY * get_local_size(1);
     const dim_type incx = blocksPerMatX * get_local_size(0);
 
-    T valOffset = mul3 * ow * op.dims[2] * op.dims[1] * op.dims[0]
-                + mul2 * oz * op.dims[1] * op.dims[0];
+    T val = mul3 * ow + mul2 * oz;
 
     for(dim_type oy = yy; oy < op.dims[1]; oy += incy) {
+        val += mul1 * oy;
+        dim_type oyzw = ozw + oy * op.strides[1];
         for(dim_type ox = xx; ox < op.dims[0]; ox += incx) {
-
-            dim_type oidx = ozw + oy * op.strides[1] + ox;
-            T val = valOffset + (mul1 * oy * op.dims[0]) + ox;
+            dim_type oidx = oyzw + ox;
+            val += mul0 * ox;
 
             out[oidx] = val;
         }

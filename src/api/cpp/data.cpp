@@ -175,17 +175,24 @@ namespace af
         return randn(dim4(d0, d1, d2, d3), ty);
     }
 
-    array range(const dim4 &dims, const int rep, af::dtype ty)
+    array range(const dim4 &dims, const int seq_dim, af::dtype ty)
     {
         af_array out;
-        AF_THROW(af_range(&out, dims.ndims(), dims.get(), rep, ty));
+        AF_THROW(af_range(&out, dims.ndims(), dims.get(), seq_dim, ty));
         return array(out);
     }
 
     array range(const dim_type d0, const dim_type d1, const dim_type d2,
-               const dim_type d3, const int rep, af::dtype ty)
+               const dim_type d3, const int seq_dim, af::dtype ty)
     {
-        return range(dim4(d0, d1, d2, d3), rep, ty);
+        return range(dim4(d0, d1, d2, d3), seq_dim, ty);
+    }
+
+    array iota(const dim4 dims, const dim4 tile_dims, af::dtype ty)
+    {
+        af_array out;
+        AF_THROW(af_iota(&out, dims.ndims(), dims.get(), tile_dims.ndims(), tile_dims.get(), ty));
+        return array(out);
     }
 
     array identity(const dim4 &dims, af::dtype type)

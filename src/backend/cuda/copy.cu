@@ -52,10 +52,10 @@ namespace cuda
     {
         Array<T> out = createEmptyArray<T>(A.dims());
 
-        if (A.isOwner()) {
-            CUDA_CHECK(cudaMemcpy(out.get(), A.get(),
-                                  A.elements() * sizeof(T),
-                                  cudaMemcpyDeviceToDevice));
+        if (A.isLinear()) {
+            CUDA_CHECK(cudaMemcpyAsync(out.get(), A.get(),
+                                       A.elements() * sizeof(T),
+                                       cudaMemcpyDeviceToDevice));
         } else {
             // FIXME: Seems to fail when using Param<T>
             kernel::memcopy(out.get(), out.strides().get(), A.get(), A.dims().get(),
@@ -74,10 +74,36 @@ namespace cuda
     }
 
     template<typename inType, typename outType>
+    struct copyWrapper {
+        void operator()(Array<outType> &out, Array<inType> const &in)
+        {
+            kernel::copy<inType, outType>(out, in, in.ndims(), scalar<outType>(0), 1);
+        }
+    };
+
+    template<typename T>
+    struct copyWrapper<T, T> {
+        void operator()(Array<T> &out, Array<T> const &in)
+        {
+            if (out.isLinear() &&
+                in.isLinear() &&
+                out.elements() == in.elements())
+            {
+                CUDA_CHECK(cudaMemcpyAsync(out.get(), in.get(),
+                                           in.elements() * sizeof(T),
+                                           cudaMemcpyDeviceToDevice));
+            } else {
+                kernel::copy<T, T>(out, in, in.ndims(), scalar<T>(0), 1);
+            }
+        }
+    };
+
+    template<typename inType, typename outType>
     void copyArray(Array<outType> &out, Array<inType> const &in)
     {
         ARG_ASSERT(1, (in.ndims() == out.dims().ndims()));
-        kernel::copy<inType, outType>(out, in, in.ndims(), scalar<outType>(0), 1);
+        copyWrapper<inType, outType> copyFn;
+        copyFn(out, in);
     }
 
 #define INSTANTIATE(T)                                              \

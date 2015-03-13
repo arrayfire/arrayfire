@@ -23,13 +23,15 @@ namespace cuda
         static const unsigned TILEX = 512;
         static const unsigned TILEY = 32;
 
-        template<typename T, unsigned rep>
+        template<typename T>
         __global__
-        void range_kernel(Param<T> out, const dim_type blocksPerMatX, const dim_type blocksPerMatY)
+        void range_kernel(Param<T> out, const int dim,
+                          const dim_type blocksPerMatX, const dim_type blocksPerMatY)
         {
-            const bool mul1 = rep > 0;
-            const bool mul2 = rep > 1;
-            const bool mul3 = rep > 2;
+            const int mul0 = (dim == 0);
+            const int mul1 = (dim == 1);
+            const int mul2 = (dim == 2);
+            const int mul3 = (dim == 3);
 
             const dim_type oz = blockIdx.x / blocksPerMatX;
             const dim_type ow = blockIdx.y / blocksPerMatY;
@@ -48,17 +50,17 @@ namespace cuda
 
             const dim_type ozw = ow * out.strides[3] + oz * out.strides[2];
 
-            T valOffset = mul3 * ow * out.dims[2] * out.dims[1] * out.dims[0]
-                        + mul2 * oz * out.dims[1] * out.dims[0];
+            T val = mul3 * ow + mul2 * oz;
 
             const dim_type incy = blocksPerMatY * blockDim.y;
             const dim_type incx = blocksPerMatX * blockDim.x;
 
             for(dim_type oy = yy; oy < out.dims[1]; oy += incy) {
+                val += mul1 * oy;
+                dim_type oyzw = ozw + oy * out.strides[1];
                 for(dim_type ox = xx; ox < out.dims[0]; ox += incx) {
-
-                    dim_type oidx = ozw + oy * out.strides[1] + ox;
-                    T val = valOffset + (mul1 * oy * out.dims[0]) + ox;
+                    dim_type oidx = oyzw + ox;
+                    val += ox * mul0;
 
                     out.ptr[oidx] = val;
                 }
@@ -69,8 +71,8 @@ namespace cuda
         ///////////////////////////////////////////////////////////////////////////
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
-        template<typename T, unsigned rep>
-        void range(Param<T> out)
+        template<typename T>
+        void range(Param<T> out, const int dim)
         {
             dim3 threads(TX, TY, 1);
 
@@ -80,7 +82,7 @@ namespace cuda
                         blocksPerMatY * out.dims[3],
                         1);
 
-            range_kernel<T, rep><<<blocks, threads>>>(out, blocksPerMatX, blocksPerMatY);
+            range_kernel<T><<<blocks, threads>>>(out, dim, blocksPerMatX, blocksPerMatY);
             POST_LAUNCH_CHECK();
         }
     }

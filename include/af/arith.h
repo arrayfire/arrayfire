@@ -14,14 +14,174 @@
 namespace af
 {
     class array;
+    /**
+       C++ API (array, array)
 
+       \param[in] lhs first input
+       \param[in] rhs second input
+       \return minimum of \p lhs and \p rhs
+
+       \ingroup numeric_func_min
+    */
     AFAPI array min    (const array &lhs, const array &rhs);
+
+    /**
+       C++ API (array, scalar)
+
+       \param[in] lhs first input
+       \param[in] rhs second input
+       \return minimum of \p lhs and \p rhs
+
+       \ingroup numeric_func_min
+    */
     AFAPI array min    (const array &lhs, const double rhs);
+
+    /**
+       C++ API (scalar, array)
+
+       \param[in] lhs first input
+       \param[in] rhs second input
+       \return minimum of \p lhs and \p rhs
+
+       \ingroup numeric_func_min
+    */
     AFAPI array min    (const double lhs, const array &rhs);
 
+    /**
+       C++ API (array, array)
+
+       \param[in] lhs first input
+       \param[in] rhs second input
+       \return maximum of \p lhs and \p rhs
+
+       \ingroup numeric_func_max
+    */
     AFAPI array max    (const array &lhs, const array &rhs);
+
+    /**
+       C++ API (array, scalar)
+
+       \param[in] lhs first input
+       \param[in] rhs second input
+       \return maximum of \p lhs and \p rhs
+
+       \ingroup numeric_func_max
+    */
     AFAPI array max    (const array &lhs, const double rhs);
+
+    /**
+       C++ API (scalar, array)
+
+       \param[in] lhs first input
+       \param[in] rhs second input
+       \return maximum of \p lhs and \p rhs
+
+       \ingroup numeric_func_max
+    */
     AFAPI array max    (const double lhs, const array &rhs);
+
+    /**
+       C++ API (array, array)
+
+       \param[in] lhs is numerator
+       \param[in] rhs is denominator
+       \return remainder when \p rhs divides \p lhs
+
+       \ingroup numeric_func_rem
+    */
+    AFAPI array rem    (const array &lhs, const array &rhs);
+
+    /**
+       C++ API (array, scalar)
+
+       \param[in] lhs is numerator
+       \param[in] rhs is denominator
+       \return remainder when \p rhs divides \p lhs
+
+       \ingroup numeric_func_rem
+    */
+    AFAPI array rem    (const array &lhs, const double rhs);
+
+    /**
+       C++ API (scalar, array)
+
+       \param[in] lhs is numerator
+       \param[in] rhs is denominator
+       \return remainder when \p rhs divides \p lhs
+
+       \ingroup numeric_func_rem
+    */
+    AFAPI array rem    (const double lhs, const array &rhs);
+
+    /**
+       C++ API (array, array)
+
+       \param[in] lhs is dividend
+       \param[in] rhs is divisor
+       \return \p lhs modulo \p rhs
+
+       \ingroup numeric_func_mod
+    */
+    AFAPI array mod    (const array &lhs, const array &rhs);
+
+    /**
+       C++ API (array, scalar)
+
+       \param[in] lhs is dividend
+       \param[in] rhs is divisor
+       \return \p lhs modulo \p rhs
+
+       \ingroup numeric_func_mod
+    */
+    AFAPI array mod    (const array &lhs, const double rhs);
+
+    /**
+       C++ API (scalar, array)
+
+       \param[in] lhs is dividend
+       \param[in] rhs is divisor
+       \return \p lhs modulo \p rhs
+
+       \ingroup numeric_func_mod
+    */
+    AFAPI array mod    (const double lhs, const array &rhs);
+
+    /**
+       C++ API (array, array)
+
+       \param[in] lhs is base
+       \param[in] rhs is exponent
+       \return \p lhs raised to power \p rhs
+
+       \ingroup numeric_func_pow
+    */
+    AFAPI array pow    (const array &lhs, const array &rhs);
+
+    /**
+       C++ API (array, scalar)
+
+       \param[in] lhs is base
+       \param[in] rhs is exponent
+       \return \p lhs raised to power \p rhs
+
+       \ingroup numeric_func_pow
+    */
+    AFAPI array pow    (const array &lhs, const double rhs);
+
+    /**
+       C++ API (scalar, array)
+
+       \param[in] lhs is base
+       \param[in] rhs is exponent
+       \return \p lhs raised to power \p rhs
+
+       \ingroup numeric_func_pow
+    */
+    AFAPI array pow    (const double lhs, const array &rhs);
+
+    AFAPI array round  (const array &in);
+    AFAPI array floor  (const array &in);
+    AFAPI array ceil   (const array &in);
 
     AFAPI array complex(const array &lhs, const array &rhs);
     AFAPI array complex(const array &lhs, const double rhs);
@@ -35,27 +195,11 @@ namespace af
     AFAPI array hypot  (const array &lhs, const double rhs);
     AFAPI array hypot  (const double lhs, const array &rhs);
 
-    AFAPI array pow    (const array &lhs, const array &rhs);
-    AFAPI array pow    (const array &lhs, const double rhs);
-    AFAPI array pow    (const double lhs, const array &rhs);
-
-    AFAPI array rem    (const array &lhs, const array &rhs);
-    AFAPI array rem    (const array &lhs, const double rhs);
-    AFAPI array rem    (const double lhs, const array &rhs);
-
-    AFAPI array mod    (const array &lhs, const array &rhs);
-    AFAPI array mod    (const array &lhs, const double rhs);
-    AFAPI array mod    (const double lhs, const array &rhs);
-
     AFAPI array complex(const array &in);
     AFAPI array real   (const array &in);
     AFAPI array imag   (const array &in);
     AFAPI array conjg  (const array &in);
     AFAPI array abs    (const array &in);
-
-    AFAPI array round  (const array &in);
-    AFAPI array floor  (const array &in);
-    AFAPI array ceil   (const array &in);
 
     AFAPI array sin    (const array &in);
     AFAPI array cos    (const array &in);
@@ -114,16 +258,69 @@ extern "C" {
     AFAPI af_err af_or    (af_array *result, const af_array lhs, const af_array rhs, bool batch);
     AFAPI af_err af_not   (af_array *result, const af_array in);
 
+    /**
+       C API
+
+       \param[out] out will contain minimum of \p lhs and \p rhs
+       \param[in] lhs first input
+       \param[in] rhs second input
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup numeric_func_min
+    */
     AFAPI af_err af_minof (af_array *result, const af_array lhs, const af_array rhs, bool batch);
+
+    /**
+       C API
+
+       \param[out] out will contain maximum of \p lhs and \p rhs
+       \param[in] lhs first input
+       \param[in] rhs second input
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup numeric_func_max
+    */
     AFAPI af_err af_maxof (af_array *result, const af_array lhs, const af_array rhs, bool batch);
+
+    /**
+       C API
+
+       \param[out] out will contain the remainder of \p lhs divided by \p rhs
+       \param[in] lhs is numerator
+       \param[in] rhs is denominator
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup numeric_func_rem
+    */
+    AFAPI af_err af_rem   (af_array *result, const af_array lhs, const af_array rhs, bool batch);
+
+    /**
+       C API
+
+       \param[out] out will contain the output of \p lhs modulo \p rhs
+       \param[in] lhs is dividend
+       \param[in] rhs is divisor
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup numeric_func_rem
+    */
+    AFAPI af_err af_mod   (af_array *result, const af_array lhs, const af_array rhs, bool batch);
+
+    /**
+       C API
+
+       \param[out] out will contain \p lhs raised to power \p rhs
+       \param[in] lhs is base
+       \param[in] rhs is exponent
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup numeric_func_pow
+    */
+    AFAPI af_err af_pow   (af_array *result, const af_array lhs, const af_array rhs, bool batch);
 
     AFAPI af_err af_cplx2 (af_array *result, const af_array lhs, const af_array rhs, bool batch);
     AFAPI af_err af_atan2 (af_array *result, const af_array lhs, const af_array rhs, bool batch);
     AFAPI af_err af_hypot (af_array *result, const af_array lhs, const af_array rhs, bool batch);
-
-    AFAPI af_err af_pow   (af_array *result, const af_array lhs, const af_array rhs, bool batch);
-    AFAPI af_err af_rem   (af_array *result, const af_array lhs, const af_array rhs, bool batch);
-    AFAPI af_err af_mod   (af_array *result, const af_array lhs, const af_array rhs, bool batch);
 
     AFAPI af_err af_bitand   (af_array *result, const af_array lhs, const af_array rhs, bool batch);
     AFAPI af_err af_bitor    (af_array *result, const af_array lhs, const af_array rhs, bool batch);
