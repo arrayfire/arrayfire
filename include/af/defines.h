@@ -137,6 +137,13 @@ typedef enum {
     AF_HSV // 2
 } af_cspace_t;
 
+// Below enum is purely added for example purposes
+// it doesn't and shoudn't be used anywhere in the
+// code. No Guarantee's provided if it is used.
+typedef enum {
+    AF_ID = 0
+} af_someenum_t;
+
 #ifdef __cplusplus
 #include <limits>
 namespace af
@@ -150,6 +157,7 @@ namespace af
     typedef af_connectivity connectivity;
     typedef af_match_type matchType;
     typedef af_cspace_t CSpace;
+    typedef af_someenum_t SomeEnum; // Purpose of Addition: How to add Function example
 
     const double NaN = std::numeric_limits<double>::quiet_NaN();
     const double Inf = std::numeric_limits<double>::infinity();
