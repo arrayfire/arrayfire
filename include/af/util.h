@@ -16,6 +16,9 @@ namespace af
     class array;
 
     AFAPI void print(const char *exp, const array &arr);
+
+    // Purpose of Addition: "How to add Function" documentation
+    AFAPI array exampleFunction(const array& in, const af_someenum_t param);
 }
 
 #define af_print(exp) af::print(#exp, exp);
@@ -65,6 +68,9 @@ extern "C" {
 
     // Print contents of af_array to console
     AFAPI af_err af_print_array(af_array arr);
+
+    // Purpose of Addition: "How to add Function" documentation
+    AFAPI af_err af_example_function(af_array* out, const af_array in, const af_someenum_t param);
 
 #ifdef __cplusplus
 }
