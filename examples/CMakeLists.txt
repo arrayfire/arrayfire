@@ -6,6 +6,10 @@ PROJECT(arrayfire-examples)
 if(NOT (TARGET afcpu OR TARGET afcuda OR TARGET afopencl))
     FIND_PACKAGE(ArrayFire REQUIRED)
     INCLUDE_DIRECTORIES(${ArrayFire_INCLUDE_DIRS})
+    
+    SET(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets")
+else()
+    SET(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../assets")
 endif()
 
 # A macro to build an ArrayFire example
@@ -25,7 +29,6 @@ ENDMACRO()
 
 # Collect the source
 FILE(GLOB FILES "*/*.cpp")
-SET(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../assets")
 ADD_DEFINITIONS("-DASSETS_DIR=\"\\\"${ASSETS_DIR}\\\"\"")
 
 FOREACH(FILE ${FILES})
@@ -56,3 +59,7 @@ ENDFOREACH()
 INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" 
     DESTINATION share/doc/arrayfire/ 
     COMPONENT examples)
+
+INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../assets/examples"
+    DESTINATION share/doc/arrayfire/examples/assets/
+)
