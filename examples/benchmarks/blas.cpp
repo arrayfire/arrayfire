@@ -10,6 +10,7 @@
 #include <arrayfire.h>
 #include <stdio.h>
 #include <math.h>
+#include <cstdlib>
 
 using namespace af;
 

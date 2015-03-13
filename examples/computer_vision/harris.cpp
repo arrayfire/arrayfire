@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <arrayfire.h>
+#include <cstdlib>
 
 using namespace af;
 
