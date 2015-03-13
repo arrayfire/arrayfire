@@ -43,11 +43,11 @@ namespace af
 
         \copydetails blas_func_matmul
 
-        \param lhs The array object on the left hand side
-        \param rhs The array object on the right hand side
-        \param optLhs Transpose operation before the function is performed
-        \param optRhs Transpose operation before the function is performed
-        \returns The result of the matrix multiplication of lhs, rhs
+        \param[in] lhs The array object on the left hand side
+        \param[in] rhs The array object on the right hand side
+        \param[in] optLhs Transpose operation before the function is performed
+        \param[in] optRhs Transpose operation before the function is performed
+        \return The result of the matrix multiplication of lhs, rhs
 
         \ingroup blas_func_matmul
      */
@@ -60,9 +60,9 @@ namespace af
 
        \copydetails blas_func_matmul
 
-       \param lhs The array object on the left hand side
-       \param rhs The array object on the right hand side
-       \returns The result of the matrix multiplication of \p lhs, transpose(\p rhs)
+       \param[in] lhs The array object on the left hand side
+       \param[in] rhs The array object on the right hand side
+       \return The result of the matrix multiplication of \p lhs, transpose(\p rhs)
 
        \ingroup blas_func_matmul
     */
@@ -73,9 +73,9 @@ namespace af
 
        \copydetails blas_func_matmul
 
-       \param lhs The array object on the left hand side
-       \param rhs The array object on the right hand side
-       \returns The result of the matrix multiplication of transpose(\p lhs), \p rhs
+       \param[in] lhs The array object on the left hand side
+       \param[in] rhs The array object on the right hand side
+       \return The result of the matrix multiplication of transpose(\p lhs), \p rhs
 
        \ingroup blas_func_matmul
     */
@@ -86,9 +86,9 @@ namespace af
 
        \copydetails blas_func_matmul
 
-       \param lhs The array object on the left hand side
-       \param rhs The array object on the right hand side
-       \returns The result of the matrix multiplication of transpose(\p lhs), transpose(\p rhs)
+       \param[in] lhs The array object on the left hand side
+       \param[in] rhs The array object on the right hand side
+       \return The result of the matrix multiplication of transpose(\p lhs), transpose(\p rhs)
 
        \ingroup blas_func_matmul
     */
@@ -116,9 +116,9 @@ namespace af
 
         \copydetails blas_func_transpose
 
-        \param in Input Matrix
-        \param conjugate If true a congugate transposition is performed
-        \returns Transposed matrix
+        \param[in] in Input Matrix
+        \param[in] conjugate If true a congugate transposition is performed
+        \return Transposed matrix
         \ingroup blas_func_transpose
     */
     AFAPI array transpose(const array& in, const bool conjugate = false);
@@ -137,13 +137,13 @@ extern "C" {
 
         \details Performs a matrix multiplication on two arrays (lhs, rhs).
 
-        \param out Pointer to the output \ref af_array
-        \param lhs A 2D matrix \ref af_array object
-        \param rhs A 2D matrix \ref af_array object
-        \param optLhs Transpose operation before the function is performed
-        \param optRhs Transpose operation before the function is performed
+        \param[out] out Pointer to the output \ref af_array
+        \param[in] lhs A 2D matrix \ref af_array object
+        \param[in] rhs A 2D matrix \ref af_array object
+        \param[in] optLhs Transpose operation before the function is performed
+        \param[in] optRhs Transpose operation before the function is performed
 
-        \returns AF_SUCCESS if the process is successful.
+        \return AF_SUCCESS if the process is successful.
         \ingroup blas_func_matmul
      */
     AFAPI af_err af_matmul( af_array *out ,
@@ -172,10 +172,10 @@ extern "C" {
 
         This funciton will tranpose the matrix in.
 
-        \param out The transposed matrix
-        \param in Input matrix which will be transposed
-        \param conjugate Perform a congugate transposition
-        \returns Transposed matrix
+        \param[out] out The transposed matrix
+        \param[in] in Input matrix which will be transposed
+        \param[in] conjugate Perform a congugate transposition
+        \return Transposed matrix
         \ingroup matmul_mat blas_func_transpose
     */
     AFAPI af_err af_transpose(af_array *out, af_array in, const bool conjugate);
