@@ -107,12 +107,48 @@ AFAPI array meanshift(const array& in, const float spatial_sigma, const float ch
 */
 AFAPI array medfilt(const array& in, dim_type wind_length = 3, dim_type wind_width = 3, padType edge_pad = AF_ZERO);
 
+/**
+    C++ Interface
+
+    \param[in]  in array is the input image
+    \param[in]  mask is the neighborhood window
+    \return     the dilated image
+
+    \ingroup image_func_dilate
+*/
 AFAPI array dilate(const array& in, const array& mask);
 
+/**
+    C++ Interface
+
+    \param[in]  in array is the input volume
+    \param[in]  mask is the neighborhood delta volume
+    \return     the dilated volume
+
+    \ingroup image_func_dilate3d
+*/
 AFAPI array dilate3d(const array& in, const array& mask);
 
+/**
+    C++ Interface
+
+    \param[in]  in array is the input image
+    \param[in]  mask is the neighborhood window
+    \return     the eroded image
+
+    \ingroup image_func_erode
+*/
 AFAPI array erode(const array& in, const array& mask);
 
+/**
+    C++ Interface
+
+    \param[in]  in array is the input volume
+    \param[in]  mask is the neighborhood delta volume
+    \return     the eroded volume
+
+    \ingroup image_func_erode3d
+*/
 AFAPI array erode3d(const array& in, const array& mask);
 
 AFAPI void grad(array& rows, array& cols, const array& in);
@@ -373,14 +409,56 @@ extern "C" {
      */
     AFAPI af_err af_histogram(af_array *out, const af_array in, const unsigned nbins, const double minval, const double maxval);
 
-    // image dilation operation
+    /**
+        C Interface
+
+        \param[out] out array is the dilated image
+        \param[in]  in array is the input image
+        \param[in]  mask is the neighborhood window
+        \return     \ref AF_SUCCESS if the dilated successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_dilate
+    */
     AFAPI af_err af_dilate(af_array *out, const af_array in, const af_array mask);
 
+    /**
+        C Interface
+
+        \param[out] out array is the dilated volume
+        \param[in]  in array is the input volume
+        \param[in]  mask is the neighborhood delta volume
+        \return     \ref AF_SUCCESS if the dilated successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_dilate3d
+    */
     AFAPI af_err af_dilate3d(af_array *out, const af_array in, const af_array mask);
 
-    // image erosion operation
+    /**
+        C Interface
+
+        \param[out] out array is the eroded image
+        \param[in]  in array is the input image
+        \param[in]  mask is the neighborhood window
+        \return     \ref AF_SUCCESS if the eroded successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_erode
+    */
     AFAPI af_err af_erode(af_array *out, const af_array in, const af_array mask);
 
+    /**
+        C Interface
+
+        \param[out] out array is the eroded volume
+        \param[in]  in array is the input volume
+        \param[in]  mask is the neighborhood delta volume
+        \return     \ref AF_SUCCESS if the eroded successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_erode3d
+    */
     AFAPI af_err af_erode3d(af_array *out, const af_array in, const af_array mask);
 
     /**

@@ -259,5 +259,84 @@ bound on color values, N, where pixel values range from 0–N inclusively.
 
 =======================================================================
 
+\defgroup image_func_erode erode
+\ingroup morph_mat
+
+\brief Erosion(morphological operator) for images
+
+The erosion function is a morphological transformation on an image that requires two inputs.
+The first is the image to be morphed, and the second is the mask indicating neighborhood that
+must be white in order to preserve each pixel.
+
+In erode, for each pixel, the mask is centered at the pixel. If each pixel of the mask matches
+the corresponding pixel on the image, then no change is made. If there is at least one mismatch,
+then pixels are changed to the background color (black).
+
+For further reference, see: [Erosion (morphology)](http://en.wikipedia.org/wiki/Erosion_(morphology))
+
+Sample input and output are shown below:
+
+<table border=0>
+<tr>
+<td> \image html erode_orig.png "Input Image" </td>
+<td> \image html mask.png "Mask" </td>
+<td> \image html erode_inter.png "Intermediate Result" </td>
+<td> \image html erode.png "Output Image" </td>
+</tr>
+</table>
+
+=======================================================================
+
+\defgroup image_func_erode3d erode3d
+\ingroup morph_mat
+
+\brief Erosion(morphological operator) for volumes
+
+Erosion for a volume is similar to the way erosion works on an image. Only difference is
+that the masking operation is performed on a volume instead of a rectangular region.
+
+For further reference, see: [Erosion (morphology)](http://en.wikipedia.org/wiki/Erosion_(morphology))
+
+=======================================================================
+
+\defgroup image_func_dilate dilate
+\ingroup morph_mat
+
+\brief Dilation(morphological operator) for images
+
+The dilation function takes two pieces of data as inputs. The first is the input image to be
+morphed, and the second is the mask indicating the neighborhood around each pixel to match.
+
+In dilation, for each pixel, the mask is centered at the pixel. If the center pixel of the
+mask matches the corresponding pixel on the image, then the mask is accepted. If the center
+pixels do not matches, then the mask is ignored and no changes are made.
+
+For further reference, see: [Dilation (morphology)](http://en.wikipedia.org/wiki/Dilation_(morphology))
+
+Sample input and output are shown below:
+
+<table border=0>
+<tr>
+<td> \image html dilate_orig.png "Input Image" </td>
+<td> \image html mask.png "Mask" </td>
+<td> \image html dilate_inter.png "Intermediate Result" </td>
+<td> \image html dilate.png "Output Image" </td>
+</tr>
+</table>
+
+=======================================================================
+
+\defgroup image_func_dilate3d dilate3d
+\ingroup morph_mat
+
+\brief Dilation(morphological operator) for volumes
+
+Dilation for a volume is similar to the way dilation works on an image. Only difference is
+that the masking operation is performed on a volume instead of a rectangular region.
+
+For further reference, see: [Dilation (morphology)](http://en.wikipedia.org/wiki/Dilation_(morphology))
+
+=======================================================================
+
 @}
 */
