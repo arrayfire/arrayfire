@@ -36,6 +36,17 @@ AFAPI array scale(const array& in, const float scale0, const float scale1, const
 
 AFAPI array skew(const array& in, const float skew0, const float skew1, const dim_type odim0, const dim_type odim1, const bool inverse=true, const interpType method=AF_INTERP_NEAREST);
 
+/**
+    C++ Interface
+
+    \param[in]  in array is the input image
+    \param[in]  spatial_sigma is the spatial variance paramter that decides the filter window
+    \param[in]  chromatic_sigma is the chromatic variance paramter
+    \param[in]  is_color indicates if the input \p in is color image or grayscale
+    \return     the processed image
+
+    \ingroup image_func_bilateral
+*/
 AFAPI array bilateral(const array &in, const float spatial_sigma, const float chromatic_sigma, bool is_color=false);
 
 /**
@@ -66,20 +77,94 @@ AFAPI array histogram(const array &in, const unsigned nbins, const double minval
  */
 AFAPI array histogram(const array &in, const unsigned nbins);
 
+/**
+    C++ Interface
+
+    \param[in]  in array is the input image
+    \param[in]  spatial_sigma is the spatial variance paramter that decides the filter window
+    \param[in]  chromatic_sigma is the chromatic variance paramter
+    \param[in]  iter is the number of iterations filter operation is performed
+    \param[in]  is_color indicates if the input \p in is color image or grayscale
+    \return     the processed image
+
+    \ingroup image_func_meanshift
+*/
 AFAPI array meanshift(const array& in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color=false);
 
+/**
+    C++ Interface
+
+    \snippet test/medfilt.cpp ex_image_medfilt
+
+    \param[in]  in array is the input image
+    \param[in]  wind_length is the kernel height
+    \param[in]  wind_width is the kernel width
+    \param[in]  edge_pad value will decide what happens to border when running
+                filter in their neighborhood. It takes one of the values [\ref AF_ZERO | \ref AF_SYMMETRIC]
+    \return     the processed image
+
+    \ingroup image_func_medfilt
+*/
 AFAPI array medfilt(const array& in, dim_type wind_length = 3, dim_type wind_width = 3, padType edge_pad = AF_ZERO);
 
+/**
+    C++ Interface
+
+    \param[in]  in array is the input image
+    \param[in]  mask is the neighborhood window
+    \return     the dilated image
+
+    \ingroup image_func_dilate
+*/
 AFAPI array dilate(const array& in, const array& mask);
 
+/**
+    C++ Interface
+
+    \param[in]  in array is the input volume
+    \param[in]  mask is the neighborhood delta volume
+    \return     the dilated volume
+
+    \ingroup image_func_dilate3d
+*/
 AFAPI array dilate3d(const array& in, const array& mask);
 
+/**
+    C++ Interface
+
+    \param[in]  in array is the input image
+    \param[in]  mask is the neighborhood window
+    \return     the eroded image
+
+    \ingroup image_func_erode
+*/
 AFAPI array erode(const array& in, const array& mask);
 
+/**
+    C++ Interface
+
+    \param[in]  in array is the input volume
+    \param[in]  mask is the neighborhood delta volume
+    \return     the eroded volume
+
+    \ingroup image_func_erode3d
+*/
 AFAPI array erode3d(const array& in, const array& mask);
 
 AFAPI void grad(array& rows, array& cols, const array& in);
 
+/**
+    C++ Interface
+
+    \snippet test/regions.cpp ex_image_regions
+
+    \param[in]  in array should be binary/grayscale image of type uchar \ref u8
+    \param[in]  connectivity can take one of the following [\ref AF_CONNECTIVITY_4 | \ref AF_CONNECTIVITY_8]
+    \param[in]  ty is type of output array
+    \return     returns array with labels indicating different regions. Throws exceptions if any issue occur.
+
+    \ingroup image_func_regions
+*/
 AFAPI array regions(const array& in, af::connectivity connectivity=AF_CONNECTIVITY_4, dtype type=f32);
 
 /**
@@ -131,10 +216,49 @@ AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_l
  */
 AFAPI void orb(features& feat, array& desc, const array& image, const float fast_thr=20.f, const unsigned max_feat=400, const float scl_fctr=1.5f, const unsigned levels=4, const bool blur_img=false);
 
+/**
+   C++ Interface
+
+   \param[in]  search_img is an array with image data
+   \param[in]  template_img is the template we are looking for in the image
+   \param[in]  m_type is metric that should be used to calculate the disparity
+               between window in the image and the template image. It can one of
+               the values defined by the enum \ref af_match_type
+   \return     array with dispartiy values for the window starting at
+               corresponding pixel position
+
+   \note If \p search_img is 3d array, a batch operation will be performed.
+
+   \ingroup image_func_match_template
+ */
 AFAPI array matchTemplate(const array &searchImg, const array &templateImg, matchType mType=AF_SAD);
 
+/**
+   C++ Interface
+
+   \param[out] dx is derivate along horizontal direction
+   \param[out] dy is derivate along vertical direction
+   \param[in]  img is an array with image data
+   \param[in]  ker_size sobel kernel size or window size
+
+   \note If \p img is 3d array, a batch operation will be performed.
+
+   \ingroup image_func_sobel
+ */
 AFAPI void sobel(array &dx, array &dy, const array &img, const unsigned ker_size=3);
 
+/**
+   C++ Interface
+
+   \param[in]  img is an array with image data
+   \param[in]  ker_size sobel kernel size or window size
+   \param[in]  isFast = true uses \f$G=G_x+G_y\f$, otherwise \f$G=\sqrt (G_x^2+G_y^2)\f$
+   \return     an array with sobel gradient values
+
+   \note If \p img is 3d array, a batch operation will be performed.
+
+   \ingroup image_func_sobel
+ */
 AFAPI array sobel(const array &img, const unsigned ker_size=3, bool isFast=false);
 
 /**
@@ -182,6 +306,17 @@ AFAPI array gray2rgb(const array& in, const float rFactor=1.0, const float gFact
  */
 AFAPI array histequal(const array& in, const array& hist);
 
+/**
+   C++ Interface
+
+   \param[in]  rows
+   \param[in]  cols
+   \param[in]  rows (default 0) (calculated internally as 0.25 * rows + 0.75)
+   \param[in]  cols (default 0) (calculated internally as 0.25 * cols + 0.75)
+   \return     an array with values generated using gaussian function
+
+   \ingroup image_func_gauss
+ */
 AFAPI array gaussianKernel(const int rows, const int cols, const double sig_r = 0, const double sig_c = 0);
 
 /**
@@ -274,29 +409,120 @@ extern "C" {
      */
     AFAPI af_err af_histogram(af_array *out, const af_array in, const unsigned nbins, const double minval, const double maxval);
 
-    // image dilation operation
+    /**
+        C Interface
+
+        \param[out] out array is the dilated image
+        \param[in]  in array is the input image
+        \param[in]  mask is the neighborhood window
+        \return     \ref AF_SUCCESS if the dilated successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_dilate
+    */
     AFAPI af_err af_dilate(af_array *out, const af_array in, const af_array mask);
 
+    /**
+        C Interface
+
+        \param[out] out array is the dilated volume
+        \param[in]  in array is the input volume
+        \param[in]  mask is the neighborhood delta volume
+        \return     \ref AF_SUCCESS if the dilated successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_dilate3d
+    */
     AFAPI af_err af_dilate3d(af_array *out, const af_array in, const af_array mask);
 
-    // image erosion operation
+    /**
+        C Interface
+
+        \param[out] out array is the eroded image
+        \param[in]  in array is the input image
+        \param[in]  mask is the neighborhood window
+        \return     \ref AF_SUCCESS if the eroded successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_erode
+    */
     AFAPI af_err af_erode(af_array *out, const af_array in, const af_array mask);
 
+    /**
+        C Interface
+
+        \param[out] out array is the eroded volume
+        \param[in]  in array is the input volume
+        \param[in]  mask is the neighborhood delta volume
+        \return     \ref AF_SUCCESS if the eroded successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_erode3d
+    */
     AFAPI af_err af_erode3d(af_array *out, const af_array in, const af_array mask);
 
-    // image bilateral filter
+    /**
+        C Interface
+
+        \param[out] out array is the processed image
+        \param[in]  in array is the input image
+        \param[in]  spatial_sigma is the spatial variance paramter that decides the filter window
+        \param[in]  chromatic_sigma is the chromatic variance paramter
+        \param[in]  is_color indicates if the input \p in is color image or grayscale
+        \return     \ref AF_SUCCESS if the filter is applied successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_bilateral
+    */
     AFAPI af_err af_bilateral(af_array *out, const af_array in, const float spatial_sigma, const float chromatic_sigma, const bool isColor);
 
-    // image meanshift filter
+    /**
+        C Interface
+
+        \param[out] out array is the processed image
+        \param[in]  in array is the input image
+        \param[in]  spatial_sigma is the spatial variance paramter that decides the filter window
+        \param[in]  chromatic_sigma is the chromatic variance paramter
+        \param[in]  iter is the number of iterations filter operation is performed
+        \param[in]  is_color indicates if the input \p in is color image or grayscale
+        \return     \ref AF_SUCCESS if the filter is applied successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_meanshift
+    */
     AFAPI af_err af_meanshift(af_array *out, const af_array in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color);
 
     // gradient
     AFAPI af_err af_gradient(af_array *grad_rows, af_array *grad_cols, const af_array in);
 
-    // image median filter
+    /**
+        C Interface
+
+        \param[out] out array is the processed image
+        \param[in]  in array is the input image
+        \param[in]  wind_length is the kernel height
+        \param[in]  wind_width is the kernel width
+        \param[in]  edge_pad value will decide what happens to border when running
+                    filter in their neighborhood. It takes one of the values [\ref AF_ZERO | \ref AF_SYMMETRIC]
+        \return     \ref AF_SUCCESS if the median filter is applied successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_medfilt
+    */
     AFAPI af_err af_medfilt(af_array *out, const af_array in, dim_type wind_length, dim_type wind_width, af_pad_type edge_pad);
 
-    // Compute labels for connected regions from binary input arrays
+    /**
+        C Interface
+
+        \param[out] out array will have labels indicating different regions
+        \param[in]  in array should be binary/grayscale image of type uchar \ref u8
+        \param[in]  connectivity can take one of the following [\ref AF_CONNECTIVITY_4 | \ref AF_CONNECTIVITY_8]
+        \param[in]  ty is type of output array
+        \return     \ref AF_SUCCESS if the regions are identified successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_regions
+    */
     AFAPI af_err af_regions(af_array *out, const af_array in, af_connectivity connectivity, af_dtype ty);
 
     /**
@@ -350,10 +576,39 @@ extern "C" {
      */
     AFAPI af_err af_orb(af_features *feat, af_array *desc, const af_array in, const float fast_thr, const unsigned max_feat, const float scl_fctr, const unsigned levels, const bool blur_img);
 
-    // object detection algorithm, matching pattern image to target image and giving disparity results
+    /**
+       C Interface
+
+       \param[out] out will have dispartiy values for the window starting at
+                   corresponding pixel position
+       \param[in]  search_img is an array with image data
+       \param[in]  template_img is the template we are looking for in the image
+       \param[in]  m_type is metric that should be used to calculate the disparity
+                   between window in the image and the template image. It can one of
+                   the values defined by the enum \ref af_match_type
+       \return     \ref AF_SUCCESS if disparity metric is computed successfully,
+       otherwise an appropriate error code is returned.
+
+       \note If \p search_img is 3d array, a batch operation will be performed.
+
+       \ingroup image_func_match_template
+     */
     AFAPI af_err af_match_template(af_array *out, const af_array search_img, const af_array template_img, af_match_type m_type);
 
-    // sobel operator for images
+    /**
+       C Interface
+
+       \param[out] dx is derivate along horizontal direction
+       \param[out] dy is derivate along vertical direction
+       \param[in]  img is an array with image data
+       \param[in]  ker_size sobel kernel size or window size
+       \return     \ref AF_SUCCESS if sobel derivates are computed successfully,
+       otherwise an appropriate error code is returned.
+
+       \note If \p img is 3d array, a batch operation will be performed.
+
+       \ingroup image_func_sobel
+     */
     AFAPI af_err af_sobel_operator(af_array *dx, af_array *dy, const af_array img, const unsigned ker_size);
 
     /**
@@ -405,6 +660,19 @@ extern "C" {
      */
     AFAPI af_err af_histequal(af_array *out, const af_array in, const af_array hist);
 
+    /**
+       C Interface
+
+       \param[out] out is an array with values generated using gaussian function
+       \param[in]  rows
+       \param[in]  cols
+       \param[in]  rows (default 0) (calculated internally as 0.25 * rows + 0.75)
+       \param[in]  cols (default 0) (calculated internally as 0.25 * cols + 0.75)
+       \return     \ref AF_SUCCESS if gaussian distribution values are generated successfully,
+       otherwise an appropriate error code is returned.
+
+       \ingroup image_func_gauss
+     */
     AFAPI af_err af_gaussian_kernel(af_array *out,
                                     const int rows, const int cols,
                                     const double sigma_r, const double sigma_c);
