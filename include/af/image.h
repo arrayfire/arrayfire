@@ -68,6 +68,20 @@ AFAPI array histogram(const array &in, const unsigned nbins);
 
 AFAPI array meanshift(const array& in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color=false);
 
+/**
+    C++ Interface
+
+    \snippet test/medfilt.cpp ex_image_medfilt
+
+    \param[in]  in array is the input image
+    \param[in]  wind_length is the kernel height
+    \param[in]  wind_width is the kernel width
+    \param[in]  edge_pad value will decide what happens to border when running
+                filter in their neighborhood. It takes one of the values [\ref AF_ZERO | \ref AF_SYMMETRIC]
+    \return     the processed image
+
+    \ingroup image_func_medfilt
+*/
 AFAPI array medfilt(const array& in, dim_type wind_length = 3, dim_type wind_width = 3, padType edge_pad = AF_ZERO);
 
 AFAPI array dilate(const array& in, const array& mask);
@@ -355,7 +369,20 @@ extern "C" {
     // gradient
     AFAPI af_err af_gradient(af_array *grad_rows, af_array *grad_cols, const af_array in);
 
-    // image median filter
+    /**
+        C Interface
+
+        \param[out] out array is the processed image
+        \param[in]  in array is the input image
+        \param[in]  wind_length is the kernel height
+        \param[in]  wind_width is the kernel width
+        \param[in]  edge_pad value will decide what happens to border when running
+                    filter in their neighborhood. It takes one of the values [\ref AF_ZERO | \ref AF_SYMMETRIC]
+        \return     \ref AF_SUCCESS if the median filter is applied successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_medfilt
+    */
     AFAPI af_err af_medfilt(af_array *out, const af_array in, dim_type wind_length, dim_type wind_width, af_pad_type edge_pad);
 
     /**

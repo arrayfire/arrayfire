@@ -219,5 +219,15 @@ match a given template image. A more in depth discussion on the topic can be fou
 
 =======================================================================
 
+\defgroup image_func_medfilt medfilt
+\ingroup imageflt_mat
+
+\brief Median Filter
+
+A median filter is similar to the arbitrary filter except that instead of a weighted sum,
+the median value of the pixels covered by the kernel is returned.
+
+=======================================================================
+
 @}
 */
