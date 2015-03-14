@@ -229,5 +229,35 @@ the median value of the pixels covered by the kernel is returned.
 
 =======================================================================
 
+\defgroup image_func_meanshift meanshift
+\ingroup imageflt_mat
+
+\brief Meanshift Filter
+
+A meanshift filter is an edge-preserving smoothing filter commonly used in object
+tracking and image segmentation.
+
+This filter replaces each pixel in the image with the mean of the values within a
+given given color and spatial radius. The meanshift filter is an iterative algorithm
+that continues until a maxium number of iterations is met or until the value of the
+means no longer changes.
+
+=======================================================================
+
+\defgroup image_func_bilateral bilateral
+\ingroup imageflt_mat
+
+\brief Bilateral Filter
+
+A bilateral filter is a edge-preserving filter that reduces noise in an image.
+The intensity of each pixel is replaced by a weighted average of the intensities
+of nearby pixels. The weights follow a Gaussian distribution and depend on the
+distance as well as the color distance.
+
+The bilateral filter requires the size of the filter (in pixels) and the upper
+bound on color values, N, where pixel values range from 0–N inclusively.
+
+=======================================================================
+
 @}
 */

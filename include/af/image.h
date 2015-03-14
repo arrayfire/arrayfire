@@ -36,6 +36,17 @@ AFAPI array scale(const array& in, const float scale0, const float scale1, const
 
 AFAPI array skew(const array& in, const float skew0, const float skew1, const dim_type odim0, const dim_type odim1, const bool inverse=true, const interpType method=AF_INTERP_NEAREST);
 
+/**
+    C++ Interface
+
+    \param[in]  in array is the input image
+    \param[in]  spatial_sigma is the spatial variance paramter that decides the filter window
+    \param[in]  chromatic_sigma is the chromatic variance paramter
+    \param[in]  is_color indicates if the input \p in is color image or grayscale
+    \return     the processed image
+
+    \ingroup image_func_bilateral
+*/
 AFAPI array bilateral(const array &in, const float spatial_sigma, const float chromatic_sigma, bool is_color=false);
 
 /**
@@ -66,6 +77,18 @@ AFAPI array histogram(const array &in, const unsigned nbins, const double minval
  */
 AFAPI array histogram(const array &in, const unsigned nbins);
 
+/**
+    C++ Interface
+
+    \param[in]  in array is the input image
+    \param[in]  spatial_sigma is the spatial variance paramter that decides the filter window
+    \param[in]  chromatic_sigma is the chromatic variance paramter
+    \param[in]  iter is the number of iterations filter operation is performed
+    \param[in]  is_color indicates if the input \p in is color image or grayscale
+    \return     the processed image
+
+    \ingroup image_func_meanshift
+*/
 AFAPI array meanshift(const array& in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color=false);
 
 /**
@@ -360,10 +383,35 @@ extern "C" {
 
     AFAPI af_err af_erode3d(af_array *out, const af_array in, const af_array mask);
 
-    // image bilateral filter
+    /**
+        C Interface
+
+        \param[out] out array is the processed image
+        \param[in]  in array is the input image
+        \param[in]  spatial_sigma is the spatial variance paramter that decides the filter window
+        \param[in]  chromatic_sigma is the chromatic variance paramter
+        \param[in]  is_color indicates if the input \p in is color image or grayscale
+        \return     \ref AF_SUCCESS if the filter is applied successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_bilateral
+    */
     AFAPI af_err af_bilateral(af_array *out, const af_array in, const float spatial_sigma, const float chromatic_sigma, const bool isColor);
 
-    // image meanshift filter
+    /**
+        C Interface
+
+        \param[out] out array is the processed image
+        \param[in]  in array is the input image
+        \param[in]  spatial_sigma is the spatial variance paramter that decides the filter window
+        \param[in]  chromatic_sigma is the chromatic variance paramter
+        \param[in]  iter is the number of iterations filter operation is performed
+        \param[in]  is_color indicates if the input \p in is color image or grayscale
+        \return     \ref AF_SUCCESS if the filter is applied successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_meanshift
+    */
     AFAPI af_err af_meanshift(af_array *out, const af_array in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color);
 
     // gradient
