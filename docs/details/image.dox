@@ -202,5 +202,22 @@ internally as (0.25 * rows + 0.75) for rows and similarly for columns.
 
 \brief Sobel Operators
 
+Sobel operators perform a 2-D spatial gradient measurement on an image
+to emphasize the regions of high spatial frequency, namely edges. A more in depth
+discussion on it can be found [here](http://en.wikipedia.org/wiki/Sobel_operator).
+
+=======================================================================
+
+\defgroup image_func_match_template matchTemplate
+\ingroup match_mat
+
+\brief Template Matching
+
+Template matching is an image processing technique to find small patches of an image which
+match a given template image. A more in depth discussion on the topic can be found
+[here](http://en.wikipedia.org/wiki/Template_matching).
+
+=======================================================================
+
 @}
 */

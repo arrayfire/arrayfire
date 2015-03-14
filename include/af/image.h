@@ -143,6 +143,21 @@ AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_l
  */
 AFAPI void orb(features& feat, array& desc, const array& image, const float fast_thr=20.f, const unsigned max_feat=400, const float scl_fctr=1.5f, const unsigned levels=4, const bool blur_img=false);
 
+/**
+   C++ Interface
+
+   \param[in]  search_img is an array with image data
+   \param[in]  template_img is the template we are looking for in the image
+   \param[in]  m_type is metric that should be used to calculate the disparity
+               between window in the image and the template image. It can one of
+               the values defined by the enum \ref af_match_type
+   \return     array with dispartiy values for the window starting at
+               corresponding pixel position
+
+   \note If \p search_img is 3d array, a batch operation will be performed.
+
+   \ingroup image_func_match_template
+ */
 AFAPI array matchTemplate(const array &searchImg, const array &templateImg, matchType mType=AF_SAD);
 
 /**
@@ -408,7 +423,23 @@ extern "C" {
      */
     AFAPI af_err af_orb(af_features *feat, af_array *desc, const af_array in, const float fast_thr, const unsigned max_feat, const float scl_fctr, const unsigned levels, const bool blur_img);
 
-    // object detection algorithm, matching pattern image to target image and giving disparity results
+    /**
+       C Interface
+
+       \param[out] out will have dispartiy values for the window starting at
+                   corresponding pixel position
+       \param[in]  search_img is an array with image data
+       \param[in]  template_img is the template we are looking for in the image
+       \param[in]  m_type is metric that should be used to calculate the disparity
+                   between window in the image and the template image. It can one of
+                   the values defined by the enum \ref af_match_type
+       \return     \ref AF_SUCCESS if disparity metric is computed successfully,
+       otherwise an appropriate error code is returned.
+
+       \note If \p search_img is 3d array, a batch operation will be performed.
+
+       \ingroup image_func_match_template
+     */
     AFAPI af_err af_match_template(af_array *out, const af_array search_img, const af_array template_img, af_match_type m_type);
 
     /**
