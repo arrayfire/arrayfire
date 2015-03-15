@@ -32,7 +32,6 @@ af_print(randu(1, 4));
 af_print(randn(2, 2));
 af_print(identity(3, 3));
 af_print(randu(2, 1, c32));
-af_print(rand(2, 4, u32));
 }
 
 You can also initialize values from a host array:
