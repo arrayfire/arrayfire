@@ -772,7 +772,6 @@ WARN_LOGFILE           =
 INPUT                  = ${DOCS_DIR}/pages \
 						 ${INCLUDE_DIR}/ \
                          ${INCLUDE_DIR}/af/ \
-                         ${INCLUDE_DIR}/../src/api/c/ \
 						 ${DOCS_DIR}/details
 
 # This tag can be used to specify the character encoding of the source files
