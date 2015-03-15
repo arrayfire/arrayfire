@@ -37,7 +37,7 @@ AFAPI array scale(const array& in, const float scale0, const float scale1, const
 AFAPI array skew(const array& in, const float skew0, const float skew1, const dim_type odim0, const dim_type odim1, const bool inverse=true, const interpType method=AF_INTERP_NEAREST);
 
 /**
-    C++ Interface
+    C++ Interface for bilateral filter
 
     \param[in]  in array is the input image
     \param[in]  spatial_sigma is the spatial variance paramter that decides the filter window
@@ -50,7 +50,7 @@ AFAPI array skew(const array& in, const float skew0, const float skew1, const di
 AFAPI array bilateral(const array &in, const float spatial_sigma, const float chromatic_sigma, bool is_color=false);
 
 /**
-   C++ Interface
+   C++ Interface for histogram
 
    \snippet test/histogram.cpp ex_image_hist_minmax
 
@@ -65,7 +65,7 @@ AFAPI array bilateral(const array &in, const float spatial_sigma, const float ch
 AFAPI array histogram(const array &in, const unsigned nbins, const double minval, const double maxval);
 
 /**
-   C++ Interface
+   C++ Interface for histogram
 
    \snippet test/histogram.cpp ex_image_hist_nominmax
 
@@ -78,7 +78,7 @@ AFAPI array histogram(const array &in, const unsigned nbins, const double minval
 AFAPI array histogram(const array &in, const unsigned nbins);
 
 /**
-    C++ Interface
+    C++ Interface for meanshift
 
     \param[in]  in array is the input image
     \param[in]  spatial_sigma is the spatial variance paramter that decides the filter window
@@ -92,7 +92,7 @@ AFAPI array histogram(const array &in, const unsigned nbins);
 AFAPI array meanshift(const array& in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color=false);
 
 /**
-    C++ Interface
+    C++ Interface for median filter
 
     \snippet test/medfilt.cpp ex_image_medfilt
 
@@ -108,18 +108,20 @@ AFAPI array meanshift(const array& in, const float spatial_sigma, const float ch
 AFAPI array medfilt(const array& in, dim_type wind_length = 3, dim_type wind_width = 3, padType edge_pad = AF_ZERO);
 
 /**
-    C++ Interface
+    C++ Interface for image dilation (max filter)
 
     \param[in]  in array is the input image
     \param[in]  mask is the neighborhood window
     \return     the dilated image
+
+    \note if \p mask is all ones, this function behaves like max filter
 
     \ingroup image_func_dilate
 */
 AFAPI array dilate(const array& in, const array& mask);
 
 /**
-    C++ Interface
+    C++ Interface for 3d image dilation
 
     \param[in]  in array is the input volume
     \param[in]  mask is the neighborhood delta volume
@@ -130,18 +132,20 @@ AFAPI array dilate(const array& in, const array& mask);
 AFAPI array dilate3d(const array& in, const array& mask);
 
 /**
-    C++ Interface
+    C++ Interface for image erosion (min filter)
 
     \param[in]  in array is the input image
     \param[in]  mask is the neighborhood window
     \return     the eroded image
+
+    \note This function can be used as min filter by using a mask of all ones
 
     \ingroup image_func_erode
 */
 AFAPI array erode(const array& in, const array& mask);
 
 /**
-    C++ Interface
+    C++ Interface for 3d for image erosion
 
     \param[in]  in array is the input volume
     \param[in]  mask is the neighborhood delta volume
@@ -154,7 +158,7 @@ AFAPI array erode3d(const array& in, const array& mask);
 AFAPI void grad(array& rows, array& cols, const array& in);
 
 /**
-    C++ Interface
+    C++ Interface for getting regions in an image
 
     \snippet test/regions.cpp ex_image_regions
 
@@ -168,7 +172,7 @@ AFAPI void grad(array& rows, array& cols, const array& in);
 AFAPI array regions(const array& in, af::connectivity connectivity=AF_CONNECTIVITY_4, dtype type=f32);
 
 /**
-    C++ Interface
+    C++ Interface for FAST feature detector
 
     \param[in] in array containing a grayscale image (color images are not
                supported)
@@ -193,7 +197,7 @@ AFAPI array regions(const array& in, af::connectivity connectivity=AF_CONNECTIVI
 AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_length=9, const bool non_max=true, const float feature_ratio=0.05, const unsigned edge=3);
 
 /**
-    C++ Interface
+    C++ Interface for ORB feature descriptor
 
     \param[out] feat features object composed of arrays for x and y
                 coordinates, score, orientation and size of selected features
@@ -217,7 +221,7 @@ AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_l
 AFAPI void orb(features& feat, array& desc, const array& image, const float fast_thr=20.f, const unsigned max_feat=400, const float scl_fctr=1.5f, const unsigned levels=4, const bool blur_img=false);
 
 /**
-   C++ Interface
+   C++ Interface for image template matching
 
    \param[in]  search_img is an array with image data
    \param[in]  template_img is the template we are looking for in the image
@@ -234,7 +238,7 @@ AFAPI void orb(features& feat, array& desc, const array& image, const float fast
 AFAPI array matchTemplate(const array &searchImg, const array &templateImg, matchType mType=AF_SAD);
 
 /**
-   C++ Interface
+   C++ Interface for extracting sobel gradients
 
    \param[out] dx is derivate along horizontal direction
    \param[out] dy is derivate along vertical direction
@@ -248,7 +252,7 @@ AFAPI array matchTemplate(const array &searchImg, const array &templateImg, matc
 AFAPI void sobel(array &dx, array &dy, const array &img, const unsigned ker_size=3);
 
 /**
-   C++ Interface
+   C++ Interface for sobel filtering
 
    \param[in]  img is an array with image data
    \param[in]  ker_size sobel kernel size or window size
@@ -262,7 +266,7 @@ AFAPI void sobel(array &dx, array &dy, const array &img, const unsigned ker_size
 AFAPI array sobel(const array &img, const unsigned ker_size=3, bool isFast=false);
 
 /**
-   C++ Interface
+   C++ Interface for RGB to gray conversion
 
    \param[in]  in is an array in the RGB colorspace
    \param[in]  rPercent is percentage of red channel value contributing to grayscale intensity
@@ -277,7 +281,7 @@ AFAPI array sobel(const array &img, const unsigned ker_size=3, bool isFast=false
 AFAPI array rgb2gray(const array& in, const float rPercent=0.2126f, const float gPercent=0.7152f, const float bPercent=0.0722f);
 
 /**
-   C++ Interface
+   C++ Interface for gray to RGB conversion
 
    \param[in]  in is an array in the Grayscale colorspace
    \param[in]  rFactor is percentage of intensity value contributing to red channel
@@ -292,7 +296,7 @@ AFAPI array rgb2gray(const array& in, const float rPercent=0.2126f, const float 
 AFAPI array gray2rgb(const array& in, const float rFactor=1.0, const float gFactor=1.0, const float bFactor=1.0);
 
 /**
-   C++ Interface
+   C++ Interface for histogram equalization
 
    \snippet test/histogram.cpp ex_image_histequal
 
@@ -307,7 +311,7 @@ AFAPI array gray2rgb(const array& in, const float rFactor=1.0, const float gFact
 AFAPI array histequal(const array& in, const array& hist);
 
 /**
-   C++ Interface
+   C++ Interface for generating gausian kernels
 
    \param[in]  rows
    \param[in]  cols
@@ -320,7 +324,7 @@ AFAPI array histequal(const array& in, const array& hist);
 AFAPI array gaussianKernel(const int rows, const int cols, const double sig_r = 0, const double sig_c = 0);
 
 /**
-   C++ Interface
+   C++ Interface for converting HSV to RGB
 
    \param[in]  in is an array in the HSV colorspace
    \return     array in RGB colorspace
@@ -332,7 +336,7 @@ AFAPI array gaussianKernel(const int rows, const int cols, const double sig_r = 
 AFAPI array hsv2rgb(const array& in);
 
 /**
-   C++ Interface
+   C++ Interface for converting RGB to HSV
 
    \param[in]  in is an array in the RGB colorspace
    \return     array in HSV colorspace
@@ -344,7 +348,7 @@ AFAPI array hsv2rgb(const array& in);
 AFAPI array rgb2hsv(const array& in);
 
 /**
-   C++ Interface
+   C++ Interface wrapper for colorspace conversion
 
    \param[in]  image is the input array
    \param[in]  to is the target array colorspace
@@ -395,7 +399,7 @@ extern "C" {
                          const bool inverse);
 
     /**
-       C Interface
+       C Interface for histogram
 
        \param[out] out is the histogram for input array in
        \param[in]  in is the input array
@@ -410,7 +414,7 @@ extern "C" {
     AFAPI af_err af_histogram(af_array *out, const af_array in, const unsigned nbins, const double minval, const double maxval);
 
     /**
-        C Interface
+        C Interface for image dilation (max filter)
 
         \param[out] out array is the dilated image
         \param[in]  in array is the input image
@@ -418,12 +422,14 @@ extern "C" {
         \return     \ref AF_SUCCESS if the dilated successfully,
         otherwise an appropriate error code is returned.
 
+        \note if \p mask is all ones, this function behaves like max filter
+
         \ingroup image_func_dilate
     */
     AFAPI af_err af_dilate(af_array *out, const af_array in, const af_array mask);
 
     /**
-        C Interface
+        C Interface for 3d image dilation
 
         \param[out] out array is the dilated volume
         \param[in]  in array is the input volume
@@ -436,7 +442,7 @@ extern "C" {
     AFAPI af_err af_dilate3d(af_array *out, const af_array in, const af_array mask);
 
     /**
-        C Interface
+        C Interface for image erosion (min filter)
 
         \param[out] out array is the eroded image
         \param[in]  in array is the input image
@@ -444,12 +450,14 @@ extern "C" {
         \return     \ref AF_SUCCESS if the eroded successfully,
         otherwise an appropriate error code is returned.
 
+        \note if \p mask is all ones, this function behaves like min filter
+
         \ingroup image_func_erode
     */
     AFAPI af_err af_erode(af_array *out, const af_array in, const af_array mask);
 
     /**
-        C Interface
+        C Interface for 3D image erosion
 
         \param[out] out array is the eroded volume
         \param[in]  in array is the input volume
@@ -462,7 +470,7 @@ extern "C" {
     AFAPI af_err af_erode3d(af_array *out, const af_array in, const af_array mask);
 
     /**
-        C Interface
+        C Interface for bilateral filter
 
         \param[out] out array is the processed image
         \param[in]  in array is the input image
@@ -477,7 +485,7 @@ extern "C" {
     AFAPI af_err af_bilateral(af_array *out, const af_array in, const float spatial_sigma, const float chromatic_sigma, const bool isColor);
 
     /**
-        C Interface
+        C Interface for mean shift
 
         \param[out] out array is the processed image
         \param[in]  in array is the input image
@@ -496,7 +504,7 @@ extern "C" {
     AFAPI af_err af_gradient(af_array *grad_rows, af_array *grad_cols, const af_array in);
 
     /**
-        C Interface
+        C Interface for median filter
 
         \param[out] out array is the processed image
         \param[in]  in array is the input image
@@ -512,7 +520,7 @@ extern "C" {
     AFAPI af_err af_medfilt(af_array *out, const af_array in, dim_type wind_length, dim_type wind_width, af_pad_type edge_pad);
 
     /**
-        C Interface
+        C Interface for regions in an image
 
         \param[out] out array will have labels indicating different regions
         \param[in]  in array should be binary/grayscale image of type uchar \ref u8
@@ -526,7 +534,7 @@ extern "C" {
     AFAPI af_err af_regions(af_array *out, const af_array in, af_connectivity connectivity, af_dtype ty);
 
     /**
-        C Interface
+        C Interface for FAST feature detector
 
         \param[out] af_features struct containing arrays for x and y
                     coordinates and score, while array orientation is set to 0
@@ -553,7 +561,7 @@ extern "C" {
     AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio, const unsigned edge);
 
     /**
-        C Interface
+        C Interface for ORB feature descriptor
 
         \param[out] feat af_features struct composed of arrays for x and y
                     coordinates, score, orientation and size of selected features
@@ -577,7 +585,7 @@ extern "C" {
     AFAPI af_err af_orb(af_features *feat, af_array *desc, const af_array in, const float fast_thr, const unsigned max_feat, const float scl_fctr, const unsigned levels, const bool blur_img);
 
     /**
-       C Interface
+       C Interface for image template matching
 
        \param[out] out will have dispartiy values for the window starting at
                    corresponding pixel position
@@ -596,7 +604,7 @@ extern "C" {
     AFAPI af_err af_match_template(af_array *out, const af_array search_img, const af_array template_img, af_match_type m_type);
 
     /**
-       C Interface
+       C Interface for getting sobel gradients
 
        \param[out] dx is derivate along horizontal direction
        \param[out] dy is derivate along vertical direction
@@ -612,7 +620,7 @@ extern "C" {
     AFAPI af_err af_sobel_operator(af_array *dx, af_array *dy, const af_array img, const unsigned ker_size);
 
     /**
-       C Interface
+       C Interface for converting RGB to gray
 
        \param[out] out is an array in target colorspace
        \param[in]  in is an array in the RGB colorspace
@@ -629,7 +637,7 @@ extern "C" {
     AFAPI af_err af_rgb2gray(af_array* out, const af_array in, const float rPercent, const float gPercent, const float bPercent);
 
     /**
-       C Interface
+       C Interface for converting gray to RGB
 
        \param[out] out is an array in target colorspace
        \param[in]  in is an array in the Grayscale colorspace
@@ -646,7 +654,7 @@ extern "C" {
     AFAPI af_err af_gray2rgb(af_array* out, const af_array in, const float rFactor, const float gFactor, const float bFactor);
 
     /**
-       C Interface
+       C Interface for histogram equalization
 
        \param[out] out is an array with data that has histogram approximately equal to histogram
        \param[in]  in is the input array, non-normalized input (!! assumes values [0-255] !!)
@@ -661,7 +669,7 @@ extern "C" {
     AFAPI af_err af_histequal(af_array *out, const af_array in, const af_array hist);
 
     /**
-       C Interface
+       C Interface generating gaussian kernels
 
        \param[out] out is an array with values generated using gaussian function
        \param[in]  rows
@@ -678,7 +686,7 @@ extern "C" {
                                     const double sigma_r, const double sigma_c);
 
     /**
-       C Interface
+       C Interface for converting HSV to RGB
 
        \param[out] out is an array in the RGB colorspace
        \param[in]  in is an array in the HSV colorspace
@@ -692,7 +700,7 @@ extern "C" {
     AFAPI af_err af_hsv2rgb(af_array* out, const af_array in);
 
     /**
-       C Interface
+       C Interface for converting RGB to HSV
 
        \param[out] out is an array in the HSV colorspace
        \param[in]  in is an array in the RGB colorspace
@@ -706,7 +714,7 @@ extern "C" {
     AFAPI af_err af_rgb2hsv(af_array* out, const af_array in);
 
     /**
-       C Interface
+       C Interface wrapper for colorspace conversion
 
        \param[out] out is an array in target colorspace \param[in]  image is
        the input array \param[in]  to is the target array colorspace \param[in]

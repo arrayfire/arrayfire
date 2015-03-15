@@ -1,5 +1,5 @@
 /*!
-\page batch_detail reductions
+\page batch_detail_algo algorithm
 
 This function performs the operation across all batches present in the input simultaneously.
 

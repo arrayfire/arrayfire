@@ -15,7 +15,7 @@ namespace af
 {
     class array;
     /**
-       C++ API (array, array)
+       C++ API for min of two arrays
 
        \param[in] lhs first input
        \param[in] rhs second input
@@ -26,7 +26,7 @@ namespace af
     AFAPI array min    (const array &lhs, const array &rhs);
 
     /**
-       C++ API (array, scalar)
+       C++ API for min of array and scalar
 
        \param[in] lhs first input
        \param[in] rhs second input
@@ -37,7 +37,7 @@ namespace af
     AFAPI array min    (const array &lhs, const double rhs);
 
     /**
-       C++ API (scalar, array)
+       C++ API for min of scalar and array
 
        \param[in] lhs first input
        \param[in] rhs second input
@@ -48,7 +48,7 @@ namespace af
     AFAPI array min    (const double lhs, const array &rhs);
 
     /**
-       C++ API (array, array)
+       C++ API for max of two arrays
 
        \param[in] lhs first input
        \param[in] rhs second input
@@ -59,7 +59,7 @@ namespace af
     AFAPI array max    (const array &lhs, const array &rhs);
 
     /**
-       C++ API (array, scalar)
+       C++ API for max of array and scalar
 
        \param[in] lhs first input
        \param[in] rhs second input
@@ -70,7 +70,7 @@ namespace af
     AFAPI array max    (const array &lhs, const double rhs);
 
     /**
-       C++ API (scalar, array)
+       C++ API for max of array and scalar
 
        \param[in] lhs first input
        \param[in] rhs second input
@@ -81,7 +81,7 @@ namespace af
     AFAPI array max    (const double lhs, const array &rhs);
 
     /**
-       C++ API (array, array)
+       C++ API for remainder when array divides array
 
        \param[in] lhs is numerator
        \param[in] rhs is denominator
@@ -92,7 +92,7 @@ namespace af
     AFAPI array rem    (const array &lhs, const array &rhs);
 
     /**
-       C++ API (array, scalar)
+       C++ API for remainder when scalar divides array
 
        \param[in] lhs is numerator
        \param[in] rhs is denominator
@@ -103,7 +103,7 @@ namespace af
     AFAPI array rem    (const array &lhs, const double rhs);
 
     /**
-       C++ API (scalar, array)
+       C++ API for remainder when array divides scalar
 
        \param[in] lhs is numerator
        \param[in] rhs is denominator
@@ -114,7 +114,7 @@ namespace af
     AFAPI array rem    (const double lhs, const array &rhs);
 
     /**
-       C++ API (array, array)
+       C++ API for modulus when dividend and divisor are arrays
 
        \param[in] lhs is dividend
        \param[in] rhs is divisor
@@ -125,7 +125,7 @@ namespace af
     AFAPI array mod    (const array &lhs, const array &rhs);
 
     /**
-       C++ API (array, scalar)
+       C++ API for modulus when dividend is array, divisor is scalar
 
        \param[in] lhs is dividend
        \param[in] rhs is divisor
@@ -136,7 +136,7 @@ namespace af
     AFAPI array mod    (const array &lhs, const double rhs);
 
     /**
-       C++ API (scalar, array)
+       C++ API for modulus when dividend is scalar, divisor is array
 
        \param[in] lhs is dividend
        \param[in] rhs is divisor
@@ -147,7 +147,7 @@ namespace af
     AFAPI array mod    (const double lhs, const array &rhs);
 
     /**
-       C++ API (array, array)
+       C++ API for power when base and exponent are arrays
 
        \param[in] lhs is base
        \param[in] rhs is exponent
@@ -158,7 +158,7 @@ namespace af
     AFAPI array pow    (const array &lhs, const array &rhs);
 
     /**
-       C++ API (array, scalar)
+       C++ API for power when base is array, exponent is scalar
 
        \param[in] lhs is base
        \param[in] rhs is exponent
@@ -169,7 +169,7 @@ namespace af
     AFAPI array pow    (const array &lhs, const double rhs);
 
     /**
-       C++ API (scalar, array)
+       C++ API for power when base is scalar, exponent is array
 
        \param[in] lhs is base
        \param[in] rhs is exponent
@@ -259,7 +259,7 @@ extern "C" {
     AFAPI af_err af_not   (af_array *result, const af_array in);
 
     /**
-       C API
+       C API for min of two arrays
 
        \param[out] out will contain minimum of \p lhs and \p rhs
        \param[in] lhs first input
@@ -271,7 +271,7 @@ extern "C" {
     AFAPI af_err af_minof (af_array *result, const af_array lhs, const af_array rhs, bool batch);
 
     /**
-       C API
+       C API for max of two arrays
 
        \param[out] out will contain maximum of \p lhs and \p rhs
        \param[in] lhs first input
@@ -283,7 +283,7 @@ extern "C" {
     AFAPI af_err af_maxof (af_array *result, const af_array lhs, const af_array rhs, bool batch);
 
     /**
-       C API
+       C API for remainder
 
        \param[out] out will contain the remainder of \p lhs divided by \p rhs
        \param[in] lhs is numerator
@@ -295,19 +295,19 @@ extern "C" {
     AFAPI af_err af_rem   (af_array *result, const af_array lhs, const af_array rhs, bool batch);
 
     /**
-       C API
+       C API for modulus
 
        \param[out] out will contain the output of \p lhs modulo \p rhs
        \param[in] lhs is dividend
        \param[in] rhs is divisor
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup numeric_func_rem
+       \ingroup numeric_func_mod
     */
     AFAPI af_err af_mod   (af_array *result, const af_array lhs, const af_array rhs, bool batch);
 
     /**
-       C API
+       C API for power
 
        \param[out] out will contain \p lhs raised to power \p rhs
        \param[in] lhs is base
