@@ -790,7 +790,7 @@ extern "C" {
                     circle)
 
         \ingroup cv_func_fast
-     */
+    */
     AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio, const unsigned edge);
 
     /**
@@ -814,7 +814,7 @@ extern "C" {
                     true
 
         \ingroup cv_func_orb
-     */
+    */
     AFAPI af_err af_orb(af_features *feat, af_array *desc, const af_array in, const float fast_thr, const unsigned max_feat, const float scl_fctr, const unsigned levels, const bool blur_img);
 
     /**
@@ -833,7 +833,7 @@ extern "C" {
        \note If \p search_img is 3d array, a batch operation will be performed.
 
        \ingroup cv_func_match_template
-     */
+    */
     AFAPI af_err af_match_template(af_array *out, const af_array search_img, const af_array template_img, af_match_type m_type);
 
     /**
@@ -849,7 +849,7 @@ extern "C" {
        \note If \p img is 3d array, a batch operation will be performed.
 
        \ingroup image_func_sobel
-     */
+    */
     AFAPI af_err af_sobel_operator(af_array *dx, af_array *dy, const af_array img, const unsigned ker_size);
 
     /**
@@ -866,7 +866,7 @@ extern "C" {
        \note \p in must be three dimensional for RGB to Grayscale conversion.
 
        \ingroup image_func_rgb2gray
-     */
+    */
     AFAPI af_err af_rgb2gray(af_array* out, const af_array in, const float rPercent, const float gPercent, const float bPercent);
 
     /**
@@ -883,7 +883,7 @@ extern "C" {
        \note \p in must be two dimensional for Grayscale to RGB conversion.
 
        \ingroup image_func_gray2rgb
-     */
+    */
     AFAPI af_err af_gray2rgb(af_array* out, const af_array in, const float rFactor, const float gFactor, const float bFactor);
 
     /**
@@ -898,7 +898,7 @@ extern "C" {
        \note \p in must be two dimensional.
 
        \ingroup image_func_histequal
-     */
+    */
     AFAPI af_err af_histequal(af_array *out, const af_array in, const af_array hist);
 
     /**
@@ -913,7 +913,7 @@ extern "C" {
        otherwise an appropriate error code is returned.
 
        \ingroup image_func_gauss
-     */
+    */
     AFAPI af_err af_gaussian_kernel(af_array *out,
                                     const int rows, const int cols,
                                     const double sigma_r, const double sigma_c);
@@ -929,7 +929,7 @@ extern "C" {
        \note \p in must be three dimensional
 
        \ingroup image_func_hsv2rgb
-     */
+    */
     AFAPI af_err af_hsv2rgb(af_array* out, const af_array in);
 
     /**
@@ -943,16 +943,20 @@ extern "C" {
        \note \p in must be three dimensional
 
        \ingroup image_func_rgb2hsv
-     */
+    */
     AFAPI af_err af_rgb2hsv(af_array* out, const af_array in);
 
     /**
        C Interface wrapper for colorspace conversion
 
        \param[out] out is an array in target colorspace \param[in]  image is
-       the input array \param[in]  to is the target array colorspace \param[in]
-       from is the input array colorspace \return     \ref AF_SUCCESS if the
-       color transformation is successful, otherwise an appropriate error code
+       the input array
+
+       \param[in]  to is the target array colorspace \param[in]
+       from is the input array colorspace
+
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code
        is returned.
 
        \note  \p image must be 3 dimensional for \ref AF_HSV to \ref AF_RGB, \ref
@@ -960,7 +964,7 @@ extern "C" {
        For \ref AF_GRAY to \ref AF_RGB transformation, 2D array is expected.
 
        \ingroup image_func_colorspace
-     */
+    */
     AFAPI af_err af_colorspace(af_array *out, const af_array image, af_cspace_t to, af_cspace_t from);
 
 #ifdef __cplusplus
