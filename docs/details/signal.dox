@@ -1,16 +1,7 @@
 
 /*!
-*/
 
-//=====================================================================
-/**
-\addtogroup arrayfire_func
-@{
-
-\defgroup signal_func_convolve convolve
-\ingroup convolve_mat
-
-\brief Convolution Integral
+\page signal_func_conv_desc Convolution
 
 A convolution is a common operation between a source array, a, and a filter (or kernel) array b.
 The answer to the convolution is the same as computing the coefficients in polynomial multiplication,
@@ -27,17 +18,147 @@ batch mode convolutions take place.
 - **Many to One**  - Single filter applied to a set of inputs.
 - **Many to Many** - A set of filters applied onto to a set of inputs in one-to-one correspondence.
 
-For example, if the signal is two dimensional with m & n as sizes along the 1st and 2nd dimensions
+
+
+\page signal_func_conv2_batch_desc convolve2
+
+For example, if the signal is two dimensional with m & n as sizes along the 0th & 1st dimensions
 respectively, then the possible batch operations are as follows.
 
 | Input Signal Dimensions | Filter Signal Dimensions | Batch Mode | Explanation |
 |:-----------------------:|:------------------------:|:----------:|:------------|
 | [m n 1 1] | [m n 1 1] | One to One  | Output will be a single convolve array |
-| [m n 1 1] | [m n 9 1] | One to Many | Output will be 3d array with 3rd dimension length as 9 - 9 filters applied to same input |
-| [m n 9 1] | [m n 1 1] | Many to One | Output will be 3d array with 3rd dimension length as 9 - 1 filter applied to 9 inputs |
-| [m n 9 1] | [m n 9 1] | Many to Many| Output will be 3d array with 3rd dimension length as 9 - 9 filter applied to 9 inputs in one-to-one fashion |
+| [m n 1 1] | [m n 9 1] | One to Many | Output will be 3d array with 2nd dimension length as 9 - 9 filters applied to same input |
+| [m n 9 1] | [m n 1 1] | Many to One | Output will be 3d array with 2nd dimension length as 9 - 1 filter applied to 9 inputs |
+| [m n 9 1] | [m n 9 1] | Many to Many| Output will be 3d array with 2nd dimension length as 9 - 9 filter applied to 9 inputs in one-to-one fashion |
 
-=======================================================================
+
+
+\page signal_func_fft_desc fft
+
+The Fast Fourier Transform (FFT) is an efficient algorithm to compute the discrete Fourier
+transform (DFT) of a signal or array. This is most commonly used to convert data in the
+time (or space) domain to the frequency domain, Then, the inverse FFT (iFFT) is used to
+return the data to the original domain.
+
+There are numerous algorithms to compute the FFT of an array, and the specifics of the
+algorithm depend on the target hardware. Most algorithms, however, use a Cooley-Tukey
+scheme in a divide-and-conquer approach.
+
+\note There are some convenience functions provided for fft where normalization
+factor is not required as input paramter. In such cases, the normalization
+factor is calculated internally based on the input data provided.
+
+*/
+
+//=====================================================================
+/**
+\addtogroup arrayfire_func
+@{
+
+\defgroup signal_func_convolve convolve
+\ingroup convolve_mat
+
+\brief Convolution Integral for any dimensional data
+
+\copydoc signal_func_conv_desc
+
+\copydoc signal_func_conv2_batch_desc
+
+
+
+
+\defgroup signal_func_convolve1 convolve1
+\ingroup convolve_mat
+
+\brief Convolution Integral for one dimensional data
+
+\copydoc signal_func_conv_desc
+For example, if the input size is m along 0th dimension, then the possible batch operations are as follows.
+
+| Input Signal Dimensions | Filter Signal Dimensions | Batch Mode | Explanation |
+|:-----------------------:|:------------------------:|:----------:|:------------|
+| [m 1 1 1] | [m 1 1 1] | One to One  | Output will be a single convolve array |
+| [m 1 1 1] | [m 4 1 1] | One to Many | Output will be 2d array with 1st dimension length as 4 - 4 filters applied to same input |
+| [m 4 1 1] | [m 1 1 1] | Many to One | Output will be 2d array with 1st dimension length as 4 - 1 filter applied to 4 inputs |
+| [m 4 1 1] | [m 4 1 1] | Many to Many| Output will be 2d array with 1st dimension length as 4 - 4 filter applied to 4 inputs in one-to-one fashion |
+
+
+
+\defgroup signal_func_convolve2 convolve2
+\ingroup convolve_mat
+
+\brief Convolution Integral for two dimensional data
+
+\copydoc signal_func_conv_desc
+\copydoc signal_func_conv2_batch_desc
+
+
+
+\defgroup signal_func_convolve3 convolve3
+\ingroup convolve_mat
+
+\brief Convolution Integral for three dimensional data
+
+\copydoc signal_func_conv_desc
+For example, if the signal is three dimensional with m, n & p sizes along the 0th, 1st & 2nd dimensions
+respectively, then the possible batch operations are as follows.
+
+| Input Signal Dimensions | Filter Signal Dimensions | Batch Mode | Explanation |
+|:-----------------------:|:------------------------:|:----------:|:------------|
+| [m n p 1] | [m n p 1] | One to One  | Output will be a single convolve array |
+| [m n p 1] | [m n p 4] | One to Many | Output will be 4d array with 3rd dimension length as 4 - 4 filters applied to same input |
+| [m n p 4] | [m n p 1] | Many to One | Output will be 4d array with 3rd dimension length as 4 - 1 filter applied to 4 inputs |
+| [m n p 4] | [m n p 4] | Many to Many| Output will be 4d array with 3rd dimension length as 4 - 4 filter applied to 4 inputs in one-to-one fashion |
+
+
+
+\defgroup signal_func_fft fft
+\ingroup fft_mat
+
+\breif Fast Fourier Transform
+
+\copydoc signal_func_fft_desc
+
+
+\defgroup signal_func_fft2 fft2
+\ingroup fft_mat
+
+\breif Fast Fourier Transform
+
+\copydoc signal_func_fft_desc
+
+
+\defgroup signal_func_fft3 fft3
+\ingroup fft_mat
+
+\breif Fast Fourier Transform
+
+\copydoc signal_func_fft_desc
+
+
+\defgroup signal_func_ifft ifft
+\ingroup fft_mat
+
+\breif Fast Fourier Transform
+
+\copydoc signal_func_fft_desc
+
+
+\defgroup signal_func_ifft2 ifft2
+\ingroup fft_mat
+
+\breif Fast Fourier Transform
+
+\copydoc signal_func_fft_desc
+
+
+\defgroup signal_func_ifft3 ifft3
+\ingroup fft_mat
+
+\breif Fast Fourier Transform
+
+\copydoc signal_func_fft_desc
 
 @}
 */
