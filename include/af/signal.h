@@ -14,9 +14,34 @@
 namespace af
 {
 
+/**
+   C++ Interface for data interpolation on one dimensional data
+
+   \param[in]  in is the input array
+   \param[in]  pos array contains the interpolation locations
+   \param[in]  method is the interpolation type, it can take one of the values defined by the
+               enum \ref af_interp_type
+   \param[in]  offGrid is the value that will set in the output array when certain index is out of bounds
+   \return     the array with interpolated values
+
+   \ingroup signal_func_approx1
+ */
 AFAPI array approx1(const array &in, const array &pos,
                     const interpType method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
 
+/**
+   C++ Interface for data interpolation on two dimensional data
+
+   \param[in]  in is the input array
+   \param[in]  pos0 array contains the interpolation locations for 0th dimension
+   \param[in]  pos1 array contains the interpolation locations for 1st dimension
+   \param[in]  method is the interpolation type, it can take one of the values defined by the
+               enum \ref af_interp_type
+   \param[in]  offGrid is the value that will set in the output array when certain index is out of bounds
+   \return     the array with interpolated values
+
+   \ingroup signal_func_approx2
+ */
 AFAPI array approx2(const array &in, const array &pos0, const array &pos1,
                     const interpType method = AF_INTERP_LINEAR, const float offGrid = 0.0f);
 
@@ -256,11 +281,38 @@ AFAPI array convolve3(const array& signal, const array& filter, bool expand=fals
 extern "C" {
 #endif
 
-// Interpolation in 1D
+/**
+   C Interface for data interpolation on one dimensional data
+
+   \param[out] out is the array with interpolated values
+   \param[in]  in is the input array
+   \param[in]  pos array contains the interpolation locations
+   \param[in]  method is the interpolation type, it can take one of the values defined by the
+               enum \ref af_interp_type
+   \param[in]  offGrid is the value that will set in the output array when certain index is out of bounds
+   \return     \ref AF_SUCCESS if the interpolation operation is successful,
+               otherwise an appropriate error code is returned.
+
+   \ingroup signal_func_approx1
+ */
 AFAPI af_err af_approx1(af_array *out, const af_array in, const af_array pos,
                         const af_interp_type method, const float offGrid);
 
-// Interpolation in 2D
+/**
+   C Interface for data interpolation on two dimensional data
+
+   \param[out] out is the array with interpolated values
+   \param[in]  in is the input array
+   \param[in]  pos0 array contains the interpolation locations for 0th dimension
+   \param[in]  pos1 array contains the interpolation locations for 1st dimension
+   \param[in]  method is the interpolation type, it can take one of the values defined by the
+               enum \ref af_interp_type
+   \param[in]  offGrid is the value that will set in the output array when certain index is out of bounds
+   \return     \ref AF_SUCCESS if the interpolation operation is successful,
+               otherwise an appropriate error code is returned.
+
+   \ingroup signal_func_approx2
+ */
 AFAPI af_err af_approx2(af_array *out, const af_array in, const af_array pos0, const af_array pos1,
                         const af_interp_type method, const float offGrid);
 

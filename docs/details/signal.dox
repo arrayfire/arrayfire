@@ -160,5 +160,26 @@ respectively, then the possible batch operations are as follows.
 
 \copydoc signal_func_fft_desc
 
+
+\defgroup signal_func_approx1 approx1
+\ingroup approx_mat
+
+approx1 interpolates data along the first dimensions.
+It has three options for the type of interpolation to perform:
+- Nearest neighbor  - \ref AF_INTERP_NEAREST
+- Linear interpolation  - \ref AF_INTERP_LINEAR
+- Bilinear interpolation - \ref AF_INTERP_BILINEAR
+- Cubic interpolation - \ref AF_INTERP_CUBIC
+
+\defgroup signal_func_approx2 approx2
+\ingroup approx_mat
+
+approx2 performs interpolation on data along the first and second dimensions.
+It has three options for the type of interpolation to perform:
+- Nearest neighbor  - \ref AF_INTERP_NEAREST
+- Linear interpolation  - \ref AF_INTERP_LINEAR
+- Bilinear interpolation - \ref AF_INTERP_BILINEAR
+- Cubic interpolation - \ref AF_INTERP_CUBIC
+
 @}
 */
