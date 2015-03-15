@@ -175,7 +175,8 @@ extern "C" {
         \param[out] out The transposed matrix
         \param[in] in Input matrix which will be transposed
         \param[in] conjugate Perform a congugate transposition
-        \return Transposed matrix
+
+        \return AF_SUCCESS if the process is successful.
         \ingroup matmul_mat blas_func_transpose
     */
     AFAPI af_err af_transpose(af_array *out, af_array in, const bool conjugate);

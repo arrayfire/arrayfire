@@ -11,15 +11,18 @@
 
 /**
 
-\defgroup arrayfire_func ArrayFire Functions
+\defgroup arrayfire_func Complete List of ArrayFire Functions
 @{
 @}
 
-@defgroup func_categories Function Categories
+@defgroup func_categories ArrayFire Functions by Category
 @{
 
    @defgroup array_mat Functions to create and modify Arrays
    @{
+
+      Array constructors, random number generation, transpose, indexing, etc
+
       @defgroup array_construct Constructors of array class
 
       @defgroup data_mat Functions to create arrays.
@@ -33,11 +36,14 @@
       @defgroup move_mat Joining and tiling operations
       join, tile, etc
 
-      @defgroup array_basic C functions to create af_array
+      @defgroup helper_mat Helper functions for arrays
+      iszero, isInf, isNan, etc
    @}
 
    @defgroup mathfunc_mat Mathematical functions
    @{
+
+      Functions from standar math library
 
       @defgroup arith_mat Arithmetic operations
       +, -, *, /, >>, <<
@@ -63,6 +69,9 @@
 
    @defgroup vector_mat Vector Algorithms
    @{
+
+      sum, min, max, sort, set operations, etc
+
       @defgroup reduce_mat Reduction operations
       sum, min, max, etc
 

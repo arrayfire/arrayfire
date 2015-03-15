@@ -16,7 +16,7 @@ namespace af
     class array;
 
     /**
-       C++ Interface
+       C++ Interface for sum of elements in an array
 
        \param[in] in is the input array
        \paran[in] dim The dimension along which the add operation occurs
@@ -29,7 +29,7 @@ namespace af
     AFAPI array sum(const array &in, const int dim = -1);
 
     /**
-       C++ Interface
+       C++ Interface for product of elements in an array
 
        \param[in] in is the input array
        \paran[in] dim The dimension along which the multiply operation occurs
@@ -42,7 +42,7 @@ namespace af
     AFAPI array product(const array &in, const int dim = -1);
 
     /**
-       C++ Interface
+       C++ Interface for minimum values in an array
 
        \param[in] in is the input array
        \paran[in] dim The dimension along which the minimum value needs to be extracted
@@ -55,7 +55,7 @@ namespace af
     AFAPI array min(const array &in, const int dim = -1);
 
     /**
-       C++ Interface
+       C++ Interface for maximum values in an array
 
        \param[in] in is the input array
        \paran[in] dim The dimension along which the maximum value needs to be extracted
@@ -68,7 +68,7 @@ namespace af
     AFAPI array max(const array &in, const int dim = -1);
 
     /**
-       C++ Interface
+       C++ Interface for checking all true values in an array
 
        \param[in] in is the input array
        \paran[in] dim The dimension along which the values are checked to be all true
@@ -81,7 +81,7 @@ namespace af
     AFAPI array alltrue(const array &in, const int dim = -1);
 
     /**
-       C++ Interface
+       C++ Interface for checking any true values in an array
 
        \param[in] in is the input array
        \paran[in] dim The dimension along which the values are checked to be any true
@@ -94,7 +94,7 @@ namespace af
     AFAPI array anytrue(const array &in, const int dim = -1);
 
     /**
-       C++ Interface
+       C++ Interface for counting non zero values in an array
 
        \param[in] in is the input array
        \paran[in] dim The dimension along which the the number of non-zero values are counted
@@ -107,7 +107,7 @@ namespace af
     AFAPI array count(const array &in, const int dim = -1);
 
     /**
-       C++ Interface
+       C++ Interface for sum of all elements in an array
 
        \param[in] in is the input array
        \return    the sum of all values of \p in
@@ -117,7 +117,7 @@ namespace af
     template<typename T> T sum(const array &in);
 
     /**
-       C++ Interface
+       C++ Interface for product of all elements in an array
 
        \param[in] in is the input array
        \return    the product of all values of \p in
@@ -127,7 +127,7 @@ namespace af
     template<typename T> T product(const array &in);
 
     /**
-       C++ Interface
+       C++ Interface for getting minimum value of an array
 
        \param[in] in is the input array
        \return    the minimum of all values of \p in
@@ -137,7 +137,7 @@ namespace af
     template<typename T> T min(const array &in);
 
     /**
-       C++ Interface
+       C++ Interface for getting maximum value of an array
 
        \param[in] in is the input array
        \return    the maximum of all values of \p in
@@ -147,7 +147,7 @@ namespace af
     template<typename T> T max(const array &in);
 
     /**
-       C++ Interface
+       C++ Interface for checking if all values in an array are true
 
        \param[in] in is the input array
        \return    true if all values of \p in are true, false otherwise
@@ -157,7 +157,7 @@ namespace af
     template<typename T> T alltrue(const array &in);
 
     /**
-       C++ Interface
+       C++ Interface for checking if any values in an array are true
 
        \param[in] in is the input array
        \return    true if any values of \p in are true, false otherwise
@@ -167,7 +167,7 @@ namespace af
     template<typename T> T anytrue(const array &in);
 
     /**
-       C++ Interface
+       C++ Interface for counting total number of non zero values in an array
 
        \param[in] in is the input array
        \return    the number of non-zero values in \p in
@@ -177,7 +177,7 @@ namespace af
     template<typename T> T count(const array &in);
 
     /**
-       C++ Interface
+       C++ Interface for getting minimum values and their locations in an array
 
        \param[out] val will contain the minimum values along dimension \p dim
        \param[out] idx will contain the locations of minimum all values along dimension \p dim
@@ -191,7 +191,7 @@ namespace af
     AFAPI void min(array &val, array &idx, const array &in, const int dim = -1);
 
     /**
-       C++ Interface
+       C++ Interface for getting maximum values and their locations in an array
 
        \param[out] val will contain the maximum values along dimension \p dim
        \param[out] idx will contain the locations of maximum all values along dimension \p dim
@@ -205,7 +205,7 @@ namespace af
     AFAPI void max(array &val, array &idx, const array &in, const int dim = -1);
 
     /**
-       C++ Interface
+       C++ Interface for getting minimum value and it's location from the entire array
 
        \param[out] val will contain the minimum values in the input
        \param[out] idx will contain the locations of minimum all values in the input
@@ -216,7 +216,7 @@ namespace af
     template<typename T> void min(T *val, unsigned *idx, const array &in);
 
     /**
-       C++ Interface
+       C++ Interface for getting maximum value and it's location from the entire array
 
        \param[out] val contains the maximum values in the input
        \param[out] idx contains the locations of maximum all values in the input
@@ -227,7 +227,7 @@ namespace af
     template<typename T> void max(T *val, unsigned *idx, const array &in);
 
     /**
-       C++ Interface
+       C++ Interface exclusive sum (cumulative sum) of an array
 
        \param[in] in is the input array
        \param[in] dim The dimension along which exclusive sum is performed
@@ -238,7 +238,7 @@ namespace af
     AFAPI array accum(const array &in, const int dim = 0);
 
     /**
-       C++ Interface
+       C++ Interface for finding the locations of non-zero values in an array
 
        \param[in] in is the input array.
        \return linear indices where \p in is non-zero
@@ -248,7 +248,7 @@ namespace af
     AFAPI array where(const array &in);
 
     /**
-       C++ Interface
+       C++ Interface for calculating first order differences in an array
 
        \param[in] in is the input array
        \param[in] dim The dimension along which numerical difference is performed
@@ -259,7 +259,7 @@ namespace af
     AFAPI array diff1(const array &in, const int dim = 0);
 
     /**
-       C++ Interface
+       C++ Interface for calculating second order differences in an array
 
        \param[in] in is the input array
        \param[in] dim The dimension along which numerical difference is performed
@@ -270,7 +270,7 @@ namespace af
     AFAPI array diff2(const array &in, const int dim = 0);
 
     /**
-       C++ Interface
+       C++ Interface for sorting an array
 
        \param[in] in is the input array
        \param[in] dim The dimension along which numerical difference is performed
@@ -284,7 +284,7 @@ namespace af
     AFAPI array sort(const array &in, const unsigned dim = 0, const bool isAscending = true);
 
     /**
-       C++ Interface
+       C++ Interface for sorting an array and getting original indices
 
        \param[out] out will contain the sorted output
        \param[out] indices will contain the indices in the original input
@@ -299,7 +299,7 @@ namespace af
     AFAPI void  sort(array &out, array &indices, const array &in, const unsigned dim = 0,
                      const bool isAscending = true);
     /**
-       C++ Interface
+       C++ Interface for sorting an array based on keys
 
        \param[out] out_keys will contain the keys based on sorted values
        \param[out] out_values will contain the sorted values
@@ -316,7 +316,7 @@ namespace af
                      const unsigned dim = 0, const bool isAscending = true);
 
     /**
-       C++ Interface
+       C++ Interface for getting unique values
 
        \param[in] in is the input array
        \param[in] is_sorted if true, skips the sorting steps internally
@@ -327,7 +327,7 @@ namespace af
     AFAPI array setunique(const array &in, bool is_sorted=false);
 
     /**
-       C++ Interface
+       C++ Interface for performing union of two arrays
 
        \param[in] first is the first array
        \param[in] second is the second array
@@ -339,7 +339,7 @@ namespace af
     AFAPI array setunion(const array &first, const array &second, bool is_unique=false);
 
     /**
-       C++ Interface
+       C++ Interface for performing intersect of two arrays
 
        \param[in] first is the first array
        \param[in] second is the second array
@@ -357,7 +357,7 @@ extern "C" {
 #endif
 
     /**
-       C Interface
+       C Interface for sum of elements in an array
 
        \param[out] out will contain the sum of all values in \p in along \p dim
        \param[in] in is the input array
@@ -369,7 +369,7 @@ extern "C" {
     AFAPI af_err af_sum(af_array *out, const af_array in, const int dim);
 
     /**
-       C Interface
+       C Interface for product of elements in an array
 
        \param[out] out will contain the product of all values in \p in along \p dim
        \param[in] in is the input array
@@ -381,7 +381,7 @@ extern "C" {
     AFAPI af_err af_product(af_array *out, const af_array in, const int dim);
 
     /**
-       C Interface
+       C Interface for minimum values in an array
 
        \param[out] out will contain the minimum of all values in \p in along \p dim
        \param[in] in is the input array
@@ -393,7 +393,7 @@ extern "C" {
     AFAPI af_err af_min(af_array *out, const af_array in, const int dim);
 
     /**
-       C Interface
+       C Interface for maximum values in an array
 
        \param[out] out will contain the maximum of all values in \p in along \p dim
        \param[in] in is the input array
@@ -405,7 +405,7 @@ extern "C" {
     AFAPI af_err af_max(af_array *out, const af_array in, const int dim);
 
     /**
-       C Interface
+       C Interface for checking all true values in an array
 
        \param[out] out will contain the result of "and" operation all values in \p in along \p dim
        \param[in] in is the input array
@@ -417,7 +417,7 @@ extern "C" {
     AFAPI af_err af_alltrue(af_array *out, const af_array in, const int dim);
 
     /**
-       C Interface
+       C Interface for checking any true values in an array
 
        \param[out] out will contain the result of "or" operation all values in \p in along \p dim
        \param[in] in is the input array
@@ -429,7 +429,7 @@ extern "C" {
     AFAPI af_err af_anytrue(af_array *out, const af_array in, const int dim);
 
     /**
-       C Interface
+       C Interface for counting non zero values in an array
 
        \param[out] out will contain the number of non-zero values in \p in along \p dim
        \param[in] in is the input array
@@ -441,7 +441,7 @@ extern "C" {
     AFAPI af_err af_count(af_array *out, const af_array in, const int dim);
 
     /**
-       C Interface
+       C Interface for sum of all elements in an array
 
        \param[out] real will contain the real part of adding all elements in input \p in
        \param[out] imag will contain the imaginary part of adding all elements in input \p in
@@ -455,7 +455,7 @@ extern "C" {
     AFAPI af_err af_sum_all(double *real, double *imag, const af_array in);
 
     /**
-       C Interface
+       C Interface for product of all elements in an array
 
        \param[out] real will contain the real part of multiplying all elements in input \p in
        \param[out] imag will contain the imaginary part of multiplying all elements in input \p in
@@ -469,7 +469,7 @@ extern "C" {
     AFAPI af_err af_product_all(double *real, double *imag, const af_array in);
 
     /**
-       C Interface
+       C Interface for getting minimum value of an array
 
        \param[out] real will contain the real part of minimum value of all elements in input \p in
        \param[out] imag will contain the imaginary part of minimum value of all elements in input \p in
@@ -483,7 +483,7 @@ extern "C" {
     AFAPI af_err af_min_all(double *real, double *imag, const af_array in);
 
     /**
-       C Interface
+       C Interface for getting maximum value of an array
 
        \param[out] real will contain the real part of maximum value of all elements in input \p in
        \param[out] imag will contain the imaginary part of maximum value of all elements in input \p in
@@ -497,7 +497,7 @@ extern "C" {
     AFAPI af_err af_max_all(double *real, double *imag, const af_array in);
 
     /**
-       C Interface
+       C Interface for checking if all values in an array are true
 
        \param[out] real is 1 if all values of input \p in are true. 0 otherwise.
        \param[out] imag is always set to 0.
@@ -511,7 +511,7 @@ extern "C" {
     AFAPI af_err af_alltrue_all(double *real, double *imag, const af_array in);
 
     /**
-       C Interface
+       C Interface for checking if any values in an array are true
 
        \param[out] real is 1 if any value of input \p in is true. 0 otherwise.
        \param[out] imag is always set to 0.
@@ -525,7 +525,7 @@ extern "C" {
     AFAPI af_err af_anytrue_all(double *real, double *imag, const af_array in);
 
     /**
-       C Interface
+       C Interface for counting total number of non zero values in an array
 
        \param[out] real will contain the number of non-zero values in \p in.
        \param[out] imag is always set to 0.
@@ -539,7 +539,7 @@ extern "C" {
     AFAPI af_err af_count_all(double *real, double *imag, const af_array in);
 
     /**
-       C Interface
+       C Interface for getting minimum values and their locations in an array
 
        \param[out] out will contain the minimum of all values in \p in along \p dim
        \param[out] idx will contain the location of minimum of all values in \p in along \p dim
@@ -552,7 +552,7 @@ extern "C" {
     AFAPI af_err af_imin(af_array *out, af_array *idx, const af_array in, const int dim);
 
     /**
-       C Interface
+       C Interface for getting maximum values and their locations in an array
 
        \param[out] out will contain the maximum of all values in \p in along \p dim
        \param[out] idx will contain the location of maximum of all values in \p in along \p dim
@@ -565,7 +565,7 @@ extern "C" {
     AFAPI af_err af_imax(af_array *out, af_array *idx, const af_array in, const int dim);
 
     /**
-       C Interface
+       C Interface for getting minimum value and it's location from the entire array
 
        \param[out] real will contain the real part of minimum value of all elements in input \p in
        \param[out] imag will contain the imaginary part of minimum value of all elements in input \p in
@@ -580,7 +580,7 @@ extern "C" {
     AFAPI af_err af_imin_all(double *real, double *imag, unsigned *idx, const af_array in);
 
     /**
-       C Interface
+       C Interface for getting maximum value and it's location from the entire array
 
        \param[out] real will contain the real part of maximum value of all elements in input \p in
        \param[out] imag will contain the imaginary part of maximum value of all elements in input \p in
@@ -595,7 +595,7 @@ extern "C" {
     AFAPI af_err af_imax_all(double *real, double *imag, unsigned *idx, const af_array in);
 
     /**
-       C Interface
+       C Interface exclusive sum (cumulative sum) of an array
 
        \param[out] out will contain exclusive sums of the input
        \param[in] in is the input array
@@ -606,8 +606,8 @@ extern "C" {
     */
     AFAPI af_err af_accum(af_array *out, const af_array in, const int dim);
 
-   /**
-       C Interface
+    /**
+       C Interface for finding the locations of non-zero values in an array
 
        \param[out] idx will contain indices where \p in is non-zero
        \param[in] in is the input array.
@@ -618,7 +618,7 @@ extern "C" {
     AFAPI af_err af_where(af_array *idx, const af_array in);
 
     /**
-       C Interface
+       C Interface for calculating first order differences in an array
 
        \param[out] out will contain the first order numerical differences of \p in
        \param[in] in is the input array
@@ -630,7 +630,7 @@ extern "C" {
     AFAPI af_err af_diff1(af_array *out, const af_array in, const int dim);
 
     /**
-       C Interface
+       C Interface for calculating second order differences in an array
 
        \param[out] out will contain the second order numerical differences of \p in
        \param[in] in is the input array
@@ -642,7 +642,7 @@ extern "C" {
     AFAPI af_err af_diff2(af_array *out, const af_array in, const int dim);
 
     /**
-       C Interface
+       C Interface for sorting an array
 
        \param[out] out will contain the sorted output
        \param[in] in is the input array
@@ -657,7 +657,7 @@ extern "C" {
     AFAPI af_err af_sort(af_array *out, const af_array in, const unsigned dim, const bool isAscending);
 
     /**
-       C Interface
+       C Interface for sorting an array and getting original indices
 
        \param[out] out will contain the sorted output
        \param[out] indices will contain the indices in the original input
@@ -673,7 +673,7 @@ extern "C" {
     AFAPI af_err af_sort_index(af_array *out, af_array *indices, const af_array in,
                                const unsigned dim, const bool isAscending);
     /**
-       C Interface
+       C Interface for sorting an array based on keys
 
        \param[out] out_keys will contain the keys based on sorted values
        \param[out] out_values will contain the sorted values
@@ -692,7 +692,7 @@ extern "C" {
                                 const unsigned dim, const bool isAscending);
 
     /**
-       C Interface
+       C Interface for getting unique values
 
        \param[out] out will contain the unique values from \p in
        \param[in] in is the input array
@@ -704,7 +704,7 @@ extern "C" {
     AFAPI af_err af_set_unique(af_array *out, const af_array in, const bool is_sorted);
 
     /**
-       C Interface
+       C Interface for performing union of two arrays
 
        \param[out] out will contain the union of \p first and \p second
        \param[in] first is the first array
@@ -717,7 +717,7 @@ extern "C" {
     AFAPI af_err af_set_union(af_array *out, const af_array first, const af_array second, const bool is_unique);
 
     /**
-       C Interface
+       C Interface for performing intersect of two arrays
 
        \param[out] out will contain the intersection of \p first and \p second
        \param[in] first is the first array
