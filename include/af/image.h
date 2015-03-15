@@ -16,24 +16,148 @@
 namespace af
 {
 
+/**
+   C++ Interface for calculating the gradients
+
+   \param[out] dx the gradient along first dimension
+   \param[out] dy the gradient along second dimension
+   \param[in] is the input
+
+   \ingroup calc_func_grad
+*/
+AFAPI void grad(array& dx, array& dy, const array& in);
+
+/**
+    C++ Interface for loading an image
+
+    \param[in] filename is name of file to be loaded
+    \param[in] is_color boolean denoting if the image should be loaded as 1 channel or 3 channel
+    \return image loaded as \ref af::array()
+
+    \ingroup imageio_func_load
+*/
 AFAPI array loadImage(const char* filename, const bool is_color=false);
 
+/**
+    C++ Interface for saving an image
+
+    \param[in] filename is name of file to be loaded
+    \param[in] in is the arrayfire array to be saved as an image
+
+    \ingroup imageio_func_save
+*/
 AFAPI void saveImage(const char* filename, const array& in);
 
+/**
+    C++ Interface for resizing an image to specified dimensions
+
+    \param[in] in is input image
+    \param[in] odim0 is the size for the first output dimension
+    \param[in] odim1 is the size for the second output dimension
+    \param[in] method is the interpolation type (Nearest by default)
+    \return the resized image of specified by \p odim0 and \p odim1
+
+    \ingroup transform_func_resize
+*/
 AFAPI array resize(const array& in, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST);
 
+/**
+    C++ Interface for resizing an image to specified scales
+
+    \param[in] scale0 is scale used for first input dimension
+    \param[in] scale1 is scale used for second input dimension
+    \param[in] in is input image
+    \param[in] method is the interpolation type (Nearest by default)
+    \return the image scaled by the specified by \p scale0 and \p scale1
+
+    \ingroup transform_func_resize
+*/
 AFAPI array resize(const float scale0, const float scale1, const array& in, const interpType method=AF_INTERP_NEAREST);
 
+/**
+    C++ Interface for resizing an image to specified scale
+
+    \param[in] scale is scale used for both input dimensions
+    \param[in] in is input image
+    \param[in] method is the interpolation type (Nearest by default)
+    \return the image scaled by the specified by \p scale
+
+    \ingroup transform_func_resize
+*/
 AFAPI array resize(const float scale, const array& in, const interpType method=AF_INTERP_NEAREST);
 
+/**
+    C++ Interface for rotating an image
+
+    \param[in] in is input image
+    \param[in] theta is the degree (in radians) by which the input is rotated
+    \param[in] crop if true the output is cropped original dimensions. If false the output dimensions scale based on \p theta
+    \param[in] method is the interpolation type (Nearest by default)
+    \return the image rotated by \p theta
+
+    \ingroup transform_func_rotate
+*/
 AFAPI array rotate(const array& in, const float theta, const bool crop=true, const interpType method=AF_INTERP_NEAREST);
 
+/**
+    C++ Interface for transforming an image
+
+    \param[in] in is input image
+    \param[in] transform is transformation matrix
+    \param[in] odim0 is the first output dimension
+    \param[in] odim1 is the second output dimension
+    \param[in] method is the interpolation type (Nearest by default)
+    \param[in] inverse if true applies inverse transform, if false applies forward transoform
+    \return the transformed image
+
+    \ingroup transform_func_transform
+*/
 AFAPI array transform(const array& in, const array& transform, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST, const bool inverse=true);
 
+/**
+    C++ Interface for translating an image
+
+    \param[in] in is input image
+    \param[in] trans0 is amount by which the first dimension is translated
+    \param[in] trans1 is amount by which the second dimension is translated
+    \param[in] odim0 is the first output dimension
+    \param[in] odim1 is the second output dimension
+    \param[in] method is the interpolation type (Nearest by default)
+    \return the translated image
+
+    \ingroup transform_func_translate
+*/
 AFAPI array translate(const array& in, const float trans0, const float trans1, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST);
 
+/**
+    C++ Interface for scaling an image
+
+    \param[in] in is input image
+    \param[in] scale0 is amount by which the first dimension is scaled
+    \param[in] scale1 is amount by which the second dimension is scaled
+    \param[in] odim0 is the first output dimension
+    \param[in] odim1 is the second output dimension
+    \param[in] method is the interpolation type (Nearest by default)
+    \return the scaled image
+
+    \ingroup transform_func_scale
+*/
 AFAPI array scale(const array& in, const float scale0, const float scale1, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST);
 
+/**
+    C++ Interface for skewing an image
+
+    \param[in] in is input image
+    \param[in] skew0 is amount by which the first dimension is skewed
+    \param[in] skew1 is amount by which the second dimension is skewed
+    \param[in] odim0 is the first output dimension
+    \param[in] odim1 is the second output dimension
+    \param[in] inverse if true applies inverse transform, if false applies forward transoform
+    \param[in] method is the interpolation type (Nearest by default)
+    \return the skewed image
+
+    \ingroup transform_func_skew
+*/
 AFAPI array skew(const array& in, const float skew0, const float skew1, const dim_type odim0, const dim_type odim1, const bool inverse=true, const interpType method=AF_INTERP_NEAREST);
 
 /**
@@ -155,8 +279,6 @@ AFAPI array erode(const array& in, const array& mask);
 */
 AFAPI array erode3d(const array& in, const array& mask);
 
-AFAPI void grad(array& rows, array& cols, const array& in);
-
 /**
     C++ Interface for getting regions in an image
 
@@ -192,7 +314,7 @@ AFAPI array regions(const array& in, af::connectivity connectivity=AF_CONNECTIVI
                compute orientation, and size is set to 1 as FAST does not
                compute multiple scales
 
-    \ingroup image_func_fast
+    \ingroup cv_func_fast
  */
 AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_length=9, const bool non_max=true, const float feature_ratio=0.05, const unsigned edge=3);
 
@@ -216,7 +338,7 @@ AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_l
                 computing descriptors to increase robustness against noise if
                 true
 
-    \ingroup image_func_orb
+    \ingroup cv_func_orb
  */
 AFAPI void orb(features& feat, array& desc, const array& image, const float fast_thr=20.f, const unsigned max_feat=400, const float scl_fctr=1.5f, const unsigned levels=4, const bool blur_img=false);
 
@@ -369,31 +491,145 @@ AFAPI array colorspace(const array& image, CSpace to, CSpace from);
 #ifdef __cplusplus
 extern "C" {
 #endif
-    // Image IO: Load and Save Image functions
+
+    /**
+       C Interface for calculating the gradients
+
+       \param[out] dx the gradient along first dimension
+       \param[out] dy the gradient along second dimension
+       \param[in] is the input
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup calc_func_grad
+    */
+    AFAPI af_err af_gradient(af_array *dx, af_array *dy, const af_array in);
+
+    /**
+       C Interface for loading an image
+
+       \param[out] out will contain the image
+       \param[in] filename is name of file to be loaded
+       \param[in] is_color boolean denoting if the image should be loaded as 1 channel or 3 channel
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup imageio_func_load
+    */
     AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isColor);
 
+   /**
+      C Interface for saving an image
+
+      \param[in] filename is name of file to be loaded
+      \param[in] in is the arrayfire array to be saved as an image
+      \return     \ref AF_SUCCESS if the color transformation is successful,
+      otherwise an appropriate error code is returned.
+
+      \ingroup imageio_func_save
+   */
     AFAPI af_err af_save_image(const char* filename, const af_array in);
 
-    // Resize an image/matrix/array
+    /**
+       C Interface for resizing an image to specified dimensions
+
+       \param[out] out will contain the resized image of specified by \p odim0 and \p odim1
+       \param[in] in is input image
+       \param[in] odim0 is the size for the first output dimension
+       \param[in] odim1 is the size for the second output dimension
+       \param[in] method is the interpolation type (Nearest by default)
+
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup transform_func_resize
+    */
     AFAPI af_err af_resize(af_array *out, const af_array in, const dim_type odim0, const dim_type odim1, const af_interp_type method);
 
-    // Transform an image using a 3x2 transformation matrix.
-    // If the transform matrix is a forward transformation matrix, then inverse is false.
-    // If the transform martix is an inverse transformation matrix, then inverse is true;
+    /**
+       C Interface for transforming an image
+
+       \param[out] out will contain the transformed image
+       \param[in] in is input image
+       \param[in] transform is transformation matrix
+       \param[in] odim0 is the first output dimension
+       \param[in] odim1 is the second output dimension
+       \param[in] method is the interpolation type (Nearest by default)
+       \param[in] inverse if true applies inverse transform, if false applies forward transoform
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup transform_func_transform
+    */
     AFAPI af_err af_transform(af_array *out, const af_array in, const af_array transform,
                               const dim_type odim0, const dim_type odim1,
                               const af_interp_type method, const bool inverse);
 
-    // Rotate
+    /**
+       C Interface for rotating an image
+
+       \param[out] out will contain the image \p in rotated by \p theta
+       \param[in] in is input image
+       \param[in] theta is the degree (in radians) by which the input is rotated
+       \param[in] crop if true the output is cropped original dimensions. If false the output dimensions scale based on \p theta
+       \param[in] method is the interpolation type (Nearest by default)
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup transform_func_rotate
+    */
     AFAPI af_err af_rotate(af_array *out, const af_array in, const float theta,
                            const bool crop, const af_interp_type method);
-    // Translate
+   /**
+      C Interface for translate an image
+
+      \param[out] out will contain the translated image
+      \param[in] in is input image
+      \param[in] trans0 is amount by which the first dimension is translated
+      \param[in] trans1 is amount by which the second dimension is translated
+      \param[in] odim0 is the first output dimension
+      \param[in] odim1 is the second output dimension
+      \param[in] method is the interpolation type (Nearest by default)
+      \return     \ref AF_SUCCESS if the color transformation is successful,
+      otherwise an appropriate error code is returned.
+
+      \ingroup transform_func_translate
+   */
     AFAPI af_err af_translate(af_array *out, const af_array in, const float trans0, const float trans1,
                               const dim_type odim0, const dim_type odim1, const af_interp_type method);
-    // Scale
+    /**
+       C Interface for scaling an image
+
+       \param[out] out will contain the scaled image
+       \param[in] in is input image
+       \param[in] scale0 is amount by which the first dimension is scaled
+       \param[in] scale1 is amount by which the second dimension is scaled
+       \param[in] odim0 is the first output dimension
+       \param[in] odim1 is the second output dimension
+       \param[in] method is the interpolation type (Nearest by default)
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup transform_func_scale
+    */
     AFAPI af_err af_scale(af_array *out, const af_array in, const float scale0, const float scale1,
                           const dim_type odim0, const dim_type odim1, const af_interp_type method);
-    // Skew
+    /**
+       C Interface for skewing an image
+
+       \param[out] out will contain the skewed image
+       \param[in] in is input image
+       \param[in] skew0 is amount by which the first dimension is skewed
+       \param[in] skew1 is amount by which the second dimension is skewed
+       \param[in] odim0 is the first output dimension
+       \param[in] odim1 is the second output dimension
+       \param[in] inverse if true applies inverse transform, if false applies forward transoform
+       \param[in] method is the interpolation type (Nearest by default)
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup transform_func_skew
+    */
     AFAPI af_err af_skew(af_array *out, const af_array in, const float skew0, const float skew1,
                          const dim_type odim0, const dim_type odim1, const af_interp_type method,
                          const bool inverse);
@@ -500,9 +736,6 @@ extern "C" {
     */
     AFAPI af_err af_meanshift(af_array *out, const af_array in, const float spatial_sigma, const float chromatic_sigma, const unsigned iter, const bool is_color);
 
-    // gradient
-    AFAPI af_err af_gradient(af_array *grad_rows, af_array *grad_cols, const af_array in);
-
     /**
         C Interface for median filter
 
@@ -556,7 +789,7 @@ extern "C" {
                     discarded by FAST (minimum is 3, as the radius of the
                     circle)
 
-        \ingroup image_func_fast
+        \ingroup cv_func_fast
      */
     AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio, const unsigned edge);
 
@@ -580,7 +813,7 @@ extern "C" {
                     computing descriptors to increase robustness against noise if
                     true
 
-        \ingroup image_func_orb
+        \ingroup cv_func_orb
      */
     AFAPI af_err af_orb(af_features *feat, af_array *desc, const af_array in, const float fast_thr, const unsigned max_feat, const float scl_fctr, const unsigned levels, const bool blur_img);
 
@@ -599,7 +832,7 @@ extern "C" {
 
        \note If \p search_img is 3d array, a batch operation will be performed.
 
-       \ingroup image_func_match_template
+       \ingroup cv_func_match_template
      */
     AFAPI af_err af_match_template(af_array *out, const af_array search_img, const af_array template_img, af_match_type m_type);
 
