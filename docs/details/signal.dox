@@ -1,0 +1,43 @@
+
+/*!
+*/
+
+//=====================================================================
+/**
+\addtogroup arrayfire_func
+@{
+
+\defgroup signal_func_convolve convolve
+\ingroup convolve_mat
+
+\brief Convolution Integral
+
+A convolution is a common operation between a source array, a, and a filter (or kernel) array b.
+The answer to the convolution is the same as computing the coefficients in polynomial multiplication,
+if a and b are the coefficients.
+
+Another way to think about it is that the filter kernel is centered on each pixel in a,
+and the output for that pixel or data point is the sum of the products.
+
+Depending on the dimensions of the input signal and the filter signal, any one of the following
+batch mode convolutions take place. 
+
+- **One to One**   - Single filter applied to single input.
+- **One to Many**  - Many filters applied on same input
+- **Many to One**  - Single filter applied to a set of inputs.
+- **Many to Many** - A set of filters applied onto to a set of inputs in one-to-one correspondence.
+
+For example, if the signal is two dimensional with m & n as sizes along the 1st and 2nd dimensions
+respectively, then the possible batch operations are as follows.
+
+| Input Signal Dimensions | Filter Signal Dimensions | Batch Mode | Explanation |
+|:-----------------------:|:------------------------:|:----------:|:------------|
+| [m n 1 1] | [m n 1 1] | One to One  | Output will be a single convolve array |
+| [m n 1 1] | [m n 9 1] | One to Many | Output will be 3d array with 3rd dimension length as 9 - 9 filters applied to same input |
+| [m n 9 1] | [m n 1 1] | Many to One | Output will be 3d array with 3rd dimension length as 9 - 1 filter applied to 9 inputs |
+| [m n 9 1] | [m n 9 1] | Many to Many| Output will be 3d array with 3rd dimension length as 9 - 9 filter applied to 9 inputs in one-to-one fashion |
+
+=======================================================================
+
+@}
+*/
