@@ -507,7 +507,19 @@ namespace af
         // INDEXING
     public:
         // Single arguments
+
+        /**
+           \defgroup index_func_index index
+           @{
+
+           Create an array based on the indices
+
+           \ingroup arrayfire_func
+           \ingroup index_mat
+        */
+
         array operator()(const array& idx) const;
+
         array operator()(const seq& s0) const;
         array operator()(const int& s0) const
                         { return this->operator()(seq(s0, s0)); }
@@ -591,6 +603,10 @@ namespace af
 
         array as(dtype type) const;
 
+        /**
+           @}
+        */
+
         ~array();
 
         // Transpose and Conjugate Tranpose
@@ -613,7 +629,21 @@ namespace af
         array& operator OP(const long long  &a);            \
         array& operator OP(const unsigned long long &a);    \
 
+        /**
+           \defgroup index_func_assign assign
+           @{
+
+           Assign values to an array.
+
+           This is a copy on write operation. The copy only occurs when the operator() is used on the left hand side.
+
+           \ingroup arrayfire_func
+           \ingroup index_mat
+        */
         ASSIGN(= )
+        /**
+           @}
+        */
 
         /**
            \ingroup arith_func_add

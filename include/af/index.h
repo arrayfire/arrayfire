@@ -139,6 +139,18 @@ AFAPI array flip(const array &in, const unsigned dim);
    @}
 */
 
+
+/**
+   Lookup the values of input array based on index
+
+   \param[in] in is input lookup array
+   \param[in] idx is lookup indices
+   \param[in] dim specifies the dimension for indexing
+   \returns an array containing values at locations specified by \p index
+
+   \ingroup index_func_index
+*/
+
 AFAPI array lookup(const array &in, const array &idx, const int dim = -1);
 
 }
@@ -148,15 +160,44 @@ AFAPI array lookup(const array &in, const array &idx, const int dim = -1);
 extern "C" {
 #endif
 
-    // Create a new af_array by indexing from existing af_array.
-    // This takes the form `out = in(seq_a, seq_b)`
+/**
+   Lookup the values of input array based on sequences
+
+   \param[out] out will contain an array containing values at indexed by the sequences
+   \param[in] in is the input array
+   \param[in] ndims is the number of sequences provided
+   \param[in] index is an array of sequences
+
+   \ingroup index_func_index
+*/
     AFAPI af_err af_index(af_array *out, const af_array in, unsigned ndims, const af_seq* const index);
 
-    // create a new af_array by indexing existing af_array using another af_array
+
+/**
+   Lookup the values of input array based on index
+
+   \param[out] out will contain an array containing values at locations specified by \p index
+   \param[in] in is input lookup array
+   \param[in] indices is lookup indices
+   \param[in] dim specifies the dimension for indexing
+
+   \ingroup index_func_index
+*/
     AFAPI af_err af_lookup(af_array *out, const af_array in, const af_array indices, const unsigned dim);
 
-    // copy an array into exiting array of larger dimensions
-    // error out in case of insufficient dimension lengths
+
+/**
+   Copy and write values in the locations specified by the sequences
+
+   \param[out] out will contain an array with values of \p rhs copied to locations specified by \p index and values from \p lhs in all other locations.
+
+   \param[in] lhs is array whose values are used for indices NOT specified by \p index
+   \param[in] ndims is the number of sequences provided
+   \param[in] index is an array of sequences
+   \param[in] rhs is the array whose values are used for indices specified by \p index
+
+   \ingroup index_func_assign
+*/
     AFAPI af_err af_assign(af_array *out, const af_array lhs, unsigned ndims, const af_seq* const index, const af_array rhs);
 
     /**
