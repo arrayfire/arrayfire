@@ -47,7 +47,7 @@ namespace af
 
     public:
         /**
-            \ingroup array_construct
+            \ingroup construct_mat
             @{
         */
         /**
@@ -350,57 +350,176 @@ namespace af
         /**
             @}
         */
+
+        /**
+           \ingroup method_mat
+           @{
+        */
+
+        /**
+           get the \ref af_array handle
+        */
         af_array get();
+
+        /**
+           get the \ref af_array handle
+        */
         af_array get() const;
+
+        /**
+           get the number of elements in array
+        */
         dim_type elements() const;
 
+        /**
+           Copy array data to host and return host pointer
+        */
         template<typename T> T* host() const;
+
+        /**
+           Copy array data to existing host pointer
+        */
         void host(void *ptr) const;
+
+        /**
+           Get array data type
+        */
         dtype type() const;
 
-        // FIXME: Everything below this has not been implemented
+        /**
+           Get dimensions of the array
+        */
         dim4 dims() const;
+
+        /**
+           Get dimensions of the array
+        */
         dim_type dims(unsigned dim) const;
+
+        /**
+           Get the number of dimensions of the array
+        */
         unsigned numdims() const;
+
+        /**
+           Get the size of the array in bytes
+        */
         size_t bytes() const;
 
+        /**
+           Perform deep copy of the array
+        */
         array copy() const;
 
         /**
            \brief Returns true of the array is empty
-
-           \returns true if the array does not contain any elements. False otherwise
          */
         bool isempty() const;
 
         /**
-           \brief Returns true of the array contains one value
-
-           \returns true if the array does not contain any elements. False otherwise
+           \brief Returns true of the array contains only one value
          */
         bool isscalar() const;
+
+        /**
+           \brief Returns true if only one of the array dimensions has more than one elment
+        */
         bool isvector() const;
+
+        /**
+           \brief Returns true if only the second dimension has more than one element
+        */
         bool isrow() const;
+
+        /**
+           \brief Returns true if only the first dimension has more than one element
+        */
         bool iscolumn() const;
+
+        /**
+           \brief Returns true if the array type is \ref c32 or \ref c64
+        */
         bool iscomplex() const;
+
+        /**
+           \brief Returns true if the array type is neither \ref c32 nor \ref c64
+        */
         inline bool isreal() const { return !iscomplex(); }
+
+        /**
+           \brief Returns true if the array type is \ref f64 or \ref c64
+        */
         bool isdouble() const;
+
+        /**
+           \brief Returns true if the array type is neither \ref f64 nor \ref c64
+        */
         bool issingle() const;
+
+        /**
+           \brief Returns true if the array type is \ref f32 or \ref f64
+        */
         bool isrealfloating() const;
+
+        /**
+           \brief Returns true if the array type is \ref f32, \ref f64, \ref c32 or \ref c64
+        */
         bool isfloating() const;
+
+        /**
+           \brief Returns true if the array type is \ref u8, \ref b8, \ref s32 \ref u32, \ref s64, \ref u64
+        */
         bool isinteger() const;
+
+        /**
+           \brief Returns true if the array type is \ref b8
+        */
         bool isbool() const;
+
+        /**
+           \brief Evaluate any JIT expressions to generate data for the array
+        */
         void eval() const;
+
+        /**
+           @}
+        */
+        template<typename T> T scalar() const;
+
+
+        /**
+           \defgroup device_func_device array::device<T>
+
+           Get the device pointer from the array
+           @{
+
+           \ingroup arrayfire_func
+           \ingroup device_mat
+        */
+        template<typename T> T* device() const;
+        /**
+           @}
+        */
 
         void unlock() const;
 
-        template<typename T> T scalar() const;
-        template<typename T> T* device() const;
 
         // INDEXING
     public:
         // Single arguments
+
+        /**
+           \defgroup index_func_index index
+           @{
+
+           Create an array based on the indices
+
+           \ingroup arrayfire_func
+           \ingroup index_mat
+        */
+
         array operator()(const array& idx) const;
+
         array operator()(const seq& s0) const;
         array operator()(const int& s0) const
                         { return this->operator()(seq(s0, s0)); }
@@ -484,6 +603,10 @@ namespace af
 
         array as(dtype type) const;
 
+        /**
+           @}
+        */
+
         ~array();
 
         // Transpose and Conjugate Tranpose
@@ -506,11 +629,57 @@ namespace af
         array& operator OP(const long long  &a);            \
         array& operator OP(const unsigned long long &a);    \
 
+        /**
+           \defgroup index_func_assign assign
+           @{
+
+           Assign values to an array.
+
+           This is a copy on write operation. The copy only occurs when the operator() is used on the left hand side.
+
+           \ingroup arrayfire_func
+           \ingroup index_mat
+        */
         ASSIGN(= )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup arith_func_add
+           @{
+        */
         ASSIGN(+=)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup arith_func_sub
+           @{
+        */
         ASSIGN(-=)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup arith_func_mul
+           @{
+        */
         ASSIGN(*=)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup arith_func_div
+           @{
+        */
         ASSIGN(/=)
+        /**
+           @}
+        */
 
 #undef ASSIGN
 
@@ -530,24 +699,166 @@ namespace af
             array operator op(const long long  &a) const;           \
             array operator op(const unsigned long long &a) const;   \
 
+        /**
+           \ingroup arith_func_add
+           @{
+        */
         OPERATOR(+ )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup arith_func_sub
+           @{
+        */
         OPERATOR(- )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup arith_func_mul
+           @{
+        */
         OPERATOR(* )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup arith_func_div
+           @{
+        */
         OPERATOR(/ )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_eq
+           @{
+        */
         OPERATOR(==)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_neq
+           @{
+        */
         OPERATOR(!=)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_lt
+           @{
+        */
         OPERATOR(< )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_le
+           @{
+        */
         OPERATOR(<=)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_gt
+           @{
+        */
         OPERATOR(> )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_ge
+           @{
+        */
         OPERATOR(>=)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_and
+           @{
+        */
         OPERATOR(&&)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_or
+        */
         OPERATOR(||)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup numeric_func_rem
+           @{
+        */
         OPERATOR(% )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_bitand
+           @{
+        */
         OPERATOR(& )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_bitor
+           @{
+        */
         OPERATOR(| )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_bitxor
+           @{
+        */
         OPERATOR(^ )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup arith_func_shiftl
+           @{
+        */
         OPERATOR(<<)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_shiftr
+           @{
+        */
         OPERATOR(>>)
+        /**
+           @}
+        */
 
 #undef OPERATOR
 
@@ -587,7 +898,14 @@ namespace af
 
 #undef FRIEND_OP
 
+        /**
+           \ingroup arith_func_neg
+        */
         array operator -() const;
+
+        /**
+           \ingroup arith_func_not
+        */
         array operator !() const;
     };
     // end of class array
@@ -607,35 +925,185 @@ namespace af
     AFAPI array operator op(const cfloat&, const array&);               \
     AFAPI array operator op(const cdouble&, const array&);              \
 
+    /**
+       \ingroup arith_func_add
+       @{
+    */
     BIN_OP(+ )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup arith_func_sub
+       @{
+    */
     BIN_OP(- )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup arith_func_mul
+       @{
+    */
     BIN_OP(* )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup arith_func_div
+       @{
+    */
     BIN_OP(/ )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_eq
+       @{
+    */
     BIN_OP(==)
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_neq
+       @{
+    */
     BIN_OP(!=)
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_lt
+       @{
+    */
     BIN_OP(< )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_le
+       @{
+    */
     BIN_OP(<=)
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_gt
+       @{
+    */
     BIN_OP(> )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_ge
+       @{
+    */
     BIN_OP(>=)
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_and
+       @{
+    */
     BIN_OP(&&)
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_or
+       @{
+    */
     BIN_OP(||)
+    /**
+       @}
+    */
+
+    /**
+       \ingroup numeric_func_rem
+       @{
+    */
     BIN_OP(% )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_bitand
+       @{
+    */
     BIN_OP(& )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_bitor
+       @{
+    */
     BIN_OP(| )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_bitxor
+       @{
+    */
     BIN_OP(^ )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup arith_func_shiftl
+       @{
+    */
     BIN_OP(<<)
+    /**
+       @}
+    */
+
+    /**
+       \ingroup arith_func_shiftr
+       @{
+    */
     BIN_OP(>>)
+    /**
+       @}
+    */
 
 #undef BIN_OP
 
 
     /// Evaluate an expression (nonblocking).
+    /**
+       \ingroup method_mat
+       @{
+    */
     inline array &eval(array &a) { a.eval(); return a; }
     inline void eval(array &a, array &b) { eval(a); b.eval(); }
     inline void eval(array &a, array &b, array &c) { eval(a, b); c.eval(); }
     inline void eval(array &a, array &b, array &c, array &d) { eval(a, b, c); d.eval(); }
     inline void eval(array &a, array &b, array &c, array &d, array &e) { eval(a, b, c, d); e.eval(); }
     inline void eval(array &a, array &b, array &c, array &d, array &e, array &f) { eval(a, b, c, d, e); f.eval(); }
+    /**
+       @}
+    */
 
 }
 #endif
@@ -644,7 +1112,7 @@ namespace af
 extern "C" {
 #endif
     /**
-       \ingroup array_basic
+       \ingroup construct_mat
        @{
     */
 
@@ -676,6 +1144,13 @@ extern "C" {
     AFAPI af_err af_create_handle(af_array *arr, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
     /**
+    @}
+    */
+
+    /**
+       \ingroup method_mat
+       @{
+
        Deep copy an array to another
     */
     AFAPI af_err af_copy_array(af_array *arr, const af_array in);

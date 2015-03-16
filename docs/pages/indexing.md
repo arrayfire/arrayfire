@@ -14,7 +14,7 @@ with mixtures of:
 * [rows(first,last)](\ref af::array::rows) or [cols(first,last)](\ref af::array::cols)
  specifying a span of rows or columns
 
-See \ref gettingstarted_indexing for the full listing.
+See \ref indexing for the full listing.
 
 \democode{
 array A = array(seq(1,9), 3, 3);

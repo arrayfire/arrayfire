@@ -1,5 +1,5 @@
 /*!
-\page batch_detail reductions
+\page batch_detail_algo algorithm
 
 This function performs the operation across all batches present in the input simultaneously.
 
@@ -15,9 +15,9 @@ This function performs the operation across all batches present in the input sim
 
 Find the sum of values in the input
 
-\copydoc batch_detail
+\copydoc batch_detail_algo
 
-========================================================
+
 
 \defgroup reduce_func_product product
 
@@ -25,9 +25,9 @@ Find the sum of values in the input
 
 Find the product of values in the input
 
-\copydoc batch_detail
+\copydoc batch_detail_algo
 
-========================================================
+
 
 \defgroup reduce_func_min min
 
@@ -35,9 +35,9 @@ Find the product of values in the input
 
 Find the minimum values and their locations
 
-\copydoc batch_detail
+\copydoc batch_detail_algo
 
-========================================================
+
 
 \defgroup reduce_func_max max
 
@@ -45,9 +45,9 @@ Find the minimum values and their locations
 
 Find the maximum values and their locations
 
-\copydoc batch_detail
+\copydoc batch_detail_algo
 
-========================================================
+
 
 \defgroup reduce_func_alltrue alltrue
 
@@ -55,9 +55,9 @@ Find the maximum values and their locations
 
 Find if of all of the values in input are true
 
-\copydoc batch_detail
+\copydoc batch_detail_algo
 
-========================================================
+
 
 \defgroup reduce_func_anytrue anytrue
 
@@ -65,9 +65,9 @@ Find if of all of the values in input are true
 
 Find if of any of the values in input are true
 
-\copydoc batch_detail
+\copydoc batch_detail_algo
 
-========================================================
+
 
 \defgroup reduce_func_count count
 
@@ -75,9 +75,9 @@ Find if of any of the values in input are true
 
 Count the number of non-zero elements in the input
 
-\copydoc batch_detail
+\copydoc batch_detail_algo
 
-========================================================
+
 
 \defgroup scan_func_accum accum
 
@@ -85,9 +85,9 @@ Count the number of non-zero elements in the input
 
 Perform exclusive sum along specified dimension
 
-\copydoc batch_detail
+\copydoc batch_detail_algo
 
-========================================================
+
 
 \defgroup scan_func_where where
 
@@ -97,7 +97,7 @@ Locate the indices of non-zero elements
 
 The locations are provided by flattening the input into a linear array.
 
-========================================================
+
 
 \defgroup calc_func_diff1 diff1
 
@@ -105,9 +105,9 @@ The locations are provided by flattening the input into a linear array.
 
 First order numerical difference along specified dimension
 
-\copydoc batch_detail
+\copydoc batch_detail_algo
 
-========================================================
+
 
 \defgroup calc_func_diff2 diff2
 
@@ -115,9 +115,9 @@ First order numerical difference along specified dimension
 
 Second order numerical difference along specified dimension
 
-\copydoc batch_detail
+\copydoc batch_detail_algo
 
-========================================================
+
 
 \defgroup sort_func_sort sort
 
@@ -127,7 +127,7 @@ Sort input arrays
 
 Optionally return original indices and keys
 
-========================================================
+
 
 \defgroup set_func_unique setunique
 
@@ -135,9 +135,7 @@ Optionally return original indices and keys
 
 Find unique values from an input
 
-.
 
-========================================================
 
 \defgroup set_func_union setunion
 
@@ -145,9 +143,7 @@ Find unique values from an input
 
 Find union of two inputs
 
-.
 
-========================================================
 
 \defgroup set_func_intersect setintersect
 
@@ -155,9 +151,6 @@ Find union of two inputs
 
 Find intersection of two inputs
 
-.
-
-========================================================
 
 @}
 */

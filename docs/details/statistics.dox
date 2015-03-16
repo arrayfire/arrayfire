@@ -1,0 +1,67 @@
+/*!
+\page batch_detail_stat statistics
+
+This function performs the operation across all batches present in the input simultaneously.
+
+*/
+
+
+/**
+\addtogroup arrayfire_func
+@{
+\defgroup stat_func_mean mean
+
+\ingroup basicstats_mat
+
+Find the mean of values in the input
+
+\copydoc batch_detail_stat
+
+========================================================
+\defgroup stat_func_var var
+
+\ingroup basicstats_mat
+
+Find the variance of values in the input
+
+\copydoc batch_detail_stat
+
+========================================================
+\defgroup stat_func_stdev stdev
+
+\ingroup basicstats_mat
+
+Find the standar deviation of values in the input
+
+\copydoc batch_detail_stat
+
+========================================================
+\defgroup stat_func_cov cov
+
+\ingroup basicstats_mat
+
+Find the covariance of values in the input
+
+\copydoc batch_detail_stat
+
+========================================================
+\defgroup stat_func_median median
+
+\ingroup basicstats_mat
+
+Find the median of values in the input
+
+\copydoc batch_detail_stat
+
+========================================================
+\defgroup stat_func_corrcoef corrcoef
+
+\ingroup basicstats_mat
+
+Find the correlation coefficient of values in the input
+
+\copydoc batch_detail_stat
+
+========================================================
+@}
+*/

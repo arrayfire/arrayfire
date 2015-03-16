@@ -1,4 +1,4 @@
-Timing Your Code {#gettingstarted_timing}
+Timing Your Code {#timing}
 ================
 
 timer() : A platform-independent timer with microsecond accuracy:
@@ -37,7 +37,7 @@ To take care of much of this boilerplate, [timeit](\ref af::timeit) provides
 accurate and reliable estimates of both CPU or GPU code.
 
 Here`s a stripped down example of
-[Monte-Carlo estimation of PI](\ref examples/benchmarks/pi.cpp) making use
+[Monte-Carlo estimation of PI](\ref pi.cpp) making use
 of [timeit](\ref af::timeit).  Notice how it expects a `void` function pointer.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}

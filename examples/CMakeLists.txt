@@ -3,13 +3,21 @@ PROJECT(arrayfire-examples)
 
 # If the examples are not being built at the same time as ArrayFire,
 # we need to first find the ArrayFire library
-if(NOT (TARGET afcpu OR TARGET afcuda OR TARGET afopencl))
+if(TARGET afcpu OR TARGET afcuda OR TARGET afopencl)
+    SET(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../assets")
+    IF(NOT EXISTS "${ASSETS_DIR}/LICENSE")
+        MESSAGE(WARNING "Arrayfire assets are not available. Assets will not be installed.")
+        MESSAGE("Did you miss the --recursive option when cloning?")
+        MESSAGE("Run the following commands to correct this:")
+        MESSAGE("git submodule init")
+        MESSAGE("git submodule update")
+        MESSAGE("git submodule foreach git pull origin master")
+    ENDIF()
+else()
     FIND_PACKAGE(ArrayFire REQUIRED)
     INCLUDE_DIRECTORIES(${ArrayFire_INCLUDE_DIRS})
-    
+
     SET(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets")
-else()
-    SET(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../assets")
 endif()
 
 # A macro to build an ArrayFire example
@@ -29,7 +37,7 @@ ENDMACRO()
 
 # Collect the source
 FILE(GLOB FILES "*/*.cpp")
-ADD_DEFINITIONS("-DASSETS_DIR=\"\\\"${ASSETS_DIR}\\\"\"")
+ADD_DEFINITIONS("-DASSETS_DIR=\"${ASSETS_DIR}\"")
 
 FOREACH(FILE ${FILES})
     GET_FILENAME_COMPONENT(EXAMPLE ${FILE} NAME_WE)
@@ -48,7 +56,7 @@ FOREACH(FILE ${FILES})
     elseif(TARGET afcuda)        # variable defined by the ArrayFire build tree
         BUILD_EXAMPLE(${EXAMPLE} ${FILE} cuda afcuda)
     endif()
-    
+
     if(${ArrayFire_OPENCL_FOUND})  # variable defined by FIND(ArrayFire ...)
         BUILD_EXAMPLE(${EXAMPLE} ${FILE} opencl ${ArrayFire_OPENCL_LIBRARIES})
     elseif(TARGET afopencl)        # variable defined by the ArrayFire build tree
@@ -56,8 +64,8 @@ FOREACH(FILE ${FILES})
     endif()
 ENDFOREACH()
 
-INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" 
-    DESTINATION share/doc/arrayfire/ 
+INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    DESTINATION share/doc/arrayfire/
     COMPONENT examples)
 
 INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../assets/examples"
