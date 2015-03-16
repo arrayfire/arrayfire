@@ -4,7 +4,7 @@
 
 \defgroup arith_func_add add
 
-\ingroup arit_mat
+\ingroup arith_mat
 
 Addition of two inputs.
 
@@ -12,7 +12,7 @@ Addition of two inputs.
 
 \defgroup arith_func_sub sub
 
-\ingroup arit_mat
+\ingroup arith_mat
 
 Subtract one input from another
 
@@ -20,7 +20,7 @@ Subtract one input from another
 
 \defgroup arith_func_mul mul
 
-\ingroup arit_mat
+\ingroup arith_mat
 
 Multiply two inputs element wise
 
@@ -28,13 +28,13 @@ Multiply two inputs element wise
 
 \defgroup arith_func_div div
 
-\ingroup arit_mat
+\ingroup arith_mat
 
 Divide one input by another
 
 
 
-\defgroup arith_func_shfitl bitshiftl
+\defgroup arith_func_shiftl bitshiftl
 
 \ingroup arith_mat
 
@@ -42,7 +42,7 @@ Left shift an input
 
 
 
-\defgroup arith_func_shfitl bitshiftr
+\defgroup arith_func_shiftr bitshiftr
 
 \ingroup arith_mat
 
@@ -111,6 +111,14 @@ Logical and of two inputs
 \ingroup logic_mat
 
 Logical or of two inputs
+
+
+
+\defgroup logic_func_not not
+
+\ingroup logic_mat
+
+Logical not of an input
 
 
 
