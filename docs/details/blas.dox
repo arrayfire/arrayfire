@@ -29,6 +29,7 @@ Performs a matrix multiplication on the two input arrays after performing the op
 
 \defgroup blas_func_transpose transpose
 \ingroup blas_mat
+\ingroup manip_mat
 
 \brief Matrix Transpose
 

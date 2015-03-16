@@ -7,9 +7,13 @@ Overview {#mainpage}
 
 ArrayFire is a high performance software library for parallel computing with an easy-to-use API. Its array based function set makes parallel programming more accessible.
 
+You can get ArrayFire in one of the following ways
+    * [Binary installers](http://arrayfire.com/download/) from our download page
+    * Build from source using our [github repo](https://github.com/arrayfire/arrayfire)
+
 ## Easy to use
 
-The [array](\ref construct) object is beautifully simple.
+The [array](\ref construct_mat) object is beautifully simple.
 
 Array-based notation effectively expresses computational algorithms in
 readable math-resembling notation. You _do not_ need expertise in
@@ -23,7 +27,7 @@ kernels.
 
 #### Support for multiple domains
 
-ArrayFire contains [hundreds of functions](modules.htm) across various domains including:
+ArrayFire contains [hundreds of functions](\ref arrayfire_func) across various domains including:
 - [Vector Algorithms](\ref vector_mat)
 - [Image Processing](\ref image_mat)
 - [Computer Vision](\ref cv_mat)
@@ -37,7 +41,7 @@ developers with all possible low-level optimizations.
 
 #### Support for various data types and sizes
 
-ArrayFire operates on common [data shapes and sizes](\ref gettingstarted_indexing),
+ArrayFire operates on common [data shapes and sizes](\ref indexing),
 including vectors, matrices, volumes, and
 
 It supports common [data types](\ref gettingstarted_datatypes),
@@ -80,13 +84,13 @@ arithmetic intensity and memory throughput, while avoiding unnecessary
 temporary allocations. It has an awesome internal JIT compiler to make
 optimizations for you.
 
-Read more about how [ArrayFire JIT](\ref jit) can improve the performance in your application.
+Read more about how [ArrayFire JIT](http://arrayfire.com/performance-of-arrayfire-jit-code-generation/) can improve the performance in your application.
 
 ## Simple Example
 
 Here's a live example to let you see ArrayFire code. You create [arrays](\ref
-construct) which reside on CUDA or OpenCL devices. Then you can use
-[ArrayFire functions](modules.htm) on those [arrays](\ref construct).
+construct_mat) which reside on CUDA or OpenCL devices. Then you can use
+[ArrayFire functions](modules.htm) on those [arrays](\ref construct_mat).
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 // sample 40 million points on the GPU

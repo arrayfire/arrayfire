@@ -11,33 +11,41 @@
 
 /**
 
-\defgroup arrayfire_func ArrayFire Functions
+\defgroup arrayfire_func Complete List of ArrayFire Functions
 @{
 @}
 
-@defgroup func_categories Function Categories
+@defgroup func_categories ArrayFire Functions by Category
 @{
 
    @defgroup array_mat Functions to create and modify Arrays
    @{
-      @defgroup array_construct Constructors of array class
+
+      Array constructors, random number generation, transpose, indexing, etc
+
+      @defgroup construct_mat Constructors of array class
+
+      @defgroup method_mat Methods of array class
+
+      @defgroup device_mat Managing devices in ArrayFire
+      getting device pointer, allocating and freeing memory
 
       @defgroup data_mat Functions to create arrays.
       constant, random, range, etc
 
       @defgroup index_mat Indexing operation on arrays
 
-      @defgroup order_mat Reorder array content
-      reorder, transpose, flip, etc
+      @defgroup manip_mat Move and Reorder array content
+      reorder, transpose, flip, join, tile, etc
 
-      @defgroup move_mat Joining and tiling operations
-      join, tile, etc
-
-      @defgroup array_basic C functions to create af_array
+      @defgroup helper_mat Helper functions for arrays
+      iszero, isInf, isNan, etc
    @}
 
    @defgroup mathfunc_mat Mathematical functions
    @{
+
+      Functions from standar math library
 
       @defgroup arith_mat Arithmetic operations
       +, -, *, /, >>, <<
@@ -63,6 +71,9 @@
 
    @defgroup vector_mat Vector Algorithms
    @{
+
+      sum, min, max, sort, set operations, etc
+
       @defgroup reduce_mat Reduction operations
       sum, min, max, etc
 
@@ -96,11 +107,17 @@
      @defgroup transform_mat Image transformations
      rotate, skew, etc
 
-     @defgroup morph_mat Image morphing operations
+     @defgroup morph_mat Morphological Operations
      erode, dilate, etc
 
-     @defgroup imageflt_mat Image filtering operators
+     @defgroup imageflt_mat Filters
      bilateral, sobel, mean shift, etc
+
+     @defgroup connected_comps_mat Connected Components & Labeling
+     regions
+
+     @defgroup utility_mat Utility Functions
+     loadImage, saveImage, gaussianKernel
    @}
 
    @defgroup cv_mat Computer Vision
@@ -142,6 +159,29 @@
    @}
 @}
 
+*/
+
+/**
+\example helloworld.cpp
+\example blas.cpp
+\example fft.cpp
+\example pi.cpp
+\example convolve.cpp
+\example integer.cpp
+\example rainfall.cpp
+\example vectorize.cpp
+\example black_scholes_options.cpp
+\example monte_carlo_options.cpp
+\example harris.cpp
+\example kmeans.cpp
+\example knn.cpp
+\example bagging.cpp
+\example naive_bayes.cpp
+\example perceptron.cpp
+\example neural_network.cpp
+\example rbm.cpp
+\example deep_belief_net.cpp
+\example logistic_regression.cpp
 */
 
 #include "af/compatible.h"

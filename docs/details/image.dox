@@ -134,7 +134,7 @@ Data normalization via histogram equalization
 
 =======================================================================
 
-\defgroup image_func_fast fast
+\defgroup cv_func_fast fast
 \ingroup featdetect_mat
 
 \brief FAST feature detector
@@ -150,7 +150,7 @@ discard it if its score is non maximal.
 
 =======================================================================
 
-\defgroup image_func_orb orb
+\defgroup cv_func_orb orb
 \ingroup featdescriptor_mat
 
 \brief ORB Feature descriptor
@@ -162,6 +162,250 @@ multi-scale pyramid is calculated by downsampling the input image multiple
 times followed by FAST feature detection on each scale.
 
 =======================================================================
+
+\defgroup image_func_regions regions
+\ingroup connected_comps_mat
+
+\brief Find blobs in given image.
+
+Given a binary image (with zero representing background pixels), regions
+computes a floating point image where each connected component is labeled
+from 1 to N, the total number of components in the image.
+
+A component is defined as one or more nonzero pixels that are connected by
+the specified connectivity (either 4-way(\ref AF_CONNECTIVITY_4) or
+8-way(\ref AF_CONNECTIVITY_8)) in two dimensions.
+
+The default connectivity is \ref AF_CONNECTIVITY_4.
+
+=======================================================================
+
+\defgroup image_func_gauss gaussiankernel
+\ingroup utility_mat
+
+\brief Creates a Gaussian Kernel
+
+This function creates a kernel of a specified size that contains a Gaussian
+distribution. This distribution is normalized to one. This is most commonly
+used when performing a Gaussian blur on an image. The function takes two sets
+of arguments, the size of the kernel (width and height in pixels) and the
+sigma parameters (for row and column) which effect the distribution of the
+weights in the y and x directions, respectively.
+
+Changing sigma causes the weights in each direction to vary. Sigma is calculated
+internally as (0.25 * rows + 0.75) for rows and similarly for columns.
+
+=======================================================================
+
+\defgroup image_func_sobel sobel
+\ingroup imageflt_mat
+
+\brief Sobel Operators
+
+Sobel operators perform a 2-D spatial gradient measurement on an image
+to emphasize the regions of high spatial frequency, namely edges. A more in depth
+discussion on it can be found [here](http://en.wikipedia.org/wiki/Sobel_operator).
+
+=======================================================================
+
+\defgroup cv_func_match_template matchTemplate
+\ingroup match_mat
+
+\brief Template Matching
+
+Template matching is an image processing technique to find small patches of an image which
+match a given template image. A more in depth discussion on the topic can be found
+[here](http://en.wikipedia.org/wiki/Template_matching).
+
+=======================================================================
+
+\defgroup image_func_medfilt medfilt
+\ingroup imageflt_mat
+
+\brief Median Filter
+
+A median filter is similar to the arbitrary filter except that instead of a weighted sum,
+the median value of the pixels covered by the kernel is returned.
+
+=======================================================================
+
+\defgroup image_func_meanshift meanshift
+\ingroup imageflt_mat
+
+\brief Meanshift Filter
+
+A meanshift filter is an edge-preserving smoothing filter commonly used in object
+tracking and image segmentation.
+
+This filter replaces each pixel in the image with the mean of the values within a
+given given color and spatial radius. The meanshift filter is an iterative algorithm
+that continues until a maxium number of iterations is met or until the value of the
+means no longer changes.
+
+=======================================================================
+
+\defgroup image_func_bilateral bilateral
+\ingroup imageflt_mat
+
+\brief Bilateral Filter
+
+A bilateral filter is a edge-preserving filter that reduces noise in an image.
+The intensity of each pixel is replaced by a weighted average of the intensities
+of nearby pixels. The weights follow a Gaussian distribution and depend on the
+distance as well as the color distance.
+
+The bilateral filter requires the size of the filter (in pixels) and the upper
+bound on color values, N, where pixel values range from 0–N inclusively.
+
+=======================================================================
+
+\defgroup image_func_erode erode
+\ingroup morph_mat
+
+\brief Erosion(morphological operator) for images
+
+The erosion function is a morphological transformation on an image that requires two inputs.
+The first is the image to be morphed, and the second is the mask indicating neighborhood that
+must be white in order to preserve each pixel.
+
+In erode, for each pixel, the mask is centered at the pixel. If each pixel of the mask matches
+the corresponding pixel on the image, then no change is made. If there is at least one mismatch,
+then pixels are changed to the background color (black).
+
+For further reference, see: [Erosion (morphology)](http://en.wikipedia.org/wiki/Erosion_(morphology))
+
+Sample input and output are shown below:
+
+<table border=0>
+<tr>
+<td> \image html erode_orig.png "Input Image" </td>
+<td> \image html mask.png "Mask" </td>
+<td> \image html erode_inter.png "Intermediate Result" </td>
+<td> \image html erode.png "Output Image" </td>
+</tr>
+</table>
+
+
+
+\defgroup image_func_erode3d erode3d
+\ingroup morph_mat
+
+\brief Erosion(morphological operator) for volumes
+
+Erosion for a volume is similar to the way erosion works on an image. Only difference is
+that the masking operation is performed on a volume instead of a rectangular region.
+
+For further reference, see: [Erosion (morphology)](http://en.wikipedia.org/wiki/Erosion_(morphology))
+
+
+
+\defgroup image_func_dilate dilate
+\ingroup morph_mat
+
+\brief Dilation(morphological operator) for images
+
+The dilation function takes two pieces of data as inputs. The first is the input image to be
+morphed, and the second is the mask indicating the neighborhood around each pixel to match.
+
+In dilation, for each pixel, the mask is centered at the pixel. If the center pixel of the
+mask matches the corresponding pixel on the image, then the mask is accepted. If the center
+pixels do not matches, then the mask is ignored and no changes are made.
+
+For further reference, see: [Dilation (morphology)](http://en.wikipedia.org/wiki/Dilation_(morphology))
+
+Sample input and output are shown below:
+
+<table border=0>
+<tr>
+<td> \image html dilate_orig.png "Input Image" </td>
+<td> \image html mask.png "Mask" </td>
+<td> \image html dilate_inter.png "Intermediate Result" </td>
+<td> \image html dilate.png "Output Image" </td>
+</tr>
+</table>
+
+
+
+\defgroup image_func_dilate3d dilate3d
+\ingroup morph_mat
+
+\brief Dilation(morphological operator) for volumes
+
+Dilation for a volume is similar to the way dilation works on an image. Only difference is
+that the masking operation is performed on a volume instead of a rectangular region.
+
+For further reference, see: [Dilation (morphology)](http://en.wikipedia.org/wiki/Dilation_(morphology))
+
+
+
+\defgroup imageio_func_load loadImage
+\ingroup imageio_mat
+
+Load an image from disk to an array
+
+Supported formats include JPG, PNG, PPM and other formats supported by freeimage
+
+
+
+\defgroup imageio_func_save saveImage
+\ingroup imageio_mat
+
+Save an array to disk as an image
+
+Supported formats include JPG, PNG, PPM and other formats supported by freeimage
+
+
+
+\defgroup calc_func_grad grad
+\ingroup calc_mat
+
+Calculate the gradients of the input
+
+The gradients along the first and second dimensions are calculated simultaneously
+
+
+
+\defgroup transform_func_resize resize
+\ingroup transform_mat
+
+Resize an input image
+
+
+
+\defgroup transform_func_rotate rotate
+\ingroup transform_mat
+
+Rotate an input image
+
+
+
+\defgroup transform_func_translate translate
+\ingroup transform_mat
+
+Translate an input image
+
+
+
+\defgroup transform_func_scale scale
+\ingroup transform_mat
+
+Scale an input image
+
+
+
+\defgroup transform_func_skew skew
+\ingroup transform_mat
+
+Skew an input image
+
+
+
+\defgroup transform_func_transform transform
+\ingroup transform_mat
+
+Transform an input image
+
+
 
 @}
 */
