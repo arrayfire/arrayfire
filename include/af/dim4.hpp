@@ -52,6 +52,10 @@ public:
     const   dim_type* get() const   { return dims; }
 };
 
+dim4 operator+(const dim4& first, const dim4& second);
+dim4 operator-(const dim4& first, const dim4& second);
+dim4 operator*(const dim4& first, const dim4& second);
+
 static inline
 std::ostream&
 operator<<(std::ostream& ostr, const dim4& dims)

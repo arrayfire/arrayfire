@@ -73,12 +73,12 @@ ExternalProject_Add(
     LOG_BUILD 0)
 ENDFUNCTION(GTEST_BUILD)
 
-GTEST_BUILD(googletest              ${CMAKE_BUILD_TYPE} ${binary_dir} ${byproducts})
+GTEST_BUILD(googletest              ${CMAKE_BUILD_TYPE} ${binary_dir} "${byproducts}")
 
 # If we are on OSX and using the clang compiler go ahead and build
 # GTest using libstdc++ just in case we compile the CUDA backend
 IF("${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-    GTEST_BUILD(googletest_libstdcpp    LibStdCpp           ${stdlib_binary_dir} ${byproducts_libstdcpp})
+    GTEST_BUILD(googletest_libstdcpp    LibStdCpp           ${stdlib_binary_dir} "${byproducts_libstdcpp}")
 ENDIF("${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 
 foreach(lib ${GTEST_LIBRARIES})

@@ -142,6 +142,34 @@ dim4::operator-=(const dim4 &other)
     return *this;
 }
 
+dim4 operator+(const dim4& first, const dim4& second)
+{
+    dim4 dims;
+    for(unsigned i = 0; i < 4; i++) {
+        dims[i] = first[i] + second[i];
+    }
+    return dims;
+}
+
+dim4 operator-(const dim4& first, const dim4& second)
+{
+    dim4 dims;
+    for(unsigned i = 0; i < 4; i++) {
+        dims[i] = first[i] - second[i];
+    }
+    return dims;
+}
+
+dim4 operator*(const dim4& first, const dim4& second)
+{
+    dim4 dims;
+    for(unsigned i = 0; i < 4; i++) {
+        dims[i] = first[i] * second[i];
+    }
+    return dims;
+}
+
+
 bool
 isEnd(const af_seq &seq)    { return (seq.end <= -1); }
 
@@ -178,6 +206,8 @@ toDims(const vector<af_seq>& seqs, dim4 parentDims)
                 outDims[i] = seqElements(temp);
             }
         } else {
+            DIM_ASSERT(1, seqs[i].begin >= 0 && seqs[i].begin < parentDims[i]);
+            DIM_ASSERT(1, seqs[i].end < parentDims[i]);
             outDims[i] = seqElements(seqs[i]);
         }
 

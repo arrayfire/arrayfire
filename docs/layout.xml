@@ -2,47 +2,16 @@
   <!-- Navigation index tabs for HTML output -->
   <navindex>
     <tab type="mainpage" visible="yes" title="" />
-    <tab type="examples" visible="yes" title="" intro=""/>
-    <tab type="usergroup" url="\ref gettingstarted" visible="yes" title="Getting Started">
-      <tab type="user" url="\ref gettingstarted_datatypes" visible="yes" title="Basic types and arithmetic"/>
-      <tab type="user" url="\ref gettingstarted_matrixmanipulation" visible="yes" title="Matrix Multiplication"/>
-      <tab type="user" url="\ref gettingstarted_indexing" visible="yes" title="Indexing"/>
-      <tab type="user" url="\ref gettingstarted_linearalgebra" visible="yes" title="Linear Algebra"/>
-      <tab type="user" url="\ref gettingstarted_convolutions" visible="yes" title="Convolutions"/>
-      <tab type="user" url="\ref gettingstarted_devicepointer" visible="yes" title="Device Pointer Interface"/>
-      <tab type="user" url="\ref gettingstarted_timing" visible="yes" title="Timing Code"/>
+    <tab type="usergroup" visible="yes" title="Tutorials">
+      <tab type="user" url="\ref gettingstarted" visible="yes" title="Getting Started"/>
+      <tab type="user" url="\ref matrixmanipulation" visible="yes" title="Matrix Manipulation"/>
+      <tab type="user" url="\ref indexing" visible="yes" title="Indexing"/>
+      <tab type="user" url="\ref timing" visible="yes" title="Timing ArrayFire"/>
+      <tab type="usergroup" url="\ref page_gfor" visible="yes" title="GFOR Usage"/>
     </tab>
-    <tab type="usergroup" url="\ref page_gfor" visible="yes" title="GFOR Usage">
-      <tab type="user" url="\ref gfor_intro" visible="yes" title="Introduction"/>
-      <tab type="user" url="\ref gfor" visible="yes" title="Usage"/>
-      <tab type="user" url="\ref gfor_mul" visible="yes" title="Multiplication Example"/>
-      <tab type="user" url="\ref gfor_iterator" visible="yes" title="The Iterator"/>
-      <tab type="user" url="\ref gfor_subscripting" visible="yes" title="Subscripting"/>
-      <tab type="user" url="\ref gfor_in_loop" visible="yes" title="In-Loop Reuse"/>
-      <tab type="user" url="\ref gfor_in_place_computation" visible="yes" title="In-Place Computation"/>
-      <tab type="user" url="\ref gfor_random" visible="yes" title="Random Data Generation"/>
-      <tab type="user" url="\ref gfor_local_variables" visible="yes" title="Local Variables"/>
-      <tab type="user" url="\ref gfor_restrictions" visible="yes" title="Restrictions"/>
-      <tab type="user" url="\ref gfor_memory" visible="yes" title="Memory Considerations"/>
-    </tab>
-    <!-- <tab type="pages" visible="yes" title="Tutorials" intro="Short
-         tutorials on various topics:"/> -->
     <tab type="modules" visible="yes" title="Functions" intro="Documentation grouped according to category:"/>
     <tab type="user" url="\ref releasenotes" visible="yes" title="Release Notes"/>
-    <!-- <tab type="namespacemembers" visible="yes" title="Namespace"> -->
-    <!--   <tab type="namespacemembers" visible="no" title="" intro=""/> -->
-    <!--   <tab type="namespaces" visible="no" title="" intro=""/> -->
-    <!-- </tab> -->
-    <!-- <tab type="classes" visible="yes" title=""> -->
-    <!--   <tab type="classes" visible="yes" title="" intro=""/> -->
-    <!--   <tab type="classindex" visible="$ALPHABETICAL_INDEX" title=""/> -->
-    <!--   <tab type="hierarchy" visible="yes" title="" intro=""/> -->
-    <!--   <tab type="classmembers" visible="yes" title="" intro=""/> -->
-    <!-- </tab> -->
-    <!-- <tab type="files" visible="yes" title=""> -->
-    <!--   <tab type="files" visible="yes" title="" intro=""/> -->
-    <!--   <tab type="globals" visible="yes" title="" intro=""/> -->
-    <!-- </tab> -->
+    <tab type="examples" visible="yes" title="" intro=""/>
   </navindex>
 
   <!-- Layout definition for a class page -->

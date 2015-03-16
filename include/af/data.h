@@ -15,7 +15,14 @@ namespace af
 {
     class array;
 
+    /**
+       \defgroup data_func_constant constant
+       Create constant array from the specified dimensions
+       @{
 
+       \ingroup arrayfire_func
+       \ingroup move_mat
+    */
 #define CONSTANT(TYPE, TY)                                          \
     AFAPI array constant(TYPE val, const dim4 &dims, dtype ty=TY);  \
     AFAPI array constant(TYPE val, const dim_type d0, dtype ty=TY); \
@@ -44,6 +51,22 @@ namespace af
 
 #undef CONSTANT
 
+    /**
+       @}
+    */
+
+    /**
+       \defgroup data_func_randu randu
+       Create a random array sampled from uniform distribution
+
+       The data is uniformly distributed between [0, 1]
+
+       @{
+
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
+
     AFAPI array randu(const dim4 &dims, dtype ty=f32);
     AFAPI array randu(const dim_type d0, dtype ty=f32);
     AFAPI array randu(const dim_type d0,
@@ -54,6 +77,21 @@ namespace af
                       const dim_type d1, const dim_type d2,
                       const dim_type d3, dtype ty=f32);
 
+    /**
+       @}
+    */
+
+    /**
+       \defgroup data_func_randn randn
+       Create a random array sampled from a normal distribution
+
+       The distribution is centered around 0
+
+       @{
+
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
     AFAPI array randn(const dim4 &dims, dtype ty=f32);
     AFAPI array randn(const dim_type d0, dtype ty=f32);
     AFAPI array randn(const dim_type d0,
@@ -64,6 +102,19 @@ namespace af
                       const dim_type d1, const dim_type d2,
                       const dim_type d3, dtype ty=f32);
 
+    /**
+       @}
+    */
+
+    /**
+       \defgroup data_func_identity identity
+       Create an identity array
+
+       @{
+
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
     AFAPI array identity(const dim4 &dims, dtype ty=f32);
     AFAPI array identity(const dim_type d0, dtype ty=f32);
     AFAPI array identity(const dim_type d0,
@@ -73,20 +124,70 @@ namespace af
     AFAPI array identity(const dim_type d0,
                          const dim_type d1, const dim_type d2,
                          const dim_type d3, dtype ty=f32);
+    /**
+       @}
+    */
 
-    AFAPI array range(const dim4 &dims, const int rep = -1, dtype ty=f32);
+    /**
+       \defgroup data_func_range range
+       Create an array with the specified range along a dimension
+
+       @{
+
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
+    AFAPI array range(const dim4 &dims, const int seq_dim = -1, dtype ty=f32);
     AFAPI array range(const dim_type d0, const dim_type d1 = 1, const dim_type d2 = 1,
-                     const dim_type d3 = 1, const int rep = -1, dtype ty=f32);
+                      const dim_type d3 = 1, const int seq_dim = -1, dtype ty=f32);
 
+    /**
+       @}
+    */
+
+    /**
+       \defgroup data_func_iota iota
+       Create an sequence and modify to specified dimensions
+
+       @{
+
+       \ingroup data_mat
+       \ingroup arrafire_func
+    */
+    AFAPI array iota(const dim4 dims, const dim4 tile_dims = dim4(1), dtype ty=f32);
+
+    /**
+       @}
+    */
+
+    /**
+       \defgroup data_func_diag diag
+       Create a diagonal marix from input array or extract diagonal from a matrix
+
+       @{
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
     AFAPI array diag(const array &in, const int num = 0, const bool extract = true);
 
+    /**
+      @}
+    */
 }
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-    // Create af_array from a constant value
+
+    /**
+       \defgroup data_func_constant constant
+       Create constant array from the specified dimensions
+       @{
+
+       \ingroup arrayfire_func
+       \ingroup data_mat
+    */
     AFAPI af_err af_constant(af_array *arr, const double val, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
     AFAPI af_err af_constant_complex(af_array *arr, const double real, const double imag,
@@ -95,25 +196,101 @@ extern "C" {
     AFAPI af_err af_constant_long (af_array *arr, const  intl val, const unsigned ndims, const dim_type * const dims);
 
     AFAPI af_err af_constant_ulong(af_array *arr, const uintl val, const unsigned ndims, const dim_type * const dims);
+    /**
+       @}
+    */
 
-    // Create sequence array
+    /**
+       \defgroup data_func_range range
+       Create an array with the specified range along a dimension
+
+       @{
+
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
     AFAPI af_err af_range(af_array *arr, const unsigned ndims, const dim_type * const dims,
-                         const int rep, const af_dtype type);
+                          const int seq_dim, const af_dtype type);
+    /**
+       @}
+    */
 
-    // Generate Random Numbers using uniform distribution
+    /**
+       \defgroup data_func_iota iota
+       Create an sequence and modify to specified dimensions
+
+       @{
+
+       \ingroup data_mat
+       \ingroup arrafire_func
+    */
+    AFAPI af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const dims,
+                         const unsigned t_ndims, const dim_type * const tdims, const af_dtype type);
+    /**
+       @}
+    */
+
+    /**
+       \defgroup data_func_randu randu
+       Create a random array sampled from uniform distribution
+
+       The data is uniformly distributed between [0, 1]
+
+       @{
+
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
     AFAPI af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);
 
-    // Generate Random Numbers using normal distribution
+    /**
+       @}
+    */
+
+    /**
+       \defgroup data_func_randn randn
+       Create a random array sampled from a normal distribution
+
+       The distribution is centered around 0
+
+       @{
+
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
     AFAPI af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+    /**
+       @}
+    */
 
-    // Generate identity matrix
+    /**
+       \defgroup data_func_identity identity
+       Create an identity array
+
+       @{
+
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
     AFAPI af_err af_identity(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+    /**
+       @}
+    */
 
-    // Create a diagonal matrix from input
+    /**
+       \defgroup data_func_diag diag
+       Create a diagonal marix from input array or extract diagonal from a matrix
+
+       @{
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
     AFAPI af_err af_diag_create(af_array *out, const af_array in, const int num);
 
-    // Extract a diagonal matrix from input
     AFAPI af_err af_diag_extract(af_array *out, const af_array in, const int num);
+    /**
+       @}
+    */
 
 #ifdef __cplusplus
 }

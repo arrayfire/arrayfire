@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <arrayfire.h>
+#include <cstdlib>
 
 #include "input.h"
 using namespace af;

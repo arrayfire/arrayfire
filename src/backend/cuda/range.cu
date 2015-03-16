@@ -17,28 +17,26 @@
 namespace cuda
 {
     template<typename T>
-    Array<T> range(const dim4& dim, const int rep)
+    Array<T> range(const dim4& dim, const int seq_dim)
     {
-        // Repeat highest dimension, ie. creates a single sequence from
-        // 0...elements - 1
-        int rep_ = rep;
-        if(rep < 0) {
-            rep_ = dim.ndims() - 1; // ndims = [1,4] => rep = [0, 3]
+        // Set dimension along which the sequence should be
+        // Other dimensions are simply tiled
+        int _seq_dim = seq_dim;
+        if(seq_dim < 0) {
+            _seq_dim = 0;   // column wise sequence
         }
 
+        if(_seq_dim < 0 || _seq_dim > 3)
+            AF_ERROR("Invalid rep selection", AF_ERR_INVALID_ARG);
+
         Array<T> out = createEmptyArray<T>(dim);
-        switch(rep_) {
-            case 0: kernel::range<T, 0>(out); break;
-            case 1: kernel::range<T, 1>(out); break;
-            case 2: kernel::range<T, 2>(out); break;
-            case 3: kernel::range<T, 3>(out); break;
-            default: AF_ERROR("Invalid rep selection", AF_ERR_INVALID_ARG);
-        }
+        kernel::range<T>(out, _seq_dim);
+
         return out;
     }
 
-#define INSTANTIATE(T)                                                  \
-    template Array<T> range<T>(const af::dim4 &dims, const int rep);     \
+#define INSTANTIATE(T)                                                      \
+    template Array<T> range<T>(const af::dim4 &dims, const int seq_dim);    \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

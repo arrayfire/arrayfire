@@ -47,7 +47,6 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
             AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
     }
 
-
     Array<T> dst = createSubArray<T>(getArray<T>(out), index_, false);
 
     bool noCaseExecuted = true;
@@ -92,7 +91,7 @@ af_err af_assign(af_array *out,
 
         af_array res;
         if (*out != lhs) AF_CHECK(af_copy_array(&res, lhs));
-        else             res = lhs;
+        else             res = weakCopy(lhs);
 
         try {
 

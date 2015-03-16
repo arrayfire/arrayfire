@@ -11,7 +11,6 @@
 #include <arrayfire.h>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
-#include <af/reduce.h>
 #include <vector>
 #include <iostream>
 #include <string>

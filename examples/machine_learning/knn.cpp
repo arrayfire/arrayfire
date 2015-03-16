@@ -93,7 +93,7 @@ void knn_demo(bool console, int perc)
     printf("Prediction time: %4.4f\n", test_time);
 
     if (!console) {
-        display_results<false>(test_images, res_labels, 20);
+        display_results<false>(test_images, res_labels, test_labels, 20);
     }
 }
 

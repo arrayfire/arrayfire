@@ -128,3 +128,65 @@ TEST(Regions, CPP)
     // Delete
     delete[] outData;
 }
+
+///////////////////////////////// Documentation Examples ///////////////////
+TEST(Regions, Docs)
+{
+    // input data
+    uchar input[64] =  {
+        0, 0, 0, 0, 1, 0, 0, 0,
+        0, 0, 1, 0, 1, 0, 0, 1,
+        0, 0, 0, 1, 0, 0, 0, 0,
+        0, 0, 1, 0, 0, 1, 0, 0,
+        1, 0, 0, 1, 0, 0, 1, 0,
+        0, 0, 0, 1, 1, 0, 0, 1,
+        1, 1, 0, 0, 0, 0, 0, 0,
+        0, 1, 0, 1, 1, 1, 1, 0
+    };
+    // gold output
+    float gold[64] =  {
+        0, 0, 0, 0, 1, 0, 0, 0,
+        0, 0, 1, 0, 1, 0, 0, 2,
+        0, 0, 0, 1, 0, 0, 0, 0,
+        0, 0, 1, 0, 0, 3, 0, 0,
+        4, 0, 0, 1, 0, 0, 3, 0,
+        0, 0, 0, 1, 1, 0, 0, 3,
+        5, 5, 0, 0, 0, 0, 0, 0,
+        0, 5, 0, 6, 6, 6, 6, 0
+    };
+
+    //![ex_image_regions]
+    af::array in(8, 8, input);
+
+    //af_print(in);
+    // in =
+    // 0   0   0   0   1   0   1   0
+    // 0   0   0   0   0   0   1   1
+    // 0   1   0   1   0   0   0   0
+    // 0   0   1   0   1   1   0   1
+    // 1   1   0   0   0   1   0   1
+    // 0   0   0   1   0   0   0   1
+    // 0   0   0   0   1   0   0   1
+    // 0   1   0   0   0   1   0   0
+
+    // Compute the label matrix using 8-way connectivity
+    af::array out = regions(in, AF_CONNECTIVITY_8);
+    //af_print(out);
+    // 0   0   0   0   4   0   5   0
+    // 0   0   0   0   0   0   5   5
+    // 0   1   0   1   0   0   0   0
+    // 0   0   1   0   1   1   0   6
+    // 1   1   0   0   0   1   0   6
+    // 0   0   0   3   0   0   0   6
+    // 0   0   0   0   3   0   0   6
+    // 0   2   0   0   0   3   0   0
+    //![ex_image_regions]
+
+
+    float output[64];
+    out.host((void*)output);
+
+    for (int i=0; i<64; ++i) {
+        ASSERT_EQ(gold[i], output[i])<<" mismatch at i="<<i<<std::endl;
+    }
+}
