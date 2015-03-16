@@ -7,6 +7,10 @@ Overview {#mainpage}
 
 ArrayFire is a high performance software library for parallel computing with an easy-to-use API. Its array based function set makes parallel programming more accessible.
 
+You can get ArrayFire in one of the following ways
+    * [Binary installers](http://arrayfire.com/download/) from our download page
+    * Build from source using our [github repo](https://github.com/arrayfire/arrayfire)
+
 ## Easy to use
 
 The [array](\ref construct_mat) object is beautifully simple.
