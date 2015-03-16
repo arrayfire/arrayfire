@@ -23,7 +23,7 @@ kernels.
 
 #### Support for multiple domains
 
-ArrayFire contains [hundreds of functions](modules.htm) across various domains including:
+ArrayFire contains [hundreds of functions](\ref arrayfire_func) across various domains including:
 - [Vector Algorithms](\ref vector_mat)
 - [Image Processing](\ref image_mat)
 - [Computer Vision](\ref cv_mat)
@@ -80,7 +80,7 @@ arithmetic intensity and memory throughput, while avoiding unnecessary
 temporary allocations. It has an awesome internal JIT compiler to make
 optimizations for you.
 
-Read more about how [ArrayFire JIT](\ref jit) can improve the performance in your application.
+Read more about how [ArrayFire JIT](http://arrayfire.com/performance-of-arrayfire-jit-code-generation/) can improve the performance in your application.
 
 ## Simple Example
 
