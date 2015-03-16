@@ -21,7 +21,7 @@ namespace af
 
    \param[out] dx the gradient along first dimension
    \param[out] dy the gradient along second dimension
-   \param[in] is the input
+   \param[in] in is the input array
 
    \ingroup calc_func_grad
 */
@@ -286,7 +286,7 @@ AFAPI array erode3d(const array& in, const array& mask);
 
     \param[in]  in array should be binary/grayscale image of type uchar \ref u8
     \param[in]  connectivity can take one of the following [\ref AF_CONNECTIVITY_4 | \ref AF_CONNECTIVITY_8]
-    \param[in]  ty is type of output array
+    \param[in]  type is type of output array
     \return     returns array with labels indicating different regions. Throws exceptions if any issue occur.
 
     \ingroup image_func_regions
@@ -302,7 +302,7 @@ AFAPI array regions(const array& in, af::connectivity connectivity=AF_CONNECTIVI
                the central pixel is considered to be greater or smaller
     \param[in] arc_length length of arc (or sequential segment) to be tested,
                must be within range [9-16]
-    \param[in] nonmax performs non-maximal suppression if true
+    \param[in] non_max performs non-maximal suppression if true
     \param[in] feature_ratio maximum ratio of features to detect, the maximum
                number of features is calculated by feature_ratio * in.elements().
                The maximum number of features is not based on the score, instead
@@ -345,9 +345,9 @@ AFAPI void orb(features& feat, array& desc, const array& image, const float fast
 /**
    C++ Interface for image template matching
 
-   \param[in]  search_img is an array with image data
-   \param[in]  template_img is the template we are looking for in the image
-   \param[in]  m_type is metric that should be used to calculate the disparity
+   \param[in]  searchImg is an array with image data
+   \param[in]  templateImg is the template we are looking for in the image
+   \param[in]  mType is metric that should be used to calculate the disparity
                between window in the image and the template image. It can one of
                the values defined by the enum \ref af_match_type
    \return     array with dispartiy values for the window starting at
@@ -437,8 +437,8 @@ AFAPI array histequal(const array& in, const array& hist);
 
    \param[in]  rows
    \param[in]  cols
-   \param[in]  rows (default 0) (calculated internally as 0.25 * rows + 0.75)
-   \param[in]  cols (default 0) (calculated internally as 0.25 * cols + 0.75)
+   \param[in]  sig_r (default 0) (calculated internally as 0.25 * rows + 0.75)
+   \param[in]  sig_c (default 0) (calculated internally as 0.25 * cols + 0.75)
    \return     an array with values generated using gaussian function
 
    \ingroup image_func_gauss
@@ -497,7 +497,7 @@ extern "C" {
 
        \param[out] dx the gradient along first dimension
        \param[out] dy the gradient along second dimension
-       \param[in] is the input
+       \param[in]  in is the input array
        \return     \ref AF_SUCCESS if the color transformation is successful,
        otherwise an appropriate error code is returned.
 
@@ -510,7 +510,7 @@ extern "C" {
 
        \param[out] out will contain the image
        \param[in] filename is name of file to be loaded
-       \param[in] is_color boolean denoting if the image should be loaded as 1 channel or 3 channel
+       \param[in] isColor boolean denoting if the image should be loaded as 1 channel or 3 channel
        \return     \ref AF_SUCCESS if the color transformation is successful,
        otherwise an appropriate error code is returned.
 
@@ -712,7 +712,7 @@ extern "C" {
         \param[in]  in array is the input image
         \param[in]  spatial_sigma is the spatial variance paramter that decides the filter window
         \param[in]  chromatic_sigma is the chromatic variance paramter
-        \param[in]  is_color indicates if the input \p in is color image or grayscale
+        \param[in]  isColor indicates if the input \p in is color image or grayscale
         \return     \ref AF_SUCCESS if the filter is applied successfully,
         otherwise an appropriate error code is returned.
 
@@ -769,7 +769,7 @@ extern "C" {
     /**
         C Interface for FAST feature detector
 
-        \param[out] af_features struct containing arrays for x and y
+        \param[out] out struct containing arrays for x and y
                     coordinates and score, while array orientation is set to 0
                     as FAST does not compute orientation, and size is set to 1
                     as FAST does not compute multiple scales
@@ -779,7 +779,7 @@ extern "C" {
                     the central pixel is considered to be greater or smaller
         \param[in]  arc_length length of arc (or sequential segment) to be
                     tested, must be within range [9-16]
-        \param[in]  nonmax performs non-maximal suppression if true
+        \param[in]  non_max performs non-maximal suppression if true
         \param[in]  feature_ratio maximum ratio of features to detect, the
                     maximum number of features is calculated by
                     feature_ratio * in.elements(). The maximum number of
@@ -800,7 +800,7 @@ extern "C" {
                     coordinates, score, orientation and size of selected features
         \param[out] desc Nx8 array containing extracted descriptors, where N is the
                     number of selected features
-        \param[in]  image array containing a grayscale image (color images are not
+        \param[in]  in array containing a grayscale image (color images are not
                     supported)
         \param[in]  fast_thr FAST threshold for which a pixel of the circle around
                     the central pixel is considered to be brighter or darker
@@ -907,8 +907,8 @@ extern "C" {
        \param[out] out is an array with values generated using gaussian function
        \param[in]  rows
        \param[in]  cols
-       \param[in]  rows (default 0) (calculated internally as 0.25 * rows + 0.75)
-       \param[in]  cols (default 0) (calculated internally as 0.25 * cols + 0.75)
+       \param[in]  sigma_r (default 0) (calculated internally as 0.25 * rows + 0.75)
+       \param[in]  sigma_c (default 0) (calculated internally as 0.25 * cols + 0.75)
        \return     \ref AF_SUCCESS if gaussian distribution values are generated successfully,
        otherwise an appropriate error code is returned.
 

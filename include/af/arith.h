@@ -851,6 +851,7 @@ extern "C" {
 
        \param[out] out will contain the values in the specified type
        \param[in] in is the input
+       \param[in] type is the target data type \ref af_dtype
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup helper_func_cast

@@ -17,7 +17,7 @@ Find the sum of values in the input
 
 \copydoc batch_detail
 
-========================================================
+
 
 \defgroup reduce_func_product product
 
@@ -27,7 +27,7 @@ Find the product of values in the input
 
 \copydoc batch_detail
 
-========================================================
+
 
 \defgroup reduce_func_min min
 
@@ -37,7 +37,7 @@ Find the minimum values and their locations
 
 \copydoc batch_detail
 
-========================================================
+
 
 \defgroup reduce_func_max max
 
@@ -47,7 +47,7 @@ Find the maximum values and their locations
 
 \copydoc batch_detail
 
-========================================================
+
 
 \defgroup reduce_func_alltrue alltrue
 
@@ -57,7 +57,7 @@ Find if of all of the values in input are true
 
 \copydoc batch_detail
 
-========================================================
+
 
 \defgroup reduce_func_anytrue anytrue
 
@@ -67,7 +67,7 @@ Find if of any of the values in input are true
 
 \copydoc batch_detail
 
-========================================================
+
 
 \defgroup reduce_func_count count
 
@@ -77,7 +77,7 @@ Count the number of non-zero elements in the input
 
 \copydoc batch_detail
 
-========================================================
+
 
 \defgroup scan_func_accum accum
 
@@ -87,7 +87,7 @@ Perform exclusive sum along specified dimension
 
 \copydoc batch_detail
 
-========================================================
+
 
 \defgroup scan_func_where where
 
@@ -97,7 +97,7 @@ Locate the indices of non-zero elements
 
 The locations are provided by flattening the input into a linear array.
 
-========================================================
+
 
 \defgroup calc_func_diff1 diff1
 
@@ -107,7 +107,7 @@ First order numerical difference along specified dimension
 
 \copydoc batch_detail
 
-========================================================
+
 
 \defgroup calc_func_diff2 diff2
 
@@ -117,7 +117,7 @@ Second order numerical difference along specified dimension
 
 \copydoc batch_detail
 
-========================================================
+
 
 \defgroup sort_func_sort sort
 
@@ -127,7 +127,7 @@ Sort input arrays
 
 Optionally return original indices and keys
 
-========================================================
+
 
 \defgroup set_func_unique setunique
 
@@ -135,9 +135,7 @@ Optionally return original indices and keys
 
 Find unique values from an input
 
-.
 
-========================================================
 
 \defgroup set_func_union setunion
 
@@ -145,9 +143,7 @@ Find unique values from an input
 
 Find union of two inputs
 
-.
 
-========================================================
 
 \defgroup set_func_intersect setintersect
 
@@ -155,9 +151,6 @@ Find union of two inputs
 
 Find intersection of two inputs
 
-.
-
-========================================================
 
 @}
 */

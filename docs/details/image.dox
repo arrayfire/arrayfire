@@ -285,7 +285,7 @@ Sample input and output are shown below:
 </tr>
 </table>
 
-=======================================================================
+
 
 \defgroup image_func_erode3d erode3d
 \ingroup morph_mat
@@ -297,7 +297,7 @@ that the masking operation is performed on a volume instead of a rectangular reg
 
 For further reference, see: [Erosion (morphology)](http://en.wikipedia.org/wiki/Erosion_(morphology))
 
-=======================================================================
+
 
 \defgroup image_func_dilate dilate
 \ingroup morph_mat
@@ -324,7 +324,7 @@ Sample input and output are shown below:
 </tr>
 </table>
 
-=======================================================================
+
 
 \defgroup image_func_dilate3d dilate3d
 \ingroup morph_mat
@@ -336,7 +336,7 @@ that the masking operation is performed on a volume instead of a rectangular reg
 
 For further reference, see: [Dilation (morphology)](http://en.wikipedia.org/wiki/Dilation_(morphology))
 
-=======================================================================
+
 
 \defgroup imageio_func_load loadImage
 \ingroup imageio_mat
@@ -345,7 +345,7 @@ Load an image from disk to an array
 
 Supported formats include JPG, PNG, PPM and other formats supported by freeimage
 
-=========================================================================
+
 
 \defgroup imageio_func_save saveImage
 \ingroup imageio_mat
@@ -354,7 +354,7 @@ Save an array to disk as an image
 
 Supported formats include JPG, PNG, PPM and other formats supported by freeimage
 
-============================================================================
+
 
 \defgroup calc_func_grad grad
 \ingroup calc_mat
@@ -363,60 +363,49 @@ Calculate the gradients of the input
 
 The gradients along the first and second dimensions are calculated simultaneously
 
-============================================================================
+
 
 \defgroup transform_func_resize resize
 \ingroup transform_mat
 
 Resize an input image
 
-.
 
-============================================================================
 
 \defgroup transform_func_rotate rotate
 \ingroup transform_mat
 
 Rotate an input image
 
-.
 
-============================================================================
 
 \defgroup transform_func_translate translate
 \ingroup transform_mat
 
 Translate an input image
 
-.
 
-============================================================================
 
 \defgroup transform_func_scale scale
 \ingroup transform_mat
 
 Scale an input image
 
-.
 
-============================================================================
 
 \defgroup transform_func_skew skew
 \ingroup transform_mat
 
 Skew an input image
 
-.
 
-============================================================================
 
 \defgroup transform_func_transform transform
 \ingroup transform_mat
 
 Transform an input image
 
-.
 
-============================================================================
+
 @}
 */

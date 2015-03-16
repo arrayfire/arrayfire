@@ -19,7 +19,7 @@ namespace af
        C++ Interface for sum of elements in an array
 
        \param[in] in is the input array
-       \paran[in] dim The dimension along which the add operation occurs
+       \param[in] dim The dimension along which the add operation occurs
        \return    result of sum all values along dimension \p dim
 
        \ingroup reduce_func_sum
@@ -32,7 +32,7 @@ namespace af
        C++ Interface for product of elements in an array
 
        \param[in] in is the input array
-       \paran[in] dim The dimension along which the multiply operation occurs
+       \param[in] dim The dimension along which the multiply operation occurs
        \return    result of product all values along dimension \p dim
 
        \ingroup reduce_func_product
@@ -45,7 +45,7 @@ namespace af
        C++ Interface for minimum values in an array
 
        \param[in] in is the input array
-       \paran[in] dim The dimension along which the minimum value needs to be extracted
+       \param[in] dim The dimension along which the minimum value needs to be extracted
        \return    result of minimum all values along dimension \p dim
 
        \ingroup reduce_func_min
@@ -58,7 +58,7 @@ namespace af
        C++ Interface for maximum values in an array
 
        \param[in] in is the input array
-       \paran[in] dim The dimension along which the maximum value needs to be extracted
+       \param[in] dim The dimension along which the maximum value needs to be extracted
        \return    result of maximum all values along dimension \p dim
 
        \ingroup reduce_func_max
@@ -71,7 +71,7 @@ namespace af
        C++ Interface for checking all true values in an array
 
        \param[in] in is the input array
-       \paran[in] dim The dimension along which the values are checked to be all true
+       \param[in] dim The dimension along which the values are checked to be all true
        \return    result of checking if values along dimension \p dim are all true
 
        \ingroup reduce_functrue
@@ -84,7 +84,7 @@ namespace af
        C++ Interface for checking any true values in an array
 
        \param[in] in is the input array
-       \paran[in] dim The dimension along which the values are checked to be any true
+       \param[in] dim The dimension along which the values are checked to be any true
        \return    result of checking if values along dimension \p dim are any true
 
        \ingroup reduce_func_anytrue
@@ -97,7 +97,7 @@ namespace af
        C++ Interface for counting non zero values in an array
 
        \param[in] in is the input array
-       \paran[in] dim The dimension along which the the number of non-zero values are counted
+       \param[in] dim The dimension along which the the number of non-zero values are counted
        \return    the number of non-zero values along dimension \p dim
 
        \ingroup reduce_func_count
@@ -182,7 +182,7 @@ namespace af
        \param[out] val will contain the minimum values along dimension \p dim
        \param[out] idx will contain the locations of minimum all values along dimension \p dim
        \param[in]  in is the input array
-       \paran[in]  dim The dimension along which the minimum value needs to be extracted
+       \param[in]  dim The dimension along which the minimum value needs to be extracted
 
        \ingroup reduce_func_min
 
@@ -196,7 +196,7 @@ namespace af
        \param[out] val will contain the maximum values along dimension \p dim
        \param[out] idx will contain the locations of maximum all values along dimension \p dim
        \param[in]  in is the input array
-       \paran[in]  dim The dimension along which the maximum value needs to be extracted
+       \param[in]  dim The dimension along which the maximum value needs to be extracted
 
        \ingroup reduce_func_max
 
@@ -361,7 +361,7 @@ extern "C" {
 
        \param[out] out will contain the sum of all values in \p in along \p dim
        \param[in] in is the input array
-       \paran[in] dim The dimension along which the add operation occurs
+       \param[in] dim The dimension along which the add operation occurs
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup reduce_func_sum
@@ -373,7 +373,7 @@ extern "C" {
 
        \param[out] out will contain the product of all values in \p in along \p dim
        \param[in] in is the input array
-       \paran[in] dim The dimension along which the multiply operation occurs
+       \param[in] dim The dimension along which the multiply operation occurs
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup reduce_func_product
@@ -385,7 +385,7 @@ extern "C" {
 
        \param[out] out will contain the minimum of all values in \p in along \p dim
        \param[in] in is the input array
-       \paran[in] dim The dimension along which the minimum value is extracted
+       \param[in] dim The dimension along which the minimum value is extracted
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup reduce_func_min
@@ -397,7 +397,7 @@ extern "C" {
 
        \param[out] out will contain the maximum of all values in \p in along \p dim
        \param[in] in is the input array
-       \paran[in] dim The dimension along which the maximum value is extracted
+       \param[in] dim The dimension along which the maximum value is extracted
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup reduce_func_max
@@ -409,7 +409,7 @@ extern "C" {
 
        \param[out] out will contain the result of "and" operation all values in \p in along \p dim
        \param[in] in is the input array
-       \paran[in] dim The dimension along which the "and" operation occurs
+       \param[in] dim The dimension along which the "and" operation occurs
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup reduce_func_alltrue
@@ -421,7 +421,7 @@ extern "C" {
 
        \param[out] out will contain the result of "or" operation all values in \p in along \p dim
        \param[in] in is the input array
-       \paran[in] dim The dimension along which the "or" operation occurs
+       \param[in] dim The dimension along which the "or" operation occurs
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup reduce_func_anytrue
@@ -433,7 +433,7 @@ extern "C" {
 
        \param[out] out will contain the number of non-zero values in \p in along \p dim
        \param[in] in is the input array
-       \paran[in] dim The dimension along which the non-zero values are counted
+       \param[in] dim The dimension along which the non-zero values are counted
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup reduce_func_count
@@ -544,7 +544,7 @@ extern "C" {
        \param[out] out will contain the minimum of all values in \p in along \p dim
        \param[out] idx will contain the location of minimum of all values in \p in along \p dim
        \param[in] in is the input array
-       \paran[in] dim The dimension along which the minimum value is extracted
+       \param[in] dim The dimension along which the minimum value is extracted
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup reduce_func_min
@@ -557,7 +557,7 @@ extern "C" {
        \param[out] out will contain the maximum of all values in \p in along \p dim
        \param[out] idx will contain the location of maximum of all values in \p in along \p dim
        \param[in] in is the input array
-       \paran[in] dim The dimension along which the maximum value is extracted
+       \param[in] dim The dimension along which the maximum value is extracted
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup reduce_func_max

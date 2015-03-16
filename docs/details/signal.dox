@@ -116,7 +116,7 @@ respectively, then the possible batch operations are as follows.
 \defgroup signal_func_fft fft
 \ingroup fft_mat
 
-\breif Fast Fourier Transform
+\brief Fast Fourier Transform
 
 \copydoc signal_func_fft_desc
 
@@ -124,7 +124,7 @@ respectively, then the possible batch operations are as follows.
 \defgroup signal_func_fft2 fft2
 \ingroup fft_mat
 
-\breif Fast Fourier Transform
+\brief Fast Fourier Transform
 
 \copydoc signal_func_fft_desc
 
@@ -132,7 +132,7 @@ respectively, then the possible batch operations are as follows.
 \defgroup signal_func_fft3 fft3
 \ingroup fft_mat
 
-\breif Fast Fourier Transform
+\brief Fast Fourier Transform
 
 \copydoc signal_func_fft_desc
 
@@ -140,7 +140,7 @@ respectively, then the possible batch operations are as follows.
 \defgroup signal_func_ifft ifft
 \ingroup fft_mat
 
-\breif Fast Fourier Transform
+\brief Fast Fourier Transform
 
 \copydoc signal_func_fft_desc
 
@@ -148,7 +148,7 @@ respectively, then the possible batch operations are as follows.
 \defgroup signal_func_ifft2 ifft2
 \ingroup fft_mat
 
-\breif Fast Fourier Transform
+\brief Fast Fourier Transform
 
 \copydoc signal_func_fft_desc
 
@@ -156,7 +156,7 @@ respectively, then the possible batch operations are as follows.
 \defgroup signal_func_ifft3 ifft3
 \ingroup fft_mat
 
-\breif Fast Fourier Transform
+\brief Fast Fourier Transform
 
 \copydoc signal_func_fft_desc
 

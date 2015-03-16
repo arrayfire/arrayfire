@@ -18,7 +18,7 @@ namespace af
    C++ Interface for mean
 
    \param[in] in is the input array
-   \paran[in] dim The dimension along which the mean is extracted
+   \param[in] dim The dimension along which the mean is extracted
    \return    the mean of the input array along dimension \p dim
 
    \ingroup stat_func_mean
@@ -32,7 +32,7 @@ AFAPI array mean(const array& in, dim_type dim=-1);
 
    \param[in] in is the input array
    \param[in] weights is used to scale input \p in before getting mean
-   \paran[in] dim The dimension along which the mean is extracted
+   \param[in] dim The dimension along which the mean is extracted
    \return    the mean of the weighted input array along dimension \p dim
 
    \ingroup stat_func_mean
@@ -46,7 +46,7 @@ AFAPI array mean(const array& in, const array& weights, dim_type dim=-1);
 
    \param[in] in is the input array
    \param[in] isbiased is boolean denoting Population variance (false) or Sample Variance (true)
-   \paran[in] dim The dimension along which the variance is extracted
+   \param[in] dim The dimension along which the variance is extracted
    \return    the variance of the input array along dimension \p dim
 
    \ingroup stat_func_var
@@ -60,8 +60,7 @@ AFAPI array var(const array& in, bool isbiased=false, dim_type dim=-1);
 
    \param[in] in is the input array
    \param[in] weights is used to scale input \p in before getting variance
-   \param[in] isbiased is boolean denoting Population variance (false) or Sample Variance (true)
-   \paran[in] dim The dimension along which the variance is extracted
+   \param[in] dim The dimension along which the variance is extracted
    \return    the variance of the weighted input array along dimension \p dim
 
    \ingroup stat_func_var
@@ -74,7 +73,7 @@ AFAPI array var(const array& in, const array weights, dim_type dim=-1);
    C++ Interface for standard deviation
 
    \param[in] in is the input array
-   \paran[in] dim The dimension along which the standard deviation is extracted
+   \param[in] dim The dimension along which the standard deviation is extracted
    \return    the standard deviation of the input array along dimension \p dim
 
    \ingroup stat_func_stdev
@@ -100,7 +99,7 @@ AFAPI array cov(const array& X, const array& Y, bool isbiased=false);
    C++ Interface for median
 
    \param[in] in is the input array
-   \paran[in] dim The dimension along which the median is extracted
+   \param[in] dim The dimension along which the median is extracted
    \return    the median of the input array along dimension \p dim
 
    \ingroup stat_func_median
@@ -204,7 +203,7 @@ extern "C" {
 
    \param[out] out will contain the mean of the input array along dimension \p dim
    \param[in] in is the input array
-   \paran[in] dim The dimension along which the mean is extracte
+   \param[in] dim The dimension along which the mean is extracte
    \return     \ref AF_SUCCESS if the color transformation is successful,
    otherwise an appropriate error code is returned.
 
@@ -218,7 +217,7 @@ AFAPI af_err af_mean(af_array *out, const af_array in, dim_type dim);
    \param[out] out will contain the mean of the input array along dimension \p dim
    \param[in] in is the input array
    \param[in] weights is used to scale input \p in before getting mean
-   \paran[in] dim The dimension along which the mean is extracted
+   \param[in] dim The dimension along which the mean is extracted
    \return     \ref AF_SUCCESS if the color transformation is successful,
    otherwise an appropriate error code is returned.
 
@@ -232,7 +231,7 @@ AFAPI af_err af_mean_weighted(af_array *out, const af_array in, const af_array w
    \param[out] out will contain the variance of the input array along dimension \p dim
    \param[in] in is the input array
    \param[in] isbiased is boolean denoting Population variance (false) or Sample Variance (true)
-   \paran[in] dim The dimension along which the variance is extracted
+   \param[in] dim The dimension along which the variance is extracted
    \return     \ref AF_SUCCESS if the color transformation is successful,
    otherwise an appropriate error code is returned.
 
@@ -247,8 +246,7 @@ AFAPI af_err af_var(af_array *out, const af_array in, bool isbiased, dim_type di
    \param[out] out will contain the variance of the input array along dimension \p dim
    \param[in] in is the input array
    \param[in] weights is used to scale input \p in before getting variance
-   \param[in] isbiased is boolean denoting Population variance (false) or Sample Variance (true)
-   \paran[in] dim The dimension along which the variance is extracted
+   \param[in] dim The dimension along which the variance is extracted
    \return     \ref AF_SUCCESS if the color transformation is successful,
    otherwise an appropriate error code is returned.
 
@@ -262,7 +260,7 @@ AFAPI af_err af_var_weighted(af_array *out, const af_array in, const af_array we
 
    \param[out] out will contain the standard deviation of the input array along dimension \p dim
    \param[in] in is the input array
-   \paran[in] dim The dimension along which the standard deviation is extracted
+   \param[in] dim The dimension along which the standard deviation is extracted
    \return     \ref AF_SUCCESS if the color transformation is successful,
    otherwise an appropriate error code is returned.
 
@@ -290,7 +288,7 @@ AFAPI af_err af_cov(af_array* out, const af_array X, const af_array Y, bool isbi
 
    \param[out] out will contain the median of the input array along dimension \p dim
    \param[in] in is the input array
-   \paran[in] dim The dimension along which the median is extracted
+   \param[in] dim The dimension along which the median is extracted
    \return     \ref AF_SUCCESS if the color transformation is successful,
    otherwise an appropriate error code is returned.
 
@@ -373,7 +371,6 @@ AFAPI af_err af_stdev_all(double *real, double *imag, const af_array in);
    \param[out] realVal will contain the real part of median of the entire input array
    \param[out] imagVal will contain the imaginary part of median of the entire input array
    \param[in] in is the input array
-   \paran[in] dim The dimension along which the median is extracted
    \return     \ref AF_SUCCESS if the color transformation is successful,
    otherwise an appropriate error code is returned.
 

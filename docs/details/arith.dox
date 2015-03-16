@@ -8,9 +8,7 @@
 
 Addition of two inputs.
 
-.
 
-========================================================
 
 \defgroup arith_func_sub sub
 
@@ -18,9 +16,6 @@ Addition of two inputs.
 
 Subtract one input from another
 
-.
-
-========================================================
 
 
 \defgroup arith_func_mul mul
@@ -29,9 +24,7 @@ Subtract one input from another
 
 Multiply two inputs element wise
 
-.
 
-========================================================
 
 \defgroup arith_func_div div
 
@@ -39,9 +32,7 @@ Multiply two inputs element wise
 
 Divide one input by another
 
-.
 
-========================================================
 
 \defgroup arith_func_shfitl bitshiftl
 
@@ -49,9 +40,7 @@ Divide one input by another
 
 Left shift an input
 
-.
 
-========================================================
 
 \defgroup arith_func_shfitl bitshiftr
 
@@ -59,9 +48,7 @@ Left shift an input
 
 Right shift an input
 
-.
 
-========================================================
 
 \defgroup logic_func_lt lt
 
@@ -69,9 +56,7 @@ Right shift an input
 
 Check if input is less than another
 
-.
 
-========================================================
 
 \defgroup logic_func_gt gt
 
@@ -79,9 +64,7 @@ Check if input is less than another
 
 Check if input is greater than another
 
-.
 
-========================================================
 
 \defgroup logic_func_le le
 
@@ -89,9 +72,7 @@ Check if input is greater than another
 
 Check if input is less than or equal to another
 
-.
 
-========================================================
 
 \defgroup logic_func_ge ge
 
@@ -99,9 +80,7 @@ Check if input is less than or equal to another
 
 Check if input is greater than or equal to another
 
-.
 
-========================================================
 
 \defgroup logic_func_eq eq
 
@@ -109,9 +88,7 @@ Check if input is greater than or equal to another
 
 Check if input two inputs are equal
 
-.
 
-========================================================
 
 \defgroup logic_func_neq neq
 
@@ -119,9 +96,7 @@ Check if input two inputs are equal
 
 Check if input two inputs are not equal
 
-.
 
-========================================================
 
 \defgroup logic_func_and and
 
@@ -129,9 +104,7 @@ Check if input two inputs are not equal
 
 Logical and of two inputs
 
-.
 
-========================================================
 
 \defgroup logic_func_or or
 
@@ -139,9 +112,7 @@ Logical and of two inputs
 
 Logical or of two inputs
 
-.
 
-========================================================
 
 \defgroup logic_func_bitand bitand
 
@@ -149,9 +120,7 @@ Logical or of two inputs
 
 Bitwise and operation of two inputs
 
-.
 
-========================================================
 
 \defgroup logic_func_bitor bitor
 
@@ -159,9 +128,7 @@ Bitwise and operation of two inputs
 
 Bitwise or operation of two inputs
 
-.
 
-========================================================
 
 \defgroup logic_func_bitxor bitxor
 
@@ -169,9 +136,7 @@ Bitwise or operation of two inputs
 
 Bitwise xor operation of two inputs
 
-.
 
-========================================================
 
 \defgroup numeric_func_min min
 
@@ -179,9 +144,7 @@ Bitwise xor operation of two inputs
 
 Minimum of two inputs.
 
-.
 
-========================================================
 
 \defgroup numeric_func_max max
 
@@ -189,9 +152,7 @@ Minimum of two inputs.
 
 Maximum of two inputs.
 
-.
 
-========================================================
 
 \defgroup numeric_func_rem rem
 
@@ -199,9 +160,7 @@ Maximum of two inputs.
 
 Remainder operation
 
-.
 
-========================================================
 
 \defgroup numeric_func_mod mod
 
@@ -209,9 +168,7 @@ Remainder operation
 
 Remainder operation
 
-.
 
-========================================================
 
 \defgroup numeric_func_abs abs
 
@@ -219,9 +176,7 @@ Remainder operation
 
 Absolute value
 
-.
 
-========================================================
 
 \defgroup numeric_func_round round
 
@@ -229,9 +184,7 @@ Absolute value
 
 Round to nearest integer
 
-.
 
-========================================================
 
 \defgroup numeric_func_floor floor
 
@@ -239,9 +192,7 @@ Round to nearest integer
 
 Round to integer less than equal to current value
 
-.
 
-========================================================
 
 \defgroup numeric_func_ceil ceil
 
@@ -249,9 +200,7 @@ Round to integer less than equal to current value
 
 Round to integer greater than equal to current value
 
-.
 
-========================================================
 
 \defgroup numeric_func_hypot hypot
 
@@ -259,9 +208,7 @@ Round to integer greater than equal to current value
 
 Hypotenuse of the two inputs
 
-.
 
-========================================================
 
 \defgroup trig_func_sin sin
 
@@ -269,9 +216,7 @@ Hypotenuse of the two inputs
 
 sin of input
 
-.
 
-========================================================
 
 \defgroup trig_func_cos cos
 
@@ -279,9 +224,7 @@ sin of input
 
 cos of input
 
-.
 
-========================================================
 
 \defgroup trig_func_tan tan
 
@@ -289,9 +232,7 @@ cos of input
 
 tan of input
 
-.
 
-========================================================
 
 \defgroup trig_func_asin asin
 
@@ -299,9 +240,7 @@ tan of input
 
 arc sin of input
 
-.
 
-========================================================
 
 \defgroup trig_func_acos acos
 
@@ -309,9 +248,7 @@ arc sin of input
 
 arc cos of input
 
-.
 
-========================================================
 
 \defgroup trig_func_atan atan
 
@@ -319,9 +256,7 @@ arc cos of input
 
 arc tan of input
 
-.
 
-========================================================
 
 \defgroup hyper_func_sinh sinh
 
@@ -329,9 +264,7 @@ arc tan of input
 
 sinh of input
 
-.
 
-========================================================
 
 \defgroup hyper_func_cosh cosh
 
@@ -339,9 +272,7 @@ sinh of input
 
 cosh of input
 
-.
 
-========================================================
 
 \defgroup hyper_func_tanh tanh
 
@@ -349,9 +280,7 @@ cosh of input
 
 tanh of input
 
-.
 
-========================================================
 
 \defgroup hyper_func_asinh asinh
 
@@ -359,9 +288,7 @@ tanh of input
 
 asinh of input
 
-.
 
-========================================================
 
 \defgroup hyper_func_acosh acosh
 
@@ -369,9 +296,7 @@ asinh of input
 
 acosh of input
 
-.
 
-========================================================
 
 \defgroup hyper_func_atanh atanh
 
@@ -379,9 +304,7 @@ acosh of input
 
 atanh of input
 
-.
 
-========================================================
 
 \defgroup complex_func_cplx complex
 
@@ -389,9 +312,7 @@ atanh of input
 
 create complex arrays
 
-.
 
-========================================================
 
 \defgroup complex_func_real real
 
@@ -399,9 +320,7 @@ create complex arrays
 
 Get real part of complex arrays
 
-.
 
-========================================================
 
 \defgroup complex_func_imag imag
 
@@ -409,9 +328,7 @@ Get real part of complex arrays
 
 Get imaginary part of complex arrays
 
-.
 
-========================================================
 
 \defgroup complex_func_conjg conjg
 
@@ -419,9 +336,7 @@ Get imaginary part of complex arrays
 
 Get complex conjugate
 
-.
 
-========================================================
 
 \defgroup explog_func_pow pow
 
@@ -429,9 +344,8 @@ Get complex conjugate
 
 Raise an array to a power
 
-.
 
-========================================================
+
 
 \defgroup explog_func_exp exp
 
@@ -439,9 +353,8 @@ Raise an array to a power
 
 Exponential of input
 
-.
 
-========================================================
+
 
 \defgroup explog_func_expm1 expm1
 
@@ -449,9 +362,7 @@ Exponential of input
 
 Exponential of input - 1
 
-.
 
-========================================================
 
 \defgroup explog_func_erf erf
 
@@ -459,9 +370,8 @@ Exponential of input - 1
 
 Error function value
 
-.
 
-========================================================
+
 
 \defgroup explog_func_erfc erfc
 
@@ -469,9 +379,6 @@ Error function value
 
 Complementary Error function value
 
-.
-
-========================================================
 
 
 \defgroup explog_func_log log
@@ -480,9 +387,6 @@ Complementary Error function value
 
 Natural logarithm
 
-.
-
-========================================================
 
 
 \defgroup explog_func_log1p log1p
@@ -491,9 +395,7 @@ Natural logarithm
 
 Natural logarithm of (1 + in)
 
-.
 
-========================================================
 
 \defgroup explog_func_log10 log10
 
@@ -501,9 +403,7 @@ Natural logarithm of (1 + in)
 
 logarithm base 10
 
-.
 
-========================================================
 
 \defgroup explog_func_sqrt sqrt
 
@@ -511,9 +411,7 @@ logarithm base 10
 
 Square root of input arrays
 
-.
 
-========================================================
 
 \defgroup explog_func_cbrt cbrt
 
@@ -521,9 +419,7 @@ Square root of input arrays
 
 Cube root of input arrays
 
-.
 
-========================================================
 
 \defgroup explog_func_tgamma tgamma
 
@@ -531,9 +427,7 @@ Cube root of input arrays
 
 Gamma function
 
-.
 
-========================================================
 
 \defgroup explog_func_lgamma lgamma
 
@@ -541,9 +435,7 @@ Gamma function
 
 Logarithm of absolute values of Gamma function
 
-.
 
-========================================================
 
 \defgroup helper_func_iszero iszero
 
@@ -551,9 +443,7 @@ Logarithm of absolute values of Gamma function
 
 Check if values are zero
 
-.
 
-========================================================
 
 \defgroup helper_func_isinf isinf
 
@@ -561,9 +451,7 @@ Check if values are zero
 
 Check if values are infinite
 
-.
 
-========================================================
 
 \defgroup helper_func_isNan isNan
 
@@ -571,9 +459,7 @@ Check if values are infinite
 
 Check if values are Nan
 
-.
 
-========================================================
 
 \defgroup helper_func_cast cast
 
@@ -581,8 +467,6 @@ Check if values are Nan
 
 Casting inputs from one type to another
 
-.
 
-========================================================
 @}
 */
