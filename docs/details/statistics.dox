@@ -15,7 +15,7 @@ This function performs the operation across all batches present in the input sim
 
 Find the mean of values in the input
 
-\copydoc batch_detail
+\copydoc batch_detail_stat
 
 ========================================================
 \defgroup stat_func_var var
@@ -24,7 +24,7 @@ Find the mean of values in the input
 
 Find the variance of values in the input
 
-\copydoc batch_detail
+\copydoc batch_detail_stat
 
 ========================================================
 \defgroup stat_func_stdev stdev
@@ -33,7 +33,7 @@ Find the variance of values in the input
 
 Find the standar deviation of values in the input
 
-\copydoc batch_detail
+\copydoc batch_detail_stat
 
 ========================================================
 \defgroup stat_func_cov cov
@@ -42,7 +42,7 @@ Find the standar deviation of values in the input
 
 Find the covariance of values in the input
 
-\copydoc batch_detail
+\copydoc batch_detail_stat
 
 ========================================================
 \defgroup stat_func_median median
@@ -51,7 +51,7 @@ Find the covariance of values in the input
 
 Find the median of values in the input
 
-\copydoc batch_detail
+\copydoc batch_detail_stat
 
 ========================================================
 \defgroup stat_func_corrcoef corrcoef
@@ -60,7 +60,7 @@ Find the median of values in the input
 
 Find the correlation coefficient of values in the input
 
-\copydoc batch_detail
+\copydoc batch_detail_stat
 
 ========================================================
 @}

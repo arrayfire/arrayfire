@@ -9,7 +9,7 @@ ArrayFire is a high performance software library for parallel computing with an 
 
 ## Easy to use
 
-The [array](\ref construct) object is beautifully simple.
+The [array](\ref construct_mat) object is beautifully simple.
 
 Array-based notation effectively expresses computational algorithms in
 readable math-resembling notation. You _do not_ need expertise in
@@ -37,7 +37,7 @@ developers with all possible low-level optimizations.
 
 #### Support for various data types and sizes
 
-ArrayFire operates on common [data shapes and sizes](\ref gettingstarted_indexing),
+ArrayFire operates on common [data shapes and sizes](\ref indexing),
 including vectors, matrices, volumes, and
 
 It supports common [data types](\ref gettingstarted_datatypes),
@@ -85,8 +85,8 @@ Read more about how [ArrayFire JIT](\ref jit) can improve the performance in you
 ## Simple Example
 
 Here's a live example to let you see ArrayFire code. You create [arrays](\ref
-construct) which reside on CUDA or OpenCL devices. Then you can use
-[ArrayFire functions](modules.htm) on those [arrays](\ref construct).
+construct_mat) which reside on CUDA or OpenCL devices. Then you can use
+[ArrayFire functions](modules.htm) on those [arrays](\ref construct_mat).
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 // sample 40 million points on the GPU

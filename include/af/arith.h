@@ -637,6 +637,7 @@ extern "C" {
        \param[out] out will contain sum of \p lhs and \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_add
@@ -649,6 +650,7 @@ extern "C" {
        \param[out] out will contain result of \p lhs - \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_sub
@@ -661,6 +663,7 @@ extern "C" {
        \param[out] out will contain the product of \p lhs and  \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_mul
@@ -673,6 +676,7 @@ extern "C" {
        \param[out] out will contain result of \p lhs / \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_div
@@ -685,6 +689,7 @@ extern "C" {
        \param[out] out will contain result of \p lhs < \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup logic_func_lt
@@ -697,6 +702,7 @@ extern "C" {
        \param[out] out will contain result of \p lhs > \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup logic_func_gt
@@ -709,6 +715,7 @@ extern "C" {
        \param[out] out will contain result of \p lhs <= \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup logic_func_le
@@ -721,6 +728,7 @@ extern "C" {
        \param[out] out will contain result of \p lhs >= \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup logic_func_ge
@@ -733,6 +741,7 @@ extern "C" {
        \param[out] out will contain result of \p lhs == \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup logic_func_eq
@@ -745,6 +754,7 @@ extern "C" {
        \param[out] out will contain result of \p lhs != \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup logic_func_neq
@@ -757,6 +767,7 @@ extern "C" {
        \param[out] out will contain result of \p lhs && \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup logic_func_and
@@ -769,6 +780,7 @@ extern "C" {
        \param[out] out will contain result of \p lhs || \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup logic_func_or
@@ -792,6 +804,7 @@ extern "C" {
        \param[out] out will contain result of \p lhs & \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup logic_func_bitand
@@ -804,6 +817,7 @@ extern "C" {
        \param[out] out will contain result of \p lhs & \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup logic_func_bitor
@@ -816,6 +830,7 @@ extern "C" {
        \param[out] out will contain result of \p lhs ^ \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup logic_func_bitxor
@@ -828,6 +843,7 @@ extern "C" {
        \param[out] out will contain result of the left shift
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_shiftl
@@ -840,6 +856,7 @@ extern "C" {
        \param[out] out will contain result of the right shift
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup arith_func_shiftr
@@ -864,6 +881,7 @@ extern "C" {
        \param[out] out will contain minimum of \p lhs and \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup numeric_func_min
@@ -876,6 +894,7 @@ extern "C" {
        \param[out] out will contain maximum of \p lhs and \p rhs
        \param[in] lhs first input
        \param[in] rhs second input
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup numeric_func_max
@@ -888,6 +907,7 @@ extern "C" {
        \param[out] out will contain the remainder of \p lhs divided by \p rhs
        \param[in] lhs is numerator
        \param[in] rhs is denominator
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup numeric_func_rem
@@ -900,6 +920,7 @@ extern "C" {
        \param[out] out will contain the output of \p lhs modulo \p rhs
        \param[in] lhs is dividend
        \param[in] rhs is divisor
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup numeric_func_mod
@@ -958,6 +979,7 @@ extern "C" {
        \param[out] out will contain the length of the hypotenuse
        \param[in] lhs is the length of first side
        \param[in] rhs is the length of second side
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup numeric_func_floor
@@ -1036,6 +1058,7 @@ extern "C" {
        \param[out] out will arc tan of the inputs
        \param[in] lhs value of numerator
        \param[in] rhs value of denominator
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup trig_func_atan
@@ -1048,6 +1071,7 @@ extern "C" {
        \param[out] out will contain the complex array generated from inputs
        \param[in] lhs is real array
        \param[in] rhs is imaginary array
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup complex_func_cplx
@@ -1170,6 +1194,7 @@ extern "C" {
        \param[out] out will contain \p lhs raised to power \p rhs
        \param[in] lhs is base
        \param[in] rhs is exponent
+       \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
        \ingroup explog_func_pow

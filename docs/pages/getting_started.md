@@ -21,7 +21,7 @@ underlying data may be one of various basic types:
 
 Older devices may not support double precision operations
 
-You can [generate](\ref gen) matrices out on the device.  The
+You can [generate](\ref data_mat) matrices out on the device.  The
 default underlying datatype is [f32](\ref f32) (`float`) unless
 otherwise specified.  Some examples:
 
@@ -73,7 +73,7 @@ printf("is vector? %d  column? %d  row? %d\n", a.isvector(), a.iscolumn(), a.isr
 printf("empty? %d  total elements: %d  bytes: %zu\n", a.isempty(), a.elements(), a.bytes());
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-There are [hundreds of functions](\ref arith) for element-wise arithmetic:
+There are [hundreds of functions](\ref arith_mat) for element-wise arithmetic:
 
 \democode{
 array R = randu(3, 3);
@@ -133,7 +133,7 @@ printf("scalar value: %g\n", val);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Integer support includes bitwise operations as well as the
-standard sort(), [min/max](\ref minmax_mat), [indexing](\ref gettingstarted_indexing)
+standard alogirthms like [sort, sum, minmax](\ref vector_mat), [indexing](\ref indexing)
 (see [more](\ref examples/getting_started/integer.cpp)).
 
 \democode{
@@ -148,14 +148,14 @@ array A_xor_B = A ^ B; af_print(A_xor_B);
 }
 
 Several platform-independent constants are available: [Pi](\ref af::Pi),
-[NaN](\ref af::NaN), [Inf](\ref af::Inf), [i](\ref af::i).
+[NaN](\ref af::NaN), and [Inf](\ref af::Inf)
 When these variable names conflict with macros in the standard header
 files or variables in scope, then reference them with their full namespace,
 e.g. af::NaN
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 array A = randu(5,5);
-A(A > .5) = af::NaN;
+A(where(A > .5)) = af::NaN;
 
 array x = randu(20e6), y = randu(20e6);
 double pi_est = 4 * sum<float>(hypot(x,y) < 1) / 20e6;
