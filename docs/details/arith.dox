@@ -122,6 +122,14 @@ Logical not of an input
 
 
 
+\defgroup logic_func_neg neg
+
+\ingroup logic_mat
+
+Negative of an input
+
+
+
 \defgroup logic_func_bitand bitand
 
 \ingroup logic_mat

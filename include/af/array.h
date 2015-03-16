@@ -614,10 +614,42 @@ namespace af
         array& operator OP(const unsigned long long &a);    \
 
         ASSIGN(= )
+
+        /**
+           \ingroup arith_func_add
+           @{
+        */
         ASSIGN(+=)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup arith_func_sub
+           @{
+        */
         ASSIGN(-=)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup arith_func_mul
+           @{
+        */
         ASSIGN(*=)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup arith_func_div
+           @{
+        */
         ASSIGN(/=)
+        /**
+           @}
+        */
 
 #undef ASSIGN
 
@@ -637,24 +669,166 @@ namespace af
             array operator op(const long long  &a) const;           \
             array operator op(const unsigned long long &a) const;   \
 
+        /**
+           \ingroup arith_func_add
+           @{
+        */
         OPERATOR(+ )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup arith_func_sub
+           @{
+        */
         OPERATOR(- )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup arith_func_mul
+           @{
+        */
         OPERATOR(* )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup arith_func_div
+           @{
+        */
         OPERATOR(/ )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_eq
+           @{
+        */
         OPERATOR(==)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_neq
+           @{
+        */
         OPERATOR(!=)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_lt
+           @{
+        */
         OPERATOR(< )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_le
+           @{
+        */
         OPERATOR(<=)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_gt
+           @{
+        */
         OPERATOR(> )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_ge
+           @{
+        */
         OPERATOR(>=)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_and
+           @{
+        */
         OPERATOR(&&)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_or
+        */
         OPERATOR(||)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup numeric_func_rem
+           @{
+        */
         OPERATOR(% )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_bitand
+           @{
+        */
         OPERATOR(& )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_bitor
+           @{
+        */
         OPERATOR(| )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_bitxor
+           @{
+        */
         OPERATOR(^ )
+        /**
+           @}
+        */
+
+        /**
+           \ingroup arith_func_shiftl
+           @{
+        */
         OPERATOR(<<)
+        /**
+           @}
+        */
+
+        /**
+           \ingroup logic_func_shiftr
+           @{
+        */
         OPERATOR(>>)
+        /**
+           @}
+        */
 
 #undef OPERATOR
 
@@ -694,7 +868,14 @@ namespace af
 
 #undef FRIEND_OP
 
+        /**
+           \ingroup arith_func_neg
+        */
         array operator -() const;
+
+        /**
+           \ingroup arith_func_not
+        */
         array operator !() const;
     };
     // end of class array
@@ -714,24 +895,167 @@ namespace af
     AFAPI array operator op(const cfloat&, const array&);               \
     AFAPI array operator op(const cdouble&, const array&);              \
 
+    /**
+       \ingroup arith_func_add
+       @{
+    */
     BIN_OP(+ )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup arith_func_sub
+       @{
+    */
     BIN_OP(- )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup arith_func_mul
+       @{
+    */
     BIN_OP(* )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup arith_func_div
+       @{
+    */
     BIN_OP(/ )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_eq
+       @{
+    */
     BIN_OP(==)
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_neq
+       @{
+    */
     BIN_OP(!=)
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_lt
+       @{
+    */
     BIN_OP(< )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_le
+       @{
+    */
     BIN_OP(<=)
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_gt
+       @{
+    */
     BIN_OP(> )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_ge
+       @{
+    */
     BIN_OP(>=)
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_and
+       @{
+    */
     BIN_OP(&&)
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_or
+       @{
+    */
     BIN_OP(||)
+    /**
+       @}
+    */
+
+    /**
+       \ingroup numeric_func_rem
+       @{
+    */
     BIN_OP(% )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_bitand
+       @{
+    */
     BIN_OP(& )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_bitor
+       @{
+    */
     BIN_OP(| )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup logic_func_bitxor
+       @{
+    */
     BIN_OP(^ )
+    /**
+       @}
+    */
+
+    /**
+       \ingroup arith_func_shiftl
+       @{
+    */
     BIN_OP(<<)
+    /**
+       @}
+    */
+
+    /**
+       \ingroup arith_func_shiftr
+       @{
+    */
     BIN_OP(>>)
+    /**
+       @}
+    */
 
 #undef BIN_OP
 
