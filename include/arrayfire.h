@@ -159,6 +159,29 @@
 
 */
 
+/**
+\example helloworld.cpp
+\example blas.cpp
+\example fft.cpp
+\example pi.cpp
+\example convolve.cpp
+\example integer.cpp
+\example rainfall.cpp
+\example vectorize.cpp
+\example black_scholes_options.cpp
+\example monte_carlo_options.cpp
+\example harris.cpp
+\example kmeans.cpp
+\example knn.cpp
+\example bagging.cpp
+\example naive_bayes.cpp
+\example perceptron.cpp
+\example neural_network.cpp
+\example rbm.cpp
+\example deep_belief_net.cpp
+\example logistic_regression.cpp
+*/
+
 #include "af/compatible.h"
 #include "af/algorithm.h"
 #include "af/arith.h"

@@ -2,7 +2,6 @@
   <!-- Navigation index tabs for HTML output -->
   <navindex>
     <tab type="mainpage" visible="yes" title="" />
-    <tab type="examples" visible="yes" title="" intro=""/>
     <tab type="usergroup" visible="yes" title="Tutorials">
       <tab type="user" url="\ref gettingstarted" visible="yes" title="Getting Started"/>
       <tab type="user" url="\ref matrixmanipulation" visible="yes" title="Matrix Manipulation"/>
@@ -12,6 +11,7 @@
     </tab>
     <tab type="modules" visible="yes" title="Functions" intro="Documentation grouped according to category:"/>
     <tab type="user" url="\ref releasenotes" visible="yes" title="Release Notes"/>
+    <tab type="examples" visible="yes" title="" intro=""/>
   </navindex>
 
   <!-- Layout definition for a class page -->

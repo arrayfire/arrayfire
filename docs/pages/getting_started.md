@@ -134,7 +134,7 @@ printf("scalar value: %g\n", val);
 
 Integer support includes bitwise operations as well as the
 standard alogirthms like [sort, sum, minmax](\ref vector_mat), [indexing](\ref indexing)
-(see [more](\ref examples/getting_started/integer.cpp)).
+(see [more](\ref integer.cpp)).
 
 \democode{
 int h_A[] = {1, 1, 0, 0, 4, 0, 0, 2, 0};
