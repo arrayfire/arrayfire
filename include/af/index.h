@@ -51,7 +51,7 @@ extern "C" {
 
     // copy an array into exiting array of larger dimensions
     // error out in case of insufficient dimension lengths
-    AFAPI af_err af_assign(af_array *out, const af_array lhs, unsigned ndims, const af_seq* const index, const af_array rhs);
+    AFAPI af_err af_assign_seq(af_array *out, const af_array lhs, unsigned ndims, const af_seq* const index, const af_array rhs);
 
     // Join 2 Arrays
     AFAPI af_err af_join(af_array *out, const int dim, const af_array first, const af_array second);
@@ -73,6 +73,16 @@ extern "C" {
     AFAPI af_err af_flat(af_array *out, const af_array in);
 
     AFAPI af_err af_flip(af_array *out, const af_array in, const unsigned dim);
+
+    // generalized indexing function that accepts either af_array or af_seq
+    // along a dimension to index the input array and create the corresponding
+    // output array
+    AFAPI af_err af_index_gen(af_array *out, const af_array in, const dim_type ndims, const af_index_t* indexers);
+
+    // generalized indexing function that accepts either af_array or af_seq
+    // along a dimension to index the input array and create the corresponding
+    // output array
+    AFAPI af_err af_assign_gen(af_array *out, const af_array lhs, const dim_type ndims, const af_index_t* indexers, const af_array rhs);
 
 #ifdef __cplusplus
 }

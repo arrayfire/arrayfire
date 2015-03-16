@@ -14,6 +14,7 @@
 namespace cpu
 {
 
+static inline
 dim_type trimIndex(dim_type idx, const dim_type &len)
 {
     dim_type ret_val = idx;
