@@ -23,18 +23,20 @@
 
       Array constructors, random number generation, transpose, indexing, etc
 
-      @defgroup array_construct Constructors of array class
+      @defgroup construct_mat Constructors of array class
+
+      @defgroup method_mat Methods of array class
+
+      @defgroup device_mat Managing devices in ArrayFire
+      getting device pointer, allocating and freeing memory
 
       @defgroup data_mat Functions to create arrays.
       constant, random, range, etc
 
       @defgroup index_mat Indexing operation on arrays
 
-      @defgroup order_mat Reorder array content
-      reorder, transpose, flip, etc
-
-      @defgroup move_mat Joining and tiling operations
-      join, tile, etc
+      @defgroup manip_mat Move and Reorder array content
+      reorder, transpose, flip, join, tile, etc
 
       @defgroup helper_mat Helper functions for arrays
       iszero, isInf, isNan, etc
