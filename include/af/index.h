@@ -48,7 +48,24 @@ AFAPI array join(const int dim, const array &first, const array &second);
    \ingroup manip_mat
    \ingroup arrayfire_func
 */
-AFAPI array tile(const array& in, const unsigned x, const unsigned y=1, const unsigned z=1, const unsigned w=1);
+AFAPI array tile(const array &in, const unsigned x, const unsigned y=1, const unsigned z=1, const unsigned w=1);
+/**
+   @}
+*/
+
+/**
+   \defgroup manip_func_tile tile
+   @{
+   Tile the input array along specified dimensions
+
+   \param[in] in is the input matrix
+   \param[in] dims dim4 of tile dimensions
+   \return the tiled output
+
+   \ingroup manip_mat
+   \ingroup arrayfire_func
+*/
+AFAPI array tile(const array &in, const af::dim4 &dims);
 /**
    @}
 */

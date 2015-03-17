@@ -53,6 +53,13 @@ array tile(const array& in, const unsigned x, const unsigned y, const unsigned z
     return array(out);
 }
 
+array tile(const array& in, const af::dim4 &dims)
+{
+    af_array out = 0;
+    AF_THROW(af_tile(&out, in.get(), dims[0], dims[1], dims[2], dims[3]));
+    return array(out);
+}
+
 array reorder(const array& in, const unsigned x, const unsigned y, const unsigned z, const unsigned w)
 {
     af_array out = 0;
