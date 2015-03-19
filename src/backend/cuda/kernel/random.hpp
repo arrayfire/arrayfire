@@ -18,8 +18,8 @@ namespace cuda
 namespace kernel
 {
 
-    static const int THREADS = 64;
-    static const int BLOCKS  = 256;
+    static const int THREADS = 256;
+    static const int BLOCKS  = 64;
     static unsigned long long uniform_seed = 0;
     static unsigned long long normal_seed  = 0;
 
