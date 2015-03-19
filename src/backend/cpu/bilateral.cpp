@@ -43,8 +43,7 @@ Array<outType> bilateral(const Array<inType> &in, const float &s_sigma, const fl
     Array<outType> out = createEmptyArray<outType>(dims);
     const dim4 ostrides = out.strides();
 
-    dim_type bCount     = dims[2];
-    if (isColor) bCount*= dims[3];
+    dim_type bCount     = isColor ? dims[3] : dims[2]*dims[3];
 
     outType *outData    = out.get();
     const inType * inData = in.get();
@@ -57,7 +56,12 @@ Array<outType> bilateral(const Array<inType> &in, const float &s_sigma, const fl
     const float cvar      = color_*color_;
 
     for(dim_type batchId=0; batchId<bCount; ++batchId) {
-        // channels or batch for gray and channel are handled by outer loop
+        // batchId for loop handles following batch configurations
+        //  - channels
+        //  - gfor
+        //  - input based batch
+        //      - when input is 3d array for grayscale images
+        //      - when input is 4d array for color images
         for(dim_type j=0; j<dims[1]; ++j) {
             // j steps along 2nd dimension
             for(dim_type i=0; i<dims[0]; ++i) {

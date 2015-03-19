@@ -32,11 +32,7 @@ static af_err bilateral(af_array *out, const af_array &in, const float &s_sigma,
         af_dtype type  = info.getType();
         af::dim4 dims  = info.dims();
 
-        if (isColor) {
-            DIM_ASSERT(1, (dims.ndims()>=3));
-        } else {
-            DIM_ASSERT(1, (dims.ndims()>=2 && dims.ndims()<=3));
-        }
+        DIM_ASSERT(1, (dims.ndims()>=2));
 
         af_array output;
         switch(type) {

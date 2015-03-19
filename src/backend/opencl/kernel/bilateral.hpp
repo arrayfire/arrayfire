@@ -75,10 +75,7 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
 
         dim_type blk_x = divup(in.info.dims[0], THREADS_X);
         dim_type blk_y = divup(in.info.dims[1], THREADS_Y);
-
-        dim_type bCount= blk_x * in.info.dims[2];
-        if (isColor)
-            bCount *= in.info.dims[3];
+        dim_type bCount= blk_x * (isColor ? in.info.dims[3] : in.info.dims[2] * in.info.dims[3]);
 
         NDRange global(bCount*THREADS_X, blk_y*THREADS_Y);
 

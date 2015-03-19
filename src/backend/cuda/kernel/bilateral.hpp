@@ -140,10 +140,7 @@ void bilateral(Param<outType> out, CParam<inType> in, float s_sigma, float c_sig
 
     dim_type blk_x = divup(in.dims[0], THREADS_X);
     dim_type blk_y = divup(in.dims[1], THREADS_Y);
-
-    dim_type bCount = blk_x * in.dims[2];
-    if (isColor)
-        bCount *= in.dims[3];
+    dim_type bCount= blk_x * (isColor ? in.dims[3] : in.dims[2]*in.dims[3]);
 
     dim3 blocks(bCount, blk_y);
 
