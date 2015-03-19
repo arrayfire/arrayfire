@@ -68,7 +68,7 @@ void histogram(Param out, const Param in, const Param minmax, dim_type nbins)
 
         dim_type blk_x       = divup(numElements, THRD_LOAD*THREADS_X);
 
-        dim_type batchCount  = in.info.dims[2];
+        dim_type batchCount  = in.info.dims[2] * in.info.dims[3];
 
         NDRange global(blk_x*THREADS_X, batchCount);
 

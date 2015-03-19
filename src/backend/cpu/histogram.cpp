@@ -31,7 +31,7 @@ Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const d
     outType *outData    = out.get();
     const inType* inData= in.get();
 
-    dim_type batchCount = inDims[2];
+    dim_type batchCount = inDims[2] * inDims[3];
     dim_type batchStride= in.strides()[2];
     dim_type numElements= inDims[0]*inDims[1];
 

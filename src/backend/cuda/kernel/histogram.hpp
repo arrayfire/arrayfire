@@ -77,9 +77,10 @@ template<typename inType, typename outType>
 void histogram(Param<outType> out, CParam<inType> in, cfloat *d_minmax, dim_type nbins)
 {
     dim3 threads(kernel::THREADS_X, 1);
-    dim_type numElements= in.dims[0] * in.dims[1];
-    dim_type blk_x = divup(numElements, THRD_LOAD*THREADS_X);
-    dim_type batchCount = in.dims[2];
+    dim_type numElements = in.dims[0] * in.dims[1];
+    dim_type blk_x       = divup(numElements, THRD_LOAD*THREADS_X);
+    dim_type batchCount  = in.dims[2] * in.dims[3];
+
     dim3 blocks(blk_x, batchCount);
     dim_type smem_size = nbins * sizeof(outType);
 

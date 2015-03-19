@@ -27,10 +27,8 @@ Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const d
     ARG_ASSERT(1, (nbins<=kernel::MAX_BINS));
 
     const dim4 dims     = in.dims();
-    const dim4 istrides = in.strides();
     dim4 outDims        = dim4(nbins, 1, dims[2], dims[3]);
     Array<outType> out  = createValueArray<outType>(outDims, outType(0));
-    const dim4 ostrides = out.strides();
 
     // create an array to hold min and max values for
     // batch operation handling, this will reduce
