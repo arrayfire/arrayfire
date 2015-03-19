@@ -37,7 +37,7 @@ Array<T> morph(const Array<T> &in, const Array<T> &mask)
     const dim_type R1     = window[1]/2;
     const dim4 istrides   = in.strides();
     const dim4 fstrides   = mask.strides();
-    const dim_type bCount = dims[2];
+    const dim_type bCount = dims[2] * dims[3];
 
     Array<T> out         = createEmptyArray<T>(dims);
     const dim4 ostrides   = out.strides();

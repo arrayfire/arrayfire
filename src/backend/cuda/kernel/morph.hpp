@@ -297,7 +297,7 @@ void morph(Param<T> out, CParam<T> in, dim_type windLen)
     dim_type blk_x = divup(in.dims[0], THREADS_X);
     dim_type blk_y = divup(in.dims[1], THREADS_Y);
     // launch batch * blk_x blocks along x dimension
-    dim3 blocks(blk_x * in.dims[2], blk_y);
+    dim3 blocks(blk_x * in.dims[2] * in.dims[3], blk_y);
 
     // calculate shared memory size
     int halo      = windLen/2;
