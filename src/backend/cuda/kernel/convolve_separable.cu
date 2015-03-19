@@ -127,7 +127,7 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<accType> filter)
     dim_type blk_x = divup(out.dims[0], threads.x);
     dim_type blk_y = divup(out.dims[1], threads.y);
 
-    dim3 blocks(blk_x*signal.dims[2], blk_y);
+    dim3 blocks(blk_x*signal.dims[2]*signal.dims[3], blk_y);
 
 
    // FIX ME: if the filter array is strided, direct copy of symbols

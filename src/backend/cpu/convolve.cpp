@@ -267,7 +267,9 @@ Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter, Array<ac
     auto tStrides = temp.strides();
     auto oStrides = out.strides();
 
-    for (dim_type b=0; b<oDims[2]; ++b) {
+    dim_type batch = oDims[2]*oDims[3];
+
+    for (dim_type b=0; b<batch; ++b) {
         T const *iptr = signal.get()+ b*sStrides[2];
         T *tptr = temp.get() + b*tStrides[2];
         T *optr = out.get()  + b*oStrides[2];

@@ -81,7 +81,7 @@ void convolve2(Param out, const Param signal, const Param filter)
         dim_type blk_x = divup(out.info.dims[0], THREADS_X);
         dim_type blk_y = divup(out.info.dims[1], THREADS_Y);
 
-        NDRange global(blk_x*signal.info.dims[2]*THREADS_X, blk_y*THREADS_Y);
+        NDRange global(blk_x*signal.info.dims[2]*signal.info.dims[3]*THREADS_X, blk_y*THREADS_Y);
 
         cl::Buffer *mBuff = bufferAlloc(fLen*sizeof(accType));
         // FIX ME: if the filter array is strided, direct might cause issues
