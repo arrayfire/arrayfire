@@ -135,12 +135,13 @@ void load2LocVolume(__local T * shrd,
 }
 
 __kernel
-void morph3d(__global T *              out,
-             KParam                    oInfo,
-             __global const T *        in,
-             KParam                    iInfo,
-             __constant const T *      d_filt,
-             __local T *               localMem)
+void morph3d(__global T *         out,
+             KParam               oInfo,
+             __global const T *   in,
+             KParam               iInfo,
+             __constant const T * d_filt,
+             __local T *          localMem,
+             dim_type             nBBS)
 {
     const dim_type halo   = windLen/2;
     const dim_type padding= 2*halo;
@@ -149,13 +150,18 @@ void morph3d(__global T *              out,
     const dim_type shrdLen   = get_local_size(0) + padding + 1;
     const dim_type shrdArea  = shrdLen * (get_local_size(1)+padding);
 
+    // gfor batch offsets
+    dim_type batchId    = get_group_id(0) / nBBS;
+    in  += (batchId * iInfo.strides[3] + iInfo.offset);
+    out += (batchId * oInfo.strides[3]);
+
     dim_type gx, gy, gz, i, j, k;
     { // scoping out unnecessary variables
     const dim_type lx = get_local_id(0);
     const dim_type ly = get_local_id(1);
     const dim_type lz = get_local_id(2);
 
-    gx = get_local_size(0) * get_group_id(0) + lx;
+    gx = get_local_size(0) * (get_group_id(0)-batchId*nBBS) + lx;
     gy = get_local_size(1) * get_group_id(1) + ly;
     gz = get_local_size(2) * get_group_id(2) + lz;
 
