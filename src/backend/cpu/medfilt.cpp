@@ -33,7 +33,9 @@ Array<T> medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
     std::vector<T> wind_vals;
     wind_vals.reserve(w_len*w_wid);
 
-    for(dim_type batchId=0; batchId<dims[2]; batchId++) {
+    dim_type batchCount = dims[2] * dims[3];
+
+    for(dim_type batchId=0; batchId<batchCount; batchId++) {
 
         T const * in_ptr = in.get() + batchId*istrides[2];
         T * out_ptr = out.get() + batchId*ostrides[2];

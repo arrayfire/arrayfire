@@ -74,7 +74,8 @@ void medfilt(Param out, const Param in)
         dim_type blk_x = divup(in.info.dims[0], THREADS_X);
         dim_type blk_y = divup(in.info.dims[1], THREADS_Y);
 
-        NDRange global(blk_x * in.info.dims[2] * THREADS_X, blk_y * THREADS_Y);
+        NDRange global(blk_x * in.info.dims[2] * in.info.dims[3] * THREADS_X,
+                       blk_y * THREADS_Y);
 
         auto medfiltOp = make_kernel<Buffer, KParam,
                                      Buffer, KParam,

@@ -208,7 +208,7 @@ void medfilt(Param<T> out, CParam<T> in, dim_type w_len, dim_type w_wid)
     dim_type blk_x = divup(in.dims[0], threads.x);
     dim_type blk_y = divup(in.dims[1], threads.y);
 
-    dim3 blocks(blk_x*in.dims[2], blk_y);
+    dim3 blocks(blk_x*in.dims[2]*in.dims[3], blk_y);
 
     switch(w_len) {
         case  3: (medfilt<T, pad,  3,  3>)<<<blocks, threads>>>(out, in, blk_x); break;
