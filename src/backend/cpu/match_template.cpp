@@ -35,7 +35,7 @@ Array<outType> match_template(const Array<inType> &sImg, const Array<inType> &tI
     Array<outType> out = createEmptyArray<outType>(sDims);
     const dim4 oStrides = out.strides();
 
-    const dim_type batchNum = sDims[2];
+    const dim_type batchNum = sDims[2] * sDims[3];
 
     outType tImgMean = outType(0);
     dim_type winNumElements = tImg.elements();

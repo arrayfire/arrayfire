@@ -48,7 +48,7 @@ af_err af_match_template(af_array *out, const af_array search_img, const af_arra
 
         dim_type sNumDims= sDims.ndims();
         dim_type tNumDims= tDims.ndims();
-        ARG_ASSERT(1, (sNumDims==2 || sNumDims==3));
+        ARG_ASSERT(1, (sNumDims>=2));
         ARG_ASSERT(2, (tNumDims==2));
 
         af_dtype sType = sInfo.getType();

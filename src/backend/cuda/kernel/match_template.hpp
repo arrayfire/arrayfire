@@ -131,7 +131,7 @@ void matchTemplate(Param<outType> out, CParam<inType> srch, CParam<inType> tmplt
     dim_type blk_x = divup(srch.dims[0], threads.x);
     dim_type blk_y = divup(srch.dims[1], threads.y);
 
-    dim3 blocks(blk_x*srch.dims[2], blk_y);
+    dim3 blocks(blk_x*srch.dims[2]*srch.dims[3], blk_y);
 
     matchTemplate<inType, outType, mType, needMean> <<< blocks, threads >>> (out, srch, tmplt, blk_x);
 

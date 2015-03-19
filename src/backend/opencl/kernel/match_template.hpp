@@ -75,7 +75,7 @@ void matchTemplate(Param out, const Param srch, const Param tmplt)
         dim_type blk_x = divup(srch.info.dims[0], THREADS_X);
         dim_type blk_y = divup(srch.info.dims[1], THREADS_Y);
 
-        NDRange global(blk_x * srch.info.dims[2] * THREADS_X, blk_y * THREADS_Y);
+        NDRange global(blk_x * srch.info.dims[2] * srch.info.dims[3] * THREADS_X, blk_y * THREADS_Y);
 
         auto matchImgOp = make_kernel<Buffer, KParam,
                                        Buffer, KParam,
