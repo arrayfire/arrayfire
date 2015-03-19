@@ -32,12 +32,11 @@ Array<T>  meanshift(const Array<T> &in, const float &s_sigma, const float &c_sig
 {
     const dim4 dims     = in.dims();
     const dim4 istrides = in.strides();
-
-    Array<T> out       = createEmptyArray<T>(dims);
+    Array<T> out        = createEmptyArray<T>(dims);
     const dim4 ostrides = out.strides();
 
     const dim_type bIndex   = (is_color ? 3 : 2);
-    const dim_type bCount   = dims[bIndex];
+    const dim_type bCount   = (is_color ? dims[bIndex] : dims[bIndex]*dims[bIndex+1]);
     const dim_type channels = (is_color ? dims[2] : 1);
 
     // clamp spatical and chromatic sigma's
@@ -45,9 +44,12 @@ Array<T>  meanshift(const Array<T> &in, const float &s_sigma, const float &c_sig
     const dim_type radius = std::max((dim_type)(space_ * 1.5f), 1);
     const float cvar      = c_sigma*c_sigma;
 
-    vector<float> means(channels);
-    vector<float> centers(channels);
-    vector<float> tmpclrs(channels);
+    vector<float> means;
+    vector<float> centers;
+    vector<float> tmpclrs;
+    means.reserve(channels);
+    centers.reserve(channels);
+    tmpclrs.reserve(channels);
 
     for(dim_type batchId=0; batchId<bCount; ++batchId) {
 

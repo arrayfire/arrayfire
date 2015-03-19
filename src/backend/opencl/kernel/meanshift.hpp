@@ -75,7 +75,8 @@ void meanshift(Param out, const Param in, float s_sigma, float c_sigma, uint ite
         dim_type blk_y = divup(in.info.dims[1], THREADS_Y);
 
         const dim_type bIndex   = (is_color ? 3 : 2);
-        const dim_type bCount   = in.info.dims[bIndex];
+        const dim_type bCount   = (is_color ? in.info.dims[bIndex] :
+                                              in.info.dims[bIndex]*in.info.dims[bIndex+1]);
         const dim_type channels = (is_color ? in.info.dims[2] : 1);
 
         NDRange global(bCount*blk_x*THREADS_X, blk_y*THREADS_Y);

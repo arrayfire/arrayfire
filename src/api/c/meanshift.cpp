@@ -36,12 +36,8 @@ af_err meanshift(af_array *out, const af_array in, const float s_sigma, const fl
         af_dtype type  = info.getType();
         af::dim4 dims  = info.dims();
 
-        if (is_color) {
-            DIM_ASSERT(1, (dims.ndims()>=3 && dims.ndims()<=4));
-            DIM_ASSERT(1, (dims[2]==3));
-        }
-        else
-            DIM_ASSERT(1, (dims.ndims()>=2 && dims.ndims()<=3));
+        DIM_ASSERT(1, (dims.ndims()>=2));
+        if (is_color) DIM_ASSERT(1, (dims[2]==3));
 
         af_array output;
         switch(type) {

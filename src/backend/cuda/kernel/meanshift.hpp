@@ -197,7 +197,7 @@ void meanshift(Param<T> out, CParam<T> in, float s_sigma, float c_sigma, uint it
     dim_type blk_y = divup(in.dims[1], THREADS_Y);
 
     const dim_type bIndex   = (is_color ? 3 : 2);
-    const dim_type bCount   = in.dims[bIndex];
+    const dim_type bCount   = (is_color ? in.dims[bIndex] : in.dims[bIndex]*in.dims[bIndex+1]);
     const dim_type channels = (is_color ? in.dims[2] : 1);
 
     dim3 blocks(blk_x * bCount, blk_y);
