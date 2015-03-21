@@ -282,7 +282,22 @@ AFAPI array erode3d(const array& in, const array& mask);
 /**
     C++ Interface for getting regions in an image
 
-    \snippet test/regions.cpp ex_image_regions
+    Below given are sample input and output for each type of connectivity value for \p type
+
+    <table border="0">
+    <tr>
+    <td> Example for \p type == \ref AF_CONNECTIVITY_8 </td>
+    <td> Example for \p type == \ref AF_CONNECTIVITY_4 </td>
+    </tr>
+    <tr>
+    <td>
+        \snippet test/regions.cpp ex_image_regions
+    </td>
+    <td>
+        \snippet test/regions.cpp ex_image_regions_4conn
+    </td>
+    </tr>
+    </table>
 
     \param[in]  in array should be binary/grayscale image of type uchar \ref u8
     \param[in]  connectivity can take one of the following [\ref AF_CONNECTIVITY_4 | \ref AF_CONNECTIVITY_8]
