@@ -31,17 +31,18 @@ float abserr(const array& predicted, const array& target)
     return 100 * sum<float>(abs(predicted - target)) / predicted.elements();
 }
 
-// Activation function
-array sigmoid(const array &val)
+array divide(const array &a, const array &b)
 {
-    return 1 / (1 + exp(-val));
+    return a / b;
 }
 
 // Predict based on given parameters
 array predict(const array &X, const array &Weights)
 {
     array Z = matmul(X, Weights);
-    return sigmoid(Z);
+    array EZ = exp(Z);
+    array nrm = sum(EZ, 1);
+    return batchFunc(EZ, nrm, divide);
 }
 
 void cost(array &J, array &dJ, const array &Weights,
@@ -60,7 +61,7 @@ void cost(array &J, array &dJ, const array &Weights,
     array H = predict(X, Weights);
 
     // Cost of misprediction
-    array Jerr =  -sum(Y * log(H) + (1 - Y) * log(1 - H));
+    array Jerr =  -sum(Y * log(H));
 
     // Regularization cost
     array Jreg = 0.5 * sum(lambdat * Weights * Weights);
@@ -111,9 +112,9 @@ array train(const array &X, const array &Y,
     return Weights;
 }
 
-void benchmark_logistic_regression(const array &train_feats,
-                                   const array &train_targets,
-                                   const array test_feats)
+void benchmark_softmax_regression(const array &train_feats,
+                                  const array &train_targets,
+                                  const array test_feats)
 {
     timer::start();
     array Weights = train(train_feats, train_targets, 0.1, 1.0, 0.01, 1000);
@@ -176,7 +177,7 @@ int logit_demo(bool console, int perc)
     printf("Maximum error on testing data: %2.2f\n",
            abserr(test_outputs , test_targets ));
 
-    benchmark_logistic_regression(train_feats, train_targets, test_feats);
+    benchmark_softmax_regression(train_feats, train_targets, test_feats);
 
     if (!console) {
         test_outputs = test_outputs.T();
