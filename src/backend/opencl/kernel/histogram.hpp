@@ -62,21 +62,16 @@ void histogram(Param out, const Param in, const Param minmax, dim_type nbins)
                                        dim_type, dim_type, dim_type
                                       >(*histKernels[device]);
 
-        NDRange local(THREADS_X, 1);
-
-        dim_type numElements = in.info.dims[0]*in.info.dims[1];
-
-        dim_type blk_x       = divup(numElements, THRD_LOAD*THREADS_X);
-
-        dim_type batchCount  = in.info.dims[2] * in.info.dims[3];
-
-        NDRange global(blk_x*THREADS_X, batchCount);
-
+        dim_type nElems = in.info.dims[0]*in.info.dims[1];
+        dim_type blk_x  = divup(nElems, THRD_LOAD*THREADS_X);
         dim_type locSize = nbins * sizeof(outType);
+
+        NDRange local(THREADS_X, 1);
+        NDRange global(blk_x*in.info.dims[2]*THREADS_X, in.info.dims[3]);
 
         histogramOp(EnqueueArgs(getQueue(), global, local),
                 *out.data, out.info, *in.data, in.info, *minmax.data,
-                cl::Local(locSize), numElements, nbins, blk_x);
+                cl::Local(locSize), nElems, nbins, blk_x);
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {
