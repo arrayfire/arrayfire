@@ -56,7 +56,7 @@ template<typename inType, typename outType>
 static __global__
 void bilateralKernel(Param<outType> out, CParam<inType> in,
                      float sigma_space, float sigma_color,
-                     dim_type gaussOff, dim_type nonBatchBlkSize)
+                     dim_type gaussOff, dim_type nBBS0, dim_type nBBS1)
 {
     SharedMemory<outType> shared;
     outType *localMem = shared.getPointer();
@@ -70,15 +70,16 @@ void bilateralKernel(Param<outType> out, CParam<inType> in,
     const float variance_space = sigma_space * sigma_space;
 
     // gfor batch offsets
-    unsigned batchId = blockIdx.x / nonBatchBlkSize;
-    const inType* iptr  = (const inType *) in.ptr + (batchId * in.strides[2]);
-    outType*       optr = (outType *     )out.ptr + (batchId * out.strides[2]);
+    unsigned b2 = blockIdx.x / nBBS0;
+    unsigned b3 = blockIdx.y / nBBS1;
+    const inType* iptr  = (const inType *) in.ptr + (b2 * in.strides[2]  + b3 * in.strides[3] );
+    outType*       optr = (outType *     )out.ptr + (b2 * out.strides[2] + b3 * out.strides[3]);
 
     dim_type lx = threadIdx.x;
     dim_type ly = threadIdx.y;
 
-    const dim_type gx = THREADS_X * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
-    const dim_type gy = THREADS_Y * blockIdx.y + ly;
+    const dim_type gx = THREADS_X * (blockIdx.x-b2*nBBS0) + lx;
+    const dim_type gy = THREADS_Y * (blockIdx.y-b3*nBBS1) + ly;
 
     // generate gauss2d spatial variance values for block
     if (lx<window_size && ly<window_size) {
@@ -141,11 +142,7 @@ void bilateral(Param<outType> out, CParam<inType> in, float s_sigma, float c_sig
     dim_type blk_x = divup(in.dims[0], THREADS_X);
     dim_type blk_y = divup(in.dims[1], THREADS_Y);
 
-    dim_type bCount = blk_x * in.dims[2];
-    if (isColor)
-        bCount *= in.dims[3];
-
-    dim3 blocks(bCount, blk_y);
+    dim3 blocks(blk_x * in.dims[2], blk_y * in.dims[3]);
 
     // calculate shared memory size
     dim_type radius = (dim_type)std::max(s_sigma * 1.5f, 1.f);
@@ -155,7 +152,7 @@ void bilateral(Param<outType> out, CParam<inType> in, float s_sigma, float c_sig
 
     bilateralKernel<inType, outType>
         <<<blocks, threads, total_shrd_size>>>
-        (out, in, s_sigma, c_sigma, num_shrd_elems, blk_x);
+        (out, in, s_sigma, c_sigma, num_shrd_elems, blk_x, blk_y);
 
     POST_LAUNCH_CHECK();
 }

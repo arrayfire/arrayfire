@@ -35,7 +35,7 @@ __constant__ char sFilter[2*THREADS_Y*(2*(MAX_SCONV_FILTER_LEN-1)+THREADS_X)*siz
 
 template<typename T, typename accType, dim_type conv_dim, bool expand, dim_type fLen>
 __global__
-void convolve2_separable(Param<T> out, CParam<T> signal, dim_type nBBS)
+void convolve2_separable(Param<T> out, CParam<T> signal, dim_type nBBS0, dim_type nBBS1)
 {
     const dim_type smem_len =   (conv_dim==0 ?
                                 (THREADS_X+2*(fLen-1))* THREADS_Y:
@@ -50,15 +50,16 @@ void convolve2_separable(Param<T> out, CParam<T> signal, dim_type nBBS)
     const dim_type d1      = signal.dims[1];
     const dim_type shrdLen = THREADS_X + (conv_dim==0 ? padding : 0);
 
-    unsigned batchId  = blockIdx.x/nBBS;
-    T *dst            = (T *)out.ptr          + (batchId*out.strides[2]);
-    const T *src      = (const T *)signal.ptr + (batchId*signal.strides[2]);
+    unsigned b2  = blockIdx.x/nBBS0;
+    unsigned b3  = blockIdx.y/nBBS1;
+    T *dst       = (T *)out.ptr          + (b2*out.strides[2] + b3*out.strides[3]);
+    const T *src = (const T *)signal.ptr + (b2*signal.strides[2] + b3*signal.strides[3]);
     const accType *impulse  = (const accType *)sFilter;
 
     dim_type lx = threadIdx.x;
     dim_type ly = threadIdx.y;
-    dim_type ox = THREADS_X * (blockIdx.x-batchId*nBBS) + lx;
-    dim_type oy = THREADS_Y * blockIdx.y + ly;
+    dim_type ox = THREADS_X * (blockIdx.x-b2*nBBS0) + lx;
+    dim_type oy = THREADS_Y * (blockIdx.y-b3*nBBS1) + ly;
     dim_type gx = ox;
     dim_type gy = oy;
 
@@ -108,9 +109,9 @@ void convolve2_separable(Param<T> out, CParam<T> signal, dim_type nBBS)
 }
 
 template<typename T, typename aT, dim_type cDim, bool expand, dim_type f>
-void conv2Helper(dim3 blks, dim3 thrds, Param<T> out, CParam<T> sig, dim_type nBBS)
+void conv2Helper(dim3 blks, dim3 thrds, Param<T> out, CParam<T> sig, dim_type nBBS0, dim_type nBBS1)
 {
-   (convolve2_separable<T, aT, cDim, expand, f>)<<<blks, thrds>>>(out, sig, nBBS);
+   (convolve2_separable<T, aT, cDim, expand, f>)<<<blks, thrds>>>(out, sig, nBBS0, nBBS1);
 }
 
 template<typename T, typename accType, dim_type conv_dim, bool expand>
@@ -127,7 +128,7 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<accType> filter)
     dim_type blk_x = divup(out.dims[0], threads.x);
     dim_type blk_y = divup(out.dims[1], threads.y);
 
-    dim3 blocks(blk_x*signal.dims[2], blk_y);
+    dim3 blocks(blk_x*signal.dims[2], blk_y*signal.dims[3]);
 
 
    // FIX ME: if the filter array is strided, direct copy of symbols
@@ -135,36 +136,36 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<accType> filter)
    CUDA_CHECK(cudaMemcpyToSymbol(kernel::sFilter, filter.ptr, fLen*sizeof(accType), 0, cudaMemcpyDeviceToDevice));
 
     switch(fLen) {
-        case  2: conv2Helper<T, accType, conv_dim, expand,  2>(blocks, threads, out, signal, blk_x); break;
-        case  3: conv2Helper<T, accType, conv_dim, expand,  3>(blocks, threads, out, signal, blk_x); break;
-        case  4: conv2Helper<T, accType, conv_dim, expand,  4>(blocks, threads, out, signal, blk_x); break;
-        case  5: conv2Helper<T, accType, conv_dim, expand,  5>(blocks, threads, out, signal, blk_x); break;
-        case  6: conv2Helper<T, accType, conv_dim, expand,  6>(blocks, threads, out, signal, blk_x); break;
-        case  7: conv2Helper<T, accType, conv_dim, expand,  7>(blocks, threads, out, signal, blk_x); break;
-        case  8: conv2Helper<T, accType, conv_dim, expand,  8>(blocks, threads, out, signal, blk_x); break;
-        case  9: conv2Helper<T, accType, conv_dim, expand,  9>(blocks, threads, out, signal, blk_x); break;
-        case 10: conv2Helper<T, accType, conv_dim, expand, 10>(blocks, threads, out, signal, blk_x); break;
-        case 11: conv2Helper<T, accType, conv_dim, expand, 11>(blocks, threads, out, signal, blk_x); break;
-        case 12: conv2Helper<T, accType, conv_dim, expand, 12>(blocks, threads, out, signal, blk_x); break;
-        case 13: conv2Helper<T, accType, conv_dim, expand, 13>(blocks, threads, out, signal, blk_x); break;
-        case 14: conv2Helper<T, accType, conv_dim, expand, 14>(blocks, threads, out, signal, blk_x); break;
-        case 15: conv2Helper<T, accType, conv_dim, expand, 15>(blocks, threads, out, signal, blk_x); break;
-        case 16: conv2Helper<T, accType, conv_dim, expand, 16>(blocks, threads, out, signal, blk_x); break;
-        case 17: conv2Helper<T, accType, conv_dim, expand, 17>(blocks, threads, out, signal, blk_x); break;
-        case 18: conv2Helper<T, accType, conv_dim, expand, 18>(blocks, threads, out, signal, blk_x); break;
-        case 19: conv2Helper<T, accType, conv_dim, expand, 19>(blocks, threads, out, signal, blk_x); break;
-        case 20: conv2Helper<T, accType, conv_dim, expand, 20>(blocks, threads, out, signal, blk_x); break;
-        case 21: conv2Helper<T, accType, conv_dim, expand, 21>(blocks, threads, out, signal, blk_x); break;
-        case 22: conv2Helper<T, accType, conv_dim, expand, 22>(blocks, threads, out, signal, blk_x); break;
-        case 23: conv2Helper<T, accType, conv_dim, expand, 23>(blocks, threads, out, signal, blk_x); break;
-        case 24: conv2Helper<T, accType, conv_dim, expand, 24>(blocks, threads, out, signal, blk_x); break;
-        case 25: conv2Helper<T, accType, conv_dim, expand, 25>(blocks, threads, out, signal, blk_x); break;
-        case 26: conv2Helper<T, accType, conv_dim, expand, 26>(blocks, threads, out, signal, blk_x); break;
-        case 27: conv2Helper<T, accType, conv_dim, expand, 27>(blocks, threads, out, signal, blk_x); break;
-        case 28: conv2Helper<T, accType, conv_dim, expand, 28>(blocks, threads, out, signal, blk_x); break;
-        case 29: conv2Helper<T, accType, conv_dim, expand, 29>(blocks, threads, out, signal, blk_x); break;
-        case 30: conv2Helper<T, accType, conv_dim, expand, 30>(blocks, threads, out, signal, blk_x); break;
-        case 31: conv2Helper<T, accType, conv_dim, expand, 31>(blocks, threads, out, signal, blk_x); break;
+        case  2: conv2Helper<T, accType, conv_dim, expand,  2>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case  3: conv2Helper<T, accType, conv_dim, expand,  3>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case  4: conv2Helper<T, accType, conv_dim, expand,  4>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case  5: conv2Helper<T, accType, conv_dim, expand,  5>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case  6: conv2Helper<T, accType, conv_dim, expand,  6>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case  7: conv2Helper<T, accType, conv_dim, expand,  7>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case  8: conv2Helper<T, accType, conv_dim, expand,  8>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case  9: conv2Helper<T, accType, conv_dim, expand,  9>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 10: conv2Helper<T, accType, conv_dim, expand, 10>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 11: conv2Helper<T, accType, conv_dim, expand, 11>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 12: conv2Helper<T, accType, conv_dim, expand, 12>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 13: conv2Helper<T, accType, conv_dim, expand, 13>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 14: conv2Helper<T, accType, conv_dim, expand, 14>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 15: conv2Helper<T, accType, conv_dim, expand, 15>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 16: conv2Helper<T, accType, conv_dim, expand, 16>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 17: conv2Helper<T, accType, conv_dim, expand, 17>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 18: conv2Helper<T, accType, conv_dim, expand, 18>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 19: conv2Helper<T, accType, conv_dim, expand, 19>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 20: conv2Helper<T, accType, conv_dim, expand, 20>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 21: conv2Helper<T, accType, conv_dim, expand, 21>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 22: conv2Helper<T, accType, conv_dim, expand, 22>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 23: conv2Helper<T, accType, conv_dim, expand, 23>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 24: conv2Helper<T, accType, conv_dim, expand, 24>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 25: conv2Helper<T, accType, conv_dim, expand, 25>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 26: conv2Helper<T, accType, conv_dim, expand, 26>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 27: conv2Helper<T, accType, conv_dim, expand, 27>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 28: conv2Helper<T, accType, conv_dim, expand, 28>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 29: conv2Helper<T, accType, conv_dim, expand, 29>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 30: conv2Helper<T, accType, conv_dim, expand, 30>(blocks, threads, out, signal, blk_x, blk_y); break;
+        case 31: conv2Helper<T, accType, conv_dim, expand, 31>(blocks, threads, out, signal, blk_x, blk_y); break;
         default: CUDA_NOT_SUPPORTED();
     }
 

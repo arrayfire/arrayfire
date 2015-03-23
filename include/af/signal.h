@@ -216,6 +216,15 @@ AFAPI array ifft3(const array& in, dim_type odim0=0, dim_type odim1=0, dim_type 
 /**
    C++ Interface for convolution any(one through three) dimensional data
 
+   Example for convolution on one dimensional signal in one to one batch mode
+   \snippet test/convolve.cpp ex_image_convolve_1d
+
+   Example for convolution on two dimensional signal in one to one batch mode
+   \snippet test/convolve.cpp ex_image_convolve_2d
+
+   Example for convolution on three dimensional signal in one to one batch mode
+   \snippet test/convolve.cpp ex_image_convolve_3d
+
    \param[in]  signal is the input signal
    \param[in]  filter is the signal that shall be flipped for the convolution operation
    \param[in]  expand indicates if the convolution should be expanded or not(where output size equals input).
@@ -228,11 +237,16 @@ AFAPI array convolve(const array& signal, const array& filter, bool expand=false
 /**
    C++ Interface for separable convolution on two dimensional data
 
+   \snippet test/convolve.cpp ex_image_conv2_sep
+
    \param[in]  signal is the input signal
    \param[in]  col_filter is the signal that shall be along coloumns
    \param[in]  row_filter is the signal that shall be along rows
    \param[in]  expand indicates if the convolution should be expanded or not(where output size equals input).
    \return     the convolved array
+
+   \note Separable convolution only supports two(ONE-to-ONE and MANY-to-ONE) batch modes from the ones described
+         in the detailed description section.
 
    \ingroup signal_func_convolve
  */
@@ -240,6 +254,8 @@ AFAPI array convolve(const array& col_filter, const array& row_filter, const arr
 
 /**
    C++ Interface for convolution on one dimensional data
+
+   \snippet test/convolve.cpp ex_image_convolve1
 
    \param[in]  signal is the input signal
    \param[in]  filter is the signal that shall be flipped for the convolution operation
@@ -253,6 +269,8 @@ AFAPI array convolve1(const array& signal, const array& filter, bool expand=fals
 /**
    C++ Interface for convolution on two dimensional data
 
+   \snippet test/convolve.cpp ex_image_convolve2
+
    \param[in]  signal is the input signal
    \param[in]  filter is the signal that shall be flipped for the convolution operation
    \param[in]  expand indicates if the convolution should be expanded or not(where output size equals input).
@@ -264,6 +282,8 @@ AFAPI array convolve2(const array& signal, const array& filter, bool expand=fals
 
 /**
    C++ Interface for convolution on three dimensional data
+
+   \snippet test/convolve.cpp ex_image_convolve3
 
    \param[in]  signal is the input signal
    \param[in]  filter is the signal that shall be flipped for the convolution operation
@@ -458,6 +478,9 @@ AFAPI af_err af_convolve3(af_array *out, af_array signal, af_array filter, bool 
    \param[in]  expand indicates if the convolution should be expanded or not(where output size equals input).
    \return     \ref AF_SUCCESS if the convolution is successful,
                otherwise an appropriate error code is returned.
+
+   \note Separable convolution only supports two(ONE-to-ONE and MANY-to-ONE) batch modes from the ones described
+         in the detailed description section.
 
    \ingroup signal_func_convolve
  */

@@ -30,9 +30,6 @@ af_err af_histogram(af_array *out, const af_array in,
     try {
         ArrayInfo info = getInfo(in);
         af_dtype type  = info.getType();
-        af::dim4 dims  = info.dims();
-
-        DIM_ASSERT(1, (dims.ndims()<=3));
 
         af_array output;
         switch(type) {

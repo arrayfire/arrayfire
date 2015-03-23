@@ -39,8 +39,8 @@ af_err af_medfilt(af_array *out, const af_array in, dim_type wind_length, dim_ty
         ArrayInfo info = getInfo(in);
         af::dim4 dims  = info.dims();
 
-        dim_type in_ndims = dims.ndims();
-        DIM_ASSERT(1, (in_ndims <= 3 && in_ndims >= 2));
+        dim_type input_ndims = dims.ndims();
+        DIM_ASSERT(1, (input_ndims >= 2));
 
         if (wind_length==1) {
             *out = weakCopy(in);

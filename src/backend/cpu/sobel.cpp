@@ -24,9 +24,8 @@ namespace cpu
 template<typename Ti, typename To, bool isDX>
 void derivative(To *optr, Ti const *iptr, dim4 const &dims, dim4 const &strides)
 {
-    dim_type bCount = dims[2]*dims[3];
-
-    for(dim_type b=0; b<bCount; ++b) {
+    for(dim_type b3=0; b3<dims[3]; ++b3) {
+    for(dim_type b2=0; b2<dims[2]; ++b2) {
 
         for(dim_type j=0; j<dims[1]; ++j) {
 
@@ -76,6 +75,9 @@ void derivative(To *optr, Ti const *iptr, dim4 const &dims, dim4 const &strides)
 
         optr += strides[2];
         iptr += strides[2];
+    }
+    optr += strides[3];
+    iptr += strides[3];
     }
 }
 

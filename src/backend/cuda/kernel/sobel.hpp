@@ -37,7 +37,7 @@ Ti load2ShrdMem(const Ti * in,
 
 template<typename Ti, typename To>
 __global__
-void sobel3x3(Param<To> dx, Param<To> dy, CParam<Ti> in, dim_type nBBS)
+void sobel3x3(Param<To> dx, Param<To> dy, CParam<Ti> in, dim_type nBBS0, dim_type nBBS1)
 {
     __shared__ Ti shrdMem[THREADS_X+2][THREADS_Y+2];
 
@@ -46,18 +46,19 @@ void sobel3x3(Param<To> dx, Param<To> dy, CParam<Ti> in, dim_type nBBS)
     const dim_type padding = 2*radius;
 
     // batch offsets
-    unsigned batchId = blockIdx.x / nBBS;
-    const Ti* iptr     = (const Ti *)in.ptr + (batchId * in.strides[2]);
-    To*       dxptr    = (To *      )dx.ptr + (batchId * dx.strides[2]);
-    To*       dyptr    = (To *      )dy.ptr + (batchId * dy.strides[2]);
+    unsigned b2 = blockIdx.x / nBBS0;
+    unsigned b3 = blockIdx.y / nBBS1;
+    const Ti* iptr     = (const Ti *)in.ptr + (b2 * in.strides[2] + b3 * in.strides[3]);
+    To*       dxptr    = (To *      )dx.ptr + (b2 * dx.strides[2] + b3 * dx.strides[3]);
+    To*       dyptr    = (To *      )dy.ptr + (b2 * dy.strides[2] + b3 * dy.strides[3]);
 
     // local neighborhood indices
     dim_type lx = threadIdx.x;
     dim_type ly = threadIdx.y;
 
     // global indices
-    dim_type gx = THREADS_X * (blockIdx.x-batchId*nBBS) + lx;
-    dim_type gy = THREADS_Y * blockIdx.y + ly;
+    dim_type gx = THREADS_X * (blockIdx.x-b2*nBBS0) + lx;
+    dim_type gy = THREADS_Y * (blockIdx.y-b3*nBBS1) + ly;
 
     // offset values for pulling image to local memory
     dim_type lx2 = lx + THREADS_X;
@@ -119,12 +120,12 @@ void sobel(Param<To> dx, Param<To> dy, CParam<Ti> in, const unsigned &ker_size)
     dim_type blk_x = divup(in.dims[0], threads.x);
     dim_type blk_y = divup(in.dims[1], threads.y);
 
-    dim3 blocks(blk_x*in.dims[2]*in.dims[3], blk_y);
+    dim3 blocks(blk_x*in.dims[2], blk_y*in.dims[3]);
 
     //TODO: add more cases when 5x5 and 7x7 kernels are done
     switch(ker_size) {
         case  3:
-            (sobel3x3<Ti, To>) <<< blocks, threads >>> (dx, dy, in, blk_x);
+            (sobel3x3<Ti, To>) <<< blocks, threads >>> (dx, dy, in, blk_x, blk_y);
             break;
     }
 

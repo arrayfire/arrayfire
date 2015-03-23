@@ -14,20 +14,21 @@ void histogram(__global outType *         d_dst,
                KParam                     iInfo,
                __global const float2 *    d_minmax,
                __local outType *          localMem,
-               dim_type len, dim_type nbins, dim_type blk_x)
+               dim_type len, dim_type nbins, dim_type nBBS)
 {
-    // offset minmax array to account for batch ops
-    __global const float2 * d_mnmx = d_minmax + get_group_id(1);
+    unsigned b2    = get_group_id(0)/nBBS;
+    dim_type start = (get_group_id(0)-b2*nBBS) * THRD_LOAD * get_local_size(0) + get_local_id(0);
+    dim_type end   = min((dim_type)(start + THRD_LOAD * get_local_size(0)), len);
 
     // offset input and output to account for batch ops
-    __global const inType *in = d_src + get_group_id(1) * iInfo.strides[2] + iInfo.offset;
-    __global outType * out    = d_dst + get_group_id(1) * oInfo.strides[2];
-
-    dim_type start = get_group_id(0) * THRD_LOAD * get_local_size(0) + get_local_id(0);
-    dim_type end   = min((dim_type)(start + THRD_LOAD * get_local_size(0)), len);
+    __global const inType *in = d_src + b2 * iInfo.strides[2] + get_group_id(1) * iInfo.strides[3] + iInfo.offset;
+    __global outType * out    = d_dst + b2 * oInfo.strides[2] + get_group_id(1) * oInfo.strides[3];
 
     __local float minval;
     __local float dx;
+
+    // offset minmax array to account for batch ops
+    __global const float2 * d_mnmx = d_minmax + (b2 * get_group_id(0) + get_group_id(1));
 
     if (get_local_id(0) == 0) {
         float2 minmax = *d_mnmx;

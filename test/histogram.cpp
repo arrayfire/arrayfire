@@ -32,26 +32,6 @@ typedef ::testing::Types<float, double, int, uint, char, uchar> TestTypes;
 // register the type list
 TYPED_TEST_CASE(Histogram, TestTypes);
 
-TYPED_TEST(Histogram,InvalidArgs)
-{
-    if (noDoubleTests<TypeParam>()) return;
-
-    af::dim4            dims(1);
-    vector<TypeParam>   in(100,1);
-
-    af_array inArray   = 0;
-    af_array outArray  = 0;
-
-    // square test file is 100x100 originally
-    // use new dimensions for this argument
-    // unit test
-    af::dim4 newDims(5,5,2,2);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), newDims.ndims(), newDims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
-
-    ASSERT_EQ(AF_ERR_SIZE, af_histogram(&outArray,inArray,256,0,255));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-}
-
 template<typename inType, typename outType>
 void histTest(string pTestFile, unsigned nbins, double minval, double maxval)
 {

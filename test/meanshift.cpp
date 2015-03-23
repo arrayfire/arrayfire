@@ -40,15 +40,7 @@ TYPED_TEST(Meanshift, InvalidArgs)
     af_array inArray   = 0;
     af_array outArray  = 0;
 
-    // check for gray scale Meanshift
-    af::dim4 dims(5,5,2,2);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
-    ASSERT_EQ(AF_ERR_SIZE, af_meanshift(&outArray, inArray, 0.12f, 0.34f, 5, false));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-
-    // check for color image Meanshift
-    dims = af::dim4(100,1,1,1);
+    af::dim4 dims = af::dim4(100,1,1,1);
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
     ASSERT_EQ(AF_ERR_SIZE, af_meanshift(&outArray, inArray, 0.12f, 0.34f, 5, true));

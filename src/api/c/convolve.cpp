@@ -97,7 +97,7 @@ af_err convolve2_sep(af_array *out, af_array col_filter, af_array row_filter, af
 
         dim4 signalDims = sInfo.dims();
 
-        ARG_ASSERT(1, (signalDims.ndims()==2 || signalDims.ndims()==3));
+        ARG_ASSERT(1, (signalDims.ndims()>=2));
         ARG_ASSERT(2, cfInfo.isVector());
         ARG_ASSERT(3, rfInfo.isVector());
 

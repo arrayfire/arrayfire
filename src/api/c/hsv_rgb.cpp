@@ -38,7 +38,7 @@ af_err convert(af_array* out, const af_array& in)
         af_dtype iType = info.getType();
         af::dim4 inputDims = info.dims();
 
-        ARG_ASSERT(1, (inputDims.ndims() == 3));
+        ARG_ASSERT(1, (inputDims.ndims() >= 3));
 
         af_array output = 0;
         switch (iType) {
