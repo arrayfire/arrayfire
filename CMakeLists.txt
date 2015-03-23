@@ -10,6 +10,7 @@ OPTION(BUILD_CUDA "Build ArrayFire with a CUDA backend" OFF)
 OPTION(BUILD_OPENCL "Build ArrayFire with a OpenCL backend" OFF)
 
 OPTION(BUILD_DOCS "Create ArrayFire Documentation" OFF)
+OPTION(WITH_COVERAGE "Added code coverage flags" OFF)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 
@@ -21,7 +22,6 @@ ELSE(FREEIMAGE_FOUND)
     MESSAGE(WARNING, "FreeImage not found!")
 ENDIF(FREEIMAGE_FOUND)
 
-
 INCLUDE_DIRECTORIES(
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/backend"
@@ -31,7 +31,13 @@ INCLUDE_DIRECTORIES(
 
 IF(${UNIX})
     ADD_DEFINITIONS(-Wall -std=c++11 -fvisibility=hidden)
-ENDIF()
+    IF(${WITH_COVERAGE})
+        SET(CMAKE_CXX_FLAGS             "-fprofile-arcs -ftest-coverage")
+        SET(CMAKE_EXE_LINKER_FLAGS      "-fprofile-arcs -ftest-coverage")
+        SET(CMAKE_SHARED_LINKER_FLAGS   "-fprofile-arcs -ftest-coverage")
+        SET(CMAKE_STATIC_LINKER_FLAGS   "-fprofile-arcs -ftest-coverage")
+    ENDIF(${WITH_COVERAGE})
+ENDIF(${UNIX})
 
 # OS Definitions
 IF(UNIX)
