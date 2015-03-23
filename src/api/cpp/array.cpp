@@ -16,10 +16,24 @@
 #include <af/index.h>
 #include <af/device.h>
 #include <af/gfor.h>
+#include <af/algorithm.h>
 #include "error.hpp"
 
 namespace af
 {
+    static void copyIndices(af_index_t inds[4], af_index_t indices[4])
+    {
+        for (int i = 0; i < 4; i++) {
+            if (!indices[i].mIsSeq) {
+                AF_THROW(af_weak_copy(&inds[i].mIndexer.arr, indices[i].mIndexer.arr));
+            } else {
+                inds[i].mIndexer.seq = indices[i].mIndexer.seq;
+            }
+            inds[i].mIsSeq = indices[i].mIsSeq;
+            inds[i].isBatch = indices[i].isBatch;
+        }
+    }
+
     static af_index_t toIndices(const seq &s)
     {
         af_index_t res;
@@ -29,13 +43,29 @@ namespace af
         return res;
     }
 
-    static af_index_t toIndices(const array &idx)
+    static af_index_t toIndices(const array &idx0)
     {
         af_index_t res;
-        res.mIndexer.arr = idx.get();
+
+        array idx = idx0.isbool() ? where(idx0) : idx0;
+        af_array arr = 0;
+        AF_THROW(af_weak_copy(&arr, idx.get()));
+        res.mIndexer.arr = arr;
+
         res.mIsSeq = false;
         res.isBatch = false;
         return res;
+    }
+
+    void cleanIndices(af_index_t indices[4])
+    {
+        for (int i = 0; i < 4; i++) {
+            if (!indices[i].mIsSeq) {
+                AF_THROW(af_destroy_array(indices[i].mIndexer.arr));
+            }
+            // Just to be safe
+            indices[i] = toIndices(span);
+        }
     }
 
     static int gforDim(af_index_t seqs[4])
@@ -245,6 +275,8 @@ namespace af
         } else {
             arr = temp;
         }
+
+        cleanIndices(indices);
 
         isRef = false;
         AF_THROW(err);
@@ -497,12 +529,12 @@ namespace af
 
             af_array tmp;
             AF_THROW(af_assign_gen(&tmp, arr, nd, indices, other_arr));
-            parent->set(tmp);
+            cleanIndices(indices);
 
+            parent->set(tmp);
             if (dim >= 0 && is_reordered) AF_THROW(af_destroy_array(other_arr));
 
             isRef = false;
-
         } else {
 
             if (this->get() == other.get()) {
@@ -527,13 +559,17 @@ namespace af
             af_array lhs;                                               \
             int dim = gforDim(this->indices);                           \
             AF_THROW(af_weak_copy(&lhs, this->arr));                    \
+            af_index_t inds[4];                                         \
+            /*FIXME: Figure out a way to not perform the copy*/         \
+            copyIndices(inds, indices);                                 \
             unsigned ndims = numDims(lhs);                              \
             /* FIXME: Unify with other af_assign_gen */                 \
             array tmp = *this op1 other;                                \
             af_array tmp_arr = tmp.get();                               \
             af_array out = 0;                                           \
             tmp_arr = (dim == -1) ? tmp_arr : gforReorder(tmp_arr, dim); \
-            AF_THROW(af_assign_gen(&out, lhs, ndims, indices, tmp_arr)); \
+            AF_THROW(af_assign_gen(&out, lhs, ndims, inds, tmp_arr));   \
+            cleanIndices(indices);                                      \
             AF_THROW(af_destroy_array(this->arr));                      \
             if (dim >= 0) AF_THROW(af_destroy_array(tmp_arr));          \
             this->arr = lhs;                                            \
