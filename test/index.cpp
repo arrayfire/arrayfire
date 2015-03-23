@@ -689,13 +689,13 @@ TEST(SeqIndex, CPP_END_SEQ)
     delete[] hB;
 }
 
-af::array cpp_scope_test(const int num, const float val, const af::seq s)
+af::array cpp_scope_seq_test(const int num, const float val, const af::seq s)
 {
     af::array a = af::constant(val, num);
     return a(s);
 }
 
-TEST(SeqIndex, CPP_SCOPE)
+TEST(SeqIndex, CPP_SCOPE_SEQ)
 {
     using af::array;
 
@@ -704,11 +704,35 @@ TEST(SeqIndex, CPP_SCOPE)
     const int seq_end = 10;
     const float val = 133.33;
 
-    array b = cpp_scope_test(num, val, af::seq(seq_begin, seq_end));
+    array b = cpp_scope_seq_test(num, val, af::seq(seq_begin, seq_end));
     float *hB = b.host<float>();
 
     for (int i = 0; i < seq_end - seq_begin + 1; i++) {
         ASSERT_EQ(hB[i], val);
+    }
+
+    delete[] hB;
+}
+
+af::array cpp_scope_arr_test(const int num, const float val)
+{
+    af::array a = af::constant(val, num);
+    af::array idx = where(a > val/2);
+    return a(idx) * (val - 1);
+}
+
+TEST(SeqIndex, CPP_SCOPE_ARR)
+{
+    using af::array;
+
+    const int num = 20;
+    const float val = 133.33;
+
+    array b = cpp_scope_arr_test(num, val);
+    float *hB = b.host<float>();
+
+    for (int i = 0; i < b.elements(); i++) {
+        ASSERT_EQ(hB[i], val * (val - 1));
     }
 
     delete[] hB;
