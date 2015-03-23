@@ -179,7 +179,7 @@ private:
 
             // Input to current layer is output of previous
             out = signal[i];
-            err = matmul(weights[i], delta).T();
+            err = matmulTT(delta, weights[i]);
 
             // Remove the error of bias and propagate backward
             err = err(span, seq(1, out.dims(1)));
