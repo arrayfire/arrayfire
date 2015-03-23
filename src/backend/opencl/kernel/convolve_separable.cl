@@ -9,7 +9,8 @@
 
 kernel
 void convolve(global T *out, KParam oInfo, global T const *signal,
-              KParam sInfo, constant accType const *impulse, dim_type nBBS)
+              KParam sInfo, constant accType const *impulse,
+              dim_type nBBS0, dim_type nBBS1)
 {
     local T localMem[LOCAL_MEM_SIZE];
 
@@ -21,14 +22,15 @@ void convolve(global T *out, KParam oInfo, global T const *signal,
     const dim_type d1      = sInfo.dims[1];
     const dim_type shrdLen = get_local_size(0) + (CONV_DIM==0 ? padding : 0);
 
-    unsigned batchId  = get_group_id(0)/nBBS;
-    global T *dst = out + (batchId*oInfo.strides[2]);
-    global const T *src = signal + (batchId*sInfo.strides[2]) + sInfo.offset;
+    unsigned b2  = get_group_id(0)/nBBS0;
+    unsigned b3  = get_group_id(1)/nBBS1;
+    global T *dst = out + (b2*oInfo.strides[2] + b3*oInfo.strides[3]);
+    global const T *src = signal + (b2*sInfo.strides[2] + b3*sInfo.strides[3]) + sInfo.offset;
 
     dim_type lx = get_local_id(0);
     dim_type ly = get_local_id(1);
-    dim_type ox = get_local_size(0) * (get_group_id(0)-batchId*nBBS) + lx;
-    dim_type oy = get_local_size(1) * get_group_id(1) + ly;
+    dim_type ox = get_local_size(0) * (get_group_id(0)-b2*nBBS0) + lx;
+    dim_type oy = get_local_size(1) * (get_group_id(1)-b3*nBBS1) + ly;
     dim_type gx = ox;
     dim_type gy = oy;
 

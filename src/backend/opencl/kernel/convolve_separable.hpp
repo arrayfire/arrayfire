@@ -74,21 +74,23 @@ void convolve2(Param out, const Param signal, const Param filter)
                     convKernels[device] = new Kernel(*convProgs[device], "convolve");
                 });
 
-        auto convOp = make_kernel<Buffer, KParam, Buffer, KParam, Buffer, dim_type>(*convKernels[device]);
+        auto convOp = make_kernel<Buffer, KParam, Buffer, KParam, Buffer,
+                                  dim_type, dim_type>(*convKernels[device]);
 
         NDRange local(THREADS_X, THREADS_Y);
 
         dim_type blk_x = divup(out.info.dims[0], THREADS_X);
         dim_type blk_y = divup(out.info.dims[1], THREADS_Y);
 
-        NDRange global(blk_x*signal.info.dims[2]*signal.info.dims[3]*THREADS_X, blk_y*THREADS_Y);
+        NDRange global(blk_x*signal.info.dims[2]*THREADS_X,
+                       blk_y*signal.info.dims[3]*THREADS_Y);
 
         cl::Buffer *mBuff = bufferAlloc(fLen*sizeof(accType));
         // FIX ME: if the filter array is strided, direct might cause issues
         getQueue().enqueueCopyBuffer(*filter.data, *mBuff, 0, 0, fLen*sizeof(accType));
 
         convOp(EnqueueArgs(getQueue(), global, local),
-               *out.data, out.info, *signal.data, signal.info, *mBuff, blk_x);
+               *out.data, out.info, *signal.data, signal.info, *mBuff, blk_x, blk_y);
 
         bufferFree(mBuff);
     } catch (cl::Error err) {

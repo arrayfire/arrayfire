@@ -267,20 +267,26 @@ Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter, Array<ac
     auto tStrides = temp.strides();
     auto oStrides = out.strides();
 
-    dim_type batch = oDims[2]*oDims[3];
+    for (dim_type b3=0; b3<oDims[3]; ++b3) {
 
-    for (dim_type b=0; b<batch; ++b) {
-        T const *iptr = signal.get()+ b*sStrides[2];
-        T *tptr = temp.get() + b*tStrides[2];
-        T *optr = out.get()  + b*oStrides[2];
+        dim_type i_b3Off = b3*sStrides[3];
+        dim_type t_b3Off = b3*tStrides[3];
+        dim_type o_b3Off = b3*oStrides[3];
 
-        convolve2_separable<T, accT, 0, expand>(tptr, iptr, c_filter.get(),
-                                                tDims, sDims, sDims, cflen,
-                                                tStrides, sStrides, c_filter.strides()[0]);
+        for (dim_type b2=0; b2<oDims[2]; ++b2) {
 
-        convolve2_separable<T, accT, 1, expand>(optr, tptr, r_filter.get(),
-                                                oDims, tDims, sDims, rflen,
-                                                oStrides, tStrides, r_filter.strides()[0]);
+            T const *iptr = signal.get()+ b2*sStrides[2] + i_b3Off;
+            T *tptr = temp.get() + b2*tStrides[2] + t_b3Off;
+            T *optr = out.get()  + b2*oStrides[2] + o_b3Off;
+
+            convolve2_separable<T, accT, 0, expand>(tptr, iptr, c_filter.get(),
+                    tDims, sDims, sDims, cflen,
+                    tStrides, sStrides, c_filter.strides()[0]);
+
+            convolve2_separable<T, accT, 1, expand>(optr, tptr, r_filter.get(),
+                    oDims, tDims, sDims, rflen,
+                    oStrides, tStrides, r_filter.strides()[0]);
+        }
     }
 
     return out;
