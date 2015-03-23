@@ -62,7 +62,7 @@ inline __device__ void load2ShrdMem(T * shrd, const T * const in,
 // necessary operations accordingly.
 template<typename T, bool isDilation, dim_type windLen>
 static __global__ void morphKernel(Param<T> out, CParam<T> in,
-                                   dim_type nonBatchBlkSize)
+                                   dim_type nBBS0, dim_type nBBS1)
 {
     // get shared memory pointer
     SharedMemory<T> shared;
@@ -74,9 +74,10 @@ static __global__ void morphKernel(Param<T> out, CParam<T> in,
     const dim_type shrdLen= blockDim.x + padding + 1;
 
     // gfor batch offsets
-    unsigned batchId = blockIdx.x / nonBatchBlkSize;
-    const T* iptr    = (const T *) in.ptr + (batchId *  in.strides[2]);
-    T*       optr    = (T *      )out.ptr + (batchId * out.strides[2]);
+    unsigned b2 = blockIdx.x / nBBS0;
+    unsigned b3 = blockIdx.y / nBBS1;
+    const T* iptr    = (const T *) in.ptr + (b2 *  in.strides[2] + b3 *  in.strides[3]);
+    T*       optr    = (T *      )out.ptr + (b2 * out.strides[2] + b3 * out.strides[3]);
 
     dim_type gx, gy, i, j;
     { //scoping out unnecessary variables
@@ -85,8 +86,8 @@ static __global__ void morphKernel(Param<T> out, CParam<T> in,
     const dim_type ly = threadIdx.y;
 
     // global indices
-    gx = blockDim.x * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
-    gy = blockDim.y * blockIdx.y + ly;
+    gx = blockDim.x * (blockIdx.x-b2*nBBS0) + lx;
+    gy = blockDim.y * (blockIdx.y-b3*nBBS1) + ly;
 
     // offset values for pulling image to local memory
     dim_type lx2      = lx + blockDim.x;
@@ -300,7 +301,7 @@ void morph(Param<T> out, CParam<T> in, dim_type windLen)
     dim_type blk_x = divup(in.dims[0], THREADS_X);
     dim_type blk_y = divup(in.dims[1], THREADS_Y);
     // launch batch * blk_x blocks along x dimension
-    dim3 blocks(blk_x * in.dims[2] * in.dims[3], blk_y);
+    dim3 blocks(blk_x * in.dims[2], blk_y * in.dims[3]);
 
     // calculate shared memory size
     int halo      = windLen/2;
@@ -309,16 +310,16 @@ void morph(Param<T> out, CParam<T> in, dim_type windLen)
     int shrdSize  = shrdLen * (kernel::THREADS_Y + padding) * sizeof(T);
 
     switch(windLen) {
-        case  3: morphKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
-        case  5: morphKernel<T, isDilation, 5> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
-        case  7: morphKernel<T, isDilation, 7> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
-        case  9: morphKernel<T, isDilation, 9> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
-        case 11: morphKernel<T, isDilation,11> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
-        case 13: morphKernel<T, isDilation,13> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
-        case 15: morphKernel<T, isDilation,15> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
-        case 17: morphKernel<T, isDilation,17> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
-        case 19: morphKernel<T, isDilation,19> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
-        default: morphKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(out, in, blk_x); break;
+        case  3: morphKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(out, in, blk_x, blk_y); break;
+        case  5: morphKernel<T, isDilation, 5> <<< blocks, threads, shrdSize>>>(out, in, blk_x, blk_y); break;
+        case  7: morphKernel<T, isDilation, 7> <<< blocks, threads, shrdSize>>>(out, in, blk_x, blk_y); break;
+        case  9: morphKernel<T, isDilation, 9> <<< blocks, threads, shrdSize>>>(out, in, blk_x, blk_y); break;
+        case 11: morphKernel<T, isDilation,11> <<< blocks, threads, shrdSize>>>(out, in, blk_x, blk_y); break;
+        case 13: morphKernel<T, isDilation,13> <<< blocks, threads, shrdSize>>>(out, in, blk_x, blk_y); break;
+        case 15: morphKernel<T, isDilation,15> <<< blocks, threads, shrdSize>>>(out, in, blk_x, blk_y); break;
+        case 17: morphKernel<T, isDilation,17> <<< blocks, threads, shrdSize>>>(out, in, blk_x, blk_y); break;
+        case 19: morphKernel<T, isDilation,19> <<< blocks, threads, shrdSize>>>(out, in, blk_x, blk_y); break;
+        default: morphKernel<T, isDilation, 3> <<< blocks, threads, shrdSize>>>(out, in, blk_x, blk_y); break;
     }
 
     POST_LAUNCH_CHECK();

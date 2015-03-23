@@ -71,7 +71,7 @@ void morph(Param         out,
         auto morphOp = make_kernel<Buffer, KParam,
                                    Buffer, KParam,
                                    Buffer, cl::LocalSpaceArg,
-                                   dim_type
+                                   dim_type, dim_type
                                   >(*morKernels[device]);
 
         NDRange local(THREADS_X, THREADS_Y);
@@ -79,8 +79,8 @@ void morph(Param         out,
         dim_type blk_x = divup(in.info.dims[0], THREADS_X);
         dim_type blk_y = divup(in.info.dims[1], THREADS_Y);
         // launch batch * blk_x blocks along x dimension
-        NDRange global(blk_x * THREADS_X * in.info.dims[2] * in.info.dims[3],
-                blk_y * THREADS_Y);
+        NDRange global(blk_x * THREADS_X * in.info.dims[2],
+                       blk_y * THREADS_Y * in.info.dims[3]);
 
         // copy mask/filter to constant memory
         cl_int se_size   = sizeof(T)*windLen*windLen;
@@ -95,7 +95,7 @@ void morph(Param         out,
 
         morphOp(EnqueueArgs(getQueue(), global, local),
                 *out.data, out.info, *in.data, in.info, *mBuff,
-                cl::Local(locSize*sizeof(T)), blk_x);
+                cl::Local(locSize*sizeof(T)), blk_x, blk_y);
 
         bufferFree(mBuff);
 
