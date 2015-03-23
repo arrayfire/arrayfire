@@ -1,0 +1,4 @@
+repo_token: Laf5x0cTozUpSqd3Heo6pB8RUfw9YqYUS
+include: [src,include]
+exclude: [src/backend/opencl/cl.hpp, test]
+gcov-options: '-lp'
