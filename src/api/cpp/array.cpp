@@ -306,6 +306,7 @@ namespace af
     INSTANTIATE(realfloating)
     INSTANTIATE(floating)
     INSTANTIATE(integer)
+    INSTANTIATE(bool)
 
 #undef INSTANTIATE
 
