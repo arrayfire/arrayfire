@@ -35,8 +35,7 @@ Array<T>  meanshift(const Array<T> &in, const float &s_sigma, const float &c_sig
     Array<T> out        = createEmptyArray<T>(dims);
     const dim4 ostrides = out.strides();
 
-    const dim_type bIndex   = (is_color ? 3 : 2);
-    const dim_type bCount   = (is_color ? dims[bIndex] : dims[bIndex]*dims[bIndex+1]);
+    const dim_type bCount   = (is_color ? 1 : dims[2]);
     const dim_type channels = (is_color ? dims[2] : 1);
 
     // clamp spatical and chromatic sigma's
@@ -51,93 +50,98 @@ Array<T>  meanshift(const Array<T> &in, const float &s_sigma, const float &c_sig
     centers.reserve(channels);
     tmpclrs.reserve(channels);
 
-    for(dim_type batchId=0; batchId<bCount; ++batchId) {
+    T *outData       = out.get();
+    const T * inData = in.get();
 
-        T *outData       = out.get() + batchId*ostrides[bIndex];
-        const T * inData = in.get()   + batchId*istrides[bIndex];
+    for(dim_type b3=0; b3<dims[3]; ++b3) {
+        for(dim_type b2=0; b2<bCount; ++b2) {
 
-        for(dim_type j=0; j<dims[1]; ++j) {
+            for(dim_type j=0; j<dims[1]; ++j) {
 
-            dim_type j_in_off  = j*istrides[1];
-            dim_type j_out_off = j*ostrides[1];
+                dim_type j_in_off  = j*istrides[1];
+                dim_type j_out_off = j*ostrides[1];
 
-            for(dim_type i=0; i<dims[0]; ++i) {
+                for(dim_type i=0; i<dims[0]; ++i) {
 
-                dim_type i_in_off  = i*istrides[0];
-                dim_type i_out_off = i*ostrides[0];
+                    dim_type i_in_off  = i*istrides[0];
+                    dim_type i_out_off = i*ostrides[0];
 
-                // clear means and centers for this pixel
-                for(dim_type ch=0; ch<channels; ++ch) {
-                    means[ch] = 0.0f;
-                    // the expression ch*istrides[2] will only effect when ch>1
-                    // i.e for color images where batch is along fourth dimension
-                    centers[ch] = inData[j_in_off + i_in_off + ch*istrides[2]];
-                }
-
-                // scope of meanshift iterationd begin
-                for(unsigned it=0; it<iter; ++it) {
-
-                    int count   = 0;
-                    int shift_x = 0;
-                    int shift_y = 0;
-
-                    for(dim_type wj=-radius; wj<=radius; ++wj) {
-
-                        int hit_count = 0;
-
-                        for(dim_type wi=-radius; wi<=radius; ++wi) {
-
-                            dim_type tj = j + wj;
-                            dim_type ti = i + wi;
-
-                            // clamps offsets
-                            tj = clamp(tj, 0ll, dims[1]-1);
-                            ti = clamp(ti, 0ll, dims[0]-1);
-
-                            // proceed
-                            float norm = 0.0f;
-                            for(dim_type ch=0; ch<channels; ++ch) {
-                                tmpclrs[ch] = inData[ tj*istrides[1] + ti*istrides[0] + ch*istrides[2]];
-                                norm += (centers[ch]-tmpclrs[ch]) * (centers[ch]-tmpclrs[ch]);
-                            }
-
-                            if (norm<= cvar) {
-                                for(dim_type ch=0; ch<channels; ++ch)
-                                    means[ch] += tmpclrs[ch];
-                                shift_x += wi;
-                                ++hit_count;
-                            }
-
-                        }
-                        count+= hit_count;
-                        shift_y += wj*hit_count;
+                    // clear means and centers for this pixel
+                    for(dim_type ch=0; ch<channels; ++ch) {
+                        means[ch] = 0.0f;
+                        // the expression ch*istrides[2] will only effect when ch>1
+                        // i.e for color images where batch is along fourth dimension
+                        centers[ch] = inData[j_in_off + i_in_off + ch*istrides[2]];
                     }
 
-                    if (count==0) { break; }
+                    // scope of meanshift iterationd begin
+                    for(unsigned it=0; it<iter; ++it) {
 
-                    const float fcount = 1.f/count;
-                    const int mean_x = (int)(shift_x*fcount+0.5f);
-                    const int mean_y = (int)(shift_y*fcount+0.5f);
+                        int count   = 0;
+                        int shift_x = 0;
+                        int shift_y = 0;
+
+                        for(dim_type wj=-radius; wj<=radius; ++wj) {
+
+                            int hit_count = 0;
+
+                            for(dim_type wi=-radius; wi<=radius; ++wi) {
+
+                                dim_type tj = j + wj;
+                                dim_type ti = i + wi;
+
+                                // clamps offsets
+                                tj = clamp(tj, 0ll, dims[1]-1);
+                                ti = clamp(ti, 0ll, dims[0]-1);
+
+                                // proceed
+                                float norm = 0.0f;
+                                for(dim_type ch=0; ch<channels; ++ch) {
+                                    tmpclrs[ch] = inData[ tj*istrides[1] + ti*istrides[0] + ch*istrides[2]];
+                                    norm += (centers[ch]-tmpclrs[ch]) * (centers[ch]-tmpclrs[ch]);
+                                }
+
+                                if (norm<= cvar) {
+                                    for(dim_type ch=0; ch<channels; ++ch)
+                                        means[ch] += tmpclrs[ch];
+                                    shift_x += wi;
+                                    ++hit_count;
+                                }
+
+                            }
+                            count+= hit_count;
+                            shift_y += wj*hit_count;
+                        }
+
+                        if (count==0) { break; }
+
+                        const float fcount = 1.f/count;
+                        const int mean_x = (int)(shift_x*fcount+0.5f);
+                        const int mean_y = (int)(shift_y*fcount+0.5f);
+                        for(dim_type ch=0; ch<channels; ++ch)
+                            means[ch] *= fcount;
+
+                        float norm = 0.f;
+                        for(dim_type ch=0; ch<channels; ++ch)
+                            norm += ((means[ch]-centers[ch])*(means[ch]-centers[ch]));
+                        bool stop = ((abs(shift_y-mean_y)+abs(shift_x-mean_x)) + norm) <= 1;
+                        shift_x = mean_x;
+                        shift_y = mean_y;
+                        for(dim_type ch=0; ch<channels; ++ch)
+                            centers[ch] = means[ch];
+                        if (stop) { break; }
+                    } // scope of meanshift iterations end
+
                     for(dim_type ch=0; ch<channels; ++ch)
-                        means[ch] *= fcount;
+                        outData[j_out_off + i_out_off + ch*ostrides[2]] = centers[ch];
 
-                    float norm = 0.f;
-                    for(dim_type ch=0; ch<channels; ++ch)
-                        norm += ((means[ch]-centers[ch])*(means[ch]-centers[ch]));
-                    bool stop = ((abs(shift_y-mean_y)+abs(shift_x-mean_x)) + norm) <= 1;
-                    shift_x = mean_x;
-                    shift_y = mean_y;
-                    for(dim_type ch=0; ch<channels; ++ch)
-                        centers[ch] = means[ch];
-                    if (stop) { break; }
-                } // scope of meanshift iterations end
-
-                for(dim_type ch=0; ch<channels; ++ch)
-                    outData[j_out_off + i_out_off + ch*ostrides[2]] = centers[ch];
-
+                }
             }
+            outData += ostrides[2];
+            inData  += istrides[2];
         }
-
+        outData += ostrides[3];
+        inData  += istrides[3];
     }
     return out;
 }

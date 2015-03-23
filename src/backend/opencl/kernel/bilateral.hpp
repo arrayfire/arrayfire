@@ -68,16 +68,16 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
                                        LocalSpaceArg,
                                        LocalSpaceArg,
                                        float, float,
-                                       dim_type, dim_type
+                                       dim_type, dim_type, dim_type
                                       >(*bilKernels[device]);
 
         NDRange local(THREADS_X, THREADS_Y);
 
         dim_type blk_x = divup(in.info.dims[0], THREADS_X);
         dim_type blk_y = divup(in.info.dims[1], THREADS_Y);
-        dim_type bCount= blk_x * (isColor ? in.info.dims[3] : in.info.dims[2] * in.info.dims[3]);
 
-        NDRange global(bCount*THREADS_X, blk_y*THREADS_Y);
+        NDRange global(blk_x*in.info.dims[2]*THREADS_X,
+                       blk_y*in.info.dims[3]*THREADS_Y);
 
         // calculate local memory size
         dim_type radius = (dim_type)std::max(s_sigma * 1.5f, 1.f);
@@ -88,7 +88,7 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
                     *out.data, out.info, *in.data, in.info,
                     cl::Local(num_shrd_elems*sizeof(outType)),
                     cl::Local(num_gauss_elems*sizeof(outType)),
-                    s_sigma, c_sigma, num_shrd_elems, blk_x);
+                    s_sigma, c_sigma, num_shrd_elems, blk_x, blk_y);
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {

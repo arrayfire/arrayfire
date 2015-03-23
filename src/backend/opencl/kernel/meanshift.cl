@@ -32,9 +32,8 @@ void meanshift(__global T *       d_dst,
                __global const T * d_src,
                KParam             iInfo,
                __local T *        localMem,
-               dim_type batchIndex, dim_type channels,
-               float space_, dim_type radius, float cvar,
-               unsigned iter, dim_type nonBatchBlkSize)
+               dim_type channels, float space_, dim_type radius,
+               float cvar, unsigned iter, dim_type nBBS0, dim_type nBBS1)
 {
     // calculate necessary offset and window parameters
     const dim_type padding     = 2*radius;
@@ -43,18 +42,19 @@ void meanshift(__global T *       d_dst,
     // the variable ichStride will only effect when we have >1
     // channels. in the other cases, the expression in question
     // will not use the variable
-    const dim_type ichStride   = iInfo.strides[batchIndex-1];
+    const dim_type ichStride   = iInfo.strides[2];
 
     // gfor batch offsets
-    unsigned batchId = get_group_id(0) / nonBatchBlkSize;
-    __global const T* iptr = d_src + (batchId * iInfo.strides[batchIndex] + iInfo.offset);
-    __global T*       optr = d_dst + (batchId * oInfo.strides[batchIndex]);
+    unsigned b2 = get_group_id(0) / nBBS0;
+    unsigned b3 = get_group_id(1) / nBBS1;
+    __global const T* iptr = d_src + (b2 * iInfo.strides[2] + b3 * iInfo.strides[3] + iInfo.offset);
+    __global T*       optr = d_dst + (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]);
 
     const dim_type lx = get_local_id(0);
     const dim_type ly = get_local_id(1);
 
-    const dim_type gx = get_local_size(0) * (get_group_id(0)-batchId*nonBatchBlkSize) + lx;
-    const dim_type gy = get_local_size(1) * get_group_id(1) + ly;
+    const dim_type gx = get_local_size(0) * (get_group_id(0)-b2*nBBS0) + lx;
+    const dim_type gy = get_local_size(1) * (get_group_id(1)-b3*nBBS1) + ly;
 
     dim_type gx2 = gx + get_local_size(0);
     dim_type gy2 = gy + get_local_size(1);

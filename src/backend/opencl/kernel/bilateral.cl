@@ -38,7 +38,7 @@ void bilateral(__global outType *        d_dst,
                __local outType *         localMem,
                __local outType *         gauss2d,
                float sigma_space, float sigma_color,
-               dim_type gaussOff, dim_type nonBatchBlkSize)
+               dim_type gaussOff, dim_type nBBS0, dim_type nBBS1)
 {
     const dim_type radius      = max((int)(sigma_space * 1.5f), 1);
     const dim_type padding     = 2 * radius;
@@ -48,15 +48,16 @@ void bilateral(__global outType *        d_dst,
     const float variance_space = sigma_space * sigma_space;
 
     // gfor batch offsets
-    unsigned batchId = get_group_id(0) / nonBatchBlkSize;
-    __global const inType* in = d_src + (batchId * iInfo.strides[2] + iInfo.offset);
-    __global outType* out     = d_dst + (batchId * oInfo.strides[2]);
+    unsigned b2 = get_group_id(0) / nBBS0;
+    unsigned b3 = get_group_id(1) / nBBS1;
+    __global const inType* in = d_src + (b2 * iInfo.strides[2] + b3 * iInfo.strides[3] + iInfo.offset);
+    __global outType* out     = d_dst + (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]);
 
     dim_type lx = get_local_id(0);
     dim_type ly = get_local_id(1);
 
-    const dim_type gx = get_local_size(0) * (get_group_id(0)-batchId*nonBatchBlkSize) + lx;
-    const dim_type gy = get_local_size(1) * get_group_id(1) + ly;
+    const dim_type gx = get_local_size(0) * (get_group_id(0)-b2*nBBS0) + lx;
+    const dim_type gy = get_local_size(1) * (get_group_id(1)-b3*nBBS1) + ly;
 
     // generate gauss2d spatial variance values for block
     if (lx<window_size && ly<window_size) {
