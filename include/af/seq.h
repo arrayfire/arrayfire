@@ -34,6 +34,7 @@ typedef struct {
     // the current dimension is indexed using
     // af_array or af_seq
     bool     mIsSeq;
+    bool     isBatch;
 } af_index_t;
 
 #ifdef __cplusplus

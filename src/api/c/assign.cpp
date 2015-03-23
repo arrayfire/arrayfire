@@ -157,7 +157,7 @@ af_err af_assign_gen(af_array *out,
         }
 
         if (track==ndims) {
-            // all indexers are sequences, redirecting to af_index
+            // all indexers are sequences, redirecting to af_assign
             return af_assign_seq(out, lhs, ndims, &(seqs.front()), rhs);
         }
 
@@ -190,8 +190,9 @@ af_err af_assign_gen(af_array *out,
         }
 
         for (int i = 0; i < 4; i++) {
-            if (oDims[i] != rhsDims[i])
+            if (oDims[i] != rhsDims[i]) {
                 AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
+            }
         }
 
         af_index_t idxrs[4];

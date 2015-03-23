@@ -205,3 +205,110 @@ TEST(GeneralAssign, AAAA)
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(lhsArray));
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
 }
+
+
+TEST(ArrayAssign, CPP_ASSIGN_INDEX)
+{
+    using af::array;
+
+    const int num = 20000;
+
+    array a = af::randu(num);
+    float *hAO = a.host<float>();
+
+    array a_copy = a;
+    array idx = where(a < 0.5);
+    const int len = idx.elements();
+    array b = af::randu(len);
+    a(idx) = b;
+
+    float *hA = a.host<float>();
+    float *hB = b.host<float>();
+    float *hAC = a_copy.host<float>();
+    uint *hIdx = idx.host<uint>();
+
+    for (int i = 0; i < num; i++) {
+
+        int j = 0;
+        while(j < len) {
+
+            // If index found, value should match B
+            if ((int)hIdx[j] == i) {
+                ASSERT_EQ(hA[i], hB[j]);
+                break;
+            }
+            j++;
+        }
+
+        // If index not found, value should match original
+        if (j >= len) {
+            ASSERT_EQ(hA[i], hAO[i]);
+        }
+    }
+
+    // hAC should not be modified, i.e. same as original
+    for (int i = 0; i < num; i++) {
+        ASSERT_EQ(hAO[i], hAC[i]);
+    }
+
+    delete[] hA;
+    delete[] hB;
+    delete[] hAC;
+    delete[] hAO;
+    delete[] hIdx;
+}
+
+TEST(ArrayAssign, CPP_ASSIGN_INDEX_LOGICAL)
+{
+    try {
+        using af::array;
+
+        const int num = 20000;
+
+        array a = af::randu(num);
+        float *hAO = a.host<float>();
+
+        array a_copy = a;
+        array idx = where(a < 0.5);
+        const int len = idx.elements();
+        array b = af::randu(len);
+        a(a < 0.5) = b;
+
+        float *hA = a.host<float>();
+        float *hB = b.host<float>();
+        float *hAC = a_copy.host<float>();
+        uint *hIdx = idx.host<uint>();
+
+        for (int i = 0; i < num; i++) {
+
+            int j = 0;
+            while(j < len) {
+
+                // If index found, value should match B
+                if ((int)hIdx[j] == i) {
+                    ASSERT_EQ(hA[i], hB[j]);
+                    break;
+                }
+                j++;
+            }
+
+            // If index not found, value should match original
+            if (j >= len) {
+                ASSERT_EQ(hA[i], hAO[i]);
+            }
+        }
+
+        // hAC should not be modified, i.e. same as original
+        for (int i = 0; i < num; i++) {
+            ASSERT_EQ(hAO[i], hAC[i]);
+        }
+
+        delete[] hA;
+        delete[] hB;
+        delete[] hAC;
+        delete[] hAO;
+        delete[] hIdx;
+    } catch(af::exception &ex) {
+        FAIL() << ex.what() << std::endl;
+    }
+}
