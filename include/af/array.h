@@ -38,9 +38,8 @@ namespace af
         //FIXME: Put the following in a different class
         const array   *parent;
         bool     isRef;
-        std::vector<seq> s;
-        void getSeq(af_seq* afs) const;
-        array(af_array in, const array *par, seq *seqs);
+        af_index_t indices[4];
+        array(af_array in, const array *par, af_index_t seqs[4]);
         void set(af_array tmp);
         void set(af_array tmp) const;
         //END FIXME
