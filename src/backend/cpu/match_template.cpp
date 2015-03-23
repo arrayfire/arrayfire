@@ -35,8 +35,6 @@ Array<outType> match_template(const Array<inType> &sImg, const Array<inType> &tI
     Array<outType> out = createEmptyArray<outType>(sDims);
     const dim4 oStrides = out.strides();
 
-    const dim_type batchNum = sDims[2] * sDims[3];
-
     outType tImgMean = outType(0);
     dim_type winNumElements = tImg.elements();
     bool needMean = mType==AF_ZSAD || mType==AF_LSAD ||
@@ -55,9 +53,11 @@ Array<outType> match_template(const Array<inType> &sImg, const Array<inType> &tI
         tImgMean /= winNumElements;
     }
 
-    for(dim_type b=0; b<batchNum; ++b) {
-        outType * dst      = out.get() + b*oStrides[2];
-        const inType * src = sImg.get() + b*sStrides[2];
+    outType * dst      = out.get();
+    const inType * src = sImg.get();
+
+    for(dim_type b3=0; b3<sDims[3]; ++b3) {
+    for(dim_type b2=0; b2<sDims[2]; ++b2) {
 
         // slide through image window after window
         for(dim_type sj=0; sj<sDim1; sj++) {
@@ -132,6 +132,11 @@ Array<outType> match_template(const Array<inType> &sImg, const Array<inType> &tI
                 dst[ojStride + si] = disparity;
             }
         }
+        src += sStrides[2];
+        dst += oStrides[2];
+    }
+        src += sStrides[3];
+        dst += oStrides[3];
     }
 
     return out;

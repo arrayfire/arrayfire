@@ -24,12 +24,14 @@ static const dim_type THREADS_Y = 16;
 
 template<typename inType, typename outType, af_match_type mType, bool needMean>
 __global__
-void matchTemplate(Param<outType> out, CParam<inType> srch, CParam<inType> tmplt, dim_type nBBS)
+void matchTemplate(Param<outType> out, CParam<inType> srch, CParam<inType> tmplt,
+                   dim_type nBBS0, dim_type nBBS1)
 {
-    unsigned batchId = blockIdx.x / nBBS;
+    unsigned b2 = blockIdx.x / nBBS0;
+    unsigned b3 = blockIdx.y / nBBS1;
 
-    dim_type gx = threadIdx.x + (blockIdx.x - batchId*nBBS) * blockDim.x;
-    dim_type gy = threadIdx.y + blockIdx.y * blockDim.y;
+    dim_type gx = threadIdx.x + (blockIdx.x - b2*nBBS0) * blockDim.x;
+    dim_type gy = threadIdx.y + (blockIdx.y - b3*nBBS1)* blockDim.y;
 
     if (gx < srch.dims[0] && gy < srch.dims[1]) {
 
@@ -52,8 +54,8 @@ void matchTemplate(Param<outType> out, CParam<inType> srch, CParam<inType> tmplt
             tImgMean /= winNumElems;
         }
 
-        const inType* sptr  = (const inType*) srch.ptr + (batchId * srch.strides[2]);
-        outType* optr       = (outType*) out.ptr + (batchId * out.strides[2]);
+        const inType* sptr  = (const inType*) srch.ptr + (b2 * srch.strides[2] + b3 * srch.strides[3]);
+        outType* optr       = (outType*) out.ptr + (b2 * out.strides[2] + b3 * out.strides[3]);
 
         // mean for window
         // this variable will be used based on mType value
@@ -131,9 +133,9 @@ void matchTemplate(Param<outType> out, CParam<inType> srch, CParam<inType> tmplt
     dim_type blk_x = divup(srch.dims[0], threads.x);
     dim_type blk_y = divup(srch.dims[1], threads.y);
 
-    dim3 blocks(blk_x*srch.dims[2]*srch.dims[3], blk_y);
+    dim3 blocks(blk_x*srch.dims[2], blk_y*srch.dims[3]);
 
-    matchTemplate<inType, outType, mType, needMean> <<< blocks, threads >>> (out, srch, tmplt, blk_x);
+    matchTemplate<inType, outType, mType, needMean> <<< blocks, threads >>> (out, srch, tmplt, blk_x, blk_y);
 
     POST_LAUNCH_CHECK();
 }
