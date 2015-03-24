@@ -75,7 +75,7 @@ void prepareKernelArgs(conv_kparam_t& param, ConvolveBatchKind kind,
         param.steps[1] = sStrides[baseDim];
         param.steps[2] = fStrides[baseDim];
         param.bCount   = sDims[baseDim];
-    } else if (kind==ONE2ALL) {
+    } else if (kind==ONE2MANY) {
         param.steps[0] = oStrides[baseDim];
         param.steps[2] = fStrides[baseDim];
         param.bCount   = fDims[baseDim];

@@ -39,7 +39,7 @@ ConvolveBatchKind identifyBatchKind(dim_type sn, dim_type fn)
 {
     const dim_type batchDim = baseDim + 1;
     if (sn==baseDim && fn==batchDim)
-        return ONE2ALL;
+        return ONE2MANY;
     else if (sn==batchDim && fn==batchDim)
         return MANY2MANY;
     else if (sn==batchDim && fn==baseDim)

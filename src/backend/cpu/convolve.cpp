@@ -148,7 +148,7 @@ void convolve_nd(T *optr, T const *iptr, accT const *fptr,
             in_step   = sStrides[baseDim];
             filt_step = fStrides[baseDim];
             break;
-        case ONE2ALL:
+        case ONE2MANY:
             out_step  = oStrides[baseDim];
             filt_step = fStrides[baseDim];
             break;
@@ -157,7 +157,7 @@ void convolve_nd(T *optr, T const *iptr, accT const *fptr,
             break;
     }
 
-    dim_type bCount = (kind==ONE2ALL ? fDims[baseDim] : sDims[baseDim]);
+    dim_type bCount = (kind==ONE2MANY ? fDims[baseDim] : sDims[baseDim]);
 
     for(dim_type b=0; b<bCount; ++b) {
         switch(baseDim) {
@@ -182,7 +182,7 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
 
     if (expand) {
         for(dim_type d=0; d<4; ++d) {
-            if (kind==ONE2ONE || kind==ONE2ALL) {
+            if (kind==ONE2ONE || kind==ONE2MANY) {
                 oDims[d] = sDims[d]+fDims[d]-1;
             } else {
                 oDims[d] = (d<baseDim ? sDims[d]+fDims[d]-1 : sDims[d]);
@@ -190,7 +190,7 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
         }
     } else {
         oDims = sDims;
-        if (kind==ONE2ALL) oDims[baseDim] = fDims[baseDim];
+        if (kind==ONE2MANY) oDims[baseDim] = fDims[baseDim];
     }
 
     Array<T> out = createEmptyArray<T>(oDims);

@@ -29,7 +29,7 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
     dim4 oDims(1);
     if (expand) {
         for(dim_type d=0; d<4ll; ++d) {
-            if (kind==ONE2ONE || kind==ONE2ALL) {
+            if (kind==ONE2ONE || kind==ONE2MANY) {
                 oDims[d] = sDims[d]+fDims[d]-1;
             } else {
                 oDims[d] = (d<baseDim ? sDims[d]+fDims[d]-1 : sDims[d]);
@@ -37,7 +37,7 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
         }
     } else {
         oDims = sDims;
-        if (kind==ONE2ALL) oDims[baseDim] = fDims[baseDim];
+        if (kind==ONE2MANY) oDims[baseDim] = fDims[baseDim];
     }
 
     Array<T> out   = createEmptyArray<T>(oDims);
