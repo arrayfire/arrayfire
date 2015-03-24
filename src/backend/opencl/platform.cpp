@@ -186,7 +186,7 @@ static std::string platformMap(std::string &platStr)
 std::string getInfo()
 {
     ostringstream info;
-    info << "ArrayFire v" << AF_VERSION << AF_VERSION_MINOR
+    info << "ArrayFire v" << AF_VERSION
          << " (OpenCL, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
 
     unsigned nDevices = 0;
