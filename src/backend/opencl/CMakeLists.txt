@@ -168,6 +168,10 @@ ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
 
 TARGET_LINK_LIBRARIES(afopencl ${OPENCL_LIBRARIES} ${lib_deps} ${CLBLAS_LIBRARIES} ${CLFFT_LIBRARIES} ${CMAKE_DL_LIBS} ${Boost_LIBRARIES})
 
+SET_TARGET_PROPERTIES(afopencl PROPERTIES
+    VERSION "${AF_VERSION}"
+    SOVERSION "${AF_VERSION_MAJOR}")
+
 # locally built but not installed libraries (clBLAS and clFFT) must NOT appear in the
 # link interface. The best option would be to use LINK_PRIVATE, but unfortunately
 # it is not available for older cmake than 2.8.7, so they must be remove from
