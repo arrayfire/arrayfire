@@ -25,20 +25,34 @@ T readSrc(global T const *src, dim_type i, dim_type j, dim_type k, dim_type dims
 
 #if BASE_DIM==1
 kernel
-void convolve(global T *out, KParam oInfo,
-              global T const *signal, KParam sInfo, local T *localMem,
-              constant accType const *impulse, KParam fInfo, dim_type nonBatchBlkSize,
-              dim_type oStep, dim_type sStep)
+void convolve(global T *out, KParam oInfo, global T const *signal, KParam sInfo,
+              local T *localMem, constant accType const *impulse, KParam fInfo,
+              dim_type nBBS0, dim_type nBBS1, dim_type o1, dim_type o2,
+              dim_type o3, dim_type s1, dim_type s2, dim_type s3)
 {
-    dim_type fLen    = fInfo.dims[0];
+    dim_type fLen     = fInfo.dims[0];
     dim_type padding  = fLen-1;
     dim_type shrdLen  = get_local_size(0) + 2*padding;
-    unsigned batchId  = get_group_id(0)/nonBatchBlkSize;
+    const unsigned b1 = get_group_id(0)/nBBS0;
+    const unsigned b0 = get_group_id(0)-nBBS0*b1;
+    const unsigned b3 = get_group_id(1)/nBBS1;
+    const unsigned b2 = get_group_id(1)-nBBS1*b3;
 
-    global T *dst = out + oStep +(batchId*oInfo.strides[1]);
-    global T const *src = signal + sStep +(batchId*sInfo.strides[1]) + sInfo.offset;
+    global T *dst = out + (b1 * oInfo.strides[1] +  /* activated with batched input signal */
+                           o1 * oInfo.strides[1] +  /* activated with batched input filter */
+                           b2 * oInfo.strides[2] +  /* activated with batched input signal */
+                           o2 * oInfo.strides[2] +  /* activated with batched input filter */
+                           b3 * oInfo.strides[3] +  /* activated with batched input signal */
+                           o3 * oInfo.strides[3]);  /* activated with batched input filter */
 
-    dim_type gx  = get_local_size(0)*(get_group_id(0)-batchId*nonBatchBlkSize);
+    global T const *src = signal + sInfo.offset + (b1 * sInfo.strides[1] + /* activated with batched input signal */
+                                                   s1 * sInfo.strides[1] + /* activated with batched input filter */
+                                                   b2 * sInfo.strides[2] + /* activated with batched input signal */
+                                                   s2 * sInfo.strides[2] + /* activated with batched input filter */
+                                                   b3 * sInfo.strides[3] + /* activated with batched input signal */
+                                                   s3 * sInfo.strides[3]); /* activated with batched input filter */
+
+    dim_type gx  = get_local_size(0)*b0;
 
     for (dim_type i=get_local_id(0); i<shrdLen; i+=get_local_size(0)) {
         dim_type idx = gx-padding + i;
@@ -61,8 +75,9 @@ void convolve(global T *out, KParam oInfo,
 #if BASE_DIM==2
 kernel
 void convolve(global T *out, KParam oInfo, global T const *signal, KParam sInfo,
-              constant accType const *impulse, KParam fInfo, dim_type nonBatchBlkSize,
-              dim_type oStep, dim_type sStep)
+              constant accType const *impulse, KParam fInfo,
+              dim_type nBBS0, dim_type nBBS1, dim_type o2,
+              dim_type o3, dim_type s2, dim_type s3)
 {
     local T localMem[C_SIZE];
 
@@ -73,15 +88,23 @@ void convolve(global T *out, KParam oInfo, global T const *signal, KParam sInfo,
     dim_type shrdLen0 = get_local_size(0) + padding0;
     dim_type shrdLen1 = get_local_size(1) + padding1;
 
-    unsigned batchId  = get_group_id(0)/nonBatchBlkSize;
+    unsigned b0  = get_group_id(0)/nBBS0;
+    unsigned b1  = get_group_id(1)/nBBS1;
 
-    global T *dst = out + oStep +(batchId*oInfo.strides[2]);
-    global T const *src = signal + sStep +(batchId*sInfo.strides[2]) + sInfo.offset;
+    global T *dst = out + (b0 * oInfo.strides[2] + /* activated with batched input signal */
+                           o2 * oInfo.strides[2] + /* activated with batched input filter */
+                           b1 * oInfo.strides[3] + /* activated with batched input signal */
+                           o3 * oInfo.strides[3]); /* activated with batched input filter */
+
+    global const T *src = signal + sInfo.offset + (b0 * sInfo.strides[2] + /* activated with batched input signal */
+                                                   s2 * sInfo.strides[2] + /* activated with batched input filter */
+                                                   b1 * sInfo.strides[3] + /* activated with batched input signal */
+                                                   s3 * sInfo.strides[3]); /* activated with batched input filter */
 
     dim_type lx = get_local_id(0);
     dim_type ly = get_local_id(1);
-    dim_type gx = get_local_size(0) * (get_group_id(0)-batchId*nonBatchBlkSize) + lx;
-    dim_type gy = get_local_size(1) * get_group_id(1) + ly;
+    dim_type gx = get_local_size(0) * (get_group_id(0)-b0*nBBS0) + lx;
+    dim_type gy = get_local_size(1) * (get_group_id(1)-b1*nBBS1) + ly;
 
     // below loops are traditional loops, they only run multiple
     // times filter length is more than launch size
@@ -111,10 +134,10 @@ void convolve(global T *out, KParam oInfo, global T const *signal, KParam sInfo,
 
 #if BASE_DIM==3
 kernel
-void convolve(global T *out, KParam oInfo, global T const *signal,
-              KParam sInfo, local T *localMem, constant accType const *impulse,
-              KParam fInfo, dim_type nonBatchBlkSize,
-              dim_type oStep, dim_type sStep)
+void convolve(global T *out, KParam oInfo, global T const *signal, KParam sInfo,
+              local T *localMem, constant accType const *impulse, KParam fInfo,
+              dim_type nBBS0, dim_type nBBS1, dim_type o1, dim_type o2,
+              dim_type o3, dim_type s1, dim_type s2, dim_type s3)
 {
     dim_type fLen0    = fInfo.dims[0];
     dim_type fLen1    = fInfo.dims[1];
@@ -128,15 +151,18 @@ void convolve(global T *out, KParam oInfo, global T const *signal,
     dim_type shrdLen0 = get_local_size(0) + padding0;
     dim_type skStride = shrdLen0 * (get_local_size(1) + padding1);
     dim_type fStride  = fLen0 * fLen1;
-    unsigned batchId  = get_group_id(0)/nonBatchBlkSize;
+    unsigned b2  = get_group_id(0)/nBBS0;
 
-    global T *dst = out + oStep +(batchId*oInfo.strides[3]);
-    global T const *src = signal + sStep +(batchId*sInfo.strides[3]) + sInfo.offset;
+    global T *dst = out + (b2 * oInfo.strides[3] + /* activated with batched input signal */
+                           o3 * oInfo.strides[3]); /* activated with batched input filter */
+
+    global const T *src = signal + sInfo.offset + (b2 * sInfo.strides[3] + /* activated with batched input signal */
+                                                   s3 * sInfo.strides[3]); /* activated with batched input filter */
 
     dim_type lx  = get_local_id(0);
     dim_type ly  = get_local_id(1);
     dim_type lz  = get_local_id(2);
-    dim_type gx  = get_local_size(0) * (get_group_id(0)-batchId*nonBatchBlkSize) + lx;
+    dim_type gx  = get_local_size(0) * (get_group_id(0)-b2*nBBS0) + lx;
     dim_type gy  = get_local_size(1) * get_group_id(1) + ly;
     dim_type gz  = get_local_size(2) * get_group_id(2) + lz;
     dim_type lx2 = lx + get_local_size(0);

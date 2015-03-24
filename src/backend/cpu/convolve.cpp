@@ -132,42 +132,51 @@ void convolve_nd(T *optr, T const *iptr, accT const *fptr,
                 dim4 const &oStrides, dim4 const &sStrides, dim4 const &fStrides,
                 ConvolveBatchKind kind)
 {
-    T * out       = optr;
-    T const *in   = iptr;
-    accT const *filt = fptr;
+    dim_type out_step[4]  = {0, 0, 0, 0}; /* first value is never used, and declared for code simplicity */
+    dim_type in_step[4]   = {0, 0, 0, 0}; /* first value is never used, and declared for code simplicity */
+    dim_type filt_step[4] = {0, 0, 0, 0}; /* first value is never used, and declared for code simplicity */
+    dim_type batch[4]     = {0, 1, 1, 1}; /* first value is never used, and declared for code simplicity */
 
-    dim_type out_step = 0, in_step   = 0, filt_step = 0;
-
-    switch(kind) {
-        case MANY2ONE:
-            out_step = oStrides[baseDim];
-            in_step  = sStrides[baseDim];
+    for (dim_type i=1; i<4; ++i) {
+        if (!(baseDim>=i))
             break;
-        case MANY2MANY:
-            out_step  = oStrides[baseDim];
-            in_step   = sStrides[baseDim];
-            filt_step = fStrides[baseDim];
-            break;
-        case ONE2MANY:
-            out_step  = oStrides[baseDim];
-            filt_step = fStrides[baseDim];
-            break;
-        default:
-            out_step = oStrides[baseDim];
-            break;
+        switch(kind) {
+            case MANY2ONE:
+                out_step[i] = oStrides[i];
+                in_step[i]  = sStrides[i];
+                if (i>=baseDim) batch[i] = sDims[i];
+                break;
+            case MANY2MANY:
+                out_step[i]  = oStrides[i];
+                in_step[i]   = sStrides[i];
+                filt_step[i] = fStrides[i];
+                if (i>=baseDim) batch[i] = sDims[i];
+                break;
+            case ONE2MANY:
+                out_step[i]  = oStrides[i];
+                filt_step[i] = fStrides[i];
+                if (i>=baseDim) batch[i] = fDims[i];
+                break;
+            default:
+                break;
+        }
     }
 
-    dim_type bCount = (kind==ONE2MANY ? fDims[baseDim] : sDims[baseDim]);
+    for (dim_type b3=0; b3<batch[3]; ++b3) {
+        for (dim_type b2=0; b2<batch[2]; ++b2) {
+            for (dim_type b1=0; b1<batch[1]; ++b1) {
 
-    for(dim_type b=0; b<bCount; ++b) {
-        switch(baseDim) {
-            case 1: one2one_1d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, sStrides);                     break;
-            case 2: one2one_2d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, oStrides, sStrides, fStrides); break;
-            case 3: one2one_3d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, oStrides, sStrides, fStrides); break;
+                T * out          = optr + b1 * out_step[1] + b2 * out_step[2] + b3 * out_step[3];
+                T const *in      = iptr + b1 *  in_step[1] + b2 *  in_step[2] + b3 *  in_step[3];
+                accT const *filt = fptr + b1 *filt_step[1] + b2 *filt_step[2] + b3 *filt_step[3];
+
+                switch(baseDim) {
+                    case 1: one2one_1d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, sStrides);                     break;
+                    case 2: one2one_2d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, oStrides, sStrides, fStrides); break;
+                    case 3: one2one_3d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, oStrides, sStrides, fStrides); break;
+                }
+            }
         }
-        out += out_step;
-        in  += in_step;
-        filt+= filt_step;
     }
 }
 
