@@ -12,6 +12,7 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <math.hpp>
+#include <utility.hpp>
 #include <debug_cuda.hpp>
 
 namespace cuda
