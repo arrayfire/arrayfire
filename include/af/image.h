@@ -500,6 +500,10 @@ AFAPI array rgb2hsv(const array& in);
  */
 AFAPI array colorspace(const array& image, CSpace to, CSpace from);
 
+AFAPI void hamming_matcher(array& idx, array& dist,
+                           const array& query, const array& train,
+                           const dim_type dist_dim=0, const uint n_dist=1);
+
 }
 #endif
 
@@ -981,6 +985,10 @@ extern "C" {
        \ingroup image_func_colorspace
     */
     AFAPI af_err af_colorspace(af_array *out, const af_array image, af_cspace_t to, af_cspace_t from);
+
+    AFAPI af_err af_hamming_matcher(af_array* idx, af_array* dist,
+                                    const af_array query, const af_array train,
+                                    const dim_type dist_dim, const uint n_dist);
 
 #ifdef __cplusplus
 }
