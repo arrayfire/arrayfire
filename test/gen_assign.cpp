@@ -312,3 +312,154 @@ TEST(ArrayAssign, CPP_ASSIGN_INDEX_LOGICAL)
         FAIL() << ex.what() << std::endl;
     }
 }
+
+
+TEST(GeneralAssign, CPP_ASNN)
+{
+    using namespace af;
+    const int nx = 1000;
+    const int ny = 1000;
+    const int st = 200;
+    const int en = 805;
+
+    array a = randu(nx, ny);
+    array idx = where(randu(ny) > 0.5);
+
+    const int nyb = (en - st) + 1;
+    const int nxb = idx.elements();
+
+    array b = randu(nxb, nyb);
+
+    a(idx, seq(st, en)) = b;
+
+    float *hA = a.host<float>();
+    uint  *hIdx = idx.host<uint>();
+    float *hB = b.host<float>();
+
+
+    for (int j = 0; j < nyb; j++) {
+        float *hAt = hA + (st + j) * nx;
+        float *hBt = hB + j * nxb;
+        for (int i = 0; i < nxb; i++) {
+            ASSERT_EQ(hAt[hIdx[i]], hBt[i])
+                << "at " << i << " " << j << std::endl;
+        }
+    }
+
+    delete[] hA;
+    delete[] hB;
+    delete[] hIdx;
+}
+
+TEST(GeneralAssign, CPP_SANN)
+{
+    using namespace af;
+    const int nx = 1000;
+    const int ny = 1000;
+    const int st = 200;
+    const int en = 805;
+
+    array a = randu(nx, ny);
+    array idx = where(randu(ny) > 0.5);
+
+    const int nxb = (en - st) + 1;
+    const int nyb = idx.elements();
+
+    array b = randu(nxb, nyb);
+
+    a(seq(st, en), idx) = b;
+
+    float *hA = a.host<float>();
+    uint  *hIdx = idx.host<uint>();
+    float *hB = b.host<float>();
+
+    for (int j = 0; j < nyb; j++) {
+        float *hAt = hA + hIdx[j] * nx;
+        float *hBt = hB + j * nxb;
+
+        for (int i = 0; i < nxb; i++) {
+            ASSERT_EQ(hAt[i + st], hBt[i])
+            << "at " << i << " " << j << std::endl;
+        }
+    }
+
+    delete[] hA;
+    delete[] hB;
+    delete[] hIdx;
+}
+
+TEST(GeneralAssign, CPP_SSAN)
+{
+    using namespace af;
+    const int nx = 100;
+    const int ny = 100;
+    const int nz = 100;
+    const int st = 20;
+    const int en = 85;
+
+    array a = randu(nx, ny, nz);
+    array idx = where(randu(nz) > 0.5);
+
+    const int nxb = (en - st) + 1;
+    const int nyb = ny;
+    const int nzb = idx.elements();
+    array b = randu(nxb, nyb, nzb);
+
+    a(seq(st, en), span, idx) = b;
+
+    float *hA = a.host<float>();
+    uint  *hIdx = idx.host<uint>();
+    float *hB = b.host<float>();
+
+    for (int k = 0; k < nzb; k++) {
+        float *hAt = hA + hIdx[k] * nx * ny;
+        float *hBt = hB + k * nxb * nyb;
+
+        for (int j = 0; j < nyb; j++) {
+            for (int i = 0; i < nxb; i++) {
+                ASSERT_EQ(hAt[j * nx  + i + st], hBt[j * nxb + i])
+                    << "at " << i << " " << j << " " << k << std::endl;
+            }
+        }
+    }
+
+    delete[] hA;
+    delete[] hB;
+    delete[] hIdx;
+}
+
+TEST(GeneralAssign, CPP_AANN)
+{
+    using namespace af;
+    const int nx = 1000;
+    const int ny = 1000;
+
+    array a = randu(nx, ny);
+    array idx0 = where(randu(nx) > 0.5);
+    array idx1 = where(randu(ny) > 0.5);
+
+    const int nxb = idx0.elements();
+    const int nyb = idx1.elements();
+    array b = randu(nxb, nyb);
+
+    a(idx0, idx1) = b;
+
+    float *hA = a.host<float>();
+    uint  *hIdx0 = idx0.host<uint>();
+    uint  *hIdx1 = idx1.host<uint>();
+    float *hB = b.host<float>();
+
+    for (int j = 0; j < nyb; j++) {
+        float *hAt = hA + hIdx1[j] * nx;
+        float *hBt = hB + j * nxb;
+        for (int i = 0; i < nxb; i++) {
+            ASSERT_EQ(hAt[hIdx0[i]], hBt[i])
+                << "at " << i << " " << j << std::endl;
+        }
+    }
+
+    delete[] hA;
+    delete[] hB;
+    delete[] hIdx0;
+    delete[] hIdx1;
+}
