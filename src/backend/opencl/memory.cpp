@@ -15,9 +15,6 @@
 
 namespace opencl
 {
-    static void garbageCollect();
-    static void pinnedGarbageCollect();
-
     // Manager Class
     // Dummy used to call garbage collection at the end of the program
     class Manager
@@ -53,7 +50,10 @@ namespace opencl
         size_t bytes;
     } mem_info;
 
-    static size_t used_bytes = 0;
+    static size_t used_bytes[DeviceManager::MAX_DEVICES] = {0};
+    static size_t used_buffers[DeviceManager::MAX_DEVICES] = {0};
+    static size_t total_bytes[DeviceManager::MAX_DEVICES] = {0};
+
     typedef std::map<cl::Buffer *, mem_info> mem_t;
     typedef mem_t::iterator mem_iter;
     mem_t memory_maps[DeviceManager::MAX_DEVICES];
@@ -63,11 +63,18 @@ namespace opencl
         delete ptr;
     }
 
-    static void garbageCollect()
+    void garbageCollect()
     {
         int n = getActiveDeviceId();
         for(mem_iter iter = memory_maps[n].begin(); iter != memory_maps[n].end(); iter++) {
-            if ((iter->second).is_free) destroy(iter->first);
+            if ((iter->second).is_free) {
+
+                used_bytes[n] -= iter->second.bytes;
+                used_buffers[n]--;
+                total_bytes[n] -= iter->second.bytes;
+
+                destroy(iter->first);
+            }
         }
 
         mem_iter memory_curr = memory_maps[n].begin();
@@ -92,7 +99,7 @@ namespace opencl
 
             // FIXME: Add better checks for garbage collection
             // Perhaps look at total memory available as a metric
-            if (memory_maps[n].size() >= MAX_BUFFERS || used_bytes >= MAX_BYTES) {
+            if (memory_maps[n].size() >= MAX_BUFFERS || used_bytes[n] >= MAX_BYTES) {
                 garbageCollect();
             }
 
@@ -102,7 +109,8 @@ namespace opencl
                 mem_info info = iter->second;
                 if (info.is_free && info.bytes == alloc_bytes) {
                     iter->second.is_free = false;
-                    used_bytes += alloc_bytes;
+                    used_bytes[n] += alloc_bytes;
+                    used_buffers[n]++;
                     return iter->first;
                 }
             }
@@ -116,7 +124,9 @@ namespace opencl
 
             mem_info info = {false, alloc_bytes};
             memory_maps[n][ptr] = info;
-            used_bytes += alloc_bytes;
+            used_bytes[n] += alloc_bytes;
+            used_buffers[n]++;
+            total_bytes[n] += alloc_bytes;
         }
         return ptr;
     }
@@ -128,10 +138,21 @@ namespace opencl
 
         if (iter != memory_maps[n].end()) {
             iter->second.is_free = true;
-            used_bytes -= iter->second.bytes;
+            used_bytes[n] -= iter->second.bytes;
+            used_buffers[n]--;
         } else {
             destroy(ptr); // Free it because we are not sure what the size is
         }
+    }
+
+    void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
+                          size_t *lock_bytes,  size_t *lock_buffers)
+    {
+        int n = getActiveDeviceId();
+        if (alloc_bytes   ) *alloc_bytes   = total_bytes[n];
+        if (alloc_buffers ) *alloc_buffers = memory_maps[n].size();
+        if (lock_bytes    ) *lock_bytes    = used_bytes[n];
+        if (lock_buffers  ) *lock_buffers  = used_buffers[n];
     }
 
     template<typename T>
@@ -164,11 +185,14 @@ namespace opencl
         destroy(buf);
     }
 
-    static void pinnedGarbageCollect()
+    void pinnedGarbageCollect()
     {
         int n = getActiveDeviceId();
         for(auto &iter : pinned_maps[n]) {
-            if ((iter.second).info.is_free) pinnedDestroy(iter.second.buf, iter.first);
+            if ((iter.second).info.is_free) {
+                pinnedDestroy(iter.second.buf, iter.first);
+                pinned_used_bytes -= iter.second.info.bytes;
+            }
         }
 
         pinned_iter memory_curr = pinned_maps[n].begin();
@@ -181,6 +205,7 @@ namespace opencl
                 ++memory_curr;
             }
         }
+
     }
 
     void *pinnedBufferAlloc(const size_t &bytes)

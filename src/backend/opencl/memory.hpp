@@ -24,4 +24,9 @@ namespace opencl
 
     static const unsigned MAX_BUFFERS   = 100;
     static const unsigned MAX_BYTES     = (1 << 30);
+
+    void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
+                          size_t *lock_bytes,  size_t *lock_buffers);
+    void garbageCollect();
+    void pinnedGarbageCollect();
 }

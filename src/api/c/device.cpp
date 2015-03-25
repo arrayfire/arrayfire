@@ -188,3 +188,20 @@ af_err af_free_pinned(void *ptr)
     } CATCHALL;
     return AF_SUCCESS;
 }
+
+af_err af_device_gc()
+{
+    try {
+        garbageCollect();
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_device_mem_info(size_t *alloc_bytes, size_t *alloc_buffers,
+                          size_t *lock_bytes,  size_t *lock_buffers)
+{
+    try {
+        deviceMemoryInfo(alloc_bytes, alloc_buffers, lock_bytes, lock_buffers);
+    } CATCHALL;
+    return AF_SUCCESS;
+}
