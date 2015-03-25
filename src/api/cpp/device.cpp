@@ -105,6 +105,18 @@ namespace af
         AF_THROW(af_free_pinned((void *)ptr));
     }
 
+    void deviceGC()
+    {
+        AF_THROW(af_device_gc());
+    }
+
+    void deviceMemInfo(size_t *alloc_bytes, size_t *alloc_buffers,
+                       size_t *lock_bytes,  size_t *lock_buffers)
+    {
+        AF_THROW(af_device_mem_info(alloc_bytes, alloc_buffers,
+                                    lock_bytes,  lock_buffers));
+    }
+
 #define INSTANTIATE(T)                                                      \
     template<> AFAPI                                                        \
     T* alloc(size_t elements)                                               \

@@ -208,7 +208,7 @@ af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs, bool batc
 template<typename T, af_op_t op>
 static inline af_array logicOp(const af_array lhs, const af_array rhs, const dim4 &odims)
 {
-    af_array res = getHandle(logicOp<T, op>(getArray<T>(lhs), getArray<T>(rhs), odims));
+    af_array res = getHandle(logicOp<T, op>(castArray<T>(lhs), castArray<T>(rhs), odims));
     return res;
 }
 
@@ -287,7 +287,7 @@ af_err af_or(af_array *out, const af_array lhs, const af_array rhs, bool batchMo
 template<typename T, af_op_t op>
 static inline af_array bitOp(const af_array lhs, const af_array rhs, const dim4 &odims)
 {
-    af_array res = getHandle(bitOp<T, op>(getArray<T>(lhs), getArray<T>(rhs), odims));
+    af_array res = getHandle(bitOp<T, op>(castArray<T>(lhs), castArray<T>(rhs), odims));
     return res;
 }
 
