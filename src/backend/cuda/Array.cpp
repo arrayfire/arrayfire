@@ -14,6 +14,7 @@
 #include <JIT/BufferNode.hpp>
 #include <scalar.hpp>
 #include <memory.hpp>
+#include <platform.hpp>
 
 using af::dim4;
 
@@ -27,14 +28,14 @@ namespace cuda
 
     template<typename T>
     Array<T>::Array(af::dim4 dims) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
         node(), ready(true), offset(0), owner(true)
     {}
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data, bool is_device) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data((is_device ? (T *)in_data : memAlloc<T>(dims.elements())), memFree<T>),
         data_dims(dims),
         node(), ready(true), offset(0), owner(true)
@@ -46,7 +47,7 @@ namespace cuda
 
     template<typename T>
     Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &strides) :
-        ArrayInfo(dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(parent.getDevId(), dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
         data(parent.getData()), data_dims(parent.getDataDims()),
         node(), ready(true),
         offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
@@ -55,7 +56,7 @@ namespace cuda
 
     template<typename T>
     Array<T>::Array(Param<T> &tmp) :
-        ArrayInfo(af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3]),
+        ArrayInfo(getActiveDeviceId(), af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3]),
                   af::dim4(0, 0, 0, 0),
                   af::dim4(tmp.strides[0], tmp.strides[1], tmp.strides[2], tmp.strides[3]),
                   (af_dtype)dtype_traits<T>::af_type),
@@ -67,7 +68,7 @@ namespace cuda
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(-1, dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(), data_dims(dims),
         node(n), ready(false), offset(0), owner(true)
     {
@@ -79,6 +80,7 @@ namespace cuda
     {
         if (isReady()) return;
 
+        this->setId(getActiveDeviceId());
         data = shared_ptr<T>(memAlloc<T>(elements()),
                              memFree<T>);
 

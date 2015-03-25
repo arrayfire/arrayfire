@@ -14,6 +14,7 @@
 #include <TNJ/BufferNode.hpp>
 #include <TNJ/ScalarNode.hpp>
 #include <memory.hpp>
+#include <platform.hpp>
 
 namespace cpu
 {
@@ -26,14 +27,14 @@ namespace cpu
 
     template<typename T>
     Array<T>::Array(dim4 dims):
-        ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(getActiveDeviceId(), dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
         node(), ready(true), offset(0), owner(true)
     { }
 
     template<typename T>
     Array<T>::Array(dim4 dims, const T * const in_data):
-        ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(getActiveDeviceId(), dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
         node(), ready(true), offset(0), owner(true)
     {
@@ -43,7 +44,7 @@ namespace cpu
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, TNJ::Node_ptr n) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(-1, dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(), data_dims(dims),
         node(n), ready(false), offset(0), owner(true)
     {
@@ -51,7 +52,7 @@ namespace cpu
 
     template<typename T>
     Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &strides) :
-        ArrayInfo(dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(parent.getDevId(), dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
         data(parent.getData()), data_dims(parent.getDataDims()),
         node(), ready(true),
         offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
@@ -63,6 +64,7 @@ namespace cpu
     {
         if (isReady()) return;
 
+        this->setId(getActiveDeviceId());
         data = std::shared_ptr<T>(memAlloc<T>(elements()), memFree<T>);
         T *ptr = data.get();
 
