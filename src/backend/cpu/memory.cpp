@@ -63,11 +63,7 @@ namespace cpu
     {
         for(mem_iter iter = memory_map.begin(); iter != memory_map.end(); iter++) {
             if ((iter->second).is_free) {
-
-                used_bytes -= iter->second.bytes;
-                used_buffers--;
                 total_bytes -= iter->second.bytes;
-
                 freeWrapper(iter->first);
             }
         }

@@ -116,9 +116,6 @@ namespace cuda
         for(mem_iter iter = memory_maps[n].begin(); iter != memory_maps[n].end(); iter++) {
             if ((iter->second).is_free) {
                 cudaFreeWrapper(iter->first);
-
-                used_bytes[n] -= iter->second.bytes;
-                used_buffers[n]--;
                 total_bytes[n] -= iter->second.bytes;
             }
         }
@@ -211,7 +208,6 @@ namespace cuda
     {
         for(mem_iter iter = pinned_maps.begin(); iter != pinned_maps.end(); iter++) {
             if ((iter->second).is_free) {
-                pinned_used_bytes -= iter->second.bytes;
                 pinnedFreeWrapper(iter->first);
             }
         }

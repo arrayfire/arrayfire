@@ -68,11 +68,7 @@ namespace opencl
         int n = getActiveDeviceId();
         for(mem_iter iter = memory_maps[n].begin(); iter != memory_maps[n].end(); iter++) {
             if ((iter->second).is_free) {
-
-                used_bytes[n] -= iter->second.bytes;
-                used_buffers[n]--;
                 total_bytes[n] -= iter->second.bytes;
-
                 destroy(iter->first);
             }
         }
@@ -191,7 +187,6 @@ namespace opencl
         for(auto &iter : pinned_maps[n]) {
             if ((iter.second).info.is_free) {
                 pinnedDestroy(iter.second.buf, iter.first);
-                pinned_used_bytes -= iter.second.info.bytes;
             }
         }
 
