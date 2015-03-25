@@ -104,9 +104,9 @@ TEST(Regions, CPP)
     if (noDoubleTests<float>()) return;
 
     vector<af::dim4> numDims;
-    vector<vector<uchar> > in;
+    vector<vector<float> > in;
     vector<vector<float> > tests;
-    readTests<uchar, float, unsigned>(string(TEST_DIR"/regions/regions_8x8_4.test"),numDims,in,tests);
+    readTests<float, float, unsigned>(string(TEST_DIR"/regions/regions_8x8_4.test"),numDims,in,tests);
 
     af::dim4 idims = numDims[0];
     af::array input(idims, (float*)&(in[0].front()));
