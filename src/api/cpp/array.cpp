@@ -779,29 +779,29 @@ namespace af
 
 #undef SELF_OP
 
-#define ASSIGN_TYPE(TY, OP)                                     \
+#define ASSIGN_TYPE(TY, OP, dty)                                \
     array& array::operator OP(const TY &value)                  \
     {                                                           \
         af::dim4 dims = isRef ?                                 \
             seqToDims(indices, getDims(arr)) : this->dims();    \
-        array cst = constant(value, dims, this->type());        \
+        array cst = constant(value, dims, dty);                 \
         return operator OP(cst);                                \
     }                                                           \
 
 #define ASSIGN_OP(OP)                           \
-    ASSIGN_TYPE(double, OP)                     \
-    ASSIGN_TYPE(float, OP)                      \
-    ASSIGN_TYPE(cdouble, OP)                    \
-    ASSIGN_TYPE(cfloat, OP)                     \
-    ASSIGN_TYPE(int, OP)                        \
-    ASSIGN_TYPE(unsigned, OP)                   \
-    ASSIGN_TYPE(long, OP)                       \
-    ASSIGN_TYPE(unsigned long, OP)              \
-    ASSIGN_TYPE(long long, OP)                  \
-    ASSIGN_TYPE(unsigned long long, OP)         \
-    ASSIGN_TYPE(char, OP)                       \
-    ASSIGN_TYPE(unsigned char, OP)              \
-    ASSIGN_TYPE(bool, OP)                       \
+    ASSIGN_TYPE(double             , OP, f64)   \
+    ASSIGN_TYPE(float              , OP, f32)   \
+    ASSIGN_TYPE(cdouble            , OP, c64)   \
+    ASSIGN_TYPE(cfloat             , OP, c32)   \
+    ASSIGN_TYPE(int                , OP, s32)   \
+    ASSIGN_TYPE(unsigned           , OP, u32)   \
+    ASSIGN_TYPE(long               , OP, s64)   \
+    ASSIGN_TYPE(unsigned long      , OP, u64)   \
+    ASSIGN_TYPE(long long          , OP, s64)   \
+    ASSIGN_TYPE(unsigned long long , OP, u64)   \
+    ASSIGN_TYPE(char               , OP, b8)    \
+    ASSIGN_TYPE(unsigned char      , OP, u8)    \
+    ASSIGN_TYPE(bool               , OP, u8)    \
 
     ASSIGN_OP(= )
     ASSIGN_OP(+=)
@@ -812,12 +812,12 @@ namespace af
 #undef ASSIGN_OP
 #undef ASSIGN_TYPE
 
-#define BINARY_TYPE(TY, OP, func)                                   \
+#define BINARY_TYPE(TY, OP, func, dty)                              \
     array array::operator OP(const TY &value) const                 \
     {                                                               \
         af_array lhs = this->get();                                 \
         af_array out;                                               \
-        array cst = constant(value, this->dims(), this->type());    \
+        array cst = constant(value, this->dims(), dty);             \
         AF_THROW(func(&out, lhs, cst.get(), gforGet()));            \
         return array(out);                                          \
     }                                                               \
@@ -825,7 +825,7 @@ namespace af
     {                                                               \
         af_array rhs = other.get();                                 \
         af_array out;                                               \
-        array cst = constant(value, other.dims(), other.type());    \
+        array cst = constant(value, other.dims(), dty);             \
         AF_THROW(func(&out, cst.get(), rhs, gforGet()));            \
         return array(out);                                          \
     }                                                               \
@@ -838,19 +838,19 @@ namespace af
         AF_THROW(func(&out, lhs, other.get(), gforGet()));  \
         return array(out);                                  \
     }                                                       \
-    BINARY_TYPE(double             , OP, func)              \
-    BINARY_TYPE(float              , OP, func)              \
-    BINARY_TYPE(cdouble            , OP, func)              \
-    BINARY_TYPE(cfloat             , OP, func)              \
-    BINARY_TYPE(int                , OP, func)              \
-    BINARY_TYPE(unsigned           , OP, func)              \
-    BINARY_TYPE(long               , OP, func)              \
-    BINARY_TYPE(unsigned long      , OP, func)              \
-    BINARY_TYPE(long long          , OP, func)              \
-    BINARY_TYPE(unsigned long long , OP, func)              \
-    BINARY_TYPE(char               , OP, func)              \
-    BINARY_TYPE(unsigned char      , OP, func)              \
-    BINARY_TYPE(bool               , OP, func)              \
+    BINARY_TYPE(double             , OP, func, f64)         \
+    BINARY_TYPE(float              , OP, func, f32)         \
+    BINARY_TYPE(cdouble            , OP, func, c64)         \
+    BINARY_TYPE(cfloat             , OP, func, c32)         \
+    BINARY_TYPE(int                , OP, func, s32)         \
+    BINARY_TYPE(unsigned           , OP, func, u32)         \
+    BINARY_TYPE(long               , OP, func, s64)         \
+    BINARY_TYPE(unsigned long      , OP, func, u64)         \
+    BINARY_TYPE(long long          , OP, func, s64)         \
+    BINARY_TYPE(unsigned long long , OP, func, u64)         \
+    BINARY_TYPE(char               , OP, func, b8)          \
+    BINARY_TYPE(unsigned char      , OP, func, u8)          \
+    BINARY_TYPE(bool               , OP, func, b8)          \
 
     BINARY_OP(+, af_add)
     BINARY_OP(-, af_sub)
