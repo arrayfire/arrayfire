@@ -39,12 +39,10 @@ Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const d
     // batch operation handling, this will reduce
     // number of concurrent reads to one single memory location
     dim_type mmNElems= dims[2] * dims[3];
-    vector<cfloat> h_minmax(mmNElems);
-
-    for(dim_type k=0; k<mmNElems; ++k) {
-        h_minmax[k].s[0] = minval;
-        h_minmax[k].s[1] = maxval;
-    }
+    cfloat init;
+    init.s[0] = minval;
+    init.s[1] = maxval;
+    vector<cfloat> h_minmax(mmNElems, init);
 
     dim4 minmax_dims(mmNElems*2);
     Array<cfloat> minmax = createHostDataArray<cfloat>(minmax_dims, h_minmax.data());

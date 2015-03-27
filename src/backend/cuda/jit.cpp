@@ -379,7 +379,7 @@ void evalNodes(Param<T> &out, Node *node)
 {
     bool is_linear = node->isLinear(out.dims);
     CUfunction ker = getKernel(node, is_linear);
-    std::vector<void *> args;
+    vector<void *> args;
     node->setArgs(args, is_linear);
 
     void *ptr = (void *)out.ptr;

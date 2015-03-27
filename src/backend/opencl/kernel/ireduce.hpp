@@ -11,7 +11,7 @@
 #include <string>
 #include <mutex>
 #include <map>
-#include <vector>
+#include <memory>
 #include <kernel_headers/ireduce_first.hpp>
 #include <kernel_headers/ireduce_dim.hpp>
 #include <kernel_headers/iops.hpp>
@@ -32,7 +32,7 @@ using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
-using std::vector;
+using std::unique_ptr;
 
 namespace opencl
 {
@@ -378,16 +378,18 @@ namespace kernel
 
                 ireduce_first_fn<T, op, true>(tmp, tidx, in, tidx, groups_x, groups_y, threads_x);
 
-                vector<T> h_ptr(tmp_elements);
-                vector<uint> h_iptr(tmp_elements);
+                unique_ptr<T> h_ptr(new T[tmp_elements]);
+                unique_ptr<uint> h_iptr(new uint[tmp_elements]);
 
-                getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(T) * tmp_elements, h_ptr.data());
-                getQueue().enqueueReadBuffer(*tidx, CL_TRUE, 0, sizeof(uint) * tmp_elements, h_iptr.data());
+                getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(T) * tmp_elements, h_ptr.get());
+                getQueue().enqueueReadBuffer(*tidx, CL_TRUE, 0, sizeof(uint) * tmp_elements, h_iptr.get());
 
-                MinMaxOp<op, T> Op(h_ptr[0], h_iptr[0]);
+                T* h_ptr_raw = h_ptr.get();
+                uint* h_iptr_raw = h_iptr.get();
+                MinMaxOp<op, T> Op(h_ptr_raw[0], h_iptr_raw[0]);
 
                 for (int i = 1; i < tmp_elements; i++) {
-                    Op(h_ptr[i], h_iptr[i]);
+                    Op(h_ptr_raw[i], h_iptr_raw[i]);
                 }
 
                 bufferFree(tmp.data);
@@ -398,13 +400,14 @@ namespace kernel
 
             } else {
 
-                vector<T> h_ptr(in_elements);
-                getQueue().enqueueReadBuffer(*in.data, CL_TRUE, 0, sizeof(T) * in_elements, h_ptr.data());
+                unique_ptr<T> h_ptr(new T[in_elements]);
+                T* h_ptr_raw = h_ptr.get();
+                getQueue().enqueueReadBuffer(*in.data, CL_TRUE, 0, sizeof(T) * in_elements, h_ptr_raw);
 
 
-                MinMaxOp<op, T> Op(h_ptr[0], 0);
+                MinMaxOp<op, T> Op(h_ptr_raw[0], 0);
                 for (int i = 1; i < in_elements; i++) {
-                    Op(h_ptr[i], i);
+                    Op(h_ptr_raw[i], i);
                 }
 
                 *loc = Op.m_idx;

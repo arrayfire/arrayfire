@@ -17,9 +17,9 @@
 #include <debug_cuda.hpp>
 #include "config.hpp"
 #include <memory.hpp>
-#include <vector>
+#include <boost/scoped_ptr.hpp>
 
-using std::vector;
+using boost::scoped_ptr;
 
 namespace cuda
 {
@@ -415,30 +415,32 @@ namespace kernel
             tmp.ptr = memAlloc<To>(tmp_elements);
             reduce_first_launcher<Ti, To, op>(tmp, in, blocks_x, blocks_y, threads_x);
 
-            vector<To> h_ptr(tmp_elements);
+            scoped_ptr<To> h_ptr(new To[tmp_elements]);
+            To* h_ptr_raw = h_ptr.get();
 
-            CUDA_CHECK(cudaMemcpy(&h_ptr.front(), tmp.ptr, tmp_elements * sizeof(To), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpy(h_ptr_raw, tmp.ptr, tmp_elements * sizeof(To), cudaMemcpyDeviceToHost));
             memFree(tmp.ptr);
 
             Binary<To, op> reduce;
             To out = reduce.init();
             for (int i = 0; i < tmp_elements; i++) {
-                out = reduce(out, h_ptr[i]);
+                out = reduce(out, h_ptr_raw[i]);
             }
 
             return out;
 
         } else {
 
-            vector<Ti> h_ptr(in_elements);
-            CUDA_CHECK(cudaMemcpy(&h_ptr.front(), in.ptr, in_elements * sizeof(Ti), cudaMemcpyDeviceToHost));
+            scoped_ptr<Ti> h_ptr(new Ti[in_elements]);
+            Ti* h_ptr_raw = h_ptr.get();
+            CUDA_CHECK(cudaMemcpy(h_ptr_raw, in.ptr, in_elements * sizeof(Ti), cudaMemcpyDeviceToHost));
 
             Transform<Ti, To, op> transform;
             Binary<To, op> reduce;
             To out = reduce.init();
 
             for (int i = 0; i < in_elements; i++) {
-                out = reduce(out, transform(h_ptr[i]));
+                out = reduce(out, transform(h_ptr_raw[i]));
             }
 
             return out;

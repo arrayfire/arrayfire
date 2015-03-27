@@ -23,7 +23,7 @@
 #include "names.hpp"
 #include "config.hpp"
 #include <memory.hpp>
-#include <vector>
+#include <memory>
 
 using cl::Buffer;
 using cl::Program;
@@ -32,7 +32,7 @@ using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
-using std::vector;
+using std::unique_ptr;
 
 namespace opencl
 {
@@ -323,13 +323,13 @@ namespace kernel
 
                 reduce_first_fn<Ti, To, op>(tmp, in, groups_x, groups_y, threads_x);
 
-                vector<To> h_ptr(tmp_elements);
-                getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(To) * tmp_elements, h_ptr.data());
+                unique_ptr<To> h_ptr(new To[tmp_elements]);
+                getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(To) * tmp_elements, h_ptr.get());
 
                 Binary<To, op> reduce;
                 To out = reduce.init();
                 for (int i = 0; i < tmp_elements; i++) {
-                    out = reduce(out, h_ptr[i]);
+                    out = reduce(out, h_ptr.get()[i]);
                 }
 
                 bufferFree(tmp.data);
@@ -337,15 +337,15 @@ namespace kernel
 
             } else {
 
-                vector<Ti> h_ptr(in_elements);
-                getQueue().enqueueReadBuffer(*in.data, CL_TRUE, 0, sizeof(Ti) * in_elements, h_ptr.data());
+                unique_ptr<Ti> h_ptr(new Ti[in_elements]);
+                getQueue().enqueueReadBuffer(*in.data, CL_TRUE, 0, sizeof(Ti) * in_elements, h_ptr.get());
 
                 Transform<Ti, To, op> transform;
                 Binary<To, op> reduce;
                 To out = reduce.init();
 
                 for (int i = 0; i < in_elements; i++) {
-                    out = reduce(out, transform(h_ptr[i]));
+                    out = reduce(out, transform(h_ptr.get()[i]));
                 }
 
                 return out;

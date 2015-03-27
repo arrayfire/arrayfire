@@ -61,7 +61,7 @@ static void print(af_array arr)
     AF_CHECK(af_reorder(&arrT, arr, 1, 0, 2, 3));
 
     //FIXME: Use alternative function to avoid copies if possible
-    AF_CHECK(af_get_data_ptr(data.data(), arrT));
+    AF_CHECK(af_get_data_ptr(&data.front(), arrT));
     const ArrayInfo infoT = getInfo(arrT);
     AF_CHECK(af_destroy_array(arrT));
 
@@ -73,7 +73,7 @@ static void print(af_array arr)
     std::cout <<"   Strides: ["<<info.strides()<<"]"<<std::endl;
 #endif
 
-    printer(std::cout, data.data(), infoT, infoT.ndims() - 1);
+    printer(std::cout, &data.front(), infoT, infoT.ndims() - 1);
 
     std::cout.flags(backup);
 }
