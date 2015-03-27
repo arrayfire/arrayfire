@@ -14,8 +14,10 @@
 #include <histogram.hpp>
 #include <kernel/histogram.hpp>
 #include <err_cuda.hpp>
+#include <vector>
 
 using af::dim4;
+using std::vector;
 
 namespace cuda
 {
@@ -34,7 +36,7 @@ Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const d
     // batch operation handling, this will reduce
     // number of concurrent reads to one single memory location
     dim_type mmNElems= dims[2] * dims[3];
-    cfloat* h_minmax = new cfloat[mmNElems];
+    vector<cfloat> h_minmax(mmNElems);
 
     for(dim_type k=0; k<mmNElems; ++k) {
         h_minmax[k].x = minval;
@@ -42,10 +44,7 @@ Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const d
     }
 
     dim4 minmax_dims(mmNElems*2);
-    Array<cfloat> minmax = createHostDataArray<cfloat>(minmax_dims, h_minmax);
-
-    // cleanup the host memory used
-    delete[] h_minmax;
+    Array<cfloat> minmax = createHostDataArray<cfloat>(minmax_dims, &h_minmax.front());
 
     kernel::histogram<inType, outType>(out, in, minmax.get(), nbins);
 

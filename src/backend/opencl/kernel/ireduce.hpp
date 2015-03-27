@@ -11,6 +11,7 @@
 #include <string>
 #include <mutex>
 #include <map>
+#include <vector>
 #include <kernel_headers/ireduce_first.hpp>
 #include <kernel_headers/ireduce_dim.hpp>
 #include <kernel_headers/iops.hpp>
@@ -31,6 +32,7 @@ using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
+using std::vector;
 
 namespace opencl
 {
@@ -358,9 +360,6 @@ namespace kernel
                 uint threads_y = THREADS_PER_GROUP / threads_x;
 
                 Param tmp;
-                T *h_ptr = NULL;
-                uint *h_iptr = NULL;
-
                 uint groups_x = divup(in.info.dims[0], threads_x * REPEAT);
                 uint groups_y = divup(in.info.dims[1], threads_y);
 
@@ -379,11 +378,11 @@ namespace kernel
 
                 ireduce_first_fn<T, op, true>(tmp, tidx, in, tidx, groups_x, groups_y, threads_x);
 
-                h_ptr = new T[tmp_elements];
-                h_iptr = new uint[tmp_elements];
+                vector<T> h_ptr(tmp_elements);
+                vector<uint> h_iptr(tmp_elements);
 
-                getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(T) * tmp_elements, h_ptr);
-                getQueue().enqueueReadBuffer(*tidx, CL_TRUE, 0, sizeof(uint) * tmp_elements, h_iptr);
+                getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(T) * tmp_elements, h_ptr.data());
+                getQueue().enqueueReadBuffer(*tidx, CL_TRUE, 0, sizeof(uint) * tmp_elements, h_iptr.data());
 
                 MinMaxOp<op, T> Op(h_ptr[0], h_iptr[0]);
 
@@ -391,8 +390,6 @@ namespace kernel
                     Op(h_ptr[i], h_iptr[i]);
                 }
 
-                delete[] h_ptr;
-                delete[] h_iptr;
                 bufferFree(tmp.data);
                 bufferFree(tidx);
 
@@ -401,16 +398,14 @@ namespace kernel
 
             } else {
 
-                T *h_ptr = new T[in_elements];
-                getQueue().enqueueReadBuffer(*in.data, CL_TRUE, 0, sizeof(T) * in_elements, h_ptr);
+                vector<T> h_ptr(in_elements);
+                getQueue().enqueueReadBuffer(*in.data, CL_TRUE, 0, sizeof(T) * in_elements, h_ptr.data());
 
 
                 MinMaxOp<op, T> Op(h_ptr[0], 0);
                 for (int i = 1; i < in_elements; i++) {
                     Op(h_ptr[i], i);
                 }
-
-                delete[] h_ptr;
 
                 *loc = Op.m_idx;
                 return Op.m_val;

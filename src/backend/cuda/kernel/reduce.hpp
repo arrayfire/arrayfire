@@ -17,6 +17,9 @@
 #include <debug_cuda.hpp>
 #include "config.hpp"
 #include <memory.hpp>
+#include <vector>
+
+using std::vector;
 
 namespace cuda
 {
@@ -395,7 +398,6 @@ namespace kernel
             uint threads_y = THREADS_PER_BLOCK / threads_x;
 
             Param<To> tmp;
-            To *h_ptr = NULL;
 
             uint blocks_x = divup(in.dims[0], threads_x * REPEAT);
             uint blocks_y = divup(in.dims[1], threads_y);
@@ -413,9 +415,9 @@ namespace kernel
             tmp.ptr = memAlloc<To>(tmp_elements);
             reduce_first_launcher<Ti, To, op>(tmp, in, blocks_x, blocks_y, threads_x);
 
-            h_ptr = new To[tmp_elements];
+            vector<To> h_ptr(tmp_elements);
 
-            CUDA_CHECK(cudaMemcpy(h_ptr, tmp.ptr, tmp_elements * sizeof(To), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpy(&h_ptr.front(), tmp.ptr, tmp_elements * sizeof(To), cudaMemcpyDeviceToHost));
             memFree(tmp.ptr);
 
             Binary<To, op> reduce;
@@ -424,13 +426,12 @@ namespace kernel
                 out = reduce(out, h_ptr[i]);
             }
 
-            delete[] h_ptr;
             return out;
 
         } else {
 
-            Ti *h_ptr = new Ti[in_elements];
-            CUDA_CHECK(cudaMemcpy(h_ptr, in.ptr, in_elements * sizeof(Ti), cudaMemcpyDeviceToHost));
+            vector<Ti> h_ptr(in_elements);
+            CUDA_CHECK(cudaMemcpy(&h_ptr.front(), in.ptr, in_elements * sizeof(Ti), cudaMemcpyDeviceToHost));
 
             Transform<Ti, To, op> transform;
             Binary<To, op> reduce;
@@ -440,7 +441,6 @@ namespace kernel
                 out = reduce(out, transform(h_ptr[i]));
             }
 
-            delete[] h_ptr;
             return out;
         }
     }

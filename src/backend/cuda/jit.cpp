@@ -25,8 +25,13 @@
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
 #include <math.hpp>
+#include <vector>
 #include <nvvm.h>
 #include <boost/functional/hash.hpp>
+#include <boost/scoped_ptr.hpp>
+
+using std::vector;
+using boost::scoped_ptr;
 
 namespace cuda
 {
@@ -228,10 +233,9 @@ static char *irToPtx(string IR, size_t *ptx_size)
         size_t log_size = 0;
         nvvmGetProgramLogSize(prog, &log_size);
         printf("%ld, %ld\n", IR.size(), log_size);
-        char *log = new char[log_size];
-        nvvmGetProgramLog(prog, log);
-        printf("LOG:\n%s\n%s", log, IR.c_str());
-        delete[] log;
+        scoped_ptr<char> log(new char[log_size]);
+        nvvmGetProgramLog(prog, log.get());
+        printf("LOG:\n%s\n%s", log.get(), IR.c_str());
         NVVM_CHECK(comp_res, "Failed to compile program");
     }
 #endif
@@ -284,7 +288,7 @@ char linkError[size];
 static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
 {
     size_t ptx_size;
-    const char *ptx = irToPtx(jit_ker, &ptx_size);
+    scoped_ptr<const char> ptx(irToPtx(jit_ker, &ptx_size));
 
     CUlinkState linkState;
 
@@ -308,7 +312,7 @@ static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
     };
 
     CU_CHECK(cuLinkCreate(5, linkOptions, linkOptionValues, &linkState));
-    CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)ptx,
+    CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)ptx.get(),
                            ptx_size, ker_name, 0, NULL, NULL));
 
     CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)arith_ptx,
@@ -344,7 +348,6 @@ static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
 
     kc_entry_t entry = {module, kernel};
 
-    delete[] ptx;
     return entry;
 }
 

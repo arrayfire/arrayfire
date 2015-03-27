@@ -19,6 +19,7 @@
 #include <kernel/sort_index.hpp>
 #include <kernel_headers/orb.hpp>
 #include <memory.hpp>
+#include <vector>
 
 using cl::Buffer;
 using cl::Program;
@@ -26,6 +27,7 @@ using cl::Kernel;
 using cl::EnqueueArgs;
 using cl::LocalSpaceArg;
 using cl::NDRange;
+using std::vector;
 
 namespace opencl
 {
@@ -365,11 +367,12 @@ void orb(unsigned* out_feat,
 
             // Compute ORB descriptors
             cl::Buffer* d_desc_lvl = bufferAlloc(usable_feat * 8 * sizeof(unsigned));
-            unsigned* h_desc_lvl = new unsigned[usable_feat * 8];
-            for (int j = 0; j < (int)usable_feat * 8; j++)
-                h_desc_lvl[j] = 0;
-            getQueue().enqueueWriteBuffer(*d_desc_lvl, CL_TRUE, 0, usable_feat * 8 * sizeof(unsigned), h_desc_lvl);
-            delete[] h_desc_lvl;
+            {
+                vector<unsigned> h_desc_lvl(usable_feat * 8);
+                for (int j = 0; j < (int)usable_feat * 8; j++)
+                    h_desc_lvl[j] = 0;
+                getQueue().enqueueWriteBuffer(*d_desc_lvl, CL_TRUE, 0, usable_feat * 8 * sizeof(unsigned), h_desc_lvl.data());
+            }
 
             auto eoOp = make_kernel<Buffer, const unsigned,
                                     Buffer, Buffer, Buffer, Buffer,

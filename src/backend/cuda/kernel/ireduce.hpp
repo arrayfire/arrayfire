@@ -17,6 +17,9 @@
 #include <debug_cuda.hpp>
 #include "config.hpp"
 #include <memory.hpp>
+#include <vector>
+
+using std::vector;
 
 namespace cuda
 {
@@ -516,8 +519,8 @@ namespace kernel
 
             Param<T> tmp;
             uint *tlptr;
-            T *h_ptr = NULL;
-            uint *h_lptr = NULL;
+            //T *h_ptr = NULL;
+            //uint *h_lptr = NULL;
 
             uint blocks_x = divup(in.dims[0], threads_x * REPEAT);
             uint blocks_y = divup(in.dims[1], threads_y);
@@ -536,11 +539,11 @@ namespace kernel
             tlptr = memAlloc<uint>(tmp_elements);
             ireduce_first_launcher<T, op, true>(tmp, tlptr, in, NULL, blocks_x, blocks_y, threads_x);
 
-            h_ptr = new T[tmp_elements];
-            h_lptr = new uint[tmp_elements];
+            vector<T>       h_ptr(tmp_elements);
+            vector<uint>    h_lptr(tmp_elements);
 
-            CUDA_CHECK(cudaMemcpy(h_ptr, tmp.ptr, tmp_elements * sizeof(T), cudaMemcpyDeviceToHost));
-            CUDA_CHECK(cudaMemcpy(h_lptr, tlptr, tmp_elements * sizeof(uint), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpy(&h_ptr.front(), tmp.ptr, tmp_elements * sizeof(T), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpy(&h_lptr.front(), tlptr, tmp_elements * sizeof(uint), cudaMemcpyDeviceToHost));
             memFree(tmp.ptr);
             memFree(tlptr);
 
@@ -550,15 +553,12 @@ namespace kernel
                 Op(h_ptr[i], h_lptr[i]);
             }
 
-            delete[] h_ptr;
-            delete[] h_lptr;
-
             *idx = Op.m_idx;
             return Op.m_val;
         } else {
 
-            T *h_ptr = new T[in_elements];
-            CUDA_CHECK(cudaMemcpy(h_ptr, in.ptr, in_elements * sizeof(T), cudaMemcpyDeviceToHost));
+            vector<T> h_ptr(in_elements);
+            CUDA_CHECK(cudaMemcpy(&h_ptr.front(), in.ptr, in_elements * sizeof(T), cudaMemcpyDeviceToHost));
 
             MinMaxOp<op, T> Op(h_ptr[0], 0);
             for (int i = 1; i < in_elements; i++) {
@@ -566,8 +566,6 @@ namespace kernel
             }
 
             *idx = Op.m_idx;
-
-            delete[] h_ptr;
             return Op.m_val;
         }
     }

@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <vector>
 #include <af/array.h>
 #include <copy.hpp>
 #include <print.hpp>
@@ -23,6 +24,7 @@ using namespace detail;
 using std::ostream;
 using std::cout;
 using std::endl;
+using std::vector;
 
 template<typename T>
 static void printer(ostream &out, const T* ptr, const ArrayInfo &info, unsigned dim)
@@ -53,13 +55,13 @@ template<typename T>
 static void print(af_array arr)
 {
     const ArrayInfo info = getInfo(arr);
-    T *data = new T[info.elements()];
+    vector<T> data(info.elements());
 
     af_array arrT;
     AF_CHECK(af_reorder(&arrT, arr, 1, 0, 2, 3));
 
     //FIXME: Use alternative function to avoid copies if possible
-    AF_CHECK(af_get_data_ptr(data, arrT));
+    AF_CHECK(af_get_data_ptr(data.data(), arrT));
     const ArrayInfo infoT = getInfo(arrT);
     AF_CHECK(af_destroy_array(arrT));
 
@@ -71,9 +73,7 @@ static void print(af_array arr)
     std::cout <<"   Strides: ["<<info.strides()<<"]"<<std::endl;
 #endif
 
-    printer(std::cout, data, infoT, infoT.ndims() - 1);
-
-    delete[] data;
+    printer(std::cout, data.data(), infoT, infoT.ndims() - 1);
 
     std::cout.flags(backup);
 }

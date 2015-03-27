@@ -18,6 +18,8 @@
 #include "orb_patch.hpp"
 #include "sort_index.hpp"
 
+using std::vector;
+
 namespace cuda
 {
 
@@ -305,12 +307,12 @@ void orb(unsigned* out_feat,
          float** d_ori,
          float** d_size,
          unsigned** d_desc,
-         std::vector<unsigned>& feat_pyr,
-         std::vector<float*>& d_x_pyr,
-         std::vector<float*>& d_y_pyr,
-         std::vector<unsigned>& lvl_best,
-         std::vector<float>& lvl_scl,
-         std::vector<CParam<T> >& img_pyr,
+         vector<unsigned>& feat_pyr,
+         vector<float*>& d_x_pyr,
+         vector<float*>& d_y_pyr,
+         vector<unsigned>& lvl_best,
+         vector<float>& lvl_scl,
+         vector<CParam<T> >& img_pyr,
          const float fast_thr,
          const unsigned max_feat,
          const float scl_fctr,
@@ -337,8 +339,8 @@ void orb(unsigned* out_feat,
     Param<convAccT> gauss_filter;
     if (blur_img) {
         unsigned gauss_len = 9;
-        convAccT* h_gauss = new convAccT[gauss_len];
-        gaussian1D(h_gauss, gauss_len, 2.f);
+        vector<convAccT> h_gauss(gauss_len);
+        gaussian1D(&h_gauss.front(), gauss_len, 2.f);
         gauss_filter.dims[0] = gauss_len;
         gauss_filter.strides[0] = 1;
 
@@ -349,9 +351,7 @@ void orb(unsigned* out_feat,
 
         dim_type gauss_elem = gauss_filter.strides[3] * gauss_filter.dims[3];
         gauss_filter.ptr = memAlloc<convAccT>(gauss_elem);
-        CUDA_CHECK(cudaMemcpy(gauss_filter.ptr, h_gauss, gauss_elem * sizeof(convAccT), cudaMemcpyHostToDevice));
-
-        delete[] h_gauss;
+        CUDA_CHECK(cudaMemcpy(gauss_filter.ptr, &h_gauss.front(), gauss_elem * sizeof(convAccT), cudaMemcpyHostToDevice));
     }
 
     for (int i = 0; i < (int)max_levels; i++) {
