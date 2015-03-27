@@ -49,32 +49,32 @@ AFAPI array approx2(const array &in, const array &pos0, const array &pos1,
    C++ Interface for fast fourier transform on one dimensional data
 
    \param[in]  in is the input array
-   \param[in]  normalize is the normalization factor
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
    \param[in]  odim0 is the length of output data - used to either truncate or pad the input data
    \return     the transformed array
 
    \ingroup signal_func_fft
  */
-AFAPI array fft(const array& in, double normalize, dim_type odim0=0);
+AFAPI array fft(const array& in, double norm_factor, dim_type odim0=0);
 
 /**
    C++ Interface for fast fourier transform on two dimensional data
 
    \param[in]  in is the input array
-   \param[in]  normalize is the normalization factor
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
    \param[in]  odim0 is the length of output data along 0th dimension - used to either truncate/pad the input
    \param[in]  odim1 is the length of output data along 1st dimension - used to either truncate/pad the input
    \return     the transformed array
 
    \ingroup signal_func_fft2
  */
-AFAPI array fft2(const array& in, double normalize, dim_type odim0=0, dim_type odim1=0);
+AFAPI array fft2(const array& in, double norm_factor, dim_type odim0=0, dim_type odim1=0);
 
 /**
    C++ Interface for fast fourier transform on three dimensional data
 
    \param[in]  in is the input array
-   \param[in]  normalize is the normalization factor
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
    \param[in]  odim0 is the length of output data along 0th dimension - used to either truncate/pad the input
    \param[in]  odim1 is the length of output data along 1st dimension - used to either truncate/pad the input
    \param[in]  odim2 is the length of output data along 2nd dimension - used to either truncate/pad the input
@@ -82,38 +82,38 @@ AFAPI array fft2(const array& in, double normalize, dim_type odim0=0, dim_type o
 
    \ingroup signal_func_fft3
  */
-AFAPI array fft3(const array& in, double normalize, dim_type odim0=0, dim_type odim1=0, dim_type odim2=0);
+AFAPI array fft3(const array& in, double norm_factor, dim_type odim0=0, dim_type odim1=0, dim_type odim2=0);
 
 /**
    C++ Interface for inverse fast fourier transform on one dimensional data
 
    \param[in]  in is the input array
-   \param[in]  normalize is the normalization factor
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
    \param[in]  odim0 is the length of output data - used to either truncate or pad the input data
    \return     the transformed array
 
    \ingroup signal_func_ifft
  */
-AFAPI array ifft(const array& in, double normalize, dim_type odim0=0);
+AFAPI array ifft(const array& in, double norm_factor, dim_type odim0=0);
 
 /**
    C++ Interface for inverse fast fourier transform on two dimensional data
 
    \param[in]  in is the input array
-   \param[in]  normalize is the normalization factor
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
    \param[in]  odim0 is the length of output data along 0th dimension - used to either truncate/pad the input
    \param[in]  odim1 is the length of output data along 1st dimension - used to either truncate/pad the input
    \return     the transformed array
 
    \ingroup signal_func_ifft2
  */
-AFAPI array ifft2(const array& in, double normalize, dim_type odim0=0, dim_type odim1=0);
+AFAPI array ifft2(const array& in, double norm_factor, dim_type odim0=0, dim_type odim1=0);
 
 /**
    C++ Interface for inverse fast fourier transform on three dimensional data
 
    \param[in]  in is the input array
-   \param[in]  normalize is the normalization factor
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
    \param[in]  odim0 is the length of output data along 0th dimension - used to either truncate/pad the input
    \param[in]  odim1 is the length of output data along 1st dimension - used to either truncate/pad the input
    \param[in]  odim2 is the length of output data along 2nd dimension - used to either truncate/pad the input
@@ -121,12 +121,12 @@ AFAPI array ifft2(const array& in, double normalize, dim_type odim0=0, dim_type 
 
    \ingroup signal_func_ifft3
  */
-AFAPI array ifft3(const array& in, double normalize, dim_type odim0=0, dim_type odim1=0, dim_type odim2=0);
+AFAPI array ifft3(const array& in, double norm_factor, dim_type odim0=0, dim_type odim1=0, dim_type odim2=0);
 
 /**
    C++ Interface for fast fourier transform on one dimensional data
 
-   This version of fft function uses a default normalize paramter that is calculated internally
+   This version of fft function uses a default norm_factor paramter that is calculated internally
    based on the input data.
 
    \param[in]  in is the input array
@@ -140,7 +140,7 @@ AFAPI array fft(const array& in, dim_type odim0=0);
 /**
    C++ Interface for fast fourier transform on two dimensional data
 
-   This version of fft function uses a default normalize paramter that is calculated internally
+   This version of fft function uses a default norm_factor paramter that is calculated internally
    based on the input data.
 
    \param[in]  in is the input array
@@ -155,7 +155,7 @@ AFAPI array fft2(const array& in, dim_type odim0=0, dim_type odim1=0);
 /**
    C++ Interface for fast fourier transform on three dimensional data
 
-   This version of fft function uses a default normalize paramter that is calculated internally
+   This version of fft function uses a default norm_factor paramter that is calculated internally
    based on the input data.
 
    \param[in]  in is the input array
@@ -171,7 +171,7 @@ AFAPI array fft3(const array& in, dim_type odim0=0, dim_type odim1=0, dim_type o
 /**
    C++ Interface for inverse fast fourier transform on one dimensional data
 
-   This version of fft function uses a default normalize paramter that is calculated internally
+   This version of fft function uses a default norm_factor paramter that is calculated internally
    based on the input data.
 
    \param[in]  in is the input array
@@ -185,7 +185,7 @@ AFAPI array ifft(const array& in, dim_type odim0=0);
 /**
    C++ Interface for inverse fast fourier transform on two dimensional data
 
-   This version of fft function uses a default normalize paramter that is calculated internally
+   This version of fft function uses a default norm_factor paramter that is calculated internally
    based on the input data.
 
    \param[in]  in is the input array
@@ -200,7 +200,7 @@ AFAPI array ifft2(const array& in, dim_type odim0=0, dim_type odim1=0);
 /**
    C++ Interface for inverse fast fourier transform on three dimensional data
 
-   This version of fft function uses a default normalize paramter that is calculated internally
+   This version of fft function uses a default norm_factor paramter that is calculated internally
    based on the input data.
 
    \param[in]  in is the input array
@@ -341,21 +341,21 @@ AFAPI af_err af_approx2(af_array *out, const af_array in, const af_array pos0, c
 
    \param[out] out is the transformed array
    \param[in]  in is the input array
-   \param[in]  normalize is the normalization factor
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
    \param[in]  odim0 is the length of output data - used to either truncate or pad the input data
    \return     \ref AF_SUCCESS if the fft transform is successful,
                otherwise an appropriate error code is returned.
 
    \ingroup signal_func_fft
  */
-AFAPI af_err af_fft(af_array *out, af_array in, double normalize, dim_type odim0);
+AFAPI af_err af_fft(af_array *out, af_array in, double norm_factor, dim_type odim0);
 
 /**
    C Interface for fast fourier transform on two dimensional data
 
    \param[out] out is the transformed array
    \param[in]  in is the input array
-   \param[in]  normalize is the normalization factor
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
    \param[in]  odim0 is the length of output data along 0th dimension - used to either truncate/pad the input
    \param[in]  odim1 is the length of output data along 1st dimension - used to either truncate/pad the input
    \return     \ref AF_SUCCESS if the fft transform is successful,
@@ -363,14 +363,14 @@ AFAPI af_err af_fft(af_array *out, af_array in, double normalize, dim_type odim0
 
    \ingroup signal_func_fft2
  */
-AFAPI af_err af_fft2(af_array *out, af_array in, double normalize, dim_type odim0, dim_type odim1);
+AFAPI af_err af_fft2(af_array *out, af_array in, double norm_factor, dim_type odim0, dim_type odim1);
 
 /**
    C Interface for fast fourier transform on three dimensional data
 
    \param[out] out is the transformed array
    \param[in]  in is the input array
-   \param[in]  normalize is the normalization factor
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
    \param[in]  odim0 is the length of output data along 0th dimension - used to either truncate/pad the input
    \param[in]  odim1 is the length of output data along 1st dimension - used to either truncate/pad the input
    \param[in]  odim2 is the length of output data along 2nd dimension - used to either truncate/pad the input
@@ -379,28 +379,28 @@ AFAPI af_err af_fft2(af_array *out, af_array in, double normalize, dim_type odim
 
    \ingroup signal_func_fft3
  */
-AFAPI af_err af_fft3(af_array *out, af_array in, double normalize, dim_type odim0, dim_type odim1, dim_type odim2);
+AFAPI af_err af_fft3(af_array *out, af_array in, double norm_factor, dim_type odim0, dim_type odim1, dim_type odim2);
 
 /**
    C Interface for inverse fast fourier transform on one dimensional data
 
    \param[out] out is the transformed array
    \param[in]  in is the input array
-   \param[in]  normalize is the normalization factor
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
    \param[in]  odim0 is the length of output data - used to either truncate or pad the input data
    \return     \ref AF_SUCCESS if the fft transform is successful,
                otherwise an appropriate error code is returned.
 
    \ingroup signal_func_ifft
  */
-AFAPI af_err af_ifft(af_array *out, af_array in, double normalize, dim_type odim0);
+AFAPI af_err af_ifft(af_array *out, af_array in, double norm_factor, dim_type odim0);
 
 /**
    C Interface for inverse fast fourier transform on two dimensional data
 
    \param[out] out is the transformed array
    \param[in]  in is the input array
-   \param[in]  normalize is the normalization factor
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
    \param[in]  odim0 is the length of output data along 0th dimension - used to either truncate/pad the input
    \param[in]  odim1 is the length of output data along 1st dimension - used to either truncate/pad the input
    \return     \ref AF_SUCCESS if the fft transform is successful,
@@ -408,14 +408,14 @@ AFAPI af_err af_ifft(af_array *out, af_array in, double normalize, dim_type odim
 
    \ingroup signal_func_ifft2
  */
-AFAPI af_err af_ifft2(af_array *out, af_array in, double normalize, dim_type odim0, dim_type odim1);
+AFAPI af_err af_ifft2(af_array *out, af_array in, double norm_factor, dim_type odim0, dim_type odim1);
 
 /**
    C Interface for inverse fast fourier transform on three dimensional data
 
    \param[out] out is the transformed array
    \param[in]  in is the input array
-   \param[in]  normalize is the normalization factor
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
    \param[in]  odim0 is the length of output data along 0th dimension - used to either truncate/pad the input
    \param[in]  odim1 is the length of output data along 1st dimension - used to either truncate/pad the input
    \param[in]  odim2 is the length of output data along 2nd dimension - used to either truncate/pad the input
@@ -424,7 +424,7 @@ AFAPI af_err af_ifft2(af_array *out, af_array in, double normalize, dim_type odi
 
    \ingroup signal_func_ifft3
  */
-AFAPI af_err af_ifft3(af_array *out, af_array in, double normalize, dim_type odim0, dim_type odim1, dim_type odim2);
+AFAPI af_err af_ifft3(af_array *out, af_array in, double norm_factor, dim_type odim0, dim_type odim1, dim_type odim2);
 
 /**
    C Interface for convolution on one dimensional data
