@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <af/defines.h>
+
 #include <complex>
 #include <limits>
 #include <algorithm>

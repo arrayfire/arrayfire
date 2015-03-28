@@ -31,7 +31,7 @@
 	#define AFAPI   __attribute__((visibility("default")))
 	#include <stdbool.h>
 	#define __PRETTY_FUNCTION__ __func__
-	#define STATIC_
+	#define STATIC_ inline
 #endif
 
 
