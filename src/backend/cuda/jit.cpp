@@ -206,7 +206,7 @@ static string getKernelString(string funcName, Node *node, bool is_linear)
         nvvmResult res = fn;                    \
         if (res == NVVM_SUCCESS) break;         \
         char nvvm_err_msg[1024];                \
-        snprintf(nvvm_err_msg,					\
+        snprintf(nvvm_err_msg,                    \
                  sizeof(nvvm_err_msg),          \
                  "NVVM Error (%d): %s\n",       \
                  (int)(res), msg);              \
@@ -276,7 +276,7 @@ char linkError[size];
         CUresult res = fn;                      \
         if (res == CUDA_SUCCESS) break;         \
         char cu_err_msg[1024];                  \
-        snprintf(cu_err_msg,					\
+        snprintf(cu_err_msg,                    \
                  sizeof(cu_err_msg),            \
                  "CU Error (%d)\n",             \
                  (int)(res));                   \

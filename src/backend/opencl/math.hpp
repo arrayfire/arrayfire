@@ -41,19 +41,19 @@ namespace opencl
         return abs(lhs) > abs(rhs) ? lhs : rhs;
     }
 
-	template<> STATIC_
+    template<> STATIC_
     cdouble max<cdouble>(cdouble lhs, cdouble rhs)
     {
         return abs(lhs) > abs(rhs) ? lhs : rhs;
     }
 
-	template<> STATIC_
+    template<> STATIC_
     cfloat min<cfloat>(cfloat lhs, cfloat rhs)
     {
         return abs(lhs) < abs(rhs) ? lhs :  rhs;
     }
 
-	template<> STATIC_
+    template<> STATIC_
     cdouble min<cdouble>(cdouble lhs, cdouble rhs)
     {
         return abs(lhs) < abs(rhs) ? lhs :  rhs;
@@ -65,7 +65,7 @@ namespace opencl
         return (T)(val);
     }
 
-	template<> STATIC_
+    template<> STATIC_
     cfloat  scalar<cfloat >(double val)
     {
         cfloat  cval;
@@ -74,7 +74,7 @@ namespace opencl
         return cval;
     }
 
-	template<> STATIC_
+    template<> STATIC_
     cdouble scalar<cdouble >(double val)
     {
         cdouble cval;
@@ -84,7 +84,7 @@ namespace opencl
     }
 
     template<typename To, typename Ti>
-	static To scalar(Ti real, Ti imag)
+    static To scalar(Ti real, Ti imag)
     {
         To  cval;
         cval.s[0] = real;

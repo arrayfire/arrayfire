@@ -32,8 +32,8 @@ public:
             const int line,
             std::string message, af_err err);
 
-	const std::string&
-	getFunctionName() const;
+    const std::string&
+    getFunctionName() const;
 
     int getLine() const;
 
@@ -56,8 +56,8 @@ public:
               const int index,
               const af_dtype type);
 
-	const std::string&
-	getTypeName() const;
+    const std::string&
+    getTypeName() const;
 
     int getArgIndex() const;
 
@@ -67,7 +67,7 @@ public:
 class ArgumentError : public AfError
 {
     int argIndex;
-    std::string	expected;
+    std::string    expected;
     ArgumentError();
 
 public:
@@ -76,8 +76,8 @@ public:
                    const int index,
                    const char * const expectString);
 
-	const std::string&
-	getExpectedCondition() const;
+    const std::string&
+    getExpectedCondition() const;
 
     int getArgIndex() const;
 
@@ -93,14 +93,14 @@ public:
                  const int line,
                  const char * const back);
     ~SupportError()throw() {}
-	const std::string&
-	getBackendName() const;
+    const std::string&
+    getBackendName() const;
 };
 
 class DimensionError : public AfError
 {
     int argIndex;
-    std::string	expected;
+    std::string    expected;
     DimensionError();
 
 public:
@@ -109,8 +109,8 @@ public:
                    const int index,
                    const char * const expectString);
 
-	const std::string&
-	getExpectedCondition() const;
+    const std::string&
+    getExpectedCondition() const;
 
     int getArgIndex() const;
 
