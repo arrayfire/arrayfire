@@ -48,7 +48,7 @@ int nvDriverVersion(char *result, int len)
 
     free(lpData);
 #else
-	snprintf(result, len, "%.2f", 0.0);
+    snprintf(result, len, "%.2f", 0.0);
 #endif
     return 1;
 }

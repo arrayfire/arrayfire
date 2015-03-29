@@ -56,7 +56,7 @@ namespace cpu
     }
 
     template<typename To, typename Ti>
-	static To scalar(Ti real, Ti imag)
+    static To scalar(Ti real, Ti imag)
     {
         To  cval = {real, imag};
         return cval;

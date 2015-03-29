@@ -18,8 +18,8 @@
 namespace cuda
 {
     template<typename T> static const std::string cplx_name() { return "@___noop"; }
-	template<> STATIC_ const std::string cplx_name<cfloat >() { return cuMangledName<float , true>("___cplx"); }
-	template<> STATIC_ const std::string cplx_name<cdouble>() { return cuMangledName<double, true>("___cplx"); }
+    template<> STATIC_ const std::string cplx_name<cfloat >() { return cuMangledName<float , true>("___cplx"); }
+    template<> STATIC_ const std::string cplx_name<cdouble>() { return cuMangledName<double, true>("___cplx"); }
 
     template<typename T> static const std::string real_name() { return "@___noop"; }
     template<> STATIC_ const std::string real_name<cfloat >() { return cuMangledName<cfloat , false>("___real"); }

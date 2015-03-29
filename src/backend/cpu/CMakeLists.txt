@@ -18,11 +18,11 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
     "${CMAKE_SOURCE_DIR}/src/backend/cpu"
     ${FFTW_INCLUDES}
-	${CBLAS_INCLUDE_DIR}
+    ${CBLAS_INCLUDE_DIR}
     )
 
 FILE(GLOB cpu_headers
-	"*.hpp"
+    "*.hpp"
     "*.h")
 
 FILE(GLOB cpu_sources
@@ -63,19 +63,19 @@ source_group(api\\cpp\\Sources FILES ${cpp_sources})
 
 # OS Definitions
 IF(UNIX)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 ELSE(${UNIX}) #Windows
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 ENDIF()
 
 ADD_LIBRARY(afcpu SHARED
            ${cpu_headers}
-		   ${cpu_sources}
+           ${cpu_sources}
            ${backend_headers}
-		   ${backend_sources}
+           ${backend_sources}
            ${c_headers}
-		   ${c_sources}
-		   ${cpp_sources})
+           ${c_sources}
+           ${cpp_sources})
 
 TARGET_LINK_LIBRARIES(afcpu ${lib_deps} ${CBLAS_LIBRARIES} ${FFTW_LIBRARIES})
 
