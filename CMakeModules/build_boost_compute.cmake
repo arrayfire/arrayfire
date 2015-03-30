@@ -8,7 +8,7 @@ SET(archive ${srcDir}.tar.gz)
 SET(inflated ${srcDir}-inflated)
 
 # the config to be used in the code
-SET(boostcompute_include_dirs "${srcDir}/include")
+SET(BoostCompute_INCLUDE_DIRS "${srcDir}/include")
 
 # do we have to do it again?
 SET(doExtraction ON)
