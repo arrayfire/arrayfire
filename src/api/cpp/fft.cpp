@@ -50,7 +50,7 @@ array fft3(const array& in, dim_type odim0, dim_type odim1, dim_type odim2)
     return fft3(in, 1.0, odim0, odim1, odim2);
 }
 
-array fft(const array& in, double norm_factor, const dim4 outDims)
+array dft(const array& in, double norm_factor, const dim4 outDims)
 {
     array temp;
     switch(in.dims().ndims()) {
@@ -62,14 +62,14 @@ array fft(const array& in, double norm_factor, const dim4 outDims)
     return temp;
 }
 
-array fft(const array& in, const dim4 outDims)
+array dft(const array& in, const dim4 outDims)
 {
-    return fft(in, 1.0, outDims);
+    return dft(in, 1.0, outDims);
 }
 
-array fft(const array& in)
+array dft(const array& in)
 {
-    return fft(in, 1.0, dim4(0,0,0,0));
+    return dft(in, 1.0, dim4(0,0,0,0));
 }
 
 array ifft(const array& in, double norm_factor, dim_type odim0)
@@ -120,7 +120,7 @@ array ifft3(const array& in, dim_type odim0, dim_type odim1, dim_type odim2)
     return ifft3(in, norm_factor, odim0, odim1, odim2);
 }
 
-array ifft(const array& in, double norm_factor, const dim4 outDims)
+array idft(const array& in, double norm_factor, const dim4 outDims)
 {
     array temp;
     switch(in.dims().ndims()) {
@@ -132,14 +132,14 @@ array ifft(const array& in, double norm_factor, const dim4 outDims)
     return temp;
 }
 
-array ifft(const array& in, const dim4 outDims)
+array idft(const array& in, const dim4 outDims)
 {
-    return ifft(in, 1.0, outDims);
+    return idft(in, 1.0, outDims);
 }
 
-array ifft(const array& in)
+array idft(const array& in)
 {
-    return ifft(in, 1.0, dim4(0,0,0,0));
+    return idft(in, 1.0, dim4(0,0,0,0));
 }
 
 }
