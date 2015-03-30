@@ -41,6 +41,10 @@ namespace kernel
         const uint xid = blockIdx_x * blockDim.x * lim + tidx;
         const uint yid = blockIdx_y * blockDim.y + tidy;
 
+        bool cond_yzw = (yid < out.dims[1]) && (zid < out.dims[2]) && (wid < out.dims[3]);
+
+        if (!cond_yzw) return; // retire warps early
+
         const Ti *iptr = in.ptr;
         To *optr = out.ptr;
         To *tptr = tmp.ptr;
@@ -49,7 +53,6 @@ namespace kernel
         optr += wid * out.strides[3] + zid * out.strides[2] + yid * out.strides[1];
         tptr += wid * tmp.strides[3] + zid * tmp.strides[2] + yid * tmp.strides[1];
 
-        bool cond_yzw = (yid < out.dims[1]) && (zid < out.dims[2]) && (wid < out.dims[3]);
 
         const uint DIMY = THREADS_PER_BLOCK / DIMX;
         const uint SHARED_MEM_SIZE = (2 * DIMX + 1) * (DIMY);
@@ -72,7 +75,7 @@ namespace kernel
 
             if (isLast) s_tmp[tidy] = val;
 
-            bool cond = (cond_yzw && (id < out.dims[0]));
+            bool cond = ((id < out.dims[0]));
             val = cond ? transform(iptr[id]) : init;
             sptr[tidx] = val;
             __syncthreads();
@@ -91,9 +94,10 @@ namespace kernel
             val = binop(val, s_tmp[tidy]);
             if (cond) optr[id] = val;
             id += blockDim.x;
+            __syncthreads();
         }
 
-        if (!isFinalPass && cond_yzw && isLast) {
+        if (!isFinalPass && isLast) {
             tptr[blockIdx_x] = val;
         }
     }
