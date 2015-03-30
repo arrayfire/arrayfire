@@ -52,9 +52,8 @@ af_err af_example_function(af_array* out,
                             const af_array in,
                             const af_someenum_t param)
 {
-    af_array output = 0;
-
     try {
+        af_array output = 0;
         ArrayInfo info = getInfo(in);       // ArrayInfo is the base class which
                                             // each backend specific Array inherits
                                             // This class stores the basic array meta-data

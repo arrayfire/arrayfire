@@ -61,7 +61,7 @@ namespace cpu
 
     void garbageCollect()
     {
-        for(mem_iter iter = memory_map.begin(); iter != memory_map.end(); iter++) {
+        for(mem_iter iter = memory_map.begin(); iter != memory_map.end(); ++iter) {
             if ((iter->second).is_free) {
                 total_bytes -= iter->second.bytes;
                 freeWrapper(iter->first);
@@ -96,7 +96,7 @@ namespace cpu
                 garbageCollect();
             }
 
-            for(mem_iter iter = memory_map.begin(); iter != memory_map.end(); iter++) {
+            for(mem_iter iter = memory_map.begin(); iter != memory_map.end(); ++iter) {
                 mem_info info = iter->second;
                 if (info.is_free && info.bytes == alloc_bytes) {
                     iter->second.is_free = false;

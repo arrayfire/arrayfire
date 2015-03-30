@@ -322,7 +322,7 @@ void sync(int device)
         setDevice(device);
         getQueue().finish();
         setDevice(currDevice);
-    } catch (cl::Error ex) {
+    } catch (const cl::Error &ex) {
         CL_TO_AF_ERROR(ex);
     }
 }

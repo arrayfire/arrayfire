@@ -22,7 +22,7 @@ array var(const array& in, bool isbiased, dim_type dim)
     return array(temp);
 }
 
-array var(const array& in, const array weights, dim_type dim)
+array var(const array& in, const array &weights, dim_type dim)
 {
     af_array temp = 0;
     AF_THROW(af_var_weighted(&temp, in.get(), weights.get(), getFNSD(dim, in.dims())));
@@ -37,7 +37,7 @@ array var(const array& in, const array weights, dim_type dim)
         return (T) ret_val;                                         \
     }                                                               \
                                                                     \
-    template<> AFAPI T var(const array& in, const array weights)    \
+    template<> AFAPI T var(const array& in, const array &weights)   \
     {                                                               \
         double ret_val;                                             \
         AF_THROW(af_var_all_weighted(&ret_val, NULL,                \
@@ -59,14 +59,14 @@ template<> AFAPI af_cdouble var(const array& in, bool isbiased)
     return std::complex<double>(real, imag);
 }
 
-template<> AFAPI af_cfloat var(const array& in, const array weights)
+template<> AFAPI af_cfloat var(const array& in, const array &weights)
 {
     double real, imag;
     AF_THROW(af_var_all_weighted(&real, &imag, in.get(), weights.get()));
     return std::complex<float>((float)real, (float)imag);
 }
 
-template<> AFAPI af_cdouble var(const array& in, const array weights)
+template<> AFAPI af_cdouble var(const array& in, const array &weights)
 {
     double real, imag;
     AF_THROW(af_var_all_weighted(&real, &imag, in.get(), weights.get()));

@@ -46,7 +46,7 @@ void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage)
 
 //  Split a MxNx3 image into 3 separate channel matrices.
 //  Produce 3 channels if needed
-static af_err channel_split(const af_array rgb, const af::dim4 dims,
+static af_err channel_split(const af_array rgb, const af::dim4 &dims,
                             af_array *outr, af_array *outg, af_array *outb, af_array *outa)
 {
     try {

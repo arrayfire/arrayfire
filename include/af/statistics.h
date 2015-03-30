@@ -67,7 +67,7 @@ AFAPI array var(const array& in, bool isbiased=false, dim_type dim=-1);
 
    \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
 */
-AFAPI array var(const array& in, const array weights, dim_type dim=-1);
+AFAPI array var(const array& in, const array &weights, dim_type dim=-1);
 
 /**
    C++ Interface for standard deviation
@@ -153,7 +153,7 @@ AFAPI T var(const array& in, bool isbiased=false);
    \ingroup stat_func_var
 */
 template<typename T>
-AFAPI T var(const array& in, const array weights);
+AFAPI T var(const array& in, const array& weights);
 
 /**
    C++ Interface for standard deviation of all elements

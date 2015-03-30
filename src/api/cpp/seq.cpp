@@ -70,11 +70,11 @@ seq::seq(double begin, double end, double step): m_gfor(false)
     init(begin, end, step);
 }
 
-seq::seq(seq other, bool is_gfor): m_gfor(is_gfor)
-{
-    this->s = other.s;
-    this->size = other.size;
-}
+seq::seq(seq other, bool is_gfor)
+    : m_gfor(is_gfor)
+    , s(other.s)
+    , size(other.size)
+{ }
 
 seq::operator array() const
 {

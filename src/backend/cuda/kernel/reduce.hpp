@@ -144,8 +144,8 @@ namespace kernel
 
         Param<To> tmp = out;
 
-        dim_type tmp_elements = 1;
         if (blocks_dim[dim] > 1) {
+            dim_type tmp_elements = 1;
             tmp.dims[dim] = blocks_dim[dim];
 
             for (int k = 0; k < 4; k++) tmp_elements *= tmp.dims[k];

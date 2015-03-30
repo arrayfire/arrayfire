@@ -30,20 +30,20 @@ static inline unsigned getIdx(const dim4 &strides,
 }
 
 template<typename T>
-T getConjugate(const T in)
+T getConjugate(const T &in)
 {
     // For non-complex types return same
     return in;
 }
 
 template<>
-cfloat getConjugate(const cfloat in)
+cfloat getConjugate(const cfloat &in)
 {
     return std::conj(in);
 }
 
 template<>
-cdouble getConjugate(const cdouble in)
+cdouble getConjugate(const cdouble &in)
 {
     return std::conj(in);
 }
