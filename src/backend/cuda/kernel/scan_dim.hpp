@@ -103,6 +103,7 @@ namespace kernel
             }
 
             val = binop(val, s_tmp[tidx]);
+            __syncthreads();
             if (cond) *optr = val;
 
             id_dim += blockDim.y;
