@@ -1,6 +1,6 @@
-set(VER 0.4)
-set(URL https://github.com/kylelutz/compute/archive/v${VER}.tar.gz)
-set(MD5 0d881bd8e8c1729559bc9b98d6b25a3c)
+set(VER 415e7a0a21b7fc2cb5a6aaa7ea14a4f32e884631)
+set(URL https://github.com/kylelutz/compute/archive/${VER}.tar.gz)
+set(MD5 733daf88c39c7337c51cd5adb0efb51b)
 
 set(thirdPartyDir "${CMAKE_BINARY_DIR}/third_party")
 set(srcDir "${thirdPartyDir}/compute-${VER}")
