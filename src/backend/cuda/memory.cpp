@@ -113,7 +113,7 @@ namespace cuda
     void garbageCollect()
     {
         int n = getActiveDeviceId();
-        for(mem_iter iter = memory_maps[n].begin(); iter != memory_maps[n].end(); iter++) {
+        for(mem_iter iter = memory_maps[n].begin(); iter != memory_maps[n].end(); ++iter) {
             if ((iter->second).is_free) {
                 cudaFreeWrapper(iter->first);
                 total_bytes[n] -= iter->second.bytes;
@@ -149,7 +149,7 @@ namespace cuda
             }
 
             for(mem_iter iter = memory_maps[n].begin();
-                iter != memory_maps[n].end(); iter++) {
+                iter != memory_maps[n].end(); ++iter) {
 
                 mem_info info = iter->second;
                 if (info.is_free && info.bytes == alloc_bytes) {
@@ -206,7 +206,7 @@ namespace cuda
 
     void pinnedGarbageCollect()
     {
-        for(mem_iter iter = pinned_maps.begin(); iter != pinned_maps.end(); iter++) {
+        for(mem_iter iter = pinned_maps.begin(); iter != pinned_maps.end(); ++iter) {
             if ((iter->second).is_free) {
                 pinnedFreeWrapper(iter->first);
             }
@@ -242,7 +242,7 @@ namespace cuda
             }
 
             for(mem_iter iter = pinned_maps.begin();
-                iter != pinned_maps.end(); iter++) {
+                iter != pinned_maps.end(); ++iter) {
 
                 mem_info info = iter->second;
                 if (info.is_free && info.bytes == alloc_bytes) {

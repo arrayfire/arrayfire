@@ -238,7 +238,11 @@ namespace af
     array::~array()
     {
         af_array tmp = get();
-        if (tmp != 0) AF_THROW(af_destroy_array(tmp));
+        if (tmp != 0){
+            if(AF_SUCCESS != af_destroy_array(tmp)) {
+                fprintf(stderr, "Error: Couldn't destroy af::array %p", this);
+            }
+        }
     }
 
     af::dtype array::type() const

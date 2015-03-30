@@ -66,7 +66,7 @@ namespace opencl
     void garbageCollect()
     {
         int n = getActiveDeviceId();
-        for(mem_iter iter = memory_maps[n].begin(); iter != memory_maps[n].end(); iter++) {
+        for(mem_iter iter = memory_maps[n].begin(); iter != memory_maps[n].end(); ++iter) {
             if ((iter->second).is_free) {
                 total_bytes[n] -= iter->second.bytes;
                 destroy(iter->first);
@@ -100,7 +100,7 @@ namespace opencl
             }
 
             for(mem_iter iter = memory_maps[n].begin();
-                iter != memory_maps[n].end(); iter++) {
+                iter != memory_maps[n].end(); ++iter) {
 
                 mem_info info = iter->second;
                 if (info.is_free && info.bytes == alloc_bytes) {
@@ -207,12 +207,12 @@ namespace opencl
     {
         void *ptr = NULL;
         int n = getActiveDeviceId();
-        cl::Buffer *buf = NULL;
         // Allocate the higher megabyte. Overhead of creating pinned memory is
         // more so we want more resuable memory.
         size_t alloc_bytes = divup(bytes, 1048576) * 1048576;
 
         if (bytes > 0) {
+            cl::Buffer *buf = NULL;
 
             // FIXME: Add better checks for garbage collection
             // Perhaps look at total memory available as a metric
@@ -221,7 +221,7 @@ namespace opencl
             }
 
             for(pinned_iter iter = pinned_maps[n].begin();
-                iter != pinned_maps[n].end(); iter++) {
+                iter != pinned_maps[n].end(); ++iter) {
 
                 mem_info info = iter->second.info;
                 if (info.is_free && info.bytes == alloc_bytes) {

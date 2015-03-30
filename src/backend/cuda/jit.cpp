@@ -232,7 +232,7 @@ static char *irToPtx(string IR, size_t *ptx_size)
     if (comp_res != NVVM_SUCCESS) {
         size_t log_size = 0;
         nvvmGetProgramLogSize(prog, &log_size);
-        printf("%ld, %ld\n", IR.size(), log_size);
+        printf("%ld, %zu\n", IR.size(), log_size);
         scoped_ptr<char> log(new char[log_size]);
         nvvmGetProgramLog(prog, log.get());
         printf("LOG:\n%s\n%s", log.get(), IR.c_str());

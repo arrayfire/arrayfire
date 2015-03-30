@@ -202,7 +202,7 @@ void evalNodes(Param &out, Node *node)
 
         getQueue().enqueueNDRangeKernel(ker, cl::NullRange, global, local);
 
-    } catch (cl::Error ex) {
+    } catch (const cl::Error &ex) {
         CL_TO_AF_ERROR(ex);
     }
 

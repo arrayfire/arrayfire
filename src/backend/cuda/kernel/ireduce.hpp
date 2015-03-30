@@ -28,8 +28,8 @@ namespace kernel
 
     template<typename T> __host__ __device__ double cabs(const T in) { return (double)in; }
     static double __host__ __device__ cabs(const char in) { return (double)(in > 0); }
-    static double __host__ __device__ cabs(const cfloat in) { return (double)abs(in); }
-    static double __host__ __device__ cabs(const cdouble in) { return (double)abs(in); }
+    static double __host__ __device__ cabs(const cfloat &in) { return (double)abs(in); }
+    static double __host__ __device__ cabs(const cdouble &in) { return (double)abs(in); }
 
     template<af_op_t op, typename T>
     struct MinMaxOp
@@ -229,8 +229,8 @@ namespace kernel
         Param<T> tmp = out;
         uint *tlptr = olptr;
 
-        dim_type tmp_elements = 1;
         if (blocks_dim[dim] > 1) {
+            dim_type tmp_elements = 1;
             tmp.dims[dim] = blocks_dim[dim];
 
             for (int k = 0; k < 4; k++) tmp_elements *= tmp.dims[k];

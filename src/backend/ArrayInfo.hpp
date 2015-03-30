@@ -20,7 +20,7 @@ calcOffset(const af::dim4 &strides, const af::dim4 &offsets);
 af::dim4
 calcStrides(const af::dim4 &parentDim);
 
-af::dim4 getOutDims(const af::dim4 ldims, const af::dim4 rdims, bool batchMode);
+af::dim4 getOutDims(const af::dim4 &ldims, const af::dim4 &rdims, bool batchMode);
 
 /// Array Arrayementation Info class
 // This class is the base class to all Array objects. The purpose of this class
