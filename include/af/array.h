@@ -38,9 +38,8 @@ namespace af
         //FIXME: Put the following in a different class
         const array   *parent;
         bool     isRef;
-        std::vector<seq> s;
-        void getSeq(af_seq* afs) const;
-        array(af_array in, const array *par, seq *seqs);
+        af_index_t indices[4];
+        array(af_array in, const array *par, af_index_t seqs[4]);
         void set(af_array tmp);
         void set(af_array tmp) const;
         //END FIXME
@@ -518,8 +517,6 @@ namespace af
            \ingroup index_mat
         */
 
-        array operator()(const array& idx) const;
-
         array operator()(const seq& s0) const;
         array operator()(const int& s0) const
                         { return this->operator()(seq(s0, s0)); }
@@ -588,6 +585,72 @@ namespace af
         { return this->operator()(seq(s0, s0), seq(s1, s1), seq(s2, s2), s3); }
         array operator()(const int& s0, const int& s1, const int& s2, const int& s3) const
         { return this->operator()(seq(s0, s0), seq(s1, s1), seq(s2, s2), seq(s3, s3)); }
+
+        array operator()(const array& idx) const;
+
+        // A-S-S-S, A-S-N-N, A-S-S-N
+        array operator()(const array& idx0, const seq &idx1, const seq &idx2 = span, const seq &idx3 = span) const;
+
+        // A-I-I-I, A-I-N-N, A-I-I-N
+        array operator()(const array& idx0, const int  idx1, const int  idx2 = 0, const int  idx3 =    0) const
+        { return this->operator()(idx0, seq(idx1, idx1), seq(idx2, idx2), seq(idx3, idx3)); }
+
+        // A-S-I-I, A-S-I-N
+        array operator()(const array& idx0, const seq &idx1, const int &idx2, const int idx3 = 0) const
+        { return this->operator()(idx0, idx1, seq(idx2, idx2), seq(idx3, idx3)); }
+
+        // A-A-S-S, A-A-N-N
+        array operator()(const array& idx0, const array &idx1, const seq &idx2 = span, const seq &idx3 = span) const;
+
+        // A-A-I-I, A-A-I-N
+        array operator()(const array& idx0, const array &idx1, const int  idx2, const int  idx3 =    0) const
+        { return this->operator()(idx0, idx1, seq(idx2, idx2), seq(idx3, idx3)); }
+
+        // A-A-A-S, A-A-A-N
+        array operator()(const array &idx0, const array &idx1, const array &idx2, const seq &idx3 = span) const;
+
+        // A-A-A-I
+        array operator()(const array &idx0, const array &idx1, const array &idx2, const int  idx3) const
+        { return this->operator()(idx0, idx1, idx2, seq(idx3, idx3)); }
+
+        // A-A-A-A
+        array operator()(const array &idx0, const array &idx1, const array &idx2, const array &idx3) const;
+
+        // S-A-S-S
+        array operator()(const seq   &idx0, const array &idx1, const seq   &idx2 = span, const seq   &idx3 = span) const;
+
+        // S-A-I-I, S-A-I-N
+        array operator()(const seq   &idx0, const array &idx1, const int   &idx2, const int   &idx3 =     0) const
+        { return this->operator()(idx0, idx1, seq(idx2, idx2), seq(idx3, idx3)); }
+
+        // I-A-S-S, I-A-N-N, I-A-S-N
+        array operator()(const int   &idx0, const array &idx1, const seq   &idx2 = span, const seq   &idx3 = span) const
+        { return this->operator()(seq(idx0, idx0), idx1, idx2, idx3); }
+
+        // I-A-I-I, I-A-I-N
+        array operator()(const int   &idx0, const array &idx1, const int   &idx2, const int   &idx3 =     0) const
+        { return this->operator()(seq(idx0, idx0), idx1, seq(idx2, idx2), seq(idx3, idx3)); }
+
+        // S-S-A-S, S-S-A-N
+        array operator()(const seq   &idx0, const seq   &idx1, const array &idx2, const seq   &idx3 = span) const;
+
+        // S-S-S-A
+        array operator()(const seq   &idx0, const seq   &idx1, const seq   &idx2, const array &idx3) const;
+
+        // A-S-A-S, A-S-A-N
+        array operator()(const array &idx0, const seq   &idx1, const array &idx2, const seq   &idx3 = span) const;
+
+        // A-S-S-A
+        array operator()(const array &idx0, const seq   &idx1, const seq   &idx2, const array &idx3) const;
+
+        // S-A-A-S, S-A-A-N
+        array operator()(const seq &idx0, const array &idx1, const array &idx2, const seq   &idx3 = span) const;
+
+        // S-A-S-A
+        array operator()(const seq &idx0, const array &idx1, const seq   &idx2, const array &idx3) const;
+
+        // S-S-A-A
+        array operator()(const seq &idx0, const seq &idx1, const array &idx2, const array   &idx3) const;
 
         array row(int index) const;
 

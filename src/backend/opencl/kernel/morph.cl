@@ -34,24 +34,25 @@ void morph(__global T *              out,
            KParam                  iInfo,
            __constant const T *   d_filt,
            __local T *          localMem,
-           dim_type nonBatchBlkSize)
+           dim_type nBBS0, dim_type nBBS1)
 {
     const dim_type halo   = windLen/2;
     const dim_type padding= 2*halo;
     const dim_type shrdLen= get_local_size(0) + padding + 1;
 
     // gfor batch offsets
-    dim_type batchId    = get_group_id(0) / nonBatchBlkSize;
-    in  += (batchId * iInfo.strides[2] + iInfo.offset);
-    out += (batchId * oInfo.strides[2]);
+    dim_type b2 = get_group_id(0) / nBBS0;
+    dim_type b3 = get_group_id(1) / nBBS1;
+    in  += (b2 * iInfo.strides[2] + b3 * iInfo.strides[3] + iInfo.offset);
+    out += (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]);
 
     // local neighborhood indices
     const dim_type lx = get_local_id(0);
     const dim_type ly = get_local_id(1);
 
     // global indices
-    dim_type gx = get_local_size(0) * (get_group_id(0)-batchId*nonBatchBlkSize) + lx;
-    dim_type gy = get_local_size(1) * get_group_id(1) + ly;
+    dim_type gx = get_local_size(0) * (get_group_id(0)-b2*nBBS0) + lx;
+    dim_type gy = get_local_size(1) * (get_group_id(1)-b3*nBBS1) + ly;
 
     // offset values for pulling image to local memory
     dim_type lx2      = lx + get_local_size(0);
@@ -135,12 +136,13 @@ void load2LocVolume(__local T * shrd,
 }
 
 __kernel
-void morph3d(__global T *              out,
-             KParam                    oInfo,
-             __global const T *        in,
-             KParam                    iInfo,
-             __constant const T *      d_filt,
-             __local T *               localMem)
+void morph3d(__global T *         out,
+             KParam               oInfo,
+             __global const T *   in,
+             KParam               iInfo,
+             __constant const T * d_filt,
+             __local T *          localMem,
+             dim_type             nBBS)
 {
     const dim_type halo   = windLen/2;
     const dim_type padding= 2*halo;
@@ -149,13 +151,18 @@ void morph3d(__global T *              out,
     const dim_type shrdLen   = get_local_size(0) + padding + 1;
     const dim_type shrdArea  = shrdLen * (get_local_size(1)+padding);
 
+    // gfor batch offsets
+    dim_type batchId    = get_group_id(0) / nBBS;
+    in  += (batchId * iInfo.strides[3] + iInfo.offset);
+    out += (batchId * oInfo.strides[3]);
+
     dim_type gx, gy, gz, i, j, k;
     { // scoping out unnecessary variables
     const dim_type lx = get_local_id(0);
     const dim_type ly = get_local_id(1);
     const dim_type lz = get_local_id(2);
 
-    gx = get_local_size(0) * get_group_id(0) + lx;
+    gx = get_local_size(0) * (get_group_id(0)-batchId*nBBS) + lx;
     gy = get_local_size(1) * get_group_id(1) + ly;
     gz = get_local_size(2) * get_group_id(2) + lz;
 

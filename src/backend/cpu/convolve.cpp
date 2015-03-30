@@ -132,42 +132,51 @@ void convolve_nd(T *optr, T const *iptr, accT const *fptr,
                 dim4 const &oStrides, dim4 const &sStrides, dim4 const &fStrides,
                 ConvolveBatchKind kind)
 {
-    T * out       = optr;
-    T const *in   = iptr;
-    accT const *filt = fptr;
+    dim_type out_step[4]  = {0, 0, 0, 0}; /* first value is never used, and declared for code simplicity */
+    dim_type in_step[4]   = {0, 0, 0, 0}; /* first value is never used, and declared for code simplicity */
+    dim_type filt_step[4] = {0, 0, 0, 0}; /* first value is never used, and declared for code simplicity */
+    dim_type batch[4]     = {0, 1, 1, 1}; /* first value is never used, and declared for code simplicity */
 
-    dim_type out_step = 0, in_step   = 0, filt_step = 0;
-
-    switch(kind) {
-        case MANY2ONE:
-            out_step = oStrides[baseDim];
-            in_step  = sStrides[baseDim];
+    for (dim_type i=1; i<4; ++i) {
+        if (!(baseDim>=i))
             break;
-        case MANY2MANY:
-            out_step  = oStrides[baseDim];
-            in_step   = sStrides[baseDim];
-            filt_step = fStrides[baseDim];
-            break;
-        case ONE2ALL:
-            out_step  = oStrides[baseDim];
-            filt_step = fStrides[baseDim];
-            break;
-        default:
-            out_step = oStrides[baseDim];
-            break;
+        switch(kind) {
+            case MANY2ONE:
+                out_step[i] = oStrides[i];
+                in_step[i]  = sStrides[i];
+                if (i>=baseDim) batch[i] = sDims[i];
+                break;
+            case MANY2MANY:
+                out_step[i]  = oStrides[i];
+                in_step[i]   = sStrides[i];
+                filt_step[i] = fStrides[i];
+                if (i>=baseDim) batch[i] = sDims[i];
+                break;
+            case ONE2MANY:
+                out_step[i]  = oStrides[i];
+                filt_step[i] = fStrides[i];
+                if (i>=baseDim) batch[i] = fDims[i];
+                break;
+            default:
+                break;
+        }
     }
 
-    dim_type bCount = (kind==ONE2ALL ? fDims[baseDim] : sDims[baseDim]);
+    for (dim_type b3=0; b3<batch[3]; ++b3) {
+        for (dim_type b2=0; b2<batch[2]; ++b2) {
+            for (dim_type b1=0; b1<batch[1]; ++b1) {
 
-    for(dim_type b=0; b<bCount; ++b) {
-        switch(baseDim) {
-            case 1: one2one_1d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, sStrides);                     break;
-            case 2: one2one_2d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, oStrides, sStrides, fStrides); break;
-            case 3: one2one_3d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, oStrides, sStrides, fStrides); break;
+                T * out          = optr + b1 * out_step[1] + b2 * out_step[2] + b3 * out_step[3];
+                T const *in      = iptr + b1 *  in_step[1] + b2 *  in_step[2] + b3 *  in_step[3];
+                accT const *filt = fptr + b1 *filt_step[1] + b2 *filt_step[2] + b3 *filt_step[3];
+
+                switch(baseDim) {
+                    case 1: one2one_1d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, sStrides);                     break;
+                    case 2: one2one_2d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, oStrides, sStrides, fStrides); break;
+                    case 3: one2one_3d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, oStrides, sStrides, fStrides); break;
+                }
+            }
         }
-        out += out_step;
-        in  += in_step;
-        filt+= filt_step;
     }
 }
 
@@ -182,7 +191,7 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
 
     if (expand) {
         for(dim_type d=0; d<4; ++d) {
-            if (kind==ONE2ONE || kind==ONE2ALL) {
+            if (kind==ONE2ONE || kind==ONE2MANY) {
                 oDims[d] = sDims[d]+fDims[d]-1;
             } else {
                 oDims[d] = (d<baseDim ? sDims[d]+fDims[d]-1 : sDims[d]);
@@ -190,7 +199,7 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
         }
     } else {
         oDims = sDims;
-        if (kind==ONE2ALL) oDims[baseDim] = fDims[baseDim];
+        if (kind==ONE2MANY) oDims[baseDim] = fDims[baseDim];
     }
 
     Array<T> out = createEmptyArray<T>(oDims);
@@ -267,18 +276,26 @@ Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter, Array<ac
     auto tStrides = temp.strides();
     auto oStrides = out.strides();
 
-    for (dim_type b=0; b<oDims[2]; ++b) {
-        T const *iptr = signal.get()+ b*sStrides[2];
-        T *tptr = temp.get() + b*tStrides[2];
-        T *optr = out.get()  + b*oStrides[2];
+    for (dim_type b3=0; b3<oDims[3]; ++b3) {
 
-        convolve2_separable<T, accT, 0, expand>(tptr, iptr, c_filter.get(),
-                                                tDims, sDims, sDims, cflen,
-                                                tStrides, sStrides, c_filter.strides()[0]);
+        dim_type i_b3Off = b3*sStrides[3];
+        dim_type t_b3Off = b3*tStrides[3];
+        dim_type o_b3Off = b3*oStrides[3];
 
-        convolve2_separable<T, accT, 1, expand>(optr, tptr, r_filter.get(),
-                                                oDims, tDims, sDims, rflen,
-                                                oStrides, tStrides, r_filter.strides()[0]);
+        for (dim_type b2=0; b2<oDims[2]; ++b2) {
+
+            T const *iptr = signal.get()+ b2*sStrides[2] + i_b3Off;
+            T *tptr = temp.get() + b2*tStrides[2] + t_b3Off;
+            T *optr = out.get()  + b2*oStrides[2] + o_b3Off;
+
+            convolve2_separable<T, accT, 0, expand>(tptr, iptr, c_filter.get(),
+                    tDims, sDims, sDims, cflen,
+                    tStrides, sStrides, c_filter.strides()[0]);
+
+            convolve2_separable<T, accT, 1, expand>(optr, tptr, r_filter.get(),
+                    oDims, tDims, sDims, rflen,
+                    oStrides, tStrides, r_filter.strides()[0]);
+        }
     }
 
     return out;

@@ -70,17 +70,19 @@ seq::seq(double begin, double end, double step): m_gfor(false)
     init(begin, end, step);
 }
 
-seq::seq(seq other, bool is_gfor): m_gfor(is_gfor)
-{
-    this->s = other.s;
-    this->size = other.size;
-}
+seq::seq(seq other, bool is_gfor)
+    : m_gfor(is_gfor)
+    , s(other.s)
+    , size(other.size)
+{ }
 
 seq::operator array() const
 {
     dim_type diff = s.end - s.begin;
     dim_type len = (int)((diff + abs(s.step) * (signbit(diff) == 0 ? 1 : -1)) / s.step);
-    array tmp = (m_gfor) ? range(1, 1, 1, len) : range(len);
+
+    array tmp = (m_gfor) ? range(1, 1, 1, len, 3) : range(len);
+
     array res = s.begin + s.step * tmp;
     return res;
 }

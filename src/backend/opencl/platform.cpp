@@ -186,7 +186,7 @@ static std::string platformMap(std::string &platStr)
 std::string getInfo()
 {
     ostringstream info;
-    info << "ArrayFire v" << AF_VERSION << AF_VERSION_MINOR
+    info << "ArrayFire v" << AF_VERSION
          << " (OpenCL, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
 
     unsigned nDevices = 0;
@@ -322,7 +322,7 @@ void sync(int device)
         setDevice(device);
         getQueue().finish();
         setDevice(currDevice);
-    } catch (cl::Error ex) {
+    } catch (const cl::Error &ex) {
         CL_TO_AF_ERROR(ex);
     }
 }

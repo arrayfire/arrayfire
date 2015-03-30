@@ -37,7 +37,11 @@ IF(${GRAPHICS_FOUND})
 ENDIF()
 
 FILE(GLOB cpu_headers
+<<<<<<< HEAD
   "*.hpp"
+=======
+    "*.hpp"
+>>>>>>> origin/devel
     "*.h")
 
 FILE(GLOB cpu_sources
@@ -78,9 +82,9 @@ source_group(api\\cpp\\Sources FILES ${cpp_sources})
 
 # OS Definitions
 IF(UNIX)
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 ELSE(${UNIX}) #Windows
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 ENDIF()
 
 ADD_LIBRARY(afcpu SHARED
@@ -102,6 +106,9 @@ IF(${GRAPHICS_FOUND})
                        ${OPENGL_glu_LIBRARY})
 ENDIF()
 
+SET_TARGET_PROPERTIES(afcpu PROPERTIES
+    VERSION "${AF_VERSION}"
+    SOVERSION "${AF_VERSION_MAJOR}")
 
 INSTALL(TARGETS afcpu EXPORT CPU DESTINATION lib COMPONENT libraries)
 

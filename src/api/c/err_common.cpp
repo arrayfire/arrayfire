@@ -70,7 +70,7 @@ const string& TypeError::getTypeName() const
 
 int TypeError::getArgIndex() const
 {
-	return argIndex;
+    return argIndex;
 }
 
 ArgumentError::ArgumentError(const char * const  funcName,
@@ -86,12 +86,12 @@ ArgumentError::ArgumentError(const char * const  funcName,
 
 const string& ArgumentError::getExpectedCondition() const
 {
-	return expected;
+    return expected;
 }
 
 int ArgumentError::getArgIndex() const
 {
-	return argIndex;
+    return argIndex;
 }
 
 
@@ -104,7 +104,7 @@ SupportError::SupportError(const char * const funcName,
 
 const string& SupportError::getBackendName() const
 {
-	return backend;
+    return backend;
 }
 
 DimensionError::DimensionError(const char * const  funcName,
@@ -120,12 +120,12 @@ DimensionError::DimensionError(const char * const  funcName,
 
 const string& DimensionError::getExpectedCondition() const
 {
-	return expected;
+    return expected;
 }
 
 int DimensionError::getArgIndex() const
 {
-	return argIndex;
+    return argIndex;
 }
 
 

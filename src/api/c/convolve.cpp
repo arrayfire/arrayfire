@@ -35,17 +35,29 @@ inline static af_array convolve2(const af_array &s, const af_array &c_f, const a
 }
 
 template<dim_type baseDim>
-ConvolveBatchKind identifyBatchKind(dim_type sn, dim_type fn)
+ConvolveBatchKind identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
 {
-    const dim_type batchDim = baseDim + 1;
-    if (sn==baseDim && fn==batchDim)
-        return ONE2ALL;
-    else if (sn==batchDim && fn==batchDim)
-        return MANY2MANY;
-    else if (sn==batchDim && fn==baseDim)
-        return MANY2ONE;
-    else
+    dim_type sn = sDims.ndims();
+    dim_type fn = fDims.ndims();
+
+    if (sn==baseDim && fn==baseDim)
         return ONE2ONE;
+    else if (sn==baseDim && (fn>baseDim && fn<=4))
+        return ONE2MANY;
+    else if ((sn>baseDim && sn<=4) && fn==baseDim)
+        return MANY2ONE;
+    else if ((sn>baseDim && sn<=4) && (fn>baseDim && fn<=4)) {
+        bool doesDimensionsMatch = true;
+        for (dim_type i=baseDim; i<4; i++) {
+            if (sDims[i]!=fDims[i]) {
+                doesDimensionsMatch = false;
+                break;
+            }
+        }
+        return (doesDimensionsMatch ? MANY2MANY : CONVOLVE_UNSUPPORTED_BATCH_MODE);
+    }
+    else
+        return CONVOLVE_UNSUPPORTED_BATCH_MODE;
 }
 
 template<dim_type baseDim, bool expand>
@@ -60,11 +72,9 @@ af_err convolve(af_array *out, af_array signal, af_array filter)
         dim4 sdims = sInfo.dims();
         dim4 fdims = fInfo.dims();
 
-        dim_type batchDim = baseDim+1;
-        ARG_ASSERT(1, (sdims.ndims()<=batchDim));
-        ARG_ASSERT(2, (fdims.ndims()<=batchDim));
+        ConvolveBatchKind convBT = identifyBatchKind<baseDim>(sdims, fdims);
 
-        ConvolveBatchKind convBT = identifyBatchKind<baseDim>(sdims.ndims(), fdims.ndims());
+        ARG_ASSERT(1, (convBT != CONVOLVE_UNSUPPORTED_BATCH_MODE));
 
         af_array output;
         switch(stype) {
@@ -97,7 +107,7 @@ af_err convolve2_sep(af_array *out, af_array col_filter, af_array row_filter, af
 
         dim4 signalDims = sInfo.dims();
 
-        ARG_ASSERT(1, (signalDims.ndims()==2 || signalDims.ndims()==3));
+        ARG_ASSERT(1, (signalDims.ndims()>=2));
         ARG_ASSERT(2, cfInfo.isVector());
         ARG_ASSERT(3, rfInfo.isVector());
 

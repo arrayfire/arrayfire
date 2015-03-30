@@ -1,0 +1,3 @@
+include: [src,include]
+exclude: [src/backend/opencl/cl.hpp, test]
+gcov_options: '-lp'

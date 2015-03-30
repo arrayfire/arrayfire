@@ -48,7 +48,24 @@ AFAPI array join(const int dim, const array &first, const array &second);
    \ingroup manip_mat
    \ingroup arrayfire_func
 */
-AFAPI array tile(const array& in, const unsigned x, const unsigned y=1, const unsigned z=1, const unsigned w=1);
+AFAPI array tile(const array &in, const unsigned x, const unsigned y=1, const unsigned z=1, const unsigned w=1);
+/**
+   @}
+*/
+
+/**
+   \defgroup manip_func_tile tile
+   @{
+   Tile the input array along specified dimensions
+
+   \param[in] in is the input matrix
+   \param[in] dims dim4 of tile dimensions
+   \return the tiled output
+
+   \ingroup manip_mat
+   \ingroup arrayfire_func
+*/
+AFAPI array tile(const array &in, const af::dim4 &dims);
 /**
    @}
 */
@@ -185,7 +202,6 @@ extern "C" {
 */
     AFAPI af_err af_lookup(af_array *out, const af_array in, const af_array indices, const unsigned dim);
 
-
 /**
    Copy and write values in the locations specified by the sequences
 
@@ -198,7 +214,7 @@ extern "C" {
 
    \ingroup index_func_assign
 */
-    AFAPI af_err af_assign(af_array *out, const af_array lhs, unsigned ndims, const af_seq* const index, const af_array rhs);
+    AFAPI af_err af_assign_seq(af_array *out, const af_array lhs, unsigned ndims, const af_seq* const index, const af_array rhs);
 
     /**
        \ingroup manip_func_join
@@ -236,6 +252,16 @@ extern "C" {
        \ingroup manip_func_flip
     */
     AFAPI af_err af_flip(af_array *out, const af_array in, const unsigned dim);
+
+    // generalized indexing function that accepts either af_array or af_seq
+    // along a dimension to index the input array and create the corresponding
+    // output array
+    AFAPI af_err af_index_gen(af_array *out, const af_array in, const dim_type ndims, const af_index_t* indexers);
+
+    // generalized indexing function that accepts either af_array or af_seq
+    // along a dimension to index the input array and create the corresponding
+    // output array
+    AFAPI af_err af_assign_gen(af_array *out, const af_array lhs, const dim_type ndims, const af_index_t* indexers, const af_array rhs);
 
 #ifdef __cplusplus
 }

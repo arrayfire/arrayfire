@@ -14,12 +14,14 @@ void matchTemplate(global outType * out,
                     KParam          sInfo,
                     global const inType * tmplt,
                     KParam          tInfo,
-                    dim_type        nBBS)
+                    dim_type        nBBS0,
+                    dim_type        nBBS1)
 {
-    unsigned batchId = get_group_id(0) / nBBS;
+    unsigned b2 = get_group_id(0) / nBBS0;
+    unsigned b3 = get_group_id(1) / nBBS1;
 
-    dim_type gx = get_local_id(0) + (get_group_id(0) - batchId*nBBS) * get_local_size(0);
-    dim_type gy = get_local_id(1) + get_group_id(1) * get_local_size(1);
+    dim_type gx = get_local_id(0) + (get_group_id(0) - b2*nBBS0) * get_local_size(0);
+    dim_type gy = get_local_id(1) + (get_group_id(1) - b3*nBBS1)* get_local_size(1);
 
     if (gx < sInfo.dims[0] && gy < sInfo.dims[1]) {
 
@@ -43,8 +45,8 @@ void matchTemplate(global outType * out,
             tImgMean /= winNumElems;
         }
 
-        global const inType* sptr  = srch + (batchId * sInfo.strides[2]);
-        global outType* optr       = out  + (batchId * oInfo.strides[2]);
+        global const inType* sptr  = srch + (b2 * sInfo.strides[2] + b3 * sInfo.strides[3] + sInfo.offset);
+        global outType* optr       = out  + (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]);
 
         // mean for window
         // this variable will be used based on MATCH_T value

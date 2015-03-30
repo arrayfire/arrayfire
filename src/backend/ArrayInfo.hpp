@@ -20,7 +20,7 @@ calcOffset(const af::dim4 &strides, const af::dim4 &offsets);
 af::dim4
 calcStrides(const af::dim4 &parentDim);
 
-af::dim4 getOutDims(const af::dim4 ldims, const af::dim4 rdims, bool batchMode);
+af::dim4 getOutDims(const af::dim4 &ldims, const af::dim4 &rdims, bool batchMode);
 
 /// Array Arrayementation Info class
 // This class is the base class to all Array objects. The purpose of this class
@@ -29,12 +29,14 @@ af::dim4 getOutDims(const af::dim4 ldims, const af::dim4 rdims, bool batchMode);
 class ArrayInfo
 {
 private:
+    int             devId;
     af_dtype        type;
     af::dim4        dim_size;
     af::dim4        dim_offsets, dim_strides;
 
 public:
-    ArrayInfo(af::dim4 size, af::dim4 offset, af::dim4 stride, af_dtype af_type):
+    ArrayInfo(int id, af::dim4 size, af::dim4 offset, af::dim4 stride, af_dtype af_type):
+        devId(id),
         type(af_type),
         dim_size(size),
         dim_offsets(offset),
@@ -57,6 +59,11 @@ public:
     size_t elements() const             { return dim_size.elements();   }
     size_t ndims() const                { return dim_size.ndims();      }
     const af::dim4& dims() const        { return dim_size;              }
+
+    int getDevId() const { return devId; }
+
+    void setId(int id) const { const_cast<ArrayInfo *>(this)->setId(id); }
+    void setId(int id) { devId = id; }
 
     void resetInfo(const af::dim4& dims)
     {

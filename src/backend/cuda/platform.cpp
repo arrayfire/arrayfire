@@ -153,7 +153,7 @@ namespace cuda
     string getInfo()
     {
         ostringstream info;
-        info << "ArrayFire v" << AF_VERSION << AF_VERSION_MINOR
+        info << "ArrayFire v" << AF_VERSION
              << " (CUDA, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
         info << getPlatformInfo();
         for (int i = 0; i < getDeviceCount(); ++i) {

@@ -35,15 +35,24 @@ template<typename T, typename accType, dim_type baseDim, bool expand>
 void convolve_nd(Param out, const Param signal, const Param filter, ConvolveBatchKind kind)
 {
     conv_kparam_t param;
-    // prepare launch parameters
-    prepareKernelArgs<T, baseDim>(param, kind, out.info.dims, signal.info.dims, filter.info.dims,
-                                  out.info.strides, signal.info.strides, filter.info.strides);
+
+    for (dim_type i=0; i<3; ++i) {
+        param.o[i] = 0;
+        param.s[i] = 0;
+    }
+    param.launchMoreBlocks = kind==MANY2MANY || kind==ONE2MANY;
+    param.outHasNoOffset = kind==MANY2ONE || kind==ONE2ONE;
+    param.inHasNoOffset  = kind!=MANY2MANY;
+
+    prepareKernelArgs<T>(param, out.info.dims, filter.info.dims, baseDim);
 
     switch(baseDim) {
         case 1: conv1<T, accType, expand>(param, out, signal, filter); break;
         case 2: conv2<T, accType, expand>(param, out, signal, filter); break;
         case 3: conv3<T, accType, expand>(param, out, signal, filter); break;
     }
+
+    bufferFree(param.impulse);
 }
 
 }

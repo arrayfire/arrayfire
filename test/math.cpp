@@ -37,7 +37,7 @@ const double dbl_err = 1e-10;
         delete[] h_b;                                           \
     }                                                           \
 
-#define MATH_TESTS_FLOAT(func) MATH_TESTS_LIMITS(float, float, func, flt_err, 0.05, 0.95)
+#define MATH_TESTS_FLOAT(func) MATH_TESTS_LIMITS(float, float, func, flt_err, 0.05f, 0.95f)
 #define MATH_TESTS_DOUBLE(func) MATH_TESTS_LIMITS(double, double, func, dbl_err, 0.05, 0.95)
 
 MATH_TESTS_FLOAT(sin)

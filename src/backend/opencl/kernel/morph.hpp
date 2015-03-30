@@ -71,7 +71,7 @@ void morph(Param         out,
         auto morphOp = make_kernel<Buffer, KParam,
                                    Buffer, KParam,
                                    Buffer, cl::LocalSpaceArg,
-                                   dim_type
+                                   dim_type, dim_type
                                   >(*morKernels[device]);
 
         NDRange local(THREADS_X, THREADS_Y);
@@ -80,7 +80,7 @@ void morph(Param         out,
         dim_type blk_y = divup(in.info.dims[1], THREADS_Y);
         // launch batch * blk_x blocks along x dimension
         NDRange global(blk_x * THREADS_X * in.info.dims[2],
-                blk_y * THREADS_Y);
+                       blk_y * THREADS_Y * in.info.dims[3]);
 
         // copy mask/filter to constant memory
         cl_int se_size   = sizeof(T)*windLen*windLen;
@@ -95,7 +95,7 @@ void morph(Param         out,
 
         morphOp(EnqueueArgs(getQueue(), global, local),
                 *out.data, out.info, *in.data, in.info, *mBuff,
-                cl::Local(locSize*sizeof(T)), blk_x);
+                cl::Local(locSize*sizeof(T)), blk_x, blk_y);
 
         bufferFree(mBuff);
 
@@ -135,7 +135,7 @@ void morph3d(Param       out,
 
         auto morphOp = make_kernel<Buffer, KParam,
                                    Buffer, KParam,
-                                   Buffer, cl::LocalSpaceArg
+                                   Buffer, cl::LocalSpaceArg, dim_type
                                   >(*morKernels[device]);
 
         NDRange local(CUBE_X, CUBE_Y, CUBE_Z);
@@ -144,9 +144,9 @@ void morph3d(Param       out,
         dim_type blk_y = divup(in.info.dims[1], CUBE_Y);
         dim_type blk_z = divup(in.info.dims[2], CUBE_Z);
         // launch batch * blk_x blocks along x dimension
-        NDRange global(blk_x * CUBE_X,
-                blk_y * CUBE_Y,
-                blk_z * CUBE_Z);
+        NDRange global(blk_x * CUBE_X * in.info.dims[3],
+                       blk_y * CUBE_Y,
+                       blk_z * CUBE_Z);
 
         // copy mask/filter to constant memory
         cl_int se_size   = sizeof(T)*windLen*windLen*windLen;
@@ -162,7 +162,7 @@ void morph3d(Param       out,
 
         morphOp(EnqueueArgs(getQueue(), global, local),
                 *out.data, out.info, *in.data, in.info,
-                *mBuff, cl::Local(locSize*sizeof(T)));
+                *mBuff, cl::Local(locSize*sizeof(T)), blk_x);
 
         bufferFree(mBuff);
         CL_DEBUG_FINISH(getQueue());

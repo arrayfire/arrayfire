@@ -65,14 +65,6 @@ int main(int argc, char **argv)
         af_print(per_day);
 
         printf("number of days over five: %g\n", sum<float>(per_day > 5));
-
-        array per_site = constant(0, sites);
-        gfor (seq s, sites)
-            per_site(s) = sum(measurement * (site == s));
-
-        printf("total rainfall at each site:\n");
-        af_print(per_site);
-
     } catch (af::exception &e) {
         fprintf(stderr, "%s\n", e.what());
         throw;

@@ -19,7 +19,7 @@
         cudaError_t _cuda_error = fn;           \
         if (_cuda_error != cudaSuccess) {       \
             char cuda_err_msg[1024];            \
-            snprintf(cuda_err_msg,				\
+            snprintf(cuda_err_msg,                \
                      sizeof(cuda_err_msg),      \
                      "CUDA Error (%d): %s\n",   \
                      (int)(_cuda_error),        \

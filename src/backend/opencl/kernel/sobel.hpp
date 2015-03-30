@@ -65,20 +65,20 @@ void sobel(Param dx, Param dy, const Param in)
         dim_type blk_x = divup(in.info.dims[0], THREADS_X);
         dim_type blk_y = divup(in.info.dims[1], THREADS_Y);
 
-        NDRange global(blk_x * in.info.dims[2] * in.info.dims[3] * THREADS_X,
-                       blk_y * THREADS_Y);
+        NDRange global(blk_x * in.info.dims[2] * THREADS_X,
+                       blk_y * in.info.dims[3] * THREADS_Y);
 
         auto sobelOp = make_kernel<Buffer, KParam,
                                    Buffer, KParam,
                                    Buffer, KParam,
                                    cl::LocalSpaceArg,
-                                   dim_type> (*sobKernels[device]);
+                                   dim_type, dim_type> (*sobKernels[device]);
 
         size_t loc_size = (THREADS_X+ker_size-1)*(THREADS_Y+ker_size-1)*sizeof(Ti);
 
         sobelOp(EnqueueArgs(getQueue(), global, local),
                     *dx.data, dx.info, *dy.data, dy.info,
-                    *in.data, in.info, cl::Local(loc_size), blk_x);
+                    *in.data, in.info, cl::Local(loc_size), blk_x, blk_y);
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {

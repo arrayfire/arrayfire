@@ -21,6 +21,22 @@ af_make_seq(double begin, double end, double step);
 
 static const af_seq af_span = {1, 1, 0};
 
+typedef struct {
+    // if seq is used for current dimension
+    // mIsSeq is set to 'true' and mIndexer.seq
+    // should be used. Otherwise, mIndexer.arr
+    // should be used.
+    union {
+        af_array arr;
+        af_seq   seq;
+    } mIndexer;
+    // below variable is used to determine if
+    // the current dimension is indexed using
+    // af_array or af_seq
+    bool     mIsSeq;
+    bool     isBatch;
+} af_index_t;
+
 #ifdef __cplusplus
 namespace af
 {
@@ -67,6 +83,8 @@ public:
 
 extern AFAPI int end;
 extern AFAPI seq span;
+
+typedef af_index_t indexType;
 
 }
 #endif

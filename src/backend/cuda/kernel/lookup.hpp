@@ -11,6 +11,8 @@
 #include <backend.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
+#include <math.hpp>
+#include <utility.hpp>
 #include <debug_cuda.hpp>
 
 namespace cuda
@@ -25,19 +27,6 @@ static const dim_type THREADS_X = 32;
 static const dim_type THREADS_Y = 8;
 
 static const dim_type THRD_LOAD = THREADS_X/THREADS_Y;
-
-__device__
-dim_type trimIndex(dim_type idx, const dim_type &len)
-{
-    dim_type ret_val = idx;
-    dim_type offset  = abs(ret_val)%len;
-    if (ret_val<0) {
-        ret_val = offset-1;
-    } else if (ret_val>=len) {
-        ret_val = len-offset-1;
-    }
-    return ret_val;
-}
 
 template<typename in_t, typename idx_t>
 __global__

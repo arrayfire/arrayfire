@@ -23,22 +23,23 @@ void sobel3x3(global To * dx, KParam dxInfo,
               global To * dy, KParam dyInfo,
               global const Ti * in, KParam iInfo,
               local        Ti * localMem,
-              dim_type nBBS)
+              dim_type nBBS0, dim_type nBBS1)
 {
     const dim_type radius  = 1;
     const dim_type padding = 2*radius;
     const dim_type shrdLen = get_local_size(0) + padding;
 
-    unsigned batchId = get_group_id(0) / nBBS;
-    global const Ti* iptr = in + (batchId * iInfo.strides[2] + iInfo.offset);
-    global To*      dxptr = dx + (batchId * dxInfo.strides[2]);
-    global To*      dyptr = dy + (batchId * dyInfo.strides[2]);
+    unsigned b2 = get_group_id(0) / nBBS0;
+    unsigned b3 = get_group_id(1) / nBBS1;
+    global const Ti* iptr = in + (b2 * iInfo.strides[2]  + b3 * iInfo.strides[3] + iInfo.offset);
+    global To*      dxptr = dx + (b2 * dxInfo.strides[2] + b3 * dxInfo.strides[3]);
+    global To*      dyptr = dy + (b2 * dyInfo.strides[2] + b3 * dyInfo.strides[3]);
 
     dim_type lx = get_local_id(0);
     dim_type ly = get_local_id(1);
 
-    dim_type gx = get_local_size(0) * (get_group_id(0)-batchId*nBBS) + lx;
-    dim_type gy = get_local_size(1) * get_group_id(1) + ly;
+    dim_type gx = get_local_size(0) * (get_group_id(0)-b2*nBBS0) + lx;
+    dim_type gy = get_local_size(1) * (get_group_id(1)-b3*nBBS1) + ly;
 
     dim_type lx2 = lx + get_local_size(0);
     dim_type ly2 = ly + get_local_size(1);

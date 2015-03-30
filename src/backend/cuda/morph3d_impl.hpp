@@ -31,10 +31,6 @@ Array<T> morph3d(const Array<T> &in, const Array<T> &mask)
     if (mdims[0] > 7)
         AF_ERROR("Upto 7x7x7 kernels are only supported in CUDA backend", AF_ERR_SIZE);
 
-    if (in.dims()[3] > 1)
-        AF_ERROR("Batch not supported for volumetic morph operations in CUDA backend",
-                 AF_ERR_NOT_SUPPORTED);
-
     Array<T> out       = createEmptyArray<T>(in.dims());
 
     CUDA_CHECK(cudaMemcpyToSymbol(kernel::cFilter, mask.get(),

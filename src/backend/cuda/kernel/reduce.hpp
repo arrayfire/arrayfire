@@ -17,6 +17,9 @@
 #include <debug_cuda.hpp>
 #include "config.hpp"
 #include <memory.hpp>
+#include <boost/scoped_ptr.hpp>
+
+using boost::scoped_ptr;
 
 namespace cuda
 {
@@ -141,8 +144,8 @@ namespace kernel
 
         Param<To> tmp = out;
 
-        dim_type tmp_elements = 1;
         if (blocks_dim[dim] > 1) {
+            dim_type tmp_elements = 1;
             tmp.dims[dim] = blocks_dim[dim];
 
             for (int k = 0; k < 4; k++) tmp_elements *= tmp.dims[k];
@@ -395,7 +398,6 @@ namespace kernel
             uint threads_y = THREADS_PER_BLOCK / threads_x;
 
             Param<To> tmp;
-            To *h_ptr = NULL;
 
             uint blocks_x = divup(in.dims[0], threads_x * REPEAT);
             uint blocks_y = divup(in.dims[1], threads_y);
@@ -413,34 +415,34 @@ namespace kernel
             tmp.ptr = memAlloc<To>(tmp_elements);
             reduce_first_launcher<Ti, To, op>(tmp, in, blocks_x, blocks_y, threads_x);
 
-            h_ptr = new To[tmp_elements];
+            scoped_ptr<To> h_ptr(new To[tmp_elements]);
+            To* h_ptr_raw = h_ptr.get();
 
-            CUDA_CHECK(cudaMemcpy(h_ptr, tmp.ptr, tmp_elements * sizeof(To), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpy(h_ptr_raw, tmp.ptr, tmp_elements * sizeof(To), cudaMemcpyDeviceToHost));
             memFree(tmp.ptr);
 
             Binary<To, op> reduce;
             To out = reduce.init();
             for (int i = 0; i < tmp_elements; i++) {
-                out = reduce(out, h_ptr[i]);
+                out = reduce(out, h_ptr_raw[i]);
             }
 
-            delete[] h_ptr;
             return out;
 
         } else {
 
-            Ti *h_ptr = new Ti[in_elements];
-            CUDA_CHECK(cudaMemcpy(h_ptr, in.ptr, in_elements * sizeof(Ti), cudaMemcpyDeviceToHost));
+            scoped_ptr<Ti> h_ptr(new Ti[in_elements]);
+            Ti* h_ptr_raw = h_ptr.get();
+            CUDA_CHECK(cudaMemcpy(h_ptr_raw, in.ptr, in_elements * sizeof(Ti), cudaMemcpyDeviceToHost));
 
             Transform<Ti, To, op> transform;
             Binary<To, op> reduce;
             To out = reduce.init();
 
             for (int i = 0; i < in_elements; i++) {
-                out = reduce(out, transform(h_ptr[i]));
+                out = reduce(out, transform(h_ptr_raw[i]));
             }
 
-            delete[] h_ptr;
             return out;
         }
     }

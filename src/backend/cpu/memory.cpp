@@ -16,8 +16,6 @@
 
 namespace cpu
 {
-    void garbageCollect();
-
     class Manager
     {
         public:
@@ -48,6 +46,8 @@ namespace cpu
     } mem_info;
 
     static size_t used_bytes = 0;
+    static size_t used_buffers = 0;
+    static size_t total_bytes = 0;
     typedef std::map<void *, mem_info> mem_t;
     typedef mem_t::iterator mem_iter;
 
@@ -61,8 +61,11 @@ namespace cpu
 
     void garbageCollect()
     {
-        for(mem_iter iter = memory_map.begin(); iter != memory_map.end(); iter++) {
-            if ((iter->second).is_free) freeWrapper(iter->first);
+        for(mem_iter iter = memory_map.begin(); iter != memory_map.end(); ++iter) {
+            if ((iter->second).is_free) {
+                total_bytes -= iter->second.bytes;
+                freeWrapper(iter->first);
+            }
         }
 
         mem_iter memory_curr = memory_map.begin();
@@ -93,11 +96,12 @@ namespace cpu
                 garbageCollect();
             }
 
-            for(mem_iter iter = memory_map.begin(); iter != memory_map.end(); iter++) {
+            for(mem_iter iter = memory_map.begin(); iter != memory_map.end(); ++iter) {
                 mem_info info = iter->second;
                 if (info.is_free && info.bytes == alloc_bytes) {
                     iter->second.is_free = false;
                     used_bytes += alloc_bytes;
+                    used_buffers++;
                     return (T *)iter->first;
                 }
             }
@@ -109,6 +113,8 @@ namespace cpu
             memory_map[ptr] = info;
 
             used_bytes += alloc_bytes;
+            used_buffers++;
+            total_bytes -= alloc_bytes;
         }
         return ptr;
     }
@@ -121,9 +127,19 @@ namespace cpu
         if (iter != memory_map.end()) {
             iter->second.is_free = true;
             used_bytes -= iter->second.bytes;
+            used_buffers--;
         } else {
             freeWrapper(ptr); // Free it because we are not sure what the size is
         }
+    }
+
+    void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
+                          size_t *lock_bytes,  size_t *lock_buffers)
+    {
+        if (alloc_bytes   ) *alloc_bytes   = total_bytes;
+        if (alloc_buffers ) *alloc_buffers = memory_map.size();
+        if (lock_bytes    ) *lock_bytes    = used_bytes;
+        if (lock_buffers  ) *lock_buffers  = used_buffers;
     }
 
     template<typename T>

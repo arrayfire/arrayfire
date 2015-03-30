@@ -47,15 +47,15 @@ namespace cuda
 
             const dim_type ozw = ow * out.strides[3] + oz * out.strides[2];
 
-            T val = (ow / t3) * s2 * s1 * s0;
-            val  += (oz / t2) * s1 * s0;
+            T val = (ow % s3) * s2 * s1 * s0;
+            val  += (oz % s2) * s1 * s0;
 
             const dim_type incy = blocksPerMatY * blockDim.y;
             const dim_type incx = blocksPerMatX * blockDim.x;
 
             for(dim_type oy = yy; oy < out.dims[1]; oy += incy) {
                 dim_type oyzw = ozw + oy * out.strides[1];
-                T valY = val + (oy / t1) * s0;
+                T valY = val + (oy % s1) * s0;
                 for(dim_type ox = xx; ox < out.dims[0]; ox += incx) {
                     dim_type oidx = oyzw + ox;
 
