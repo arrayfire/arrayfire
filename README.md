@@ -10,7 +10,7 @@ A few lines of code in ArrayFire can replace dozens of lines of parallel computi
 To build ArrayFire from source, please follow the instructions on our [wiki](https://github.com/arrayfire/arrayfire/wiki).
 
 ### Download ArrayFire Installers
-We currently have binary tar balls and installers available for the beta version of ArrayFire 3.0. These can be downloaded at the [ArrayFire Downloads](http://arrayfire.com/download/) page.
+We currently have binary tar balls and installers available for the beta version of ArrayFire 3.0. These can be downloaded at the [ArrayFire Downloads](http://go.arrayfire.com/l/37882/2015-03-31/mmhqy) page.
 
 ### Support and Contact Info
 
