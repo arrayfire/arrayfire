@@ -28,6 +28,7 @@ ExternalProject_Add(
     -DBUILD_TEST:BOOL=OFF
     -DSUFFIX_LIB:STRING=
     -DUSE_SYSTEM_GTEST:BOOL=ON
+    ${byproducts}
     )
 
 ExternalProject_Get_Property(clFFT-external install_dir)

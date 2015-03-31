@@ -28,6 +28,7 @@ ExternalProject_Add(
     -DBUILD_TEST:BOOL=OFF
     -DBUILD_KTEST:BOOL=OFF
     -DSUFFIX_LIB:STRING=
+    ${byproducts}
     )
 
 ExternalProject_Get_Property(clBLAS-external install_dir)
