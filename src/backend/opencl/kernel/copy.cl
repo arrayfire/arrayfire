@@ -74,7 +74,7 @@ void copy(__global outType * dst,
     uint ostride0 = oInfo.strides[0];
 
     if (gy < oInfo.dims[1] && gz < oInfo.dims[2] && gw < oInfo.dims[3]) {
-        dim_type loop_offset = get_num_groups(0)*get_local_size(0);
+        dim_type loop_offset = get_local_size(0);
         bool cond = gy < trgt.dim[1] && gz < trgt.dim[2] && gw < trgt.dim[3];
         for(dim_type rep=gx; rep<oInfo.dims[0]; rep+=loop_offset) {
             outType temp  = default_value;
