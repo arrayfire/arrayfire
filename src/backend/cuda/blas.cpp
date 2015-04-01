@@ -10,6 +10,7 @@
 #include <blas.hpp>
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
+#include <platform.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -17,6 +18,7 @@
 #include <iostream>
 #include <math.hpp>
 #include <err_common.hpp>
+#include <boost/scoped_ptr.hpp>
 
 namespace cuda
 {
@@ -48,8 +50,7 @@ class cublasHandle
 {
     cublasHandle_t handle;
 public:
-    cublasHandle()
-    {
+    cublasHandle() : handle(0){
         cublasStatus_t cErr;
         cErr = cublasCreate(&handle);
         if(cErr != CUBLAS_STATUS_SUCCESS) {
@@ -57,6 +58,7 @@ public:
             throw std::runtime_error(string("cuBLAS Error: ") + cublasErrorString(cErr));
         }
     }
+
     ~cublasHandle()             { cublasDestroy(handle);}
     operator cublasHandle_t()   { return handle;        }
 };
@@ -64,8 +66,13 @@ public:
 cublasHandle&
 getHandle()
 {
-    static cublasHandle handle;
-    return handle;
+    using boost::scoped_ptr;
+    static scoped_ptr<cublasHandle> handle[DeviceManager::MAX_DEVICES];
+    if(!handle[getActiveDeviceId()]) {
+        handle[getActiveDeviceId()].reset(new cublasHandle());
+    }
+
+    return *handle[getActiveDeviceId()];
 }
 
 cublasOperation_t
