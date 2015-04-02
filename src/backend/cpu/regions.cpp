@@ -104,15 +104,15 @@ static void setUnion(LabelNode<T>* x, LabelNode<T>* y)
 }
 
 template<typename T>
-Array<T> regions(const Array<uchar> &in, af_connectivity connectivity)
+Array<T> regions(const Array<char> &in, af_connectivity connectivity)
 {
     const dim4 in_dims = in.dims();
 
     // Create output placeholder
     Array<T> out = createValueArray(in_dims, (T)0);
 
-    const uchar *in_ptr  = in.get();
-          T     *out_ptr = out.get();
+    const char *in_ptr  = in.get();
+          T    *out_ptr = out.get();
 
     // Map labels
     typedef typename std::map<T, LabelNode<T>* > label_map_t;
@@ -202,13 +202,11 @@ Array<T> regions(const Array<uchar> &in, af_connectivity connectivity)
 }
 
 #define INSTANTIATE(T)\
-    template Array<T> regions<T>(const Array<uchar> &in, af_connectivity connectivity);
+    template Array<T> regions<T>(const Array<char> &in, af_connectivity connectivity);
 
 INSTANTIATE(float )
 INSTANTIATE(double)
-INSTANTIATE(char  )
 INSTANTIATE(int   )
 INSTANTIATE(uint  )
-INSTANTIATE(uchar )
 
 }
