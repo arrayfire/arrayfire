@@ -29,6 +29,17 @@ ENDIF()
 
 ADD_DEFINITIONS(-DAF_CUDA)
 
+IF(CMAKE_VERSION VERSION_LESS 3.2)
+    IF(${CUDA_VERSION_MAJOR} LESS 7)
+        MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cuSolve library. Linear Algebra will not be available." )
+        SET(CUDA_cusolver_LIBRARY)
+    ELSE()
+        MESSAGE(STATUS "CUDA cusolver library available in CUDA Version ${CUDA_VERSION_STRING}")
+        ADD_DEFINITIONS(-DWITH_LINEAR_ALGEBRA)
+        SET(CUDA_cusolver_LIBRARY ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcusolver.so)
+    ENDIF()
+ENDIF()
+
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
     ${Boost_INCLUDE_DIR}
@@ -165,8 +176,14 @@ CUDA_ADD_LIBRARY(afcuda SHARED
 
 ADD_DEPENDENCIES(afcuda ${ptx_targets})
 
-
-TARGET_LINK_LIBRARIES(afcuda ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} ${FreeImage_LIBS} ${CUDA_CUFFT_LIBRARIES} ${CUDA_NVVM_LIBRARIES} ${CUDA_CUDA_LIBRARY})
+TARGET_LINK_LIBRARIES(afcuda
+                      ${CUDA_CUBLAS_LIBRARIES}
+                      ${CUDA_LIBRARIES}
+                      ${CUDA_cusolver_LIBRARY}
+                      ${FreeImage_LIBS}
+                      ${CUDA_CUFFT_LIBRARIES}
+                      ${CUDA_NVVM_LIBRARIES}
+                      ${CUDA_CUDA_LIBRARY})
 
 SET_TARGET_PROPERTIES(afcuda PROPERTIES
     VERSION "${AF_VERSION}"
