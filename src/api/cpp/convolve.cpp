@@ -19,7 +19,7 @@ array convolve(const array& signal, const array& filter, bool expand)
     unsigned sN = signal.numdims();
     unsigned fN = filter.numdims();
 
-    switch(std::max(sN,fN)) {
+    switch(std::min(sN,fN)) {
         case 1: return convolve1(signal, filter, expand);
         case 2: return convolve2(signal, filter, expand);
         case 3: return convolve3(signal, filter, expand);

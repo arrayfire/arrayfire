@@ -26,6 +26,6 @@ namespace opencl
     template<> struct           is_complex<cfloat>  { static const bool value = true;   };
     template<> struct           is_complex<cdouble> { static const bool value = true;   };
 
-	template<typename T > const char *shortname(bool caps=false);
+    template<typename T > const char *shortname(bool caps=false);
 
 }

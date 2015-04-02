@@ -57,8 +57,8 @@ FOREACH(FILE ${FILES})
         BUILD_EXAMPLE(${EXAMPLE} ${FILE} cuda afcuda)
     endif()
 
-    if(${ArrayFire_OPENCL_FOUND})  # variable defined by FIND(ArrayFire ...)
-        BUILD_EXAMPLE(${EXAMPLE} ${FILE} opencl ${ArrayFire_OPENCL_LIBRARIES})
+    if(${ArrayFire_OpenCL_FOUND})  # variable defined by FIND(ArrayFire ...)
+        BUILD_EXAMPLE(${EXAMPLE} ${FILE} opencl ${ArrayFire_OpenCL_LIBRARIES})
     elseif(TARGET afopencl)        # variable defined by the ArrayFire build tree
         BUILD_EXAMPLE(${EXAMPLE} ${FILE} opencl afopencl)
     endif()

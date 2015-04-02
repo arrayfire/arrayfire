@@ -185,6 +185,33 @@ namespace af
     /**
        @}
     */
+
+    /**
+       \defgroup device_func_mem deviceMemInfo
+
+       Get the information of memory used by the memory manager
+
+       @{
+
+       \ingroup arrayfire_func
+       \ingroup device_mat
+    */
+
+    AFAPI void deviceMemInfo(size_t *alloc_bytes, size_t *alloc_buffers,
+                             size_t *lock_bytes, size_t *lock_buffers);
+
+    /**
+       \defgroup device_func_gc deviceGC
+
+       Call the garbage collection function in the memory manager
+
+       @{
+
+       \ingroup arrayfire_func
+       \ingroup device_mat
+    */
+
+    AFAPI void deviceGC();
 }
 #endif
 
@@ -259,6 +286,19 @@ extern "C" {
        \ingroup construct_mat
     */
     AFAPI af_err af_device_array(af_array *arr, const void *data, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+
+    /**
+       Get memory information from the memory manager
+       \ingroup device_func_mem
+    */
+    AFAPI af_err af_device_mem_info(size_t *alloc_bytes, size_t *alloc_buffers,
+                                    size_t *lock_bytes, size_t *lock_buffers);
+
+    /**
+       Call the garbage collection routine
+       \ingroup device_func_gc
+    */
+    AFAPI af_err af_device_gc();
 
 #ifdef __cplusplus
 }

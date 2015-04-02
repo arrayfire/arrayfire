@@ -36,14 +36,14 @@ void range_kernel(__global T *out, const KParam op, const int dim,
     const dim_type incy = blocksPerMatY * get_local_size(1);
     const dim_type incx = blocksPerMatX * get_local_size(0);
 
-    T val = mul3 * ow + mul2 * oz;
+    T valZW = (mul3 * ow) + (mul2 * oz);
 
     for(dim_type oy = yy; oy < op.dims[1]; oy += incy) {
-        val += mul1 * oy;
+        T valYZW = valZW + (mul1 * oy);
         dim_type oyzw = ozw + oy * op.strides[1];
         for(dim_type ox = xx; ox < op.dims[0]; ox += incx) {
             dim_type oidx = oyzw + ox;
-            val += mul0 * ox;
+            T val = valYZW + (mul0 * ox);
 
             out[oidx] = val;
         }

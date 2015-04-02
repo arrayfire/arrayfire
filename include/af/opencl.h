@@ -8,9 +8,9 @@
  ********************************************************/
 
 #if defined(__APPLE__) || defined(__MACOSX)
-#include <OpenCL/cl.hpp>
+#include <OpenCL/cl.h>
 #else
-#include <CL/cl.hpp>
+#include <CL/cl.h>
 #endif
 #include <af/defines.h>
 

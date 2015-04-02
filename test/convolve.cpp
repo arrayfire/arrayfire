@@ -349,8 +349,84 @@ TEST(Convolve, Separable_DimCheck)
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(signal));
 }
 
+TEST(Convolve1, CPP)
+{
+    if (noDoubleTests<float>()) return;
 
-TEST(Convolve, CPP)
+    using af::dim4;
+
+    vector<dim4>      numDims;
+    vector<vector<float> >      in;
+    vector<vector<float> >   tests;
+
+    readTests<float, float, int>(string(TEST_DIR"/convolve/vector_same.test"), numDims, in, tests);
+
+    //![ex_image_convolve1]
+    //vector<dim4> numDims;
+    //vector<vector<float> > in;
+    af::array signal(numDims[0], &(in[0].front()));
+    //signal dims = [32 1 1 1]
+    af::array filter(numDims[1], &(in[1].front()));
+    //filter dims = [4 1 1 1]
+
+    af::array output = convolve1(signal, filter, false);
+    //output dims = [32 1 1 1] - same as input since expand(3rd argument is false)
+    //None of the dimensions > 1 has lenght > 1, so no batch mode is activated.
+    //![ex_image_convolve1]
+
+    vector<float> currGoldBar = tests[0];
+    size_t nElems  = output.elements();
+    float *outData = new float[nElems];
+    output.host(outData);
+
+    for (size_t elIter=0; elIter<nElems; ++elIter) {
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+    }
+
+    delete[] outData;
+}
+
+TEST(Convolve2, CPP)
+{
+    if (noDoubleTests<float>()) return;
+
+    using af::dim4;
+
+    vector<dim4>      numDims;
+    vector<vector<float> >      in;
+    vector<vector<float> >   tests;
+
+    readTests<float, float, int>(string(TEST_DIR"/convolve/rectangle_same_one2many.test"), numDims, in, tests);
+
+    //![ex_image_convolve2]
+    //vector<dim4> numDims;
+    //vector<vector<float> > in;
+    af::array signal(numDims[0], &(in[0].front()));
+    //signal dims = [15 17 1 1]
+    af::array filter(numDims[1], &(in[1].front()));
+    //filter dims = [5 5 2 1]
+
+    af::array output = convolve2(signal, filter, false);
+    //output dims = [15 17 1 1] - same as input since expand(3rd argument is false)
+    //however, notice that the 3rd dimension of filter is > 1.
+    //So, one to many batch mode will be activated automatically
+    //where the 2d input signal is convolved with each 2d filter
+    //and the result will written corresponding slice in the output 3d array
+    //![ex_image_convolve2]
+
+    vector<float> currGoldBar = tests[0];
+    size_t nElems  = output.elements();
+    float *outData = new float[nElems];
+    output.host(outData);
+
+    for (size_t elIter=0; elIter<nElems; ++elIter) {
+        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+    }
+
+    delete[] outData;
+}
+
+TEST(Convolve3, CPP)
 {
     if (noDoubleTests<float>()) return;
 
@@ -362,10 +438,20 @@ TEST(Convolve, CPP)
 
     readTests<float, float, int>(string(TEST_DIR"/convolve/cuboid_same_many2many.test"), numDims, in, tests);
 
+    //![ex_image_convolve3]
+    //vector<dim4> numDims;
+    //vector<vector<float> > in;
     af::array signal(numDims[0], &(in[0].front()));
+    //signal dims = [10 11 2 2]
     af::array filter(numDims[1], &(in[1].front()));
+    //filter dims = [4 2 3 2]
 
     af::array output = convolve3(signal, filter, false);
+    //output dims = [10 11 2 2] - same as input since expand(3rd argument is false)
+    //however, notice that the 4th dimension is > 1 for both signal
+    //and the filter, therefore many to many batch mode will be
+    //activated where each 3d signal is convolved with the corresponding 3d filter
+    //![ex_image_convolve3]
 
     vector<float> currGoldBar = tests[0];
     size_t nElems  = output.elements();
@@ -392,11 +478,23 @@ TEST(Convolve, separable_CPP)
     readTests<float, float, int>(string(TEST_DIR"/convolve/separable_conv2d_same_rectangle_batch.test"),
                                  numDims, in, tests);
 
+    //![ex_image_conv2_sep]
+    //vector<dim4> numDims;
+    //vector<vector<float> > in;
     af::array signal(numDims[0], &(in[0].front()));
+    //signal dims = [3 4 2 1]
     af::array cFilter(numDims[1], &(in[1].front()));
+    //coloumn filter dims = [2 1 1 1]
     af::array rFilter(numDims[2], &(in[2].front()));
+    //row filter dims = [3 1 1 1]
 
     af::array output = convolve(cFilter, rFilter, signal, false);
+    //output signal dims = [3 4 2 1] - same as input since 'expand = false'
+    //notice that the input signal is 3d array, therefore
+    //batch mode will be automatically activated.
+    //output will be 3d array with result of each 2d array convolution(with same filter)
+    //stacked along the 3rd dimension
+    //![ex_image_conv2_sep]
 
     vector<float> currGoldBar = tests[0];
     size_t nElems  = output.elements();
@@ -409,4 +507,108 @@ TEST(Convolve, separable_CPP)
     }
 
     delete[] outData;
+}
+
+TEST(Convolve, Docs_Unified_Wrapper)
+{
+    // This unit test doesn't necessarily need to function
+    // accuracy as af::convolve is merely a wrapper to
+    // af::convolve[1|2|3]
+    using af::array;
+    using af::dim4;
+    using af::randu;
+    using af::constant;
+    using af::convolve;
+
+    //![ex_image_convolve_1d]
+    array a = randu(10);
+    //af_print(a);
+    //a [10 1 1 1] = 0.0000 0.1315 0.7556 0.4587 0.5328 0.2190 0.0470 0.6789 0.6793 0.9347
+    array b = randu(4);
+    //af_print(b);
+    //b [4 1 1 1]  = 0.3835 0.5194 0.8310 0.0346
+    array c = convolve(a, b);
+    //af_print(c);
+    //c [10 1 1 1] = 0.3581 0.6777 1.0750 0.7679 0.5903 0.4851 0.6598 1.2770 1.0734 0.8002
+    //![ex_image_convolve_1d]
+
+    //![ex_image_convolve_2d]
+    array d = constant(0.5, 5, 5);
+    //af_print(d);
+    //d [5 5 1 1]
+    //    0.5000     0.5000     0.5000     0.5000     0.5000
+    //    0.5000     0.5000     0.5000     0.5000     0.5000
+    //    0.5000     0.5000     0.5000     0.5000     0.5000
+    //    0.5000     0.5000     0.5000     0.5000     0.5000
+    //    0.5000     0.5000     0.5000     0.5000     0.5000
+    array e = constant(1, 2, 2);
+    //af_print(e);
+    //e [2 2 1 1]
+    //     1.0000     1.0000
+    //     1.0000     1.0000
+    array f = convolve(d, e);
+    //af_print(f);
+    //f [5 5 1 1]
+    //     2.0000     2.0000     2.0000     2.0000     1.0000
+    //     2.0000     2.0000     2.0000     2.0000     1.0000
+    //     2.0000     2.0000     2.0000     2.0000     1.0000
+    //     2.0000     2.0000     2.0000     2.0000     1.0000
+    //     1.0000     1.0000     1.0000     1.0000     0.5000
+    //![ex_image_convolve_2d]
+
+    //![ex_image_convolve_3d]
+    array g = constant(1, 4, 4, 4);
+    //af_print(g);
+    //g [4 4 4 1]
+    //    1.0000     1.0000     1.0000     1.0000
+    //    1.0000     1.0000     1.0000     1.0000
+    //    1.0000     1.0000     1.0000     1.0000
+    //    1.0000     1.0000     1.0000     1.0000
+
+    //    1.0000     1.0000     1.0000     1.0000
+    //    1.0000     1.0000     1.0000     1.0000
+    //    1.0000     1.0000     1.0000     1.0000
+    //    1.0000     1.0000     1.0000     1.0000
+
+    //    1.0000     1.0000     1.0000     1.0000
+    //    1.0000     1.0000     1.0000     1.0000
+    //    1.0000     1.0000     1.0000     1.0000
+    //    1.0000     1.0000     1.0000     1.0000
+
+    //    1.0000     1.0000     1.0000     1.0000
+    //    1.0000     1.0000     1.0000     1.0000
+    //    1.0000     1.0000     1.0000     1.0000
+    //    1.0000     1.0000     1.0000     1.0000
+    array h = constant(0.5, 2, 2, 2);
+    //af_print(h);
+    //h [2 2 2 1]
+    //    0.5000     0.5000
+    //    0.5000     0.5000
+
+    //    0.5000     0.5000
+    //    0.5000     0.5000
+
+    array i = convolve(g, h);
+    //af_print(i);
+    //i [4 4 4 1]
+    //    4.0000     4.0000     4.0000     2.0000
+    //    4.0000     4.0000     4.0000     2.0000
+    //    4.0000     4.0000     4.0000     2.0000
+    //    2.0000     2.0000     2.0000     1.0000
+
+    //    4.0000     4.0000     4.0000     2.0000
+    //    4.0000     4.0000     4.0000     2.0000
+    //    4.0000     4.0000     4.0000     2.0000
+    //    2.0000     2.0000     2.0000     1.0000
+
+    //    4.0000     4.0000     4.0000     2.0000
+    //    4.0000     4.0000     4.0000     2.0000
+    //    4.0000     4.0000     4.0000     2.0000
+    //    2.0000     2.0000     2.0000     1.0000
+
+    //    2.0000     2.0000     2.0000     1.0000
+    //    2.0000     2.0000     2.0000     1.0000
+    //    2.0000     2.0000     2.0000     1.0000
+    //    1.0000     1.0000     1.0000     0.5000
+    //![ex_image_convolve_3d]
 }

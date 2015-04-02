@@ -155,7 +155,7 @@ bool ArrayInfo::isLinear() const
     return true;
 }
 
-dim4 getOutDims(const dim4 ldims, const dim4 rdims, bool batchMode)
+dim4 getOutDims(const dim4 &ldims, const dim4 &rdims, bool batchMode)
 {
     if (!batchMode) {
         DIM_ASSERT(1, ldims == rdims);

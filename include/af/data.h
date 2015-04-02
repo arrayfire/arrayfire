@@ -154,7 +154,7 @@ namespace af
        \ingroup data_mat
        \ingroup arrafire_func
     */
-    AFAPI array iota(const dim4 dims, const dim4 tile_dims = dim4(1), dtype ty=f32);
+    AFAPI array iota(const dim4 &dims, const dim4 &tile_dims = dim4(1), dtype ty=f32);
 
     /**
        @}

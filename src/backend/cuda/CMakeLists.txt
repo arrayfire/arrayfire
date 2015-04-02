@@ -20,6 +20,9 @@ ENDIF()
 IF(UNIX)
   SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -Xcompiler -fvisibility=hidden)
   REMOVE_DEFINITIONS(-std=c++0x)
+  IF(${WITH_COVERAGE})
+    SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler -fprofile-arcs -Xcompiler -ftest-coverage -Xlinker -fprofile-arcs -Xlinker -ftest-coverage")
+  ENDIF(${WITH_COVERAGE})
 ELSE()
   ADD_DEFINITIONS(-DAFDLL)
 ENDIF()
@@ -176,6 +179,10 @@ IF(FORGE_FOUND)
                         ${FORGE_LIBRARIES}
                        )
 ENDIF()
+
+SET_TARGET_PROPERTIES(afcuda PROPERTIES
+    VERSION "${AF_VERSION}"
+    SOVERSION "${AF_VERSION_MAJOR}")
 
 INSTALL(TARGETS afcuda EXPORT CUDA DESTINATION lib COMPONENT libraries)
 

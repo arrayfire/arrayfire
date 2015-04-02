@@ -52,11 +52,11 @@ void load2ShrdMem(T * shrd, const T * in,
         shrd[lIdx(lx, ly, shrdStride, 1)+ch*schStride] = in[lIdx(gx_, gy_, inStride1, inStride0)+ch*ichStride];
 }
 
-template<typename T, dim_type channels, dim_type batchIndex>
+template<typename T, dim_type channels>
 static __global__
 void meanshiftKernel(Param<T> out, CParam<T> in,
                      float space_, dim_type radius, float cvar,
-                     uint iter, dim_type nonBatchBlkSize)
+                     uint iter, dim_type nBBS0, dim_type nBBS1)
 {
     SharedMemory<T> shared;
     T * shrdMem = shared.getPointer();
@@ -68,18 +68,19 @@ void meanshiftKernel(Param<T> out, CParam<T> in,
     // the variable ichStride will only effect when we have >1
     // channels. in the other cases, the expression in question
     // will not use the variable
-    const dim_type ichStride   = in.strides[batchIndex-1];
+    const dim_type ichStride   = in.strides[2];
 
     // gfor batch offsets
-    unsigned batchId = blockIdx.x / nonBatchBlkSize;
-    const T* iptr    = (const T *) in.ptr + (batchId *  in.strides[batchIndex]);
-    T*       optr    = (T *      )out.ptr + (batchId * out.strides[batchIndex]);
+    unsigned b2 = blockIdx.x / nBBS0;
+    unsigned b3 = blockIdx.y / nBBS1;
+    const T* iptr = (const T *) in.ptr + (b2 *  in.strides[2] + b3 *  in.strides[3]);
+    T*       optr = (T *      )out.ptr + (b2 * out.strides[2] + b3 * out.strides[3]);
 
     const dim_type lx = threadIdx.x;
     const dim_type ly = threadIdx.y;
 
-    const dim_type gx = blockDim.x * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
-    const dim_type gy = blockDim.y * blockIdx.y + ly;
+    const dim_type gx = blockDim.x * (blockIdx.x-b2*nBBS0) + lx;
+    const dim_type gy = blockDim.y * (blockIdx.y-b3*nBBS1) + ly;
 
     dim_type gx2 = gx + blockDim.x;
     dim_type gy2 = gy + blockDim.y;
@@ -196,11 +197,10 @@ void meanshift(Param<T> out, CParam<T> in, float s_sigma, float c_sigma, uint it
     dim_type blk_x = divup(in.dims[0], THREADS_X);
     dim_type blk_y = divup(in.dims[1], THREADS_Y);
 
-    const dim_type bIndex   = (is_color ? 3 : 2);
-    const dim_type bCount   = in.dims[bIndex];
-    const dim_type channels = (is_color ? in.dims[2] : 1);
+    const dim_type bCount   = (is_color ? 1 : in.dims[2]);
+    const dim_type channels = (is_color ? in.dims[2] : 1); // this has to be 3 for color images
 
-    dim3 blocks(blk_x * bCount, blk_y);
+    dim3 blocks(blk_x * bCount, blk_y * in.dims[3]);
 
     // clamp spatical and chromatic sigma's
     float space_     = std::min(11.5f, s_sigma);
@@ -210,9 +210,9 @@ void meanshift(Param<T> out, CParam<T> in, float s_sigma, float c_sigma, uint it
     size_t shrd_size = channels*(threads.x + padding)*(threads.y+padding)*sizeof(T);
 
     if (is_color)
-        (meanshiftKernel<T, 3, 3>) <<<blocks, threads, shrd_size>>>(out, in, space_, radius, cvar, iter, blk_x);
+        (meanshiftKernel<T, 3>) <<<blocks, threads, shrd_size>>>(out, in, space_, radius, cvar, iter, blk_x, blk_y);
     else
-        (meanshiftKernel<T, 1, 2>) <<<blocks, threads, shrd_size>>>(out, in, space_, radius, cvar, iter, blk_x);
+        (meanshiftKernel<T, 1>) <<<blocks, threads, shrd_size>>>(out, in, space_, radius, cvar, iter, blk_x, blk_y);
 
     POST_LAUNCH_CHECK();
 }

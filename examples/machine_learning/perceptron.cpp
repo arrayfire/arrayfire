@@ -58,7 +58,7 @@ array train(const array &X, const array &Y,
             printf("Iter :%d, Err: %.4f\n", i + 1, mean_abs_err);
         }
 
-        Weights = Weights + alpha * matmul(transpose(X), err);
+        Weights = Weights + alpha * matmulTN(X, err);
     }
 
     return Weights;

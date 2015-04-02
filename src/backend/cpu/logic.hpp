@@ -21,32 +21,32 @@ namespace cpu
 
 #define LOGIC_FN(OP, op)                        \
     template<typename T>                        \
-    struct BinOp<uchar, T, OP>                  \
+    struct BinOp<char, T, OP>                   \
     {                                           \
-        uchar eval(T lhs, T rhs)                \
+        char eval(T lhs, T rhs)                 \
         {                                       \
             return lhs op rhs;                  \
         }                                       \
     };                                          \
 
 
-LOGIC_FN(af_eq_t, ==)
-LOGIC_FN(af_neq_t, !=)
-LOGIC_FN(af_lt_t, <)
-LOGIC_FN(af_gt_t, >)
-LOGIC_FN(af_le_t, <=)
-LOGIC_FN(af_ge_t, >=)
-LOGIC_FN(af_and_t, &&)
-LOGIC_FN(af_or_t, ||)
+    LOGIC_FN(af_eq_t, ==)
+    LOGIC_FN(af_neq_t, !=)
+    LOGIC_FN(af_lt_t, <)
+    LOGIC_FN(af_gt_t, >)
+    LOGIC_FN(af_le_t, <=)
+    LOGIC_FN(af_ge_t, >=)
+    LOGIC_FN(af_and_t, &&)
+    LOGIC_FN(af_or_t, ||)
 
 #undef LOGIC_FN
 
 #define LOGIC_CPLX_FN(T, OP, op)                    \
     template<>                                      \
-    struct BinOp<uchar, std::complex<T>, OP>        \
+    struct BinOp<char, std::complex<T>, OP>         \
     {                                               \
-        uchar eval(std::complex<T> lhs,             \
-                   std::complex<T> rhs)             \
+        char eval(std::complex<T> lhs,              \
+                  std::complex<T> rhs)              \
         {                                           \
             return std::abs(lhs) op std::abs(rhs);  \
         }                                           \
@@ -70,14 +70,14 @@ LOGIC_CPLX_FN(double, af_or_t, ||)
 #undef LOGIC_CPLX_FN
 
     template<typename T, af_op_t op>
-    Array<uchar> logicOp(const Array<T> &lhs, const Array<T> &rhs, const af::dim4 &odims)
+    Array<char> logicOp(const Array<T> &lhs, const Array<T> &rhs, const af::dim4 &odims)
     {
         TNJ::Node_ptr lhs_node = lhs.getNode();
         TNJ::Node_ptr rhs_node = rhs.getNode();
 
-        TNJ::BinaryNode<uchar, T, op> *node = new TNJ::BinaryNode<uchar, T, op>(lhs_node, rhs_node);
+        TNJ::BinaryNode<char, T, op> *node = new TNJ::BinaryNode<char, T, op>(lhs_node, rhs_node);
 
-        return createNodeArray<uchar>(odims, TNJ::Node_ptr(
+        return createNodeArray<char>(odims, TNJ::Node_ptr(
                                           reinterpret_cast<TNJ::Node *>(node)));
     }
 

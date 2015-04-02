@@ -63,10 +63,10 @@ void meanshift(Param out, const Param in, float s_sigma, float c_sigma, uint ite
 
         auto meanshiftOp = make_kernel<Buffer, KParam,
                                        Buffer, KParam,
-                                       LocalSpaceArg, dim_type,
+                                       LocalSpaceArg,
                                        dim_type, float,
                                        dim_type, float,
-                                       unsigned, dim_type
+                                       unsigned, dim_type, dim_type
                                       >(*msKernels[device]);
 
         NDRange local(THREADS_X, THREADS_Y);
@@ -74,11 +74,10 @@ void meanshift(Param out, const Param in, float s_sigma, float c_sigma, uint ite
         dim_type blk_x = divup(in.info.dims[0], THREADS_X);
         dim_type blk_y = divup(in.info.dims[1], THREADS_Y);
 
-        const dim_type bIndex   = (is_color ? 3 : 2);
-        const dim_type bCount   = in.info.dims[bIndex];
+        const dim_type bCount   = (is_color ? 1 : in.info.dims[2]);
         const dim_type channels = (is_color ? in.info.dims[2] : 1);
 
-        NDRange global(bCount*blk_x*THREADS_X, blk_y*THREADS_Y);
+        NDRange global(bCount*blk_x*THREADS_X, in.info.dims[3]*blk_y*THREADS_Y);
 
         // clamp spatical and chromatic sigma's
         float space_     = std::min(11.5f, s_sigma);
@@ -89,8 +88,8 @@ void meanshift(Param out, const Param in, float s_sigma, float c_sigma, uint ite
 
         meanshiftOp(EnqueueArgs(getQueue(), global, local),
                     *out.data, out.info, *in.data, in.info,
-                    cl::Local(loc_size), bIndex, channels,
-                    space_, radius, cvar, iter, blk_x);
+                    cl::Local(loc_size), channels,
+                    space_, radius, cvar, iter, blk_x, blk_y);
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {

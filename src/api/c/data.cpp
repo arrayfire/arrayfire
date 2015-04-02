@@ -55,8 +55,8 @@ af_err af_create_array(af_array *result, const void * const data,
                        const unsigned ndims, const dim_type * const dims,
                        const af_dtype type)
 {
-    af_array out;
     try {
+        af_array out;
         AF_CHECK(af_init());
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
@@ -86,8 +86,8 @@ af_err af_constant(af_array *result, const double value,
                    const unsigned ndims, const dim_type * const dims,
                    const af_dtype type)
 {
-    af_array out;
     try {
+        af_array out;
         AF_CHECK(af_init());
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
@@ -123,8 +123,8 @@ static inline af_array createCplx(dim4 dims, const Ti real, const Ti imag)
 af_err af_constant_complex(af_array *result, const double real, const double imag,
                            const unsigned ndims, const dim_type * const dims, af_dtype type)
 {
-    af_array out;
     try {
+        af_array out;
         AF_CHECK(af_init());
 
         dim4 d((size_t)dims[0]);
@@ -147,8 +147,8 @@ af_err af_constant_complex(af_array *result, const double real, const double ima
 af_err af_constant_long(af_array *result, const intl val,
                         const unsigned ndims, const dim_type * const dims)
 {
-    af_array out;
     try {
+        af_array out;
         AF_CHECK(af_init());
 
         dim4 d((size_t)dims[0]);
@@ -167,8 +167,8 @@ af_err af_constant_long(af_array *result, const intl val,
 af_err af_constant_ulong(af_array *result, const uintl val,
                          const unsigned ndims, const dim_type * const dims)
 {
-    af_array out;
     try {
+        af_array out;
         AF_CHECK(af_init());
 
         dim4 d((size_t)dims[0]);
@@ -188,8 +188,8 @@ af_err af_constant_ulong(af_array *result, const uintl val,
 af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type * const dims,
                         const af_dtype type)
 {
-    af_array out;
     try {
+        af_array out;
         AF_CHECK(af_init());
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
@@ -217,11 +217,11 @@ af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type *
 //Strong Exception Guarantee
 af_err af_copy_array(af_array *out, const af_array in)
 {
-    ArrayInfo info = getInfo(in);
-    const af_dtype type = info.getType();
-
-    af_array res;
     try {
+        ArrayInfo info = getInfo(in);
+        const af_dtype type = info.getType();
+
+        af_array res;
         switch(type) {
         case f32:   res = copyArray<float   >(in); break;
         case c32:   res = copyArray<cfloat  >(in); break;
@@ -261,8 +261,8 @@ static inline af_array identity_(const af::dim4 &dims)
 
 af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
 {
-    af_array result;
     try {
+        af_array result;
         AF_CHECK(af_init());
 
         dim4 d((size_t)dims[0]);
@@ -285,13 +285,13 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims
         std::swap(*out, result);
     }
     CATCHALL
-        return AF_SUCCESS;
+    return AF_SUCCESS;
 }
 
 af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
 {
-    af_array result;
     try {
+        af_array result;
         AF_CHECK(af_init());
 
         dim4 d((size_t)dims[0]);
@@ -314,8 +314,8 @@ af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims
 
 af_err af_identity(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
 {
-    af_array result;
     try {
+        af_array result;
         AF_CHECK(af_init());
         dim4 d((size_t)dims[0]);
 
@@ -413,8 +413,8 @@ static inline af_array range_(const dim4& d, const int seq_dim)
 af_err af_range(af_array *result, const unsigned ndims, const dim_type * const dims,
                const int seq_dim, const af_dtype type)
 {
-    af_array out;
     try {
+        af_array out;
         AF_CHECK(af_init());
 
         DIM_ASSERT(1, ndims > 0 && ndims <= 4);
@@ -448,8 +448,8 @@ static inline af_array iota_(const dim4 &dims, const dim4 &tile_dims)
 af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const dims,
                const unsigned t_ndims, const dim_type * const tdims, const af_dtype type)
 {
-    af_array out;
     try {
+        af_array out;
         AF_CHECK(af_init());
 
         DIM_ASSERT(1, ndims > 0 && ndims <= 4);

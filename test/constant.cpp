@@ -16,29 +16,55 @@
 using namespace std;
 using namespace af;
 
+template<typename T>
+class Constant : public ::testing::Test { };
 
-#define CONSTANT_TESTS(TY, VAL)                         \
-    TEST(ConstantTests, Test_##TY)                      \
-    {                                                   \
-        if (noDoubleTests<TY>()) return;                \
-        const int num = 1000;                           \
-        TY val = VAL;                                   \
-        dtype dty = (dtype) dtype_traits<TY>::af_type;  \
-        af::array in = constant(val, num, dty);         \
-                                                        \
-        TY *h_in = in.host<TY>();                       \
-                                                        \
-        for (int i = 0; i < num; i++) {                 \
-            ASSERT_EQ(h_in[i], val);                    \
-        }                                               \
-                                                        \
-        delete[] h_in;                                  \
-    }                                                   \
+typedef ::testing::Types<float, af::cfloat, double, af::cdouble, int, unsigned, char, uchar, uintl, intl> TestTypes;
+TYPED_TEST_CASE(Constant, TestTypes);
 
-CONSTANT_TESTS(float, 3.5);
-CONSTANT_TESTS(double, 5.5);
-CONSTANT_TESTS(int, ((1 << 31) + (1 << 24)));
-CONSTANT_TESTS(unsigned, ((1u << 31) + (1u << 24)));
-CONSTANT_TESTS(uchar, 255);
-CONSTANT_TESTS(uintl, ((1UL << 63) + (1UL << 54)));
-CONSTANT_TESTS(intl, ((1LL << 63) + (1LL << 54)));
+template<typename T>
+void ConstantCPPCheck(T value) {
+    if (noDoubleTests<T>()) return;
+
+    const int num = 1000;
+    T val = value;
+    dtype dty = (dtype) dtype_traits<T>::af_type;
+    af::array in = constant(val, num, dty);
+
+    vector<T> h_in(num);
+    in.host(&h_in.front());
+
+    for (int i = 0; i < num; i++) {
+        ASSERT_EQ(h_in[i], val);
+    }
+}
+
+template<typename T>
+void ConstantCCheck(T value) {
+    if (noDoubleTests<T>()) return;
+
+    const int num = 1000;
+    typedef typename af::dtype_traits<T>::base_type BT;
+    BT val = ::real(value);
+    dtype dty = (dtype) dtype_traits<T>::af_type;
+    af_array out;
+    dim_type dim[] = {(dim_type)num};
+    ASSERT_EQ(AF_SUCCESS, af_constant(&out, val, 1, dim, dty));
+
+    vector<T> h_in(num);
+    af_get_data_ptr(&h_in.front(), out);
+
+    for (int i = 0; i < num; i++) {
+        ASSERT_EQ(h_in[i], val);
+    }
+}
+
+TYPED_TEST(Constant, basicCPP)
+{
+    ConstantCPPCheck<TypeParam>(5);
+}
+
+TYPED_TEST(Constant, basicC)
+{
+    ConstantCCheck<TypeParam>(5);
+}

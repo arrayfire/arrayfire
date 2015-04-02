@@ -188,7 +188,7 @@ namespace af
         return range(dim4(d0, d1, d2, d3), seq_dim, ty);
     }
 
-    array iota(const dim4 dims, const dim4 tile_dims, af::dtype ty)
+    array iota(const dim4 &dims, const dim4 &tile_dims, af::dtype ty)
     {
         af_array out;
         AF_THROW(af_iota(&out, dims.ndims(), dims.get(), tile_dims.ndims(), tile_dims.get(), ty));

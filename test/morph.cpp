@@ -194,25 +194,12 @@ void morphInputTest(void)
     vector<T>   in(100,1);
     vector<T>   mask(9,1);
 
-    // Check for 4D inputs
-    af::dim4 dims(5,5,2,2);
+    // Check for 1D inputs
+    af::dim4 dims = af::dim4(100,1,1,1);
     af::dim4 mdims(3,3,1,1);
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&maskArray, &mask.front(),
                 mdims.ndims(), mdims.get(), (af_dtype) af::dtype_traits<T>::af_type));
-
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
-
-    if (isDilation)
-        ASSERT_EQ(AF_ERR_SIZE, af_dilate(&outArray, inArray, maskArray));
-    else
-        ASSERT_EQ(AF_ERR_SIZE, af_erode(&outArray, inArray, maskArray));
-
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-
-    // Check for 1D inputs
-    dims = af::dim4(100,1,1,1);
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));

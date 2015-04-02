@@ -13,6 +13,7 @@
 #include <iostream>
 #include <cassert>
 #include <err_cpu.hpp>
+#include <err_common.hpp>
 
 namespace cpu
 {
@@ -115,7 +116,7 @@ toCblasTranspose(af_blas_transpose opt)
         case AF_NO_TRANSPOSE        : out = CblasNoTrans;   break;
         case AF_TRANSPOSE           : out = CblasTrans;     break;
         case AF_CONJUGATE_TRANSPOSE : out = CblasConjTrans; break;
-        default                     : assert( "INVALID af_blas_transpose" && 1!=1);
+        default                     : AF_ERROR("INVALID af_blas_transpose", AF_ERR_INVALID_ARG);
     }
     return out;
 }

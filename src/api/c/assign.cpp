@@ -16,6 +16,7 @@
 #include <backend.hpp>
 #include <Array.hpp>
 #include <copy.hpp>
+#include <assign.hpp>
 #include <math.hpp>
 
 using namespace detail;
@@ -76,7 +77,7 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
         TYPE_ERROR(1, iType);
 }
 
-af_err af_assign(af_array *out,
+af_err af_assign_seq(af_array *out,
                  const af_array lhs, const unsigned ndims,
                  const af_seq *index, const af_array rhs)
 {
@@ -120,6 +121,126 @@ af_err af_assign(af_array *out,
         std::swap(*out, res);
     }
     CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+template<typename T>
+static void genAssign(af_array& out, const af_index_t* indexers, const af_array& rhs)
+{
+    detail::assign<T>(getWritableArray<T>(out), indexers, getArray<T>(rhs));
+}
+
+af_err af_assign_gen(af_array *out,
+                    const af_array lhs,
+                    const dim_type ndims, const af_index_t* indexers,
+                    const af_array rhs)
+{
+    af_array output = 0;
+    // spanner is sequence indexer used for indexing along the
+    // dimensions after ndims
+    af_index_t spanner;
+    spanner.mIndexer.seq = af_span;
+    spanner.mIsSeq = true;
+
+    try {
+        ARG_ASSERT(2, (ndims>0));
+        ARG_ASSERT(3, (indexers!=NULL));
+
+        int track = 0;
+        vector<af_seq> seqs(4, af_span);
+        for (dim_type i = 0; i < ndims; i++) {
+            if (indexers[i].mIsSeq) {
+                track++;
+                seqs[i] = indexers[i].mIndexer.seq;
+            }
+        }
+
+        if (track==ndims) {
+            // all indexers are sequences, redirecting to af_assign
+            return af_assign_seq(out, lhs, ndims, &(seqs.front()), rhs);
+        }
+
+        ARG_ASSERT(1, (lhs!=0));
+        ARG_ASSERT(4, (rhs!=0));
+
+        if (*out != lhs) AF_CHECK(af_copy_array(&output, lhs));
+        else             output = lhs;
+
+        ArrayInfo lInfo = getInfo(output);
+        ArrayInfo rInfo = getInfo(rhs);
+        dim4 lhsDims    = lInfo.dims();
+        dim4 rhsDims    = rInfo.dims();
+        af_dtype lhsType= lInfo.getType();
+        af_dtype rhsType= rInfo.getType();
+
+        ARG_ASSERT(1, (lhsType==rhsType));
+        ARG_ASSERT(3, (rhsDims.ndims()>0));
+        ARG_ASSERT(1, (lhsDims.ndims()>=rhsDims.ndims()));
+        ARG_ASSERT(2, (lhsDims.ndims()>=(int)ndims));
+
+        dim4 oDims = af::toDims(seqs, lhsDims);
+        // if af_array are indexers along any
+        // particular dimension, set the length of
+        // that dimension accordingly before any checks
+        for (dim_type i=0; i<ndims; i++) {
+            if (!indexers[i].mIsSeq) {
+                oDims[i] = getInfo(indexers[i].mIndexer.arr).elements();
+            }
+        }
+
+        for (int i = 0; i < 4; i++) {
+            if (oDims[i] != rhsDims[i]) {
+                AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
+            }
+        }
+
+        af_index_t idxrs[4];
+        // set all dimensions above ndims to spanner indexer
+        for (dim_type i=ndims; i<4; ++i) idxrs[i] = spanner;
+
+        for (dim_type i=0; i<ndims; ++i) {
+            if (!indexers[i].mIsSeq) {
+                // check if all af_arrays have atleast one value
+                // to enable indexing along that dimension
+                ArrayInfo idxInfo = getInfo(indexers[i].mIndexer.arr);
+                af_dtype idxType  = idxInfo.getType();
+
+                ARG_ASSERT(3, (idxType!=c32));
+                ARG_ASSERT(3, (idxType!=c64));
+                ARG_ASSERT(3, (idxType!=b8 ));
+
+                idxrs[i].mIndexer.arr = indexers[i].mIndexer.arr;
+                idxrs[i].mIsSeq = indexers[i].mIsSeq;
+            } else {
+                // af_seq is being used for this dimension
+                // just copy the indexer to local variable
+                idxrs[i] = indexers[i];
+            }
+        }
+
+        try {
+            switch(rhsType) {
+                case c64: genAssign<cdouble>(output, idxrs, rhs); break;
+                case f64: genAssign<double >(output, idxrs, rhs); break;
+                case c32: genAssign<cfloat >(output, idxrs, rhs); break;
+                case f32: genAssign<float  >(output, idxrs, rhs); break;
+                case u64: genAssign<uintl  >(output, idxrs, rhs); break;
+                case u32: genAssign<uint   >(output, idxrs, rhs); break;
+                case s64: genAssign<intl   >(output, idxrs, rhs); break;
+                case s32: genAssign<int    >(output, idxrs, rhs); break;
+                case  u8: genAssign<uchar  >(output, idxrs, rhs); break;
+                case  b8: genAssign<char   >(output, idxrs, rhs); break;
+                default: TYPE_ERROR(1, rhsType);
+            }
+        } catch(...) {
+            if (*out != lhs) AF_CHECK(af_destroy_array(output));
+            throw;
+        }
+    }
+    CATCHALL;
+
+    std::swap(*out, output);
 
     return AF_SUCCESS;
 }

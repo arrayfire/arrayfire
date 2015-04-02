@@ -143,18 +143,8 @@ void medfiltInputTest(void)
 
     vector<T>   in(100, 1);
 
-    // Check for 4D inputs
-    af::dim4 dims(5, 5, 2, 2);
-
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
-
-    ASSERT_EQ(AF_ERR_SIZE, af_medfilt(&outArray, inArray, 1, 1, AF_ZERO));
-
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-
     // Check for 1D inputs
-    dims = af::dim4(100, 1, 1, 1);
+    af::dim4 dims = af::dim4(100, 1, 1, 1);
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));

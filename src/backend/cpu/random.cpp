@@ -35,12 +35,12 @@ template<typename T, typename GenType>
 is_arithmetic_t<T>
 urand(GenType &generator)
 {
-	typedef typename conditional<   is_floating_point<T>::value,
-									uniform_real_distribution<T>,
+    typedef typename conditional<   is_floating_point<T>::value,
+                                    uniform_real_distribution<T>,
 #if OS_WIN
                                     uniform_int_distribution<unsigned>>::type dist;
 #else
-									uniform_int_distribution<T >> ::type dist;
+                                    uniform_int_distribution<T >> ::type dist;
 #endif
     return bind(dist(), generator);
 }

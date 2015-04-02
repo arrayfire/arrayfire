@@ -12,12 +12,14 @@
 
 #include <af/array.h>
 #include <af/index.h>
+#include <af/arith.h>
 #include <ArrayInfo.hpp>
 #include <err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
 #include <Array.hpp>
 #include <lookup.hpp>
+#include <index.hpp>
 
 using namespace detail;
 using std::vector;
@@ -115,4 +117,92 @@ af_seq
 af_make_seq(double begin, double end, double step) {
     af_seq seq = {begin, end, step};
     return seq;
+}
+
+// idxrs parameter to the below static function
+// expects 4 values which is handled appropriately
+// by the C-API af_index_gen
+template<typename T>
+static inline
+af_array genIndex(const af_array& in,  const af_index_t idxrs[])
+{
+    return getHandle<T>(index<T>(getArray<T>(in), idxrs));
+}
+
+af_err af_index_gen(af_array *out, const af_array in, const dim_type ndims, const af_index_t* indexers)
+{
+    af_array output = 0;
+    // spanner is sequence indexer used for indexing along the
+    // dimensions after ndims
+    af_index_t spanner;
+    spanner.mIndexer.seq = af_span;
+    spanner.mIsSeq = true;
+
+    try {
+        ARG_ASSERT(2, (ndims>0));
+        ARG_ASSERT(3, (indexers!=NULL));
+
+        int track = 0;
+        af_seq seqs[] = {af_span, af_span, af_span, af_span};
+        for (dim_type i = 0; i < ndims; i++) {
+            if (indexers[i].mIsSeq) {
+                track++;
+                seqs[i] = indexers[i].mIndexer.seq;
+            }
+        }
+
+        if (track==ndims) {
+            // all indexers are sequences, redirecting to af_index
+            return af_index(out, in, ndims, seqs);
+        }
+
+        af_index_t idxrs[4];
+        // set all dimensions above ndims to spanner indexer
+        for (dim_type i=ndims; i<4; ++i) idxrs[i] = spanner;
+
+        for (dim_type i=0; i<ndims; ++i) {
+            if (!indexers[i].mIsSeq) {
+                // check if all af_arrays have atleast one value
+                // to enable indexing along that dimension
+                ArrayInfo idxInfo = getInfo(indexers[i].mIndexer.arr);
+                af_dtype idxType  = idxInfo.getType();
+
+                ARG_ASSERT(3, (idxType!=c32));
+                ARG_ASSERT(3, (idxType!=c64));
+                ARG_ASSERT(3, (idxType!=b8 ));
+
+                idxrs[i].mIndexer.arr = indexers[i].mIndexer.arr;
+                idxrs[i].mIsSeq = indexers[i].mIsSeq;
+            } else {
+                // af_seq is being used for this dimension
+                // just copy the indexer to local variable
+                idxrs[i] = indexers[i];
+            }
+        }
+
+        ArrayInfo iInfo = getInfo(in);
+        dim4 iDims = iInfo.dims();
+
+        ARG_ASSERT(1, (iDims.ndims()>0));
+
+        af_dtype inType = getInfo(in).getType();
+        switch(inType) {
+            case c64: output = genIndex<cdouble>(in, idxrs); break;
+            case f64: output = genIndex<double >(in, idxrs); break;
+            case c32: output = genIndex<cfloat >(in, idxrs); break;
+            case f32: output = genIndex<float  >(in, idxrs); break;
+            case u64: output = genIndex<uintl  >(in, idxrs); break;
+            case u32: output = genIndex<uint   >(in, idxrs); break;
+            case s64: output = genIndex<intl   >(in, idxrs); break;
+            case s32: output = genIndex<int    >(in, idxrs); break;
+            case  u8: output = genIndex<uchar  >(in, idxrs); break;
+            case  b8: output = genIndex<char   >(in, idxrs); break;
+            default: TYPE_ERROR(1, inType);
+        }
+    }
+    CATCHALL;
+
+    std::swap(*out, output);
+
+    return AF_SUCCESS;
 }

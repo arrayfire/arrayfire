@@ -69,7 +69,6 @@ static af_array var(const af_array& in, bool isbiased, int dim)
     dim4 iDims = input.dims();
 
     Array<outType> meanArr = mean<outType>(input, dim);
-    dim4 oDims = meanArr.dims();
 
     /* now tile meanArr along dim and use it for variance computation */
     dim4 tileDims(1);
@@ -80,7 +79,7 @@ static af_array var(const af_array& in, bool isbiased, int dim)
     Array<outType> diff    = arithOp<outType, af_sub_t>(input, tMeanArr, tMeanArr.dims());
     Array<outType> diffSq  = arithOp<outType, af_mul_t>(diff, diff, diff.dims());
     Array<outType> redDiff = reduce<af_add_t, outType, outType>(diffSq, dim);
-    oDims = redDiff.dims();
+    dim4 oDims = redDiff.dims();
 
     Array<outType> divArr = createValueArray<outType>(oDims, scalar<outType>(isbiased ? iDims[dim] : iDims[dim]-1));
     Array<outType> result = arithOp<outType, af_div_t>(redDiff, divArr, redDiff.dims());

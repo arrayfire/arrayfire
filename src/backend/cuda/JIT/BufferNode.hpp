@@ -34,7 +34,6 @@ namespace JIT
         CParam<T> m_param;
         unsigned m_bytes;
 
-        bool m_set_arg;
         bool m_linear;
     public:
 
@@ -48,7 +47,6 @@ namespace JIT
               sptr(data),
               m_param(param),
               m_bytes(bytes),
-              m_set_arg(false),
               m_linear(is_linear)
         {
         }
@@ -101,9 +99,6 @@ namespace JIT
             if (m_gen_offset) return;
 
             if (!is_linear) {
-                std::string idx_str  = std::string("int idx") + toString(m_id);
-                std::string info_str = std::string("iInfo") + toString(m_id);;
-
                 kerStream << "%b3" << m_id << " = icmp slt i32 %id3, %dim3" << m_id << "\n";
                 kerStream << "%b2" << m_id << " = icmp slt i32 %id2, %dim2" << m_id << "\n";
                 kerStream << "%b1" << m_id << " = icmp slt i32 %id1, %dim1" << m_id << "\n";

@@ -15,7 +15,7 @@ namespace opencl
 namespace kernel
 {
 
-template<typename T, typename accType, bool expand, dim_type f0, dim_type f1>
+template<typename T, typename aT, bool expand, dim_type f0, dim_type f1>
 void conv2Helper(const conv_kparam_t& param, Param out, const Param signal, const Param filter)
 {
     try {
@@ -30,7 +30,7 @@ void conv2Helper(const conv_kparam_t& param, Param out, const Param signal, cons
 
                     std::ostringstream options;
                     options << " -D T=" << dtype_traits<T>::getName()
-                            << " -D accType="<< dtype_traits<accType>::getName()
+                            << " -D accType="<< dtype_traits<aT>::getName()
                             << " -D BASE_DIM="<< 2 /* hard constant specific to this convolution type */
                             << " -D FLEN0=" << f0
                             << " -D FLEN1=" << f1
@@ -47,20 +47,16 @@ void conv2Helper(const conv_kparam_t& param, Param out, const Param signal, cons
                 });
 
         auto convOp = make_kernel<Buffer, KParam, Buffer, KParam,
-                                  Buffer, KParam, dim_type, dim_type, dim_type>(*convKernels[device]);
+                                  Buffer, KParam, dim_type, dim_type,
+                                  dim_type, dim_type,
+                                  dim_type, dim_type
+                                 >(*convKernels[device]);
 
-        cl_int se_size    = sizeof(accType)*filter.info.dims[0]*filter.info.dims[1];
-        cl::Buffer *mBuff = bufferAlloc(se_size);
+        convOp(EnqueueArgs(getQueue(), param.global, param.local),
+                *out.data, out.info, *signal.data, signal.info,
+                *param.impulse, filter.info, param.nBBS0, param.nBBS1,
+                param.o[1], param.o[2], param.s[1], param.s[2]);
 
-        for (dim_type b=0; b<param.bCount; ++b) {
-            // FIX ME: if the filter array is strided, direct copy might cause issues
-            getQueue().enqueueCopyBuffer(*filter.data, *mBuff, b*param.steps[2]*sizeof(accType), 0, se_size);
-
-            convOp(EnqueueArgs(getQueue(), param.global, param.local),
-                    *out.data, out.info, *signal.data, signal.info,
-                    *mBuff, filter.info, param.nBBS, b*param.steps[0], b*param.steps[1]);
-        }
-        bufferFree(mBuff);
     } catch (cl::Error err) {
         CL_TO_AF_ERROR(err);
         throw;
@@ -81,7 +77,7 @@ void conv2Helper(const conv_kparam_t& p, Param out, const Param sig, const Param
 }
 
 template<typename T, typename aT, bool expand>
-void conv2(const conv_kparam_t& p, Param& out, const Param& sig, const Param& filt)
+void conv2Helper(const conv_kparam_t& p, Param& out, const Param& sig, const Param& filt)
 {
     dim_type f0 = filt.info.dims[0];
     dim_type f1 = filt.info.dims[1];
@@ -108,9 +104,35 @@ void conv2(const conv_kparam_t& p, Param& out, const Param& sig, const Param& fi
     }
 }
 
+template<typename T, typename aT, bool expand>
+void conv2(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt)
+{
+    size_t se_size = filt.info.dims[0] * filt.info.dims[1] * sizeof(aT);
+    p.impulse = bufferAlloc(se_size);
+
+    for (dim_type b3=0; b3<filt.info.dims[3]; ++b3) {
+        dim_type f3Off = b3 * filt.info.strides[3];
+
+        for (dim_type b2=0; b2<filt.info.dims[2]; ++b2) {
+            dim_type f2Off = b2 * filt.info.strides[2];
+
+            // FIXME: if the filter array is strided, direct copy of symbols
+            // might cause issues
+            getQueue().enqueueCopyBuffer(*filt.data, *p.impulse, (f2Off+f3Off)*sizeof(aT), 0, se_size);
+
+            p.o[1] = (p.outHasNoOffset ? 0 : b2);
+            p.o[2] = (p.outHasNoOffset ? 0 : b3);
+            p.s[1] = (p.inHasNoOffset ? 0 : b2);
+            p.s[2] = (p.inHasNoOffset ? 0 : b3);
+
+            conv2Helper<T, aT, expand>(p, out, sig, filt);
+        }
+    }
+}
+
 #define INSTANTIATE(T, accT)  \
-    template void conv2<T, accT, true >(const conv_kparam_t& p, Param& out, const Param& sig, const Param& filt); \
-    template void conv2<T, accT, false>(const conv_kparam_t& p, Param& out, const Param& sig, const Param& filt); \
+    template void conv2<T, accT, true >(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt); \
+    template void conv2<T, accT, false>(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt); \
 
 }
 

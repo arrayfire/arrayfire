@@ -14,6 +14,7 @@
 #include <JIT/BufferNode.hpp>
 #include <err_opencl.hpp>
 #include <memory.hpp>
+#include <platform.hpp>
 
 using af::dim4;
 
@@ -27,7 +28,7 @@ namespace opencl
 
     template<typename T>
     Array<T>::Array(af::dim4 dims) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(bufferAlloc(ArrayInfo::elements() * sizeof(T)), bufferFree),
         data_dims(dims),
         node(), ready(true), offset(0), owner(true)
@@ -36,7 +37,7 @@ namespace opencl
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(-1, dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(),
         data_dims(dims),
         node(n), ready(false), offset(0), owner(true)
@@ -45,7 +46,7 @@ namespace opencl
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(bufferAlloc(ArrayInfo::elements()*sizeof(T)), bufferFree),
         data_dims(dims),
         node(), ready(true), offset(0), owner(true)
@@ -55,7 +56,7 @@ namespace opencl
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, cl_mem mem) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(new cl::Buffer(mem), bufferFree),
         data_dims(dims),
         node(), ready(true), offset(0), owner(true)
@@ -64,7 +65,7 @@ namespace opencl
 
     template<typename T>
     Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &stride) :
-        ArrayInfo(dims, offsets, stride, (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(parent.getDevId(), dims, offsets, stride, (af_dtype)dtype_traits<T>::af_type),
         data(parent.getData()),
         data_dims(parent.getDataDims()),
         node(),
@@ -76,7 +77,7 @@ namespace opencl
 
     template<typename T>
     Array<T>::Array(Param &tmp) :
-        ArrayInfo(af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3]),
+        ArrayInfo(getActiveDeviceId(), af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3]),
                   af::dim4(0, 0, 0, 0),
                   af::dim4(tmp.info.strides[0], tmp.info.strides[1],
                            tmp.info.strides[2], tmp.info.strides[3]),
@@ -93,6 +94,7 @@ namespace opencl
     {
         if (isReady()) return;
 
+        this->setId(getActiveDeviceId());
         data = Buffer_ptr(bufferAlloc(elements() * sizeof(T)), bufferFree);
 
         // Do not replace this with cast operator

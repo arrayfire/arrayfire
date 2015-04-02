@@ -30,14 +30,14 @@ void iota_kernel(__global T *out, const KParam op,
 
     const dim_type ozw = ow * op.strides[3] + oz * op.strides[2];
 
-    T val = (ow / t3) * s2 * s1 * s0;
-    val  += (oz / t2) * s1 * s0;
+    T val = (ow % s3) * s2 * s1 * s0;
+    val  += (oz % s2) * s1 * s0;
 
     const dim_type incy = blocksPerMatY * get_local_size(1);
     const dim_type incx = blocksPerMatX * get_local_size(0);
 
     for(dim_type oy = yy; oy < op.dims[1]; oy += incy) {
-        T valY = val + (oy / t1) * s0;
+        T valY = val + (oy % s1) * s0;
         dim_type oyzw = ozw + oy * op.strides[1];
         for(dim_type ox = xx; ox < op.dims[0]; ox += incx) {
             dim_type oidx = oyzw + ox;

@@ -10,13 +10,16 @@ OPTION(BUILD_CUDA "Build ArrayFire with a CUDA backend" OFF)
 OPTION(BUILD_OPENCL "Build ArrayFire with a OpenCL backend" OFF)
 
 OPTION(BUILD_DOCS "Create ArrayFire Documentation" OFF)
+OPTION(WITH_COVERAGE "Added code coverage flags" OFF)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+INCLUDE(${CMAKE_MODULE_PATH}/UploadCoveralls.cmake)
 
 FIND_PACKAGE(FreeImage)
 IF(FREEIMAGE_FOUND)
-  ADD_DEFINITIONS(-DWITH_FREEIMAGE)
-    SET(lib_deps ${FREEIMAGE_LIBRARY} CACHE PATH "Library Dependencies")
+    ADD_DEFINITIONS(-DWITH_FREEIMAGE)
+    SET(lib_deps ${FREEIMAGE_LIBRARY})
+    INCLUDE_DIRECTORIES(${FREEIMAGE_INCLUDE_DIRS})
 ELSE(FREEIMAGE_FOUND)
     MESSAGE(WARNING, "FreeImage not found!")
 ENDIF(FREEIMAGE_FOUND)
@@ -30,7 +33,6 @@ INCLUDE_DIRECTORIES(
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/backend"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/api/c"
-    ${FREEIMAGE_INCLUDE_PATH}
     )
 
   IF(FORGE_FOUND)
@@ -42,7 +44,13 @@ ENDIF()
 
 IF(${UNIX})
     ADD_DEFINITIONS(-Wall -std=c++11 -fvisibility=hidden)
-ENDIF()
+    IF(${WITH_COVERAGE})
+        SET(CMAKE_CXX_FLAGS             "-fprofile-arcs -ftest-coverage")
+        SET(CMAKE_EXE_LINKER_FLAGS      "-fprofile-arcs -ftest-coverage")
+        SET(CMAKE_SHARED_LINKER_FLAGS   "-fprofile-arcs -ftest-coverage")
+        SET(CMAKE_STATIC_LINKER_FLAGS   "-fprofile-arcs -ftest-coverage")
+    ENDIF(${WITH_COVERAGE})
+ENDIF(${UNIX})
 
 # OS Definitions
 IF(UNIX)
@@ -121,7 +129,7 @@ INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/" DESTINATION include
 
 ## The ArrayFire version file is generated and won't be included above, install
 ## it separately.
-INSTALL(FILES 
+INSTALL(FILES
     ${CMAKE_SOURCE_DIR}/include/af/version.h DESTINATION include/af/
     COMPONENT headers
 )
@@ -160,30 +168,30 @@ SET(CPACK_PACKAGE_VERSION 3.0.beta)
 SET(CPACK_PACKAGE_VERSION_MAJOR "3")
 SET(CPACK_PACKAGE_VERSION_MINOR "0")
 SET(CPACK_PACKAGE_VERSION_PATCH "beta")
-SET(CPACK_PACKAGE_FILE_NAME 
+SET(CPACK_PACKAGE_FILE_NAME
     ${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}_${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR})
 SET(CPACK_PACKAGE_CONTACT "ArrayFire Development Group <technical@arrayfire.com>")
 # Long description of the package
-SET(CPACK_PACKAGE_DESCRIPTION 
-"ArrayFire is a high performance software library for parallel computing 
-with an easy-to-use API. Its array based function set makes parallel 
+SET(CPACK_PACKAGE_DESCRIPTION
+"ArrayFire is a high performance software library for parallel computing
+with an easy-to-use API. Its array based function set makes parallel
 programming simple.
 
-ArrayFire's multiple backends (CUDA, OpenCL and native CPU) make it 
+ArrayFire's multiple backends (CUDA, OpenCL and native CPU) make it
 platform independent and highly portable.
 
-A few lines of code in ArrayFire can replace dozens of lines of parallel 
+A few lines of code in ArrayFire can replace dozens of lines of parallel
 computing code, saving you valuable time and lowering development costs.")
 # Short description of the package
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A high performance library for parallel
 computing with an easy-to-use API.")
 
-# Useful descriptions for components 
+# Useful descriptions for components
 SET(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "ArrayFire libraries")
 SET(CPACK_COMPONENT_DOCUMENTATION_NAME "Doxygen documentation")
 SET(CPACK_COMPONENT_HEADERS_NAME "C/C++ headers")
 SET(CPACK_COMPONENT_CMAKE_NAME "CMake support")
-# Set the default components installed in the package 
+# Set the default components installed in the package
 SET(CPACK_COMPONENTS_ALL libraries headers documentation cmake)
 
 # Call to CPACK

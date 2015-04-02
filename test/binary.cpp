@@ -68,7 +68,7 @@ af::array randgen(const int num, af::dtype ty)
         Tb h_b = 3.0;                                                   \
         af::array c = func(a, h_b);                                     \
         Ta *h_a = a.host<Ta>();                                         \
-        Ta *h_c = c.host<Ta>();                                         \
+        Tc *h_c = c.host<Tc>();                                         \
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(h_c[i], func(h_a[i], h_b)) <<                     \
                 "for values: " << h_a[i]  << "," << h_b << std::endl;   \
@@ -86,7 +86,7 @@ af::array randgen(const int num, af::dtype ty)
         af::array b = randgen(num, tb);                                 \
         af::array c = func(h_a, b);                                     \
         Tb *h_b = b.host<Tb>();                                         \
-        Tb *h_c = c.host<Tb>();                                         \
+        Tc *h_c = c.host<Tc>();                                         \
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(h_c[i], func(h_a, h_b[i])) <<                     \
                 "for values: " << h_a  << "," << h_b[i] << std::endl;   \
@@ -128,7 +128,7 @@ af::array randgen(const int num, af::dtype ty)
         Tb h_b = 0.3;                                                   \
         af::array c = func(a, h_b);                                     \
         Ta *h_a = a.host<Ta>();                                         \
-        Ta *h_c = c.host<Ta>();                                         \
+        Tc *h_c = c.host<Tc>();                                         \
         for (int i = 0; i < num; i++)                                   \
             ASSERT_NEAR(h_c[i], func(h_a[i], h_b), err) <<              \
                 "for values: " << h_a[i]  << "," << h_b << std::endl;   \
@@ -147,7 +147,7 @@ af::array randgen(const int num, af::dtype ty)
         af::array b = randgen(num, tb);                                 \
         af::array c = func(h_a, b);                                     \
         Tb *h_b = b.host<Tb>();                                         \
-        Tb *h_c = c.host<Tb>();                                         \
+        Tc *h_c = c.host<Tc>();                                         \
         for (int i = 0; i < num; i++)                                   \
             ASSERT_NEAR(h_c[i], func(h_a, h_b[i]), err) <<              \
                 "for values: " << h_a  << "," << h_b[i] << std::endl;   \

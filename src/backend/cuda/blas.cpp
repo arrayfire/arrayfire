@@ -16,6 +16,7 @@
 #include <cassert>
 #include <iostream>
 #include <math.hpp>
+#include <err_common.hpp>
 
 namespace cuda
 {
@@ -75,7 +76,7 @@ toCblasTranspose(af_blas_transpose opt)
         case AF_NO_TRANSPOSE        : out = CUBLAS_OP_N;    break;
         case AF_TRANSPOSE           : out = CUBLAS_OP_T;    break;
         case AF_CONJUGATE_TRANSPOSE : out = CUBLAS_OP_C;    break;
-        default                     : assert( "INVALID af_blas_transpose" && 1!=1);
+        default                     : AF_ERROR("INVALID af_blas_transpose", AF_ERR_INVALID_ARG);
     }
     return out;
 }

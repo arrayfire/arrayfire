@@ -368,7 +368,15 @@ double real<float>(float val) { return val; }
 template<>
 double real<int>(int val) { return val; }
 template<>
+double real<char>(char val) { return val; }
+template<>
+double real<uchar>(uchar val) { return val; }
+template<>
 double real<uint>(uint val) { return val; }
+template<>
+double real<intl>(intl val) { return val; }
+template<>
+double real<uintl>(uintl val) { return val; }
 
 template<typename T>
 double imag(T val) { return val.imag(); }
@@ -380,6 +388,14 @@ template<>
 double imag<int>(int val) { return 0; }
 template<>
 double imag<uint>(uint val) { return 0; }
+template<>
+double imag<intl>(intl val) { return 0; }
+template<>
+double imag<uintl>(uintl val) { return 0; }
+template<>
+double imag<char>(char val) { return 0; }
+template<>
+double imag<uchar>(uchar val) { return 0; }
 
 template<typename T>
 bool noDoubleTests()

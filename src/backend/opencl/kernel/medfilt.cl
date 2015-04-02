@@ -42,7 +42,8 @@ void medfilt(__global T *       out,
              __global const T * in,
              KParam             iInfo,
              __local T *        localMem,
-             dim_type           nonBatchBlkSize)
+             dim_type           nBBS0,
+             dim_type           nBBS1)
 {
     // calculate necessary offset and window parameters
     const dim_type padding = w_len-1;
@@ -50,17 +51,18 @@ void medfilt(__global T *       out,
     const dim_type shrdLen = get_local_size(0) + padding;
 
     // batch offsets
-    unsigned batchId = get_group_id(0) / nonBatchBlkSize;
-    __global const T* iptr =  in + (batchId * iInfo.strides[2] + iInfo.offset);
-    __global T*       optr = out + (batchId * oInfo.strides[2]);
+    unsigned b2 = get_group_id(0) / nBBS0;
+    unsigned b3 = get_group_id(1) / nBBS1;
+    __global const T* iptr =  in + (b2 * iInfo.strides[2] + b3 * iInfo.strides[3] + iInfo.offset);
+    __global T*       optr = out + (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]);
 
     // local neighborhood indices
     dim_type lx = get_local_id(0);
     dim_type ly = get_local_id(1);
 
     // global indices
-    dim_type gx = get_local_size(0) * (get_group_id(0)-batchId*nonBatchBlkSize) + lx;
-    dim_type gy = get_local_size(1) * get_group_id(1) + ly;
+    dim_type gx = get_local_size(0) * (get_group_id(0)-b2*nBBS0) + lx;
+    dim_type gy = get_local_size(1) * (get_group_id(1)-b3*nBBS1) + ly;
 
     // offset values for pulling image to local memory
     dim_type lx2 = lx + get_local_size(0);

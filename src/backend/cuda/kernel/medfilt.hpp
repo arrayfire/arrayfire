@@ -66,7 +66,7 @@ void load2ShrdMem(T * shrd, const T * in,
 
 template<typename T, af_pad_type pad, unsigned w_len, unsigned w_wid>
 __global__
-void medfilt(Param<T> out, CParam<T> in, dim_type nonBatchBlkSize)
+void medfilt(Param<T> out, CParam<T> in, dim_type nBBS0, dim_type nBBS1)
 {
     __shared__ T shrdMem[(THREADS_X+w_len-1)*(THREADS_Y+w_wid-1)];
 
@@ -76,17 +76,18 @@ void medfilt(Param<T> out, CParam<T> in, dim_type nonBatchBlkSize)
     const dim_type shrdLen = blockDim.x + padding;
 
     // batch offsets
-    unsigned batchId = blockIdx.x / nonBatchBlkSize;
-    const T* iptr    = (const T *) in.ptr + (batchId *  in.strides[2]);
-    T*       optr    = (T *      )out.ptr + (batchId * out.strides[2]);
+    unsigned b2 = blockIdx.x / nBBS0;
+    unsigned b3 = blockIdx.y / nBBS1;
+    const T* iptr    = (const T *) in.ptr + (b2 *  in.strides[2] + b3 *  in.strides[3]);
+    T*       optr    = (T *      )out.ptr + (b2 * out.strides[2] + b3 * out.strides[3]);
 
     // local neighborhood indices
     dim_type lx = threadIdx.x;
     dim_type ly = threadIdx.y;
 
     // global indices
-    dim_type gx = blockDim.x * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
-    dim_type gy = blockDim.y * blockIdx.y + ly;
+    dim_type gx = blockDim.x * (blockIdx.x-b2*nBBS0) + lx;
+    dim_type gy = blockDim.y * (blockIdx.y-b3*nBBS1) + ly;
 
     // offset values for pulling image to local memory
     dim_type lx2 = lx + blockDim.x;
@@ -208,16 +209,16 @@ void medfilt(Param<T> out, CParam<T> in, dim_type w_len, dim_type w_wid)
     dim_type blk_x = divup(in.dims[0], threads.x);
     dim_type blk_y = divup(in.dims[1], threads.y);
 
-    dim3 blocks(blk_x*in.dims[2], blk_y);
+    dim3 blocks(blk_x*in.dims[2], blk_y*in.dims[3]);
 
     switch(w_len) {
-        case  3: (medfilt<T, pad,  3,  3>)<<<blocks, threads>>>(out, in, blk_x); break;
-        case  5: (medfilt<T, pad,  5,  5>)<<<blocks, threads>>>(out, in, blk_x); break;
-        case  7: (medfilt<T, pad,  7,  7>)<<<blocks, threads>>>(out, in, blk_x); break;
-        case  9: (medfilt<T, pad,  9,  9>)<<<blocks, threads>>>(out, in, blk_x); break;
-        case 11: (medfilt<T, pad, 11, 11>)<<<blocks, threads>>>(out, in, blk_x); break;
-        case 13: (medfilt<T, pad, 13, 13>)<<<blocks, threads>>>(out, in, blk_x); break;
-        case 15: (medfilt<T, pad, 15, 15>)<<<blocks, threads>>>(out, in, blk_x); break;
+        case  3: (medfilt<T, pad,  3,  3>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
+        case  5: (medfilt<T, pad,  5,  5>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
+        case  7: (medfilt<T, pad,  7,  7>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
+        case  9: (medfilt<T, pad,  9,  9>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
+        case 11: (medfilt<T, pad, 11, 11>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
+        case 13: (medfilt<T, pad, 13, 13>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
+        case 15: (medfilt<T, pad, 15, 15>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
     }
 
     POST_LAUNCH_CHECK();
