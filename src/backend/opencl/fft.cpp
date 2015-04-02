@@ -15,6 +15,7 @@
 #include <fft.hpp>
 #include <err_opencl.hpp>
 #include <clFFT.h>
+#include <math.hpp>
 #include <string>
 #include <cstdio>
 
@@ -222,13 +223,6 @@ void computePaddedDims(dim4 &pdims, dim_type const * const pad)
     }
 }
 
-
-template<typename T> T zero() { return 0; }
-
-template<> cfloat zero<cfloat>() { return cfloat({{0.0f, 0.0f}}); }
-
-template<> cdouble zero<cdouble>() { return cdouble({{0.0, 0.0}}); }
-
 //(currently) true is in clFFT if length is a power of 2,3,5
 inline bool isSupLen(dim_type length)
 {
@@ -250,29 +244,25 @@ template<typename inType, typename outType, int rank, bool isR2C>
 Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
 {
     ARG_ASSERT(1, (in.isOwner()==true));
+    ARG_ASSERT(1, (rank>=1 && rank<=3));
 
-    const dim4 dims = in.dims();
+    dim4 dims = in.dims();
+
     dim4 pdims(1);
-
-    switch(rank) {
-        case 1 :
-            ARG_ASSERT(1, (rank==1 && isSupLen(dims[0])));
-            computePaddedDims<1>(pdims, pad);
-            break;
-        case 2 :
-            ARG_ASSERT(2, (rank==2 && (isSupLen(dims[0]) || isSupLen(dims[1]))));
-            computePaddedDims<2>(pdims, pad);
-            break;
-        case 3 :
-            ARG_ASSERT(3, (rank==3 && (isSupLen(dims[0]) || isSupLen(dims[1]) || isSupLen(dims[2]))));
-            computePaddedDims<3>(pdims, pad);
-            break;
-        default: AF_ERROR("invalid rank", AF_ERR_SIZE);
-    }
-
+    computePaddedDims<rank>(pdims, pad);
     pdims[rank] = in.dims()[rank];
 
-    Array<outType> ret = padArray<inType, outType>(in, (npad>0 ? pdims : in.dims()), zero<outType>(), norm_factor);
+    if (npad>0)
+      dims = pdims;
+
+    switch(rank) {
+        case 1 : ARG_ASSERT(1, (isSupLen(dims[0]))); break;
+        case 2 : ARG_ASSERT(2, ((isSupLen(dims[0]) || isSupLen(dims[1])))); break;
+        case 3 : ARG_ASSERT(3, ((isSupLen(dims[0]) || isSupLen(dims[1]) || isSupLen(dims[2])))); break;
+        default: AF_ERROR("invalid input dimensions", AF_ERR_SIZE);
+    }
+
+    Array<outType> ret = padArray<inType, outType>(in, dims, scalar<outType>(0), norm_factor);
 
     clfft_common<outType, rank, CLFFT_FORWARD>(ret);
 
@@ -283,32 +273,31 @@ template<typename T, int rank>
 Array<T> ifft(Array<T> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
 {
     ARG_ASSERT(1, (in.isOwner()==true));
+    ARG_ASSERT(1, (rank>=1 && rank<=3));
 
-    const dim4 dims = in.dims();
+    dim4 dims = in.dims();
+
     dim4 pdims(1);
+    computePaddedDims<rank>(pdims, pad);
+    pdims[rank] = in.dims()[rank];
 
+    if (npad>0)
+      dims = pdims;
+
+    // the input norm_factor is further scaled
+    // based on the input dimensions to match
+    // cuFFT behavior
     for (int i=0; i<rank; i++)
         norm_factor *= dims[i];
 
     switch(rank) {
-        case 1 :
-            ARG_ASSERT(1, (rank==1 && isSupLen(dims[0])));
-            computePaddedDims<1>(pdims, pad);
-            break;
-        case 2 :
-            ARG_ASSERT(2, (rank==2 && (isSupLen(dims[0]) || isSupLen(dims[1]))));
-            computePaddedDims<2>(pdims, pad);
-            break;
-        case 3 :
-            ARG_ASSERT(3, (rank==3 && (isSupLen(dims[0]) || isSupLen(dims[1]) || isSupLen(dims[2]))));
-            computePaddedDims<3>(pdims, pad);
-            break;
-        default: AF_ERROR("invalid rank", AF_ERR_SIZE);
+        case 1 : ARG_ASSERT(1, (isSupLen(dims[0]))); break;
+        case 2 : ARG_ASSERT(2, ((isSupLen(dims[0]) || isSupLen(dims[1])))); break;
+        case 3 : ARG_ASSERT(3, ((isSupLen(dims[0]) || isSupLen(dims[1]) || isSupLen(dims[2])))); break;
+        default: AF_ERROR("invalid input dimensions", AF_ERR_SIZE);
     }
 
-    pdims[rank] = in.dims()[rank];
-
-    Array<T> ret = padArray<T, T>(in, (npad>0 ? pdims : in.dims()), zero<T>(), norm_factor);
+    Array<T> ret = padArray<T, T>(in, dims, scalar<T>(0), norm_factor);
 
     clfft_common<T, rank, CLFFT_BACKWARD>(ret);
 
