@@ -17,6 +17,7 @@
 #include <mutex>
 #include <math.hpp>
 #include "config.hpp"
+#include <iostream>
 
 using cl::Buffer;
 using cl::Program;
@@ -25,12 +26,32 @@ using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
+using std::ostringstream;
 
 namespace opencl
 {
 
 namespace kernel
 {
+    template<typename T>
+    string scalar_to_option(const T &val)
+    {
+        return std::to_string(+val);
+    }
+
+    template<>
+    string scalar_to_option<cfloat>(const cfloat &val) {
+        ostringstream ss;
+        ss << val.s[0] << "," << val.s[1];
+        return ss.str();
+    }
+
+    template<>
+    string scalar_to_option<cdouble>(const cdouble &val) {
+        ostringstream ss;
+        ss << val.s[0] << "," << val.s[1];
+        return ss.str();
+    }
 
     template<typename T>
     static void identity(Param out)
@@ -43,10 +64,10 @@ namespace kernel
             int device = getActiveDeviceId();
 
             std::call_once( compileFlags[device], [device] () {
-                    std::ostringstream options;
+                    ostringstream options;
                     options << " -D T="    << dtype_traits<T>::getName()
-                            << " -D ONE="  << scalar<T>(1)
-                            << " -D ZERO=" << scalar<T>(0);
+                            << " -D ONE=(T)("  << scalar_to_option(scalar<T>(1)) << ")"
+                            << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")";
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
                         options << " -D USE_DOUBLE";
