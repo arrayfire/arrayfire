@@ -65,7 +65,7 @@ void IdentityCPPCheck() {
 
     int num = 1000;
     dtype dty = (dtype) dtype_traits<T>::af_type;
-    array out = identity(num, num, dty);
+    array out = af::identity(num, num, dty);
 
     vector<T> h_in(num*num);
     out.host(&h_in.front());
@@ -80,7 +80,7 @@ void IdentityCPPCheck() {
     }
 
     num = 100;
-    out = identity(num, num, num, dty);
+    out = af::identity(num, num, num, dty);
 
     h_in.resize(num*num*num);
     out.host(&h_in.front());
@@ -127,7 +127,7 @@ void IdentityCPPError() {
     static const int num = 1000;
     dtype dty = (dtype) dtype_traits<T>::af_type;
     try {
-        array out = identity(num, 0, dty);
+        array out = af::identity(num, 0, dty);
     }
     catch(const af::exception &ex) {
         SUCCEED();
