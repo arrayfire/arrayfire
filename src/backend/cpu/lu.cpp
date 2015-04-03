@@ -124,7 +124,7 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
 }
 
 template<typename T>
-Array<int> lu_inplace(Array<T> &in);
+Array<int> lu_inplace(Array<T> &in)
 {
     AF_ERROR("Linear Algebra is disabled on CPU", AF_ERR_NOT_CONFIGURED);
 }

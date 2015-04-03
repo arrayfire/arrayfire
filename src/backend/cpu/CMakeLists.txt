@@ -84,7 +84,12 @@ ADD_LIBRARY(afcpu SHARED
            ${c_sources}
            ${cpp_sources})
 
-TARGET_LINK_LIBRARIES(afcpu ${FreeImage_LIBS} ${CBLAS_LIBRARIES} ${FFTW_LIBRARIES} ${LAPACK_LIBRARIES})
+TARGET_LINK_LIBRARIES(afcpu
+                      ${FreeImage_LIBS}
+                      ${CBLAS_LIBRARIES}
+                      ${FFTW_LIBRARIES}
+                      ${LAPACK_LIBRARIES}
+                      )
 
 SET_TARGET_PROPERTIES(afcpu PROPERTIES
                       VERSION "${AF_VERSION}"

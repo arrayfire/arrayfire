@@ -12,6 +12,9 @@
 
 #if defined(WITH_LINEAR_ALGEBRA)
 
+namespace cpu
+{
+
 template<typename T>
 void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
 {
@@ -32,6 +35,8 @@ INSTANTIATE_QR(float)
 INSTANTIATE_QR(cfloat)
 INSTANTIATE_QR(double)
 INSTANTIATE_QR(cdouble)
+
+}
 
 #else
 
