@@ -59,6 +59,29 @@ void ConstantCCheck(T value) {
     }
 }
 
+template<typename T>
+void IdentityCCheck() {
+    if (noDoubleTests<T>()) return;
+
+    const int num = 1000;
+    dtype dty = (dtype) dtype_traits<T>::af_type;
+    af_array out;
+    dim_type dim[] = {(dim_type)num, (dim_type)num};
+    ASSERT_EQ(AF_SUCCESS, af_identity(&out, 2, dim, dty));
+
+    vector<T> h_in(num*num);
+    af_get_data_ptr(&h_in.front(), out);
+
+    for (int i = 0; i < num; i++) {
+        for (int j = 0; j < num; j++) {
+            if(j == i)
+                ASSERT_EQ(h_in[i * num + j], T(1));
+            else
+                ASSERT_EQ(h_in[i * num + j], T(0));
+        }
+    }
+}
+
 TYPED_TEST(Constant, basicCPP)
 {
     ConstantCPPCheck<TypeParam>(5);
@@ -67,4 +90,9 @@ TYPED_TEST(Constant, basicCPP)
 TYPED_TEST(Constant, basicC)
 {
     ConstantCCheck<TypeParam>(5);
+}
+
+TYPED_TEST(Constant, Identity)
+{
+    IdentityCCheck<TypeParam>();
 }
