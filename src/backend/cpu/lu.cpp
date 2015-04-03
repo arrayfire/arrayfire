@@ -12,121 +12,130 @@
 
 #if defined(WITH_LINEAR_ALGEBRA)
 
-//#include <af/dim4.hpp>
-//#include <handle.hpp>
-//#include <iostream>
-//#include <cassert>
-//#include <err_cpu.hpp>
-//#include <err_common.hpp>
-//
-//#if defined(LAPACK_All)
-//    #include <atlas/clapack.h>
-//    #define LAPACK_NAME(fn) clapack_##fn
-//    #define ORDER CblasColMajor
-//    #define ORDER_TYPE CBLAS_ORDER
-//#elif defined(LAPACK_Intel)
-//    #include <lapack.h>
-//    #define LAPACK_PREFIX LAPACKE
-//    #define LAPACK_SUFFIX
-//    #define ORDER LAPACK_COL_MAJOR
-//    #define ORDER_TYPE int
-//#else
-//    #warning "HERE NOT IN ALL"
-//#endif
-//
-//namespace cpu
-//{
-//using std::is_floating_point;
-//using std::conditional;
-//
-//template<typename T, typename BT>
-//using ptr_type = typename conditional<is_complex<T>::value,
-//                                      BT *,
-//                                      T*>::type;
-//template<typename T, typename BT>
-//using getrf_func_def = int (*)(ORDER_TYPE, int, int,
-//                               ptr_type<T, BT>, const int,
-//                               ptr_type<int, int>);
-//
-//#define LU_FUNC_DEF( FUNC )                                                      \
-//template<typename T, typename BT> FUNC##_func_def<T, BT> FUNC##_func();
-//
-//
-//#define LU_FUNC( FUNC, TYPE, BASE_TYPE, PREFIX )                                 \
-//template<> FUNC##_func_def<TYPE, BASE_TYPE>     FUNC##_func<TYPE, BASE_TYPE>()     \
-//{ return & LAPACK_NAME(PREFIX##FUNC); }
-//
-//LU_FUNC_DEF( getrf )
-//LU_FUNC(getrf , float   , float  , s)
-//LU_FUNC(getrf , double  , double , d)
-//LU_FUNC(getrf , cfloat  , void   , c)
-//LU_FUNC(getrf , cdouble , void   , z)
-//
-//#ifdef OS_WIN
-//#define BT af::dtype_traits<T>::base_type
-//#else
-//template<typename T> struct lapack_types;
-//
-//template<>
-//struct lapack_types<float> {
-//    typedef float base_type;
-//};
-//
-//template<>
-//struct lapack_types<cfloat> {
-//    typedef void base_type;
-//};
-//
-//template<>
-//struct lapack_types<double> {
-//    typedef double base_type;
-//};
-//
-//template<>
-//struct lapack_types<cdouble> {
-//    typedef void base_type;
-//};
-//#define BT typename lapack_types<T>::base_type
-//#endif
-//
-//template<typename T>
-//Array<int> lu_inplace(Array<T> &in)
-//{
-//    dim4 iDims = in.dims();
-//    int M = iDims[0];
-//    int N = iDims[1];
-//
-//    //FIXME: Leaks on errors.
-//    Array<int> pivot = createEmptyArray<int>(af::dim4(min(M, N), 1, 1, 1));
-//
-//    getrf_func<T, BT>()(ORDER, M, N,
-//                        in.get(), M, pivot.get());
-//
-//    return pivot;
-//}
-//
-//#define INSTANTIATE_LU(TYPE)                                                          \
-//    template Array<int> lu_inplace<TYPE>(Array<TYPE> &in);
-//
-//INSTANTIATE_LU(float)
-//INSTANTIATE_LU(cfloat)
-//INSTANTIATE_LU(double)
-//INSTANTIATE_LU(cdouble)
-//}
+#include <af/dim4.hpp>
+#include <handle.hpp>
+#include <iostream>
+#include <cassert>
+#include <err_cpu.hpp>
+#include <err_common.hpp>
+
+#include <lapack_helper.hpp>
 
 namespace cpu
 {
 
 template<typename T>
+using getrf_func_def = int (*)(ORDER_TYPE, int, int,
+                               T*, int,
+                               int*);
+
+#define LU_FUNC_DEF( FUNC )                                     \
+template<typename T> FUNC##_func_def<T> FUNC##_func();
+
+
+#define LU_FUNC( FUNC, TYPE, PREFIX )                           \
+template<> FUNC##_func_def<TYPE>     FUNC##_func<TYPE>()        \
+{ return & LAPACK_NAME(PREFIX##FUNC); }
+
+LU_FUNC_DEF( getrf )
+LU_FUNC(getrf , float  , s)
+LU_FUNC(getrf , double , d)
+LU_FUNC(getrf , cfloat , c)
+LU_FUNC(getrf , cdouble, z)
+
+template<typename T>
+void lu_split(Array<T> &lower, Array<T> &upper, const Array<T> &in)
+{
+    T *l = lower.get();
+    T *u = upper.get();
+    const T *i = in.get();
+
+    dim4 ldm = lower.dims();
+    dim4 udm = upper.dims();
+    dim4 idm = in.dims();
+
+    dim4 lst = lower.strides();
+    dim4 ust = upper.strides();
+    dim4 ist = in.strides();
+
+    for(dim_type ow = 0; ow < idm[3]; ow++) {
+        const dim_type lW = ow * lst[3];
+        const dim_type uW = ow * ust[3];
+        const dim_type iW = ow * ist[3];
+
+        for(dim_type oz = 0; oz < idm[2]; oz++) {
+            const dim_type lZW = lW + oz * lst[2];
+            const dim_type uZW = uW + oz * ust[2];
+            const dim_type iZW = iW + oz * ist[2];
+
+            for(dim_type oy = 0; oy < idm[1]; oy++) {
+                const dim_type lYZW = lZW + oy * lst[1];
+                const dim_type uYZW = uZW + oy * ust[1];
+                const dim_type iYZW = iZW + oy * ist[1];
+
+                for(dim_type ox = 0; ox < idm[0]; ox++) {
+                    const dim_type lMem = lYZW + ox;
+                    const dim_type uMem = uYZW + ox;
+                    const dim_type iMem = iYZW + ox;
+                    if(ox > oy) {
+                        if(oy < ldm[1])
+                            l[lMem] = i[iMem];
+                        if(ox < udm[0])
+                            u[uMem] = scalar<T>(0);
+                    } else if (oy > ox) {
+                        if(oy < ldm[1])
+                            l[lMem] = scalar<T>(0);
+                        if(ox < udm[0])
+                            u[uMem] = i[iMem];
+                    } else if(ox == oy) {
+                        if(oy < ldm[1])
+                            l[lMem] = scalar<T>(1.0);
+                        if(ox < udm[0])
+                            u[uMem] = i[iMem];
+                    }
+                }
+            }
+        }
+    }
+}
+
+template<typename T>
 void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
 {
-    AF_ERROR("Linear Algebra is disabled on CPU", AF_ERR_NOT_CONFIGURED);
+    dim4 iDims = in.dims();
+    int M = iDims[0];
+    int N = iDims[1];
+
+    Array<T> in_copy = copyArray<T>(in);
+
+    pivot = createEmptyArray<int>(af::dim4(min(M, N), 1, 1, 1));
+    int out = getrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N,
+                              in_copy.get(), M,
+                              pivot.get());
+
+    // SPLIT into lower and upper
+    dim4 ldims(M, min(M, N));
+    dim4 udims(min(M, N), N);
+    lower = createEmptyArray<T>(ldims);
+    upper = createEmptyArray<T>(udims);
+
+    lu_split<T>(lower, upper, in_copy);
 }
 
 template<typename T>
 Array<int> lu_inplace(Array<T> &in)
 {
-    AF_ERROR("Linear Algebra is disabled on CPU", AF_ERR_NOT_CONFIGURED);
+    dim4 iDims = in.dims();
+    int M = iDims[0];
+    int N = iDims[1];
+
+    Array<int> pivot = createEmptyArray<int>(af::dim4(min(M, N), 1, 1, 1));
+
+    int out = getrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N,
+                              in.get(), M,
+                              pivot.get());
+
+    return pivot;
 }
 
 #define INSTANTIATE_LU(T)                                               \
