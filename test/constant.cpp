@@ -79,23 +79,22 @@ void IdentityCPPCheck() {
         }
     }
 
-    // FIXME: Breaks on OpenCL and CUDA. See #562
-    //num = 100;
-    //out = identity(num, num, num, dty);
+    num = 100;
+    out = identity(num, num, num, dty);
 
-    //h_in.resize(num*num*num);
-    //out.host(&h_in.front());
+    h_in.resize(num*num*num);
+    out.host(&h_in.front());
 
-    //for (int h = 0; h < num; h++) {
-    //    for (int i = 0; i < num; i++) {
-    //        for (int j = 0; j < num; j++) {
-    //            if(j == i)
-    //                ASSERT_EQ(h_in[i * num + j], T(1));
-    //            else
-    //                ASSERT_EQ(h_in[i * num + j], T(0));
-    //        }
-    //    }
-    //}
+    for (int h = 0; h < num; h++) {
+       for (int i = 0; i < num; i++) {
+           for (int j = 0; j < num; j++) {
+               if(j == i)
+                   ASSERT_EQ(h_in[i * num + j], T(1));
+               else
+                   ASSERT_EQ(h_in[i * num + j], T(0));
+           }
+       }
+    }
 }
 
 template<typename T>
