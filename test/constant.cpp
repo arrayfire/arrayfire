@@ -60,10 +60,49 @@ void ConstantCCheck(T value) {
 }
 
 template<typename T>
+void IdentityCPPCheck() {
+    if (noDoubleTests<T>()) return;
+
+    int num = 1000;
+    dtype dty = (dtype) dtype_traits<T>::af_type;
+    array out = identity(num, num, dty);
+
+    vector<T> h_in(num*num);
+    out.host(&h_in.front());
+
+    for (int i = 0; i < num; i++) {
+        for (int j = 0; j < num; j++) {
+            if(j == i)
+                ASSERT_EQ(h_in[i * num + j], T(1));
+            else
+                ASSERT_EQ(h_in[i * num + j], T(0));
+        }
+    }
+
+    // FIXME: Breaks on OpenCL and CUDA. See #562
+    //num = 100;
+    //out = identity(num, num, num, dty);
+
+    //h_in.resize(num*num*num);
+    //out.host(&h_in.front());
+
+    //for (int h = 0; h < num; h++) {
+    //    for (int i = 0; i < num; i++) {
+    //        for (int j = 0; j < num; j++) {
+    //            if(j == i)
+    //                ASSERT_EQ(h_in[i * num + j], T(1));
+    //            else
+    //                ASSERT_EQ(h_in[i * num + j], T(0));
+    //        }
+    //    }
+    //}
+}
+
+template<typename T>
 void IdentityCCheck() {
     if (noDoubleTests<T>()) return;
 
-    const int num = 1000;
+    static const int num = 1000;
     dtype dty = (dtype) dtype_traits<T>::af_type;
     af_array out;
     dim_type dim[] = {(dim_type)num, (dim_type)num};
@@ -82,6 +121,22 @@ void IdentityCCheck() {
     }
 }
 
+template<typename T>
+void IdentityCPPError() {
+    if (noDoubleTests<T>()) return;
+
+    static const int num = 1000;
+    dtype dty = (dtype) dtype_traits<T>::af_type;
+    try {
+        array out = identity(num, 0, dty);
+    }
+    catch(const af::exception &ex) {
+        SUCCEED();
+        return;
+    }
+    FAIL() << "Failed to throw an exception";
+}
+
 TYPED_TEST(Constant, basicCPP)
 {
     ConstantCPPCheck<TypeParam>(5);
@@ -92,7 +147,17 @@ TYPED_TEST(Constant, basicC)
     ConstantCCheck<TypeParam>(5);
 }
 
-TYPED_TEST(Constant, Identity)
+TYPED_TEST(Constant, IdentityC)
 {
     IdentityCCheck<TypeParam>();
+}
+
+TYPED_TEST(Constant, IdentityCPP)
+{
+    IdentityCPPCheck<TypeParam>();
+}
+
+TYPED_TEST(Constant, IdentityCPPError)
+{
+    IdentityCPPError<TypeParam>();
 }
