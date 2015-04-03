@@ -816,23 +816,27 @@ namespace af
 #undef ASSIGN_OP
 #undef ASSIGN_TYPE
 
-#define BINARY_TYPE(TY, OP, func, dty)                              \
-    array array::operator OP(const TY &value) const                 \
-    {                                                               \
-        af_array lhs = this->get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, this->dims(), dty);             \
-        AF_THROW(func(&out, lhs, cst.get(), gforGet()));            \
-        return array(out);                                          \
-    }                                                               \
-    array operator OP(const TY &value, const array &other)          \
-    {                                                               \
-        af_array rhs = other.get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, other.dims(), dty);             \
-        AF_THROW(func(&out, cst.get(), rhs, gforGet()));            \
-        return array(out);                                          \
-    }                                                               \
+#define BINARY_TYPE(TY, OP, func, dty)                      \
+    array array::operator OP(const TY &value) const         \
+    {                                                       \
+        af_array lhs = this->get();                         \
+        af_array out;                                       \
+        af::dtype ty = this->type();                        \
+        af::dtype cty = this->isrealfloating() ? ty : dty;  \
+        array cst = constant(value, this->dims(), cty);     \
+        AF_THROW(func(&out, lhs, cst.get(), gforGet()));    \
+        return array(out);                                  \
+    }                                                       \
+    array operator OP(const TY &value, const array &other)  \
+    {                                                       \
+        af_array rhs = other.get();                         \
+        af_array out;                                       \
+        af::dtype ty = other.type();                        \
+        af::dtype cty = other.isrealfloating() ? ty : dty;  \
+        array cst = constant(value, other.dims(), cty);     \
+        AF_THROW(func(&out, cst.get(), rhs, gforGet()));    \
+        return array(out);                                  \
+    }                                                       \
 
 #define BINARY_OP(OP, func)                                 \
     array array::operator OP(const array &other) const      \
