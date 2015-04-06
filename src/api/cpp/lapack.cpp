@@ -16,8 +16,9 @@ namespace af
     AFAPI void lu(array &out, array &pivot, const array &in)
     {
         out = in.copy();
-        af_array p = pivot.get();
+        af_array p = 0;
         AF_THROW(af_lu_inplace(&p, out.get()));
+        pivot = array(p);
     }
 
     AFAPI void lu(array& lower, array& upper, array& pivot, const array& in)
@@ -39,8 +40,9 @@ namespace af
     AFAPI void qr(array& out, array& tau, const array& in)
     {
         out = in.copy();
-        af_array t = tau.get();
+        af_array t = 0;
         AF_THROW(af_qr_inplace(&t, out.get()));
+        tau = array(t);
     }
 
     AFAPI void qr(array& q, array& r, array& tau, const array& in)
