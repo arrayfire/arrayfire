@@ -18,6 +18,7 @@
 #include <math.hpp>
 #include <string>
 #include <cstdio>
+#include <memory.hpp>
 
 using af::dim4;
 using std::string;
@@ -25,12 +26,29 @@ using std::string;
 namespace opencl
 {
 
-#define CLFFT_ERROR_CHECK(call) do {            \
-    clfftStatus err = (call);                   \
-    if (err!=CLFFT_SUCCESS)                     \
-        AF_ERROR("clFFT library call failed",   \
-                 AF_ERR_INTERNAL);              \
-    } while(0);
+static void CLFFT_ERROR(clfftStatus err)
+{
+    switch(err) {
+    case CLFFT_INVALID_CONTEXT   : AF_ERROR("clFFT: invalid context   ", AF_ERR_INTERNAL);
+    case CLFFT_INVALID_PLATFORM  : AF_ERROR("clFFT: invalid platform  ", AF_ERR_INTERNAL);
+    case CLFFT_OUT_OF_HOST_MEMORY: AF_ERROR("clFFT: out of host memory", AF_ERR_INTERNAL);
+    case CLFFT_OUT_OF_RESOURCES  : AF_ERROR("clFFT: out of resources  ", AF_ERR_INTERNAL);
+    case CLFFT_MEM_OBJECT_ALLOCATION_FAILURE:
+        AF_ERROR("clFFT: mem object allocation failure", AF_ERR_INTERNAL);
+    case CLFFT_NOTIMPLEMENTED    : AF_ERROR("clFFt: feature not implemented", AF_ERR_INTERNAL);
+    case CLFFT_SUCCESS: return;
+    default: AF_ERROR("clFFT: unkown error", AF_ERR_INTERNAL);
+    }
+}
+
+#define CLFFT_CHECK(call) do {                          \
+        clfftStatus err = (call);                       \
+        if (err!=CLFFT_SUCCESS) {                       \
+            garbageCollect();                           \
+            err = (call);                               \
+        }                                               \
+        if (err != CLFFT_SUCCESS)   CLFFT_ERROR(err);   \
+    } while(0)
 
 // clFFTPlanner will do very basic plan caching.
 // it looks for required candidate in mHandles array and returns if found one.
@@ -133,52 +151,33 @@ void find_clfft_plan(clfftPlanHandle &plan,
     // and finally set it to output plan variable
     int slot_index = planner.mAvailSlotIndex;
 
-    clfftStatus res = CLFFT_SUCCESS;
-
     if (planner.mHandles[slot_index]) {
-        res = clfftDestroyPlan(&planner.mHandles[slot_index]);
+        CLFFT_CHECK(clfftDestroyPlan(&planner.mHandles[slot_index]));
         planner.mHandles[slot_index] = 0;
     }
 
-    if (res==CLFFT_SUCCESS) {
-        clfftPlanHandle temp;
+    clfftPlanHandle temp;
 
-        // getContext() returns object of type Context
-        // Context() returns the actual cl_context handle
-        clfftStatus res = clfftCreateDefaultPlan(&temp, getContext()(), rank, clLengths);
+    // getContext() returns object of type Context
+    // Context() returns the actual cl_context handle
+    CLFFT_CHECK(clfftCreateDefaultPlan(&temp, getContext()(), rank, clLengths));
 
-        switch(res) {
-            case CLFFT_INVALID_CONTEXT   : AF_ERROR("clFFT: invalid context   ", AF_ERR_INTERNAL);
-            case CLFFT_INVALID_PLATFORM  : AF_ERROR("clFFT: invalid platform  ", AF_ERR_INTERNAL);
-            case CLFFT_OUT_OF_HOST_MEMORY: AF_ERROR("clFFT: out of host memory", AF_ERR_INTERNAL);
-            case CLFFT_OUT_OF_RESOURCES  : AF_ERROR("clFFT: out of resources  ", AF_ERR_INTERNAL);
-            case CLFFT_MEM_OBJECT_ALLOCATION_FAILURE:
-                                           AF_ERROR("clFFT: mem object allocation failure", AF_ERR_INTERNAL);
-            case CLFFT_NOTIMPLEMENTED    : AF_ERROR("clFFt: feature not implemented", AF_ERR_INTERNAL);
-            case CLFFT_SUCCESS:
-                {
-                    res = clfftSetLayout(temp, CLFFT_COMPLEX_INTERLEAVED, CLFFT_COMPLEX_INTERLEAVED);
-                    res = clfftSetPlanBatchSize(temp, batch);
-                    res = clfftSetPlanDistance(temp, idist, odist);
-                    res = clfftSetPlanInStride(temp, rank, istrides);
-                    res = clfftSetPlanOutStride(temp, rank, ostrides);
-                    res = clfftSetPlanPrecision(temp, precision);
-                    res = clfftSetResultLocation(temp, CLFFT_INPLACE);
+    CLFFT_CHECK(clfftSetLayout(temp, CLFFT_COMPLEX_INTERLEAVED, CLFFT_COMPLEX_INTERLEAVED));
+    CLFFT_CHECK(clfftSetPlanBatchSize(temp, batch));
+    CLFFT_CHECK(clfftSetPlanDistance(temp, idist, odist));
+    CLFFT_CHECK(clfftSetPlanInStride(temp, rank, istrides));
+    CLFFT_CHECK(clfftSetPlanOutStride(temp, rank, ostrides));
+    CLFFT_CHECK(clfftSetPlanPrecision(temp, precision));
+    CLFFT_CHECK(clfftSetResultLocation(temp, CLFFT_INPLACE));
 
-                    // getQueue() returns object of type CommandQueue
-                    // CommandQueue() returns the actual cl_command_queue handle
-                    res = clfftBakePlan(temp, 1, &(getQueue()()), NULL, NULL);
+    // getQueue() returns object of type CommandQueue
+    // CommandQueue() returns the actual cl_command_queue handle
+    CLFFT_CHECK(clfftBakePlan(temp, 1, &(getQueue()()), NULL, NULL));
 
-                    plan = temp;
-                    planner.mHandles[slot_index] = temp;
-                    planner.mKeys[slot_index] = key_string;
-                    planner.mAvailSlotIndex = (slot_index + 1)%clFFTPlanner::MAX_PLAN_CACHE;
-                }
-                break;
-            default: AF_ERROR("clFFT: unkown error", AF_ERR_INTERNAL);
-        }
-    } else
-        AF_ERROR("clFFTDestroyPlan call failed", AF_ERR_INTERNAL);
+    plan = temp;
+    planner.mHandles[slot_index] = temp;
+    planner.mKeys[slot_index] = key_string;
+    planner.mAvailSlotIndex = (slot_index + 1)%clFFTPlanner::MAX_PLAN_CACHE;
 }
 
 template<typename T> struct Precision;
@@ -205,7 +204,7 @@ void clfft_common(Array<T> &arr)
                     (clfftPrecision)Precision<T>::type,
                     dims[rank]);
 
-    CLFFT_ERROR_CHECK( clfftEnqueueTransform(plan, direction, 1, &(getQueue()()), 0, NULL, NULL, &((*arr.get())()), NULL, NULL) );
+    CLFFT_CHECK( clfftEnqueueTransform(plan, direction, 1, &(getQueue()()), 0, NULL, NULL, &((*arr.get())()), NULL, NULL) );
 }
 
 template<int rank>
