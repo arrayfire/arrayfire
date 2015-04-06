@@ -62,7 +62,8 @@ void meanshiftKernel(Param<T> out, CParam<T> in,
     T * shrdMem = shared.getPointer();
 
     // calculate necessary offset and window parameters
-    const dim_type padding     = 2*radius;
+    const dim_type padding     = 2*radius + 1;
+    const dim_type wind_len    = padding - 1;
     const dim_type shrdLen     = blockDim.x + padding;
     const dim_type schStride   = shrdLen*(blockDim.y + padding);
     // the variable ichStride will only effect when we have >1
@@ -93,17 +94,17 @@ void meanshiftKernel(Param<T> out, CParam<T> in,
     load2ShrdMem<T, channels>(shrdMem, iptr, lx, ly, shrdLen, schStride,
                               in.dims[0], in.dims[1], gx-radius,
                               gy-radius, ichStride, in.strides[1], in.strides[0]);
-    if (lx<padding) {
+    if (lx<wind_len) {
         load2ShrdMem<T, channels>(shrdMem, iptr, lx2, ly, shrdLen, schStride,
                                   in.dims[0], in.dims[1], gx2-radius,
                                   gy-radius, ichStride, in.strides[1], in.strides[0]);
     }
-    if (ly<padding) {
+    if (ly<wind_len) {
         load2ShrdMem<T, channels>(shrdMem, iptr, lx, ly2, shrdLen, schStride,
                                   in.dims[0], in.dims[1], gx-radius,
                                   gy2-radius, ichStride, in.strides[1], in.strides[0]);
     }
-    if (lx<padding && ly<padding) {
+    if (lx<wind_len && ly<wind_len) {
         load2ShrdMem<T, channels>(shrdMem, iptr, lx2, ly2, shrdLen, schStride,
                                   in.dims[0], in.dims[1], gx2-radius,
                                   gy2-radius, ichStride, in.strides[1], in.strides[0]);
