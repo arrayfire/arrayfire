@@ -15,7 +15,6 @@
 #include <cusolverDnManager.hpp>
 #include <memory.hpp>
 #include <copy.hpp>
-
 #include <math.hpp>
 #include <err_common.hpp>
 
@@ -80,6 +79,30 @@ LU_FUNC(getrf , double , D)
 LU_FUNC(getrf , cfloat , C)
 LU_FUNC(getrf , cdouble, Z)
 
+void convertPivot(Array<int> &pivot)
+{
+    dim_type d0 = pivot.dims()[0];
+
+    int *d_po = new int[d0];
+    for(int i = 0; i < d0; i++) {
+        d_po[i] = i;
+    }
+
+    int *d_pi = new int[d0];
+    copyData(d_pi, pivot);
+
+    for(int j = 0; j < d0; j++) {
+        // 1 indexed in pivot
+        std::swap(d_po[j], d_po[d_pi[j] - 1]);
+    }
+
+    pivot = createHostDataArray<int>(pivot.dims(), d_po);;
+
+    delete [] d_po;
+    delete [] d_pi;
+}
+
+
 template<typename T>
 void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
 {
@@ -118,6 +141,7 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
     upper = createEmptyArray<T>(udims);
 
     kernel::lu_split<T>(lower, upper, in_copy);
+    convertPivot(pivot);
 }
 
 template<typename T>
@@ -150,6 +174,7 @@ Array<int> lu_inplace(Array<T> &in)
         std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
     }
 
+    convertPivot(pivot);
     return pivot;
 }
 

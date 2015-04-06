@@ -18,6 +18,7 @@
 #include <cassert>
 #include <err_cpu.hpp>
 
+#include <range.hpp>
 #include <lapack_helper.hpp>
 
 namespace cpu
@@ -98,6 +99,19 @@ void lu_split(Array<T> &lower, Array<T> &upper, const Array<T> &in)
     }
 }
 
+void convertPivot(Array<int> &pivot)
+{
+    Array<int> p = range<int>(pivot.dims(), 0);
+    int *d_pi = pivot.get();
+    int *d_po = p.get();
+    dim_type d0 = pivot.dims()[0];
+    for(int j = 0; j < d0; j++) {
+        // 1 indexed in pivot
+        std::swap(d_po[j], d_po[d_pi[j] - 1]);
+    }
+    pivot = p;
+}
+
 template<typename T>
 void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
 {
@@ -119,6 +133,7 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
     upper = createEmptyArray<T>(udims);
 
     lu_split<T>(lower, upper, in_copy);
+    convertPivot(pivot);
 }
 
 template<typename T>
@@ -134,6 +149,7 @@ Array<int> lu_inplace(Array<T> &in)
                               in.get(), M,
                               pivot.get());
 
+    convertPivot(pivot);
     return pivot;
 }
 
