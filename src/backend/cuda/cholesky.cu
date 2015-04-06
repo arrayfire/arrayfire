@@ -113,7 +113,7 @@ Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
     T *workspace = memAlloc<T>(lwork);
     int *d_info = memAlloc<int>(1);
 
-    err = potrf_func<T>()(getSolverHandle(), CUBLAS_FILL_MODE_LOWER,
+    err = potrf_func<T>()(getSolverHandle(), uplo,
                           N, out.get(), M,
                           workspace,
                           lwork, d_info);
@@ -150,7 +150,7 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
     T *workspace = memAlloc<T>(lwork);
     int *d_info = memAlloc<int>(1);
 
-    err = potrf_func<T>()(getSolverHandle(), CUBLAS_FILL_MODE_LOWER,
+    err = potrf_func<T>()(getSolverHandle(), uplo,
                           N, in.get(), M,
                           workspace,
                           lwork, d_info);
