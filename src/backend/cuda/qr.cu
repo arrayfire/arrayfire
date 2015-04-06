@@ -155,7 +155,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
     }
 
     // SPLIT into q and r
-    dim4 rdims(min(M, N), N);
+    dim4 rdims(M, N);
     r = createEmptyArray<T>(rdims);
 
     kernel::qr_split<T>(r, in_copy);
@@ -173,7 +173,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
                         workspace, lwork,
                         info);
 
-    q.resetDims(dim4(M, min(M, N)));
+    q.resetDims(dim4(M, M));
 
     if(err != CUSOLVER_STATUS_SUCCESS) {
         std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
