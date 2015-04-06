@@ -17,7 +17,6 @@
 #include <iostream>
 #include <cassert>
 #include <err_cpu.hpp>
-#include <err_common.hpp>
 
 #include <lapack_helper.hpp>
 
