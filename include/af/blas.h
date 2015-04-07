@@ -122,6 +122,8 @@ namespace af
         \ingroup blas_func_transpose
     */
     AFAPI array transpose(const array& in, const bool conjugate = false);
+
+    AFAPI void transposeInplace(array& in, const bool conjugate = false);
     /**
       }@
     */
@@ -180,6 +182,8 @@ extern "C" {
         \ingroup blas_func_transpose
     */
     AFAPI af_err af_transpose(af_array *out, af_array in, const bool conjugate);
+
+    AFAPI af_err af_transpose_inplace(af_array in, const bool conjugate);
 
 
 #ifdef __cplusplus

@@ -10,7 +10,7 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <transpose.hpp>
-#include <kernel/transpose.hpp>
+#include <kernel/transpose_inplace.hpp>
 
 using af::dim4;
 
@@ -18,33 +18,30 @@ namespace opencl
 {
 
 template<typename T>
-Array<T> transpose(const Array<T> &in, const bool conjugate)
+void transpose_inplace(Array<T> &in, const bool conjugate)
 {
     if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
         !isDoubleSupported(getActiveDeviceId())) {
         OPENCL_NOT_SUPPORTED();
     }
-    const dim4 inDims   = in.dims();
-    dim4 outDims  = dim4(inDims[1],inDims[0],inDims[2],inDims[3]);
-    Array<T> out  = createEmptyArray<T>(outDims);
+
+    dim4 iDims = in.dims();
 
     if(conjugate) {
-        if(inDims[0] % kernel::TILE_DIM == 0 && inDims[1] % kernel::TILE_DIM == 0)
-            kernel::transpose<T, true, true>(out, in);
+        if(iDims[0] % kernel::TILE_DIM == 0 && iDims[1] % kernel::TILE_DIM == 0)
+            kernel::transpose_inplace<T, true, true>(in);
         else
-            kernel::transpose<T, true, false>(out, in);
+            kernel::transpose_inplace<T, true, false>(in);
     } else {
-        if(inDims[0] % kernel::TILE_DIM == 0 && inDims[1] % kernel::TILE_DIM == 0)
-            kernel::transpose<T, false, true>(out, in);
+        if(iDims[0] % kernel::TILE_DIM == 0 && iDims[1] % kernel::TILE_DIM == 0)
+            kernel::transpose_inplace<T, false, true>(in);
         else
-            kernel::transpose<T, false, false>(out, in);
+            kernel::transpose_inplace<T, false, false>(in);
     }
-
-    return out;
 }
 
 #define INSTANTIATE(T)                                                          \
-    template Array<T> transpose(const Array<T> &in, const bool conjugate);
+    template void transpose_inplace(Array<T> &in, const bool conjugate);
 
 INSTANTIATE(float  )
 INSTANTIATE(cfloat )
@@ -58,3 +55,4 @@ INSTANTIATE(intl   )
 INSTANTIATE(uintl  )
 
 }
+

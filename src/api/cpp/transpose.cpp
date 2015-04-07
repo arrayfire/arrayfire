@@ -20,4 +20,9 @@ array transpose(const array& in, const bool conjugate)
     return array(out);
 }
 
+void transposeInplace(array& in, const bool conjugate)
+{
+    AF_THROW(af_transpose_inplace(in.get(), conjugate));
+}
+
 }
