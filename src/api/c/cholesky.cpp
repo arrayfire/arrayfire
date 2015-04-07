@@ -19,9 +19,6 @@
 using af::dim4;
 using namespace detail;
 
-using af::dim4;
-using namespace detail;
-
 template<typename T>
 static inline af_array cholesky(int *info, const af_array in, const bool is_upper)
 {

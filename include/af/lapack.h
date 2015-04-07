@@ -21,19 +21,21 @@ namespace af
     */
     AFAPI void lu(array &out, array &pivot, const array &in);
 
-    AFAPI void lu(array& lower, array& upper, array& pivot, const array& in);
+    AFAPI void lu(array &lower, array &upper, array &pivot, const array &in);
 
     AFAPI array luInplace(array &in);
 
-    AFAPI void qr(array& out, array& tau, const array& in);
+    AFAPI void qr(array &out, array &tau, const array &in);
 
-    AFAPI void qr(array& q, array& r, array& tau, const array& in);
+    AFAPI void qr(array &q, array &r, array &tau, const array &in);
 
-    AFAPI array qrInplace(array& in);
+    AFAPI array qrInplace(array &in);
 
-    AFAPI array cholesky(const array& in, int *info = NULL, const bool is_upper = true);
+    AFAPI array cholesky(const array &in, int *info = NULL, const bool is_upper = true);
 
-    AFAPI void choleskyInplace(array& in, int *info = NULL, const bool is_upper = true);
+    AFAPI void choleskyInplace(array &in, int *info = NULL, const bool is_upper = true);
+
+    AFAPI array solve(const array &a, const array &b, const af_solve_t options = AF_SOLVE_NONE);
 
     /**
        @}
@@ -59,6 +61,9 @@ extern "C" {
     AFAPI af_err af_cholesky(af_array *out, int *info, const af_array in, const bool is_upper);
 
     AFAPI af_err af_cholesky_inplace(int *info, af_array in, const bool is_upper);
+
+    AFAPI af_err af_solve(af_array *out, const af_array a, const af_array b,
+                          const af_solve_t options = AF_SOLVE_NONE);
 
 #ifdef __cplusplus
 }
