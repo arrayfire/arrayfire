@@ -17,7 +17,7 @@
 #include <ArrayInfo.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>
-#include <graphics.hpp>
+#include <image.hpp>
 #include <handle.hpp>
 #include <reorder.hpp>
 #include <tile.hpp>

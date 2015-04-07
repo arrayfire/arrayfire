@@ -13,7 +13,7 @@
 #if defined(WITH_GRAPHICS)
 
 #include <Array.hpp>
-#include <graphics.hpp>
+#include <image.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
 #include <platform.hpp>
