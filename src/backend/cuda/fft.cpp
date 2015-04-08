@@ -14,6 +14,7 @@
 #include <copy.hpp>
 #include <fft.hpp>
 #include <err_cuda.hpp>
+#include <err_cufft.hpp>
 #include <cufft.h>
 #include <math.hpp>
 #include <string>
@@ -117,22 +118,13 @@ void find_cufft_plan(cufftHandle &plan, int rank, int *n,
     // If plan creation fails, clean up the memory we hold on to and try again
     if (res != CUFFT_SUCCESS) {
         garbageCollect();
-        res = cufftPlanMany(&temp, rank, n, inembed, istride, idist, onembed, ostride, odist, type, batch);
+        CUFFT_CHECK(cufftPlanMany(&temp, rank, n, inembed, istride, idist, onembed, ostride, odist, type, batch));
     }
 
-    switch(res) {
-    case CUFFT_ALLOC_FAILED  : AF_ERROR("cuFFTPlanMany: cuFFT GPU resource allocation failed"   , AF_ERR_INTERNAL);
-    case CUFFT_INVALID_VALUE : AF_ERROR("cuFFTPlanMany: invalid parameters passed to cuFFT API" , AF_ERR_INTERNAL);
-    case CUFFT_INTERNAL_ERROR: AF_ERROR("cuFFTPlanMany: internal driver detected using cuFFT"   , AF_ERR_INTERNAL);
-    case CUFFT_SETUP_FAILED  : AF_ERROR("cuFFTPlanMany: cuFFT library initialization failed"    , AF_ERR_INTERNAL);
-    case CUFFT_INVALID_SIZE  : AF_ERROR("cuFFTPlanMany: invalid size parameters passed to cuFFT", AF_ERR_INTERNAL);
-    default: //CUFFT_SUCCESS
-        plan = temp;
-        planner.mHandles[slot_index] = temp;
-        planner.mKeys[slot_index] = key_string;
-        planner.mAvailSlotIndex = (slot_index + 1)%cuFFTPlanner::MAX_PLAN_CACHE;
-        break;
-    }
+    plan = temp;
+    planner.mHandles[slot_index] = temp;
+    planner.mKeys[slot_index] = key_string;
+    planner.mAvailSlotIndex = (slot_index + 1)%cuFFTPlanner::MAX_PLAN_CACHE;
 }
 
 template<typename T>
@@ -190,7 +182,7 @@ void cufft_common(Array<T> &arr)
 
     cufft_transform<T> transform;
 
-    transform(plan, arr.get(), arr.get(), direction);
+    CUFFT_CHECK(transform(plan, arr.get(), arr.get(), direction));
 }
 
 template<int rank>
