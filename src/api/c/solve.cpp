@@ -33,8 +33,15 @@ af_err af_solve(af_array *out, const af_array a, const af_array b, const af_solv
 
         af_dtype type = a_info.getType();
 
+        dim4 adims = a_info.dims();
+        dim4 bdims = a_info.dims();
+
         ARG_ASSERT(1, a_info.isFloating());                       // Only floating and complex types
         ARG_ASSERT(2, b_info.isFloating());                       // Only floating and complex types
+
+        DIM_ASSERT(1, bdims[0] == adims[0]);
+        DIM_ASSERT(1, bdims[2] == adims[2]);
+        DIM_ASSERT(1, bdims[3] == adims[3]);
 
         af_array output;
 

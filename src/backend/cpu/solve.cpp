@@ -14,6 +14,7 @@
 
 #include <af/dim4.hpp>
 #include <handle.hpp>
+#include <range.hpp>
 #include <iostream>
 #include <cassert>
 #include <err_cpu.hpp>
@@ -24,10 +25,74 @@ namespace cpu
 {
 
 template<typename T>
+using gesv_func_def = int (*)(ORDER_TYPE, int, int,
+                              T *, int,
+                              int *,
+                              T *, int);
+
+template<typename T>
+using gels_func_def = int (*)(ORDER_TYPE, char,
+                              int, int, int,
+                              T *, int,
+                              T *, int);
+
+#define SOLVE_FUNC_DEF( FUNC )                                      \
+template<typename T> FUNC##_func_def<T> FUNC##_func();
+
+
+#define SOLVE_FUNC( FUNC, TYPE, PREFIX )                            \
+template<> FUNC##_func_def<TYPE>     FUNC##_func<TYPE>()            \
+{ return & LAPACK_NAME(PREFIX##FUNC); }
+
+SOLVE_FUNC_DEF( gesv )
+SOLVE_FUNC(gesv , float  , s)
+SOLVE_FUNC(gesv , double , d)
+SOLVE_FUNC(gesv , cfloat , c)
+SOLVE_FUNC(gesv , cdouble, z)
+
+SOLVE_FUNC_DEF( gels )
+SOLVE_FUNC(gels , float  , s)
+SOLVE_FUNC(gels , double , d)
+SOLVE_FUNC(gels , cfloat , c)
+SOLVE_FUNC(gels , cdouble, z)
+
+void solveConvertPivot(Array<int> &pivot)
+{
+    Array<int> p = range<int>(pivot.dims(), 0);
+    int *d_pi = pivot.get();
+    int *d_po = p.get();
+    dim_type d0 = pivot.dims()[0];
+    for(int j = 0; j < d0; j++) {
+        // 1 indexed in pivot
+        std::swap(d_po[j], d_po[d_pi[j] - 1]);
+    }
+    pivot = p;
+}
+
+template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_solve_t options)
 {
-    AF_ERROR("CPU Solve not implemented",
-              AF_ERR_NOT_CONFIGURED);
+    int M = a.dims()[0];
+    int N = a.dims()[1];
+    int K = b.dims()[1];
+
+    Array<T> A = copyArray<T>(a);
+    Array<T> B = copyArray<T>(b);
+    Array<int> pivot = createEmptyArray<int>(dim4(N, 1, 1));
+
+    if(M == N) {
+        int info = gesv_func<T>()(AF_LAPACK_COL_MAJOR, N, K,
+                                  A.get(), M,
+                                  pivot.get(),
+                                  B.get(), M);
+        //solveConvertPivot(pivot);
+    } else {
+        int info = gels_func<T>()(AF_LAPACK_COL_MAJOR, 'N',
+                                  M, N, K,
+                                  A.get(), M, B.get(), M);
+    }
+
+    return B;
 }
 
 #define INSTANTIATE_SOLVE(T)                                                                   \
