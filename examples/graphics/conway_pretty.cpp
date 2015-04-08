@@ -15,21 +15,22 @@ using namespace af;
 int main(int argc, char *argv[])
 {
     try {
-        // Initialize the kernel array just once
-        af::info();
         static const float h_kernel[] = {1, 1, 1, 1, 0, 1, 1, 1, 1};
-        static const af::array kernel(3, 3, h_kernel, af::afHost);
-
         static const int reset = 500;
         static const int game_w = 100, game_h = 100;
+
+        af::info();
+        fg_window_handle window;
+        fg_create_window(&window, 8 * game_w, 8 * game_h, "Conway", FG_RGB, GL_FLOAT);
+        af_mark_device_clgl(0, window);
         int frame_count = 0;
 
+        // Initialize the kernel array just once
+        const af::array kernel(3, 3, h_kernel, af::afHost);
         array state;
         state = (af::randu(game_h, game_w, f32) > 0.4).as(f32);
 
-        fg_window_handle window;
         fg_image_handle image;
-        fg_create_window(&window, 8 * state.dims(1), 8 * state.dims(0), "Conway", FG_RGB, GL_FLOAT);
         fg_setup_image(&image, window, state.dims(1), state.dims(0));
 
         array display = tile(state, 1, 1, 3, 1);
@@ -56,7 +57,7 @@ int main(int argc, char *argv[])
             af::array C1 = (nHood == 3);
 
             array a0 = (state == 1) && (nHood < 2); // Die of under population
-            array a1 = state && (C0 || C1);         // Continue to live
+            array a1 = (state != 0) && (C0 || C1);         // Continue to live
             array a2 = (state == 0) && C1;          // Reproduction
             array a3 = (state == 1) && (nHood > 3); // Over-population
 

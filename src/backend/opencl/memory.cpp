@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <memory.hpp>
-#include <platform.hpp>
 #include <dispatch.hpp>
 #include <map>
 #include <types.hpp>

@@ -7,9 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <kernel_headers/set.hpp>
-#include <cl.hpp>
 #include <platform.hpp>
+#include <kernel_headers/set.hpp>
 #include <traits.hpp>
 #include <mutex>
 #include <map>

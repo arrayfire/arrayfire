@@ -8,11 +8,10 @@
  ********************************************************/
 
 #pragma once
+#include <platform.hpp>
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
-#include <cl.hpp>
-#include <platform.hpp>
 #include <traits.hpp>
 #include <backend.hpp>
 #include <types.hpp>
