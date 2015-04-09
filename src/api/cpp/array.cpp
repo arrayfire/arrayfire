@@ -101,6 +101,16 @@ namespace af
             }
         }
 
+        // Change the dimensions if inside GFOR
+        for (int i = 0; i < 4; i++) {
+            if (indices[i].isBatch) {
+                int tmp = odims[i];
+                odims[i] = odims[3];
+                odims[3] = tmp;
+                break;
+            }
+        }
+
         return odims;
     }
 
