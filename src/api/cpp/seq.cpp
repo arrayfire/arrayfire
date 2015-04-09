@@ -71,9 +71,9 @@ seq::seq(double begin, double end, double step): m_gfor(false)
 }
 
 seq::seq(seq other, bool is_gfor)
-    : m_gfor(is_gfor)
-    , s(other.s)
-    , size(other.size)
+    : s(other.s),
+      size(other.size),
+      m_gfor(is_gfor)
 { }
 
 seq::operator array() const
