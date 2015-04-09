@@ -77,7 +77,7 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_solve_t options)
     int K = b.dims()[1];
 
     Array<T> A = copyArray<T>(a);
-    Array<T> B = copyArray<T>(b);
+    Array<T> B = padArray<T, T>(b, dim4(max(M, N), K));
     Array<int> pivot = createEmptyArray<int>(dim4(N, 1, 1));
 
     if(M == N) {
@@ -89,7 +89,9 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_solve_t options)
     } else {
         int info = gels_func<T>()(AF_LAPACK_COL_MAJOR, 'N',
                                   M, N, K,
-                                  A.get(), M, B.get(), M);
+                                  A.get(), M,
+                                  B.get(), max(M, N));
+        B.resetDims(dim4(N, K));
     }
 
     return B;
