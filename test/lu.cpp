@@ -82,7 +82,6 @@ TEST(LUFactorized, CPP)
 
     af::dim4 ldims = l.dims();
     af::dim4 udims = u.dims();
-    af::dim4 pdims = pivot.dims();
 
     // Get result
     float* lData = new float[ldims.elements()];
