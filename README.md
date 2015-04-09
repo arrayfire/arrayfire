@@ -28,6 +28,8 @@ We currently have binary tar balls and installers available for the beta version
 | Windows         | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows/devel)](http://ci.arrayfire.org/job/arrayfire-windows/branch/devel/)  | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows-test/devel)](http://ci.arrayfire.org/job/arrayfire-windows-test/branch/devel/)          |
 | OSX             | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/devel)](http://ci.arrayfire.org/job/arrayfire-osx/branch/devel/)          | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx-test/devel)](http://ci.arrayfire.org/job/arrayfire-osx-test/branch/devel/)                  |
 
+Test coverage: [![Coverage Status](https://coveralls.io/repos/arrayfire/arrayfire/badge.svg?branch=HEAD)](https://coveralls.io/r/arrayfire/arrayfire?branch=HEAD)
+
 ### Example
 
 ``` C++
