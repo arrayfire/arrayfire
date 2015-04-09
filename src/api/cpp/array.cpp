@@ -78,6 +78,8 @@ namespace af
 
     static af_array gforReorder(const af_array in, unsigned dim)
     {
+        // This is here to stop gcc from complaining
+        if (dim > 3) AF_THROW_MSG("Invalid dimension", AF_ERR_INTERNAL);
         unsigned order[4] = {0, 1, 2, dim};
         order[dim] = 3;
         af_array out;
