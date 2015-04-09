@@ -34,8 +34,8 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
     dim4 const outDs = oInfo.dims();
     dim4 const iDims = iInfo.dims();
 
-    ARG_ASSERT(0, (outDs.ndims()>=iDims.ndims()));
-    ARG_ASSERT(1, (outDs.ndims()>=(int)ndims));
+    DIM_ASSERT(0, (outDs.ndims()>=iDims.ndims()));
+    DIM_ASSERT(0, (outDs.ndims()>=(int)ndims));
 
     AF_CHECK(af_eval(out));
 
@@ -78,8 +78,8 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
 }
 
 af_err af_assign_seq(af_array *out,
-                 const af_array lhs, const unsigned ndims,
-                 const af_seq *index, const af_array rhs)
+                     const af_array lhs, const unsigned ndims,
+                     const af_seq *index, const af_array rhs)
 {
     try {
         ARG_ASSERT(0, (lhs!=0));

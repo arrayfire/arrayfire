@@ -68,16 +68,18 @@ namespace af
         }
     }
 
-    static int gforDim(af_index_t seqs[4])
+    static int gforDim(af_index_t indices[4])
     {
         for (int i = 0; i < 4; i++) {
-            if (seqs[i].isBatch) return i;
+            if (indices[i].isBatch) return i;
         }
         return -1;
     }
 
     static af_array gforReorder(const af_array in, unsigned dim)
     {
+        // This is here to stop gcc from complaining
+        if (dim > 3) AF_THROW_MSG("Invalid dimension", AF_ERR_INTERNAL);
         unsigned order[4] = {0, 1, 2, dim};
         order[dim] = 3;
         af_array out;
@@ -85,7 +87,7 @@ namespace af
         return out;
     }
 
-    static af::dim4 seqToDims(af_index_t indices[4], af::dim4 parentDims)
+    static af::dim4 seqToDims(af_index_t indices[4], af::dim4 parentDims, bool reorder = true)
     {
         std::vector<af_seq> av(4);
         for (int i = 0; i < 4; i++) av[i] = indices[i].mIndexer.seq;
@@ -96,6 +98,18 @@ namespace af
                 dim_type elems = 0;
                 AF_THROW(af_get_elements(&elems, indices[i].mIndexer.arr));
                 odims[i] = elems;
+            }
+        }
+
+        // Change the dimensions if inside GFOR
+        if (reorder) {
+            for (int i = 0; i < 4; i++) {
+                if (indices[i].isBatch) {
+                    int tmp = odims[i];
+                    odims[i] = odims[3];
+                    odims[3] = tmp;
+                    break;
+                }
             }
         }
 
@@ -346,10 +360,10 @@ namespace af
 
 #undef INSTANTIATE
 
-    array::array(af_array in, const array *par, af_index_t seqs[4]) :
+    array::array(af_array in, const array *par, af_index_t inds[4]) :
     arr(in), parent(par), isRef(true)
     {
-        for(int i=0; i<4; ++i) indices[i] = seqs[i];
+        for(int i=0; i<4; ++i) indices[i] = inds[i];
     }
 
     array array::operator()(const array& idx) const
@@ -714,21 +728,47 @@ namespace af
         if (isRef) {
 
             unsigned nd = numDims(arr);
+            const dim4 this_dims = getDims(arr);
+            const dim4 other_dims = other.dims();
             int dim = gforDim(this->indices);
             af_array other_arr = other.get();
 
-            // HACK: This is a quick check to see if other has been reordered inside gfor
-            // TODO: Figure out if this breaks and implement a cleaner method
-            bool is_reordered = (getDims(arr) != other.dims());
+            bool batch_assign = false;
+            bool is_reordered = false;
+            if (dim >= 0) {
+                batch_assign = true;
+                for (int i = 0; i < 4; i++) {
+                    if (this->indices[i].isBatch) batch_assign &= (other_dims[i] == 1);
+                    else                          batch_assign &= (other_dims[i] == this_dims[i]);
+                }
 
-            other_arr = (dim == -1 || !is_reordered) ? other_arr : gforReorder(other_arr, dim);
+                if (batch_assign) {
+                    //FIXME: Figure out a faster, cleaner way to do this
+                    dim4 out_dims = seqToDims(this->indices, this_dims, false);
+                    af_array out;
+                    AF_THROW(af_tile(&out, other_arr,
+                                     out_dims[0] / other_dims[0],
+                                     out_dims[1] / other_dims[1],
+                                     out_dims[2] / other_dims[2],
+                                     out_dims[3] / other_dims[3]));
+                    other_arr = out;
+
+                } else if (this_dims != other_dims) {
+                    // HACK: This is a quick check to see if other has been reordered inside gfor
+                    // TODO: Figure out if this breaks and implement a cleaner method
+                    other_arr = gforReorder(other_arr, dim);
+                    is_reordered = true;
+                }
+            }
 
             af_array tmp;
             AF_THROW(af_assign_gen(&tmp, arr, nd, indices, other_arr));
             cleanIndices(indices);
 
             parent->set(tmp);
-            if (dim >= 0 && is_reordered) AF_THROW(af_destroy_array(other_arr));
+            if (dim >= 0 && (is_reordered || batch_assign)) {
+                AF_THROW(af_destroy_array(other_arr));
+            }
 
             isRef = false;
         } else {
@@ -763,7 +803,7 @@ namespace af
             array tmp = *this op1 other;                                \
             af_array tmp_arr = tmp.get();                               \
             af_array out = 0;                                           \
-            tmp_arr = (dim == -1) ? tmp_arr : gforReorder(tmp_arr, dim); \
+            tmp_arr = (dim < 0) ? tmp_arr : gforReorder(tmp_arr, dim);  \
             AF_THROW(af_assign_gen(&out, lhs, ndims, inds, tmp_arr));   \
             cleanIndices(indices);                                      \
             AF_THROW(af_destroy_array(this->arr));                      \
