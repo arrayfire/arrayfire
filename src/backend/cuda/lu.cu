@@ -145,7 +145,7 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
 }
 
 template<typename T>
-Array<int> lu_inplace(Array<T> &in)
+Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
 {
     dim4 iDims = in.dims();
     int M = iDims[0];
@@ -174,12 +174,13 @@ Array<int> lu_inplace(Array<T> &in)
         std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
     }
 
-    convertPivot(pivot);
+    if(convert_pivot) convertPivot(pivot);
+
     return pivot;
 }
 
 #define INSTANTIATE_LU(T)                                                                           \
-    template Array<int> lu_inplace<T>(Array<T> &in);                                                \
+    template Array<int> lu_inplace<T>(Array<T> &in, const bool convert_pivot);                      \
     template void lu<T>(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in);
 
 INSTANTIATE_LU(float)
