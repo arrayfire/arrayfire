@@ -68,10 +68,10 @@ namespace af
         }
     }
 
-    static int gforDim(af_index_t seqs[4])
+    static int gforDim(af_index_t indices[4])
     {
         for (int i = 0; i < 4; i++) {
-            if (seqs[i].isBatch) return i;
+            if (indices[i].isBatch) return i;
         }
         return -1;
     }
@@ -348,10 +348,10 @@ namespace af
 
 #undef INSTANTIATE
 
-    array::array(af_array in, const array *par, af_index_t seqs[4]) :
+    array::array(af_array in, const array *par, af_index_t inds[4]) :
     arr(in), parent(par), isRef(true)
     {
-        for(int i=0; i<4; ++i) indices[i] = seqs[i];
+        for(int i=0; i<4; ++i) indices[i] = inds[i];
     }
 
     array array::operator()(const array& idx) const
@@ -723,7 +723,7 @@ namespace af
             // TODO: Figure out if this breaks and implement a cleaner method
             bool is_reordered = (getDims(arr) != other.dims());
 
-            other_arr = (dim == -1 || !is_reordered) ? other_arr : gforReorder(other_arr, dim);
+            other_arr = (dim < 0 || !is_reordered) ? other_arr : gforReorder(other_arr, dim);
 
             af_array tmp;
             AF_THROW(af_assign_gen(&tmp, arr, nd, indices, other_arr));
@@ -765,7 +765,7 @@ namespace af
             array tmp = *this op1 other;                                \
             af_array tmp_arr = tmp.get();                               \
             af_array out = 0;                                           \
-            tmp_arr = (dim == -1) ? tmp_arr : gforReorder(tmp_arr, dim); \
+            tmp_arr = (dim < 0) ? tmp_arr : gforReorder(tmp_arr, dim);  \
             AF_THROW(af_assign_gen(&out, lhs, ndims, inds, tmp_arr));   \
             cleanIndices(indices);                                      \
             AF_THROW(af_destroy_array(this->arr));                      \
