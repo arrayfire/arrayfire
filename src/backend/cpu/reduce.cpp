@@ -7,13 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <complex>
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <reduce.hpp>
 #include <ops.hpp>
+#include <functional>
+#include <complex>
 
 using af::dim4;
 
@@ -22,17 +23,18 @@ namespace cpu
     template<af_op_t op, typename Ti, typename To, int D>
     struct reduce_dim
     {
-        void operator()(To *out, const dim4 ostrides, const dim4 odims,
-                        const Ti *in , const dim4 istrides, const dim4 idims,
+        void operator()(To *out, const dim4 &ostrides, const dim4 &odims,
+                        const Ti *in , const dim4 &istrides, const dim4 &idims,
                         const int dim)
         {
-            const int D1 = D - 1;
+            static const int D1 = D - 1;
+            static reduce_dim<op, Ti, To, D1> reduce_dim_next;
             for (dim_type i = 0; i < odims[D1]; i++) {
-                reduce_dim<op, Ti, To, D1>()(out + i * ostrides[D1],
-                                             ostrides, odims,
-                                             in  + i * istrides[D1],
-                                             istrides, idims,
-                                             dim);
+                 reduce_dim_next(out + i * ostrides[D1],
+                                 ostrides, odims,
+                                 in  + i * istrides[D1],
+                                 istrides, idims,
+                                 dim);
             }
         }
     };
@@ -40,15 +42,14 @@ namespace cpu
     template<af_op_t op, typename Ti, typename To>
     struct reduce_dim<op, Ti, To, 0>
     {
-        void operator()(To *out, const dim4 ostrides, const dim4 odims,
-                        const Ti *in , const dim4 istrides, const dim4 idims,
+
+        Transform<Ti, To, op> transform;
+        Binary<To, op> reduce;
+        void operator()(To *out, const dim4 &ostrides, const dim4 &odims,
+                        const Ti *in , const dim4 &istrides, const dim4 &idims,
                         const int dim)
         {
-
             dim_type stride = istrides[dim];
-
-            Transform<Ti, To, op> transform;
-            Binary<To, op> reduce;
 
             To out_val = reduce.init();
             for (dim_type i = 0; i < idims[dim]; i++) {
@@ -61,34 +62,24 @@ namespace cpu
     };
 
     template<af_op_t op, typename Ti, typename To>
+    using reduce_dim_func = std::function<void(To*,const dim4&, const dim4&,
+                                                const Ti*, const dim4&, const dim4&,
+                                                const int)>;
+
+    template<af_op_t op, typename Ti, typename To>
     Array<To> reduce(const Array<Ti> &in, const int dim)
     {
         dim4 odims = in.dims();
         odims[dim] = 1;
 
         Array<To> out = createEmptyArray<To>(odims);
+        static reduce_dim_func<op, Ti, To>  reduce_funcs[4] = { reduce_dim<op, Ti, To, 1>()
+                                                              , reduce_dim<op, Ti, To, 2>()
+                                                              , reduce_dim<op, Ti, To, 3>()
+                                                              , reduce_dim<op, Ti, To, 4>()};
 
-        switch (in.ndims()) {
-        case 1:
-            reduce_dim<op, Ti, To, 1>()(out.get(), out.strides(), out.dims(),
-                                        in.get(), in.strides(), in.dims(), dim);
-            break;
-
-        case 2:
-            reduce_dim<op, Ti, To, 2>()(out.get(), out.strides(), out.dims(),
-                                        in.get(), in.strides(), in.dims(), dim);
-            break;
-
-        case 3:
-            reduce_dim<op, Ti, To, 3>()(out.get(), out.strides(), out.dims(),
-                                        in.get(), in.strides(), in.dims(), dim);
-            break;
-
-        case 4:
-            reduce_dim<op, Ti, To, 4>()(out.get(), out.strides(), out.dims(),
-                                        in.get(), in.strides(), in.dims(), dim);
-            break;
-        }
+        reduce_funcs[in.ndims() - 1](out.get(), out.strides(), out.dims(),
+                                    in.get(), in.strides(), in.dims(), dim);
 
         return out;
     }
