@@ -120,6 +120,20 @@ struct dot_func_def_t
                                                 T *);
 };
 
+template<typename T>
+struct trsm_func_def_t
+{
+    typedef cublasStatus_t (*trsm_func_def)(    cublasHandle_t,
+                                                cublasSideMode_t,
+                                                cublasFillMode_t,
+                                                cublasOperation_t,
+                                                cublasDiagType_t,
+                                                int, int,
+                                                const T *,
+                                                const T *, int,
+                                                T *, int);
+};
+
 #define BLAS_FUNC_DEF( FUNC )                       \
 template<typename T>                                \
 typename FUNC##_func_def_t<T>::FUNC##_func_def      \
@@ -143,6 +157,12 @@ BLAS_FUNC(gemv, cdouble,Z)
 BLAS_FUNC_DEF(dot)
 BLAS_FUNC(dot, float,  S)
 BLAS_FUNC(dot, double, D)
+
+BLAS_FUNC_DEF(trsm)
+BLAS_FUNC(trsm, float,  S)
+BLAS_FUNC(trsm, cfloat, C)
+BLAS_FUNC(trsm, double, D)
+BLAS_FUNC(trsm, cdouble,Z)
 
 using namespace std;
 
@@ -210,6 +230,35 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
     return createValueArray(af::dim4(1), out);
 }
 
+template<typename T>
+void trsm(const Array<T> &lhs, Array<T> &rhs, af_blas_transpose trans)
+{
+    dim4 lDims = lhs.dims();
+    dim4 rDims = rhs.dims();
+    int M = rDims[0];
+    int N = rDims[1];
+
+    T alpha = scalar<T>(1);
+
+    dim4 lStrides = lhs.strides();
+    dim4 rStrides = rhs.strides();
+
+    cublasStatus_t err =
+    trsm_func<T>()(
+        getHandle(), CUBLAS_SIDE_LEFT,
+        CUBLAS_FILL_MODE_UPPER, trans,
+        CUBLAS_DIAG_UNIT,
+        M, N,
+        &alpha,
+        lhs.get(), lStrides[1],
+        rhs.get(), rStrides[1]);
+
+    if(err != CUBLAS_STATUS_SUCCESS) {
+        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cublasErrorString(err) << std::endl;
+    }
+}
+
+
 #define INSTANTIATE_BLAS(TYPE)                                                          \
     template Array<TYPE> matmul<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs,  \
                                       af_blas_transpose optLhs, af_blas_transpose optRhs);
@@ -225,4 +274,14 @@ INSTANTIATE_BLAS(cdouble)
 
 INSTANTIATE_DOT(float)
 INSTANTIATE_DOT(double)
+
+#define INSTANTIATE_TRSM(TYPE)                                                          \
+    template void trsm<TYPE>(const Array<TYPE> &lhs, Array<TYPE> &rhs,                  \
+                             af_blas_transpose trans);
+
+INSTANTIATE_TRSM(float)
+INSTANTIATE_TRSM(cfloat)
+INSTANTIATE_TRSM(double)
+INSTANTIATE_TRSM(cdouble)
+
 }
