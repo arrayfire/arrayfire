@@ -233,7 +233,7 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
 template<typename T>
 void trsm(const Array<T> &lhs, Array<T> &rhs, af_blas_transpose trans)
 {
-    dim4 lDims = lhs.dims();
+    //dim4 lDims = lhs.dims();
     dim4 rDims = rhs.dims();
     int M = rDims[0];
     int N = rDims[1];
@@ -246,7 +246,7 @@ void trsm(const Array<T> &lhs, Array<T> &rhs, af_blas_transpose trans)
     cublasStatus_t err =
     trsm_func<T>()(
         getHandle(), CUBLAS_SIDE_LEFT,
-        CUBLAS_FILL_MODE_UPPER, trans,
+        CUBLAS_FILL_MODE_UPPER, toCblasTranspose(trans),
         CUBLAS_DIAG_UNIT,
         M, N,
         &alpha,
