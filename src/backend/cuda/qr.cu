@@ -133,8 +133,10 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
     int lwork = 0;
 
     cusolverStatus_t err;
-    err = geqrf_buf_func<T>()(getSolverHandle(), M, N,
-                              in_copy.get(), M, &lwork);
+    err = geqrf_buf_func<T>()(getSolverHandle(),
+                              M, N,
+                              in_copy.get(), in_copy.strides()[1],
+                              &lwork);
 
     if(err != CUSOLVER_STATUS_SUCCESS) {
         std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
@@ -144,8 +146,9 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
 
     t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
     int *info = memAlloc<int>(1);
-    err = geqrf_func<T>()(getSolverHandle(), M, N,
-                          in_copy.get(), M,
+    err = geqrf_func<T>()(getSolverHandle(),
+                          M, N,
+                          in_copy.get(), in_copy.strides()[1],
                           t.get(),
                           workspace,
                           lwork, info);
@@ -167,9 +170,9 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
     err = mqr_func<T>()(getSolverHandle(),
                         CUBLAS_SIDE_LEFT, CUBLAS_OP_N,
                         M, N, min(M, N),
-                        in_copy.get(), M,
+                        in_copy.get(), in_copy.strides()[1],
                         t.get(),
-                        q.get(), q.dims()[0],
+                        q.get(), q.strides()[1],
                         workspace, lwork,
                         info);
 
@@ -192,8 +195,10 @@ Array<T> qr_inplace(Array<T> &in)
     int lwork = 0;
 
     cusolverStatus_t err;
-    err = geqrf_buf_func<T>()(getSolverHandle(), M, N,
-                              in.get(), M, &lwork);
+    err = geqrf_buf_func<T>()(getSolverHandle(),
+                              M, N,
+                              in.get(), in.strides()[1],
+                              &lwork);
 
     if(err != CUSOLVER_STATUS_SUCCESS) {
         std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
@@ -202,10 +207,12 @@ Array<T> qr_inplace(Array<T> &in)
     T *workspace = memAlloc<T>(lwork);
     int *info = memAlloc<int>(1);
 
-    err = geqrf_func<T>()(getSolverHandle(), M, N,
-                          in.get(), M,
-                          t.get(), workspace,
-                          lwork, info);
+    err = geqrf_func<T>()(getSolverHandle(),
+                          M, N,
+                          in.get(), in.strides()[1],
+                          t.get(),
+                          workspace, lwork,
+                          info);
 
     if(err != CUSOLVER_STATUS_SUCCESS) {
         std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;

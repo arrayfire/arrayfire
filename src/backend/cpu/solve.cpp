@@ -76,21 +76,25 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_solve_t options)
     int N = a.dims()[1];
     int K = b.dims()[1];
 
+
     Array<T> A = copyArray<T>(a);
     Array<T> B = padArray<T, T>(b, dim4(max(M, N), K));
     Array<int> pivot = createEmptyArray<int>(dim4(N, 1, 1));
 
     if(M == N) {
         int info = gesv_func<T>()(AF_LAPACK_COL_MAJOR, N, K,
-                                  A.get(), M,
+                                  A.get(), A.strides()[1],
                                   pivot.get(),
-                                  B.get(), M);
+                                  B.get(), B.strides()[1]);
         //solveConvertPivot(pivot);
     } else {
+        int sM = a.strides()[1];
+        int sN = a.strides()[2] / sM;
+
         int info = gels_func<T>()(AF_LAPACK_COL_MAJOR, 'N',
                                   M, N, K,
-                                  A.get(), M,
-                                  B.get(), max(M, N));
+                                  A.get(), A.strides()[1],
+                                  B.get(), max(sM, sN));
         B.resetDims(dim4(N, K));
     }
 

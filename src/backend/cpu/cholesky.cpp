@@ -56,7 +56,7 @@ Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
         uplo = 'U';
 
     *info = potrf_func<T>()(AF_LAPACK_COL_MAJOR, uplo,
-                            N, out.get(), M);
+                            N, out.get(), out.strides()[1]);
 
     return out;
 }
@@ -73,7 +73,7 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
         uplo = 'U';
 
     int info = potrf_func<T>()(AF_LAPACK_COL_MAJOR, uplo,
-                               N, in.get(), M);
+                               N, in.get(), in.strides()[1]);
 
     return info;
 }

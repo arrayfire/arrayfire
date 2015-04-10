@@ -111,7 +111,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
     t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
 
     int ret = geqrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N,
-                              q.get(), M,
+                              q.get(), q.strides()[1],
                               t.get());
 
     // SPLIT into q and r
@@ -122,7 +122,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
 
     ret = gqr_func<T>()(AF_LAPACK_COL_MAJOR,
                         M, M, min(M, N),
-                        q.get(), M,
+                        q.get(), q.strides()[1],
                         t.get());
 
     q.resetDims(dim4(M, M));
@@ -138,7 +138,7 @@ Array<T> qr_inplace(Array<T> &in)
     Array<T> t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
 
     int ret = geqrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N,
-                              in.get(), M,
+                              in.get(), in.strides()[1],
                               t.get());
 
     return t;

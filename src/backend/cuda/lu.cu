@@ -115,8 +115,10 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
     int lwork = 0;
 
     cusolverStatus_t err;
-    err = getrf_buf_func<T>()(getSolverHandle(), M, N,
-                              in_copy.get(), M, &lwork);
+    err = getrf_buf_func<T>()(getSolverHandle(),
+                              M, N,
+                              in_copy.get(), in_copy.strides()[1],
+                              &lwork);
 
     if(err != CUSOLVER_STATUS_SUCCESS) {
         std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
@@ -126,9 +128,12 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
 
     pivot = createEmptyArray<int>(af::dim4(min(M, N), 1, 1, 1));
     int *info = memAlloc<int>(1);
-    err = getrf_func<T>()(getSolverHandle(), M, N,
-                          in_copy.get(), M, workspace,
-                          pivot.get(), info);
+    err = getrf_func<T>()(getSolverHandle(),
+                          M, N,
+                          in_copy.get(), in_copy.strides()[1],
+                          workspace,
+                          pivot.get(),
+                          info);
 
     if(err != CUSOLVER_STATUS_SUCCESS) {
         std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
@@ -156,8 +161,10 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
     int lwork = 0;
 
     cusolverStatus_t err;
-    err = getrf_buf_func<T>()(getSolverHandle(), M, N,
-                              in.get(), M, &lwork);
+    err = getrf_buf_func<T>()(getSolverHandle(),
+                              M, N,
+                              in.get(), in.strides()[1],
+                              &lwork);
 
     if(err != CUSOLVER_STATUS_SUCCESS) {
         std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
@@ -166,9 +173,12 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
     T *workspace = memAlloc<T>(lwork);
     int *info = memAlloc<int>(1);
 
-    err = getrf_func<T>()(getSolverHandle(), M, N,
-                          in.get(), M, workspace,
-                          pivot.get(), info);
+    err = getrf_func<T>()(getSolverHandle(),
+                          M, N,
+                          in.get(), in.strides()[1],
+                          workspace,
+                          pivot.get(),
+                          info);
 
     if(err != CUSOLVER_STATUS_SUCCESS) {
         std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;

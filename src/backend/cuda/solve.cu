@@ -178,11 +178,12 @@ Array<T> solve_square(const Array<T> &a, const Array<T> &b, const af_solve_t opt
     int *info = memAlloc<int>(1);
 
     cusolverStatus_t err;
-    err = getrs_func<T>()(getSolverHandle(), CUBLAS_OP_N,
+    err = getrs_func<T>()(getSolverHandle(),
+                          CUBLAS_OP_N,
                           N, K,
-                          A.get(), M,
+                          A.get(), A.strides()[1],
                           pivot.get(),
-                          B.get(), M,
+                          B.get(), B.strides()[1],
                           info);
 
     if(err != CUSOLVER_STATUS_SUCCESS) {
@@ -206,8 +207,10 @@ Array<T> solve_rect(const Array<T> &a, const Array<T> &b, const af_solve_t optio
     int lwork = 0;
 
     cusolverStatus_t err;
-    err = geqrf_buf_func<T>()(getSolverHandle(), M, N,
-                              A.get(), M, &lwork);
+    err = geqrf_buf_func<T>()(getSolverHandle(),
+                              M, N,
+                              A.get(), A.strides()[1],
+                              &lwork);
 
     if(err != CUSOLVER_STATUS_SUCCESS) {
         std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
@@ -217,11 +220,12 @@ Array<T> solve_rect(const Array<T> &a, const Array<T> &b, const af_solve_t optio
 
     Array<T> t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
     int *info = memAlloc<int>(1);
-    err = geqrf_func<T>()(getSolverHandle(), M, N,
-                          A.get(), M,
+    err = geqrf_func<T>()(getSolverHandle(),
+                          M, N,
+                          A.get(), A.strides()[1],
                           t.get(),
-                          workspace,
-                          lwork, info);
+                          workspace, lwork,
+                          info);
 
     if(err != CUSOLVER_STATUS_SUCCESS) {
         std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;

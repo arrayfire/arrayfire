@@ -102,8 +102,10 @@ Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
         uplo = CUBLAS_FILL_MODE_UPPER;
 
     cusolverStatus_t err;
-    err = potrf_buf_func<T>()(getSolverHandle(), uplo,
-                              N, out.get(), M,
+    err = potrf_buf_func<T>()(getSolverHandle(),
+                              uplo,
+                              N,
+                              out.get(), out.strides()[1],
                               &lwork);
 
     if(err != CUSOLVER_STATUS_SUCCESS) {
@@ -113,10 +115,12 @@ Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
     T *workspace = memAlloc<T>(lwork);
     int *d_info = memAlloc<int>(1);
 
-    err = potrf_func<T>()(getSolverHandle(), uplo,
-                          N, out.get(), M,
-                          workspace,
-                          lwork, d_info);
+    err = potrf_func<T>()(getSolverHandle(),
+                          uplo,
+                          N,
+                          out.get(), out.strides()[1],
+                          workspace, lwork,
+                          d_info);
 
     if(err != CUSOLVER_STATUS_SUCCESS) {
         std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
@@ -139,8 +143,10 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
         uplo = CUBLAS_FILL_MODE_UPPER;
 
     cusolverStatus_t err;
-    err = potrf_buf_func<T>()(getSolverHandle(), uplo,
-                              N, in.get(), M,
+    err = potrf_buf_func<T>()(getSolverHandle(),
+                              uplo,
+                              N,
+                              in.get(), in.strides()[1],
                               &lwork);
 
     if(err != CUSOLVER_STATUS_SUCCESS) {
@@ -150,10 +156,12 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
     T *workspace = memAlloc<T>(lwork);
     int *d_info = memAlloc<int>(1);
 
-    err = potrf_func<T>()(getSolverHandle(), uplo,
-                          N, in.get(), M,
-                          workspace,
-                          lwork, d_info);
+    err = potrf_func<T>()(getSolverHandle(),
+                          uplo,
+                          N,
+                          in.get(), in.strides()[1],
+                          workspace, lwork,
+                          d_info);
 
     if(err != CUSOLVER_STATUS_SUCCESS) {
         std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;

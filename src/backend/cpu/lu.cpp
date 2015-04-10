@@ -123,7 +123,7 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
 
     pivot = createEmptyArray<int>(af::dim4(min(M, N), 1, 1, 1));
     int out = getrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N,
-                              in_copy.get(), M,
+                              in_copy.get(), in_copy.strides()[1],
                               pivot.get());
 
     // SPLIT into lower and upper
@@ -146,7 +146,7 @@ Array<int> lu_inplace(Array<T> &in)
     Array<int> pivot = createEmptyArray<int>(af::dim4(min(M, N), 1, 1, 1));
 
     int out = getrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N,
-                              in.get(), M,
+                              in.get(), in.strides()[1],
                               pivot.get());
 
     convertPivot(pivot);
