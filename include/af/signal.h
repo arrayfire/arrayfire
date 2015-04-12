@@ -372,6 +372,11 @@ AFAPI array convolve2(const array& signal, const array& filter, bool expand=fals
  */
 AFAPI array convolve3(const array& signal, const array& filter, bool expand=false);
 
+AFAPI array fftconvolve(const array& signal, const array& filter);
+AFAPI array fftconvolve1(const array& signal, const array& filter);
+AFAPI array fftconvolve2(const array& signal, const array& filter);
+AFAPI array fftconvolve3(const array& signal, const array& filter);
+
 }
 #endif
 
@@ -563,6 +568,10 @@ AFAPI af_err af_convolve3(af_array *out, af_array signal, af_array filter, bool 
    \ingroup signal_func_convolve
  */
 AFAPI af_err af_convolve2_sep(af_array *out, af_array col_filter, af_array row_filter, af_array signal, bool expand);
+
+AFAPI af_err af_fftconvolve1(af_array *out, af_array signal, af_array filter);
+AFAPI af_err af_fftconvolve2(af_array *out, af_array signal, af_array filter);
+AFAPI af_err af_fftconvolve3(af_array *out, af_array signal, af_array filter);
 
 #ifdef __cplusplus
 }
