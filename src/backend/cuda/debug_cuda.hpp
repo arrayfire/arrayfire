@@ -8,8 +8,6 @@
  ********************************************************/
 
 #pragma once
-#include <iostream>
-#include <stdio.h>
 #include <err_cuda.hpp>
 
 // FIXME: Add a special flag for debug

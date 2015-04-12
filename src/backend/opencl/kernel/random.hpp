@@ -18,7 +18,6 @@
 #include <string>
 #include <mutex>
 #include <map>
-#include <iostream>
 #include <dispatch.hpp>
 #include <err_opencl.hpp>
 #include <program.hpp>

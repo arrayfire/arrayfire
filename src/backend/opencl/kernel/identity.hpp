@@ -17,7 +17,6 @@
 #include <mutex>
 #include <math.hpp>
 #include "config.hpp"
-#include <iostream>
 
 using cl::Buffer;
 using cl::Program;

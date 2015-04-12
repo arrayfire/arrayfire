@@ -11,7 +11,6 @@
 #include <numeric>
 #include <cmath>
 #include <vector>
-#include <iostream>
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
 #include <err_common.hpp>

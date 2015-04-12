@@ -10,13 +10,12 @@
 #include <err_common.hpp>
 #include <type_util.hpp>
 #include <string>
-#include <iostream>
 #include <sstream>
 #include <cstring>
+#include <cstdio>
 
 using std::string;
 using std::stringstream;
-using std::cerr;
 
 AfError::AfError(const char * const funcName,
                  const int line,
@@ -135,7 +134,7 @@ print_error(const stringstream &msg)
     const char* perr = getenv("AF_PRINT_ERRORS");
     if(perr != nullptr) {
         if(std::strncmp(perr, "0", 1) != 0)
-            cerr << msg.str() << std::endl;
+            fprintf(stderr, "%s\n", msg.str().c_str());
     }
 }
 
