@@ -119,6 +119,9 @@ Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
                                    workspace, lwork,
                                    d_info));
 
+    memFree(workspace);
+    memFree(d_info);
+
     return out;
 }
 
@@ -150,6 +153,10 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
                                    in.get(), in.strides()[1],
                                    workspace, lwork,
                                    d_info));
+
+    memFree(workspace);
+    memFree(d_info);
+
     //FIXME: should return h_info
     return 0;
 }

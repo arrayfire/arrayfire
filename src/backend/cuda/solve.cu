@@ -130,14 +130,14 @@ struct mqr_func_def_t
                               int *);
 };
 
-#define QR_FUNC_DEF( FUNC )                                                     \
-template<typename T>                                                            \
-static typename FUNC##_func_def_t<T>::FUNC##_func_def                                  \
-FUNC##_func();                                                                  \
-                                                                                \
-template<typename T>                                                            \
-static typename FUNC##_buf_func_def_t<T>::FUNC##_buf_func_def                          \
-FUNC##_buf_func();                                                              \
+#define QR_FUNC_DEF( FUNC )                                         \
+    template<typename T>                                            \
+    static typename FUNC##_func_def_t<T>::FUNC##_func_def           \
+    FUNC##_func();                                                  \
+                                                                    \
+    template<typename T>                                            \
+    static typename FUNC##_buf_func_def_t<T>::FUNC##_buf_func_def   \
+    FUNC##_buf_func();                                              \
 
 #define QR_FUNC( FUNC, TYPE, PREFIX )                                                           \
 template<> typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>()                \
@@ -152,14 +152,15 @@ QR_FUNC(geqrf , double , D)
 QR_FUNC(geqrf , cfloat , C)
 QR_FUNC(geqrf , cdouble, Z)
 
-#define MQR_FUNC_DEF( FUNC )                                                    \
-template<typename T>                                                            \
-static typename FUNC##_func_def_t<T>::FUNC##_func_def                                  \
-FUNC##_func();
+#define MQR_FUNC_DEF( FUNC )                                \
+    template<typename T>                                    \
+    static typename FUNC##_func_def_t<T>::FUNC##_func_def   \
+    FUNC##_func();
 
-#define MQR_FUNC( FUNC, TYPE, PREFIX )                                                          \
-template<> typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>()                \
-{ return &cusolverDn##PREFIX; }                                                                 \
+#define MQR_FUNC( FUNC, TYPE, PREFIX )                              \
+    template<> typename FUNC##_func_def_t<TYPE>::FUNC##_func_def    \
+    FUNC##_func<TYPE>()                                             \
+    { return &cusolverDn##PREFIX; }                                 \
 
 MQR_FUNC_DEF( mqr )
 MQR_FUNC(mqr , float  , Sormqr)
@@ -253,6 +254,10 @@ Array<T> solve_rect(const Array<T> &a, const Array<T> &b, const af_solve_t optio
                                      B.get(), B.strides()[1],
                                      workspace, lwork,
                                      info));
+
+        memFree(workspace);
+        memFree(info);
+
     } else if (M > N) {
         B = createValueArray<T>(dim4(N, K), scalar<T>(0));
     }

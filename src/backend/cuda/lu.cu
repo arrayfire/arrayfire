@@ -143,6 +143,9 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
 
     kernel::lu_split<T>(lower, upper, in_copy);
     convertPivot(pivot);
+
+    memFree(workspace);
+    memFree(info);
 }
 
 template<typename T>
@@ -172,6 +175,9 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
                                    info));
 
     if(convert_pivot) convertPivot(pivot);
+
+    memFree(workspace);
+    memFree(info);
 
     return pivot;
 }

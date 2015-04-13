@@ -171,6 +171,9 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
                                  info));
 
     q.resetDims(dim4(M, M));
+
+    memFree(workspace);
+    memFree(info);
 }
 
 template<typename T>
@@ -198,6 +201,9 @@ Array<T> qr_inplace(Array<T> &in)
                                    t.get(),
                                    workspace, lwork,
                                    info));
+
+    memFree(workspace);
+    memFree(info);
     return t;
 }
 
