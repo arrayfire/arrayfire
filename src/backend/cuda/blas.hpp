@@ -23,6 +23,7 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
              af_blas_transpose optLhs, af_blas_transpose optRhs);
 
 template<typename T>
-void trsm(const Array<T> &lhs, Array<T> &rhs, af_blas_transpose trans);
+void trsm(const Array<T> &lhs, Array<T> &rhs, af_blas_transpose trans = AF_NO_TRANSPOSE,
+          bool is_upper = false, bool is_left = true, bool is_unit = false);
 
 }

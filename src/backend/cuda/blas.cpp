@@ -18,32 +18,11 @@
 #include <iostream>
 #include <math.hpp>
 #include <err_common.hpp>
+#include <err_cublas.hpp>
 #include <boost/scoped_ptr.hpp>
 
 namespace cuda
 {
-
-static
-const char * const
-cublasErrorString(cublasStatus_t err)
-{
-
-    switch(err)
-    {
-        case    CUBLAS_STATUS_SUCCESS:              return "CUBLAS_STATUS_SUCCESS";
-        case    CUBLAS_STATUS_NOT_INITIALIZED:      return "CUBLAS_STATUS_NOT_INITIALIZED";
-        case    CUBLAS_STATUS_ALLOC_FAILED:         return "CUBLAS_STATUS_ALLOC_FAILED";
-        case    CUBLAS_STATUS_INVALID_VALUE:        return "CUBLAS_STATUS_INVALID_VALUE";
-        case    CUBLAS_STATUS_ARCH_MISMATCH:        return "CUBLAS_STATUS_ARCH_MISMATCH";
-        case    CUBLAS_STATUS_MAPPING_ERROR:        return "CUBLAS_STATUS_MAPPING_ERROR";
-        case    CUBLAS_STATUS_EXECUTION_FAILED:     return "CUBLAS_STATUS_EXECUTION_FAILED";
-        case    CUBLAS_STATUS_INTERNAL_ERROR:       return "CUBLAS_STATUS_INTERNAL_ERROR";
-#if CUDA_VERSION > 5050
-        case    CUBLAS_STATUS_NOT_SUPPORTED:        return "CUBLAS_STATUS_NOT_SUPPORTED";
-#endif
-        default:                                    return "UNKNOWN";
-    }
-}
 
 //RAII class around the cublas Handle
 class cublasHandle
@@ -191,24 +170,28 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     dim4 rStrides = rhs.strides();
     if(rDims[bColDim] == 1) {
         N = lDims[aColDim];
-        gemv_func<T>()(
-            getHandle(), lOpts,
-            lDims[0], lDims[1],
-            &alpha, lhs.get(),   lStrides[1],
-                    rhs.get(),   rStrides[0],
-            &beta , out.get(),            1);
+        CUBLAS_CHECK(gemv_func<T>()(
+                         getHandle(),
+                         lOpts,
+                         lDims[0],
+                         lDims[1],
+                         &alpha,
+                         lhs.get(), lStrides[1],
+                         rhs.get(), rStrides[0],
+                         &beta,
+                         out.get(), 1));
     } else {
-        cublasStatus_t err =
-            gemm_func<T>()(
-                getHandle(), lOpts, rOpts,
-                M, N, K,
-                &alpha, lhs.get(),  lStrides[1],
-                        rhs.get(),  rStrides[1],
-                &beta , out.get(), out.dims()[0]);
-
-        if(err != CUBLAS_STATUS_SUCCESS) {
-            std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cublasErrorString(err) << std::endl;
-        }
+        CUBLAS_CHECK(gemm_func<T>()(
+                         getHandle(),
+                         lOpts,
+                         rOpts,
+                         M, N, K,
+                         &alpha,
+                         lhs.get(), lStrides[1],
+                         rhs.get(), rStrides[1],
+                         &beta,
+                         out.get(),
+                         out.dims()[0]));
     }
 
     return out;
@@ -222,16 +205,19 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
     int N = lhs.dims()[0];
 
     T out;
-    dot_func<T>()(  getHandle(), N,
-                            lhs.get(), lhs.strides()[0],
-                            rhs.get(), rhs.strides()[0],
-                            &out);
+
+    CUBLAS_CHECK(dot_func<T>()(getHandle(),
+                               N,
+                               lhs.get(), lhs.strides()[0],
+                               rhs.get(), rhs.strides()[0],
+                               &out));
 
     return createValueArray(af::dim4(1), out);
 }
 
 template<typename T>
-void trsm(const Array<T> &lhs, Array<T> &rhs, af_blas_transpose trans)
+void trsm(const Array<T> &lhs, Array<T> &rhs, af_blas_transpose trans,
+          bool is_upper, bool is_left, bool is_unit)
 {
     //dim4 lDims = lhs.dims();
     dim4 rDims = rhs.dims();
@@ -243,19 +229,16 @@ void trsm(const Array<T> &lhs, Array<T> &rhs, af_blas_transpose trans)
     dim4 lStrides = lhs.strides();
     dim4 rStrides = rhs.strides();
 
-    cublasStatus_t err =
-    trsm_func<T>()(
-        getHandle(), CUBLAS_SIDE_LEFT,
-        CUBLAS_FILL_MODE_UPPER, toCblasTranspose(trans),
-        CUBLAS_DIAG_UNIT,
-        M, N,
-        &alpha,
-        lhs.get(), lStrides[1],
-        rhs.get(), rStrides[1]);
-
-    if(err != CUBLAS_STATUS_SUCCESS) {
-        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cublasErrorString(err) << std::endl;
-    }
+    CUBLAS_CHECK(trsm_func<T>()(
+                     getHandle(),
+                     is_left  ? CUBLAS_SIDE_LEFT : CUBLAS_SIDE_RIGHT,
+                     is_upper ? CUBLAS_FILL_MODE_UPPER : CUBLAS_FILL_MODE_LOWER,
+                     toCblasTranspose(trans),
+                     is_unit  ? CUBLAS_DIAG_UNIT : CUBLAS_DIAG_NON_UNIT,
+                     M, N,
+                     &alpha,
+                     lhs.get(), lStrides[1],
+                     rhs.get(), rStrides[1]));
 }
 
 
@@ -277,7 +260,7 @@ INSTANTIATE_DOT(double)
 
 #define INSTANTIATE_TRSM(TYPE)                                                          \
     template void trsm<TYPE>(const Array<TYPE> &lhs, Array<TYPE> &rhs,                  \
-                             af_blas_transpose trans);
+                             af_blas_transpose trans, bool is_upper, bool is_left, bool is_unit);
 
 INSTANTIATE_TRSM(float)
 INSTANTIATE_TRSM(cfloat)
