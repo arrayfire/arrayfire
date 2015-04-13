@@ -37,6 +37,8 @@ namespace af
 
     AFAPI array solve(const array &a, const array &b, const af_solve_t options = AF_SOLVE_NONE);
 
+    AFAPI array inverse(const array &in);
+
     /**
        @}
     */
@@ -64,6 +66,8 @@ extern "C" {
 
     AFAPI af_err af_solve(af_array *out, const af_array a, const af_array b,
                           const af_solve_t options = AF_SOLVE_NONE);
+
+    AFAPI af_err af_inverse(af_array *out, const af_array in);
 
 #ifdef __cplusplus
 }

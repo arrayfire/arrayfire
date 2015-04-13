@@ -80,4 +80,11 @@ namespace af
         return array(out);
     }
 
+    array inverse(const array &in)
+    {
+        af_array out;
+        AF_THROW(af_inverse(&out, in.get()));
+        return array(out);
+    }
+
 }
