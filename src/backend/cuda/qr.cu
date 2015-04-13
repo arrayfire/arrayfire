@@ -157,13 +157,15 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
 
     kernel::qr_split<T>(r, in_copy);
 
-    dim4 qdims(M, N);
-
+    int mn = max(M, N);
+    dim4 qdims(M, mn);
     q = identity<T>(qdims);
 
     CUSOLVER_CHECK(mqr_func<T>()(getDnHandle(),
                                  CUBLAS_SIDE_LEFT, CUBLAS_OP_N,
-                                 M, N, min(M, N),
+                                 q.dims()[0],
+                                 q.dims()[1],
+                                 min(M, N),
                                  in_copy.get(), in_copy.strides()[1],
                                  t.get(),
                                  q.get(), q.strides()[1],
