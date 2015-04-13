@@ -18,41 +18,12 @@
 #include <iostream>
 #include <math.hpp>
 #include <err_common.hpp>
-#include <err_cublas.hpp>
-#include <boost/scoped_ptr.hpp>
+#include <cublasManager.hpp>
 
 namespace cuda
 {
 
-//RAII class around the cublas Handle
-class cublasHandle
-{
-    cublasHandle_t handle;
-public:
-    cublasHandle() : handle(0){
-        cublasStatus_t cErr;
-        cErr = cublasCreate(&handle);
-        if(cErr != CUBLAS_STATUS_SUCCESS) {
-            using std::string;
-            throw std::runtime_error(string("cuBLAS Error: ") + cublasErrorString(cErr));
-        }
-    }
-
-    ~cublasHandle()             { cublasDestroy(handle);}
-    operator cublasHandle_t()   { return handle;        }
-};
-
-cublasHandle&
-getHandle()
-{
-    using boost::scoped_ptr;
-    static scoped_ptr<cublasHandle> handle[DeviceManager::MAX_DEVICES];
-    if(!handle[getActiveDeviceId()]) {
-        handle[getActiveDeviceId()].reset(new cublasHandle());
-    }
-
-    return *handle[getActiveDeviceId()];
-}
+using cublas::getHandle;
 
 cublasOperation_t
 toCblasTranspose(af_blas_transpose opt)

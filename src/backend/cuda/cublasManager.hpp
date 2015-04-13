@@ -13,27 +13,12 @@
 #include <cublas_v2.h>
 
 
-static
-const char * const
-cublasErrorString(cublasStatus_t err)
-{
+namespace cublas {
 
-    switch(err)
-    {
-        case    CUBLAS_STATUS_SUCCESS:              return "CUBLAS_STATUS_SUCCESS";
-        case    CUBLAS_STATUS_NOT_INITIALIZED:      return "CUBLAS_STATUS_NOT_INITIALIZED";
-        case    CUBLAS_STATUS_ALLOC_FAILED:         return "CUBLAS_STATUS_ALLOC_FAILED";
-        case    CUBLAS_STATUS_INVALID_VALUE:        return "CUBLAS_STATUS_INVALID_VALUE";
-        case    CUBLAS_STATUS_ARCH_MISMATCH:        return "CUBLAS_STATUS_ARCH_MISMATCH";
-        case    CUBLAS_STATUS_MAPPING_ERROR:        return "CUBLAS_STATUS_MAPPING_ERROR";
-        case    CUBLAS_STATUS_EXECUTION_FAILED:     return "CUBLAS_STATUS_EXECUTION_FAILED";
-        case    CUBLAS_STATUS_INTERNAL_ERROR:       return "CUBLAS_STATUS_INTERNAL_ERROR";
-#if CUDA_VERSION > 5050
-        case    CUBLAS_STATUS_NOT_SUPPORTED:        return "CUBLAS_STATUS_NOT_SUPPORTED";
-#endif
-        default:                                    return "UNKNOWN";
-    }
+    const char * errorString(cublasStatus_t err);
+    cublasHandle_t getHandle();
 }
+
 
 #define CUBLAS_CHECK(fn) do {                   \
         cublasStatus_t _error = fn;             \
@@ -43,7 +28,7 @@ cublasErrorString(cublasStatus_t err)
                      sizeof(_err_msg),          \
                      "CUBLAS Error (%d): %s\n", \
                      (int)(_error),             \
-                     cublasErrorString(         \
+                     cublas::errorString(       \
                          _error));              \
                                                 \
             AF_ERROR(_err_msg,                  \

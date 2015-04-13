@@ -8,45 +8,34 @@
  ********************************************************/
 
 #if defined(WITH_LINEAR_ALGEBRA)
+#pragma once
 
 #include <cuda_runtime.h>
 #include <cusolverDn.h>
+#include <stdio.h>
+#include <err_common.hpp>
 
-namespace cuda
+namespace cusolver
 {
 
-static const char *
-cusolverErrorString(cusolverStatus_t err)
-{
-    switch(err) {
-    case    CUSOLVER_STATUS_SUCCESS                     :   return "CUSOLVER_STATUS_SUCCESS"                    ;
-    case    CUSOLVER_STATUS_NOT_INITIALIZED             :   return "CUSOLVER_STATUS_NOT_INITIALIZED"            ;
-    case    CUSOLVER_STATUS_ALLOC_FAILED                :   return "CUSOLVER_STATUS_ALLOC_FAILED"               ;
-    case    CUSOLVER_STATUS_INVALID_VALUE               :   return "CUSOLVER_STATUS_INVALID_VALUE"              ;
-    case    CUSOLVER_STATUS_ARCH_MISMATCH               :   return "CUSOLVER_STATUS_ARCH_MISMATCH"              ;
-    case    CUSOLVER_STATUS_MAPPING_ERROR               :   return "CUSOLVER_STATUS_MAPPING_ERROR"              ;
-    case    CUSOLVER_STATUS_EXECUTION_FAILED            :   return "CUSOLVER_STATUS_EXECUTION_FAILED"           ;
-    case    CUSOLVER_STATUS_INTERNAL_ERROR              :   return "CUSOLVER_STATUS_INTERNAL_ERROR"             ;
-    case    CUSOLVER_STATUS_MATRIX_TYPE_NOT_SUPPORTED   :   return "CUSOLVER_STATUS_MATRIX_TYPE_NOT_SUPPORTED"  ;
-    case    CUSOLVER_STATUS_NOT_SUPPORTED               :   return "CUSOLVER_STATUS_NOT_SUPPORTED"              ;
-    case    CUSOLVER_STATUS_ZERO_PIVOT                  :   return "CUSOLVER_STATUS_ZERO_PIVOT"                 ;
-    case    CUSOLVER_STATUS_INVALID_LICENSE             :   return "CUSOLVER_STATUS_INVALID_LICENSE"            ;
-    default                                             :   return "UNKNOWN";
-    }
+    const char * errorString(cusolverStatus_t err);
+    cusolverDnHandle_t getDnHandle();
 }
 
-//RAII class around the cusolver Handle
-class cusolverDnHandle
-{
-    cusolverDnHandle_t handle;
-public:
-    cusolverDnHandle();
-    ~cusolverDnHandle();
-    operator cusolverDnHandle_t();
-};
-
-cusolverDnHandle& getSolverHandle();
-
-}
+#define CUSOLVER_CHECK(fn) do {                     \
+        cusolverStatus_t _error = fn;               \
+        if (_error != CUSOLVER_STATUS_SUCCESS) {    \
+            char _err_msg[1024];                    \
+            snprintf(_err_msg,                      \
+                     sizeof(_err_msg),              \
+                     "CUBLAS Error (%d): %s\n",     \
+                     (int)(_error),                 \
+                     cusolver::errorString(         \
+                         _error));                  \
+                                                    \
+            AF_ERROR(_err_msg,                      \
+                     AF_ERR_INTERNAL);              \
+        }                                           \
+    } while(0)
 
 #endif

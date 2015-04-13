@@ -25,6 +25,8 @@
 namespace cuda
 {
 
+using cusolver::getDnHandle;
+
 //cusolverStatus_t cusolverDn<>potrf_bufferSize(
 //        cusolverDnHandle_t handle,
 //        cublasFillMode_t uplo,
@@ -101,30 +103,21 @@ Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
     if(is_upper)
         uplo = CUBLAS_FILL_MODE_UPPER;
 
-    cusolverStatus_t err;
-    err = potrf_buf_func<T>()(getSolverHandle(),
-                              uplo,
-                              N,
-                              out.get(), out.strides()[1],
-                              &lwork);
-
-    if(err != CUSOLVER_STATUS_SUCCESS) {
-        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
-    }
+    CUSOLVER_CHECK(potrf_buf_func<T>()(getDnHandle(),
+                                       uplo,
+                                       N,
+                                       out.get(), out.strides()[1],
+                                       &lwork));
 
     T *workspace = memAlloc<T>(lwork);
     int *d_info = memAlloc<int>(1);
 
-    err = potrf_func<T>()(getSolverHandle(),
-                          uplo,
-                          N,
-                          out.get(), out.strides()[1],
-                          workspace, lwork,
-                          d_info);
-
-    if(err != CUSOLVER_STATUS_SUCCESS) {
-        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
-    }
+    CUSOLVER_CHECK(potrf_func<T>()(getDnHandle(),
+                                   uplo,
+                                   N,
+                                   out.get(), out.strides()[1],
+                                   workspace, lwork,
+                                   d_info));
 
     return out;
 }
@@ -142,32 +135,22 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
     if(is_upper)
         uplo = CUBLAS_FILL_MODE_UPPER;
 
-    cusolverStatus_t err;
-    err = potrf_buf_func<T>()(getSolverHandle(),
-                              uplo,
-                              N,
-                              in.get(), in.strides()[1],
-                              &lwork);
-
-    if(err != CUSOLVER_STATUS_SUCCESS) {
-        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
-    }
+    CUSOLVER_CHECK(potrf_buf_func<T>()(getDnHandle(),
+                                       uplo,
+                                       N,
+                                       in.get(), in.strides()[1],
+                                       &lwork));
 
     T *workspace = memAlloc<T>(lwork);
     int *d_info = memAlloc<int>(1);
 
-    err = potrf_func<T>()(getSolverHandle(),
-                          uplo,
-                          N,
-                          in.get(), in.strides()[1],
-                          workspace, lwork,
-                          d_info);
-
-    if(err != CUSOLVER_STATUS_SUCCESS) {
-        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
-    }
-
-    //FIXME
+    CUSOLVER_CHECK(potrf_func<T>()(getDnHandle(),
+                                   uplo,
+                                   N,
+                                   in.get(), in.strides()[1],
+                                   workspace, lwork,
+                                   d_info));
+    //FIXME: should return h_info
     return 0;
 }
 

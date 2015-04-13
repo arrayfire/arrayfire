@@ -26,6 +26,8 @@
 namespace cuda
 {
 
+using cusolver::getDnHandle;
+
 //cusolverStatus_t cusolverDn<>geqrf_bufferSize(
 //        cusolverDnHandle_t handle,
 //        int m, int n,
@@ -132,30 +134,22 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
 
     int lwork = 0;
 
-    cusolverStatus_t err;
-    err = geqrf_buf_func<T>()(getSolverHandle(),
-                              M, N,
-                              in_copy.get(), in_copy.strides()[1],
-                              &lwork);
-
-    if(err != CUSOLVER_STATUS_SUCCESS) {
-        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
-    }
+    CUSOLVER_CHECK(geqrf_buf_func<T>()(getDnHandle(),
+                                       M, N,
+                                       in_copy.get(), in_copy.strides()[1],
+                                       &lwork));
 
     T *workspace = memAlloc<T>(lwork);
 
     t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
     int *info = memAlloc<int>(1);
-    err = geqrf_func<T>()(getSolverHandle(),
-                          M, N,
-                          in_copy.get(), in_copy.strides()[1],
-                          t.get(),
-                          workspace,
-                          lwork, info);
 
-    if(err != CUSOLVER_STATUS_SUCCESS) {
-        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
-    }
+    CUSOLVER_CHECK(geqrf_func<T>()(getDnHandle(),
+                                   M, N,
+                                   in_copy.get(), in_copy.strides()[1],
+                                   t.get(),
+                                   workspace,
+                                   lwork, info));
 
     // SPLIT into q and r
     dim4 rdims(M, N);
@@ -167,20 +161,16 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
 
     q = identity<T>(qdims);
 
-    err = mqr_func<T>()(getSolverHandle(),
-                        CUBLAS_SIDE_LEFT, CUBLAS_OP_N,
-                        M, N, min(M, N),
-                        in_copy.get(), in_copy.strides()[1],
-                        t.get(),
-                        q.get(), q.strides()[1],
-                        workspace, lwork,
-                        info);
+    CUSOLVER_CHECK(mqr_func<T>()(getDnHandle(),
+                                 CUBLAS_SIDE_LEFT, CUBLAS_OP_N,
+                                 M, N, min(M, N),
+                                 in_copy.get(), in_copy.strides()[1],
+                                 t.get(),
+                                 q.get(), q.strides()[1],
+                                 workspace, lwork,
+                                 info));
 
     q.resetDims(dim4(M, M));
-
-    if(err != CUSOLVER_STATUS_SUCCESS) {
-        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
-    }
 }
 
 template<typename T>
@@ -194,30 +184,20 @@ Array<T> qr_inplace(Array<T> &in)
 
     int lwork = 0;
 
-    cusolverStatus_t err;
-    err = geqrf_buf_func<T>()(getSolverHandle(),
-                              M, N,
-                              in.get(), in.strides()[1],
-                              &lwork);
-
-    if(err != CUSOLVER_STATUS_SUCCESS) {
-        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
-    }
+    CUSOLVER_CHECK(geqrf_buf_func<T>()(getDnHandle(),
+                                       M, N,
+                                       in.get(), in.strides()[1],
+                                       &lwork));
 
     T *workspace = memAlloc<T>(lwork);
     int *info = memAlloc<int>(1);
 
-    err = geqrf_func<T>()(getSolverHandle(),
-                          M, N,
-                          in.get(), in.strides()[1],
-                          t.get(),
-                          workspace, lwork,
-                          info);
-
-    if(err != CUSOLVER_STATUS_SUCCESS) {
-        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
-    }
-
+    CUSOLVER_CHECK(geqrf_func<T>()(getDnHandle(),
+                                   M, N,
+                                   in.get(), in.strides()[1],
+                                   t.get(),
+                                   workspace, lwork,
+                                   info));
     return t;
 }
 

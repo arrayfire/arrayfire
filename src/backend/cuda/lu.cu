@@ -23,6 +23,8 @@
 namespace cuda
 {
 
+using cusolver::getDnHandle;
+
 //cusolverStatus_t CUDENSEAPI cusolverDn<>getrf_bufferSize(
 //        cusolverDnHandle_t handle,
 //        int m, int n,
@@ -66,12 +68,14 @@ typename FUNC##_buf_func_def_t<T>::FUNC##_buf_func_def                          
 FUNC##_buf_func();
 
 
-#define LU_FUNC( FUNC, TYPE, PREFIX )                                                           \
-template<> typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>()              \
-{ return &cusolverDn##PREFIX##FUNC; }                                                           \
-                                                                                                \
-template<> typename FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def FUNC##_buf_func<TYPE>()  \
-{ return & cusolverDn##PREFIX##FUNC##_bufferSize; }
+#define LU_FUNC( FUNC, TYPE, PREFIX )                                   \
+    template<> typename FUNC##_func_def_t<TYPE>::FUNC##_func_def        \
+    FUNC##_func<TYPE>()                                                 \
+    { return &cusolverDn##PREFIX##FUNC; }                               \
+                                                                        \
+    template<> typename FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def \
+    FUNC##_buf_func<TYPE>()                                             \
+    { return & cusolverDn##PREFIX##FUNC##_bufferSize; }
 
 LU_FUNC_DEF( getrf )
 LU_FUNC(getrf , float  , S)
@@ -114,30 +118,22 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
 
     int lwork = 0;
 
-    cusolverStatus_t err;
-    err = getrf_buf_func<T>()(getSolverHandle(),
-                              M, N,
-                              in_copy.get(), in_copy.strides()[1],
-                              &lwork);
-
-    if(err != CUSOLVER_STATUS_SUCCESS) {
-        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
-    }
+    CUSOLVER_CHECK(getrf_buf_func<T>()(getDnHandle(),
+                                       M, N,
+                                       in_copy.get(), in_copy.strides()[1],
+                                       &lwork));
 
     T *workspace = memAlloc<T>(lwork);
 
     pivot = createEmptyArray<int>(af::dim4(min(M, N), 1, 1, 1));
     int *info = memAlloc<int>(1);
-    err = getrf_func<T>()(getSolverHandle(),
-                          M, N,
-                          in_copy.get(), in_copy.strides()[1],
-                          workspace,
-                          pivot.get(),
-                          info);
 
-    if(err != CUSOLVER_STATUS_SUCCESS) {
-        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
-    }
+    CUSOLVER_CHECK(getrf_func<T>()(getDnHandle(),
+                                   M, N,
+                                   in_copy.get(), in_copy.strides()[1],
+                                   workspace,
+                                   pivot.get(),
+                                   info));
 
     // SPLIT into lower and upper
     dim4 ldims(M, min(M, N));
@@ -160,29 +156,20 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
 
     int lwork = 0;
 
-    cusolverStatus_t err;
-    err = getrf_buf_func<T>()(getSolverHandle(),
-                              M, N,
-                              in.get(), in.strides()[1],
-                              &lwork);
-
-    if(err != CUSOLVER_STATUS_SUCCESS) {
-        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
-    }
+    CUSOLVER_CHECK(getrf_buf_func<T>()(getDnHandle(),
+                                       M, N,
+                                       in.get(), in.strides()[1],
+                                       &lwork));
 
     T *workspace = memAlloc<T>(lwork);
     int *info = memAlloc<int>(1);
 
-    err = getrf_func<T>()(getSolverHandle(),
-                          M, N,
-                          in.get(), in.strides()[1],
-                          workspace,
-                          pivot.get(),
-                          info);
-
-    if(err != CUSOLVER_STATUS_SUCCESS) {
-        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
-    }
+    CUSOLVER_CHECK(getrf_func<T>()(getDnHandle(),
+                                   M, N,
+                                   in.get(), in.strides()[1],
+                                   workspace,
+                                   pivot.get(),
+                                   info));
 
     if(convert_pivot) convertPivot(pivot);
 

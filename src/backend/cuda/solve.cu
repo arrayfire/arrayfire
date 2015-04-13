@@ -18,6 +18,7 @@
 #include <iostream>
 #include <memory.hpp>
 #include <copy.hpp>
+#include <transpose.hpp>
 
 #include <math.hpp>
 #include <err_common.hpp>
@@ -31,6 +32,8 @@
 
 namespace cuda
 {
+
+using cusolver::getDnHandle;
 
 //cusolverStatus_t cusolverDn<>getrs(
 //    cusolverDnHandle_t handle,
@@ -177,19 +180,13 @@ Array<T> solve_square(const Array<T> &a, const Array<T> &b, const af_solve_t opt
 
     int *info = memAlloc<int>(1);
 
-    cusolverStatus_t err;
-    err = getrs_func<T>()(getSolverHandle(),
-                          CUBLAS_OP_N,
-                          N, K,
-                          A.get(), A.strides()[1],
-                          pivot.get(),
-                          B.get(), B.strides()[1],
-                          info);
-
-    if(err != CUSOLVER_STATUS_SUCCESS) {
-        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
-    }
-
+    CUSOLVER_CHECK(getrs_func<T>()(getDnHandle(),
+                                   CUBLAS_OP_N,
+                                   N, K,
+                                   A.get(), A.strides()[1],
+                                   pivot.get(),
+                                   B.get(), B.strides()[1],
+                                   info));
     return B;
 }
 
@@ -200,87 +197,65 @@ Array<T> solve_rect(const Array<T> &a, const Array<T> &b, const af_solve_t optio
     int N = a.dims()[1];
     int K = b.dims()[1];
 
-#if 1
-    Array<T> A = copyArray<T>(a);
-    Array<T> B = copyArray<T>(b);
+    Array<T> B = createEmptyArray<T>(dim4());
 
-    int lwork = 0;
+    if (M < N) {
 
-    cusolverStatus_t err;
-    err = geqrf_buf_func<T>()(getSolverHandle(),
-                              M, N,
-                              A.get(), A.strides()[1],
-                              &lwork);
+        Array<T> A = transpose<T>(a, true);
+        B = padArray<T, T>(b, dim4(N, K), scalar<T>(0));
 
-    if(err != CUSOLVER_STATUS_SUCCESS) {
-        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
-    }
+        /*
 
-    T *workspace = memAlloc<T>(lwork);
+          The following code does the in place equivalent of the following
 
-    Array<T> t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
-    int *info = memAlloc<int>(1);
-    err = geqrf_func<T>()(getSolverHandle(),
-                          M, N,
-                          A.get(), A.strides()[1],
-                          t.get(),
-                          workspace, lwork,
-                          info);
+          Array<T> Q = createEmptyArray<T>(dim4());
+          Array<T> R = createEmptyArray<T>(dim4());
+          Array<T> Tau = createEmptyArray<T>(dim4());
+          qr(Q, R, Tau, A);
+          R.resetDims(dim4(M, M));
+          B.resetDims(dim4(M, K));
+          trsm<T>(R, B, AF_CONJUGATE_TRANSPOSE, true, true, false);
+          B.resetDims(dim4(N, K));
+          B = matmul<T>(Q, B, AF_NO_TRANSPOSE, AF_NO_TRANSPOSE);
+        */
 
-    if(err != CUSOLVER_STATUS_SUCCESS) {
-        std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
-    }
+        int lwork = 0;
 
-    //err = mqr_func<T>()(getSolverHandle(),
-    //                    CUBLAS_SIDE_LEFT, CUBLAS_OP_T,
-    //                    M, N, min(M, N),
-    //                    A.get(), A.strides()[1],
-    //                    t.get(),
-    //                    B.get(), B.strides()[1],
-    //                    workspace, lwork,
-    //                    info);
+        CUSOLVER_CHECK(geqrf_buf_func<T>()(getDnHandle(),
+                                           A.dims()[0], A.dims()[1],
+                                           A.get(), A.strides()[1],
+                                           &lwork));
 
+        T *workspace = memAlloc<T>(lwork);
 
-    if(M < N) {
-        trsm<T>(A, B, AF_NO_TRANSPOSE);
+        Array<T> t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
+        int *info = memAlloc<int>(1);
+        CUSOLVER_CHECK(geqrf_func<T>()(getDnHandle(),
+                                       A.dims()[0], A.dims()[1],
+                                       A.get(), A.strides()[1],
+                                       t.get(),
+                                       workspace, lwork,
+                                       info));
 
-        err = mqr_func<T>()(getSolverHandle(),
-                            CUBLAS_SIDE_LEFT, CUBLAS_OP_T,
-                            M, N, min(M, N),
-                            A.get(), A.strides()[1],
-                            t.get(),
-                            B.get(), B.strides()[1],
-                            workspace, lwork,
-                            info);
-
-        if(err != CUSOLVER_STATUS_SUCCESS) {
-            std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cusolverErrorString(err) << std::endl;
-        }
+        A.resetDims(dim4(M, M));
+        B.resetDims(dim4(M, K));
+        trsm<T>(A, B, AF_CONJUGATE_TRANSPOSE, true, true, false);
 
         B.resetDims(dim4(N, K));
+
+        CUSOLVER_CHECK(mqr_func<T>()(getDnHandle(),
+                                     CUBLAS_SIDE_LEFT, CUBLAS_OP_N,
+                                     B.dims()[0],
+                                     B.dims()[1],
+                                     A.dims()[0],
+                                     A.get(), A.strides()[1],
+                                     t.get(),
+                                     B.get(), B.strides()[1],
+                                     workspace, lwork,
+                                     info));
+    } else if (M > N) {
+        B = createValueArray<T>(dim4(N, K), scalar<T>(0));
     }
-
-#else
-    Array<T> q = createEmptyArray<T>(dim4());
-    Array<T> r = createEmptyArray<T>(dim4());
-    Array<T> t = createEmptyArray<T>(dim4());
-    qr(q, r, t, a);
-
-    printf("q\n");
-    af_print_array(getHandle<T>(q));
-    printf("b\n");
-    af_print_array(getHandle<T>(b));
-    Array<T> B = matmul<T>(q, b, AF_TRANSPOSE, AF_NO_TRANSPOSE);
-    printf("B\n");
-    af_print_array(getHandle<T>(B));
-
-    trsm<T>(r, B);
-
-    B.resetDims(dim4(N, K));
-
-#endif
-
-
     return B;
 }
 
