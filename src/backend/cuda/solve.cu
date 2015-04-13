@@ -202,35 +202,31 @@ Array<T> solve_rect(const Array<T> &a, const Array<T> &b, const af_solve_t optio
 
     if (M < N) {
 
+        // Least squres for this case is solved using the following
+        // solve(A, B) == matmul(Q, Xpad);
+        // Where:
+        // Xpad == pad(Xt, N - M, 1);
+        // Xt   == tri_solve(R1, B);
+        // R1   == R(seq(M), seq(M));
+        // transpose(A) == matmul(Q, R);
+
+        // QR is performed on the transpose of A
         Array<T> A = transpose<T>(a, true);
         B = padArray<T, T>(b, dim4(N, K), scalar<T>(0));
 
-        /*
-
-          The following code does the in place equivalent of the following
-
-          Array<T> Q = createEmptyArray<T>(dim4());
-          Array<T> R = createEmptyArray<T>(dim4());
-          Array<T> Tau = createEmptyArray<T>(dim4());
-          qr(Q, R, Tau, A);
-          R.resetDims(dim4(M, M));
-          B.resetDims(dim4(M, K));
-          trsm<T>(R, B, AF_CONJUGATE_TRANSPOSE, true, true, false);
-          B.resetDims(dim4(N, K));
-          B = matmul<T>(Q, B, AF_NO_TRANSPOSE, AF_NO_TRANSPOSE);
-        */
-
         int lwork = 0;
 
+        // Get workspace needed for QR
         CUSOLVER_CHECK(geqrf_buf_func<T>()(getDnHandle(),
                                            A.dims()[0], A.dims()[1],
                                            A.get(), A.strides()[1],
                                            &lwork));
 
         T *workspace = memAlloc<T>(lwork);
-
         Array<T> t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
         int *info = memAlloc<int>(1);
+
+        // In place Perform in place QR
         CUSOLVER_CHECK(geqrf_func<T>()(getDnHandle(),
                                        A.dims()[0], A.dims()[1],
                                        A.get(), A.strides()[1],
@@ -238,12 +234,17 @@ Array<T> solve_rect(const Array<T> &a, const Array<T> &b, const af_solve_t optio
                                        workspace, lwork,
                                        info));
 
+        // R1 = R(seq(M), seq(M));
         A.resetDims(dim4(M, M));
+
+        // Bt = tri_solve(R1, B);
         B.resetDims(dim4(M, K));
         trsm<T>(A, B, AF_CONJUGATE_TRANSPOSE, true, true, false);
 
+        // Bpad = pad(Bt, ..)
         B.resetDims(dim4(N, K));
 
+        // matmul(Q, Bpad)
         CUSOLVER_CHECK(mqr_func<T>()(getDnHandle(),
                                      CUBLAS_SIDE_LEFT, CUBLAS_OP_N,
                                      B.dims()[0],
@@ -259,7 +260,54 @@ Array<T> solve_rect(const Array<T> &a, const Array<T> &b, const af_solve_t optio
         memFree(info);
 
     } else if (M > N) {
-        B = createValueArray<T>(dim4(N, K), scalar<T>(0));
+
+        // Least squres for this case is solved using the following
+        // solve(A, B) == tri_solve(R1, Bt);
+        // Where:
+        // R1 == R(seq(N), seq(N));
+        // Bt == matmul(transpose(Q1), B);
+        // Q1 == Q(span, seq(N));
+        // A  == matmul(Q, R);
+
+        Array<T> A = copyArray<T>(a);
+        B = copyArray(b);
+
+        int lwork = 0;
+
+        // Get workspace needed for QR
+        CUSOLVER_CHECK(geqrf_buf_func<T>()(getDnHandle(),
+                                           A.dims()[0], A.dims()[1],
+                                           A.get(), A.strides()[1],
+                                           &lwork));
+
+        T *workspace = memAlloc<T>(lwork);
+        Array<T> t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
+        int *info = memAlloc<int>(1);
+
+        // In place Perform in place QR
+        CUSOLVER_CHECK(geqrf_func<T>()(getDnHandle(),
+                                       A.dims()[0], A.dims()[1],
+                                       A.get(), A.strides()[1],
+                                       t.get(),
+                                       workspace, lwork,
+                                       info));
+
+        // matmul(Q1, B)
+        CUSOLVER_CHECK(mqr_func<T>()(getDnHandle(),
+                                     CUBLAS_SIDE_LEFT, CUBLAS_OP_T,
+                                     B.dims()[0],
+                                     B.dims()[1],
+                                     A.dims()[1],
+                                     A.get(), A.strides()[1],
+                                     t.get(),
+                                     B.get(), B.strides()[1],
+                                     workspace, lwork,
+                                     info));
+
+        // tri_solve(R1, Bt)
+        A.resetDims(dim4(N, N));
+        B.resetDims(dim4(N, K));
+        trsm(A, B, AF_NO_TRANSPOSE, true, true, false);
     }
     return B;
 }
