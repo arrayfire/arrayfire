@@ -203,14 +203,14 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
 }
 
 template<typename T>
-Array<int> lu_inplace(Array<T> &in)
+Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
 {
     AF_ERROR("CUDA cusolver not available. Linear Algebra is disabled",
              AF_ERR_NOT_CONFIGURED);
 }
 
 #define INSTANTIATE_LU(T)                                                                           \
-    template Array<int> lu_inplace<T>(Array<T> &in);                                                \
+    template Array<int> lu_inplace<T>(Array<T> &in, const bool convert_pivot);                      \
     template void lu<T>(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in);
 
 INSTANTIATE_LU(float)

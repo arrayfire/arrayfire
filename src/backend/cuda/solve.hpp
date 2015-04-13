@@ -13,5 +13,5 @@
 namespace cuda
 {
     template<typename T>
-    Array<T> solve(const Array<T> &a, const Array<T> &b, const af_solve_t options);
+    Array<T> solve(const Array<T> &a, const Array<T> &b, const af_solve_t options = AF_SOLVE_NONE);
 }
