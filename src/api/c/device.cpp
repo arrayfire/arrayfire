@@ -11,7 +11,6 @@
 #include <af/device.h>
 #include <backend.hpp>
 #include <platform.hpp>
-#include <iostream>
 #include <Array.hpp>
 #include <handle.hpp>
 #include <memory.hpp>
@@ -33,7 +32,7 @@ af_err af_init()
 
 af_err af_info()
 {
-    std::cout << getInfo();
+    printf("%s", getInfo().c_str());
     return AF_SUCCESS;
 }
 
@@ -73,10 +72,8 @@ af_err af_get_device(int *device)
 af_err af_set_device(const int device)
 {
     try {
-        if (setDevice(device) < 0) {
-            std::cout << "Invalid Device ID" << std::endl;
-            return AF_ERR_INVALID_ARG;
-        }
+        ARG_ASSERT(0, device >= 0);
+        ARG_ASSERT(0, setDevice(device) >= 0);
     } CATCHALL;
 
     return AF_SUCCESS;

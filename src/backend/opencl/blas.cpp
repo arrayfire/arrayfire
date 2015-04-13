@@ -13,7 +13,6 @@
 #include <clBLAS.h>
 #include <cassert>
 #include <string>
-#include <iostream>
 #include <functional>
 #include <stdexcept>
 #include <mutex>

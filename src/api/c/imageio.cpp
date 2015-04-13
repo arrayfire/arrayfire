@@ -23,7 +23,6 @@
 #include <memory.hpp>
 
 #include <FreeImage.h>
-#include <iostream>
 #include <string>
 #include <cstring>
 #include <cstdio>
