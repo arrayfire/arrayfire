@@ -13,7 +13,7 @@
 
 namespace af
 {
-    AFAPI void lu(array &out, array &pivot, const array &in)
+    void lu(array &out, array &pivot, const array &in)
     {
         out = in.copy();
         af_array p = 0;
@@ -21,7 +21,7 @@ namespace af
         pivot = array(p);
     }
 
-    AFAPI void lu(array &lower, array &upper, array &pivot, const array &in)
+    void lu(array &lower, array &upper, array &pivot, const array &in)
     {
         af_array l = 0, u = 0, p = 0;
         AF_THROW(af_lu(&l, &u, &p, in.get()));
@@ -30,14 +30,14 @@ namespace af
         pivot = array(p);
     }
 
-    AFAPI array luInplace(array &in)
+    array luInplace(array &in)
     {
         af_array pivot = 0;
         AF_THROW(af_lu_inplace(&pivot, in.get()));
         return array(pivot);
     }
 
-    AFAPI void qr(array &out, array &tau, const array &in)
+    void qr(array &out, array &tau, const array &in)
     {
         out = in.copy();
         af_array t = 0;
@@ -45,7 +45,7 @@ namespace af
         tau = array(t);
     }
 
-    AFAPI void qr(array &q, array &r, array &tau, const array &in)
+    void qr(array &q, array &r, array &tau, const array &in)
     {
         af_array q_ = 0, r_ = 0, t_ = 0;
         AF_THROW(af_qr(&q_, &r_, &t_, in.get()));
@@ -54,26 +54,26 @@ namespace af
         tau = array(t_);
     }
 
-    AFAPI array qrInplace(array &in)
+    array qrInplace(array &in)
     {
         af_array tau = 0;
         AF_THROW(af_qr_inplace(&tau, in.get()));
         return array(tau);
     }
 
-    AFAPI array cholesky(const array &in, int *info, const bool is_upper)
+    array cholesky(const array &in, int *info, const bool is_upper)
     {
         array out = in.copy();
         AF_THROW(af_cholesky_inplace(info, out.get(), is_upper));
         return out;
     }
 
-    AFAPI void choleskyInplace(array &in, int *info, const bool is_upper)
+    void choleskyInplace(array &in, int *info, const bool is_upper)
     {
         AF_THROW(af_cholesky_inplace(info, in.get(), is_upper));
     }
 
-    AFAPI array solve(const array &a, const array &b, const af_solve_t options)
+    array solve(const array &a, const array &b, const af_solve_t options)
     {
         af_array out;
         AF_THROW(af_solve(&out, a.get(), b.get(), options));
