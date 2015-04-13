@@ -10,7 +10,7 @@
 #include <lu.hpp>
 #include <err_common.hpp>
 
-#if defined(WITH_LINEAR_ALGEBRA)
+#if defined(WITH_CUDA_LINEAR_ALGEBRA)
 
 #include <cusolverDnManager.hpp>
 #include <memory.hpp>

@@ -10,7 +10,7 @@
 #include <solve.hpp>
 #include <err_common.hpp>
 
-#if defined(WITH_LINEAR_ALGEBRA)
+#if defined(WITH_CPU_LINEAR_ALGEBRA)
 
 #include <af/dim4.hpp>
 #include <handle.hpp>

@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined(WITH_LINEAR_ALGEBRA)
+#if defined(WITH_CUDA_LINEAR_ALGEBRA)
 
 #include <cusolverDnManager.hpp>
 #include <platform.hpp>

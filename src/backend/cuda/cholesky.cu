@@ -10,7 +10,7 @@
 #include <err_common.hpp>
 #include <cholesky.hpp>
 
-#if defined(WITH_LINEAR_ALGEBRA)
+#if defined(WITH_CUDA_LINEAR_ALGEBRA)
 
 #include <cusolverDnManager.hpp>
 #include <cublas_v2.h>
