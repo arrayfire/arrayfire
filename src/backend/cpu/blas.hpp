@@ -10,12 +10,17 @@
 #include <af/defines.h>
 #include <af/blas.h>
 #include <Array.hpp>
+
 #ifdef __APPLE__
 #include <Accelerate/Accelerate.h>
+#else
+#ifdef USE_MKL
+#include <mkl_cblas.h>
 #else
 extern "C" {
 #include <cblas.h>
 }
+#endif
 #endif
 
 namespace cpu

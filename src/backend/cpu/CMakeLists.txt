@@ -1,9 +1,18 @@
 
 FIND_PACKAGE(CBLAS REQUIRED)
-MESSAGE(STATUS "BLAS Library: ${CBLAS_LIBRARIES}")
+
+IF (NOT CBLAS_LIBRARIES)
+    MESSAGE(SEND_ERROR "CBLAS Library not set")
+ELSE()
+    MESSAGE(STATUS "Using CBLAS Library: ${CBLAS_LIBRARIES}")
+ENDIF()
 
 IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" AND "${APPLE}")
     ADD_DEFINITIONS(-flax-vector-conversions)
+ENDIF()
+
+IF(${MKL_FOUND})
+    ADD_DEFINITIONS(-DUSE_MKL)
 ENDIF()
 
 FIND_PACKAGE(FFTW REQUIRED)
@@ -89,8 +98,13 @@ TARGET_LINK_LIBRARIES(afcpu
                       ${FreeImage_LIBS}
                       ${CBLAS_LIBRARIES}
                       ${FFTW_LIBRARIES}
-                      ${LAPACK_LIBRARIES}
                       )
+
+IF(LAPACK_FOUND)
+   TARGET_LINK_LIBRARIES(afcpu
+   ${LAPACK_LIBRARIES}
+   )
+ENDIF()
 
 SET_TARGET_PROPERTIES(afcpu PROPERTIES
                       VERSION "${AF_VERSION}"
