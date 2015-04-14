@@ -9,10 +9,10 @@
 
 #if defined (WITH_GRAPHICS)
 
+#include <interopManager.hpp>
 #include <Array.hpp>
 #include <plot.hpp>
 #include <err_opencl.hpp>
-#include <graphics_common.hpp>
 
 using af::dim4;
 
