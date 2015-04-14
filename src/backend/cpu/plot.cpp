@@ -45,9 +45,14 @@ namespace cpu
             Z[2*i+1] = d_Y[i];
         }
 
-        glGenBuffers(1, &(plot->gl_vbo));
         glBindBuffer(GL_ARRAY_BUFFER, plot->gl_vbo);
-        glBufferData(GL_ARRAY_BUFFER, ( X.elements()+Y.elements() ) * sizeof (T), Z, GL_STATIC_DRAW);
+        size_t bytes = (X.elements() + Y.elements()) * sizeof(T);
+        if(bytes != plot->vbosize) {
+            glBufferData(GL_ARRAY_BUFFER, bytes, Z, GL_STATIC_DRAW);
+            plot->vbosize = bytes;
+        } else {
+            glBufferSubData(GL_ARRAY_BUFFER, 0, bytes, Z);
+        }
 
         CheckGL("In CopyArrayToVBO");
 

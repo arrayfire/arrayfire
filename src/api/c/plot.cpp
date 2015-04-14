@@ -32,11 +32,11 @@ af_err af_draw_plot(const af_array X, const af_array Y, const fg_plot_handle plo
     try {
         ArrayInfo Xinfo = getInfo(X);
         af::dim4 X_dims = Xinfo.dims();
-        af_dtype Xtype    = Xinfo.getType();
+        af_dtype Xtype  = Xinfo.getType();
 
         ArrayInfo Yinfo = getInfo(Y);
         af::dim4 Y_dims = Yinfo.dims();
-        af_dtype Ytype    = Yinfo.getType();
+        af_dtype Ytype  = Yinfo.getType();
 
         DIM_ASSERT(0, X_dims == Y_dims);
         DIM_ASSERT(0, X_dims == Y_dims);

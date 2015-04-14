@@ -24,8 +24,7 @@ int main(int argc, char *argv[])
         fg_create_window(&window, 640, 480, "Plot", FG_RED, GL_FLOAT);
         fg_plot_init(&plot, window, 640, 480);
 
-
-        for (int i = 0; i < 2000; i++)
+        for (int i = 1; i < 200; i++)
         {
             af::timer delay = timer::start();
             array X = range(i)/i;

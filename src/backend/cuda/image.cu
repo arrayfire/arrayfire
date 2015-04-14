@@ -28,7 +28,7 @@ void copy_image(const Array<T> &in, const fg_image_handle image)
 {
     InteropManager& intrpMngr = InteropManager::getInstance();
 
-    cudaGraphicsResource *cudaPBOResource = intrpMngr.getPBOResource(image);
+    cudaGraphicsResource *cudaPBOResource = intrpMngr.getBufferResource(image);
 
     const T *d_X = in.get();
     // Map resource. Copy data to PBO. Unmap resource.

@@ -26,7 +26,7 @@ using af::dim4;
 namespace cuda
 {
 
-typedef std::map<fg_image_handle, cudaGraphicsResource *> interop_t;
+typedef std::map<void *, cudaGraphicsResource *> interop_t;
 typedef interop_t::iterator iter_t;
 
 // Manager Class for cudaPBOResource: calls garbage collection at the end of the program
@@ -38,7 +38,8 @@ class InteropManager
     public:
         static InteropManager& getInstance();
         ~InteropManager();
-        cudaGraphicsResource* getPBOResource(const fg_image_handle handle);
+        cudaGraphicsResource* getBufferResource(const fg_image_handle handle);
+        cudaGraphicsResource* getBufferResource(const fg_plot_handle handle);
 
     protected:
         InteropManager() {}
