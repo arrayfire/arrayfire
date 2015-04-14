@@ -9,10 +9,9 @@
 
 #pragma once
 
+#include <platform.hpp>
 #include <af/defines.h>
 #include <kernel_headers/random.hpp>
-#include <cl.hpp>
-#include <platform.hpp>
 #include <traits.hpp>
 #include <sstream>
 #include <string>

@@ -205,3 +205,13 @@ af_err af_device_mem_info(size_t *alloc_bytes, size_t *alloc_buffers,
     } CATCHALL;
     return AF_SUCCESS;
 }
+
+#if defined(WITH_GRAPHICS)
+af_err af_mark_device_clgl(const int device, const fg_window_handle wHandle)
+{
+    try {
+        detail::markDeviceForInterop(device, wHandle);
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+#endif

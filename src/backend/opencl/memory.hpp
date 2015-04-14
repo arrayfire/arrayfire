@@ -8,8 +8,9 @@
  ********************************************************/
 #pragma once
 
+#include <platform.hpp>
 #include <af/defines.h>
-#include <cl.hpp>
+
 namespace opencl
 {
 

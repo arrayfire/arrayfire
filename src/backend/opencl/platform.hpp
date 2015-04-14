@@ -8,7 +8,9 @@
  ********************************************************/
 
 #pragma once
-
+#if defined(WITH_GRAPHICS)
+#include <fg/window.h>
+#endif
 #include <cl.hpp>
 #include <vector>
 #include <string>
@@ -35,6 +37,10 @@ class DeviceManager
     friend void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
     friend int setDevice(int device);
+
+#if defined(WITH_GRAPHICS)
+    friend void markDeviceForInterop(const int device, const fg_window_handle wHandle);
+#endif
 
     public:
         static const unsigned MAX_DEVICES = 16;
@@ -86,5 +92,9 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 int setDevice(int device);
 
 void sync(int device);
+
+#if defined(WITH_GRAPHICS)
+void markDeviceForInterop(const int device, const fg_window_handle wHandle);
+#endif
 
 }
