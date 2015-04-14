@@ -61,7 +61,7 @@ void copy_plot(const Array<T> &X, const Array<T> &Y, const fg_plot_handle plot)
     cudaMemcpy(d_vbo, d_Z, num_bytes, cudaMemcpyDeviceToDevice);
     cudaGraphicsUnmapResources(1, &cudaVBOResource, 0);
 
-    fg_plot2d(plot, xmax, xmin, ymax, ymin, ( X.elements() ));
+    fg_plot2d(plot, xmax, xmin, ymax, ymin);
     // Unlock array
     // Not implemented yet
     // X.unlock();

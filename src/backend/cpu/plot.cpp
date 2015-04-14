@@ -56,7 +56,7 @@ namespace cpu
 
         CheckGL("In CopyArrayToVBO");
 
-        fg_plot2d(plot, xmax, xmin, ymax, ymin, ( X.elements() ));
+        fg_plot2d(plot, xmax, xmin, ymax, ymin);
         memFree(Z);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 

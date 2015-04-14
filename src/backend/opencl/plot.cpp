@@ -65,7 +65,7 @@ namespace opencl
         CheckGL("After opencl resource copy");
         CL_DEBUG_FINISH(getQueue());
 
-        fg_plot2d(plot, xmax, xmin, ymax, ymin, X.elements());
+        fg_plot2d(plot, xmax, xmin, ymax, ymin);
         // Unlock array
         // Not implemented yet
         // X.unlock();
