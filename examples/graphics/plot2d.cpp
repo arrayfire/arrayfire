@@ -18,7 +18,6 @@ int main(int argc, char *argv[])
     try {
         // Initialize the kernel array just once
         af::info();
-        int size = 2000;
 
         fg_window_handle window;
         fg_plot_handle plot;
@@ -26,7 +25,7 @@ int main(int argc, char *argv[])
         fg_plot_init(&plot, window, 640, 480);
 
 
-        for (int i = 0; i<20000; i++)
+        for (int i = 0; i < 2000; i++)
         {
             af::timer delay = timer::start();
             array X = range(i)/i;

@@ -10,17 +10,10 @@
 #if defined (WITH_GRAPHICS)
 
 #include <Array.hpp>
-#include <graphics.hpp>
-#include <err_cpu.hpp>
-#include <cstdio>
-#include <stdexcept>
+#include <plot.hpp>
+#include <err_cuda.hpp>
 #include <graphics_common.hpp>
-#include <join.hpp>
-#include <reduce.hpp>
-#include <iostream>
-#include <memory.hpp>
 
-using namespace std;
 using af::dim4;
 
 namespace cuda

@@ -155,51 +155,5 @@ af_err af_draw_image(const af_array in, const fg_image_handle image)
 
     return AF_SUCCESS;
 }
-template<typename T>
-void setup_plot(const af_array X, const af_array Y, const fg_plot_handle plot)
-{
-    copy_plot<T>(getArray<T>(X), getArray<T>(Y), plot);
-}
-
-af_err af_draw_plot(const af_array X, const af_array Y, const fg_plot_handle plot)
-{
-    try {
-#if 1
-        ArrayInfo Xinfo = getInfo(X);
-        af::dim4 X_dims = Xinfo.dims();
-        af_dtype Xtype    = Xinfo.getType();
-
-        ArrayInfo Yinfo = getInfo(Y);
-        af::dim4 Y_dims = Yinfo.dims();
-        af_dtype Ytype    = Yinfo.getType();
-
-        DIM_ASSERT(0, X_dims == Y_dims);
-        DIM_ASSERT(0, X_dims == Y_dims);
-        DIM_ASSERT(0, Xinfo.isVector());
-
-        TYPE_ASSERT(Xtype == Ytype);
-
-        switch(Xtype) {
-            case f32:
-                setup_plot<float  >(X, Y, plot);
-                break;
-            case s32:
-                setup_plot<int    >(X, Y, plot);
-                break;
-            case u32:
-                setup_plot<uint   >(X, Y, plot);
-                break;
-            case u8:
-                setup_plot<uchar  >(X, Y, plot);
-                break;
-            default:  TYPE_ERROR(1, Xtype);
-        }
-#else
-
-#endif
-    }
-    CATCHALL;
-    return AF_SUCCESS;
-}
 
 #endif

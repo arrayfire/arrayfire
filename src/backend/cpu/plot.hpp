@@ -12,10 +12,11 @@
 #include <af/graphics.h>
 #include <Array.hpp>
 
-namespace opencl
+namespace cpu
 {
     template<typename T>
-    void copy_image(const Array<T> &in, const fg_image_handle image);
+    void copy_plot(const Array<T> &X, const Array<T> &Y, const fg_plot_handle plot);
 }
 
 #endif
+
