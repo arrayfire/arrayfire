@@ -20,10 +20,10 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T, typename convT, bool isDouble, dim_type baseDim>
+template<typename T, typename convT, bool isDouble, bool roundOut, dim_type baseDim>
 inline static af_array fftconvolve(const af_array &s, const af_array &f, ConvolveBatchKind kind)
 {
-    return getHandle(fftconvolve<T, convT, isDouble, baseDim>(getArray<T>(s), getArray<T>(f), kind));
+    return getHandle(fftconvolve<T, convT, isDouble, roundOut, baseDim>(getArray<T>(s), getArray<T>(f), kind));
 }
 
 template<dim_type baseDim>
@@ -70,12 +70,12 @@ af_err fftconvolve(af_array *out, af_array signal, af_array filter)
 
         af_array output;
         switch(stype) {
-            case f64: output = fftconvolve<double, double, true , baseDim>(signal, filter, convBT); break;
-            case f32: output = fftconvolve<float , float,  false, baseDim>(signal, filter, convBT); break;
-            case u32: output = fftconvolve<uint  , float,  false, baseDim>(signal, filter, convBT); break;
-            case s32: output = fftconvolve<int   , float,  false, baseDim>(signal, filter, convBT); break;
-            case u8:  output = fftconvolve<uchar , float,  false, baseDim>(signal, filter, convBT); break;
-            case b8:  output = fftconvolve<char  , float,  false, baseDim>(signal, filter, convBT); break;
+            case f64: output = fftconvolve<double, double, true , false, baseDim>(signal, filter, convBT); break;
+            case f32: output = fftconvolve<float , float,  false, false, baseDim>(signal, filter, convBT); break;
+            case u32: output = fftconvolve<uint  , float,  false, true,  baseDim>(signal, filter, convBT); break;
+            case s32: output = fftconvolve<int   , float,  false, true,  baseDim>(signal, filter, convBT); break;
+            case u8:  output = fftconvolve<uchar , float,  false, true,  baseDim>(signal, filter, convBT); break;
+            case b8:  output = fftconvolve<char  , float,  false, true,  baseDim>(signal, filter, convBT); break;
             default: TYPE_ERROR(1, stype);
         }
         std::swap(*out,output);
