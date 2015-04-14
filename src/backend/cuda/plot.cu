@@ -12,7 +12,8 @@
 #include <Array.hpp>
 #include <plot.hpp>
 #include <err_cuda.hpp>
-#include <graphics_common.hpp>
+#include <debug_cuda.hpp>
+#include <interopManager.hpp>
 
 using af::dim4;
 
