@@ -19,6 +19,12 @@ namespace af
     {
         AF_THROW(af_draw_image(in.get(), image));
     }
+
+    void drawPlot(const array &X,const array &Y, const fg_plot_handle plot)
+    {
+        AF_THROW(af_draw_plot(X.get(), Y.get(), plot));
+    }
+
 }
 
 #endif

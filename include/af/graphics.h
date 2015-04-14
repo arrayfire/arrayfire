@@ -18,6 +18,8 @@
 namespace af
 {
     AFAPI void drawImage(const array &in, const fg_image_handle image);
+
+    AFAPI void drawPlot(const array &X, const array &Y, const fg_plot_handle plot);
 }
 #endif
 
@@ -25,6 +27,8 @@ namespace af
 extern "C" {
 #endif
     AFAPI af_err af_draw_image(const af_array in, const fg_image_handle image);
+
+    AFAPI af_err af_draw_plot(const af_array X, const af_array Y, const fg_plot_handle plot);
 #ifdef __cplusplus
 }
 #endif
