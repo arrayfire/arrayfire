@@ -35,7 +35,7 @@ InteropManager& InteropManager::getInstance()
     return my_instance;
 }
 
-cl::Buffer* InteropManager::getPBOResource(const fg_image_handle image)
+cl::Buffer* InteropManager::getBufferResource(const fg_image_handle image)
 {
     int device = getActiveDeviceId();
     iter_t iter = interop_maps[device].find(image);
@@ -44,6 +44,25 @@ cl::Buffer* InteropManager::getPBOResource(const fg_image_handle image)
         interop_maps[device][image] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, image->gl_PBO, NULL);
 
     return interop_maps[device][image];
+}
+
+cl::Buffer* InteropManager::getBufferResource(const fg_plot_handle plot)
+{
+    int device = getActiveDeviceId();
+    iter_t iter = interop_maps[device].find(plot);
+
+    if (iter == interop_maps[device].end()) {
+        interop_maps[device][plot] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, plot->gl_vbo, NULL);
+    } else {
+        cl::Buffer *buf = iter->second;
+        size_t bytes = buf->getInfo<CL_MEM_SIZE>();
+        if(bytes != plot->vbosize) {
+            delete iter->second;
+            interop_maps[device][plot] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, plot->gl_vbo, NULL);
+        }
+    }
+
+    return interop_maps[device][plot];
 }
 
 }

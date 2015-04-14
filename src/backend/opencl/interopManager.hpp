@@ -17,7 +17,7 @@
 namespace opencl
 {
 
-typedef std::map<fg_image_handle, cl::Buffer*> interop_t;
+typedef std::map<void *, cl::Buffer*> interop_t;
 typedef interop_t::iterator iter_t;
 
 class InteropManager
@@ -28,7 +28,8 @@ class InteropManager
     public:
         static InteropManager& getInstance();
         ~InteropManager();
-        cl::Buffer* getPBOResource(const fg_image_handle image);
+        cl::Buffer* getBufferResource(const fg_image_handle image);
+        cl::Buffer* getBufferResource(const fg_plot_handle plot);
 
     protected:
         InteropManager() {}

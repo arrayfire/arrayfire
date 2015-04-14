@@ -9,11 +9,11 @@
 
 #if defined (WITH_GRAPHICS)
 
+#include <interopManager.hpp>
 #include <Array.hpp>
 #include <plot.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
-#include <interopManager.hpp>
 #include <join.hpp>
 #include <reduce.hpp>
 #include <reorder.hpp>

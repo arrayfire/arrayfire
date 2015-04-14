@@ -22,6 +22,9 @@ int main(int argc, char *argv[])
         fg_window_handle window;
         fg_plot_handle plot;
         fg_create_window(&window, 640, 480, "Plot", FG_RED, GL_FLOAT);
+
+        af_mark_device_clgl(0, window);
+
         fg_plot_init(&plot, window, 640, 480);
 
         int points = 200;

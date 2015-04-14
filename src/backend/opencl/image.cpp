@@ -25,7 +25,7 @@ void copy_image(const Array<T> &in, const fg_image_handle image)
 {
     InteropManager& intrpMngr = InteropManager::getInstance();
 
-    cl::Buffer *clPBOResource = intrpMngr.getPBOResource(image);
+    cl::Buffer *clPBOResource = intrpMngr.getBufferResource(image);
     const cl::Buffer *d_X = in.get();
     size_t num_bytes = in.elements()*sizeof(T);
 
