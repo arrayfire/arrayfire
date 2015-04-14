@@ -11,7 +11,7 @@
 
 #include <GL/glew.h>
 #include <Array.hpp>
-#include <graphics.hpp>
+#include <image.hpp>
 #include <err_opencl.hpp>
 #include <stdexcept>
 #include <cstdio>
