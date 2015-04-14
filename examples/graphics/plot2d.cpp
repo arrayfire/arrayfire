@@ -24,10 +24,13 @@ int main(int argc, char *argv[])
         fg_create_window(&window, 640, 480, "Plot", FG_RED, GL_FLOAT);
         fg_plot_init(&plot, window, 640, 480);
 
+        int points = 200;
+        int scale = 2;
+
         for (int i = 1; i < 200; i++)
         {
             af::timer delay = timer::start();
-            array X = range(i)/i;
+            array X = ((float)i / 10) + (range(points) - (points / 2)) / (points / (2 * scale));   // 200 points in time between offset + [-2, + 2]
             array Y = sin(X*af::Pi).as(f32);
             drawPlot(X, Y, plot);
             double fps = 5;
