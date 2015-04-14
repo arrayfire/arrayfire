@@ -9,7 +9,7 @@
 
 #pragma once
 #include <backend.hpp>
-#include <iostream>
+#include <ostream>
 
 namespace opencl
 {

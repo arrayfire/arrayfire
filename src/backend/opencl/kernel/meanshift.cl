@@ -36,7 +36,8 @@ void meanshift(__global T *       d_dst,
                float cvar, unsigned iter, dim_type nBBS0, dim_type nBBS1)
 {
     // calculate necessary offset and window parameters
-    const dim_type padding     = 2*radius;
+    const dim_type padding     = 2*radius + 1;
+    const dim_type wind_len    = padding - 1;
     const dim_type shrdLen     = get_local_size(0) + padding;
     const dim_type schStride   = shrdLen*(get_local_size(1) + padding);
     // the variable ichStride will only effect when we have >1
@@ -67,17 +68,17 @@ void meanshift(__global T *       d_dst,
     load2LocalMem(localMem, iptr, lx, ly, shrdLen, schStride, channels,
             iInfo.dims[0], iInfo.dims[1], gx-radius,
             gy-radius, ichStride, iInfo.strides[1], iInfo.strides[0]);
-    if (lx<padding) {
+    if (lx<wind_len) {
         load2LocalMem(localMem, iptr, lx2, ly, shrdLen, schStride, channels,
                 iInfo.dims[0], iInfo.dims[1], gx2-radius,
                 gy-radius, ichStride, iInfo.strides[1], iInfo.strides[0]);
     }
-    if (ly<padding) {
+    if (ly<wind_len) {
         load2LocalMem(localMem, iptr, lx, ly2, shrdLen, schStride, channels,
                 iInfo.dims[0], iInfo.dims[1], gx-radius,
                 gy2-radius, ichStride, iInfo.strides[1], iInfo.strides[0]);
     }
-    if (lx<padding && ly<padding) {
+    if (lx<wind_len && ly<wind_len) {
         load2LocalMem(localMem, iptr, lx2, ly2, shrdLen, schStride, channels,
                 iInfo.dims[0], iInfo.dims[1], gx2-radius,
                 gy2-radius, ichStride, iInfo.strides[1], iInfo.strides[0]);

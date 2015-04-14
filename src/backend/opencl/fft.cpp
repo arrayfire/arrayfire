@@ -15,8 +15,10 @@
 #include <fft.hpp>
 #include <err_opencl.hpp>
 #include <clFFT.h>
+#include <math.hpp>
 #include <string>
 #include <cstdio>
+#include <memory.hpp>
 
 using af::dim4;
 using std::string;
@@ -24,12 +26,29 @@ using std::string;
 namespace opencl
 {
 
-#define CLFFT_ERROR_CHECK(call) do {            \
-    clfftStatus err = (call);                   \
-    if (err!=CLFFT_SUCCESS)                     \
-        AF_ERROR("clFFT library call failed",   \
-                 AF_ERR_INTERNAL);              \
-    } while(0);
+static void CLFFT_ERROR(clfftStatus err)
+{
+    switch(err) {
+    case CLFFT_INVALID_CONTEXT   : AF_ERROR("clFFT: invalid context   ", AF_ERR_INTERNAL);
+    case CLFFT_INVALID_PLATFORM  : AF_ERROR("clFFT: invalid platform  ", AF_ERR_INTERNAL);
+    case CLFFT_OUT_OF_HOST_MEMORY: AF_ERROR("clFFT: out of host memory", AF_ERR_INTERNAL);
+    case CLFFT_OUT_OF_RESOURCES  : AF_ERROR("clFFT: out of resources  ", AF_ERR_INTERNAL);
+    case CLFFT_MEM_OBJECT_ALLOCATION_FAILURE:
+        AF_ERROR("clFFT: mem object allocation failure", AF_ERR_INTERNAL);
+    case CLFFT_NOTIMPLEMENTED    : AF_ERROR("clFFt: feature not implemented", AF_ERR_INTERNAL);
+    case CLFFT_SUCCESS: return;
+    default: AF_ERROR("clFFT: unkown error", AF_ERR_INTERNAL);
+    }
+}
+
+#define CLFFT_CHECK(call) do {                          \
+        clfftStatus err = (call);                       \
+        if (err!=CLFFT_SUCCESS) {                       \
+            garbageCollect();                           \
+            err = (call);                               \
+        }                                               \
+        if (err != CLFFT_SUCCESS)   CLFFT_ERROR(err);   \
+    } while(0)
 
 // clFFTPlanner will do very basic plan caching.
 // it looks for required candidate in mHandles array and returns if found one.
@@ -132,52 +151,33 @@ void find_clfft_plan(clfftPlanHandle &plan,
     // and finally set it to output plan variable
     int slot_index = planner.mAvailSlotIndex;
 
-    clfftStatus res = CLFFT_SUCCESS;
-
     if (planner.mHandles[slot_index]) {
-        res = clfftDestroyPlan(&planner.mHandles[slot_index]);
+        CLFFT_CHECK(clfftDestroyPlan(&planner.mHandles[slot_index]));
         planner.mHandles[slot_index] = 0;
     }
 
-    if (res==CLFFT_SUCCESS) {
-        clfftPlanHandle temp;
+    clfftPlanHandle temp;
 
-        // getContext() returns object of type Context
-        // Context() returns the actual cl_context handle
-        clfftStatus res = clfftCreateDefaultPlan(&temp, getContext()(), rank, clLengths);
+    // getContext() returns object of type Context
+    // Context() returns the actual cl_context handle
+    CLFFT_CHECK(clfftCreateDefaultPlan(&temp, getContext()(), rank, clLengths));
 
-        switch(res) {
-            case CLFFT_INVALID_CONTEXT   : AF_ERROR("clFFT: invalid context   ", AF_ERR_INTERNAL);
-            case CLFFT_INVALID_PLATFORM  : AF_ERROR("clFFT: invalid platform  ", AF_ERR_INTERNAL);
-            case CLFFT_OUT_OF_HOST_MEMORY: AF_ERROR("clFFT: out of host memory", AF_ERR_INTERNAL);
-            case CLFFT_OUT_OF_RESOURCES  : AF_ERROR("clFFT: out of resources  ", AF_ERR_INTERNAL);
-            case CLFFT_MEM_OBJECT_ALLOCATION_FAILURE:
-                                           AF_ERROR("clFFT: mem object allocation failure", AF_ERR_INTERNAL);
-            case CLFFT_NOTIMPLEMENTED    : AF_ERROR("clFFt: feature not implemented", AF_ERR_INTERNAL);
-            case CLFFT_SUCCESS:
-                {
-                    res = clfftSetLayout(temp, CLFFT_COMPLEX_INTERLEAVED, CLFFT_COMPLEX_INTERLEAVED);
-                    res = clfftSetPlanBatchSize(temp, batch);
-                    res = clfftSetPlanDistance(temp, idist, odist);
-                    res = clfftSetPlanInStride(temp, rank, istrides);
-                    res = clfftSetPlanOutStride(temp, rank, ostrides);
-                    res = clfftSetPlanPrecision(temp, precision);
-                    res = clfftSetResultLocation(temp, CLFFT_INPLACE);
+    CLFFT_CHECK(clfftSetLayout(temp, CLFFT_COMPLEX_INTERLEAVED, CLFFT_COMPLEX_INTERLEAVED));
+    CLFFT_CHECK(clfftSetPlanBatchSize(temp, batch));
+    CLFFT_CHECK(clfftSetPlanDistance(temp, idist, odist));
+    CLFFT_CHECK(clfftSetPlanInStride(temp, rank, istrides));
+    CLFFT_CHECK(clfftSetPlanOutStride(temp, rank, ostrides));
+    CLFFT_CHECK(clfftSetPlanPrecision(temp, precision));
+    CLFFT_CHECK(clfftSetResultLocation(temp, CLFFT_INPLACE));
 
-                    // getQueue() returns object of type CommandQueue
-                    // CommandQueue() returns the actual cl_command_queue handle
-                    res = clfftBakePlan(temp, 1, &(getQueue()()), NULL, NULL);
+    // getQueue() returns object of type CommandQueue
+    // CommandQueue() returns the actual cl_command_queue handle
+    CLFFT_CHECK(clfftBakePlan(temp, 1, &(getQueue()()), NULL, NULL));
 
-                    plan = temp;
-                    planner.mHandles[slot_index] = temp;
-                    planner.mKeys[slot_index] = key_string;
-                    planner.mAvailSlotIndex = (slot_index + 1)%clFFTPlanner::MAX_PLAN_CACHE;
-                }
-                break;
-            default: AF_ERROR("clFFT: unkown error", AF_ERR_INTERNAL);
-        }
-    } else
-        AF_ERROR("clFFTDestroyPlan call failed", AF_ERR_INTERNAL);
+    plan = temp;
+    planner.mHandles[slot_index] = temp;
+    planner.mKeys[slot_index] = key_string;
+    planner.mAvailSlotIndex = (slot_index + 1)%clFFTPlanner::MAX_PLAN_CACHE;
 }
 
 template<typename T> struct Precision;
@@ -204,7 +204,7 @@ void clfft_common(Array<T> &arr)
                     (clfftPrecision)Precision<T>::type,
                     dims[rank]);
 
-    CLFFT_ERROR_CHECK( clfftEnqueueTransform(plan, direction, 1, &(getQueue()()), 0, NULL, NULL, &((*arr.get())()), NULL, NULL) );
+    CLFFT_CHECK( clfftEnqueueTransform(plan, direction, 1, &(getQueue()()), 0, NULL, NULL, &((*arr.get())()), NULL, NULL) );
 }
 
 template<int rank>
@@ -221,13 +221,6 @@ void computePaddedDims(dim4 &pdims, dim_type const * const pad)
         pdims[2] = pad[2];
     }
 }
-
-
-template<typename T> T zero() { return 0; }
-
-template<> cfloat zero<cfloat>() { return cfloat({{0.0f, 0.0f}}); }
-
-template<> cdouble zero<cdouble>() { return cdouble({{0.0, 0.0}}); }
 
 //(currently) true is in clFFT if length is a power of 2,3,5
 inline bool isSupLen(dim_type length)
@@ -250,29 +243,25 @@ template<typename inType, typename outType, int rank, bool isR2C>
 Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
 {
     ARG_ASSERT(1, (in.isOwner()==true));
+    ARG_ASSERT(1, (rank>=1 && rank<=3));
 
-    const dim4 dims = in.dims();
+    dim4 dims = in.dims();
+
     dim4 pdims(1);
-
-    switch(rank) {
-        case 1 :
-            ARG_ASSERT(1, (rank==1 && isSupLen(dims[0])));
-            computePaddedDims<1>(pdims, pad);
-            break;
-        case 2 :
-            ARG_ASSERT(2, (rank==2 && (isSupLen(dims[0]) || isSupLen(dims[1]))));
-            computePaddedDims<2>(pdims, pad);
-            break;
-        case 3 :
-            ARG_ASSERT(3, (rank==3 && (isSupLen(dims[0]) || isSupLen(dims[1]) || isSupLen(dims[2]))));
-            computePaddedDims<3>(pdims, pad);
-            break;
-        default: AF_ERROR("invalid rank", AF_ERR_SIZE);
-    }
-
+    computePaddedDims<rank>(pdims, pad);
     pdims[rank] = in.dims()[rank];
 
-    Array<outType> ret = padArray<inType, outType>(in, (npad>0 ? pdims : in.dims()), zero<outType>(), norm_factor);
+    if (npad>0)
+      dims = pdims;
+
+    switch(rank) {
+        case 1 : ARG_ASSERT(1, (isSupLen(dims[0]))); break;
+        case 2 : ARG_ASSERT(2, ((isSupLen(dims[0]) || isSupLen(dims[1])))); break;
+        case 3 : ARG_ASSERT(3, ((isSupLen(dims[0]) || isSupLen(dims[1]) || isSupLen(dims[2])))); break;
+        default: AF_ERROR("invalid input dimensions", AF_ERR_SIZE);
+    }
+
+    Array<outType> ret = padArray<inType, outType>(in, dims, scalar<outType>(0), norm_factor);
 
     clfft_common<outType, rank, CLFFT_FORWARD>(ret);
 
@@ -283,32 +272,31 @@ template<typename T, int rank>
 Array<T> ifft(Array<T> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
 {
     ARG_ASSERT(1, (in.isOwner()==true));
+    ARG_ASSERT(1, (rank>=1 && rank<=3));
 
-    const dim4 dims = in.dims();
+    dim4 dims = in.dims();
+
     dim4 pdims(1);
+    computePaddedDims<rank>(pdims, pad);
+    pdims[rank] = in.dims()[rank];
 
+    if (npad>0)
+      dims = pdims;
+
+    // the input norm_factor is further scaled
+    // based on the input dimensions to match
+    // cuFFT behavior
     for (int i=0; i<rank; i++)
         norm_factor *= dims[i];
 
     switch(rank) {
-        case 1 :
-            ARG_ASSERT(1, (rank==1 && isSupLen(dims[0])));
-            computePaddedDims<1>(pdims, pad);
-            break;
-        case 2 :
-            ARG_ASSERT(2, (rank==2 && (isSupLen(dims[0]) || isSupLen(dims[1]))));
-            computePaddedDims<2>(pdims, pad);
-            break;
-        case 3 :
-            ARG_ASSERT(3, (rank==3 && (isSupLen(dims[0]) || isSupLen(dims[1]) || isSupLen(dims[2]))));
-            computePaddedDims<3>(pdims, pad);
-            break;
-        default: AF_ERROR("invalid rank", AF_ERR_SIZE);
+        case 1 : ARG_ASSERT(1, (isSupLen(dims[0]))); break;
+        case 2 : ARG_ASSERT(2, ((isSupLen(dims[0]) || isSupLen(dims[1])))); break;
+        case 3 : ARG_ASSERT(3, ((isSupLen(dims[0]) || isSupLen(dims[1]) || isSupLen(dims[2])))); break;
+        default: AF_ERROR("invalid input dimensions", AF_ERR_SIZE);
     }
 
-    pdims[rank] = in.dims()[rank];
-
-    Array<T> ret = padArray<T, T>(in, (npad>0 ? pdims : in.dims()), zero<T>(), norm_factor);
+    Array<T> ret = padArray<T, T>(in, dims, scalar<T>(0), norm_factor);
 
     clfft_common<T, rank, CLFFT_BACKWARD>(ret);
 

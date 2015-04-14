@@ -299,7 +299,7 @@ AFAPI array erode3d(const array& in, const array& mask);
     </tr>
     </table>
 
-    \param[in]  in array should be binary/grayscale image of type uchar \ref u8
+    \param[in]  in array should be binary image of type \ref b8
     \param[in]  connectivity can take one of the following [\ref AF_CONNECTIVITY_4 | \ref AF_CONNECTIVITY_8]
     \param[in]  type is type of output array
     \return     returns array with labels indicating different regions. Throws exceptions if any issue occur.
@@ -771,7 +771,7 @@ extern "C" {
         C Interface for regions in an image
 
         \param[out] out array will have labels indicating different regions
-        \param[in]  in array should be binary/grayscale image of type uchar \ref u8
+        \param[in]  in array should be binary image of type \ref b8
         \param[in]  connectivity can take one of the following [\ref AF_CONNECTIVITY_4 | \ref AF_CONNECTIVITY_8]
         \param[in]  ty is type of output array
         \return     \ref AF_SUCCESS if the regions are identified successfully,

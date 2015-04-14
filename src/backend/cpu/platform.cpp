@@ -9,10 +9,7 @@
 
 #include <af/version.h>
 #include <platform.hpp>
-#include <iostream>
 #include <sstream>
-
-using namespace std;
 
 namespace cpu
 {
@@ -35,9 +32,9 @@ static const char *get_system(void)
 #endif
 }
 
-string getInfo()
+std::string getInfo()
 {
-    ostringstream info;
+    std::ostringstream info;
     info << "ArrayFire v" << AF_VERSION
          << " (CPU, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
     return info.str();
@@ -52,7 +49,7 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
 {
     static bool flag;
     if(!flag) {
-        std::cout << "WARNING: af_devprop not supported for CPU" << std::endl;
+        printf("WARNING: af_devprop not supported for CPU\n");
         flag = 1;
     }
 }
@@ -62,11 +59,12 @@ int getDeviceCount()
     return 1;
 }
 
+
 int setDevice(int device)
 {
     static bool flag;
     if(!flag) {
-        std::cout << "WARNING: af_set_device not supported for CPU" << std::endl;
+        printf("WARNING: af_set_device not supported for CPU\n");
         flag = 1;
     }
     return 1;

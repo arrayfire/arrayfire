@@ -117,7 +117,9 @@ namespace opencl
     bool operator ==(cdouble a, cdouble b);
     bool operator !=(cdouble a, cdouble b);
     cfloat operator +(cfloat a, cfloat b);
+    cfloat operator +(cfloat a);
     cdouble operator +(cdouble a, cdouble b);
+    cdouble operator +(cdouble a);
     cfloat operator *(cfloat a, cfloat b);
     cdouble operator *(cdouble a, cdouble b);
 }

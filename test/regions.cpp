@@ -55,11 +55,11 @@ void regionsTest(string pTestFile, af_connectivity connectivity, bool isSubRef =
     af_array outArray = 0;
 
     if (isSubRef) {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<uchar>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<char>::af_type));
 
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv->size(), &seqv->front()));
     } else {
-        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<uchar>::af_type));
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<char>::af_type));
     }
 
     ASSERT_EQ(AF_SUCCESS, af_regions(&outArray, inArray, connectivity, (af_dtype) af::dtype_traits<T>::af_type));
@@ -110,7 +110,7 @@ TEST(Regions, CPP)
 
     af::dim4 idims = numDims[0];
     af::array input(idims, (float*)&(in[0].front()));
-    af::array output = af::regions(input);
+    af::array output = af::regions(input.as(b8));
 
     // Get result
     float* outData = new float[idims.elements()];
@@ -169,7 +169,7 @@ TEST(Regions, Docs_8)
     // 0   1   0   0   0   1   0   0
 
     // Compute the label matrix using 8-way connectivity
-    af::array out = regions(in, AF_CONNECTIVITY_8);
+    af::array out = regions(in.as(b8), AF_CONNECTIVITY_8);
     //af_print(out);
     // 0   0   0   0   4   0   5   0
     // 0   0   0   0   0   0   5   5
@@ -229,7 +229,7 @@ TEST(Regions, Docs_4)
     //0  0  0  0  1  0  0  1
     //0  1  0  0  0  1  0  0
     // Compute the label matrix using 4-way connectivity
-    af::array out = regions(in, AF_CONNECTIVITY_4);
+    af::array out = regions(in.as(b8), AF_CONNECTIVITY_4);
     //af_print(out.T());
     //out
     //0  0  0  0  7  0 11  0

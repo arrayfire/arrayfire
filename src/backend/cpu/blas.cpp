@@ -10,7 +10,6 @@
 #include <blas.hpp>
 #include <af/dim4.hpp>
 #include <handle.hpp>
-#include <iostream>
 #include <cassert>
 #include <err_cpu.hpp>
 #include <err_common.hpp>
@@ -121,7 +120,6 @@ toCblasTranspose(af_blas_transpose opt)
     return out;
 }
 
-#include <iostream>
 using namespace std;
 
 
