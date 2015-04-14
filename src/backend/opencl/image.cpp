@@ -9,31 +9,49 @@
 
 #if defined(WITH_GRAPHICS)
 
-#include <GL/glew.h>
+#include <interopManager.hpp>
 #include <Array.hpp>
 #include <image.hpp>
 #include <err_opencl.hpp>
+#include <debug_opencl.hpp>
 #include <stdexcept>
-#include <cstdio>
+#include <vector>
 
 namespace opencl
 {
-    template<typename T>
-    void copy_image(const Array<T> &in, const fg_image_handle image)
-    {
-        printf("Error: Graphics not available for OpenCL backend.\n");
-        AF_ERROR("Graphics not Available", AF_ERR_NOT_CONFIGURED);
-    }
 
-    #define INSTANTIATE(T)      \
-        template void copy_image<T>(const Array<T> &in, const fg_image_handle image);
+template<typename T>
+void copy_image(const Array<T> &in, const fg_image_handle image)
+{
+    InteropManager& intrpMngr = InteropManager::getInstance();
 
-    INSTANTIATE(float)
-    INSTANTIATE(double)
-    INSTANTIATE(int)
-    INSTANTIATE(uint)
-    INSTANTIATE(uchar)
-    INSTANTIATE(char)
+    cl::Buffer *clPBOResource = intrpMngr.getBufferResource(image);
+    const cl::Buffer *d_X = in.get();
+    size_t num_bytes = in.elements()*sizeof(T);
+
+    std::vector<cl::Memory> shared_objects;
+    shared_objects.push_back(*clPBOResource);
+
+    glFinish();
+    getQueue().enqueueAcquireGLObjects(&shared_objects);
+    getQueue().enqueueCopyBuffer(*d_X, *clPBOResource, 0, 0, num_bytes, NULL, NULL);
+    getQueue().finish();
+    getQueue().enqueueReleaseGLObjects(&shared_objects);
+
+    CheckGL("After opencl resource copy");
+    CL_DEBUG_FINISH(getQueue());
+}
+
+#define INSTANTIATE(T)      \
+    template void copy_image<T>(const Array<T> &in, const fg_image_handle image);
+
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(uchar)
+INSTANTIATE(char)
+
 }
 
 #endif

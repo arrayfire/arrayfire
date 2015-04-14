@@ -171,6 +171,7 @@ SET(CPACK_PACKAGE_VERSION_PATCH "beta")
 SET(CPACK_PACKAGE_FILE_NAME
     ${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}_${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR})
 SET(CPACK_PACKAGE_CONTACT "ArrayFire Development Group <technical@arrayfire.com>")
+
 # Long description of the package
 SET(CPACK_PACKAGE_DESCRIPTION
 "ArrayFire is a high performance software library for parallel computing
@@ -182,6 +183,7 @@ platform independent and highly portable.
 
 A few lines of code in ArrayFire can replace dozens of lines of parallel
 computing code, saving you valuable time and lowering development costs.")
+
 # Short description of the package
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A high performance library for parallel
 computing with an easy-to-use API.")
@@ -193,6 +195,27 @@ SET(CPACK_COMPONENT_HEADERS_NAME "C/C++ headers")
 SET(CPACK_COMPONENT_CMAKE_NAME "CMake support")
 # Set the default components installed in the package
 SET(CPACK_COMPONENTS_ALL libraries headers documentation cmake)
+
+# Source package
+SET(CPACK_SOURCE_GENERATOR "TGZ")
+SET(CPACK_SOURCE_PACKAGE_FILE_NAME
+    ${CPACK_PACKAGE_NAME}_src_${CPACK_PACKAGE_VERSION}_${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR})
+SET(CPACK_SOURCE_IGNORE_FILES
+    "/build"
+    "CMakeFiles"
+    "/\\\\.dir"
+    "/\\\\.git"
+    "/\\\\.gitignore$"
+    ".*~$"
+    "\\\\.bak$"
+    "\\\\.swp$"
+    "\\\\.orig$"
+    "/\\\\.DS_Store$"
+    "/Thumbs\\\\.db"
+    "/CMakeLists.txt.user$"
+    ${CPACK_SOURCE_IGNORE_FILES})
+# Ignore build directories that may be in the source tree
+FILE(GLOB_RECURSE CACHES "${CMAKE_SOURCE_DIR}/CMakeCache.txt")
 
 # Call to CPACK
 INCLUDE(CPack)

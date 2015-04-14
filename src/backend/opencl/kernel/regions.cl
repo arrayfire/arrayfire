@@ -10,10 +10,10 @@
 // The initial label kernel distinguishes between valid (nonzero)
 // pixels and "background" (zero) pixels.
 __kernel
-void initial_label(global     T * equiv_map,
-                   KParam         eInfo,
-                   global uchar * bin,
-                   KParam         bInfo)
+void initial_label(global    T * equiv_map,
+                   KParam        eInfo,
+                   global char * bin,
+                   KParam        bInfo)
 {
     const int base_x = (get_group_id(0) * get_local_size(0) * N_PER_THREAD) + get_local_id(0);
     const int base_y = (get_group_id(1) * get_local_size(1) * N_PER_THREAD) + get_local_id(1);
@@ -27,18 +27,18 @@ void initial_label(global     T * equiv_map,
             const int y = base_y + (yb * get_local_size(1));
             const int n = y * bInfo.dims[0] + x;
             if (x < bInfo.dims[0] && y < bInfo.dims[1]) {
-                equiv_map[n] = (bin[n] == (uchar)1) ? n + 1 : 0;
+                equiv_map[n] = (bin[n] > (char)0) ? n + 1 : 0;
             }
         }
     }
 }
 
 __kernel
-void final_relabel(global       T     * equiv_map,
-                   KParam               eInfo,
-                   global       uchar * bin,
-                   KParam               bInfo,
-                   global const T     * d_tmp)
+void final_relabel(global       T    * equiv_map,
+                   KParam              eInfo,
+                   global       char * bin,
+                   KParam              bInfo,
+                   global const T    * d_tmp)
 {
     const int base_x = (get_group_id(0) * get_local_size(0) * N_PER_THREAD) + get_local_id(0);
     const int base_y = (get_group_id(1) * get_local_size(1) * N_PER_THREAD) + get_local_id(1);
@@ -52,7 +52,7 @@ void final_relabel(global       T     * equiv_map,
             const int y = base_y + (yb * get_local_size(1));
             const int n = y * bInfo.dims[0] + x;
             if (x < bInfo.dims[0] && y < bInfo.dims[1]) {
-                equiv_map[n] = (bin[n] == (uchar)1) ? d_tmp[(int)equiv_map[n]] : (T)0;
+                equiv_map[n] = (bin[n] > (char)0) ? d_tmp[(int)equiv_map[n]] : (T)0;
             }
         }
     }
@@ -89,12 +89,12 @@ void update_equiv(global T*   equiv_map,
     const int height = eInfo.dims[1];
 
     // Per element write flags and label, initially 0
-    uchar      write[N_PER_THREAD * N_PER_THREAD];
-    T     best_label[N_PER_THREAD * N_PER_THREAD];
+    char      write[N_PER_THREAD * N_PER_THREAD];
+    T    best_label[N_PER_THREAD * N_PER_THREAD];
 
     #pragma unroll
     for (int i = 0; i < N_PER_THREAD * N_PER_THREAD; ++i) {
-        write[i]      = (uchar)0;
+        write[i]      = (char)0;
         best_label[i] = (T)0;
     }
 
@@ -191,7 +191,7 @@ void update_equiv(global T*   equiv_map,
             if (orig_label != new_label) {
                 tid_changed[warpIdx] = 1;
                 s_tile[ty][tx] = new_label;
-                write[tid_i] = (uchar)1;
+                write[tid_i] = (char)1;
             }
             best_label[tid_i] = new_label;
         }

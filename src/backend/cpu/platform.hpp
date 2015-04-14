@@ -8,6 +8,9 @@
  ********************************************************/
 
 #include <string>
+#if defined(WITH_GRAPHICS)
+#include <fg/window.h>
+#endif
 
 namespace cpu {
     std::string getInfo();
@@ -23,4 +26,8 @@ namespace cpu {
     int getActiveDeviceId();
 
     void sync(int device);
+
+#if defined(WITH_GRAPHICS)
+    void markDeviceForInterop(const int device, const fg_window_handle wHandle);
+#endif
 }

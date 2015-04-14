@@ -382,3 +382,44 @@ TEST(ifft3, CPP)
 {
     cppFFTTest<cfloat, cfloat, true>(string(TEST_DIR"/signal/ifft3_c2c.test"));
 }
+
+TEST(fft3, RandomData)
+{
+    af::array a = af::randu(31, 31, 31);
+    af::array b = af::fft3(a, 64, 64, 64);
+    af::array c = af::ifft3(b);
+
+    af::dim4 aDims = a.dims();
+    af::dim4 cDims = c.dims();
+    af::dim4 aStrides(1, aDims[0], aDims[0]*aDims[1], aDims[0]*aDims[1]*aDims[2]);
+    af::dim4 cStrides(1, cDims[0], cDims[0]*cDims[1], cDims[0]*cDims[1]*cDims[2]);
+
+    float* gold = new float[a.elements()];
+    float* out  = new float[2*c.elements()];
+
+    a.host((void*)gold);
+    c.host((void*)out);
+
+    for (int k=0; k<aDims[2]; ++k) {
+        int gkOff = k*aStrides[2];
+        int okOff = k*cStrides[2];
+        for (int j=0; j<aDims[1]; ++j) {
+            int gjOff = j*aStrides[1];
+            int ojOff = j*cStrides[1];
+            for (int i=0; i<aDims[0]; ++i) {
+                int giOff = i*aStrides[0];
+                int oiOff = i*cStrides[0];
+
+                int gi = gkOff + gjOff + giOff;
+                int oi = okOff + ojOff + oiOff;
+
+                bool isUnderTolerance = std::abs(gold[gi]-out[2*oi])<0.001;
+                ASSERT_EQ(true, isUnderTolerance)<< "Expected value="<<
+                    gold[gi] <<"\t Actual Value="<< out[2*oi] << " at: " <<gi<< std::endl;
+            }
+        }
+    }
+
+    delete[] gold;
+    delete[] out;
+}

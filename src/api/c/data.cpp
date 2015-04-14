@@ -332,6 +332,8 @@ af_err af_identity(af_array *out, const unsigned ndims, const dim_type * const d
         case s32:   result = identity_<int    >(d);    break;
         case u32:   result = identity_<uint   >(d);    break;
         case u8:    result = identity_<uchar  >(d);    break;
+        case u64:   result = identity_<uintl  >(d);    break;
+        case s64:   result = identity_<intl   >(d);    break;
             // Removed because of bool type. Functions implementations exist.
         case b8:    result = identity_<char   >(d);    break;
         default:    TYPE_ERROR(3, type);

@@ -125,9 +125,6 @@ af_err af_draw_image(const af_array in, const fg_image_handle image)
         DIM_ASSERT(0, in_dims[2] == 1 || in_dims[2] == 3 || in_dims[2] == 4);
         DIM_ASSERT(0, in_dims[3] == 1);
 
-        // Test to make sure window GLenum type and in.type() are compatible
-        ARG_ASSERT(0, type == f32);
-
         fg_make_window_current(image->window);
 
         switch(type) {

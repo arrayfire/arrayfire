@@ -9,6 +9,9 @@
 
 #pragma once
 #include <af/defines.h>
+#if defined(WITH_GRAPHICS)
+#include <forge.h>
+#endif
 
 #ifdef __cplusplus
 namespace af
@@ -299,6 +302,16 @@ extern "C" {
        \ingroup device_func_gc
     */
     AFAPI af_err af_device_gc();
+
+    /**
+       Calling this function has its effect only in OpenCL backend.
+       In OpenCL backend, this function shall query OpenGL context
+       using forge(external) library
+       \ingroup device_func_info
+     */
+#if defined(WITH_GRAPHICS)
+    AFAPI af_err af_mark_device_clgl(const int device, const fg_window_handle wHandle);
+#endif
 
 #ifdef __cplusplus
 }

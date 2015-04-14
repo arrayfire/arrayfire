@@ -10,7 +10,6 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <copy.hpp>
-#include <iostream>
 #include <TNJ/BufferNode.hpp>
 #include <TNJ/ScalarNode.hpp>
 #include <memory.hpp>

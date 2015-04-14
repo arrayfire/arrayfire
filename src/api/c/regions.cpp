@@ -21,7 +21,7 @@ using namespace detail;
 template<typename T>
 static af_array regions(af_array const &in, af_connectivity connectivity)
 {
-    return getHandle<T>(regions<T>(castArray<uchar>(in), connectivity));
+    return getHandle<T>(regions<T>(getArray<char>(in), connectivity));
 }
 
 af_err af_regions(af_array *out, const af_array in, af_connectivity connectivity, af_dtype type)
@@ -35,13 +35,18 @@ af_err af_regions(af_array *out, const af_array in, af_connectivity connectivity
         dim_type in_ndims = dims.ndims();
         DIM_ASSERT(1, (in_ndims <= 3 && in_ndims >= 2));
 
+        af_dtype in_type = info.getType();
+        if (in_type != b8) {
+            TYPE_ERROR(1, in_type);
+        }
+
         af_array output;
         switch(type) {
             case f32: output = regions<float >(in, connectivity); break;
             case f64: output = regions<double>(in, connectivity); break;
             case s32: output = regions<int   >(in, connectivity); break;
             case u32: output = regions<uint  >(in, connectivity); break;
-            default : TYPE_ERROR(1, type);
+            default : TYPE_ERROR(0, type);
         }
         std::swap(*out, output);
     }

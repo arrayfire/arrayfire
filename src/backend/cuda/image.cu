@@ -16,105 +16,48 @@
 #include <image.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
-#include <platform.hpp>
-#include <graphics_common.hpp>
-
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <cuda_gl_interop.h>
+#include <interopManager.hpp>
 
 using af::dim4;
 
 namespace cuda
 {
-    typedef std::map<fg_image_handle, cudaGraphicsResource *> interop_t;
-    typedef interop_t::iterator iter_t;
-    interop_t interop_maps[DeviceManager::MAX_DEVICES];
-    static void destroyResources();
 
-    // Manager Class for cudaPBOResource
-    // Dummy used to call garbage collection at the end of the program
-    class InteropManager
-    {
-        public:
-        static bool initialized;
-        InteropManager()
-        {
-            initialized = true;
-        }
+template<typename T>
+void copy_image(const Array<T> &in, const fg_image_handle image)
+{
+    InteropManager& intrpMngr = InteropManager::getInstance();
 
-        ~InteropManager()
-        {
-            for(int i = 0; i < getDeviceCount(); i++) {
-                setDevice(i);
-                destroyResources();
-            }
-        }
-    };
+    cudaGraphicsResource *cudaPBOResource = intrpMngr.getBufferResource(image);
 
-    bool InteropManager::initialized = false;
+    const T *d_X = in.get();
+    // Map resource. Copy data to PBO. Unmap resource.
+    size_t num_bytes;
+    T* d_pbo = NULL;
+    cudaGraphicsMapResources(1, &cudaPBOResource, 0);
+    cudaGraphicsResourceGetMappedPointer((void **)&d_pbo, &num_bytes, cudaPBOResource);
+    cudaMemcpy(d_pbo, d_X, num_bytes, cudaMemcpyDeviceToDevice);
+    cudaGraphicsUnmapResources(1, &cudaPBOResource, 0);
 
-    static void interopManagerInit()
-    {
-        if(InteropManager::initialized == false)
-            static InteropManager pm = InteropManager();
-    }
+    // Unlock array
+    // Not implemented yet
+    // X.unlock();
 
-    static void destroyResources()
-    {
-        int n = getActiveDeviceId();
-        for(iter_t iter = interop_maps[n].begin(); iter != interop_maps[n].end(); iter++) {
-            cudaGraphicsUnregisterResource(iter->second);
-        }
-    }
+    CheckGL("After cuda resource copy");
 
-    template<typename T>
-    void copy_image(const Array<T> &in, const fg_image_handle image)
-    {
-        interopManagerInit();
+    POST_LAUNCH_CHECK();
+}
 
-        cudaGraphicsResource *cudaPBOResource;
+#define INSTANTIATE(T)      \
+    template void copy_image<T>(const Array<T> &in, const fg_image_handle image);
 
-        int n = getActiveDeviceId();
-        iter_t iter = interop_maps[n].find(image);
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(uchar)
+INSTANTIATE(char)
 
-        if (iter != interop_maps[n].end()) {
-            cudaPBOResource = iter->second;
-        } else {
-            // Register PBO with CUDA
-            cudaGraphicsGLRegisterBuffer(&cudaPBOResource, image->gl_PBO,
-                                         cudaGraphicsMapFlagsWriteDiscard);
-
-            interop_maps[n][image] = cudaPBOResource;
-        }
-
-        const T *d_X = in.get();
-        // Map resource. Copy data to PBO. Unmap resource.
-        size_t num_bytes;
-        T* d_pbo = NULL;
-        cudaGraphicsMapResources(1, &cudaPBOResource, 0);
-        cudaGraphicsResourceGetMappedPointer((void **)&d_pbo, &num_bytes, cudaPBOResource);
-        cudaMemcpy(d_pbo, d_X, num_bytes, cudaMemcpyDeviceToDevice);
-        cudaGraphicsUnmapResources(1, &cudaPBOResource, 0);
-
-        // Unlock array
-        // Not implemented yet
-        // X.unlock();
-
-        CheckGL("After cuda resource copy");
-
-        POST_LAUNCH_CHECK();
-    }
-
-    #define INSTANTIATE(T)      \
-        template void copy_image<T>(const Array<T> &in, const fg_image_handle image);
-
-    INSTANTIATE(float)
-    INSTANTIATE(double)
-    INSTANTIATE(int)
-    INSTANTIATE(uint)
-    INSTANTIATE(uchar)
-    INSTANTIATE(char)
 }
 
 #endif

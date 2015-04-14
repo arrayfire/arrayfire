@@ -13,6 +13,9 @@
 #include <cuda_runtime.h>
 #include <vector>
 #include <string>
+#if defined(WITH_GRAPHICS)
+#include <fg/window.h>
+#endif
 
 namespace cuda
 {
@@ -42,6 +45,10 @@ int getDeviceNativeId(int device);
 int setDevice(int device);
 
 void sync(int device);
+
+#if defined(WITH_GRAPHICS)
+void markDeviceForInterop(const int device, const fg_window_handle wHandle);
+#endif
 
 cudaDeviceProp getDeviceProp(int device);
 

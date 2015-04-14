@@ -9,6 +9,9 @@
 
 // Include this before af/opencl.h
 // Causes conflict between system cl.hpp and opencl/cl.hpp
+#if defined(WITH_GRAPHICS)
+#include <graphics_common.hpp>
+#endif
 #include <cl.hpp>
 
 #include <af/version.h>
@@ -20,7 +23,6 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include <iostream>
 #include <stdexcept>
 #include <cstring>
 #include <algorithm>
@@ -40,6 +42,13 @@ using cl::Device;
 
 namespace opencl
 {
+
+#if defined (__APPLE__) || defined(MACOSX)
+static const std::string CL_GL_SHARING_EXT = "cl_APPLE_gl_sharing";
+#else
+static const std::string CL_GL_SHARING_EXT = "cl_khr_gl_sharing";
+#endif
+
 static const char *get_system(void)
 {
     return
@@ -327,22 +336,83 @@ void sync(int device)
     }
 }
 
+bool checkExtnAvailability(Device pDevice, std::string pName)
+{
+    bool ret_val = false;
+    // find the extension required
+    std::string exts = pDevice.getInfo<CL_DEVICE_EXTENSIONS>();
+    std::stringstream ss(exts);
+    std::string item;
+    while (std::getline(ss,item,' ')) {
+        if (item==pName) {
+            ret_val = true;
+            break;
+        }
+    }
+    return ret_val;
+}
+
+#if defined(WITH_GRAPHICS)
+void markDeviceForInterop(const int device, const fg_window_handle wHandle)
+{
+    try {
+        DeviceManager& devMngr = DeviceManager::getInstance();
+
+        if (device >= (int)devMngr.mQueues.size() ||
+                device>= (int)DeviceManager::MAX_DEVICES) {
+            throw cl::Error(CL_INVALID_DEVICE, "Invalid device passed for CL-GL Interop");
+        }
+        else {
+            // finish pending tasks
+            if (getActiveDeviceId()==device)
+                getQueue().finish();
+
+            // check if the device has CL_GL sharing extension enabled
+            if (!checkExtnAvailability(*devMngr.mDevices[device], CL_GL_SHARING_EXT))
+                throw cl::Error(CL_INVALID_DEVICE, "Device has no support for OpenGL Interoperation");
+
+            // call forge to get OpenGL sharing context and details
+            cl::Platform plat = devMngr.mDevices[device]->getInfo<CL_DEVICE_PLATFORM>();
+            cl_context_properties cps[] = {
+                CL_GL_CONTEXT_KHR, (cl_context_properties)wHandle->cxt,
+                CL_GLX_DISPLAY_KHR, (cl_context_properties)wHandle->dsp,
+                CL_CONTEXT_PLATFORM, (cl_context_properties)plat(),
+                0
+            };
+
+            Context * ctx = new Context(*devMngr.mDevices[device], cps);
+            CommandQueue * cq = new CommandQueue(*ctx, *devMngr.mDevices[device]);
+
+            delete devMngr.mContexts[device];
+            delete devMngr.mQueues[device];
+
+            devMngr.mContexts[device] = ctx;
+            devMngr.mQueues[device] = cq;
+        }
+    } catch (const cl::Error &ex) {
+        CL_TO_AF_ERROR(ex);
+    }
+}
+#endif
+
 }
 
 namespace afcl
 {
-    cl_context getContext()
-    {
-        return opencl::getContext()();
-    }
 
-    cl_command_queue getQueue()
-    {
-        return opencl::getQueue()();
-    }
+cl_context getContext()
+{
+    return opencl::getContext()();
+}
 
-    cl_device_id getDeviceId()
-    {
-        return opencl::getDevice()();
-    }
+cl_command_queue getQueue()
+{
+    return opencl::getQueue()();
+}
+
+cl_device_id getDeviceId()
+{
+    return opencl::getDevice()();
+}
+
 }

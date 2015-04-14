@@ -168,7 +168,7 @@ namespace kernel
         dim_type ostride0 = dst.strides[0];
 
         if (gy < dst.dims[1] && gz < dst.dims[2] && gw < dst.dims[3]) {
-            dim_type loop_offset = blockDim.x*gridDim.x;
+            dim_type loop_offset = blockDim.x * blk_x;
             bool cond = gy < trgt.dim[1] && gz < trgt.dim[2] && gw < trgt.dim[3];
             for(dim_type rep=gx; rep<dst.dims[0]; rep+=loop_offset) {
                 outType temp = default_value;
