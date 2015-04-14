@@ -30,6 +30,7 @@ We currently have binary tar balls and installers available for the beta version
 
 Test coverage: [![Coverage Status](https://coveralls.io/repos/arrayfire/arrayfire/badge.svg?branch=HEAD)](https://coveralls.io/r/arrayfire/arrayfire?branch=HEAD)
 
+dum dum dum
 ### Example
 
 ``` C++
