@@ -28,13 +28,11 @@ namespace cpu
     {
         CheckGL("Before CopyArrayToPBO");
         const T *d_X = in.get();
+        size_t data_size = image->src_width * image->src_height * image->window->mode * sizeof(T);
 
-        glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, image->src_width * image->src_height * image->window->mode * sizeof(T),
-                     d_X, GL_STREAM_COPY);
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, image->gl_PBO);
+        glBufferSubData(GL_PIXEL_UNPACK_BUFFER_ARB, 0, data_size, d_X);
 
-        // Unlock array
-        // Not implemented yet
-        // X.unlock();
         CheckGL("In CopyArrayToPBO");
     }
 
