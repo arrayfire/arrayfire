@@ -381,40 +381,43 @@ AFAPI array convolve3(const array& signal, const array& filter, bool expand=fals
 
    \ingroup signal_func_fftconvolve
  */
-AFAPI array fftconvolve(const array& signal, const array& filter);
+AFAPI array fftconvolve(const array& signal, const array& filter, const bool expand=false);
 
 /**
    C++ Interface for convolution on one dimensional data
 
    \param[in]  signal is the input signal
    \param[in]  filter is the signal that shall be used for the convolution operation
+   \param[in]  expand indicates if the convolution should be expanded or not(where output size equals input).
    \return     the convolved array
 
    \ingroup signal_func_fftconvolve1
  */
-AFAPI array fftconvolve1(const array& signal, const array& filter);
+AFAPI array fftconvolve1(const array& signal, const array& filter, const bool expand=false);
 
 /**
    C++ Interface for convolution on two dimensional data
 
    \param[in]  signal is the input signal
    \param[in]  filter is the signal that shall be used for the convolution operation
+   \param[in]  expand indicates if the convolution should be expanded or not(where output size equals input).
    \return     the convolved array
 
    \ingroup signal_func_fftconvolve2
  */
-AFAPI array fftconvolve2(const array& signal, const array& filter);
+AFAPI array fftconvolve2(const array& signal, const array& filter, const bool expand=false);
 
 /**
    C++ Interface for convolution on three dimensional data
 
    \param[in]  signal is the input signal
    \param[in]  filter is the signal that shall be used for the convolution operation
+   \param[in]  expand indicates if the convolution should be expanded or not(where output size equals input).
    \return     the convolved array
 
    \ingroup signal_func_fftconvolve3
  */
-AFAPI array fftconvolve3(const array& signal, const array& filter);
+AFAPI array fftconvolve3(const array& signal, const array& filter, const bool expand=false);
 
 }
 #endif
@@ -614,12 +617,13 @@ AFAPI af_err af_convolve2_sep(af_array *out, af_array col_filter, af_array row_f
    \param[out] out is convolved array
    \param[in]  signal is the input signal
    \param[in]  filter is the signal that shall be used for the convolution operation
+   \param[in]  expand indicates if the convolution should be expanded or not(where output size equals input).
    \return     \ref AF_SUCCESS if the convolution is successful,
                otherwise an appropriate error code is returned.
 
    \ingroup signal_func_fftconvolve1
  */
-AFAPI af_err af_fftconvolve1(af_array *out, af_array signal, af_array filter);
+AFAPI af_err af_fftconvolve1(af_array *out, af_array signal, af_array filter, const bool expand);
 
 /**
    C Interface for FFT-based convolution on two dimensional data
@@ -627,12 +631,13 @@ AFAPI af_err af_fftconvolve1(af_array *out, af_array signal, af_array filter);
    \param[out] out is convolved array
    \param[in]  signal is the input signal
    \param[in]  filter is the signal that shall be used for the convolution operation
+   \param[in]  expand indicates if the convolution should be expanded or not(where output size equals input).
    \return     \ref AF_SUCCESS if the convolution is successful,
                otherwise an appropriate error code is returned.
 
    \ingroup signal_func_fftconvolve2
  */
-AFAPI af_err af_fftconvolve2(af_array *out, af_array signal, af_array filter);
+AFAPI af_err af_fftconvolve2(af_array *out, af_array signal, af_array filter, const bool expand);
 
 /**
    C Interface for FFT-based convolution on three dimensional data
@@ -640,12 +645,13 @@ AFAPI af_err af_fftconvolve2(af_array *out, af_array signal, af_array filter);
    \param[out] out is convolved array
    \param[in]  signal is the input signal
    \param[in]  filter is the signal that shall be used for the convolution operation
+   \param[in]  expand indicates if the convolution should be expanded or not(where output size equals input).
    \return     \ref AF_SUCCESS if the convolution is successful,
                otherwise an appropriate error code is returned.
 
    \ingroup signal_func_fftconvolve3
  */
-AFAPI af_err af_fftconvolve3(af_array *out, af_array signal, af_array filter);
+AFAPI af_err af_fftconvolve3(af_array *out, af_array signal, af_array filter, const bool expand);
 
 #ifdef __cplusplus
 }
