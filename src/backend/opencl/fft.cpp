@@ -14,6 +14,7 @@
 #include <copy.hpp>
 #include <fft.hpp>
 #include <err_opencl.hpp>
+#include <err_clfft.hpp>
 #include <clFFT.h>
 #include <math.hpp>
 #include <string>
@@ -25,30 +26,6 @@ using std::string;
 
 namespace opencl
 {
-
-static void CLFFT_ERROR(clfftStatus err)
-{
-    switch(err) {
-    case CLFFT_INVALID_CONTEXT   : AF_ERROR("clFFT: invalid context   ", AF_ERR_INTERNAL);
-    case CLFFT_INVALID_PLATFORM  : AF_ERROR("clFFT: invalid platform  ", AF_ERR_INTERNAL);
-    case CLFFT_OUT_OF_HOST_MEMORY: AF_ERROR("clFFT: out of host memory", AF_ERR_INTERNAL);
-    case CLFFT_OUT_OF_RESOURCES  : AF_ERROR("clFFT: out of resources  ", AF_ERR_INTERNAL);
-    case CLFFT_MEM_OBJECT_ALLOCATION_FAILURE:
-        AF_ERROR("clFFT: mem object allocation failure", AF_ERR_INTERNAL);
-    case CLFFT_NOTIMPLEMENTED    : AF_ERROR("clFFt: feature not implemented", AF_ERR_INTERNAL);
-    case CLFFT_SUCCESS: return;
-    default: AF_ERROR("clFFT: unkown error", AF_ERR_INTERNAL);
-    }
-}
-
-#define CLFFT_CHECK(call) do {                          \
-        clfftStatus err = (call);                       \
-        if (err!=CLFFT_SUCCESS) {                       \
-            garbageCollect();                           \
-            err = (call);                               \
-        }                                               \
-        if (err != CLFFT_SUCCESS)   CLFFT_ERROR(err);   \
-    } while(0)
 
 // clFFTPlanner will do very basic plan caching.
 // it looks for required candidate in mHandles array and returns if found one.
