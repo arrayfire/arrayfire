@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <iostream>
+#include <ostream>
 #include <backend.hpp>
 
 namespace cuda

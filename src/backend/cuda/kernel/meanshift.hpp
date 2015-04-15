@@ -23,23 +23,23 @@ namespace kernel
 static const dim_type THREADS_X = 16;
 static const dim_type THREADS_Y = 16;
 
-__forceinline__ __device__ 
+__forceinline__ __device__
 dim_type lIdx(dim_type x, dim_type y,
               dim_type stride1, dim_type stride0)
 {
     return (y*stride1 + x*stride0);
 }
 
-__forceinline__ __device__ 
+__forceinline__ __device__
 dim_type clamp(dim_type f, dim_type a, dim_type b)
 {
     return max(a, min(f, b));
 }
 
 template<typename T, dim_type channels>
-inline __device__ 
+inline __device__
 void load2ShrdMem(T * shrd, const T * in,
-                  dim_type lx, dim_type ly, 
+                  dim_type lx, dim_type ly,
                   dim_type shrdStride, dim_type schStride,
                   dim_type dim0, dim_type dim1,
                   dim_type gx, dim_type gy,

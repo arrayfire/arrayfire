@@ -15,7 +15,6 @@
 #include <stdexcept>
 #include <string>
 #include <cassert>
-#include <iostream>
 #include <math.hpp>
 #include <err_common.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -187,7 +186,8 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                 &beta , out.get(), out.dims()[0]);
 
         if(err != CUBLAS_STATUS_SUCCESS) {
-            std::cout <<__PRETTY_FUNCTION__<< " ERROR: " << cublasErrorString(err) << std::endl;
+            printf("%s ERROR: %s\n", __PRETTY_FUNCTION__ , cublasErrorString(err));
+            //TODO: Throw Exception?
         }
     }
 

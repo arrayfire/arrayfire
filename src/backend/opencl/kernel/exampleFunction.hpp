@@ -104,7 +104,7 @@ void exampleFunc(Param out, const Param in, const af_someenum_t p)
 
         // create a kernel functor from the cl::Kernel object
         // corresponding to the device on which current execution
-        // is happending. 
+        // is happending.
         auto exampleFuncOp = make_kernel<Buffer, KParam,
                                      Buffer, KParam, int>(*egKernels[device]);
 

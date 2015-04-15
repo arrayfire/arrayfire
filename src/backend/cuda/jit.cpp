@@ -10,7 +10,6 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <map>
-#include <iostream>
 #include <stdexcept>
 #include <copy.hpp>
 #include <JIT/Node.hpp>
