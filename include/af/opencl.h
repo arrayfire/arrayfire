@@ -40,13 +40,6 @@ namespace afcl
             throw(af::exception("Context mismatch between input \"buf\" and arrayfire"));
         }
 
-        cl_device_id device;
-        clerr = clGetContextInfo(context, CL_CONTEXT_DEVICES, sizeof(cl_device_id), &device, NULL);
-
-        if (device != getDeviceId()) {
-            throw(af::exception("device mismatch between input \"buf\" and arrayfire"));
-        }
-
         af_array out;
         af_err err = af_device_array(&out, buf, ndims, dims, type);
         if (err != AF_SUCCESS) {
