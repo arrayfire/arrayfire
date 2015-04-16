@@ -25,7 +25,7 @@ namespace afcl
     AFAPI cl_command_queue getQueue();
     AFAPI cl_device_id getDeviceId();
 
-    static inline af::array array(af::dim4 idims, cl_mem buf, af::dtype type)
+    static inline af::array array(af::dim4 idims, cl_mem buf, af::dtype type, bool retain=true)
     {
         const unsigned ndims = (unsigned)idims.ndims();
         const dim_type *dims = idims.get();
@@ -40,38 +40,43 @@ namespace afcl
             throw(af::exception("Context mismatch between input \"buf\" and arrayfire"));
         }
 
+
+        if (retain) clerr = clRetainMemObject(buf);
+
         af_array out;
         af_err err = af_device_array(&out, buf, ndims, dims, type);
-        if (err != AF_SUCCESS) {
-            throw af::exception("Failed to create device array", __FILE__, __LINE__ - 2, err);
+
+        if (err != AF_SUCCESS || clerr != CL_SUCCESS) {
+            if (retain && clerr == CL_SUCCESS) clReleaseMemObject(buf);
+            throw af::exception("Failed to create device array");
         }
 
         return af::array(out);
     }
 
     static inline af::array array(dim_type dim0,
-                                  cl_mem buf, af::dtype type)
+                                  cl_mem buf, af::dtype type, bool retain=true)
     {
-        return afcl::array(af::dim4(dim0), buf, type);
+        return afcl::array(af::dim4(dim0), buf, type, retain);
     }
 
     static inline af::array array(dim_type dim0, dim_type dim1,
-                                  cl_mem buf, af::dtype type)
+                                  cl_mem buf, af::dtype type, bool retain=true)
     {
-        return afcl::array(af::dim4(dim0, dim1), buf, type);
+        return afcl::array(af::dim4(dim0, dim1), buf, type, retain);
     }
 
     static inline af::array array(dim_type dim0, dim_type dim1,
                                   dim_type dim2,
-                                  cl_mem buf, af::dtype type)
+                                  cl_mem buf, af::dtype type, bool retain=true)
     {
-        return afcl::array(af::dim4(dim0, dim1, dim2), buf, type);
+        return afcl::array(af::dim4(dim0, dim1, dim2), buf, type, retain);
     }
 
     static inline af::array array(dim_type dim0, dim_type dim1,
                                   dim_type dim2, dim_type dim3,
-                                  cl_mem buf, af::dtype type)
+                                  cl_mem buf, af::dtype type, bool retain=true)
     {
-        return afcl::array(af::dim4(dim0, dim1, dim2, dim3), buf, type);
+        return afcl::array(af::dim4(dim0, dim1, dim2, dim3), buf, type, retain);
     }
 }
