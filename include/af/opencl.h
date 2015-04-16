@@ -21,11 +21,11 @@
 
 namespace afcl
 {
-    AFAPI cl_context getContext();
-    AFAPI cl_command_queue getQueue();
+    AFAPI cl_context getContext(bool retain = false);
+    AFAPI cl_command_queue getQueue(bool retain = false);
     AFAPI cl_device_id getDeviceId();
 
-    static inline af::array array(af::dim4 idims, cl_mem buf, af::dtype type, bool retain=true)
+    static inline af::array array(af::dim4 idims, cl_mem buf, af::dtype type, bool retain=false)
     {
         const unsigned ndims = (unsigned)idims.ndims();
         const dim_type *dims = idims.get();
@@ -55,27 +55,27 @@ namespace afcl
     }
 
     static inline af::array array(dim_type dim0,
-                                  cl_mem buf, af::dtype type, bool retain=true)
+                                  cl_mem buf, af::dtype type, bool retain=false)
     {
         return afcl::array(af::dim4(dim0), buf, type, retain);
     }
 
     static inline af::array array(dim_type dim0, dim_type dim1,
-                                  cl_mem buf, af::dtype type, bool retain=true)
+                                  cl_mem buf, af::dtype type, bool retain=false)
     {
         return afcl::array(af::dim4(dim0, dim1), buf, type, retain);
     }
 
     static inline af::array array(dim_type dim0, dim_type dim1,
                                   dim_type dim2,
-                                  cl_mem buf, af::dtype type, bool retain=true)
+                                  cl_mem buf, af::dtype type, bool retain=false)
     {
         return afcl::array(af::dim4(dim0, dim1, dim2), buf, type, retain);
     }
 
     static inline af::array array(dim_type dim0, dim_type dim1,
                                   dim_type dim2, dim_type dim3,
-                                  cl_mem buf, af::dtype type, bool retain=true)
+                                  cl_mem buf, af::dtype type, bool retain=false)
     {
         return afcl::array(af::dim4(dim0, dim1, dim2, dim3), buf, type, retain);
     }
