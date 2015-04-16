@@ -27,23 +27,32 @@ int main(int argc, char *argv[])
 
         fg_plot_init(&plot, window, 640, 480);
 
-        int points = 200;
-        int scale = 2;
+        int size = 2000;
+        float x[size];
+        float y[size];
+
+        for (int i = 1; i < size; i++)
+        {
+            x[i] = i;
+            y[i] = i;
+        }
+
+        array X(size,1,x,af::afHost);
+        array Y(size,1,y,af::afHost);
 
         for (int i = 1; i < 200; i++)
         {
             af::timer delay = timer::start();
-            array X = ((float)i / 10) + (range(points) - (points / 2)) / (points / (2 * scale));   // 200 points in time between offset + [-2, + 2]
-            array Y = sin(X*af::Pi).as(f32);
             drawPlot(X, Y, plot);
             double fps = 15;
             while(timer::stop(delay) < (1 / fps)) { }
         }
 
-        fg_destroy_plot(plot);
-        fg_destroy_window(window);
+      fg_destroy_plot(plot);
+      fg_destroy_window(window);
+    }
 
-    } catch (af::exception& e) {
+        catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());
         throw;
     }

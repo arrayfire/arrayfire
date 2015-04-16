@@ -45,7 +45,8 @@ namespace cpu
             Z[2*i+1] = d_Y[i];
         }
 
-        glBindBuffer(GL_ARRAY_BUFFER, plot->gl_vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, plot->gl_vbo[0]);
+
         size_t bytes = (X.elements() + Y.elements()) * sizeof(T);
         if(bytes != plot->vbosize) {
             glBufferData(GL_ARRAY_BUFFER, bytes, Z, GL_STATIC_DRAW);
