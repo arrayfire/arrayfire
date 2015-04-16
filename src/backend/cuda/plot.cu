@@ -41,7 +41,7 @@ void copy_plot(const Array<T> &X, const Array<T> &Y, const fg_plot_handle plot)
     T *d_Z = Z.get();
 
     // Create Data Store
-    glBindBuffer(GL_ARRAY_BUFFER, plot->gl_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, plot->gl_vbo[0]);
     size_t bytes = (X.elements() + Y.elements()) * sizeof(T);
     if(bytes != plot->vbosize) {
         glBufferData(GL_ARRAY_BUFFER, bytes, NULL, GL_STATIC_DRAW);

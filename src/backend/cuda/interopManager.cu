@@ -65,7 +65,7 @@ cudaGraphicsResource* InteropManager::getBufferResource(const fg_plot_handle key
         // Not found. Create New
         cudaGraphicsResource *cudaVBOResource;
         // Register VBO with CUDA
-        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaVBOResource, key->gl_vbo, cudaGraphicsMapFlagsWriteDiscard));
+        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaVBOResource, key->gl_vbo[0], cudaGraphicsMapFlagsWriteDiscard));
         interop_maps[device][key] = cudaVBOResource;
 
     } else {
@@ -86,7 +86,7 @@ cudaGraphicsResource* InteropManager::getBufferResource(const fg_plot_handle key
         if(num_bytes != key->vbosize) {
             // Delete and reallocate
             CUDA_CHECK(cudaGraphicsUnregisterResource(cudaVBOResource));
-            CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaVBOResource, key->gl_vbo,
+            CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaVBOResource, key->gl_vbo[0],
                        cudaGraphicsMapFlagsWriteDiscard));
             interop_maps[device][key] = cudaVBOResource;
         }
