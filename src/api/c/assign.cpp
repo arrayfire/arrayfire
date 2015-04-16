@@ -67,6 +67,8 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
             case f32: copyArray<float  , T>(dst, getArray<float >(in));  break;
             case s32: copyArray<int    , T>(dst, getArray<int   >(in));  break;
             case u32: copyArray<uint   , T>(dst, getArray<uint  >(in));  break;
+            case s64: copyArray<intl    , T>(dst, getArray<intl   >(in));  break;
+            case u64: copyArray<uintl   , T>(dst, getArray<uintl  >(in));  break;
             case u8 : copyArray<uchar  , T>(dst, getArray<uchar >(in));  break;
             case b8 : copyArray<char   , T>(dst, getArray<char  >(in));  break;
             default : noCaseExecuted = true; break;
@@ -106,6 +108,8 @@ af_err af_assign_seq(af_array *out,
                 case f32: assign<float  , false>(res, ndims, index, rhs);  break;
                 case s32: assign<int    , false>(res, ndims, index, rhs);  break;
                 case u32: assign<uint   , false>(res, ndims, index, rhs);  break;
+                case s64: assign<intl    , false>(res, ndims, index, rhs);  break;
+                case u64: assign<uintl   , false>(res, ndims, index, rhs);  break;
                 case u8 : assign<uchar  , false>(res, ndims, index, rhs);  break;
                 case b8 : assign<char   , false>(res, ndims, index, rhs);  break;
                 default : TYPE_ERROR(1, oType); break;

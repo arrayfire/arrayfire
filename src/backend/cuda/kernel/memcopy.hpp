@@ -141,6 +141,8 @@ namespace kernel
     OTHER_SPECIALIZATIONS(double)
     OTHER_SPECIALIZATIONS(int   )
     OTHER_SPECIALIZATIONS(uint  )
+    OTHER_SPECIALIZATIONS(intl   )
+    OTHER_SPECIALIZATIONS(uintl  )
     OTHER_SPECIALIZATIONS(uchar )
     OTHER_SPECIALIZATIONS(char  )
     ////////////////////////////// END - templated help functions for copy_kernel //////////////////////////////////
