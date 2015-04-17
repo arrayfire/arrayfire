@@ -58,11 +58,13 @@ static const char * _cufftGetResultString(cufftResult res)
         case CUFFT_NO_WORKSPACE:
             return "cuFFT: no workspace provided";
 
+#if CUDA_VERSION >= 6050
         case CUFFT_NOT_IMPLEMENTED:
             return "cuFFT: not implemented";
 
         case CUFFT_LICENSE_ERROR:
             return "cuFFT: license error";
+#endif
     }
 
     return "cuFFT: unknown error";
