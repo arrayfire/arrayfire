@@ -252,9 +252,9 @@ public:
     vector<vector<af_seq> > strided_strided_seq;
 };
 
-template<typename T, size_t NDims>
+template<typename T>
 void
-DimCheck2D(const vector<vector<af_seq> > &seqs,string TestFile)
+DimCheck2D(const vector<vector<af_seq> > &seqs,string TestFile, size_t NDims)
 {
     if (noDoubleTests<T>()) return;
 
@@ -301,92 +301,92 @@ TYPED_TEST_CASE(Indexing2D, TestTypes);
 
 TYPED_TEST(Indexing2D, ColumnContinious)
 {
-    DimCheck2D<TypeParam, 2>(this->column_continuous_seq, TEST_DIR"/index/ColumnContinious.test");
+    DimCheck2D<TypeParam>(this->column_continuous_seq, TEST_DIR"/index/ColumnContinious.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ColumnContiniousReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->column_continuous_reverse_seq, TEST_DIR"/index/ColumnContiniousReverse.test");
+    DimCheck2D<TypeParam>(this->column_continuous_reverse_seq, TEST_DIR"/index/ColumnContiniousReverse.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ColumnStrided)
 {
-    DimCheck2D<TypeParam, 2>(this->column_strided_seq, TEST_DIR"/index/ColumnStrided.test");
+    DimCheck2D<TypeParam>(this->column_strided_seq, TEST_DIR"/index/ColumnStrided.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ColumnStridedReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->column_strided_reverse_seq, TEST_DIR"/index/ColumnStridedReverse.test");
+    DimCheck2D<TypeParam>(this->column_strided_reverse_seq, TEST_DIR"/index/ColumnStridedReverse.test", 2);
 }
 
 TYPED_TEST(Indexing2D, RowContinious)
 {
-    DimCheck2D<TypeParam, 2>(this->row_continuous_seq, TEST_DIR"/index/RowContinious.test");
+    DimCheck2D<TypeParam>(this->row_continuous_seq, TEST_DIR"/index/RowContinious.test", 2);
 }
 
 TYPED_TEST(Indexing2D, RowContiniousReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->row_continuous_reverse_seq, TEST_DIR"/index/RowContiniousReverse.test");
+    DimCheck2D<TypeParam>(this->row_continuous_reverse_seq, TEST_DIR"/index/RowContiniousReverse.test", 2);
 }
 
 TYPED_TEST(Indexing2D, RowStrided)
 {
-    DimCheck2D<TypeParam, 2>(this->row_strided_seq, TEST_DIR"/index/RowStrided.test");
+    DimCheck2D<TypeParam>(this->row_strided_seq, TEST_DIR"/index/RowStrided.test", 2);
 }
 
 TYPED_TEST(Indexing2D, RowStridedReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->row_strided_reverse_seq, TEST_DIR"/index/RowStridedReverse.test");
+    DimCheck2D<TypeParam>(this->row_strided_reverse_seq, TEST_DIR"/index/RowStridedReverse.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ContiniousContinious)
 {
-    DimCheck2D<TypeParam, 2>(this->continuous_continuous_seq, TEST_DIR"/index/ContiniousContinious.test");
+    DimCheck2D<TypeParam>(this->continuous_continuous_seq, TEST_DIR"/index/ContiniousContinious.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ContiniousReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->continuous_reverse_seq, TEST_DIR"/index/ContiniousReverse.test");
+    DimCheck2D<TypeParam>(this->continuous_reverse_seq, TEST_DIR"/index/ContiniousReverse.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ContiniousStrided)
 {
-    DimCheck2D<TypeParam, 2>(this->continuous_strided_seq, TEST_DIR"/index/ContiniousStrided.test");
+    DimCheck2D<TypeParam>(this->continuous_strided_seq, TEST_DIR"/index/ContiniousStrided.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ContiniousStridedReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->continuous_strided_reverse_seq, TEST_DIR"/index/ContiniousStridedReverse.test");
+    DimCheck2D<TypeParam>(this->continuous_strided_reverse_seq, TEST_DIR"/index/ContiniousStridedReverse.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ReverseContinious)
 {
-    DimCheck2D<TypeParam, 2>(this->reverse_continuous_seq, TEST_DIR"/index/ReverseContinious.test");
+    DimCheck2D<TypeParam>(this->reverse_continuous_seq, TEST_DIR"/index/ReverseContinious.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ReverseReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->reverse_reverse_seq, TEST_DIR"/index/ReverseReverse.test");
+    DimCheck2D<TypeParam>(this->reverse_reverse_seq, TEST_DIR"/index/ReverseReverse.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ReverseStrided)
 {
-    DimCheck2D<TypeParam, 2>(this->reverse_strided_seq, TEST_DIR"/index/ReverseStrided.test");
+    DimCheck2D<TypeParam>(this->reverse_strided_seq, TEST_DIR"/index/ReverseStrided.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ReverseStridedReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->reverse_strided_reverse_seq, TEST_DIR"/index/ReverseStridedReverse.test");
+    DimCheck2D<TypeParam>(this->reverse_strided_reverse_seq, TEST_DIR"/index/ReverseStridedReverse.test", 2);
 }
 
 TYPED_TEST(Indexing2D, StridedContinious)
 {
-    DimCheck2D<TypeParam, 2>(this->strided_continuous_seq, TEST_DIR"/index/StridedContinious.test");
+    DimCheck2D<TypeParam>(this->strided_continuous_seq, TEST_DIR"/index/StridedContinious.test", 2);
 }
 
 TYPED_TEST(Indexing2D, StridedStrided)
 {
-    DimCheck2D<TypeParam, 2>(this->strided_strided_seq, TEST_DIR"/index/StridedStrided.test");
+    DimCheck2D<TypeParam>(this->strided_strided_seq, TEST_DIR"/index/StridedStrided.test", 2);
 }
 
 vector<af_seq> make_vec(af_seq first, af_seq second) {
@@ -448,51 +448,51 @@ class Indexing : public ::testing::Test
     vector<vector<af_seq> > continuous4d_to_1d;
 };
 
-template<typename T, size_t NDims>
-void DimCheckND(const vector<vector<af_seq> > &seqs,string TestFile)
+template<typename T>
+void DimCheckND(const vector<vector<af_seq> > &seqs,string TestFile, size_t NDims)
 {
     if (noDoubleTests<T>()) return;
 
     // DimCheck2D function is generalized enough
     // to check 3d and 4d indexing
-    DimCheck2D<T, NDims>(seqs, TestFile);
+    DimCheck2D<T>(seqs, TestFile, NDims);
 }
 
 TYPED_TEST_CASE(Indexing, TestTypes);
 
 TYPED_TEST(Indexing, 4D_to_4D)
 {
-    DimCheckND<TypeParam, 4>(this->continuous4d_to_4d, TEST_DIR"/index/Continuous4Dto4D.test");
+    DimCheckND<TypeParam>(this->continuous4d_to_4d, TEST_DIR"/index/Continuous4Dto4D.test", 4);
 }
 
 TYPED_TEST(Indexing, 4D_to_3D)
 {
-    DimCheckND<TypeParam, 4>(this->continuous4d_to_3d, TEST_DIR"/index/Continuous4Dto3D.test");
+    DimCheckND<TypeParam>(this->continuous4d_to_3d, TEST_DIR"/index/Continuous4Dto3D.test", 4);
 }
 
 TYPED_TEST(Indexing, 4D_to_2D)
 {
-    DimCheckND<TypeParam, 4>(this->continuous4d_to_2d, TEST_DIR"/index/Continuous4Dto2D.test");
+    DimCheckND<TypeParam>(this->continuous4d_to_2d, TEST_DIR"/index/Continuous4Dto2D.test", 4);
 }
 
 TYPED_TEST(Indexing, 4D_to_1D)
 {
-    DimCheckND<TypeParam, 4>(this->continuous4d_to_1d, TEST_DIR"/index/Continuous4Dto1D.test");
+    DimCheckND<TypeParam>(this->continuous4d_to_1d, TEST_DIR"/index/Continuous4Dto1D.test", 4);
 }
 
 TYPED_TEST(Indexing, 3D_to_3D)
 {
-    DimCheckND<TypeParam, 3>(this->continuous3d_to_3d, TEST_DIR"/index/Continuous3Dto3D.test");
+    DimCheckND<TypeParam>(this->continuous3d_to_3d, TEST_DIR"/index/Continuous3Dto3D.test", 3);
 }
 
 TYPED_TEST(Indexing, 3D_to_2D)
 {
-    DimCheckND<TypeParam, 3>(this->continuous3d_to_2d, TEST_DIR"/index/Continuous3Dto2D.test");
+    DimCheckND<TypeParam>(this->continuous3d_to_2d, TEST_DIR"/index/Continuous3Dto2D.test", 3);
 }
 
 TYPED_TEST(Indexing, 3D_to_1D)
 {
-    DimCheckND<TypeParam, 3>(this->continuous3d_to_1d, TEST_DIR"/index/Continuous3Dto1D.test");
+    DimCheckND<TypeParam>(this->continuous3d_to_1d, TEST_DIR"/index/Continuous3Dto1D.test", 3);
 }
 
 //////////////////////////////// CPP ////////////////////////////////
