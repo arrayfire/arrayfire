@@ -17,18 +17,18 @@
 #include <utility>
 namespace af
 {
-    AFAPI void drawImage(const array &in, const fg_image_handle image);
+    AFAPI void image(const array &in);
 
-    AFAPI void drawPlot(const array &X, const array &Y, const fg_plot_handle plot);
+    AFAPI void plot(const array &X, const array &Y);
 }
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-    AFAPI af_err af_draw_image(const af_array in, const fg_image_handle image);
+    AFAPI af_err af_draw_image(const af_array in);
 
-    AFAPI af_err af_draw_plot(const af_array X, const af_array Y, const fg_plot_handle plot);
+    AFAPI af_err af_draw_plot(const af_array X, const af_array Y);
 #ifdef __cplusplus
 }
 #endif

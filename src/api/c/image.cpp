@@ -15,6 +15,7 @@
 #include <af/data.h>
 
 #include <ArrayInfo.hpp>
+#include <graphics_common.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <image.hpp>
@@ -23,99 +24,34 @@
 #include <tile.hpp>
 #include <join.hpp>
 
+#include <iostream>
+
 using af::dim4;
 using namespace detail;
-
-template<typename T, int i2, int o2>
-static void convert_and_copy_image(const af_array in, const fg_image_handle image)
-{
-    ArrayInfo info = getInfo(in);
-
-    const Array<T> _in = getArray<T>(in);
-
-    Array<T> X = createEmptyArray<T>(dim4());
-    Array<T> Y = createEmptyArray<T>(dim4());
-    Array<T> Z = createEmptyArray<T>(dim4());
-
-    dim4 rdims(2, 1, 0, 3);
-    dim4 tdims(1, 1, 3, 1);
-
-    if (i2 == 1) {
-        if (o2 == 1) {
-            X = reorder(_in, rdims);
-        } else if (o2 == 3) {
-            Y = tile(_in, tdims);
-            X = reorder(Y, rdims);
-        } else if (o2 == 4) {
-            Array<T> c1 = createValueArray<T>(info.dims(), 1);
-            Z = tile(_in, tdims);
-            Y = join(2, Z, c1);
-            X = reorder(Y, rdims);
-        }
-    } else if (i2 == 3) {
-        if (o2 == 1) {
-            af_array y = 0;
-            AF_CHECK(af_rgb2gray(&y, in, 0.2126f, 0.7152f, 0.0722f));
-            Y = getArray<T>(y);
-            X = reorder(Y, rdims);
-            if(y != 0) AF_CHECK(af_destroy_array(y));
-        } else if (o2 == 3) {
-            X = reorder(_in, rdims);
-        } else if (o2 == 4) {
-            Array<T> c1 = createValueArray<T>(info.dims(), 1);
-            Y = join(2, _in, c1);
-            X = reorder(Y, rdims);
-        }
-    } else if (i2 == 4) {
-
-        af_seq s[3] = {af_span, af_span, {0, 2, 1}};
-        std::vector<af_seq> s_vec(s, s + sizeof(s) / sizeof(s[0]));
-
-        if (o2 == 1) {
-            af_array y = 0;
-            af_array z = 0;
-            Z = createSubArray(_in, s_vec, false);
-            z = getHandle<T>(Z);
-            AF_CHECK(af_rgb2gray(&y, z, 0.2126f, 0.7152f, 0.0722f));
-            Y = getArray<T>(y);
-            X = reorder(Y, rdims);
-            if(y != 0) AF_CHECK(af_destroy_array(y));
-        } else if (o2 == 3) {
-            Y = createSubArray(_in, s_vec, false);
-            X = reorder(Y, rdims);
-        } else if (o2 == 4) {
-            X = reorder(_in, rdims);
-        }
-    }
-
-    copy_image<T>(X, image);
-
-}
-
-template<typename T, int i2>
-static void convert_and_copy_image(const af_array in, const fg_image_handle image)
-{
-    dim_type o2 = image->window->mode;
-    switch(o2) {
-        case 1: convert_and_copy_image<T, i2, 1>(in, image); break;
-        case 3: convert_and_copy_image<T, i2, 3>(in, image); break;
-        case 4: convert_and_copy_image<T, i2, 4>(in, image); break;
-    }
-}
+using namespace graphics;
 
 template<typename T>
-static void convert_and_copy_image(const af_array in, const fg_image_handle image)
+static fg::Image* convert_and_copy_image(const af_array in)
 {
-    ArrayInfo info = getInfo(in);
-    dim_type i2 = info.dims()[2];
-    switch(i2) {
-        case 1: convert_and_copy_image<T, 1>(in, image); break;
-        case 3: convert_and_copy_image<T, 3>(in, image); break;
-        case 4: convert_and_copy_image<T, 4>(in, image); break;
-    }
+    ArrayInfo info      = getInfo(in);
+    const Array<T> _in  = getArray<T>(in);
+
+    dim4 rdims = (_in.dims()[2]>1 ? dim4(2, 1, 0, 3) : dim4(1, 0, 2, 3));
+
+    Array<T> imgData = reorder(_in, rdims);
+
+    dim4 xdims = imgData.dims();
+
+    ForgeManager& fgMngr = ForgeManager::getInstance();
+
+    fg::Image* ret_val = fgMngr.getImage(xdims[0], xdims[1], (fg::ColorMode)xdims[2], getGLType<T>());
+
+    copy_image<T>(imgData, ret_val);
+
+    return ret_val;
 }
 
-af_err af_draw_image(const af_array in, const fg_image_handle image)
+af_err af_draw_image(const af_array in)
 {
     try {
         ArrayInfo info = getInfo(in);
@@ -125,31 +61,20 @@ af_err af_draw_image(const af_array in, const fg_image_handle image)
         DIM_ASSERT(0, in_dims[2] == 1 || in_dims[2] == 3 || in_dims[2] == 4);
         DIM_ASSERT(0, in_dims[3] == 1);
 
-        fg_make_window_current(image->window);
+        fg::makeWindowCurrent(ForgeManager::getWindow());
+
+        fg::Image* image = NULL;
 
         switch(type) {
-            case f32:
-                convert_and_copy_image<float  >(in, image);
-                break;
-            case f64:
-                convert_and_copy_image<double >(in, image);
-                break;
-            case b8:
-                convert_and_copy_image<char   >(in, image);
-                break;
-            case s32:
-                convert_and_copy_image<int    >(in, image);
-                break;
-            case u32:
-                convert_and_copy_image<uint   >(in, image);
-                break;
-            case u8:
-                convert_and_copy_image<uchar  >(in, image);
-                break;
+            case f32: image = convert_and_copy_image<float>(in); break;
+            case b8 : image = convert_and_copy_image<char >(in); break;
+            case s32: image = convert_and_copy_image<int  >(in); break;
+            case u32: image = convert_and_copy_image<uint >(in); break;
+            case u8 : image = convert_and_copy_image<uchar>(in); break;
             default:  TYPE_ERROR(1, type);
         }
 
-        fg_draw_image(image);
+        fg::drawImage(ForgeManager::getWindow(), *image);
     }
     CATCHALL;
 

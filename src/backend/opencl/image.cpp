@@ -21,13 +21,14 @@ namespace opencl
 {
 
 template<typename T>
-void copy_image(const Array<T> &in, const fg_image_handle image)
+void copy_image(const Array<T> &in, const fg::Image* image)
 {
+    CheckGL("Begin opencl resource copy");
     InteropManager& intrpMngr = InteropManager::getInstance();
 
     cl::Buffer *clPBOResource = intrpMngr.getBufferResource(image);
     const cl::Buffer *d_X = in.get();
-    size_t num_bytes = in.elements()*sizeof(T);
+    size_t num_bytes = image->size();
 
     std::vector<cl::Memory> shared_objects;
     shared_objects.push_back(*clPBOResource);
@@ -38,12 +39,12 @@ void copy_image(const Array<T> &in, const fg_image_handle image)
     getQueue().finish();
     getQueue().enqueueReleaseGLObjects(&shared_objects);
 
-    CheckGL("After opencl resource copy");
     CL_DEBUG_FINISH(getQueue());
+    CheckGL("End opencl resource copy");
 }
 
 #define INSTANTIATE(T)      \
-    template void copy_image<T>(const Array<T> &in, const fg_image_handle image);
+    template void copy_image<T>(const Array<T> &in, const fg::Image* image);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

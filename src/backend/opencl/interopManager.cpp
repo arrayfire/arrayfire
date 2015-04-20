@@ -35,34 +35,36 @@ InteropManager& InteropManager::getInstance()
     return my_instance;
 }
 
-cl::Buffer* InteropManager::getBufferResource(const fg_image_handle image)
+cl::Buffer* InteropManager::getBufferResource(const fg::Image* image)
 {
+    void * key = (void*)image;
     int device = getActiveDeviceId();
-    iter_t iter = interop_maps[device].find(image);
+    iter_t iter = interop_maps[device].find(key);
 
     if (iter == interop_maps[device].end())
-        interop_maps[device][image] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, image->gl_PBO, NULL);
+        interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, image->pbo(), NULL);
 
-    return interop_maps[device][image];
+    return interop_maps[device][key];
 }
 
-cl::Buffer* InteropManager::getBufferResource(const fg_plot_handle plot)
+cl::Buffer* InteropManager::getBufferResource(const fg::Plot* plot)
 {
+    void * key = (void*)plot;
     int device = getActiveDeviceId();
-    iter_t iter = interop_maps[device].find(plot);
+    iter_t iter = interop_maps[device].find(key);
 
     if (iter == interop_maps[device].end()) {
-        interop_maps[device][plot] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, plot->gl_vbo[0], NULL);
+        interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, plot->vbo(), NULL);
     } else {
         cl::Buffer *buf = iter->second;
         size_t bytes = buf->getInfo<CL_MEM_SIZE>();
-        if(bytes != plot->vbosize) {
+        if(bytes != plot->size()) {
             delete iter->second;
-            interop_maps[device][plot] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, plot->gl_vbo[0], NULL);
+            interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, plot->vbo(), NULL);
         }
     }
 
-    return interop_maps[device][plot];
+    return interop_maps[device][key];
 }
 
 }

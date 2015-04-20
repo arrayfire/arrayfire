@@ -39,7 +39,7 @@ class DeviceManager
     friend int setDevice(int device);
 
 #if defined(WITH_GRAPHICS)
-    friend void markDeviceForInterop(const int device, const fg_window_handle wHandle);
+    friend void markDeviceForInterop(const int device, const fg::Window* wHandle);
 #endif
 
     public:
@@ -94,7 +94,7 @@ int setDevice(int device);
 void sync(int device);
 
 #if defined(WITH_GRAPHICS)
-void markDeviceForInterop(const int device, const fg_window_handle wHandle);
+void markDeviceForInterop(const int device, const fg::Window* wHandle);
 #endif
 
 }

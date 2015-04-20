@@ -24,20 +24,20 @@ using af::dim4;
 namespace cpu
 {
     template<typename T>
-    void copy_image(const Array<T> &in, const fg_image_handle image)
+    void copy_image(const Array<T> &in, const fg::Image* image)
     {
         CheckGL("Before CopyArrayToPBO");
         const T *d_X = in.get();
-        size_t data_size = image->src_width * image->src_height * image->window->mode * sizeof(T);
+        size_t data_size = image->size();
 
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, image->gl_PBO);
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, image->pbo());
         glBufferSubData(GL_PIXEL_UNPACK_BUFFER_ARB, 0, data_size, d_X);
 
         CheckGL("In CopyArrayToPBO");
     }
 
     #define INSTANTIATE(T)  \
-        template void copy_image<T>(const Array<T> &in, const fg_image_handle image);
+        template void copy_image<T>(const Array<T> &in, const fg::Image* image);
 
     INSTANTIATE(float)
     INSTANTIATE(double)

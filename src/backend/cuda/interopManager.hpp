@@ -38,8 +38,8 @@ class InteropManager
     public:
         static InteropManager& getInstance();
         ~InteropManager();
-        cudaGraphicsResource* getBufferResource(const fg_image_handle handle);
-        cudaGraphicsResource* getBufferResource(const fg_plot_handle handle);
+        cudaGraphicsResource* getBufferResource(const fg::Image* handle);
+        cudaGraphicsResource* getBufferResource(const fg::Plot* handle);
 
     protected:
         InteropManager() {}

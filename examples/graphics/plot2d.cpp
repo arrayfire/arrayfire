@@ -18,14 +18,7 @@ int main(int argc, char *argv[])
     try {
         // Initialize the kernel array just once
         af::info();
-
-        fg_window_handle window;
-        fg_plot_handle plot;
-        fg_create_window(&window, 640, 480, "Plot", FG_RED, GL_FLOAT);
-
-        af_mark_device_clgl(0, window);
-
-        fg_plot_init(&plot, window, 640, 480);
+        af::initGraphics(0);
 
         int size = 2000;
         float x[size];
@@ -43,13 +36,10 @@ int main(int argc, char *argv[])
         for (int i = 1; i < 200; i++)
         {
             af::timer delay = timer::start();
-            drawPlot(X, Y, plot);
+            plot(X, Y);
             double fps = 15;
             while(timer::stop(delay) < (1 / fps)) { }
         }
-
-      fg_destroy_plot(plot);
-      fg_destroy_window(window);
     }
 
         catch (af::exception& e) {
