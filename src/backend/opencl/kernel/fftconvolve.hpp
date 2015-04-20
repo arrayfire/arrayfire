@@ -198,7 +198,8 @@ void fftconvolve(Param out,
                                           0, NULL, NULL, &((*packed.data)()),
                                           NULL, NULL));
 
-        dim_type mul_elem = std::max(sig_packed_elem, filter_packed_elem) / 2;
+        dim_type mul_elem = (sig_packed_elem < filter_packed_elem) ?
+                            filter_packed_elem / 2 : sig_packed_elem / 2;
         blocks = divup(mul_elem, THREADS);
         global = NDRange(blocks * THREADS);
 

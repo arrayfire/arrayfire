@@ -393,7 +393,8 @@ void fftconvolve(Param<T> out,
         CUFFT_CHECK(cufftExecC2C(plan, (cufftComplex*)packed.ptr,
                                  (cufftComplex*)packed.ptr, CUFFT_FORWARD));
 
-    dim_type mul_elem = max(sig_packed_elem, filter_packed_elem) / 2;
+    dim_type mul_elem = (sig_packed_elem < filter_packed_elem) ?
+                        filter_packed_elem / 2 : sig_packed_elem / 2;
     blocks = dim3(divup(mul_elem, threads.x));
 
     // Multiply filter and signal FFT arrays
