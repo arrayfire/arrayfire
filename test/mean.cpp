@@ -54,8 +54,8 @@ struct meanOutType {
                                               typename c32HelperType<T>::type >::type type;
 };
 
-template<typename T, dim_type dim>
-void meanDimTest(string pFileName)
+template<typename T>
+void meanDimTest(string pFileName, dim_type dim)
 {
     typedef typename meanOutType<T>::type outType;
     if (noDoubleTests<T>()) return;
@@ -96,32 +96,32 @@ void meanDimTest(string pFileName)
 
 TYPED_TEST(Mean, Dim0Matrix)
 {
-    meanDimTest<TypeParam, 0>(string(TEST_DIR"/mean/mean_dim0_matrix.test"));
+    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim0_matrix.test"), 0);
 }
 
 TYPED_TEST(Mean, Dim1Cube)
 {
-    meanDimTest<TypeParam, 1>(string(TEST_DIR"/mean/mean_dim1_cube.test"));
+    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim1_cube.test"), 1);
 }
 
 TYPED_TEST(Mean, Dim0HyperCube)
 {
-    meanDimTest<TypeParam, 0>(string(TEST_DIR"/mean/mean_dim0_hypercube.test"));
+    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim0_hypercube.test"), 0);
 }
 
 TYPED_TEST(Mean, Dim2Matrix)
 {
-    meanDimTest<TypeParam, 2>(string(TEST_DIR"/mean/mean_dim2_matrix.test"));
+    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim2_matrix.test"), 2);
 }
 
 TYPED_TEST(Mean, Dim2Cube)
 {
-    meanDimTest<TypeParam, 2>(string(TEST_DIR"/mean/mean_dim2_cube.test"));
+    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim2_cube.test"), 2);
 }
 
 TYPED_TEST(Mean, Dim2HyperCube)
 {
-    meanDimTest<TypeParam, 2>(string(TEST_DIR"/mean/mean_dim2_hypercube.test"));
+    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim2_hypercube.test"), 2);
 }
 
 //////////////////////////////// CPP ////////////////////////////////////

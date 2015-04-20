@@ -330,14 +330,18 @@ void sync(int device)
 
 namespace afcl
 {
-    cl_context getContext()
+    cl_context getContext(bool retain)
     {
-        return opencl::getContext()();
+        cl_context ctx = opencl::getContext()();
+        if (retain) clRetainContext(ctx);
+        return ctx;
     }
 
-    cl_command_queue getQueue()
+    cl_command_queue getQueue(bool retain)
     {
-        return opencl::getQueue()();
+        cl_command_queue queue = opencl::getQueue()();
+        if (retain) clRetainCommandQueue(queue);
+        return queue;
     }
 
     cl_device_id getDeviceId()

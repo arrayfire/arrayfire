@@ -13,6 +13,7 @@
 #include <map>
 #include <dispatch.hpp>
 #include <cstdlib>
+#include <mutex>
 
 namespace cpu
 {
@@ -52,6 +53,7 @@ namespace cpu
     typedef mem_t::iterator mem_iter;
 
     mem_t memory_map;
+    std::mutex memory_map_mutex;
 
     template<typename T>
     void freeWrapper(T *ptr)
@@ -89,6 +91,7 @@ namespace cpu
         size_t alloc_bytes = divup(sizeof(T) * elements, 1024) * 1024;
 
         if (elements > 0) {
+            std::lock_guard<std::mutex> lock(memory_map_mutex);
 
             // FIXME: Add better checks for garbage collection
             // Perhaps look at total memory available as a metric
@@ -122,6 +125,8 @@ namespace cpu
     template<typename T>
     void memFree(T *ptr)
     {
+        std::lock_guard<std::mutex> lock(memory_map_mutex);
+
         mem_iter iter = memory_map.find((void *)ptr);
 
         if (iter != memory_map.end()) {
