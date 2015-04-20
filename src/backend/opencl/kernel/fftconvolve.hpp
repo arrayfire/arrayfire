@@ -80,13 +80,13 @@ void fftconvolve(Param out,
         dim_type fftScale = 1;
 
         Param packed;
-        size_t fft_dims[baseDim];
+        size_t fft_dims[4];
 
         // Pack both signal and filter on same memory array, this will ensure
         // better use of batched clFFT capabilities
         for (dim_type k = 0; k < 4; k++) {
             if (k < baseDim)
-                packed.info.dims[k] = nextpow2((unsigned)(sd[k] + fd[k] - 1));
+                packed.info.dims[k] = 1 << (unsigned)ceil(log2(sd[k] + fd[k] - 1));
             else if (k == baseDim)
                 packed.info.dims[k] = sd[k] + fd[k];
             else
