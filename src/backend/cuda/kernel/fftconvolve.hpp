@@ -379,7 +379,7 @@ void fftconvolve(Param<T> out,
     packData<convT, T><<<blocks, threads>>>(sig_tmp, sig, sig_half_d0, sig_half_d0_odd);
     POST_LAUNCH_CHECK();
 
-    blocks = dim3(divup(filter_packed_elem, threads.x));
+    blocks = dim3(divup(filter_packed_elem / 2, threads.x));
 
     // Pad filter array with 0s
     padArray<convT, T><<<blocks, threads>>>(filter_tmp, filter);

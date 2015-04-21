@@ -181,7 +181,7 @@ void fftconvolve(Param out,
              sig_half_d0, sig_half_d0_odd);
         CL_DEBUG_FINISH(getQueue());
 
-        blocks = divup(filter_packed_elem, THREADS);
+        blocks = divup(filter_packed_elem / 2, THREADS);
         global = NDRange(blocks * THREADS);
 
         // Pad filter array with 0s
