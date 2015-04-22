@@ -58,9 +58,9 @@ class cuFFTPlanner
 };
 
 void find_cufft_plan(cufftHandle &plan, int rank, int *n,
-                                        int *inembed, int istride, int idist,
-                                        int *onembed, int ostride, int odist,
-                                        cufftType type, int batch)
+                     int *inembed, int istride, int idist,
+                     int *onembed, int ostride, int odist,
+                     cufftType type, int batch)
 {
     cuFFTPlanner &planner = cuFFTPlanner::getInstance();
     // create the key string
@@ -82,6 +82,7 @@ void find_cufft_plan(cufftHandle &plan, int rank, int *n,
         sprintf(key_str_temp, "%d:%d:", istride, idist);
         key_string.append(std::string(key_str_temp));
     }
+
     if (onembed!=NULL) {
         for(int r=0; r<rank; ++r) {
             sprintf(key_str_temp, "%d:", onembed[r]);
@@ -159,24 +160,29 @@ void computeDims(int *rdims, const dim4 &idims)
     }
 }
 
-template<typename T, int rank, int direction>
-void cufft_common(Array<T> &arr)
+template<typename T, int rank, bool direction>
+void fft_common(Array<T> &out, const Array<T> &in)
 {
-    const dim4 dims    = arr.dims();
-    const dim4 strides = arr.strides();
+    const dim4 idims    = in.dims();
+    const dim4 istrides = in.strides();
+    const dim4 ostrides = out.strides();
 
-    int rank_dims[3];
-    computeDims<rank>(rank_dims, dims);
+    int in_dims[3];
+    int in_embed[3];
+    int out_embed[3];
+
+    computeDims<rank>(in_dims, idims);
+    computeDims<rank>(in_embed, in.getDataDims());
+    computeDims<rank>(out_embed, out.getDataDims());
 
     cufftHandle plan;
-    find_cufft_plan(plan, rank, rank_dims,
-            NULL, strides[0], strides[rank],
-            NULL, strides[0], strides[rank],
-            (cufftType)cufft_transform<T>::type, dims[rank]);
+    find_cufft_plan(plan, rank, in_dims,
+                    in_embed , istrides[0], istrides[rank],
+                    out_embed, ostrides[0], ostrides[rank],
+                    (cufftType)cufft_transform<T>::type, idims[rank]);
 
     cufft_transform<T> transform;
-
-    CUFFT_CHECK(transform(plan, arr.get(), arr.get(), direction));
+    CUFFT_CHECK(transform(plan, (T *)in.get(), out.get(), direction ? CUFFT_FORWARD : CUFFT_INVERSE));
 }
 
 template<int rank>
@@ -210,7 +216,7 @@ Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const n
 
     Array<outType> ret = padArray<inType, outType>(in, dims, scalar<outType>(0), norm_factor);
 
-    cufft_common<outType, rank, CUFFT_FORWARD>(ret);
+    fft_common<outType, rank, true>(ret, ret);
 
     return ret;
 }
@@ -231,7 +237,7 @@ Array<T> ifft(Array<T> const &in, double norm_factor, dim_type const npad, dim_t
 
     Array<T> ret = padArray<T, T>(in, dims, scalar<T>(0), norm_factor);
 
-    cufft_common<T, rank, CUFFT_INVERSE>(ret);
+    fft_common<T, rank, false>(ret, ret);
 
     return ret;
 }
