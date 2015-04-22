@@ -107,150 +107,114 @@ namespace cpu
         return out;
     }
 
+    template<typename T, int n_arrays>
+    void join_wrapper(const int dim, Array<T> &out, const std::vector<Array<T>> &inputs)
+    {
+        af::dim4 zero(0,0,0,0);
+        af::dim4 d = zero;
+        switch(dim) {
+            case 0:
+                join_append<T, T, 0>(out.get(), inputs[0].get(), zero,
+                            out.dims(), inputs[0].dims(), out.strides(), inputs[0].strides());
+                for(int i = 1; i < n_arrays; i++) {
+                    d += inputs[i - 1].dims();
+                    join_append<T, T, 0>(out.get(), inputs[i].get(), calcOffset<0>(d),
+                            out.dims(), inputs[i].dims(), out.strides(), inputs[i].strides());
+                }
+                break;
+            case 1:
+                join_append<T, T, 1>(out.get(), inputs[0].get(), zero,
+                            out.dims(), inputs[0].dims(), out.strides(), inputs[0].strides());
+                for(int i = 1; i < n_arrays; i++) {
+                    d += inputs[i - 1].dims();
+                    join_append<T, T, 1>(out.get(), inputs[i].get(), calcOffset<1>(d),
+                            out.dims(), inputs[i].dims(), out.strides(), inputs[i].strides());
+                }
+                break;
+            case 2:
+                join_append<T, T, 2>(out.get(), inputs[0].get(), zero,
+                            out.dims(), inputs[0].dims(), out.strides(), inputs[0].strides());
+                for(int i = 1; i < n_arrays; i++) {
+                    d += inputs[i - 1].dims();
+                    join_append<T, T, 2>(out.get(), inputs[i].get(), calcOffset<2>(d),
+                            out.dims(), inputs[i].dims(), out.strides(), inputs[i].strides());
+                }
+                break;
+            case 3:
+                join_append<T, T, 3>(out.get(), inputs[0].get(), zero,
+                            out.dims(), inputs[0].dims(), out.strides(), inputs[0].strides());
+                for(int i = 1; i < n_arrays; i++) {
+                    d += inputs[i - 1].dims();
+                    join_append<T, T, 3>(out.get(), inputs[i].get(), calcOffset<3>(d),
+                            out.dims(), inputs[i].dims(), out.strides(), inputs[i].strides());
+                }
+                break;
+        }
+    }
+
     template<typename T>
-    Array<T> join(const int dim, const Array<T> &first, const Array<T> &second,
-                  const Array<T> &third)
+    Array<T> join(const int dim, const std::vector<Array<T>> &inputs)
     {
         // All dimensions except join dimension must be equal
         // Compute output dims
         af::dim4 odims;
-        af::dim4 fdims = first.dims();
-        af::dim4 sdims = second.dims();
-        af::dim4 tdims = third.dims();
+        const dim_type n_arrays = inputs.size();
+        std::vector<af::dim4> idims(n_arrays);
+
+        dim_type dim_size = 0;
+        for(int i = 0; i < (int)idims.size(); i++) {
+            idims[i] = inputs[i].dims();
+            dim_size += idims[i][dim];
+        }
 
         for(int i = 0; i < 4; i++) {
             if(i == dim) {
-                odims[i] = fdims[i] + sdims[i] + tdims[i];
+                odims[i] = dim_size;
             } else {
-                odims[i] = fdims[i];
+                odims[i] = idims[0][i];
             }
         }
 
         Array<T> out = createEmptyArray<T>(odims);
 
-        T* outPtr = out.get();
-        const T* fptr = first.get();
-        const T* sptr = second.get();
-        const T* tptr = third.get();
-
-        af::dim4 zero(0,0,0,0);
-
-        switch(dim) {
-            case 0:
-                join_append<T, T, 0>(outPtr, fptr, zero,
-                                     odims, fdims, out.strides(), first.strides());
-                join_append<T, T, 0>(outPtr, sptr, calcOffset<0>(fdims),
-                                     odims, sdims, out.strides(), second.strides());
-                join_append<T, T, 0>(outPtr, tptr, calcOffset<0>(fdims + sdims),
-                                     odims, tdims, out.strides(), third.strides());
-                break;
+        switch(n_arrays) {
             case 1:
-                join_append<T, T, 1>(outPtr, fptr, zero,
-                                     odims, fdims, out.strides(), first.strides());
-                join_append<T, T, 1>(outPtr, sptr, calcOffset<1>(fdims),
-                                     odims, sdims, out.strides(), second.strides());
-                join_append<T, T, 1>(outPtr, tptr, calcOffset<1>(fdims + sdims),
-                                     odims, tdims, out.strides(), third.strides());
+                join_wrapper<T, 1>(dim, out, inputs);
                 break;
             case 2:
-                join_append<T, T, 2>(outPtr, fptr, zero,
-                                     odims, fdims, out.strides(), first.strides());
-                join_append<T, T, 2>(outPtr, sptr, calcOffset<2>(fdims),
-                                     odims, sdims, out.strides(), second.strides());
-                join_append<T, T, 2>(outPtr, tptr, calcOffset<2>(fdims + sdims),
-                                     odims, tdims, out.strides(), third.strides());
+                join_wrapper<T, 2>(dim, out, inputs);
                 break;
             case 3:
-                join_append<T, T, 3>(outPtr, fptr, zero,
-                                     odims, fdims, out.strides(), first.strides());
-                join_append<T, T, 3>(outPtr, sptr, calcOffset<3>(fdims),
-                                     odims, sdims, out.strides(), second.strides());
-                join_append<T, T, 3>(outPtr, tptr, calcOffset<3>(fdims + sdims),
-                                       odims, tdims, out.strides(), third.strides());
+                join_wrapper<T, 3>(dim, out, inputs);
+                break;
+            case 4:
+                join_wrapper<T, 4>(dim, out, inputs);
+                break;
+            case 5:
+                join_wrapper<T, 4>(dim, out, inputs);
+                break;
+            case 6:
+                join_wrapper<T, 4>(dim, out, inputs);
+                break;
+            case 7:
+                join_wrapper<T, 4>(dim, out, inputs);
+                break;
+            case 8:
+                join_wrapper<T, 4>(dim, out, inputs);
+                break;
+            case 9:
+                join_wrapper<T, 4>(dim, out, inputs);
+                break;
+            case 10:
+                join_wrapper<T, 4>(dim, out, inputs);
                 break;
         }
 
         return out;
     }
 
-    template<typename T>
-    Array<T> join(const int dim, const Array<T> &first, const Array<T> &second,
-                  const Array<T> &third, const Array<T> &fourth)
-    {
-        // All dimensions except join dimension must be equal
-        // Compute output dims
-        af::dim4 odims;
-        af::dim4 fdims = first.dims();
-        af::dim4 sdims = second.dims();
-        af::dim4 tdims = third.dims();
-        af::dim4 rdims = fourth.dims();
-
-        for(int i = 0; i < 4; i++) {
-            if(i == dim) {
-                odims[i] = fdims[i] + sdims[i] + tdims[i] + rdims[i];
-            } else {
-                odims[i] = fdims[i];
-            }
-        }
-
-        Array<T> out = createEmptyArray<T>(odims);
-
-        T* outPtr = out.get();
-        const T* fptr = first.get();
-        const T* sptr = second.get();
-        const T* tptr = third.get();
-        const T* rptr = fourth.get();
-
-        af::dim4 zero(0,0,0,0);
-
-        switch(dim) {
-            case 0:
-                join_append<T, T, 0>(outPtr, fptr, zero,
-                                     odims, fdims, out.strides(), first.strides());
-                join_append<T, T, 0>(outPtr, sptr, calcOffset<0>(fdims),
-                                     odims, sdims, out.strides(), second.strides());
-                join_append<T, T, 0>(outPtr, tptr, calcOffset<0>(fdims + sdims),
-                                     odims, tdims, out.strides(), third.strides());
-                join_append<T, T, 0>(outPtr, rptr, calcOffset<0>(fdims + sdims + tdims),
-                                     odims, rdims, out.strides(), fourth.strides());
-                break;
-            case 1:
-                join_append<T, T, 1>(outPtr, fptr, zero,
-                                     odims, fdims, out.strides(), first.strides());
-                join_append<T, T, 1>(outPtr, sptr, calcOffset<1>(fdims),
-                                     odims, sdims, out.strides(), second.strides());
-                join_append<T, T, 1>(outPtr, tptr, calcOffset<1>(fdims + sdims),
-                                     odims, tdims, out.strides(), third.strides());
-                join_append<T, T, 1>(outPtr, rptr, calcOffset<1>(fdims + sdims + tdims),
-                                     odims, rdims, out.strides(), fourth.strides());
-                break;
-            case 2:
-                join_append<T, T, 2>(outPtr, fptr, zero,
-                                     odims, fdims, out.strides(), first.strides());
-                join_append<T, T, 2>(outPtr, sptr, calcOffset<2>(fdims),
-                                     odims, sdims, out.strides(), second.strides());
-                join_append<T, T, 2>(outPtr, tptr, calcOffset<2>(fdims + sdims),
-                                     odims, tdims, out.strides(), third.strides());
-                join_append<T, T, 2>(outPtr, rptr, calcOffset<2>(fdims + sdims + tdims),
-                                     odims, rdims, out.strides(), fourth.strides());
-                break;
-            case 3:
-                join_append<T, T, 3>(outPtr, fptr, zero,
-                                     odims, fdims, out.strides(), first.strides());
-                join_append<T, T, 3>(outPtr, sptr, calcOffset<3>(fdims),
-                                     odims, sdims, out.strides(), second.strides());
-                join_append<T, T, 3>(outPtr, tptr, calcOffset<3>(fdims + sdims),
-                                     odims, tdims, out.strides(), third.strides());
-                join_append<T, T, 3>(outPtr, rptr, calcOffset<3>(fdims + sdims + tdims),
-                                     odims, rdims, out.strides(), fourth.strides());
-                break;
-        }
-
-        return out;
-    }
-
-#define INSTANTIATE(Tx, Ty)                                                                             \
-    template Array<Tx> join<Tx, Ty>(const int dim, const Array<Tx> &first, const Array<Ty> &second);   \
+#define INSTANTIATE(Tx, Ty) \
+    template Array<Tx> join<Tx, Ty>(const int dim, const Array<Tx> &first, const Array<Ty> &second);
 
     INSTANTIATE(float,   float)
     INSTANTIATE(double,  double)
@@ -263,11 +227,8 @@ namespace cpu
 
 #undef INSTANTIATE
 
-#define INSTANTIATE(T)                                                                              \
-    template Array<T> join<T>(const int dim, const Array<T> &first, const Array<T> &second,         \
-                              const Array<T> &third);                                               \
-    template Array<T> join<T>(const int dim, const Array<T> &first, const Array<T> &second,         \
-                              const Array<T> &third, const Array<T> &fourth);
+#define INSTANTIATE(T)      \
+    template Array<T> join<T>(const int dim, const std::vector<Array<T>> &inputs);
 
     INSTANTIATE(float)
     INSTANTIATE(double)

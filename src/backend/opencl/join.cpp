@@ -78,61 +78,46 @@ namespace opencl
         return out;
     }
 
-    template<typename T>
-    Array<T> join(const int dim, const Array<T> &first, const Array<T> &second, const Array<T> &third)
+    template<typename T, int n_arrays>
+    void join_wrapper(const int dim, Array<T> &out, const std::vector<Array<T> > &inputs)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
-
-        // All dimensions except join dimension must be equal
-        // Compute output dims
-        af::dim4 odims;
-        af::dim4 fdims = first.dims();
-        af::dim4 sdims = second.dims();
-        af::dim4 tdims = third.dims();
-
-        for(int i = 0; i < 4; i++) {
-            if(i == dim) {
-                odims[i] = fdims[i] + sdims[i] + tdims[i];
-            } else {
-                odims[i] = fdims[i];
-            }
-        }
-
-        Array<T> out = createEmptyArray<T>(odims);
-
         af::dim4 zero(0,0,0,0);
+        af::dim4 d = zero;
 
         switch(dim) {
             case 0:
-                kernel::join<T, T, 0>(out, first,  zero);
-                kernel::join<T, T, 0>(out, second, calcOffset<0>(fdims));
-                kernel::join<T, T, 0>(out, third,  calcOffset<0>(fdims + sdims));
+                kernel::join<T, T, 0>(out, inputs[0], zero);
+                for(int i = 1; i < n_arrays; i++) {
+                    d += inputs[i - 1].dims();
+                    kernel::join<T, T, 0>(out, inputs[i], calcOffset<0>(d));
+                }
                 break;
             case 1:
-                kernel::join<T, T, 1>(out, first,  zero);
-                kernel::join<T, T, 1>(out, second, calcOffset<1>(fdims));
-                kernel::join<T, T, 1>(out, third,  calcOffset<1>(fdims + sdims));
+                kernel::join<T, T, 1>(out, inputs[0], zero);
+                for(int i = 1; i < n_arrays; i++) {
+                    d += inputs[i - 1].dims();
+                    kernel::join<T, T, 1>(out, inputs[i], calcOffset<1>(d));
+                }
                 break;
             case 2:
-                kernel::join<T, T, 2>(out, first,  zero);
-                kernel::join<T, T, 2>(out, second, calcOffset<2>(fdims));
-                kernel::join<T, T, 2>(out, third,  calcOffset<2>(fdims + sdims));
+                kernel::join<T, T, 1>(out, inputs[0], zero);
+                for(int i = 1; i < n_arrays; i++) {
+                    d += inputs[i - 1].dims();
+                    kernel::join<T, T, 2>(out, inputs[i], calcOffset<2>(d));
+                }
                 break;
             case 3:
-                kernel::join<T, T, 3>(out, first,  zero);
-                kernel::join<T, T, 3>(out, second, calcOffset<3>(fdims));
-                kernel::join<T, T, 3>(out, third,  calcOffset<3>(fdims + sdims));
+                kernel::join<T, T, 3>(out, inputs[0], zero);
+                for(int i = 1; i < n_arrays; i++) {
+                    d += inputs[i - 1].dims();
+                    kernel::join<T, T, 3>(out, inputs[i], calcOffset<3>(d));
+                }
                 break;
         }
-        return out;
     }
 
     template<typename T>
-    Array<T> join(const int dim, const Array<T> &first, const Array<T> &second,
-                  const Array<T> &third, const Array<T> &fourth)
+    Array<T> join(const int dim, const std::vector<Array<T> > &inputs)
     {
         if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
             !isDoubleSupported(getActiveDeviceId())) {
@@ -142,47 +127,55 @@ namespace opencl
         // All dimensions except join dimension must be equal
         // Compute output dims
         af::dim4 odims;
-        af::dim4 fdims = first.dims();
-        af::dim4 sdims = second.dims();
-        af::dim4 tdims = third.dims();
-        af::dim4 rdims = fourth.dims();
+        const dim_type n_arrays = inputs.size();
+        std::vector<af::dim4> idims(n_arrays);
+
+        dim_type dim_size = 0;
+        for(int i = 0; i < (int)idims.size(); i++) {
+            idims[i] = inputs[i].dims();
+            dim_size += idims[i][dim];
+        }
 
         for(int i = 0; i < 4; i++) {
             if(i == dim) {
-                odims[i] = fdims[i] + sdims[i] + tdims[i] + rdims[i];
+                odims[i] = dim_size;
             } else {
-                odims[i] = fdims[i];
+                odims[i] = idims[0][i];
             }
         }
 
         Array<T> out = createEmptyArray<T>(odims);
 
-        af::dim4 zero(0,0,0,0);
-
-        switch(dim) {
-            case 0:
-                kernel::join<T, T, 0>(out, first,  zero);
-                kernel::join<T, T, 0>(out, second, calcOffset<0>(fdims));
-                kernel::join<T, T, 0>(out, third,  calcOffset<0>(fdims + sdims));
-                kernel::join<T, T, 0>(out, fourth, calcOffset<0>(fdims + sdims + rdims));
-                break;
+        switch(n_arrays) {
             case 1:
-                kernel::join<T, T, 1>(out, first,  zero);
-                kernel::join<T, T, 1>(out, second, calcOffset<1>(fdims));
-                kernel::join<T, T, 1>(out, third,  calcOffset<1>(fdims + sdims));
-                kernel::join<T, T, 0>(out, fourth, calcOffset<1>(fdims + sdims + rdims));
+                join_wrapper<T, 1>(dim, out, inputs);
                 break;
             case 2:
-                kernel::join<T, T, 2>(out, first,  zero);
-                kernel::join<T, T, 2>(out, second, calcOffset<2>(fdims));
-                kernel::join<T, T, 2>(out, third,  calcOffset<2>(fdims + sdims));
-                kernel::join<T, T, 0>(out, fourth, calcOffset<2>(fdims + sdims + rdims));
+                join_wrapper<T, 2>(dim, out, inputs);
                 break;
             case 3:
-                kernel::join<T, T, 3>(out, first,  zero);
-                kernel::join<T, T, 3>(out, second, calcOffset<3>(fdims));
-                kernel::join<T, T, 3>(out, third,  calcOffset<3>(fdims + sdims));
-                kernel::join<T, T, 3>(out, fourth, calcOffset<3>(fdims + sdims + rdims));
+                join_wrapper<T, 3>(dim, out, inputs);
+                break;
+            case 4:
+                join_wrapper<T, 4>(dim, out, inputs);
+                break;
+            case 5:
+                join_wrapper<T, 5>(dim, out, inputs);
+                break;
+            case 6:
+                join_wrapper<T, 6>(dim, out, inputs);
+                break;
+            case 7:
+                join_wrapper<T, 7>(dim, out, inputs);
+                break;
+            case 8:
+                join_wrapper<T, 8>(dim, out, inputs);
+                break;
+            case 9:
+                join_wrapper<T, 9>(dim, out, inputs);
+                break;
+            case 10:
+                join_wrapper<T,10>(dim, out, inputs);
                 break;
         }
         return out;
@@ -203,10 +196,7 @@ namespace opencl
 #undef INSTANTIATE
 
 #define INSTANTIATE(T)                                                                              \
-    template Array<T> join<T>(const int dim, const Array<T> &first, const Array<T> &second,         \
-                              const Array<T> &third);                                               \
-    template Array<T> join<T>(const int dim, const Array<T> &first, const Array<T> &second,         \
-                              const Array<T> &third, const Array<T> &fourth);
+    template Array<T> join<T>(const int dim, const std::vector<Array<T> > &inputs);
 
     INSTANTIATE(float)
     INSTANTIATE(double)

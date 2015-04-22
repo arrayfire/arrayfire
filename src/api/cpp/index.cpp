@@ -49,14 +49,16 @@ array join(const int dim, const array& first, const array& second)
 array join(const int dim, const array& first, const array& second, const array &third)
 {
     af_array out = 0;
-    AF_THROW(af_join3(&out, dim, first.get(), second.get(), third.get()));
+    af_array inputs[3] = {first.get(), second.get(), third.get()};
+    AF_THROW(af_join_many(&out, dim, 3, inputs));
     return array(out);
 }
 
 array join(const int dim, const array& first, const array& second, const array &third, const array &fourth)
 {
     af_array out = 0;
-    AF_THROW(af_join4(&out, dim, first.get(), second.get(), third.get(), fourth.get()));
+    af_array inputs[4] = {first.get(), second.get(), third.get(), fourth.get()};
+    AF_THROW(af_join_many(&out, dim, 4, inputs));
     return array(out);
 }
 

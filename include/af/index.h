@@ -225,9 +225,7 @@ extern "C" {
     */
     AFAPI af_err af_join(af_array *out, const int dim, const af_array first, const af_array second);
 
-    AFAPI af_err af_join3(af_array *out, const int dim, const af_array first, const af_array second, const af_array third);
-
-    AFAPI af_err af_join4(af_array *out, const int dim, const af_array first, const af_array second, const af_array third, const af_array fourth);
+    AFAPI af_err af_join_many(af_array *out, const int dim, const unsigned n_arrays, const af_array *inputs);
 
     /**
        \ingroup manip_func_tile

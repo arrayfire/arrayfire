@@ -9,6 +9,7 @@
 
 #include <af/array.h>
 #include <Array.hpp>
+#include <vector>
 
 namespace cpu
 {
@@ -16,10 +17,5 @@ namespace cpu
     Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second);
 
     template<typename T>
-    Array<T> join(const int dim, const Array<T> &first, const Array<T> &second,
-                  const Array<T> &third);
-
-    template<typename T>
-    Array<T> join(const int dim, const Array<T> &first, const Array<T> &second,
-                  const Array<T> &third, const Array<T> &fourth);
+    Array<T> join(const int dim, const std::vector<Array<T>> &inputs);
 }
