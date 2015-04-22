@@ -10,6 +10,7 @@
 #pragma once
 #include <stdio.h>
 #include <err_common.hpp>
+#include <cuda.h> // Need this for CUDA_VERSION
 #include <cufft.h>
 
 static const char * _cufftGetResultString(cufftResult res)
@@ -85,4 +86,3 @@ static const char * _cufftGetResultString(cufftResult res)
                      AF_ERR_INTERNAL);          \
         }                                       \
     } while(0)
-
