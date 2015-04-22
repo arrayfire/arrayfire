@@ -191,22 +191,22 @@ namespace cpu
                 join_wrapper<T, 4>(dim, out, inputs);
                 break;
             case 5:
-                join_wrapper<T, 4>(dim, out, inputs);
+                join_wrapper<T, 5>(dim, out, inputs);
                 break;
             case 6:
-                join_wrapper<T, 4>(dim, out, inputs);
+                join_wrapper<T, 6>(dim, out, inputs);
                 break;
             case 7:
-                join_wrapper<T, 4>(dim, out, inputs);
+                join_wrapper<T, 7>(dim, out, inputs);
                 break;
             case 8:
-                join_wrapper<T, 4>(dim, out, inputs);
+                join_wrapper<T, 8>(dim, out, inputs);
                 break;
             case 9:
-                join_wrapper<T, 4>(dim, out, inputs);
+                join_wrapper<T, 9>(dim, out, inputs);
                 break;
             case 10:
-                join_wrapper<T, 4>(dim, out, inputs);
+                join_wrapper<T,10>(dim, out, inputs);
                 break;
         }
 
