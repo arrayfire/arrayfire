@@ -46,6 +46,20 @@ array join(const int dim, const array& first, const array& second)
     return array(out);
 }
 
+array join(const int dim, const array& first, const array& second, const array &third)
+{
+    af_array out = 0;
+    AF_THROW(af_join3(&out, dim, first.get(), second.get(), third.get()));
+    return array(out);
+}
+
+array join(const int dim, const array& first, const array& second, const array &third, const array &fourth)
+{
+    af_array out = 0;
+    AF_THROW(af_join4(&out, dim, first.get(), second.get(), third.get(), fourth.get()));
+    return array(out);
+}
+
 array tile(const array& in, const unsigned x, const unsigned y, const unsigned z, const unsigned w)
 {
     af_array out = 0;

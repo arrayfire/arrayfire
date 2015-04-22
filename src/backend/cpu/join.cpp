@@ -14,57 +14,42 @@
 
 namespace cpu
 {
-    template<typename Tx, typename Ty, int dim>
-    void join_(Tx *out, const Tx *X, const Ty *Y,
-               const af::dim4 &odims, const af::dim4 &xdims, const af::dim4 &ydims,
-               const af::dim4 &ost, const af::dim4 &xst, const af::dim4 &yst)
+    template<typename To, typename Tx, int dim>
+    void join_append(To *out, const Tx *X, const af::dim4 &offset,
+               const af::dim4 &odims, const af::dim4 &xdims,
+               const af::dim4 &ost, const af::dim4 &xst)
     {
-        af::dim4 offset;
-        offset[0] = (dim == 0) ? xdims[0] : 0;
-        offset[1] = (dim == 1) ? xdims[1] : 0;
-        offset[2] = (dim == 2) ? xdims[2] : 0;
-        offset[3] = (dim == 3) ? xdims[3] : 0;
         for(dim_type ow = 0; ow < xdims[3]; ow++) {
             const dim_type xW = ow * xst[3];
-            const dim_type oW = ow * ost[3];
+            const dim_type oW = (ow + offset[3]) * ost[3];
 
             for(dim_type oz = 0; oz < xdims[2]; oz++) {
                 const dim_type xZW = xW + oz * xst[2];
-                const dim_type oZW = oW + oz * ost[2];
+                const dim_type oZW = oW + (oz + offset[2]) * ost[2];
 
                 for(dim_type oy = 0; oy < xdims[1]; oy++) {
                     const dim_type xYZW = xZW + oy * xst[1];
-                    const dim_type oYZW = oZW + oy * ost[1];
+                    const dim_type oYZW = oZW + (oy + offset[1]) * ost[1];
 
                     for(dim_type ox = 0; ox < xdims[0]; ox++) {
                         const dim_type iMem = xYZW + ox;
-                        const dim_type oMem = oYZW + ox;
+                        const dim_type oMem = oYZW + (ox + offset[0]);
                         out[oMem] = X[iMem];
                     }
                 }
             }
         }
+    }
 
-        for(dim_type ow = 0; ow < ydims[3]; ow++) {
-            const dim_type yW = ow * yst[3];
-            const dim_type oW = (ow + offset[3]) * ost[3];
-
-            for(dim_type oz = 0; oz < ydims[2]; oz++) {
-                const dim_type yZW = yW + oz * yst[2];
-                const dim_type oZW = oW + (offset[2] + oz) * ost[2];
-
-                for(dim_type oy = 0; oy < ydims[1]; oy++) {
-                    const dim_type yYZW = yZW + oy * yst[1];
-                    const dim_type oYZW = oZW + (offset[1] + oy) * ost[1];
-
-                    for(dim_type ox = 0; ox < ydims[0]; ox++) {
-                        const dim_type iMem = yYZW + ox;
-                        const dim_type oMem = oYZW + (offset[0] + ox);
-                        out[oMem] = Y[iMem];
-                    }
-                }
-            }
-        }
+    template<int dim>
+    af::dim4 calcOffset(const af::dim4 dims)
+    {
+        af::dim4 offset;
+        offset[0] = (dim == 0) ? dims[0] : 0;
+        offset[1] = (dim == 1) ? dims[1] : 0;
+        offset[2] = (dim == 2) ? dims[2] : 0;
+        offset[3] = (dim == 3) ? dims[3] : 0;
+        return offset;
     }
 
     template<typename Tx, typename Ty>
@@ -90,19 +75,175 @@ namespace cpu
         const Tx* fptr = first.get();
         const Ty* sptr = second.get();
 
+        af::dim4 zero(0,0,0,0);
+
         switch(dim) {
-            case 0: join_<Tx, Ty, 0>(outPtr, fptr, sptr, odims, fdims, sdims,
-                                     out.strides(), first.strides(), second.strides());
-                    break;
-            case 1: join_<Tx, Ty, 1>(outPtr, fptr, sptr, odims, fdims, sdims,
-                                     out.strides(), first.strides(), second.strides());
-                    break;
-            case 2: join_<Tx, Ty, 2>(outPtr, fptr, sptr, odims, fdims, sdims,
-                                     out.strides(), first.strides(), second.strides());
-                    break;
-            case 3: join_<Tx, Ty, 3>(outPtr, fptr, sptr, odims, fdims, sdims,
-                                     out.strides(), first.strides(), second.strides());
-                    break;
+            case 0:
+                join_append<Tx, Tx, 0>(outPtr, fptr, zero,
+                                       odims, fdims, out.strides(), first.strides());
+                join_append<Tx, Ty, 0>(outPtr, sptr, calcOffset<0>(fdims),
+                                       odims, sdims, out.strides(), second.strides());
+                break;
+            case 1:
+                join_append<Tx, Tx, 1>(outPtr, fptr, zero,
+                                       odims, fdims, out.strides(), first.strides());
+                join_append<Tx, Ty, 1>(outPtr, sptr, calcOffset<1>(fdims),
+                                       odims, sdims, out.strides(), second.strides());
+                break;
+            case 2:
+                join_append<Tx, Tx, 2>(outPtr, fptr, zero,
+                                       odims, fdims, out.strides(), first.strides());
+                join_append<Tx, Ty, 2>(outPtr, sptr, calcOffset<2>(fdims),
+                                       odims, sdims, out.strides(), second.strides());
+                break;
+            case 3:
+                join_append<Tx, Tx, 3>(outPtr, fptr, zero,
+                                       odims, fdims, out.strides(), first.strides());
+                join_append<Tx, Ty, 3>(outPtr, sptr, calcOffset<3>(fdims),
+                                       odims, sdims, out.strides(), second.strides());
+                break;
+        }
+
+        return out;
+    }
+
+    template<typename T>
+    Array<T> join(const int dim, const Array<T> &first, const Array<T> &second,
+                  const Array<T> &third)
+    {
+        // All dimensions except join dimension must be equal
+        // Compute output dims
+        af::dim4 odims;
+        af::dim4 fdims = first.dims();
+        af::dim4 sdims = second.dims();
+        af::dim4 tdims = third.dims();
+
+        for(int i = 0; i < 4; i++) {
+            if(i == dim) {
+                odims[i] = fdims[i] + sdims[i] + tdims[i];
+            } else {
+                odims[i] = fdims[i];
+            }
+        }
+
+        Array<T> out = createEmptyArray<T>(odims);
+
+        T* outPtr = out.get();
+        const T* fptr = first.get();
+        const T* sptr = second.get();
+        const T* tptr = third.get();
+
+        af::dim4 zero(0,0,0,0);
+
+        switch(dim) {
+            case 0:
+                join_append<T, T, 0>(outPtr, fptr, zero,
+                                     odims, fdims, out.strides(), first.strides());
+                join_append<T, T, 0>(outPtr, sptr, calcOffset<0>(fdims),
+                                     odims, sdims, out.strides(), second.strides());
+                join_append<T, T, 0>(outPtr, tptr, calcOffset<0>(fdims + sdims),
+                                     odims, tdims, out.strides(), third.strides());
+                break;
+            case 1:
+                join_append<T, T, 1>(outPtr, fptr, zero,
+                                     odims, fdims, out.strides(), first.strides());
+                join_append<T, T, 1>(outPtr, sptr, calcOffset<1>(fdims),
+                                     odims, sdims, out.strides(), second.strides());
+                join_append<T, T, 1>(outPtr, tptr, calcOffset<1>(fdims + sdims),
+                                     odims, tdims, out.strides(), third.strides());
+                break;
+            case 2:
+                join_append<T, T, 2>(outPtr, fptr, zero,
+                                     odims, fdims, out.strides(), first.strides());
+                join_append<T, T, 2>(outPtr, sptr, calcOffset<2>(fdims),
+                                     odims, sdims, out.strides(), second.strides());
+                join_append<T, T, 2>(outPtr, tptr, calcOffset<2>(fdims + sdims),
+                                     odims, tdims, out.strides(), third.strides());
+                break;
+            case 3:
+                join_append<T, T, 3>(outPtr, fptr, zero,
+                                     odims, fdims, out.strides(), first.strides());
+                join_append<T, T, 3>(outPtr, sptr, calcOffset<3>(fdims),
+                                     odims, sdims, out.strides(), second.strides());
+                join_append<T, T, 3>(outPtr, tptr, calcOffset<3>(fdims + sdims),
+                                       odims, tdims, out.strides(), third.strides());
+                break;
+        }
+
+        return out;
+    }
+
+    template<typename T>
+    Array<T> join(const int dim, const Array<T> &first, const Array<T> &second,
+                  const Array<T> &third, const Array<T> &fourth)
+    {
+        // All dimensions except join dimension must be equal
+        // Compute output dims
+        af::dim4 odims;
+        af::dim4 fdims = first.dims();
+        af::dim4 sdims = second.dims();
+        af::dim4 tdims = third.dims();
+        af::dim4 rdims = fourth.dims();
+
+        for(int i = 0; i < 4; i++) {
+            if(i == dim) {
+                odims[i] = fdims[i] + sdims[i] + tdims[i] + rdims[i];
+            } else {
+                odims[i] = fdims[i];
+            }
+        }
+
+        Array<T> out = createEmptyArray<T>(odims);
+
+        T* outPtr = out.get();
+        const T* fptr = first.get();
+        const T* sptr = second.get();
+        const T* tptr = third.get();
+        const T* rptr = fourth.get();
+
+        af::dim4 zero(0,0,0,0);
+
+        switch(dim) {
+            case 0:
+                join_append<T, T, 0>(outPtr, fptr, zero,
+                                     odims, fdims, out.strides(), first.strides());
+                join_append<T, T, 0>(outPtr, sptr, calcOffset<0>(fdims),
+                                     odims, sdims, out.strides(), second.strides());
+                join_append<T, T, 0>(outPtr, tptr, calcOffset<0>(fdims + sdims),
+                                     odims, tdims, out.strides(), third.strides());
+                join_append<T, T, 0>(outPtr, rptr, calcOffset<0>(fdims + sdims + tdims),
+                                     odims, rdims, out.strides(), fourth.strides());
+                break;
+            case 1:
+                join_append<T, T, 1>(outPtr, fptr, zero,
+                                     odims, fdims, out.strides(), first.strides());
+                join_append<T, T, 1>(outPtr, sptr, calcOffset<1>(fdims),
+                                     odims, sdims, out.strides(), second.strides());
+                join_append<T, T, 1>(outPtr, tptr, calcOffset<1>(fdims + sdims),
+                                     odims, tdims, out.strides(), third.strides());
+                join_append<T, T, 1>(outPtr, rptr, calcOffset<1>(fdims + sdims + tdims),
+                                     odims, rdims, out.strides(), fourth.strides());
+                break;
+            case 2:
+                join_append<T, T, 2>(outPtr, fptr, zero,
+                                     odims, fdims, out.strides(), first.strides());
+                join_append<T, T, 2>(outPtr, sptr, calcOffset<2>(fdims),
+                                     odims, sdims, out.strides(), second.strides());
+                join_append<T, T, 2>(outPtr, tptr, calcOffset<2>(fdims + sdims),
+                                     odims, tdims, out.strides(), third.strides());
+                join_append<T, T, 2>(outPtr, rptr, calcOffset<2>(fdims + sdims + tdims),
+                                     odims, rdims, out.strides(), fourth.strides());
+                break;
+            case 3:
+                join_append<T, T, 3>(outPtr, fptr, zero,
+                                     odims, fdims, out.strides(), first.strides());
+                join_append<T, T, 3>(outPtr, sptr, calcOffset<3>(fdims),
+                                     odims, sdims, out.strides(), second.strides());
+                join_append<T, T, 3>(outPtr, tptr, calcOffset<3>(fdims + sdims),
+                                     odims, tdims, out.strides(), third.strides());
+                join_append<T, T, 3>(outPtr, rptr, calcOffset<3>(fdims + sdims + tdims),
+                                     odims, rdims, out.strides(), fourth.strides());
+                break;
         }
 
         return out;
@@ -119,4 +260,23 @@ namespace cpu
     INSTANTIATE(uint,    uint)
     INSTANTIATE(uchar,   uchar)
     INSTANTIATE(char,    char)
+
+#undef INSTANTIATE
+
+#define INSTANTIATE(T)                                                                              \
+    template Array<T> join<T>(const int dim, const Array<T> &first, const Array<T> &second,         \
+                              const Array<T> &third);                                               \
+    template Array<T> join<T>(const int dim, const Array<T> &first, const Array<T> &second,         \
+                              const Array<T> &third, const Array<T> &fourth);
+
+    INSTANTIATE(float)
+    INSTANTIATE(double)
+    INSTANTIATE(cfloat)
+    INSTANTIATE(cdouble)
+    INSTANTIATE(int)
+    INSTANTIATE(uint)
+    INSTANTIATE(uchar)
+    INSTANTIATE(char)
+
+#undef INSTANTIATE
 }
