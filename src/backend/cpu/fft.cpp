@@ -37,49 +37,32 @@ void computeDims(int *rdims, const dim4 &idims)
     }
 }
 
-#define TRANSFORM(FUNC, T, CAST_T, PREFIX, DIRECTION)               \
-    template<> void FUNC##w_common<T>(Array<T> &arr, int rank)      \
-    {                                                               \
-        int rank_dims[3];                                           \
-        const dim4 dims = arr.dims();                               \
-        switch(rank) {                                              \
-            case 1: computeDims<1>(rank_dims, dims); break;         \
-            case 2: computeDims<2>(rank_dims, dims); break;         \
-            case 3: computeDims<3>(rank_dims, dims); break;         \
-        }                                                           \
-        const dim4 strides = arr.strides();                         \
-        PREFIX##_plan plan = PREFIX##_plan_many_dft  (              \
-                                            rank,                   \
-                                            rank_dims,              \
-                                            (int)dims[rank],        \
-                                            (CAST_T*)arr.get(),     \
-                                            NULL, (int)strides[0],  \
-                                            (int)strides[rank],     \
-                                            (CAST_T*)arr.get(),     \
-                                            NULL, (int)strides[0],  \
-                                            (int)strides[rank],     \
-                                            DIRECTION,              \
-                                            FFTW_ESTIMATE);         \
-        PREFIX##_execute(plan);                                     \
-        PREFIX##_destroy_plan(plan);                                \
+#define TRANSFORM(T, PREFIX)                            \
+    template<int rank, int direction>                   \
+    void fftw_common(Array<T> &arr)                     \
+    {                                                   \
+        int rank_dims[3];                               \
+        const dim4 dims = arr.dims();                   \
+        computeDims<rank>(rank_dims, dims);             \
+        const dim4 strides = arr.strides();             \
+        PREFIX##_plan plan = PREFIX##_plan_many_dft  (  \
+            rank,                                       \
+            rank_dims,                                  \
+            (int)dims[rank],                            \
+            (PREFIX##_complex *)arr.get(),              \
+            NULL, (int)strides[0],                      \
+            (int)strides[rank],                         \
+            (PREFIX##_complex *)arr.get(),              \
+            NULL, (int)strides[0],                      \
+            (int)strides[rank],                         \
+            direction,                                  \
+            FFTW_ESTIMATE);                             \
+        PREFIX##_execute(plan);                         \
+        PREFIX##_destroy_plan(plan);                    \
     }
 
-template<typename T>
-void fftw_common(Array<T> &arr, int rank)
-{
-    CPU_NOT_SUPPORTED();
-}
-
-template<typename T>
-void ifftw_common(Array<T> &arr, int rank)
-{
-    CPU_NOT_SUPPORTED();
-}
-
-TRANSFORM( fft,  cfloat, fftwf_complex, fftwf,  FFTW_FORWARD);
-TRANSFORM( fft, cdouble, fftw_complex , fftw ,  FFTW_FORWARD);
-TRANSFORM(ifft,  cfloat, fftwf_complex, fftwf, FFTW_BACKWARD);
-TRANSFORM(ifft, cdouble, fftw_complex , fftw , FFTW_BACKWARD);
+TRANSFORM(cfloat , fftwf);
+TRANSFORM(cdouble, fftw );
 
 template<int rank>
 void computePaddedDims(dim4 &pdims, dim_type const * const pad)
@@ -100,22 +83,14 @@ template<typename inType, typename outType, int rank, bool isR2C>
 Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
 {
     ARG_ASSERT(1, ((in.isOwner()==true) && "fft: Sub-Arrays not supported yet."));
+    ARG_ASSERT(1, rank >= 1 && rank <= 3);
 
     dim4 pdims(1);
-
-    switch(rank) {
-        case 1 : computePaddedDims<1>(pdims, pad); break;
-        case 2 : computePaddedDims<2>(pdims, pad); break;
-        case 3 : computePaddedDims<3>(pdims, pad); break;
-        default: AF_ERROR("invalid rank", AF_ERR_SIZE);
-    }
-
+    computePaddedDims<rank>(pdims, pad);
     pdims[rank] = in.dims()[rank];
 
     Array<outType> ret = padArray<inType, outType>(in, (npad>0 ? pdims : in.dims()));
-
-    fftw_common<outType>(ret, rank);
-
+    fftw_common<rank, FFTW_FORWARD>(ret);
     return ret;
 }
 
@@ -123,21 +98,14 @@ template<typename T, int rank>
 Array<T> ifft(Array<T> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
 {
     ARG_ASSERT(1, ((in.isOwner()==true) && "ifft: Sub-Arrays not supported yet."));
+    ARG_ASSERT(1, rank >= 1 && rank <= 3);
 
     dim4 pdims(1);
-
-    switch(rank) {
-        case 1 : computePaddedDims<1>(pdims, pad); break;
-        case 2 : computePaddedDims<2>(pdims, pad); break;
-        case 3 : computePaddedDims<3>(pdims, pad); break;
-        default: AF_ERROR("invalid rank", AF_ERR_SIZE);
-    }
-
+    computePaddedDims<rank>(pdims, pad);
     pdims[rank] = in.dims()[rank];
 
     Array<T> ret = padArray<T, T>(in, (npad>0 ? pdims : in.dims()), scalar<T>(0), norm_factor);
-
-    ifftw_common<T>(ret, rank);
+    fftw_common<rank, FFTW_BACKWARD>(ret);
 
     return ret;
 }

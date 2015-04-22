@@ -166,15 +166,9 @@ void cufft_common(Array<T> &arr)
     const dim4 strides = arr.strides();
 
     int rank_dims[3];
-
-    switch(rank) {
-        case 1: computeDims<1>(rank_dims, dims); break;
-        case 2: computeDims<2>(rank_dims, dims); break;
-        case 3: computeDims<3>(rank_dims, dims); break;
-    }
+    computeDims<rank>(rank_dims, dims);
 
     cufftHandle plan;
-
     find_cufft_plan(plan, rank, rank_dims,
             NULL, strides[0], strides[rank],
             NULL, strides[0], strides[rank],
