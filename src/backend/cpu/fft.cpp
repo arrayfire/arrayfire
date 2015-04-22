@@ -37,32 +37,64 @@ void computeDims(int *rdims, const dim4 &idims)
     }
 }
 
-#define TRANSFORM(T, PREFIX)                            \
-    template<int rank, int direction>                   \
-    void fftw_common(Array<T> &arr)                     \
-    {                                                   \
-        int rank_dims[3];                               \
-        const dim4 dims = arr.dims();                   \
-        computeDims<rank>(rank_dims, dims);             \
-        const dim4 strides = arr.strides();             \
-        PREFIX##_plan plan = PREFIX##_plan_many_dft  (  \
-            rank,                                       \
-            rank_dims,                                  \
-            (int)dims[rank],                            \
-            (PREFIX##_complex *)arr.get(),              \
-            NULL, (int)strides[0],                      \
-            (int)strides[rank],                         \
-            (PREFIX##_complex *)arr.get(),              \
-            NULL, (int)strides[0],                      \
-            (int)strides[rank],                         \
-            direction,                                  \
-            FFTW_ESTIMATE);                             \
-        PREFIX##_execute(plan);                         \
-        PREFIX##_destroy_plan(plan);                    \
-    }
+template<typename T>
+struct fftw_transform;
 
-TRANSFORM(cfloat , fftwf);
-TRANSFORM(cdouble, fftw );
+#define TRANSFORM(PRE, TY)                                              \
+    template<>                                                          \
+    struct fftw_transform<TY>                                           \
+    {                                                                   \
+        typedef PRE##_plan plan_t;                                      \
+        typedef PRE##_complex ctype_t;                                  \
+                                                                        \
+        template<typename... Args>                                      \
+            plan_t create(Args... args)                                 \
+        { return PRE##_plan_many_dft(args...); }                        \
+        void execute(plan_t plan) { return PRE##_execute(plan); }       \
+        void destroy(plan_t plan) { return PRE##_destroy_plan(plan); }  \
+    };                                                                  \
+
+
+TRANSFORM(fftwf, cfloat)
+TRANSFORM(fftw, cdouble)
+
+template<typename T, int rank, int direction>
+void fft_common(Array <T> &out, const Array<T> &in)
+{
+    int in_dims[3];
+    int in_embed[3];
+    int out_embed[3];
+
+    const dim4 idims = in.dims();
+
+    computeDims<rank>(in_dims  , idims);
+    computeDims<rank>(in_embed , in.getDataDims());
+    computeDims<rank>(out_embed, out.getDataDims());
+
+    const dim4 istrides = in.strides();
+    const dim4 ostrides = out.strides();
+
+    typedef typename fftw_transform<T>::ctype_t ctype_t;
+    typename fftw_transform<T>::plan_t plan;
+
+    fftw_transform<T> transform;
+
+    plan = transform.create(rank,
+                            in_dims,
+                            (int)idims[rank],
+                            (ctype_t *)in.get(),
+                            in_embed, (int)istrides[0],
+                            (int)istrides[rank],
+                            (ctype_t *)out.get(),
+                            out_embed, (int)ostrides[0],
+                            (int)ostrides[rank],
+                            direction ? FFTW_FORWARD : FFTW_BACKWARD,
+                            FFTW_ESTIMATE);
+
+    transform.execute(plan);
+    transform.destroy(plan);
+
+}
 
 template<int rank>
 void computePaddedDims(dim4 &pdims, dim_type const * const pad)
@@ -90,7 +122,7 @@ Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const n
     pdims[rank] = in.dims()[rank];
 
     Array<outType> ret = padArray<inType, outType>(in, (npad>0 ? pdims : in.dims()));
-    fftw_common<rank, FFTW_FORWARD>(ret);
+    fft_common<outType, rank, true>(ret, ret);
     return ret;
 }
 
@@ -105,7 +137,7 @@ Array<T> ifft(Array<T> const &in, double norm_factor, dim_type const npad, dim_t
     pdims[rank] = in.dims()[rank];
 
     Array<T> ret = padArray<T, T>(in, (npad>0 ? pdims : in.dims()), scalar<T>(0), norm_factor);
-    fftw_common<rank, FFTW_BACKWARD>(ret);
+    fft_common<T, rank, false>(ret, ret);
 
     return ret;
 }
