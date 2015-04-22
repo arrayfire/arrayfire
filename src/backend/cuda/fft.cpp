@@ -146,17 +146,10 @@ CUFFT_FUNC(cfloat , C2C)
 CUFFT_FUNC(cdouble, Z2Z)
 
 template<int rank>
-void computeDims(int *rdims, const dim4 &idims)
+void computeDims(int rdims[rank], const dim4 &idims)
 {
-    if (rank==3) {
-        rdims[0] = idims[2];
-        rdims[1] = idims[1];
-        rdims[2] = idims[0];
-    } else if(rank==2) {
-        rdims[0] = idims[1];
-        rdims[1] = idims[0];
-    } else {
-        rdims[0] = idims[0];
+    for (int i = 0; i < rank; i++) {
+        rdims[i] = idims[(rank -1) - i];
     }
 }
 
@@ -167,9 +160,9 @@ void fft_common(Array<T> &out, const Array<T> &in)
     const dim4 istrides = in.strides();
     const dim4 ostrides = out.strides();
 
-    int in_dims[3];
-    int in_embed[3];
-    int out_embed[3];
+    int in_dims[rank];
+    int in_embed[rank];
+    int out_embed[rank];
 
     computeDims<rank>(in_dims, idims);
     computeDims<rank>(in_embed, in.getDataDims());
@@ -185,18 +178,13 @@ void fft_common(Array<T> &out, const Array<T> &in)
     CUFFT_CHECK(transform(plan, (T *)in.get(), out.get(), direction ? CUFFT_FORWARD : CUFFT_INVERSE));
 }
 
-template<int rank>
-void computePaddedDims(dim4 &pdims, dim_type const * const pad)
+void computePaddedDims(dim4 &pdims,
+                       const dim4 &idims,
+                       const dim_type npad,
+                       dim_type const * const pad)
 {
-    if (rank==1) {
-        pdims[0] = pad[0];
-    } else if (rank==2) {
-        pdims[0] = pad[0];
-        pdims[1] = pad[1];
-    } else if (rank==3) {
-        pdims[0] = pad[0];
-        pdims[1] = pad[1];
-        pdims[2] = pad[2];
+    for (int i = 0; i < 4; i++) {
+        pdims[i] = (i < npad) ? pad[i] : idims[i];
     }
 }
 
@@ -206,16 +194,10 @@ Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const n
     ARG_ASSERT(1, (in.isOwner()==true));
     ARG_ASSERT(1, (rank>=1 && rank<=3));
 
-    dim4 dims = in.dims();
     dim4 pdims(1);
-    computePaddedDims<rank>(pdims, pad);
-    pdims[rank] = in.dims()[rank];
+    computePaddedDims(pdims, in.dims(), npad, pad);
 
-    if (npad>0)
-      dims = pdims;
-
-    Array<outType> ret = padArray<inType, outType>(in, dims, scalar<outType>(0), norm_factor);
-
+    Array<outType> ret = padArray<inType, outType>(in, pdims, scalar<outType>(0), norm_factor);
     fft_common<outType, rank, true>(ret, ret);
 
     return ret;
@@ -227,16 +209,10 @@ Array<T> ifft(Array<T> const &in, double norm_factor, dim_type const npad, dim_t
     ARG_ASSERT(1, (in.isOwner()==true));
     ARG_ASSERT(1, (rank>=1 && rank<=3));
 
-    dim4 dims = in.dims();
     dim4 pdims(1);
-    computePaddedDims<rank>(pdims, pad);
-    pdims[rank] = in.dims()[rank];
+    computePaddedDims(pdims, in.dims(), npad, pad);
 
-    if (npad>0)
-      dims = pdims;
-
-    Array<T> ret = padArray<T, T>(in, dims, scalar<T>(0), norm_factor);
-
+    Array<T> ret = padArray<T, T>(in, pdims, scalar<T>(0), norm_factor);
     fft_common<T, rank, false>(ret, ret);
 
     return ret;

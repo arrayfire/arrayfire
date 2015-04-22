@@ -200,18 +200,13 @@ void fft_common(Array<T> &out, const Array<T> &in)
                                       &imem, &omem, NULL));
 }
 
-template<int rank>
-void computePaddedDims(dim4 &pdims, dim_type const * const pad)
+void computePaddedDims(dim4 &pdims,
+                       const dim4 &idims,
+                       const dim_type npad,
+                       dim_type const * const pad)
 {
-    if (rank==1) {
-        pdims[0] = pad[0];
-    } else if (rank==2) {
-        pdims[0] = pad[0];
-        pdims[1] = pad[1];
-    } else if (rank==3) {
-        pdims[0] = pad[0];
-        pdims[1] = pad[1];
-        pdims[2] = pad[2];
+    for (int i = 0; i < 4; i++) {
+        pdims[i] = (i < npad) ? pad[i] : idims[i];
     }
 }
 
@@ -246,18 +241,11 @@ Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const n
     ARG_ASSERT(1, (in.isOwner()==true));
     ARG_ASSERT(1, (rank>=1 && rank<=3));
 
-    dim4 dims = in.dims();
-
     dim4 pdims(1);
-    computePaddedDims<rank>(pdims, pad);
-    pdims[rank] = in.dims()[rank];
+    computePaddedDims(pdims, in.dims(), npad, pad);
+    verifySupported<rank>(pdims);
 
-    if (npad>0)
-      dims = pdims;
-
-    verifySupported<rank>(dims);
-
-    Array<outType> ret = padArray<inType, outType>(in, dims, scalar<outType>(0), norm_factor);
+    Array<outType> ret = padArray<inType, outType>(in, pdims, scalar<outType>(0), norm_factor);
     fft_common<outType, rank, true>(ret, ret);
 
     return ret;
@@ -269,24 +257,17 @@ Array<T> ifft(Array<T> const &in, double norm_factor, dim_type const npad, dim_t
     ARG_ASSERT(1, (in.isOwner()==true));
     ARG_ASSERT(1, (rank>=1 && rank<=3));
 
-    dim4 dims = in.dims();
-
     dim4 pdims(1);
-    computePaddedDims<rank>(pdims, pad);
-    pdims[rank] = in.dims()[rank];
-
-    if (npad>0)
-      dims = pdims;
+    computePaddedDims(pdims, in.dims(), npad, pad);
+    verifySupported<rank>(pdims);
 
     // the input norm_factor is further scaled
     // based on the input dimensions to match
     // cuFFT behavior
     for (int i=0; i<rank; i++)
-        norm_factor *= dims[i];
+        norm_factor *= pdims[i];
 
-    verifySupported<rank>(dims);
-
-    Array<T> ret = padArray<T, T>(in, dims, scalar<T>(0), norm_factor);
+    Array<T> ret = padArray<T, T>(in, pdims, scalar<T>(0), norm_factor);
     fft_common<T, rank, false>(ret, ret);
     return ret;
 }
