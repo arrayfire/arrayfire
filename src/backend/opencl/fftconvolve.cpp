@@ -20,7 +20,7 @@ using af::dim4;
 namespace opencl
 {
 
-template<typename T, typename convT, bool isDouble, bool roundOut, dim_type baseDim>
+template<typename T, typename convT, typename cT, bool isDouble, bool roundOut, dim_type baseDim>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool expand, ConvolveBatchKind kind)
 {
     if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
@@ -57,19 +57,19 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
     return out;
 }
 
-#define INSTANTIATE(T, convT, isDouble, roundOut)                                                       \
-    template Array<T> fftconvolve <T, convT, isDouble, roundOut, 1>                                     \
+#define INSTANTIATE(T, convT, cT, isDouble, roundOut)                                                   \
+    template Array<T> fftconvolve <T, convT, cT, isDouble, roundOut, 1>                                 \
         (Array<T> const& signal, Array<T> const& filter, const bool expand, ConvolveBatchKind kind);    \
-    template Array<T> fftconvolve <T, convT, isDouble, roundOut, 2>                                     \
+    template Array<T> fftconvolve <T, convT, cT, isDouble, roundOut, 2>                                 \
         (Array<T> const& signal, Array<T> const& filter, const bool expand, ConvolveBatchKind kind);    \
-    template Array<T> fftconvolve <T, convT, isDouble, roundOut, 3>                                     \
+    template Array<T> fftconvolve <T, convT, cT, isDouble, roundOut, 3>                                 \
         (Array<T> const& signal, Array<T> const& filter, const bool expand, ConvolveBatchKind kind);
 
-INSTANTIATE(double, double, true , false)
-INSTANTIATE(float , float,  false, false)
-INSTANTIATE(uint  , float,  false, true)
-INSTANTIATE(int   , float,  false, true)
-INSTANTIATE(uchar , float,  false, true)
-INSTANTIATE(char  , float,  false, true)
+INSTANTIATE(double, double, cdouble, true , false)
+INSTANTIATE(float , float,  cfloat,  false, false)
+INSTANTIATE(uint  , float,  cfloat,  false, true)
+INSTANTIATE(int   , float,  cfloat,  false, true)
+INSTANTIATE(uchar , float,  cfloat,  false, true)
+INSTANTIATE(char  , float,  cfloat,  false, true)
 
 }

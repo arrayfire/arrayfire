@@ -39,49 +39,43 @@ __global__ void packData(
     if (t >= tMax)
         return;
 
-    const dim_type do0 = out.dims[0];
     const dim_type do1 = out.dims[1];
     const dim_type do2 = out.dims[2];
+    const dim_type so1 = out.strides[1];
+    const dim_type so2 = out.strides[2];
+    const dim_type so3 = out.strides[3];
 
-    const dim_type do01 = do0 * do1;
-    const dim_type do012 = do01 * do2;
-    const dim_type do0_half = do0/2;
-    const dim_type do01_half = do0_half * do1;
-    const dim_type do012_half = do01_half * do2;
+    const int to0 = t % so1;
+    const int to1 = (t / so1) % do1;
+    const int to2 = (t / so2) % do2;
+    const int to3 = t / so3;
 
-    const int to0 = t % do0_half;
-    const int to1 = (t / do0_half) % do1;
-    const int to2 = (t / do01_half) % do2;
-    const int to3 = t / do012_half;
-
-    const dim_type di0 = in.dims[0];
     const dim_type di1 = in.dims[1];
     const dim_type di2 = in.dims[2];
-
-    const dim_type di01 = di0 * di1;
-    const dim_type di012 = di01 * di2;
+    const dim_type si1 = in.strides[1];
+    const dim_type si2 = in.strides[2];
+    const dim_type si3 = in.strides[3];
 
     const int ti0 = to0;
-    const int ti1 = to1 * di0;
-    const int ti2 = to2 * di01;
-    const int ti3 = to3 * di012;
+    const int ti1 = to1 * si1;
+    const int ti2 = to2 * si2;
+    const int ti3 = to3 * si3;
 
     const int iidx1 = ti3 + ti2 + ti1 + ti0;
     const int iidx2 = iidx1 + di0_half;
-    const int oidx1 = to3*do012 + to2*do01 + to1*do0 + to0*2;
-    const int oidx2 = oidx1 + 1;
+    const int oidx = to3*so3 + to2*so2 + to1*so1 + to0;
 
     if (to0 < di0_half && to1 < di1 && to2 < di2) {
-        out.ptr[oidx1] = (To)in.ptr[iidx1];
+        out.ptr[oidx].x = in.ptr[iidx1];
         if (ti0 == di0_half-1 && odd_di0)
-            out.ptr[oidx2] = (To)0;
+            out.ptr[oidx].y = 0;
         else
-            out.ptr[oidx2] = (To)in.ptr[iidx2];
+            out.ptr[oidx].y = in.ptr[iidx2];
     }
     else {
         // Pad remaining elements with 0s
-        out.ptr[oidx1] = (To)0;
-        out.ptr[oidx2] = (To)0;
+        out.ptr[oidx].x = 0;
+        out.ptr[oidx].y = 0;
     }
 }
 
@@ -97,52 +91,51 @@ __global__ void padArray(
     if (t >= tMax)
         return;
 
-    const dim_type do0 = out.dims[0]/2;
     const dim_type do1 = out.dims[1];
     const dim_type do2 = out.dims[2];
+    const dim_type so1 = out.strides[1];
+    const dim_type so2 = out.strides[2];
+    const dim_type so3 = out.strides[3];
 
-    const dim_type do01 = do0 * do1;
-    const dim_type do012 = do01 * do2;
-
-    const int to0 = t % do0;
-    const int to1 = (t / do0) % do1;
-    const int to2 = (t / do01) % do2;
-    const int to3 = (t / do012);
+    const int to0 = t % so1;
+    const int to1 = (t / so1) % do1;
+    const int to2 = (t / so2) % do2;
+    const int to3 = (t / so3);
 
     const dim_type di0 = in.dims[0];
     const dim_type di1 = in.dims[1];
     const dim_type di2 = in.dims[2];
     const dim_type di3 = in.dims[3];
-
-    const dim_type di01 = di0 * di1;
-    const dim_type di012 = di01 * di2;
+    const dim_type si1 = in.strides[1];
+    const dim_type si2 = in.strides[2];
+    const dim_type si3 = in.strides[3];
 
     const int ti0 = to0;
-    const int ti1 = to1 * di0;
-    const int ti2 = to2 * di01;
-    const int ti3 = to3 * di012;
+    const int ti1 = to1 * si1;
+    const int ti2 = to2 * si2;
+    const int ti3 = to3 * si3;
 
     const int iidx = ti3 + ti2 + ti1 + ti0;
 
-    const int t2 = t*2;
+    const int t2 = to3*so3 + to2*so2 + to1*so1 + to0;
 
     if (to0 < di0 && to1 < di1 && to2 < di2 && to3 < di3) {
         // Copy input elements to real elements, set imaginary elements to 0
-        out.ptr[t2]   = in.ptr[iidx];
-        out.ptr[t2+1] = (To)0;
+        out.ptr[t2].x = in.ptr[iidx];
+        out.ptr[t2].y = 0;
     }
     else {
         // Pad remaining of the matrix to 0s
-        out.ptr[t2]   = (To)0;
-        out.ptr[t2+1] = (To)0;
+        out.ptr[t2].x = 0;
+        out.ptr[t2].y = 0;
     }
 }
 
-template<typename T, ConvolveBatchKind kind>
+template<typename convT, ConvolveBatchKind kind>
 __global__ void complexMultiply(
-    Param<T> out,
-    Param<T> in1,
-    Param<T> in2,
+    Param<convT> out,
+    Param<convT> in1,
+    Param<convT> in2,
     const dim_type nelem)
 {
     const int t = blockDim.x * blockIdx.x + threadIdx.x;
@@ -152,55 +145,35 @@ __global__ void complexMultiply(
 
     if (kind == ONE2ONE || kind == MANY2MANY) {
         // Complex multiply each signal to equivalent filter
-        const int ridx = t * 2;
-        const int iidx = t * 2 + 1;
+        const int ridx = t;
 
-        T a = in1.ptr[ridx];
-        T b = in1.ptr[iidx];
-        T c = in2.ptr[ridx];
-        T d = in2.ptr[iidx];
+        convT c1 = in1.ptr[ridx];
+        convT c2 = in2.ptr[ridx];
 
-        T ac = a*c;
-        T bd = b*d;
-
-        out.ptr[ridx] = ac - bd;
-        out.ptr[iidx] = (a+b) * (c+d) - ac - bd;
+        out.ptr[ridx].x = c1.x*c2.x - c1.y*c2.y;
+        out.ptr[ridx].y = (c1.x+c1.y) * (c2.x+c2.y) - c1.x*c2.x - c1.y*c2.y;
     }
     else if (kind == MANY2ONE) {
         // Complex multiply all signals to filter
-        const int ridx1 = t * 2;
-        const int iidx1 = t * 2 + 1;
-        const int ridx2 = (t*2)   % (in2.strides[3] * in2.dims[3]);
-        const int iidx2 = (t*2+1) % (in2.strides[3] * in2.dims[3]);
+        const int ridx1 = t;
+        const int ridx2 = t % (in2.strides[3] * in2.dims[3]);
 
-        T a = in1.ptr[ridx1];
-        T b = in1.ptr[iidx1];
-        T c = in2.ptr[ridx2];
-        T d = in2.ptr[iidx2];
+        convT c1 = in1.ptr[ridx1];
+        convT c2 = in2.ptr[ridx2];
 
-        T ac = a*c;
-        T bd = b*d;
-
-        out.ptr[ridx1] = ac - bd;
-        out.ptr[iidx1] = (a+b) * (c+d) - ac - bd;
+        out.ptr[ridx1].x = c1.x*c2.x - c1.y*c2.y;
+        out.ptr[ridx1].y = (c1.x+c1.y) * (c2.x+c2.y) - c1.x*c2.x - c1.y*c2.y;
     }
     else if (kind == ONE2MANY) {
         // Complex multiply signal to all filters
-        const int ridx1 = (t*2)   % (in1.strides[3] * in1.dims[3]);
-        const int iidx1 = (t*2+1) % (in1.strides[3] * in1.dims[3]);
-        const int ridx2 = t * 2;
-        const int iidx2 = t * 2 + 1;
+        const int ridx1 = t % (in1.strides[3] * in1.dims[3]);
+        const int ridx2 = t;
 
-        T a = in1.ptr[ridx1];
-        T b = in1.ptr[iidx1];
-        T c = in2.ptr[ridx2];
-        T d = in2.ptr[iidx2];
+        convT c1 = in1.ptr[ridx1];
+        convT c2 = in2.ptr[ridx2];
 
-        T ac = a*c;
-        T bd = b*d;
-
-        out.ptr[ridx2] = ac - bd;
-        out.ptr[iidx2] = (a+b) * (c+d) - ac - bd;
+        out.ptr[ridx2].x = c1.x*c2.x - c1.y*c2.y;
+        out.ptr[ridx2].y = (c1.x+c1.y) * (c2.x+c2.y) - c1.x*c2.x - c1.y*c2.y;
     }
 }
 
@@ -220,226 +193,160 @@ __global__ void reorderOutput(
     if (t >= tMax)
         return;
 
-    const dim_type do0 = out.dims[0];
     const dim_type do1 = out.dims[1];
     const dim_type do2 = out.dims[2];
+    const dim_type so1 = out.strides[1];
+    const dim_type so2 = out.strides[2];
+    const dim_type so3 = out.strides[3];
 
-    const dim_type do01 = do0 * do1;
-    const dim_type do012 = do01 * do2;
+    const dim_type si1 = in.strides[1];
+    const dim_type si2 = in.strides[2];
+    const dim_type si3 = in.strides[3];
 
-    const dim_type di0 = in.dims[0];
-    const dim_type di1 = in.dims[1];
-    const dim_type di2 = in.dims[2];
+    const int to0 = t % so1;
+    const int to1 = (t / so1) % do1;
+    const int to2 = (t / so2) % do2;
+    const int to3 = (t / so3);
 
-    const dim_type di01 = di0 * di1;
-    const dim_type di012 = di01 * di2;
-
-    const int to0 = t % do0;
-    const int to1 = (t / do0) % do1;
-    const int to2 = (t / do01) % do2;
-    const int to3 = (t / do012);
-
-    int oidx = to3*do012 + to2*do01 + to1*do0 + to0;
+    int oidx = to3*so3 + to2*so2 + to1*so1 + to0;
 
     int ti0, ti1, ti2, ti3;
     if (expand) {
         ti0 = to0;
-        ti1 = to1 * di0;
-        ti2 = to2 * di01;
-        ti3 = to3 * di012;
+        ti1 = to1 * si1;
+        ti2 = to2 * si2;
+        ti3 = to3 * si3;
     }
     else {
         ti0 = to0 + filter.dims[0]/2;
-        ti1 = (to1 + (baseDim > 1)*(filter.dims[1]/2)) * di0;
-        ti2 = (to2 + (baseDim > 2)*(filter.dims[2]/2)) * di01;
-        ti3 = to3 * di012;
+        ti1 = (to1 + (baseDim > 1)*(filter.dims[1]/2)) * si1;
+        ti2 = (to2 + (baseDim > 2)*(filter.dims[2]/2)) * si2;
+        ti3 = to3 * si3;
     }
 
     // Divide output elements to cuFFT resulting scale, round result if output
     // type is single or double precision floating-point
     if (ti0 < half_di0) {
         // Copy top elements
-        int iidx = ti3 + ti2 + ti1 + ti0 * 2;
+        int iidx = ti3 + ti2 + ti1 + ti0;
         if (roundOut)
-            out.ptr[oidx] = (To)roundf(in.ptr[iidx] / fftScale);
+            out.ptr[oidx] = (To)roundf(in.ptr[iidx].x / fftScale);
         else
-            out.ptr[oidx] = (To)(in.ptr[iidx] / fftScale);
+            out.ptr[oidx] = (To)(in.ptr[iidx].x / fftScale);
     }
     else if (ti0 < half_di0 + filter.dims[0] - 1) {
         // Add signal and filter elements to central part
-        int iidx1 = ti3 + ti2 + ti1 + ti0 * 2;
-        int iidx2 = ti3 + ti2 + ti1 + (ti0 - half_di0) * 2 + 1;
+        int iidx1 = ti3 + ti2 + ti1 + ti0;
+        int iidx2 = ti3 + ti2 + ti1 + (ti0 - half_di0);
         if (roundOut)
-            out.ptr[oidx] = (To)roundf((in.ptr[iidx1] + in.ptr[iidx2]) / fftScale);
+            out.ptr[oidx] = (To)roundf((in.ptr[iidx1].x + in.ptr[iidx2].y) / fftScale);
         else
-            out.ptr[oidx] = (To)((in.ptr[iidx1] + in.ptr[iidx2]) / fftScale);
+            out.ptr[oidx] = (To)((in.ptr[iidx1].x + in.ptr[iidx2].y) / fftScale);
     }
     else {
         // Copy bottom elements
-        const int iidx = ti3 + ti2 + ti1 + (ti0 - half_di0) * 2 + 1;
+        const int iidx = ti3 + ti2 + ti1 + (ti0 - half_di0);
         if (roundOut)
-            out.ptr[oidx] = (To)roundf(in.ptr[iidx] / fftScale);
+            out.ptr[oidx] = (To)roundf(in.ptr[iidx].y / fftScale);
         else
-            out.ptr[oidx] = (To)(in.ptr[iidx] / fftScale);
+            out.ptr[oidx] = (To)(in.ptr[iidx].y / fftScale);
     }
 }
 
-template<typename T, typename convT, bool isDouble, bool roundOut,
-         dim_type baseDim, bool expand>
-void fftconvolve(Param<T> out,
-                 CParam<T> sig,
-                 CParam<T> filter,
-                 ConvolveBatchKind kind)
+template<typename convT, typename T>
+void packDataHelper(Param<convT> sig_packed,
+                    Param<convT> filter_packed,
+                    CParam<T> sig,
+                    CParam<T> filter,
+                    const dim_type baseDim)
 {
     dim_type *sd = sig.dims;
-    dim_type *fd = filter.dims;
-    dim_type fftScale = 1;
 
-    Param<convT> packed;
-    dim_type fft_dims[baseDim];
-
-    // Pack both signal and filter on same memory array, this will ensure
-    // better use of batched cuFFT capabilities
-    for (dim_type k = 0; k < 4; k++) {
-        if (k < baseDim)
-            packed.dims[k] = nextpow2((unsigned)(sd[k] + fd[k] - 1));
-        else if (k == baseDim)
-            packed.dims[k] = sd[k] + fd[k];
-        else
-            packed.dims[k] = 1;
-
-        packed.strides[k] = (k == 0) ? 1 : packed.strides[k - 1] * packed.dims[k - 1];
-
-        if (k < baseDim) {
-            // Invert dimensions order, as cuFFT expects it this way
-            fft_dims[baseDim-k-1] = (k == 0) ? packed.dims[k] / 2 : packed.dims[k];
-            fftScale *= fft_dims[baseDim-k-1];
-        }
-    }
-
-    dim_type packed_elem = packed.strides[3] * packed.dims[3];
-
-    // Create cuFFT plan
-    cufftHandle plan;
-    cufftResult res;
-    if (isDouble)
-        res = cufftPlanMany(&plan, baseDim, fft_dims, NULL, 0, 0,
-                            NULL, 0, 0, CUFFT_Z2Z, packed.dims[baseDim]);
-    else
-        res = cufftPlanMany(&plan, baseDim, fft_dims, NULL, 0, 0,
-                            NULL, 0, 0, CUFFT_C2C, packed.dims[baseDim]);
-
-    // If there was no memory available, call garbage collector and try again
-    if (res != CUFFT_SUCCESS) {
-        garbageCollect();
-        if (isDouble)
-            CUFFT_CHECK(cufftPlanMany(&plan, baseDim, fft_dims, NULL, 0, 0,
-                                      NULL, 0, 0, CUFFT_Z2Z, packed.dims[baseDim]));
-        else
-            CUFFT_CHECK(cufftPlanMany(&plan, baseDim, fft_dims, NULL, 0, 0,
-                                      NULL, 0, 0, CUFFT_C2C, packed.dims[baseDim]));
-    }
-
-    packed.ptr = memAlloc<convT>(packed_elem);
-
-    Param<convT> sig_tmp, filter_tmp;
-    sig_tmp.dims[0] = filter_tmp.dims[0] = packed.dims[0];
-    sig_tmp.strides[0] = filter_tmp.strides[0] = 1;
-
-    for (dim_type k = 1; k < 4; k++) {
-        if (k < baseDim) {
-            sig_tmp.dims[k]    = packed.dims[k];
-            filter_tmp.dims[k] = packed.dims[k];
-        }
-        else {
-            sig_tmp.dims[k]    = sd[k];
-            filter_tmp.dims[k] = fd[k];
-        }
-
-        sig_tmp.strides[k]    = sig_tmp.strides[k - 1] * sig_tmp.dims[k - 1];
-        filter_tmp.strides[k] = filter_tmp.strides[k - 1] * filter_tmp.dims[k - 1];
-    }
-
-    // Calculate memory offsets for packed signal and filter
-    sig_tmp.ptr = packed.ptr;
-    filter_tmp.ptr = packed.ptr + sig_tmp.strides[3] * sig_tmp.dims[3];
-
-    dim_type sig_packed_elem = sig_tmp.strides[3] * sig_tmp.dims[3];
-    dim_type filter_packed_elem = filter_tmp.strides[3] * filter_tmp.dims[3];
+    dim_type sig_packed_elem = sig_packed.strides[3] * sig_packed.dims[3];
+    dim_type filter_packed_elem = filter_packed.strides[3] * filter_packed.dims[3];
 
     // Number of packed complex elements in dimension 0
     dim_type sig_half_d0 = divup(sd[0], 2);
     bool sig_half_d0_odd = (sd[0] % 2 == 1);
 
     dim3 threads(THREADS);
-    dim3 blocks(divup(sig_packed_elem / 2, threads.x));
+    dim3 blocks(divup(sig_packed_elem, threads.x));
 
     // Pack signal in a complex matrix where first dimension is half the input
     // (allows faster FFT computation) and pad array to a power of 2 with 0s
-    packData<convT, T><<<blocks, threads>>>(sig_tmp, sig, sig_half_d0, sig_half_d0_odd);
+    packData<convT, T><<<blocks, threads>>>(sig_packed, sig, sig_half_d0, sig_half_d0_odd);
     POST_LAUNCH_CHECK();
 
-    blocks = dim3(divup(filter_packed_elem / 2, threads.x));
+    blocks = dim3(divup(filter_packed_elem, threads.x));
 
     // Pad filter array with 0s
-    padArray<convT, T><<<blocks, threads>>>(filter_tmp, filter);
+    padArray<convT, T><<<blocks, threads>>>(filter_packed, filter);
     POST_LAUNCH_CHECK();
+}
 
-    // Compute forward FFT
-    if (isDouble)
-        CUFFT_CHECK(cufftExecZ2Z(plan, (cufftDoubleComplex*)packed.ptr,
-                                 (cufftDoubleComplex*)packed.ptr, CUFFT_FORWARD));
-    else
-        CUFFT_CHECK(cufftExecC2C(plan, (cufftComplex*)packed.ptr,
-                                 (cufftComplex*)packed.ptr, CUFFT_FORWARD));
+template<typename T, typename convT>
+void complexMultiplyHelper(Param<T> out,
+                           Param<convT> sig_packed,
+                           Param<convT> filter_packed,
+                           CParam<T> sig,
+                           CParam<T> filter,
+                           ConvolveBatchKind kind)
+{
+    dim_type sig_packed_elem = sig_packed.strides[3] * sig_packed.dims[3];
+    dim_type filter_packed_elem = filter_packed.strides[3] * filter_packed.dims[3];
+
+    dim3 threads(THREADS);
+    dim3 blocks(divup(sig_packed_elem / 2, threads.x));
 
     dim_type mul_elem = (sig_packed_elem < filter_packed_elem) ?
-                        filter_packed_elem / 2 : sig_packed_elem / 2;
+                        filter_packed_elem : sig_packed_elem;
     blocks = dim3(divup(mul_elem, threads.x));
 
     // Multiply filter and signal FFT arrays
     switch(kind) {
         case ONE2ONE:
             complexMultiply<convT, ONE2ONE  ><<<blocks, threads>>>
-                (sig_tmp, sig_tmp, filter_tmp, mul_elem);
+                (sig_packed, sig_packed, filter_packed, mul_elem);
             break;
         case MANY2ONE:
             complexMultiply<convT, MANY2ONE ><<<blocks, threads>>>
-                (sig_tmp, sig_tmp, filter_tmp, mul_elem);
+                (sig_packed, sig_packed, filter_packed, mul_elem);
             break;
         case ONE2MANY:
             complexMultiply<convT, ONE2MANY ><<<blocks, threads>>>
-                (filter_tmp, sig_tmp, filter_tmp, mul_elem);
+                (filter_packed, sig_packed, filter_packed, mul_elem);
             break;
         case MANY2MANY:
             complexMultiply<convT, MANY2MANY><<<blocks, threads>>>
-                (sig_tmp, sig_tmp, filter_tmp, mul_elem);
+                (sig_packed, sig_packed, filter_packed, mul_elem);
             break;
     }
     POST_LAUNCH_CHECK();
+}
 
-    // Compute inverse FFT
-    if (isDouble)
-        CUFFT_CHECK(cufftExecZ2Z(plan, (cufftDoubleComplex*)packed.ptr,
-                                 (cufftDoubleComplex*)packed.ptr, CUFFT_INVERSE));
-    else
-        CUFFT_CHECK(cufftExecC2C(plan, (cufftComplex*)packed.ptr,
-                                 (cufftComplex*)packed.ptr, CUFFT_INVERSE));
+template<typename T, typename convT, bool roundOut, dim_type baseDim, bool expand>
+void reorderOutputHelper(Param<T> out,
+                         Param<convT> packed,
+                         CParam<T> sig,
+                         CParam<T> filter,
+                         ConvolveBatchKind kind)
+{
+    dim_type *sd = sig.dims;
+    dim_type fftScale = 1;
 
-    CUFFT_CHECK(cufftDestroy(plan));
+    // Calculate the scale by which to divide cuFFT results
+    for (dim_type k = 0; k < baseDim; k++)
+        fftScale *= packed.dims[k];
 
-    blocks = dim3(divup(out.strides[3] * out.dims[3], threads.x));
-    if (kind == ONE2MANY) {
-        reorderOutput<T, convT, expand, roundOut><<<blocks, threads>>>
-            (out, filter_tmp, filter, sig_half_d0, baseDim, fftScale);
-    }
-    else {
-        reorderOutput<T, convT, expand, roundOut><<<blocks, threads>>>
-            (out, sig_tmp, filter, sig_half_d0, baseDim, fftScale);
-    }
+    // Number of packed complex elements in dimension 0
+    dim_type sig_half_d0 = divup(sd[0], 2);
+
+    dim3 threads(THREADS);
+    dim3 blocks(divup(out.strides[3] * out.dims[3], threads.x));
+
+    reorderOutput<T, convT, expand, roundOut><<<blocks, threads>>>
+        (out, packed, filter, sig_half_d0, baseDim, fftScale);
     POST_LAUNCH_CHECK();
-
-    memFree(packed.ptr);
 }
 
 } // namespace kernel
