@@ -240,4 +240,15 @@ INSTANTIATE1(double , cdouble)
 INSTANTIATE2(cfloat )
 INSTANTIATE2(cdouble)
 
+#define INSTANTIATE3(T)\
+    template void cufft_common<T, 1, CUFFT_FORWARD>(Array<T> &arr); \
+    template void cufft_common<T, 2, CUFFT_FORWARD>(Array<T> &arr); \
+    template void cufft_common<T, 3, CUFFT_FORWARD>(Array<T> &arr); \
+    template void cufft_common<T, 1, CUFFT_INVERSE>(Array<T> &arr); \
+    template void cufft_common<T, 2, CUFFT_INVERSE>(Array<T> &arr); \
+    template void cufft_common<T, 3, CUFFT_INVERSE>(Array<T> &arr);
+
+INSTANTIATE3(cfloat )
+INSTANTIATE3(cdouble)
+
 }

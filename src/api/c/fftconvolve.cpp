@@ -20,10 +20,10 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T, typename convT, bool isDouble, bool roundOut, dim_type baseDim>
+template<typename T, typename convT, typename cT, bool isDouble, bool roundOut, dim_type baseDim>
 inline static af_array fftconvolve(const af_array &s, const af_array &f, const bool expand, ConvolveBatchKind kind)
 {
-    return getHandle(fftconvolve<T, convT, isDouble, roundOut, baseDim>(getArray<T>(s), getArray<T>(f), expand, kind));
+    return getHandle(fftconvolve<T, convT, cT, isDouble, roundOut, baseDim>(getArray<T>(s), getArray<T>(f), expand, kind));
 }
 
 template<dim_type baseDim>
@@ -70,12 +70,12 @@ af_err fftconvolve(af_array *out, af_array signal, af_array filter, const bool e
 
         af_array output;
         switch(stype) {
-            case f64: output = fftconvolve<double, double, true , false, baseDim>(signal, filter, expand, convBT); break;
-            case f32: output = fftconvolve<float , float,  false, false, baseDim>(signal, filter, expand, convBT); break;
-            case u32: output = fftconvolve<uint  , float,  false, true,  baseDim>(signal, filter, expand, convBT); break;
-            case s32: output = fftconvolve<int   , float,  false, true,  baseDim>(signal, filter, expand, convBT); break;
-            case u8:  output = fftconvolve<uchar , float,  false, true,  baseDim>(signal, filter, expand, convBT); break;
-            case b8:  output = fftconvolve<char  , float,  false, true,  baseDim>(signal, filter, expand, convBT); break;
+            case f64: output = fftconvolve<double, double, cdouble, true , false, baseDim>(signal, filter, expand, convBT); break;
+            case f32: output = fftconvolve<float , float,  cfloat,  false, false, baseDim>(signal, filter, expand, convBT); break;
+            case u32: output = fftconvolve<uint  , float,  cfloat,  false, true,  baseDim>(signal, filter, expand, convBT); break;
+            case s32: output = fftconvolve<int   , float,  cfloat,  false, true,  baseDim>(signal, filter, expand, convBT); break;
+            case u8:  output = fftconvolve<uchar , float,  cfloat,  false, true,  baseDim>(signal, filter, expand, convBT); break;
+            case b8:  output = fftconvolve<char  , float,  cfloat,  false, true,  baseDim>(signal, filter, expand, convBT); break;
             default: TYPE_ERROR(1, stype);
         }
         std::swap(*out,output);

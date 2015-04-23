@@ -10,6 +10,8 @@
 #pragma once
 
 #include <af/traits.hpp>
+#include <string>
+#include <sstream>
 
 namespace af
 {
@@ -30,6 +32,28 @@ template<typename T> static bool iscplx() { return false; }
 template<> STATIC_ bool iscplx<cl_float2>() { return true; }
 template<> STATIC_ bool iscplx<cl_double2>() { return true; }
 
+template<typename T>
+STATIC_
+std::string scalar_to_option(const T &val)
+{
+    return std::to_string(+val);
+}
+
+template<>
+STATIC_
+std::string scalar_to_option<cl_float2>(const cl_float2 &val) {
+    std::ostringstream ss;
+    ss << val.s[0] << "," << val.s[1];
+    return ss.str();
+}
+
+template<>
+STATIC_
+std::string scalar_to_option<cl_double2>(const cl_double2 &val) {
+    std::ostringstream ss;
+    ss << val.s[0] << "," << val.s[1];
+    return ss.str();
+}
 }
 
 using af::dtype_traits;
