@@ -84,23 +84,23 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
     Array<T> out = createEmptyArray<T>(oDims);
 
     if (expand)
-        kernel::complexMultiplyHelper<T, cT, isDouble, roundOut, baseDim, true >(out, signal_packed, filter_packed, signal, filter, kind);
+        kernel::complexMultiplyHelper<T, cT>(out, signal_packed, filter_packed, signal, filter, kind);
     else
-        kernel::complexMultiplyHelper<T, cT, isDouble, roundOut, baseDim, false>(out, signal_packed, filter_packed, signal, filter, kind);
+        kernel::complexMultiplyHelper<T, cT>(out, signal_packed, filter_packed, signal, filter, kind);
 
     if (kind == ONE2MANY) {
         cufft_common<cT, baseDim, CUFFT_INVERSE>(filter_packed);
         if (expand)
-            kernel::reorderOutputHelper<T, cT, isDouble, roundOut, baseDim, true >(out, filter_packed, signal, filter, kind);
+            kernel::reorderOutputHelper<T, cT, roundOut, baseDim, true >(out, filter_packed, signal, filter, kind);
         else
-            kernel::reorderOutputHelper<T, cT, isDouble, roundOut, baseDim, false>(out, filter_packed, signal, filter, kind);
+            kernel::reorderOutputHelper<T, cT, roundOut, baseDim, false>(out, filter_packed, signal, filter, kind);
     }
     else {
         cufft_common<cT, baseDim, CUFFT_INVERSE>(signal_packed);
         if (expand)
-            kernel::reorderOutputHelper<T, cT, isDouble, roundOut, baseDim, true >(out, signal_packed, signal, filter, kind);
+            kernel::reorderOutputHelper<T, cT, roundOut, baseDim, true >(out, signal_packed, signal, filter, kind);
         else
-            kernel::reorderOutputHelper<T, cT, isDouble, roundOut, baseDim, false>(out, signal_packed, signal, filter, kind);
+            kernel::reorderOutputHelper<T, cT, roundOut, baseDim, false>(out, signal_packed, signal, filter, kind);
     }
 
     return out;

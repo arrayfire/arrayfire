@@ -284,8 +284,7 @@ void packDataHelper(Param<convT> sig_packed,
     POST_LAUNCH_CHECK();
 }
 
-template<typename T, typename convT, bool isDouble, bool roundOut,
-         dim_type baseDim, bool expand>
+template<typename T, typename convT>
 void complexMultiplyHelper(Param<T> out,
                            Param<convT> sig_packed,
                            Param<convT> filter_packed,
@@ -325,7 +324,7 @@ void complexMultiplyHelper(Param<T> out,
     POST_LAUNCH_CHECK();
 }
 
-template<typename T, typename convT, bool isDouble, bool roundOut, dim_type baseDim, bool expand>
+template<typename T, typename convT, bool roundOut, dim_type baseDim, bool expand>
 void reorderOutputHelper(Param<T> out,
                          Param<convT> packed,
                          CParam<T> sig,
