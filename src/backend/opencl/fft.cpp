@@ -161,41 +161,57 @@ template<typename T> struct Precision;
 template<> struct Precision<cfloat > { enum {type = CLFFT_SINGLE}; };
 template<> struct Precision<cdouble> { enum {type = CLFFT_DOUBLE}; };
 
-template<typename T, int rank, clfftDirection direction>
-void clfft_common(Array<T> &arr)
+void computeDims(size_t rdims[4], const dim4 &idims)
 {
-    const dim4 dims    = arr.dims();
-    const dim4 strides = arr.strides();
-    size_t io_strides[]= {(size_t)strides[0],
-                          (size_t)strides[1],
-                          (size_t)strides[2],
-                          (size_t)strides[3]};
+    for (int i = 0; i < 4; i++) {
+        rdims[i] = (size_t)idims[i];
+    }
+}
 
-    size_t rank_dims[3] = {(size_t)dims[0], (size_t)dims[1], (size_t)dims[2]};
+template<typename T, int rank, bool direction>
+void fft_common(Array<T> &out, const Array<T> &in)
+{
+    size_t idims[4], istrides[4], iembed[4];
+    size_t odims[4], ostrides[4], oembed[4];
+
+    computeDims(idims   , in.dims());
+    computeDims(iembed  , in.getDataDims());
+    computeDims(istrides, in.strides());
+
+    computeDims(odims   , out.dims());
+    computeDims(oembed  , out.getDataDims());
+    computeDims(ostrides, out.strides());
 
     clfftPlanHandle plan;
 
-    find_clfft_plan(plan, (clfftDim)rank, rank_dims,
-                    io_strides, io_strides[rank],
-                    io_strides, io_strides[rank],
-                    (clfftPrecision)Precision<T>::type,
-                    dims[rank]);
+    int batch = 1;
+    for (int i = rank; i < 4; i++) {
+        batch *= idims[i];
+    }
 
-    CLFFT_CHECK( clfftEnqueueTransform(plan, direction, 1, &(getQueue()()), 0, NULL, NULL, &((*arr.get())()), NULL, NULL) );
+    find_clfft_plan(plan, (clfftDim)rank, idims,
+                    istrides, istrides[rank],
+                    ostrides, ostrides[rank],
+                    (clfftPrecision)Precision<T>::type,
+                    batch);
+
+    cl_mem imem = (*in.get())();
+    cl_mem omem = (*out.get())();
+    cl_command_queue queue = getQueue()();
+
+    CLFFT_CHECK(clfftEnqueueTransform(plan,
+                                      direction ? CLFFT_FORWARD : CLFFT_BACKWARD,
+                                      1, &queue, 0, NULL, NULL,
+                                      &imem, &omem, NULL));
 }
 
-template<int rank>
-void computePaddedDims(dim4 &pdims, dim_type const * const pad)
+void computePaddedDims(dim4 &pdims,
+                       const dim4 &idims,
+                       const dim_type npad,
+                       dim_type const * const pad)
 {
-    if (rank==1) {
-        pdims[0] = pad[0];
-    } else if (rank==2) {
-        pdims[0] = pad[0];
-        pdims[1] = pad[1];
-    } else if (rank==3) {
-        pdims[0] = pad[0];
-        pdims[1] = pad[1];
-        pdims[2] = pad[2];
+    for (int i = 0; i < 4; i++) {
+        pdims[i] = (i < npad) ? pad[i] : idims[i];
     }
 }
 
@@ -216,31 +232,25 @@ inline bool isSupLen(dim_type length)
     return true;
 }
 
+template<int rank>
+void verifySupported(const dim4 dims)
+{
+    for (int i = 0; i < rank; i++) {
+        ARG_ASSERT(1, isSupLen(dims[i]));
+    }
+}
+
 template<typename inType, typename outType, int rank, bool isR2C>
 Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
 {
-    ARG_ASSERT(1, (in.isOwner()==true));
     ARG_ASSERT(1, (rank>=1 && rank<=3));
 
-    dim4 dims = in.dims();
-
     dim4 pdims(1);
-    computePaddedDims<rank>(pdims, pad);
-    pdims[rank] = in.dims()[rank];
+    computePaddedDims(pdims, in.dims(), npad, pad);
+    verifySupported<rank>(pdims);
 
-    if (npad>0)
-      dims = pdims;
-
-    switch(rank) {
-        case 1 : ARG_ASSERT(1, (isSupLen(dims[0]))); break;
-        case 2 : ARG_ASSERT(2, ((isSupLen(dims[0]) || isSupLen(dims[1])))); break;
-        case 3 : ARG_ASSERT(3, ((isSupLen(dims[0]) || isSupLen(dims[1]) || isSupLen(dims[2])))); break;
-        default: AF_ERROR("invalid input dimensions", AF_ERR_SIZE);
-    }
-
-    Array<outType> ret = padArray<inType, outType>(in, dims, scalar<outType>(0), norm_factor);
-
-    clfft_common<outType, rank, CLFFT_FORWARD>(ret);
+    Array<outType> ret = padArray<inType, outType>(in, pdims, scalar<outType>(0), norm_factor);
+    fft_common<outType, rank, true>(ret, ret);
 
     return ret;
 }
@@ -248,35 +258,20 @@ Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const n
 template<typename T, int rank>
 Array<T> ifft(Array<T> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
 {
-    ARG_ASSERT(1, (in.isOwner()==true));
     ARG_ASSERT(1, (rank>=1 && rank<=3));
 
-    dim4 dims = in.dims();
-
     dim4 pdims(1);
-    computePaddedDims<rank>(pdims, pad);
-    pdims[rank] = in.dims()[rank];
-
-    if (npad>0)
-      dims = pdims;
+    computePaddedDims(pdims, in.dims(), npad, pad);
+    verifySupported<rank>(pdims);
 
     // the input norm_factor is further scaled
     // based on the input dimensions to match
     // cuFFT behavior
     for (int i=0; i<rank; i++)
-        norm_factor *= dims[i];
+        norm_factor *= pdims[i];
 
-    switch(rank) {
-        case 1 : ARG_ASSERT(1, (isSupLen(dims[0]))); break;
-        case 2 : ARG_ASSERT(2, ((isSupLen(dims[0]) || isSupLen(dims[1])))); break;
-        case 3 : ARG_ASSERT(3, ((isSupLen(dims[0]) || isSupLen(dims[1]) || isSupLen(dims[2])))); break;
-        default: AF_ERROR("invalid input dimensions", AF_ERR_SIZE);
-    }
-
-    Array<T> ret = padArray<T, T>(in, dims, scalar<T>(0), norm_factor);
-
-    clfft_common<T, rank, CLFFT_BACKWARD>(ret);
-
+    Array<T> ret = padArray<T, T>(in, pdims, scalar<T>(0), norm_factor);
+    fft_common<T, rank, false>(ret, ret);
     return ret;
 }
 
