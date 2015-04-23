@@ -64,7 +64,7 @@ static af_array median(const af_array& in, dim_type dim)
     const Array<T> input = getArray<T>(in);
     Array<T> sortedIn   = sort<T, true>(input, dim);
 
-    int nElems    = input.elements();
+    int nElems    = input.dims()[0];
     double mid    = (nElems + 1) / 2;
     af_array left = 0;
 
