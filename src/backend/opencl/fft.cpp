@@ -184,11 +184,16 @@ void fft_common(Array<T> &out, const Array<T> &in)
 
     clfftPlanHandle plan;
 
+    int batch = 1;
+    for (int i = rank; i < 4; i++) {
+        batch *= idims[i];
+    }
+
     find_clfft_plan(plan, (clfftDim)rank, idims,
                     istrides, istrides[rank],
                     ostrides, ostrides[rank],
                     (clfftPrecision)Precision<T>::type,
-                    idims[rank]);
+                    batch);
 
     cl_mem imem = (*in.get())();
     cl_mem omem = (*out.get())();
@@ -238,7 +243,6 @@ void verifySupported(const dim4 dims)
 template<typename inType, typename outType, int rank, bool isR2C>
 Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
 {
-    ARG_ASSERT(1, (in.isOwner()==true));
     ARG_ASSERT(1, (rank>=1 && rank<=3));
 
     dim4 pdims(1);
@@ -254,7 +258,6 @@ Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const n
 template<typename T, int rank>
 Array<T> ifft(Array<T> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
 {
-    ARG_ASSERT(1, (in.isOwner()==true));
     ARG_ASSERT(1, (rank>=1 && rank<=3));
 
     dim4 pdims(1);

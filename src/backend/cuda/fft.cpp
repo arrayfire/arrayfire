@@ -168,11 +168,16 @@ void fft_common(Array<T> &out, const Array<T> &in)
     computeDims<rank>(in_embed, in.getDataDims());
     computeDims<rank>(out_embed, out.getDataDims());
 
+    int batch = 1;
+    for (int i = rank; i < 4; i++) {
+        batch *= idims[i];
+    }
+
     cufftHandle plan;
     find_cufft_plan(plan, rank, in_dims,
                     in_embed , istrides[0], istrides[rank],
                     out_embed, ostrides[0], ostrides[rank],
-                    (cufftType)cufft_transform<T>::type, idims[rank]);
+                    (cufftType)cufft_transform<T>::type, batch);
 
     cufft_transform<T> transform;
     CUFFT_CHECK(transform(plan, (T *)in.get(), out.get(), direction ? CUFFT_FORWARD : CUFFT_INVERSE));
@@ -191,7 +196,6 @@ void computePaddedDims(dim4 &pdims,
 template<typename inType, typename outType, int rank, bool isR2C>
 Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
 {
-    ARG_ASSERT(1, (in.isOwner()==true));
     ARG_ASSERT(1, (rank>=1 && rank<=3));
 
     dim4 pdims(1);
@@ -206,7 +210,6 @@ Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const n
 template<typename T, int rank>
 Array<T> ifft(Array<T> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
 {
-    ARG_ASSERT(1, (in.isOwner()==true));
     ARG_ASSERT(1, (rank>=1 && rank<=3));
 
     dim4 pdims(1);

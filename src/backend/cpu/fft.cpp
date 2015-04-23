@@ -72,9 +72,14 @@ void fft_common(Array <T> &out, const Array<T> &in)
 
     fftw_transform<T> transform;
 
+    int batch = 1;
+    for (int i = rank; i < 4; i++) {
+        batch *= idims[i];
+    }
+
     plan = transform.create(rank,
                             in_dims,
-                            (int)idims[rank],
+                            (int)batch,
                             (ctype_t *)in.get(),
                             in_embed, (int)istrides[0],
                             (int)istrides[rank],
@@ -102,7 +107,6 @@ void computePaddedDims(dim4 &pdims,
 template<typename inType, typename outType, int rank, bool isR2C>
 Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
 {
-    ARG_ASSERT(1, ((in.isOwner()==true) && "fft: Sub-Arrays not supported yet."));
     ARG_ASSERT(1, rank >= 1 && rank <= 3);
 
     dim4 pdims(1);
@@ -116,7 +120,6 @@ Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const n
 template<typename T, int rank>
 Array<T> ifft(Array<T> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
 {
-    ARG_ASSERT(1, ((in.isOwner()==true) && "ifft: Sub-Arrays not supported yet."));
     ARG_ASSERT(1, rank >= 1 && rank <= 3);
 
     dim4 pdims(1);
