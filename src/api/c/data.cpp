@@ -590,6 +590,8 @@ af_err af_diag_create(af_array *out, const af_array in, const int num)
         case c64:   result = diagCreate<cdouble>(in, num);    break;
         case s32:   result = diagCreate<int    >(in, num);    break;
         case u32:   result = diagCreate<uint   >(in, num);    break;
+        case s64:   result = diagCreate<intl   >(in, num);    break;
+        case u64:   result = diagCreate<uintl  >(in, num);    break;
         case u8:    result = diagCreate<uchar  >(in, num);    break;
             // Removed because of bool type. Functions implementations exist.
         case b8:    result = diagCreate<char   >(in, num);    break;
@@ -617,6 +619,8 @@ af_err af_diag_extract(af_array *out, const af_array in, const int num)
         case c64:   result = diagExtract<cdouble>(in, num);    break;
         case s32:   result = diagExtract<int    >(in, num);    break;
         case u32:   result = diagExtract<uint   >(in, num);    break;
+        case s64:   result = diagExtract<intl   >(in, num);    break;
+        case u64:   result = diagExtract<uintl  >(in, num);    break;
         case u8:    result = diagExtract<uchar  >(in, num);    break;
             // Removed because of bool type. Functions implementations exist.
         case b8:    result = diagExtract<char   >(in, num);    break;
