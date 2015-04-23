@@ -10,7 +10,7 @@
 #include <kernel_headers/diag_create.hpp>
 #include <kernel_headers/diag_extract.hpp>
 #include <program.hpp>
-#include <traits.hpp>
+#include "../traits.hpp"
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -26,6 +26,7 @@ using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
+using af::scalar_to_option;
 
 namespace opencl
 {
@@ -46,7 +47,7 @@ namespace kernel
             std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
                     options << " -D T="    << dtype_traits<T>::getName()
-                            << " -D ZERO=" << scalar<T>(0);
+                            << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")";
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
                         options << " -D USE_DOUBLE";
@@ -89,7 +90,7 @@ namespace kernel
             std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
                     options << " -D T="    << dtype_traits<T>::getName()
-                            << " -D ZERO=" << scalar<T>(0);
+                            << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")";
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
                         options << " -D USE_DOUBLE";

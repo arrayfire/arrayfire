@@ -13,7 +13,7 @@ class Diagonal : public ::testing::Test
 
 };
 
-typedef ::testing::Types<float, double, int, uint> TestTypes;
+typedef ::testing::Types<float, double, int, uint, char, unsigned char> TestTypes;
 TYPED_TEST_CASE(Diagonal, TestTypes);
 
 TYPED_TEST(Diagonal, Create)
