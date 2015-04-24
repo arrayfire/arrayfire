@@ -372,3 +372,71 @@ TEST(ArrayAssign, CPP_ASSIGN_BINOP)
     delete[] hAC;
     delete[] hAO;
 }
+
+TEST(ArrayAssign, CPP_ASSIGN_VECTOR)
+{
+    using af::array;
+
+    const int num = 20;
+
+    array a = af::randu(1, num);
+    array b = af::randu(num);
+
+    array c, idx;
+    sort(c, idx, b);
+
+    a(idx) = c;
+
+    ASSERT_EQ(a.dims(0) , 1);
+    ASSERT_EQ(a.dims(1) , num);
+    ASSERT_EQ(c.dims(0) , num);
+
+    float *h_a = a.host<float>();
+    float *h_b = b.host<float>();
+
+    for (int i =0; i < num; i++) {
+        ASSERT_EQ(h_a[i], h_b[i]) << "at " << i;
+    }
+
+    delete[] h_a;
+    delete[] h_b;
+}
+
+TEST(ArrayAssign, CPP_ASSIGN_VECTOR_SEQ)
+{
+    using af::array;
+
+    const int num = 20;
+    const int len = 10;
+    const int st = 3;
+    const int en = st + len - 1;
+
+    array a = af::randu(1, 1, num);
+    array a0 = a;
+    array b = af::randu(len);
+
+    array idx = af::seq(st, en);
+
+    a(af::seq(st, en)) = b;
+
+    ASSERT_EQ(a.dims(0) , 1);
+    ASSERT_EQ(a.dims(1) , 1);
+    ASSERT_EQ(a.dims(2) , num);
+    ASSERT_EQ(b.dims(0) , len);
+
+    float *h_a0 = a0.host<float>();
+    float *h_a  =  a.host<float>();
+    float *h_b  =  b.host<float>();
+
+    for (int i = 0; i < num; i++) {
+        if (i >= st && i <= en) {
+            ASSERT_EQ(h_a[i], h_b[i - st]);
+        } else {
+            ASSERT_EQ(h_a[i], h_a0[i]);
+        }
+    }
+
+    delete[] h_a0;
+    delete[] h_a;
+    delete[] h_b;
+}
