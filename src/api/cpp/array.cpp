@@ -373,8 +373,19 @@ namespace af
         // Special case of indexing linearly
         // Flatten the current array and index accordingly
         if (this->numdims() > 1) {
-            array tmp = flat(*this);
-            return tmp(idx);
+            if (this->isvector()) {
+
+                switch(this->numdims()) {
+                case 1: return (*this)(idx);
+                case 2: return (*this)(span, idx);
+                case 3: return (*this)(span, span, idx);
+                case 4: return (*this)(span, span, span, idx);
+                }
+
+            } else {
+                array tmp = flat(*this);
+                return tmp(idx);
+            }
         }
 
         af_index_t inds[4];
@@ -395,8 +406,19 @@ namespace af
         // Special case of indexing linearly
         // Flatten the current array and index accordingly
         if (this->numdims() > 1) {
-            array tmp = flat(*this);
-            return tmp(s0);
+            if (this->isvector()) {
+
+                switch(this->numdims()) {
+                case 1: return (*this)(s0);
+                case 2: return (*this)(span, s0);
+                case 3: return (*this)(span, span, s0);
+                case 4: return (*this)(span, span, span, s0);
+                }
+
+            } else {
+                array tmp = flat(*this);
+                return tmp(s0);
+            }
         }
 
         af_index_t inds[4];
