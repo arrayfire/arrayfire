@@ -372,10 +372,19 @@ namespace af
 
         // Special case of indexing linearly
         // Flatten the current array and index accordingly
-        if (this->numdims() > 1) {
-            if (this->isvector()) {
+        int num_dims = numDims(this->arr);
+        dim4 this_dims = getDims(this->arr);
 
-                switch(this->numdims()) {
+        if (num_dims > 1) {
+            bool is_vector = true;
+
+            for (int i = 0; is_vector && i < num_dims - 1; i++) {
+                is_vector &= (this_dims[i] == 1);
+            }
+
+            if (is_vector) {
+
+                switch(num_dims) {
                 case 1: return (*this)(idx);
                 case 2: return (*this)(span, idx);
                 case 3: return (*this)(span, span, idx);
@@ -405,8 +414,17 @@ namespace af
 
         // Special case of indexing linearly
         // Flatten the current array and index accordingly
-        if (this->numdims() > 1) {
-            if (this->isvector()) {
+        int num_dims = numDims(this->arr);
+        dim4 this_dims = getDims(this->arr);
+
+        if (num_dims > 1) {
+            bool is_vector = true;
+
+            for (int i = 0; is_vector && i < num_dims - 1; i++) {
+                is_vector &= (this_dims[i] == 1);
+            }
+
+            if (is_vector) {
 
                 switch(this->numdims()) {
                 case 1: return (*this)(s0);
