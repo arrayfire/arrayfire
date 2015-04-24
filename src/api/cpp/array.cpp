@@ -845,29 +845,30 @@ namespace af
 
 #undef SELF_OP
 
-#define ASSIGN_TYPE(TY, OP, dty)                                \
+#define ASSIGN_TYPE(TY, OP)                                     \
     array& array::operator OP(const TY &value)                  \
     {                                                           \
         af::dim4 dims = isRef ?                                 \
             seqToDims(indices, getDims(arr)) : this->dims();    \
-        array cst = constant(value, dims, dty);                 \
+        af::dtype ty = this->type();                            \
+        array cst = constant(value, dims, ty);                  \
         return operator OP(cst);                                \
     }                                                           \
 
 #define ASSIGN_OP(OP)                           \
-    ASSIGN_TYPE(double             , OP, f64)   \
-    ASSIGN_TYPE(float              , OP, f32)   \
-    ASSIGN_TYPE(cdouble            , OP, c64)   \
-    ASSIGN_TYPE(cfloat             , OP, c32)   \
-    ASSIGN_TYPE(int                , OP, s32)   \
-    ASSIGN_TYPE(unsigned           , OP, u32)   \
-    ASSIGN_TYPE(long               , OP, s64)   \
-    ASSIGN_TYPE(unsigned long      , OP, u64)   \
-    ASSIGN_TYPE(long long          , OP, s64)   \
-    ASSIGN_TYPE(unsigned long long , OP, u64)   \
-    ASSIGN_TYPE(char               , OP, b8)    \
-    ASSIGN_TYPE(unsigned char      , OP, u8)    \
-    ASSIGN_TYPE(bool               , OP, u8)    \
+    ASSIGN_TYPE(double             , OP)        \
+    ASSIGN_TYPE(float              , OP)        \
+    ASSIGN_TYPE(cdouble            , OP)        \
+    ASSIGN_TYPE(cfloat             , OP)        \
+    ASSIGN_TYPE(int                , OP)        \
+    ASSIGN_TYPE(unsigned           , OP)        \
+    ASSIGN_TYPE(long               , OP)        \
+    ASSIGN_TYPE(unsigned long      , OP)        \
+    ASSIGN_TYPE(long long          , OP)        \
+    ASSIGN_TYPE(unsigned long long , OP)        \
+    ASSIGN_TYPE(char               , OP)        \
+    ASSIGN_TYPE(unsigned char      , OP)        \
+    ASSIGN_TYPE(bool               , OP)        \
 
     ASSIGN_OP(= )
     ASSIGN_OP(+=)
