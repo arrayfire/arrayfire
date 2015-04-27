@@ -344,21 +344,21 @@ TEST(Array, ShapeAttributes)
     EXPECT_FALSE(volume.    isscalar());
     EXPECT_FALSE(hypercube. isscalar());
 
-    EXPECT_TRUE(scalar.     isvector());
+    EXPECT_FALSE(scalar.    isvector());
     EXPECT_TRUE(col.        isvector());
     EXPECT_TRUE(row.        isvector());
     EXPECT_FALSE(matrix.    isvector());
     EXPECT_FALSE(volume.    isvector());
     EXPECT_FALSE(hypercube. isvector());
 
-    EXPECT_TRUE(scalar.     isrow());
+    EXPECT_FALSE(scalar.    isrow());
     EXPECT_FALSE(col.       isrow());
     EXPECT_TRUE(row.        isrow());
     EXPECT_FALSE(matrix.    isrow());
     EXPECT_FALSE(volume.    isrow());
     EXPECT_FALSE(hypercube. isrow());
 
-    EXPECT_TRUE(scalar.     iscolumn());
+    EXPECT_FALSE(scalar.    iscolumn());
     EXPECT_TRUE(col.        iscolumn());
     EXPECT_FALSE(row.       iscolumn());
     EXPECT_FALSE(matrix.    iscolumn());
