@@ -28,8 +28,8 @@ class InteropManager
     public:
         static InteropManager& getInstance();
         ~InteropManager();
-        cl::Buffer* getBufferResource(const fg_image_handle image);
-        cl::Buffer* getBufferResource(const fg_plot_handle plot);
+        cl::Buffer* getBufferResource(const fg::Image* image);
+        cl::Buffer* getBufferResource(const fg::Plot* plot);
 
     protected:
         InteropManager() {}

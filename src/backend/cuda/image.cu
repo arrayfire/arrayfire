@@ -24,7 +24,7 @@ namespace cuda
 {
 
 template<typename T>
-void copy_image(const Array<T> &in, const fg_image_handle image)
+void copy_image(const Array<T> &in, const fg::Image* image)
 {
     InteropManager& intrpMngr = InteropManager::getInstance();
 
@@ -39,17 +39,12 @@ void copy_image(const Array<T> &in, const fg_image_handle image)
     cudaMemcpy(d_pbo, d_X, num_bytes, cudaMemcpyDeviceToDevice);
     cudaGraphicsUnmapResources(1, &cudaPBOResource, 0);
 
-    // Unlock array
-    // Not implemented yet
-    // X.unlock();
-
-    CheckGL("After cuda resource copy");
-
     POST_LAUNCH_CHECK();
+    CheckGL("After cuda resource copy");
 }
 
 #define INSTANTIATE(T)      \
-    template void copy_image<T>(const Array<T> &in, const fg_image_handle image);
+    template void copy_image<T>(const Array<T> &in, const fg::Image* image);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

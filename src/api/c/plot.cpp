@@ -7,28 +7,57 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined (WITH_GRAPHICS)
-
 #include <af/graphics.h>
 #include <af/image.h>
 
 #include <ArrayInfo.hpp>
+#include <graphics_common.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <plot.hpp>
+#include <reduce.hpp>
+#include <join.hpp>
+#include <reorder.hpp>
 #include <handle.hpp>
 
 using af::dim4;
 using namespace detail;
+using namespace graphics;
 
+#if defined(WITH_GRAPHICS)
 template<typename T>
-void setup_plot(const af_array X, const af_array Y, const fg_plot_handle plot)
+fg::Plot* setup_plot(const af_array X, const af_array Y)
 {
-    copy_plot<T>(getArray<T>(X), getArray<T>(Y), plot);
-}
+    Array<T> xIn = getArray<T>(X);
+    Array<T> yIn = getArray<T>(Y);
 
-af_err af_draw_plot(const af_array X, const af_array Y, const fg_plot_handle plot)
+    T xmax = reduce_all<af_max_t, T, T>(xIn);
+    T xmin = reduce_all<af_min_t, T, T>(xIn);
+    T ymax = reduce_all<af_max_t, T, T>(yIn);
+    T ymin = reduce_all<af_min_t, T, T>(yIn);
+
+    dim4 rdims(1, 0, 2, 3);
+
+    Array<T> Z = join(1, xIn, yIn);
+    Array<T> P = reorder(Z, rdims);
+
+    ArrayInfo Xinfo = getInfo(X);
+    af::dim4 X_dims = Xinfo.dims();
+
+    ForgeManager& fgMngr = ForgeManager::getInstance();
+    fg::Plot* plot = fgMngr.getPlot(X_dims.elements(), getGLType<T>());
+    plot->setColor(1.0, 0.0, 0.0);
+    plot->setAxesLimits(xmax, xmin, ymax, ymin);
+
+    copy_plot<T>(P, plot);
+
+    return plot;
+}
+#endif
+
+af_err af_draw_plot(const af_array X, const af_array Y)
 {
+#if defined(WITH_GRAPHICS)
     try {
         ArrayInfo Xinfo = getInfo(X);
         af::dim4 X_dims = Xinfo.dims();
@@ -44,17 +73,23 @@ af_err af_draw_plot(const af_array X, const af_array Y, const fg_plot_handle plo
 
         TYPE_ASSERT(Xtype == Ytype);
 
+        fg::Window* window = ForgeManager::getWindow();
+        fg::makeCurrent(window);
+        fg::Plot* plot = NULL;
+
         switch(Xtype) {
-            case f32: setup_plot<float  >(X, Y, plot); break;
-            case s32: setup_plot<int    >(X, Y, plot); break;
-            case u32: setup_plot<uint   >(X, Y, plot); break;
-            case u8 : setup_plot<uchar  >(X, Y, plot); break;
+            case f32: plot = setup_plot<float  >(X, Y); break;
+            case s32: plot = setup_plot<int    >(X, Y); break;
+            case u32: plot = setup_plot<uint   >(X, Y); break;
+            case u8 : plot = setup_plot<uchar  >(X, Y); break;
             default:  TYPE_ERROR(1, Xtype);
         }
+
+        window->draw(*plot);
     }
     CATCHALL;
     return AF_SUCCESS;
-}
-
+#else
+    return AF_ERR_NO_GRAPHICS;
 #endif
-
+}

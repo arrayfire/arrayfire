@@ -9,6 +9,7 @@
 
 #include <af/dim4.hpp>
 #include <af/device.h>
+#include <graphics_common.hpp>
 #include <backend.hpp>
 #include <platform.hpp>
 #include <Array.hpp>
@@ -203,12 +204,12 @@ af_err af_device_mem_info(size_t *alloc_bytes, size_t *alloc_buffers,
     return AF_SUCCESS;
 }
 
-#if defined(WITH_GRAPHICS)
-af_err af_mark_device_clgl(const int device, const fg_window_handle wHandle)
+af_err af_init_graphics(int device)
 {
     try {
-        detail::markDeviceForInterop(device, wHandle);
+#if defined(WITH_GRAPHICS)
+        detail::markDeviceForInterop(device, graphics::ForgeManager::getWindow());
+#endif
     } CATCHALL;
     return AF_SUCCESS;
 }
-#endif

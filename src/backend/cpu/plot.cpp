@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined (WITH_GRAPHICS)
+#if defined(WITH_GRAPHICS)
 
 #include <Array.hpp>
 #include <plot.hpp>
@@ -22,49 +22,19 @@ using af::dim4;
 namespace cpu
 {
     template<typename T>
-    void copy_plot(const Array<T> &X, const Array<T> &Y, const fg_plot_handle plot)
+    void copy_plot(const Array<T> &P, fg::Plot* plot)
     {
         CheckGL("Before CopyArrayToVBO");
-        const T *d_X = X.get();
-        const T *d_Y = Y.get();
 
-        T xmax = reduce_all<af_max_t,T, T>(X);
-        T xmin = reduce_all<af_min_t,T, T>(X);
-        T ymax = reduce_all<af_max_t,T, T>(Y);
-        T ymin = reduce_all<af_min_t,T, T>(Y);
-
-
-        // Plot size
-        af::dim4 Xdim = X.dims();
-        af::dim4 Ydim = Y.dims();
-
-        T *Z = memAlloc<T>(Xdim[0] + Ydim[0]);
-
-        for(int i=0; i < (int) Xdim[0]; i++){
-            Z[2*i]   = d_X[i];
-            Z[2*i+1] = d_Y[i];
-        }
-
-        glBindBuffer(GL_ARRAY_BUFFER, plot->gl_vbo[0]);
-
-        size_t bytes = (X.elements() + Y.elements()) * sizeof(T);
-        if(bytes != plot->vbosize) {
-            glBufferData(GL_ARRAY_BUFFER, bytes, Z, GL_STATIC_DRAW);
-            plot->vbosize = bytes;
-        } else {
-            glBufferSubData(GL_ARRAY_BUFFER, 0, bytes, Z);
-        }
-
-        CheckGL("In CopyArrayToVBO");
-
-        fg_plot2d(plot, xmax, xmin, ymax, ymin);
-        memFree(Z);
+        glBindBuffer(GL_ARRAY_BUFFER, plot->vbo());
+        glBufferSubData(GL_ARRAY_BUFFER, 0, plot->size(), P.get());
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+        CheckGL("In CopyArrayToVBO");
     }
 
     #define INSTANTIATE(T)  \
-        template void copy_plot<T>(const Array<T> &X, const Array<T> &Y, const fg_plot_handle plot);
+        template void copy_plot<T>(const Array<T> &P, fg::Plot* plot);
 
     INSTANTIATE(float)
     INSTANTIATE(double)

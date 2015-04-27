@@ -9,13 +9,13 @@
 
 #if defined (WITH_GRAPHICS)
 
-#include <af/graphics.h>
 #include <Array.hpp>
+#include <graphics_common.hpp>
 
 namespace cuda
 {
     template<typename T>
-    void copy_plot(const Array<T> &X, const Array<T> &Y, const fg_plot_handle plot);
+    void copy_plot(const Array<T> &P, fg::Plot* plot);
 }
 
 #endif

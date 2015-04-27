@@ -20,9 +20,7 @@ int main(int argc, char *argv[])
         static const int game_w = 160, game_h = 120;
 
         af::info();
-        fg_window_handle window;
-        fg_create_window(&window, 4 * game_w, 4 * game_h, "Conway", FG_RED, GL_FLOAT);
-        af_mark_device_clgl(0, window);
+        af::initGraphics(0);
 
         int frame_count = 0;
 
@@ -31,12 +29,9 @@ int main(int argc, char *argv[])
         array state;
         state = (af::randu(game_h, game_w, f32) > 0.5).as(f32);
 
-        fg_image_handle image;
-        fg_setup_image(&image, window, state.dims(1), state.dims(0));
-
         while(frame_count <= 1500) {
 
-            drawImage(state, image);
+            image(state);
             frame_count++;
 
             // Generate a random starting state
@@ -57,10 +52,6 @@ int main(int argc, char *argv[])
             // Update state
             state = state * C0 + C1;
         }
-
-        fg_destroy_image(image);
-        fg_destroy_window(window);
-
     } catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());
         throw;

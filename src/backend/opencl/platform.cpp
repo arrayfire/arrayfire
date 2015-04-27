@@ -353,7 +353,7 @@ bool checkExtnAvailability(Device pDevice, std::string pName)
 }
 
 #if defined(WITH_GRAPHICS)
-void markDeviceForInterop(const int device, const fg_window_handle wHandle)
+void markDeviceForInterop(const int device, const fg::Window* wHandle)
 {
     try {
         DeviceManager& devMngr = DeviceManager::getInstance();
@@ -374,8 +374,12 @@ void markDeviceForInterop(const int device, const fg_window_handle wHandle)
             // call forge to get OpenGL sharing context and details
             cl::Platform plat = devMngr.mDevices[device]->getInfo<CL_DEVICE_PLATFORM>();
             cl_context_properties cps[] = {
-                CL_GL_CONTEXT_KHR, (cl_context_properties)wHandle->cxt,
-                CL_GLX_DISPLAY_KHR, (cl_context_properties)wHandle->dsp,
+                CL_GL_CONTEXT_KHR, (cl_context_properties)wHandle->context(),
+#if defined(_WIN32) || defined(_MSC_VER)
+                CL_WGL_HDC_KHR, (cl_context_properties)wHandle->display(),
+#else
+                CL_GLX_DISPLAY_KHR, (cl_context_properties)wHandle->display(),
+#endif
                 CL_CONTEXT_PLATFORM, (cl_context_properties)plat(),
                 0
             };

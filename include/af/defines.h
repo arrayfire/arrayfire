@@ -75,6 +75,7 @@ typedef enum {
     AF_ERR_INVALID_TYPE,
     AF_ERR_INVALID_ARG,
     AF_ERR_GL_ERROR,
+    AF_ERR_NO_GRAPHICS,
     AF_ERR_UNKNOWN
 } af_err;
 

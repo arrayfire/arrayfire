@@ -9,13 +9,13 @@
 
 #if defined (WITH_GRAPHICS)
 
-#include <af/graphics.h>
 #include <Array.hpp>
+#include <graphics_common.hpp>
 
 namespace opencl
 {
     template<typename T>
-    void copy_image(const Array<T> &in, const fg_image_handle image);
+    void copy_image(const Array<T> &in, const fg::Image* image);
 }
 
 #endif

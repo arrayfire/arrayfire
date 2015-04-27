@@ -373,9 +373,11 @@ void sync(int device)
     setDevice(currDevice);
 }
 
-void markDeviceForInterop(const int device, const fg_window_handle wHandle)
+#if defined(WITH_GRAPHICS)
+void markDeviceForInterop(const int device, const fg::Window* window)
 {
     return; // Nothing to be done for CUDA
 }
+#endif
 
 }
