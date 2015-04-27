@@ -190,6 +190,8 @@ namespace opencl
     INSTANTIATE(cdouble, cdouble)
     INSTANTIATE(int,     int)
     INSTANTIATE(uint,    uint)
+    INSTANTIATE(intl,    intl)
+    INSTANTIATE(uintl,   uintl)
     INSTANTIATE(uchar,   uchar)
     INSTANTIATE(char,    char)
 
@@ -204,6 +206,8 @@ namespace opencl
     INSTANTIATE(cdouble)
     INSTANTIATE(int)
     INSTANTIATE(uint)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
 
