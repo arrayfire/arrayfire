@@ -28,6 +28,21 @@ using af::dim4;
 using namespace detail;
 using namespace std;
 
+static inline dim4 verifyDims(const unsigned ndims, const dim_type * const dims)
+{
+
+    DIM_ASSERT(1, ndims >= 1);
+
+    dim4 d(1, 1, 1, 1);
+
+    for(unsigned i = 0; i < ndims; i++) {
+        d[i] = dims[i];
+        DIM_ASSERT(2, dims[i] >= 1);
+    }
+
+    return d;
+}
+
 af_err af_get_data_ptr(void *data, const af_array arr)
 {
     try {
@@ -58,10 +73,9 @@ af_err af_create_array(af_array *result, const void * const data,
     try {
         af_array out;
         AF_CHECK(af_init());
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-        }
+
+        dim4 d = verifyDims(ndims, dims);
+
         switch(type) {
         case f32:   out = createHandleFromData(d, static_cast<const float   *>(data)); break;
         case c32:   out = createHandleFromData(d, static_cast<const cfloat  *>(data)); break;
@@ -89,10 +103,9 @@ af_err af_constant(af_array *result, const double value,
     try {
         af_array out;
         AF_CHECK(af_init());
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-        }
+
+        dim4 d = verifyDims(ndims, dims);
+
         switch(type) {
         case f32:   out = createHandleFromValue<float  >(d, value); break;
         case c32:   out = createHandleFromValue<cfloat >(d, value); break;
@@ -127,10 +140,7 @@ af_err af_constant_complex(af_array *result, const double real, const double ima
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-        }
+        dim4 d = verifyDims(ndims, dims);
 
         switch (type) {
         case c32: out = createCplx<cfloat , float >(d, real, imag); break;
@@ -151,10 +161,7 @@ af_err af_constant_long(af_array *result, const intl val,
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-        }
+        dim4 d = verifyDims(ndims, dims);
 
         out = getHandle(createValueArray<intl>(d, val));
 
@@ -171,11 +178,7 @@ af_err af_constant_ulong(af_array *result, const uintl val,
         af_array out;
         AF_CHECK(af_init());
 
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-        }
-
+        dim4 d = verifyDims(ndims, dims);
         out = getHandle(createValueArray<uintl>(d, val));
 
         std::swap(*result, out);
@@ -191,10 +194,12 @@ af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type *
     try {
         af_array out;
         AF_CHECK(af_init());
+
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
         }
+
         switch(type) {
         case f32:   out = createHandle<float  >(d); break;
         case c32:   out = createHandle<cfloat >(d); break;
@@ -265,11 +270,7 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims
         af_array result;
         AF_CHECK(af_init());
 
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-            DIM_ASSERT(2, d[i] >= 1);
-        }
+        dim4 d = verifyDims(ndims, dims);
 
         switch(type) {
         case f32:   result = randu_<float  >(d);    break;
@@ -294,11 +295,8 @@ af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims
         af_array result;
         AF_CHECK(af_init());
 
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-            DIM_ASSERT(2, d[i] >= 1);
-        }
+        dim4 d = verifyDims(ndims, dims);
+
         switch(type) {
         case f32:   result = randn_<float  >(d);    break;
         case c32:   result = randn_<cfloat >(d);    break;
@@ -317,12 +315,8 @@ af_err af_identity(af_array *out, const unsigned ndims, const dim_type * const d
     try {
         af_array result;
         AF_CHECK(af_init());
-        dim4 d((size_t)dims[0]);
 
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-            DIM_ASSERT(2, d[i] >= 1);
-        }
+        dim4 d = verifyDims(ndims, dims);
 
         switch(type) {
         case f32:   result = identity_<float  >(d);    break;
@@ -419,12 +413,7 @@ af_err af_range(af_array *result, const unsigned ndims, const dim_type * const d
         af_array out;
         AF_CHECK(af_init());
 
-        DIM_ASSERT(1, ndims > 0 && ndims <= 4);
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-            DIM_ASSERT(2, d[i] >= 1);
-        }
+        dim4 d = verifyDims(ndims, dims);
 
         switch(type) {
         case f32:   out = range_<float  >(d, seq_dim); break;
