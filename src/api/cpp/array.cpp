@@ -382,10 +382,10 @@ namespace af
             if (is_vector) {
 
                 switch(num_dims) {
-                case 1: return (*this)(idx);
                 case 2: return (*this)(span, idx);
                 case 3: return (*this)(span, span, idx);
                 case 4: return (*this)(span, span, span, idx);
+                default: AF_THROW_MSG("ArrayFire internal error", AF_ERR_INTERNAL);
                 }
 
             } else {
@@ -423,11 +423,11 @@ namespace af
 
             if (is_vector) {
 
-                switch(this->numdims()) {
-                case 1: return (*this)(s0);
+                switch(num_dims) {
                 case 2: return (*this)(span, s0);
                 case 3: return (*this)(span, span, s0);
                 case 4: return (*this)(span, span, span, s0);
+                default: AF_THROW_MSG("ArrayFire internal error", AF_ERR_INTERNAL);
                 }
 
             } else {
