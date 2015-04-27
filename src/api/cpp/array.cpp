@@ -253,7 +253,8 @@ namespace af
     array::~array()
     {
         af_array tmp = get();
-        if (tmp) AF_THROW(af_destroy_array(tmp));
+        // THOU SHALL NOT THROW IN DESTRUCTORS
+        af_destroy_array(tmp);
     }
 
     af::dtype array::type() const
