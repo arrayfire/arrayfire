@@ -80,16 +80,12 @@ bool ArrayInfo::isScalar() const
 
 bool ArrayInfo::isRow() const
 {
-    return (dims()[1] > 1 && dims()[0] == 1 && dims()[2] == 1 && dims()[3] == 1);
+    return (dims()[0] == 1 && dims()[1] > 1 && dims()[2] == 1 && dims()[3] == 1);
 }
 
 bool ArrayInfo::isColumn() const
 {
-    bool ret = dims()[0] > 1;
-    for(int i = 1; i < AF_MAX_DIMS; i++) {
-        ret &= dims()[i] == 1;
-    }
-    return ret;
+    return (dims()[0] > 1 && dims()[1] == 1 && dims()[2] == 1 && dims()[3] == 1);
 }
 
 bool ArrayInfo::isVector() const

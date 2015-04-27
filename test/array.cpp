@@ -114,7 +114,7 @@ TYPED_TEST(Array, ConstructorEmpty4D)
     EXPECT_EQ(2,    a.dims(2));
     EXPECT_EQ(2,    a.dims(3));
     EXPECT_EQ(16,   a.elements());
-    EXPECT_EQ(type,  a.type());
+    EXPECT_EQ(type, a.type());
 }
 
 TYPED_TEST(Array, ConstructorHostPointer1D)
