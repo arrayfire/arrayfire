@@ -58,9 +58,13 @@ af_err af_create_array(af_array *result, const void * const data,
     try {
         af_array out;
         AF_CHECK(af_init());
+
+        DIM_ASSERT(1, ndims >= 1);
+
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
+            DIM_ASSERT(2, dims[i] >= 1);
         }
         switch(type) {
         case f32:   out = createHandleFromData(d, static_cast<const float   *>(data)); break;
@@ -89,9 +93,13 @@ af_err af_constant(af_array *result, const double value,
     try {
         af_array out;
         AF_CHECK(af_init());
+
+        DIM_ASSERT(1, ndims >= 1);
+
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
+            DIM_ASSERT(2, dims[i] >= 1);
         }
         switch(type) {
         case f32:   out = createHandleFromValue<float  >(d, value); break;
@@ -127,9 +135,12 @@ af_err af_constant_complex(af_array *result, const double real, const double ima
         af_array out;
         AF_CHECK(af_init());
 
+        DIM_ASSERT(1, ndims >= 1);
+
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
+            DIM_ASSERT(2, dims[i] >= 1);
         }
 
         switch (type) {
@@ -151,9 +162,12 @@ af_err af_constant_long(af_array *result, const intl val,
         af_array out;
         AF_CHECK(af_init());
 
+        DIM_ASSERT(1, ndims >= 1);
+
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
+            DIM_ASSERT(2, dims[i] >= 1);
         }
 
         out = getHandle(createValueArray<intl>(d, val));
@@ -171,9 +185,12 @@ af_err af_constant_ulong(af_array *result, const uintl val,
         af_array out;
         AF_CHECK(af_init());
 
+        DIM_ASSERT(1, ndims >= 1);
+
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
+            DIM_ASSERT(2, dims[i] >= 1);
         }
 
         out = getHandle(createValueArray<uintl>(d, val));
@@ -191,10 +208,12 @@ af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type *
     try {
         af_array out;
         AF_CHECK(af_init());
+
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
         }
+
         switch(type) {
         case f32:   out = createHandle<float  >(d); break;
         case c32:   out = createHandle<cfloat >(d); break;
@@ -266,6 +285,9 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims
         AF_CHECK(af_init());
 
         dim4 d((size_t)dims[0]);
+
+        DIM_ASSERT(1, ndims >= 1);
+
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
             DIM_ASSERT(2, d[i] >= 1);
@@ -294,6 +316,8 @@ af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims
         af_array result;
         AF_CHECK(af_init());
 
+        DIM_ASSERT(1, ndims >= 1);
+
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
@@ -318,6 +342,8 @@ af_err af_identity(af_array *out, const unsigned ndims, const dim_type * const d
         af_array result;
         AF_CHECK(af_init());
         dim4 d((size_t)dims[0]);
+
+        DIM_ASSERT(1, ndims >= 1);
 
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
