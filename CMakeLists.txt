@@ -149,9 +149,12 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
     COMPONENT cmake)
 
 # CPack package generation
+# Create the following installers are as follows:
+#  Linux: TGZ, STGZ, DEB
+#  Windows: Use external packaging, do nothing here
 
-# Binary packages:
-SET(CPACK_GENERATOR "TGZ;STGZ")
+# Common settings to all packaging tools
+SET(CPACK_GENERATOR "TGZ;STGZ;DEB;RPM")
 SET(CPACK_PREFIX_DIR ${CMAKE_INSTALL_PREFIX})
 SET(CPACK_PACKAGE_NAME "arrayfire")
 SET(CPACK_PACKAGE_VERSION 3.0.beta)
@@ -178,8 +181,7 @@ A few lines of code in ArrayFire can replace dozens of lines of parallel
 computing code, saving you valuable time and lowering development costs.")
 
 # Short description of the package
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A high performance library for parallel
-computing with an easy-to-use API.")
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A high performance library for parallel computing with an easy-to-use API.")
 
 # Useful descriptions for components
 SET(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "ArrayFire libraries")
@@ -189,7 +191,23 @@ SET(CPACK_COMPONENT_CMAKE_NAME "CMake support")
 # Set the default components installed in the package
 SET(CPACK_COMPONENTS_ALL libraries headers documentation cmake)
 
+##
+# Debian package
+##
+SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE ${PROCESSOR_ARCHITECTURE})
+SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libfreeimage-dev, libatlas3gf-base, libfftw3-dev")
+SET(CPACK_DEBIAN_PACKAGE_SUGGESTS "ocl-icd-libopencl1 (>= 2.0), nvidia-cuda-dev (>= 6.0)")
+
+##
+# RPM package
+##
+SET(CPACK_RPM_PACKAGE_LICENSE "BSD")
+SET(CPACK_PACKAGE_GROUP "Development/Libraries")
+SET(CPACK_RPM_PACKAGE_REQUIRES "freeimage atlas fftw")
+
+##
 # Source package
+##
 SET(CPACK_SOURCE_GENERATOR "TGZ")
 SET(CPACK_SOURCE_PACKAGE_FILE_NAME
     ${CPACK_PACKAGE_NAME}_src_${CPACK_PACKAGE_VERSION}_${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR})
