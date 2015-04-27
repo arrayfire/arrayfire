@@ -18,7 +18,7 @@ TYPED_TEST_CASE(Array, TestTypes);
 TEST(Array, ConstructorDefault)
 {
     array a;
-    //EXPECT_EQ(0,    a.numdims()); //FIXME: see #607
+    EXPECT_EQ(0,    a.numdims());
     EXPECT_EQ(0,    a.dims(0));
     EXPECT_EQ(0,    a.dims(1));
     EXPECT_EQ(0,    a.dims(2));
@@ -344,21 +344,21 @@ TEST(Array, ShapeAttributes)
     EXPECT_FALSE(volume.    isscalar());
     EXPECT_FALSE(hypercube. isscalar());
 
-    EXPECT_TRUE(scalar.     isvector());
+    EXPECT_FALSE(scalar.    isvector());
     EXPECT_TRUE(col.        isvector());
     EXPECT_TRUE(row.        isvector());
     EXPECT_FALSE(matrix.    isvector());
     EXPECT_FALSE(volume.    isvector());
     EXPECT_FALSE(hypercube. isvector());
 
-    EXPECT_TRUE(scalar.     isrow());
+    EXPECT_FALSE(scalar.    isrow());
     EXPECT_FALSE(col.       isrow());
     EXPECT_TRUE(row.        isrow());
     EXPECT_FALSE(matrix.    isrow());
     EXPECT_FALSE(volume.    isrow());
     EXPECT_FALSE(hypercube. isrow());
 
-    EXPECT_TRUE(scalar.     iscolumn());
+    EXPECT_FALSE(scalar.    iscolumn());
     EXPECT_TRUE(col.        iscolumn());
     EXPECT_FALSE(row.       iscolumn());
     EXPECT_FALSE(matrix.    iscolumn());
