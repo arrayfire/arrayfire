@@ -87,11 +87,15 @@ fg::Window* ForgeManager::getWindow()
 {
     static bool once = true;
     static fg::Window* gAFwindow = NULL;
+    static fg::Font* gFont = NULL;
 
     if (once) {
         try {
             gAFwindow = new fg::Window(1280, 720, "ArrayFire");
             detail::markDeviceForInterop(detail::getActiveDeviceId(), gAFwindow);
+            gFont = new fg::Font();
+            gFont->loadFont("/usr/share/fonts/TTF/Vera.ttf", 32);
+            gAFwindow->setFont(gFont);
         }catch(const fg::Error &e) {
             std::cout<< e <<std::endl;
             AF_ERROR("ForgeManager", AF_ERR_GL_ERROR);
@@ -132,7 +136,7 @@ fg::Plot* ForgeManager::getPlot(int nPoints, GLenum type)
 
     PltMapIter iter = mPltMap.find(size);
     if (iter==mPltMap.end()) {
-        fg::Plot* temp = new fg::Plot(type);
+        fg::Plot* temp = new fg::Plot(nPoints, type);
         mPltMap[size] = temp;
     }
 

@@ -7,8 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined (WITH_GRAPHICS)
-
 #include <af/array.h>
 #include <af/graphics.h>
 #include "error.hpp"
@@ -26,5 +24,3 @@ namespace af
     }
 
 }
-
-#endif

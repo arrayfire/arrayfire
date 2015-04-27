@@ -9,9 +9,7 @@
 
 #pragma once
 
-#if defined (WITH_GRAPHICS)
 #include <af/array.h>
-#include <forge.h>
 
 #ifdef __cplusplus
 #include <utility>
@@ -31,6 +29,5 @@ extern "C" {
     AFAPI af_err af_draw_plot(const af_array X, const af_array Y);
 #ifdef __cplusplus
 }
-#endif
 
 #endif

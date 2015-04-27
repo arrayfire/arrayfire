@@ -62,36 +62,11 @@ cudaGraphicsResource* InteropManager::getBufferResource(const fg::Plot* key)
 
     iter_t iter = interop_maps[device].find(key_value);
 
-    if(iter == interop_maps[device].end()) {
-
-        // Not found. Create New
+    if(interop_maps[device].find(key_value) == interop_maps[device].end()) {
         cudaGraphicsResource *cudaVBOResource;
         // Register VBO with CUDA
         CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaVBOResource, key->vbo(), cudaGraphicsMapFlagsWriteDiscard));
         interop_maps[device][key_value] = cudaVBOResource;
-
-    } else {
-
-        // Find a better way to handle this
-        // Problem is cudaGraphicsResource keeps the same size until it is
-        // unregistered
-
-        // Buffer was found
-        cudaGraphicsResource *cudaVBOResource = iter->second;
-        // Check if buffer size is same
-        void* d_vbo = NULL;
-        size_t num_bytes = 0;
-        cudaGraphicsMapResources(1, &cudaVBOResource, 0);
-        cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, cudaVBOResource);
-        cudaGraphicsUnmapResources(1, &cudaVBOResource, 0);
-
-        if(num_bytes != key->size()) {
-            // Delete and reallocate
-            CUDA_CHECK(cudaGraphicsUnregisterResource(cudaVBOResource));
-            CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaVBOResource, key->vbo(),
-                       cudaGraphicsMapFlagsWriteDiscard));
-            interop_maps[device][key_value] = cudaVBOResource;
-        }
     }
 
     return interop_maps[device][key_value];

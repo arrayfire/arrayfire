@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined (WITH_GRAPHICS)
+#if defined(WITH_GRAPHICS)
 
 #include <Array.hpp>
 #include <plot.hpp>
@@ -27,15 +27,7 @@ namespace cpu
         CheckGL("Before CopyArrayToVBO");
 
         glBindBuffer(GL_ARRAY_BUFFER, plot->vbo());
-
-        size_t bytes = P.elements() * sizeof(T);
-        if(bytes != plot->size()) {
-            glBufferData(GL_ARRAY_BUFFER, bytes, P.get(), GL_STATIC_DRAW);
-            plot->setVBOSize(bytes);
-        } else {
-            glBufferSubData(GL_ARRAY_BUFFER, 0, bytes, P.get());
-        }
-
+        glBufferSubData(GL_ARRAY_BUFFER, 0, plot->size(), P.get());
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         CheckGL("In CopyArrayToVBO");

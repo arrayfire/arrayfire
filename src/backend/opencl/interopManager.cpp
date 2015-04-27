@@ -53,16 +53,8 @@ cl::Buffer* InteropManager::getBufferResource(const fg::Plot* plot)
     int device = getActiveDeviceId();
     iter_t iter = interop_maps[device].find(key);
 
-    if (iter == interop_maps[device].end()) {
+    if (iter == interop_maps[device].end())
         interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, plot->vbo(), NULL);
-    } else {
-        cl::Buffer *buf = iter->second;
-        size_t bytes = buf->getInfo<CL_MEM_SIZE>();
-        if(bytes != plot->size()) {
-            delete iter->second;
-            interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, plot->vbo(), NULL);
-        }
-    }
 
     return interop_maps[device][key];
 }

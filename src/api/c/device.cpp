@@ -18,7 +18,6 @@
 #include "err_common.hpp"
 
 using namespace detail;
-using namespace graphics;
 
 af_err af_init()
 {
@@ -209,7 +208,7 @@ af_err af_init_graphics(int device)
 {
     try {
 #if defined(WITH_GRAPHICS)
-        detail::markDeviceForInterop(device, ForgeManager::getWindow());
+        detail::markDeviceForInterop(device, graphics::ForgeManager::getWindow());
 #endif
     } CATCHALL;
     return AF_SUCCESS;

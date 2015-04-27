@@ -27,14 +27,7 @@ namespace opencl
     {
         CheckGL("Begin OpenCL resource copy");
         const cl::Buffer *d_P = P.get();
-        // Create Data Store
-        glBindBuffer(GL_ARRAY_BUFFER, plot->vbo());
-        size_t bytes = P.elements() * sizeof(T);
-        if(bytes != plot->size()) {
-            glBufferData(GL_ARRAY_BUFFER, bytes, NULL, GL_STATIC_DRAW);
-            plot->setVBOSize(bytes);
-        }
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        size_t bytes = plot->size();
 
         InteropManager& intrpMngr = InteropManager::getInstance();
 

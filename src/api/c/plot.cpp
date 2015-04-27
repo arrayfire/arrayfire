@@ -7,8 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#if defined (WITH_GRAPHICS)
-
 #include <af/graphics.h>
 #include <af/image.h>
 
@@ -26,6 +24,7 @@ using af::dim4;
 using namespace detail;
 using namespace graphics;
 
+#if defined(WITH_GRAPHICS)
 template<typename T>
 fg::Plot* setup_plot(const af_array X, const af_array Y)
 {
@@ -47,15 +46,18 @@ fg::Plot* setup_plot(const af_array X, const af_array Y)
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
     fg::Plot* plot = fgMngr.getPlot(X_dims.elements(), getGLType<T>());
+    plot->setColor(1.0, 0.0, 0.0);
     plot->setAxesLimits(xmax, xmin, ymax, ymin);
 
     copy_plot<T>(P, plot);
 
     return plot;
 }
+#endif
 
 af_err af_draw_plot(const af_array X, const af_array Y)
 {
+#if defined(WITH_GRAPHICS)
     try {
         ArrayInfo Xinfo = getInfo(X);
         af::dim4 X_dims = Xinfo.dims();
@@ -71,7 +73,8 @@ af_err af_draw_plot(const af_array X, const af_array Y)
 
         TYPE_ASSERT(Xtype == Ytype);
 
-        fg::makeWindowCurrent(ForgeManager::getWindow());
+        fg::Window* window = ForgeManager::getWindow();
+        fg::makeCurrent(window);
         fg::Plot* plot = NULL;
 
         switch(Xtype) {
@@ -82,12 +85,11 @@ af_err af_draw_plot(const af_array X, const af_array Y)
             default:  TYPE_ERROR(1, Xtype);
         }
 
-        fg::drawPlot(ForgeManager::getWindow(), *plot);
-
+        window->draw(*plot);
     }
     CATCHALL;
     return AF_SUCCESS;
-}
-
+#else
+    return AF_ERR_NO_GRAPHICS;
 #endif
-
+}

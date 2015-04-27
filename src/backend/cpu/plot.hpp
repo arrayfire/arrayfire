@@ -9,8 +9,8 @@
 
 #if defined (WITH_GRAPHICS)
 
-#include <af/graphics.h>
 #include <Array.hpp>
+#include <graphics_common.hpp>
 
 namespace cpu
 {

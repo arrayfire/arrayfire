@@ -30,8 +30,9 @@ namespace cpu
         const T *d_X = in.get();
         size_t data_size = image->size();
 
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, image->pbo());
-        glBufferSubData(GL_PIXEL_UNPACK_BUFFER_ARB, 0, data_size, d_X);
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, image->pbo());
+        glBufferSubData(GL_PIXEL_UNPACK_BUFFER, 0, data_size, d_X);
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
         CheckGL("In CopyArrayToPBO");
     }

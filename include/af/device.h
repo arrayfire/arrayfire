@@ -9,9 +9,6 @@
 
 #pragma once
 #include <af/defines.h>
-#if defined(WITH_GRAPHICS)
-#include <forge.h>
-#endif
 
 #ifdef __cplusplus
 namespace af

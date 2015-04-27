@@ -7,9 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+
 #if defined(WITH_GRAPHICS)
 
 #include <af/graphics.h>
+#include <forge.h>
 
 #include <map>
 

@@ -40,9 +40,7 @@ int main(int argc, char *argv[])
             double fps = 15;
             while(timer::stop(delay) < (1 / fps)) { }
         }
-    }
-
-        catch (af::exception& e) {
+    } catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());
         throw;
     }

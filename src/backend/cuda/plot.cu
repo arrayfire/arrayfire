@@ -28,21 +28,11 @@ void copy_plot(const Array<T> &P, fg::Plot* plot)
 {
     const T *d_P = P.get();
 
-    // Create Data Store
-    glBindBuffer(GL_ARRAY_BUFFER, plot->vbo());
-    size_t bytes = P.elements() * sizeof(T);
-    if(bytes != plot->size()) {
-        glBufferData(GL_ARRAY_BUFFER, bytes, NULL, GL_STATIC_DRAW);
-        plot->setVBOSize(bytes);
-    }
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
     InteropManager& intrpMngr = InteropManager::getInstance();
 
     cudaGraphicsResource *cudaVBOResource = intrpMngr.getBufferResource(plot);
-
     // Map resource. Copy data to VBO. Unmap resource.
-    size_t num_bytes;
+    size_t num_bytes = plot->size();
     T* d_vbo = NULL;
     cudaGraphicsMapResources(1, &cudaVBOResource, 0);
     cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, cudaVBOResource);
