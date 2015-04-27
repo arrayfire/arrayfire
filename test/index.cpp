@@ -952,3 +952,55 @@ TEST(SeqIndex, Cascade11)
     delete[] h_b;
     delete[] h_c;
 }
+
+TEST(ArrayIndex, CPP_INDEX_VECTOR)
+{
+    using af::array;
+    float h_inds[] = {0, 3, 2, 1}; // zero-based indexing
+    array inds(1, 4, h_inds);
+    array B = af::randu(1, 4);
+    array C = B(inds);
+
+    ASSERT_EQ(B.dims(0), 1);
+    ASSERT_EQ(B.dims(1), 4);
+    ASSERT_EQ(C.dims(0), 1);
+    ASSERT_EQ(C.dims(1), 4);
+
+    float *h_B = B.host<float>();
+    float *h_C = C.host<float>();
+
+    for (int i = 0; i < 4; i++) {
+        ASSERT_EQ(h_C[i], h_B[(int)h_inds[i]]);
+    }
+
+    delete[] h_B;
+    delete[] h_C;
+}
+
+TEST(SeqIndex, CPP_INDEX_VECTOR)
+{
+    using af::array;
+
+    const int num = 20;
+    const int len = 10;
+    const int st  =  3;
+    const int en  = st + len - 1;
+
+    array B = af::randu(1, 20);
+    array C = B(af::seq(st, en));
+
+    ASSERT_EQ(B.dims(0), 1);
+    ASSERT_EQ(B.dims(1), num);
+    ASSERT_EQ(C.dims(0), 1);
+    ASSERT_EQ(C.dims(1), len);
+
+    float *h_B = B.host<float>();
+    float *h_C = C.host<float>();
+
+    for (int i = 0; i < len; i++) {
+        ASSERT_EQ(h_C[i], h_B[i + st]);
+    }
+
+    delete[] h_B;
+    delete[] h_C;
+}

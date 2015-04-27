@@ -18,7 +18,7 @@ Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const n
 template<typename T, int rank>
 Array<T> ifft(Array<T> const &in, double norm_factor, dim_type const npad, dim_type const * const pad);
 
-template<typename T, int rank, int direction>
-void cufft_common(Array<T> &arr);
+template<typename T, int rank, bool direction>
+void fft_common(Array<T> &out, const Array<T> &in);
 
 }

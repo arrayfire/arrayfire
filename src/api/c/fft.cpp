@@ -39,7 +39,6 @@ static af_err fft(af_array *out, af_array in, double norm_factor, dim_type npad,
         af::dim4 dims  = info.dims();
 
         DIM_ASSERT(1, (dims.ndims()>=rank));
-        DIM_ASSERT(1, (dims.ndims()<=(rank+1)));
 
         af_array output;
         switch(type) {
@@ -65,7 +64,6 @@ static af_err ifft(af_array *out, af_array in, double norm_factor, dim_type npad
         af::dim4 dims  = info.dims();
 
         DIM_ASSERT(1, (dims.ndims()>=rank));
-        DIM_ASSERT(1, (dims.ndims()<=(rank+1)));
 
         af_array output;
         switch(type) {
