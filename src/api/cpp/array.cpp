@@ -366,6 +366,22 @@ namespace af
         for(int i=0; i<4; ++i) indices[i] = inds[i];
     }
 
+    template<typename Idx1, typename Idx2, typename Idx3, typename Idx4>
+    array array::gen_indexing(const Idx1 &s0, const Idx2 &s1, const Idx3 &s2, const Idx4 &s3) const
+    {
+        eval();
+        af_index_t inds[4];
+        inds[0] = toIndices(s0);
+        inds[1] = toIndices(s1);
+        inds[2] = toIndices(s2);
+        inds[3] = toIndices(s3);
+
+        af_array out = 0;
+        //FIXME: check if this->s has same dimensions as numdims
+        AF_THROW(af_weak_copy(&out, this->get()));
+        return array(out, this, inds);
+    }
+
     array array::operator()(const array& idx) const
     {
         eval();
@@ -397,15 +413,7 @@ namespace af
             }
         }
 
-        af_index_t inds[4];
-        inds[0] = toIndices(idx);
-        inds[1] = toIndices(span);
-        inds[2] = toIndices(span);
-        inds[3] = toIndices(span);
-
-        af_array out = 0;
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(idx, span, span, span);
     }
 
     array array::operator()(const seq &s0) const
@@ -439,255 +447,94 @@ namespace af
             }
         }
 
-        af_index_t inds[4];
-        inds[0] = toIndices(s0);
-        inds[1] = toIndices(span);
-        inds[2] = toIndices(span);
-        inds[3] = toIndices(span);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(s0, span, span, span);
     }
 
     array array::operator()(const seq &s0, const seq &s1) const
     {
-        eval();
-
-        af_index_t inds[4];
-        inds[0] = toIndices(s0);
-        inds[1] = toIndices(s1);
-        inds[2] = toIndices(span);
-        inds[3] = toIndices(span);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(s0, s1, span, span);
     }
 
     array array::operator()(const seq &s0, const seq &s1, const seq &s2) const
     {
-        eval();
-
-        af_index_t inds[4];
-        inds[0] = toIndices(s0);
-        inds[1] = toIndices(s1);
-        inds[2] = toIndices(s2);
-        inds[3] = toIndices(span);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(s0, s1, s2, span);
     }
 
     array array::operator()(const seq &s0, const seq &s1, const seq &s2, const seq &s3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(s0);
-        inds[1] = toIndices(s1);
-        inds[2] = toIndices(s2);
-        inds[3] = toIndices(s3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(s0, s1, s2, s3);
     }
 
     // A-S-S-S, A-S-N-N, A-S-S-N
     array array::operator()(const array& idx0, const seq &idx1, const seq &idx2, const seq &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(idx0, idx1, idx2, idx3);
     }
 
     // A-A-S-S, A-A-N-N
     array array::operator()(const array& idx0, const array &idx1, const seq &idx2, const seq &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(idx0, idx1, idx2, idx3);
     }
 
     // A-A-A-S, A-A-A-N
     array array::operator()(const array &idx0, const array &idx1, const array &idx2, const seq &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(idx0, idx1, idx2, idx3);
     }
 
     // A-A-A-A
     array array::operator()(const array &idx0, const array &idx1, const array &idx2, const array &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(idx0, idx1, idx2, idx3);
     }
 
     // S-A-S-S
     array array::operator()(const seq &idx0, const array &idx1, const seq &idx2, const seq &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(idx0, idx1, idx2, idx3);
     }
 
     // S-S-A-S, S-S-A-N
     array array::operator()(const seq &idx0, const seq &idx1, const array &idx2, const seq &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(idx0, idx1, idx2, idx3);
     }
 
     // S-S-S-A
     array array::operator()(const seq   &idx0, const seq   &idx1, const seq   &idx2, const array &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(idx0, idx1, idx2, idx3);
     }
 
     // A-S-A-S, A-S-A-N
     array array::operator()(const array &idx0, const seq   &idx1, const array &idx2, const seq &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(idx0, idx1, idx2, idx3);
     }
 
     // A-S-S-A
     array array::operator()(const array &idx0, const seq &idx1, const seq &idx2, const array &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(idx0, idx1, idx2, idx3);
     }
 
     // S-A-A-S, S-A-A-N
     array array::operator()(const seq &idx0, const array &idx1, const array &idx2, const seq &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(idx0, idx1, idx2, idx3);
     }
 
     // S-A-S-A
     array array::operator()(const seq &idx0, const array &idx1, const seq &idx2, const array &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(idx0, idx1, idx2, idx3);
     }
 
     // S-S-A-A
     array array::operator()(const seq &idx0, const seq &idx1, const array &idx2, const array &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(idx0, idx1, idx2, idx3);
     }
 
     array array::row(int index) const
