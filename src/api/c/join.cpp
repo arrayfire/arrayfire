@@ -65,6 +65,7 @@ af_err af_join(af_array *out, const int dim, const af_array first, const af_arra
             case b8:  output = join<char   , char   >(dim, first, second);  break;
             case s32: output = join<int    , int    >(dim, first, second);  break;
             case u32: output = join<uint   , uint   >(dim, first, second);  break;
+            case u64: output = join<uintl  , uintl  >(dim, first, second);  break;
             case u8:  output = join<uchar  , uchar  >(dim, first, second);  break;
             default:  TYPE_ERROR(1, finfo.getType());
         }

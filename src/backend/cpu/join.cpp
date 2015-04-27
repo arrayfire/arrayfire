@@ -222,6 +222,7 @@ namespace cpu
     INSTANTIATE(cdouble, cdouble)
     INSTANTIATE(int,     int)
     INSTANTIATE(uint,    uint)
+    INSTANTIATE(uintl,   uintl)
     INSTANTIATE(uchar,   uchar)
     INSTANTIATE(char,    char)
 
@@ -236,6 +237,7 @@ namespace cpu
     INSTANTIATE(cdouble)
     INSTANTIATE(int)
     INSTANTIATE(uint)
+    INSTANTIATE(uintl)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
 
