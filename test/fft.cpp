@@ -408,25 +408,6 @@ TEST(fft, CPP_4D)
     delete[] h_B;
 }
 
-TEST(fft2, CPP_4D)
-{
-    af::array a = af::randu(1024, 1024, 32);
-    af::array b = af::fft2(a);
-
-    af::array A = af::moddims(a, 1024, 1024, 4, 8);
-    af::array B = af::fft2(A);
-
-    af::cfloat *h_b = b.host<af::cfloat>();
-    af::cfloat *h_B = B.host<af::cfloat>();
-
-    for (int i = 0; i < a.elements(); i++) {
-        ASSERT_EQ(h_b[i], h_B[i]) << "at: " << i << std::endl;
-    }
-
-    delete[] h_b;
-    delete[] h_B;
-}
-
 TEST(ifft, CPP_4D)
 {
     af::array a = af::randu(1024, 1024, c32);
@@ -434,25 +415,6 @@ TEST(ifft, CPP_4D)
 
     af::array A = af::moddims(a, 1024, 32, 16, 2);
     af::array B = af::ifft(A);
-
-    af::cfloat *h_b = b.host<af::cfloat>();
-    af::cfloat *h_B = B.host<af::cfloat>();
-
-    for (int i = 0; i < a.elements(); i++) {
-        ASSERT_EQ(h_b[i], h_B[i]) << "at: " << i << std::endl;
-    }
-
-    delete[] h_b;
-    delete[] h_B;
-}
-
-TEST(ifft2, CPP_4D)
-{
-    af::array a = af::randu(1024, 1024, 32, c32);
-    af::array b = af::ifft2(a);
-
-    af::array A = af::moddims(a, 1024, 1024, 4, 8);
-    af::array B = af::ifft2(A);
 
     af::cfloat *h_b = b.host<af::cfloat>();
     af::cfloat *h_B = B.host<af::cfloat>();
