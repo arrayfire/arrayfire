@@ -60,7 +60,7 @@ namespace af
     void cleanIndices(af_index_t indices[4])
     {
         for (int i = 0; i < 4; i++) {
-            if (!indices[i].mIsSeq) {
+            if (!indices[i].mIsSeq && indices[i].mIndexer.arr) {
                 AF_THROW(af_destroy_array(indices[i].mIndexer.arr));
             }
             // Just to be safe
@@ -174,6 +174,7 @@ namespace af
     {
         initEmptyArray(&arr, f32, 0, 0, 0, 0);
     }
+
     array::array(const dim4 &dims, af::dtype ty) : arr(0), parent(NULL), isRef(false)
     {
         initEmptyArray(&arr, ty, dims[0], dims[1], dims[2], dims[3]);
@@ -252,11 +253,7 @@ namespace af
     array::~array()
     {
         af_array tmp = get();
-        if (tmp != 0){
-            if(AF_SUCCESS != af_destroy_array(tmp)) {
-                fprintf(stderr, "Error: Couldn't destroy af::array %p", this);
-            }
-        }
+        if (tmp) AF_THROW(af_destroy_array(tmp));
     }
 
     af::dtype array::type() const
@@ -284,12 +281,12 @@ namespace af
             return arr;
         af_array temp = 0;
         af_err err = af_index_gen(&temp, arr, 4, indices);
-        AF_THROW(af_destroy_array(arr));
+        if (arr) AF_THROW(af_destroy_array(arr));
 
         int dim = gforDim(this->indices);
         if (temp && dim >= 0) {
             arr = gforReorder(temp, dim);
-            AF_THROW(af_destroy_array(temp));
+            if (temp) AF_THROW(af_destroy_array(temp));
         } else {
             arr = temp;
         }
@@ -751,7 +748,7 @@ namespace af
 
     void array::set(af_array tmp)
     {
-        AF_THROW(af_destroy_array(arr));
+        if (arr) AF_THROW(af_destroy_array(arr));
         arr = tmp;
     }
 
@@ -807,7 +804,7 @@ namespace af
 
             parent->set(tmp);
             if (dim >= 0 && (is_reordered || batch_assign)) {
-                AF_THROW(af_destroy_array(other_arr));
+                if (other_arr) AF_THROW(af_destroy_array(other_arr));
             }
 
             isRef = false;
@@ -846,8 +843,8 @@ namespace af
             tmp_arr = (dim < 0) ? tmp_arr : gforReorder(tmp_arr, dim);  \
             AF_THROW(af_assign_gen(&out, lhs, ndims, inds, tmp_arr));   \
             cleanIndices(indices);                                      \
-            AF_THROW(af_destroy_array(this->arr));                      \
-            if (dim >= 0) AF_THROW(af_destroy_array(tmp_arr));          \
+            if (this->arr) AF_THROW(af_destroy_array(this->arr));       \
+            if (dim >= 0)  AF_THROW(af_destroy_array(tmp_arr));         \
             this->arr = lhs;                                            \
             parent->set(out);                                           \
         } else {                                                        \
