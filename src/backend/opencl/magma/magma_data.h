@@ -13,10 +13,11 @@
 #define MAGMA_DATA_H
 #include <iostream>
 #include <CL/cl.h>
+#include <cl.hpp>
 #include <platform.hpp>
 #include "magma_types.h"
 
-#define check_error( err ) if (err != CL_SUCCESS) printf("%s:%d OpenCL Error: %d\n", __FILE__, __LINE__, err);
+#define check_error( err ) if (err != CL_SUCCESS) throw cl::Error(err);
 
 // ========================================
 // memory allocation

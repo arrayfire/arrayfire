@@ -39,48 +39,57 @@ Array<int> convertPivot(int *ipiv, int num)
 template<typename T>
 void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
 {
-    dim4 iDims = in.dims();
-    int M = iDims[0];
-    int N = iDims[1];
-    int MN = std::min(M, N);
-    int *ipiv = new int[MN];
 
-    Array<T> in_copy = copyArray<T>(in);
+    try {
+        dim4 iDims = in.dims();
+        int M = iDims[0];
+        int N = iDims[1];
+        int MN = std::min(M, N);
+        int *ipiv = new int[MN];
 
-    cl::Buffer *in_buf = in_copy.get();
-    int info = 0;
-    magma_getrf_gpu<T>(M, N, (*in_buf)(), in.getOffset(), in.strides()[1],
-                       ipiv, getQueue()(), &info);
+        Array<T> in_copy = copyArray<T>(in);
 
-    // SPLIT into lower and upper
-    dim4 ldims(M, MN);
-    dim4 udims(MN, N);
-    lower = createEmptyArray<T>(ldims);
-    upper = createEmptyArray<T>(udims);
+        cl::Buffer *in_buf = in_copy.get();
+        int info = 0;
+        magma_getrf_gpu<T>(M, N, (*in_buf)(), in.getOffset(), in.strides()[1],
+                           ipiv, getQueue()(), &info);
 
-    kernel::lu_split<T>(lower, upper, in_copy);
+        // SPLIT into lower and upper
+        dim4 ldims(M, MN);
+        dim4 udims(MN, N);
+        lower = createEmptyArray<T>(ldims);
+        upper = createEmptyArray<T>(udims);
 
-    pivot = convertPivot(ipiv, MN);
-    delete[] ipiv;
+        kernel::lu_split<T>(lower, upper, in_copy);
+
+        pivot = convertPivot(ipiv, MN);
+        delete[] ipiv;
+    } catch (cl::Error &err) {
+        CL_TO_AF_ERROR(err);
+    }
 }
 
 template<typename T>
 Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
 {
-    dim4 iDims = in.dims();
-    int M = iDims[0];
-    int N = iDims[1];
-    int MN = std::min(M, N);
-    int *ipiv = new int[MN];
+    try {
+        dim4 iDims = in.dims();
+        int M = iDims[0];
+        int N = iDims[1];
+        int MN = std::min(M, N);
+        int *ipiv = new int[MN];
 
-    cl::Buffer *in_buf = in.get();
-    int info = 0;
-    magma_getrf_gpu<T>(M, N, (*in_buf)(), in.getOffset(), in.strides()[1],
-                       ipiv, getQueue()(), &info);
+        cl::Buffer *in_buf = in.get();
+        int info = 0;
+        magma_getrf_gpu<T>(M, N, (*in_buf)(), in.getOffset(), in.strides()[1],
+                           ipiv, getQueue()(), &info);
 
-    Array<int> pivot = convertPivot(ipiv, MN);
-    delete[] ipiv;
-    return pivot;
+        Array<int> pivot = convertPivot(ipiv, MN);
+        delete[] ipiv;
+        return pivot;
+    } catch(cl::Error &err) {
+        CL_TO_AF_ERROR(err);
+    }
 }
 
 #define INSTANTIATE_LU(T)                                                                           \

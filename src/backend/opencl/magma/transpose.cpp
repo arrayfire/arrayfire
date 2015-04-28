@@ -38,21 +38,17 @@ magmablas_transpose(
 
     int idims[] = {m, n, 1, 1};
     int odims[] = {n, m, 1, 1};
-    int istrides[] = {ldda, ldda * n, ldda * n, ldda * n};
-    int ostrides[] = {lddat, lddat * m, lddat * m, lddat * m};
+    int istrides[] = {1, ldda, ldda * n, ldda * n};
+    int ostrides[] = {1, lddat, lddat * m, lddat * m};
 
     using namespace opencl;
 
-    try {
-        if (m % 32 == 0 && n % 32 == 0) {
-            kernel::transpose<T, false, true >(makeParam(dA , dA_offset , idims, istrides),
-                                               makeParam(dAT, dAT_offset, odims, ostrides));
-        } else {
-            kernel::transpose<T, false, false>(makeParam(dA , dA_offset , idims, istrides),
-                                                       makeParam(dAT, dAT_offset, odims, ostrides));
-        }
-    } catch(cl::Error &err) {
-        std::cout << err.err() << std::endl;
+    if (m % 32 == 0 && n % 32 == 0) {
+        kernel::transpose<T, false, true >(makeParam(dA , dA_offset , idims, istrides),
+                                           makeParam(dAT, dAT_offset, odims, ostrides));
+    } else {
+        kernel::transpose<T, false, false>(makeParam(dA , dA_offset , idims, istrides),
+                                           makeParam(dAT, dAT_offset, odims, ostrides));
     }
 }
 

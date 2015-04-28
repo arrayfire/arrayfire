@@ -30,19 +30,14 @@ magmablas_transpose_inplace(
     if (n == 0) return;
 
     int dims[] = {n, n, 1, 1};
-    int strides[] = {ldda, ldda * n, ldda * n, ldda * n};
+    int strides[] = {1, ldda, ldda * n, ldda * n};
 
-    try {
+    using namespace opencl;
 
-        using namespace opencl;
-
-        if (n % 32 == 0) {
-            kernel::transpose_inplace<T, false, true >(makeParam(dA , dA_offset , dims, strides));
-        } else {
-            kernel::transpose_inplace<T, false, false>(makeParam(dA , dA_offset , dims, strides));
-        }
-    } catch(cl::Error &err) {
-        std::cout << err.err() << std::endl;
+    if (n % 32 == 0) {
+        kernel::transpose_inplace<T, false, true >(makeParam(dA , dA_offset , dims, strides));
+    } else {
+        kernel::transpose_inplace<T, false, false>(makeParam(dA , dA_offset , dims, strides));
     }
 }
 

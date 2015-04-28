@@ -33,15 +33,7 @@ magmablas_laswp(
         return;  //info;
     }
 
-    try {
-
-        using namespace opencl;
-        kernel::laswp<T>(n, dAT, dAT_offset, ldda, k1, k2, ipiv, inci);
-
-    } catch(cl::Error &err) {
-        std::cout << err.err() << std::endl;
-    }
-
+    opencl::kernel::laswp<T>(n, dAT, dAT_offset, ldda, k1, k2, ipiv, inci);
 }
 
 

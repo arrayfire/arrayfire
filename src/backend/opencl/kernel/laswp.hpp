@@ -77,7 +77,8 @@ void laswp(int n, cl_mem in, size_t offset, int ldda,
     NDRange global(groups * local[0]);
     zlaswp_params_t params;
 
-    auto laswpOp = make_kernel<int, cl_mem, int, int, zlaswp_params_t>(*swpKernels[device]);
+    auto laswpOp = make_kernel<int, cl_mem, unsigned long long,
+                               int, zlaswp_params_t>(*swpKernels[device]);
 
     for( int k = k1-1; k < k2; k += MAX_PIVOTS ) {
 
