@@ -10,7 +10,7 @@
 #include <af/array.h>
 #include <af/graphics.h>
 #include "error.hpp"
-
+#include <stdio.h>
 namespace af
 {
     void image(const array &in)
@@ -23,4 +23,8 @@ namespace af
         AF_THROW(af_draw_plot(X.get(), Y.get()));
     }
 
+    void histogram1d(const array &X, const unsigned int nbins, const double minval, const double maxval)
+    {
+        AF_THROW(af_draw_histogram1d(X.get(), nbins, minval, maxval));
+    }
 }

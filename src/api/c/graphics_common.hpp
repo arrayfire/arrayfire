@@ -35,15 +35,18 @@ namespace graphics
 
 typedef std::map<size_t, fg::Image*> ImageMap_t;
 typedef std::map<size_t, fg::Plot*> PlotMap_t;
+typedef std::map<size_t, fg::Histogram*> HistogramMap_t;
 
 typedef ImageMap_t::iterator ImgMapIter;
 typedef PlotMap_t::iterator PltMapIter;
+typedef HistogramMap_t::iterator HstMapIter;
 
 class ForgeManager
 {
     private:
         ImageMap_t mImgMap;
         PlotMap_t  mPltMap;
+        HistogramMap_t  mHstMap;
 
     public:
         static fg::Window* getWindow();
@@ -51,6 +54,7 @@ class ForgeManager
         ~ForgeManager();
         fg::Image* getImage(int w, int h, fg::ColorMode mode, GLenum type);
         fg::Plot* getPlot(int nPoints, GLenum type);
+        fg::Histogram* getHistogram(int nPoints, GLenum type);
 
     protected:
         ForgeManager() {}

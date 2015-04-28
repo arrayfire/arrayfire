@@ -143,6 +143,19 @@ fg::Plot* ForgeManager::getPlot(int nPoints, GLenum type)
     return mPltMap[size];
 }
 
+fg::Histogram* ForgeManager::getHistogram(int nPoints, GLenum type)
+{
+    size_t size = nPoints * getTypeSize(type);
+
+    HstMapIter iter = mHstMap.find(size);
+    if (iter==mHstMap.end()) {
+        fg::Histogram* temp = new fg::Histogram(type);
+        mHstMap[size] = temp;
+    }
+
+    return mHstMap[size];
+}
+
 void ForgeManager::destroyResources()
 {
     for(ImgMapIter iter = mImgMap.begin(); iter != mImgMap.end(); iter++)
