@@ -44,11 +44,11 @@ magmablas_transpose(
     using namespace opencl;
 
     if (m % 32 == 0 && n % 32 == 0) {
-        kernel::transpose<T, false, true >(makeParam(dA , dA_offset , idims, istrides),
-                                           makeParam(dAT, dAT_offset, odims, ostrides));
+        kernel::transpose<T, false, true >(makeParam(dAT, dAT_offset, odims, ostrides),
+                                           makeParam(dA , dA_offset , idims, istrides));
     } else {
-        kernel::transpose<T, false, false>(makeParam(dA , dA_offset , idims, istrides),
-                                           makeParam(dAT, dAT_offset, odims, ostrides));
+        kernel::transpose<T, false, false>(makeParam(dAT, dAT_offset, odims, ostrides),
+                                           makeParam(dA , dA_offset , idims, istrides));
     }
 }
 
