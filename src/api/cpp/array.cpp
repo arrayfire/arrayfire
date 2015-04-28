@@ -367,9 +367,9 @@ namespace af
     }
 
     template<typename Idx1, typename Idx2, typename Idx3, typename Idx4>
-    array array::gen_indexing(const Idx1 &s0, const Idx2 &s1, const Idx3 &s2, const Idx4 &s3) const
+    static array gen_indexing(const array &ref, const Idx1 &s0, const Idx2 &s1, const Idx3 &s2, const Idx4 &s3)
     {
-        eval();
+        ref.eval();
         af_index_t inds[4];
         inds[0] = toIndices(s0);
         inds[1] = toIndices(s1);
@@ -378,8 +378,8 @@ namespace af
 
         af_array out = 0;
         //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        AF_THROW(af_weak_copy(&out, ref.get()));
+        return array(out, &ref, inds);
     }
 
     array array::operator()(const array& idx) const
@@ -413,7 +413,7 @@ namespace af
             }
         }
 
-        return gen_indexing(idx, span, span, span);
+        return gen_indexing(*this, idx, span, span, span);
     }
 
     array array::operator()(const seq &s0) const
@@ -447,94 +447,94 @@ namespace af
             }
         }
 
-        return gen_indexing(s0, span, span, span);
+        return gen_indexing(*this, s0, span, span, span);
     }
 
     array array::operator()(const seq &s0, const seq &s1) const
     {
-        return gen_indexing(s0, s1, span, span);
+        return gen_indexing(*this, s0, s1, span, span);
     }
 
     array array::operator()(const seq &s0, const seq &s1, const seq &s2) const
     {
-        return gen_indexing(s0, s1, s2, span);
+        return gen_indexing(*this, s0, s1, s2, span);
     }
 
     array array::operator()(const seq &s0, const seq &s1, const seq &s2, const seq &s3) const
     {
-        return gen_indexing(s0, s1, s2, s3);
+        return gen_indexing(*this, s0, s1, s2, s3);
     }
 
     // A-S-S-S, A-S-N-N, A-S-S-N
     array array::operator()(const array& idx0, const seq &idx1, const seq &idx2, const seq &idx3) const
     {
-        return gen_indexing(idx0, idx1, idx2, idx3);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // A-A-S-S, A-A-N-N
     array array::operator()(const array& idx0, const array &idx1, const seq &idx2, const seq &idx3) const
     {
-        return gen_indexing(idx0, idx1, idx2, idx3);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // A-A-A-S, A-A-A-N
     array array::operator()(const array &idx0, const array &idx1, const array &idx2, const seq &idx3) const
     {
-        return gen_indexing(idx0, idx1, idx2, idx3);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // A-A-A-A
     array array::operator()(const array &idx0, const array &idx1, const array &idx2, const array &idx3) const
     {
-        return gen_indexing(idx0, idx1, idx2, idx3);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // S-A-S-S
     array array::operator()(const seq &idx0, const array &idx1, const seq &idx2, const seq &idx3) const
     {
-        return gen_indexing(idx0, idx1, idx2, idx3);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // S-S-A-S, S-S-A-N
     array array::operator()(const seq &idx0, const seq &idx1, const array &idx2, const seq &idx3) const
     {
-        return gen_indexing(idx0, idx1, idx2, idx3);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // S-S-S-A
     array array::operator()(const seq   &idx0, const seq   &idx1, const seq   &idx2, const array &idx3) const
     {
-        return gen_indexing(idx0, idx1, idx2, idx3);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // A-S-A-S, A-S-A-N
     array array::operator()(const array &idx0, const seq   &idx1, const array &idx2, const seq &idx3) const
     {
-        return gen_indexing(idx0, idx1, idx2, idx3);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // A-S-S-A
     array array::operator()(const array &idx0, const seq &idx1, const seq &idx2, const array &idx3) const
     {
-        return gen_indexing(idx0, idx1, idx2, idx3);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // S-A-A-S, S-A-A-N
     array array::operator()(const seq &idx0, const array &idx1, const array &idx2, const seq &idx3) const
     {
-        return gen_indexing(idx0, idx1, idx2, idx3);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // S-A-S-A
     array array::operator()(const seq &idx0, const array &idx1, const seq &idx2, const array &idx3) const
     {
-        return gen_indexing(idx0, idx1, idx2, idx3);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // S-S-A-A
     array array::operator()(const seq &idx0, const seq &idx1, const array &idx2, const array &idx3) const
     {
-        return gen_indexing(idx0, idx1, idx2, idx3);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     array array::row(int index) const

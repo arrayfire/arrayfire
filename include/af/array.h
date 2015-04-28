@@ -43,12 +43,8 @@ namespace af
         void set(af_array tmp) const;
         //END FIXME
 
-        array(af_array in, const array *par, af_index_t seqs[4]);
-
-        template<typename Idx1, typename Idx2, typename Idx3, typename Idx4>
-        array gen_indexing(const Idx1 &s0, const Idx2 &s1, const Idx3 &s2, const Idx4 &s3) const;
-
     public:
+        array(af_array in, const array *par, af_index_t seqs[4]);
         /**
             \ingroup construct_mat
             @{
