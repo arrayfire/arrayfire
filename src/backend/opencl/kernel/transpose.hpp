@@ -17,6 +17,7 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
+#include <types.hpp>
 
 using cl::Buffer;
 using cl::Program;

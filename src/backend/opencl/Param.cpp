@@ -7,18 +7,22 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#pragma once
+#include <af/defines.h>
 #include <cl.hpp>
+#include <Param.hpp>
 #include <kernel/KParam.hpp>
 
 namespace opencl
 {
-
-    typedef struct
+    Param makeParam(cl_mem mem, int off, int dims[4], int strides[4])
     {
-        cl::Buffer *data;
-        KParam info;
-    } Param;
-
-    Param makeParam(cl_mem mem, int off, int dims[4], int strides[4]);
+        Param out;
+        out.data = new cl::Buffer(mem);
+        out.info.offset = off;
+        for (int i = 0; i < 4; i++) {
+            out.info.dims[i] = dims[i];
+            out.info.strides[i] = strides[i];
+        }
+        return out;
+    }
 }

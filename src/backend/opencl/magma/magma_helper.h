@@ -7,18 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#pragma once
-#include <cl.hpp>
-#include <kernel/KParam.hpp>
+#ifndef __MAGMA_HELPER_H
+#define __MAGMA_HELPER_H
 
-namespace opencl
-{
+template<typename T> T magma_one();
+template<typename T> T magma_neg_one();
+template<typename T> magma_int_t magma_get_getrf_nb(int num);
 
-    typedef struct
-    {
-        cl::Buffer *data;
-        KParam info;
-    } Param;
-
-    Param makeParam(cl_mem mem, int off, int dims[4], int strides[4]);
-}
+#endif
