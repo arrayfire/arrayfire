@@ -20,8 +20,18 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+
+
+template<typename T>
+class Reduce : public ::testing::Test
+{
+};
+
+typedef ::testing::Types<float, double, af::cfloat, af::cdouble, uint, int, char, uchar> TestTypes;
+TYPED_TEST_CASE(Reduce, TestTypes);
 
 typedef af_err (*reduceFunc)(af_array *, const af_array, const int);
 
@@ -321,36 +331,106 @@ TEST(Reduce, Test_max_Global)
     delete[] h_a;
 }
 
-TEST(Reduce, Test_All_Global)
+
+template<typename T>
+void typed_assert_eq(T lhs, T rhs, bool both = true)
 {
-    int num = 10000;
-    af::array a = af::round(2 * af::randu(num, 1));
-
-    char res = af::alltrue<char>(a);
-    float *h_a = a.host<float>();
-    char gold = 1;
-
-    for (int i = 0; i < num; i++) {
-        gold = gold && h_a[i];
-    }
-
-    ASSERT_EQ(gold, res);
-    delete[] h_a;
+    ASSERT_EQ(lhs, rhs);
 }
 
-TEST(Reduce, Test_Any_Global)
+template<>
+void typed_assert_eq<float>(float lhs, float rhs, bool both)
 {
-    int num = 10000;
-    af::array a = af::round(2 * af::randu(num, 1));
+    ASSERT_FLOAT_EQ(lhs, rhs);
+}
 
-    char res = af::anytrue<char>(a);
-    float *h_a = a.host<float>();
-    char gold = 0;
+template<>
+void typed_assert_eq<double>(double lhs, double rhs, bool both)
+{
+    ASSERT_DOUBLE_EQ(lhs, rhs);
+}
 
-    for (int i = 0; i < num; i++) {
-        gold = gold || h_a[i];
+template<>
+void typed_assert_eq<af::cfloat>(af::cfloat lhs, af::cfloat rhs, bool both)
+{
+    ASSERT_FLOAT_EQ(lhs.real(), rhs.real());
+    if(both)
+        ASSERT_FLOAT_EQ(lhs.imag(), rhs.imag());
+
+}
+
+template<>
+void typed_assert_eq<af::cdouble>(af::cdouble lhs, af::cdouble rhs, bool both)
+{
+    ASSERT_DOUBLE_EQ(lhs.real(), rhs.real());
+    if(both)
+        ASSERT_DOUBLE_EQ(lhs.imag(), rhs.imag());
+}
+
+TYPED_TEST(Reduce, Test_All_Global)
+{
+    if (noDoubleTests<TypeParam>()) return;
+
+    // Input size test
+    for(int i = 1; i < 1000; i+=100) {
+        int num = 10 * i;
+        vector<TypeParam> h_vals(num, (TypeParam)true);
+        array a(2, num/2, &h_vals.front());
+
+        TypeParam res = af::alltrue<TypeParam>(a);
+        typed_assert_eq((TypeParam)true, res, false);
+
+        h_vals[3] = false;
+        a = array(2, num/2, &h_vals.front());
+
+        res = af::alltrue<TypeParam>(a);
+        typed_assert_eq((TypeParam)false, res, false);
     }
 
-    ASSERT_EQ(gold, res);
-    delete[] h_a;
+    // false value location test
+    int num = 10000;
+    vector<TypeParam> h_vals(num, (TypeParam)true);
+    for(int i = 1; i < 10000; i+=100) {
+        h_vals[i] = false;
+        array a(2, num/2, &h_vals.front());
+
+        TypeParam res = af::alltrue<TypeParam>(a);
+        typed_assert_eq((TypeParam)false, res, false);
+
+        h_vals[i] = true;
+    }
+}
+
+TYPED_TEST(Reduce, Test_Any_Global)
+{
+    if (noDoubleTests<TypeParam>()) return;
+
+    // Input size test
+    for(int i = 1; i < 1000; i+=100) {
+        int num = 10 * i;
+        vector<TypeParam> h_vals(num, (TypeParam)false);
+        array a(2, num/2, &h_vals.front());
+
+        TypeParam res = af::anytrue<TypeParam>(a);
+        typed_assert_eq((TypeParam)false, res, false);
+
+        h_vals[3] = true;
+        a = array(2, num/2, &h_vals.front());
+
+        res = af::anytrue<TypeParam>(a);
+        typed_assert_eq((TypeParam)true, res, false);
+    }
+
+    // true value location test
+    int num = 10000;
+    vector<TypeParam> h_vals(num, (TypeParam)false);
+    for(int i = 1; i < 10000; i+=100) {
+        h_vals[i] = true;
+        array a(2, num/2, &h_vals.front());
+
+        TypeParam res = af::anytrue<TypeParam>(a);
+        typed_assert_eq((TypeParam)true, res, false);
+
+        h_vals[i] = false;
+    }
 }

@@ -36,13 +36,14 @@ namespace af
         af_array   arr;
 
         //FIXME: Put the following in a different class
-        const array   *parent;
-        bool     isRef;
-        af_index_t indices[4];
-        array(af_array in, const array *par, af_index_t seqs[4]);
+        const array     *parent;
+        bool            isRef;
+        af_index_t      indices[4];
         void set(af_array tmp);
         void set(af_array tmp) const;
         //END FIXME
+
+        array(af_array in, const array *par, af_index_t seqs[4]);
 
     public:
         /**
@@ -57,11 +58,14 @@ namespace af
             \endcode
         */
         array();
+
         /**
             Creates an array from an \ref af_array handle
             \param handle the af_array object.
          */
+        explicit
         array(const af_array handle);
+
         /**
             Creates an arra
             TODO: Copy or reference semantics?
@@ -90,6 +94,7 @@ namespace af
                        (default is f32)
 
         */
+        explicit
         array(dim_type dim0, dtype ty = f32);
 
         /**
@@ -114,6 +119,7 @@ namespace af
                        (default is f32)
 
         */
+        explicit
         array(dim_type dim0, dim_type dim1, dtype ty = f32);
 
         /**
@@ -139,6 +145,7 @@ namespace af
                        (default is f32)
 
         */
+        explicit
         array(dim_type dim0, dim_type dim1, dim_type dim2, dtype ty = f32);
 
         /**
@@ -164,6 +171,7 @@ namespace af
                        (default is f32)
 
         */
+        explicit
         array(dim_type dim0, dim_type dim1, dim_type dim2, dim_type dim3, dtype ty = f32);
 
         /**
@@ -191,6 +199,7 @@ namespace af
             \param[in] ty optional label describing the data type
                        (default is f32)
         */
+        explicit
         array(const dim4& dims, dtype ty = f32);
 
         /**
@@ -224,8 +233,9 @@ namespace af
             \endcode
         */
         template<typename T>
-            array(dim_type dim0,
-                  const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
+        explicit
+        array(dim_type dim0,
+              const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
 
 
         /**
@@ -253,8 +263,9 @@ namespace af
             \image html 2dArray.png
         */
         template<typename T>
-            array(dim_type dim0, dim_type dim1,
-                  const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
+        explicit
+        array(dim_type dim0, dim_type dim1,
+              const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
 
 
         /**
@@ -281,8 +292,9 @@ namespace af
             \image html 3dArray.png
         */
         template<typename T>
-            array(dim_type dim0, dim_type dim1, dim_type dim2,
-                  const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
+        explicit
+        array(dim_type dim0, dim_type dim1, dim_type dim2,
+              const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
 
 
         /**
@@ -310,8 +322,9 @@ namespace af
             \endcode
         */
         template<typename T>
-            array(dim_type dim0, dim_type dim1, dim_type dim2, dim_type dim3,
-                  const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
+        explicit
+        array(dim_type dim0, dim_type dim1, dim_type dim2, dim_type dim3,
+              const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
 
         /**
             Create an array of specified size on the device using a host/device pointer
@@ -343,8 +356,9 @@ namespace af
             \endcode
         */
         template<typename T>
-            array(const dim4& dims,
-                  const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
+        explicit
+        array(const dim4& dims,
+              const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
 
         /**
             @}
