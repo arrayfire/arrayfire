@@ -17,7 +17,6 @@
 #include <mutex>
 #include <math.hpp>
 #include "config.hpp"
-#include <iostream>
 
 using cl::Buffer;
 using cl::Program;
@@ -27,31 +26,13 @@ using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
 using std::ostringstream;
+using af::scalar_to_option;
 
 namespace opencl
 {
 
 namespace kernel
 {
-    template<typename T>
-    string scalar_to_option(const T &val)
-    {
-        return std::to_string(+val);
-    }
-
-    template<>
-    string scalar_to_option<cfloat>(const cfloat &val) {
-        ostringstream ss;
-        ss << val.s[0] << "," << val.s[1];
-        return ss.str();
-    }
-
-    template<>
-    string scalar_to_option<cdouble>(const cdouble &val) {
-        ostringstream ss;
-        ss << val.s[0] << "," << val.s[1];
-        return ss.str();
-    }
 
     template<typename T>
     static void identity(Param out)

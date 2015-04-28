@@ -80,21 +80,21 @@ bool ArrayInfo::isScalar() const
 
 bool ArrayInfo::isRow() const
 {
-    return (ndims() == 2 && dims()[0] == 1);
+    return (dims()[0] == 1 && dims()[1] > 1 && dims()[2] == 1 && dims()[3] == 1);
 }
 
 bool ArrayInfo::isColumn() const
 {
-    return (ndims() == 1);
+    return (dims()[0] > 1 && dims()[1] == 1 && dims()[2] == 1 && dims()[3] == 1);
 }
 
 bool ArrayInfo::isVector() const
 {
-    bool ret = true;
-    for(unsigned i = 0; i < (ndims() - 1) && ret; i++) {
-        ret = (dims()[i] == 1);
+    int singular_dims = 0;
+    for(int i = 0; i < AF_MAX_DIMS; i++) {
+        singular_dims += (dims()[i] == 1);
     }
-    return ret;
+    return singular_dims == AF_MAX_DIMS - 1;
 }
 
 bool ArrayInfo::isComplex() const
@@ -124,13 +124,15 @@ bool ArrayInfo::isRealFloating() const
 
 bool ArrayInfo::isFloating() const
 {
-    return (!isInteger());
+    return (!isInteger() && !isBool());
 }
 
 bool ArrayInfo::isInteger() const
 {
     return (type == s32
          || type == u32
+         || type == s64
+         || type == u64
          || type == u8);
 }
 

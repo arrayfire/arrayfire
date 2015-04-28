@@ -15,7 +15,6 @@
 #include <stdexcept>
 #include <string>
 #include <cassert>
-#include <iostream>
 #include <math.hpp>
 #include <err_common.hpp>
 #include <cublasManager.hpp>

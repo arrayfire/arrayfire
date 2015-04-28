@@ -11,7 +11,6 @@
 #include <numeric>
 #include <cmath>
 #include <vector>
-#include <iostream>
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
 #include <err_common.hpp>
@@ -73,12 +72,15 @@ dim4::elements()
 dim_type
 dim4::ndims() const
 {
-    dim_type ret = 4;
-    for(int i = 3; i >= 1; i--) {
-        if(dims[i] == 1)    {   ret--;  }
-        else                {   break;  }
-    }
-    return ret;
+    int num = elements();
+    if (num == 0) return 0;
+    if (num == 1) return 1;
+
+    if (dims[3] != 1) return 4;
+    if (dims[2] != 1) return 3;
+    if (dims[1] != 1) return 2;
+
+    return 1;
 }
 
 dim_type

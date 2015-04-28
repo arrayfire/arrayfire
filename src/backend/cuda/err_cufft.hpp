@@ -10,6 +10,7 @@
 #pragma once
 #include <stdio.h>
 #include <err_common.hpp>
+#include <cuda.h> // Need this for CUDA_VERSION
 #include <cufft.h>
 
 static const char * _cufftGetResultString(cufftResult res)
@@ -58,11 +59,13 @@ static const char * _cufftGetResultString(cufftResult res)
         case CUFFT_NO_WORKSPACE:
             return "cuFFT: no workspace provided";
 
+#if CUDA_VERSION >= 6050
         case CUFFT_NOT_IMPLEMENTED:
             return "cuFFT: not implemented";
 
         case CUFFT_LICENSE_ERROR:
             return "cuFFT: license error";
+#endif
     }
 
     return "cuFFT: unknown error";
@@ -83,4 +86,3 @@ static const char * _cufftGetResultString(cufftResult res)
                      AF_ERR_INTERNAL);          \
         }                                       \
     } while(0)
-

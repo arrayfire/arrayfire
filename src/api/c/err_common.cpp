@@ -10,12 +10,12 @@
 #include <err_common.hpp>
 #include <type_util.hpp>
 #include <string>
-#include <iostream>
 #include <sstream>
+#include <cstring>
+#include <cstdio>
 
 using std::string;
 using std::stringstream;
-using std::cerr;
 
 AfError::AfError(const char * const funcName,
                  const int line,
@@ -128,6 +128,15 @@ int DimensionError::getArgIndex() const
     return argIndex;
 }
 
+void
+print_error(const stringstream &msg)
+{
+    const char* perr = getenv("AF_PRINT_ERRORS");
+    if(perr != nullptr) {
+        if(std::strncmp(perr, "0", 1) != 0)
+            fprintf(stderr, "%s\n", msg.str().c_str());
+    }
+}
 
 af_err processException()
 {
@@ -137,52 +146,44 @@ af_err processException()
     try {
         throw;
     } catch (const DimensionError &ex) {
-
         ss << "In function " << ex.getFunctionName()
            << "(" << ex.getLine() << "):\n"
            << "Invalid dimension for argument " << ex.getArgIndex() << "\n"
            << "Expected: " << ex.getExpectedCondition() << "\n";
 
-        cerr << ss.str();
+        print_error(ss);
         err = AF_ERR_SIZE;
-
     } catch (const ArgumentError &ex) {
-
         ss << "In function " << ex.getFunctionName()
            << "(" << ex.getLine() << "):\n"
            << "Invalid argument at index " << ex.getArgIndex() << "\n"
            << "Expected: " << ex.getExpectedCondition() << "\n";
 
-        cerr << ss.str();
+        print_error(ss);
         err = AF_ERR_ARG;
-
     } catch (const SupportError &ex) {
-
         ss << ex.getFunctionName()
            << " not supported for " << ex.getBackendName()
            << " backend\n";
 
-        cerr << ss.str();
+        print_error(ss);
         err = AF_ERR_NOT_SUPPORTED;
     } catch (const TypeError &ex) {
-
         ss << "In function " << ex.getFunctionName()
            << "(" << ex.getLine() << "):\n"
            << "Invalid type for argument " << ex.getArgIndex() << "\n";
 
-        cerr << ss.str();
+        print_error(ss);
         err = AF_ERR_INVALID_TYPE;
     } catch (const AfError &ex) {
-
         ss << "Error in " << ex.getFunctionName()
            << "(" << ex.getLine() << "):\n"
            << ex.what() << "\n";
 
-        cerr << ss.str();
+        print_error(ss);
         err = ex.getError();
     } catch (...) {
-
-        cerr << "Unknown error\n";
+        print_error(ss);
         err = AF_ERR_UNKNOWN;
     }
 
