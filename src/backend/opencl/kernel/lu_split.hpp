@@ -18,6 +18,7 @@
 #include <Param.hpp>
 #include <debug_opencl.hpp>
 #include <types.hpp>
+#include <math.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -26,6 +27,7 @@ using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
+using af::scalar_to_option;
 
 namespace opencl
 {
@@ -53,7 +55,9 @@ void lu_split_launcher(Param lower, Param upper, const Param in)
 
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName()
-                        << " -D same_dims=" << same_dims;
+                        << " -D same_dims=" << same_dims
+                        << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")"
+                        << " -D ONE=(T)(" << scalar_to_option(scalar<T>(1)) << ")";
 
                 if (std::is_same<T, double>::value ||
                     std::is_same<T, cdouble>::value) {

@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-__kernel_
+__kernel
 void lu_split_kernel(__global T *lptr, KParam linfo,
                      __global T *uptr, KParam uinfo,
                      const __global T *iptr, KParam iinfo,
@@ -19,8 +19,8 @@ void lu_split_kernel(__global T *lptr, KParam linfo,
     const dim_type groupIdx_0 = get_group_id(0) - oz * groups_x;
     const dim_type groupIdx_1 = get_group_id(1) - ow * groups_y;
 
-    const dim_type xx = threadIdx.x + groupIdx_0 * get_local_size(0);
-    const dim_type yy = threadIdx.y + groupIdx_1 * get_local_size(1);
+    const dim_type xx = get_local_id(0) + groupIdx_0 * get_local_size(0);
+    const dim_type yy = get_local_id(1) + groupIdx_1 * get_local_size(1);
 
     const dim_type incy = groups_y * get_local_size(1);
     const dim_type incx = groups_x * get_local_size(0);
@@ -35,23 +35,23 @@ void lu_split_kernel(__global T *lptr, KParam linfo,
         d_u = d_u + oz * uinfo.strides[2] + ow * uinfo.strides[3];
 
         for (dim_type oy = yy; oy < iinfo.dims[1]; oy += incy) {
-            T *Yd_i = d_i + oy * iinfo.strides[1];
-            T *Yd_l = d_l +  oy * linfo.strides[1];
-            T *Yd_u = d_u +  oy * uinfo.strides[1];
+            __global T *Yd_i = d_i + oy * iinfo.strides[1];
+            __global T *Yd_l = d_l +  oy * linfo.strides[1];
+            __global T *Yd_u = d_u +  oy * uinfo.strides[1];
             for (dim_type ox = xx; ox < iinfo.dims[0]; ox += incx) {
                 if(ox > oy) {
                     if(same_dims || oy < linfo.dims[1])
                         Yd_l[ox] = Yd_i[ox];
                     if(!same_dims || ox < uinfo.dims[0])
-                        Yd_u[ox] = scalar<T>(0);
+                        Yd_u[ox] = ZERO;
                 } else if (oy > ox) {
                     if(same_dims || oy < linfo.dims[1])
-                        Yd_l[ox] = scalar<T>(0);
+                        Yd_l[ox] = ZERO;
                     if(!same_dims || ox < uinfo.dims[0])
                         Yd_u[ox] = Yd_i[ox];
                 } else if(ox == oy) {
                     if(same_dims || oy < linfo.dims[1])
-                        Yd_l[ox] = scalar<T>(1.0);
+                        Yd_l[ox] = ONE;
                     if(!same_dims || ox < uinfo.dims[0])
                         Yd_u[ox] = Yd_i[ox];
                 }

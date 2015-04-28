@@ -11,7 +11,7 @@
 
 #ifndef MAGMA_DATA_H
 #define MAGMA_DATA_H
-
+#include <iostream>
 #include <CL/cl.h>
 #include <platform.hpp>
 #include "magma_types.h"

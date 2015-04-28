@@ -79,7 +79,7 @@ magma_int_t magma_getrf_gpu(
     static const Ty c_one     = magma_one<Ty>();
     static const Ty c_neg_one = magma_neg_one<Ty>();
 
-    magma_int_t iinfo, nb;
+    magma_int_t iinfo = 0, nb;
     magma_int_t maxm, maxn, mindim;
     magma_int_t i, j, rows, s, lddat, ldwork;
     cl_mem dAT, dAP;
