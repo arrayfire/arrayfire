@@ -18,20 +18,22 @@
 namespace opencl
 {
 
-Array<int> convertPivot(int *ipiv, int num)
+Array<int> convertPivot(int *ipiv, int in_sz, int out_sz)
 {
-    int *out = new int[num];
 
-    for (int i = 0; i < num; i++) {
+    int *out = new int[out_sz];
+
+    for (int i = 0; i < out_sz; i++) {
         out[i] = i;
     }
 
-    for(int j = 0; j < num; j++) {
+    for(int j = 0; j < in_sz; j++) {
         // 1 indexed in pivot
         std::swap(out[j], out[ipiv[j] - 1]);
     }
 
-    Array<int> res = createHostDataArray(dim4(num), out);
+    Array<int> res = createHostDataArray(dim4(out_sz), out);
+
     delete[] out;
     return res;
 }
@@ -62,7 +64,7 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
 
         kernel::lu_split<T>(lower, upper, in_copy);
 
-        pivot = convertPivot(ipiv, MN);
+        pivot = convertPivot(ipiv, MN, M);
         delete[] ipiv;
     } catch (cl::Error &err) {
         CL_TO_AF_ERROR(err);
@@ -84,7 +86,7 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
         magma_getrf_gpu<T>(M, N, (*in_buf)(), in.getOffset(), in.strides()[1],
                            ipiv, getQueue()(), &info);
 
-        Array<int> pivot = convertPivot(ipiv, MN);
+        Array<int> pivot = convertPivot(ipiv, MN, M);
         delete[] ipiv;
         return pivot;
     } catch(cl::Error &err) {

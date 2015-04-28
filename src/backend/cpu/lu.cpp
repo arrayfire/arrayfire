@@ -99,9 +99,9 @@ void lu_split(Array<T> &lower, Array<T> &upper, const Array<T> &in)
     }
 }
 
-void convertPivot(Array<int> &pivot)
+void convertPivot(Array<int> &pivot, int out_sz)
 {
-    Array<int> p = range<int>(pivot.dims(), 0);
+    Array<int> p = range<int>(dim4(out_sz), 0);
     int *d_pi = pivot.get();
     int *d_po = p.get();
     dim_type d0 = pivot.dims()[0];
@@ -133,7 +133,7 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
     upper = createEmptyArray<T>(udims);
 
     lu_split<T>(lower, upper, in_copy);
-    convertPivot(pivot);
+    convertPivot(pivot, M);
 }
 
 template<typename T>
@@ -149,7 +149,7 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
                               in.get(), in.strides()[1],
                               pivot.get());
 
-    if(convert_pivot) convertPivot(pivot);
+    if(convert_pivot) convertPivot(pivot, M);
 
     return pivot;
 }

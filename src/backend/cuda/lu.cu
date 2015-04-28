@@ -83,12 +83,12 @@ LU_FUNC(getrf , double , D)
 LU_FUNC(getrf , cfloat , C)
 LU_FUNC(getrf , cdouble, Z)
 
-void convertPivot(Array<int> &pivot)
+void convertPivot(Array<int> &pivot, int out_sz)
 {
     dim_type d0 = pivot.dims()[0];
 
-    int *d_po = new int[d0];
-    for(int i = 0; i < d0; i++) {
+    int *d_po = new int[out_sz];
+    for(int i = 0; i < out_sz; i++) {
         d_po[i] = i;
     }
 
@@ -100,7 +100,7 @@ void convertPivot(Array<int> &pivot)
         std::swap(d_po[j], d_po[d_pi[j] - 1]);
     }
 
-    pivot = createHostDataArray<int>(pivot.dims(), d_po);;
+    pivot = createHostDataArray<int>(out_sz, d_po);;
 
     delete [] d_po;
     delete [] d_pi;
@@ -142,7 +142,7 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
     upper = createEmptyArray<T>(udims);
 
     kernel::lu_split<T>(lower, upper, in_copy);
-    convertPivot(pivot);
+    convertPivot(pivot, M);
 
     memFree(workspace);
     memFree(info);
@@ -174,7 +174,7 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
                                    pivot.get(),
                                    info));
 
-    if(convert_pivot) convertPivot(pivot);
+    if(convert_pivot) convertPivot(pivot, M);
 
     memFree(workspace);
     memFree(info);
