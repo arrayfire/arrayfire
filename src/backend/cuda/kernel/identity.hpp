@@ -38,7 +38,7 @@ namespace kernel
            idw >= out.dims[3])
             return;
 
-        T *ptr = out.ptr + idw * out.strides[2] + idz * out.strides[3];
+        T *ptr = out.ptr + idz * out.strides[2] + idw * out.strides[3];
         T val = (idx == idy) ? scalar<T>(1) : scalar<T>(0);
         ptr[idx + idy * out.strides[1]] = val;
     }

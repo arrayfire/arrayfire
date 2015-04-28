@@ -7,7 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <iostream>
 #include <af/array.h>
 #include <af/defines.h>
 #include <Array.hpp>
@@ -143,6 +142,8 @@ namespace opencl
     template Array<cdouble> padArray<SRC_T, cdouble>(Array<SRC_T> const &src, dim4 const &dims, cdouble default_value, double factor); \
     template Array<int    > padArray<SRC_T, int    >(Array<SRC_T> const &src, dim4 const &dims, int     default_value, double factor); \
     template Array<uint   > padArray<SRC_T, uint   >(Array<SRC_T> const &src, dim4 const &dims, uint    default_value, double factor); \
+    template Array<intl    > padArray<SRC_T, intl    >(Array<SRC_T> const &src, dim4 const &dims, intl     default_value, double factor); \
+    template Array<uintl   > padArray<SRC_T, uintl   >(Array<SRC_T> const &src, dim4 const &dims, uintl    default_value, double factor); \
     template Array<uchar  > padArray<SRC_T, uchar  >(Array<SRC_T> const &src, dim4 const &dims, uchar   default_value, double factor); \
     template Array<char   > padArray<SRC_T, char   >(Array<SRC_T> const &src, dim4 const &dims, char    default_value, double factor); \
     template void copyArray<SRC_T, float  >(Array<float  > &dst, Array<SRC_T> const &src); \
@@ -151,6 +152,8 @@ namespace opencl
     template void copyArray<SRC_T, cdouble>(Array<cdouble> &dst, Array<SRC_T> const &src); \
     template void copyArray<SRC_T, int    >(Array<int    > &dst, Array<SRC_T> const &src); \
     template void copyArray<SRC_T, uint   >(Array<uint   > &dst, Array<SRC_T> const &src); \
+    template void copyArray<SRC_T, intl    >(Array<intl    > &dst, Array<SRC_T> const &src); \
+    template void copyArray<SRC_T, uintl   >(Array<uintl   > &dst, Array<SRC_T> const &src); \
     template void copyArray<SRC_T, uchar  >(Array<uchar  > &dst, Array<SRC_T> const &src); \
     template void copyArray<SRC_T, char   >(Array<char   > &dst, Array<SRC_T> const &src);
 
@@ -158,6 +161,8 @@ namespace opencl
     INSTANTIATE_PAD_ARRAY(double)
     INSTANTIATE_PAD_ARRAY(int   )
     INSTANTIATE_PAD_ARRAY(uint  )
+    INSTANTIATE_PAD_ARRAY(intl   )
+    INSTANTIATE_PAD_ARRAY(uintl  )
     INSTANTIATE_PAD_ARRAY(uchar )
     INSTANTIATE_PAD_ARRAY(char  )
 

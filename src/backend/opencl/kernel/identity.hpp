@@ -25,6 +25,8 @@ using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
+using std::ostringstream;
+using af::scalar_to_option;
 
 namespace opencl
 {
@@ -43,10 +45,10 @@ namespace kernel
             int device = getActiveDeviceId();
 
             std::call_once( compileFlags[device], [device] () {
-                    std::ostringstream options;
+                    ostringstream options;
                     options << " -D T="    << dtype_traits<T>::getName()
-                            << " -D ONE="  << scalar<T>(1)
-                            << " -D ZERO=" << scalar<T>(0);
+                            << " -D ONE=(T)("  << scalar_to_option(scalar<T>(1)) << ")"
+                            << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")";
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
                         options << " -D USE_DOUBLE";

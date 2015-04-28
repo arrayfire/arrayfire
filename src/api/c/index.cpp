@@ -89,7 +89,7 @@ af_err af_lookup(af_array *out, const af_array in, const af_array indices, const
         ArrayInfo inInfo = getInfo(in);
         ArrayInfo idxInfo= getInfo(indices);
 
-        ARG_ASSERT(2, idxInfo.isVector());
+        ARG_ASSERT(2, idxInfo.isVector() || idxInfo.isScalar());
 
         af_dtype idxType = idxInfo.getType();
 

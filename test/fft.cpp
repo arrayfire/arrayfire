@@ -21,24 +21,6 @@ using std::vector;
 using af::cfloat;
 using af::cdouble;
 
-TEST(fft, Invalid_Array)
-{
-    if (noDoubleTests<float>()) return;
-
-    vector<float>   in(10000,1);
-
-    af_array inArray   = 0;
-    af_array outArray  = 0;
-
-    af::dim4 dims(10,10,10,1);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
-
-    ASSERT_EQ(AF_ERR_SIZE, af_fft(&outArray, inArray, 1.0, 0));
-
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-}
-
 TEST(fft2, Invalid_Array)
 {
     if (noDoubleTests<float>()) return;
@@ -48,7 +30,7 @@ TEST(fft2, Invalid_Array)
     af_array inArray   = 0;
     af_array outArray  = 0;
 
-    af::dim4 dims(5,5,2,2);
+    af::dim4 dims(5 * 5 * 2 * 2);
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
@@ -70,23 +52,6 @@ TEST(fft3, Invalid_Array)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_fft3(&outArray, inArray, 1.0, 0, 0, 0));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-}
-
-TEST(ifft1, Invalid_Array)
-{
-    if (noDoubleTests<float>()) return;
-
-    vector<float>   in(100,1);
-
-    af_array inArray   = 0;
-    af_array outArray  = 0;
-
-    af::dim4 dims(5,5,4,1);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<cfloat>::af_type));
-
-    ASSERT_EQ(AF_ERR_SIZE, af_ifft(&outArray, inArray, 0.01, 0));
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 
@@ -381,4 +346,146 @@ TEST(fft3, CPP)
 TEST(ifft3, CPP)
 {
     cppFFTTest<cfloat, cfloat, true>(string(TEST_DIR"/signal/ifft3_c2c.test"));
+}
+
+TEST(fft3, RandomData)
+{
+    af::array a = af::randu(31, 31, 31);
+    af::array b = af::fft3(a, 64, 64, 64);
+    af::array c = af::ifft3(b);
+
+    af::dim4 aDims = a.dims();
+    af::dim4 cDims = c.dims();
+    af::dim4 aStrides(1, aDims[0], aDims[0]*aDims[1], aDims[0]*aDims[1]*aDims[2]);
+    af::dim4 cStrides(1, cDims[0], cDims[0]*cDims[1], cDims[0]*cDims[1]*cDims[2]);
+
+    float* gold = new float[a.elements()];
+    float* out  = new float[2*c.elements()];
+
+    a.host((void*)gold);
+    c.host((void*)out);
+
+    for (int k=0; k<aDims[2]; ++k) {
+        int gkOff = k*aStrides[2];
+        int okOff = k*cStrides[2];
+        for (int j=0; j<aDims[1]; ++j) {
+            int gjOff = j*aStrides[1];
+            int ojOff = j*cStrides[1];
+            for (int i=0; i<aDims[0]; ++i) {
+                int giOff = i*aStrides[0];
+                int oiOff = i*cStrides[0];
+
+                int gi = gkOff + gjOff + giOff;
+                int oi = okOff + ojOff + oiOff;
+
+                bool isUnderTolerance = std::abs(gold[gi]-out[2*oi])<0.001;
+                ASSERT_EQ(true, isUnderTolerance)<< "Expected value="<<
+                    gold[gi] <<"\t Actual Value="<< out[2*oi] << " at: " <<gi<< std::endl;
+            }
+        }
+    }
+
+    delete[] gold;
+    delete[] out;
+}
+
+TEST(fft, CPP_4D)
+{
+    af::array a = af::randu(1024, 1024);
+    af::array b = af::fft(a);
+
+    af::array A = af::moddims(a, 1024, 32, 16, 2);
+    af::array B = af::fft(A);
+
+    af::cfloat *h_b = b.host<af::cfloat>();
+    af::cfloat *h_B = B.host<af::cfloat>();
+
+    for (int i = 0; i < a.elements(); i++) {
+        ASSERT_EQ(h_b[i], h_B[i]) << "at: " << i << std::endl;
+    }
+
+    delete[] h_b;
+    delete[] h_B;
+}
+
+TEST(ifft, CPP_4D)
+{
+    af::array a = af::randu(1024, 1024, c32);
+    af::array b = af::ifft(a);
+
+    af::array A = af::moddims(a, 1024, 32, 16, 2);
+    af::array B = af::ifft(A);
+
+    af::cfloat *h_b = b.host<af::cfloat>();
+    af::cfloat *h_B = B.host<af::cfloat>();
+
+    for (int i = 0; i < a.elements(); i++) {
+        ASSERT_EQ(h_b[i], h_B[i]) << "at: " << i << std::endl;
+    }
+
+    delete[] h_b;
+    delete[] h_B;
+}
+
+TEST(fft, GFOR)
+{
+    af::array a = af::randu(1024, 1024);
+    af::array b = af::constant(0, 1024, 1024, c32);
+    af::array c = af::fft(a);
+
+    gfor(af::seq ii, a.dims(1)) {
+        b(af::span, ii) = af::fft(a(af::span, ii));
+    }
+
+    af::cfloat *h_b = b.host<af::cfloat>();
+    af::cfloat *h_c = c.host<af::cfloat>();
+
+    for (int i = 0; i < a.elements(); i++) {
+        ASSERT_EQ(h_b[i], h_c[i]) << "at: " << i << std::endl;
+    }
+
+    delete[] h_b;
+    delete[] h_c;
+}
+
+TEST(fft2, GFOR)
+{
+    af::array a = af::randu(1024, 1024, 4);
+    af::array b = af::constant(0, 1024, 1024, 4, c32);
+    af::array c = af::fft2(a);
+
+    gfor(af::seq ii, a.dims(2)) {
+        b(af::span, af::span, ii) = af::fft2(a(af::span, af::span, ii));
+    }
+
+    af::cfloat *h_b = b.host<af::cfloat>();
+    af::cfloat *h_c = c.host<af::cfloat>();
+
+    for (int i = 0; i < a.elements(); i++) {
+        ASSERT_EQ(h_b[i], h_c[i]) << "at: " << i << std::endl;
+    }
+
+    delete[] h_b;
+    delete[] h_c;
+}
+
+TEST(fft3, GFOR)
+{
+    af::array a = af::randu(32, 32, 32, 4);
+    af::array b = af::constant(0, 32, 32, 32, 4, c32);
+    af::array c = af::fft3(a);
+
+    gfor(af::seq ii, a.dims(3)) {
+        b(af::span, af::span, af::span, ii) = af::fft3(a(af::span, af::span, af::span, ii));
+    }
+
+    af::cfloat *h_b = b.host<af::cfloat>();
+    af::cfloat *h_c = c.host<af::cfloat>();
+
+    for (int i = 0; i < a.elements(); i++) {
+        ASSERT_EQ(h_b[i], h_c[i]) << "at: " << i << std::endl;
+    }
+
+    delete[] h_b;
+    delete[] h_c;
 }

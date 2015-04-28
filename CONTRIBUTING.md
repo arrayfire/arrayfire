@@ -23,6 +23,7 @@ If you want to contribute code, we suggest you use the one of the following meth
 
 Key areas of code contributions include:
 - [New features](https://github.com/arrayfire/arrayfire/issues?q=is%3Aopen+is%3Aissue+label%3Afeature)
+    - You can refer to [this](https://github.com/arrayfire/arrayfire/wiki/How-to-Add-a-New-Function-to-ArrayFire) wiki page to get started on how to add a new function to the library.
 - [Bug fixes](https://github.com/arrayfire/arrayfire/labels/bug)
 - [Style changes](https://github.com/arrayfire/arrayfire/labels/style)
 - [Performance improvements](https://github.com/arrayfire/arrayfire/labels/style)

@@ -14,16 +14,19 @@
 #include <copy.hpp>
 #include <fft.hpp>
 #include <err_cuda.hpp>
+#include <err_cufft.hpp>
 #include <cufft.h>
-#include <cuComplex.h>
+#include <math.hpp>
 #include <string>
 #include <cstdio>
+#include <memory.hpp>
 
 using af::dim4;
 using std::string;
 
 namespace cuda
 {
+
 
 // cuFFTPlanner will do very basic plan caching.
 // it looks for required candidate in mHandles array and returns if found one.
@@ -55,9 +58,9 @@ class cuFFTPlanner
 };
 
 void find_cufft_plan(cufftHandle &plan, int rank, int *n,
-                                        int *inembed, int istride, int idist,
-                                        int *onembed, int ostride, int odist,
-                                        cufftType type, int batch)
+                     int *inembed, int istride, int idist,
+                     int *onembed, int ostride, int odist,
+                     cufftType type, int batch)
 {
     cuFFTPlanner &planner = cuFFTPlanner::getInstance();
     // create the key string
@@ -79,6 +82,7 @@ void find_cufft_plan(cufftHandle &plan, int rank, int *n,
         sprintf(key_str_temp, "%d:%d:", istride, idist);
         key_string.append(std::string(key_str_temp));
     }
+
     if (onembed!=NULL) {
         for(int r=0; r<rank; ++r) {
             sprintf(key_str_temp, "%d:", onembed[r]);
@@ -107,27 +111,21 @@ void find_cufft_plan(cufftHandle &plan, int rank, int *n,
     // otherwise create a new plan and set it at mAvailSlotIndex
     // and finally set it to output plan variable
     int slot_index = planner.mAvailSlotIndex;
-    cufftResult res= cufftDestroy(planner.mHandles[slot_index]);
-    if (res==CUFFT_SUCCESS || CUFFT_INVALID_PLAN) {
-        cufftHandle temp;
-        cufftResult res = cufftPlanMany(&temp, rank, n, inembed, istride, idist, onembed, ostride, odist, type, batch);
-        switch(res) {
-            case CUFFT_ALLOC_FAILED  : AF_ERROR("cuFFTPlanMany: cuFFT GPU resource allocation failed"   , AF_ERR_INTERNAL);
-            case CUFFT_INVALID_VALUE : AF_ERROR("cuFFTPlanMany: invalid parameters passed to cuFFT API" , AF_ERR_INTERNAL);
-            case CUFFT_INTERNAL_ERROR: AF_ERROR("cuFFTPlanMany: internal driver detected using cuFFT"   , AF_ERR_INTERNAL);
-            case CUFFT_SETUP_FAILED  : AF_ERROR("cuFFTPlanMany: cuFFT library initialization failed"    , AF_ERR_INTERNAL);
-            case CUFFT_INVALID_SIZE  : AF_ERROR("cuFFTPlanMany: invalid size parameters passed to cuFFT", AF_ERR_INTERNAL);
-            default: //CUFFT_SUCCESS
-                {
-                    plan = temp;
-                    planner.mHandles[slot_index] = temp;
-                    planner.mKeys[slot_index] = key_string;
-                    planner.mAvailSlotIndex = (slot_index + 1)%cuFFTPlanner::MAX_PLAN_CACHE;
-                }
-                break;
-        }
-    } else
-        AF_ERROR("cuFFTDestroy call failed", AF_ERR_INTERNAL);
+    cufftDestroy(planner.mHandles[slot_index]); // We ignore both return values
+
+    cufftHandle temp;
+    cufftResult res = cufftPlanMany(&temp, rank, n, inembed, istride, idist, onembed, ostride, odist, type, batch);
+
+    // If plan creation fails, clean up the memory we hold on to and try again
+    if (res != CUFFT_SUCCESS) {
+        garbageCollect();
+        CUFFT_CHECK(cufftPlanMany(&temp, rank, n, inembed, istride, idist, onembed, ostride, odist, type, batch));
+    }
+
+    plan = temp;
+    planner.mHandles[slot_index] = temp;
+    planner.mKeys[slot_index] = key_string;
+    planner.mAvailSlotIndex = (slot_index + 1)%cuFFTPlanner::MAX_PLAN_CACHE;
 }
 
 template<typename T>
@@ -148,88 +146,63 @@ CUFFT_FUNC(cfloat , C2C)
 CUFFT_FUNC(cdouble, Z2Z)
 
 template<int rank>
-void computeDims(int *rdims, const dim4 &idims)
+void computeDims(int rdims[rank], const dim4 &idims)
 {
-    if (rank==3) {
-        rdims[0] = idims[2];
-        rdims[1] = idims[1];
-        rdims[2] = idims[0];
-    } else if(rank==2) {
-        rdims[0] = idims[1];
-        rdims[1] = idims[0];
-    } else {
-        rdims[0] = idims[0];
+    for (int i = 0; i < rank; i++) {
+        rdims[i] = idims[(rank -1) - i];
     }
 }
 
-template<typename T, int rank, int direction>
-void cufft_common(Array<T> &arr)
+template<typename T, int rank, bool direction>
+void fft_common(Array<T> &out, const Array<T> &in)
 {
-    const dim4 dims    = arr.dims();
-    const dim4 strides = arr.strides();
+    const dim4 idims    = in.dims();
+    const dim4 istrides = in.strides();
+    const dim4 ostrides = out.strides();
 
-    int rank_dims[3];
+    int in_dims[rank];
+    int in_embed[rank];
+    int out_embed[rank];
 
-    switch(rank) {
-        case 1: computeDims<1>(rank_dims, dims); break;
-        case 2: computeDims<2>(rank_dims, dims); break;
-        case 3: computeDims<3>(rank_dims, dims); break;
+    computeDims<rank>(in_dims, idims);
+    computeDims<rank>(in_embed, in.getDataDims());
+    computeDims<rank>(out_embed, out.getDataDims());
+
+    int batch = 1;
+    for (int i = rank; i < 4; i++) {
+        batch *= idims[i];
     }
 
     cufftHandle plan;
-
-    find_cufft_plan(plan, rank, rank_dims,
-            NULL, strides[0], strides[rank],
-            NULL, strides[0], strides[rank],
-            (cufftType)cufft_transform<T>::type, dims[rank]);
+    find_cufft_plan(plan, rank, in_dims,
+                    in_embed , istrides[0], istrides[rank],
+                    out_embed, ostrides[0], ostrides[rank],
+                    (cufftType)cufft_transform<T>::type, batch);
 
     cufft_transform<T> transform;
-
-    transform(plan, arr.get(), arr.get(), direction);
+    CUFFT_CHECK(transform(plan, (T *)in.get(), out.get(), direction ? CUFFT_FORWARD : CUFFT_INVERSE));
 }
 
-template<int rank>
-void computePaddedDims(dim4 &pdims, dim_type const * const pad)
+void computePaddedDims(dim4 &pdims,
+                       const dim4 &idims,
+                       const dim_type npad,
+                       dim_type const * const pad)
 {
-    if (rank==1) {
-        pdims[0] = pad[0];
-    } else if (rank==2) {
-        pdims[0] = pad[0];
-        pdims[1] = pad[1];
-    } else if (rank==3) {
-        pdims[0] = pad[0];
-        pdims[1] = pad[1];
-        pdims[2] = pad[2];
+    for (int i = 0; i < 4; i++) {
+        pdims[i] = (i < npad) ? pad[i] : idims[i];
     }
 }
-
-
-template<typename T> T zero() { return 0; }
-
-template<> cfloat zero<cfloat>() { return make_cuFloatComplex(0.0f, 0.0f); }
-
-template<> cdouble zero<cdouble>() { return make_cuDoubleComplex(0.0, 0.0); }
-
 
 template<typename inType, typename outType, int rank, bool isR2C>
 Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
 {
-    ARG_ASSERT(1, (in.isOwner()==true));
+    ARG_ASSERT(1, (rank>=1 && rank<=3));
 
     dim4 pdims(1);
+    computePaddedDims(pdims, in.dims(), npad, pad);
 
-    switch(rank) {
-        case 1 : computePaddedDims<1>(pdims, pad); break;
-        case 2 : computePaddedDims<2>(pdims, pad); break;
-        case 3 : computePaddedDims<3>(pdims, pad); break;
-        default: AF_ERROR("invalid rank", AF_ERR_SIZE);
-    }
-
-    pdims[rank] = in.dims()[rank];
-
-    Array<outType> ret = padArray<inType, outType>(in, (npad>0 ? pdims : in.dims()), zero<outType>(), norm_factor);
-
-    cufft_common<outType, rank, CUFFT_FORWARD>(ret);
+    Array<outType> ret = padArray<inType, outType>(in, pdims, scalar<outType>(0), norm_factor);
+    fft_common<outType, rank, true>(ret, ret);
 
     return ret;
 }
@@ -237,22 +210,13 @@ Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const n
 template<typename T, int rank>
 Array<T> ifft(Array<T> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
 {
-    ARG_ASSERT(1, (in.isOwner()==true));
+    ARG_ASSERT(1, (rank>=1 && rank<=3));
 
     dim4 pdims(1);
+    computePaddedDims(pdims, in.dims(), npad, pad);
 
-    switch(rank) {
-        case 1 : computePaddedDims<1>(pdims, pad); break;
-        case 2 : computePaddedDims<2>(pdims, pad); break;
-        case 3 : computePaddedDims<3>(pdims, pad); break;
-        default: AF_ERROR("invalid rank", AF_ERR_SIZE);
-    }
-
-    pdims[rank] = in.dims()[rank];
-
-    Array<T> ret = padArray<T, T>(in, (npad>0 ? pdims : in.dims()), zero<T>(), norm_factor);
-
-    cufft_common<T, rank, CUFFT_INVERSE>(ret);
+    Array<T> ret = padArray<T, T>(in, pdims, scalar<T>(0), norm_factor);
+    fft_common<T, rank, false>(ret, ret);
 
     return ret;
 }

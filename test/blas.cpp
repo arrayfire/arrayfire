@@ -208,3 +208,35 @@ TYPED_TEST(MatrixMultiply, RectangleVector_CPP)
 {
     cppMatMulCheck<TypeParam, true>(TEST_DIR"/blas/RectangleVector.test");
 }
+
+TYPED_TEST(MatrixMultiply, MultiGPUSquare_CPP)
+{
+    for(int i = 0; i < af::getDeviceCount(); i++) {
+        af::setDevice(i);
+        cppMatMulCheck<TypeParam, false>(TEST_DIR"/blas/Basic.test");
+    }
+}
+
+TYPED_TEST(MatrixMultiply, MultiGPUNonSquare_CPP)
+{
+    for(int i = 0; i < af::getDeviceCount(); i++) {
+        af::setDevice(i);
+        cppMatMulCheck<TypeParam, false>(TEST_DIR"/blas/NonSquare.test");
+    }
+}
+
+TYPED_TEST(MatrixMultiply, MultiGPUSquareVector_CPP)
+{
+    for(int i = 0; i < af::getDeviceCount(); i++) {
+        af::setDevice(i);
+        cppMatMulCheck<TypeParam, true>(TEST_DIR"/blas/SquareVector.test");
+    }
+}
+
+TYPED_TEST(MatrixMultiply, MultiGPURectangleVector_CPP)
+{
+    for(int i = 0; i < af::getDeviceCount(); i++) {
+        af::setDevice(i);
+        cppMatMulCheck<TypeParam, true>(TEST_DIR"/blas/RectangleVector.test");
+    }
+}

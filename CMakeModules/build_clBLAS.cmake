@@ -2,8 +2,10 @@ INCLUDE(ExternalProject)
 
 SET(prefix ${CMAKE_BINARY_DIR}/third_party/clBLAS)
 SET(clBLAS_location ${prefix}/lib/import/${CMAKE_STATIC_LIBRARY_PREFIX}clBLAS${CMAKE_STATIC_LIBRARY_SUFFIX})
-IF(CMAKE_VERSION VERSION_LESS 3.2 AND CMAKE_GENERATOR MATCHES "Ninja")
-    message(WARNING "Building clBLAS with Ninja has known issues with CMake older than 3.2")
+IF(CMAKE_VERSION VERSION_LESS 3.2)
+    IF(CMAKE_GENERATOR MATCHES "Ninja")
+        MESSAGE(WARNING "Building clBLAS with Ninja has known issues with CMake older than 3.2")
+    endif()
     SET(byproducts)
 ELSE()
     SET(byproducts BYPRODUCTS ${clBLAS_location})
@@ -28,6 +30,7 @@ ExternalProject_Add(
     -DBUILD_TEST:BOOL=OFF
     -DBUILD_KTEST:BOOL=OFF
     -DSUFFIX_LIB:STRING=
+    ${byproducts}
     )
 
 ExternalProject_Get_Property(clBLAS-external install_dir)

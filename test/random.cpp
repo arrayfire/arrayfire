@@ -147,9 +147,10 @@ void randuArgsTest()
 {
     if (noDoubleTests<T>()) return;
 
-    af::dim4 dims(1, 2, 3, 0);
+    dim_type ndims = 4;
+    dim_type dims[] = {1, 2, 3, 0};
     af_array outArray = 0;
-    ASSERT_EQ(AF_ERR_SIZE, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<char>::af_type));
+    ASSERT_EQ(AF_ERR_SIZE, af_randu(&outArray, ndims, dims, (af_dtype) af::dtype_traits<char>::af_type));
     if(outArray != 0) af_destroy_array(outArray);
 }
 

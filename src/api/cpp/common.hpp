@@ -6,10 +6,10 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
- 
+
 namespace af
 {
- 
+
 /// Get the first non-zero dimension
 static inline dim_type getFNSD(const int dim, af::dim4 dims)
 {

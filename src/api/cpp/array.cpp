@@ -60,7 +60,7 @@ namespace af
     void cleanIndices(af_index_t indices[4])
     {
         for (int i = 0; i < 4; i++) {
-            if (!indices[i].mIsSeq) {
+            if (!indices[i].mIsSeq && indices[i].mIndexer.arr) {
                 AF_THROW(af_destroy_array(indices[i].mIndexer.arr));
             }
             // Just to be safe
@@ -68,16 +68,18 @@ namespace af
         }
     }
 
-    static int gforDim(af_index_t seqs[4])
+    static int gforDim(af_index_t indices[4])
     {
         for (int i = 0; i < 4; i++) {
-            if (seqs[i].isBatch) return i;
+            if (indices[i].isBatch) return i;
         }
         return -1;
     }
 
     static af_array gforReorder(const af_array in, unsigned dim)
     {
+        // This is here to stop gcc from complaining
+        if (dim > 3) AF_THROW_MSG("Invalid dimension", AF_ERR_INTERNAL);
         unsigned order[4] = {0, 1, 2, dim};
         order[dim] = 3;
         af_array out;
@@ -85,7 +87,7 @@ namespace af
         return out;
     }
 
-    static af::dim4 seqToDims(af_index_t indices[4], af::dim4 parentDims)
+    static af::dim4 seqToDims(af_index_t indices[4], af::dim4 parentDims, bool reorder = true)
     {
         std::vector<af_seq> av(4);
         for (int i = 0; i < 4; i++) av[i] = indices[i].mIndexer.seq;
@@ -96,6 +98,18 @@ namespace af
                 dim_type elems = 0;
                 AF_THROW(af_get_elements(&elems, indices[i].mIndexer.arr));
                 odims[i] = elems;
+            }
+        }
+
+        // Change the dimensions if inside GFOR
+        if (reorder) {
+            for (int i = 0; i < 4; i++) {
+                if (indices[i].isBatch) {
+                    int tmp = odims[i];
+                    odims[i] = odims[3];
+                    odims[3] = tmp;
+                    break;
+                }
             }
         }
 
@@ -160,6 +174,7 @@ namespace af
     {
         initEmptyArray(&arr, f32, 0, 0, 0, 0);
     }
+
     array::array(const dim4 &dims, af::dtype ty) : arr(0), parent(NULL), isRef(false)
     {
         initEmptyArray(&arr, ty, dims[0], dims[1], dims[2], dims[3]);
@@ -238,11 +253,8 @@ namespace af
     array::~array()
     {
         af_array tmp = get();
-        if (tmp != 0){
-            if(AF_SUCCESS != af_destroy_array(tmp)) {
-                fprintf(stderr, "Error: Couldn't destroy af::array %p", this);
-            }
-        }
+        // THOU SHALL NOT THROW IN DESTRUCTORS
+        af_destroy_array(tmp);
     }
 
     af::dtype array::type() const
@@ -270,12 +282,12 @@ namespace af
             return arr;
         af_array temp = 0;
         af_err err = af_index_gen(&temp, arr, 4, indices);
-        AF_THROW(af_destroy_array(arr));
+        if (arr) AF_THROW(af_destroy_array(arr));
 
         int dim = gforDim(this->indices);
         if (temp && dim >= 0) {
             arr = gforReorder(temp, dim);
-            AF_THROW(af_destroy_array(temp));
+            if (temp) AF_THROW(af_destroy_array(temp));
         } else {
             arr = temp;
         }
@@ -346,10 +358,10 @@ namespace af
 
 #undef INSTANTIATE
 
-    array::array(af_array in, const array *par, af_index_t seqs[4]) :
+    array::array(af_array in, const array *par, af_index_t inds[4]) :
     arr(in), parent(par), isRef(true)
     {
-        for(int i=0; i<4; ++i) indices[i] = seqs[i];
+        for(int i=0; i<4; ++i) indices[i] = inds[i];
     }
 
     array array::operator()(const array& idx) const
@@ -358,9 +370,29 @@ namespace af
 
         // Special case of indexing linearly
         // Flatten the current array and index accordingly
-        if (this->numdims() > 1) {
-            array tmp = flat(*this);
-            return tmp(idx);
+        int num_dims = numDims(this->arr);
+        dim4 this_dims = getDims(this->arr);
+
+        if (num_dims > 1) {
+            bool is_vector = true;
+
+            for (int i = 0; is_vector && i < num_dims - 1; i++) {
+                is_vector &= (this_dims[i] == 1);
+            }
+
+            if (is_vector) {
+
+                switch(num_dims) {
+                case 2: return (*this)(span, idx);
+                case 3: return (*this)(span, span, idx);
+                case 4: return (*this)(span, span, span, idx);
+                default: AF_THROW_MSG("ArrayFire internal error", AF_ERR_INTERNAL);
+                }
+
+            } else {
+                array tmp = flat(*this);
+                return tmp(idx);
+            }
         }
 
         af_index_t inds[4];
@@ -380,9 +412,29 @@ namespace af
 
         // Special case of indexing linearly
         // Flatten the current array and index accordingly
-        if (this->numdims() > 1) {
-            array tmp = flat(*this);
-            return tmp(s0);
+        int num_dims = numDims(this->arr);
+        dim4 this_dims = getDims(this->arr);
+
+        if (num_dims > 1) {
+            bool is_vector = true;
+
+            for (int i = 0; is_vector && i < num_dims - 1; i++) {
+                is_vector &= (this_dims[i] == 1);
+            }
+
+            if (is_vector) {
+
+                switch(num_dims) {
+                case 2: return (*this)(span, s0);
+                case 3: return (*this)(span, span, s0);
+                case 4: return (*this)(span, span, span, s0);
+                default: AF_THROW_MSG("ArrayFire internal error", AF_ERR_INTERNAL);
+                }
+
+            } else {
+                array tmp = flat(*this);
+                return tmp(s0);
+            }
         }
 
         af_index_t inds[4];
@@ -697,7 +749,7 @@ namespace af
 
     void array::set(af_array tmp)
     {
-        AF_THROW(af_destroy_array(arr));
+        if (arr) AF_THROW(af_destroy_array(arr));
         arr = tmp;
     }
 
@@ -714,21 +766,47 @@ namespace af
         if (isRef) {
 
             unsigned nd = numDims(arr);
+            const dim4 this_dims = getDims(arr);
+            const dim4 other_dims = other.dims();
             int dim = gforDim(this->indices);
             af_array other_arr = other.get();
 
-            // HACK: This is a quick check to see if other has been reordered inside gfor
-            // TODO: Figure out if this breaks and implement a cleaner method
-            bool is_reordered = (getDims(arr) != other.dims());
+            bool batch_assign = false;
+            bool is_reordered = false;
+            if (dim >= 0) {
+                batch_assign = true;
+                for (int i = 0; i < 4; i++) {
+                    if (this->indices[i].isBatch) batch_assign &= (other_dims[i] == 1);
+                    else                          batch_assign &= (other_dims[i] == this_dims[i]);
+                }
 
-            other_arr = (dim == -1 || !is_reordered) ? other_arr : gforReorder(other_arr, dim);
+                if (batch_assign) {
+                    //FIXME: Figure out a faster, cleaner way to do this
+                    dim4 out_dims = seqToDims(this->indices, this_dims, false);
+                    af_array out;
+                    AF_THROW(af_tile(&out, other_arr,
+                                     out_dims[0] / other_dims[0],
+                                     out_dims[1] / other_dims[1],
+                                     out_dims[2] / other_dims[2],
+                                     out_dims[3] / other_dims[3]));
+                    other_arr = out;
+
+                } else if (this_dims != other_dims) {
+                    // HACK: This is a quick check to see if other has been reordered inside gfor
+                    // TODO: Figure out if this breaks and implement a cleaner method
+                    other_arr = gforReorder(other_arr, dim);
+                    is_reordered = true;
+                }
+            }
 
             af_array tmp;
             AF_THROW(af_assign_gen(&tmp, arr, nd, indices, other_arr));
             cleanIndices(indices);
 
             parent->set(tmp);
-            if (dim >= 0 && is_reordered) AF_THROW(af_destroy_array(other_arr));
+            if (dim >= 0 && (is_reordered || batch_assign)) {
+                if (other_arr) AF_THROW(af_destroy_array(other_arr));
+            }
 
             isRef = false;
         } else {
@@ -763,11 +841,11 @@ namespace af
             array tmp = *this op1 other;                                \
             af_array tmp_arr = tmp.get();                               \
             af_array out = 0;                                           \
-            tmp_arr = (dim == -1) ? tmp_arr : gforReorder(tmp_arr, dim); \
+            tmp_arr = (dim < 0) ? tmp_arr : gforReorder(tmp_arr, dim);  \
             AF_THROW(af_assign_gen(&out, lhs, ndims, inds, tmp_arr));   \
             cleanIndices(indices);                                      \
-            AF_THROW(af_destroy_array(this->arr));                      \
-            if (dim >= 0) AF_THROW(af_destroy_array(tmp_arr));          \
+            if (this->arr) AF_THROW(af_destroy_array(this->arr));       \
+            if (dim >= 0)  AF_THROW(af_destroy_array(tmp_arr));         \
             this->arr = lhs;                                            \
             parent->set(out);                                           \
         } else {                                                        \
@@ -783,29 +861,30 @@ namespace af
 
 #undef SELF_OP
 
-#define ASSIGN_TYPE(TY, OP, dty)                                \
+#define ASSIGN_TYPE(TY, OP)                                     \
     array& array::operator OP(const TY &value)                  \
     {                                                           \
         af::dim4 dims = isRef ?                                 \
             seqToDims(indices, getDims(arr)) : this->dims();    \
-        array cst = constant(value, dims, dty);                 \
+        af::dtype ty = this->type();                            \
+        array cst = constant(value, dims, ty);                  \
         return operator OP(cst);                                \
     }                                                           \
 
 #define ASSIGN_OP(OP)                           \
-    ASSIGN_TYPE(double             , OP, f64)   \
-    ASSIGN_TYPE(float              , OP, f32)   \
-    ASSIGN_TYPE(cdouble            , OP, c64)   \
-    ASSIGN_TYPE(cfloat             , OP, c32)   \
-    ASSIGN_TYPE(int                , OP, s32)   \
-    ASSIGN_TYPE(unsigned           , OP, u32)   \
-    ASSIGN_TYPE(long               , OP, s64)   \
-    ASSIGN_TYPE(unsigned long      , OP, u64)   \
-    ASSIGN_TYPE(long long          , OP, s64)   \
-    ASSIGN_TYPE(unsigned long long , OP, u64)   \
-    ASSIGN_TYPE(char               , OP, b8)    \
-    ASSIGN_TYPE(unsigned char      , OP, u8)    \
-    ASSIGN_TYPE(bool               , OP, u8)    \
+    ASSIGN_TYPE(double             , OP)        \
+    ASSIGN_TYPE(float              , OP)        \
+    ASSIGN_TYPE(cdouble            , OP)        \
+    ASSIGN_TYPE(cfloat             , OP)        \
+    ASSIGN_TYPE(int                , OP)        \
+    ASSIGN_TYPE(unsigned           , OP)        \
+    ASSIGN_TYPE(long               , OP)        \
+    ASSIGN_TYPE(unsigned long      , OP)        \
+    ASSIGN_TYPE(long long          , OP)        \
+    ASSIGN_TYPE(unsigned long long , OP)        \
+    ASSIGN_TYPE(char               , OP)        \
+    ASSIGN_TYPE(unsigned char      , OP)        \
+    ASSIGN_TYPE(bool               , OP)        \
 
     ASSIGN_OP(= )
     ASSIGN_OP(+=)
@@ -816,23 +895,27 @@ namespace af
 #undef ASSIGN_OP
 #undef ASSIGN_TYPE
 
-#define BINARY_TYPE(TY, OP, func, dty)                              \
-    array array::operator OP(const TY &value) const                 \
-    {                                                               \
-        af_array lhs = this->get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, this->dims(), dty);             \
-        AF_THROW(func(&out, lhs, cst.get(), gforGet()));            \
-        return array(out);                                          \
-    }                                                               \
-    array operator OP(const TY &value, const array &other)          \
-    {                                                               \
-        af_array rhs = other.get();                                 \
-        af_array out;                                               \
-        array cst = constant(value, other.dims(), dty);             \
-        AF_THROW(func(&out, cst.get(), rhs, gforGet()));            \
-        return array(out);                                          \
-    }                                                               \
+#define BINARY_TYPE(TY, OP, func, dty)                      \
+    array array::operator OP(const TY &value) const         \
+    {                                                       \
+        af_array lhs = this->get();                         \
+        af_array out;                                       \
+        af::dtype ty = this->type();                        \
+        af::dtype cty = this->isrealfloating() ? ty : dty;  \
+        array cst = constant(value, this->dims(), cty);     \
+        AF_THROW(func(&out, lhs, cst.get(), gforGet()));    \
+        return array(out);                                  \
+    }                                                       \
+    array operator OP(const TY &value, const array &other)  \
+    {                                                       \
+        af_array rhs = other.get();                         \
+        af_array out;                                       \
+        af::dtype ty = other.type();                        \
+        af::dtype cty = other.isrealfloating() ? ty : dty;  \
+        array cst = constant(value, other.dims(), cty);     \
+        AF_THROW(func(&out, cst.get(), rhs, gforGet()));    \
+        return array(out);                                  \
+    }                                                       \
 
 #define BINARY_OP(OP, func)                                 \
     array array::operator OP(const array &other) const      \

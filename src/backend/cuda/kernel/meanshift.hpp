@@ -23,23 +23,23 @@ namespace kernel
 static const dim_type THREADS_X = 16;
 static const dim_type THREADS_Y = 16;
 
-__forceinline__ __device__ 
+__forceinline__ __device__
 dim_type lIdx(dim_type x, dim_type y,
               dim_type stride1, dim_type stride0)
 {
     return (y*stride1 + x*stride0);
 }
 
-__forceinline__ __device__ 
+__forceinline__ __device__
 dim_type clamp(dim_type f, dim_type a, dim_type b)
 {
     return max(a, min(f, b));
 }
 
 template<typename T, dim_type channels>
-inline __device__ 
+inline __device__
 void load2ShrdMem(T * shrd, const T * in,
-                  dim_type lx, dim_type ly, 
+                  dim_type lx, dim_type ly,
                   dim_type shrdStride, dim_type schStride,
                   dim_type dim0, dim_type dim1,
                   dim_type gx, dim_type gy,
@@ -62,7 +62,8 @@ void meanshiftKernel(Param<T> out, CParam<T> in,
     T * shrdMem = shared.getPointer();
 
     // calculate necessary offset and window parameters
-    const dim_type padding     = 2*radius;
+    const dim_type padding     = 2*radius + 1;
+    const dim_type wind_len    = padding - 1;
     const dim_type shrdLen     = blockDim.x + padding;
     const dim_type schStride   = shrdLen*(blockDim.y + padding);
     // the variable ichStride will only effect when we have >1
@@ -93,17 +94,17 @@ void meanshiftKernel(Param<T> out, CParam<T> in,
     load2ShrdMem<T, channels>(shrdMem, iptr, lx, ly, shrdLen, schStride,
                               in.dims[0], in.dims[1], gx-radius,
                               gy-radius, ichStride, in.strides[1], in.strides[0]);
-    if (lx<padding) {
+    if (lx<wind_len) {
         load2ShrdMem<T, channels>(shrdMem, iptr, lx2, ly, shrdLen, schStride,
                                   in.dims[0], in.dims[1], gx2-radius,
                                   gy-radius, ichStride, in.strides[1], in.strides[0]);
     }
-    if (ly<padding) {
+    if (ly<wind_len) {
         load2ShrdMem<T, channels>(shrdMem, iptr, lx, ly2, shrdLen, schStride,
                                   in.dims[0], in.dims[1], gx-radius,
                                   gy2-radius, ichStride, in.strides[1], in.strides[0]);
     }
-    if (lx<padding && ly<padding) {
+    if (lx<wind_len && ly<wind_len) {
         load2ShrdMem<T, channels>(shrdMem, iptr, lx2, ly2, shrdLen, schStride,
                                   in.dims[0], in.dims[1], gx2-radius,
                                   gy2-radius, ichStride, in.strides[1], in.strides[0]);

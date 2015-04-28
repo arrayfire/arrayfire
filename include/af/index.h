@@ -29,6 +29,10 @@ namespace af
    \ingroup arrayfire_func
 */
 AFAPI array join(const int dim, const array &first, const array &second);
+
+AFAPI array join(const int dim, const array &first, const array &second, const array &third);
+
+AFAPI array join(const int dim, const array &first, const array &second, const array &third, const array &fourth);
 /**
    @}
 */
@@ -220,6 +224,8 @@ extern "C" {
        \ingroup manip_func_join
     */
     AFAPI af_err af_join(af_array *out, const int dim, const af_array first, const af_array second);
+
+    AFAPI af_err af_join_many(af_array *out, const int dim, const unsigned n_arrays, const af_array *inputs);
 
     /**
        \ingroup manip_func_tile
