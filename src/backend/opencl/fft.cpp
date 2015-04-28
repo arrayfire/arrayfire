@@ -46,13 +46,13 @@ class clFFTPlanner
         }
 
         ~clFFTPlanner() {
-            clfftTeardown();
+            CLFFT_CHECK(clfftTeardown());
         }
 
     private:
         clFFTPlanner() : mAvailSlotIndex(0) {
-            clfftInitSetupData(&fftSetup);
-            clfftSetup(&fftSetup);
+            CLFFT_CHECK(clfftInitSetupData(&fftSetup));
+            CLFFT_CHECK(clfftSetup(&fftSetup));
             for(int p=0; p<MAX_PLAN_CACHE; ++p)
                 mHandles[p] = 0;
         }
