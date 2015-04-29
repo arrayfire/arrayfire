@@ -94,7 +94,7 @@ fg::Window* ForgeManager::getWindow()
             gAFwindow = new fg::Window(1280, 720, "ArrayFire");
             detail::markDeviceForInterop(detail::getActiveDeviceId(), gAFwindow);
             gFont = new fg::Font();
-            gFont->loadFont("/usr/share/fonts/TTF/Vera.ttf", 32);
+            gFont->loadSystemFont("vera", 32);
             gAFwindow->setFont(gFont);
         }catch(const fg::Error &e) {
             std::cout<< e <<std::endl;

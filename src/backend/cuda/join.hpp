@@ -14,4 +14,7 @@ namespace cuda
 {
     template<typename Tx, typename Ty>
     Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second);
+
+    template<typename T>
+    Array<T> join(const int dim, const std::vector<Array<T> > &inputs);
 }

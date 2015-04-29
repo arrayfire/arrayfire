@@ -33,8 +33,8 @@ typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, char, uchar>
 // register the type list
 TYPED_TEST_CASE(Convolve, TestTypes);
 
-template<typename T, int baseDim>
-void convolveTest(string pTestFile, bool expand)
+template<typename T>
+void convolveTest(string pTestFile, int baseDim, bool expand)
 {
     if (noDoubleTests<T>()) return;
 
@@ -81,122 +81,122 @@ void convolveTest(string pTestFile, bool expand)
 
 TYPED_TEST(Convolve, Vector)
 {
-    convolveTest<TypeParam, 1>(string(TEST_DIR"/convolve/vector.test"), true);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/vector.test"), 1, true);
 }
 
 TYPED_TEST(Convolve, Rectangle)
 {
-    convolveTest<TypeParam, 2>(string(TEST_DIR"/convolve/rectangle.test"), true);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/rectangle.test"), 2, true);
 }
 
 TYPED_TEST(Convolve, Cuboid)
 {
-    convolveTest<TypeParam, 3>(string(TEST_DIR"/convolve/cuboid.test"), true);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/cuboid.test"), 3, true);
 }
 
 TYPED_TEST(Convolve, Vector_Many2One)
 {
-    convolveTest<TypeParam, 1>(string(TEST_DIR"/convolve/vector_many2one.test"), true);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/vector_many2one.test"), 1, true);
 }
 
 TYPED_TEST(Convolve, Rectangle_Many2One)
 {
-    convolveTest<TypeParam, 2>(string(TEST_DIR"/convolve/rectangle_many2one.test"), true);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/rectangle_many2one.test"), 2, true);
 }
 
 TYPED_TEST(Convolve, Cuboid_Many2One)
 {
-    convolveTest<TypeParam, 3>(string(TEST_DIR"/convolve/cuboid_many2one.test"), true);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/cuboid_many2one.test"), 3, true);
 }
 
 TYPED_TEST(Convolve, Vector_Many2Many)
 {
-    convolveTest<TypeParam, 1>(string(TEST_DIR"/convolve/vector_many2many.test"), true);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/vector_many2many.test"), 1, true);
 }
 
 TYPED_TEST(Convolve, Rectangle_Many2Many)
 {
-    convolveTest<TypeParam, 2>(string(TEST_DIR"/convolve/rectangle_many2many.test"), true);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/rectangle_many2many.test"), 2, true);
 }
 
 TYPED_TEST(Convolve, Cuboid_Many2Many)
 {
-    convolveTest<TypeParam, 3>(string(TEST_DIR"/convolve/cuboid_many2many.test"), true);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/cuboid_many2many.test"), 3, true);
 }
 
 TYPED_TEST(Convolve, Vector_One2Many)
 {
-    convolveTest<TypeParam, 1>(string(TEST_DIR"/convolve/vector_one2many.test"), true);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/vector_one2many.test"), 1, true);
 }
 
 TYPED_TEST(Convolve, Rectangle_One2Many)
 {
-    convolveTest<TypeParam, 2>(string(TEST_DIR"/convolve/rectangle_one2many.test"), true);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/rectangle_one2many.test"), 2, true);
 }
 
 TYPED_TEST(Convolve, Cuboid_One2Many)
 {
-    convolveTest<TypeParam, 3>(string(TEST_DIR"/convolve/cuboid_one2many.test"), true);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/cuboid_one2many.test"), 3, true);
 }
 
 TYPED_TEST(Convolve, Same_Vector)
 {
-    convolveTest<TypeParam, 1>(string(TEST_DIR"/convolve/vector_same.test"), false);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/vector_same.test"), 1, false);
 }
 
 TYPED_TEST(Convolve, Same_Rectangle)
 {
-    convolveTest<TypeParam, 2>(string(TEST_DIR"/convolve/rectangle_same.test"), false);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/rectangle_same.test"), 2, false);
 }
 
 TYPED_TEST(Convolve, Same_Cuboid)
 {
-    convolveTest<TypeParam, 3>(string(TEST_DIR"/convolve/cuboid_same.test"), false);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/cuboid_same.test"), 3, false);
 }
 
 TYPED_TEST(Convolve, Same_Vector_Many2One)
 {
-    convolveTest<TypeParam, 1>(string(TEST_DIR"/convolve/vector_same_many2one.test"), false);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/vector_same_many2one.test"), 1, false);
 }
 
 TYPED_TEST(Convolve, Same_Rectangle_Many2One)
 {
-    convolveTest<TypeParam, 2>(string(TEST_DIR"/convolve/rectangle_same_many2one.test"), false);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/rectangle_same_many2one.test"), 2, false);
 }
 
 TYPED_TEST(Convolve, Same_Cuboid_Many2One)
 {
-    convolveTest<TypeParam, 3>(string(TEST_DIR"/convolve/cuboid_same_many2one.test"), false);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/cuboid_same_many2one.test"), 3, false);
 }
 
 TYPED_TEST(Convolve, Same_Vector_Many2Many)
 {
-    convolveTest<TypeParam, 1>(string(TEST_DIR"/convolve/vector_same_many2many.test"), false);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/vector_same_many2many.test"), 1, false);
 }
 
 TYPED_TEST(Convolve, Same_Rectangle_Many2Many)
 {
-    convolveTest<TypeParam, 2>(string(TEST_DIR"/convolve/rectangle_same_many2many.test"), false);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/rectangle_same_many2many.test"), 2, false);
 }
 
 TYPED_TEST(Convolve, Same_Cuboid_Many2Many)
 {
-    convolveTest<TypeParam, 3>(string(TEST_DIR"/convolve/cuboid_same_many2many.test"), false);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/cuboid_same_many2many.test"), 3, false);
 }
 
 TYPED_TEST(Convolve, Same_Vector_One2Many)
 {
-    convolveTest<TypeParam, 1>(string(TEST_DIR"/convolve/vector_same_one2many.test"), false);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/vector_same_one2many.test"), 1, false);
 }
 
 TYPED_TEST(Convolve, Same_Rectangle_One2Many)
 {
-    convolveTest<TypeParam, 2>(string(TEST_DIR"/convolve/rectangle_same_one2many.test"), false);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/rectangle_same_one2many.test"), 2, false);
 }
 
 TYPED_TEST(Convolve, Same_Cuboid_One2Many)
 {
-    convolveTest<TypeParam, 3>(string(TEST_DIR"/convolve/cuboid_same_one2many.test"), false);
+    convolveTest<TypeParam>(string(TEST_DIR"/convolve/cuboid_same_one2many.test"), 3, false);
 }
 
 template<typename T>

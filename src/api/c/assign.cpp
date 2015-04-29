@@ -25,8 +25,9 @@ using std::swap;
 
 template<typename T, bool isComplex>
 static
-void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_array &in)
+void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_array &in_)
 {
+    af_array in = in_;
     ArrayInfo iInfo = getInfo(in);
     ArrayInfo oInfo = getInfo(out);
     af_dtype iType  = iInfo.getType();
@@ -43,9 +44,24 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
 
     dim4 oDims = af::toDims(index_, outDs);
 
-    for (int i = 0; i < 4; i++) {
-        if (oDims[i] != iDims[i])
+    bool is_vector = true;
+    for (int i = 0; is_vector && i < oDims.ndims() - 1; i++) {
+        is_vector &= oDims[i] == 1;
+    }
+
+    if (is_vector && iInfo.isVector()) {
+        if (oDims.elements() != (dim_type)iInfo.elements()) {
             AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
+        }
+
+        // If both out and in are vectors of equal elements, reshape in to out dims
+        AF_CHECK(af_moddims(&in, in_, oDims.ndims(), oDims.get()));
+    } else {
+        for (int i = 0; i < 4; i++) {
+            if (oDims[i] != iDims[i]) {
+                AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
+            }
+        }
     }
 
     Array<T> dst = createSubArray<T>(getArray<T>(out), index_, false);
@@ -67,6 +83,8 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
             case f32: copyArray<float  , T>(dst, getArray<float >(in));  break;
             case s32: copyArray<int    , T>(dst, getArray<int   >(in));  break;
             case u32: copyArray<uint   , T>(dst, getArray<uint  >(in));  break;
+            case s64: copyArray<intl    , T>(dst, getArray<intl   >(in));  break;
+            case u64: copyArray<uintl   , T>(dst, getArray<uintl  >(in));  break;
             case u8 : copyArray<uchar  , T>(dst, getArray<uchar >(in));  break;
             case b8 : copyArray<char   , T>(dst, getArray<char  >(in));  break;
             default : noCaseExecuted = true; break;
@@ -106,6 +124,8 @@ af_err af_assign_seq(af_array *out,
                 case f32: assign<float  , false>(res, ndims, index, rhs);  break;
                 case s32: assign<int    , false>(res, ndims, index, rhs);  break;
                 case u32: assign<uint   , false>(res, ndims, index, rhs);  break;
+                case s64: assign<intl    , false>(res, ndims, index, rhs);  break;
+                case u64: assign<uintl   , false>(res, ndims, index, rhs);  break;
                 case u8 : assign<uchar  , false>(res, ndims, index, rhs);  break;
                 case b8 : assign<char   , false>(res, ndims, index, rhs);  break;
                 default : TYPE_ERROR(1, oType); break;
@@ -134,9 +154,10 @@ static void genAssign(af_array& out, const af_index_t* indexers, const af_array&
 af_err af_assign_gen(af_array *out,
                     const af_array lhs,
                     const dim_type ndims, const af_index_t* indexers,
-                    const af_array rhs)
+                    const af_array rhs_)
 {
     af_array output = 0;
+    af_array rhs = rhs_;
     // spanner is sequence indexer used for indexing along the
     // dimensions after ndims
     af_index_t spanner;
@@ -189,9 +210,23 @@ af_err af_assign_gen(af_array *out,
             }
         }
 
-        for (int i = 0; i < 4; i++) {
-            if (oDims[i] != rhsDims[i]) {
+        bool is_vector = true;
+        for (int i = 0; is_vector && i < oDims.ndims() - 1; i++) {
+            is_vector &= oDims[i] == 1;
+        }
+
+        if (is_vector && rInfo.isVector()) {
+            if (oDims.elements() != (dim_type)rInfo.elements()) {
                 AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
+            }
+
+            // If both out and rhs are vectors of equal elements, reshape rhs to out dims
+            AF_CHECK(af_moddims(&rhs, rhs_, oDims.ndims(), oDims.get()));
+        } else {
+            for (int i = 0; i < 4; i++) {
+                if (oDims[i] != rhsDims[i]) {
+                    AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
+                }
             }
         }
 

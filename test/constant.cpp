@@ -127,7 +127,7 @@ void IdentityCPPError() {
     static const int num = 1000;
     dtype dty = (dtype) dtype_traits<T>::af_type;
     try {
-        array out = af::identity(num, 0, dty);
+        array out = af::identity(num, 0, 10, dty);
     }
     catch(const af::exception &ex) {
         SUCCEED();

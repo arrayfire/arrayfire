@@ -21,7 +21,7 @@
    @defgroup array_mat Functions to create and modify Arrays
    @{
 
-      Array constructors, random number generation, transpose, indexing, etc
+      Array constructors, random number generation, transpose, indexing, etc.
 
       @defgroup construct_mat Constructors of array class
 
@@ -31,21 +31,21 @@
       getting device pointer, allocating and freeing memory
 
       @defgroup data_mat Functions to create arrays.
-      constant, random, range, etc
+      constant, random, range, etc.
 
       @defgroup index_mat Indexing operation on arrays
 
       @defgroup manip_mat Move and Reorder array content
-      reorder, transpose, flip, join, tile, etc
+      reorder, transpose, flip, join, tile, etc.
 
       @defgroup helper_mat Helper functions for arrays
-      iszero, isInf, isNan, etc
+      iszero, isInf, isNan, etc.
    @}
 
    @defgroup mathfunc_mat Mathematical functions
    @{
 
-      Functions from standar math library
+      Functions from standard math library
 
       @defgroup arith_mat Arithmetic operations
       +, -, *, /, >>, <<
@@ -54,64 +54,64 @@
       &&, ||, |, &, <, >, <=, >=, ==, !
 
       @defgroup numeric_mat Numeric functions
-      floor, round, min, max, etc
+      floor, round, min, max, etc.
 
       @defgroup trig_mat Trigonometric functions
-      sin, cos, tan, etc
+      sin, cos, tan, etc.
 
       @defgroup explog_mat Exponential and logarithmic functions
-      exp, log, expm1, log1p, etc
+      exp, log, expm1, log1p, etc.
 
       @defgroup hyper_mat Hyperbolic functions
-      sinh, cosh, tanh, etc
+      sinh, cosh, tanh, etc.
 
       @defgroup complex_mat Complex operations
-      real, imag, conjugate etc
+      real, imag, conjugate etc.
    @}
 
    @defgroup vector_mat Vector Algorithms
    @{
 
-      sum, min, max, sort, set operations, etc
+      sum, min, max, sort, set operations, etc.
 
       @defgroup reduce_mat Reduction operations
-      sum, min, max, etc
+      sum, min, max, etc.
 
       @defgroup sort_mat Sort operations
-      sort, sort by key, etc
+      sort, sort by key, etc.
 
       @defgroup scan_mat Inclusive scan operations
-      inclusive / cumulative sum, etc
+      inclusive / cumulative sum, etc.
 
       @defgroup set_mat Set operations
       unique, union, intersect
 
       @defgroup calc_mat Numerical differentiation
-      diff, gradient, etc
+      diff, gradient, etc.
    @}
 
    @defgroup linalg_mat Linear Algebra
    @{
      @defgroup blas_mat BLAS operations
-     Matrix multiply, dot product, etc
+     Matrix multiply, dot product, etc.
    @}
 
    @defgroup image_mat Image Processing
    @{
      @defgroup colorconv_mat Colorspace conversions
-     RGB to gray, gray to RGB, RGB to HSV, etc
+     RGB to gray, gray to RGB, RGB to HSV, etc.
 
      @defgroup hist_mat Histograms
      Image and data histograms
 
      @defgroup transform_mat Image transformations
-     rotate, skew, etc
+     rotate, skew, etc.
 
      @defgroup morph_mat Morphological Operations
-     erode, dilate, etc
+     erode, dilate, etc.
 
      @defgroup imageflt_mat Filters
-     bilateral, sobel, mean shift, etc
+     bilateral, sobel, mean shift, etc.
 
      @defgroup connected_comps_mat Connected Components & Labeling
      regions
@@ -146,7 +146,7 @@
    @defgroup stats_mat Statistics
    @{
      @defgroup basicstats_mat Basic statistics functions
-     mean, median, variance, etc
+     mean, median, variance, etc.
    @}
 
    @defgroup io_mat Input and Output functions
@@ -157,7 +157,11 @@
      @defgroup imageio_mat Reading and writing images
      Reading and writing images
    @}
+
+    @defgroup external Interfacing with other code / libraries
+
 @}
+
 
 */
 
