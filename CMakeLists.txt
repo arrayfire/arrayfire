@@ -149,12 +149,16 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
     COMPONENT cmake)
 
 # CPack package generation
+SET(CPACK_GENERATOR "TGZ;STGZ")
 # Create the following installers are as follows:
-#  Linux: TGZ, STGZ, DEB
 #  Windows: Use external packaging, do nothing here
+#  OSX: Deploy as TGZ and STGZ
+IF("${CMAKE_SYSTEM}" MATCHES "Linux")
+    #  Linux: TGZ, STGZ, DEB
+    SET(CPACK_GENERATOR "TGZ;STGZ;DEB;RPM")
+ENDIF()
 
 # Common settings to all packaging tools
-SET(CPACK_GENERATOR "TGZ;STGZ;DEB;RPM")
 SET(CPACK_PREFIX_DIR ${CMAKE_INSTALL_PREFIX})
 SET(CPACK_PACKAGE_NAME "arrayfire")
 SET(CPACK_PACKAGE_VERSION 3.0.beta)
