@@ -12,6 +12,7 @@
 #include <af/blas.h>
 #include <Array.hpp>
 #include <clBLAS.h>
+#include <mutex>
 
 namespace opencl
 {
