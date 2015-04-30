@@ -403,7 +403,7 @@ magma_getmatrix_async(
 
     size_t buffer_origin[3] = { dA_offset*sizeof(T), 0, 0 };
     size_t host_orig[3]     = { 0, 0, 0 };
-    size_t region[3]        = { m*sizeof(T), n, 1 };
+    size_t region[3]        = { m*sizeof(T), (size_t)n, 1 };
     cl_int err = clEnqueueReadBufferRect(
         queue, dA_src, CL_FALSE,  // non-blocking
         buffer_origin, host_orig, region,

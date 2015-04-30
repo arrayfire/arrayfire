@@ -7,9 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#ifndef MAGMA_HELPER_H
-#define MAGMA_HELPER_H
-
 #include "magma_common.h"
 
 template<typename T> T magma_one() { return (T)1.0; }
@@ -70,5 +67,30 @@ magma_int_t magma_get_getrf_nb<magmaDoubleComplex>( magma_int_t m )
     else                return 128;
 }
 
+template<typename T>
+magma_int_t magma_get_potrf_nb(magma_int_t m )
+{
+    if      (m <= 1024) return 128;
+    else                return 320;
+}
 
-#endif
+template magma_int_t magma_get_potrf_nb<float>(magma_int_t m);
+
+template<>
+magma_int_t magma_get_potrf_nb<double>(magma_int_t m)
+{
+    if      (m <= 4256) return 128;
+    else                return 256;
+}
+
+template<>
+magma_int_t magma_get_potrf_nb<magmaFloatComplex>(magma_int_t m)
+{
+    return 128;
+}
+
+template<>
+magma_int_t magma_get_potrf_nb<magmaDoubleComplex>(magma_int_t m)
+{
+    return  64;
+}

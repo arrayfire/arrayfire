@@ -23,14 +23,14 @@
     template<typename T>                        \
     struct NAME##_func;
 
-#define CPU_LAPACK_FUNC(NAME, TYPE, X)          \
-    template<>                                  \
-    struct NAME##_func<TYPE>                    \
-    {                                           \
-        template<typename... Args>              \
-            void                                \
-            operator() (Args... args)           \
-        { (LAPACK_NAME(X##NAME))(args...); }    \
+#define CPU_LAPACK_FUNC(NAME, TYPE, X)              \
+    template<>                                      \
+    struct NAME##_func<TYPE>                        \
+    {                                               \
+        template<typename... Args>                  \
+            int                                     \
+            operator() (Args... args)               \
+        { return (LAPACK_NAME(X##NAME))(args...); } \
     };
 
 CPU_LAPACK_FUNC_DEF(getrf)
@@ -38,5 +38,11 @@ CPU_LAPACK_FUNC(getrf, float,      s)
 CPU_LAPACK_FUNC(getrf, double,     d)
 CPU_LAPACK_FUNC(getrf, magmaFloatComplex,     c)
 CPU_LAPACK_FUNC(getrf, magmaDoubleComplex,    z)
+
+CPU_LAPACK_FUNC_DEF(potrf)
+CPU_LAPACK_FUNC(potrf, float,      s)
+CPU_LAPACK_FUNC(potrf, double,     d)
+CPU_LAPACK_FUNC(potrf, magmaFloatComplex,     c)
+CPU_LAPACK_FUNC(potrf, magmaDoubleComplex,    z)
 
 #endif

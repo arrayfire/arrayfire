@@ -12,6 +12,9 @@
 
 template<typename T> T magma_one();
 template<typename T> T magma_neg_one();
+
 template<typename T> magma_int_t magma_get_getrf_nb(int num);
+template<typename T> magma_int_t magma_get_potrf_nb(int num);
+
 
 #endif

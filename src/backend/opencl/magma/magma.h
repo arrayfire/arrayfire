@@ -19,4 +19,10 @@ magma_int_t magma_getrf_gpu(magma_int_t m, magma_int_t n,
                             magma_queue_t queue,
                             magma_int_t *info );
 
+template<typename Ty>
+magma_int_t magma_potrf_gpu(magma_uplo_t   uplo, magma_int_t    n,
+                            cl_mem dA, size_t dA_offset, magma_int_t ldda,
+                            magma_queue_t queue,
+                            magma_int_t*   info );
+
 #endif
