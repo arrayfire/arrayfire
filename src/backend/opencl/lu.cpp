@@ -14,6 +14,7 @@
 #include <magma/magma.h>
 #include <kernel/lu_split.hpp>
 #include <copy.hpp>
+#include <blas.hpp>
 
 namespace opencl
 {
@@ -43,6 +44,7 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
 {
 
     try {
+        initBlas();
         dim4 iDims = in.dims();
         int M = iDims[0];
         int N = iDims[1];
@@ -75,6 +77,7 @@ template<typename T>
 Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
 {
     try {
+        initBlas();
         dim4 iDims = in.dims();
         int M = iDims[0];
         int N = iDims[1];
