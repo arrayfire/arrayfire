@@ -21,7 +21,7 @@
 #include <math.hpp>
 #include <err_common.hpp>
 
-#include <kernel/qr_split.hpp>
+#include <kernel/triangle.hpp>
 
 namespace cuda
 {
@@ -155,7 +155,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
     dim4 rdims(M, N);
     r = createEmptyArray<T>(rdims);
 
-    kernel::qr_split<T>(r, in_copy);
+    kernel::triangle<T, true>(r, in_copy);
 
     int mn = max(M, N);
     dim4 qdims(M, mn);
