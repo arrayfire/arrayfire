@@ -91,36 +91,9 @@ CH_FUNC(potrf , cdouble, Z)
 template<typename T>
 Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
 {
-    dim4 iDims = in.dims();
-    int N = iDims[0];
 
     Array<T> out = copyArray<T>(in);
-
-    int lwork = 0;
-
-    cublasFillMode_t uplo = CUBLAS_FILL_MODE_LOWER;
-    if(is_upper)
-        uplo = CUBLAS_FILL_MODE_UPPER;
-
-    CUSOLVER_CHECK(potrf_buf_func<T>()(getDnHandle(),
-                                       uplo,
-                                       N,
-                                       out.get(), out.strides()[1],
-                                       &lwork));
-
-    T *workspace = memAlloc<T>(lwork);
-    int *d_info = memAlloc<int>(1);
-
-    CUSOLVER_CHECK(potrf_func<T>()(getDnHandle(),
-                                   uplo,
-                                   N,
-                                   out.get(), out.strides()[1],
-                                   workspace, lwork,
-                                   d_info));
-
-    memFree(workspace);
-    memFree(d_info);
-
+    *info = cholesky_inplace(out, is_upper);
     return out;
 }
 

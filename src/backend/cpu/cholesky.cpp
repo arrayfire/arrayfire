@@ -45,18 +45,8 @@ CH_FUNC(potrf , cdouble, z)
 template<typename T>
 Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
 {
-    dim4 iDims = in.dims();
-    int N = iDims[0];
-
     Array<T> out = copyArray<T>(in);
-
-    char uplo = 'L';
-    if(is_upper)
-        uplo = 'U';
-
-    *info = potrf_func<T>()(AF_LAPACK_COL_MAJOR, uplo,
-                            N, out.get(), out.strides()[1]);
-
+    *info = cholesky_inplace(out, is_upper);
     return out;
 }
 
