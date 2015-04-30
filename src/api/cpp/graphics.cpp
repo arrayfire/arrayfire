@@ -23,4 +23,8 @@ namespace af
         AF_THROW(af_draw_plot(X.get(), Y.get()));
     }
 
+    void hist(const array &X, const double minval, const double maxval)
+    {
+        AF_THROW(af_draw_hist(X.get(), minval, maxval));
+    }
 }

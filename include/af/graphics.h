@@ -18,6 +18,8 @@ namespace af
     AFAPI void image(const array &in);
 
     AFAPI void plot(const array &X, const array &Y);
+
+    AFAPI void hist(const array &X, const double minval, const double maxval);
 }
 #endif
 
@@ -27,6 +29,8 @@ extern "C" {
     AFAPI af_err af_draw_image(const af_array in);
 
     AFAPI af_err af_draw_plot(const af_array X, const af_array Y);
+
+    AFAPI af_err af_draw_hist(const af_array X, const double minval, const double maxval);
 #ifdef __cplusplus
 }
 

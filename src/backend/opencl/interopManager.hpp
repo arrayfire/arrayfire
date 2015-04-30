@@ -30,6 +30,7 @@ class InteropManager
         ~InteropManager();
         cl::Buffer* getBufferResource(const fg::Image* image);
         cl::Buffer* getBufferResource(const fg::Plot* plot);
+        cl::Buffer* getBufferResource(const fg::Histogram* hist);
 
     protected:
         InteropManager() {}
