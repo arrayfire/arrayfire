@@ -86,7 +86,7 @@ void fftconvolve(Param out,
         // better use of batched clFFT capabilities
         for (dim_type k = 0; k < 4; k++) {
             if (k < baseDim)
-                packed.info.dims[k] = 1 << (unsigned)ceil(log2(sd[k] + fd[k] - 1));
+                packed.info.dims[k] = (unsigned)pow(2, ceil(log2(sd[k] + fd[k] - 1)));
             else if (k == baseDim)
                 packed.info.dims[k] = sd[k] + fd[k];
             else
