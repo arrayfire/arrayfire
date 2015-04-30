@@ -108,11 +108,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
     int N = iDims[1];
 
     q = padArray<T, T>(in, dim4(M, max(M, N)));
-    t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
-
-    int ret = geqrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N,
-                              q.get(), q.strides()[1],
-                              t.get());
+    t = qr_inplace(q);
 
     // SPLIT into q and r
     dim4 rdims(M, N);
@@ -120,11 +116,10 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
 
     qr_split<T>(r, q);
 
-    ret = gqr_func<T>()(AF_LAPACK_COL_MAJOR,
-                        M, M, min(M, N),
-                        q.get(), q.strides()[1],
-                        t.get());
-
+    gqr_func<T>()(AF_LAPACK_COL_MAJOR,
+                  M, M, min(M, N),
+                  q.get(), q.strides()[1],
+                  t.get());
     q.resetDims(dim4(M, M));
 }
 
@@ -137,9 +132,9 @@ Array<T> qr_inplace(Array<T> &in)
 
     Array<T> t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
 
-    int ret = geqrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N,
-                              in.get(), in.strides()[1],
-                              t.get());
+    geqrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N,
+                    in.get(), in.strides()[1],
+                    t.get());
 
     return t;
 }
