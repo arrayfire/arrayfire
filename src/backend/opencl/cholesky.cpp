@@ -8,7 +8,11 @@
  ********************************************************/
 
 #include <cholesky.hpp>
+#include <copy.hpp>
 #include <err_common.hpp>
+#include <magma/magma.h>
+#include <blas.hpp>
+#include <err_opencl.hpp>
 
 #if defined(WITH_OPENCL_LINEAR_ALGEBRA)
 
@@ -16,15 +20,39 @@ namespace opencl
 {
 
 template<typename T>
-Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
+int cholesky_inplace(Array<T> &in, const bool is_upper)
 {
-    AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
+    try {
+        initBlas();
+
+        dim4 iDims = in.dims();
+        int N = iDims[0];
+
+        magma_uplo_t uplo = is_upper ? MagmaUpper : MagmaLower;
+
+        int info = 0;
+        cl::Buffer *in_buf = in.get();
+        magma_potrf_gpu<T>(uplo, N,
+                           (*in_buf)(), in.getOffset(),  in.strides()[1],
+                           getQueue()(), &info);
+        return info;
+    } catch (cl::Error &err) {
+        CL_TO_AF_ERROR(err);
+    }
 }
 
 template<typename T>
-int cholesky_inplace(Array<T> &in, const bool is_upper)
+Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
 {
-    AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
+    try {
+
+        Array<T> out = copyArray<T>(in);
+        *info = cholesky_inplace(out, is_upper);
+        return out;
+
+    } catch (cl::Error &err) {
+        CL_TO_AF_ERROR(err);
+    }
 }
 
 #define INSTANTIATE_CH(T)                                                                   \
@@ -69,4 +97,3 @@ INSTANTIATE_CH(cdouble)
 }
 
 #endif
-
