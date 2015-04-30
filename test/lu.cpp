@@ -27,7 +27,7 @@ using af::cdouble;
 
 ///////////////////////////////// CPP ////////////////////////////////////
 //
-TEST(LU, CPP)
+TEST(LU, InplaceSmall)
 {
     if (noDoubleTests<float>()) return;
 
@@ -64,7 +64,7 @@ TEST(LU, CPP)
     delete[] outData;
 }
 
-TEST(LUFactorized, CPP)
+TEST(LU, SplitSmall)
 {
     if (noDoubleTests<float>()) return;
 
@@ -111,3 +111,49 @@ TEST(LUFactorized, CPP)
     delete[] lData;
     delete[] uData;
 }
+
+template<typename T>
+void luTester(const int m, const int n, double eps)
+{
+    if (noDoubleTests<T>()) return;
+
+    af::array a = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
+    af::array l, u, pivot;
+    af::lu(l, u, pivot, a);
+    af::array aa = af::matmul(l, u);
+    af::array bb = a(pivot, af::span);
+
+    ASSERT_EQ(af::max<double>(af::abs(real(aa - bb))) < eps, true);
+    ASSERT_EQ(af::max<double>(af::abs(imag(aa - bb))) < eps, true);
+}
+
+#define LU_BIG_TESTS(T, eps)                    \
+    TEST(LU, T##BigSquare)                      \
+    {                                           \
+        luTester<T>(500, 500, eps);             \
+    }                                           \
+    TEST(LU, T##BigRect0)                       \
+    {                                           \
+        luTester<T>(500, 1000, eps);            \
+    }                                           \
+    TEST(LU, T##BigRect1)                       \
+    {                                           \
+        luTester<T>(500, 1000, eps);            \
+    }                                           \
+    TEST(LU, T##BigSquareMultiple)              \
+    {                                           \
+        luTester<T>(512, 512, eps);             \
+    }                                           \
+    TEST(LU, T##BigRect0Multiple)               \
+    {                                           \
+        luTester<T>(512, 1024, eps);            \
+    }                                           \
+    TEST(LU, T##BigRect1Multiple)               \
+    {                                           \
+        luTester<T>(512, 1024, eps);            \
+    }                                           \
+
+LU_BIG_TESTS(float, 1E-5)
+LU_BIG_TESTS(double, 1E-8)
+LU_BIG_TESTS(cfloat, 1E-3)
+LU_BIG_TESTS(cdouble, 1E-8)
