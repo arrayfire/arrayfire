@@ -115,37 +115,14 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
     int N = iDims[1];
 
     Array<T> in_copy = copyArray<T>(in);
-
-    int lwork = 0;
-
-    CUSOLVER_CHECK(getrf_buf_func<T>()(getDnHandle(),
-                                       M, N,
-                                       in_copy.get(), in_copy.strides()[1],
-                                       &lwork));
-
-    T *workspace = memAlloc<T>(lwork);
-
-    pivot = createEmptyArray<int>(af::dim4(min(M, N), 1, 1, 1));
-    int *info = memAlloc<int>(1);
-
-    CUSOLVER_CHECK(getrf_func<T>()(getDnHandle(),
-                                   M, N,
-                                   in_copy.get(), in_copy.strides()[1],
-                                   workspace,
-                                   pivot.get(),
-                                   info));
+    pivot = lu_inplace(in_copy);
 
     // SPLIT into lower and upper
     dim4 ldims(M, min(M, N));
     dim4 udims(min(M, N), N);
     lower = createEmptyArray<T>(ldims);
     upper = createEmptyArray<T>(udims);
-
     kernel::lu_split<T>(lower, upper, in_copy);
-    convertPivot(pivot, M);
-
-    memFree(workspace);
-    memFree(info);
 }
 
 template<typename T>

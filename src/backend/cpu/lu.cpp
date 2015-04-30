@@ -120,11 +120,7 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
     int N = iDims[1];
 
     Array<T> in_copy = copyArray<T>(in);
-
-    pivot = createEmptyArray<int>(af::dim4(min(M, N), 1, 1, 1));
-    int out = getrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N,
-                              in_copy.get(), in_copy.strides()[1],
-                              pivot.get());
+    pivot = lu_inplace(in_copy);
 
     // SPLIT into lower and upper
     dim4 ldims(M, min(M, N));
@@ -133,7 +129,6 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
     upper = createEmptyArray<T>(udims);
 
     lu_split<T>(lower, upper, in_copy);
-    convertPivot(pivot, M);
 }
 
 template<typename T>
@@ -145,9 +140,9 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
 
     Array<int> pivot = createEmptyArray<int>(af::dim4(min(M, N), 1, 1, 1));
 
-    int out = getrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N,
-                              in.get(), in.strides()[1],
-                              pivot.get());
+    getrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N,
+                    in.get(), in.strides()[1],
+                    pivot.get());
 
     if(convert_pivot) convertPivot(pivot, M);
 

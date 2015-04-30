@@ -44,30 +44,21 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
 {
 
     try {
-        initBlas();
         dim4 iDims = in.dims();
         int M = iDims[0];
         int N = iDims[1];
         int MN = std::min(M, N);
-        int *ipiv = new int[MN];
 
         Array<T> in_copy = copyArray<T>(in);
-
-        cl::Buffer *in_buf = in_copy.get();
-        int info = 0;
-        magma_getrf_gpu<T>(M, N, (*in_buf)(), in.getOffset(), in.strides()[1],
-                           ipiv, getQueue()(), &info);
+        pivot = lu_inplace(in_copy);
 
         // SPLIT into lower and upper
         dim4 ldims(M, MN);
         dim4 udims(MN, N);
         lower = createEmptyArray<T>(ldims);
         upper = createEmptyArray<T>(udims);
-
         kernel::lu_split<T>(lower, upper, in_copy);
 
-        pivot = convertPivot(ipiv, MN, M);
-        delete[] ipiv;
     } catch (cl::Error &err) {
         CL_TO_AF_ERROR(err);
     }
@@ -88,6 +79,8 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
         int info = 0;
         magma_getrf_gpu<T>(M, N, (*in_buf)(), in.getOffset(), in.strides()[1],
                            ipiv, getQueue()(), &info);
+
+        if (!convert_pivot) return createHostDataArray<int>(dim4(MN), ipiv);
 
         Array<int> pivot = convertPivot(ipiv, MN, M);
         delete[] ipiv;
