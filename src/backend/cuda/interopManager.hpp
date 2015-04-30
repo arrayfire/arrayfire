@@ -40,6 +40,7 @@ class InteropManager
         ~InteropManager();
         cudaGraphicsResource* getBufferResource(const fg::Image* handle);
         cudaGraphicsResource* getBufferResource(const fg::Plot* handle);
+        cudaGraphicsResource* getBufferResource(const fg::Histogram* handle);
 
     protected:
         InteropManager() {}

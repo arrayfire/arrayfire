@@ -9,8 +9,11 @@
 
 #if defined (WITH_GRAPHICS)
 
+#include <interopManager.hpp>
+#include <Array.hpp>
 #include <hist_graphics.hpp>
 #include <err_cuda.hpp>
+#include <debug_cuda.hpp>
 
 namespace cuda
 {
@@ -18,7 +21,22 @@ namespace cuda
 template<typename T>
 void copy_histogram(const Array<T> &data, const fg::Histogram* hist)
 {
-    CUDA_NOT_SUPPORTED();
+    const T *d_P = data.get();
+
+    InteropManager& intrpMngr = InteropManager::getInstance();
+
+    cudaGraphicsResource *cudaVBOResource = intrpMngr.getBufferResource(hist);
+    // Map resource. Copy data to VBO. Unmap resource.
+    size_t num_bytes = hist->size();
+    T* d_vbo = NULL;
+    cudaGraphicsMapResources(1, &cudaVBOResource, 0);
+    cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, cudaVBOResource);
+    cudaMemcpy(d_vbo, d_P, num_bytes, cudaMemcpyDeviceToDevice);
+    cudaGraphicsUnmapResources(1, &cudaVBOResource, 0);
+
+    CheckGL("After cuda resource copy");
+
+    POST_LAUNCH_CHECK();
 }
 
 #define INSTANTIATE(T)  \
