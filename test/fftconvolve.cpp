@@ -89,7 +89,7 @@ void fftconvolveTest(string pTestFile, bool expand)
 template<typename T, int baseDim>
 void fftconvolveTestLarge(int sDim, int fDim, int sBatch, int fBatch, bool expand)
 {
-    //if (noDoubleTests<T>()) return;
+    if (noDoubleTests<T>()) return;
 
     using af::dim4;
     using af::seq;
@@ -117,27 +117,21 @@ void fftconvolveTestLarge(int sDim, int fDim, int sBatch, int fBatch, bool expan
     const dim4 signalDims(sd[0], sd[1], sd[2], sd[3]);
     const dim4 filterDims(fd[0], fd[1], fd[2], fd[3]);
 
-    //array signal = (randu(signalDims)).as(u32).as(f32);
-    //array filter = (randu(filterDims)).as(u32).as(f32);
     array signal = randu(signalDims, (af_dtype) af::dtype_traits<T>::af_type);
     array filter = randu(filterDims, (af_dtype) af::dtype_traits<T>::af_type);
 
-    //array out = fftconvolve(signal, filter, expand);
-    array out;
+    array out = fftconvolve(signal, filter, expand);
 
     array gold;
     switch(baseDim) {
     case 1:
         gold = real(af::ifft(af::fft(signal, fftDim) * af::fft(filter, fftDim)));
-        out = real(af::ifft(af::fft(signal, fftDim) * af::fft(filter, fftDim)));
         break;
     case 2:
         gold = real(af::ifft2(af::fft2(signal, fftDim, fftDim) * af::fft2(filter, fftDim, fftDim)));
-        out = real(af::ifft2(af::fft2(signal, fftDim, fftDim) * af::fft2(filter, fftDim, fftDim)));
         break;
     case 3:
         gold = real(af::ifft3(af::fft3(signal, fftDim, fftDim, fftDim) * af::fft3(filter, fftDim, fftDim, fftDim)));
-        out = real(af::ifft3(af::fft3(signal, fftDim, fftDim, fftDim) * af::fft3(filter, fftDim, fftDim, fftDim)));
         break;
     default:
         ASSERT_LT(baseDim, 4);
@@ -156,15 +150,12 @@ void fftconvolveTestLarge(int sDim, int fDim, int sBatch, int fBatch, bool expan
     switch(baseDim) {
     case 1:
         gold = gold(seq(cropMin, cropMax));
-        out = out(seq(cropMin, cropMax));
         break;
     case 2:
         gold = gold(seq(cropMin, cropMax), seq(cropMin, cropMax));
-        out = out(seq(cropMin, cropMax), seq(cropMin, cropMax));
         break;
     case 3:
         gold = gold(seq(cropMin, cropMax), seq(cropMin, cropMax), seq(cropMin, cropMax));
-        out = out(seq(cropMin, cropMax), seq(cropMin, cropMax), seq(cropMin, cropMax));
         break;
     }
 
@@ -180,73 +171,13 @@ void fftconvolveTestLarge(int sDim, int fDim, int sBatch, int fBatch, bool expan
     out.host(outData);
 
     for (size_t elIter=0; elIter<outElems; ++elIter) {
-        ASSERT_NEAR(goldData[elIter], outData[elIter], 1) << "at: " << elIter << std::endl;
+        ASSERT_NEAR(goldData[elIter], outData[elIter], 5e-2) << "at: " << elIter << std::endl;
     }
 
     delete[] goldData;
     delete[] outData;
 }
 
-//TYPED_TEST(FFTConvolveLarge, VectorLargeSignalSmallFilter)
-//{
-//    fftconvolveTestLarge<TypeParam, 1>(4194304, 25, 1, 1, true);
-//}
-//
-//TYPED_TEST(FFTConvolveLarge, VectorLargeSignalLargeFilter)
-//{
-//    fftconvolveTestLarge<TypeParam, 1>(4194304, 1046529, 1, 1, true);
-//}
-//
-//TYPED_TEST(FFTConvolveLarge, SameVectorLargeSignalSmallFilter)
-//{
-//    fftconvolveTestLarge<TypeParam, 1>(4194304, 25, 1, 1, false);
-//}
-//
-//TYPED_TEST(FFTConvolveLarge, SameVectorLargeSignalLargeFilter)
-//{
-//    fftconvolveTestLarge<TypeParam, 1>(4194304, 1046529, 1, 1, false);
-//}
-//
-//TYPED_TEST(FFTConvolveLarge, RectangleLargeSignalSmallFilter)
-//{
-//    fftconvolveTestLarge<TypeParam, 2>(2048, 5, 1, 1, true);
-//}
-//
-//TYPED_TEST(FFTConvolveLarge, RectangleLargeSignalLargeFilter)
-//{
-//    fftconvolveTestLarge<TypeParam, 2>(2048, 1023, 1, 1, true);
-//}
-//
-//TYPED_TEST(FFTConvolveLarge, SameRectangleLargeSignalSmallFilter)
-//{
-//    fftconvolveTestLarge<TypeParam, 2>(2048, 5, 1, 1, false);
-//}
-//
-//TYPED_TEST(FFTConvolveLarge, SameRectangleLargeSignalLargeFilter)
-//{
-//    fftconvolveTestLarge<TypeParam, 2>(2048, 1023, 1, 1, false);
-//}
-//
-//TYPED_TEST(FFTConvolveLarge, CuboidLargeSignalSmallFilter)
-//{
-//    fftconvolveTestLarge<TypeParam, 3>(160, 5, 1, 1, true);
-//}
-//
-//TYPED_TEST(FFTConvolveLarge, CuboidLargeSignalLargeFilter)
-//{
-//    fftconvolveTestLarge<TypeParam, 3>(160, 45, 1, 1, true);
-//}
-//
-//TYPED_TEST(FFTConvolveLarge, SameCuboidLargeSignalSmallFilter)
-//{
-//    fftconvolveTestLarge<TypeParam, 3>(160, 15, 1, 1, false);
-//}
-//
-//TYPED_TEST(FFTConvolveLarge, SameCuboidLargeSignalLargeFilter)
-//{
-//    fftconvolveTestLarge<TypeParam, 2>(160, 15, 1, 1, false);
-//}
-//
 TYPED_TEST(FFTConvolveLarge, VectorLargeSignalSmallFilter)
 {
     fftconvolveTestLarge<TypeParam, 1>(32768, 25, 1, 1, true);
@@ -254,7 +185,7 @@ TYPED_TEST(FFTConvolveLarge, VectorLargeSignalSmallFilter)
 
 TYPED_TEST(FFTConvolveLarge, VectorLargeSignalLargeFilter)
 {
-    fftconvolveTestLarge<TypeParam, 1>(32768, 32768, 1, 1, true);
+    fftconvolveTestLarge<TypeParam, 1>(32768, 4095, 1, 1, true);
 }
 
 TYPED_TEST(FFTConvolveLarge, SameVectorLargeSignalSmallFilter)
@@ -264,7 +195,7 @@ TYPED_TEST(FFTConvolveLarge, SameVectorLargeSignalSmallFilter)
 
 TYPED_TEST(FFTConvolveLarge, SameVectorLargeSignalLargeFilter)
 {
-    fftconvolveTestLarge<TypeParam, 1>(32768, 32768, 1, 1, false);
+    fftconvolveTestLarge<TypeParam, 1>(32768, 4095, 1, 1, false);
 }
 
 TYPED_TEST(FFTConvolveLarge, RectangleLargeSignalSmallFilter)
@@ -294,7 +225,7 @@ TYPED_TEST(FFTConvolveLarge, CuboidLargeSignalSmallFilter)
 
 TYPED_TEST(FFTConvolveLarge, CuboidLargeSignalLargeFilter)
 {
-    fftconvolveTestLarge<TypeParam, 3>(64, 63, 1, 1, true);
+    fftconvolveTestLarge<TypeParam, 3>(64, 31, 1, 1, true);
 }
 
 TYPED_TEST(FFTConvolveLarge, SameCuboidLargeSignalSmallFilter)
@@ -304,7 +235,7 @@ TYPED_TEST(FFTConvolveLarge, SameCuboidLargeSignalSmallFilter)
 
 TYPED_TEST(FFTConvolveLarge, SameCuboidLargeSignalLargeFilter)
 {
-    fftconvolveTestLarge<TypeParam, 2>(64, 63, 1, 1, false);
+    fftconvolveTestLarge<TypeParam, 2>(64, 31, 1, 1, false);
 }
 
 TYPED_TEST(FFTConvolve, Vector)
