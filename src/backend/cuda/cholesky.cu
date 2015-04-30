@@ -18,6 +18,7 @@
 #include <iostream>
 #include <memory.hpp>
 #include <copy.hpp>
+#include <triangle.hpp>
 
 #include <math.hpp>
 #include <err_common.hpp>
@@ -94,6 +95,10 @@ Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
 
     Array<T> out = copyArray<T>(in);
     *info = cholesky_inplace(out, is_upper);
+
+    if (is_upper) triangle<T, true >(out, out);
+    else          triangle<T, false>(out, out);
+
     return out;
 }
 

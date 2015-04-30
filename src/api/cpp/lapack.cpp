@@ -63,9 +63,9 @@ namespace af
 
     array cholesky(const array &in, int *info, const bool is_upper)
     {
-        array out = in.copy();
-        AF_THROW(af_cholesky_inplace(info, out.get(), is_upper));
-        return out;
+        af_array out;
+        AF_THROW(af_cholesky(&out, info, in.get(), is_upper));
+        return array(out);
     }
 
     void choleskyInplace(array &in, int *info, const bool is_upper)
