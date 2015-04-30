@@ -311,7 +311,7 @@ magma_int_t magma_getrf_gpu(
         magma_queue_t queue,                            \
         magma_int_t *info);                             \
 
-INSTANTIATE(float);
-INSTANTIATE(double);
-INSTANTIATE(magmaFloatComplex);
-INSTANTIATE(magmaDoubleComplex);
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(magmaFloatComplex)
+INSTANTIATE(magmaDoubleComplex)

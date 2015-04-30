@@ -12,6 +12,11 @@
 
 #include "magma_types.h"
 
+#define LAPACKE_sunmqr_work(...) LAPACKE_sormqr_work(__VA_ARGS__)
+#define LAPACKE_dunmqr_work(...) LAPACKE_dormqr_work(__VA_ARGS__)
+#define LAPACKE_sungqr_work(...) LAPACKE_sorgqr_work(__VA_ARGS__)
+#define LAPACKE_dungqr_work(...) LAPACKE_dorgqr_work(__VA_ARGS__)
+
 #define lapack_complex_float magmaFloatComplex
 #define lapack_complex_double magmaDoubleComplex
 #define LAPACK_PREFIX LAPACKE_
@@ -30,7 +35,7 @@
         template<typename... Args>                  \
             int                                     \
             operator() (Args... args)               \
-        { return (LAPACK_NAME(X##NAME))(args...); } \
+        { return LAPACK_NAME(X##NAME)(args...); }   \
     };
 
 CPU_LAPACK_FUNC_DEF(getrf)
@@ -44,5 +49,35 @@ CPU_LAPACK_FUNC(potrf, float,      s)
 CPU_LAPACK_FUNC(potrf, double,     d)
 CPU_LAPACK_FUNC(potrf, magmaFloatComplex,     c)
 CPU_LAPACK_FUNC(potrf, magmaDoubleComplex,    z)
+
+CPU_LAPACK_FUNC_DEF(trtri)
+CPU_LAPACK_FUNC(trtri, float,      s)
+CPU_LAPACK_FUNC(trtri, double,     d)
+CPU_LAPACK_FUNC(trtri, magmaFloatComplex,     c)
+CPU_LAPACK_FUNC(trtri, magmaDoubleComplex,    z)
+
+CPU_LAPACK_FUNC_DEF(geqrf_work)
+CPU_LAPACK_FUNC(geqrf_work, float,      s)
+CPU_LAPACK_FUNC(geqrf_work, double,     d)
+CPU_LAPACK_FUNC(geqrf_work, magmaFloatComplex,     c)
+CPU_LAPACK_FUNC(geqrf_work, magmaDoubleComplex,    z)
+
+CPU_LAPACK_FUNC_DEF(larft)
+CPU_LAPACK_FUNC(larft, float,      s)
+CPU_LAPACK_FUNC(larft, double,     d)
+CPU_LAPACK_FUNC(larft, magmaFloatComplex,     c)
+CPU_LAPACK_FUNC(larft, magmaDoubleComplex,    z)
+
+CPU_LAPACK_FUNC_DEF(unmqr_work)
+CPU_LAPACK_FUNC(unmqr_work, float,      s)
+CPU_LAPACK_FUNC(unmqr_work, double,     d)
+CPU_LAPACK_FUNC(unmqr_work, magmaFloatComplex,     c)
+CPU_LAPACK_FUNC(unmqr_work, magmaDoubleComplex,    z)
+
+CPU_LAPACK_FUNC_DEF(ungqr_work)
+CPU_LAPACK_FUNC(ungqr_work, float,      s)
+CPU_LAPACK_FUNC(ungqr_work, double,     d)
+CPU_LAPACK_FUNC(ungqr_work, magmaFloatComplex,     c)
+CPU_LAPACK_FUNC(ungqr_work, magmaDoubleComplex,    z)
 
 #endif

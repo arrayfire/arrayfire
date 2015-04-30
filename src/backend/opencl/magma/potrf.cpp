@@ -82,10 +82,13 @@ magma_int_t magma_potrf_gpu(
 #define A(i,j)  &A[ (i) + (j)*lda ]
 
     magma_int_t j, jb, nb;
-    Ty  z_one = magma_one<Ty>();
-    Ty mz_one = magma_neg_one<Ty>();
-    double    one =  1.0;
-    double  m_one = -1.0;
+    static const Ty  z_one = magma_one<Ty>();
+    static const Ty mz_one = magma_neg_one<Ty>();
+    static const double    one =  1.0;
+    static const double  m_one = -1.0;
+
+    static const clblasTranspose transType = magma_is_real<Ty>() ? clblasTrans : clblasConjTrans;
+
     Ty* work;
     magma_int_t err;
 
@@ -139,7 +142,7 @@ magma_int_t magma_potrf_gpu(
                 jb = std::min(nb, n-j);
                 if (j > 0) {
                     gpu_herk(clblasColumnMajor,
-                             clblasUpper, clblasConjTrans,
+                             clblasUpper, transType,
                              jb, j,
                              m_one,
                              dA(0,j), ldda,
@@ -154,7 +157,7 @@ magma_int_t magma_potrf_gpu(
                 // apply all previous updates to block row right of diagonal block
                 if (j+jb < n) {
                     gpu_gemm(clblasColumnMajor,
-                             clblasConjTrans, clblasNoTrans,
+                             transType, clblasNoTrans,
                              jb, n-j-jb, j,
                              mz_one,
                              dA(0, j   ), ldda,
@@ -182,7 +185,7 @@ magma_int_t magma_potrf_gpu(
                     magma_event_sync(event);
                     gpu_trsm(clblasColumnMajor,
                              clblasLeft, clblasUpper,
-                             clblasConjTrans, clblasNonUnit,
+                             transType, clblasNonUnit,
                              jb, n-j-jb,
                              z_one,
                              dA(j, j   ), ldda,
@@ -214,7 +217,7 @@ magma_int_t magma_potrf_gpu(
                 // apply all previous updates to block column below diagonal block
                 if (j+jb < n) {
                     gpu_gemm(clblasColumnMajor,
-                             clblasNoTrans, clblasConjTrans,
+                             clblasNoTrans, transType,
                              n-j-jb, jb, j,
                              mz_one,
                              dA(j+jb, 0), ldda,
@@ -240,7 +243,7 @@ magma_int_t magma_potrf_gpu(
                 if (j+jb < n) {
                     magma_event_sync(event);
                     gpu_trsm(clblasColumnMajor,
-                             clblasRight, clblasLower, clblasConjTrans, clblasNonUnit,
+                             clblasRight, clblasLower, transType, clblasNonUnit,
                              n-j-jb, jb,
                              z_one,
                              dA(j   , j), ldda,
@@ -264,7 +267,7 @@ magma_int_t magma_potrf_gpu(
         magma_queue_t queue,                            \
         magma_int_t*   info);                           \
 
-INSTANTIATE(float);
-INSTANTIATE(double);
-INSTANTIATE(magmaFloatComplex);
-INSTANTIATE(magmaDoubleComplex);
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(magmaFloatComplex)
+INSTANTIATE(magmaDoubleComplex)

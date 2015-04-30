@@ -10,7 +10,9 @@
 #ifndef MAGMA_SYNC_H
 #define MAGMA_SYNC_H
 
-#define check_error( err ) if (err != CL_SUCCESS) throw cl::Error(err);
+#ifndef check_error
+#define check_error( err ) if (err != CL_SUCCESS) { printf ("OpenCL err: %d\n", err); throw cl::Error(err); }
+#endif
 
 static inline void
 magma_event_sync( magma_event_t event )

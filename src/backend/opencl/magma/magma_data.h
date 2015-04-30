@@ -39,7 +39,7 @@ magma_malloc( magma_ptr* ptrPtr, int num)
 
 // --------------------
 // Free GPU memory allocated by magma_malloc.
-static magma_int_t
+static inline magma_int_t
 magma_free(cl_mem ptr)
 {
     cl_int err = clReleaseMemObject( ptr );
@@ -356,7 +356,7 @@ magma_setmatrix_async(
 
     size_t buffer_origin[3] = { dB_offset*sizeof(T), 0, 0 };
     size_t host_orig[3]     = { 0, 0, 0 };
-    size_t region[3]        = { m*sizeof(T), n, 1 };
+    size_t region[3]        = { m*sizeof(T), (size_t)n, 1 };
     cl_int err = clEnqueueWriteBufferRect(
         queue, dB_dst, CL_FALSE,  // non-blocking
         buffer_origin, host_orig, region,
@@ -435,5 +435,16 @@ magmablas_laswp(
     const magma_int_t *ipiv, magma_int_t inci,
     magma_queue_t queue);
 
+template<typename T> void
+magmablas_swapdblk(magma_int_t n, magma_int_t nb,
+                   cl_mem dA, magma_int_t dA_offset, magma_int_t ldda, magma_int_t inca,
+                   cl_mem dB, magma_int_t dB_offset, magma_int_t lddb, magma_int_t incb,
+                   magma_queue_t queue);
+
+template<typename T> void
+magmablas_laset(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+                T offdiag, T diag,
+                cl_mem dA, size_t dA_offset, magma_int_t ldda,
+                magma_queue_t queue);
 
 #endif

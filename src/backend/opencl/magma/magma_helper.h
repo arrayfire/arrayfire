@@ -10,11 +10,15 @@
 #ifndef __MAGMA_HELPER_H
 #define __MAGMA_HELPER_H
 
+template<typename T> T magma_zero();
 template<typename T> T magma_one();
 template<typename T> T magma_neg_one();
+template<typename T> T magma_scalar(double val);
+
+template<typename T> bool magma_is_real();
 
 template<typename T> magma_int_t magma_get_getrf_nb(int num);
 template<typename T> magma_int_t magma_get_potrf_nb(int num);
-
+template<typename T> magma_int_t magma_get_geqrf_nb(int num);
 
 #endif

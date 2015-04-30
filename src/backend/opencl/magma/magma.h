@@ -17,12 +17,51 @@ magma_int_t magma_getrf_gpu(magma_int_t m, magma_int_t n,
                             cl_mem dA, size_t dA_offset, magma_int_t ldda,
                             magma_int_t *ipiv,
                             magma_queue_t queue,
-                            magma_int_t *info );
+                            magma_int_t *info);
 
 template<typename Ty>
 magma_int_t magma_potrf_gpu(magma_uplo_t   uplo, magma_int_t    n,
                             cl_mem dA, size_t dA_offset, magma_int_t ldda,
                             magma_queue_t queue,
-                            magma_int_t*   info );
+                            magma_int_t*   info);
+
+template<typename Ty> magma_int_t
+magma_larfb_gpu(
+    magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    cl_mem dV   , size_t dV_offset,    magma_int_t lddv,
+    cl_mem dT   , size_t dT_offset,    magma_int_t lddt,
+    cl_mem dC   , size_t dC_offset,    magma_int_t lddc,
+    cl_mem dwork, size_t dwork_offset, magma_int_t ldwork,
+    magma_queue_t queue);
+
+template<typename Ty> magma_int_t
+magma_geqrf_gpu(
+    magma_int_t m, magma_int_t n,
+    cl_mem dA, size_t dA_offset,  magma_int_t ldda,
+    Ty *tau, cl_mem dT, size_t dT_offset,
+    magma_queue_t queue,
+    magma_int_t *info);
+
+template<typename Ty>  magma_int_t
+magma_unmqr_gpu(
+    magma_side_t side, magma_trans_t trans,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    cl_mem dA, size_t dA_offset, magma_int_t ldda,
+    Ty *tau,
+    cl_mem dC, size_t dC_offset, magma_int_t lddc,
+    Ty *hwork, magma_int_t lwork,
+    cl_mem dT, size_t dT_offset, magma_int_t nb,
+    magma_queue_t queue,
+    magma_int_t *info);
+
+template<typename Ty>  magma_int_t
+magma_ungqr_gpu(
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    cl_mem dA, size_t dA_offset, magma_int_t ldda,
+    Ty *tau,
+    cl_mem dT, size_t dT_offset, magma_int_t nb,
+    magma_queue_t queue,
+    magma_int_t *info);
 
 #endif
