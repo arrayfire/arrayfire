@@ -13,22 +13,26 @@
 #include "magma_common.h"
 #include <types.hpp>
 #include <clBLAS.h>
+#include <err_clblas.hpp>
 
 using opencl::cfloat;
 using opencl::cdouble;
 
-#define BLAS_FUNC_DEF(NAME)                                             \
-template<typename T>                                                    \
-struct NAME##_func;
+#define BLAS_FUNC_DEF(NAME)                     \
+    template<typename T>                        \
+    struct NAME##_func;
 
-#define BLAS_FUNC(NAME, TYPE, PREFIX)                                   \
-template<>                                                              \
-struct NAME##_func<TYPE>                                                \
-{                                                                       \
-    template<typename... Args>                                          \
-    clblasStatus                                                        \
-    operator() (Args... args) { return clblas##PREFIX##NAME(args...); } \
-};
+#define BLAS_FUNC(NAME, TYPE, PREFIX)                       \
+    template<>                                              \
+    struct NAME##_func<TYPE>                                \
+    {                                                       \
+        template<typename... Args>                          \
+            void                                            \
+            operator() (Args... args)                       \
+        {                                                   \
+            CLBLAS_CHECK(clblas##PREFIX##NAME(args...));    \
+        }                                                   \
+    };
 
 BLAS_FUNC_DEF(gemm)
 BLAS_FUNC(gemm, float,      S)
