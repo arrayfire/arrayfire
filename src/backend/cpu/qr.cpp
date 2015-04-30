@@ -17,6 +17,7 @@
 #include <iostream>
 #include <cassert>
 #include <err_cpu.hpp>
+#include <triangle.hpp>
 
 #include <lapack_helper.hpp>
 
@@ -61,46 +62,6 @@ GQR_FUNC(gqr , cfloat , cungqr)
 GQR_FUNC(gqr , cdouble, zungqr)
 
 template<typename T>
-void qr_split(Array<T> &r_, const Array<T> &in)
-{
-          T *r = r_.get();
-    const T *i = in.get();
-
-    dim4 rdm = r_.dims();
-    dim4 idm = in.dims();
-
-    dim4 rst = r_.strides();
-    dim4 ist = in.strides();
-
-    for(dim_type ow = 0; ow < idm[3]; ow++) {
-        const dim_type rW = ow * rst[3];
-        const dim_type iW = ow * ist[3];
-
-        for(dim_type oz = 0; oz < idm[2]; oz++) {
-            const dim_type rZW = rW + oz * rst[2];
-            const dim_type iZW = iW + oz * ist[2];
-
-            for(dim_type oy = 0; oy < idm[1]; oy++) {
-                const dim_type rYZW = rZW + oy * rst[1];
-                const dim_type iYZW = iZW + oy * ist[1];
-
-                for(dim_type ox = 0; ox < idm[0]; ox++) {
-                    const dim_type rMem = rYZW + ox;
-                    const dim_type iMem = iYZW + ox;
-                    if(oy >= ox) {
-                        if(oy < rdm[1])
-                            r[rMem] = i[iMem];
-                    } else {
-                        if(oy < rdm[1])
-                            r[rMem] = scalar<T>(0);
-                    }
-                }
-            }
-        }
-    }
-}
-
-template<typename T>
 void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
 {
     dim4 iDims = in.dims();
@@ -114,12 +75,13 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
     dim4 rdims(M, N);
     r = createEmptyArray<T>(rdims);
 
-    qr_split<T>(r, q);
+    triangle<T, true>(r, q);
 
     gqr_func<T>()(AF_LAPACK_COL_MAJOR,
                   M, M, min(M, N),
                   q.get(), q.strides()[1],
                   t.get());
+
     q.resetDims(dim4(M, M));
 }
 
