@@ -43,7 +43,8 @@ void triangle(Array<T> &out, const Array<T> &in)
                     const dim_type oMem = oYZW + ox;
                     const dim_type iMem = iYZW + ox;
 
-                    if(!is_upper ^ (oy >= ox)) {
+                    bool cond = is_upper ? (oy >= ox) : (oy <= ox);
+                    if(cond) {
                         o[oMem] = i[iMem];
                     } else {
                         o[oMem] = scalar<T>(0);
