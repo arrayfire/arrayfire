@@ -153,4 +153,4 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
 ##
 # Packaging
 ##
-add_subdirectory(packages)
+include(${CMAKE_CURRENT_SOURCE_DIR}/CPack.txt)
