@@ -92,8 +92,7 @@ template<typename T>
 Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper)
 {
     dim4 iDims = in.dims();
-    int M = iDims[0];
-    int N = iDims[1];
+    int N = iDims[0];
 
     Array<T> out = copyArray<T>(in);
 
@@ -129,8 +128,7 @@ template<typename T>
 int cholesky_inplace(Array<T> &in, const bool is_upper)
 {
     dim4 iDims = in.dims();
-    int M = iDims[0];
-    int N = iDims[1];
+    int N = iDims[0];
 
     int lwork = 0;
 
