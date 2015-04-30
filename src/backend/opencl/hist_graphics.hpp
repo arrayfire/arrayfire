@@ -9,14 +9,15 @@
 
 #if defined (WITH_GRAPHICS)
 
-#include <af/graphics.h>
-#include <Array.hpp>
 #include <graphics_common.hpp>
+#include <Array.hpp>
 
-namespace cpu
+namespace opencl
 {
-    template<typename T>
-    void copy_histogram(Array<uint> &P, const unsigned int nbins, const double minval, const double maxval, fg::Histogram* hist);
+
+template<typename T>
+void copy_histogram(const Array<T> &data, const fg::Histogram* hist);
+
 }
 
 #endif

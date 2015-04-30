@@ -54,7 +54,7 @@ class ForgeManager
         ~ForgeManager();
         fg::Image* getImage(int w, int h, fg::ColorMode mode, GLenum type);
         fg::Plot* getPlot(int nPoints, GLenum type);
-        fg::Histogram* getHistogram(int nPoints, GLenum type);
+        fg::Histogram* getHistogram(int nBins, GLenum type);
 
     protected:
         ForgeManager() {}

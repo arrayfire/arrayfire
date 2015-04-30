@@ -19,7 +19,7 @@ namespace af
 
     AFAPI void plot(const array &X, const array &Y);
 
-    AFAPI void histogram1d(const array &X, const unsigned int nbins, const double minval, const double maxval);
+    AFAPI void hist(const array &X, const double minval, const double maxval);
 }
 #endif
 
@@ -30,7 +30,7 @@ extern "C" {
 
     AFAPI af_err af_draw_plot(const af_array X, const af_array Y);
 
-    AFAPI af_err af_draw_histogram1d(const af_array X, const unsigned int nbins, const double minval, const double maxval);
+    AFAPI af_err af_draw_hist(const af_array X, const double minval, const double maxval);
 #ifdef __cplusplus
 }
 
