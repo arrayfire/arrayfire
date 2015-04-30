@@ -43,9 +43,8 @@ namespace af
         void set(af_array tmp) const;
         //END FIXME
 
-        array(af_array in, const array *par, af_index_t seqs[4]);
-
     public:
+        array(af_array in, const array *par, af_index_t seqs[4]);
         /**
             \ingroup construct_mat
             @{
