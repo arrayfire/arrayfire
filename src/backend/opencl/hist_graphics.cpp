@@ -10,8 +10,10 @@
 #if defined (WITH_GRAPHICS)
 
 #include <interopManager.hpp>
+#include <Array.hpp>
 #include <hist_graphics.hpp>
 #include <err_opencl.hpp>
+#include <debug_opencl.hpp>
 
 namespace opencl
 {
@@ -19,7 +21,25 @@ namespace opencl
 template<typename T>
 void copy_histogram(const Array<T> &data, const fg::Histogram* hist)
 {
-    OPENCL_NOT_SUPPORTED();
+    CheckGL("Begin OpenCL resource copy");
+    const cl::Buffer *d_P = data.get();
+    size_t bytes = hist->size();
+
+    InteropManager& intrpMngr = InteropManager::getInstance();
+
+    cl::Buffer *clPBOResource = intrpMngr.getBufferResource(hist);
+
+    std::vector<cl::Memory> shared_objects;
+    shared_objects.push_back(*clPBOResource);
+
+    glFinish();
+    getQueue().enqueueAcquireGLObjects(&shared_objects);
+    getQueue().enqueueCopyBuffer(*d_P, *clPBOResource, 0, 0, bytes, NULL, NULL);
+    getQueue().finish();
+    getQueue().enqueueReleaseGLObjects(&shared_objects);
+
+    CL_DEBUG_FINISH(getQueue());
+    CheckGL("End OpenCL resource copy");
 }
 
 #define INSTANTIATE(T)  \
