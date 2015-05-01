@@ -9,7 +9,6 @@
 
 #pragma once
 #include <af/defines.h>
-#include <af/dim4.hpp>
 #include <af/seq.h>
 #include <af/traits.hpp>
 

@@ -10,6 +10,7 @@
 #include <af/dim4.hpp>
 #include <af/statistics.h>
 #include <af/algorithm.h>
+#include <af/array.h>
 #include "error.hpp"
 #include "common.hpp"
 

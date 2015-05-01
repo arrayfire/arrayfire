@@ -9,6 +9,7 @@
 
 #pragma once
 #include <af/defines.h>
+#include <af/dim4.hpp>
 
 #ifdef __cplusplus
 namespace af

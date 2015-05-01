@@ -21,7 +21,7 @@ af_make_seq(double begin, double end, double step);
 
 static const af_seq af_span = {1, 1, 0};
 
-typedef struct {
+typedef struct af_index_t{
     // if seq is used for current dimension
     // mIsSeq is set to 'true' and mIndexer.seq
     // should be used. Otherwise, mIndexer.arr
