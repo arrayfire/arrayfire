@@ -8,12 +8,12 @@
  ********************************************************/
 
 #pragma once
-#include <af/array.h>
 #include <af/image.h>
 
 #ifdef __cplusplus
 namespace af
 {
+class array;
 
 AFAPI int devicecount();
 

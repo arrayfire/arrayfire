@@ -8,12 +8,17 @@
  ********************************************************/
 
 #pragma once
-#include <af/array.h>
 #include <af/defines.h>
+
+struct af_seq;
+struct af_index_t;
 
 #if __cplusplus
 namespace af
 {
+
+class array;
+class dim4;
 
 /**
    \defgroup manip_func_join join
@@ -69,7 +74,7 @@ AFAPI array tile(const array &in, const unsigned x, const unsigned y=1, const un
    \ingroup manip_mat
    \ingroup arrayfire_func
 */
-AFAPI array tile(const array &in, const af::dim4 &dims);
+AFAPI array tile(const array &in, const dim4 &dims);
 /**
    @}
 */

@@ -9,7 +9,6 @@
 
 #pragma once
 #include <af/defines.h>
-#include <af/dim4.hpp>
 #include <af/seq.h>
 #include <af/traits.hpp>
 
@@ -759,221 +758,6 @@ namespace af
 
 #undef ASSIGN
 
-#define OPERATOR(op)                                                \
-            array operator op(const array &a) const;                \
-            array operator op(const double &a) const;               \
-            array operator op(const cdouble &a) const;              \
-            array operator op(const cfloat &a) const;               \
-            array operator op(const float &a) const;                \
-            array operator op(const int &a) const;                  \
-            array operator op(const unsigned &a) const;             \
-            array operator op(const bool &a) const;                 \
-            array operator op(const char &a) const;                 \
-            array operator op(const unsigned char &a) const;        \
-            array operator op(const long  &a) const;                \
-            array operator op(const unsigned long &a) const;        \
-            array operator op(const long long  &a) const;           \
-            array operator op(const unsigned long long &a) const;   \
-
-        /**
-           \ingroup arith_func_add
-           @{
-        */
-        OPERATOR(+ )
-        /**
-           @}
-        */
-
-        /**
-           \ingroup arith_func_sub
-           @{
-        */
-        OPERATOR(- )
-        /**
-           @}
-        */
-
-        /**
-           \ingroup arith_func_mul
-           @{
-        */
-        OPERATOR(* )
-        /**
-           @}
-        */
-
-        /**
-           \ingroup arith_func_div
-           @{
-        */
-        OPERATOR(/ )
-        /**
-           @}
-        */
-
-        /**
-           \ingroup logic_func_eq
-           @{
-        */
-        OPERATOR(==)
-        /**
-           @}
-        */
-
-        /**
-           \ingroup logic_func_neq
-           @{
-        */
-        OPERATOR(!=)
-        /**
-           @}
-        */
-
-        /**
-           \ingroup logic_func_lt
-           @{
-        */
-        OPERATOR(< )
-        /**
-           @}
-        */
-
-        /**
-           \ingroup logic_func_le
-           @{
-        */
-        OPERATOR(<=)
-        /**
-           @}
-        */
-
-        /**
-           \ingroup logic_func_gt
-           @{
-        */
-        OPERATOR(> )
-        /**
-           @}
-        */
-
-        /**
-           \ingroup logic_func_ge
-           @{
-        */
-        OPERATOR(>=)
-        /**
-           @}
-        */
-
-        /**
-           \ingroup logic_func_and
-           @{
-        */
-        OPERATOR(&&)
-        /**
-           @}
-        */
-
-        /**
-           \ingroup logic_func_or
-        */
-        OPERATOR(||)
-        /**
-           @}
-        */
-
-        /**
-           \ingroup numeric_func_rem
-           @{
-        */
-        OPERATOR(% )
-        /**
-           @}
-        */
-
-        /**
-           \ingroup logic_func_bitand
-           @{
-        */
-        OPERATOR(& )
-        /**
-           @}
-        */
-
-        /**
-           \ingroup logic_func_bitor
-           @{
-        */
-        OPERATOR(| )
-        /**
-           @}
-        */
-
-        /**
-           \ingroup logic_func_bitxor
-           @{
-        */
-        OPERATOR(^ )
-        /**
-           @}
-        */
-
-        /**
-           \ingroup arith_func_shiftl
-           @{
-        */
-        OPERATOR(<<)
-        /**
-           @}
-        */
-
-        /**
-           \ingroup logic_func_shiftr
-           @{
-        */
-        OPERATOR(>>)
-        /**
-           @}
-        */
-
-#undef OPERATOR
-
-#define FRIEND_OP(op)                                                   \
-        AFAPI friend array operator op(const bool&, const array&);      \
-        AFAPI friend array operator op(const int&, const array&);       \
-        AFAPI friend array operator op(const unsigned&, const array&);  \
-        AFAPI friend array operator op(const char&, const array&);      \
-        AFAPI friend array operator op(const unsigned char&, const array&); \
-        AFAPI friend array operator op(const long&, const array&);      \
-        AFAPI friend array operator op(const unsigned long&, const array&); \
-        AFAPI friend array operator op(const long long&, const array&); \
-        AFAPI friend array operator op(const unsigned long long&, const array&); \
-        AFAPI friend array operator op(const double&, const array&);    \
-        AFAPI friend array operator op(const float&, const array&);     \
-        AFAPI friend array operator op(const cfloat&, const array&);    \
-        AFAPI friend array operator op(const cdouble&, const array&);   \
-
-        FRIEND_OP(+ )
-        FRIEND_OP(- )
-        FRIEND_OP(* )
-        FRIEND_OP(/ )
-        FRIEND_OP(==)
-        FRIEND_OP(!=)
-        FRIEND_OP(< )
-        FRIEND_OP(<=)
-        FRIEND_OP(> )
-        FRIEND_OP(>=)
-        FRIEND_OP(&&)
-        FRIEND_OP(||)
-        FRIEND_OP(% )
-        FRIEND_OP(& )
-        FRIEND_OP(| )
-        FRIEND_OP(^ )
-        FRIEND_OP(<<)
-        FRIEND_OP(>>)
-
-#undef FRIEND_OP
-
         /**
            \ingroup arith_func_neg
         */
@@ -987,6 +771,7 @@ namespace af
     // end of class array
 
 #define BIN_OP(op)                                                      \
+    AFAPI array operator op(const array&, const array&);                 \
     AFAPI array operator op(const bool&, const array&);                 \
     AFAPI array operator op(const int&, const array&);                  \
     AFAPI array operator op(const unsigned&, const array&);             \
@@ -1000,6 +785,20 @@ namespace af
     AFAPI array operator op(const float&, const array&);                \
     AFAPI array operator op(const cfloat&, const array&);               \
     AFAPI array operator op(const cdouble&, const array&);              \
+    AFAPI array operator op(const array&, const array&);                 \
+    AFAPI array operator op(const array&, const bool&);                 \
+    AFAPI array operator op(const array&, const int&);                  \
+    AFAPI array operator op(const array&, const unsigned&);             \
+    AFAPI array operator op(const array&, const char&);                 \
+    AFAPI array operator op(const array&, const unsigned char&);        \
+    AFAPI array operator op(const array&, const long&);                 \
+    AFAPI array operator op(const array&, const unsigned long&);        \
+    AFAPI array operator op(const array&, const long long&);            \
+    AFAPI array operator op(const array&, const unsigned long long&);   \
+    AFAPI array operator op(const array&, const double&);               \
+    AFAPI array operator op(const array&, const float&);                \
+    AFAPI array operator op(const array&, const cfloat&);               \
+    AFAPI array operator op(const array&, const cdouble&);              \
 
     /**
        \ingroup arith_func_add

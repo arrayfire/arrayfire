@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/blas.h>
+#include <af/array.h>
 #include "error.hpp"
 
 namespace af

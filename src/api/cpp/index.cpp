@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/index.h>
+#include <af/array.h>
 #include "error.hpp"
 #include "common.hpp"
 
