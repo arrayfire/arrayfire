@@ -14,13 +14,14 @@
 #endif
 
 #include <af/defines.h>
+#include <af/array.h>
+#include <af/dim4.hpp>
 #include <af/exception.h>
 #include <af/device.h>
 #include <stdio.h>
 
 namespace afcl
 {
-    class array;
    /**
         \addtogroup external
         @{
