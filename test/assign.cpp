@@ -79,7 +79,7 @@ class ArrayAssign : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<af::cdouble, af::cfloat, double, float, int, uint, char, uchar, intl, uintl> TestTypes;
+typedef ::testing::Types<float, af::cdouble, af::cfloat, double, int, uint, char, uchar, intl, uintl> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(ArrayAssign, TestTypes);
@@ -115,6 +115,7 @@ void assignTest(string pTestFile, const vector<af_seq> *seqv)
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
 
     vector<outType> currGoldBar = tests[0];
+    using namespace std;
     size_t nElems        = currGoldBar.size();
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
@@ -126,9 +127,57 @@ void assignTest(string pTestFile, const vector<af_seq> *seqv)
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
 }
 
+template<typename T>
+void assignTestCPP(string pTestFile, const vector<af_seq> &seqv)
+{
+    if (noDoubleTests<T>()) return;
+    try {
+
+        using af::array;
+
+        vector<af::dim4>  numDims;
+        vector<vector<T> >      in;
+        vector<vector<T> >   tests;
+
+        readTests<T, T, int>(pTestFile, numDims, in, tests);
+
+        af::dim4 dims0     = numDims[0];
+        af::dim4 dims1     = numDims[1];
+
+        array a(dims0, &(in[0].front()));
+        array b(dims1, &(in[1].front()));
+
+        switch(seqv.size()) {
+            case 1: b(seqv[0]) = a; break;
+            case 2: b(seqv[0],seqv[1]) = a; break;
+            case 3: b(seqv[0],seqv[1], seqv[2]) = a; break;
+            case 4: b(seqv[0],seqv[1], seqv[2], seqv[3]) = a; break;
+            default: assert(1 != 1 && "Does not compute");
+        }
+
+        T *outData = new T[dims1.elements()];
+        b.host(outData);
+
+        vector<T> currGoldBar = tests[0];
+        size_t nElems        = currGoldBar.size();
+        for (size_t elIter=0; elIter<nElems; ++elIter) {
+            EXPECT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+        }
+        delete[] outData;
+    } catch(const af::exception &ex) {
+        FAIL() << "Exception thrown: " << ex.what();
+    }
+
+}
+
 TYPED_TEST(ArrayAssign, Vector)
 {
     assignTest<TypeParam, TypeParam>(string(TEST_DIR"/assign/1d_to_1d.test"), &(this->subMat1D));
+}
+
+TYPED_TEST(ArrayAssign, VectorCPP)
+{
+    assignTestCPP<TypeParam>(string(TEST_DIR"/assign/1d_to_1d.test"), this->subMat1D);
 }
 
 TYPED_TEST(ArrayAssign, Matrix)
@@ -136,9 +185,19 @@ TYPED_TEST(ArrayAssign, Matrix)
     assignTest<TypeParam, TypeParam>(string(TEST_DIR"/assign/2d_to_2d.test"), &(this->subMat2D));
 }
 
+TYPED_TEST(ArrayAssign, MatrixCPP)
+{
+    assignTestCPP<TypeParam>(string(TEST_DIR"/assign/2d_to_2d.test"), this->subMat2D);
+}
+
 TYPED_TEST(ArrayAssign, Cube)
 {
     assignTest<TypeParam, TypeParam>(string(TEST_DIR"/assign/3d_to_3d.test"), &(this->subMat3D));
+}
+
+TYPED_TEST(ArrayAssign, CubeCPP)
+{
+    assignTestCPP<TypeParam>(string(TEST_DIR"/assign/3d_to_3d.test"), this->subMat3D);
 }
 
 TYPED_TEST(ArrayAssign, HyperCube)
@@ -146,9 +205,19 @@ TYPED_TEST(ArrayAssign, HyperCube)
     assignTest<TypeParam, TypeParam>(string(TEST_DIR"/assign/4d_to_4d.test"), &(this->subMat4D));
 }
 
+TYPED_TEST(ArrayAssign, HyperCubeCPP)
+{
+    assignTestCPP<TypeParam>(string(TEST_DIR"/assign/4d_to_4d.test"), this->subMat4D);
+}
+
 TYPED_TEST(ArrayAssign, Vector2Matrix)
 {
     assignTest<TypeParam, TypeParam>(string(TEST_DIR"/assign/1d_to_2d.test"), &(this->subMat1D_to_2D));
+}
+
+TYPED_TEST(ArrayAssign, Vector2MatrixCPP)
+{
+    assignTestCPP<TypeParam>(string(TEST_DIR"/assign/1d_to_2d.test"), this->subMat1D_to_2D);
 }
 
 TYPED_TEST(ArrayAssign, Vector2Cube)
@@ -156,9 +225,19 @@ TYPED_TEST(ArrayAssign, Vector2Cube)
     assignTest<TypeParam, TypeParam>(string(TEST_DIR"/assign/1d_to_3d.test"), &(this->subMat1D_to_3D));
 }
 
+TYPED_TEST(ArrayAssign, Vector2CubeCPP)
+{
+    assignTestCPP<TypeParam>(string(TEST_DIR"/assign/1d_to_3d.test"), this->subMat1D_to_3D);
+}
+
 TYPED_TEST(ArrayAssign, Matrix2Cube)
 {
     assignTest<TypeParam, TypeParam>(string(TEST_DIR"/assign/2d_to_3d.test"), &(this->subMat2D_to_3D));
+}
+
+TYPED_TEST(ArrayAssign, Matrix2CubeCPP)
+{
+    assignTestCPP<TypeParam>(string(TEST_DIR"/assign/2d_to_3d.test"), this->subMat2D_to_3D);
 }
 
 TYPED_TEST(ArrayAssign, Vector2HyperCube)
@@ -166,14 +245,102 @@ TYPED_TEST(ArrayAssign, Vector2HyperCube)
     assignTest<TypeParam, TypeParam>(string(TEST_DIR"/assign/1d_to_4d.test"), &(this->subMat1D_to_4D));
 }
 
+TYPED_TEST(ArrayAssign, Vector2HyperCubeCPP)
+{
+    assignTestCPP<TypeParam>(string(TEST_DIR"/assign/1d_to_4d.test"), this->subMat1D_to_4D);
+}
+
 TYPED_TEST(ArrayAssign, Matrix2HyperCube)
 {
     assignTest<TypeParam, TypeParam>(string(TEST_DIR"/assign/2d_to_4d.test"), &(this->subMat2D_to_4D));
 }
 
+TYPED_TEST(ArrayAssign, Matrix2HyperCubeCPP)
+{
+    assignTestCPP<TypeParam>(string(TEST_DIR"/assign/2d_to_4d.test"), this->subMat2D_to_4D);
+}
+
 TYPED_TEST(ArrayAssign, Cube2HyperCube)
 {
     assignTest<TypeParam, TypeParam>(string(TEST_DIR"/assign/3d_to_4d.test"), &(this->subMat3D_to_4D));
+}
+
+TYPED_TEST(ArrayAssign, Cube2HyperCubeCPP)
+{
+    assignTestCPP<TypeParam>(string(TEST_DIR"/assign/3d_to_4d.test"), this->subMat3D_to_4D);
+}
+
+template<typename T>
+void assignScalarCPP(string pTestFile, const vector<af_seq> &seqv)
+{
+    if (noDoubleTests<T>()) return;
+    try {
+
+        using af::array;
+
+        vector<af::dim4>  numDims;
+        vector<vector<T> >      in;
+        vector<vector<T> >   tests;
+
+        readTests<T, T, int>(pTestFile, numDims, in, tests);
+
+        af::dim4 dims0     = numDims[0];
+        af::dim4 dims1     = numDims[1];
+
+        T a = in[0][0];
+        array b(dims1, &(in[1].front()));
+
+        switch(seqv.size()) {
+            case 1: b(seqv[0]) = a; break;
+            case 2: b(seqv[0],seqv[1]) = a; break;
+            case 3: b(seqv[0],seqv[1], seqv[2]) = a; break;
+            case 4: b(seqv[0],seqv[1], seqv[2], seqv[3]) = a; break;
+            default: assert(1 != 1 && "Does not compute");
+        }
+
+        T *outData = new T[dims1.elements()];
+        b.host(outData);
+
+        vector<T> currGoldBar = tests[0];
+        size_t nElems        = currGoldBar.size();
+        for (size_t elIter=0; elIter<nElems; ++elIter) {
+            if(currGoldBar[elIter] != outData[elIter]){
+                switch(seqv.size()) {
+                    case 1: printf("b(seqv[0]) = a\n"); break;
+                    case 2: printf("b(seqv[0],seqv[1]) = a\n"); break;
+                    case 3: printf("b(seqv[0],seqv[1], seqv[2]) = a\n"); break;
+                    case 4: printf("b(seqv[0],seqv[1], seqv[2], seqv[3]) = a\n"); break;
+                    default: assert(1 != 1 && "Does not compute");
+                }
+                std::cout << "a: " << a << std::endl;
+                af_print(b);
+                ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
+            }
+        }
+        delete[] outData;
+    } catch(const af::exception &ex) {
+        FAIL() << "Exception thrown: " << ex.what();
+    }
+}
+
+TYPED_TEST(ArrayAssign, Scalar1DCPP)
+{
+    assignScalarCPP<TypeParam>(string(TEST_DIR"/assign/scalar_to_1d.test"), this->subMat1D);
+}
+
+TYPED_TEST(ArrayAssign, Scalar2DCPP)
+{
+    assignScalarCPP<TypeParam>(string(TEST_DIR"/assign/scalar_to_2d.test"), this->subMat2D);
+}
+
+TYPED_TEST(ArrayAssign, Scalar3DCPP)
+{
+    assignScalarCPP<TypeParam>(string(TEST_DIR"/assign/scalar_to_3d.test"), this->subMat3D);
+}
+
+TYPED_TEST(ArrayAssign, Scalar4DCPP)
+{
+    assignScalarCPP<TypeParam>(string(TEST_DIR"/assign/scalar_to_4d.test"), this->subMat4D);
 }
 
 TEST(ArrayAssign, InvalidArgs)
@@ -209,42 +376,6 @@ TEST(ArrayAssign, InvalidArgs)
 
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(rhsArray));
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(lhsArray));
-}
-
-TEST(ArrayAssign, CPP)
-{
-    if (noDoubleTests<float>()) return;
-
-    using af::array;
-
-    vector<af_seq> seqv;
-    seqv.push_back(af_make_seq(1,2,1));
-    seqv.push_back(af_make_seq(1,2,1));
-
-    vector<af::dim4>  numDims;
-    vector<vector<float> >      in;
-    vector<vector<float> >   tests;
-
-    readTests<float, float, int>(string(TEST_DIR"/assign/2d_to_2d.test"), numDims, in, tests);
-
-    af::dim4 dims0     = numDims[0];
-    af::dim4 dims1     = numDims[1];
-
-    array a(dims0, &(in[0].front()));
-    array b(dims1, &(in[1].front()));
-
-    b(seqv[0],seqv[1]) = a;
-
-    float *outData = new float[dims1.elements()];
-    b.host(outData);
-
-    vector<float> currGoldBar = tests[0];
-    size_t nElems        = currGoldBar.size();
-    for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_EQ(currGoldBar[elIter], outData[elIter])<< "at: " << elIter<< std::endl;
-    }
-
-    delete[] outData;
 }
 
 TEST(ArrayAssign, CPP_END)
