@@ -343,6 +343,90 @@ TYPED_TEST(ArrayAssign, Scalar4DCPP)
     assignScalarCPP<TypeParam>(string(TEST_DIR"/assign/scalar_to_4d.test"), this->subMat4D);
 }
 
+TYPED_TEST(ArrayAssign, AssignRowCPP)
+{
+    if (noDoubleTests<TypeParam>()) return;
+    using namespace std;
+    using namespace af;
+    int dimsize=10;
+    vector<TypeParam> input(100, 1);
+    vector<TypeParam> sq(dimsize);
+    vector<int> arIdx(2);
+    for(int i = 0; i < sq.size(); i++) sq[i] = i;
+    arIdx[0] = 5;
+    arIdx[1] = 7;
+
+    af::array in(dimsize, dimsize, &input.front(), af::afHost, dtype_traits<TypeParam>::af_type);
+    af::dim4 size(dimsize, 1, 1, 1);
+    af::array sarr(size, &sq.front(), af::afHost, in.type());
+    af::array arrIdx(2, &arIdx.front(), af::afHost, s32);
+
+    in.row(0)       = sarr;
+    in.row(2)       = 2;
+    in(arrIdx, span)= 8;
+    in.row(af::end) = 3;
+
+    vector<TypeParam> out(100);
+    in.host(&out.front());
+
+    for(int col = 0; col < dimsize; col++) {
+        for(int row = 0; row < dimsize; row++) {
+            if      (row == 0)              ASSERT_EQ(sq[col], out[col * dimsize + row])
+                << "Assigning array to indexed array using col";
+            else if (row == 2)              ASSERT_EQ(TypeParam(2), out[col * dimsize + row])
+                << "Assigning value to indexed array using col";
+            else if (row == dimsize-1)      ASSERT_EQ(TypeParam(3), out[col * dimsize + row])
+                << "Assigning value to array which is indexed using end.";
+            else if (row == 5 || row == 7)  ASSERT_EQ(TypeParam(8), out[col * dimsize + row])
+                << "Assigning value to an array which is indexed using an array (i.e. in(span, arrIdx) = 8);) using col";
+            else                            ASSERT_EQ(TypeParam(1),  out[col * dimsize + row])
+                << "Values written to incorrect location";
+        }
+    }
+}
+
+TYPED_TEST(ArrayAssign, AssignColumnCPP)
+{
+    if (noDoubleTests<TypeParam>()) return;
+    using namespace std;
+    using namespace af;
+    int dimsize=10;
+    vector<TypeParam> input(100, 1);
+    vector<TypeParam> sq(dimsize);
+    vector<int> arIdx(2);
+    for(int i = 0; i < sq.size(); i++) sq[i] = i;
+    arIdx[0] = 5;
+    arIdx[1] = 7;
+
+    af::array in(dimsize, dimsize, &input.front(), af::afHost, dtype_traits<TypeParam>::af_type);
+    af::dim4 size(dimsize, 1, 1, 1);
+    af::array sarr(size, &sq.front(), af::afHost, in.type());
+    af::array arrIdx(2, &arIdx.front(), af::afHost, s32);
+
+    in.col(0)       = sarr;
+    in.col(2)       = 2;
+    in(span, arrIdx)= 8;
+    in.col(af::end) = 3;
+
+    vector<TypeParam> out(100);
+    in.host(&out.front());
+
+    for(int col = 0; col < dimsize; col++) {
+        for(int row = 0; row < dimsize; row++) {
+            if      (col == 0)              ASSERT_EQ(sq[row], out[col * dimsize + row])
+                << "Assigning array to indexed array using col";
+            else if (col == 2)              ASSERT_EQ(TypeParam(2), out[col * dimsize + row])
+                << "Assigning value to indexed array using col";
+            else if (col == dimsize-1)      ASSERT_EQ(TypeParam(3), out[col * dimsize + row])
+                << "Assigning value to array which is indexed using end.";
+            else if (col == 5 || col == 7)  ASSERT_EQ(TypeParam(8), out[col * dimsize + row])
+                << "Assigning value to an array which is indexed using an array (i.e. in(span, arrIdx) = 8);) using col";
+            else                            ASSERT_EQ(TypeParam(1),  out[col * dimsize + row])
+                << "Values written to incorrect location";
+        }
+    }
+}
+
 TEST(ArrayAssign, InvalidArgs)
 {
     vector<af::cfloat> in(10, af::cfloat(0,0));
