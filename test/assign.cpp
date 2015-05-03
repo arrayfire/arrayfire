@@ -352,7 +352,7 @@ TYPED_TEST(ArrayAssign, AssignRowCPP)
     vector<TypeParam> input(100, 1);
     vector<TypeParam> sq(dimsize);
     vector<int> arIdx(2);
-    for(int i = 0; i < sq.size(); i++) sq[i] = i;
+    for(int i = 0; i < (int)sq.size(); i++) sq[i] = i;
     arIdx[0] = 5;
     arIdx[1] = 7;
 
@@ -394,7 +394,7 @@ TYPED_TEST(ArrayAssign, AssignColumnCPP)
     vector<TypeParam> input(100, 1);
     vector<TypeParam> sq(dimsize);
     vector<int> arIdx(2);
-    for(int i = 0; i < sq.size(); i++) sq[i] = i;
+    for(int i = 0; i < (int)sq.size(); i++) sq[i] = i;
     arIdx[0] = 5;
     arIdx[1] = 7;
 
