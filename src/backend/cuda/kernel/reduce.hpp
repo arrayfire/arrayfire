@@ -226,6 +226,7 @@ namespace kernel
                 assign_vol(val2, s_ptr_vol + n);
                 tmp = reduce(val1, val2);
                 assign_vol(s_ptr_vol, tmp);
+                __syncthreads();
             }
         }
     }
