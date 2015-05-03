@@ -171,17 +171,60 @@ namespace kernel
     }
 
     template<typename To, af_op_t op>
-    __device__ void warp_reduce(To *s_ptr, uint tidx)
+    __device__ void warp_reduce_sync(To *s_ptr, uint tidx)
     {
-        Binary<To, op> reduce;
 
-        for (int n = 16; n >= 1; n >>= 1) {
-            if (tidx < n) {
-                s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx + n]);
-            }
-            __syncthreads();
-        }
     }
+
+#if (__CUDA_ARCH__ >= 300)
+    template<typename To, af_op_t op>
+    __device__ void warp_reduce_shfl(To *s_ptr, uint tidx)
+    {
+
+    }
+#endif
+
+    template<typename To, af_op_t op>
+    struct WarpReduce
+    {
+        __device__ To operator()(To *s_ptr, uint tidx)
+        {
+            Binary<To, op> reduce;
+#pragma unroll
+            for (int n = 16; n >= 1; n >>= 1) {
+                if (tidx < n) {
+                    s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx + n]);
+                }
+                __syncthreads();
+            }
+            return s_ptr[tidx];
+        }
+    };
+
+
+#if (__CUDA_ARCH__ >= 300)
+#define WARP_REDUCE(T)                                  \
+    template<af_op_t op>                                \
+    struct WarpReduce<T, op>                            \
+    {                                                   \
+        __device__ T operator()(T *s_ptr, uint tidx)    \
+        {                                               \
+            Binary<T, op> reduce;                       \
+                                                        \
+            T val = s_ptr[tidx];                        \
+                                                        \
+            for (int n = 16; n >= 1; n >>= 1) {         \
+                val = reduce(val, __shfl_down(val, n)); \
+            }                                           \
+            return val;                                 \
+        }                                               \
+    };                                                  \
+
+    WARP_REDUCE(float)
+    WARP_REDUCE(int)
+    WARP_REDUCE(uchar) // upcasted to int
+    WARP_REDUCE(char)  // upcasted to int
+#endif
 
     template<typename Ti, typename To, af_op_t op, uint DIMX>
     __global__
@@ -242,10 +285,10 @@ namespace kernel
             __syncthreads();
         }
 
-        warp_reduce<To, op>(s_ptr, tidx);
+        out_val = WarpReduce<To, op>()(s_ptr, tidx);
 
         if (tidx == 0) {
-            optr[blockIdx_x] = s_ptr[0];
+            optr[blockIdx_x] = out_val;
         }
     }
 
