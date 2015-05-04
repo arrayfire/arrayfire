@@ -71,7 +71,7 @@ namespace af
 
     features::~features()
     {
-        if (feat.n >= 0) {
+        if (feat.n > 0) {
             if(AF_SUCCESS != af_destroy_features(feat)) {
                 fprintf(stderr, "Error: Couldn't destroy af::features: %p\n", this);
             }

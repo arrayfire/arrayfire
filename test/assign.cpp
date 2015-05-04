@@ -284,7 +284,6 @@ void assignScalarCPP(string pTestFile, const vector<af_seq> &seqv)
 
         readTests<T, T, int>(pTestFile, numDims, in, tests);
 
-        af::dim4 dims0     = numDims[0];
         af::dim4 dims1     = numDims[1];
 
         T a = in[0][0];
@@ -352,7 +351,7 @@ TYPED_TEST(ArrayAssign, AssignRowCPP)
     vector<TypeParam> input(100, 1);
     vector<TypeParam> sq(dimsize);
     vector<int> arIdx(2);
-    for(int i = 0; i < sq.size(); i++) sq[i] = i;
+    for(int i = 0; i < (int)sq.size(); i++) sq[i] = i;
     arIdx[0] = 5;
     arIdx[1] = 7;
 
@@ -394,7 +393,7 @@ TYPED_TEST(ArrayAssign, AssignColumnCPP)
     vector<TypeParam> input(100, 1);
     vector<TypeParam> sq(dimsize);
     vector<int> arIdx(2);
-    for(int i = 0; i < sq.size(); i++) sq[i] = i;
+    for(int i = 0; i < (int)sq.size(); i++) sq[i] = i;
     arIdx[0] = 5;
     arIdx[1] = 7;
 

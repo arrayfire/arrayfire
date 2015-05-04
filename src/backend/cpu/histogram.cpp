@@ -33,7 +33,7 @@ Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const d
     outType *outData    = out.get();
     const inType* inData= in.get();
 
-    for(dim_type b3 = 0; b3 < outDims[2]; b3++) {
+    for(dim_type b3 = 0; b3 < outDims[3]; b3++) {
         for(dim_type b2 = 0; b2 < outDims[2]; b2++) {
             for(dim_type i=0; i<nElems; i++) {
                 int bin = (int)((inData[i] - minval) / step);

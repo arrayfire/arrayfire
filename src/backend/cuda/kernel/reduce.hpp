@@ -170,66 +170,61 @@ namespace kernel
 
     }
 
-
-    template<typename To>
-    __inline__ __device__ void assign_vol(volatile To *s_ptr_vol, To &tmp)
+    template<typename To, af_op_t op>
+    __device__ void warp_reduce_sync(To *s_ptr, uint tidx)
     {
-        *s_ptr_vol = tmp;
+
     }
 
-    template<> __inline__ __device__
-    void assign_vol<cfloat>(volatile cfloat *s_ptr_vol, cfloat &tmp)
+#if (__CUDA_ARCH__ >= 300)
+    template<typename To, af_op_t op>
+    __device__ void warp_reduce_shfl(To *s_ptr, uint tidx)
     {
-        s_ptr_vol->x = tmp.x;
-        s_ptr_vol->y = tmp.y;
-    }
 
-    template<> __inline__ __device__
-    void assign_vol<cdouble>(volatile cdouble *s_ptr_vol, cdouble &tmp)
-    {
-        s_ptr_vol->x = tmp.x;
-        s_ptr_vol->y = tmp.y;
     }
-
-    template<typename To>
-    __inline__ __device__ void assign_vol(To &dst, volatile To *s_ptr_vol)
-    {
-        dst = *s_ptr_vol;
-    }
-
-    template<> __inline__ __device__
-    void assign_vol<cfloat>(cfloat &dst, volatile cfloat *s_ptr_vol)
-    {
-        dst.x = s_ptr_vol->x;
-        dst.y = s_ptr_vol->y;
-    }
-
-    template<> __inline__ __device__
-    void assign_vol<cdouble>(cdouble &dst, volatile cdouble *s_ptr_vol)
-    {
-        dst.x = s_ptr_vol->x;
-        dst.y = s_ptr_vol->y;
-    }
+#endif
 
     template<typename To, af_op_t op>
-    __device__ void warp_reduce(To *s_ptr, uint tidx)
+    struct WarpReduce
     {
-        Binary<To, op> reduce;
-        volatile To *s_ptr_vol = s_ptr + tidx;
-        To tmp = *s_ptr;
-
+        __device__ To operator()(To *s_ptr, uint tidx)
+        {
+            Binary<To, op> reduce;
 #pragma unroll
-        for (int n = 16; n >= 1; n >>= 1) {
-            if (tidx < n) {
-                To val1, val2;
-                assign_vol(val1, s_ptr_vol);
-                assign_vol(val2, s_ptr_vol + n);
-                tmp = reduce(val1, val2);
-                assign_vol(s_ptr_vol, tmp);
+            for (int n = 16; n >= 1; n >>= 1) {
+                if (tidx < n) {
+                    s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx + n]);
+                }
+                __syncthreads();
             }
+            return s_ptr[tidx];
         }
-    }
+    };
 
+
+#if (__CUDA_ARCH__ >= 300)
+#define WARP_REDUCE(T)                                  \
+    template<af_op_t op>                                \
+    struct WarpReduce<T, op>                            \
+    {                                                   \
+        __device__ T operator()(T *s_ptr, uint tidx)    \
+        {                                               \
+            Binary<T, op> reduce;                       \
+                                                        \
+            T val = s_ptr[tidx];                        \
+                                                        \
+            for (int n = 16; n >= 1; n >>= 1) {         \
+                val = reduce(val, __shfl_down(val, n)); \
+            }                                           \
+            return val;                                 \
+        }                                               \
+    };                                                  \
+
+    WARP_REDUCE(float)
+    WARP_REDUCE(int)
+    WARP_REDUCE(uchar) // upcasted to int
+    WARP_REDUCE(char)  // upcasted to int
+#endif
 
     template<typename Ti, typename To, af_op_t op, uint DIMX>
     __global__
@@ -290,9 +285,10 @@ namespace kernel
             __syncthreads();
         }
 
-        warp_reduce<To, op>(s_ptr, tidx);
+        out_val = WarpReduce<To, op>()(s_ptr, tidx);
+
         if (tidx == 0) {
-            optr[blockIdx_x] = s_ptr[0];
+            optr[blockIdx_x] = out_val;
         }
     }
 
