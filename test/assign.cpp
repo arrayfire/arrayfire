@@ -284,7 +284,6 @@ void assignScalarCPP(string pTestFile, const vector<af_seq> &seqv)
 
         readTests<T, T, int>(pTestFile, numDims, in, tests);
 
-        af::dim4 dims0     = numDims[0];
         af::dim4 dims1     = numDims[1];
 
         T a = in[0][0];
