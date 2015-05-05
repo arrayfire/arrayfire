@@ -123,8 +123,8 @@ void luTester(const int m, const int n, double eps)
     af::array aa = af::matmul(l, u);
     af::array bb = a(pivot, af::span);
 
-    ASSERT_EQ(af::max<double>(af::abs(real(aa - bb))) < eps, true);
-    ASSERT_EQ(af::max<double>(af::abs(imag(aa - bb))) < eps, true);
+    ASSERT_NEAR(0, af::max<double>(af::abs(real(aa - bb))), eps);
+    ASSERT_NEAR(0, af::max<double>(af::abs(imag(aa - bb))), eps);
 }
 
 #define LU_BIG_TESTS(T, eps)                    \
@@ -138,7 +138,7 @@ void luTester(const int m, const int n, double eps)
     }                                           \
     TEST(LU, T##BigRect1)                       \
     {                                           \
-        luTester<T>(500, 1000, eps);            \
+        luTester<T>(1000, 500, eps);            \
     }                                           \
     TEST(LU, T##BigSquareMultiple)              \
     {                                           \
@@ -150,7 +150,7 @@ void luTester(const int m, const int n, double eps)
     }                                           \
     TEST(LU, T##BigRect1Multiple)               \
     {                                           \
-        luTester<T>(512, 1024, eps);            \
+        luTester<T>(1024, 512, eps);            \
     }                                           \
 
 LU_BIG_TESTS(float, 1E-5)
