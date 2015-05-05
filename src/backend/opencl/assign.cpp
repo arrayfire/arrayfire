@@ -15,6 +15,7 @@
 #include <assign.hpp>
 #include <kernel/assign.hpp>
 #include <err_opencl.hpp>
+#include <memory.hpp>
 
 using af::dim4;
 
@@ -52,16 +53,22 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs)
     std::vector< Array<uint> > idxArrs(4, createEmptyArray<uint>(dim4()));
     // look through indexers to read af_array indexers
     for (dim_type x=0; x<4; ++x) {
-        // set idxPtrs to null
-        bPtrs[x] = new Buffer();
         // set index pointers were applicable
         if (!p.isSeq[x]) {
             idxArrs[x] = castArray<uint>(idxrs[x].mIndexer.arr);
             bPtrs[x] = idxArrs[x].get();
         }
+        else {
+            // alloc an 1-element buffer to avoid OpenCL from failing
+            bPtrs[x] = bufferAlloc(sizeof(uint));
+        }
     }
 
     kernel::assign<T>(out, rhs, p, bPtrs);
+
+    for (dim_type x=0; x<4; ++x) {
+        if (p.isSeq[x]) bufferFree(bPtrs[x]);
+    }
 }
 
 #define INSTANTIATE(T) \
