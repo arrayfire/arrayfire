@@ -54,21 +54,22 @@ namespace af
             operator array();
 
         //array operator = (array &&other);
-#define ASSIGN(OP)                                          \
-            array_proxy& operator OP(const array &a);                 \
-            array_proxy& operator OP(const double &a);                \
-            array_proxy& operator OP(const cdouble &a);               \
-            array_proxy& operator OP(const cfloat &a);                \
-            array_proxy& operator OP(const float &a);                 \
-            array_proxy& operator OP(const int &a);                   \
-            array_proxy& operator OP(const unsigned &a);              \
-            array_proxy& operator OP(const bool &a);                  \
-            array_proxy& operator OP(const char &a);                  \
-            array_proxy& operator OP(const unsigned char &a);         \
-            array_proxy& operator OP(const long  &a);                 \
-            array_proxy& operator OP(const unsigned long &a);         \
-            array_proxy& operator OP(const long long  &a);            \
-            array_proxy& operator OP(const unsigned long long &a);    \
+#define ASSIGN(OP)                                                  \
+            array_proxy& operator OP(const array_proxy &a);         \
+            array_proxy& operator OP(const array &a);               \
+            array_proxy& operator OP(const double &a);              \
+            array_proxy& operator OP(const cdouble &a);             \
+            array_proxy& operator OP(const cfloat &a);              \
+            array_proxy& operator OP(const float &a);               \
+            array_proxy& operator OP(const int &a);                 \
+            array_proxy& operator OP(const unsigned &a);            \
+            array_proxy& operator OP(const bool &a);                \
+            array_proxy& operator OP(const char &a);                \
+            array_proxy& operator OP(const unsigned char &a);       \
+            array_proxy& operator OP(const long  &a);               \
+            array_proxy& operator OP(const unsigned long &a);       \
+            array_proxy& operator OP(const long long  &a);          \
+            array_proxy& operator OP(const unsigned long long &a);  \
 
             ASSIGN(=)
             ASSIGN(+=)

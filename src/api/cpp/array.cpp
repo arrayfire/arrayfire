@@ -623,6 +623,13 @@ namespace af
         return *this;
     }
 
+    array::array_proxy&
+    af::array::array_proxy::operator=(const array::array_proxy &other)
+    {
+        array out = other;
+        return *this = out;
+    }
+
     af::array::array_proxy::array_proxy(array& par, af_index_t *ssss )
         : parent(&par)
         , indices()
