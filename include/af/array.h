@@ -393,6 +393,11 @@ namespace af
         void host(void *ptr) const;
 
         /**
+           Perform deep from host/device pointer to an existing array
+        */
+        template<typename T> void write(const T *ptr, const size_t bytes, af_source_t src = afHost);
+
+        /**
            Get array data type
         */
         dtype type() const;
@@ -1029,6 +1034,11 @@ extern "C" {
        Deep copy an array to another
     */
     AFAPI af_err af_copy_array(af_array *arr, const af_array in);
+
+    /**
+       Copy data from an C pointer (host/device) to an existing array.
+    */
+    AFAPI af_err af_write_array(af_array arr, const void *data, const size_t bytes, af_source src);
 
     /**
        Copy data from an af_array to a C pointer.

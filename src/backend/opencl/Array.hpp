@@ -45,6 +45,14 @@ namespace opencl
     template<typename T>
     Array<T> createDeviceDataArray(const af::dim4 &size, const void *data);
 
+    // Copies data to an existing Array object from a host pointer
+    template<typename T>
+    void writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes);
+
+    // Copies data to an existing Array object from a device pointer
+    template<typename T>
+    void writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes);
+
     // Create an Array object and do not assign any values to it
     template<typename T> Array<T> *initArray();
 
