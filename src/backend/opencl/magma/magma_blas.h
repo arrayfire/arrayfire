@@ -52,6 +52,12 @@ BLAS_FUNC(trsm, double,     D)
 BLAS_FUNC(trsm, cfloat,     C)
 BLAS_FUNC(trsm, cdouble,    Z)
 
+BLAS_FUNC_DEF(trsv)
+BLAS_FUNC(trsv, float,      S)
+BLAS_FUNC(trsv, double,     D)
+BLAS_FUNC(trsv, cfloat,     C)
+BLAS_FUNC(trsv, cdouble,    Z)
+
 #define clblasSherk(...) clblasSsyrk(__VA_ARGS__)
 #define clblasDherk(...) clblasDsyrk(__VA_ARGS__)
 

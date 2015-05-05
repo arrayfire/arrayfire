@@ -80,4 +80,10 @@ CPU_LAPACK_FUNC(ungqr_work, double,     d)
 CPU_LAPACK_FUNC(ungqr_work, magmaFloatComplex,     c)
 CPU_LAPACK_FUNC(ungqr_work, magmaDoubleComplex,    z)
 
+CPU_LAPACK_FUNC_DEF(laswp)
+CPU_LAPACK_FUNC(laswp, float,      s)
+CPU_LAPACK_FUNC(laswp, double,     d)
+CPU_LAPACK_FUNC(laswp, magmaFloatComplex,     c)
+CPU_LAPACK_FUNC(laswp, magmaDoubleComplex,    z)
+
 #endif

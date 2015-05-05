@@ -64,4 +64,12 @@ magma_ungqr_gpu(
     magma_queue_t queue,
     magma_int_t *info);
 
+template<typename Ty>  magma_int_t
+magma_getrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
+                cl_mem dA, size_t dA_offset, magma_int_t ldda,
+                magma_int_t *ipiv,
+                cl_mem dB, size_t dB_offset, magma_int_t lddb,
+                magma_queue_t queue,
+                magma_int_t *info);
+
 #endif
