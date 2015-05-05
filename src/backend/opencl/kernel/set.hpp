@@ -56,6 +56,7 @@ set(Buffer &ptr, T val, const size_t &elements)
 
     auto setKern = make_kernel<Buffer, T, const unsigned long>(setKernels[device]);
     setKern(EnqueueArgs(getQueue(), NDRange(elements)), ptr, val, elements);
+    CL_DEBUG_FINISH(getQueue());
 }
 
 }

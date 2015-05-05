@@ -90,6 +90,7 @@ namespace kernel
 
             memcopy_kernel(EnqueueArgs(getQueue(), global, local),
                 out, _ostrides, in, _idims, _istrides, offset, groups_0, groups_1);
+            CL_DEBUG_FINISH(getQueue());
         }
         catch (cl::Error err) {
             CL_TO_AF_ERROR(err);
