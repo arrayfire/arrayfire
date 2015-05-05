@@ -461,6 +461,22 @@ TEST(ArrayAssign, InvalidArgs)
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(lhsArray));
 }
 
+TEST(ArrayAssign, CPP_ASSIGN_TO_INDEXED)
+{
+    vector<int> in(20);
+    for(int i = 0; i < (int)in.size(); i++) in[i] = i;
+
+    af::array input(10, 2, &in.front(), af::afHost, s32);
+
+    input(af::span, 0) = input(af::span, 1);// <-- Tests array_proxy to array_proxy assignment
+
+    vector<int> out(20);
+    input.host(&out.front());
+
+    for(int i = 0; i < 10; i++)                 ASSERT_EQ(i + 10, out[i]);
+    for(int i = 10; i < (int)in.size(); i++)    ASSERT_EQ(i, out[i]);
+}
+
 TEST(ArrayAssign, CPP_END)
 {
     using af::array;
