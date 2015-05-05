@@ -41,12 +41,11 @@ static const char * _clblasGetResultString(clblasStatus st)
     case clblasInvalidLeadDimC:      return "Invalid ldc";
     case clblasInvalidIncX:          return "Invalid incx";
     case clblasInvalidIncY:          return "Invalid incy";
-    case clblasInsufficientMemMatA:
-    case clblasInsufficientMemMatB:
-    case clblasInsufficientMemMatC:
-    case clblasInsufficientMemVecX:
-    case clblasInsufficientMemVecY:
-        return  "Insufficient Memory";
+    case clblasInsufficientMemMatA:  return  "Insufficient Memory for Matrix A";
+    case clblasInsufficientMemMatB:  return  "Insufficient Memory for Matrix B";
+    case clblasInsufficientMemMatC:  return  "Insufficient Memory for Matrix C";
+    case clblasInsufficientMemVecX:  return  "Insufficient Memory for Vector X";
+    case clblasInsufficientMemVecY:  return  "Insufficient Memory for Vector Y";
     }
 
     return "Unknown error";
