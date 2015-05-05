@@ -267,6 +267,41 @@ namespace opencl
         A.eval();
     }
 
+    template<typename T>
+    void
+    writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes)
+    {
+        if (!arr.isOwner()) {
+            arr = createEmptyArray<T>(arr.dims());
+        }
+
+        getQueue().enqueueWriteBuffer(*arr.get(), CL_TRUE,
+                                      arr.getOffset(),
+                                      bytes,
+                                      data);
+
+        return;
+    }
+
+    template<typename T>
+    void
+    writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
+    {
+        if (!arr.isOwner()) {
+            arr = createEmptyArray<T>(arr.dims());
+        }
+
+        cl::Buffer buf = *arr.get();
+
+        const cl::Buffer *data_buf = new cl::Buffer((cl_mem)(data));
+
+        getQueue().enqueueCopyBuffer(*data_buf, buf,
+                                     0, (size_t)arr.getOffset(),
+                                     bytes);
+
+        return;
+    }
+
 
 #define INSTANTIATE(T)                                                  \
     template       Array<T>  createHostDataArray<T>   (const dim4 &size, const T * const data); \
@@ -284,6 +319,8 @@ namespace opencl
     template       Array<T>::~Array        ();                          \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
+    template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
+    template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

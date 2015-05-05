@@ -8,11 +8,14 @@
  ********************************************************/
 
 #pragma once
-#include <af/array.h>
 
 #ifdef __cplusplus
+#include <af/defines.h>
+
 namespace af
 {
+class array;
+class dim4;
 
 /**
    C++ Interface for data interpolation on one dimensional data

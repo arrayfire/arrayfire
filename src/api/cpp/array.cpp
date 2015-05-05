@@ -364,6 +364,22 @@ namespace af
         for(int i=0; i<4; ++i) indices[i] = inds[i];
     }
 
+    template<typename Idx1, typename Idx2, typename Idx3, typename Idx4>
+    static array gen_indexing(const array &ref, const Idx1 &s0, const Idx2 &s1, const Idx3 &s2, const Idx4 &s3)
+    {
+        ref.eval();
+        af_index_t inds[4];
+        inds[0] = toIndices(s0);
+        inds[1] = toIndices(s1);
+        inds[2] = toIndices(s2);
+        inds[3] = toIndices(s3);
+
+        af_array out = 0;
+        //FIXME: check if this->s has same dimensions as numdims
+        AF_THROW(af_weak_copy(&out, ref.get()));
+        return array(out, &ref, inds);
+    }
+
     array array::operator()(const array& idx) const
     {
         eval();
@@ -395,15 +411,7 @@ namespace af
             }
         }
 
-        af_index_t inds[4];
-        inds[0] = toIndices(idx);
-        inds[1] = toIndices(span);
-        inds[2] = toIndices(span);
-        inds[3] = toIndices(span);
-
-        af_array out = 0;
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(*this, idx, span, span, span);
     }
 
     array array::operator()(const seq &s0) const
@@ -437,255 +445,94 @@ namespace af
             }
         }
 
-        af_index_t inds[4];
-        inds[0] = toIndices(s0);
-        inds[1] = toIndices(span);
-        inds[2] = toIndices(span);
-        inds[3] = toIndices(span);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(*this, s0, span, span, span);
     }
 
     array array::operator()(const seq &s0, const seq &s1) const
     {
-        eval();
-
-        af_index_t inds[4];
-        inds[0] = toIndices(s0);
-        inds[1] = toIndices(s1);
-        inds[2] = toIndices(span);
-        inds[3] = toIndices(span);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(*this, s0, s1, span, span);
     }
 
     array array::operator()(const seq &s0, const seq &s1, const seq &s2) const
     {
-        eval();
-
-        af_index_t inds[4];
-        inds[0] = toIndices(s0);
-        inds[1] = toIndices(s1);
-        inds[2] = toIndices(s2);
-        inds[3] = toIndices(span);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(*this, s0, s1, s2, span);
     }
 
     array array::operator()(const seq &s0, const seq &s1, const seq &s2, const seq &s3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(s0);
-        inds[1] = toIndices(s1);
-        inds[2] = toIndices(s2);
-        inds[3] = toIndices(s3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(*this, s0, s1, s2, s3);
     }
 
     // A-S-S-S, A-S-N-N, A-S-S-N
     array array::operator()(const array& idx0, const seq &idx1, const seq &idx2, const seq &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // A-A-S-S, A-A-N-N
     array array::operator()(const array& idx0, const array &idx1, const seq &idx2, const seq &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // A-A-A-S, A-A-A-N
     array array::operator()(const array &idx0, const array &idx1, const array &idx2, const seq &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // A-A-A-A
     array array::operator()(const array &idx0, const array &idx1, const array &idx2, const array &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // S-A-S-S
     array array::operator()(const seq &idx0, const array &idx1, const seq &idx2, const seq &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // S-S-A-S, S-S-A-N
     array array::operator()(const seq &idx0, const seq &idx1, const array &idx2, const seq &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // S-S-S-A
     array array::operator()(const seq   &idx0, const seq   &idx1, const seq   &idx2, const array &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // A-S-A-S, A-S-A-N
     array array::operator()(const array &idx0, const seq   &idx1, const array &idx2, const seq &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // A-S-S-A
     array array::operator()(const array &idx0, const seq &idx1, const seq &idx2, const array &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // S-A-A-S, S-A-A-N
     array array::operator()(const seq &idx0, const array &idx1, const array &idx2, const seq &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // S-A-S-A
     array array::operator()(const seq &idx0, const array &idx1, const seq &idx2, const array &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     // S-S-A-A
     array array::operator()(const seq &idx0, const seq &idx1, const array &idx2, const array &idx3) const
     {
-        eval();
-        af_index_t inds[4];
-        inds[0] = toIndices(idx0);
-        inds[1] = toIndices(idx1);
-        inds[2] = toIndices(idx2);
-        inds[3] = toIndices(idx3);
-
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, this->get()));
-        return array(out, this, inds);
+        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     array array::row(int index) const
@@ -895,49 +742,47 @@ namespace af
 #undef ASSIGN_OP
 #undef ASSIGN_TYPE
 
-#define BINARY_TYPE(TY, OP, func, dty)                      \
-    array array::operator OP(const TY &value) const         \
-    {                                                       \
-        af_array lhs = this->get();                         \
-        af_array out;                                       \
-        af::dtype ty = this->type();                        \
-        af::dtype cty = this->isrealfloating() ? ty : dty;  \
-        array cst = constant(value, this->dims(), cty);     \
-        AF_THROW(func(&out, lhs, cst.get(), gforGet()));    \
-        return array(out);                                  \
-    }                                                       \
-    array operator OP(const TY &value, const array &other)  \
-    {                                                       \
-        af_array rhs = other.get();                         \
-        af_array out;                                       \
-        af::dtype ty = other.type();                        \
-        af::dtype cty = other.isrealfloating() ? ty : dty;  \
-        array cst = constant(value, other.dims(), cty);     \
-        AF_THROW(func(&out, cst.get(), rhs, gforGet()));    \
-        return array(out);                                  \
-    }                                                       \
+#define BINARY_TYPE(TY, OP, func, dty)                          \
+    array operator OP(const array& plhs, const TY &value)       \
+    {                                                           \
+        af_array out;                                           \
+        af::dtype ty = plhs.type();                             \
+        af::dtype cty = plhs.isrealfloating() ? ty : dty;       \
+        array cst = constant(value, plhs.dims(), cty);          \
+        AF_THROW(func(&out, plhs.get(), cst.get(), gforGet())); \
+        return array(out);                                      \
+    }                                                           \
+    array operator OP(const TY &value, const array &other)      \
+    {                                                           \
+        const af_array rhs = other.get();                       \
+        af_array out;                                           \
+        af::dtype ty = other.type();                            \
+        af::dtype cty = other.isrealfloating() ? ty : dty;      \
+        array cst = constant(value, other.dims(), cty);         \
+        AF_THROW(func(&out, cst.get(), rhs, gforGet()));        \
+        return array(out);                                      \
+    }                                                           \
 
-#define BINARY_OP(OP, func)                                 \
-    array array::operator OP(const array &other) const      \
-    {                                                       \
-        af_array lhs = this->get();                         \
-        af_array out;                                       \
-        AF_THROW(func(&out, lhs, other.get(), gforGet()));  \
-        return array(out);                                  \
-    }                                                       \
-    BINARY_TYPE(double             , OP, func, f64)         \
-    BINARY_TYPE(float              , OP, func, f32)         \
-    BINARY_TYPE(cdouble            , OP, func, c64)         \
-    BINARY_TYPE(cfloat             , OP, func, c32)         \
-    BINARY_TYPE(int                , OP, func, s32)         \
-    BINARY_TYPE(unsigned           , OP, func, u32)         \
-    BINARY_TYPE(long               , OP, func, s64)         \
-    BINARY_TYPE(unsigned long      , OP, func, u64)         \
-    BINARY_TYPE(long long          , OP, func, s64)         \
-    BINARY_TYPE(unsigned long long , OP, func, u64)         \
-    BINARY_TYPE(char               , OP, func, b8)          \
-    BINARY_TYPE(unsigned char      , OP, func, u8)          \
-    BINARY_TYPE(bool               , OP, func, b8)          \
+#define BINARY_OP(OP, func)                                     \
+    array operator OP(const array &lhs, const array &rhs)       \
+    {                                                           \
+        af_array out;                                           \
+        AF_THROW(func(&out, lhs.get(), rhs.get(), gforGet()));  \
+        return array(out);                                      \
+    }                                                           \
+    BINARY_TYPE(double             , OP, func, f64)             \
+    BINARY_TYPE(float              , OP, func, f32)             \
+    BINARY_TYPE(cdouble            , OP, func, c64)             \
+    BINARY_TYPE(cfloat             , OP, func, c32)             \
+    BINARY_TYPE(int                , OP, func, s32)             \
+    BINARY_TYPE(unsigned           , OP, func, u32)             \
+    BINARY_TYPE(long               , OP, func, s64)             \
+    BINARY_TYPE(unsigned long      , OP, func, u64)             \
+    BINARY_TYPE(long long          , OP, func, s64)             \
+    BINARY_TYPE(unsigned long long , OP, func, u64)             \
+    BINARY_TYPE(char               , OP, func, b8)              \
+    BINARY_TYPE(unsigned char      , OP, func, u8)              \
+    BINARY_TYPE(bool               , OP, func, b8)              \
 
     BINARY_OP(+, af_add)
     BINARY_OP(-, af_sub)
@@ -1010,6 +855,12 @@ namespace af
         void *ptr = NULL;                                           \
         AF_THROW(af_get_device_ptr(&ptr, get(), true));             \
         return (T *)ptr;                                            \
+    }                                                               \
+    template<> AFAPI void array::write(const T *ptr,                \
+               const size_t bytes, af_source_t src)                 \
+    {                                                               \
+        if(src == afHost)   AF_THROW(af_write_array(get(), ptr, bytes, (af_source)afHost));             \
+        if(src == afDevice) AF_THROW(af_write_array(get(), ptr, bytes, (af_source)afDevice));           \
     }                                                               \
 
     INSTANTIATE(cdouble)

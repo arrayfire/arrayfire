@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include <af/array.h>
 #include "af/defines.h"
 
 #ifdef __cplusplus
@@ -38,6 +37,7 @@ extern "C" {
 #ifdef __cplusplus
 namespace af
 {
+    class array;
     /**
         \brief Matrix multiply on two arrays
 

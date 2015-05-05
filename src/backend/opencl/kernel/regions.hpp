@@ -118,6 +118,7 @@ void regions(Param out, Param in)
 
             ueOp(EnqueueArgs(getQueue(), global, local),
                  *out.data, out.info, *d_continue);
+            CL_DEBUG_FINISH(getQueue());
 
             getQueue().enqueueReadBuffer(*d_continue, CL_TRUE, 0, sizeof(int), &h_continue);
         }
@@ -205,6 +206,7 @@ void regions(Param out, Param in)
         //Buffer labels_buf(tmp.get_buffer().get());
         frOp(EnqueueArgs(getQueue(), global, local),
              *out.data, out.info, *in.data, in.info, labels);
+        CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {
         CL_TO_AF_ERROR(err);
         throw;

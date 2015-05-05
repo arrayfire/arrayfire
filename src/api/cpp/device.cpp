@@ -9,6 +9,7 @@
 
 #include <af/device.h>
 #include <af/compatible.h>
+#include <af/traits.hpp>
 #include "error.hpp"
 
 namespace af

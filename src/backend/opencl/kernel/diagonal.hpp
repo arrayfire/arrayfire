@@ -71,6 +71,7 @@ namespace kernel
 
             diagCreateOp(EnqueueArgs(getQueue(), global, local),
                          *(out.data), out.info, *(in.data), in.info, num, groups_x);
+            CL_DEBUG_FINISH(getQueue());
 
         } catch (cl::Error err) {
             CL_TO_AF_ERROR(err);
@@ -114,6 +115,7 @@ namespace kernel
 
             diagExtractOp(EnqueueArgs(getQueue(), global, local),
                           *(out.data), out.info, *(in.data), in.info, num, groups_z);
+            CL_DEBUG_FINISH(getQueue());
 
         } catch (cl::Error err) {
             CL_TO_AF_ERROR(err);

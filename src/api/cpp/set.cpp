@@ -7,7 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/image.h>
 #include <af/algorithm.h>
 #include <af/array.h>
 #include "error.hpp"
@@ -15,25 +14,25 @@
 namespace af
 {
 
-array histogram(const array &in, const unsigned nbins, const double minval, const double maxval)
+array setunique(const array &in, bool is_sorted)
 {
     af_array out = 0;
-    AF_THROW(af_histogram(&out, in.get(), nbins, minval, maxval));
+    AF_THROW(af_set_unique(&out, in.get(), is_sorted));
     return array(out);
 }
 
-array histogram(const array &in, const unsigned nbins)
+array setunion(const array &first, const array &second, bool is_unique)
 {
     af_array out = 0;
-    AF_THROW(af_histogram(&out, in.get(), nbins, min<double>(in), max<double>(in)));
+    AF_THROW(af_set_union(&out, first.get(), second.get(), is_unique));
     return array(out);
 }
 
-array histequal(const array& in, const array& hist)
+array setintersect(const array &first, const array &second, bool is_unique)
 {
-    af_array temp = 0;
-    AF_THROW(af_histequal(&temp, in.get(), hist.get()));
-    return array(temp);
+    af_array out = 0;
+    AF_THROW(af_set_intersect(&out, first.get(), second.get(), is_unique));
+    return array(out);
 }
 
 }

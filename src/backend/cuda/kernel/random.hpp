@@ -139,7 +139,10 @@ namespace kernel
         static curandState_t *states[DeviceManager::MAX_DEVICES];
         if (!states[device]) {
             CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
+
             setup_kernel<<<BLOCKS, THREADS>>>(states[device], uniform_seed);
+
+            POST_LAUNCH_CHECK();
         }
 
         uniform_kernel<<<blocks, threads>>>(out, states[device], elements);
@@ -159,7 +162,10 @@ namespace kernel
         static curandState_t *states[DeviceManager::MAX_DEVICES];
         if (!states[device]) {
             CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
+
             setup_kernel<<<BLOCKS, THREADS>>>(states[device], uniform_seed);
+
+            POST_LAUNCH_CHECK();
         }
 
         normal_kernel<<<blocks, threads>>>(out, states[device], elements);

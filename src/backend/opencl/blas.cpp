@@ -10,7 +10,6 @@
 #include <blas.hpp>
 #include <af/blas.h>
 #include <Array.hpp>
-#include <clBLAS.h>
 #include <cassert>
 #include <string>
 #include <functional>
@@ -73,12 +72,6 @@ BLAS_FUNC(dot, double,      D)
 
 #undef BLAS_FUNC_DEF
 #undef BLAS_FUNC
-
-static void
-initBlas() {
-    static std::once_flag clblasSetupFlag;
-    call_once(clblasSetupFlag, clblasSetup);
-}
 
 template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,

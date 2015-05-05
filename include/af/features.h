@@ -9,10 +9,6 @@
 
 #pragma once
 #include <af/defines.h>
-#include <af/array.h>
-#include <af/dim4.hpp>
-#include <af/seq.h>
-#include <af/traits.hpp>
 
 typedef struct {
     size_t n;
@@ -26,6 +22,7 @@ typedef struct {
 #ifdef __cplusplus
 namespace af
 {
+    class array;
 
     class AFAPI features {
     private:

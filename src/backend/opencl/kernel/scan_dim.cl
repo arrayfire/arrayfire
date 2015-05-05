@@ -120,36 +120,38 @@ void bcast_dim_kernel(__global To *oData, KParam oInfo,
     int ids[4] = {xid, yid, zid, wid};
     const int groupId_dim = ids[dim];
 
-    if (groupId_dim == 0) return;
+    if (groupId_dim != 0) {
 
-    // There is only one element per group for out
-    // There are DIMY elements per group for in
-    // Hence increment ids[dim] just after offseting out and before offsetting in
-    tData += ids[3] * tInfo.strides[3] + ids[2] * tInfo.strides[2] + ids[1] * tInfo.strides[1] + ids[0];
+        // There is only one element per group for out
+        // There are DIMY elements per group for in
+        // Hence increment ids[dim] just after offseting out and before offsetting in
+        tData += ids[3] * tInfo.strides[3] + ids[2] * tInfo.strides[2] + ids[1] * tInfo.strides[1] + ids[0];
 
-    ids[dim] = ids[dim] * DIMY * lim + lidy;
-    oData  += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] + ids[1] * oInfo.strides[1] + ids[0];
+        ids[dim] = ids[dim] * DIMY * lim + lidy;
+        oData  += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] + ids[1] * oInfo.strides[1] + ids[0];
 
-    const int id_dim = ids[dim];
-    const int out_dim = oInfo.dims[dim];
+        const int id_dim = ids[dim];
+        const int out_dim = oInfo.dims[dim];
 
-    bool is_valid =
-        (ids[0] < oInfo.dims[0]) &&
-        (ids[1] < oInfo.dims[1]) &&
-        (ids[2] < oInfo.dims[2]) &&
-        (ids[3] < oInfo.dims[3]);
+        bool is_valid =
+            (ids[0] < oInfo.dims[0]) &&
+            (ids[1] < oInfo.dims[1]) &&
+            (ids[2] < oInfo.dims[2]) &&
+            (ids[3] < oInfo.dims[3]);
 
-    if (!is_valid) return;
+        if (is_valid) {
 
-    To accum = *(tData - tInfo.strides[dim]);
+            To accum = *(tData - tInfo.strides[dim]);
 
-    const int ostride_dim = oInfo.strides[dim];
+            const int ostride_dim = oInfo.strides[dim];
 
-    for (int k = 0, id = id_dim;
-         is_valid && k < lim && (id < out_dim);
-         k++, id += DIMY) {
+            for (int k = 0, id = id_dim;
+                 is_valid && k < lim && (id < out_dim);
+                 k++, id += DIMY) {
 
-        *oData = binOp(*oData, accum);
-        oData += DIMY * ostride_dim;
+                *oData = binOp(*oData, accum);
+                oData += DIMY * ostride_dim;
+            }
+        }
     }
 }

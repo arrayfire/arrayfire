@@ -254,69 +254,18 @@ namespace kernel
 
     }
 
-    template<typename T>
-    __inline__ __device__ void assign_vol(volatile T *s_ptr_vol, T &tmp)
-    {
-        *s_ptr_vol = tmp;
-    }
-
-    template<> __inline__ __device__
-    void assign_vol<cfloat>(volatile cfloat *s_ptr_vol, cfloat &tmp)
-    {
-        s_ptr_vol->x = tmp.x;
-        s_ptr_vol->y = tmp.y;
-    }
-
-    template<> __inline__ __device__
-    void assign_vol<cdouble>(volatile cdouble *s_ptr_vol, cdouble &tmp)
-    {
-        s_ptr_vol->x = tmp.x;
-        s_ptr_vol->y = tmp.y;
-    }
-
-    template<typename T>
-    __inline__ __device__ void assign_vol(T &dst, volatile T *s_ptr_vol)
-    {
-        dst = *s_ptr_vol;
-    }
-
-    template<> __inline__ __device__
-    void assign_vol<cfloat>(cfloat &dst, volatile cfloat *s_ptr_vol)
-    {
-        dst.x = s_ptr_vol->x;
-        dst.y = s_ptr_vol->y;
-    }
-
-    template<> __inline__ __device__
-    void assign_vol<cdouble>(cdouble &dst, volatile cdouble *s_ptr_vol)
-    {
-        dst.x = s_ptr_vol->x;
-        dst.y = s_ptr_vol->y;
-    }
-
     template<typename T, af_op_t op>
     __device__ void warp_reduce(T *s_ptr, uint *s_idx, uint tidx)
     {
-        volatile T *s_ptr_vol = s_ptr + tidx;
-        volatile uint *s_idx_vol = s_idx + tidx;
-
+        MinMaxOp<op, T> Op(s_ptr[tidx], s_idx[tidx]);
 #pragma unroll
         for (int n = 16; n >= 1; n >>= 1) {
             if (tidx < n) {
-                T val1, val2;
-                assign_vol(val1, s_ptr_vol);
-                assign_vol(val2, s_ptr_vol + n);
-
-                uint idx1, idx2;
-                assign_vol(idx1, s_idx_vol);
-                assign_vol(idx2, s_idx_vol + n);
-
-                MinMaxOp<op, T> Op(val1, idx1);
-                Op(val2, idx2);
-
-                assign_vol(s_ptr_vol, Op.m_val);
-                assign_vol(s_idx_vol, Op.m_idx);
+                Op(s_ptr[tidx + n], s_idx[tidx + n]);
+                s_ptr[tidx] = Op.m_val;
+                s_idx[tidx] = Op.m_idx;
             }
+            __syncthreads();
         }
     }
 
