@@ -856,6 +856,12 @@ namespace af
         AF_THROW(af_get_device_ptr(&ptr, get(), true));             \
         return (T *)ptr;                                            \
     }                                                               \
+    template<> AFAPI void array::write(const T *ptr,                \
+               const size_t bytes, af_source_t src)                 \
+    {                                                               \
+        if(src == afHost)   AF_THROW(af_write_array(get(), ptr, bytes, (af_source)afHost));             \
+        if(src == afDevice) AF_THROW(af_write_array(get(), ptr, bytes, (af_source)afDevice));           \
+    }                                                               \
 
     INSTANTIATE(cdouble)
     INSTANTIATE(cfloat)
