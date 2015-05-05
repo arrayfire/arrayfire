@@ -26,44 +26,6 @@ using af::cfloat;
 using af::cdouble;
 
 ///////////////////////////////// CPP ////////////////////////////////////
-//
-TEST(QR, CPP)
-{
-    if (noDoubleTests<float>()) return;
-
-    int resultIdx = 0;
-
-    vector<af::dim4> numDims;
-    vector<vector<float> > in;
-    vector<vector<float> > tests;
-    readTests<float, float, float>(string(TEST_DIR"/lapack/qr.test"),numDims,in,tests);
-
-    af::dim4 idims = numDims[0];
-    af::array input(idims, &(in[0].front()));
-    af::array output, tau;
-    af::qr(output, tau, input);
-
-    af::dim4 odims = output.dims();
-
-    // Get result
-    float* outData = new float[tests[resultIdx].size()];
-    output.host((void*)outData);
-
-    // Compare result
-    for (int y = 0; y < odims[1]; ++y) {
-        for (int x = 0; x < odims[0]; ++x) {
-            // Check only upper triangle
-            if(x <= y) {
-            int elIter = y * odims[0] + x;
-            ASSERT_NEAR(tests[resultIdx][elIter], outData[elIter], 0.001) << "at: " << elIter << std::endl;
-            }
-        }
-    }
-
-    // Delete
-    delete[] outData;
-}
-
 TEST(QRFactorized, CPP)
 {
     if (noDoubleTests<float>()) return;
@@ -113,3 +75,62 @@ TEST(QRFactorized, CPP)
     delete[] qData;
     delete[] rData;
 }
+
+template<typename T>
+void qrTester(const int m, const int n, double eps)
+{
+    try {
+        if (noDoubleTests<T>()) return;
+
+        setenv("AF_PRINT_ERRORS", "1", true);
+
+#ifndef NDEBUG
+        std::vector<float> hin(m * n);
+        for (int i = 0; i < m * n; i++) {
+            hin[i] = (float)(rand()) / RAND_MAX;
+        }
+        af::array in(m, n, &hin[0]);
+#else
+        af::array in = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
+#endif
+        af::array q, r, tau;
+        af::qr(q, r, tau, in);
+
+        af::array qq = af::matmul(q, q.H());
+        af::array ii = af::identity(qq.dims(), qq.type());
+
+        ASSERT_NEAR(0, af::max<double>(af::abs(real(qq - ii))), eps);
+        ASSERT_NEAR(0, af::max<double>(af::abs(imag(qq - ii))), eps);
+
+
+        af::array re = af::matmul(q, r);
+        ASSERT_NEAR(0, af::max<double>(af::abs(real(re - in))), eps);
+        ASSERT_NEAR(0, af::max<double>(af::abs(imag(re - in))), eps);
+    } catch(af::exception &ex) {
+        std::cout << ex.what() << std::endl;
+        throw;
+    }
+}
+
+#define QR_BIG_TESTS(T, eps)                    \
+    TEST(QR, T##BigRect0)                       \
+    {                                           \
+        qrTester<T>(500, 17, eps);              \
+    }                                           \
+    TEST(QR, T##BigRect1)                       \
+    {                                           \
+        qrTester<T>(1000, 500, eps);            \
+    }                                           \
+    TEST(QR, T##BigRect0Multiple)               \
+    {                                           \
+        qrTester<T>(512, 1024, eps);            \
+    }                                           \
+    TEST(QR, T##BigRect1Multiple)               \
+    {                                           \
+        qrTester<T>(1024, 512, eps);            \
+    }                                           \
+
+QR_BIG_TESTS(float, 1E-3)
+QR_BIG_TESTS(double, 1E-8)
+QR_BIG_TESTS(cfloat, 1E-3)
+QR_BIG_TESTS(cdouble, 1E-8)
