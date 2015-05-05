@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/signal.h>
+#include <af/array.h>
 #include "error.hpp"
 #include <algorithm>
 

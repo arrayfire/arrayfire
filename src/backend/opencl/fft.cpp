@@ -20,6 +20,8 @@
 #include <string>
 #include <cstdio>
 #include <memory.hpp>
+#include <iostream>
+#include <handle.hpp>
 
 using af::dim4;
 using std::string;
@@ -83,30 +85,31 @@ void find_clfft_plan(clfftPlanHandle &plan,
 
     string key_string(key_str_temp);
 
+    /* WARNING: DO NOT CHANGE sprintf format specifier */
     for(int r=0; r<rank; ++r) {
-        sprintf(key_str_temp, "%zu:", clLengths[r]);
+        sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", clLengths[r]);
         key_string.append(std::string(key_str_temp));
     }
 
     if(istrides!=NULL) {
         for(int r=0; r<rank; ++r) {
-            sprintf(key_str_temp, "%zu:", istrides[r]);
+            sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", istrides[r]);
             key_string.append(std::string(key_str_temp));
         }
-        sprintf(key_str_temp, "%zu:", idist);
+        sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", idist);
         key_string.append(std::string(key_str_temp));
     }
 
     if (ostrides!=NULL) {
         for(int r=0; r<rank; ++r) {
-            sprintf(key_str_temp, "%zu:", ostrides[r]);
+            sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", ostrides[r]);
             key_string.append(std::string(key_str_temp));
         }
-        sprintf(key_str_temp, "%zu:", odist);
+        sprintf(key_str_temp, SIZE_T_FRMT_SPECIFIER ":", odist);
         key_string.append(std::string(key_str_temp));
     }
 
-    sprintf(key_str_temp, "%d:%zu", (int)precision, batch);
+    sprintf(key_str_temp, "%d:" SIZE_T_FRMT_SPECIFIER, (int)precision, batch);
     key_string.append(std::string(key_str_temp));
 
     // find the matching plan_index in the array clFFTPlanner::mKeys

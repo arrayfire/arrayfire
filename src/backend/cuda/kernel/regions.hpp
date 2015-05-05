@@ -420,8 +420,12 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
         h_continue = 0;
         CUDA_CHECK(cudaMemcpyToSymbol(continue_flag, &h_continue, sizeof(int),
                                       0, cudaMemcpyHostToDevice));
+
         (update_equiv<T, 16, n_per_thread, full_conn>)<<<blocks, threads>>>
             (out, tex);
+
+        POST_LAUNCH_CHECK();
+
         CUDA_CHECK(cudaMemcpyFromSymbol(&h_continue, continue_flag, sizeof(int),
                                         0, cudaMemcpyDeviceToHost));
     }
@@ -471,6 +475,8 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
     (final_relabel<T,n_per_thread>)<<<blocks,threads>>>(out,
                                                         in,
                                                         thrust::raw_pointer_cast(&labels[0]));
+
+    POST_LAUNCH_CHECK();
 
     cuda::memFree(tmp);
 }

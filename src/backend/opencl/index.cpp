@@ -15,6 +15,7 @@
 #include <index.hpp>
 #include <kernel/index.hpp>
 #include <err_opencl.hpp>
+#include <memory.hpp>
 
 namespace opencl
 {
@@ -50,14 +51,16 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     std::vector< Array<uint> > idxArrs(4, createEmptyArray<uint>(dim4()));
     // look through indexers to read af_array indexers
     for (dim_type x=0; x<4; ++x) {
-        // set idxPtrs to null
-        bPtrs[x] = new Buffer();
         // set index pointers were applicable
         if (!p.isSeq[x]) {
             idxArrs[x] = castArray<uint>(idxrs[x].mIndexer.arr);
             bPtrs[x] = idxArrs[x].get();
             // set output array ith dimension value
             oDims[x] = idxArrs[x].elements();
+        }
+        else {
+            // alloc an 1-element buffer to avoid OpenCL from failing
+            bPtrs[x] = bufferAlloc(sizeof(uint));
         }
     }
 
@@ -66,7 +69,7 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     kernel::index<T>(out, in, p, bPtrs);
 
     for (dim_type x=0; x<4; ++x) {
-        if (p.isSeq[x]) delete bPtrs[x];
+        if (p.isSeq[x]) bufferFree(bPtrs[x]);
     }
 
     return out;

@@ -14,6 +14,7 @@
 #include <TNJ/ScalarNode.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
+#include <cstring>
 
 namespace cpu
 {
@@ -226,6 +227,25 @@ namespace cpu
         A.eval();
     }
 
+    template<typename T>
+    void
+    writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes)
+    {
+        if(!arr.isOwner()) {
+            arr = createEmptyArray<T>(arr.dims());
+        }
+        memcpy(arr.get() + arr.getOffset(), data, bytes);
+    }
+
+    template<typename T>
+    void
+    writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
+    {
+        if(!arr.isOwner()) {
+            arr = createEmptyArray<T>(arr.dims());
+        }
+        memcpy(arr.get() + arr.getOffset(), (const T * const)data, bytes);
+    }
 
 #define INSTANTIATE(T)                                                  \
     template       Array<T>  createHostDataArray<T>   (const dim4 &size, const T * const data); \
@@ -243,6 +263,8 @@ namespace cpu
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
     template       TNJ::Node_ptr Array<T>::getNode() const;             \
+    template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
+    template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

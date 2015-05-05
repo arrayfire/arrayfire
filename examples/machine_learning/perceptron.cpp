@@ -55,7 +55,7 @@ array train(const array &X, const array &Y,
         if (mean_abs_err  < maxerr) break;
 
         if (verbose && (i + 1) % 25 == 0) {
-            printf("Iter :%d, Err: %.4f\n", i + 1, mean_abs_err);
+            printf("Iter: %d, Err: %.4f\n", i + 1, mean_abs_err);
         }
 
         Weights = Weights + alpha * matmulTN(X, err);

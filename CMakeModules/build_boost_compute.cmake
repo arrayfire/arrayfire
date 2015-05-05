@@ -1,6 +1,6 @@
-SET(VER 415e7a0a21b7fc2cb5a6aaa7ea14a4f32e884631)
-SET(URL https://github.com/kylelutz/compute/archive/${VER}.tar.gz)
-SET(MD5 733daf88c39c7337c51cd5adb0efb51b)
+SET(VER 79aa8f9086fdf6ef6db78e889de0273b0eb7bd19)
+SET(URL https://github.com/boostorg/compute/archive/${VER}.tar.gz)
+SET(MD5 dba3318cbdac912dddce71f2a38ffa43)
 
 SET(thirdPartyDir "${CMAKE_BINARY_DIR}/third_party")
 SET(srcDir "${thirdPartyDir}/compute-${VER}")

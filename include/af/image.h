@@ -8,13 +8,13 @@
  ********************************************************/
 
 #pragma once
-#include <af/array.h>
 #include <af/features.h>
 
 #ifdef __cplusplus
 #include <utility>
 namespace af
 {
+class array;
 
 /**
    C++ Interface for calculating the gradients

@@ -19,6 +19,7 @@
 #include <map>
 #include <dispatch.hpp>
 #include <err_opencl.hpp>
+#include <debug_opencl.hpp>
 #include <program.hpp>
 
 using cl::Buffer;
@@ -130,6 +131,7 @@ namespace opencl
 
                 randomOp(EnqueueArgs(getQueue(), global, local),
                          out, elements, counter, random_seed[0], random_seed[1]);
+                CL_DEBUG_FINISH(getQueue());
             } catch(cl::Error ex) {
                 CL_TO_AF_ERROR(ex);
             }

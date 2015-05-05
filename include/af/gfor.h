@@ -9,14 +9,14 @@
 
 #pragma once
 #include <af/defines.h>
-#include <af/dim4.hpp>
 #include <af/seq.h>
-#include <af/array.h>
 
 
 #ifdef __cplusplus
 namespace af
 {
+class array;
+class dim4;
 
 AFAPI bool gforToggle();
 AFAPI bool gforGet();
