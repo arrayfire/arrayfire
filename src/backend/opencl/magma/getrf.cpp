@@ -14,6 +14,8 @@
 #include "magma_cpu_lapack.h"
 #include "magma_helper.h"
 
+#include <algorithm>
+
 template<typename Ty>
 magma_int_t magma_getrf_gpu(
     magma_int_t m, magma_int_t n,

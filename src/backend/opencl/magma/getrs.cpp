@@ -15,6 +15,8 @@
 #include "magma_helper.h"
 #include "magma_sync.h"
 
+#include <algorithm>
+
 template<typename Ty>  magma_int_t
 magma_getrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
                 cl_mem dA, size_t dA_offset, magma_int_t ldda,

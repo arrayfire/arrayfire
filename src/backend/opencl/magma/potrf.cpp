@@ -16,6 +16,8 @@
 #include "magma_helper.h"
 #include "magma_sync.h"
 
+#include <algorithm>
+
 template<typename Ty>
 magma_int_t magma_potrf_gpu(
     magma_uplo_t   uplo, magma_int_t    n,

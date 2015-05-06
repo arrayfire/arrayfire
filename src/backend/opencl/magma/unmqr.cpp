@@ -15,6 +15,8 @@
 #include "magma_helper.h"
 #include "magma_sync.h"
 
+#include <algorithm>
+
 template<typename Ty>  magma_int_t
 magma_unmqr_gpu(
     magma_side_t side, magma_trans_t trans,

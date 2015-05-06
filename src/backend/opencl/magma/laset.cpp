@@ -10,6 +10,8 @@
 #include "magma_data.h"
 #include "kernel/laset.hpp"
 
+#include <algorithm>
+
 template<typename T> void
 magmablas_laset(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
                 T offdiag, T diag,

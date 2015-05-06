@@ -14,6 +14,8 @@
 #include "magma_helper.h"
 #include "magma_sync.h"
 
+#include <algorithm>
+
 /* ////////////////////////////////////////////////////////////////////////////
    -- Auxiliary function: 'a' is pointer to the current panel holding the
       Householder vectors for the QR factorization of the panel. This routine

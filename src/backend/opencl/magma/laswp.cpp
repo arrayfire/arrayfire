@@ -10,6 +10,8 @@
 #include "magma_data.h"
 #include "kernel/laswp.hpp"
 
+#include <algorithm>
+
 template<typename T> void
 magmablas_laswp(
     magma_int_t n,

@@ -17,6 +17,8 @@
 #include "magma_helper.h"
 #include "magma_sync.h"
 
+#include <algorithm>
+
 /**
     Purpose
     -------
