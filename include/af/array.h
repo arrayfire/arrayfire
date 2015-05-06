@@ -10,6 +10,8 @@
 #pragma once
 #include <af/defines.h>
 #include <af/seq.h>
+#include <af/util.h>
+#include <af/index.h>
 #include <af/traits.hpp>
 
 
@@ -30,20 +32,87 @@ namespace af
     /// \brief A multi dimensional data container
     ///
     class AFAPI array {
-
-    private:
         af_array   arr;
 
-        //FIXME: Put the following in a different class
-        const array     *parent;
-        bool            isRef;
-        af_index_t      indices[4];
-        void set(af_array tmp);
-        void set(af_array tmp) const;
-        //END FIXME
 
     public:
-        array(af_array in, const array *par, af_index_t seqs[4]);
+        void set(af_array tmp);
+
+        ///
+        /// \brief Intermediate data class. Used for assignment and indexing
+        ///
+        class array_proxy
+        {
+            array       *parent;        // The original array
+            af_index_t  indices[4];     // Indexing array or seq objects
+
+        public:
+            array_proxy(array &par, af_index_t *ssss);
+
+            // Implicit conversion operators
+            operator array() const;
+            operator array();
+
+        //array operator = (array &&other);
+#define ASSIGN(OP)                                                  \
+            array_proxy& operator OP(const array_proxy &a);         \
+            array_proxy& operator OP(const array &a);               \
+            array_proxy& operator OP(const double &a);              \
+            array_proxy& operator OP(const cdouble &a);             \
+            array_proxy& operator OP(const cfloat &a);              \
+            array_proxy& operator OP(const float &a);               \
+            array_proxy& operator OP(const int &a);                 \
+            array_proxy& operator OP(const unsigned &a);            \
+            array_proxy& operator OP(const bool &a);                \
+            array_proxy& operator OP(const char &a);                \
+            array_proxy& operator OP(const unsigned char &a);       \
+            array_proxy& operator OP(const long  &a);               \
+            array_proxy& operator OP(const unsigned long &a);       \
+            array_proxy& operator OP(const long long  &a);          \
+            array_proxy& operator OP(const unsigned long long &a);  \
+
+            ASSIGN(=)
+            ASSIGN(+=)
+            ASSIGN(-=)
+            ASSIGN(*=)
+            ASSIGN(/=)
+#undef ASSIGN
+
+            // af::array member functions. same behavior as those below
+            af_array get();
+            af_array get() const;
+            dim_type elements() const;
+            template<typename T> T* host() const;
+            void host(void *ptr) const;
+            dtype type() const;
+            dim4 dims() const;
+            dim_type dims(unsigned dim) const;
+            unsigned numdims() const;
+            size_t bytes() const;
+            array copy() const;
+            bool isempty() const;
+            bool isscalar() const;
+            bool isvector() const;
+            bool isrow() const;
+            bool iscolumn() const;
+            bool iscomplex() const;
+            inline bool isreal() const { return !iscomplex(); }
+            bool isdouble() const;
+            bool issingle() const;
+            bool isrealfloating() const;
+            bool isfloating() const;
+            bool isinteger() const;
+            bool isbool() const;
+            void eval() const;
+            array as(dtype type) const;
+            array T() const;
+            array H() const;
+            template<typename T> T scalar() const;
+            template<typename T> T* device() const;
+            void unlock() const;
+        };
+
+        //array(af_array in, const array *par, af_index_t seqs[4]);
         /**
             \ingroup construct_mat
             @{
@@ -534,152 +603,152 @@ namespace af
            \ingroup index_mat
         */
 
-        array operator()(const seq& s0) const;
-        array operator()(const int& s0) const
+        array::array_proxy operator()(const seq& s0) const;
+        array::array_proxy operator()(const int& s0) const
                         { return this->operator()(seq(s0, s0)); }
 
         // Two arguments
-        array operator()(const seq& s0, const seq& s1) const;
+        array::array_proxy operator()(const seq& s0, const seq& s1) const;
 
-        array operator()(const int& s0, const int& s1) const
+        array::array_proxy operator()(const int& s0, const int& s1) const
                         { return this->operator()(seq(s0, s0), seq(s1, s1)); }
 
-        array operator()(const int& s0, const seq& s1) const
+        array::array_proxy operator()(const int& s0, const seq& s1) const
                         { return this->operator()(seq(s0, s0), s1); }
 
-        array operator()(const seq& s0, const int& s1) const
+        array::array_proxy operator()(const seq& s0, const int& s1) const
                         { return this->operator()(s0, seq(s1, s1)); }
 
         // Three arguments
-        array operator()(const seq& s0, const seq& s1, const seq& s2) const;
+        array::array_proxy operator()(const seq& s0, const seq& s1, const seq& s2) const;
 
-        array operator()(const int& s0, const int& s1, const int& s2) const
+        array::array_proxy operator()(const int& s0, const int& s1, const int& s2) const
                         { return this->operator()(seq(s0, s0), seq(s1, s1), seq(s2, s2)); }
 
-        array operator()(const int& s0, const seq& s1, const seq& s2) const
+        array::array_proxy operator()(const int& s0, const seq& s1, const seq& s2) const
                         { return this->operator()(seq(s0, s0), s1, s2); }
 
-        array operator()(const int& s0, const int& s1, const seq& s2) const
+        array::array_proxy operator()(const int& s0, const int& s1, const seq& s2) const
                         { return this->operator()(seq(s0, s0), seq(s1, s1), s2); }
 
-        array operator()(const seq& s0, const int& s1, const seq& s2) const
+        array::array_proxy operator()(const seq& s0, const int& s1, const seq& s2) const
         { return this->operator()(s0, seq(s1, s1), s2); }
 
-        array operator()(const seq& s0, const int& s1, const int& s2) const
+        array::array_proxy operator()(const seq& s0, const int& s1, const int& s2) const
         { return this->operator()(s0, seq(s1, s1), seq(s2, s2)); }
 
-        array operator()(const seq& s0, const seq& s1, const int& s2) const
+        array::array_proxy operator()(const seq& s0, const seq& s1, const int& s2) const
         { return this->operator()(s0, s1, seq(s2, s2)); }
 
         // Four arguments
-        array operator()(const seq& s0, const seq& s1, const seq& s2, const seq& s3) const;
-        array operator()(const seq& s0, const seq& s1, const seq& s2, const int& s3) const
+        array::array_proxy operator()(const seq& s0, const seq& s1, const seq& s2, const seq& s3) const;
+        array::array_proxy operator()(const seq& s0, const seq& s1, const seq& s2, const int& s3) const
         { return this->operator()(s0, s1, s2, seq(s3, s3)); }
-        array operator()(const seq& s0, const seq& s1, const int& s2, const seq& s3) const
+        array::array_proxy operator()(const seq& s0, const seq& s1, const int& s2, const seq& s3) const
         { return this->operator()(s0, s1, seq(s2, s2), s3); }
-        array operator()(const seq& s0, const seq& s1, const int& s2, const int& s3) const
+        array::array_proxy operator()(const seq& s0, const seq& s1, const int& s2, const int& s3) const
         { return this->operator()(s0, s1, seq(s2, s2), seq(s3, s3)); }
-        array operator()(const seq& s0, const int& s1, const seq& s2, const seq& s3) const
+        array::array_proxy operator()(const seq& s0, const int& s1, const seq& s2, const seq& s3) const
         { return this->operator()(s0, seq(s1, s1), s2, s3); }
-        array operator()(const seq& s0, const int& s1, const seq& s2, const int& s3) const
+        array::array_proxy operator()(const seq& s0, const int& s1, const seq& s2, const int& s3) const
         { return this->operator()(s0, seq(s1, s1), s2, seq(s3, s3)); }
-        array operator()(const seq& s0, const int& s1, const int& s2, const seq& s3) const
+        array::array_proxy operator()(const seq& s0, const int& s1, const int& s2, const seq& s3) const
         { return this->operator()(s0, seq(s1, s1), seq(s2, s2), s3); }
-        array operator()(const seq& s0, const int& s1, const int& s2, const int& s3) const
+        array::array_proxy operator()(const seq& s0, const int& s1, const int& s2, const int& s3) const
         { return this->operator()(s0, seq(s1, s1), seq(s2, s2), seq(s3, s3)); }
 
-        array operator()(const int& s0, const seq& s1, const seq& s2, const int& s3) const
+        array::array_proxy operator()(const int& s0, const seq& s1, const seq& s2, const int& s3) const
         { return this->operator()(seq(s0, s0), s1, s2, seq(s3, s3)); }
-        array operator()(const int& s0, const seq& s1, const int& s2, const seq& s3) const
+        array::array_proxy operator()(const int& s0, const seq& s1, const int& s2, const seq& s3) const
         { return this->operator()(seq(s0, s0), s1, seq(s2, s2), s3); }
-        array operator()(const int& s0, const seq& s1, const int& s2, const int& s3) const
+        array::array_proxy operator()(const int& s0, const seq& s1, const int& s2, const int& s3) const
         { return this->operator()(seq(s0, s0), s1, seq(s2, s2), seq(s3, s3)); }
-        array operator()(const int& s0, const int& s1, const seq& s2, const seq& s3) const
+        array::array_proxy operator()(const int& s0, const int& s1, const seq& s2, const seq& s3) const
         { return this->operator()(seq(s0, s0), seq(s1, s1), s2, s3); }
-        array operator()(const int& s0, const int& s1, const seq& s2, const int& s3) const
+        array::array_proxy operator()(const int& s0, const int& s1, const seq& s2, const int& s3) const
         { return this->operator()(seq(s0, s0), seq(s1, s1), s2, seq(s3, s3)); }
-        array operator()(const int& s0, const int& s1, const int& s2, const seq& s3) const
+        array::array_proxy operator()(const int& s0, const int& s1, const int& s2, const seq& s3) const
         { return this->operator()(seq(s0, s0), seq(s1, s1), seq(s2, s2), s3); }
-        array operator()(const int& s0, const int& s1, const int& s2, const int& s3) const
+        array::array_proxy operator()(const int& s0, const int& s1, const int& s2, const int& s3) const
         { return this->operator()(seq(s0, s0), seq(s1, s1), seq(s2, s2), seq(s3, s3)); }
 
-        array operator()(const array& idx) const;
+        array::array_proxy operator()(const array& idx) const;
 
         // A-S-S-S, A-S-N-N, A-S-S-N
-        array operator()(const array& idx0, const seq &idx1, const seq &idx2 = span, const seq &idx3 = span) const;
+        array::array_proxy operator()(const array& idx0, const seq &idx1, const seq &idx2 = span, const seq &idx3 = span) const;
 
         // A-I-I-I, A-I-N-N, A-I-I-N
-        array operator()(const array& idx0, const int  idx1, const int  idx2 = 0, const int  idx3 =    0) const
+        array::array_proxy operator()(const array& idx0, const int  idx1, const int  idx2 = 0, const int  idx3 =    0) const
         { return this->operator()(idx0, seq(idx1, idx1), seq(idx2, idx2), seq(idx3, idx3)); }
 
         // A-S-I-I, A-S-I-N
-        array operator()(const array& idx0, const seq &idx1, const int &idx2, const int idx3 = 0) const
+        array::array_proxy operator()(const array& idx0, const seq &idx1, const int &idx2, const int idx3 = 0) const
         { return this->operator()(idx0, idx1, seq(idx2, idx2), seq(idx3, idx3)); }
 
         // A-A-S-S, A-A-N-N
-        array operator()(const array& idx0, const array &idx1, const seq &idx2 = span, const seq &idx3 = span) const;
+        array::array_proxy operator()(const array& idx0, const array &idx1, const seq &idx2 = span, const seq &idx3 = span) const;
 
         // A-A-I-I, A-A-I-N
-        array operator()(const array& idx0, const array &idx1, const int  idx2, const int  idx3 =    0) const
+        array::array_proxy operator()(const array& idx0, const array &idx1, const int  idx2, const int  idx3 =    0) const
         { return this->operator()(idx0, idx1, seq(idx2, idx2), seq(idx3, idx3)); }
 
         // A-A-A-S, A-A-A-N
-        array operator()(const array &idx0, const array &idx1, const array &idx2, const seq &idx3 = span) const;
+        array::array_proxy operator()(const array &idx0, const array &idx1, const array &idx2, const seq &idx3 = span) const;
 
         // A-A-A-I
-        array operator()(const array &idx0, const array &idx1, const array &idx2, const int  idx3) const
+        array::array_proxy operator()(const array &idx0, const array &idx1, const array &idx2, const int  idx3) const
         { return this->operator()(idx0, idx1, idx2, seq(idx3, idx3)); }
 
         // A-A-A-A
-        array operator()(const array &idx0, const array &idx1, const array &idx2, const array &idx3) const;
+        array::array_proxy operator()(const array &idx0, const array &idx1, const array &idx2, const array &idx3) const;
 
         // S-A-S-S
-        array operator()(const seq   &idx0, const array &idx1, const seq   &idx2 = span, const seq   &idx3 = span) const;
+        array::array_proxy operator()(const seq   &idx0, const array &idx1, const seq   &idx2 = span, const seq   &idx3 = span) const;
 
         // S-A-I-I, S-A-I-N
-        array operator()(const seq   &idx0, const array &idx1, const int   &idx2, const int   &idx3 =     0) const
+        array::array_proxy operator()(const seq   &idx0, const array &idx1, const int   &idx2, const int   &idx3 =     0) const
         { return this->operator()(idx0, idx1, seq(idx2, idx2), seq(idx3, idx3)); }
 
         // I-A-S-S, I-A-N-N, I-A-S-N
-        array operator()(const int   &idx0, const array &idx1, const seq   &idx2 = span, const seq   &idx3 = span) const
+        array::array_proxy operator()(const int   &idx0, const array &idx1, const seq   &idx2 = span, const seq   &idx3 = span) const
         { return this->operator()(seq(idx0, idx0), idx1, idx2, idx3); }
 
         // I-A-I-I, I-A-I-N
-        array operator()(const int   &idx0, const array &idx1, const int   &idx2, const int   &idx3 =     0) const
+        array::array_proxy operator()(const int   &idx0, const array &idx1, const int   &idx2, const int   &idx3 =     0) const
         { return this->operator()(seq(idx0, idx0), idx1, seq(idx2, idx2), seq(idx3, idx3)); }
 
         // S-S-A-S, S-S-A-N
-        array operator()(const seq   &idx0, const seq   &idx1, const array &idx2, const seq   &idx3 = span) const;
+        array::array_proxy operator()(const seq   &idx0, const seq   &idx1, const array &idx2, const seq   &idx3 = span) const;
 
         // S-S-S-A
-        array operator()(const seq   &idx0, const seq   &idx1, const seq   &idx2, const array &idx3) const;
+        array::array_proxy operator()(const seq   &idx0, const seq   &idx1, const seq   &idx2, const array &idx3) const;
 
         // A-S-A-S, A-S-A-N
-        array operator()(const array &idx0, const seq   &idx1, const array &idx2, const seq   &idx3 = span) const;
+        array::array_proxy operator()(const array &idx0, const seq   &idx1, const array &idx2, const seq   &idx3 = span) const;
 
         // A-S-S-A
-        array operator()(const array &idx0, const seq   &idx1, const seq   &idx2, const array &idx3) const;
+        array::array_proxy operator()(const array &idx0, const seq   &idx1, const seq   &idx2, const array &idx3) const;
 
         // S-A-A-S, S-A-A-N
-        array operator()(const seq &idx0, const array &idx1, const array &idx2, const seq   &idx3 = span) const;
+        array::array_proxy operator()(const seq &idx0, const array &idx1, const array &idx2, const seq   &idx3 = span) const;
 
         // S-A-S-A
-        array operator()(const seq &idx0, const array &idx1, const seq   &idx2, const array &idx3) const;
+        array::array_proxy operator()(const seq &idx0, const array &idx1, const seq   &idx2, const array &idx3) const;
 
         // S-S-A-A
-        array operator()(const seq &idx0, const seq &idx1, const array &idx2, const array   &idx3) const;
+        array::array_proxy operator()(const seq &idx0, const seq &idx1, const array &idx2, const array   &idx3) const;
 
-        array row(int index) const;
+        array::array_proxy row(int index) const;
 
-        array col(int index) const;
+        array::array_proxy col(int index) const;
 
-        array slice(int index) const;
+        array::array_proxy slice(int index) const;
 
-        array rows(int first, int last) const;
+        array::array_proxy rows(int first, int last) const;
 
-        array cols(int first, int last) const;
+        array::array_proxy cols(int first, int last) const;
 
-        array slices(int first, int last) const;
+        array::array_proxy slices(int first, int last) const;
 
         array as(dtype type) const;
 
@@ -724,7 +793,6 @@ namespace af
         /**
            @}
         */
-
         /**
            \ingroup arith_func_add
            @{
@@ -760,6 +828,7 @@ namespace af
         /**
            @}
         */
+
 
 #undef ASSIGN
 
@@ -968,7 +1037,6 @@ namespace af
     */
 
 #undef BIN_OP
-
 
     /// Evaluate an expression (nonblocking).
     /**
