@@ -13,18 +13,35 @@
 
 namespace af
 {
-    void image(const array &in)
-    {
-        AF_THROW(af_draw_image(in.get()));
-    }
 
-    void plot(const array &X, const array &Y)
-    {
-        AF_THROW(af_draw_plot(X.get(), Y.get()));
-    }
+void image(const array &in)
+{
+    AF_THROW(af_draw_image(in.get()));
+}
 
-    void hist(const array &X, const double minval, const double maxval)
-    {
-        AF_THROW(af_draw_hist(X.get(), minval, maxval));
-    }
+void plot(const array &X, const array &Y)
+{
+    AF_THROW(af_draw_plot(X.get(), Y.get()));
+}
+
+void hist(const array &X, const double minval, const double maxval)
+{
+    AF_THROW(af_draw_hist(X.get(), minval, maxval));
+}
+
+void setupGrid(int rows, int cols)
+{
+    AF_THROW(af_setup_grid(rows, cols));
+}
+
+void bindCell(int colId, int rowId)
+{
+    AF_THROW(af_bind_cell(colId, rowId));
+}
+
+void showGrid()
+{
+    AF_THROW(af_show_grid());
+}
+
 }

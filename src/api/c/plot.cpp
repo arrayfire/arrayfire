@@ -85,7 +85,11 @@ af_err af_draw_plot(const af_array X, const af_array Y)
             default:  TYPE_ERROR(1, Xtype);
         }
 
-        window->draw(*plot);
+        ForgeManager& fgMngr = ForgeManager::getInstance();
+        if (fgMngr.isGridMode())
+            window->draw(fgMngr.cellColId(), fgMngr.cellRowId(), plot, fg::FG_PLOT);
+        else
+            window->draw(*plot);
     }
     CATCHALL;
     return AF_SUCCESS;

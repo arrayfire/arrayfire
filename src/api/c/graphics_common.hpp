@@ -48,6 +48,10 @@ class ForgeManager
         PlotMap_t  mPltMap;
         HistogramMap_t  mHstMap;
 
+        int mGridBoundRowId;
+        int mGridBoundColId;
+        bool mIsGridMode;
+
     public:
         static fg::Window* getWindow();
         static ForgeManager& getInstance();
@@ -56,8 +60,21 @@ class ForgeManager
         fg::Plot* getPlot(int nPoints, GLenum type);
         fg::Histogram* getHistogram(int nBins, GLenum type);
 
+        inline void toggleGridMode() { mIsGridMode = !mIsGridMode; }
+        inline void setGridCellId(int colId, int rowId) {
+            mGridBoundRowId = rowId;
+            mGridBoundColId = colId;
+        }
+        inline int cellRowId() const { return mGridBoundRowId; }
+        inline int cellColId() const { return mGridBoundColId; }
+        inline bool isGridMode() const { return mIsGridMode; }
+
     protected:
-        ForgeManager() {}
+        ForgeManager() {
+            mIsGridMode = false;
+            mGridBoundRowId = -1;
+            mGridBoundColId = -1;
+        }
         ForgeManager(ForgeManager const&);
         void operator=(ForgeManager const&);
         void destroyResources();

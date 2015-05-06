@@ -20,6 +20,12 @@ namespace af
     AFAPI void plot(const array &X, const array &Y);
 
     AFAPI void hist(const array &X, const double minval, const double maxval);
+
+    AFAPI void setupGrid(int rows, int cols);
+
+    AFAPI void bindCell(int colId, int rowId);
+
+    AFAPI void showGrid();
 }
 #endif
 
@@ -31,6 +37,12 @@ extern "C" {
     AFAPI af_err af_draw_plot(const af_array X, const af_array Y);
 
     AFAPI af_err af_draw_hist(const af_array X, const double minval, const double maxval);
+
+    AFAPI af_err af_setup_grid(int rows, int cols);
+
+    AFAPI af_err af_bind_cell(int colId, int rowId);
+
+    AFAPI af_err af_show_grid();
 #ifdef __cplusplus
 }
 

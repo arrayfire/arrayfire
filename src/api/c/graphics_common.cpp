@@ -94,7 +94,7 @@ fg::Window* ForgeManager::getWindow()
             gAFwindow = new fg::Window(1280, 720, "ArrayFire");
             detail::markDeviceForInterop(detail::getActiveDeviceId(), gAFwindow);
             gFont = new fg::Font();
-            gFont->loadSystemFont("vera", 32);
+            gFont->loadSystemFont("Vera", 64);
             gAFwindow->setFont(gFont);
         }catch(const fg::Error &e) {
             std::cout<< e <<std::endl;
@@ -162,6 +162,9 @@ void ForgeManager::destroyResources()
         delete (iter->second);
 
     for(PltMapIter iter = mPltMap.begin(); iter != mPltMap.end(); iter++)
+        delete (iter->second);
+
+    for(HstMapIter iter = mHstMap.begin(); iter != mHstMap.end(); iter++)
         delete (iter->second);
 }
 

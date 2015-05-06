@@ -75,10 +75,58 @@ af_err af_draw_image(const af_array in)
             default:  TYPE_ERROR(1, type);
         }
 
-        window->draw(*image);
+        ForgeManager& fgMngr = ForgeManager::getInstance();
+        if (fgMngr.isGridMode())
+            window->draw(fgMngr.cellColId(), fgMngr.cellRowId(), image, fg::FG_IMAGE);
+        else
+            window->draw(*image);
     }
     CATCHALL;
 
+    return AF_SUCCESS;
+#else
+    return AF_ERR_NO_GRAPHICS;
+#endif
+}
+
+af_err af_setup_grid(int rows, int cols)
+{
+#if defined(WITH_GRAPHICS)
+    try {
+        ForgeManager::getInstance().toggleGridMode();
+        fg::Window* window = ForgeManager::getWindow();
+        window->grid(rows, cols);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+#else
+    return AF_ERR_NO_GRAPHICS;
+#endif
+}
+
+af_err af_bind_cell(int colId, int rowId)
+{
+#if defined(WITH_GRAPHICS)
+    try {
+        ForgeManager& fgMngr = ForgeManager::getInstance();
+        fgMngr.setGridCellId(colId, rowId);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+#else
+    return AF_ERR_NO_GRAPHICS;
+#endif
+}
+
+af_err af_show_grid()
+{
+#if defined(WITH_GRAPHICS)
+    try {
+        fg::Window* window = ForgeManager::getWindow();
+        window->show();
+        ForgeManager::getInstance().toggleGridMode();
+    }
+    CATCHALL;
     return AF_SUCCESS;
 #else
     return AF_ERR_NO_GRAPHICS;
