@@ -9,6 +9,7 @@
 
 #include <af/index.h>
 #include <af/array.h>
+#include <af/algorithm.h>
 #include "error.hpp"
 #include "common.hpp"
 
@@ -103,6 +104,55 @@ array lookup(const array &in, const array &idx, const int dim)
     af_array out = 0;
     AF_THROW(af_lookup(&out, in.get(), idx.get(), getFNSD(dim, in.dims())));
     return array(out);
+}
+
+indexer::indexer() {
+    impl.mIndexer.seq = af_span;
+    impl.mIsSeq = true;
+    impl.isBatch = false;
+}
+
+indexer::indexer(const int idx) {
+    impl.mIndexer.seq = af_make_seq(idx, idx, 1);
+    impl.mIsSeq = true;
+    impl.isBatch = false;
+}
+
+indexer::indexer(const af::seq& s0) {
+    impl.mIndexer.seq = s0.s;
+    impl.mIsSeq = true;
+    impl.isBatch = s0.m_gfor;
+}
+
+indexer::indexer(const af_seq& s0) {
+    impl.mIndexer.seq = s0;
+    impl.mIsSeq = true;
+    impl.isBatch = false;
+}
+
+indexer::indexer(const af::array& idx0) {
+    array idx = idx0.isbool() ? where(idx0) : idx0;
+    af_array arr = 0;
+    AF_THROW(af_weak_copy(&arr, idx.get()));
+    impl.mIndexer.arr = arr;
+
+    impl.mIsSeq = false;
+    impl.isBatch = false;
+}
+
+
+static bool operator==(const af_seq& lhs, const af_seq& rhs) {
+    return lhs.begin == rhs.begin && lhs.end == rhs.end && lhs.step == rhs.step;
+}
+
+bool indexer::isspan() const
+{
+    return impl.mIsSeq == true && impl.mIndexer.seq == af_span;
+}
+
+const af_index_t& indexer::get() const
+{
+    return impl;
 }
 
 }

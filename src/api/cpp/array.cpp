@@ -345,10 +345,10 @@ namespace af
     {
         ref.eval();
         af_index_t inds[4];
-        inds[0] = toIndices(s0);
-        inds[1] = toIndices(s1);
-        inds[2] = toIndices(s2);
-        inds[3] = toIndices(s3);
+        inds[0] = s0.get();
+        inds[1] = s1.get();
+        inds[2] = s2.get();
+        inds[3] = s3.get();
 
         af_array out = 0;
         //FIXME: check if this->s has same dimensions as numdims
@@ -356,159 +356,31 @@ namespace af
         return array::array_proxy(const_cast<array&>(ref), inds);
     }
 
-    array::array_proxy array::operator()(const array& idx) const
+
+    array::array_proxy array::operator()(const indexer &s0, const indexer &s1, const indexer &s2, const indexer &s3)
     {
-        eval();
+        return const_cast<const array*>(this)->operator()(s0, s1, s2, s3);
+    }
 
-        // Special case of indexing linearly
-        // Flatten the current array and index accordingly
-        int num_dims = numDims(this->arr);
-        dim4 this_dims = getDims(this->arr);
+    const array::array_proxy array::operator()(const indexer &s0, const indexer &s1, const indexer &s2, const indexer &s3) const
+    {
+        if(isvector()   && s1.isspan()
+                        && s2.isspan()
+                        && s3.isspan()) {
+            int num_dims = numDims(this->arr);
 
-        if (num_dims > 1) {
-            bool is_vector = true;
-
-            for (int i = 0; is_vector && i < num_dims - 1; i++) {
-                is_vector &= (this_dims[i] == 1);
-            }
-
-            if (is_vector) {
-
-                switch(num_dims) {
-                case 2: return (*this)(span, idx);
-                case 3: return (*this)(span, span, idx);
-                case 4: return (*this)(span, span, span, idx);
-                default: AF_THROW_MSG("ArrayFire internal error", AF_ERR_INTERNAL);
-                }
-
-            } else {
-                array tmp = flat(*this);
-                return tmp(idx);
+            switch(num_dims) {
+            case 1: return gen_indexing(*this, s0, s1, s2, s3);
+            case 2: return gen_indexing(*this, s1, s0, s2, s3);
+            case 3: return gen_indexing(*this, s1, s2, s0, s3);
+            case 4: return gen_indexing(*this, s1, s2, s3, s0);
+            default: AF_THROW_MSG("ArrayFire internal error", AF_ERR_INTERNAL);
             }
         }
-
-        return gen_indexing(*this, idx, span, span, span);
-    }
-
-    array::array_proxy array::operator()(const seq &s0) const
-    {
-        eval();
-
-        // Special case of indexing linearly
-        // Flatten the current array and index accordingly
-        int num_dims = numDims(this->arr);
-        dim4 this_dims = getDims(this->arr);
-
-        if (num_dims > 1) {
-            bool is_vector = true;
-
-            for (int i = 0; is_vector && i < num_dims - 1; i++) {
-                is_vector &= (this_dims[i] == 1);
-            }
-
-            if (is_vector) {
-
-                switch(num_dims) {
-                case 2: return (*this)(span, s0);
-                case 3: return (*this)(span, span, s0);
-                case 4: return (*this)(span, span, span, s0);
-                default: AF_THROW_MSG("ArrayFire internal error", AF_ERR_INTERNAL);
-                }
-
-            } else {
-                array tmp = flat(*this);
-                return tmp(s0);
-            }
+        else {
+            return gen_indexing(*this, s0, s1, s2, s3);
         }
 
-        return gen_indexing(*this, s0, span, span, span);
-    }
-
-    array::array_proxy array::operator()(const seq &s0, const seq &s1) const
-    {
-        return gen_indexing(*this, s0, s1, span, span);
-    }
-
-    array::array_proxy array::operator()(const seq &s0, const seq &s1, const seq &s2) const
-    {
-        return gen_indexing(*this, s0, s1, s2, span);
-    }
-
-    array::array_proxy array::operator()(const seq &s0, const seq &s1, const seq &s2, const seq &s3) const
-    {
-        return gen_indexing(*this, s0, s1, s2, s3);
-    }
-
-    // A-S-S-S, A-S-N-N, A-S-S-N
-    array::array_proxy array::operator()(const array& idx0, const seq &idx1, const seq &idx2, const seq &idx3) const
-    {
-        return gen_indexing(*this, idx0, idx1, idx2, idx3);
-    }
-
-    // A-A-S-S, A-A-N-N
-    array::array_proxy array::operator()(const array& idx0, const array &idx1, const seq &idx2, const seq &idx3) const
-    {
-        return gen_indexing(*this, idx0, idx1, idx2, idx3);
-    }
-
-    // A-A-A-S, A-A-A-N
-    array::array_proxy array::operator()(const array &idx0, const array &idx1, const array &idx2, const seq &idx3) const
-    {
-        return gen_indexing(*this, idx0, idx1, idx2, idx3);
-    }
-
-    // A-A-A-A
-    array::array_proxy array::operator()(const array &idx0, const array &idx1, const array &idx2, const array &idx3) const
-    {
-        return gen_indexing(*this, idx0, idx1, idx2, idx3);
-    }
-
-    // S-A-S-S
-    array::array_proxy array::operator()(const seq &idx0, const array &idx1, const seq &idx2, const seq &idx3) const
-    {
-        return gen_indexing(*this, idx0, idx1, idx2, idx3);
-    }
-
-    // S-S-A-S, S-S-A-N
-    array::array_proxy array::operator()(const seq &idx0, const seq &idx1, const array &idx2, const seq &idx3) const
-    {
-        return gen_indexing(*this, idx0, idx1, idx2, idx3);
-    }
-
-    // S-S-S-A
-    array::array_proxy array::operator()(const seq   &idx0, const seq   &idx1, const seq   &idx2, const array &idx3) const
-    {
-        return gen_indexing(*this, idx0, idx1, idx2, idx3);
-    }
-
-    // A-S-A-S, A-S-A-N
-    array::array_proxy array::operator()(const array &idx0, const seq   &idx1, const array &idx2, const seq &idx3) const
-    {
-        return gen_indexing(*this, idx0, idx1, idx2, idx3);
-    }
-
-    // A-S-S-A
-    array::array_proxy array::operator()(const array &idx0, const seq &idx1, const seq &idx2, const array &idx3) const
-    {
-        return gen_indexing(*this, idx0, idx1, idx2, idx3);
-    }
-
-    // S-A-A-S, S-A-A-N
-    array::array_proxy array::operator()(const seq &idx0, const array &idx1, const array &idx2, const seq &idx3) const
-    {
-        return gen_indexing(*this, idx0, idx1, idx2, idx3);
-    }
-
-    // S-A-S-A
-    array::array_proxy array::operator()(const seq &idx0, const array &idx1, const seq &idx2, const array &idx3) const
-    {
-        return gen_indexing(*this, idx0, idx1, idx2, idx3);
-    }
-
-    // S-S-A-A
-    array::array_proxy array::operator()(const seq &idx0, const seq &idx1, const array &idx2, const array &idx3) const
-    {
-        return gen_indexing(*this, idx0, idx1, idx2, idx3);
     }
 
     array::array_proxy array::row(int index) const

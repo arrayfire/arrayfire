@@ -9,16 +9,47 @@
 
 #pragma once
 #include <af/defines.h>
+#include <af/seq.h>
 
-struct af_seq;
-struct af_index_t;
+typedef struct af_index_t{
+    // if seq is used for current dimension
+    // mIsSeq is set to 'true' and mIndexer.seq
+    // should be used. Otherwise, mIndexer.arr
+    // should be used.
+    union {
+        af_array arr;
+        af_seq   seq;
+    } mIndexer;
+    // below variable is used to determine if
+    // the current dimension is indexed using
+    // af_array or af_seq
+    bool     mIsSeq;
+    bool     isBatch;
+} af_index_t;
+
 
 #if __cplusplus
 namespace af
 {
 
-class array;
+typedef af_index_t indexType;
 class dim4;
+class array;
+class seq;
+
+class AFAPI indexer {
+    af_index_t impl;
+    public:
+    indexer();
+
+    indexer(const int idx);
+    indexer(const af::seq& s0);
+    indexer(const af_seq& s0);
+    indexer(const af::array& idx0);
+
+    bool isspan() const;
+    const af_index_t& get() const;
+};
 
 /**
    \defgroup manip_func_join join
