@@ -82,8 +82,6 @@ void qrTester(const int m, const int n, double eps)
     try {
         if (noDoubleTests<T>()) return;
 
-        setenv("AF_PRINT_ERRORS", "1", true);
-
 #ifndef NDEBUG
         std::vector<float> hin(m * n);
         for (int i = 0; i < m * n; i++) {
@@ -131,6 +129,6 @@ void qrTester(const int m, const int n, double eps)
     }                                           \
 
 QR_BIG_TESTS(float, 1E-3)
-QR_BIG_TESTS(double, 1E-8)
+QR_BIG_TESTS(double, 1E-5)
 QR_BIG_TESTS(cfloat, 1E-3)
-QR_BIG_TESTS(cdouble, 1E-8)
+QR_BIG_TESTS(cdouble, 1E-5)

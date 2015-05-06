@@ -73,7 +73,7 @@ void choleskyTester(const int n, double eps, bool is_upper)
 
     // Prepare positive definite matrix
     af::array a = af::randu(n, n, ty);
-    af::array b = 5 * n * af::identity(n, n, ty);
+    af::array b = 10 * n * af::identity(n, n, ty);
     af::array in = matmul(a.H(), a) + b;
 
     int info = 0;
