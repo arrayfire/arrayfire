@@ -26,15 +26,15 @@ namespace cpu
 
 template<typename T, typename BT>
 using cptr_type     =   typename conditional<   is_complex<T>::value,
-                                                const BT *,
+                                                const void *,
                                                 const T*>::type;
 template<typename T, typename BT>
 using ptr_type     =    typename conditional<   is_complex<T>::value,
-                                                BT *,
+                                                void *,
                                                 T*>::type;
 template<typename T, typename BT>
-using scale_type     =  typename conditional<   is_complex<T>::value,
-                                                const BT *,
+using scale_type   =    typename conditional<   is_complex<T>::value,
+                                                const void *,
                                                 T>::type;
 template<typename T, typename BT>
 using gemm_func_def = void (*)( const enum CBLAS_ORDER, const enum CBLAS_TRANSPOSE, const enum CBLAS_TRANSPOSE,
@@ -49,13 +49,6 @@ using gemv_func_def = void (*)( const enum CBLAS_ORDER, const enum CBLAS_TRANSPO
                                 scale_type<T, BT>, cptr_type<T, BT>, const int,
                                 cptr_type<T, BT>, const int,
                                 scale_type<T, BT>, ptr_type<T, BT>, const int);
-
-template<typename T, typename BT>
-using dot_func_def = T (*) (    const int,
-                                cptr_type<T, BT>,
-                                const int,
-                                cptr_type<T, BT>,
-                                const int);
 
 #define BLAS_FUNC_DEF( FUNC )                                                      \
 template<typename T, typename BT> FUNC##_func_def<T, BT> FUNC##_func();
@@ -90,10 +83,6 @@ BLAS_FUNC(gemv , double  , double, d)
 BLAS_FUNC(gemv , cfloat  ,   void, c)
 BLAS_FUNC(gemv , cdouble ,   void, z)
 #endif
-
-BLAS_FUNC_DEF( dot )
-BLAS_FUNC(dot , float  , float  , s)
-BLAS_FUNC(dot , double , double , d)
 
 template<typename T, typename BT, int value>
 typename enable_if<is_floating_point<T>::value, scale_type<T,BT>>::type
@@ -202,10 +191,12 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
 {
     int N = lhs.dims()[0];
 
-    T out = dot_func<T, BT>()(N,
-                            lhs.get(), lhs.strides()[0],
-                            rhs.get(), rhs.strides()[0]
-                            );
+    T out = 0;
+    const T *pL = lhs.get();
+    const T *pR = rhs.get();
+
+    for(int i = 0; i < N; i++)
+        out += pL[i] * pR[i];
 
     return createValueArray(af::dim4(1), out);
 }

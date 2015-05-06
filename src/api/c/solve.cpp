@@ -31,7 +31,8 @@ af_err af_solve(af_array *out, const af_array a, const af_array b, const af_solv
         ArrayInfo a_info = getInfo(a);
         ArrayInfo b_info = getInfo(b);
 
-        af_dtype type = a_info.getType();
+        af_dtype a_type = a_info.getType();
+        af_dtype b_type = b_info.getType();
 
         dim4 adims = a_info.dims();
         dim4 bdims = a_info.dims();
@@ -39,18 +40,20 @@ af_err af_solve(af_array *out, const af_array a, const af_array b, const af_solv
         ARG_ASSERT(1, a_info.isFloating());                       // Only floating and complex types
         ARG_ASSERT(2, b_info.isFloating());                       // Only floating and complex types
 
+        TYPE_ASSERT(a_type == b_type);
+
         DIM_ASSERT(1, bdims[0] == adims[0]);
         DIM_ASSERT(1, bdims[2] == adims[2]);
         DIM_ASSERT(1, bdims[3] == adims[3]);
 
         af_array output;
 
-        switch(type) {
+        switch(a_type) {
             case f32: output = solve<float  >(a, b, options);  break;
             case f64: output = solve<double >(a, b, options);  break;
             case c32: output = solve<cfloat >(a, b, options);  break;
             case c64: output = solve<cdouble>(a, b, options);  break;
-            default:  TYPE_ERROR(1, type);
+            default:  TYPE_ERROR(1, a_type);
         }
         std::swap(*out, output);
     }
