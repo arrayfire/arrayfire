@@ -34,9 +34,9 @@ void setupGrid(int rows, int cols)
     AF_THROW(af_setup_grid(rows, cols));
 }
 
-void bindCell(int colId, int rowId)
+void bindCell(int colId, int rowId, const char* title)
 {
-    AF_THROW(af_bind_cell(colId, rowId));
+    AF_THROW(af_bind_cell(colId, rowId, title));
 }
 
 void showGrid()

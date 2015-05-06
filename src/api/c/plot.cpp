@@ -87,7 +87,8 @@ af_err af_draw_plot(const af_array X, const af_array Y)
 
         ForgeManager& fgMngr = ForgeManager::getInstance();
         if (fgMngr.isGridMode())
-            window->draw(fgMngr.cellColId(), fgMngr.cellRowId(), plot, fg::FG_PLOT);
+            window->draw(fgMngr.cellColId(), fgMngr.cellRowId(),
+                         plot, fg::FG_PLOT, fgMngr.cellTitle().c_str());
         else
             window->draw(*plot);
     }

@@ -50,6 +50,7 @@ class ForgeManager
 
         int mGridBoundRowId;
         int mGridBoundColId;
+        std::string mGridBoundTitle;
         bool mIsGridMode;
 
     public:
@@ -61,12 +62,14 @@ class ForgeManager
         fg::Histogram* getHistogram(int nBins, GLenum type);
 
         inline void toggleGridMode() { mIsGridMode = !mIsGridMode; }
-        inline void setGridCellId(int colId, int rowId) {
+        inline void setGridCellId(int colId, int rowId, const char* title) {
             mGridBoundRowId = rowId;
             mGridBoundColId = colId;
+            mGridBoundTitle = title;
         }
         inline int cellRowId() const { return mGridBoundRowId; }
         inline int cellColId() const { return mGridBoundColId; }
+        inline std::string cellTitle() const { return mGridBoundTitle; }
         inline bool isGridMode() const { return mIsGridMode; }
 
     protected:

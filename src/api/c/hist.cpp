@@ -69,7 +69,8 @@ af_err af_draw_hist(const af_array X, const double minval, const double maxval)
 
         ForgeManager& fgMngr = ForgeManager::getInstance();
         if (fgMngr.isGridMode())
-            window->draw(fgMngr.cellColId(), fgMngr.cellRowId(), hist, fg::FG_HIST);
+            window->draw(fgMngr.cellColId(), fgMngr.cellRowId(),
+                         hist, fg::FG_HIST, fgMngr.cellTitle().c_str());
         else
             window->draw(*hist);
     }

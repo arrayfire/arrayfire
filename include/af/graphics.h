@@ -23,7 +23,7 @@ namespace af
 
     AFAPI void setupGrid(int rows, int cols);
 
-    AFAPI void bindCell(int colId, int rowId);
+    AFAPI void bindCell(int colId, int rowId, const char* title);
 
     AFAPI void showGrid();
 }
@@ -40,7 +40,7 @@ extern "C" {
 
     AFAPI af_err af_setup_grid(int rows, int cols);
 
-    AFAPI af_err af_bind_cell(int colId, int rowId);
+    AFAPI af_err af_bind_cell(int colId, int rowId, const char* title);
 
     AFAPI af_err af_show_grid();
 #ifdef __cplusplus

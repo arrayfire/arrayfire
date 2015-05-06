@@ -97,17 +97,17 @@ static void morphing_demo(bool console)
         setupGrid(3, 4);
 
         // image operations
-        bindCell(1,1);  image(img_rgb);
-        bindCell(1,2);  image(er);
-        bindCell(1,3);  image(di);
-        bindCell(2,1);  image(op);
-        bindCell(2,2);  image(cl);
-        bindCell(2,3);  image(gr);
-        bindCell(3,1);  image(th);
-        bindCell(3,2);  image(bh);
-        bindCell(3,3);  image(bl);
-        bindCell(4,1);  image(bp);
-        bindCell(4,2);  image(bo);
+        bindCell(1,1,"Input Color Image");  image(img_rgb);
+        bindCell(1,2,"Erosion");  image(er);
+        bindCell(1,3,"Dilation");  image(di);
+        bindCell(2,1,"Morphological Opening");  image(op);
+        bindCell(2,2,"Morphological Closing");  image(cl);
+        bindCell(2,3,"Gradient");  image(gr);
+        bindCell(3,1,"Top Hat");  image(th);
+        bindCell(3,2,"Bottom Hat");  image(bh);
+        bindCell(3,3,"Blur");  image(bl);
+        bindCell(4,1,"Border Set to Gray");  image(bp);
+        bindCell(4,2,"Border Set to Zero");  image(bo);
 
         showGrid();
         //FIXME add timeout

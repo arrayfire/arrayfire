@@ -80,10 +80,10 @@ void edge(bool console)
         // colormap, grayscale
         setupGrid(2, 2);
 
-        bindCell(1, 1); image(in/255);
-        bindCell(1, 2); hist(hst, 0, 255);
-        bindCell(2, 1); image(prewitt);
-        bindCell(2, 2); image(sobelFilter);
+        bindCell(1, 1, "Input Image"); image(in/255);
+        bindCell(1, 2, "Input Image Histogram"); hist(hst, 0, 255);
+        bindCell(2, 1, "Prewitt Edge Detector"); image(prewitt);
+        bindCell(2, 2, "Sobel Edge Detector"); image(sobelFilter);
 
         showGrid();
         //FIXME add timeout

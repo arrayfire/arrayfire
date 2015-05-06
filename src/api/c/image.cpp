@@ -77,7 +77,8 @@ af_err af_draw_image(const af_array in)
 
         ForgeManager& fgMngr = ForgeManager::getInstance();
         if (fgMngr.isGridMode())
-            window->draw(fgMngr.cellColId(), fgMngr.cellRowId(), image, fg::FG_IMAGE);
+            window->draw(fgMngr.cellColId(), fgMngr.cellRowId(),
+                         image, fg::FG_IMAGE, fgMngr.cellTitle().c_str());
         else
             window->draw(*image);
     }
@@ -104,12 +105,12 @@ af_err af_setup_grid(int rows, int cols)
 #endif
 }
 
-af_err af_bind_cell(int colId, int rowId)
+af_err af_bind_cell(int colId, int rowId, const char* title)
 {
 #if defined(WITH_GRAPHICS)
     try {
         ForgeManager& fgMngr = ForgeManager::getInstance();
-        fgMngr.setGridCellId(colId, rowId);
+        fgMngr.setGridCellId(colId, rowId, title);
     }
     CATCHALL;
     return AF_SUCCESS;
