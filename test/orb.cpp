@@ -140,36 +140,6 @@ typedef ::testing::Types<float, double> TestTypes;
 
 TYPED_TEST_CASE(ORB, TestTypes);
 
-// TODO: perform conversion on device for CUDA and OpenCL
-template<typename T>
-af_err conv_image(af_array *out, af_array in)
-{
-    af_array outArray;
-
-    dim_type d0, d1, d2, d3;
-    af_get_dims(&d0, &d1, &d2, &d3, in);
-    dim4 idims(d0, d1, d2, d3);
-
-    dim_type nElems = 0;
-    af_get_elements(&nElems, in);
-
-    float *in_data = new float[nElems];
-    af_get_data_ptr(in_data, in);
-
-    T *out_data = new T[nElems];
-
-    for (int i = 0; i < nElems; i++)
-        out_data[i] = (T)in_data[i];
-
-    af_create_array(&outArray, out_data, idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type);
-
-    std::swap(*out, outArray);
-
-    delete [] in_data;
-
-    return AF_SUCCESS;
-}
-
 template<typename T>
 void orbTest(string pTestFile)
 {

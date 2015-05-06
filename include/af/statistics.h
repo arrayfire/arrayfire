@@ -8,11 +8,12 @@
  ********************************************************/
 
 #pragma once
-#include "array.h"
+#include <af/defines.h>
 
 #ifdef __cplusplus
 namespace af
 {
+class array;
 
 /**
    C++ Interface for mean

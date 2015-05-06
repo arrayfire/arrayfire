@@ -88,7 +88,7 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
     // ASSERT_EQ (in comments below) to pass for CUDA & OpenCL backends
     size_t fail_count = 0;
     for(size_t i = 0; i < nElems; i++) {
-        if(abs((double)(tests[resultIdx][i] - outData[i])) > 0.0001)
+        if(fabs((double)(tests[resultIdx][i] - outData[i])) > 0.0001)
             fail_count++;
     }
     ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.01));
@@ -199,7 +199,7 @@ TEST(Rotate, CPP)
     // ASSERT_EQ (in comments below) to pass for CUDA & OpenCL backends
     size_t fail_count = 0;
     for(size_t i = 0; i < nElems; i++) {
-        if(abs(tests[resultIdx][i] - outData[i]) > 0.0001)
+        if(fabs(tests[resultIdx][i] - outData[i]) > 0.0001)
             fail_count++;
     }
     ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.01));

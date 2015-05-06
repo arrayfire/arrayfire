@@ -18,14 +18,14 @@ TYPED_TEST_CASE(Array, TestTypes);
 TEST(Array, ConstructorDefault)
 {
     array a;
-    EXPECT_EQ(0,    a.numdims());
-    EXPECT_EQ(0,    a.dims(0));
-    EXPECT_EQ(0,    a.dims(1));
-    EXPECT_EQ(0,    a.dims(2));
-    EXPECT_EQ(0,    a.dims(3));
-    EXPECT_EQ(0,    a.elements());
+    EXPECT_EQ(0u,    a.numdims());
+    EXPECT_EQ(dim_type(0),    a.dims(0));
+    EXPECT_EQ(dim_type(0),    a.dims(1));
+    EXPECT_EQ(dim_type(0),    a.dims(2));
+    EXPECT_EQ(dim_type(0),    a.dims(3));
+    EXPECT_EQ(dim_type(0),    a.elements());
     EXPECT_EQ(f32,  a.type());
-    EXPECT_EQ(0,    a.bytes());
+    EXPECT_EQ(0u,    a.bytes());
     EXPECT_FALSE(   a.isrow());
     EXPECT_FALSE(   a.iscomplex());
     EXPECT_FALSE(   a.isdouble());
@@ -48,12 +48,12 @@ TYPED_TEST(Array, ConstructorEmptyDim4)
     dtype type = (dtype)af::dtype_traits<TypeParam>::af_type;
     dim4 dims(3, 3, 3, 3);
     array a(dims, type);
-    EXPECT_EQ(4,    a.numdims());
-    EXPECT_EQ(3,    a.dims(0));
-    EXPECT_EQ(3,    a.dims(1));
-    EXPECT_EQ(3,    a.dims(2));
-    EXPECT_EQ(3,    a.dims(3));
-    EXPECT_EQ(81,   a.elements());
+    EXPECT_EQ(4u,    a.numdims());
+    EXPECT_EQ(dim_type(3),    a.dims(0));
+    EXPECT_EQ(dim_type(3),    a.dims(1));
+    EXPECT_EQ(dim_type(3),    a.dims(2));
+    EXPECT_EQ(dim_type(3),    a.dims(3));
+    EXPECT_EQ(dim_type(81),   a.elements());
     EXPECT_EQ(type,  a.type());
 }
 
@@ -63,12 +63,12 @@ TYPED_TEST(Array, ConstructorEmpty1D)
 
     dtype type = (dtype)af::dtype_traits<TypeParam>::af_type;
     array a(2, type);
-    EXPECT_EQ(1,    a.numdims());
-    EXPECT_EQ(2,    a.dims(0));
-    EXPECT_EQ(1,    a.dims(1));
-    EXPECT_EQ(1,    a.dims(2));
-    EXPECT_EQ(1,    a.dims(3));
-    EXPECT_EQ(2,    a.elements());
+    EXPECT_EQ(1u,    a.numdims());
+    EXPECT_EQ(dim_type(2),    a.dims(0));
+    EXPECT_EQ(dim_type(1),    a.dims(1));
+    EXPECT_EQ(dim_type(1),    a.dims(2));
+    EXPECT_EQ(dim_type(1),    a.dims(3));
+    EXPECT_EQ(dim_type(2),    a.elements());
     EXPECT_EQ(type,  a.type());
 }
 
@@ -78,12 +78,12 @@ TYPED_TEST(Array, ConstructorEmpty2D)
 
     dtype type = (dtype)af::dtype_traits<TypeParam>::af_type;
     array a(2, 2, type);
-    EXPECT_EQ(2,    a.numdims());
-    EXPECT_EQ(2,    a.dims(0));
-    EXPECT_EQ(2,    a.dims(1));
-    EXPECT_EQ(1,    a.dims(2));
-    EXPECT_EQ(1,    a.dims(3));
-    EXPECT_EQ(4,    a.elements());
+    EXPECT_EQ(2u,    a.numdims());
+    EXPECT_EQ(dim_type(2),    a.dims(0));
+    EXPECT_EQ(dim_type(2),    a.dims(1));
+    EXPECT_EQ(dim_type(1),    a.dims(2));
+    EXPECT_EQ(dim_type(1),    a.dims(3));
+    EXPECT_EQ(dim_type(4),    a.elements());
     EXPECT_EQ(type,  a.type());
 }
 
@@ -93,12 +93,12 @@ TYPED_TEST(Array, ConstructorEmpty3D)
 
     dtype type = (dtype)af::dtype_traits<TypeParam>::af_type;
     array a(2, 2, 2, type);
-    EXPECT_EQ(3,    a.numdims());
-    EXPECT_EQ(2,    a.dims(0));
-    EXPECT_EQ(2,    a.dims(1));
-    EXPECT_EQ(2,    a.dims(2));
-    EXPECT_EQ(1,    a.dims(3));
-    EXPECT_EQ(8,    a.elements());
+    EXPECT_EQ(3u,    a.numdims());
+    EXPECT_EQ(dim_type(2),    a.dims(0));
+    EXPECT_EQ(dim_type(2),    a.dims(1));
+    EXPECT_EQ(dim_type(2),    a.dims(2));
+    EXPECT_EQ(dim_type(1),    a.dims(3));
+    EXPECT_EQ(dim_type(8),    a.elements());
     EXPECT_EQ(type,  a.type());
 }
 
@@ -108,12 +108,12 @@ TYPED_TEST(Array, ConstructorEmpty4D)
 
     dtype type = (dtype)af::dtype_traits<TypeParam>::af_type;
     array a(2, 2, 2, 2, type);
-    EXPECT_EQ(4,    a.numdims());
-    EXPECT_EQ(2,    a.dims(0));
-    EXPECT_EQ(2,    a.dims(1));
-    EXPECT_EQ(2,    a.dims(2));
-    EXPECT_EQ(2,    a.dims(3));
-    EXPECT_EQ(16,   a.elements());
+    EXPECT_EQ(4u,    a.numdims());
+    EXPECT_EQ(dim_type(2),    a.dims(0));
+    EXPECT_EQ(dim_type(2),    a.dims(1));
+    EXPECT_EQ(dim_type(2),    a.dims(2));
+    EXPECT_EQ(dim_type(2),    a.dims(3));
+    EXPECT_EQ(dim_type(16),   a.elements());
     EXPECT_EQ(type, a.type());
 }
 
@@ -125,12 +125,12 @@ TYPED_TEST(Array, ConstructorHostPointer1D)
     size_t nelems = 10;
     vector<TypeParam> data(nelems, 4);
     array a(nelems, &data.front(), af::afHost);
-    EXPECT_EQ(1,        a.numdims());
-    EXPECT_EQ(nelems,   a.dims(0));
-    EXPECT_EQ(1,        a.dims(1));
-    EXPECT_EQ(1,        a.dims(2));
-    EXPECT_EQ(1,        a.dims(3));
-    EXPECT_EQ(nelems,   a.elements());
+    EXPECT_EQ(1u,        a.numdims());
+    EXPECT_EQ(dim_type(nelems),   a.dims(0));
+    EXPECT_EQ(dim_type(1),        a.dims(1));
+    EXPECT_EQ(dim_type(1),        a.dims(2));
+    EXPECT_EQ(dim_type(1),        a.dims(3));
+    EXPECT_EQ(dim_type(nelems),   a.elements());
     EXPECT_EQ(type,     a.type());
 
     vector<TypeParam> out(nelems);
@@ -149,11 +149,11 @@ TYPED_TEST(Array, ConstructorHostPointer2D)
     vector<TypeParam> data(nelems, 4);
     array a(dim_size, dim_size, &data.front(), af::afHost);
     EXPECT_EQ(ndims,    a.numdims());
-    EXPECT_EQ(dim_size, a.dims(0));
-    EXPECT_EQ(dim_size, a.dims(1));
-    EXPECT_EQ(1,        a.dims(2));
-    EXPECT_EQ(1,        a.dims(3));
-    EXPECT_EQ(nelems,   a.elements());
+    EXPECT_EQ(dim_type(dim_size), a.dims(0));
+    EXPECT_EQ(dim_type(dim_size), a.dims(1));
+    EXPECT_EQ(dim_type(1),        a.dims(2));
+    EXPECT_EQ(dim_type(1),        a.dims(3));
+    EXPECT_EQ(dim_type(nelems),   a.elements());
     EXPECT_EQ(type,     a.type());
 
     vector<TypeParam> out(nelems);
@@ -172,11 +172,11 @@ TYPED_TEST(Array, ConstructorHostPointer3D)
     vector<TypeParam> data(nelems, 4);
     array a(dim_size, dim_size, dim_size, &data.front(), af::afHost);
     EXPECT_EQ(ndims,    a.numdims());
-    EXPECT_EQ(dim_size, a.dims(0));
-    EXPECT_EQ(dim_size, a.dims(1));
-    EXPECT_EQ(dim_size, a.dims(2));
-    EXPECT_EQ(1,        a.dims(3));
-    EXPECT_EQ(nelems,   a.elements());
+    EXPECT_EQ(dim_type(dim_size), a.dims(0));
+    EXPECT_EQ(dim_type(dim_size), a.dims(1));
+    EXPECT_EQ(dim_type(dim_size), a.dims(2));
+    EXPECT_EQ(dim_type(1),        a.dims(3));
+    EXPECT_EQ(dim_type(nelems),   a.elements());
     EXPECT_EQ(type,     a.type());
 
     vector<TypeParam> out(nelems);
@@ -195,11 +195,11 @@ TYPED_TEST(Array, ConstructorHostPointer4D)
     vector<TypeParam> data(nelems, 4);
     array a(dim_size, dim_size, dim_size, dim_size, &data.front(), af::afHost);
     EXPECT_EQ(ndims,    a.numdims());
-    EXPECT_EQ(dim_size, a.dims(0));
-    EXPECT_EQ(dim_size, a.dims(1));
-    EXPECT_EQ(dim_size, a.dims(2));
-    EXPECT_EQ(dim_size, a.dims(3));
-    EXPECT_EQ(nelems,   a.elements());
+    EXPECT_EQ(dim_type(dim_size), a.dims(0));
+    EXPECT_EQ(dim_type(dim_size), a.dims(1));
+    EXPECT_EQ(dim_type(dim_size), a.dims(2));
+    EXPECT_EQ(dim_type(dim_size), a.dims(3));
+    EXPECT_EQ(dim_type(nelems),   a.elements());
     EXPECT_EQ(type,     a.type());
 
     vector<TypeParam> out(nelems);

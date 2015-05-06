@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/image.h>
+#include <af/array.h>
 #include "error.hpp"
 
 namespace af

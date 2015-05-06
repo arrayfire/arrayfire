@@ -16,7 +16,6 @@
 //#include <initializer_list>
 #endif
 #include <af/defines.h>
-#include <af/array.h>
 #include <af/seq.h>
 
 

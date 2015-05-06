@@ -621,3 +621,39 @@ af_err af_diag_extract(af_array *out, const af_array in, const int num)
 
     return AF_SUCCESS;
 }
+
+template<typename T>
+void write_array(af_array arr, const T * const data, const size_t bytes, af_source src)
+{
+    if(src == afHost) {
+        writeHostDataArray(getWritableArray<T>(arr), data, bytes);
+    } else {
+        writeDeviceDataArray(getWritableArray<T>(arr), data, bytes);
+    }
+    return;
+}
+
+af_err af_write_array(af_array arr, const void *data, const size_t bytes, af_source src)
+{
+    try {
+        af_dtype type = getInfo(arr).getType();
+        //DIM_ASSERT(2, bytes <= getInfo(arr).bytes());
+
+        switch(type) {
+        case f32:   write_array(arr, static_cast<const float   *>(data), bytes, src); break;
+        case c32:   write_array(arr, static_cast<const cfloat  *>(data), bytes, src); break;
+        case f64:   write_array(arr, static_cast<const double  *>(data), bytes, src); break;
+        case c64:   write_array(arr, static_cast<const cdouble *>(data), bytes, src); break;
+        case b8:    write_array(arr, static_cast<const char    *>(data), bytes, src); break;
+        case s32:   write_array(arr, static_cast<const int     *>(data), bytes, src); break;
+        case u32:   write_array(arr, static_cast<const uint    *>(data), bytes, src); break;
+        case u8:    write_array(arr, static_cast<const uchar   *>(data), bytes, src); break;
+        case s64:   write_array(arr, static_cast<const intl    *>(data), bytes, src); break;
+        case u64:   write_array(arr, static_cast<const uintl   *>(data), bytes, src); break;
+        default:    TYPE_ERROR(4, type);
+        }
+    }
+    CATCHALL
+        return AF_SUCCESS;
+}
+

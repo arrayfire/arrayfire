@@ -742,49 +742,47 @@ namespace af
 #undef ASSIGN_OP
 #undef ASSIGN_TYPE
 
-#define BINARY_TYPE(TY, OP, func, dty)                      \
-    array array::operator OP(const TY &value) const         \
-    {                                                       \
-        af_array lhs = this->get();                         \
-        af_array out;                                       \
-        af::dtype ty = this->type();                        \
-        af::dtype cty = this->isrealfloating() ? ty : dty;  \
-        array cst = constant(value, this->dims(), cty);     \
-        AF_THROW(func(&out, lhs, cst.get(), gforGet()));    \
-        return array(out);                                  \
-    }                                                       \
-    array operator OP(const TY &value, const array &other)  \
-    {                                                       \
-        af_array rhs = other.get();                         \
-        af_array out;                                       \
-        af::dtype ty = other.type();                        \
-        af::dtype cty = other.isrealfloating() ? ty : dty;  \
-        array cst = constant(value, other.dims(), cty);     \
-        AF_THROW(func(&out, cst.get(), rhs, gforGet()));    \
-        return array(out);                                  \
-    }                                                       \
+#define BINARY_TYPE(TY, OP, func, dty)                          \
+    array operator OP(const array& plhs, const TY &value)       \
+    {                                                           \
+        af_array out;                                           \
+        af::dtype ty = plhs.type();                             \
+        af::dtype cty = plhs.isrealfloating() ? ty : dty;       \
+        array cst = constant(value, plhs.dims(), cty);          \
+        AF_THROW(func(&out, plhs.get(), cst.get(), gforGet())); \
+        return array(out);                                      \
+    }                                                           \
+    array operator OP(const TY &value, const array &other)      \
+    {                                                           \
+        const af_array rhs = other.get();                       \
+        af_array out;                                           \
+        af::dtype ty = other.type();                            \
+        af::dtype cty = other.isrealfloating() ? ty : dty;      \
+        array cst = constant(value, other.dims(), cty);         \
+        AF_THROW(func(&out, cst.get(), rhs, gforGet()));        \
+        return array(out);                                      \
+    }                                                           \
 
-#define BINARY_OP(OP, func)                                 \
-    array array::operator OP(const array &other) const      \
-    {                                                       \
-        af_array lhs = this->get();                         \
-        af_array out;                                       \
-        AF_THROW(func(&out, lhs, other.get(), gforGet()));  \
-        return array(out);                                  \
-    }                                                       \
-    BINARY_TYPE(double             , OP, func, f64)         \
-    BINARY_TYPE(float              , OP, func, f32)         \
-    BINARY_TYPE(cdouble            , OP, func, c64)         \
-    BINARY_TYPE(cfloat             , OP, func, c32)         \
-    BINARY_TYPE(int                , OP, func, s32)         \
-    BINARY_TYPE(unsigned           , OP, func, u32)         \
-    BINARY_TYPE(long               , OP, func, s64)         \
-    BINARY_TYPE(unsigned long      , OP, func, u64)         \
-    BINARY_TYPE(long long          , OP, func, s64)         \
-    BINARY_TYPE(unsigned long long , OP, func, u64)         \
-    BINARY_TYPE(char               , OP, func, b8)          \
-    BINARY_TYPE(unsigned char      , OP, func, u8)          \
-    BINARY_TYPE(bool               , OP, func, b8)          \
+#define BINARY_OP(OP, func)                                     \
+    array operator OP(const array &lhs, const array &rhs)       \
+    {                                                           \
+        af_array out;                                           \
+        AF_THROW(func(&out, lhs.get(), rhs.get(), gforGet()));  \
+        return array(out);                                      \
+    }                                                           \
+    BINARY_TYPE(double             , OP, func, f64)             \
+    BINARY_TYPE(float              , OP, func, f32)             \
+    BINARY_TYPE(cdouble            , OP, func, c64)             \
+    BINARY_TYPE(cfloat             , OP, func, c32)             \
+    BINARY_TYPE(int                , OP, func, s32)             \
+    BINARY_TYPE(unsigned           , OP, func, u32)             \
+    BINARY_TYPE(long               , OP, func, s64)             \
+    BINARY_TYPE(unsigned long      , OP, func, u64)             \
+    BINARY_TYPE(long long          , OP, func, s64)             \
+    BINARY_TYPE(unsigned long long , OP, func, u64)             \
+    BINARY_TYPE(char               , OP, func, b8)              \
+    BINARY_TYPE(unsigned char      , OP, func, u8)              \
+    BINARY_TYPE(bool               , OP, func, b8)              \
 
     BINARY_OP(+, af_add)
     BINARY_OP(-, af_sub)
@@ -857,6 +855,12 @@ namespace af
         void *ptr = NULL;                                           \
         AF_THROW(af_get_device_ptr(&ptr, get(), true));             \
         return (T *)ptr;                                            \
+    }                                                               \
+    template<> AFAPI void array::write(const T *ptr,                \
+               const size_t bytes, af_source_t src)                 \
+    {                                                               \
+        if(src == afHost)   AF_THROW(af_write_array(get(), ptr, bytes, (af_source)afHost));             \
+        if(src == afDevice) AF_THROW(af_write_array(get(), ptr, bytes, (af_source)afDevice));           \
     }                                                               \
 
     INSTANTIATE(cdouble)

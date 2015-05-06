@@ -70,6 +70,7 @@ namespace kernel
 
             identityOp(EnqueueArgs(getQueue(), global, local),
                        *(out.data), out.info, groups_x, groups_y);
+            CL_DEBUG_FINISH(getQueue());
 
         } catch (cl::Error err) {
             CL_TO_AF_ERROR(err);

@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/statistics.h>
+#include <af/array.h>
 #include "error.hpp"
 #include "common.hpp"
 

@@ -8,6 +8,7 @@
  ********************************************************/
 #include <af/dim4.hpp>
 #include <af/image.h>
+#include <af/array.h>
 #include <af/algorithm.h>
 #include <af/compatible.h>
 #include "error.hpp"

@@ -8,6 +8,8 @@
  ********************************************************/
 
 #include <af/signal.h>
+#include <af/array.h>
+#include <af/dim4.hpp>
 #include "error.hpp"
 
 namespace af

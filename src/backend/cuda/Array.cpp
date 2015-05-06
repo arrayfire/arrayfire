@@ -223,6 +223,40 @@ namespace cuda
         A.eval();
     }
 
+    template<typename T>
+    void
+    writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes)
+    {
+        if (!arr.isOwner()) {
+            arr = createEmptyArray<T>(arr.dims());
+        }
+
+        T *ptr = arr.get();
+
+        CUDA_CHECK(cudaMemcpy(ptr + arr.getOffset(), data,
+                              bytes,
+                              cudaMemcpyHostToDevice));
+
+        return;
+    }
+
+    template<typename T>
+    void
+    writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
+    {
+        if (!arr.isOwner()) {
+            arr = createEmptyArray<T>(arr.dims());
+        }
+
+        T *ptr = arr.get();
+
+        CUDA_CHECK(cudaMemcpy(ptr + arr.getOffset(), data,
+                              bytes,
+                              cudaMemcpyDeviceToDevice));
+
+        return;
+    }
+
 #define INSTANTIATE(T)                                                  \
     template       Array<T>  createHostDataArray<T>   (const dim4 &size, const T * const data); \
     template       Array<T>  createDeviceDataArray<T> (const dim4 &size, const void *data); \
@@ -239,6 +273,8 @@ namespace cuda
     template       Array<T>::~Array        ();                          \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
+    template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
+    template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
 
     INSTANTIATE(float)
     INSTANTIATE(double)
