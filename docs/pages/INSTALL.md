@@ -1,4 +1,4 @@
-ArrayFire binary installation instructions
+ArrayFire binary installation instructions {#installing}
 =====
 
 Installing ArrayFire couldn't be easier. We ship installers for Windows,
@@ -62,7 +62,7 @@ apt-get update
 apt-get install nvidia-cuda-dev
 ```
 
-## <a name="Fedora"></a> Fedora 21 
+## <a name="Fedora"></a> Fedora 21
 
 First [download](http://arrayfire.com/download/) ArrayFire. Then, using the
 `yum` package manager, you can install ArrayFire and all dependencies as
@@ -82,7 +82,7 @@ yum install freeimage atlas fftw cmake
 ./arrayfire_3.0.0_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
 ```
 
-## <a name="Ubuntu"></a> Ubuntu 14.10 and later 
+## <a name="Ubuntu"></a> Ubuntu 14.10 and later
 
 First [download](http://arrayfire.com/download/) ArrayFire. Then, using the
 `gdebi` package manager, you can install ArrayFire and all dependencies as
