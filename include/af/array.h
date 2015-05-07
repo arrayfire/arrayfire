@@ -41,7 +41,7 @@ namespace af
         ///
         /// \brief Intermediate data class. Used for assignment and indexing
         ///
-        class array_proxy
+        class AFAPI array_proxy
         {
             array       *parent;        // The original array
             af_index_t  indices[4];     // Indexing array or seq objects
