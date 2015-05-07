@@ -62,9 +62,9 @@ template<typename T>                                                            
 typename FUNC##_func_def_t<T>::FUNC##_func_def                                  \
 FUNC##_func();
 
-#define SOLVE_FUNC( FUNC, TYPE, PREFIX )                                                           \
-template<> typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>()                \
-{ return &cusolverDn##PREFIX##FUNC; }                                                           \
+#define SOLVE_FUNC( FUNC, TYPE, PREFIX )                                                    \
+template<> typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>()            \
+{ return (FUNC##_func_def_t<TYPE>::FUNC##_func_def)&cusolverDn##PREFIX##FUNC; }             \
 
 SOLVE_FUNC_DEF( getrs )
 SOLVE_FUNC(getrs , float  , S)
@@ -98,9 +98,9 @@ SOLVE_FUNC(getrs , cdouble, Z)
 //        int lwork, int *devInfo);
 
 template<typename T>
-struct geqrf_func_def_t
+struct geqrf_solve_func_def_t
 {
-    typedef cusolverStatus_t (*geqrf_func_def) (
+    typedef cusolverStatus_t (*geqrf_solve_func_def) (
                               cusolverDnHandle_t, int, int,
                               T *, int,
                               T *,
@@ -109,17 +109,17 @@ struct geqrf_func_def_t
 };
 
 template<typename T>
-struct geqrf_buf_func_def_t
+struct geqrf_solve_buf_func_def_t
 {
-    typedef cusolverStatus_t (*geqrf_buf_func_def) (
+    typedef cusolverStatus_t (*geqrf_solve_buf_func_def) (
                               cusolverDnHandle_t, int, int,
                               T *, int, int *);
 };
 
 template<typename T>
-struct mqr_func_def_t
+struct mqr_solve_func_def_t
 {
-    typedef cusolverStatus_t (*mqr_func_def) (
+    typedef cusolverStatus_t (*mqr_solve_func_def) (
                               cusolverDnHandle_t,
                               cublasSideMode_t, cublasOperation_t,
                               int, int, int,
@@ -130,21 +130,21 @@ struct mqr_func_def_t
                               int *);
 };
 
-#define QR_FUNC_DEF( FUNC )                                         \
-    template<typename T>                                            \
-    static typename FUNC##_func_def_t<T>::FUNC##_func_def           \
-    FUNC##_func();                                                  \
-                                                                    \
-    template<typename T>                                            \
-    static typename FUNC##_buf_func_def_t<T>::FUNC##_buf_func_def   \
-    FUNC##_buf_func();                                              \
+#define QR_FUNC_DEF( FUNC )                                                     \
+template<typename T>                                                            \
+static typename FUNC##_solve_func_def_t<T>::FUNC##_solve_func_def               \
+FUNC##_solve_func();                                                            \
+                                                                                \
+template<typename T>                                                            \
+static typename FUNC##_solve_buf_func_def_t<T>::FUNC##_solve_buf_func_def       \
+FUNC##_solve_buf_func();                                                        \
 
-#define QR_FUNC( FUNC, TYPE, PREFIX )                                                           \
-template<> typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>()                \
-{ return &cusolverDn##PREFIX##FUNC; }                                                           \
-                                                                                                \
-template<> typename FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def FUNC##_buf_func<TYPE>()    \
-{ return & cusolverDn##PREFIX##FUNC##_bufferSize; }
+#define QR_FUNC( FUNC, TYPE, PREFIX )                                                                               \
+template<> typename FUNC##_solve_func_def_t<TYPE>::FUNC##_solve_func_def FUNC##_solve_func<TYPE>()                  \
+{ return (FUNC##_solve_func_def_t<TYPE>::FUNC##_solve_func_def)&cusolverDn##PREFIX##FUNC; }                         \
+                                                                                                                    \
+template<> typename FUNC##_solve_buf_func_def_t<TYPE>::FUNC##_solve_buf_func_def FUNC##_solve_buf_func<TYPE>()      \
+{ return (FUNC##_solve_buf_func_def_t<TYPE>::FUNC##_solve_buf_func_def)& cusolverDn##PREFIX##FUNC##_bufferSize; }
 
 QR_FUNC_DEF( geqrf )
 QR_FUNC(geqrf , float  , S)
@@ -152,15 +152,15 @@ QR_FUNC(geqrf , double , D)
 QR_FUNC(geqrf , cfloat , C)
 QR_FUNC(geqrf , cdouble, Z)
 
-#define MQR_FUNC_DEF( FUNC )                                \
-    template<typename T>                                    \
-    static typename FUNC##_func_def_t<T>::FUNC##_func_def   \
-    FUNC##_func();
+#define MQR_FUNC_DEF( FUNC )                                                            \
+template<typename T>                                                                    \
+static typename FUNC##_solve_func_def_t<T>::FUNC##_solve_func_def                       \
+FUNC##_solve_func();
 
-#define MQR_FUNC( FUNC, TYPE, PREFIX )                              \
-    template<> typename FUNC##_func_def_t<TYPE>::FUNC##_func_def    \
-    FUNC##_func<TYPE>()                                             \
-    { return &cusolverDn##PREFIX; }                                 \
+#define MQR_FUNC( FUNC, TYPE, PREFIX )                                                  \
+template<> typename FUNC##_solve_func_def_t<TYPE>::FUNC##_solve_func_def                \
+FUNC##_solve_func<TYPE>()                                                               \
+{ return (FUNC##_solve_func_def_t<TYPE>::FUNC##_solve_func_def)&cusolverDn##PREFIX; }   \
 
 MQR_FUNC_DEF( mqr )
 MQR_FUNC(mqr , float  , Sormqr)
@@ -217,22 +217,22 @@ Array<T> solve_rect(const Array<T> &a, const Array<T> &b, const af_solve_t optio
         int lwork = 0;
 
         // Get workspace needed for QR
-        CUSOLVER_CHECK(geqrf_buf_func<T>()(getDnHandle(),
-                                           A.dims()[0], A.dims()[1],
-                                           A.get(), A.strides()[1],
-                                           &lwork));
+        CUSOLVER_CHECK(geqrf_solve_buf_func<T>()(getDnHandle(),
+                                                 A.dims()[0], A.dims()[1],
+                                                 A.get(), A.strides()[1],
+                                                 &lwork));
 
         T *workspace = memAlloc<T>(lwork);
         Array<T> t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
         int *info = memAlloc<int>(1);
 
         // In place Perform in place QR
-        CUSOLVER_CHECK(geqrf_func<T>()(getDnHandle(),
-                                       A.dims()[0], A.dims()[1],
-                                       A.get(), A.strides()[1],
-                                       t.get(),
-                                       workspace, lwork,
-                                       info));
+        CUSOLVER_CHECK(geqrf_solve_func<T>()(getDnHandle(),
+                                             A.dims()[0], A.dims()[1],
+                                             A.get(), A.strides()[1],
+                                             t.get(),
+                                             workspace, lwork,
+                                             info));
 
         // R1 = R(seq(M), seq(M));
         A.resetDims(dim4(M, M));
@@ -245,16 +245,16 @@ Array<T> solve_rect(const Array<T> &a, const Array<T> &b, const af_solve_t optio
         B.resetDims(dim4(N, K));
 
         // matmul(Q, Bpad)
-        CUSOLVER_CHECK(mqr_func<T>()(getDnHandle(),
-                                     CUBLAS_SIDE_LEFT, CUBLAS_OP_N,
-                                     B.dims()[0],
-                                     B.dims()[1],
-                                     A.dims()[0],
-                                     A.get(), A.strides()[1],
-                                     t.get(),
-                                     B.get(), B.strides()[1],
-                                     workspace, lwork,
-                                     info));
+        CUSOLVER_CHECK(mqr_solve_func<T>()(getDnHandle(),
+                                           CUBLAS_SIDE_LEFT, CUBLAS_OP_N,
+                                           B.dims()[0],
+                                           B.dims()[1],
+                                           A.dims()[0],
+                                           A.get(), A.strides()[1],
+                                           t.get(),
+                                           B.get(), B.strides()[1],
+                                           workspace, lwork,
+                                           info));
 
         memFree(workspace);
         memFree(info);
@@ -275,34 +275,34 @@ Array<T> solve_rect(const Array<T> &a, const Array<T> &b, const af_solve_t optio
         int lwork = 0;
 
         // Get workspace needed for QR
-        CUSOLVER_CHECK(geqrf_buf_func<T>()(getDnHandle(),
-                                           A.dims()[0], A.dims()[1],
-                                           A.get(), A.strides()[1],
-                                           &lwork));
+        CUSOLVER_CHECK(geqrf_solve_buf_func<T>()(getDnHandle(),
+                                                 A.dims()[0], A.dims()[1],
+                                                 A.get(), A.strides()[1],
+                                                 &lwork));
 
         T *workspace = memAlloc<T>(lwork);
         Array<T> t = createEmptyArray<T>(af::dim4(min(M, N), 1, 1, 1));
         int *info = memAlloc<int>(1);
 
         // In place Perform in place QR
-        CUSOLVER_CHECK(geqrf_func<T>()(getDnHandle(),
-                                       A.dims()[0], A.dims()[1],
-                                       A.get(), A.strides()[1],
-                                       t.get(),
-                                       workspace, lwork,
-                                       info));
+        CUSOLVER_CHECK(geqrf_solve_func<T>()(getDnHandle(),
+                                             A.dims()[0], A.dims()[1],
+                                             A.get(), A.strides()[1],
+                                             t.get(),
+                                             workspace, lwork,
+                                             info));
 
         // matmul(Q1, B)
-        CUSOLVER_CHECK(mqr_func<T>()(getDnHandle(),
-                                     CUBLAS_SIDE_LEFT, CUBLAS_OP_T,
-                                     B.dims()[0],
-                                     B.dims()[1],
-                                     A.dims()[1],
-                                     A.get(), A.strides()[1],
-                                     t.get(),
-                                     B.get(), B.strides()[1],
-                                     workspace, lwork,
-                                     info));
+        CUSOLVER_CHECK(mqr_solve_func<T>()(getDnHandle(),
+                                           CUBLAS_SIDE_LEFT, CUBLAS_OP_T,
+                                           B.dims()[0],
+                                           B.dims()[1],
+                                           A.dims()[1],
+                                           A.get(), A.strides()[1],
+                                           t.get(),
+                                           B.get(), B.strides()[1],
+                                           workspace, lwork,
+                                           info));
 
         // tri_solve(R1, Bt)
         A.resetDims(dim4(N, N));

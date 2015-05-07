@@ -68,14 +68,14 @@ typename FUNC##_buf_func_def_t<T>::FUNC##_buf_func_def                          
 FUNC##_buf_func();
 
 
-#define LU_FUNC( FUNC, TYPE, PREFIX )                                   \
-    template<> typename FUNC##_func_def_t<TYPE>::FUNC##_func_def        \
-    FUNC##_func<TYPE>()                                                 \
-    { return &cusolverDn##PREFIX##FUNC; }                               \
-                                                                        \
-    template<> typename FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def \
-    FUNC##_buf_func<TYPE>()                                             \
-    { return & cusolverDn##PREFIX##FUNC##_bufferSize; }
+#define LU_FUNC( FUNC, TYPE, PREFIX )                                                   \
+template<> typename FUNC##_func_def_t<TYPE>::FUNC##_func_def                            \
+FUNC##_func<TYPE>()                                                                     \
+{ return (FUNC##_func_def_t<TYPE>::FUNC##_func_def)&cusolverDn##PREFIX##FUNC; }         \
+                                                                                        \
+template<> typename FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def                    \
+FUNC##_buf_func<TYPE>()                                                                 \
+{ return (FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def)& cusolverDn##PREFIX##FUNC##_bufferSize; }
 
 LU_FUNC_DEF( getrf )
 LU_FUNC(getrf , float  , S)

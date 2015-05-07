@@ -78,10 +78,10 @@ FUNC##_buf_func();                                                              
 
 #define CH_FUNC( FUNC, TYPE, PREFIX )                                                           \
 template<> typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>()                \
-{ return &cusolverDn##PREFIX##FUNC; }                                                           \
+{ return (FUNC##_func_def_t<TYPE>::FUNC##_func_def)&cusolverDn##PREFIX##FUNC; }                 \
                                                                                                 \
 template<> typename FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def FUNC##_buf_func<TYPE>()    \
-{ return & cusolverDn##PREFIX##FUNC##_bufferSize; }
+{ return (FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def)&cusolverDn##PREFIX##FUNC##_bufferSize; }
 
 CH_FUNC_DEF( potrf )
 CH_FUNC(potrf , float  , S)
