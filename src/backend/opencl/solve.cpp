@@ -17,6 +17,8 @@
 #include <err_opencl.hpp>
 #include <blas.hpp>
 
+#include <algorithm>
+
 namespace opencl
 {
 
