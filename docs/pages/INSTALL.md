@@ -35,32 +35,25 @@ First [download](http://arrayfire.com/download/) ArrayFire. Then, using the
 `gdebi` package manager, you can install ArrayFire and all dependencies as
 follows:
 
-```bash
-gdebi arrayfire*.deb
-```
+    gdebi arrayfire*.deb
 
 If you prefer to use the `.sh` installer, it and all prerequisite packages
 may be installed as follows:
 
-```bash
-# Prerequisite packages:
-apt-get install libfreeimage-dev libatlas3gf-base libfftw3-dev cmake
+    # Prerequisite packages:
+    apt-get install libfreeimage-dev libatlas3gf-base libfftw3-dev cmake
 
-# Enable GPU support (OpenCL):
-apt-get install ocl-icd-libopencl1
+    # Enable GPU support (OpenCL):
+    apt-get install ocl-icd-libopencl1
 
-# Run Installer
-./arrayfire_3.0.0_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
-
-```
+    # Run Installer
+    ./arrayfire_3.0.0_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
 
 To enable CUDA support, edit `/etc/apt/sources.list` and append `non-free`
 to the line containing `deb http://.../debian jessie main`. Then, as root, run
 
-```
-apt-get update
-apt-get install nvidia-cuda-dev
-```
+    apt-get update
+    apt-get install nvidia-cuda-dev
 
 ## <a name="Fedora"></a> Fedora 21
 
@@ -68,19 +61,15 @@ First [download](http://arrayfire.com/download/) ArrayFire. Then, using the
 `yum` package manager, you can install ArrayFire and all dependencies as
 follows:
 
-```bash
-yum --nogpgcheck localinstall arrayfire*.rpm
-```
+    yum --nogpgcheck localinstall arrayfire*.rpm
 
 Or with the self-extracting installer
 
-```bash
-# Install prerequiste packages
-yum install freeimage atlas fftw cmake
+    # Install prerequiste packages
+    yum install freeimage atlas fftw cmake
 
-# Run Installer
-./arrayfire_3.0.0_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
-```
+    # Run Installer
+    ./arrayfire_3.0.0_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
 
 ## <a name="Ubuntu"></a> Ubuntu 14.10 and later
 
@@ -88,25 +77,21 @@ First [download](http://arrayfire.com/download/) ArrayFire. Then, using the
 `gdebi` package manager, you can install ArrayFire and all dependencies as
 follows:
 
-```bash
-sudo apt-get install gdebi
-gdebi arrayfire*.deb
-```
+    sudo apt-get install gdebi
+    gdebi arrayfire*.deb
 
 If you prefer to use the `.sh` installer, it and all prerequisite packages
 may be installed as follows:
 
-```bash
-# Prerequisite packages:
-sudo apt-get install libfreeimage-dev libatlas3gf-base libfftw3-dev cmake
+    # Prerequisite packages:
+    sudo apt-get install libfreeimage-dev libatlas3gf-base libfftw3-dev cmake
 
-# Enable GPU support (OpenCL and/or CUDA):
-sudo apt-get install ocl-icd-libopencl1
-sudo apt-get install nvidia-cuda-dev
+    # Enable GPU support (OpenCL and/or CUDA):
+    sudo apt-get install ocl-icd-libopencl1
+    sudo apt-get install nvidia-cuda-dev
 
-# Run Installer
-sudo ./arrayfire_3.0.0_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
-```
+    # Run Installer
+    sudo ./arrayfire_3.0.0_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
 
 # <a name="OSX"></a> Mac OSX
 
@@ -119,12 +104,9 @@ but you can also build them yourself if you prefer.
 First [download](http://arrayfire.com/download/) ArrayFire. You may install
 ArrayFire to `/usr/local` from XTerm using the following commands:
 
-```bash
+    brew install boost fftw cmake freeimage
 
-brew install boost fftw cmake freeimage
-
-sudo ./arrayfire_3.0.0_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
-```
+    sudo ./arrayfire_3.0.0_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
 
 ## Brew installation
 
@@ -134,22 +116,18 @@ download and compile ArrayFire and all prerequisites. Please remember to
 register on the ArrayFire website so we can keep you up to date about new
 versions of our software!
 
-```bash
-brew install arrayfire
-```
+    brew install arrayfire
 
 ## Testing installation
 
 After ArrayFire is installed, you can build the example programs as follows:
 
-```bash
-cp -r /usr/local/share/doc/arrayfire/examples .
-cd examples
-mkdir build
-cd build
-cmake ..
-make
-```
+    cp -r /usr/local/share/doc/arrayfire/examples .
+    cd examples
+    mkdir build
+    cd build
+    cmake ..
+    make
 
 ## <a name="GettingHelp"></a> Getting help
 
