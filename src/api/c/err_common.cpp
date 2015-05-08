@@ -13,6 +13,9 @@
 #include <sstream>
 #include <cstring>
 #include <cstdio>
+#if defined(WITH_GRAPHICS)
+#include <graphics_common.hpp>
+#endif
 
 using std::string;
 using std::stringstream;
@@ -182,6 +185,12 @@ af_err processException()
 
         print_error(ss);
         err = ex.getError();
+#if defined(WITH_GRAPHICS)
+    } catch (const fg::Error &ex) {
+        ss << ex << "\n";
+        print_error(ss);
+        err = AF_ERR_GL_ERROR;
+#endif
     } catch (...) {
         print_error(ss);
         err = AF_ERR_UNKNOWN;
