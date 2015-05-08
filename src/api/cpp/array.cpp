@@ -45,11 +45,11 @@ namespace af
         try {
             af::dim4 odims(1);
             for (int i = 0; i < AF_MAX_DIMS; i++) {
-                if (indices[i].mIsSeq) {
-                    odims[i] = calcDim(indices[i].mIndexer.seq, parentDims[i]);
+                if (indices[i].isSeq) {
+                    odims[i] = calcDim(indices[i].idx.seq, parentDims[i]);
                 } else {
                     dim_type elems = 0;
-                    AF_THROW(af_get_elements(&elems, indices[i].mIndexer.arr));
+                    AF_THROW(af_get_elements(&elems, indices[i].idx.arr));
                     odims[i] = elems;
                 }
             }
@@ -316,12 +316,12 @@ namespace af
     }
 
 
-    array::array_proxy array::operator()(const indexer &s0, const indexer &s1, const indexer &s2, const indexer &s3)
+    array::array_proxy array::operator()(const index &s0, const index &s1, const index &s2, const index &s3)
     {
         return const_cast<const array*>(this)->operator()(s0, s1, s2, s3);
     }
 
-    const array::array_proxy array::operator()(const indexer &s0, const indexer &s1, const indexer &s2, const indexer &s3) const
+    const array::array_proxy array::operator()(const index &s0, const index &s1, const index &s2, const index &s3) const
     {
         if(isvector()   && s1.isspan()
                         && s2.isspan()

@@ -603,15 +603,15 @@ namespace af
            \ingroup index_mat
         */
 
-              array::array_proxy operator()(const indexer &s0,
-                                            const indexer &s1 = span,
-                                            const indexer &s2 = span,
-                                            const indexer &s3 = span);
+              array::array_proxy operator()(const index &s0,
+                                            const index &s1 = span,
+                                            const index &s2 = span,
+                                            const index &s3 = span);
 
-        const array::array_proxy operator()(const indexer &s0,
-                                            const indexer &s1 = span,
-                                            const indexer &s2 = span,
-                                            const indexer &s3 = span) const;
+        const array::array_proxy operator()(const index &s0,
+                                            const index &s1 = span,
+                                            const index &s2 = span,
+                                            const index &s3 = span) const;
 
         array::array_proxy row(int index) const;
 

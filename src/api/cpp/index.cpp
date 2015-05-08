@@ -106,37 +106,37 @@ array lookup(const array &in, const array &idx, const int dim)
     return array(out);
 }
 
-indexer::indexer() {
-    impl.mIndexer.seq = af_span;
-    impl.mIsSeq = true;
+index::index() {
+    impl.idx.seq = af_span;
+    impl.isSeq = true;
     impl.isBatch = false;
 }
 
-indexer::indexer(const int idx) {
-    impl.mIndexer.seq = af_make_seq(idx, idx, 1);
-    impl.mIsSeq = true;
+index::index(const int idx) {
+    impl.idx.seq = af_make_seq(idx, idx, 1);
+    impl.isSeq = true;
     impl.isBatch = false;
 }
 
-indexer::indexer(const af::seq& s0) {
-    impl.mIndexer.seq = s0.s;
-    impl.mIsSeq = true;
+index::index(const af::seq& s0) {
+    impl.idx.seq = s0.s;
+    impl.isSeq = true;
     impl.isBatch = s0.m_gfor;
 }
 
-indexer::indexer(const af_seq& s0) {
-    impl.mIndexer.seq = s0;
-    impl.mIsSeq = true;
+index::index(const af_seq& s0) {
+    impl.idx.seq = s0;
+    impl.isSeq = true;
     impl.isBatch = false;
 }
 
-indexer::indexer(const af::array& idx0) {
+index::index(const af::array& idx0) {
     array idx = idx0.isbool() ? where(idx0) : idx0;
     af_array arr = 0;
     AF_THROW(af_weak_copy(&arr, idx.get()));
-    impl.mIndexer.arr = arr;
+    impl.idx.arr = arr;
 
-    impl.mIsSeq = false;
+    impl.isSeq = false;
     impl.isBatch = false;
 }
 
@@ -145,12 +145,12 @@ static bool operator==(const af_seq& lhs, const af_seq& rhs) {
     return lhs.begin == rhs.begin && lhs.end == rhs.end && lhs.step == rhs.step;
 }
 
-bool indexer::isspan() const
+bool index::isspan() const
 {
-    return impl.mIsSeq == true && impl.mIndexer.seq == af_span;
+    return impl.isSeq == true && impl.idx.seq == af_span;
 }
 
-const af_index_t& indexer::get() const
+const af_index_t& index::get() const
 {
     return impl;
 }

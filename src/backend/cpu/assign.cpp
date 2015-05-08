@@ -41,10 +41,10 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs)
     // create seq vector to retrieve output
     // dimensions, offsets & offsets
     for (dim_type x=0; x<4; ++x) {
-        if (idxrs[x].mIsSeq) {
-            seqs[x] = idxrs[x].mIndexer.seq;
+        if (idxrs[x].isSeq) {
+            seqs[x] = idxrs[x].idx.seq;
         }
-        isSeq[x] = idxrs[x].mIsSeq;
+        isSeq[x] = idxrs[x].isSeq;
     }
 
     dim4 dDims = out.getDataDims();
@@ -58,14 +58,14 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs)
     dim4 src_strides    = rhs.strides();
 
     std::vector< Array<uint> > idxArrs(4, createEmptyArray<uint>(dim4()));
-    // look through indexers to read af_array indexers
+    // look through indexs to read af_array indexs
     for (dim_type x=0; x<4; ++x) {
         if (!isSeq[x]) {
-            idxArrs[x] = castArray<uint>(idxrs[x].mIndexer.arr);
+            idxArrs[x] = castArray<uint>(idxrs[x].idx.arr);
         }
     }
 
-    // declare pointers to af_array indexer data
+    // declare pointers to af_array index data
     const uint* ptr0 = idxArrs[0].get();
     const uint* ptr1 = idxArrs[1].get();
     const uint* ptr2 = idxArrs[2].get();

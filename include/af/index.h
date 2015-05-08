@@ -13,17 +13,17 @@
 
 typedef struct af_index_t{
     // if seq is used for current dimension
-    // mIsSeq is set to 'true' and mIndexer.seq
-    // should be used. Otherwise, mIndexer.arr
+    // isSeq is set to 'true' and idx.seq
+    // should be used. Otherwise, idx.arr
     // should be used.
     union {
         af_array arr;
         af_seq   seq;
-    } mIndexer;
+    } idx;
     // below variable is used to determine if
     // the current dimension is indexed using
     // af_array or af_seq
-    bool     mIsSeq;
+    bool     isSeq;
     bool     isBatch;
 } af_index_t;
 
@@ -37,15 +37,15 @@ class dim4;
 class array;
 class seq;
 
-class AFAPI indexer {
+class AFAPI index {
     af_index_t impl;
     public:
-    indexer();
+    index();
 
-    indexer(const int idx);
-    indexer(const af::seq& s0);
-    indexer(const af_seq& s0);
-    indexer(const af::array& idx0);
+    index(const int idx);
+    index(const af::seq& s0);
+    index(const af_seq& s0);
+    index(const af::array& idx0);
 
     bool isspan() const;
     const af_index_t& get() const;
@@ -298,12 +298,12 @@ extern "C" {
     // generalized indexing function that accepts either af_array or af_seq
     // along a dimension to index the input array and create the corresponding
     // output array
-    AFAPI af_err af_index_gen(af_array *out, const af_array in, const dim_type ndims, const af_index_t* indexers);
+    AFAPI af_err af_index_gen(af_array *out, const af_array in, const dim_type ndims, const af_index_t* indexs);
 
     // generalized indexing function that accepts either af_array or af_seq
     // along a dimension to index the input array and create the corresponding
     // output array
-    AFAPI af_err af_assign_gen(af_array *out, const af_array lhs, const dim_type ndims, const af_index_t* indexers, const af_array rhs);
+    AFAPI af_err af_assign_gen(af_array *out, const af_array lhs, const dim_type ndims, const af_index_t* indexs, const af_array rhs);
 
 #ifdef __cplusplus
 }
