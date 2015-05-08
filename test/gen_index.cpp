@@ -29,7 +29,7 @@ using std::endl;
 using std::ostream_iterator;
 using af::dtype_traits;
 
-void testGeneralIndexOneArray(string pTestFile, const dim_type ndims, af_index_t* indexers, int arrayDim)
+void testGeneralIndexOneArray(string pTestFile, const dim_type ndims, af_index_t* indexs, int arrayDim)
 {
     vector<af::dim4>        numDims;
     vector< vector<float> >      in;
@@ -48,9 +48,9 @@ void testGeneralIndexOneArray(string pTestFile, const dim_type ndims, af_index_t
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray, &(in[1].front()),
                 dims1.ndims(), dims1.get(), (af_dtype)af::dtype_traits<float>::af_type));
-    indexers[arrayDim].mIndexer.arr = idxArray;
+    indexs[arrayDim].idx.arr = idxArray;
 
-    ASSERT_EQ(AF_SUCCESS, af_index_gen(&outArray, inArray, ndims, indexers));
+    ASSERT_EQ(AF_SUCCESS, af_index_gen(&outArray, inArray, ndims, indexs));
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
@@ -70,40 +70,40 @@ void testGeneralIndexOneArray(string pTestFile, const dim_type ndims, af_index_t
 
 TEST(GeneralIndex, SSSA)
 {
-    af_index_t indexers[4];
-    indexers[0].mIndexer.seq = af_make_seq(0, 3, 1);
-    indexers[1].mIndexer.seq = af_make_seq(0, 1, 1);
-    indexers[2].mIndexer.seq = af_make_seq(1, 2, 1);
-    indexers[0].mIsSeq = true;
-    indexers[1].mIsSeq = true;
-    indexers[2].mIsSeq = true;
-    indexers[3].mIsSeq = false;
+    af_index_t indexs[4];
+    indexs[0].idx.seq = af_make_seq(0, 3, 1);
+    indexs[1].idx.seq = af_make_seq(0, 1, 1);
+    indexs[2].idx.seq = af_make_seq(1, 2, 1);
+    indexs[0].isSeq = true;
+    indexs[1].isSeq = true;
+    indexs[2].isSeq = true;
+    indexs[3].isSeq = false;
 
-    testGeneralIndexOneArray(string(TEST_DIR"/gen_index/s0_3s0_1s1_2a.test"), 4, indexers, 3);
+    testGeneralIndexOneArray(string(TEST_DIR"/gen_index/s0_3s0_1s1_2a.test"), 4, indexs, 3);
 }
 
 TEST(GeneralIndex, ASSS)
 {
-    af_index_t indexers[4];
-    indexers[1].mIndexer.seq = af_make_seq(0, 9, 1);
-    indexers[2].mIndexer.seq = af_span;
-    indexers[3].mIndexer.seq = af_span;
-    indexers[0].mIsSeq = false;
-    indexers[1].mIsSeq = true;
-    indexers[2].mIsSeq = true;
-    indexers[3].mIsSeq = true;
+    af_index_t indexs[4];
+    indexs[1].idx.seq = af_make_seq(0, 9, 1);
+    indexs[2].idx.seq = af_span;
+    indexs[3].idx.seq = af_span;
+    indexs[0].isSeq = false;
+    indexs[1].isSeq = true;
+    indexs[2].isSeq = true;
+    indexs[3].isSeq = true;
 
-    testGeneralIndexOneArray(string(TEST_DIR"/gen_index/as0_9s0_ns0_n.test"), 4, indexers, 0);
+    testGeneralIndexOneArray(string(TEST_DIR"/gen_index/as0_9s0_ns0_n.test"), 4, indexs, 0);
 }
 
 TEST(GeneralIndex, SASS)
 {
-    af_index_t indexers[2];
-    indexers[0].mIndexer.seq = af_make_seq(10, 40, 1);
-    indexers[0].mIsSeq = true;
-    indexers[1].mIsSeq = false;
+    af_index_t indexs[2];
+    indexs[0].idx.seq = af_make_seq(10, 40, 1);
+    indexs[0].isSeq = true;
+    indexs[1].isSeq = false;
 
-    testGeneralIndexOneArray(string(TEST_DIR"/gen_index/s0_9as0_ns0_n.test"), 2, indexers, 1);
+    testGeneralIndexOneArray(string(TEST_DIR"/gen_index/s0_9as0_ns0_n.test"), 2, indexs, 1);
 }
 
 TEST(GeneralIndex, AASS)
@@ -122,22 +122,22 @@ TEST(GeneralIndex, AASS)
     af_array idxArray0 = 0;
     af_array idxArray1 = 0;
 
-    af_index_t indexers[2];
+    af_index_t indexs[2];
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()),
                 dims0.ndims(), dims0.get(), (af_dtype)af::dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray0, &(in[1].front()),
                 dims1.ndims(), dims1.get(), (af_dtype)af::dtype_traits<float>::af_type));
-    indexers[0].mIsSeq = false;
-    indexers[0].mIndexer.arr = idxArray0;
+    indexs[0].isSeq = false;
+    indexs[0].idx.arr = idxArray0;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray1, &(in[2].front()),
                 dims2.ndims(), dims2.get(), (af_dtype)af::dtype_traits<float>::af_type));
-    indexers[1].mIsSeq = false;
-    indexers[1].mIndexer.arr = idxArray1;
+    indexs[1].isSeq = false;
+    indexs[1].idx.arr = idxArray1;
 
-    ASSERT_EQ(AF_SUCCESS, af_index_gen(&outArray, inArray, 2, indexers));
+    ASSERT_EQ(AF_SUCCESS, af_index_gen(&outArray, inArray, 2, indexs));
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();

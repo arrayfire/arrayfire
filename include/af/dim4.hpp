@@ -81,9 +81,5 @@ bool isSpan(const af_seq &seq);
 
 size_t seqElements(const af_seq &seq);
 
-dim4 toDims(const std::vector<af_seq>& seqs, af::dim4 parentDims);
-
-dim4 toOffset(const std::vector<af_seq>& seqs, af::dim4 parentDims);
-
-dim4 toStride(const std::vector<af_seq>& seqs, af::dim4 parentDims);
+dim_type calcDim(const af_seq &seq, const dim_type &parentDim);
 }
