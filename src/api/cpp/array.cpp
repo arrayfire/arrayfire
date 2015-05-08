@@ -21,56 +21,9 @@
 
 namespace af
 {
-    static void copyIndices(af_index_t inds[4], af_index_t indices[4])
+    static int gforDim(af_index_t *indices)
     {
-        for (int i = 0; i < 4; i++) {
-            if (!indices[i].mIsSeq) {
-                AF_THROW(af_weak_copy(&inds[i].mIndexer.arr, indices[i].mIndexer.arr));
-            } else {
-                inds[i].mIndexer.seq = indices[i].mIndexer.seq;
-            }
-            inds[i].mIsSeq = indices[i].mIsSeq;
-            inds[i].isBatch = indices[i].isBatch;
-        }
-    }
-
-    static af_index_t toIndices(const seq &s)
-    {
-        af_index_t res;
-        res.mIndexer.seq = s.s;
-        res.mIsSeq = true;
-        res.isBatch = s.m_gfor;
-        return res;
-    }
-
-    static af_index_t toIndices(const array &idx0)
-    {
-        af_index_t res;
-
-        array idx = idx0.isbool() ? where(idx0) : idx0;
-        af_array arr = 0;
-        AF_THROW(af_weak_copy(&arr, idx.get()));
-        res.mIndexer.arr = arr;
-
-        res.mIsSeq = false;
-        res.isBatch = false;
-        return res;
-    }
-
-    void cleanIndices(af_index_t indices[4])
-    {
-        for (int i = 0; i < 4; i++) {
-            if (!indices[i].mIsSeq && indices[i].mIndexer.arr) {
-                AF_THROW(af_destroy_array(indices[i].mIndexer.arr));
-            }
-            // Just to be safe
-            indices[i] = toIndices(span);
-        }
-    }
-
-    static int gforDim(af_index_t indices[4])
-    {
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < AF_MAX_DIMS; i++) {
             if (indices[i].isBatch) return i;
         }
         return -1;
@@ -80,20 +33,20 @@ namespace af
     {
         // This is here to stop gcc from complaining
         if (dim > 3) AF_THROW_MSG("Invalid dimension", AF_ERR_INTERNAL);
-        unsigned order[4] = {0, 1, 2, dim};
+        unsigned order[AF_MAX_DIMS] = {0, 1, 2, dim};
         order[dim] = 3;
         af_array out;
         AF_THROW(af_reorder(&out, in, order[0], order[1], order[2], order[3]));
         return out;
     }
 
-    static af::dim4 seqToDims(af_index_t indices[4], af::dim4 parentDims, bool reorder = true)
+    static af::dim4 seqToDims(af_index_t *indices, af::dim4 parentDims, bool reorder = true)
     {
-        std::vector<af_seq> av(4);
-        for (int i = 0; i < 4; i++) av[i] = indices[i].mIndexer.seq;
+        std::vector<af_seq> av(AF_MAX_DIMS);
+        for (int i = 0; i < AF_MAX_DIMS; i++) av[i] = indices[i].mIndexer.seq;
         af::dim4 odims = toDims(av, parentDims);
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < AF_MAX_DIMS; i++) {
             if (!indices[i].mIsSeq) {
                 dim_type elems = 0;
                 AF_THROW(af_get_elements(&elems, indices[i].mIndexer.arr));
@@ -103,7 +56,7 @@ namespace af
 
         // Change the dimensions if inside GFOR
         if (reorder) {
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < AF_MAX_DIMS; i++) {
                 if (indices[i].isBatch) {
                     int tmp = odims[i];
                     odims[i] = odims[3];
@@ -123,6 +76,8 @@ namespace af
         case f64: return sizeof(double);
         case s32: return sizeof(int);
         case u32: return sizeof(unsigned);
+        case s64: return sizeof(intl);
+        case u64: return sizeof(uintl);
         case u8 : return sizeof(unsigned char);
         case b8 : return sizeof(unsigned char);
         case c32: return sizeof(float) * 2;
@@ -153,7 +108,7 @@ namespace af
                                dim_type d0, dim_type d1=1, dim_type d2=1, dim_type d3=1)
     {
         dim_type my_dims[] = {d0, d1, d2, d3};
-        AF_THROW(af_create_handle(arr, 4, my_dims, ty));
+        AF_THROW(af_create_handle(arr, AF_MAX_DIMS, my_dims, ty));
     }
 
     template<typename T>
@@ -163,8 +118,8 @@ namespace af
         af::dtype ty = (af::dtype)dtype_traits<T>::af_type;
         dim_type my_dims[] = {d0, d1, d2, d3};
         switch (src) {
-        case afHost:   AF_THROW(af_create_array(arr, (const void * const)ptr, 4, my_dims, ty)); break;
-        case afDevice: AF_THROW(af_device_array(arr, (const void *      )ptr, 4, my_dims, ty)); break;
+        case afHost:   AF_THROW(af_create_array(arr, (const void * const)ptr, AF_MAX_DIMS, my_dims, ty)); break;
+        case afDevice: AF_THROW(af_device_array(arr, (const void *      )ptr, AF_MAX_DIMS, my_dims, ty)); break;
         default: AF_THROW_MSG("Can not create array from the requested source pointer",
                               AF_ERR_INVALID_ARG);
         }
@@ -344,7 +299,7 @@ namespace af
     static array::array_proxy gen_indexing(const array &ref, const Idx1 &s0, const Idx2 &s1, const Idx3 &s2, const Idx4 &s3)
     {
         ref.eval();
-        af_index_t inds[4];
+        af_index_t inds[AF_MAX_DIMS];
         inds[0] = s0.get();
         inds[1] = s1.get();
         inds[2] = s2.get();
@@ -461,7 +416,7 @@ namespace af
         bool is_reordered = false;
         if (dim >= 0) {
             batch_assign = true;
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < AF_MAX_DIMS; i++) {
                 if (this->indices[i].isBatch) batch_assign &= (other_dims[i] == 1);
                 else                          batch_assign &= (other_dims[i] == this_dims[i]);
             }
@@ -506,7 +461,7 @@ namespace af
         : parent(&par)
         , indices()
     {
-        std::copy(ssss, ssss + 4, indices);
+        std::copy(ssss, ssss + AF_MAX_DIMS, indices);
     }
 
     array array::array_proxy::as(dtype type) const
@@ -618,7 +573,7 @@ namespace af
     {
         af_array tmp = 0;
         af_array arr = parent->get();
-        af_index_gen(&tmp, arr, 4, indices);
+        af_index_gen(&tmp, arr, AF_MAX_DIMS, indices);
 
         return array(tmp);
     }
@@ -627,7 +582,7 @@ namespace af
     {
         af_array tmp = 0;
         af_array arr = parent->get();
-        af_index_gen(&tmp, arr, 4, indices);
+        af_index_gen(&tmp, arr, AF_MAX_DIMS, indices);
 
         int dim = gforDim(indices);
         if (tmp && dim >= 0) {
