@@ -11,7 +11,6 @@
 #include <numeric>
 #include <cmath>
 #include <cfloat>
-#include <vector>
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
 #include <err_common.hpp>
@@ -189,40 +188,50 @@ seqElements(const af_seq &seq) {
     return out;
 }
 
+dim_type calcDim(const af_seq &seq, const dim_type &parentDim)
+{
+    dim_type outDim = 1;
+    if  (isSpan(seq)) {
+        outDim = parentDim;
+    } else if (isEnd(seq)) {
+        if(seq.begin == -1) {   // only end is passed as seq
+            outDim = 1;
+        } else if (seq.begin < 0) {
+            af_seq temp = {parentDim + seq.begin,
+                           parentDim + seq.end,
+                           seq.step};
+            outDim = seqElements(temp);
+        } else {    // end is passed as a part of seq
+            af_seq temp = {seq.begin, parentDim + seq.end, seq.step};
+            outDim = seqElements(temp);
+        }
+    } else {
+        DIM_ASSERT(1, seq.begin >= -DBL_MIN && seq.begin < parentDim);
+        DIM_ASSERT(1, seq.end < parentDim);
+        outDim = seqElements(seq);
+    }
+
+    return outDim;
+}
+}
+
+using af::dim4;
+using std::vector;
+
 dim4
-toDims(const vector<af_seq>& seqs, dim4 parentDims)
+toDims(const vector<af_seq>& seqs, const dim4 &parentDims)
 {
     dim4 outDims(1, 1, 1, 1);
     for(unsigned i = 0; i < seqs.size(); i++ ) {
-        if  (isSpan(seqs[i])) {
-            outDims[i] = parentDims[i];
-        } else if (isEnd(seqs[i])) {
-            if(seqs[i].begin == -1) {   // only end is passed as seq
-                outDims[i] = 1;
-            } else if (seqs[i].begin < 0) {
-                af_seq temp = {parentDims[i] + seqs[i].begin,
-                               parentDims[i] + seqs[i].end,
-                               seqs[i].step};
-                outDims[i] = seqElements(temp);
-            } else {    // end is passed as a part of seq
-                af_seq temp = {seqs[i].begin, parentDims[i] + seqs[i].end, seqs[i].step};
-                outDims[i] = seqElements(temp);
-            }
-        } else {
-            DIM_ASSERT(1, seqs[i].begin >= 0 && seqs[i].begin < parentDims[i]);
-            DIM_ASSERT(1, seqs[i].end < parentDims[i]);
-            outDims[i] = seqElements(seqs[i]);
-        }
-
+        outDims[i] = af::calcDim(seqs[i], parentDims[i]);
         if (outDims[i] > parentDims[i])
             AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
     }
-
     return outDims;
 }
 
 dim4
-toOffset(const vector<af_seq>& seqs, dim4 parentDims)
+toOffset(const vector<af_seq>& seqs, const dim4 &parentDims)
 {
     dim4 outOffsets(0, 0, 0, 0);
     for(unsigned i = 0; i < seqs.size(); i++ ) {
@@ -241,12 +250,11 @@ toOffset(const vector<af_seq>& seqs, dim4 parentDims)
 }
 
 dim4
-toStride(const vector<af_seq>& seqs, af::dim4 parentDims)
+toStride(const vector<af_seq>& seqs, const af::dim4 &parentDims)
 {
     dim4 out(calcStrides(parentDims));
     for(unsigned i = 0; i < seqs.size(); i++ ) {
         if  (seqs[i].step != 0) {   out[i] *= seqs[i].step; }
     }
     return out;
-}
 }

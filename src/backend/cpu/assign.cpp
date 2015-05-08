@@ -51,8 +51,8 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs)
     dim4 pDims = out.dims();
     // retrieve dimensions & strides for array
     // to which rhs is being copied to
-    dim4 dst_offsets    = af::toOffset(seqs, dDims);
-    dim4 dst_strides    = af::toStride(seqs, dDims);
+    dim4 dst_offsets    = toOffset(seqs, dDims);
+    dim4 dst_strides    = toStride(seqs, dDims);
     // retrieve rhs array dimenesions & strides
     dim4 src_dims       = rhs.dims();
     dim4 src_strides    = rhs.strides();

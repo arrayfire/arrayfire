@@ -12,7 +12,7 @@
 #include <af/util.h>
 #include <af/dim4.hpp>
 #include <af/device.h>
-
+#include <vector>
 
 dim_type
 calcOffset(const af::dim4 &strides, const af::dim4 &offsets);
@@ -114,3 +114,10 @@ public:
 // Note this doesn't require template parameters.
 const  ArrayInfo&
 getInfo(const af_array arr);
+
+
+af::dim4 toDims(const std::vector<af_seq>& seqs, const af::dim4 &parentDims);
+
+af::dim4 toOffset(const std::vector<af_seq>& seqs, const af::dim4 &parentDims);
+
+af::dim4 toStride(const std::vector<af_seq>& seqs, const af::dim4 &parentDims);

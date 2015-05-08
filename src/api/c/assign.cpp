@@ -42,7 +42,7 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
 
     vector<af_seq> index_(index, index+ndims);
 
-    dim4 oDims = af::toDims(index_, outDs);
+    dim4 oDims = toDims(index_, outDs);
 
     bool is_vector = true;
     for (int i = 0; is_vector && i < oDims.ndims() - 1; i++) {
@@ -200,7 +200,7 @@ af_err af_assign_gen(af_array *out,
         ARG_ASSERT(1, (lhsDims.ndims()>=rhsDims.ndims()));
         ARG_ASSERT(2, (lhsDims.ndims()>=(int)ndims));
 
-        dim4 oDims = af::toDims(seqs, lhsDims);
+        dim4 oDims = toDims(seqs, lhsDims);
         // if af_array are indexers along any
         // particular dimension, set the length of
         // that dimension accordingly before any checks

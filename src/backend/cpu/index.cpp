@@ -51,9 +51,9 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     // rettrieve
     dim4 iDims = in.dims();
     dim4 dDims = in.getDataDims();
-    dim4 oDims = af::toDims  (seqs, iDims);
-    dim4 iOffs = af::toOffset(seqs, dDims);
-    dim4 iStrds= af::toStride(seqs, dDims);
+    dim4 oDims = toDims  (seqs, iDims);
+    dim4 iOffs = toOffset(seqs, dDims);
+    dim4 iStrds= toStride(seqs, dDims);
 
     std::vector< Array<uint> > idxArrs(4, createEmptyArray<uint>(dim4()));
     // look through indexers to read af_array indexers

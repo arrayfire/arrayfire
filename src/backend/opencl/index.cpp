@@ -36,9 +36,9 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     // retrieve dimensions, strides and offsets
     dim4 iDims = in.dims();
     dim4 dDims = in.getDataDims();
-    dim4 oDims = af::toDims  (seqs, iDims);
-    dim4 iOffs = af::toOffset(seqs, dDims);
-    dim4 iStrds= af::toStride(seqs, dDims);
+    dim4 oDims = toDims  (seqs, iDims);
+    dim4 iOffs = toOffset(seqs, dDims);
+    dim4 iStrds= toStride(seqs, dDims);
 
     for (dim_type i=0; i<4; ++i) {
         p.isSeq[i] = idxrs[i].mIsSeq;

@@ -6,7 +6,7 @@
  * The complete license agreement can be obtained at:
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
-
+#include <stdexcept>
 #include <af/array.h>
 #include <af/arith.h>
 #include <af/blas.h>
@@ -42,31 +42,35 @@ namespace af
 
     static af::dim4 seqToDims(af_index_t *indices, af::dim4 parentDims, bool reorder = true)
     {
-        std::vector<af_seq> av(AF_MAX_DIMS);
-        for (int i = 0; i < AF_MAX_DIMS; i++) av[i] = indices[i].mIndexer.seq;
-        af::dim4 odims = toDims(av, parentDims);
-
-        for (int i = 0; i < AF_MAX_DIMS; i++) {
-            if (!indices[i].mIsSeq) {
-                dim_type elems = 0;
-                AF_THROW(af_get_elements(&elems, indices[i].mIndexer.arr));
-                odims[i] = elems;
-            }
-        }
-
-        // Change the dimensions if inside GFOR
-        if (reorder) {
+        try {
+            af::dim4 odims(1);
             for (int i = 0; i < AF_MAX_DIMS; i++) {
-                if (indices[i].isBatch) {
-                    int tmp = odims[i];
-                    odims[i] = odims[3];
-                    odims[3] = tmp;
-                    break;
+                if (indices[i].mIsSeq) {
+                    odims[i] = calcDim(indices[i].mIndexer.seq, parentDims[i]);
+                } else {
+                    dim_type elems = 0;
+                    AF_THROW(af_get_elements(&elems, indices[i].mIndexer.arr));
+                    odims[i] = elems;
                 }
             }
-        }
 
-        return odims;
+            // Change the dimensions if inside GFOR
+            if (reorder) {
+                for (int i = 0; i < AF_MAX_DIMS; i++) {
+                    if (indices[i].isBatch) {
+                        int tmp = odims[i];
+                        odims[i] = odims[3];
+                        odims[3] = tmp;
+                        break;
+                    }
+                }
+            }
+            return odims;
+        } catch(af::exception &afex) {
+            throw;
+        } catch(std::runtime_error &err) {
+            AF_THROW_MSG(err.what(), AF_ERR_INTERNAL);
+        }
     }
 
     static unsigned size_of(af::dtype type)
