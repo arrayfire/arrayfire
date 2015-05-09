@@ -71,6 +71,46 @@ void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
     }
 }
 
+template<typename outType>
+void readTestsOutputOnly(const std::string &FileName, std::vector<af::dim4> &inputDims,
+                         std::vector<std::vector<outType> > &testOutputs)
+{
+    using std::vector;
+
+    std::ifstream testFile(FileName.c_str());
+    if(testFile.good()) {
+        unsigned inputCount;
+        testFile >> inputCount;
+        for(unsigned i=0; i<inputCount; i++) {
+            af::dim4 temp(1);
+            testFile >> temp;
+            inputDims.push_back(temp);
+        }
+
+        unsigned testCount;
+        testFile >> testCount;
+        testOutputs.resize(testCount);
+
+        vector<unsigned> testSizes(testCount);
+        for(unsigned i = 0; i < testCount; i++) {
+            testFile >> testSizes[i];
+        }
+
+        testOutputs.resize(testCount, vector<outType>(0));
+        for(unsigned i = 0; i < testCount; i++) {
+            testOutputs[i].resize(testSizes[i]);
+            outType tmp;
+            for(unsigned j = 0; j < testSizes[i]; j++) {
+                testFile >> tmp;
+                testOutputs[i][j] = tmp;
+            }
+        }
+    }
+    else {
+        FAIL() << "TEST FILE NOT FOUND";
+    }
+}
+
 template<typename inType, typename outType>
 void readTestsFromFile(const std::string &FileName, std::vector<af::dim4> &inputDims,
                 std::vector<std::vector<inType> >  &testInputs,
