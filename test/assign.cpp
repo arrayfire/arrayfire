@@ -426,6 +426,54 @@ TYPED_TEST(ArrayAssign, AssignColumnCPP)
     }
 }
 
+TYPED_TEST(ArrayAssign, AssignSliceCPP)
+{
+    if (noDoubleTests<TypeParam>()) return;
+    using namespace std;
+    using namespace af;
+    int dimsize=10;
+    vector<TypeParam> input(1000, 1);
+    vector<TypeParam> sq(dimsize * dimsize);
+    vector<int> arIdx(2);
+    for(int i = 0; i < (int)sq.size(); i++) sq[i] = i;
+    arIdx[0] = 5;
+    arIdx[1] = 7;
+
+    af::array in(dimsize, dimsize, dimsize, &input.front(), af::afHost, dtype_traits<TypeParam>::af_type);
+    af::dim4 size(dimsize, dimsize, 1, 1);
+    af::array sarr(size, &sq.front(), af::afHost, in.type());
+    af::array arrIdx(2, &arIdx.front(), af::afHost, s32);
+
+    in.slice(0)             = sarr;
+    in.slice(2)             = 2;
+    in(span, span, arrIdx)  = 8;
+    in.slice(af::end)       = 3;
+    in.slices(3, 4)         = 7;
+
+    vector<TypeParam> out(1000);
+    in.host(&out.front());
+
+    for(int slice = 0; slice < dimsize; slice++) {
+        for(int col = 0; col < dimsize; col++) {
+            for(int row = 0; row < dimsize; row++) {
+                int idx = slice * dimsize * dimsize + col * dimsize + row;
+                if      (slice == 0)              ASSERT_EQ(sq[col * dimsize + row], out[idx])
+                    << "Assigning array to indexed array using col";
+                else if (slice == 2)              ASSERT_EQ(TypeParam(2), out[idx])
+                    << "Assigning value to indexed array using col";
+                else if (slice == dimsize-1)      ASSERT_EQ(TypeParam(3), out[idx])
+                    << "Assigning value to array which is indexed using end.";
+                else if (slice == 3 || slice == 4)  ASSERT_EQ(TypeParam(7), out[idx])
+                    << "Assigning value to an array which is indexed using an slices";
+                else if (slice == 5 || slice == 7)  ASSERT_EQ(TypeParam(8), out[idx])
+                    << "Assigning value to an array which is indexed using an array (i.e. in(span, span, arrIdx) = 8);) using slice";
+                else                            ASSERT_EQ(TypeParam(1),  out[idx])
+                    << "Values written to incorrect location";
+            }
+        }
+    }
+}
+
 TEST(ArrayAssign, InvalidArgs)
 {
     vector<af::cfloat> in(10, af::cfloat(0,0));
