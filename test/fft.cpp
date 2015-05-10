@@ -21,6 +21,21 @@ using std::vector;
 using af::cfloat;
 using af::cdouble;
 
+TEST(fft, Invalid_Type)
+{
+    vector<char>   in(100,1);
+
+    af_array inArray   = 0;
+    af_array outArray  = 0;
+
+    af::dim4 dims(5 * 5 * 2 * 2);
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
+                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<char>::af_type));
+
+    ASSERT_EQ(AF_ERR_INVALID_TYPE, af_fft(&outArray, inArray, 1.0, 0));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+}
+
 TEST(fft2, Invalid_Array)
 {
     if (noDoubleTests<float>()) return;
@@ -188,6 +203,38 @@ INSTANTIATE_TEST(ifft2,  C2C_Float, true,  cfloat,  cfloat, string(TEST_DIR"/sig
 INSTANTIATE_TEST(ifft2, C2C_Double, true, cdouble, cdouble, string(TEST_DIR"/signal/ifft2_c2c.test"));
 INSTANTIATE_TEST(ifft3,  C2C_Float, true,  cfloat,  cfloat, string(TEST_DIR"/signal/ifft3_c2c.test"));
 INSTANTIATE_TEST(ifft3, C2C_Double, true, cdouble, cdouble, string(TEST_DIR"/signal/ifft3_c2c.test"));
+
+// Real to complex transforms
+INSTANTIATE_TEST(dft ,  R2C_Float, false,  float,  cfloat, string(TEST_DIR"/signal/fft_r2c.test") );
+INSTANTIATE_TEST(dft , R2C_Double, false, double, cdouble, string(TEST_DIR"/signal/fft_r2c.test") );
+INSTANTIATE_TEST(dft2,  R2C_Float, false,  float,  cfloat, string(TEST_DIR"/signal/fft2_r2c.test"));
+INSTANTIATE_TEST(dft2, R2C_Double, false, double, cdouble, string(TEST_DIR"/signal/fft2_r2c.test"));
+INSTANTIATE_TEST(dft3,  R2C_Float, false,  float,  cfloat, string(TEST_DIR"/signal/fft3_r2c.test"));
+INSTANTIATE_TEST(dft3, R2C_Double, false, double, cdouble, string(TEST_DIR"/signal/fft3_r2c.test"));
+
+// complex to complex transforms
+INSTANTIATE_TEST(dft ,  C2C_Float, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft_c2c.test") );
+INSTANTIATE_TEST(dft , C2C_Double, false, cdouble, cdouble, string(TEST_DIR"/signal/fft_c2c.test") );
+INSTANTIATE_TEST(dft2,  C2C_Float, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft2_c2c.test"));
+INSTANTIATE_TEST(dft2, C2C_Double, false, cdouble, cdouble, string(TEST_DIR"/signal/fft2_c2c.test"));
+INSTANTIATE_TEST(dft3,  C2C_Float, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft3_c2c.test"));
+INSTANTIATE_TEST(dft3, C2C_Double, false, cdouble, cdouble, string(TEST_DIR"/signal/fft3_c2c.test"));
+
+// transforms on padded and truncated arrays
+INSTANTIATE_TEST(dft2,  R2C_Float_Trunc, false,  float,  cfloat, string(TEST_DIR"/signal/fft2_r2c_trunc.test"), 16, 16);
+INSTANTIATE_TEST(dft2, R2C_Double_Trunc, false, double, cdouble, string(TEST_DIR"/signal/fft2_r2c_trunc.test"), 16, 16);
+
+INSTANTIATE_TEST(dft2,  C2C_Float_Pad, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft2_c2c_pad.test"), 16, 16);
+INSTANTIATE_TEST(dft2, C2C_Double_Pad, false, cdouble, cdouble, string(TEST_DIR"/signal/fft2_c2c_pad.test"), 16, 16);
+
+// inverse transforms
+// complex to complex transforms
+INSTANTIATE_TEST(idft ,  C2C_Float, true,  cfloat,  cfloat, string(TEST_DIR"/signal/ifft_c2c.test") );
+INSTANTIATE_TEST(idft , C2C_Double, true, cdouble, cdouble, string(TEST_DIR"/signal/ifft_c2c.test") );
+INSTANTIATE_TEST(idft2,  C2C_Float, true,  cfloat,  cfloat, string(TEST_DIR"/signal/ifft2_c2c.test"));
+INSTANTIATE_TEST(idft2, C2C_Double, true, cdouble, cdouble, string(TEST_DIR"/signal/ifft2_c2c.test"));
+INSTANTIATE_TEST(idft3,  C2C_Float, true,  cfloat,  cfloat, string(TEST_DIR"/signal/ifft3_c2c.test"));
+INSTANTIATE_TEST(idft3, C2C_Double, true, cdouble, cdouble, string(TEST_DIR"/signal/ifft3_c2c.test"));
 
 
 template<typename inType, typename outType, int rank, bool isInverse>
