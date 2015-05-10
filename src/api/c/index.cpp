@@ -49,6 +49,8 @@ af_err af_index(af_array *result, const af_array in, const unsigned ndims, const
         case b8:     indexArray<char>    (out, in, ndims, index);  break;
         case s32:    indexArray<int>     (out, in, ndims, index);  break;
         case u32:    indexArray<unsigned>(out, in, ndims, index);  break;
+        case s64:    indexArray<intl>    (out, in, ndims, index);  break;
+        case u64:    indexArray<uintl>   (out, in, ndims, index);  break;
         case u8:     indexArray<uchar>   (out, in, ndims, index);  break;
         default:    TYPE_ERROR(1, in_type);
         }
@@ -73,6 +75,8 @@ static af_array lookup(const af_array &in, const af_array &idx, const unsigned d
         case c64: return getHandle(lookup<cdouble , idx_t > (getArray<cdouble >(in), getArray<idx_t>(idx), dim));
         case s32: return getHandle(lookup<int     , idx_t > (getArray<int     >(in), getArray<idx_t>(idx), dim));
         case u32: return getHandle(lookup<unsigned, idx_t > (getArray<unsigned>(in), getArray<idx_t>(idx), dim));
+        case s64: return getHandle(lookup<intl    , idx_t > (getArray<intl    >(in), getArray<idx_t>(idx), dim));
+        case u64: return getHandle(lookup<uintl   , idx_t > (getArray<uintl   >(in), getArray<idx_t>(idx), dim));
         case  u8: return getHandle(lookup<uchar   , idx_t > (getArray<uchar   >(in), getArray<idx_t>(idx), dim));
         case  b8: return getHandle(lookup<char    , idx_t > (getArray<char    >(in), getArray<idx_t>(idx), dim));
         default : TYPE_ERROR(1, inType);

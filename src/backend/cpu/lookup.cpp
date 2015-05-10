@@ -88,6 +88,8 @@ INSTANTIATE(double  );
 INSTANTIATE(cdouble );
 INSTANTIATE(int     );
 INSTANTIATE(unsigned);
+INSTANTIATE(intl    );
+INSTANTIATE(uintl   );
 INSTANTIATE(uchar   );
 INSTANTIATE(char    );
 
