@@ -490,7 +490,7 @@ namespace af
     {
         array tmp = *this;
         af_array out = 0;
-        af_weak_copy(&out, tmp.get());
+        AF_THROW(af_weak_copy(&out, tmp.get()));
         return out;
     }
 
@@ -577,7 +577,7 @@ namespace af
     {
         af_array tmp = 0;
         af_array arr = parent->get();
-        af_index_gen(&tmp, arr, AF_MAX_DIMS, indices);
+        AF_THROW(af_index_gen(&tmp, arr, AF_MAX_DIMS, indices));
 
         return array(tmp);
     }
@@ -586,7 +586,7 @@ namespace af
     {
         af_array tmp = 0;
         af_array arr = parent->get();
-        af_index_gen(&tmp, arr, AF_MAX_DIMS, indices);
+        AF_THROW(af_index_gen(&tmp, arr, AF_MAX_DIMS, indices));
 
         int dim = gforDim(indices);
         if (tmp && dim >= 0) {
@@ -617,36 +617,36 @@ namespace af
         this->arr = temp;
         return *this;
     }
-#define ASSIGN_TYPE(TY, OP)                             \
-    array& array::operator OP(const TY &value)          \
-    {                                                   \
-        af::dim4 dims = this->dims();                   \
-        af::dtype ty = this->type();                    \
-        array cst = constant(value, dims, ty);          \
-        return operator OP(cst);                        \
-    }                                                   \
+#define ASSIGN_TYPE(TY, OP)                                         \
+    array& array::operator OP(const TY &value)                      \
+    {                                                               \
+        af::dim4 dims = this->dims();                               \
+        af::dtype ty = this->type();                                \
+        array cst = constant(value, dims, ty);                      \
+        return operator OP(cst);                                    \
+    }                                                               \
 
-#define ASSIGN_OP(OP, op1)                              \
-    array& array::operator OP(const array &other)       \
-    {                                                   \
-        af_array out = 0;                               \
-        op1(&out, this->get(), other.get(), gforGet()); \
-        this->set(out);                                 \
-        return *this;                                   \
-    }                                                   \
-    ASSIGN_TYPE(double             , OP)                \
-    ASSIGN_TYPE(float              , OP)                \
-    ASSIGN_TYPE(cdouble            , OP)                \
-    ASSIGN_TYPE(cfloat             , OP)                \
-    ASSIGN_TYPE(int                , OP)                \
-    ASSIGN_TYPE(unsigned           , OP)                \
-    ASSIGN_TYPE(long               , OP)                \
-    ASSIGN_TYPE(unsigned long      , OP)                \
-    ASSIGN_TYPE(long long          , OP)                \
-    ASSIGN_TYPE(unsigned long long , OP)                \
-    ASSIGN_TYPE(char               , OP)                \
-    ASSIGN_TYPE(unsigned char      , OP)                \
-    ASSIGN_TYPE(bool               , OP)                \
+#define ASSIGN_OP(OP, op1)                                          \
+    array& array::operator OP(const array &other)                   \
+    {                                                               \
+        af_array out = 0;                                           \
+        AF_THROW(op1(&out, this->get(), other.get(), gforGet()));   \
+        this->set(out);                                             \
+        return *this;                                               \
+    }                                                               \
+    ASSIGN_TYPE(double             , OP)                            \
+    ASSIGN_TYPE(float              , OP)                            \
+    ASSIGN_TYPE(cdouble            , OP)                            \
+    ASSIGN_TYPE(cfloat             , OP)                            \
+    ASSIGN_TYPE(int                , OP)                            \
+    ASSIGN_TYPE(unsigned           , OP)                            \
+    ASSIGN_TYPE(long               , OP)                            \
+    ASSIGN_TYPE(unsigned long      , OP)                            \
+    ASSIGN_TYPE(long long          , OP)                            \
+    ASSIGN_TYPE(unsigned long long , OP)                            \
+    ASSIGN_TYPE(char               , OP)                            \
+    ASSIGN_TYPE(unsigned char      , OP)                            \
+    ASSIGN_TYPE(bool               , OP)                            \
 
     ASSIGN_OP(+=, af_add)
     ASSIGN_OP(-=, af_sub)
