@@ -36,22 +36,29 @@ void gaussianKernelTest(string pFileName, double sigma)
 {
     if (noDoubleTests<T>()) return;
 
-    vector<af::dim4>   numDims;
-    vector<vector<T> > tests;
+    vector<af::dim4>     numDims;
+    vector<vector<int> > in;
+    vector<vector<T> >   tests;
 
-    readTestsOutputOnly<T>(pFileName, numDims, tests);
+    readTestsFromFile<int,T>(pFileName, numDims, in, tests);
 
-    af::dim4 dims      = numDims[0];
     af_array outArray  = 0;
 
-    ASSERT_EQ(AF_SUCCESS, af_gaussian_kernel(&outArray, dims[0], dims[1], sigma, sigma));
+    vector<int> input(in[0].begin(), in[0].end());
 
-    T *outData = new T[dims.elements()];
+    ASSERT_EQ(AF_SUCCESS, af_gaussian_kernel(&outArray, input[0], input[1], sigma, sigma));
+
+    dim_type outElems = 0;
+    ASSERT_EQ(AF_SUCCESS, af_get_elements(&outElems, outArray));
+    T *outData = new T[outElems];
 
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
 
     vector<T> currGoldBar(tests[0].begin(), tests[0].end());
     size_t nElems = currGoldBar.size();
+
+    ASSERT_EQ(outElems, nElems);
+
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1.0e-3)<< "at: " << elIter<< std::endl;
     }
@@ -105,20 +112,25 @@ void gaussianKernelTestCPP(string pFileName, double sigma)
     using af::array;
     using af::gaussiankernel;
 
-    vector<af::dim4>   numDims;
+    vector<af::dim4>       numDims;
+    vector<vector<int> >   in;
     vector<vector<float> > tests;
 
-    readTestsOutputOnly<float>(pFileName, numDims, tests);
+    readTestsFromFile<int,float>(pFileName, numDims, in, tests);
 
-    af::dim4 dims = numDims[0];
+    vector<int> input(in[0].begin(), in[0].end());
 
-    array out = gaussiankernel(dims[0], dims[1], sigma, sigma);
+    array out = gaussiankernel(input[0], input[1], sigma, sigma);
 
-    float *outData = new float[out.elements()];
+    dim_type outElems = out.elements();
+    float *outData = new float[outElems];
     out.host(outData);
 
     vector<float> currGoldBar(tests[0].begin(), tests[0].end());
     size_t nElems = currGoldBar.size();
+
+    ASSERT_EQ(outElems, nElems);
+
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1.0e-3)<< "at: " << elIter<< std::endl;
     }
