@@ -34,7 +34,7 @@ template<typename T, typename OP>
 void
 checkValues(const af_seq &seq, const T* data, const T* indexed_data, OP compair_op) {
     for(int i = 0, j = seq.begin; compair_op(j,(int)seq.end); j+= seq.step, i++) {
-        ASSERT_DOUBLE_EQ(data[j], indexed_data[i])
+        ASSERT_DOUBLE_EQ(real(data[j]), real(indexed_data[i]))
         << "Where i = " << i << " and j = " << j;
     }
 }
@@ -78,7 +78,7 @@ DimCheck(const vector<af_seq> &seqs) {
             checkValues(seqs[k], &hData.front(), h_indexed[k], std::greater_equal<int>());
         } else {
             for(size_t i = 0; i <= seqs[k].end; i++) {
-                ASSERT_DOUBLE_EQ(hData[i], h_indexed[k][i])
+                ASSERT_DOUBLE_EQ(real(hData[i]), real(h_indexed[k][i]))
                     << "Where i = " << i;
             }
         }
@@ -126,8 +126,8 @@ public:
     vector<af_seq> span_seqs;
 };
 
-typedef ::testing::Types<float, double, int, unsigned, char, unsigned char> TestTypes;
-TYPED_TEST_CASE(Indexing1D, TestTypes);
+typedef ::testing::Types<float, double, af::cfloat, af::cdouble, int, unsigned, unsigned char, intl, uintl> AllTypes;
+TYPED_TEST_CASE(Indexing1D, AllTypes);
 
 TYPED_TEST(Indexing1D, Continious)          { DimCheck<TypeParam>(this->continuous_seqs);           }
 TYPED_TEST(Indexing1D, ContiniousReverse)   { DimCheck<TypeParam>(this->continuous_reverse_seqs);   }
@@ -297,7 +297,7 @@ DimCheck2D(const vector<vector<af_seq> > &seqs,string TestFile, size_t NDims)
     }
 }
 
-TYPED_TEST_CASE(Indexing2D, TestTypes);
+TYPED_TEST_CASE(Indexing2D, AllTypes);
 
 TYPED_TEST(Indexing2D, ColumnContinious)
 {
@@ -458,7 +458,7 @@ void DimCheckND(const vector<vector<af_seq> > &seqs,string TestFile, size_t NDim
     DimCheck2D<T>(seqs, TestFile, NDims);
 }
 
-TYPED_TEST_CASE(Indexing, TestTypes);
+TYPED_TEST_CASE(Indexing, AllTypes);
 
 TYPED_TEST(Indexing, 4D_to_4D)
 {
@@ -1003,4 +1003,42 @@ TEST(SeqIndex, CPP_INDEX_VECTOR)
 
     delete[] h_B;
     delete[] h_C;
+}
+
+template<typename T>
+class IndexedMembers : public ::testing::Test
+{
+    public:
+        virtual void SetUp() {
+        }
+};
+
+TYPED_TEST_CASE(IndexedMembers, AllTypes);
+
+TYPED_TEST(IndexedMembers, MemFuncs)
+{
+    if (noDoubleTests<TypeParam>()) return;
+    using af::array;
+    int dimsize = 100;
+    vector<TypeParam> in(dimsize * dimsize);
+    for(int i = 0; i < in.size(); i++) in[i] = i;
+    array input(dimsize, dimsize, &in.front(), af::afHost, (af::dtype) dtype_traits<TypeParam>::af_type);
+
+    ASSERT_EQ(dimsize, input(af::span, 1).elements());
+    ASSERT_EQ(input.type(), input(af::span, 1).type());
+    ASSERT_EQ(af::dim4(dimsize), input(af::span, 1).dims());
+    ASSERT_EQ(1, input(af::span, 1).numdims());
+    ASSERT_FALSE(input(af::span, 1).isempty());
+    ASSERT_FALSE(input(af::span, 1).isscalar());
+    ASSERT_TRUE(input(1, 1).isscalar());
+    ASSERT_TRUE(input(af::span, 1).isvector());
+    ASSERT_FALSE(input(af::span, 1).isrow());
+    ASSERT_EQ(input.iscomplex(), input(af::span, 1).iscomplex());
+    ASSERT_EQ(input.isdouble(), input(af::span, 1).isdouble());
+    ASSERT_EQ(input.issingle(), input(af::span, 1).issingle());
+    ASSERT_EQ(input.isrealfloating(), input(af::span, 1).isrealfloating());
+    ASSERT_EQ(input.isfloating(), input(af::span, 1).isfloating());
+    ASSERT_EQ(input.isinteger(), input(af::span, 1).isinteger());
+    ASSERT_EQ(input.isbool(), input(af::span, 1).isbool());
+    ASSERT_EQ(input.scalar<TypeParam>(), input(af::span, 0).scalar<TypeParam>());
 }
