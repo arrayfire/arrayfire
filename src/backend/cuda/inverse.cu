@@ -22,12 +22,8 @@ namespace cuda
 template<typename T>
 Array<T> inverse(const Array<T> &in)
 {
-    dim4 iDims = in.dims();
-
-    Array<T> I = identity<T>(iDims);
-    Array<T> A = solve<T>(in, I);
-
-    return A;
+    Array<T> I = identity<T>(in.dims());
+    return solve<T>(in, I);
 }
 
 #define INSTANTIATE(T)                                                                   \

@@ -21,6 +21,8 @@
 
 #include <lapack_helper.hpp>
 #include <lu.hpp>
+#include <identity.hpp>
+#include <solve.hpp>
 
 namespace cpu
 {
@@ -46,7 +48,14 @@ INV_FUNC(getri , cdouble, z)
 template<typename T>
 Array<T> inverse(const Array<T> &in)
 {
+
     int M = in.dims()[0];
+    int N = in.dims()[1];
+
+    if (M != N) {
+        Array<T> I = identity<T>(in.dims());
+        return solve(in, I);
+    }
 
     Array<T> A = copyArray<T>(in);
 
@@ -92,4 +101,3 @@ INSTANTIATE(cdouble)
 }
 
 #endif
-
