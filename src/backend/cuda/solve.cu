@@ -169,7 +169,7 @@ MQR_FUNC(mqr , cfloat , Cunmqr)
 MQR_FUNC(mqr , cdouble, Zunmqr)
 
 template<typename T>
-Array<T> solve_square(const Array<T> &a, const Array<T> &b, const af_solve_t options)
+Array<T> generalSolve(const Array<T> &a, const Array<T> &b)
 {
     int M = a.dims()[0];
     int N = a.dims()[1];
@@ -192,7 +192,7 @@ Array<T> solve_square(const Array<T> &a, const Array<T> &b, const af_solve_t opt
 }
 
 template<typename T>
-Array<T> solve_rect(const Array<T> &a, const Array<T> &b, const af_solve_t options)
+Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
 {
     int M = a.dims()[0];
     int N = a.dims()[1];
@@ -316,9 +316,9 @@ template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_solve_t options)
 {
     if(a.dims()[0] == a.dims()[1]) {
-        return solve_square<T>(a, b, options);
+        return generalSolve<T>(a, b);
     } else {
-        return solve_rect<T>(a, b, options);
+        return leastSquares<T>(a, b);
     }
 }
 
