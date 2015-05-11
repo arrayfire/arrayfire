@@ -153,7 +153,7 @@ void luTester(const int m, const int n, double eps)
         luTester<T>(1024, 512, eps);            \
     }                                           \
 
-LU_BIG_TESTS(float, 1E-5)
+LU_BIG_TESTS(float, 1E-3)
 LU_BIG_TESTS(double, 1E-8)
 LU_BIG_TESTS(cfloat, 1E-3)
 LU_BIG_TESTS(cdouble, 1E-8)
