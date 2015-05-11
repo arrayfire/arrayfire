@@ -9,6 +9,7 @@
 
 #include <err_common.hpp>
 #include <solve.hpp>
+#include <identity.hpp>
 
 #if defined(WITH_OPENCL_LINEAR_ALGEBRA)
 
@@ -18,7 +19,8 @@ namespace opencl
 template<typename T>
 Array<T> inverse(const Array<T> &in)
 {
-    AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
+    Array<T> I = identity<T>(in.dims());
+    return solve<T>(in, I);
 }
 
 #define INSTANTIATE(T)                                                                   \
@@ -53,4 +55,3 @@ INSTANTIATE(cdouble)
 }
 
 #endif
-
