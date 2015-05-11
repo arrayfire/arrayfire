@@ -204,38 +204,6 @@ INSTANTIATE_TEST(ifft2, C2C_Double, true, cdouble, cdouble, string(TEST_DIR"/sig
 INSTANTIATE_TEST(ifft3,  C2C_Float, true,  cfloat,  cfloat, string(TEST_DIR"/signal/ifft3_c2c.test"));
 INSTANTIATE_TEST(ifft3, C2C_Double, true, cdouble, cdouble, string(TEST_DIR"/signal/ifft3_c2c.test"));
 
-// Real to complex transforms
-INSTANTIATE_TEST(dft ,  R2C_Float, false,  float,  cfloat, string(TEST_DIR"/signal/fft_r2c.test") );
-INSTANTIATE_TEST(dft , R2C_Double, false, double, cdouble, string(TEST_DIR"/signal/fft_r2c.test") );
-INSTANTIATE_TEST(dft2,  R2C_Float, false,  float,  cfloat, string(TEST_DIR"/signal/fft2_r2c.test"));
-INSTANTIATE_TEST(dft2, R2C_Double, false, double, cdouble, string(TEST_DIR"/signal/fft2_r2c.test"));
-INSTANTIATE_TEST(dft3,  R2C_Float, false,  float,  cfloat, string(TEST_DIR"/signal/fft3_r2c.test"));
-INSTANTIATE_TEST(dft3, R2C_Double, false, double, cdouble, string(TEST_DIR"/signal/fft3_r2c.test"));
-
-// complex to complex transforms
-INSTANTIATE_TEST(dft ,  C2C_Float, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft_c2c.test") );
-INSTANTIATE_TEST(dft , C2C_Double, false, cdouble, cdouble, string(TEST_DIR"/signal/fft_c2c.test") );
-INSTANTIATE_TEST(dft2,  C2C_Float, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft2_c2c.test"));
-INSTANTIATE_TEST(dft2, C2C_Double, false, cdouble, cdouble, string(TEST_DIR"/signal/fft2_c2c.test"));
-INSTANTIATE_TEST(dft3,  C2C_Float, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft3_c2c.test"));
-INSTANTIATE_TEST(dft3, C2C_Double, false, cdouble, cdouble, string(TEST_DIR"/signal/fft3_c2c.test"));
-
-// transforms on padded and truncated arrays
-INSTANTIATE_TEST(dft2,  R2C_Float_Trunc, false,  float,  cfloat, string(TEST_DIR"/signal/fft2_r2c_trunc.test"), 16, 16);
-INSTANTIATE_TEST(dft2, R2C_Double_Trunc, false, double, cdouble, string(TEST_DIR"/signal/fft2_r2c_trunc.test"), 16, 16);
-
-INSTANTIATE_TEST(dft2,  C2C_Float_Pad, false,  cfloat,  cfloat, string(TEST_DIR"/signal/fft2_c2c_pad.test"), 16, 16);
-INSTANTIATE_TEST(dft2, C2C_Double_Pad, false, cdouble, cdouble, string(TEST_DIR"/signal/fft2_c2c_pad.test"), 16, 16);
-
-// inverse transforms
-// complex to complex transforms
-INSTANTIATE_TEST(idft ,  C2C_Float, true,  cfloat,  cfloat, string(TEST_DIR"/signal/ifft_c2c.test") );
-INSTANTIATE_TEST(idft , C2C_Double, true, cdouble, cdouble, string(TEST_DIR"/signal/ifft_c2c.test") );
-INSTANTIATE_TEST(idft2,  C2C_Float, true,  cfloat,  cfloat, string(TEST_DIR"/signal/ifft2_c2c.test"));
-INSTANTIATE_TEST(idft2, C2C_Double, true, cdouble, cdouble, string(TEST_DIR"/signal/ifft2_c2c.test"));
-INSTANTIATE_TEST(idft3,  C2C_Float, true,  cfloat,  cfloat, string(TEST_DIR"/signal/ifft3_c2c.test"));
-INSTANTIATE_TEST(idft3, C2C_Double, true, cdouble, cdouble, string(TEST_DIR"/signal/ifft3_c2c.test"));
-
 
 template<typename inType, typename outType, int rank, bool isInverse>
 void fftBatchTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0)
@@ -384,6 +352,52 @@ void cppFFTTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad
     delete[] outData;
 }
 
+template<typename inType, typename outType, bool isInverse>
+void cppDFTTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0)
+{
+    if (noDoubleTests<inType>()) return;
+    if (noDoubleTests<outType>()) return;
+
+    vector<af::dim4>        numDims;
+    vector<vector<inType> >       in;
+    vector<vector<outType> >   tests;
+
+    readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
+
+    af::dim4 dims = numDims[0];
+    af::array signal(dims, &(in[0].front()));
+    af::array output;
+
+    if (isInverse){
+        output = idft(signal);
+    } else {
+        output = dft(signal);
+    }
+
+    size_t out_size = tests[0].size();
+    cfloat *outData= new cfloat[out_size];
+    output.host((void*)outData);
+
+    vector<cfloat> goldBar(tests[0].begin(), tests[0].end());
+
+    size_t test_size = 0;
+    switch(dims.ndims()) {
+        case 1  : test_size = dims[0]/2+1;                       break;
+        case 2  : test_size = dims[1] * (dims[0]/2+1);           break;
+        case 3  : test_size = dims[2] * dims[1] * (dims[0]/2+1); break;
+        default : test_size = dims[0]/2+1;                       break;
+    }
+    outType output_scale = (outType)(isInverse ? test_size : 1);
+    for (size_t elIter=0; elIter<test_size; ++elIter) {
+        bool isUnderTolerance = std::abs(goldBar[elIter]-outData[elIter])<0.001;
+        ASSERT_EQ(true, isUnderTolerance)<<
+            "Expected value="<<goldBar[elIter] <<"\t Actual Value="<<
+            (output_scale*outData[elIter]) << " at: " << elIter<< std::endl;
+    }
+    // cleanup
+    delete[] outData;
+}
+
 
 TEST(fft3, CPP)
 {
@@ -434,6 +448,36 @@ TEST(fft3, RandomData)
 
     delete[] gold;
     delete[] out;
+}
+
+TEST(dft, CPP)
+{
+    cppDFTTest<cfloat, cfloat, false>(string(TEST_DIR"/signal/fft_c2c.test"));
+}
+
+TEST(idft, CPP)
+{
+    cppDFTTest<cfloat, cfloat, true>(string(TEST_DIR"/signal/ifft_c2c.test"));
+}
+
+TEST(dft2, CPP)
+{
+    cppDFTTest<cfloat, cfloat, false>(string(TEST_DIR"/signal/fft2_c2c.test"));
+}
+
+TEST(idft2, CPP)
+{
+    cppDFTTest<cfloat, cfloat, true>(string(TEST_DIR"/signal/ifft2_c2c.test"));
+}
+
+TEST(dft3, CPP)
+{
+    cppDFTTest<cfloat, cfloat, false>(string(TEST_DIR"/signal/fft3_c2c.test"));
+}
+
+TEST(idft3, CPP)
+{
+    cppDFTTest<cfloat, cfloat, true>(string(TEST_DIR"/signal/ifft3_c2c.test"));
 }
 
 TEST(fft, CPP_4D)
