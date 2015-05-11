@@ -25,8 +25,8 @@ static char transChar(CBLAS_TRANSPOSE Trans)
 
 #define GEMM_F77(X, TS, TV, TY)                                                     \
 void cblas_##X##gemm(                                                               \
-       const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA,             \
-       const enum CBLAS_TRANSPOSE TransB, const int M, const int N,                 \
+       const CBLAS_ORDER Order, const CBLAS_TRANSPOSE TransA,                       \
+       const CBLAS_TRANSPOSE TransB, const int M, const int N,                      \
        const int K, const TS alpha, const TV *A,                                    \
        const int lda, const TV *B, const int ldb,                                   \
        const TS beta, TV *C, const int ldc)                                         \
@@ -39,7 +39,7 @@ void cblas_##X##gemm(                                                           
             (const TY *)ADDR(beta), (TY *)C, &ldc);                                 \
 }                                                                                   \
 void cblas_##X##gemv(                                                               \
-        const enum CBLAS_ORDER order, const enum CBLAS_TRANSPOSE TransA,            \
+        const CBLAS_ORDER order, const CBLAS_TRANSPOSE TransA,                      \
         const int M, const int N,                                                   \
         const TS alpha, const TV *A, const int lda,                                 \
         const TV *X, const int incX, const TS beta,                                 \
