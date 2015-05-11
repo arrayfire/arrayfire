@@ -85,9 +85,6 @@ void swapdblk(int n, int nb,
         return;
     }
 
-    // HACK for multiples of nb
-    if (nblocks * nb == n) nblocks--;
-
     NDRange local(nb);
     NDRange global(nblocks * nb);
     auto swapdOp = make_kernel<int,

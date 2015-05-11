@@ -56,7 +56,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &orig)
         kernel::triangle<T, true>(r, in);
 
         cl::Buffer *r_buf = r.get();
-        magmablas_swapdblk<T>(MN, NB,
+        magmablas_swapdblk<T>(MN - 1, NB,
                               ( *r_buf)(), r.getOffset(),
                               r.strides()[1], 1,
                               (*dT)(), tmp.getOffset() + MN * NB,
