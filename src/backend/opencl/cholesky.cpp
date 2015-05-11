@@ -10,12 +10,12 @@
 #include <cholesky.hpp>
 #include <copy.hpp>
 #include <err_common.hpp>
-#include <magma/magma.h>
 #include <blas.hpp>
 #include <err_opencl.hpp>
-#include <triangle.hpp>
 
 #if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+#include <magma/magma.h>
+#include <triangle.hpp>
 
 namespace opencl
 {

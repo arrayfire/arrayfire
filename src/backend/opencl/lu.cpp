@@ -11,10 +11,10 @@
 #include <err_common.hpp>
 
 #if defined(WITH_OPENCL_LINEAR_ALGEBRA)
-#include <magma/magma.h>
 #include <kernel/lu_split.hpp>
 #include <copy.hpp>
 #include <blas.hpp>
+#include <magma/magma.h>
 
 namespace opencl
 {
