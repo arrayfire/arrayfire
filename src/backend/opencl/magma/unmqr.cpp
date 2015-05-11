@@ -182,9 +182,8 @@ magma_unmqr_gpu(
         return *info;
     }
 
-    lddwork= k;
-    dwork  = dT;
-    size_t dwork_offset = 2*lddwork*nb;
+    lddwork= std::min(m, n);
+    magma_malloc<Ty>(&dwork, (((n+31)/32)*32)*nb);
 
     unmqr_work_func<Ty> cpu_unmqr;
 
@@ -268,12 +267,15 @@ magma_unmqr_gpu(
                 ni = n - i;
                 jc = i;
             }
+
+            if (mi == 0 || ni == 0) break;
+
             ret = magma_larfb_gpu<Ty>(MagmaLeft,
                                       is_real ? MagmaTrans : MagmaConjTrans,
                                       MagmaForward, MagmaColumnwise,
                                       mi, ni, ib,
                                       a_ref(i,  i ), ldda, t_ref(i), nb,
-                                      c_ref(ic, jc), lddc, dwork, dwork_offset, nw, queue);
+                                      c_ref(ic, jc), lddc, dwork, 0, nw, queue);
             if ( ret != MAGMA_SUCCESS )
               return ret;
         }
