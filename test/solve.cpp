@@ -27,54 +27,49 @@ using af::cdouble;
 
 ///////////////////////////////// CPP ////////////////////////////////////
 //
-const double max_dbl_err = 1E-10;
-TEST(Solve, Square_CPP)
+
+template<typename T>
+void solveTester(const int m, const int n, const int k, double eps)
 {
     if (noDoubleTests<double>()) return;
+    af::array A  = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
+    af::array X0 = af::randu(n, k, (af::dtype)af::dtype_traits<T>::af_type);
+    af::array B0 = af::matmul(A, X0);
 
-    const int M = 1000;
-    const int N = M;
-    const int K = 100;
-    af::array a = af::randu(M, N, f64);
-    af::array x0 = af::randu(N, K, f64);
-    af::array b0 = af::matmul(a, x0);
+    af::array X1 = af::solve(A, B0);
+    af::array B1 = af::matmul(A, X1);
 
-    af::array x1 = af::solve(a, b0);
-    af::array b1 = af::matmul(a, x1);
-
-    ASSERT_EQ(af::sum<double>(abs(b0 - b1)) / (M * K) < max_dbl_err, true);
+    ASSERT_NEAR(0, af::max<double>(af::abs(real(B0 - B1))), eps);
+    ASSERT_NEAR(0, af::max<double>(af::abs(imag(B0 - B1))), eps);
 }
 
-TEST(Solve, UnderDetermined_CPP)
-{
-    if (noDoubleTests<double>()) return;
+#define SOLVE_TESTS(T, eps)                     \
+    TEST(SOLVE, T##Square)                      \
+    {                                           \
+        solveTester<T>(1000, 1000, 100, eps);   \
+    }                                           \
+    TEST(SOLVE, T##SquareMultiple)              \
+    {                                           \
+        solveTester<T>(2048, 2048, 512, eps);   \
+    }                                           \
+    TEST(SOLVE, T##RectUnder)                   \
+    {                                           \
+        solveTester<T>(800, 1000, 200, eps);    \
+    }                                           \
+    TEST(SOLVE, T##RectUnderMultiple)           \
+    {                                           \
+        solveTester<T>(1536, 2048, 400, eps);   \
+    }                                           \
+    TEST(SOLVE, T##RectOver)                    \
+    {                                           \
+        solveTester<T>(800, 600, 50, eps);      \
+    }                                           \
+    TEST(SOLVE, T##RectOverMultiple)            \
+    {                                           \
+        solveTester<T>(1536, 1024, 1, eps);     \
+    }
 
-    const int M = 800;
-    const int N = 1000;
-    const int K = 100;
-    af::array a = af::randu(M, N, f64);
-    af::array x0 = af::randu(N, K, f64);
-    af::array b0 = af::matmul(a, x0);
-
-    af::array x1 = af::solve(a, b0);
-    af::array b1 = af::matmul(a, x1);
-
-    ASSERT_EQ(af::sum<double>(abs(b0 - b1)) / (M * K) < max_dbl_err, true);
-}
-
-TEST(Solve, OverDetermined_CPP)
-{
-    if (noDoubleTests<double>()) return;
-
-    const int M = 1000;
-    const int N = 800;
-    const int K = 100;
-    af::array a = af::randu(M, N, f64);
-    af::array x0 = af::randu(N, K, f64);
-    af::array b0 = af::matmul(a, x0);
-
-    af::array x1 = af::solve(a, b0);
-    af::array b1 = af::matmul(a, x1);
-
-    ASSERT_EQ(af::sum<double>(abs(b0 - b1)) / (M * K) < max_dbl_err, true);
-}
+SOLVE_TESTS(float, 0.01)
+SOLVE_TESTS(double, 1E-5)
+SOLVE_TESTS(cfloat, 0.01)
+SOLVE_TESTS(cdouble, 1E-5)
