@@ -16,6 +16,11 @@
 #define ORDER_TYPE int
 #define AF_LAPACK_COL_MAJOR LAPACK_COL_MAJOR
 #define LAPACK_NAME(fn) LAPACKE_##fn
+
+#ifdef USE_MKL
+#include<mkl_lapacke.h>
+#else // NETLIB LAPACKE
 #include<lapacke.h>
+#endif
 
 #endif

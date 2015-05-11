@@ -35,16 +35,16 @@ using ptr_type     =    typename conditional<   is_complex<T>::value,
 template<typename T, typename BT>
 using scale_type   =    typename conditional<   is_complex<T>::value,
                                                 const void *,
-                                                T>::type;
+                                                const T>::type;
 template<typename T, typename BT>
-using gemm_func_def = void (*)( const enum CBLAS_ORDER, const enum CBLAS_TRANSPOSE, const enum CBLAS_TRANSPOSE,
+using gemm_func_def = void (*)( const CBLAS_ORDER, const CBLAS_TRANSPOSE, const CBLAS_TRANSPOSE,
                                 const int, const int, const int,
                                 scale_type<T, BT>, cptr_type<T, BT>, const int,
                                 cptr_type<T, BT>, const int,
                                 scale_type<T, BT>, ptr_type<T, BT>, const int);
 
 template<typename T, typename BT>
-using gemv_func_def = void (*)( const enum CBLAS_ORDER, const enum CBLAS_TRANSPOSE,
+using gemv_func_def = void (*)( const CBLAS_ORDER, const CBLAS_TRANSPOSE,
                                 const int, const int,
                                 scale_type<T, BT>, cptr_type<T, BT>, const int,
                                 cptr_type<T, BT>, const int,

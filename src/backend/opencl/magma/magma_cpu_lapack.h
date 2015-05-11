@@ -22,7 +22,11 @@
 #define LAPACK_PREFIX LAPACKE_
 #define ORDER_TYPE int
 #define LAPACK_NAME(fn) LAPACKE_##fn
+#ifdef USE_MKL
+#include<mkl_lapacke.h>
+#else // NETLIB LAPACKE
 #include<lapacke.h>
+#endif
 
 #define CPU_LAPACK_FUNC_DEF(NAME)               \
     template<typename T>                        \
