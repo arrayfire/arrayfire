@@ -10,7 +10,6 @@
 #include <complex>
 #include <af/defines.h>
 #include <af/dim4.hpp>
-#include <af/index.h>
 #include <af/algorithm.h>
 #include <err_common.hpp>
 #include <handle.hpp>

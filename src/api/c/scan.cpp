@@ -11,7 +11,6 @@
 #include <af/defines.h>
 #include <af/dim4.hpp>
 #include <af/algorithm.h>
-#include <af/index.h>
 #include <err_common.hpp>
 #include <handle.hpp>
 #include <ops.hpp>

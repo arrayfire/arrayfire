@@ -11,6 +11,7 @@
 #include <cassert>
 
 #include <af/array.h>
+#include <af/data.h>
 #include <af/index.h>
 #include <af/seq.h>
 #include <ArrayInfo.hpp>

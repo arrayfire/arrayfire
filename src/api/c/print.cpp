@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <vector>
 #include <af/array.h>
+#include <af/data.h>
 #include <copy.hpp>
 #include <print.hpp>
 #include <ArrayInfo.hpp>
