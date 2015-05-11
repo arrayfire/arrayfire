@@ -321,6 +321,8 @@ magma_unmqr_gpu(
         magma_setmatrix<Ty>(mi, ni, hC, mi, c_ref(ic, jc), lddc, queue);
     }
 
+    magma_free(dwork);
+
     return *info;
     /* End of MAGMA_ZUNMQR_GPU */
 }
