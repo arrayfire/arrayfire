@@ -237,4 +237,18 @@ namespace af
 
         return array(res);
     }
+
+    array lower(const array &in)
+    {
+        af_array res;
+        AF_THROW(af_lower(&res, in.get()));
+        return array(res);
+    }
+
+    array upper(const array &in)
+    {
+        af_array res;
+        AF_THROW(af_upper(&res, in.get()));
+        return array(res);
+    }
 }

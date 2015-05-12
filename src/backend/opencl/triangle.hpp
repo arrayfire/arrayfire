@@ -14,4 +14,7 @@ namespace opencl
 {
     template<typename T, bool is_upper>
     void triangle(Array<T> &out, const Array<T> &in);
+
+    template<typename T, bool is_upper>
+    Array<T> triangle(const Array<T> &in);
 }

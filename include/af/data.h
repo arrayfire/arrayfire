@@ -174,6 +174,34 @@ namespace af
     /**
       @}
     */
+
+    /**
+       \defgroup data_func_lower lower
+       Create a lower triangular marix from input array
+
+       @{
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
+    AFAPI array lower(const array &in);
+
+    /**
+      @}
+    */
+
+    /**
+       \defgroup data_func_upper upper
+       Create a upper triangular marix from input array
+
+       @{
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
+    AFAPI array upper(const array &in);
+
+    /**
+      @}
+    */
 }
 #endif
 
@@ -291,6 +319,33 @@ extern "C" {
     AFAPI af_err af_diag_extract(af_array *out, const af_array in, const int num);
     /**
        @}
+    */
+
+    /**
+       \defgroup data_func_lower lower
+       Create a lower triangular marix from input array
+
+       @{
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
+    AFAPI af_err af_lower(af_array *out, const af_array in);
+
+    /**
+      @}
+    */
+
+    /**
+       \defgroup data_func_upper upper
+       Create a upper triangular marix from input array
+
+       @{
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
+    AFAPI af_err af_upper(af_array *out, const af_array in);
+    /**
+      @}
     */
 
 #ifdef __cplusplus
