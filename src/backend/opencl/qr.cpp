@@ -42,7 +42,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &orig)
         int NUM = (2*MN + ((N+31)/32)*32)*NB;
         Array<T> tmp = createEmptyArray<T>(dim4(NUM));
 
-        T *h_tau = new T[MN];
+        std::vector<T> h_tau(MN);
 
         int info = 0;
         cl::Buffer *in_buf = in.get();
@@ -50,7 +50,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &orig)
 
         magma_geqrf_gpu<T>(M, N,
                            (*in_buf)(), in.getOffset(), in.strides()[1],
-                           h_tau, (*dT)(), tmp.getOffset(), getQueue()(), &info);
+                           &h_tau[0], (*dT)(), tmp.getOffset(), getQueue()(), &info);
 
         r = createEmptyArray<T>(in.dims());
         kernel::triangle<T, true>(r, in);
@@ -68,11 +68,10 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &orig)
 
         magma_ungqr_gpu<T>(q.dims()[0], q.dims()[1], std::min(M, N),
                            (*q_buf)(), q.getOffset(), q.strides()[1],
-                           h_tau,
+                           &h_tau[0],
                            (*dT)(), tmp.getOffset(), NB, getQueue()(), &info);
 
-        t = createHostDataArray(dim4(MN), h_tau);
-        delete[] h_tau;
+        t = createHostDataArray(dim4(MN), &h_tau[0]);
     } catch(cl::Error &err) {
         CL_TO_AF_ERROR(err);
     }

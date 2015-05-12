@@ -35,7 +35,7 @@ Array<T> generalSolve(const Array<T> &a, const Array<T> &b)
     int M = iDims[0];
     int N = iDims[1];
     int MN = std::min(M, N);
-    int *ipiv = new int[MN];
+    std::vector<int> ipiv(MN);
 
     Array<T> A = copyArray<T>(a);
     Array<T> B = copyArray<T>(b);
@@ -43,13 +43,13 @@ Array<T> generalSolve(const Array<T> &a, const Array<T> &b)
     cl::Buffer *a_buf = A.get();
     int info = 0;
     magma_getrf_gpu<T>(M, N, (*a_buf)(), a.getOffset(), a.strides()[1],
-                       ipiv, getQueue()(), &info);
+                       &ipiv[0], getQueue()(), &info);
 
     cl::Buffer *b_buf = B.get();
     int K = b.dims()[1];
     magma_getrs_gpu<T>(MagmaNoTrans, M, K,
                        (*a_buf)(), a.getOffset(), a.strides()[1],
-                       ipiv,
+                       &ipiv[0],
                        (*b_buf)(), b.getOffset(), b.strides()[1],
                        getQueue()(), &info);
     return B;
@@ -95,7 +95,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
         int NUM = (2*MN + ((M+31)/32)*32)*NB;
         Array<T> tmp = createEmptyArray<T>(dim4(NUM));
 
-        T *h_tau = new T[MN];
+        std::vector<T> h_tau(MN);
 
         int info = 0;
         cl::Buffer *dA = A.get();
@@ -104,7 +104,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
 
         magma_geqrf_gpu<T>(A.dims()[0], A.dims()[1],
                            (*dA)(), A.getOffset(), A.strides()[1],
-                           h_tau, (*dT)(), tmp.getOffset(), getQueue()(), &info);
+                           &h_tau[0], (*dT)(), tmp.getOffset(), getQueue()(), &info);
 
         A.resetDims(dim4(M, M));
 
@@ -127,27 +127,24 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
 
 #if UNMQR
         int lwork = (B.dims()[0]-A.dims()[0]+NB)*(B.dims()[1]+2*NB);
-        T *h_work = new T[lwork];
+        std::vector<T> h_work(lwork);
         B.resetDims(dim4(N, K));
         magma_unmqr_gpu<T>(MagmaLeft, MagmaNoTrans,
                            B.dims()[0], B.dims()[1], A.dims()[0],
                            (*dA)(), A.getOffset(), A.strides()[1],
-                           h_tau,
+                           &h_tau[0],
                            (*dB)(), B.getOffset(), B.strides()[1],
-                           h_work, lwork,
+                           &h_work[0], lwork,
                            (*dT)(), tmp.getOffset(), NB, queue, &info);
-        delete[] h_work;
 #else
         A.resetDims(dim4(N, M));
         magma_ungqr_gpu<T>(A.dims()[0], A.dims()[1], std::min(M, N),
                            (*dA)(), A.getOffset(), A.strides()[1],
-                           h_tau,
+                           &h_tau[0],
                            (*dT)(), tmp.getOffset(), NB, queue, &info);
 
         B = matmul(A, B, AF_NO_TRANSPOSE, AF_NO_TRANSPOSE);
 #endif
-        delete[] h_tau;
-
     } else if (M > N) {
         // Least squres for this case is solved using the following
         // solve(A, B) == tri_solve(R1, Bt);
@@ -171,7 +168,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
         int NUM = (2*MN + ((N+31)/32)*32)*NB;
         Array<T> tmp = createEmptyArray<T>(dim4(NUM));
 
-        T *h_tau = new T[NUM];
+        std::vector<T> h_tau(NUM);
 
         int info = 0;
         cl::Buffer *A_buf = A.get();
@@ -180,20 +177,20 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
 
         magma_geqrf_gpu<T>(M, N,
                            (*A_buf)(), A.getOffset(), A.strides()[1],
-                           h_tau, (*dT)(), tmp.getOffset(), getQueue()(), &info);
+                           &h_tau[0], (*dT)(), tmp.getOffset(), getQueue()(), &info);
 
         int NRHS = B.dims()[1];
         int lhwork = (M - N + NB) * (NRHS + NB) + NRHS * NB;
 
-        T *h_work = new T[lhwork];
+        std::vector<T> h_work(lhwork);
         h_work[0] = scalar<T>(lhwork);
 
         magma_unmqr_gpu<T>(MagmaLeft, MagmaConjTrans,
                            M, NRHS, N,
                            (*A_buf)(), A.getOffset(), A.strides()[1],
-                           h_tau,
+                           &h_tau[0],
                            (*B_buf)(), B.getOffset(), B.strides()[1],
-                           h_work, lhwork,
+                           &h_work[0], lhwork,
                            (*dT)(), tmp.getOffset(), NB,
                            queue, &info);
 
@@ -210,8 +207,6 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
                  1, &queue, 0, nullptr, &event);
 
         B.resetDims(dim4(N, K));
-        delete[] h_tau;
-        delete[] h_work;
     }
 
     return B;

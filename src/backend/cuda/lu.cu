@@ -87,23 +87,20 @@ void convertPivot(Array<int> &pivot, int out_sz)
 {
     dim_type d0 = pivot.dims()[0];
 
-    int *d_po = new int[out_sz];
+    std::vector<int> d_po(out_sz);
     for(int i = 0; i < out_sz; i++) {
         d_po[i] = i;
     }
 
-    int *d_pi = new int[d0];
-    copyData(d_pi, pivot);
+    std::vector<int> d_pi(d0);
+    copyData(&d_pi[0], pivot);
 
     for(int j = 0; j < d0; j++) {
         // 1 indexed in pivot
         std::swap(d_po[j], d_po[d_pi[j] - 1]);
     }
 
-    pivot = createHostDataArray<int>(out_sz, d_po);;
-
-    delete [] d_po;
-    delete [] d_pi;
+    pivot = createHostDataArray<int>(out_sz, &d_po[0]);
 }
 
 
