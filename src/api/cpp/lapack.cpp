@@ -30,7 +30,7 @@ namespace af
         pivot = array(p);
     }
 
-    array luInplace(array &in)
+    array luInPlace(array &in)
     {
         af_array pivot = 0;
         AF_THROW(af_lu_inplace(&pivot, in.get()));
@@ -54,7 +54,7 @@ namespace af
         tau = array(t_);
     }
 
-    array qrInplace(array &in)
+    array qrInPlace(array &in)
     {
         af_array tau = 0;
         AF_THROW(af_qr_inplace(&tau, in.get()));
@@ -68,7 +68,7 @@ namespace af
         return array(out);
     }
 
-    void choleskyInplace(array &in, int *info, const bool is_upper)
+    void choleskyInPlace(array &in, int *info, const bool is_upper)
     {
         AF_THROW(af_cholesky_inplace(info, in.get(), is_upper));
     }

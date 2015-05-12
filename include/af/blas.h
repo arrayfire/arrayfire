@@ -123,7 +123,7 @@ namespace af
     */
     AFAPI array transpose(const array& in, const bool conjugate = false);
 
-    AFAPI void transposeInplace(array& in, const bool conjugate = false);
+    AFAPI void transposeInPlace(array& in, const bool conjugate = false);
     /**
       }@
     */

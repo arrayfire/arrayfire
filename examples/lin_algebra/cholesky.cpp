@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
         array in = matmulNT(t, t) + identity(n, n) * n;
         af_print(in);
 
-        printf("Running Cholesky Inplace\n");
+        printf("Running Cholesky InPlace\n");
         array cin = in.copy();
         af_print(cin);
 

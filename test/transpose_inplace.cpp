@@ -81,7 +81,7 @@ INIT_TEST(25, 2, 2);
 
 ////////////////////////////////////// CPP //////////////////////////////////
 //
-void transposeInplaceCPPTest()
+void transposeInPlaceCPPTest()
 {
     if (noDoubleTests<float>()) return;
 
@@ -89,7 +89,7 @@ void transposeInplaceCPPTest()
 
     af::array input = randu(dims);
     af::array output = af::transpose(input);
-    transposeInplace(input);
+    transposeInPlace(input);
 
     float *outData = new float[dims.elements()];
     float *trsData = new float[dims.elements()];

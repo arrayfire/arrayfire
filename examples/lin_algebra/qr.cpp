@@ -22,13 +22,13 @@ int main(int argc, char *argv[])
         af::setDevice(device);
         af::info();
 
-        printf("Running QR Inplace\n");
+        printf("Running QR InPlace\n");
         array in = randu(5, 8);
         af_print(in);
 
         array qin = in.copy();
 
-        array tau = qrInplace(qin);
+        array tau = qrInPlace(qin);
         af_print(qin);
         af_print(tau);
 

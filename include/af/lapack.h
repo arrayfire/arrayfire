@@ -23,17 +23,17 @@ namespace af
 
     AFAPI void lu(array &lower, array &upper, array &pivot, const array &in);
 
-    AFAPI array luInplace(array &in);
+    AFAPI array luInPlace(array &in);
 
     AFAPI void qr(array &out, array &tau, const array &in);
 
     AFAPI void qr(array &q, array &r, array &tau, const array &in);
 
-    AFAPI array qrInplace(array &in);
+    AFAPI array qrInPlace(array &in);
 
     AFAPI array cholesky(const array &in, int *info = NULL, const bool is_upper = true);
 
-    AFAPI void choleskyInplace(array &in, int *info = NULL, const bool is_upper = true);
+    AFAPI void choleskyInPlace(array &in, int *info = NULL, const bool is_upper = true);
 
     AFAPI array solve(const array &a, const array &b, const af_solve_t options = AF_SOLVE_NONE);
 

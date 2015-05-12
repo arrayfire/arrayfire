@@ -27,7 +27,7 @@ using af::cdouble;
 
 ///////////////////////////////// CPP ////////////////////////////////////
 //
-TEST(LU, InplaceSmall)
+TEST(LU, InPlaceSmall)
 {
     if (noDoubleTests<float>()) return;
 

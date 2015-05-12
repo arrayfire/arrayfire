@@ -73,7 +73,7 @@ af_err af_transpose_inplace(af_array in, const bool conjugate)
         af_dtype type = info.getType();
         af::dim4 dims = info.dims();
 
-        // Inplace only works on square matrices
+        // InPlace only works on square matrices
         DIM_ASSERT(0, dims[0] == dims[1]);
 
         // If singleton element
