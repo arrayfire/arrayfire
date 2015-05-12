@@ -12,7 +12,13 @@
 #ifndef MAGMA_DATA_H
 #define MAGMA_DATA_H
 #include <iostream>
+
+#ifdef __APPLE__
+#include <OpenCL/cl.h>
+#else
 #include <CL/cl.h>
+#endif
+
 #include <cl.hpp>
 #include <platform.hpp>
 #include "magma_types.h"
@@ -227,7 +233,7 @@ magma_copymatrix(
 
     size_t src_origin[3] = { dA_offset*sizeof(T), 0, 0 };
     size_t dst_orig[3]   = { dB_offset*sizeof(T), 0, 0 };
-    size_t region[3]     = { m*sizeof(T), n, 1 };
+    size_t region[3]     = { m*sizeof(T), static_cast<size_t>(n), 1 };
     cl_int err = clEnqueueCopyBufferRect(
         queue, dA_src, dB_dst,
         src_origin, dst_orig, region,
@@ -251,7 +257,7 @@ magma_copymatrix_async(
     // TODO how to make non-blocking?
     size_t src_origin[3] = { dA_offset*sizeof(T), 0, 0 };
     size_t dst_orig[3]   = { dB_offset*sizeof(T), 0, 0 };
-    size_t region[3]     = { m*sizeof(T), n, 1 };
+    size_t region[3]     = { m*sizeof(T), static_cast<size_t>(n), 1 };
     cl_int err = clEnqueueCopyBufferRect(
         queue, dA_src, dB_dst,
         src_origin, dst_orig, region,

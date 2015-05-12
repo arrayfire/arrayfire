@@ -22,11 +22,17 @@
 #define LAPACK_PREFIX LAPACKE_
 #define ORDER_TYPE int
 #define LAPACK_NAME(fn) LAPACKE_##fn
-#ifdef USE_MKL
-#include<mkl_lapacke.h>
-#else // NETLIB LAPACKE
-#include<lapacke.h>
-#endif
+
+#if defined(__APPLE__)
+    #define LAPACK_COL_MAJOR 102
+    #include "../../lapacke.hpp"
+#else
+    #ifdef USE_MKL
+        #include<mkl_lapacke.h>
+    #else // NETLIB LAPACKE
+        #include<lapacke.h>
+    #endif  // MKL/NETLIB
+#endif  //APPLE
 
 #define CPU_LAPACK_FUNC_DEF(NAME)               \
     template<typename T>                        \
