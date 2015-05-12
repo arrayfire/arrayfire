@@ -33,9 +33,9 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type TILE_DIM  = 32;
+static const dim_type TILE_DIM  = 16;
 static const dim_type THREADS_X = TILE_DIM;
-static const dim_type THREADS_Y = TILE_DIM / 4;
+static const dim_type THREADS_Y = 256 / TILE_DIM;
 
 template<typename T, bool conjugate, bool IS32MULTIPLE>
 void transpose_inplace(Param in)
