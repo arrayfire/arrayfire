@@ -31,7 +31,7 @@ using af::cdouble;
 template<typename T>
 void inverseTester(const int m, const int n, const int k, double eps)
 {
-    if (noDoubleTests<double>()) return;
+    if (noDoubleTests<T>()) return;
     af::array A  = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
     af::array IA = inverse(A);
 

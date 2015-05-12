@@ -31,7 +31,7 @@ using af::cdouble;
 template<typename T>
 void solveTester(const int m, const int n, const int k, double eps)
 {
-    if (noDoubleTests<double>()) return;
+    if (noDoubleTests<T>()) return;
     af::array A  = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
     af::array X0 = af::randu(n, k, (af::dtype)af::dtype_traits<T>::af_type);
     af::array B0 = af::matmul(A, X0);

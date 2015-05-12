@@ -92,9 +92,10 @@ TEST(LU, SplitSmall)
     // Compare result
     for (int y = 0; y < ldims[1]; ++y) {
         for (int x = 0; x < ldims[0]; ++x) {
-            if(x < y);
-            int elIter = y * ldims[0] + x;
-            ASSERT_NEAR(tests[resultIdx][elIter], lData[elIter], 0.001) << "at: " << elIter << std::endl;
+            if(x < y) {
+                int elIter = y * ldims[0] + x;
+                ASSERT_NEAR(tests[resultIdx][elIter], lData[elIter], 0.001) << "at: " << elIter << std::endl;
+            }
         }
     }
 
