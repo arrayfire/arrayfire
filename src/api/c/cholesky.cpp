@@ -38,11 +38,10 @@ af_err af_cholesky(af_array *out, int *info, const af_array in, const bool is_up
 
         af_dtype type = i_info.getType();
 
-        ARG_ASSERT(2, i_info.isFloating());                       // Only floating and complex types
-        ARG_ASSERT(2, i_info.isFloating());                       // Only floating and complex types
+        ARG_ASSERT(2, i_info.isFloating());                  // Only floating and complex types
+        DIM_ASSERT(1, i_info.dims()[0] == i_info.dims()[1]); // Only square matrices
 
         af_array output;
-
         switch(type) {
             case f32: output = cholesky<float  >(info, in, is_upper);  break;
             case f64: output = cholesky<double >(info, in, is_upper);  break;

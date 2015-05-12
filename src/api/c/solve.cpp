@@ -46,6 +46,8 @@ af_err af_solve(af_array *out, const af_array a, const af_array b, const af_solv
         DIM_ASSERT(1, bdims[2] == adims[2]);
         DIM_ASSERT(1, bdims[3] == adims[3]);
 
+        ARG_ASSERT(3, options == AF_SOLVE_NONE);
+
         af_array output;
 
         switch(a_type) {
