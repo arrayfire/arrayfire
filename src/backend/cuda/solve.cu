@@ -192,6 +192,12 @@ Array<T> generalSolve(const Array<T> &a, const Array<T> &b)
 }
 
 template<typename T>
+cublasOperation_t trans() { return CUBLAS_OP_T; }
+template<> cublasOperation_t trans<cfloat>() { return CUBLAS_OP_C; }
+template<> cublasOperation_t trans<cdouble>() { return CUBLAS_OP_C; }
+
+
+template<typename T>
 Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
 {
     int M = a.dims()[0];
@@ -294,10 +300,9 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
 
         // matmul(Q1, B)
         CUSOLVER_CHECK(mqr_solve_func<T>()(getDnHandle(),
-                                           CUBLAS_SIDE_LEFT, CUBLAS_OP_T,
-                                           B.dims()[0],
-                                           B.dims()[1],
-                                           A.dims()[1],
+                                           CUBLAS_SIDE_LEFT,
+                                           trans<T>(),
+                                           M, K, N,
                                            A.get(), A.strides()[1],
                                            t.get(),
                                            B.get(), B.strides()[1],
