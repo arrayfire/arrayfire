@@ -16,6 +16,7 @@
 #include <stdexcept>
 #include <mutex>
 #include <err_common.hpp>
+#include <err_clblas.hpp>
 #include <math.hpp>
 
 namespace opencl
@@ -98,23 +99,25 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
 
     dim4 lStrides = lhs.strides();
     dim4 rStrides = rhs.strides();
-    clblasStatus err;
     cl::Event event;
     if(rDims[bColDim] == 1) {
         N = lDims[aColDim];
         gemv_func<T> gemv;
-        err = gemv(
-            clblasColumnMajor, lOpts,
-            lDims[0], lDims[1],
-            alpha,
-            (*lhs.get())(),    lhs.getOffset(),   lStrides[1],
-            (*rhs.get())(),    rhs.getOffset(),   rStrides[0],
-            beta ,
-            (*out.get())(),   out.getOffset(),             1,
-            1, &getQueue()(), 0, nullptr, &event());
+        CLBLAS_CHECK(
+            gemv(
+                clblasColumnMajor, lOpts,
+                lDims[0], lDims[1],
+                alpha,
+                (*lhs.get())(),    lhs.getOffset(),   lStrides[1],
+                (*rhs.get())(),    rhs.getOffset(),   rStrides[0],
+                beta ,
+                (*out.get())(),   out.getOffset(),             1,
+                1, &getQueue()(), 0, nullptr, &event())
+            );
     } else {
         gemm_func<T> gemm;
-        err = gemm(
+        CLBLAS_CHECK(
+            gemm(
                 clblasColumnMajor, lOpts, rOpts,
                 M, N, K,
                 alpha,
@@ -122,11 +125,9 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                 (*rhs.get())(),    rhs.getOffset(),   rStrides[1],
                 beta,
                 (*out.get())(),   out.getOffset(),  out.dims()[0],
-                1, &getQueue()(), 0, nullptr, &event());
+                1, &getQueue()(), 0, nullptr, &event())
+            );
 
-    }
-    if(err) {
-        throw runtime_error(std::string("CLBLAS error: ") + std::to_string(err));
     }
 
     return out;
@@ -143,17 +144,14 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
     cl::Event event;
     auto out = createEmptyArray<T>(af::dim4(1));
     cl::Buffer scratch(getContext(), CL_MEM_READ_WRITE, sizeof(T) * N);
-    clblasStatus err;
-    err = dot(N,
-              (*out.get())(), out.getOffset(),
-              (*lhs.get())(),  lhs.getOffset(), lhs.strides()[0],
-              (*rhs.get())(),  rhs.getOffset(), rhs.strides()[0],
-              scratch(),
-              1, &getQueue()(), 0, nullptr, &event());
-
-    if(err) {
-        throw runtime_error(std::string("CLBLAS error: ") + std::to_string(err));
-    }
+    CLBLAS_CHECK(
+        dot(N,
+            (*out.get())(), out.getOffset(),
+            (*lhs.get())(),  lhs.getOffset(), lhs.strides()[0],
+            (*rhs.get())(),  rhs.getOffset(), rhs.strides()[0],
+            scratch(),
+            1, &getQueue()(), 0, nullptr, &event())
+        );
     return out;
 }
 

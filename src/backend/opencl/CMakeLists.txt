@@ -5,6 +5,24 @@ FIND_PACKAGE(OpenCL REQUIRED)
 
 INCLUDE("${CMAKE_MODULE_PATH}/CLKernelToH.cmake")
 
+IF (OPENCL_USE_F77_BLAS)
+  MESSAGE("Using F77 BLAS")
+  ADD_DEFINITIONS(-DUSE_F77_BLAS)
+ENDIF()
+
+IF (OPENCL_USE_MKL)
+  MESSAGE("Using MKL")
+  ADD_DEFINITIONS(-DUSE_MKL)
+ENDIF()
+
+FIND_PACKAGE(LAPACK)
+IF(NOT LAPACK_FOUND)
+  MESSAGE(WARNING "LAPACK not found. Functionality will be disabled")
+ELSE(NOT LAPACK_FOUND)
+  ADD_DEFINITIONS(-DLAPACK_${BLA_VENDOR})
+  ADD_DEFINITIONS(-DWITH_OPENCL_LINEAR_ALGEBRA)
+ENDIF()
+
 IF(NOT UNIX)
   ADD_DEFINITIONS(-DAFDLL)
 ENDIF()
@@ -53,13 +71,21 @@ INCLUDE_DIRECTORIES(
     ${CLFFT_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIR}
     ${BoostCompute_INCLUDE_DIRS}
+    ${LAPACK_INCLUDE_DIR}
     )
 
 FILE(GLOB opencl_headers
   "*.hpp"
-    "*.h")
+  "*.h")
+
 FILE(GLOB opencl_sources
     "*.cpp")
+
+FILE(GLOB magma_sources
+    "magma/*.cpp")
+
+FILE(GLOB magma_headers
+    "magma/*.h")
 
 FILE(GLOB jit_sources
     "jit/*.hpp")
@@ -87,6 +113,8 @@ source_group(backend\\opencl\\kernel\\cl FILES ${opencl_kernels})
 source_group(backend\\opencl\\kernel\\Sources FILES ${kernel_sources})
 source_group(backend\\opencl\\kernel\\convolve\\Headers FILES ${conv_ker_headers})
 source_group(backend\\opencl\\kernel\\convolve\\Sources FILES ${conv_ker_sources})
+source_group(backend\\opencl\\magma\\Sources FILES ${magma_sources})
+source_group(backend\\opencl\\magma\\Headers FILES ${magma_headers})
 
 FILE(GLOB backend_headers
     "../*.hpp"
@@ -152,11 +180,25 @@ ADD_LIBRARY(afopencl SHARED
             ${c_sources}
             ${c_headers}
             ${cpp_sources}
+            ${magma_sources}
+            ${magma_headers}
             )
 
 ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
 
-TARGET_LINK_LIBRARIES(afopencl ${OpenCL_LIBRARIES} ${lib_deps} ${CLBLAS_LIBRARIES} ${CLFFT_LIBRARIES} ${CMAKE_DL_LIBS} ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES(afopencl
+  ${OpenCL_LIBRARIES}
+  ${FreeImage_LIBS}
+  ${CLBLAS_LIBRARIES}
+  ${CLFFT_LIBRARIES}
+  ${CMAKE_DL_LIBS}
+  ${Boost_LIBRARIES})
+
+IF(LAPACK_FOUND)
+   TARGET_LINK_LIBRARIES(afopencl
+   ${LAPACK_LIBRARIES}
+   )
+ENDIF()
 
 SET_TARGET_PROPERTIES(afopencl PROPERTIES
     VERSION "${AF_VERSION}"
