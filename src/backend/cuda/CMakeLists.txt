@@ -38,7 +38,14 @@ ELSE(${CUDA_VERSION_MAJOR} LESS 7)
     MESSAGE(STATUS "CUDA cusolver library available in CUDA Version ${CUDA_VERSION_STRING}")
     ADD_DEFINITIONS(-DWITH_CUDA_LINEAR_ALGEBRA)
     IF(CMAKE_VERSION VERSION_LESS 3.2)
-        SET(CUDA_cusolver_LIBRARY ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libcusolver.so)
+        FIND_LIBRARY(
+            CUDA_cusolver_LIBRARY
+            NAMES "cusolver"
+            PATHS ${CUDA_TOOLKIT_ROOT_DIR}
+            PATH_SUFFIXES "lib64" "lib/x64" "lib"
+            DOC "CUDA cusolver Library"
+            NO_DEFAULT_PATH
+            )
     ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
 ENDIF(${CUDA_VERSION_MAJOR} LESS 7)
 
