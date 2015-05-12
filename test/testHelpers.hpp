@@ -447,13 +447,11 @@ af::array cpu_randu(const af::dim4 dims)
     bool isTypeCplx = is_same_type<T, af::cfloat>::value || is_same_type<T, af::cdouble>::value;
     bool isTypeFloat = is_same_type<BT, float>::value || is_same_type<BT, double>::value;
 
-    if (!isTypeFloat) throw af::exception("Unsupported data type");
-
     dim_type elements = (isTypeCplx ? 2 : 1) * dims.elements();
 
     std::vector<BT> out(elements);
     for(int i = 0; i < (int)elements; i++) {
-        out[i] = (BT)(rand())/RAND_MAX;
+        out[i] = isTypeFloat ? (BT)(rand())/RAND_MAX : rand() % 100;
     }
 
     return af::array(dims, (T *)&out[0]);
