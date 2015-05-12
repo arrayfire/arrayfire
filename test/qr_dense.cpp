@@ -82,12 +82,8 @@ void qrTester(const int m, const int n, double eps)
     try {
         if (noDoubleTests<T>()) return;
 
-#ifndef NDEBUG
-        std::vector<float> hin(m * n);
-        for (int i = 0; i < m * n; i++) {
-            hin[i] = (float)(rand()) / RAND_MAX;
-        }
-        af::array in(m, n, &hin[0]);
+#if 1
+        af::array in = cpu_randu<T>(af::dim4(m, n));
 #else
         af::array in = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
 #endif

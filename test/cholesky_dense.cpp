@@ -72,7 +72,11 @@ void choleskyTester(const int n, double eps, bool is_upper)
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 
     // Prepare positive definite matrix
+#if 1
+    af::array a = cpu_randu<T>(af::dim4(n, n));
+#else
     af::array a = af::randu(n, n, ty);
+#endif
     af::array b = 10 * n * af::identity(n, n, ty);
     af::array in = matmul(a.H(), a) + b;
 

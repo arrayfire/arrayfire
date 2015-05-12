@@ -118,7 +118,13 @@ void luTester(const int m, const int n, double eps)
 {
     if (noDoubleTests<T>()) return;
 
+#if 1
+    af::array a = cpu_randu<T>(af::dim4(m, n));
+#else
     af::array a = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
+#endif
+
+
     af::array l, u, pivot;
     af::lu(l, u, pivot, a);
     af::array aa = af::matmul(l, u);
