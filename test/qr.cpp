@@ -113,7 +113,7 @@ void qrTester(const int m, const int n, double eps)
 #define QR_BIG_TESTS(T, eps)                    \
     TEST(QR, T##BigRect0)                       \
     {                                           \
-        qrTester<T>(500, 17, eps);              \
+        qrTester<T>(500, 1000, eps);            \
     }                                           \
     TEST(QR, T##BigRect1)                       \
     {                                           \

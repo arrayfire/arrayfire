@@ -65,6 +65,9 @@ void swapdblk(int n, int nb,
 
     int nblocks = n / nb;
 
+    if(nblocks == 0)
+        return;
+
     int info = 0;
     if (n < 0) {
         info = -1;
