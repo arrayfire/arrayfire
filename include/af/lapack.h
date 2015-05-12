@@ -65,11 +65,10 @@ extern "C" {
     AFAPI af_err af_cholesky_inplace(int *info, af_array in, const bool is_upper);
 
     AFAPI af_err af_solve(af_array *out, const af_array a, const af_array b,
-                          const af_solve_t options = AF_SOLVE_NONE);
+                          const af_solve_t options);
 
     AFAPI af_err af_inverse(af_array *out, const af_array in);
 
 #ifdef __cplusplus
 }
 #endif
-
