@@ -51,7 +51,7 @@ SET(CPACK_COMPONENTS_ALL libraries headers documentation cmake)
 # Debian package
 ##
 SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE ${PROCESSOR_ARCHITECTURE})
-SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libfreeimage-dev, libatlas3gf-base, libfftw3-dev")
+SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libfreeimage-dev, libatlas3gf-base, libfftw3-dev, liblapacke-dev")
 SET(CPACK_DEBIAN_PACKAGE_SUGGESTS "ocl-icd-libopencl1 (>= 2.0), nvidia-cuda-dev (>= 6.0)")
 
 ##
