@@ -43,7 +43,7 @@ Array<T> transpose(const Array<T> &in, const bool conjugate)
     return out;
 }
 
-#define INSTANTIATE(T)\
+#define INSTANTIATE(T)                                                          \
     template Array<T> transpose(const Array<T> &in, const bool conjugate);
 
 INSTANTIATE(float  )

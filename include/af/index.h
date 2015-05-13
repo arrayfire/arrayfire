@@ -110,11 +110,6 @@ extern "C" {
 */
     AFAPI af_err af_assign_seq(af_array *out, const af_array lhs, unsigned ndims, const af_seq* const index, const af_array rhs);
 
-    /**
-       \ingroup manip_func_flip
-    */
-    AFAPI af_err af_flip(af_array *out, const af_array in, const unsigned dim);
-
     // generalized indexing function that accepts either af_array or af_seq
     // along a dimension to index the input array and create the corresponding
     // output array

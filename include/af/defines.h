@@ -139,6 +139,20 @@ typedef enum {
     AF_HSV // 2
 } af_cspace_t;
 
+typedef enum {
+    AF_SOLVE_NONE      = 0,    ///< Default
+    AF_SOLVE_POSDEF    = 1,    ///< A is positive definite
+    AF_SOLVE_NONPOSDEF = 2,    ///< A is not positive definite
+    AF_SOLVE_GAUSSIAN  = 3,    ///< Use Gaussian elimination (fast, cannot be combined with other options)
+    AF_SOLVE_PSEUDO    = 4,    ///< Use pseudo inverse (fast, cannot be combined with other options)
+    AF_SOLVE_CTRANS    = 256,  ///< Solve A.H() (conjugate transpose)
+    AF_SOLVE_TRANS     = 512,  ///< Solve A.T() (non-conjugate transpose)
+    AF_SOLVE_UPPERTRI  = 1024, ///< Solve uppertri(A) (upper triangular system)
+    AF_SOLVE_LOWERTRI  = 2048, ///< Solve lowertri(A) (lower triangular system)
+    AF_SOLVE_TRIDIAG   = 4096,
+    AF_SOLVE_BLKDIAG   = 8192
+} af_solve_t;
+
 // Below enum is purely added for example purposes
 // it doesn't and shoudn't be used anywhere in the
 // code. No Guarantee's provided if it is used.

@@ -1021,13 +1021,13 @@ TYPED_TEST(IndexedMembers, MemFuncs)
     using af::array;
     int dimsize = 100;
     vector<TypeParam> in(dimsize * dimsize);
-    for(int i = 0; i < in.size(); i++) in[i] = i;
+    for(int i = 0; i < (int)in.size(); i++) in[i] = i;
     array input(dimsize, dimsize, &in.front(), af::afHost, (af::dtype) dtype_traits<TypeParam>::af_type);
 
     ASSERT_EQ(dimsize, input(af::span, 1).elements());
     ASSERT_EQ(input.type(), input(af::span, 1).type());
     ASSERT_EQ(af::dim4(dimsize), input(af::span, 1).dims());
-    ASSERT_EQ(1, input(af::span, 1).numdims());
+    ASSERT_EQ(1u, input(af::span, 1).numdims());
     ASSERT_FALSE(input(af::span, 1).isempty());
     ASSERT_FALSE(input(af::span, 1).isscalar());
     ASSERT_TRUE(input(1, 1).isscalar());

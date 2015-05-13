@@ -29,6 +29,26 @@ ENDIF()
 
 ADD_DEFINITIONS(-DAF_CUDA)
 
+IF(${CUDA_VERSION_MAJOR} LESS 7)
+    MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cuSolve library. Linear Algebra will not be available." )
+    IF(CMAKE_VERSION VERSION_LESS 3.2)
+        SET(CUDA_cusolver_LIBRARY)
+    ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
+ELSE(${CUDA_VERSION_MAJOR} LESS 7)
+    MESSAGE(STATUS "CUDA cusolver library available in CUDA Version ${CUDA_VERSION_STRING}")
+    ADD_DEFINITIONS(-DWITH_CUDA_LINEAR_ALGEBRA)
+    IF(CMAKE_VERSION VERSION_LESS 3.2)
+        FIND_LIBRARY(
+            CUDA_cusolver_LIBRARY
+            NAMES "cusolver"
+            PATHS ${CUDA_TOOLKIT_ROOT_DIR}
+            PATH_SUFFIXES "lib64" "lib/x64" "lib"
+            DOC "CUDA cusolver Library"
+            NO_DEFAULT_PATH
+            )
+    ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
+ENDIF(${CUDA_VERSION_MAJOR} LESS 7)
+
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
     ${Boost_INCLUDE_DIR}
@@ -165,8 +185,14 @@ CUDA_ADD_LIBRARY(afcuda SHARED
 
 ADD_DEPENDENCIES(afcuda ${ptx_targets})
 
-
-TARGET_LINK_LIBRARIES(afcuda ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} ${lib_deps} ${CUDA_CUFFT_LIBRARIES} ${CUDA_NVVM_LIBRARIES} ${CUDA_CUDA_LIBRARY})
+TARGET_LINK_LIBRARIES(afcuda
+                      ${CUDA_CUBLAS_LIBRARIES}
+                      ${CUDA_LIBRARIES}
+                      ${CUDA_cusolver_LIBRARY}
+                      ${FreeImage_LIBS}
+                      ${CUDA_CUFFT_LIBRARIES}
+                      ${CUDA_NVVM_LIBRARIES}
+                      ${CUDA_CUDA_LIBRARY})
 
 SET_TARGET_PROPERTIES(afcuda PROPERTIES
     VERSION "${AF_VERSION}"
@@ -175,6 +201,6 @@ SET_TARGET_PROPERTIES(afcuda PROPERTIES
 INSTALL(TARGETS afcuda EXPORT CUDA DESTINATION lib COMPONENT libraries)
 
 export(TARGETS afcuda FILE ArrayFireCUDA.cmake)
-INSTALL(EXPORT CUDA DESTINATION ${ARRAYFIRE_CMAKE_DIR} 
+INSTALL(EXPORT CUDA DESTINATION ${ARRAYFIRE_CMAKE_DIR}
     COMPONENT cmake
     FILE ArrayFireCUDA.cmake)
