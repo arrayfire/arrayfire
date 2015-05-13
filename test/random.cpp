@@ -39,6 +39,20 @@ typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, unsigned
 TYPED_TEST_CASE(Random, TestTypes);
 
 template<typename T>
+class Random_norm : public ::testing::Test
+{
+    public:
+        virtual void SetUp() {
+        }
+};
+
+// create a list of types to be tested
+typedef ::testing::Types<float, cfloat, double, cdouble> TestTypesNorm;
+
+// register the type list
+TYPED_TEST_CASE(Random_norm, TestTypesNorm);
+
+template<typename T>
 void randuTest(af::dim4 & dims)
 {
     if (noDoubleTests<T>()) return;
@@ -170,4 +184,69 @@ TEST(Random, CPP)
     af::dim4 dims(1, 2, 3, 1);
     af::array out1 = af::randu(dims);
     af::array out2 = af::randn(dims);
+}
+
+template<typename T>
+void testSetSeed(const int seed0, const int seed1, bool is_norm = false)
+{
+
+    if (noDoubleTests<T>()) return;
+
+    const int num = 1024 * 1024;
+    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+
+    af::setSeed(seed0);
+    af::array in0 = is_norm ? af::randn(num, ty) : af::randu(num, ty);
+
+    af::setSeed(seed1);
+    af::array in1 = is_norm ? af::randn(num, ty) : af::randu(num, ty);
+
+    af::setSeed(seed0);
+    af::array in2 = is_norm ? af::randn(num, ty) : af::randu(num, ty);
+
+    std::vector<T> h_in0(num);
+    std::vector<T> h_in1(num);
+    std::vector<T> h_in2(num);
+
+    in0.host((void *)&h_in0[0]);
+    in1.host((void *)&h_in1[0]);
+    in2.host((void *)&h_in2[0]);
+
+    for (int i = 0; i < num; i++) {
+        ASSERT_EQ(h_in0[i], h_in2[i]);
+    }
+}
+
+TYPED_TEST(Random, setSeed)
+{
+    testSetSeed<TypeParam>(10101, 23232, false);
+}
+
+TYPED_TEST(Random_norm, setSeed)
+{
+    testSetSeed<TypeParam>(456, 789, false);
+}
+
+template<typename T>
+void testGetSeed(const int seed0, const int seed1)
+{
+    const int num = 1024;
+    af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
+
+    af::setSeed(seed0);
+    af::array in0 = af::randu(num, ty);
+    ASSERT_EQ(af::getSeed(), seed0);
+
+    af::setSeed(seed1);
+    af::array in1 = af::randu(num, ty);
+    ASSERT_EQ(af::getSeed(), seed1);
+
+    af::setSeed(seed0);
+    af::array in2 = af::randu(num, ty);
+    ASSERT_EQ(af::getSeed(), seed0);
+}
+
+TYPED_TEST(Random, getSeed)
+{
+    testGetSeed<TypeParam>(1234, 9876);
 }
