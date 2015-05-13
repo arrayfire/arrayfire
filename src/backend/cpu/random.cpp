@@ -68,10 +68,11 @@ nrand(GenType &generator)
     return [func] () { return T(func(), func());};
 }
 
+static default_random_engine generator;
+
 template<typename T>
 Array<T> randn(const af::dim4 &dims)
 {
-    static default_random_engine generator;
     static auto gen = nrand<T>(generator);
 
     Array<T> outArray = createEmptyArray<T>(dims);
@@ -83,7 +84,6 @@ Array<T> randn(const af::dim4 &dims)
 template<typename T>
 Array<T> randu(const af::dim4 &dims)
 {
-    static default_random_engine generator;
     static auto gen = urand<T>(generator);
 
     Array<T> outArray = createEmptyArray<T>(dims);
@@ -117,7 +117,6 @@ INSTANTIATE_NORMAL(cdouble)
 template<>
 Array<char> randu(const af::dim4 &dims)
 {
-    static default_random_engine generator;
     static auto gen = urand<float>(generator);
 
     Array<char> outArray = createEmptyArray<char>(dims);

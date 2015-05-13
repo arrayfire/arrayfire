@@ -22,6 +22,7 @@ namespace kernel
     static const int BLOCKS  = 64;
     static unsigned long long uniform_seed = 0;
     static unsigned long long normal_seed  = 0;
+    static curandState_t *states[DeviceManager::MAX_DEVICES];
 
     template<typename T>
     __device__
@@ -136,7 +137,6 @@ namespace kernel
         int blocks  = divup(elements, THREADS);
         if (blocks > BLOCKS) blocks = BLOCKS;
 
-        static curandState_t *states[DeviceManager::MAX_DEVICES];
         if (!states[device]) {
             CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
 
@@ -159,7 +159,6 @@ namespace kernel
         int blocks  = divup(elements, THREADS);
         if (blocks > BLOCKS) blocks = BLOCKS;
 
-        static curandState_t *states[DeviceManager::MAX_DEVICES];
         if (!states[device]) {
             CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
 
