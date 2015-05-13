@@ -213,7 +213,12 @@ void testSetSeed(const int seed0, const int seed1, bool is_norm = false)
     in2.host((void *)&h_in2[0]);
 
     for (int i = 0; i < num; i++) {
+        // Verify if same seed produces same arrays
         ASSERT_EQ(h_in0[i], h_in2[i]);
+
+        // Verify different arrays don't clash at same location
+        // b8 and u9 can clash because they generate a small set of values
+        if (ty != b8 && ty != u8) ASSERT_NE(h_in0[i], h_in1[i]);
     }
 }
 
