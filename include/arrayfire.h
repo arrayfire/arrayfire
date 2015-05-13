@@ -167,10 +167,7 @@
 
 /**
 \example helloworld.cpp
-\example blas.cpp
-\example fft.cpp
 \example pi.cpp
-\example convolve.cpp
 \example integer.cpp
 \example rainfall.cpp
 \example vectorize.cpp
