@@ -37,7 +37,8 @@ namespace opencl
     {
         static const uint REPEAT  = 32;
         static const uint THREADS = 256;
-        static uint random_seed[2];
+
+        static uint random_seed[2] = {0, 0};
         static unsigned counter;
 
         template<typename T, bool isRandu>

@@ -174,6 +174,18 @@ namespace af
         return randn(dim4(d0, d1, d2, d3), ty);
     }
 
+    void setSeed(const uintl seed)
+    {
+        AF_THROW(af_set_seed(seed));
+    }
+
+    uintl getSeed()
+    {
+        uintl seed = 0;
+        AF_THROW(af_get_seed(&seed));
+        return seed;
+    }
+
     array range(const dim4 &dims, const int seq_dim, af::dtype ty)
     {
         af_array out;

@@ -108,6 +108,31 @@ namespace af
     */
 
     /**
+       \defgroup data_func_setseed setSeed
+       Set the seed for the random number generator
+
+
+       \param[in] seed is a 64 bit unsigned integer
+
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
+    AFAPI void setSeed(const uintl seed);
+
+    /**
+       \defgroup data_func_getseed getSeed
+       Get the seed for the random number generator
+
+
+       \return seed which is a 64 bit unsigned integer
+
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
+    AFAPI uintl getSeed();
+
+
+    /**
        \defgroup data_func_identity identity
        Create an identity array
 
@@ -412,6 +437,31 @@ extern "C" {
     /**
        @}
     */
+
+    /**
+       \defgroup data_func_setseed setSeed
+       Set the seed for the random number generator
+
+
+       \param[in] seed is a 64 bit unsigned integer
+
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
+    AFAPI af_err af_set_seed(const uintl seed);
+
+    /**
+       \defgroup data_func_getseed getSeed
+       Get the seed for the random number generator
+
+
+       \param[out] seed which is a 64 bit unsigned integer
+
+       \ingroup data_mat
+       \ingroup arrayfire_func
+    */
+    AFAPI af_err af_get_seed(uintl *seed);
+
 
     /**
        \defgroup data_func_identity identity
