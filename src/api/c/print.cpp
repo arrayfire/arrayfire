@@ -37,17 +37,20 @@ static void printer(ostream &out, const T* ptr, const ArrayInfo &info, unsigned 
     dim_type d      =   info.dims()[dim];
     ToNum<T> toNum;
 
-    for (dim_type i = 0; i < d; i++) {
-        if (idx == 0) {
+    if (idx == 0) {
+        for (dim_type i = 0; i < d; i++) {
             out<<   std::fixed <<
                 std::setw(10) <<
                 std::setprecision(4) << toNum(ptr[i * stride]) << " ";
-        } else {
+        }
+    } else {
+        for (dim_type i = 0; i < d; i++) {
             printer(out, ptr, info, idx - 1);
             ptr += stride;
         }
     }
-    out << std::endl;
+
+    if (idx <= info.ndims()) out << std::endl;
 }
 
 template<typename T>
@@ -67,7 +70,7 @@ static void print(af_array arr)
     std::cout <<"   Strides: ["<<info.strides()<<"]"<<std::endl;
 #endif
 
-    printer(std::cout, &data.front(), info, info.ndims() - 1);
+    printer(std::cout, &data.front(), info, 3);
 
     std::cout.flags(backup);
 }
