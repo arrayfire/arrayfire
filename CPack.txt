@@ -59,7 +59,7 @@ SET(CPACK_DEBIAN_PACKAGE_SUGGESTS "ocl-icd-libopencl1 (>= 2.0), nvidia-cuda-dev 
 ##
 SET(CPACK_RPM_PACKAGE_LICENSE "BSD")
 SET(CPACK_PACKAGE_GROUP "Development/Libraries")
-SET(CPACK_RPM_PACKAGE_REQUIRES "freeimage atlas fftw")
+SET(CPACK_RPM_PACKAGE_REQUIRES "freeimage atlas fftw lapack")
 
 ##
 # Source package
