@@ -70,4 +70,20 @@ namespace opencl
     COMPLEX_RANDOM(randn, cfloat, float, false)
     COMPLEX_RANDOM(randn, cdouble, double, false)
 
+
+    void setSeed(const uintl seed)
+    {
+        uintl hi = (seed & 0xffffffff00000000) >> 32;
+        uintl lo = (seed & 0x00000000ffffffff);
+        kernel::random_seed[0] = (unsigned)hi;
+        kernel::random_seed[1] = (unsigned)lo;
+        kernel::counter = 0;
+    }
+
+    uintl getSeed()
+    {
+        uintl hi = kernel::random_seed[0];
+        uintl lo = kernel::random_seed[1];
+        return hi << 32 | lo;
+    }
 }

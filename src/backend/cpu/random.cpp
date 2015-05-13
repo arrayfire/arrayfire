@@ -68,11 +68,16 @@ nrand(GenType &generator)
     return [func] () { return T(func(), func());};
 }
 
+static default_random_engine generator;
+static unsigned long long gen_seed = 0;
+static bool is_first = true;
+
 template<typename T>
 Array<T> randn(const af::dim4 &dims)
 {
-    static default_random_engine generator;
-    static auto gen = nrand<T>(generator);
+    if (is_first) setSeed(gen_seed);
+
+    auto gen = nrand<T>(generator);
 
     Array<T> outArray = createEmptyArray<T>(dims);
     T *outPtr = outArray.get();
@@ -83,8 +88,9 @@ Array<T> randn(const af::dim4 &dims)
 template<typename T>
 Array<T> randu(const af::dim4 &dims)
 {
-    static default_random_engine generator;
-    static auto gen = urand<T>(generator);
+    if (is_first) setSeed(gen_seed);
+
+    auto gen = urand<T>(generator);
 
     Array<T> outArray = createEmptyArray<T>(dims);
     T *outPtr = outArray.get();
@@ -117,8 +123,7 @@ INSTANTIATE_NORMAL(cdouble)
 template<>
 Array<char> randu(const af::dim4 &dims)
 {
-    static default_random_engine generator;
-    static auto gen = urand<float>(generator);
+    auto gen = urand<float>(generator);
 
     Array<char> outArray = createEmptyArray<char>(dims);
     char *outPtr = outArray.get();
@@ -126,6 +131,18 @@ Array<char> randu(const af::dim4 &dims)
         outPtr[i] = gen() > 0.5;
     }
     return outArray;
+}
+
+void setSeed(const uintl seed)
+{
+    generator.seed(seed);
+    is_first = false;
+    gen_seed = seed;
+}
+
+uintl getSeed()
+{
+    return gen_seed;
 }
 
 }

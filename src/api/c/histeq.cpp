@@ -9,6 +9,7 @@
 
 #include <af/image.h>
 #include <af/index.h>
+#include <af/data.h>
 #include <af/defines.h>
 #include <err_common.hpp>
 #include <handle.hpp>

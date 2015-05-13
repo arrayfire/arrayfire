@@ -311,6 +311,22 @@ af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims
     return AF_SUCCESS;
 }
 
+af_err af_set_seed(const uintl seed)
+{
+    try {
+        setSeed(seed);
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_get_seed(uintl *seed)
+{
+    try {
+        *seed = getSeed();
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
 af_err af_identity(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
 {
     try {
