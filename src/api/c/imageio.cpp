@@ -31,20 +31,23 @@
 using af::dim4;
 using namespace detail;
 
-void FI_DeInitialize();
-
 class FI_Manager
 {
     public:
     static bool initialized;
     FI_Manager()
     {
+#ifndef FREEIMAGE_LIB
+        FreeImage_Initialise();
+#endif
         initialized = true;
     }
 
     ~FI_Manager()
     {
-        FI_DeInitialize();
+#ifndef FREEIMAGE_LIB
+        FreeImage_DeInitialise();
+#endif
     }
 };
 
@@ -52,15 +55,7 @@ bool FI_Manager::initialized = false;
 
 static void FI_Init()
 {
-    if(FI_Manager::initialized == false) {
-        FreeImage_Initialise();
-        static FI_Manager pm = FI_Manager();
-    }
-}
-
-void FI_DeInitialize()
-{
-    FreeImage_DeInitialise();
+    static FI_Manager manager = FI_Manager();
 }
 
 // Helpers
