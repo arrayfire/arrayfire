@@ -22,7 +22,7 @@ namespace kernel
     static const int BLOCKS  = 64;
     static unsigned long long seed = 0;
     static curandState_t *states[DeviceManager::MAX_DEVICES];
-    static bool is_first = true;
+    static bool is_init[DeviceManager::MAX_DEVICES] = {0};
 
     template<typename T>
     __device__
@@ -132,13 +132,13 @@ namespace kernel
     {
         int device = getActiveDeviceId();
 
-        if (is_first) {
+        if (!is_init[device]) {
             CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
-            is_first = false;
         }
 
         setup_kernel<<<BLOCKS, THREADS>>>(states[device], seed);
         POST_LAUNCH_CHECK();
+        is_init[device] = true;
     }
 
     template<typename T>
