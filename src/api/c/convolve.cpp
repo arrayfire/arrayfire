@@ -130,33 +130,33 @@ af_err convolve2_sep(af_array *out, af_array col_filter, af_array row_filter, af
     return AF_SUCCESS;
 }
 
-af_err af_convolve1(af_array *out, af_array signal, af_array filter, bool expand)
+af_err af_convolve1(af_array *out, af_array signal, af_array filter, const af_conv_mode mode)
 {
-    if (expand)
+    if (mode == AF_CONV_EXPAND)
         return convolve<1, true >(out, signal, filter);
     else
         return convolve<1, false>(out, signal, filter);
 }
 
-af_err af_convolve2(af_array *out, af_array signal, af_array filter, bool expand)
+af_err af_convolve2(af_array *out, af_array signal, af_array filter, const af_conv_mode mode)
 {
-    if (expand)
+    if (mode == AF_CONV_EXPAND)
         return convolve<2, true >(out, signal, filter);
     else
         return convolve<2, false>(out, signal, filter);
 }
 
-af_err af_convolve3(af_array *out, af_array signal, af_array filter, bool expand)
+af_err af_convolve3(af_array *out, af_array signal, af_array filter, const af_conv_mode mode)
 {
-    if (expand)
+    if (mode == AF_CONV_EXPAND)
         return convolve<3, true >(out, signal, filter);
     else
         return convolve<3, false>(out, signal, filter);
 }
 
-af_err af_convolve2_sep(af_array *out, af_array signal, af_array col_filter, af_array row_filter, bool expand)
+af_err af_convolve2_sep(af_array *out, af_array signal, af_array col_filter, af_array row_filter, const af_conv_mode mode)
 {
-    if (expand)
+    if (mode == AF_CONV_EXPAND)
         return convolve2_sep<true >(out, signal, col_filter, row_filter);
     else
         return convolve2_sep<false>(out, signal, col_filter, row_filter);

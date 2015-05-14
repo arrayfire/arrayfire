@@ -122,6 +122,17 @@ typedef enum {
 } af_connectivity;
 
 typedef enum {
+    AF_CONV_DEFAULT,
+    AF_CONV_EXPAND,
+} af_conv_mode;
+
+typedef enum {
+    AF_CONV_AUTO,
+    AF_CONV_SPATIAL,
+    AF_CONV_FREQ,
+} af_conv_domain;
+
+typedef enum {
     AF_SAD = 0,
     AF_ZSAD, // 1
     AF_LSAD, // 2
@@ -180,6 +191,7 @@ namespace af
     typedef af_match_type matchType;
     typedef af_cspace_t CSpace;
     typedef af_someenum_t SomeEnum; // Purpose of Addition: How to add Function example
+    typedef af_conv_mode convMode;
 
     const double NaN = std::numeric_limits<double>::quiet_NaN();
     const double Inf = std::numeric_limits<double>::infinity();
