@@ -77,9 +77,9 @@ operator>>(std::istream& istr, dim4& dims)
     return istr;
 }
 
-bool isSpan(const af_seq &seq);
+AFAPI bool isSpan(const af_seq &seq);
 
-size_t seqElements(const af_seq &seq);
+AFAPI size_t seqElements(const af_seq &seq);
 
-dim_type calcDim(const af_seq &seq, const dim_type &parentDim);
+AFAPI dim_type calcDim(const af_seq &seq, const dim_type &parentDim);
 }
