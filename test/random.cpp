@@ -235,6 +235,8 @@ TYPED_TEST(Random_norm, setSeed)
 template<typename T>
 void testGetSeed(const int seed0, const int seed1)
 {
+    if (noDoubleTests<T>()) return;
+
     const int num = 1024;
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 
