@@ -560,12 +560,17 @@ namespace af
 #undef ASSIGN_TYPE
 #undef ASSIGN_OP
 
-#define SELF_OP(OP, op1)                                                    \
-    array::array_proxy& array::array_proxy::operator OP(const array &other) \
-    {                                                                       \
-        *this = *this op1 other;                                            \
-        return *this;                                                       \
-    }                                                                       \
+#define SELF_OP(OP, op1)                                                          \
+    array::array_proxy& array::array_proxy::operator OP(const array_proxy &other) \
+    {                                                                             \
+        *this = *this op1 other;                                                  \
+        return *this;                                                             \
+    }                                                                             \
+    array::array_proxy& array::array_proxy::operator OP(const array &other)       \
+    {                                                                             \
+        *this = *this op1 other;                                                  \
+        return *this;                                                             \
+    }                                                                             \
 
     SELF_OP(+=, +)
     SELF_OP(-=, -)

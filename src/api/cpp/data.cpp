@@ -44,6 +44,7 @@ namespace af
     CONSTANT(unsigned long);
     CONSTANT(long long);
     CONSTANT(unsigned long long);
+    CONSTANT(bool);
 
 #undef CONSTANT
 
