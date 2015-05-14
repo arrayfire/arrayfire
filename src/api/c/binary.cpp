@@ -33,7 +33,7 @@ static inline af_array arithOp(const af_array lhs, const af_array rhs,
 }
 
 template<af_op_t op>
-static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     try {
         const af_dtype otype = implicit(lhs, rhs);
@@ -65,7 +65,7 @@ static af_err af_arith(af_array *out, const af_array lhs, const af_array rhs, bo
 }
 
 template<af_op_t op>
-static af_err af_arith_real(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+static af_err af_arith_real(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     try {
         const af_dtype otype = implicit(lhs, rhs);
@@ -94,47 +94,47 @@ static af_err af_arith_real(af_array *out, const af_array lhs, const af_array rh
     return AF_SUCCESS;
 }
 
-af_err af_add(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_add(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_arith<af_add_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_mul(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_mul(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_arith<af_mul_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_sub(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_sub(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_arith<af_sub_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_div(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_div(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_arith<af_div_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_maxof(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_maxof(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_arith<af_max_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_minof(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_minof(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_arith<af_min_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_rem(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_rem(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_arith_real<af_rem_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_mod(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_mod(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_arith_real<af_mod_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_pow(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_pow(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     try {
         ArrayInfo linfo = getInfo(lhs);
@@ -147,7 +147,7 @@ af_err af_pow(af_array *out, const af_array lhs, const af_array rhs, bool batchM
     return af_arith_real<af_pow_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     try {
 
@@ -176,7 +176,7 @@ af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs, bool batc
     return AF_SUCCESS;
 }
 
-af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_hypot(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     try {
 
@@ -213,7 +213,7 @@ static inline af_array logicOp(const af_array lhs, const af_array rhs, const dim
 }
 
 template<af_op_t op>
-static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     try {
         const af_dtype type = implicit(lhs, rhs);
@@ -244,42 +244,42 @@ static af_err af_logic(af_array *out, const af_array lhs, const af_array rhs, bo
     return AF_SUCCESS;
 }
 
-af_err af_eq(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_eq(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_logic<af_eq_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_neq(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_neq(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_logic<af_neq_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_gt(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_gt(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_logic<af_gt_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_ge(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_ge(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_logic<af_ge_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_lt(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_lt(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_logic<af_lt_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_le(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_le(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_logic<af_le_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_and(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_and(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_logic<af_and_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_or(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_or(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_logic<af_or_t>(out, lhs, rhs, batchMode);
 }
@@ -292,7 +292,7 @@ static inline af_array bitOp(const af_array lhs, const af_array rhs, const dim4 
 }
 
 template<af_op_t op>
-static af_err af_bitwise(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+static af_err af_bitwise(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     try {
         const af_dtype type = implicit(lhs, rhs);
@@ -319,27 +319,27 @@ static af_err af_bitwise(af_array *out, const af_array lhs, const af_array rhs, 
     return AF_SUCCESS;
 }
 
-af_err af_bitand(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_bitand(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_bitwise<af_bitand_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_bitor(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_bitor(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_bitwise<af_bitor_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_bitxor(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_bitxor(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_bitwise<af_bitxor_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_bitshiftl(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_bitshiftl(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_bitwise<af_bitshiftl_t>(out, lhs, rhs, batchMode);
 }
 
-af_err af_bitshiftr(af_array *out, const af_array lhs, const af_array rhs, bool batchMode)
+af_err af_bitshiftr(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     return af_bitwise<af_bitshiftr_t>(out, lhs, rhs, batchMode);
 }

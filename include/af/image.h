@@ -171,7 +171,7 @@ AFAPI array skew(const array& in, const float skew0, const float skew1, const di
 
     \ingroup image_func_bilateral
 */
-AFAPI array bilateral(const array &in, const float spatial_sigma, const float chromatic_sigma, bool is_color=false);
+AFAPI array bilateral(const array &in, const float spatial_sigma, const float chromatic_sigma, const bool is_color=false);
 
 /**
    C++ Interface for histogram
@@ -229,7 +229,7 @@ AFAPI array meanshift(const array& in, const float spatial_sigma, const float ch
 
     \ingroup image_func_medfilt
 */
-AFAPI array medfilt(const array& in, dim_type wind_length = 3, dim_type wind_width = 3, padType edge_pad = AF_PAD_ZERO);
+AFAPI array medfilt(const array& in, const dim_type wind_length = 3, const dim_type wind_width = 3, const padType edge_pad = AF_PAD_ZERO);
 
 /**
     C++ Interface for image dilation (max filter)
@@ -306,7 +306,7 @@ AFAPI array erode3d(const array& in, const array& mask);
 
     \ingroup image_func_regions
 */
-AFAPI array regions(const array& in, af::connectivity connectivity=AF_CONNECTIVITY_4, dtype type=f32);
+AFAPI array regions(const array& in, const af::connectivity connectivity=AF_CONNECTIVITY_4, const dtype type=f32);
 
 /**
     C++ Interface for FAST feature detector
@@ -372,7 +372,7 @@ AFAPI void orb(features& feat, array& desc, const array& image, const float fast
 
    \ingroup image_func_match_template
  */
-AFAPI array matchTemplate(const array &searchImg, const array &templateImg, matchType mType=AF_SAD);
+AFAPI array matchTemplate(const array &searchImg, const array &templateImg, const matchType mType=AF_SAD);
 
 /**
    C++ Interface for extracting sobel gradients
@@ -400,7 +400,7 @@ AFAPI void sobel(array &dx, array &dy, const array &img, const unsigned ker_size
 
    \ingroup image_func_sobel
  */
-AFAPI array sobel(const array &img, const unsigned ker_size=3, bool isFast=false);
+AFAPI array sobel(const array &img, const unsigned ker_size=3, const bool isFast=false);
 
 /**
    C++ Interface for RGB to gray conversion
@@ -498,7 +498,7 @@ AFAPI array rgb2hsv(const array& in);
 
    \ingroup image_func_colorspace
  */
-AFAPI array colorspace(const array& image, CSpace to, CSpace from);
+AFAPI array colorspace(const array& image, const CSpace to, const CSpace from);
 
 }
 #endif
@@ -765,7 +765,7 @@ extern "C" {
 
         \ingroup image_func_medfilt
     */
-    AFAPI af_err af_medfilt(af_array *out, const af_array in, dim_type wind_length, dim_type wind_width, af_pad_type edge_pad);
+    AFAPI af_err af_medfilt(af_array *out, const af_array in, const dim_type wind_length, const dim_type wind_width, const af_pad_type edge_pad);
 
     /**
         C Interface for regions in an image
@@ -779,7 +779,7 @@ extern "C" {
 
         \ingroup image_func_regions
     */
-    AFAPI af_err af_regions(af_array *out, const af_array in, af_connectivity connectivity, af_dtype ty);
+    AFAPI af_err af_regions(af_array *out, const af_array in, const af_connectivity connectivity, const af_dtype ty);
 
     /**
         C Interface for FAST feature detector
@@ -849,7 +849,7 @@ extern "C" {
 
        \ingroup cv_func_match_template
     */
-    AFAPI af_err af_match_template(af_array *out, const af_array search_img, const af_array template_img, af_match_type m_type);
+    AFAPI af_err af_match_template(af_array *out, const af_array search_img, const af_array template_img, const af_match_type m_type);
 
     /**
        C Interface for getting sobel gradients
@@ -980,7 +980,7 @@ extern "C" {
 
        \ingroup image_func_colorspace
     */
-    AFAPI af_err af_colorspace(af_array *out, const af_array image, af_cspace_t to, af_cspace_t from);
+    AFAPI af_err af_colorspace(af_array *out, const af_array image, const af_cspace_t to, const af_cspace_t from);
 
 #ifdef __cplusplus
 }

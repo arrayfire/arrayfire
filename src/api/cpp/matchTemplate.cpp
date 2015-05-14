@@ -14,7 +14,7 @@
 namespace af
 {
 
-array matchTemplate(const array &searchImg, const array &templateImg, matchType mType)
+array matchTemplate(const array &searchImg, const array &templateImg, const matchType mType)
 {
     af_array out = 0;
     AF_THROW(af_match_template(&out, searchImg.get(), templateImg.get(), mType));

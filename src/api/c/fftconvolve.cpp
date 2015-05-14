@@ -53,7 +53,7 @@ ConvolveBatchKind identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
 }
 
 template<dim_type baseDim>
-af_err fftconvolve(af_array *out, af_array signal, af_array filter, const bool expand)
+af_err fftconvolve(af_array *out, const af_array signal, const af_array filter, const bool expand)
 {
     try {
         ArrayInfo sInfo = getInfo(signal);
@@ -85,17 +85,17 @@ af_err fftconvolve(af_array *out, af_array signal, af_array filter, const bool e
     return AF_SUCCESS;
 }
 
-af_err af_fftconvolve1(af_array *out, af_array signal, af_array filter, const af_conv_mode mode)
+af_err af_fftconvolve1(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode)
 {
     return fftconvolve<1>(out, signal, filter, mode == AF_CONV_EXPAND);
 }
 
-af_err af_fftconvolve2(af_array *out, af_array signal, af_array filter, const af_conv_mode mode)
+af_err af_fftconvolve2(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode)
 {
     return fftconvolve<2>(out, signal, filter, mode == AF_CONV_EXPAND);
 }
 
-af_err af_fftconvolve3(af_array *out, af_array signal, af_array filter, const af_conv_mode mode)
+af_err af_fftconvolve3(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode)
 {
     return fftconvolve<3>(out, signal, filter, mode == AF_CONV_EXPAND);
 }

@@ -15,7 +15,7 @@
 namespace af
 {
 
-array colorspace(const array& image, CSpace to, CSpace from)
+array colorspace(const array& image, const CSpace to, const CSpace from)
 {
     af_array temp = 0;
     AF_THROW(af_colorspace(&temp, image.get(), to ,from));

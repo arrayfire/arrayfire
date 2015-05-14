@@ -33,7 +33,7 @@ static inline af_array dot(const af_array lhs, const af_array rhs,
 
 af_err af_matmul(   af_array *out,
                     const af_array lhs, const af_array rhs,
-                    af_transpose_t optLhs, af_transpose_t optRhs)
+                    const af_transpose_t optLhs, const af_transpose_t optRhs)
 {
     using namespace detail;
 
@@ -67,7 +67,7 @@ af_err af_matmul(   af_array *out,
 
 af_err af_dot(      af_array *out,
                     const af_array lhs, const af_array rhs,
-                    af_transpose_t optLhs, af_transpose_t optRhs)
+                    const af_transpose_t optLhs, const af_transpose_t optRhs)
 {
     using namespace detail;
 

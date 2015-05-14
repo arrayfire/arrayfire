@@ -97,7 +97,7 @@ af_err af_stdev_all(double *realVal, double *imagVal, const af_array in)
     return AF_SUCCESS;
 }
 
-af_err af_stdev(af_array *out, const af_array in, dim_type dim)
+af_err af_stdev(af_array *out, const af_array in, const dim_type dim)
 {
     try {
         ARG_ASSERT(2, (dim>=0 && dim<=3));

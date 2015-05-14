@@ -14,7 +14,7 @@
 namespace af
 {
     array matmul(const array &lhs, const array &rhs,
-                 af_transpose_t optLhs, af_transpose_t optRhs)
+                 const af_transpose_t optLhs, const af_transpose_t optRhs)
     {
         af_array out = 0;
         AF_THROW(af_matmul(&out, lhs.get(), rhs.get(), optLhs, optRhs));
@@ -46,7 +46,7 @@ namespace af
     }
 
     array dot   (const array &lhs, const array &rhs,
-                 af_transpose_t optLhs, af_transpose_t optRhs)
+                 const af_transpose_t optLhs, const af_transpose_t optRhs)
     {
         af_array out = 0;
         AF_THROW(af_dot(&out, lhs.get(), rhs.get(), optLhs, optRhs));

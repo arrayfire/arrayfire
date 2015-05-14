@@ -191,6 +191,7 @@ namespace af
     typedef af_match_type matchType;
     typedef af_cspace_t CSpace;
     typedef af_someenum_t SomeEnum; // Purpose of Addition: How to add Function example
+    typedef af_transpose_t trans;
     typedef af_conv_mode convMode;
 
     const double NaN = std::numeric_limits<double>::quiet_NaN();
