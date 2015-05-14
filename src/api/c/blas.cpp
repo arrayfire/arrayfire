@@ -44,6 +44,18 @@ af_err af_matmul(   af_array *out,
         af_dtype lhs_type = lhsInfo.getType();
         af_dtype rhs_type = rhsInfo.getType();
 
+        if (!(optLhs == AF_MAT_NONE ||
+              optLhs == AF_MAT_TRANS ||
+              optLhs == AF_MAT_CTRANS)) {
+            AF_ERROR("Using this property is not yet supported in matmul", AF_ERR_NOT_SUPPORTED);
+        }
+
+        if (!(optRhs == AF_MAT_NONE ||
+              optRhs == AF_MAT_TRANS ||
+              optRhs == AF_MAT_CTRANS)) {
+            AF_ERROR("Using this property is not yet supported in matmul", AF_ERR_NOT_SUPPORTED);
+        }
+
         TYPE_ASSERT(lhs_type == rhs_type);
         af_array output = 0;
 
@@ -74,6 +86,14 @@ af_err af_dot(      af_array *out,
     try {
         ArrayInfo lhsInfo = getInfo(lhs);
         ArrayInfo rhsInfo = getInfo(rhs);
+
+        if (optLhs != AF_MAT_NONE) {
+            AF_ERROR("Using this property is not yet supported in dot", AF_ERR_NOT_SUPPORTED);
+        }
+
+        if (optRhs != AF_MAT_NONE) {
+            AF_ERROR("Using this property is not yet supported in dot", AF_ERR_NOT_SUPPORTED);
+        }
 
         DIM_ASSERT(1, lhsInfo.dims()[0] == rhsInfo.dims()[0]);
         af_dtype lhs_type = lhsInfo.getType();

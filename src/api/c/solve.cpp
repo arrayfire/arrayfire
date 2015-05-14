@@ -46,7 +46,9 @@ af_err af_solve(af_array *out, const af_array a, const af_array b, const af_mat_
         DIM_ASSERT(1, bdims[2] == adims[2]);
         DIM_ASSERT(1, bdims[3] == adims[3]);
 
-        ARG_ASSERT(3, options == AF_MAT_NONE);
+        if (options != AF_MAT_NONE) {
+            AF_ERROR("Using this property is not yet supported in solve", AF_ERR_NOT_SUPPORTED);
+        }
 
         af_array output;
 
