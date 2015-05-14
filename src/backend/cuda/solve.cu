@@ -245,7 +245,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
 
         // Bt = tri_solve(R1, B);
         B.resetDims(dim4(M, K));
-        trsm<T>(A, B, AF_CONJUGATE_TRANSPOSE, true, true, false);
+        trsm<T>(A, B, AF_CONJ_TRANS, true, true, false);
 
         // Bpad = pad(Bt, ..)
         B.resetDims(dim4(N, K));
@@ -312,7 +312,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
         // tri_solve(R1, Bt)
         A.resetDims(dim4(N, N));
         B.resetDims(dim4(N, K));
-        trsm(A, B, AF_NO_TRANSPOSE, true, true, false);
+        trsm(A, B, AF_NO_TRANS, true, true, false);
     }
     return B;
 }

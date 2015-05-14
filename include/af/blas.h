@@ -24,12 +24,6 @@ extern "C" {
     /**
        \ingroup blas_func_matmul
     */
-
-    typedef enum af_transpose_enum {
-        AF_NO_TRANSPOSE,
-        AF_TRANSPOSE,
-        AF_CONJUGATE_TRANSPOSE
-    } af_blas_transpose;
 #ifdef __cplusplus
 }
 #endif
@@ -52,8 +46,8 @@ namespace af
         \ingroup blas_func_matmul
      */
     AFAPI array matmul(const array &lhs, const array &rhs,
-                       af_blas_transpose optLhs = AF_NO_TRANSPOSE,
-                       af_blas_transpose optRhs = AF_NO_TRANSPOSE);
+                       af_transpose_t optLhs = AF_NO_TRANS,
+                       af_transpose_t optRhs = AF_NO_TRANS);
 
     /**
        \brief Matrix multiply on two arrays
@@ -108,8 +102,8 @@ namespace af
         \ingroup blas_func_dot
     */
     AFAPI array dot   (const array &lhs, const array &rhs,
-                       af_blas_transpose optLhs = AF_NO_TRANSPOSE,
-                       af_blas_transpose optRhs = AF_NO_TRANSPOSE);
+                       af_transpose_t optLhs = AF_NO_TRANS,
+                       af_transpose_t optRhs = AF_NO_TRANS);
 
     /**
         \brief Transposes a matrix
@@ -150,7 +144,7 @@ extern "C" {
      */
     AFAPI af_err af_matmul( af_array *out ,
                             const af_array lhs, const af_array rhs,
-                            af_blas_transpose optLhs, af_blas_transpose optRhs);
+                            af_transpose_t optLhs, af_transpose_t optRhs);
 
 
     /**
@@ -167,7 +161,7 @@ extern "C" {
 
     AFAPI af_err af_dot(    af_array *out,
                             const af_array lhs, const af_array rhs,
-                            af_blas_transpose optLhs, af_blas_transpose optRhs);
+                            af_transpose_t optLhs, af_transpose_t optRhs);
 
     /**
         \brief Transposes a matrix

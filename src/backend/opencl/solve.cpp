@@ -143,7 +143,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
                            &h_tau[0],
                            (*dT)(), tmp.getOffset(), NB, queue, &info);
 
-        B = matmul(A, B, AF_NO_TRANSPOSE, AF_NO_TRANSPOSE);
+        B = matmul(A, B, AF_NO_TRANS, AF_NO_TRANS);
 #endif
     } else if (M > N) {
         // Least squres for this case is solved using the following

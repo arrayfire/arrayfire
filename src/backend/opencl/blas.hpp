@@ -19,10 +19,10 @@ namespace opencl
 
 template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
-                af_blas_transpose optLhs, af_blas_transpose optRhs);
+                af_transpose_t optLhs, af_transpose_t optRhs);
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
-             af_blas_transpose optLhs, af_blas_transpose optRhs);
+             af_transpose_t optLhs, af_transpose_t optRhs);
 
 STATIC_ void
 initBlas() {

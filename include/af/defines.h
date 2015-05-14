@@ -153,6 +153,12 @@ typedef enum {
     AF_SOLVE_BLKDIAG   = 8192
 } af_solve_t;
 
+typedef enum {
+    AF_NO_TRANS,
+    AF_TRANS,
+    AF_CONJ_TRANS
+} af_transpose_t;
+
 // Below enum is purely added for example purposes
 // it doesn't and shoudn't be used anywhere in the
 // code. No Guarantee's provided if it is used.
