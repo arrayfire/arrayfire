@@ -154,7 +154,7 @@ void af_get_last_error(char **str, dim_type *len)
     *str = new char[*len + 1];
     memcpy(*str, global_err_string.c_str(), *len * sizeof(char));
 
-    str[*len] = '\0';
+    (*str)[*len] = '\0';
     global_err_string = std::string("");
 }
 
