@@ -847,4 +847,9 @@ namespace af
 
 #undef INSTANTIATE
 #undef TEMPLATE_MEM_FUNC
+
+    //FIXME: This needs to be implemented at a later point
+    void array::unlock() const {}
+    void array::array_proxy::unlock() const {}
+
 }
