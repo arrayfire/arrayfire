@@ -224,12 +224,12 @@ AFAPI array meanshift(const array& in, const float spatial_sigma, const float ch
     \param[in]  wind_length is the kernel height
     \param[in]  wind_width is the kernel width
     \param[in]  edge_pad value will decide what happens to border when running
-                filter in their neighborhood. It takes one of the values [\ref AF_ZERO | \ref AF_SYMMETRIC]
+                filter in their neighborhood. It takes one of the values [\ref AF_PAD_ZERO | \ref AF_PAD_SYM]
     \return     the processed image
 
     \ingroup image_func_medfilt
 */
-AFAPI array medfilt(const array& in, dim_type wind_length = 3, dim_type wind_width = 3, padType edge_pad = AF_ZERO);
+AFAPI array medfilt(const array& in, dim_type wind_length = 3, dim_type wind_width = 3, padType edge_pad = AF_PAD_ZERO);
 
 /**
     C++ Interface for image dilation (max filter)
@@ -759,7 +759,7 @@ extern "C" {
         \param[in]  wind_length is the kernel height
         \param[in]  wind_width is the kernel width
         \param[in]  edge_pad value will decide what happens to border when running
-                    filter in their neighborhood. It takes one of the values [\ref AF_ZERO | \ref AF_SYMMETRIC]
+                    filter in their neighborhood. It takes one of the values [\ref AF_PAD_ZERO | \ref AF_PAD_SYM]
         \return     \ref AF_SUCCESS if the median filter is applied successfully,
         otherwise an appropriate error code is returned.
 

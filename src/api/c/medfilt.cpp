@@ -22,9 +22,9 @@ template<typename T>
 static af_array medfilt(af_array const &in, dim_type w_len, dim_type w_wid, af_pad_type edge_pad)
 {
     switch(edge_pad) {
-        case AF_ZERO     : return getHandle<T>(medfilt<T, AF_ZERO     >(getArray<T>(in), w_len, w_wid)); break;
-        case AF_SYMMETRIC: return getHandle<T>(medfilt<T, AF_SYMMETRIC>(getArray<T>(in), w_len, w_wid)); break;
-        default          : return getHandle<T>(medfilt<T, AF_ZERO     >(getArray<T>(in), w_len, w_wid)); break;
+        case AF_PAD_ZERO     : return getHandle<T>(medfilt<T, AF_PAD_ZERO     >(getArray<T>(in), w_len, w_wid)); break;
+        case AF_PAD_SYM: return getHandle<T>(medfilt<T, AF_PAD_SYM>(getArray<T>(in), w_len, w_wid)); break;
+        default          : return getHandle<T>(medfilt<T, AF_PAD_ZERO     >(getArray<T>(in), w_len, w_wid)); break;
     }
 }
 
@@ -34,7 +34,7 @@ af_err af_medfilt(af_array *out, const af_array in, dim_type wind_length, dim_ty
         ARG_ASSERT(2, (wind_length==wind_width));
         ARG_ASSERT(2, (wind_length>0));
         ARG_ASSERT(3, (wind_width>0));
-        ARG_ASSERT(4, (edge_pad>=AF_ZERO && edge_pad<=AF_SYMMETRIC));
+        ARG_ASSERT(4, (edge_pad>=AF_PAD_ZERO && edge_pad<=AF_PAD_SYM));
 
         ArrayInfo info = getInfo(in);
         af::dim4 dims  = info.dims();

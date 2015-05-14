@@ -53,12 +53,12 @@ Array<T> medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
                         dim_type im_col = col + wj-w_wid/2;
                         dim_type im_coff;
                         switch(pad) {
-                            case AF_ZERO:
+                            case AF_PAD_ZERO:
                                 im_coff = im_col * istrides[1];
                                 if (im_col < 0 || im_col>=dims[1])
                                     isColOff = true;
                                 break;
-                            case AF_SYMMETRIC:
+                            case AF_PAD_SYM:
                                 {
                                     if (im_col < 0) {
                                         im_col *= -1;
@@ -82,12 +82,12 @@ Array<T> medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
                             dim_type im_row = row + wi-w_len/2;
                             dim_type im_roff;
                             switch(pad) {
-                                case AF_ZERO:
+                                case AF_PAD_ZERO:
                                     im_roff = im_row * istrides[0];
                                     if (im_row < 0 || im_row>=dims[0])
                                         isRowOff = true;
                                     break;
-                                case AF_SYMMETRIC:
+                                case AF_PAD_SYM:
                                     {
                                         if (im_row < 0) {
                                             im_row *= -1;
@@ -106,10 +106,10 @@ Array<T> medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
 
                             if(isRowOff || isColOff) {
                                 switch(pad) {
-                                    case AF_ZERO:
+                                    case AF_PAD_ZERO:
                                         wind_vals.push_back(0);
                                         break;
-                                    case AF_SYMMETRIC:
+                                    case AF_PAD_SYM:
                                         wind_vals.push_back(in_ptr[im_coff+im_roff]);
                                         break;
                                 }
@@ -139,8 +139,8 @@ Array<T> medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
 }
 
 #define INSTANTIATE(T)\
-    template Array<T> medfilt<T, AF_ZERO     >(const Array<T> &in, dim_type w_len, dim_type w_wid); \
-    template Array<T> medfilt<T, AF_SYMMETRIC>(const Array<T> &in, dim_type w_len, dim_type w_wid);
+    template Array<T> medfilt<T, AF_PAD_ZERO     >(const Array<T> &in, dim_type w_len, dim_type w_wid); \
+    template Array<T> medfilt<T, AF_PAD_SYM>(const Array<T> &in, dim_type w_len, dim_type w_wid);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

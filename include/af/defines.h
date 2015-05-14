@@ -112,8 +112,8 @@ typedef enum {
 } af_interp_type;
 
 typedef enum {
-    AF_ZERO = 0,
-    AF_SYMMETRIC
+    AF_PAD_ZERO = 0,
+    AF_PAD_SYM
 } af_pad_type;
 
 typedef enum {

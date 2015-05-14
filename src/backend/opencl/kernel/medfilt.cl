@@ -22,12 +22,12 @@ void load2ShrdMem(__local T *           shrd,
                   dim_type gx, dim_type gy,
                   dim_type inStride1, dim_type inStride0)
 {
-    if (pad==AF_ZERO) {
+    if (pad==AF_PAD_ZERO) {
         if (gx<0 || gx>=dim0 || gy<0 || gy>=dim1)
             shrd[lIdx(lx, ly, shrdStride, 1)] = (T)0;
         else
             shrd[lIdx(lx, ly, shrdStride, 1)] = in[lIdx(gx, gy, inStride1, inStride0)];
-    } else if (pad==AF_SYMMETRIC) {
+    } else if (pad==AF_PAD_SYM) {
         if (gx<0) gx *= -1;
         if (gy<0) gy *= -1;
         if (gx>=dim0) gx = 2*(dim0-1) - gx;
