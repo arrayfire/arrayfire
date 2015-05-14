@@ -37,7 +37,7 @@ class FI_Manager
     static bool initialized;
     FI_Manager()
     {
-#ifndef FREEIMAGE_LIB
+#ifdef FREEIMAGE_LIB
         FreeImage_Initialise();
 #endif
         initialized = true;
@@ -45,7 +45,7 @@ class FI_Manager
 
     ~FI_Manager()
     {
-#ifndef FREEIMAGE_LIB
+#ifdef FREEIMAGE_LIB
         FreeImage_DeInitialise();
 #endif
     }
