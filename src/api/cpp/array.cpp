@@ -66,9 +66,7 @@ namespace af
                 }
             }
             return odims;
-        } catch(af::exception &afex) {
-            throw;
-        } catch(std::runtime_error &err) {
+        } catch(std::logic_error &err) {
             AF_THROW_MSG(err.what(), AF_ERR_INTERNAL);
         }
     }
