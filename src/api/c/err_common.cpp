@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <af/exception.h>
 #include <err_common.hpp>
 #include <type_util.hpp>
 #include <string>
