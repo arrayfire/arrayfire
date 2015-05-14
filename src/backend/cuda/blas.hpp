@@ -16,14 +16,14 @@ namespace cuda
 
 template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
-                af_transpose_t optLhs, af_transpose_t optRhs);
+                af_mat_prop optLhs, af_mat_prop optRhs);
 
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
-             af_transpose_t optLhs, af_transpose_t optRhs);
+             af_mat_prop optLhs, af_mat_prop optRhs);
 
 template<typename T>
-void trsm(const Array<T> &lhs, Array<T> &rhs, af_transpose_t trans = AF_NO_TRANS,
+void trsm(const Array<T> &lhs, Array<T> &rhs, af_mat_prop trans = AF_MAT_NONE,
           bool is_upper = false, bool is_left = true, bool is_unit = false);
 
 }

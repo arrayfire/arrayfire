@@ -19,21 +19,21 @@
 
 template<typename T>
 static inline af_array matmul(const af_array lhs, const af_array rhs,
-                    af_transpose_t optLhs, af_transpose_t optRhs)
+                    af_mat_prop optLhs, af_mat_prop optRhs)
 {
     return getHandle(detail::matmul<T>(getArray<T>(lhs), getArray<T>(rhs), optLhs, optRhs));
 }
 
 template<typename T>
 static inline af_array dot(const af_array lhs, const af_array rhs,
-                    af_transpose_t optLhs, af_transpose_t optRhs)
+                    af_mat_prop optLhs, af_mat_prop optRhs)
 {
     return getHandle(detail::dot<T>(getArray<T>(lhs), getArray<T>(rhs), optLhs, optRhs));
 }
 
 af_err af_matmul(   af_array *out,
                     const af_array lhs, const af_array rhs,
-                    const af_transpose_t optLhs, const af_transpose_t optRhs)
+                    const af_mat_prop optLhs, const af_mat_prop optRhs)
 {
     using namespace detail;
 
@@ -47,8 +47,8 @@ af_err af_matmul(   af_array *out,
         TYPE_ASSERT(lhs_type == rhs_type);
         af_array output = 0;
 
-        int aColDim = (optLhs == AF_NO_TRANS) ? 1 : 0;
-        int bRowDim = (optRhs == AF_NO_TRANS) ? 0 : 1;
+        int aColDim = (optLhs == AF_MAT_NONE) ? 1 : 0;
+        int bRowDim = (optRhs == AF_MAT_NONE) ? 0 : 1;
 
         DIM_ASSERT(1, lhsInfo.dims()[aColDim] == rhsInfo.dims()[bRowDim]);
 
@@ -67,7 +67,7 @@ af_err af_matmul(   af_array *out,
 
 af_err af_dot(      af_array *out,
                     const af_array lhs, const af_array rhs,
-                    const af_transpose_t optLhs, const af_transpose_t optRhs)
+                    const af_mat_prop optLhs, const af_mat_prop optRhs)
 {
     using namespace detail;
 

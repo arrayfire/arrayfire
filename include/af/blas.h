@@ -46,8 +46,8 @@ namespace af
         \ingroup blas_func_matmul
      */
     AFAPI array matmul(const array &lhs, const array &rhs,
-                       const af::trans optLhs = AF_NO_TRANS,
-                       const af::trans optRhs = AF_NO_TRANS);
+                       const matProp optLhs = AF_MAT_NONE,
+                       const matProp optRhs = AF_MAT_NONE);
 
     /**
        \brief Matrix multiply on two arrays
@@ -102,8 +102,8 @@ namespace af
         \ingroup blas_func_dot
     */
     AFAPI array dot   (const array &lhs, const array &rhs,
-                       const af::trans optLhs = AF_NO_TRANS,
-                       const af::trans optRhs = AF_NO_TRANS);
+                       const matProp optLhs = AF_MAT_NONE,
+                       const matProp optRhs = AF_MAT_NONE);
 
     /**
         \brief Transposes a matrix
@@ -144,7 +144,7 @@ extern "C" {
      */
     AFAPI af_err af_matmul( af_array *out ,
                             const af_array lhs, const af_array rhs,
-                            const af_transpose_t optLhs, const af_transpose_t optRhs);
+                            const af_mat_prop optLhs, const af_mat_prop optRhs);
 
 
     /**
@@ -161,7 +161,7 @@ extern "C" {
 
     AFAPI af_err af_dot(    af_array *out,
                             const af_array lhs, const af_array rhs,
-                            const af_transpose_t optLhs, const af_transpose_t optRhs);
+                            const af_mat_prop optLhs, const af_mat_prop optRhs);
 
     /**
         \brief Transposes a matrix

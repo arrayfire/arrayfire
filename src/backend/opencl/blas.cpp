@@ -30,14 +30,14 @@ using std::runtime_error;
 using std::to_string;
 
 clblasTranspose
-toClblasTranspose(af_transpose_t opt)
+toClblasTranspose(af_mat_prop opt)
 {
     clblasTranspose out = clblasNoTrans;
     switch(opt) {
-        case AF_NO_TRANS        : out = clblasNoTrans;   break;
-        case AF_TRANS           : out = clblasTrans;     break;
-        case AF_CONJ_TRANS : out = clblasConjTrans; break;
-        default                     : AF_ERROR("INVALID af_transpose_t", AF_ERR_INVALID_ARG);
+        case AF_MAT_NONE        : out = clblasNoTrans;   break;
+        case AF_MAT_TRANS           : out = clblasTrans;     break;
+        case AF_MAT_CTRANS : out = clblasConjTrans; break;
+        default                     : AF_ERROR("INVALID af_mat_prop", AF_ERR_INVALID_ARG);
     }
     return out;
 }
@@ -76,7 +76,7 @@ BLAS_FUNC(dot, double,      D)
 
 template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
-                af_transpose_t optLhs, af_transpose_t optRhs)
+                af_mat_prop optLhs, af_mat_prop optRhs)
 {
     initBlas();
     clblasTranspose lOpts = toClblasTranspose(optLhs);
@@ -135,7 +135,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
 
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
-             af_transpose_t optLhs, af_transpose_t optRhs)
+             af_mat_prop optLhs, af_mat_prop optRhs)
 {
     initBlas();
 
@@ -157,7 +157,7 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
 
 #define INSTANTIATE_BLAS(TYPE)                                                          \
     template Array<TYPE> matmul<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs,  \
-                    af_transpose_t optLhs, af_transpose_t optRhs);
+                    af_mat_prop optLhs, af_mat_prop optRhs);
 
 INSTANTIATE_BLAS(float)
 INSTANTIATE_BLAS(cfloat)
@@ -166,11 +166,11 @@ INSTANTIATE_BLAS(cdouble)
 
 #define INSTANTIATE_DOT(TYPE)                                                       \
     template Array<TYPE> dot<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs, \
-                                   af_transpose_t optLhs, af_transpose_t optRhs);
+                                   af_mat_prop optLhs, af_mat_prop optRhs);
 
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
-              af_transpose_t optLhs, af_transpose_t optRhs);
+              af_mat_prop optLhs, af_mat_prop optRhs);
 
 INSTANTIATE_DOT(float)
 INSTANTIATE_DOT(double)

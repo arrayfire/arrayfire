@@ -151,24 +151,18 @@ typedef enum {
 } af_cspace_t;
 
 typedef enum {
-    AF_SOLVE_NONE      = 0,    ///< Default
-    AF_SOLVE_POSDEF    = 1,    ///< A is positive definite
-    AF_SOLVE_NONPOSDEF = 2,    ///< A is not positive definite
-    AF_SOLVE_GAUSSIAN  = 3,    ///< Use Gaussian elimination (fast, cannot be combined with other options)
-    AF_SOLVE_PSEUDO    = 4,    ///< Use pseudo inverse (fast, cannot be combined with other options)
-    AF_SOLVE_CTRANS    = 256,  ///< Solve A.H() (conjugate transpose)
-    AF_SOLVE_TRANS     = 512,  ///< Solve A.T() (non-conjugate transpose)
-    AF_SOLVE_UPPERTRI  = 1024, ///< Solve uppertri(A) (upper triangular system)
-    AF_SOLVE_LOWERTRI  = 2048, ///< Solve lowertri(A) (lower triangular system)
-    AF_SOLVE_TRIDIAG   = 4096,
-    AF_SOLVE_BLKDIAG   = 8192
-} af_solve_t;
-
-typedef enum {
-    AF_NO_TRANS,
-    AF_TRANS,
-    AF_CONJ_TRANS
-} af_transpose_t;
+    AF_MAT_NONE       = 0,    ///< Default
+    AF_MAT_TRANS      = 1,    ///< Data needs to be transposed
+    AF_MAT_CTRANS     = 2,    ///< Data needs to be conjugate tansposed
+    AF_MAT_UPPER      = 32,   ///< Matrix is upper triangular
+    AF_MAT_LOWER      = 64,   ///< Matrix is lower triangular
+    AF_MAT_DIAG_UNIT  = 128,  ///< Matrix diagonal contains unitary values
+    AF_MAT_SYM        = 512,  ///< Matrix is symmetric
+    AF_MAT_POSDEF     = 1024, ///< Matrix is positive definite
+    AF_MAT_ORTHOG     = 2048, ///< Matrix is orthogonal
+    AF_MAT_TRI_DIAG   = 4096, ///< Matrix is tri diagonal
+    AF_MAT_BLOCK_DIAG = 8192  ///< Matrix is block diagonal
+} af_mat_prop;
 
 // Below enum is purely added for example purposes
 // it doesn't and shoudn't be used anywhere in the
@@ -191,8 +185,9 @@ namespace af
     typedef af_match_type matchType;
     typedef af_cspace_t CSpace;
     typedef af_someenum_t SomeEnum; // Purpose of Addition: How to add Function example
-    typedef af_transpose_t trans;
+    typedef af_mat_prop trans;
     typedef af_conv_mode convMode;
+    typedef af_mat_prop matProp;
 
     const double NaN = std::numeric_limits<double>::quiet_NaN();
     const double Inf = std::numeric_limits<double>::infinity();

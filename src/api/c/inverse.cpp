@@ -25,7 +25,7 @@ static inline af_array inverse(const af_array in)
     return getHandle(inverse<T>(getArray<T>(in)));
 }
 
-af_err af_inverse(af_array *out, const af_array in)
+af_err af_inverse(af_array *out, const af_array in, const af_mat_prop options)
 {
     try {
         ArrayInfo i_info = getInfo(in);
