@@ -129,7 +129,7 @@ void gaussianKernelTestCPP(string pFileName, double sigma)
     vector<float> currGoldBar(tests[0].begin(), tests[0].end());
     size_t nElems = currGoldBar.size();
 
-    ASSERT_EQ(outElems, nElems);
+    ASSERT_EQ(outElems, (dim_type)nElems);
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1.0e-3)<< "at: " << elIter<< std::endl;
