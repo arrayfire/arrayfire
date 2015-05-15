@@ -642,7 +642,7 @@ extern "C" {
 
        \ingroup arith_func_add
     */
-    AFAPI af_err af_add   (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_add   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for subtracting an array from another
@@ -655,7 +655,7 @@ extern "C" {
 
        \ingroup arith_func_sub
     */
-    AFAPI af_err af_sub   (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_sub   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for multiplying two arrays
@@ -668,7 +668,7 @@ extern "C" {
 
        \ingroup arith_func_mul
     */
-    AFAPI af_err af_mul   (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_mul   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for dividing an array from another
@@ -681,7 +681,7 @@ extern "C" {
 
        \ingroup arith_func_div
     */
-    AFAPI af_err af_div   (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_div   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for checking if an array is less than another
@@ -694,7 +694,7 @@ extern "C" {
 
        \ingroup logic_func_lt
     */
-    AFAPI af_err af_lt    (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_lt    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for checking if an array is greater than another
@@ -707,7 +707,7 @@ extern "C" {
 
        \ingroup logic_func_gt
     */
-    AFAPI af_err af_gt    (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_gt    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for checking if an array is less or equal to than another
@@ -720,7 +720,7 @@ extern "C" {
 
        \ingroup logic_func_le
     */
-    AFAPI af_err af_le    (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_le    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for checking if an array is greater than or equal another
@@ -733,7 +733,7 @@ extern "C" {
 
        \ingroup logic_func_ge
     */
-    AFAPI af_err af_ge    (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_ge    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for checking if an array is equal to another
@@ -746,7 +746,7 @@ extern "C" {
 
        \ingroup logic_func_eq
     */
-    AFAPI af_err af_eq    (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_eq    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for checking if an array is not equal to another
@@ -759,7 +759,7 @@ extern "C" {
 
        \ingroup logic_func_neq
     */
-    AFAPI af_err af_neq   (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_neq   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for performing logical and on two arrays
@@ -772,7 +772,7 @@ extern "C" {
 
        \ingroup logic_func_and
     */
-    AFAPI af_err af_and   (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_and   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for performing logical or on two arrays
@@ -785,7 +785,7 @@ extern "C" {
 
        \ingroup logic_func_or
     */
-    AFAPI af_err af_or    (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_or    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for performing logical not on input
@@ -809,7 +809,7 @@ extern "C" {
 
        \ingroup logic_func_bitand
     */
-    AFAPI af_err af_bitand   (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_bitand   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for performing bitwise or on two arrays
@@ -822,7 +822,7 @@ extern "C" {
 
        \ingroup logic_func_bitor
     */
-    AFAPI af_err af_bitor    (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_bitor    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for performing bitwise xor on two arrays
@@ -835,7 +835,7 @@ extern "C" {
 
        \ingroup logic_func_bitxor
     */
-    AFAPI af_err af_bitxor   (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_bitxor   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for left shfit on integer arrays
@@ -848,7 +848,7 @@ extern "C" {
 
        \ingroup arith_func_shiftl
     */
-    AFAPI af_err af_bitshiftl(af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_bitshiftl(af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for right shfit on integer arrays
@@ -861,7 +861,7 @@ extern "C" {
 
        \ingroup arith_func_shiftr
     */
-    AFAPI af_err af_bitshiftr(af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_bitshiftr(af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for casting an array from one type to another
@@ -873,7 +873,7 @@ extern "C" {
 
        \ingroup helper_func_cast
     */
-    AFAPI af_err af_cast    (af_array *out, const af_array in, af_dtype type);
+    AFAPI af_err af_cast    (af_array *out, const af_array in, const af_dtype type);
 
     /**
        C Interface for min of two arrays
@@ -886,7 +886,7 @@ extern "C" {
 
        \ingroup numeric_func_min
     */
-    AFAPI af_err af_minof (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_minof (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for max of two arrays
@@ -899,7 +899,7 @@ extern "C" {
 
        \ingroup numeric_func_max
     */
-    AFAPI af_err af_maxof (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_maxof (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for remainder
@@ -912,7 +912,7 @@ extern "C" {
 
        \ingroup numeric_func_rem
     */
-    AFAPI af_err af_rem   (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_rem   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for modulus
@@ -925,7 +925,7 @@ extern "C" {
 
        \ingroup numeric_func_mod
     */
-    AFAPI af_err af_mod   (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_mod   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for absolute value
@@ -984,7 +984,7 @@ extern "C" {
 
        \ingroup numeric_func_floor
     */
-    AFAPI af_err af_hypot (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_hypot (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for sin
@@ -1063,7 +1063,7 @@ extern "C" {
 
        \ingroup trig_func_atan
     */
-    AFAPI af_err af_atan2 (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_atan2 (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for creating complex array from two input arrays
@@ -1076,7 +1076,7 @@ extern "C" {
 
        \ingroup complex_func_cplx
     */
-    AFAPI af_err af_cplx2 (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_cplx2 (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for creating complex array from real array
@@ -1199,7 +1199,7 @@ extern "C" {
 
        \ingroup explog_func_pow
     */
-    AFAPI af_err af_pow   (af_array *out, const af_array lhs, const af_array rhs, bool batch);
+    AFAPI af_err af_pow   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
        C Interface for exponential of an array

@@ -32,7 +32,7 @@ INSTANTIATE_MEDIAN(unsigned char);
 
 #undef INSTANTIATE_MEDIAN
 
-AFAPI array median(const array& in, dim_type dim)
+AFAPI array median(const array& in, const dim_type dim)
 {
     af_array temp = 0;
     AF_THROW(af_median(&temp, in.get(), getFNSD(dim, in.dims())));
@@ -40,4 +40,3 @@ AFAPI array median(const array& in, dim_type dim)
 }
 
 }
-

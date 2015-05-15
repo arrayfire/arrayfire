@@ -143,7 +143,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
                            &h_tau[0],
                            (*dT)(), tmp.getOffset(), NB, queue, &info);
 
-        B = matmul(A, B, AF_NO_TRANSPOSE, AF_NO_TRANSPOSE);
+        B = matmul(A, B, AF_MAT_NONE, AF_MAT_NONE);
 #endif
     } else if (M > N) {
         // Least squres for this case is solved using the following
@@ -213,7 +213,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
 }
 
 template<typename T>
-Array<T> solve(const Array<T> &a, const Array<T> &b, const af_solve_t options)
+Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
     try {
         initBlas();
@@ -228,7 +228,7 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_solve_t options)
 }
 
 #define INSTANTIATE_SOLVE(T)                                                                   \
-    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_solve_t options);
+    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_mat_prop options);
 
 INSTANTIATE_SOLVE(float)
 INSTANTIATE_SOLVE(cfloat)
@@ -243,13 +243,13 @@ namespace opencl
 {
 
 template<typename T>
-Array<T> solve(const Array<T> &a, const Array<T> &b, const af_solve_t options)
+Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
     AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
 }
 
 #define INSTANTIATE_SOLVE(T)                                                                   \
-    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_solve_t options);
+    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_mat_prop options);
 
 INSTANTIATE_SOLVE(float)
 INSTANTIATE_SOLVE(cfloat)

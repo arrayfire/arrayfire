@@ -64,10 +64,11 @@ void fftconvolveTest(string pTestFile, bool expand)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&filter, &(in[1].front()),
                 fDims.ndims(), fDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
 
+    af_conv_mode mode = expand ? AF_CONV_EXPAND : AF_CONV_DEFAULT;
     switch(baseDim) {
-        case 1: ASSERT_EQ(AF_SUCCESS, af_fftconvolve1(&outArray, signal, filter, expand)); break;
-        case 2: ASSERT_EQ(AF_SUCCESS, af_fftconvolve2(&outArray, signal, filter, expand)); break;
-        case 3: ASSERT_EQ(AF_SUCCESS, af_fftconvolve3(&outArray, signal, filter, expand)); break;
+        case 1: ASSERT_EQ(AF_SUCCESS, af_fftconvolve1(&outArray, signal, filter, mode)); break;
+        case 2: ASSERT_EQ(AF_SUCCESS, af_fftconvolve2(&outArray, signal, filter, mode)); break;
+        case 3: ASSERT_EQ(AF_SUCCESS, af_fftconvolve3(&outArray, signal, filter, mode)); break;
     }
 
     vector<T> currGoldBar = tests[0];
@@ -120,7 +121,7 @@ void fftconvolveTestLarge(int sDim, int fDim, int sBatch, int fBatch, bool expan
     array signal = randu(signalDims, (af_dtype) af::dtype_traits<T>::af_type);
     array filter = randu(filterDims, (af_dtype) af::dtype_traits<T>::af_type);
 
-    array out = fftconvolve(signal, filter, expand);
+    array out = fftconvolve(signal, filter, expand ? AF_CONV_EXPAND : AF_CONV_DEFAULT);
 
     array gold;
     switch(baseDim) {
@@ -378,7 +379,7 @@ TEST(FFTConvolve1, CPP)
     af::array filter(numDims[1], &(in[1].front()));
     //filter dims = [4 1 1 1]
 
-    af::array output = fftconvolve1(signal, filter, true);
+    af::array output = fftconvolve1(signal, filter, AF_CONV_EXPAND);
     //output dims = [32 1 1 1] - same as input since expand(3rd argument is false)
     //None of the dimensions > 1 has lenght > 1, so no batch mode is activated.
     //![ex_image_convolve1]
@@ -415,7 +416,7 @@ TEST(FFTConvolve2, CPP)
     af::array filter(numDims[1], &(in[1].front()));
     //filter dims = [5 5 2 1]
 
-    af::array output = fftconvolve2(signal, filter, true);
+    af::array output = fftconvolve2(signal, filter, AF_CONV_EXPAND);
     //output dims = [15 17 1 1] - same as input since expand(3rd argument is false)
     //however, notice that the 3rd dimension of filter is > 1.
     //So, one to many batch mode will be activated automatically
@@ -455,7 +456,7 @@ TEST(FFTConvolve3, CPP)
     af::array filter(numDims[1], &(in[1].front()));
     //filter dims = [4 2 3 2]
 
-    af::array output = fftconvolve3(signal, filter, true);
+    af::array output = fftconvolve3(signal, filter, AF_CONV_EXPAND);
     //output dims = [10 11 2 2] - same as input since expand(3rd argument is false)
     //however, notice that the 4th dimension is > 1 for both signal
     //and the filter, therefore many to many batch mode will be

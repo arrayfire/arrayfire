@@ -81,7 +81,7 @@ extern "C" {
 
    \ingroup index_func_index
 */
-    AFAPI af_err af_index(af_array *out, const af_array in, unsigned ndims, const af_seq* const index);
+    AFAPI af_err af_index(af_array *out, const af_array in, const unsigned ndims, const af_seq* const index);
 
 
 /**
@@ -108,7 +108,7 @@ extern "C" {
 
    \ingroup index_func_assign
 */
-    AFAPI af_err af_assign_seq(af_array *out, const af_array lhs, unsigned ndims, const af_seq* const index, const af_array rhs);
+    AFAPI af_err af_assign_seq(af_array *out, const af_array lhs, const unsigned ndims, const af_seq* const index, const af_array rhs);
 
     // generalized indexing function that accepts either af_array or af_seq
     // along a dimension to index the input array and create the corresponding

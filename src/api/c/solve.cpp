@@ -20,12 +20,12 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
-static inline af_array solve(const af_array a, const af_array b, const af_solve_t options)
+static inline af_array solve(const af_array a, const af_array b, const af_mat_prop options)
 {
     return getHandle(solve<T>(getArray<T>(a), getArray<T>(b), options));
 }
 
-af_err af_solve(af_array *out, const af_array a, const af_array b, const af_solve_t options)
+af_err af_solve(af_array *out, const af_array a, const af_array b, const af_mat_prop options)
 {
     try {
         ArrayInfo a_info = getInfo(a);
@@ -46,7 +46,9 @@ af_err af_solve(af_array *out, const af_array a, const af_array b, const af_solv
         DIM_ASSERT(1, bdims[2] == adims[2]);
         DIM_ASSERT(1, bdims[3] == adims[3]);
 
-        ARG_ASSERT(3, options == AF_SOLVE_NONE);
+        if (options != AF_MAT_NONE) {
+            AF_ERROR("Using this property is not yet supported in solve", AF_ERR_NOT_SUPPORTED);
+        }
 
         af_array output;
 

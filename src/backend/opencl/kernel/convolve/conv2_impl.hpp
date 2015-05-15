@@ -96,6 +96,12 @@ void conv2Helper(const conv_kparam_t& p, Param& out, const Param& sig, const Par
                              case  9: conv2Helper<T, aT, expand,  9,  9>(p, out, sig, filt); break;
                              case 10: conv2Helper<T, aT, expand, 10, 10>(p, out, sig, filt); break;
                              case 11: conv2Helper<T, aT, expand, 11, 11>(p, out, sig, filt); break;
+                             case 12: conv2Helper<T, aT, expand, 12, 12>(p, out, sig, filt); break;
+                             case 13: conv2Helper<T, aT, expand, 13, 13>(p, out, sig, filt); break;
+                             case 14: conv2Helper<T, aT, expand, 14, 14>(p, out, sig, filt); break;
+                             case 15: conv2Helper<T, aT, expand, 15, 15>(p, out, sig, filt); break;
+                             case 16: conv2Helper<T, aT, expand, 16, 16>(p, out, sig, filt); break;
+                             case 17: conv2Helper<T, aT, expand, 17, 17>(p, out, sig, filt); break;
                              default: OPENCL_NOT_SUPPORTED();
                          }
                      } else

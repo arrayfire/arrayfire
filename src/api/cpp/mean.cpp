@@ -17,14 +17,14 @@
 namespace af
 {
 
-array mean(const array &in, dim_type dim)
+array mean(const array &in, const dim_type dim)
 {
     af_array temp = 0;
     AF_THROW(af_mean(&temp, in.get(), getFNSD(dim, in.dims())));
     return array(temp);
 }
 
-array mean(const array &in, const array &weights, dim_type dim)
+array mean(const array &in, const array &weights, const dim_type dim)
 {
     af_array temp = 0;
     AF_THROW(af_mean_weighted(&temp, in.get(), weights.get(), getFNSD(dim, in.dims())));

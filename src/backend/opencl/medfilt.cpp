@@ -46,8 +46,8 @@ Array<T> medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
 }
 
 #define INSTANTIATE(T)\
-    template Array<T> medfilt<T, AF_ZERO     >(const Array<T> &in, dim_type w_len, dim_type w_wid); \
-    template Array<T> medfilt<T, AF_SYMMETRIC>(const Array<T> &in, dim_type w_len, dim_type w_wid);
+    template Array<T> medfilt<T, AF_PAD_ZERO     >(const Array<T> &in, dim_type w_len, dim_type w_wid); \
+    template Array<T> medfilt<T, AF_PAD_SYM>(const Array<T> &in, dim_type w_len, dim_type w_wid);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

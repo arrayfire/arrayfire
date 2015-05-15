@@ -24,7 +24,7 @@
 using namespace detail;
 
 template<typename inType, typename outType>
-static outType varAll(const af_array& in, bool isbiased)
+static outType varAll(const af_array& in, const bool isbiased)
 {
     Array<outType> input = cast<outType>(getArray<inType>(in));
 
@@ -63,7 +63,7 @@ static outType varAll(const af_array& in, const af_array weights)
 }
 
 template<typename inType, typename outType>
-static af_array var(const af_array& in, bool isbiased, int dim)
+static af_array var(const af_array& in, const bool isbiased, int dim)
 {
     Array<outType> input = cast<outType>(getArray<inType>(in));
     dim4 iDims = input.dims();
@@ -114,7 +114,7 @@ static af_array var(const af_array& in, const af_array& weights, dim_type dim)
     return getHandle<outType>(result);
 }
 
-af_err af_var(af_array *out, const af_array in, bool isbiased, dim_type dim)
+af_err af_var(af_array *out, const af_array in, const bool isbiased, const dim_type dim)
 {
     try {
         ARG_ASSERT(2, (dim>=0 && dim<=3));
@@ -139,7 +139,7 @@ af_err af_var(af_array *out, const af_array in, bool isbiased, dim_type dim)
     return AF_SUCCESS;
 }
 
-af_err af_var_weighted(af_array *out, const af_array in, const af_array weights, dim_type dim)
+af_err af_var_weighted(af_array *out, const af_array in, const af_array weights, const dim_type dim)
 {
     try {
         ARG_ASSERT(2, (dim>=0 && dim<=3));
@@ -169,7 +169,7 @@ af_err af_var_weighted(af_array *out, const af_array in, const af_array weights,
     return AF_SUCCESS;
 }
 
-af_err af_var_all(double *realVal, double *imagVal, const af_array in, bool isbiased)
+af_err af_var_all(double *realVal, double *imagVal, const af_array in, const bool isbiased)
 {
     try {
         ArrayInfo info = getInfo(in);

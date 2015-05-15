@@ -70,7 +70,7 @@ void solveConvertPivot(Array<int> &pivot)
 }
 
 template<typename T>
-Array<T> solve(const Array<T> &a, const Array<T> &b, const af_solve_t options)
+Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
     int M = a.dims()[0];
     int N = a.dims()[1];
@@ -102,7 +102,7 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_solve_t options)
 }
 
 #define INSTANTIATE_SOLVE(T)                                                                   \
-    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_solve_t options);
+    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_mat_prop options);
 
 INSTANTIATE_SOLVE(float)
 INSTANTIATE_SOLVE(cfloat)
@@ -117,14 +117,14 @@ namespace cpu
 {
 
 template<typename T>
-Array<T> solve(const Array<T> &a, const Array<T> &b, const af_solve_t options)
+Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
     AF_ERROR("Linear Algebra is diabled on CPU",
               AF_ERR_NOT_CONFIGURED);
 }
 
 #define INSTANTIATE_SOLVE(T)                                                                   \
-    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_solve_t options);
+    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_mat_prop options);
 
 INSTANTIATE_SOLVE(float)
 INSTANTIATE_SOLVE(cfloat)

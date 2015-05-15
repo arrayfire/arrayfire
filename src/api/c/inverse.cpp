@@ -25,12 +25,16 @@ static inline af_array inverse(const af_array in)
     return getHandle(inverse<T>(getArray<T>(in)));
 }
 
-af_err af_inverse(af_array *out, const af_array in)
+af_err af_inverse(af_array *out, const af_array in, const af_mat_prop options)
 {
     try {
         ArrayInfo i_info = getInfo(in);
 
         af_dtype type = i_info.getType();
+
+        if (options != AF_MAT_NONE) {
+            AF_ERROR("Using this property is not yet supported in inverse", AF_ERR_NOT_SUPPORTED);
+        }
 
         DIM_ASSERT(1, i_info.dims()[0] == i_info.dims()[1]);      // Only square matrices
         ARG_ASSERT(1, i_info.isFloating());                       // Only floating and complex types

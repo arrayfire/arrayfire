@@ -114,12 +114,12 @@ void randnTest<unsigned char>(af::dim4 &dims)
 }
 
 #define RAND(d0, d1, d2, d3)                            \
-    TYPED_TEST(Random,randu_##d0##_##d1##_##d2##_##d3)                \
+    TYPED_TEST(Random,randu_##d0##_##d1##_##d2##_##d3)  \
     {                                                   \
         af::dim4 dims(d0, d1, d2, d3);                  \
         randuTest<TypeParam>(dims);                     \
     }                                                   \
-    TYPED_TEST(Random,randn_##d0##_##d1##_##d2##_##d3)                \
+    TYPED_TEST(Random,randn_##d0##_##d1##_##d2##_##d3)  \
     {                                                   \
         af::dim4 dims(d0, d1, d2, d3);                  \
         randnTest<TypeParam>(dims);                     \
@@ -187,7 +187,7 @@ TEST(Random, CPP)
 }
 
 template<typename T>
-void testSetSeed(const int seed0, const int seed1, bool is_norm = false)
+void testSetSeed(const uintl seed0, const uintl seed1, bool is_norm = false)
 {
 
     if (noDoubleTests<T>()) return;
@@ -233,7 +233,7 @@ TYPED_TEST(Random_norm, setSeed)
 }
 
 template<typename T>
-void testGetSeed(const int seed0, const int seed1)
+void testGetSeed(const uintl seed0, const uintl seed1)
 {
     if (noDoubleTests<T>()) return;
 

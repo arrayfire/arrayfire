@@ -8,26 +8,26 @@ namespace af
 {
 
 #define CONSTANT(TYPE)                                                  \
-    array constant(TYPE val, const dim_type d0, af::dtype ty)           \
+    array constant(TYPE val, const dim_type d0, const af::dtype ty)     \
     {                                                                   \
         return constant(val, dim4(d0), ty);                             \
     }                                                                   \
                                                                         \
     array constant(TYPE val, const dim_type d0,                         \
-                   const dim_type d1, af::dtype ty)                     \
+                   const dim_type d1, const af::dtype ty)               \
     {                                                                   \
         return constant(val, dim4(d0, d1), ty);                         \
     }                                                                   \
                                                                         \
     array constant(TYPE val, const dim_type d0,                         \
-                   const dim_type d1, const dim_type d2, af::dtype ty)  \
+                   const dim_type d1, const dim_type d2, const af::dtype ty) \
     {                                                                   \
         return constant(val, dim4(d0, d1, d2), ty);                     \
     }                                                                   \
                                                                         \
     array constant(TYPE val, const dim_type d0,                         \
                    const dim_type d1, const dim_type d2,                \
-                   const dim_type d3, af::dtype ty)                     \
+                   const dim_type d3, const af::dtype ty)               \
     {                                                                   \
         return constant(val, dim4(d0, d1, d2, d3), ty);                 \
     }                                                                   \
@@ -49,7 +49,7 @@ namespace af
 #undef CONSTANT
 
 #define CONSTANT_DOUBLE(TYPE)                                   \
-    array constant(TYPE val, const dim4 &dims, af::dtype type)  \
+    array constant(TYPE val, const dim4 &dims, const af::dtype type)  \
     {                                                           \
         af_array res;                                           \
         AF_THROW(af_constant(&res, val,                         \
@@ -68,7 +68,7 @@ namespace af
 #undef CONSTANT_DOUBLE
 
 #define CONSTANT_LONG(TYPE, DTYPE)                              \
-    array constant(TYPE val, const dim4 &dims, af::dtype type)  \
+    array constant(TYPE val, const dim4 &dims, const af::dtype type)  \
     {                                                           \
         if (type != s64 && type != u64) {                       \
             return constant((double)val, dims, type);           \
@@ -94,7 +94,7 @@ namespace af
 #undef CONSTANT_LONG
 
 #define CONSTANT_COMPLEX(TYPE)                                  \
-    array constant(TYPE val, const dim4 &dims, af::dtype type)  \
+    array constant(TYPE val, const dim4 &dims, const af::dtype type)  \
     {                                                           \
         if (type != c32 && type != c64) {                       \
             return constant(real(val), dims, type);             \
@@ -113,64 +113,64 @@ namespace af
 
 #undef CONSTANT_COMPLEX
 
-    array randu(const dim4 &dims, af::dtype type)
+    array randu(const dim4 &dims, const af::dtype type)
     {
         af_array res;
         AF_THROW(af_randu(&res, dims.ndims(), dims.get(), type));
         return array(res);
     }
 
-    array randu(const dim_type d0, af::dtype ty)
+    array randu(const dim_type d0, const af::dtype ty)
     {
         return randu(dim4(d0), ty);
     }
 
     array randu(const dim_type d0,
-                const dim_type d1, af::dtype ty)
+                const dim_type d1, const af::dtype ty)
     {
         return randu(dim4(d0, d1), ty);
     }
 
     array randu(const dim_type d0,
-                const dim_type d1, const dim_type d2, af::dtype ty)
+                const dim_type d1, const dim_type d2, const af::dtype ty)
     {
         return randu(dim4(d0, d1, d2), ty);
     }
 
     array randu(const dim_type d0,
                 const dim_type d1, const dim_type d2,
-                const dim_type d3, af::dtype ty)
+                const dim_type d3, const af::dtype ty)
     {
         return randu(dim4(d0, d1, d2, d3), ty);
     }
 
-    array randn(const dim4 &dims, af::dtype type)
+    array randn(const dim4 &dims, const af::dtype type)
     {
         af_array res;
         AF_THROW(af_randn(&res, dims.ndims(), dims.get(), type));
         return array(res);
     }
 
-    array randn(const dim_type d0, af::dtype ty)
+    array randn(const dim_type d0, const af::dtype ty)
     {
         return randn(dim4(d0), ty);
     }
 
     array randn(const dim_type d0,
-                const dim_type d1, af::dtype ty)
+                const dim_type d1, const af::dtype ty)
     {
         return randn(dim4(d0, d1), ty);
     }
 
     array randn(const dim_type d0,
-                const dim_type d1, const dim_type d2, af::dtype ty)
+                const dim_type d1, const dim_type d2, const af::dtype ty)
     {
         return randn(dim4(d0, d1, d2), ty);
     }
 
     array randn(const dim_type d0,
                 const dim_type d1, const dim_type d2,
-                const dim_type d3, af::dtype ty)
+                const dim_type d3, const af::dtype ty)
     {
         return randn(dim4(d0, d1, d2, d3), ty);
     }
@@ -187,7 +187,7 @@ namespace af
         return seed;
     }
 
-    array range(const dim4 &dims, const int seq_dim, af::dtype ty)
+    array range(const dim4 &dims, const int seq_dim, const af::dtype ty)
     {
         af_array out;
         AF_THROW(af_range(&out, dims.ndims(), dims.get(), seq_dim, ty));
@@ -195,45 +195,45 @@ namespace af
     }
 
     array range(const dim_type d0, const dim_type d1, const dim_type d2,
-               const dim_type d3, const int seq_dim, af::dtype ty)
+               const dim_type d3, const int seq_dim, const af::dtype ty)
     {
         return range(dim4(d0, d1, d2, d3), seq_dim, ty);
     }
 
-    array iota(const dim4 &dims, const dim4 &tile_dims, af::dtype ty)
+    array iota(const dim4 &dims, const dim4 &tile_dims, const af::dtype ty)
     {
         af_array out;
         AF_THROW(af_iota(&out, dims.ndims(), dims.get(), tile_dims.ndims(), tile_dims.get(), ty));
         return array(out);
     }
 
-    array identity(const dim4 &dims, af::dtype type)
+    array identity(const dim4 &dims, const af::dtype type)
     {
         af_array res;
         AF_THROW(af_identity(&res, dims.ndims(), dims.get(), type));
         return array(res);
     }
 
-    array identity(const dim_type d0, af::dtype ty)
+    array identity(const dim_type d0, const af::dtype ty)
     {
         return identity(dim4(d0), ty);
     }
 
     array identity(const dim_type d0,
-                const dim_type d1, af::dtype ty)
+                const dim_type d1, const af::dtype ty)
     {
         return identity(dim4(d0, d1), ty);
     }
 
     array identity(const dim_type d0,
-                const dim_type d1, const dim_type d2, af::dtype ty)
+                const dim_type d1, const dim_type d2, const af::dtype ty)
     {
         return identity(dim4(d0, d1, d2), ty);
     }
 
     array identity(const dim_type d0,
                 const dim_type d1, const dim_type d2,
-                const dim_type d3, af::dtype ty)
+                const dim_type d3, const af::dtype ty)
     {
         return identity(dim4(d0, d1, d2, d3), ty);
     }
@@ -262,7 +262,7 @@ namespace af
         return af::moddims(in, dims.ndims(), dims.get());
     }
 
-    array moddims(const array& in, dim_type d0, dim_type d1, dim_type d2, dim_type d3)
+    array moddims(const array& in, const dim_type d0, const dim_type d1, const dim_type d2, const dim_type d3)
     {
         dim_type dims[4] = {d0, d1, d2, d3};
         return af::moddims(in, 4, dims);

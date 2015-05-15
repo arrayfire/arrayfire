@@ -25,14 +25,14 @@ namespace cuda
 using cublas::getHandle;
 
 cublasOperation_t
-toCblasTranspose(af_blas_transpose opt)
+toCblasTranspose(af_mat_prop opt)
 {
     cublasOperation_t out = CUBLAS_OP_N;
     switch(opt) {
-        case AF_NO_TRANSPOSE        : out = CUBLAS_OP_N;    break;
-        case AF_TRANSPOSE           : out = CUBLAS_OP_T;    break;
-        case AF_CONJUGATE_TRANSPOSE : out = CUBLAS_OP_C;    break;
-        default                     : AF_ERROR("INVALID af_blas_transpose", AF_ERR_INVALID_ARG);
+        case AF_MAT_NONE        : out = CUBLAS_OP_N;    break;
+        case AF_MAT_TRANS           : out = CUBLAS_OP_T;    break;
+        case AF_MAT_CTRANS : out = CUBLAS_OP_C;    break;
+        default                     : AF_ERROR("INVALID af_mat_prop", AF_ERR_INVALID_ARG);
     }
     return out;
 }
@@ -117,7 +117,7 @@ using namespace std;
 
 template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
-                af_blas_transpose optLhs, af_blas_transpose optRhs)
+                af_mat_prop optLhs, af_mat_prop optRhs)
 {
     cublasOperation_t lOpts = toCblasTranspose(optLhs);
     cublasOperation_t rOpts = toCblasTranspose(optRhs);
@@ -170,7 +170,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
 
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
-             af_blas_transpose optLhs, af_blas_transpose optRhs)
+             af_mat_prop optLhs, af_mat_prop optRhs)
 {
     int N = lhs.dims()[0];
 
@@ -186,7 +186,7 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
 }
 
 template<typename T>
-void trsm(const Array<T> &lhs, Array<T> &rhs, af_blas_transpose trans,
+void trsm(const Array<T> &lhs, Array<T> &rhs, af_mat_prop trans,
           bool is_upper, bool is_left, bool is_unit)
 {
     //dim4 lDims = lhs.dims();
@@ -214,7 +214,7 @@ void trsm(const Array<T> &lhs, Array<T> &rhs, af_blas_transpose trans,
 
 #define INSTANTIATE_BLAS(TYPE)                                                          \
     template Array<TYPE> matmul<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs,  \
-                                      af_blas_transpose optLhs, af_blas_transpose optRhs);
+                                      af_mat_prop optLhs, af_mat_prop optRhs);
 
 INSTANTIATE_BLAS(float)
 INSTANTIATE_BLAS(cfloat)
@@ -223,14 +223,14 @@ INSTANTIATE_BLAS(cdouble)
 
 #define INSTANTIATE_DOT(TYPE)                                                       \
     template Array<TYPE> dot<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs, \
-                                   af_blas_transpose optLhs, af_blas_transpose optRhs);
+                                   af_mat_prop optLhs, af_mat_prop optRhs);
 
 INSTANTIATE_DOT(float)
 INSTANTIATE_DOT(double)
 
 #define INSTANTIATE_TRSM(TYPE)                                                          \
     template void trsm<TYPE>(const Array<TYPE> &lhs, Array<TYPE> &rhs,                  \
-                             af_blas_transpose trans, bool is_upper, bool is_left, bool is_unit);
+                             af_mat_prop trans, bool is_upper, bool is_left, bool is_unit);
 
 INSTANTIATE_TRSM(float)
 INSTANTIATE_TRSM(cfloat)

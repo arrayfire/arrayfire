@@ -73,17 +73,17 @@ namespace af
         AF_THROW(af_cholesky_inplace(info, in.get(), is_upper));
     }
 
-    array solve(const array &a, const array &b, const af_solve_t options)
+    array solve(const array &a, const array &b, const matProp options)
     {
         af_array out;
         AF_THROW(af_solve(&out, a.get(), b.get(), options));
         return array(out);
     }
 
-    array inverse(const array &in)
+    array inverse(const array &in, const matProp options)
     {
         af_array out;
-        AF_THROW(af_inverse(&out, in.get()));
+        AF_THROW(af_inverse(&out, in.get(), options));
         return array(out);
     }
 

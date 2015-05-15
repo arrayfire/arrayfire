@@ -35,9 +35,9 @@ namespace af
 
     AFAPI void choleskyInPlace(array &in, int *info = NULL, const bool is_upper = true);
 
-    AFAPI array solve(const array &a, const array &b, const af_solve_t options = AF_SOLVE_NONE);
+    AFAPI array solve(const array &a, const array &b, const matProp options = AF_MAT_NONE);
 
-    AFAPI array inverse(const array &in);
+    AFAPI array inverse(const array &in, const matProp options = AF_MAT_NONE);
 
     /**
        @}
@@ -65,9 +65,9 @@ extern "C" {
     AFAPI af_err af_cholesky_inplace(int *info, af_array in, const bool is_upper);
 
     AFAPI af_err af_solve(af_array *out, const af_array a, const af_array b,
-                          const af_solve_t options);
+                          const af_mat_prop options);
 
-    AFAPI af_err af_inverse(af_array *out, const af_array in);
+    AFAPI af_err af_inverse(af_array *out, const af_array in, const af_mat_prop options);
 
 #ifdef __cplusplus
 }

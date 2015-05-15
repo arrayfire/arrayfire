@@ -245,7 +245,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
 
         // Bt = tri_solve(R1, B);
         B.resetDims(dim4(M, K));
-        trsm<T>(A, B, AF_CONJUGATE_TRANSPOSE, true, true, false);
+        trsm<T>(A, B, AF_MAT_CTRANS, true, true, false);
 
         // Bpad = pad(Bt, ..)
         B.resetDims(dim4(N, K));
@@ -312,13 +312,13 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
         // tri_solve(R1, Bt)
         A.resetDims(dim4(N, N));
         B.resetDims(dim4(N, K));
-        trsm(A, B, AF_NO_TRANSPOSE, true, true, false);
+        trsm(A, B, AF_MAT_NONE, true, true, false);
     }
     return B;
 }
 
 template<typename T>
-Array<T> solve(const Array<T> &a, const Array<T> &b, const af_solve_t options)
+Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
     if(a.dims()[0] == a.dims()[1]) {
         return generalSolve<T>(a, b);
@@ -328,7 +328,7 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_solve_t options)
 }
 
 #define INSTANTIATE_SOLVE(T)                                                                   \
-    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_solve_t options);
+    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_mat_prop options);
 
 INSTANTIATE_SOLVE(float)
 INSTANTIATE_SOLVE(cfloat)
@@ -342,14 +342,14 @@ namespace cuda
 {
 
 template<typename T>
-Array<T> solve(const Array<T> &a, const Array<T> &b, const af_solve_t options)
+Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
     AF_ERROR("CUDA cusolver not available. Linear Algebra is disabled",
               AF_ERR_NOT_CONFIGURED);
 }
 
 #define INSTANTIATE_SOLVE(T)                                                                   \
-    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_solve_t options);
+    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_mat_prop options);
 
 INSTANTIATE_SOLVE(float)
 INSTANTIATE_SOLVE(cfloat)

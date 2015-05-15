@@ -59,7 +59,7 @@ static double median(const af_array& in)
 }
 
 template<typename T>
-static af_array median(const af_array& in, dim_type dim)
+static af_array median(const af_array& in, const dim_type dim)
 {
     const Array<T> input = getArray<T>(in);
     Array<T> sortedIn   = sort<T, true>(input, dim);
@@ -136,7 +136,7 @@ af_err af_median_all(double *realVal, double *imagVal, const af_array in)
     return AF_SUCCESS;
 }
 
-af_err af_median(af_array* out, const af_array in, dim_type dim)
+af_err af_median(af_array* out, const af_array in, const dim_type dim)
 {
     try {
         ARG_ASSERT(2, (dim>=0 && dim<=0));
