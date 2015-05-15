@@ -70,23 +70,28 @@ array edge(const array &in, int method = 0)
 
 void edge(bool console)
 {
+    af::Window myWindow("Edge Dectectors");
+    af::Window myWindow2(512, 512, "Histogram");
+
     array in = loadimage(ASSETS_DIR "/examples/images/lena.ppm", false);
 
     array prewitt = edge(in, 1);
     array sobelFilter   = edge(in, 2);
     array hst = histogram(in, 256, 0, 255);
 
-    while(!console) {
-        // colormap, grayscale
-        setupGrid(2, 2);
+    while(!myWindow.close() && !myWindow2.close()) {
 
-        bindCell(1, 1, "Input Image"); image(in/255);
-        bindCell(1, 2, "Input Image Histogram"); hist(hst, 0, 255);
-        bindCell(2, 1, "Prewitt Edge Detector"); image(prewitt);
-        bindCell(2, 2, "Sobel Edge Detector"); image(sobelFilter);
+        /* show input, prewitt and sobel edge detectors in a grid */
+        myWindow.grid(2, 2);
 
-        showGrid();
-        //FIXME add timeout
+        myWindow(0,0)->image(in/255     , "Input Image");
+        myWindow(0,1)->image(prewitt    , "Prewitt"    );
+        myWindow(1,0)->image(sobelFilter, "Sobel"      );
+
+        myWindow.show();
+
+        /* show histogram on input in separate window */
+        myWindow2.hist(hst, 255, 1);
     }
 }
 
@@ -98,7 +103,6 @@ int main(int argc, char* argv[])
     try {
         af::deviceset(device);
         af::info();
-        af::initGraphics(device);
 
         printf("** ArrayFire Edge Detection Demo **\n");
         edge(console);

@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     try {
         // Initialize the kernel array just once
         af::info();
-        af::initGraphics(0);
+        af::Window myWindow(512, 512, "2D Plot example: ArrayFire");
 
         int size = 2000;
         float x[size];
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
         for (int i = 1; i < 200; i++)
         {
             af::timer delay = timer::start();
-            plot(X, Y);
+            myWindow.plot(X, Y);
             double fps = 15;
             while(timer::stop(delay) < (1 / fps)) { }
         }

@@ -212,8 +212,6 @@ namespace af
     */
 
     AFAPI void deviceGC();
-
-    AFAPI void initGraphics(int device);
 }
 #endif
 
@@ -301,8 +299,6 @@ extern "C" {
        \ingroup device_func_gc
     */
     AFAPI af_err af_device_gc();
-
-    AFAPI af_err af_init_graphics(int device);
 
 #ifdef __cplusplus
 }

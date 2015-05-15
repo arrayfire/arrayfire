@@ -55,7 +55,7 @@ fg::Plot* setup_plot(const af_array X, const af_array Y)
 }
 #endif
 
-af_err af_draw_plot(const af_array X, const af_array Y)
+af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
     try {
@@ -73,7 +73,7 @@ af_err af_draw_plot(const af_array X, const af_array Y)
 
         TYPE_ASSERT(Xtype == Ytype);
 
-        fg::Window* window = ForgeManager::getWindow();
+        fg::Window* window = reinterpret_cast<fg::Window*>(wind);
         fg::makeCurrent(window);
         fg::Plot* plot = NULL;
 
@@ -85,10 +85,8 @@ af_err af_draw_plot(const af_array X, const af_array Y)
             default:  TYPE_ERROR(1, Xtype);
         }
 
-        ForgeManager& fgMngr = ForgeManager::getInstance();
-        if (fgMngr.isGridMode())
-            window->draw(fgMngr.cellColId(), fgMngr.cellRowId(),
-                         plot, fg::FG_PLOT, fgMngr.cellTitle().c_str());
+        if (props->col>-1 && props->row>-1)
+            window->draw(props->col, props->row, plot, fg::FG_PLOT, props->title);
         else
             window->draw(*plot);
     }

@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     try {
         // Initialize the kernel array just once
         af::info();
-        af::initGraphics(0);
+        af::Window myWindow(512, 512, "Histogram example using ArrayFire");
 
         array img = loadimage(ASSETS_DIR"/examples/images/lena.ppm", false);
         array hist_out = histogram(img, 256, 0, 255);
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
         for (int i = 1; i < 200; i++)
         {
             af::timer delay = timer::start();
-            hist(hist_out, 0, 255);
+            myWindow.hist(hist_out, 0, 255);
             double fps = 15;
             while(timer::stop(delay) < (1 / fps)) { }
         }

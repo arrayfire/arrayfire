@@ -203,13 +203,3 @@ af_err af_device_mem_info(size_t *alloc_bytes, size_t *alloc_buffers,
     } CATCHALL;
     return AF_SUCCESS;
 }
-
-af_err af_init_graphics(int device)
-{
-    try {
-#if defined(WITH_GRAPHICS)
-        detail::markDeviceForInterop(device, graphics::ForgeManager::getWindow());
-#endif
-    } CATCHALL;
-    return AF_SUCCESS;
-}

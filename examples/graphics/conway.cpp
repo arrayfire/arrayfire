@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
         static const int game_w = 160, game_h = 120;
 
         af::info();
-        af::initGraphics(0);
+        af::Window myWindow("Conway's Game of Life using ArrayFire");
 
         int frame_count = 0;
 
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 
         while(frame_count <= 1500) {
 
-            image(state);
+            myWindow.image(state);
             frame_count++;
 
             // Generate a random starting state

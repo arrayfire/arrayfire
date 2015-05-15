@@ -13,6 +13,7 @@
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <platform.hpp>
+#include <mutex>
 
 using namespace std;
 
@@ -83,29 +84,6 @@ size_t getTypeSize(GLenum type)
 namespace graphics
 {
 
-fg::Window* ForgeManager::getWindow()
-{
-    static bool once = true;
-    static fg::Window* gAFwindow = NULL;
-    static fg::Font* gFont = NULL;
-
-    if (once) {
-        try {
-            gAFwindow = new fg::Window(1280, 720, "ArrayFire");
-            detail::markDeviceForInterop(detail::getActiveDeviceId(), gAFwindow);
-            gFont = new fg::Font();
-            gFont->loadSystemFont("Vera", 64);
-            gAFwindow->setFont(gFont);
-        }catch(const fg::Error &e) {
-            std::cout<< e <<std::endl;
-            AF_ERROR("ForgeManager", AF_ERR_GL_ERROR);
-        }
-        once = false;
-    }
-
-    return gAFwindow;
-}
-
 ForgeManager& ForgeManager::getInstance()
 {
     static ForgeManager my_instance;
@@ -115,6 +93,37 @@ ForgeManager& ForgeManager::getInstance()
 ForgeManager::~ForgeManager()
 {
     destroyResources();
+}
+
+fg::Font* ForgeManager::getFont()
+{
+    static std::once_flag flag;
+    static fg::Font* fnt = NULL;
+
+    CheckGL("Begin ForgeManager::getFont");
+
+    std::call_once(flag, []() {
+            fnt = new fg::Font();
+            fnt->loadSystemFont("Vera", 32);
+            });
+
+    CheckGL("End ForgeManager::getFont");
+    return fnt;
+}
+
+fg::Window* ForgeManager::getMainWindow()
+{
+    static std::once_flag flag;
+    static fg::Window* wnd = NULL;
+
+    CheckGL("Begin ForgeManager::getMainWindow");
+
+    std::call_once(flag, [this]() {
+            wnd = new fg::Window(WIDTH, HEIGHT, "ArrayFire", NULL, true);
+            });
+
+    CheckGL("End ForgeManager::getMainWindow");
+    return wnd;
 }
 
 fg::Image* ForgeManager::getImage(int w, int h, fg::ColorMode mode, GLenum type)
@@ -158,6 +167,8 @@ fg::Histogram* ForgeManager::getHistogram(int nBins, GLenum type)
 
 void ForgeManager::destroyResources()
 {
+    /* clear all OpenGL resource objects (images, plots, histograms etc) first
+     * and then delete the windows */
     for(ImgMapIter iter = mImgMap.begin(); iter != mImgMap.end(); iter++)
         delete (iter->second);
 
@@ -166,6 +177,9 @@ void ForgeManager::destroyResources()
 
     for(HstMapIter iter = mHstMap.begin(); iter != mHstMap.end(); iter++)
         delete (iter->second);
+
+    delete getFont();
+    delete getMainWindow();
 }
 
 }

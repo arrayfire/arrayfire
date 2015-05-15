@@ -9,40 +9,79 @@
 
 #pragma once
 
+#include <af/defines.h>
 #include <af/array.h>
+
+typedef unsigned long long af_window;
+
+typedef struct {
+    int row;
+    int col;
+    const char* title;
+} af_cell;
 
 #ifdef __cplusplus
 #include <utility>
 namespace af
 {
-    AFAPI void image(const array &in);
 
-    AFAPI void plot(const array &X, const array &Y);
+    // FIXME handle copying properly
+class AFAPI Window {
+    private:
+        af_window wnd;
+        /* below attributes are used to track which
+         * cell in the grid is being rendered currently */
+        int _r;
+        int _c;
 
-    AFAPI void hist(const array &X, const double minval, const double maxval);
+        void initWindow(const int width, const int height, const char* const title);
 
-    AFAPI void setupGrid(int rows, int cols);
+    public:
+        Window();
+        Window(const char* const title);
+        Window(const int width, const int height, const char* const title="ArrayFire");
+        Window(const af_window wnd);
+        ~Window();
 
-    AFAPI void bindCell(int colId, int rowId, const char* title);
+        af_window get() const { return wnd; }
 
-    AFAPI void showGrid();
+        void image(const array& in, const char* title=NULL);
+        void plot(const array& X, const array& Y, const char* const title=NULL);
+        void hist(const array& X, const double minval, const double maxval, const char* const title=NULL);
+        void grid(const int rows, const int cols);
+        void show();
+
+        bool close();
+
+        inline Window* operator()(const int r, const int c) {
+            _r = r; _c = c;
+            return this;
+        }
+};
+
 }
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-    AFAPI af_err af_draw_image(const af_array in);
 
-    AFAPI af_err af_draw_plot(const af_array X, const af_array Y);
+AFAPI af_err af_create_window(af_window *out, const int width, const int height, const char* const title);
 
-    AFAPI af_err af_draw_hist(const af_array X, const double minval, const double maxval);
+AFAPI af_err af_draw_image(const af_window wind, const af_array in, const af_cell* const props);
 
-    AFAPI af_err af_setup_grid(int rows, int cols);
+AFAPI af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, const af_cell* const props);
 
-    AFAPI af_err af_bind_cell(int colId, int rowId, const char* title);
+AFAPI af_err af_draw_hist(const af_window window, const af_array X, const double minval, const double maxval, const af_cell* const props);
 
-    AFAPI af_err af_show_grid();
+AFAPI af_err af_grid(const af_window wind, const int rows, const int cols);
+
+AFAPI af_err af_show(const af_window window);
+
+AFAPI af_err af_is_window_closed(bool *out, const af_window window);
+
+AFAPI af_err af_destroy_window(const af_window wind);
+
 #ifdef __cplusplus
 }
 

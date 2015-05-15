@@ -77,6 +77,7 @@ array blur(const array& img, const array mask = gaussiankernel(3,3))
 // Demonstrates various image morphing manipulations.
 static void morphing_demo(bool console)
 {
+    af::Window wnd(1280, 720, "Morphological Operations");
     // load images
     array img_rgb = loadimage(ASSETS_DIR "/examples/images/lena.ppm", true) / 255.f; // 3 channel RGB       [0-1]
 
@@ -93,24 +94,25 @@ static void morphing_demo(bool console)
     array bp = border(img_rgb, 20, 30, 40, 50, 0.5);
     array bo = border(img_rgb, 20);
 
-    while (!console) {
-        setupGrid(3, 4);
+    while (!wnd.close()) {
+        wnd.grid(3, 4);
 
-        // image operations
-        bindCell(1,1,"Input Color Image");  image(img_rgb);
-        bindCell(1,2,"Erosion");  image(er);
-        bindCell(1,3,"Dilation");  image(di);
-        bindCell(2,1,"Morphological Opening");  image(op);
-        bindCell(2,2,"Morphological Closing");  image(cl);
-        bindCell(2,3,"Gradient");  image(gr);
-        bindCell(3,1,"Top Hat");  image(th);
-        bindCell(3,2,"Bottom Hat");  image(bh);
-        bindCell(3,3,"Blur");  image(bl);
-        bindCell(4,1,"Border Set to Gray");  image(bp);
-        bindCell(4,2,"Border Set to Zero");  image(bo);
+        wnd(0, 0)->image(img_rgb, "Input"          );
+        wnd(1, 0)->image(er     , "Erosion"        );
+        wnd(2, 0)->image(di     , "Dilation"       );
 
-        showGrid();
-        //FIXME add timeout
+        wnd(0, 1)->image(op     , "Opening"        );
+        wnd(1, 1)->image(cl     , "Closing"        );
+        wnd(2, 1)->image(gr     , "Gradient"       );
+
+        wnd(0, 2)->image(th     , "TopHat"         );
+        wnd(1, 2)->image(bh     , "BottomHat"      );
+        wnd(2, 2)->image(bl     , "Blur"           );
+
+        wnd(0, 3)->image(bp     , "Border to Gray" );
+        wnd(1, 3)->image(bo     , "Border to black");
+
+        wnd.show();
     }
 }
 
@@ -120,9 +122,8 @@ int main(int argc, char** argv)
     bool console = argc > 2 ? argv[2][0] == '-' : false;
 
     try {
-        af::deviceset(device);
         af::info();
-        af::initGraphics(device);
+        af::deviceset(device);
         printf("** ArrayFire Image Morphing Demo **\n\n");
         morphing_demo(console);
 

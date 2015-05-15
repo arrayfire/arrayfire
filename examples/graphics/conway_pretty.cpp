@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
         static const int game_w = 100, game_h = 100;
 
         af::info();
-        af::initGraphics(0);
+        af::Window myWindow(512, 512, "Conway's Game Of Life");
         int frame_count = 0;
 
         // Initialize the kernel array just once
@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
         while(frame_count <= 1500) {
             af::timer delay = timer::start();
 
-            image(display);
+            myWindow.image(display);
             frame_count++;
 
             // Generate a random starting state

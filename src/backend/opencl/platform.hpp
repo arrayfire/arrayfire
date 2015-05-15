@@ -38,10 +38,6 @@ class DeviceManager
 
     friend int setDevice(int device);
 
-#if defined(WITH_GRAPHICS)
-    friend void markDeviceForInterop(const int device, const fg::Window* wHandle);
-#endif
-
     public:
         static const unsigned MAX_DEVICES = 16;
 
@@ -60,6 +56,9 @@ class DeviceManager
         // variables
         DeviceManager(DeviceManager const&);
         void operator=(DeviceManager const&);
+#if defined(WITH_GRAPHICS)
+        void markDeviceForInterop(const int device, const fg::Window* wHandle);
+#endif
 
     private:
         // Attributes
@@ -92,9 +91,5 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 int setDevice(int device);
 
 void sync(int device);
-
-#if defined(WITH_GRAPHICS)
-void markDeviceForInterop(const int device, const fg::Window* wHandle);
-#endif
 
 }

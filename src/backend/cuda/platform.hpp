@@ -46,10 +46,6 @@ int setDevice(int device);
 
 void sync(int device);
 
-#if defined(WITH_GRAPHICS)
-void markDeviceForInterop(const int device, const fg::Window* window);
-#endif
-
 cudaDeviceProp getDeviceProp(int device);
 
 struct cudaDevice_t {

@@ -80,11 +80,4 @@ void sync(int device)
     // Nothing here
 }
 
-#if defined(WITH_GRAPHICS)
-void markDeviceForInterop(const int device, const fg::Window* window)
-{
-    return; // Nothing to be done for CPU
-}
-#endif
-
 }

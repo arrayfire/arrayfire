@@ -139,8 +139,4 @@ namespace af
     INSTANTIATE(unsigned char)
     INSTANTIATE(char)
 
-    void initGraphics(int device)
-    {
-        AF_THROW(af_init_graphics(device));
-    }
 }

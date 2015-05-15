@@ -117,9 +117,11 @@ DeviceManager::DeviceManager()
         unsigned nDevices = 0;
         for (auto devType : DEVC_TYPES) {
             for (auto &platform : platforms) {
+
                 cl_context_properties cps[3] = {CL_CONTEXT_PLATFORM,
-                                                (cl_context_properties)(platform()),
-                                                0};
+                    (cl_context_properties)(platform()),
+                    0};
+
                 std::vector<Device> devs;
                 try {
                     platform.getDevices(devType, &devs);
@@ -156,6 +158,13 @@ DeviceManager::DeviceManager()
     } catch (const cl::Error &error) {
             CL_TO_AF_ERROR(error);
     }
+    /* loop over devices and replace contexts with
+     * OpenGL shared contexts whereever applicable */
+#if defined(WITH_GRAPHICS)
+    int devCount = mDevices.size();
+    fg::Window* wHandle = graphics::ForgeManager::getInstance().getMainWindow();
+    for(int i=0; i<devCount; ++i) markDeviceForInterop(i, wHandle);
+#endif
 }
 
 
@@ -336,7 +345,7 @@ void sync(int device)
     }
 }
 
-bool checkExtnAvailability(Device pDevice, std::string pName)
+bool checkExtnAvailability(const Device &pDevice, std::string pName)
 {
     bool ret_val = false;
     // find the extension required
@@ -353,26 +362,26 @@ bool checkExtnAvailability(Device pDevice, std::string pName)
 }
 
 #if defined(WITH_GRAPHICS)
-void markDeviceForInterop(const int device, const fg::Window* wHandle)
+void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHandle)
 {
     try {
-        DeviceManager& devMngr = DeviceManager::getInstance();
-
-        if (device >= (int)devMngr.mQueues.size() ||
+        if (device >= (int)mQueues.size() ||
                 device>= (int)DeviceManager::MAX_DEVICES) {
             throw cl::Error(CL_INVALID_DEVICE, "Invalid device passed for CL-GL Interop");
         }
         else {
-            // finish pending tasks
-            if (getActiveDeviceId()==device)
-                getQueue().finish();
+            mQueues[device]->finish();
 
             // check if the device has CL_GL sharing extension enabled
-            if (!checkExtnAvailability(*devMngr.mDevices[device], CL_GL_SHARING_EXT))
-                throw cl::Error(CL_INVALID_DEVICE, "Device has no support for OpenGL Interoperation");
+            if (!checkExtnAvailability(*mDevices[device], CL_GL_SHARING_EXT)) {
+                printf("Device[%d] has no support for OpenGL Interoperation\n",device);
+                /* return silently if given device has not OpenGL sharing extension
+                 * enabled so that regular queue is used for it */
+                return;
+            }
 
             // call forge to get OpenGL sharing context and details
-            cl::Platform plat = devMngr.mDevices[device]->getInfo<CL_DEVICE_PLATFORM>();
+            cl::Platform plat = mDevices[device]->getInfo<CL_DEVICE_PLATFORM>();
             cl_context_properties cps[] = {
                 CL_GL_CONTEXT_KHR, (cl_context_properties)wHandle->context(),
 #if defined(_WIN32) || defined(_MSC_VER)
@@ -384,14 +393,14 @@ void markDeviceForInterop(const int device, const fg::Window* wHandle)
                 0
             };
 
-            Context * ctx = new Context(*devMngr.mDevices[device], cps);
-            CommandQueue * cq = new CommandQueue(*ctx, *devMngr.mDevices[device]);
+            Context * ctx = new Context(*mDevices[device], cps);
+            CommandQueue * cq = new CommandQueue(*ctx, *mDevices[device]);
 
-            delete devMngr.mContexts[device];
-            delete devMngr.mQueues[device];
+            delete mContexts[device];
+            delete mQueues[device];
 
-            devMngr.mContexts[device] = ctx;
-            devMngr.mQueues[device] = cq;
+            mContexts[device] = ctx;
+            mQueues[device] = cq;
         }
     } catch (const cl::Error &ex) {
         CL_TO_AF_ERROR(ex);

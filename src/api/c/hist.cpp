@@ -46,7 +46,8 @@ fg::Histogram* setup_histogram(const af_array in, const double minval, const dou
 }
 #endif
 
-af_err af_draw_hist(const af_array X, const double minval, const double maxval)
+af_err af_draw_hist(const af_window wind, const af_array X, const double minval, const double maxval,
+                   const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
     try {
@@ -55,7 +56,7 @@ af_err af_draw_hist(const af_array X, const double minval, const double maxval)
 
         ARG_ASSERT(0, Xinfo.isVector());
 
-        fg::Window* window = ForgeManager::getWindow();
+        fg::Window* window = reinterpret_cast<fg::Window*>(wind);
         fg::makeCurrent(window);
         fg::Histogram* hist = NULL;
 
@@ -67,10 +68,8 @@ af_err af_draw_hist(const af_array X, const double minval, const double maxval)
             default:  TYPE_ERROR(1, Xtype);
         }
 
-        ForgeManager& fgMngr = ForgeManager::getInstance();
-        if (fgMngr.isGridMode())
-            window->draw(fgMngr.cellColId(), fgMngr.cellRowId(),
-                         hist, fg::FG_HIST, fgMngr.cellTitle().c_str());
+        if (props->col>-1 && props->row>-1)
+            window->draw(props->col, props->row, hist, fg::FG_HIST, props->title);
         else
             window->draw(*hist);
     }

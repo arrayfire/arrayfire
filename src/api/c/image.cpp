@@ -51,7 +51,7 @@ static fg::Image* convert_and_copy_image(const af_array in)
 }
 #endif
 
-af_err af_draw_image(const af_array in)
+af_err af_draw_image(const af_window wind, const af_array in, const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
     try {
@@ -62,7 +62,7 @@ af_err af_draw_image(const af_array in)
         DIM_ASSERT(0, in_dims[2] == 1 || in_dims[2] == 3 || in_dims[2] == 4);
         DIM_ASSERT(0, in_dims[3] == 1);
 
-        fg::Window* window = ForgeManager::getWindow();
+        fg::Window* window = reinterpret_cast<fg::Window*>(wind);
         fg::makeCurrent(window);
         fg::Image* image = NULL;
 
@@ -75,10 +75,8 @@ af_err af_draw_image(const af_array in)
             default:  TYPE_ERROR(1, type);
         }
 
-        ForgeManager& fgMngr = ForgeManager::getInstance();
-        if (fgMngr.isGridMode())
-            window->draw(fgMngr.cellColId(), fgMngr.cellRowId(),
-                         image, fg::FG_IMAGE, fgMngr.cellTitle().c_str());
+        if (props->col>-1 && props->row>-1)
+            window->draw(props->col, props->row, image, fg::FG_IMAGE, props->title);
         else
             window->draw(*image);
     }
@@ -90,13 +88,29 @@ af_err af_draw_image(const af_array in)
 #endif
 }
 
-af_err af_setup_grid(int rows, int cols)
+af_err af_create_window(af_window *out, const int width, const int height, const char* const title)
+{
+#if defined(WITH_GRAPHICS)
+    fg::Window* wnd;
+    try {
+        graphics::ForgeManager& fgMngr = graphics::ForgeManager::getInstance();
+        wnd = new fg::Window(width, height, title, fgMngr.getMainWindow());
+        wnd->setFont(fgMngr.getFont());
+    }
+    CATCHALL;
+    *out = reinterpret_cast<af_window>(wnd);
+    return AF_SUCCESS;
+#else
+    return AF_ERR_NO_GRAPHICS;
+#endif
+}
+
+af_err af_grid(const af_window wind, const int rows, const int cols)
 {
 #if defined(WITH_GRAPHICS)
     try {
-        ForgeManager::getInstance().toggleGridMode();
-        fg::Window* window = ForgeManager::getWindow();
-        window->grid(rows, cols);
+        fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
+        wnd->grid(rows, cols);
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -105,12 +119,12 @@ af_err af_setup_grid(int rows, int cols)
 #endif
 }
 
-af_err af_bind_cell(int colId, int rowId, const char* title)
+af_err af_show(const af_window wind)
 {
 #if defined(WITH_GRAPHICS)
     try {
-        ForgeManager& fgMngr = ForgeManager::getInstance();
-        fgMngr.setGridCellId(colId, rowId, title);
+        fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
+        wnd->draw();
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -119,13 +133,26 @@ af_err af_bind_cell(int colId, int rowId, const char* title)
 #endif
 }
 
-af_err af_show_grid()
+af_err af_is_window_closed(bool *out, const af_window wind)
 {
 #if defined(WITH_GRAPHICS)
     try {
-        fg::Window* window = ForgeManager::getWindow();
-        window->show();
-        ForgeManager::getInstance().toggleGridMode();
+        fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
+        *out = wnd->close();
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+#else
+    return AF_ERR_NO_GRAPHICS;
+#endif
+}
+
+af_err af_destroy_window(const af_window wind)
+{
+#if defined(WITH_GRAPHICS)
+    try {
+        fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
+        delete wnd;
     }
     CATCHALL;
     return AF_SUCCESS;

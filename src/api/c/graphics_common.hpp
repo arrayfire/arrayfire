@@ -33,6 +33,11 @@ GLenum glForceErrorCheck(const char *msg, const char* file, int line);
 namespace graphics
 {
 
+enum Defaults {
+    WIDTH = 1280,
+    HEIGHT= 720
+};
+
 typedef std::map<size_t, fg::Image*> ImageMap_t;
 typedef std::map<size_t, fg::Plot*> PlotMap_t;
 typedef std::map<size_t, fg::Histogram*> HistogramMap_t;
@@ -41,43 +46,35 @@ typedef ImageMap_t::iterator ImgMapIter;
 typedef PlotMap_t::iterator PltMapIter;
 typedef HistogramMap_t::iterator HstMapIter;
 
+/**
+ * ForgeManager class follows a single pattern. Any user of this class, has
+ * to call ForgeManager::getInstance inorder to use Forge resources for rendering.
+ * It manages the windows, and other renderables (given below) that are drawed
+ * onto chosen window.
+ * Renderables:
+ *             fg::Image
+ *             fg::Plot
+ *             fg::Histogram
+ * */
 class ForgeManager
 {
     private:
-        ImageMap_t mImgMap;
-        PlotMap_t  mPltMap;
+        ImageMap_t      mImgMap;
+        PlotMap_t       mPltMap;
         HistogramMap_t  mHstMap;
 
-        int mGridBoundRowId;
-        int mGridBoundColId;
-        std::string mGridBoundTitle;
-        bool mIsGridMode;
-
     public:
-        static fg::Window* getWindow();
         static ForgeManager& getInstance();
         ~ForgeManager();
+
+        fg::Font* getFont();
+        fg::Window* getMainWindow();
         fg::Image* getImage(int w, int h, fg::ColorMode mode, GLenum type);
         fg::Plot* getPlot(int nPoints, GLenum type);
         fg::Histogram* getHistogram(int nBins, GLenum type);
 
-        inline void toggleGridMode() { mIsGridMode = !mIsGridMode; }
-        inline void setGridCellId(int colId, int rowId, const char* title) {
-            mGridBoundRowId = rowId;
-            mGridBoundColId = colId;
-            mGridBoundTitle = title;
-        }
-        inline int cellRowId() const { return mGridBoundRowId; }
-        inline int cellColId() const { return mGridBoundColId; }
-        inline std::string cellTitle() const { return mGridBoundTitle; }
-        inline bool isGridMode() const { return mIsGridMode; }
-
     protected:
-        ForgeManager() {
-            mIsGridMode = false;
-            mGridBoundRowId = -1;
-            mGridBoundColId = -1;
-        }
+        ForgeManager() {}
         ForgeManager(ForgeManager const&);
         void operator=(ForgeManager const&);
         void destroyResources();
