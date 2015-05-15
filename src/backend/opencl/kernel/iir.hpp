@@ -35,8 +35,8 @@ namespace opencl
     {
         static const int MAX_A_SIZE = 1024;
 
-        template<typename T>
-        void iir(Param y, Param c, Param a, T a0)
+        template<typename T, bool batch_a>
+        void iir(Param y, Param c, Param a)
         {
 
             static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -49,6 +49,7 @@ namespace opencl
 
                     std::ostringstream options;
                     options << " -D MAX_A_SIZE=" << MAX_A_SIZE
+                            << " -D BATCH_A=" << batch_a
                             << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")"
                             << " -D T=" << dtype_traits<T>::getName();
 
@@ -79,10 +80,10 @@ namespace opencl
             auto iirOp = make_kernel<Buffer, KParam,
                                      Buffer, KParam,
                                      Buffer, KParam,
-                                     T, dim_type>(*iirKernels[device]);
+                                     dim_type>(*iirKernels[device]);
 
             iirOp(EnqueueArgs(getQueue(), global, local),
-                  *y.data, y.info, *c.data, c.info, *a.data, a.info, a0, groups_y);
+                  *y.data, y.info, *c.data, c.info, *a.data, a.info, groups_y);
 
             CL_DEBUG_FINISH(getQueue());
         }

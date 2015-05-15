@@ -25,11 +25,6 @@ namespace cuda
     template<typename T>
     Array<T> iir(const Array<T> &b, const Array<T> &a, const Array<T> &x)
     {
-        T h_a0 = scalar<T>(0);
-        CUDA_CHECK(cudaMemcpy(&h_a0, a.get(), sizeof(T), cudaMemcpyDeviceToHost));
-
-        Array<T> a0 = createValueArray<T>(b.dims(), h_a0);
-        Array<T> bNorm = arithOp<T, af_div_t>(b, a0, b.dims());
 
         ConvolveBatchKind type = x.ndims() == 1 ? ONE2ONE : MANY2MANY;
         if (x.elements() != b.elements()) {
@@ -37,7 +32,7 @@ namespace cuda
         }
 
         // Extract the first N elements
-        Array<T> c = convolve<T, T, 1, true>(x, bNorm, type);
+        Array<T> c = convolve<T, T, 1, true>(x, b, type);
         dim4 cdims = c.dims();
         cdims[0] = x.dims()[0];
         c.resetDims(cdims);
@@ -49,7 +44,11 @@ namespace cuda
         dim4 ydims = c.dims();
         Array<T> y = createEmptyArray<T>(ydims);
 
-        kernel::iir<T>(y, c, a, h_a0);
+        if (a.ndims() > 1) {
+            kernel::iir<T,  true>(y, c, a);
+        } else {
+            kernel::iir<T, false>(y, c, a);
+        }
         return y;
     }
 

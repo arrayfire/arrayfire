@@ -26,7 +26,6 @@ namespace cpu
     {
         T h_a0 = a.get()[0];
         Array<T> a0 = createValueArray<T>(b.dims(), h_a0);
-        Array<T> bNorm = arithOp<T, af_div_t>(b, a0, b.dims());
 
         ConvolveBatchKind type = x.ndims() == 1 ? ONE2ONE : MANY2MANY;
         if (x.elements() != b.elements()) {
@@ -34,18 +33,15 @@ namespace cpu
         }
 
         // Extract the first N elements
-        Array<T> c = convolve<T, T, 1, true>(x, bNorm, type);
+        Array<T> c = convolve<T, T, 1, true>(x, b, type);
         dim4 cdims = c.dims();
         cdims[0] = x.dims()[0];
         c.resetDims(cdims);
 
         int num_a = a.dims()[0];
 
-        if (num_a == 1) return c;
-
         dim4 ydims = c.dims();
         Array<T> y = createEmptyArray<T>(ydims);
-
 
         for (int l = 0; l < ydims[3]; l++) {
             dim_type yidx3 = l * y.strides()[3];
@@ -64,16 +60,15 @@ namespace cpu
                     dim_type cidx1 = j * c.strides()[1] + cidx2;
                     dim_type aidx1 = j * a.strides()[1] + aidx2;
 
-                    std::vector<T> h_z(num_a - 1);
+                    std::vector<T> h_z(num_a);
 
-                    const T *h_a = a.get() + aidx1;
+                    const T *h_a = a.get() + (a.ndims() > 1 ? aidx1 : 0);
                     T *h_c = c.get() + cidx1;
                     T *h_y = y.get() + yidx1;
 
                     for (int i = 0; i < ydims[0]; i++) {
 
                         T y = h_y[i] = h_c[i] + h_z[0] /  h_a[0];
-
                         for (int ii = 1; ii < num_a; ii++) {
                             h_z[ii - 1] = h_z[ii] - h_a[ii] * y;
                         }

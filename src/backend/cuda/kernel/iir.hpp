@@ -22,9 +22,9 @@ namespace cuda
 
         static const int MAX_A_SIZE = 1024;
 
-        template<typename T>
+        template<typename T, bool batch_a>
         __global__
-        void iir_kernel(Param<T> y, CParam<T> c, CParam<T> a, T a0,
+        void iir_kernel(Param<T> y, CParam<T> c, CParam<T> a,
                         const dim_type blocks_y)
         {
             __shared__ T s_z[MAX_A_SIZE];
@@ -40,7 +40,9 @@ namespace cuda
 
             dim_type y_off = idw * y.strides[3] + idz * y.strides[2] + idy * y.strides[1];
             dim_type c_off = idw * c.strides[3] + idz * c.strides[2] + idy * c.strides[1];
-            dim_type a_off = idw * a.strides[3] + idz * a.strides[2] + idy * a.strides[1];
+            dim_type a_off = 0;
+
+            if (batch_a) a_off = idw * a.strides[3] + idz * a.strides[2] + idy * a.strides[1];
 
             T *d_y = y.ptr + y_off;
             const T *d_c = c.ptr + c_off;
@@ -57,7 +59,7 @@ namespace cuda
 
             for (int i = 0; i < y.dims[0]; i++) {
                 if (tx == 0) {
-                    d_y[i] = d_c[i] + s_z[0] / a0;
+                    d_y[i] = d_c[i] + s_z[0] / s_a[0];
                     s_y = d_y[i];
                 }
                 __syncthreads();
@@ -75,8 +77,8 @@ namespace cuda
             }
         }
 
-        template<typename T>
-        void iir(Param<T> y, CParam<T> c, CParam<T> a, T a0)
+        template<typename T, bool batch_a>
+        void iir(Param<T> y, CParam<T> c, CParam<T> a)
         {
             const dim_type blocks_y = y.dims[1];
             const dim_type blocks_x = y.dims[2];
@@ -84,10 +86,12 @@ namespace cuda
             dim3 blocks(blocks_x,
                         blocks_y * y.dims[3]);
 
+            printf("%d, %d, %d\n", c.dims[1], y.dims[1], a.dims[1]);
+
             int threads = 256;
             while (threads > y.dims[0] && threads > 32) threads /= 2;
 
-            (iir_kernel<T>)<<<blocks, threads>>>(y, c, a, a0, blocks_y);
+            (iir_kernel<T, batch_a>)<<<blocks, threads>>>(y, c, a, blocks_y);
         }
 
     }

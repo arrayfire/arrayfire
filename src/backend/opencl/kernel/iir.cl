@@ -49,7 +49,7 @@ __kernel
 void iir_kernel(      __global T *yptr, const KParam yinfo,
                 const __global T *cptr, const KParam cinfo,
                 const __global T *aptr, const KParam ainfo,
-                const T a0, const dim_type groups_y)
+                const dim_type groups_y)
 {
     __local T s_z[MAX_A_SIZE];
     __local T s_a[MAX_A_SIZE];
@@ -64,7 +64,12 @@ void iir_kernel(      __global T *yptr, const KParam yinfo,
 
     dim_type y_off = idw * yinfo.strides[3] + idz * yinfo.strides[2] + idy * yinfo.strides[1];
     dim_type c_off = idw * cinfo.strides[3] + idz * cinfo.strides[2] + idy * cinfo.strides[1];
+
+#if BATCH_A
     dim_type a_off = idw * ainfo.strides[3] + idz * ainfo.strides[2] + idy * ainfo.strides[1];
+#else
+    dim_type a_off = 0;
+#endif
 
     __global T *d_y = yptr + y_off;
     const __global T *d_c = cptr + c_off;
@@ -81,7 +86,7 @@ void iir_kernel(      __global T *yptr, const KParam yinfo,
 
     for (int i = 0; i < yinfo.dims[0]; i++) {
         if (tx == 0) {
-            d_y[i] = d_c[i] + __div(s_z[0], a0);
+            d_y[i] = d_c[i] + __div(s_z[0], s_a[0]);
             s_y = d_y[i];
         }
         barrier(CLK_LOCAL_MEM_FENCE);
