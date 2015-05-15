@@ -89,6 +89,39 @@ namespace af
     AFAPI array matmulTT(const array &lhs, const array &rhs);
 
     /**
+       \brief Chain 2 matrix multiplications
+
+       The matrix multiplications are done in a way to reduce temporary memory
+
+       \param[in] a The first array
+       \param[in] b The second array
+       \param[in] c The third array
+
+       \returns out = a x b x c
+
+       \ingroup blas_func_matmul
+    */
+    AFAPI array matmul(const array &a, const array &b, const array &c);
+
+
+    /**
+       \brief Chain 3 matrix multiplications
+
+       The matrix multiplications are done in a way to reduce temporary memory
+
+       \param[in] a The first array
+       \param[in] b The second array
+       \param[in] c The third array
+       \param[in] d The fourth array
+
+       \returns out = a x b x c x d
+
+       \ingroup blas_func_matmul
+    */
+    AFAPI array matmul(const array &a, const array &b, const array &c, const array &d);
+
+
+    /**
         \brief Dot Product
 
         Scalar dot product between two vectors.  Also referred to as the inner

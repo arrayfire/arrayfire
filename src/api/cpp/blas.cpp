@@ -45,6 +45,30 @@ namespace af
         return array(out);
     }
 
+    array matmul(const array &a, const array &b, const array &c)
+    {
+        int tmp1 = a.dims(0) * b.dims(1);
+        int tmp2 = b.dims(0) * c.dims(1);
+
+        if (tmp1 < tmp2) {
+            return matmul(matmul(a, b), c);
+        } else {
+            return matmul(a, matmul(b, c));
+        }
+    }
+
+    array matmul(const array &a, const array &b, const array &c, const array &d)
+    {
+        int tmp1 = a.dims(0) * c.dims(1);
+        int tmp2 = b.dims(0) * d.dims(1);
+
+        if (tmp1 < tmp2) {
+            return matmul(matmul(a, b, c), d);
+        } else {
+            return matmul(a, matmul(b, c, d));
+        }
+    }
+
     array dot   (const array &lhs, const array &rhs,
                  const matProp optLhs, const matProp optRhs)
     {
