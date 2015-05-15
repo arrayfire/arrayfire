@@ -187,6 +187,7 @@ namespace af
     typedef af_someenum_t SomeEnum; // Purpose of Addition: How to add Function example
     typedef af_mat_prop trans;
     typedef af_conv_mode convMode;
+    typedef af_conv_domain convDomain;
     typedef af_mat_prop matProp;
 
     const double NaN = std::numeric_limits<double>::quiet_NaN();

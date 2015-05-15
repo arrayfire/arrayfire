@@ -59,9 +59,9 @@ void convolveTest(string pTestFile, int baseDim, bool expand)
 
     af_conv_mode mode = expand ? AF_CONV_EXPAND : AF_CONV_DEFAULT;
     switch(baseDim) {
-        case 1: ASSERT_EQ(AF_SUCCESS, af_convolve1(&outArray, signal, filter, mode)); break;
-        case 2: ASSERT_EQ(AF_SUCCESS, af_convolve2(&outArray, signal, filter, mode)); break;
-        case 3: ASSERT_EQ(AF_SUCCESS, af_convolve3(&outArray, signal, filter, mode)); break;
+    case 1: ASSERT_EQ(AF_SUCCESS, af_convolve1(&outArray, signal, filter, mode, AF_CONV_AUTO)); break;
+    case 2: ASSERT_EQ(AF_SUCCESS, af_convolve2(&outArray, signal, filter, mode, AF_CONV_AUTO)); break;
+    case 3: ASSERT_EQ(AF_SUCCESS, af_convolve3(&outArray, signal, filter, mode, AF_CONV_AUTO)); break;
     }
 
     vector<T> currGoldBar = tests[0];

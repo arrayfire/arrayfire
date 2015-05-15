@@ -313,7 +313,7 @@ AFAPI array idft(const array& in);
 
    \ingroup signal_func_convolve
  */
-AFAPI array convolve(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
+AFAPI array convolve(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT, const convDomain domain=AF_CONV_AUTO);
 
 /**
    C++ Interface for separable convolution on two dimensional data
@@ -331,7 +331,7 @@ AFAPI array convolve(const array& signal, const array& filter, const convMode mo
 
    \ingroup signal_func_convolve
  */
-AFAPI array convolve(const array& col_filter, const array& row_filter, const array& signal, const convMode mode=AF_CONV_DEFAULT);
+AFAPI array convolve(const array& col_filter, const array& row_filter, const array& signal, const convMode mode=AF_CONV_DEFAULT, const convDomain domain=AF_CONV_AUTO);
 
 /**
    C++ Interface for convolution on one dimensional data
@@ -345,7 +345,7 @@ AFAPI array convolve(const array& col_filter, const array& row_filter, const arr
 
    \ingroup signal_func_convolve1
  */
-AFAPI array convolve1(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
+AFAPI array convolve1(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT, const convDomain domain=AF_CONV_AUTO);
 
 /**
    C++ Interface for convolution on two dimensional data
@@ -359,7 +359,7 @@ AFAPI array convolve1(const array& signal, const array& filter, const convMode m
 
    \ingroup signal_func_convolve2
  */
-AFAPI array convolve2(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
+AFAPI array convolve2(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT, const convDomain domain=AF_CONV_AUTO);
 
 /**
    C++ Interface for convolution on three dimensional data
@@ -373,7 +373,7 @@ AFAPI array convolve2(const array& signal, const array& filter, const convMode m
 
    \ingroup signal_func_convolve3
  */
-AFAPI array convolve3(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
+AFAPI array convolve3(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT, const convDomain domain=AF_CONV_AUTO);
 
 /**
    C++ Interface for FFT-based convolution any(one through three) dimensional data
@@ -566,7 +566,7 @@ AFAPI af_err af_ifft3(af_array *out, const af_array in, const double norm_factor
 
    \ingroup signal_func_convolve1
  */
-AFAPI af_err af_convolve1(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode);
+AFAPI af_err af_convolve1(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode, af_conv_domain domain);
 
 /**
    C Interface for convolution on two dimensional data
@@ -580,7 +580,7 @@ AFAPI af_err af_convolve1(af_array *out, const af_array signal, const af_array f
 
    \ingroup signal_func_convolve2
  */
-AFAPI af_err af_convolve2(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode);
+AFAPI af_err af_convolve2(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode, af_conv_domain domain);
 
 /**
    C Interface for convolution on three dimensional data
@@ -594,7 +594,7 @@ AFAPI af_err af_convolve2(af_array *out, const af_array signal, const af_array f
 
    \ingroup signal_func_convolve3
  */
-AFAPI af_err af_convolve3(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode);
+AFAPI af_err af_convolve3(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode, af_conv_domain domain);
 
 /**
    C Interface for separable convolution on two dimensional data

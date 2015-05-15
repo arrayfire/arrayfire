@@ -13,6 +13,7 @@
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <convolve.hpp>
+#include <fftconvolve.hpp>
 #include <convolve_common.hpp>
 
 #include <cstdio>
@@ -130,24 +131,78 @@ af_err convolve2_sep(af_array *out, af_array col_filter, af_array row_filter, co
     return AF_SUCCESS;
 }
 
-af_err af_convolve1(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode)
+
+template<dim_type baseDim>
+bool isFreqDomain(const af_array &signal, const af_array filter, af_conv_domain domain)
 {
+    if (domain == AF_CONV_FREQ) return true;
+    if (domain != AF_CONV_AUTO) return false;
+
+    ArrayInfo sInfo = getInfo(signal);
+    ArrayInfo fInfo = getInfo(filter);
+
+    dim4 sdims = sInfo.dims();
+    dim4 fdims = fInfo.dims();
+
+    int batch = 1;
+    for(int i = 3; i >= baseDim; i--) {
+        batch *= std::max(fdims[i], sdims[i]);
+    }
+
+    if (batch >= 10) return true;
+
+    if (baseDim == 1) {
+        if (fdims[0] > 128) return true;
+    }
+
+    if (baseDim == 2) {
+        // maximum supported size in 2D domain
+        if (fdims[0] > 17 || fdims[1] > 17) return true;
+
+        // Maximum supported non square size
+        if (fdims[0] != fdims[1] && fdims[0] > 5) return true;
+    }
+
+    if (baseDim == 3) {
+        if (fdims[0] > 5 || fdims[1] > 5 || fdims[2] > 5) return true;
+    }
+
+    return false;
+}
+
+af_err af_convolve1(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode, af_conv_domain domain)
+{
+    try {
+        if (isFreqDomain<1>(signal, filter, domain))
+            return af_fftconvolve1(out, signal, filter, mode);
+    } CATCHALL;
+
     if (mode == AF_CONV_EXPAND)
-        return convolve<1, true >(out, signal, filter);
+            return convolve<1, true >(out, signal, filter);
     else
         return convolve<1, false>(out, signal, filter);
 }
 
-af_err af_convolve2(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode)
+af_err af_convolve2(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode, af_conv_domain domain)
 {
+    try {
+        if (isFreqDomain<2>(signal, filter, domain))
+            return af_fftconvolve2(out, signal, filter, mode);
+    } CATCHALL;
+
     if (mode == AF_CONV_EXPAND)
         return convolve<2, true >(out, signal, filter);
     else
         return convolve<2, false>(out, signal, filter);
 }
 
-af_err af_convolve3(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode)
+af_err af_convolve3(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode, af_conv_domain domain)
 {
+    try {
+        if (isFreqDomain<3>(signal, filter, domain))
+            return af_fftconvolve3(out, signal, filter, mode);
+    } CATCHALL;
+
     if (mode == AF_CONV_EXPAND)
         return convolve<3, true >(out, signal, filter);
     else
