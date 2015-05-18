@@ -12,10 +12,11 @@
 #include <handle.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>
+#include <arith.hpp>
+#include <fft.hpp>
 #include <fftconvolve.hpp>
 #include <convolve_common.hpp>
-
-#include <cstdio>
+#include <dispatch.hpp>
 
 using af::dim4;
 using namespace detail;
@@ -23,7 +24,7 @@ using namespace detail;
 template<typename T, typename convT, typename cT, bool isDouble, bool roundOut, dim_type baseDim>
 inline static af_array fftconvolve(const af_array &s, const af_array &f, const bool expand, ConvolveBatchKind kind)
 {
-    return getHandle(fftconvolve<T, convT, cT, isDouble, roundOut, baseDim>(getArray<T>(s), getArray<T>(f), expand, kind));
+    return getHandle(fftconvolve<T, convT, cT, isDouble, roundOut, baseDim>(getArray<T>(s), castArray<T>(f), expand, kind));
 }
 
 template<dim_type baseDim>
@@ -52,6 +53,61 @@ ConvolveBatchKind identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
         return CONVOLVE_UNSUPPORTED_BATCH_MODE;
 }
 
+template<typename T, dim_type baseDim>
+static inline
+af_array fftconvcplx(const af_array signal, const af_array filter, bool expand,
+                     ConvolveBatchKind kind)
+{
+    const Array<T> S = getArray<T>(signal);
+    const Array<T> F = castArray<T>(filter);
+    const dim4 sdims = S.dims();
+    const dim4 fdims = F.dims();
+    dim4 tdims(1, 1, 1, 1);
+    std::vector<af_seq> index(4);
+
+    int count = 1;
+    for (int i = 0; i < baseDim; i++) {
+        dim_type tdim_i = sdims[i] + fdims[i] - 1;
+
+        // Pad temporary buffers to power of 2 for performance
+        tdims[i] = nextpow2(tdim_i);
+
+        // The normalization factor
+        count *= tdims[i];
+
+        // Get the indexing params for output
+        if (expand) {
+            index[i].begin = 0;
+            index[i].end = tdim_i - 1;
+        } else {
+            index[i].begin = fdims[i] / 2;
+            index[i].end = index[i].begin + sdims[i] - 1;
+        }
+        index[i].step = 1;
+    }
+
+    for (int i = baseDim; i < 4; i++) {
+        tdims[i] = std::max(sdims[i], fdims[i]);
+        index[i] = af_span;
+    }
+
+    // fft(signal)
+    Array<T> T1 = fft<T, T, baseDim, false>(S, 1.0, baseDim, tdims.get());
+
+    // fft(filter)
+    Array<T> T2 = fft<T, T, baseDim, false>(F, 1.0, baseDim, tdims.get());
+
+    // fft(signal) * fft(filter)
+    T1 = arithOp<T, af_mul_t>(T1, T2, tdims);
+
+    // ifft(ffit(signal) * fft(filter))
+    T1 = ifft<T, baseDim>(T1, 1.0/(double)count, baseDim, tdims.get());
+
+    // Index to proper offsets
+    T1 = createSubArray<T>(T1, index);
+    return getHandle(T1);
+}
+
 template<dim_type baseDim>
 af_err fftconvolve(af_array *out, const af_array signal, const af_array filter, const bool expand)
 {
@@ -76,6 +132,8 @@ af_err fftconvolve(af_array *out, const af_array signal, const af_array filter, 
             case s32: output = fftconvolve<int   , float,  cfloat,  false, true,  baseDim>(signal, filter, expand, convBT); break;
             case u8:  output = fftconvolve<uchar , float,  cfloat,  false, true,  baseDim>(signal, filter, expand, convBT); break;
             case b8:  output = fftconvolve<char  , float,  cfloat,  false, true,  baseDim>(signal, filter, expand, convBT); break;
+            case c32: output = fftconvcplx<cfloat , baseDim>(signal, filter, expand, convBT); break;
+            case c64: output = fftconvcplx<cdouble, baseDim>(signal, filter, expand, convBT); break;
             default: TYPE_ERROR(1, stype);
         }
         std::swap(*out,output);
