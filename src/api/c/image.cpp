@@ -27,9 +27,10 @@
 
 using af::dim4;
 using namespace detail;
-using namespace graphics;
 
 #if defined(WITH_GRAPHICS)
+using namespace graphics;
+
 template<typename T>
 static fg::Image* convert_and_copy_image(const af_array in)
 {
