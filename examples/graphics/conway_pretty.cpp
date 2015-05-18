@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
                 state = (af::randu(game_h, game_w, f32) > 0.5).as(f32);
 
             // Convolve gets neighbors
-            af::array nHood = convolve(state, kernel, false);
+            af::array nHood = convolve(state, kernel);
 
             // Generate conditions for life
             // state == 1 && nHood < 2 ->> state = 0
