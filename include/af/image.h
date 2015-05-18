@@ -112,7 +112,7 @@ AFAPI array rotate(const array& in, const float theta, const bool crop=true, con
 
     \ingroup transform_func_transform
 */
-AFAPI array transform(const array& in, const array& transform, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST, const bool inverse=true);
+AFAPI array transform(const array& in, const array& transform, const dim_type odim0 = 0, const dim_type odim1 = 0, const interpType method=AF_INTERP_NEAREST, const bool inverse=true);
 
 /**
     C++ Interface for translating an image
@@ -127,7 +127,7 @@ AFAPI array transform(const array& in, const array& transform, const dim_type od
 
     \ingroup transform_func_translate
 */
-AFAPI array translate(const array& in, const float trans0, const float trans1, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST);
+AFAPI array translate(const array& in, const float trans0, const float trans1, const dim_type odim0 = 0, const dim_type odim1 = 0, const interpType method=AF_INTERP_NEAREST);
 
 /**
     C++ Interface for scaling an image
@@ -142,7 +142,7 @@ AFAPI array translate(const array& in, const float trans0, const float trans1, c
 
     \ingroup transform_func_scale
 */
-AFAPI array scale(const array& in, const float scale0, const float scale1, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST);
+AFAPI array scale(const array& in, const float scale0, const float scale1, const dim_type odim0 = 0, const dim_type odim1 = 0, const interpType method=AF_INTERP_NEAREST);
 
 /**
     C++ Interface for skewing an image
@@ -158,7 +158,7 @@ AFAPI array scale(const array& in, const float scale0, const float scale1, const
 
     \ingroup transform_func_skew
 */
-AFAPI array skew(const array& in, const float skew0, const float skew1, const dim_type odim0, const dim_type odim1, const bool inverse=true, const interpType method=AF_INTERP_NEAREST);
+AFAPI array skew(const array& in, const float skew0, const float skew1, const dim_type odim0 = 0, const dim_type odim1 = 0, const bool inverse=true, const interpType method=AF_INTERP_NEAREST);
 
 /**
     C++ Interface for bilateral filter
