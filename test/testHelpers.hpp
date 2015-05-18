@@ -15,6 +15,7 @@
 #include <limits>
 #include <arrayfire.h>
 #include <af/dim4.hpp>
+#include <af/array.h>
 
 typedef unsigned char uchar;
 typedef unsigned int uint;
@@ -438,3 +439,20 @@ af_err conv_image(af_array *out, af_array in)
     return AF_SUCCESS;
 }
 
+template<typename T>
+af::array cpu_randu(const af::dim4 dims)
+{
+    typedef typename af::dtype_traits<T>::base_type BT;
+
+    bool isTypeCplx = is_same_type<T, af::cfloat>::value || is_same_type<T, af::cdouble>::value;
+    bool isTypeFloat = is_same_type<BT, float>::value || is_same_type<BT, double>::value;
+
+    dim_type elements = (isTypeCplx ? 2 : 1) * dims.elements();
+
+    std::vector<BT> out(elements);
+    for(int i = 0; i < (int)elements; i++) {
+        out[i] = isTypeFloat ? (BT)(rand())/RAND_MAX : rand() % 100;
+    }
+
+    return af::array(dims, (T *)&out[0]);
+}

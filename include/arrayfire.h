@@ -167,10 +167,7 @@
 
 /**
 \example helloworld.cpp
-\example blas.cpp
-\example fft.cpp
 \example pi.cpp
-\example convolve.cpp
 \example integer.cpp
 \example rainfall.cpp
 \example vectorize.cpp
@@ -201,6 +198,7 @@
 #include "af/graphics.h"
 #include "af/image.h"
 #include "af/index.h"
+#include <af/lapack.h>
 #include "af/seq.h"
 #include "af/signal.h"
 #include "af/statistics.h"

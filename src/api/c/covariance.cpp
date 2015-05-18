@@ -25,7 +25,7 @@ using af::dim4;
 using namespace detail;
 
 template<typename T, typename cType>
-static af_array cov(const af_array& X, const af_array& Y, bool isbiased)
+static af_array cov(const af_array& X, const af_array& Y, const bool isbiased)
 {
     Array<cType> xArr = cast<cType>(getArray<T>(X));
     Array<cType> yArr = cast<cType>(getArray<T>(Y));
@@ -47,7 +47,7 @@ static af_array cov(const af_array& X, const af_array& Y, bool isbiased)
     return getHandle<cType>(result);
 }
 
-af_err af_cov(af_array* out, const af_array X, const af_array Y, bool isbiased)
+af_err af_cov(af_array* out, const af_array X, const af_array Y, const bool isbiased)
 {
     try {
         ArrayInfo xInfo = getInfo(X);

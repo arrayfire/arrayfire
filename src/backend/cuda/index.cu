@@ -29,32 +29,32 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     // create seq vector to retrieve output
     // dimensions, offsets & offsets
     for (dim_type x=0; x<4; ++x) {
-        if (idxrs[x].mIsSeq) {
-            seqs[x] = idxrs[x].mIndexer.seq;
+        if (idxrs[x].isSeq) {
+            seqs[x] = idxrs[x].idx.seq;
         }
     }
 
     // retrieve dimensions, strides and offsets
     dim4 iDims = in.dims();
     dim4 dDims = in.getDataDims();
-    dim4 oDims = af::toDims  (seqs, iDims);
-    dim4 iOffs = af::toOffset(seqs, dDims);
-    dim4 iStrds= af::toStride(seqs, dDims);
+    dim4 oDims = toDims  (seqs, iDims);
+    dim4 iOffs = toOffset(seqs, dDims);
+    dim4 iStrds= toStride(seqs, dDims);
 
     for (dim_type i=0; i<4; ++i) {
-        p.isSeq[i] = idxrs[i].mIsSeq;
+        p.isSeq[i] = idxrs[i].isSeq;
         p.offs[i]  = iOffs[i];
         p.strds[i] = iStrds[i];
     }
 
     std::vector< Array<uint> > idxArrs(4, createEmptyArray<uint>(dim4()));
-    // look through indexers to read af_array indexers
+    // look through indexs to read af_array indexs
     for (dim_type x=0; x<4; ++x) {
         // set idxPtrs to null
         p.ptr[x] = 0;
         // set index pointers were applicable
         if (!p.isSeq[x]) {
-            idxArrs[x] = castArray<uint>(idxrs[x].mIndexer.arr);
+            idxArrs[x] = castArray<uint>(idxrs[x].idx.arr);
             p.ptr[x] = idxArrs[x].get();
             // set output array ith dimension value
             oDims[x] = idxArrs[x].elements();

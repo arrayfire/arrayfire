@@ -10,6 +10,7 @@
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <af/index.h>
+#include <af/data.h>
 #include <ArrayInfo.hpp>
 #include <err_common.hpp>
 #include <handle.hpp>
@@ -42,7 +43,7 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
 
     vector<af_seq> index_(index, index+ndims);
 
-    dim4 oDims = af::toDims(index_, outDs);
+    dim4 oDims = toDims(index_, outDs);
 
     bool is_vector = true;
     for (int i = 0; is_vector && i < oDims.ndims() - 1; i++) {
@@ -146,39 +147,39 @@ af_err af_assign_seq(af_array *out,
 }
 
 template<typename T>
-static void genAssign(af_array& out, const af_index_t* indexers, const af_array& rhs)
+static void genAssign(af_array& out, const af_index_t* indexs, const af_array& rhs)
 {
-    detail::assign<T>(getWritableArray<T>(out), indexers, getArray<T>(rhs));
+    detail::assign<T>(getWritableArray<T>(out), indexs, getArray<T>(rhs));
 }
 
 af_err af_assign_gen(af_array *out,
                     const af_array lhs,
-                    const dim_type ndims, const af_index_t* indexers,
+                    const dim_type ndims, const af_index_t* indexs,
                     const af_array rhs_)
 {
     af_array output = 0;
     af_array rhs = rhs_;
-    // spanner is sequence indexer used for indexing along the
+    // spanner is sequence index used for indexing along the
     // dimensions after ndims
     af_index_t spanner;
-    spanner.mIndexer.seq = af_span;
-    spanner.mIsSeq = true;
+    spanner.idx.seq = af_span;
+    spanner.isSeq = true;
 
     try {
         ARG_ASSERT(2, (ndims>0));
-        ARG_ASSERT(3, (indexers!=NULL));
+        ARG_ASSERT(3, (indexs!=NULL));
 
         int track = 0;
         vector<af_seq> seqs(4, af_span);
         for (dim_type i = 0; i < ndims; i++) {
-            if (indexers[i].mIsSeq) {
+            if (indexs[i].isSeq) {
                 track++;
-                seqs[i] = indexers[i].mIndexer.seq;
+                seqs[i] = indexs[i].idx.seq;
             }
         }
 
         if (track==ndims) {
-            // all indexers are sequences, redirecting to af_assign
+            // all indexs are sequences, redirecting to af_assign
             return af_assign_seq(out, lhs, ndims, &(seqs.front()), rhs);
         }
 
@@ -200,13 +201,13 @@ af_err af_assign_gen(af_array *out,
         ARG_ASSERT(1, (lhsDims.ndims()>=rhsDims.ndims()));
         ARG_ASSERT(2, (lhsDims.ndims()>=(int)ndims));
 
-        dim4 oDims = af::toDims(seqs, lhsDims);
-        // if af_array are indexers along any
+        dim4 oDims = toDims(seqs, lhsDims);
+        // if af_array are indexs along any
         // particular dimension, set the length of
         // that dimension accordingly before any checks
         for (dim_type i=0; i<ndims; i++) {
-            if (!indexers[i].mIsSeq) {
-                oDims[i] = getInfo(indexers[i].mIndexer.arr).elements();
+            if (!indexs[i].isSeq) {
+                oDims[i] = getInfo(indexs[i].idx.arr).elements();
             }
         }
 
@@ -231,26 +232,26 @@ af_err af_assign_gen(af_array *out,
         }
 
         af_index_t idxrs[4];
-        // set all dimensions above ndims to spanner indexer
+        // set all dimensions above ndims to spanner index
         for (dim_type i=ndims; i<4; ++i) idxrs[i] = spanner;
 
         for (dim_type i=0; i<ndims; ++i) {
-            if (!indexers[i].mIsSeq) {
+            if (!indexs[i].isSeq) {
                 // check if all af_arrays have atleast one value
                 // to enable indexing along that dimension
-                ArrayInfo idxInfo = getInfo(indexers[i].mIndexer.arr);
+                ArrayInfo idxInfo = getInfo(indexs[i].idx.arr);
                 af_dtype idxType  = idxInfo.getType();
 
                 ARG_ASSERT(3, (idxType!=c32));
                 ARG_ASSERT(3, (idxType!=c64));
                 ARG_ASSERT(3, (idxType!=b8 ));
 
-                idxrs[i].mIndexer.arr = indexers[i].mIndexer.arr;
-                idxrs[i].mIsSeq = indexers[i].mIsSeq;
+                idxrs[i].idx.arr = indexs[i].idx.arr;
+                idxrs[i].isSeq = indexs[i].isSeq;
             } else {
                 // af_seq is being used for this dimension
-                // just copy the indexer to local variable
-                idxrs[i] = indexers[i];
+                // just copy the index to local variable
+                idxrs[i] = indexs[i];
             }
         }
 

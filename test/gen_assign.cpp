@@ -29,7 +29,7 @@ using std::endl;
 using std::ostream_iterator;
 using af::dtype_traits;
 
-void testGeneralAssignOneArray(string pTestFile, const dim_type ndims, af_index_t* indexers, int arrayDim)
+void testGeneralAssignOneArray(string pTestFile, const dim_type ndims, af_index_t* indexs, int arrayDim)
 {
     vector<af::dim4>        numDims;
     vector< vector<float> >      in;
@@ -53,9 +53,9 @@ void testGeneralAssignOneArray(string pTestFile, const dim_type ndims, af_index_
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray, &(in[2].front()),
                 dims2.ndims(), dims2.get(), (af_dtype)af::dtype_traits<float>::af_type));
-    indexers[arrayDim].mIndexer.arr = idxArray;
+    indexs[arrayDim].idx.arr = idxArray;
 
-    ASSERT_EQ(AF_SUCCESS, af_assign_gen(&outArray, lhsArray, ndims, indexers, rhsArray));
+    ASSERT_EQ(AF_SUCCESS, af_assign_gen(&outArray, lhsArray, ndims, indexs, rhsArray));
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
@@ -76,22 +76,22 @@ void testGeneralAssignOneArray(string pTestFile, const dim_type ndims, af_index_
 
 TEST(GeneralAssign, ASSS)
 {
-    af_index_t indexers[2];
-    indexers[1].mIndexer.seq = af_make_seq(0, 9, 1);
-    indexers[0].mIsSeq = false;
-    indexers[1].mIsSeq = true;
+    af_index_t indexs[2];
+    indexs[1].idx.seq = af_make_seq(0, 9, 1);
+    indexs[0].isSeq = false;
+    indexs[1].isSeq = true;
 
-    testGeneralAssignOneArray(string(TEST_DIR"/gen_assign/as0_9s0_ns0_n.test"), 2, indexers, 0);
+    testGeneralAssignOneArray(string(TEST_DIR"/gen_assign/as0_9s0_ns0_n.test"), 2, indexs, 0);
 }
 
 TEST(GeneralAssign, SASS)
 {
-    af_index_t indexers[2];
-    indexers[0].mIndexer.seq = af_make_seq(10, 14, 1);
-    indexers[0].mIsSeq = true;
-    indexers[1].mIsSeq = false;
+    af_index_t indexs[2];
+    indexs[0].idx.seq = af_make_seq(10, 14, 1);
+    indexs[0].isSeq = true;
+    indexs[1].isSeq = false;
 
-    testGeneralAssignOneArray(string(TEST_DIR"/gen_assign/s10_14as0_ns0_n.test"), 2, indexers, 1);
+    testGeneralAssignOneArray(string(TEST_DIR"/gen_assign/s10_14as0_ns0_n.test"), 2, indexs, 1);
 }
 
 TEST(GeneralAssign, SSSS)
@@ -108,11 +108,11 @@ TEST(GeneralAssign, SSSS)
     af_array rhsArray  = 0;
     af_array lhsArray  = 0;
 
-    af_index_t indexers[2];
-    indexers[0].mIndexer.seq = af_make_seq(10, 14, 1);
-    indexers[1].mIndexer.seq = af_make_seq(0, 9, 1);
-    indexers[0].mIsSeq = true;
-    indexers[1].mIsSeq = true;
+    af_index_t indexs[2];
+    indexs[0].idx.seq = af_make_seq(10, 14, 1);
+    indexs[1].idx.seq = af_make_seq(0, 9, 1);
+    indexs[0].isSeq = true;
+    indexs[1].isSeq = true;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&lhsArray, &(in[0].front()),
                 dims0.ndims(), dims0.get(), (af_dtype)af::dtype_traits<float>::af_type));
@@ -120,7 +120,7 @@ TEST(GeneralAssign, SSSS)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&rhsArray, &(in[1].front()),
                 dims1.ndims(), dims1.get(), (af_dtype)af::dtype_traits<float>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_assign_gen(&outArray, lhsArray, 2, indexers, rhsArray));
+    ASSERT_EQ(AF_SUCCESS, af_assign_gen(&outArray, lhsArray, 2, indexs, rhsArray));
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();
@@ -160,11 +160,11 @@ TEST(GeneralAssign, AAAA)
     af_array idxArray2 = 0;
     af_array idxArray3 = 0;
 
-    af_index_t indexers[4];
-    indexers[0].mIsSeq = false;
-    indexers[1].mIsSeq = false;
-    indexers[2].mIsSeq = false;
-    indexers[3].mIsSeq = false;
+    af_index_t indexs[4];
+    indexs[0].isSeq = false;
+    indexs[1].isSeq = false;
+    indexs[2].isSeq = false;
+    indexs[3].isSeq = false;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&lhsArray, &(in[0].front()),
                 dims0.ndims(), dims0.get(), (af_dtype)af::dtype_traits<float>::af_type));
@@ -174,21 +174,21 @@ TEST(GeneralAssign, AAAA)
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray0, &(in[2].front()),
                 dims2.ndims(), dims2.get(), (af_dtype)af::dtype_traits<float>::af_type));
-    indexers[0].mIndexer.arr = idxArray0;
+    indexs[0].idx.arr = idxArray0;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray1, &(in[3].front()),
                 dims3.ndims(), dims3.get(), (af_dtype)af::dtype_traits<float>::af_type));
-    indexers[1].mIndexer.arr = idxArray1;
+    indexs[1].idx.arr = idxArray1;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray2, &(in[4].front()),
                 dims4.ndims(), dims4.get(), (af_dtype)af::dtype_traits<float>::af_type));
-    indexers[2].mIndexer.arr = idxArray2;
+    indexs[2].idx.arr = idxArray2;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&idxArray3, &(in[5].front()),
                 dims5.ndims(), dims5.get(), (af_dtype)af::dtype_traits<float>::af_type));
-    indexers[3].mIndexer.arr = idxArray3;
+    indexs[3].idx.arr = idxArray3;
 
-    ASSERT_EQ(AF_SUCCESS, af_assign_gen(&outArray, lhsArray, 4, indexers, rhsArray));
+    ASSERT_EQ(AF_SUCCESS, af_assign_gen(&outArray, lhsArray, 4, indexs, rhsArray));
 
     vector<float> currGoldBar = tests[0];
     size_t nElems = currGoldBar.size();

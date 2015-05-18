@@ -54,8 +54,8 @@ void medfilt(Param out, const Param in)
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName()
                         << " -D pad="<< pad
-                        << " -D AF_ZERO="<< AF_ZERO
-                        << " -D AF_SYMMETRIC="<< AF_SYMMETRIC
+                        << " -D AF_PAD_ZERO="<< AF_PAD_ZERO
+                        << " -D AF_PAD_SYM="<< AF_PAD_SYM
                         << " -D ARR_SIZE="<< ARR_SIZE
                         << " -D w_len="<< w_len
                         << " -D w_wid=" << w_wid;

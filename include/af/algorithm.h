@@ -324,7 +324,7 @@ namespace af
 
        \ingroup set_func_unique
     */
-    AFAPI array setunique(const array &in, bool is_sorted=false);
+    AFAPI array setunique(const array &in, const bool is_sorted=false);
 
     /**
        C++ Interface for performing union of two arrays
@@ -336,7 +336,7 @@ namespace af
 
        \ingroup set_func_union
     */
-    AFAPI array setunion(const array &first, const array &second, bool is_unique=false);
+    AFAPI array setunion(const array &first, const array &second, const bool is_unique=false);
 
     /**
        C++ Interface for performing intersect of two arrays
@@ -348,7 +348,7 @@ namespace af
 
        \ingroup set_func_intersect
     */
-    AFAPI array setintersect(const array &first, const array &second, bool is_unique=false);
+    AFAPI array setintersect(const array &first, const array &second, const bool is_unique=false);
 }
 #endif
 

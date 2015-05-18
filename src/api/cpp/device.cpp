@@ -78,7 +78,7 @@ namespace af
         }
     }
 
-    void *alloc(size_t elements, af::dtype type)
+    void *alloc(const size_t elements, const af::dtype type)
     {
         void *ptr;
         AF_THROW(af_alloc_device(&ptr, elements * size_of(type)));
@@ -86,7 +86,7 @@ namespace af
         return ptr;
     }
 
-    void *pinned(size_t elements, af::dtype type)
+    void *pinned(const size_t elements, const af::dtype type)
     {
         void *ptr;
         AF_THROW(af_alloc_pinned(&ptr, elements * size_of(type)));
@@ -118,16 +118,16 @@ namespace af
                                     lock_bytes,  lock_buffers));
     }
 
-#define INSTANTIATE(T)                                                      \
-    template<> AFAPI                                                        \
-    T* alloc(size_t elements)                                               \
-    {                                                                       \
-        return (T*)alloc(elements, (af::dtype)dtype_traits<T>::af_type);     \
-    }                                                                       \
-    template<> AFAPI                                                        \
-    T* pinned(size_t elements)                                              \
-    {                                                                       \
-        return (T*)pinned(elements, (af::dtype)dtype_traits<T>::af_type);    \
+#define INSTANTIATE(T)                                                  \
+    template<> AFAPI                                                    \
+    T* alloc(const size_t elements)                                     \
+    {                                                                   \
+        return (T*)alloc(elements, (af::dtype)dtype_traits<T>::af_type); \
+    }                                                                   \
+    template<> AFAPI                                                    \
+    T* pinned(const size_t elements)                                    \
+    {                                                                   \
+        return (T*)pinned(elements, (af::dtype)dtype_traits<T>::af_type); \
     }
 
     INSTANTIATE(float)

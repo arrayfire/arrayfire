@@ -43,7 +43,7 @@ void load2ShrdMem(T * shrd, const T * in,
                   dim_type inStride1, dim_type inStride0)
 {
     switch(pad) {
-        case AF_ZERO:
+        case AF_PAD_ZERO:
             {
                 if (gx<0 || gx>=dim0 || gy<0 || gy>=dim1)
                     shrd[lIdx(lx, ly, shrdStride, 1)] = T(0);
@@ -51,7 +51,7 @@ void load2ShrdMem(T * shrd, const T * in,
                     shrd[lIdx(lx, ly, shrdStride, 1)] = in[lIdx(gx, gy, inStride1, inStride0)];
             }
             break;
-        case AF_SYMMETRIC:
+        case AF_PAD_SYM:
             {
                 if (gx<0) gx *= -1;
                 if (gy<0) gy *= -1;

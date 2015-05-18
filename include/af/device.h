@@ -113,7 +113,7 @@ namespace af
        \ingroup arrayfire_func
        \ingroup device_mat
     */
-    AFAPI void sync(int device = -1);
+    AFAPI void sync(const int device = -1);
     /**
        @}
     */
@@ -128,10 +128,10 @@ namespace af
        \ingroup arrayfire_func
        \ingroup device_mat
     */
-    AFAPI void *alloc(size_t elements, dtype type);
+    AFAPI void *alloc(const size_t elements, const dtype type);
 
     template<typename T>
-    T* alloc(size_t elements);
+    T* alloc(const size_t elements);
     /**
        @}
     */
@@ -147,10 +147,10 @@ namespace af
        \ingroup arrayfire_func
        \ingroup device_mat
     */
-    AFAPI void *pinned(size_t elements, dtype type);
+    AFAPI void *pinned(const size_t elements, const dtype type);
 
     template<typename T>
-    T* pinned(size_t elements);
+    T* pinned(const size_t elements);
     /**
        @}
     */
@@ -259,17 +259,17 @@ extern "C" {
     /**
        \ingroup device_func_device
     */
-    AFAPI af_err af_get_device_ptr(void **ptr, const af_array arr, bool read_only);
+    AFAPI af_err af_get_device_ptr(void **ptr, const af_array arr, const bool read_only);
 
     /**
        \ingroup device_func_alloc
     */
-    AFAPI af_err af_alloc_device(void **ptr, dim_type bytes);
+    AFAPI af_err af_alloc_device(void **ptr, const dim_type bytes);
 
     /**
        \ingroup device_func_pinned
     */
-    AFAPI af_err af_alloc_pinned(void **ptr, dim_type bytes);
+    AFAPI af_err af_alloc_pinned(void **ptr, const dim_type bytes);
 
     /**
        \ingroup device_func_free

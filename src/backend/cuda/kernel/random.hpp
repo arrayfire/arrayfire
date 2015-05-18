@@ -20,8 +20,9 @@ namespace kernel
 
     static const int THREADS = 256;
     static const int BLOCKS  = 64;
-    static unsigned long long uniform_seed = 0;
-    static unsigned long long normal_seed  = 0;
+    static unsigned long long seed = 0;
+    static curandState_t *states[DeviceManager::MAX_DEVICES];
+    static bool is_init[DeviceManager::MAX_DEVICES] = {0};
 
     template<typename T>
     __device__
@@ -127,6 +128,19 @@ namespace kernel
         states[id] = state;
     }
 
+    void setup_states()
+    {
+        int device = getActiveDeviceId();
+
+        if (!is_init[device]) {
+            CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
+        }
+
+        setup_kernel<<<BLOCKS, THREADS>>>(states[device], seed);
+        POST_LAUNCH_CHECK();
+        is_init[device] = true;
+    }
+
     template<typename T>
     void randu(T *out, size_t elements)
     {
@@ -135,18 +149,7 @@ namespace kernel
         int threads = THREADS;
         int blocks  = divup(elements, THREADS);
         if (blocks > BLOCKS) blocks = BLOCKS;
-
-        static curandState_t *states[DeviceManager::MAX_DEVICES];
-        if (!states[device]) {
-            CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
-
-            setup_kernel<<<BLOCKS, THREADS>>>(states[device], uniform_seed);
-
-            POST_LAUNCH_CHECK();
-        }
-
         uniform_kernel<<<blocks, threads>>>(out, states[device], elements);
-
         POST_LAUNCH_CHECK();
     }
 
@@ -159,11 +162,10 @@ namespace kernel
         int blocks  = divup(elements, THREADS);
         if (blocks > BLOCKS) blocks = BLOCKS;
 
-        static curandState_t *states[DeviceManager::MAX_DEVICES];
         if (!states[device]) {
             CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
 
-            setup_kernel<<<BLOCKS, THREADS>>>(states[device], uniform_seed);
+            setup_kernel<<<BLOCKS, THREADS>>>(states[device], seed);
 
             POST_LAUNCH_CHECK();
         }

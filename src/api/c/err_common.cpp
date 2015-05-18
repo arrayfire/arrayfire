@@ -7,12 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <af/exception.h>
 #include <err_common.hpp>
 #include <type_util.hpp>
 #include <string>
 #include <sstream>
 #include <cstring>
 #include <cstdio>
+#include <algorithm>
+
 #if defined(WITH_GRAPHICS)
 #include <graphics_common.hpp>
 #endif
@@ -131,6 +134,9 @@ int DimensionError::getArgIndex() const
     return argIndex;
 }
 
+static const int MAX_ERR_SIZE = 1024;
+static std::string global_err_string;
+
 void
 print_error(const stringstream &msg)
 {
@@ -138,6 +144,44 @@ print_error(const stringstream &msg)
     if(perr != nullptr) {
         if(std::strncmp(perr, "0", 1) != 0)
             fprintf(stderr, "%s\n", msg.str().c_str());
+    }
+    global_err_string = msg.str();
+}
+
+void af_get_last_error(char **str, dim_type *len)
+{
+    *len = std::min(MAX_ERR_SIZE, (int)global_err_string.size());
+
+    if (*len == 0) {
+        *str = NULL;
+    }
+
+    *str = new char[*len + 1];
+    memcpy(*str, global_err_string.c_str(), *len * sizeof(char));
+
+    (*str)[*len] = '\0';
+    global_err_string = std::string("");
+}
+
+const char *af_err_to_string(const af_err err)
+{
+    switch (err) {
+    case AF_SUCCESS:            return "Success";
+    case AF_ERR_INTERNAL:       return "Internal error";
+    case AF_ERR_NOMEM:          return "Device out of memory";
+    case AF_ERR_DRIVER:         return "Driver not available or incompatible";
+    case AF_ERR_RUNTIME:        return "Runtime error ";
+    case AF_ERR_INVALID_ARRAY:  return "Invalid array";
+    case AF_ERR_ARG:
+    case AF_ERR_INVALID_ARG:    return "Invalid input argument";
+    case AF_ERR_SIZE:           return "Invalid input size";
+    case AF_ERR_DIFF_TYPE:      return "Input types are not the same";
+    case AF_ERR_NOT_SUPPORTED:  return "Function not supported";
+    case AF_ERR_NOT_CONFIGURED: return "Function not configured to build";
+    case AF_ERR_INVALID_TYPE:   return "Function does not support this data type";
+    case AF_ERR_UNKNOWN:
+    default:
+        return "Unknown error";
     }
 }
 

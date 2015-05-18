@@ -134,4 +134,37 @@ TEST(ImageIO, CPP)
     // Delete
     delete[] imgData;
 }
+
+TEST(ImageIO, SavePNGCPP) {
+
+    af::array input(10, 10, 3, f32);
+
+    input(af::span, af::span, af::span) = 0;
+    input(0, 0, 0) = 255;
+    input(0, 9, 1) = 255;
+    input(9, 0, 2) = 255;
+    input(9, 9, af::span) = 255;
+
+    saveImage("SaveCPP.png", input);
+    af::array out = af::loadImage("SaveCPP.png", true);
+
+    ASSERT_FALSE(af::anytrue<bool>(out - input));
+}
+
+TEST(ImageIO, SaveBMPCPP) {
+
+    af::array input(10, 10, 3, f32);
+
+    input(af::span, af::span, af::span) = 0;
+    input(0, 0, 0) = 255;
+    input(0, 9, 1) = 255;
+    input(9, 0, 2) = 255;
+    input(9, 9, af::span) = 255;
+
+    saveImage("SaveCPP.bmp", input);
+    af::array out = af::loadImage("SaveCPP.bmp", true);
+
+    ASSERT_FALSE(af::anytrue<bool>(out - input));
+}
+
 #endif // WITH_FREEIMAGE

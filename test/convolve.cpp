@@ -57,10 +57,11 @@ void convolveTest(string pTestFile, int baseDim, bool expand)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&filter, &(in[1].front()),
                 fDims.ndims(), fDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
 
+    af_conv_mode mode = expand ? AF_CONV_EXPAND : AF_CONV_DEFAULT;
     switch(baseDim) {
-        case 1: ASSERT_EQ(AF_SUCCESS, af_convolve1(&outArray, signal, filter, expand)); break;
-        case 2: ASSERT_EQ(AF_SUCCESS, af_convolve2(&outArray, signal, filter, expand)); break;
-        case 3: ASSERT_EQ(AF_SUCCESS, af_convolve3(&outArray, signal, filter, expand)); break;
+    case 1: ASSERT_EQ(AF_SUCCESS, af_convolve1(&outArray, signal, filter, mode, AF_CONV_AUTO)); break;
+    case 2: ASSERT_EQ(AF_SUCCESS, af_convolve2(&outArray, signal, filter, mode, AF_CONV_AUTO)); break;
+    case 3: ASSERT_EQ(AF_SUCCESS, af_convolve3(&outArray, signal, filter, mode, AF_CONV_AUTO)); break;
     }
 
     vector<T> currGoldBar = tests[0];
@@ -227,7 +228,8 @@ void sepConvolveTest(string pTestFile, bool expand)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&r_filter, &(in[2].front()),
                 rfDims.ndims(), rfDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_convolve2_sep(&outArray, c_filter, r_filter, signal, expand));
+    af_conv_mode  mode = expand ? AF_CONV_EXPAND : AF_CONV_DEFAULT;
+    ASSERT_EQ(AF_SUCCESS, af_convolve2_sep(&outArray, c_filter, r_filter, signal, mode));
 
     vector<T> currGoldBar = tests[0];
     size_t nElems         = currGoldBar.size();
@@ -310,7 +312,7 @@ TEST(Convolve, Separable_TypeCheck)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&r_filter, &(filt.front()),
                 fDims.ndims(), fDims.get(), (af_dtype)af::dtype_traits<int>::af_type));
 
-    ASSERT_EQ(AF_ERR_ARG, af_convolve2_sep(&outArray, c_filter, r_filter, signal, true));
+    ASSERT_EQ(AF_ERR_ARG, af_convolve2_sep(&outArray, c_filter, r_filter, signal, AF_CONV_EXPAND));
 
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(signal));
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(c_filter));
@@ -342,7 +344,7 @@ TEST(Convolve, Separable_DimCheck)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&r_filter, &(filt.front()),
                 fDims.ndims(), fDims.get(), (af_dtype)af::dtype_traits<int>::af_type));
 
-    ASSERT_EQ(AF_ERR_ARG, af_convolve2_sep(&outArray, c_filter, r_filter, signal, true));
+    ASSERT_EQ(AF_ERR_ARG, af_convolve2_sep(&outArray, c_filter, r_filter, signal, AF_CONV_EXPAND));
 
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(c_filter));
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(r_filter));
@@ -369,7 +371,7 @@ TEST(Convolve1, CPP)
     af::array filter(numDims[1], &(in[1].front()));
     //filter dims = [4 1 1 1]
 
-    af::array output = convolve1(signal, filter, false);
+    af::array output = convolve1(signal, filter, AF_CONV_DEFAULT);
     //output dims = [32 1 1 1] - same as input since expand(3rd argument is false)
     //None of the dimensions > 1 has lenght > 1, so no batch mode is activated.
     //![ex_image_convolve1]
@@ -406,7 +408,7 @@ TEST(Convolve2, CPP)
     af::array filter(numDims[1], &(in[1].front()));
     //filter dims = [5 5 2 1]
 
-    af::array output = convolve2(signal, filter, false);
+    af::array output = convolve2(signal, filter, AF_CONV_DEFAULT);
     //output dims = [15 17 1 1] - same as input since expand(3rd argument is false)
     //however, notice that the 3rd dimension of filter is > 1.
     //So, one to many batch mode will be activated automatically
@@ -446,7 +448,7 @@ TEST(Convolve3, CPP)
     af::array filter(numDims[1], &(in[1].front()));
     //filter dims = [4 2 3 2]
 
-    af::array output = convolve3(signal, filter, false);
+    af::array output = convolve3(signal, filter, AF_CONV_DEFAULT);
     //output dims = [10 11 2 2] - same as input since expand(3rd argument is false)
     //however, notice that the 4th dimension is > 1 for both signal
     //and the filter, therefore many to many batch mode will be
@@ -488,7 +490,7 @@ TEST(Convolve, separable_CPP)
     af::array rFilter(numDims[2], &(in[2].front()));
     //row filter dims = [3 1 1 1]
 
-    af::array output = convolve(cFilter, rFilter, signal, false);
+    af::array output = convolve(cFilter, rFilter, signal, AF_CONV_DEFAULT);
     //output signal dims = [3 4 2 1] - same as input since 'expand = false'
     //notice that the input signal is 3d array, therefore
     //batch mode will be automatically activated.

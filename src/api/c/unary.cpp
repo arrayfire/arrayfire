@@ -91,6 +91,7 @@ UNARY(erfc)
 UNARY(log)
 UNARY(log10)
 UNARY(log1p)
+UNARY(log2)
 
 UNARY(sqrt)
 UNARY(cbrt)

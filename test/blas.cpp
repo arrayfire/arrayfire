@@ -68,17 +68,17 @@ void MatMulCheck(string TestFile)
 
     vector<af_array> out(tests.size(), 0);
     if(isBVector) {
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[0] , aT, b,    AF_NO_TRANSPOSE,    AF_NO_TRANSPOSE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[1] , bT, a,   AF_NO_TRANSPOSE,    AF_NO_TRANSPOSE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[2] , b, a,    AF_TRANSPOSE,       AF_NO_TRANSPOSE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[3] , bT, aT,   AF_NO_TRANSPOSE,    AF_TRANSPOSE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[4] , b, aT,    AF_TRANSPOSE,       AF_TRANSPOSE));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[0] , aT, b,    AF_MAT_NONE,    AF_MAT_NONE));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[1] , bT, a,   AF_MAT_NONE,    AF_MAT_NONE));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[2] , b, a,    AF_MAT_TRANS,       AF_MAT_NONE));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[3] , bT, aT,   AF_MAT_NONE,    AF_MAT_TRANS));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[4] , b, aT,    AF_MAT_TRANS,       AF_MAT_TRANS));
     }
     else {
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[0] , a, b, AF_NO_TRANSPOSE,   AF_NO_TRANSPOSE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[1] , a, bT, AF_NO_TRANSPOSE,   AF_TRANSPOSE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[2] , a, bT, AF_TRANSPOSE,      AF_NO_TRANSPOSE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[3] , aT, bT, AF_TRANSPOSE,      AF_TRANSPOSE));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[0] , a, b, AF_MAT_NONE,   AF_MAT_NONE));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[1] , a, bT, AF_MAT_NONE,   AF_MAT_TRANS));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[2] , a, bT, AF_MAT_TRANS,      AF_MAT_NONE));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[3] , aT, bT, AF_MAT_TRANS,      AF_MAT_TRANS));
     }
 
     for(size_t i = 0; i < tests.size(); i++) {
@@ -160,17 +160,17 @@ void cppMatMulCheck(string TestFile)
 
     vector<af::array> out(tests.size());
     if(isBVector) {
-        out[0] = af::matmul(aT, b,    AF_NO_TRANSPOSE,    AF_NO_TRANSPOSE);
-        out[1] = af::matmul(bT, a,   AF_NO_TRANSPOSE,    AF_NO_TRANSPOSE);
-        out[2] = af::matmul(b, a,    AF_TRANSPOSE,       AF_NO_TRANSPOSE);
-        out[3] = af::matmul(bT, aT,   AF_NO_TRANSPOSE,    AF_TRANSPOSE);
-        out[4] = af::matmul(b, aT,    AF_TRANSPOSE,       AF_TRANSPOSE);
+        out[0] = af::matmul(aT, b,    AF_MAT_NONE,    AF_MAT_NONE);
+        out[1] = af::matmul(bT, a,   AF_MAT_NONE,    AF_MAT_NONE);
+        out[2] = af::matmul(b, a,    AF_MAT_TRANS,       AF_MAT_NONE);
+        out[3] = af::matmul(bT, aT,   AF_MAT_NONE,    AF_MAT_TRANS);
+        out[4] = af::matmul(b, aT,    AF_MAT_TRANS,       AF_MAT_TRANS);
     }
     else {
-        out[0] = af::matmul(a, b, AF_NO_TRANSPOSE,   AF_NO_TRANSPOSE);
-        out[1] = af::matmul(a, bT, AF_NO_TRANSPOSE,   AF_TRANSPOSE);
-        out[2] = af::matmul(a, bT, AF_TRANSPOSE,      AF_NO_TRANSPOSE);
-        out[3] = af::matmul(aT, bT, AF_TRANSPOSE,      AF_TRANSPOSE);
+        out[0] = af::matmul(a, b, AF_MAT_NONE,   AF_MAT_NONE);
+        out[1] = af::matmul(a, bT, AF_MAT_NONE,   AF_MAT_TRANS);
+        out[2] = af::matmul(a, bT, AF_MAT_TRANS,      AF_MAT_NONE);
+        out[3] = af::matmul(aT, bT, AF_MAT_TRANS,      AF_MAT_TRANS);
     }
 
     for(size_t i = 0; i < tests.size(); i++) {

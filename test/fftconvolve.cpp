@@ -17,6 +17,8 @@
 
 using std::vector;
 using std::string;
+using af::cfloat;
+using af::cdouble;
 
 template<typename T>
 class FFTConvolve : public ::testing::Test
@@ -33,12 +35,16 @@ class FFTConvolveLarge : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, int, uint, char, uchar> TestTypes;
+typedef ::testing::Types<cfloat, cdouble, float, double, int, uint, char, uchar> TestTypes;
 typedef ::testing::Types<float, double> TestTypesLarge;
 
 // register the type list
 TYPED_TEST_CASE(FFTConvolve, TestTypes);
 TYPED_TEST_CASE(FFTConvolveLarge, TestTypesLarge);
+
+static double get_real(double val) { return val; }
+static double get_real(cfloat val) { return std::real(val); }
+static double get_real(cdouble val) { return std::real(val); }
 
 template<typename T, int baseDim>
 void fftconvolveTest(string pTestFile, bool expand)
@@ -58,26 +64,36 @@ void fftconvolveTest(string pTestFile, bool expand)
     af_array signal   = 0;
     af_array filter   = 0;
     af_array outArray = 0;
+    af_dtype in_type =(af_dtype)af::dtype_traits<T>::af_type;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&signal, &(in[0].front()),
-                sDims.ndims(), sDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                                          sDims.ndims(), sDims.get(), in_type));
     ASSERT_EQ(AF_SUCCESS, af_create_array(&filter, &(in[1].front()),
-                fDims.ndims(), fDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                                          fDims.ndims(), fDims.get(), in_type));
 
+    af_conv_mode mode = expand ? AF_CONV_EXPAND : AF_CONV_DEFAULT;
     switch(baseDim) {
-        case 1: ASSERT_EQ(AF_SUCCESS, af_fftconvolve1(&outArray, signal, filter, expand)); break;
-        case 2: ASSERT_EQ(AF_SUCCESS, af_fftconvolve2(&outArray, signal, filter, expand)); break;
-        case 3: ASSERT_EQ(AF_SUCCESS, af_fftconvolve3(&outArray, signal, filter, expand)); break;
+        case 1: ASSERT_EQ(AF_SUCCESS, af_fftconvolve1(&outArray, signal, filter, mode)); break;
+        case 2: ASSERT_EQ(AF_SUCCESS, af_fftconvolve2(&outArray, signal, filter, mode)); break;
+        case 3: ASSERT_EQ(AF_SUCCESS, af_fftconvolve3(&outArray, signal, filter, mode)); break;
     }
 
     vector<T> currGoldBar = tests[0];
     size_t nElems         = currGoldBar.size();
+
+    dim_type out_elems = 0;
+    ASSERT_EQ(AF_SUCCESS, af_get_elements(&out_elems, outArray));
+    ASSERT_EQ(nElems, (size_t)out_elems);
+
     T *outData            = new T[nElems];
 
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1e-2)<< "at: " << elIter<< std::endl;
+        ASSERT_NEAR(
+            get_real(currGoldBar[elIter]),
+            get_real(outData[elIter])
+            , 1e-2)<< "at: " << elIter<< std::endl;
     }
 
     delete[] outData;
@@ -120,7 +136,7 @@ void fftconvolveTestLarge(int sDim, int fDim, int sBatch, int fBatch, bool expan
     array signal = randu(signalDims, (af_dtype) af::dtype_traits<T>::af_type);
     array filter = randu(filterDims, (af_dtype) af::dtype_traits<T>::af_type);
 
-    array out = fftconvolve(signal, filter, expand);
+    array out = fftconvolve(signal, filter, expand ? AF_CONV_EXPAND : AF_CONV_DEFAULT);
 
     array gold;
     switch(baseDim) {
@@ -352,7 +368,6 @@ TYPED_TEST(FFTConvolve, Same_Rectangle_One2Many)
 {
     fftconvolveTest<TypeParam, 2>(string(TEST_DIR"/convolve/rectangle_same_one2many.test"), false);
 }
-
 TYPED_TEST(FFTConvolve, Same_Cuboid_One2Many)
 {
     fftconvolveTest<TypeParam, 3>(string(TEST_DIR"/convolve/cuboid_same_one2many.test"), false);
@@ -378,7 +393,7 @@ TEST(FFTConvolve1, CPP)
     af::array filter(numDims[1], &(in[1].front()));
     //filter dims = [4 1 1 1]
 
-    af::array output = fftconvolve1(signal, filter, true);
+    af::array output = fftconvolve1(signal, filter, AF_CONV_EXPAND);
     //output dims = [32 1 1 1] - same as input since expand(3rd argument is false)
     //None of the dimensions > 1 has lenght > 1, so no batch mode is activated.
     //![ex_image_convolve1]
@@ -415,7 +430,7 @@ TEST(FFTConvolve2, CPP)
     af::array filter(numDims[1], &(in[1].front()));
     //filter dims = [5 5 2 1]
 
-    af::array output = fftconvolve2(signal, filter, true);
+    af::array output = fftconvolve2(signal, filter, AF_CONV_EXPAND);
     //output dims = [15 17 1 1] - same as input since expand(3rd argument is false)
     //however, notice that the 3rd dimension of filter is > 1.
     //So, one to many batch mode will be activated automatically
@@ -455,7 +470,7 @@ TEST(FFTConvolve3, CPP)
     af::array filter(numDims[1], &(in[1].front()));
     //filter dims = [4 2 3 2]
 
-    af::array output = fftconvolve3(signal, filter, true);
+    af::array output = fftconvolve3(signal, filter, AF_CONV_EXPAND);
     //output dims = [10 11 2 2] - same as input since expand(3rd argument is false)
     //however, notice that the 4th dimension is > 1 for both signal
     //and the filter, therefore many to many batch mode will be

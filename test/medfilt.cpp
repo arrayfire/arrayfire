@@ -69,22 +69,22 @@ void medfiltTest(string pTestFile, dim_type w_len, dim_type w_wid, af_pad_type p
 
 TYPED_TEST(MedianFilter, ZERO_PAD_3x3)
 {
-    medfiltTest<TypeParam>(string(TEST_DIR"/medianfilter/zero_pad_3x3_window.test"), 3, 3, AF_ZERO);
+    medfiltTest<TypeParam>(string(TEST_DIR"/medianfilter/zero_pad_3x3_window.test"), 3, 3, AF_PAD_ZERO);
 }
 
 TYPED_TEST(MedianFilter, SYMMETRIC_PAD_3x3)
 {
-    medfiltTest<TypeParam>(string(TEST_DIR"/medianfilter/symmetric_pad_3x3_window.test"), 3, 3, AF_SYMMETRIC);
+    medfiltTest<TypeParam>(string(TEST_DIR"/medianfilter/symmetric_pad_3x3_window.test"), 3, 3, AF_PAD_SYM);
 }
 
 TYPED_TEST(MedianFilter, BATCH_ZERO_PAD_3x3)
 {
-    medfiltTest<TypeParam>(string(TEST_DIR"/medianfilter/batch_zero_pad_3x3_window.test"), 3, 3, AF_ZERO);
+    medfiltTest<TypeParam>(string(TEST_DIR"/medianfilter/batch_zero_pad_3x3_window.test"), 3, 3, AF_PAD_ZERO);
 }
 
 TYPED_TEST(MedianFilter, BATCH_SYMMETRIC_PAD_3x3)
 {
-    medfiltTest<TypeParam>(string(TEST_DIR"/medianfilter/batch_symmetric_pad_3x3_window.test"), 3, 3, AF_SYMMETRIC);
+    medfiltTest<TypeParam>(string(TEST_DIR"/medianfilter/batch_symmetric_pad_3x3_window.test"), 3, 3, AF_PAD_SYM);
 }
 
 template<typename T,bool isColor>
@@ -117,7 +117,7 @@ void medfiltImageTest(string pTestFile, dim_type w_len, dim_type w_wid)
         ASSERT_EQ(AF_SUCCESS, af_load_image(&goldArray, outFiles[testId].c_str(), isColor));
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, goldArray));
 
-        ASSERT_EQ(AF_SUCCESS, af_medfilt(&outArray, inArray, w_len, w_wid, AF_ZERO));
+        ASSERT_EQ(AF_SUCCESS, af_medfilt(&outArray, inArray, w_len, w_wid, AF_PAD_ZERO));
 
         T * outData = new T[nElems];
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
@@ -149,7 +149,7 @@ void medfiltInputTest(void)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_ERR_SIZE, af_medfilt(&outArray, inArray, 1, 1, AF_ZERO));
+    ASSERT_EQ(AF_ERR_SIZE, af_medfilt(&outArray, inArray, 1, 1, AF_PAD_ZERO));
 
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
@@ -175,9 +175,9 @@ void medfiltWindowTest(void)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_ERR_ARG, af_medfilt(&outArray, inArray, -1, -1, AF_ZERO));
+    ASSERT_EQ(AF_ERR_ARG, af_medfilt(&outArray, inArray, -1, -1, AF_PAD_ZERO));
 
-    ASSERT_EQ(AF_ERR_ARG, af_medfilt(&outArray, inArray, 3, 5, AF_ZERO));
+    ASSERT_EQ(AF_ERR_ARG, af_medfilt(&outArray, inArray, 3, 5, AF_PAD_ZERO));
 
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
@@ -234,7 +234,7 @@ TEST(MedianFilter, CPP)
 
     af::dim4 dims    = numDims[0];
     af::array input(dims, &(in[0].front()));
-    af::array output = af::medfilt(input, w_len, w_wid, AF_SYMMETRIC);
+    af::array output = af::medfilt(input, w_len, w_wid, AF_PAD_SYM);
 
     float *outData = new float[dims.elements()];
     output.host((void*)outData);
@@ -275,7 +275,7 @@ TEST(MedianFilter, Docs)
     //    2.0000        6.0000       10.0000       14.0000
     //    3.0000        7.0000       11.0000       15.0000
     //    4.0000        8.0000       12.0000       16.0000
-    array b = af::medfilt(a, 3, 3, AF_ZERO);
+    array b = af::medfilt(a, 3, 3, AF_PAD_ZERO);
     //af_print(b);
     //b=  0.0000        2.0000        6.0000        0.0000
     //    2.0000        6.0000       10.0000       10.0000

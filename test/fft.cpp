@@ -21,6 +21,21 @@ using std::vector;
 using af::cfloat;
 using af::cdouble;
 
+TEST(fft, Invalid_Type)
+{
+    vector<char>   in(100,1);
+
+    af_array inArray   = 0;
+    af_array outArray  = 0;
+
+    af::dim4 dims(5 * 5 * 2 * 2);
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
+                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<char>::af_type));
+
+    ASSERT_EQ(AF_ERR_INVALID_TYPE, af_fft(&outArray, inArray, 1.0, 0));
+    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+}
+
 TEST(fft2, Invalid_Array)
 {
     if (noDoubleTests<float>()) return;
@@ -337,6 +352,52 @@ void cppFFTTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad
     delete[] outData;
 }
 
+template<typename inType, typename outType, bool isInverse>
+void cppDFTTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0)
+{
+    if (noDoubleTests<inType>()) return;
+    if (noDoubleTests<outType>()) return;
+
+    vector<af::dim4>        numDims;
+    vector<vector<inType> >       in;
+    vector<vector<outType> >   tests;
+
+    readTestsFromFile<inType, outType>(pTestFile, numDims, in, tests);
+
+    af::dim4 dims = numDims[0];
+    af::array signal(dims, &(in[0].front()));
+    af::array output;
+
+    if (isInverse){
+        output = idft(signal);
+    } else {
+        output = dft(signal);
+    }
+
+    size_t out_size = tests[0].size();
+    cfloat *outData= new cfloat[out_size];
+    output.host((void*)outData);
+
+    vector<cfloat> goldBar(tests[0].begin(), tests[0].end());
+
+    size_t test_size = 0;
+    switch(dims.ndims()) {
+        case 1  : test_size = dims[0]/2+1;                       break;
+        case 2  : test_size = dims[1] * (dims[0]/2+1);           break;
+        case 3  : test_size = dims[2] * dims[1] * (dims[0]/2+1); break;
+        default : test_size = dims[0]/2+1;                       break;
+    }
+    outType output_scale = (outType)(isInverse ? test_size : 1);
+    for (size_t elIter=0; elIter<test_size; ++elIter) {
+        bool isUnderTolerance = std::abs(goldBar[elIter]-outData[elIter])<0.001;
+        ASSERT_EQ(true, isUnderTolerance)<<
+            "Expected value="<<goldBar[elIter] <<"\t Actual Value="<<
+            (output_scale*outData[elIter]) << " at: " << elIter<< std::endl;
+    }
+    // cleanup
+    delete[] outData;
+}
+
 
 TEST(fft3, CPP)
 {
@@ -387,6 +448,36 @@ TEST(fft3, RandomData)
 
     delete[] gold;
     delete[] out;
+}
+
+TEST(dft, CPP)
+{
+    cppDFTTest<cfloat, cfloat, false>(string(TEST_DIR"/signal/fft_c2c.test"));
+}
+
+TEST(idft, CPP)
+{
+    cppDFTTest<cfloat, cfloat, true>(string(TEST_DIR"/signal/ifft_c2c.test"));
+}
+
+TEST(dft2, CPP)
+{
+    cppDFTTest<cfloat, cfloat, false>(string(TEST_DIR"/signal/fft2_c2c.test"));
+}
+
+TEST(idft2, CPP)
+{
+    cppDFTTest<cfloat, cfloat, true>(string(TEST_DIR"/signal/ifft2_c2c.test"));
+}
+
+TEST(dft3, CPP)
+{
+    cppDFTTest<cfloat, cfloat, false>(string(TEST_DIR"/signal/fft3_c2c.test"));
+}
+
+TEST(idft3, CPP)
+{
+    cppDFTTest<cfloat, cfloat, true>(string(TEST_DIR"/signal/ifft3_c2c.test"));
 }
 
 TEST(fft, CPP_4D)

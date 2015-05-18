@@ -31,7 +31,7 @@ void assignKernel(global T * optr, KParam oInfo, global const T * iptr, KParam i
                  global const uint* ptr1, global const uint* ptr2,
                  global const uint* ptr3, const dim_type nBBS0, const dim_type nBBS1)
 {
-    // retrive booleans that tell us which indexer to use
+    // retrive booleans that tell us which index to use
     const bool s0 = p.isSeq[0];
     const bool s1 = p.isSeq[1];
     const bool s2 = p.isSeq[2];

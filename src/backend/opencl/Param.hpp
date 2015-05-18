@@ -19,4 +19,6 @@ namespace opencl
         cl::Buffer *data;
         KParam info;
     } Param;
+
+    Param makeParam(cl_mem mem, int off, int dims[4], int strides[4]);
 }
