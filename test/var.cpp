@@ -119,7 +119,7 @@ TYPED_TEST(Var, DimCPPSmall)
 
     readTests<TypeParam, outType, double> (TEST_DIR"/var/var.data",numDims,in,tests);
 
-    for(int i = 0; i < in.size(); i++)
+    for(size_t i = 0; i < in.size(); i++)
     {
         array input(numDims[i], &in[i].front(), af::afHost, af::dtype_traits<TypeParam>::af_type);
 
@@ -141,8 +141,8 @@ TYPED_TEST(Var, DimCPPSmall)
         bout1.host( &h_out[2].front());
         nbout1.host(&h_out[3].front());
 
-        for(int j = 0; j < tests.size(); j++) {
-            for(int jj = 0; jj < tests[j].size(); jj++) {
+        for(size_t j = 0; j < tests.size(); j++) {
+            for(size_t jj = 0; jj < tests[j].size(); jj++) {
                 ASSERT_EQ(h_out[j][jj], tests[j][jj]);
             }
         }
