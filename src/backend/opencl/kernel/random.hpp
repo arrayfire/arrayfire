@@ -37,7 +37,9 @@ namespace opencl
     {
         static const uint REPEAT  = 32;
         static const uint THREADS = 256;
-        static uint random_seed[2];
+
+        static uint random_seed[2] = {0, 0};
+        static unsigned counter;
 
         template<typename T, bool isRandu>
         struct random_name
@@ -92,8 +94,6 @@ namespace opencl
         void random(cl::Buffer out, dim_type elements)
         {
             try {
-                static unsigned counter;
-
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
                 static Program            ranProgs[DeviceManager::MAX_DEVICES];
                 static Kernel           ranKernels[DeviceManager::MAX_DEVICES];

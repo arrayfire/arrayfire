@@ -24,12 +24,6 @@ extern "C" {
     /**
        \ingroup blas_func_matmul
     */
-
-    typedef enum af_transpose_enum {
-        AF_NO_TRANSPOSE,
-        AF_TRANSPOSE,
-        AF_CONJUGATE_TRANSPOSE
-    } af_blas_transpose;
 #ifdef __cplusplus
 }
 #endif
@@ -52,8 +46,8 @@ namespace af
         \ingroup blas_func_matmul
      */
     AFAPI array matmul(const array &lhs, const array &rhs,
-                       af_blas_transpose optLhs = AF_NO_TRANSPOSE,
-                       af_blas_transpose optRhs = AF_NO_TRANSPOSE);
+                       const matProp optLhs = AF_MAT_NONE,
+                       const matProp optRhs = AF_MAT_NONE);
 
     /**
        \brief Matrix multiply on two arrays
@@ -95,6 +89,39 @@ namespace af
     AFAPI array matmulTT(const array &lhs, const array &rhs);
 
     /**
+       \brief Chain 2 matrix multiplications
+
+       The matrix multiplications are done in a way to reduce temporary memory
+
+       \param[in] a The first array
+       \param[in] b The second array
+       \param[in] c The third array
+
+       \returns out = a x b x c
+
+       \ingroup blas_func_matmul
+    */
+    AFAPI array matmul(const array &a, const array &b, const array &c);
+
+
+    /**
+       \brief Chain 3 matrix multiplications
+
+       The matrix multiplications are done in a way to reduce temporary memory
+
+       \param[in] a The first array
+       \param[in] b The second array
+       \param[in] c The third array
+       \param[in] d The fourth array
+
+       \returns out = a x b x c x d
+
+       \ingroup blas_func_matmul
+    */
+    AFAPI array matmul(const array &a, const array &b, const array &c, const array &d);
+
+
+    /**
         \brief Dot Product
 
         Scalar dot product between two vectors.  Also referred to as the inner
@@ -108,8 +135,8 @@ namespace af
         \ingroup blas_func_dot
     */
     AFAPI array dot   (const array &lhs, const array &rhs,
-                       af_blas_transpose optLhs = AF_NO_TRANSPOSE,
-                       af_blas_transpose optRhs = AF_NO_TRANSPOSE);
+                       const matProp optLhs = AF_MAT_NONE,
+                       const matProp optRhs = AF_MAT_NONE);
 
     /**
         \brief Transposes a matrix
@@ -122,6 +149,8 @@ namespace af
         \ingroup blas_func_transpose
     */
     AFAPI array transpose(const array& in, const bool conjugate = false);
+
+    AFAPI void transposeInPlace(array& in, const bool conjugate = false);
     /**
       }@
     */
@@ -148,7 +177,7 @@ extern "C" {
      */
     AFAPI af_err af_matmul( af_array *out ,
                             const af_array lhs, const af_array rhs,
-                            af_blas_transpose optLhs, af_blas_transpose optRhs);
+                            const af_mat_prop optLhs, const af_mat_prop optRhs);
 
 
     /**
@@ -165,7 +194,7 @@ extern "C" {
 
     AFAPI af_err af_dot(    af_array *out,
                             const af_array lhs, const af_array rhs,
-                            af_blas_transpose optLhs, af_blas_transpose optRhs);
+                            const af_mat_prop optLhs, const af_mat_prop optRhs);
 
     /**
         \brief Transposes a matrix
@@ -180,6 +209,8 @@ extern "C" {
         \ingroup blas_func_transpose
     */
     AFAPI af_err af_transpose(af_array *out, af_array in, const bool conjugate);
+
+    AFAPI af_err af_transpose_inplace(af_array in, const bool conjugate);
 
 
 #ifdef __cplusplus

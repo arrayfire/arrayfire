@@ -18,7 +18,7 @@ namespace cuda
 {
 
 template<typename T>
-Array<T>  transpose(const Array<T> &in, const bool conjugate)
+Array<T> transpose(const Array<T> &in, const bool conjugate)
 {
     const dim4 inDims   = in.dims();
     const dim4 inStrides= in.strides();
@@ -33,8 +33,8 @@ Array<T>  transpose(const Array<T> &in, const bool conjugate)
     return out;
 }
 
-#define INSTANTIATE(T)\
-    template Array<T>  transpose(const Array<T> &in, const bool conjugate);
+#define INSTANTIATE(T)                                                              \
+    template Array<T> transpose(const Array<T> &in, const bool conjugate);
 
 INSTANTIATE(float  )
 INSTANTIATE(cfloat )

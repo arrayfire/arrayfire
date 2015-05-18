@@ -20,7 +20,7 @@ namespace kernel
 // a maximum shared memory configuration of 48KB per block
 // considering complex types as well
 static const dim_type MAX_CONV1_FILTER_LEN = 129;
-static const dim_type MAX_CONV2_FILTER_LEN = 11;
+static const dim_type MAX_CONV2_FILTER_LEN = 17;
 static const dim_type MAX_CONV3_FILTER_LEN = 5;
 
 /*

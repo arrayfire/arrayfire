@@ -49,6 +49,8 @@ af_err af_index(af_array *result, const af_array in, const unsigned ndims, const
         case b8:     indexArray<char>    (out, in, ndims, index);  break;
         case s32:    indexArray<int>     (out, in, ndims, index);  break;
         case u32:    indexArray<unsigned>(out, in, ndims, index);  break;
+        case s64:    indexArray<intl>    (out, in, ndims, index);  break;
+        case u64:    indexArray<uintl>   (out, in, ndims, index);  break;
         case u8:     indexArray<uchar>   (out, in, ndims, index);  break;
         default:    TYPE_ERROR(1, in_type);
         }
@@ -73,6 +75,8 @@ static af_array lookup(const af_array &in, const af_array &idx, const unsigned d
         case c64: return getHandle(lookup<cdouble , idx_t > (getArray<cdouble >(in), getArray<idx_t>(idx), dim));
         case s32: return getHandle(lookup<int     , idx_t > (getArray<int     >(in), getArray<idx_t>(idx), dim));
         case u32: return getHandle(lookup<unsigned, idx_t > (getArray<unsigned>(in), getArray<idx_t>(idx), dim));
+        case s64: return getHandle(lookup<intl    , idx_t > (getArray<intl    >(in), getArray<idx_t>(idx), dim));
+        case u64: return getHandle(lookup<uintl   , idx_t > (getArray<uintl   >(in), getArray<idx_t>(idx), dim));
         case  u8: return getHandle(lookup<uchar   , idx_t > (getArray<uchar   >(in), getArray<idx_t>(idx), dim));
         case  b8: return getHandle(lookup<char    , idx_t > (getArray<char    >(in), getArray<idx_t>(idx), dim));
         default : TYPE_ERROR(1, inType);
@@ -129,54 +133,54 @@ af_array genIndex(const af_array& in,  const af_index_t idxrs[])
     return getHandle<T>(index<T>(getArray<T>(in), idxrs));
 }
 
-af_err af_index_gen(af_array *out, const af_array in, const dim_type ndims, const af_index_t* indexers)
+af_err af_index_gen(af_array *out, const af_array in, const dim_type ndims, const af_index_t* indexs)
 {
     af_array output = 0;
-    // spanner is sequence indexer used for indexing along the
+    // spanner is sequence index used for indexing along the
     // dimensions after ndims
     af_index_t spanner;
-    spanner.mIndexer.seq = af_span;
-    spanner.mIsSeq = true;
+    spanner.idx.seq = af_span;
+    spanner.isSeq = true;
 
     try {
         ARG_ASSERT(2, (ndims>0));
-        ARG_ASSERT(3, (indexers!=NULL));
+        ARG_ASSERT(3, (indexs!=NULL));
 
         int track = 0;
         af_seq seqs[] = {af_span, af_span, af_span, af_span};
         for (dim_type i = 0; i < ndims; i++) {
-            if (indexers[i].mIsSeq) {
+            if (indexs[i].isSeq) {
                 track++;
-                seqs[i] = indexers[i].mIndexer.seq;
+                seqs[i] = indexs[i].idx.seq;
             }
         }
 
         if (track==ndims) {
-            // all indexers are sequences, redirecting to af_index
+            // all indexs are sequences, redirecting to af_index
             return af_index(out, in, ndims, seqs);
         }
 
         af_index_t idxrs[4];
-        // set all dimensions above ndims to spanner indexer
+        // set all dimensions above ndims to spanner index
         for (dim_type i=ndims; i<4; ++i) idxrs[i] = spanner;
 
         for (dim_type i=0; i<ndims; ++i) {
-            if (!indexers[i].mIsSeq) {
+            if (!indexs[i].isSeq) {
                 // check if all af_arrays have atleast one value
                 // to enable indexing along that dimension
-                ArrayInfo idxInfo = getInfo(indexers[i].mIndexer.arr);
+                ArrayInfo idxInfo = getInfo(indexs[i].idx.arr);
                 af_dtype idxType  = idxInfo.getType();
 
                 ARG_ASSERT(3, (idxType!=c32));
                 ARG_ASSERT(3, (idxType!=c64));
                 ARG_ASSERT(3, (idxType!=b8 ));
 
-                idxrs[i].mIndexer.arr = indexers[i].mIndexer.arr;
-                idxrs[i].mIsSeq = indexers[i].mIsSeq;
+                idxrs[i].idx.arr = indexs[i].idx.arr;
+                idxrs[i].isSeq = indexs[i].isSeq;
             } else {
                 // af_seq is being used for this dimension
-                // just copy the indexer to local variable
-                idxrs[i] = indexers[i];
+                // just copy the index to local variable
+                idxrs[i] = indexs[i];
             }
         }
 

@@ -120,7 +120,7 @@ af_err af_device_array(af_array *arr, const void *data,
     return AF_SUCCESS;
 }
 
-af_err af_get_device_ptr(void **data, const af_array arr, bool read_only)
+af_err af_get_device_ptr(void **data, const af_array arr, const bool read_only)
 {
     try {
 
@@ -152,7 +152,7 @@ af_err af_get_device_ptr(void **data, const af_array arr, bool read_only)
     return AF_SUCCESS;
 }
 
-af_err af_alloc_device(void **ptr, dim_type bytes)
+af_err af_alloc_device(void **ptr, const dim_type bytes)
 {
     try {
         AF_CHECK(af_init());
@@ -161,7 +161,7 @@ af_err af_alloc_device(void **ptr, dim_type bytes)
     return AF_SUCCESS;
 }
 
-af_err af_alloc_pinned(void **ptr, dim_type bytes)
+af_err af_alloc_pinned(void **ptr, const dim_type bytes)
 {
     try {
         AF_CHECK(af_init());

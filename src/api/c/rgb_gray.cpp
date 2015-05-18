@@ -11,6 +11,7 @@
 #include <af/dim4.hpp>
 #include <af/image.h>
 #include <af/index.h>
+#include <af/data.h>
 
 #include <ArrayInfo.hpp>
 #include <handle.hpp>

@@ -37,12 +37,12 @@ void indexKernel(Param<T> out, CParam<T> in, const IndexKernelParam_t p,
                  const dim_type nBBS0, const dim_type nBBS1)
 {
     // retrieve index pointers
-    // these can be 0 where af_array indexer is not used
+    // these can be 0 where af_array index is not used
     const uint* ptr0 = p.ptr[0];
     const uint* ptr1 = p.ptr[1];
     const uint* ptr2 = p.ptr[2];
     const uint* ptr3 = p.ptr[3];
-    // retrive booleans that tell us which indexer to use
+    // retrive booleans that tell us which index to use
     const bool s0 = p.isSeq[0];
     const bool s1 = p.isSeq[1];
     const bool s2 = p.isSeq[2];

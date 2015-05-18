@@ -31,6 +31,33 @@
 using af::dim4;
 using namespace detail;
 
+class FI_Manager
+{
+    public:
+    static bool initialized;
+    FI_Manager()
+    {
+#ifdef FREEIMAGE_LIB
+        FreeImage_Initialise();
+#endif
+        initialized = true;
+    }
+
+    ~FI_Manager()
+    {
+#ifdef FREEIMAGE_LIB
+        FreeImage_DeInitialise();
+#endif
+    }
+};
+
+bool FI_Manager::initialized = false;
+
+static void FI_Init()
+{
+    static FI_Manager manager = FI_Manager();
+}
+
 // Helpers
 void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage);
 
@@ -147,7 +174,7 @@ AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isCol
         ARG_ASSERT(1, filename != NULL);
 
         // for statically linked FI
-        FreeImage_Initialise();
+        FI_Init();
 
         // set your own FreeImage error handler
         FreeImage_SetOutputMessage(FreeImageErrorHandler);
@@ -238,7 +265,6 @@ AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isCol
         }
 
         FreeImage_Unload(pBitmap);
-        FreeImage_DeInitialise();
         std::swap(*out,rImage);
     } CATCHALL;
 
@@ -252,7 +278,7 @@ af_err af_save_image(const char* filename, const af_array in_)
 
         ARG_ASSERT(0, filename != NULL);
 
-        FreeImage_Initialise();
+        FI_Init();
 
         // set your own FreeImage error handler
         FreeImage_SetOutputMessage(FreeImageErrorHandler);
@@ -403,8 +429,6 @@ af_err af_save_image(const char* filename, const af_array in_)
         if(ggT!= 0) AF_CHECK(af_destroy_array(ggT));
         if(bbT!= 0) AF_CHECK(af_destroy_array(bbT));
         if(aaT!= 0) AF_CHECK(af_destroy_array(aaT));
-
-        FreeImage_DeInitialise();
 
     } CATCHALL
 

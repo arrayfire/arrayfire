@@ -173,9 +173,9 @@ namespace opencl
         dim4 dDims = parent.getDataDims();
         dim4 pDims = parent.dims();
 
-        dim4 dims   = af::toDims  (index, pDims);
-        dim4 offset = af::toOffset(index, dDims);
-        dim4 stride = af::toStride (index, dDims);
+        dim4 dims   = toDims  (index, pDims);
+        dim4 offset = toOffset(index, dDims);
+        dim4 stride = toStride (index, dDims);
 
         Array<T> out = Array<T>(parent, dims, offset, stride);
 

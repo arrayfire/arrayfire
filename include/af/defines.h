@@ -113,14 +113,25 @@ typedef enum {
 } af_interp_type;
 
 typedef enum {
-    AF_ZERO = 0,
-    AF_SYMMETRIC
+    AF_PAD_ZERO = 0,
+    AF_PAD_SYM
 } af_pad_type;
 
 typedef enum {
     AF_CONNECTIVITY_4 = 4,
     AF_CONNECTIVITY_8 = 8
 } af_connectivity;
+
+typedef enum {
+    AF_CONV_DEFAULT,
+    AF_CONV_EXPAND,
+} af_conv_mode;
+
+typedef enum {
+    AF_CONV_AUTO,
+    AF_CONV_SPATIAL,
+    AF_CONV_FREQ,
+} af_conv_domain;
 
 typedef enum {
     AF_SAD = 0,
@@ -139,6 +150,20 @@ typedef enum {
     AF_RGB,// 1
     AF_HSV // 2
 } af_cspace_t;
+
+typedef enum {
+    AF_MAT_NONE       = 0,    ///< Default
+    AF_MAT_TRANS      = 1,    ///< Data needs to be transposed
+    AF_MAT_CTRANS     = 2,    ///< Data needs to be conjugate tansposed
+    AF_MAT_UPPER      = 32,   ///< Matrix is upper triangular
+    AF_MAT_LOWER      = 64,   ///< Matrix is lower triangular
+    AF_MAT_DIAG_UNIT  = 128,  ///< Matrix diagonal contains unitary values
+    AF_MAT_SYM        = 512,  ///< Matrix is symmetric
+    AF_MAT_POSDEF     = 1024, ///< Matrix is positive definite
+    AF_MAT_ORTHOG     = 2048, ///< Matrix is orthogonal
+    AF_MAT_TRI_DIAG   = 4096, ///< Matrix is tri diagonal
+    AF_MAT_BLOCK_DIAG = 8192  ///< Matrix is block diagonal
+} af_mat_prop;
 
 // Below enum is purely added for example purposes
 // it doesn't and shoudn't be used anywhere in the
@@ -161,6 +186,10 @@ namespace af
     typedef af_match_type matchType;
     typedef af_cspace_t CSpace;
     typedef af_someenum_t SomeEnum; // Purpose of Addition: How to add Function example
+    typedef af_mat_prop trans;
+    typedef af_conv_mode convMode;
+    typedef af_conv_domain convDomain;
+    typedef af_mat_prop matProp;
 
     const double NaN = std::numeric_limits<double>::quiet_NaN();
     const double Inf = std::numeric_limits<double>::infinity();

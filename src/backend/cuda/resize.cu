@@ -22,10 +22,6 @@ namespace cuda
         const af::dim4 iDims = in.dims();
         af::dim4 oDims(odim0, odim1, iDims[2], iDims[3]);
 
-        if(iDims.elements() == 0 || oDims.elements() == 0) {
-            AF_ERROR("Elements are 0", AF_ERR_SIZE);
-        }
-
         Array<T> out = createEmptyArray<T>(oDims);
 
         switch(method) {
