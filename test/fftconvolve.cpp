@@ -17,6 +17,8 @@
 
 using std::vector;
 using std::string;
+using af::cfloat;
+using af::cdouble;
 
 template<typename T>
 class FFTConvolve : public ::testing::Test
@@ -33,12 +35,16 @@ class FFTConvolveLarge : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, int, uint, char, uchar> TestTypes;
+typedef ::testing::Types<cfloat, cdouble, float, double, int, uint, char, uchar> TestTypes;
 typedef ::testing::Types<float, double> TestTypesLarge;
 
 // register the type list
 TYPED_TEST_CASE(FFTConvolve, TestTypes);
 TYPED_TEST_CASE(FFTConvolveLarge, TestTypesLarge);
+
+static double get_real(double val) { return val; }
+static double get_real(cfloat val) { return std::real(val); }
+static double get_real(cdouble val) { return std::real(val); }
 
 template<typename T, int baseDim>
 void fftconvolveTest(string pTestFile, bool expand)
@@ -58,11 +64,12 @@ void fftconvolveTest(string pTestFile, bool expand)
     af_array signal   = 0;
     af_array filter   = 0;
     af_array outArray = 0;
+    af_dtype in_type =(af_dtype)af::dtype_traits<T>::af_type;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&signal, &(in[0].front()),
-                sDims.ndims(), sDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                                          sDims.ndims(), sDims.get(), in_type));
     ASSERT_EQ(AF_SUCCESS, af_create_array(&filter, &(in[1].front()),
-                fDims.ndims(), fDims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+                                          fDims.ndims(), fDims.get(), in_type));
 
     af_conv_mode mode = expand ? AF_CONV_EXPAND : AF_CONV_DEFAULT;
     switch(baseDim) {
@@ -73,12 +80,20 @@ void fftconvolveTest(string pTestFile, bool expand)
 
     vector<T> currGoldBar = tests[0];
     size_t nElems         = currGoldBar.size();
+
+    dim_type out_elems = 0;
+    ASSERT_EQ(AF_SUCCESS, af_get_elements(&out_elems, outArray));
+    ASSERT_EQ(nElems, (size_t)out_elems);
+
     T *outData            = new T[nElems];
 
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
-        ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1e-2)<< "at: " << elIter<< std::endl;
+        ASSERT_NEAR(
+            get_real(currGoldBar[elIter]),
+            get_real(outData[elIter])
+            , 1e-2)<< "at: " << elIter<< std::endl;
     }
 
     delete[] outData;
@@ -353,7 +368,6 @@ TYPED_TEST(FFTConvolve, Same_Rectangle_One2Many)
 {
     fftconvolveTest<TypeParam, 2>(string(TEST_DIR"/convolve/rectangle_same_one2many.test"), false);
 }
-
 TYPED_TEST(FFTConvolve, Same_Cuboid_One2Many)
 {
     fftconvolveTest<TypeParam, 3>(string(TEST_DIR"/convolve/cuboid_same_one2many.test"), false);
