@@ -13,6 +13,9 @@
 
 using namespace af;
 
+static const int ITERATIONS = 100;
+static const float PRECISION = 1.0f/ITERATIONS;
+
 int main(int argc, char *argv[])
 {
     try {
@@ -20,26 +23,26 @@ int main(int argc, char *argv[])
         af::info();
         af::Window myWindow(512, 512, "2D Plot example: ArrayFire");
 
-        int size = 2000;
-        float x[size];
-        float y[size];
+        array Y;
+        int sign = 1;
+        array X = seq(-af::Pi, af::Pi, PRECISION);
 
-        for (int i = 1; i < size; i++)
-        {
-            x[i] = i;
-            y[i] = i;
-        }
+        for (double val=-af::Pi; !myWindow.close(); ) {
 
-        array X(size,1,x,af::afHost);
-        array Y(size,1,y,af::afHost);
+            Y = sin(X);
 
-        for (int i = 1; i < 200; i++)
-        {
-            af::timer delay = timer::start();
             myWindow.plot(X, Y);
-            double fps = 15;
-            while(timer::stop(delay) < (1 / fps)) { }
+
+            X = X + PRECISION * float(sign);
+            val += PRECISION * float(sign);
+
+            if (val>af::Pi) {
+                sign = -1;
+            } else if (val<-af::Pi) {
+                sign = 1;
+            }
         }
+
     } catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());
         throw;
