@@ -71,26 +71,43 @@ nrand(GenType &generator)
 static default_random_engine generator;
 static unsigned long long gen_seed = 0;
 static bool is_first = true;
+#define GLOBAL 1
 
 template<typename T>
 Array<T> randn(const af::dim4 &dims)
 {
-    if (is_first) setSeed(gen_seed);
+    static unsigned long long my_seed = 0;
+    if (is_first) {
+        setSeed(gen_seed);
+        my_seed = gen_seed;
+    }
 
-    auto gen = nrand<T>(generator);
+    static auto gen = nrand<T>(generator);
+
+    if (my_seed != gen_seed) {
+        gen = nrand<T>(generator);
+    }
 
     Array<T> outArray = createEmptyArray<T>(dims);
     T *outPtr = outArray.get();
-    generate(outPtr, outPtr + outArray.elements(), nrand<T>(generator));
+    generate(outPtr, outPtr + outArray.elements(), gen);
     return outArray;
 }
 
 template<typename T>
 Array<T> randu(const af::dim4 &dims)
 {
-    if (is_first) setSeed(gen_seed);
+    static unsigned long long my_seed = 0;
+    if (is_first) {
+        setSeed(gen_seed);
+        my_seed = gen_seed;
+    }
 
-    auto gen = urand<T>(generator);
+    static auto gen = urand<T>(generator);
+
+    if (my_seed != gen_seed) {
+        gen = urand<T>(generator);
+    }
 
     Array<T> outArray = createEmptyArray<T>(dims);
     T *outPtr = outArray.get();
@@ -123,7 +140,17 @@ INSTANTIATE_NORMAL(cdouble)
 template<>
 Array<char> randu(const af::dim4 &dims)
 {
-    auto gen = urand<float>(generator);
+    static unsigned long long my_seed = 0;
+    if (is_first) {
+        setSeed(gen_seed);
+        my_seed = gen_seed;
+    }
+
+    static auto gen = urand<float>(generator);
+
+    if (my_seed != gen_seed) {
+        gen = urand<float>(generator);
+    }
 
     Array<char> outArray = createEmptyArray<char>(dims);
     char *outPtr = outArray.get();
