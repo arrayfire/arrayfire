@@ -9,6 +9,7 @@
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <af/signal.h>
+#include <af/arith.h>
 #include <handle.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>
@@ -60,6 +61,7 @@ af_err af_iir(af_array *y, const af_array b, const af_array a, const af_array x)
         ARG_ASSERT(2, binfo.getType() == xtype);
         ARG_ASSERT(1, binfo.ndims() == ainfo.ndims());
 
+        dim4 adims = ainfo.dims();
         dim4 bdims = binfo.dims();
         dim4 xdims = xinfo.dims();
 
@@ -69,6 +71,15 @@ af_err af_iir(af_array *y, const af_array b, const af_array a, const af_array x)
                     ARG_ASSERT(1, bdims[i] == xdims[i]);
                 }
             }
+        }
+
+        // If only a0 is available, just normalize b and perform fir
+        if (adims[0] == 1) {
+            af_array bnorm = 0;
+            AF_CHECK(af_div(&bnorm, b, a, true));
+            AF_CHECK(af_fir(y, bnorm, x));
+            AF_CHECK(af_destroy_array(bnorm));
+            return AF_SUCCESS;
         }
 
         af_array res;
