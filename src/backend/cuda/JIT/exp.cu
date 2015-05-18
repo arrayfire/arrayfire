@@ -27,6 +27,7 @@ MATH(erfc)
 MATH(log)
 MATH(log10)
 MATH(log1p)
+MATH(log2)
 
 MATH(sqrt)
 MATH(cbrt)

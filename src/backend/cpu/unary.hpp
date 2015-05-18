@@ -54,6 +54,7 @@ UNARY_FN(erfc)
 UNARY_FN(log)
 UNARY_FN(log10)
 UNARY_FN(log1p)
+UNARY_FN(log2)
 
 UNARY_FN(sqrt)
 UNARY_FN(cbrt)

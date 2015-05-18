@@ -59,6 +59,7 @@ namespace af
     INSTANTIATE(log   )
     INSTANTIATE(log1p )
     INSTANTIATE(log10 )
+    INSTANTIATE(log2  )
 
     INSTANTIATE(sqrt  )
     INSTANTIATE(cbrt  )
