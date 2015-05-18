@@ -21,7 +21,7 @@ TEST(BasicTests, constant1000x1000)
 
     static const int ndims = 2;
     static const int dim_size = 1000;
-    dim_type d[ndims] = {dim_size, dim_size};
+    dim_t d[ndims] = {dim_size, dim_size};
 
     double valA = 3.9;
     af_array a;
@@ -44,7 +44,7 @@ TEST(BasicTests, constant10x10)
 
     static const int ndims = 2;
     static const int dim_size = 10;
-    dim_type d[2] = {dim_size, dim_size};
+    dim_t d[2] = {dim_size, dim_size};
 
     double valA = 3.9;
     af_array a;
@@ -67,7 +67,7 @@ TEST(BasicTests, constant100x100)
 
     static const int ndims = 2;
     static const int dim_size = 100;
-    dim_type d[2] = {dim_size, dim_size};
+    dim_t d[2] = {dim_size, dim_size};
 
     double valA = 4.9;
     af_array a;
@@ -92,7 +92,7 @@ TEST(BasicTests, AdditionSameType)
 
     static const int ndims = 2;
     static const int dim_size = 100;
-    dim_type d[ndims] = {dim_size, dim_size};
+    dim_t d[ndims] = {dim_size, dim_size};
 
     double valA = 3.9;
     double valB = 5.7;
@@ -140,7 +140,7 @@ TEST(BasicTests, Additionf64f64)
 
     static const int ndims = 2;
     static const int dim_size = 100;
-    dim_type d[ndims] = {dim_size, dim_size};
+    dim_t d[ndims] = {dim_size, dim_size};
 
     double valA = 3.9;
     double valB = 5.7;
@@ -178,7 +178,7 @@ TEST(BasicTests, Additionf32f64)
 
     static const int ndims = 2;
     static const int dim_size = 100;
-    dim_type d[ndims] = {dim_size, dim_size};
+    dim_t d[ndims] = {dim_size, dim_size};
 
     double valA = 3.9;
     double valB = 5.7;
@@ -212,7 +212,7 @@ TEST(BasicArrayTests, constant10x10)
 {
     if (noDoubleTests<float>()) return;
 
-    dim_type dim_size = 10;
+    dim_t dim_size = 10;
     double valA = 3.14;
     af::array a = af::constant(valA, dim_size, dim_size, f32);
 
@@ -233,7 +233,7 @@ TEST(BasicTests, constant100x100_CPP)
     if (noDoubleTests<float>()) return;
 
     static const int dim_size = 100;
-    dim_type d[2] = {dim_size, dim_size};
+    dim_t d[2] = {dim_size, dim_size};
 
     double valA = 4.9;
     dim4 dims(d[0], d[1]);
@@ -255,7 +255,7 @@ TEST(BasicTests, AdditionSameType_CPP)
     if (noDoubleTests<double>()) return;
 
     static const int dim_size = 100;
-    dim_type d[2] = {dim_size, dim_size};
+    dim_t d[2] = {dim_size, dim_size};
     dim4 dims(d[0], d[1]);
 
     double valA = 3.9;
@@ -294,7 +294,7 @@ TEST(BasicTests, Additionf32f64_CPP)
     if (noDoubleTests<double>()) return;
 
     static const int dim_size = 100;
-    dim_type d[2] = {dim_size, dim_size};
+    dim_t d[2] = {dim_size, dim_size};
     dim4 dims(d[0], d[1]);
 
     double valA = 3.9;

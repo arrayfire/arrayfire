@@ -22,10 +22,10 @@ namespace cpu
 {
 
 static inline
-dim_type trimIndex(dim_type idx, const dim_type &len)
+dim_t trimIndex(dim_t idx, const dim_t &len)
 {
-    dim_type ret_val = idx;
-    dim_type offset  = abs(ret_val)%len;
+    dim_t ret_val = idx;
+    dim_t offset  = abs(ret_val)%len;
     if (ret_val<0) {
         ret_val = offset-1;
     } else if (ret_val>=len) {
@@ -41,7 +41,7 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     std::vector<af_seq> seqs(4, af_span);
     // create seq vector to retrieve output
     // dimensions, offsets & offsets
-    for (dim_type x=0; x<4; ++x) {
+    for (dim_t x=0; x<4; ++x) {
         if (idxrs[x].isSeq) {
             seqs[x] = idxrs[x].idx.seq;
         }
@@ -57,7 +57,7 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
 
     std::vector< Array<uint> > idxArrs(4, createEmptyArray<uint>(dim4()));
     // look through indexs to read af_array indexs
-    for (dim_type x=0; x<4; ++x) {
+    for (dim_t x=0; x<4; ++x) {
         if (!isSeq[x]) {
             idxArrs[x] = castArray<uint>(idxrs[x].idx.arr);
             // set output array ith dimension value
@@ -76,29 +76,29 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     const uint* ptr2 = idxArrs[2].get();
     const uint* ptr3 = idxArrs[3].get();
 
-    for (dim_type l=0; l<oDims[3]; ++l) {
+    for (dim_t l=0; l<oDims[3]; ++l) {
 
-        dim_type lOff   = l*oStrides[3];
-        dim_type inIdx3 = trimIndex(isSeq[3] ? l+iOffs[3] : ptr3[l], iDims[3]);
-        dim_type inOff3 = inIdx3*iStrds[3];
+        dim_t lOff   = l*oStrides[3];
+        dim_t inIdx3 = trimIndex(isSeq[3] ? l+iOffs[3] : ptr3[l], iDims[3]);
+        dim_t inOff3 = inIdx3*iStrds[3];
 
-        for (dim_type k=0; k<oDims[2]; ++k) {
+        for (dim_t k=0; k<oDims[2]; ++k) {
 
-            dim_type kOff   = k*oStrides[2];
-            dim_type inIdx2 = trimIndex(isSeq[2] ? k+iOffs[2] : ptr2[k], iDims[2]);
-            dim_type inOff2 = inIdx2*iStrds[2];
+            dim_t kOff   = k*oStrides[2];
+            dim_t inIdx2 = trimIndex(isSeq[2] ? k+iOffs[2] : ptr2[k], iDims[2]);
+            dim_t inOff2 = inIdx2*iStrds[2];
 
-            for (dim_type j=0; j<oDims[1]; ++j) {
+            for (dim_t j=0; j<oDims[1]; ++j) {
 
-                dim_type jOff   = j*oStrides[1];
-                dim_type inIdx1 = trimIndex(isSeq[1] ? j+iOffs[1] : ptr1[j], iDims[1]);
-                dim_type inOff1 = inIdx1*iStrds[1];
+                dim_t jOff   = j*oStrides[1];
+                dim_t inIdx1 = trimIndex(isSeq[1] ? j+iOffs[1] : ptr1[j], iDims[1]);
+                dim_t inOff1 = inIdx1*iStrds[1];
 
-                for (dim_type i=0; i<oDims[0]; ++i) {
+                for (dim_t i=0; i<oDims[0]; ++i) {
 
-                    dim_type iOff   = i*oStrides[0];
-                    dim_type inIdx0 = trimIndex(isSeq[0] ? i+iOffs[0] : ptr0[i], iDims[0]);
-                    dim_type inOff0 = inIdx0*iStrds[0];
+                    dim_t iOff   = i*oStrides[0];
+                    dim_t inIdx0 = trimIndex(isSeq[0] ? i+iOffs[0] : ptr0[i], iDims[0]);
+                    dim_t inOff0 = inIdx0*iStrds[0];
 
                     dst[lOff+kOff+jOff+iOff] = src[inOff3+inOff2+inOff1+inOff0];
                 }

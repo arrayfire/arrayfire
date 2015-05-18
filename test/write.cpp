@@ -60,7 +60,7 @@ void writeTest(af::dim4 dims)
     char *h_check1 = check1.host<char>();
     char *h_check2 = check2.host<char>();
 
-    for(int i = 0; i < dims.elements(); i++) {
+    for(int i = 0; i < (int)dims.elements(); i++) {
         ASSERT_EQ(h_check1[i], 0) << "at: " << i << std::endl;
         ASSERT_EQ(h_check2[i], 0) << "at: " << i << std::endl;
     }

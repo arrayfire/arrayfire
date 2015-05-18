@@ -51,27 +51,27 @@ namespace cpu
         const Tk *comp_ptr = nullptr;
         auto comparator = [&comp_ptr, &op](size_t i1, size_t i2) {return op(comp_ptr[i1], comp_ptr[i2]);};
 
-        for(dim_type w = 0; w < ikey.dims()[3]; w++) {
-            dim_type okeyW = w * okey.strides()[3];
-            dim_type ovalW = w * oval.strides()[3];
-            dim_type oidxW = w * oidx.strides()[3];
-            dim_type ikeyW = w * ikey.strides()[3];
-            dim_type ivalW = w * ival.strides()[3];
+        for(dim_t w = 0; w < ikey.dims()[3]; w++) {
+            dim_t okeyW = w * okey.strides()[3];
+            dim_t ovalW = w * oval.strides()[3];
+            dim_t oidxW = w * oidx.strides()[3];
+            dim_t ikeyW = w * ikey.strides()[3];
+            dim_t ivalW = w * ival.strides()[3];
 
-            for(dim_type z = 0; z < ikey.dims()[2]; z++) {
-                dim_type okeyWZ = okeyW + z * okey.strides()[2];
-                dim_type ovalWZ = ovalW + z * oval.strides()[2];
-                dim_type oidxWZ = oidxW + z * oidx.strides()[2];
-                dim_type ikeyWZ = ikeyW + z * ikey.strides()[2];
-                dim_type ivalWZ = ivalW + z * ival.strides()[2];
+            for(dim_t z = 0; z < ikey.dims()[2]; z++) {
+                dim_t okeyWZ = okeyW + z * okey.strides()[2];
+                dim_t ovalWZ = ovalW + z * oval.strides()[2];
+                dim_t oidxWZ = oidxW + z * oidx.strides()[2];
+                dim_t ikeyWZ = ikeyW + z * ikey.strides()[2];
+                dim_t ivalWZ = ivalW + z * ival.strides()[2];
 
-                for(dim_type y = 0; y < ikey.dims()[1]; y++) {
+                for(dim_t y = 0; y < ikey.dims()[1]; y++) {
 
-                    dim_type okeyOffset = okeyWZ + y * okey.strides()[1];
-                    dim_type ovalOffset = ovalWZ + y * oval.strides()[1];
-                    dim_type oidxOffset = oidxWZ + y * oidx.strides()[1];
-                    dim_type ikeyOffset = ikeyWZ + y * ikey.strides()[1];
-                    dim_type ivalOffset = ivalWZ + y * ival.strides()[1];
+                    dim_t okeyOffset = okeyWZ + y * okey.strides()[1];
+                    dim_t ovalOffset = ovalWZ + y * oval.strides()[1];
+                    dim_t oidxOffset = oidxWZ + y * oidx.strides()[1];
+                    dim_t ikeyOffset = ikeyWZ + y * ikey.strides()[1];
+                    dim_t ivalOffset = ivalWZ + y * ival.strides()[1];
 
                     uint *ptr = oidx_ptr + oidxOffset;
                     std::copy(seq_vec.begin(), seq_vec.end(), ptr);
@@ -79,7 +79,7 @@ namespace cpu
                     comp_ptr = ikey_ptr + ikeyOffset;
                     std::stable_sort(ptr, ptr + ikey.dims()[0], comparator);
 
-                    for (dim_type i = 0; i < oval.dims()[0]; ++i){
+                    for (dim_t i = 0; i < oval.dims()[0]; ++i){
                         uint sortIdx = oidx_ptr[oidxOffset + i];
                         okey_ptr[okeyOffset + i] = ikey_ptr[ikeyOffset + sortIdx];
                         oval_ptr[ovalOffset + i] = ival_ptr[ivalOffset + sortIdx];

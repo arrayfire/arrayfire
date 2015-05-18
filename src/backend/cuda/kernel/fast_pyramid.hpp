@@ -90,7 +90,7 @@ void fast_pyramid(std::vector<unsigned>& feat_pyr,
                 lvl_img.strides[k] = lvl_img.dims[k - 1] * lvl_img.strides[k - 1];
             }
 
-            dim_type lvl_elem = lvl_img.strides[3] * lvl_img.dims[3];
+            int lvl_elem = lvl_img.strides[3] * lvl_img.dims[3];
             lvl_img.ptr = memAlloc<T>(lvl_elem);
 
             resize<T, AF_INTERP_BILINEAR>(lvl_img, img_pyr[i-1]);

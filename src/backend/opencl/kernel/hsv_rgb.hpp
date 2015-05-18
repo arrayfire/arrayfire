@@ -32,8 +32,8 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type THREADS_X = 16;
-static const dim_type THREADS_Y = 16;
+static const int THREADS_X = 16;
+static const int THREADS_Y = 16;
 
 template<typename T, bool isHSV2RGB>
 void hsv2rgb_convert(Param out, const Param in)
@@ -63,14 +63,14 @@ void hsv2rgb_convert(Param out, const Param in)
 
         NDRange local(THREADS_X, THREADS_Y);
 
-        dim_type blk_x = divup(in.info.dims[0], THREADS_X);
-        dim_type blk_y = divup(in.info.dims[1], THREADS_Y);
+        int blk_x = divup(in.info.dims[0], THREADS_X);
+        int blk_y = divup(in.info.dims[1], THREADS_Y);
 
         // all images are three channels, so batch
         // parameter would be along 4th dimension
         NDRange global(blk_x * in.info.dims[3] * THREADS_X, blk_y * THREADS_Y);
 
-        auto hsvrgbOp = make_kernel<Buffer, KParam, Buffer, KParam, dim_type> (*hrKernels[device]);
+        auto hsvrgbOp = make_kernel<Buffer, KParam, Buffer, KParam, int> (*hrKernels[device]);
 
         hsvrgbOp(EnqueueArgs(getQueue(), global, local),
                     *out.data, out.info, *in.data, in.info, blk_x);

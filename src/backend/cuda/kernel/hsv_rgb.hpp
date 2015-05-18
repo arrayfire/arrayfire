@@ -19,30 +19,30 @@ namespace cuda
 namespace kernel
 {
 
-static const dim_type THREADS_X = 16;
-static const dim_type THREADS_Y = 16;
+static const int THREADS_X = 16;
+static const int THREADS_Y = 16;
 
 template<typename T, bool isHSV2RGB>
 __global__
-void convert(Param<T> out, CParam<T> in, dim_type nBBS)
+void convert(Param<T> out, CParam<T> in, int nBBS)
 {
     // batch offsets
     unsigned batchId= blockIdx.x / nBBS;
     const T* src    = (const T *) in.ptr + (batchId *  in.strides[3]);
     T*       dst    = (T *      )out.ptr + (batchId * out.strides[3]);
     // global indices
-    dim_type gx = blockDim.x * (blockIdx.x-batchId*nBBS) + threadIdx.x;
-    dim_type gy = blockDim.y * blockIdx.y + threadIdx.y;
+    int gx = blockDim.x * (blockIdx.x-batchId*nBBS) + threadIdx.x;
+    int gy = blockDim.y * blockIdx.y + threadIdx.y;
 
     if (gx < out.dims[0] && gy < out.dims[1]) {
 
-        dim_type oIdx0 = gx + gy * out.strides[1];
-        dim_type oIdx1 = oIdx0 + out.strides[2];
-        dim_type oIdx2 = oIdx1 + out.strides[2];
+        int oIdx0 = gx + gy * out.strides[1];
+        int oIdx1 = oIdx0 + out.strides[2];
+        int oIdx2 = oIdx1 + out.strides[2];
 
-        dim_type iIdx0 = gx * in.strides[0] + gy * in.strides[1];
-        dim_type iIdx1 = iIdx0 + in.strides[2];
-        dim_type iIdx2 = iIdx1 + in.strides[2];
+        int iIdx0 = gx * in.strides[0] + gy * in.strides[1];
+        int iIdx1 = iIdx0 + in.strides[2];
+        int iIdx2 = iIdx1 + in.strides[2];
 
         if(isHSV2RGB) {
             T H = src[iIdx0];
@@ -99,8 +99,8 @@ void hsv2rgb_convert(Param<T> out, CParam<T> in)
 {
     const dim3 threads(THREADS_X, THREADS_Y);
 
-    dim_type blk_x = divup(in.dims[0], threads.x);
-    dim_type blk_y = divup(in.dims[1], threads.y);
+    int blk_x = divup(in.dims[0], threads.x);
+    int blk_y = divup(in.dims[1], threads.y);
 
     // all images are three channels, so batch
     // parameter would be along 4th dimension

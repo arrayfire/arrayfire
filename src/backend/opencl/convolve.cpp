@@ -20,7 +20,7 @@ using af::dim4;
 namespace opencl
 {
 
-template<typename T, typename accT, dim_type baseDim, bool expand>
+template<typename T, typename accT, dim_t baseDim, bool expand>
 Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBatchKind kind)
 {
     if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
@@ -32,7 +32,7 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
 
     dim4 oDims(1);
     if (expand) {
-        for(dim_type d=0; d<4; ++d) {
+        for(dim_t d=0; d<4; ++d) {
             if (kind==ONE2ONE || kind==ONE2MANY) {
                 oDims[d] = sDims[d]+fDims[d]-1;
             } else {
@@ -42,7 +42,7 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
     } else {
         oDims = sDims;
         if (kind==ONE2MANY) {
-            for (dim_type i=baseDim; i<4; ++i)
+            for (dim_t i=baseDim; i<4; ++i)
                 oDims[i] = fDims[i];
         }
     }
@@ -50,8 +50,8 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
     Array<T> out   = createEmptyArray<T>(oDims);
     bool callKernel = true;
 
-    dim_type MCFL2 = kernel::MAX_CONV2_FILTER_LEN;
-    dim_type MCFL3 = kernel::MAX_CONV3_FILTER_LEN;
+    dim_t MCFL2 = kernel::MAX_CONV2_FILTER_LEN;
+    dim_t MCFL3 = kernel::MAX_CONV3_FILTER_LEN;
     switch(baseDim) {
         case 1: if (fDims[0]>kernel::MAX_CONV1_FILTER_LEN) callKernel = false; break;
         case 2: if ((fDims[0]*fDims[1]) > (MCFL2 * MCFL2)) callKernel = false; break;

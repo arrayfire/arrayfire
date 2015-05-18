@@ -95,10 +95,10 @@ namespace kernel
             otmp.strides[k] = otmp.strides[k - 1] * otmp.dims[k - 1];
         }
 
-        dim_type rtmp_elements = rtmp.strides[3] * rtmp.dims[3];
+        int rtmp_elements = rtmp.strides[3] * rtmp.dims[3];
         rtmp.ptr = memAlloc<uint>(rtmp_elements);
 
-        dim_type otmp_elements = otmp.strides[3] * otmp.dims[3];
+        int otmp_elements = otmp.strides[3] * otmp.dims[3];
         otmp.ptr = memAlloc<uint>(otmp_elements);
 
         scan_first_launcher<T, uint, af_notzero_t, false>(otmp, rtmp, in,

@@ -671,9 +671,9 @@ TEST(ArrayAssign, CPP_ASSIGN_VECTOR)
 
     a(idx) = c;
 
-    ASSERT_EQ(a.dims(0) , 1);
-    ASSERT_EQ(a.dims(1) , num);
-    ASSERT_EQ(c.dims(0) , num);
+    ASSERT_EQ(a.dims(0) , (dim_t)1);
+    ASSERT_EQ(a.dims(1) , (dim_t)num);
+    ASSERT_EQ(c.dims(0) , (dim_t)num);
 
     float *h_a = a.host<float>();
     float *h_b = b.host<float>();
@@ -703,10 +703,10 @@ TEST(ArrayAssign, CPP_ASSIGN_VECTOR_SEQ)
 
     a(af::seq(st, en)) = b;
 
-    ASSERT_EQ(a.dims(0) , 1);
-    ASSERT_EQ(a.dims(1) , 1);
-    ASSERT_EQ(a.dims(2) , num);
-    ASSERT_EQ(b.dims(0) , len);
+    ASSERT_EQ(a.dims(0) , (dim_t)1);
+    ASSERT_EQ(a.dims(1) , (dim_t)1);
+    ASSERT_EQ(a.dims(2) , (dim_t)num);
+    ASSERT_EQ(b.dims(0) , (dim_t)len);
 
     float *h_a0 = a0.host<float>();
     float *h_a  =  a.host<float>();

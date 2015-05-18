@@ -88,7 +88,7 @@ static af_array var(const af_array& in, const bool isbiased, int dim)
 }
 
 template<typename inType, typename outType>
-static af_array var(const af_array& in, const af_array& weights, dim_type dim)
+static af_array var(const af_array& in, const af_array& weights, dim_t dim)
 {
     typedef typename baseOutType<outType>::type bType;
 
@@ -114,7 +114,7 @@ static af_array var(const af_array& in, const af_array& weights, dim_type dim)
     return getHandle<outType>(result);
 }
 
-af_err af_var(af_array *out, const af_array in, const bool isbiased, const dim_type dim)
+af_err af_var(af_array *out, const af_array in, const bool isbiased, const dim_t dim)
 {
     try {
         ARG_ASSERT(2, (dim>=0 && dim<=3));
@@ -141,7 +141,7 @@ af_err af_var(af_array *out, const af_array in, const bool isbiased, const dim_t
     return AF_SUCCESS;
 }
 
-af_err af_var_weighted(af_array *out, const af_array in, const af_array weights, const dim_type dim)
+af_err af_var_weighted(af_array *out, const af_array in, const af_array weights, const dim_t dim)
 {
     try {
         ARG_ASSERT(2, (dim>=0 && dim<=3));

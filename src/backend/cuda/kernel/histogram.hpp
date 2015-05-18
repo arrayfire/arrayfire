@@ -20,10 +20,10 @@ namespace kernel
 {
 
 static const unsigned MAX_BINS  = 4000;
-static const dim_type THREADS_X =  256;
-static const dim_type THRD_LOAD =   16;
+static const int THREADS_X =  256;
+static const int THRD_LOAD =   16;
 
-__forceinline__ __device__ dim_type minimum(dim_type a, dim_type b)
+__forceinline__ __device__ int minimum(int a, int b)
 {
   return (a < b ? a : b);
 }
@@ -31,8 +31,8 @@ __forceinline__ __device__ dim_type minimum(dim_type a, dim_type b)
 template<typename inType, typename outType>
 static __global__
 void histogramKernel(Param<outType> out, CParam<inType> in,
-                     const cfloat *d_minmax, dim_type len,
-                     dim_type nbins, dim_type nBBS)
+                     const cfloat *d_minmax, int len,
+                     int nbins, int nBBS)
 {
     SharedMemory<outType> shared;
     outType * shrdMem = shared.getPointer();
@@ -75,16 +75,16 @@ void histogramKernel(Param<outType> out, CParam<inType> in,
 }
 
 template<typename inType, typename outType>
-void histogram(Param<outType> out, CParam<inType> in, cfloat *d_minmax, dim_type nbins)
+void histogram(Param<outType> out, CParam<inType> in, cfloat *d_minmax, int nbins)
 {
     dim3 threads(kernel::THREADS_X, 1);
 
-    dim_type nElems = in.dims[0] * in.dims[1];
-    dim_type blk_x  = divup(nElems, THRD_LOAD*THREADS_X);
+    int nElems = in.dims[0] * in.dims[1];
+    int blk_x  = divup(nElems, THRD_LOAD*THREADS_X);
 
     dim3 blocks(blk_x * in.dims[2], in.dims[3]);
 
-    dim_type smem_size = nbins * sizeof(outType);
+    int smem_size = nbins * sizeof(outType);
 
     histogramKernel<inType, outType>
         <<<blocks, threads, smem_size>>>

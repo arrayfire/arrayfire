@@ -127,7 +127,7 @@ void readTestsFromFile(const std::string &FileName, std::vector<af::dim4> &input
 void readImageTests(const std::string        &pFileName,
                     std::vector<af::dim4>    &pInputDims,
                     std::vector<std::string> &pTestInputs,
-                    std::vector<dim_type>    &pTestOutSizes,
+                    std::vector<dim_t>    &pTestOutSizes,
                     std::vector<std::string> &pTestOutputs)
 {
     using std::vector;
@@ -311,13 +311,13 @@ void readImageFeaturesDescriptors(const std::string                  &pFileName,
  * value of NRMSD. Hence, the range of RMSD is [0,255] for image inputs.
  */
 template<typename T>
-bool compareArraysRMSD(dim_type data_size, T *gold, T *data, double tolerance)
+bool compareArraysRMSD(dim_t data_size, T *gold, T *data, double tolerance)
 {
     double accum  = 0.0;
     double maxion = FLT_MAX;//(double)std::numeric_limits<T>::lowest();
     double minion = FLT_MAX;//(double)std::numeric_limits<T>::max();
 
-    for(dim_type i=0;i<data_size;i++)
+    for(dim_t i=0;i<data_size;i++)
     {
         double dTemp = (double)data[i];
         double gTemp = (double)gold[i];
@@ -415,11 +415,11 @@ af_err conv_image(af_array *out, af_array in)
 {
     af_array outArray;
 
-    dim_type d0, d1, d2, d3;
+    dim_t d0, d1, d2, d3;
     af_get_dims(&d0, &d1, &d2, &d3, in);
     af::dim4 idims(d0, d1, d2, d3);
 
-    dim_type nElems = 0;
+    dim_t nElems = 0;
     af_get_elements(&nElems, in);
 
     float *in_data = new float[nElems];
@@ -427,7 +427,7 @@ af_err conv_image(af_array *out, af_array in)
 
     T *out_data = new T[nElems];
 
-    for (int i = 0; i < nElems; i++)
+    for (int i = 0; i < (int)nElems; i++)
         out_data[i] = (T)in_data[i];
 
     af_create_array(&outArray, out_data, idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type);
@@ -447,7 +447,7 @@ af::array cpu_randu(const af::dim4 dims)
     bool isTypeCplx = is_same_type<T, af::cfloat>::value || is_same_type<T, af::cdouble>::value;
     bool isTypeFloat = is_same_type<BT, float>::value || is_same_type<BT, double>::value;
 
-    dim_type elements = (isTypeCplx ? 2 : 1) * dims.elements();
+    dim_t elements = (isTypeCplx ? 2 : 1) * dims.elements();
 
     std::vector<BT> out(elements);
     for(int i = 0; i < (int)elements; i++) {

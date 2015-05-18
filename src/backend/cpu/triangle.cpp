@@ -27,21 +27,21 @@ void triangle(Array<T> &out, const Array<T> &in)
     dim4 ost = out.strides();
     dim4 ist = in.strides();
 
-    for(dim_type ow = 0; ow < odm[3]; ow++) {
-        const dim_type oW = ow * ost[3];
-        const dim_type iW = ow * ist[3];
+    for(dim_t ow = 0; ow < odm[3]; ow++) {
+        const dim_t oW = ow * ost[3];
+        const dim_t iW = ow * ist[3];
 
-        for(dim_type oz = 0; oz < odm[2]; oz++) {
-            const dim_type oZW = oW + oz * ost[2];
-            const dim_type iZW = iW + oz * ist[2];
+        for(dim_t oz = 0; oz < odm[2]; oz++) {
+            const dim_t oZW = oW + oz * ost[2];
+            const dim_t iZW = iW + oz * ist[2];
 
-            for(dim_type oy = 0; oy < odm[1]; oy++) {
-                const dim_type oYZW = oZW + oy * ost[1];
-                const dim_type iYZW = iZW + oy * ist[1];
+            for(dim_t oy = 0; oy < odm[1]; oy++) {
+                const dim_t oYZW = oZW + oy * ost[1];
+                const dim_t iYZW = iZW + oy * ist[1];
 
-                for(dim_type ox = 0; ox < odm[0]; ox++) {
-                    const dim_type oMem = oYZW + ox;
-                    const dim_type iMem = iYZW + ox;
+                for(dim_t ox = 0; ox < odm[0]; ox++) {
+                    const dim_t oMem = oYZW + ox;
+                    const dim_t iMem = iYZW + ox;
 
                     bool cond = is_upper ? (oy >= ox) : (oy <= ox);
                     if(cond) {

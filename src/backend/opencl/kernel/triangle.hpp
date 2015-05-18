@@ -72,15 +72,15 @@ void triangle(Param out, const Param in)
 
         NDRange local(TX, TY);
 
-        dim_type groups_x = divup(out.info.dims[0], TILEX);
-        dim_type groups_y = divup(out.info.dims[1], TILEY);
+        int groups_x = divup(out.info.dims[0], TILEX);
+        int groups_y = divup(out.info.dims[1], TILEY);
 
         NDRange global(groups_x * out.info.dims[2] * local[0],
                        groups_y * out.info.dims[3] * local[1]);
 
         auto triangleOp = make_kernel<Buffer, KParam,
                                       const Buffer, KParam,
-                                      const dim_type, const dim_type> (*trgKernels[device]);
+                                      const int, const int> (*trgKernels[device]);
 
         triangleOp(EnqueueArgs(getQueue(), global, local),
                     *out.data, out.info, *in.data, in.info, groups_x, groups_y);

@@ -31,10 +31,10 @@ namespace opencl
 {
     namespace kernel
     {
-        static const dim_type TX = 16;
-        static const dim_type TY = 16;
+        static const int TX = 16;
+        static const int TY = 16;
 
-        static const dim_type THREADS = 256;
+        static const int THREADS = 256;
 
         ///////////////////////////////////////////////////////////////////////////
         // Wrapper functions
@@ -82,11 +82,11 @@ namespace opencl
 
 
                 auto approx1Op = make_kernel<Buffer, const KParam, const Buffer, const KParam,
-                                       const Buffer, const KParam, const float, const dim_type>
+                                       const Buffer, const KParam, const float, const int>
                                       (*approxKernels[device]);
 
                 NDRange local(THREADS, 1, 1);
-                dim_type blocksPerMat = divup(out.info.dims[0], local[0]);
+                int blocksPerMat = divup(out.info.dims[0], local[0]);
                 NDRange global(blocksPerMat * local[0] * out.info.dims[1],
                                out.info.dims[2] * out.info.dims[3] * local[0],
                                1);
@@ -145,12 +145,12 @@ namespace opencl
 
                 auto approx2Op = make_kernel<Buffer, const KParam, const Buffer, const KParam,
                                        const Buffer, const KParam, const Buffer, const KParam,
-                                       const float, const dim_type, const dim_type>
+                                       const float, const int, const int>
                                        (*approxKernels[device]);
 
                 NDRange local(TX, TY, 1);
-                dim_type blocksPerMatX = divup(out.info.dims[0], local[0]);
-                dim_type blocksPerMatY = divup(out.info.dims[1], local[1]);
+                int blocksPerMatX = divup(out.info.dims[0], local[0]);
+                int blocksPerMatY = divup(out.info.dims[1], local[1]);
                 NDRange global(blocksPerMatX * local[0] * out.info.dims[2],
                                blocksPerMatY * local[1] * out.info.dims[3],
                                1);

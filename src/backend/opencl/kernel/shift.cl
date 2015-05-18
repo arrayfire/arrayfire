@@ -7,24 +7,24 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-static inline dim_type simple_mod(const dim_type i, const dim_type dim)
+static inline int simple_mod(const int i, const int dim)
 {
     return (i < dim) ? i : (i - dim);
 }
 
 __kernel
 void shift_kernel(__global T *out, __global const T *in, const KParam op, const KParam ip,
-                  const dim_type d0, const dim_type d1, const dim_type d2, const dim_type d3,
-                  const dim_type blocksPerMatX, const dim_type blocksPerMatY)
+                  const int d0, const int d1, const int d2, const int d3,
+                  const int blocksPerMatX, const int blocksPerMatY)
 {
-    const dim_type oz = get_group_id(0) / blocksPerMatX;
-    const dim_type ow = get_group_id(1) / blocksPerMatY;
+    const int oz = get_group_id(0) / blocksPerMatX;
+    const int ow = get_group_id(1) / blocksPerMatY;
 
-    const dim_type blockIdx_x = get_group_id(0) - oz * blocksPerMatX;
-    const dim_type blockIdx_y = get_group_id(1) - ow * blocksPerMatY;
+    const int blockIdx_x = get_group_id(0) - oz * blocksPerMatX;
+    const int blockIdx_y = get_group_id(1) - ow * blocksPerMatY;
 
-    const dim_type xx = get_local_id(0) + blockIdx_x * get_local_size(0);
-    const dim_type yy = get_local_id(1) + blockIdx_y * get_local_size(1);
+    const int xx = get_local_id(0) + blockIdx_x * get_local_size(0);
+    const int yy = get_local_id(1) + blockIdx_y * get_local_size(1);
 
     if(xx >= op.dims[0] ||
        yy >= op.dims[1] ||
@@ -32,22 +32,22 @@ void shift_kernel(__global T *out, __global const T *in, const KParam op, const 
        ow >= op.dims[3])
         return;
 
-    const dim_type incy = blocksPerMatY * get_local_size(1);
-    const dim_type incx = blocksPerMatX * get_local_size(0);
+    const int incy = blocksPerMatY * get_local_size(1);
+    const int incx = blocksPerMatX * get_local_size(0);
 
-    const dim_type iw = simple_mod((ow + d3), op.dims[3]);
-    const dim_type iz = simple_mod((oz + d2), op.dims[2]);
+    const int iw = simple_mod((ow + d3), op.dims[3]);
+    const int iz = simple_mod((oz + d2), op.dims[2]);
 
-    const dim_type o_off   = ow * op.strides[3] + oz * op.strides[2];
-    const dim_type i_off   = iw * ip.strides[3] + iz * ip.strides[2] + ip.offset;
+    const int o_off   = ow * op.strides[3] + oz * op.strides[2];
+    const int i_off   = iw * ip.strides[3] + iz * ip.strides[2] + ip.offset;
 
-    for(dim_type oy = yy; oy < op.dims[1]; oy += incy) {
-        const dim_type iy = simple_mod((oy + d1), op.dims[1]);
-        for(dim_type ox = xx; ox < op.dims[0]; ox += incx) {
-            const dim_type ix = simple_mod((ox + d0), op.dims[0]);
+    for(int oy = yy; oy < op.dims[1]; oy += incy) {
+        const int iy = simple_mod((oy + d1), op.dims[1]);
+        for(int ox = xx; ox < op.dims[0]; ox += incx) {
+            const int ix = simple_mod((ox + d0), op.dims[0]);
 
-            const dim_type oIdx = o_off + oy * op.strides[1] + ox;
-            const dim_type iIdx = i_off + iy * ip.strides[1] + ix;
+            const int oIdx = o_off + oy * op.strides[1] + ox;
+            const int iIdx = i_off + iy * ip.strides[1] + ix;
 
             out[oIdx] = in[iIdx];
         }

@@ -21,14 +21,14 @@ void conv1(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt)
     size_t se_size = filt.info.dims[0] * sizeof(aT);
     p.impulse = bufferAlloc(se_size);
 
-    for (dim_type b3=0; b3<filt.info.dims[3]; ++b3) {
-        dim_type f3Off = b3 * filt.info.strides[3];
+    for (int b3=0; b3<filt.info.dims[3]; ++b3) {
+        int f3Off = b3 * filt.info.strides[3];
 
-        for (dim_type b2=0; b2<filt.info.dims[2]; ++b2) {
-            dim_type f2Off = b2 * filt.info.strides[2];
+        for (int b2=0; b2<filt.info.dims[2]; ++b2) {
+            int f2Off = b2 * filt.info.strides[2];
 
-            for (dim_type b1=0; b1<filt.info.dims[1]; ++b1) {
-                dim_type f1Off = b1 * filt.info.strides[1];
+            for (int b1=0; b1<filt.info.dims[1]; ++b1) {
+                int f1Off = b1 * filt.info.strides[1];
 
                 // FIXME: if the filter array is strided, direct copy of symbols
                 // might cause issues

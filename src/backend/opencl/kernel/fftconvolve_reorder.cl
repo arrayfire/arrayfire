@@ -14,7 +14,7 @@ void reorder_output(
     __global const CONVT *d_in,
     KParam                iInfo,
     KParam                fInfo,
-    const dim_type        half_di0,
+    const int        half_di0,
     const int             baseDim)
 {
     const int t = get_global_id(0);
@@ -24,23 +24,23 @@ void reorder_output(
     if (t >= tMax)
         return;
 
-    const dim_type do0 = oInfo.dims[0];
-    const dim_type do1 = oInfo.dims[1];
-    const dim_type do2 = oInfo.dims[2];
+    const int do0 = oInfo.dims[0];
+    const int do1 = oInfo.dims[1];
+    const int do2 = oInfo.dims[2];
 
-    const dim_type so1 = oInfo.strides[1];
-    const dim_type so2 = oInfo.strides[2];
-    const dim_type so3 = oInfo.strides[3];
+    const int so1 = oInfo.strides[1];
+    const int so2 = oInfo.strides[2];
+    const int so3 = oInfo.strides[3];
 
     // Treating complex input array as real-only array,
     // thus, multiply dimension 0 and strides by 2
-    const dim_type di0 = iInfo.dims[0] * 2;
-    const dim_type di1 = iInfo.dims[1];
-    const dim_type di2 = iInfo.dims[2];
+    const int di0 = iInfo.dims[0] * 2;
+    const int di1 = iInfo.dims[1];
+    const int di2 = iInfo.dims[2];
 
-    const dim_type si1 = iInfo.strides[1] * 2;
-    const dim_type si2 = iInfo.strides[2] * 2;
-    const dim_type si3 = iInfo.strides[3] * 2;
+    const int si1 = iInfo.strides[1] * 2;
+    const int si2 = iInfo.strides[2] * 2;
+    const int si3 = iInfo.strides[3] * 2;
 
     const int to0 = t % so1;
     const int to1 = (t / so1) % do1;

@@ -58,25 +58,25 @@ void lu_split(Array<T> &lower, Array<T> &upper, const Array<T> &in)
     dim4 ust = upper.strides();
     dim4 ist = in.strides();
 
-    for(dim_type ow = 0; ow < idm[3]; ow++) {
-        const dim_type lW = ow * lst[3];
-        const dim_type uW = ow * ust[3];
-        const dim_type iW = ow * ist[3];
+    for(dim_t ow = 0; ow < idm[3]; ow++) {
+        const dim_t lW = ow * lst[3];
+        const dim_t uW = ow * ust[3];
+        const dim_t iW = ow * ist[3];
 
-        for(dim_type oz = 0; oz < idm[2]; oz++) {
-            const dim_type lZW = lW + oz * lst[2];
-            const dim_type uZW = uW + oz * ust[2];
-            const dim_type iZW = iW + oz * ist[2];
+        for(dim_t oz = 0; oz < idm[2]; oz++) {
+            const dim_t lZW = lW + oz * lst[2];
+            const dim_t uZW = uW + oz * ust[2];
+            const dim_t iZW = iW + oz * ist[2];
 
-            for(dim_type oy = 0; oy < idm[1]; oy++) {
-                const dim_type lYZW = lZW + oy * lst[1];
-                const dim_type uYZW = uZW + oy * ust[1];
-                const dim_type iYZW = iZW + oy * ist[1];
+            for(dim_t oy = 0; oy < idm[1]; oy++) {
+                const dim_t lYZW = lZW + oy * lst[1];
+                const dim_t uYZW = uZW + oy * ust[1];
+                const dim_t iYZW = iZW + oy * ist[1];
 
-                for(dim_type ox = 0; ox < idm[0]; ox++) {
-                    const dim_type lMem = lYZW + ox;
-                    const dim_type uMem = uYZW + ox;
-                    const dim_type iMem = iYZW + ox;
+                for(dim_t ox = 0; ox < idm[0]; ox++) {
+                    const dim_t lMem = lYZW + ox;
+                    const dim_t uMem = uYZW + ox;
+                    const dim_t iMem = iYZW + ox;
                     if(ox > oy) {
                         if(oy < ldm[1])
                             l[lMem] = i[iMem];
@@ -104,8 +104,8 @@ void convertPivot(Array<int> &pivot, int out_sz)
     Array<int> p = range<int>(dim4(out_sz), 0);
     int *d_pi = pivot.get();
     int *d_po = p.get();
-    dim_type d0 = pivot.dims()[0];
-    for(int j = 0; j < d0; j++) {
+    dim_t d0 = pivot.dims()[0];
+    for(int j = 0; j < (int)d0; j++) {
         // 1 indexed in pivot
         std::swap(d_po[j], d_po[d_pi[j] - 1]);
     }

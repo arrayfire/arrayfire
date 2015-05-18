@@ -20,8 +20,8 @@ using af::dim4;
 namespace opencl
 {
 
-template<typename T, typename accT, dim_type cDim, bool expand>
-void conv2Helper(Array<T>& out, const Array<T>& sig, const Array<accT>& filt, dim_type f)
+template<typename T, typename accT, dim_t cDim, bool expand>
+void conv2Helper(Array<T>& out, const Array<T>& sig, const Array<accT>& filt, dim_t f)
 {
     switch(f) {
         case  2: kernel::convolve2<T, accT, cDim, expand,  2>(out, sig, filt); break;
@@ -66,8 +66,8 @@ Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter, Array<ac
         OPENCL_NOT_SUPPORTED();
     }
 
-    const dim_type cflen = (dim_type)c_filter.elements();
-    const dim_type rflen = (dim_type)r_filter.elements();
+    const dim_t cflen = (dim_t)c_filter.elements();
+    const dim_t rflen = (dim_t)r_filter.elements();
 
     if ((cflen > kernel::MAX_SCONV_FILTER_LEN) ||
             (rflen > kernel::MAX_SCONV_FILTER_LEN)) {

@@ -26,15 +26,15 @@ namespace af
     */
 #define CONSTANT(TYPE, TY)                                              \
     AFAPI array constant(TYPE val, const dim4 &dims, const dtype ty=TY); \
-    AFAPI array constant(TYPE val, const dim_type d0, const dtype ty=TY); \
-    AFAPI array constant(TYPE val, const dim_type d0,                   \
-                         const dim_type d1, const dtype ty=TY);         \
-    AFAPI array constant(TYPE val, const dim_type d0,                   \
-                         const dim_type d1, const dim_type d2,          \
+    AFAPI array constant(TYPE val, const dim_t d0, const dtype ty=TY); \
+    AFAPI array constant(TYPE val, const dim_t d0,                   \
+                         const dim_t d1, const dtype ty=TY);         \
+    AFAPI array constant(TYPE val, const dim_t d0,                   \
+                         const dim_t d1, const dim_t d2,          \
                          const dtype ty=TY);                            \
-    AFAPI array constant(TYPE val, const dim_type d0,                   \
-                         const dim_type d1, const dim_type d2,          \
-                         const dim_type d3, const dtype ty=TY);         \
+    AFAPI array constant(TYPE val, const dim_t d0,                   \
+                         const dim_t d1, const dim_t d2,          \
+                         const dim_t d3, const dtype ty=TY);         \
 
     CONSTANT(double             , f32)
     CONSTANT(float              , f32)
@@ -69,14 +69,14 @@ namespace af
     */
 
     AFAPI array randu(const dim4 &dims, const dtype ty=f32);
-    AFAPI array randu(const dim_type d0, const dtype ty=f32);
-    AFAPI array randu(const dim_type d0,
-                      const dim_type d1, const dtype ty=f32);
-    AFAPI array randu(const dim_type d0,
-                      const dim_type d1, const dim_type d2, const dtype ty=f32);
-    AFAPI array randu(const dim_type d0,
-                      const dim_type d1, const dim_type d2,
-                      const dim_type d3, const dtype ty=f32);
+    AFAPI array randu(const dim_t d0, const dtype ty=f32);
+    AFAPI array randu(const dim_t d0,
+                      const dim_t d1, const dtype ty=f32);
+    AFAPI array randu(const dim_t d0,
+                      const dim_t d1, const dim_t d2, const dtype ty=f32);
+    AFAPI array randu(const dim_t d0,
+                      const dim_t d1, const dim_t d2,
+                      const dim_t d3, const dtype ty=f32);
 
     /**
        @}
@@ -94,14 +94,14 @@ namespace af
        \ingroup arrayfire_func
     */
     AFAPI array randn(const dim4 &dims, const dtype ty=f32);
-    AFAPI array randn(const dim_type d0, const dtype ty=f32);
-    AFAPI array randn(const dim_type d0,
-                      const dim_type d1, const dtype ty=f32);
-    AFAPI array randn(const dim_type d0,
-                      const dim_type d1, const dim_type d2, const dtype ty=f32);
-    AFAPI array randn(const dim_type d0,
-                      const dim_type d1, const dim_type d2,
-                      const dim_type d3, const dtype ty=f32);
+    AFAPI array randn(const dim_t d0, const dtype ty=f32);
+    AFAPI array randn(const dim_t d0,
+                      const dim_t d1, const dtype ty=f32);
+    AFAPI array randn(const dim_t d0,
+                      const dim_t d1, const dim_t d2, const dtype ty=f32);
+    AFAPI array randn(const dim_t d0,
+                      const dim_t d1, const dim_t d2,
+                      const dim_t d3, const dtype ty=f32);
 
     /**
        @}
@@ -142,14 +142,14 @@ namespace af
        \ingroup arrayfire_func
     */
     AFAPI array identity(const dim4 &dims, const dtype ty=f32);
-    AFAPI array identity(const dim_type d0, const dtype ty=f32);
-    AFAPI array identity(const dim_type d0,
-                         const dim_type d1, const dtype ty=f32);
-    AFAPI array identity(const dim_type d0,
-                         const dim_type d1, const dim_type d2, const dtype ty=f32);
-    AFAPI array identity(const dim_type d0,
-                         const dim_type d1, const dim_type d2,
-                         const dim_type d3, const dtype ty=f32);
+    AFAPI array identity(const dim_t d0, const dtype ty=f32);
+    AFAPI array identity(const dim_t d0,
+                         const dim_t d1, const dtype ty=f32);
+    AFAPI array identity(const dim_t d0,
+                         const dim_t d1, const dim_t d2, const dtype ty=f32);
+    AFAPI array identity(const dim_t d0,
+                         const dim_t d1, const dim_t d2,
+                         const dim_t d3, const dtype ty=f32);
     /**
        @}
     */
@@ -164,8 +164,8 @@ namespace af
        \ingroup arrayfire_func
     */
     AFAPI array range(const dim4 &dims, const int seq_dim = -1, const dtype ty=f32);
-    AFAPI array range(const dim_type d0, const dim_type d1 = 1, const dim_type d2 = 1,
-                      const dim_type d3 = 1, const int seq_dim = -1, const dtype ty=f32);
+    AFAPI array range(const dim_t d0, const dim_t d1 = 1, const dim_t d2 = 1,
+                      const dim_t d3 = 1, const int seq_dim = -1, const dtype ty=f32);
 
     /**
        @}
@@ -311,11 +311,11 @@ namespace af
        \ingroup manip_mat
        \ingroup arrayfire_func
     */
-    AFAPI array moddims(const array& in, const unsigned ndims, const dim_type * const dims);
+    AFAPI array moddims(const array& in, const unsigned ndims, const dim_t * const dims);
 
     AFAPI array moddims(const array& in, const dim4& dims);
 
-    AFAPI array moddims(const array& in, const dim_type d0, const dim_type d1=1, const dim_type d2=1, const dim_type d3=1);
+    AFAPI array moddims(const array& in, const dim_t d0, const dim_t d1=1, const dim_t d2=1, const dim_t d3=1);
     /**
        @}
     */
@@ -390,14 +390,14 @@ extern "C" {
        \ingroup arrayfire_func
        \ingroup data_mat
     */
-    AFAPI af_err af_constant(af_array *arr, const double val, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+    AFAPI af_err af_constant(af_array *arr, const double val, const unsigned ndims, const dim_t * const dims, const af_dtype type);
 
     AFAPI af_err af_constant_complex(af_array *arr, const double real, const double imag,
-                                     const unsigned ndims, const dim_type * const dims, const af_dtype type);
+                                     const unsigned ndims, const dim_t * const dims, const af_dtype type);
 
-    AFAPI af_err af_constant_long (af_array *arr, const  intl val, const unsigned ndims, const dim_type * const dims);
+    AFAPI af_err af_constant_long (af_array *arr, const  intl val, const unsigned ndims, const dim_t * const dims);
 
-    AFAPI af_err af_constant_ulong(af_array *arr, const uintl val, const unsigned ndims, const dim_type * const dims);
+    AFAPI af_err af_constant_ulong(af_array *arr, const uintl val, const unsigned ndims, const dim_t * const dims);
     /**
        @}
     */
@@ -411,7 +411,7 @@ extern "C" {
        \ingroup data_mat
        \ingroup arrayfire_func
     */
-    AFAPI af_err af_range(af_array *arr, const unsigned ndims, const dim_type * const dims,
+    AFAPI af_err af_range(af_array *arr, const unsigned ndims, const dim_t * const dims,
                           const int seq_dim, const af_dtype type);
     /**
        @}
@@ -426,8 +426,8 @@ extern "C" {
        \ingroup data_mat
        \ingroup arrafire_func
     */
-    AFAPI af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const dims,
-                         const unsigned t_ndims, const dim_type * const tdims, const af_dtype type);
+    AFAPI af_err af_iota(af_array *result, const unsigned ndims, const dim_t * const dims,
+                         const unsigned t_ndims, const dim_t * const tdims, const af_dtype type);
     /**
        @}
     */
@@ -443,7 +443,7 @@ extern "C" {
        \ingroup data_mat
        \ingroup arrayfire_func
     */
-    AFAPI af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+    AFAPI af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type);
 
     /**
        @}
@@ -460,7 +460,7 @@ extern "C" {
        \ingroup data_mat
        \ingroup arrayfire_func
     */
-    AFAPI af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+    AFAPI af_err af_randn(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type);
     /**
        @}
     */
@@ -499,7 +499,7 @@ extern "C" {
        \ingroup data_mat
        \ingroup arrayfire_func
     */
-    AFAPI af_err af_identity(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+    AFAPI af_err af_identity(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type);
     /**
        @}
     */
@@ -546,7 +546,7 @@ extern "C" {
     /**
        \ingroup manip_func_moddims
     */
-    AFAPI af_err af_moddims(af_array *out, const af_array in, const unsigned ndims, const dim_type * const dims);
+    AFAPI af_err af_moddims(af_array *out, const af_array in, const unsigned ndims, const dim_t * const dims);
 
     /**
        \ingroup manip_func_flat

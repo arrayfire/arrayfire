@@ -26,19 +26,19 @@ namespace cuda
         template<typename T, bool is_upper>
         __global__
         void triangle_kernel(Param<T> r, CParam<T> in,
-                             const dim_type blocksPerMatX, const dim_type blocksPerMatY)
+                             const int blocksPerMatX, const int blocksPerMatY)
         {
-            const dim_type oz = blockIdx.x / blocksPerMatX;
-            const dim_type ow = blockIdx.y / blocksPerMatY;
+            const int oz = blockIdx.x / blocksPerMatX;
+            const int ow = blockIdx.y / blocksPerMatY;
 
-            const dim_type blockIdx_x = blockIdx.x - oz * blocksPerMatX;
-            const dim_type blockIdx_y = blockIdx.y - ow * blocksPerMatY;
+            const int blockIdx_x = blockIdx.x - oz * blocksPerMatX;
+            const int blockIdx_y = blockIdx.y - ow * blocksPerMatY;
 
-            const dim_type xx = threadIdx.x + blockIdx_x * blockDim.x;
-            const dim_type yy = threadIdx.y + blockIdx_y * blockDim.y;
+            const int xx = threadIdx.x + blockIdx_x * blockDim.x;
+            const int yy = threadIdx.y + blockIdx_y * blockDim.y;
 
-            const dim_type incy = blocksPerMatY * blockDim.y;
-            const dim_type incx = blocksPerMatX * blockDim.x;
+            const int incy = blocksPerMatY * blockDim.y;
+            const int incx = blocksPerMatX * blockDim.x;
 
             T *d_r = r.ptr;
             const T *d_i = in.ptr;
@@ -47,11 +47,11 @@ namespace cuda
                 d_i = d_i + oz * in.strides[2]    + ow * in.strides[3];
                 d_r = d_r + oz * r.strides[2] + ow * r.strides[3];
 
-                for (dim_type oy = yy; oy < r.dims[1]; oy += incy) {
+                for (int oy = yy; oy < r.dims[1]; oy += incy) {
                     const T *Yd_i = d_i + oy * in.strides[1];
                     T *Yd_r = d_r +  oy * r.strides[1];
 
-                    for (dim_type ox = xx; ox < r.dims[0]; ox += incx) {
+                    for (int ox = xx; ox < r.dims[0]; ox += incx) {
 
                         bool cond = is_upper ? (oy >= ox) : (oy <= ox);
                         if(cond) {
@@ -72,8 +72,8 @@ namespace cuda
         {
             dim3 threads(TX, TY, 1);
 
-            dim_type blocksPerMatX = divup(r.dims[0], TILEX);
-            dim_type blocksPerMatY = divup(r.dims[1], TILEY);
+            int blocksPerMatX = divup(r.dims[0], TILEX);
+            int blocksPerMatY = divup(r.dims[1], TILEY);
             dim3 blocks(blocksPerMatX * r.dims[2],
                         blocksPerMatY * r.dims[3],
                         1);

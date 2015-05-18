@@ -23,7 +23,7 @@ namespace cuda
 namespace kernel
 {
 
-static const dim_type THREADS = 256;
+static const int THREADS = 256;
 
 template<typename To, typename Ti>
 __global__ void packData(
@@ -39,22 +39,22 @@ __global__ void packData(
     if (t >= tMax)
         return;
 
-    const dim_type do1 = out.dims[1];
-    const dim_type do2 = out.dims[2];
-    const dim_type so1 = out.strides[1];
-    const dim_type so2 = out.strides[2];
-    const dim_type so3 = out.strides[3];
+    const int do1 = out.dims[1];
+    const int do2 = out.dims[2];
+    const int so1 = out.strides[1];
+    const int so2 = out.strides[2];
+    const int so3 = out.strides[3];
 
     const int to0 = t % so1;
     const int to1 = (t / so1) % do1;
     const int to2 = (t / so2) % do2;
     const int to3 = t / so3;
 
-    const dim_type di1 = in.dims[1];
-    const dim_type di2 = in.dims[2];
-    const dim_type si1 = in.strides[1];
-    const dim_type si2 = in.strides[2];
-    const dim_type si3 = in.strides[3];
+    const int di1 = in.dims[1];
+    const int di2 = in.dims[2];
+    const int si1 = in.strides[1];
+    const int si2 = in.strides[2];
+    const int si3 = in.strides[3];
 
     const int ti0 = to0;
     const int ti1 = to1 * si1;
@@ -91,24 +91,24 @@ __global__ void padArray(
     if (t >= tMax)
         return;
 
-    const dim_type do1 = out.dims[1];
-    const dim_type do2 = out.dims[2];
-    const dim_type so1 = out.strides[1];
-    const dim_type so2 = out.strides[2];
-    const dim_type so3 = out.strides[3];
+    const int do1 = out.dims[1];
+    const int do2 = out.dims[2];
+    const int so1 = out.strides[1];
+    const int so2 = out.strides[2];
+    const int so3 = out.strides[3];
 
     const int to0 = t % so1;
     const int to1 = (t / so1) % do1;
     const int to2 = (t / so2) % do2;
     const int to3 = (t / so3);
 
-    const dim_type di0 = in.dims[0];
-    const dim_type di1 = in.dims[1];
-    const dim_type di2 = in.dims[2];
-    const dim_type di3 = in.dims[3];
-    const dim_type si1 = in.strides[1];
-    const dim_type si2 = in.strides[2];
-    const dim_type si3 = in.strides[3];
+    const int di0 = in.dims[0];
+    const int di1 = in.dims[1];
+    const int di2 = in.dims[2];
+    const int di3 = in.dims[3];
+    const int si1 = in.strides[1];
+    const int si2 = in.strides[2];
+    const int si3 = in.strides[3];
 
     const int ti0 = to0;
     const int ti1 = to1 * si1;
@@ -136,7 +136,7 @@ __global__ void complexMultiply(
     Param<convT> out,
     Param<convT> in1,
     Param<convT> in2,
-    const dim_type nelem)
+    const int nelem)
 {
     const int t = blockDim.x * blockIdx.x + threadIdx.x;
 
@@ -193,15 +193,15 @@ __global__ void reorderOutput(
     if (t >= tMax)
         return;
 
-    const dim_type do1 = out.dims[1];
-    const dim_type do2 = out.dims[2];
-    const dim_type so1 = out.strides[1];
-    const dim_type so2 = out.strides[2];
-    const dim_type so3 = out.strides[3];
+    const int do1 = out.dims[1];
+    const int do2 = out.dims[2];
+    const int so1 = out.strides[1];
+    const int so2 = out.strides[2];
+    const int so3 = out.strides[3];
 
-    const dim_type si1 = in.strides[1];
-    const dim_type si2 = in.strides[2];
-    const dim_type si3 = in.strides[3];
+    const int si1 = in.strides[1];
+    const int si2 = in.strides[2];
+    const int si3 = in.strides[3];
 
     const int to0 = t % so1;
     const int to1 = (t / so1) % do1;
@@ -258,15 +258,15 @@ void packDataHelper(Param<convT> sig_packed,
                     Param<convT> filter_packed,
                     CParam<T> sig,
                     CParam<T> filter,
-                    const dim_type baseDim)
+                    const int baseDim)
 {
-    dim_type *sd = sig.dims;
+    dim_t *sd = sig.dims;
 
-    dim_type sig_packed_elem = sig_packed.strides[3] * sig_packed.dims[3];
-    dim_type filter_packed_elem = filter_packed.strides[3] * filter_packed.dims[3];
+    int sig_packed_elem = sig_packed.strides[3] * sig_packed.dims[3];
+    int filter_packed_elem = filter_packed.strides[3] * filter_packed.dims[3];
 
     // Number of packed complex elements in dimension 0
-    dim_type sig_half_d0 = divup(sd[0], 2);
+    int sig_half_d0 = divup(sd[0], 2);
     bool sig_half_d0_odd = (sd[0] % 2 == 1);
 
     dim3 threads(THREADS);
@@ -292,13 +292,13 @@ void complexMultiplyHelper(Param<T> out,
                            CParam<T> filter,
                            ConvolveBatchKind kind)
 {
-    dim_type sig_packed_elem = sig_packed.strides[3] * sig_packed.dims[3];
-    dim_type filter_packed_elem = filter_packed.strides[3] * filter_packed.dims[3];
+    int sig_packed_elem = sig_packed.strides[3] * sig_packed.dims[3];
+    int filter_packed_elem = filter_packed.strides[3] * filter_packed.dims[3];
 
     dim3 threads(THREADS);
     dim3 blocks(divup(sig_packed_elem / 2, threads.x));
 
-    dim_type mul_elem = (sig_packed_elem < filter_packed_elem) ?
+    int mul_elem = (sig_packed_elem < filter_packed_elem) ?
                         filter_packed_elem : sig_packed_elem;
     blocks = dim3(divup(mul_elem, threads.x));
 
@@ -324,22 +324,22 @@ void complexMultiplyHelper(Param<T> out,
     POST_LAUNCH_CHECK();
 }
 
-template<typename T, typename convT, bool roundOut, dim_type baseDim, bool expand>
+template<typename T, typename convT, bool roundOut, int baseDim, bool expand>
 void reorderOutputHelper(Param<T> out,
                          Param<convT> packed,
                          CParam<T> sig,
                          CParam<T> filter,
                          ConvolveBatchKind kind)
 {
-    dim_type *sd = sig.dims;
-    dim_type fftScale = 1;
+    dim_t *sd = sig.dims;
+    int fftScale = 1;
 
     // Calculate the scale by which to divide cuFFT results
-    for (dim_type k = 0; k < baseDim; k++)
+    for (int k = 0; k < baseDim; k++)
         fftScale *= packed.dims[k];
 
     // Number of packed complex elements in dimension 0
-    dim_type sig_half_d0 = divup(sd[0], 2);
+    int sig_half_d0 = divup(sd[0], 2);
 
     dim3 threads(THREADS);
     dim3 blocks(divup(out.strides[3] * out.dims[3], threads.x));

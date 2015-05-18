@@ -10,19 +10,19 @@
 __kernel
 void triangle_kernel(__global T *rptr, KParam rinfo,
                      const __global T *iptr, KParam iinfo,
-                     const dim_type groups_x, const dim_type groups_y)
+                     const int groups_x, const int groups_y)
 {
-    const dim_type oz = get_group_id(0) / groups_x;
-    const dim_type ow = get_group_id(1) / groups_y;
+    const int oz = get_group_id(0) / groups_x;
+    const int ow = get_group_id(1) / groups_y;
 
-    const dim_type groupId_0 = get_group_id(0) - oz * groups_x;
-    const dim_type groupId_1 = get_group_id(1) - ow * groups_y;
+    const int groupId_0 = get_group_id(0) - oz * groups_x;
+    const int groupId_1 = get_group_id(1) - ow * groups_y;
 
-    const dim_type xx = get_local_id(0) + groupId_0 * get_local_size(0);
-    const dim_type yy = get_local_id(1) + groupId_1 * get_local_size(1);
+    const int xx = get_local_id(0) + groupId_0 * get_local_size(0);
+    const int yy = get_local_id(1) + groupId_1 * get_local_size(1);
 
-    const dim_type incy = groups_y * get_local_size(1);
-    const dim_type incx = groups_x * get_local_size(0);
+    const int incy = groups_y * get_local_size(1);
+    const int incx = groups_x * get_local_size(0);
 
     __global T *d_r = rptr;
     const __global T *d_i = iptr;
@@ -31,11 +31,11 @@ void triangle_kernel(__global T *rptr, KParam rinfo,
         d_i = d_i + oz * iinfo.strides[2] + ow * iinfo.strides[3];
         d_r = d_r + oz * rinfo.strides[2] + ow * rinfo.strides[3];
 
-        for (dim_type oy = yy; oy < rinfo.dims[1]; oy += incy) {
+        for (int oy = yy; oy < rinfo.dims[1]; oy += incy) {
             const __global T *Yd_i = d_i + oy * iinfo.strides[1];
             __global T *Yd_r = d_r +  oy * rinfo.strides[1];
 
-            for (dim_type ox = xx; ox < rinfo.dims[0]; ox += incx) {
+            for (int ox = xx; ox < rinfo.dims[0]; ox += incx) {
 
                 bool cond = is_upper ? (oy >= ox) : (oy <= ox);
                 if(cond) {

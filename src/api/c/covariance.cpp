@@ -31,7 +31,7 @@ static af_array cov(const af_array& X, const af_array& Y, const bool isbiased)
     Array<cType> yArr = cast<cType>(getArray<T>(Y));
 
     dim4 xDims = xArr.dims();
-    dim_type N = isbiased ? xDims[0] : xDims[0]-1;
+    dim_t N = isbiased ? xDims[0] : xDims[0]-1;
 
     Array<cType> xmArr = createValueArray<cType>(xDims, mean<cType>(xArr));
     Array<cType> ymArr = createValueArray<cType>(xDims, mean<cType>(yArr));

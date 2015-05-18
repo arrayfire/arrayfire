@@ -29,9 +29,9 @@ namespace cuda
 namespace kernel
 {
 
-static const dim_type THREADS   = 256;
-static const dim_type THREADS_X = 16;
-static const dim_type THREADS_Y = 16;
+static const int THREADS   = 256;
+static const int THREADS_X = 16;
+static const int THREADS_Y = 16;
 
 static const float PI_VAL = 3.14159265358979323846f;
 
@@ -352,7 +352,7 @@ void orb(unsigned* out_feat,
             gauss_filter.strides[k] = gauss_filter.dims[k - 1] * gauss_filter.strides[k - 1];
         }
 
-        dim_type gauss_elem = gauss_filter.strides[3] * gauss_filter.dims[3];
+        int gauss_elem = gauss_filter.strides[3] * gauss_filter.dims[3];
         gauss_filter.ptr = memAlloc<convAccT>(gauss_elem);
         CUDA_CHECK(cudaMemcpy(gauss_filter.ptr, h_gauss.get(), gauss_elem * sizeof(convAccT), cudaMemcpyHostToDevice));
     }
@@ -389,7 +389,7 @@ void orb(unsigned* out_feat,
             harris_idx.strides[k] = harris_idx.dims[k - 1] * harris_idx.strides[k - 1];
         }
 
-        dim_type sort_elem = harris_sorted.strides[3] * harris_sorted.dims[3];
+        int sort_elem = harris_sorted.strides[3] * harris_sorted.dims[3];
         harris_sorted.ptr = d_score_harris;
         harris_idx.ptr = memAlloc<unsigned>(sort_elem);
 
@@ -435,7 +435,7 @@ void orb(unsigned* out_feat,
                 lvl_filt.strides[k] = img_pyr[i].strides[k];
             }
 
-            dim_type lvl_elem = img_pyr[i].strides[3] * img_pyr[i].dims[3];
+            int lvl_elem = img_pyr[i].strides[3] * img_pyr[i].dims[3];
             lvl_tmp.ptr = memAlloc<T>(lvl_elem);
             lvl_filt.ptr = memAlloc<T>(lvl_elem);
 

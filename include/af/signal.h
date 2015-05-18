@@ -58,7 +58,7 @@ AFAPI array approx2(const array &in, const array &pos0, const array &pos1,
 
    \ingroup signal_func_fft
  */
-AFAPI array fft(const array& in, const double norm_factor, const dim_type odim0=0);
+AFAPI array fftNorm(const array& in, const double norm_factor, const dim_t odim0=0);
 
 /**
    C++ Interface for fast fourier transform on two dimensional data
@@ -71,7 +71,7 @@ AFAPI array fft(const array& in, const double norm_factor, const dim_type odim0=
 
    \ingroup signal_func_fft2
  */
-AFAPI array fft2(const array& in, const double norm_factor, const dim_type odim0=0, const dim_type odim1=0);
+AFAPI array fft2Norm(const array& in, const double norm_factor, const dim_t odim0=0, const dim_t odim1=0);
 
 /**
    C++ Interface for fast fourier transform on three dimensional data
@@ -85,7 +85,7 @@ AFAPI array fft2(const array& in, const double norm_factor, const dim_type odim0
 
    \ingroup signal_func_fft3
  */
-AFAPI array fft3(const array& in, const double norm_factor, const dim_type odim0=0, const dim_type odim1=0, const dim_type odim2=0);
+AFAPI array fft3Norm(const array& in, const double norm_factor, const dim_t odim0=0, const dim_t odim1=0, const dim_t odim2=0);
 
 /**
    C++ Interface for fast fourier transform on one dimensional data
@@ -99,7 +99,7 @@ AFAPI array fft3(const array& in, const double norm_factor, const dim_type odim0
 
    \ingroup signal_func_fft
  */
-AFAPI array fft(const array& in, const dim_type odim0=0);
+AFAPI array fft(const array& in, const dim_t odim0=0);
 
 /**
    C++ Interface for fast fourier transform on two dimensional data
@@ -114,7 +114,7 @@ AFAPI array fft(const array& in, const dim_type odim0=0);
 
    \ingroup signal_func_fft2
  */
-AFAPI array fft2(const array& in, const dim_type odim0=0, const dim_type odim1=0);
+AFAPI array fft2(const array& in, const dim_t odim0=0, const dim_t odim1=0);
 
 /**
    C++ Interface for fast fourier transform on three dimensional data
@@ -130,7 +130,7 @@ AFAPI array fft2(const array& in, const dim_type odim0=0, const dim_type odim1=0
 
    \ingroup signal_func_fft3
  */
-AFAPI array fft3(const array& in, const dim_type odim0=0, const dim_type odim1=0, const dim_type odim2=0);
+AFAPI array fft3(const array& in, const dim_t odim0=0, const dim_t odim1=0, const dim_t odim2=0);
 
 /**
    C++ Interface for fast fourier transform on any(1d, 2d, 3d) dimensional data
@@ -181,7 +181,7 @@ AFAPI array dft(const array& in);
 
    \ingroup signal_func_ifft
  */
-AFAPI array ifft(const array& in, const double norm_factor, const dim_type odim0=0);
+AFAPI array ifftNorm(const array& in, const double norm_factor, const dim_t odim0=0);
 
 /**
    C++ Interface for inverse fast fourier transform on two dimensional data
@@ -194,7 +194,7 @@ AFAPI array ifft(const array& in, const double norm_factor, const dim_type odim0
 
    \ingroup signal_func_ifft2
  */
-AFAPI array ifft2(const array& in, const double norm_factor, const dim_type odim0=0, const dim_type odim1=0);
+AFAPI array ifft2Norm(const array& in, const double norm_factor, const dim_t odim0=0, const dim_t odim1=0);
 
 /**
    C++ Interface for inverse fast fourier transform on three dimensional data
@@ -208,7 +208,7 @@ AFAPI array ifft2(const array& in, const double norm_factor, const dim_type odim
 
    \ingroup signal_func_ifft3
  */
-AFAPI array ifft3(const array& in, const double norm_factor, const dim_type odim0=0, const dim_type odim1=0, const dim_type odim2=0);
+AFAPI array ifft3Norm(const array& in, const double norm_factor, const dim_t odim0=0, const dim_t odim1=0, const dim_t odim2=0);
 
 /**
    C++ Interface for inverse fast fourier transform on one dimensional data
@@ -222,7 +222,7 @@ AFAPI array ifft3(const array& in, const double norm_factor, const dim_type odim
 
    \ingroup signal_func_ifft
  */
-AFAPI array ifft(const array& in, const dim_type odim0=0);
+AFAPI array ifft(const array& in, const dim_t odim0=0);
 
 /**
    C++ Interface for inverse fast fourier transform on two dimensional data
@@ -237,7 +237,7 @@ AFAPI array ifft(const array& in, const dim_type odim0=0);
 
    \ingroup signal_func_ifft2
  */
-AFAPI array ifft2(const array& in, const dim_type odim0=0, const dim_type odim1=0);
+AFAPI array ifft2(const array& in, const dim_t odim0=0, const dim_t odim1=0);
 
 /**
    C++ Interface for inverse fast fourier transform on three dimensional data
@@ -253,7 +253,7 @@ AFAPI array ifft2(const array& in, const dim_type odim0=0, const dim_type odim1=
 
    \ingroup signal_func_ifft3
  */
-AFAPI array ifft3(const array& in, const dim_type odim0=0, const dim_type odim1=0, const dim_type odim2=0);
+AFAPI array ifft3(const array& in, const dim_t odim0=0, const dim_t odim1=0, const dim_t odim2=0);
 
 /**
    C++ Interface for inverse fast fourier transform on any(1d, 2d, 3d) dimensional data
@@ -479,7 +479,7 @@ AFAPI af_err af_approx2(af_array *out, const af_array in, const af_array pos0, c
 
    \ingroup signal_func_fft
  */
-AFAPI af_err af_fft(af_array *out, const af_array in, const double norm_factor, const dim_type odim0);
+AFAPI af_err af_fft(af_array *out, const af_array in, const double norm_factor, const dim_t odim0);
 
 /**
    C Interface for fast fourier transform on two dimensional data
@@ -494,7 +494,7 @@ AFAPI af_err af_fft(af_array *out, const af_array in, const double norm_factor, 
 
    \ingroup signal_func_fft2
  */
-AFAPI af_err af_fft2(af_array *out, const af_array in, const double norm_factor, const dim_type odim0, const dim_type odim1);
+AFAPI af_err af_fft2(af_array *out, const af_array in, const double norm_factor, const dim_t odim0, const dim_t odim1);
 
 /**
    C Interface for fast fourier transform on three dimensional data
@@ -510,7 +510,7 @@ AFAPI af_err af_fft2(af_array *out, const af_array in, const double norm_factor,
 
    \ingroup signal_func_fft3
  */
-AFAPI af_err af_fft3(af_array *out, const af_array in, const double norm_factor, const dim_type odim0, const dim_type odim1, const dim_type odim2);
+AFAPI af_err af_fft3(af_array *out, const af_array in, const double norm_factor, const dim_t odim0, const dim_t odim1, const dim_t odim2);
 
 /**
    C Interface for inverse fast fourier transform on one dimensional data
@@ -524,7 +524,7 @@ AFAPI af_err af_fft3(af_array *out, const af_array in, const double norm_factor,
 
    \ingroup signal_func_ifft
  */
-AFAPI af_err af_ifft(af_array *out, const af_array in, const double norm_factor, const dim_type odim0);
+AFAPI af_err af_ifft(af_array *out, const af_array in, const double norm_factor, const dim_t odim0);
 
 /**
    C Interface for inverse fast fourier transform on two dimensional data
@@ -539,7 +539,7 @@ AFAPI af_err af_ifft(af_array *out, const af_array in, const double norm_factor,
 
    \ingroup signal_func_ifft2
  */
-AFAPI af_err af_ifft2(af_array *out, const af_array in, const double norm_factor, const dim_type odim0, const dim_type odim1);
+AFAPI af_err af_ifft2(af_array *out, const af_array in, const double norm_factor, const dim_t odim0, const dim_t odim1);
 
 /**
    C Interface for inverse fast fourier transform on three dimensional data
@@ -555,7 +555,7 @@ AFAPI af_err af_ifft2(af_array *out, const af_array in, const double norm_factor
 
    \ingroup signal_func_ifft3
  */
-AFAPI af_err af_ifft3(af_array *out, const af_array in, const double norm_factor, const dim_type odim0, const dim_type odim1, const dim_type odim2);
+AFAPI af_err af_ifft3(af_array *out, const af_array in, const double norm_factor, const dim_t odim0, const dim_t odim1, const dim_t odim2);
 
 /**
    C Interface for convolution on one dimensional data

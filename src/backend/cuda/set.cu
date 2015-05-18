@@ -54,7 +54,7 @@ namespace cuda
             unique_second = setUnique(second, false);
         }
 
-        dim_type out_size = unique_first.dims()[0] + unique_second.dims()[0];
+        dim_t out_size = unique_first.dims()[0] + unique_second.dims()[0];
         Array<T> out = createEmptyArray<T>(dim4(out_size));
 
         thrust::device_ptr<T> first_ptr = thrust::device_pointer_cast<T>(unique_first.get());
@@ -87,7 +87,7 @@ namespace cuda
             unique_second = setUnique(second, false);
         }
 
-        dim_type out_size = std::max(unique_first.dims()[0], unique_second.dims()[0]);
+        dim_t out_size = std::max(unique_first.dims()[0], unique_second.dims()[0]);
         Array<T> out = createEmptyArray<T>(dim4(out_size));
 
         thrust::device_ptr<T> first_ptr = thrust::device_pointer_cast<T>(unique_first.get());

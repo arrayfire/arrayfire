@@ -17,21 +17,21 @@ typedef struct {
 __kernel
 void rotate_kernel(__global T *d_out, const KParam out,
                    __global const T *d_in, const KParam in,
-                   const tmat_t t, const dim_type nimages, const dim_type batches,
-                   const dim_type blocksXPerImage, const dim_type blocksYPerImage)
+                   const tmat_t t, const int nimages, const int batches,
+                   const int blocksXPerImage, const int blocksYPerImage)
 {
     // Compute which image set
-    const dim_type setId = get_group_id(0) / blocksXPerImage;
-    const dim_type blockIdx_x = get_group_id(0) - setId * blocksXPerImage;
+    const int setId = get_group_id(0) / blocksXPerImage;
+    const int blockIdx_x = get_group_id(0) - setId * blocksXPerImage;
 
-    const dim_type batch = get_group_id(1) / blocksYPerImage;
-    const dim_type blockIdx_y = get_group_id(1) - batch * blocksYPerImage;
+    const int batch = get_group_id(1) / blocksYPerImage;
+    const int blockIdx_y = get_group_id(1) - batch * blocksYPerImage;
 
     // Get thread indices
-    const dim_type xx = get_local_id(0) + blockIdx_x * get_local_size(0);
-    const dim_type yy = get_local_id(1) + blockIdx_y * get_local_size(1);
+    const int xx = get_local_id(0) + blockIdx_x * get_local_size(0);
+    const int yy = get_local_id(1) + blockIdx_y * get_local_size(1);
 
-    const dim_type limages = min(out.dims[2] - setId * nimages, nimages);
+    const int limages = min((int)out.dims[2] - setId * nimages, nimages);
 
     if(xx >= out.dims[0] || yy >= out.dims[1])
         return;

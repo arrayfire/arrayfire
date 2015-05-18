@@ -28,10 +28,10 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type FAST_THREADS_X = 16;
-static const dim_type FAST_THREADS_Y = 16;
-static const dim_type FAST_THREADS_NONMAX_X = 32;
-static const dim_type FAST_THREADS_NONMAX_Y = 8;
+static const int FAST_THREADS_X = 16;
+static const int FAST_THREADS_Y = 16;
+static const int FAST_THREADS_NONMAX_X = 32;
+static const int FAST_THREADS_NONMAX_Y = 8;
 
 template<typename T, const unsigned arc_length, const bool nonmax>
 void fast(unsigned* out_feat,
@@ -87,8 +87,8 @@ void fast(unsigned* out_feat,
             d_flags = bufferAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(T));
         }
 
-        const dim_type blk_x = divup(in.info.dims[0]-edge*2, FAST_THREADS_X);
-        const dim_type blk_y = divup(in.info.dims[1]-edge*2, FAST_THREADS_Y);
+        const int blk_x = divup(in.info.dims[0]-edge*2, FAST_THREADS_X);
+        const int blk_y = divup(in.info.dims[1]-edge*2, FAST_THREADS_Y);
 
         // Locate features kernel sizes
         const NDRange local(FAST_THREADS_X, FAST_THREADS_Y);
@@ -103,8 +103,8 @@ void fast(unsigned* out_feat,
              cl::Local((FAST_THREADS_X + 6) * (FAST_THREADS_Y + 6) * sizeof(T)));
         CL_DEBUG_FINISH(getQueue());
 
-        const dim_type blk_nonmax_x = divup(in.info.dims[0], 64);
-        const dim_type blk_nonmax_y = divup(in.info.dims[1], 64);
+        const int blk_nonmax_x = divup(in.info.dims[0], 64);
+        const int blk_nonmax_y = divup(in.info.dims[1], 64);
 
         // Nonmax kernel sizes
         const NDRange local_nonmax(FAST_THREADS_NONMAX_X, FAST_THREADS_NONMAX_Y);

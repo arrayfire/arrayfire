@@ -85,7 +85,7 @@ LU_FUNC(getrf , cdouble, Z)
 
 void convertPivot(Array<int> &pivot, int out_sz)
 {
-    dim_type d0 = pivot.dims()[0];
+    dim_t d0 = pivot.dims()[0];
 
     std::vector<int> d_po(out_sz);
     for(int i = 0; i < out_sz; i++) {

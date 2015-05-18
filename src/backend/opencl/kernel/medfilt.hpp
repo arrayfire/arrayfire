@@ -32,10 +32,10 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type MAX_MEDFILTER_LEN = 15;
+static const int MAX_MEDFILTER_LEN = 15;
 
-static const dim_type THREADS_X = 16;
-static const dim_type THREADS_Y = 16;
+static const int THREADS_X = 16;
+static const int THREADS_Y = 16;
 
 template<typename T, af_pad_type pad, unsigned w_len, unsigned w_wid>
 void medfilt(Param out, const Param in)
@@ -49,7 +49,7 @@ void medfilt(Param out, const Param in)
 
         std::call_once( compileFlags[device], [device] () {
 
-                const dim_type ARR_SIZE = w_len * (w_wid-w_wid/2);
+                const int ARR_SIZE = w_len * (w_wid-w_wid/2);
 
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName()
@@ -71,8 +71,8 @@ void medfilt(Param out, const Param in)
 
         NDRange local(THREADS_X, THREADS_Y);
 
-        dim_type blk_x = divup(in.info.dims[0], THREADS_X);
-        dim_type blk_y = divup(in.info.dims[1], THREADS_Y);
+        int blk_x = divup(in.info.dims[0], THREADS_X);
+        int blk_y = divup(in.info.dims[1], THREADS_Y);
 
         NDRange global(blk_x * in.info.dims[2] * THREADS_X,
                        blk_y * in.info.dims[3] * THREADS_Y);
@@ -80,7 +80,7 @@ void medfilt(Param out, const Param in)
         auto medfiltOp = make_kernel<Buffer, KParam,
                                      Buffer, KParam,
                                      cl::LocalSpaceArg,
-                                     dim_type, dim_type> (*mfKernels[device]);
+                                     int, int> (*mfKernels[device]);
 
         size_t loc_size = (THREADS_X+w_len-1)*(THREADS_Y+w_wid-1)*sizeof(T);
 

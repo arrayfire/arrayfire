@@ -69,7 +69,7 @@ void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=N
         // destroy the temporary indexed Array
         ASSERT_EQ(AF_SUCCESS, af_destroy_array(subArray));
 
-        dim_type nElems;
+        dim_t nElems;
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems,outArray));
         outData = new T[nElems];
     } else {

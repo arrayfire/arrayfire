@@ -31,13 +31,13 @@ namespace cuda
         {
             thrust::device_ptr<T> val_ptr = thrust::device_pointer_cast(val.ptr);
 
-            for(dim_type w = 0; w < val.dims[3]; w++) {
-                dim_type valW = w * val.strides[3];
-                for(dim_type z = 0; z < val.dims[2]; z++) {
-                    dim_type valWZ = valW + z * val.strides[2];
-                    for(dim_type y = 0; y < val.dims[1]; y++) {
+            for(int w = 0; w < val.dims[3]; w++) {
+                int valW = w * val.strides[3];
+                for(int z = 0; z < val.dims[2]; z++) {
+                    int valWZ = valW + z * val.strides[2];
+                    for(int y = 0; y < val.dims[1]; y++) {
 
-                        dim_type valOffset = valWZ + y * val.strides[1];
+                        int valOffset = valWZ + y * val.strides[1];
 
                         if(isAscending) {
                             thrust::sort(val_ptr + valOffset, val_ptr + valOffset + val.dims[0]);

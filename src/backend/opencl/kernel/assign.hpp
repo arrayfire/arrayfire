@@ -32,12 +32,12 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type THREADS_X = 32;
-static const dim_type THREADS_Y =  8;
+static const int THREADS_X = 32;
+static const int THREADS_Y =  8;
 
 typedef struct {
-    dim_type  offs[4];
-    dim_type strds[4];
+    int  offs[4];
+    int strds[4];
     char     isSeq[4];
 } AssignKernelParam_t;
 
@@ -68,14 +68,14 @@ void assign(Param out, const Param in, const AssignKernelParam_t& p, Buffer *bPt
 
         NDRange local(THREADS_X, THREADS_Y);
 
-        dim_type blk_x = divup(in.info.dims[0], THREADS_X);
-        dim_type blk_y = divup(in.info.dims[1], THREADS_Y);
+        int blk_x = divup(in.info.dims[0], THREADS_X);
+        int blk_y = divup(in.info.dims[1], THREADS_Y);
 
         NDRange global(blk_x * in.info.dims[2] * THREADS_X,
                 blk_y * in.info.dims[3] * THREADS_Y);
 
         auto assignOp = make_kernel<Buffer, KParam, Buffer, KParam, AssignKernelParam_t,
-             Buffer, Buffer, Buffer, Buffer, dim_type, dim_type>(*agnKernels[device]);
+             Buffer, Buffer, Buffer, Buffer, int, int>(*agnKernels[device]);
 
         assignOp(EnqueueArgs(getQueue(), global, local),
                 *out.data, out.info, *in.data, in.info, p,

@@ -27,7 +27,7 @@ void bilateralTest(string pTestFile)
 
     vector<dim4>       inDims;
     vector<string>    inFiles;
-    vector<dim_type> outSizes;
+    vector<dim_t> outSizes;
     vector<string>   outFiles;
 
     readImageTests(pTestFile, inDims, inFiles, outSizes, outFiles);
@@ -39,7 +39,7 @@ void bilateralTest(string pTestFile)
         af_array inArray  = 0;
         af_array outArray = 0;
         af_array goldArray= 0;
-        dim_type nElems   = 0;
+        dim_t nElems   = 0;
 
         inFiles[testId].insert(0,string(TEST_DIR"/bilateral/"));
         outFiles[testId].insert(0,string(TEST_DIR"/bilateral/"));

@@ -14,11 +14,11 @@ void histogram(__global outType *         d_dst,
                KParam                     iInfo,
                __global const float2 *    d_minmax,
                __local outType *          localMem,
-               dim_type len, dim_type nbins, dim_type nBBS)
+               int len, int nbins, int nBBS)
 {
     unsigned b2    = get_group_id(0)/nBBS;
-    dim_type start = (get_group_id(0)-b2*nBBS) * THRD_LOAD * get_local_size(0) + get_local_id(0);
-    dim_type end   = min((dim_type)(start + THRD_LOAD * get_local_size(0)), len);
+    int start = (get_group_id(0)-b2*nBBS) * THRD_LOAD * get_local_size(0) + get_local_id(0);
+    int end   = min((int)(start + THRD_LOAD * get_local_size(0)), len);
 
     // offset input and output to account for batch ops
     __global const inType *in = d_src + b2 * iInfo.strides[2] + get_group_id(1) * iInfo.strides[3] + iInfo.offset;
@@ -36,7 +36,7 @@ void histogram(__global outType *         d_dst,
         dx     = (minmax.s1-minmax.s0) / (float)nbins;
     }
 
-    for (dim_type i = get_local_id(0); i < nbins; i += get_local_size(0))
+    for (int i = get_local_id(0); i < nbins; i += get_local_size(0))
         localMem[i] = 0;
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -48,7 +48,7 @@ void histogram(__global outType *         d_dst,
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    for (dim_type i = get_local_id(0); i < nbins; i += get_local_size(0)) {
+    for (int i = get_local_id(0); i < nbins; i += get_local_size(0)) {
         atomic_add((out + i), localMem[i]);
     }
 }

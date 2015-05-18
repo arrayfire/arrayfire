@@ -47,7 +47,7 @@ DimCheck(const vector<af_seq> &seqs) {
     static const int ndims = 1;
     static const size_t dims = 100;
 
-    dim_type d[1] = {dims};
+    dim_t d[1] = {dims};
 
     vector<T> hData(dims);
     for(int i = 0; i < (int)dims; i++) { hData[i] = i; }
@@ -65,7 +65,7 @@ DimCheck(const vector<af_seq> &seqs) {
 
     vector<T*> h_indexed(seqs.size());
     for(size_t i = 0; i < seqs.size(); i++) {
-        dim_type elems;
+        dim_t elems;
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&elems, indexed_array[i]));
         h_indexed[i] = new T[elems];
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void *)(h_indexed[i]), indexed_array[i]));
@@ -275,7 +275,7 @@ DimCheck2D(const vector<vector<af_seq> > &seqs,string TestFile, size_t NDims)
 
     vector<T*> h_indexed(seqs.size(), NULL);
     for(size_t i = 0; i < seqs.size(); i++) {
-        dim_type elems;
+        dim_t elems;
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&elems, indexed_arrays[i]));
         h_indexed[i] = new T[elems];
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void *)h_indexed[i], indexed_arrays[i]));
@@ -524,7 +524,7 @@ TEST(Indexing2D, ColumnContiniousCPP)
     }
 
     for(size_t i = 0; i < seqs.size(); i++) {
-        dim_type elems = sub[i].elements();
+        dim_t elems = sub[i].elements();
         float *ptr = new float[elems];
         sub[i].host(ptr);
 
@@ -731,7 +731,7 @@ TEST(SeqIndex, CPP_SCOPE_ARR)
     array b = cpp_scope_arr_test(num, val);
     float *hB = b.host<float>();
 
-    for (int i = 0; i < b.elements(); i++) {
+    for (int i = 0; i < (int)b.elements(); i++) {
         ASSERT_EQ(hB[i], val * (val - 1));
     }
 
@@ -790,8 +790,8 @@ TEST(SeqIndex, Cascade00)
     af::array b = a(seq(stb, enb), span);
     af::array c = b(seq(stc, enc), span);
 
-    ASSERT_EQ(c.dims(1), ny );
-    ASSERT_EQ(c.dims(0), nxc);
+    ASSERT_EQ(c.dims(1), (dim_t)ny );
+    ASSERT_EQ(c.dims(0), (dim_t)nxc);
 
     float *h_a = a.host<float>();
     float *h_b = b.host<float>();
@@ -835,8 +835,8 @@ TEST(SeqIndex, Cascade01)
     af::array b = a(seq(stb, enb), span);
     af::array c = b(span, seq(stc, enc));
 
-    ASSERT_EQ(c.dims(1), nyc);
-    ASSERT_EQ(c.dims(0), nxc);
+    ASSERT_EQ(c.dims(1), (dim_t)nyc);
+    ASSERT_EQ(c.dims(0), (dim_t)nxc);
 
     float *h_a = a.host<float>();
     float *h_b = b.host<float>();
@@ -881,8 +881,8 @@ TEST(SeqIndex, Cascade10)
     af::array b = a(span, seq(stb, enb));
     af::array c = b(seq(stc, enc), span);
 
-    ASSERT_EQ(c.dims(1), nyc);
-    ASSERT_EQ(c.dims(0), nxc);
+    ASSERT_EQ(c.dims(1), (dim_t)nyc);
+    ASSERT_EQ(c.dims(0), (dim_t)nxc);
 
     float *h_a = a.host<float>();
     float *h_b = b.host<float>();
@@ -1019,7 +1019,7 @@ TYPED_TEST(IndexedMembers, MemFuncs)
 {
     if (noDoubleTests<TypeParam>()) return;
     using af::array;
-    int dimsize = 100;
+    dim_t dimsize = 100;
     vector<TypeParam> in(dimsize * dimsize);
     for(int i = 0; i < (int)in.size(); i++) in[i] = i;
     array input(dimsize, dimsize, &in.front(), af::afHost, (af::dtype) dtype_traits<TypeParam>::af_type);

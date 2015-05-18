@@ -50,8 +50,8 @@ TEST(LU, InPlaceSmall)
     output.host((void*)outData);
 
     // Compare result
-    for (int y = 0; y < odims[1]; ++y) {
-        for (int x = 0; x < odims[0]; ++x) {
+    for (int y = 0; y < (int)odims[1]; ++y) {
+        for (int x = 0; x < (int)odims[0]; ++x) {
             // Check only upper triangle
             if(x <= y) {
             int elIter = y * odims[0] + x;
@@ -90,8 +90,8 @@ TEST(LU, SplitSmall)
     u.host((void*)uData);
 
     // Compare result
-    for (int y = 0; y < ldims[1]; ++y) {
-        for (int x = 0; x < ldims[0]; ++x) {
+    for (int y = 0; y < (int)ldims[1]; ++y) {
+        for (int x = 0; x < (int)ldims[0]; ++x) {
             if(x < y) {
                 int elIter = y * ldims[0] + x;
                 ASSERT_NEAR(tests[resultIdx][elIter], lData[elIter], 0.001) << "at: " << elIter << std::endl;
@@ -101,9 +101,9 @@ TEST(LU, SplitSmall)
 
     resultIdx = 1;
 
-    for (int y = 0; y < udims[1]; ++y) {
-        for (int x = 0; x < udims[0]; ++x) {
-            int elIter = y * udims[0] + x;
+    for (int y = 0; y < (int)udims[1]; ++y) {
+        for (int x = 0; x < (int)udims[0]; ++x) {
+            int elIter = y * (int)udims[0] + x;
             ASSERT_NEAR(tests[resultIdx][elIter], uData[elIter], 0.001) << "at: " << elIter << std::endl;
         }
     }

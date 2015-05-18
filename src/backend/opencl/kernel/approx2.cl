@@ -32,17 +32,17 @@ Ty div(Ty a, Tp b) { a.x = a.x / b; a.y = a.y / b; return a; }
 ///////////////////////////////////////////////////////////////////////////
 // nearest-neighbor resampling
 ///////////////////////////////////////////////////////////////////////////
-void core_nearest2(const dim_type idx, const dim_type idy, const dim_type idz, const dim_type idw,
+void core_nearest2(const int idx, const int idy, const int idz, const int idw,
                    __global       Ty *d_out, const KParam out,
                    __global const Ty *d_in,  const KParam in,
                    __global const Tp *d_pos, const KParam pos,
                    __global const Tp *d_qos, const KParam qos,
                    const float offGrid)
 {
-    const dim_type omId = idw * out.strides[3] + idz * out.strides[2]
+    const int omId = idw * out.strides[3] + idz * out.strides[2]
                         + idy * out.strides[1] + idx;
-    const dim_type pmId = idy * pos.strides[1] + idx;
-    const dim_type qmId = idy * qos.strides[1] + idx;
+    const int pmId = idy * pos.strides[1] + idx;
+    const int qmId = idy * qos.strides[1] + idx;
 
     const Tp x = d_pos[pmId], y = d_qos[qmId];
     if (x < 0 || y < 0 || in.dims[0] < x+1 || in.dims[1] < y+1) {
@@ -50,8 +50,8 @@ void core_nearest2(const dim_type idx, const dim_type idy, const dim_type idz, c
         return;
     }
 
-    const dim_type grid_x = round(x), grid_y = round(y); // nearest grid
-    const dim_type imId = idw * in.strides[3] + idz * in.strides[2]
+    const int grid_x = round(x), grid_y = round(y); // nearest grid
+    const int imId = idw * in.strides[3] + idz * in.strides[2]
                      + grid_y * in.strides[1] + grid_x;
 
     Ty z;
@@ -62,17 +62,17 @@ void core_nearest2(const dim_type idx, const dim_type idy, const dim_type idz, c
 ///////////////////////////////////////////////////////////////////////////
 // linear resampling
 ///////////////////////////////////////////////////////////////////////////
-void core_linear2(const dim_type idx, const dim_type idy, const dim_type idz, const dim_type idw,
+void core_linear2(const int idx, const int idy, const int idz, const int idw,
                   __global       Ty *d_out, const KParam out,
                   __global const Ty *d_in,  const KParam in,
                   __global const Tp *d_pos, const KParam pos,
                   __global const Tp *d_qos, const KParam qos,
                   const float offGrid)
 {
-    const dim_type omId = idw * out.strides[3] + idz * out.strides[2]
+    const int omId = idw * out.strides[3] + idz * out.strides[2]
                         + idy * out.strides[1] + idx;
-    const dim_type pmId = idy * pos.strides[1] + idx;
-    const dim_type qmId = idy * qos.strides[1] + idx;
+    const int pmId = idy * pos.strides[1] + idx;
+    const int qmId = idy * qos.strides[1] + idx;
 
     const Tp x = d_pos[pmId], y = d_qos[qmId];
     if (x < 0 || y < 0 || in.dims[0] < x+1 || in.dims[1] < y+1) {
@@ -83,7 +83,7 @@ void core_linear2(const dim_type idx, const dim_type idy, const dim_type idz, co
     const Tp grid_x = floor(x),   grid_y = floor(y);   // nearest grid
     const Tp off_x  = x - grid_x, off_y  = y - grid_y; // fractional offset
 
-    dim_type ioff = idw * in.strides[3] + idz * in.strides[2] + grid_y * in.strides[1] + grid_x;
+    int ioff = idw * in.strides[3] + idz * in.strides[2] + grid_y * in.strides[1] + grid_x;
 
     // Check if pVal and pVal + 1 are both valid indices
     bool condY = (y < in.dims[1] - 1);
@@ -118,16 +118,16 @@ void approx2_kernel(__global       Ty *d_out, const KParam out,
                     __global const Ty *d_in,  const KParam in,
                     __global const Tp *d_pos, const KParam pos,
                     __global const Tp *d_qos, const KParam qos,
-                    const float offGrid, const dim_type blocksMatX, const dim_type blocksMatY)
+                    const float offGrid, const int blocksMatX, const int blocksMatY)
 {
-    const dim_type idz = get_group_id(0) / blocksMatX;
-    const dim_type idw = get_group_id(1) / blocksMatY;
+    const int idz = get_group_id(0) / blocksMatX;
+    const int idw = get_group_id(1) / blocksMatY;
 
-    const dim_type blockIdx_x = get_group_id(0) - idz * blocksMatX;
-    const dim_type blockIdx_y = get_group_id(1) - idw * blocksMatY;
+    const int blockIdx_x = get_group_id(0) - idz * blocksMatX;
+    const int blockIdx_y = get_group_id(1) - idw * blocksMatY;
 
-    const dim_type idx = get_local_id(0) + blockIdx_x * get_local_size(0);
-    const dim_type idy = get_local_id(1) + blockIdx_y * get_local_size(1);
+    const int idx = get_local_id(0) + blockIdx_x * get_local_size(0);
+    const int idy = get_local_id(1) + blockIdx_y * get_local_size(1);
 
     if(idx >= out.dims[0] ||
        idy >= out.dims[1] ||

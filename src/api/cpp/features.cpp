@@ -28,7 +28,7 @@ namespace af
     features::features(const size_t n)
     {
         feat.n = n;
-        dim_type out_dims[4] = {dim_type(n), 1, 1, 1};
+        dim_t out_dims[4] = {dim_t(n), 1, 1, 1};
         AF_THROW(af_create_handle(&feat.x, 4, out_dims, f32));
         AF_THROW(af_create_handle(&feat.y, 4, out_dims, f32));
         AF_THROW(af_create_handle(&feat.score, 4, out_dims, f32));

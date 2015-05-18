@@ -71,17 +71,17 @@ namespace cpu
         dim4 ostrs = strides();
         dim4 odims = dims();
 
-        for (int w = 0; w < odims[3]; w++) {
-            dim_type offw = w * ostrs[3];
+        for (int w = 0; w < (int)odims[3]; w++) {
+            dim_t offw = w * ostrs[3];
 
-            for (int z = 0; z < odims[2]; z++) {
-                dim_type offz = z * ostrs[2] + offw;
+            for (int z = 0; z < (int)odims[2]; z++) {
+                dim_t offz = z * ostrs[2] + offw;
 
-                for (int y = 0; y < odims[1]; y++) {
-                    dim_type offy = y * ostrs[1] + offz;
+                for (int y = 0; y < (int)odims[1]; y++) {
+                    dim_t offy = y * ostrs[1] + offz;
 
-                    for (int x = 0; x < odims[0]; x++) {
-                        dim_type id = x + offy;
+                    for (int x = 0; x < (int)odims[0]; x++) {
+                        dim_t id = x + offy;
 
                         ptr[id] = *(T *)node->calc(x, y, z, w);
                     }
