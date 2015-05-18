@@ -27,8 +27,8 @@ namespace cuda
     {
 
         ConvolveBatchKind type = x.ndims() == 1 ? ONE2ONE : MANY2MANY;
-        if (x.elements() != b.elements()) {
-            type = (x.elements() < b.elements()) ? ONE2MANY : MANY2ONE;
+        if (x.ndims() != b.ndims()) {
+            type = (x.ndims() < b.ndims()) ? ONE2MANY : MANY2ONE;
         }
 
         // Extract the first N elements

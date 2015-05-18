@@ -49,7 +49,7 @@ namespace cuda
             const T *d_a = a.ptr + a_off;
             const int repeat = (num_a + blockDim.x - 1) / blockDim.x;
 
-            for (int ii = 0; ii < repeat; ii++) {
+            for (int ii = 0; ii < MAX_A_SIZE / blockDim.x; ii++) {
                 int id = ii * blockDim.x + tx;
                 s_z[id] = scalar<T>(0);
                 s_a[id] = (id < num_a) ? d_a[id] : scalar<T>(0);
@@ -59,8 +59,8 @@ namespace cuda
 
             for (int i = 0; i < y.dims[0]; i++) {
                 if (tx == 0) {
-                    d_y[i] = d_c[i] + s_z[0] / s_a[0];
-                    s_y = d_y[i];
+                    s_y = (d_c[i] + s_z[0]) / s_a[0];
+                    d_y[i] = s_y;
                 }
                 __syncthreads();
 
@@ -85,8 +85,6 @@ namespace cuda
 
             dim3 blocks(blocks_x,
                         blocks_y * y.dims[3]);
-
-            printf("%d, %d, %d\n", c.dims[1], y.dims[1], a.dims[1]);
 
             int threads = 256;
             while (threads > y.dims[0] && threads > 32) threads /= 2;

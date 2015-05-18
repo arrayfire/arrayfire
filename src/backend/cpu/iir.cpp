@@ -28,8 +28,8 @@ namespace cpu
         Array<T> a0 = createValueArray<T>(b.dims(), h_a0);
 
         ConvolveBatchKind type = x.ndims() == 1 ? ONE2ONE : MANY2MANY;
-        if (x.elements() != b.elements()) {
-            type = (x.elements() < b.elements()) ? ONE2MANY : MANY2ONE;
+        if (x.ndims() != b.ndims()) {
+            type = (x.ndims() < b.ndims()) ? ONE2MANY : MANY2ONE;
         }
 
         // Extract the first N elements
@@ -68,7 +68,7 @@ namespace cpu
 
                     for (int i = 0; i < ydims[0]; i++) {
 
-                        T y = h_y[i] = h_c[i] + h_z[0] /  h_a[0];
+                        T y = h_y[i] = (h_c[i] + h_z[0]) /  h_a[0];
                         for (int ii = 1; ii < num_a; ii++) {
                             h_z[ii - 1] = h_z[ii] - h_a[ii] * y;
                         }

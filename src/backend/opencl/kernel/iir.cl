@@ -76,7 +76,7 @@ void iir_kernel(      __global T *yptr, const KParam yinfo,
     const __global T *d_a = aptr + a_off;
     const int repeat = (num_a + get_local_size(0) - 1) / get_local_size(0);
 
-    for (int ii = 0; ii < repeat; ii++) {
+    for (int ii = 0; ii < MAX_A_SIZE / get_local_size(0); ii++) {
         int id = ii * get_local_size(0) + tx;
         s_z[id] = ZERO;
         s_a[id] = (id < num_a) ? d_a[id] : ZERO;
@@ -86,8 +86,8 @@ void iir_kernel(      __global T *yptr, const KParam yinfo,
 
     for (int i = 0; i < yinfo.dims[0]; i++) {
         if (tx == 0) {
-            d_y[i] = d_c[i] + __div(s_z[0], s_a[0]);
-            s_y = d_y[i];
+            s_y = __div((d_c[i] + s_z[0]), s_a[0]);
+            d_y[i] = s_y;
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
