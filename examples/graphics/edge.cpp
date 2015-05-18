@@ -91,7 +91,7 @@ void edge(bool console)
         myWindow.show();
 
         /* show histogram on input in separate window */
-        myWindow2.hist(hst, 255, 1);
+        myWindow2.hist(hst, 0, 255);
     }
 }
 
