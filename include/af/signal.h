@@ -422,6 +422,9 @@ AFAPI array fftconvolve2(const array& signal, const array& filter, const convMod
  */
 AFAPI array fftconvolve3(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
 
+AFAPI array fir(const array &b, const array &x);
+AFAPI array iir(const array &b, const array &a, const array &x);
+
 }
 #endif
 
@@ -656,6 +659,8 @@ AFAPI af_err af_fftconvolve2(af_array *out, const af_array signal, const af_arra
  */
 AFAPI af_err af_fftconvolve3(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode);
 
+AFAPI af_err af_fir(af_array *y, const af_array b, const af_array x);
+AFAPI af_err af_iir(af_array *y, const af_array b, const af_array a, const af_array x);
 #ifdef __cplusplus
 }
 #endif
