@@ -19,12 +19,14 @@ namespace af
 template<>
 struct dtype_traits<cl_float2> {
     enum { af_type = c32 };
+    typedef float base_type;
     static const char* getName() { return "float2"; }
 };
 
 template<>
 struct dtype_traits<cl_double2> {
     enum { af_type = c64 };
+    typedef double base_type;
     static const char* getName() { return "double2"; }
 };
 

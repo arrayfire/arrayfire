@@ -86,13 +86,14 @@ namespace cuda
                 ty = -(sy - ny);
             }
 
+            // Rounding error. Anything more than 3 decimal points wont make a diff
             tmat_t t;
-            t.tmat[0] =  c;
-            t.tmat[1] = -s;
-            t.tmat[2] = tx;
-            t.tmat[3] =  s;
-            t.tmat[4] =  c;
-            t.tmat[5] = ty;
+            t.tmat[0] = round( c * 1000) / 1000.0f;
+            t.tmat[1] = round(-s * 1000) / 1000.0f;
+            t.tmat[2] = round(tx * 1000) / 1000.0f;
+            t.tmat[3] = round( s * 1000) / 1000.0f;
+            t.tmat[4] = round( c * 1000) / 1000.0f;
+            t.tmat[5] = round(ty * 1000) / 1000.0f;
 
             dim_type nimages = in.dims[2];
             dim_type nbatches = in.dims[3];

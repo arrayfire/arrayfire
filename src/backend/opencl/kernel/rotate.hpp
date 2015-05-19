@@ -40,6 +40,16 @@ namespace opencl
             float tmat[6];
         } tmat_t;
 
+        using std::conditional;
+        using std::is_same;
+        template<typename T>
+        using wtype_t = typename conditional<is_same<T, double>::value, double, float>::type;
+
+        template<typename T>
+        using vtype_t = typename conditional<is_complex<T>::value,
+                                             T, wtype_t<T>
+                                            >::type;
+
         template<typename T, af_interp_type method>
         void rotate(Param out, const Param in, const float theta)
         {
@@ -49,14 +59,18 @@ namespace opencl
                 static std::map<int, Kernel *> rotateKernels;
 
                 int device = getActiveDeviceId();
+                typedef typename dtype_traits<T>::base_type BT;
 
                 std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
                     options << " -D T="        << dtype_traits<T>::getName();
+                    options << " -D VT="       << dtype_traits<vtype_t<T>>::getName();
+                    options << " -D WT="       << dtype_traits<wtype_t<BT>>::getName();
 
                     if((af_dtype) dtype_traits<T>::af_type == c32 ||
                        (af_dtype) dtype_traits<T>::af_type == c64) {
                         options << " -D CPLX=1";
+                        options << " -D TB=" << dtype_traits<BT>::getName();
                     } else {
                         options << " -D CPLX=0";
                     }
@@ -99,13 +113,15 @@ namespace opencl
                     ty = -(sy - ny);
                 }
 
+                // Rounding error. Anything more than 3 decimal points wont make a diff
                 tmat_t t;
-                t.tmat[0] =  c;
-                t.tmat[1] = -s;
-                t.tmat[2] = tx;
-                t.tmat[3] =  s;
-                t.tmat[4] =  c;
-                t.tmat[5] = ty;
+                t.tmat[0] = round( c * 1000) / 1000.0f;
+                t.tmat[1] = round(-s * 1000) / 1000.0f;
+                t.tmat[2] = round(tx * 1000) / 1000.0f;
+                t.tmat[3] = round( s * 1000) / 1000.0f;
+                t.tmat[4] = round( c * 1000) / 1000.0f;
+                t.tmat[5] = round(ty * 1000) / 1000.0f;
+
 
                 NDRange local(TX, TY, 1);
 

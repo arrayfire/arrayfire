@@ -55,9 +55,14 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
         switch(itype) {
             case f32: output = transform<float  >(in, tf, odims, method, inverse);  break;
             case f64: output = transform<double >(in, tf, odims, method, inverse);  break;
+            case c32: output = transform<cfloat >(in, tf, odims, method, inverse);  break;
+            case c64: output = transform<cdouble>(in, tf, odims, method, inverse);  break;
             case s32: output = transform<int    >(in, tf, odims, method, inverse);  break;
             case u32: output = transform<uint   >(in, tf, odims, method, inverse);  break;
+            case s64: output = transform<intl   >(in, tf, odims, method, inverse);  break;
+            case u64: output = transform<uintl  >(in, tf, odims, method, inverse);  break;
             case u8:  output = transform<uchar  >(in, tf, odims, method, inverse);  break;
+            case b8:  output = transform<char   >(in, tf, odims, method, inverse);  break;
             default:  TYPE_ERROR(1, itype);
         }
         std::swap(*out,output);

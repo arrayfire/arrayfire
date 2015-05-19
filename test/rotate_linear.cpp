@@ -36,7 +36,7 @@ class Rotate : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double> TestTypes;
+typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int, intl, uintl, unsigned char, char> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Rotate, TestTypes);
@@ -88,10 +88,11 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
     // ASSERT_EQ (in comments below) to pass for CUDA & OpenCL backends
     size_t fail_count = 0;
     for(size_t i = 0; i < nElems; i++) {
-        if(fabs((double)(tests[resultIdx][i] - outData[i])) > 0.001) // increased from 0.0001 because of VS FP errors
+        if(std::abs((tests[resultIdx][i] - (T)outData[i])) > 0.001) {
             fail_count++;
+        }
     }
-    ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.02));
+    ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.02)) << "where count = " << fail_count << std::endl;
 
     //for (size_t elIter = 0; elIter < nElems; ++elIter) {
     //    ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;

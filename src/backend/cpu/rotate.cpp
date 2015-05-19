@@ -40,7 +40,13 @@ namespace cpu
             ty = -(sy - ny);
         }
 
-        const float tmat[6] = {c, -s, tx, s, c, ty};
+        const float tmat[6] = {std::round( c * 1000) / 1000.0f,
+                               std::round(-s * 1000) / 1000.0f,
+                               std::round(tx * 1000) / 1000.0f,
+                               std::round( s * 1000) / 1000.0f,
+                               std::round( c * 1000) / 1000.0f,
+                               std::round(ty * 1000) / 1000.0f,
+                              };
 
         switch(method) {
             case AF_INTERP_NEAREST:
@@ -88,15 +94,18 @@ namespace cpu
     }
 
 
-#define INSTANTIATE(T)                                                                          \
-    template Array<T> rotate(const Array<T> &in, const float theta,                            \
-                             const af::dim4 &odims, const af_interp_type method); \
+#define INSTANTIATE(T)                                                              \
+    template Array<T> rotate(const Array<T> &in, const float theta,                 \
+                             const af::dim4 &odims, const af_interp_type method);   \
 
     INSTANTIATE(float)
     INSTANTIATE(double)
     INSTANTIATE(cfloat)
-    //INSTANTIATE(cdouble)
+    INSTANTIATE(cdouble)
     INSTANTIATE(int)
     INSTANTIATE(uint)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
     INSTANTIATE(uchar)
+    INSTANTIATE(char)
 }

@@ -12,6 +12,34 @@ namespace cuda
     namespace kernel
     {
         template<typename T>
+        struct itype_t
+        {
+            typedef float wtype;
+            typedef float vtype;
+        };
+
+        template<>
+        struct itype_t<double>
+        {
+            typedef double wtype;
+            typedef double vtype;
+        };
+
+        template<>
+        struct itype_t<cfloat>
+        {
+            typedef float  wtype;
+            typedef cfloat vtype;
+        };
+
+        template<>
+        struct itype_t<cdouble>
+        {
+            typedef double  wtype;
+            typedef cdouble vtype;
+        };
+
+        template<typename T>
         __device__
         void transform_n(T *optr, Param<T> out, const T *iptr, CParam<T> in, const float *tmat,
                          const dim_type xido, const dim_type yido, const dim_type nimages)
@@ -60,27 +88,30 @@ namespace cuda
                              + yido * tmat[4]
                                     + tmat[5];
 
-            if (xidi < 0 || yidi < 0 || in.dims[0] < xidi || in.dims[1] < yidi) {
+            if (xidi < -0.0001 || yidi < -0.0001 || in.dims[0] < xidi || in.dims[1] < yidi) {
                 for(int i = 0; i < nimages; i++) {
                     optr[loco + i * out.strides[2]] = scalar<T>(0.0f);
                 }
                 return;
             }
 
-            const float grd_x = floor(xidi),  grd_y = floor(yidi);
-            const float off_x = xidi - grd_x, off_y = yidi - grd_y;
+            typedef typename itype_t<T>::wtype WT;
+            typedef typename itype_t<T>::vtype VT;
+
+            const WT grd_x = floor(xidi),  grd_y = floor(yidi);
+            const WT off_x = xidi - grd_x, off_y = yidi - grd_y;
 
             // Check if pVal and pVal + 1 are both valid indices
             const bool condY = (yidi < in.dims[1] - 1);
             const bool condX = (xidi < in.dims[0] - 1);
 
             // Compute weights used
-            const float wt00 = (1.0 - off_x) * (1.0 - off_y);
-            const float wt10 = (condY) ? (1.0 - off_x) * (off_y)     : 0;
-            const float wt01 = (condX) ? (off_x) * (1.0 - off_y)     : 0;
-            const float wt11 = (condX && condY) ? (off_x) * (off_y)  : 0;
+            const WT wt00 = (1.0 - off_x) * (1.0 - off_y);
+            const WT wt10 = (condY) ? (1.0 - off_x) * (off_y)     : 0;
+            const WT wt01 = (condX) ? (off_x) * (1.0 - off_y)     : 0;
+            const WT wt11 = (condX && condY) ? (off_x) * (off_y)  : 0;
 
-            const float wt = wt00 + wt10 + wt01 + wt11;
+            const WT wt = wt00 + wt10 + wt01 + wt11;
 
             const dim_type loci = grd_y * in.strides[1] + grd_x;
             T zero = scalar<T>(0.0f);
@@ -89,13 +120,13 @@ namespace cuda
                 const dim_type ooff = loco + (i * out.strides[2]);
 
                 // Compute Weighted Values
-                T v00 =                    wt00 * iptr[ioff];
-                T v10 = (condY) ?          wt10 * iptr[ioff + in.strides[1]]     : zero;
-                T v01 = (condX) ?          wt01 * iptr[ioff + 1]                 : zero;
-                T v11 = (condX && condY) ? wt11 * iptr[ioff + in.strides[1] + 1] : zero;
-                T vo = v00 + v10 + v01 + v11;
+                VT v00 =                    wt00 * iptr[ioff];
+                VT v10 = (condY) ?          wt10 * iptr[ioff + in.strides[1]]     : zero;
+                VT v01 = (condX) ?          wt01 * iptr[ioff + 1]                 : zero;
+                VT v11 = (condX && condY) ? wt11 * iptr[ioff + in.strides[1] + 1] : zero;
+                VT vo  = v00 + v10 + v01 + v11;
 
-                optr[ooff] = (vo / wt);
+                optr[ooff] = (T)(vo / wt);
             }
         }
     }
