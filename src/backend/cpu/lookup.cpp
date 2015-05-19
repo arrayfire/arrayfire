@@ -15,10 +15,10 @@ namespace cpu
 {
 
 static inline
-dim_t trimIndex(dim_t idx, const dim_t &len)
+dim_t trimIndex(int idx, const dim_t &len)
 {
-    dim_t ret_val = idx;
-    dim_t offset  = abs(ret_val)%len;
+    int ret_val = idx;
+    int offset  = abs(ret_val)%len;
     if (ret_val<0) {
         ret_val = offset-1;
     } else if (ret_val>=len) {
