@@ -1,10 +1,9 @@
 # - Find Forge
 
 # Defines the following variables:
-# FORGE_INCLUDE_DIRS    - Location of FORGE's include directory.
-# FORGE_LIBRARIES       - Location of FORGE's libraries.
-# FORGE_DIR             - Location of FORGE.
-# FORGE_FOUND           - True if FORGE has been located
+# FORGE_INCLUDE_DIRECTORIES    - Location of FORGE's include directory.
+# FORGE_LIBRARIES              - Location of FORGE's libraries.
+# FORGE_FOUND                  - True if FORGE has been located
 #
 # You may provide a hint to where FORGE's root directory may be located
 # by setting FORGE_ROOT_DIR before calling this script.
