@@ -21,7 +21,7 @@ namespace cpu
 {
 
 template<typename T, af_pad_type pad>
-Array<T> medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
+Array<T> medfilt(const Array<T> &in, dim_t w_len, dim_t w_wid)
 {
     const dim4 dims     = in.dims();
     const dim4 istrides = in.strides();
@@ -34,28 +34,28 @@ Array<T> medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
     T const * in_ptr = in.get();
     T * out_ptr = out.get();
 
-    for(dim_type b3=0; b3<dims[3]; b3++) {
+    for(int b3=0; b3<(int)dims[3]; b3++) {
 
-        for(dim_type b2=0; b2<dims[2]; b2++) {
+        for(int b2=0; b2<(int)dims[2]; b2++) {
 
-            for(dim_type col=0; col<dims[1]; col++) {
+            for(int col=0; col<(int)dims[1]; col++) {
 
-                dim_type ocol_off = col*ostrides[1];
+                int ocol_off = col*ostrides[1];
 
-                for(dim_type row=0; row<dims[0]; row++) {
+                for(int row=0; row<(int)dims[0]; row++) {
 
                     wind_vals.clear();
 
-                    for(dim_type wj=0; wj<w_wid; ++wj) {
+                    for(int wj=0; wj<(int)w_wid; ++wj) {
 
                         bool isColOff = false;
 
-                        dim_type im_col = col + wj-w_wid/2;
-                        dim_type im_coff;
+                        int im_col = col + wj-w_wid/2;
+                        int im_coff;
                         switch(pad) {
                             case AF_PAD_ZERO:
                                 im_coff = im_col * istrides[1];
-                                if (im_col < 0 || im_col>=dims[1])
+                                if (im_col < 0 || im_col>=(int)dims[1])
                                     isColOff = true;
                                 break;
                             case AF_PAD_SYM:
@@ -65,8 +65,8 @@ Array<T> medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
                                         isColOff = true;
                                     }
 
-                                    if (im_col>=dims[1]) {
-                                        im_col = 2*(dims[1]-1) - im_col;
+                                    if (im_col>=(int)dims[1]) {
+                                        im_col = 2*((int)dims[1]-1) - im_col;
                                         isColOff = true;
                                     }
 
@@ -75,16 +75,16 @@ Array<T> medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
                                 break;
                         }
 
-                        for(dim_type wi=0; wi<w_len; ++wi) {
+                        for(int wi=0; wi<(int)w_len; ++wi) {
 
                             bool isRowOff = false;
 
-                            dim_type im_row = row + wi-w_len/2;
-                            dim_type im_roff;
+                            int im_row = row + wi-w_len/2;
+                            int im_roff;
                             switch(pad) {
                                 case AF_PAD_ZERO:
                                     im_roff = im_row * istrides[0];
-                                    if (im_row < 0 || im_row>=dims[0])
+                                    if (im_row < 0 || im_row>=(int)dims[0])
                                         isRowOff = true;
                                     break;
                                 case AF_PAD_SYM:
@@ -94,8 +94,8 @@ Array<T> medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
                                             isRowOff = true;
                                         }
 
-                                        if (im_row>=dims[0]) {
-                                            im_row = 2*(dims[0]-1) - im_row;
+                                        if (im_row>=(int)dims[0]) {
+                                            im_row = 2*((int)dims[0]-1) - im_row;
                                             isRowOff = true;
                                         }
 
@@ -119,7 +119,7 @@ Array<T> medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
                     }
 
                     std::stable_sort(wind_vals.begin(),wind_vals.end());
-                    dim_type off = wind_vals.size()/2;
+                    int off = wind_vals.size()/2;
                     if (wind_vals.size()%2==0)
                         out_ptr[ocol_off+row*ostrides[0]] = (wind_vals[off]+wind_vals[off-1])/2;
                     else {
@@ -139,8 +139,8 @@ Array<T> medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
 }
 
 #define INSTANTIATE(T)\
-    template Array<T> medfilt<T, AF_PAD_ZERO     >(const Array<T> &in, dim_type w_len, dim_type w_wid); \
-    template Array<T> medfilt<T, AF_PAD_SYM>(const Array<T> &in, dim_type w_len, dim_type w_wid);
+    template Array<T> medfilt<T, AF_PAD_ZERO     >(const Array<T> &in, dim_t w_len, dim_t w_wid); \
+    template Array<T> medfilt<T, AF_PAD_SYM>(const Array<T> &in, dim_t w_len, dim_t w_wid);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

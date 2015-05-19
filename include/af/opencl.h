@@ -75,7 +75,7 @@ namespace afcl
     static inline af::array array(af::dim4 idims, cl_mem buf, af::dtype type, bool retain=false)
     {
         const unsigned ndims = (unsigned)idims.ndims();
-        const dim_type *dims = idims.get();
+        const dim_t *dims = idims.get();
 
         cl_context context;
         cl_int clerr = clGetMemObjectInfo(buf, CL_MEM_CONTEXT, sizeof(cl_context), &context, NULL);
@@ -109,7 +109,7 @@ namespace afcl
     \param retain If true, instructs ArrayFire to retain the memory object. Set to true if
         the memory originates from a cl::Buffer object
      */
-    static inline af::array array(dim_type dim0,
+    static inline af::array array(dim_t dim0,
                                   cl_mem buf, af::dtype type, bool retain=false)
     {
         return afcl::array(af::dim4(dim0), buf, type, retain);
@@ -124,7 +124,7 @@ namespace afcl
     \param retain If true, instructs ArrayFire to retain the memory object. Set to true if
         the memory originates from a cl::Buffer object
      */
-    static inline af::array array(dim_type dim0, dim_type dim1,
+    static inline af::array array(dim_t dim0, dim_t dim1,
                                   cl_mem buf, af::dtype type, bool retain=false)
     {
         return afcl::array(af::dim4(dim0, dim1), buf, type, retain);
@@ -140,8 +140,8 @@ namespace afcl
     \param retain If true, instructs ArrayFire to retain the memory object. Set to true if
         the memory originates from a cl::Buffer object
      */
-    static inline af::array array(dim_type dim0, dim_type dim1,
-                                  dim_type dim2,
+    static inline af::array array(dim_t dim0, dim_t dim1,
+                                  dim_t dim2,
                                   cl_mem buf, af::dtype type, bool retain=false)
     {
         return afcl::array(af::dim4(dim0, dim1, dim2), buf, type, retain);
@@ -158,8 +158,8 @@ namespace afcl
     \param retain If true, instructs ArrayFire to retain the memory object. Set to true if
         the memory originates from a cl::Buffer object
      */
-    static inline af::array array(dim_type dim0, dim_type dim1,
-                                  dim_type dim2, dim_type dim3,
+    static inline af::array array(dim_t dim0, dim_t dim1,
+                                  dim_t dim2, dim_t dim3,
                                   cl_mem buf, af::dtype type, bool retain=false)
     {
         return afcl::array(af::dim4(dim0, dim1, dim2, dim3), buf, type, retain);

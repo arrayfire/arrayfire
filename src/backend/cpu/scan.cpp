@@ -27,7 +27,7 @@ namespace cpu
                         const int dim)
         {
             const int D1 = D - 1;
-            for (dim_type i = 0; i < odims[D1]; i++) {
+            for (dim_t i = 0; i < odims[D1]; i++) {
                 scan_dim<op, Ti, To, D1>()(out + i * ostrides[D1],
                                            ostrides, odims,
                                            in  + i * istrides[D1],
@@ -46,15 +46,15 @@ namespace cpu
                         const int dim)
         {
 
-            dim_type istride = istrides[dim];
-            dim_type ostride = ostrides[dim];
+            dim_t istride = istrides[dim];
+            dim_t ostride = ostrides[dim];
 
             Transform<Ti, To, op> transform;
             // FIXME: Change the name to something better
             Binary<To, op> scan;
 
             To out_val = scan.init();
-            for (dim_type i = 0; i < idims[dim]; i++) {
+            for (dim_t i = 0; i < idims[dim]; i++) {
                 To in_val = transform(in[i * istride]);
                 out_val = scan(in_val, out_val);
                 out[i * ostride] = out_val;

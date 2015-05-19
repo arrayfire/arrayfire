@@ -87,7 +87,7 @@ namespace cpu
 
         TNJ::Node_ptr node;
         bool ready;
-        dim_type offset;
+        dim_t offset;
         bool owner;
 
         Array(dim4 dims);
@@ -106,7 +106,7 @@ namespace cpu
         void eval();
         void eval() const;
 
-        dim_type getOffset() const { return offset; }
+        dim_t getOffset() const { return offset; }
         shared_ptr<T> getData() const {return data; }
 
         dim4 getDataDims() const

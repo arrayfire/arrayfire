@@ -82,7 +82,7 @@ void fastTest(string pTestFile, bool nonmax)
     size_t testCount = inDims.size();
 
     for (size_t testId=0; testId<testCount; ++testId) {
-        dim_type nElems       = 0;
+        dim_t nElems       = 0;
         af_array inArray_f32  = 0;
         af_array inArray      = 0;
         af_features outFeat;
@@ -115,7 +115,7 @@ void fastTest(string pTestFile, bool nonmax)
         std::sort(out_feat.begin(), out_feat.end(), feat_cmp);
         std::sort(gold_feat.begin(), gold_feat.end(), feat_cmp);
 
-        for (int elIter = 0; elIter < nElems; elIter++) {
+        for (int elIter = 0; elIter < (int)nElems; elIter++) {
             ASSERT_EQ(out_feat[elIter].f[0], gold_feat[elIter].f[0]) << "at: " << elIter << std::endl;
             ASSERT_EQ(out_feat[elIter].f[1], gold_feat[elIter].f[1]) << "at: " << elIter << std::endl;
             ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e-3) << "at: " << elIter << std::endl;

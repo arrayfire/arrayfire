@@ -14,7 +14,7 @@
 namespace af
 {
 
-array medfilt(const array& in, const dim_type wind_length, const dim_type wind_width, const padType edge_pad)
+array medfilt(const array& in, const dim_t wind_length, const dim_t wind_width, const padType edge_pad)
 {
     af_array out = 0;
     AF_THROW(af_medfilt(&out, in.get(), wind_length, wind_width, edge_pad));

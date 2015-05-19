@@ -34,21 +34,21 @@ namespace cuda
         template<typename T, af_interp_type method>
         __global__ static void
         rotate_kernel(Param<T> out, CParam<T> in, const tmat_t t,
-                      const dim_type nimages, const dim_type nbatches,
-                      const dim_type blocksXPerImage, const dim_type blocksYPerImage)
+                      const int nimages, const int nbatches,
+                      const int blocksXPerImage, const int blocksYPerImage)
         {
             // Compute which image set
-            const dim_type setId = blockIdx.x / blocksXPerImage;
-            const dim_type blockIdx_x = blockIdx.x - setId * blocksXPerImage;
+            const int setId = blockIdx.x / blocksXPerImage;
+            const int blockIdx_x = blockIdx.x - setId * blocksXPerImage;
 
-            const dim_type batch = blockIdx.y / blocksYPerImage;
-            const dim_type blockIdx_y = blockIdx.y - batch * blocksYPerImage;
+            const int batch = blockIdx.y / blocksYPerImage;
+            const int blockIdx_y = blockIdx.y - batch * blocksYPerImage;
 
             // Get thread indices
-            const dim_type xx = blockIdx_x * blockDim.x + threadIdx.x;
-            const dim_type yy = blockIdx_y * blockDim.y + threadIdx.y;
+            const int xx = blockIdx_x * blockDim.x + threadIdx.x;
+            const int yy = blockIdx_y * blockDim.y + threadIdx.y;
 
-            const dim_type limages = min(out.dims[2] - setId * nimages, nimages);
+            const int limages = min(out.dims[2] - setId * nimages, nimages);
 
             if(xx >= out.dims[0] || yy >= out.dims[1])
                 return;
@@ -94,17 +94,17 @@ namespace cuda
             t.tmat[4] =  c;
             t.tmat[5] = ty;
 
-            dim_type nimages = in.dims[2];
-            dim_type nbatches = in.dims[3];
+            int nimages = in.dims[2];
+            int nbatches = in.dims[3];
 
             dim3 threads(TX, TY, 1);
             dim3 blocks(divup(out.dims[0], threads.x), divup(out.dims[1], threads.y));
 
-            const dim_type blocksXPerImage = blocks.x;
-            const dim_type blocksYPerImage = blocks.y;
+            const int blocksXPerImage = blocks.x;
+            const int blocksYPerImage = blocks.y;
 
             if(nimages > TI) {
-                dim_type tile_images = divup(nimages, TI);
+                int tile_images = divup(nimages, TI);
                 nimages = TI;
                 blocks.x = blocks.x * tile_images;
             }

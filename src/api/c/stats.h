@@ -64,7 +64,7 @@ inline T mean(const Array<T>& in, const Array<wType>& weights)
 }
 
 template<typename T>
-inline Array<T> mean(const Array<T>& in, dim_type dim)
+inline Array<T> mean(const Array<T>& in, dim_t dim)
 {
     Array<T> redArr = reduce<af_add_t, T, T>(in, dim);
 
@@ -78,7 +78,7 @@ inline Array<T> mean(const Array<T>& in, dim_type dim)
 }
 
 template<typename T>
-inline Array<T> mean(const Array<T>& in, const Array<T>& wts, dim_type dim)
+inline Array<T> mean(const Array<T>& in, const Array<T>& wts, dim_t dim)
 {
     dim4 iDims = in.dims();
 

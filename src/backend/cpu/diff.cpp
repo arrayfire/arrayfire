@@ -43,10 +43,10 @@ namespace cpu
               T *outPtr = outArray.get();
 
         // TODO: Improve this
-        for(dim_type l = 0; l < dims[3]; l++) {
-            for(dim_type k = 0; k < dims[2]; k++) {
-                for(dim_type j = 0; j < dims[1]; j++) {
-                    for(dim_type i = 0; i < dims[0]; i++) {
+        for(dim_t l = 0; l < dims[3]; l++) {
+            for(dim_t k = 0; k < dims[2]; k++) {
+                for(dim_t j = 0; j < dims[1]; j++) {
+                    for(dim_t i = 0; i < dims[0]; i++) {
                         // Operation: out[index] = in[index + 1 * dim_size] - in[index]
                         int idx = getIdx(in.strides(), in.offsets(), i, j, k, l);
                         int jdx = getIdx(in.strides(), in.offsets(),
@@ -83,10 +83,10 @@ namespace cpu
               T *outPtr = outArray.get();
 
         // TODO: Improve this
-        for(dim_type l = 0; l < dims[3]; l++) {
-            for(dim_type k = 0; k < dims[2]; k++) {
-                for(dim_type j = 0; j < dims[1]; j++) {
-                    for(dim_type i = 0; i < dims[0]; i++) {
+        for(dim_t l = 0; l < dims[3]; l++) {
+            for(dim_t k = 0; k < dims[2]; k++) {
+                for(dim_t j = 0; j < dims[1]; j++) {
+                    for(dim_t i = 0; i < dims[0]; i++) {
                         // Operation: out[index] = in[index + 1 * dim_size] - in[index]
                         int idx = getIdx(in.strides(), in.offsets(), i, j, k, l);
                         int jdx = getIdx(in.strides(), in.offsets(),

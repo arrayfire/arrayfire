@@ -27,7 +27,7 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     std::vector<af_seq> seqs(4, af_span);
     // create seq vector to retrieve output
     // dimensions, offsets & offsets
-    for (dim_type x=0; x<4; ++x) {
+    for (dim_t x=0; x<4; ++x) {
         if (idxrs[x].isSeq) {
             seqs[x] = idxrs[x].idx.seq;
         }
@@ -40,7 +40,7 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     dim4 iOffs = toOffset(seqs, dDims);
     dim4 iStrds= toStride(seqs, dDims);
 
-    for (dim_type i=0; i<4; ++i) {
+    for (dim_t i=0; i<4; ++i) {
         p.isSeq[i] = idxrs[i].isSeq;
         p.offs[i]  = iOffs[i];
         p.strds[i] = iStrds[i];
@@ -50,7 +50,7 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
 
     std::vector< Array<uint> > idxArrs(4, createEmptyArray<uint>(dim4()));
     // look through indexs to read af_array indexs
-    for (dim_type x=0; x<4; ++x) {
+    for (dim_t x=0; x<4; ++x) {
         // set index pointers were applicable
         if (!p.isSeq[x]) {
             idxArrs[x] = castArray<uint>(idxrs[x].idx.arr);
@@ -68,7 +68,7 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
 
     kernel::index<T>(out, in, p, bPtrs);
 
-    for (dim_type x=0; x<4; ++x) {
+    for (dim_t x=0; x<4; ++x) {
         if (p.isSeq[x]) bufferFree(bPtrs[x]);
     }
 

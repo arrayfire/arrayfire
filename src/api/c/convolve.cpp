@@ -21,7 +21,7 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T, typename accT, dim_type baseDim, bool expand>
+template<typename T, typename accT, dim_t baseDim, bool expand>
 inline static af_array convolve(const af_array &s, const af_array &f, ConvolveBatchKind kind)
 {
     return getHandle(convolve<T, accT, baseDim, expand>(getArray<T>(s), castArray<accT>(f), kind));
@@ -35,11 +35,11 @@ inline static af_array convolve2(const af_array &s, const af_array &c_f, const a
                                                 castArray<accT>(r_f)));
 }
 
-template<dim_type baseDim>
+template<dim_t baseDim>
 ConvolveBatchKind identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
 {
-    dim_type sn = sDims.ndims();
-    dim_type fn = fDims.ndims();
+    dim_t sn = sDims.ndims();
+    dim_t fn = fDims.ndims();
 
     if (sn==baseDim && fn==baseDim)
         return ONE2ONE;
@@ -49,7 +49,7 @@ ConvolveBatchKind identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
         return MANY2ONE;
     else if ((sn>baseDim && sn<=4) && (fn>baseDim && fn<=4)) {
         bool doesDimensionsMatch = true;
-        for (dim_type i=baseDim; i<4; i++) {
+        for (dim_t i=baseDim; i<4; i++) {
             if (sDims[i]!=fDims[i]) {
                 doesDimensionsMatch = false;
                 break;
@@ -61,7 +61,7 @@ ConvolveBatchKind identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
         return CONVOLVE_UNSUPPORTED_BATCH_MODE;
 }
 
-template<dim_type baseDim, bool expand>
+template<dim_t baseDim, bool expand>
 af_err convolve(af_array *out, const af_array signal, const af_array filter)
 {
     try {
@@ -132,7 +132,7 @@ af_err convolve2_sep(af_array *out, af_array col_filter, af_array row_filter, co
 }
 
 
-template<dim_type baseDim>
+template<int baseDim>
 bool isFreqDomain(const af_array &signal, const af_array filter, af_conv_domain domain)
 {
     if (domain == AF_CONV_FREQ) return true;

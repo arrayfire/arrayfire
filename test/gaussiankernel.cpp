@@ -48,7 +48,7 @@ void gaussianKernelTest(string pFileName, double sigma)
 
     ASSERT_EQ(AF_SUCCESS, af_gaussian_kernel(&outArray, input[0], input[1], sigma, sigma));
 
-    dim_type outElems = 0;
+    dim_t outElems = 0;
     ASSERT_EQ(AF_SUCCESS, af_get_elements(&outElems, outArray));
     T *outData = new T[outElems];
 
@@ -57,7 +57,7 @@ void gaussianKernelTest(string pFileName, double sigma)
     vector<T> currGoldBar(tests[0].begin(), tests[0].end());
     size_t nElems = currGoldBar.size();
 
-    ASSERT_EQ(outElems, (int)nElems);
+    ASSERT_EQ(outElems, (dim_t)nElems);
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1.0e-3)<< "at: " << elIter<< std::endl;
@@ -122,14 +122,14 @@ void gaussianKernelTestCPP(string pFileName, double sigma)
 
     array out = gaussiankernel(input[0], input[1], sigma, sigma);
 
-    dim_type outElems = out.elements();
+    dim_t outElems = out.elements();
     float *outData = new float[outElems];
     out.host(outData);
 
     vector<float> currGoldBar(tests[0].begin(), tests[0].end());
     size_t nElems = currGoldBar.size();
 
-    ASSERT_EQ(outElems, (dim_type)nElems);
+    ASSERT_EQ(outElems, (dim_t)nElems);
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(currGoldBar[elIter], outData[elIter], 1.0e-3)<< "at: " << elIter<< std::endl;

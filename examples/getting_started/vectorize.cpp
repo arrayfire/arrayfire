@@ -17,16 +17,16 @@ array A, B;
 
 static array dist_naive(array a, array b)
 {
-    array dist_mat = constant(0, a.dims(1), b.dims(1));
+    array dist_mat = constant(0, a.dims(1), (int)b.dims(1));
 
     // Iterate through columns a
-    for (int ii = 0; ii < a.dims(1); ii++) {
+    for (int ii = 0; ii < (int)a.dims(1); ii++) {
 
         // Iterate through columns of b
-        for (int jj = 0; jj < b.dims(1); jj++) {
+        for (int jj = 0; jj < (int)b.dims(1); jj++) {
 
             // Get the sum of absolute differences
-            for (int kk = 0; kk < a.dims(0); kk++) {
+            for (int kk = 0; kk < (int)a.dims(0); kk++) {
                 dist_mat(ii, jj) += abs(a(kk, ii) - b(kk, jj));
             }
         }
@@ -37,14 +37,14 @@ static array dist_naive(array a, array b)
 
 static array dist_vec(array a, array b)
 {
-    array dist_mat = constant(0, a.dims(1), b.dims(1));
+    array dist_mat = constant(0, (int)a.dims(1), (int)b.dims(1));
 
     // Iterate through columns a
-    for (int ii = 0; ii < a.dims(1); ii++) {
+    for (int ii = 0; ii < (int)a.dims(1); ii++) {
         array avec = a(span, ii);
 
         // Iterate through columns of b
-        for (int jj = 0; jj < b.dims(1); jj++) {
+        for (int jj = 0; jj < (int)b.dims(1); jj++) {
             array bvec = b(span, jj);
 
             // get SAD using sum on the vector
@@ -57,14 +57,14 @@ static array dist_vec(array a, array b)
 
 static array dist_gfor1(array a, array b)
 {
-    array dist_mat = constant(0, a.dims(1), b.dims(1));
+    array dist_mat = constant(0, (int)a.dims(1), (int)b.dims(1));
 
     // GFOR along columns of a
-    gfor (seq ii, a.dims(1)) {
+    gfor (seq ii, (int)a.dims(1)) {
         array avec = a(span, ii);
 
         // Itere through columns of b
-        for (int jj = 0; jj < b.dims(1); jj++) {
+        for (int jj = 0; jj < (int)b.dims(1); jj++) {
             array bvec = b(span, jj);
 
             // get SAD using sum on the vector
@@ -77,14 +77,14 @@ static array dist_gfor1(array a, array b)
 
 static array dist_gfor2(array a, array b)
 {
-    array dist_mat = constant(0, a.dims(1), b.dims(1));
+    array dist_mat = constant(0, (int)a.dims(1), (int)b.dims(1));
 
     // GFOR along columns of b
-    gfor (seq jj, b.dims(1)) {
+    gfor (seq jj, (int)b.dims(1)) {
         array bvec = b(span, jj);
 
         // Iterate through columns of A
-        for (int ii = 0; ii < a.dims(1); ii++) {
+        for (int ii = 0; ii < (int)a.dims(1); ii++) {
             array avec = a(span, ii);
 
             // get SAD using sum on the vector
@@ -97,9 +97,9 @@ static array dist_gfor2(array a, array b)
 
 static array dist_tile1(array a, array b)
 {
-    // int feat_len = a.dims(0); // Same as b.dims(0);
-    int alen = a.dims(1);
-    int blen = b.dims(1);
+    // int feat_len = (int)a.dims(0); // Same as (int)b.dims(0);
+    int alen = (int)a.dims(1);
+    int blen = (int)b.dims(1);
 
     array dist_mat = constant(0, alen, blen);
 
@@ -127,9 +127,9 @@ static array dist_tile1(array a, array b)
 
 static array dist_tile2(array a, array b)
 {
-    int feat_len = a.dims(0);
-    int alen = a.dims(1);
-    int blen = b.dims(1);
+    int feat_len = (int)a.dims(0);
+    int alen = (int)a.dims(1);
+    int blen = (int)b.dims(1);
 
     // Shape of a is (feat_len, alen, 1)
     array a_mod = a;

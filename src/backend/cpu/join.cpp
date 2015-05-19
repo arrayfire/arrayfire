@@ -19,21 +19,21 @@ namespace cpu
                const af::dim4 &odims, const af::dim4 &xdims,
                const af::dim4 &ost, const af::dim4 &xst)
     {
-        for(dim_type ow = 0; ow < xdims[3]; ow++) {
-            const dim_type xW = ow * xst[3];
-            const dim_type oW = (ow + offset[3]) * ost[3];
+        for(dim_t ow = 0; ow < xdims[3]; ow++) {
+            const dim_t xW = ow * xst[3];
+            const dim_t oW = (ow + offset[3]) * ost[3];
 
-            for(dim_type oz = 0; oz < xdims[2]; oz++) {
-                const dim_type xZW = xW + oz * xst[2];
-                const dim_type oZW = oW + (oz + offset[2]) * ost[2];
+            for(dim_t oz = 0; oz < xdims[2]; oz++) {
+                const dim_t xZW = xW + oz * xst[2];
+                const dim_t oZW = oW + (oz + offset[2]) * ost[2];
 
-                for(dim_type oy = 0; oy < xdims[1]; oy++) {
-                    const dim_type xYZW = xZW + oy * xst[1];
-                    const dim_type oYZW = oZW + (oy + offset[1]) * ost[1];
+                for(dim_t oy = 0; oy < xdims[1]; oy++) {
+                    const dim_t xYZW = xZW + oy * xst[1];
+                    const dim_t oYZW = oZW + (oy + offset[1]) * ost[1];
 
-                    for(dim_type ox = 0; ox < xdims[0]; ox++) {
-                        const dim_type iMem = xYZW + ox;
-                        const dim_type oMem = oYZW + (ox + offset[0]);
+                    for(dim_t ox = 0; ox < xdims[0]; ox++) {
+                        const dim_t iMem = xYZW + ox;
+                        const dim_t oMem = oYZW + (ox + offset[0]);
                         out[oMem] = X[iMem];
                     }
                 }
@@ -158,10 +158,10 @@ namespace cpu
         // All dimensions except join dimension must be equal
         // Compute output dims
         af::dim4 odims;
-        const dim_type n_arrays = inputs.size();
+        const dim_t n_arrays = inputs.size();
         std::vector<af::dim4> idims(n_arrays);
 
-        dim_type dim_size = 0;
+        dim_t dim_size = 0;
         for(int i = 0; i < (int)idims.size(); i++) {
             idims[i] = inputs[i].dims();
             dim_size += idims[i][dim];

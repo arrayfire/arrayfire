@@ -15,7 +15,7 @@ namespace opencl
 namespace kernel
 {
 
-template<typename T, typename aT, bool expand, dim_type f0, dim_type f1>
+template<typename T, typename aT, bool expand, int f0, int f1>
 void conv2Helper(const conv_kparam_t& param, Param out, const Param signal, const Param filter)
 {
     try {
@@ -47,9 +47,9 @@ void conv2Helper(const conv_kparam_t& param, Param out, const Param signal, cons
                 });
 
         auto convOp = make_kernel<Buffer, KParam, Buffer, KParam,
-                                  Buffer, KParam, dim_type, dim_type,
-                                  dim_type, dim_type,
-                                  dim_type, dim_type
+                                  Buffer, KParam, int, int,
+                                  int, int,
+                                  int, int
                                  >(*convKernels[device]);
 
         convOp(EnqueueArgs(getQueue(), param.global, param.local),
@@ -63,7 +63,7 @@ void conv2Helper(const conv_kparam_t& param, Param out, const Param signal, cons
     }
 }
 
-template<typename T, typename aT, bool expand, dim_type f>
+template<typename T, typename aT, bool expand, int f>
 void conv2Helper(const conv_kparam_t& p, Param out, const Param sig, const Param filt)
 {
     switch(filt.info.dims[1]) {
@@ -79,8 +79,8 @@ void conv2Helper(const conv_kparam_t& p, Param out, const Param sig, const Param
 template<typename T, typename aT, bool expand>
 void conv2Helper(const conv_kparam_t& p, Param& out, const Param& sig, const Param& filt)
 {
-    dim_type f0 = filt.info.dims[0];
-    dim_type f1 = filt.info.dims[1];
+    int f0 = filt.info.dims[0];
+    int f1 = filt.info.dims[1];
     switch(f0) {
         case  1: conv2Helper<T, aT, expand,  1>(p, out, sig, filt); break;
         case  2: conv2Helper<T, aT, expand,  2>(p, out, sig, filt); break;
@@ -116,11 +116,11 @@ void conv2(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt)
     size_t se_size = filt.info.dims[0] * filt.info.dims[1] * sizeof(aT);
     p.impulse = bufferAlloc(se_size);
 
-    for (dim_type b3=0; b3<filt.info.dims[3]; ++b3) {
-        dim_type f3Off = b3 * filt.info.strides[3];
+    for (int b3=0; b3<filt.info.dims[3]; ++b3) {
+        int f3Off = b3 * filt.info.strides[3];
 
-        for (dim_type b2=0; b2<filt.info.dims[2]; ++b2) {
-            dim_type f2Off = b2 * filt.info.strides[2];
+        for (int b2=0; b2<filt.info.dims[2]; ++b2) {
+            int f2Off = b2 * filt.info.strides[2];
 
             // FIXME: if the filter array is strided, direct copy of symbols
             // might cause issues

@@ -257,7 +257,7 @@ namespace kernel
             tmp.strides[0] = 1;
             for (int k = 1; k < 4; k++) tmp.strides[k] = tmp.strides[k - 1] * tmp.dims[k - 1];
 
-            dim_type tmp_elements = tmp.strides[3] * tmp.dims[3];
+            int tmp_elements = tmp.strides[3] * tmp.dims[3];
             tmp.ptr = memAlloc<To>(tmp_elements);
 
             scan_dim_launcher<Ti, To, op, dim, false>(out, tmp, in,

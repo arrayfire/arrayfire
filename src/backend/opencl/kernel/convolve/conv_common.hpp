@@ -39,35 +39,35 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type THREADS   = 256;
+static const int THREADS   = 256;
 
-static const dim_type THREADS_X = 16;
-static const dim_type THREADS_Y = 16;
+static const int THREADS_X = 16;
+static const int THREADS_Y = 16;
 
-static const dim_type CUBE_X    =  8;
-static const dim_type CUBE_Y    =  8;
-static const dim_type CUBE_Z    =  4;
+static const int CUBE_X    =  8;
+static const int CUBE_Y    =  8;
+static const int CUBE_Z    =  4;
 
 struct conv_kparam_t {
     NDRange         global;
     NDRange          local;
     size_t        loc_size;
-    dim_type         nBBS0;
-    dim_type         nBBS1;
+    int         nBBS0;
+    int         nBBS1;
     bool    outHasNoOffset;
     bool     inHasNoOffset;
     bool  launchMoreBlocks;
-    dim_type          o[3];
-    dim_type          s[3];
+    int          o[3];
+    int          s[3];
     cl::Buffer*    impulse;
 };
 
 template<typename T>
-void prepareKernelArgs(conv_kparam_t& param, dim_type *oDims,
-                       const dim_type *fDims, dim_type baseDim)
+void prepareKernelArgs(conv_kparam_t& param, dim_t *oDims,
+                       const dim_t *fDims, int baseDim)
 {
-    dim_type batchDims[4] = {1, 1, 1, 1};
-    for(dim_type i=baseDim; i<4; ++i) {
+    int batchDims[4] = {1, 1, 1, 1};
+    for(int i=baseDim; i<4; ++i) {
         batchDims[i] = (param.launchMoreBlocks ? 1 : oDims[i]);
     }
 
@@ -87,7 +87,7 @@ void prepareKernelArgs(conv_kparam_t& param, dim_type *oDims,
         param.local    = NDRange(CUBE_X, CUBE_Y, CUBE_Z);
         param.nBBS0    = divup(oDims[0], CUBE_X);
         param.nBBS1    = divup(oDims[1], CUBE_Y);
-        dim_type blk_z = divup(oDims[2], CUBE_Z);
+        int blk_z = divup(oDims[2], CUBE_Z);
         param.global   = NDRange(param.nBBS0 * CUBE_X * batchDims[3],
                                  param.nBBS1 * CUBE_Y,
                                  blk_z * CUBE_Z);
@@ -96,7 +96,7 @@ void prepareKernelArgs(conv_kparam_t& param, dim_type *oDims,
     }
 }
 
-template<typename T, typename aT, dim_type bDim, bool expand>
+template<typename T, typename aT, int bDim, bool expand>
 void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal, const Param& filter)
 {
     try {
@@ -124,9 +124,9 @@ void convNHelper(const conv_kparam_t& param, Param& out, const Param& signal, co
 
         auto convOp = make_kernel<Buffer, KParam, Buffer, KParam,
                                   cl::LocalSpaceArg, Buffer, KParam,
-                                  dim_type, dim_type,
-                                  dim_type, dim_type, dim_type,
-                                  dim_type, dim_type, dim_type
+                                  int, int,
+                                  int, int, int,
+                                  int, int, int
                                  >(*convKernels[device]);
 
         convOp(EnqueueArgs(getQueue(), param.global, param.local),

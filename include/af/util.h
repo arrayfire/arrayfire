@@ -30,12 +30,12 @@ extern "C" {
 #endif
 
     // Get the number of elements in an af_array
-    AFAPI af_err af_get_elements(dim_type *elems, const af_array arr);
+    AFAPI af_err af_get_elements(dim_t *elems, const af_array arr);
 
     // Get the data type of an af_array
     AFAPI af_err af_get_type(af_dtype *type, const af_array arr);
 
-    AFAPI af_err af_get_dims(dim_type *d0, dim_type *d1, dim_type *d2, dim_type *d3,
+    AFAPI af_err af_get_dims(dim_t *d0, dim_t *d1, dim_t *d2, dim_t *d3,
                              const af_array arr);
 
     AFAPI af_err af_get_numdims(unsigned *result, const af_array arr);

@@ -26,20 +26,20 @@ namespace cuda
         template<typename To, typename Ti, int dim>
         __global__
         void join_kernel(Param<To> out, CParam<Ti> in,
-                         const dim_type o0, const dim_type o1, const dim_type o2, const dim_type o3,
-                         const dim_type blocksPerMatX, const dim_type blocksPerMatY)
+                         const int o0, const int o1, const int o2, const int o3,
+                         const int blocksPerMatX, const int blocksPerMatY)
         {
-            const dim_type iz = blockIdx.x / blocksPerMatX;
-            const dim_type iw = blockIdx.y / blocksPerMatY;
+            const int iz = blockIdx.x / blocksPerMatX;
+            const int iw = blockIdx.y / blocksPerMatY;
 
-            const dim_type blockIdx_x = blockIdx.x - iz * blocksPerMatX;
-            const dim_type blockIdx_y = blockIdx.y - iw * blocksPerMatY;
+            const int blockIdx_x = blockIdx.x - iz * blocksPerMatX;
+            const int blockIdx_y = blockIdx.y - iw * blocksPerMatY;
 
-            const dim_type xx = threadIdx.x + blockIdx_x * blockDim.x;
-            const dim_type yy = threadIdx.y + blockIdx_y * blockDim.y;
+            const int xx = threadIdx.x + blockIdx_x * blockDim.x;
+            const int yy = threadIdx.y + blockIdx_y * blockDim.y;
 
-            const dim_type incy = blocksPerMatY * blockDim.y;
-            const dim_type incx = blocksPerMatX * blockDim.x;
+            const int incy = blocksPerMatY * blockDim.y;
+            const int incx = blocksPerMatX * blockDim.x;
 
             To *d_out = out.ptr;
             Ti const *d_in = in.ptr;
@@ -48,11 +48,11 @@ namespace cuda
                 d_out = d_out + (iz + o2) * out.strides[2] + (iw + o3) * out.strides[3];
                 d_in  = d_in  + iz * in.strides[2] + iw * in.strides[3];
 
-                for (dim_type iy = yy; iy < in.dims[1]; iy += incy) {
+                for (int iy = yy; iy < in.dims[1]; iy += incy) {
                     Ti const *d_in_ = d_in + iy * in.strides[1];
                     To *d_out_ = d_out + (iy + o1) * out.strides[1];
 
-                    for (dim_type ix = xx; ix < in.dims[0]; ix += incx) {
+                    for (int ix = xx; ix < in.dims[0]; ix += incx) {
                         d_out_[ix + o0] = d_in_[ix];
                     }
                 }
@@ -67,8 +67,8 @@ namespace cuda
         {
             dim3 threads(TX, TY, 1);
 
-            dim_type blocksPerMatX = divup(X.dims[0], TILEX);
-            dim_type blocksPerMatY = divup(X.dims[1], TILEY);
+            int blocksPerMatX = divup(X.dims[0], TILEX);
+            int blocksPerMatY = divup(X.dims[1], TILEY);
             dim3 blocks(blocksPerMatX * X.dims[2],
                         blocksPerMatY * X.dims[3],
                         1);

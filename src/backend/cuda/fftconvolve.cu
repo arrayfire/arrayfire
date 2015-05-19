@@ -25,16 +25,16 @@ namespace cuda
 template<typename T>
 static const dim4 calcPackedSize(Array<T> const& i1,
                                  Array<T> const& i2,
-                                 const dim_type baseDim)
+                                 const dim_t baseDim)
 {
     const dim4 i1d = i1.dims();
     const dim4 i2d = i2.dims();
 
-    dim_type pd[4];
+    dim_t pd[4];
 
     // Pack both signal and filter on same memory array, this will ensure
     // better use of batched cuFFT capabilities
-    for (dim_type k = 0; k < 4; k++) {
+    for (dim_t k = 0; k < 4; k++) {
         if (k == 0)
             pd[k] = nextpow2((unsigned)(i1d[k] + i2d[k] - 1)) / 2;
         else if (k < baseDim)
@@ -48,7 +48,7 @@ static const dim4 calcPackedSize(Array<T> const& i1,
     return dim4(pd[0], pd[1], pd[2], pd[3]);
 }
 
-template<typename T, typename convT, typename cT, bool isDouble, bool roundOut, dim_type baseDim>
+template<typename T, typename convT, typename cT, bool isDouble, bool roundOut, dim_t baseDim>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool expand, ConvolveBatchKind kind)
 {
     const dim4 sDims = signal.dims();
@@ -56,7 +56,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
 
     dim4 oDims(1);
     if (expand) {
-        for(dim_type d=0; d<4; ++d) {
+        for(dim_t d=0; d<4; ++d) {
             if (kind==ONE2ONE || kind==ONE2MANY) {
                 oDims[d] = sDims[d]+fDims[d]-1;
             } else {
@@ -66,7 +66,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
     } else {
         oDims = sDims;
         if (kind==ONE2MANY) {
-            for (dim_type i=baseDim; i<4; ++i)
+            for (dim_t i=baseDim; i<4; ++i)
                 oDims[i] = fDims[i];
         }
     }

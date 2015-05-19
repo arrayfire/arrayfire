@@ -48,7 +48,7 @@ void ConstantCCheck(T value) {
     BT val = ::real(value);
     dtype dty = (dtype) dtype_traits<T>::af_type;
     af_array out;
-    dim_type dim[] = {(dim_type)num};
+    dim_t dim[] = {(dim_t)num};
     ASSERT_EQ(AF_SUCCESS, af_constant(&out, val, 1, dim, dty));
 
     vector<T> h_in(num);
@@ -104,7 +104,7 @@ void IdentityCCheck() {
     static const int num = 1000;
     dtype dty = (dtype) dtype_traits<T>::af_type;
     af_array out;
-    dim_type dim[] = {(dim_type)num, (dim_type)num};
+    dim_t dim[] = {(dim_t)num, (dim_t)num};
     ASSERT_EQ(AF_SUCCESS, af_identity(&out, 2, dim, dty));
 
     vector<T> h_in(num*num);

@@ -30,8 +30,8 @@ namespace opencl
 {
     namespace kernel
     {
-        static const dim_type TX = 16;
-        static const dim_type TY = 16;
+        static const int TX = 16;
+        static const int TY = 16;
 
         template<typename T, unsigned dim, bool isDiff2>
         void diff(Param out, const Param in, const unsigned indims)
@@ -59,7 +59,7 @@ namespace opencl
                 });
 
                 auto diffOp = make_kernel<Buffer, const Buffer, const KParam, const KParam,
-                                          const dim_type, const dim_type, const dim_type>
+                                          const int, const int, const int>
                                           (*diffKernels[device]);
 
                 NDRange local(TX, TY, 1);
@@ -67,13 +67,13 @@ namespace opencl
                     local = NDRange(TX * TY, 1, 1);
                 }
 
-                dim_type blocksPerMatX = divup(out.info.dims[0], local[0]);
-                dim_type blocksPerMatY = divup(out.info.dims[1], local[1]);
+                int blocksPerMatX = divup(out.info.dims[0], local[0]);
+                int blocksPerMatY = divup(out.info.dims[1], local[1]);
                 NDRange global(local[0] * blocksPerMatX * out.info.dims[2],
                                local[1] * blocksPerMatY * out.info.dims[3],
                                1);
 
-                const dim_type oElem = out.info.dims[0] * out.info.dims[1]
+                const int oElem = out.info.dims[0] * out.info.dims[1]
                                      * out.info.dims[2] * out.info.dims[3];
 
                 diffOp(EnqueueArgs(getQueue(), global, local),

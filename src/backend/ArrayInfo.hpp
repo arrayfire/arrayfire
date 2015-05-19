@@ -14,7 +14,7 @@
 #include <af/device.h>
 #include <vector>
 
-dim_type
+dim_t
 calcOffset(const af::dim4 &strides, const af::dim4 &offsets);
 
 af::dim4

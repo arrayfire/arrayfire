@@ -32,7 +32,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar> TestTypes;
 TYPED_TEST_CASE(MedianFilter, TestTypes);
 
 template<typename T>
-void medfiltTest(string pTestFile, dim_type w_len, dim_type w_wid, af_pad_type pad)
+void medfiltTest(string pTestFile, dim_t w_len, dim_t w_wid, af_pad_type pad)
 {
     if (noDoubleTests<T>()) return;
 
@@ -88,7 +88,7 @@ TYPED_TEST(MedianFilter, BATCH_SYMMETRIC_PAD_3x3)
 }
 
 template<typename T,bool isColor>
-void medfiltImageTest(string pTestFile, dim_type w_len, dim_type w_wid)
+void medfiltImageTest(string pTestFile, dim_t w_len, dim_t w_wid)
 {
     if (noDoubleTests<T>()) return;
 
@@ -96,7 +96,7 @@ void medfiltImageTest(string pTestFile, dim_type w_len, dim_type w_wid)
 
     vector<dim4>       inDims;
     vector<string>    inFiles;
-    vector<dim_type> outSizes;
+    vector<dim_t> outSizes;
     vector<string>   outFiles;
 
     readImageTests(pTestFile, inDims, inFiles, outSizes, outFiles);
@@ -108,7 +108,7 @@ void medfiltImageTest(string pTestFile, dim_type w_len, dim_type w_wid)
         af_array inArray  = 0;
         af_array outArray = 0;
         af_array goldArray= 0;
-        dim_type nElems   = 0;
+        dim_t nElems   = 0;
 
         inFiles[testId].insert(0,string(TEST_DIR"/medianfilter/"));
         outFiles[testId].insert(0,string(TEST_DIR"/medianfilter/"));
@@ -175,8 +175,6 @@ void medfiltWindowTest(void)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_ERR_ARG, af_medfilt(&outArray, inArray, -1, -1, AF_PAD_ZERO));
-
     ASSERT_EQ(AF_ERR_ARG, af_medfilt(&outArray, inArray, 3, 5, AF_PAD_ZERO));
 
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
@@ -222,8 +220,8 @@ TEST(MedianFilter, CPP)
 {
     if (noDoubleTests<float>()) return;
 
-    const dim_type w_len = 3;
-    const dim_type w_wid = 3;
+    const dim_t w_len = 3;
+    const dim_t w_wid = 3;
 
     vector<af::dim4>  numDims;
     vector<vector<float> >      in;

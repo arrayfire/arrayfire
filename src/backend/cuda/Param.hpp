@@ -18,8 +18,8 @@ template<typename T>
 struct Param
 {
     T *ptr;
-    dim_type dims[4];
-    dim_type strides[4];
+    dim_t dims[4];
+    dim_t strides[4];
 };
 
 template<typename T>
@@ -27,10 +27,10 @@ class CParam
 {
 public:
     const T *ptr;
-    dim_type dims[4];
-    dim_type strides[4];
+    dim_t dims[4];
+    dim_t strides[4];
 
-    __DH__ CParam(const T *iptr, const dim_type *idims, const dim_type *istrides) :
+    __DH__ CParam(const T *iptr, const dim_t *idims, const dim_t *istrides) :
         ptr(iptr)
     {
         for (int i = 0; i < 4; i++) {

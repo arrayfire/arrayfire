@@ -35,9 +35,9 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type ORB_THREADS   = 256;
-static const dim_type ORB_THREADS_X = 16;
-static const dim_type ORB_THREADS_Y = 16;
+static const int ORB_THREADS   = 256;
+static const int ORB_THREADS_X = 16;
+static const int ORB_THREADS_Y = 16;
 
 static const float PI_VAL = 3.14159265358979323846f;
 
@@ -226,7 +226,7 @@ void orb(unsigned* out_feat,
 
             // Calculate Harris responses
             // Good block_size >= 7 (must be an odd number)
-            const dim_type blk_x = divup(lvl_feat, ORB_THREADS_X);
+            const int blk_x = divup(lvl_feat, ORB_THREADS_X);
             const NDRange local(ORB_THREADS_X, ORB_THREADS_Y);
             const NDRange global(blk_x * ORB_THREADS_X, ORB_THREADS_Y);
 
@@ -294,7 +294,7 @@ void orb(unsigned* out_feat,
             usable_feat = min(usable_feat, lvl_best[i]);
 
             // Keep only features with higher Harris responses
-            const dim_type keep_blk = divup(usable_feat, ORB_THREADS);
+            const int keep_blk = divup(usable_feat, ORB_THREADS);
             const NDRange local_keep(ORB_THREADS, 1);
             const NDRange global_keep(keep_blk * ORB_THREADS, 1);
 
@@ -317,7 +317,7 @@ void orb(unsigned* out_feat,
             cl::Buffer* d_size_lvl = bufferAlloc(usable_feat * sizeof(float));
 
             // Compute orientation of features
-            const dim_type centroid_blk_x = divup(usable_feat, ORB_THREADS_X);
+            const int centroid_blk_x = divup(usable_feat, ORB_THREADS_X);
             const NDRange local_centroid(ORB_THREADS_X, ORB_THREADS_Y);
             const NDRange global_centroid(centroid_blk_x * ORB_THREADS_X, ORB_THREADS_Y);
 
@@ -353,7 +353,7 @@ void orb(unsigned* out_feat,
                         gauss_filter.info.strides[k] = gauss_filter.info.dims[k - 1] * gauss_filter.info.strides[k - 1];
                     }
 
-                    dim_type gauss_elem = gauss_filter.info.strides[3] * gauss_filter.info.dims[3];
+                    int gauss_elem = gauss_filter.info.strides[3] * gauss_filter.info.dims[3];
                     gauss_filter.data = bufferAlloc(gauss_elem * sizeof(T));
                     getQueue().enqueueWriteBuffer(*gauss_filter.data, CL_TRUE, 0, gauss_elem * sizeof(T), h_gauss);
                 }

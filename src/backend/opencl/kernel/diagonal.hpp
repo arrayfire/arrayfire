@@ -60,8 +60,8 @@ namespace kernel
                 });
 
             NDRange local(32, 8);
-            dim_type groups_x = divup(out.info.dims[0], local[0]);
-            dim_type groups_y = divup(out.info.dims[1], local[1]);
+            int groups_x = divup(out.info.dims[0], local[0]);
+            int groups_y = divup(out.info.dims[1], local[1]);
             NDRange global(groups_x * local[0] * out.info.dims[2],
                            groups_y * local[1]);
 
@@ -104,8 +104,8 @@ namespace kernel
                 });
 
             NDRange local(256, 1);
-            dim_type groups_x = divup(out.info.dims[0], local[0]);
-            dim_type groups_z = out.info.dims[2];
+            int groups_x = divup(out.info.dims[0], local[0]);
+            int groups_z = out.info.dims[2];
             NDRange global(groups_x * local[0],
                            groups_z * local[1] * out.info.dims[3]);
 

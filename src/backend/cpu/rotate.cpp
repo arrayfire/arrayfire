@@ -21,11 +21,11 @@ namespace cpu
                  const af::dim4 &odims, const af::dim4 &idims,
                  const af::dim4 &ostrides, const af::dim4 &istrides)
     {
-        dim_type nimages = idims[2];
+        dim_t nimages = idims[2];
 
         void (*t_fn)(T *, const T *, const float *, const af::dim4 &,
                      const af::dim4 &, const af::dim4 &,
-                     const dim_type, const dim_type, const dim_type, const dim_type);
+                     const dim_t, const dim_t, const dim_t, const dim_t);
 
         const float c = cos(-theta), s = sin(-theta);
         float tx, ty;
@@ -56,8 +56,8 @@ namespace cpu
 
 
         // Do transform for image
-        for(int yy = 0; yy < odims[1]; yy++) {
-            for(int xx = 0; xx < odims[0]; xx++) {
+        for(int yy = 0; yy < (int)odims[1]; yy++) {
+            for(int xx = 0; xx < (int)odims[0]; xx++) {
                 t_fn(out, in, tmat, idims, ostrides, istrides, nimages, 0, xx, yy);
             }
         }

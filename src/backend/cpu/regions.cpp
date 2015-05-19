@@ -123,20 +123,20 @@ Array<T> regions(const Array<char> &in, af_connectivity connectivity)
     // Initial label
     T label = (T)1;
 
-    for (int j = 0; j < in_dims[1]; j++) {
-        for (int i = 0; i < in_dims[0]; i++) {
+    for (int j = 0; j < (int)in_dims[1]; j++) {
+        for (int i = 0; i < (int)in_dims[0]; i++) {
             int idx = j * in_dims[0] + i;
             if (in_ptr[idx] != 0) {
                 std::vector<T> l;
 
                 // Test neighbors
-                if (i > 0 && out_ptr[j * in_dims[0] + i-1] > 0)
+                if (i > 0 && out_ptr[j * (int)in_dims[0] + i-1] > 0)
                     l.push_back(out_ptr[j * in_dims[0] + i-1]);
-                if (j > 0 && out_ptr[(j-1) * in_dims[0] + i] > 0)
+                if (j > 0 && out_ptr[(j-1) * (int)in_dims[0] + i] > 0)
                     l.push_back(out_ptr[(j-1) * in_dims[0] + i]);
                 if (connectivity == AF_CONNECTIVITY_8 && i > 0 && j > 0 && out_ptr[(j-1) * in_dims[0] + i-1] > 0)
                     l.push_back(out_ptr[(j-1) * in_dims[0] + i-1]);
-                if (connectivity == AF_CONNECTIVITY_8 && i < in_dims[0] - 1 && j > 0 && out_ptr[(j-1) * in_dims[0] + i+1] != 0)
+                if (connectivity == AF_CONNECTIVITY_8 && i < (int)in_dims[0] - 1 && j > 0 && out_ptr[(j-1) * in_dims[0] + i+1] != 0)
                     l.push_back(out_ptr[(j-1) * in_dims[0] + i+1]);
 
                 if (!l.empty()) {
@@ -164,9 +164,9 @@ Array<T> regions(const Array<char> &in, af_connectivity connectivity)
 
     std::set<T> removed;
 
-    for (int j = 0; j < in_dims[1]; j++) {
-        for (int i = 0; i < in_dims[0]; i++) {
-            int idx = j * in_dims[0] + i;
+    for (int j = 0; j < (int)in_dims[1]; j++) {
+        for (int i = 0; i < (int)in_dims[0]; i++) {
+            int idx = j * (int)in_dims[0] + i;
             if (in_ptr[idx] != 0) {
                 T l = out_ptr[idx];
                 label_map_iterator_t cur_map = lmap.find(l);
@@ -189,9 +189,9 @@ Array<T> regions(const Array<char> &in, af_connectivity connectivity)
     }
 
     // Calculate final neighbors (ensure final labels are sequential)
-    for (int j = 0; j < in_dims[1]; j++) {
-        for (int i = 0; i < in_dims[0]; i++) {
-            int idx = j * in_dims[0] + i;
+    for (int j = 0; j < (int)in_dims[1]; j++) {
+        for (int i = 0; i < (int)in_dims[0]; i++) {
+            int idx = j * (int)in_dims[0] + i;
             if (out_ptr[idx] > 0) {
                 out_ptr[idx] -= distance(removed.begin(), removed.lower_bound(out_ptr[idx]));
             }

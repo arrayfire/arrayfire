@@ -72,7 +72,7 @@ namespace cuda
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
         template<typename T, unsigned dim, bool isDiff2>
-        void diff(Param<T> out, CParam<T> in, const dim_type indims)
+        void diff(Param<T> out, CParam<T> in, const int indims)
         {
             dim3 threads(TX, TY, 1);
 
@@ -80,13 +80,13 @@ namespace cuda
                 threads = dim3(TX * TY, 1, 1);
             }
 
-            dim_type blocksPerMatX = divup(out.dims[0], TX);
-            dim_type blocksPerMatY = divup(out.dims[1], TY);
+            int blocksPerMatX = divup(out.dims[0], TX);
+            int blocksPerMatY = divup(out.dims[1], TY);
             dim3 blocks(blocksPerMatX * out.dims[2],
                         blocksPerMatY * out.dims[3],
                         1);
 
-            const dim_type oElem = out.dims[0] * out.dims[1] * out.dims[2] * out.dims[3];
+            const int oElem = out.dims[0] * out.dims[1] * out.dims[2] * out.dims[3];
 
             diff_kernel<T, dim, isDiff2> <<<blocks, threads>>>
                 (out, in, oElem, blocksPerMatX, blocksPerMatY);

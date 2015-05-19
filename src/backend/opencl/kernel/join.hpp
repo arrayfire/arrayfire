@@ -31,10 +31,10 @@ namespace opencl
     namespace kernel
     {
         // Kernel Launch Config Values
-        static const dim_type TX = 32;
-        static const dim_type TY = 8;
-        static const dim_type TILEX = 256;
-        static const dim_type TILEY = 32;
+        static const int TX = 32;
+        static const int TY = 8;
+        static const int TILEX = 256;
+        static const int TILEY = 32;
 
         template<typename To, typename Ti, int dim>
         void join(Param out, const Param in, const af::dim4 offset)
@@ -67,13 +67,13 @@ namespace opencl
                 });
 
                 auto joinOp = make_kernel<Buffer, const KParam, const Buffer, const KParam,
-                              const dim_type, const dim_type, const dim_type, const dim_type,
-                              const dim_type, const dim_type> (*joinKernels[device]);
+                              const int, const int, const int, const int,
+                              const int, const int> (*joinKernels[device]);
 
                 NDRange local(TX, TY, 1);
 
-                dim_type blocksPerMatX = divup(in.info.dims[0], TILEX);
-                dim_type blocksPerMatY = divup(in.info.dims[1], TILEY);
+                int blocksPerMatX = divup(in.info.dims[0], TILEX);
+                int blocksPerMatY = divup(in.info.dims[1], TILEY);
                 NDRange global(local[0] * blocksPerMatX * in.info.dims[2],
                                local[1] * blocksPerMatY * in.info.dims[3],
                                1);

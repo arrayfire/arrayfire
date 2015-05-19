@@ -91,7 +91,7 @@ namespace opencl
         template<> STATIC_ bool isDouble<cdouble>() { return true; }
 
         template<typename T, bool isRandu>
-        void random(cl::Buffer out, dim_type elements)
+        void random(cl::Buffer out, int elements)
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];

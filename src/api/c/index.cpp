@@ -133,7 +133,7 @@ af_array genIndex(const af_array& in,  const af_index_t idxrs[])
     return getHandle<T>(index<T>(getArray<T>(in), idxrs));
 }
 
-af_err af_index_gen(af_array *out, const af_array in, const dim_type ndims, const af_index_t* indexs)
+af_err af_index_gen(af_array *out, const af_array in, const dim_t ndims, const af_index_t* indexs)
 {
     af_array output = 0;
     // spanner is sequence index used for indexing along the
@@ -148,23 +148,23 @@ af_err af_index_gen(af_array *out, const af_array in, const dim_type ndims, cons
 
         int track = 0;
         af_seq seqs[] = {af_span, af_span, af_span, af_span};
-        for (dim_type i = 0; i < ndims; i++) {
+        for (dim_t i = 0; i < ndims; i++) {
             if (indexs[i].isSeq) {
                 track++;
                 seqs[i] = indexs[i].idx.seq;
             }
         }
 
-        if (track==ndims) {
+        if (track==(int)ndims) {
             // all indexs are sequences, redirecting to af_index
             return af_index(out, in, ndims, seqs);
         }
 
         af_index_t idxrs[4];
         // set all dimensions above ndims to spanner index
-        for (dim_type i=ndims; i<4; ++i) idxrs[i] = spanner;
+        for (dim_t i=ndims; i<4; ++i) idxrs[i] = spanner;
 
-        for (dim_type i=0; i<ndims; ++i) {
+        for (dim_t i=0; i<ndims; ++i) {
             if (!indexs[i].isSeq) {
                 // check if all af_arrays have atleast one value
                 // to enable indexing along that dimension

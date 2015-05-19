@@ -10,7 +10,9 @@
 
 // Workaround for BOOST_NOINLINE not being defined with nvcc / CUDA < 6.5
 #if CUDA_VERSION < 6050
+#ifndef BOOST_NOINLINE
 #define BOOST_NOINLINE __attribute__ ((noinline))
+#endif
 #endif
 
 #include <af/array.h>
@@ -96,7 +98,7 @@ namespace cuda
 
         JIT::Node_ptr node;
         bool ready;
-        dim_type offset;
+        dim_t offset;
         bool owner;
 
         Array(af::dim4 dims);
@@ -114,7 +116,7 @@ namespace cuda
         void eval();
         void eval() const;
 
-        dim_type getOffset() const { return offset; }
+        dim_t getOffset() const { return offset; }
         shared_ptr<T> getData() const { return data; }
 
         dim4 getDataDims() const

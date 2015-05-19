@@ -13,7 +13,7 @@ void pack_data(
     KParam            oInfo,
     __global const T *d_in,
     KParam            iInfo,
-    const dim_type    di0_half,
+    const int    di0_half,
     const int         odd_di0)
 {
     const int t = get_global_id(0);
@@ -23,26 +23,26 @@ void pack_data(
     if (t >= tMax)
         return;
 
-    const dim_type do0 = oInfo.dims[0];
-    const dim_type do1 = oInfo.dims[1];
-    const dim_type do2 = oInfo.dims[2];
+    const int do0 = oInfo.dims[0];
+    const int do1 = oInfo.dims[1];
+    const int do2 = oInfo.dims[2];
 
-    const dim_type so1 = oInfo.strides[1];
-    const dim_type so2 = oInfo.strides[2];
-    const dim_type so3 = oInfo.strides[3];
+    const int so1 = oInfo.strides[1];
+    const int so2 = oInfo.strides[2];
+    const int so3 = oInfo.strides[3];
 
     const int to0 = t % so1;
     const int to1 = (t / so1) % do1;
     const int to2 = (t / so2) % do2;
     const int to3 = t / so3;
 
-    const dim_type di0 = iInfo.dims[0];
-    const dim_type di1 = iInfo.dims[1];
-    const dim_type di2 = iInfo.dims[2];
+    const int di0 = iInfo.dims[0];
+    const int di1 = iInfo.dims[1];
+    const int di2 = iInfo.dims[2];
 
-    const dim_type si1 = iInfo.strides[1];
-    const dim_type si2 = iInfo.strides[2];
-    const dim_type si3 = iInfo.strides[3];
+    const int si1 = iInfo.strides[1];
+    const int si2 = iInfo.strides[2];
+    const int si3 = iInfo.strides[3];
 
     const int ti0 = to0;
     const int ti1 = to1 * si1;
@@ -85,27 +85,27 @@ void pad_array(
     if (t >= tMax)
         return;
 
-    const dim_type do0 = oInfo.dims[0];
-    const dim_type do1 = oInfo.dims[1];
-    const dim_type do2 = oInfo.dims[2];
+    const int do0 = oInfo.dims[0];
+    const int do1 = oInfo.dims[1];
+    const int do2 = oInfo.dims[2];
 
-    const dim_type so1 = oInfo.strides[1];
-    const dim_type so2 = oInfo.strides[2];
-    const dim_type so3 = oInfo.strides[3];
+    const int so1 = oInfo.strides[1];
+    const int so2 = oInfo.strides[2];
+    const int so3 = oInfo.strides[3];
 
     const int to0 = t % so1;
     const int to1 = (t / so1) % do1;
     const int to2 = (t / so2) % do2;
     const int to3 = (t / so3);
 
-    const dim_type di0 = iInfo.dims[0];
-    const dim_type di1 = iInfo.dims[1];
-    const dim_type di2 = iInfo.dims[2];
-    const dim_type di3 = iInfo.dims[3];
+    const int di0 = iInfo.dims[0];
+    const int di1 = iInfo.dims[1];
+    const int di2 = iInfo.dims[2];
+    const int di3 = iInfo.dims[3];
 
-    const dim_type si1 = iInfo.strides[1];
-    const dim_type si2 = iInfo.strides[2];
-    const dim_type si3 = iInfo.strides[3];
+    const int si1 = iInfo.strides[1];
+    const int si2 = iInfo.strides[2];
+    const int si3 = iInfo.strides[3];
 
     const int ti0 = to0;
     const int ti1 = to1 * si1;

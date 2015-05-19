@@ -33,7 +33,7 @@ static af_array histequal(const af_array& in, const af_array& hist)
     Array<float> fHist  = cast<float>(getArray<hType>(hist));
 
     dim4 hDims = fHist.dims();
-    dim_type grayLevels = fHist.elements();
+    dim_t grayLevels = fHist.elements();
 
     Array<float> cdf = scan<af_add_t, float, float>(fHist, 0);
 

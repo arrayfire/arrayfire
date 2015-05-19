@@ -13,7 +13,7 @@
 namespace opencl
 {
 
-template<typename T, typename convT, typename cT, bool isDouble, bool roundOut, dim_type baseDim>
+template<typename T, typename convT, typename cT, bool isDouble, bool roundOut, dim_t baseDim>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool expand, ConvolveBatchKind kind);
 
 }

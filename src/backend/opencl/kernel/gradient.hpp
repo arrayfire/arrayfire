@@ -31,8 +31,8 @@ namespace opencl
     namespace kernel
     {
         // Kernel Launch Config Values
-        static const dim_type TX = 32;
-        static const dim_type TY = 8;
+        static const int TX = 32;
+        static const int TY = 8;
 
         template<typename T>
         void gradient(Param grad0, Param grad1, const Param in)
@@ -67,13 +67,13 @@ namespace opencl
                 });
 
                 auto gradOp = make_kernel<Buffer, const KParam, Buffer, const KParam,
-                                    const Buffer, const KParam, const dim_type, const dim_type>
+                                    const Buffer, const KParam, const int, const int>
                                         (*gradKernels[device]);
 
                 NDRange local(TX, TY, 1);
 
-                dim_type blocksPerMatX = divup(in.info.dims[0], TX);
-                dim_type blocksPerMatY = divup(in.info.dims[1], TY);
+                int blocksPerMatX = divup(in.info.dims[0], TX);
+                int blocksPerMatY = divup(in.info.dims[1], TY);
                 NDRange global(local[0] * blocksPerMatX * in.info.dims[2],
                                local[1] * blocksPerMatY * in.info.dims[3],
                                1);

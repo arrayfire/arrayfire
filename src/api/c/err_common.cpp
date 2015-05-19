@@ -144,7 +144,7 @@ print_error(const stringstream &msg)
     global_err_string = msg.str();
 }
 
-void af_get_last_error(char **str, dim_type *len)
+void af_get_last_error(char **str, dim_t *len)
 {
     *len = std::min(MAX_ERR_SIZE, (int)global_err_string.size());
 

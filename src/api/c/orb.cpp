@@ -60,7 +60,7 @@ af_err af_orb(af_features* feat, af_array* desc,
         ARG_ASSERT(5, scl_fctr > 1.0f);
         ARG_ASSERT(6, levels > 0);
 
-        dim_type in_ndims = dims.ndims();
+        dim_t in_ndims = dims.ndims();
         DIM_ASSERT(1, (in_ndims <= 3 && in_ndims >= 2));
 
         af_array tmp_desc;

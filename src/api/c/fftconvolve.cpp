@@ -21,17 +21,17 @@
 using af::dim4;
 using namespace detail;
 
-template<typename T, typename convT, typename cT, bool isDouble, bool roundOut, dim_type baseDim>
+template<typename T, typename convT, typename cT, bool isDouble, bool roundOut, dim_t baseDim>
 inline static af_array fftconvolve(const af_array &s, const af_array &f, const bool expand, ConvolveBatchKind kind)
 {
     return getHandle(fftconvolve<T, convT, cT, isDouble, roundOut, baseDim>(getArray<T>(s), castArray<T>(f), expand, kind));
 }
 
-template<dim_type baseDim>
+template<dim_t baseDim>
 ConvolveBatchKind identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
 {
-    dim_type sn = sDims.ndims();
-    dim_type fn = fDims.ndims();
+    dim_t sn = sDims.ndims();
+    dim_t fn = fDims.ndims();
 
     if (sn==baseDim && fn==baseDim)
         return ONE2ONE;
@@ -41,7 +41,7 @@ ConvolveBatchKind identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
         return MANY2ONE;
     else if ((sn>baseDim && sn<=4) && (fn>baseDim && fn<=4)) {
         bool doesDimensionsMatch = true;
-        for (dim_type i=baseDim; i<4; i++) {
+        for (dim_t i=baseDim; i<4; i++) {
             if (sDims[i]!=fDims[i]) {
                 doesDimensionsMatch = false;
                 break;
@@ -53,7 +53,7 @@ ConvolveBatchKind identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
         return CONVOLVE_UNSUPPORTED_BATCH_MODE;
 }
 
-template<typename T, dim_type baseDim>
+template<typename T, int baseDim>
 static inline
 af_array fftconvcplx(const af_array signal, const af_array filter, bool expand,
                      ConvolveBatchKind kind)
@@ -67,7 +67,7 @@ af_array fftconvcplx(const af_array signal, const af_array filter, bool expand,
 
     int count = 1;
     for (int i = 0; i < baseDim; i++) {
-        dim_type tdim_i = sdims[i] + fdims[i] - 1;
+        dim_t tdim_i = sdims[i] + fdims[i] - 1;
 
         // Pad temporary buffers to power of 2 for performance
         tdims[i] = nextpow2(tdim_i);
@@ -108,7 +108,7 @@ af_array fftconvcplx(const af_array signal, const af_array filter, bool expand,
     return getHandle(T1);
 }
 
-template<dim_type baseDim>
+template<dim_t baseDim>
 af_err fftconvolve(af_array *out, const af_array signal, const af_array filter, const bool expand)
 {
     try {

@@ -11,8 +11,8 @@
 #define __KPARAM_H
 typedef struct
 {
-    dim_type dims[4];
-    dim_type strides[4];
-    dim_type offset;
+    dim_t dims[4];
+    dim_t strides[4];
+    dim_t offset;
 } KParam;
 #endif

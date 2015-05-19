@@ -33,22 +33,22 @@ namespace cpu
         const af::dim4 ist = in.strides();
         const af::dim4 ost = out.strides();
 
-        for(dim_type ow = 0; ow < oDims[3]; ow++) {
-            const dim_type iw = ow % iDims[3];
-            const dim_type iW = iw * ist[3];
-            const dim_type oW = ow * ost[3];
-            for(dim_type oz = 0; oz < oDims[2]; oz++) {
-                const dim_type iz = oz % iDims[2];
-                const dim_type iZW = iW + iz * ist[2];
-                const dim_type oZW = oW + oz * ost[2];
-                for(dim_type oy = 0; oy < oDims[1]; oy++) {
-                    const dim_type iy = oy % iDims[1];
-                    const dim_type iYZW = iZW + iy * ist[1];
-                    const dim_type oYZW = oZW + oy * ost[1];
-                    for(dim_type ox = 0; ox < oDims[0]; ox++) {
-                        const dim_type ix = ox % iDims[0];
-                        const dim_type iMem = iYZW + ix;
-                        const dim_type oMem = oYZW + ox;
+        for(dim_t ow = 0; ow < oDims[3]; ow++) {
+            const dim_t iw = ow % iDims[3];
+            const dim_t iW = iw * ist[3];
+            const dim_t oW = ow * ost[3];
+            for(dim_t oz = 0; oz < oDims[2]; oz++) {
+                const dim_t iz = oz % iDims[2];
+                const dim_t iZW = iW + iz * ist[2];
+                const dim_t oZW = oW + oz * ost[2];
+                for(dim_t oy = 0; oy < oDims[1]; oy++) {
+                    const dim_t iy = oy % iDims[1];
+                    const dim_t iYZW = iZW + iy * ist[1];
+                    const dim_t oYZW = oZW + oy * ost[1];
+                    for(dim_t ox = 0; ox < oDims[0]; ox++) {
+                        const dim_t ix = ox % iDims[0];
+                        const dim_t iMem = iYZW + ix;
+                        const dim_t oMem = oYZW + ox;
                         outPtr[oMem] = inPtr[iMem];
                     }
                 }
