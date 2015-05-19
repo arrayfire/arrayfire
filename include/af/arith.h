@@ -556,6 +556,16 @@ namespace af
     AFAPI array log10  (const array &in);
 
     /**
+       C++ Interface for logarithm base 2
+
+       \param[in] in is input
+       \return the logarithm of input in base 2
+
+       \ingroup explog_func_log2
+    */
+    AFAPI array log2   (const array &in);
+
+    /**
        C++ Interface for square root of input
 
        \param[in] in is input
@@ -1277,6 +1287,17 @@ extern "C" {
        \ingroup explog_func_log10
     */
     AFAPI af_err af_log10   (af_array *out, const af_array in);
+
+    /**
+       C Interface for logarithm base 2
+
+       \param[out] out will contain the base 2 logarithm of \p in
+       \param[in] in is input
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup explog_func_log2
+    */
+    AFAPI af_err af_log2   (af_array *out, const af_array in);
 
     /**
        C Interface for square root
