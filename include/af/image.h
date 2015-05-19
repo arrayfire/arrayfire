@@ -59,7 +59,7 @@ AFAPI void saveImage(const char* filename, const array& in);
 
     \ingroup transform_func_resize
 */
-AFAPI array resize(const array& in, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST);
+AFAPI array resize(const array& in, const dim_t odim0, const dim_t odim1, const interpType method=AF_INTERP_NEAREST);
 
 /**
     C++ Interface for resizing an image to specified scales
@@ -112,7 +112,7 @@ AFAPI array rotate(const array& in, const float theta, const bool crop=true, con
 
     \ingroup transform_func_transform
 */
-AFAPI array transform(const array& in, const array& transform, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST, const bool inverse=true);
+AFAPI array transform(const array& in, const array& transform, const dim_t odim0 = 0, const dim_t odim1 = 0, const interpType method=AF_INTERP_NEAREST, const bool inverse=true);
 
 /**
     C++ Interface for translating an image
@@ -127,7 +127,7 @@ AFAPI array transform(const array& in, const array& transform, const dim_type od
 
     \ingroup transform_func_translate
 */
-AFAPI array translate(const array& in, const float trans0, const float trans1, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST);
+AFAPI array translate(const array& in, const float trans0, const float trans1, const dim_t odim0 = 0, const dim_t odim1 = 0, const interpType method=AF_INTERP_NEAREST);
 
 /**
     C++ Interface for scaling an image
@@ -142,7 +142,7 @@ AFAPI array translate(const array& in, const float trans0, const float trans1, c
 
     \ingroup transform_func_scale
 */
-AFAPI array scale(const array& in, const float scale0, const float scale1, const dim_type odim0, const dim_type odim1, const interpType method=AF_INTERP_NEAREST);
+AFAPI array scale(const array& in, const float scale0, const float scale1, const dim_t odim0 = 0, const dim_t odim1 = 0, const interpType method=AF_INTERP_NEAREST);
 
 /**
     C++ Interface for skewing an image
@@ -158,7 +158,7 @@ AFAPI array scale(const array& in, const float scale0, const float scale1, const
 
     \ingroup transform_func_skew
 */
-AFAPI array skew(const array& in, const float skew0, const float skew1, const dim_type odim0, const dim_type odim1, const bool inverse=true, const interpType method=AF_INTERP_NEAREST);
+AFAPI array skew(const array& in, const float skew0, const float skew1, const dim_t odim0 = 0, const dim_t odim1 = 0, const bool inverse=true, const interpType method=AF_INTERP_NEAREST);
 
 /**
     C++ Interface for bilateral filter
@@ -229,7 +229,7 @@ AFAPI array meanshift(const array& in, const float spatial_sigma, const float ch
 
     \ingroup image_func_medfilt
 */
-AFAPI array medfilt(const array& in, const dim_type wind_length = 3, const dim_type wind_width = 3, const padType edge_pad = AF_PAD_ZERO);
+AFAPI array medfilt(const array& in, const dim_t wind_length = 3, const dim_t wind_width = 3, const padType edge_pad = AF_PAD_ZERO);
 
 /**
     C++ Interface for image dilation (max filter)
@@ -559,7 +559,7 @@ extern "C" {
 
        \ingroup transform_func_resize
     */
-    AFAPI af_err af_resize(af_array *out, const af_array in, const dim_type odim0, const dim_type odim1, const af_interp_type method);
+    AFAPI af_err af_resize(af_array *out, const af_array in, const dim_t odim0, const dim_t odim1, const af_interp_type method);
 
     /**
        C Interface for transforming an image
@@ -577,7 +577,7 @@ extern "C" {
        \ingroup transform_func_transform
     */
     AFAPI af_err af_transform(af_array *out, const af_array in, const af_array transform,
-                              const dim_type odim0, const dim_type odim1,
+                              const dim_t odim0, const dim_t odim1,
                               const af_interp_type method, const bool inverse);
 
     /**
@@ -611,7 +611,7 @@ extern "C" {
       \ingroup transform_func_translate
    */
     AFAPI af_err af_translate(af_array *out, const af_array in, const float trans0, const float trans1,
-                              const dim_type odim0, const dim_type odim1, const af_interp_type method);
+                              const dim_t odim0, const dim_t odim1, const af_interp_type method);
     /**
        C Interface for scaling an image
 
@@ -628,7 +628,7 @@ extern "C" {
        \ingroup transform_func_scale
     */
     AFAPI af_err af_scale(af_array *out, const af_array in, const float scale0, const float scale1,
-                          const dim_type odim0, const dim_type odim1, const af_interp_type method);
+                          const dim_t odim0, const dim_t odim1, const af_interp_type method);
     /**
        C Interface for skewing an image
 
@@ -646,7 +646,7 @@ extern "C" {
        \ingroup transform_func_skew
     */
     AFAPI af_err af_skew(af_array *out, const af_array in, const float skew0, const float skew1,
-                         const dim_type odim0, const dim_type odim1, const af_interp_type method,
+                         const dim_t odim0, const dim_t odim1, const af_interp_type method,
                          const bool inverse);
 
     /**
@@ -765,7 +765,7 @@ extern "C" {
 
         \ingroup image_func_medfilt
     */
-    AFAPI af_err af_medfilt(af_array *out, const af_array in, const dim_type wind_length, const dim_type wind_width, const af_pad_type edge_pad);
+    AFAPI af_err af_medfilt(af_array *out, const af_array in, const dim_t wind_length, const dim_t wind_width, const af_pad_type edge_pad);
 
     /**
         C Interface for regions in an image

@@ -88,7 +88,7 @@ namespace opencl
 
         JIT::Node_ptr node;
         bool ready;
-        dim_type offset;
+        dim_t offset;
         bool owner;
 
         Array(af::dim4 dims);
@@ -121,7 +121,7 @@ namespace opencl
             return data.get();
         }
 
-        const dim_type getOffset() const
+        const dim_t getOffset() const
         {
             return offset;
         }

@@ -21,10 +21,10 @@ namespace cuda
 namespace kernel
 {
 
-template<typename T, typename accType, dim_type baseDim, bool expand>
+template<typename T, typename accType, int baseDim, bool expand>
 void convolve_nd(Param<T> out, CParam<T> signal, CParam<accType> filter, ConvolveBatchKind kind);
 
-template<typename T, typename accType, dim_type conv_dim, bool expand>
+template<typename T, typename accType, int conv_dim, bool expand>
 void convolve2(Param<T> out, CParam<T> signal, CParam<accType> filter);
 
 }

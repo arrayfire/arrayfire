@@ -14,7 +14,7 @@
 // nearest-neighbor resampling
 void resize_n_(__global T* d_out, const KParam out,
                __global const T* d_in, const KParam in,
-               const dim_type blockIdx_x, const dim_type blockIdx_y,
+               const int blockIdx_x, const int blockIdx_y,
                const float xf, const float yf)
 {
     int const ox = get_local_id(0) + blockIdx_x * get_local_size(0);
@@ -36,7 +36,7 @@ void resize_n_(__global T* d_out, const KParam out,
 // bilinear resampling
 void resize_b_(__global T* d_out, const KParam out,
                __global const T* d_in, const KParam in,
-               const dim_type blockIdx_x, const dim_type blockIdx_y,
+               const int blockIdx_x, const int blockIdx_y,
                const float xf_, const float yf_)
 {
     int const ox = get_local_id(0) + blockIdx_x * get_local_size(0);
@@ -76,15 +76,15 @@ void resize_b_(__global T* d_out, const KParam out,
 __kernel
 void resize_kernel(__global T *d_out, const KParam out,
                    __global const T *d_in, const KParam in,
-                   const dim_type b0, const dim_type b1, const float xf, const float yf)
+                   const int b0, const int b1, const float xf, const float yf)
 {
-    dim_type bIdx = get_group_id(0) / b0;
-    dim_type bIdy = get_group_id(1) / b1;
+    int bIdx = get_group_id(0) / b0;
+    int bIdy = get_group_id(1) / b1;
     // batch adjustment
     int i_off = bIdy *  in.strides[3] + bIdx *  in.strides[2] + in.offset;
     int o_off = bIdy * out.strides[3] + bIdx * out.strides[2];
-    dim_type blockIdx_x =  get_group_id(0) - bIdx * b0;
-    dim_type blockIdx_y =  get_group_id(1) - bIdy * b1;
+    int blockIdx_x =  get_group_id(0) - bIdx * b0;
+    int blockIdx_y =  get_group_id(1) - bIdy * b1;
 
     INTERP(d_out + o_off, out, d_in + i_off, in, blockIdx_x, blockIdx_y, xf, yf);
 }

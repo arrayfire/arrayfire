@@ -44,7 +44,7 @@ static outType mean(const af_array &in, const af_array &weights)
 }
 
 template<typename inType, typename outType>
-static af_array mean(const af_array &in, const dim_type dim)
+static af_array mean(const af_array &in, const dim_t dim)
 {
     Array<outType> input = cast<outType>(getArray<inType>(in));
     Array<outType>  result= mean<outType>(input, dim); /* defined in stats.h */
@@ -53,7 +53,7 @@ static af_array mean(const af_array &in, const dim_type dim)
 }
 
 template<typename inType, typename outType>
-static af_array mean(const af_array &in, const af_array &weights, const dim_type dim)
+static af_array mean(const af_array &in, const af_array &weights, const dim_t dim)
 {
     typedef typename baseOutType<outType>::type bType;
 
@@ -64,7 +64,7 @@ static af_array mean(const af_array &in, const af_array &weights, const dim_type
     return getHandle<outType>(retVal);
 }
 
-af_err af_mean(af_array *out, const af_array in, const dim_type dim)
+af_err af_mean(af_array *out, const af_array in, const dim_t dim)
 {
     try {
         ARG_ASSERT(2, (dim>=0 && dim<=3));
@@ -89,7 +89,7 @@ af_err af_mean(af_array *out, const af_array in, const dim_type dim)
     return AF_SUCCESS;
 }
 
-af_err af_mean_weighted(af_array *out, const af_array in, const af_array weights, const dim_type dim)
+af_err af_mean_weighted(af_array *out, const af_array in, const af_array weights, const dim_t dim)
 {
     try {
         ARG_ASSERT(2, (dim>=0 && dim<=3));

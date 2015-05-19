@@ -34,14 +34,14 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type THREADS_X = 16;
-static const dim_type THREADS_Y = 16;
+static const int THREADS_X = 16;
+static const int THREADS_Y = 16;
 
-static const dim_type CUBE_X    =  8;
-static const dim_type CUBE_Y    =  8;
-static const dim_type CUBE_Z    =  4;
+static const int CUBE_X    =  8;
+static const int CUBE_Y    =  8;
+static const int CUBE_Z    =  4;
 
-template<typename T, bool isDilation, dim_type windLen>
+template<typename T, bool isDilation, int windLen>
 void morph(Param         out,
         const Param      in,
         const Param      mask)
@@ -71,13 +71,13 @@ void morph(Param         out,
         auto morphOp = make_kernel<Buffer, KParam,
                                    Buffer, KParam,
                                    Buffer, cl::LocalSpaceArg,
-                                   dim_type, dim_type
+                                   int, int
                                   >(*morKernels[device]);
 
         NDRange local(THREADS_X, THREADS_Y);
 
-        dim_type blk_x = divup(in.info.dims[0], THREADS_X);
-        dim_type blk_y = divup(in.info.dims[1], THREADS_Y);
+        int blk_x = divup(in.info.dims[0], THREADS_X);
+        int blk_y = divup(in.info.dims[1], THREADS_Y);
         // launch batch * blk_x blocks along x dimension
         NDRange global(blk_x * THREADS_X * in.info.dims[2],
                        blk_y * THREADS_Y * in.info.dims[3]);
@@ -106,7 +106,7 @@ void morph(Param         out,
     }
 }
 
-template<typename T, bool isDilation, dim_type windLen>
+template<typename T, bool isDilation, int windLen>
 void morph3d(Param       out,
         const Param      in,
         const Param      mask)
@@ -135,14 +135,14 @@ void morph3d(Param       out,
 
         auto morphOp = make_kernel<Buffer, KParam,
                                    Buffer, KParam,
-                                   Buffer, cl::LocalSpaceArg, dim_type
+                                   Buffer, cl::LocalSpaceArg, int
                                   >(*morKernels[device]);
 
         NDRange local(CUBE_X, CUBE_Y, CUBE_Z);
 
-        dim_type blk_x = divup(in.info.dims[0], CUBE_X);
-        dim_type blk_y = divup(in.info.dims[1], CUBE_Y);
-        dim_type blk_z = divup(in.info.dims[2], CUBE_Z);
+        int blk_x = divup(in.info.dims[0], CUBE_X);
+        int blk_y = divup(in.info.dims[1], CUBE_Y);
+        int blk_z = divup(in.info.dims[2], CUBE_Z);
         // launch batch * blk_x blocks along x dimension
         NDRange global(blk_x * CUBE_X * in.info.dims[3],
                        blk_y * CUBE_Y,

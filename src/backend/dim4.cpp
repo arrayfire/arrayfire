@@ -30,10 +30,10 @@ dim4::dim4()
     dims[3] = 0;
 }
 
-dim4::dim4( dim_type first,
-            dim_type second,
-            dim_type third,
-            dim_type fourth)
+dim4::dim4( dim_t first,
+            dim_t second,
+            dim_t third,
+            dim_t fourth)
 {
     dims[0] = first;
     dims[1] = second;
@@ -49,7 +49,7 @@ dim4::dim4(const dim4& other)
     dims[3] = other.dims[3];
 }
 
-dim4::dim4(const unsigned ndims_, const dim_type * const dims_)
+dim4::dim4(const unsigned ndims_, const dim_t * const dims_)
 {
     for (unsigned i = 0; i < 4; i++) {
         dims[i] = ndims_ > i ? dims_[i] : 1;
@@ -57,19 +57,19 @@ dim4::dim4(const unsigned ndims_, const dim_type * const dims_)
 }
 
 
-dim_type
+dim_t
 dim4::elements() const
 {
     return dims[0] * dims[1] * dims[2] * dims[3];
 }
 
-dim_type
+dim_t
 dim4::elements()
 {
     return static_cast<const dim4&>(*this).elements();
 }
 
-dim_type
+dim_t
 dim4::ndims() const
 {
     int num = elements();
@@ -83,22 +83,22 @@ dim4::ndims() const
     return 1;
 }
 
-dim_type
+dim_t
 dim4::ndims()
 {
     return static_cast<const dim4&>(*this).ndims();
 }
 
-const dim_type&
+const dim_t&
 dim4::operator[](const unsigned dim) const
 {
     return dims[dim];
 }
 
-dim_type &
+dim_t &
 dim4::operator[](const unsigned dim)
 {
-    return const_cast<dim_type&>(static_cast<const dim4&>((*this))[dim]);
+    return const_cast<dim_t&>(static_cast<const dim4&>((*this))[dim]);
 }
 
 bool
@@ -188,9 +188,9 @@ seqElements(const af_seq &seq) {
     return out;
 }
 
-dim_type calcDim(const af_seq &seq, const dim_type &parentDim)
+dim_t calcDim(const af_seq &seq, const dim_t &parentDim)
 {
-    dim_type outDim = 1;
+    dim_t outDim = 1;
     if  (isSpan(seq)) {
         outDim = parentDim;
     } else if (isEnd(seq)) {

@@ -25,22 +25,22 @@ Array<T> hsv2rgb(const Array<T>& in)
     const dim4 dims    = in.dims();
     const dim4 strides = in.strides();
     Array<T> out       = createEmptyArray<T>(dims);
-    dim_type obStride  = out.strides()[3];
-    dim_type coff      = strides[2];
-    dim_type bCount    = dims[3];
+    dim_t obStride  = out.strides()[3];
+    dim_t coff      = strides[2];
+    dim_t bCount    = dims[3];
 
-    for(dim_type b=0; b<bCount; ++b) {
+    for(dim_t b=0; b<bCount; ++b) {
         const T* src = in.get() + b * strides[3];
         T* dst       = out.get() + b * obStride;
 
-        for(dim_type j=0; j<dims[1]; ++j) {
-            dim_type jOff = j*strides[1];
+        for(dim_t j=0; j<dims[1]; ++j) {
+            dim_t jOff = j*strides[1];
             // j steps along 2nd dimension
-            for(dim_type i=0; i<dims[0]; ++i) {
+            for(dim_t i=0; i<dims[0]; ++i) {
                 // i steps along 1st dimension
-                dim_type hIdx = i*strides[0] + jOff;
-                dim_type sIdx = hIdx + coff;
-                dim_type vIdx = sIdx + coff;
+                dim_t hIdx = i*strides[0] + jOff;
+                dim_t sIdx = hIdx + coff;
+                dim_t vIdx = sIdx + coff;
 
                 T H = src[hIdx];
                 T S = src[sIdx];
@@ -81,26 +81,26 @@ Array<T> rgb2hsv(const Array<T>& in)
     const dim4 strides = in.strides();
     Array<T> out       = createEmptyArray<T>(dims);
     dim4 oStrides      = out.strides();
-    dim_type bCount    = dims[3];
+    dim_t bCount    = dims[3];
 
-    for(dim_type b=0; b<bCount; ++b) {
+    for(dim_t b=0; b<bCount; ++b) {
         const T* src = in.get() + b * strides[3];
         T* dst       = out.get() + b * oStrides[3];
 
-        for(dim_type j=0; j<dims[1]; ++j) {
+        for(dim_t j=0; j<dims[1]; ++j) {
             // j steps along 2nd dimension
-            dim_type oj = j * oStrides[1];
-            dim_type ij = j * strides[1];
+            dim_t oj = j * oStrides[1];
+            dim_t ij = j * strides[1];
 
-            for(dim_type i=0; i<dims[0]; ++i) {
+            for(dim_t i=0; i<dims[0]; ++i) {
                 // i steps along 1st dimension
-                dim_type oIdx0 = i * oStrides[0] + oj;
-                dim_type oIdx1 = oIdx0 + oStrides[2];
-                dim_type oIdx2 = oIdx1 + oStrides[2];
+                dim_t oIdx0 = i * oStrides[0] + oj;
+                dim_t oIdx1 = oIdx0 + oStrides[2];
+                dim_t oIdx2 = oIdx1 + oStrides[2];
 
-                dim_type iIdx0 = i * strides[0]  + ij;
-                dim_type iIdx1 = iIdx0 + strides[2];
-                dim_type iIdx2 = iIdx1 + strides[2];
+                dim_t iIdx0 = i * strides[0]  + ij;
+                dim_t iIdx1 = iIdx0 + strides[2];
+                dim_t iIdx2 = iIdx1 + strides[2];
 
                 T R = src[iIdx0];
                 T G = src[iIdx1];

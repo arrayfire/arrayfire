@@ -55,7 +55,7 @@ struct meanOutType {
 };
 
 template<typename T>
-void meanDimTest(string pFileName, dim_type dim)
+void meanDimTest(string pFileName, dim_t dim)
 {
     typedef typename meanOutType<T>::type outType;
     if (noDoubleTests<T>()) return;

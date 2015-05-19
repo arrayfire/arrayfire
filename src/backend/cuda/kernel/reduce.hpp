@@ -145,7 +145,7 @@ namespace kernel
         Param<To> tmp = out;
 
         if (blocks_dim[dim] > 1) {
-            dim_type tmp_elements = 1;
+            int tmp_elements = 1;
             tmp.dims[dim] = blocks_dim[dim];
 
             for (int k = 0; k < 4; k++) tmp_elements *= tmp.dims[k];
@@ -358,7 +358,7 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op>
-    void reduce(Param<To> out, CParam<Ti> in, dim_type dim)
+    void reduce(Param<To> out, CParam<Ti> in, int dim)
     {
         switch (dim) {
         case 0: return reduce_first<Ti, To, op   >(out, in);
@@ -371,7 +371,7 @@ namespace kernel
     template<typename Ti, typename To, af_op_t op>
     To reduce_all(CParam<Ti> in)
     {
-        dim_type in_elements = in.strides[3] * in.dims[3];
+        int in_elements = in.strides[3] * in.dims[3];
 
         // FIXME: Use better heuristics to get to the optimum number
         if (in_elements > 4096) {
@@ -406,7 +406,7 @@ namespace kernel
                 tmp.strides[k] = tmp.dims[k - 1] * tmp.strides[k - 1];
             }
 
-            dim_type tmp_elements = tmp.strides[3] * tmp.dims[3];
+            int tmp_elements = tmp.strides[3] * tmp.dims[3];
 
             tmp.ptr = memAlloc<To>(tmp_elements);
             reduce_first_launcher<Ti, To, op>(tmp, in, blocks_x, blocks_y, threads_x);

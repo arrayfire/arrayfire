@@ -25,7 +25,7 @@ namespace cuda
         template<typename T, bool batch_a>
         __global__
         void iir_kernel(Param<T> y, CParam<T> c, CParam<T> a,
-                        const dim_type blocks_y)
+                        const int blocks_y)
         {
             __shared__ T s_z[MAX_A_SIZE];
             __shared__ T s_a[MAX_A_SIZE];
@@ -38,9 +38,9 @@ namespace cuda
             const int tx = threadIdx.x;
             const int num_a = a.dims[0];
 
-            dim_type y_off = idw * y.strides[3] + idz * y.strides[2] + idy * y.strides[1];
-            dim_type c_off = idw * c.strides[3] + idz * c.strides[2] + idy * c.strides[1];
-            dim_type a_off = 0;
+            int y_off = idw * y.strides[3] + idz * y.strides[2] + idy * y.strides[1];
+            int c_off = idw * c.strides[3] + idz * c.strides[2] + idy * c.strides[1];
+            int a_off = 0;
 
             if (batch_a) a_off = idw * a.strides[3] + idz * a.strides[2] + idy * a.strides[1];
 
@@ -80,8 +80,8 @@ namespace cuda
         template<typename T, bool batch_a>
         void iir(Param<T> y, CParam<T> c, CParam<T> a)
         {
-            const dim_type blocks_y = y.dims[1];
-            const dim_type blocks_x = y.dims[2];
+            const int blocks_y = y.dims[1];
+            const int blocks_x = y.dims[2];
 
             dim3 blocks(blocks_x,
                         blocks_y * y.dims[3]);

@@ -31,12 +31,12 @@ template<typename T>
 static void printer(ostream &out, const T* ptr, const ArrayInfo &info, unsigned dim)
 {
 
-    dim_type stride =   info.strides()[dim];
-    dim_type d      =   info.dims()[dim];
+    dim_t stride =   info.strides()[dim];
+    dim_t d      =   info.dims()[dim];
     ToNum<T> toNum;
 
     if(dim == 0) {
-        for(dim_type i = 0, j = 0; i < d; i++, j+=stride) {
+        for(dim_t i = 0, j = 0; i < d; i++, j+=stride) {
             out<<   std::fixed <<
                     std::setw(10) <<
                     std::setprecision(4) << toNum(ptr[j]) << " ";
@@ -44,7 +44,7 @@ static void printer(ostream &out, const T* ptr, const ArrayInfo &info, unsigned 
         out << endl;
     }
     else {
-        for(dim_type i = 0; i < d; i++) {
+        for(dim_t i = 0; i < d; i++) {
             printer(out, ptr, info, dim - 1);
             ptr += stride;
         }

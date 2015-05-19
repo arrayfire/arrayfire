@@ -19,14 +19,26 @@ namespace af
 template<>
 struct dtype_traits<cl_float2> {
     enum { af_type = c32 };
+    typedef float base_type;
     static const char* getName() { return "float2"; }
 };
 
 template<>
 struct dtype_traits<cl_double2> {
     enum { af_type = c64 };
+    typedef double base_type;
     static const char* getName() { return "double2"; }
 };
+
+#if !defined(OS_WIN)        // Windows defines size_t as ulong
+template<>
+struct dtype_traits<size_t> {
+    static const char* getName()
+    {
+        return (sizeof(size_t) == 8)  ? "ulong" : "uint";
+    }
+};
+#endif
 
 template<typename T> static bool iscplx() { return false; }
 template<> STATIC_ bool iscplx<cl_float2>() { return true; }

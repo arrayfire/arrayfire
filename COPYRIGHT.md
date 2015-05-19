@@ -5,10 +5,10 @@ Copyrights
 * [FreeImage](#freeimage)
 * [clBLAS](#clblas)
 * [clFFT](#clfft)
-* [Magma](#magma)
-* [Boost Compute](#boost-compute)
 * [Random123](#random123)
+* [Boost Compute](#boost-compute)
 * [Thrust](#thrust)
+* [Magma](#magma)
 
 ### Introduction
 ArrayFire uses software written by the following parties. Each software is listed with it's copyright, license and home page.
@@ -20,7 +20,7 @@ Copyright (C) 2014-2015, ArrayFire.
 
 ArrayFire is distributed under the BSD 3-Clause License. A copy of this license is present in the LICENSES directory.
 
-See ArrayFire home page https://github.com/arrayfire/arrayfirefor details and links to the source code.
+See ArrayFire home page https://github.com/arrayfire/arrayfire for details and links to the source code.
 
 ### FreeImage
 Copyright (C) 2014-2015, FreeImage.
@@ -66,7 +66,7 @@ Thrust is distributed under the Apache License Version 2.0 License. A copy of th
 
 See Thrust home page https://github.com/thrust/thrust for details and links to the source code.
 
-#Magma
+### Magma
 Copyright (C) 2015 The University of Tennessee.
 
 Magma is distributed under the BSD 3-Clause License. A copy of this license is present in the LICENSES directory.

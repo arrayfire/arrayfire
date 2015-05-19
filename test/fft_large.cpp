@@ -30,7 +30,7 @@ TEST(fft2, CPP_4D)
     af::cfloat *h_b = b.host<af::cfloat>();
     af::cfloat *h_B = B.host<af::cfloat>();
 
-    for (int i = 0; i < a.elements(); i++) {
+    for (int i = 0; i < (int)a.elements(); i++) {
         ASSERT_EQ(h_b[i], h_B[i]) << "at: " << i << std::endl;
     }
 
@@ -49,7 +49,7 @@ TEST(ifft2, CPP_4D)
     af::cfloat *h_b = b.host<af::cfloat>();
     af::cfloat *h_B = B.host<af::cfloat>();
 
-    for (int i = 0; i < a.elements(); i++) {
+    for (int i = 0; i < (int)a.elements(); i++) {
         ASSERT_EQ(h_b[i], h_B[i]) << "at: " << i << std::endl;
     }
 

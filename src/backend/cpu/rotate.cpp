@@ -21,11 +21,11 @@ namespace cpu
                  const af::dim4 &odims, const af::dim4 &idims,
                  const af::dim4 &ostrides, const af::dim4 &istrides)
     {
-        dim_type nimages = idims[2];
+        dim_t nimages = idims[2];
 
         void (*t_fn)(T *, const T *, const float *, const af::dim4 &,
                      const af::dim4 &, const af::dim4 &,
-                     const dim_type, const dim_type, const dim_type, const dim_type);
+                     const dim_t, const dim_t, const dim_t, const dim_t);
 
         const float c = cos(-theta), s = sin(-theta);
         float tx, ty;
@@ -40,7 +40,13 @@ namespace cpu
             ty = -(sy - ny);
         }
 
-        const float tmat[6] = {c, -s, tx, s, c, ty};
+        const float tmat[6] = {std::round( c * 1000) / 1000.0f,
+                               std::round(-s * 1000) / 1000.0f,
+                               std::round(tx * 1000) / 1000.0f,
+                               std::round( s * 1000) / 1000.0f,
+                               std::round( c * 1000) / 1000.0f,
+                               std::round(ty * 1000) / 1000.0f,
+                              };
 
         switch(method) {
             case AF_INTERP_NEAREST:
@@ -56,8 +62,8 @@ namespace cpu
 
 
         // Do transform for image
-        for(int yy = 0; yy < odims[1]; yy++) {
-            for(int xx = 0; xx < odims[0]; xx++) {
+        for(int yy = 0; yy < (int)odims[1]; yy++) {
+            for(int xx = 0; xx < (int)odims[0]; xx++) {
                 t_fn(out, in, tmat, idims, ostrides, istrides, nimages, 0, xx, yy);
             }
         }
@@ -88,15 +94,18 @@ namespace cpu
     }
 
 
-#define INSTANTIATE(T)                                                                          \
-    template Array<T> rotate(const Array<T> &in, const float theta,                            \
-                             const af::dim4 &odims, const af_interp_type method); \
+#define INSTANTIATE(T)                                                              \
+    template Array<T> rotate(const Array<T> &in, const float theta,                 \
+                             const af::dim4 &odims, const af_interp_type method);   \
 
     INSTANTIATE(float)
     INSTANTIATE(double)
     INSTANTIATE(cfloat)
-    //INSTANTIATE(cdouble)
+    INSTANTIATE(cdouble)
     INSTANTIATE(int)
     INSTANTIATE(uint)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
     INSTANTIATE(uchar)
+    INSTANTIATE(char)
 }

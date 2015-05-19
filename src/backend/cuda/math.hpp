@@ -27,6 +27,9 @@ namespace cuda
     static inline __DH__ float  abs(cfloat  cval) { return cuCabsf(cval); }
     static inline __DH__ double abs(cdouble cval) { return cuCabs (cval); }
 
+    static inline __DH__ size_t min(size_t lhs, size_t rhs) { return lhs < rhs ? lhs : rhs; }
+    static inline __DH__ size_t max(size_t lhs, size_t rhs) { return lhs > rhs ? lhs : rhs; }
+
 #ifndef __CUDA_ARCH__
     template<typename T> static inline __DH__ T min(T lhs, T rhs) { return std::min(lhs, rhs);}
     template<typename T> static inline __DH__ T max(T lhs, T rhs) { return std::max(lhs, rhs);}

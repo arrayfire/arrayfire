@@ -66,11 +66,11 @@ namespace opencl
                 });
 
 
-            const dim_type groups_y = y.info.dims[1];
-            const dim_type groups_x = y.info.dims[2];
+            const int groups_y = y.info.dims[1];
+            const int groups_x = y.info.dims[2];
 
             int threads = 256;
-            while (threads > y.info.dims[0] && threads > 32) threads /= 2;
+            while (threads > (int)y.info.dims[0] && threads > 32) threads /= 2;
 
 
             NDRange local(threads, 1);
@@ -80,7 +80,7 @@ namespace opencl
             auto iirOp = make_kernel<Buffer, KParam,
                                      Buffer, KParam,
                                      Buffer, KParam,
-                                     dim_type>(*iirKernels[device]);
+                                     int>(*iirKernels[device]);
 
             iirOp(EnqueueArgs(getQueue(), global, local),
                   *y.data, y.info, *c.data, c.info, *a.data, a.info, groups_y);

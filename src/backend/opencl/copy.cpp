@@ -25,7 +25,7 @@ namespace opencl
         // FIXME: Merge this with copyArray
         A.eval();
 
-        dim_type offset = 0;
+        dim_t offset = 0;
         cl::Buffer buf;
         Array<T> out = A;
 
@@ -53,7 +53,7 @@ namespace opencl
     Array<T> copyArray(const Array<T> &A)
     {
         Array<T> out = createEmptyArray<T>(A.dims());
-        dim_type offset = A.getOffset();
+        dim_t offset = A.getOffset();
 
         if (A.isLinear()) {
             // FIXME: Add checks
@@ -98,8 +98,8 @@ namespace opencl
                 in.isLinear() &&
                 out.elements() == in.elements())
             {
-                dim_type in_offset = in.getOffset() * sizeof(T);
-                dim_type out_offset = out.getOffset() * sizeof(T);
+                dim_t in_offset = in.getOffset() * sizeof(T);
+                dim_t out_offset = out.getOffset() * sizeof(T);
 
                 getQueue().enqueueCopyBuffer(*in.get(), *out.get(),
                                              in_offset, out_offset,

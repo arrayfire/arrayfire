@@ -17,7 +17,7 @@
 namespace opencl
 {
     template<typename T>
-    Array<T> resize(const Array<T> &in, const dim_type odim0, const dim_type odim1,
+    Array<T> resize(const Array<T> &in, const dim_t odim0, const dim_t odim1,
                     const af_interp_type method)
     {
         if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
@@ -45,7 +45,7 @@ namespace opencl
 
 #define INSTANTIATE(T)                                                  \
     template Array<T> resize<T> (const Array<T> &in,                    \
-                                 const dim_type odim0, const dim_type odim1, \
+                                 const dim_t odim0, const dim_t odim1, \
                                  const af_interp_type method);
 
 

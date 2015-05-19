@@ -69,7 +69,7 @@ void moddimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *se
         newDims[1] = 3;
         ASSERT_EQ(AF_SUCCESS, af_moddims(&outArray,subArray,newDims.ndims(),newDims.get()));
 
-        dim_type nElems;
+        dim_t nElems;
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems,outArray));
 
         outData          = new T[nElems];
@@ -203,7 +203,7 @@ void cppModdimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> 
         newDims[1] = 3;
         af::array output = af::moddims(subArray, newDims.ndims(), newDims.get());
 
-        dim_type nElems = output.elements();
+        dim_t nElems = output.elements();
         outData = new T[nElems];
         output.host((void*)outData);
     } else {

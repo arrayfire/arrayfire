@@ -81,12 +81,12 @@ namespace af
             // af::array member functions. same behavior as those below
             af_array get();
             af_array get() const;
-            dim_type elements() const;
+            dim_t elements() const;
             template<typename T> T* host() const;
             void host(void *ptr) const;
             dtype type() const;
             dim4 dims() const;
-            dim_type dims(unsigned dim) const;
+            dim_t dims(unsigned dim) const;
             unsigned numdims() const;
             size_t bytes() const;
             array copy() const;
@@ -162,7 +162,7 @@ namespace af
 
         */
         explicit
-        array(dim_type dim0, dtype ty = f32);
+        array(dim_t dim0, dtype ty = f32);
 
         /**
             Allocate a two-dimensional array of a specified size with undefined contents
@@ -187,7 +187,7 @@ namespace af
 
         */
         explicit
-        array(dim_type dim0, dim_type dim1, dtype ty = f32);
+        array(dim_t dim0, dim_t dim1, dtype ty = f32);
 
         /**
             Allocate a three-dimensional (3D) array of a specified size with undefined contents
@@ -213,7 +213,7 @@ namespace af
 
         */
         explicit
-        array(dim_type dim0, dim_type dim1, dim_type dim2, dtype ty = f32);
+        array(dim_t dim0, dim_t dim1, dim_t dim2, dtype ty = f32);
 
         /**
             Allocate a four-dimensional (4D) array of a specified size with undefined contents
@@ -239,7 +239,7 @@ namespace af
 
         */
         explicit
-        array(dim_type dim0, dim_type dim1, dim_type dim2, dim_type dim3, dtype ty = f32);
+        array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3, dtype ty = f32);
 
         /**
             Allocate an array of a specified size with undefined contents
@@ -301,8 +301,8 @@ namespace af
         */
         template<typename T>
         explicit
-        array(dim_type dim0,
-              const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
+        array(dim_t dim0,
+              const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
 
 
         /**
@@ -331,8 +331,8 @@ namespace af
         */
         template<typename T>
         explicit
-        array(dim_type dim0, dim_type dim1,
-              const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
+        array(dim_t dim0, dim_t dim1,
+              const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
 
 
         /**
@@ -360,8 +360,8 @@ namespace af
         */
         template<typename T>
         explicit
-        array(dim_type dim0, dim_type dim1, dim_type dim2,
-              const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
+        array(dim_t dim0, dim_t dim1, dim_t dim2,
+              const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
 
 
         /**
@@ -390,8 +390,8 @@ namespace af
         */
         template<typename T>
         explicit
-        array(dim_type dim0, dim_type dim1, dim_type dim2, dim_type dim3,
-              const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
+        array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3,
+              const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
 
         /**
             Create an array of specified size on the device using a host/device pointer
@@ -425,7 +425,7 @@ namespace af
         template<typename T>
         explicit
         array(const dim4& dims,
-              const T *pointer, af_source_t src=afHost, dim_type ngfor=0);
+              const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
 
         /**
             @}
@@ -449,7 +449,7 @@ namespace af
         /**
            get the number of elements in array
         */
-        dim_type elements() const;
+        dim_t elements() const;
 
         /**
            Copy array data to host and return host pointer
@@ -479,7 +479,7 @@ namespace af
         /**
            Get dimensions of the array
         */
-        dim_type dims(unsigned dim) const;
+        dim_t dims(unsigned dim) const;
 
         /**
            Get the number of dimensions of the array
@@ -952,7 +952,7 @@ extern "C" {
 
        \returns \ref AF_SUCCESS if the operation was a success
     */
-    AFAPI af_err af_create_array(af_array *arr, const void * const data, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+    AFAPI af_err af_create_array(af_array *arr, const void * const data, const unsigned ndims, const dim_t * const dims, const af_dtype type);
 
     /**
        Create af_array handle
@@ -964,7 +964,7 @@ extern "C" {
 
        \returns \ref AF_SUCCESS if the operation was a success
     */
-    AFAPI af_err af_create_handle(af_array *arr, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+    AFAPI af_err af_create_handle(af_array *arr, const unsigned ndims, const dim_t * const dims, const af_dtype type);
 
     /**
     @}

@@ -13,7 +13,7 @@
 namespace cuda
 {
 
-template<typename T, typename accT, dim_type baseDim, bool expand>
+template<typename T, typename accT, dim_t baseDim, bool expand>
 Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBatchKind kind);
 
 template<typename T, typename accT, bool expand>

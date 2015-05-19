@@ -60,7 +60,7 @@ namespace opencl
             OPENCL_NOT_SUPPORTED();                         \
         }                                                   \
         Array<T> out = createEmptyArray<T>(dims);           \
-        dim_type elements = out.elements() * 2;             \
+        dim_t elements = out.elements() * 2;             \
         kernel::random<TR, is_randu>(*out.get(), elements); \
         return out;                                         \
     }                                                       \

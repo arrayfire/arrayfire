@@ -29,7 +29,7 @@ using std::endl;
 using std::ostream_iterator;
 using af::dtype_traits;
 
-void testGeneralIndexOneArray(string pTestFile, const dim_type ndims, af_index_t* indexs, int arrayDim)
+void testGeneralIndexOneArray(string pTestFile, const dim_t ndims, af_index_t* indexs, int arrayDim)
 {
     vector<af::dim4>        numDims;
     vector< vector<float> >      in;

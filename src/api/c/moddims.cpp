@@ -38,7 +38,7 @@ af_array modDims(const af_array in, const af::dim4 &newDims)
 }
 
 af_err af_moddims(af_array *out, const af_array in,
-                  const unsigned ndims, const dim_type * const dims)
+                  const unsigned ndims, const dim_t * const dims)
 {
     try {
         ARG_ASSERT(2, ndims >= 1);
@@ -47,8 +47,8 @@ af_err af_moddims(af_array *out, const af_array in,
         af_array output = 0;
         dim4 newDims(ndims, dims);
         ArrayInfo info = getInfo(in);
-        dim_type in_elements = info.elements();
-        dim_type new_elements = newDims.elements();
+        dim_t in_elements = info.elements();
+        dim_t new_elements = newDims.elements();
 
         DIM_ASSERT(1, in_elements == new_elements);
 
@@ -84,7 +84,7 @@ af_err af_flat(af_array *out, const af_array in)
         if (in_info.ndims() == 1) {
             AF_CHECK(af_weak_copy(&res, in));
         } else {
-            const dim_type num = (dim_type)(in_info.elements());
+            const dim_t num = (dim_t)(in_info.elements());
             AF_CHECK(af_moddims(&res, in, 1, &num));
         }
 

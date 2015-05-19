@@ -212,7 +212,7 @@ namespace kernel
                 tmp.info.strides[k] = tmp.info.strides[k - 1] * tmp.info.dims   [k - 1];
             }
 
-            dim_type tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
+            int tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
 
             tmp.data = bufferAlloc(tmp_elements * sizeof(To));
 

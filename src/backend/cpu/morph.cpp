@@ -33,8 +33,8 @@ Array<T> morph(const Array<T> &in, const Array<T> &mask)
 {
     const dim4 dims       = in.dims();
     const dim4 window     = mask.dims();
-    const dim_type R0     = window[0]/2;
-    const dim_type R1     = window[1]/2;
+    const dim_t R0     = window[0]/2;
+    const dim_t R1     = window[1]/2;
     const dim4 istrides   = in.strides();
     const dim4 fstrides   = mask.strides();
 
@@ -45,21 +45,21 @@ Array<T> morph(const Array<T> &in, const Array<T> &mask)
     const T*   inData     = in.get();
     const T*   filter     = mask.get();
 
-    for(dim_type b3=0; b3<dims[3]; ++b3) {
-        for(dim_type b2=0; b2<dims[2]; ++b2) {
+    for(dim_t b3=0; b3<dims[3]; ++b3) {
+        for(dim_t b2=0; b2<dims[2]; ++b2) {
             // either channels or batch is handled by outer most loop
-            for(dim_type j=0; j<dims[1]; ++j) {
+            for(dim_t j=0; j<dims[1]; ++j) {
                 // j steps along 2nd dimension
-                for(dim_type i=0; i<dims[0]; ++i) {
+                for(dim_t i=0; i<dims[0]; ++i) {
                     // i steps along 1st dimension
                     T filterResult = inData[ getIdx(istrides, i, j) ];
 
                     // wj,wi steps along 2nd & 1st dimensions of filter window respectively
-                    for(dim_type wj=0; wj<window[1]; wj++) {
-                        for(dim_type wi=0; wi<window[0]; wi++) {
+                    for(dim_t wj=0; wj<window[1]; wj++) {
+                        for(dim_t wi=0; wi<window[0]; wi++) {
 
-                            dim_type offj = j+wj-R1;
-                            dim_type offi = i+wi-R0;
+                            dim_t offj = j+wj-R1;
+                            dim_t offi = i+wi-R0;
 
                             T maskValue = filter[ getIdx(fstrides, wi, wj) ];
 
@@ -96,12 +96,12 @@ Array<T> morph3d(const Array<T> &in, const Array<T> &mask)
 {
     const dim4 dims       = in.dims();
     const dim4 window     = mask.dims();
-    const dim_type R0     = window[0]/2;
-    const dim_type R1     = window[1]/2;
-    const dim_type R2     = window[2]/2;
+    const dim_t R0     = window[0]/2;
+    const dim_t R1     = window[1]/2;
+    const dim_t R2     = window[2]/2;
     const dim4 istrides   = in.strides();
     const dim4 fstrides   = mask.strides();
-    const dim_type bCount = dims[3];
+    const dim_t bCount = dims[3];
 
     Array<T> out         = createEmptyArray<T>(dims);
     const dim4 ostrides   = out.strides();
@@ -110,24 +110,24 @@ Array<T> morph3d(const Array<T> &in, const Array<T> &mask)
     const T*   inData     = in.get();
     const T*   filter     = mask.get();
 
-    for(dim_type batchId=0; batchId<bCount; ++batchId) {
+    for(dim_t batchId=0; batchId<bCount; ++batchId) {
         // either channels or batch is handled by outer most loop
-        for(dim_type k=0; k<dims[2]; ++k) {
+        for(dim_t k=0; k<dims[2]; ++k) {
             // k steps along 3rd dimension
-            for(dim_type j=0; j<dims[1]; ++j) {
+            for(dim_t j=0; j<dims[1]; ++j) {
                 // j steps along 2nd dimension
-                for(dim_type i=0; i<dims[0]; ++i) {
+                for(dim_t i=0; i<dims[0]; ++i) {
                     // i steps along 1st dimension
                     T filterResult = inData[ getIdx(istrides, i, j, k) ];
 
                     // wk, wj,wi steps along 2nd & 1st dimensions of filter window respectively
-                    for(dim_type wk=0; wk<window[2]; wk++) {
-                        for(dim_type wj=0; wj<window[1]; wj++) {
-                            for(dim_type wi=0; wi<window[0]; wi++) {
+                    for(dim_t wk=0; wk<window[2]; wk++) {
+                        for(dim_t wj=0; wj<window[1]; wj++) {
+                            for(dim_t wi=0; wi<window[0]; wi++) {
 
-                                dim_type offk = k+wk-R2;
-                                dim_type offj = j+wj-R1;
-                                dim_type offi = i+wi-R0;
+                                dim_t offk = k+wk-R2;
+                                dim_t offj = j+wj-R1;
+                                dim_t offi = i+wi-R0;
 
                                 T maskValue = filter[ getIdx(fstrides, wi, wj, wk) ];
 

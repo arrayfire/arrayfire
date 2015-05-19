@@ -14,10 +14,10 @@
 namespace cuda
 {
 
-static __DH__ dim_type trimIndex(const dim_type &idx, const dim_type &len)
+static __DH__ dim_t trimIndex(const int &idx, const dim_t &len)
 {
-    dim_type ret_val = idx;
-    dim_type offset  = abs(ret_val)%len;
+    int ret_val = idx;
+    int offset  = abs(ret_val)%len;
     if (ret_val<0) {
         ret_val = offset-1;
     } else if (ret_val>=len) {
@@ -27,4 +27,3 @@ static __DH__ dim_type trimIndex(const dim_type &idx, const dim_type &len)
 }
 
 }
-

@@ -54,7 +54,7 @@ void meanshiftTest(string pTestFile)
 
     vector<dim4>       inDims;
     vector<string>    inFiles;
-    vector<dim_type> outSizes;
+    vector<dim_t> outSizes;
     vector<string>   outFiles;
 
     readImageTests(pTestFile, inDims, inFiles, outSizes, outFiles);
@@ -67,7 +67,7 @@ void meanshiftTest(string pTestFile)
         af_array inArray_f32 = 0;
         af_array outArray    = 0;
         af_array goldArray   = 0;
-        dim_type nElems      = 0;
+        dim_t nElems      = 0;
 
         inFiles[testId].insert(0,string(TEST_DIR"/meanshift/"));
         outFiles[testId].insert(0,string(TEST_DIR"/meanshift/"));
@@ -123,7 +123,7 @@ TEST(Meanshift, Color_CPP)
 
     vector<dim4>       inDims;
     vector<string>    inFiles;
-    vector<dim_type> outSizes;
+    vector<dim_t> outSizes;
     vector<string>   outFiles;
 
     readImageTests(string(TEST_DIR"/meanshift/color.test"), inDims, inFiles, outSizes, outFiles);
@@ -136,7 +136,7 @@ TEST(Meanshift, Color_CPP)
 
         af::array img   = af::loadImage(inFiles[testId].c_str(), true);
         af::array gold  = af::loadImage(outFiles[testId].c_str(), true);
-        dim_type nElems = gold.elements();
+        dim_t nElems = gold.elements();
         af::array output= af::meanshift(img, 2.25f, 25.56f, 5, true);
 
         float * outData = new float[nElems];

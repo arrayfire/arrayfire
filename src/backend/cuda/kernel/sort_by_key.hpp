@@ -32,16 +32,16 @@ namespace cuda
             thrust::device_ptr<Tk>       okey_ptr = thrust::device_pointer_cast(okey.ptr);
             thrust::device_ptr<Tv>       oval_ptr = thrust::device_pointer_cast(oval.ptr);
 
-            for(dim_type w = 0; w < okey.dims[3]; w++) {
-                dim_type okeyW = w * okey.strides[3];
-                dim_type ovalW = w * oval.strides[3];
-                for(dim_type z = 0; z < okey.dims[2]; z++) {
-                    dim_type okeyWZ = okeyW + z * okey.strides[2];
-                    dim_type ovalWZ = ovalW + z * oval.strides[2];
-                    for(dim_type y = 0; y < okey.dims[1]; y++) {
+            for(int w = 0; w < okey.dims[3]; w++) {
+                int okeyW = w * okey.strides[3];
+                int ovalW = w * oval.strides[3];
+                for(int z = 0; z < okey.dims[2]; z++) {
+                    int okeyWZ = okeyW + z * okey.strides[2];
+                    int ovalWZ = ovalW + z * oval.strides[2];
+                    for(int y = 0; y < okey.dims[1]; y++) {
 
-                        dim_type okeyOffset = okeyWZ + y * okey.strides[1];
-                        dim_type ovalOffset = ovalWZ + y * oval.strides[1];
+                        int okeyOffset = okeyWZ + y * okey.strides[1];
+                        int ovalOffset = ovalWZ + y * oval.strides[1];
 
                         if(isAscending) {
                             thrust::sort_by_key(okey_ptr + okeyOffset, okey_ptr + okeyOffset + okey.dims[0],

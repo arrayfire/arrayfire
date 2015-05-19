@@ -48,7 +48,7 @@ namespace af
                 if (indices[i].isSeq) {
                     odims[i] = calcDim(indices[i].idx.seq, parentDims[i]);
                 } else {
-                    dim_type elems = 0;
+                    dim_t elems = 0;
                     AF_THROW(af_get_elements(&elems, indices[i].idx.arr));
                     odims[i] = elems;
                 }
@@ -97,7 +97,7 @@ namespace af
 
     static dim4 getDims(const af_array arr)
     {
-        dim_type d0, d1, d2, d3;
+        dim_t d0, d1, d2, d3;
         AF_THROW(af_get_dims(&d0, &d1, &d2, &d3, arr));
         return dim4(d0, d1, d2, d3);
     }
@@ -107,18 +107,18 @@ namespace af
     }
 
     static void initEmptyArray(af_array *arr, af::dtype ty,
-                               dim_type d0, dim_type d1=1, dim_type d2=1, dim_type d3=1)
+                               dim_t d0, dim_t d1=1, dim_t d2=1, dim_t d3=1)
     {
-        dim_type my_dims[] = {d0, d1, d2, d3};
+        dim_t my_dims[] = {d0, d1, d2, d3};
         AF_THROW(af_create_handle(arr, AF_MAX_DIMS, my_dims, ty));
     }
 
     template<typename T>
     static void initDataArray(af_array *arr, const T *ptr, af_source_t src,
-                              dim_type d0, dim_type d1=1, dim_type d2=1, dim_type d3=1)
+                              dim_t d0, dim_t d1=1, dim_t d2=1, dim_t d3=1)
     {
         af::dtype ty = (af::dtype)dtype_traits<T>::af_type;
-        dim_type my_dims[] = {d0, d1, d2, d3};
+        dim_t my_dims[] = {d0, d1, d2, d3};
         switch (src) {
         case afHost:   AF_THROW(af_create_array(arr, (const void * const)ptr, AF_MAX_DIMS, my_dims, ty)); break;
         case afDevice: AF_THROW(af_device_array(arr, (const void *      )ptr, AF_MAX_DIMS, my_dims, ty)); break;
@@ -137,23 +137,23 @@ namespace af
         initEmptyArray(&arr, ty, dims[0], dims[1], dims[2], dims[3]);
     }
 
-    array::array(dim_type d0, af::dtype ty) : arr(0)
+    array::array(dim_t d0, af::dtype ty) : arr(0)
     {
         initEmptyArray(&arr, ty, d0);
     }
 
-    array::array(dim_type d0, dim_type d1, af::dtype ty) : arr(0)
+    array::array(dim_t d0, dim_t d1, af::dtype ty) : arr(0)
     {
         initEmptyArray(&arr, ty, d0, d1);
     }
 
-    array::array(dim_type d0, dim_type d1, dim_type d2, af::dtype ty) :
+    array::array(dim_t d0, dim_t d1, dim_t d2, af::dtype ty) :
         arr(0)
     {
         initEmptyArray(&arr, ty, d0, d1, d2);
     }
 
-    array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, af::dtype ty) :
+    array::array(dim_t d0, dim_t d1, dim_t d2, dim_t d3, af::dtype ty) :
         arr(0)
     {
         initEmptyArray(&arr, ty, d0, d1, d2, d3);
@@ -161,33 +161,33 @@ namespace af
 
 #define INSTANTIATE(T)                                                  \
     template<> AFAPI                                                    \
-    array::array(const dim4 &dims, const T *ptr, af_source_t src, dim_type ngfor) \
+    array::array(const dim4 &dims, const T *ptr, af_source_t src, dim_t ngfor) \
         : arr(0)                                                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, dims[0], dims[1], dims[2], dims[3]); \
     }                                                                   \
     template<> AFAPI                                                    \
-    array::array(dim_type d0, const T *ptr, af_source_t src, dim_type ngfor) \
+    array::array(dim_t d0, const T *ptr, af_source_t src, dim_t ngfor) \
         : arr(0)                                                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0);                           \
     }                                                                   \
     template<> AFAPI                                                    \
-    array::array(dim_type d0, dim_type d1, const T *ptr, af_source_t src, \
-                 dim_type ngfor) : arr(0)                               \
+    array::array(dim_t d0, dim_t d1, const T *ptr, af_source_t src, \
+                 dim_t ngfor) : arr(0)                               \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0, d1);                       \
     }                                                                   \
     template<> AFAPI                                                    \
-    array::array(dim_type d0, dim_type d1, dim_type d2, const T *ptr,   \
-                 af_source_t src, dim_type ngfor) :                     \
+    array::array(dim_t d0, dim_t d1, dim_t d2, const T *ptr,   \
+                 af_source_t src, dim_t ngfor) :                     \
         arr(0)                                                          \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0, d1, d2);                   \
     }                                                                   \
     template<> AFAPI                                                    \
-    array::array(dim_type d0, dim_type d1, dim_type d2, dim_type d3, const T *ptr, \
-                 af_source_t src, dim_type ngfor) :                     \
+    array::array(dim_t d0, dim_t d1, dim_t d2, dim_t d3, const T *ptr, \
+                 af_source_t src, dim_t ngfor) :                     \
         arr(0)                                                          \
                                                                         \
     {                                                                   \
@@ -221,9 +221,9 @@ namespace af
         return my_type;
     }
 
-    dim_type array::elements() const
+    dim_t array::elements() const
     {
-        dim_type elems;
+        dim_t elems;
         AF_THROW(af_get_elements(&elems, get()));
         return elems;
     }
@@ -249,7 +249,7 @@ namespace af
         return getDims(get());
     }
 
-    dim_type array::dims(unsigned dim) const
+    dim_t array::dims(unsigned dim) const
     {
         return dims()[dim];
     }
@@ -261,7 +261,7 @@ namespace af
 
     size_t array::bytes() const
     {
-        dim_type nElements;
+        dim_t nElements;
         AF_THROW(af_get_elements(&nElements, get()));
         return nElements * size_of(type());
     }
@@ -472,7 +472,7 @@ namespace af
         return out.as(type);
     }
 
-    dim_type array::array_proxy::dims(unsigned dim) const
+    dim_t array::array_proxy::dims(unsigned dim) const
     {
         array out = *this;
         return out.dims(dim);
@@ -500,7 +500,7 @@ namespace af
     }
 
     MEM_FUNC(af_array               , get)
-    MEM_FUNC(dim_type               , elements)
+    MEM_FUNC(dim_t               , elements)
     MEM_FUNC(array                  , T)
     MEM_FUNC(array                  , H)
     MEM_FUNC(dtype                  , type)

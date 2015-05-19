@@ -26,19 +26,19 @@ namespace cuda
         template<typename T, bool same_dims>
         __global__
         void lu_split_kernel(Param<T> lower, Param<T> upper, Param<T> in,
-                             const dim_type blocksPerMatX, const dim_type blocksPerMatY)
+                             const int blocksPerMatX, const int blocksPerMatY)
         {
-            const dim_type oz = blockIdx.x / blocksPerMatX;
-            const dim_type ow = blockIdx.y / blocksPerMatY;
+            const int oz = blockIdx.x / blocksPerMatX;
+            const int ow = blockIdx.y / blocksPerMatY;
 
-            const dim_type blockIdx_x = blockIdx.x - oz * blocksPerMatX;
-            const dim_type blockIdx_y = blockIdx.y - ow * blocksPerMatY;
+            const int blockIdx_x = blockIdx.x - oz * blocksPerMatX;
+            const int blockIdx_y = blockIdx.y - ow * blocksPerMatY;
 
-            const dim_type xx = threadIdx.x + blockIdx_x * blockDim.x;
-            const dim_type yy = threadIdx.y + blockIdx_y * blockDim.y;
+            const int xx = threadIdx.x + blockIdx_x * blockDim.x;
+            const int yy = threadIdx.y + blockIdx_y * blockDim.y;
 
-            const dim_type incy = blocksPerMatY * blockDim.y;
-            const dim_type incx = blocksPerMatX * blockDim.x;
+            const int incy = blocksPerMatY * blockDim.y;
+            const int incx = blocksPerMatX * blockDim.x;
 
             T *d_l = lower.ptr;
             T *d_u = upper.ptr;
@@ -49,11 +49,11 @@ namespace cuda
                 d_l = d_l + oz * lower.strides[2] + ow * lower.strides[3];
                 d_u = d_u + oz * upper.strides[2] + ow * upper.strides[3];
 
-                for (dim_type oy = yy; oy < in.dims[1]; oy += incy) {
+                for (int oy = yy; oy < in.dims[1]; oy += incy) {
                     T *Yd_i = d_i + oy * in.strides[1];
                     T *Yd_l = d_l +  oy * lower.strides[1];
                     T *Yd_u = d_u +  oy * upper.strides[1];
-                    for (dim_type ox = xx; ox < in.dims[0]; ox += incx) {
+                    for (int ox = xx; ox < in.dims[0]; ox += incx) {
                         if(ox > oy) {
                             if(same_dims || oy < lower.dims[1])
                                 Yd_l[ox] = Yd_i[ox];
@@ -83,8 +83,8 @@ namespace cuda
         {
             dim3 threads(TX, TY, 1);
 
-            dim_type blocksPerMatX = divup(in.dims[0], TILEX);
-            dim_type blocksPerMatY = divup(in.dims[1], TILEY);
+            int blocksPerMatX = divup(in.dims[0], TILEX);
+            int blocksPerMatY = divup(in.dims[1], TILEY);
             dim3 blocks(blocksPerMatX * in.dims[2],
                         blocksPerMatY * in.dims[3],
                         1);

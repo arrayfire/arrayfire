@@ -74,8 +74,8 @@ void lu_split_launcher(Param lower, Param upper, const Param in)
 
         NDRange local(TX, TY);
 
-        dim_type groups_x = divup(in.info.dims[0], TILEX);
-        dim_type groups_y = divup(in.info.dims[1], TILEY);
+        int groups_x = divup(in.info.dims[0], TILEX);
+        int groups_y = divup(in.info.dims[1], TILEY);
 
         NDRange global(groups_x * local[0] * in.info.dims[2],
                        groups_y * local[1] * in.info.dims[3]);
@@ -83,7 +83,7 @@ void lu_split_launcher(Param lower, Param upper, const Param in)
         auto lu_split_op = make_kernel<Buffer, const KParam,
                                        Buffer, const KParam,
                                        const Buffer, const KParam,
-                                       const dim_type, const dim_type> (*splitKernels[device]);
+                                       const int, const int> (*splitKernels[device]);
 
         lu_split_op(EnqueueArgs(getQueue(), global, local),
                     *lower.data, lower.info,

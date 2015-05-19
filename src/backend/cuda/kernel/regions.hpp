@@ -26,8 +26,8 @@
 
 #if __CUDACC__
 
-static const dim_type THREADS_X = 16;
-static const dim_type THREADS_Y = 16;
+static const int THREADS_X = 16;
+static const int THREADS_Y = 16;
 
 // This flag is used to track convergence (i.e. it is set, whenever
 // any label equivalency changes.  When no labels changed, the
@@ -405,8 +405,8 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
 {
     const dim3 threads(THREADS_X, THREADS_Y);
 
-    const dim_type blk_x = divup(in.dims[0], threads.x*2);
-    const dim_type blk_y = divup(in.dims[1], threads.y*2);
+    const int blk_x = divup(in.dims[0], threads.x*2);
+    const int blk_y = divup(in.dims[1], threads.y*2);
 
     const dim3 blocks(blk_x, blk_y);
 

@@ -81,7 +81,7 @@ void fftconvolveTest(string pTestFile, bool expand)
     vector<T> currGoldBar = tests[0];
     size_t nElems         = currGoldBar.size();
 
-    dim_type out_elems = 0;
+    dim_t out_elems = 0;
     ASSERT_EQ(AF_SUCCESS, af_get_elements(&out_elems, outArray));
     ASSERT_EQ(nElems, (size_t)out_elems);
 

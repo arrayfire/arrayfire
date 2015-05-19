@@ -60,13 +60,13 @@ namespace kernel
                 });
 
             NDRange local(32, 8);
-            dim_type groups_x = divup(out.info.dims[0], local[0]);
-            dim_type groups_y = divup(out.info.dims[1], local[1]);
+            int groups_x = divup(out.info.dims[0], local[0]);
+            int groups_y = divup(out.info.dims[1], local[1]);
             NDRange global(groups_x * out.info.dims[2] * local[0],
                            groups_y * out.info.dims[3] * local[1]);
 
             auto identityOp = make_kernel<Buffer, const KParam,
-                                          dim_type, dim_type> (*identityKernels[device]);
+                                          int, int> (*identityKernels[device]);
 
             identityOp(EnqueueArgs(getQueue(), global, local),
                        *(out.data), out.info, groups_x, groups_y);
