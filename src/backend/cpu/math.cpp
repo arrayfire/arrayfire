@@ -13,6 +13,9 @@ namespace cpu
     uint abs(uint val) { return val; }
     uchar abs(uchar val) { return val; }
     uintl abs(uintl val) { return val; }
+#if !defined(OS_WIN)
+    size_t abs(size_t val) { return val; }
+#endif
 
     cfloat  scalar(float val)
     {

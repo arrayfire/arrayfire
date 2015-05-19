@@ -36,7 +36,7 @@ class Rotate : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int, intl, uintl, unsigned char, char> TestTypes;
+typedef ::testing::Types<float, double, cfloat, cdouble, int, intl, char> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Rotate, TestTypes);
