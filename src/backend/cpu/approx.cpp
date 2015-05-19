@@ -21,11 +21,11 @@ namespace cpu
     template<typename Ty, typename Tp, af_interp_type method>
     struct approx1_op
     {
-        void operator()(Ty *out, const af::dim4 &odims, const dim_type oElems,
-                  const Ty *in,  const af::dim4 &idims, const dim_type iElems,
+        void operator()(Ty *out, const af::dim4 &odims, const dim_t oElems,
+                  const Ty *in,  const af::dim4 &idims, const dim_t iElems,
                   const Tp *pos, const af::dim4 &pdims,
                   const af::dim4 &ostrides, const af::dim4 &istrides, const af::dim4 &pstrides,
-                  const float offGrid, const dim_type idx)
+                  const float offGrid, const dim_t idx)
         {
             return;
         }
@@ -34,13 +34,13 @@ namespace cpu
     template<typename Ty, typename Tp>
     struct approx1_op<Ty, Tp, AF_INTERP_NEAREST>
     {
-        void operator()(Ty *out, const af::dim4 &odims, const dim_type oElems,
-                  const Ty *in,  const af::dim4 &idims, const dim_type iElems,
+        void operator()(Ty *out, const af::dim4 &odims, const dim_t oElems,
+                  const Ty *in,  const af::dim4 &idims, const dim_t iElems,
                   const Tp *pos, const af::dim4 &pdims,
                   const af::dim4 &ostrides, const af::dim4 &istrides, const af::dim4 &pstrides,
-                  const float offGrid, const dim_type idx)
+                  const float offGrid, const dim_t idx)
         {
-            const dim_type pmId = idx;
+            const dim_t pmId = idx;
 
             const Tp x = pos[pmId];
             bool gFlag = false;
@@ -48,17 +48,17 @@ namespace cpu
                 gFlag = true;
             }
 
-            for(dim_type idw = 0; idw < odims[3]; idw++) {
-                for(dim_type idz = 0; idz < odims[2]; idz++) {
-                    for(dim_type idy = 0; idy < odims[1]; idy++) {
-                        const dim_type omId = idw * ostrides[3] + idz * ostrides[2]
+            for(dim_t idw = 0; idw < odims[3]; idw++) {
+                for(dim_t idz = 0; idz < odims[2]; idz++) {
+                    for(dim_t idy = 0; idy < odims[1]; idy++) {
+                        const dim_t omId = idw * ostrides[3] + idz * ostrides[2]
                                             + idy * ostrides[1] + idx;
                         if(gFlag) {
                             out[omId] = scalar<Ty>(offGrid);
                         } else {
-                            dim_type ioff = idw * istrides[3] + idz * istrides[2]
+                            dim_t ioff = idw * istrides[3] + idz * istrides[2]
                                           + idy * istrides[1];
-                            const dim_type iMem = round(x) + ioff;
+                            const dim_t iMem = round(x) + ioff;
 
                             out[omId] = in[iMem];
                         }
@@ -71,13 +71,13 @@ namespace cpu
     template<typename Ty, typename Tp>
     struct approx1_op<Ty, Tp, AF_INTERP_LINEAR>
     {
-        void operator()(Ty *out, const af::dim4 &odims, const dim_type oElems,
-                  const Ty *in,  const af::dim4 &idims, const dim_type iElems,
+        void operator()(Ty *out, const af::dim4 &odims, const dim_t oElems,
+                  const Ty *in,  const af::dim4 &idims, const dim_t iElems,
                   const Tp *pos, const af::dim4 &pdims,
                   const af::dim4 &ostrides, const af::dim4 &istrides, const af::dim4 &pstrides,
-                  const float offGrid, const dim_type idx)
+                  const float offGrid, const dim_t idx)
         {
-            const dim_type pmId = idx;
+            const dim_t pmId = idx;
 
             const Tp x = pos[pmId];
             bool gFlag = false;
@@ -88,15 +88,15 @@ namespace cpu
             const Tp grid_x = floor(x);  // nearest grid
             const Tp off_x = x - grid_x; // fractional offset
 
-            for(dim_type idw = 0; idw < odims[3]; idw++) {
-                for(dim_type idz = 0; idz < odims[2]; idz++) {
-                    for(dim_type idy = 0; idy < odims[1]; idy++) {
-                        const dim_type omId = idw * ostrides[3] + idz * ostrides[2]
+            for(dim_t idw = 0; idw < odims[3]; idw++) {
+                for(dim_t idz = 0; idz < odims[2]; idz++) {
+                    for(dim_t idy = 0; idy < odims[1]; idy++) {
+                        const dim_t omId = idw * ostrides[3] + idz * ostrides[2]
                                             + idy * ostrides[1] + idx;
                         if(gFlag) {
                             out[omId] = scalar<Ty>(offGrid);
                         } else {
-                            dim_type ioff = idw * istrides[3] + idz * istrides[2] + idy * istrides[1] + grid_x;
+                            dim_t ioff = idw * istrides[3] + idz * istrides[2] + idy * istrides[1] + grid_x;
 
                             // Check if x and x + 1 are both valid indices
                             bool cond = (x < idims[0] - 1);
@@ -116,14 +116,14 @@ namespace cpu
     };
 
     template<typename Ty, typename Tp, af_interp_type method>
-    void approx1_(Ty *out, const af::dim4 &odims, const dim_type oElems,
-            const Ty *in,  const af::dim4 &idims, const dim_type iElems,
+    void approx1_(Ty *out, const af::dim4 &odims, const dim_t oElems,
+            const Ty *in,  const af::dim4 &idims, const dim_t iElems,
             const Tp *pos, const af::dim4 &pdims,
             const af::dim4 &ostrides, const af::dim4 &istrides, const af::dim4 &pstrides,
             const float offGrid)
     {
         approx1_op<Ty, Tp, method> op;
-        for(dim_type x = 0; x < odims[0]; x++) {
+        for(dim_t x = 0; x < odims[0]; x++) {
             op(out, odims, oElems, in, idims, iElems, pos, pdims,
                ostrides, istrides, pstrides, offGrid, x);
         }
@@ -164,12 +164,12 @@ namespace cpu
     template<typename Ty, typename Tp, af_interp_type method>
     struct approx2_op
     {
-        void operator()(Ty *out, const af::dim4 &odims, const dim_type oElems,
-                  const Ty *in,  const af::dim4 &idims, const dim_type iElems,
+        void operator()(Ty *out, const af::dim4 &odims, const dim_t oElems,
+                  const Ty *in,  const af::dim4 &idims, const dim_t iElems,
                   const Tp *pos, const af::dim4 &pdims, const Tp *qos, const af::dim4 &qdims,
                   const af::dim4 &ostrides, const af::dim4 &istrides,
                   const af::dim4 &pstrides, const af::dim4 &qstrides,
-                  const float offGrid, const dim_type idx, const dim_type idy)
+                  const float offGrid, const dim_t idx, const dim_t idy)
         {
             return;
         }
@@ -178,15 +178,15 @@ namespace cpu
     template<typename Ty, typename Tp>
     struct approx2_op<Ty, Tp, AF_INTERP_NEAREST>
     {
-        void operator()(Ty *out, const af::dim4 &odims, const dim_type oElems,
-                  const Ty *in,  const af::dim4 &idims, const dim_type iElems,
+        void operator()(Ty *out, const af::dim4 &odims, const dim_t oElems,
+                  const Ty *in,  const af::dim4 &idims, const dim_t iElems,
                   const Tp *pos, const af::dim4 &pdims, const Tp *qos, const af::dim4 &qdims,
                   const af::dim4 &ostrides, const af::dim4 &istrides,
                   const af::dim4 &pstrides, const af::dim4 &qstrides,
-                  const float offGrid, const dim_type idx, const dim_type idy)
+                  const float offGrid, const dim_t idx, const dim_t idy)
         {
-            const dim_type pmId = idy * pstrides[1] + idx;
-            const dim_type qmId = idy * qstrides[1] + idx;
+            const dim_t pmId = idy * pstrides[1] + idx;
+            const dim_t qmId = idy * qstrides[1] + idx;
 
             bool gFlag = false;
             const Tp x = pos[pmId], y = qos[qmId];
@@ -194,15 +194,15 @@ namespace cpu
                 gFlag = true;
             }
 
-            for(dim_type idw = 0; idw < odims[3]; idw++) {
-                for(dim_type idz = 0; idz < odims[2]; idz++) {
-                    const dim_type omId = idw * ostrides[3] + idz * ostrides[2]
+            for(dim_t idw = 0; idw < odims[3]; idw++) {
+                for(dim_t idz = 0; idz < odims[2]; idz++) {
+                    const dim_t omId = idw * ostrides[3] + idz * ostrides[2]
                                         + idy * ostrides[1] + idx;
                     if(gFlag) {
                         out[omId] = scalar<Ty>(offGrid);
                     } else {
-                        const dim_type grid_x = round(x), grid_y = round(y); // nearest grid
-                        const dim_type imId = idw * istrides[3] +
+                        const dim_t grid_x = round(x), grid_y = round(y); // nearest grid
+                        const dim_t imId = idw * istrides[3] +
                                               idz * istrides[2] +
                                               grid_y * istrides[1] + grid_x;
                         out[omId] = in[imId];
@@ -215,15 +215,15 @@ namespace cpu
     template<typename Ty, typename Tp>
     struct approx2_op<Ty, Tp, AF_INTERP_LINEAR>
     {
-        void operator()(Ty *out, const af::dim4 &odims, const dim_type oElems,
-                  const Ty *in,  const af::dim4 &idims, const dim_type iElems,
+        void operator()(Ty *out, const af::dim4 &odims, const dim_t oElems,
+                  const Ty *in,  const af::dim4 &idims, const dim_t iElems,
                   const Tp *pos, const af::dim4 &pdims, const Tp *qos, const af::dim4 &qdims,
                   const af::dim4 &ostrides, const af::dim4 &istrides,
                   const af::dim4 &pstrides, const af::dim4 &qstrides,
-                  const float offGrid, const dim_type idx, const dim_type idy)
+                  const float offGrid, const dim_t idx, const dim_t idy)
         {
-            const dim_type pmId = idy * pstrides[1] + idx;
-            const dim_type qmId = idy * qstrides[1] + idx;
+            const dim_t pmId = idy * pstrides[1] + idx;
+            const dim_t qmId = idy * qstrides[1] + idx;
 
             bool gFlag = false;
             const Tp x = pos[pmId], y = qos[qmId];
@@ -247,14 +247,14 @@ namespace cpu
             Tp wt = wt00 + wt10 + wt01 + wt11;
             Ty zero = scalar<Ty>(0);
 
-            for(dim_type idw = 0; idw < odims[3]; idw++) {
-                for(dim_type idz = 0; idz < odims[2]; idz++) {
-                    const dim_type omId = idw * ostrides[3] + idz * ostrides[2]
+            for(dim_t idw = 0; idw < odims[3]; idw++) {
+                for(dim_t idz = 0; idz < odims[2]; idz++) {
+                    const dim_t omId = idw * ostrides[3] + idz * ostrides[2]
                                         + idy * ostrides[1] + idx;
                     if(gFlag) {
                         out[omId] = scalar<Ty>(offGrid);
                     } else {
-                        dim_type ioff = idw * istrides[3] + idz * istrides[2]
+                        dim_t ioff = idw * istrides[3] + idz * istrides[2]
                                    + grid_y * istrides[1] + grid_x;
 
                         // Compute Weighted Values
@@ -275,16 +275,16 @@ namespace cpu
     };
 
     template<typename Ty, typename Tp, af_interp_type method>
-    void approx2_(Ty *out, const af::dim4 &odims, const dim_type oElems,
-            const Ty *in,  const af::dim4 &idims, const dim_type iElems,
+    void approx2_(Ty *out, const af::dim4 &odims, const dim_t oElems,
+            const Ty *in,  const af::dim4 &idims, const dim_t iElems,
             const Tp *pos, const af::dim4 &pdims, const Tp *qos, const af::dim4 &qdims,
             const af::dim4 &ostrides, const af::dim4 &istrides,
             const af::dim4 &pstrides, const af::dim4 &qstrides,
             const float offGrid)
     {
         approx2_op<Ty, Tp, method> op;
-        for(dim_type y = 0; y < odims[1]; y++) {
-            for(dim_type x = 0; x < odims[0]; x++) {
+        for(dim_t y = 0; y < odims[1]; y++) {
+            for(dim_t x = 0; x < odims[0]; x++) {
                 op(out, odims, oElems, in, idims, iElems, pos, pdims, qos, qdims,
                     ostrides, istrides, pstrides, qstrides, offGrid, x, y);
             }

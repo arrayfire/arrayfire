@@ -127,10 +127,10 @@ namespace opencl
         // All dimensions except join dimension must be equal
         // Compute output dims
         af::dim4 odims;
-        const dim_type n_arrays = inputs.size();
+        const dim_t n_arrays = inputs.size();
         std::vector<af::dim4> idims(n_arrays);
 
-        dim_type dim_size = 0;
+        dim_t dim_size = 0;
         for(int i = 0; i < (int)idims.size(); i++) {
             idims[i] = inputs[i].dims();
             dim_size += idims[i][dim];

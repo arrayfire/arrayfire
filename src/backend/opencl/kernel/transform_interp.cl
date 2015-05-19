@@ -50,24 +50,24 @@ T __div(T lhs, T rhs)
 #endif
 
 void transform_n(__global T *d_out, const KParam out, __global const T *d_in, const KParam in,
-                 const float *tmat, const dim_type xido, const dim_type yido, const dim_type nimages)
+                 const float *tmat, const int xido, const int yido, const int nimages)
 {
     // Compute input index
-    const dim_type xidi = round(xido * tmat[0]
+    const int xidi = round(xido * tmat[0]
                               + yido * tmat[1]
                                      + tmat[2]);
-    const dim_type yidi = round(xido * tmat[3]
+    const int yidi = round(xido * tmat[3]
                               + yido * tmat[4]
                                      + tmat[5]);
 
     // Compute memory location of indices
-    const dim_type loci = yidi * in.strides[1]  + xidi;
-    const dim_type loco = yido * out.strides[1] + xido;
+    const int loci = yidi * in.strides[1]  + xidi;
+    const int loco = yido * out.strides[1] + xido;
 
     for(int i = 0; i < nimages; i++) {
         // Compute memory location of indices
-        dim_type ioff = loci + i * in.strides[2];
-        dim_type ooff = loco + i * out.strides[2];
+        int ioff = loci + i * in.strides[2];
+        int ooff = loco + i * out.strides[2];
 
         T val; set_scalar(val, 0);
         if (xidi < in.dims[0] && yidi < in.dims[1] && xidi >= 0 && yidi >= 0) val = d_in[ioff];
@@ -77,9 +77,9 @@ void transform_n(__global T *d_out, const KParam out, __global const T *d_in, co
 }
 
 void transform_b(__global T *d_out, const KParam out, __global const T *d_in, const KParam in,
-                 const float *tmat, const dim_type xido, const dim_type yido, const dim_type nimages)
+                 const float *tmat, const int xido, const int yido, const int nimages)
 {
-    const dim_type loco = (yido * out.strides[1] + xido);
+    const int loco = (yido * out.strides[1] + xido);
 
     // Compute input index
     const float xid = xido * tmat[0]
@@ -112,10 +112,10 @@ void transform_b(__global T *d_out, const KParam out, __global const T *d_in, co
 
     const WT wt = wt00 + wt10 + wt01 + wt11;
 
-    const dim_type loci = grd_y * in.strides[1] + grd_x;
+    const int loci = grd_y * in.strides[1] + grd_x;
     for(int i = 0; i < nimages; i++) {
-        const dim_type ioff = loci + (i * in.strides[2]);
-        const dim_type ooff = loco + (i * out.strides[2]);
+        const int ioff = loci + (i * in.strides[2]);
+        const int ooff = loco + (i * out.strides[2]);
 
         // Compute Weighted Values
         VT v00 =                    __mul(wt00, d_in[ioff]);

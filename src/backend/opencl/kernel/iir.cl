@@ -49,7 +49,7 @@ __kernel
 void iir_kernel(      __global T *yptr, const KParam yinfo,
                 const __global T *cptr, const KParam cinfo,
                 const __global T *aptr, const KParam ainfo,
-                const dim_type groups_y)
+                const int groups_y)
 {
     __local T s_z[MAX_A_SIZE];
     __local T s_a[MAX_A_SIZE];
@@ -62,13 +62,13 @@ void iir_kernel(      __global T *yptr, const KParam yinfo,
     const int tx = get_local_id(0);
     const int num_a = ainfo.dims[0];
 
-    dim_type y_off = idw * yinfo.strides[3] + idz * yinfo.strides[2] + idy * yinfo.strides[1];
-    dim_type c_off = idw * cinfo.strides[3] + idz * cinfo.strides[2] + idy * cinfo.strides[1];
+    int y_off = idw * yinfo.strides[3] + idz * yinfo.strides[2] + idy * yinfo.strides[1];
+    int c_off = idw * cinfo.strides[3] + idz * cinfo.strides[2] + idy * cinfo.strides[1];
 
 #if BATCH_A
-    dim_type a_off = idw * ainfo.strides[3] + idz * ainfo.strides[2] + idy * ainfo.strides[1];
+    int a_off = idw * ainfo.strides[3] + idz * ainfo.strides[2] + idy * ainfo.strides[1];
 #else
-    dim_type a_off = 0;
+    int a_off = 0;
 #endif
 
     __global T *d_y = yptr + y_off;

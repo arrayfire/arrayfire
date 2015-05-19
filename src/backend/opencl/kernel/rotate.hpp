@@ -31,10 +31,10 @@ namespace opencl
 {
     namespace kernel
     {
-        static const dim_type TX = 16;
-        static const dim_type TY = 16;
+        static const int TX = 16;
+        static const int TY = 16;
         // Used for batching images
-        static const dim_type TI = 4;
+        static const int TI = 4;
 
         typedef struct {
             float tmat[6];
@@ -97,7 +97,7 @@ namespace opencl
                 });
 
                 auto rotateOp = make_kernel<Buffer, const KParam, const Buffer, const KParam, const tmat_t,
-                                            const dim_type, const dim_type, const dim_type, const dim_type>
+                                            const int, const int, const int, const int>
                                            (*rotateKernels[device]);
 
                 const float c = cos(-theta), s = sin(-theta);
@@ -125,15 +125,15 @@ namespace opencl
 
                 NDRange local(TX, TY, 1);
 
-                dim_type nimages  = in.info.dims[2];
-                dim_type nbatches = in.info.dims[3];
-                dim_type global_x = local[0] * divup(out.info.dims[0], local[0]);
-                dim_type global_y = local[1] * divup(out.info.dims[1], local[1]);
-                const dim_type blocksXPerImage = global_x / local[0];
-                const dim_type blocksYPerImage = global_y / local[1];
+                int nimages  = in.info.dims[2];
+                int nbatches = in.info.dims[3];
+                int global_x = local[0] * divup(out.info.dims[0], local[0]);
+                int global_y = local[1] * divup(out.info.dims[1], local[1]);
+                const int blocksXPerImage = global_x / local[0];
+                const int blocksYPerImage = global_y / local[1];
 
                 if(nimages > TI) {
-                    dim_type tile_images = divup(nimages, TI);
+                    int tile_images = divup(nimages, TI);
                     nimages = TI;
                     global_x = global_x * tile_images;
                 }

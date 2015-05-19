@@ -60,7 +60,7 @@ namespace JIT
 
         virtual int setId(int id) { m_set_id = true; return id; }
         virtual void setArgs(std::vector<void *> &args, bool is_linear) { m_set_arg = true; }
-        virtual bool isLinear(dim_type dims[4]) { return true; }
+        virtual bool isLinear(dim_t dims[4]) { return true; }
 
         virtual void resetFlags() {}
         virtual void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)

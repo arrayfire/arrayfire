@@ -54,8 +54,8 @@ void transposeip_test(af::dim4 dims)
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)trsData, inArray));
 
-    dim_type nElems = dims.elements();
-    for (int elIter = 0; elIter < nElems; ++elIter) {
+    dim_t nElems = dims.elements();
+    for (int elIter = 0; elIter < (int)nElems; ++elIter) {
         ASSERT_EQ(trsData[elIter] , outData[elIter])<< "at: " << elIter << std::endl;
     }
 
@@ -97,8 +97,8 @@ void transposeInPlaceCPPTest()
     output.host((void*)outData);
     input.host((void*)trsData);
 
-    dim_type nElems = dims.elements();
-    for (int elIter = 0; elIter < nElems; ++elIter) {
+    dim_t nElems = dims.elements();
+    for (int elIter = 0; elIter < (int)nElems; ++elIter) {
         ASSERT_EQ(trsData[elIter], outData[elIter])<< "at: " << elIter << std::endl;
     }
 

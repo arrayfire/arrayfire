@@ -29,17 +29,17 @@ void packData(To* out_ptr, const af::dim4& od, const af::dim4& os,
     const af::dim4 is = in.strides();
     const Ti* in_ptr = in.get();
 
-    dim_type id0_half = divup(id[0], 2);
+    int id0_half = divup(id[0], 2);
     bool odd_id0 = (id[0] % 2 == 1);
 
-    for (int d3 = 0; d3 < od[3]; d3++) {
-        for (int d2 = 0; d2 < od[2]; d2++) {
-            for (int d1 = 0; d1 < od[1]; d1++) {
-                for (int d0 = 0; d0 < od[0] / 2; d0++) {
-                    const dim_type oidx = d3*os[3] + d2*os[2] + d1*os[1] + d0*2;
+    for (int d3 = 0; d3 < (int)od[3]; d3++) {
+        for (int d2 = 0; d2 < (int)od[2]; d2++) {
+            for (int d1 = 0; d1 < (int)od[1]; d1++) {
+                for (int d0 = 0; d0 < (int)od[0] / 2; d0++) {
+                    const dim_t oidx = d3*os[3] + d2*os[2] + d1*os[1] + d0*2;
 
-                    if (d0 < id0_half && d1 < id[1] && d2 < id[2] && d3 < id[3]) {
-                        const dim_type iidx = d3*is[3] + d2*is[2] + d1*is[1] + d0;
+                    if (d0 < (int)id0_half && d1 < (int)id[1] && d2 < (int)id[2] && d3 < (int)id[3]) {
+                        const dim_t iidx = d3*is[3] + d2*is[2] + d1*is[1] + d0;
                         out_ptr[oidx]   = (To)in_ptr[iidx];
                         if (d0 == id0_half-1 && odd_id0)
                             out_ptr[oidx+1] = (To)0;
@@ -65,15 +65,15 @@ void padArray(To* out_ptr, const af::dim4& od, const af::dim4& os,
     const af::dim4 is = in.strides();
     const Ti* in_ptr = in.get();
 
-    for (int d3 = 0; d3 < od[3]; d3++) {
-        for (int d2 = 0; d2 < od[2]; d2++) {
-            for (int d1 = 0; d1 < od[1]; d1++) {
-                for (int d0 = 0; d0 < od[0] / 2; d0++) {
-                    const dim_type oidx = d3*os[3] + d2*os[2] + d1*os[1] + d0*2;
+    for (int d3 = 0; d3 < (int)od[3]; d3++) {
+        for (int d2 = 0; d2 < (int)od[2]; d2++) {
+            for (int d1 = 0; d1 < (int)od[1]; d1++) {
+                for (int d0 = 0; d0 < (int)od[0] / 2; d0++) {
+                    const dim_t oidx = d3*os[3] + d2*os[2] + d1*os[1] + d0*2;
 
-                    if (d0 < id[0] && d1 < id[1] && d2 < id[2] && d3 < id[3]) {
+                    if (d0 < (int)id[0] && d1 < (int)id[1] && d2 < (int)id[2] && d3 < (int)id[3]) {
                         // Copy input elements to real elements, set imaginary elements to 0
-                        const dim_type iidx = d3*is[3] + d2*is[2] + d1*is[1] + d0;
+                        const dim_t iidx = d3*is[3] + d2*is[2] + d1*is[1] + d0;
                         out_ptr[oidx]   = (To)in_ptr[iidx];
                         out_ptr[oidx+1] = (To)0;
                     }
@@ -94,10 +94,10 @@ void complexMultiply(T* out_ptr, const af::dim4& od, const af::dim4& os,
                      T* in2_ptr, const af::dim4& i2d, const af::dim4& i2s,
                      ConvolveBatchKind kind)
 {
-    for (int d3 = 0; d3 < od[3]; d3++) {
-        for (int d2 = 0; d2 < od[2]; d2++) {
-            for (int d1 = 0; d1 < od[1]; d1++) {
-                for (int d0 = 0; d0 < od[0] / 2; d0++) {
+    for (int d3 = 0; d3 < (int)od[3]; d3++) {
+        for (int d2 = 0; d2 < (int)od[2]; d2++) {
+            for (int d1 = 0; d1 < (int)od[1]; d1++) {
+                for (int d0 = 0; d0 < (int)od[0] / 2; d0++) {
                     if (kind == ONE2ONE || kind == MANY2MANY) {
                         // Complex multiply each signal to equivalent filter
                         const int ridx = d3*os[3] + d2*os[2] + d1*os[1] + d0*2;
@@ -107,10 +107,10 @@ void complexMultiply(T* out_ptr, const af::dim4& od, const af::dim4& os,
                         T b = in1_ptr[iidx];
                         T c = in2_ptr[ridx];
                         T d = in2_ptr[iidx];
-                
+
                         T ac = a*c;
                         T bd = b*d;
-                
+
                         out_ptr[ridx] = ac - bd;
                         out_ptr[iidx] = (a+b) * (c+d) - ac - bd;
                     }
@@ -125,10 +125,10 @@ void complexMultiply(T* out_ptr, const af::dim4& od, const af::dim4& os,
                         T b = in1_ptr[iidx1];
                         T c = in2_ptr[ridx2];
                         T d = in2_ptr[iidx2];
-                
+
                         T ac = a*c;
                         T bd = b*d;
-                
+
                         out_ptr[ridx1] = ac - bd;
                         out_ptr[iidx1] = (a+b) * (c+d) - ac - bd;
                     }
@@ -143,10 +143,10 @@ void complexMultiply(T* out_ptr, const af::dim4& od, const af::dim4& os,
                         T b = in1_ptr[iidx1];
                         T c = in2_ptr[ridx2];
                         T d = in2_ptr[iidx2];
-                
+
                         T ac = a*c;
                         T bd = b*d;
-                
+
                         out_ptr[ridx2] = ac - bd;
                         out_ptr[iidx2] = (a+b) * (c+d) - ac - bd;
                     }
@@ -162,10 +162,10 @@ void reorderOutput(To* out_ptr, const af::dim4& od, const af::dim4& os,
                    const af::dim4& fd, const int half_di0, const int baseDim,
                    const int fftScale, const bool expand)
 {
-    for (int d3 = 0; d3 < od[3]; d3++) {
-        for (int d2 = 0; d2 < od[2]; d2++) {
-            for (int d1 = 0; d1 < od[1]; d1++) {
-                for (int d0 = 0; d0 < od[0]; d0++) {
+    for (int d3 = 0; d3 < (int)od[3]; d3++) {
+        for (int d2 = 0; d2 < (int)od[2]; d2++) {
+            for (int d1 = 0; d1 < (int)od[1]; d1++) {
+                for (int d0 = 0; d0 < (int)od[0]; d0++) {
                     int id0, id1, id2, id3;
                     if (expand) {
                         id0 = d0;
@@ -192,7 +192,7 @@ void reorderOutput(To* out_ptr, const af::dim4& od, const af::dim4& os,
                         else
                             out_ptr[oidx] = (To)(in_ptr[iidx] / fftScale);
                     }
-                    else if (id0 < half_di0 + fd[0] - 1) {
+                    else if (id0 < half_di0 + (int)fd[0] - 1) {
                         // Add signal and filter elements to central part
                         int iidx1 = id3 + id2 + id1 + id0 * 2;
                         int iidx2 = id3 + id2 + id1 + (id0 - half_di0) * 2 + 1;
@@ -215,14 +215,14 @@ void reorderOutput(To* out_ptr, const af::dim4& od, const af::dim4& os,
     }
 }
 
-template<typename T, typename convT, typename cT, bool isDouble, bool roundOut, dim_type baseDim>
+template<typename T, typename convT, typename cT, bool isDouble, bool roundOut, dim_t baseDim>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
                      const bool expand, ConvolveBatchKind kind)
 {
     const af::dim4 sd = signal.dims();
     const af::dim4 fd = filter.dims();
 
-    dim_type fftScale = 1;
+    dim_t fftScale = 1;
 
     af::dim4 packed_dims;
     int fft_dims[baseDim];
@@ -231,7 +231,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
 
     // Pack both signal and filter on same memory array, this will ensure
     // better use of batched cuFFT capabilities
-    for (dim_type k = 0; k < 4; k++) {
+    for (dim_t k = 0; k < 4; k++) {
         if (k < baseDim)
             packed_dims[k] = nextpow2((unsigned)(sd[k] + fd[k] - 1));
         else if (k == baseDim)
@@ -253,7 +253,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     sig_tmp_dims[0]    = filter_tmp_dims[0] = packed_dims[0];
     sig_tmp_strides[0] = filter_tmp_strides[0] = 1;
 
-    for (dim_type k = 1; k < 4; k++) {
+    for (dim_t k = 1; k < 4; k++) {
         if (k < baseDim) {
             sig_tmp_dims[k]    = packed_dims[k];
             filter_tmp_dims[k] = packed_dims[k];
@@ -272,7 +272,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     convT *filter_tmp_ptr = packed_ptr + sig_tmp_strides[3] * sig_tmp_dims[3];
 
     // Number of packed complex elements in dimension 0
-    dim_type sig_half_d0 = divup(sd[0], 2);
+    dim_t sig_half_d0 = divup(sd[0], 2);
 
     // Pack signal in a complex matrix where first dimension is half the input
     // (allows faster FFT computation) and pad array to a power of 2 with 0s
@@ -372,7 +372,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     // Compute output dimensions
     dim4 oDims(1);
     if (expand) {
-        for(dim_type d=0; d<4; ++d) {
+        for(dim_t d=0; d<4; ++d) {
             if (kind==ONE2ONE || kind==ONE2MANY) {
                 oDims[d] = sd[d]+fd[d]-1;
             } else {
@@ -382,7 +382,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
     } else {
         oDims = sd;
         if (kind==ONE2MANY) {
-            for (dim_type i=baseDim; i<4; ++i)
+            for (dim_t i=baseDim; i<4; ++i)
                 oDims[i] = fd[i];
         }
     }

@@ -19,45 +19,45 @@ T doOp(T in)
 __kernel
 void transpose(__global T *oData, const KParam out,
                const __global T *iData, const KParam in,
-               const dim_type blocksPerMatX, const dim_type blocksPerMatY)
+               const int blocksPerMatX, const int blocksPerMatY)
 {
     __local T shrdMem[TILE_DIM*(TILE_DIM+1)];
 
-    const dim_type shrdStride = TILE_DIM+1;
+    const int shrdStride = TILE_DIM+1;
     // create variables to hold output dimensions
-    const dim_type oDim0 = out.dims[0];
-    const dim_type oDim1 = out.dims[1];
-    const dim_type iDim0 = in.dims[0];
-    const dim_type iDim1 = in.dims[1];
+    const int oDim0 = out.dims[0];
+    const int oDim1 = out.dims[1];
+    const int iDim0 = in.dims[0];
+    const int iDim1 = in.dims[1];
 
     // calculate strides
-    const dim_type oStride1 = out.strides[1];
-    const dim_type iStride1 = in.strides[1];
+    const int oStride1 = out.strides[1];
+    const int iStride1 = in.strides[1];
 
-    const dim_type lx = get_local_id(0);
-    const dim_type ly = get_local_id(1);
+    const int lx = get_local_id(0);
+    const int ly = get_local_id(1);
 
     // batch based block Id
-    const dim_type batchId_x  = get_group_id(0) / blocksPerMatX;
-    const dim_type blockIdx_x = (get_group_id(0) - batchId_x * blocksPerMatX);
+    const int batchId_x  = get_group_id(0) / blocksPerMatX;
+    const int blockIdx_x = (get_group_id(0) - batchId_x * blocksPerMatX);
 
-    const dim_type batchId_y  = get_group_id(1) / blocksPerMatY;
-    const dim_type blockIdx_y = (get_group_id(1) - batchId_y * blocksPerMatY);
+    const int batchId_y  = get_group_id(1) / blocksPerMatY;
+    const int blockIdx_y = (get_group_id(1) - batchId_y * blocksPerMatY);
 
-    const dim_type x0 = TILE_DIM * blockIdx_x;
-    const dim_type y0 = TILE_DIM * blockIdx_y;
+    const int x0 = TILE_DIM * blockIdx_x;
+    const int y0 = TILE_DIM * blockIdx_y;
 
     // calculate global indices
-    dim_type gx = lx + x0;
-    dim_type gy = ly + y0;
+    int gx = lx + x0;
+    int gy = ly + y0;
 
     // offset in and out based on batch id
     // also add the subBuffer offsets
     iData += batchId_x *  in.strides[2] + batchId_y *  in.strides[3] +  in.offset;
     oData += batchId_x * out.strides[2] + batchId_y * out.strides[3] + out.offset;
 
-    for (dim_type repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
-        dim_type gy_ = gy + repeat;
+    for (int repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
+        int gy_ = gy + repeat;
         if (IS32MULTIPLE || (gx < iDim0 && gy_< iDim1))
             shrdMem[(ly + repeat) * shrdStride + lx] = iData[gy_ * iStride1 + gx];
     }
@@ -66,8 +66,8 @@ void transpose(__global T *oData, const KParam out,
     gx = lx + y0;
     gy = ly + x0;
 
-    for (dim_type repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
-        dim_type gy_ = gy + repeat;
+    for (int repeat = 0; repeat < TILE_DIM; repeat += THREADS_Y) {
+        int gy_ = gy + repeat;
         if (IS32MULTIPLE || (gx < oDim0 && gy_ < oDim1)) {
             oData[gy_ * oStride1 + gx] = doOp(shrdMem[lx * shrdStride + ly + repeat]);
         }

@@ -26,7 +26,7 @@ class array;
 
    \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
 */
-AFAPI array mean(const array& in, const dim_type dim=-1);
+AFAPI array mean(const array& in, const dim_t dim=-1);
 
 /**
    C++ Interface for mean of weighted inputs
@@ -40,7 +40,7 @@ AFAPI array mean(const array& in, const dim_type dim=-1);
 
    \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
 */
-AFAPI array mean(const array& in, const array& weights, const dim_type dim=-1);
+AFAPI array mean(const array& in, const array& weights, const dim_t dim=-1);
 
 /**
    C++ Interface for variance
@@ -54,7 +54,7 @@ AFAPI array mean(const array& in, const array& weights, const dim_type dim=-1);
 
    \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
 */
-AFAPI array var(const array& in, const bool isbiased=false, const dim_type dim=-1);
+AFAPI array var(const array& in, const bool isbiased=false, const dim_t dim=-1);
 
 /**
    C++ Interface for variance of weighted inputs
@@ -68,7 +68,7 @@ AFAPI array var(const array& in, const bool isbiased=false, const dim_type dim=-
 
    \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
 */
-AFAPI array var(const array& in, const array &weights, const dim_type dim=-1);
+AFAPI array var(const array& in, const array &weights, const dim_t dim=-1);
 
 /**
    C++ Interface for standard deviation
@@ -81,7 +81,7 @@ AFAPI array var(const array& in, const array &weights, const dim_type dim=-1);
 
    \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
 */
-AFAPI array stdev(const array& in, const dim_type dim=-1);
+AFAPI array stdev(const array& in, const dim_t dim=-1);
 
 
 /**
@@ -107,7 +107,7 @@ AFAPI array cov(const array& X, const array& Y, const bool isbiased=false);
 
    \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
 */
-AFAPI array median(const array& in, const dim_type dim=-1);
+AFAPI array median(const array& in, const dim_t dim=-1);
 
 /**
    C++ Interface for mean of all elements
@@ -210,7 +210,7 @@ extern "C" {
 
    \ingroup stat_func_mean
 */
-AFAPI af_err af_mean(af_array *out, const af_array in, const dim_type dim);
+AFAPI af_err af_mean(af_array *out, const af_array in, const dim_t dim);
 
 /**
    C Interface for mean of weighted input array
@@ -224,7 +224,7 @@ AFAPI af_err af_mean(af_array *out, const af_array in, const dim_type dim);
 
    \ingroup stat_func_mean
 */
-AFAPI af_err af_mean_weighted(af_array *out, const af_array in, const af_array weights, const dim_type dim);
+AFAPI af_err af_mean_weighted(af_array *out, const af_array in, const af_array weights, const dim_t dim);
 
 /**
    C Interface for variance
@@ -239,7 +239,7 @@ AFAPI af_err af_mean_weighted(af_array *out, const af_array in, const af_array w
    \ingroup stat_func_var
 
 */
-AFAPI af_err af_var(af_array *out, const af_array in, const bool isbiased, const dim_type dim);
+AFAPI af_err af_var(af_array *out, const af_array in, const bool isbiased, const dim_t dim);
 
 /**
    C Interface for variance of weighted input array
@@ -254,7 +254,7 @@ AFAPI af_err af_var(af_array *out, const af_array in, const bool isbiased, const
    \ingroup stat_func_var
 
 */
-AFAPI af_err af_var_weighted(af_array *out, const af_array in, const af_array weights, const dim_type dim);
+AFAPI af_err af_var_weighted(af_array *out, const af_array in, const af_array weights, const dim_t dim);
 
 /**
    C Interface for standard deviation
@@ -268,7 +268,7 @@ AFAPI af_err af_var_weighted(af_array *out, const af_array in, const af_array we
    \ingroup stat_func_stdev
 
 */
-AFAPI af_err af_stdev(af_array *out, const af_array in, const dim_type dim);
+AFAPI af_err af_stdev(af_array *out, const af_array in, const dim_t dim);
 
 /**
    C Interface for covariance
@@ -295,7 +295,7 @@ AFAPI af_err af_cov(af_array* out, const af_array X, const af_array Y, const boo
 
    \ingroup stat_func_median
 */
-AFAPI af_err af_median(af_array* out, const af_array in, const dim_type dim);
+AFAPI af_err af_median(af_array* out, const af_array in, const dim_t dim);
 
 /**
    C Interface for mean of all elements

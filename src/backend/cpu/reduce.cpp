@@ -29,7 +29,7 @@ namespace cpu
         {
             static const int D1 = D - 1;
             static reduce_dim<op, Ti, To, D1> reduce_dim_next;
-            for (dim_type i = 0; i < odims[D1]; i++) {
+            for (dim_t i = 0; i < odims[D1]; i++) {
                  reduce_dim_next(out + i * ostrides[D1],
                                  ostrides, odims,
                                  in  + i * istrides[D1],
@@ -49,10 +49,10 @@ namespace cpu
                         const Ti *in , const dim4 &istrides, const dim4 &idims,
                         const int dim)
         {
-            dim_type stride = istrides[dim];
+            dim_t stride = istrides[dim];
 
             To out_val = reduce.init();
-            for (dim_type i = 0; i < idims[dim]; i++) {
+            for (dim_t i = 0; i < idims[dim]; i++) {
                 To in_val = transform(in[i * stride]);
                 out_val = reduce(in_val, out_val);
             }
@@ -97,17 +97,17 @@ namespace cpu
         af::dim4 strides = in.strides();
         const Ti *inPtr = in.get();
 
-        for(dim_type l = 0; l < dims[3]; l++) {
-            dim_type off3 = l * strides[3];
+        for(dim_t l = 0; l < dims[3]; l++) {
+            dim_t off3 = l * strides[3];
 
-            for(dim_type k = 0; k < dims[2]; k++) {
-                dim_type off2 = k * strides[2];
+            for(dim_t k = 0; k < dims[2]; k++) {
+                dim_t off2 = k * strides[2];
 
-                for(dim_type j = 0; j < dims[1]; j++) {
-                    dim_type off1 = j * strides[1];
+                for(dim_t j = 0; j < dims[1]; j++) {
+                    dim_t off1 = j * strides[1];
 
-                    for(dim_type i = 0; i < dims[0]; i++) {
-                        dim_type idx = i + off1 + off2 + off3;
+                    for(dim_t i = 0; i < dims[0]; i++) {
+                        dim_t idx = i + off1 + off2 + off3;
 
                         To val = transform(inPtr[idx]);
                         out = reduce(val, out);

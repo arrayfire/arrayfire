@@ -26,15 +26,15 @@ namespace cuda
         template<typename T>
         __host__ __device__
         void resize_n(Param<T> out, CParam<T> in,
-                      const dim_type o_off, const dim_type i_off,
-                      const dim_type blockIdx_x, const dim_type blockIdx_y,
+                      const int o_off, const int i_off,
+                      const int blockIdx_x, const int blockIdx_y,
                       const float xf, const float yf)
         {
-            const dim_type ox = threadIdx.x + blockIdx_x * blockDim.x;
-            const dim_type oy = threadIdx.y + blockIdx_y * blockDim.y;
+            const int ox = threadIdx.x + blockIdx_x * blockDim.x;
+            const int oy = threadIdx.y + blockIdx_y * blockDim.y;
 
-            dim_type ix = round(ox * xf);
-            dim_type iy = round(oy * yf);
+            int ix = round(ox * xf);
+            int iy = round(oy * yf);
 
             if (ox >= out.dims[0] || oy >= out.dims[1]) { return; }
             if (ix >= in.dims[0]) { ix = in.dims[0] - 1; }
@@ -49,18 +49,18 @@ namespace cuda
         template<typename T>
         __host__ __device__
         void resize_b(Param<T> out, CParam<T> in,
-                      const dim_type o_off, const dim_type i_off,
-                      const dim_type blockIdx_x, const dim_type blockIdx_y,
+                      const int o_off, const int i_off,
+                      const int blockIdx_x, const int blockIdx_y,
                       const float xf_, const float yf_)
         {
-            const dim_type ox = threadIdx.x + blockIdx_x * blockDim.x;
-            const dim_type oy = threadIdx.y + blockIdx_y * blockDim.y;
+            const int ox = threadIdx.x + blockIdx_x * blockDim.x;
+            const int oy = threadIdx.y + blockIdx_y * blockDim.y;
 
             float xf = ox * xf_;
             float yf = oy * yf_;
 
-            dim_type ix = floorf(xf);
-            dim_type iy = floorf(yf);
+            int ix = floorf(xf);
+            int iy = floorf(yf);
 
             if (ox >= out.dims[0] || oy >= out.dims[1]) { return; }
             if (ix >= in.dims[0]) { ix = in.dims[0] - 1; }
@@ -69,8 +69,8 @@ namespace cuda
             float b = xf - ix;
             float a = yf - iy;
 
-            const dim_type ix2 = ix + 1 <  in.dims[0] ? ix + 1 : ix;
-            const dim_type iy2 = iy + 1 <  in.dims[1] ? iy + 1 : iy;
+            const int ix2 = ix + 1 <  in.dims[0] ? ix + 1 : ix;
+            const int iy2 = iy + 1 <  in.dims[1] ? iy + 1 : iy;
 
             const T *iptr = in.ptr + i_off;
 
@@ -93,15 +93,15 @@ namespace cuda
         template<typename T, af_interp_type method>
         __global__
         void resize_kernel(Param<T> out, CParam<T> in,
-                           const dim_type b0, const dim_type b1, const float xf, const float yf)
+                           const int b0, const int b1, const float xf, const float yf)
         {
-            const dim_type bIdx = blockIdx.x / b0;
-            const dim_type bIdy = blockIdx.y / b1;
+            const int bIdx = blockIdx.x / b0;
+            const int bIdy = blockIdx.y / b1;
             // channel adjustment
-            const dim_type i_off = bIdx * in.strides[2]  + bIdy * in.strides[3];
-            const dim_type o_off = bIdx * out.strides[2] + bIdy * out.strides[3];
-            const dim_type blockIdx_x =  blockIdx.x - bIdx * b0;
-            const dim_type blockIdx_y =  blockIdx.y - bIdy * b1;
+            const int i_off = bIdx * in.strides[2]  + bIdy * in.strides[3];
+            const int o_off = bIdx * out.strides[2] + bIdy * out.strides[3];
+            const int blockIdx_x =  blockIdx.x - bIdx * b0;
+            const int blockIdx_y =  blockIdx.y - bIdy * b1;
 
             // core
             if(method == AF_INTERP_NEAREST) {
@@ -119,8 +119,8 @@ namespace cuda
         {
             dim3 threads(TX, TY, 1);
             dim3 blocks(divup(out.dims[0], threads.x), divup(out.dims[1], threads.y));
-            dim_type blocksPerMatX = blocks.x;
-            dim_type blocksPerMatY = blocks.y;
+            int blocksPerMatX = blocks.x;
+            int blocksPerMatY = blocks.y;
 
             if (in.dims[2] > 1) { blocks.x *= in.dims[2]; }
             if (in.dims[3] > 1) { blocks.y *= in.dims[3]; }

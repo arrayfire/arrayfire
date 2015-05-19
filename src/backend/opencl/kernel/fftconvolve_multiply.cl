@@ -15,7 +15,7 @@ void complex_multiply(
     KParam                i1Info,
     __global const CONVT *d_in2,
     KParam                i2Info,
-    const dim_type        nelem,
+    const int        nelem,
     const int             kind)
 {
     const int t = get_global_id(0);

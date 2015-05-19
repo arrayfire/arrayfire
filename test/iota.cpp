@@ -71,7 +71,7 @@ void iotaTest(const af::dim4 idims, const af::dim4 tdims)
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)tileData, temp0));
 
     // Compare result
-    for(int i = 0; i < fulldims.elements(); i++)
+    for(int i = 0; i < (int) fulldims.elements(); i++)
         ASSERT_EQ(tileData[i], outData[i]) << "at: " << i << std::endl;
 
     // Delete
@@ -130,7 +130,7 @@ TEST(Iota, CPP)
     // Compare result
 
     // Compare result
-    for(int i = 0; i < fulldims.elements(); i++)
+    for(int i = 0; i < (int)fulldims.elements(); i++)
         ASSERT_EQ(tileData[i], outData[i]) << "at: " << i << std::endl;
 
     // Delete

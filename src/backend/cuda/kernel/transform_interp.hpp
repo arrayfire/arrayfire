@@ -42,28 +42,28 @@ namespace cuda
         template<typename T>
         __device__
         void transform_n(T *optr, Param<T> out, const T *iptr, CParam<T> in, const float *tmat,
-                         const dim_type xido, const dim_type yido, const dim_type nimages)
+                         const int xido, const int yido, const int nimages)
         {
             // Compute input index
-            dim_type xidi = round(xido * tmat[0]
-                                + yido * tmat[1]
-                                       + tmat[2]);
-            dim_type yidi = round(xido * tmat[3]
-                                + yido * tmat[4]
-                                       + tmat[5]);
+            int xidi = round(xido * tmat[0]
+                             + yido * tmat[1]
+                             + tmat[2]);
+            int yidi = round(xido * tmat[3]
+                             + yido * tmat[4]
+                             + tmat[5]);
 
             // Makes scale give same output as resize
             // But fails rotate tests
             //if (xidi >= in.dims[0]) { xidi = in.dims[0] - 1; }
             //if (yidi >= in.dims[1]) { yidi = in.dims[1] - 1; }
 
-            const dim_type loci = yidi * in.strides[1]  + xidi;
-            const dim_type loco = yido * out.strides[1] + xido;
+            const int loci = yidi * in.strides[1]  + xidi;
+            const int loco = yido * out.strides[1] + xido;
 
             for(int i = 0; i < nimages; i++) {
                 // Compute memory location of indices
-                dim_type ioff = loci + i * in.strides[2];
-                dim_type ooff = loco + i * out.strides[2];
+                int ioff = loci + i * in.strides[2];
+                int ooff = loco + i * out.strides[2];
 
                 // Copy to output
                 T val = scalar<T>(0);
@@ -76,9 +76,9 @@ namespace cuda
         template<typename T>
         __device__
         void transform_b(T *optr, Param<T> out, const T *iptr, CParam<T> in, const float *tmat,
-                         const dim_type xido, const dim_type yido, const dim_type nimages)
+                         const int xido, const int yido, const int nimages)
         {
-            const dim_type loco = (yido * out.strides[1] + xido);
+            const int loco = (yido * out.strides[1] + xido);
 
             // Compute input index
             const float xidi = xido * tmat[0]
@@ -113,11 +113,11 @@ namespace cuda
 
             const WT wt = wt00 + wt10 + wt01 + wt11;
 
-            const dim_type loci = grd_y * in.strides[1] + grd_x;
+            const int loci = grd_y * in.strides[1] + grd_x;
             T zero = scalar<T>(0.0f);
             for(int i = 0; i < nimages; i++) {
-                const dim_type ioff = loci + (i * in.strides[2]);
-                const dim_type ooff = loco + (i * out.strides[2]);
+                const int ioff = loci + (i * in.strides[2]);
+                const int ooff = loco + (i * out.strides[2]);
 
                 // Compute Weighted Values
                 VT v00 =                    wt00 * iptr[ioff];

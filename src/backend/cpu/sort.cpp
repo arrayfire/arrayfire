@@ -38,13 +38,13 @@ namespace cpu
         if(isAscending) { op = less<T>(); }
 
         T *comp_ptr = nullptr;
-        for(dim_type w = 0; w < val.dims()[3]; w++) {
-            dim_type valW = w * val.strides()[3];
-            for(dim_type z = 0; z < val.dims()[2]; z++) {
-                dim_type valWZ = valW + z * val.strides()[2];
-                for(dim_type y = 0; y < val.dims()[1]; y++) {
+        for(dim_t w = 0; w < val.dims()[3]; w++) {
+            dim_t valW = w * val.strides()[3];
+            for(dim_t z = 0; z < val.dims()[2]; z++) {
+                dim_t valWZ = valW + z * val.strides()[2];
+                for(dim_t y = 0; y < val.dims()[1]; y++) {
 
-                    dim_type valOffset = valWZ + y * val.strides()[1];
+                    dim_t valOffset = valWZ + y * val.strides()[1];
 
                     comp_ptr = val_ptr + valOffset;
                     std::sort(comp_ptr, comp_ptr + val.dims()[0], op);

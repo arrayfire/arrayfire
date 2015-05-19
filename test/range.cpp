@@ -59,10 +59,10 @@ void rangeTest(const uint x, const uint y, const uint z, const uint w, const uin
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
 
     // Compare result
-    for(int w = 0; w < idims[3]; w++) {
-        for(int z = 0; z < idims[2]; z++) {
-            for(int y = 0; y < idims[1]; y++) {
-                for(int x = 0; x < idims[0]; x++) {
+    for(int w = 0; w < (int)idims[3]; w++) {
+        for(int z = 0; z < (int)idims[2]; z++) {
+            for(int y = 0; y < (int)idims[1]; y++) {
+                for(int x = 0; x < (int)idims[0]; x++) {
                     T val = 0;
                     if(dim == 0) {
                         val = x;
@@ -73,7 +73,7 @@ void rangeTest(const uint x, const uint y, const uint z, const uint w, const uin
                     } else if(dim == 3) {
                         val = w;
                     }
-                    dim_type idx = w * idims[0] * idims[1] * idims[2]
+                    dim_t idx = w * idims[0] * idims[1] * idims[2]
                                  + z * idims[0] * idims[1]
                                  + y * idims[0] + x;
 
@@ -129,10 +129,10 @@ TEST(Range, CPP)
     output.host((void*)outData);
 
     // Compare result
-    for(int w = 0; w < idims[3]; w++) {
-        for(int z = 0; z < idims[2]; z++) {
-            for(int y = 0; y < idims[1]; y++) {
-                for(int x = 0; x < idims[0]; x++) {
+    for(int w = 0; w < (int)idims[3]; w++) {
+        for(int z = 0; z < (int)idims[2]; z++) {
+            for(int y = 0; y < (int)idims[1]; y++) {
+                for(int x = 0; x < (int)idims[0]; x++) {
                     float val = 0;
                     if(dim == 0) {
                         val = x;
@@ -143,7 +143,7 @@ TEST(Range, CPP)
                     } else if(dim == 3) {
                         val = w;
                     }
-                    dim_type idx = (w * idims[0] * idims[1] * idims[2]) +
+                    dim_t idx = (w * idims[0] * idims[1] * idims[2]) +
                                    (z * idims[0] * idims[1]) +
                                    (y * idims[0]) + x;
                     ASSERT_EQ(val, outData[idx]) << "at: " << idx << std::endl;

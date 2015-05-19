@@ -33,9 +33,9 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type TILE_DIM  = 16;
-static const dim_type THREADS_X = TILE_DIM;
-static const dim_type THREADS_Y = 256 / TILE_DIM;
+static const int TILE_DIM  = 16;
+static const int THREADS_X = TILE_DIM;
+static const int THREADS_Y = 256 / TILE_DIM;
 
 template<typename T, bool conjugate, bool IS32MULTIPLE>
 void transpose_inplace(Param in)
@@ -71,15 +71,15 @@ void transpose_inplace(Param in)
 
         NDRange local(THREADS_X, THREADS_Y);
 
-        dim_type blk_x = divup(in.info.dims[0], TILE_DIM);
-        dim_type blk_y = divup(in.info.dims[1], TILE_DIM);
+        int blk_x = divup(in.info.dims[0], TILE_DIM);
+        int blk_y = divup(in.info.dims[1], TILE_DIM);
 
         // launch batch * blk_x blocks along x dimension
         NDRange global(blk_x * local[0] * in.info.dims[2],
                        blk_y * local[1] * in.info.dims[3]);
 
         auto transposeOp = make_kernel<Buffer, const KParam,
-                                       const dim_type, const dim_type> (*transposeKernels[device]);
+                                       const int, const int> (*transposeKernels[device]);
 
         transposeOp(EnqueueArgs(getQueue(), global, local), *in.data, in.info, blk_x, blk_y);
 

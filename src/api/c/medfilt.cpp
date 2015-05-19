@@ -19,7 +19,7 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
-static af_array medfilt(af_array const &in, dim_type w_len, dim_type w_wid, af_pad_type edge_pad)
+static af_array medfilt(af_array const &in, dim_t w_len, dim_t w_wid, af_pad_type edge_pad)
 {
     switch(edge_pad) {
         case AF_PAD_ZERO     : return getHandle<T>(medfilt<T, AF_PAD_ZERO     >(getArray<T>(in), w_len, w_wid)); break;
@@ -28,7 +28,7 @@ static af_array medfilt(af_array const &in, dim_type w_len, dim_type w_wid, af_p
     }
 }
 
-af_err af_medfilt(af_array *out, const af_array in, const dim_type wind_length, const dim_type wind_width, const af_pad_type edge_pad)
+af_err af_medfilt(af_array *out, const af_array in, const dim_t wind_length, const dim_t wind_width, const af_pad_type edge_pad)
 {
     try {
         ARG_ASSERT(2, (wind_length==wind_width));
@@ -39,7 +39,7 @@ af_err af_medfilt(af_array *out, const af_array in, const dim_type wind_length, 
         ArrayInfo info = getInfo(in);
         af::dim4 dims  = info.dims();
 
-        dim_type input_ndims = dims.ndims();
+        dim_t input_ndims = dims.ndims();
         DIM_ASSERT(1, (input_ndims >= 2));
 
         if (wind_length==1) {

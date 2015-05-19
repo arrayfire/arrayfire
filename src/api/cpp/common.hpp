@@ -13,13 +13,13 @@ namespace af
 {
 
 /// Get the first non-zero dimension
-static inline dim_type getFNSD(const int dim, af::dim4 dims)
+static inline dim_t getFNSD(const int dim, af::dim4 dims)
 {
     if(dim >= 0)
         return dim;
 
-    dim_type fNSD = 0;
-    for (dim_type i=0; i<4; ++i) {
+    dim_t fNSD = 0;
+    for (dim_t i=0; i<4; ++i) {
         if (dims[i]>1) {
             fNSD = i;
             break;

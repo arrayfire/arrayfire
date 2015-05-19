@@ -37,7 +37,7 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
     dim4 const iDims = iInfo.dims();
 
     DIM_ASSERT(0, (outDs.ndims()>=iDims.ndims()));
-    DIM_ASSERT(0, (outDs.ndims()>=(int)ndims));
+    DIM_ASSERT(0, (outDs.ndims()>=(dim_t)ndims));
 
     AF_CHECK(af_eval(out));
 
@@ -46,12 +46,12 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
     dim4 oDims = toDims(index_, outDs);
 
     bool is_vector = true;
-    for (int i = 0; is_vector && i < oDims.ndims() - 1; i++) {
+    for (int i = 0; is_vector && i < (int)oDims.ndims() - 1; i++) {
         is_vector &= oDims[i] == 1;
     }
 
     if (is_vector && iInfo.isVector()) {
-        if (oDims.elements() != (dim_type)iInfo.elements()) {
+        if (oDims.elements() != (dim_t)iInfo.elements()) {
             AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
         }
 
@@ -105,7 +105,7 @@ af_err af_assign_seq(af_array *out,
         ARG_ASSERT(1, (ndims>0));
         ARG_ASSERT(3, (rhs!=0));
 
-        for(dim_type i=0; i<(dim_type)ndims; ++i) {
+        for(dim_t i=0; i<(dim_t)ndims; ++i) {
             ARG_ASSERT(2, (index[i].step>=0));
         }
 
@@ -154,7 +154,7 @@ static void genAssign(af_array& out, const af_index_t* indexs, const af_array& r
 
 af_err af_assign_gen(af_array *out,
                     const af_array lhs,
-                    const dim_type ndims, const af_index_t* indexs,
+                    const dim_t ndims, const af_index_t* indexs,
                     const af_array rhs_)
 {
     af_array output = 0;
@@ -171,14 +171,14 @@ af_err af_assign_gen(af_array *out,
 
         int track = 0;
         vector<af_seq> seqs(4, af_span);
-        for (dim_type i = 0; i < ndims; i++) {
+        for (dim_t i = 0; i < ndims; i++) {
             if (indexs[i].isSeq) {
                 track++;
                 seqs[i] = indexs[i].idx.seq;
             }
         }
 
-        if (track==ndims) {
+        if (track==(int)ndims) {
             // all indexs are sequences, redirecting to af_assign
             return af_assign_seq(out, lhs, ndims, &(seqs.front()), rhs);
         }
@@ -199,25 +199,25 @@ af_err af_assign_gen(af_array *out,
         ARG_ASSERT(1, (lhsType==rhsType));
         ARG_ASSERT(3, (rhsDims.ndims()>0));
         ARG_ASSERT(1, (lhsDims.ndims()>=rhsDims.ndims()));
-        ARG_ASSERT(2, (lhsDims.ndims()>=(int)ndims));
+        ARG_ASSERT(2, (lhsDims.ndims()>=ndims));
 
         dim4 oDims = toDims(seqs, lhsDims);
         // if af_array are indexs along any
         // particular dimension, set the length of
         // that dimension accordingly before any checks
-        for (dim_type i=0; i<ndims; i++) {
+        for (dim_t i=0; i<ndims; i++) {
             if (!indexs[i].isSeq) {
                 oDims[i] = getInfo(indexs[i].idx.arr).elements();
             }
         }
 
         bool is_vector = true;
-        for (int i = 0; is_vector && i < oDims.ndims() - 1; i++) {
+        for (uint i = 0; is_vector && i < oDims.ndims() - 1; i++) {
             is_vector &= oDims[i] == 1;
         }
 
         if (is_vector && rInfo.isVector()) {
-            if (oDims.elements() != (dim_type)rInfo.elements()) {
+            if (oDims.elements() != (dim_t)rInfo.elements()) {
                 AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
             }
 
@@ -233,9 +233,9 @@ af_err af_assign_gen(af_array *out,
 
         af_index_t idxrs[4];
         // set all dimensions above ndims to spanner index
-        for (dim_type i=ndims; i<4; ++i) idxrs[i] = spanner;
+        for (dim_t i=ndims; i<4; ++i) idxrs[i] = spanner;
 
-        for (dim_type i=0; i<ndims; ++i) {
+        for (dim_t i=0; i<ndims; ++i) {
             if (!indexs[i].isSeq) {
                 // check if all af_arrays have atleast one value
                 // to enable indexing along that dimension

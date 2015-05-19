@@ -33,8 +33,8 @@ TYPED_TEST(Diagonal, Create)
             vector<TypeParam> h_out(out.elements());
             out.host(&h_out.front());
 
-            for(int i =0; i < out.dims(0); i++) {
-                for(int j =0; j < out.dims(1); j++) {
+            for(int i =0; i < (int)out.dims(0); i++) {
+                for(int j =0; j < (int)out.dims(1); j++) {
                     if(i == j) ASSERT_EQ(input[i], h_out[i * out.dims(0) + j]);
                     else       ASSERT_EQ(TypeParam(0), h_out[i * out.dims(0) + j]);
                 }
@@ -62,7 +62,7 @@ TYPED_TEST(Diagonal, Extract)
             vector<TypeParam> h_out(out.elements());
             out.host(&h_out.front());
 
-            for(int i =0; i < out.dims(0); i++) {
+            for(int i =0; i < (int)out.dims(0); i++) {
                 ASSERT_EQ(input[i * data.dims(0) + i], h_out[i]);
             }
         }

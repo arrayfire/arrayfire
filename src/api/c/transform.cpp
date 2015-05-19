@@ -26,7 +26,7 @@ static inline af_array transform(const af_array in, const af_array tf, const af:
 }
 
 af_err af_transform(af_array *out, const af_array in, const af_array tf,
-                    const dim_type odim0, const dim_type odim1,
+                    const dim_t odim0, const dim_t odim1,
                     const af_interp_type method, const bool inverse)
 {
     try {
@@ -43,8 +43,8 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
         DIM_ASSERT(1, idims.elements() > 0);
         DIM_ASSERT(1, (idims.ndims() == 2 || idims.ndims() == 3));
 
-        dim_type o0 = odim0, o1 = odim1;
-        dim_type o2 = idims[2] * tdims[2];
+        dim_t o0 = odim0, o1 = odim1;
+        dim_t o2 = idims[2] * tdims[2];
         if (odim0 * odim1 == 0) {
             o0 = idims[0];
             o1 = idims[1];
@@ -73,7 +73,7 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
 }
 
 af_err af_translate(af_array *out, const af_array in, const float trans0, const float trans1,
-                    const dim_type odim0, const dim_type odim1, const af_interp_type method)
+                    const dim_t odim0, const dim_t odim1, const af_interp_type method)
 {
 
     try {
@@ -95,13 +95,13 @@ af_err af_translate(af_array *out, const af_array in, const float trans0, const 
 }
 
 af_err af_scale(af_array *out, const af_array in, const float scale0, const float scale1,
-                const dim_type odim0, const dim_type odim1, const af_interp_type method)
+                const dim_t odim0, const dim_t odim1, const af_interp_type method)
 {
     try {
         ArrayInfo i_info = getInfo(in);
         af::dim4 idims = i_info.dims();
 
-        dim_type _odim0 = odim0, _odim1 = odim1;
+        dim_t _odim0 = odim0, _odim1 = odim1;
         float sx, sy;
 
         DIM_ASSERT(4, odim0 != 0);
@@ -134,7 +134,7 @@ af_err af_scale(af_array *out, const af_array in, const float scale0, const floa
 }
 
 af_err af_skew(af_array *out, const af_array in, const float skew0, const float skew1,
-               const dim_type odim0, const dim_type odim1, const af_interp_type method,
+               const dim_t odim0, const dim_t odim1, const af_interp_type method,
                const bool inverse)
 {
     try {

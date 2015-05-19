@@ -127,7 +127,7 @@ namespace kernel
         Param tmp = out;
         cl::Buffer *tidx = oidx;
 
-        dim_type tmp_elements = 1;
+        int tmp_elements = 1;
         if (groups_all[dim] > 1) {
             tmp.info.dims[dim] = groups_all[dim];
 
@@ -272,7 +272,7 @@ namespace kernel
     }
 
     template<typename T, af_op_t op>
-    void ireduce(Param out, cl::Buffer *oidx, Param in, dim_type dim)
+    void ireduce(Param out, cl::Buffer *oidx, Param in, int dim)
     {
         try {
             switch (dim) {
@@ -337,7 +337,7 @@ namespace kernel
     T ireduce_all(uint *loc, Param in)
     {
         try {
-            dim_type in_elements = in.info.dims[3] * in.info.strides[3];
+            int in_elements = in.info.dims[3] * in.info.strides[3];
 
             // FIXME: Use better heuristics to get to the optimum number
             if (in_elements > 4096) {
@@ -372,7 +372,7 @@ namespace kernel
                     tmp.info.strides[k] = tmp.info.dims[k - 1] * tmp.info.strides[k - 1];
                 }
 
-                dim_type tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
+                int tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
                 tmp.data = bufferAlloc(tmp_elements * sizeof(T));
                 cl::Buffer *tidx = bufferAlloc(tmp_elements * sizeof(uint));
 
@@ -388,7 +388,7 @@ namespace kernel
                 uint* h_iptr_raw = h_iptr.get();
                 MinMaxOp<op, T> Op(h_ptr_raw[0], h_iptr_raw[0]);
 
-                for (int i = 1; i < tmp_elements; i++) {
+                for (int i = 1; i < (int)tmp_elements; i++) {
                     Op(h_ptr_raw[i], h_iptr_raw[i]);
                 }
 
@@ -406,7 +406,7 @@ namespace kernel
 
 
                 MinMaxOp<op, T> Op(h_ptr_raw[0], 0);
-                for (int i = 1; i < in_elements; i++) {
+                for (int i = 1; i < (int)in_elements; i++) {
                     Op(h_ptr_raw[i], i);
                 }
 

@@ -172,7 +172,7 @@ void orbTest(string pTestFile)
         float * outScore       = new float[feat.n];
         float * outOrientation = new float[feat.n];
         float * outSize        = new float[feat.n];
-        dim_type descSize;
+        dim_t descSize;
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&descSize, desc));
         unsigned * outDesc     = new unsigned[descSize];
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outX, feat.x));

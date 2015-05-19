@@ -53,17 +53,17 @@ template<typename T, bool conjugate>
 void transpose_(T *out, const T *in, const af::dim4 &odims, const af::dim4 &idims,
                 const af::dim4 &ostrides, const af::dim4 &istrides)
 {
-    for (dim_type l = 0; l < odims[3]; ++l) {
-        for (dim_type k = 0; k < odims[2]; ++k) {
+    for (dim_t l = 0; l < odims[3]; ++l) {
+        for (dim_t k = 0; k < odims[2]; ++k) {
             // Outermost loop handles batch mode
             // if input has no data along third dimension
             // this loop runs only once
-            for (dim_type j = 0; j < odims[1]; ++j) {
-                for (dim_type i = 0; i < odims[0]; ++i) {
+            for (dim_t j = 0; j < odims[1]; ++j) {
+                for (dim_t i = 0; i < odims[0]; ++i) {
                     // calculate array indices based on offsets and strides
                     // the helper getIdx takes care of indices
-                    const dim_type inIdx  = getIdx(istrides,j,i,k,l);
-                    const dim_type outIdx = getIdx(ostrides,i,j,k,l);
+                    const dim_t inIdx  = getIdx(istrides,j,i,k,l);
+                    const dim_t outIdx = getIdx(ostrides,i,j,k,l);
                     if(conjugate)
                         out[outIdx] = getConjugate(in[inIdx]);
                     else
@@ -105,19 +105,19 @@ Array<T> transpose(const Array<T> &in, const bool conjugate)
 template<typename T, bool conjugate>
 void transpose_inplace(T *in, const af::dim4 &idims, const af::dim4 &istrides)
 {
-    for (dim_type l = 0; l < idims[3]; ++l) {
-        for (dim_type k = 0; k < idims[2]; ++k) {
+    for (dim_t l = 0; l < idims[3]; ++l) {
+        for (dim_t k = 0; k < idims[2]; ++k) {
             // Outermost loop handles batch mode
             // if input has no data along third dimension
             // this loop runs only once
             //
             // Run only bottom triangle. std::swap swaps with upper triangle
-            for (dim_type j = 0; j < idims[1]; ++j) {
-                for (dim_type i = j + 1; i < idims[0]; ++i) {
+            for (dim_t j = 0; j < idims[1]; ++j) {
+                for (dim_t i = j + 1; i < idims[0]; ++i) {
                     // calculate array indices based on offsets and strides
                     // the helper getIdx takes care of indices
-                    const dim_type iIdx  = getIdx(istrides,j,i,k,l);
-                    const dim_type oIdx = getIdx(istrides,i,j,k,l);
+                    const dim_t iIdx  = getIdx(istrides,j,i,k,l);
+                    const dim_t oIdx = getIdx(istrides,i,j,k,l);
                     if(conjugate) {
                         in[iIdx] = getConjugate(in[iIdx]);
                         in[oIdx] = getConjugate(in[oIdx]);

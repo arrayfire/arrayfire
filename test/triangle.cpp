@@ -50,7 +50,7 @@ void triangleTester(const dim4 dims, bool is_upper)
     int m = dims[0];
     int n = dims[1];
 
-    for (int z = 0; z < dims[2] * dims[3]; z++) {
+    for (int z = 0; z < (int)(dims[2] * dims[3]); z++) {
         int z_off = z * m * n;
 
         for (int y = 0; y < n; y++) {

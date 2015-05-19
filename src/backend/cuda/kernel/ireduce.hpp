@@ -230,7 +230,7 @@ namespace kernel
         uint *tlptr = olptr;
 
         if (blocks_dim[dim] > 1) {
-            dim_type tmp_elements = 1;
+            int tmp_elements = 1;
             tmp.dims[dim] = blocks_dim[dim];
 
             for (int k = 0; k < 4; k++) tmp_elements *= tmp.dims[k];
@@ -431,7 +431,7 @@ namespace kernel
     }
 
     template<typename T, af_op_t op>
-    void ireduce(Param<T> out, uint *olptr, CParam<T> in, dim_type dim)
+    void ireduce(Param<T> out, uint *olptr, CParam<T> in, int dim)
     {
         switch (dim) {
         case 0: return ireduce_first<T, op   >(out, olptr, in);
@@ -444,7 +444,7 @@ namespace kernel
     template<typename T, af_op_t op>
     T ireduce_all(uint *idx, CParam<T> in)
     {
-        dim_type in_elements = in.strides[3] * in.dims[3];
+        int in_elements = in.strides[3] * in.dims[3];
 
         // FIXME: Use better heuristics to get to the optimum number
         if (in_elements > 4096) {
@@ -480,7 +480,7 @@ namespace kernel
                 tmp.strides[k] = tmp.dims[k - 1] * tmp.strides[k - 1];
             }
 
-            dim_type tmp_elements = tmp.strides[3] * tmp.dims[3];
+            int tmp_elements = tmp.strides[3] * tmp.dims[3];
 
             //TODO: Use scoped_ptr
             tmp.ptr = memAlloc<T>(tmp_elements);

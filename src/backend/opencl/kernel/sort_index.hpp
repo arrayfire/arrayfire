@@ -36,8 +36,8 @@ namespace opencl
     namespace kernel
     {
         // Kernel Launch Config Values
-        static const dim_type TX = 32;
-        static const dim_type TY = 8;
+        static const int TX = 32;
+        static const int TY = 8;
 
         template<typename T, bool isAscending>
         void sort0_index(Param val, Param idx)
@@ -48,16 +48,16 @@ namespace opencl
                 compute::buffer val_buf((*val.data)());
                 compute::buffer idx_buf((*idx.data)());
 
-                for(dim_type w = 0; w < val.info.dims[3]; w++) {
-                    dim_type valW = w * val.info.strides[3];
-                    dim_type idxW = w * idx.info.strides[3];
-                    for(dim_type z = 0; z < val.info.dims[2]; z++) {
-                        dim_type valWZ = valW + z * val.info.strides[2];
-                        dim_type idxWZ = idxW + z * idx.info.strides[2];
-                        for(dim_type y = 0; y < val.info.dims[1]; y++) {
+                for(int w = 0; w < (int)val.info.dims[3]; w++) {
+                    int valW = w * (int)val.info.strides[3];
+                    int idxW = w * idx.info.strides[3];
+                    for(int z = 0; z < (int)val.info.dims[2]; z++) {
+                        int valWZ = valW + z * (int)val.info.strides[2];
+                        int idxWZ = idxW + z * idx.info.strides[2];
+                        for(int y = 0; y < (int)val.info.dims[1]; y++) {
 
-                            dim_type valOffset = valWZ + y * val.info.strides[1];
-                            dim_type idxOffset = idxWZ + y * idx.info.strides[1];
+                            int valOffset = valWZ + y * val.info.strides[1];
+                            int idxOffset = idxWZ + y * idx.info.strides[1];
 
                             compute::buffer_iterator<unsigned> idx_begin(idx_buf, idxOffset);
                             compute::iota(idx_begin, idx_begin + val.info.dims[0], 0, c_queue);

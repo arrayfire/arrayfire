@@ -61,8 +61,8 @@ void solveConvertPivot(Array<int> &pivot)
     Array<int> p = range<int>(pivot.dims(), 0);
     int *d_pi = pivot.get();
     int *d_po = p.get();
-    dim_type d0 = pivot.dims()[0];
-    for(int j = 0; j < d0; j++) {
+    dim_t d0 = pivot.dims()[0];
+    for(int j = 0; j < (int)d0; j++) {
         // 1 indexed in pivot
         std::swap(d_po[j], d_po[d_pi[j] - 1]);
     }
@@ -134,4 +134,3 @@ INSTANTIATE_SOLVE(cdouble)
 }
 
 #endif
-

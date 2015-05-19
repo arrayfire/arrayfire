@@ -8,7 +8,7 @@
  ********************************************************/
 
 __kernel
-void identity_kernel(__global T *oData, KParam oInfo, dim_type groups_x, dim_type groups_y)
+void identity_kernel(__global T *oData, KParam oInfo, int groups_x, int groups_y)
 {
 
     unsigned idz = get_group_id(0) / groups_x;

@@ -43,7 +43,7 @@ namespace JIT
               m_linear(is_linear)
         {}
 
-        bool isLinear(dim_type dims[4])
+        bool isLinear(dim_t dims[4])
         {
             bool same_dims = true;
             for (int i = 0; same_dims && i < 4; i++) {

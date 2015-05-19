@@ -105,7 +105,7 @@ TEST(ifft3, Invalid_Array)
 }
 
 template<typename inType, typename outType, bool isInverse>
-void fftTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0)
+void fftTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
 {
     if (noDoubleTests<inType>()) return;
     if (noDoubleTests<outType>()) return;
@@ -206,7 +206,7 @@ INSTANTIATE_TEST(ifft3, C2C_Double, true, cdouble, cdouble, string(TEST_DIR"/sig
 
 
 template<typename inType, typename outType, int rank, bool isInverse>
-void fftBatchTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0)
+void fftBatchTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
 {
     if (noDoubleTests<inType>()) return;
     if (noDoubleTests<outType>()) return;
@@ -307,7 +307,7 @@ INSTANTIATE_BATCH_TEST(fft2, C2C_Double_Pad, 2, false, cdouble, cdouble, string(
 /////////////////////////////////////// CPP ////////////////////////////////////
 //
 template<typename inType, typename outType, bool isInverse>
-void cppFFTTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0)
+void cppFFTTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
 {
     if (noDoubleTests<inType>()) return;
     if (noDoubleTests<outType>()) return;
@@ -323,9 +323,9 @@ void cppFFTTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad
     af::array output;
 
     if (isInverse){
-        output = ifft3(signal, 1.0);
+        output = ifft3Norm(signal, 1.0);
     } else {
-        output = fft3(signal, 1.0);
+        output = fft3Norm(signal, 1.0);
     }
 
     size_t out_size = tests[0].size();
@@ -353,7 +353,7 @@ void cppFFTTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad
 }
 
 template<typename inType, typename outType, bool isInverse>
-void cppDFTTest(string pTestFile, dim_type pad0=0, dim_type pad1=0, dim_type pad2=0)
+void cppDFTTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
 {
     if (noDoubleTests<inType>()) return;
     if (noDoubleTests<outType>()) return;
@@ -426,13 +426,13 @@ TEST(fft3, RandomData)
     a.host((void*)gold);
     c.host((void*)out);
 
-    for (int k=0; k<aDims[2]; ++k) {
+    for (int k=0; k<(int)aDims[2]; ++k) {
         int gkOff = k*aStrides[2];
         int okOff = k*cStrides[2];
-        for (int j=0; j<aDims[1]; ++j) {
+        for (int j=0; j<(int)aDims[1]; ++j) {
             int gjOff = j*aStrides[1];
             int ojOff = j*cStrides[1];
-            for (int i=0; i<aDims[0]; ++i) {
+            for (int i=0; i<(int)aDims[0]; ++i) {
                 int giOff = i*aStrides[0];
                 int oiOff = i*cStrides[0];
 
@@ -491,7 +491,7 @@ TEST(fft, CPP_4D)
     af::cfloat *h_b = b.host<af::cfloat>();
     af::cfloat *h_B = B.host<af::cfloat>();
 
-    for (int i = 0; i < a.elements(); i++) {
+    for (int i = 0; i < (int)a.elements(); i++) {
         ASSERT_EQ(h_b[i], h_B[i]) << "at: " << i << std::endl;
     }
 
@@ -510,7 +510,7 @@ TEST(ifft, CPP_4D)
     af::cfloat *h_b = b.host<af::cfloat>();
     af::cfloat *h_B = B.host<af::cfloat>();
 
-    for (int i = 0; i < a.elements(); i++) {
+    for (int i = 0; i < (int)a.elements(); i++) {
         ASSERT_EQ(h_b[i], h_B[i]) << "at: " << i << std::endl;
     }
 
@@ -531,7 +531,7 @@ TEST(fft, GFOR)
     af::cfloat *h_b = b.host<af::cfloat>();
     af::cfloat *h_c = c.host<af::cfloat>();
 
-    for (int i = 0; i < a.elements(); i++) {
+    for (int i = 0; i < (int)a.elements(); i++) {
         ASSERT_EQ(h_b[i], h_c[i]) << "at: " << i << std::endl;
     }
 
@@ -552,7 +552,7 @@ TEST(fft2, GFOR)
     af::cfloat *h_b = b.host<af::cfloat>();
     af::cfloat *h_c = c.host<af::cfloat>();
 
-    for (int i = 0; i < a.elements(); i++) {
+    for (int i = 0; i < (int)a.elements(); i++) {
         ASSERT_EQ(h_b[i], h_c[i]) << "at: " << i << std::endl;
     }
 
@@ -573,7 +573,7 @@ TEST(fft3, GFOR)
     af::cfloat *h_b = b.host<af::cfloat>();
     af::cfloat *h_c = c.host<af::cfloat>();
 
-    for (int i = 0; i < a.elements(); i++) {
+    for (int i = 0; i < (int)a.elements(); i++) {
         ASSERT_EQ(h_b[i], h_c[i]) << "at: " << i << std::endl;
     }
 

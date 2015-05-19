@@ -27,7 +27,7 @@ template<typename T>
 static double median(const af_array& in)
 {
     const Array<T> input  = getArray<T>(in);
-    dim_type nElems = input.elements();
+    dim_t nElems = input.elements();
     double mid      = (nElems + 1) / 2;
     af_seq mdSpan[1]= {af_make_seq(mid-1, mid, 1)};
     dim4 dims(nElems, 1, 1, 1);
@@ -59,7 +59,7 @@ static double median(const af_array& in)
 }
 
 template<typename T>
-static af_array median(const af_array& in, const dim_type dim)
+static af_array median(const af_array& in, const dim_t dim)
 {
     const Array<T> input = getArray<T>(in);
     Array<T> sortedIn   = sort<T, true>(input, dim);
@@ -136,7 +136,7 @@ af_err af_median_all(double *realVal, double *imagVal, const af_array in)
     return AF_SUCCESS;
 }
 
-af_err af_median(af_array* out, const af_array in, const dim_type dim)
+af_err af_median(af_array* out, const af_array in, const dim_t dim)
 {
     try {
         ARG_ASSERT(2, (dim>=0 && dim<=0));

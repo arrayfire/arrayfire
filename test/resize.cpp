@@ -95,7 +95,7 @@ TYPED_TEST(Resize, InvalidType)
 }
 
 template<typename T>
-void resizeTest(string pTestFile, const unsigned resultIdx, const dim_type odim0, const dim_type odim1, const af_interp_type method, bool isSubRef = false, const vector<af_seq> * seqv = NULL)
+void resizeTest(string pTestFile, const unsigned resultIdx, const dim_t odim0, const dim_t odim1, const af_interp_type method, bool isSubRef = false, const vector<af_seq> * seqv = NULL)
 {
     if (noDoubleTests<T>()) return;
 

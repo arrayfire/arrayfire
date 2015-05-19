@@ -126,7 +126,7 @@ void morphImageTest(string pTestFile)
 
     vector<dim4>       inDims;
     vector<string>    inFiles;
-    vector<dim_type> outSizes;
+    vector<dim_t> outSizes;
     vector<string>   outFiles;
 
     readImageTests(pTestFile, inDims, inFiles, outSizes, outFiles);
@@ -139,7 +139,7 @@ void morphImageTest(string pTestFile)
         af_array maskArray= 0;
         af_array outArray = 0;
         af_array goldArray= 0;
-        dim_type nElems   = 0;
+        dim_t nElems   = 0;
 
         inFiles[testId].insert(0,string(TEST_DIR"/morph/"));
         outFiles[testId].insert(0,string(TEST_DIR"/morph/"));
@@ -346,7 +346,7 @@ void cppMorphImageTest(string pTestFile)
 
     vector<dim4>       inDims;
     vector<string>    inFiles;
-    vector<dim_type> outSizes;
+    vector<dim_t> outSizes;
     vector<string>   outFiles;
 
     readImageTests(pTestFile, inDims, inFiles, outSizes, outFiles);
@@ -360,7 +360,7 @@ void cppMorphImageTest(string pTestFile)
         af::array mask = af::constant(1.0, 3, 3);
         af::array img = af::loadimage(inFiles[testId].c_str(), isColor);
         af::array gold = af::loadimage(outFiles[testId].c_str(), isColor);
-        dim_type nElems   = gold.elements();
+        dim_t nElems   = gold.elements();
         af::array output;
 
         if (isDilation)

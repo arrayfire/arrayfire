@@ -38,7 +38,7 @@ Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const d
     // create an array to hold min and max values for
     // batch operation handling, this will reduce
     // number of concurrent reads to one single memory location
-    dim_type mmNElems= dims[2] * dims[3];
+    dim_t mmNElems= dims[2] * dims[3];
     cfloat init;
     init.s[0] = minval;
     init.s[1] = maxval;

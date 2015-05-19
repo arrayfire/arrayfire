@@ -31,20 +31,20 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type THREADS = 256;
+static const int THREADS = 256;
 
 void calcParamSizes(Param& sig_tmp,
                     Param& filter_tmp,
                     Param& packed,
                     Param& sig,
                     Param& filter,
-                    const dim_type baseDim,
+                    const int baseDim,
                     ConvolveBatchKind kind)
 {
     sig_tmp.info.dims[0] = filter_tmp.info.dims[0] = packed.info.dims[0];
     sig_tmp.info.strides[0] = filter_tmp.info.strides[0] = 1;
 
-    for (dim_type k = 1; k < 4; k++) {
+    for (int k = 1; k < 4; k++) {
         if (k < baseDim) {
             sig_tmp.info.dims[k]    = packed.info.dims[k];
             filter_tmp.info.dims[k] = packed.info.dims[k];
@@ -76,7 +76,7 @@ template<typename convT, typename T, bool isDouble, typename printT>
 void packDataHelper(Param packed,
                     Param sig,
                     Param filter,
-                    const dim_type baseDim,
+                    const int baseDim,
                     ConvolveBatchKind kind)
 {
     try {
@@ -112,14 +112,14 @@ void packDataHelper(Param packed,
         Param sig_tmp, filter_tmp;
         calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, baseDim, kind);
 
-        dim_type sig_packed_elem = sig_tmp.info.strides[3] * sig_tmp.info.dims[3];
-        dim_type filter_packed_elem = filter_tmp.info.strides[3] * filter_tmp.info.dims[3];
+        int sig_packed_elem = sig_tmp.info.strides[3] * sig_tmp.info.dims[3];
+        int filter_packed_elem = filter_tmp.info.strides[3] * filter_tmp.info.dims[3];
 
         // Number of packed complex elements in dimension 0
-        dim_type sig_half_d0 = divup(sig.info.dims[0], 2);
+        int sig_half_d0 = divup(sig.info.dims[0], 2);
         int sig_half_d0_odd = sig.info.dims[0] % 2;
 
-        dim_type blocks = divup(sig_packed_elem, THREADS);
+        int blocks = divup(sig_packed_elem, THREADS);
 
         // Locate features kernel sizes
         NDRange local(THREADS);
@@ -129,7 +129,7 @@ void packDataHelper(Param packed,
         // (allows faster FFT computation) and pad array to a power of 2 with 0s
         auto pdOp = make_kernel<Buffer, KParam,
                                 Buffer, KParam,
-                                const dim_type, const int> (pdKernel[device]);
+                                const int, const int> (pdKernel[device]);
 
         pdOp(EnqueueArgs(getQueue(), global, local),
              *sig_tmp.data, sig_tmp.info, *sig.data, sig.info,
@@ -157,7 +157,7 @@ template<typename convT, typename T, bool isDouble, typename printT>
 void complexMultiplyHelper(Param packed,
                            Param sig,
                            Param filter,
-                           const dim_type baseDim,
+                           const int baseDim,
                            ConvolveBatchKind kind)
 {
     try {
@@ -195,12 +195,12 @@ void complexMultiplyHelper(Param packed,
         Param sig_tmp, filter_tmp;
         calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, baseDim, kind);
 
-        dim_type sig_packed_elem = sig_tmp.info.strides[3] * sig_tmp.info.dims[3];
-        dim_type filter_packed_elem = filter_tmp.info.strides[3] * filter_tmp.info.dims[3];
-        dim_type mul_elem = (sig_packed_elem < filter_packed_elem) ?
+        int sig_packed_elem = sig_tmp.info.strides[3] * sig_tmp.info.dims[3];
+        int filter_packed_elem = filter_tmp.info.strides[3] * filter_tmp.info.dims[3];
+        int mul_elem = (sig_packed_elem < filter_packed_elem) ?
                             filter_packed_elem : sig_packed_elem;
 
-        dim_type blocks = divup(mul_elem, THREADS);
+        int blocks = divup(mul_elem, THREADS);
 
         NDRange local(THREADS);
         NDRange global(blocks * THREADS);
@@ -209,7 +209,7 @@ void complexMultiplyHelper(Param packed,
         auto cmOp = make_kernel<Buffer, KParam,
                                 Buffer, KParam,
                                 Buffer, KParam,
-                                const dim_type, const int> (cmKernel[device]);
+                                const int, const int> (cmKernel[device]);
 
         cmOp(EnqueueArgs(getQueue(), global, local),
              *packed.data, packed.info,
@@ -228,7 +228,7 @@ void reorderOutputHelper(Param out,
                          Param packed,
                          Param sig,
                          Param filter,
-                         const dim_type baseDim,
+                         const int baseDim,
                          ConvolveBatchKind kind)
 {
     try {
@@ -265,16 +265,16 @@ void reorderOutputHelper(Param out,
         calcParamSizes(sig_tmp, filter_tmp, packed, sig, filter, baseDim, kind);
 
         // Number of packed complex elements in dimension 0
-        dim_type sig_half_d0 = divup(sig.info.dims[0], 2);
+        int sig_half_d0 = divup(sig.info.dims[0], 2);
 
-        dim_type blocks = divup(out.info.strides[3] * out.info.dims[3], THREADS);
+        int blocks = divup(out.info.strides[3] * out.info.dims[3], THREADS);
 
         NDRange local(THREADS);
         NDRange global(blocks * THREADS);
 
         auto roOp = make_kernel<Buffer, KParam,
                                 Buffer, KParam,
-                                KParam, const dim_type,
+                                KParam, const int,
                                 const int> (roKernel[device]);
 
         if (kind == ONE2MANY) {

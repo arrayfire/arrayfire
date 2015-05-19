@@ -49,7 +49,7 @@ void MatMulCheck(string TestFile)
             af_create_array(&a, &hData[0].front(), numDims[0].ndims(), numDims[0].get(), (af_dtype) af::dtype_traits<T>::af_type));
     af::dim4 atdims = numDims[0];
     {
-        dim_type f  =    atdims[0];
+        dim_t f  =    atdims[0];
         atdims[0]   =    atdims[1];
         atdims[1]   =    f;
     }
@@ -59,7 +59,7 @@ void MatMulCheck(string TestFile)
             af_create_array(&b, &hData[1].front(), numDims[1].ndims(), numDims[1].get(), (af_dtype) af::dtype_traits<T>::af_type));
     af::dim4 btdims = numDims[1];
     {
-        dim_type f = btdims[0];
+        dim_t f = btdims[0];
         btdims[0] = btdims[1];
         btdims[1] = f;
     }
@@ -82,7 +82,7 @@ void MatMulCheck(string TestFile)
     }
 
     for(size_t i = 0; i < tests.size(); i++) {
-        dim_type elems;
+        dim_t elems;
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&elems, out[i]));
         vector<T> h_out(elems);
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void *)&h_out.front(), out[i]));
@@ -144,13 +144,13 @@ void cppMatMulCheck(string TestFile)
 
     af::dim4 atdims = numDims[0];
     {
-        dim_type f  =    atdims[0];
+        dim_t f  =    atdims[0];
         atdims[0]   =    atdims[1];
         atdims[1]   =    f;
     }
     af::dim4 btdims = numDims[1];
     {
-        dim_type f = btdims[0];
+        dim_t f = btdims[0];
         btdims[0] = btdims[1];
         btdims[1] = f;
     }
@@ -174,7 +174,7 @@ void cppMatMulCheck(string TestFile)
     }
 
     for(size_t i = 0; i < tests.size(); i++) {
-        dim_type elems = out[i].elements();
+        dim_t elems = out[i].elements();
         vector<T> h_out(elems);
         out[i].host((void*)&h_out.front());
 

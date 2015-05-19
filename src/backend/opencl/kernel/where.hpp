@@ -120,10 +120,10 @@ namespace kernel
                 otmp.info.strides[k] = otmp.info.strides[k - 1] * otmp.info.dims[k - 1];
             }
 
-            dim_type rtmp_elements = rtmp.info.strides[3] * rtmp.info.dims[3];
+            int rtmp_elements = rtmp.info.strides[3] * rtmp.info.dims[3];
             rtmp.data = bufferAlloc(rtmp_elements * sizeof(uint));
 
-            dim_type otmp_elements = otmp.info.strides[3] * otmp.info.dims[3];
+            int otmp_elements = otmp.info.strides[3] * otmp.info.dims[3];
             otmp.data = bufferAlloc(otmp_elements * sizeof(uint));
 
             scan_first_fn<T, uint, af_notzero_t, false>(otmp, rtmp, in,

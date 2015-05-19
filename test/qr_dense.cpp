@@ -52,8 +52,8 @@ TEST(QRFactorized, CPP)
     r.host((void*)rData);
 
     // Compare result
-    for (int y = 0; y < qdims[1]; ++y) {
-        for (int x = 0; x < qdims[0]; ++x) {
+    for (int y = 0; y < (int)qdims[1]; ++y) {
+        for (int x = 0; x < (int)qdims[0]; ++x) {
             int elIter = y * qdims[0] + x;
             ASSERT_NEAR(tests[resultIdx][elIter], qData[elIter], 0.001) << "at: " << elIter << std::endl;
         }
@@ -61,8 +61,8 @@ TEST(QRFactorized, CPP)
 
     resultIdx = 1;
 
-    for (int y = 0; y < rdims[1]; ++y) {
-        for (int x = 0; x < rdims[0]; ++x) {
+    for (int y = 0; y < (int)rdims[1]; ++y) {
+        for (int x = 0; x < (int)rdims[0]; ++x) {
             // Test only upper half
             if(x <= y) {
                 int elIter = y * rdims[0] + x;

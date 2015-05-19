@@ -264,12 +264,12 @@ extern "C" {
     /**
        \ingroup device_func_alloc
     */
-    AFAPI af_err af_alloc_device(void **ptr, const dim_type bytes);
+    AFAPI af_err af_alloc_device(void **ptr, const dim_t bytes);
 
     /**
        \ingroup device_func_pinned
     */
-    AFAPI af_err af_alloc_pinned(void **ptr, const dim_type bytes);
+    AFAPI af_err af_alloc_pinned(void **ptr, const dim_t bytes);
 
     /**
        \ingroup device_func_free
@@ -285,7 +285,7 @@ extern "C" {
        Create array from device memory
        \ingroup construct_mat
     */
-    AFAPI af_err af_device_array(af_array *arr, const void *data, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+    AFAPI af_err af_device_array(af_array *arr, const void *data, const unsigned ndims, const dim_t * const dims, const af_dtype type);
 
     /**
        Get memory information from the memory manager
