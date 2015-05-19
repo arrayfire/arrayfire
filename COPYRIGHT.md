@@ -20,7 +20,7 @@ Copyright (C) 2014-2015, ArrayFire.
 
 ArrayFire is distributed under the BSD 3-Clause License. A copy of this license is present in the LICENSES directory.
 
-See ArrayFire home page https://github.com/arrayfire/arrayfirefor details and links to the source code.
+See ArrayFire home page https://github.com/arrayfire/arrayfire for details and links to the source code.
 
 ### FreeImage
 Copyright (C) 2014-2015, FreeImage.
