@@ -42,9 +42,9 @@ array border(const array& img, const int left, const int right,
         const int top, const int bottom,
         const float value = 0.0)
 {
-    if(img.dims(0) < (int)(top + bottom))
+    if((int)img.dims(0) < (top + bottom))
         std::cerr << "input does not have enough rows" << std::endl;
-    if(img.dims(1) < (int)(left + right))
+    if((int)img.dims(1) < (left + right))
         std::cerr << "input does not have enough columns" << std::endl;
 
     dim4 imgDims = img.dims();
@@ -69,7 +69,7 @@ array border(const array& img, const int size, const float value = 0.0)
 array blur(const array& img, const array mask = gaussiankernel(3,3))
 {
     array blurred = array(img.dims(), img.type());
-    for(int i = 0; i < blurred.dims(2); i++)
+    for(int i = 0; i < (int)blurred.dims(2); i++)
         blurred(span, span, i) = convolve(img(span, span, i), mask);
     return blurred;
 }

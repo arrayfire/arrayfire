@@ -27,7 +27,7 @@ template<typename T>
 fg::Histogram* setup_histogram(const af_array in, const double minval, const double maxval)
 {
     Array<T> histogramInput = getArray<T>(in);
-    dim_type nBins = histogramInput.elements();
+    dim_t nBins = histogramInput.elements();
 
     T freqMax = detail::reduce_all<af_max_t, T, T>(histogramInput);
 
