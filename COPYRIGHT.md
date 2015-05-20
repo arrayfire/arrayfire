@@ -30,7 +30,7 @@ FreeImage is distributed under the FreeImage Public License (FIPL) version 1.0. 
 See FreeImage home page http://freeimage.sourceforge.net/ for details and links to the source code.
 
 ### clBLAS
-Copyright (C) 2013 Advanced Micro Devices, Inc.
+Copyright (C) 2013-2015 Advanced Micro Devices, Inc.
 This product includes software developed atAdvanced Micro Devices, Inc. (http://www.amd.com).
 
 clBLAS is distributed under the Apache License Version 2.0 License. A copy of this license is present in the LICENSES directory.
@@ -38,7 +38,7 @@ clBLAS is distributed under the Apache License Version 2.0 License. A copy of th
 See clBLAS home page https://github.com/clMathLibraries/clBLAS for details and links to the source code.
 
 ### clFFT
-Copyright (C) 2013 Advanced Micro Devices, Inc.
+Copyright (C) 2013-2015 Advanced Micro Devices, Inc.
 This product includes software developed atAdvanced Micro Devices, Inc. (http://www.amd.com).
 
 clFFT is distributed under the Apache License Version 2.0 License. A copy of this license is present in the LICENSES directory.
@@ -46,14 +46,14 @@ clFFT is distributed under the Apache License Version 2.0 License. A copy of thi
 See clFFT home page https://github.com/clMathLibraries/clBLAS for details and links to the source code.
 
 ### Random123
-Copyright (C) 2010-2011, D. E. Shaw Research.
+Copyright (C) 2010-2015, D. E. Shaw Research.
 
 Random123 is distributed under the BSD 3-Clause License. A copy of this license is present in the LICENSES directory.
 
 See Random123 home page https://www.deshawresearch.com/resources_random123.html for details and links to the source code.
 
 ### Boost Compute
-Copyright (C) 2013, 2014 Kyle Lutz
+Copyright (C) 2013-2015 Kyle Lutz
 
 Boost Compute is distributed under the Boost Software License, Version 1.0 License. A copy of this license is present in the LICENSES directory.
 
