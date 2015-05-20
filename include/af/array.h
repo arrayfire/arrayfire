@@ -161,7 +161,6 @@ namespace af
                        (default is f32)
 
         */
-        explicit
         array(dim_t dim0, dtype ty = f32);
 
         /**
@@ -186,7 +185,6 @@ namespace af
                        (default is f32)
 
         */
-        explicit
         array(dim_t dim0, dim_t dim1, dtype ty = f32);
 
         /**
@@ -212,7 +210,6 @@ namespace af
                        (default is f32)
 
         */
-        explicit
         array(dim_t dim0, dim_t dim1, dim_t dim2, dtype ty = f32);
 
         /**
@@ -238,7 +235,6 @@ namespace af
                        (default is f32)
 
         */
-        explicit
         array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3, dtype ty = f32);
 
         /**
@@ -300,7 +296,6 @@ namespace af
             \endcode
         */
         template<typename T>
-        explicit
         array(dim_t dim0,
               const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
 
@@ -330,7 +325,6 @@ namespace af
             \image html 2dArray.png
         */
         template<typename T>
-        explicit
         array(dim_t dim0, dim_t dim1,
               const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
 
@@ -359,7 +353,6 @@ namespace af
             \image html 3dArray.png
         */
         template<typename T>
-        explicit
         array(dim_t dim0, dim_t dim1, dim_t dim2,
               const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
 
@@ -389,7 +382,6 @@ namespace af
             \endcode
         */
         template<typename T>
-        explicit
         array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3,
               const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
 
