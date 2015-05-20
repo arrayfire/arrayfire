@@ -33,11 +33,12 @@ namespace opencl
 
     namespace kernel
     {
-        static const int MAX_A_SIZE = 1024;
-
         template<typename T, bool batch_a>
         void iir(Param y, Param c, Param a)
         {
+
+            //FIXME: This is a temporary fix. Ideally the local memory should be allocted outside
+            static const int MAX_A_SIZE = (1024 * sizeof(double)) / sizeof(T);
 
             static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
             static std::map<int, Program*>  iirProgs;
@@ -82,8 +83,13 @@ namespace opencl
                                      Buffer, KParam,
                                      int>(*iirKernels[device]);
 
-            iirOp(EnqueueArgs(getQueue(), global, local),
-                  *y.data, y.info, *c.data, c.info, *a.data, a.info, groups_y);
+            try {
+                iirOp(EnqueueArgs(getQueue(), global, local),
+                      *y.data, y.info, *c.data, c.info, *a.data, a.info, groups_y);
+            } catch(cl::Error &clerr) {
+                AF_ERROR("Size of a too big for this datatype",
+                         AF_ERR_SIZE);
+            }
 
             CL_DEBUG_FINISH(getQueue());
         }
