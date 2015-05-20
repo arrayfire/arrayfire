@@ -148,6 +148,15 @@ INSTALL(FILES
     COMPONENT headers
 )
 
+IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
+    INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}/third_party/forge/include/" DESTINATION include
+        COMPONENT headers
+    )
+    INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}/third_party/forge/lib/" DESTINATION lib
+        COMPONENT libraries
+    )
+ENDIF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
+
 ## configuration to be used from the binary directory directly
 SET(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 SET(BACKEND_DIR "src/backend/\${lowerbackend}")
