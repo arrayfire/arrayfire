@@ -88,7 +88,7 @@ static af_array var(const af_array& in, const bool isbiased, int dim)
 }
 
 template<typename inType, typename outType>
-static af_array var(const af_array& in, const af_array& weights, dim_t dim)
+static af_array var(const af_array& in, const af_array& weights, int dim)
 {
     typedef typename baseOutType<outType>::type bType;
 

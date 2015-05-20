@@ -102,7 +102,11 @@ typedef enum {
 // A handle for an internal array object
 typedef void * af_array;
 
-typedef size_t dim_t;
+#if defined(ARCH_64)
+typedef long long dim_t;
+#else
+typedef int dim_t;
+#endif
 
 typedef enum {
     AF_INTERP_NEAREST,
