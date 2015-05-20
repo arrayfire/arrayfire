@@ -19,7 +19,7 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
-static void hamming_matcher(af_array* idx, af_array* dist, const af_array query, const af_array train, const dim_type dist_dim, const uint n_dist)
+static void hamming_matcher(af_array* idx, af_array* dist, const af_array query, const af_array train, const dim_t dist_dim, const uint n_dist)
 {
     Array<uint> oIdxArray = createEmptyArray<uint>(af::dim4());
     Array<uint> oDistArray = createEmptyArray<uint>(af::dim4());
@@ -30,7 +30,7 @@ static void hamming_matcher(af_array* idx, af_array* dist, const af_array query,
     *dist = getHandle<uint>(oDistArray);
 }
 
-af_err af_hamming_matcher(af_array* idx, af_array* dist, const af_array query, const af_array train, const dim_type dist_dim, const uint n_dist)
+af_err af_hamming_matcher(af_array* idx, af_array* dist, const af_array query, const af_array train, const dim_t dist_dim, const uint n_dist)
 {
     try {
         ArrayInfo qInfo = getInfo(query);

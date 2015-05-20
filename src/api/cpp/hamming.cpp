@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/image.h>
+#include <af/array.h>
 #include "error.hpp"
 
 namespace af
@@ -15,7 +16,7 @@ namespace af
 
 void hamming_matcher(array& idx, array& dist,
                      const array& query, const array& train,
-                     const dim_type dist_dim, const uint n_dist)
+                     const dim_t dist_dim, const uint n_dist)
 {
     af_array temp_idx  = 0;
     af_array temp_dist = 0;

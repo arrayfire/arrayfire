@@ -502,7 +502,7 @@ AFAPI array colorspace(const array& image, const CSpace to, const CSpace from);
 
 AFAPI void hamming_matcher(array& idx, array& dist,
                            const array& query, const array& train,
-                           const dim_type dist_dim=0, const uint n_dist=1);
+                           const dim_t dist_dim=0, const uint n_dist=1);
 
 }
 #endif
@@ -988,7 +988,7 @@ extern "C" {
 
     AFAPI af_err af_hamming_matcher(af_array* idx, af_array* dist,
                                     const af_array query, const af_array train,
-                                    const dim_type dist_dim, const uint n_dist);
+                                    const dim_t dist_dim, const uint n_dist);
 
 #ifdef __cplusplus
 }

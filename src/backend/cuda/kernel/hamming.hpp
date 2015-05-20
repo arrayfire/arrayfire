@@ -305,7 +305,7 @@ void hamming_matcher(Param<uint> idx,
                      Param<uint> dist,
                      CParam<T> query,
                      CParam<T> train,
-                     const dim_type dist_dim,
+                     const dim_t dist_dim,
                      const unsigned n_dist)
 {
     const unsigned feat_len = query.dims[dist_dim];
@@ -315,7 +315,7 @@ void hamming_matcher(Param<uint> idx,
         CUDA_NOT_SUPPORTED();
     }
 
-    const dim_type sample_dim = (dist_dim == 0) ? 1 : 0;
+    const dim_t sample_dim = (dist_dim == 0) ? 1 : 0;
 
     const unsigned nquery = query.dims[sample_dim];
     const unsigned ntrain = train.dims[sample_dim];
