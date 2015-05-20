@@ -104,7 +104,11 @@ fg::Font* ForgeManager::getFont()
 
     std::call_once(flag, []() {
             fnt = new fg::Font();
+#if defined(_WIN32) || defined(_MSC_VER)
+            fnt->loadSystemFont("Arial", 32);
+#else
             fnt->loadSystemFont("Vera", 32);
+#endif
             });
 
     CheckGL("End ForgeManager::getFont");
@@ -115,8 +119,6 @@ fg::Window* ForgeManager::getMainWindow()
 {
     static std::once_flag flag;
     static fg::Window* wnd = NULL;
-
-    CheckGL("Begin ForgeManager::getMainWindow");
 
     std::call_once(flag, [this]() {
             wnd = new fg::Window(WIDTH, HEIGHT, "ArrayFire", NULL, true);
