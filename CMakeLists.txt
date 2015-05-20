@@ -14,6 +14,14 @@ OPTION(BUILD_OPENCL "Build ArrayFire with a OpenCL backend" OFF)
 OPTION(BUILD_DOCS "Create ArrayFire Documentation" OFF)
 OPTION(WITH_COVERAGE "Added code coverage flags" OFF)
 
+# Set a default build type if none was specified
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
+    "MinSizeRel" "RelWithDebInfo")
+endif()
+
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 INCLUDE(${CMAKE_MODULE_PATH}/UploadCoveralls.cmake)
 
