@@ -12,6 +12,7 @@
 #include <af/defines.h>
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
+#include <memory.hpp>
 #include <where.hpp>
 #include <ops.hpp>
 #include <vector>
@@ -28,7 +29,7 @@ namespace cpu
         static const T zero = scalar<T>(0);
 
         const T *iptr = in.get();
-        uint *out_vec  = new uint[in.elements()];
+        uint *out_vec  = memAlloc<uint>(in.elements());
 
         dim_type count = 0;
         dim_type idx = 0;
@@ -55,6 +56,7 @@ namespace cpu
         }
 
         Array<uint> out = createHostDataArray(dim4(count), out_vec);
+        memFree<uint>(out_vec);
         return out;
     }
 
