@@ -48,16 +48,6 @@ void solveTester(const int m, const int n, const int k, double eps)
     ASSERT_NEAR(0, af::sum<double>(af::abs(imag(B0 - B1))) / (m * k), eps);
 }
 
-#if !(defined(OS_WIN) && defined(AF_OPENCL))
-#define FailsOnWindowsOpenCLTest                \
-    TEST(SOLVE, T##RectOver)                    \
-    {                                           \
-        solveTester<T>(800, 600, 50, eps);      \
-    }
-#else
-#define FailsOnWindowsOpenCLTest
-#endif
-
 #define SOLVE_TESTS(T, eps)                     \
     TEST(SOLVE, T##Square)                      \
     {                                           \
@@ -75,7 +65,6 @@ void solveTester(const int m, const int n, const int k, double eps)
     {                                           \
         solveTester<T>(1536, 2048, 400, eps);   \
     }                                           \
-    FailsOnWindowsOpenCLTest                    \
     TEST(SOLVE, T##RectOverMultiple)            \
     {                                           \
         solveTester<T>(1536, 1024, 1, eps);     \
@@ -85,3 +74,21 @@ SOLVE_TESTS(float, 0.01)
 SOLVE_TESTS(double, 1E-5)
 SOLVE_TESTS(cfloat, 0.01)
 SOLVE_TESTS(cdouble, 1E-5)
+
+#undef SOLVE_TESTS
+
+#define SOLVE_TESTS(T, eps)                     \
+    TEST(SOLVE, T##RectOver)                    \
+    {                                           \
+        solveTester<T>(800, 600, 50, eps);      \
+    }
+
+SOLVE_TESTS(float, 0.01)
+SOLVE_TESTS(double, 1E-5)
+// Fails on Windows on some devices
+#if !(defined(OS_WIN) && defined(AF_OPENCL))
+SOLVE_TESTS(cfloat, 0.01)
+SOLVE_TESTS(cdouble, 1E-5)
+#endif
+
+#undef SOLVE_TESTS
