@@ -134,9 +134,7 @@ af_err af_assign_seq(af_array *out,
             }
 
         } catch(...) {
-            if (*out != lhs) {
-                AF_CHECK(af_destroy_array(res));
-            }
+            af_destroy_array(res);
             throw;
         }
         std::swap(*out, res);
