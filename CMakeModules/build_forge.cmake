@@ -1,12 +1,7 @@
 INCLUDE(ExternalProject)
 
 SET(prefix ${CMAKE_BINARY_DIR}/third_party/forge)
-IF(WIN32)
-       SET(forge_location ${prefix}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}forge.lib)
-ELSE(WIN32)
-       SET(forge_location ${prefix}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}forge${CMAKE_SHARED_LIBRARY_SUFFIX})
-ENDIF(WIN32)
-
+SET(forge_location "${prefix}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}forge${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 IF(CMAKE_VERSION VERSION_LESS 3.2)
     IF(CMAKE_GENERATOR MATCHES "Ninja")
@@ -16,7 +11,6 @@ IF(CMAKE_VERSION VERSION_LESS 3.2)
 ELSE()
     SET(byproducts BYPRODUCTS ${forge_location})
 ENDIF()
-
 
 INCLUDE("${CMAKE_MODULE_PATH}/FindGLEWmx.cmake")
 FIND_PACKAGE(GLFW)
@@ -44,17 +38,12 @@ ExternalProject_Add(
     )
 
 ExternalProject_Get_Property(forge-external install_dir)
-ADD_LIBRARY(forge IMPORTED SHARED)
+ADD_LIBRARY(forge SHARED IMPORTED)
 SET_TARGET_PROPERTIES(forge PROPERTIES IMPORTED_LOCATION ${forge_location})
+IF(WIN32)
+	SET_TARGET_PROPERTIES(forge PROPERTIES IMPORTED_IMPLIB ${prefix}/lib/forge.lib)
+ENDIF(WIN32)
 ADD_DEPENDENCIES(forge forge-external)
 SET(FORGE_INCLUDE_DIRECTORIES ${install_dir}/include)
-
-# FIXME - The unix way is not working on windows Returns forge-NotFound
-IF(WIN32)
-    SET(FORGE_LIBRARIES ${forge_location})
-ELSE(WIN32)
-    SET(FORGE_LIBRARIES forge)
-ENDIF(WIN32)
-
+SET(FORGE_LIBRARIES forge)
 SET(FORGE_FOUND ON)
-
