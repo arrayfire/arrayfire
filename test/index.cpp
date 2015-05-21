@@ -1022,7 +1022,7 @@ TYPED_TEST(IndexedMembers, MemFuncs)
     dim_t dimsize = 100;
     vector<TypeParam> in(dimsize * dimsize);
     for(int i = 0; i < (int)in.size(); i++) in[i] = i;
-    array input(dimsize, dimsize, &in.front(), af::afHost, (af::dtype) dtype_traits<TypeParam>::af_type);
+    array input(dimsize, dimsize, &in.front(), af::afHost);
 
     ASSERT_EQ(dimsize, input(af::span, 1).elements());
     ASSERT_EQ(input.type(), input(af::span, 1).type());

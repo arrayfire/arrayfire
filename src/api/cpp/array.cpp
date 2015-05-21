@@ -161,33 +161,34 @@ namespace af
 
 #define INSTANTIATE(T)                                                  \
     template<> AFAPI                                                    \
-    array::array(const dim4 &dims, const T *ptr, af_source_t src, dim_t ngfor) \
+    array::array(const dim4 &dims, const T *ptr, af_source_t src)       \
         : arr(0)                                                        \
     {                                                                   \
-        initDataArray<T>(&arr, ptr, src, dims[0], dims[1], dims[2], dims[3]); \
+        initDataArray<T>(&arr, ptr, src, dims[0], dims[1], dims[2],     \
+                dims[3]);                                               \
     }                                                                   \
     template<> AFAPI                                                    \
-    array::array(dim_t d0, const T *ptr, af_source_t src, dim_t ngfor) \
+    array::array(dim_t d0, const T *ptr, af_source_t src) \
         : arr(0)                                                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0);                           \
     }                                                                   \
     template<> AFAPI                                                    \
-    array::array(dim_t d0, dim_t d1, const T *ptr, af_source_t src, \
-                 dim_t ngfor) : arr(0)                               \
+    array::array(dim_t d0, dim_t d1, const T *ptr, af_source_t src)     \
+        : arr(0)                                                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0, d1);                       \
     }                                                                   \
     template<> AFAPI                                                    \
-    array::array(dim_t d0, dim_t d1, dim_t d2, const T *ptr,   \
-                 af_source_t src, dim_t ngfor) :                     \
-        arr(0)                                                          \
+    array::array(dim_t d0, dim_t d1, dim_t d2, const T *ptr,            \
+                 af_source_t src)                                       \
+        : arr(0)                                                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0, d1, d2);                   \
     }                                                                   \
     template<> AFAPI                                                    \
-    array::array(dim_t d0, dim_t d1, dim_t d2, dim_t d3, const T *ptr, \
-                 af_source_t src, dim_t ngfor) :                     \
+    array::array(dim_t d0, dim_t d1, dim_t d2, dim_t d3, const T *ptr,  \
+                 af_source_t src) :                                     \
         arr(0)                                                          \
                                                                         \
     {                                                                   \

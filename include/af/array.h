@@ -280,7 +280,6 @@ namespace af
             \param[in] dim0    number of elements in the column vector
             \param[in] pointer pointer (points to a buffer on the host/device)
             \param[in] src     source of the data (default is afHost, can also be afDevice)
-            \param[in] ngfor   number of gfor tiles (default is ZERO)
 
             \code
             // allocate data on the host
@@ -297,7 +296,7 @@ namespace af
         */
         template<typename T>
         array(dim_t dim0,
-              const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
+              const T *pointer, af_source_t src=afHost);
 
 
         /**
@@ -315,7 +314,6 @@ namespace af
             \param[in] dim1    number of columns
             \param[in] pointer pointer (points to a buffer on the host/device)
             \param[in] src     source of the data (default is afHost, can also be afDevice)
-            \param[in] ngfor   number of gfor tiles (default is ZERO)
 
             \code
             int h_buffer[] = {0, 1, 2, 3, 4, 5};  // host array
@@ -326,7 +324,7 @@ namespace af
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1,
-              const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
+              const T *pointer, af_source_t src=afHost);
 
 
         /**
@@ -341,7 +339,6 @@ namespace af
             \param[in] dim2    third dimension
             \param[in] pointer pointer (points to a buffer on the host/device)
             \param[in] src     source of the data (default is \ref afHost, can also be \ref afDevice)
-            \param[in] ngfor   number of gfor tiles (default is ZERO)
 
             \code
             int h_buffer[] = {0, 1, 2, 3, 4, 5, 6, 7, 8
@@ -354,7 +351,7 @@ namespace af
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1, dim_t dim2,
-              const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
+              const T *pointer, af_source_t src=afHost);
 
 
         /**
@@ -370,7 +367,6 @@ namespace af
             \param[in] dim3    fourth dimension
             \param[in] pointer pointer (points to a buffer on the host/device)
             \param[in] src     source of the data (default is afHost, can also be afDevice)
-            \param[in] ngfor   number of gfor tiles (default is ZERO)
 
             \code
             int h_buffer[] = {0, 1, 2, 3,
@@ -383,7 +379,7 @@ namespace af
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3,
-              const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
+              const T *pointer, af_source_t src=afHost);
 
         /**
             Create an array of specified size on the device using a host/device pointer
@@ -395,7 +391,6 @@ namespace af
             \param[in] dims    vector data type containing the dimension of the array
             \param[in] pointer pointer (points to a buffer on the host/device)
             \param[in] src     source of the data (default is afHost, can also be afDevice)
-            \param[in] ngfor   number of gfor tiles (default is ZERO)
 
             \code
             int h_buffer[] = {0, 1, 2, 3,    // host array with 16 elements
@@ -417,7 +412,7 @@ namespace af
         template<typename T>
         explicit
         array(const dim4& dims,
-              const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
+              const T *pointer, af_source_t src=afHost);
 
         /**
             @}
