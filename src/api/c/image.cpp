@@ -64,7 +64,7 @@ af_err af_draw_image(const af_window wind, const af_array in, const af_cell* con
         DIM_ASSERT(0, in_dims[3] == 1);
 
         fg::Window* window = reinterpret_cast<fg::Window*>(wind);
-        fg::makeCurrent(window);
+        window->makeCurrent();
         fg::Image* image = NULL;
 
         switch(type) {
@@ -77,7 +77,7 @@ af_err af_draw_image(const af_window wind, const af_array in, const af_cell* con
         }
 
         if (props->col>-1 && props->row>-1)
-            window->draw(props->col, props->row, image, fg::FG_IMAGE, props->title);
+            window->draw(props->col, props->row, *image, props->title);
         else
             window->draw(*image);
     }

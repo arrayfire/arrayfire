@@ -59,7 +59,7 @@ af_err af_draw_hist(const af_window wind, const af_array X, const double minval,
         ARG_ASSERT(0, Xinfo.isVector());
 
         fg::Window* window = reinterpret_cast<fg::Window*>(wind);
-        fg::makeCurrent(window);
+        window->makeCurrent();
         fg::Histogram* hist = NULL;
 
         switch(Xtype) {
@@ -71,7 +71,7 @@ af_err af_draw_hist(const af_window wind, const af_array X, const double minval,
         }
 
         if (props->col>-1 && props->row>-1)
-            window->draw(props->col, props->row, hist, fg::FG_HIST, props->title);
+            window->draw(props->col, props->row, *hist, props->title);
         else
             window->draw(*hist);
     }
