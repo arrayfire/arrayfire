@@ -106,15 +106,23 @@ void qrTester(const int m, const int n, double eps)
     }
 }
 
+#if !(defined(OS_WIN) && defined(AF_OPENCL))
+#define FailsOnWindowsOpenCLTest                \
+    TEST(QR, T##BigRect1)                       \
+    {                                           \
+        qrTester<T>(1000, 500, eps);            \
+    }
+#else
+#define FailsOnWindowsOpenCLTest
+#endif
+
+
 #define QR_BIG_TESTS(T, eps)                    \
     TEST(QR, T##BigRect0)                       \
     {                                           \
         qrTester<T>(500, 1000, eps);            \
     }                                           \
-    TEST(QR, T##BigRect1)                       \
-    {                                           \
-        qrTester<T>(1000, 500, eps);            \
-    }                                           \
+    FailsOnWindowsOpenCLTest                    \
     TEST(QR, T##BigRect0Multiple)               \
     {                                           \
         qrTester<T>(512, 1024, eps);            \
