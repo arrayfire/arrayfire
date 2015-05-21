@@ -48,7 +48,7 @@ TYPED_TEST_CASE(Translate, TestTypes);
 TYPED_TEST_CASE(TranslateInt, TestTypesInt);
 
 template<typename T>
-void translateTest(string pTestFile, const unsigned resultIdx, af::dim4 odims, const float tx, const float ty, const af_interp_type method, const unsigned max_fail_count = 0)
+void translateTest(string pTestFile, const unsigned resultIdx, af::dim4 odims, const float tx, const float ty, const af_interp_type method, const float max_fail_count = 0.0001)
 {
     if (noDoubleTests<T>()) return;
 
@@ -79,7 +79,8 @@ void translateTest(string pTestFile, const unsigned resultIdx, af::dim4 odims, c
             fail_count++;
         }
     }
-    ASSERT_EQ(true, (fail_count <= max_fail_count)) << "Fail Count  = " << fail_count << std::endl;
+    ASSERT_EQ(true, (((float)fail_count / (float)(nElems)) <= max_fail_count))
+             << "Fail Count  = " << fail_count << std::endl;
 
     // Delete
     delete[] outData;
@@ -175,11 +176,11 @@ TYPED_TEST(TranslateInt, Large2)
 TYPED_TEST(TranslateInt, Large3)
 {
     translateTest<TypeParam>(string(TEST_DIR"/translate/translate_large_1.test"), 2,
-                             af::dim4(300, 400, 1, 1), 10.23, 12.72, AF_INTERP_BILINEAR, 10);
+                             af::dim4(300, 400, 1, 1), 10.23, 12.72, AF_INTERP_BILINEAR, 0.001);
 }
 
 TYPED_TEST(TranslateInt, Large4)
 {
     translateTest<TypeParam>(string(TEST_DIR"/translate/translate_large_1.test"), 3,
-                             af::dim4(300, 400, 1, 1), -15.69, -10.13, AF_INTERP_BILINEAR, 10);
+                             af::dim4(300, 400, 1, 1), -15.69, -10.13, AF_INTERP_BILINEAR, 0.001);
 }

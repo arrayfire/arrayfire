@@ -307,9 +307,6 @@ namespace af
         inds[2] = s2.get();
         inds[3] = s3.get();
 
-        af_array out = 0;
-        //FIXME: check if this->s has same dimensions as numdims
-        AF_THROW(af_weak_copy(&out, ref.get()));
         return array::array_proxy(const_cast<array&>(ref), inds);
     }
 

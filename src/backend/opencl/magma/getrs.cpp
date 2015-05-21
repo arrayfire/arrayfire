@@ -31,22 +31,22 @@
  * * Redistributions  of  source  code  must  retain  the above copyright
  *   notice,  this  list  of  conditions  and  the  following  disclaimer.
  * * Redistributions  in  binary  form must reproduce the above copyright
- *   notice,  this list of conditions and the following disclaimer in the 
+ *   notice,  this list of conditions and the following disclaimer in the
  *   documentation  and/or other materials provided with the distribution.
- * * Neither  the  name of the University of Tennessee, Knoxville nor the 
+ * * Neither  the  name of the University of Tennessee, Knoxville nor the
  *   names of its contributors may be used to endorse or promote products
  *   derived from this software without specific prior written permission.
  *
  * THIS  SOFTWARE  IS  PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * ``AS IS''  AND  ANY  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
- * LIMITED  TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
+ * ``AS IS''  AND  ANY  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED  TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
  * A  PARTICULAR  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
  * HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL,  EXEMPLARY,  OR  CONSEQUENTIAL  DAMAGES  (INCLUDING,  BUT NOT 
+ * SPECIAL,  EXEMPLARY,  OR  CONSEQUENTIAL  DAMAGES  (INCLUDING,  BUT NOT
  * LIMITED  TO,  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA,  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * DATA,  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
  * THEORY  OF  LIABILITY,  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * (INCLUDING  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF  THIS  SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  **********************************************************************/
@@ -58,7 +58,9 @@
 #include "magma_helper.h"
 #include "magma_sync.h"
 
+#include <platform.hpp>
 #include <algorithm>
+#include <string>
 
 template<typename Ty>  magma_int_t
 magma_getrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
@@ -166,6 +168,13 @@ magma_getrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
     clblasTranspose cltrans =(trans == MagmaNoTrans) ? clblasNoTrans :
         (trans == MagmaTrans ? clblasTrans : clblasConjTrans);
 
+    std::string pName = opencl::getPlatformName(opencl::getDevice());
+    bool cond = pName.find("NVIDIA") != std::string::npos;
+    cl_mem dAT = 0;
+    if (nrhs > 1 && cond) {
+        magma_malloc<Ty>(&dAT, n * n);
+        magmablas_transpose<Ty>(n, n, dA, dA_offset, ldda, dAT, 0, n, queue);
+    }
     if (notran) {
         inc = 1;
 
@@ -173,13 +182,17 @@ magma_getrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
         magma_getmatrix<Ty>( n, nrhs, dB, dB_offset, lddb, work, n, queue );
         cpu_laswp(LAPACK_COL_MAJOR, nrhs, work, n, i1, i2, ipiv, inc);
         magma_setmatrix<Ty>( n, nrhs, work, n, dB, dB_offset, lddb, queue );
-
         if ( nrhs == 1) {
             gpu_trsv(clblasColumnMajor, clblasLower, clblasNoTrans, clblasUnit, n, dA, dA_offset, ldda, dB, dB_offset, 1, 1, &queue, 0, nullptr, &event);
             gpu_trsv(clblasColumnMajor, clblasUpper, clblasNoTrans, clblasNonUnit, n, dA, dA_offset, ldda, dB, dB_offset, 1, 1, &queue, 0, nullptr, &event);
         } else {
             gpu_trsm(clblasColumnMajor, clblasLeft, clblasLower, clblasNoTrans, clblasUnit, n, nrhs, c_one, dA, dA_offset, ldda, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event);
-            gpu_trsm(clblasColumnMajor, clblasLeft, clblasUpper, clblasNoTrans, clblasNonUnit, n, nrhs, c_one, dA, dA_offset, ldda, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event);
+
+            if(cond) {
+                gpu_trsm(clblasColumnMajor, clblasLeft, clblasLower, clblasTrans, clblasNonUnit, n, nrhs, c_one, dAT, 0, n, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event);
+            } else {
+                gpu_trsm(clblasColumnMajor, clblasLeft, clblasUpper, clblasNoTrans, clblasNonUnit, n, nrhs, c_one, dA, dA_offset, ldda, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event);
+            }
         }
     } else {
         inc = -1;
@@ -189,14 +202,19 @@ magma_getrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
             gpu_trsv(clblasColumnMajor, clblasUpper, cltrans, clblasNonUnit, n, dA, dA_offset, ldda, dB, dB_offset, 1, 1, &queue, 0, nullptr, &event);
             gpu_trsv(clblasColumnMajor, clblasLower, cltrans, clblasUnit, n, dA, dA_offset, ldda, dB, dB_offset, 1, 1, &queue, 0, nullptr, &event);
         } else {
-            gpu_trsm(clblasColumnMajor, clblasLeft, clblasUpper, cltrans, clblasNonUnit, n, nrhs, c_one, dA, dA_offset, ldda, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event);
+            if(cond) {
+                gpu_trsm(clblasColumnMajor, clblasLeft, clblasLower, clblasNoTrans, clblasNonUnit, n, nrhs, c_one, dAT, 0, n, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event);
+            } else {
+                gpu_trsm(clblasColumnMajor, clblasLeft, clblasUpper, cltrans, clblasNonUnit, n, nrhs, c_one, dA, dA_offset, ldda, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event);
+            }
             gpu_trsm(clblasColumnMajor, clblasLeft, clblasLower, cltrans, clblasUnit, n, nrhs, c_one, dA, dA_offset, ldda, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event);
         }
-
         magma_getmatrix<Ty>( n, nrhs, dB, dB_offset, lddb, work, n, queue );
         cpu_laswp(LAPACK_COL_MAJOR, nrhs, work, n, i1, i2, ipiv, inc);
         magma_setmatrix<Ty>( n, nrhs, work, n, dB, dB_offset, lddb, queue );
     }
+
+    if (nrhs > 1 && dAT != 0) magma_free(dAT);
     magma_free_cpu(work);
     return *info;
 }

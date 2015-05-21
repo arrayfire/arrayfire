@@ -23,6 +23,7 @@
 #include <math.hpp>
 
 #include <algorithm>
+#include <string>
 
 namespace opencl
 {
@@ -199,13 +200,26 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
                               (*dT)(), tmp.getOffset() + NB * MN,
                               NB, 0, queue);
 
-        gpu_trsm(clblasColumnMajor,
-                 clblasLeft, clblasUpper, clblasNoTrans, clblasNonUnit,
-                 N, NRHS, scalar<T>(1),
-                 (*A_buf)(), A.getOffset(), A.strides()[1],
-                 (*B_buf)(), B.getOffset(), B.strides()[1],
-                 1, &queue, 0, nullptr, &event);
 
+        std::string pName = getPlatformName(getDevice());
+        if(pName.find("NVIDIA") != std::string::npos)
+        {
+            Array<T> AT = transpose<T>(A, true);
+            cl::Buffer* AT_buf = AT.get();
+            gpu_trsm(clblasColumnMajor,
+                clblasLeft, clblasLower, clblasConjTrans, clblasNonUnit,
+                N, NRHS, scalar<T>(1),
+                (*AT_buf)(), AT.getOffset(), AT.strides()[1],
+                (*B_buf)(), B.getOffset(), B.strides()[1],
+                1, &queue, 0, nullptr, &event);
+        } else {
+            gpu_trsm(clblasColumnMajor,
+                     clblasLeft, clblasUpper, clblasNoTrans, clblasNonUnit,
+                     N, NRHS, scalar<T>(1),
+                     (*A_buf)(), A.getOffset(), A.strides()[1],
+                     (*B_buf)(), B.getOffset(), B.strides()[1],
+                     1, &queue, 0, nullptr, &event);
+        }
         B.resetDims(dim4(N, K));
     }
 
