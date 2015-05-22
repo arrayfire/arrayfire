@@ -59,6 +59,7 @@ void testCPPVar(T const_value, af::dim4 dims)
 {
     typedef typename varOutType<T>::type outType;
     if (noDoubleTests<T>()) return;
+    if (noDoubleTests<outType>()) return;
 
     using af::array;
     using af::var;
@@ -111,8 +112,11 @@ TYPED_TEST(Var, AllCPPLarge)
 
 TYPED_TEST(Var, DimCPPSmall)
 {
-    if (noDoubleTests<TypeParam>()) return;
     typedef typename varOutType<TypeParam>::type outType;
+
+    if (noDoubleTests<TypeParam>()) return;
+    if (noDoubleTests<outType>()) return;
+
     vector<af::dim4> numDims;
     vector<vector<TypeParam> > in;
     vector<vector<outType> > tests;
