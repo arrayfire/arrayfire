@@ -11,6 +11,8 @@ OPTION(BUILD_CPU "Build ArrayFire with a CPU backend" ON)
 OPTION(BUILD_CUDA "Build ArrayFire with a CUDA backend" OFF)
 OPTION(BUILD_OPENCL "Build ArrayFire with a OpenCL backend" OFF)
 
+OPTION(BUILD_GRAPHICS "Build ArrayFire with Forge Graphics" ON)
+
 OPTION(BUILD_DOCS "Create ArrayFire Documentation" OFF)
 OPTION(WITH_COVERAGE "Added code coverage flags" OFF)
 
@@ -35,32 +37,39 @@ ELSE(FREEIMAGE_FOUND)
     MESSAGE(WARNING, "FreeImage not found!")
 ENDIF(FREEIMAGE_FOUND)
 
-OPTION(USE_SYSTEM_FORGE "Use system Forge" OFF)
-IF(USE_SYSTEM_FORGE)
-    FIND_PACKAGE(Forge)
-ELSE()
-    INCLUDE("${CMAKE_MODULE_PATH}/build_forge.cmake")
-ENDIF()
+IF(BUILD_GRAPHICS)
+    OPTION(USE_SYSTEM_FORGE "Use system Forge" OFF)
+    IF(USE_SYSTEM_FORGE)
+        FIND_PACKAGE(Forge)
+    ELSE(USE_SYSTEM_FORGE)
+        INCLUDE("${CMAKE_MODULE_PATH}/build_forge.cmake")
+    ENDIF(USE_SYSTEM_FORGE)
 
-IF(FORGE_FOUND)
-    ADD_DEFINITIONS(-DGLEW_MX -DWITH_GRAPHICS)
-    INCLUDE("${CMAKE_MODULE_PATH}/FindGLEWmx.cmake")
-    FIND_PACKAGE(GLFW)
-    INCLUDE_DIRECTORIES(
-      ${FORGE_INCLUDE_DIRECTORIES}
-      ${GLEW_INCLUDE_DIR}
-      ${GLFW_INCLUDE_DIR}
-    )
-    SET(FORGE_LIBRARIES ${FORGE_LIBRARIES}
-                        ${GLEWmx_LIBRARY}
-                        ${OPENGL_gl_LIBRARY}
-                        ${OPENGL_glu_LIBRARY}
-       )
-   IF(APPLE)
-       INCLUDE_DIRECTORIES(/usr/X11R6/include/)
-       LINK_DIRECTORIES(/usr/X11R6/lib)
-   ENDIF()
-ENDIF(FORGE_FOUND)
+    IF(FORGE_FOUND)
+        ADD_DEFINITIONS(-DGLEW_MX -DWITH_GRAPHICS)
+        INCLUDE("${CMAKE_MODULE_PATH}/FindGLEWmx.cmake")
+        FIND_PACKAGE(GLFW)
+
+        INCLUDE_DIRECTORIES(
+          ${FORGE_INCLUDE_DIRECTORIES}
+          ${GLEW_INCLUDE_DIR}
+          ${GLFW_INCLUDE_DIR})
+
+        SET(FORGE_LIBRARIES ${FORGE_LIBRARIES}
+                            ${GLEWmx_LIBRARY}
+                            ${OPENGL_gl_LIBRARY}
+                            ${OPENGL_glu_LIBRARY})
+
+       IF(APPLE)
+         FIND_PACKAGE(X11 REQUIRED)
+         INCLUDE_DIRECTORIES(${X11_INCLUDE_DIR})
+       ENDIF(APPLE)
+
+    ELSE(FORGE_FOUND)
+       MESSAGE(WARNING "Forge not found. Graphics will be disabled")
+    ENDIF(FORGE_FOUND)
+
+ENDIF(BUILD_GRAPHICS)
 
 INCLUDE_DIRECTORIES(
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
