@@ -36,6 +36,14 @@
     #define SIZE_T_FRMT_SPECIFIER "%zu"
 #endif
 
+// Windows 64-bit has long long as 64-bit int type (long is 32-bit) following LLP64
+// All other 64 bit OS have long and long long as 64-bit int type following LP64
+// All 32-bit OS have long as 32-bit int type
+#if defined(_WIN64)
+    typedef long long   dim_t;
+#else
+    typedef long        dim_t;
+#endif
 
 #ifdef __cplusplus
 #include <complex>
@@ -101,12 +109,6 @@ typedef enum {
 
 // A handle for an internal array object
 typedef void * af_array;
-
-#if defined(ARCH_64)
-typedef long long dim_t;
-#else
-typedef int dim_t;
-#endif
 
 typedef enum {
     AF_INTERP_NEAREST,
