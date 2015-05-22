@@ -8,23 +8,23 @@ INCLUDE("${CMAKE_MODULE_PATH}/FindNVVM.cmake")
 
 # Disables running cuda_compute_check.c when build windows using remote
 IF(NOT DEFINED CUDA_COMPUTE_CAPABILITY)
-  INCLUDE("${CMAKE_MODULE_PATH}/CUDACheckCompute.cmake")
+    INCLUDE("${CMAKE_MODULE_PATH}/CUDACheckCompute.cmake")
 ELSE(NOT DEFINED CUDA_COMPUTE_CAPABILITY)
-  IF(NOT DEFINED CUDA_GENERATE_CODE)
-    SET(CUDA_GENERATE_CODE "arch=compute_${CUDA_COMPUTE_CAPABILITY},code=sm_${CUDA_COMPUTE_CAPABILITY}")
-  ENDIF(NOT DEFINED CUDA_GENERATE_CODE)
+    IF(NOT DEFINED CUDA_GENERATE_CODE)
+        SET(CUDA_GENERATE_CODE "arch=compute_${CUDA_COMPUTE_CAPABILITY},code=sm_${CUDA_COMPUTE_CAPABILITY}")
+    ENDIF(NOT DEFINED CUDA_GENERATE_CODE)
 
-  SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -arch compute_${CUDA_COMPUTE_CAPABILITY})
+    SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -arch compute_${CUDA_COMPUTE_CAPABILITY})
 ENDIF()
 
 IF(UNIX)
-  SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -Xcompiler -fvisibility=hidden)
-  REMOVE_DEFINITIONS(-std=c++0x)
-  IF(${WITH_COVERAGE})
-    SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler -fprofile-arcs -Xcompiler -ftest-coverage -Xlinker -fprofile-arcs -Xlinker -ftest-coverage")
-  ENDIF(${WITH_COVERAGE})
+    SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -Xcompiler -fvisibility=hidden)
+    REMOVE_DEFINITIONS(-std=c++0x)
+    IF(${WITH_COVERAGE})
+        SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler -fprofile-arcs -Xcompiler -ftest-coverage -Xlinker -fprofile-arcs -Xlinker -ftest-coverage")
+    ENDIF(${WITH_COVERAGE})
 ELSE()
-  ADD_DEFINITIONS(-DAFDLL)
+    ADD_DEFINITIONS(-DAFDLL)
 ENDIF()
 
 ADD_DEFINITIONS(-DAF_CUDA)
@@ -119,7 +119,7 @@ ELSEIF(${CUDA_COMPUTE_CAPABILITY} STREQUAL "32")
 ELSEIF(${CUDA_COMPUTE_CAPABILITY} STREQUAL "52")
     SET(PTX_COMPUTE "50")
 ELSE()
-  SET(PTX_COMPUTE ${CUDA_COMPUTE_CAPABILITY})
+    SET(PTX_COMPUTE ${CUDA_COMPUTE_CAPABILITY})
 ENDIF()
 
 CUDA_COMPILE_PTX(ptx_files ${ptx_sources})
@@ -195,9 +195,9 @@ TARGET_LINK_LIBRARIES(afcuda
                       ${CUDA_CUDA_LIBRARY})
 
 IF(FORGE_FOUND)
-  TARGET_LINK_LIBRARIES(afcuda
-                        ${FORGE_LIBRARIES}
-                       )
+    TARGET_LINK_LIBRARIES(afcuda
+                          ${FORGE_LIBRARIES}
+                         )
 ENDIF()
 
 SET_TARGET_PROPERTIES(afcuda PROPERTIES
