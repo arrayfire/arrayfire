@@ -37,7 +37,7 @@
 #endif
 
 // Known 64-bit x86 and ARM architectures use long long
-#if defined(__x86_64__) || defined(_M_X64) || defined(_WIN64) || defined(__aarch64__)   // 64-bit Architectures
+#if defined(__x86_64__) || defined(_M_X64) || defined(_WIN64) || defined(__aarch64__) || defined(__LP64__)   // 64-bit Architectures
     typedef long long   dim_t;
 // Known 32-bit x86 and ARM architectures use int
 #elif defined(__i386__) || defined(_M_IX86) || defined(__arm__) || defined(_M_ARM)     // 32-bit x86 Architecture
