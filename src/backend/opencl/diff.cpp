@@ -19,10 +19,6 @@ namespace opencl
     template<typename T, bool isDiff2>
     static Array<T> diff(const Array<T> &in, const int dim)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
         const af::dim4 iDims = in.dims();
         af::dim4 oDims = iDims;
         oDims[dim] -= (isDiff2 + 1);

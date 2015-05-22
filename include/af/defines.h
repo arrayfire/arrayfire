@@ -63,20 +63,20 @@ typedef long long intl;
 typedef unsigned long long uintl;
 
 typedef enum {
-    AF_SUCCESS=0,
-    AF_ERR_INTERNAL,
-    AF_ERR_NOMEM,
-    AF_ERR_DRIVER,
-    AF_ERR_RUNTIME,
-    AF_ERR_INVALID_ARRAY,
-    AF_ERR_ARG,
-    AF_ERR_SIZE,
-    AF_ERR_DIFF_TYPE,
-    AF_ERR_NOT_SUPPORTED,
-    AF_ERR_NOT_CONFIGURED,
-    AF_ERR_INVALID_TYPE,
-    AF_ERR_INVALID_ARG,
-    AF_ERR_UNKNOWN
+    AF_SUCCESS            =   0,
+    AF_ERR_INTERNAL       =  -1,
+    AF_ERR_NOMEM          = 101,
+    AF_ERR_DRIVER         = 102,
+    AF_ERR_RUNTIME        = 103,
+    AF_ERR_INVALID_ARRAY  = 201,
+    AF_ERR_ARG            = 202,
+    AF_ERR_SIZE           = 203,
+    AF_ERR_TYPE           = 204,
+    AF_ERR_DIFF_TYPE      = 205,
+    AF_ERR_NOT_SUPPORTED  = 301,
+    AF_ERR_NOT_CONFIGURED = 302,
+    AF_ERR_NO_DBL         = 401,
+    AF_ERR_UNKNOWN        = 999
 } af_err;
 
 typedef enum {

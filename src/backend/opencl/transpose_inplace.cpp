@@ -20,11 +20,6 @@ namespace opencl
 template<typename T>
 void transpose_inplace(Array<T> &in, const bool conjugate)
 {
-    if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-        !isDoubleSupported(getActiveDeviceId())) {
-        OPENCL_NOT_SUPPORTED();
-    }
-
     dim4 iDims = in.dims();
 
     if(conjugate) {
@@ -55,4 +50,3 @@ INSTANTIATE(intl   )
 INSTANTIATE(uintl  )
 
 }
-

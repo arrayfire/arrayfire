@@ -60,7 +60,7 @@ AfError::~AfError() throw() {}
 TypeError::TypeError(const char * const  funcName,
                      const int line,
                      const int index, const af_dtype type)
-    : AfError (funcName, line, "Invalid data type", AF_ERR_INVALID_TYPE),
+    : AfError (funcName, line, "Invalid data type", AF_ERR_TYPE),
       argIndex(index),
       errTypeName(getName(type))
 {}
@@ -79,7 +79,7 @@ ArgumentError::ArgumentError(const char * const  funcName,
                              const int line,
                              const int index,
                              const char * const  expectString)
-    : AfError(funcName, line, "Invalid argument", AF_ERR_INVALID_ARG),
+    : AfError(funcName, line, "Invalid argument", AF_ERR_ARG),
       argIndex(index),
       expected(expectString)
 {
@@ -168,13 +168,13 @@ const char *af_err_to_string(const af_err err)
     case AF_ERR_DRIVER:         return "Driver not available or incompatible";
     case AF_ERR_RUNTIME:        return "Runtime error ";
     case AF_ERR_INVALID_ARRAY:  return "Invalid array";
-    case AF_ERR_ARG:
-    case AF_ERR_INVALID_ARG:    return "Invalid input argument";
+    case AF_ERR_ARG:            return "Invalid input argument";
     case AF_ERR_SIZE:           return "Invalid input size";
     case AF_ERR_DIFF_TYPE:      return "Input types are not the same";
     case AF_ERR_NOT_SUPPORTED:  return "Function not supported";
     case AF_ERR_NOT_CONFIGURED: return "Function not configured to build";
-    case AF_ERR_INVALID_TYPE:   return "Function does not support this data type";
+    case AF_ERR_TYPE:           return "Function does not support this data type";
+    case AF_ERR_NO_DBL:         return "Double precision not supported for this device";
     case AF_ERR_UNKNOWN:
     default:
         return "Unknown error";
@@ -217,7 +217,7 @@ af_err processException()
            << "Invalid type for argument " << ex.getArgIndex() << "\n";
 
         print_error(ss);
-        err = AF_ERR_INVALID_TYPE;
+        err = AF_ERR_TYPE;
     } catch (const AfError &ex) {
         ss << "Error in " << ex.getFunctionName()
            << "(" << ex.getLine() << "):\n"

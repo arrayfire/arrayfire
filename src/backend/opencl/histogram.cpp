@@ -25,10 +25,6 @@ namespace opencl
 template<typename inType, typename outType>
 Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const double &minval, const double &maxval)
 {
-    if ((std::is_same<inType, double>::value || std::is_same<inType, cdouble>::value) &&
-        !isDoubleSupported(getActiveDeviceId())) {
-        OPENCL_NOT_SUPPORTED();
-    }
     ARG_ASSERT(1, (nbins<=kernel::MAX_BINS));
 
     const dim4 dims     = in.dims();

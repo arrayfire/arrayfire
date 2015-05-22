@@ -32,7 +32,7 @@ TEST(fft, Invalid_Type)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<char>::af_type));
 
-    ASSERT_EQ(AF_ERR_INVALID_TYPE, af_fft(&outArray, inArray, 1.0, 0));
+    ASSERT_EQ(AF_ERR_TYPE, af_fft(&outArray, inArray, 1.0, 0));
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 

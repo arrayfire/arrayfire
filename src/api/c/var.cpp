@@ -127,8 +127,8 @@ af_err af_var(af_array *out, const af_array in, const bool isbiased, const dim_t
             case f32: output = var<float ,  float >(in, isbiased, dim); break;
             case s32: output = var<int   ,  float >(in, isbiased, dim); break;
             case u32: output = var<uint  ,  float >(in, isbiased, dim); break;
-            case s64: output = var<intl  ,  double>(in, isbiased, dim); break;
-            case u64: output = var<uintl ,  double>(in, isbiased, dim); break;
+            case s64: output = var<intl  ,  double>(in,  isbiased, dim); break;
+            case u64: output = var<uintl ,  double>(in,  isbiased, dim); break;
             case  u8: output = var<uchar ,  float >(in, isbiased, dim); break;
             case  b8: output = var<char  ,  float >(in, isbiased, dim); break;
             case c32: output = var<cfloat,  cfloat>(in, isbiased, dim); break;

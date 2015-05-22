@@ -21,15 +21,6 @@ namespace opencl
     void sort_by_key(Array<Tk> &okey, Array<Tv> &oval,
                const Array<Tk> &ikey, const Array<Tv> &ival, const unsigned dim)
     {
-        if ((std::is_same<Tk, double>::value || std::is_same<Tk, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
-        if ((std::is_same<Tv, double>::value || std::is_same<Tv, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
-
         try {
             okey = copyArray<Tk>(ikey);
             oval = copyArray<Tv>(ival);

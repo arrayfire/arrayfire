@@ -65,7 +65,7 @@ namespace cpu
             case 1: range<T, 1>(out.get(), out.dims(), out.strides()); break;
             case 2: range<T, 2>(out.get(), out.dims(), out.strides()); break;
             case 3: range<T, 3>(out.get(), out.dims(), out.strides()); break;
-            default : AF_ERROR("Invalid rep selection", AF_ERR_INVALID_ARG);
+            default : AF_ERROR("Invalid rep selection", AF_ERR_ARG);
         }
 
 
