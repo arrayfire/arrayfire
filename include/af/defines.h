@@ -36,6 +36,16 @@
     #define SIZE_T_FRMT_SPECIFIER "%zu"
 #endif
 
+// Known 64-bit x86 and ARM architectures use long long
+#if defined(__x86_64__) || defined(_M_X64) || defined(_WIN64) || defined(__aarch64__) || defined(__LP64__)   // 64-bit Architectures
+    typedef long long   dim_t;
+// Known 32-bit x86 and ARM architectures use int
+#elif defined(__i386__) || defined(_M_IX86) || defined(__arm__) || defined(_M_ARM)     // 32-bit x86 Architecture
+    typedef int         dim_t;
+// All other platforms use long long
+#else
+    typedef long long   dim_t;
+#endif
 
 #ifdef __cplusplus
 #include <complex>
@@ -103,12 +113,6 @@ typedef enum {
 
 // A handle for an internal array object
 typedef void * af_array;
-
-#if defined(ARCH_64)
-typedef long long dim_t;
-#else
-typedef int dim_t;
-#endif
 
 typedef enum {
     AF_INTERP_NEAREST,
