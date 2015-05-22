@@ -43,7 +43,7 @@ using cl::Device;
 namespace opencl
 {
 
-#if defined (__APPLE__) || defined(MACOSX)
+#if defined (OS_MAC)
 static const std::string CL_GL_SHARING_EXT = "cl_APPLE_gl_sharing";
 #else
 static const std::string CL_GL_SHARING_EXT = "cl_khr_gl_sharing";

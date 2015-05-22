@@ -56,6 +56,10 @@ IF(FORGE_FOUND)
                         ${OPENGL_gl_LIBRARY}
                         ${OPENGL_glu_LIBRARY}
        )
+   IF(APPLE)
+       INCLUDE_DIRECTORIES(/usr/X11R6/include/)
+       LINK_DIRECTORIES(/usr/X11R6/lib)
+   ENDIF()
 ENDIF(FORGE_FOUND)
 
 INCLUDE_DIRECTORIES(

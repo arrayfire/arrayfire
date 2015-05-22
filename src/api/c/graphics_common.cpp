@@ -13,7 +13,6 @@
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <platform.hpp>
-#include <mutex>
 
 using namespace std;
 
@@ -97,32 +96,34 @@ ForgeManager::~ForgeManager()
 
 fg::Font* ForgeManager::getFont()
 {
-    static std::once_flag flag;
+    static bool flag = true;
     static fg::Font* fnt = NULL;
 
     CheckGL("Begin ForgeManager::getFont");
 
-    std::call_once(flag, []() {
-            fnt = new fg::Font();
+    if (flag) {
+        fnt = new fg::Font();
 #if defined(_WIN32) || defined(_MSC_VER)
-            fnt->loadSystemFont("Arial", 32);
+        fnt->loadSystemFont("Arial", 32);
 #else
-            fnt->loadSystemFont("Vera", 32);
+        fnt->loadSystemFont("Vera", 32);
 #endif
-            CheckGL("End ForgeManager::getFont");
-            });
+        CheckGL("End ForgeManager::getFont");
+        flag = false;
+    };
     return fnt;
 }
 
 fg::Window* ForgeManager::getMainWindow()
 {
-    static std::once_flag flag;
+    static bool flag = true;
     static fg::Window* wnd = NULL;
 
-    std::call_once(flag, [this]() {
-            wnd = new fg::Window(WIDTH, HEIGHT, "ArrayFire", NULL, true);
-            CheckGL("End ForgeManager::getMainWindow");
-            });
+    if (flag) {
+	wnd = new fg::Window(WIDTH, HEIGHT, "ArrayFire", NULL, true);
+	CheckGL("End ForgeManager::getMainWindow");
+	flag = false;
+    };
     return wnd;
 }
 
