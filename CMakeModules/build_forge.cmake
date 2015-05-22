@@ -16,7 +16,7 @@ INCLUDE("${CMAKE_MODULE_PATH}/FindGLEWmx.cmake")
 FIND_PACKAGE(GLFW)
 
 ExternalProject_Add(
-    forge-external
+    forge-ext
     GIT_REPOSITORY https://github.com/arrayfire/forge.git
     GIT_TAG master
     PREFIX "${prefix}"
@@ -37,13 +37,13 @@ ExternalProject_Add(
     ${byproducts}
     )
 
-ExternalProject_Get_Property(forge-external install_dir)
+ExternalProject_Get_Property(forge-ext install_dir)
 ADD_LIBRARY(forge SHARED IMPORTED)
 SET_TARGET_PROPERTIES(forge PROPERTIES IMPORTED_LOCATION ${forge_location})
 IF(WIN32)
-	SET_TARGET_PROPERTIES(forge PROPERTIES IMPORTED_IMPLIB ${prefix}/lib/forge.lib)
+    SET_TARGET_PROPERTIES(forge PROPERTIES IMPORTED_IMPLIB ${prefix}/lib/forge.lib)
 ENDIF(WIN32)
-ADD_DEPENDENCIES(forge forge-external)
+ADD_DEPENDENCIES(forge forge-ext)
 SET(FORGE_INCLUDE_DIRECTORIES ${install_dir}/include)
 SET(FORGE_LIBRARIES forge)
 SET(FORGE_FOUND ON)
