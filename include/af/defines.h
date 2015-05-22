@@ -36,13 +36,15 @@
     #define SIZE_T_FRMT_SPECIFIER "%zu"
 #endif
 
-// Windows 64-bit has long long as 64-bit int type (long is 32-bit) following LLP64
-// All other 64 bit OS have long and long long as 64-bit int type following LP64
-// All 32-bit OS have long as 32-bit int type
-#if defined(_WIN64)
+// Known 64-bit x86 and ARM architectures use long long
+#if defined(__x86_64__) || defined(_M_X64) || defined(_WIN64) || defined(__aarch64__)   // 64-bit Architectures
     typedef long long   dim_t;
+// Known 32-bit x86 and ARM architectures use int
+#elif defined(__i386__) || defined(_M_IX86) || defined(__arm__) || defined(_M_ARM)     // 32-bit x86 Architecture
+    typedef int         dim_t;
+// All other platforms use long long
 #else
-    typedef long        dim_t;
+    typedef long long   dim_t;
 #endif
 
 #ifdef __cplusplus
