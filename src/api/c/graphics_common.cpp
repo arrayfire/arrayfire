@@ -109,9 +109,8 @@ fg::Font* ForgeManager::getFont()
 #else
             fnt->loadSystemFont("Vera", 32);
 #endif
+            CheckGL("End ForgeManager::getFont");
             });
-
-    CheckGL("End ForgeManager::getFont");
     return fnt;
 }
 
@@ -122,9 +121,8 @@ fg::Window* ForgeManager::getMainWindow()
 
     std::call_once(flag, [this]() {
             wnd = new fg::Window(WIDTH, HEIGHT, "ArrayFire", NULL, true);
+            CheckGL("End ForgeManager::getMainWindow");
             });
-
-    CheckGL("End ForgeManager::getMainWindow");
     return wnd;
 }
 
