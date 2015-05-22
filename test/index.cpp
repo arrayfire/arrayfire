@@ -989,10 +989,10 @@ TEST(SeqIndex, CPP_INDEX_VECTOR)
     array B = af::randu(1, 20);
     array C = B(af::seq(st, en));
 
-    ASSERT_EQ(B.dims(0), 1);
-    ASSERT_EQ(B.dims(1), num);
-    ASSERT_EQ(C.dims(0), 1);
-    ASSERT_EQ(C.dims(1), len);
+    ASSERT_EQ(1  , B.dims(0));
+    ASSERT_EQ(num, B.dims(1));
+    ASSERT_EQ(1  , C.dims(0));
+    ASSERT_EQ(len, C.dims(1));
 
     float *h_B = B.host<float>();
     float *h_C = C.host<float>();

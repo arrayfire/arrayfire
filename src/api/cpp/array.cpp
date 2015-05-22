@@ -311,10 +311,32 @@ namespace af
         return array::array_proxy(const_cast<array&>(ref), inds);
     }
 
+    array::array_proxy array::operator()(const index &s0)
+    {
+        return const_cast<const array*>(this)->operator()(s0);
+    }
 
     array::array_proxy array::operator()(const index &s0, const index &s1, const index &s2, const index &s3)
     {
         return const_cast<const array*>(this)->operator()(s0, s1, s2, s3);
+    }
+
+    const array::array_proxy array::operator()(const index &s0) const
+    {
+        if(isvector()){
+            index z = index(0);
+            switch(numDims(this->arr)) {
+                case 1: return gen_indexing(*this, s0, z, z, z);
+                case 2: return gen_indexing(*this, z, s0, z, z);
+                case 3: return gen_indexing(*this, z, z, s0, z);
+                case 4: return gen_indexing(*this, z, z, z, s0);
+                default: AF_THROW_MSG("ArrayFire internal error", AF_ERR_INTERNAL);
+            }
+        }
+        else {
+            array out = moddims(*this, this->elements());
+            return out(s0, 0, 0, 0);
+        }
     }
 
     const array::array_proxy array::operator()(const index &s0, const index &s1, const index &s2, const index &s3) const
