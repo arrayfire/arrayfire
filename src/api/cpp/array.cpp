@@ -386,6 +386,18 @@ namespace af
         AF_THROW(af_weak_copy(&arr, in.get()));
     }
 
+    array::array(const array& input, const dim4& dims) : arr(0)
+    {
+        AF_THROW(af_moddims(&arr, input.get(), AF_MAX_DIMS, dims.get()));
+    }
+
+    array::array(const array& input, const dim_t dim0, const dim_t dim1, const dim_t dim2, const dim_t dim3)
+        : arr(0)
+    {
+        dim_t dims[] = {dim0, dim1, dim2, dim3};
+        AF_THROW(af_moddims(&arr, input.get(), AF_MAX_DIMS, dims));
+    }
+
     // Transpose and Conjugate Transpose
     array array::T() const
     {

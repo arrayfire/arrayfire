@@ -415,6 +415,68 @@ namespace af
               const T *pointer, af_source_t src=afHost);
 
         /**
+           Adjust the dimensions of an N-D array (fast).
+
+           This operation simply rearranges the description of the array
+           on the host device. No memory transfers or transformations are
+           performed. The total number of elements must not change.
+
+           \code
+           float f[] = {1,2,3,4};
+           array a(2,2,f);
+           //a=[1 3]
+           //  [2 4]
+
+           array b = array(a, dim4(4));
+           //b=[1]
+           //  [2]
+           //  [3]
+           //  [4]
+
+           array c = array(a, b.T().dims() );
+           //c=[1 2 3 4]
+           \endcode
+
+           \param[in] input
+           \param[in] dims total number of elements must not change.
+           \return same underlying array data with different dimensions
+        */
+        array(const array& input, const dim4& dims);
+
+        /**
+           Adjust the dimensions of an N-D array (fast).
+
+           This operation simply rearranges the description of the array
+           on the host device. No memory transfers or transformations are
+           performed. The total number of elements must not change.
+
+           \code
+
+           float f[] = {1,2,3,4};
+           array a(2,2,f);
+           //a=[1 3]
+           //  [2 4]
+
+           array b = array(a, 4);
+           //b=[1]
+           //  [2]
+           //  [3]
+           //  [4]
+
+           array c = array(a, 1, 4);
+           //c=[1 2 3 4]
+           \endcode
+
+           \param[in] input
+           \param[in] dim0 first dimension
+           \param[in] dim1 second dimension
+           \param[in] dim2 third dimension
+           \param[in] dim3 fourth dimension
+           \return same underlying array data with different dimensions
+        */
+        array(const array& input, const dim_t dim0, const dim_t dim1 = 1, const dim_t dim2 = 1, const dim_t dim3 = 1);
+
+        /**
             @}
         */
 
