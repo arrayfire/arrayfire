@@ -57,6 +57,11 @@ index::index(const af::array& idx0) {
     impl.isBatch = false;
 }
 
+index::~index() {
+    if (!impl.isSeq)
+        af_destroy_array(impl.idx.arr);
+}
+
 
 static bool operator==(const af_seq& lhs, const af_seq& rhs) {
     return lhs.begin == rhs.begin && lhs.end == rhs.end && lhs.step == rhs.step;
