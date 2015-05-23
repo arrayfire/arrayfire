@@ -43,11 +43,11 @@ namespace af
         ///
         class AFAPI array_proxy
         {
-            array       *parent;        // The original array
-            af_index_t  indices[4];     // Indexing array or seq objects
+            struct array_proxy_impl;    //forward declaration
+            array_proxy_impl *impl;     // implementation
 
         public:
-            array_proxy(array &par, af_index_t *ssss);
+            array_proxy(array& par, af_index_t *ssss, bool linear = false);
 
             // Implicit conversion operators
             operator array() const;
