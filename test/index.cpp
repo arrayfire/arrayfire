@@ -1043,3 +1043,123 @@ TYPED_TEST(IndexedMembers, MemFuncs)
     // TODO: Doesn't compile in cuda for cfloat and cdouble
     //ASSERT_EQ(input.scalar<TypeParam>(), input(af::span, 0).scalar<TypeParam>());
 }
+
+
+TEST(Indexing, SNIPPET_indexing_first)
+{
+    using namespace af;
+    //! [ex_indexing_first]
+    array A = array(seq(1,9), 3, 3);
+    af_print(A);
+
+    af_print(A(0));    // first element
+    af_print(A(0,1));  // first row, second column
+
+    af_print(A(end));   // last element
+    af_print(A(-1));    // also last element
+    af_print(A(end-1)); // second-to-last element
+
+    af_print(A(1,span));       // second row
+    af_print(A.row(end));      // last row
+    af_print(A.cols(1,end));   // all but first column
+
+    float b_host[] = {0,1,2,3,4,5,6,7,8,9};
+    array b(10, 1, b_host);
+    af_print(b(seq(3)));
+    af_print(b(seq(1,7)));
+    af_print(b(seq(1,7,2)));
+    af_print(b(seq(0,end,2)));
+    //! [ex_indexing_first]
+
+
+    array lin_first = A(0);
+    array lin_last = A(end);
+    array lin_snd_last = A(end-1);
+
+    EXPECT_EQ(1, lin_first.dims(0));
+    EXPECT_EQ(1, lin_first.elements());
+    EXPECT_EQ(1, lin_last.dims(0));
+    EXPECT_EQ(1, lin_last.elements());
+    EXPECT_EQ(1, lin_snd_last.dims(0));
+    EXPECT_EQ(1, lin_snd_last.elements());
+
+    EXPECT_FLOAT_EQ(1.0f, lin_first.scalar<float>());
+    EXPECT_FLOAT_EQ(9.0f, lin_last.scalar<float>());
+    EXPECT_FLOAT_EQ(8.0f, lin_snd_last.scalar<float>());
+
+
+    lin_last = A(-1);
+    EXPECT_EQ(1, lin_last.dims(0));
+    EXPECT_EQ(1, lin_last.elements());
+    EXPECT_FLOAT_EQ(9.0f, lin_last.scalar<float>());
+
+    {
+        array out = b(seq(3));
+        ASSERT_EQ(3, out.elements());
+        vector<float> hout(out.elements());
+        out.host(&hout.front());
+        for(unsigned i = 0; i < hout.size(); i++) { ASSERT_FLOAT_EQ(b_host[i], hout[i]); }
+    }
+
+    {
+        array out = b(seq(1, 7));
+        ASSERT_EQ(7, out.elements());
+        vector<float> hout(out.elements());
+        out.host(&hout.front());
+        for(unsigned i = 1; i < hout.size(); i++) { ASSERT_FLOAT_EQ(b_host[i], hout[i - 1]); }
+    }
+
+    {
+        array out = b(seq(1, 7, 2));
+        ASSERT_EQ(4, out.elements());
+        vector<float> hout(out.elements());
+        out.host(&hout.front());
+        for(unsigned i = 0; i < hout.size(); i++) { ASSERT_FLOAT_EQ(b_host[i * 2 + 1], hout[i]); }
+    }
+}
+
+TEST(Indexing, SNIPPET_indexing_set)
+{
+    using namespace af;
+    //! [ex_indexing_set]
+    array A = constant(0, 3, 3);
+    af_print(A);
+
+    // setting entries to a constant
+    A(span) = 4;        // fill entire array
+    af_print(A);
+
+    A.row(0) = -1;      // first row
+    af_print(A);
+
+    A(seq(3)) = 3.1415; // first three elements
+    af_print(A);
+
+    // copy in another matrix
+    array B = constant(1, 4, 4, s32);
+    B.row(0) = randu(1, 4, f32); // set a row to random values (also upcast)
+    //! [ex_indexing_set]
+    //TODO: Confirm the outputs are correct. see #697
+}
+
+
+TEST(Indexing, SNIPPET_indexing_ref)
+{
+    using namespace af;
+    //! [ex_indexing_ref]
+    float h_inds[] = {0, 4, 2, 1}; // zero-based indexing
+    array inds(1, 4, h_inds);
+    af_print(inds);
+
+    array B = randu(1, 4);
+    af_print(B);
+
+    array c = B(inds);        // get
+    af_print(c);
+
+    B(inds) = -1;             // set to scalar
+    B(inds) = constant(0, 4); // zero indices
+    af_print(B);
+    //! [ex_indexing_ref]
+    //TODO: Confirm the outputs are correct. see #697
+}
