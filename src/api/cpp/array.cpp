@@ -511,6 +511,27 @@ namespace af
     {
     }
 
+    af::array::array_proxy::array_proxy(const array_proxy &other) {
+        *impl = *(other.impl);
+    }
+
+#if __cplusplus > 199711L
+    af::array::array_proxy::array_proxy(array_proxy &&other) {
+        impl = other.impl;
+        other.impl = nullptr;
+    }
+
+    array::array_proxy&
+    af::array::array_proxy::operator=(array_proxy &&other) {
+        array out = other;
+        return *this = out;
+    }
+#endif
+
+    af::array::array_proxy::~array_proxy() {
+        if(impl) delete impl;
+    }
+
     array array::array_proxy::as(dtype type) const
     {
         array out = *this;

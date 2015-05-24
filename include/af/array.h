@@ -48,6 +48,12 @@ namespace af
 
         public:
             array_proxy(array& par, af_index_t *ssss, bool linear = false);
+            array_proxy(const array_proxy &other);
+#if __cplusplus > 199711L
+            array_proxy(array_proxy &&other);
+            array_proxy & operator=(array_proxy &&other);
+#endif
+            ~array_proxy();
 
             // Implicit conversion operators
             operator array() const;
