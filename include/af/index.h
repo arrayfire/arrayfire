@@ -41,6 +41,7 @@ class AFAPI index {
     af_index_t impl;
     public:
     index();
+    ~index();
 
     index(const int idx);
     index(const af::seq& s0);

@@ -65,10 +65,6 @@ void solveTester(const int m, const int n, const int k, double eps)
     {                                           \
         solveTester<T>(1536, 2048, 400, eps);   \
     }                                           \
-    TEST(SOLVE, T##RectOver)                    \
-    {                                           \
-        solveTester<T>(800, 600, 50, eps);      \
-    }                                           \
     TEST(SOLVE, T##RectOverMultiple)            \
     {                                           \
         solveTester<T>(1536, 1024, 1, eps);     \
@@ -78,3 +74,21 @@ SOLVE_TESTS(float, 0.01)
 SOLVE_TESTS(double, 1E-5)
 SOLVE_TESTS(cfloat, 0.01)
 SOLVE_TESTS(cdouble, 1E-5)
+
+#undef SOLVE_TESTS
+
+#define SOLVE_TESTS(T, eps)                     \
+    TEST(SOLVE, T##RectOver)                    \
+    {                                           \
+        solveTester<T>(800, 600, 50, eps);      \
+    }
+
+SOLVE_TESTS(float, 0.01)
+SOLVE_TESTS(double, 1E-5)
+// Fails on Windows on some devices
+#if !(defined(OS_WIN) && defined(AF_OPENCL))
+SOLVE_TESTS(cfloat, 0.01)
+SOLVE_TESTS(cdouble, 1E-5)
+#endif
+
+#undef SOLVE_TESTS

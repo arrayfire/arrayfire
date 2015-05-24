@@ -216,6 +216,13 @@ std::string getInfo()
     return info.str();
 }
 
+std::string getPlatformName(const cl::Device &device)
+{
+    const Platform &platform = device.getInfo<CL_DEVICE_PLATFORM>();
+    std::string platStr = platform.getInfo<CL_PLATFORM_NAME>();
+    return platformMap(platStr);
+}
+
 int getDeviceCount()
 {
     return DeviceManager::getInstance().mQueues.size();

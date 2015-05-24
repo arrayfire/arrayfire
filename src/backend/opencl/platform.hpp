@@ -83,6 +83,8 @@ bool isDoubleSupported(int device);
 
 void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
+std::string getPlatformName(const cl::Device &device);
+
 int setDevice(int device);
 
 void sync(int device);
