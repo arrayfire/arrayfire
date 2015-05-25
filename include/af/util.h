@@ -15,6 +15,19 @@ namespace af
 {
     class array;
 
+    /**
+        \defgroup print_func_print print
+
+        \brief Print the array to screen
+
+        \ingroup arrayfire_func
+    */
+    /**
+        \param[in] exp is an expression, generally the name of the array
+        \param[in] arr is the input array
+
+        \ingroup print_func_print
+    */
     AFAPI void print(const char *exp, const array &arr);
 
     // Purpose of Addition: "How to add Function" documentation
@@ -216,7 +229,14 @@ extern "C" {
         @}
     */
 
-    // Print contents of af_array to console
+    /**
+        \param[in] exp is an expression, generally the name of the array
+        \param[in] arr is the input array
+
+        \returns error codes
+
+        \ingroup print_func_print
+    */
     AFAPI af_err af_print_array(af_array arr);
 
     // Purpose of Addition: "How to add Function" documentation
