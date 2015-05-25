@@ -73,22 +73,26 @@ typedef long long intl;
 typedef unsigned long long uintl;
 
 typedef enum {
-    AF_SUCCESS=0,
-    AF_ERR_INTERNAL,
-    AF_ERR_NOMEM,
-    AF_ERR_DRIVER,
-    AF_ERR_RUNTIME,
-    AF_ERR_INVALID_ARRAY,
-    AF_ERR_ARG,
-    AF_ERR_SIZE,
-    AF_ERR_DIFF_TYPE,
-    AF_ERR_NOT_SUPPORTED,
-    AF_ERR_NOT_CONFIGURED,
-    AF_ERR_INVALID_TYPE,
-    AF_ERR_INVALID_ARG,
-    AF_ERR_GL_ERROR,
-    AF_ERR_NO_GRAPHICS,
-    AF_ERR_UNKNOWN
+    AF_SUCCESS            =   0,
+    // 100-199 Errors in environment
+    AF_ERR_NO_MEM         = 101,
+    AF_ERR_DRIVER         = 102,
+    AF_ERR_RUNTIME        = 103,
+    // 200-299 Errors in input parameters
+    AF_ERR_INVALID_ARRAY  = 201,
+    AF_ERR_ARG            = 202,
+    AF_ERR_SIZE           = 203,
+    AF_ERR_TYPE           = 204,
+    AF_ERR_DIFF_TYPE      = 205,
+    // 300-399 Errors for missing software features
+    AF_ERR_NOT_SUPPORTED  = 301,
+    AF_ERR_NOT_CONFIGURED = 302,
+    // 400-499 Errors for missing hardware features
+    AF_ERR_NO_DBL         = 401,
+    AF_ERR_NO_GFX         = 402,
+    // 900-999 Errors from upstream libraries and runtimes
+    AF_ERR_INTERNAL       = 998,
+    AF_ERR_UNKNOWN        = 999
 } af_err;
 
 typedef enum {

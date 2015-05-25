@@ -20,10 +20,6 @@ namespace opencl
     Array<T> resize(const Array<T> &in, const dim_t odim0, const dim_t odim1,
                     const af_interp_type method)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
         const af::dim4 iDims = in.dims();
         af::dim4 oDims(odim0, odim1, iDims[2], iDims[3]);
 

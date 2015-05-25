@@ -86,7 +86,7 @@ void rangeTest(const uint x, const uint y, const uint z, const uint w, const uin
     // Delete
     delete[] outData;
 
-    if(outArray  != 0) af_destroy_array(outArray);
+    if(outArray  != 0) af_release_array(outArray);
 }
 
 #define RANGE_INIT(desc, x, y, z, w, rep)                                                    \

@@ -32,7 +32,7 @@ toCblasTranspose(af_mat_prop opt)
         case AF_MAT_NONE        : out = CUBLAS_OP_N;    break;
         case AF_MAT_TRANS           : out = CUBLAS_OP_T;    break;
         case AF_MAT_CTRANS : out = CUBLAS_OP_C;    break;
-        default                     : AF_ERROR("INVALID af_mat_prop", AF_ERR_INVALID_ARG);
+        default                     : AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
     }
     return out;
 }

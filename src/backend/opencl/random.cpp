@@ -20,10 +20,7 @@ namespace opencl
     template<typename T>
     Array<T> randu(const af::dim4 &dims)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
+        verifyDoubleSupport<T>();
         Array<T> out = createEmptyArray<T>(dims);
         kernel::random<T, true>(*out.get(), out.elements());
         return out;
@@ -32,10 +29,7 @@ namespace opencl
     template<typename T>
     Array<T> randn(const af::dim4 &dims)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
+        verifyDoubleSupport<T>();
         Array<T> out = createEmptyArray<T>(dims);
         kernel::random<T, false>(*out.get(), out.elements());
         return out;
@@ -54,11 +48,6 @@ namespace opencl
 #define COMPLEX_RANDOM(fn, T, TR, is_randu)                 \
     template<> Array<T> fn<T>(const af::dim4 &dims)         \
     {                                                       \
-        if ((std::is_same<T, double>::value ||              \
-             std::is_same<T, cdouble>::value) &&            \
-            !isDoubleSupported(getActiveDeviceId())) {      \
-            OPENCL_NOT_SUPPORTED();                         \
-        }                                                   \
         Array<T> out = createEmptyArray<T>(dims);           \
         dim_t elements = out.elements() * 2;             \
         kernel::random<TR, is_randu>(*out.get(), elements); \

@@ -84,7 +84,7 @@ af_err af_cplx(af_array *out, const af_array in)
         default: TYPE_ERROR(0, type);
         }
 
-        AF_CHECK(af_destroy_array(tmp));
+        AF_CHECK(af_release_array(tmp));
 
         std::swap(*out, res);
     }
@@ -100,7 +100,7 @@ af_err af_real(af_array *out, const af_array in)
         af_dtype type = info.getType();
 
         if (type != c32 && type != c64) {
-            return af_weak_copy(out, in);
+            return af_retain_array(out, in);
         }
 
         af_array res;

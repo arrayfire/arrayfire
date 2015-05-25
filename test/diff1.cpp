@@ -97,9 +97,9 @@ void diff1Test(string pTestFile, unsigned dim, bool isSubRef=false, const vector
     // Delete
     delete[] outData;
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(outArray  != 0) af_release_array(outArray);
+    if(tempArray != 0) af_release_array(tempArray);
 }
 
 TYPED_TEST(Diff1,Vector0)
@@ -173,8 +173,8 @@ void diff1ArgsTest(string pTestFile)
     ASSERT_EQ(AF_ERR_ARG, af_diff1(&outArray, inArray, -1));
     ASSERT_EQ(AF_ERR_ARG, af_diff1(&outArray, inArray,  5));
 
-    if(inArray  != 0) af_destroy_array(inArray);
-    if(outArray != 0) af_destroy_array(outArray);
+    if(inArray  != 0) af_release_array(inArray);
+    if(outArray != 0) af_release_array(outArray);
 }
 
 TYPED_TEST(Diff1,InvalidArgs)

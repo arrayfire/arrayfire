@@ -68,10 +68,10 @@ void testGeneralAssignOneArray(string pTestFile, const dim_t ndims, af_index_t* 
     }
 
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(rhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(lhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(idxArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(rhsArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(lhsArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 TEST(GeneralAssign, ASSS)
@@ -133,9 +133,9 @@ TEST(GeneralAssign, SSSS)
     }
 
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(rhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(lhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(rhsArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(lhsArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 TEST(GeneralAssign, AAAA)
@@ -201,9 +201,9 @@ TEST(GeneralAssign, AAAA)
     }
 
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(rhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(lhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(rhsArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(lhsArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 

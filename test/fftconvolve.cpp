@@ -97,9 +97,9 @@ void fftconvolveTest(string pTestFile, bool expand)
     }
 
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(signal));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(filter));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(signal));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(filter));
 }
 
 template<typename T, int baseDim>

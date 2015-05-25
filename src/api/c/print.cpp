@@ -64,7 +64,7 @@ static void print(af_array arr)
     //FIXME: Use alternative function to avoid copies if possible
     AF_CHECK(af_get_data_ptr(&data.front(), arrT));
     const ArrayInfo infoT = getInfo(arrT);
-    AF_CHECK(af_destroy_array(arrT));
+    AF_CHECK(af_release_array(arrT));
 
     std::ios_base::fmtflags backup = std::cout.flags();
 

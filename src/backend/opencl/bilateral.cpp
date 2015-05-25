@@ -22,10 +22,6 @@ namespace opencl
 template<typename inType, typename outType, bool isColor>
 Array<outType> bilateral(const Array<inType> &in, const float &s_sigma, const float &c_sigma)
 {
-    if ((std::is_same<inType, double>::value || std::is_same<inType, cdouble>::value) &&
-        !isDoubleSupported(getActiveDeviceId())) {
-        OPENCL_NOT_SUPPORTED();
-    }
     Array<outType> out       = createEmptyArray<outType>(in.dims());
     kernel::bilateral<inType, outType, isColor>(out, in, s_sigma, c_sigma);
     return out;

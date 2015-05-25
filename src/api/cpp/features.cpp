@@ -52,11 +52,11 @@ namespace af
 
             feat.n = f.n;
             if (f.n > 0) {
-                AF_THROW(af_weak_copy(&feat.x, f.x));
-                AF_THROW(af_weak_copy(&feat.y, f.y));
-                AF_THROW(af_weak_copy(&feat.score, f.score));
-                AF_THROW(af_weak_copy(&feat.orientation, f.orientation));
-                AF_THROW(af_weak_copy(&feat.size, f.size));
+                AF_THROW(af_retain_array(&feat.x, f.x));
+                AF_THROW(af_retain_array(&feat.y, f.y));
+                AF_THROW(af_retain_array(&feat.score, f.score));
+                AF_THROW(af_retain_array(&feat.orientation, f.orientation));
+                AF_THROW(af_retain_array(&feat.size, f.size));
             } else {
                 feat.x = 0;
                 feat.y = 0;
@@ -87,7 +87,7 @@ namespace af
     {
         if (feat.n == 0) return array();
         af_array tmp = 0;
-        AF_THROW(af_weak_copy(&tmp, feat.x));
+        AF_THROW(af_retain_array(&tmp, feat.x));
         return array(tmp);
     }
 
@@ -95,7 +95,7 @@ namespace af
     {
         if (feat.n == 0) return array();
         af_array tmp = 0;
-        AF_THROW(af_weak_copy(&tmp, feat.y));
+        AF_THROW(af_retain_array(&tmp, feat.y));
         return array(tmp);
     }
 
@@ -103,7 +103,7 @@ namespace af
     {
         if (feat.n == 0) return array();
         af_array tmp = 0;
-        AF_THROW(af_weak_copy(&tmp, feat.score));
+        AF_THROW(af_retain_array(&tmp, feat.score));
         return array(tmp);
     }
 
@@ -111,7 +111,7 @@ namespace af
     {
         if (feat.n == 0) return array();
         af_array tmp = 0;
-        AF_THROW(af_weak_copy(&tmp, feat.orientation));
+        AF_THROW(af_retain_array(&tmp, feat.orientation));
         return array(tmp);
     }
 
@@ -119,7 +119,7 @@ namespace af
     {
         if (feat.n == 0) return array();
         af_array tmp = 0;
-        AF_THROW(af_weak_copy(&tmp, feat.size));
+        AF_THROW(af_retain_array(&tmp, feat.size));
         return array(tmp);
     }
 

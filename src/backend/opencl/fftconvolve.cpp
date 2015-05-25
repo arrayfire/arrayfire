@@ -50,10 +50,6 @@ static const dim4 calcPackedSize(Array<T> const& i1,
 template<typename T, typename convT, typename cT, bool isDouble, bool roundOut, dim_t baseDim>
 Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool expand, ConvolveBatchKind kind)
 {
-    if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-        !isDoubleSupported(getActiveDeviceId())) {
-        OPENCL_NOT_SUPPORTED();
-    }
     const dim4 sDims = signal.dims();
     const dim4 fDims = filter.dims();
 

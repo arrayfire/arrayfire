@@ -102,9 +102,9 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
     // Delete
     delete[] outData;
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(outArray  != 0) af_release_array(outArray);
+    if(tempArray != 0) af_release_array(tempArray);
 }
 
 #define ROTATE_INIT(desc, file, resultIdx, angle, crop, recenter)                               \

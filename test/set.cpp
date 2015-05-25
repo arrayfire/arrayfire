@@ -69,8 +69,8 @@ void uniqueTest(string pTestFile)
         // Delete
         delete[] outData;
 
-        if(inArray   != 0) af_destroy_array(inArray);
-        if(outArray  != 0) af_destroy_array(outArray);
+        if(inArray   != 0) af_release_array(inArray);
+        if(outArray  != 0) af_release_array(outArray);
     }
 }
 
@@ -140,9 +140,9 @@ void setTest(string pTestFile)
         // Delete
         delete[] outData;
 
-        if(inArray0   != 0) af_destroy_array(inArray0);
-        if(inArray1   != 0) af_destroy_array(inArray1);
-        if(outArray  != 0) af_destroy_array(outArray);
+        if(inArray0   != 0) af_release_array(inArray0);
+        if(inArray1   != 0) af_release_array(inArray1);
+        if(outArray  != 0) af_release_array(outArray);
     }
 }
 

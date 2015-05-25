@@ -59,7 +59,7 @@ void randuTest(af::dim4 & dims)
 
     af_array outArray = 0;
     ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
-    if(outArray != 0) af_destroy_array(outArray);
+    if(outArray != 0) af_release_array(outArray);
 }
 
 template<typename T>
@@ -69,7 +69,7 @@ void randnTest(af::dim4 &dims)
 
     af_array outArray = 0;
     ASSERT_EQ(AF_SUCCESS, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
-    if(outArray != 0) af_destroy_array(outArray);
+    if(outArray != 0) af_release_array(outArray);
 }
 
 // INT, UNIT, CHAR, UCHAR Not Supported by RANDN
@@ -79,8 +79,8 @@ void randnTest<int>(af::dim4 &dims)
     if (noDoubleTests<int>()) return;
 
     af_array outArray = 0;
-    ASSERT_EQ(AF_ERR_INVALID_TYPE, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<int>::af_type));
-    if(outArray != 0) af_destroy_array(outArray);
+    ASSERT_EQ(AF_ERR_TYPE, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<int>::af_type));
+    if(outArray != 0) af_release_array(outArray);
 }
 
 template<>
@@ -89,8 +89,8 @@ void randnTest<unsigned>(af::dim4 &dims)
     if (noDoubleTests<unsigned>()) return;
 
     af_array outArray = 0;
-    ASSERT_EQ(AF_ERR_INVALID_TYPE, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<unsigned>::af_type));
-    if(outArray != 0) af_destroy_array(outArray);
+    ASSERT_EQ(AF_ERR_TYPE, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<unsigned>::af_type));
+    if(outArray != 0) af_release_array(outArray);
 }
 
 template<>
@@ -99,8 +99,8 @@ void randnTest<char>(af::dim4 &dims)
     if (noDoubleTests<char>()) return;
 
     af_array outArray = 0;
-    ASSERT_EQ(AF_ERR_INVALID_TYPE, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<char>::af_type));
-    if(outArray != 0) af_destroy_array(outArray);
+    ASSERT_EQ(AF_ERR_TYPE, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<char>::af_type));
+    if(outArray != 0) af_release_array(outArray);
 }
 
 template<>
@@ -109,8 +109,8 @@ void randnTest<unsigned char>(af::dim4 &dims)
     if (noDoubleTests<unsigned char>()) return;
 
     af_array outArray = 0;
-    ASSERT_EQ(AF_ERR_INVALID_TYPE, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<unsigned char>::af_type));
-    if(outArray != 0) af_destroy_array(outArray);
+    ASSERT_EQ(AF_ERR_TYPE, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<unsigned char>::af_type));
+    if(outArray != 0) af_release_array(outArray);
 }
 
 #define RAND(d0, d1, d2, d3)                            \
@@ -165,7 +165,7 @@ void randuArgsTest()
     dim_t dims[] = {1, 2, 3, 0};
     af_array outArray = 0;
     ASSERT_EQ(AF_ERR_SIZE, af_randu(&outArray, ndims, dims, (af_dtype) af::dtype_traits<char>::af_type));
-    if(outArray != 0) af_destroy_array(outArray);
+    if(outArray != 0) af_release_array(outArray);
 }
 
 TYPED_TEST(Random,InvalidArgs)

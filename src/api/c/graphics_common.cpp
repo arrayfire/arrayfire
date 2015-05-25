@@ -49,7 +49,7 @@ GLenum glErrorCheck(const char *msg, const char* file, int line)
 
     if (x != GL_NO_ERROR) {
         printf("GL Error at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
-        AF_ERROR("Error in Graphics", AF_ERR_GL_ERROR);
+        AF_ERROR("Error in Graphics", AF_ERR_INTERNAL);
     }
     return x;
 #else
@@ -63,7 +63,7 @@ GLenum glForceErrorCheck(const char *msg, const char* file, int line)
 
     if (x != GL_NO_ERROR) {
         printf("GL Error at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
-        AF_ERROR("Error in Graphics", AF_ERR_GL_ERROR);
+        AF_ERROR("Error in Graphics", AF_ERR_INTERNAL);
     }
     return x;
 }

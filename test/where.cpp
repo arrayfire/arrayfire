@@ -73,9 +73,9 @@ void whereTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=
                                                         << std::endl;
     }
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(outArray  != 0) af_release_array(outArray);
+    if(tempArray != 0) af_release_array(tempArray);
 }
 
 vector<af_seq> init_subs()
@@ -116,7 +116,7 @@ TYPED_TEST(Where, CPP)
     af::dim4 dims       = numDims[0];
 
     vector<float> in(data[0].begin(), data[0].end());
-    af::array input(dims, &in.front(), af::afHost, af::dtype_traits<TypeParam>::af_type);
+    af::array input(dims, &in.front(), af::afHost);
     af::array output = where(input);
 
     // Compare result

@@ -23,10 +23,6 @@ namespace opencl
 template<typename T>
 Array<T> regions(const Array<char> &in, af_connectivity connectivity)
 {
-    if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-        !isDoubleSupported(getActiveDeviceId())) {
-        OPENCL_NOT_SUPPORTED();
-    }
     ARG_ASSERT(2, (connectivity==AF_CONNECTIVITY_4 || connectivity==AF_CONNECTIVITY_8));
 
     const af::dim4 dims = in.dims();

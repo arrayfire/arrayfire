@@ -94,10 +94,10 @@ void joinTest(string pTestFile, const unsigned dim, const unsigned in0, const un
     // Delete
     delete[] outData;
 
-    if(in0Array  != 0) af_destroy_array(in0Array);
-    if(in1Array  != 0) af_destroy_array(in1Array);
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    if(in0Array  != 0) af_release_array(in0Array);
+    if(in1Array  != 0) af_release_array(in1Array);
+    if(outArray  != 0) af_release_array(outArray);
+    if(tempArray != 0) af_release_array(tempArray);
 }
 
 #define JOIN_INIT(desc, file, dim, in0, in1, resultIdx)                                     \

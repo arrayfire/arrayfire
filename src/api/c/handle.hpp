@@ -98,9 +98,9 @@ static af_array copyArray(const af_array in)
 }
 
 template<typename T>
-static void destroyHandle(const af_array arr)
+static void releaseHandle(const af_array arr)
 {
     detail::destroyArray(reinterpret_cast<detail::Array<T>*>(arr));
 }
 
-af_array weakCopy(const af_array in);
+af_array retain(const af_array in);

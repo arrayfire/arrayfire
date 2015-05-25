@@ -74,7 +74,7 @@ TYPED_TEST(Resize, InvalidDims)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(),
                                           (af_dtype) af::dtype_traits<TypeParam>::af_type));
     ASSERT_EQ(AF_ERR_SIZE, af_resize(&outArray, inArray, 0, 0, AF_INTERP_NEAREST));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
 
 TYPED_TEST(Resize, InvalidType)
@@ -90,8 +90,8 @@ TYPED_TEST(Resize, InvalidType)
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(),
                                           (af_dtype) af::dtype_traits<cfloat>::af_type));
-    ASSERT_EQ(AF_ERR_INVALID_TYPE, af_resize(&outArray, inArray, 16, 16, AF_INTERP_NEAREST));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_ERR_TYPE, af_resize(&outArray, inArray, 16, 16, AF_INTERP_NEAREST));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
 
 template<typename T>
@@ -134,9 +134,9 @@ void resizeTest(string pTestFile, const unsigned resultIdx, const dim_t odim0, c
     // Delete
     delete[] outData;
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(outArray  != 0) af_release_array(outArray);
+    if(tempArray != 0) af_release_array(tempArray);
 }
 
 TYPED_TEST(Resize, Resize3CSquareUpNearest)
@@ -305,8 +305,8 @@ void resizeArgsTest(af_err err, string pTestFile, const af::dim4 odims, const af
 
     ASSERT_EQ(err, af_resize(&outArray, inArray, odims[0], odims[1], method));
 
-    if(inArray != 0) af_destroy_array(inArray);
-    if(outArray != 0) af_destroy_array(outArray);
+    if(inArray != 0) af_release_array(inArray);
+    if(outArray != 0) af_release_array(outArray);
 }
 
 TYPED_TEST(Resize,InvalidArgsDims0)

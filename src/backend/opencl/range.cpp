@@ -19,11 +19,6 @@ namespace opencl
     template<typename T>
     Array<T> range(const dim4& dim, const int seq_dim)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
-
         // Set dimension along which the sequence should be
         // Other dimensions are simply tiled
         int _seq_dim = seq_dim;
@@ -32,7 +27,7 @@ namespace opencl
         }
 
         if(_seq_dim < 0 || _seq_dim > 3)
-            AF_ERROR("Invalid rep selection", AF_ERR_INVALID_ARG);
+            AF_ERROR("Invalid rep selection", AF_ERR_ARG);
 
         Array<T> out = createEmptyArray<T>(dim);
         kernel::range<T>(out, _seq_dim);

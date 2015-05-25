@@ -29,15 +29,6 @@ namespace opencl
     template<typename Tx, typename Ty>
     Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second)
     {
-        if ((std::is_same<Tx, double>::value || std::is_same<Tx, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
-        if ((std::is_same<Ty, double>::value || std::is_same<Ty, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
-
         // All dimensions except join dimension must be equal
         // Compute output dims
         af::dim4 odims;
@@ -119,10 +110,6 @@ namespace opencl
     template<typename T>
     Array<T> join(const int dim, const std::vector<Array<T> > &inputs)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
 
         // All dimensions except join dimension must be equal
         // Compute output dims

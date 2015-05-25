@@ -81,9 +81,9 @@ void testSobelDerivatives(string pTestFile)
     // cleanup
     delete[] dxData;
     delete[] dyData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(dxArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(dyArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(dxArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(dyArray));
 }
 
 TYPED_TEST(Sobel, Rectangle)

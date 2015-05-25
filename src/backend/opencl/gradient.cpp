@@ -18,10 +18,6 @@ namespace opencl
     template<typename T>
     void gradient(Array<T> &grad0, Array<T> &grad1, const Array<T> &in)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
         kernel::gradient<T>(grad0, grad1, in);
     }
 
@@ -33,4 +29,3 @@ namespace opencl
     INSTANTIATE(cfloat)
     INSTANTIATE(cdouble)
 }
-
