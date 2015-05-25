@@ -164,7 +164,7 @@ const char *af_err_to_string(const af_err err)
     switch (err) {
     case AF_SUCCESS:            return "Success";
     case AF_ERR_INTERNAL:       return "Internal error";
-    case AF_ERR_NOMEM:          return "Device out of memory";
+    case AF_ERR_NO_MEM:         return "Device out of memory";
     case AF_ERR_DRIVER:         return "Driver not available or incompatible";
     case AF_ERR_RUNTIME:        return "Runtime error ";
     case AF_ERR_INVALID_ARRAY:  return "Invalid array";

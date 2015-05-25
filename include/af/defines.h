@@ -65,7 +65,7 @@ typedef unsigned long long uintl;
 typedef enum {
     AF_SUCCESS            =   0,
     AF_ERR_INTERNAL       =  -1,
-    AF_ERR_NOMEM          = 101,
+    AF_ERR_NO_MEM         = 101,
     AF_ERR_DRIVER         = 102,
     AF_ERR_RUNTIME        = 103,
     AF_ERR_INVALID_ARRAY  = 201,
