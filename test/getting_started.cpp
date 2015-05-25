@@ -10,6 +10,7 @@
 #include <gtest/gtest.h>
 #include <arrayfire.h>
 #include <vector>
+#include <testHelpers.hpp>
 
 using namespace af;
 using namespace std;
@@ -34,7 +35,7 @@ TEST(GettingStarted, SNIPPET_getting_started_gen)
         for(unsigned i = 0; i < zeros.elements(); i++) ASSERT_FLOAT_EQ(0, output[i]);
     }
 
-    {
+    if (!noDoubleTests<double>()) {
         vector<double> output(ones.elements());
         ones.host(&output.front());
         ASSERT_EQ(f64, ones.type());
