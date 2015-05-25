@@ -41,14 +41,20 @@ void choleskyTester(const int n, double eps, bool is_upper)
     af::array b = 10 * n * af::identity(n, n, ty);
     af::array in = matmul(a.H(), a) + b;
 
-    int info = 0;
     af::array out;
-    info = cholesky(out, in, is_upper);
+    cholesky(out, in, is_upper);
 
     af::array re = is_upper ? matmul(out.H(), out) : matmul(out, out.H());
 
     ASSERT_NEAR(0, af::max<double>(af::abs(real(in - re))), eps);
     ASSERT_NEAR(0, af::max<double>(af::abs(imag(in - re))), eps);
+
+    af::array in2 = in.copy();
+    choleskyInPlace(in2, is_upper);
+    af::array out2 = is_upper ? upper(in2) : lower(in2);
+
+    ASSERT_NEAR(0, af::max<double>(af::abs(real(out2 - out))), eps);
+    ASSERT_NEAR(0, af::max<double>(af::abs(imag(out2 - out))), eps);
 }
 
 #define CHOLESKY_BIG_TESTS(T, eps)              \

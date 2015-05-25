@@ -96,10 +96,22 @@ void qrTester(const int m, const int n, double eps)
         ASSERT_NEAR(0, af::max<double>(af::abs(real(qq - ii))), eps);
         ASSERT_NEAR(0, af::max<double>(af::abs(imag(qq - ii))), eps);
 
-
         af::array re = af::matmul(q, r);
         ASSERT_NEAR(0, af::max<double>(af::abs(real(re - in))), eps);
         ASSERT_NEAR(0, af::max<double>(af::abs(imag(re - in))), eps);
+
+        af::array out = in.copy();
+        af::array tau2;
+        qrInPlace(tau2, out);
+        af::array r2 = upper(out);
+
+        ASSERT_NEAR(0, af::max<double>(af::abs(real(tau - tau2))), eps);
+        ASSERT_NEAR(0, af::max<double>(af::abs(imag(tau - tau2))), eps);
+
+        ASSERT_NEAR(0, af::max<double>(af::abs(real(r2 - r))), eps);
+        ASSERT_NEAR(0, af::max<double>(af::abs(imag(r2 - r))), eps);
+
+
     } catch(af::exception &ex) {
         std::cout << ex.what() << std::endl;
         throw;

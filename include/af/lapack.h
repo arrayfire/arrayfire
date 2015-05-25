@@ -29,7 +29,7 @@ namespace af
 
     AFAPI void qr(array &q, array &r, array &tau, const array &in);
 
-    AFAPI void qrInPlace(array &t, array &in);
+    AFAPI void qrInPlace(array &tau, array &in);
 
     AFAPI int cholesky(array &out, const array &in, const bool is_upper = true);
 

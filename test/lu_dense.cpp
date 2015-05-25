@@ -132,6 +132,24 @@ void luTester(const int m, const int n, double eps)
 
     ASSERT_NEAR(0, af::max<double>(af::abs(real(aa - bb))), eps);
     ASSERT_NEAR(0, af::max<double>(af::abs(imag(aa - bb))), eps);
+
+    af::array out = a.copy();
+    af::array pivot2;
+    af::luInPlace(pivot2, out);
+    af::array l2 = lower(out,  true);
+    af::array u2 = upper(out, false);
+
+    ASSERT_EQ(af::count<uint>(pivot == pivot2), pivot.elements());
+
+    int mn = std::min(m, n);
+    l2 = l2(af::span, af::seq(mn));
+    u2 = u2(af::seq(mn), af::span);
+
+    ASSERT_NEAR(0, af::max<double>(af::abs(real(l2 - l))), eps);
+    ASSERT_NEAR(0, af::max<double>(af::abs(imag(l2 - l))), eps);
+
+    ASSERT_NEAR(0, af::max<double>(af::abs(real(u2 - u))), eps);
+    ASSERT_NEAR(0, af::max<double>(af::abs(imag(u2 - u))), eps);
 }
 
 #define LU_BIG_TESTS(T, eps)                    \
