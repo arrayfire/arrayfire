@@ -42,7 +42,8 @@ void choleskyTester(const int n, double eps, bool is_upper)
     af::array in = matmul(a.H(), a) + b;
 
     int info = 0;
-    af::array out = cholesky(in, &info, is_upper);
+    af::array out;
+    info = cholesky(out, in, is_upper);
 
     af::array re = is_upper ? matmul(out.H(), out) : matmul(out, out.H());
 

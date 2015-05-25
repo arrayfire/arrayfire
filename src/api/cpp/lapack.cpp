@@ -30,11 +30,11 @@ namespace af
         pivot = array(p);
     }
 
-    array luInPlace(array &in)
+    void luInPlace(array &pivot, array &in)
     {
-        af_array pivot = 0;
-        AF_THROW(af_lu_inplace(&pivot, in.get()));
-        return array(pivot);
+        af_array p = 0;
+        AF_THROW(af_lu_inplace(&p, in.get()));
+        pivot = array(p);
     }
 
     void qr(array &out, array &tau, const array &in)
@@ -54,23 +54,27 @@ namespace af
         tau = array(t_);
     }
 
-    array qrInPlace(array &in)
+    void qrInPlace(array &tau, array &in)
     {
-        af_array tau = 0;
-        AF_THROW(af_qr_inplace(&tau, in.get()));
-        return array(tau);
+        af_array t = 0;
+        AF_THROW(af_qr_inplace(&t, in.get()));
+        tau = array(t);
     }
 
-    array cholesky(const array &in, int *info, const bool is_upper)
+    int cholesky(array &out, const array &in, const bool is_upper)
     {
-        af_array out;
-        AF_THROW(af_cholesky(&out, info, in.get(), is_upper));
-        return array(out);
+        int info = 0;
+        af_array res;
+        AF_THROW(af_cholesky(&res, &info, in.get(), is_upper));
+        out = array(res);
+        return info;
     }
 
-    void choleskyInPlace(array &in, int *info, const bool is_upper)
+    int choleskyInPlace(array &in, const bool is_upper)
     {
-        AF_THROW(af_cholesky_inplace(info, in.get(), is_upper));
+        int info = 0;
+        AF_THROW(af_cholesky_inplace(&info, in.get(), is_upper));
+        return info;
     }
 
     array solve(const array &a, const array &b, const matProp options)
