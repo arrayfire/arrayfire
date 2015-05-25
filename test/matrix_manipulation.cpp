@@ -33,8 +33,8 @@ TEST(MatrixManipulation, SNIPPET_matrix_manipulation_tile)
 
     unsigned fdim = large_arr.dims(0);
     unsigned sdim = large_arr.dims(1);
-    for(unsigned i; i < sdim; i++) {
-        for(unsigned j; j < fdim; j++) {
+    for(unsigned i = 0; i < sdim; i++) {
+        for(unsigned j = 0; j < fdim; j++) {
             ASSERT_FLOAT_EQ(h[(i%2) * 2 + (j%2)], h_large_arr[i * fdim + j] );
         }
     }
@@ -132,4 +132,3 @@ TEST(MatrixManipulation, SNIPPET_matrix_manipulation_transpose)
     af_print(c.H());  // Hermitian (conjugate) transpose
     //! [ex_matrix_manipulation_transpose]
 }
-
