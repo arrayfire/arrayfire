@@ -651,6 +651,9 @@ namespace af
         }
         else        { arr = impl->parent->get(); }
         AF_THROW(af_index_gen(&tmp, arr, AF_MAX_DIMS, impl->indices));
+        if(impl->lin)  {
+            AF_THROW(af_destroy_array(arr));
+        }
 
         return array(tmp);
     }
@@ -664,6 +667,9 @@ namespace af
         }
         else        { arr = impl->parent->get(); }
         AF_THROW(af_index_gen(&tmp, arr, AF_MAX_DIMS, impl->indices));
+        if(impl->lin)  {
+            AF_THROW(af_destroy_array(arr));
+        }
 
         int dim = gforDim(impl->indices);
         if (tmp && dim >= 0) {

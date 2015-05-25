@@ -482,7 +482,7 @@ TYPED_TEST(ArrayAssign, AssignSliceCPP)
 
 TEST(ArrayAssign, InvalidArgs)
 {
-    vector<af::cfloat> in(10, af::cfloat(0,0));
+    vector<af::cfloat> in(100, af::cfloat(0,0));
     vector<float> tests(100, float(1));
 
     af::dim4 dims0(10, 1, 1, 1);
