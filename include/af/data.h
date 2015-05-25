@@ -26,15 +26,15 @@ namespace af
     */
 #define CONSTANT(TYPE, TY)                                              \
     AFAPI array constant(TYPE val, const dim4 &dims, const dtype ty=TY); \
-    AFAPI array constant(TYPE val, const dim_t d0, const dtype ty=TY); \
-    AFAPI array constant(TYPE val, const dim_t d0,                   \
-                         const dim_t d1, const dtype ty=TY);         \
-    AFAPI array constant(TYPE val, const dim_t d0,                   \
-                         const dim_t d1, const dim_t d2,          \
+    AFAPI array constant(TYPE val, const dim_t d0, const dtype ty=TY);  \
+    AFAPI array constant(TYPE val, const dim_t d0,                      \
+                         const dim_t d1, const dtype ty=TY);            \
+    AFAPI array constant(TYPE val, const dim_t d0,                      \
+                         const dim_t d1, const dim_t d2,                \
                          const dtype ty=TY);                            \
-    AFAPI array constant(TYPE val, const dim_t d0,                   \
-                         const dim_t d1, const dim_t d2,          \
-                         const dim_t d3, const dtype ty=TY);         \
+    AFAPI array constant(TYPE val, const dim_t d0,                      \
+                         const dim_t d1, const dim_t d2,                \
+                         const dim_t d3, const dtype ty=TY);            \
 
     CONSTANT(double             , f32)
     CONSTANT(float              , f32)
@@ -356,7 +356,7 @@ namespace af
        \ingroup data_mat
        \ingroup arrayfire_func
     */
-    AFAPI array lower(const array &in);
+    AFAPI array lower(const array &in, bool is_unit_diag=false);
 
     /**
       @}
@@ -370,7 +370,7 @@ namespace af
        \ingroup data_mat
        \ingroup arrayfire_func
     */
-    AFAPI array upper(const array &in);
+    AFAPI array upper(const array &in, bool is_unit_diag=false);
 
     /**
       @}
@@ -566,7 +566,7 @@ extern "C" {
        \ingroup data_mat
        \ingroup arrayfire_func
     */
-    AFAPI af_err af_lower(af_array *out, const af_array in);
+    AFAPI af_err af_lower(af_array *out, const af_array in, bool is_unit_diag);
 
     /**
       @}
@@ -580,7 +580,7 @@ extern "C" {
        \ingroup data_mat
        \ingroup arrayfire_func
     */
-    AFAPI af_err af_upper(af_array *out, const af_array in);
+    AFAPI af_err af_upper(af_array *out, const af_array in, bool is_unit_diag);
     /**
       @}
     */

@@ -16,7 +16,7 @@
 namespace cpu
 {
 
-template<typename T, bool is_upper>
+template<typename T, bool is_upper, bool is_unit_diag>
 void triangle(Array<T> &out, const Array<T> &in)
 {
     T *o = out.get();
@@ -44,8 +44,9 @@ void triangle(Array<T> &out, const Array<T> &in)
                     const dim_t iMem = iYZW + ox;
 
                     bool cond = is_upper ? (oy >= ox) : (oy <= ox);
+                    bool do_unit_diag = (is_unit_diag && ox == oy);
                     if(cond) {
-                        o[oMem] = i[iMem];
+                        o[oMem] = do_unit_diag ? scalar<T>(1) : i[iMem];
                     } else {
                         o[oMem] = scalar<T>(0);
                     }
@@ -56,20 +57,23 @@ void triangle(Array<T> &out, const Array<T> &in)
     }
 }
 
-template<typename T, bool is_upper>
+template<typename T, bool is_upper, bool is_unit_diag>
 Array<T> triangle(const Array<T> &in)
 {
     Array<T> out = createEmptyArray<T>(in.dims());
-    triangle<T, is_upper>(out, in);
+    triangle<T, is_upper, is_unit_diag>(out, in);
     return out;
 }
 
-
 #define INSTANTIATE(T)                                                  \
-    template void triangle<T, true >(Array<T> &out, const Array<T> &in); \
-    template void triangle<T, false>(Array<T> &out, const Array<T> &in); \
-    template Array<T> triangle<T, true >(const Array<T> &in);           \
-    template Array<T> triangle<T, false>(const Array<T> &in);           \
+    template void triangle<T, true ,  true>(Array<T> &out, const Array<T> &in); \
+    template void triangle<T, false,  true>(Array<T> &out, const Array<T> &in); \
+    template void triangle<T, true , false>(Array<T> &out, const Array<T> &in); \
+    template void triangle<T, false, false>(Array<T> &out, const Array<T> &in); \
+    template Array<T> triangle<T, true ,  true>(const Array<T> &in);    \
+    template Array<T> triangle<T, false,  true>(const Array<T> &in);    \
+    template Array<T> triangle<T, true , false>(const Array<T> &in);    \
+    template Array<T> triangle<T, false, false>(const Array<T> &in);    \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

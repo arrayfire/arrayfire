@@ -53,7 +53,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &orig)
                            &h_tau[0], (*dT)(), tmp.getOffset(), getQueue()(), &info);
 
         r = createEmptyArray<T>(in.dims());
-        kernel::triangle<T, true>(r, in);
+        kernel::triangle<T, true, false>(r, in);
 
         cl::Buffer *r_buf = r.get();
         magmablas_swapdblk<T>(MN - 1, NB,

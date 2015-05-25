@@ -75,7 +75,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
     dim4 rdims(M, N);
     r = createEmptyArray<T>(rdims);
 
-    triangle<T, true>(r, q);
+    triangle<T, true, false>(r, q);
 
     gqr_func<T>()(AF_LAPACK_COL_MAJOR,
                   M, M, min(M, N),
