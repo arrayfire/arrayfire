@@ -79,9 +79,9 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 
     Array<T> A = copyArray<T>(a);
     Array<T> B = padArray<T, T>(b, dim4(max(M, N), K));
-    Array<int> pivot = createEmptyArray<int>(dim4(N, 1, 1));
 
     if(M == N) {
+        Array<int> pivot = createEmptyArray<int>(dim4(N, 1, 1));
         int info = gesv_func<T>()(AF_LAPACK_COL_MAJOR, N, K,
                                   A.get(), A.strides()[1],
                                   pivot.get(),
