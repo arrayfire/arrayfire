@@ -389,6 +389,16 @@ void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHa
 
             // call forge to get OpenGL sharing context and details
             cl::Platform plat = mDevices[device]->getInfo<CL_DEVICE_PLATFORM>();
+#ifdef OS_MAC
+            CGLContextObj cgl_current_ctx = CGLGetCurrentContext();
+            CGLShareGroupObj cgl_share_group = CGLGetShareGroup(cgl_current_ctx);
+            printf("current opengl context is -------- %p \n", cgl_current_ctx);
+
+            cl_context_properties cps[] = {
+                CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE, (cl_context_properties)cgl_share_group,
+                0
+            };
+#else
             cl_context_properties cps[] = {
                 CL_GL_CONTEXT_KHR, (cl_context_properties)wHandle->context(),
 #if defined(_WIN32) || defined(_MSC_VER)
@@ -399,7 +409,7 @@ void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHa
                 CL_CONTEXT_PLATFORM, (cl_context_properties)plat(),
                 0
             };
-
+#endif
             Context * ctx = new Context(*mDevices[device], cps);
             CommandQueue * cq = new CommandQueue(*ctx, *mDevices[device]);
 
