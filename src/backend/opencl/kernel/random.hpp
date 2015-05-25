@@ -94,8 +94,8 @@ namespace opencl
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static Program            ranProgs[DeviceManager::MAX_DEVICES];
-                static Kernel           ranKernels[DeviceManager::MAX_DEVICES];
+                static std::map<int, Program*>  ranProgs;
+                static std::map<int, Kernel*>   ranKernels;
 
                 int device = getActiveDeviceId();
 
@@ -117,11 +117,13 @@ namespace opencl
                             options << " -D IS_BOOL";
                         }
 
-                        buildProgram(ranProgs[device], random_cl, random_cl_len, options.str());
-                        ranKernels[device] = Kernel(ranProgs[device], "random");
+                        cl::Program prog;
+                        buildProgram(prog, random_cl, random_cl_len, options.str());
+                        ranProgs[device] = new Program(prog);
+                        ranKernels[device] = new Kernel(*ranProgs[device], "random");
                     });
 
-                auto randomOp = make_kernel<cl::Buffer, uint, uint, uint, uint>(ranKernels[device]);
+                auto randomOp = make_kernel<cl::Buffer, uint, uint, uint, uint>(*ranKernels[device]);
 
                 uint groups = divup(elements, THREADS * REPEAT);
                 counter += divup(elements, THREADS * groups);

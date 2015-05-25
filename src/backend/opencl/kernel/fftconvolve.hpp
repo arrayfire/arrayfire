@@ -17,6 +17,7 @@
 #include <kernel_headers/fftconvolve_multiply.hpp>
 #include <kernel_headers/fftconvolve_reorder.hpp>
 #include <memory.hpp>
+#include <map>
 
 using cl::Buffer;
 using cl::Program;
@@ -81,9 +82,9 @@ void packDataHelper(Param packed,
 {
     try {
         static std::once_flag     compileFlags[DeviceManager::MAX_DEVICES];
-        static Program        fftconvolveProgs[DeviceManager::MAX_DEVICES];
-        static Kernel                 pdKernel[DeviceManager::MAX_DEVICES];
-        static Kernel                 paKernel[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*>  fftconvolveProgs;
+        static std::map<int, Kernel*>   pdKernel;
+        static std::map<int, Kernel*>   paKernel;
 
         int device = getActiveDeviceId();
 
@@ -100,13 +101,12 @@ void packDataHelper(Param packed,
                             << " -D USE_DOUBLE";
                 }
 
-                buildProgram(fftconvolveProgs[device],
-                             fftconvolve_pack_cl,
-                             fftconvolve_pack_cl_len,
-                             options.str());
+                cl::Program prog;
+                buildProgram(prog, fftconvolve_pack_cl, fftconvolve_pack_cl_len, options.str());
+                fftconvolveProgs[device] = new Program(prog);
 
-                pdKernel[device] = Kernel(fftconvolveProgs[device], "pack_data");
-                paKernel[device] = Kernel(fftconvolveProgs[device], "pad_array");
+                pdKernel[device] = new Kernel(*fftconvolveProgs[device], "pack_data");
+                paKernel[device] = new Kernel(*fftconvolveProgs[device], "pad_array");
             });
 
         Param sig_tmp, filter_tmp;
@@ -129,7 +129,7 @@ void packDataHelper(Param packed,
         // (allows faster FFT computation) and pad array to a power of 2 with 0s
         auto pdOp = make_kernel<Buffer, KParam,
                                 Buffer, KParam,
-                                const int, const int> (pdKernel[device]);
+                                const int, const int> (*pdKernel[device]);
 
         pdOp(EnqueueArgs(getQueue(), global, local),
              *sig_tmp.data, sig_tmp.info, *sig.data, sig.info,
@@ -141,7 +141,7 @@ void packDataHelper(Param packed,
 
         // Pad filter array with 0s
         auto paOp = make_kernel<Buffer, KParam,
-                                Buffer, KParam> (paKernel[device]);
+                                Buffer, KParam> (*paKernel[device]);
 
         paOp(EnqueueArgs(getQueue(), global, local),
              *filter_tmp.data, filter_tmp.info,
@@ -162,8 +162,8 @@ void complexMultiplyHelper(Param packed,
 {
     try {
         static std::once_flag     compileFlags[DeviceManager::MAX_DEVICES];
-        static Program        fftconvolveProgs[DeviceManager::MAX_DEVICES];
-        static Kernel                 cmKernel[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*> fftconvolveProgs;
+        static std::map<int, Kernel*>  cmKernel;
 
         int device = getActiveDeviceId();
 
@@ -184,12 +184,14 @@ void complexMultiplyHelper(Param packed,
                             << " -D USE_DOUBLE";
                 }
 
-                buildProgram(fftconvolveProgs[device],
+                cl::Program prog;
+                buildProgram(prog,
                              fftconvolve_multiply_cl,
                              fftconvolve_multiply_cl_len,
                              options.str());
+                fftconvolveProgs[device] = new Program(prog);
 
-                cmKernel[device] = Kernel(fftconvolveProgs[device], "complex_multiply");
+                cmKernel[device] = new Kernel(*fftconvolveProgs[device], "complex_multiply");
             });
 
         Param sig_tmp, filter_tmp;
@@ -209,7 +211,7 @@ void complexMultiplyHelper(Param packed,
         auto cmOp = make_kernel<Buffer, KParam,
                                 Buffer, KParam,
                                 Buffer, KParam,
-                                const int, const int> (cmKernel[device]);
+                                const int, const int> (*cmKernel[device]);
 
         cmOp(EnqueueArgs(getQueue(), global, local),
              *packed.data, packed.info,
@@ -233,8 +235,8 @@ void reorderOutputHelper(Param out,
 {
     try {
         static std::once_flag     compileFlags[DeviceManager::MAX_DEVICES];
-        static Program        fftconvolveProgs[DeviceManager::MAX_DEVICES];
-        static Kernel                 roKernel[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*> fftconvolveProgs;
+        static std::map<int, Kernel*>  roKernel;
 
         int device = getActiveDeviceId();
 
@@ -253,12 +255,14 @@ void reorderOutputHelper(Param out,
                             << " -D USE_DOUBLE";
                 }
 
-                buildProgram(fftconvolveProgs[device],
+                cl::Program prog;
+                buildProgram(prog,
                              fftconvolve_reorder_cl,
                              fftconvolve_reorder_cl_len,
                              options.str());
+                fftconvolveProgs[device] = new Program(prog);
 
-                roKernel[device] = Kernel(fftconvolveProgs[device], "reorder_output");
+                roKernel[device] = new Kernel(*fftconvolveProgs[device], "reorder_output");
             });
 
         Param sig_tmp, filter_tmp;
@@ -275,7 +279,7 @@ void reorderOutputHelper(Param out,
         auto roOp = make_kernel<Buffer, KParam,
                                 Buffer, KParam,
                                 KParam, const int,
-                                const int> (roKernel[device]);
+                                const int> (*roKernel[device]);
 
         if (kind == ONE2MANY) {
             roOp(EnqueueArgs(getQueue(), global, local),
