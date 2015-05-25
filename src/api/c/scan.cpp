@@ -37,7 +37,7 @@ af_err af_accum(af_array *out, const af_array in, const int dim)
         const ArrayInfo& in_info = getInfo(in);
 
         if (dim >= (int)in_info.ndims()) {
-            *out = weakCopy(in);
+            *out = retain(in);
             return AF_SUCCESS;
         }
 

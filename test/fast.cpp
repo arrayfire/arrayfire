@@ -123,14 +123,14 @@ void fastTest(string pTestFile, bool nonmax)
             ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << std::endl;
         }
 
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray_f32));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray_f32));
 
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(outFeat.x));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(outFeat.y));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(outFeat.score));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(outFeat.orientation));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(outFeat.size));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(outFeat.x));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(outFeat.y));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(outFeat.score));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(outFeat.orientation));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(outFeat.size));
 
         delete [] outX;
         delete [] outY;

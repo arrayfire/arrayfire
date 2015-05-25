@@ -24,22 +24,21 @@ using namespace detail;
 using std::vector;
 using std::swap;
 
-template<typename T, bool isComplex>
-static
-void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_array &in_)
-{
-    af_array in = in_;
-    ArrayInfo iInfo = getInfo(in);
-    ArrayInfo oInfo = getInfo(out);
-    af_dtype iType  = iInfo.getType();
+// From src/api/c/moddims.cpp TODO: move to header?
+template<typename T>
+Array<T> modDims(const Array<T>& in, const af::dim4 &newDims);
 
-    dim4 const outDs = oInfo.dims();
-    dim4 const iDims = iInfo.dims();
+template<typename Tout, typename Tin>
+static
+void assign(Array<Tout> &out, const unsigned &ndims, const af_seq *index, const Array<Tin> &in_)
+{
+    dim4 const outDs = out.dims();
+    dim4 const iDims = in_.dims();
 
     DIM_ASSERT(0, (outDs.ndims()>=iDims.ndims()));
     DIM_ASSERT(0, (outDs.ndims()>=(dim_t)ndims));
 
-    AF_CHECK(af_eval(out));
+    evalArray(out);
 
     vector<af_seq> index_(index, index+ndims);
 
@@ -50,50 +49,58 @@ void assign(af_array &out, const unsigned &ndims, const af_seq *index, const af_
         is_vector &= oDims[i] == 1;
     }
 
-    if (is_vector && iInfo.isVector()) {
-        if (oDims.elements() != (dim_t)iInfo.elements()) {
+    if (is_vector && in_.isVector()) {
+        if (oDims.elements() != (dim_t)in_.elements()) {
             AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
         }
 
         // If both out and in are vectors of equal elements, reshape in to out dims
-        AF_CHECK(af_moddims(&in, in_, oDims.ndims(), oDims.get()));
+        Array<Tin> in = modDims(in_, oDims);
+        Array<Tout> dst = createSubArray<Tout>(out, index_, false);
+
+        copyArray<Tin , Tout>(dst, in);
     } else {
         for (int i = 0; i < 4; i++) {
             if (oDims[i] != iDims[i]) {
                 AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
             }
         }
+        Array<Tout> dst = createSubArray<Tout>(out, index_, false);
+
+        copyArray<Tin , Tout>(dst, in_);
     }
+}
 
-    Array<T> dst = createSubArray<T>(getArray<T>(out), index_, false);
+template<typename T>
+static
+void assign_helper(Array<T> &out, const unsigned &ndims, const af_seq *index, const af_array &in_)
+{
+    ArrayInfo iInfo = getInfo(in_);
+    af_dtype iType  = iInfo.getType();
 
-    bool noCaseExecuted = true;
-    if (isComplex) {
-        noCaseExecuted = false;
+    if(out.getType() == c64 || out.getType() == c32)
+    {
+
         switch(iType) {
-            case c64: copyArray<cdouble, T>(dst, getArray<cdouble>(in));  break;
-            case c32: copyArray<cfloat , T>(dst, getArray<cfloat >(in));  break;
-            default : noCaseExecuted = true; break;
+            case c64: assign<T, cdouble>(out, ndims, index, getArray<cdouble  >(in_));  break;
+            case c32: assign<T, cfloat >(out, ndims, index, getArray<cfloat   >(in_));  break;
+            default : TYPE_ERROR(1, iType); break;
         }
     }
-
-    if(noCaseExecuted) {
-        noCaseExecuted = false;
+    else
+    {
         switch(iType) {
-            case f64: copyArray<double , T>(dst, getArray<double>(in));  break;
-            case f32: copyArray<float  , T>(dst, getArray<float >(in));  break;
-            case s32: copyArray<int    , T>(dst, getArray<int   >(in));  break;
-            case u32: copyArray<uint   , T>(dst, getArray<uint  >(in));  break;
-            case s64: copyArray<intl    , T>(dst, getArray<intl   >(in));  break;
-            case u64: copyArray<uintl   , T>(dst, getArray<uintl  >(in));  break;
-            case u8 : copyArray<uchar  , T>(dst, getArray<uchar >(in));  break;
-            case b8 : copyArray<char   , T>(dst, getArray<char  >(in));  break;
-            default : noCaseExecuted = true; break;
+            case f64: assign<T, double >(out, ndims, index, getArray<double   >(in_));  break;
+            case f32: assign<T, float  >(out, ndims, index, getArray<float    >(in_));  break;
+            case s32: assign<T, int    >(out, ndims, index, getArray<int      >(in_));  break;
+            case u32: assign<T, uint   >(out, ndims, index, getArray<uint     >(in_));  break;
+            case s64: assign<T, intl   >(out, ndims, index, getArray<intl     >(in_));  break;
+            case u64: assign<T, uintl  >(out, ndims, index, getArray<uintl    >(in_));  break;
+            case u8 : assign<T, uchar  >(out, ndims, index, getArray<uchar    >(in_));  break;
+            case b8 : assign<T, char   >(out, ndims, index, getArray<char     >(in_));  break;
+            default : TYPE_ERROR(1, iType); break;
         }
     }
-
-    if (noCaseExecuted)
-        TYPE_ERROR(1, iType);
 }
 
 af_err af_assign_seq(af_array *out,
@@ -111,7 +118,7 @@ af_err af_assign_seq(af_array *out,
 
         af_array res;
         if (*out != lhs) AF_CHECK(af_copy_array(&res, lhs));
-        else             res = weakCopy(lhs);
+        else             res = retain(lhs);
 
         try {
 
@@ -119,22 +126,21 @@ af_err af_assign_seq(af_array *out,
                 ArrayInfo oInfo = getInfo(lhs);
                 af_dtype oType  = oInfo.getType();
                 switch(oType) {
-                case c64: assign<cdouble, true >(res, ndims, index, rhs);  break;
-                case c32: assign<cfloat , true >(res, ndims, index, rhs);  break;
-                case f64: assign<double , false>(res, ndims, index, rhs);  break;
-                case f32: assign<float  , false>(res, ndims, index, rhs);  break;
-                case s32: assign<int    , false>(res, ndims, index, rhs);  break;
-                case u32: assign<uint   , false>(res, ndims, index, rhs);  break;
-                case s64: assign<intl    , false>(res, ndims, index, rhs);  break;
-                case u64: assign<uintl   , false>(res, ndims, index, rhs);  break;
-                case u8 : assign<uchar  , false>(res, ndims, index, rhs);  break;
-                case b8 : assign<char   , false>(res, ndims, index, rhs);  break;
+                case c64: assign_helper<cdouble>(getWritableArray<cdouble>(res), ndims, index, rhs);  break;
+                case c32: assign_helper<cfloat >(getWritableArray<cfloat >(res), ndims, index, rhs);  break;
+                case f64: assign_helper<double >(getWritableArray<double >(res), ndims, index, rhs);  break;
+                case f32: assign_helper<float  >(getWritableArray<float  >(res), ndims, index, rhs);  break;
+                case s32: assign_helper<int    >(getWritableArray<int    >(res), ndims, index, rhs);  break;
+                case u32: assign_helper<uint   >(getWritableArray<uint   >(res), ndims, index, rhs);  break;
+                case s64: assign_helper<intl   >(getWritableArray<intl   >(res), ndims, index, rhs);  break;
+                case u64: assign_helper<uintl  >(getWritableArray<uintl  >(res), ndims, index, rhs);  break;
+                case u8 : assign_helper<uchar  >(getWritableArray<uchar  >(res), ndims, index, rhs);  break;
+                case b8 : assign_helper<char   >(getWritableArray<char   >(res), ndims, index, rhs);  break;
                 default : TYPE_ERROR(1, oType); break;
                 }
             }
-
         } catch(...) {
-            af_destroy_array(res);
+            af_release_array(res);
             throw;
         }
         std::swap(*out, res);
@@ -187,7 +193,7 @@ af_err af_assign_gen(af_array *out,
         if (*out != lhs) AF_CHECK(af_copy_array(&output, lhs));
         else             output = lhs;
 
-        ArrayInfo lInfo = getInfo(output);
+        ArrayInfo lInfo = getInfo(lhs);
         ArrayInfo rInfo = getInfo(rhs);
         dim4 lhsDims    = lInfo.dims();
         dim4 rhsDims    = rInfo.dims();
@@ -214,7 +220,9 @@ af_err af_assign_gen(af_array *out,
             is_vector &= oDims[i] == 1;
         }
 
-        if (is_vector && rInfo.isVector()) {
+        //TODO: Move logic out of this
+        is_vector &= rInfo.isVector();
+        if (is_vector) {
             if (oDims.elements() != (dim_t)rInfo.elements()) {
                 AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
             }
@@ -268,9 +276,13 @@ af_err af_assign_gen(af_array *out,
                 default: TYPE_ERROR(1, rhsType);
             }
         } catch(...) {
-            if (*out != lhs) AF_CHECK(af_destroy_array(output));
+            if (*out != lhs) {
+                AF_CHECK(af_release_array(output));
+                if (is_vector) { AF_CHECK(af_release_array(rhs)); }
+            }
             throw;
         }
+        if (is_vector) { AF_CHECK(af_release_array(rhs)); }
     }
     CATCHALL;
 

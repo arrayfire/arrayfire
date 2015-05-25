@@ -43,11 +43,17 @@ namespace af
         ///
         class AFAPI array_proxy
         {
-            array       *parent;        // The original array
-            af_index_t  indices[4];     // Indexing array or seq objects
+            struct array_proxy_impl;    //forward declaration
+            array_proxy_impl *impl;     // implementation
 
         public:
-            array_proxy(array &par, af_index_t *ssss);
+            array_proxy(array& par, af_index_t *ssss, bool linear = false);
+            array_proxy(const array_proxy &other);
+#if __cplusplus > 199711L
+            array_proxy(array_proxy &&other);
+            array_proxy & operator=(array_proxy &&other);
+#endif
+            ~array_proxy();
 
             // Implicit conversion operators
             operator array() const;
@@ -280,7 +286,6 @@ namespace af
             \param[in] dim0    number of elements in the column vector
             \param[in] pointer pointer (points to a buffer on the host/device)
             \param[in] src     source of the data (default is afHost, can also be afDevice)
-            \param[in] ngfor   number of gfor tiles (default is ZERO)
 
             \code
             // allocate data on the host
@@ -297,7 +302,7 @@ namespace af
         */
         template<typename T>
         array(dim_t dim0,
-              const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
+              const T *pointer, af_source_t src=afHost);
 
 
         /**
@@ -315,7 +320,6 @@ namespace af
             \param[in] dim1    number of columns
             \param[in] pointer pointer (points to a buffer on the host/device)
             \param[in] src     source of the data (default is afHost, can also be afDevice)
-            \param[in] ngfor   number of gfor tiles (default is ZERO)
 
             \code
             int h_buffer[] = {0, 1, 2, 3, 4, 5};  // host array
@@ -326,7 +330,7 @@ namespace af
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1,
-              const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
+              const T *pointer, af_source_t src=afHost);
 
 
         /**
@@ -341,7 +345,6 @@ namespace af
             \param[in] dim2    third dimension
             \param[in] pointer pointer (points to a buffer on the host/device)
             \param[in] src     source of the data (default is \ref afHost, can also be \ref afDevice)
-            \param[in] ngfor   number of gfor tiles (default is ZERO)
 
             \code
             int h_buffer[] = {0, 1, 2, 3, 4, 5, 6, 7, 8
@@ -354,7 +357,7 @@ namespace af
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1, dim_t dim2,
-              const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
+              const T *pointer, af_source_t src=afHost);
 
 
         /**
@@ -370,7 +373,6 @@ namespace af
             \param[in] dim3    fourth dimension
             \param[in] pointer pointer (points to a buffer on the host/device)
             \param[in] src     source of the data (default is afHost, can also be afDevice)
-            \param[in] ngfor   number of gfor tiles (default is ZERO)
 
             \code
             int h_buffer[] = {0, 1, 2, 3,
@@ -383,7 +385,7 @@ namespace af
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3,
-              const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
+              const T *pointer, af_source_t src=afHost);
 
         /**
             Create an array of specified size on the device using a host/device pointer
@@ -395,7 +397,6 @@ namespace af
             \param[in] dims    vector data type containing the dimension of the array
             \param[in] pointer pointer (points to a buffer on the host/device)
             \param[in] src     source of the data (default is afHost, can also be afDevice)
-            \param[in] ngfor   number of gfor tiles (default is ZERO)
 
             \code
             int h_buffer[] = {0, 1, 2, 3,    // host array with 16 elements
@@ -417,7 +418,69 @@ namespace af
         template<typename T>
         explicit
         array(const dim4& dims,
-              const T *pointer, af_source_t src=afHost, dim_t ngfor=0);
+              const T *pointer, af_source_t src=afHost);
+
+        /**
+           Adjust the dimensions of an N-D array (fast).
+
+           This operation simply rearranges the description of the array
+           on the host device. No memory transfers or transformations are
+           performed. The total number of elements must not change.
+
+           \code
+           float f[] = {1,2,3,4};
+           array a(2,2,f);
+           //a=[1 3]
+           //  [2 4]
+
+           array b = array(a, dim4(4));
+           //b=[1]
+           //  [2]
+           //  [3]
+           //  [4]
+
+           array c = array(a, b.T().dims() );
+           //c=[1 2 3 4]
+           \endcode
+
+           \param[in] input
+           \param[in] dims total number of elements must not change.
+           \return same underlying array data with different dimensions
+        */
+        array(const array& input, const dim4& dims);
+
+        /**
+           Adjust the dimensions of an N-D array (fast).
+
+           This operation simply rearranges the description of the array
+           on the host device. No memory transfers or transformations are
+           performed. The total number of elements must not change.
+
+           \code
+
+           float f[] = {1,2,3,4};
+           array a(2,2,f);
+           //a=[1 3]
+           //  [2 4]
+
+           array b = array(a, 4);
+           //b=[1]
+           //  [2]
+           //  [3]
+           //  [4]
+
+           array c = array(a, 1, 4);
+           //c=[1 2 3 4]
+           \endcode
+
+           \param[in] input
+           \param[in] dim0 first dimension
+           \param[in] dim1 second dimension
+           \param[in] dim2 third dimension
+           \param[in] dim3 fourth dimension
+           \return same underlying array data with different dimensions
+        */
+        array(const array& input, const dim_t dim0, const dim_t dim1 = 1, const dim_t dim2 = 1, const dim_t dim3 = 1);
 
         /**
             @}
@@ -595,13 +658,15 @@ namespace af
            \ingroup index_mat
         */
 
+              array::array_proxy operator()(const index &s0);
               array::array_proxy operator()(const index &s0,
-                                            const index &s1 = span,
+                                            const index &s1,
                                             const index &s2 = span,
                                             const index &s3 = span);
 
+        const array::array_proxy operator()(const index &s0) const;
         const array::array_proxy operator()(const index &s0,
-                                            const index &s1 = span,
+                                            const index &s1,
                                             const index &s2 = span,
                                             const index &s3 = span) const;
 
@@ -983,14 +1048,14 @@ extern "C" {
     AFAPI af_err af_get_data_ptr(void *data, const af_array arr);
 
     /**
-       \brief Destroy af_array
+       \brief Reduce the reference count of the \ref af_array
     */
-    AFAPI af_err af_destroy_array(af_array arr);
+    AFAPI af_err af_release_array(af_array arr);
 
     /**
-       weak copy array
+       Increments an \ref af_array reference count
     */
-    AFAPI af_err af_weak_copy(af_array *out, const af_array in);
+    AFAPI af_err af_retain_array(af_array *out, const af_array in);
 
     /**
        Evaluate any expressions in the Array

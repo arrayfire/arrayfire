@@ -33,7 +33,7 @@ TEST(fft, Invalid_Type)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<char>::af_type));
 
     ASSERT_EQ(AF_ERR_TYPE, af_fft(&outArray, inArray, 1.0, 0));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
 
 TEST(fft2, Invalid_Array)
@@ -50,7 +50,7 @@ TEST(fft2, Invalid_Array)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_fft2(&outArray, inArray, 1.0, 0, 0));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
 
 TEST(fft3, Invalid_Array)
@@ -67,7 +67,7 @@ TEST(fft3, Invalid_Array)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_fft3(&outArray, inArray, 1.0, 0, 0, 0));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
 
 TEST(ifft2, Invalid_Array)
@@ -84,7 +84,7 @@ TEST(ifft2, Invalid_Array)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<cfloat>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_ifft2(&outArray, inArray, 0.01, 0, 0));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
 
 TEST(ifft3, Invalid_Array)
@@ -101,7 +101,7 @@ TEST(ifft3, Invalid_Array)
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<cfloat>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_ifft3(&outArray, inArray, 0.01, 0, 0, 0));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
 
 template<typename inType, typename outType, bool isInverse>
@@ -162,8 +162,8 @@ void fftTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
 
     // cleanup
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 #define INSTANTIATE_TEST(func, name, is_inverse, in_t, out_t, ...)  \
@@ -271,8 +271,8 @@ void fftBatchTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
 
     // cleanup
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 #define INSTANTIATE_BATCH_TEST(func, name, rank, is_inverse, in_t, out_t, ...) \

@@ -78,7 +78,7 @@ af_err af_iir(af_array *y, const af_array b, const af_array a, const af_array x)
             af_array bnorm = 0;
             AF_CHECK(af_div(&bnorm, b, a, true));
             AF_CHECK(af_fir(y, bnorm, x));
-            AF_CHECK(af_destroy_array(bnorm));
+            AF_CHECK(af_release_array(bnorm));
             return AF_SUCCESS;
         }
 

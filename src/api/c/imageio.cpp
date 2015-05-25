@@ -321,7 +321,7 @@ af_err af_save_image(const char* filename, const af_array in_)
             af_array c255;
             AF_CHECK(af_constant(&c255, 255.0, info.ndims(), info.dims().get(), f32));
             AF_CHECK(af_mul(&in, in_, c255, false));
-            AF_CHECK(af_destroy_array(c255));
+            AF_CHECK(af_release_array(c255));
             free_in = true;
         } else {
             in = in_;
@@ -420,15 +420,15 @@ af_err af_save_image(const char* filename, const af_array in_)
 
         FreeImage_Unload(pResultBitmap);
 
-        if(free_in) AF_CHECK(af_destroy_array(in ));
-        if(rr != 0) AF_CHECK(af_destroy_array(rr ));
-        if(gg != 0) AF_CHECK(af_destroy_array(gg ));
-        if(bb != 0) AF_CHECK(af_destroy_array(bb ));
-        if(aa != 0) AF_CHECK(af_destroy_array(aa ));
-        if(rrT!= 0) AF_CHECK(af_destroy_array(rrT));
-        if(ggT!= 0) AF_CHECK(af_destroy_array(ggT));
-        if(bbT!= 0) AF_CHECK(af_destroy_array(bbT));
-        if(aaT!= 0) AF_CHECK(af_destroy_array(aaT));
+        if(free_in) AF_CHECK(af_release_array(in ));
+        if(rr != 0) AF_CHECK(af_release_array(rr ));
+        if(gg != 0) AF_CHECK(af_release_array(gg ));
+        if(bb != 0) AF_CHECK(af_release_array(bb ));
+        if(aa != 0) AF_CHECK(af_release_array(aa ));
+        if(rrT!= 0) AF_CHECK(af_release_array(rrT));
+        if(ggT!= 0) AF_CHECK(af_release_array(ggT));
+        if(bbT!= 0) AF_CHECK(af_release_array(bbT));
+        if(aaT!= 0) AF_CHECK(af_release_array(aaT));
 
     } CATCHALL
 

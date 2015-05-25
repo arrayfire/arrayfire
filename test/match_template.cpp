@@ -69,9 +69,9 @@ void matchTemplateTest(string pTestFile, af_match_type pMatchType)
 
     // cleanup
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(sArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(tArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(sArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(tArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 TYPED_TEST(MatchTemplate, Matrix_SAD)
@@ -108,8 +108,8 @@ TEST(MatchTemplate, InvalidMatchType)
 
     ASSERT_EQ(AF_ERR_ARG, af_match_template(&outArray, inArray, tArray, (af_match_type)-1));
 
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(tArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(tArray));
 }
 
 ///////////////////////////////// CPP TESTS /////////////////////////////

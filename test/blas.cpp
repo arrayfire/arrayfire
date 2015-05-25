@@ -97,13 +97,13 @@ void MatMulCheck(string TestFile)
         }
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(a));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(aT));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(b));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(bT));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(aT));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(b));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(bT));
 
     for (size_t i = 0; i <  out.size(); i++) {
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(out[i]));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(out[i]));
     }
 }
 

@@ -43,7 +43,7 @@ af_err af_medfilt(af_array *out, const af_array in, const dim_t wind_length, con
         DIM_ASSERT(1, (input_ndims >= 2));
 
         if (wind_length==1) {
-            *out = weakCopy(in);
+            *out = retain(in);
         } else {
             af_array output;
             af_dtype type  = info.getType();

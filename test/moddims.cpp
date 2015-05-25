@@ -75,9 +75,9 @@ void moddimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *se
         outData          = new T[nElems];
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
 
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(subArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(subArray));
     } else {
         af_array inArray   = 0;
         af_array outArray  = 0;
@@ -92,8 +92,8 @@ void moddimsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *se
         outData          = new T[dims.elements()];
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
 
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
     }
 
     for (size_t testIter=0; testIter<tests.size(); ++testIter) {
@@ -139,7 +139,7 @@ void moddimsArgsTest(string pTestFile)
     ASSERT_EQ(AF_ERR_ARG, af_moddims(&outArray,inArray,0,newDims.get()));
     ASSERT_EQ(AF_ERR_ARG, af_moddims(&outArray,inArray,newDims.ndims(),NULL));
 
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
 
 TYPED_TEST(Moddims,InvalidArgs)
@@ -168,7 +168,7 @@ void moddimsMismatchTest(string pTestFile)
     newDims[1] = (dims[0]-1)*dims[2];
     ASSERT_EQ(AF_ERR_SIZE, af_moddims(&outArray,inArray,newDims.ndims(),newDims.get()));
 
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
 
 TYPED_TEST(Moddims,Mismatch)

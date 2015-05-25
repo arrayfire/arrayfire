@@ -355,22 +355,22 @@ af_err af_identity(af_array *out, const unsigned ndims, const dim_t * const dims
     return AF_SUCCESS;
 }
 
-af_err af_destroy_array(af_array arr)
+af_err af_release_array(af_array arr)
 {
     try {
         af_dtype type = getInfo(arr).getType();
 
         switch(type) {
-        case f32:   destroyHandle<float   >(arr); break;
-        case c32:   destroyHandle<cfloat  >(arr); break;
-        case f64:   destroyHandle<double  >(arr); break;
-        case c64:   destroyHandle<cdouble >(arr); break;
-        case b8:    destroyHandle<char    >(arr); break;
-        case s32:   destroyHandle<int     >(arr); break;
-        case u32:   destroyHandle<uint    >(arr); break;
-        case u8:    destroyHandle<uchar   >(arr); break;
-        case s64:   destroyHandle<intl    >(arr); break;
-        case u64:   destroyHandle<uintl   >(arr); break;
+        case f32:   releaseHandle<float   >(arr); break;
+        case c32:   releaseHandle<cfloat  >(arr); break;
+        case f64:   releaseHandle<double  >(arr); break;
+        case c64:   releaseHandle<cdouble >(arr); break;
+        case b8:    releaseHandle<char    >(arr); break;
+        case s32:   releaseHandle<int     >(arr); break;
+        case u32:   releaseHandle<uint    >(arr); break;
+        case u8:    releaseHandle<uchar   >(arr); break;
+        case s64:   releaseHandle<intl    >(arr); break;
+        case u64:   releaseHandle<uintl   >(arr); break;
         default:    TYPE_ERROR(0, type);
         }
     }
@@ -381,7 +381,7 @@ af_err af_destroy_array(af_array arr)
 
 
 template<typename T>
-static af_array weakCopyHandle(const af_array in)
+static af_array retainHandle(const af_array in)
 {
     detail::Array<T> *A = reinterpret_cast<detail::Array<T> *>(in);
     detail::Array<T> *out = detail::initArray<T>();
@@ -389,29 +389,29 @@ static af_array weakCopyHandle(const af_array in)
     return reinterpret_cast<af_array>(out);
 }
 
-af_array weakCopy(const af_array in)
+af_array retain(const af_array in)
 {
     af_dtype ty = getInfo(in).getType();
     switch(ty) {
-    case f32: return weakCopyHandle<float           >(in);
-    case f64: return weakCopyHandle<double          >(in);
-    case s32: return weakCopyHandle<int             >(in);
-    case u32: return weakCopyHandle<uint            >(in);
-    case u8:  return weakCopyHandle<uchar           >(in);
-    case c32: return weakCopyHandle<detail::cfloat  >(in);
-    case c64: return weakCopyHandle<detail::cdouble >(in);
-    case b8:  return weakCopyHandle<char            >(in);
-    case s64: return weakCopyHandle<intl            >(in);
-    case u64: return weakCopyHandle<uintl           >(in);
+    case f32: return retainHandle<float           >(in);
+    case f64: return retainHandle<double          >(in);
+    case s32: return retainHandle<int             >(in);
+    case u32: return retainHandle<uint            >(in);
+    case u8:  return retainHandle<uchar           >(in);
+    case c32: return retainHandle<detail::cfloat  >(in);
+    case c64: return retainHandle<detail::cdouble >(in);
+    case b8:  return retainHandle<char            >(in);
+    case s64: return retainHandle<intl            >(in);
+    case u64: return retainHandle<uintl           >(in);
     default:
         TYPE_ERROR(1, ty);
     }
 }
 
-af_err af_weak_copy(af_array *out, const af_array in)
+af_err af_retain_array(af_array *out, const af_array in)
 {
     try {
-        *out = weakCopy(in);
+        *out = retain(in);
     }
     CATCHALL;
     return AF_SUCCESS;

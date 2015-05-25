@@ -80,9 +80,9 @@ void regionsTest(string pTestFile, af_connectivity connectivity, bool isSubRef =
     // Delete
     delete[] outData;
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(outArray  != 0) af_release_array(outArray);
+    if(tempArray != 0) af_release_array(tempArray);
 }
 
 #define REGIONS_INIT(desc, file, conn, conn_type)                                           \

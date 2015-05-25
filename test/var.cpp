@@ -125,7 +125,7 @@ TYPED_TEST(Var, DimCPPSmall)
 
     for(size_t i = 0; i < in.size(); i++)
     {
-        array input(numDims[i], &in[i].front(), af::afHost, af::dtype_traits<TypeParam>::af_type);
+        array input(numDims[i], &in[i].front(), af::afHost);
 
         array bout  = var(input, false);
         array nbout = var(input, true);

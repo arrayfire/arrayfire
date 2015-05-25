@@ -57,9 +57,9 @@ static af_array rgb2gray(const af_array& in, const float r, const float g, const
     //r*Slice0 + g*Slice1 + b*Slice2
     Array<cType> result= arithOp<cType, af_add_t>(expr3, expr4, matDims);
 
-    AF_CHECK(af_destroy_array(ch1Temp));
-    AF_CHECK(af_destroy_array(ch2Temp));
-    AF_CHECK(af_destroy_array(ch3Temp));
+    AF_CHECK(af_release_array(ch1Temp));
+    AF_CHECK(af_release_array(ch2Temp));
+    AF_CHECK(af_release_array(ch3Temp));
 
     return getHandle<cType>(result);
 }
@@ -88,7 +88,7 @@ static af_array gray2rgb(const af_array& in, const float r, const float g, const
     Array<cType> expr2 = arithOp<cType, af_mul_t>(mod_in, gCnst, matDims);
     Array<cType> expr3 = arithOp<cType, af_mul_t>(mod_in, bCnst, matDims);
 
-    AF_CHECK(af_destroy_array(mod_input));
+    AF_CHECK(af_release_array(mod_input));
 
     // join channels
     Array<cType> expr4 = join<cType, cType>(2, expr1, expr2);

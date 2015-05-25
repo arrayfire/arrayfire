@@ -67,7 +67,7 @@ void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=N
         ASSERT_EQ(AF_SUCCESS, af_index(&subArray,inArray,seqv->size(),&seqv->front()));
         ASSERT_EQ(AF_SUCCESS, af_transpose(&outArray,subArray, false));
         // destroy the temporary indexed Array
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(subArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(subArray));
 
         dim_t nElems;
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems,outArray));
@@ -89,8 +89,8 @@ void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=N
 
     // cleanup
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 TYPED_TEST(Transpose,Vector)

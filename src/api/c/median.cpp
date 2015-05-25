@@ -52,8 +52,8 @@ static double median(const af_array& in)
         }
     }
 
-    AF_CHECK(af_destroy_array(res));
-    AF_CHECK(af_destroy_array(temp));
+    AF_CHECK(af_release_array(res));
+    AF_CHECK(af_release_array(temp));
 
     return result;
 }
@@ -80,7 +80,7 @@ static af_array median(const af_array& in, const dim_t dim)
         // Return as floats for consistency
         af_array out;
         AF_CHECK(af_cast(&out, left, f32));
-        AF_CHECK(af_destroy_array(left));
+        AF_CHECK(af_release_array(left));
         return out;
     } else {
         // ((mid-1)+mid)/2 is our guy
@@ -101,8 +101,8 @@ static af_array median(const af_array& in, const dim_t dim)
             af_array lleft, rright;
             AF_CHECK(af_cast(&lleft, left, f32));
             AF_CHECK(af_cast(&rright, right, f32));
-            AF_CHECK(af_destroy_array(left));
-            AF_CHECK(af_destroy_array(right));
+            AF_CHECK(af_release_array(left));
+            AF_CHECK(af_release_array(right));
             left = lleft;
             right = rright;
         }
@@ -110,10 +110,10 @@ static af_array median(const af_array& in, const dim_t dim)
         AF_CHECK(af_add(&sumarr, left, right, false));
         AF_CHECK(af_mul(&result, sumarr, carr, false));
 
-        AF_CHECK(af_destroy_array(left));
-        AF_CHECK(af_destroy_array(right));
-        AF_CHECK(af_destroy_array(sumarr));
-        AF_CHECK(af_destroy_array(carr));
+        AF_CHECK(af_release_array(left));
+        AF_CHECK(af_release_array(right));
+        AF_CHECK(af_release_array(sumarr));
+        AF_CHECK(af_release_array(carr));
         return result;
     }
 }

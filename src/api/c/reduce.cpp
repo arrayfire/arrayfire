@@ -39,7 +39,7 @@ static af_err reduce_type(af_array *out, const af_array in, const int dim)
         const ArrayInfo in_info = getInfo(in);
 
         if (dim >= (int)in_info.ndims()) {
-            *out = weakCopy(in);
+            *out = retain(in);
             return AF_SUCCESS;
         }
 
@@ -76,7 +76,7 @@ static af_err reduce_common(af_array *out, const af_array in, const int dim)
         const ArrayInfo in_info = getInfo(in);
 
         if (dim >= (int)in_info.ndims()) {
-            *out = weakCopy(in);
+            *out = retain(in);
             return AF_SUCCESS;
         }
 
@@ -113,7 +113,7 @@ static af_err reduce_promote(af_array *out, const af_array in, const int dim)
         const ArrayInfo in_info = getInfo(in);
 
         if (dim >= (int)in_info.ndims()) {
-            *out = weakCopy(in);
+            *out = retain(in);
             return AF_SUCCESS;
         }
 
@@ -364,7 +364,7 @@ static af_err ireduce_common(af_array *val, af_array *idx, const af_array in, co
         const ArrayInfo in_info = getInfo(in);
 
         if (dim >= (int)in_info.ndims()) {
-            *val = weakCopy(in);
+            *val = retain(in);
             return AF_SUCCESS;
         }
 

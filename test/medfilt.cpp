@@ -63,8 +63,8 @@ void medfiltTest(string pTestFile, dim_t w_len, dim_t w_wid, af_pad_type pad)
 
     // cleanup
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 TYPED_TEST(MedianFilter, ZERO_PAD_3x3)
@@ -127,9 +127,9 @@ void medfiltImageTest(string pTestFile, dim_t w_len, dim_t w_wid)
 
         ASSERT_EQ(true, compareArraysRMSD(nElems, goldData, outData, 0.018f));
 
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(goldArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(goldArray));
     }
 }
 
@@ -151,7 +151,7 @@ void medfiltInputTest(void)
 
     ASSERT_EQ(AF_ERR_SIZE, af_medfilt(&outArray, inArray, 1, 1, AF_PAD_ZERO));
 
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
 
 TYPED_TEST(MedianFilter, InvalidArray)
@@ -177,7 +177,7 @@ void medfiltWindowTest(void)
 
     ASSERT_EQ(AF_ERR_ARG, af_medfilt(&outArray, inArray, 3, 5, AF_PAD_ZERO));
 
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
 
 TYPED_TEST(MedianFilter, InvalidWindow)
@@ -205,7 +205,7 @@ void medfiltPadTest(void)
 
     ASSERT_EQ(AF_ERR_ARG, af_medfilt(&outArray, inArray, 3, 3, af_pad_type(-1)));
 
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
 
 TYPED_TEST(MedianFilter, InvalidPadType)
