@@ -312,8 +312,7 @@ namespace af
 
 #undef INSTANTIATE
 
-    template<typename Idx1, typename Idx2, typename Idx3, typename Idx4>
-    static array::array_proxy gen_indexing(const array &ref, const Idx1 &s0, const Idx2 &s1, const Idx3 &s2, const Idx4 &s3, bool linear = false)
+    static array::array_proxy gen_indexing(const array &ref, const index &s0, const index &s1, const index &s2, const index &s3, bool linear = false)
     {
         ref.eval();
         af_index_t inds[AF_MAX_DIMS];
@@ -348,7 +347,6 @@ namespace af
             }
         }
         else {
-            //array out = moddims(*this, this->elements());
             return gen_indexing(*this, s0, z, z, z, true);
         }
     }
