@@ -19,23 +19,23 @@ TEST(MatrixManipulation, SNIPPET_matrix_manipulation_tile)
 {
     //! [ex_matrix_manipulation_tile]
     float h[] = {1, 2, 3, 4};
-    array small = array(2, 2, h); // 2x2 matrix
-    af_print(small);
-    array large = tile(small, 2, 3);  // produces 4x6 matrix: (2*2)x(2*3)
-    af_print(large);
+    array small_arr = array(2, 2, h); // 2x2 matrix
+    af_print(small_arr);
+    array large_arr = tile(small_arr, 2, 3);  // produces 4x6 matrix: (2*2)x(2*3)
+    af_print(large_arr);
     //! [ex_matrix_manipulation_tile]
 
-    ASSERT_EQ(4, large.dims(0));
-    ASSERT_EQ(6, large.dims(1));
+    ASSERT_EQ(4, large_arr.dims(0));
+    ASSERT_EQ(6, large_arr.dims(1));
 
-    vector<float> h_large(large.elements());
-    large.host(&h_large.front());
+    vector<float> h_large_arr(large_arr.elements());
+    large_arr.host(&h_large_arr.front());
 
-    unsigned fdim = large.dims(0);
-    unsigned sdim = large.dims(1);
+    unsigned fdim = large_arr.dims(0);
+    unsigned sdim = large_arr.dims(1);
     for(unsigned i; i < sdim; i++) {
         for(unsigned j; j < fdim; j++) {
-            ASSERT_FLOAT_EQ(h[(i%2) * 2 + (j%2)], h_large[i * fdim + j] );
+            ASSERT_FLOAT_EQ(h[(i%2) * 2 + (j%2)], h_large_arr[i * fdim + j] );
         }
     }
 }
