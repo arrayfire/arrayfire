@@ -93,7 +93,7 @@ void split_diag_block(magma_int_t ib, Ty *a, magma_int_t lda, Ty *work)
 }
 
 template<typename Ty> magma_int_t
-magma_geqrf_gpu(
+magma_geqrf3_gpu(
     magma_int_t m, magma_int_t n,
     cl_mem dA, size_t dA_offset,  magma_int_t ldda,
     Ty *tau, cl_mem dT, size_t dT_offset,
@@ -314,7 +314,7 @@ magma_geqrf_gpu(
 
 #define INSTANTIATE(T)                                  \
     template magma_int_t                                \
-    magma_geqrf_gpu<T>(                                 \
+    magma_geqrf3_gpu<T>(                                 \
         magma_int_t m, magma_int_t n,                   \
         cl_mem dA, size_t dA_offset,  magma_int_t ldda, \
         T *tau, cl_mem dT, size_t dT_offset,            \

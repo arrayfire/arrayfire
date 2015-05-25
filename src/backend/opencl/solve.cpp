@@ -103,7 +103,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
         cl::Buffer *dT = tmp.get();
         cl::Buffer *dB = B.get();
 
-        magma_geqrf_gpu<T>(A.dims()[0], A.dims()[1],
+        magma_geqrf3_gpu<T>(A.dims()[0], A.dims()[1],
                            (*dA)(), A.getOffset(), A.strides()[1],
                            &h_tau[0], (*dT)(), tmp.getOffset(), getQueue()(), &info);
 
@@ -176,7 +176,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
         cl::Buffer *B_buf = B.get();
         cl::Buffer *dT = tmp.get();
 
-        magma_geqrf_gpu<T>(M, N,
+        magma_geqrf3_gpu<T>(M, N,
                            (*A_buf)(), A.getOffset(), A.strides()[1],
                            &h_tau[0], (*dT)(), tmp.getOffset(), getQueue()(), &info);
 

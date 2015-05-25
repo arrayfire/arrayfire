@@ -48,7 +48,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &orig)
         cl::Buffer *in_buf = in.get();
         cl::Buffer *dT = tmp.get();
 
-        magma_geqrf_gpu<T>(M, N,
+        magma_geqrf3_gpu<T>(M, N,
                            (*in_buf)(), in.getOffset(), in.strides()[1],
                            &h_tau[0], (*dT)(), tmp.getOffset(), getQueue()(), &info);
 

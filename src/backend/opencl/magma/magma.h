@@ -36,7 +36,7 @@ magma_larfb_gpu(
     magma_queue_t queue);
 
 template<typename Ty> magma_int_t
-magma_geqrf_gpu(
+magma_geqrf3_gpu(
     magma_int_t m, magma_int_t n,
     cl_mem dA, size_t dA_offset,  magma_int_t ldda,
     Ty *tau, cl_mem dT, size_t dT_offset,
