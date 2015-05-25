@@ -104,7 +104,7 @@ toCblasTranspose(af_mat_prop opt)
         case AF_MAT_NONE        : out = CblasNoTrans;   break;
         case AF_MAT_TRANS           : out = CblasTrans;     break;
         case AF_MAT_CTRANS : out = CblasConjTrans; break;
-        default                     : AF_ERROR("INVALID af_mat_prop", AF_ERR_INVALID_ARG);
+        default                     : AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
     }
     return out;
 }

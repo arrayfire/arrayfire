@@ -19,11 +19,6 @@ namespace opencl
     Array<T> rotate(const Array<T> &in, const float theta, const af::dim4 &odims,
                      const af_interp_type method)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
-
         Array<T> out = createEmptyArray<T>(odims);
 
         switch(method) {

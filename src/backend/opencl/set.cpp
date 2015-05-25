@@ -32,10 +32,6 @@ namespace opencl
                        const bool is_sorted)
     {
         try {
-            if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-                !isDoubleSupported(getActiveDeviceId())) {
-                OPENCL_NOT_SUPPORTED();
-            }
             Array<T> out = copyArray<T>(in);
 
             compute::command_queue queue(getQueue()());
@@ -65,10 +61,6 @@ namespace opencl
                       const bool is_unique)
     {
         try {
-            if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-                !isDoubleSupported(getActiveDeviceId())) {
-                OPENCL_NOT_SUPPORTED();
-            }
             Array<T> unique_first = first;
             Array<T> unique_second = second;
 
@@ -110,10 +102,6 @@ namespace opencl
                           const bool is_unique)
     {
         try {
-            if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-                !isDoubleSupported(getActiveDeviceId())) {
-                OPENCL_NOT_SUPPORTED();
-            }
             Array<T> unique_first = first;
             Array<T> unique_second = second;
 

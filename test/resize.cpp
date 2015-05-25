@@ -90,7 +90,7 @@ TYPED_TEST(Resize, InvalidType)
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(),
                                           (af_dtype) af::dtype_traits<cfloat>::af_type));
-    ASSERT_EQ(AF_ERR_INVALID_TYPE, af_resize(&outArray, inArray, 16, 16, AF_INTERP_NEAREST));
+    ASSERT_EQ(AF_ERR_TYPE, af_resize(&outArray, inArray, 16, 16, AF_INTERP_NEAREST));
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
 }
 

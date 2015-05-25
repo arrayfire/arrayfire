@@ -508,8 +508,8 @@ TEST(ArrayAssign, InvalidArgs)
 
     ASSERT_EQ(AF_ERR_ARG, af_assign_seq(&outArray, lhsArray, 0, &seqv.front(), rhsArray));
 
-    ASSERT_EQ(AF_ERR_INVALID_TYPE, af_assign_seq(&outArray,
-                                             lhsArray, seqv.size(), &seqv.front(), rhsArray));
+    ASSERT_EQ(AF_ERR_TYPE, af_assign_seq(&outArray,
+                                         lhsArray, seqv.size(), &seqv.front(), rhsArray));
 
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(rhsArray));
     ASSERT_EQ(AF_SUCCESS, af_destroy_array(lhsArray));

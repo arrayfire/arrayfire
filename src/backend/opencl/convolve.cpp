@@ -23,10 +23,6 @@ namespace opencl
 template<typename T, typename accT, dim_t baseDim, bool expand>
 Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBatchKind kind)
 {
-    if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-        !isDoubleSupported(getActiveDeviceId())) {
-        OPENCL_NOT_SUPPORTED();
-    }
     const dim4 sDims    = signal.dims();
     const dim4 fDims    = filter.dims();
 

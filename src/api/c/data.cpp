@@ -391,7 +391,8 @@ static af_array weakCopyHandle(const af_array in)
 
 af_array weakCopy(const af_array in)
 {
-    switch(getInfo(in).getType()) {
+    af_dtype ty = getInfo(in).getType();
+    switch(ty) {
     case f32: return weakCopyHandle<float           >(in);
     case f64: return weakCopyHandle<double          >(in);
     case s32: return weakCopyHandle<int             >(in);
@@ -403,7 +404,7 @@ af_array weakCopy(const af_array in)
     case s64: return weakCopyHandle<intl            >(in);
     case u64: return weakCopyHandle<uintl           >(in);
     default:
-        AF_ERROR("Invalid type", AF_ERR_INVALID_TYPE);
+        TYPE_ERROR(1, ty);
     }
 }
 

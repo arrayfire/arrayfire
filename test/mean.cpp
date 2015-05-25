@@ -28,7 +28,7 @@ class Mean : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, char, uchar> TestTypes;
+typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, intl, uintl, char, uchar> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Mean, TestTypes);
@@ -48,10 +48,22 @@ struct c32HelperType {
 };
 
 template<typename T>
+struct elseType {
+   typedef typename cond_type< is_same_type<T, uintl>::value ||
+                               is_same_type<T, intl>::value,
+                                              double,
+                                              T>::type type;
+};
+
+template<typename T>
 struct meanOutType {
-    typedef typename cond_type<is_same_type<T, cdouble>::value,
-                                              cdouble,
-                                              typename c32HelperType<T>::type >::type type;
+   typedef typename cond_type< is_same_type<T, float>::value ||
+                               is_same_type<T, int>::value ||
+                               is_same_type<T, uint>::value ||
+                               is_same_type<T, uchar>::value ||
+                               is_same_type<T, char>::value,
+                                              float,
+                              typename elseType<T>::type>::type type;
 };
 
 template<typename T>
@@ -59,6 +71,7 @@ void meanDimTest(string pFileName, dim_t dim)
 {
     typedef typename meanOutType<T>::type outType;
     if (noDoubleTests<T>()) return;
+    if (noDoubleTests<outType>()) return;
 
     vector<af::dim4>      numDims;
     vector<vector<int> >        in;
@@ -134,6 +147,7 @@ void testCPPMean(T const_value, af::dim4 dims)
 {
     typedef typename meanOutType<T>::type outType;
     if (noDoubleTests<T>()) return;
+    if (noDoubleTests<outType>()) return;
 
     using af::array;
     using af::mean;

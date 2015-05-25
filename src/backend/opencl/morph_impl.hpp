@@ -24,10 +24,6 @@ namespace opencl
 template<typename T, bool isDilation>
 Array<T> morph(const Array<T> &in, const Array<T> &mask)
 {
-    if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-        !isDoubleSupported(getActiveDeviceId())) {
-        OPENCL_NOT_SUPPORTED();
-    }
     const dim4 mdims    = mask.dims();
 
     if (mdims[0]!=mdims[1])

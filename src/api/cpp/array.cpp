@@ -123,7 +123,7 @@ namespace af
         case afHost:   AF_THROW(af_create_array(arr, (const void * const)ptr, AF_MAX_DIMS, my_dims, ty)); break;
         case afDevice: AF_THROW(af_device_array(arr, (const void *      )ptr, AF_MAX_DIMS, my_dims, ty)); break;
         default: AF_THROW_MSG("Can not create array from the requested source pointer",
-                              AF_ERR_INVALID_ARG);
+                              AF_ERR_ARG);
         }
     }
 
@@ -778,7 +778,7 @@ namespace af
     {                                                               \
         if (type() != (af::dtype)dtype_traits<T>::af_type) {        \
             AF_THROW_MSG("Requested type doesn't match with array", \
-                         AF_ERR_INVALID_TYPE);                      \
+                         AF_ERR_TYPE);                              \
         }                                                           \
                                                                     \
         T *res = new T[elements()];                                 \
