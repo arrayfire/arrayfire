@@ -94,10 +94,10 @@ void gradTest(string pTestFile, const unsigned resultIdx0, const unsigned result
     delete[] grad0Data;
     delete[] grad1Data;
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(g0Array   != 0) af_destroy_array(g0Array);
-    if(g1Array   != 0) af_destroy_array(g1Array);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(g0Array   != 0) af_release_array(g0Array);
+    if(g1Array   != 0) af_release_array(g1Array);
+    if(tempArray != 0) af_release_array(tempArray);
 }
 
 #define GRAD_INIT(desc, file, resultIdx0, resultIdx1)                                       \

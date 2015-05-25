@@ -80,7 +80,7 @@ af_err af_flat(af_array *out, const af_array in)
         ArrayInfo in_info = getInfo(in);
 
         if (in_info.ndims() == 1) {
-            AF_CHECK(af_weak_copy(&res, in));
+            AF_CHECK(af_retain_array(&res, in));
         } else {
             const dim_t num = (dim_t)(in_info.elements());
             AF_CHECK(af_moddims(&res, in, 1, &num));

@@ -50,7 +50,7 @@ index::index(const af_seq& s0) {
 index::index(const af::array& idx0) {
     array idx = idx0.isbool() ? where(idx0) : idx0;
     af_array arr = 0;
-    AF_THROW(af_weak_copy(&arr, idx.get()));
+    AF_THROW(af_retain_array(&arr, idx.get()));
     impl.idx.arr = arr;
 
     impl.isSeq = false;
@@ -59,7 +59,7 @@ index::index(const af::array& idx0) {
 
 index::~index() {
     if (!impl.isSeq)
-        af_destroy_array(impl.idx.arr);
+        af_release_array(impl.idx.arr);
 }
 
 

@@ -58,9 +58,9 @@ void bilateralTest(string pTestFile)
 
         ASSERT_EQ(true, compareArraysRMSD(nElems, goldData, outData, 0.02f));
 
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(goldArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(goldArray));
     }
 }
 
@@ -120,8 +120,8 @@ void bilateralDataTest(string pTestFile)
 
     // cleanup
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 TYPED_TEST(BilateralOnData, Rectangle)
@@ -148,7 +148,7 @@ TYPED_TEST(BilateralOnData, InvalidArgs)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
     ASSERT_EQ(AF_ERR_SIZE, af_bilateral(&outArray, inArray, 0.12f, 0.34f, true));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
 
 // C++ unit tests

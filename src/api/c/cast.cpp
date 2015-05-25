@@ -25,7 +25,7 @@ static af_array cast(const af_array in, const af_dtype type)
     const ArrayInfo info = getInfo(in);
 
     if (info.getType() == type) {
-        return weakCopy(in);
+        return retain(in);
     }
 
     switch (type) {

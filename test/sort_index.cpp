@@ -96,10 +96,10 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
     delete[] sxData;
     delete[] ixData;
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(sxArray   != 0) af_destroy_array(sxArray);
-    if(ixArray   != 0) af_destroy_array(ixArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(sxArray   != 0) af_release_array(sxArray);
+    if(ixArray   != 0) af_release_array(ixArray);
+    if(tempArray != 0) af_release_array(tempArray);
 }
 
 #define SORT_INIT(desc, file, dir, resultIdx0, resultIdx1)                                       \

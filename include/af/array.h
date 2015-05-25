@@ -1048,14 +1048,14 @@ extern "C" {
     AFAPI af_err af_get_data_ptr(void *data, const af_array arr);
 
     /**
-       \brief Destroy af_array
+       \brief Reduce the reference count of the \ref af_array
     */
-    AFAPI af_err af_destroy_array(af_array arr);
+    AFAPI af_err af_release_array(af_array arr);
 
     /**
-       weak copy array
+       Increments an \ref af_array reference count
     */
-    AFAPI af_err af_weak_copy(af_array *out, const af_array in);
+    AFAPI af_err af_retain_array(af_array *out, const af_array in);
 
     /**
        Evaluate any expressions in the Array

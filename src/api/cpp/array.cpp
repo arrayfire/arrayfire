@@ -226,7 +226,7 @@ namespace af
     {
         af_array tmp = get();
         // THOU SHALL NOT THROW IN DESTRUCTORS
-        af_destroy_array(tmp);
+        af_release_array(tmp);
     }
 
     af::dtype array::type() const
@@ -419,7 +419,7 @@ namespace af
 
     array::array(const array& in) : arr(0)
     {
-        AF_THROW(af_weak_copy(&arr, in.get()));
+        AF_THROW(af_retain_array(&arr, in.get()));
     }
 
     array::array(const array& input, const dim4& dims) : arr(0)
@@ -447,7 +447,7 @@ namespace af
 
     void array::set(af_array tmp)
     {
-        if (arr) AF_THROW(af_destroy_array(arr));
+        if (arr) AF_THROW(af_release_array(arr));
         arr = tmp;
     }
 
@@ -494,7 +494,7 @@ namespace af
         impl->parent->set(tmp);
 
         if (dim >= 0 && (is_reordered || batch_assign)) {
-            if (other_arr) AF_THROW(af_destroy_array(other_arr));
+            if (other_arr) AF_THROW(af_release_array(other_arr));
         }
         return *this;
     }
@@ -554,7 +554,7 @@ namespace af
     {
         array tmp = *this;
         af_array out = 0;
-        AF_THROW(af_weak_copy(&out, tmp.get()));
+        AF_THROW(af_retain_array(&out, tmp.get()));
         return out;
     }
 
@@ -652,7 +652,7 @@ namespace af
         else        { arr = impl->parent->get(); }
         AF_THROW(af_index_gen(&tmp, arr, AF_MAX_DIMS, impl->indices));
         if(impl->lin)  {
-            AF_THROW(af_destroy_array(arr));
+            AF_THROW(af_release_array(arr));
         }
 
         return array(tmp);
@@ -668,13 +668,13 @@ namespace af
         else        { arr = impl->parent->get(); }
         AF_THROW(af_index_gen(&tmp, arr, AF_MAX_DIMS, impl->indices));
         if(impl->lin)  {
-            AF_THROW(af_destroy_array(arr));
+            AF_THROW(af_release_array(arr));
         }
 
         int dim = gforDim(impl->indices);
         if (tmp && dim >= 0) {
             arr = gforReorder(tmp, dim);
-            if (tmp) AF_THROW(af_destroy_array(tmp));
+            if (tmp) AF_THROW(af_release_array(tmp));
         } else {
             arr = tmp;
         }
@@ -692,11 +692,11 @@ namespace af
         }
         //TODO: Unsafe. loses data if af_weak_copy fails
         if(this->arr != 0) {
-            AF_THROW(af_destroy_array(this->arr));
+            AF_THROW(af_release_array(this->arr));
         }
 
         af_array temp = 0;
-        AF_THROW(af_weak_copy(&temp, other.get()));
+        AF_THROW(af_retain_array(&temp, other.get()));
         this->arr = temp;
         return *this;
     }

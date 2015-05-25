@@ -118,7 +118,7 @@ af_err af_assign_seq(af_array *out,
 
         af_array res;
         if (*out != lhs) AF_CHECK(af_copy_array(&res, lhs));
-        else             res = weakCopy(lhs);
+        else             res = retain(lhs);
 
         try {
 
@@ -140,7 +140,7 @@ af_err af_assign_seq(af_array *out,
                 }
             }
         } catch(...) {
-            af_destroy_array(res);
+            af_release_array(res);
             throw;
         }
         std::swap(*out, res);
@@ -277,12 +277,12 @@ af_err af_assign_gen(af_array *out,
             }
         } catch(...) {
             if (*out != lhs) {
-                AF_CHECK(af_destroy_array(output));
-                if (is_vector) { AF_CHECK(af_destroy_array(rhs)); }
+                AF_CHECK(af_release_array(output));
+                if (is_vector) { AF_CHECK(af_release_array(rhs)); }
             }
             throw;
         }
-        if (is_vector) { AF_CHECK(af_destroy_array(rhs)); }
+        if (is_vector) { AF_CHECK(af_release_array(rhs)); }
     }
     CATCHALL;
 

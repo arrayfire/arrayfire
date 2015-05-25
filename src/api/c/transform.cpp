@@ -87,7 +87,7 @@ af_err af_translate(af_array *out, const af_array in, const float trans0, const 
 
         AF_CHECK(af_create_array(&t, trans_mat, tdims.ndims(), tdims.get(), f32));
         AF_CHECK(af_transform(out, in, t, odim0, odim1, method, true));
-        AF_CHECK(af_destroy_array(t));
+        AF_CHECK(af_release_array(t));
     }
     CATCHALL;
 
@@ -127,7 +127,7 @@ af_err af_scale(af_array *out, const af_array in, const float scale0, const floa
         af_array t = 0;
         AF_CHECK(af_create_array(&t, trans_mat, tdims.ndims(), tdims.get(), f32));
         AF_CHECK(af_transform(out, in, t, _odim0, _odim1, method, true));
-        AF_CHECK(af_destroy_array(t));
+        AF_CHECK(af_release_array(t));
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -164,7 +164,7 @@ af_err af_skew(af_array *out, const af_array in, const float skew0, const float 
         af_array t = 0;
         AF_CHECK(af_create_array(&t, trans_mat, tdims.ndims(), tdims.get(), f32));
         AF_CHECK(af_transform(out, in, t, odim0, odim1, method, true));
-        AF_CHECK(af_destroy_array(t));
+        AF_CHECK(af_release_array(t));
     }
     CATCHALL;
 

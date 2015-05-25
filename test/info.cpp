@@ -52,7 +52,7 @@ void infoTest()
         af::dim4 dims(32, 32, 1, 1);
         ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
         // cleanup
-        if(outArray != 0) ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+        if(outArray != 0) ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
     }
 }
 

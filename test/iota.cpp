@@ -78,10 +78,10 @@ void iotaTest(const af::dim4 idims, const af::dim4 tdims)
     delete[] outData;
     delete[] tileData;
 
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(temp0     != 0) af_destroy_array(temp0);
-    if(temp1     != 0) af_destroy_array(temp1);
-    if(temp2     != 0) af_destroy_array(temp2);
+    if(outArray  != 0) af_release_array(outArray);
+    if(temp0     != 0) af_release_array(temp0);
+    if(temp1     != 0) af_release_array(temp1);
+    if(temp2     != 0) af_release_array(temp2);
 }
 
 #define IOTA_INIT(desc, x, y, z, w, a, b, c, d)                                             \

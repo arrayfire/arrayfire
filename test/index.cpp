@@ -85,9 +85,9 @@ DimCheck(const vector<af_seq> &seqs) {
         delete[] h_indexed[k];
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(a));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
     for (size_t i = 0; i < indexed_array.size(); i++) {
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(indexed_array[i]));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(indexed_array[i]));
     }
 }
 
@@ -291,9 +291,9 @@ DimCheck2D(const vector<vector<af_seq> > &seqs,string TestFile, size_t NDims)
         delete[] h_indexed[i];
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(a));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
     for (size_t i = 0; i < indexed_arrays.size(); i++) {
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(indexed_arrays[i]));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(indexed_arrays[i]));
     }
 }
 
@@ -588,9 +588,9 @@ void arrayIndexTest(string pTestFile, int dim)
     }
 
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(idxArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 TYPED_TEST(lookup, Dim0)

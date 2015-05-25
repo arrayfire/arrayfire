@@ -122,9 +122,9 @@ void assignTest(string pTestFile, const vector<af_seq> *seqv)
     }
 
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(rhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(lhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(rhsArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(lhsArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 template<typename T>
@@ -511,8 +511,8 @@ TEST(ArrayAssign, InvalidArgs)
     ASSERT_EQ(AF_ERR_INVALID_TYPE, af_assign_seq(&outArray,
                                              lhsArray, seqv.size(), &seqv.front(), rhsArray));
 
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(rhsArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(lhsArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(rhsArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(lhsArray));
 }
 
 TEST(ArrayAssign, CPP_ASSIGN_TO_INDEXED)

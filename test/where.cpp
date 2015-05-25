@@ -73,9 +73,9 @@ void whereTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=
                                                         << std::endl;
     }
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(outArray  != 0) af_release_array(outArray);
+    if(tempArray != 0) af_release_array(tempArray);
 }
 
 vector<af_seq> init_subs()

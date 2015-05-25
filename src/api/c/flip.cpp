@@ -53,7 +53,7 @@ af_err af_flip(af_array *result, const af_array in, const unsigned dim)
         ArrayInfo in_info = getInfo(in);
 
         if (in_info.ndims() <= dim) {
-            *result = weakCopy(in);
+            *result = retain(in);
             return AF_SUCCESS;
         }
 

@@ -63,9 +63,9 @@ void testGeneralIndexOneArray(string pTestFile, const dim_t ndims, af_index_t* i
     }
 
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(idxArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 TEST(GeneralIndex, SSSA)
@@ -150,10 +150,10 @@ TEST(GeneralIndex, AASS)
     }
 
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(idxArray0));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(idxArray1));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray0));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray1));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 TEST(GeneralIndex, CPP_ASNN)

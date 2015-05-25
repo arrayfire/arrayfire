@@ -66,8 +66,8 @@ void histTest(string pTestFile, unsigned nbins, double minval, double maxval)
 
     // cleanup
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 TYPED_TEST(Histogram,256Bins0min255max_ones)

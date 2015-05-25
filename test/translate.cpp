@@ -85,8 +85,8 @@ void translateTest(string pTestFile, const unsigned resultIdx, af::dim4 odims, c
     // Delete
     delete[] outData;
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(outArray  != 0) af_destroy_array(outArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(outArray  != 0) af_release_array(outArray);
 }
 
 TYPED_TEST(Translate, Small1)

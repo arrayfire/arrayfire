@@ -54,7 +54,7 @@ static af_array histequal(const af_array& in, const af_array& hist)
 
     Array<T> result = cast<T>(idxArr);
 
-    AF_CHECK(af_destroy_array(vInput));
+    AF_CHECK(af_release_array(vInput));
 
     return getHandle<T>(result);
 }

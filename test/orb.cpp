@@ -210,15 +210,15 @@ void orbTest(string pTestFile)
         // TODO: improve distance for single/double-precision interchangeability
         EXPECT_TRUE(compareHamming(descSize, (unsigned*)&v_out_desc[0], (unsigned*)&v_gold_desc[0], 3));
 
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray_f32));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray_f32));
 
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(feat.x));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(feat.y));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(feat.score));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(feat.orientation));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(feat.size));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(desc));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(feat.x));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(feat.y));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(feat.score));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(feat.orientation));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(feat.size));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(desc));
 
         delete[] outX;
         delete[] outY;

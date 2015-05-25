@@ -62,8 +62,8 @@ void transposeip_test(af::dim4 dims)
     // cleanup
     delete[] outData;
     delete[] trsData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 #define INIT_TEST(Side, D3, D4)                                                     \
