@@ -36,6 +36,14 @@ magma_larfb_gpu(
     magma_queue_t queue);
 
 template<typename Ty> magma_int_t
+magma_geqrf2_gpu(
+    magma_int_t m, magma_int_t n,
+    cl_mem dA, size_t dA_offset, magma_int_t ldda,
+    Ty *tau,
+    magma_queue_t* queue,
+    magma_int_t *info);
+
+template<typename Ty> magma_int_t
 magma_geqrf3_gpu(
     magma_int_t m, magma_int_t n,
     cl_mem dA, size_t dA_offset,  magma_int_t ldda,
@@ -54,6 +62,19 @@ magma_unmqr_gpu(
     cl_mem dT, size_t dT_offset, magma_int_t nb,
     magma_queue_t queue,
     magma_int_t *info);
+
+#if 0  // Needs to be enabled when unmqr2 is enabled
+template<typename Ty> magma_int_t
+magma_unmqr2_gpu(
+    magma_side_t side, magma_trans_t trans,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    cl_mem dA, size_t dA_offset, magma_int_t ldda,
+    Ty    *tau,
+    cl_mem dC, size_t dC_offset, magma_int_t lddc,
+    Ty    *wA, magma_int_t ldwa,
+    magma_queue_t queue,
+    magma_int_t *info);
+#endif
 
 template<typename Ty>  magma_int_t
 magma_ungqr_gpu(
