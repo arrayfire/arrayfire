@@ -139,6 +139,7 @@ DeviceManager::DeviceManager()
                     mContexts.push_back(ctx);
                     mQueues.push_back(cq);
                     mCtxOffsets.push_back(nDevices);
+                    mIsGLSharingOn.push_back(false);
                 }
             }
         }
@@ -161,9 +162,13 @@ DeviceManager::DeviceManager()
     /* loop over devices and replace contexts with
      * OpenGL shared contexts whereever applicable */
 #if defined(WITH_GRAPHICS)
-    int devCount = mDevices.size();
-    fg::Window* wHandle = graphics::ForgeManager::getInstance().getMainWindow();
-    for(int i=0; i<devCount; ++i) markDeviceForInterop(i, wHandle);
+    try {
+        int devCount = mDevices.size();
+        fg::Window* wHandle = graphics::ForgeManager::getInstance().getMainWindow();
+        for(int i=0; i<devCount; ++i)
+            markDeviceForInterop(i, wHandle);
+    } catch (...) {
+    }
 #endif
 }
 
@@ -386,12 +391,11 @@ void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHa
             mQueues[device]->finish();
 
             // check if the device has CL_GL sharing extension enabled
-            bool currDevGLsharing = checkExtnAvailability(*mDevices[device], CL_GL_SHARING_EXT);
-            if (!currDevGLsharing) {
+            bool temp = checkExtnAvailability(*mDevices[device], CL_GL_SHARING_EXT);
+            if (!temp) {
                 printf("Device[%d] has no support for OpenGL Interoperation\n",device);
                 /* return silently if given device has not OpenGL sharing extension
                  * enabled so that regular queue is used for it */
-                mIsGLSharingOn.push_back(false);
                 return;
             }
 
@@ -427,17 +431,13 @@ void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHa
             mContexts[device] = ctx;
             mQueues[device] = cq;
         }
-        mIsGLSharingOn.push_back(true);
+        mIsGLSharingOn[device] = true;
     } catch (const cl::Error &ex) {
         /* If replacing the original context with GL shared context
          * failes, don't throw an error and instead fall back to
          * original context and use copy via host to support graphics
          * on that particular OpenCL device. So mark it as no GL sharing */
-        mIsGLSharingOn.push_back(false);
     }
-
-    /* push gl sharing availability identifier to
-     * tracking container for later use */
 }
 #endif
 

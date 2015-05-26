@@ -98,14 +98,14 @@ ForgeManager::~ForgeManager()
     destroyResources();
 }
 
-fg::Font* ForgeManager::getFont()
+fg::Font* ForgeManager::getFont(const bool dontCreate)
 {
     static bool flag = true;
     static fg::Font* fnt = NULL;
 
     CheckGL("Begin ForgeManager::getFont");
 
-    if (flag) {
+    if (flag && !dontCreate) {
         fnt = new fg::Font();
 #if defined(_WIN32) || defined(_MSC_VER)
         fnt->loadSystemFont("Arial", 32);
@@ -115,18 +115,19 @@ fg::Font* ForgeManager::getFont()
         CheckGL("End ForgeManager::getFont");
         flag = false;
     };
+
     return fnt;
 }
 
-fg::Window* ForgeManager::getMainWindow()
+fg::Window* ForgeManager::getMainWindow(const bool dontCreate)
 {
     static bool flag = true;
     static fg::Window* wnd = NULL;
 
-    if (flag) {
-	wnd = new fg::Window(WIDTH, HEIGHT, "ArrayFire", NULL, true);
-	CheckGL("End ForgeManager::getMainWindow");
-	flag = false;
+    if (flag && !dontCreate) {
+	    wnd = new fg::Window(WIDTH, HEIGHT, "ArrayFire", NULL, true);
+	    CheckGL("End ForgeManager::getMainWindow");
+	    flag = false;
     };
     return wnd;
 }
@@ -183,8 +184,8 @@ void ForgeManager::destroyResources()
     for(HstMapIter iter = mHstMap.begin(); iter != mHstMap.end(); iter++)
         delete (iter->second);
 
-    delete getFont();
-    delete getMainWindow();
+    delete getFont(true);
+    delete getMainWindow(true);
 }
 
 }

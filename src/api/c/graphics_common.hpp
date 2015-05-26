@@ -67,8 +67,8 @@ class ForgeManager
         static ForgeManager& getInstance();
         ~ForgeManager();
 
-        fg::Font* getFont();
-        fg::Window* getMainWindow();
+        fg::Font* getFont(const bool dontCreate=false);
+        fg::Window* getMainWindow(const bool dontCreate=false);
         fg::Image* getImage(int w, int h, fg::ColorMode mode, GLenum type);
         fg::Plot* getPlot(int nPoints, GLenum type);
         fg::Histogram* getHistogram(int nBins, GLenum type);
