@@ -36,6 +36,12 @@ namespace af
 
 
     public:
+        ///
+        /// \brief Updates the internal \ref af_array object
+        ///
+        /// /note This function will reduce the reference of the previous
+        ///       \ref af_array object
+        ///
         void set(af_array tmp);
 
         ///
@@ -59,7 +65,6 @@ namespace af
             operator array() const;
             operator array();
 
-        //array operator = (array &&other);
 #define ASSIGN(OP)                                                  \
             array_proxy& operator OP(const array_proxy &a);         \
             array_proxy& operator OP(const array &a);               \
@@ -140,19 +145,20 @@ namespace af
         array(const af_array handle);
 
         /**
-            Creates an arra
-            TODO: Copy or reference semantics?
+            Creates a copy to the \p in array.
+
             \param in The input \ref array
          */
         array(const array& in);
 
         /**
-            Allocate a one-dimensional array of a specified size with undefined contents
+            Allocate a one-dimensional array of a specified size with undefined
+            contents
 
             Declare a two-dimensional array by passing the
             number of rows and the number of columns as the first two parameters.
-            The (optional) third parameter is the type of the array. The default type is f32
-            or 4-byte single-precision floating-point numbers.
+            The (optional) second parameter is the type of the array. The default
+            type is f32 or 4-byte single-precision floating-point numbers.
 
             \code
             // allocate space for an array with 10 rows
@@ -163,19 +169,20 @@ namespace af
             \endcode
 
             \param[in] dim0 number of columns in the array
-            \param[in] ty optional label describing the data type
+            \param[in] ty   optional label describing the data type
                        (default is f32)
 
         */
         array(dim_t dim0, dtype ty = f32);
 
         /**
-            Allocate a two-dimensional array of a specified size with undefined contents
+            Allocate a two-dimensional array of a specified size with undefined
+            contents
 
             Declare a two-dimensional array by passing the
             number of rows and the number of columns as the first two parameters.
-            The (optional) third parameter is the type of the array. The default type is f32
-            or 4-byte single-precision floating-point numbers.
+            The (optional) third parameter is the type of the array. The default
+            type is f32 or 4-byte single-precision floating-point numbers.
 
             \code
             // allocate space for an array with 10 rows and 8 columns
@@ -194,12 +201,13 @@ namespace af
         array(dim_t dim0, dim_t dim1, dtype ty = f32);
 
         /**
-            Allocate a three-dimensional (3D) array of a specified size with undefined contents
+            Allocate a three-dimensional (3D) array of a specified size with
+            undefined contents
 
-            This is useful to quickly declare a three-dimensional array by passing
-            the size as the first three parameters. The (optional) fourth parameter
-            is the type of the array. The default type is f32 or 4-byte
-            single-precision floating point numbers.
+            This is useful to quickly declare a three-dimensional array by
+            passing the size as the first three parameters. The (optional)
+            fourth parameter is the type of the array. The default type is f32
+            or 4-byte single-precision floating point numbers.
 
             \code
             // allocate space for a 10 x 10 x 10 array
@@ -219,11 +227,13 @@ namespace af
         array(dim_t dim0, dim_t dim1, dim_t dim2, dtype ty = f32);
 
         /**
-            Allocate a four-dimensional (4D) array of a specified size with undefined contents
+            Allocate a four-dimensional (4D) array of a specified size with
+            undefined contents
 
-            This is useful to quickly declare a four-dimensional array by passing the
-            size as the first four parameters. The (optional) fifth parameter is the
-            type of the array. The default type is f32 or 4-byte floating point numbers.
+            This is useful to quickly declare a four-dimensional array by
+            passing the size as the first four parameters. The (optional) fifth
+            parameter is the type of the array. The default type is f32 or
+            4-byte floating point numbers.
 
             \code
             // allocate space for a 10 x 10 x 10 x 20 array
@@ -248,8 +258,8 @@ namespace af
 
             This can be useful when the dimensions of the array are calculated
             somewhere else within the code. The first parameter specifies the
-            size of the array via dim4(). The second parameter is
-            the type of the array. The default type is f32 or 4-byte
+            size of the array via dim4(). The second parameter is the type of
+            the array. The default type is f32 or 4-byte
             single-precision floating point numbers.
 
             \code
@@ -274,18 +284,19 @@ namespace af
         /**
             Create a column vector on the device using a host/device pointer
 
-            This function can be used to transfer data from a host or device pointer
-            to an array object on the device with one column. The type of the array
-            is automatically matched to the type of the data.
+            This function can be used to transfer data from a host or device
+            pointer to an array object on the device with one column. The type
+            of the array is automatically matched to the type of the data.
 
-            Depending on the specified size of the column vector, the data will be
-            copied partially or completely. However, the user needs to be careful to
-            ensure that the array size is not larger than the number of elements in
-            the input buffer.
+            Depending on the specified size of the column vector, the data will
+            be copied partially or completely. However, the user needs to be
+            careful to ensure that the array size is not larger than the number
+            of elements in the input buffer.
 
-            \param[in] dim0    number of elements in the column vector
-            \param[in] pointer pointer (points to a buffer on the host/device)
-            \param[in] src     source of the data (default is afHost, can also be afDevice)
+            \param[in] dim0     number of elements in the column vector
+            \param[in] pointer  pointer (points to a buffer on the host/device)
+            \param[in] src      source of the data (default is afHost, can also
+                                be afDevice)
 
             \code
             // allocate data on the host
@@ -308,18 +319,19 @@ namespace af
         /**
             Create a 2D array on the device using a host/device pointer
 
-            This function copies data from the location specified by the pointer
-            to a 2D array on the device. The data is arranged in "column-major"
-            format (similar to that used by FORTRAN).
+            This function copies data from the location specified by the
+            pointer to a 2D array on the device. The data is arranged in
+            "column-major" format (similar to that used by FORTRAN).
 
-            Note that this is an synchronous copy. The elements are not actually
-            filled until this array is evaluated or used in the evaluation of some
-            other expression that uses this array object.
+            Note that this is an synchronous copy. The elements are not
+            actually filled until this array is evaluated or used in the
+            evaluation of some other expression that uses this array object.
 
-            \param[in] dim0    number of rows
-            \param[in] dim1    number of columns
-            \param[in] pointer pointer (points to a buffer on the host/device)
-            \param[in] src     source of the data (default is afHost, can also be afDevice)
+            \param[in] dim0     number of rows
+            \param[in] dim1     number of columns
+            \param[in] pointer  pointer (points to a buffer on the host/device)
+            \param[in] src      source of the data (default is afHost, can also
+                                be \ref afDevice)
 
             \code
             int h_buffer[] = {0, 1, 2, 3, 4, 5};  // host array
@@ -340,11 +352,12 @@ namespace af
             to a 3D array on the device. The data is arranged in "column-major"
             format (similar to that used by FORTRAN).
 
-            \param[in] dim0    first dimension
-            \param[in] dim1    second dimension
-            \param[in] dim2    third dimension
-            \param[in] pointer pointer (points to a buffer on the host/device)
-            \param[in] src     source of the data (default is \ref afHost, can also be \ref afDevice)
+            \param[in] dim0     first dimension
+            \param[in] dim1     second dimension
+            \param[in] dim2     third dimension
+            \param[in] pointer  pointer (points to a buffer on the host/device)
+            \param[in] src      source of the data (default is \ref afHost, can
+                                also be \ref afDevice)
 
             \code
             int h_buffer[] = {0, 1, 2, 3, 4, 5, 6, 7, 8
@@ -367,12 +380,13 @@ namespace af
             to a 4D array on the device. The data is arranged in "column-major"
             format (similar to that used by FORTRAN).
 
-            \param[in] dim0    first dimension
-            \param[in] dim1    second dimension
-            \param[in] dim2    third dimension
-            \param[in] dim3    fourth dimension
-            \param[in] pointer pointer (points to a buffer on the host/device)
-            \param[in] src     source of the data (default is afHost, can also be afDevice)
+            \param[in] dim0     first dimension
+            \param[in] dim1     second dimension
+            \param[in] dim2     third dimension
+            \param[in] dim3     fourth dimension
+            \param[in] pointer  pointer (points to a buffer on the host/device)
+            \param[in] src      source of the data (default is afHost, can also
+                                be \ref afDevice)
 
             \code
             int h_buffer[] = {0, 1, 2, 3,
@@ -388,15 +402,18 @@ namespace af
               const T *pointer, af_source_t src=afHost);
 
         /**
-            Create an array of specified size on the device using a host/device pointer
+            Create an array of specified size on the device using a host/device
+            pointer
 
-            This function copies data from the location specified by the pointer
-            to a 1D/2D/3D/4D array on the device. The data is arranged in "column-major"
-            format (similar to that used by FORTRAN).
+            This function copies data from the location specified by the
+            pointer to a 1D/2D/3D/4D array on the device. The data is arranged
+            in "column-major" format (similar to that used by FORTRAN).
 
-            \param[in] dims    vector data type containing the dimension of the array
+            \param[in] dims    vector data type containing the dimension of the
+                               \ref array
             \param[in] pointer pointer (points to a buffer on the host/device)
-            \param[in] src     source of the data (default is afHost, can also be afDevice)
+            \param[in] src     source of the data (default is afHost, can also
+                                be \ref afDevice)
 
             \code
             int h_buffer[] = {0, 1, 2, 3,    // host array with 16 elements
@@ -480,7 +497,9 @@ namespace af
            \param[in] dim3 fourth dimension
            \return same underlying array data with different dimensions
         */
-        array(const array& input, const dim_t dim0, const dim_t dim1 = 1, const dim_t dim2 = 1, const dim_t dim3 = 1);
+        array(  const array& input,
+                const dim_t dim0, const dim_t dim1 = 1,
+                const dim_t dim2 = 1, const dim_t dim3 = 1);
 
         /**
             @}
@@ -645,26 +664,52 @@ namespace af
 
 
         // INDEXING
-    public:
         // Single arguments
 
-        /**
-           \defgroup index_func_index index
-           @{
 
-           Create an array based on the indices
-
-           \ingroup arrayfire_func
-           \ingroup index_mat
-        */
-
+        ///
+        /// \brief Gets a reference to a set of linear elements
+        ///
+        /// \copydetails array_mem_operator_paren_one
+        ///
+        /// \param[in] s0   is sequence of linear indices
+        ///
+        /// \returns A reference to the array at the given index
+        /// \ingroup array_mem_operator_paren
+        ///
               array::array_proxy operator()(const index &s0);
+
+        ///
+        /// \brief Gets a reference to a sub array
+        ///
+        /// \copydetails array_mem_operator_paren_many
+        ///
+        /// \returns A reference to the array at the given index
+        /// \ingroup array_mem_operator_paren
+        ///
               array::array_proxy operator()(const index &s0,
                                             const index &s1,
                                             const index &s2 = span,
                                             const index &s3 = span);
 
+        ///
+        /// \brief Gets a constant reference to a set of linear elements
+        ///
+        /// \copydetails array_mem_operator_paren_one
+        ///
+        /// \returns A constant reference to the array at the given index
+        /// \ingroup array_mem_operator_paren
+        ///
         const array::array_proxy operator()(const index &s0) const;
+
+        ///
+        /// \brief Gets a constant reference to a sub array
+        ///
+        /// \copydetails array_mem_operator_paren_many
+        ///
+        /// \returns A constant reference to the array at the given index
+        /// \ingroup array_mem_operator_paren
+        ///
         const array::array_proxy operator()(const index &s0,
                                             const index &s1,
                                             const index &s2 = span,
@@ -684,9 +729,6 @@ namespace af
 
         array as(dtype type) const;
 
-        /**
-           @}
-        */
 
         ~array();
 

@@ -1,0 +1,42 @@
+
+/**
+\addtogroup arrayfire_func
+@{
+\defgroup array_mem_operator_paren operator()
+\ingroup index_mat 
+
+\brief Gets a reference to a set of elements
+
+\snippet test/index.cpp ex_indexing_first
+
+This operator returns a reference of the original array at a given coordinate.
+You can pass \ref seq, \ref array, or an int as it's parameters. These
+references can be used for assignment or returning references
+to \ref array objects.
+
+===============================================================================
+
+\defgroup array_mem_operator_paran_one operator()
+
+This operator returns a reference of the original array at a given coordinate.
+You can pass \ref seq, \ref array, or an int as it's parameters. These
+references can be used for assignment or returning references
+to \ref array objects.
+
+If the \ref array is a multi-dimensional array then this coordinate
+will treated as the data as a linear array.
+
+===============================================================================
+
+\defgroup array_mem_operator_paran_many operator()
+
+This operator returns a reference of the original array at a given coordinate.
+You can pass \ref seq, \ref array, or an int as it's parameters. These
+references can be used for assignment or returning references
+to \ref array objects.
+
+===============================================================================
+
+
+@}
+*/
