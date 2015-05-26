@@ -1,0 +1,51 @@
+/**
+\addtogroup arrayfire_func
+@{
+\defgroup lapack_factor_func_lu lu
+
+\ingroup lapack_factor_mat
+
+\brief Perform LU decomposition
+
+This function decomposes input matrix \p A into a lower triangle \p L and upper triangle \p U such that
+
+    \f$A = L * U\f$
+
+The output \p pivot contains the row permutations performed by ArrayFire to improve the stability of the decomposition.
+
+The outputs \p L and \p U can be multiplied to generate the permuted version of the original input \p A in the following manner.
+
+\snippet test/lu_dense.cpp ex_lu_unpacked
+
+When memory is a concern, users can perform the LU decomposition in place as shown below.
+
+\snippet test/lu_dense.cpp ex_lu_packed
+
+LU decompositions has many applications. The cheif amongst them is <a href="http://en.wikipedia.org/wiki/LU_decomposition#Solving_linear_equations">solving a system of linear equations</a>.
+
+=======================================================================
+
+\defgroup lapack_factor_func_qr qr
+
+\ingroup lapack_factor_mat
+
+=======================================================================
+
+\defgroup lapack_factor_func_cholesky cholesky
+
+\ingroup lapack_factor_mat
+
+=======================================================================
+
+\defgroup lapack_solve_func_gen solve
+
+\ingroup lapack_solve_mat
+
+=======================================================================
+
+\defgroup lapack_ops_func_inv inverse
+
+\ingroup lapack_ops_mat
+
+@}
+*/

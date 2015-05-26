@@ -94,6 +94,15 @@
    @{
      @defgroup blas_mat BLAS operations
      Matrix multiply, dot product, etc.
+
+     @defgroup lapack_factor_mat Matrix factorizations and decompositions
+     LU, QR, Cholesky etc.
+
+     @defgroup lapack_solve_mat Linear solve and least squares
+     solve, solveLU, solveQR, solveChol
+
+     @defgroup lapack_ops_mat Matrix operations
+     inverse, det, etc.
    @}
 
    @defgroup image_mat Image Processing
