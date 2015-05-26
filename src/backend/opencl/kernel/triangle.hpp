@@ -41,7 +41,7 @@ static const unsigned TY = 8;
 static const unsigned TILEX = 128;
 static const unsigned TILEY = 32;
 
-template<typename T, bool is_upper>
+template<typename T, bool is_upper, bool is_unit_diag>
 void triangle(Param out, const Param in)
 {
     try {
@@ -56,7 +56,9 @@ void triangle(Param out, const Param in)
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName()
                         << " -D is_upper=" << is_upper
-                        << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")";
+                        << " -D is_unit_diag=" << is_unit_diag
+                        << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")"
+                        << " -D ONE=(T)(" << scalar_to_option(scalar<T>(1)) << ")";
 
                 if (std::is_same<T, double>::value ||
                     std::is_same<T, cdouble>::value) {

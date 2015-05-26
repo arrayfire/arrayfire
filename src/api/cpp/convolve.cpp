@@ -28,7 +28,7 @@ array convolve(const array& signal, const array& filter, const convMode mode, co
     }
 }
 
-array convolve(const array& col_filter, const array& row_filter, const array& signal, const convMode mode, convDomain domain)
+array convolve(const array& col_filter, const array& row_filter, const array& signal, const convMode mode)
 {
     af_array out = 0;
     AF_THROW(af_convolve2_sep(&out, col_filter.get(), row_filter.get(), signal.get(), mode));

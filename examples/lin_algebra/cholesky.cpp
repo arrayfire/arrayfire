@@ -22,7 +22,6 @@ int main(int argc, char *argv[])
         af::setDevice(device);
         af::info();
 
-        int val;
         int n = 5;
         array t = randu(n, n);
         array in = matmulNT(t, t) + identity(n, n) * n;
@@ -33,8 +32,12 @@ int main(int argc, char *argv[])
         af_print(cin);
 
         printf("Running Cholesky Out of place\n");
-        array out_upper = cholesky(in, &val, true);
-        array out_lower = cholesky(in, &val, false);
+        array out_upper;
+        array out_lower;
+
+        cholesky(out_upper, in, true);
+        cholesky(out_lower, in, false);
+
         af_print(out_upper);
         af_print(out_lower);
 
@@ -52,4 +55,3 @@ int main(int argc, char *argv[])
     #endif
     return 0;
 }
-

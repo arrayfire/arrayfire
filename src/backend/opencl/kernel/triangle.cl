@@ -38,8 +38,9 @@ void triangle_kernel(__global T *rptr, KParam rinfo,
             for (int ox = xx; ox < rinfo.dims[0]; ox += incx) {
 
                 bool cond = is_upper ? (oy >= ox) : (oy <= ox);
+                bool do_unit_diag = is_unit_diag && (oy == ox);
                 if(cond) {
-                    Yd_r[ox] = Yd_i[ox];
+                    Yd_r[ox] = do_unit_diag ? ONE : Yd_i[ox];
                 } else {
                     Yd_r[ox] = ZERO;
                 }

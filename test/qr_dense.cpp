@@ -39,6 +39,7 @@ TEST(QRFactorized, CPP)
 
     af::dim4 idims = numDims[0];
     af::array input(idims, &(in[0].front()));
+
     af::array q, r, tau;
     af::qr(q, r, tau, input);
 
@@ -87,8 +88,11 @@ void qrTester(const int m, const int n, double eps)
 #else
         af::array in = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
 #endif
+
+        //! [ex_qr_unpacked]
         af::array q, r, tau;
         af::qr(q, r, tau, in);
+        //! [ex_qr_unpacked]
 
         af::array qq = af::matmul(q, q.H());
         af::array ii = af::identity(qq.dims(), qq.type());
@@ -96,10 +100,28 @@ void qrTester(const int m, const int n, double eps)
         ASSERT_NEAR(0, af::max<double>(af::abs(real(qq - ii))), eps);
         ASSERT_NEAR(0, af::max<double>(af::abs(imag(qq - ii))), eps);
 
-
+        //! [ex_qr_recon]
         af::array re = af::matmul(q, r);
+        //! [ex_qr_recon]
+
         ASSERT_NEAR(0, af::max<double>(af::abs(real(re - in))), eps);
         ASSERT_NEAR(0, af::max<double>(af::abs(imag(re - in))), eps);
+
+        //! [ex_qr_packed]
+        af::array out = in.copy();
+        af::array tau2;
+        qrInPlace(tau2, out);
+        //! [ex_qr_packed]
+
+        af::array r2 = upper(out);
+
+        ASSERT_NEAR(0, af::max<double>(af::abs(real(tau - tau2))), eps);
+        ASSERT_NEAR(0, af::max<double>(af::abs(imag(tau - tau2))), eps);
+
+        ASSERT_NEAR(0, af::max<double>(af::abs(real(r2 - r))), eps);
+        ASSERT_NEAR(0, af::max<double>(af::abs(imag(r2 - r))), eps);
+
+
     } catch(af::exception &ex) {
         std::cout << ex.what() << std::endl;
         throw;

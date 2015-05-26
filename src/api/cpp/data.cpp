@@ -17,26 +17,26 @@ namespace af
 {
 
 #define CONSTANT(TYPE)                                                  \
-    array constant(TYPE val, const dim_t d0, const af::dtype ty)     \
+    array constant(TYPE val, const dim_t d0, const af::dtype ty)        \
     {                                                                   \
         return constant(val, dim4(d0), ty);                             \
     }                                                                   \
                                                                         \
-    array constant(TYPE val, const dim_t d0,                         \
-                   const dim_t d1, const af::dtype ty)               \
+    array constant(TYPE val, const dim_t d0,                            \
+                   const dim_t d1, const af::dtype ty)                  \
     {                                                                   \
         return constant(val, dim4(d0, d1), ty);                         \
     }                                                                   \
                                                                         \
-    array constant(TYPE val, const dim_t d0,                         \
-                   const dim_t d1, const dim_t d2, const af::dtype ty) \
+    array constant(TYPE val, const dim_t d0,                            \
+                   const dim_t d1, const dim_t d2, const af::dtype ty)  \
     {                                                                   \
         return constant(val, dim4(d0, d1, d2), ty);                     \
     }                                                                   \
                                                                         \
-    array constant(TYPE val, const dim_t d0,                         \
-                   const dim_t d1, const dim_t d2,                \
-                   const dim_t d3, const af::dtype ty)               \
+    array constant(TYPE val, const dim_t d0,                            \
+                   const dim_t d1, const dim_t d2,                      \
+                   const dim_t d3, const af::dtype ty)                  \
     {                                                                   \
         return constant(val, dim4(d0, d1, d2, d3), ty);                 \
     }                                                                   \
@@ -342,17 +342,17 @@ namespace af
         return array(out);
     }
 
-    array lower(const array &in)
+    array lower(const array &in, bool is_unit_diag)
     {
         af_array res;
-        AF_THROW(af_lower(&res, in.get()));
+        AF_THROW(af_lower(&res, in.get(), is_unit_diag));
         return array(res);
     }
 
-    array upper(const array &in)
+    array upper(const array &in, bool is_unit_diag)
     {
         af_array res;
-        AF_THROW(af_upper(&res, in.get()));
+        AF_THROW(af_upper(&res, in.get(), is_unit_diag));
         return array(res);
     }
 }

@@ -41,8 +41,13 @@ void solveTester(const int m, const int n, const int k, double eps)
 #endif
     af::array B0 = af::matmul(A, X0);
 
+    //! [ex_solve]
     af::array X1 = af::solve(A, B0);
+    //! [ex_solve]
+
+    //! [ex_solve_recon]
     af::array B1 = af::matmul(A, X1);
+    //! [ex_solve_recon]
 
     ASSERT_NEAR(0, af::sum<double>(af::abs(real(B0 - B1))) / (m * k), eps);
     ASSERT_NEAR(0, af::sum<double>(af::abs(imag(B0 - B1))) / (m * k), eps);
