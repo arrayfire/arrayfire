@@ -84,9 +84,9 @@ void edge(bool console)
         /* show input, prewitt and sobel edge detectors in a grid */
         myWindow.grid(2, 2);
 
-        myWindow(0,0)->image(in/255     , "Input Image");
-        myWindow(0,1)->image(prewitt    , "Prewitt"    );
-        myWindow(1,0)->image(sobelFilter, "Sobel"      );
+        myWindow(0,0).image(in/255     , "Input Image");
+        myWindow(0,1).image(prewitt    , "Prewitt"    );
+        myWindow(1,0).image(sobelFilter, "Sobel"      );
 
         myWindow.show();
 

@@ -52,9 +52,9 @@ class AFAPI Window {
 
         bool close();
 
-        inline Window* operator()(const int r, const int c) {
+        inline Window& operator()(const int r, const int c) {
             _r = r; _c = c;
-            return this;
+            return *this;
         }
 };
 

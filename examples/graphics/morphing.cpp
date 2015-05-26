@@ -97,20 +97,20 @@ static void morphing_demo(bool console)
     while (!wnd.close()) {
         wnd.grid(3, 4);
 
-        wnd(0, 0)->image(img_rgb, "Input"          );
-        wnd(1, 0)->image(er     , "Erosion"        );
-        wnd(2, 0)->image(di     , "Dilation"       );
+        wnd(0, 0).image(img_rgb, "Input"          );
+        wnd(1, 0).image(er     , "Erosion"        );
+        wnd(2, 0).image(di     , "Dilation"       );
 
-        wnd(0, 1)->image(op     , "Opening"        );
-        wnd(1, 1)->image(cl     , "Closing"        );
-        wnd(2, 1)->image(gr     , "Gradient"       );
+        wnd(0, 1).image(op     , "Opening"        );
+        wnd(1, 1).image(cl     , "Closing"        );
+        wnd(2, 1).image(gr     , "Gradient"       );
 
-        wnd(0, 2)->image(th     , "TopHat"         );
-        wnd(1, 2)->image(bh     , "BottomHat"      );
-        wnd(2, 2)->image(bl     , "Blur"           );
+        wnd(0, 2).image(th     , "TopHat"         );
+        wnd(1, 2).image(bh     , "BottomHat"      );
+        wnd(2, 2).image(bl     , "Blur"           );
 
-        wnd(0, 3)->image(bp     , "Border to Gray" );
-        wnd(1, 3)->image(bo     , "Border to black");
+        wnd(0, 3).image(bp     , "Border to Gray" );
+        wnd(1, 3).image(bo     , "Border to black");
 
         wnd.show();
     }
