@@ -126,7 +126,7 @@ namespace cuda
                 VT v11 = (condX && condY) ? wt11 * iptr[ioff + in.strides[1] + 1] : zero;
                 VT vo  = v00 + v10 + v01 + v11;
 
-                optr[ooff] = (T)(vo / wt);
+                optr[ooff] = (vo / wt);
             }
         }
     }

@@ -37,10 +37,13 @@ void inverseTester(const int m, const int n, const int k, double eps)
 #else
     af::array A  = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
 #endif
-    af::array IA = inverse(A);
 
-    af::array I = af::identity(m, n, (af::dtype)af::dtype_traits<T>::af_type);
-    af::array I2 = af::matmul(A, IA);
+    //! [ex_inverse]
+    af::array IA = inverse(A);
+    af::array I = af::matmul(A, IA);
+    //! [ex_inverse]
+
+    af::array I2 = af::identity(m, n, (af::dtype)af::dtype_traits<T>::af_type);
 
     ASSERT_NEAR(0, af::max<double>(af::abs(real(I - I2))), eps);
     ASSERT_NEAR(0, af::max<double>(af::abs(imag(I - I2))), eps);

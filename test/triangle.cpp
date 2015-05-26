@@ -34,7 +34,7 @@ typedef ::testing::Types<float, af::cfloat, double, af::cdouble, int, unsigned, 
 TYPED_TEST_CASE(Triangle, TestTypes);
 
 template<typename T>
-void triangleTester(const dim4 dims, bool is_upper)
+void triangleTester(const dim4 dims, bool is_upper, bool is_unit_diag=false)
 {
     if (noDoubleTests<T>()) return;
 #if 1
@@ -44,7 +44,7 @@ void triangleTester(const dim4 dims, bool is_upper)
 #endif
 
     T *h_in = in.host<T>();
-    af::array out = is_upper ?  upper(in) : lower(in);
+    af::array out = is_upper ?  upper(in, is_unit_diag) : lower(in, is_unit_diag);
     T *h_out = out.host<T>();
 
     int m = dims[0];
@@ -60,7 +60,7 @@ void triangleTester(const dim4 dims, bool is_upper)
                 T val = T(0);
                 if (((y <= x) && !is_upper) ||
                     ((y >= x) &&  is_upper)) {
-                    val = h_in[y_off + x];
+                    val = (is_unit_diag && y == x) ? (T)(1) : h_in[y_off + x];
                 }
 
                 ASSERT_EQ(h_out[y_off + x], val) << "at (" << x << ", " << y << ")";
@@ -120,4 +120,34 @@ TYPED_TEST(Triangle, Upper3D)
 TYPED_TEST(Triangle, Upper4D)
 {
     triangleTester<TypeParam>(dim4(600, 900, 5, 2), true);
+}
+
+TYPED_TEST(Triangle, Lower2DRect0Unit)
+{
+    triangleTester<TypeParam>(dim4(500, 600), false, true);
+}
+
+TYPED_TEST(Triangle, Lower2DRect1Unit)
+{
+    triangleTester<TypeParam>(dim4(2003, 1775), false, true);
+}
+
+TYPED_TEST(Triangle, Lower2DSquareUnit)
+{
+    triangleTester<TypeParam>(dim4(2048, 2048), false, true);
+}
+
+TYPED_TEST(Triangle, Upper2DRect0Unit)
+{
+    triangleTester<TypeParam>(dim4(500, 600), true, true);
+}
+
+TYPED_TEST(Triangle, Upper2DRect1Unit)
+{
+    triangleTester<TypeParam>(dim4(2003, 1775), true, true);
+}
+
+TYPED_TEST(Triangle, Upper2DSquareUnit)
+{
+    triangleTester<TypeParam>(dim4(2048, 2048), true, true);
 }

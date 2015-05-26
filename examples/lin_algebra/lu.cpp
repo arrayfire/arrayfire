@@ -27,7 +27,8 @@ int main(int argc, char *argv[])
         array lin = in.copy();
 
         printf("Running LU InPlace\n");
-        array pivot = luInPlace(lin);
+        array pivot;
+        luInPlace(pivot, lin);
         af_print(lin);
         af_print(pivot);
 
@@ -52,4 +53,3 @@ int main(int argc, char *argv[])
     #endif
     return 0;
 }
-

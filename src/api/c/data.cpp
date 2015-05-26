@@ -676,27 +676,30 @@ af_err af_write_array(af_array arr, const void *data, const size_t bytes, af_sou
 }
 
 template<typename T, bool is_upper>
-af_array triangle(const af_array in)
+af_array triangle(const af_array in, bool is_unit_diag)
 {
-    return getHandle(triangle<T, is_upper>(getArray<T>(in)));
+    if (is_unit_diag)
+        return getHandle(triangle<T, is_upper,  true>(getArray<T>(in)));
+    else
+        return getHandle(triangle<T, is_upper, false>(getArray<T>(in)));
 }
 
-af_err af_lower(af_array *out, const af_array in)
+af_err af_lower(af_array *out, const af_array in, bool is_unit_diag)
 {
     try {
         af_dtype type = getInfo(in).getType();
         af_array res;
         switch(type) {
-        case f32: res = triangle<float   , false>(in); break;
-        case f64: res = triangle<double  , false>(in); break;
-        case c32: res = triangle<cfloat  , false>(in); break;
-        case c64: res = triangle<cdouble , false>(in); break;
-        case s32: res = triangle<int     , false>(in); break;
-        case s64: res = triangle<intl    , false>(in); break;
-        case u32: res = triangle<uint    , false>(in); break;
-        case u64: res = triangle<uintl   , false>(in); break;
-        case u8 : res = triangle<uchar   , false>(in); break;
-        case b8 : res = triangle<char    , false>(in); break;
+        case f32: res = triangle<float   , false>(in, is_unit_diag); break;
+        case f64: res = triangle<double  , false>(in, is_unit_diag); break;
+        case c32: res = triangle<cfloat  , false>(in, is_unit_diag); break;
+        case c64: res = triangle<cdouble , false>(in, is_unit_diag); break;
+        case s32: res = triangle<int     , false>(in, is_unit_diag); break;
+        case s64: res = triangle<intl    , false>(in, is_unit_diag); break;
+        case u32: res = triangle<uint    , false>(in, is_unit_diag); break;
+        case u64: res = triangle<uintl   , false>(in, is_unit_diag); break;
+        case u8 : res = triangle<uchar   , false>(in, is_unit_diag); break;
+        case b8 : res = triangle<char    , false>(in, is_unit_diag); break;
         }
         std::swap(*out, res);
     }
@@ -705,22 +708,22 @@ af_err af_lower(af_array *out, const af_array in)
 }
 
 
-af_err af_upper(af_array *out, const af_array in)
+af_err af_upper(af_array *out, const af_array in, bool is_unit_diag)
 {
     try {
         af_dtype type = getInfo(in).getType();
         af_array res;
         switch(type) {
-        case f32: res = triangle<float   , true>(in); break;
-        case f64: res = triangle<double  , true>(in); break;
-        case c32: res = triangle<cfloat  , true>(in); break;
-        case c64: res = triangle<cdouble , true>(in); break;
-        case s32: res = triangle<int     , true>(in); break;
-        case s64: res = triangle<intl    , true>(in); break;
-        case u32: res = triangle<uint    , true>(in); break;
-        case u64: res = triangle<uintl   , true>(in); break;
-        case u8 : res = triangle<uchar   , true>(in); break;
-        case b8 : res = triangle<char    , true>(in); break;
+        case f32: res = triangle<float   , true>(in, is_unit_diag); break;
+        case f64: res = triangle<double  , true>(in, is_unit_diag); break;
+        case c32: res = triangle<cfloat  , true>(in, is_unit_diag); break;
+        case c64: res = triangle<cdouble , true>(in, is_unit_diag); break;
+        case s32: res = triangle<int     , true>(in, is_unit_diag); break;
+        case s64: res = triangle<intl    , true>(in, is_unit_diag); break;
+        case u32: res = triangle<uint    , true>(in, is_unit_diag); break;
+        case u64: res = triangle<uintl   , true>(in, is_unit_diag); break;
+        case u8 : res = triangle<uchar   , true>(in, is_unit_diag); break;
+        case b8 : res = triangle<char    , true>(in, is_unit_diag); break;
         }
         std::swap(*out, res);
     }

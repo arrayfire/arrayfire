@@ -23,7 +23,7 @@ namespace cuda
         static const unsigned TILEX = 128;
         static const unsigned TILEY = 32;
 
-        template<typename T, bool is_upper>
+        template<typename T, bool is_upper, bool is_unit_diag>
         __global__
         void triangle_kernel(Param<T> r, CParam<T> in,
                              const int blocksPerMatX, const int blocksPerMatY)
@@ -54,8 +54,9 @@ namespace cuda
                     for (int ox = xx; ox < r.dims[0]; ox += incx) {
 
                         bool cond = is_upper ? (oy >= ox) : (oy <= ox);
+                        bool do_unit_diag  = is_unit_diag && (ox == oy);
                         if(cond) {
-                            Yd_r[ox] = Yd_i[ox];
+                            Yd_r[ox] = do_unit_diag ? scalar<T>(1) : Yd_i[ox];
                         } else {
                             Yd_r[ox] = scalar<T>(0);
                         }
@@ -67,7 +68,7 @@ namespace cuda
         ///////////////////////////////////////////////////////////////////////////
         // Wrapper functions
         ///////////////////////////////////////////////////////////////////////////
-        template<typename T, bool is_upper>
+        template<typename T, bool is_upper, bool is_unit_diag>
         void triangle(Param<T> r, CParam<T> in)
         {
             dim3 threads(TX, TY, 1);
@@ -78,7 +79,7 @@ namespace cuda
                         blocksPerMatY * r.dims[3],
                         1);
 
-            triangle_kernel<T, is_upper><<<blocks, threads>>>(r, in, blocksPerMatX, blocksPerMatY);
+            triangle_kernel<T, is_upper, is_unit_diag><<<blocks, threads>>>(r, in, blocksPerMatX, blocksPerMatY);
 
             POST_LAUNCH_CHECK();
         }

@@ -24,8 +24,10 @@
       Array constructors, random number generation, transpose, indexing, etc.
 
       @defgroup construct_mat Constructors of array class
+      Construct an array object
 
       @defgroup method_mat Methods of array class
+      Get information about the array object
 
       @defgroup device_mat Managing devices in ArrayFire
       getting device pointer, allocating and freeing memory
@@ -34,6 +36,7 @@
       constant, random, range, etc.
 
       @defgroup index_mat Indexing operation on arrays
+      Access sub regions of an array object
 
       @defgroup manip_mat Move and Reorder array content
       reorder, transpose, flip, join, tile, etc.
@@ -92,12 +95,27 @@
 
    @defgroup linalg_mat Linear Algebra
    @{
+
+     Matrix multiply, solve, decompositions
+
      @defgroup blas_mat BLAS operations
      Matrix multiply, dot product, etc.
+
+     @defgroup lapack_factor_mat Matrix factorizations and decompositions
+     LU, QR, Cholesky etc.
+
+     @defgroup lapack_solve_mat Linear solve and least squares
+     solve, solveLU, solveQR, solveChol
+
+     @defgroup lapack_ops_mat Matrix operations
+     inverse, det, etc.
    @}
 
    @defgroup image_mat Image Processing
    @{
+
+     Image filtering, morphing and transformations
+
      @defgroup colorconv_mat Colorspace conversions
      RGB to gray, gray to RGB, RGB to HSV, etc.
 
@@ -122,6 +140,9 @@
 
    @defgroup cv_mat Computer Vision
    @{
+
+     A list of computer vision algorithms
+
      @defgroup featdetect_mat Feature detectors
      FAST feature detector
 
@@ -134,6 +155,7 @@
    @defgroup signal_mat Signal Processing
    @{
 
+     Convolutions, FFTs, filters
      @defgroup convolve_mat Convolutions
      1D, 2D and 3D convolutions
 
@@ -141,16 +163,22 @@
      1D, 2D and 3D forward, inverse FFTs
 
      @defgroup approx_mat   Interpolation and approximation
+     1D and 2D interpolation
    @}
 
    @defgroup stats_mat Statistics
    @{
+
+     A list of Statistics functions
      @defgroup basicstats_mat Basic statistics functions
      mean, median, variance, etc.
    @}
 
    @defgroup io_mat Input and Output functions
    @{
+
+     Functions to read and write data
+
      @defgroup dataio_mat Reading and writing arrays
      printing data to screen / files
 
@@ -158,8 +186,15 @@
      Reading and writing images
    @}
 
-    @defgroup external Interfacing with other code / libraries
+   @defgroup external Interface Functions
+   @{
 
+     Functions to interface with external libraries and frameworks
+
+     @defgroup opencl_mat
+     Interface with native OpenCL calls
+
+   @}
 @}
 
 

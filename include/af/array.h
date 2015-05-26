@@ -715,19 +715,25 @@ namespace af
                                             const index &s2 = span,
                                             const index &s3 = span) const;
 
-        array::array_proxy row(int index) const;
+              array::array_proxy row(int index);
+        const array::array_proxy row(int index) const;
 
-        array::array_proxy col(int index) const;
+              array::array_proxy col(int index);
+        const array::array_proxy col(int index) const;
 
-        array::array_proxy slice(int index) const;
+              array::array_proxy slice(int index);
+        const array::array_proxy slice(int index) const;
 
-        array::array_proxy rows(int first, int last) const;
+              array::array_proxy rows(int first, int last);
+        const array::array_proxy rows(int first, int last) const;
 
-        array::array_proxy cols(int first, int last) const;
+              array::array_proxy cols(int first, int last);
+        const array::array_proxy cols(int first, int last) const;
 
-        array::array_proxy slices(int first, int last) const;
+              array::array_proxy slices(int first, int last);
+        const array::array_proxy slices(int first, int last) const;
 
-        array as(dtype type) const;
+        const array as(dtype type) const;
 
 
         ~array();

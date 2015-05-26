@@ -119,19 +119,47 @@ void luTester(const int m, const int n, double eps)
     if (noDoubleTests<T>()) return;
 
 #if 1
-    af::array a = cpu_randu<T>(af::dim4(m, n));
+    af::array a_orig = cpu_randu<T>(af::dim4(m, n));
 #else
-    af::array a = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
+    af::array a_orig = af::randu(m, n, (af::dtype)af::dtype_traits<T>::af_type);
 #endif
 
 
+    //! [ex_lu_unpacked]
     af::array l, u, pivot;
-    af::lu(l, u, pivot, a);
-    af::array aa = af::matmul(l, u);
-    af::array bb = a(pivot, af::span);
+    af::lu(l, u, pivot, a_orig);
+    //! [ex_lu_unpacked]
 
-    ASSERT_NEAR(0, af::max<double>(af::abs(real(aa - bb))), eps);
-    ASSERT_NEAR(0, af::max<double>(af::abs(imag(aa - bb))), eps);
+    //! [ex_lu_recon]
+    af::array a_recon = af::matmul(l, u);
+    af::array a_perm = a_orig(pivot, af::span);
+    //! [ex_lu_recon]
+
+    ASSERT_NEAR(0, af::max<double>(af::abs(real(a_recon - a_perm))), eps);
+    ASSERT_NEAR(0, af::max<double>(af::abs(imag(a_recon - a_perm))), eps);
+
+    //! [ex_lu_packed]
+    af::array out = a_orig.copy();
+    af::array pivot2;
+    af::luInPlace(pivot2, out);
+    //! [ex_lu_packed]
+
+    //! [ex_lu_extract]
+    af::array l2 = lower(out,  true);
+    af::array u2 = upper(out, false);
+    //! [ex_lu_extract]
+
+    ASSERT_EQ(af::count<uint>(pivot == pivot2), pivot.elements());
+
+    int mn = std::min(m, n);
+    l2 = l2(af::span, af::seq(mn));
+    u2 = u2(af::seq(mn), af::span);
+
+    ASSERT_NEAR(0, af::max<double>(af::abs(real(l2 - l))), eps);
+    ASSERT_NEAR(0, af::max<double>(af::abs(imag(l2 - l))), eps);
+
+    ASSERT_NEAR(0, af::max<double>(af::abs(real(u2 - u))), eps);
+    ASSERT_NEAR(0, af::max<double>(af::abs(imag(u2 - u))), eps);
 }
 
 #define LU_BIG_TESTS(T, eps)                    \

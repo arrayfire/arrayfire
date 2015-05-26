@@ -11,6 +11,7 @@
 #include <Param.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
+#include <math.hpp>
 
 namespace cuda
 {
@@ -19,6 +20,34 @@ namespace cuda
         // Kernel Launch Config Values
         static const unsigned TX = 16;
         static const unsigned TY = 16;
+
+        template<typename T>
+        struct itype_t
+        {
+            typedef float wtype;
+            typedef float vtype;
+        };
+
+        template<>
+        struct itype_t<double>
+        {
+            typedef double wtype;
+            typedef double vtype;
+        };
+
+        template<>
+        struct itype_t<cfloat>
+        {
+            typedef float  wtype;
+            typedef cfloat vtype;
+        };
+
+        template<>
+        struct itype_t<cdouble>
+        {
+            typedef double  wtype;
+            typedef cdouble vtype;
+        };
 
         ///////////////////////////////////////////////////////////////////////////
         // nearest-neighbor resampling
@@ -72,17 +101,20 @@ namespace cuda
             const int ix2 = ix + 1 <  in.dims[0] ? ix + 1 : ix;
             const int iy2 = iy + 1 <  in.dims[1] ? iy + 1 : iy;
 
+            typedef typename itype_t<T>::wtype WT;
+            typedef typename itype_t<T>::vtype VT;
+
             const T *iptr = in.ptr + i_off;
 
-            const T p1 = iptr[ix  + in.strides[1] * iy ];
-            const T p2 = iptr[ix  + in.strides[1] * iy2];
-            const T p3 = iptr[ix2 + in.strides[1] * iy ] ;
-            const T p4 = iptr[ix2 + in.strides[1] * iy2];
+            const VT p1 = iptr[ix  + in.strides[1] * iy ];
+            const VT p2 = iptr[ix  + in.strides[1] * iy2];
+            const VT p3 = iptr[ix2 + in.strides[1] * iy ] ;
+            const VT p4 = iptr[ix2 + in.strides[1] * iy2];
 
-            T val = (1.0f-a) * (1.0f-b) * p1 +
-                    (a)      * (1.0f-b) * p2 +
-                    (1.0f-a) * (b)      * p3 +
-                    (a)      * (b)      * p4;
+            VT val = scalar<WT>((1.0f-a) * (1.0f-b)) * p1 +
+                     scalar<WT>((a)      * (1.0f-b)) * p2 +
+                     scalar<WT>((1.0f-a) * (b)     ) * p3 +
+                     scalar<WT>((a)      * (b)     ) * p4;
 
             out.ptr[o_off + ox + oy * out.strides[1]] = val;
         }
