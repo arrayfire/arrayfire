@@ -8,9 +8,9 @@
  ********************************************************/
 
 #pragma once
+#include <af/defines.h>
 
 #ifdef __cplusplus
-#include <af/defines.h>
 
 namespace af
 {

@@ -11,7 +11,6 @@
 #include <af/features.h>
 
 #ifdef __cplusplus
-#include <utility>
 namespace af
 {
 class array;

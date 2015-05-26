@@ -9,6 +9,8 @@
 
 #pragma once
 
+#ifdef __cplusplus
+
 #include <ostream>
 #include <istream>
 #include <vector>
@@ -83,3 +85,5 @@ AFAPI size_t seqElements(const af_seq &seq);
 
 AFAPI dim_t calcDim(const af_seq &seq, const dim_t &parentDim);
 }
+
+#endif

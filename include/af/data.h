@@ -9,9 +9,9 @@
 
 #pragma once
 #include <af/defines.h>
-#include <af/dim4.hpp>
 
 #ifdef __cplusplus
+#include <af/dim4.hpp>
 namespace af
 {
     class array;

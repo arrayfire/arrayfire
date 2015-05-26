@@ -12,10 +12,9 @@
 #include <af/seq.h>
 #include <af/util.h>
 #include <af/index.h>
-#include <af/traits.hpp>
-
 
 #ifdef __cplusplus
+#include <af/traits.hpp>
 #include <vector>
 namespace af
 {

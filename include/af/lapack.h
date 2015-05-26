@@ -11,7 +11,7 @@
 #include <af/array.h>
 #include <af/defines.h>
 
-#if __cplusplus
+#ifdef __cplusplus
 namespace af
 {
 
