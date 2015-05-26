@@ -93,7 +93,7 @@ int main(int argc, char **argv)
             Tg = tile(GC5, n, 1);
 
             dim4 dims = Xg.dims();
-            printf("Input Data Size = %lu x %lu\n", dims[0], dims[1]);
+            printf("Input Data Size = %d x %d\n", (int)dims[0], (int)dims[1]);
 
             // Force compute on the GPU
             af::sync();
