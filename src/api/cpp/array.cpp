@@ -372,43 +372,79 @@ namespace af
 
     }
 
-    array::array_proxy array::row(int index) const
+    const array::array_proxy array::row(int index) const
     {
         seq idx(index, index, 1);
         return this->operator()(idx, span, span, span);
     }
 
-    array::array_proxy array::col(int index) const
+    array::array_proxy array::row(int index)
+    {
+        seq idx(index, index, 1);
+        return this->operator()(idx, span, span, span);
+    }
+
+    const array::array_proxy array::col(int index) const
     {
         seq idx(index, index, 1);
         return this->operator()(span, idx, span, span);
     }
 
-    array::array_proxy array::slice(int index) const
+    array::array_proxy array::col(int index)
+    {
+        seq idx(index, index, 1);
+        return this->operator()(span, idx, span, span);
+    }
+
+    const array::array_proxy array::slice(int index) const
     {
         seq idx(index, index, 1);
         return this->operator()(span, span, idx, span);
     }
 
-    array::array_proxy array::rows(int first, int last) const
+    array::array_proxy array::slice(int index)
+    {
+        seq idx(index, index, 1);
+        return this->operator()(span, span, idx, span);
+    }
+
+    const array::array_proxy array::rows(int first, int last) const
     {
         seq idx(first, last, 1);
         return this->operator()(idx, span, span, span);
     }
 
-    array::array_proxy array::cols(int first, int last) const
+    array::array_proxy array::rows(int first, int last)
+    {
+        seq idx(first, last, 1);
+        return this->operator()(idx, span, span, span);
+    }
+
+    const array::array_proxy array::cols(int first, int last) const
     {
         seq idx(first, last, 1);
         return this->operator()(span, idx, span, span);
     }
 
-    array::array_proxy array::slices(int first, int last) const
+    array::array_proxy array::cols(int first, int last)
+    {
+        seq idx(first, last, 1);
+        return this->operator()(span, idx, span, span);
+    }
+
+    const array::array_proxy array::slices(int first, int last) const
     {
         seq idx(first, last, 1);
         return this->operator()(span, span, idx, span);
     }
 
-    array array::as(af::dtype type) const
+    array::array_proxy array::slices(int first, int last)
+    {
+        seq idx(first, last, 1);
+        return this->operator()(span, span, idx, span);
+    }
+
+    const array array::as(af::dtype type) const
     {
         af_array out;
         AF_THROW(af_cast(&out, this->get(), type));
