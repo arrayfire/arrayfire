@@ -82,4 +82,6 @@ class ForgeManager
 
 }
 
+#define MAIN_WINDOW graphics::ForgeManager::getInstance().getMainWindow(true)
+
 #endif

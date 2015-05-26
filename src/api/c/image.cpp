@@ -55,6 +55,11 @@ static fg::Image* convert_and_copy_image(const af_array in)
 af_err af_draw_image(const af_window wind, const af_array in, const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
+    if(wind==0) {
+        std::cerr<<"Not a valid window"<<std::endl;
+        return AF_SUCCESS;
+    }
+
     try {
         ArrayInfo info = getInfo(in);
 
@@ -95,7 +100,20 @@ af_err af_create_window(af_window *out, const int width, const int height, const
     fg::Window* wnd;
     try {
         graphics::ForgeManager& fgMngr = graphics::ForgeManager::getInstance();
-        wnd = new fg::Window(width, height, title, fgMngr.getMainWindow());
+        fg::Window* mainWnd = NULL;
+
+        try {
+            mainWnd = fgMngr.getMainWindow();
+        } catch(...) {
+            std::cerr<<"OpenGL context creation failed"<<std::endl;
+        }
+
+        if(mainWnd==0) {
+            std::cerr<<"Not a valid window"<<std::endl;
+            return AF_SUCCESS;
+        }
+
+        wnd = new fg::Window(width, height, title, mainWnd);
         wnd->setFont(fgMngr.getFont());
     }
     CATCHALL;
@@ -109,6 +127,11 @@ af_err af_create_window(af_window *out, const int width, const int height, const
 af_err af_grid(const af_window wind, const int rows, const int cols)
 {
 #if defined(WITH_GRAPHICS)
+    if(wind==0) {
+        std::cerr<<"Not a valid window"<<std::endl;
+        return AF_SUCCESS;
+    }
+
     try {
         fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
         wnd->grid(rows, cols);
@@ -123,6 +146,11 @@ af_err af_grid(const af_window wind, const int rows, const int cols)
 af_err af_show(const af_window wind)
 {
 #if defined(WITH_GRAPHICS)
+    if(wind==0) {
+        std::cerr<<"Not a valid window"<<std::endl;
+        return AF_SUCCESS;
+    }
+
     try {
         fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
         wnd->draw();
@@ -137,6 +165,11 @@ af_err af_show(const af_window wind)
 af_err af_is_window_closed(bool *out, const af_window wind)
 {
 #if defined(WITH_GRAPHICS)
+    if(wind==0) {
+        std::cerr<<"Not a valid window"<<std::endl;
+        return AF_SUCCESS;
+    }
+
     try {
         fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
         *out = wnd->close();
@@ -151,6 +184,11 @@ af_err af_is_window_closed(bool *out, const af_window wind)
 af_err af_destroy_window(const af_window wind)
 {
 #if defined(WITH_GRAPHICS)
+    if(wind==0) {
+        std::cerr<<"Not a valid window"<<std::endl;
+        return AF_SUCCESS;
+    }
+
     try {
         fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
         delete wnd;

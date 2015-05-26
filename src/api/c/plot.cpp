@@ -61,6 +61,11 @@ fg::Plot* setup_plot(const af_array X, const af_array Y)
 af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
+    if(wind==0) {
+        std::cerr<<"Not a valid window"<<std::endl;
+        return AF_SUCCESS;
+    }
+
     try {
         ArrayInfo Xinfo = getInfo(X);
         af::dim4 X_dims = Xinfo.dims();
