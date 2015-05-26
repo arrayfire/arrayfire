@@ -444,6 +444,7 @@ namespace af
 
     /**
         \param[in] in is the input matrix
+        \param[in] is_unit_diag is a boolean parameter specifying if the diagonal elements should be 1
         \return the lower triangle array
 
         \ingroup data_func_lower
@@ -452,6 +453,7 @@ namespace af
 
     /**
         \param[in] in is the input matrix
+        \param[in] is_unit_diag is a boolean parameter specifying if the diagonal elements should be 1
         \return the upper triangle matrix
 
         \ingroup data_func_upper
@@ -680,6 +682,7 @@ extern "C" {
     /**
         \param[out] out is the lower traingle matrix
         \param[in] in is the input matrix
+        \param[in] is_unit_diag is a boolean parameter specifying if the diagonal elements should be 1
 
         \ingroup data_func_lower
     */
@@ -688,6 +691,7 @@ extern "C" {
     /**
         \param[out] out is the upper triangle matrix
         \param[in] in is the input matrix
+        \param[in] is_unit_diag is a boolean parameter specifying if the diagonal elements should be 1
 
         \ingroup data_func_upper
     */

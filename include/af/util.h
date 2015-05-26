@@ -230,7 +230,6 @@ extern "C" {
     */
 
     /**
-        \param[in] exp is an expression, generally the name of the array
         \param[in] arr is the input array
 
         \returns error codes

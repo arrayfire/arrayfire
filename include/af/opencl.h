@@ -114,6 +114,7 @@ namespace afcl
     Create an af::array object from an OpenCL cl_mem buffer
 
     \param[in] dim0 the length of the first dimension of the buffer
+    \param[in] buf the OpenCL memory object.
     \param[in] type the data type contained in the buffer
     \param[in] retain If true, instructs ArrayFire to retain the memory object.
     \returns an array object created from the OpenCL buffer
@@ -131,6 +132,7 @@ namespace afcl
 
     \param[in] dim0 the length of the first dimension of the buffer
     \param[in] dim1 the length of the second dimension of the buffer
+    \param[in] buf the OpenCL memory object.
     \param[in] type the data type contained in the buffer
     \param[in] retain If true, instructs ArrayFire to retain the memory object.
     \returns an array object created from the OpenCL buffer
@@ -149,6 +151,7 @@ namespace afcl
     \param[in] dim0 the length of the first dimension of the buffer
     \param[in] dim1 the length of the second dimension of the buffer
     \param[in] dim2 the length of the third dimension of the buffer
+    \param[in] buf the OpenCL memory object.
     \param[in] type the data type contained in the buffer
     \param[in] retain If true, instructs ArrayFire to retain the memory object.
     \returns an array object created from the OpenCL buffer
@@ -169,6 +172,7 @@ namespace afcl
     \param[in] dim1 the length of the second dimension of the buffer
     \param[in] dim2 the length of the third dimension of the buffer
     \param[in] dim3 the length of the fourth dimension of the buffer
+    \param[in] buf the OpenCL memory object.
     \param[in] type the data type contained in the buffer
     \param[in] retain If true, instructs ArrayFire to retain the memory object.
     \returns an array object created from the OpenCL buffer

@@ -137,7 +137,7 @@ This operation can be done in ArrayFire using the following code snippet.
 
 \snippet test/solve_dense.cpp ex_solve
 
-The results can be verified by reconstructing the output matrix using \ref matmul in the following manner.
+The results can be verified by reconstructing the output matrix using \ref af::matmul in the following manner.
 
 \snippet test/solve_dense.cpp ex_solve_recon
 
