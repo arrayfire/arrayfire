@@ -327,7 +327,6 @@ AFAPI array convolve(const array& signal, const array& filter, const convMode mo
    \param[in]  col_filter is the signal that shall be along coloumns
    \param[in]  row_filter is the signal that shall be along rows
    \param[in]  mode indicates if the convolution should be expanded or not(where output size equals input).
-   \param[in]  domain specifies if the convolution should be performed in frequency os spatial domain
    \return     the convolved array
 
    \note The default paramter of \p domain, \ref AF_CONV_AUTO, heuristically switches between frequency and spatial domain.
@@ -336,7 +335,7 @@ AFAPI array convolve(const array& signal, const array& filter, const convMode mo
 
    \ingroup signal_func_convolve
  */
-AFAPI array convolve(const array& col_filter, const array& row_filter, const array& signal, const convMode mode=AF_CONV_DEFAULT, const convDomain domain=AF_CONV_AUTO);
+AFAPI array convolve(const array& col_filter, const array& row_filter, const array& signal, const convMode mode=AF_CONV_DEFAULT);
 
 /**
    C++ Interface for convolution on one dimensional data
@@ -394,6 +393,7 @@ AFAPI array convolve3(const array& signal, const array& filter, const convMode m
 
    \param[in]  signal is the input signal
    \param[in]  filter is the signal that shall be used for the convolution operation
+   \param[in]  mode indicates if the convolution should be expanded or not(where output size equals input).
    \return     the convolved array
 
    \ingroup signal_func_fftconvolve
@@ -630,13 +630,11 @@ AFAPI af_err af_convolve3(af_array *out, const af_array signal, const af_array f
    \param[in]  row_filter is filter that has to be applied along the rows
    \param[in]  signal is the input array
    \param[in]  mode indicates if the convolution should be expanded or not(where output size equals input).
-   \param[in]  domain specifies if the convolution should be performed in frequency os spatial domain
    \return     \ref AF_SUCCESS if the convolution is successful,
                otherwise an appropriate error code is returned.
 
-   \note The default paramter of \p domain, \ref AF_CONV_AUTO, heuristically switches between frequency and spatial domain.
-
-   \note Separable convolution only supports two(ONE-to-ONE and MANY-to-ONE) batch modes from the ones described in the detailed description section.
+   \note Separable convolution only supports two(ONE-to-ONE and MANY-to-ONE) batch modes from the ones described
+         in the detailed description section.
 
    \ingroup signal_func_convolve
  */
