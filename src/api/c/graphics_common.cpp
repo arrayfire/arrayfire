@@ -33,7 +33,9 @@ GLenum glErrorSkip(const char *msg, const char* file, int line)
 #ifndef NDEBUG
     GLenum x = glGetError();
     if (x != GL_NO_ERROR) {
-        printf("GL Error Skipped at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
+        char buf[1024];
+        sprintf(buf, "GL Error Skipped at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
+        AF_ERROR(buf, AF_ERR_INTERNAL);
     }
     return x;
 #else
@@ -48,8 +50,9 @@ GLenum glErrorCheck(const char *msg, const char* file, int line)
     GLenum x = glGetError();
 
     if (x != GL_NO_ERROR) {
-        printf("GL Error at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
-        AF_ERROR("Error in Graphics", AF_ERR_INTERNAL);
+        char buf[1024];
+        sprintf(buf, "GL Error at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
+        AF_ERROR(buf, AF_ERR_INTERNAL);
     }
     return x;
 #else
@@ -62,8 +65,9 @@ GLenum glForceErrorCheck(const char *msg, const char* file, int line)
     GLenum x = glGetError();
 
     if (x != GL_NO_ERROR) {
-        printf("GL Error at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
-        AF_ERROR("Error in Graphics", AF_ERR_INTERNAL);
+        char buf[1024];
+        sprintf(buf, "GL Error at: %s:%d Message: %s Error Code: %d \"%s\"\n", file, line, msg, x, gluErrorString(x));
+        AF_ERROR(buf, AF_ERR_INTERNAL);
     }
     return x;
 }

@@ -49,7 +49,7 @@ fg::Histogram* setup_histogram(const af_array in, const double minval, const dou
 #endif
 
 af_err af_draw_hist(const af_window wind, const af_array X, const double minval, const double maxval,
-                   const af_cell* const props)
+                    const af_cell* const props)
 {
 #if defined(WITH_GRAPHICS)
     try {

@@ -9,7 +9,6 @@
 
 #include <af/dim4.hpp>
 #include <af/device.h>
-#include <graphics_common.hpp>
 #include <backend.hpp>
 #include <platform.hpp>
 #include <Array.hpp>

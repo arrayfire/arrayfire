@@ -21,7 +21,6 @@ typedef struct {
 } af_cell;
 
 #ifdef __cplusplus
-#include <utility>
 namespace af
 {
 
