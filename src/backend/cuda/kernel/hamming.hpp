@@ -46,27 +46,33 @@ __global__ void hamming_matcher_unroll(
     s_dist[tid] = max_dist;
     s_idx[tid]  = 0xffffffff;
 
-    if (f < ntrain) {
+    bool valid_feat = (f < ntrain);
+
+    if (valid_feat) {
         // Copy blockDim.x training features to shared memory
         if (use_shmem) {
+            #pragma unroll
             for (unsigned i = 0; i < feat_len; i++) {
                 s_train[i * blockDim.x + tid] = train.ptr[i * ntrain + f];
             }
-            __syncthreads();
         }
+    }
+    __syncthreads();
 
-        for (int j = 0; j < (int)nquery; j++) {
-            s_dist[tid] = max_dist;
+    for (unsigned j = 0; j < nquery; j++) {
+        s_dist[tid] = max_dist;
 
-            // Load one query feature that will be tested against all training
-            // features in current block
-            if (tid < feat_len) {
-                s_query[tid] = query.ptr[tid * nquery + j];
-            }
-            __syncthreads();
+        // Load one query feature that will be tested against all training
+        // features in current block
+        if (tid < feat_len && valid_feat) {
+            s_query[tid] = query.ptr[tid * nquery + j];
+        }
+        __syncthreads();
 
-            unsigned dist = 0;
-            for (int k = 0; k < (int)feat_len; k++) {
+        unsigned dist = 0;
+        if (valid_feat) {
+            #pragma unroll
+            for (unsigned k = 0; k < feat_len; k++) {
                 // Calculate Hamming distance for 32-bits of descriptor and
                 // accumulates to dist
                 if (use_shmem) {
@@ -81,54 +87,56 @@ __global__ void hamming_matcher_unroll(
             // than the best match found so far
             s_dist[tid] = dist;
             s_idx[tid]  = f;
-            __syncthreads();
+        }
+        __syncthreads();
 
-            // Find best match in training features from block to the current
-            // query feature
-            if (tid < 128) {
-                if (s_dist[tid + 128] < s_dist[tid]) {
-                    s_dist[tid] = s_dist[tid + 128];
-                    s_idx[tid]  = s_idx[tid + 128];
-                }
+        // Find best match in training features from block to the current
+        // query feature
+        if (tid < 128) {
+            if (s_dist[tid + 128] < s_dist[tid]) {
+                s_dist[tid] = s_dist[tid + 128];
+                s_idx[tid]  = s_idx[tid + 128];
             }
-            __syncthreads();
-            if (tid < 64) {
-                if (s_dist[tid + 64] < s_dist[tid]) {
-                    s_dist[tid] = s_dist[tid + 64];
-                    s_idx[tid]  = s_idx[tid + 64];
-                }
+        }
+        __syncthreads();
+        if (tid < 64) {
+            if (s_dist[tid + 64] < s_dist[tid]) {
+                s_dist[tid] = s_dist[tid + 64];
+                s_idx[tid]  = s_idx[tid + 64];
             }
-            __syncthreads();
-            if (tid < 32) {
-                if (s_dist[tid + 32] < s_dist[tid]) {
-                    s_dist[tid] = s_dist[tid + 32];
-                    s_idx[tid]  = s_idx[tid + 32];
-                }
-                if (s_dist[tid + 16] < s_dist[tid]) {
-                    s_dist[tid] = s_dist[tid + 16];
-                    s_idx[tid]  = s_idx[tid + 16];
-                }
-                if (s_dist[tid + 8] < s_dist[tid]) {
-                    s_dist[tid] = s_dist[tid + 8];
-                    s_idx[tid]  = s_idx[tid + 8];
-                }
-                if (s_dist[tid + 4] < s_dist[tid]) {
-                    s_dist[tid] = s_dist[tid + 4];
-                    s_idx[tid]  = s_idx[tid + 4];
-                }
-                if (s_dist[tid + 2] < s_dist[tid]) {
-                    s_dist[tid] = s_dist[tid + 2];
-                    s_idx[tid]  = s_idx[tid + 2];
-                }
-                if (s_dist[tid + 1] < s_dist[tid]) {
-                    s_dist[tid] = s_dist[tid + 1];
-                    s_idx[tid]  = s_idx[tid + 1];
-                }
+        }
+        __syncthreads();
+        if (tid < 32) {
+            if (s_dist[tid + 32] < s_dist[tid]) {
+                s_dist[tid] = s_dist[tid + 32];
+                s_idx[tid]  = s_idx[tid + 32];
             }
-            __syncthreads();
+            if (s_dist[tid + 16] < s_dist[tid]) {
+                s_dist[tid] = s_dist[tid + 16];
+                s_idx[tid]  = s_idx[tid + 16];
+            }
+            if (s_dist[tid + 8] < s_dist[tid]) {
+                s_dist[tid] = s_dist[tid + 8];
+                s_idx[tid]  = s_idx[tid + 8];
+            }
+            if (s_dist[tid + 4] < s_dist[tid]) {
+                s_dist[tid] = s_dist[tid + 4];
+                s_idx[tid]  = s_idx[tid + 4];
+            }
+            if (s_dist[tid + 2] < s_dist[tid]) {
+                s_dist[tid] = s_dist[tid + 2];
+                s_idx[tid]  = s_idx[tid + 2];
+            }
+            if (s_dist[tid + 1] < s_dist[tid]) {
+                s_dist[tid] = s_dist[tid + 1];
+                s_idx[tid]  = s_idx[tid + 1];
+            }
+        }
+        __syncthreads();
 
-            // Store best match in training features from block to the current
-            // query feature
+        // Store best match in training features from block to the current
+        // query feature
+        if (valid_feat) {
             out_dist[j * gridDim.x + blockIdx.x] = s_dist[0];
             out_idx[j * gridDim.x + blockIdx.x]  = s_idx[0];
         }
@@ -160,26 +168,30 @@ __global__ void hamming_matcher(
     s_dist[tid] = max_dist;
     s_idx[tid]  = 0xffffffff;
 
-    if (f < ntrain) {
+    bool valid_feat = (f < ntrain);
+
+    if (valid_feat) {
         // Copy blockDim.x training features to shared memory
         if (use_shmem) {
             for (unsigned i = 0; i < feat_len; i++) {
                 s_train[i * blockDim.x + tid] = train.ptr[i * ntrain + f];
             }
-            __syncthreads();
         }
+    }
+    __syncthreads();
 
-        for (unsigned j = 0; j < nquery; j++) {
-            s_dist[tid] = max_dist;
+    for (unsigned j = 0; j < nquery; j++) {
+        s_dist[tid] = max_dist;
 
-            // Load one query feature that will be tested against all training
-            // features in current block
-            if (tid < feat_len) {
-                s_query[tid] = query.ptr[tid * nquery + j];
-            }
-            __syncthreads();
+        // Load one query feature that will be tested against all training
+        // features in current block
+        if (tid < feat_len && valid_feat) {
+            s_query[tid] = query.ptr[tid * nquery + j];
+        }
+        __syncthreads();
 
-            unsigned dist = 0;
+        unsigned dist = 0;
+        if (valid_feat) {
             for (unsigned k = 0; k < feat_len; k++) {
                 // Calculate Hamming distance for 32-bits of descriptor and
                 // accumulates to dist
@@ -195,54 +207,56 @@ __global__ void hamming_matcher(
             // than the best match found so far
             s_dist[tid] = dist;
             s_idx[tid]  = f;
-            __syncthreads();
+        }
+        __syncthreads();
 
-            // Find best match in training features from block to the current
-            // query feature
-            if (tid < 128) {
-                if (s_dist[tid + 128] < s_dist[tid]) {
-                    s_dist[tid] = s_dist[tid + 128];
-                    s_idx[tid]  = s_idx[tid + 128];
-                }
+        // Find best match in training features from block to the current
+        // query feature
+        if (tid < 128) {
+            if (s_dist[tid + 128] < s_dist[tid]) {
+                s_dist[tid] = s_dist[tid + 128];
+                s_idx[tid]  = s_idx[tid + 128];
             }
-            __syncthreads();
-            if (tid < 64) {
-                if (s_dist[tid + 64] < s_dist[tid]) {
-                    s_dist[tid] = s_dist[tid + 64];
-                    s_idx[tid]  = s_idx[tid + 64];
-                }
+        }
+        __syncthreads();
+        if (tid < 64) {
+            if (s_dist[tid + 64] < s_dist[tid]) {
+                s_dist[tid] = s_dist[tid + 64];
+                s_idx[tid]  = s_idx[tid + 64];
             }
-            __syncthreads();
-            if (tid < 32) {
-                if (s_dist[tid + 32] < s_dist[tid]) {
-                    s_dist[tid] = s_dist[tid + 32];
-                    s_idx[tid]  = s_idx[tid + 32];
-                }
-                if (s_dist[tid + 16] < s_dist[tid]) {
-                    s_dist[tid] = s_dist[tid + 16];
-                    s_idx[tid]  = s_idx[tid + 16];
-                }
-                if (s_dist[tid + 8] < s_dist[tid]) {
-                    s_dist[tid] = s_dist[tid + 8];
-                    s_idx[tid]  = s_idx[tid + 8];
-                }
-                if (s_dist[tid + 4] < s_dist[tid]) {
-                    s_dist[tid] = s_dist[tid + 4];
-                    s_idx[tid]  = s_idx[tid + 4];
-                }
-                if (s_dist[tid + 2] < s_dist[tid]) {
-                    s_dist[tid] = s_dist[tid + 2];
-                    s_idx[tid]  = s_idx[tid + 2];
-                }
-                if (s_dist[tid + 1] < s_dist[tid]) {
-                    s_dist[tid] = s_dist[tid + 1];
-                    s_idx[tid]  = s_idx[tid + 1];
-                }
+        }
+        __syncthreads();
+        if (tid < 32) {
+            if (s_dist[tid + 32] < s_dist[tid]) {
+                s_dist[tid] = s_dist[tid + 32];
+                s_idx[tid]  = s_idx[tid + 32];
             }
-            __syncthreads();
+            if (s_dist[tid + 16] < s_dist[tid]) {
+                s_dist[tid] = s_dist[tid + 16];
+                s_idx[tid]  = s_idx[tid + 16];
+            }
+            if (s_dist[tid + 8] < s_dist[tid]) {
+                s_dist[tid] = s_dist[tid + 8];
+                s_idx[tid]  = s_idx[tid + 8];
+            }
+            if (s_dist[tid + 4] < s_dist[tid]) {
+                s_dist[tid] = s_dist[tid + 4];
+                s_idx[tid]  = s_idx[tid + 4];
+            }
+            if (s_dist[tid + 2] < s_dist[tid]) {
+                s_dist[tid] = s_dist[tid + 2];
+                s_idx[tid]  = s_idx[tid + 2];
+            }
+            if (s_dist[tid + 1] < s_dist[tid]) {
+                s_dist[tid] = s_dist[tid + 1];
+                s_idx[tid]  = s_idx[tid + 1];
+            }
+        }
+        __syncthreads();
 
-            // Store best match in training features from block to the current
-            // query feature
+        // Store best match in training features from block to the current
+        // query feature
+        if (valid_feat) {
             out_dist[j * gridDim.x + blockIdx.x] = s_dist[0];
             out_idx[j * gridDim.x + blockIdx.x]  = s_idx[0];
         }
