@@ -7,6 +7,20 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#if CPLX
+#define set(a, b) a = b
+#define set_scalar(a, b) do {                   \
+        a.x = b;                                \
+        a.y = 0;                                \
+    } while(0)
+
+#else
+
+#define set(a, b) a = b
+#define set_scalar(a, b) a = b
+
+#endif
+
 #define NEAREST resize_n_
 #define BILINEAR resize_b_
 
@@ -58,17 +72,17 @@ void resize_b_(__global T* d_out, const KParam out,
     const int ix2 = (ix + 1) < in.dims[0] ? (ix + 1) : ix;
     const int iy2 = (iy + 1) < in.dims[1] ? (iy + 1) : iy;
 
-    const T p1 = d_in[ix  + in.strides[1] * iy ];
-    const T p2 = d_in[ix  + in.strides[1] * iy2];
-    const T p3 = d_in[ix2 + in.strides[1] * iy ];
-    const T p4 = d_in[ix2 + in.strides[1] * iy2];
+    const VT p1 = d_in[ix  + in.strides[1] * iy ];
+    const VT p2 = d_in[ix  + in.strides[1] * iy2];
+    const VT p3 = d_in[ix2 + in.strides[1] * iy ];
+    const VT p4 = d_in[ix2 + in.strides[1] * iy2];
 
-    T val = (1.0f-a) * (1.0f-b) * p1 +
-            (a)      * (1.0f-b) * p2 +
-            (1.0f-a) * (b)      * p3 +
-            (a)      * (b)      * p4;
+    d_out[ox + oy * out.strides[1]] =
+             (((1.0f-a) * (1.0f-b)) * p1) +
+             (((a)      * (1.0f-b)) * p2) +
+             (((1.0f-a) * (b)     ) * p3) +
+             (((a)      * (b)     ) * p4);
 
-    d_out[ox + oy * out.strides[1]] = val;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

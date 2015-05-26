@@ -11,6 +11,9 @@
 #include <resize.hpp>
 #include <stdexcept>
 #include <err_cpu.hpp>
+#include <math.hpp>
+#include <types.hpp>
+#include <af/traits.hpp>
 
 namespace cpu
 {
@@ -27,6 +30,17 @@ namespace cpu
     {
         return (dim_t)(value+0.5f);
     }
+
+    using std::conditional;
+    using std::is_same;
+
+    template<typename T>
+    using wtype_t = typename conditional<is_same<T, double>::value, double, float>::type;
+
+    template<typename T>
+    using vtype_t = typename conditional<is_complex<T>::value,
+                                         T, wtype_t<T>
+                                        >::type;
 
     template<typename T, af_interp_type method>
     struct resize_op
@@ -89,6 +103,10 @@ namespace cpu
             dim_t i2_x  = (i1_x + 1 >= idims[0] ? idims[0] - 1 : i1_x + 1);
             dim_t i2_y  = (i1_y + 1 >= idims[1] ? idims[1] - 1 : i1_y + 1);
 
+            typedef typename dtype_traits<T>::base_type BT;
+            typedef wtype_t<BT> WT;
+            typedef vtype_t<T> VT;
+
             dim_t o_off = y * ostrides[1] + x;
             // Copy values from all channels
             for(dim_t w = 0; w < odims[3]; w++) {
@@ -96,16 +114,16 @@ namespace cpu
                 for(dim_t z = 0; z < odims[2]; z++) {
                     dim_t zst = z * istrides[2];
                     dim_t channel_off = zst + wst;
-                    T p1 = inPtr[i1_y * istrides[1] + i1_x + channel_off];
-                    T p2 = inPtr[i2_y * istrides[1] + i1_x + channel_off];
-                    T p3 = inPtr[i1_y * istrides[1] + i2_x + channel_off];
-                    T p4 = inPtr[i2_y * istrides[1] + i2_x + channel_off];
+                    VT p1 = inPtr[i1_y * istrides[1] + i1_x + channel_off];
+                    VT p2 = inPtr[i2_y * istrides[1] + i1_x + channel_off];
+                    VT p3 = inPtr[i1_y * istrides[1] + i2_x + channel_off];
+                    VT p4 = inPtr[i2_y * istrides[1] + i2_x + channel_off];
 
                     outPtr[o_off + z * ostrides[2] + w * ostrides[3]] =
-                                    (1.0f - a) * (1.0f - b) * p1 +
-                                         a     * (1.0f - b) * p2 +
-                                    (1.0f - a) *      b     * p3 +
-                                         a     *      b     * p4;
+                                    scalar<WT>((1.0f - a) * (1.0f - b)) * p1 +
+                                    scalar<WT>((    a   ) * (1.0f - b)) * p2 +
+                                    scalar<WT>((1.0f - a) * (    b   )) * p3 +
+                                    scalar<WT>((    a   ) * (    b   )) * p4;
                 }
             }
         }
@@ -161,10 +179,12 @@ namespace cpu
 
     INSTANTIATE(float)
     INSTANTIATE(double)
-    //INSTANTIATE(cfloat)
-    //INSTANTIATE(cdouble)
+    INSTANTIATE(cfloat)
+    INSTANTIATE(cdouble)
     INSTANTIATE(int)
     INSTANTIATE(uint)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
 }

@@ -41,10 +41,14 @@ af_err af_resize(af_array *out, const af_array in, const dim_t odim0, const dim_
         switch(type) {
             case f32: output = resize<float  >(in, odim0, odim1, method);  break;
             case f64: output = resize<double >(in, odim0, odim1, method);  break;
-            case b8:  output = resize<char   >(in, odim0, odim1, method);  break;
+            case c32: output = resize<cfloat >(in, odim0, odim1, method);  break;
+            case c64: output = resize<cdouble>(in, odim0, odim1, method);  break;
             case s32: output = resize<int    >(in, odim0, odim1, method);  break;
             case u32: output = resize<uint   >(in, odim0, odim1, method);  break;
+            case s64: output = resize<intl   >(in, odim0, odim1, method);  break;
+            case u64: output = resize<uintl  >(in, odim0, odim1, method);  break;
             case u8:  output = resize<uchar  >(in, odim0, odim1, method);  break;
+            case b8:  output = resize<char   >(in, odim0, odim1, method);  break;
             default:  TYPE_ERROR(1, type);
         }
         std::swap(*out,output);
