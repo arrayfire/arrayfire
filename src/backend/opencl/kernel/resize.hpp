@@ -33,6 +33,16 @@ namespace opencl
         static const int RESIZE_TX = 16;
         static const int RESIZE_TY = 16;
 
+        using std::conditional;
+        using std::is_same;
+        template<typename T>
+        using wtype_t = typename conditional<is_same<T, double>::value, double, float>::type;
+
+        template<typename T>
+        using vtype_t = typename conditional<is_complex<T>::value,
+                                             T, wtype_t<T>
+                                            >::type;
+
         template<typename T, af_interp_type method>
         void resize(Param out, const Param in)
         {
@@ -43,19 +53,33 @@ namespace opencl
 
                 int device = getActiveDeviceId();
 
+                typedef typename dtype_traits<T>::base_type BT;
+
                 std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
                     options << " -D T="        << dtype_traits<T>::getName();
+                    options << " -D VT="       << dtype_traits<vtype_t<T>>::getName();
+                    options << " -D WT="       << dtype_traits<wtype_t<BT>>::getName();
 
                     switch(method) {
-                        case AF_INTERP_NEAREST:  options<<" -D INTERP=NEAREST";  break;
-                        case AF_INTERP_BILINEAR: options<<" -D INTERP=BILINEAR"; break;
+                        case AF_INTERP_NEAREST:  options <<" -D INTERP=NEAREST" ;  break;
+                        case AF_INTERP_BILINEAR: options <<" -D INTERP=BILINEAR"; break;
                         default: break;
                     }
+
+                    if((af_dtype) dtype_traits<T>::af_type == c32 ||
+                       (af_dtype) dtype_traits<T>::af_type == c64) {
+                        options << " -D CPLX=1";
+                        options << " -D TB=" << dtype_traits<BT>::getName();
+                    } else {
+                        options << " -D CPLX=0";
+                    }
+
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
                         options << " -D USE_DOUBLE";
                     }
+
                     Program prog;
                     buildProgram(prog, resize_cl, resize_cl_len, options.str());
                     resizeProgs[device] = new Program(prog);

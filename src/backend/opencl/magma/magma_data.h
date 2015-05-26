@@ -490,4 +490,12 @@ magmablas_laset(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
                 cl_mem dA, size_t dA_offset, magma_int_t ldda,
                 magma_queue_t queue);
 
+#if 0  // Needs to be enabled when unmqr2 is enabled
+template<typename T> void
+magmablas_laset_band(magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,
+                     T offdiag, T diag,
+                     cl_mem dA, size_t dA_offset, magma_int_t ldda,
+                     magma_queue_t queue);
+#endif
+
 #endif

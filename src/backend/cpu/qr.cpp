@@ -69,13 +69,14 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
     int N = iDims[1];
 
     q = padArray<T, T>(in, dim4(M, max(M, N)));
+    q.resetDims(iDims);
     t = qr_inplace(q);
 
     // SPLIT into q and r
     dim4 rdims(M, N);
     r = createEmptyArray<T>(rdims);
 
-    triangle<T, true>(r, q);
+    triangle<T, true, false>(r, q);
 
     gqr_func<T>()(AF_LAPACK_COL_MAJOR,
                   M, M, min(M, N),

@@ -48,12 +48,12 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &orig)
         cl::Buffer *in_buf = in.get();
         cl::Buffer *dT = tmp.get();
 
-        magma_geqrf_gpu<T>(M, N,
+        magma_geqrf3_gpu<T>(M, N,
                            (*in_buf)(), in.getOffset(), in.strides()[1],
                            &h_tau[0], (*dT)(), tmp.getOffset(), getQueue()(), &info);
 
         r = createEmptyArray<T>(in.dims());
-        kernel::triangle<T, true>(r, in);
+        kernel::triangle<T, true, false>(r, in);
 
         cl::Buffer *r_buf = r.get();
         magmablas_swapdblk<T>(MN - 1, NB,
@@ -81,7 +81,28 @@ template<typename T>
 Array<T> qr_inplace(Array<T> &in)
 {
     try {
-        AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
+        initBlas();
+        dim4 iDims = in.dims();
+        int M = iDims[0];
+        int N = iDims[1];
+        int MN = std::min(M, N);
+
+        getQueue().finish(); // FIXME: Does this need to be here?
+        cl::CommandQueue Queue2(getContext(), getDevice());
+        cl_command_queue queues[] = {getQueue()(), Queue2()};
+
+
+        std::vector<T> h_tau(MN);
+        cl::Buffer *in_buf = in.get();
+
+        int info = 0;
+        magma_geqrf2_gpu<T>(M, N, (*in_buf)(),
+                            in.getOffset(), in.strides()[1],
+                            &h_tau[0], queues, &info);
+
+        Array<T> t = createHostDataArray(dim4(MN), &h_tau[0]);
+        return t;
+
     } catch(cl::Error &err) {
         CL_TO_AF_ERROR(err);
     }

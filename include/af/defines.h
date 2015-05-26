@@ -73,44 +73,107 @@ typedef long long intl;
 typedef unsigned long long uintl;
 
 typedef enum {
+    ///
+    /// The function returned successfully
+    ///
     AF_SUCCESS            =   0,
+
     // 100-199 Errors in environment
+
+    ///
+    /// The system or device ran out of memory
+    ///
     AF_ERR_NO_MEM         = 101,
+
+    ///
+    /// There was an error in the device driver
+    ///
     AF_ERR_DRIVER         = 102,
+
+    ///
+    /// There was an error with the runtime environment
+    ///
     AF_ERR_RUNTIME        = 103,
+
     // 200-299 Errors in input parameters
+
+    ///
+    /// The input array is not a valid af_array object
+    ///
     AF_ERR_INVALID_ARRAY  = 201,
+
+    ///
+    /// One of the function arguments is incorrect
+    ///
     AF_ERR_ARG            = 202,
+
+    ///
+    /// The size is incorrect
+    ///
     AF_ERR_SIZE           = 203,
+
+    ///
+    /// The type is not suppported by this function
+    ///
     AF_ERR_TYPE           = 204,
+
+    ///
+    /// The type of the input arrays are not compatible
+    ///
     AF_ERR_DIFF_TYPE      = 205,
     // 300-399 Errors for missing software features
+
+    ///
+    /// The option is not supported
+    ///
     AF_ERR_NOT_SUPPORTED  = 301,
+
+    ///
+    /// This build of ArrayFire does not support this feature
+    ///
     AF_ERR_NOT_CONFIGURED = 302,
     // 400-499 Errors for missing hardware features
+
+    ///
+    /// This device does not support double
+    ///
     AF_ERR_NO_DBL         = 401,
+
+    ///
+    /// This build of ArrayFire was not built with graphics or this device does
+    /// not support graphics
+    ///
     AF_ERR_NO_GFX         = 402,
     // 900-999 Errors from upstream libraries and runtimes
+
+    ///
+    /// There was an internal error either in ArrayFire or in a project
+    /// upstream
+    ///
     AF_ERR_INTERNAL       = 998,
+
+    ///
+    /// Unknown Error
+    ///
     AF_ERR_UNKNOWN        = 999
 } af_err;
 
 typedef enum {
-    f32,
-    c32,
-    f64,
-    c64,
-    b8,
-    s32,
-    u32,
-    u8,
-    s64,
-    u64
+    f32,    ///< A 32-bit floating point value
+    c32,    ///< A 32-bit complex floating point values
+    f64,    ///< A 64-bit complex floating point values
+    c64,    ///< A 64-bit complex floating point values
+    b8,     ///< A 8-bit boolean values
+    s32,    ///< A 32-bit signed integral values
+    u32,    ///< A 32-bit unsigned integral values
+    u8,     ///< A 8-bit unsigned integral values
+    s64,    ///< A 64-bit signed integral values
+    u64     ///< A 64-bit unsigned integral values
 } af_dtype;
 
 typedef enum {
-    afDevice,
-    afHost,
+    afDevice,   ///< Device pointer
+    afHost,     ///< Host pointer
 } af_source;
 
 #define AF_MAX_DIMS 4
@@ -119,10 +182,10 @@ typedef enum {
 typedef void * af_array;
 
 typedef enum {
-    AF_INTERP_NEAREST,
-    AF_INTERP_LINEAR,
-    AF_INTERP_BILINEAR,
-    AF_INTERP_CUBIC
+    AF_INTERP_NEAREST,  ///< Nearest Interpolation
+    AF_INTERP_LINEAR,   ///< Linear Interpolation
+    AF_INTERP_BILINEAR, ///< Bilinear Interpolation
+    AF_INTERP_CUBIC     ///< Cubic Interpolation
 } af_interp_type;
 
 typedef enum {

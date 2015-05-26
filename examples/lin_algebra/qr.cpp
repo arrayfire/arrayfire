@@ -28,7 +28,9 @@ int main(int argc, char *argv[])
 
         array qin = in.copy();
 
-        array tau = qrInPlace(qin);
+        array tau;
+        qrInPlace(tau, qin);
+
         af_print(qin);
         af_print(tau);
 

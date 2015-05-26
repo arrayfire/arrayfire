@@ -43,7 +43,11 @@ namespace af
         \param[in] optRhs Transpose operation before the function is performed
         \return The result of the matrix multiplication of lhs, rhs
 
+        \note optLhs and optRhs can only be one of \ref AF_MAT_NONE, \ref AF_MAT_TRANS, \ref AF_MAT_CTRANS
+        \note This function is not supported in GFOR
+
         \ingroup blas_func_matmul
+
      */
     AFAPI array matmul(const array &lhs, const array &rhs,
                        const matProp optLhs = AF_MAT_NONE,
@@ -58,6 +62,8 @@ namespace af
        \param[in] rhs The array object on the right hand side
        \return The result of the matrix multiplication of \p lhs, transpose(\p rhs)
 
+       \note This function is not supported in GFOR
+
        \ingroup blas_func_matmul
     */
     AFAPI array matmulNT(const array &lhs, const array &rhs);
@@ -71,6 +77,8 @@ namespace af
        \param[in] rhs The array object on the right hand side
        \return The result of the matrix multiplication of transpose(\p lhs), \p rhs
 
+       \note This function is not supported in GFOR
+
        \ingroup blas_func_matmul
     */
     AFAPI array matmulTN(const array &lhs, const array &rhs);
@@ -83,6 +91,8 @@ namespace af
        \param[in] lhs The array object on the left hand side
        \param[in] rhs The array object on the right hand side
        \return The result of the matrix multiplication of transpose(\p lhs), transpose(\p rhs)
+
+       \note This function is not supported in GFOR
 
        \ingroup blas_func_matmul
     */
@@ -98,6 +108,8 @@ namespace af
        \param[in] c The third array
 
        \returns out = a x b x c
+
+       \note This function is not supported in GFOR
 
        \ingroup blas_func_matmul
     */
@@ -116,6 +128,8 @@ namespace af
 
        \returns out = a x b x c x d
 
+       \note This function is not supported in GFOR
+
        \ingroup blas_func_matmul
     */
     AFAPI array matmul(const array &a, const array &b, const array &c, const array &d);
@@ -132,6 +146,9 @@ namespace af
         array x = randu(100), y = randu(100);
         af_print(dot(x,y));
         }
+
+        \note This function is not supported in GFOR
+
         \ingroup blas_func_dot
     */
     AFAPI array dot   (const array &lhs, const array &rhs,
@@ -150,6 +167,16 @@ namespace af
     */
     AFAPI array transpose(const array& in, const bool conjugate = false);
 
+    /**
+        \brief Transposes a matrix
+
+        \copydetails blas_func_transpose
+
+        \param[in,out] in is the matrix to be transposed in place
+        \param[in] conjugate If true a congugate transposition is performed
+
+        \ingroup blas_func_transpose
+    */
     AFAPI void transposeInPlace(array& in, const bool conjugate = false);
     /**
       }@
@@ -210,6 +237,16 @@ extern "C" {
     */
     AFAPI af_err af_transpose(af_array *out, af_array in, const bool conjugate);
 
+    /**
+        \brief Transposes a matrix
+
+        \copydetails blas_func_transpose
+
+        \param[in,out] in is the matrix to be transposed in place
+        \param[in] conjugate If true a congugate transposition is performed
+
+        \ingroup blas_func_transpose
+    */
     AFAPI af_err af_transpose_inplace(af_array in, const bool conjugate);
 
 
