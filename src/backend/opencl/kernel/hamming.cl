@@ -13,7 +13,7 @@ __inline unsigned popcount(unsigned x)
     x = x - ((x >> 1) & 0x55555555);
     x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
     x = (x + (x >> 4)) & 0x0F0F0F0F;
-    x = x + (x >> 8); 
+    x = x + (x >> 8);
     x = x + (x >> 16);
     return x & 0x0000003F;
 }
@@ -49,7 +49,7 @@ void hamming_matcher_unroll(
     bool valid_feat = (f < ntrain);
 
 #ifdef USE_LOCAL_MEM
-    if (f < ntrain) {
+    if (valid_feat) {
         // Copy blockDim.x training features to shared memory
         #pragma unroll
         for (unsigned i = 0; i < FEAT_LEN; i++) {
@@ -174,7 +174,7 @@ void hamming_matcher(
     bool valid_feat = (f < ntrain);
 
 #ifdef USE_LOCAL_MEM
-    if (f < ntrain) {
+    if (valid_feat) {
         // Copy blockDim.x training features to shared memory
         for (unsigned i = 0; i < feat_len; i++) {
             l_train[i * get_local_size(0) + tid] = train[i * ntrain + f];
