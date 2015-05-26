@@ -198,7 +198,7 @@ typedef enum {
     /// Out of bound values are symmetric over the edge
     ///
     AF_PAD_SYM
-} af_pad_type;
+} af_border_type;
 
 typedef enum {
     ///
@@ -278,7 +278,7 @@ namespace af
     typedef af_dtype dtype;
     typedef af_source source;
     typedef af_interp_type interpType;
-    typedef af_pad_type padType;
+    typedef af_border_type borderType;
     typedef af_connectivity connectivity;
     typedef af_match_type matchType;
     typedef af_cspace_t CSpace;

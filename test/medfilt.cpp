@@ -32,7 +32,7 @@ typedef ::testing::Types<float, double, int, uint, char, uchar> TestTypes;
 TYPED_TEST_CASE(MedianFilter, TestTypes);
 
 template<typename T>
-void medfiltTest(string pTestFile, dim_t w_len, dim_t w_wid, af_pad_type pad)
+void medfiltTest(string pTestFile, dim_t w_len, dim_t w_wid, af_border_type pad)
 {
     if (noDoubleTests<T>()) return;
 
@@ -201,9 +201,9 @@ void medfiltPadTest(void)
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_ERR_ARG, af_medfilt(&outArray, inArray, 3, 3, af_pad_type(3)));
+    ASSERT_EQ(AF_ERR_ARG, af_medfilt(&outArray, inArray, 3, 3, af_border_type(3)));
 
-    ASSERT_EQ(AF_ERR_ARG, af_medfilt(&outArray, inArray, 3, 3, af_pad_type(-1)));
+    ASSERT_EQ(AF_ERR_ARG, af_medfilt(&outArray, inArray, 3, 3, af_border_type(-1)));
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
