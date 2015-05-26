@@ -124,10 +124,10 @@ TEST(MatrixManipulation, SNIPPET_matrix_manipulation_moddims)
 TEST(MatrixManipulation, SNIPPET_matrix_manipulation_transpose)
 {
     //! [ex_matrix_manipulation_transpose]
-    array x = randu(2, 2, f64);
+    array x = randu(2, 2, f32);
     af_print(x.T());  // transpose (real)
 
-    array c = randu(2, 2, c64);
+    array c = randu(2, 2, c32);
     af_print(c.T());  // transpose (complex)
     af_print(c.H());  // Hermitian (conjugate) transpose
     //! [ex_matrix_manipulation_transpose]

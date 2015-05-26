@@ -167,6 +167,16 @@ namespace af
     */
     AFAPI array transpose(const array& in, const bool conjugate = false);
 
+    /**
+        \brief Transposes a matrix
+
+        \copydetails blas_func_transpose
+
+        \param[in,out] in is the matrix to be transposed in place
+        \param[in] conjugate If true a congugate transposition is performed
+
+        \ingroup blas_func_transpose
+    */
     AFAPI void transposeInPlace(array& in, const bool conjugate = false);
     /**
       }@
@@ -227,6 +237,16 @@ extern "C" {
     */
     AFAPI af_err af_transpose(af_array *out, af_array in, const bool conjugate);
 
+    /**
+        \brief Transposes a matrix
+
+        \copydetails blas_func_transpose
+
+        \param[in,out] in is the matrix to be transposed in place
+        \param[in] conjugate If true a congugate transposition is performed
+
+        \ingroup blas_func_transpose
+    */
     AFAPI af_err af_transpose_inplace(af_array in, const bool conjugate);
 
 
