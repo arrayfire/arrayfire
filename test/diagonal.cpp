@@ -27,7 +27,7 @@ TYPED_TEST(Diagonal, Create)
             input[i] = i;
         }
         for(int jj = 10; jj < size; jj+=100) {
-            array data(jj, &input.front(), af::afHost);
+            array data(jj, &input.front(), afHost);
             array out = diag(data, 0, false);
 
             vector<TypeParam> h_out(out.elements());
@@ -56,7 +56,7 @@ TYPED_TEST(Diagonal, Extract)
             input[i] = i;
         }
         for(int jj = 10; jj < size; jj+=100) {
-            array data(jj, jj, &input.front(), af::afHost);
+            array data(jj, jj, &input.front(), afHost);
             array out = diag(data, 0);
 
             vector<TypeParam> h_out(out.elements());

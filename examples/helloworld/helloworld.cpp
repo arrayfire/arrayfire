@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
         printf("Create 2-by-3 matrix from host data\n");
         float d[] = { 1, 2, 3, 4, 5, 6 };
-        array D(2, 3, d, af::afHost);
+        array D(2, 3, d, afHost);
         af_print(D);
 
         printf("Copy last column onto first\n");

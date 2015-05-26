@@ -128,7 +128,7 @@ namespace af
     }
 
     template<typename T>
-    static void initDataArray(af_array *arr, const T *ptr, af_source_t src,
+    static void initDataArray(af_array *arr, const T *ptr, af::source src,
                               dim_t d0, dim_t d1=1, dim_t d2=1, dim_t d3=1)
     {
         af::dtype ty = (af::dtype)dtype_traits<T>::af_type;
@@ -175,34 +175,34 @@ namespace af
 
 #define INSTANTIATE(T)                                                  \
     template<> AFAPI                                                    \
-    array::array(const dim4 &dims, const T *ptr, af_source_t src)       \
+    array::array(const dim4 &dims, const T *ptr, af::source src)       \
         : arr(0)                                                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, dims[0], dims[1], dims[2],     \
                 dims[3]);                                               \
     }                                                                   \
     template<> AFAPI                                                    \
-    array::array(dim_t d0, const T *ptr, af_source_t src) \
+    array::array(dim_t d0, const T *ptr, af::source src) \
         : arr(0)                                                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0);                           \
     }                                                                   \
     template<> AFAPI                                                    \
-    array::array(dim_t d0, dim_t d1, const T *ptr, af_source_t src)     \
+    array::array(dim_t d0, dim_t d1, const T *ptr, af::source src)     \
         : arr(0)                                                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0, d1);                       \
     }                                                                   \
     template<> AFAPI                                                    \
     array::array(dim_t d0, dim_t d1, dim_t d2, const T *ptr,            \
-                 af_source_t src)                                       \
+                 af::source src)                                       \
         : arr(0)                                                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0, d1, d2);                   \
     }                                                                   \
     template<> AFAPI                                                    \
     array::array(dim_t d0, dim_t d1, dim_t d2, dim_t d3, const T *ptr,  \
-                 af_source_t src) :                                     \
+                 af::source src) :                                     \
         arr(0)                                                          \
                                                                         \
     {                                                                   \
@@ -854,38 +854,38 @@ namespace af
     }
 
 // array instanciations
-#define INSTANTIATE(T)                                              \
-    template<> AFAPI T *array::host() const                         \
-    {                                                               \
-        if (type() != (af::dtype)dtype_traits<T>::af_type) {        \
-            AF_THROW_MSG("Requested type doesn't match with array", \
-                         AF_ERR_TYPE);                              \
-        }                                                           \
-                                                                    \
-        T *res = new T[elements()];                                 \
-        AF_THROW(af_get_data_ptr((void *)res, get()));              \
-                                                                    \
-        return res;                                                 \
-    }                                                               \
-    template<> AFAPI T array::scalar() const                        \
-    {                                                               \
-        T *h_ptr = host<T>();                                       \
-        T scalar = h_ptr[0];                                        \
-        delete[] h_ptr;                                             \
-        return scalar;                                              \
-    }                                                               \
-    template<> AFAPI T* array::device() const                       \
-    {                                                               \
-        void *ptr = NULL;                                           \
-        AF_THROW(af_get_device_ptr(&ptr, get(), true));             \
-        return (T *)ptr;                                            \
-    }                                                               \
-    template<> AFAPI void array::write(const T *ptr,                \
-               const size_t bytes, af_source_t src)                 \
-    {                                                               \
-        if(src == afHost)   AF_THROW(af_write_array(get(), ptr, bytes, (af_source)afHost));             \
-        if(src == afDevice) AF_THROW(af_write_array(get(), ptr, bytes, (af_source)afDevice));           \
-    }                                                               \
+#define INSTANTIATE(T)                                                  \
+    template<> AFAPI T *array::host() const                             \
+    {                                                                   \
+        if (type() != (af::dtype)dtype_traits<T>::af_type) {            \
+            AF_THROW_MSG("Requested type doesn't match with array",     \
+                         AF_ERR_TYPE);                                  \
+        }                                                               \
+                                                                        \
+        T *res = new T[elements()];                                     \
+        AF_THROW(af_get_data_ptr((void *)res, get()));                  \
+                                                                        \
+        return res;                                                     \
+    }                                                                   \
+    template<> AFAPI T array::scalar() const                            \
+    {                                                                   \
+        T *h_ptr = host<T>();                                           \
+        T scalar = h_ptr[0];                                            \
+        delete[] h_ptr;                                                 \
+        return scalar;                                                  \
+    }                                                                   \
+    template<> AFAPI T* array::device() const                           \
+    {                                                                   \
+        void *ptr = NULL;                                               \
+        AF_THROW(af_get_device_ptr(&ptr, get(), true));                 \
+        return (T *)ptr;                                                \
+    }                                                                   \
+    template<> AFAPI void array::write(const T *ptr,                    \
+                                       const size_t bytes, af::source src) \
+    {                                                                   \
+        if(src == afHost)   AF_THROW(af_write_array(get(), ptr, bytes, (af::source)afHost)); \
+        if(src == afDevice) AF_THROW(af_write_array(get(), ptr, bytes, (af::source)afDevice)); \
+    }                                                                   \
 
     INSTANTIATE(cdouble)
     INSTANTIATE(cfloat)
