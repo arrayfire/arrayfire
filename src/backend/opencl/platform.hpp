@@ -32,6 +32,8 @@ class DeviceManager
 
     friend const cl::Device& getDevice();
 
+    friend bool isGLSharingSupported();
+
     friend bool isDoubleSupported(int device);
 
     friend void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
@@ -67,6 +69,7 @@ class DeviceManager
         std::vector<cl::Context*>     mContexts;
         std::vector<cl::Platform*>   mPlatforms;
         std::vector<unsigned>       mCtxOffsets;
+        std::vector<bool>        mIsGLSharingOn;
 
         unsigned mActiveCtxId;
         unsigned mActiveQId;
@@ -83,6 +86,8 @@ const cl::Context& getContext();
 cl::CommandQueue& getQueue();
 
 const cl::Device& getDevice();
+
+bool isGLSharingSupported();
 
 bool isDoubleSupported(int device);
 

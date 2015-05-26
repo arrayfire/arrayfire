@@ -22,9 +22,11 @@ using af::dim4;
 
 namespace opencl
 {
-    template<typename T>
-    void copy_plot(const Array<T> &P, fg::Plot* plot)
-    {
+
+template<typename T>
+void copy_plot(const Array<T> &P, fg::Plot* plot)
+{
+    if (isGLSharingSupported()) {
         CheckGL("Begin OpenCL resource copy");
         const cl::Buffer *d_P = P.get();
         size_t bytes = plot->size();
@@ -44,16 +46,28 @@ namespace opencl
 
         CL_DEBUG_FINISH(getQueue());
         CheckGL("End OpenCL resource copy");
+    } else {
+        CheckGL("Begin OpenCL fallback-resource copy");
+        glBindBuffer(GL_ARRAY_BUFFER, plot->vbo());
+        GLubyte* ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        if (ptr) {
+            getQueue().enqueueReadBuffer(*P.get(), CL_TRUE, 0, plot->size(), ptr);
+            glUnmapBuffer(GL_ARRAY_BUFFER);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        CheckGL("End OpenCL fallback-resource copy");
     }
+}
 
-    #define INSTANTIATE(T)  \
-        template void copy_plot<T>(const Array<T> &P, fg::Plot* plot);
+#define INSTANTIATE(T)  \
+    template void copy_plot<T>(const Array<T> &P, fg::Plot* plot);
 
-    INSTANTIATE(float)
-    INSTANTIATE(double)
-    INSTANTIATE(int)
-    INSTANTIATE(uint)
-    INSTANTIATE(uchar)
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(uchar)
+
 }
 
 #endif  // WITH_GRAPHICS
