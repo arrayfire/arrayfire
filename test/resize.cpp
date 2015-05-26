@@ -78,6 +78,38 @@ TYPED_TEST(Resize, InvalidDims)
 }
 
 template<typename T>
+void compare(T test, T out, double err, size_t i)
+{
+    ASSERT_EQ(std::abs(test - out) < 0.0001, true) << "at: " << i << std::endl
+             << "for test = : " << test << std::endl
+             << "out data = : " << out << std::endl;
+}
+
+template<>
+void compare<uintl>(uintl test, uintl out, double err, size_t i)
+{
+    ASSERT_EQ(((intl)test - (intl)out) < 0.0001, true) << "at: " << i << std::endl
+             << "for test = : " << test << std::endl
+             << "out data = : " << out << std::endl;
+}
+
+template<>
+void compare<uint>(uint test, uint out, double err, size_t i)
+{
+    ASSERT_EQ(((int)test - (int)out) < 0.0001, true) << "at: " << i << std::endl
+             << "for test = : " << test << std::endl
+             << "out data = : " << out << std::endl;
+}
+
+template<>
+void compare<uchar>(uchar test, uchar out, double err, size_t i)
+{
+    ASSERT_EQ(((int)test - (int)out) < 0.0001, true) << "at: " << i << std::endl
+             << "for test = : " << test << std::endl
+             << "out data = : " << out << std::endl;
+}
+
+template<typename T>
 void resizeTest(string pTestFile, const unsigned resultIdx, const dim_t odim0, const dim_t odim1, const af_interp_type method, bool isSubRef = false, const vector<af_seq> * seqv = NULL)
 {
     if (noDoubleTests<T>()) return;
@@ -111,9 +143,7 @@ void resizeTest(string pTestFile, const unsigned resultIdx, const dim_t odim0, c
     // Compare result
     size_t nElems = tests[resultIdx].size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(std::abs(tests[resultIdx][elIter] - outData[elIter]) < 0.0001, true) << "at: " << elIter << std::endl
-                 << "for test = : " << tests[resultIdx][elIter] << std::endl
-                 << "out data = : " << outData[elIter] << std::endl;
+        compare<T>(tests[resultIdx][elIter], outData[elIter], 0.0001, elIter);
     }
 
     // Delete
