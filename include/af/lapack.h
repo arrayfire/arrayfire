@@ -20,7 +20,9 @@ namespace af
 
        \param[out] out is the output array containing the packed LU decomposition
        \param[out] pivot will contain the permutation indices to map the input to the decomposition
-       \param[in] in is the input array
+       \param[in] in is the input matrix
+
+       \note This function is not supported in GFOR
 
        \ingroup lapack_factor_func_lu
     */
@@ -32,6 +34,9 @@ namespace af
        \param[out] lower will contain the lower triangular matrix of the LU decomposition
        \param[out] upper will contain the upper triangular matrix of the LU decomposition
        \param[out] pivot will contain the permutation indices to map the input to the decomposition
+       \param[in] in is the input matrix
+
+       \note This function is not supported in GFOR
 
        \ingroup lapack_factor_func_lu
     */
@@ -43,6 +48,8 @@ namespace af
       \param[out] pivot will contain the permutation indices to map the input to the decomposition
       \param[inout] in contains the input on entry, the packed LU decomposition on exit
 
+      \note This function is not supported in GFOR
+
       \ingroup lapack_factor_func_lu
     */
     AFAPI void luInPlace(array &pivot, array &in);
@@ -52,7 +59,9 @@ namespace af
 
        \param[out] out is the output array containing the packed QR decomposition
        \param[out] tau will contain additional information needed for unpacking the data
-       \param[in] in is the input array
+       \param[in] in is the input matrix
+
+       \note This function is not supported in GFOR
 
        \ingroup lapack_factor_func_qr
     */
@@ -64,7 +73,9 @@ namespace af
        \param[out] q is the orthogonal matrix from QR decomposition
        \param[out] r is the upper triangular matrix from QR decomposition
        \param[out] tau will contain additional information needed for solving a least squares problem using \p q and \p r
-       \param[in] in is the input array
+       \param[in] in is the input matrix
+
+       \note This function is not supported in GFOR
 
        \ingroup lapack_factor_func_qr
     */
@@ -74,7 +85,9 @@ namespace af
        C++ Interface for QR decomposition
 
        \param[out] tau will contain additional information needed for unpacking the data
-       \param[inout] in is the input array on entry. It contains packed QR decomposition on exit
+       \param[inout] in is the input matrix on entry. It contains packed QR decomposition on exit
+
+       \note This function is not supported in GFOR
 
        \ingroup lapack_factor_func_qr
     */
@@ -89,6 +102,9 @@ namespace af
 
        \returns \p 0 if cholesky decomposition passes. If not returns the rank at which the decomposition failed.
 
+       \note The input matrix **has** to be a positive definite matrix. If it is not zero, the cholesky decomposition functions return a non zero output.
+       \note This function is not supported in GFOR
+
        \ingroup lapack_factor_func_cholesky
     */
     AFAPI int cholesky(array &out, const array &in, const bool is_upper = true);
@@ -100,6 +116,9 @@ namespace af
        \param[in] is_upper a boolean determining if \p in is upper or lower triangular
 
        \returns \p 0 if cholesky decomposition passes. If not returns the rank at which the decomposition failed.
+
+       \note The input matrix **has** to be a positive definite matrix. If it is not zero, the cholesky decomposition functions return a non zero output.
+       \note This function is not supported in GFOR
 
        \ingroup lapack_factor_func_cholesky
     */
@@ -113,9 +132,10 @@ namespace af
        \param[in] options determining various properties of matrix \p a
        \returns \p x, the matrix of unknown variables
 
-       \ingroup lapack_solve_func_gen
+       \note \p options currently needs to be \ref AF_MAT_NONE
+       \note This function is not supported in GFOR
 
-       \note currently options needs to be \ref AF_MAT_NONE
+       \ingroup lapack_solve_func_gen
     */
     AFAPI array solve(const array &a, const array &b, const matProp options = AF_MAT_NONE);
 
@@ -123,12 +143,14 @@ namespace af
     /**
        C++ Invert a matrix
 
-       \param[in] a is input matrix
+       \param[in] in is input matrix
+       \param[in] options determining various properties of matrix \p in
        \returns \p x, the inverse of the input matrix
 
-       \ingroup lapack_ops_func_inv
+       \note \p options currently needs to be \ref AF_MAT_NONE
+       \note This function is not supported in GFOR
 
-       \note currently options needs to be \ref AF_MAT_NONE
+       \ingroup lapack_ops_func_inv
     */
     AFAPI array inverse(const array &in, const matProp options = AF_MAT_NONE);
 }
@@ -166,7 +188,7 @@ extern "C" {
        \param[out] q is the orthogonal matrix from QR decomposition
        \param[out] r is the upper triangular matrix from QR decomposition
        \param[out] tau will contain additional information needed for solving a least squares problem using \p q and \p r
-       \param[in] in is the input array
+       \param[in] in is the input matrix
 
        \ingroup lapack_factor_func_qr
     */
@@ -176,7 +198,7 @@ extern "C" {
        C Interface for QR decomposition
 
        \param[out] tau will contain additional information needed for unpacking the data
-       \param[inout] in is the input array on entry. It contains packed QR decomposition on exit
+       \param[inout] in is the input matrix on entry. It contains packed QR decomposition on exit
 
        \ingroup lapack_factor_func_qr
     */
@@ -190,6 +212,8 @@ extern "C" {
        \param[in] in is the input matrix
        \param[in] is_upper a boolean determining if \p out is upper or lower triangular
 
+       \note The input matrix **has** to be a positive definite matrix. If it is not zero, the cholesky decomposition functions return a non zero output.
+
        \ingroup lapack_factor_func_cholesky
     */
     AFAPI af_err af_cholesky(af_array *out, int *info, const af_array in, const bool is_upper);
@@ -201,6 +225,8 @@ extern "C" {
        \param[inout] in is the input matrix on entry. It contains the triangular matrix on exit.
        \param[in] is_upper a boolean determining if \p in is upper or lower triangular
 
+       \note The input matrix **has** to be a positive definite matrix. If it is not zero, the cholesky decomposition functions return a non zero output.
+
        \ingroup lapack_factor_func_cholesky
     */
     AFAPI af_err af_cholesky_inplace(int *info, af_array in, const bool is_upper);
@@ -208,7 +234,7 @@ extern "C" {
     /**
        C Interface for solving a system of equations
 
-       \param[out] x, the matrix of unknown variables
+       \param[out] x is the matrix of unknown variables
        \param[in] a is the coefficient matrix
        \param[in] b is the measured values
        \param[in] options determining various properties of matrix \p a
@@ -225,6 +251,7 @@ extern "C" {
 
        \param[out] out will contain the inverse of matrix \p in
        \param[in] in is input matrix
+       \param[in] options determining various properties of matrix \p in
 
        \ingroup lapack_ops_func_inv
 

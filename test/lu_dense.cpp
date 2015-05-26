@@ -128,9 +128,12 @@ void luTester(const int m, const int n, double eps)
     //! [ex_lu_unpacked]
     af::array l, u, pivot;
     af::lu(l, u, pivot, a_orig);
+    //! [ex_lu_unpacked]
+
+    //! [ex_lu_recon]
     af::array a_recon = af::matmul(l, u);
     af::array a_perm = a_orig(pivot, af::span);
-    //! [ex_lu_unpacked]
+    //! [ex_lu_recon]
 
     ASSERT_NEAR(0, af::max<double>(af::abs(real(a_recon - a_perm))), eps);
     ASSERT_NEAR(0, af::max<double>(af::abs(imag(a_recon - a_perm))), eps);
@@ -141,8 +144,10 @@ void luTester(const int m, const int n, double eps)
     af::luInPlace(pivot2, out);
     //! [ex_lu_packed]
 
+    //! [ex_lu_extract]
     af::array l2 = lower(out,  true);
     af::array u2 = upper(out, false);
+    //! [ex_lu_extract]
 
     ASSERT_EQ(af::count<uint>(pivot == pivot2), pivot.elements());
 
