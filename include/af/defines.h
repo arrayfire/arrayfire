@@ -159,16 +159,16 @@ typedef enum {
 } af_err;
 
 typedef enum {
-    f32,    ///< A 32-bit floating point value
-    c32,    ///< A 32-bit complex floating point values
-    f64,    ///< A 64-bit complex floating point values
-    c64,    ///< A 64-bit complex floating point values
-    b8,     ///< A 8-bit boolean values
-    s32,    ///< A 32-bit signed integral values
-    u32,    ///< A 32-bit unsigned integral values
-    u8,     ///< A 8-bit unsigned integral values
-    s64,    ///< A 64-bit signed integral values
-    u64     ///< A 64-bit unsigned integral values
+    f32,    ///< 32-bit floating point values
+    c32,    ///< 32-bit complex floating point values
+    f64,    ///< 64-bit complex floating point values
+    c64,    ///< 64-bit complex floating point values
+    b8,     ///< 8-bit boolean values
+    s32,    ///< 32-bit signed integral values
+    u32,    ///< 32-bit unsigned integral values
+    u8,     ///< 8-bit unsigned integral values
+    s64,    ///< 64-bit signed integral values
+    u64     ///< 64-bit unsigned integral values
 } af_dtype;
 
 typedef enum {
@@ -189,42 +189,64 @@ typedef enum {
 } af_interp_type;
 
 typedef enum {
+    ///
+    /// Out of bound values are 0
+    ///
     AF_PAD_ZERO = 0,
+
+    ///
+    /// Out of bound values are symmetric over the edge
+    ///
     AF_PAD_SYM
 } af_pad_type;
 
 typedef enum {
+    ///
+    /// Connectivity includes neighbors, North, East, South and West of current pixel
+    ///
     AF_CONNECTIVITY_4 = 4,
+
+    ///
+    /// Connectivity includes 4-connectivity neigbors and also those on Northeast, Northwest, Southeast and Southwest
+    ///
     AF_CONNECTIVITY_8 = 8
 } af_connectivity;
 
 typedef enum {
+
+    ///
+    /// Output of the convolution is the same size as input
+    ///
     AF_CONV_DEFAULT,
+
+    ///
+    /// Output of the convolution is signal_len + filter_len - 1
+    ///
     AF_CONV_EXPAND,
 } af_conv_mode;
 
 typedef enum {
-    AF_CONV_AUTO,
-    AF_CONV_SPATIAL,
-    AF_CONV_FREQ,
+    AF_CONV_AUTO,    ///< ArrayFire automatically picks the right convolution algorithm
+    AF_CONV_SPATIAL, ///< Perform convolution in spatial domain
+    AF_CONV_FREQ,    ///< Perform convolution in frequency domain
 } af_conv_domain;
 
 typedef enum {
-    AF_SAD = 0,
-    AF_ZSAD, // 1
-    AF_LSAD, // 2
-    AF_SSD,  // 3
-    AF_ZSSD, // 4
-    AF_LSSD, // 5
-    AF_NCC,  // 6
-    AF_ZNCC, // 7
-    AF_SHD   // 8
+    AF_SAD = 0,   ///< Match based on Sum of Absolute Differences (SAD)
+    AF_ZSAD,      ///< Match based on Zero mean SAD
+    AF_LSAD,      ///< Match based on Locally scaled SAD
+    AF_SSD,       ///< Match based on Sum of Squared Differences (SSD)
+    AF_ZSSD,      ///< Match based on Zero mean SSD
+    AF_LSSD,      ///< Match based on Locally scaled SSD
+    AF_NCC,       ///< Match based on Normalized Cross Correlation (NCC)
+    AF_ZNCC,      ///< Match based on Zero mean NCC
+    AF_SHD        ///< Match based on Sum of Hamming Distances (SHD)
 } af_match_type;
 
 typedef enum {
-    AF_GRAY = 0,
-    AF_RGB,// 1
-    AF_HSV // 2
+    AF_GRAY = 0, ///< Grayscale
+    AF_RGB,      ///< 3-channel RGB
+    AF_HSV       ///< 3-channel HSV
 } af_cspace_t;
 
 typedef enum {
