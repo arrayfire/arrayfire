@@ -14,38 +14,10 @@
         a.y = 0;                                \
     } while(0)
 
-T __cconjf(T in)
-{
-    T out = {in.x, -in.y};
-    return out;
-}
-
-T __mul(T lhs, T rhs)
-{
-    T out;
-    out.x = lhs.x * rhs.x - lhs.y * rhs.y;
-    out.y = lhs.x * rhs.y + lhs.y * rhs.x;
-    return out;
-}
-
-T __div(T lhs, T rhs)
-{
-    T out;
-    TB den = (rhs.x * rhs.x + rhs.y * rhs.y);
-    T num = __mul(lhs, __cconjf(rhs));
-
-    out.x = num.x / den;
-    out.y = num.y / den;
-
-    return out;
-}
-
 #else
 
 #define set(a, b) a = b
 #define set_scalar(a, b) a = b
-#define __mul(lhs, rhs) ((lhs)*(rhs))
-#define __div(lhs, rhs) ((lhs)/(rhs))
 
 #endif
 
@@ -118,12 +90,12 @@ void transform_b(__global T *d_out, const KParam out, __global const T *d_in, co
         const int ooff = loco + (i * out.strides[2]);
 
         // Compute Weighted Values
-        VT v00 =                    __mul(wt00, d_in[ioff]);
-        VT v10 = (condY) ?          __mul(wt10, d_in[ioff + in.strides[1]])     : zero;
-        VT v01 = (condX) ?          __mul(wt01, d_in[ioff + 1])                 : zero;
-        VT v11 = (condX && condY) ? __mul(wt11, d_in[ioff + in.strides[1] + 1]) : zero;
+        VT v00 =                    (wt00 * d_in[ioff]);
+        VT v10 = (condY) ?          (wt10 * d_in[ioff + in.strides[1]])     : zero;
+        VT v01 = (condX) ?          (wt01 * d_in[ioff + 1])                 : zero;
+        VT v11 = (condX && condY) ? (wt11 * d_in[ioff + in.strides[1] + 1]) : zero;
         VT vo  = v00 + v10 + v01 + v11;
 
-        d_out[ooff] = (T)__div(vo, wt);
+        d_out[ooff] = (T)(vo / wt);
     }
 }
