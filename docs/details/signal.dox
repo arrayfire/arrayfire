@@ -11,7 +11,7 @@ Another way to think about it is that the filter kernel is centered on each pixe
 and the output for that pixel or data point is the sum of the products.
 
 Depending on the dimensions of the input signal and the filter signal, any one of the following
-batch mode convolutions take place. 
+batch mode convolutions take place.
 
 - **One to One**   - Single filter applied to single input.
 - **One to Many**  - Many filters applied on same input
@@ -184,5 +184,23 @@ It has three options for the type of interpolation to perform:
 - Bilinear interpolation - \ref AF_INTERP_BILINEAR
 - Cubic interpolation - \ref AF_INTERP_CUBIC
 
+\defgroup signal_func_fir fir
+\ingroup sigfilt_mat
+
+\brief This function implements a Finite Impulse Filter
+
+Finite impulse filters take an input **x** and a co-efficient array **b** to generate an output **y** such that:
+
+       \f$y[n] = \sum_{i = 0}^N b_i . x[n]\f$
+
+
+\defgroup signal_func_iir iir
+\ingroup sigfilt_mat
+
+\brief This function implements a Infinite Impulse Filter
+
+Iinite impulse filters take an input **x** and a feedforward array **b**, feedback array **a** to generate an output **y** such that:
+
+       \f$\sum_{j = 0}^Q a_j . y[n] = \sum_{i = 0}^P b_i . x[n]\f$
 @}
 */

@@ -156,8 +156,12 @@
    @{
 
      Convolutions, FFTs, filters
+
      @defgroup convolve_mat Convolutions
      1D, 2D and 3D convolutions
+
+     @defgroup sigfilt_mat Filter
+     fir, iir, etc.
 
      @defgroup fft_mat      Fast Fourier Transforms
      1D, 2D and 3D forward, inverse FFTs
