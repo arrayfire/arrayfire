@@ -23,6 +23,9 @@ void orb(features& feat, array& desc, const array& in,
     af_array temp_desc = 0;
     AF_THROW(af_orb(&temp_feat, &temp_desc, in.get(), fast_thr,
                     max_feat, scl_fctr, levels, blur_img));
+
+    dim_t num = 0;
+    AF_THROW(af_get_features_num(&num,  temp_feat));
     feat = features(temp_feat);
     desc = array(temp_desc);
 }
