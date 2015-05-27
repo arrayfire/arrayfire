@@ -19,7 +19,7 @@ using af::dim4;
 namespace cpu
 {
 
-#ifdef defined(_WIN32) || defined(_MSC_VER)
+#if defined(_WIN32) || defined(_MSC_VER)
 
 #include <intrin.h>
 #define __builtin_popcount __popcnt
