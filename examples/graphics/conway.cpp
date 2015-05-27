@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
         int frame_count = 0;
 
         // Initialize the kernel array just once
-        const af::array kernel(3, 3, h_kernel, af::afHost);
+        const af::array kernel(3, 3, h_kernel, afHost);
         array state;
         state = (af::randu(game_h, game_w, f32) > 0.5).as(f32);
 
