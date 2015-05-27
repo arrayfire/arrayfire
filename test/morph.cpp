@@ -57,13 +57,13 @@ void morphTest(string pTestFile)
 
     if (isDilation) {
         if (isVolume)
-            ASSERT_EQ(AF_SUCCESS, af_dilate3d(&outArray, inArray, maskArray));
+            ASSERT_EQ(AF_SUCCESS, af_dilate3(&outArray, inArray, maskArray));
         else
             ASSERT_EQ(AF_SUCCESS, af_dilate(&outArray, inArray, maskArray));
     }
     else {
         if (isVolume)
-            ASSERT_EQ(AF_SUCCESS, af_erode3d(&outArray, inArray, maskArray));
+            ASSERT_EQ(AF_SUCCESS, af_erode3(&outArray, inArray, maskArray));
         else
             ASSERT_EQ(AF_SUCCESS, af_erode(&outArray, inArray, maskArray));
     }
@@ -302,9 +302,9 @@ void morph3DMaskTest(void)
                 mdims.ndims(), mdims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
     if (isDilation)
-        ASSERT_EQ(AF_ERR_SIZE, af_dilate3d(&outArray, inArray, maskArray));
+        ASSERT_EQ(AF_ERR_SIZE, af_dilate3(&outArray, inArray, maskArray));
     else
-        ASSERT_EQ(AF_ERR_SIZE, af_erode3d(&outArray, inArray, maskArray));
+        ASSERT_EQ(AF_ERR_SIZE, af_erode3(&outArray, inArray, maskArray));
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(maskArray));
 
@@ -315,9 +315,9 @@ void morph3DMaskTest(void)
                 mdims.ndims(), mdims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
     if (isDilation)
-        ASSERT_EQ(AF_ERR_SIZE, af_dilate3d(&outArray, inArray, maskArray));
+        ASSERT_EQ(AF_ERR_SIZE, af_dilate3(&outArray, inArray, maskArray));
     else
-        ASSERT_EQ(AF_ERR_SIZE, af_erode3d(&outArray, inArray, maskArray));
+        ASSERT_EQ(AF_ERR_SIZE, af_erode3(&outArray, inArray, maskArray));
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(maskArray));
 

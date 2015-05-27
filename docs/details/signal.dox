@@ -114,7 +114,34 @@ respectively, then the possible batch operations are as follows.
 | [m n p q] | [m n p 1] | Many to One | Output will be 4d array with 3rd dimension length as q - 1 filter applied to q inputs |
 | [m n p q] | [m n p q] | Many to Many| Output will be 4d array with 3rd dimension length as q - q filter applied to q inputs in one-to-one correspondence |
 
+===============================================================================
 
+\defgroup signal_func_fft_convolve fftConvolve
+\ingroup convolve_mat
+
+\brief Convolution using Fast Fourier Transform
+
+\copydoc signal_func_fft_convolve_desc
+
+===============================================================================
+
+\defgroup signal_func_fft_convolve2 fftConvolve2
+\ingroup convolve_mat
+
+\brief 2D Convolution using Fast Fourier Transform
+
+\copydoc signal_func_fft_convolve_desc
+
+===============================================================================
+
+\defgroup signal_func_fft_convolve3 fftConvolve3
+\ingroup convolve_mat
+
+\brief 3D Convolution using Fast Fourier Transform
+
+\copydoc signal_func_fft_convolve_desc
+
+===============================================================================
 
 \defgroup signal_func_fft fft
 \ingroup fft_mat

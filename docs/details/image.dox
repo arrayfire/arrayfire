@@ -231,7 +231,7 @@ the median value of the pixels covered by the kernel is returned.
 
 =======================================================================
 
-\defgroup image_func_meanshift meanshift
+\defgroup image_func_mean_shift meanshift
 \ingroup imageflt_mat
 
 \brief Meanshift Filter

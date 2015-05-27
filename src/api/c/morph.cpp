@@ -109,12 +109,12 @@ af_err af_erode(af_array *out, const af_array in, const af_array mask)
     return morph<false>(out,in,mask);
 }
 
-af_err af_dilate3d(af_array *out, const af_array in, const af_array mask)
+af_err af_dilate3(af_array *out, const af_array in, const af_array mask)
 {
     return morph3d<true>(out,in,mask);
 }
 
-af_err af_erode3d(af_array *out, const af_array in, const af_array mask)
+af_err af_erode3(af_array *out, const af_array in, const af_array mask)
 {
     return morph3d<false>(out,in,mask);
 }

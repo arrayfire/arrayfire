@@ -396,9 +396,9 @@ AFAPI array convolve3(const array& signal, const array& filter, const convMode m
    \param[in]  mode indicates if the convolution should be expanded or not(where output size equals input).
    \return     the convolved array
 
-   \ingroup signal_func_fftconvolve
+   \ingroup signal_func_fft_convolve
  */
-AFAPI array fftconvolve(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
+AFAPI array fftConvolve(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
 
 /**
    C++ Interface for convolution on one dimensional data
@@ -408,9 +408,9 @@ AFAPI array fftconvolve(const array& signal, const array& filter, const convMode
    \param[in]  mode indicates if the convolution should be expanded or not(where output size equals input).
    \return     the convolved array
 
-   \ingroup signal_func_fftconvolve1
+   \ingroup signal_func_fft_convolve1
  */
-AFAPI array fftconvolve1(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
+AFAPI array fftConvolve1(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
 
 /**
    C++ Interface for convolution on two dimensional data
@@ -420,9 +420,9 @@ AFAPI array fftconvolve1(const array& signal, const array& filter, const convMod
    \param[in]  mode indicates if the convolution should be expanded or not(where output size equals input).
    \return     the convolved array
 
-   \ingroup signal_func_fftconvolve2
+   \ingroup signal_func_fft_convolve2
  */
-AFAPI array fftconvolve2(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
+AFAPI array fftConvolve2(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
 
 /**
    C++ Interface for convolution on three dimensional data
@@ -434,7 +434,7 @@ AFAPI array fftconvolve2(const array& signal, const array& filter, const convMod
 
    \ingroup signal_func_fftconvolve3
  */
-AFAPI array fftconvolve3(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
+AFAPI array fftConvolve3(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
 
 /**
    C++ Interface for finite impulse response  filter
@@ -672,9 +672,9 @@ AFAPI af_err af_convolve2_sep(af_array *out, const af_array col_filter, const af
    \return     \ref AF_SUCCESS if the convolution is successful,
                otherwise an appropriate error code is returned.
 
-   \ingroup signal_func_fftconvolve1
+   \ingroup signal_func_fft_convolve1
  */
-AFAPI af_err af_fftconvolve1(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode);
+AFAPI af_err af_fft_convolve1(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode);
 
 /**
    C Interface for FFT-based convolution on two dimensional data
@@ -686,9 +686,9 @@ AFAPI af_err af_fftconvolve1(af_array *out, const af_array signal, const af_arra
    \return     \ref AF_SUCCESS if the convolution is successful,
                otherwise an appropriate error code is returned.
 
-   \ingroup signal_func_fftconvolve2
+   \ingroup signal_func_fft_convolve2
  */
-AFAPI af_err af_fftconvolve2(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode);
+AFAPI af_err af_fft_convolve2(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode);
 
 /**
    C Interface for FFT-based convolution on three dimensional data
@@ -700,9 +700,9 @@ AFAPI af_err af_fftconvolve2(af_array *out, const af_array signal, const af_arra
    \return     \ref AF_SUCCESS if the convolution is successful,
                otherwise an appropriate error code is returned.
 
-   \ingroup signal_func_fftconvolve3
+   \ingroup signal_func_fft_convolve3
  */
-AFAPI af_err af_fftconvolve3(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode);
+AFAPI af_err af_fft_convolve3(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode);
 
 /**
    C++ Interface for finite impulse response  filter
