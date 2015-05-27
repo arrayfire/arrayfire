@@ -33,32 +33,6 @@ void hamming_matcher(Array<uint>& idx, Array<uint>& dist,
     const dim4 qDims = query.dims();
     const dim4 tDims = train.dims();
 
-    const dim4 queryTDims = dim4(qDims[1], qDims[0], qDims[2], qDims[3]);
-    const dim4 trainTDims = dim4(tDims[1], tDims[0], tDims[2], tDims[3]);
-    Array<T> queryT = createEmptyArray<T>(queryTDims);
-    Array<T> trainT = createEmptyArray<T>(trainTDims);
-
-    if (dist_dim == 0)
-    {
-        bool queryIs32Multiple = false;
-        if (qDims[0] % 32 == 0 && qDims[1] % 32 == 0)
-            queryIs32Multiple = true;
-
-        bool trainIs32Multiple = false;
-        if (tDims[0] % 32 == 0 && tDims[1] % 32 == 0)
-        trainIs32Multiple = true;
-
-        if (queryIs32Multiple)
-            kernel::transpose<T, false, true >(queryT, query);
-        else
-            kernel::transpose<T, false, false>(queryT, query);
-
-        if (trainIs32Multiple)
-            kernel::transpose<T, false, true >(trainT, train);
-        else
-            kernel::transpose<T, false, false>(trainT, train);
-    }
-
     const dim4 outDims(n_dist, qDims[sample_dim]);
 
     idx  = createEmptyArray<uint>(outDims);
@@ -76,6 +50,29 @@ void hamming_matcher(Array<uint>& idx, Array<uint>& dist,
     size_t lmem_sz = (use_lmem) ? lmem_predef + ltrain_sz : lmem_predef;
 
     if (dist_dim == 0) {
+        const dim4 queryTDims = dim4(qDims[1], qDims[0], qDims[2], qDims[3]);
+        const dim4 trainTDims = dim4(tDims[1], tDims[0], tDims[2], tDims[3]);
+        Array<T> queryT = createEmptyArray<T>(queryTDims);
+        Array<T> trainT = createEmptyArray<T>(trainTDims);
+
+        bool queryIs32Multiple = false;
+        if (qDims[0] % 32 == 0 && qDims[1] % 32 == 0)
+            queryIs32Multiple = true;
+
+        bool trainIs32Multiple = false;
+        if (tDims[0] % 32 == 0 && tDims[1] % 32 == 0)
+        trainIs32Multiple = true;
+
+        if (queryIs32Multiple)
+            kernel::transpose<T, false, true >(queryT, query);
+        else
+            kernel::transpose<T, false, false>(queryT, query);
+
+        if (trainIs32Multiple)
+            kernel::transpose<T, false, true >(trainT, train);
+        else
+            kernel::transpose<T, false, false>(trainT, train);
+
         switch (use_lmem) {
         case true:
             switch (feat_len) {
