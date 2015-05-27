@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
         array state;
         state = (af::randu(game_h, game_w, f32) > 0.5).as(f32);
 
-        while(frame_count <= 1500) {
+        while(!myWindow.close()) {
 
             myWindow.image(state);
             frame_count++;

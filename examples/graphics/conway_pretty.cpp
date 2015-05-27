@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 
         array display = tile(state, 1, 1, 3, 1);
 
-        while(frame_count <= 1500) {
+        while(!myWindow.close()) {
             af::timer delay = timer::start();
 
             myWindow.image(display);
