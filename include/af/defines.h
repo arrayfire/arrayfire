@@ -121,6 +121,13 @@ typedef enum {
     /// The type of the input arrays are not compatible
     ///
     AF_ERR_DIFF_TYPE      = 205,
+
+    ///
+    /// Function does not support GFOR / batch mode
+    ///
+    AF_ERR_BATCH          = 207,
+
+
     // 300-399 Errors for missing software features
 
     ///

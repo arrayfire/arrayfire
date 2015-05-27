@@ -44,6 +44,10 @@ af_err af_qr(af_array *q, af_array *r, af_array *tau, const af_array in)
     try {
         ArrayInfo i_info = getInfo(in);
 
+        if (i_info.ndims() > 2) {
+            AF_ERROR("qr can not be used in batch mode", AF_ERR_BATCH);
+        }
+
         af_dtype type = i_info.getType();
 
         ARG_ASSERT(3, i_info.isFloating());                       // Only floating and complex types
@@ -65,6 +69,11 @@ af_err af_qr_inplace(af_array *tau, af_array in)
 {
     try {
         ArrayInfo i_info = getInfo(in);
+
+        if (i_info.ndims() > 2) {
+            AF_ERROR("qr can not be used in batch mode", AF_ERR_BATCH);
+        }
+
         af_dtype type = i_info.getType();
 
         ARG_ASSERT(1, i_info.isFloating()); // Only floating and complex types
