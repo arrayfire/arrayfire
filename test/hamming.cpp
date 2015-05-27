@@ -88,10 +88,10 @@ void hammingMatcherTest(string pTestFile, int feat_dim)
 
     delete[] outIdx;
     delete[] outDist;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(query));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(train));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(idx));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(dist));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(query));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(train));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(idx));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(dist));
 }
 
 TYPED_TEST(HammingMatcher8, Hamming_500_5000_Dim0)

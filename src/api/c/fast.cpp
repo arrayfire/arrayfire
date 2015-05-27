@@ -14,6 +14,7 @@
 #include <handle.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>
+#include <features.hpp>
 #include <fast.hpp>
 
 using af::dim4;
@@ -28,7 +29,7 @@ static af_features fast(af_array const &in, const float thr,
     Array<float> y = createEmptyArray<float>(dim4());
     Array<float> score = createEmptyArray<float>(dim4());
 
-    af_features feat;
+    af_features_t feat;
     feat.n = fast<T>(x, y, score,
                      getArray<T>(in), thr,
                      arc_length, non_max, feature_ratio, edge);
@@ -42,7 +43,7 @@ static af_features fast(af_array const &in, const float thr,
     feat.orientation = getHandle(orientation);
     feat.size        = getHandle(size);
 
-    return feat;
+    return getFeaturesHandle(feat);
 }
 
 
