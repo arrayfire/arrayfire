@@ -113,3 +113,42 @@ TYPED_TEST(HammingMatcher32, Hamming_500_5000_Dim1)
 {
     hammingMatcherTest<TypeParam>(string(TEST_DIR"/hamming/hamming_500_5000_dim1_u32.test"), 1);
 }
+
+///////////////////////////////////// CPP ////////////////////////////////
+//
+TEST(HammingMatcher, CPP)
+{
+    using af::array;
+    using af::dim4;
+
+    vector<dim4>         numDims;
+    vector<vector<uint> >     in;
+    vector<vector<uint> >  tests;
+
+    readTests<uint, uint, uint>(TEST_DIR"/hamming/hamming_500_5000_dim0_u32.test", numDims, in, tests);
+
+    dim4 qDims     = numDims[0];
+    dim4 tDims     = numDims[1];
+
+    array query(qDims, &(in[0].front()));
+    array train(tDims, &(in[1].front()));
+
+    array idx, dist;
+    hammingMatcher(idx, dist, query, train, 0, 1);
+
+    vector<uint> goldIdx  = tests[0];
+    vector<uint> goldDist = tests[1];
+    size_t nElems         = goldIdx.size();
+    uint *outIdx          = new uint[nElems];
+    uint *outDist         = new uint[nElems];
+
+    idx.host(outIdx);
+    dist.host(outDist);
+
+    for (size_t elIter=0; elIter<nElems; ++elIter) {
+        ASSERT_EQ(goldDist[elIter], outDist[elIter])<< "at: " << elIter<< std::endl;
+    }
+
+    delete[] outIdx;
+    delete[] outDist;
+}
