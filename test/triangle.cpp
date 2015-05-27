@@ -94,7 +94,7 @@ TYPED_TEST(Triangle, Lower3D)
 
 TYPED_TEST(Triangle, Lower4D)
 {
-    triangleTester<TypeParam>(dim4(600, 900, 5, 2), false);
+    triangleTester<TypeParam>(dim4(600, 900, 3, 2), false);
 }
 
 TYPED_TEST(Triangle, Upper2DRect0)
@@ -119,7 +119,7 @@ TYPED_TEST(Triangle, Upper3D)
 
 TYPED_TEST(Triangle, Upper4D)
 {
-    triangleTester<TypeParam>(dim4(600, 900, 5, 2), true);
+    triangleTester<TypeParam>(dim4(600, 900, 3, 2), true);
 }
 
 TYPED_TEST(Triangle, Lower2DRect0Unit)
