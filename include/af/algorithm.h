@@ -74,11 +74,11 @@ namespace af
        \param[in] dim The dimension along which the values are checked to be all true
        \return    result of checking if values along dimension \p dim are all true
 
-       \ingroup reduce_functrue
+       \ingroup reduce_func_all_true
 
        \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
     */
-    AFAPI array alltrue(const array &in, const int dim = -1);
+    AFAPI array allTrue(const array &in, const int dim = -1);
 
     /**
        C++ Interface for checking any true values in an array
@@ -87,11 +87,11 @@ namespace af
        \param[in] dim The dimension along which the values are checked to be any true
        \return    result of checking if values along dimension \p dim are any true
 
-       \ingroup reduce_func_anytrue
+       \ingroup reduce_func_any_true
 
        \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
     */
-    AFAPI array anytrue(const array &in, const int dim = -1);
+    AFAPI array anyTrue(const array &in, const int dim = -1);
 
     /**
        C++ Interface for counting non zero values in an array
@@ -152,9 +152,9 @@ namespace af
        \param[in] in is the input array
        \return    true if all values of \p in are true, false otherwise
 
-       \ingroup reduce_func_alltrue
+       \ingroup reduce_func_all_true
     */
-    template<typename T> T alltrue(const array &in);
+    template<typename T> T allTrue(const array &in);
 
     /**
        C++ Interface for checking if any values in an array are true
@@ -162,9 +162,9 @@ namespace af
        \param[in] in is the input array
        \return    true if any values of \p in are true, false otherwise
 
-       \ingroup reduce_func_anytrue
+       \ingroup reduce_func_any_true
     */
-    template<typename T> T anytrue(const array &in);
+    template<typename T> T anyTrue(const array &in);
 
     /**
        C++ Interface for counting total number of non zero values in an array
@@ -324,7 +324,7 @@ namespace af
 
        \ingroup set_func_unique
     */
-    AFAPI array setunique(const array &in, const bool is_sorted=false);
+    AFAPI array setUnique(const array &in, const bool is_sorted=false);
 
     /**
        C++ Interface for performing union of two arrays
@@ -336,7 +336,7 @@ namespace af
 
        \ingroup set_func_union
     */
-    AFAPI array setunion(const array &first, const array &second, const bool is_unique=false);
+    AFAPI array setUnion(const array &first, const array &second, const bool is_unique=false);
 
     /**
        C++ Interface for performing intersect of two arrays
@@ -348,7 +348,7 @@ namespace af
 
        \ingroup set_func_intersect
     */
-    AFAPI array setintersect(const array &first, const array &second, const bool is_unique=false);
+    AFAPI array setIntersect(const array &first, const array &second, const bool is_unique=false);
 }
 #endif
 
@@ -412,9 +412,9 @@ extern "C" {
        \param[in] dim The dimension along which the "and" operation occurs
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup reduce_func_alltrue
+       \ingroup reduce_func_all_true
     */
-    AFAPI af_err af_alltrue(af_array *out, const af_array in, const int dim);
+    AFAPI af_err af_all_true(af_array *out, const af_array in, const int dim);
 
     /**
        C Interface for checking any true values in an array
@@ -424,9 +424,9 @@ extern "C" {
        \param[in] dim The dimension along which the "or" operation occurs
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup reduce_func_anytrue
+       \ingroup reduce_func_any_true
     */
-    AFAPI af_err af_anytrue(af_array *out, const af_array in, const int dim);
+    AFAPI af_err af_any_true(af_array *out, const af_array in, const int dim);
 
     /**
        C Interface for counting non zero values in an array
@@ -506,9 +506,9 @@ extern "C" {
 
        \note \p imag is always set to 0.
 
-       \ingroup reduce_func_alltrue
+       \ingroup reduce_func_all_true
     */
-    AFAPI af_err af_alltrue_all(double *real, double *imag, const af_array in);
+    AFAPI af_err af_all_true_all(double *real, double *imag, const af_array in);
 
     /**
        C Interface for checking if any values in an array are true
@@ -520,9 +520,9 @@ extern "C" {
 
        \note \p imag is always set to 0.
 
-       \ingroup reduce_func_anytrue
+       \ingroup reduce_func_any_true
     */
-    AFAPI af_err af_anytrue_all(double *real, double *imag, const af_array in);
+    AFAPI af_err af_any_true_all(double *real, double *imag, const af_array in);
 
     /**
        C Interface for counting total number of non zero values in an array
