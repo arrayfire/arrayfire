@@ -172,9 +172,6 @@ INSTALL(FILES
 )
 
 IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
-    INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}/third_party/forge/include/" DESTINATION include
-        COMPONENT headers
-    )
     INSTALL(DIRECTORY "${CMAKE_BINARY_DIR}/third_party/forge/lib/" DESTINATION lib
         COMPONENT libraries
     )
