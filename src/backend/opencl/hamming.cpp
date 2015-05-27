@@ -49,11 +49,14 @@ void hamming_matcher(Array<uint>& idx, Array<uint>& dist,
     bool use_lmem = (avail_lmem >= (lmem_predef + ltrain_sz)) ? true : false;
     size_t lmem_sz = (use_lmem) ? lmem_predef + ltrain_sz : lmem_predef;
 
+    Array<T> queryT = query;
+    Array<T> trainT = train;
+
     if (dist_dim == 0) {
         const dim4 queryTDims = dim4(qDims[1], qDims[0], qDims[2], qDims[3]);
         const dim4 trainTDims = dim4(tDims[1], tDims[0], tDims[2], tDims[3]);
-        Array<T> queryT = createEmptyArray<T>(queryTDims);
-        Array<T> trainT = createEmptyArray<T>(trainTDims);
+        queryT = createEmptyArray<T>(queryTDims);
+        trainT = createEmptyArray<T>(trainTDims);
 
         bool queryIs32Multiple = false;
         if (qDims[0] % 32 == 0 && qDims[1] % 32 == 0)
@@ -72,125 +75,65 @@ void hamming_matcher(Array<uint>& idx, Array<uint>& dist,
             kernel::transpose<T, false, true >(trainT, train);
         else
             kernel::transpose<T, false, false>(trainT, train);
-
-        switch (use_lmem) {
-        case true:
-            switch (feat_len) {
-            case 1:
-                kernel::hamming_matcher<T, true , 1 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-                break;
-            case 2:
-                kernel::hamming_matcher<T, true , 2 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-                break;
-            case 4:
-                kernel::hamming_matcher<T, true , 4 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-                break;
-            case 8:
-                kernel::hamming_matcher<T, true , 8 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-                break;
-            case 16:
-                kernel::hamming_matcher<T, true , 16>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-                break;
-            case 32:
-                kernel::hamming_matcher<T, true , 32>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-                break;
-            case 64:
-                kernel::hamming_matcher<T, true , 64>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-                break;
-            default:
-                kernel::hamming_matcher<T, true , 0 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-                break;
-            }
-            break;
-        case false:
-            switch (feat_len) {
-            case 1:
-                kernel::hamming_matcher<T, false, 1 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-                break;
-            case 2:
-                kernel::hamming_matcher<T, false, 2 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-                break;
-            case 4:
-                kernel::hamming_matcher<T, false, 4 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-                break;
-            case 8:
-                kernel::hamming_matcher<T, false, 8 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-                break;
-            case 16:
-                kernel::hamming_matcher<T, false, 16>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-                break;
-            case 32:
-                kernel::hamming_matcher<T, false, 32>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-                break;
-            case 64:
-                kernel::hamming_matcher<T, false, 64>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-                break;
-            default:
-                kernel::hamming_matcher<T, false, 0 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-                break;
-            }
-            break;
-        }
     }
-    else {
-        switch (use_lmem) {
-        case true:
-            switch (feat_len) {
-            case 1:
-                kernel::hamming_matcher<T, true , 1 >(idx, dist, query, train, dist_dim, n_dist, lmem_sz);
-                break;
-            case 2:
-                kernel::hamming_matcher<T, true , 2 >(idx, dist, query, train, dist_dim, n_dist, lmem_sz);
-                break;
-            case 4:
-                kernel::hamming_matcher<T, true , 4 >(idx, dist, query, train, dist_dim, n_dist, lmem_sz);
-                break;
-            case 8:
-                kernel::hamming_matcher<T, true , 8 >(idx, dist, query, train, dist_dim, n_dist, lmem_sz);
-                break;
-            case 16:
-                kernel::hamming_matcher<T, true , 16>(idx, dist, query, train, dist_dim, n_dist, lmem_sz);
-                break;
-            case 32:
-                kernel::hamming_matcher<T, true , 32>(idx, dist, query, train, dist_dim, n_dist, lmem_sz);
-                break;
-            case 64:
-                kernel::hamming_matcher<T, true , 64>(idx, dist, query, train, dist_dim, n_dist, lmem_sz);
-                break;
-            default:
-                kernel::hamming_matcher<T, true , 0 >(idx, dist, query, train, dist_dim, n_dist, lmem_sz);
-                break;
-            }
+
+    switch (use_lmem) {
+    case true:
+        switch (feat_len) {
+        case 1:
+            kernel::hamming_matcher<T, true , 1 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
             break;
-        case false:
-            switch (feat_len) {
-            case 1:
-                kernel::hamming_matcher<T, false, 1 >(idx, dist, query, train, dist_dim, n_dist, lmem_sz);
-                break;
-            case 2:
-                kernel::hamming_matcher<T, false, 2 >(idx, dist, query, train, dist_dim, n_dist, lmem_sz);
-                break;
-            case 4:
-                kernel::hamming_matcher<T, false, 4 >(idx, dist, query, train, dist_dim, n_dist, lmem_sz);
-                break;
-            case 8:
-                kernel::hamming_matcher<T, false, 8 >(idx, dist, query, train, dist_dim, n_dist, lmem_sz);
-                break;
-            case 16:
-                kernel::hamming_matcher<T, false, 16>(idx, dist, query, train, dist_dim, n_dist, lmem_sz);
-                break;
-            case 32:
-                kernel::hamming_matcher<T, false, 32>(idx, dist, query, train, dist_dim, n_dist, lmem_sz);
-                break;
-            case 64:
-                kernel::hamming_matcher<T, false, 64>(idx, dist, query, train, dist_dim, n_dist, lmem_sz);
-                break;
-            default:
-                kernel::hamming_matcher<T, false, 0 >(idx, dist, query, train, dist_dim, n_dist, lmem_sz);
-                break;
-            }
+        case 2:
+            kernel::hamming_matcher<T, true , 2 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
+            break;
+        case 4:
+            kernel::hamming_matcher<T, true , 4 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
+            break;
+        case 8:
+            kernel::hamming_matcher<T, true , 8 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
+            break;
+        case 16:
+            kernel::hamming_matcher<T, true , 16>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
+            break;
+        case 32:
+            kernel::hamming_matcher<T, true , 32>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
+            break;
+        case 64:
+            kernel::hamming_matcher<T, true , 64>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
+            break;
+        default:
+            kernel::hamming_matcher<T, true , 0 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
             break;
         }
+        break;
+    case false:
+        switch (feat_len) {
+        case 1:
+            kernel::hamming_matcher<T, false, 1 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
+            break;
+        case 2:
+            kernel::hamming_matcher<T, false, 2 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
+            break;
+        case 4:
+            kernel::hamming_matcher<T, false, 4 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
+            break;
+        case 8:
+            kernel::hamming_matcher<T, false, 8 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
+            break;
+        case 16:
+            kernel::hamming_matcher<T, false, 16>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
+            break;
+        case 32:
+            kernel::hamming_matcher<T, false, 32>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
+            break;
+        case 64:
+            kernel::hamming_matcher<T, false, 64>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
+            break;
+        default:
+            kernel::hamming_matcher<T, false, 0 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
+            break;
+        }
+        break;
     }
 }
 
