@@ -30,7 +30,6 @@ namespace cuda
     template<typename T>
     static void pinnedFreeWrapper(T *ptr)
     {
-        printf("Destroying pinned memory: %p\n", ptr);
         cudaError_t err = cudaFreeHost(ptr);
         if (err != cudaErrorCudartUnloading) // see issue #167
             CUDA_CHECK(err);
@@ -258,7 +257,6 @@ namespace cuda
                 pinnedGarbageCollect();
                 CUDA_CHECK(cudaMallocHost((void **)(&ptr), alloc_bytes));
             }
-            printf("Allocating pinned memory: %p\n", ptr);
 
             mem_info info = {false, alloc_bytes};
             pinned_maps[ptr] = info;
