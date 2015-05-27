@@ -13,6 +13,9 @@
 #include <cuda_runtime.h>
 #include <vector>
 #include <string>
+#if defined(WITH_GRAPHICS)
+#include <fg/window.h>
+#endif
 
 namespace cuda
 {

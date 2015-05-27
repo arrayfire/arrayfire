@@ -72,3 +72,22 @@ Copyright (C) 2015 The University of Tennessee.
 Magma is distributed under the BSD 3-Clause License. A copy of this license is present in the LICENSES directory.
 
 See Magma home page http://icl.cs.utk.edu/magma/index.html for details and links to the source code.
+
+### GLEW
+The OpenGL Extension Wrangler Library
+Copyright (C) 2002-2007, Milan Ikits <milan ikits[]ieee org>
+Copyright (C) 2002-2007, Marcelo E. Magallon <mmagallo[]debian org>
+Copyright (C) 2002, Lev Povalahev
+
+GLEW is distributed under the BSD 3-Clause License, Mesa 3D License (MIT) and the Khronos License (MIT).
+A copy of these licenses is present in the LICENSES directory.
+
+See GLEW home page http://glew.sourceforge.net for details and links to the source code.
+
+### GLFW
+Copyright (C) 2002-2006 Marcus Geelnard
+Copyright (C) 2006-2011 Camilla Berglund
+
+GLFW is distributed under the zlib/libpng License. A copy of this license is present in the LICENSES directory.
+
+See GLFW home page http://www.glfw.org for details and links to the source code.

@@ -138,4 +138,5 @@ namespace af
     INSTANTIATE(unsigned)
     INSTANTIATE(unsigned char)
     INSTANTIATE(char)
+
 }

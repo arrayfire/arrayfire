@@ -57,13 +57,6 @@
 #define MAGMA_DATA_H
 #include <iostream>
 
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
-
-#include <cl.hpp>
 #include <platform.hpp>
 #include "magma_types.h"
 
