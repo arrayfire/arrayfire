@@ -395,7 +395,7 @@ AFAPI array gray2rgb(const array& in, const float rFactor=1.0, const float gFact
 
    \ingroup image_func_histequal
  */
-AFAPI array histequal(const array& in, const array& hist);
+AFAPI array histEqual(const array& in, const array& hist);
 
 /**
    C++ Interface for generating gausian kernels
@@ -813,7 +813,7 @@ extern "C" {
 
        \ingroup image_func_histequal
     */
-    AFAPI af_err af_histequal(af_array *out, const af_array in, const af_array hist);
+    AFAPI af_err af_hist_equal(af_array *out, const af_array in, const af_array hist);
 
     /**
        C Interface generating gaussian kernels

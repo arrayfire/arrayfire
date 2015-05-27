@@ -29,16 +29,16 @@ namespace af
     */
 
     /**
-       \defgroup device_func_prop deviceprop
+       \defgroup device_func_prop deviceInfo
 
-       Get device properties
+       Get device information
 
        @{
 
        \ingroup arrayfire_func
        \ingroup device_mat
     */
-    AFAPI void deviceprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+    AFAPI void deviceInfo(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
     /**
        @}
     */
@@ -227,9 +227,9 @@ extern "C" {
     AFAPI af_err af_init();
 
     /**
-       \ingroup device_func_prop
+       \ingroup device_func_info
     */
-    AFAPI af_err af_deviceprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+    AFAPI af_err af_device_info(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
     /**
        \ingroup device_func_count

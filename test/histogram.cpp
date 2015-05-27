@@ -221,7 +221,7 @@ TEST(Histogram, SNIPPET_histequal)
 
     // input after histogram equalization or normalization
     // based on histogram provided
-    array eq_out = histequal(hist_in, hist_out);
+    array eq_out = histEqual(hist_in, hist_out);
     // eq_out = { 1.5, 4.5,  1.5, 1.5, 4.5, 4.5, 6.0, 7.5, 4.5 }
     //! [ex_image_histequal]
 
