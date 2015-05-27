@@ -30,23 +30,22 @@ void hamming_matcher(Array<uint>& idx, Array<uint>& dist,
     const dim4 qDims = query.dims();
     const dim4 tDims = train.dims();
 
-    const dim4 queryTDims = dim4(qDims[1], qDims[0], qDims[2], qDims[3]);
-    const dim4 trainTDims = dim4(tDims[1], tDims[0], tDims[2], tDims[3]);
-    Array<T> queryT = createEmptyArray<T>(queryTDims);
-    Array<T> trainT = createEmptyArray<T>(trainTDims);
-    if (dist_dim == 0)
-    {
-        kernel::transpose<T, false>(queryT, query, query.ndims());
-        kernel::transpose<T, false>(trainT, train, train.ndims());
-    }
-
     const dim4 outDims(n_dist, qDims[sample_dim]);
 
     idx  = createEmptyArray<uint>(outDims);
     dist = createEmptyArray<uint>(outDims);
 
-    if (dist_dim == 0)
+    if (dist_dim == 0) {
+        const dim4 queryTDims = dim4(qDims[1], qDims[0], qDims[2], qDims[3]);
+        const dim4 trainTDims = dim4(tDims[1], tDims[0], tDims[2], tDims[3]);
+        Array<T> queryT = createEmptyArray<T>(queryTDims);
+        Array<T> trainT = createEmptyArray<T>(trainTDims);
+
+        kernel::transpose<T, false>(queryT, query, query.ndims());
+        kernel::transpose<T, false>(trainT, train, train.ndims());
+
         kernel::hamming_matcher<T>(idx, dist, queryT, trainT, 1, n_dist);
+    }
     else
         kernel::hamming_matcher<T>(idx, dist, query, train, dist_dim, n_dist);
 }
