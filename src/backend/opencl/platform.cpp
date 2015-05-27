@@ -162,12 +162,16 @@ DeviceManager::DeviceManager()
     /* loop over devices and replace contexts with
      * OpenGL shared contexts whereever applicable */
 #if defined(WITH_GRAPHICS)
-    try {
-        int devCount = mDevices.size();
-        fg::Window* wHandle = graphics::ForgeManager::getInstance().getMainWindow();
-        for(int i=0; i<devCount; ++i)
-            markDeviceForInterop(i, wHandle);
-    } catch (...) {
+    // Define AF_DISABLE_GRAPHICS with any value to disable initialization
+    const char* noGraphicsENV = getenv("AF_DISABLE_GRAPHICS");
+    if(!noGraphicsENV) { // If AF_DISABLE_GRAPHICS is not defined
+        try {
+            int devCount = mDevices.size();
+            fg::Window* wHandle = graphics::ForgeManager::getInstance().getMainWindow();
+            for(int i=0; i<devCount; ++i)
+                markDeviceForInterop(i, wHandle);
+        } catch (...) {
+        }
     }
 #endif
 }

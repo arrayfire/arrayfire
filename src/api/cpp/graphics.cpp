@@ -79,7 +79,7 @@ void Window::show()
 
 bool Window::close()
 {
-    bool temp;
+    bool temp = true;
     AF_THROW(af_is_window_closed(&temp, get()));
     return temp;
 }
