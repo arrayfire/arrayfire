@@ -69,25 +69,27 @@ AFAPI void orb(features& feat, array& desc, const array& image, const float fast
 /**
    C++ Interface wrapper for Hamming matcher
 
-   \param[out]  idx is an array of MxN size, where M is equal to the number of query
-                features and N is equal to n_dist. The value at position IxJ indicates
-                the index of the Jth smallest distance to the Ith query value in the
-                train data array.
-                the index of the Ith smallest distance of the Mth query.
-   \param[out]  idx is an array of MxN size, where M is equal to the number of query
-                features and N is equal to n_dist. The value at position IxJ indicates
-                the Hamming distance of the Jth smallest distance to the Ith query
-                value in the train data array.
-   \param[in]   query is the array containing the data to be queried
-   \param[in]   train is the array containing the data stored as training data
-   \param[in]   dist_dim indicates the dimension to analyze for distance (the dimension
-                indicated here must be of equal length for both query and train arrays)
-   \param[in]   n_dist is the number of smallest distances to return (currently, only 1
-                is supported)
+   \param[out] idx is an array of MxN size, where M is equal to the number of query
+               features and N is equal to n_dist. The value at position IxJ indicates
+               the index of the Jth smallest distance to the Ith query value in the
+               train data array.
+               the index of the Ith smallest distance of the Mth query.
+   \param[out] idx is an array of MxN size, where M is equal to the number of query
+               features and N is equal to n_dist. The value at position IxJ indicates
+               the Hamming distance of the Jth smallest distance to the Ith query
+               value in the train data array.
+   \param[in]  query is the array containing the data to be queried
+   \param[in]  train is the array containing the data stored as training data
+   \param[in]  dist_dim indicates the dimension to analyze for distance (the dimension
+               indicated here must be of equal length for both query and train arrays)
+   \param[in]  n_dist is the number of smallest distances to return (currently, only 1
+               is supported)
+
+   \ingroup cv_func_hamming_matcher
  */
-AFAPI void hamming_matcher(array& idx, array& dist,
-                           const array& query, const array& train,
-                           const dim_t dist_dim=0, const uint n_dist=1);
+AFAPI void hammingMatcher(array& idx, array& dist,
+                          const array& query, const array& train,
+                          const dim_t dist_dim=0, const uint n_dist=1);
 
 }
 #endif
@@ -150,21 +152,23 @@ extern "C" {
     /**
        C Interface wrapper for Hamming matcher
 
-       \param[out]  idx is an array of MxN size, where M is equal to the number of query
-                    features and N is equal to n_dist. The value at position IxJ indicates
-                    the index of the Jth smallest distance to the Ith query value in the
-                    train data array.
-                    the index of the Ith smallest distance of the Mth query.
-       \param[out]  idx is an array of MxN size, where M is equal to the number of query
-                    features and N is equal to n_dist. The value at position IxJ indicates
-                    the Hamming distance of the Jth smallest distance to the Ith query
-                    value in the train data array.
-       \param[in]   query is the array containing the data to be queried
-       \param[in]   train is the array containing the data stored as training data
-       \param[in]   dist_dim indicates the dimension to analyze for distance (the dimension
-                    indicated here must be of equal length for both query and train arrays)
-       \param[in]   n_dist is the number of smallest distances to return (currently, only 1
-                    is supported)
+       \param[out] idx is an array of MxN size, where M is equal to the number of query
+                   features and N is equal to n_dist. The value at position IxJ indicates
+                   the index of the Jth smallest distance to the Ith query value in the
+                   train data array.
+                   the index of the Ith smallest distance of the Mth query.
+       \param[out] idx is an array of MxN size, where M is equal to the number of query
+                   features and N is equal to n_dist. The value at position IxJ indicates
+                   the Hamming distance of the Jth smallest distance to the Ith query
+                   value in the train data array.
+       \param[in]  query is the array containing the data to be queried
+       \param[in]  train is the array containing the data stored as training data
+       \param[in]  dist_dim indicates the dimension to analyze for distance (the dimension
+                   indicated here must be of equal length for both query and train arrays)
+       \param[in]  n_dist is the number of smallest distances to return (currently, only 1
+                   is supported)
+
+       \ingroup cv_func_hamming_matcher
     */
     AFAPI af_err af_hamming_matcher(af_array* idx, af_array* dist,
                                     const af_array query, const af_array train,

@@ -14,7 +14,7 @@
 namespace af
 {
 
-void hamming_matcher(array& idx, array& dist,
+void hammingMatcher(array& idx, array& dist,
                      const array& query, const array& train,
                      const dim_t dist_dim, const uint n_dist)
 {
