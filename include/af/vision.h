@@ -11,7 +11,6 @@
 #include <af/features.h>
 
 #ifdef __cplusplus
-#include <utility>
 namespace af
 {
 class array;
@@ -89,7 +88,7 @@ AFAPI void orb(features& feat, array& desc, const array& image, const float fast
  */
 AFAPI void hammingMatcher(array& idx, array& dist,
                           const array& query, const array& train,
-                          const dim_t dist_dim=0, const uint n_dist=1);
+                          const dim_t dist_dim=0, const unsigned n_dist=1);
 
 }
 #endif
@@ -172,7 +171,7 @@ extern "C" {
     */
     AFAPI af_err af_hamming_matcher(af_array* idx, af_array* dist,
                                     const af_array query, const af_array train,
-                                    const dim_t dist_dim, const uint n_dist);
+                                    const dim_t dist_dim, const unsigned n_dist);
 
 #ifdef __cplusplus
 }
