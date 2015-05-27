@@ -112,22 +112,37 @@ void hamming_matcher_unroll(
                 l_dist[tid] = l_dist[tid + 32];
                 l_idx[tid]  = l_idx[tid + 32];
             }
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+        if (tid < 16) {
             if (l_dist[tid + 16] < l_dist[tid]) {
                 l_dist[tid] = l_dist[tid + 16];
                 l_idx[tid]  = l_idx[tid + 16];
             }
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+        if (tid < 8) {
             if (l_dist[tid + 8] < l_dist[tid]) {
                 l_dist[tid] = l_dist[tid + 8];
                 l_idx[tid]  = l_idx[tid + 8];
             }
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+        if (tid < 4) {
             if (l_dist[tid + 4] < l_dist[tid]) {
                 l_dist[tid] = l_dist[tid + 4];
                 l_idx[tid]  = l_idx[tid + 4];
             }
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+        if (tid < 2) {
             if (l_dist[tid + 2] < l_dist[tid]) {
                 l_dist[tid] = l_dist[tid + 2];
                 l_idx[tid]  = l_idx[tid + 2];
             }
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+        if (tid < 1) {
             if (l_dist[tid + 1] < l_dist[tid]) {
                 l_dist[tid] = l_dist[tid + 1];
                 l_idx[tid]  = l_idx[tid + 1];
@@ -236,22 +251,37 @@ void hamming_matcher(
                 l_dist[tid] = l_dist[tid + 32];
                 l_idx[tid]  = l_idx[tid + 32];
             }
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+        if (tid < 16) {
             if (l_dist[tid + 16] < l_dist[tid]) {
                 l_dist[tid] = l_dist[tid + 16];
                 l_idx[tid]  = l_idx[tid + 16];
             }
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+        if (tid < 8) {
             if (l_dist[tid + 8] < l_dist[tid]) {
                 l_dist[tid] = l_dist[tid + 8];
                 l_idx[tid]  = l_idx[tid + 8];
             }
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+        if (tid < 4) {
             if (l_dist[tid + 4] < l_dist[tid]) {
                 l_dist[tid] = l_dist[tid + 4];
                 l_idx[tid]  = l_idx[tid + 4];
             }
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+        if (tid < 2) {
             if (l_dist[tid + 2] < l_dist[tid]) {
                 l_dist[tid] = l_dist[tid + 2];
                 l_idx[tid]  = l_idx[tid + 2];
             }
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+        if (tid < 1) {
             if (l_dist[tid + 1] < l_dist[tid]) {
                 l_dist[tid] = l_dist[tid + 1];
                 l_idx[tid]  = l_idx[tid + 1];

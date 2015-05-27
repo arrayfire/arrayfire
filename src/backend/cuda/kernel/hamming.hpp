@@ -111,22 +111,37 @@ __global__ void hamming_matcher_unroll(
                 s_dist[tid] = s_dist[tid + 32];
                 s_idx[tid]  = s_idx[tid + 32];
             }
+        }
+        __syncthreads();
+        if (tid < 16) {
             if (s_dist[tid + 16] < s_dist[tid]) {
                 s_dist[tid] = s_dist[tid + 16];
                 s_idx[tid]  = s_idx[tid + 16];
             }
+        }
+        __syncthreads();
+        if (tid < 8) {
             if (s_dist[tid + 8] < s_dist[tid]) {
                 s_dist[tid] = s_dist[tid + 8];
                 s_idx[tid]  = s_idx[tid + 8];
             }
+        }
+        __syncthreads();
+        if (tid < 4) {
             if (s_dist[tid + 4] < s_dist[tid]) {
                 s_dist[tid] = s_dist[tid + 4];
                 s_idx[tid]  = s_idx[tid + 4];
             }
+        }
+        __syncthreads();
+        if (tid < 2) {
             if (s_dist[tid + 2] < s_dist[tid]) {
                 s_dist[tid] = s_dist[tid + 2];
                 s_idx[tid]  = s_idx[tid + 2];
             }
+        }
+        __syncthreads();
+        if (tid < 1) {
             if (s_dist[tid + 1] < s_dist[tid]) {
                 s_dist[tid] = s_dist[tid + 1];
                 s_idx[tid]  = s_idx[tid + 1];
@@ -232,22 +247,37 @@ __global__ void hamming_matcher(
                 s_dist[tid] = s_dist[tid + 32];
                 s_idx[tid]  = s_idx[tid + 32];
             }
+        }
+        __syncthreads();
+        if (tid < 16) {
             if (s_dist[tid + 16] < s_dist[tid]) {
                 s_dist[tid] = s_dist[tid + 16];
                 s_idx[tid]  = s_idx[tid + 16];
             }
+        }
+        __syncthreads();
+        if (tid < 8) {
             if (s_dist[tid + 8] < s_dist[tid]) {
                 s_dist[tid] = s_dist[tid + 8];
                 s_idx[tid]  = s_idx[tid + 8];
             }
+        }
+        __syncthreads();
+        if (tid < 4) {
             if (s_dist[tid + 4] < s_dist[tid]) {
                 s_dist[tid] = s_dist[tid + 4];
                 s_idx[tid]  = s_idx[tid + 4];
             }
+        }
+        __syncthreads();
+        if (tid < 2) {
             if (s_dist[tid + 2] < s_dist[tid]) {
                 s_dist[tid] = s_dist[tid + 2];
                 s_idx[tid]  = s_idx[tid + 2];
             }
+        }
+        __syncthreads();
+        if (tid < 1) {
             if (s_dist[tid + 1] < s_dist[tid]) {
                 s_dist[tid] = s_dist[tid + 1];
                 s_idx[tid]  = s_idx[tid + 1];
