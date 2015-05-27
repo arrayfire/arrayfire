@@ -20,7 +20,8 @@ TEST(GettingStarted, SNIPPET_getting_started_gen)
 
     //! [ex_getting_started_gen]
     array zeros      = constant(0, 3);
-    array ones       = constant(1, 3, 2, f64);
+    // Moved inside the double test condition below
+    //array ones       = constant(1, 3, 2, f64);
     array rand1      = randu(1, 4);
     array rand2      = randn(2, 2);
     array iden       = af::identity(3, 3);
@@ -36,6 +37,7 @@ TEST(GettingStarted, SNIPPET_getting_started_gen)
     }
 
     if (!noDoubleTests<double>()) {
+        array ones       = constant(1, 3, 2, f64);
         vector<double> output(ones.elements());
         ones.host(&output.front());
         ASSERT_EQ(f64, ones.type());
