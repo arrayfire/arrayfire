@@ -11,7 +11,6 @@
 #include <af/features.h>
 
 #ifdef __cplusplus
-#include <utility>
 namespace af
 {
 class array;
@@ -229,7 +228,7 @@ AFAPI array meanshift(const array& in, const float spatial_sigma, const float ch
 
     \ingroup image_func_medfilt
 */
-AFAPI array medfilt(const array& in, const dim_t wind_length = 3, const dim_t wind_width = 3, const padType edge_pad = AF_PAD_ZERO);
+AFAPI array medfilt(const array& in, const dim_t wind_length = 3, const dim_t wind_width = 3, const borderType edge_pad = AF_PAD_ZERO);
 
 /**
     C++ Interface for image dilation (max filter)
@@ -765,7 +764,7 @@ extern "C" {
 
         \ingroup image_func_medfilt
     */
-    AFAPI af_err af_medfilt(af_array *out, const af_array in, const dim_t wind_length, const dim_t wind_width, const af_pad_type edge_pad);
+    AFAPI af_err af_medfilt(af_array *out, const af_array in, const dim_t wind_length, const dim_t wind_width, const af_border_type edge_pad);
 
     /**
         C Interface for regions in an image

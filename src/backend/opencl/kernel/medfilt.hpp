@@ -37,7 +37,7 @@ static const int MAX_MEDFILTER_LEN = 15;
 static const int THREADS_X = 16;
 static const int THREADS_Y = 16;
 
-template<typename T, af_pad_type pad, unsigned w_len, unsigned w_wid>
+template<typename T, af_border_type pad, unsigned w_len, unsigned w_wid>
 void medfilt(Param out, const Param in)
 {
     try {

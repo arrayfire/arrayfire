@@ -8,9 +8,9 @@
  ********************************************************/
 
 #pragma once
+#include <af/defines.h>
 
 #ifdef __cplusplus
-#include <af/defines.h>
 
 namespace af
 {
@@ -436,7 +436,29 @@ AFAPI array fftconvolve2(const array& signal, const array& filter, const convMod
  */
 AFAPI array fftconvolve3(const array& signal, const array& filter, const convMode mode=AF_CONV_DEFAULT);
 
+/**
+   C++ Interface for finite impulse response  filter
+
+   \param[in] b is the array containing the coefficients of the filter
+   \param[in] x is the input signal to the filter
+   \returns the output signal from the filter
+
+   \ingroup signal_func_fir
+*/
 AFAPI array fir(const array &b, const array &x);
+
+/**
+   C++ Interface for infinite impulse response filter
+
+   \param[in] b is the array containing the feedforward coefficients
+   \param[in] a is the array containing the feedback coefficients
+   \param[in] x is the input signal to the filter
+   \returns the output signal from the filter
+
+   \note The feedforward coefficients are currently limited to a length of 512
+
+   \ingroup signal_func_iir
+*/
 AFAPI array iir(const array &b, const array &a, const array &x);
 
 }
@@ -682,7 +704,29 @@ AFAPI af_err af_fftconvolve2(af_array *out, const af_array signal, const af_arra
  */
 AFAPI af_err af_fftconvolve3(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode);
 
+/**
+   C++ Interface for finite impulse response  filter
+
+   \param[out] y is the output signal from the filter
+   \param[in] b is the array containing the coefficients of the filter
+   \param[in] x is the input signal to the filter
+
+   \ingroup signal_func_fir
+*/
 AFAPI af_err af_fir(af_array *y, const af_array b, const af_array x);
+
+/**
+   C++ Interface for infinite impulse response filter
+
+   \param[out] y is the output signal from the filter
+   \param[in] b is the array containing the feedforward coefficients
+   \param[in] a is the array containing the feedback coefficients
+   \param[in] x is the input signal to the filter
+
+   \note The feedforward coefficients are currently limited to a length of 512
+
+   \ingroup signal_func_iir
+*/
 AFAPI af_err af_iir(af_array *y, const af_array b, const af_array a, const af_array x);
 #ifdef __cplusplus
 }

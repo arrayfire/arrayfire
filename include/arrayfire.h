@@ -156,8 +156,12 @@
    @{
 
      Convolutions, FFTs, filters
+
      @defgroup convolve_mat Convolutions
      1D, 2D and 3D convolutions
+
+     @defgroup sigfilt_mat Filter
+     fir, iir, etc.
 
      @defgroup fft_mat      Fast Fourier Transforms
      1D, 2D and 3D forward, inverse FFTs
@@ -225,6 +229,7 @@
 #include "af/arith.h"
 #include "af/array.h"
 #include "af/blas.h"
+#include "af/constants.h"
 #include "af/data.h"
 #include "af/device.h"
 #include "af/exception.h"
@@ -232,7 +237,7 @@
 #include "af/gfor.h"
 #include "af/image.h"
 #include "af/index.h"
-#include <af/lapack.h>
+#include "af/lapack.h"
 #include "af/seq.h"
 #include "af/signal.h"
 #include "af/statistics.h"

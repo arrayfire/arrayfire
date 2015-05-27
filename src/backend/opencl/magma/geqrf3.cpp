@@ -78,8 +78,6 @@ void split_diag_block(magma_int_t ib, Ty *a, magma_int_t lda, Ty *work)
     static const Ty c_zero = magma_zero<Ty>();
     static const Ty c_one  = magma_one<Ty>();
 
-    trtri_func<Ty> cpu_trtri;
-
     for(i=0; i<ib; i++){
         cola = a    + i*lda;
         colw = work + i*ib;

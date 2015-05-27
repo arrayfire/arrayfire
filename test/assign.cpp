@@ -355,10 +355,10 @@ TYPED_TEST(ArrayAssign, AssignRowCPP)
     arIdx[0] = 5;
     arIdx[1] = 7;
 
-    af::array in(dimsize, dimsize, &input.front(), af::afHost);
+    af::array in(dimsize, dimsize, &input.front(), afHost);
     af::dim4 size(dimsize, 1, 1, 1);
-    af::array sarr(size, &sq.front(), af::afHost);
-    af::array arrIdx(2, &arIdx.front(), af::afHost);
+    af::array sarr(size, &sq.front(), afHost);
+    af::array arrIdx(2, &arIdx.front(), afHost);
 
     in.row(0)       = sarr;
     in.row(2)       = 2;
@@ -400,10 +400,10 @@ TYPED_TEST(ArrayAssign, AssignColumnCPP)
     arIdx[0] = 5;
     arIdx[1] = 7;
 
-    af::array in(dimsize, dimsize, &input.front(), af::afHost);
+    af::array in(dimsize, dimsize, &input.front(), afHost);
     af::dim4 size(dimsize, 1, 1, 1);
-    af::array sarr(size, &sq.front(), af::afHost);
-    af::array arrIdx(2, &arIdx.front(), af::afHost);
+    af::array sarr(size, &sq.front(), afHost);
+    af::array arrIdx(2, &arIdx.front(), afHost);
 
     in.col(0)       = sarr;
     in.col(2)       = 2;
@@ -445,10 +445,10 @@ TYPED_TEST(ArrayAssign, AssignSliceCPP)
     arIdx[0] = 5;
     arIdx[1] = 7;
 
-    af::array in(dimsize, dimsize, dimsize, &input.front(), af::afHost);
+    af::array in(dimsize, dimsize, dimsize, &input.front(), afHost);
     af::dim4 size(dimsize, dimsize, 1, 1);
-    af::array sarr(size, &sq.front(), af::afHost);
-    af::array arrIdx(2, &arIdx.front(), af::afHost);
+    af::array sarr(size, &sq.front(), afHost);
+    af::array arrIdx(2, &arIdx.front(), afHost);
 
     in.slice(0)             = sarr;
     in.slice(2)             = 2;
@@ -520,7 +520,7 @@ TEST(ArrayAssign, CPP_ASSIGN_TO_INDEXED)
     vector<int> in(20);
     for(int i = 0; i < (int)in.size(); i++) in[i] = i;
 
-    af::array input(10, 2, &in.front(), af::afHost);
+    af::array input(10, 2, &in.front(), afHost);
 
     input(af::span, 0) = input(af::span, 1);// <-- Tests array_proxy to array_proxy assignment
 

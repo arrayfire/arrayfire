@@ -20,7 +20,7 @@ using af::dim4;
 namespace cpu
 {
 
-template<typename T, af_pad_type pad>
+template<typename T, af_border_type pad>
 Array<T> medfilt(const Array<T> &in, dim_t w_len, dim_t w_wid)
 {
     const dim4 dims     = in.dims();

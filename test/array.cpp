@@ -124,7 +124,7 @@ TYPED_TEST(Array, ConstructorHostPointer1D)
     dtype type = (dtype)af::dtype_traits<TypeParam>::af_type;
     size_t nelems = 10;
     vector<TypeParam> data(nelems, 4);
-    array a(nelems, &data.front(), af::afHost);
+    array a(nelems, &data.front(), afHost);
     EXPECT_EQ(1u,        a.numdims());
     EXPECT_EQ(dim_t(nelems),   a.dims(0));
     EXPECT_EQ(dim_t(1),        a.dims(1));
@@ -147,7 +147,7 @@ TYPED_TEST(Array, ConstructorHostPointer2D)
     size_t dim_size = 10;
     size_t nelems   = dim_size * dim_size;
     vector<TypeParam> data(nelems, 4);
-    array a(dim_size, dim_size, &data.front(), af::afHost);
+    array a(dim_size, dim_size, &data.front(), afHost);
     EXPECT_EQ(ndims,    a.numdims());
     EXPECT_EQ(dim_t(dim_size), a.dims(0));
     EXPECT_EQ(dim_t(dim_size), a.dims(1));
@@ -170,7 +170,7 @@ TYPED_TEST(Array, ConstructorHostPointer3D)
     size_t dim_size = 10;
     size_t nelems   = dim_size * dim_size * dim_size;
     vector<TypeParam> data(nelems, 4);
-    array a(dim_size, dim_size, dim_size, &data.front(), af::afHost);
+    array a(dim_size, dim_size, dim_size, &data.front(), afHost);
     EXPECT_EQ(ndims,    a.numdims());
     EXPECT_EQ(dim_t(dim_size), a.dims(0));
     EXPECT_EQ(dim_t(dim_size), a.dims(1));
@@ -193,7 +193,7 @@ TYPED_TEST(Array, ConstructorHostPointer4D)
     size_t dim_size = 10;
     size_t nelems   = dim_size * dim_size * dim_size * dim_size;
     vector<TypeParam> data(nelems, 4);
-    array a(dim_size, dim_size, dim_size, dim_size, &data.front(), af::afHost);
+    array a(dim_size, dim_size, dim_size, dim_size, &data.front(), afHost);
     EXPECT_EQ(ndims,    a.numdims());
     EXPECT_EQ(dim_t(dim_size), a.dims(0));
     EXPECT_EQ(dim_t(dim_size), a.dims(1));
