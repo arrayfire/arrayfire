@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/image.h>
+#include <af/vision.h>
 #include <af/array.h>
 #include "error.hpp"
 
