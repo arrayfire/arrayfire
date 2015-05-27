@@ -14,14 +14,15 @@
 namespace af
 {
 
-features fast(const array& in, const float thr, const unsigned arc_length,
-                const bool non_max, const float feature_ratio,
-                const unsigned edge)
+void hammingMatcher(array& idx, array& dist,
+                     const array& query, const array& train,
+                     const dim_t dist_dim, const uint n_dist)
 {
-    af_features temp;
-    AF_THROW(af_fast(&temp, in.get(), thr, arc_length,
-                     non_max, feature_ratio, edge));
-    return features(temp);
+    af_array temp_idx  = 0;
+    af_array temp_dist = 0;
+    AF_THROW(af_hamming_matcher(&temp_idx, &temp_dist, query.get(), train.get(), dist_dim, n_dist));
+    idx  = array(temp_idx);
+    dist = array(temp_dist);
 }
 
 }

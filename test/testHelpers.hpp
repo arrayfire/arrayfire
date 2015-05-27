@@ -435,6 +435,7 @@ af_err conv_image(af_array *out, af_array in)
     std::swap(*out, outArray);
 
     delete [] in_data;
+    delete [] out_data;
 
     return AF_SUCCESS;
 }

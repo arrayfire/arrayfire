@@ -244,3 +244,4 @@
 #include "af/statistics.h"
 #include "af/timing.h"
 #include "af/util.h"
+#include "af/vision.h"

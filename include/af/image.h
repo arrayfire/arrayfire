@@ -308,55 +308,6 @@ AFAPI array erode3d(const array& in, const array& mask);
 AFAPI array regions(const array& in, const af::connectivity connectivity=AF_CONNECTIVITY_4, const dtype type=f32);
 
 /**
-    C++ Interface for FAST feature detector
-
-    \param[in] in array containing a grayscale image (color images are not
-               supported)
-    \param[in] thr FAST threshold for which a pixel of the circle around
-               the central pixel is considered to be greater or smaller
-    \param[in] arc_length length of arc (or sequential segment) to be tested,
-               must be within range [9-16]
-    \param[in] non_max performs non-maximal suppression if true
-    \param[in] feature_ratio maximum ratio of features to detect, the maximum
-               number of features is calculated by feature_ratio * in.elements().
-               The maximum number of features is not based on the score, instead
-               features detected after the limit is reached are discarded
-    \param[in] edge is the length of the edges in the image to be discarded
-               by FAST (minimum is 3, as the radius of the circle)
-    \return    features object containing arrays for x and y coordinates and
-               score, while array orientation is set to 0 as FAST does not
-               compute orientation, and size is set to 1 as FAST does not
-               compute multiple scales
-
-    \ingroup cv_func_fast
- */
-AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_length=9, const bool non_max=true, const float feature_ratio=0.05, const unsigned edge=3);
-
-/**
-    C++ Interface for ORB feature descriptor
-
-    \param[out] feat features object composed of arrays for x and y
-                coordinates, score, orientation and size of selected features
-    \param[out] desc Nx8 array containing extracted descriptors, where N is the
-                number of selected features
-    \param[in]  image array containing a grayscale image (color images are not
-                supported)
-    \param[in]  fast_thr FAST threshold for which a pixel of the circle around
-                the central pixel is considered to be brighter or darker
-    \param[in]  max_feat Maximum number of features to hold (will only keep the
-                max_feat features with higher Harris responses)
-    \param[in]  scl_fctr Factor to downsample the input image, meaning that
-                each level will hold prior level dimensions divided by scl_fctr
-    \param[in]  levels Number of levels to be computed for the image pyramid
-    \param[in]  blur_img Blur image with a Gaussian filter with sigma=2 before
-                computing descriptors to increase robustness against noise if
-                true
-
-    \ingroup cv_func_orb
- */
-AFAPI void orb(features& feat, array& desc, const array& image, const float fast_thr=20.f, const unsigned max_feat=400, const float scl_fctr=1.5f, const unsigned levels=4, const bool blur_img=false);
-
-/**
    C++ Interface for image template matching
 
    \param[in]  searchImg is an array with image data
@@ -779,57 +730,6 @@ extern "C" {
         \ingroup image_func_regions
     */
     AFAPI af_err af_regions(af_array *out, const af_array in, const af_connectivity connectivity, const af_dtype ty);
-
-    /**
-        C Interface for FAST feature detector
-
-        \param[out] out struct containing arrays for x and y
-                    coordinates and score, while array orientation is set to 0
-                    as FAST does not compute orientation, and size is set to 1
-                    as FAST does not compute multiple scales
-        \param[in]  in array containing a grayscale image (color images are
-                    not supported)
-        \param[in]  thr FAST threshold for which a pixel of the circle around
-                    the central pixel is considered to be greater or smaller
-        \param[in]  arc_length length of arc (or sequential segment) to be
-                    tested, must be within range [9-16]
-        \param[in]  non_max performs non-maximal suppression if true
-        \param[in]  feature_ratio maximum ratio of features to detect, the
-                    maximum number of features is calculated by
-                    feature_ratio * in.elements(). The maximum number of
-                    features is not based on the score, instead features
-                    detected after the limit is reached are discarded
-        \param[in]  edge is the length of the edges in the image to be
-                    discarded by FAST (minimum is 3, as the radius of the
-                    circle)
-
-        \ingroup cv_func_fast
-    */
-    AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio, const unsigned edge);
-
-    /**
-        C Interface for ORB feature descriptor
-
-        \param[out] feat af_features struct composed of arrays for x and y
-                    coordinates, score, orientation and size of selected features
-        \param[out] desc Nx8 array containing extracted descriptors, where N is the
-                    number of selected features
-        \param[in]  in array containing a grayscale image (color images are not
-                    supported)
-        \param[in]  fast_thr FAST threshold for which a pixel of the circle around
-                    the central pixel is considered to be brighter or darker
-        \param[in]  max_feat Maximum number of features to hold (will only keep the
-                    max_feat features with higher Harris responses)
-        \param[in]  scl_fctr Factor to downsample the input image, meaning that
-                    each level will hold prior level dimensions divided by scl_fctr
-        \param[in]  levels Number of levels to be computed for the image pyramid
-        \param[in]  blur_img Blur image with a Gaussian filter with sigma=2 before
-                    computing descriptors to increase robustness against noise if
-                    true
-
-        \ingroup cv_func_orb
-    */
-    AFAPI af_err af_orb(af_features *feat, af_array *desc, const af_array in, const float fast_thr, const unsigned max_feat, const float scl_fctr, const unsigned levels, const bool blur_img);
 
     /**
        C Interface for image template matching
