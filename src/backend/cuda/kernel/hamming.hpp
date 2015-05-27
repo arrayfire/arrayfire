@@ -140,6 +140,7 @@ __global__ void hamming_matcher_unroll(
             out_dist[j * gridDim.x + blockIdx.x] = s_dist[0];
             out_idx[j * gridDim.x + blockIdx.x]  = s_idx[0];
         }
+        __syncthreads();
     }
 }
 
@@ -260,6 +261,7 @@ __global__ void hamming_matcher(
             out_dist[j * gridDim.x + blockIdx.x] = s_dist[0];
             out_idx[j * gridDim.x + blockIdx.x]  = s_idx[0];
         }
+        __syncthreads();
     }
 }
 

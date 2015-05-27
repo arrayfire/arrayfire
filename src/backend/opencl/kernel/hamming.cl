@@ -141,6 +141,7 @@ void hamming_matcher_unroll(
             out_dist[j * get_num_groups(0) + get_group_id(0)] = l_dist[0];
             out_idx[j * get_num_groups(0) + get_group_id(0)]  = l_idx[0];
         }
+        barrier(CLK_LOCAL_MEM_FENCE);
     }
 }
 
@@ -264,6 +265,7 @@ void hamming_matcher(
             out_dist[j * get_num_groups(0) + get_group_id(0)] = l_dist[0];
             out_idx[j * get_num_groups(0) + get_group_id(0)]  = l_idx[0];
         }
+        barrier(CLK_LOCAL_MEM_FENCE);
     }
 }
 
