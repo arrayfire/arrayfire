@@ -45,6 +45,13 @@ int LAPACKE_##X##getrf(int layout, int M, int N, T *A, int lda, int *pivot)     
     int ret = X##getrf_(&M, &N, (TO)A, &lda, pivot, &info);                         \
     return info;                                                                    \
 }                                                                                   \
+int LAPACKE_##X##getrs(int layout, int M, int N, const T *A,                        \
+                       int lda, const int *pivot, T *B, int ldb)                    \
+{                                                                                   \
+    int info = 0;                                                                   \
+    int ret = X##getrs_(&M, &N, (TO)A, &lda, (int *)pivot, (TO)B, ldb, &info);      \
+    return info;                                                                    \
+}                                                                                   \
 int LAPACKE_##X##potrf(int layout, char uplo, int N, T *A, int lda)                 \
 {                                                                                   \
     int info = 0;                                                                   \
