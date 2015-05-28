@@ -28,12 +28,14 @@
     #define snprintf sprintf_s
     #define STATIC_ static
     #define SIZE_T_FRMT_SPECIFIER "%Iu"
+    #define DEPRECATED(msg) __declspec(deprecated( msg ))
 #else
     #define AFAPI   __attribute__((visibility("default")))
     #include <stdbool.h>
     #define __PRETTY_FUNCTION__ __func__
     #define STATIC_ inline
     #define SIZE_T_FRMT_SPECIFIER "%zu"
+    #define DEPRECATED(msg) __attribute__((deprecated( msg )))
 #endif
 
 // Known 64-bit x86 and ARM architectures use long long
