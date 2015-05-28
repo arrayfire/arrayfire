@@ -141,7 +141,7 @@ void luTester(const int m, const int n, double eps)
     //! [ex_lu_packed]
     af::array out = a_orig.copy();
     af::array pivot2;
-    af::luInPlace(pivot2, out);
+    af::luInPlace(pivot2, out, false);
     //! [ex_lu_packed]
 
     //! [ex_lu_extract]

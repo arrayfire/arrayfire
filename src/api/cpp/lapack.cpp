@@ -13,11 +13,11 @@
 
 namespace af
 {
-    void lu(array &out, array &pivot, const array &in)
+    void lu(array &out, array &pivot, const array &in, const bool is_lapack_piv)
     {
         out = in.copy();
         af_array p = 0;
-        AF_THROW(af_lu_inplace(&p, out.get()));
+        AF_THROW(af_lu_inplace(&p, out.get(), is_lapack_piv));
         pivot = array(p);
     }
 
@@ -30,10 +30,10 @@ namespace af
         pivot = array(p);
     }
 
-    void luInPlace(array &pivot, array &in)
+    void luInPlace(array &pivot, array &in, const bool is_lapack_piv)
     {
         af_array p = 0;
-        AF_THROW(af_lu_inplace(&p, in.get()));
+        AF_THROW(af_lu_inplace(&p, in.get(), is_lapack_piv));
         pivot = array(p);
     }
 

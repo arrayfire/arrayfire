@@ -21,12 +21,13 @@ namespace af
        \param[out] out is the output array containing the packed LU decomposition
        \param[out] pivot will contain the permutation indices to map the input to the decomposition
        \param[in] in is the input matrix
+       \param[in] is_lapack_piv specifies if the pivot is returned in original LAPACK compliant format
 
        \note This function is not supported in GFOR
 
        \ingroup lapack_factor_func_lu
     */
-    AFAPI void lu(array &out, array &pivot, const array &in);
+    AFAPI void lu(array &out, array &pivot, const array &in, const bool is_lapack_piv=true);
 
     /**
        C++ Interface for LU decomposition
@@ -47,12 +48,13 @@ namespace af
 
       \param[out] pivot will contain the permutation indices to map the input to the decomposition
       \param[inout] in contains the input on entry, the packed LU decomposition on exit
+      \param[in] is_lapack_piv specifies if the pivot is returned in original LAPACK compliant format
 
       \note This function is not supported in GFOR
 
       \ingroup lapack_factor_func_lu
     */
-    AFAPI void luInPlace(array &pivot, array &in);
+    AFAPI void luInPlace(array &pivot, array &in, const bool is_lapack_piv=true);
 
     /**
        C++ Interface for QR decomposition in packed format
@@ -177,10 +179,11 @@ extern "C" {
 
        \param[out] pivot will contain the permutation indices to map the input to the decomposition
        \param[inout] in contains the input on entry, the packed LU decomposition on exit
+       \param[in] is_lapack_piv specifies if the pivot is returned in original LAPACK compliant format
 
        \ingroup lapack_factor_func_lu
     */
-    AFAPI af_err af_lu_inplace(af_array *pivot, af_array in);
+    AFAPI af_err af_lu_inplace(af_array *pivot, af_array in, const bool is_lapack_piv);
 
     /**
        C Interface for QR decomposition
