@@ -184,9 +184,6 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
 
         dim4 aDims = A.dims();
 
-        int M = aDims[0];
-        int N = aDims[1];
-
         int MN = std::min(M, N);
         int NB = magma_get_geqrf_nb<T>(M);
 

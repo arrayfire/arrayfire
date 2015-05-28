@@ -25,15 +25,6 @@ static inline af_array solve(const af_array a, const af_array b, const af_mat_pr
     return getHandle(solve<T>(getArray<T>(a), getArray<T>(b), options));
 }
 
-template<typename T>
-static inline af_array solve_lu(const af_array a, const af_array pivot,
-                                const af_array b, const af_mat_prop options)
-{
-    return getHandle(solveLU<T>(getArray<T>(a), getArray<int>(pivot),
-                                getArray<T>(b), options));
-}
-
-
 af_err af_solve(af_array *out, const af_array a, const af_array b, const af_mat_prop options)
 {
     try {
@@ -80,6 +71,14 @@ af_err af_solve(af_array *out, const af_array a, const af_array b, const af_mat_
     return AF_SUCCESS;
 }
 
+template<typename T>
+static inline af_array solve_lu(const af_array a, const af_array pivot,
+                                const af_array b, const af_mat_prop options)
+{
+    return getHandle(solveLU<T>(getArray<T>(a), getArray<int>(pivot),
+                                getArray<T>(b), options));
+}
+
 af_err af_solve_lu(af_array *out, const af_array a,
                    const af_array piv, const af_array b,
                    const af_mat_prop options)
@@ -104,6 +103,7 @@ af_err af_solve_lu(af_array *out, const af_array a,
 
         TYPE_ASSERT(a_type == b_type);
 
+        DIM_ASSERT(1, adims[0] == adims[1]);
         DIM_ASSERT(1, bdims[0] == adims[0]);
         DIM_ASSERT(1, bdims[2] == adims[2]);
         DIM_ASSERT(1, bdims[3] == adims[3]);
