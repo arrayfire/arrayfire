@@ -151,3 +151,21 @@ TYPED_TEST(Triangle, Upper2DSquareUnit)
 {
     triangleTester<TypeParam>(dim4(2048, 2048), true, true);
 }
+
+TEST(Lower, ExtractGFOR)
+{
+    using namespace af;
+    dim4 dims = dim4(100, 100, 3);
+    array A = round(100 * randu(dims));
+    array B = constant(0, 100, 100, 3);
+
+    gfor(seq ii, 3) {
+        B(span, span, ii) = lower(A(span, span, ii));
+    }
+
+    for(int ii = 0; ii < 3; ii++) {
+        array c_ii = lower(A(span, span, ii));
+        array b_ii = B(span, span, ii);
+        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
+    }
+}

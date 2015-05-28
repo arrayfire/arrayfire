@@ -23,7 +23,7 @@ exception::exception(): m_err(AF_ERR_UNKNOWN)
     strncpy(m_msg, "unknown exception", sizeof(m_msg));
 }
 
-exception::exception(const char *msg): m_err(AF_ERR_INTERNAL)
+exception::exception(const char *msg): m_err(AF_ERR_UNKNOWN)
 {
     strncpy(m_msg, msg, sizeof(m_msg));
     m_msg[sizeof(m_msg)-1] = '\0';
@@ -32,7 +32,7 @@ exception::exception(const char *msg): m_err(AF_ERR_INTERNAL)
 exception::exception(const char *file, unsigned line, af_err err): m_err(err)
 {
     snprintf(m_msg, sizeof(m_msg) - 1,
-             "Error(%d): %s\nIn %s:%u",
+             "ArrayFire Exception(%d): %s\nIn %s:%u",
              (int)err, af_err_to_string(err), file, line);
 
     m_msg[sizeof(m_msg)-1] = '\0';
@@ -41,8 +41,8 @@ exception::exception(const char *file, unsigned line, af_err err): m_err(err)
 exception::exception(const char *msg, const char *file, unsigned line, af_err err): m_err(err)
 {
     snprintf(m_msg, sizeof(m_msg) - 1,
-             "%s\n""Error(%d): %s\nIn %s:%u",
-             msg, (int)(err), af_err_to_string(err), file, line);
+             "ArrayFire Exception(%d): %s\nIn %s:%u",
+             (int)(err), msg, file, line);
 
     m_msg[sizeof(m_msg)-1] = '\0';
 }

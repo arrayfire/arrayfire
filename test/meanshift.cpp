@@ -151,3 +151,22 @@ TEST(Meanshift, Color_CPP)
         delete[] goldData;
     }
 }
+
+TEST(meanshift, GFOR)
+{
+    using namespace af;
+
+    dim4 dims = dim4(10, 10, 3);
+    array A = iota(dims);
+    array B = constant(0, dims);
+
+    gfor(seq ii, 3) {
+        B(span, span, ii) = meanshift(A(span, span, ii), 3, 5, 3);
+    }
+
+    for(int ii = 0; ii < 3; ii++) {
+        array c_ii = meanshift(A(span, span, ii), 3, 5, 3);
+        array b_ii = B(span, span, ii);
+        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
+    }
+}

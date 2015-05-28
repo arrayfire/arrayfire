@@ -117,7 +117,7 @@ DimensionError::DimensionError(const char * const  funcName,
                              const int line,
                              const int index,
                              const char * const  expectString)
-    : AfError(funcName, line, "Invalid dimension", AF_ERR_SIZE),
+    : AfError(funcName, line, "Invalid size", AF_ERR_SIZE),
       argIndex(index),
       expected(expectString)
 {

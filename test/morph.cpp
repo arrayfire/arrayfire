@@ -390,3 +390,22 @@ TEST(Morph, ColorImage_CPP)
 {
     cppMorphImageTest<float, false, true>(string(TEST_DIR"/morph/color.test"));
 }
+
+using namespace af;
+TEST(Morph, GFOR)
+{
+    dim4 dims = dim4(10, 10, 3);
+    array A = iota(dims);
+    array B = constant(0, dims);
+    array mask = randu(3,3) > 0.3;
+
+    gfor(seq ii, 3) {
+        B(span, span, ii) = erode(A(span, span, ii), mask);
+    }
+
+    for(int ii = 0; ii < 3; ii++) {
+        array c_ii = erode(A(span, span, ii), mask);
+        array b_ii = B(span, span, ii);
+        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
+    }
+}

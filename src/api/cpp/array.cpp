@@ -32,7 +32,7 @@ namespace af
     static af_array gforReorder(const af_array in, unsigned dim)
     {
         // This is here to stop gcc from complaining
-        if (dim > 3) AF_THROW_MSG("Invalid dimension", AF_ERR_INTERNAL);
+        if (dim > 3) THROW(AF_ERR_SIZE);
         unsigned order[AF_MAX_DIMS] = {0, 1, 2, dim};
         order[dim] = 3;
         af_array out;
@@ -67,7 +67,7 @@ namespace af
             }
             return odims;
         } catch(std::logic_error &err) {
-            AF_THROW_MSG(err.what(), AF_ERR_INTERNAL);
+            AF_THROW_MSG(err.what(), AF_ERR_SIZE);
         }
     }
 
@@ -343,7 +343,7 @@ namespace af
                 case 2: return gen_indexing(*this, z, s0, z, z);
                 case 3: return gen_indexing(*this, z, z, s0, z);
                 case 4: return gen_indexing(*this, z, z, z, s0);
-                default: AF_THROW_MSG("ArrayFire internal error", AF_ERR_INTERNAL);
+                default: THROW(AF_ERR_SIZE);
             }
         }
         else {
@@ -363,7 +363,7 @@ namespace af
             case 2: return gen_indexing(*this, s1, s0, s2, s3);
             case 3: return gen_indexing(*this, s1, s2, s0, s3);
             case 4: return gen_indexing(*this, s1, s2, s3, s0);
-            default: AF_THROW_MSG("ArrayFire internal error", AF_ERR_INTERNAL);
+            default: THROW(AF_ERR_SIZE);
             }
         }
         else {
@@ -523,9 +523,28 @@ namespace af
             }
         }
 
+        af_array par_arr = 0;
+
+        if (impl->lin) {
+            AF_THROW(af_flat(&par_arr, impl->parent->get()));
+            nd = 1;
+        } else {
+            par_arr = impl->parent->get();
+        }
+
         af_array tmp = 0;
-        AF_THROW(af_assign_gen(&tmp, impl->parent->get(), nd, impl->indices, other_arr));
-        impl->parent->set(tmp);
+        AF_THROW(af_assign_gen(&tmp, par_arr, nd, impl->indices, other_arr));
+
+        af_array res = 0;
+        if (impl->lin) {
+            AF_THROW(af_moddims(&res, tmp, this_dims.ndims(), this_dims.get()));
+            AF_THROW(af_release_array(par_arr));
+            AF_THROW(af_release_array(tmp));
+        } else {
+            res = tmp;
+        }
+
+        impl->parent->set(res);
 
         if (dim >= 0 && (is_reordered || batch_assign)) {
             if (other_arr) AF_THROW(af_release_array(other_arr));
@@ -625,15 +644,17 @@ namespace af
 #undef MEM_FUNC
 
 
-#define ASSIGN_TYPE(TY, OP)                                     \
-    array::array_proxy&                                         \
-    array::array_proxy::operator OP(const TY &value)            \
-    {                                                           \
-        dim4 dims = seqToDims(impl->indices, getDims(impl->parent->get())); \
-        af::dtype ty = impl->parent->type();                          \
-        array cst = constant(value, dims, ty);                  \
-        return this->operator OP(cst);                          \
-    }                                                           \
+#define ASSIGN_TYPE(TY, OP)                             \
+    array::array_proxy&                                 \
+    array::array_proxy::operator OP(const TY &value)    \
+    {                                                   \
+        dim4 pdims = getDims(impl->parent->get());      \
+        if (impl->lin) pdims = dim4(pdims.elements());  \
+        dim4 dims = seqToDims(impl->indices, pdims );   \
+        af::dtype ty = impl->parent->type();            \
+        array cst = constant(value, dims, ty);          \
+        return this->operator OP(cst);                  \
+    }                                                   \
 
 #define ASSIGN_OP(OP, op1)                      \
     ASSIGN_TYPE(double             , OP)        \
@@ -680,10 +701,13 @@ namespace af
     {
         af_array tmp = 0;
         af_array arr = 0;
+
         if(impl->lin)  {
-            af_flat(&arr, impl->parent->get());
+            AF_THROW(af_flat(&arr, impl->parent->get()));
+        } else {
+            arr = impl->parent->get();
         }
-        else        { arr = impl->parent->get(); }
+
         AF_THROW(af_index_gen(&tmp, arr, AF_MAX_DIMS, impl->indices));
         if(impl->lin)  {
             AF_THROW(af_release_array(arr));
@@ -696,10 +720,13 @@ namespace af
     {
         af_array tmp = 0;
         af_array arr = 0;
+
         if(impl->lin)  {
-            af_flat(&arr, impl->parent->get());
+            AF_THROW(af_flat(&arr, impl->parent->get()));
+        } else {
+            arr = impl->parent->get();
         }
-        else        { arr = impl->parent->get(); }
+
         AF_THROW(af_index_gen(&tmp, arr, AF_MAX_DIMS, impl->indices));
         if(impl->lin)  {
             AF_THROW(af_release_array(arr));
