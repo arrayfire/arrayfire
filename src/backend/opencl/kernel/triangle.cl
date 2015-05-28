@@ -25,7 +25,7 @@ void triangle_kernel(__global T *rptr, KParam rinfo,
     const int incx = groups_x * get_local_size(0);
 
     __global T *d_r = rptr;
-    const __global T *d_i = iptr;
+    const __global T *d_i = iptr + iinfo.offset;
 
     if(oz < rinfo.dims[2] && ow < rinfo.dims[3]) {
         d_i = d_i + oz * iinfo.strides[2] + ow * iinfo.strides[3];
