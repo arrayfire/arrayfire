@@ -385,8 +385,7 @@ void hamming_matcher(Param<uint> idx,
 
     // For each query vector, find training vector with smallest Hamming
     // distance per CUDA block
-    switch(use_shmem) {
-    case true:
+    if (use_shmem) {
         switch(feat_len) {
         // Optimized lengths (faster due to loop unrolling)
         case 1:
@@ -421,8 +420,8 @@ void hamming_matcher(Param<uint> idx,
             hamming_matcher<T,true><<<blocks, threads, smem_sz>>>
                            (d_blk_idx, d_blk_dist, query, train, max_dist, feat_len);
         }
-        break;
-    case false:
+    }
+    else {
         switch(feat_len) {
         // Optimized lengths (faster due to loop unrolling)
         case 1:
@@ -457,7 +456,6 @@ void hamming_matcher(Param<uint> idx,
             hamming_matcher<T,false><<<blocks, threads, smem_sz>>>
                            (d_blk_idx, d_blk_dist, query, train, max_dist, feat_len);
         }
-        break;
     }
     POST_LAUNCH_CHECK();
 

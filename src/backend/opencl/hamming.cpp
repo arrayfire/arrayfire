@@ -41,9 +41,7 @@ void hamming_matcher(Array<uint>& idx, Array<uint>& dist,
     const unsigned feat_len = qDims[dist_dim];
 
     // Determine maximum feat_len capable of using shared memory (faster)
-    int device = getActiveDeviceId();
-    std::vector<Device> devices = getContext().getInfo<CL_CONTEXT_DEVICES>();
-    cl_ulong avail_lmem = devices[device].getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
+    cl_ulong avail_lmem = getDevice().getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
     size_t lmem_predef = 2 * THREADS * sizeof(unsigned) + feat_len * sizeof(T);
     size_t ltrain_sz = THREADS * feat_len * sizeof(T);
     bool use_lmem = (avail_lmem >= (lmem_predef + ltrain_sz)) ? true : false;
@@ -77,8 +75,7 @@ void hamming_matcher(Array<uint>& idx, Array<uint>& dist,
             kernel::transpose<T, false, false>(trainT, train);
     }
 
-    switch (use_lmem) {
-    case true:
+    if (use_lmem) {
         switch (feat_len) {
         case 1:
             kernel::hamming_matcher<T, true , 1 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
@@ -105,8 +102,8 @@ void hamming_matcher(Array<uint>& idx, Array<uint>& dist,
             kernel::hamming_matcher<T, true , 0 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
             break;
         }
-        break;
-    case false:
+    }
+    else {
         switch (feat_len) {
         case 1:
             kernel::hamming_matcher<T, false, 1 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
@@ -133,7 +130,6 @@ void hamming_matcher(Array<uint>& idx, Array<uint>& dist,
             kernel::hamming_matcher<T, false, 0 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
             break;
         }
-        break;
     }
 }
 
