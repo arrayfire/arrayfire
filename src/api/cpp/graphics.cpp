@@ -52,6 +52,11 @@ void Window::setPos(const unsigned x, const unsigned y)
     AF_THROW(af_set_position(get(), x, y));
 }
 
+void Window::setTitle(const char* const title)
+{
+    AF_THROW(af_set_title(get(), title));
+}
+
 void Window::image(const array& in, const char* const title)
 {
     af_cell temp{_r, _c, title};
