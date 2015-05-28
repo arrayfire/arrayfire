@@ -21,7 +21,7 @@ namespace af
        \param[in] rhs second input
        \return minimum of \p lhs and \p rhs
 
-       \ingroup numeric_func_min
+       \ingroup arith_func_min
     */
     AFAPI array min    (const array &lhs, const array &rhs);
 
@@ -32,7 +32,7 @@ namespace af
        \param[in] rhs second input
        \return minimum of \p lhs and \p rhs
 
-       \ingroup numeric_func_min
+       \ingroup arith_func_min
     */
     AFAPI array min    (const array &lhs, const double rhs);
 
@@ -43,7 +43,7 @@ namespace af
        \param[in] rhs second input
        \return minimum of \p lhs and \p rhs
 
-       \ingroup numeric_func_min
+       \ingroup arith_func_min
     */
     AFAPI array min    (const double lhs, const array &rhs);
 
@@ -54,7 +54,7 @@ namespace af
        \param[in] rhs second input
        \return maximum of \p lhs and \p rhs
 
-       \ingroup numeric_func_max
+       \ingroup arith_func_max
     */
     AFAPI array max    (const array &lhs, const array &rhs);
 
@@ -65,7 +65,7 @@ namespace af
        \param[in] rhs second input
        \return maximum of \p lhs and \p rhs
 
-       \ingroup numeric_func_max
+       \ingroup arith_func_max
     */
     AFAPI array max    (const array &lhs, const double rhs);
 
@@ -76,7 +76,7 @@ namespace af
        \param[in] rhs second input
        \return maximum of \p lhs and \p rhs
 
-       \ingroup numeric_func_max
+       \ingroup arith_func_max
     */
     AFAPI array max    (const double lhs, const array &rhs);
 
@@ -87,7 +87,7 @@ namespace af
        \param[in] rhs is denominator
        \return remainder when \p rhs divides \p lhs
 
-       \ingroup numeric_func_rem
+       \ingroup arith_func_rem
     */
     AFAPI array rem    (const array &lhs, const array &rhs);
 
@@ -98,7 +98,7 @@ namespace af
        \param[in] rhs is denominator
        \return remainder when \p rhs divides \p lhs
 
-       \ingroup numeric_func_rem
+       \ingroup arith_func_rem
     */
     AFAPI array rem    (const array &lhs, const double rhs);
 
@@ -109,7 +109,7 @@ namespace af
        \param[in] rhs is denominator
        \return remainder when \p rhs divides \p lhs
 
-       \ingroup numeric_func_rem
+       \ingroup arith_func_rem
     */
     AFAPI array rem    (const double lhs, const array &rhs);
 
@@ -120,7 +120,7 @@ namespace af
        \param[in] rhs is divisor
        \return \p lhs modulo \p rhs
 
-       \ingroup numeric_func_mod
+       \ingroup arith_func_mod
     */
     AFAPI array mod    (const array &lhs, const array &rhs);
 
@@ -131,7 +131,7 @@ namespace af
        \param[in] rhs is divisor
        \return \p lhs modulo \p rhs
 
-       \ingroup numeric_func_mod
+       \ingroup arith_func_mod
     */
     AFAPI array mod    (const array &lhs, const double rhs);
 
@@ -142,7 +142,7 @@ namespace af
        \param[in] rhs is divisor
        \return \p lhs modulo \p rhs
 
-       \ingroup numeric_func_mod
+       \ingroup arith_func_mod
     */
     AFAPI array mod    (const double lhs, const array &rhs);
 
@@ -152,7 +152,7 @@ namespace af
        \param[in] in is input array
        \return absolute value of \p in
 
-       \ingroup numeric_func_abs
+       \ingroup arith_func_abs
     */
     AFAPI array abs    (const array &in);
 
@@ -164,7 +164,7 @@ namespace af
 
        \note The values are rounded to nearest integer
 
-       \ingroup numeric_func_round
+       \ingroup arith_func_round
     */
     AFAPI array round  (const array &in);
 
@@ -174,7 +174,7 @@ namespace af
        \param[in] in is input array
        \return values rounded to nearest integer less than or equal to current value
 
-       \ingroup numeric_func_floor
+       \ingroup arith_func_floor
     */
     AFAPI array floor  (const array &in);
 
@@ -184,7 +184,7 @@ namespace af
        \param[in] in is input array
        \return values rounded to nearest integer greater than or equal to current value
 
-       \ingroup numeric_func_ceil
+       \ingroup arith_func_ceil
     */
     AFAPI array ceil   (const array &in);
 
@@ -195,7 +195,7 @@ namespace af
        \param[in] rhs is the length of second side
        \return the length of the hypotenuse
 
-       \ingroup numeric_func_floor
+       \ingroup arith_func_hypot
     */
     AFAPI array hypot  (const array &lhs, const array &rhs);
 
@@ -206,7 +206,7 @@ namespace af
        \param[in] rhs is the length of second side
        \return the length of the hypotenuse
 
-       \ingroup numeric_func_floor
+       \ingroup arith_func_hypot
     */
     AFAPI array hypot  (const array &lhs, const double rhs);
 
@@ -217,7 +217,7 @@ namespace af
        \param[in] rhs is the length of second side
        \return the length of the hypotenuse
 
-       \ingroup numeric_func_floor
+       \ingroup arith_func_hypot
     */
     AFAPI array hypot  (const double lhs, const array &rhs);
 
@@ -227,7 +227,7 @@ namespace af
        \param[in] in is input array
        \return sin of input
 
-       \ingroup trig_func_sin
+       \ingroup arith_func_sin
     */
     AFAPI array sin    (const array &in);
 
@@ -237,7 +237,7 @@ namespace af
        \param[in] in is input array
        \return cos of input
 
-       \ingroup trig_func_cos
+       \ingroup arith_func_cos
     */
     AFAPI array cos    (const array &in);
 
@@ -247,7 +247,7 @@ namespace af
        \param[in] in is input array
        \return tan of input
 
-       \ingroup trig_func_tan
+       \ingroup arith_func_tan
     */
     AFAPI array tan    (const array &in);
 
@@ -257,7 +257,7 @@ namespace af
        \param[in] in is input array
        \return arc sin of input
 
-       \ingroup trig_func_asin
+       \ingroup arith_func_asin
     */
     AFAPI array asin   (const array &in);
 
@@ -267,7 +267,7 @@ namespace af
        \param[in] in is input array
        \return arc cos of input
 
-       \ingroup trig_func_acos
+       \ingroup arith_func_acos
     */
     AFAPI array acos   (const array &in);
 
@@ -277,7 +277,7 @@ namespace af
        \param[in] in is input array
        \return arc tan of input
 
-       \ingroup trig_func_atan
+       \ingroup arith_func_atan
     */
     AFAPI array atan   (const array &in);
 
@@ -288,7 +288,7 @@ namespace af
        \param[in] rhs value of denominator
        \return arc tan of the inputs
 
-       \ingroup trig_func_atan2
+       \ingroup arith_func_atan
     */
     AFAPI array atan2  (const array &lhs, const array &rhs);
 
@@ -299,7 +299,7 @@ namespace af
        \param[in] rhs value of denominator
        \return arc tan of the inputs
 
-       \ingroup trig_func_atan2
+       \ingroup arith_func_atan
     */
     AFAPI array atan2  (const array &lhs, const double rhs);
 
@@ -310,7 +310,7 @@ namespace af
        \param[in] rhs value of denominator
        \return arc tan of the inputs
 
-       \ingroup trig_func_atan
+       \ingroup arith_func_atan
     */
     AFAPI array atan2  (const double lhs, const array &rhs);
 
@@ -353,7 +353,7 @@ namespace af
        \param[in] in is real array
        \return complex array from in
 
-       \ingroup complex_func_cplx
+       \ingroup arith_func_cplx
     */
     AFAPI array complex(const array &in);
 
@@ -363,7 +363,7 @@ namespace af
        \param[in] in is complex array
        \return the real part of \p in
 
-       \ingroup complex_func_real
+       \ingroup arith_func_real
     */
     AFAPI array real   (const array &in);
 
@@ -373,7 +373,7 @@ namespace af
        \param[in] in is complex array
        \return the imaginary part of \p in
 
-       \ingroup complex_func_imag
+       \ingroup arith_func_imag
     */
     AFAPI array imag   (const array &in);
 
@@ -383,7 +383,7 @@ namespace af
        \param[in] in is complex array
        \return the complex conjugate of \p in
 
-       \ingroup complex_func_conjg
+       \ingroup arith_func_conjg
     */
     AFAPI array conjg  (const array &in);
 
@@ -393,7 +393,7 @@ namespace af
        \param[in] in is input array
        \return sinh of input
 
-       \ingroup hyper_func_sinh
+       \ingroup arith_func_sinh
     */
     AFAPI array sinh    (const array &in);
 
@@ -403,7 +403,7 @@ namespace af
        \param[in] in is input array
        \return cosh of input
 
-       \ingroup hyper_func_cosh
+       \ingroup arith_func_cosh
     */
     AFAPI array cosh    (const array &in);
 
@@ -413,7 +413,7 @@ namespace af
        \param[in] in is input array
        \return tanh of input
 
-       \ingroup hyper_func_tanh
+       \ingroup arith_func_tanh
     */
     AFAPI array tanh    (const array &in);
 
@@ -423,7 +423,7 @@ namespace af
        \param[in] in is input array
        \return sinh inverse of input
 
-       \ingroup hyper_func_asinh
+       \ingroup arith_func_asinh
     */
     AFAPI array asinh   (const array &in);
 
@@ -433,7 +433,7 @@ namespace af
        \param[in] in is input array
        \return cosh inverse of input
 
-       \ingroup hyper_func_acosh
+       \ingroup arith_func_acosh
     */
     AFAPI array acosh   (const array &in);
 
@@ -443,7 +443,7 @@ namespace af
        \param[in] in is input array
        \return tanh inverse of input
 
-       \ingroup hyper_func_atanh
+       \ingroup arith_func_atanh
     */
     AFAPI array atanh   (const array &in);
 
@@ -455,7 +455,7 @@ namespace af
        \param[in] rhs is exponent
        \return \p lhs raised to power \p rhs
 
-       \ingroup explog_func_pow
+       \ingroup arith_func_pow
     */
     AFAPI array pow    (const array &lhs, const array &rhs);
 
@@ -466,7 +466,7 @@ namespace af
        \param[in] rhs is exponent
        \return \p lhs raised to power \p rhs
 
-       \ingroup explog_func_pow
+       \ingroup arith_func_pow
     */
     AFAPI array pow    (const array &lhs, const double rhs);
 
@@ -477,7 +477,7 @@ namespace af
        \param[in] rhs is exponent
        \return \p lhs raised to power \p rhs
 
-       \ingroup explog_func_pow
+       \ingroup arith_func_pow
     */
     AFAPI array pow    (const double lhs, const array &rhs);
 
@@ -487,7 +487,7 @@ namespace af
        \param[in] in is exponent
        \return the exponential of \p in
 
-       \ingroup explog_func_exp
+       \ingroup arith_func_exp
     */
     AFAPI array exp    (const array &in);
 
@@ -499,7 +499,7 @@ namespace af
 
        \note This function is useful when \p in is small
 
-       \ingroup explog_func_expm1
+       \ingroup arith_func_expm1
     */
     AFAPI array expm1  (const array &in);
 
@@ -509,7 +509,7 @@ namespace af
        \param[in] in is input
        \return the error function value
 
-       \ingroup explog_func_erf
+       \ingroup arith_func_erf
     */
     AFAPI array erf    (const array &in);
 
@@ -519,7 +519,7 @@ namespace af
        \param[in] in is input
        \return the complementary error function value
 
-       \ingroup explog_func_erfc
+       \ingroup arith_func_erfc
     */
     AFAPI array erfc   (const array &in);
 
@@ -529,7 +529,7 @@ namespace af
        \param[in] in is input
        \return the natural logarithm of input
 
-       \ingroup explog_func_log
+       \ingroup arith_func_log
     */
     AFAPI array log    (const array &in);
 
@@ -541,7 +541,7 @@ namespace af
 
        \note This function is useful when \p is small
 
-       \ingroup explog_func_log1p
+       \ingroup arith_func_log1p
     */
     AFAPI array log1p  (const array &in);
 
@@ -551,7 +551,7 @@ namespace af
        \param[in] in is input
        \return the logarithm of input in base 10
 
-       \ingroup explog_func_log10
+       \ingroup arith_func_log10
     */
     AFAPI array log10  (const array &in);
 
@@ -571,7 +571,7 @@ namespace af
        \param[in] in is input
        \return the square root of input
 
-       \ingroup explog_func_sqrt
+       \ingroup arith_func_sqrt
     */
     AFAPI array sqrt   (const array &in);
 
@@ -581,7 +581,7 @@ namespace af
        \param[in] in is input
        \return the cube root of input
 
-       \ingroup explog_func_cbrt
+       \ingroup arith_func_cbrt
     */
     AFAPI array cbrt   (const array &in);
 
@@ -591,7 +591,7 @@ namespace af
        \param[in] in is input
        \return the gamma function of input
 
-       \ingroup explog_func_tgamma
+       \ingroup arith_func_tgamma
     */
     AFAPI array tgamma (const array &in);
 
@@ -601,7 +601,7 @@ namespace af
        \param[in] in is input
        \return the logarithm of absolute value of gamma function of input
 
-       \ingroup explog_func_tgamma
+       \ingroup arith_func_tgamma
     */
     AFAPI array lgamma (const array &in);
 
@@ -611,7 +611,7 @@ namespace af
         \param[in] in is input
         \return array containing 1's where input is 0, and 0 otherwise.
 
-        \ingroup helper_func_iszero
+        \ingroup arith_func_iszero
     */
     AFAPI array iszero (const array &in);
 
@@ -621,7 +621,7 @@ namespace af
         \param[in] in is input
         \return array containing 1's where input is Inf or -Inf, and 0 otherwise.
 
-        \ingroup helper_func_isinf
+        \ingroup arith_func_isinf
     */
     AFAPI array isInf  (const array &in);
 
@@ -631,7 +631,7 @@ namespace af
         \param[in] in is input
         \return array containing 1's where input is NaN, and 0 otherwise.
 
-        \ingroup helper_func_isnan
+        \ingroup arith_func_isnan
     */
     AFAPI array isNaN  (const array &in);
 }
@@ -715,7 +715,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup logic_func_gt
+       \ingroup arith_func_gt
     */
     AFAPI af_err af_gt    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -728,7 +728,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup logic_func_le
+       \ingroup arith_func_le
     */
     AFAPI af_err af_le    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -741,7 +741,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup logic_func_ge
+       \ingroup arith_func_ge
     */
     AFAPI af_err af_ge    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -754,7 +754,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup logic_func_eq
+       \ingroup arith_func_eq
     */
     AFAPI af_err af_eq    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -767,7 +767,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup logic_func_neq
+       \ingroup arith_func_neq
     */
     AFAPI af_err af_neq   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -780,7 +780,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup logic_func_and
+       \ingroup arith_func_and
     */
     AFAPI af_err af_and   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -793,7 +793,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup logic_func_or
+       \ingroup arith_func_or
     */
     AFAPI af_err af_or    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -804,7 +804,7 @@ extern "C" {
        \param[in] in is the input
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup logic_func_not
+       \ingroup arith_func_not
     */
     AFAPI af_err af_not   (af_array *out, const af_array in);
 
@@ -817,7 +817,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup logic_func_bitand
+       \ingroup arith_func_bitand
     */
     AFAPI af_err af_bitand   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -830,7 +830,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup logic_func_bitor
+       \ingroup arith_func_bitor
     */
     AFAPI af_err af_bitor    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -843,7 +843,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup logic_func_bitxor
+       \ingroup arith_func_bitxor
     */
     AFAPI af_err af_bitxor   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -881,7 +881,7 @@ extern "C" {
        \param[in] type is the target data type \ref af_dtype
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup helper_func_cast
+       \ingroup arith_func_cast
     */
     AFAPI af_err af_cast    (af_array *out, const af_array in, const af_dtype type);
 
@@ -894,7 +894,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup numeric_func_min
+       \ingroup arith_func_min
     */
     AFAPI af_err af_minof (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -907,7 +907,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup numeric_func_max
+       \ingroup arith_func_max
     */
     AFAPI af_err af_maxof (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -920,7 +920,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup numeric_func_rem
+       \ingroup arith_func_rem
     */
     AFAPI af_err af_rem   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -933,7 +933,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup numeric_func_mod
+       \ingroup arith_func_mod
     */
     AFAPI af_err af_mod   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -944,7 +944,7 @@ extern "C" {
        \param[in] in is input array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup numeric_func_abs
+       \ingroup arith_func_abs
     */
     AFAPI af_err af_abs     (af_array *out, const af_array in);
 
@@ -957,7 +957,7 @@ extern "C" {
 
        \note The values are rounded to nearest integer
 
-       \ingroup numeric_func_round
+       \ingroup arith_func_round
     */
     AFAPI af_err af_round   (af_array *out, const af_array in);
 
@@ -968,7 +968,7 @@ extern "C" {
        \param[in] in is input array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup numeric_func_floor
+       \ingroup arith_func_floor
     */
     AFAPI af_err af_floor   (af_array *out, const af_array in);
 
@@ -979,7 +979,7 @@ extern "C" {
        \param[in] in is input array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup numeric_func_ceil
+       \ingroup arith_func_ceil
     */
     AFAPI af_err af_ceil    (af_array *out, const af_array in);
 
@@ -992,7 +992,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup numeric_func_floor
+       \ingroup arith_func_floor
     */
     AFAPI af_err af_hypot (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -1003,7 +1003,7 @@ extern "C" {
        \param[in] in is input array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup trig_func_sin
+       \ingroup arith_func_sin
     */
     AFAPI af_err af_sin     (af_array *out, const af_array in);
 
@@ -1014,7 +1014,7 @@ extern "C" {
        \param[in] in is input array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup trig_func_cos
+       \ingroup arith_func_cos
     */
     AFAPI af_err af_cos     (af_array *out, const af_array in);
 
@@ -1025,7 +1025,7 @@ extern "C" {
        \param[in] in is input array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup trig_func_tan
+       \ingroup arith_func_tan
     */
     AFAPI af_err af_tan     (af_array *out, const af_array in);
 
@@ -1036,7 +1036,7 @@ extern "C" {
        \param[in] in is input array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup trig_func_asin
+       \ingroup arith_func_asin
     */
     AFAPI af_err af_asin    (af_array *out, const af_array in);
 
@@ -1047,7 +1047,7 @@ extern "C" {
        \param[in] in is input array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup trig_func_acos
+       \ingroup arith_func_acos
     */
     AFAPI af_err af_acos    (af_array *out, const af_array in);
 
@@ -1058,7 +1058,7 @@ extern "C" {
        \param[in] in is input array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup trig_func_atan
+       \ingroup arith_func_atan
     */
     AFAPI af_err af_atan    (af_array *out, const af_array in);
 
@@ -1071,7 +1071,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup trig_func_atan
+       \ingroup arith_func_atan
     */
     AFAPI af_err af_atan2 (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -1084,7 +1084,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup complex_func_cplx
+       \ingroup arith_func_cplx
     */
     AFAPI af_err af_cplx2 (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -1095,7 +1095,7 @@ extern "C" {
        \param[in] in is real array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup complex_func_cplx
+       \ingroup arith_func_cplx
     */
     AFAPI af_err af_cplx    (af_array *out, const af_array in);
 
@@ -1106,7 +1106,7 @@ extern "C" {
        \param[in] in is complex array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup complex_func_real
+       \ingroup arith_func_real
     */
     AFAPI af_err af_real    (af_array *out, const af_array in);
 
@@ -1117,7 +1117,7 @@ extern "C" {
        \param[in] in is complex array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup complex_func_imag
+       \ingroup arith_func_imag
     */
     AFAPI af_err af_imag    (af_array *out, const af_array in);
 
@@ -1128,7 +1128,7 @@ extern "C" {
        \param[in] in is complex array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup complex_func_conjg
+       \ingroup arith_func_conjg
     */
     AFAPI af_err af_conjg   (af_array *out, const af_array in);
 
@@ -1139,7 +1139,7 @@ extern "C" {
        \param[in] in is input array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup hyper_func_sinh
+       \ingroup arith_func_sinh
     */
     AFAPI af_err af_sinh    (af_array *out, const af_array in);
 
@@ -1150,7 +1150,7 @@ extern "C" {
        \param[in] in is input array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup hyper_func_cosh
+       \ingroup arith_func_cosh
     */
     AFAPI af_err af_cosh    (af_array *out, const af_array in);
 
@@ -1161,7 +1161,7 @@ extern "C" {
        \param[in] in is input array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup hyper_func_tanh
+       \ingroup arith_func_tanh
     */
     AFAPI af_err af_tanh    (af_array *out, const af_array in);
 
@@ -1172,7 +1172,7 @@ extern "C" {
        \param[in] in is input array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup hyper_func_asinh
+       \ingroup arith_func_asinh
     */
     AFAPI af_err af_asinh   (af_array *out, const af_array in);
 
@@ -1183,7 +1183,7 @@ extern "C" {
        \param[in] in is input array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup hyper_func_acosh
+       \ingroup arith_func_acosh
     */
     AFAPI af_err af_acosh   (af_array *out, const af_array in);
 
@@ -1194,7 +1194,7 @@ extern "C" {
        \param[in] in is input array
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup hyper_func_atanh
+       \ingroup arith_func_atanh
     */
     AFAPI af_err af_atanh   (af_array *out, const af_array in);
 
@@ -1207,7 +1207,7 @@ extern "C" {
        \param[in] batch specifies if operations need to be performed in batch mode
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup explog_func_pow
+       \ingroup arith_func_pow
     */
     AFAPI af_err af_pow   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
@@ -1218,7 +1218,7 @@ extern "C" {
        \param[in] in is exponent
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup explog_func_exp
+       \ingroup arith_func_exp
     */
     AFAPI af_err af_exp     (af_array *out, const af_array in);
 
@@ -1229,7 +1229,7 @@ extern "C" {
        \param[in] in is input
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup explog_func_expm1
+       \ingroup arith_func_expm1
     */
     AFAPI af_err af_expm1   (af_array *out, const af_array in);
 
@@ -1240,7 +1240,7 @@ extern "C" {
        \param[in] in is input
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup explog_func_erf
+       \ingroup arith_func_erf
     */
     AFAPI af_err af_erf     (af_array *out, const af_array in);
 
@@ -1251,7 +1251,7 @@ extern "C" {
        \param[in] in is input
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup explog_func_erfc
+       \ingroup arith_func_erfc
     */
     AFAPI af_err af_erfc    (af_array *out, const af_array in);
 
@@ -1262,7 +1262,7 @@ extern "C" {
        \param[in] in is input
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup explog_func_log
+       \ingroup arith_func_log
     */
     AFAPI af_err af_log     (af_array *out, const af_array in);
 
@@ -1273,7 +1273,7 @@ extern "C" {
        \param[in] in is input
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup explog_func_log1p
+       \ingroup arith_func_log1p
     */
     AFAPI af_err af_log1p   (af_array *out, const af_array in);
 
@@ -1284,7 +1284,7 @@ extern "C" {
        \param[in] in is input
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup explog_func_log10
+       \ingroup arith_func_log10
     */
     AFAPI af_err af_log10   (af_array *out, const af_array in);
 
@@ -1306,7 +1306,7 @@ extern "C" {
        \param[in] in is input
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup explog_func_sqrt
+       \ingroup arith_func_sqrt
     */
     AFAPI af_err af_sqrt    (af_array *out, const af_array in);
 
@@ -1317,7 +1317,7 @@ extern "C" {
        \param[in] in is input
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup explog_func_cbrt
+       \ingroup arith_func_cbrt
     */
     AFAPI af_err af_cbrt    (af_array *out, const af_array in);
 
@@ -1328,7 +1328,7 @@ extern "C" {
        \param[in] in is input
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup explog_func_tgamma
+       \ingroup arith_func_tgamma
     */
     AFAPI af_err af_tgamma   (af_array *out, const af_array in);
 
@@ -1339,7 +1339,7 @@ extern "C" {
        \param[in] in is input
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup explog_func_lgamma
+       \ingroup arith_func_lgamma
     */
     AFAPI af_err af_lgamma   (af_array *out, const af_array in);
 
@@ -1350,7 +1350,7 @@ extern "C" {
         \param[in] in is input
         \return \ref AF_SUCCESS if the execution completes properly
 
-        \ingroup helper_func_iszero
+        \ingroup arith_func_iszero
     */
     AFAPI af_err af_iszero  (af_array *out, const af_array in);
 
@@ -1361,7 +1361,7 @@ extern "C" {
         \param[in] in is input
         \return \ref AF_SUCCESS if the execution completes properly
 
-        \ingroup helper_func_isinf
+        \ingroup arith_func_isinf
     */
     AFAPI af_err af_isinf   (af_array *out, const af_array in);
 
@@ -1372,7 +1372,7 @@ extern "C" {
         \param[in] in is input
         \return \ref AF_SUCCESS if the execution completes properly
 
-        \ingroup helper_func_nan
+        \ingroup arith_func_nan
     */
     AFAPI af_err af_isnan   (af_array *out, const af_array in);
 #ifdef __cplusplus

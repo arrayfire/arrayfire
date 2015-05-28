@@ -894,197 +894,252 @@ namespace af
     };
     // end of class array
 
-#define BIN_OP(op)                                                      \
-    AFAPI array operator op(const array&, const array&);                \
-    AFAPI array operator op(const bool&, const array&);                 \
-    AFAPI array operator op(const int&, const array&);                  \
-    AFAPI array operator op(const unsigned&, const array&);             \
-    AFAPI array operator op(const char&, const array&);                 \
-    AFAPI array operator op(const unsigned char&, const array&);        \
-    AFAPI array operator op(const long&, const array&);                 \
-    AFAPI array operator op(const unsigned long&, const array&);        \
-    AFAPI array operator op(const long long&, const array&);            \
-    AFAPI array operator op(const unsigned long long&, const array&);   \
-    AFAPI array operator op(const double&, const array&);               \
-    AFAPI array operator op(const float&, const array&);                \
-    AFAPI array operator op(const cfloat&, const array&);               \
-    AFAPI array operator op(const cdouble&, const array&);              \
-    AFAPI array operator op(const array&, const array&);                \
-    AFAPI array operator op(const array&, const bool&);                 \
-    AFAPI array operator op(const array&, const int&);                  \
-    AFAPI array operator op(const array&, const unsigned&);             \
-    AFAPI array operator op(const array&, const char&);                 \
-    AFAPI array operator op(const array&, const unsigned char&);        \
-    AFAPI array operator op(const array&, const long&);                 \
-    AFAPI array operator op(const array&, const unsigned long&);        \
-    AFAPI array operator op(const array&, const long long&);            \
-    AFAPI array operator op(const array&, const unsigned long long&);   \
-    AFAPI array operator op(const array&, const double&);               \
-    AFAPI array operator op(const array&, const float&);                \
-    AFAPI array operator op(const array&, const cfloat&);               \
-    AFAPI array operator op(const array&, const cdouble&);              \
+#define BIN_OP(OP)                                                                                                       \
+    AFAPI array OP (const array& lhs, const array& rhs);                                                                 \
+    AFAPI array OP (const bool& lhs, const array& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const int& lhs, const array& rhs);                  /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const unsigned& lhs, const array& rhs);             /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const char& lhs, const array& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const unsigned char& lhs, const array& rhs);        /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const long& lhs, const array& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const unsigned long& lhs, const array& rhs);        /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const long long& lhs, const array& rhs);            /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const unsigned long long& lhs, const array& rhs);   /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const double& lhs, const array& rhs);               /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const float& lhs, const array& rhs);                /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const cfloat& lhs, const array& rhs);               /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const cdouble& lhs, const array& rhs);              /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const bool& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const int& rhs);                  /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const unsigned& rhs);             /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const char& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const unsigned char& rhs);        /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const long& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const unsigned long& rhs);        /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const long long& rhs);            /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const unsigned long long& rhs);   /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const double& rhs);               /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const float& rhs);                /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const cfloat& rhs);               /**< \copydoc OP (const array&, const array&) */ \
+    AFAPI array OP (const array& lhs, const cdouble& rhs);              /**< \copydoc OP (const array&, const array&) */ \
 
-    /**
-       \ingroup arith_func_add
-       @{
-    */
-    BIN_OP(+ )
-    /**
-       @}
-    */
+    /// \ingroup arith_func_add
+    /// @{
+    /// \brief Adds two arrays or an array and a value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns an array which is the sum of the \p lhs and \p rhs
+    BIN_OP(operator+ )
+    /// @}
 
-    /**
-       \ingroup arith_func_sub
-       @{
-    */
-    BIN_OP(- )
-    /**
-       @}
-    */
+    /// \ingroup arith_func_sub
+    /// @{
+    /// \brief Subtracts two arrays or an array and a value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns an array which is the subtraction of the \p lhs and \p rhs
+    BIN_OP(operator- )
+    /// @}
 
-    /**
-       \ingroup arith_func_mul
-       @{
-    */
-    BIN_OP(* )
-    /**
-       @}
-    */
+    /// \ingroup arith_func_mul
+    /// @{
+    /// \brief Multiplies two arrays or an array and a value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns an array which is the product of the \p lhs and \p rhs
+    BIN_OP(operator* )
+    /// @}
 
-    /**
-       \ingroup arith_func_div
-       @{
-    */
-    BIN_OP(/ )
-    /**
-       @}
-    */
+    /// \ingroup arith_func_div
+    /// @{
+    /// \brief Divides two arrays or an array and a value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns an array which is the quotient of the \p lhs and \p rhs
+    BIN_OP(operator/ )
+    /// @}
 
-    /**
-       \ingroup logic_func_eq
-       @{
-    */
-    BIN_OP(==)
-    /**
-       @}
-    */
+    /// \ingroup arith_func_eq
+    /// @{
+    /// \brief Performs an equality operation on two arrays or an array and a value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns an array with the equality operation performed on each element
+    BIN_OP(operator==)
+    /// @}
 
-    /**
-       \ingroup logic_func_neq
-       @{
-    */
-    BIN_OP(!=)
-    /**
-       @}
-    */
+    /// \ingroup arith_func_neq
+    /// @{
+    /// \brief Performs an equality operation on two arrays or an array and a value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns    an array with the != operation performed on each element
+    ///             of \p lhs and \p rhs
+    BIN_OP(operator!=)
+    /// @}
 
-    /**
-       \ingroup logic_func_lt
-       @{
-    */
-    BIN_OP(< )
-    /**
-       @}
-    */
+    /// \ingroup arith_func_lt
+    /// @{
+    /// \brief Performs an < operation on two arrays or an array and a value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns    an array with the < operation performed on each element
+    ///             of \p lhs and \p rhs
+    BIN_OP(operator< )
+    /// @}
 
-    /**
-       \ingroup logic_func_le
-       @{
-    */
-    BIN_OP(<=)
-    /**
-       @}
-    */
+    /// \ingroup arith_func_le
+    /// @{
+    /// \brief Performs an <= operation on two arrays or an array and a value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns    an array with the <= operation performed on each element
+    ///             of \p lhs and \p rhs
+    BIN_OP(operator<=)
+    /// @}
 
-    /**
-       \ingroup logic_func_gt
-       @{
-    */
-    BIN_OP(> )
-    /**
-       @}
-    */
+    /// \ingroup arith_func_gt
+    /// @{
+    /// \brief Performs an > operation on two arrays or an array and a value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns    an array with the > operation performed on each element
+    ///             of \p lhs and \p rhs
+    BIN_OP(operator> )
+    /// @}
 
-    /**
-       \ingroup logic_func_ge
-       @{
-    */
-    BIN_OP(>=)
-    /**
-       @}
-    */
+    /// \ingroup arith_func_ge
+    /// @{
+    /// \brief Performs an >= operation on two arrays or an array and a value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns    an array with the >= operation performed on each element
+    ///             of \p lhs and \p rhs
+    BIN_OP(operator>=)
+    /// @}
 
-    /**
-       \ingroup logic_func_and
-       @{
-    */
-    BIN_OP(&&)
-    /**
-       @}
-    */
+    /// \ingroup arith_func_and
+    /// @{
+    /// \brief  Performs a logical AND operation on two arrays or an array and a
+    ///         value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns    an array with a logical AND operation performed on each
+    ///             element of \p lhs and \p rhs
+    BIN_OP(operator&&)
+    /// @}
 
-    /**
-       \ingroup logic_func_or
-       @{
-    */
-    BIN_OP(||)
-    /**
-       @}
-    */
+    /// \ingroup arith_func_or
+    /// @{
+    /// \brief  Performs an logical OR operation on two arrays or an array and a
+    ///         value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns    an array with a logical OR operation performed on each
+    ///             element of \p lhs and \p rhs
+    BIN_OP(operator||)
+    /// @}
 
-    /**
-       \ingroup numeric_func_rem
-       @{
-    */
-    BIN_OP(% )
-    /**
-       @}
-    */
+    /// \ingroup numeric_func_rem
+    /// @{
+    /// \brief Performs an modulo operation on two arrays or an array and a value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns    an array with a modulo operation performed on each
+    ///             element of \p lhs and \p rhs
+    BIN_OP(operator% )
+    /// @}
 
-    /**
-       \ingroup logic_func_bitand
-       @{
-    */
-    BIN_OP(& )
-    /**
-       @}
-    */
+    /// \ingroup arith_func_bitand
+    /// @{
+    /// \brief  Performs an bitwise AND operation on two arrays or an array and
+    ///         a value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns    an array with a bitwise AND operation performed on each
+    ///             element of \p lhs and \p rhs
+    BIN_OP(operator& )
+    /// @}
 
-    /**
-       \ingroup logic_func_bitor
-       @{
-    */
-    BIN_OP(| )
-    /**
-       @}
-    */
+    /// \ingroup arith_func_bitor
+    /// @{
+    /// \brief  Performs an bitwise AND operation on two arrays or an array and
+    ///         a value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns    an array with a bitwise OR operation performed on each
+    ///             element of \p lhs and \p rhs
+    BIN_OP(operator| )
+    /// @}
 
-    /**
-       \ingroup logic_func_bitxor
-       @{
-    */
-    BIN_OP(^ )
-    /**
-       @}
-    */
+    /// \ingroup arith_func_bitxor
+    /// @{
+    /// \brief  Performs an bitwise AND operation on two arrays or an array and
+    ///         a value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns    an array with a bitwise OR operation performed on each
+    ///             element of \p lhs and \p rhs
+    BIN_OP(operator^ )
+    /// @}
 
-    /**
-       \ingroup arith_func_shiftl
-       @{
-    */
-    BIN_OP(<<)
-    /**
-       @}
-    */
+    /// \ingroup arith_func_shiftl
+    /// @{
+    /// \brief  Performs an left shift operation on two arrays or an array and a
+    ///          value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns    an array with a left shift operation performed on each
+    ///             element of \p lhs and \p rhs
+    BIN_OP(operator<<)
+    /// @}
 
-    /**
-       \ingroup arith_func_shiftr
-       @{
-    */
-    BIN_OP(>>)
-    /**
-       @}
-    */
+    /// \ingroup arith_func_shiftr
+    /// @{
+    /// \brief  Performs an right shift operation on two arrays or an array and a
+    ///          value.
+    ///
+    /// \param[in] lhs the left hand side value of the operand
+    /// \param[in] rhs the right hand side value of the operand
+    ///
+    /// \returns    an array with a right shift operation performed on each
+    ///             element of \p lhs and \p rhs
+    BIN_OP(operator>>)
+    /// @}
 
 #undef BIN_OP
 
