@@ -56,6 +56,13 @@ array mandelbrot(const array &in, int iter, float maxval)
     return mag / maxval;
 }
 
+array normalize(array a)
+{
+    float mx = af::max<float>(a);
+    float mn = af::min<float>(a);
+    return (a-mn)/(mx-mn);
+}
+
 int main(int argc, char **argv)
 {
     int device = argc > 1 ? atoi(argv[1]) : 0;
@@ -76,7 +83,7 @@ int main(int argc, char **argv)
             // Generate the mandelbrot image
             array mag = mandelbrot(c, iter, 1000);
             if(!console) {
-                wnd.image(mag);
+                wnd.image(normalize(mag));
             }
         }
 
