@@ -345,8 +345,25 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
 }
 
 template<typename T>
+Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop options)
+{
+    Array<T> B = copyArray<T>(b);
+    trsm(A, B,
+         AF_MAT_NONE, // transpose flag
+         options & AF_MAT_UPPER ? true : false,
+         true, // is_left
+         options & AF_MAT_DIAG_UNIT ? true : false);
+    return B;
+}
+
+template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
+    if (options & AF_MAT_UPPER ||
+        options & AF_MAT_LOWER) {
+        return triangleSolve<T>(a, b, options);
+    }
+
     if(a.dims()[0] == a.dims()[1]) {
         return generalSolve<T>(a, b);
     } else {

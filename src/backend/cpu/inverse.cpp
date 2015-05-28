@@ -61,9 +61,9 @@ Array<T> inverse(const Array<T> &in)
 
     Array<int> pivot = lu_inplace<T>(A, false);
 
-    int out = getri_func<T>()(AF_LAPACK_COL_MAJOR, M,
-                              A.get(), A.strides()[1],
-                              pivot.get());
+    getri_func<T>()(AF_LAPACK_COL_MAJOR, M,
+                    A.get(), A.strides()[1],
+                    pivot.get());
 
     return A;
 }

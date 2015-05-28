@@ -182,8 +182,6 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
         Array<T> A = copyArray<T>(a);
         B = copyArray(b);
 
-        dim4 aDims = A.dims();
-
         int MN = std::min(M, N);
         int NB = magma_get_geqrf_nb<T>(M);
 
@@ -248,10 +246,63 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
 }
 
 template<typename T>
+Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop options)
+{
+    trsm_func<T> gpu_trsm;
+
+    Array<T> B = copyArray<T>(b);
+
+    int N = B.dims()[0];
+    int NRHS = B.dims()[1];
+
+    const cl::Buffer* A_buf = A.get();
+    cl::Buffer* B_buf = B.get();
+
+    cl_event event = 0;
+    cl_command_queue queue = getQueue()();
+
+    std::string pName = getPlatformName(getDevice());
+    if(pName.find("NVIDIA") != std::string::npos && (options & AF_MAT_UPPER))
+    {
+        Array<T> AT = transpose<T>(A, true);
+
+        cl::Buffer* AT_buf = AT.get();
+        gpu_trsm(clblasColumnMajor,
+                 clblasLeft,
+                 clblasLower,
+                 clblasNoTrans,
+                 options & AF_MAT_DIAG_UNIT ? clblasUnit : clblasNonUnit,
+                 N, NRHS, scalar<T>(1),
+                 (*AT_buf)(), AT.getOffset(), AT.strides()[1],
+                 (*B_buf)(), B.getOffset(), B.strides()[1],
+                 1, &queue, 0, nullptr, &event);
+    } else {
+        gpu_trsm(clblasColumnMajor,
+                 clblasLeft,
+                 options & AF_MAT_LOWER ? clblasLower : clblasUpper,
+                 clblasNoTrans,
+                 options & AF_MAT_DIAG_UNIT ? clblasUnit : clblasNonUnit,
+                 N, NRHS, scalar<T>(1),
+                 (*A_buf)(), A.getOffset(), A.strides()[1],
+                 (*B_buf)(), B.getOffset(), B.strides()[1],
+                 1, &queue, 0, nullptr, &event);
+    }
+
+    return B;
+}
+
+
+template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
     try {
         initBlas();
+
+        if (options & AF_MAT_UPPER ||
+            options & AF_MAT_LOWER) {
+            return triangleSolve<T>(a, b, options);
+        }
+
         if(a.dims()[0] == a.dims()[1]) {
             return generalSolve<T>(a, b);
         } else {

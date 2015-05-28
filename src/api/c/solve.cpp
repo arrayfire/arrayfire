@@ -51,8 +51,17 @@ af_err af_solve(af_array *out, const af_array a, const af_array b, const af_mat_
         DIM_ASSERT(1, bdims[2] == adims[2]);
         DIM_ASSERT(1, bdims[3] == adims[3]);
 
-        if (options != AF_MAT_NONE) {
+        bool is_triangle_solve = (options & AF_MAT_LOWER) || (options & AF_MAT_UPPER);
+
+        if (options != AF_MAT_NONE && !is_triangle_solve) {
             AF_ERROR("Using this property is not yet supported in solve", AF_ERR_NOT_SUPPORTED);
+        }
+
+        if (is_triangle_solve) {
+            DIM_ASSERT(1, adims[0] == adims[1]);
+            if ((options & AF_MAT_TRANS || options & AF_MAT_CTRANS)) {
+                AF_ERROR("Using AF_MAT_TRANS is not yet supported in solve", AF_ERR_NOT_SUPPORTED);
+            }
         }
 
         af_array output;

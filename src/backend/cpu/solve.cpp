@@ -43,6 +43,13 @@ using getrs_func_def = int (*)(ORDER_TYPE, char,
                                const int *,
                                T *, int);
 
+template<typename T>
+using trtrs_func_def = int (*)(ORDER_TYPE,
+                               char, char, char,
+                               int, int,
+                               const T *, int,
+                               T *, int);
+
 
 #define SOLVE_FUNC_DEF( FUNC )                                      \
 template<typename T> FUNC##_func_def<T> FUNC##_func();
@@ -70,6 +77,12 @@ SOLVE_FUNC(getrs , double , d)
 SOLVE_FUNC(getrs , cfloat , c)
 SOLVE_FUNC(getrs , cdouble, z)
 
+SOLVE_FUNC_DEF( trtrs )
+SOLVE_FUNC(trtrs , float  , s)
+SOLVE_FUNC(trtrs , double , d)
+SOLVE_FUNC(trtrs , cfloat , c)
+SOLVE_FUNC(trtrs , cdouble, z)
+
 template<typename T>
 Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
                  const Array<T> &b, const af_mat_prop options)
@@ -89,8 +102,32 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
 }
 
 template<typename T>
+Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop options)
+{
+    Array<T> B = copyArray<T>(b);
+    int N = B.dims()[0];
+    int NRHS = B.dims()[1];
+
+    trtrs_func<T>()(AF_LAPACK_COL_MAJOR,
+                    options & AF_MAT_UPPER ? 'U' : 'L',
+                    'N', // transpose flag
+                    options & AF_MAT_DIAG_UNIT ? 'U' : 'N',
+                    N, NRHS,
+                    A.get(), A.strides()[1],
+                    B.get(), B.strides()[1]);
+    return B;
+}
+
+
+template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
+
+    if (options & AF_MAT_UPPER ||
+        options & AF_MAT_LOWER) {
+        return triangleSolve<T>(a, b, options);
+    }
+
     int M = a.dims()[0];
     int N = a.dims()[1];
     int K = b.dims()[1];
