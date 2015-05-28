@@ -44,6 +44,7 @@ class AFAPI Window {
 
         af_window get() const { return wnd; }
         void setPos(const unsigned x, const unsigned y);
+        void setTitle(const char* const title);
 
         void image(const array& in, const char* title=NULL);
         void plot(const array& X, const array& Y, const char* const title=NULL);
@@ -69,6 +70,8 @@ extern "C" {
 AFAPI af_err af_create_window(af_window *out, const int width, const int height, const char* const title);
 
 AFAPI af_err af_set_position(const af_window wind, const unsigned x, const unsigned y);
+
+AFAPI af_err af_set_title(const af_window wind, const char* const title);
 
 AFAPI af_err af_draw_image(const af_window wind, const af_array in, const af_cell* const props);
 
