@@ -8,6 +8,7 @@
  ********************************************************/
 
 // OpenCL < 1.2 compatibility
+#if !defined(__OPENCL_VERSION__) || __OPENCL_VERSION__ < 120
 __inline unsigned popcount(unsigned x)
 {
     x = x - ((x >> 1) & 0x55555555);
@@ -17,8 +18,7 @@ __inline unsigned popcount(unsigned x)
     x = x + (x >> 16);
     return x & 0x0000003F;
 }
-
-//template<typename T, unsigned feat_len, bool use_shmem>
+#endif
 
 __kernel
 void hamming_matcher_unroll(
@@ -50,7 +50,7 @@ void hamming_matcher_unroll(
 
 #ifdef USE_LOCAL_MEM
     if (valid_feat) {
-        // Copy blockDim.x training features to shared memory
+        // Copy local_size(0) training features to shared memory
         #pragma unroll
         for (unsigned i = 0; i < FEAT_LEN; i++) {
             l_train[i * get_local_size(0) + tid] = train[i * ntrain + f];
@@ -191,7 +191,7 @@ void hamming_matcher(
 
 #ifdef USE_LOCAL_MEM
     if (valid_feat) {
-        // Copy blockDim.x training features to shared memory
+        // Copy local_size(0) training features to shared memory
         for (unsigned i = 0; i < feat_len; i++) {
             l_train[i * get_local_size(0) + tid] = train[i * ntrain + f];
         }
@@ -310,7 +310,8 @@ void select_matches(
     const unsigned max_dist)
 {
     unsigned f = get_global_id(0);
-    unsigned sid = get_local_id(0) * get_local_size(1) + get_local_id(1);
+    unsigned lsz1 = get_local_size(1);
+    unsigned sid = get_local_id(0) * lsz1 + get_local_id(1);
 
     __local unsigned l_dist[THREADS];
     __local unsigned l_idx[THREADS];
@@ -319,10 +320,13 @@ void select_matches(
 
     if (valid_feat)
         l_dist[sid] = max_dist;
-    __syncthreads();
+    barrier(CLK_LOCAL_MEM_FENCE);
 
-    for (unsigned i = get_local_id(1); i < nelem; i += get_local_size(1)) {
-        if (valid_feat) {
+    unsigned nelem_max = (nelem / lsz1) * lsz1;
+    nelem_max = (nelem % lsz1 == 0) ? nelem_max : nelem_max + lsz1;
+
+    for (unsigned i = get_local_id(1); i < nelem_max; i += get_local_size(1)) {
+        if (valid_feat && i < nelem) {
             unsigned dist = in_dist[f * nelem + i];
 
             // Copy all best matches previously found in hamming_matcher() to
@@ -332,10 +336,9 @@ void select_matches(
                 l_idx[sid]  = in_idx[f * nelem + i];
             }
         }
-        __syncthreads();
+        barrier(CLK_LOCAL_MEM_FENCE);
     }
 
-    // Reduce best matches and find the best of them all
     for (unsigned i = get_local_size(1) / 2; i > 0; i >>= 1) {
         if (get_local_id(1) < i) {
             if (valid_feat) {
@@ -345,8 +348,8 @@ void select_matches(
                     l_idx[sid]  = l_idx[sid + i];
                 }
             }
-            __syncthreads();
         }
+        barrier(CLK_LOCAL_MEM_FENCE);
     }
 
     // Store best matches and indexes to training dataset
