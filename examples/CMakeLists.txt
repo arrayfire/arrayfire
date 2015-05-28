@@ -65,9 +65,9 @@ FOREACH(FILE ${FILES})
 ENDFOREACH()
 
 INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-    DESTINATION share/doc/arrayfire/
+    DESTINATION "${AF_INSTALL_DOC_DIR}"
     COMPONENT examples)
 
 INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../assets/examples"
-    DESTINATION share/doc/arrayfire/examples/assets/
+    DESTINATION "${AF_INSTALL_DOC_DIR}/examples/assets/"
 )
