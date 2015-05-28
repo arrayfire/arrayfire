@@ -523,9 +523,28 @@ namespace af
             }
         }
 
+        af_array par_arr = 0;
+
+        if (impl->lin) {
+            AF_THROW(af_flat(&par_arr, impl->parent->get()));
+            nd = 1;
+        } else {
+            par_arr = impl->parent->get();
+        }
+
         af_array tmp = 0;
-        AF_THROW(af_assign_gen(&tmp, impl->parent->get(), nd, impl->indices, other_arr));
-        impl->parent->set(tmp);
+        AF_THROW(af_assign_gen(&tmp, par_arr, nd, impl->indices, other_arr));
+
+        af_array res = 0;
+        if (impl->lin) {
+            AF_THROW(af_moddims(&res, tmp, this_dims.ndims(), this_dims.get()));
+            AF_THROW(af_release_array(par_arr));
+            AF_THROW(af_release_array(tmp));
+        } else {
+            res = tmp;
+        }
+
+        impl->parent->set(res);
 
         if (dim >= 0 && (is_reordered || batch_assign)) {
             if (other_arr) AF_THROW(af_release_array(other_arr));
@@ -625,15 +644,17 @@ namespace af
 #undef MEM_FUNC
 
 
-#define ASSIGN_TYPE(TY, OP)                                     \
-    array::array_proxy&                                         \
-    array::array_proxy::operator OP(const TY &value)            \
-    {                                                           \
-        dim4 dims = seqToDims(impl->indices, getDims(impl->parent->get())); \
-        af::dtype ty = impl->parent->type();                          \
-        array cst = constant(value, dims, ty);                  \
-        return this->operator OP(cst);                          \
-    }                                                           \
+#define ASSIGN_TYPE(TY, OP)                             \
+    array::array_proxy&                                 \
+    array::array_proxy::operator OP(const TY &value)    \
+    {                                                   \
+        dim4 pdims = getDims(impl->parent->get());      \
+        if (impl->lin) pdims = dim4(pdims.elements());  \
+        dim4 dims = seqToDims(impl->indices, pdims );   \
+        af::dtype ty = impl->parent->type();            \
+        array cst = constant(value, dims, ty);          \
+        return this->operator OP(cst);                  \
+    }                                                   \
 
 #define ASSIGN_OP(OP, op1)                      \
     ASSIGN_TYPE(double             , OP)        \
@@ -680,10 +701,13 @@ namespace af
     {
         af_array tmp = 0;
         af_array arr = 0;
+
         if(impl->lin)  {
-            af_flat(&arr, impl->parent->get());
+            AF_THROW(af_flat(&arr, impl->parent->get()));
+        } else {
+            arr = impl->parent->get();
         }
-        else        { arr = impl->parent->get(); }
+
         AF_THROW(af_index_gen(&tmp, arr, AF_MAX_DIMS, impl->indices));
         if(impl->lin)  {
             AF_THROW(af_release_array(arr));
@@ -696,10 +720,13 @@ namespace af
     {
         af_array tmp = 0;
         af_array arr = 0;
+
         if(impl->lin)  {
-            af_flat(&arr, impl->parent->get());
+            AF_THROW(af_flat(&arr, impl->parent->get()));
+        } else {
+            arr = impl->parent->get();
         }
-        else        { arr = impl->parent->get(); }
+
         AF_THROW(af_index_gen(&tmp, arr, AF_MAX_DIMS, impl->indices));
         if(impl->lin)  {
             AF_THROW(af_release_array(arr));
