@@ -102,8 +102,7 @@ void hamming_matcher(Array<uint>& idx, Array<uint>& dist,
             kernel::hamming_matcher<T, true , 0 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
             break;
         }
-    }
-    else {
+    } else {
         switch (feat_len) {
         case 1:
             kernel::hamming_matcher<T, false, 1 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);

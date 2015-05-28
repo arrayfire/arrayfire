@@ -169,6 +169,29 @@ MQR_FUNC(mqr , cfloat , Cunmqr)
 MQR_FUNC(mqr , cdouble, Zunmqr)
 
 template<typename T>
+Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
+                 const Array<T> &b, const af_mat_prop options)
+{
+    int N = A.dims()[0];
+    int NRHS = b.dims()[1];
+
+    Array< T > B = copyArray<T>(b);
+
+    int *info = memAlloc<int>(1);
+
+    CUSOLVER_CHECK(getrs_func<T>()(getDnHandle(),
+                                   CUBLAS_OP_N,
+                                   N, NRHS,
+                                   A.get(), A.strides()[1],
+                                   pivot.get(),
+                                   B.get(), B.strides()[1],
+                                   info));
+
+    memFree(info);
+    return B;
+}
+
+template<typename T>
 Array<T> generalSolve(const Array<T> &a, const Array<T> &b)
 {
     int M = a.dims()[0];
@@ -188,6 +211,7 @@ Array<T> generalSolve(const Array<T> &a, const Array<T> &b)
                                    pivot.get(),
                                    B.get(), B.strides()[1],
                                    info));
+    memFree(info);
     return B;
 }
 
@@ -313,13 +337,33 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
         A.resetDims(dim4(N, N));
         B.resetDims(dim4(N, K));
         trsm(A, B, AF_MAT_NONE, true, true, false);
+
+        memFree(workspace);
+        memFree(info);
     }
+    return B;
+}
+
+template<typename T>
+Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop options)
+{
+    Array<T> B = copyArray<T>(b);
+    trsm(A, B,
+         AF_MAT_NONE, // transpose flag
+         options & AF_MAT_UPPER ? true : false,
+         true, // is_left
+         options & AF_MAT_DIAG_UNIT ? true : false);
     return B;
 }
 
 template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
+    if (options & AF_MAT_UPPER ||
+        options & AF_MAT_LOWER) {
+        return triangleSolve<T>(a, b, options);
+    }
+
     if(a.dims()[0] == a.dims()[1]) {
         return generalSolve<T>(a, b);
     } else {
@@ -327,8 +371,11 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
     }
 }
 
-#define INSTANTIATE_SOLVE(T)                                                                   \
-    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_mat_prop options);
+#define INSTANTIATE_SOLVE(T)                                            \
+    template Array<T> solve<T>(const Array<T> &a, const Array<T> &b,    \
+                               const af_mat_prop options);              \
+    template Array<T> solveLU<T>(const Array<T> &A, const Array<int> &pivot, \
+                                 const Array<T> &b, const af_mat_prop options); \
 
 INSTANTIATE_SOLVE(float)
 INSTANTIATE_SOLVE(cfloat)
@@ -342,20 +389,30 @@ namespace cuda
 {
 
 template<typename T>
+Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
+                 const Array<T> &b, const af_mat_prop options)
+{
+    AF_ERROR("Linear Algebra is diabled on CUDA",
+             AF_ERR_NOT_CONFIGURED);
+}
+
+template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
-    AF_ERROR("CUDA cusolver not available. Linear Algebra is disabled",
+    AF_ERROR("Linear Algebra is diabled on CUDA",
               AF_ERR_NOT_CONFIGURED);
 }
 
-#define INSTANTIATE_SOLVE(T)                                                                   \
-    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_mat_prop options);
+#define INSTANTIATE_SOLVE(T)                                            \
+    template Array<T> solve<T>(const Array<T> &a, const Array<T> &b,    \
+                               const af_mat_prop options);              \
+    template Array<T> solveLU<T>(const Array<T> &A, const Array<int> &pivot, \
+                                 const Array<T> &b, const af_mat_prop options); \
 
 INSTANTIATE_SOLVE(float)
 INSTANTIATE_SOLVE(cfloat)
 INSTANTIATE_SOLVE(double)
 INSTANTIATE_SOLVE(cdouble)
-
 }
 
 #endif

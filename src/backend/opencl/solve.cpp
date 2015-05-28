@@ -29,6 +29,30 @@ namespace opencl
 {
 
 template<typename T>
+Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
+                 const Array<T> &b, const af_mat_prop options)
+{
+    int N = A.dims()[0];
+    int NRHS = b.dims()[1];
+
+    std::vector<int> ipiv(N);
+    copyData(&ipiv[0], pivot);
+
+    Array< T > B = copyArray<T>(b);
+
+    const cl::Buffer *A_buf = A.get();
+    cl::Buffer *B_buf = B.get();
+
+    int info = 0;
+    magma_getrs_gpu<T>(MagmaNoTrans, N, NRHS,
+                       (*A_buf)(), A.getOffset(), A.strides()[1],
+                       &ipiv[0],
+                       (*B_buf)(), B.getOffset(), B.strides()[1],
+                       getQueue()(), &info);
+    return B;
+}
+
+template<typename T>
 Array<T> generalSolve(const Array<T> &a, const Array<T> &b)
 {
 
@@ -41,17 +65,17 @@ Array<T> generalSolve(const Array<T> &a, const Array<T> &b)
     Array<T> A = copyArray<T>(a);
     Array<T> B = copyArray<T>(b);
 
-    cl::Buffer *a_buf = A.get();
+    cl::Buffer *A_buf = A.get();
     int info = 0;
-    magma_getrf_gpu<T>(M, N, (*a_buf)(), a.getOffset(), a.strides()[1],
+    magma_getrf_gpu<T>(M, N, (*A_buf)(), A.getOffset(), A.strides()[1],
                        &ipiv[0], getQueue()(), &info);
 
-    cl::Buffer *b_buf = B.get();
-    int K = b.dims()[1];
+    cl::Buffer *B_buf = B.get();
+    int K = B.dims()[1];
     magma_getrs_gpu<T>(MagmaNoTrans, M, K,
-                       (*a_buf)(), a.getOffset(), a.strides()[1],
+                       (*A_buf)(), A.getOffset(), A.strides()[1],
                        &ipiv[0],
-                       (*b_buf)(), b.getOffset(), b.strides()[1],
+                       (*B_buf)(), B.getOffset(), B.strides()[1],
                        getQueue()(), &info);
     return B;
 }
@@ -158,11 +182,6 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
         Array<T> A = copyArray<T>(a);
         B = copyArray(b);
 
-        dim4 aDims = A.dims();
-
-        int M = aDims[0];
-        int N = aDims[1];
-
         int MN = std::min(M, N);
         int NB = magma_get_geqrf_nb<T>(M);
 
@@ -207,11 +226,11 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
             Array<T> AT = transpose<T>(A, true);
             cl::Buffer* AT_buf = AT.get();
             gpu_trsm(clblasColumnMajor,
-                clblasLeft, clblasLower, clblasConjTrans, clblasNonUnit,
-                N, NRHS, scalar<T>(1),
-                (*AT_buf)(), AT.getOffset(), AT.strides()[1],
-                (*B_buf)(), B.getOffset(), B.strides()[1],
-                1, &queue, 0, nullptr, &event);
+                     clblasLeft, clblasLower, clblasConjTrans, clblasNonUnit,
+                     N, NRHS, scalar<T>(1),
+                     (*AT_buf)(), AT.getOffset(), AT.strides()[1],
+                     (*B_buf)(), B.getOffset(), B.strides()[1],
+                     1, &queue, 0, nullptr, &event);
         } else {
             gpu_trsm(clblasColumnMajor,
                      clblasLeft, clblasUpper, clblasNoTrans, clblasNonUnit,
@@ -227,10 +246,63 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
 }
 
 template<typename T>
+Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop options)
+{
+    trsm_func<T> gpu_trsm;
+
+    Array<T> B = copyArray<T>(b);
+
+    int N = B.dims()[0];
+    int NRHS = B.dims()[1];
+
+    const cl::Buffer* A_buf = A.get();
+    cl::Buffer* B_buf = B.get();
+
+    cl_event event = 0;
+    cl_command_queue queue = getQueue()();
+
+    std::string pName = getPlatformName(getDevice());
+    if(pName.find("NVIDIA") != std::string::npos && (options & AF_MAT_UPPER))
+    {
+        Array<T> AT = transpose<T>(A, true);
+
+        cl::Buffer* AT_buf = AT.get();
+        gpu_trsm(clblasColumnMajor,
+                 clblasLeft,
+                 clblasLower,
+                 clblasConjTrans,
+                 options & AF_MAT_DIAG_UNIT ? clblasUnit : clblasNonUnit,
+                 N, NRHS, scalar<T>(1),
+                 (*AT_buf)(), AT.getOffset(), AT.strides()[1],
+                 (*B_buf)(), B.getOffset(), B.strides()[1],
+                 1, &queue, 0, nullptr, &event);
+    } else {
+        gpu_trsm(clblasColumnMajor,
+                 clblasLeft,
+                 options & AF_MAT_LOWER ? clblasLower : clblasUpper,
+                 clblasNoTrans,
+                 options & AF_MAT_DIAG_UNIT ? clblasUnit : clblasNonUnit,
+                 N, NRHS, scalar<T>(1),
+                 (*A_buf)(), A.getOffset(), A.strides()[1],
+                 (*B_buf)(), B.getOffset(), B.strides()[1],
+                 1, &queue, 0, nullptr, &event);
+    }
+
+    return B;
+}
+
+
+template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
     try {
         initBlas();
+
+        if (options & AF_MAT_UPPER ||
+            options & AF_MAT_LOWER) {
+            return triangleSolve<T>(a, b, options);
+        }
+
         if(a.dims()[0] == a.dims()[1]) {
             return generalSolve<T>(a, b);
         } else {
@@ -241,14 +313,16 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
     }
 }
 
-#define INSTANTIATE_SOLVE(T)                                                                   \
-    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_mat_prop options);
+#define INSTANTIATE_SOLVE(T)                                            \
+    template Array<T> solve<T>(const Array<T> &a, const Array<T> &b,    \
+                               const af_mat_prop options);              \
+    template Array<T> solveLU<T>(const Array<T> &A, const Array<int> &pivot, \
+                                 const Array<T> &b, const af_mat_prop options); \
 
 INSTANTIATE_SOLVE(float)
 INSTANTIATE_SOLVE(cfloat)
 INSTANTIATE_SOLVE(double)
 INSTANTIATE_SOLVE(cdouble)
-
 }
 
 #else
@@ -257,13 +331,25 @@ namespace opencl
 {
 
 template<typename T>
-Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
+Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
+                 const Array<T> &b, const af_mat_prop options)
 {
-    AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
+    AF_ERROR("Linear Algebra is diabled on OpenCL",
+             AF_ERR_NOT_CONFIGURED);
 }
 
-#define INSTANTIATE_SOLVE(T)                                                                   \
-    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_mat_prop options);
+template<typename T>
+Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
+{
+    AF_ERROR("Linear Algebra is diabled on OpenCL",
+              AF_ERR_NOT_CONFIGURED);
+}
+
+#define INSTANTIATE_SOLVE(T)                                            \
+    template Array<T> solve<T>(const Array<T> &a, const Array<T> &b,    \
+                               const af_mat_prop options);              \
+    template Array<T> solveLU<T>(const Array<T> &A, const Array<int> &pivot, \
+                                 const Array<T> &b, const af_mat_prop options); \
 
 INSTANTIATE_SOLVE(float)
 INSTANTIATE_SOLVE(cfloat)

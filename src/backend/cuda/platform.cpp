@@ -19,17 +19,6 @@
 #include <cstring>
 #include <err_cuda.hpp>
 
-//Macro for checking cuda errors following a cuda launch or api call
-#define CUDA(call)                                                  \
-do {                                                                \
-    cudaError_t err = call;                                         \
-    if (cudaSuccess != err) {                                       \
-        fprintf (stderr, "CUDA Error in %s:%d : %s.",               \
-                 __FILE__, __LINE__, cudaGetErrorString(err));      \
-        exit(EXIT_FAILURE);                                         \
-    }                                                               \
-} while (0);                                                        \
-
 using namespace std;
 
 namespace cuda
@@ -242,7 +231,7 @@ string getDriverVersion()
         throw runtime_error("Invalid driver");
         #endif
         int driver = 0;
-        CUDA(cudaDriverGetVersion(&driver));
+        CUDA_CHECK(cudaDriverGetVersion(&driver));
         return string("CUDA Driver Version: ") + toString(driver);
     } else {
         return string(driverVersion);
@@ -252,7 +241,7 @@ string getDriverVersion()
 string getCUDARuntimeVersion()
 {
     int runtime = 0;
-    CUDA(cudaRuntimeGetVersion(&runtime));
+    CUDA_CHECK(cudaRuntimeGetVersion(&runtime));
     if(runtime / 100.f > 0)
         return toString((runtime / 1000) + (runtime % 1000)/ 100.);
     else
@@ -301,7 +290,7 @@ DeviceManager& DeviceManager::getInstance()
 DeviceManager::DeviceManager()
     : cuDevices(0), activeDev(0), nDevices(0)
 {
-    CUDA(cudaGetDeviceCount(&nDevices));
+    CUDA_CHECK(cudaGetDeviceCount(&nDevices));
     if (nDevices == 0)
         throw runtime_error("No CUDA-Capable devices found");
 
@@ -359,7 +348,7 @@ int DeviceManager::setActiveDevice(int device, int nId)
     } else {
         int old = activeDev;
         if(nId == -1) nId = getDeviceNativeId(device);
-        CUDA(cudaSetDevice(nId));
+        CUDA_CHECK(cudaSetDevice(nId));
         activeDev = device;
         return old;
     }

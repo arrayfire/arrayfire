@@ -21,12 +21,13 @@ namespace af
        \param[out] out is the output array containing the packed LU decomposition
        \param[out] pivot will contain the permutation indices to map the input to the decomposition
        \param[in] in is the input matrix
+       \param[in] is_lapack_piv specifies if the pivot is returned in original LAPACK compliant format
 
        \note This function is not supported in GFOR
 
        \ingroup lapack_factor_func_lu
     */
-    AFAPI void lu(array &out, array &pivot, const array &in);
+    AFAPI void lu(array &out, array &pivot, const array &in, const bool is_lapack_piv=true);
 
     /**
        C++ Interface for LU decomposition
@@ -47,12 +48,13 @@ namespace af
 
       \param[out] pivot will contain the permutation indices to map the input to the decomposition
       \param[inout] in contains the input on entry, the packed LU decomposition on exit
+      \param[in] is_lapack_piv specifies if the pivot is returned in original LAPACK compliant format
 
       \note This function is not supported in GFOR
 
       \ingroup lapack_factor_func_lu
     */
-    AFAPI void luInPlace(array &pivot, array &in);
+    AFAPI void luInPlace(array &pivot, array &in, const bool is_lapack_piv=true);
 
     /**
        C++ Interface for QR decomposition in packed format
@@ -132,13 +134,29 @@ namespace af
        \param[in] options determining various properties of matrix \p a
        \returns \p x, the matrix of unknown variables
 
-       \note \p options currently needs to be \ref AF_MAT_NONE
+       \note \p options needs to be one of \ref AF_MAT_NONE, \ref AF_MAT_LOWER or \ref AF_MAT_UPPER
        \note This function is not supported in GFOR
 
        \ingroup lapack_solve_func_gen
     */
     AFAPI array solve(const array &a, const array &b, const matProp options = AF_MAT_NONE);
 
+
+    /**
+       C++ Interface for solving a system of equations
+
+       \param[in] a is the output matrix from packed LU decomposition of the coefficient matrix
+       \param[in] piv is the pivot array from packed LU decomposition of the coefficient matrix
+       \param[in] b is the matrix of measured values
+       \returns \p x, the matrix of unknown variables
+
+       \ingroup lapack_solve_lu_func_gen
+
+       \note \p options currently needs to be \ref AF_MAT_NONE
+       \note This function is not supported in GFOR
+    */
+    AFAPI array solveLU(const array &a, const array &piv,
+                        const array &b, const matProp options = AF_MAT_NONE);
 
     /**
        C++ Invert a matrix
@@ -177,10 +195,11 @@ extern "C" {
 
        \param[out] pivot will contain the permutation indices to map the input to the decomposition
        \param[inout] in contains the input on entry, the packed LU decomposition on exit
+       \param[in] is_lapack_piv specifies if the pivot is returned in original LAPACK compliant format
 
        \ingroup lapack_factor_func_lu
     */
-    AFAPI af_err af_lu_inplace(af_array *pivot, af_array in);
+    AFAPI af_err af_lu_inplace(af_array *pivot, af_array in, const bool is_lapack_piv);
 
     /**
        C Interface for QR decomposition
@@ -241,10 +260,26 @@ extern "C" {
 
        \ingroup lapack_solve_func_gen
 
-       \note currently options needs to be \ref AF_MAT_NONE
+       \note \p options needs to be one of \ref AF_MAT_NONE, \ref AF_MAT_LOWER or \ref AF_MAT_UPPER
     */
     AFAPI af_err af_solve(af_array *x, const af_array a, const af_array b,
                           const af_mat_prop options);
+
+    /**
+       C Interface for solving a system of equations
+
+       \param[out] x will contain the matrix of unknown variables
+       \param[in] a is the output matrix from packed LU decomposition of the coefficient matrix
+       \param[in] piv is the pivot array from packed LU decomposition of the coefficient matrix
+       \param[in] b is the matrix of measured values
+
+       \ingroup lapack_solve_lu_func_gen
+
+       \note \p options currently needs to be \ref AF_MAT_NONE
+       \note This function is not supported in GFOR
+    */
+    AFAPI af_err af_solve_lu(af_array *x, const af_array a, const af_array piv,
+                             const af_array b, const af_mat_prop options);
 
     /**
        C Invert a matrix

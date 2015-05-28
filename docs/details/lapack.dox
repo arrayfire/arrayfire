@@ -65,7 +65,7 @@ The lower and upper triangle matrices can be obtained if necessary in the follow
 
 \snippet test/lu_dense.cpp ex_lu_extract
 
-LU decompositions has many applications including <a href="http://en.wikipedia.org/wiki/LU_decomposition#Solving_linear_equations">solving a system of linear equations</a>.
+LU decompositions has many applications including <a href="http://en.wikipedia.org/wiki/LU_decomposition#Solving_linear_equations">solving a system of linear equations</a>. Check \ref af::solveLU fore more information.
 
 =======================================================================
 
@@ -164,6 +164,39 @@ B1 [3 1 1 1]
    30.7000
    39.0000
 \endcode
+
+If the coefficient matrix is known to be a triangular matrix, \ref AF_MAT_LOWER or \ref AF_MAT_UPPER can be passed to make solve faster.
+
+The sample code snippets for solving a lower triangular matrix can be seen below.
+
+\snippet test/solve_dense.cpp ex_solve_lower
+
+Similarily, the code snippet for solving an upper triangular matrix can be seen below.
+
+\snippet test/solve_dense.cpp ex_solve_upper
+
+See also: \ref af::solveLU
+
+=======================================================================
+
+\defgroup lapack_solve_lu_func_gen solveLU
+
+\ingroup lapack_solve_mat
+
+\brief Solve a system of equations
+
+This function takes a co-efficient matrix **A** and an output matrix **B**  as inputs to solve the following equation for **X**
+
+     \f$A * X = B\f$
+
+This operation can be done in ArrayFire using the following code snippet.
+
+\snippet test/solve_dense.cpp ex_solve_lu
+
+This function along with \ref af::lu split up the task af::solve performs for square matrices.
+
+\note This function is beneficial over \ref af::solve only in long running application where the coefficient matrix **A** stays the same, but the observed variables keep changing.
+
 
 =======================================================================
 
