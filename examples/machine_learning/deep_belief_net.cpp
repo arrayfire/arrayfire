@@ -371,7 +371,7 @@ int main(int argc, char** argv)
         return dbn_demo(console, perc);
 
     } catch (af::exception &ae) {
-        std::cout << ae.what() << std::endl;
+        std::cerr << ae.what() << std::endl;
     }
 
 }

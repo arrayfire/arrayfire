@@ -77,7 +77,7 @@ int main()
                    1000 * monte_carlo_bench<float, true>(n));
         }
     } catch (af::exception &ae) {
-        std::cout << ae.what() << std::endl;
+        std::cerr << ae.what() << std::endl;
     }
 
     return 0;
