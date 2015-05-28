@@ -433,3 +433,23 @@ TEST(ResizeScale2, CPP)
     // Delete
     delete[] outData;
 }
+
+
+
+TEST(Resize, ExtractGFOR)
+{
+    using namespace af;
+    dim4 dims = dim4(100, 100, 3);
+    array A = round(100 * randu(dims));
+    array B = constant(0, 200, 200, 3);
+
+    gfor(seq ii, 3) {
+        B(span, span, ii) = resize(A(span, span, ii), 200, 200);
+    }
+
+    for(int ii = 0; ii < 3; ii++) {
+        array c_ii = resize(A(span, span, ii), 200, 200);
+        array b_ii = B(span, span, ii);
+        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
+    }
+}

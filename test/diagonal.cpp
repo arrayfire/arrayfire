@@ -70,3 +70,20 @@ TYPED_TEST(Diagonal, Extract)
         FAIL() << ex.what() << endl;
     }
 }
+
+TEST(Diagonal, ExtractGFOR)
+{
+    dim4 dims = dim4(100, 100, 3);
+    array A = round(100 * randu(dims));
+    array B = constant(0, 100, 1, 3);
+
+    gfor(seq ii, 3) {
+        B(span, span, ii) = diag(A(span, span, ii));
+    }
+
+    for(int ii = 0; ii < 3; ii++) {
+        array c_ii = diag(A(span, span, ii));
+        array b_ii = B(span, span, ii);
+        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
+    }
+}
