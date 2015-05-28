@@ -43,7 +43,7 @@ TYPED_TEST(Meanshift, InvalidArgs)
     af::dim4 dims = af::dim4(100,1,1,1);
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(),
                 dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
-    ASSERT_EQ(AF_ERR_SIZE, af_meanshift(&outArray, inArray, 0.12f, 0.34f, 5, true));
+    ASSERT_EQ(AF_ERR_SIZE, af_mean_shift(&outArray, inArray, 0.12f, 0.34f, 5, true));
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
 
@@ -78,7 +78,7 @@ void meanshiftTest(string pTestFile)
         ASSERT_EQ(AF_SUCCESS, af_load_image(&goldArray, outFiles[testId].c_str(), isColor));
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems, goldArray));
 
-        ASSERT_EQ(AF_SUCCESS, af_meanshift(&outArray, inArray, 2.25f, 25.56f, 5, isColor));
+        ASSERT_EQ(AF_SUCCESS, af_mean_shift(&outArray, inArray, 2.25f, 25.56f, 5, isColor));
 
         T * outData = new T[nElems];
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
@@ -137,7 +137,7 @@ TEST(Meanshift, Color_CPP)
         af::array img   = af::loadImage(inFiles[testId].c_str(), true);
         af::array gold  = af::loadImage(outFiles[testId].c_str(), true);
         dim_t nElems = gold.elements();
-        af::array output= af::meanshift(img, 2.25f, 25.56f, 5, true);
+        af::array output= af::meanShift(img, 2.25f, 25.56f, 5, true);
 
         float * outData = new float[nElems];
         output.host((void*)outData);

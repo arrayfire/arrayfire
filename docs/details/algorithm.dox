@@ -49,7 +49,7 @@ Find the maximum values and their locations
 
 
 
-\defgroup reduce_func_alltrue alltrue
+\defgroup reduce_func_all_true alltrue
 
 \ingroup reduce_mat
 
@@ -59,7 +59,7 @@ Find if of all of the values in input are true
 
 
 
-\defgroup reduce_func_anytrue anytrue
+\defgroup reduce_func_any_true anytrue
 
 \ingroup reduce_mat
 

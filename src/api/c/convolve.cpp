@@ -174,7 +174,7 @@ af_err af_convolve1(af_array *out, const af_array signal, const af_array filter,
 {
     try {
         if (isFreqDomain<1>(signal, filter, domain))
-            return af_fftconvolve1(out, signal, filter, mode);
+            return af_fft_convolve1(out, signal, filter, mode);
     } CATCHALL;
 
     if (mode == AF_CONV_EXPAND)
@@ -187,7 +187,7 @@ af_err af_convolve2(af_array *out, const af_array signal, const af_array filter,
 {
     try {
         if (isFreqDomain<2>(signal, filter, domain))
-            return af_fftconvolve2(out, signal, filter, mode);
+            return af_fft_convolve2(out, signal, filter, mode);
     } CATCHALL;
 
     if (mode == AF_CONV_EXPAND)
@@ -200,7 +200,7 @@ af_err af_convolve3(af_array *out, const af_array signal, const af_array filter,
 {
     try {
         if (isFreqDomain<3>(signal, filter, domain))
-            return af_fftconvolve3(out, signal, filter, mode);
+            return af_fft_convolve3(out, signal, filter, mode);
     } CATCHALL;
 
     if (mode == AF_CONV_EXPAND)
