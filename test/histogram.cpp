@@ -236,3 +236,22 @@ TEST(Histogram, SNIPPET_histequal)
         FAIL() << "Output did not match";
     }
 }
+
+TEST(histogram, GFOR)
+{
+    using namespace af;
+
+    dim4 dims = dim4(100, 100, 3);
+    array A = round(100 * randu(dims));
+    array B = constant(0, 100, 1, 3);
+
+    gfor(seq ii, 3) {
+        B(span, span, ii) = histogram(A(span, span, ii), 100);
+    }
+
+    for(int ii = 0; ii < 3; ii++) {
+        array c_ii = histogram(A(span, span, ii), 100);
+        array b_ii = B(span, span, ii);
+        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
+    }
+}

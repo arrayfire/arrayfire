@@ -44,8 +44,6 @@ Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const d
             inData  += iStrides[2];
             outData += oStrides[2];
         }
-        inData  += iStrides[3];
-        outData += oStrides[3];
     }
 
     return out;
