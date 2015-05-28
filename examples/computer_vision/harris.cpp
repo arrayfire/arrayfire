@@ -15,8 +15,18 @@ using namespace af;
 
 static void harris_demo(bool console)
 {
+    af::Window wnd("Harris Corner Detector");
+
     // Load image
-    array img = loadImage(ASSETS_DIR"/examples/images/square.png", false);
+    array img_color;
+    if (console)
+        img_color = loadImage(ASSETS_DIR "/examples/images/square.png", true);
+    else
+        img_color = loadImage(ASSETS_DIR "/examples/images/lena.ppm", true);
+    // Convert the image from RGB to gray-scale
+    array img = colorSpace(img_color, AF_GRAY, AF_RGB);
+    // For visualization in ArrayFire, color images must be in the [0.0f-1.0f] interval
+    img_color /= 255.f;
 
     // Calculate image gradients
     array ix, iy;
@@ -57,18 +67,54 @@ static void harris_demo(bool console)
     // scale them to original response value
     corners = (corners == max_resp) * corners;
 
-    // Find corner indexes in the image as 1D indexes
-    array idx = where(corners);
+    // Gets host pointer to response data
+    float* h_corners = corners.host<float>();
 
-    // Calculate 2D corner indexes
-    array corners_x = idx / corners.dims()[0];
-    array corners_y = idx % corners.dims()[0];
+    unsigned good_corners = 0;
 
-    const int good_corners = corners_x.dims()[0];
-    std::cout << "Corners found: " << good_corners << std::endl << std::endl;
+    // Draw draw_len x draw_len crosshairs where the corners are
+    const int draw_len = 3;
+    for (int y = draw_len; y < img_color.dims(0) - draw_len; y++) {
+        for (int x = draw_len; x < img_color.dims(1) - draw_len; x++) {
+            // Only draws crosshair if is a corner
+            if (h_corners[x * corners.dims(0) + y] > 1e5f) {
+                // Draw horizontal line of (draw_len * 2 + 1) pixels centered on the corner
+                // Set only the first channel to 1 (green lines)
+                img_color(y, seq(x-draw_len, x+draw_len), 0) = 0.f;
+                img_color(y, seq(x-draw_len, x+draw_len), 1) = 1.f;
+                img_color(y, seq(x-draw_len, x+draw_len), 2) = 0.f;
 
-    af_print(corners_x);
-    af_print(corners_y);
+                // Draw vertical line of (draw_len * 2 + 1) pixels centered on  the corner
+                // Set only the first channel to 1 (green lines)
+                img_color(seq(y-draw_len, y+draw_len), x, 0) = 0.f;
+                img_color(seq(y-draw_len, y+draw_len), x, 1) = 1.f;
+                img_color(seq(y-draw_len, y+draw_len), x, 2) = 0.f;
+
+                good_corners++;
+            }
+        }
+    }
+
+    printf("Corners found: %u\n", good_corners);
+
+    if (!console) {
+        // Previews color image with green crosshairs
+        while(!wnd.close())
+            wnd.image(img_color);
+    } else {
+        // Find corner indexes in the image as 1D indexes
+        array idx = where(corners);
+
+        // Calculate 2D corner indexes
+        array corners_x = idx / corners.dims()[0];
+        array corners_y = idx % corners.dims()[0];
+
+        const int good_corners = corners_x.dims()[0];
+        std::cout << "Corners found: " << good_corners << std::endl << std::endl;
+
+        af_print(corners_x);
+        af_print(corners_y);
+    }
 }
 
 int main(int argc, char** argv)
@@ -87,9 +133,5 @@ int main(int argc, char** argv)
         throw;
     }
 
-    if (!console) {
-        printf("hit [enter]...");
-        getchar();
-    }
     return 0;
 }

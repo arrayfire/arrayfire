@@ -9,6 +9,8 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
+#include <algorithm>
 #include <arrayfire.h>
 
 using namespace af;
