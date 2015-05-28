@@ -124,11 +124,15 @@ fg::Window* ForgeManager::getMainWindow(const bool dontCreate)
     static bool flag = true;
     static fg::Window* wnd = NULL;
 
-    if (flag && !dontCreate) {
-	    wnd = new fg::Window(WIDTH, HEIGHT, "ArrayFire", NULL, true);
-	    CheckGL("End ForgeManager::getMainWindow");
-	    flag = false;
-    };
+    // Define AF_DISABLE_GRAPHICS with any value to disable initialization
+    const char* noGraphicsENV = getenv("AF_DISABLE_GRAPHICS");
+    if(!noGraphicsENV) { // If AF_DISABLE_GRAPHICS is not defined
+        if (flag && !dontCreate) {
+            wnd = new fg::Window(WIDTH, HEIGHT, "ArrayFire", NULL, true);
+            CheckGL("End ForgeManager::getMainWindow");
+            flag = false;
+        };
+    }
     return wnd;
 }
 
