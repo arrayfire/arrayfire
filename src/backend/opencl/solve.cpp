@@ -226,11 +226,11 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
             Array<T> AT = transpose<T>(A, true);
             cl::Buffer* AT_buf = AT.get();
             gpu_trsm(clblasColumnMajor,
-                clblasLeft, clblasLower, clblasConjTrans, clblasNonUnit,
-                N, NRHS, scalar<T>(1),
-                (*AT_buf)(), AT.getOffset(), AT.strides()[1],
-                (*B_buf)(), B.getOffset(), B.strides()[1],
-                1, &queue, 0, nullptr, &event);
+                     clblasLeft, clblasLower, clblasConjTrans, clblasNonUnit,
+                     N, NRHS, scalar<T>(1),
+                     (*AT_buf)(), AT.getOffset(), AT.strides()[1],
+                     (*B_buf)(), B.getOffset(), B.strides()[1],
+                     1, &queue, 0, nullptr, &event);
         } else {
             gpu_trsm(clblasColumnMajor,
                      clblasLeft, clblasUpper, clblasNoTrans, clblasNonUnit,
@@ -270,7 +270,7 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop o
         gpu_trsm(clblasColumnMajor,
                  clblasLeft,
                  clblasLower,
-                 clblasNoTrans,
+                 clblasConjTrans,
                  options & AF_MAT_DIAG_UNIT ? clblasUnit : clblasNonUnit,
                  N, NRHS, scalar<T>(1),
                  (*AT_buf)(), AT.getOffset(), AT.strides()[1],
