@@ -10,6 +10,9 @@
 #ifndef __PROGRESS_H
 #define __PROGRESS_H
 
+#include <cmath>
+#include <algorithm>
+
 static bool progress(unsigned iter_curr, af::timer t, double time_total)
 {
     static unsigned iter_prev = 0;
