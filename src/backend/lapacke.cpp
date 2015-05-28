@@ -92,7 +92,7 @@ int LAPACKE_##X##trtri(int layout, char uplo, char diag, int N, T *A, int lda)  
     X##trtri_(&uplo, &diag, &N, (TO)A, &lda, &info);                                \
     return info;                                                                    \
 }                                                                                   \
-int LAPACKE_##X##getrs(int layout, char uplo, char trans, char diag,                \
+int LAPACKE_##X##trtrs(int layout, char uplo, char trans, char diag,                \
                        int N, int NRHS, const T *A, int lda, T *B, int ldb)         \
 {                                                                                   \
     int info = 0;                                                                   \

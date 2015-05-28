@@ -33,7 +33,7 @@ int LAPACKE_##X##laswp(int layout, int N, T *A, int lda,                        
                        int k1, int k2, const int * pivot, int incx);                \
 int LAPACKE_##X##getrs(int layout, char trans, int M, int N, const T *A,            \
                        int lda, const int *pivot, T *B, int ldb);                   \
-int LAPACKE_##X##getrs(int layout, char uplo, char trans, char diag,                \
+int LAPACKE_##X##trtrs(int layout, char uplo, char trans, char diag,                \
                        int N, int NRHS, const T *A, int lda, T *B, int ldb);        \
 
 LAPACK_FUNC(s, float)
