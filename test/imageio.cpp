@@ -148,7 +148,7 @@ TEST(ImageIO, SavePNGCPP) {
     saveImage("SaveCPP.png", input);
     af::array out = af::loadImage("SaveCPP.png", true);
 
-    ASSERT_FALSE(af::anytrue<bool>(out - input));
+    ASSERT_FALSE(af::anyTrue<bool>(out - input));
 }
 
 TEST(ImageIO, SaveBMPCPP) {
@@ -164,7 +164,7 @@ TEST(ImageIO, SaveBMPCPP) {
     saveImage("SaveCPP.bmp", input);
     af::array out = af::loadImage("SaveCPP.bmp", true);
 
-    ASSERT_FALSE(af::anytrue<bool>(out - input));
+    ASSERT_FALSE(af::anyTrue<bool>(out - input));
 }
 
 #endif // WITH_FREEIMAGE

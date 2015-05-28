@@ -19,3 +19,5 @@
         if (__err == AF_SUCCESS) break;                         \
         throw af::exception(__msg, __FILE__, __LINE__, __err);  \
     } while(0);
+
+#define THROW(__err) throw af::exception(__FILE__, __LINE__, __err)

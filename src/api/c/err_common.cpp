@@ -16,6 +16,10 @@
 #include <cstdio>
 #include <algorithm>
 
+#if defined(WITH_GRAPHICS)
+#include <graphics_common.hpp>
+#endif
+
 using std::string;
 using std::stringstream;
 
@@ -113,7 +117,7 @@ DimensionError::DimensionError(const char * const  funcName,
                              const int line,
                              const int index,
                              const char * const  expectString)
-    : AfError(funcName, line, "Invalid dimension", AF_ERR_SIZE),
+    : AfError(funcName, line, "Invalid size", AF_ERR_SIZE),
       argIndex(index),
       expected(expectString)
 {
@@ -225,6 +229,12 @@ af_err processException()
 
         print_error(ss);
         err = ex.getError();
+#if defined(WITH_GRAPHICS)
+    } catch (const fg::Error &ex) {
+        ss << ex << "\n";
+        print_error(ss);
+        err = AF_ERR_INTERNAL;
+#endif
     } catch (...) {
         print_error(ss);
         err = AF_ERR_UNKNOWN;

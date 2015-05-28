@@ -15,37 +15,37 @@
 namespace af
 {
 
-array fftconvolve(const array& signal, const array& filter, const convMode mode)
+array fftConvolve(const array& signal, const array& filter, const convMode mode)
 {
     unsigned sN = signal.numdims();
     unsigned fN = filter.numdims();
 
     switch(std::min(sN,fN)) {
-        case 1:  return fftconvolve1(signal, filter, mode);
-        case 2:  return fftconvolve2(signal, filter, mode);
-        case 3:  return fftconvolve3(signal, filter, mode);
-        default: return fftconvolve3(signal, filter, mode);
+        case 1:  return fftConvolve1(signal, filter, mode);
+        case 2:  return fftConvolve2(signal, filter, mode);
+        case 3:  return fftConvolve3(signal, filter, mode);
+        default: return fftConvolve3(signal, filter, mode);
     }
 }
 
-array fftconvolve1(const array& signal, const array& filter, const convMode mode)
+array fftConvolve1(const array& signal, const array& filter, const convMode mode)
 {
     af_array out = 0;
-    AF_THROW(af_fftconvolve1(&out, signal.get(), filter.get(), mode));
+    AF_THROW(af_fft_convolve1(&out, signal.get(), filter.get(), mode));
     return array(out);
 }
 
-array fftconvolve2(const array& signal, const array& filter, const convMode mode)
+array fftConvolve2(const array& signal, const array& filter, const convMode mode)
 {
     af_array out = 0;
-    AF_THROW(af_fftconvolve2(&out, signal.get(), filter.get(), mode));
+    AF_THROW(af_fft_convolve2(&out, signal.get(), filter.get(), mode));
     return array(out);
 }
 
-array fftconvolve3(const array& signal, const array& filter, const convMode mode)
+array fftConvolve3(const array& signal, const array& filter, const convMode mode)
 {
     af_array out = 0;
-    AF_THROW(af_fftconvolve3(&out, signal.get(), filter.get(), mode));
+    AF_THROW(af_fft_convolve3(&out, signal.get(), filter.get(), mode));
     return array(out);
 }
 

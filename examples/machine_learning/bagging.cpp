@@ -139,7 +139,7 @@ int main(int argc, char** argv)
 
     try {
 
-        af::deviceset(device);
+        setDevice(device);
         af::info();
         bagging_demo(console, perc);
 

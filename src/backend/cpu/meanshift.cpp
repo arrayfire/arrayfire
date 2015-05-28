@@ -141,8 +141,6 @@ Array<T>  meanshift(const Array<T> &in, const float &s_sigma, const float &c_sig
             outData += ostrides[2];
             inData  += istrides[2];
         }
-        outData += ostrides[3];
-        inData  += istrides[3];
     }
     return out;
 }

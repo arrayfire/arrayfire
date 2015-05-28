@@ -56,7 +56,7 @@ int main(int argc, char ** argv)
 {
     try {
         int device = argc > 1 ? atoi(argv[1]) : 0;
-        deviceset(device);
+        setDevice(device);
         info();
 
         printf("device:  %.5f seconds to estimate  pi = %.5f\n", timeit(device_wrapper), pi_device());

@@ -226,7 +226,7 @@ int main(int argc, char** argv)
 
     try {
 
-        af::deviceset(device);
+        af::setDevice(device);
         af::info();
         return rbm_demo(console, perc);
 

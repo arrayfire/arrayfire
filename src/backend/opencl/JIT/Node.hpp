@@ -8,8 +8,8 @@
  ********************************************************/
 
 #pragma once
+#include <platform.hpp>
 #include <af/array.h>
-#include <cl.hpp>
 #include <optypes.hpp>
 #include <string>
 #include <vector>

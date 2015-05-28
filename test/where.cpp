@@ -116,7 +116,7 @@ TYPED_TEST(Where, CPP)
     af::dim4 dims       = numDims[0];
 
     vector<float> in(data[0].begin(), data[0].end());
-    af::array input(dims, &in.front(), af::afHost);
+    af::array input(dims, &in.front(), afHost);
     af::array output = where(input);
 
     // Compare result

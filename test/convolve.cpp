@@ -614,3 +614,56 @@ TEST(Convolve, Docs_Unified_Wrapper)
     //    1.0000     1.0000     1.0000     0.5000
     //![ex_image_convolve_3d]
 }
+
+using namespace af;
+
+TEST(GFOR, convolve2_MO)
+{
+    array A = randu(5, 5, 3);
+    array B = randu(5, 5, 3);
+    array K = randu(3, 3);
+
+    gfor(seq ii, 3) {
+        B(span, span, ii) = convolve2(A(span, span, ii), K);
+    }
+
+    for (int ii = 0; ii < 3; ii++) {
+        array c_ii = convolve2(A(span, span, ii), K);
+        array b_ii = B(span, span, ii);
+        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
+    }
+}
+
+TEST(GFOR, convolve2_1M)
+{
+    array A = randu(5, 5);
+    array B = randu(5, 5, 3);
+    array K = randu(3, 3, 3);
+
+    gfor(seq ii, 3) {
+        B(span, span, ii) = convolve2(A, K(span, span, ii));
+    }
+
+    for (int ii = 0; ii < 3; ii++) {
+        array c_ii = convolve2(A, K(span, span, ii));
+        array b_ii = B(span, span, ii);
+        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
+    }
+}
+
+TEST(GFOR, convolve2_MM)
+{
+    array A = randu(5, 5, 3);
+    array B = randu(5, 5, 3);
+    array K = randu(3, 3, 3);
+
+    gfor(seq ii, 3) {
+        B(span, span, ii) = convolve2(A(span, span, ii), K(span, span, ii));
+    }
+
+    for (int ii = 0; ii < 3; ii++) {
+        array c_ii = convolve2(A(span, span, ii), K(span, span, ii));
+        array b_ii = B(span, span, ii);
+        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
+    }
+}

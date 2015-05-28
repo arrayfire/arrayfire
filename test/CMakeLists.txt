@@ -29,7 +29,13 @@ ELSE()
     SET(THREAD_LIB_FLAG ${CMAKE_THREAD_LIBS_INIT})
 ENDIF()
 
-INCLUDE("${CMAKE_MODULE_PATH}/build_gtest.cmake")
+OPTION(USE_SYSTEM_GTEST "Use GTEST from system libraries" OFF)
+IF(USE_SYSTEM_GTEST)
+    FIND_PACKAGE(GTest REQUIRED)
+ELSE(USE_SYSTEM_GTEST)
+    INCLUDE("${CMAKE_MODULE_PATH}/build_gtest.cmake")
+ENDIF(USE_SYSTEM_GTEST)
+
 INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
 
 OPTION(USE_RELATIVE_TEST_DIR "Use relative paths for the test data directory(For continious integration(CI) purposes only)" OFF)

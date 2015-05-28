@@ -51,8 +51,8 @@ void writeTest(af::dim4 dims)
     T *a_host = A.host<T>();
     T *b_dev  = B.device<T>();
 
-    A.write(b_dev, dims.elements() * sizeof(T), af::afDevice);
-    B.write(a_host, dims.elements() * sizeof(T), af::afHost);
+    A.write(b_dev, dims.elements() * sizeof(T), afDevice);
+    B.write(a_host, dims.elements() * sizeof(T), afHost);
 
     af::array check1 = A != B_copy;     // False so check1 is all 0s
     af::array check2 = B != A_copy;     // False so check2 is all 0s

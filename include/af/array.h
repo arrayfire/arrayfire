@@ -12,21 +12,14 @@
 #include <af/seq.h>
 #include <af/util.h>
 #include <af/index.h>
-#include <af/traits.hpp>
-
 
 #ifdef __cplusplus
+#include <af/traits.hpp>
 #include <vector>
 namespace af
 {
 
     class dim4;
-
-    /// Specify which address-space pointer belongs
-    typedef enum {
-        afDevice, ///< Device-memory pointer
-        afHost    ///< Host-memory pointer
-    } af_source_t;
 
     ///
     /// \brief A multi dimensional data container
@@ -313,7 +306,7 @@ namespace af
         */
         template<typename T>
         array(dim_t dim0,
-              const T *pointer, af_source_t src=afHost);
+              const T *pointer, af::source src=afHost);
 
 
         /**
@@ -342,7 +335,7 @@ namespace af
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1,
-              const T *pointer, af_source_t src=afHost);
+              const T *pointer, af::source src=afHost);
 
 
         /**
@@ -370,7 +363,7 @@ namespace af
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1, dim_t dim2,
-              const T *pointer, af_source_t src=afHost);
+              const T *pointer, af::source src=afHost);
 
 
         /**
@@ -399,7 +392,7 @@ namespace af
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3,
-              const T *pointer, af_source_t src=afHost);
+              const T *pointer, af::source src=afHost);
 
         /**
             Create an array of specified size on the device using a host/device
@@ -435,7 +428,7 @@ namespace af
         template<typename T>
         explicit
         array(const dim4& dims,
-              const T *pointer, af_source_t src=afHost);
+              const T *pointer, af::source src=afHost);
 
         /**
            Adjust the dimensions of an N-D array (fast).
@@ -538,7 +531,7 @@ namespace af
         /**
            Perform deep from host/device pointer to an existing array
         */
-        template<typename T> void write(const T *ptr, const size_t bytes, af_source_t src = afHost);
+        template<typename T> void write(const T *ptr, const size_t bytes, af::source src = afHost);
 
         /**
            Get array data type

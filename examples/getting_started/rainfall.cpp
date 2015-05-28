@@ -31,7 +31,7 @@ int main(int argc, char **argv)
 {
     try {
         int device = argc > 1 ? atoi(argv[1]) : 0;
-        af::deviceset(device);
+        af::setDevice(device);
         af::info();
 
         int days = 9, sites = 4;

@@ -22,7 +22,7 @@ template<typename T, bool isDilation>
 static inline af_array morph(const af_array &in, const af_array &mask)
 {
     const Array<T> &input = getArray<T>(in);
-    const Array<T> &filter = getArray<T>(mask);
+    const Array<T> &filter = castArray<T>(mask);
     Array<T> out = morph<T, isDilation>(input, filter);
     return getHandle(out);
 }
@@ -31,7 +31,7 @@ template<typename T, bool isDilation>
 static inline af_array morph3d(const af_array &in, const af_array &mask)
 {
     const Array<T> &input = getArray<T>(in);
-    const Array<T> &filter = getArray<T>(mask);
+    const Array<T> &filter = castArray<T>(mask);
     Array<T> out = morph3d<T, isDilation>(input, filter);
     return getHandle(out);
 }
@@ -109,12 +109,12 @@ af_err af_erode(af_array *out, const af_array in, const af_array mask)
     return morph<false>(out,in,mask);
 }
 
-af_err af_dilate3d(af_array *out, const af_array in, const af_array mask)
+af_err af_dilate3(af_array *out, const af_array in, const af_array mask)
 {
     return morph3d<true>(out,in,mask);
 }
 
-af_err af_erode3d(af_array *out, const af_array in, const af_array mask)
+af_err af_erode3(af_array *out, const af_array in, const af_array mask)
 {
     return morph3d<false>(out,in,mask);
 }

@@ -56,6 +56,12 @@ af_err af_matmul(   af_array *out,
             AF_ERROR("Using this property is not yet supported in matmul", AF_ERR_NOT_SUPPORTED);
         }
 
+
+        if (lhsInfo.ndims() > 2 ||
+            rhsInfo.ndims() > 2) {
+            AF_ERROR("matmul can not be used in batch mode", AF_ERR_BATCH);
+        }
+
         TYPE_ASSERT(lhs_type == rhs_type);
         af_array output = 0;
 
@@ -98,6 +104,11 @@ af_err af_dot(      af_array *out,
         DIM_ASSERT(1, lhsInfo.dims()[0] == rhsInfo.dims()[0]);
         af_dtype lhs_type = lhsInfo.getType();
         af_dtype rhs_type = rhsInfo.getType();
+
+        if (lhsInfo.ndims() > 2 ||
+            rhsInfo.ndims() > 2) {
+            AF_ERROR("dot can not be used in batch mode", AF_ERR_BATCH);
+        }
 
         TYPE_ASSERT(lhs_type == rhs_type);
 

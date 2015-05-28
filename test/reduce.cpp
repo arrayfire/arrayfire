@@ -133,21 +133,21 @@ REDUCE_TESTS(max, cdouble , cdouble, cdouble);
 REDUCE_TESTS(max, unsigned, unsigned  , unsigned  );
 REDUCE_TESTS(max, uchar   , unsigned char, unsigned char);
 
-REDUCE_TESTS(anytrue, float   , float     , unsigned char);
-REDUCE_TESTS(anytrue, double  , double    , unsigned char);
-REDUCE_TESTS(anytrue, int     , int       , unsigned char);
-REDUCE_TESTS(anytrue, cfloat  , cfloat , unsigned char);
-REDUCE_TESTS(anytrue, cdouble , cdouble, unsigned char);
-REDUCE_TESTS(anytrue, unsigned, unsigned  , unsigned char);
-REDUCE_TESTS(anytrue, uchar   , unsigned char, unsigned char);
+REDUCE_TESTS(any_true, float   , float     , unsigned char);
+REDUCE_TESTS(any_true, double  , double    , unsigned char);
+REDUCE_TESTS(any_true, int     , int       , unsigned char);
+REDUCE_TESTS(any_true, cfloat  , cfloat , unsigned char);
+REDUCE_TESTS(any_true, cdouble , cdouble, unsigned char);
+REDUCE_TESTS(any_true, unsigned, unsigned  , unsigned char);
+REDUCE_TESTS(any_true, uchar   , unsigned char, unsigned char);
 
-REDUCE_TESTS(alltrue, float   , float     , unsigned char);
-REDUCE_TESTS(alltrue, double  , double    , unsigned char);
-REDUCE_TESTS(alltrue, int     , int       , unsigned char);
-REDUCE_TESTS(alltrue, cfloat  , cfloat , unsigned char);
-REDUCE_TESTS(alltrue, cdouble , cdouble, unsigned char);
-REDUCE_TESTS(alltrue, unsigned, unsigned  , unsigned char);
-REDUCE_TESTS(alltrue, uchar   , unsigned char, unsigned char);
+REDUCE_TESTS(all_true, float   , float     , unsigned char);
+REDUCE_TESTS(all_true, double  , double    , unsigned char);
+REDUCE_TESTS(all_true, int     , int       , unsigned char);
+REDUCE_TESTS(all_true, cfloat  , cfloat , unsigned char);
+REDUCE_TESTS(all_true, cdouble , cdouble, unsigned char);
+REDUCE_TESTS(all_true, unsigned, unsigned  , unsigned char);
+REDUCE_TESTS(all_true, uchar   , unsigned char, unsigned char);
 
 REDUCE_TESTS(count, float   , float     , unsigned);
 REDUCE_TESTS(count, double  , double    , unsigned);
@@ -184,8 +184,8 @@ typedef af::array (*ReductionOp)(const af::array&, const int);
 using af::sum;
 using af::min;
 using af::max;
-using af::alltrue;
-using af::anytrue;
+using af::allTrue;
+using af::anyTrue;
 using af::count;
 
 template<typename Ti, typename To, ReductionOp reduce>
@@ -228,20 +228,20 @@ void cppReduceTest(string pTestFile)
     }
 }
 
-#define CPP_REDUCE_TESTS(FN, Ti, To)               \
+#define CPP_REDUCE_TESTS(FN, FNAME, Ti, To)        \
     TEST(Reduce, Test_##FN##_CPP)                  \
     {                                              \
         cppReduceTest<Ti, To, FN>(                 \
-            string(TEST_DIR"/reduce/"#FN".test")   \
+            string(TEST_DIR"/reduce/"#FNAME".test")\
             );                                     \
     }
 
-CPP_REDUCE_TESTS(sum, float, float);
-CPP_REDUCE_TESTS(min, float, float);
-CPP_REDUCE_TESTS(max, float, float);
-CPP_REDUCE_TESTS(anytrue, float, unsigned char);
-CPP_REDUCE_TESTS(alltrue, float, unsigned char);
-CPP_REDUCE_TESTS(count, float, unsigned);
+CPP_REDUCE_TESTS(sum, sum, float, float);
+CPP_REDUCE_TESTS(min, min, float, float);
+CPP_REDUCE_TESTS(max, max, float, float);
+CPP_REDUCE_TESTS(anyTrue, any_true, float, unsigned char);
+CPP_REDUCE_TESTS(allTrue, all_true, float, unsigned char);
+CPP_REDUCE_TESTS(count, count, float, unsigned);
 
 TEST(Reduce, Test_Product_Global)
 {
@@ -377,13 +377,13 @@ TYPED_TEST(Reduce, Test_All_Global)
         vector<TypeParam> h_vals(num, (TypeParam)true);
         array a(2, num/2, &h_vals.front());
 
-        TypeParam res = af::alltrue<TypeParam>(a);
+        TypeParam res = af::allTrue<TypeParam>(a);
         typed_assert_eq((TypeParam)true, res, false);
 
         h_vals[3] = false;
         a = array(2, num/2, &h_vals.front());
 
-        res = af::alltrue<TypeParam>(a);
+        res = af::allTrue<TypeParam>(a);
         typed_assert_eq((TypeParam)false, res, false);
     }
 
@@ -394,7 +394,7 @@ TYPED_TEST(Reduce, Test_All_Global)
         h_vals[i] = false;
         array a(2, num/2, &h_vals.front());
 
-        TypeParam res = af::alltrue<TypeParam>(a);
+        TypeParam res = af::allTrue<TypeParam>(a);
         typed_assert_eq((TypeParam)false, res, false);
 
         h_vals[i] = true;
@@ -411,13 +411,13 @@ TYPED_TEST(Reduce, Test_Any_Global)
         vector<TypeParam> h_vals(num, (TypeParam)false);
         array a(2, num/2, &h_vals.front());
 
-        TypeParam res = af::anytrue<TypeParam>(a);
+        TypeParam res = af::anyTrue<TypeParam>(a);
         typed_assert_eq((TypeParam)false, res, false);
 
         h_vals[3] = true;
         a = array(2, num/2, &h_vals.front());
 
-        res = af::anytrue<TypeParam>(a);
+        res = af::anyTrue<TypeParam>(a);
         typed_assert_eq((TypeParam)true, res, false);
     }
 
@@ -428,7 +428,7 @@ TYPED_TEST(Reduce, Test_Any_Global)
         h_vals[i] = true;
         array a(2, num/2, &h_vals.front());
 
-        TypeParam res = af::anytrue<TypeParam>(a);
+        TypeParam res = af::anyTrue<TypeParam>(a);
         typed_assert_eq((TypeParam)true, res, false);
 
         h_vals[i] = false;

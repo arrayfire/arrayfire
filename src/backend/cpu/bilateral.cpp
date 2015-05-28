@@ -92,8 +92,6 @@ Array<outType> bilateral(const Array<inType> &in, const float &s_sigma, const fl
             outData += ostrides[2];
             inData  += istrides[2];
         }
-        outData += ostrides[3];
-        inData  += istrides[3];
     }
 
     return out;

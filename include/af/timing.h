@@ -8,7 +8,9 @@
  ********************************************************/
 
 #pragma once
-#include "defines.h"
+#include <af/defines.h>
+
+#ifdef __cplusplus
 
 #if defined(_WIN32) || defined(_MSC_VER)
   #include <windows.h>
@@ -42,3 +44,5 @@ namespace af {
 
 AFAPI double timeit(void(*fn)());
 }
+
+#endif

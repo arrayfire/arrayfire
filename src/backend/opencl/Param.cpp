@@ -8,8 +8,8 @@
  ********************************************************/
 
 #include <af/defines.h>
-#include <cl.hpp>
 #include <Param.hpp>
+#include <platform.hpp>
 #include <kernel/KParam.hpp>
 
 namespace opencl

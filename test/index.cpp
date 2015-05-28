@@ -1005,6 +1005,60 @@ TEST(SeqIndex, CPP_INDEX_VECTOR)
     delete[] h_C;
 }
 
+
+TEST(ArrayIndex, CPP_INDEX_VECTOR_2D)
+{
+    using af::array;
+    float h_inds[] = {3, 5, 7, 2}; // zero-based indexing
+    array inds(1, 4, h_inds);
+    array B = af::randu(4, 4);
+    array C = B(inds);
+
+    ASSERT_EQ(B.dims(0), 4);
+    ASSERT_EQ(B.dims(1), 4);
+    ASSERT_EQ(C.dims(0), 4);
+    ASSERT_EQ(C.dims(1), 1);
+
+    float *h_B = B.host<float>();
+    float *h_C = C.host<float>();
+
+    for (int i = 0; i < 4; i++) {
+        ASSERT_EQ(h_C[i], h_B[(int)h_inds[i]]);
+    }
+
+    delete[] h_B;
+    delete[] h_C;
+}
+
+TEST(SeqIndex, CPP_INDEX_VECTOR_2D)
+{
+    using af::array;
+
+    const int nx = 4;
+    const int ny = 3 * nx;
+    const int len = 2 * nx;
+    const int st  = nx - 1;
+    const int en  = st + len - 1;
+
+    array B = af::randu(nx, ny);
+    array C = B(af::seq(st, en));
+
+    ASSERT_EQ(nx , B.dims(0));
+    ASSERT_EQ(ny , B.dims(1));
+    ASSERT_EQ(len, C.dims(0));
+    ASSERT_EQ(1  , C.dims(1));
+
+    float *h_B = B.host<float>();
+    float *h_C = C.host<float>();
+
+    for (int i = 0; i < len; i++) {
+        ASSERT_EQ(h_C[i], h_B[i + st]);
+    }
+
+    delete[] h_B;
+    delete[] h_C;
+}
+
 template<typename T>
 class IndexedMembers : public ::testing::Test
 {
@@ -1022,7 +1076,7 @@ TYPED_TEST(IndexedMembers, MemFuncs)
     dim_t dimsize = 100;
     vector<TypeParam> in(dimsize * dimsize);
     for(int i = 0; i < (int)in.size(); i++) in[i] = i;
-    array input(dimsize, dimsize, &in.front(), af::afHost);
+    array input(dimsize, dimsize, &in.front(), afHost);
 
     ASSERT_EQ(dimsize, input(af::span, 1).elements());
     ASSERT_EQ(input.type(), input(af::span, 1).type());

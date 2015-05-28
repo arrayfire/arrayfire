@@ -34,7 +34,7 @@ int lIdx(int x, int y, int stride1, int stride0)
     return (y*stride1 + x*stride0);
 }
 
-template<typename T, af_pad_type pad>
+template<typename T, af_border_type pad>
 __device__
 void load2ShrdMem(T * shrd, const T * in,
                   int lx, int ly, int shrdStride,
@@ -64,7 +64,7 @@ void load2ShrdMem(T * shrd, const T * in,
     }
 }
 
-template<typename T, af_pad_type pad, unsigned w_len, unsigned w_wid>
+template<typename T, af_border_type pad, unsigned w_len, unsigned w_wid>
 __global__
 void medfilt(Param<T> out, CParam<T> in, int nBBS0, int nBBS1)
 {
@@ -201,7 +201,7 @@ void medfilt(Param<T> out, CParam<T> in, int nBBS0, int nBBS1)
     }
 }
 
-template<typename T, af_pad_type pad>
+template<typename T, af_border_type pad>
 void medfilt(Param<T> out, CParam<T> in, int w_len, int w_wid)
 {
     const dim3 threads(THREADS_X, THREADS_Y);

@@ -138,8 +138,6 @@ void convolve_nd(T *optr, T const *iptr, accT const *fptr,
     dim_t batch[4]     = {0, 1, 1, 1}; /* first value is never used, and declared for code simplicity */
 
     for (dim_t i=1; i<4; ++i) {
-        if (!(baseDim>=i))
-            break;
         switch(kind) {
             case MANY2ONE:
                 out_step[i] = oStrides[i];
@@ -188,7 +186,6 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
     auto sStrides = signal.strides();
 
     dim4 oDims(1);
-
     if (expand) {
         for(dim_t d=0; d<4; ++d) {
             if (kind==ONE2ONE || kind==ONE2MANY) {
@@ -199,7 +196,10 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
         }
     } else {
         oDims = sDims;
-        if (kind==ONE2MANY) oDims[baseDim] = fDims[baseDim];
+        if (kind==ONE2MANY) {
+            for (dim_t i=baseDim; i<4; ++i)
+                oDims[i] = fDims[i];
+        }
     }
 
     Array<T> out = createEmptyArray<T>(oDims);

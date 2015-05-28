@@ -110,7 +110,7 @@ TYPED_TEST(GaussianKernel, SmallSmall2DWithSigma)
 void gaussianKernelTestCPP(string pFileName, double sigma)
 {
     using af::array;
-    using af::gaussiankernel;
+    using af::gaussianKernel;
 
     vector<af::dim4>       numDims;
     vector<vector<int> >   in;
@@ -120,7 +120,7 @@ void gaussianKernelTestCPP(string pFileName, double sigma)
 
     vector<int> input(in[0].begin(), in[0].end());
 
-    array out = gaussiankernel(input[0], input[1], sigma, sigma);
+    array out = gaussianKernel(input[0], input[1], sigma, sigma);
 
     dim_t outElems = out.elements();
     float *outData = new float[outElems];

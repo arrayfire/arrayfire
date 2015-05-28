@@ -29,7 +29,7 @@ static void harris_demo(bool console)
 
     // Compute a Gaussian kernel with standard deviation of 1.0 and length of 5 pixels
     // These values can be changed to use a smaller or larger window
-    array gauss_filt = gaussiankernel(5, 5, 1.0, 1.0);
+    array gauss_filt = gaussianKernel(5, 5, 1.0, 1.0);
 
     // Filter second-order derivatives with Gaussian kernel computed previously
     ixx = convolve(ixx, gauss_filt);
@@ -77,7 +77,7 @@ int main(int argc, char** argv)
     bool console = argc > 2 ? argv[2][0] == '-' : false;
 
     try {
-        af::deviceset(device);
+        af::setDevice(device);
         af::info();
         std::cout << "** ArrayFire Harris Corner Detector Demo **" << std::endl << std::endl;
         harris_demo(console);

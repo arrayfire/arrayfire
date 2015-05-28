@@ -167,23 +167,33 @@ void orbTest(string pTestFile)
 
         ASSERT_EQ(AF_SUCCESS, af_orb(&feat, &desc, inArray, 20.0f, 400, 1.2f, 8, true));
 
-        float * outX           = new float[feat.n];
-        float * outY           = new float[feat.n];
-        float * outScore       = new float[feat.n];
-        float * outOrientation = new float[feat.n];
-        float * outSize        = new float[feat.n];
+        dim_t n = 0;
+        af_array x, y, score, orientation, size;
+
+        ASSERT_EQ(AF_SUCCESS, af_get_features_num(&n, feat));
+        ASSERT_EQ(AF_SUCCESS, af_get_features_xpos(&x, feat));
+        ASSERT_EQ(AF_SUCCESS, af_get_features_ypos(&y, feat));
+        ASSERT_EQ(AF_SUCCESS, af_get_features_score(&score, feat));
+        ASSERT_EQ(AF_SUCCESS, af_get_features_orientation(&orientation, feat));
+        ASSERT_EQ(AF_SUCCESS, af_get_features_size(&size, feat));
+
+        float * outX           = new float[n];
+        float * outY           = new float[n];
+        float * outScore       = new float[n];
+        float * outOrientation = new float[n];
+        float * outSize        = new float[n];
         dim_t descSize;
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&descSize, desc));
         unsigned * outDesc     = new unsigned[descSize];
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outX, feat.x));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outY, feat.y));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outScore, feat.score));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outOrientation, feat.orientation));
-        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outSize, feat.size));
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outX, x));
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outY, y));
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outScore, score));
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outOrientation, orientation));
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outSize, size));
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outDesc, desc));
 
         vector<feat_desc_t> out_feat_desc;
-        array_to_feat_desc(out_feat_desc, outX, outY, outScore, outOrientation, outSize, outDesc, feat.n);
+        array_to_feat_desc(out_feat_desc, outX, outY, outScore, outOrientation, outSize, outDesc, n);
 
         vector<feat_desc_t> gold_feat_desc;
         array_to_feat_desc(gold_feat_desc, &goldFeat[0].front(), &goldFeat[1].front(), &goldFeat[2].front(), &goldFeat[3].front(), &goldFeat[4].front(), goldDesc, goldFeat[0].size());
@@ -199,7 +209,7 @@ void orbTest(string pTestFile)
         split_feat_desc(out_feat_desc, out_feat, v_out_desc);
         split_feat_desc(gold_feat_desc, gold_feat, v_gold_desc);
 
-        for (int elIter = 0; elIter < (int)feat.n; elIter++) {
+        for (int elIter = 0; elIter < (int)n; elIter++) {
             ASSERT_EQ(out_feat[elIter].f[0], gold_feat[elIter].f[0]) << "at: " << elIter << std::endl;
             ASSERT_EQ(out_feat[elIter].f[1], gold_feat[elIter].f[1]) << "at: " << elIter << std::endl;
             ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e-3) << "at: " << elIter << std::endl;
@@ -213,11 +223,11 @@ void orbTest(string pTestFile)
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray_f32));
 
-        ASSERT_EQ(AF_SUCCESS, af_release_array(feat.x));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(feat.y));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(feat.score));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(feat.orientation));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(feat.size));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(x));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(y));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(score));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(orientation));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(size));
         ASSERT_EQ(AF_SUCCESS, af_release_array(desc));
 
         delete[] outX;
@@ -252,7 +262,7 @@ TEST(ORB, CPP)
     readImageFeaturesDescriptors<unsigned>(string(TEST_DIR"/orb/square.test"), inDims, inFiles, goldFeat, goldDesc);
     inFiles[0].insert(0,string(TEST_DIR"/orb/"));
 
-    af::array in = af::loadimage(inFiles[0].c_str(), false);
+    af::array in = af::loadImage(inFiles[0].c_str(), false);
 
     af::features feat;
     af::array desc;

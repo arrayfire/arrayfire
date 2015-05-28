@@ -8,7 +8,9 @@
  ********************************************************/
 
 #pragma once
-
+#if defined(WITH_GRAPHICS)
+#include <fg/window.h>
+#endif
 #include <cl.hpp>
 #include <vector>
 #include <string>
@@ -29,6 +31,8 @@ class DeviceManager
     friend cl::CommandQueue& getQueue();
 
     friend const cl::Device& getDevice();
+
+    friend bool isGLSharingSupported();
 
     friend bool isDoubleSupported(int device);
 
@@ -54,6 +58,9 @@ class DeviceManager
         // variables
         DeviceManager(DeviceManager const&);
         void operator=(DeviceManager const&);
+#if defined(WITH_GRAPHICS)
+        void markDeviceForInterop(const int device, const fg::Window* wHandle);
+#endif
 
     private:
         // Attributes
@@ -62,6 +69,7 @@ class DeviceManager
         std::vector<cl::Context*>     mContexts;
         std::vector<cl::Platform*>   mPlatforms;
         std::vector<unsigned>       mCtxOffsets;
+        std::vector<bool>        mIsGLSharingOn;
 
         unsigned mActiveCtxId;
         unsigned mActiveQId;
@@ -78,6 +86,8 @@ const cl::Context& getContext();
 cl::CommandQueue& getQueue();
 
 const cl::Device& getDevice();
+
+bool isGLSharingSupported();
 
 bool isDoubleSupported(int device);
 

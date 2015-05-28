@@ -9,8 +9,10 @@
 
 #pragma once
 
+#ifdef __cplusplus
+
 #include <iostream>
-#include "defines.h"
+#include <af/defines.h>
 
 namespace af {
 
@@ -33,5 +35,15 @@ public:
 
 }
 
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 AFAPI void af_get_last_error(char **msg, dim_t *len);
 AFAPI const char *af_err_to_string(const af_err err);
+
+#ifdef __cplusplus
+}
+#endif

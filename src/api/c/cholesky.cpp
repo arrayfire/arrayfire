@@ -36,6 +36,10 @@ af_err af_cholesky(af_array *out, int *info, const af_array in, const bool is_up
     try {
         ArrayInfo i_info = getInfo(in);
 
+        if (i_info.ndims() > 2) {
+            AF_ERROR("cholesky can not be used in batch mode", AF_ERR_BATCH);
+        }
+
         af_dtype type = i_info.getType();
 
         ARG_ASSERT(2, i_info.isFloating());                  // Only floating and complex types
@@ -60,6 +64,11 @@ af_err af_cholesky_inplace(int *info, af_array in, const bool is_upper)
 {
     try {
         ArrayInfo i_info = getInfo(in);
+
+        if (i_info.ndims() > 2) {
+            AF_ERROR("cholesky can not be used in batch mode", AF_ERR_BATCH);
+        }
+
         af_dtype type = i_info.getType();
 
         ARG_ASSERT(1, i_info.isFloating()); // Only floating and complex types
