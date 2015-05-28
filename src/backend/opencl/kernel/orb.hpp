@@ -246,9 +246,11 @@ void orb(unsigned* out_feat,
 
             getQueue().enqueueReadBuffer(*d_usable_feat, CL_TRUE, 0, sizeof(unsigned), &usable_feat);
 
-            bufferFree(d_x_feat.data);
-            bufferFree(d_y_feat.data);
-            bufferFree(d_usable_feat);
+            if (lvl_feat > 0) { //This is just to supress warnings
+                bufferFree(d_x_feat.data);
+                bufferFree(d_y_feat.data);
+                bufferFree(d_usable_feat);
+            }
 
             if (usable_feat == 0) {
                 feat_pyr[i] = 0;

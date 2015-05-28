@@ -77,8 +77,7 @@ void hamming_matcher(Array<uint>& idx, Array<uint>& dist,
             kernel::transpose<T, false, false>(trainT, train);
     }
 
-    switch (use_lmem) {
-    case true:
+    if (use_lmem) {
         switch (feat_len) {
         case 1:
             kernel::hamming_matcher<T, true , 1 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
@@ -105,8 +104,7 @@ void hamming_matcher(Array<uint>& idx, Array<uint>& dist,
             kernel::hamming_matcher<T, true , 0 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
             break;
         }
-        break;
-    case false:
+    } else {
         switch (feat_len) {
         case 1:
             kernel::hamming_matcher<T, false, 1 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
@@ -133,7 +131,6 @@ void hamming_matcher(Array<uint>& idx, Array<uint>& dist,
             kernel::hamming_matcher<T, false, 0 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
             break;
         }
-        break;
     }
 }
 
