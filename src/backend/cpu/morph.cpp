@@ -84,8 +84,6 @@ Array<T> morph(const Array<T> &in, const Array<T> &mask)
             outData += ostrides[2];
             inData  += istrides[2];
         }
-        outData += ostrides[3];
-        inData  += istrides[3];
     }
 
     return out;

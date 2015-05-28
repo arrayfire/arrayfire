@@ -22,7 +22,7 @@ template<typename T, bool isDilation>
 static inline af_array morph(const af_array &in, const af_array &mask)
 {
     const Array<T> &input = getArray<T>(in);
-    const Array<T> &filter = getArray<T>(mask);
+    const Array<T> &filter = castArray<T>(mask);
     Array<T> out = morph<T, isDilation>(input, filter);
     return getHandle(out);
 }
@@ -31,7 +31,7 @@ template<typename T, bool isDilation>
 static inline af_array morph3d(const af_array &in, const af_array &mask)
 {
     const Array<T> &input = getArray<T>(in);
-    const Array<T> &filter = getArray<T>(mask);
+    const Array<T> &filter = castArray<T>(mask);
     Array<T> out = morph3d<T, isDilation>(input, filter);
     return getHandle(out);
 }
