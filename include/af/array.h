@@ -660,6 +660,8 @@ namespace af
         // Single arguments
 
 
+        /// \ingroup array_mem_operator_paren
+        /// @{
         ///
         /// \brief Gets a reference to a set of linear elements
         ///
@@ -668,64 +670,122 @@ namespace af
         /// \param[in] s0   is sequence of linear indices
         ///
         /// \returns A reference to the array at the given index
-        /// \ingroup array_mem_operator_paren
         ///
               array::array_proxy operator()(const index &s0);
+
+        /// \copydoc operator()(const index &)
+        const array::array_proxy operator()(const index &s0) const;
+
 
         ///
         /// \brief Gets a reference to a sub array
         ///
         /// \copydetails array_mem_operator_paren_many
         ///
+        /// \param[in] s0   is sequence of indices along the first dimension
+        /// \param[in] s1   is sequence of indices along the second dimension
+        /// \param[in] s2   is sequence of indices along the third dimension
+        /// \param[in] s3   is sequence of indices along the fourth dimension
+        ///
         /// \returns A reference to the array at the given index
-        /// \ingroup array_mem_operator_paren
         ///
               array::array_proxy operator()(const index &s0,
                                             const index &s1,
                                             const index &s2 = span,
                                             const index &s3 = span);
 
-        ///
-        /// \brief Gets a constant reference to a set of linear elements
-        ///
-        /// \copydetails array_mem_operator_paren_one
-        ///
-        /// \returns A constant reference to the array at the given index
-        /// \ingroup array_mem_operator_paren
-        ///
-        const array::array_proxy operator()(const index &s0) const;
-
-        ///
-        /// \brief Gets a constant reference to a sub array
-        ///
-        /// \copydetails array_mem_operator_paren_many
-        ///
-        /// \returns A constant reference to the array at the given index
-        /// \ingroup array_mem_operator_paren
-        ///
+        /// \copydoc operator()(const index &, const index &, const index &, const index &)
         const array::array_proxy operator()(const index &s0,
                                             const index &s1,
                                             const index &s2 = span,
                                             const index &s3 = span) const;
+        /// @}
 
+        /// \ingroup array_mem_row
+        /// @{
+        ///
+        /// \brief Returns a reference to a row
+        ///
+        /// \copydetails array_mem_row
+        ///
+        /// \param[in]  index is the index of the row to be returned
+        ///
+        /// \returns a reference to a row defined by \p index
+        ///
               array::array_proxy row(int index);
-        const array::array_proxy row(int index) const;
+        const array::array_proxy row(int index) const; ///< \copydoc row
 
-              array::array_proxy col(int index);
-        const array::array_proxy col(int index) const;
-
-              array::array_proxy slice(int index);
-        const array::array_proxy slice(int index) const;
-
+        ///
+        /// \brief Returns a reference to sequence of rows
+        ///
+        /// \copydetails array_mem_row
+        ///
+        /// \param[in]  first is the index of the row to be returned
+        /// \param[in]  last is the index of the row to be returned
+        ///
+        /// \returns a reference to a set of rows
               array::array_proxy rows(int first, int last);
-        const array::array_proxy rows(int first, int last) const;
+        const array::array_proxy rows(int first, int last) const; ///< \copydoc rows
+        /// @}
 
+        /// \ingroup array_mem_col
+        /// @{
+        ///
+        /// \brief Returns a reference to a col
+        ///
+        /// \copydetails array_mem_col
+        ///
+        /// \param[in]  index is the index of the col to be returned
+        ///
+        /// \returns a reference to a col defined by \p index
+        ///
+              array::array_proxy col(int index);
+        const array::array_proxy col(int index) const; ///< \copydoc col
+
+        ///
+        /// \brief Returns a reference to sequence of columns
+        ///
+        /// \copydetails array_mem_col
+        ///
+        /// \param[in]  first is the index of the columns to be returned
+        /// \param[in]  last is the index of the columns to be returned
+        ///
+        /// \returns a reference to a set of columns
               array::array_proxy cols(int first, int last);
-        const array::array_proxy cols(int first, int last) const;
+        const array::array_proxy cols(int first, int last) const; ///< \copydoc cols
+        /// @}
 
+        /// \ingroup array_mem_slice
+        /// @{
+        ///
+        /// \brief Returns a reference to a matrix in a volume
+        ///
+        /// \copydetails array_mem_slice
+        ///
+        /// \param[in]  index is the index of the slice to be returned
+        ///
+        /// \returns a reference to a col
+        ///
+              array::array_proxy slice(int index);
+        const array::array_proxy slice(int index) const; ///< \copydoc slice
+
+        /// \brief Returns a reference to a matrix in a volume
+        ///
+        /// \copydetails array_mem_slice
+        ///
+        /// \param[in]  first is the index of the slices to be returned
+        /// \param[in]  last is the index of the slices to be returned
+        ///
+        /// \returns a reference to a set of slice
               array::array_proxy slices(int first, int last);
-        const array::array_proxy slices(int first, int last) const;
+        const array::array_proxy slices(int first, int last) const; ///< \copydoc slices
+        /// @}
 
+        /// \brief Converts the array into another type
+        ///
+        ///  \param[in] type is the desired type(f32, s64, etc.)
+        /// \returns an array with the type specified by \p type
+        /// \ingroup method_mat
         const array as(dtype type) const;
 
 
@@ -735,90 +795,107 @@ namespace af
         array T() const;
         array H() const;
 
-#define ASSIGN(OP)                                          \
-        array& operator OP(const array &a);                 \
-        array& operator OP(const double &a);                \
-        array& operator OP(const cdouble &a);               \
-        array& operator OP(const cfloat &a);                \
-        array& operator OP(const float &a);                 \
-        array& operator OP(const int &a);                   \
-        array& operator OP(const unsigned &a);              \
-        array& operator OP(const bool &a);                  \
-        array& operator OP(const char &a);                  \
-        array& operator OP(const unsigned char &a);         \
-        array& operator OP(const long  &a);                 \
-        array& operator OP(const unsigned long &a);         \
-        array& operator OP(const long long  &a);            \
-        array& operator OP(const unsigned long long &a);    \
+#define ASSIGN(OP)                                                                      \
+        array& OP(const array &val);                                                    \
+        array& OP(const double &val);              /**< \copydoc OP (const array &) */  \
+        array& OP(const cdouble &val);             /**< \copydoc OP (const array &) */  \
+        array& OP(const cfloat &val);              /**< \copydoc OP (const array &) */  \
+        array& OP(const float &val);               /**< \copydoc OP (const array &) */  \
+        array& OP(const int &val);                 /**< \copydoc OP (const array &) */  \
+        array& OP(const unsigned &val);            /**< \copydoc OP (const array &) */  \
+        array& OP(const bool &val);                /**< \copydoc OP (const array &) */  \
+        array& OP(const char &val);                /**< \copydoc OP (const array &) */  \
+        array& OP(const unsigned char &val);       /**< \copydoc OP (const array &) */  \
+        array& OP(const long  &val);               /**< \copydoc OP (const array &) */  \
+        array& OP(const unsigned long &val);       /**< \copydoc OP (const array &) */  \
+        array& OP(const long long  &val);          /**< \copydoc OP (const array &) */  \
+        array& OP(const unsigned long long &val);  /**< \copydoc OP (const array &) */  \
 
-        /**
-           \defgroup index_func_assign assign
-           @{
+        /// \ingroup array_mem_operator_eq
+        /// @{
+        /// \brief Assignes the value(s) of val to the elements of the array.
+        ///
+        /// \param[in] val  is the value to be assigned to the /ref af::array
+        /// \returns the reference to this
+        ///
+        /// \note   This is a copy on write operation. The copy only occurs when the
+        ///          operator() is used on the left hand side.
+        ASSIGN(operator=)
+        /// @}
 
-           Assign values to an array.
+        /// \ingroup arith_func_add
+        /// @{
+        /// \brief Adds the value(s) of val to the elements of the array.
+        ///
+        /// \param[in] val  is the value to be assigned to the /ref af::array
+        /// \returns the reference to this
+        ///
+        /// \note   This is a copy on write operation. The copy only occurs when the
+        ///          operator() is used on the left hand side.
+        /// \ingroup array_mem_operator_plus_eq
+        ASSIGN(operator+=)
+        /// @}
 
-           This is a copy on write operation. The copy only occurs when the operator() is used on the left hand side.
+        /// \ingroup arith_func_sub
+        /// @{
+        /// \brief Subtracts the value(s) of val to the elements of the array.
+        ///
+        /// \param[in] val  is the value to be assigned to the /ref af::array
+        /// \returns the reference to this
+        ///
+        /// \note   This is a copy on write operation. The copy only occurs when the
+        ///          operator() is used on the left hand side.
+        /// \ingroup array_mem_operator_minus_eq
+        ASSIGN(operator-=)
+        /// @}
 
-           \ingroup arrayfire_func
-           \ingroup index_mat
-        */
-        ASSIGN(= )
-        /**
-           @}
-        */
-        /**
-           \ingroup arith_func_add
-           @{
-        */
-        ASSIGN(+=)
-        /**
-           @}
-        */
+        /// \ingroup arith_func_mul
+        /// @{
+        /// \brief Multiplies the value(s) of val to the elements of the array.
+        ///
+        /// \param[in] val  is the value to be assigned to the /ref af::array
+        /// \returns the reference to this
+        ///
+        /// \note   This is a copy on write operation. The copy only occurs when the
+        ///          operator() is used on the left hand side.
+        /// \ingroup array_mem_operator_multiply_eq
+        ASSIGN(operator*=)
+        /// @}
 
-        /**
-           \ingroup arith_func_sub
-           @{
-        */
-        ASSIGN(-=)
-        /**
-           @}
-        */
-
-        /**
-           \ingroup arith_func_mul
-           @{
-        */
-        ASSIGN(*=)
-        /**
-           @}
-        */
-
-        /**
-           \ingroup arith_func_div
-           @{
-        */
-        ASSIGN(/=)
-        /**
-           @}
-        */
+        /// \ingroup arith_func_div
+        /// @{
+        /// \brief Divides the value(s) of val to the elements of the array.
+        ///
+        /// \param[in] val  is the value to be assigned to the /ref af::array
+        /// \returns the reference to this
+        ///
+        /// \note   This is a copy on write operation. The copy only occurs when the
+        ///          operator() is used on the left hand side.
+        /// \ingroup array_mem_operator_divide_eq
+        ASSIGN(operator/=)
+        /// @}
 
 
 #undef ASSIGN
 
-        /**
-           \ingroup arith_func_neg
-        */
+        ///
+        /// \brief Negates the values of the array
+        /// \ingroup arith_func_neg
+        ///
+        /// \returns an \ref array with negated values
         array operator -() const;
 
-        /**
-           \ingroup arith_func_not
-        */
+        ///
+        /// \brief Performs a not operation on the values of the array
+        /// \ingroup arith_func_not
+        ///
+        /// \returns an \ref array with negated values
         array operator !() const;
     };
     // end of class array
 
 #define BIN_OP(op)                                                      \
-    AFAPI array operator op(const array&, const array&);                 \
+    AFAPI array operator op(const array&, const array&);                \
     AFAPI array operator op(const bool&, const array&);                 \
     AFAPI array operator op(const int&, const array&);                  \
     AFAPI array operator op(const unsigned&, const array&);             \
@@ -832,7 +909,7 @@ namespace af
     AFAPI array operator op(const float&, const array&);                \
     AFAPI array operator op(const cfloat&, const array&);               \
     AFAPI array operator op(const cdouble&, const array&);              \
-    AFAPI array operator op(const array&, const array&);                 \
+    AFAPI array operator op(const array&, const array&);                \
     AFAPI array operator op(const array&, const bool&);                 \
     AFAPI array operator op(const array&, const int&);                  \
     AFAPI array operator op(const array&, const unsigned&);             \
