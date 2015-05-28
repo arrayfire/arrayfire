@@ -53,7 +53,40 @@ void solveTester(const int m, const int n, const int k, double eps)
     ASSERT_NEAR(0, af::sum<double>(af::abs(imag(B0 - B1))) / (m * k), eps);
 }
 
+template<typename T>
+void solveLUTester(const int n, const int k, double eps)
+{
+    if (noDoubleTests<T>()) return;
+#if 1
+    af::array A  = cpu_randu<T>(af::dim4(n, n));
+    af::array X0 = cpu_randu<T>(af::dim4(n, k));
+#else
+    af::array A  = af::randu(n, n, (af::dtype)af::dtype_traits<T>::af_type);
+    af::array X0 = af::randu(n, k, (af::dtype)af::dtype_traits<T>::af_type);
+#endif
+    af::array B0 = af::matmul(A, X0);
+
+    //! [ex_solve_lu]
+    af::array A_lu, pivot;
+    af::lu(A_lu, pivot, A);
+    af::array X1 = af::solveLU(A_lu, pivot, B0);
+    //! [ex_solve_lu]
+
+    af::array B1 = af::matmul(A, X1);
+
+    ASSERT_NEAR(0, af::sum<double>(af::abs(real(B0 - B1))) / (n * k), eps);
+    ASSERT_NEAR(0, af::sum<double>(af::abs(imag(B0 - B1))) / (n * k), eps);
+}
+
 #define SOLVE_TESTS(T, eps)                     \
+    TEST(SOLVE_LU, T##Reg)                      \
+    {                                           \
+        solveLUTester<T>(1000, 100, eps);       \
+    }                                           \
+    TEST(SOLVE_LU, T##RegMultiple)              \
+    {                                           \
+        solveLUTester<T>(2048, 512, eps);       \
+    }                                           \
     TEST(SOLVE, T##Square)                      \
     {                                           \
         solveTester<T>(1000, 1000, 100, eps);   \
