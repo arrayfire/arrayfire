@@ -177,7 +177,7 @@ struct Binary<char, af_min_t>
 
     __DH__ char operator() (char lhs, char rhs)
     {
-        return detail::max(lhs > 0, rhs > 0);
+        return detail::min(lhs > 0, rhs > 0);
     }
 };
 

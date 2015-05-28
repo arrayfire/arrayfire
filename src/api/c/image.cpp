@@ -124,6 +124,25 @@ af_err af_create_window(af_window *out, const int width, const int height, const
 #endif
 }
 
+af_err af_set_position(const af_window wind, const unsigned x, const unsigned y)
+{
+#if defined(WITH_GRAPHICS)
+    if(wind==0) {
+        std::cerr<<"Not a valid window"<<std::endl;
+        return AF_SUCCESS;
+    }
+
+    try {
+        fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
+        wnd->setPos(x, y);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+#else
+    return AF_ERR_NO_GFX;
+#endif
+}
+
 af_err af_grid(const af_window wind, const int rows, const int cols)
 {
 #if defined(WITH_GRAPHICS)

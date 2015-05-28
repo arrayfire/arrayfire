@@ -53,6 +53,7 @@ static af_array hist_equal(const af_array& in, const af_array& hist)
     Array<float> idxArr  = lookup<float, T>(normCdf, getArray<T>(vInput), 0);
 
     Array<T> result = cast<T>(idxArr);
+    result.modDims(input.dims());
 
     AF_CHECK(af_release_array(vInput));
 
