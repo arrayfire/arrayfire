@@ -130,9 +130,6 @@ Array<T> medfilt(const Array<T> &in, dim_t w_len, dim_t w_wid)
             in_ptr  += istrides[2];
             out_ptr += ostrides[2];
         }
-
-        in_ptr  += istrides[3];
-        out_ptr += ostrides[3];
     }
 
     return out;
