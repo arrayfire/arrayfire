@@ -66,7 +66,7 @@ af_err af_lu(af_array *lower, af_array *upper, af_array *pivot, const af_array i
     return AF_SUCCESS;
 }
 
-af_err af_lu_inplace(af_array *pivot, const af_array in, const bool is_lapack_piv)
+af_err af_lu_inplace(af_array *pivot, af_array in, const bool is_lapack_piv)
 {
     try {
 
