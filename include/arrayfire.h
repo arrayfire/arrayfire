@@ -105,10 +105,10 @@
      LU, QR, Cholesky etc.
 
      @defgroup lapack_solve_mat Linear solve and least squares
-     solve, solveLU, solveQR, solveChol
+     solve, solveLU, etc.
 
      @defgroup lapack_ops_mat Matrix operations
-     inverse, det, etc.
+     inverse, etc.
    @}
 
    @defgroup image_mat Image Processing

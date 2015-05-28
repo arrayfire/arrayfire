@@ -134,7 +134,7 @@ namespace af
        \param[in] options determining various properties of matrix \p a
        \returns \p x, the matrix of unknown variables
 
-       \note \p options currently needs to be \ref AF_MAT_NONE
+       \note \p options needs to be one of \ref AF_MAT_NONE, \ref AF_MAT_LOWER or \ref AF_MAT_UPPER
        \note This function is not supported in GFOR
 
        \ingroup lapack_solve_func_gen
@@ -260,7 +260,7 @@ extern "C" {
 
        \ingroup lapack_solve_func_gen
 
-       \note currently options needs to be \ref AF_MAT_NONE
+       \note \p options needs to be one of \ref AF_MAT_NONE, \ref AF_MAT_LOWER or \ref AF_MAT_UPPER
     */
     AFAPI af_err af_solve(af_array *x, const af_array a, const af_array b,
                           const af_mat_prop options);
