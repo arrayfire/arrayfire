@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 
     try {
         int device = argc > 1 ? atoi(argv[1]) : 0;
-        deviceset(device);
+        setDevice(device);
         info();
 
         printf("** ArrayFire Black-Scholes Example **\n"

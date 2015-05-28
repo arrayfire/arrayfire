@@ -55,7 +55,7 @@ array edge(const array &in, int method = 0)
     if (in.dims(0) <  512) h = 3;
     if (in.dims(0) > 2048) h = 7;
 
-    array ker = gaussiankernel(w, h);
+    array ker = gaussianKernel(w, h);
     array smooth = convolve(in, ker);
     array mag, dir;
 
@@ -73,7 +73,7 @@ void edge(bool console)
     af::Window myWindow("Edge Dectectors");
     af::Window myWindow2(512, 512, "Histogram");
 
-    array in = loadimage(ASSETS_DIR "/examples/images/lena.ppm", false);
+    array in = loadImage(ASSETS_DIR "/examples/images/lena.ppm", false);
 
     array prewitt = edge(in, 1);
     array sobelFilter   = edge(in, 2);
@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
     bool console = argc > 2 ? argv[2][0] == '-' : false;
 
     try {
-        af::deviceset(device);
+        af::setDevice(device);
         af::info();
 
         printf("** ArrayFire Edge Detection Demo **\n");

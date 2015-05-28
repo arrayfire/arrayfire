@@ -262,7 +262,7 @@ TEST(ORB, CPP)
     readImageFeaturesDescriptors<unsigned>(string(TEST_DIR"/orb/square.test"), inDims, inFiles, goldFeat, goldDesc);
     inFiles[0].insert(0,string(TEST_DIR"/orb/"));
 
-    af::array in = af::loadimage(inFiles[0].c_str(), false);
+    af::array in = af::loadImage(inFiles[0].c_str(), false);
 
     af::features feat;
     af::array desc;

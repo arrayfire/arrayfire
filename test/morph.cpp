@@ -358,8 +358,8 @@ void cppMorphImageTest(string pTestFile)
         outFiles[testId].insert(0,string(TEST_DIR"/morph/"));
 
         af::array mask = af::constant(1.0, 3, 3);
-        af::array img = af::loadimage(inFiles[testId].c_str(), isColor);
-        af::array gold = af::loadimage(outFiles[testId].c_str(), isColor);
+        af::array img = af::loadImage(inFiles[testId].c_str(), isColor);
+        af::array gold = af::loadImage(outFiles[testId].c_str(), isColor);
         dim_t nElems   = gold.elements();
         af::array output;
 

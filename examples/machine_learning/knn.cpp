@@ -105,7 +105,7 @@ int main(int argc, char** argv)
 
     try {
 
-        af::deviceset(device);
+        af::setDevice(device);
         af::info();
         knn_demo(console, perc);
 

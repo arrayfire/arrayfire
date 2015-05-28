@@ -66,7 +66,7 @@ array border(const array& img, const int size, const float value = 0.0)
     return border(img, size, size, size, size, value);
 }
 
-array blur(const array& img, const array mask = gaussiankernel(3,3))
+array blur(const array& img, const array mask = gaussianKernel(3,3))
 {
     array blurred = array(img.dims(), img.type());
     for(int i = 0; i < (int)blurred.dims(2); i++)
@@ -79,7 +79,7 @@ static void morphing_demo(bool console)
 {
     af::Window wnd(1280, 720, "Morphological Operations");
     // load images
-    array img_rgb = loadimage(ASSETS_DIR "/examples/images/lena.ppm", true) / 255.f; // 3 channel RGB       [0-1]
+    array img_rgb = loadImage(ASSETS_DIR "/examples/images/lena.ppm", true) / 255.f; // 3 channel RGB       [0-1]
 
     array mask = constant(1, 5, 5);
 
@@ -90,7 +90,7 @@ static void morphing_demo(bool console)
     array gr = morphgrad(img_rgb, mask);
     array th = tophat(img_rgb, mask);
     array bh = bottomhat(img_rgb, mask);
-    array bl = blur(img_rgb, gaussiankernel(5,5));
+    array bl = blur(img_rgb, gaussianKernel(5,5));
     array bp = border(img_rgb, 20, 30, 40, 50, 0.5);
     array bo = border(img_rgb, 20);
 
@@ -123,7 +123,7 @@ int main(int argc, char** argv)
 
     try {
         af::info();
-        af::deviceset(device);
+        af::setDevice(device);
         printf("** ArrayFire Image Morphing Demo **\n\n");
         morphing_demo(console);
 
