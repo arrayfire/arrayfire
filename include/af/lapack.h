@@ -143,6 +143,22 @@ namespace af
 
 
     /**
+       C++ Interface for solving a system of equations
+
+       \param[in] a is the output matrix from packed LU decomposition of the coefficient matrix
+       \param[in] piv is the pivot array from packed LU decomposition of the coefficient matrix
+       \param[in] b is the matrix of measured values
+       \returns \p x, the matrix of unknown variables
+
+       \ingroup lapack_solve_func_gen
+
+       \note \p options currently needs to be \ref AF_MAT_NONE
+       \note This function is not supported in GFOR
+    */
+    AFAPI array solveLU(const array &a, const array &piv,
+                        const array &b, const matProp options = AF_MAT_NONE);
+
+    /**
        C++ Invert a matrix
 
        \param[in] in is input matrix
@@ -248,6 +264,22 @@ extern "C" {
     */
     AFAPI af_err af_solve(af_array *x, const af_array a, const af_array b,
                           const af_mat_prop options);
+
+    /**
+       C Interface for solving a system of equations
+
+       \param[out] x will contain the matrix of unknown variables
+       \param[in] a is the output matrix from packed LU decomposition of the coefficient matrix
+       \param[in] piv is the pivot array from packed LU decomposition of the coefficient matrix
+       \param[in] b is the matrix of measured values
+
+       \ingroup lapack_solve_lu_func_gen
+
+       \note \p options currently needs to be \ref AF_MAT_NONE
+       \note This function is not supported in GFOR
+    */
+    AFAPI af_err af_solve_lu(af_array *x, const af_array a, const af_array piv,
+                             const af_array b, const af_mat_prop options);
 
     /**
        C Invert a matrix

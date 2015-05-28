@@ -29,6 +29,30 @@ namespace opencl
 {
 
 template<typename T>
+Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
+                 const Array<T> &b, const af_mat_prop options)
+{
+    int N = A.dims()[0];
+    int NRHS = b.dims()[1];
+
+    std::vector<int> ipiv(N);
+    copyData(&ipiv[0], pivot);
+
+    Array< T > B = copyArray<T>(b);
+
+    const cl::Buffer *A_buf = A.get();
+    cl::Buffer *B_buf = B.get();
+
+    int info = 0;
+    magma_getrs_gpu<T>(MagmaNoTrans, N, NRHS,
+                       (*A_buf)(), A.getOffset(), A.strides()[1],
+                       &ipiv[0],
+                       (*B_buf)(), B.getOffset(), B.strides()[1],
+                       getQueue()(), &info);
+    return B;
+}
+
+template<typename T>
 Array<T> generalSolve(const Array<T> &a, const Array<T> &b)
 {
 
@@ -41,17 +65,17 @@ Array<T> generalSolve(const Array<T> &a, const Array<T> &b)
     Array<T> A = copyArray<T>(a);
     Array<T> B = copyArray<T>(b);
 
-    cl::Buffer *a_buf = A.get();
+    cl::Buffer *A_buf = A.get();
     int info = 0;
-    magma_getrf_gpu<T>(M, N, (*a_buf)(), a.getOffset(), a.strides()[1],
+    magma_getrf_gpu<T>(M, N, (*A_buf)(), A.getOffset(), A.strides()[1],
                        &ipiv[0], getQueue()(), &info);
 
-    cl::Buffer *b_buf = B.get();
-    int K = b.dims()[1];
+    cl::Buffer *B_buf = B.get();
+    int K = B.dims()[1];
     magma_getrs_gpu<T>(MagmaNoTrans, M, K,
-                       (*a_buf)(), a.getOffset(), a.strides()[1],
+                       (*A_buf)(), A.getOffset(), A.strides()[1],
                        &ipiv[0],
-                       (*b_buf)(), b.getOffset(), b.strides()[1],
+                       (*B_buf)(), B.getOffset(), B.strides()[1],
                        getQueue()(), &info);
     return B;
 }
@@ -241,14 +265,16 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
     }
 }
 
-#define INSTANTIATE_SOLVE(T)                                                                   \
-    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_mat_prop options);
+#define INSTANTIATE_SOLVE(T)                                            \
+    template Array<T> solve<T>(const Array<T> &a, const Array<T> &b,    \
+                               const af_mat_prop options);              \
+    template Array<T> solveLU<T>(const Array<T> &A, const Array<int> &pivot, \
+                                 const Array<T> &b, const af_mat_prop options); \
 
 INSTANTIATE_SOLVE(float)
 INSTANTIATE_SOLVE(cfloat)
 INSTANTIATE_SOLVE(double)
 INSTANTIATE_SOLVE(cdouble)
-
 }
 
 #else
@@ -257,13 +283,25 @@ namespace opencl
 {
 
 template<typename T>
-Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
+Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
+                 const Array<T> &b, const af_mat_prop options)
 {
-    AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
+    AF_ERROR("Linear Algebra is diabled on OpenCL",
+             AF_ERR_NOT_CONFIGURED);
 }
 
-#define INSTANTIATE_SOLVE(T)                                                                   \
-    template Array<T> solve<T> (const Array<T> &a, const Array<T> &b, const af_mat_prop options);
+template<typename T>
+Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
+{
+    AF_ERROR("Linear Algebra is diabled on OpenCL",
+              AF_ERR_NOT_CONFIGURED);
+}
+
+#define INSTANTIATE_SOLVE(T)                                            \
+    template Array<T> solve<T>(const Array<T> &a, const Array<T> &b,    \
+                               const af_mat_prop options);              \
+    template Array<T> solveLU<T>(const Array<T> &A, const Array<int> &pivot, \
+                                 const Array<T> &b, const af_mat_prop options); \
 
 INSTANTIATE_SOLVE(float)
 INSTANTIATE_SOLVE(cfloat)

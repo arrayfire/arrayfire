@@ -84,6 +84,14 @@ namespace af
         return array(out);
     }
 
+    array solveLU(const array &a, const array &piv,
+                  const array &b, const matProp options)
+    {
+        af_array out;
+        AF_THROW(af_solve_lu(&out, a.get(), piv.get(), b.get(), options));
+        return array(out);
+    }
+
     array inverse(const array &in, const matProp options)
     {
         af_array out;
