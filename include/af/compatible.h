@@ -15,13 +15,13 @@ namespace af
 {
 class array;
 
-DEPRECATED("Use deviceCount instead")
+DEPRECATED("Use getDeviceCount instead")
 AFAPI int devicecount();
 
-DEPRECATED("Use deviceGet instead")
+DEPRECATED("Use getDevice instead")
 AFAPI int deviceget();
 
-DEPRECATED("Use deviceSet instead")
+DEPRECATED("Use setDevice instead")
 AFAPI void deviceset(const int device);
 
 DEPRECATED("Use loadImage instead")
@@ -33,11 +33,13 @@ AFAPI void saveimage(const char* filename, const array& in);
 DEPRECATED("Use gaussianKernel instead")
 AFAPI array gaussiankernel(const int rows, const int cols, const double sig_r = 0, const double sig_c = 0);
 
+template<typename T>
 DEPRECATED("Use allTrue instead")
-template<typename T> T alltrue(const array &in);
+T alltrue(const array &in);
 
+template<typename T>
 DEPRECATED("Use anyTrue instead")
-template<typename T> T anytrue(const array &in);
+T anytrue(const array &in);
 
 DEPRECATED("Use allTrue instead")
 AFAPI array alltrue(const array &in, const int dim = -1);
