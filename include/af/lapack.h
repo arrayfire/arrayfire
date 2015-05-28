@@ -150,7 +150,7 @@ namespace af
        \param[in] b is the matrix of measured values
        \returns \p x, the matrix of unknown variables
 
-       \ingroup lapack_solve_func_gen
+       \ingroup lapack_solve_lu_func_gen
 
        \note \p options currently needs to be \ref AF_MAT_NONE
        \note This function is not supported in GFOR

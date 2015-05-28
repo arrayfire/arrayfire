@@ -185,9 +185,8 @@ This operation can be done in ArrayFire using the following code snippet.
 
 This function along with \ref af::lu split up the task af::solve performs for square matrices.
 
-**Benefit over \ref af::solve**
+\note This function is beneficial over \ref af::solve only in long running application where the coefficient matrix **A** stays the same, but the observed variables keep changing.
 
-In a long running application where the coefficient matrix **A** stays the same, but the observed variables keep changing, it would beneficial to decompose the matrix once and call \ref af::solveLU repeatedly.
 
 =======================================================================
 
