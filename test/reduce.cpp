@@ -228,20 +228,20 @@ void cppReduceTest(string pTestFile)
     }
 }
 
-#define CPP_REDUCE_TESTS(FN, Ti, To)               \
+#define CPP_REDUCE_TESTS(FN, FNAME, Ti, To)        \
     TEST(Reduce, Test_##FN##_CPP)                  \
     {                                              \
         cppReduceTest<Ti, To, FN>(                 \
-            string(TEST_DIR"/reduce/"#FN".test")   \
+            string(TEST_DIR"/reduce/"#FNAME".test")\
             );                                     \
     }
 
-CPP_REDUCE_TESTS(sum, float, float);
-CPP_REDUCE_TESTS(min, float, float);
-CPP_REDUCE_TESTS(max, float, float);
-CPP_REDUCE_TESTS(anyTrue, float, unsigned char);
-CPP_REDUCE_TESTS(allTrue, float, unsigned char);
-CPP_REDUCE_TESTS(count, float, unsigned);
+CPP_REDUCE_TESTS(sum, sum, float, float);
+CPP_REDUCE_TESTS(min, min, float, float);
+CPP_REDUCE_TESTS(max, max, float, float);
+CPP_REDUCE_TESTS(anyTrue, any_true, float, unsigned char);
+CPP_REDUCE_TESTS(allTrue, all_true, float, unsigned char);
+CPP_REDUCE_TESTS(count, count, float, unsigned);
 
 TEST(Reduce, Test_Product_Global)
 {
