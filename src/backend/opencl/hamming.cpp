@@ -41,9 +41,7 @@ void hamming_matcher(Array<uint>& idx, Array<uint>& dist,
     const unsigned feat_len = qDims[dist_dim];
 
     // Determine maximum feat_len capable of using shared memory (faster)
-    int device = getActiveDeviceId();
-    std::vector<Device> devices = getContext().getInfo<CL_CONTEXT_DEVICES>();
-    cl_ulong avail_lmem = devices[device].getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
+    cl_ulong avail_lmem = getDevice().getInfo<CL_DEVICE_LOCAL_MEM_SIZE>();
     size_t lmem_predef = 2 * THREADS * sizeof(unsigned) + feat_len * sizeof(T);
     size_t ltrain_sz = THREADS * feat_len * sizeof(T);
     bool use_lmem = (avail_lmem >= (lmem_predef + ltrain_sz)) ? true : false;

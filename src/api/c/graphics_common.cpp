@@ -138,41 +138,61 @@ fg::Window* ForgeManager::getMainWindow(const bool dontCreate)
 
 fg::Image* ForgeManager::getImage(int w, int h, fg::ColorMode mode, GLenum type)
 {
-    size_t size = w * h * mode * getTypeSize(type);
+    /* w, h needs to fall in the range of [0, 2^16]
+     * for the ForgeManager to correctly retrieve
+     * the necessary Forge Image object. So, this implementation
+     * is a limitation on how big of an image can be rendered
+     * using arrayfire graphics funtionality */
+    assert(w <= 2ll<<16);
+    assert(h <= 2ll<<16);
+    long long key = ((w & _16BIT) << 16) | (h & _16BIT);
+    key = (((key << 16) | mode) << 16) | type;
 
-    ImgMapIter iter = mImgMap.find(size);
+    ImgMapIter iter = mImgMap.find(key);
     if (iter==mImgMap.end()) {
         fg::Image* temp = new fg::Image(w, h, mode, type);
-        mImgMap[size] = temp;
+        mImgMap[key] = temp;
     }
 
-    return mImgMap[size];
+    return mImgMap[key];
 }
 
 fg::Plot* ForgeManager::getPlot(int nPoints, GLenum type)
 {
-    size_t size = nPoints * getTypeSize(type);
+    /* nPoints needs to fall in the range of [0, 2^48]
+     * for the ForgeManager to correctly retrieve
+     * the necessary Forge Plot object. So, this implementation
+     * is a limitation on how big of an plot graph can be rendered
+     * using arrayfire graphics funtionality */
+    assert(nPoints <= 2ll<<48);
+    long long key = ((nPoints & _48BIT) << 48) | (type & _16BIT);
 
-    PltMapIter iter = mPltMap.find(size);
+    PltMapIter iter = mPltMap.find(key);
     if (iter==mPltMap.end()) {
         fg::Plot* temp = new fg::Plot(nPoints, type);
-        mPltMap[size] = temp;
+        mPltMap[key] = temp;
     }
 
-    return mPltMap[size];
+    return mPltMap[key];
 }
 
 fg::Histogram* ForgeManager::getHistogram(int nBins, GLenum type)
 {
-    size_t size = nBins * getTypeSize(type);
+    /* nBins needs to fall in the range of [0, 2^48]
+     * for the ForgeManager to correctly retrieve
+     * the necessary Forge Histogram object. So, this implementation
+     * is a limitation on how big of an histogram data can be rendered
+     * using arrayfire graphics funtionality */
+    assert(nBins <= 2ll<<48);
+    long long key = ((nBins & _48BIT) << 48) | (type & _16BIT);
 
-    HstMapIter iter = mHstMap.find(size);
+    HstMapIter iter = mHstMap.find(key);
     if (iter==mHstMap.end()) {
         fg::Histogram* temp = new fg::Histogram(nBins, type);
-        mHstMap[size] = temp;
+        mHstMap[key] = temp;
     }
 
-    return mHstMap[size];
+    return mHstMap[key];
 }
 
 void ForgeManager::destroyResources()
