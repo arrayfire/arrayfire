@@ -14,6 +14,11 @@
 namespace af
 {
 
+array setunique(const array &in, const bool is_sorted)
+{
+    return setUnique(in, is_sorted);
+}
+
 array setUnique(const array &in, const bool is_sorted)
 {
     af_array out = 0;
@@ -21,11 +26,21 @@ array setUnique(const array &in, const bool is_sorted)
     return array(out);
 }
 
+array setunion(const array &first, const array &second, const bool is_unique)
+{
+    return setUnion(first, second, is_unique);
+}
+
 array setUnion(const array &first, const array &second, const bool is_unique)
 {
     af_array out = 0;
     AF_THROW(af_set_union(&out, first.get(), second.get(), is_unique));
     return array(out);
+}
+
+array setintersect(const array &first, const array &second, const bool is_unique)
+{
+    return setIntersect(first, second, is_unique);
 }
 
 array setIntersect(const array &first, const array &second, const bool is_unique)

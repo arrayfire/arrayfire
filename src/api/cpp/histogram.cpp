@@ -9,6 +9,7 @@
 
 #include <af/image.h>
 #include <af/algorithm.h>
+#include <af/compatible.h>
 #include <af/array.h>
 #include "error.hpp"
 
@@ -29,6 +30,7 @@ array histogram(const array &in, const unsigned nbins)
     return array(out);
 }
 
+array histequal(const array& in, const array& hist) { return histEqual(in, hist); }
 array histEqual(const array& in, const array& hist)
 {
     af_array temp = 0;

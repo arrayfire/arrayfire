@@ -19,6 +19,10 @@ namespace af
         AF_THROW(af_info());
     }
 
+    void deviceprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
+    {
+        deviceInfo(d_name, d_platform, d_toolkit, d_compute);
+    }
     void deviceInfo(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
     {
         AF_THROW(af_device_info(d_name, d_platform, d_toolkit, d_compute));

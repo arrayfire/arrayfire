@@ -9,6 +9,7 @@
 
 #include <af/array.h>
 #include <af/algorithm.h>
+#include <af/compatible.h>
 #include "error.hpp"
 #include "common.hpp"
 
@@ -42,6 +43,8 @@ namespace af
         return array(out);
     }
 
+    // 2.1 compatibility
+    array alltrue(const array &in, const int dim) { return allTrue(in, dim); }
     array allTrue(const array &in, const int dim)
     {
         af_array out = 0;
@@ -49,6 +52,8 @@ namespace af
         return array(out);
     }
 
+    // 2.1 compatibility
+    array anytrue(const array &in, const int dim) { return anyTrue(in, dim); }
     array anyTrue(const array &in, const int dim)
     {
         af_array out = 0;
@@ -81,23 +86,23 @@ namespace af
         idx = array(loc);
     }
 
-#define INSTANTIATE_REAL(fnC, fnCPP, T)                             \
+#define INSTANTIATE_REAL(fnC, fnCPP, T)                     \
     template<> AFAPI                                        \
-    T fnCPP(const array &in)                                   \
+    T fnCPP(const array &in)                                \
     {                                                       \
         double rval, ival;                                  \
-        AF_THROW(af_##fnC##_all(&rval, &ival, in.get()));    \
+        AF_THROW(af_##fnC##_all(&rval, &ival, in.get()));   \
         return (T)(rval);                                   \
     }                                                       \
 
 
-#define INSTANTIATE_CPLX(fnC, fnCPP, T, Tr)                         \
+#define INSTANTIATE_CPLX(fnC, fnCPP, T, Tr)                 \
     template<> AFAPI                                        \
-    T fnCPP(const array &in)                                   \
+    T fnCPP(const array &in)                                \
     {                                                       \
         double rval, ival;                                  \
-        AF_THROW(af_##fnC##_all(&rval, &ival, in.get()));    \
-        T out((Tr)rval, (Tr)ival);                       \
+        AF_THROW(af_##fnC##_all(&rval, &ival, in.get()));   \
+        T out((Tr)rval, (Tr)ival);                          \
         return out;                                         \
     }                                                       \
 
@@ -130,6 +135,33 @@ namespace af
 #undef INSTANTIATE_REAL
 #undef INSTANTIATE_CPLX
 
+#define INSTANTIATE_COMPAT(fnCPP, fnCompat, T)              \
+    template<> AFAPI                                        \
+    T fnCompat(const array &in)                             \
+    {                                                       \
+        return fnCPP<T>(in);                                      \
+    }
+
+#define INSTANTIATE(fnCPP, fnCompat)                            \
+    INSTANTIATE_COMPAT(fnCPP, fnCompat, float)                  \
+    INSTANTIATE_COMPAT(fnCPP, fnCompat, double)                 \
+    INSTANTIATE_COMPAT(fnCPP, fnCompat, int)                    \
+    INSTANTIATE_COMPAT(fnCPP, fnCompat, unsigned)               \
+    INSTANTIATE_COMPAT(fnCPP, fnCompat, long)                   \
+    INSTANTIATE_COMPAT(fnCPP, fnCompat, unsigned long)          \
+    INSTANTIATE_COMPAT(fnCPP, fnCompat, long long)              \
+    INSTANTIATE_COMPAT(fnCPP, fnCompat, unsigned long long)     \
+    INSTANTIATE_COMPAT(fnCPP, fnCompat, char)                   \
+    INSTANTIATE_COMPAT(fnCPP, fnCompat, unsigned char)          \
+    INSTANTIATE_COMPAT(fnCPP, fnCompat, af_cfloat)              \
+    INSTANTIATE_COMPAT(fnCPP, fnCompat, af_cdouble)             \
+
+    INSTANTIATE(allTrue, alltrue)
+    INSTANTIATE(anyTrue, anytrue)
+
+#undef INSTANTIATE
+#undef INSTANTIATE_COMPAT
+
 #define INSTANTIATE_REAL(fn, T)                                 \
     template<> AFAPI                                            \
     void fn(T *val, unsigned *idx, const array &in)             \
@@ -146,7 +178,7 @@ namespace af
     {                                                           \
         double rval, ival;                                      \
         AF_THROW(af_i##fn##_all(&rval, &ival, idx, in.get()));  \
-        *val = T((Tr)rval, (Tr)ival);                            \
+        *val = T((Tr)rval, (Tr)ival);                           \
     }                                                           \
 
 #define INSTANTIATE(fn)                         \
