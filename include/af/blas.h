@@ -19,16 +19,6 @@
 #include <af/defines.h>
 
 #ifdef __cplusplus
-extern "C" {
-#endif
-    /**
-       \ingroup blas_func_matmul
-    */
-#ifdef __cplusplus
-}
-#endif
-
-#ifdef __cplusplus
 namespace af
 {
     class array;

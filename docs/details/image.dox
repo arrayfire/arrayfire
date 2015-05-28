@@ -494,7 +494,7 @@ the input dimensions and the data out of bounds will be discarded.
 
 All new values that do not map to a location of the input array are set to 0.
 
-Translate is a special case of the \ref transform function.
+Translate is a special case of the \ref af::transform function.
 
 \code
 in [5 3 1 1]

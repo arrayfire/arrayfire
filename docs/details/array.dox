@@ -1,0 +1,129 @@
+
+/**
+\addtogroup arrayfire_func
+@{
+\defgroup array_mem_operator_paren operator()
+\ingroup index_mat 
+
+\brief Gets a reference to a set of elements
+
+\snippet test/index.cpp ex_indexing_first
+
+This operator returns a reference of the original array at a given coordinate.
+You can pass \ref af::seq, \ref af::array, or an int as it's parameters. These
+references can be used for assignment or returning references
+to \ref af::array objects.
+
+===============================================================================
+
+\defgroup array_mem_operator_paren_one operator()
+
+This operator returns a reference of the original array at a given coordinate.
+You can pass \ref af::seq, \ref af::array, or an int as it's parameters. These
+references can be used for assignment or returning references
+to \ref af::array objects.
+
+If the \ref af::array is a multi-dimensional array then this coordinate
+will treated as the data as a linear array.
+
+===============================================================================
+
+\defgroup array_mem_operator_paren_many operator()
+
+This operator returns a reference of the original array at a given coordinate.
+You can pass \ref af::seq, \ref af::array, or an int as it's parameters. These
+references can be used for assignment or returning references
+to \ref af::array objects.
+
+===============================================================================
+
+\defgroup array_mem_row row/rows
+\ingroup index_mat
+
+\brief Gets a reference of a row in a 2D \ref af::array
+
+This function returns a row or a set of rows from a two dimensional \ref
+af::array.  The reference can be used for indexing into and assignment of
+values to the \ref af::array object.
+
+===============================================================================
+
+\defgroup array_mem_col col/cols
+\ingroup index_mat
+
+\brief Gets a reference of a col in a 2D \ref af::array
+
+This function returns a column or a set of columns from a two dimensional \ref
+af::array.  The reference can be used for indexing into and assignment of
+values to the \ref af::array object.
+
+===============================================================================
+
+\defgroup array_mem_slice slice/slices
+\ingroup index_mat
+
+\brief Gets a reference of a matrix in a 3D \ref af::array
+
+This function returns a slice or a set of slices from a two dimensional \ref
+af::array.  The reference can be used for indexing into and assignment of
+values to the \ref af::array object.
+
+
+===============================================================================
+
+\defgroup array_mem_operator_eq operator=
+\ingroup index_mat
+
+\brief Assignes the value(s) of val to the elements of the af::array.
+
+Assigns a value
+
+===============================================================================
+
+\defgroup array_mem_operator_plus_eq operator+=
+\ingroup index_mat
+
+\brief Adds and assigns the value(s) of val to the elements of the af::array
+
+Adds and assigns values
+
+===============================================================================
+
+\defgroup array_mem_operator_minus_eq operator-=
+\ingroup index_mat
+
+\brief Substracts and assigns the value(s) of val to the elements of the
+af::array
+
+Substracts and assigns values
+
+===============================================================================
+
+\defgroup array_mem_operator_multiply_eq operator(star)=
+\ingroup index_mat
+
+\brief Multiplies and assigns the value(s) of val to the elements of the
+af::array
+
+Multiplies and assigns values
+
+===============================================================================
+
+\defgroup array_mem_operator_divide_eq operator/=
+\ingroup index_mat
+
+\brief Divides and assigns the value(s) of val to the elements of the af::array
+
+Divides and assigns values
+
+===============================================================================
+
+\defgroup array_mem_operator_plus operator+
+\ingroup arith_mat
+
+\brief Divides and assigns the value(s) of val to the elements of the af::array
+
+Divides and assigns values
+
+@}
+*/
