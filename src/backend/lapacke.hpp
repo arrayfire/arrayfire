@@ -31,6 +31,8 @@ int LAPACKE_##X##larft(int layout, char direct, char storev, int N, int K,      
                        const T *v, int ldv, const T *tau, T *t, int ldt);           \
 int LAPACKE_##X##laswp(int layout, int N, T *A, int lda,                            \
                        int k1, int k2, const int * pivot, int incx);                \
+int LAPACKE_##X##getrs(int layout, char trans, int M, int N, const T *A,            \
+                       int lda, const int *pivot, T *B, int ldb);                   \
 
 LAPACK_FUNC(s, float)
 LAPACK_FUNC(d, double)
@@ -70,4 +72,3 @@ LAPACK_MQR_WORK(unmqr, z, cdouble)
 #undef LAPACK_MQR_WORK
 
 #endif
-
