@@ -47,6 +47,8 @@ void pyramids_demo(bool console)
 {
     af::Window wnd_rgb("Image Pyramids - RGB Images");
     af::Window wnd_gray("Image Pyramids - Grayscale Images");
+    wnd_rgb.setPos(25, 25);
+    wnd_gray.setPos(150, 150);
 
     array img_rgb = loadImage(ASSETS_DIR "/examples/images/atlantis.png", true) / 255.f; // 3 channel RGB       [0-1]
     array img_gray = colorSpace(img_rgb, AF_GRAY, AF_RGB);
