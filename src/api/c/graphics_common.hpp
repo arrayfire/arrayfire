@@ -38,9 +38,13 @@ enum Defaults {
     HEIGHT= 720
 };
 
-typedef std::map<size_t, fg::Image*> ImageMap_t;
-typedef std::map<size_t, fg::Plot*> PlotMap_t;
-typedef std::map<size_t, fg::Histogram*> HistogramMap_t;
+static const long long _16BIT = 0x000000000000FFFF;
+static const long long _32BIT = 0x00000000FFFFFFFF;
+static const long long _48BIT = 0x0000FFFFFFFFFFFF;
+
+typedef std::map<long long, fg::Image*> ImageMap_t;
+typedef std::map<long long, fg::Plot*> PlotMap_t;
+typedef std::map<long long, fg::Histogram*> HistogramMap_t;
 
 typedef ImageMap_t::iterator ImgMapIter;
 typedef PlotMap_t::iterator PltMapIter;
