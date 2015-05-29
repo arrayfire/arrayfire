@@ -25,21 +25,6 @@
 namespace afcl
 {
    /**
-        \addtogroup external
-        @{
-            @defgroup opencl_mat Interfacing with OpenCL
-            How to access ArrayFire's context, queue, and share data with other OpenCL code.
-
-            If your software is using ArrayFire's OpenCL backend, you can also write custom
-            kernels and do custom memory operations using native OpenCL commands. The functions
-            contained in the `afcl` namespace provide methods to get the context, queue, and
-            device(s) that ArrayFire is using as well as convert `cl_mem` handles to
-            `af::array` objects.
-
-            Please note: the `af::array` constructors are not thread safe. You may create and
-            upload data to `cl_mem` objects from separate threads, but the thread which
-            instantiated ArrayFire must do the `cl_mem` to `af::array` conversion.
-        @}
 
     */
     /**
