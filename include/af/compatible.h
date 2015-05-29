@@ -52,15 +52,15 @@ DEPRECATED("Use gaussianKernel instead")
 AFAPI array gaussiankernel(const int rows, const int cols, const double sig_r = 0, const double sig_c = 0);
 
 /// \ingroup reduce_func_all_true
-/// \copydoc allTrue
-/// \deprecated Use \ref af::allTrue instead
+/// \copydoc af::allTrue(const array&)
+/// \deprecated Use \ref af::allTrue(const array&) instead
 template<typename T>
 DEPRECATED("Use allTrue instead")
 T alltrue(const array &in);
 
 /// \ingroup reduce_func_any_true
-/// \copydoc anyTrue
-/// \deprecated Use \ref af::anyTrue instead
+/// \copydoc af::allTrue(const array&)
+/// \deprecated Use \ref af::anyTrue(const array&) instead
 template<typename T>
 DEPRECATED("Use anyTrue instead")
 T anytrue(const array &in);

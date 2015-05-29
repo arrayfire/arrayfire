@@ -193,10 +193,21 @@
    @defgroup external Interface Functions
    @{
 
-     Functions to interface with external libraries and frameworks
+     CUDA/OpenCL specific functions
 
-     @defgroup opencl_mat
-     Interface with native OpenCL calls
+     @defgroup opencl_mat OpenCL specific functions
+
+        \brief Accessing ArrayFire's context, queue, and share data with other OpenCL code.
+
+        If your software is using ArrayFire's OpenCL backend, you can also write custom
+        kernels and do custom memory operations using native OpenCL commands. The functions
+        contained in the \p afcl namespace provide methods to get the context, queue, and
+        device(s) that ArrayFire is using as well as convert `cl_mem` handles to
+        \ref af::array objects.
+
+        Please note: the \ref af::array constructors are not thread safe. You may create and
+        upload data to `cl_mem` objects from separate threads, but the thread which
+        instantiated ArrayFire must do the `cl_mem` to \ref af::array conversion.
 
    @}
 @}
