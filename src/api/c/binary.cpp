@@ -147,6 +147,31 @@ af_err af_pow(af_array *out, const af_array lhs, const af_array rhs, const bool 
     return af_arith_real<af_pow_t>(out, lhs, rhs, batchMode);
 }
 
+af_err af_root(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
+{
+    try {
+        ArrayInfo linfo = getInfo(lhs);
+        ArrayInfo rinfo = getInfo(rhs);
+        if (linfo.isComplex() || rinfo.isComplex()) {
+            AF_ERROR("Powers of Complex numbers not supported", AF_ERR_NOT_SUPPORTED);
+        }
+
+        af_array one;
+        AF_CHECK(af_constant(&one, 1, linfo.ndims(), linfo.dims().get(), linfo.getType()));
+
+        af_array inv_lhs;
+        AF_CHECK(af_div(&inv_lhs, one, lhs, batchMode));
+
+        AF_CHECK(af_arith_real<af_pow_t>(out, rhs, inv_lhs, batchMode));
+
+        AF_CHECK(af_release_array(one));
+        AF_CHECK(af_release_array(inv_lhs));
+
+    } CATCHALL;
+
+    return AF_SUCCESS;
+}
+
 af_err af_atan2(af_array *out, const af_array lhs, const af_array rhs, const bool batchMode)
 {
     try {

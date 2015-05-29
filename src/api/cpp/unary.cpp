@@ -28,10 +28,13 @@ namespace af
     INSTANTIATE(complex)
     INSTANTIATE(real  )
     INSTANTIATE(imag  )
+    INSTANTIATE(arg   )
     INSTANTIATE(abs   )
     INSTANTIATE(conjg )
 
+    INSTANTIATE(sign  )
     INSTANTIATE(round )
+    INSTANTIATE(trunc )
     INSTANTIATE(floor )
     INSTANTIATE(ceil  )
 
@@ -51,6 +54,7 @@ namespace af
     INSTANTIATE(acosh )
     INSTANTIATE(atanh )
 
+    INSTANTIATE(pow2  )
     INSTANTIATE(exp   )
     INSTANTIATE(expm1 )
     INSTANTIATE(erf   )
@@ -66,6 +70,7 @@ namespace af
 
     INSTANTIATE(iszero)
 
+    INSTANTIATE(factorial)
     INSTANTIATE(tgamma)
     INSTANTIATE(lgamma)
 

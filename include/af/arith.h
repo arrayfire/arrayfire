@@ -157,6 +157,28 @@ namespace af
     AFAPI array abs    (const array &in);
 
     /**
+       C++ Interface for arg
+
+       \param[in] in is input array
+       \return phase of \p in
+
+       \ingroup arith_func_arg
+    */
+    AFAPI array arg    (const array &in);
+
+    /**
+       C++ Interface for getting the sign of input
+
+       \param[in] in is input array
+       \return the sign of each element of input
+
+       \note output is 1 for negative numbers and 0 for positive numbers
+
+       \ingroup arith_func_sign
+    */
+    AFAPI array sign  (const array &in);
+
+    /**
        C++ Interface for rounding an array of numbers
 
        \param[in] in is input array
@@ -167,6 +189,17 @@ namespace af
        \ingroup arith_func_round
     */
     AFAPI array round  (const array &in);
+
+    /**
+       C++ Interface for truncating an array of numbers
+
+       \param[in] in is input array
+       \return values truncated to nearest integer not greater than input values
+
+       \ingroup arith_func_trunc
+    */
+    AFAPI array trunc  (const array &in);
+
 
     /**
        C++ Interface for flooring an array of numbers
@@ -447,6 +480,39 @@ namespace af
     */
     AFAPI array atanh   (const array &in);
 
+    /**
+       C++ Interface for nth root
+
+       \param[in] lhs is nth root
+       \param[in] rhs is value
+       \return \p lhs th root of \p rhs
+
+       \ingroup arith_func_root
+    */
+    AFAPI array root    (const array &lhs, const array &rhs);
+
+    /**
+       C++ Interface for nth root
+
+       \param[in] lhs is nth root
+       \param[in] rhs is value
+       \return \p lhs th root of \p rhs
+
+       \ingroup arith_func_root
+    */
+    AFAPI array root    (const array &lhs, const double rhs);
+
+    /**
+       C++ Interface for nth root
+
+       \param[in] lhs is nth root
+       \param[in] rhs is value
+       \return \p lhs th root of \p rhs
+
+       \ingroup arith_func_root
+    */
+    AFAPI array root    (const double lhs, const array &rhs);
+
 
     /**
        C++ Interface for power when base and exponent are arrays
@@ -480,6 +546,16 @@ namespace af
        \ingroup arith_func_pow
     */
     AFAPI array pow    (const double lhs, const array &rhs);
+
+    /**
+       C++ Interface for power of 2
+
+       \param[in] in is exponent
+       \return 2 raised to power of \p in
+
+       \ingroup arith_func_pow2
+    */
+    AFAPI array pow2    (const array &in);
 
     /**
        C++ Interface for exponential of an array
@@ -584,6 +660,16 @@ namespace af
        \ingroup arith_func_cbrt
     */
     AFAPI array cbrt   (const array &in);
+
+    /**
+       C++ Interface for factorial of input
+
+       \param[in] in is input
+       \return the factorial function of input
+
+       \ingroup arith_func_factorial
+    */
+    AFAPI array factorial (const array &in);
 
     /**
        C++ Interface for gamma function of input
@@ -949,6 +1035,30 @@ extern "C" {
     AFAPI af_err af_abs     (af_array *out, const af_array in);
 
     /**
+       C Interface for finding the phase
+
+       \param[out] out will the phase of \p in
+       \param[in] in is input array
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup arith_func_arg
+    */
+    AFAPI af_err af_arg     (af_array *out, const af_array in);
+
+    /**
+       C Interface for finding the sign of the input
+
+       \param[out] out will contain the sign of each element of the input arrays
+       \param[in] in is input array
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \note output is 1 for negative numbers and 0 for positive numbers
+
+       \ingroup arith_func_round
+    */
+    AFAPI af_err af_sign   (af_array *out, const af_array in);
+
+    /**
        C Interface for rounding an array of numbers
 
        \param[out] out will contain values rounded to nearest integer
@@ -960,6 +1070,17 @@ extern "C" {
        \ingroup arith_func_round
     */
     AFAPI af_err af_round   (af_array *out, const af_array in);
+
+    /**
+       C Interface for truncing an array of numbers
+
+       \param[out] out will contain values truncated to nearest integer not greater than input
+       \param[in] in is input array
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup arith_func_trunc
+    */
+    AFAPI af_err af_trunc   (af_array *out, const af_array in);
 
     /**
        C Interface for flooring an array of numbers
@@ -1199,6 +1320,20 @@ extern "C" {
     AFAPI af_err af_atanh   (af_array *out, const af_array in);
 
     /**
+       C Interface for root
+
+       \param[out] out will contain \p lhs th root of \p rhs
+       \param[in] lhs is nth root
+       \param[in] rhs is value
+       \param[in] batch specifies if operations need to be performed in batch mode
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup arith_func_root
+    */
+    AFAPI af_err af_root   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
+
+
+    /**
        C Interface for power
 
        \param[out] out will contain \p lhs raised to power \p rhs
@@ -1210,6 +1345,17 @@ extern "C" {
        \ingroup arith_func_pow
     */
     AFAPI af_err af_pow   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
+
+    /**
+       C Interface for power of two
+
+       \param[out] out will contain the values of 2 to the power \p in
+       \param[in] in is exponent
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup arith_func_pow2
+    */
+    AFAPI af_err af_pow2     (af_array *out, const af_array in);
 
     /**
        C Interface for exponential of an array
@@ -1320,6 +1466,17 @@ extern "C" {
        \ingroup arith_func_cbrt
     */
     AFAPI af_err af_cbrt    (af_array *out, const af_array in);
+
+    /**
+       C Interface for the factorial
+
+       \param[out] out will contain the result of factorial of \p in
+       \param[in] in is input
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup arith_func_factorial
+    */
+    AFAPI af_err af_factorial   (af_array *out, const af_array in);
 
     /**
        C Interface for the gamma function
