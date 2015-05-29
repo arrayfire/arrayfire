@@ -183,7 +183,7 @@ namespace af
 
        \ingroup lapack_ops_func_rank
     */
-    AFAPI uint rank(const array &in, const double tol=1E-5);
+    AFAPI unsigned rank(const array &in, const double tol=1E-5);
 
     /**
        C++ Interface for finding the determinant of a matrix
@@ -343,7 +343,7 @@ extern "C" {
 
        \ingroup lapack_ops_func_rank
     */
-    AFAPI af_err af_rank(uint *rank, const af_array in, const double tol);
+    AFAPI af_err af_rank(unsigned *rank, const af_array in, const double tol);
 
     /**
        C Interface for finding the determinant of a matrix
