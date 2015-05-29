@@ -891,6 +891,12 @@ namespace af
         ///
         /// \returns an \ref array with negated values
         array operator !() const;
+
+        ///
+        /// \brief Get the count of non zero elements in the array
+        ///
+        /// For dense matrix, this is the same as count<int>(arr);
+        int nonzeros() const;
     };
     // end of class array
 
