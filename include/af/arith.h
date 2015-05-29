@@ -7,632 +7,436 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#pragma once
 #include <af/defines.h>
 
 #ifdef __cplusplus
 namespace af
 {
     class array;
-    /**
-       C++ interface for min of two arrays
 
-       \param[in] lhs first input
-       \param[in] rhs second input
-       \return minimum of \p lhs and \p rhs
-
-       \ingroup arith_func_min
-    */
+    /// \ingroup arith_func_min
+    /// @{
+    /// \brief C++ interface for min of two arrays
+    ///
+    /// \param[in] lhs first input
+    /// \param[in] rhs second input
+    /// \return minimum of \p lhs and \p rhs
+    ///
     AFAPI array min    (const array &lhs, const array &rhs);
 
-    /**
-       C++ Interface for min of array and scalar
-
-       \param[in] lhs first input
-       \param[in] rhs second input
-       \return minimum of \p lhs and \p rhs
-
-       \ingroup arith_func_min
-    */
+    /// \copydoc min(const array&, const array &)
     AFAPI array min    (const array &lhs, const double rhs);
 
-    /**
-       C++ Interface for min of scalar and array
-
-       \param[in] lhs first input
-       \param[in] rhs second input
-       \return minimum of \p lhs and \p rhs
-
-       \ingroup arith_func_min
-    */
+    /// \copydoc min(const array&, const array &)
     AFAPI array min    (const double lhs, const array &rhs);
+    /// @}
 
-    /**
-       C++ Interface for max of two arrays
-
-       \param[in] lhs first input
-       \param[in] rhs second input
-       \return maximum of \p lhs and \p rhs
-
-       \ingroup arith_func_max
-    */
+    /// \ingroup arith_func_max
+    /// @{
+    /// C++ Interface for max of two arrays or an array and a scalar
+    ///
+    /// \param[in] lhs first input
+    /// \param[in] rhs second input
+    /// \return maximum of \p lhs and \p rhs
     AFAPI array max    (const array &lhs, const array &rhs);
 
-    /**
-       C++ Interface for max of array and scalar
-
-       \param[in] lhs first input
-       \param[in] rhs second input
-       \return maximum of \p lhs and \p rhs
-
-       \ingroup arith_func_max
-    */
+    /// \copydoc max(const array&, const array&)
     AFAPI array max    (const array &lhs, const double rhs);
 
-    /**
-       C++ Interface for max of array and scalar
-
-       \param[in] lhs first input
-       \param[in] rhs second input
-       \return maximum of \p lhs and \p rhs
-
-       \ingroup arith_func_max
-    */
+    /// \copydoc max(const array&, const array&)
     AFAPI array max    (const double lhs, const array &rhs);
+    /// @}
 
-    /**
-       C++ Interface for remainder when array divides array
-
-       \param[in] lhs is numerator
-       \param[in] rhs is denominator
-       \return remainder when \p rhs divides \p lhs
-
-       \ingroup arith_func_rem
-    */
+    /// \ingroup arith_func_rem
+    /// @{
+    /// C++ Interface for remainder when array divides array
+    ///
+    /// \param[in] lhs is numerator
+    /// \param[in] rhs is denominator
+    /// \return remainder when \p rhs divides \p lhs
     AFAPI array rem    (const array &lhs, const array &rhs);
 
-    /**
-       C++ Interface for remainder when scalar divides array
-
-       \param[in] lhs is numerator
-       \param[in] rhs is denominator
-       \return remainder when \p rhs divides \p lhs
-
-       \ingroup arith_func_rem
-    */
+    /// \copydoc rem(const array&, const array&)
     AFAPI array rem    (const array &lhs, const double rhs);
 
-    /**
-       C++ Interface for remainder when array divides scalar
-
-       \param[in] lhs is numerator
-       \param[in] rhs is denominator
-       \return remainder when \p rhs divides \p lhs
-
-       \ingroup arith_func_rem
-    */
+    /// \copydoc rem(const array&, const array&)
     AFAPI array rem    (const double lhs, const array &rhs);
+    /// @}
 
-    /**
-       C++ Interface for modulus when dividend and divisor are arrays
-
-       \param[in] lhs is dividend
-       \param[in] rhs is divisor
-       \return \p lhs modulo \p rhs
-
-       \ingroup arith_func_mod
-    */
+    /// \ingroup arith_func_mod
+    /// @{
+    /// C++ Interface for modulus when dividend and divisor are arrays
+    ///
+    /// \param[in] lhs is dividend
+    /// \param[in] rhs is divisor
+    /// \return \p lhs modulo \p rhs
     AFAPI array mod    (const array &lhs, const array &rhs);
 
-    /**
-       C++ Interface for modulus when dividend is array, divisor is scalar
-
-       \param[in] lhs is dividend
-       \param[in] rhs is divisor
-       \return \p lhs modulo \p rhs
-
-       \ingroup arith_func_mod
-    */
+    /// \copydoc mod(const array&, const array&)
     AFAPI array mod    (const array &lhs, const double rhs);
 
-    /**
-       C++ Interface for modulus when dividend is scalar, divisor is array
-
-       \param[in] lhs is dividend
-       \param[in] rhs is divisor
-       \return \p lhs modulo \p rhs
-
-       \ingroup arith_func_mod
-    */
+    /// \copydoc mod(const array&, const array&)
     AFAPI array mod    (const double lhs, const array &rhs);
+    /// @}
 
-    /**
-       C++ Interface for absolute value
-
-       \param[in] in is input array
-       \return absolute value of \p in
-
-       \ingroup arith_func_abs
-    */
+    /// C++ Interface for absolute value
+    ///
+    /// \param[in] in is input array
+    /// \return absolute value of \p in
+    ///
+    /// \ingroup arith_func_abs
     AFAPI array abs    (const array &in);
 
-    /**
-       C++ Interface for rounding an array of numbers
-
-       \param[in] in is input array
-       \return values rounded to nearest integer
-
-       \note The values are rounded to nearest integer
-
-       \ingroup arith_func_round
-    */
+    ///C++ Interface for rounding an array of numbers
+    ///
+    ///\param[in] in is input array
+    ///\return values rounded to nearest integer
+    ///
+    ///\note The values are rounded to nearest integer
+    ///
+    ///\ingroup arith_func_round
     AFAPI array round  (const array &in);
 
-    /**
-       C++ Interface for flooring an array of numbers
-
-       \param[in] in is input array
-       \return values rounded to nearest integer less than or equal to current value
-
-       \ingroup arith_func_floor
-    */
+    /// C++ Interface for flooring an array of numbers
+    ///
+    /// \param[in] in is input array
+    /// \return values rounded to nearest integer less than or equal to current value
+    ///
+    /// \ingroup arith_func_floor
     AFAPI array floor  (const array &in);
 
-    /**
-       C++ Interface for ceiling an array of numbers
-
-       \param[in] in is input array
-       \return values rounded to nearest integer greater than or equal to current value
-
-       \ingroup arith_func_ceil
-    */
+    /// C++ Interface for ceiling an array of numbers
+    ///
+    /// \param[in] in is input array
+    /// \return values rounded to nearest integer greater than or equal to current value
+    ///
+    /// \ingroup arith_func_ceil
     AFAPI array ceil   (const array &in);
 
-    /**
-       C++ Interface for getting length of hypotenuse of two arrays
-
-       \param[in] lhs is the length of first side
-       \param[in] rhs is the length of second side
-       \return the length of the hypotenuse
-
-       \ingroup arith_func_hypot
-    */
+    /// \ingroup arith_func_hypot
+    /// @{
+    /// \brief C++ Interface for getting length of hypotenuse of two inputs
+    ///
+    /// Calculates the hypotenuse of two inputs. The inputs can be arrays or a
+    /// double.
+    ///
+    /// \param[in] lhs is the length of first side
+    /// \param[in] rhs is the length of second side
+    /// \return the length of the hypotenuse
     AFAPI array hypot  (const array &lhs, const array &rhs);
 
-    /**
-       C++ Interface for getting length of hypotenuse of an array and a scalar
-
-       \param[in] lhs is the length of first side
-       \param[in] rhs is the length of second side
-       \return the length of the hypotenuse
-
-       \ingroup arith_func_hypot
-    */
+    /// \copydoc hypot(const array&, const array&)
     AFAPI array hypot  (const array &lhs, const double rhs);
 
-    /**
-       C++ Interface for getting length of hypotenuse of a scalar and an array
-
-       \param[in] lhs is the length of first side
-       \param[in] rhs is the length of second side
-       \return the length of the hypotenuse
-
-       \ingroup arith_func_hypot
-    */
+    /// \copydoc hypot(const array&, const array&)
     AFAPI array hypot  (const double lhs, const array &rhs);
+    /// @}
 
-    /**
-       C++ Interface for sin
-
-       \param[in] in is input array
-       \return sin of input
-
-       \ingroup arith_func_sin
-    */
+    /// C++ Interface for sin
+    ///
+    /// \param[in] in is input array
+    /// \return sin of input
+    ///
+    /// \ingroup arith_func_sin
     AFAPI array sin    (const array &in);
 
-    /**
-       C++ Interface for cos
-
-       \param[in] in is input array
-       \return cos of input
-
-       \ingroup arith_func_cos
-    */
+    /// C++ Interface for cos
+    ///
+    /// \param[in] in is input array
+    /// \return cos of input
+    ///
+    /// \ingroup arith_func_cos
     AFAPI array cos    (const array &in);
 
-    /**
-       C++ Interface for tan
-
-       \param[in] in is input array
-       \return tan of input
-
-       \ingroup arith_func_tan
-    */
+    /// C++ Interface for tan
+    ///
+    /// \param[in] in is input array
+    /// \return tan of input
+    ///
+    /// \ingroup arith_func_tan
     AFAPI array tan    (const array &in);
 
-    /**
-       C++ Interface for arc sin (sin inverse)
-
-       \param[in] in is input array
-       \return arc sin of input
-
-       \ingroup arith_func_asin
-    */
+    /// C++ Interface for arc sin (sin inverse)
+    ///
+    /// \param[in] in is input array
+    /// \return arc sin of input
+    ///
+    /// \ingroup arith_func_asin
     AFAPI array asin   (const array &in);
 
-    /**
-       C++ Interface for arc cos (cos inverse)
-
-       \param[in] in is input array
-       \return arc cos of input
-
-       \ingroup arith_func_acos
-    */
+    /// C++ Interface for arc cos (cos inverse)
+    ///
+    /// \param[in] in is input array
+    /// \return arc cos of input
+    ///
+    /// \ingroup arith_func_acos
     AFAPI array acos   (const array &in);
 
-    /**
-       C++ Interface for arc tan (tan inverse)
-
-       \param[in] in is input array
-       \return arc tan of input
-
-       \ingroup arith_func_atan
-    */
+    /// C++ Interface for arc tan (tan inverse)
+    ///
+    /// \param[in] in is input array
+    /// \return arc tan of input
+    ///
+    /// \ingroup arith_func_atan
     AFAPI array atan   (const array &in);
 
-    /**
-       C++ Interface for arc tan of two arrays
-
-       \param[in] lhs value of numerator
-       \param[in] rhs value of denominator
-       \return arc tan of the inputs
-
-       \ingroup arith_func_atan
-    */
+    /// \ingroup arith_func_atan
+    /// @{
+    /// C++ Interface for arc tan of two arrays
+    ///
+    /// \param[in] lhs value of numerator
+    /// \param[in] rhs value of denominator
+    /// \return arc tan of the inputs
     AFAPI array atan2  (const array &lhs, const array &rhs);
 
-    /**
-       C++ Interface for arc tan of array and scalar
-
-       \param[in] lhs value of numerator
-       \param[in] rhs value of denominator
-       \return arc tan of the inputs
-
-       \ingroup arith_func_atan
-    */
+    /// \copydoc atan2(const array&, const array&)
     AFAPI array atan2  (const array &lhs, const double rhs);
 
-    /**
-       C++ Interface for arc tan of scalar and array
-
-       \param[in] lhs value of numerator
-       \param[in] rhs value of denominator
-       \return arc tan of the inputs
-
-       \ingroup arith_func_atan
-    */
+    /// \copydoc atan2(const array&, const array&)
     AFAPI array atan2  (const double lhs, const array &rhs);
+    /// @}
 
-    /**
-       C++ Interface for creating complex array from two input arrays
-
-       \param[in] lhs is real array
-       \param[in] rhs is imaginary array
-       \return complex array from inputs
-
-       \ingroup trig_func_cplx2
-    */
+    /// \ingroup trig_func_cplx2
+    /// @{
+    /// C++ Interface for creating complex array from two inputs
+    ///
+    /// Creates a complex number from two sets of inputs. The left hand side is
+    /// the real part and the right hand side is the imaginary part. This
+    /// function accepts both \ref af::array and doubles as inputs. for both
+    /// inputs.
+    ///
+    /// \param[in] lhs is real value(s)
+    /// \param[in] rhs is imaginary value(s)
+    /// \return complex array from inputs
     AFAPI array complex(const array &lhs, const array &rhs);
 
-    /**
-       C++ Interface for creating complex array from real array and imaginary scalar
-
-       \param[in] lhs is real array
-       \param[in] rhs is imaginary scalar
-       \return complex array from inputs
-
-       \ingroup trig_func_cplx2
-    */
+    /// \copydoc complex(const array&, const array&)
     AFAPI array complex(const array &lhs, const double rhs);
 
-    /**
-       C++ Interface for creating complex array from real scalar and imaginary array
-
-       \param[in] lhs is real scalar
-       \param[in] rhs is imaginary array
-       \return complex array from inputs
-
-       \ingroup trig_func_cplx
-    */
+    /// \copydoc complex(const array&, const array&)
     AFAPI array complex(const double lhs, const array &rhs);
 
-    /**
-       C++ Interface for creating complex array from real array
-
-       \param[in] in is real array
-       \return complex array from in
-
-       \ingroup arith_func_cplx
-    */
+    /// C++ Interface for creating complex array from real array
+    ///
+    /// \param[in] in is real array
+    /// \return complex array from \ref in
+    ///
+    /// \ingroup arith_func_cplx
     AFAPI array complex(const array &in);
+    /// @}
 
-    /**
-       C++ Interface for getting real part from complex array
-
-       \param[in] in is complex array
-       \return the real part of \p in
-
-       \ingroup arith_func_real
-    */
+    /// C++ Interface for getting real part from complex array
+    ///
+    /// \param[in] in is complex array
+    /// \return the real part of \p in
+    ///
+    /// \ingroup arith_func_real
     AFAPI array real   (const array &in);
 
-    /**
-       C++ Interface for getting imaginary part from complex array
-
-       \param[in] in is complex array
-       \return the imaginary part of \p in
-
-       \ingroup arith_func_imag
-    */
+    /// C++ Interface for getting imaginary part from complex array
+    ///
+    /// \param[in] in is complex array
+    /// \return the imaginary part of \p in
+    ///
+    /// \ingroup arith_func_imag
     AFAPI array imag   (const array &in);
 
-    /**
-       C++ Interface for getting the complex conjugate of input array
-
-       \param[in] in is complex array
-       \return the complex conjugate of \p in
-
-       \ingroup arith_func_conjg
-    */
+    /// C++ Interface for getting the complex conjugate of input array
+    ///
+    /// \param[in] in is complex array
+    /// \return the complex conjugate of \p in
+    ///
+    /// \ingroup arith_func_conjg
     AFAPI array conjg  (const array &in);
 
-    /**
-       C++ Interface for sinh
-
-       \param[in] in is input array
-       \return sinh of input
-
-       \ingroup arith_func_sinh
-    */
+    /// C++ Interface for sinh
+    ///
+    /// \param[in] in is input array
+    /// \return sinh of input
+    ///
+    /// \ingroup arith_func_sinh
     AFAPI array sinh    (const array &in);
 
-    /**
-       C++ Interface for cosh
-
-       \param[in] in is input array
-       \return cosh of input
-
-       \ingroup arith_func_cosh
-    */
+    /// C++ Interface for cosh
+    ///
+    /// \param[in] in is input array
+    /// \return cosh of input
+    ///
+    /// \ingroup arith_func_cosh
     AFAPI array cosh    (const array &in);
 
-    /**
-       C++ Interface for tanh
-
-       \param[in] in is input array
-       \return tanh of input
-
-       \ingroup arith_func_tanh
-    */
+    /// C++ Interface for tanh
+    ///
+    /// \param[in] in is input array
+    /// \return tanh of input
+    ///
+    /// \ingroup arith_func_tanh
     AFAPI array tanh    (const array &in);
 
-    /**
-       C++ Interface for sinh inverse
-
-       \param[in] in is input array
-       \return sinh inverse of input
-
-       \ingroup arith_func_asinh
-    */
+    /// C++ Interface for sinh inverse
+    ///
+    /// \param[in] in is input array
+    /// \return sinh inverse of input
+    ///
+    /// \ingroup arith_func_asinh
     AFAPI array asinh   (const array &in);
 
-    /**
-       C++ Interface for cosh inverse
-
-       \param[in] in is input array
-       \return cosh inverse of input
-
-       \ingroup arith_func_acosh
-    */
+    /// C++ Interface for cosh inverse
+    ///
+    /// \param[in] in is input array
+    /// \return cosh inverse of input
+    ///
+    /// \ingroup arith_func_acosh
     AFAPI array acosh   (const array &in);
 
-    /**
-       C++ Interface for tanh inverse
-
-       \param[in] in is input array
-       \return tanh inverse of input
-
-       \ingroup arith_func_atanh
-    */
+    /// C++ Interface for tanh inverse
+    ///
+    /// \param[in] in is input array
+    /// \return tanh inverse of input
+    ///
+    /// \ingroup arith_func_atanh
     AFAPI array atanh   (const array &in);
 
 
-    /**
-       C++ Interface for power when base and exponent are arrays
-
-       \param[in] lhs is base
-       \param[in] rhs is exponent
-       \return \p lhs raised to power \p rhs
-
-       \ingroup arith_func_pow
-    */
+    /// \ingroup arith_func_pow
+    /// @{
+    /// \brief C++ Interface for power
+    ///
+    /// Computes the value of \p lhs rased to the power of \p rhs. The inputs
+    /// can be an array or a double value.
+    ///
+    /// \param[in] lhs is base
+    /// \param[in] rhs is exponent
+    /// \return \p lhs raised to power \p rhs
     AFAPI array pow    (const array &lhs, const array &rhs);
 
-    /**
-       C++ Interface for power when base is array, exponent is scalar
-
-       \param[in] lhs is base
-       \param[in] rhs is exponent
-       \return \p lhs raised to power \p rhs
-
-       \ingroup arith_func_pow
-    */
+    /// \copydoc pow(const array&, const array&)
     AFAPI array pow    (const array &lhs, const double rhs);
 
-    /**
-       C++ Interface for power when base is scalar, exponent is array
-
-       \param[in] lhs is base
-       \param[in] rhs is exponent
-       \return \p lhs raised to power \p rhs
-
-       \ingroup arith_func_pow
-    */
+    /// \copydoc pow(const array&, const array&)
     AFAPI array pow    (const double lhs, const array &rhs);
+    /// @}
 
-    /**
-       C++ Interface for exponential of an array
-
-       \param[in] in is exponent
-       \return the exponential of \p in
-
-       \ingroup arith_func_exp
-    */
+    /// C++ Interface for exponential of an array
+    ///
+    /// \param[in] in is exponent
+    /// \return the exponential of \p in
+    ///
+    /// \ingroup arith_func_exp
     AFAPI array exp    (const array &in);
 
-    /**
-       C++ Interface for exponential of an array minus 1
-
-       \param[in] in is exponent
-       \return the exponential of \p in - 1
-
-       \note This function is useful when \p in is small
-
-       \ingroup arith_func_expm1
-    */
+    /// C++ Interface for exponential of an array minus 1
+    ///
+    /// \param[in] in is exponent
+    /// \return the exponential of \p in - 1
+    ///
+    /// \note This function is useful when \p in is small
+    /// \ingroup arith_func_expm1
     AFAPI array expm1  (const array &in);
 
-    /**
-       C++ Interface for error function value
-
-       \param[in] in is input
-       \return the error function value
-
-       \ingroup arith_func_erf
-    */
+    /// C++ Interface for error function value
+    ///
+    /// \param[in] in is input
+    /// \return the error function value
+    ///
+    /// \ingroup arith_func_erf
     AFAPI array erf    (const array &in);
 
-    /**
-       C++ Interface for complementary error function value
-
-       \param[in] in is input
-       \return the complementary error function value
-
-       \ingroup arith_func_erfc
-    */
+    /// C++ Interface for complementary error function value
+    ///
+    /// \param[in] in is input
+    /// \return the complementary error function value
+    ///
+    /// \ingroup arith_func_erfc
     AFAPI array erfc   (const array &in);
 
-    /**
-       C++ Interface for natural logarithm
-
-       \param[in] in is input
-       \return the natural logarithm of input
-
-       \ingroup arith_func_log
-    */
+    /// C++ Interface for natural logarithm
+    ///
+    /// \param[in] in is input
+    /// \return the natural logarithm of input
+    ///
+    /// \ingroup arith_func_log
     AFAPI array log    (const array &in);
 
-    /**
-       C++ Interface for natural logarithm of 1 + input
-
-       \param[in] in is input
-       \return the natural logarithm of (1 + input)
-
-       \note This function is useful when \p is small
-
-       \ingroup arith_func_log1p
-    */
+    /// C++ Interface for natural logarithm of 1 + input
+    ///
+    /// \param[in] in is input
+    /// \return the natural logarithm of (1 + input)
+    ///
+    /// \note This function is useful when \p is small
+    /// \ingroup arith_func_log1p
     AFAPI array log1p  (const array &in);
 
-    /**
-       C++ Interface for logarithm base 10
-
-       \param[in] in is input
-       \return the logarithm of input in base 10
-
-       \ingroup arith_func_log10
-    */
+    /// C++ Interface for logarithm base 10
+    ///
+    /// \param[in] in is input
+    /// \return the logarithm of input in base 10
+    ///
+    /// \ingroup arith_func_log10
     AFAPI array log10  (const array &in);
 
-    /**
-       C++ Interface for logarithm base 2
-
-       \param[in] in is input
-       \return the logarithm of input in base 2
-
-       \ingroup explog_func_log2
-    */
+    /// C++ Interface for logarithm base 2
+    ///
+    /// \param[in] in is input
+    /// \return the logarithm of input in base 2
+    ///
+    /// \ingroup explog_func_log2
     AFAPI array log2   (const array &in);
 
-    /**
-       C++ Interface for square root of input
-
-       \param[in] in is input
-       \return the square root of input
-
-       \ingroup arith_func_sqrt
-    */
+    /// C++ Interface for square root of input
+    ///
+    /// \param[in] in is input
+    /// \return the square root of input
+    ///
+    /// \ingroup arith_func_sqrt
     AFAPI array sqrt   (const array &in);
 
-    /**
-       C++ Interface for cube root of input
-
-       \param[in] in is input
-       \return the cube root of input
-
-       \ingroup arith_func_cbrt
-    */
+    /// C++ Interface for cube root of input
+    ///
+    /// \param[in] in is input
+    /// \return the cube root of input
+    ///
+    /// \ingroup arith_func_cbrt
     AFAPI array cbrt   (const array &in);
 
-    /**
-       C++ Interface for gamma function of input
-
-       \param[in] in is input
-       \return the gamma function of input
-
-       \ingroup arith_func_tgamma
-    */
+    /// C++ Interface for gamma function of input
+    ///
+    /// \param[in] in is input
+    /// \return the gamma function of input
+    ///
+    /// \ingroup arith_func_tgamma
     AFAPI array tgamma (const array &in);
 
-    /**
-       C++ Interface for logarithm of absolute value of gamma function of input
-
-       \param[in] in is input
-       \return the logarithm of absolute value of gamma function of input
-
-       \ingroup arith_func_tgamma
-    */
+    /// C++ Interface for logarithm of absolute value of gamma function of input
+    ///
+    /// \param[in] in is input
+    /// \return the logarithm of absolute value of gamma function of input
+    ///
+    /// \ingroup arith_func_tgamma
     AFAPI array lgamma (const array &in);
 
-    /**
-        C++ Interface for checking values are zero
-
-        \param[in] in is input
-        \return array containing 1's where input is 0, and 0 otherwise.
-
-        \ingroup arith_func_iszero
-    */
+    /// C++ Interface for checking values are zero
+    ///
+    /// \param[in] in is input
+    /// \return array containing 1's where input is 0, and 0 otherwise.
+    ///
+    /// \ingroup arith_func_iszero
     AFAPI array iszero (const array &in);
 
-    /**
-        C++ Interface for checking values are Infinities
-
-        \param[in] in is input
-        \return array containing 1's where input is Inf or -Inf, and 0 otherwise.
-
-        \ingroup arith_func_isinf
-    */
+    /// C++ Interface for checking values are Infinities
+    ///
+    /// \param[in] in is input
+    /// \return array containing 1's where input is Inf or -Inf, and 0 otherwise.
+    ///
+    /// \ingroup arith_func_isinf
     AFAPI array isInf  (const array &in);
 
-    /**
-        C++ Interface for checking values are NaNs
-
-        \param[in] in is input
-        \return array containing 1's where input is NaN, and 0 otherwise.
-
-        \ingroup arith_func_isnan
-    */
+    /// C++ Interface for checking values are NaNs
+    ///
+    /// \param[in] in is input
+    /// \return array containing 1's where input is NaN, and 0 otherwise.
+    ///
+    /// \ingroup arith_func_isnan
     AFAPI array isNaN  (const array &in);
 }
 #endif
