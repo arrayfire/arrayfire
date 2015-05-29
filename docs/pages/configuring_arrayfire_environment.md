@@ -1,8 +1,8 @@
-ArrayFire Pro Tips {#arrayfire_pro_tips}
+Configuring ArrayFire Environment {#configuring_environment}
 ===============================================================================
 
-This page lists simple tips and tricks that will help enhance your experience
-with ArrayFire.
+This page lists environment and runtime configurations that will help enhance
+your experience with ArrayFire.
 
 [TOC]
 
