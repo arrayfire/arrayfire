@@ -996,4 +996,6 @@ namespace af
     void array::unlock() const {}
     void array::array_proxy::unlock() const {}
 
+    int array::nonzeros() const { return count<int>(*this); }
+
 }

@@ -74,6 +74,8 @@ typedef enum {
     af_floor_t,
     af_ceil_t,
     af_round_t,
+    af_trunc_t,
+    af_sign_t,
 
     af_rem_t,
     af_mod_t,

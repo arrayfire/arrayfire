@@ -72,7 +72,9 @@ UNARY_FN(log2)
 UNARY_FN(sqrt)
 UNARY_FN(cbrt)
 
+UNARY_FN(sign )
 UNARY_FN(round)
+UNARY_FN(trunc)
 UNARY_FN(ceil)
 UNARY_FN(floor)
 

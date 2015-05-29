@@ -231,6 +231,24 @@ the median value of the pixels covered by the kernel is returned.
 
 =======================================================================
 
+\defgroup image_func_minfilt minfilt
+\ingroup imageflt_mat
+
+\brief Find minimum value from a window
+
+minfilt finds the smallest value from a 2D window and assigns it to the current pixel.
+
+=======================================================================
+
+\defgroup image_func_maxfilt maxfilt
+\ingroup imageflt_mat
+
+\brief Find maximum value from a window
+
+maxfilt finds the smallest value from a 2D window and assigns it to the current pixel.
+
+=======================================================================
+
 \defgroup image_func_mean_shift meanshift
 \ingroup imageflt_mat
 
@@ -530,11 +548,11 @@ translate(in, -2, -1, 6, 4, AF_INTERP_BILINEAR) [6 4 1 1]
 
 Scale an input image
 
-Scale is the same functionality as \resize except that the scale function uses
+Scale is the same functionality as \ref af::resize except that the scale function uses
 the transform kernels. The other difference is that scale does not set boundary
 values to be the boundary of the input array. Instead these are set to 0.
 
-Scale is a special case of the \ref transform function.
+Scale is a special case of the \ref af::transform function.
 
 
 \defgroup transform_func_skew skew
@@ -553,7 +571,7 @@ Explicit output dimensions can be specified using \p odim0 and \p odim1.
 
 All new values that do not map to a location of the input array are set to 0.
 
-Skew is a special case of the \ref transform function.
+Skew is a special case of the \ref af::transform function.
 
 
 \defgroup transform_func_transform transform
@@ -578,7 +596,7 @@ y' = x * r10 + y * r11 + t1;
 
 Interpolation types of \ref AF_INTERP_NEAREST and \ref AF_INTERP_BILINEAR are allowed.
 
-Affine transforms can be used for various purposes. \ref Translate, \ref scale and \ref skew
+Affine transforms can be used for various purposes. \ref af::translate, \ref af::scale and \ref af::skew
 are specializations of the transform function.
 
 @}

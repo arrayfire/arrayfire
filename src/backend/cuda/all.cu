@@ -12,12 +12,12 @@
 namespace cuda
 {
     //alltrue
-    INSTANTIATE(af_and_t, float  , uchar)
-    INSTANTIATE(af_and_t, double , uchar)
-    INSTANTIATE(af_and_t, cfloat , uchar)
-    INSTANTIATE(af_and_t, cdouble, uchar)
-    INSTANTIATE(af_and_t, int    , uchar)
-    INSTANTIATE(af_and_t, uint   , uchar)
-    INSTANTIATE(af_and_t, char   , uchar)
-    INSTANTIATE(af_and_t, uchar  , uchar)
+    INSTANTIATE(af_and_t, float  , char)
+    INSTANTIATE(af_and_t, double , char)
+    INSTANTIATE(af_and_t, cfloat , char)
+    INSTANTIATE(af_and_t, cdouble, char)
+    INSTANTIATE(af_and_t, int    , char)
+    INSTANTIATE(af_and_t, uint   , char)
+    INSTANTIATE(af_and_t, char   , char)
+    INSTANTIATE(af_and_t, uchar  , char)
 }

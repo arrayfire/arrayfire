@@ -194,11 +194,35 @@ Absolute value
 
 
 
+\defgroup arith_func_arg arg
+
+\ingroup numeric_mat
+
+Phase of a complex number
+
+
+
+\defgroup arith_func_sign sign
+
+\ingroup numeric_mat
+
+Check if input is negative
+
+
+
 \defgroup arith_func_round round
 
 \ingroup numeric_mat
 
 Round to nearest integer
+
+
+
+\defgroup arith_func_trunc trunc
+
+\ingroup numeric_mat
+
+Truncate to nearest integer
 
 
 
@@ -353,6 +377,15 @@ Get complex conjugate
 
 
 
+
+\defgroup arith_func_root root
+
+\ingroup explog_mat
+
+Find root of an input
+
+
+
 \defgroup arith_func_pow pow
 
 \ingroup explog_mat
@@ -367,7 +400,6 @@ Raise an array to a power
 \ingroup explog_mat
 
 Exponential of input
-
 
 
 
@@ -436,11 +468,20 @@ Cube root of input arrays
 
 
 
+\defgroup arith_func_factorial factorial
+
+\ingroup explog_mat
+
+Factorial function
+
+
+
 \defgroup arith_func_tgamma tgamma
 
 \ingroup explog_mat
 
 Gamma function
+
 
 
 \defgroup arith_func_lgamma lgamma
