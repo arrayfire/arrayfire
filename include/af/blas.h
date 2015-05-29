@@ -33,8 +33,9 @@ namespace af
         \param[in] optRhs Transpose operation before the function is performed
         \return The result of the matrix multiplication of lhs, rhs
 
-        \note optLhs and optRhs can only be one of \ref AF_MAT_NONE, \ref AF_MAT_TRANS, \ref AF_MAT_CTRANS
-        \note This function is not supported in GFOR
+        \note optLhs and optRhs can only be one of \ref AF_MAT_NONE, \ref
+                AF_MAT_TRANS, \ref AF_MAT_CTRANS \note This function is not supported
+                in GFOR
 
         \ingroup blas_func_matmul
 
@@ -168,9 +169,6 @@ namespace af
         \ingroup blas_func_transpose
     */
     AFAPI void transposeInPlace(array& in, const bool conjugate = false);
-    /**
-      }@
-    */
 }
 #endif
 
@@ -208,7 +206,6 @@ extern "C" {
         }
         \ingroup blas_func_dot
     */
-
     AFAPI af_err af_dot(    af_array *out,
                             const af_array lhs, const af_array rhs,
                             const af_mat_prop optLhs, const af_mat_prop optRhs);

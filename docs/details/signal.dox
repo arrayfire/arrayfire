@@ -121,7 +121,7 @@ respectively, then the possible batch operations are as follows.
 
 \brief Convolution using Fast Fourier Transform
 
-\copydoc signal_func_fft_convolve_desc
+\copydoc signal_func_conv_desc
 
 ===============================================================================
 
@@ -130,7 +130,7 @@ respectively, then the possible batch operations are as follows.
 
 \brief 2D Convolution using Fast Fourier Transform
 
-\copydoc signal_func_fft_convolve_desc
+\copydoc signal_func_conv_desc
 
 ===============================================================================
 
@@ -139,7 +139,7 @@ respectively, then the possible batch operations are as follows.
 
 \brief 3D Convolution using Fast Fourier Transform
 
-\copydoc signal_func_fft_convolve_desc
+\copydoc signal_func_conv_desc
 
 ===============================================================================
 

@@ -21,4 +21,18 @@ array medfilt(const array& in, const dim_t wind_length, const dim_t wind_width, 
     return array(out);
 }
 
+array minfilt(const array& in, const dim_t wind_length, const dim_t wind_width, const borderType edge_pad)
+{
+    af_array out = 0;
+    AF_THROW(af_minfilt(&out, in.get(), wind_length, wind_width, edge_pad));
+    return array(out);
+}
+
+array maxfilt(const array& in, const dim_t wind_length, const dim_t wind_width, const borderType edge_pad)
+{
+    af_array out = 0;
+    AF_THROW(af_maxfilt(&out, in.get(), wind_length, wind_width, edge_pad));
+    return array(out);
+}
+
 }

@@ -73,7 +73,7 @@ AFAPI void orb(features& feat, array& desc, const array& image, const float fast
                the index of the Jth smallest distance to the Ith query value in the
                train data array.
                the index of the Ith smallest distance of the Mth query.
-   \param[out] idx is an array of MxN size, where M is equal to the number of query
+   \param[out] dist is an array of MxN size, where M is equal to the number of query
                features and N is equal to n_dist. The value at position IxJ indicates
                the Hamming distance of the Jth smallest distance to the Ith query
                value in the train data array.
@@ -156,7 +156,7 @@ extern "C" {
                    the index of the Jth smallest distance to the Ith query value in the
                    train data array.
                    the index of the Ith smallest distance of the Mth query.
-       \param[out] idx is an array of MxN size, where M is equal to the number of query
+       \param[out] dist is an array of MxN size, where M is equal to the number of query
                    features and N is equal to n_dist. The value at position IxJ indicates
                    the Hamming distance of the Jth smallest distance to the Ith query
                    value in the train data array.

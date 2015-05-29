@@ -230,5 +230,40 @@ I [3 3 1 1]
 
 \endcode
 
+==================================================================================
+
+\defgroup lapack_ops_func_rank rank
+
+\ingroup lapack_ops_mat
+
+\brief Find the rank of the input matrix.
+
+This function uses \ref af::qr to find the rank of the input matrix within the given tolerance.
+
+=====================================================================================
+
+\defgroup lapack_ops_func_det det
+
+\ingroup lapack_ops_mat
+
+\brief Find the determinant of the input matrix.
+
+
+\note This function requires scratch space equal to the input array
+
+===============================================================================
+
+\defgroup lapack_ops_func_norm norm
+
+\ingroup lapack_ops_mat
+
+\brief Find the norm of the input matrix
+
+This function can return the norm using various metrics based on the type paramter.
+
+\note \ref AF_NORM_MATRIX_2 is currently not supported.
+
+===============================================================================
+
 @}
 */

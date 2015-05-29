@@ -823,7 +823,7 @@ namespace af
         ASSIGN(operator=)
         /// @}
 
-        /// \ingroup arith_func_add
+        /// \ingroup array_mem_operator_plus_eq
         /// @{
         /// \brief Adds the value(s) of val to the elements of the array.
         ///
@@ -832,11 +832,10 @@ namespace af
         ///
         /// \note   This is a copy on write operation. The copy only occurs when the
         ///          operator() is used on the left hand side.
-        /// \ingroup array_mem_operator_plus_eq
         ASSIGN(operator+=)
         /// @}
 
-        /// \ingroup arith_func_sub
+        /// \ingroup array_mem_operator_minus_eq
         /// @{
         /// \brief Subtracts the value(s) of val to the elements of the array.
         ///
@@ -845,11 +844,10 @@ namespace af
         ///
         /// \note   This is a copy on write operation. The copy only occurs when the
         ///          operator() is used on the left hand side.
-        /// \ingroup array_mem_operator_minus_eq
         ASSIGN(operator-=)
         /// @}
 
-        /// \ingroup arith_func_mul
+        /// \ingroup array_mem_operator_multiply_eq
         /// @{
         /// \brief Multiplies the value(s) of val to the elements of the array.
         ///
@@ -858,11 +856,10 @@ namespace af
         ///
         /// \note   This is a copy on write operation. The copy only occurs when the
         ///          operator() is used on the left hand side.
-        /// \ingroup array_mem_operator_multiply_eq
         ASSIGN(operator*=)
         /// @}
 
-        /// \ingroup arith_func_div
+        /// \ingroup array_mem_operator_divide_eq
         /// @{
         /// \brief Divides the value(s) of val to the elements of the array.
         ///
@@ -891,6 +888,12 @@ namespace af
         ///
         /// \returns an \ref array with negated values
         array operator !() const;
+
+        ///
+        /// \brief Get the count of non zero elements in the array
+        ///
+        /// For dense matrix, this is the same as count<int>(arr);
+        int nonzeros() const;
     };
     // end of class array
 

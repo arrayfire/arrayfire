@@ -166,12 +166,12 @@ af_err af_count(af_array *out, const af_array in, const int dim)
 
 af_err af_all_true(af_array *out, const af_array in, const int dim)
 {
-    return reduce_type<af_and_t, uchar>(out, in, dim);
+    return reduce_type<af_and_t, char>(out, in, dim);
 }
 
 af_err af_any_true(af_array *out, const af_array in, const int dim)
 {
-    return reduce_type<af_or_t, uchar>(out, in, dim);
+    return reduce_type<af_or_t, char>(out, in, dim);
 }
 
 template<af_op_t op, typename Ti, typename To>
@@ -329,12 +329,12 @@ af_err af_count_all(double *real, double *imag, const af_array in)
 
 af_err af_all_true_all(double *real, double *imag, const af_array in)
 {
-    return reduce_all_type<af_and_t, uchar>(real, imag, in);
+    return reduce_all_type<af_and_t, char>(real, imag, in);
 }
 
 af_err af_any_true_all(double *real, double *imag, const af_array in)
 {
-    return reduce_all_type<af_or_t, uchar>(real, imag, in);
+    return reduce_all_type<af_or_t , char>(real, imag, in);
 }
 
 template<af_op_t op, typename T>

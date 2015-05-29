@@ -99,4 +99,40 @@ namespace af
         return array(out);
     }
 
+    uint rank(const array &in, const double tol)
+    {
+        uint r = 0;
+        AF_THROW(af_rank(&r, in.get(), tol));
+        return r;
+    }
+
+#define INSTANTIATE_DET(TR, TC)                     \
+    template<> AFAPI                                \
+    TR det(const array &in)                         \
+    {                                               \
+        double real;                                \
+        double imag;                                \
+        AF_THROW(af_det(&real, &imag, in.get()));   \
+        return real;                                \
+    }                                               \
+    template<> AFAPI                                \
+    TC det(const array &in)                         \
+    {                                               \
+        double real;                                \
+        double imag;                                \
+        AF_THROW(af_det(&real, &imag, in.get()));   \
+        TC out((TR)real, (TR)imag);                 \
+        return out;                                 \
+    }                                               \
+
+    INSTANTIATE_DET(float, af_cfloat)
+    INSTANTIATE_DET(double, af_cdouble)
+
+    double norm(const array &in, const normType type,
+                const double p, const double q)
+    {
+        double out;
+        AF_THROW(af_norm(&out, in.get(), type, p, q));
+        return out;
+    }
 }

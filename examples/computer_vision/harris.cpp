@@ -47,12 +47,12 @@ static void harris_demo(bool console)
     iyy = convolve(iyy, gauss_filt);
 
     // Calculate trace
-    array tr = ixx + iyy;
+    array itr = ixx + iyy;
     // Calculate determinant
-    array det = ixx * iyy - ixy * ixy;
+    array idet = ixx * iyy - ixy * ixy;
 
     // Calculate Harris response
-    array response = det - 0.04f * (tr * tr);
+    array response = idet - 0.04f * (itr * itr);
 
     // Gets maximum response for each 3x3 neighborhood
     //array max_resp = maxfilt(response, 3, 3);
