@@ -159,7 +159,7 @@ namespace af
                         const array &b, const matProp options = AF_MAT_NONE);
 
     /**
-       C++ Invert a matrix
+       C++ Interface for inverting a matrix
 
        \param[in] in is input matrix
        \param[in] options determining various properties of matrix \p in
@@ -171,6 +171,30 @@ namespace af
        \ingroup lapack_ops_func_inv
     */
     AFAPI array inverse(const array &in, const matProp options = AF_MAT_NONE);
+
+    /**
+       C++ Interface for finding the rank of a matrix
+
+       \param[in] in is input matrix
+       \param[in] tol is the tolerance value
+
+       \returns the rank of the matrix
+
+       \ingroup lapack_ops_func_rank
+    */
+    AFAPI uint rank(const array &in, const double tol=1E-5);
+
+    /**
+       C++ Interface for finding the determinant of a matrix
+
+       \param[in] in is input matrix
+       \param[in] tol is the tolerance value
+
+       \returns the determinant of the matrix
+
+       \ingroup lapack_ops_func_det
+    */
+    template<typename T> T det(const array &in);
 }
 #endif
 
@@ -282,7 +306,7 @@ extern "C" {
                              const af_array b, const af_mat_prop options);
 
     /**
-       C Invert a matrix
+       C Interface for inverting a matrix
 
        \param[out] out will contain the inverse of matrix \p in
        \param[in] in is input matrix
@@ -293,6 +317,29 @@ extern "C" {
        \note currently options needs to be \ref AF_MAT_NONE
     */
     AFAPI af_err af_inverse(af_array *out, const af_array in, const af_mat_prop options);
+
+    /**
+       C Interface for finding the rank of a matrix
+
+       \param[out] rank will contain the rank of \p in
+       \param[in] in is input matrix
+       \param[in] tol is the tolerance value
+
+       \ingroup lapack_ops_func_rank
+    */
+    AFAPI af_err af_rank(uint *rank, const af_array in, const double tol);
+
+    /**
+       C Interface for finding the determinant of a matrix
+
+       \param[out] det_real will contain the real part of the determinant of \p in
+       \param[out] det_imag will contain the imaginary part of the determinant of \p in
+       \param[in] in is input matrix
+       \param[in] tol is the tolerance value
+
+       \ingroup lapack_ops_func_det
+    */
+    AFAPI af_err af_det(double *det_real, double *det_imag, const af_array in);
 
 #ifdef __cplusplus
 }
