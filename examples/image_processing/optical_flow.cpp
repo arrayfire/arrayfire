@@ -38,6 +38,7 @@ static void diffs(array& Ix, array& Iy, array& It, array I1, array I2)
 static void optical_flow_demo(bool console)
 {
     af::Window wnd("Horn-Schunck Optical Flow Demo");
+    wnd.setColorMap(AF_COLORMAP_COLORS);
 
     double time_total = 10; // run for N seconds
 

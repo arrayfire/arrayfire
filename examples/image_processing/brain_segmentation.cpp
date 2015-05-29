@@ -91,6 +91,7 @@ array segment_volume(array A, int k)
 void brain_seg(bool console)
 {
     af::Window wnd("Brain Segmentation Demo");
+    wnd.setColorMap(AF_COLORMAP_HEAT);
 
     double time_total = 30; // run for N seconds
 

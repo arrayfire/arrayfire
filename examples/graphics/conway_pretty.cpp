@@ -40,6 +40,8 @@ int main(int argc, char *argv[])
 
         af::Window simpleWindow(512, 512, "Conway's Game Of Life - Current State");
         af::Window prettyWindow(512, 512, "Conway's Game Of Life - Visualizing States");
+        simpleWindow.setPos(25, 25);
+        prettyWindow.setPos(125, 15);
 
         int frame_count = 0;
 
@@ -50,7 +52,7 @@ int main(int argc, char *argv[])
 
         array display = tile(state, 1, 1, 3, 1);
 
-        while(!simpleWindow.close() || !prettyWindow.close()) {
+        while(!simpleWindow.close() && !prettyWindow.close()) {
             af::timer delay = timer::start();
 
             if(!simpleWindow.close())   simpleWindow.image(state);
