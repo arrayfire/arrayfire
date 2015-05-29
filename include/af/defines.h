@@ -272,6 +272,19 @@ typedef enum {
     AF_MAT_BLOCK_DIAG = 8192  ///< Matrix is block diagonal
 } af_mat_prop;
 
+typedef enum {
+    AF_NORM_VECTOR_1,
+    AF_NORM_VECTOR_INF,
+    AF_NORM_VECTOR_2,
+    AF_NORM_VECTOR_P,
+    AF_NORM_MATRIX_1,
+    AF_NORM_MATRIX_INF,
+    AF_NORM_MATRIX_2,
+    AF_NORM_MATRIX_L_PQ,
+
+    AF_NORM_EUCLID = AF_NORM_VECTOR_2,
+} af_norm_type;
+
 // Below enum is purely added for example purposes
 // it doesn't and shoudn't be used anywhere in the
 // code. No Guarantee's provided if it is used.
@@ -296,6 +309,7 @@ namespace af
     typedef af_conv_mode convMode;
     typedef af_conv_domain convDomain;
     typedef af_mat_prop matProp;
+    typedef af_norm_type normType;
 }
 
 #endif

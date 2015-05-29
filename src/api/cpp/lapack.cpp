@@ -128,4 +128,11 @@ namespace af
     INSTANTIATE_DET(float, af_cfloat)
     INSTANTIATE_DET(double, af_cdouble)
 
+    double norm(const array &in, const normType type,
+                const double p, const double q)
+    {
+        double out;
+        AF_THROW(af_norm(&out, in.get(), type, p, q));
+        return out;
+    }
 }

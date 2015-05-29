@@ -195,6 +195,21 @@ namespace af
        \ingroup lapack_ops_func_det
     */
     template<typename T> T det(const array &in);
+
+    /**
+       C++ Interface for norm of a matrix
+
+       \param[in] in is the input matrix
+       \param[in] type specifies the \ref af::normType. Default: \ref AF_NORM_VECTOR_1
+       \param[in] p specifies the value of P when \p type is one of \ref AF_NORM_VECTOR_P, AF_NORM_MATRIX_L_PQ is used. It is ignored for other values of \p type
+       \param[in] q specifies the value of Q when \p type is AF_NORM_MATRIX_L_PQ. This parameter is ignored if \p type is anything else
+
+       \returns the norm of \p inbased on \p type
+
+       \ingroup lapack_ops_func_norm
+    */
+    AFAPI double norm(const array &in, const normType=AF_NORM_EUCLID,
+                      const double p=1, const double q=1);
 }
 #endif
 
@@ -340,6 +355,21 @@ extern "C" {
        \ingroup lapack_ops_func_det
     */
     AFAPI af_err af_det(double *det_real, double *det_imag, const af_array in);
+
+    /**
+       C Interface for norm of a matrix
+
+       \param[out] out will contain the norm of \p in
+       \param[in] in is the input matrix
+       \param[in] type specifies the \ref af::normType. Default: \ref AF_NORM_VECTOR_1
+       \param[in] p specifies the value of P when \p type is one of \ref AF_NORM_VECTOR_P,  AF_NORM_MATRIX_L_PQ is used. It is ignored for other values of \p type
+       \param[in] q specifies the value of Q when \p type is AF_NORM_MATRIX_L_PQ. This parameter is ignored if \p type is anything else
+
+
+       \ingroup lapack_ops_func_norm
+    */
+    AFAPI af_err af_norm(double *out, const af_array in, const af_norm_type type, const double p, const double q);
+
 
 #ifdef __cplusplus
 }
