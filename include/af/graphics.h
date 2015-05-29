@@ -18,6 +18,7 @@ typedef struct {
     int row;
     int col;
     const char* title;
+    af_colormap cmap;
 } af_cell;
 
 #ifdef __cplusplus
@@ -32,6 +33,7 @@ class AFAPI Window {
          * cell in the grid is being rendered currently */
         int _r;
         int _c;
+        ColorMap _cmap;
 
         void initWindow(const int width, const int height, const char* const title);
 
@@ -45,6 +47,7 @@ class AFAPI Window {
         af_window get() const { return wnd; }
         void setPos(const unsigned x, const unsigned y);
         void setTitle(const char* const title);
+        void setColorMap(const ColorMap cmap);
 
         void image(const array& in, const char* title=NULL);
         void plot(const array& X, const array& Y, const char* const title=NULL);
