@@ -278,11 +278,12 @@ namespace opencl
             arr = createEmptyArray<T>(arr.dims());
         }
 
-        cl::Buffer buf = *arr.get();
+        cl::Buffer& buf = *arr.get();
 
-        const cl::Buffer *data_buf = new cl::Buffer((cl_mem)(data));
+        clRetainMemObject((cl_mem)(data));
+        cl::Buffer data_buf = cl::Buffer((cl_mem)(data));
 
-        getQueue().enqueueCopyBuffer(*data_buf, buf,
+        getQueue().enqueueCopyBuffer(data_buf, buf,
                                      0, (size_t)arr.getOffset(),
                                      bytes);
 
