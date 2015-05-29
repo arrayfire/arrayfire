@@ -280,6 +280,7 @@ namespace opencl
 
         cl::Buffer& buf = *arr.get();
 
+        clRetainMemObject((cl_mem)(data));
         cl::Buffer data_buf = cl::Buffer((cl_mem)(data));
 
         getQueue().enqueueCopyBuffer(data_buf, buf,
