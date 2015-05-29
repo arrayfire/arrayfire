@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#define sign(in) signbit((in))
 #define __add(lhs, rhs) (lhs) + (rhs)
 #define __sub(lhs, rhs) (lhs) - (rhs)
 #define __mul(lhs, rhs) (lhs) * (rhs)

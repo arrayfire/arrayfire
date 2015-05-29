@@ -231,6 +231,34 @@ AFAPI array meanShift(const array& in, const float spatial_sigma, const float ch
 AFAPI array medfilt(const array& in, const dim_t wind_length = 3, const dim_t wind_width = 3, const borderType edge_pad = AF_PAD_ZERO);
 
 /**
+    C++ Interface for minimum filter
+
+    \param[in]  in array is the input image
+    \param[in]  wind_length is the kernel height
+    \param[in]  wind_width is the kernel width
+    \param[in]  edge_pad value will decide what happens to border when running
+                filter in their neighborhood. It takes one of the values [\ref AF_PAD_ZERO | \ref AF_PAD_SYM]
+    \return     the processed image
+
+    \ingroup image_func_minfilt
+*/
+AFAPI array minfilt(const array& in, const dim_t wind_length = 3, const dim_t wind_width = 3, const borderType edge_pad = AF_PAD_ZERO);
+
+/**
+    C++ Interface for maximum filter
+
+    \param[in]  in array is the input image
+    \param[in]  wind_length is the kernel height
+    \param[in]  wind_width is the kernel width
+    \param[in]  edge_pad value will decide what happens to border when running
+                filter in their neighborhood. It takes one of the values [\ref AF_PAD_ZERO | \ref AF_PAD_SYM]
+    \return     the processed image
+
+    \ingroup image_func_maxfilt
+*/
+AFAPI array maxfilt(const array& in, const dim_t wind_length = 3, const dim_t wind_width = 3, const borderType edge_pad = AF_PAD_ZERO);
+
+/**
     C++ Interface for image dilation (max filter)
 
     \param[in]  in array is the input image
@@ -716,6 +744,38 @@ extern "C" {
         \ingroup image_func_medfilt
     */
     AFAPI af_err af_medfilt(af_array *out, const af_array in, const dim_t wind_length, const dim_t wind_width, const af_border_type edge_pad);
+
+    /**
+        C Interface for minimum filter
+
+        \param[out] out array is the processed image
+        \param[in]  in array is the input image
+        \param[in]  wind_length is the kernel height
+        \param[in]  wind_width is the kernel width
+        \param[in]  edge_pad value will decide what happens to border when running
+                    filter in their neighborhood. It takes one of the values [\ref AF_PAD_ZERO | \ref AF_PAD_SYM]
+        \return     \ref AF_SUCCESS if the minimum filter is applied successfully,
+        otherwise an appropriate error code is returned.
+
+        \ingroup image_func_minfilt
+    */
+    AFAPI af_err af_minfilt(af_array *out, const af_array in, const dim_t wind_length, const dim_t wind_width, const af_border_type edge_pad);
+
+    /**
+       C Interface for maximum filter
+
+       \param[out] out array is the processed image
+       \param[in]  in array is the input image
+       \param[in]  wind_length is the kernel height
+       \param[in]  wind_width is the kernel width
+       \param[in]  edge_pad value will decide what happens to border when running
+       filter in their neighborhood. It takes one of the values [\ref AF_PAD_ZERO | \ref AF_PAD_SYM]
+       \return     \ref AF_SUCCESS if the maximum filter is applied successfully,
+       otherwise an appropriate error code is returned.
+
+       \ingroup image_func_maxfilt
+    */
+    AFAPI af_err af_maxfilt(af_array *out, const af_array in, const dim_t wind_length, const dim_t wind_width, const af_border_type edge_pad);
 
     /**
         C Interface for regions in an image
