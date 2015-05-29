@@ -273,16 +273,16 @@ typedef enum {
 } af_mat_prop;
 
 typedef enum {
-    AF_NORM_VECTOR_1,
-    AF_NORM_VECTOR_INF,
-    AF_NORM_VECTOR_2,
-    AF_NORM_VECTOR_P,
-    AF_NORM_MATRIX_1,
-    AF_NORM_MATRIX_INF,
-    AF_NORM_MATRIX_2,
-    AF_NORM_MATRIX_L_PQ,
+    AF_NORM_VECTOR_1,      ///< treats the input as a vector and returns the sum of absolute values
+    AF_NORM_VECTOR_INF,    ///< treats the input as a vector and returns the max of absolute values
+    AF_NORM_VECTOR_2,      ///< treats the input as a vector and returns euclidean norm
+    AF_NORM_VECTOR_P,      ///< treats the input as a vector and returns the p-norm
+    AF_NORM_MATRIX_1,      ///< return the max of column sums
+    AF_NORM_MATRIX_INF,    ///< return the max of row sums
+    AF_NORM_MATRIX_2,      ///< returns the max singular value). Currently NOT SUPPORTED
+    AF_NORM_MATRIX_L_PQ,   ///< returns Lpq-norm
 
-    AF_NORM_EUCLID = AF_NORM_VECTOR_2,
+    AF_NORM_EUCLID = AF_NORM_VECTOR_2, ///< The default. Same as AF_NORM_VECTOR_2
 } af_norm_type;
 
 // Below enum is purely added for example purposes

@@ -148,6 +148,7 @@ namespace af
        \param[in] a is the output matrix from packed LU decomposition of the coefficient matrix
        \param[in] piv is the pivot array from packed LU decomposition of the coefficient matrix
        \param[in] b is the matrix of measured values
+       \param[in] options determining various properties of matrix \p a
        \returns \p x, the matrix of unknown variables
 
        \ingroup lapack_solve_lu_func_gen
@@ -188,7 +189,6 @@ namespace af
        C++ Interface for finding the determinant of a matrix
 
        \param[in] in is input matrix
-       \param[in] tol is the tolerance value
 
        \returns the determinant of the matrix
 
@@ -208,7 +208,7 @@ namespace af
 
        \ingroup lapack_ops_func_norm
     */
-    AFAPI double norm(const array &in, const normType=AF_NORM_EUCLID,
+    AFAPI double norm(const array &in, const normType type=AF_NORM_EUCLID,
                       const double p=1, const double q=1);
 }
 #endif
@@ -311,6 +311,7 @@ extern "C" {
        \param[in] a is the output matrix from packed LU decomposition of the coefficient matrix
        \param[in] piv is the pivot array from packed LU decomposition of the coefficient matrix
        \param[in] b is the matrix of measured values
+       \param[in] options determining various properties of matrix \p a
 
        \ingroup lapack_solve_lu_func_gen
 
@@ -350,7 +351,6 @@ extern "C" {
        \param[out] det_real will contain the real part of the determinant of \p in
        \param[out] det_imag will contain the imaginary part of the determinant of \p in
        \param[in] in is input matrix
-       \param[in] tol is the tolerance value
 
        \ingroup lapack_ops_func_det
     */

@@ -108,7 +108,7 @@
      solve, solveLU, etc.
 
      @defgroup lapack_ops_mat Matrix operations
-     inverse, etc.
+     inverse, det, rank, norm etc.
    @}
 
    @defgroup image_mat Image Processing
@@ -129,7 +129,7 @@
      erode, dilate, etc.
 
      @defgroup imageflt_mat Filters
-     bilateral, sobel, mean shift, etc.
+     bilateral, sobel, mean shift, median / min / max filters etc.
 
      @defgroup connected_comps_mat Connected Components & Labeling
      regions
