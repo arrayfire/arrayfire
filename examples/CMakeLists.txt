@@ -1,9 +1,17 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT(arrayfire-examples)
 
+# Find CUDA and OpenCL
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+FIND_PACKAGE(CUDA)
+FIND_PACKAGE(OpenCL)
+
 # If the examples are not being built at the same time as ArrayFire,
 # we need to first find the ArrayFire library
 if(TARGET afcpu OR TARGET afcuda OR TARGET afopencl)
+    SET(ArrayFire_CPU_FOUND False)
+    SET(ArrayFire_CUDA_FOUND False)
+    SET(ArrayFire_OpenCL_FOUND False)
     SET(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../assets")
     IF(NOT EXISTS "${ASSETS_DIR}/LICENSE")
         MESSAGE(WARNING "Arrayfire assets are not available. Assets will not be installed.")
@@ -51,13 +59,13 @@ FOREACH(FILE ${FILES})
         BUILD_EXAMPLE(${EXAMPLE} ${FILE} cpu afcpu)
     endif()
 
-    if(${ArrayFire_CUDA_FOUND})  # variable defined by FIND(ArrayFire ...)
+    if(${ArrayFire_CUDA_FOUND} AND ${CUDA_FOUND})  # variable defined by FIND(ArrayFire ...)
         BUILD_EXAMPLE(${EXAMPLE} ${FILE} cuda ${ArrayFire_CUDA_LIBRARIES})
     elseif(TARGET afcuda)        # variable defined by the ArrayFire build tree
         BUILD_EXAMPLE(${EXAMPLE} ${FILE} cuda afcuda)
     endif()
 
-    if(${ArrayFire_OpenCL_FOUND})  # variable defined by FIND(ArrayFire ...)
+    if(${ArrayFire_OpenCL_FOUND} AND ${OpenCL_FOUND})  # variable defined by FIND(ArrayFire ...)
         BUILD_EXAMPLE(${EXAMPLE} ${FILE} opencl ${ArrayFire_OpenCL_LIBRARIES})
     elseif(TARGET afopencl)        # variable defined by the ArrayFire build tree
         BUILD_EXAMPLE(${EXAMPLE} ${FILE} opencl afopencl)
