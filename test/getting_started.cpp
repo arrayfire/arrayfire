@@ -88,7 +88,7 @@ TEST(GettingStarted, SNIPPET_getting_started_init)
     // as found in C's complex.h and C++'s <complex>.
     // Below we create a 3x1 column vector of complex data values:
     std::vector< std::complex<float> > hB(A.elements());
-    array a(&hB.front()); // 3x1 column vector of complex numbers
+    array dB(3, 1, &hB[0]); // 3x1 column vector of complex numbers
 
     //! [ex_getting_started_init]
 
