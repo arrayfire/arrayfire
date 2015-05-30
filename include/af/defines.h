@@ -285,6 +285,16 @@ typedef enum {
     AF_NORM_EUCLID = AF_NORM_VECTOR_2, ///< The default. Same as AF_NORM_VECTOR_2
 } af_norm_type;
 
+typedef enum {
+    AF_COLORMAP_DEFAULT = 0,    ///< Default grayscale map
+    AF_COLORMAP_SPECTRUM= 1,    ///< Spectrum map
+    AF_COLORMAP_COLORS  = 2,    ///< Colors
+    AF_COLORMAP_RED     = 3,    ///< Red hue map
+    AF_COLORMAP_MOOD    = 4,    ///< Mood map
+    AF_COLORMAP_HEAT    = 5,    ///< Heat map
+    AF_COLORMAP_BLUE    = 6     ///< Blue hue map
+} af_colormap;
+
 // Below enum is purely added for example purposes
 // it doesn't and shoudn't be used anywhere in the
 // code. No Guarantee's provided if it is used.
@@ -309,6 +319,7 @@ namespace af
     typedef af_conv_mode convMode;
     typedef af_conv_domain convDomain;
     typedef af_mat_prop matProp;
+    typedef af_colormap ColorMap;
     typedef af_norm_type normType;
 }
 

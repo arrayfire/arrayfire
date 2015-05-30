@@ -15,6 +15,10 @@
 @{
 @}
 
+\defgroup graphics_func Graphics
+@{
+@}
+
 @defgroup func_categories ArrayFire Functions by Category
 @{
 
@@ -233,6 +237,17 @@
 \example rbm.cpp
 \example deep_belief_net.cpp
 \example logistic_regression.cpp
+\example conway.cpp
+\example conway_pretty.cpp
+\example fractal.cpp
+\example histogram.cpp
+\example plot2d.cpp
+\example brain_segmentation.cpp
+\example image_demo.cpp
+\example morphing.cpp
+\example optical_flow.cpp
+\example pyramids.cpp
+\example edge.cpp
 */
 
 #include "af/compatible.h"

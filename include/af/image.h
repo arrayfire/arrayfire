@@ -348,7 +348,7 @@ AFAPI array regions(const array& in, const af::connectivity connectivity=AF_CONN
 
    \note If \p search_img is 3d array, a batch operation will be performed.
 
-   \ingroup image_func_match_template
+   \ingroup cv_func_match_template
  */
 AFAPI array matchTemplate(const array &searchImg, const array &templateImg, const matchType mType=AF_SAD);
 

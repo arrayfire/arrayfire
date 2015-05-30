@@ -1,0 +1,23 @@
+/**
+
+\addtogroup  graphics_func
+@{
+
+A list of graphics functions to visualize data
+
+\defgroup gfx_func_window Window Functions
+@{
+
+Window creation, modification and destruction functions.
+
+@}
+
+\defgroup gfx_func_draw Rendering Functions
+@{
+
+Rendering functions to draw images, plots etc.
+
+@}
+
+@}
+*/

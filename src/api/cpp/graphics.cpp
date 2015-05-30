@@ -20,25 +20,25 @@ void Window::initWindow(const int width, const int height, const char* const tit
 }
 
 Window::Window()
-    : wnd(0), _r(-1), _c(-1)
+    : wnd(0), _r(-1), _c(-1), _cmap(AF_COLORMAP_DEFAULT)
 {
     initWindow(1280, 720, "ArrayFire");
 }
 
 Window::Window(const char* const title)
-    : wnd(0), _r(-1), _c(-1)
+    : wnd(0), _r(-1), _c(-1), _cmap(AF_COLORMAP_DEFAULT)
 {
     initWindow(1280, 720, title);
 }
 
 Window::Window(const int width, const int height, const char* const title)
-    : wnd(0), _r(-1), _c(-1)
+    : wnd(0), _r(-1), _c(-1), _cmap(AF_COLORMAP_DEFAULT)
 {
     initWindow(width, height, title);
 }
 
 Window::Window(const af_window window)
-    : wnd(window), _r(-1), _c(-1)
+    : wnd(window), _r(-1), _c(-1), _cmap(AF_COLORMAP_DEFAULT)
 {
 }
 
@@ -57,21 +57,26 @@ void Window::setTitle(const char* const title)
     AF_THROW(af_set_title(get(), title));
 }
 
+void Window::setColorMap(const ColorMap cmap)
+{
+    _cmap = cmap;
+}
+
 void Window::image(const array& in, const char* const title)
 {
-    af_cell temp{_r, _c, title};
+    af_cell temp{_r, _c, title, _cmap};
     AF_THROW(af_draw_image(get(), in.get(), &temp));
 }
 
 void Window::plot(const array& X, const array& Y, const char* const title)
 {
-    af_cell temp{_r, _c, title};
+    af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
     AF_THROW(af_draw_plot(get(), X.get(), Y.get(), &temp));
 }
 
 void Window::hist(const array& X, const double minval, const double maxval, const char* const title)
 {
-    af_cell temp{_r, _c, title};
+    af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
     AF_THROW(af_draw_hist(get(), X.get(), minval, maxval, &temp));
 }
 

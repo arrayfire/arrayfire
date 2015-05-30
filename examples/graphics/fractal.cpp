@@ -73,10 +73,11 @@ int main(int argc, char **argv)
         info();
         printf("** ArrayFire Fractals Demo **\n");
         af::Window wnd("Fractal Demo");
+        wnd.setColorMap(AF_COLORMAP_SPECTRUM);
 
         float center[] = {-0.5, 0};
         // Keep zomming out for each frame
-        for (int zoom = 1000; zoom > 10; zoom -= 5) {
+        for (int zoom = 1000; zoom > 100; zoom -= 1) {
             // Generate the grid at the current zoom factor
             array c = complex_grid(WIDTH, HEIGHT, zoom, center);
 
