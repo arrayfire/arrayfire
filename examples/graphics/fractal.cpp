@@ -11,6 +11,7 @@
 #include <iostream>
 #include <arrayfire.h>
 #include <math.h>
+#include <cstdlib>
 
 #define WIDTH 600 // Width of image
 #define HEIGHT 800 // Width of image
