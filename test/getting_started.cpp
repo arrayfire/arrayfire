@@ -87,9 +87,8 @@ TEST(GettingStarted, SNIPPET_getting_started_init)
     // data (stored in {{real, imaginary}, {real, imaginary},  ... } format
     // as found in C's complex.h and C++'s <complex>.
     // Below we create a 3x1 column vector of complex data values:
-    std::vector< std::complex<float> > hB(3);
-    hB.assign(hA, hA + 6);
-    array dB(3, 1, &hB[0]); // 3x1 column vector of complex numbers
+    array dB(3, 1, (cfloat*) hA); // 3x1 column vector of complex numbers
+    af_print(dB);
 
     //! [ex_getting_started_init]
 
