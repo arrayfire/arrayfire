@@ -29,6 +29,11 @@ namespace af
         return array(out);
     }
 
+    array mul(const array &in, const int dim)
+    {
+        return product(in, dim);
+    }
+
     array min(const array &in, const int dim)
     {
         af_array out = 0;
@@ -156,6 +161,7 @@ namespace af
     INSTANTIATE_COMPAT(fnCPP, fnCompat, af_cfloat)              \
     INSTANTIATE_COMPAT(fnCPP, fnCompat, af_cdouble)             \
 
+    INSTANTIATE(product, mul)
     INSTANTIATE(allTrue, alltrue)
     INSTANTIATE(anyTrue, anytrue)
 

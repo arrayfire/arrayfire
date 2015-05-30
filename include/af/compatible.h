@@ -107,6 +107,39 @@ AFAPI array histequal(const array& in, const array& hist);
 DEPRECATED("Use colorSpace instead")
 AFAPI array colorspace(const array& image, const CSpace to, const CSpace from);
 
+/// Image Filtering
+/// \code
+/// // filter (convolve) an image with a 3x3 sobel kernel
+/// const float h_kernel[] = { -2.0, -1.0,  0.0,
+///                            -1.0,  0.0,  1.0,
+///                             0.0,  1.0,  2.0 };
+/// array kernel = array(3,3,h_kernel);
+/// array img_out = filter(img_in, kernel);
+/// \endcode
+///
+/// \param[in] image
+/// \param[in] kernel coefficient matrix
+/// \returns filtered image (same size as input)
+///
+/// \note Filtering done using correlation. Array values outside bounds are assumed to have zero value (0).
+/// \ingroup image_func_filter
+/// \deprecated Use \ref af::convolve instead
+DEPRECATED("Use af::convolve instead")
+AFAPI array filter(const array& image, const array& kernel);
+
+/// \ingroup reduce_func_product
+/// \copydoc product(const array&, const int);
+/// \deprecated Use \ref product instead
+DEPRECATED("Use af::product instead")
+AFAPI array mul(const array& in, const int dim = -1);
+
+/// \ingroup reduce_func_product
+/// \copydoc product(const array&)
+/// \deprecated Use \ref product instead
+template<typename T>
+DEPRECATED("Use af::product instead")
+T mul(const array& in);
+
 /// \ingroup device_func_prop
 /// \copydoc deviceInfo
 /// \deprecated Use \ref deviceInfo instead
