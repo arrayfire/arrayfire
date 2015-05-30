@@ -99,9 +99,9 @@ namespace af
         return array(out);
     }
 
-    uint rank(const array &in, const double tol)
+    unsigned rank(const array &in, const double tol)
     {
-        uint r = 0;
+        unsigned r = 0;
         AF_THROW(af_rank(&r, in.get(), tol));
         return r;
     }
