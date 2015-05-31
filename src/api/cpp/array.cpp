@@ -917,38 +917,45 @@ namespace af
     }
 
 // array instanciations
-#define INSTANTIATE(T)                                                  \
-    template<> AFAPI T *array::host() const                             \
-    {                                                                   \
-        if (type() != (af::dtype)dtype_traits<T>::af_type) {            \
-            AF_THROW_MSG("Requested type doesn't match with array",     \
-                         AF_ERR_TYPE);                                  \
-        }                                                               \
-                                                                        \
-        T *res = new T[elements()];                                     \
-        AF_THROW(af_get_data_ptr((void *)res, get()));                  \
-                                                                        \
-        return res;                                                     \
-    }                                                                   \
-    template<> AFAPI T array::scalar() const                            \
-    {                                                                   \
-        T *h_ptr = host<T>();                                           \
-        T scalar = h_ptr[0];                                            \
-        delete[] h_ptr;                                                 \
-        return scalar;                                                  \
-    }                                                                   \
-    template<> AFAPI T* array::device() const                           \
-    {                                                                   \
-        void *ptr = NULL;                                               \
-        AF_THROW(af_get_device_ptr(&ptr, get(), true));                 \
-        return (T *)ptr;                                                \
-    }                                                                   \
-    template<> AFAPI void array::write(const T *ptr,                    \
-                                       const size_t bytes, af::source src) \
-    {                                                                   \
-        if(src == afHost)   AF_THROW(af_write_array(get(), ptr, bytes, (af::source)afHost)); \
-        if(src == afDevice) AF_THROW(af_write_array(get(), ptr, bytes, (af::source)afDevice)); \
-    }                                                                   \
+#define INSTANTIATE(T)                                              \
+    template<> AFAPI T *array::host() const                         \
+    {                                                               \
+        if (type() != (af::dtype)dtype_traits<T>::af_type) {        \
+            AF_THROW_MSG("Requested type doesn't match with array", \
+                         AF_ERR_TYPE);                              \
+        }                                                           \
+                                                                    \
+        T *res = new T[elements()];                                 \
+        AF_THROW(af_get_data_ptr((void *)res, get()));              \
+                                                                    \
+        return res;                                                 \
+    }                                                               \
+    template<> AFAPI T array::scalar() const                        \
+    {                                                               \
+        T *h_ptr = host<T>();                                       \
+        T scalar = h_ptr[0];                                        \
+        delete[] h_ptr;                                             \
+        return scalar;                                              \
+    }                                                               \
+    template<> AFAPI T* array::device() const                       \
+    {                                                               \
+        void *ptr = NULL;                                           \
+        AF_THROW(af_get_device_ptr(&ptr, get()));                   \
+        return (T *)ptr;                                            \
+    }                                                               \
+    template<> AFAPI void array::write(const T *ptr,                \
+                                       const size_t bytes,          \
+                                       af::source src)              \
+    {                                                               \
+        if(src == afHost)   {                                       \
+            AF_THROW(af_write_array(get(), ptr, bytes,              \
+                                    (af::source)afHost));           \
+        }                                                           \
+        if(src == afDevice) {                                       \
+            AF_THROW(af_write_array(get(), ptr, bytes,              \
+                                    (af::source)afDevice));         \
+        }                                                           \
+    }                                                               \
 
     INSTANTIATE(cdouble)
     INSTANTIATE(cfloat)

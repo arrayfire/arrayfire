@@ -194,7 +194,7 @@ extern "C" {
     /**
        \ingroup device_func_device
     */
-    AFAPI af_err af_get_device_ptr(void **ptr, const af_array arr, const bool read_only);
+    AFAPI af_err af_get_device_ptr(void **ptr, const af_array arr);
 
     /**
        \ingroup device_func_alloc

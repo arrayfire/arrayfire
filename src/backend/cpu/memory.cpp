@@ -43,6 +43,7 @@ namespace cpu
     typedef struct
     {
         bool is_free;
+        bool is_unlinked;
         size_t bytes;
     } mem_info;
 
@@ -63,10 +64,15 @@ namespace cpu
 
     void garbageCollect()
     {
-        for(mem_iter iter = memory_map.begin(); iter != memory_map.end(); ++iter) {
+        for(mem_iter iter = memory_map.begin();
+            iter != memory_map.end(); ++iter) {
+
             if ((iter->second).is_free) {
+
+                if (!(iter->second).is_unlinked) {
+                    freeWrapper(iter->first);
+                }
                 total_bytes -= iter->second.bytes;
-                freeWrapper(iter->first);
             }
         }
 
@@ -95,13 +101,21 @@ namespace cpu
 
             // FIXME: Add better checks for garbage collection
             // Perhaps look at total memory available as a metric
-            if (memory_map.size() > MAX_BUFFERS || used_bytes >= MAX_BYTES) {
+            if (memory_map.size() > MAX_BUFFERS ||
+                used_bytes >= MAX_BYTES) {
+
                 garbageCollect();
             }
 
-            for(mem_iter iter = memory_map.begin(); iter != memory_map.end(); ++iter) {
+            for(mem_iter iter = memory_map.begin();
+                iter != memory_map.end(); ++iter) {
+
                 mem_info info = iter->second;
-                if (info.is_free && info.bytes == alloc_bytes) {
+
+                if ( info.is_free &&
+                    !info.is_unlinked &&
+                     info.bytes == alloc_bytes) {
+
                     iter->second.is_free = false;
                     used_bytes += alloc_bytes;
                     used_buffers++;
@@ -112,7 +126,7 @@ namespace cpu
             // Perform garbage collection if memory can not be allocated
             ptr = (T *)malloc(alloc_bytes);
 
-            mem_info info = {false, alloc_bytes};
+            mem_info info = {false, false, alloc_bytes};
             memory_map[ptr] = info;
 
             used_bytes += alloc_bytes;
@@ -130,11 +144,37 @@ namespace cpu
         mem_iter iter = memory_map.find((void *)ptr);
 
         if (iter != memory_map.end()) {
+            if ((iter->second).is_unlinked) return;
+
             iter->second.is_free = true;
             used_bytes -= iter->second.bytes;
             used_buffers--;
+
         } else {
             freeWrapper(ptr); // Free it because we are not sure what the size is
+        }
+    }
+
+    template<typename T>
+    void memUnlink(T *ptr)
+    {
+        std::lock_guard<std::mutex> lock(memory_map_mutex);
+
+        mem_iter iter = memory_map.find((void *)ptr);
+
+        if (iter != memory_map.end()) {
+
+            iter->second.is_unlinked = true;
+            iter->second.is_free = true;
+            used_bytes -= iter->second.bytes;
+            used_buffers--;
+
+        } else {
+            mem_info info = { false,
+                              false,
+                              100 }; //This number is not relevant
+
+            memory_map[ptr] = info;
         }
     }
 
@@ -162,6 +202,7 @@ namespace cpu
 #define INSTANTIATE(T)                              \
     template T* memAlloc(const size_t &elements);   \
     template void memFree(T* ptr);                  \
+    template void memUnlink(T* ptr);                \
     template T* pinnedAlloc(const size_t &elements);\
     template void pinnedFree(T* ptr);               \
 

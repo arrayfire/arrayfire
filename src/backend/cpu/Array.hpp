@@ -16,6 +16,7 @@
 #include <types.hpp>
 #include <traits.hpp>
 #include <TNJ/Node.hpp>
+#include <memory.hpp>
 #include <memory>
 #include <algorithm>
 #include <vector>
@@ -72,6 +73,7 @@ namespace cpu
     template<typename T>
     void *getDevicePtr(const Array<T>& arr)
     {
+        memUnlink((T *)arr.get());
         return (void *)arr.get();
     }
 

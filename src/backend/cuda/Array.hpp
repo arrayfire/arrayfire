@@ -27,6 +27,7 @@
 #include <JIT/Node.hpp>
 #include <boost/shared_ptr.hpp>
 #include <vector>
+#include <memory.hpp>
 
 namespace cuda
 {
@@ -87,6 +88,7 @@ namespace cuda
     template<typename T>
     void *getDevicePtr(const Array<T>& arr)
     {
+        memUnlink((T *)arr.get());
         return (void *)arr.get();
     }
 

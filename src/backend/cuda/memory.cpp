@@ -99,6 +99,7 @@ namespace cuda
     typedef struct
     {
         bool is_free;
+        bool is_unlinked;
         size_t bytes;
     } mem_info;
 
@@ -113,9 +114,15 @@ namespace cuda
     void garbageCollect()
     {
         int n = getActiveDeviceId();
-        for(mem_iter iter = memory_maps[n].begin(); iter != memory_maps[n].end(); ++iter) {
+
+        for(mem_iter iter = memory_maps[n].begin();
+            iter != memory_maps[n].end(); ++iter) {
+
             if ((iter->second).is_free) {
-                cudaFreeWrapper(iter->first);
+
+                if (!(iter->second).is_unlinked) {
+                    cudaFreeWrapper(iter->first);
+                }
                 total_bytes[n] -= iter->second.bytes;
             }
         }
@@ -152,7 +159,11 @@ namespace cuda
                 iter != memory_maps[n].end(); ++iter) {
 
                 mem_info info = iter->second;
-                if (info.is_free && info.bytes == alloc_bytes) {
+
+                if (  info.is_free &&
+                     !info.is_unlinked &&
+                      info.bytes == alloc_bytes) {
+
                     iter->second.is_free = false;
                     used_bytes[n] += alloc_bytes;
                     used_buffers[n]++;
@@ -166,7 +177,7 @@ namespace cuda
                 CUDA_CHECK(cudaMalloc((void **)(&ptr), alloc_bytes));
             }
 
-            mem_info info = {false, alloc_bytes};
+            mem_info info = {false, false, alloc_bytes};
             memory_maps[n][ptr] = info;
             used_bytes[n] += alloc_bytes;
             used_buffers[n]++;
@@ -182,11 +193,37 @@ namespace cuda
         mem_iter iter = memory_maps[n].find((void *)ptr);
 
         if (iter != memory_maps[n].end()) {
+
+            if ((iter->second).is_unlinked) return;
+
             iter->second.is_free = true;
             used_bytes[n] -= iter->second.bytes;
             used_buffers[n]--;
+
         } else {
             cudaFreeWrapper(ptr); // Free it because we are not sure what the size is
+        }
+    }
+
+    template<typename T>
+    void memUnlink(T *ptr)
+    {
+        int n = getActiveDeviceId();
+        mem_iter iter = memory_maps[n].find((void *)ptr);
+
+        if (iter != memory_maps[n].end()) {
+
+            iter->second.is_free = true;
+            iter->second.is_unlinked = true;
+            used_bytes[n] -= iter->second.bytes;
+            used_buffers[n]--;
+
+        } else {
+            mem_info info = { false,
+                              false,
+                              100 }; //This number is not relevant
+
+            memory_maps[n][ptr] = info;
         }
     }
 
@@ -283,6 +320,7 @@ namespace cuda
 #define INSTANTIATE(T)                              \
     template T* memAlloc(const size_t &elements);   \
     template void memFree(T* ptr);                  \
+    template void memUnlink(T* ptr);                \
     template T* pinnedAlloc(const size_t &elements);\
     template void pinnedFree(T* ptr);               \
 

@@ -120,14 +120,9 @@ af_err af_device_array(af_array *arr, const void *data,
     return AF_SUCCESS;
 }
 
-af_err af_get_device_ptr(void **data, const af_array arr, const bool read_only)
+af_err af_get_device_ptr(void **data, const af_array arr)
 {
     try {
-
-        if (!read_only) {
-            //FIXME: Implement a lock / unlock mechanism
-            AF_ERROR("Write access to device pointer not yet implemented", AF_ERR_NOT_SUPPORTED);
-        }
 
         // Make sure all kernels and memcopies are done before getting device pointer
         detail::sync(getActiveDeviceId());
@@ -147,6 +142,7 @@ af_err af_get_device_ptr(void **data, const af_array arr, const bool read_only)
 
         default: TYPE_ERROR(4, type);
         }
+
     } CATCHALL;
 
     return AF_SUCCESS;
