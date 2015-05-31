@@ -68,6 +68,8 @@ namespace TNJ
 
         void reset()
         {
+            m_lhs->reset();
+            m_rhs->reset();
             m_is_eval = false;
         }
     };
