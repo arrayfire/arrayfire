@@ -183,3 +183,137 @@ TEST(Memory, LargeLoop)
     ASSERT_EQ(lock_buffers, 1u);
     ASSERT_EQ(lock_bytes, 1 * step_bytes);
 }
+
+TEST(Memory, IndexingOffset)
+{
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    cleanSlate(); // Clean up everything done so far
+
+    const int num = step_bytes / sizeof(float);
+
+    af::array a = af::randu(num);
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 1u);
+    ASSERT_EQ(lock_buffers, 1u);
+    ASSERT_EQ(alloc_bytes, 1 * step_bytes);
+    ASSERT_EQ(lock_bytes, 1 * step_bytes);
+
+    {
+        af::array b = a(af::seq(1, num/2)); // Should just be an offset
+
+        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                          &lock_bytes, &lock_buffers);
+
+        ASSERT_EQ(alloc_buffers, 1u);
+        ASSERT_EQ(lock_buffers, 1u);
+        ASSERT_EQ(alloc_bytes, 1 * step_bytes);
+        ASSERT_EQ(lock_bytes, 1 * step_bytes);
+    }
+
+
+    // b should not have deleted a
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 1u);
+    ASSERT_EQ(lock_buffers, 1u);
+    ASSERT_EQ(alloc_bytes, 1 * step_bytes);
+    ASSERT_EQ(lock_bytes, 1 * step_bytes);
+
+}
+
+TEST(Memory, IndexingCopy)
+{
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    cleanSlate(); // Clean up everything done so far
+
+    const int num = step_bytes / sizeof(float);
+
+    af::array a = af::randu(num);
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 1u);
+    ASSERT_EQ(lock_buffers, 1u);
+    ASSERT_EQ(alloc_bytes, 1 * step_bytes);
+    ASSERT_EQ(lock_bytes, 1 * step_bytes);
+
+    {
+        // Should just a copy
+        af::array b = a(af::seq(0, num/2-1, 2));
+
+        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                          &lock_bytes, &lock_buffers);
+
+        ASSERT_EQ(alloc_buffers, 2u);
+        ASSERT_EQ(lock_buffers, 2u);
+        ASSERT_EQ(alloc_bytes, 2 * step_bytes);
+        ASSERT_EQ(lock_bytes, 2 * step_bytes);
+    }
+
+
+    // b should not have deleted a
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 2u);
+    ASSERT_EQ(lock_buffers, 1u);
+    ASSERT_EQ(alloc_bytes, 2 * step_bytes);
+    ASSERT_EQ(lock_bytes, 1 * step_bytes);
+
+}
+
+TEST(Memory, Assign)
+{
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    cleanSlate(); // Clean up everything done so far
+
+    const int num = step_bytes / sizeof(float);
+
+    af::array a = af::randu(num);
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 1u);
+    ASSERT_EQ(lock_buffers, 1u);
+    ASSERT_EQ(alloc_bytes, 1 * step_bytes);
+    ASSERT_EQ(lock_bytes, 1 * step_bytes);
+
+    {
+        // Should just a copy
+        af::array b = af::randu(num / 2);
+        a(af::seq(num / 2)) = b;
+
+        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                          &lock_bytes, &lock_buffers);
+
+        // FIXME: An extra buffer is used because of copy on write
+        // Fix to not perform a copy when the buffer does not have children
+        ASSERT_EQ(alloc_buffers, 3u);
+        ASSERT_EQ(lock_buffers, 2u);
+        ASSERT_EQ(alloc_bytes, 3 * step_bytes);
+        ASSERT_EQ(lock_bytes, 2 * step_bytes);
+    }
+
+
+    // b should not have deleted a
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 3u);
+    ASSERT_EQ(lock_buffers, 1u);
+    ASSERT_EQ(alloc_bytes, 3 * step_bytes);
+    ASSERT_EQ(lock_bytes, 1 * step_bytes);
+
+}
