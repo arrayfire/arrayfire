@@ -131,7 +131,7 @@ namespace cpu
 
             used_bytes += alloc_bytes;
             used_buffers++;
-            total_bytes -= alloc_bytes;
+            total_bytes += alloc_bytes;
         }
         return ptr;
     }
