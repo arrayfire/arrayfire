@@ -295,7 +295,7 @@ namespace opencl
                 ptr = getQueue().enqueueMapBuffer(*buf, true, CL_MAP_READ|CL_MAP_WRITE,
                                                   0, alloc_bytes);
             }
-            mem_info info = {false, alloc_bytes};
+            mem_info info = {false, false, alloc_bytes};
             pinned_info pt = {buf, info};
             pinned_maps[n][ptr] = pt;
             pinned_used_bytes += alloc_bytes;

@@ -307,7 +307,7 @@ namespace cuda
                 CUDA_CHECK(cudaMallocHost((void **)(&ptr), alloc_bytes));
             }
 
-            mem_info info = {false, alloc_bytes};
+            mem_info info = {false, false, alloc_bytes};
             pinned_maps[ptr] = info;
             pinned_used_bytes += alloc_bytes;
         }
