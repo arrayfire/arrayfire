@@ -92,11 +92,21 @@ namespace cuda
 
         ~Manager()
         {
-            for(int i = 0; i < getDeviceCount(); i++) {
-                setDevice(i);
-                garbageCollect();
+            // Destructors should not through exceptions
+            try {
+                for(int i = 0; i < getDeviceCount(); i++) {
+                    setDevice(i);
+                    garbageCollect();
+                }
+                pinnedGarbageCollect();
+
+            } catch (AfError &ex) {
+
+                const char* perr = getenv("AF_PRINT_ERRORS");
+                if(perr && perr[0] != '0') {
+                    fprintf(stderr, "%s\n", ex.what());
+                }
             }
-            pinnedGarbageCollect();
         }
     };
 
