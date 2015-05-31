@@ -447,22 +447,25 @@ void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHa
 
 }
 
-namespace afcl
-{
+using namespace opencl;
 
-cl_context getContext()
+af_err afcl_get_context(cl_context *ctx, const bool retain)
 {
-    return opencl::getContext()();
+    *ctx = getContext()();
+    if (retain) clRetainContext(*ctx);
+    return AF_SUCCESS;
 }
 
-cl_command_queue getQueue()
+
+af_err afcl_get_queue(cl_command_queue *queue, const bool retain)
 {
-    return opencl::getQueue()();
+    *queue = getQueue()();
+    if (retain) clRetainCommandQueue(*queue);
+    return AF_SUCCESS;
 }
 
-cl_device_id getDeviceId()
+af_err afcl_get_device_id(cl_device_id *id)
 {
-    return opencl::getDevice()();
-}
-
+    *id = getDevice()();
+    return AF_SUCCESS;
 }
