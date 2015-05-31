@@ -19,6 +19,18 @@
 
 namespace cuda
 {
+    static size_t memory_resolution = 1024; //1KB
+
+    void setMemStepSize(size_t step_bytes)
+    {
+        memory_resolution = step_bytes;
+    }
+
+    size_t getMemStepSize(void)
+    {
+        return memory_resolution;
+    }
+
     template<typename T>
     static void cudaFreeWrapper(T *ptr)
     {
@@ -145,7 +157,7 @@ namespace cuda
         managerInit();
         int n = getActiveDeviceId();
         T* ptr = NULL;
-        size_t alloc_bytes = divup(sizeof(T) * elements, 1024) * 1024;
+        size_t alloc_bytes = divup(sizeof(T) * elements, memory_resolution) * memory_resolution;
 
         if (elements > 0) {
 

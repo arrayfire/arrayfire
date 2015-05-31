@@ -14,6 +14,18 @@
 
 namespace opencl
 {
+    static size_t memory_resolution = 1024; //1KB
+
+    void setMemStepSize(size_t step_bytes)
+    {
+        memory_resolution = step_bytes;
+    }
+
+    size_t getMemStepSize(void)
+    {
+        return memory_resolution;
+    }
+
     // Manager Class
     // Dummy used to call garbage collection at the end of the program
     class Manager
@@ -94,7 +106,7 @@ namespace opencl
     {
         int n = getActiveDeviceId();
         cl::Buffer *ptr = NULL;
-        size_t alloc_bytes = divup(bytes, 1024) * 1024;
+        size_t alloc_bytes = divup(bytes, memory_resolution) * memory_resolution;
 
         if (bytes > 0) {
 

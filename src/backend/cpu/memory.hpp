@@ -25,4 +25,7 @@ namespace cpu
                           size_t *lock_bytes,  size_t *lock_buffers);
     void garbageCollect();
     void pinnedGarbageCollect();
+
+    void setMemStepSize(size_t step_bytes);
+    size_t getMemStepSize(void);
 }

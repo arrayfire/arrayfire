@@ -17,6 +17,19 @@
 
 namespace cpu
 {
+
+    static size_t memory_resolution = 1024; //1KB
+
+    void setMemStepSize(size_t step_bytes)
+    {
+        memory_resolution = step_bytes;
+    }
+
+    size_t getMemStepSize(void)
+    {
+        return memory_resolution;
+    }
+
     class Manager
     {
         public:
@@ -94,7 +107,7 @@ namespace cpu
         managerInit();
 
         T* ptr = NULL;
-        size_t alloc_bytes = divup(sizeof(T) * elements, 1024) * 1024;
+        size_t alloc_bytes = divup(sizeof(T) * elements, memory_resolution) * memory_resolution;
 
         if (elements > 0) {
             std::lock_guard<std::mutex> lock(memory_map_mutex);

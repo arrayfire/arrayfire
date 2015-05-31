@@ -198,3 +198,15 @@ af_err af_device_mem_info(size_t *alloc_bytes, size_t *alloc_buffers,
     } CATCHALL;
     return AF_SUCCESS;
 }
+
+af_err af_set_mem_step_size(const size_t step_bytes)
+{
+    detail::setMemStepSize(step_bytes);
+    return AF_SUCCESS;
+}
+
+af_err af_get_mem_step_size(size_t *step_bytes)
+{
+    *step_bytes =  detail::getMemStepSize();
+    return AF_SUCCESS;
+}
