@@ -7,6 +7,13 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#if defined(__APPLE__) || defined(__MACOSX)
+#include <OpenCL/cl.h>
+#else
+#include <CL/cl.h>
+#endif
+
+#include <af/defines.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,13 +31,6 @@ extern "C" {
 
 #ifdef __cplusplus
 
-#if defined(__APPLE__) || defined(__MACOSX)
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
-
-#include <af/defines.h>
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <af/exception.h>
