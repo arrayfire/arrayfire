@@ -320,6 +320,9 @@ void complexMultiplyHelper(Param<T> out,
             complexMultiply<convT, MANY2MANY><<<blocks, threads>>>
                 (sig_packed, sig_packed, filter_packed, mul_elem);
             break;
+        case CONVOLVE_UNSUPPORTED_BATCH_MODE:
+        default:
+            break;
     }
     POST_LAUNCH_CHECK();
 }
