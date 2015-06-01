@@ -75,6 +75,7 @@ namespace afcl
         cl_command_queue queue;
         af_err err = afcl_get_queue(&queue, retain);
         if (err != AF_SUCCESS) throw af::exception("Failed to get OpenCL command queue from arrayfire");
+        return queue;
     }
 
     /**
