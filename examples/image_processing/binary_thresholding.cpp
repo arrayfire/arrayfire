@@ -19,7 +19,7 @@ array threshold(const array &in, float thresholdValue)
     int channels = in.dims(2);
     array ret_val = in.copy();
     if (channels>1)
-        ret_val = colorspace(in, AF_GRAY, AF_RGB);
+        ret_val = colorSpace(in, AF_GRAY, AF_RGB);
     ret_val = (ret_val<thresholdValue)*0.0f + 255.0f*(ret_val>thresholdValue);
     return ret_val;
 }
@@ -34,7 +34,7 @@ array otsu(const array& in)
     array gray;
     int channels = in.dims(2);
     if (channels>1)
-        gray = colorspace(in, AF_GRAY, AF_RGB);
+        gray = colorSpace(in, AF_GRAY, AF_RGB);
     else
         gray = in;
     unsigned total = gray.elements();
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
         af::setDevice(device);
         af::info();
 
-        array bimodal = loadimage(ASSETS_DIR "/examples/images/noisy_square.png", false);
+        array bimodal = loadImage(ASSETS_DIR "/examples/images/noisy_square.png", false);
         bimodal = resize(0.75f, bimodal);
 
         array bt = threshold(bimodal, 180.0f);

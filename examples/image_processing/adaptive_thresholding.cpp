@@ -25,7 +25,7 @@ array threshold(const array &in, float thresholdValue)
     int channels = in.dims(2);
     array ret_val = in.copy();
     if (channels>1)
-        ret_val = colorspace(in, AF_GRAY, AF_RGB);
+        ret_val = colorSpace(in, AF_GRAY, AF_RGB);
     ret_val = (ret_val<thresholdValue)*0.0f + 255.0f*(ret_val>thresholdValue);
     return ret_val;
 }
@@ -33,7 +33,7 @@ array threshold(const array &in, float thresholdValue)
 array adaptiveThreshold(const array &in, LocalThresholdType kind, int window_size, int constnt)
 {
     int wr = window_size;
-    array ret_val = colorspace(in, AF_GRAY, AF_RGB);
+    array ret_val = colorSpace(in, AF_GRAY, AF_RGB);
     if (kind == MEAN) {
         array wind = constant(1, wr, wr) / (wr*wr);
         array mean = convolve(ret_val, wind);
@@ -58,7 +58,7 @@ array adaptiveThreshold(const array &in, LocalThresholdType kind, int window_siz
 
 array iterativeThreshold(const array &in)
 {
-    array ret_val = colorspace(in, AF_GRAY, AF_RGB);
+    array ret_val = colorSpace(in, AF_GRAY, AF_RGB);
     float T = mean<float>(ret_val);
     bool isContinue = true;
     while (isContinue) {
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
         af::setDevice(device);
         af::info();
 
-        array sudoku = loadimage(ASSETS_DIR "/examples/images/sudoku.jpg", true);
+        array sudoku = loadImage(ASSETS_DIR "/examples/images/sudoku.jpg", true);
 
         array mnt = adaptiveThreshold(sudoku, MEAN, 37, 10);
         array mdt = adaptiveThreshold(sudoku, MEDIAN, 7, 4);

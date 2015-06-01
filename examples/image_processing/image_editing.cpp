@@ -46,7 +46,7 @@ array clamp(const array &in, float min = 0.0f, float max = 255.0f)
 array usm(const array &in, float radius, float amount)
 {
     int gKernelLen = 2 * radius + 1;
-    array blurKernel = gaussiankernel(gKernelLen, gKernelLen);
+    array blurKernel = gaussianKernel(gKernelLen, gKernelLen);
     array blur = convolve(in, blurKernel);
     return (in + amount*(in - blur));
 }
@@ -99,11 +99,11 @@ int main(int argc, char **argv)
         af::setDevice(device);
         af::info();
 
-        array man = loadimage(ASSETS_DIR "/examples/images/man.jpg", true);
-        array fight = loadimage(ASSETS_DIR "/examples/images/fight.jpg", true);
-        array nature = loadimage(ASSETS_DIR "/examples/images/nature.jpg", true);
+        array man = loadImage(ASSETS_DIR "/examples/images/man.jpg", true);
+        array fight = loadImage(ASSETS_DIR "/examples/images/fight.jpg", true);
+        array nature = loadImage(ASSETS_DIR "/examples/images/nature.jpg", true);
 
-        array intensity = colorspace(fight, AF_GRAY, AF_RGB);
+        array intensity = colorSpace(fight, AF_GRAY, AF_RGB);
         array mask = clamp(intensity, 10.0f, 255.0f)>0.0f;
         array blend = alphaBlend(fight, nature, mask);
         array highcon = changeContrast(man, 0.3);
