@@ -135,8 +135,8 @@ array dog(const array &in, int window_radius1, int window_radius2)
     array ret_val;
     int w1 = 2 * window_radius1 + 1;
     int w2 = 2 * window_radius2 + 1;
-    array g1 = gaussiankernel(w1, w1);
-    array g2 = gaussiankernel(w2, w2);
+    array g1 = gaussianKernel(w1, w1);
+    array g2 = gaussianKernel(w2, w2);
     ret_val = (convolve(in, g1) - convolve(in, g2));
     normalizeImage(ret_val);
     return ret_val;
@@ -153,7 +153,7 @@ array medianfilter(const array &in, int window_width, int window_height)
 
 array gaussianblur(const array &in, int window_width, int window_height, int sigma)
 {
-    array g = gaussiankernel(window_width, window_height, sigma, sigma);
+    array g = gaussianKernel(window_width, window_height, sigma, sigma);
     return convolve(in, g);
 }
 
@@ -176,7 +176,7 @@ array emboss(const array &input, float azimuth, float elevation, float depth)
 
     array in = input;
     if (in.dims(2)>1)
-        in = colorspace(input, AF_GRAY, AF_RGB);
+        in = colorSpace(input, AF_GRAY, AF_RGB);
     else
         in = input;
 
@@ -214,11 +214,11 @@ int main(int argc, char **argv)
         af::setDevice(device);
         af::info();
 
-        array lena = loadimage(ASSETS_DIR "/examples/images/lena.ppm", true);
+        array lena = loadImage(ASSETS_DIR "/examples/images/lena.ppm", true);
 
         array prew_mag, prew_dir;
         array sob_mag, sob_dir;
-        array lena1ch = colorspace(lena, AF_GRAY, AF_RGB);
+        array lena1ch = colorSpace(lena, AF_GRAY, AF_RGB);
         prewitt(prew_mag, prew_dir, lena1ch);
         sobelFilter(sob_mag, sob_dir, lena1ch);
         array sprd = spread(lena, 3, 3);

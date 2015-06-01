@@ -28,6 +28,9 @@ else()
     SET(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets")
 endif()
 
+SET(CMAKE_CXX_FLAGS "-Werror=deprecated-declarations")
+SET(CMAKE_C_FLAGS   "-Werror=deprecated-declarations")
+
 # A macro to build an ArrayFire example
 # For most uses only FIND_PACKAGE(ArrayFire REQUIRED), ADD_EXECUTABLE(...)
 # and TARGET_LINK_LIBRARIES(... ${ARRAYFIRE_LIBRARIES}) are needed
