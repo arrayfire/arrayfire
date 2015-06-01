@@ -70,10 +70,10 @@ namespace TNJ
             return;
         }
 
-        void reset()
+        void reset(bool reset_off=true)
         {
             m_is_eval = false;
-            off = 0;
+            if (reset_off) off = 0;
         }
     };
 

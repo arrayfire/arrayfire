@@ -172,7 +172,7 @@ namespace cpu
 
         Node *n = node.get();
         n->getInfo(length, buf_count, bytes);
-        n->reset();
+        n->reset(false);
 
         if (length > MAX_TNJ_LEN ||
             buf_count >= MAX_BUFFERS ||
