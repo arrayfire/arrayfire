@@ -1099,6 +1099,38 @@ TYPED_TEST(IndexedMembers, MemFuncs)
 }
 
 
+TYPED_TEST(IndexedMembers, MemIndex)
+{
+    using namespace af;
+    array a = range(dim4(10, 10));
+    array b = a(seq(1,7), span);
+    array brow = b.row(5);
+    array brows = b.rows(5, 6);
+    array bcol = b.col(5);
+    array bcols = b.cols(5, 6);
+
+    array out_row = a(seq(1,7), span).row(5);
+    array out_rows = a(seq(1,7), span).rows(5, 6);
+    array out_col = a(seq(1,7), span).col(5);
+    array out_cols = a(seq(1,7), span).cols(5, 6);
+
+    ASSERT_EQ(0, where(brow != out_row).elements());
+    ASSERT_EQ(0, where(brows != out_rows).elements());
+    ASSERT_EQ(0, where(bcol != out_col).elements());
+    ASSERT_EQ(0, where(bcols != out_cols).elements());
+
+    array avol = range(dim4(10, 10, 10));
+    array bvol = avol(seq(1, 7), span, span);
+    array bslice = bvol.slice(5);
+    array bslices = bvol.slices(5, 6);
+
+    array out_slice = avol(seq(1,7), span, span).slice(5);
+    array out_slices = avol(seq(1,7), span, span).slices(5, 6);
+
+    ASSERT_EQ(0, where(bslice != out_slice).elements());
+    ASSERT_EQ(0, where(bslices != out_slices).elements());
+}
+
 TEST(Indexing, SNIPPET_indexing_first)
 {
     using namespace af;

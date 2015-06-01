@@ -114,6 +114,23 @@ namespace af
             template<typename T> T scalar() const;
             template<typename T> T* device() const;
             void unlock() const;
+
+                  array::array_proxy row(int index);
+            const array::array_proxy row(int index) const;
+
+                  array::array_proxy rows(int first, int last);
+            const array::array_proxy rows(int first, int last) const;
+
+                  array::array_proxy col(int index);
+            const array::array_proxy col(int index) const;
+                  array::array_proxy cols(int first, int last);
+            const array::array_proxy cols(int first, int last) const;
+
+                  array::array_proxy slice(int index);
+            const array::array_proxy slice(int index) const;
+
+                  array::array_proxy slices(int first, int last);
+            const array::array_proxy slices(int first, int last) const;
         };
 
         //array(af_array in, const array *par, af_index_t seqs[4]);

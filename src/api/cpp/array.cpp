@@ -175,7 +175,7 @@ namespace af
 
 #define INSTANTIATE(T)                                                  \
     template<> AFAPI                                                    \
-    array::array(const dim4 &dims, const T *ptr, af::source src)       \
+    array::array(const dim4 &dims, const T *ptr, af::source src)        \
         : arr(0)                                                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, dims[0], dims[1], dims[2],     \
@@ -188,21 +188,21 @@ namespace af
         initDataArray<T>(&arr, ptr, src, d0);                           \
     }                                                                   \
     template<> AFAPI                                                    \
-    array::array(dim_t d0, dim_t d1, const T *ptr, af::source src)     \
+    array::array(dim_t d0, dim_t d1, const T *ptr, af::source src)      \
         : arr(0)                                                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0, d1);                       \
     }                                                                   \
     template<> AFAPI                                                    \
     array::array(dim_t d0, dim_t d1, dim_t d2, const T *ptr,            \
-                 af::source src)                                       \
+                 af::source src)                                        \
         : arr(0)                                                        \
     {                                                                   \
         initDataArray<T>(&arr, ptr, src, d0, d1, d2);                   \
     }                                                                   \
     template<> AFAPI                                                    \
     array::array(dim_t d0, dim_t d1, dim_t d2, dim_t d3, const T *ptr,  \
-                 af::source src) :                                     \
+                 af::source src) :                                      \
         arr(0)                                                          \
                                                                         \
     {                                                                   \
@@ -380,8 +380,7 @@ namespace af
 
     array::array_proxy array::row(int index)
     {
-        seq idx(index, index, 1);
-        return this->operator()(idx, span, span, span);
+        return const_cast<const array*>(this)->row(index);
     }
 
     const array::array_proxy array::col(int index) const
@@ -392,8 +391,7 @@ namespace af
 
     array::array_proxy array::col(int index)
     {
-        seq idx(index, index, 1);
-        return this->operator()(span, idx, span, span);
+        return const_cast<const array*>(this)->col(index);
     }
 
     const array::array_proxy array::slice(int index) const
@@ -404,8 +402,7 @@ namespace af
 
     array::array_proxy array::slice(int index)
     {
-        seq idx(index, index, 1);
-        return this->operator()(span, span, idx, span);
+        return const_cast<const array*>(this)->slice(index);
     }
 
     const array::array_proxy array::rows(int first, int last) const
@@ -416,8 +413,7 @@ namespace af
 
     array::array_proxy array::rows(int first, int last)
     {
-        seq idx(first, last, 1);
-        return this->operator()(idx, span, span, span);
+        return const_cast<const array*>(this)->rows(first, last);
     }
 
     const array::array_proxy array::cols(int first, int last) const
@@ -428,8 +424,7 @@ namespace af
 
     array::array_proxy array::cols(int first, int last)
     {
-        seq idx(first, last, 1);
-        return this->operator()(span, idx, span, span);
+        return const_cast<const array*>(this)->cols(first, last);
     }
 
     const array::array_proxy array::slices(int first, int last) const
@@ -440,8 +435,7 @@ namespace af
 
     array::array_proxy array::slices(int first, int last)
     {
-        seq idx(first, last, 1);
-        return this->operator()(span, span, idx, span);
+        return const_cast<const array*>(this)->slices(first, last);
     }
 
     const array array::as(af::dtype type) const
@@ -742,6 +736,24 @@ namespace af
 
         return array(arr);
     }
+
+    //FIXME: Check if this leaks
+#define MEM_INDEX(FUNC_SIG, USAGE)          \
+    array::array_proxy                      \
+    array::array_proxy::FUNC_SIG            \
+    {                                       \
+        array *out = new array(this->get());\
+        return out->USAGE;                  \
+    }
+
+    MEM_INDEX(row(int index)                , row(index));
+    MEM_INDEX(rows(int first, int last)     , rows(first, last));
+    MEM_INDEX(col(int index)                , col(index));
+    MEM_INDEX(cols(int first, int last)     , cols(first, last));
+    MEM_INDEX(slice(int index)              , slice(index));
+    MEM_INDEX(slices(int first, int last)   , slices(first, last));
+
+#undef MEM_INDEX
 
     ///////////////////////////////////////////////////////////////////////////
     // Operator =
