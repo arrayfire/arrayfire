@@ -25,7 +25,9 @@
         #define true  1
     #endif
     #define __PRETTY_FUNCTION__ __FUNCSIG__
-    #define snprintf sprintf_s
+    #if _MSC_VER < 1900
+	    #define snprintf sprintf_s
+    #endif
     #define STATIC_ static
     #define SIZE_T_FRMT_SPECIFIER "%Iu"
     #define DEPRECATED(msg) __declspec(deprecated( msg ))
