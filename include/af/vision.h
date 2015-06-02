@@ -27,7 +27,7 @@ class array;
     \param[in] non_max performs non-maximal suppression if true
     \param[in] feature_ratio maximum ratio of features to detect, the maximum
                number of features is calculated by feature_ratio * in.elements().
-               The maximum number of features is not based on the score, instead
+               The maximum number of features is not based on the score, instead,
                features detected after the limit is reached are discarded
     \param[in] edge is the length of the edges in the image to be discarded
                by FAST (minimum is 3, as the radius of the circle)
@@ -51,12 +51,12 @@ AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_l
                 supported)
     \param[in]  fast_thr FAST threshold for which a pixel of the circle around
                 the central pixel is considered to be brighter or darker
-    \param[in]  max_feat Maximum number of features to hold (will only keep the
+    \param[in]  max_feat maximum number of features to hold (will only keep the
                 max_feat features with higher Harris responses)
-    \param[in]  scl_fctr Factor to downsample the input image, meaning that
+    \param[in]  scl_fctr factor to downsample the input image, meaning that
                 each level will hold prior level dimensions divided by scl_fctr
-    \param[in]  levels Number of levels to be computed for the image pyramid
-    \param[in]  blur_img Blur image with a Gaussian filter with sigma=2 before
+    \param[in]  levels number of levels to be computed for the image pyramid
+    \param[in]  blur_img blur image with a Gaussian filter with sigma=2 before
                 computing descriptors to increase robustness against noise if
                 true
 
@@ -78,7 +78,7 @@ AFAPI void orb(features& feat, array& desc, const array& image, const float fast
                the Hamming distance of the Jth smallest distance to the Ith query
                value in the train data array.
    \param[in]  query is the array containing the data to be queried
-   \param[in]  train is the array containing the data stored as training data
+   \param[in]  train is the array containing the data used as training data
    \param[in]  dist_dim indicates the dimension to analyze for distance (the dimension
                indicated here must be of equal length for both query and train arrays)
    \param[in]  n_dist is the number of smallest distances to return (currently, only 1
@@ -114,7 +114,7 @@ extern "C" {
         \param[in]  feature_ratio maximum ratio of features to detect, the
                     maximum number of features is calculated by
                     feature_ratio * in.elements(). The maximum number of
-                    features is not based on the score, instead features
+                    features is not based on the score, instead, features
                     detected after the limit is reached are discarded
         \param[in]  edge is the length of the edges in the image to be
                     discarded by FAST (minimum is 3, as the radius of the
@@ -135,12 +135,12 @@ extern "C" {
                     supported)
         \param[in]  fast_thr FAST threshold for which a pixel of the circle around
                     the central pixel is considered to be brighter or darker
-        \param[in]  max_feat Maximum number of features to hold (will only keep the
+        \param[in]  max_feat maximum number of features to hold (will only keep the
                     max_feat features with higher Harris responses)
-        \param[in]  scl_fctr Factor to downsample the input image, meaning that
+        \param[in]  scl_fctr factor to downsample the input image, meaning that
                     each level will hold prior level dimensions divided by scl_fctr
-        \param[in]  levels Number of levels to be computed for the image pyramid
-        \param[in]  blur_img Blur image with a Gaussian filter with sigma=2 before
+        \param[in]  levels number of levels to be computed for the image pyramid
+        \param[in]  blur_img blur image with a Gaussian filter with sigma=2 before
                     computing descriptors to increase robustness against noise if
                     true
 
@@ -161,7 +161,7 @@ extern "C" {
                    the Hamming distance of the Jth smallest distance to the Ith query
                    value in the train data array.
        \param[in]  query is the array containing the data to be queried
-       \param[in]  train is the array containing the data stored as training data
+       \param[in]  train is the array containing the data used as training data
        \param[in]  dist_dim indicates the dimension to analyze for distance (the dimension
                    indicated here must be of equal length for both query and train arrays)
        \param[in]  n_dist is the number of smallest distances to return (currently, only 1

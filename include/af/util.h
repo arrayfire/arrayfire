@@ -70,9 +70,9 @@ extern "C" {
         \brief Gets the dimseions of an array.
 
         \param[out] d0 is the output that contains the size of first dimension of \p arr
-        \param[out] d1 is the output that contains the size of first dimension of \p arr
-        \param[out] d2 is the output that contains the size of first dimension of \p arr
-        \param[out] d3 is the output that contains the size of first dimension of \p arr
+        \param[out] d1 is the output that contains the size of second dimension of \p arr
+        \param[out] d2 is the output that contains the size of third dimension of \p arr
+        \param[out] d3 is the output that contains the size of fourth dimension of \p arr
         \param[in] arr is the input array
 
         \returns error codes

@@ -19,12 +19,12 @@ class array;
    C++ Interface for mean
 
    \param[in] in is the input array
-   \param[in] dim The dimension along which the mean is extracted
+   \param[in] dim the dimension along which the mean is extracted
    \return    the mean of the input array along dimension \p dim
 
    \ingroup stat_func_mean
 
-   \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
+   \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
 */
 AFAPI array mean(const array& in, const dim_t dim=-1);
 
@@ -33,12 +33,12 @@ AFAPI array mean(const array& in, const dim_t dim=-1);
 
    \param[in] in is the input array
    \param[in] weights is used to scale input \p in before getting mean
-   \param[in] dim The dimension along which the mean is extracted
+   \param[in] dim the dimension along which the mean is extracted
    \return    the mean of the weighted input array along dimension \p dim
 
    \ingroup stat_func_mean
 
-   \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
+   \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
 */
 AFAPI array mean(const array& in, const array& weights, const dim_t dim=-1);
 
@@ -47,12 +47,12 @@ AFAPI array mean(const array& in, const array& weights, const dim_t dim=-1);
 
    \param[in] in is the input array
    \param[in] isbiased is boolean denoting Population variance (false) or Sample Variance (true)
-   \param[in] dim The dimension along which the variance is extracted
+   \param[in] dim the dimension along which the variance is extracted
    \return    the variance of the input array along dimension \p dim
 
    \ingroup stat_func_var
 
-   \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
+   \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
 */
 AFAPI array var(const array& in, const bool isbiased=false, const dim_t dim=-1);
 
@@ -61,12 +61,12 @@ AFAPI array var(const array& in, const bool isbiased=false, const dim_t dim=-1);
 
    \param[in] in is the input array
    \param[in] weights is used to scale input \p in before getting variance
-   \param[in] dim The dimension along which the variance is extracted
+   \param[in] dim the dimension along which the variance is extracted
    \return    the variance of the weighted input array along dimension \p dim
 
    \ingroup stat_func_var
 
-   \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
+   \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
 */
 AFAPI array var(const array& in, const array &weights, const dim_t dim=-1);
 
@@ -74,12 +74,12 @@ AFAPI array var(const array& in, const array &weights, const dim_t dim=-1);
    C++ Interface for standard deviation
 
    \param[in] in is the input array
-   \param[in] dim The dimension along which the standard deviation is extracted
+   \param[in] dim the dimension along which the standard deviation is extracted
    \return    the standard deviation of the input array along dimension \p dim
 
    \ingroup stat_func_stdev
 
-   \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
+   \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
 */
 AFAPI array stdev(const array& in, const dim_t dim=-1);
 
@@ -89,7 +89,7 @@ AFAPI array stdev(const array& in, const dim_t dim=-1);
 
    \param[in] X is the first input array
    \param[in] Y is the second input array
-   \param[in] isbiased is boolean specifying if biased estiamte should be taken (default: false)
+   \param[in] isbiased is boolean specifying if biased estimate should be taken (default: false)
    \return    the covariance of the input arrays
 
    \ingroup stat_func_cov
@@ -100,12 +100,12 @@ AFAPI array cov(const array& X, const array& Y, const bool isbiased=false);
    C++ Interface for median
 
    \param[in] in is the input array
-   \param[in] dim The dimension along which the median is extracted
+   \param[in] dim the dimension along which the median is extracted
    \return    the median of the input array along dimension \p dim
 
    \ingroup stat_func_median
 
-   \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
+   \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
 */
 AFAPI array median(const array& in, const dim_t dim=-1);
 
@@ -204,7 +204,7 @@ extern "C" {
 
    \param[out] out will contain the mean of the input array along dimension \p dim
    \param[in] in is the input array
-   \param[in] dim The dimension along which the mean is extracte
+   \param[in] dim the dimension along which the mean is extracted
    \return     \ref AF_SUCCESS if the color transformation is successful,
    otherwise an appropriate error code is returned.
 
@@ -218,7 +218,7 @@ AFAPI af_err af_mean(af_array *out, const af_array in, const dim_t dim);
    \param[out] out will contain the mean of the input array along dimension \p dim
    \param[in] in is the input array
    \param[in] weights is used to scale input \p in before getting mean
-   \param[in] dim The dimension along which the mean is extracted
+   \param[in] dim the dimension along which the mean is extracted
    \return     \ref AF_SUCCESS if the color transformation is successful,
    otherwise an appropriate error code is returned.
 
@@ -232,7 +232,7 @@ AFAPI af_err af_mean_weighted(af_array *out, const af_array in, const af_array w
    \param[out] out will contain the variance of the input array along dimension \p dim
    \param[in] in is the input array
    \param[in] isbiased is boolean denoting Population variance (false) or Sample Variance (true)
-   \param[in] dim The dimension along which the variance is extracted
+   \param[in] dim the dimension along which the variance is extracted
    \return     \ref AF_SUCCESS if the color transformation is successful,
    otherwise an appropriate error code is returned.
 
@@ -247,7 +247,7 @@ AFAPI af_err af_var(af_array *out, const af_array in, const bool isbiased, const
    \param[out] out will contain the variance of the input array along dimension \p dim
    \param[in] in is the input array
    \param[in] weights is used to scale input \p in before getting variance
-   \param[in] dim The dimension along which the variance is extracted
+   \param[in] dim the dimension along which the variance is extracted
    \return     \ref AF_SUCCESS if the color transformation is successful,
    otherwise an appropriate error code is returned.
 
@@ -261,7 +261,7 @@ AFAPI af_err af_var_weighted(af_array *out, const af_array in, const af_array we
 
    \param[out] out will contain the standard deviation of the input array along dimension \p dim
    \param[in] in is the input array
-   \param[in] dim The dimension along which the standard deviation is extracted
+   \param[in] dim the dimension along which the standard deviation is extracted
    \return     \ref AF_SUCCESS if the color transformation is successful,
    otherwise an appropriate error code is returned.
 
@@ -276,7 +276,7 @@ AFAPI af_err af_stdev(af_array *out, const af_array in, const dim_t dim);
    \param[out] out will the covariance of the input arrays
    \param[in] X is the first input array
    \param[in] Y is the second input array
-   \param[in] isbiased is boolean specifying if biased estiamte should be taken (default: false)
+   \param[in] isbiased is boolean specifying if biased estimate should be taken (default: false)
    \return     \ref AF_SUCCESS if the color transformation is successful,
    otherwise an appropriate error code is returned.
 
@@ -289,7 +289,7 @@ AFAPI af_err af_cov(af_array* out, const af_array X, const af_array Y, const boo
 
    \param[out] out will contain the median of the input array along dimension \p dim
    \param[in] in is the input array
-   \param[in] dim The dimension along which the median is extracted
+   \param[in] dim the dimension along which the median is extracted
    \return     \ref AF_SUCCESS if the color transformation is successful,
    otherwise an appropriate error code is returned.
 
