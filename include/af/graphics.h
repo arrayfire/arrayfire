@@ -137,6 +137,7 @@ class AFAPI Window {
            \param[in] X is the data frequency \ref array
            \param[in] minval is the value of the minimum data point of the array whose histogram(\p X) is going to be rendered.
            \param[in] maxval is the value of the maximum data point of the array whose histogram(\p X) is going to be rendered.
+           \param[in] title parameter is used when this function is called in grid mode
 
            \note \p X should be a vector.
          */
