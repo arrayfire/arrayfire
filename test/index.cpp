@@ -1099,6 +1099,7 @@ TYPED_TEST(IndexedMembers, MemFuncs)
 }
 
 
+#if 0
 TYPED_TEST(IndexedMembers, MemIndex)
 {
     using namespace af;
@@ -1130,6 +1131,7 @@ TYPED_TEST(IndexedMembers, MemIndex)
     ASSERT_EQ(0, where(bslice != out_slice).elements());
     ASSERT_EQ(0, where(bslices != out_slices).elements());
 }
+#endif
 
 TEST(Indexing, SNIPPET_indexing_first)
 {
