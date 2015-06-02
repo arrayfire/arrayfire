@@ -49,7 +49,7 @@ namespace afcl
     /**
     Get a handle to ArrayFire's OpenCL context
 
-    \param[in] retain If true calls clRetainContext prior to returning the context.
+    \param[in] retain if true calls clRetainContext prior to returning the context
     \returns the current context being used by ArrayFire
 
     \note Set \p retain to true if this value will be passed to a cl::Context constructor
@@ -65,7 +65,7 @@ namespace afcl
     /**
     Get a handle to ArrayFire's OpenCL command queue
 
-    \param[in] retain If true calls clRetainCommandQueue prior to returning the context.
+    \param[in] retain if true calls clRetainCommandQueue prior to returning the context
     \returns the current command queue being used by ArrayFire
 
     \note Set \p retain to true if this value will be passed to a cl::CommandQueue constructor
@@ -95,9 +95,9 @@ namespace afcl
     Create an af::array object from an OpenCL cl_mem buffer
 
     \param[in] idims the dimensions of the buffer
-    \param[in] buf the OpenCL memory object.
+    \param[in] buf the OpenCL memory object
     \param[in] type the data type contained in the buffer
-    \param[in] retain If true, instructs ArrayFire to retain the memory object.
+    \param[in] retain if true, instructs ArrayFire to retain the memory object
     \returns an array object created from the OpenCL buffer
 
     \note Set \p retain to true if the memory originates from a cl::Buffer object
@@ -135,9 +135,9 @@ namespace afcl
     Create an af::array object from an OpenCL cl_mem buffer
 
     \param[in] dim0 the length of the first dimension of the buffer
-    \param[in] buf the OpenCL memory object.
+    \param[in] buf the OpenCL memory object
     \param[in] type the data type contained in the buffer
-    \param[in] retain If true, instructs ArrayFire to retain the memory object.
+    \param[in] retain if true, instructs ArrayFire to retain the memory object
     \returns an array object created from the OpenCL buffer
 
     \note Set \p retain to true if the memory originates from a cl::Buffer object
@@ -153,9 +153,9 @@ namespace afcl
 
     \param[in] dim0 the length of the first dimension of the buffer
     \param[in] dim1 the length of the second dimension of the buffer
-    \param[in] buf the OpenCL memory object.
+    \param[in] buf the OpenCL memory object
     \param[in] type the data type contained in the buffer
-    \param[in] retain If true, instructs ArrayFire to retain the memory object.
+    \param[in] retain if true, instructs ArrayFire to retain the memory object
     \returns an array object created from the OpenCL buffer
 
     \note Set \p retain to true if the memory originates from a cl::Buffer object
@@ -172,9 +172,9 @@ namespace afcl
     \param[in] dim0 the length of the first dimension of the buffer
     \param[in] dim1 the length of the second dimension of the buffer
     \param[in] dim2 the length of the third dimension of the buffer
-    \param[in] buf the OpenCL memory object.
+    \param[in] buf the OpenCL memory object
     \param[in] type the data type contained in the buffer
-    \param[in] retain If true, instructs ArrayFire to retain the memory object.
+    \param[in] retain if true, instructs ArrayFire to retain the memory object
     \returns an array object created from the OpenCL buffer
 
     \note Set \p retain to true if the memory originates from a cl::Buffer object
@@ -193,9 +193,9 @@ namespace afcl
     \param[in] dim1 the length of the second dimension of the buffer
     \param[in] dim2 the length of the third dimension of the buffer
     \param[in] dim3 the length of the fourth dimension of the buffer
-    \param[in] buf the OpenCL memory object.
+    \param[in] buf the OpenCL memory object
     \param[in] type the data type contained in the buffer
-    \param[in] retain If true, instructs ArrayFire to retain the memory object.
+    \param[in] retain if true, instructs ArrayFire to retain the memory object
     \returns an array object created from the OpenCL buffer
 
     \note Set \p retain to true if the memory originates from a cl::Buffer object

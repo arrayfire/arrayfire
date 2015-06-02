@@ -14,7 +14,7 @@
 ///
 /// \brief Struct used while indexing af_array
 ///
-/// This struct represents objects which can be used to index into an afa_array
+/// This struct represents objects which can be used to index into an af_array
 /// Object. It contains a union object which can be an \ref af_seq or an
 /// \ref af_array. Indexing with an int can be represented using a \ref af_seq
 /// object with the same \ref af_seq::begin and \ref af_seq::end with an
@@ -46,7 +46,7 @@ class seq;
 /// allows implicit type conversion from valid indexing types like int,
 /// \ref af::seq, \ref af_seq, and \ref af::array.
 ///
-/// \note This is a helper class and does not necessarly need to be created
+/// \note This is a helper class and does not necessarily need to be created
 /// explicitly. It is used in the operator() overloads to simplify the API.
 ///
 class AFAPI index {
@@ -54,7 +54,7 @@ class AFAPI index {
     af_index_t impl;
     public:
     ///
-    /// \brief Default constructor. Equivilant to \ref af::span
+    /// \brief Default constructor. Equivalent to \ref af::span
     ///
     index();
     ~index();
@@ -71,7 +71,7 @@ class AFAPI index {
     index(const int idx);
 
     ///
-    /// \brief Implicit int converter
+    /// \brief Implicit seq converter
     ///
     /// Indexes the af::array using an \ref af::seq object
     ///
@@ -82,7 +82,7 @@ class AFAPI index {
     index(const af::seq& s0);
 
     ///
-    /// \brief Implicit int converter
+    /// \brief Implicit seq converter
     ///
     /// Indexes the af::array using an \ref af_seq object
     ///
@@ -141,7 +141,7 @@ extern "C" {
     ///
     /// Lookup the values of input array based on sequences
     ///
-    /// \param[out] out  will contain an array containing values at indexed by the
+    /// \param[out] out  output array containing values indexed by the
     ///                  sequences
     /// \param[in] in    is the input array
     /// \param[in] ndims is the number of sequences provided
@@ -157,7 +157,7 @@ extern "C" {
     ///
     /// Lookup the values of input array based on index
     ///
-    /// \param[out] out      will contain an array containing values at locations
+    /// \param[out] out      output array containing values at locations
     ///                      specified by \p index
     /// \param[in] in        is input lookup array
     /// \param[in] indices   is lookup indices
@@ -173,7 +173,7 @@ extern "C" {
     ///
     /// Copy and write values in the locations specified by the sequences
     ///
-    /// \param[out] out     will contain an array with values of \p rhs copied to
+    /// \param[out] out     output array with values of \p rhs copied to
     ///                     locations specified by \p index and values from
     ///                     \p lhs in all other locations.
     /// \param[in] lhs      is array whose values are used for indices NOT
@@ -194,11 +194,11 @@ extern "C" {
     ///
     /// \brief Indexing an array using \ref af_seq, or \ref af_array
     ///
-    /// generalized indexing function that accepts either af_array or af_seq
+    /// Generalized indexing function that accepts either af_array or af_seq
     /// along a dimension to index the input array and create the corresponding
     /// output array
     ///
-    /// \param[out] out     will contain an array containing values at indexed by
+    /// \param[out] out     output array containing values at indexed by
     ///                     the sequences
     /// \param[in] in       is the input array
     /// \param[in] ndims    is the number of \ref af_index_t provided
@@ -214,15 +214,15 @@ extern "C" {
     /// \brief Assignment of an array using \ref af_seq, or \ref af_array
     ///
     /// Generalized assignment function that accepts either af_array or af_seq
-    /// along a dimension to assing elements form an input array to an output
+    /// along a dimension to assign elements form an input array to an output
     /// array
     ///
-    /// \param[out] out     will contain an array containing values at indexed by
+    /// \param[out] out     output array containing values at indexed by
     ///                     the sequences
     /// \param[in] lhs      is the input array
     /// \param[in] ndims    is the number of \ref af_index_t provided
     /// \param[in] indices  is an af_array of \ref af_index_t objects
-    /// \param[in] rhs      is the array whos values will be assigned to \p lhs
+    /// \param[in] rhs      is the array whose values will be assigned to \p lhs
     ///
     /// \ingroup index_func_index
     ///
