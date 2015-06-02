@@ -62,6 +62,12 @@ apt-get install libglfw3
 
 For Debian 7 and Ubuntu 14.04, please follow [these instructions](https://github.com/arrayfire/arrayfire/wiki/GLFW-for-ArrayFire)
 
+**Special instructions for Tegra-K1**
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+sudo apt-get install libatlas3gf-base libatlas-dev libfftw3-dev liblapacke-dev
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ## CMake
 
 This is the suggested method of using ArrayFire on Linux.

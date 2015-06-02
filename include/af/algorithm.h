@@ -292,7 +292,7 @@ namespace af
        \param[in] dim The dimension along which numerical difference is performed
        \param[in] isAscending specifies the sorting order
 
-       \ingroup sort_func_sort
+       \ingroup sort_func_sort_index
 
        \note \p dim is currently restricted to 0.
     */
@@ -308,7 +308,7 @@ namespace af
        \param[in] dim The dimension along which numerical difference is performed
        \param[in] isAscending specifies the sorting order
 
-       \ingroup sort_func_sort
+       \ingroup sort_func_sort_keys
 
        \note \p dim is currently restricted to 0.
     */
@@ -666,7 +666,7 @@ extern "C" {
        \param[in] isAscending specifies the sorting order
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup sort_func_sort
+       \ingroup sort_func_sort_index
 
        \note \p dim is currently restricted to 0.
     */
@@ -683,7 +683,7 @@ extern "C" {
        \param[in] isAscending specifies the sorting order
        \return \ref AF_SUCCESS if the execution completes properly
 
-       \ingroup sort_func_sort
+       \ingroup sort_func_sort_keys
 
        \note \p dim is currently restricted to 0.
     */

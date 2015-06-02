@@ -125,7 +125,27 @@ Second order numerical difference along specified dimension
 
 Sort input arrays
 
-Optionally return original indices and keys
+Sort an multi dimensional array
+
+
+
+\defgroup sort_func_sort_index sortIndex
+
+\ingroup sort_mat
+
+Sort input arrays get the sorted indices
+
+Sort a multi dimensional array and return sorted indices
+
+
+
+\defgroup sort_func_sort_keys sortByKey
+
+\ingroup sort_mat
+
+Sort input arrays based on keys
+
+Sort a multi dimensional array based on keys
 
 
 
