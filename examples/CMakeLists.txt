@@ -28,8 +28,15 @@ else()
     SET(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets")
 endif()
 
-SET(CMAKE_CXX_FLAGS "-Werror=deprecated-declarations")
-SET(CMAKE_C_FLAGS   "-Werror=deprecated-declarations")
+IF(WIN32)
+    # Deprecated Errors are Warning 4996 on VS2013.
+    # https://msdn.microsoft.com/en-us/library/ttcz0bys.aspx
+    SET(CMAKE_CXX_FLAGS "/we4996")
+    SET(CMAKE_C_FLAGS   "/we4996")
+ELSE(WIN32)
+    SET(CMAKE_CXX_FLAGS "-Werror=deprecated-declarations")
+    SET(CMAKE_C_FLAGS   "-Werror=deprecated-declarations")
+ENDIF(WIN32)
 
 # A macro to build an ArrayFire example
 # For most uses only FIND_PACKAGE(ArrayFire REQUIRED), ADD_EXECUTABLE(...)

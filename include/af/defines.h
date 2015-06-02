@@ -35,7 +35,12 @@
     #define __PRETTY_FUNCTION__ __func__
     #define STATIC_ inline
     #define SIZE_T_FRMT_SPECIFIER "%zu"
+#if __GNUC__ >= 4 && __GNUC_MINOR > 4
     #define DEPRECATED(msg) __attribute__((deprecated( msg )))
+#else
+    #define DEPRECATED(msg) __attribute__((deprecated))
+#endif
+
 #endif
 
 // Known 64-bit x86 and ARM architectures use long long

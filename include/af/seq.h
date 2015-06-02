@@ -67,4 +67,11 @@ extern AFAPI seq span;
 }
 #endif
 
-extern "C" AFAPI af_seq af_make_seq(double begin, double end, double step);
+#ifdef __cplusplus
+extern "C" {
+#endif
+AFAPI af_seq af_make_seq(double begin, double end, double step);
+
+#ifdef __cplusplus
+}
+#endif
