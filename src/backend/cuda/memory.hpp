@@ -13,6 +13,7 @@ namespace cuda
 {
     template<typename T> T* memAlloc(const size_t &elements);
     template<typename T> void memFree(T* ptr);
+    template<typename T> void memUnlink(T *ptr);
 
     template<typename T> T* pinnedAlloc(const size_t &elements);
     template<typename T> void pinnedFree(T* ptr);
@@ -24,4 +25,7 @@ namespace cuda
                           size_t *lock_bytes,  size_t *lock_buffers);
     void garbageCollect();
     void pinnedGarbageCollect();
+
+    void setMemStepSize(size_t step_bytes);
+    size_t getMemStepSize(void);
 }

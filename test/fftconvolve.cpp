@@ -42,10 +42,6 @@ typedef ::testing::Types<float, double> TestTypesLarge;
 TYPED_TEST_CASE(FFTConvolve, TestTypes);
 TYPED_TEST_CASE(FFTConvolveLarge, TestTypesLarge);
 
-static double get_real(double val) { return val; }
-static double get_real(cfloat val) { return std::real(val); }
-static double get_real(cdouble val) { return std::real(val); }
-
 template<typename T, int baseDim>
 void fftconvolveTest(string pTestFile, bool expand)
 {
@@ -91,8 +87,8 @@ void fftconvolveTest(string pTestFile, bool expand)
 
     for (size_t elIter=0; elIter<nElems; ++elIter) {
         ASSERT_NEAR(
-            get_real(currGoldBar[elIter]),
-            get_real(outData[elIter])
+            real(currGoldBar[elIter]),
+            real(outData[elIter])
             , 1e-2)<< "at: " << elIter<< std::endl;
     }
 

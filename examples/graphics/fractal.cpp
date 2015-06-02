@@ -51,6 +51,10 @@ array mandelbrot(const array &in, int iter, float maxval)
         // If abs(Z) cross maxval, turn off those locations
         C = C * (1 - cond);
         Z = Z * (1 - cond);
+
+        // Ensuring the JIT does not become too large
+        C.eval();
+        Z.eval();
     }
 
     // Normalize
@@ -79,13 +83,17 @@ int main(int argc, char **argv)
         float center[] = {-0.5, 0};
         // Keep zomming out for each frame
         for (int zoom = 1000; zoom > 100; zoom -= 1) {
+
             // Generate the grid at the current zoom factor
             array c = complex_grid(WIDTH, HEIGHT, zoom, center);
 
             // Generate the mandelbrot image
             array mag = mandelbrot(c, iter, 1000);
+
             if(!console) {
-                wnd.image(normalize(mag));
+                if (wnd.close()) break;
+                array mag_norm = normalize(mag);
+                wnd.image(mag_norm);
             }
         }
 

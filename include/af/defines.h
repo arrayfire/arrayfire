@@ -35,7 +35,12 @@
     #define __PRETTY_FUNCTION__ __func__
     #define STATIC_ inline
     #define SIZE_T_FRMT_SPECIFIER "%zu"
+#if __GNUC__ >= 4 && __GNUC_MINOR > 4
     #define DEPRECATED(msg) __attribute__((deprecated( msg )))
+#else
+    #define DEPRECATED(msg) __attribute__((deprecated))
+#endif
+
 #endif
 
 // Known 64-bit x86 and ARM architectures use long long
@@ -49,27 +54,7 @@
     typedef long long   dim_t;
 #endif
 
-#ifdef __cplusplus
-#include <complex>
-#include <cstddef>
-
-typedef std::complex<float> af_cfloat;
-typedef std::complex<double> af_cdouble;
-
-#else
 #include <stdlib.h>
-
-typedef struct {
-    float x;
-    float y;
-} af_cfloat;
-
-typedef struct {
-    double x;
-    double y;
-} af_cdouble;
-
-#endif
 
 typedef long long intl;
 typedef unsigned long long uintl;
@@ -305,8 +290,6 @@ typedef enum {
 #ifdef __cplusplus
 namespace af
 {
-    typedef af_cfloat cfloat;
-    typedef af_cdouble  cdouble;
     typedef af_dtype dtype;
     typedef af_source source;
     typedef af_interp_type interpType;

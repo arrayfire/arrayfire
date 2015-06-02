@@ -49,7 +49,8 @@ namespace af
 
     /// \ingroup arith_func_rem
     /// @{
-    /// C++ Interface for remainder when array divides array
+    /// C++ Interface for remainder when array divides array,
+    /// scalar divides array or array divides scalar
     ///
     /// \param[in] lhs is numerator
     /// \param[in] rhs is denominator
@@ -66,6 +67,7 @@ namespace af
     /// \ingroup arith_func_mod
     /// @{
     /// C++ Interface for modulus when dividend and divisor are arrays
+    /// or one of them is scalar
     ///
     /// \param[in] lhs is dividend
     /// \param[in] rhs is divisor
@@ -150,8 +152,8 @@ namespace af
     /// @{
     /// \brief C++ Interface for getting length of hypotenuse of two inputs
     ///
-    /// Calculates the hypotenuse of two inputs. The inputs can be arrays or a
-    /// double.
+    /// Calculates the hypotenuse of two inputs. The inputs can be both arrays
+    /// or an array and a scalar.
     ///
     /// \param[in] lhs is the length of first side
     /// \param[in] rhs is the length of second side
@@ -235,8 +237,8 @@ namespace af
     ///
     /// Creates a complex number from two sets of inputs. The left hand side is
     /// the real part and the right hand side is the imaginary part. This
-    /// function accepts both \ref af::array and doubles as inputs. for both
-    /// inputs.
+    /// function accepts two \ref af::array or one \ref af::array and a scalar
+    /// as nputs.
     ///
     /// \param[in] lhs is real value(s)
     /// \param[in] rhs is imaginary value(s)
@@ -252,7 +254,7 @@ namespace af
     /// C++ Interface for creating complex array from real array
     ///
     /// \param[in] in is real array
-    /// \return complex array from \ref in
+    /// \return complex array from \p in
     ///
     /// \ingroup arith_func_cplx
     AFAPI array complex(const array &in);
@@ -362,8 +364,8 @@ namespace af
     /// @{
     /// \brief C++ Interface for power
     ///
-    /// Computes the value of \p lhs rased to the power of \p rhs. The inputs
-    /// can be an array or a double value.
+    /// Computes the value of \p lhs raised to the power of \p rhs. The inputs
+    /// can be two arrays or an array and a scalar.
     ///
     /// \param[in] lhs is base
     /// \param[in] rhs is exponent
@@ -492,7 +494,7 @@ namespace af
     /// \ingroup arith_func_tgamma
     AFAPI array lgamma (const array &in);
 
-    /// C++ Interface for checking values are zero
+    /// C++ Interface for checking if values are zero
     ///
     /// \param[in] in is input
     /// \return array containing 1's where input is 0, and 0 otherwise.
@@ -500,7 +502,7 @@ namespace af
     /// \ingroup arith_func_iszero
     AFAPI array iszero (const array &in);
 
-    /// C++ Interface for checking values are Infinities
+    /// C++ Interface for checking if values are Infinities
     ///
     /// \param[in] in is input
     /// \return array containing 1's where input is Inf or -Inf, and 0 otherwise.
@@ -508,7 +510,7 @@ namespace af
     /// \ingroup arith_func_isinf
     AFAPI array isInf  (const array &in);
 
-    /// C++ Interface for checking values are NaNs
+    /// C++ Interface for checking if values are NaNs
     ///
     /// \param[in] in is input
     /// \return array containing 1's where input is NaN, and 0 otherwise.
@@ -562,7 +564,7 @@ extern "C" {
     AFAPI af_err af_mul   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for dividing an array from another
+       C Interface for dividing an array by another
 
        \param[out] out will contain result of \p lhs / \p rhs
        \param[in] lhs first input
@@ -601,7 +603,7 @@ extern "C" {
     AFAPI af_err af_gt    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for checking if an array is less or equal to than another
+       C Interface for checking if an array is less or equal to another
 
        \param[out] out will contain result of \p lhs <= \p rhs
        \param[in] lhs first input
@@ -614,7 +616,7 @@ extern "C" {
     AFAPI af_err af_le    (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for checking if an array is greater than or equal another
+       C Interface for checking if an array is greater or equal to another
 
        \param[out] out will contain result of \p lhs >= \p rhs
        \param[in] lhs first input
@@ -729,7 +731,7 @@ extern "C" {
     AFAPI af_err af_bitxor   (af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for left shfit on integer arrays
+       C Interface for left shift on integer arrays
 
        \param[out] out will contain result of the left shift
        \param[in] lhs first input
@@ -742,7 +744,7 @@ extern "C" {
     AFAPI af_err af_bitshiftl(af_array *out, const af_array lhs, const af_array rhs, const bool batch);
 
     /**
-       C Interface for right shfit on integer arrays
+       C Interface for right shift on integer arrays
 
        \param[out] out will contain result of the right shift
        \param[in] lhs first input
@@ -867,7 +869,7 @@ extern "C" {
     AFAPI af_err af_round   (af_array *out, const af_array in);
 
     /**
-       C Interface for truncing an array of numbers
+       C Interface for truncating an array of numbers
 
        \param[out] out will contain values truncated to nearest integer not greater than input
        \param[in] in is input array
@@ -1164,7 +1166,7 @@ extern "C" {
     AFAPI af_err af_exp     (af_array *out, const af_array in);
 
     /**
-       C Interface for exponential of an array
+       C Interface for exponential of an array minus 1
 
        \param[out] out will contain the exponential of \p in - 1
        \param[in] in is input
@@ -1296,7 +1298,7 @@ extern "C" {
     AFAPI af_err af_lgamma   (af_array *out, const af_array in);
 
     /**
-        C Interface for checking values are zero
+        C Interface for checking if values are zero
 
         \param[out] out will contain 1's where input is 0, and 0 otherwise.
         \param[in] in is input
@@ -1307,7 +1309,7 @@ extern "C" {
     AFAPI af_err af_iszero  (af_array *out, const af_array in);
 
     /**
-        C Interface for checking values are infinities
+        C Interface for checking if values are infinities
 
         \param[out] out will contain 1's where input is Inf or -Inf, and 0 otherwise.
         \param[in] in is input
@@ -1318,7 +1320,7 @@ extern "C" {
     AFAPI af_err af_isinf   (af_array *out, const af_array in);
 
     /**
-        C Interface for checking values are NaNs
+        C Interface for checking if values are NaNs
 
         \param[out] out will contain 1's where input is NaN, and 0 otherwise.
         \param[in] in is input

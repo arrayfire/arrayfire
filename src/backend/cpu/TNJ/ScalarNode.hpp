@@ -42,7 +42,7 @@ namespace TNJ
             return;
         }
 
-        void reset() { m_is_eval = false; }
+        void reset(bool reset_off=true) { m_is_eval = false; }
     };
 }
 

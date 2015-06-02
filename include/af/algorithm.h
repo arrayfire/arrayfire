@@ -24,7 +24,7 @@ namespace af
 
        \ingroup reduce_func_sum
 
-       \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
+       \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
     */
     AFAPI array sum(const array &in, const int dim = -1);
 
@@ -37,7 +37,7 @@ namespace af
 
        \ingroup reduce_func_product
 
-       \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
+       \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
     */
     AFAPI array product(const array &in, const int dim = -1);
 
@@ -50,7 +50,7 @@ namespace af
 
        \ingroup reduce_func_min
 
-       \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
+       \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
     */
     AFAPI array min(const array &in, const int dim = -1);
 
@@ -63,7 +63,7 @@ namespace af
 
        \ingroup reduce_func_max
 
-       \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
+       \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
     */
     AFAPI array max(const array &in, const int dim = -1);
 
@@ -76,7 +76,7 @@ namespace af
 
        \ingroup reduce_func_all_true
 
-       \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
+       \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
     */
     AFAPI array allTrue(const array &in, const int dim = -1);
 
@@ -89,12 +89,12 @@ namespace af
 
        \ingroup reduce_func_any_true
 
-       \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
+       \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
     */
     AFAPI array anyTrue(const array &in, const int dim = -1);
 
     /**
-       C++ Interface for counting non zero values in an array
+       C++ Interface for counting non-zero values in an array
 
        \param[in] in is the input array
        \param[in] dim The dimension along which the the number of non-zero values are counted
@@ -102,7 +102,7 @@ namespace af
 
        \ingroup reduce_func_count
 
-       \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
+       \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
     */
     AFAPI array count(const array &in, const int dim = -1);
 
@@ -167,7 +167,7 @@ namespace af
     template<typename T> T anyTrue(const array &in);
 
     /**
-       C++ Interface for counting total number of non zero values in an array
+       C++ Interface for counting total number of non-zero values in an array
 
        \param[in] in is the input array
        \return    the number of non-zero values in \p in
@@ -186,7 +186,7 @@ namespace af
 
        \ingroup reduce_func_min
 
-       \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
+       \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
     */
     AFAPI void min(array &val, array &idx, const array &in, const int dim = -1);
 
@@ -200,12 +200,12 @@ namespace af
 
        \ingroup reduce_func_max
 
-       \note \p dim is -1 by default. -1 denotes the first non-signleton dimension.
+       \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
     */
     AFAPI void max(array &val, array &idx, const array &in, const int dim = -1);
 
     /**
-       C++ Interface for getting minimum value and it's location from the entire array
+       C++ Interface for getting minimum value and its location from the entire array
 
        \param[out] val will contain the minimum values in the input
        \param[out] idx will contain the locations of minimum all values in the input
@@ -216,7 +216,7 @@ namespace af
     template<typename T> void min(T *val, unsigned *idx, const array &in);
 
     /**
-       C++ Interface for getting maximum value and it's location from the entire array
+       C++ Interface for getting maximum value and its location from the entire array
 
        \param[out] val contains the maximum values in the input
        \param[out] idx contains the locations of maximum all values in the input
@@ -252,7 +252,7 @@ namespace af
 
        \param[in] in is the input array
        \param[in] dim The dimension along which numerical difference is performed
-       \return output of first order numerical difference
+       \return array of first order numerical difference
 
        \ingroup calc_func_diff1
     */
@@ -263,7 +263,7 @@ namespace af
 
        \param[in] in is the input array
        \param[in] dim The dimension along which numerical difference is performed
-       \return output of second order numerical difference
+       \return array of second order numerical difference
 
        \ingroup calc_func_diff2
     */
@@ -429,7 +429,7 @@ extern "C" {
     AFAPI af_err af_any_true(af_array *out, const af_array in, const int dim);
 
     /**
-       C Interface for counting non zero values in an array
+       C Interface for counting non-zero values in an array
 
        \param[out] out will contain the number of non-zero values in \p in along \p dim
        \param[in] in is the input array
@@ -499,7 +499,7 @@ extern "C" {
     /**
        C Interface for checking if all values in an array are true
 
-       \param[out] real is 1 if all values of input \p in are true. 0 otherwise.
+       \param[out] real is 1 if all values of input \p in are true, 0 otherwise.
        \param[out] imag is always set to 0.
        \param[in] in is the input array
        \return \ref AF_SUCCESS if the execution completes properly
@@ -513,7 +513,7 @@ extern "C" {
     /**
        C Interface for checking if any values in an array are true
 
-       \param[out] real is 1 if any value of input \p in is true. 0 otherwise.
+       \param[out] real is 1 if any value of input \p in is true, 0 otherwise.
        \param[out] imag is always set to 0.
        \param[in] in is the input array
        \return \ref AF_SUCCESS if the execution completes properly
@@ -525,7 +525,7 @@ extern "C" {
     AFAPI af_err af_any_true_all(double *real, double *imag, const af_array in);
 
     /**
-       C Interface for counting total number of non zero values in an array
+       C Interface for counting total number of non-zero values in an array
 
        \param[out] real will contain the number of non-zero values in \p in.
        \param[out] imag is always set to 0.
@@ -565,7 +565,7 @@ extern "C" {
     AFAPI af_err af_imax(af_array *out, af_array *idx, const af_array in, const int dim);
 
     /**
-       C Interface for getting minimum value and it's location from the entire array
+       C Interface for getting minimum value and its location from the entire array
 
        \param[out] real will contain the real part of minimum value of all elements in input \p in
        \param[out] imag will contain the imaginary part of minimum value of all elements in input \p in

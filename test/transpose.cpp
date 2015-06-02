@@ -211,8 +211,8 @@ void trsCPPConjTest()
 
     size_t nElems = dims.elements();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_NEAR(tData[elIter].real(), cData[elIter].real(), 1e-6)<< "at: " << elIter << std::endl;
-        ASSERT_NEAR(-tData[elIter].imag(), cData[elIter].imag(), 1e-6)<< "at: " << elIter << std::endl;
+        ASSERT_NEAR(real(tData[elIter]), real(cData[elIter]), 1e-6)<< "at: " << elIter << std::endl;
+        ASSERT_NEAR(-imag(tData[elIter]), imag(cData[elIter]), 1e-6)<< "at: " << elIter << std::endl;
     }
 
     // cleanup

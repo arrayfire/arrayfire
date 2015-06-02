@@ -122,6 +122,18 @@ namespace af
                                     lock_bytes,  lock_buffers));
     }
 
+    void setMemStepSize(const size_t step_bytes)
+    {
+        AF_THROW(af_set_mem_step_size(step_bytes));
+    }
+
+    size_t getMemStepSize()
+    {
+        size_t size_bytes = 0;
+        AF_THROW(af_get_mem_step_size(&size_bytes));
+        return size_bytes;
+    }
+
 #define INSTANTIATE(T)                                                  \
     template<> AFAPI                                                    \
     T* alloc(const size_t elements)                                     \

@@ -80,7 +80,7 @@ TYPED_TEST(Resize, InvalidDims)
 template<typename T>
 void compare(T test, T out, double err, size_t i)
 {
-    ASSERT_EQ(std::abs(test - out) < 0.0001, true) << "at: " << i << std::endl
+    ASSERT_EQ(abs(test - out) < 0.0001, true) << "at: " << i << std::endl
              << "for test = : " << test << std::endl
              << "out data = : " << out << std::endl;
 }

@@ -23,14 +23,14 @@ namespace af
 {
     class array;
     /**
-        \brief Matrix multiply on two arrays
+        \brief Matrix multiply of two arrays
 
         \copydetails blas_func_matmul
 
         \param[in] lhs The array object on the left hand side
         \param[in] rhs The array object on the right hand side
-        \param[in] optLhs Transpose operation before the function is performed
-        \param[in] optRhs Transpose operation before the function is performed
+        \param[in] optLhs Transpose left hand side before the function is performed
+        \param[in] optRhs Transpose right hand side before the function is performed
         \return The result of the matrix multiplication of lhs, rhs
 
         \note optLhs and optRhs can only be one of \ref AF_MAT_NONE, \ref
@@ -45,7 +45,7 @@ namespace af
                        const matProp optRhs = AF_MAT_NONE);
 
     /**
-       \brief Matrix multiply on two arrays
+       \brief Matrix multiply of two arrays
 
        \copydetails blas_func_matmul
 
@@ -60,7 +60,7 @@ namespace af
     AFAPI array matmulNT(const array &lhs, const array &rhs);
 
     /**
-       \brief Matrix multiply on two arrays
+       \brief Matrix multiply of two arrays
 
        \copydetails blas_func_matmul
 
@@ -75,7 +75,7 @@ namespace af
     AFAPI array matmulTN(const array &lhs, const array &rhs);
 
     /**
-       \brief Matrix multiply on two arrays
+       \brief Matrix multiply of two arrays
 
        \copydetails blas_func_matmul
 
@@ -159,7 +159,7 @@ namespace af
     AFAPI array transpose(const array& in, const bool conjugate = false);
 
     /**
-        \brief Transposes a matrix
+        \brief Transposes a matrix in-place
 
         \copydetails blas_func_transpose
 
@@ -177,15 +177,15 @@ extern "C" {
 #endif
 
     /**
-        \brief Matrix multiply on two \ref af_array
+        \brief Matrix multiply of two \ref af_array
 
         \details Performs a matrix multiplication on two arrays (lhs, rhs).
 
         \param[out] out Pointer to the output \ref af_array
         \param[in] lhs A 2D matrix \ref af_array object
         \param[in] rhs A 2D matrix \ref af_array object
-        \param[in] optLhs Transpose operation before the function is performed
-        \param[in] optRhs Transpose operation before the function is performed
+        \param[in] optLhs Transpose left hand side before the function is performed
+        \param[in] optRhs Transpose right hand side before the function is performed
 
         \return AF_SUCCESS if the process is successful.
         \ingroup blas_func_matmul
@@ -225,7 +225,7 @@ extern "C" {
     AFAPI af_err af_transpose(af_array *out, af_array in, const bool conjugate);
 
     /**
-        \brief Transposes a matrix
+        \brief Transposes a matrix in-place
 
         \copydetails blas_func_transpose
 

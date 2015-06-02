@@ -147,6 +147,16 @@ namespace af
     /// \ingroup device_func_mem
     AFAPI void deviceGC();
     /// @}
+
+    /// \brief Set the resolution of memory chunks
+    ///
+    /// \ingroup device_func_mem
+    AFAPI void setMemStepSize(const size_t size);
+
+    /// \brief Get the resolution of memory chunks
+    ///
+    /// \ingroup device_func_mem
+    AFAPI size_t getMemStepSize();
 }
 #endif
 
@@ -194,7 +204,7 @@ extern "C" {
     /**
        \ingroup device_func_device
     */
-    AFAPI af_err af_get_device_ptr(void **ptr, const af_array arr, const bool read_only);
+    AFAPI af_err af_get_device_ptr(void **ptr, const af_array arr);
 
     /**
        \ingroup device_func_alloc
@@ -231,9 +241,21 @@ extern "C" {
 
     /**
        Call the garbage collection routine
-       \ingroup device_func_gc
+       \ingroup device_func_mem
     */
     AFAPI af_err af_device_gc();
+
+    /**
+       Set the minimum memory chunk size
+       \ingroup device_func_mem
+    */
+    AFAPI af_err af_set_mem_step_size(const size_t step_bytes);
+
+    /**
+       Get the minimum memory chunk size
+       \ingroup device_func_mem
+    */
+    AFAPI af_err af_get_mem_step_size(size_t *step_bytes);
 
 #ifdef __cplusplus
 }

@@ -28,6 +28,16 @@ else()
     SET(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets")
 endif()
 
+IF(WIN32)
+    # Deprecated Errors are Warning 4996 on VS2013.
+    # https://msdn.microsoft.com/en-us/library/ttcz0bys.aspx
+    SET(CMAKE_CXX_FLAGS "/we4996")
+    SET(CMAKE_C_FLAGS   "/we4996")
+ELSE(WIN32)
+    SET(CMAKE_CXX_FLAGS "-Werror=deprecated-declarations")
+    SET(CMAKE_C_FLAGS   "-Werror=deprecated-declarations")
+ENDIF(WIN32)
+
 # A macro to build an ArrayFire example
 # For most uses only FIND_PACKAGE(ArrayFire REQUIRED), ADD_EXECUTABLE(...)
 # and TARGET_LINK_LIBRARIES(... ${ARRAYFIRE_LIBRARIES}) are needed
@@ -73,9 +83,9 @@ FOREACH(FILE ${FILES})
 ENDFOREACH()
 
 INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-    DESTINATION "${AF_INSTALL_DOC_DIR}"
+    DESTINATION "${AF_INSTALL_EXAMPLE_DIR}"
     COMPONENT examples)
 
 INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../assets/examples"
-    DESTINATION "${AF_INSTALL_DOC_DIR}/examples/assets/"
+    DESTINATION "${AF_INSTALL_EXAMPLE_DIR}/examples/assets/"
 )

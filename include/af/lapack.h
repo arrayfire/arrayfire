@@ -98,13 +98,13 @@ namespace af
     /**
        C++ Interface for cholesky decomposition
 
-       \param[out] out contains the triangular matrix. Multiply \p out with it conjugate transpose reproduces the input \p in.
+       \param[out] out contains the triangular matrix. Multiply \p out with its conjugate transpose reproduces the input \p in.
        \param[in] in is the input matrix
        \param[in] is_upper a boolean determining if \p out is upper or lower triangular
 
-       \returns \p 0 if cholesky decomposition passes. If not returns the rank at which the decomposition failed.
+       \returns \p 0 if cholesky decomposition passes, if not it returns the rank at which the decomposition failed.
 
-       \note The input matrix **has** to be a positive definite matrix. If it is not zero, the cholesky decomposition functions return a non zero output.
+       \note The input matrix \b has to be a positive definite matrix, if it is not zero, the cholesky decomposition functions return a non-zero output.
        \note This function is not supported in GFOR
 
        \ingroup lapack_factor_func_cholesky
@@ -117,9 +117,9 @@ namespace af
        \param[inout] in is the input matrix on entry. It contains the triangular matrix on exit.
        \param[in] is_upper a boolean determining if \p in is upper or lower triangular
 
-       \returns \p 0 if cholesky decomposition passes. If not returns the rank at which the decomposition failed.
+       \returns \p 0 if cholesky decomposition passes, if not it returns the rank at which the decomposition failed.
 
-       \note The input matrix **has** to be a positive definite matrix. If it is not zero, the cholesky decomposition functions return a non zero output.
+       \note The input matrix \b has to be a positive definite matrix, if it is not zero, the cholesky decomposition functions return a non-zero output.
        \note This function is not supported in GFOR
 
        \ingroup lapack_factor_func_cholesky
@@ -266,11 +266,11 @@ extern "C" {
        C++ Interface for cholesky decomposition
 
        \param[out] out contains the triangular matrix. Multiply \p out with it conjugate transpose reproduces the input \p in.
-       \param[out] info is \p 0 if cholesky decomposition passes. If not returns the rank at which the decomposition failed.
+       \param[out] info is \p 0 if cholesky decomposition passes, if not it returns the rank at which the decomposition failed.
        \param[in] in is the input matrix
        \param[in] is_upper a boolean determining if \p out is upper or lower triangular
 
-       \note The input matrix **has** to be a positive definite matrix. If it is not zero, the cholesky decomposition functions return a non zero output.
+       \note The input matrix \b has to be a positive definite matrix, if it is not zero, the cholesky decomposition functions return a non zero output.
 
        \ingroup lapack_factor_func_cholesky
     */
@@ -279,11 +279,11 @@ extern "C" {
     /**
        C Interface for in place cholesky decomposition
 
-       \param[out] info is \p 0 if cholesky decomposition passes. If not returns the rank at which the decomposition failed.
+       \param[out] info is \p 0 if cholesky decomposition passes, if not it returns the rank at which the decomposition failed.
        \param[inout] in is the input matrix on entry. It contains the triangular matrix on exit.
        \param[in] is_upper a boolean determining if \p in is upper or lower triangular
 
-       \note The input matrix **has** to be a positive definite matrix. If it is not zero, the cholesky decomposition functions return a non zero output.
+       \note The input matrix \b has to be a positive definite matrix, if it is not zero, the cholesky decomposition functions return a non zero output.
 
        \ingroup lapack_factor_func_cholesky
     */

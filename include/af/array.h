@@ -114,6 +114,23 @@ namespace af
             template<typename T> T scalar() const;
             template<typename T> T* device() const;
             void unlock() const;
+
+                  array::array_proxy row(int index);
+            const array::array_proxy row(int index) const;
+
+                  array::array_proxy rows(int first, int last);
+            const array::array_proxy rows(int first, int last) const;
+
+                  array::array_proxy col(int index);
+            const array::array_proxy col(int index) const;
+                  array::array_proxy cols(int first, int last);
+            const array::array_proxy cols(int first, int last) const;
+
+                  array::array_proxy slice(int index);
+            const array::array_proxy slice(int index) const;
+
+                  array::array_proxy slices(int first, int last);
+            const array::array_proxy slices(int first, int last) const;
         };
 
         //array(af_array in, const array *par, af_index_t seqs[4]);
@@ -122,7 +139,7 @@ namespace af
             @{
         */
         /**
-            Create non-dimensioned array (no data, undefined size)
+            Create undimensioned array (no data, undefined size)
 
             \code
             array A, B, C;   // creates three arrays called A, B and C
@@ -316,7 +333,7 @@ namespace af
             pointer to a 2D array on the device. The data is arranged in
             "column-major" format (similar to that used by FORTRAN).
 
-            Note that this is an synchronous copy. The elements are not
+            Note that this is a synchronous copy. The elements are not
             actually filled until this array is evaluated or used in the
             evaluation of some other expression that uses this array object.
 
@@ -433,9 +450,9 @@ namespace af
         /**
            Adjust the dimensions of an N-D array (fast).
 
-           This operation simply rearranges the description of the array
-           on the host device. No memory transfers or transformations are
-           performed. The total number of elements must not change.
+           This operation simply rearranges the description of the array.
+           No memory transfers or transformations are  performed. The total
+           number of elements must not change.
 
            \code
            float f[] = {1,2,3,4};
@@ -462,9 +479,9 @@ namespace af
         /**
            Adjust the dimensions of an N-D array (fast).
 
-           This operation simply rearranges the description of the array
-           on the host device. No memory transfers or transformations are
-           performed. The total number of elements must not change.
+           This operation simply rearranges the description of the array.
+           No memory transfers or transformations are  performed. The total
+           number of elements must not change.
 
            \code
 
@@ -529,7 +546,7 @@ namespace af
         void host(void *ptr) const;
 
         /**
-           Perform deep from host/device pointer to an existing array
+           Perform deep copy from host/device pointer to an existing array
         */
         template<typename T> void write(const T *ptr, const size_t bytes, af::source src = afHost);
 
@@ -574,7 +591,7 @@ namespace af
         bool isscalar() const;
 
         /**
-           \brief Returns true if only one of the array dimensions has more than one elment
+           \brief Returns true if only one of the array dimensions has more than one element
         */
         bool isvector() const;
 
@@ -890,7 +907,7 @@ namespace af
         array operator !() const;
 
         ///
-        /// \brief Get the count of non zero elements in the array
+        /// \brief Get the count of non-zero elements in the array
         ///
         /// For dense matrix, this is the same as count<int>(arr);
         int nonzeros() const;
@@ -983,7 +1000,7 @@ namespace af
 
     /// \ingroup arith_func_neq
     /// @{
-    /// \brief Performs an equality operation on two arrays or an array and a value.
+    /// \brief Performs an inequality operation on two arrays or an array and a value.
     ///
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
@@ -995,7 +1012,7 @@ namespace af
 
     /// \ingroup arith_func_lt
     /// @{
-    /// \brief Performs an < operation on two arrays or an array and a value.
+    /// \brief Performs a lower than operation on two arrays or an array and a value.
     ///
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
@@ -1007,7 +1024,7 @@ namespace af
 
     /// \ingroup arith_func_le
     /// @{
-    /// \brief Performs an <= operation on two arrays or an array and a value.
+    /// \brief Performs an lower or equal operation on two arrays or an array and a value.
     ///
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
@@ -1019,7 +1036,7 @@ namespace af
 
     /// \ingroup arith_func_gt
     /// @{
-    /// \brief Performs an > operation on two arrays or an array and a value.
+    /// \brief Performs an greater than operation on two arrays or an array and a value.
     ///
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
@@ -1031,7 +1048,7 @@ namespace af
 
     /// \ingroup arith_func_ge
     /// @{
-    /// \brief Performs an >= operation on two arrays or an array and a value.
+    /// \brief Performs an greater or equal operation on two arrays or an array and a value.
     ///
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
@@ -1067,7 +1084,7 @@ namespace af
     BIN_OP(operator||)
     /// @}
 
-    /// \ingroup numeric_func_rem
+    /// \ingroup numeric_func_mod
     /// @{
     /// \brief Performs an modulo operation on two arrays or an array and a value.
     ///
@@ -1094,7 +1111,7 @@ namespace af
 
     /// \ingroup arith_func_bitor
     /// @{
-    /// \brief  Performs an bitwise AND operation on two arrays or an array and
+    /// \brief  Performs an bitwise OR operation on two arrays or an array and
     ///         a value.
     ///
     /// \param[in] lhs the left hand side value of the operand
@@ -1107,7 +1124,7 @@ namespace af
 
     /// \ingroup arith_func_bitxor
     /// @{
-    /// \brief  Performs an bitwise AND operation on two arrays or an array and
+    /// \brief  Performs an bitwise XOR operation on two arrays or an array and
     ///         a value.
     ///
     /// \param[in] lhs the left hand side value of the operand
@@ -1177,7 +1194,7 @@ extern "C" {
 
        This function will create an \ref af_array handle from the memory provided in \p data
 
-       \param[out]  arr The pointer to the retured object.
+       \param[out]  arr The pointer to the returned object.
        \param[in]   data The data which will be loaded into the array
        \param[in]   ndims The number of dimensions read from the \p dims parameter
        \param[in]   dims A C pointer with \p ndims elements. Each value represents the size of that dimension
@@ -1212,7 +1229,7 @@ extern "C" {
     AFAPI af_err af_copy_array(af_array *arr, const af_array in);
 
     /**
-       Copy data from an C pointer (host/device) to an existing array.
+       Copy data from a C pointer (host/device) to an existing array.
     */
     AFAPI af_err af_write_array(af_array arr, const void *data, const size_t bytes, af_source src);
 

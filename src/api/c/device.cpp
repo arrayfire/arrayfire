@@ -9,6 +9,7 @@
 
 #include <af/dim4.hpp>
 #include <af/device.h>
+#include <af/version.h>
 #include <backend.hpp>
 #include <platform.hpp>
 #include <Array.hpp>
@@ -33,6 +34,15 @@ af_err af_init()
 af_err af_info()
 {
     printf("%s", getInfo().c_str());
+    return AF_SUCCESS;
+}
+
+af_err af_get_version(int *major, int *minor, int *patch)
+{
+    *major = AF_VERSION_MAJOR;
+    *minor = AF_VERSION_MINOR;
+    *patch = AF_VERSION_PATCH;
+
     return AF_SUCCESS;
 }
 
@@ -120,14 +130,9 @@ af_err af_device_array(af_array *arr, const void *data,
     return AF_SUCCESS;
 }
 
-af_err af_get_device_ptr(void **data, const af_array arr, const bool read_only)
+af_err af_get_device_ptr(void **data, const af_array arr)
 {
     try {
-
-        if (!read_only) {
-            //FIXME: Implement a lock / unlock mechanism
-            AF_ERROR("Write access to device pointer not yet implemented", AF_ERR_NOT_SUPPORTED);
-        }
 
         // Make sure all kernels and memcopies are done before getting device pointer
         detail::sync(getActiveDeviceId());
@@ -147,6 +152,7 @@ af_err af_get_device_ptr(void **data, const af_array arr, const bool read_only)
 
         default: TYPE_ERROR(4, type);
         }
+
     } CATCHALL;
 
     return AF_SUCCESS;
@@ -200,5 +206,17 @@ af_err af_device_mem_info(size_t *alloc_bytes, size_t *alloc_buffers,
     try {
         deviceMemoryInfo(alloc_bytes, alloc_buffers, lock_bytes, lock_buffers);
     } CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_set_mem_step_size(const size_t step_bytes)
+{
+    detail::setMemStepSize(step_bytes);
+    return AF_SUCCESS;
+}
+
+af_err af_get_mem_step_size(size_t *step_bytes)
+{
+    *step_bytes =  detail::getMemStepSize();
     return AF_SUCCESS;
 }

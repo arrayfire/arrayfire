@@ -32,9 +32,6 @@ public:
 typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 TYPED_TEST_CASE(filter, TestTypes);
 
-static double get_real(double val) { return val; }
-static double get_real(cfloat val) { return std::real(val); }
-static double get_real(cdouble val) { return std::real(val); }
 
 template<typename T>
 void firTest(const int xrows, const int xcols, const int brows, const int bcols)
@@ -60,8 +57,8 @@ void firTest(const int xrows, const int xcols, const int brows, const int bcols)
 
         for (int j = 0; j < ycols; j++) {
             for (int i = 0; i < yrows; i++) {
-                ASSERT_NEAR(get_real(hy[j * yrows + i]),
-                            get_real(hc[j * crows + i]), 0.01);
+                ASSERT_NEAR(real(hy[j * yrows + i]),
+                            real(hc[j * crows + i]), 0.01);
             }
         }
     } catch (af::exception &ex) {
@@ -115,8 +112,8 @@ void iirA0Test(const int xrows, const int xcols, const int brows, const int bcol
 
         for (int j = 0; j < ycols; j++) {
             for (int i = 0; i < yrows; i++) {
-                ASSERT_NEAR(get_real(hy[j * yrows + i]),
-                            get_real(hc[j * crows + i]), 0.01);
+                ASSERT_NEAR(real(hy[j * yrows + i]),
+                            real(hc[j * crows + i]), 0.01);
             }
         }
     } catch (af::exception &ex) {
@@ -167,7 +164,7 @@ void iirTest(const char *testFile)
         y.host(&out[0]);
 
         for(size_t i = 0; i < gold.size(); i++) {
-            ASSERT_NEAR(get_real(out[i]), get_real(gold[i]), 0.01) << "at: " << i;
+            ASSERT_NEAR(real(out[i]), real(gold[i]), 0.01) << "at: " << i;
         }
 
     } catch (af::exception &ex) {

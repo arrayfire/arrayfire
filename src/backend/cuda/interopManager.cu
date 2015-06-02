@@ -22,15 +22,25 @@ namespace cuda
 void InteropManager::destroyResources()
 {
     int n = getActiveDeviceId();
-    for(iter_t iter = interop_maps[n].begin(); iter != interop_maps[n].end(); iter++)
+    for(iter_t iter = interop_maps[n].begin(); iter != interop_maps[n].end(); iter++) {
         CUDA_CHECK(cudaGraphicsUnregisterResource(iter->second));
+    }
 }
 
 InteropManager::~InteropManager()
 {
-    for(int i = 0; i < getDeviceCount(); i++) {
-        setDevice(i);
-        destroyResources();
+    try {
+        for(int i = 0; i < getDeviceCount(); i++) {
+            setDevice(i);
+            destroyResources();
+        }
+    } catch (AfError &ex) {
+
+        const char* perr = getenv("AF_PRINT_ERRORS");
+
+        if(perr && perr[0] != '0') {
+            fprintf(stderr, "%s\n", ex.what());
+        }
     }
 }
 

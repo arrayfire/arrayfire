@@ -28,14 +28,14 @@ template<> AFAPI af_cfloat stdev(const array& in)
 {
     double real, imag;
     AF_THROW(af_stdev_all(&real, &imag, in.get()));
-    return std::complex<float>((float)real, (float)imag);
+    return af_cfloat((float)real, (float)imag);
 }
 
 template<> AFAPI af_cdouble stdev(const array& in)
 {
     double real, imag;
     AF_THROW(af_stdev_all(&real, &imag, in.get()));
-    return std::complex<double>(real, imag);
+    return af_cdouble(real, imag);
 }
 
 INSTANTIATE_STDEV(float);

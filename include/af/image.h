@@ -163,8 +163,8 @@ AFAPI array skew(const array& in, const float skew0, const float skew1, const di
     C++ Interface for bilateral filter
 
     \param[in]  in array is the input image
-    \param[in]  spatial_sigma is the spatial variance paramter that decides the filter window
-    \param[in]  chromatic_sigma is the chromatic variance paramter
+    \param[in]  spatial_sigma is the spatial variance parameter that decides the filter window
+    \param[in]  chromatic_sigma is the chromatic variance parameter
     \param[in]  is_color indicates if the input \p in is color image or grayscale
     \return     the processed image
 
@@ -204,8 +204,8 @@ AFAPI array histogram(const array &in, const unsigned nbins);
     C++ Interface for mean shift
 
     \param[in]  in array is the input image
-    \param[in]  spatial_sigma is the spatial variance paramter that decides the filter window
-    \param[in]  chromatic_sigma is the chromatic variance paramter
+    \param[in]  spatial_sigma is the spatial variance parameter that decides the filter window
+    \param[in]  chromatic_sigma is the chromatic variance parameter
     \param[in]  iter is the number of iterations filter operation is performed
     \param[in]  is_color indicates if the input \p in is color image or grayscale
     \return     the processed image
@@ -341,9 +341,9 @@ AFAPI array regions(const array& in, const af::connectivity connectivity=AF_CONN
    \param[in]  searchImg is an array with image data
    \param[in]  templateImg is the template we are looking for in the image
    \param[in]  mType is metric that should be used to calculate the disparity
-               between window in the image and the template image. It can one of
+               between window in the image and the template image. It can be one of
                the values defined by the enum \ref af_match_type
-   \return     array with dispartiy values for the window starting at
+   \return     array with disparity values for the window starting at
                corresponding pixel position
 
    \note If \p search_img is 3d array, a batch operation will be performed.
@@ -355,8 +355,8 @@ AFAPI array matchTemplate(const array &searchImg, const array &templateImg, cons
 /**
    C++ Interface for extracting sobel gradients
 
-   \param[out] dx is derivate along horizontal direction
-   \param[out] dy is derivate along vertical direction
+   \param[out] dx is derivative along horizontal direction
+   \param[out] dy is derivative along vertical direction
    \param[in]  img is an array with image data
    \param[in]  ker_size sobel kernel size or window size
 
@@ -416,7 +416,7 @@ AFAPI array gray2rgb(const array& in, const float rFactor=1.0, const float gFact
    \snippet test/histogram.cpp ex_image_histequal
 
    \param[in]  in is the input array, non-normalized input (!! assumes values [0-255] !!)
-   \param[in]  hist target histogram to approximate in output (based on # of bins)
+   \param[in]  hist target histogram to approximate in output (based on number of bins)
    \return     data with histogram approximately equal to histogram
 
    \note \p in must be two dimensional.
@@ -428,8 +428,8 @@ AFAPI array histEqual(const array& in, const array& hist);
 /**
    C++ Interface for generating gausian kernels
 
-   \param[in]  rows
-   \param[in]  cols
+   \param[in]  rows number of kernel rows
+   \param[in]  cols number of kernel columns
    \param[in]  sig_r (default 0) (calculated internally as 0.25 * rows + 0.75)
    \param[in]  sig_c (default 0) (calculated internally as 0.25 * cols + 0.75)
    \return     an array with values generated using gaussian function
@@ -703,8 +703,8 @@ extern "C" {
 
         \param[out] out array is the processed image
         \param[in]  in array is the input image
-        \param[in]  spatial_sigma is the spatial variance paramter that decides the filter window
-        \param[in]  chromatic_sigma is the chromatic variance paramter
+        \param[in]  spatial_sigma is the spatial variance parameter that decides the filter window
+        \param[in]  chromatic_sigma is the chromatic variance parameter
         \param[in]  isColor indicates if the input \p in is color image or grayscale
         \return     \ref AF_SUCCESS if the filter is applied successfully,
         otherwise an appropriate error code is returned.
@@ -718,8 +718,8 @@ extern "C" {
 
         \param[out] out array is the processed image
         \param[in]  in array is the input image
-        \param[in]  spatial_sigma is the spatial variance paramter that decides the filter window
-        \param[in]  chromatic_sigma is the chromatic variance paramter
+        \param[in]  spatial_sigma is the spatial variance parameter that decides the filter window
+        \param[in]  chromatic_sigma is the chromatic variance parameter
         \param[in]  iter is the number of iterations filter operation is performed
         \param[in]  is_color indicates if the input \p in is color image or grayscale
         \return     \ref AF_SUCCESS if the filter is applied successfully,
@@ -794,12 +794,12 @@ extern "C" {
     /**
        C Interface for image template matching
 
-       \param[out] out will have dispartiy values for the window starting at
+       \param[out] out will have disparity values for the window starting at
                    corresponding pixel position
        \param[in]  search_img is an array with image data
        \param[in]  template_img is the template we are looking for in the image
        \param[in]  m_type is metric that should be used to calculate the disparity
-                   between window in the image and the template image. It can one of
+                   between window in the image and the template image. It can be one of
                    the values defined by the enum \ref af_match_type
        \return     \ref AF_SUCCESS if disparity metric is computed successfully,
        otherwise an appropriate error code is returned.
@@ -813,11 +813,11 @@ extern "C" {
     /**
        C Interface for getting sobel gradients
 
-       \param[out] dx is derivate along horizontal direction
-       \param[out] dy is derivate along vertical direction
+       \param[out] dx is derivative along horizontal direction
+       \param[out] dy is derivative along vertical direction
        \param[in]  img is an array with image data
        \param[in]  ker_size sobel kernel size or window size
-       \return     \ref AF_SUCCESS if sobel derivates are computed successfully,
+       \return     \ref AF_SUCCESS if sobel derivatives are computed successfully,
        otherwise an appropriate error code is returned.
 
        \note If \p img is 3d array, a batch operation will be performed.
@@ -865,7 +865,7 @@ extern "C" {
 
        \param[out] out is an array with data that has histogram approximately equal to histogram
        \param[in]  in is the input array, non-normalized input (!! assumes values [0-255] !!)
-       \param[in]  hist target histogram to approximate in output (based on # of bins)
+       \param[in]  hist target histogram to approximate in output (based on number of bins)
        \return     \ref AF_SUCCESS if the color transformation is successful,
        otherwise an appropriate error code is returned.
 
@@ -879,8 +879,8 @@ extern "C" {
        C Interface generating gaussian kernels
 
        \param[out] out is an array with values generated using gaussian function
-       \param[in]  rows
-       \param[in]  cols
+       \param[in]  rows number of kernel rows
+       \param[in]  cols number of kernel columns
        \param[in]  sigma_r (default 0) (calculated internally as 0.25 * rows + 0.75)
        \param[in]  sigma_c (default 0) (calculated internally as 0.25 * cols + 0.75)
        \return     \ref AF_SUCCESS if gaussian distribution values are generated successfully,
@@ -923,12 +923,10 @@ extern "C" {
     /**
        C Interface wrapper for color space conversion
 
-       \param[out] out is an array in target color space \param[in]  image is
-       the input array
-
+       \param[out] out is an array in target color space
+       \param[in]  image is the input array
        \param[in]  to is the target array color space \param[in]
        from is the input array color space
-
        \return     \ref AF_SUCCESS if the color transformation is successful,
        otherwise an appropriate error code
        is returned.

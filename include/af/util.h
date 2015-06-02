@@ -70,9 +70,9 @@ extern "C" {
         \brief Gets the dimseions of an array.
 
         \param[out] d0 is the output that contains the size of first dimension of \p arr
-        \param[out] d1 is the output that contains the size of first dimension of \p arr
-        \param[out] d2 is the output that contains the size of first dimension of \p arr
-        \param[out] d3 is the output that contains the size of first dimension of \p arr
+        \param[out] d1 is the output that contains the size of second dimension of \p arr
+        \param[out] d2 is the output that contains the size of third dimension of \p arr
+        \param[out] d3 is the output that contains the size of fourth dimension of \p arr
         \param[in] arr is the input array
 
         \returns error codes
@@ -240,6 +240,11 @@ extern "C" {
 
     // Purpose of Addition: "How to add Function" documentation
     AFAPI af_err af_example_function(af_array* out, const af_array in, const af_someenum_t param);
+
+    ///
+    ///Get the version information of the library
+    ///
+    AFAPI af_err af_get_version(int *major, int *minor, int *patch);
 
 #ifdef __cplusplus
 }

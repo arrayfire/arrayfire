@@ -137,6 +137,7 @@ class AFAPI Window {
            \param[in] X is the data frequency \ref array
            \param[in] minval is the value of the minimum data point of the array whose histogram(\p X) is going to be rendered.
            \param[in] maxval is the value of the maximum data point of the array whose histogram(\p X) is going to be rendered.
+           \param[in] title parameter is used when this function is called in grid mode
 
            \note \p X should be a vector.
          */
@@ -157,8 +158,8 @@ class AFAPI Window {
         void show();
 
         /**
-           To check if window is marked for close. This usually
-            happens when user presses ESC key while the window is in focus.
+           Check if window is marked for close. This usually
+           happens when user presses ESC key while the window is in focus.
 
            \return     \ref AF_SUCCESS if window show is successful, otherwise an appropriate error code
            is returned.
@@ -168,11 +169,11 @@ class AFAPI Window {
         /**
            This function is used to keep track of which cell in the grid mode is
            being currently rendered. When a user does Window(0,0), we internally
-           store the cell coordinates and return an reference to the very object that
+           store the cell coordinates and return a reference to the very object that
            called upon this function. This reference can be used later to issue
            draw calls using rendering functions.
 
-           \return returns a reference to the object pointed by this
+           \return a reference to the object pointed by this
            to enable cascading this call with rendering functions.
          */
         inline Window& operator()(const int r, const int c) {
@@ -204,7 +205,7 @@ extern "C" {
 AFAPI af_err af_create_window(af_window *out, const int width, const int height, const char* const title);
 
 /**
-   C Interface wrapper for setting the start position when window display
+   C Interface wrapper for setting the start position when window is displayed
 
    \param[in]   wind is the window handle
    \param[in]   x is horizontal start coordinate

@@ -18,6 +18,7 @@
 #include <traits.hpp>
 #include <Param.hpp>
 #include <JIT/Node.hpp>
+#include <memory.hpp>
 #include <memory>
 
 namespace opencl
@@ -77,6 +78,7 @@ namespace opencl
     template<typename T>
     void *getDevicePtr(const Array<T>& arr)
     {
+        memUnlink((T *)arr.get());
         return (void *)((*arr.get())());
     }
 
