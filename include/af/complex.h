@@ -18,7 +18,9 @@
 namespace af{
 #endif
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 typedef struct af_cfloat {
     float real;
     float imag;
@@ -34,7 +36,9 @@ typedef struct af_cdouble {
     af_cdouble(const double real = 0, const double imag = 0) :real(real), imag(imag) {}
 #endif
 } af_cdouble;
+#ifdef __cplusplus
 }
+#endif
 
 #ifdef __cplusplus
 typedef af::af_cfloat   cfloat;
@@ -74,7 +78,6 @@ AFAPI std::istream& operator>> (std::istream &is, cdouble &in);
 AFAPI std::ostream& operator<< (std::ostream &os, const cfloat &in);
 AFAPI std::ostream& operator<< (std::ostream &os, const cdouble &in);
 
-#endif
 
 AFAPI float abs(const cfloat &val);
 AFAPI double abs(const cdouble &val);
@@ -82,6 +85,5 @@ AFAPI double abs(const cdouble &val);
 AFAPI cfloat conj(const cfloat &val);
 AFAPI cdouble conj(const cdouble &val);
 
-#ifdef __cplusplus
 }
 #endif
