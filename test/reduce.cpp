@@ -353,18 +353,18 @@ void typed_assert_eq<double>(double lhs, double rhs, bool both)
 template<>
 void typed_assert_eq<af::cfloat>(af::cfloat lhs, af::cfloat rhs, bool both)
 {
-    ASSERT_FLOAT_EQ(lhs.real(), rhs.real());
+    ASSERT_FLOAT_EQ(real(lhs), real(rhs));
     if(both)
-        ASSERT_FLOAT_EQ(lhs.imag(), rhs.imag());
+        ASSERT_FLOAT_EQ(imag(lhs), imag(rhs));
 
 }
 
 template<>
 void typed_assert_eq<af::cdouble>(af::cdouble lhs, af::cdouble rhs, bool both)
 {
-    ASSERT_DOUBLE_EQ(lhs.real(), rhs.real());
+    ASSERT_DOUBLE_EQ(real(lhs), real(rhs));
     if(both)
-        ASSERT_DOUBLE_EQ(lhs.imag(), rhs.imag());
+        ASSERT_DOUBLE_EQ(imag(lhs), imag(rhs));
 }
 
 TYPED_TEST(Reduce, Test_All_Global)

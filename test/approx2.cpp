@@ -86,7 +86,7 @@ void approx2Test(string pTestFile, const unsigned resultIdx, const af_interp_typ
     size_t nElems = tests[resultIdx].size();
     bool ret = true;
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ret = (std::abs(tests[resultIdx][elIter] - outData[elIter]) < 0.001);
+        ret = (abs(tests[resultIdx][elIter] - outData[elIter]) < 0.001);
         ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
     }
 

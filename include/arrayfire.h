@@ -256,6 +256,7 @@
 #include "af/array.h"
 #include "af/blas.h"
 #include "af/constants.h"
+#include "af/complex.h"
 #include "af/data.h"
 #include "af/device.h"
 #include "af/exception.h"

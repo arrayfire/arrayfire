@@ -13,6 +13,7 @@
 
 #include <complex>
 #include <af/defines.h>
+#include <af/complex.h>
 
 namespace af {
 
@@ -39,6 +40,16 @@ struct dtype_traits<af::cfloat> {
 };
 
 template<>
+struct dtype_traits<std::complex<float> > {
+    enum {
+        af_type = c32 ,
+        ctype = c32
+    };
+    typedef float base_type;
+    static const char* getName() { return "std::complex<float>"; }
+};
+
+template<>
 struct dtype_traits<double> {
     enum {
         af_type = f64 ,
@@ -50,6 +61,16 @@ struct dtype_traits<double> {
 
 template<>
 struct dtype_traits<af::cdouble> {
+    enum {
+        af_type = c64 ,
+        ctype = c64
+    };
+    typedef double base_type;
+    static const char* getName() { return "std::complex<double>"; }
+};
+
+template<>
+struct dtype_traits<std::complex<double> > {
     enum {
         af_type = c64 ,
         ctype = c64

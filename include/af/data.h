@@ -18,19 +18,19 @@ namespace af
     class array;
 
     template<typename T>
-    AFAPI array constant(T val, const dim4 &dims, const dtype ty=(af_dtype)dtype_traits<T>::ctype);
+    array constant(T val, const dim4 &dims, const dtype ty=(af_dtype)dtype_traits<T>::ctype);
 
     template<typename T>
-    AFAPI array constant(T val, const dim_t d0, const af_dtype ty=(af_dtype)dtype_traits<T>::ctype);
+    array constant(T val, const dim_t d0, const af_dtype ty=(af_dtype)dtype_traits<T>::ctype);
 
     template<typename T>
-    AFAPI array constant(T val, const dim_t d0, const dim_t d1, const af_dtype ty=(af_dtype)dtype_traits<T>::ctype);
+    array constant(T val, const dim_t d0, const dim_t d1, const af_dtype ty=(af_dtype)dtype_traits<T>::ctype);
 
     template<typename T>
-    AFAPI array constant(T val, const dim_t d0, const dim_t d1, const dim_t d2, const af_dtype ty=(af_dtype)dtype_traits<T>::ctype);
+    array constant(T val, const dim_t d0, const dim_t d1, const dim_t d2, const af_dtype ty=(af_dtype)dtype_traits<T>::ctype);
 
     template<typename T>
-    AFAPI array constant(T val, const dim_t d0, const dim_t d1, const dim_t d2, const dim_t d3, const af_dtype ty=(af_dtype)dtype_traits<T>::ctype);
+    array constant(T val, const dim_t d0, const dim_t d1, const dim_t d2, const dim_t d3, const af_dtype ty=(af_dtype)dtype_traits<T>::ctype);
 
     /**
         \param[in] dims is the dimensions of the array to be generated

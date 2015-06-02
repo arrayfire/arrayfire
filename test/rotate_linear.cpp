@@ -88,7 +88,7 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
     // ASSERT_EQ (in comments below) to pass for CUDA & OpenCL backends
     size_t fail_count = 0;
     for(size_t i = 0; i < nElems; i++) {
-        if(std::abs((tests[resultIdx][i] - (T)outData[i])) > 0.001) {
+        if(abs((tests[resultIdx][i] - (T)outData[i])) > 0.001) {
             fail_count++;
         }
     }

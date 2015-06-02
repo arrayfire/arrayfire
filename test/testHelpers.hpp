@@ -361,7 +361,7 @@ struct cond_type<false, T, Other> {
 };
 
 template<typename T>
-double real(T val) { return val.real(); }
+double real(T val) { return real(val); }
 template<>
 double real<double>(double val) { return val; }
 template<>
@@ -380,7 +380,7 @@ template<>
 double real<uintl>(uintl val) { return val; }
 
 template<typename T>
-double imag(T val) { return val.imag(); }
+double imag(T val) { return imag(val); }
 template<>
 double imag<double>(double val) { return 0; }
 template<>

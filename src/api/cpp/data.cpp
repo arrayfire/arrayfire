@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/array.h>
+#include <af/complex.h>
 #include <af/arith.h>
 #include <af/data.h>
 #include <af/traits.hpp>
@@ -38,7 +39,7 @@ namespace af
     }
 
     template<>
-    array constant<cfloat>(cfloat val, const dim4 &dims, const af::dtype type)
+    AFAPI array constant(cfloat val, const dim4 &dims, const af::dtype type)
     {
         if (type != c32 && type != c64) {
             return constant(real(val), dims, type);
@@ -53,7 +54,7 @@ namespace af
     }
 
     template<>
-    array constant<cdouble>(cdouble val, const dim4 &dims, const af::dtype type)
+    AFAPI array constant(cdouble val, const dim4 &dims, const af::dtype type)
     {
         if (type != c32 && type != c64) {
             return constant(real(val), dims, type);
@@ -91,14 +92,14 @@ namespace af
     }
 
 #define CONSTANT(TYPE)                                                              \
-    template array constant<TYPE>(TYPE val, const dim4 &dims, const af::dtype ty);  \
-    template array constant<TYPE>(TYPE val, const dim_t d0, const af::dtype ty);    \
-    template array constant<TYPE>(TYPE val, const dim_t d0,                         \
+    template AFAPI array constant<TYPE>(TYPE val, const dim4 &dims, const af::dtype ty);  \
+    template AFAPI array constant<TYPE>(TYPE val, const dim_t d0, const af::dtype ty);    \
+    template AFAPI array constant<TYPE>(TYPE val, const dim_t d0,                         \
                                             const dim_t d1, const af::dtype ty);    \
-    template array constant<TYPE>(TYPE val, const dim_t d0,                         \
+    template AFAPI array constant<TYPE>(TYPE val, const dim_t d0,                         \
                                             const dim_t d1,                         \
                                             const dim_t d2, const af::dtype ty);    \
-    template array constant<TYPE>(TYPE val, const dim_t d0,                         \
+    template AFAPI array constant<TYPE>(TYPE val, const dim_t d0,                         \
                                             const dim_t d1,                         \
                                             const dim_t d2,                         \
                                             const dim_t d3, const af::dtype ty);
