@@ -13,6 +13,14 @@ Before you get started, make sure you have the necessary pre-requisites.
      - [Intel OpenCL SDK](https://software.intel.com/en-us/articles/download-the-latest-intel-amt-software-development-kit-sdk)
      - [NVIDIA CUDA](https://developer.nvidia.com/cuda-downloads)
 
+## Step 0: Running pre-built executables
+
+The ArrayFire installer ships with a few pre-built executables with the examples.
+These should run out of the box.
+
+Note: For the CUDA executables, you will need to copy CUDA_PATH\nvvm\bin\nvvm64_30_0.dll
+to the location of the executables.
+
 ## Step 1: Adding ArrayFire to PATH for all users
 
 The ArrayFire installer for Windows creates a user `PATH` variable containing
