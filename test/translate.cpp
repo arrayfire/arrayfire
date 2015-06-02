@@ -75,7 +75,7 @@ void translateTest(string pTestFile, const unsigned resultIdx, af::dim4 odims, c
 
     size_t fail_count = 0;
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        if(std::abs((T)tests[resultIdx][elIter] - outData[elIter]) > 0.0001) {
+        if(abs((T)tests[resultIdx][elIter] - outData[elIter]) > 0.0001) {
             fail_count++;
         }
     }

@@ -154,7 +154,7 @@ void fftTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
     }
     outType output_scale = (outType)(isInverse ? test_size : 1);
     for (size_t elIter=0; elIter<test_size; ++elIter) {
-        bool isUnderTolerance = std::abs(goldBar[elIter]-outData[elIter])<0.001;
+        bool isUnderTolerance = abs(goldBar[elIter]-outData[elIter])<0.001;
         ASSERT_EQ(true, isUnderTolerance)<<
             "Expected value="<<goldBar[elIter] <<"\t Actual Value="<<
             (output_scale*outData[elIter]) << " at: " << elIter<< std::endl;
@@ -262,7 +262,7 @@ void fftBatchTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
     for(size_t batchId=0; batchId<batch_count; ++batchId) {
         size_t off = batchId*batch_stride;
         for (size_t elIter=0; elIter<test_size; ++elIter) {
-            bool isUnderTolerance = std::abs(goldBar[elIter+off]-outData[elIter+off])<0.001;
+            bool isUnderTolerance = abs(goldBar[elIter+off]-outData[elIter+off])<0.001;
             ASSERT_EQ(true, isUnderTolerance)<<"Batch id = "<<batchId<<
                 "; Expected value="<<goldBar[elIter+off] <<"\t Actual Value="<<
                 (output_scale*outData[elIter+off]) << " at: " << elIter<< std::endl;
@@ -343,7 +343,7 @@ void cppFFTTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
     }
     outType output_scale = (outType)(isInverse ? test_size : 1);
     for (size_t elIter=0; elIter<test_size; ++elIter) {
-        bool isUnderTolerance = std::abs(goldBar[elIter]-outData[elIter])<0.001;
+        bool isUnderTolerance = abs(goldBar[elIter]-outData[elIter])<0.001;
         ASSERT_EQ(true, isUnderTolerance)<<
             "Expected value="<<goldBar[elIter] <<"\t Actual Value="<<
             (output_scale*outData[elIter]) << " at: " << elIter<< std::endl;
@@ -389,7 +389,7 @@ void cppDFTTest(string pTestFile, dim_t pad0=0, dim_t pad1=0, dim_t pad2=0)
     }
     outType output_scale = (outType)(isInverse ? test_size : 1);
     for (size_t elIter=0; elIter<test_size; ++elIter) {
-        bool isUnderTolerance = std::abs(goldBar[elIter]-outData[elIter])<0.001;
+        bool isUnderTolerance = abs(goldBar[elIter]-outData[elIter])<0.001;
         ASSERT_EQ(true, isUnderTolerance)<<
             "Expected value="<<goldBar[elIter] <<"\t Actual Value="<<
             (output_scale*outData[elIter]) << " at: " << elIter<< std::endl;

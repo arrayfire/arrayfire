@@ -12,49 +12,25 @@
 
 #ifdef __cplusplus
 #include <af/dim4.hpp>
+#include <af/traits.hpp>
 namespace af
 {
     class array;
 
-    /**
-       \defgroup data_func_constant constant
-       Create constant array from the specified dimensions
-       @{
+    template<typename T>
+    array constant(T val, const dim4 &dims, const dtype ty=(af_dtype)dtype_traits<T>::ctype);
 
-       \ingroup arrayfire_func
-       \ingroup move_mat
-    */
-#define CONSTANT(TYPE, TY)                                              \
-    AFAPI array constant(TYPE val, const dim4 &dims, const dtype ty=TY); \
-    AFAPI array constant(TYPE val, const dim_t d0, const dtype ty=TY);  \
-    AFAPI array constant(TYPE val, const dim_t d0,                      \
-                         const dim_t d1, const dtype ty=TY);            \
-    AFAPI array constant(TYPE val, const dim_t d0,                      \
-                         const dim_t d1, const dim_t d2,                \
-                         const dtype ty=TY);                            \
-    AFAPI array constant(TYPE val, const dim_t d0,                      \
-                         const dim_t d1, const dim_t d2,                \
-                         const dim_t d3, const dtype ty=TY);            \
+    template<typename T>
+    array constant(T val, const dim_t d0, const af_dtype ty=(af_dtype)dtype_traits<T>::ctype);
 
-    CONSTANT(double             , f32)
-    CONSTANT(float              , f32)
-    CONSTANT(int                , f32)
-    CONSTANT(unsigned           , f32)
-    CONSTANT(char               , f32)
-    CONSTANT(unsigned char      , f32)
-    CONSTANT(cfloat             , c32)
-    CONSTANT(cdouble            , c64)
-    CONSTANT(long               , s64)
-    CONSTANT(unsigned long      , u64)
-    CONSTANT(long long          , s64)
-    CONSTANT(unsigned long long , u64)
-    CONSTANT(bool               ,  b8)
+    template<typename T>
+    array constant(T val, const dim_t d0, const dim_t d1, const af_dtype ty=(af_dtype)dtype_traits<T>::ctype);
 
-#undef CONSTANT
+    template<typename T>
+    array constant(T val, const dim_t d0, const dim_t d1, const dim_t d2, const af_dtype ty=(af_dtype)dtype_traits<T>::ctype);
 
-    /**
-       @}
-    */
+    template<typename T>
+    array constant(T val, const dim_t d0, const dim_t d1, const dim_t d2, const dim_t d3, const af_dtype ty=(af_dtype)dtype_traits<T>::ctype);
 
     /**
         \param[in] dims is the dimensions of the array to be generated

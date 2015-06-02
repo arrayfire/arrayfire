@@ -50,28 +50,28 @@ template<> AFAPI af_cfloat var(const array& in, const bool isbiased)
 {
     double real, imag;
     AF_THROW(af_var_all(&real, &imag, in.get(), isbiased));
-    return std::complex<float>((float)real, (float)imag);
+    return af_cfloat((float)real, (float)imag);
 }
 
 template<> AFAPI af_cdouble var(const array& in, const bool isbiased)
 {
     double real, imag;
     AF_THROW(af_var_all(&real, &imag, in.get(), isbiased));
-    return std::complex<double>(real, imag);
+    return af_cdouble(real, imag);
 }
 
 template<> AFAPI af_cfloat var(const array& in, const array &weights)
 {
     double real, imag;
     AF_THROW(af_var_all_weighted(&real, &imag, in.get(), weights.get()));
-    return std::complex<float>((float)real, (float)imag);
+    return af_cfloat((float)real, (float)imag);
 }
 
 template<> AFAPI af_cdouble var(const array& in, const array &weights)
 {
     double real, imag;
     AF_THROW(af_var_all_weighted(&real, &imag, in.get(), weights.get()));
-    return std::complex<double>(real, imag);
+    return af_cdouble(real, imag);
 }
 
 INSTANTIATE_VAR(float);
