@@ -1,8 +1,66 @@
 Using ArrayFire on Linux {#using_on_linux}
 =====
 
+
 Among the many possible build systems on Linux we suggest using ArrayFire with
 either CMake or Makefiles with CMake being the preferred build system.
+
+## Pre-requisites
+
+Before you get started, make sure you have the necessary pre-requisites.
+
+- If you are using CUDA, please make sure you have [CUDA 7](https://developer.nvidia.com/cuda-downloads) installed on your system.
+     - [Contact us](support@arrayfire.com) for custom builds (eg. different toolkits)
+
+- If you are using OpenCL, please make sure you have one of the following SDKs.
+     - [AMD OpenCL SDK](http://developer.amd.com/tools-and-sdks/opencl-zone/amd-accelerated-parallel-processing-app-sdk/)
+     - [Intel OpenCL SDK](https://software.intel.com/en-us/articles/download-the-latest-intel-amt-software-development-kit-sdk)
+     - [NVIDIA CUDA](https://developer.nvidia.com/cuda-downloads)
+
+You will also need the following dependencies to use ArrayFire.
+
+#### Fedora, Centos and Redhat
+
+Install EPEL repo (not required for Fedora)
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+yum install epel-release
+yum update
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Install the common dependencies
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+yum install gcc gcc-c++ cmake make
+yum install freeimage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Install glfw (not required for no-gl installers)
+
+Fedora:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+yum install glfw
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For Centos and Redhat, please follow [these instructions](https://github.com/arrayfire/arrayfire/wiki/GLFW-for-ArrayFire)
+
+#### Debian and Ubuntu
+
+Install common dependencies
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+apt-get install build-essential cmake cmake-curses-gui
+apt-get libfreeimage3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Install glfw (not required for no-gl installers)
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+apt-get install libglfw3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For Debian 7 and Ubuntu 14.04, please follow [these instructions](https://github.com/arrayfire/arrayfire/wiki/GLFW-for-ArrayFire)
 
 ## CMake
 
@@ -76,4 +134,3 @@ Here is a minimial example MakeFile which uses ArrayFire's CPU backend:
 
     all: main.cpp Makefile
         $(CC) main.cpp -o test $(INCLUDES) $(LIBS) $(LIB_PATHS)
-

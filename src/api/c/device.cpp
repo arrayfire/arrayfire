@@ -9,6 +9,7 @@
 
 #include <af/dim4.hpp>
 #include <af/device.h>
+#include <af/version.h>
 #include <backend.hpp>
 #include <platform.hpp>
 #include <Array.hpp>
@@ -33,6 +34,15 @@ af_err af_init()
 af_err af_info()
 {
     printf("%s", getInfo().c_str());
+    return AF_SUCCESS;
+}
+
+af_err af_get_version(int *major, int *minor, int *patch)
+{
+    *major = AF_VERSION_MAJOR;
+    *minor = AF_VERSION_MINOR;
+    *patch = AF_VERSION_PATCH;
+
     return AF_SUCCESS;
 }
 

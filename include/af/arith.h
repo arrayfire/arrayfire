@@ -254,7 +254,7 @@ namespace af
     /// C++ Interface for creating complex array from real array
     ///
     /// \param[in] in is real array
-    /// \return complex array from \ref in
+    /// \return complex array from \p in
     ///
     /// \ingroup arith_func_cplx
     AFAPI array complex(const array &in);

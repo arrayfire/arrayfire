@@ -241,6 +241,11 @@ extern "C" {
     // Purpose of Addition: "How to add Function" documentation
     AFAPI af_err af_example_function(af_array* out, const af_array in, const af_someenum_t param);
 
+    ///
+    ///Get the version information of the library
+    ///
+    AFAPI af_err af_get_version(int *major, int *minor, int *patch);
+
 #ifdef __cplusplus
 }
 #endif
