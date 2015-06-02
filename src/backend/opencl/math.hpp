@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <af/defines.h>
+
 #include <complex>
 #include <limits>
 #include <algorithm>
@@ -39,19 +41,19 @@ namespace opencl
         return abs(lhs) > abs(rhs) ? lhs : rhs;
     }
 
-	template<> STATIC_
+    template<> STATIC_
     cdouble max<cdouble>(cdouble lhs, cdouble rhs)
     {
         return abs(lhs) > abs(rhs) ? lhs : rhs;
     }
 
-	template<> STATIC_
+    template<> STATIC_
     cfloat min<cfloat>(cfloat lhs, cfloat rhs)
     {
         return abs(lhs) < abs(rhs) ? lhs :  rhs;
     }
 
-	template<> STATIC_
+    template<> STATIC_
     cdouble min<cdouble>(cdouble lhs, cdouble rhs)
     {
         return abs(lhs) < abs(rhs) ? lhs :  rhs;
@@ -63,7 +65,7 @@ namespace opencl
         return (T)(val);
     }
 
-	template<> STATIC_
+    template<> STATIC_
     cfloat  scalar<cfloat >(double val)
     {
         cfloat  cval;
@@ -72,7 +74,7 @@ namespace opencl
         return cval;
     }
 
-	template<> STATIC_
+    template<> STATIC_
     cdouble scalar<cdouble >(double val)
     {
         cdouble cval;
@@ -82,7 +84,7 @@ namespace opencl
     }
 
     template<typename To, typename Ti>
-	static To scalar(Ti real, Ti imag)
+    static To scalar(Ti real, Ti imag)
     {
         To  cval;
         cval.s[0] = real;
@@ -115,7 +117,9 @@ namespace opencl
     bool operator ==(cdouble a, cdouble b);
     bool operator !=(cdouble a, cdouble b);
     cfloat operator +(cfloat a, cfloat b);
+    cfloat operator +(cfloat a);
     cdouble operator +(cdouble a, cdouble b);
+    cdouble operator +(cdouble a);
     cfloat operator *(cfloat a, cfloat b);
     cdouble operator *(cdouble a, cdouble b);
 }

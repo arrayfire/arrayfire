@@ -10,17 +10,18 @@
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <af/features.h>
-#include <af/image.h>
+#include <af/vision.h>
 #include <handle.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <orb.hpp>
+#include <features.hpp>
 
 using af::dim4;
 using namespace detail;
 
 template<typename T, typename convAccT>
-static void orb(af_features& feat, af_array& descriptor,
+static void orb(af_features& feat_, af_array& descriptor,
                 const af_array& in, const float fast_thr,
                 const unsigned max_feat, const float scl_fctr,
                 const unsigned levels, const bool blur_img)
@@ -32,6 +33,8 @@ static void orb(af_features& feat, af_array& descriptor,
     Array<float> size  = createEmptyArray<float>(dim4());
     Array<uint > desc  = createEmptyArray<uint >(dim4());
 
+    af_features_t feat;
+
     feat.n = orb<T, convAccT>(x, y, score, ori, size, desc,
                               getArray<T>(in), fast_thr, max_feat,
                               scl_fctr, levels, blur_img);
@@ -42,6 +45,7 @@ static void orb(af_features& feat, af_array& descriptor,
     feat.orientation = getHandle(ori);
     feat.size        = getHandle(size);
 
+    feat_ = getFeaturesHandle(feat);
     descriptor = getHandle<unsigned>(desc);
 }
 
@@ -60,7 +64,7 @@ af_err af_orb(af_features* feat, af_array* desc,
         ARG_ASSERT(5, scl_fctr > 1.0f);
         ARG_ASSERT(6, levels > 0);
 
-        dim_type in_ndims = dims.ndims();
+        dim_t in_ndims = dims.ndims();
         DIM_ASSERT(1, (in_ndims <= 3 && in_ndims >= 2));
 
         af_array tmp_desc;

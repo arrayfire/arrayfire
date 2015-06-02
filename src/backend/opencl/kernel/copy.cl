@@ -8,7 +8,7 @@
  ********************************************************/
 
 typedef struct {
-    dim_type dim[4];
+    dim_t dim[4];
 } dims_t;
 
 inType scale(inType value, float factor)
@@ -55,7 +55,7 @@ void copy(__global outType * dst,
           KParam iInfo,
           outType default_value,
           float factor, dims_t trgt,
-          dim_type blk_x, dim_type blk_y)
+          int blk_x, int blk_y)
 {
     uint lx = get_local_id(0);
     uint ly = get_local_id(1);
@@ -74,9 +74,9 @@ void copy(__global outType * dst,
     uint ostride0 = oInfo.strides[0];
 
     if (gy < oInfo.dims[1] && gz < oInfo.dims[2] && gw < oInfo.dims[3]) {
-        dim_type loop_offset = get_num_groups(0)*get_local_size(0);
+        int loop_offset = get_local_size(0) * blk_x;
         bool cond = gy < trgt.dim[1] && gz < trgt.dim[2] && gw < trgt.dim[3];
-        for(dim_type rep=gx; rep<oInfo.dims[0]; rep+=loop_offset) {
+        for(int rep=gx; rep<oInfo.dims[0]; rep+=loop_offset) {
             outType temp  = default_value;
 #if SAME_DIMS
             temp = CONVERT(scale(in[rep*istride0], factor));

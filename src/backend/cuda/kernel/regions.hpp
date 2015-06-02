@@ -26,8 +26,8 @@
 
 #if __CUDACC__
 
-static const dim_type THREADS_X = 16;
-static const dim_type THREADS_Y = 16;
+static const int THREADS_X = 16;
+static const int THREADS_Y = 16;
 
 // This flag is used to track convergence (i.e. it is set, whenever
 // any label equivalency changes.  When no labels changed, the
@@ -55,7 +55,7 @@ static T fetch(const int n,
 // pixels and "background" (zero) pixels.
 template<typename T, int n_per_thread>
 __global__
-static void initial_label(cuda::Param<T> equiv_map, cuda::CParam<cuda::uchar> bin)
+static void initial_label(cuda::Param<T> equiv_map, cuda::CParam<char> bin)
 {
     const int base_x = (blockIdx.x * blockDim.x * n_per_thread) + threadIdx.x;
     const int base_y = (blockIdx.y * blockDim.y * n_per_thread) + threadIdx.y;
@@ -69,7 +69,7 @@ static void initial_label(cuda::Param<T> equiv_map, cuda::CParam<cuda::uchar> bi
             const int y = base_y + (yb * blockDim.y);
             const int n = y * bin.dims[0] + x;
             if (x < bin.dims[0] && y < bin.dims[1]) {
-                equiv_map.ptr[n] = (bin.ptr[n] == (cuda::uchar)1) ? n + 1 : 0;
+                equiv_map.ptr[n] = (bin.ptr[n] > (char)0) ? n + 1 : 0;
             }
         }
     }
@@ -77,7 +77,7 @@ static void initial_label(cuda::Param<T> equiv_map, cuda::CParam<cuda::uchar> bi
 
 template<typename T, int n_per_thread>
 __global__
-static void final_relabel(cuda::Param<T> equiv_map, cuda::CParam<cuda::uchar> bin, const T* d_tmp)
+static void final_relabel(cuda::Param<T> equiv_map, cuda::CParam<char> bin, const T* d_tmp)
 {
     const int base_x = (blockIdx.x * blockDim.x * n_per_thread) + threadIdx.x;
     const int base_y = (blockIdx.y * blockDim.y * n_per_thread) + threadIdx.y;
@@ -91,7 +91,7 @@ static void final_relabel(cuda::Param<T> equiv_map, cuda::CParam<cuda::uchar> bi
             const int y = base_y + (yb * blockDim.y);
             const int n = y * bin.dims[0] + x;
             if (x < bin.dims[0] && y < bin.dims[1]) {
-                equiv_map.ptr[n] = (bin.ptr[n] == (cuda::uchar)1) ? d_tmp[(int)equiv_map.ptr[n]] : (T)0;
+                equiv_map.ptr[n] = (bin.ptr[n] > (char)0) ? d_tmp[(int)equiv_map.ptr[n]] : (T)0;
             }
         }
     }
@@ -145,12 +145,12 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
     bool tid_changed = false;
 
     // Per element write flags and label, initially 0
-    cuda::uchar      write[n_per_thread * n_per_thread];
-    T           best_label[n_per_thread * n_per_thread];
+    char write[n_per_thread * n_per_thread];
+    T    best_label[n_per_thread * n_per_thread];
 
     #pragma unroll
     for (int i = 0; i < n_per_thread * n_per_thread; ++i) {
-        write[i]      = (cuda::uchar)0;
+        write[i]      = (char)0;
         best_label[i] = (T)0;
     }
 
@@ -245,7 +245,7 @@ static void update_equiv(cuda::Param<T> equiv_map, const cudaTextureObject_t tex
             if (orig_label != new_label) {
                 tid_changed = true;
                 s_tile[ty][tx] = new_label;
-                write[tid_i] = (cuda::uchar)1;
+                write[tid_i] = (char)1;
             }
             best_label[tid_i] = new_label;
         }
@@ -401,12 +401,12 @@ struct clamp_to_one : public thrust::unary_function<T,T>
 };
 
 template<typename T, bool full_conn, int n_per_thread>
-void regions(cuda::Param<T> out, cuda::CParam<cuda::uchar> in, cudaTextureObject_t tex)
+void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
 {
     const dim3 threads(THREADS_X, THREADS_Y);
 
-    const dim_type blk_x = divup(in.dims[0], threads.x*2);
-    const dim_type blk_y = divup(in.dims[1], threads.y*2);
+    const int blk_x = divup(in.dims[0], threads.x*2);
+    const int blk_y = divup(in.dims[1], threads.y*2);
 
     const dim3 blocks(blk_x, blk_y);
 
@@ -420,8 +420,12 @@ void regions(cuda::Param<T> out, cuda::CParam<cuda::uchar> in, cudaTextureObject
         h_continue = 0;
         CUDA_CHECK(cudaMemcpyToSymbol(continue_flag, &h_continue, sizeof(int),
                                       0, cudaMemcpyHostToDevice));
+
         (update_equiv<T, 16, n_per_thread, full_conn>)<<<blocks, threads>>>
             (out, tex);
+
+        POST_LAUNCH_CHECK();
+
         CUDA_CHECK(cudaMemcpyFromSymbol(&h_continue, continue_flag, sizeof(int),
                                         0, cudaMemcpyDeviceToHost));
     }
@@ -471,6 +475,8 @@ void regions(cuda::Param<T> out, cuda::CParam<cuda::uchar> in, cudaTextureObject
     (final_relabel<T,n_per_thread>)<<<blocks,threads>>>(out,
                                                         in,
                                                         thrust::raw_pointer_cast(&labels[0]));
+
+    POST_LAUNCH_CHECK();
 
     cuda::memFree(tmp);
 }

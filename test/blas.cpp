@@ -49,7 +49,7 @@ void MatMulCheck(string TestFile)
             af_create_array(&a, &hData[0].front(), numDims[0].ndims(), numDims[0].get(), (af_dtype) af::dtype_traits<T>::af_type));
     af::dim4 atdims = numDims[0];
     {
-        dim_type f  =    atdims[0];
+        dim_t f  =    atdims[0];
         atdims[0]   =    atdims[1];
         atdims[1]   =    f;
     }
@@ -59,7 +59,7 @@ void MatMulCheck(string TestFile)
             af_create_array(&b, &hData[1].front(), numDims[1].ndims(), numDims[1].get(), (af_dtype) af::dtype_traits<T>::af_type));
     af::dim4 btdims = numDims[1];
     {
-        dim_type f = btdims[0];
+        dim_t f = btdims[0];
         btdims[0] = btdims[1];
         btdims[1] = f;
     }
@@ -68,21 +68,21 @@ void MatMulCheck(string TestFile)
 
     vector<af_array> out(tests.size(), 0);
     if(isBVector) {
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[0] , aT, b,    AF_NO_TRANSPOSE,    AF_NO_TRANSPOSE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[1] , bT, a,   AF_NO_TRANSPOSE,    AF_NO_TRANSPOSE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[2] , b, a,    AF_TRANSPOSE,       AF_NO_TRANSPOSE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[3] , bT, aT,   AF_NO_TRANSPOSE,    AF_TRANSPOSE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[4] , b, aT,    AF_TRANSPOSE,       AF_TRANSPOSE));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[0] , aT, b,    AF_MAT_NONE,    AF_MAT_NONE));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[1] , bT, a,   AF_MAT_NONE,    AF_MAT_NONE));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[2] , b, a,    AF_MAT_TRANS,       AF_MAT_NONE));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[3] , bT, aT,   AF_MAT_NONE,    AF_MAT_TRANS));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[4] , b, aT,    AF_MAT_TRANS,       AF_MAT_TRANS));
     }
     else {
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[0] , a, b, AF_NO_TRANSPOSE,   AF_NO_TRANSPOSE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[1] , a, bT, AF_NO_TRANSPOSE,   AF_TRANSPOSE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[2] , a, bT, AF_TRANSPOSE,      AF_NO_TRANSPOSE));
-        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[3] , aT, bT, AF_TRANSPOSE,      AF_TRANSPOSE));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[0] , a, b, AF_MAT_NONE,   AF_MAT_NONE));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[1] , a, bT, AF_MAT_NONE,   AF_MAT_TRANS));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[2] , a, bT, AF_MAT_TRANS,      AF_MAT_NONE));
+        ASSERT_EQ(AF_SUCCESS, af_matmul( &out[3] , aT, bT, AF_MAT_TRANS,      AF_MAT_TRANS));
     }
 
     for(size_t i = 0; i < tests.size(); i++) {
-        dim_type elems;
+        dim_t elems;
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&elems, out[i]));
         vector<T> h_out(elems);
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void *)&h_out.front(), out[i]));
@@ -97,13 +97,13 @@ void MatMulCheck(string TestFile)
         }
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(a));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(aT));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(b));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(bT));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(aT));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(b));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(bT));
 
     for (size_t i = 0; i <  out.size(); i++) {
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(out[i]));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(out[i]));
     }
 }
 
@@ -144,13 +144,13 @@ void cppMatMulCheck(string TestFile)
 
     af::dim4 atdims = numDims[0];
     {
-        dim_type f  =    atdims[0];
+        dim_t f  =    atdims[0];
         atdims[0]   =    atdims[1];
         atdims[1]   =    f;
     }
     af::dim4 btdims = numDims[1];
     {
-        dim_type f = btdims[0];
+        dim_t f = btdims[0];
         btdims[0] = btdims[1];
         btdims[1] = f;
     }
@@ -160,21 +160,21 @@ void cppMatMulCheck(string TestFile)
 
     vector<af::array> out(tests.size());
     if(isBVector) {
-        out[0] = af::matmul(aT, b,    AF_NO_TRANSPOSE,    AF_NO_TRANSPOSE);
-        out[1] = af::matmul(bT, a,   AF_NO_TRANSPOSE,    AF_NO_TRANSPOSE);
-        out[2] = af::matmul(b, a,    AF_TRANSPOSE,       AF_NO_TRANSPOSE);
-        out[3] = af::matmul(bT, aT,   AF_NO_TRANSPOSE,    AF_TRANSPOSE);
-        out[4] = af::matmul(b, aT,    AF_TRANSPOSE,       AF_TRANSPOSE);
+        out[0] = af::matmul(aT, b,    AF_MAT_NONE,    AF_MAT_NONE);
+        out[1] = af::matmul(bT, a,   AF_MAT_NONE,    AF_MAT_NONE);
+        out[2] = af::matmul(b, a,    AF_MAT_TRANS,       AF_MAT_NONE);
+        out[3] = af::matmul(bT, aT,   AF_MAT_NONE,    AF_MAT_TRANS);
+        out[4] = af::matmul(b, aT,    AF_MAT_TRANS,       AF_MAT_TRANS);
     }
     else {
-        out[0] = af::matmul(a, b, AF_NO_TRANSPOSE,   AF_NO_TRANSPOSE);
-        out[1] = af::matmul(a, bT, AF_NO_TRANSPOSE,   AF_TRANSPOSE);
-        out[2] = af::matmul(a, bT, AF_TRANSPOSE,      AF_NO_TRANSPOSE);
-        out[3] = af::matmul(aT, bT, AF_TRANSPOSE,      AF_TRANSPOSE);
+        out[0] = af::matmul(a, b, AF_MAT_NONE,   AF_MAT_NONE);
+        out[1] = af::matmul(a, bT, AF_MAT_NONE,   AF_MAT_TRANS);
+        out[2] = af::matmul(a, bT, AF_MAT_TRANS,      AF_MAT_NONE);
+        out[3] = af::matmul(aT, bT, AF_MAT_TRANS,      AF_MAT_TRANS);
     }
 
     for(size_t i = 0; i < tests.size(); i++) {
-        dim_type elems = out[i].elements();
+        dim_t elems = out[i].elements();
         vector<T> h_out(elems);
         out[i].host((void*)&h_out.front());
 
@@ -207,4 +207,36 @@ TYPED_TEST(MatrixMultiply, SquareVector_CPP)
 TYPED_TEST(MatrixMultiply, RectangleVector_CPP)
 {
     cppMatMulCheck<TypeParam, true>(TEST_DIR"/blas/RectangleVector.test");
+}
+
+TYPED_TEST(MatrixMultiply, MultiGPUSquare_CPP)
+{
+    for(int i = 0; i < af::getDeviceCount(); i++) {
+        af::setDevice(i);
+        cppMatMulCheck<TypeParam, false>(TEST_DIR"/blas/Basic.test");
+    }
+}
+
+TYPED_TEST(MatrixMultiply, MultiGPUNonSquare_CPP)
+{
+    for(int i = 0; i < af::getDeviceCount(); i++) {
+        af::setDevice(i);
+        cppMatMulCheck<TypeParam, false>(TEST_DIR"/blas/NonSquare.test");
+    }
+}
+
+TYPED_TEST(MatrixMultiply, MultiGPUSquareVector_CPP)
+{
+    for(int i = 0; i < af::getDeviceCount(); i++) {
+        af::setDevice(i);
+        cppMatMulCheck<TypeParam, true>(TEST_DIR"/blas/SquareVector.test");
+    }
+}
+
+TYPED_TEST(MatrixMultiply, MultiGPURectangleVector_CPP)
+{
+    for(int i = 0; i < af::getDeviceCount(); i++) {
+        af::setDevice(i);
+        cppMatMulCheck<TypeParam, true>(TEST_DIR"/blas/RectangleVector.test");
+    }
 }

@@ -26,21 +26,21 @@ namespace cuda
         template<typename T>
         __global__
         void range_kernel(Param<T> out, const int dim,
-                          const dim_type blocksPerMatX, const dim_type blocksPerMatY)
+                          const int blocksPerMatX, const int blocksPerMatY)
         {
             const int mul0 = (dim == 0);
             const int mul1 = (dim == 1);
             const int mul2 = (dim == 2);
             const int mul3 = (dim == 3);
 
-            const dim_type oz = blockIdx.x / blocksPerMatX;
-            const dim_type ow = blockIdx.y / blocksPerMatY;
+            const int oz = blockIdx.x / blocksPerMatX;
+            const int ow = blockIdx.y / blocksPerMatY;
 
-            const dim_type blockIdx_x = blockIdx.x - oz * blocksPerMatX;
-            const dim_type blockIdx_y = blockIdx.y - ow * blocksPerMatY;
+            const int blockIdx_x = blockIdx.x - oz * blocksPerMatX;
+            const int blockIdx_y = blockIdx.y - ow * blocksPerMatY;
 
-            const dim_type xx = threadIdx.x + blockIdx_x * blockDim.x;
-            const dim_type yy = threadIdx.y + blockIdx_y * blockDim.y;
+            const int xx = threadIdx.x + blockIdx_x * blockDim.x;
+            const int yy = threadIdx.y + blockIdx_y * blockDim.y;
 
             if(xx >= out.dims[0] ||
                yy >= out.dims[1] ||
@@ -48,19 +48,19 @@ namespace cuda
                ow >= out.dims[3])
                 return;
 
-            const dim_type ozw = ow * out.strides[3] + oz * out.strides[2];
+            const int ozw = ow * out.strides[3] + oz * out.strides[2];
 
-            T val = mul3 * ow + mul2 * oz;
+            T valZW = (mul3 * ow) + (mul2 * oz);
 
-            const dim_type incy = blocksPerMatY * blockDim.y;
-            const dim_type incx = blocksPerMatX * blockDim.x;
+            const int incy = blocksPerMatY * blockDim.y;
+            const int incx = blocksPerMatX * blockDim.x;
 
-            for(dim_type oy = yy; oy < out.dims[1]; oy += incy) {
-                val += mul1 * oy;
-                dim_type oyzw = ozw + oy * out.strides[1];
-                for(dim_type ox = xx; ox < out.dims[0]; ox += incx) {
-                    dim_type oidx = oyzw + ox;
-                    val += ox * mul0;
+            for(int oy = yy; oy < out.dims[1]; oy += incy) {
+                T valYZW = valZW + (mul1 * oy);
+                int oyzw = ozw + oy * out.strides[1];
+                for(int ox = xx; ox < out.dims[0]; ox += incx) {
+                    int oidx = oyzw + ox;
+                    T val = valYZW + (ox * mul0);
 
                     out.ptr[oidx] = val;
                 }
@@ -76,8 +76,8 @@ namespace cuda
         {
             dim3 threads(TX, TY, 1);
 
-            dim_type blocksPerMatX = divup(out.dims[0], TILEX);
-            dim_type blocksPerMatY = divup(out.dims[1], TILEY);
+            int blocksPerMatX = divup(out.dims[0], TILEX);
+            int blocksPerMatY = divup(out.dims[1], TILEY);
             dim3 blocks(blocksPerMatX * out.dims[2],
                         blocksPerMatY * out.dims[3],
                         1);

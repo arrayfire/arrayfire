@@ -34,8 +34,8 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type THREADS_X = 16;
-static const dim_type THREADS_Y = 16;
+static const int THREADS_X = 16;
+static const int THREADS_Y = 16;
 
 template<typename inType, typename outType, bool isColor>
 void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
@@ -68,30 +68,27 @@ void bilateral(Param out, const Param in, float s_sigma, float c_sigma)
                                        LocalSpaceArg,
                                        LocalSpaceArg,
                                        float, float,
-                                       dim_type, dim_type
+                                       int, int, int
                                       >(*bilKernels[device]);
 
         NDRange local(THREADS_X, THREADS_Y);
 
-        dim_type blk_x = divup(in.info.dims[0], THREADS_X);
-        dim_type blk_y = divup(in.info.dims[1], THREADS_Y);
+        int blk_x = divup(in.info.dims[0], THREADS_X);
+        int blk_y = divup(in.info.dims[1], THREADS_Y);
 
-        dim_type bCount= blk_x * in.info.dims[2];
-        if (isColor)
-            bCount *= in.info.dims[3];
-
-        NDRange global(bCount*THREADS_X, blk_y*THREADS_Y);
+        NDRange global(blk_x*in.info.dims[2]*THREADS_X,
+                       blk_y*in.info.dims[3]*THREADS_Y);
 
         // calculate local memory size
-        dim_type radius = (dim_type)std::max(s_sigma * 1.5f, 1.f);
-        dim_type num_shrd_elems    = (THREADS_X + 2 * radius) * (THREADS_Y + 2 * radius);
-        dim_type num_gauss_elems   = (2*radius+1)*(2*radius+1);
+        int radius = (int)std::max(s_sigma * 1.5f, 1.f);
+        int num_shrd_elems    = (THREADS_X + 2 * radius) * (THREADS_Y + 2 * radius);
+        int num_gauss_elems   = (2*radius+1)*(2*radius+1);
 
         bilateralOp(EnqueueArgs(getQueue(), global, local),
                     *out.data, out.info, *in.data, in.info,
                     cl::Local(num_shrd_elems*sizeof(outType)),
                     cl::Local(num_gauss_elems*sizeof(outType)),
-                    s_sigma, c_sigma, num_shrd_elems, blk_x);
+                    s_sigma, c_sigma, num_shrd_elems, blk_x, blk_y);
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {

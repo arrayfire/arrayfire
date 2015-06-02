@@ -9,6 +9,7 @@
 
 #include <af/image.h>
 #include <af/index.h>
+#include <af/data.h>
 #include <af/defines.h>
 #include <err_common.hpp>
 #include <handle.hpp>
@@ -22,7 +23,7 @@
 using namespace detail;
 
 template<typename T, typename hType>
-static af_array histequal(const af_array& in, const af_array& hist)
+static af_array hist_equal(const af_array& in, const af_array& hist)
 {
     const Array<T> input = getArray<T>(in);
 
@@ -32,7 +33,7 @@ static af_array histequal(const af_array& in, const af_array& hist)
     Array<float> fHist  = cast<float>(getArray<hType>(hist));
 
     dim4 hDims = fHist.dims();
-    dim_type grayLevels = fHist.elements();
+    dim_t grayLevels = fHist.elements();
 
     Array<float> cdf = scan<af_add_t, float, float>(fHist, 0);
 
@@ -52,13 +53,14 @@ static af_array histequal(const af_array& in, const af_array& hist)
     Array<float> idxArr  = lookup<float, T>(normCdf, getArray<T>(vInput), 0);
 
     Array<T> result = cast<T>(idxArr);
+    result.modDims(input.dims());
 
-    AF_CHECK(af_destroy_array(vInput));
+    AF_CHECK(af_release_array(vInput));
 
     return getHandle<T>(result);
 }
 
-af_err af_histequal(af_array *out, const af_array in, const af_array hist)
+af_err af_hist_equal(af_array *out, const af_array in, const af_array hist)
 {
     try {
         ArrayInfo dataInfo = getInfo(in);
@@ -71,11 +73,11 @@ af_err af_histequal(af_array *out, const af_array in, const af_array hist)
 
         af_array output = 0;
         switch(dataType) {
-            case f64: output = histequal<double, uint>(in, hist); break;
-            case f32: output = histequal<float , uint>(in, hist); break;
-            case s32: output = histequal<int   , uint>(in, hist); break;
-            case u32: output = histequal<uint  , uint>(in, hist); break;
-            case u8 : output = histequal<uchar , uint>(in, hist); break;
+            case f64: output = hist_equal<double, uint>(in, hist); break;
+            case f32: output = hist_equal<float , uint>(in, hist); break;
+            case s32: output = hist_equal<int   , uint>(in, hist); break;
+            case u32: output = hist_equal<uint  , uint>(in, hist); break;
+            case u8 : output = hist_equal<uchar , uint>(in, hist); break;
             default : TYPE_ERROR(1, dataType);
         }
         std::swap(*out,output);

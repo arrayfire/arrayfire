@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/index.h>
+#include <af/data.h>
 #include <af/blas.h>
 #include <err_common.hpp>
 #include <handle.hpp>
@@ -44,7 +44,7 @@ af_err af_reorder(af_array *out, const af_array in, const af::dim4 &rdims)
         // i = 3 => 1 found and cond is true so alldims[1] = -1
         // rdims = {2, 0, 3, 2} // Failure case
         // i = 3 => 2 found so cond is false (since alldims[2] = -1 when i = 0) so failed.
-        int allDims[] = {0, 1, 2, 3};
+        dim_t allDims[] = {0, 1, 2, 3};
         for(int i = 0; i < 4; i++) {
             DIM_ASSERT(i + 2, rdims[i] == allDims[rdims[i]]);
             allDims[rdims[i]] = -1;

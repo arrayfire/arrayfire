@@ -32,13 +32,13 @@ namespace opencl
     namespace kernel
     {
         // Kernel Launch Config Values
-        static const dim_type TX = 32;
-        static const dim_type TY = 8;
-        static const dim_type TILEX = 128;
-        static const dim_type TILEY = 32;
+        static const int TX = 32;
+        static const int TY = 8;
+        static const int TILEX = 128;
+        static const int TILEY = 32;
 
         template<typename T>
-        void shift(Param out, const Param in, const dim_type *sdims)
+        void shift(Param out, const Param in, const int *sdims)
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -61,23 +61,23 @@ namespace opencl
                 });
 
                 auto shiftOp = make_kernel<Buffer, const Buffer, const KParam, const KParam,
-                                          const dim_type, const dim_type, const dim_type, const dim_type,
-                                          const dim_type, const dim_type> (*shiftKernels[device]);
+                                          const int, const int, const int, const int,
+                                          const int, const int> (*shiftKernels[device]);
 
                 NDRange local(TX, TY, 1);
 
-                dim_type blocksPerMatX = divup(out.info.dims[0], TILEX);
-                dim_type blocksPerMatY = divup(out.info.dims[1], TILEY);
+                int blocksPerMatX = divup(out.info.dims[0], TILEX);
+                int blocksPerMatY = divup(out.info.dims[1], TILEY);
                 NDRange global(local[0] * blocksPerMatX * out.info.dims[2],
                                local[1] * blocksPerMatY * out.info.dims[3],
                                1);
 
-                dim_type sdims_[4];
+                int sdims_[4];
                 // Need to do this because we are mapping output to input in the kernel
                 for(int i = 0; i < 4; i++) {
                     // sdims_[i] will always be positive and always [0, oDims[i]].
                     // Negative shifts are converted to position by going the other way round
-                    sdims_[i] = -(sdims[i] % out.info.dims[i]) + out.info.dims[i] * (sdims[i] > 0);
+                    sdims_[i] = -(sdims[i] % (int)out.info.dims[i]) + out.info.dims[i] * (sdims[i] > 0);
                     assert(sdims_[i] >= 0 && sdims_[i] <= out.info.dims[i]);
                 }
 

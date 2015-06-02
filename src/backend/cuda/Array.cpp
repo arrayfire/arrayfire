@@ -14,6 +14,7 @@
 #include <JIT/BufferNode.hpp>
 #include <scalar.hpp>
 #include <memory.hpp>
+#include <platform.hpp>
 
 using af::dim4;
 
@@ -27,14 +28,14 @@ namespace cuda
 
     template<typename T>
     Array<T>::Array(af::dim4 dims) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
         node(), ready(true), offset(0), owner(true)
     {}
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data, bool is_device) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data((is_device ? (T *)in_data : memAlloc<T>(dims.elements())), memFree<T>),
         data_dims(dims),
         node(), ready(true), offset(0), owner(true)
@@ -46,7 +47,7 @@ namespace cuda
 
     template<typename T>
     Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &strides) :
-        ArrayInfo(dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(parent.getDevId(), dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
         data(parent.getData()), data_dims(parent.getDataDims()),
         node(), ready(true),
         offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
@@ -55,7 +56,7 @@ namespace cuda
 
     template<typename T>
     Array<T>::Array(Param<T> &tmp) :
-        ArrayInfo(af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3]),
+        ArrayInfo(getActiveDeviceId(), af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3]),
                   af::dim4(0, 0, 0, 0),
                   af::dim4(tmp.strides[0], tmp.strides[1], tmp.strides[2], tmp.strides[3]),
                   (af_dtype)dtype_traits<T>::af_type),
@@ -67,7 +68,7 @@ namespace cuda
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(-1, dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(), data_dims(dims),
         node(n), ready(false), offset(0), owner(true)
     {
@@ -79,6 +80,7 @@ namespace cuda
     {
         if (isReady()) return;
 
+        this->setId(getActiveDeviceId());
         data = shared_ptr<T>(memAlloc<T>(elements()),
                              memFree<T>);
 
@@ -184,9 +186,9 @@ namespace cuda
         dim4 dDims = parent.getDataDims();
         dim4 pDims = parent.dims();
 
-        dim4 dims   = af::toDims  (index, pDims);
-        dim4 offset = af::toOffset(index, dDims);
-        dim4 stride = af::toStride (index, dDims);
+        dim4 dims   = toDims  (index, pDims);
+        dim4 offset = toOffset(index, dDims);
+        dim4 stride = toStride (index, dDims);
 
         Array<T> out = Array<T>(parent, dims, offset, stride);
 
@@ -221,6 +223,40 @@ namespace cuda
         A.eval();
     }
 
+    template<typename T>
+    void
+    writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes)
+    {
+        if (!arr.isOwner()) {
+            arr = createEmptyArray<T>(arr.dims());
+        }
+
+        T *ptr = arr.get();
+
+        CUDA_CHECK(cudaMemcpy(ptr + arr.getOffset(), data,
+                              bytes,
+                              cudaMemcpyHostToDevice));
+
+        return;
+    }
+
+    template<typename T>
+    void
+    writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
+    {
+        if (!arr.isOwner()) {
+            arr = createEmptyArray<T>(arr.dims());
+        }
+
+        T *ptr = arr.get();
+
+        CUDA_CHECK(cudaMemcpy(ptr + arr.getOffset(), data,
+                              bytes,
+                              cudaMemcpyDeviceToDevice));
+
+        return;
+    }
+
 #define INSTANTIATE(T)                                                  \
     template       Array<T>  createHostDataArray<T>   (const dim4 &size, const T * const data); \
     template       Array<T>  createDeviceDataArray<T> (const dim4 &size, const void *data); \
@@ -237,6 +273,8 @@ namespace cuda
     template       Array<T>::~Array        ();                          \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
+    template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
+    template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

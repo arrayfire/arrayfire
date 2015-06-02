@@ -23,140 +23,129 @@ namespace cpu
 {
 
 template<int rank>
-void computeDims(int *rdims, const dim4 &idims)
+void computeDims(int rdims[rank], const dim4 &idims)
 {
-    if (rank==3) {
-        rdims[0] = idims[2];
-        rdims[1] = idims[1];
-        rdims[2] = idims[0];
-    } else if(rank==2) {
-        rdims[0] = idims[1];
-        rdims[1] = idims[0];
-    } else {
-        rdims[0] = idims[0];
+    for (int i = 0; i < rank; i++) {
+        rdims[i] = idims[(rank -1) - i];
     }
 }
 
-#define TRANSFORM(FUNC, T, CAST_T, PREFIX, DIRECTION)               \
-    template<> void FUNC##w_common<T>(Array<T> &arr, int rank)      \
-    {                                                               \
-        int rank_dims[3];                                           \
-        const dim4 dims = arr.dims();                               \
-        switch(rank) {                                              \
-            case 1: computeDims<1>(rank_dims, dims); break;         \
-            case 2: computeDims<2>(rank_dims, dims); break;         \
-            case 3: computeDims<3>(rank_dims, dims); break;         \
-        }                                                           \
-        const dim4 strides = arr.strides();                         \
-        PREFIX##_plan plan = PREFIX##_plan_many_dft  (              \
-                                            rank,                   \
-                                            rank_dims,              \
-                                            (int)dims[rank],        \
-                                            (CAST_T*)arr.get(),     \
-                                            NULL, (int)strides[0],  \
-                                            (int)strides[rank],     \
-                                            (CAST_T*)arr.get(),     \
-                                            NULL, (int)strides[0],  \
-                                            (int)strides[rank],     \
-                                            DIRECTION,              \
-                                            FFTW_ESTIMATE);         \
-        PREFIX##_execute(plan);                                     \
-        PREFIX##_destroy_plan(plan);                                \
+template<typename T>
+struct fftw_transform;
+
+#define TRANSFORM(PRE, TY)                                              \
+    template<>                                                          \
+    struct fftw_transform<TY>                                           \
+    {                                                                   \
+        typedef PRE##_plan plan_t;                                      \
+        typedef PRE##_complex ctype_t;                                  \
+                                                                        \
+        template<typename... Args>                                      \
+            plan_t create(Args... args)                                 \
+        { return PRE##_plan_many_dft(args...); }                        \
+        void execute(plan_t plan) { return PRE##_execute(plan); }       \
+        void destroy(plan_t plan) { return PRE##_destroy_plan(plan); }  \
+    };                                                                  \
+
+
+TRANSFORM(fftwf, cfloat)
+TRANSFORM(fftw, cdouble)
+
+template<typename T, int rank, int direction>
+void fft_common(Array <T> &out, const Array<T> &in)
+{
+    int in_dims[rank];
+    int in_embed[rank];
+    int out_embed[rank];
+
+    const dim4 idims = in.dims();
+
+    computeDims<rank>(in_dims  , idims);
+    computeDims<rank>(in_embed , in.getDataDims());
+    computeDims<rank>(out_embed, out.getDataDims());
+
+    const dim4 istrides = in.strides();
+    const dim4 ostrides = out.strides();
+
+    typedef typename fftw_transform<T>::ctype_t ctype_t;
+    typename fftw_transform<T>::plan_t plan;
+
+    fftw_transform<T> transform;
+
+    int batch = 1;
+    for (int i = rank; i < 4; i++) {
+        batch *= idims[i];
     }
 
-template<typename T>
-void fftw_common(Array<T> &arr, int rank)
-{
-    CPU_NOT_SUPPORTED();
+    plan = transform.create(rank,
+                            in_dims,
+                            (int)batch,
+                            (ctype_t *)in.get(),
+                            in_embed, (int)istrides[0],
+                            (int)istrides[rank],
+                            (ctype_t *)out.get(),
+                            out_embed, (int)ostrides[0],
+                            (int)ostrides[rank],
+                            direction ? FFTW_FORWARD : FFTW_BACKWARD,
+                            FFTW_ESTIMATE);
+
+    transform.execute(plan);
+    transform.destroy(plan);
+
 }
 
-template<typename T>
-void ifftw_common(Array<T> &arr, int rank)
+void computePaddedDims(dim4 &pdims,
+                       const dim4 &idims,
+                       const dim_t npad,
+                       dim_t const * const pad)
 {
-    CPU_NOT_SUPPORTED();
-}
-
-TRANSFORM( fft,  cfloat, fftwf_complex, fftwf,  FFTW_FORWARD);
-TRANSFORM( fft, cdouble, fftw_complex , fftw ,  FFTW_FORWARD);
-TRANSFORM(ifft,  cfloat, fftwf_complex, fftwf, FFTW_BACKWARD);
-TRANSFORM(ifft, cdouble, fftw_complex , fftw , FFTW_BACKWARD);
-
-template<int rank>
-void computePaddedDims(dim4 &pdims, dim_type const * const pad)
-{
-    if (rank==1) {
-        pdims[0] = pad[0];
-    } else if (rank==2) {
-        pdims[0] = pad[0];
-        pdims[1] = pad[1];
-    } else if (rank==3) {
-        pdims[0] = pad[0];
-        pdims[1] = pad[1];
-        pdims[2] = pad[2];
+    for (int i = 0; i < 4; i++) {
+        pdims[i] = (i < (int)npad) ? pad[i] : idims[i];
     }
 }
 
 template<typename inType, typename outType, int rank, bool isR2C>
-Array<outType> fft(Array<inType> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
+Array<outType> fft(Array<inType> const &in, double norm_factor, dim_t const npad, dim_t const * const pad)
 {
-    ARG_ASSERT(1, ((in.isOwner()==true) && "fft: Sub-Arrays not supported yet."));
+    ARG_ASSERT(1, rank >= 1 && rank <= 3);
 
     dim4 pdims(1);
+    computePaddedDims(pdims, in.dims(), npad, pad);
 
-    switch(rank) {
-        case 1 : computePaddedDims<1>(pdims, pad); break;
-        case 2 : computePaddedDims<2>(pdims, pad); break;
-        case 3 : computePaddedDims<3>(pdims, pad); break;
-        default: AF_ERROR("invalid rank", AF_ERR_SIZE);
-    }
-
-    pdims[rank] = in.dims()[rank];
-
-    Array<outType> ret = padArray<inType, outType>(in, (npad>0 ? pdims : in.dims()));
-
-    fftw_common<outType>(ret, rank);
-
+    Array<outType> ret = padArray<inType, outType>(in, pdims);
+    fft_common<outType, rank, true>(ret, ret);
     return ret;
 }
 
 template<typename T, int rank>
-Array<T> ifft(Array<T> const &in, double norm_factor, dim_type const npad, dim_type const * const pad)
+Array<T> ifft(Array<T> const &in, double norm_factor, dim_t const npad, dim_t const * const pad)
 {
-    ARG_ASSERT(1, ((in.isOwner()==true) && "ifft: Sub-Arrays not supported yet."));
+    ARG_ASSERT(1, rank >= 1 && rank <= 3);
 
     dim4 pdims(1);
+    computePaddedDims(pdims, in.dims(), npad, pad);
 
-    switch(rank) {
-        case 1 : computePaddedDims<1>(pdims, pad); break;
-        case 2 : computePaddedDims<2>(pdims, pad); break;
-        case 3 : computePaddedDims<3>(pdims, pad); break;
-        default: AF_ERROR("invalid rank", AF_ERR_SIZE);
-    }
-
-    pdims[rank] = in.dims()[rank];
-
-    Array<T> ret = padArray<T, T>(in, (npad>0 ? pdims : in.dims()), scalar<T>(0), norm_factor);
-
-    ifftw_common<T>(ret, rank);
+    Array<T> ret = padArray<T, T>(in, pdims, scalar<T>(0), norm_factor);
+    fft_common<T, rank, false>(ret, ret);
 
     return ret;
 }
 
 #define INSTANTIATE1(T1, T2)\
-    template Array<T2> fft <T1, T2, 1, true >(const Array<T1> &in, double normalize, dim_type const npad, dim_type const * const pad); \
-    template Array<T2> fft <T1, T2, 2, true >(const Array<T1> &in, double normalize, dim_type const npad, dim_type const * const pad); \
-    template Array<T2> fft <T1, T2, 3, true >(const Array<T1> &in, double normalize, dim_type const npad, dim_type const * const pad);
+    template Array<T2> fft <T1, T2, 1, true >(const Array<T1> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
+    template Array<T2> fft <T1, T2, 2, true >(const Array<T1> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
+    template Array<T2> fft <T1, T2, 3, true >(const Array<T1> &in, double norm_factor, dim_t const npad, dim_t const * const pad);
 
 INSTANTIATE1(float  , cfloat )
 INSTANTIATE1(double , cdouble)
 
 #define INSTANTIATE2(T)\
-    template Array<T> fft <T, T, 1, false>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad); \
-    template Array<T> fft <T, T, 2, false>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad); \
-    template Array<T> fft <T, T, 3, false>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad); \
-    template Array<T> ifft<T, 1>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad); \
-    template Array<T> ifft<T, 2>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad); \
-    template Array<T> ifft<T, 3>(const Array<T> &in, double normalize, dim_type const npad, dim_type const * const pad);
+    template Array<T> fft <T, T, 1, false>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
+    template Array<T> fft <T, T, 2, false>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
+    template Array<T> fft <T, T, 3, false>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
+    template Array<T> ifft<T, 1>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
+    template Array<T> ifft<T, 2>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
+    template Array<T> ifft<T, 3>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad);
 
 INSTANTIATE2(cfloat )
 INSTANTIATE2(cdouble)

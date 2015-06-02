@@ -16,14 +16,28 @@ namespace kernel
 {
 
 template<typename T, typename aT, bool expand>
-void conv3(const conv_kparam_t& p, Param& out, const Param& sig, const Param& filt)
+void conv3(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt)
 {
-    convNHelper<T, aT, 3, expand>(p, out, sig, filt);
+    size_t se_size = filt.info.dims[0] * filt.info.dims[1] * filt.info.dims[2] * sizeof(aT);
+    p.impulse = bufferAlloc(se_size);
+    int f0Off = filt.info.offset;
+
+    for (int b3=0; b3<filt.info.dims[3]; ++b3) {
+        int f3Off = b3 * filt.info.strides[3];
+        // FIXME: if the filter array is strided, direct copy of symbols
+        // might cause issues
+        getQueue().enqueueCopyBuffer(*filt.data, *p.impulse, (f0Off + f3Off)*sizeof(aT), 0, se_size);
+
+        p.o[2] = (p.outHasNoOffset ? 0 : b3);
+        p.s[2] = (p.inHasNoOffset ? 0 : b3);
+
+        convNHelper<T, aT, 3, expand>(p, out, sig, filt);
+    }
 }
 
 #define INSTANTIATE(T, accT)  \
-    template void conv3<T, accT, true >(const conv_kparam_t& p, Param& out, const Param& sig, const Param& filt); \
-    template void conv3<T, accT, false>(const conv_kparam_t& p, Param& out, const Param& sig, const Param& filt); \
+    template void conv3<T, accT, true >(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt); \
+    template void conv3<T, accT, false>(conv_kparam_t& p, Param& out, const Param& sig, const Param& filt); \
 
 INSTANTIATE(cdouble, cdouble)
 INSTANTIATE(cfloat ,  cfloat)

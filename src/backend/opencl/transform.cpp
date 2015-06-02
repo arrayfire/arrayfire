@@ -21,10 +21,6 @@ namespace opencl
                        const af::dim4 &odims,
                        const af_interp_type method, const bool inverse)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
         Array<T> out = createEmptyArray<T>(odims);
 
         if(inverse) {
@@ -73,5 +69,8 @@ namespace opencl
     INSTANTIATE(cdouble)
     INSTANTIATE(int)
     INSTANTIATE(uint)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
     INSTANTIATE(uchar)
+    INSTANTIATE(char)
 }

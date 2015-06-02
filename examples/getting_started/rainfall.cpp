@@ -31,7 +31,7 @@ int main(int argc, char **argv)
 {
     try {
         int device = argc > 1 ? atoi(argv[1]) : 0;
-        af::deviceset(device);
+        af::setDevice(device);
         af::info();
 
         int days = 9, sites = 4;
@@ -65,14 +65,6 @@ int main(int argc, char **argv)
         af_print(per_day);
 
         printf("number of days over five: %g\n", sum<float>(per_day > 5));
-
-        array per_site = constant(0, sites);
-        gfor (seq s, sites)
-            per_site(s) = sum(measurement * (site == s));
-
-        printf("total rainfall at each site:\n");
-        af_print(per_site);
-
     } catch (af::exception &e) {
         fprintf(stderr, "%s\n", e.what());
         throw;

@@ -32,8 +32,8 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type THREADS_X = 16;
-static const dim_type THREADS_Y = 16;
+static const int THREADS_X = 16;
+static const int THREADS_Y = 16;
 
 template<typename inType, typename outType, af_match_type mType, bool needMean>
 void matchTemplate(Param out, const Param srch, const Param tmplt)
@@ -72,18 +72,18 @@ void matchTemplate(Param out, const Param srch, const Param tmplt)
 
         NDRange local(THREADS_X, THREADS_Y);
 
-        dim_type blk_x = divup(srch.info.dims[0], THREADS_X);
-        dim_type blk_y = divup(srch.info.dims[1], THREADS_Y);
+        int blk_x = divup(srch.info.dims[0], THREADS_X);
+        int blk_y = divup(srch.info.dims[1], THREADS_Y);
 
-        NDRange global(blk_x * srch.info.dims[2] * THREADS_X, blk_y * THREADS_Y);
+        NDRange global(blk_x * srch.info.dims[2] * THREADS_X, blk_y * srch.info.dims[3] * THREADS_Y);
 
         auto matchImgOp = make_kernel<Buffer, KParam,
                                        Buffer, KParam,
                                        Buffer, KParam,
-                                       dim_type> (*mtKernels[device]);
+                                       int, int> (*mtKernels[device]);
 
         matchImgOp(EnqueueArgs(getQueue(), global, local),
-                    *out.data, out.info, *srch.data, srch.info, *tmplt.data, tmplt.info, blk_x);
+                    *out.data, out.info, *srch.data, srch.info, *tmplt.data, tmplt.info, blk_x, blk_y);
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {

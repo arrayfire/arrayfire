@@ -1,0 +1,21 @@
+/**
+
+\addtogroup  graphics_func
+@{
+
+\defgroup gfx_func_window Window Functions
+@{
+
+Window creation, modification and destruction functions.
+
+@}
+
+\defgroup gfx_func_draw Rendering Functions
+@{
+
+Rendering functions to draw images, plots etc.
+
+@}
+
+@}
+*/

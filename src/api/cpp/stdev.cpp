@@ -9,6 +9,7 @@
 
 #include <af/dim4.hpp>
 #include <af/statistics.h>
+#include <af/array.h>
 #include "error.hpp"
 #include "common.hpp"
 
@@ -27,14 +28,14 @@ template<> AFAPI af_cfloat stdev(const array& in)
 {
     double real, imag;
     AF_THROW(af_stdev_all(&real, &imag, in.get()));
-    return std::complex<float>((float)real, (float)imag);
+    return af_cfloat((float)real, (float)imag);
 }
 
 template<> AFAPI af_cdouble stdev(const array& in)
 {
     double real, imag;
     AF_THROW(af_stdev_all(&real, &imag, in.get()));
-    return std::complex<double>(real, imag);
+    return af_cdouble(real, imag);
 }
 
 INSTANTIATE_STDEV(float);
@@ -46,7 +47,7 @@ INSTANTIATE_STDEV(unsigned char);
 
 #undef INSTANTIATE_STDEV
 
-array stdev(const array& in, dim_type dim)
+array stdev(const array& in, const dim_t dim)
 {
     af_array temp = 0;
     AF_THROW(af_stdev(&temp, in.get(), getFNSD(dim, in.dims())));

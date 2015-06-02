@@ -36,7 +36,7 @@ class Rotate : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double> TestTypes;
+typedef ::testing::Types<float, double, cfloat, cdouble, int, intl, char> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Rotate, TestTypes);
@@ -88,10 +88,11 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
     // ASSERT_EQ (in comments below) to pass for CUDA & OpenCL backends
     size_t fail_count = 0;
     for(size_t i = 0; i < nElems; i++) {
-        if(abs((double)(tests[resultIdx][i] - outData[i])) > 0.001) // increased from 0.0001 because of VS FP errors
+        if(abs((tests[resultIdx][i] - (T)outData[i])) > 0.001) {
             fail_count++;
+        }
     }
-    ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.02));
+    ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.02)) << "where count = " << fail_count << std::endl;
 
     //for (size_t elIter = 0; elIter < nElems; ++elIter) {
     //    ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
@@ -101,9 +102,9 @@ void rotateTest(string pTestFile, const unsigned resultIdx, const float angle, c
     // Delete
     delete[] outData;
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(outArray  != 0) af_release_array(outArray);
+    if(tempArray != 0) af_release_array(tempArray);
 }
 
 #define ROTATE_INIT(desc, file, resultIdx, angle, crop, recenter)                               \
@@ -199,7 +200,7 @@ TEST(Rotate, CPP)
     // ASSERT_EQ (in comments below) to pass for CUDA & OpenCL backends
     size_t fail_count = 0;
     for(size_t i = 0; i < nElems; i++) {
-        if(abs(tests[resultIdx][i] - outData[i]) > 0.0001)
+        if(fabs(tests[resultIdx][i] - outData[i]) > 0.0001)
             fail_count++;
     }
     ASSERT_EQ(true, ((fail_count / (float)nElems) < 0.01));

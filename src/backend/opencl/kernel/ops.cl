@@ -31,7 +31,7 @@ T binOp(T lhs, T rhs)
 #else
 T binOp(T lhs, T rhs)
 {
-    return lhs + rhs;
+    return lhs * rhs;
 }
 #endif
 

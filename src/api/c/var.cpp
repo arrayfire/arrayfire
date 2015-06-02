@@ -24,7 +24,7 @@
 using namespace detail;
 
 template<typename inType, typename outType>
-static outType varAll(const af_array& in, bool isbiased)
+static outType varAll(const af_array& in, const bool isbiased)
 {
     Array<outType> input = cast<outType>(getArray<inType>(in));
 
@@ -63,13 +63,12 @@ static outType varAll(const af_array& in, const af_array weights)
 }
 
 template<typename inType, typename outType>
-static af_array var(const af_array& in, bool isbiased, int dim)
+static af_array var(const af_array& in, const bool isbiased, int dim)
 {
     Array<outType> input = cast<outType>(getArray<inType>(in));
     dim4 iDims = input.dims();
 
     Array<outType> meanArr = mean<outType>(input, dim);
-    dim4 oDims = meanArr.dims();
 
     /* now tile meanArr along dim and use it for variance computation */
     dim4 tileDims(1);
@@ -80,7 +79,7 @@ static af_array var(const af_array& in, bool isbiased, int dim)
     Array<outType> diff    = arithOp<outType, af_sub_t>(input, tMeanArr, tMeanArr.dims());
     Array<outType> diffSq  = arithOp<outType, af_mul_t>(diff, diff, diff.dims());
     Array<outType> redDiff = reduce<af_add_t, outType, outType>(diffSq, dim);
-    oDims = redDiff.dims();
+    dim4 oDims = redDiff.dims();
 
     Array<outType> divArr = createValueArray<outType>(oDims, scalar<outType>(isbiased ? iDims[dim] : iDims[dim]-1));
     Array<outType> result = arithOp<outType, af_div_t>(redDiff, divArr, redDiff.dims());
@@ -89,7 +88,7 @@ static af_array var(const af_array& in, bool isbiased, int dim)
 }
 
 template<typename inType, typename outType>
-static af_array var(const af_array& in, const af_array& weights, dim_type dim)
+static af_array var(const af_array& in, const af_array& weights, int dim)
 {
     typedef typename baseOutType<outType>::type bType;
 
@@ -115,7 +114,7 @@ static af_array var(const af_array& in, const af_array& weights, dim_type dim)
     return getHandle<outType>(result);
 }
 
-af_err af_var(af_array *out, const af_array in, bool isbiased, dim_type dim)
+af_err af_var(af_array *out, const af_array in, const bool isbiased, const dim_t dim)
 {
     try {
         ARG_ASSERT(2, (dim>=0 && dim<=3));
@@ -128,6 +127,8 @@ af_err af_var(af_array *out, const af_array in, bool isbiased, dim_type dim)
             case f32: output = var<float ,  float >(in, isbiased, dim); break;
             case s32: output = var<int   ,  float >(in, isbiased, dim); break;
             case u32: output = var<uint  ,  float >(in, isbiased, dim); break;
+            case s64: output = var<intl  ,  double>(in, isbiased, dim); break;
+            case u64: output = var<uintl ,  double>(in, isbiased, dim); break;
             case  u8: output = var<uchar ,  float >(in, isbiased, dim); break;
             case  b8: output = var<char  ,  float >(in, isbiased, dim); break;
             case c32: output = var<cfloat,  cfloat>(in, isbiased, dim); break;
@@ -140,7 +141,7 @@ af_err af_var(af_array *out, const af_array in, bool isbiased, dim_type dim)
     return AF_SUCCESS;
 }
 
-af_err af_var_weighted(af_array *out, const af_array in, const af_array weights, dim_type dim)
+af_err af_var_weighted(af_array *out, const af_array in, const af_array weights, const dim_t dim)
 {
     try {
         ARG_ASSERT(2, (dim>=0 && dim<=3));
@@ -158,6 +159,8 @@ af_err af_var_weighted(af_array *out, const af_array in, const af_array weights,
             case f32: output = var<float ,  float >(in, weights, dim); break;
             case s32: output = var<int   ,  float >(in, weights, dim); break;
             case u32: output = var<uint  ,  float >(in, weights, dim); break;
+            case s64: output = var<intl  ,  double>(in, weights, dim); break;
+            case u64: output = var<uintl ,  double>(in, weights, dim); break;
             case  u8: output = var<uchar ,  float >(in, weights, dim); break;
             case  b8: output = var<char  ,  float >(in, weights, dim); break;
             case c32: output = var<cfloat,  cfloat>(in, weights, dim); break;
@@ -170,7 +173,7 @@ af_err af_var_weighted(af_array *out, const af_array in, const af_array weights,
     return AF_SUCCESS;
 }
 
-af_err af_var_all(double *realVal, double *imagVal, const af_array in, bool isbiased)
+af_err af_var_all(double *realVal, double *imagVal, const af_array in, const bool isbiased)
 {
     try {
         ArrayInfo info = getInfo(in);
@@ -180,6 +183,8 @@ af_err af_var_all(double *realVal, double *imagVal, const af_array in, bool isbi
             case f32: *realVal = varAll<float , float >(in, isbiased); break;
             case s32: *realVal = varAll<int   , float >(in, isbiased); break;
             case u32: *realVal = varAll<uint  , float >(in, isbiased); break;
+            case s64: *realVal = varAll<intl  , double>(in, isbiased); break;
+            case u64: *realVal = varAll<uintl , double>(in, isbiased); break;
             case  u8: *realVal = varAll<uchar , float >(in, isbiased); break;
             case  b8: *realVal = varAll<char  , float >(in, isbiased); break;
             case c32: {
@@ -214,6 +219,8 @@ af_err af_var_all_weighted(double *realVal, double *imagVal, const af_array in, 
             case f32: *realVal = varAll<float , float >(in, weights); break;
             case s32: *realVal = varAll<int   , float >(in, weights); break;
             case u32: *realVal = varAll<uint  , float >(in, weights); break;
+            case s64: *realVal = varAll<intl  , double >(in, weights); break;
+            case u64: *realVal = varAll<uintl , double >(in, weights); break;
             case  u8: *realVal = varAll<uchar , float >(in, weights); break;
             case  b8: *realVal = varAll<char  , float >(in, weights); break;
             case c32: {

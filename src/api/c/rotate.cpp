@@ -54,9 +54,14 @@ af_err af_rotate(af_array *out, const af_array in, const float theta,
         switch(itype) {
             case f32: output = rotate<float  >(in, theta, odims, method);  break;
             case f64: output = rotate<double >(in, theta, odims, method);  break;
+            case c32: output = rotate<cfloat >(in, theta, odims, method);  break;
+            case c64: output = rotate<cdouble>(in, theta, odims, method);  break;
             case s32: output = rotate<int    >(in, theta, odims, method);  break;
             case u32: output = rotate<uint   >(in, theta, odims, method);  break;
+            case s64: output = rotate<intl   >(in, theta, odims, method);  break;
+            case u64: output = rotate<uintl  >(in, theta, odims, method);  break;
             case u8:  output = rotate<uchar  >(in, theta, odims, method);  break;
+            case b8:  output = rotate<uchar  >(in, theta, odims, method);  break;
             default:  TYPE_ERROR(1, itype);
         }
         std::swap(*out,output);

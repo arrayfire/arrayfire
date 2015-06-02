@@ -10,7 +10,6 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <map>
-#include <iostream>
 #include <stdexcept>
 #include <copy.hpp>
 #include <JIT/Node.hpp>
@@ -130,8 +129,8 @@ static Kernel getKernel(Node *node, bool is_linear)
     string funcName = getFuncName(node, is_linear, &is_dbl);
 
     typedef struct {
-        Program prog;
-        Kernel ker;
+        Program* prog;
+        Kernel* ker;
     } kc_entry_t;
 
     typedef std::map<string, kc_entry_t> kc_t;
@@ -146,16 +145,17 @@ static Kernel getKernel(Node *node, bool is_linear)
 
         const char *ker_strs[] = {jit_cl, jit_ker.c_str()};
         const int ker_lens[] = {jit_cl_len, (int)jit_ker.size()};
-
-        buildProgram(entry.prog, 2, ker_strs, ker_lens, is_dbl ? string(" -D USE_DOUBLE") :  string(""));
-        entry.ker = Kernel(entry.prog, funcName.c_str());
+        cl::Program prog;
+        buildProgram(prog, 2, ker_strs, ker_lens, is_dbl ? string(" -D USE_DOUBLE") :  string(""));
+        entry.prog = new cl::Program(prog);
+        entry.ker = new Kernel(*entry.prog, funcName.c_str());
 
         kernelCaches[device][funcName] = entry;
     } else {
         entry = idx->second;
     }
 
-    return entry.ker;
+    return *entry.ker;
 }
 
 void evalNodes(Param &out, Node *node)
@@ -202,7 +202,7 @@ void evalNodes(Param &out, Node *node)
 
         getQueue().enqueueNDRangeKernel(ker, cl::NullRange, global, local);
 
-    } catch (cl::Error ex) {
+    } catch (const cl::Error &ex) {
         CL_TO_AF_ERROR(ex);
     }
 

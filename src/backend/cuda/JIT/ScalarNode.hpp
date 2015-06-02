@@ -23,17 +23,15 @@ namespace JIT
     {
     private:
         T m_val;
-        bool m_set_arg;
     public:
 
         ScalarNode(T val)
             : Node(irname<T>(), afShortName<T>(false)),
-              m_val(val),
-              m_set_arg(false)
+              m_val(val)
         {
         }
 
-        bool isLinear(dim_type dims[4])
+        bool isLinear(dim_t dims[4])
         {
             return true;
         }

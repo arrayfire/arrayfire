@@ -26,19 +26,19 @@ namespace cuda
         template<typename T>
         __global__
         void gradient_kernel(Param<T> grad0, Param<T> grad1, CParam<T> in,
-                             const dim_type blocksPerMatX, const dim_type blocksPerMatY)
+                             const int blocksPerMatX, const int blocksPerMatY)
         {
-            const dim_type idz = blockIdx.x / blocksPerMatX;
-            const dim_type idw = blockIdx.y / blocksPerMatY;
+            const int idz = blockIdx.x / blocksPerMatX;
+            const int idw = blockIdx.y / blocksPerMatY;
 
-            const dim_type blockIdx_x = blockIdx.x - idz * blocksPerMatX;
-            const dim_type blockIdx_y = blockIdx.y - idw * blocksPerMatY;
+            const int blockIdx_x = blockIdx.x - idz * blocksPerMatX;
+            const int blockIdx_y = blockIdx.y - idw * blocksPerMatY;
 
-            const dim_type xB = blockIdx_x * blockDim.x;
-            const dim_type yB = blockIdx_y * blockDim.y;
+            const int xB = blockIdx_x * blockDim.x;
+            const int yB = blockIdx_y * blockDim.y;
 
-            const dim_type idx = threadIdx.x + xB;
-            const dim_type idy = threadIdx.y + yB;
+            const int idx = threadIdx.x + xB;
+            const int idy = threadIdx.y + yB;
 
             bool cond = (idx >= in.dims[0] || idy >= in.dims[1] ||
                          idz >= in.dims[2] || idw >= in.dims[3]);
@@ -46,13 +46,13 @@ namespace cuda
             int xmax = (TX > (in.dims[0] - xB)) ? (in.dims[0] - xB) : TX;
             int ymax = (TY > (in.dims[1] - yB)) ? (in.dims[1] - yB) : TY;
 
-            dim_type iIdx = idw * in.strides[3] + idz * in.strides[2]
+            int iIdx = idw * in.strides[3] + idz * in.strides[2]
                           + idy * in.strides[1] + idx;
 
-            dim_type g0dx = idw * grad0.strides[3] + idz * grad0.strides[2]
+            int g0dx = idw * grad0.strides[3] + idz * grad0.strides[2]
                           + idy * grad0.strides[1] + idx;
 
-            dim_type g1dx = idw * grad1.strides[3] + idz * grad1.strides[2]
+            int g1dx = idw * grad1.strides[3] + idz * grad1.strides[2]
                           + idy * grad1.strides[1] + idx;
 
             __shared__ T scratch[TY + 2][TX + 2];
@@ -101,8 +101,8 @@ namespace cuda
         {
             dim3 threads(TX, TY, 1);
 
-            dim_type blocksPerMatX = divup(in.dims[0], TX);
-            dim_type blocksPerMatY = divup(in.dims[1], TY);
+            int blocksPerMatX = divup(in.dims[0], TX);
+            int blocksPerMatY = divup(in.dims[1], TY);
             dim3 blocks(blocksPerMatX * in.dims[2],
                         blocksPerMatY * in.dims[3],
                         1);

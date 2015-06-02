@@ -36,7 +36,7 @@ namespace JIT
         {
         }
 
-        bool isLinear(dim_type dims[4])
+        bool isLinear(dim_t dims[4])
         {
             return m_lhs->isLinear(dims) && m_rhs->isLinear(dims);
         }

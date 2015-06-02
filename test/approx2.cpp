@@ -86,18 +86,18 @@ void approx2Test(string pTestFile, const unsigned resultIdx, const af_interp_typ
     size_t nElems = tests[resultIdx].size();
     bool ret = true;
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ret = (std::abs(tests[resultIdx][elIter] - outData[elIter]) < 0.001);
+        ret = (abs(tests[resultIdx][elIter] - outData[elIter]) < 0.001);
         ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
     }
 
     // Delete
     delete[] outData;
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(pos0Array != 0) af_destroy_array(pos0Array);
-    if(pos1Array != 0) af_destroy_array(pos1Array);
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(pos0Array != 0) af_release_array(pos0Array);
+    if(pos1Array != 0) af_release_array(pos1Array);
+    if(outArray  != 0) af_release_array(outArray);
+    if(tempArray != 0) af_release_array(tempArray);
 }
 
 #define APPROX2_INIT(desc, file, resultIdx, method)                               \
@@ -142,10 +142,10 @@ void approx2ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp
 
     ASSERT_EQ(err, af_approx2(&outArray, inArray, pos0Array, pos1Array, method, 0));
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(pos0Array != 0) af_destroy_array(pos0Array);
-    if(pos1Array != 0) af_destroy_array(pos1Array);
-    if(outArray  != 0) af_destroy_array(outArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(pos0Array != 0) af_release_array(pos0Array);
+    if(pos1Array != 0) af_release_array(pos1Array);
+    if(outArray  != 0) af_release_array(outArray);
 }
 
 #define APPROX2_ARGS(desc, file, resultIdx, method, err)                                            \
@@ -193,10 +193,10 @@ void approx2ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const 
         ASSERT_EQ(AF_SUCCESS, af_approx2(&outArray, inArray, pos0Array, pos1Array, method, 0));
     }
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(pos0Array != 0) af_destroy_array(pos0Array);
-    if(pos1Array != 0) af_destroy_array(pos1Array);
-    if(outArray  != 0) af_destroy_array(outArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(pos0Array != 0) af_release_array(pos0Array);
+    if(pos1Array != 0) af_release_array(pos1Array);
+    if(outArray  != 0) af_release_array(outArray);
 }
 
 #define APPROX2_ARGSP(desc, file, resultIdx, method)                                    \

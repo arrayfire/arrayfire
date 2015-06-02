@@ -1,0 +1,94 @@
+/**
+\addtogroup arrayfire_func
+@{
+
+\defgroup device_func_count getDeviceCount
+\ingroup device_mat
+
+\brief Gets the number of compute devices on the system
+
+Get the number of devices available for the current backend
+
+===============================================================================
+
+\defgroup device_func_get getDevice
+\ingroup device_mat
+
+\brief Get the current device ID
+
+Gets the ID of the current device
+
+===============================================================================
+
+\defgroup device_func_dbl isDoubleAvailable
+\ingroup device_mat
+
+\brief Check if double precision support is available for specified device
+
+These functions check if a device has support to perform double precision
+floating point operations
+
+===============================================================================
+
+\defgroup device_func_set setDevice
+\ingroup device_mat
+
+\brief Change current device to specified device
+
+These functions change the current device. Operations after this called will
+be performed on the set device.
+
+===============================================================================
+
+\defgroup device_func_sync sync
+\ingroup device_mat
+
+\brief Blocks until all operations on device are finished
+
+These functions block the calling thread until all of the device operations
+have finished.
+
+===============================================================================
+
+\defgroup device_func_alloc alloc
+\ingroup device_mat
+
+\brief Allocate memory using the ArrayFire memory manager
+
+This function will allocate memory on the device and return a pointer
+to it. The memory is allocated using ArrayFire's memory manager which
+has some different characteristics to standard method of memory
+allocation
+
+===============================================================================
+
+\defgroup device_func_pinned pinned
+\ingroup device_mat
+
+\brief Allocate pinned memory using ArrayFire's memory manager.
+
+These functions allocate page locked memory. This type of memory has better
+performance characteristics but require additional care because they are
+a limited resource.
+
+===============================================================================
+
+\defgroup device_func_free free
+\ingroup device_mat
+
+\brief Free device memory allocated by ArrayFire's memory manager
+
+These calls free the device or pinned memory. These functions need to be called
+
+===============================================================================
+
+\defgroup device_func_mem deviceMemInfo
+\ingroup device_mat
+
+\brief Memory manager related functions
+
+Memory manager related functions
+
+@}
+
+*/

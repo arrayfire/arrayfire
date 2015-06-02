@@ -1,3 +1,12 @@
+/*******************************************************
+ * Copyright (c) 2014, ArrayFire
+ * All rights reserved.
+ *
+ * This file is distributed under 3-clause BSD license.
+ * The complete license agreement can be obtained at:
+ * http://arrayfire.com/licenses/BSD-3-Clause
+ ********************************************************/
+
 #include "types.h"
 
 #define MATH_BASIC(fn, T)                       \
@@ -27,6 +36,7 @@ MATH(erfc)
 MATH(log)
 MATH(log10)
 MATH(log1p)
+MATH(log2)
 
 MATH(sqrt)
 MATH(cbrt)

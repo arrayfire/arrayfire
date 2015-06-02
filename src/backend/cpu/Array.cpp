@@ -10,10 +10,11 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <copy.hpp>
-#include <iostream>
 #include <TNJ/BufferNode.hpp>
 #include <TNJ/ScalarNode.hpp>
 #include <memory.hpp>
+#include <platform.hpp>
+#include <cstring>
 
 namespace cpu
 {
@@ -26,14 +27,14 @@ namespace cpu
 
     template<typename T>
     Array<T>::Array(dim4 dims):
-        ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(getActiveDeviceId(), dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
         node(), ready(true), offset(0), owner(true)
     { }
 
     template<typename T>
     Array<T>::Array(dim4 dims, const T * const in_data):
-        ArrayInfo(dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(getActiveDeviceId(), dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
         node(), ready(true), offset(0), owner(true)
     {
@@ -43,7 +44,7 @@ namespace cpu
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, TNJ::Node_ptr n) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(-1, dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(), data_dims(dims),
         node(n), ready(false), offset(0), owner(true)
     {
@@ -51,7 +52,7 @@ namespace cpu
 
     template<typename T>
     Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &strides) :
-        ArrayInfo(dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(parent.getDevId(), dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
         data(parent.getData()), data_dims(parent.getDataDims()),
         node(), ready(true),
         offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
@@ -63,23 +64,24 @@ namespace cpu
     {
         if (isReady()) return;
 
+        this->setId(getActiveDeviceId());
         data = std::shared_ptr<T>(memAlloc<T>(elements()), memFree<T>);
         T *ptr = data.get();
 
         dim4 ostrs = strides();
         dim4 odims = dims();
 
-        for (int w = 0; w < odims[3]; w++) {
-            dim_type offw = w * ostrs[3];
+        for (int w = 0; w < (int)odims[3]; w++) {
+            dim_t offw = w * ostrs[3];
 
-            for (int z = 0; z < odims[2]; z++) {
-                dim_type offz = z * ostrs[2] + offw;
+            for (int z = 0; z < (int)odims[2]; z++) {
+                dim_t offz = z * ostrs[2] + offw;
 
-                for (int y = 0; y < odims[1]; y++) {
-                    dim_type offy = y * ostrs[1] + offz;
+                for (int y = 0; y < (int)odims[1]; y++) {
+                    dim_t offy = y * ostrs[1] + offz;
 
-                    for (int x = 0; x < odims[0]; x++) {
-                        dim_type id = x + offy;
+                    for (int x = 0; x < (int)odims[0]; x++) {
+                        dim_t id = x + offy;
 
                         ptr[id] = *(T *)node->calc(x, y, z, w);
                     }
@@ -170,7 +172,7 @@ namespace cpu
 
         Node *n = node.get();
         n->getInfo(length, buf_count, bytes);
-        n->reset();
+        n->reset(false);
 
         if (length > MAX_TNJ_LEN ||
             buf_count >= MAX_BUFFERS ||
@@ -192,9 +194,9 @@ namespace cpu
         dim4 dDims = parent.getDataDims();
         dim4 pDims = parent.dims();
 
-        dim4 dims   = af::toDims  (index, pDims);
-        dim4 offset = af::toOffset(index, dDims);
-        dim4 stride = af::toStride (index, dDims);
+        dim4 dims   = toDims  (index, pDims);
+        dim4 offset = toOffset(index, dDims);
+        dim4 stride = toStride (index, dDims);
 
         Array<T> out = Array<T>(parent, dims, offset, stride);
 
@@ -225,6 +227,25 @@ namespace cpu
         A.eval();
     }
 
+    template<typename T>
+    void
+    writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes)
+    {
+        if(!arr.isOwner()) {
+            arr = createEmptyArray<T>(arr.dims());
+        }
+        memcpy(arr.get() + arr.getOffset(), data, bytes);
+    }
+
+    template<typename T>
+    void
+    writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
+    {
+        if(!arr.isOwner()) {
+            arr = createEmptyArray<T>(arr.dims());
+        }
+        memcpy(arr.get() + arr.getOffset(), (const T * const)data, bytes);
+    }
 
 #define INSTANTIATE(T)                                                  \
     template       Array<T>  createHostDataArray<T>   (const dim4 &size, const T * const data); \
@@ -242,6 +263,8 @@ namespace cpu
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
     template       TNJ::Node_ptr Array<T>::getNode() const;             \
+    template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
+    template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

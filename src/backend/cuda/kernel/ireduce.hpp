@@ -17,6 +17,9 @@
 #include <debug_cuda.hpp>
 #include "config.hpp"
 #include <memory.hpp>
+#include <boost/scoped_ptr.hpp>
+
+using boost::scoped_ptr;
 
 namespace cuda
 {
@@ -25,8 +28,8 @@ namespace kernel
 
     template<typename T> __host__ __device__ double cabs(const T in) { return (double)in; }
     static double __host__ __device__ cabs(const char in) { return (double)(in > 0); }
-    static double __host__ __device__ cabs(const cfloat in) { return (double)abs(in); }
-    static double __host__ __device__ cabs(const cdouble in) { return (double)abs(in); }
+    static double __host__ __device__ cabs(const cfloat &in) { return (double)abs(in); }
+    static double __host__ __device__ cabs(const cdouble &in) { return (double)abs(in); }
 
     template<af_op_t op, typename T>
     struct MinMaxOp
@@ -226,8 +229,8 @@ namespace kernel
         Param<T> tmp = out;
         uint *tlptr = olptr;
 
-        dim_type tmp_elements = 1;
         if (blocks_dim[dim] > 1) {
+            int tmp_elements = 1;
             tmp.dims[dim] = blocks_dim[dim];
 
             for (int k = 0; k < 4; k++) tmp_elements *= tmp.dims[k];
@@ -251,69 +254,18 @@ namespace kernel
 
     }
 
-    template<typename T>
-    __inline__ __device__ void assign_vol(volatile T *s_ptr_vol, T &tmp)
-    {
-        *s_ptr_vol = tmp;
-    }
-
-    template<> __inline__ __device__
-    void assign_vol<cfloat>(volatile cfloat *s_ptr_vol, cfloat &tmp)
-    {
-        s_ptr_vol->x = tmp.x;
-        s_ptr_vol->y = tmp.y;
-    }
-
-    template<> __inline__ __device__
-    void assign_vol<cdouble>(volatile cdouble *s_ptr_vol, cdouble &tmp)
-    {
-        s_ptr_vol->x = tmp.x;
-        s_ptr_vol->y = tmp.y;
-    }
-
-    template<typename T>
-    __inline__ __device__ void assign_vol(T &dst, volatile T *s_ptr_vol)
-    {
-        dst = *s_ptr_vol;
-    }
-
-    template<> __inline__ __device__
-    void assign_vol<cfloat>(cfloat &dst, volatile cfloat *s_ptr_vol)
-    {
-        dst.x = s_ptr_vol->x;
-        dst.y = s_ptr_vol->y;
-    }
-
-    template<> __inline__ __device__
-    void assign_vol<cdouble>(cdouble &dst, volatile cdouble *s_ptr_vol)
-    {
-        dst.x = s_ptr_vol->x;
-        dst.y = s_ptr_vol->y;
-    }
-
     template<typename T, af_op_t op>
     __device__ void warp_reduce(T *s_ptr, uint *s_idx, uint tidx)
     {
-        volatile T *s_ptr_vol = s_ptr + tidx;
-        volatile uint *s_idx_vol = s_idx + tidx;
-
+        MinMaxOp<op, T> Op(s_ptr[tidx], s_idx[tidx]);
 #pragma unroll
         for (int n = 16; n >= 1; n >>= 1) {
             if (tidx < n) {
-                T val1, val2;
-                assign_vol(val1, s_ptr_vol);
-                assign_vol(val2, s_ptr_vol + n);
-
-                uint idx1, idx2;
-                assign_vol(idx1, s_idx_vol);
-                assign_vol(idx2, s_idx_vol + n);
-
-                MinMaxOp<op, T> Op(val1, idx1);
-                Op(val2, idx2);
-
-                assign_vol(s_ptr_vol, Op.m_val);
-                assign_vol(s_idx_vol, Op.m_idx);
+                Op(s_ptr[tidx + n], s_idx[tidx + n]);
+                s_ptr[tidx] = Op.m_val;
+                s_idx[tidx] = Op.m_idx;
             }
+            __syncthreads();
         }
     }
 
@@ -479,7 +431,7 @@ namespace kernel
     }
 
     template<typename T, af_op_t op>
-    void ireduce(Param<T> out, uint *olptr, CParam<T> in, dim_type dim)
+    void ireduce(Param<T> out, uint *olptr, CParam<T> in, int dim)
     {
         switch (dim) {
         case 0: return ireduce_first<T, op   >(out, olptr, in);
@@ -492,7 +444,7 @@ namespace kernel
     template<typename T, af_op_t op>
     T ireduce_all(uint *idx, CParam<T> in)
     {
-        dim_type in_elements = in.strides[3] * in.dims[3];
+        int in_elements = in.strides[3] * in.dims[3];
 
         // FIXME: Use better heuristics to get to the optimum number
         if (in_elements > 4096) {
@@ -516,8 +468,6 @@ namespace kernel
 
             Param<T> tmp;
             uint *tlptr;
-            T *h_ptr = NULL;
-            uint *h_lptr = NULL;
 
             uint blocks_x = divup(in.dims[0], threads_x * REPEAT);
             uint blocks_y = divup(in.dims[1], threads_y);
@@ -530,44 +480,43 @@ namespace kernel
                 tmp.strides[k] = tmp.dims[k - 1] * tmp.strides[k - 1];
             }
 
-            dim_type tmp_elements = tmp.strides[3] * tmp.dims[3];
+            int tmp_elements = tmp.strides[3] * tmp.dims[3];
 
+            //TODO: Use scoped_ptr
             tmp.ptr = memAlloc<T>(tmp_elements);
             tlptr = memAlloc<uint>(tmp_elements);
             ireduce_first_launcher<T, op, true>(tmp, tlptr, in, NULL, blocks_x, blocks_y, threads_x);
 
-            h_ptr = new T[tmp_elements];
-            h_lptr = new uint[tmp_elements];
+            scoped_ptr<T>       h_ptr(new T[tmp_elements]);
+            scoped_ptr<uint>    h_lptr(new uint[tmp_elements]);
+            T*      h_ptr_raw = h_ptr.get();
+            uint*   h_lptr_raw = h_lptr.get();
 
-            CUDA_CHECK(cudaMemcpy(h_ptr, tmp.ptr, tmp_elements * sizeof(T), cudaMemcpyDeviceToHost));
-            CUDA_CHECK(cudaMemcpy(h_lptr, tlptr, tmp_elements * sizeof(uint), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpy(h_ptr_raw, tmp.ptr, tmp_elements * sizeof(T), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpy(h_lptr_raw, tlptr, tmp_elements * sizeof(uint), cudaMemcpyDeviceToHost));
             memFree(tmp.ptr);
             memFree(tlptr);
 
-            MinMaxOp<op, T> Op(h_ptr[0], h_lptr[0]);
+            MinMaxOp<op, T> Op(h_ptr_raw[0], h_lptr_raw[0]);
 
             for (int i = 1; i < tmp_elements; i++) {
-                Op(h_ptr[i], h_lptr[i]);
+                Op(h_ptr_raw[i], h_lptr_raw[i]);
             }
-
-            delete[] h_ptr;
-            delete[] h_lptr;
 
             *idx = Op.m_idx;
             return Op.m_val;
         } else {
 
-            T *h_ptr = new T[in_elements];
-            CUDA_CHECK(cudaMemcpy(h_ptr, in.ptr, in_elements * sizeof(T), cudaMemcpyDeviceToHost));
+            scoped_ptr<T> h_ptr(new T[in_elements]);
+            T* h_ptr_raw = h_ptr.get();
+            CUDA_CHECK(cudaMemcpy(h_ptr_raw, in.ptr, in_elements * sizeof(T), cudaMemcpyDeviceToHost));
 
-            MinMaxOp<op, T> Op(h_ptr[0], 0);
+            MinMaxOp<op, T> Op(h_ptr_raw[0], 0);
             for (int i = 1; i < in_elements; i++) {
-                Op(h_ptr[i], i);
+                Op(h_ptr_raw[i], i);
             }
 
             *idx = Op.m_idx;
-
-            delete[] h_ptr;
             return Op.m_val;
         }
     }

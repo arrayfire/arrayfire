@@ -13,9 +13,12 @@ namespace opencl
 {
 
 template<typename inType, typename outType, int rank, bool isR2C>
-Array<outType> fft(Array<inType> const &in, double normalize, dim_type const npad, dim_type const * const pad);
+Array<outType> fft(Array<inType> const &in, double norm_factor, dim_t const npad, dim_t const * const pad);
 
 template<typename T, int rank>
-Array<T> ifft(Array<T> const &in, double normalize, dim_type const npad, dim_type const * const pad);
+Array<T> ifft(Array<T> const &in, double norm_factor, dim_t const npad, dim_t const * const pad);
+
+template<typename T, int rank, bool direction>
+void fft_common(Array<T> &out, const Array<T> &in);
 
 }

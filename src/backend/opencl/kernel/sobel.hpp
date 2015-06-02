@@ -32,8 +32,8 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type THREADS_X = 16;
-static const dim_type THREADS_Y = 16;
+static const int THREADS_X = 16;
+static const int THREADS_Y = 16;
 
 template<typename Ti, typename To, unsigned ker_size>
 void sobel(Param dx, Param dy, const Param in)
@@ -62,23 +62,23 @@ void sobel(Param dx, Param dy, const Param in)
 
         NDRange local(THREADS_X, THREADS_Y);
 
-        dim_type blk_x = divup(in.info.dims[0], THREADS_X);
-        dim_type blk_y = divup(in.info.dims[1], THREADS_Y);
+        int blk_x = divup(in.info.dims[0], THREADS_X);
+        int blk_y = divup(in.info.dims[1], THREADS_Y);
 
-        NDRange global(blk_x * in.info.dims[2] * in.info.dims[3] * THREADS_X,
-                       blk_y * THREADS_Y);
+        NDRange global(blk_x * in.info.dims[2] * THREADS_X,
+                       blk_y * in.info.dims[3] * THREADS_Y);
 
         auto sobelOp = make_kernel<Buffer, KParam,
                                    Buffer, KParam,
                                    Buffer, KParam,
                                    cl::LocalSpaceArg,
-                                   dim_type> (*sobKernels[device]);
+                                   int, int> (*sobKernels[device]);
 
         size_t loc_size = (THREADS_X+ker_size-1)*(THREADS_Y+ker_size-1)*sizeof(Ti);
 
         sobelOp(EnqueueArgs(getQueue(), global, local),
                     *dx.data, dx.info, *dy.data, dy.info,
-                    *in.data, in.info, cl::Local(loc_size), blk_x);
+                    *in.data, in.info, cl::Local(loc_size), blk_x, blk_y);
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {

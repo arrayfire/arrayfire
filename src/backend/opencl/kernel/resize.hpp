@@ -30,8 +30,18 @@ namespace opencl
 {
     namespace kernel
     {
-        static const dim_type RESIZE_TX = 16;
-        static const dim_type RESIZE_TY = 16;
+        static const int RESIZE_TX = 16;
+        static const int RESIZE_TY = 16;
+
+        using std::conditional;
+        using std::is_same;
+        template<typename T>
+        using wtype_t = typename conditional<is_same<T, double>::value, double, float>::type;
+
+        template<typename T>
+        using vtype_t = typename conditional<is_complex<T>::value,
+                                             T, wtype_t<T>
+                                            >::type;
 
         template<typename T, af_interp_type method>
         void resize(Param out, const Param in)
@@ -43,19 +53,33 @@ namespace opencl
 
                 int device = getActiveDeviceId();
 
+                typedef typename dtype_traits<T>::base_type BT;
+
                 std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
                     options << " -D T="        << dtype_traits<T>::getName();
+                    options << " -D VT="       << dtype_traits<vtype_t<T>>::getName();
+                    options << " -D WT="       << dtype_traits<wtype_t<BT>>::getName();
 
                     switch(method) {
-                        case AF_INTERP_NEAREST:  options<<" -D INTERP=NEAREST";  break;
-                        case AF_INTERP_BILINEAR: options<<" -D INTERP=BILINEAR"; break;
+                        case AF_INTERP_NEAREST:  options <<" -D INTERP=NEAREST" ;  break;
+                        case AF_INTERP_BILINEAR: options <<" -D INTERP=BILINEAR"; break;
                         default: break;
                     }
+
+                    if((af_dtype) dtype_traits<T>::af_type == c32 ||
+                       (af_dtype) dtype_traits<T>::af_type == c64) {
+                        options << " -D CPLX=1";
+                        options << " -D TB=" << dtype_traits<BT>::getName();
+                    } else {
+                        options << " -D CPLX=0";
+                    }
+
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
                         options << " -D USE_DOUBLE";
                     }
+
                     Program prog;
                     buildProgram(prog, resize_cl, resize_cl_len, options.str());
                     resizeProgs[device] = new Program(prog);
@@ -64,13 +88,13 @@ namespace opencl
 
                 auto resizeOp = make_kernel<Buffer, const KParam,
                                       const Buffer, const KParam,
-                                      const dim_type, const dim_type, const float, const float>
+                                      const int, const int, const float, const float>
                                       (*resizeKernels[device]);
 
                 NDRange local(RESIZE_TX, RESIZE_TY, 1);
 
-                dim_type blocksPerMatX = divup(out.info.dims[0], local[0]);
-                dim_type blocksPerMatY = divup(out.info.dims[1], local[1]);
+                int blocksPerMatX = divup(out.info.dims[0], local[0]);
+                int blocksPerMatY = divup(out.info.dims[1], local[1]);
                 NDRange global(local[0] * blocksPerMatX * in.info.dims[2],
                                local[1] * blocksPerMatY * in.info.dims[3],
                                1);

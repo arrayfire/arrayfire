@@ -20,7 +20,7 @@ using af::dim4;
 namespace cuda
 {
 
-template<typename T, typename accT, dim_type baseDim, bool expand>
+template<typename T, typename accT, dim_t baseDim, bool expand>
 Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBatchKind kind)
 {
     const dim4 sDims    = signal.dims();
@@ -28,8 +28,8 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
 
     dim4 oDims(1);
     if (expand) {
-        for(dim_type d=0; d<4ll; ++d) {
-            if (kind==ONE2ONE || kind==ONE2ALL) {
+        for(dim_t d=0; d<4; ++d) {
+            if (kind==ONE2ONE || kind==ONE2MANY) {
                 oDims[d] = sDims[d]+fDims[d]-1;
             } else {
                 oDims[d] = (d<baseDim ? sDims[d]+fDims[d]-1 : sDims[d]);
@@ -37,7 +37,10 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
         }
     } else {
         oDims = sDims;
-        if (kind==ONE2ALL) oDims[baseDim] = fDims[baseDim];
+        if (kind==ONE2MANY) {
+            for (dim_t i=baseDim; i<4; ++i)
+                oDims[i] = fDims[i];
+        }
     }
 
     Array<T> out   = createEmptyArray<T>(oDims);
@@ -53,8 +56,8 @@ Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter, Array<ac
     const dim4 cfDims   = c_filter.dims();
     const dim4 rfDims   = r_filter.dims();
 
-    const dim_type cfLen= cfDims.elements();
-    const dim_type rfLen= rfDims.elements();
+    const dim_t cfLen= cfDims.elements();
+    const dim_t rfLen= rfDims.elements();
 
     const dim4 sDims = signal.dims();
     dim4 tDims = sDims;

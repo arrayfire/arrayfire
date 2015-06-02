@@ -21,39 +21,29 @@ namespace cpu
 template<typename inType, typename outType>
 Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const double &minval, const double &maxval)
 {
-    const dim4 inDims   = in.dims();
-    dim4 outDims        = dim4(nbins,1,inDims[2],inDims[3]);
+    float step = (maxval - minval)/(float)nbins;
 
-    // create an array with first two dimensions swapped
-    Array<outType> out = createEmptyArray<outType>(outDims);
+    const dim4 inDims  = in.dims();
+    dim4 iStrides      = in.strides();
+    dim4 outDims       = dim4(nbins,1,inDims[2],inDims[3]);
+    Array<outType> out = createValueArray<outType>(outDims, outType(0));
+    dim4 oStrides      = out.strides();
+    dim_t nElems    = inDims[0]*inDims[1];
 
-    // get data pointers for input and output Arrays
     outType *outData    = out.get();
     const inType* inData= in.get();
 
-    dim_type batchCount = inDims[2];
-    dim_type batchStride= in.strides()[2];
-    dim_type numElements= inDims[0]*inDims[1];
-
-    // set all bin elements to zero
-    outType *temp = outData;
-    for(int batchId = 0; batchId < batchCount; batchId++) {
-        for(int i=0; i < (int)nbins; i++)
-            temp[i] = 0;
-        temp += nbins;
-    }
-
-    float step = (maxval - minval)/(float)nbins;
-
-    for(dim_type batchId = 0; batchId < batchCount; batchId++) {
-        for(dim_type i=0; i<numElements; i++) {
-            int bin = (int)((inData[i] - minval) / step);
-            bin = std::max(bin, 0);
-            bin = std::min(bin, (int)(nbins - 1));
-            outData[bin]++;
+    for(dim_t b3 = 0; b3 < outDims[3]; b3++) {
+        for(dim_t b2 = 0; b2 < outDims[2]; b2++) {
+            for(dim_t i=0; i<nElems; i++) {
+                int bin = (int)((inData[i] - minval) / step);
+                bin = std::max(bin, 0);
+                bin = std::min(bin, (int)(nbins - 1));
+                outData[bin]++;
+            }
+            inData  += iStrides[2];
+            outData += oStrides[2];
         }
-        inData  += batchStride;
-        outData += nbins;
     }
 
     return out;

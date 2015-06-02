@@ -17,4 +17,7 @@ namespace cpu
 
     template<typename T>
     Array<T> randn(const af::dim4 &dims);
+
+    void setSeed(const uintl seed);
+    uintl getSeed();
 }

@@ -11,6 +11,7 @@
 #include <cassert>
 
 #include <af/array.h>
+#include <af/data.h>
 #include <af/index.h>
 #include <af/seq.h>
 #include <ArrayInfo.hpp>
@@ -52,7 +53,7 @@ af_err af_flip(af_array *result, const af_array in, const unsigned dim)
         ArrayInfo in_info = getInfo(in);
 
         if (in_info.ndims() <= dim) {
-            *result = weakCopy(in);
+            *result = retain(in);
             return AF_SUCCESS;
         }
 

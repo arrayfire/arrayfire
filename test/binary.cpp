@@ -68,7 +68,7 @@ af::array randgen(const int num, af::dtype ty)
         Tb h_b = 3.0;                                                   \
         af::array c = func(a, h_b);                                     \
         Ta *h_a = a.host<Ta>();                                         \
-        Ta *h_c = c.host<Ta>();                                         \
+        Tc *h_c = c.host<Tc>();                                         \
         for (int i = 0; i < num; i++)                                   \
             ASSERT_EQ(h_c[i], func(h_a[i], h_b)) <<                     \
                 "for values: " << h_a[i]  << "," << h_b << std::endl;   \

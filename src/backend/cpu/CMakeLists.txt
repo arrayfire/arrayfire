@@ -1,28 +1,65 @@
 
+ADD_DEFINITIONS(-DAF_CPU)
+
 FIND_PACKAGE(CBLAS REQUIRED)
-MESSAGE(STATUS "BLAS Library: ${CBLAS_LIBRARIES}")
+
+IF(USE_CPU_F77_BLAS)
+    MESSAGE("Using F77 BLAS")
+    ADD_DEFINITIONS(-DUSE_F77_BLAS)
+ENDIF()
+
+IF(USE_CPU_MKL)
+    MESSAGE("Using MKL")
+    ADD_DEFINITIONS(-DUSE_MKL)
+ENDIF()
+
+IF (NOT CBLAS_LIBRARIES)
+    MESSAGE(SEND_ERROR "CBLAS Library not set")
+ELSE()
+    MESSAGE(STATUS "Using CBLAS Library: ${CBLAS_LIBRARIES}")
+ENDIF()
 
 IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" AND "${APPLE}")
     ADD_DEFINITIONS(-flax-vector-conversions)
+ENDIF()
+
+IF(${MKL_FOUND})
+    ADD_DEFINITIONS(-DUSE_MKL)
 ENDIF()
 
 FIND_PACKAGE(FFTW REQUIRED)
 MESSAGE(STATUS "FFTW Found ? ${FFTW_FOUND}")
 MESSAGE(STATUS "FFTW Library: ${FFTW_LIBRARIES}")
 
+INCLUDE("${CMAKE_MODULE_PATH}/FindGLEWmx.cmake")
+
+IF(APPLE)
+    FIND_PACKAGE(LAPACK)
+ELSE(APPLE) # Linux and Windows
+    FIND_PACKAGE(LAPACKE)
+ENDIF(APPLE)
+
+IF(NOT LAPACK_FOUND)
+    MESSAGE(WARNING "LAPACK not found. Functionality will be disabled")
+ELSE(NOT LAPACK_FOUND)
+    ADD_DEFINITIONS(-DLAPACK_${BLA_VENDOR})
+    ADD_DEFINITIONS(-DWITH_CPU_LINEAR_ALGEBRA)
+ENDIF()
+
 IF(NOT UNIX)
-  ADD_DEFINITIONS(-DAFDLL)
+    ADD_DEFINITIONS(-DAFDLL)
 ENDIF()
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
     "${CMAKE_SOURCE_DIR}/src/backend/cpu"
     ${FFTW_INCLUDES}
-	${CBLAS_INCLUDE_DIR}
+    ${CBLAS_INCLUDE_DIR}
+    ${LAPACK_INCLUDE_DIR}
     )
 
 FILE(GLOB cpu_headers
-	"*.hpp"
+    "*.hpp"
     "*.h")
 
 FILE(GLOB cpu_sources
@@ -63,25 +100,51 @@ source_group(api\\cpp\\Sources FILES ${cpp_sources})
 
 # OS Definitions
 IF(UNIX)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 ELSE(${UNIX}) #Windows
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 ENDIF()
 
 ADD_LIBRARY(afcpu SHARED
            ${cpu_headers}
-		   ${cpu_sources}
+           ${cpu_sources}
            ${backend_headers}
-		   ${backend_sources}
+           ${backend_sources}
            ${c_headers}
-		   ${c_sources}
-		   ${cpp_sources})
+           ${c_sources}
+           ${cpp_sources})
 
-TARGET_LINK_LIBRARIES(afcpu ${lib_deps} ${CBLAS_LIBRARIES} ${FFTW_LIBRARIES})
+TARGET_LINK_LIBRARIES(afcpu
+                      ${FreeImage_LIBS}
+                      ${CBLAS_LIBRARIES}
+                      ${FFTW_LIBRARIES}
+                      )
 
-INSTALL(TARGETS afcpu EXPORT CPU DESTINATION lib COMPONENT libraries)
+IF(LAPACK_FOUND)
+   TARGET_LINK_LIBRARIES(afcpu
+   ${LAPACK_LIBRARIES}
+   )
+ENDIF()
+
+IF(FORGE_FOUND)
+    TARGET_LINK_LIBRARIES(afcpu
+                          ${FORGE_LIBRARIES}
+                         )
+ENDIF()
+
+SET_TARGET_PROPERTIES(afcpu PROPERTIES
+                      VERSION "${AF_VERSION}"
+                      SOVERSION "${AF_VERSION_MAJOR}")
+
+IF(INSTALLER_MODE)
+    SET_TARGET_PROPERTIES(afcpu PROPERTIES LINK_INTERFACE_LIBRARIES "")
+    SET_TARGET_PROPERTIES(afcpu PROPERTIES INTERFACE_LINK_LIBRARIES "")
+ENDIF()
+
+INSTALL(TARGETS afcpu EXPORT CPU DESTINATION "${AF_INSTALL_LIB_DIR}"
+        COMPONENT libraries)
 
 export(TARGETS afcpu FILE ArrayFireCPU.cmake)
-INSTALL(EXPORT CPU DESTINATION ${ARRAYFIRE_CMAKE_DIR} 
-    COMPONENT cmake
-    FILE ArrayFireCPU.cmake)
+INSTALL(EXPORT CPU DESTINATION "${AF_INSTALL_CMAKE_DIR}"
+        COMPONENT cmake
+        FILE ArrayFireCPU.cmake)

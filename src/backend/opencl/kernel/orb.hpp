@@ -19,6 +19,7 @@
 #include <kernel/sort_index.hpp>
 #include <kernel_headers/orb.hpp>
 #include <memory.hpp>
+#include <vector>
 
 using cl::Buffer;
 using cl::Program;
@@ -26,6 +27,7 @@ using cl::Kernel;
 using cl::EnqueueArgs;
 using cl::LocalSpaceArg;
 using cl::NDRange;
+using std::vector;
 
 namespace opencl
 {
@@ -33,9 +35,9 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type ORB_THREADS   = 256;
-static const dim_type ORB_THREADS_X = 16;
-static const dim_type ORB_THREADS_Y = 16;
+static const int ORB_THREADS   = 256;
+static const int ORB_THREADS_X = 16;
+static const int ORB_THREADS_Y = 16;
 
 static const float PI_VAL = 3.14159265358979323846f;
 
@@ -82,11 +84,11 @@ void orb(unsigned* out_feat,
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static Program            orbProgs[DeviceManager::MAX_DEVICES];
-        static Kernel             hrKernel[DeviceManager::MAX_DEVICES];
-        static Kernel             kfKernel[DeviceManager::MAX_DEVICES];
-        static Kernel             caKernel[DeviceManager::MAX_DEVICES];
-        static Kernel             eoKernel[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*> orbProgs;
+        static std::map<int, Kernel*>  hrKernel;
+        static std::map<int, Kernel*>  kfKernel;
+        static std::map<int, Kernel*>  caKernel;
+        static std::map<int, Kernel*>  eoKernel;
 
         int device = getActiveDeviceId();
 
@@ -101,15 +103,14 @@ void orb(unsigned* out_feat,
                     options << " -D USE_DOUBLE";
                 }
 
-                buildProgram(orbProgs[device],
-                             orb_cl,
-                             orb_cl_len,
-                             options.str());
+                cl::Program prog;
+                buildProgram(prog, orb_cl, orb_cl_len, options.str());
+                orbProgs[device] = new Program(prog);
 
-                hrKernel[device] = Kernel(orbProgs[device], "harris_response");
-                kfKernel[device] = Kernel(orbProgs[device], "keep_features");
-                caKernel[device] = Kernel(orbProgs[device], "centroid_angle");
-                eoKernel[device] = Kernel(orbProgs[device], "extract_orb");
+                hrKernel[device] = new Kernel(*orbProgs[device], "harris_response");
+                kfKernel[device] = new Kernel(*orbProgs[device], "keep_features");
+                caKernel[device] = new Kernel(*orbProgs[device], "centroid_angle");
+                eoKernel[device] = new Kernel(*orbProgs[device], "extract_orb");
             });
 
         unsigned patch_size = REF_PAT_SIZE;
@@ -127,18 +128,18 @@ void orb(unsigned* out_feat,
             scl_sum += 1.f / (float)pow(scl_fctr,(float)i);
         }
 
-        std::vector<cl::Buffer*> d_x_pyr(max_levels);
-        std::vector<cl::Buffer*> d_y_pyr(max_levels);
-        std::vector<cl::Buffer*> d_score_pyr(max_levels);
-        std::vector<cl::Buffer*> d_ori_pyr(max_levels);
-        std::vector<cl::Buffer*> d_size_pyr(max_levels);
-        std::vector<cl::Buffer*> d_desc_pyr(max_levels);
+        vector<cl::Buffer*> d_x_pyr(max_levels);
+        vector<cl::Buffer*> d_y_pyr(max_levels);
+        vector<cl::Buffer*> d_score_pyr(max_levels);
+        vector<cl::Buffer*> d_ori_pyr(max_levels);
+        vector<cl::Buffer*> d_size_pyr(max_levels);
+        vector<cl::Buffer*> d_desc_pyr(max_levels);
 
-        std::vector<unsigned> feat_pyr(max_levels);
+        vector<unsigned> feat_pyr(max_levels);
         unsigned total_feat = 0;
 
         // Compute number of features to keep for each level
-        std::vector<unsigned> lvl_best(max_levels);
+        vector<unsigned> lvl_best(max_levels);
         unsigned feat_sum = 0;
         for (unsigned i = 0; i < max_levels-1; i++) {
             float lvl_scl = (float)pow(scl_fctr,(float)i);
@@ -224,7 +225,7 @@ void orb(unsigned* out_feat,
 
             // Calculate Harris responses
             // Good block_size >= 7 (must be an odd number)
-            const dim_type blk_x = divup(lvl_feat, ORB_THREADS_X);
+            const int blk_x = divup(lvl_feat, ORB_THREADS_X);
             const NDRange local(ORB_THREADS_X, ORB_THREADS_Y);
             const NDRange global(blk_x * ORB_THREADS_X, ORB_THREADS_Y);
 
@@ -234,7 +235,7 @@ void orb(unsigned* out_feat,
             auto hrOp = make_kernel<Buffer, Buffer, Buffer,
                                     Buffer, Buffer, const unsigned,
                                     Buffer, Buffer, KParam,
-                                    const unsigned, const float, const unsigned> (hrKernel[device]);
+                                    const unsigned, const float, const unsigned> (*hrKernel[device]);
 
             hrOp(EnqueueArgs(getQueue(), global, local),
                  *d_x_harris, *d_y_harris, *d_score_harris,
@@ -245,9 +246,11 @@ void orb(unsigned* out_feat,
 
             getQueue().enqueueReadBuffer(*d_usable_feat, CL_TRUE, 0, sizeof(unsigned), &usable_feat);
 
-            bufferFree(d_x_feat.data);
-            bufferFree(d_y_feat.data);
-            bufferFree(d_usable_feat);
+            if (lvl_feat > 0) { //This is just to supress warnings
+                bufferFree(d_x_feat.data);
+                bufferFree(d_y_feat.data);
+                bufferFree(d_usable_feat);
+            }
 
             if (usable_feat == 0) {
                 feat_pyr[i] = 0;
@@ -292,13 +295,13 @@ void orb(unsigned* out_feat,
             usable_feat = min(usable_feat, lvl_best[i]);
 
             // Keep only features with higher Harris responses
-            const dim_type keep_blk = divup(usable_feat, ORB_THREADS);
+            const int keep_blk = divup(usable_feat, ORB_THREADS);
             const NDRange local_keep(ORB_THREADS, 1);
             const NDRange global_keep(keep_blk * ORB_THREADS, 1);
 
             auto kfOp = make_kernel<Buffer, Buffer, Buffer,
                                     Buffer, Buffer, Buffer, Buffer,
-                                    const unsigned> (kfKernel[device]);
+                                    const unsigned> (*kfKernel[device]);
 
             kfOp(EnqueueArgs(getQueue(), global_keep, local_keep),
                  *d_x_lvl, *d_y_lvl, *d_score_lvl,
@@ -315,13 +318,13 @@ void orb(unsigned* out_feat,
             cl::Buffer* d_size_lvl = bufferAlloc(usable_feat * sizeof(float));
 
             // Compute orientation of features
-            const dim_type centroid_blk_x = divup(usable_feat, ORB_THREADS_X);
+            const int centroid_blk_x = divup(usable_feat, ORB_THREADS_X);
             const NDRange local_centroid(ORB_THREADS_X, ORB_THREADS_Y);
             const NDRange global_centroid(centroid_blk_x * ORB_THREADS_X, ORB_THREADS_Y);
 
             auto caOp = make_kernel<Buffer, Buffer, Buffer,
                                     const unsigned, Buffer, KParam,
-                                    const unsigned> (caKernel[device]);
+                                    const unsigned> (*caKernel[device]);
 
             caOp(EnqueueArgs(getQueue(), global_centroid, local_centroid),
                  *d_x_lvl, *d_y_lvl, *d_ori_lvl,
@@ -351,7 +354,7 @@ void orb(unsigned* out_feat,
                         gauss_filter.info.strides[k] = gauss_filter.info.dims[k - 1] * gauss_filter.info.strides[k - 1];
                     }
 
-                    dim_type gauss_elem = gauss_filter.info.strides[3] * gauss_filter.info.dims[3];
+                    int gauss_elem = gauss_filter.info.strides[3] * gauss_filter.info.dims[3];
                     gauss_filter.data = bufferAlloc(gauss_elem * sizeof(T));
                     getQueue().enqueueWriteBuffer(*gauss_filter.data, CL_TRUE, 0, gauss_elem * sizeof(T), h_gauss);
                 }
@@ -365,16 +368,15 @@ void orb(unsigned* out_feat,
 
             // Compute ORB descriptors
             cl::Buffer* d_desc_lvl = bufferAlloc(usable_feat * 8 * sizeof(unsigned));
-            unsigned* h_desc_lvl = new unsigned[usable_feat * 8];
-            for (int j = 0; j < (int)usable_feat * 8; j++)
-                h_desc_lvl[j] = 0;
-            getQueue().enqueueWriteBuffer(*d_desc_lvl, CL_TRUE, 0, usable_feat * 8 * sizeof(unsigned), h_desc_lvl);
-            delete[] h_desc_lvl;
+            {
+                vector<unsigned> h_desc_lvl(usable_feat * 8);
+                getQueue().enqueueWriteBuffer(*d_desc_lvl, CL_TRUE, 0, usable_feat * 8 * sizeof(unsigned), h_desc_lvl.data());
+            }
 
             auto eoOp = make_kernel<Buffer, const unsigned,
                                     Buffer, Buffer, Buffer, Buffer,
                                     Buffer, KParam,
-                                    const float, const unsigned> (eoKernel[device]);
+                                    const float, const unsigned> (*eoKernel[device]);
 
             if (blur_img) {
                 eoOp(EnqueueArgs(getQueue(), global_centroid, local_centroid),

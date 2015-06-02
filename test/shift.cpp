@@ -39,13 +39,12 @@ class Shift : public ::testing::Test
 
 // create a list of types to be tested
 typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int, char, unsigned char> TestTypes;
-
 // register the type list
 TYPED_TEST_CASE(Shift, TestTypes);
 
 template<typename T>
 void shiftTest(string pTestFile, const unsigned resultIdx,
-                 const uint x, const uint y, const uint z, const uint w,
+                 const int x, const int y, const int z, const int w,
                  bool isSubRef = false, const vector<af_seq> * seqv = NULL)
 {
     if (noDoubleTests<T>()) return;
@@ -84,9 +83,9 @@ void shiftTest(string pTestFile, const unsigned resultIdx,
     // Delete
     delete[] outData;
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(outArray  != 0) af_release_array(outArray);
+    if(tempArray != 0) af_release_array(tempArray);
 }
 
 #define SHIFT_INIT(desc, file, resultIdx, x, y, z, w)                                       \
@@ -95,7 +94,7 @@ void shiftTest(string pTestFile, const unsigned resultIdx,
         shiftTest<TypeParam>(string(TEST_DIR"/shift/"#file".test"), resultIdx, x, y, z, w); \
     }
 
-    SHIFT_INIT(Shift0,  shift4d, 0,    2,  0,  0,  0);
+SHIFT_INIT(Shift0,  shift4d, 0,    2,  0,  0,  0);
     SHIFT_INIT(Shift1,  shift4d, 1,   -1,  0,  0,  0);
     SHIFT_INIT(Shift2,  shift4d, 2,    3,  2,  0,  0);
     SHIFT_INIT(Shift3,  shift4d, 3,   11, 22,  0,  0);

@@ -10,7 +10,7 @@
 #include <kernel_headers/diag_create.hpp>
 #include <kernel_headers/diag_extract.hpp>
 #include <program.hpp>
-#include <traits.hpp>
+#include "../traits.hpp"
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
@@ -26,6 +26,7 @@ using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
+using af::scalar_to_option;
 
 namespace opencl
 {
@@ -46,7 +47,7 @@ namespace kernel
             std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
                     options << " -D T="    << dtype_traits<T>::getName()
-                            << " -D ZERO=" << scalar<T>(0);
+                            << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")";
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
                         options << " -D USE_DOUBLE";
@@ -59,8 +60,8 @@ namespace kernel
                 });
 
             NDRange local(32, 8);
-            dim_type groups_x = divup(out.info.dims[0], local[0]);
-            dim_type groups_y = divup(out.info.dims[1], local[1]);
+            int groups_x = divup(out.info.dims[0], local[0]);
+            int groups_y = divup(out.info.dims[1], local[1]);
             NDRange global(groups_x * local[0] * out.info.dims[2],
                            groups_y * local[1]);
 
@@ -70,6 +71,7 @@ namespace kernel
 
             diagCreateOp(EnqueueArgs(getQueue(), global, local),
                          *(out.data), out.info, *(in.data), in.info, num, groups_x);
+            CL_DEBUG_FINISH(getQueue());
 
         } catch (cl::Error err) {
             CL_TO_AF_ERROR(err);
@@ -89,7 +91,7 @@ namespace kernel
             std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
                     options << " -D T="    << dtype_traits<T>::getName()
-                            << " -D ZERO=" << scalar<T>(0);
+                            << " -D ZERO=(T)(" << scalar_to_option(scalar<T>(0)) << ")";
                     if (std::is_same<T, double>::value ||
                         std::is_same<T, cdouble>::value) {
                         options << " -D USE_DOUBLE";
@@ -102,8 +104,8 @@ namespace kernel
                 });
 
             NDRange local(256, 1);
-            dim_type groups_x = divup(out.info.dims[0], local[0]);
-            dim_type groups_z = out.info.dims[2];
+            int groups_x = divup(out.info.dims[0], local[0]);
+            int groups_z = out.info.dims[2];
             NDRange global(groups_x * local[0],
                            groups_z * local[1] * out.info.dims[3]);
 
@@ -113,6 +115,7 @@ namespace kernel
 
             diagExtractOp(EnqueueArgs(getQueue(), global, local),
                           *(out.data), out.info, *(in.data), in.info, num, groups_z);
+            CL_DEBUG_FINISH(getQueue());
 
         } catch (cl::Error err) {
             CL_TO_AF_ERROR(err);

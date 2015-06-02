@@ -3,11 +3,11 @@ Getting Started {#gettingstarted}
 
 [TOC]
 
-Basic data types and arithmetic {#gettingstarted_datatypes}
-===============================
+# Supported data types {#gettingstarted_datatypes}
 
 There is one generic [array](\ref af::array) container object while the
-underlying data may be one of various basic types:
+underlying data may be one of various [basic types](\ref af::af_dtype):
+
 * [b8](\ref b8) 8-bit boolean values (`bool`)
 * [f32](\ref f32) real single-precision (`float`)
 * [c32](\ref c32) complex single-precision (`cfloat`)
@@ -15,163 +15,144 @@ underlying data may be one of various basic types:
 * [u32](\ref u32) 32-bit unsigned integer (`unsigned`)
 * [f64](\ref f64) real double-precision (`double`)
 * [c64](\ref c64) complex double-precision (`cdouble`)
-* [s64](\ref c64) complex double-precision (`intl`)
-* [u64](\ref c64) complex double-precision (`uintl`)
+* [s64](\ref s64) 64-bit signed integer (`intl`)
+* [u64](\ref u64) 64-bit unsigned integer (`uintl`)
 
+Older devices may not support double precision operations.
 
-Older devices may not support double precision operations
+# Creating an populating an ArrayFire array {#getting_started_af_arrays}
 
-You can [generate](\ref data_mat) matrices out on the device.  The
-default underlying datatype is [f32](\ref f32) (`float`) unless
-otherwise specified.  Some examples:
+ArrayFire [array](\ref af::array)s always exist on the device. They
+may be populated with data using an ArrayFire function, or filled with data
+found on the host. For example:
 
-\democode{
-af_print(constant(0, 3));
-af_print(constant(1, 3, 2, f64));
-af_print(randu(1, 4));
-af_print(randn(2, 2));
-af_print(identity(3, 3));
-af_print(randu(2, 1, c32));
-}
+\snippet test/getting_started.cpp ex_getting_started_gen
 
-You can also initialize values from a host array:
+A complete list of ArrayFire functions that automatically generate data
+on the device may be found on the [functions to create arrays](\ref data_mat)
+page. The default data type for arrays is [f32](\ref f32) (a
+32-bit floating point number) unless specified otherwise.
 
-\democode{
-float hA[] = {0, 1, 2, 3, 4, 5};
-array A(2, 3, hA);   // 2x3 matrix of single-precision
-af_print(A);            // Note: Fortran storage order (column major)
-}
+ArrayFire arrays may also be populated from data found on the host.
+For example:
 
-You can print the contents of an array or expression:
+\snippet test/getting_started.cpp ex_getting_started_init
 
-\democode{
-array a = randu(2, 2);
-array b = constant(1, 2, 1);
-af_print(a);
-af_print(b);
-af_print(a.col(0) + b + .4);
-}
+ArrayFire also supports array initialization from a device pointer.
+For example ArrayFire can be populated directly by a call to `cudaMemcpy`
 
-You can access the dimensions of a matrix using a [dim4](\ref af::dim4) object
-or directly via [dims()](\ref af::array::dims) and [numdims()](\ref af::array::numdims)
+\snippet test/getting_started.cpp ex_getting_started_dev_ptr
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-array a = randu(4,5,2);
-printf("numdims(a)  %d\n",  a.numdims()); // 3
+# ArrayFire array contents, dimentions, and properties {#getting_started_array_properties}
 
-dim4 dims = a.dims();
-printf("dims = [%d %d]\n", dims[0], dims[1]); // 4,5
-printf("dims = [%d %d]\n", a.dims(0), a.dims(1)); // 4,5
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The [af_print](\ref af::af_print) function can be used to print arrays that
+have already been generated or an expression involving arrays:
 
-You can query properties about an array:
+\snippet test/getting_started.cpp ex_getting_started_print
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-printf("underlying type: %d\n", a.type());
-printf("is complex? %d    is real? %d\n", a.iscomplex(), a.isreal());
-printf("is vector? %d  column? %d  row? %d\n", a.isvector(), a.iscolumn(), a.isrow());
-printf("empty? %d  total elements: %d  bytes: %zu\n", a.isempty(), a.elements(), a.bytes());
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ArrayFire provides several convenient methods for accessing the dimensions.
+You may use either a [dim4](\ref af::dim4) object or access the dimensions
+directly using the [dims()](\ref af::array::dims) and
+[numdims()](\ref af::array::numdims) functions:
 
-There are [hundreds of functions](\ref arith_mat) for element-wise arithmetic:
+\snippet test/getting_started.cpp ex_getting_started_dims
 
-\democode{
-array R = randu(3, 3);
-af_print(constant(1, 3, 3) + complex(sin(R)));  // will be c32
+Arrays also provide functions to determine their properties including:
 
-// rescale complex values to unit circle
-array a = randn(5, c32);
-af_print(a / abs(a));
+\snippet test/getting_started.cpp ex_getting_started_prop
 
-// calculate L2 norm of vectors
-array X = randn(3, 4);
-af_print(sqrt(sum(pow(X, 2))));     // norm of every column vector
-af_print(sqrt(sum(pow(X, 2), 0)));  // same as above
-af_print(sqrt(sum(pow(X, 2), 1)));  // norm of every row vector
-}
+# Writing mathematical expressions in ArrayFire {#getting_started_writing_math}
 
-You can initialize a matrix from either a host or device pointer:
+Most of ArrayFire's functions operate on an element-wise basis.
+This means that function like `c[i] = a[i] + b[i]` could simply be written
+as `c = a + b`.
+ArrayFire has an intelligent runtime JIT compliation engine which converts
+array expressions into the smallest number of OpenCL/CUDA kernels.
+This "kernel fusion" technology not only decreases the number of kernel calls,
+but, more importantly, avoids extraneous global memory operations.
+Our JIT functionality extends across C/C++ function boundaries and only ends
+when a non-JIT function is encountered or a synchronization operation is
+explicitly called by the code.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-float host_ptr[] = {0,1,2,3,4,5}; // column-major order (like Fortran)
-array a(2, 3, host_ptr); // f32 matrix of size 2-by-3 from host data
+ArrayFire has [hundreds of functions](\ref arith_mat) for element-wise
+arithmetic. Here are a few examples:
 
-float *device_ptr;
-cudaMalloc((void**)&device_ptr, 6*sizeof(float));
-cudaMemcpy(device_ptr, host_ptr, 6*sizeof(float), cudaMemcpyHostToDevice);
-array b(2,3, host_ptr, afDevice); // Note: afDevice (default: afHost)
-// do not call cudaFree(device_ptr) -- it is freed when 'b' is destructed.
+\snippet test/getting_started.cpp ex_getting_started_arith
 
-// create complex data
-cuComplex ha[] = { {0,1}, {2,3}, {4,5} }; // { {real,imaginary}, {real,imag}, .. }
-array a(3,ha); // 3x1 column vector
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Mathematical constants {#getting_started_constants}
 
-You can get both device and host side pointers to the underlying
-data with [device()](\ref af::array::device) and [host()](\ref af::array::host)
+ArrayFire contains several platform-independent constants, like
+[Pi](\ref af::Pi), [NaN](\ref af::NaN), and [Inf](\ref af::Inf).
+If ArrayFire does not have a constant you need, you can create your own
+using the [af::constant](\ref af::constant) array constructor.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-array a = randu(3, f32);
-float *host_a = a.host<float>();        // must call array::free() later
-printf("host_a[2] = %g\n", host_a[2]);  // last element
-array::free(host_a);
+Constants can be used in all of ArrayFire's functions. Below we demonstrate
+their use in element selection and a mathematical expression:
 
-float *device_a = a.device<float>();    // no need to free this
-float value;
-cudaMemcpy(&value, device_a + 2, sizeof(float), cudaMemcpyDeviceToHost);
-printf("device_a[2] = %g\n", value);
-a.unlock(); // unlock to allow garbage collection if necessary
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\snippet test/getting_started.cpp ex_getting_started_constants
 
-You can pull the scalar value from the first element of an array back to the CPU
-with [scalar()](\ref af::array::scalar).
+Please note that our constants may, at times, conflict with macro definitions
+in standard header files. When this occurs, please refer to our constants
+using the `af::` namespace.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-array a = randu(3);
-float val = a.scalar<float>();
-printf("scalar value: %g\n", val);
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Indexing {#getting_started_indexing}
 
-Integer support includes bitwise operations as well as the
-standard alogirthms like [sort, sum, minmax](\ref vector_mat), [indexing](\ref indexing)
-(see [more](\ref integer.cpp)).
+Like all functions in ArrayFire, indexing is also executed in parallel on
+the OpenCL/CUDA device.
+Because of this, indexing becomes part of a JIT operation and is accomplished
+using parentheses instead of square brackets (i.e. as `A(0)` instead of `A[0]`).
+To index `af::array`s you may use one or a combination of the following functions:
 
-\democode{
-int h_A[] = {1, 1, 0, 0, 4, 0, 0, 2, 0};
-int h_B[] = {1, 0, 1, 0, 1, 0, 1, 1, 1};
-array A = array(3, 3, h_A), B = array(3, 3, h_B);
-af_print(A); af_print(B);
+* integer scalars
+* [seq()](\ref af::seq) representing a linear sequence
+* [end](\ref af::end) representing the last element of a dimension
+* [span](\ref af::span) representing the entire dimension
+* [row(i)](\ref af::array::row) or [col(i)](\ref af::array::col) specifying a single row/column
+* [rows(first,last)](\ref af::array::rows) or [cols(first,last)](\ref af::array::cols)
+ specifying a span of rows or columns
 
-array A_and_B = A & B; af_print(A_and_B);
-array  A_or_B = A | B; af_print(A_or_B);
-array A_xor_B = A ^ B; af_print(A_xor_B);
-}
+Please see the [indexing page](\ref indexing) for several examples of how to
+use these functions.
 
-Several platform-independent constants are available: [Pi](\ref af::Pi),
-[NaN](\ref af::NaN), and [Inf](\ref af::Inf)
-When these variable names conflict with macros in the standard header
-files or variables in scope, then reference them with their full namespace,
-e.g. af::NaN
+# Getting access to ArrayFire array memory on the host and device {#getting_started_memory_access}
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-array A = randu(5,5);
-A(where(A > .5)) = af::NaN;
+Memory in `af::array`s may be accessed using the [host()](\ref af::array::host)
+and device()](\ref af::array::device) functions.
+The `host` function *copies* the data from the device and makes it available
+in a C-style array on the host.
+The `device` function returns a pointer to device memory for interoperability
+with external CUDA/OpenCL kernels.
+For example, here is how we can interact with both OpenCL and CUDA:
 
-array x = randu(20e6), y = randu(20e6);
-double pi_est = 4 * sum<float>(hypot(x,y) < 1) / 20e6;
-printf("estimation error: %g\n", fabs(Pi - pi_est));
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\snippet test/getting_started.cpp ex_getting_started_ptr
 
+ArrayFire also provides several helper functions for creating `af::array`s from
+OpenCL `cl_mem` references and `cl::Buffer` objects. See the `include/af/opencl.h`
+file for further information.
 
-C API {#gettingstarted_c_api}
-========================
+Lastly, if you want only the first value from an `af::array` you can use
+get it using the [scalar()](\ref af::array::scalar) function:
 
-Basic Example
--------------
+\snippet test/getting_started.cpp ex_getting_started_scalar
+
+# Bitwise operators {#getting_started_bitwise_operators}
+
+In addition to supporting standard mathematical functions, `af::array`s
+that contain integer data types also support bitwise operators including
+and, or, and shift:
+
+\snippet test/getting_started.cpp ex_getting_started_bit
+
+# Using the ArrayFire API in C and C++ {#gettingstarted_api_usage}
+
+The ArrayFire API is wrapped into a unified C/C++ header. To use the library
+simply include the `arrayfire.h` header file and start coding!
+
+## Sample using the C API
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
     #include <arrayfire.h>
-    // Generate random data and add all the values (Ignore error codes)
+    // Generate random data and sum and print the result
     int main(void)
     {
         // generate random values
@@ -180,10 +161,46 @@ Basic Example
         af_randu(&a, n);
 
         // sum all the values
-        double real, imag;
-        af_sum_all(&real, &imag, n, a);
+        float result;
+        af_sum_all(&result, a, 0);
 
         printf("sum: %g\n", sum);
         return 0;
     }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+## Sample using the C++ API
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+    #include <arrayfire.h>
+    // Generate random data, sum and print the result.
+    int main(void)
+    {
+        // Generate 10,000 random values
+        af::array a = af::randu(10000);
+
+        // Sum the values and copy the result to the CPU:
+        double sum = af::sum<float>(a);
+
+        printf("sum: %g\n", sum);
+        return 0;
+    }
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# What to read next? {#getting_started_next_steps}
+
+Now that you have a general introduction to ArrayFire, where do you go from
+here? In particular you might find these documents useful
+
+* [Building an ArrayFire program on Linux](\ref using_on_linux)
+* [Building an Arrayfire program on Windows](\ref using_on_windows)
+* [Timing ArrayFire code](\ref timing)
+
+
+
+# Where to go for help? {#getting_started_help}
+
+* Google Groups: https://groups.google.com/forum/#!forum/arrayfire-users
+* ArrayFire Services:  [Consulting](http://arrayfire.com/consulting/)  |  [Support](http://arrayfire.com/support/)   |  [Training](http://arrayfire.com/training/)
+* ArrayFire Blogs: http://arrayfire.com/blog/
+* Email: <mailto:technical@arrayfire.com>

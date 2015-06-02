@@ -34,7 +34,7 @@ static ty monte_carlo_barrier(int N, ty K, ty t, ty vol, ty r, ty strike, int st
     array S = product(join(1, s, randmat), 1);
 
     if (use_barrier) {
-        S = S * alltrue(S < B, 1);
+        S = S * allTrue(S < B, 1);
     }
 
     payoff = max(0.0, S - K);
@@ -77,7 +77,7 @@ int main()
                    1000 * monte_carlo_bench<float, true>(n));
         }
     } catch (af::exception &ae) {
-        std::cout << ae.what() << std::endl;
+        std::cerr << ae.what() << std::endl;
     }
 
     return 0;

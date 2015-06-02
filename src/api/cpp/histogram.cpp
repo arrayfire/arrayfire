@@ -9,6 +9,8 @@
 
 #include <af/image.h>
 #include <af/algorithm.h>
+#include <af/compatible.h>
+#include <af/array.h>
 #include "error.hpp"
 
 namespace af
@@ -28,10 +30,11 @@ array histogram(const array &in, const unsigned nbins)
     return array(out);
 }
 
-array histequal(const array& in, const array& hist)
+array histequal(const array& in, const array& hist) { return histEqual(in, hist); }
+array histEqual(const array& in, const array& hist)
 {
     af_array temp = 0;
-    AF_THROW(af_histequal(&temp, in.get(), hist.get()));
+    AF_THROW(af_hist_equal(&temp, in.get(), hist.get()));
     return array(temp);
 }
 

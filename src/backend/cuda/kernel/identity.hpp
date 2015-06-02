@@ -21,7 +21,7 @@ namespace kernel
 
     template<typename T>
     __global__
-    static void identity_kernel(Param<T> out, dim_type blocks_x, dim_type blocks_y)
+    static void identity_kernel(Param<T> out, int blocks_x, int blocks_y)
     {
         unsigned idz = blockIdx.x / blocks_x;
         unsigned idw = blockIdx.y / blocks_y;
@@ -38,7 +38,7 @@ namespace kernel
            idw >= out.dims[3])
             return;
 
-        T *ptr = out.ptr + idw * out.strides[2] + idz * out.strides[3];
+        T *ptr = out.ptr + idz * out.strides[2] + idw * out.strides[3];
         T val = (idx == idy) ? scalar<T>(1) : scalar<T>(0);
         ptr[idx + idy * out.strides[1]] = val;
     }
@@ -47,8 +47,8 @@ namespace kernel
     static void identity(Param<T> out)
     {
         dim3 threads(32, 8);
-        dim_type blocks_x = divup(out.dims[0], threads.x);
-        dim_type blocks_y = divup(out.dims[1], threads.y);
+        int blocks_x = divup(out.dims[0], threads.x);
+        int blocks_y = divup(out.dims[1], threads.y);
         dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
 
         identity_kernel<T> <<<blocks, threads>>> (out, blocks_x, blocks_y);

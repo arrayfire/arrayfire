@@ -27,6 +27,9 @@ namespace cuda
     static inline __DH__ float  abs(cfloat  cval) { return cuCabsf(cval); }
     static inline __DH__ double abs(cdouble cval) { return cuCabs (cval); }
 
+    static inline __DH__ size_t min(size_t lhs, size_t rhs) { return lhs < rhs ? lhs : rhs; }
+    static inline __DH__ size_t max(size_t lhs, size_t rhs) { return lhs > rhs ? lhs : rhs; }
+
 #ifndef __CUDA_ARCH__
     template<typename T> static inline __DH__ T min(T lhs, T rhs) { return std::min(lhs, rhs);}
     template<typename T> static inline __DH__ T max(T lhs, T rhs) { return std::max(lhs, rhs);}
@@ -36,51 +39,51 @@ namespace cuda
 #endif
 
     template<> __DH__
-	STATIC_ cfloat  max<cfloat >(cfloat lhs, cfloat rhs)
+    STATIC_ cfloat  max<cfloat >(cfloat lhs, cfloat rhs)
     {
         return abs(lhs) > abs(rhs) ? lhs : rhs;
     }
 
-	template<> __DH__
-	STATIC_ cdouble max<cdouble>(cdouble lhs, cdouble rhs)
+    template<> __DH__
+    STATIC_ cdouble max<cdouble>(cdouble lhs, cdouble rhs)
     {
         return abs(lhs) > abs(rhs) ? lhs : rhs;
     }
 
-	template<> __DH__
+    template<> __DH__
     STATIC_ cfloat  min<cfloat >(cfloat lhs, cfloat rhs)
     {
         return abs(lhs) < abs(rhs) ? lhs :  rhs;
     }
 
-	template<> __DH__
+    template<> __DH__
     STATIC_ cdouble min<cdouble>(cdouble lhs, cdouble rhs)
     {
         return abs(lhs) < abs(rhs) ? lhs :  rhs;
     }
 
-	template<typename T> __DH__
-	static T scalar(double val)
+    template<typename T> __DH__
+    static T scalar(double val)
     {
         return (T)(val);
     }
 
     template<> __DH__
-	STATIC_ cfloat scalar<cfloat >(double val)
+    STATIC_ cfloat scalar<cfloat >(double val)
     {
         cfloat  cval = {(float)val, 0};
         return cval;
     }
 
     template<> __DH__
-	STATIC_ cdouble scalar<cdouble >(double val)
+    STATIC_ cdouble scalar<cdouble >(double val)
     {
         cdouble  cval = {val, 0};
         return cval;
     }
 
     template<typename To, typename Ti> __DH__
-	static To scalar(Ti real, Ti imag)
+    static To scalar(Ti real, Ti imag)
     {
         To  cval = {real, imag};
         return cval;
@@ -203,5 +206,4 @@ __SDH__ bool operator !=(cdouble a, cdouble b) { return !(a == b); }
     template<typename T> static inline T division(T lhs, double rhs) { return lhs / rhs; }
     cfloat division(cfloat lhs, double rhs);
     cdouble division(cdouble lhs, double rhs);
-
 }

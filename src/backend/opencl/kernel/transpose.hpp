@@ -17,6 +17,7 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
+#include <types.hpp>
 
 using cl::Buffer;
 using cl::Program;
@@ -32,9 +33,9 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type TILE_DIM  = 32;
-static const dim_type THREADS_X = TILE_DIM;
-static const dim_type THREADS_Y = TILE_DIM / 4;
+static const int TILE_DIM  = 32;
+static const int THREADS_X = TILE_DIM;
+static const int THREADS_Y = 256 / TILE_DIM;
 
 template<typename T, bool conjugate, bool IS32MULTIPLE>
 void transpose(Param out, const Param in)
@@ -70,8 +71,8 @@ void transpose(Param out, const Param in)
 
         NDRange local(THREADS_X, THREADS_Y);
 
-        dim_type blk_x = divup(in.info.dims[0], TILE_DIM);
-        dim_type blk_y = divup(in.info.dims[1], TILE_DIM);
+        int blk_x = divup(in.info.dims[0], TILE_DIM);
+        int blk_y = divup(in.info.dims[1], TILE_DIM);
 
         // launch batch * blk_x blocks along x dimension
         NDRange global(blk_x * local[0] * in.info.dims[2],
@@ -79,7 +80,7 @@ void transpose(Param out, const Param in)
 
         auto transposeOp = make_kernel<Buffer, const KParam,
                                        const Buffer, const KParam,
-                                       const dim_type, const dim_type> (*trsKernels[device]);
+                                       const int, const int> (*trsKernels[device]);
 
         transposeOp(EnqueueArgs(getQueue(), global, local),
                     *out.data, out.info, *in.data, in.info, blk_x, blk_y);

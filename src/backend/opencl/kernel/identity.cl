@@ -8,7 +8,7 @@
  ********************************************************/
 
 __kernel
-void identity_kernel(__global T *oData, KParam oInfo, dim_type groups_x, dim_type groups_y)
+void identity_kernel(__global T *oData, KParam oInfo, int groups_x, int groups_y)
 {
 
     unsigned idz = get_group_id(0) / groups_x;
@@ -26,7 +26,7 @@ void identity_kernel(__global T *oData, KParam oInfo, dim_type groups_x, dim_typ
        idw >= oInfo.dims[3])
         return;
 
-    __global T *ptr = oData + idw * oInfo.strides[2] + idz * oInfo.strides[3];
+    __global T *ptr = oData + idz * oInfo.strides[2] + idw * oInfo.strides[3];
     T val = (idx == idy) ? ONE : ZERO;
     ptr[idx + idy * oInfo.strides[1]] = val;
 }

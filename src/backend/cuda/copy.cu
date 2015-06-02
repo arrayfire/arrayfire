@@ -128,6 +128,8 @@ namespace cuda
     template Array<cdouble> padArray<SRC_T, cdouble>(Array<SRC_T> const &src, dim4 const &dims, cdouble default_value, double factor); \
     template Array<int    > padArray<SRC_T, int    >(Array<SRC_T> const &src, dim4 const &dims, int     default_value, double factor); \
     template Array<uint   > padArray<SRC_T, uint   >(Array<SRC_T> const &src, dim4 const &dims, uint    default_value, double factor); \
+    template Array<intl    > padArray<SRC_T, intl    >(Array<SRC_T> const &src, dim4 const &dims, intl     default_value, double factor); \
+    template Array<uintl   > padArray<SRC_T, uintl   >(Array<SRC_T> const &src, dim4 const &dims, uintl    default_value, double factor); \
     template Array<uchar  > padArray<SRC_T, uchar  >(Array<SRC_T> const &src, dim4 const &dims, uchar   default_value, double factor); \
     template Array<char   > padArray<SRC_T, char   >(Array<SRC_T> const &src, dim4 const &dims, char    default_value, double factor); \
     template void copyArray<SRC_T, float  >(Array<float  > &dst, Array<SRC_T> const &src); \
@@ -136,6 +138,8 @@ namespace cuda
     template void copyArray<SRC_T, cdouble>(Array<cdouble> &dst, Array<SRC_T> const &src); \
     template void copyArray<SRC_T, int    >(Array<int    > &dst, Array<SRC_T> const &src); \
     template void copyArray<SRC_T, uint   >(Array<uint   > &dst, Array<SRC_T> const &src); \
+    template void copyArray<SRC_T, intl    >(Array<intl    > &dst, Array<SRC_T> const &src); \
+    template void copyArray<SRC_T, uintl   >(Array<uintl   > &dst, Array<SRC_T> const &src); \
     template void copyArray<SRC_T, uchar  >(Array<uchar  > &dst, Array<SRC_T> const &src); \
     template void copyArray<SRC_T, char   >(Array<char   > &dst, Array<SRC_T> const &src);
 
@@ -143,6 +147,8 @@ namespace cuda
     INSTANTIATE_PAD_ARRAY(double)
     INSTANTIATE_PAD_ARRAY(int   )
     INSTANTIATE_PAD_ARRAY(uint  )
+    INSTANTIATE_PAD_ARRAY(intl   )
+    INSTANTIATE_PAD_ARRAY(uintl  )
     INSTANTIATE_PAD_ARRAY(uchar )
     INSTANTIATE_PAD_ARRAY(char  )
 
@@ -155,4 +161,26 @@ namespace cuda
     INSTANTIATE_PAD_ARRAY_COMPLEX(cfloat )
     INSTANTIATE_PAD_ARRAY_COMPLEX(cdouble)
 
+#define SPECILIAZE_UNUSED_COPYARRAY(SRC_T, DST_T) \
+    template<> void copyArray<SRC_T, DST_T>(Array<DST_T> &out, Array<SRC_T> const &in) \
+    {\
+        CUDA_NOT_SUPPORTED();\
+    }
+
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, double)
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, float)
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, uchar)
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, char)
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, uint)
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, int)
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, intl)
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, uintl)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, double)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, float)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, uchar)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, char)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, uint)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, int)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, intl)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, uintl)
 }

@@ -1,4 +1,15 @@
+/*******************************************************
+ * Copyright (c) 2014, ArrayFire
+ * All rights reserved.
+ *
+ * This file is distributed under 3-clause BSD license.
+ * The complete license agreement can be obtained at:
+ * http://arrayfire.com/licenses/BSD-3-Clause
+ ********************************************************/
+
 #include "types.h"
+
+template<typename T> __device__ T sign(T a) { return signbit(a); }
 
 #define MATH_BASIC(fn, T)                       \
     __device__ T ___##fn(T a)                   \
@@ -40,6 +51,20 @@ MATH_NOOP(round, int)
 MATH_NOOP(round, uint)
 MATH_NOOP(round, char)
 MATH_NOOP(round, uchar)
+
+MATH_BASIC(trunc, float)
+MATH_BASIC(trunc, double)
+MATH_NOOP(trunc, int)
+MATH_NOOP(trunc, uint)
+MATH_NOOP(trunc, char)
+MATH_NOOP(trunc, uchar)
+
+MATH_BASIC(sign, float)
+MATH_BASIC(sign, double)
+MATH_NOOP(sign, int)
+MATH_NOOP(sign, uint)
+MATH_NOOP(sign, char)
+MATH_NOOP(sign, uchar)
 
 MATH_BASIC(abs, float)
 MATH_BASIC(abs, double)

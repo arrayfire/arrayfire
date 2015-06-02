@@ -32,26 +32,6 @@ typedef ::testing::Types<float, double, int, uint, char, uchar> TestTypes;
 // register the type list
 TYPED_TEST_CASE(Histogram, TestTypes);
 
-TYPED_TEST(Histogram,InvalidArgs)
-{
-    if (noDoubleTests<TypeParam>()) return;
-
-    af::dim4            dims(1);
-    vector<TypeParam>   in(100,1);
-
-    af_array inArray   = 0;
-    af_array outArray  = 0;
-
-    // square test file is 100x100 originally
-    // use new dimensions for this argument
-    // unit test
-    af::dim4 newDims(5,5,2,2);
-    ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), newDims.ndims(), newDims.get(), (af_dtype) af::dtype_traits<TypeParam>::af_type));
-
-    ASSERT_EQ(AF_ERR_SIZE, af_histogram(&outArray,inArray,256,0,255));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-}
-
 template<typename inType, typename outType>
 void histTest(string pTestFile, unsigned nbins, double minval, double maxval)
 {
@@ -86,8 +66,8 @@ void histTest(string pTestFile, unsigned nbins, double minval, double maxval)
 
     // cleanup
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 TYPED_TEST(Histogram,256Bins0min255max_ones)
@@ -241,7 +221,7 @@ TEST(Histogram, SNIPPET_histequal)
 
     // input after histogram equalization or normalization
     // based on histogram provided
-    array eq_out = histequal(hist_in, hist_out);
+    array eq_out = histEqual(hist_in, hist_out);
     // eq_out = { 1.5, 4.5,  1.5, 1.5, 4.5, 4.5, 6.0, 7.5, 4.5 }
     //! [ex_image_histequal]
 
@@ -254,5 +234,24 @@ TEST(Histogram, SNIPPET_histequal)
         cout << endl << "Actual: ";
         copy(h_out.begin(), h_out.end(), ostream_iterator<float>(cout, ", "));
         FAIL() << "Output did not match";
+    }
+}
+
+TEST(histogram, GFOR)
+{
+    using namespace af;
+
+    dim4 dims = dim4(100, 100, 3);
+    array A = round(100 * randu(dims));
+    array B = constant(0, 100, 1, 3);
+
+    gfor(seq ii, 3) {
+        B(span, span, ii) = histogram(A(span, span, ii), 100);
+    }
+
+    for(int ii = 0; ii < 3; ii++) {
+        array c_ii = histogram(A(span, span, ii), 100);
+        array b_ii = B(span, span, ii);
+        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
     }
 }

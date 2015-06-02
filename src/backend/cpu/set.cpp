@@ -34,7 +34,7 @@ namespace cpu
 
         T *ptr = out.get();
         T *last = std::unique(ptr, ptr + in.elements());
-        dim_type dist = (dim_type)std::distance(ptr, last);
+        dim_t dist = (dim_t)std::distance(ptr, last);
 
         dim4 dims(dist, 1, 1, 1);
         out.resetDims(dims);
@@ -55,9 +55,9 @@ namespace cpu
             uSecond = setUnique(second, false);
         }
 
-        dim_type first_elements  = uFirst.elements();
-        dim_type second_elements = uSecond.elements();
-        dim_type elements = first_elements + second_elements;
+        dim_t first_elements  = uFirst.elements();
+        dim_t second_elements = uSecond.elements();
+        dim_t elements = first_elements + second_elements;
 
         Array<T> out = createEmptyArray<T>(af::dim4(elements));
 
@@ -66,7 +66,7 @@ namespace cpu
                                  uSecond.get(), uSecond.get() + second_elements,
                                  ptr);
 
-        dim_type dist = (dim_type)std::distance(ptr, last);
+        dim_t dist = (dim_t)std::distance(ptr, last);
         dim4 dims(dist, 1, 1, 1);
         out.resetDims(dims);
 
@@ -86,9 +86,9 @@ namespace cpu
             uSecond = setUnique(second, false);
         }
 
-        dim_type first_elements  = uFirst.elements();
-        dim_type second_elements = uSecond.elements();
-        dim_type elements = std::max(first_elements, second_elements);
+        dim_t first_elements  = uFirst.elements();
+        dim_t second_elements = uSecond.elements();
+        dim_t elements = std::max(first_elements, second_elements);
 
         Array<T> out = createEmptyArray<T>(af::dim4(elements));
 
@@ -97,7 +97,7 @@ namespace cpu
                                         uSecond.get(), uSecond.get() + second_elements,
                                         ptr);
 
-        dim_type dist = (dim_type)std::distance(ptr, last);
+        dim_t dist = (dim_t)std::distance(ptr, last);
         dim4 dims(dist, 1, 1, 1);
         out.resetDims(dims);
 

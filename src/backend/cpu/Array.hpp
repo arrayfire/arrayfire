@@ -16,6 +16,7 @@
 #include <types.hpp>
 #include <traits.hpp>
 #include <TNJ/Node.hpp>
+#include <memory.hpp>
 #include <memory>
 #include <algorithm>
 #include <vector>
@@ -43,6 +44,14 @@ namespace cpu
     template<typename T>
     Array<T> createDeviceDataArray(const af::dim4 &size, const void *data);
 
+    // Copies data to an existing Array object from a host pointer
+    template<typename T>
+    void writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes);
+
+    // Copies data to an existing Array object from a device pointer
+    template<typename T>
+    void writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes);
+
     // Create an Array object and do not assign any values to it
     template<typename T> Array<T> *initArray();
 
@@ -64,6 +73,7 @@ namespace cpu
     template<typename T>
     void *getDevicePtr(const Array<T>& arr)
     {
+        memUnlink((T *)arr.get());
         return (void *)arr.get();
     }
 
@@ -79,7 +89,7 @@ namespace cpu
 
         TNJ::Node_ptr node;
         bool ready;
-        dim_type offset;
+        dim_t offset;
         bool owner;
 
         Array(dim4 dims);
@@ -98,7 +108,7 @@ namespace cpu
         void eval();
         void eval() const;
 
-        dim_type getOffset() const { return offset; }
+        dim_t getOffset() const { return offset; }
         shared_ptr<T> getData() const {return data; }
 
         dim4 getDataDims() const

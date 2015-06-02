@@ -44,7 +44,7 @@ static outType mean(const af_array &in, const af_array &weights)
 }
 
 template<typename inType, typename outType>
-static af_array mean(const af_array &in, dim_type dim)
+static af_array mean(const af_array &in, const dim_t dim)
 {
     Array<outType> input = cast<outType>(getArray<inType>(in));
     Array<outType>  result= mean<outType>(input, dim); /* defined in stats.h */
@@ -53,7 +53,7 @@ static af_array mean(const af_array &in, dim_type dim)
 }
 
 template<typename inType, typename outType>
-static af_array mean(const af_array &in, const af_array &weights, dim_type dim)
+static af_array mean(const af_array &in, const af_array &weights, const dim_t dim)
 {
     typedef typename baseOutType<outType>::type bType;
 
@@ -64,7 +64,7 @@ static af_array mean(const af_array &in, const af_array &weights, dim_type dim)
     return getHandle<outType>(retVal);
 }
 
-af_err af_mean(af_array *out, const af_array in, dim_type dim)
+af_err af_mean(af_array *out, const af_array in, const dim_t dim)
 {
     try {
         ARG_ASSERT(2, (dim>=0 && dim<=3));
@@ -77,6 +77,8 @@ af_err af_mean(af_array *out, const af_array in, dim_type dim)
             case f32: output = mean<float ,  float >(in, dim); break;
             case s32: output = mean<int   ,  float >(in, dim); break;
             case u32: output = mean<uint  ,  float >(in, dim); break;
+            case s64: output = mean<intl  ,  double>(in, dim); break;
+            case u64: output = mean<uintl ,  double>(in, dim); break;
             case  u8: output = mean<uchar ,  float >(in, dim); break;
             case  b8: output = mean<char  ,  float >(in, dim); break;
             case c32: output = mean<cfloat,  cfloat>(in, dim); break;
@@ -89,7 +91,7 @@ af_err af_mean(af_array *out, const af_array in, dim_type dim)
     return AF_SUCCESS;
 }
 
-af_err af_mean_weighted(af_array *out, const af_array in, const af_array weights, dim_type dim)
+af_err af_mean_weighted(af_array *out, const af_array in, const af_array weights, const dim_t dim)
 {
     try {
         ARG_ASSERT(2, (dim>=0 && dim<=3));
@@ -107,6 +109,8 @@ af_err af_mean_weighted(af_array *out, const af_array in, const af_array weights
             case f32: output = mean<float ,  float >(in, weights, dim); break;
             case s32: output = mean<int   ,  float >(in, weights, dim); break;
             case u32: output = mean<uint  ,  float >(in, weights, dim); break;
+            case s64: output = mean<intl  ,  double>(in, weights, dim); break;
+            case u64: output = mean<uintl ,  double>(in, weights, dim); break;
             case  u8: output = mean<uchar ,  float >(in, weights, dim); break;
             case  b8: output = mean<char  ,  float >(in, weights, dim); break;
             case c32: output = mean<cfloat,  cfloat>(in, weights, dim); break;
@@ -129,6 +133,8 @@ af_err af_mean_all(double *realVal, double *imagVal, const af_array in)
             case f32: *realVal = mean<float ,  float>(in); break;
             case s32: *realVal = mean<int   ,  float>(in); break;
             case u32: *realVal = mean<uint  ,  float>(in); break;
+            case s64: *realVal = mean<intl  , double>(in); break;
+            case u64: *realVal = mean<uintl , double>(in); break;
             case  u8: *realVal = mean<uchar ,  float>(in); break;
             case  b8: *realVal = mean<char  ,  float>(in); break;
             case c32: {
@@ -163,6 +169,8 @@ af_err af_mean_all_weighted(double *realVal, double *imagVal, const af_array in,
             case f32: *realVal = mean<float ,  float>(in, weights); break;
             case s32: *realVal = mean<int   ,  float>(in, weights); break;
             case u32: *realVal = mean<uint  ,  float>(in, weights); break;
+            case s64: *realVal = mean<intl  , double>(in, weights); break;
+            case u64: *realVal = mean<uintl , double>(in, weights); break;
             case  u8: *realVal = mean<uchar ,  float>(in, weights); break;
             case  b8: *realVal = mean<char  ,  float>(in, weights); break;
             case c32: {

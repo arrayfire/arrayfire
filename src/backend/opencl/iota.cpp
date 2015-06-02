@@ -19,10 +19,6 @@ namespace opencl
     template<typename T>
     Array<T> iota(const dim4 &dims, const dim4 &tile_dims)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
         dim4 outdims = dims * tile_dims;
 
         Array<T> out = createEmptyArray<T>(outdims);
@@ -40,4 +36,3 @@ namespace opencl
     INSTANTIATE(uint)
     INSTANTIATE(uchar)
 }
-

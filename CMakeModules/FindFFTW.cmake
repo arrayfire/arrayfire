@@ -2,7 +2,7 @@
 #
 # Usage:
 #   FIND_PACKAGE(FFTW [REQUIRED] [QUIET] )
-#     
+#
 # It sets the following variables:
 #   FFTW_FOUND               ... true if fftw is found on the system
 #   FFTW_LIBRARIES           ... full path to fftw library
@@ -56,13 +56,7 @@ IF(FFTW_ROOT)
         PATH_SUFFIXES "lib" "lib64"
         NO_DEFAULT_PATH
         )
-    FIND_LIBRARY(
-        FFTWL_LIB
-        NAMES "fftw3l" "libfftw3l-3" "fftw3l-3"
-        PATHS ${FFTW_ROOT}
-        PATH_SUFFIXES "lib" "lib64"
-        NO_DEFAULT_PATH
-        )
+
     #find includes
     FIND_PATH(
         FFTW_INCLUDES
@@ -82,11 +76,6 @@ ELSE()
         NAMES "fftw3f"
         PATHS ${PKG_FFTW_LIBRARY_DIRS} ${LIB_INSTALL_DIR}
         )
-    FIND_LIBRARY(
-        FFTWL_LIB
-        NAMES "fftw3l"
-        PATHS ${PKG_FFTW_LIBRARY_DIRS} ${LIB_INSTALL_DIR}
-        )
     FIND_PATH(
         FFTW_INCLUDES
         NAMES "fftw3.h"
@@ -95,10 +84,6 @@ ELSE()
 ENDIF(FFTW_ROOT)
 
 SET(FFTW_LIBRARIES ${FFTW_LIB} ${FFTWF_LIB})
-
-IF(FFTWL_LIB)
-    SET(FFTW_LIBRARIES ${FFTW_LIBRARIES} ${FFTWL_LIB})
-ENDIF()
 
 SET(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_SAV})
 

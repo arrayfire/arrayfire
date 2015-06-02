@@ -29,7 +29,7 @@ std::string classify(af::array arr, int k)
         float *h_vec = vec.host<float>();
         std::vector<sort_type> data;
 
-        for (int i = 0; i < vec.elements(); i++)
+        for (int i = 0; i < (int)vec.elements(); i++)
             data.push_back(std::make_pair(h_vec[i], i));
 
         std::stable_sort(data.begin(), data.end(), compare);
@@ -46,11 +46,11 @@ static void setup_mnist(int *num_classes, int *num_train, int *num_test,
                         af::array &train_images, af::array &test_images,
                         af::array &train_labels, af::array &test_labels, float frac)
 {
-    std::vector<dim_type> idims;
+    std::vector<dim_t> idims;
     std::vector<float   > idata;
     read_idx(idims, idata, ASSETS_DIR"/examples/data/mnist/images-subset");
 
-    std::vector<dim_type> ldims;
+    std::vector<dim_t> ldims;
     std::vector<unsigned> ldata;
     read_idx(ldims, ldata, ASSETS_DIR"/examples/data/mnist/labels-subset");
 

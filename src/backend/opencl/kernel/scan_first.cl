@@ -25,6 +25,8 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
     const int xid = groupId_x * get_local_size(0) * lim + lidx;
     const int yid = groupId_y * get_local_size(1) + lidy;
 
+    bool cond_yzw = (yid < oInfo.dims[1]) && (zid < oInfo.dims[2]) && (wid < oInfo.dims[3]);
+
     iData += wid * iInfo.strides[3] + zid * iInfo.strides[2] +
         yid * iInfo.strides[1] + iInfo.offset;
 
@@ -34,8 +36,6 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
     oData += wid * oInfo.strides[3] + zid * oInfo.strides[2] +
         yid * oInfo.strides[1] + oInfo.offset;
 
-    bool cond_yzw = (yid < oInfo.dims[1]) && (zid < oInfo.dims[2]) && (wid < oInfo.dims[3]);
-
     __local To l_val0[SHARED_MEM_SIZE];
     __local To l_val1[SHARED_MEM_SIZE];
     __local To *l_val = l_val0;
@@ -44,7 +44,7 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
     bool flip = 0;
 
     const To init_val = init;
-    uint id = xid;
+    int id = xid;
     To val = init_val;
 
     const bool isLast = (lidx == (DIMX - 1));
@@ -53,7 +53,7 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
 
         if (isLast) l_tmp[lidy] = val;
 
-        bool cond = (cond_yzw && (id < oInfo.dims[0]));
+        bool cond = ((id < oInfo.dims[0]) && cond_yzw);
         val = cond ? transform(iData[id]) : init_val;
         l_val[lid] = val;
         barrier(CLK_LOCAL_MEM_FENCE);
@@ -70,9 +70,10 @@ void scan_first_kernel(__global To *oData, KParam oInfo,
         val = binOp(val, l_tmp[lidy]);
         if (cond) oData[id] = val;
         id += DIMX;
+        barrier(CLK_LOCAL_MEM_FENCE); //FIXME: May be needed only for non nvidia gpus
     }
 
-    if (!isFinalPass && cond_yzw && isLast) {
+    if (!isFinalPass && isLast && cond_yzw) {
         tData[groupId_x] = val;
     }
 }
@@ -93,24 +94,25 @@ void bcast_first_kernel(__global To *oData, KParam oInfo,
     const int xid = groupId_x * get_local_size(0) * lim + lidx;
     const int yid = groupId_y * get_local_size(1) + lidy;
 
-    tData += wid * tInfo.strides[3] + zid * tInfo.strides[2] +
-        yid * tInfo.strides[1] + tInfo.offset;
+    if (groupId_x != 0) {
+        bool cond = (yid < oInfo.dims[1]) && (zid < oInfo.dims[2]) && (wid < oInfo.dims[3]);
 
-    oData += wid * oInfo.strides[3] + zid * oInfo.strides[2] +
-        yid * oInfo.strides[1] + oInfo.offset;
+        if (cond) {
 
-    bool cond = (yid < oInfo.dims[1]) && (zid < oInfo.dims[2]) && (wid < oInfo.dims[3]);
+            tData += wid * tInfo.strides[3] + zid * tInfo.strides[2] +
+                yid * tInfo.strides[1] + tInfo.offset;
 
-    if (!cond) return;
-    if (groupId_x == 0) return;
+            oData += wid * oInfo.strides[3] + zid * oInfo.strides[2] +
+                yid * oInfo.strides[1] + oInfo.offset;
 
-    To accum = tData[groupId_x - 1];
+            To accum = tData[groupId_x - 1];
 
-    for (int k = 0, id = xid;
-         k < lim && id < oInfo.dims[0];
-         k++, id += DIMX) {
+            for (int k = 0, id = xid;
+                 k < lim && id < oInfo.dims[0];
+                 k++, id += DIMX) {
 
-        oData[id] = binOp(accum, oData[id]);
+                oData[id] = binOp(accum, oData[id]);
+            }
+        }
     }
-
 }

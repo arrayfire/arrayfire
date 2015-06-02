@@ -18,10 +18,6 @@ namespace opencl
     template<typename T>
     Array<T> reorder(const Array<T> &in, const af::dim4 &rdims)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
         const af::dim4 iDims = in.dims();
         af::dim4 oDims(0);
         for(int i = 0; i < 4; i++)

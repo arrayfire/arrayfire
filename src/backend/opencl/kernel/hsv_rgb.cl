@@ -8,25 +8,25 @@
  ********************************************************/
 
 kernel
-void convert(global T * out, KParam oInfo, global const T * in, KParam iInfo, dim_type nBBS)
+void convert(global T * out, KParam oInfo, global const T * in, KParam iInfo, int nBBS)
 {
     // batch offsets
     unsigned batchId = get_group_id(0) / nBBS;
     global const T* src =  in + (batchId * iInfo.strides[3]);
     global T*       dst = out + (batchId * oInfo.strides[3]);
     // global indices
-    dim_type gx = get_local_size(0) * (get_group_id(0)-batchId*nBBS) + get_local_id(0);
-    dim_type gy = get_local_size(1) * get_group_id(1) + get_local_id(1);
+    int gx = get_local_size(0) * (get_group_id(0)-batchId*nBBS) + get_local_id(0);
+    int gy = get_local_size(1) * get_group_id(1) + get_local_id(1);
 
     if (gx < oInfo.dims[0] && gy < oInfo.dims[1]) {
 
-        dim_type oIdx0 = gx + gy * oInfo.strides[1];
-        dim_type oIdx1 = oIdx0 + oInfo.strides[2];
-        dim_type oIdx2 = oIdx1 + oInfo.strides[2];
+        int oIdx0 = gx + gy * oInfo.strides[1];
+        int oIdx1 = oIdx0 + oInfo.strides[2];
+        int oIdx2 = oIdx1 + oInfo.strides[2];
 
-        dim_type iIdx0 = gx * iInfo.strides[0] + gy * iInfo.strides[1];
-        dim_type iIdx1 = iIdx0 + iInfo.strides[2];
-        dim_type iIdx2 = iIdx1 + iInfo.strides[2];
+        int iIdx0 = gx * iInfo.strides[0] + gy * iInfo.strides[1];
+        int iIdx1 = iIdx0 + iInfo.strides[2];
+        int iIdx2 = iIdx1 + iInfo.strides[2];
 
 #ifdef isHSV2RGB
         T H = src[iIdx0];

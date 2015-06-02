@@ -15,10 +15,6 @@ typedef struct af_seq {
     double step;
 } af_seq;
 
-AFAPI
-af_seq
-af_make_seq(double begin, double end, double step);
-
 static const af_seq af_span = {1, 1, 0};
 
 #ifdef __cplusplus
@@ -68,5 +64,14 @@ public:
 extern AFAPI int end;
 extern AFAPI seq span;
 
+}
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+AFAPI af_seq af_make_seq(double begin, double end, double step);
+
+#ifdef __cplusplus
 }
 #endif

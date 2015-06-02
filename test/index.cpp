@@ -34,7 +34,7 @@ template<typename T, typename OP>
 void
 checkValues(const af_seq &seq, const T* data, const T* indexed_data, OP compair_op) {
     for(int i = 0, j = seq.begin; compair_op(j,(int)seq.end); j+= seq.step, i++) {
-        ASSERT_DOUBLE_EQ(data[j], indexed_data[i])
+        ASSERT_DOUBLE_EQ(real(data[j]), real(indexed_data[i]))
         << "Where i = " << i << " and j = " << j;
     }
 }
@@ -47,7 +47,7 @@ DimCheck(const vector<af_seq> &seqs) {
     static const int ndims = 1;
     static const size_t dims = 100;
 
-    dim_type d[1] = {dims};
+    dim_t d[1] = {dims};
 
     vector<T> hData(dims);
     for(int i = 0; i < (int)dims; i++) { hData[i] = i; }
@@ -65,7 +65,7 @@ DimCheck(const vector<af_seq> &seqs) {
 
     vector<T*> h_indexed(seqs.size());
     for(size_t i = 0; i < seqs.size(); i++) {
-        dim_type elems;
+        dim_t elems;
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&elems, indexed_array[i]));
         h_indexed[i] = new T[elems];
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void *)(h_indexed[i]), indexed_array[i]));
@@ -78,16 +78,16 @@ DimCheck(const vector<af_seq> &seqs) {
             checkValues(seqs[k], &hData.front(), h_indexed[k], std::greater_equal<int>());
         } else {
             for(size_t i = 0; i <= seqs[k].end; i++) {
-                ASSERT_DOUBLE_EQ(hData[i], h_indexed[k][i])
+                ASSERT_DOUBLE_EQ(real(hData[i]), real(h_indexed[k][i]))
                     << "Where i = " << i;
             }
         }
         delete[] h_indexed[k];
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(a));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
     for (size_t i = 0; i < indexed_array.size(); i++) {
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(indexed_array[i]));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(indexed_array[i]));
     }
 }
 
@@ -126,8 +126,8 @@ public:
     vector<af_seq> span_seqs;
 };
 
-typedef ::testing::Types<float, double, int, unsigned, char, unsigned char> TestTypes;
-TYPED_TEST_CASE(Indexing1D, TestTypes);
+typedef ::testing::Types<float, double, af::cfloat, af::cdouble, int, unsigned, unsigned char, intl, uintl> AllTypes;
+TYPED_TEST_CASE(Indexing1D, AllTypes);
 
 TYPED_TEST(Indexing1D, Continious)          { DimCheck<TypeParam>(this->continuous_seqs);           }
 TYPED_TEST(Indexing1D, ContiniousReverse)   { DimCheck<TypeParam>(this->continuous_reverse_seqs);   }
@@ -252,9 +252,9 @@ public:
     vector<vector<af_seq> > strided_strided_seq;
 };
 
-template<typename T, size_t NDims>
+template<typename T>
 void
-DimCheck2D(const vector<vector<af_seq> > &seqs,string TestFile)
+DimCheck2D(const vector<vector<af_seq> > &seqs,string TestFile, size_t NDims)
 {
     if (noDoubleTests<T>()) return;
 
@@ -275,7 +275,7 @@ DimCheck2D(const vector<vector<af_seq> > &seqs,string TestFile)
 
     vector<T*> h_indexed(seqs.size(), NULL);
     for(size_t i = 0; i < seqs.size(); i++) {
-        dim_type elems;
+        dim_t elems;
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&elems, indexed_arrays[i]));
         h_indexed[i] = new T[elems];
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void *)h_indexed[i], indexed_arrays[i]));
@@ -291,102 +291,102 @@ DimCheck2D(const vector<vector<af_seq> > &seqs,string TestFile)
         delete[] h_indexed[i];
     }
 
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(a));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(a));
     for (size_t i = 0; i < indexed_arrays.size(); i++) {
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(indexed_arrays[i]));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(indexed_arrays[i]));
     }
 }
 
-TYPED_TEST_CASE(Indexing2D, TestTypes);
+TYPED_TEST_CASE(Indexing2D, AllTypes);
 
 TYPED_TEST(Indexing2D, ColumnContinious)
 {
-    DimCheck2D<TypeParam, 2>(this->column_continuous_seq, TEST_DIR"/index/ColumnContinious.test");
+    DimCheck2D<TypeParam>(this->column_continuous_seq, TEST_DIR"/index/ColumnContinious.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ColumnContiniousReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->column_continuous_reverse_seq, TEST_DIR"/index/ColumnContiniousReverse.test");
+    DimCheck2D<TypeParam>(this->column_continuous_reverse_seq, TEST_DIR"/index/ColumnContiniousReverse.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ColumnStrided)
 {
-    DimCheck2D<TypeParam, 2>(this->column_strided_seq, TEST_DIR"/index/ColumnStrided.test");
+    DimCheck2D<TypeParam>(this->column_strided_seq, TEST_DIR"/index/ColumnStrided.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ColumnStridedReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->column_strided_reverse_seq, TEST_DIR"/index/ColumnStridedReverse.test");
+    DimCheck2D<TypeParam>(this->column_strided_reverse_seq, TEST_DIR"/index/ColumnStridedReverse.test", 2);
 }
 
 TYPED_TEST(Indexing2D, RowContinious)
 {
-    DimCheck2D<TypeParam, 2>(this->row_continuous_seq, TEST_DIR"/index/RowContinious.test");
+    DimCheck2D<TypeParam>(this->row_continuous_seq, TEST_DIR"/index/RowContinious.test", 2);
 }
 
 TYPED_TEST(Indexing2D, RowContiniousReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->row_continuous_reverse_seq, TEST_DIR"/index/RowContiniousReverse.test");
+    DimCheck2D<TypeParam>(this->row_continuous_reverse_seq, TEST_DIR"/index/RowContiniousReverse.test", 2);
 }
 
 TYPED_TEST(Indexing2D, RowStrided)
 {
-    DimCheck2D<TypeParam, 2>(this->row_strided_seq, TEST_DIR"/index/RowStrided.test");
+    DimCheck2D<TypeParam>(this->row_strided_seq, TEST_DIR"/index/RowStrided.test", 2);
 }
 
 TYPED_TEST(Indexing2D, RowStridedReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->row_strided_reverse_seq, TEST_DIR"/index/RowStridedReverse.test");
+    DimCheck2D<TypeParam>(this->row_strided_reverse_seq, TEST_DIR"/index/RowStridedReverse.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ContiniousContinious)
 {
-    DimCheck2D<TypeParam, 2>(this->continuous_continuous_seq, TEST_DIR"/index/ContiniousContinious.test");
+    DimCheck2D<TypeParam>(this->continuous_continuous_seq, TEST_DIR"/index/ContiniousContinious.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ContiniousReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->continuous_reverse_seq, TEST_DIR"/index/ContiniousReverse.test");
+    DimCheck2D<TypeParam>(this->continuous_reverse_seq, TEST_DIR"/index/ContiniousReverse.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ContiniousStrided)
 {
-    DimCheck2D<TypeParam, 2>(this->continuous_strided_seq, TEST_DIR"/index/ContiniousStrided.test");
+    DimCheck2D<TypeParam>(this->continuous_strided_seq, TEST_DIR"/index/ContiniousStrided.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ContiniousStridedReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->continuous_strided_reverse_seq, TEST_DIR"/index/ContiniousStridedReverse.test");
+    DimCheck2D<TypeParam>(this->continuous_strided_reverse_seq, TEST_DIR"/index/ContiniousStridedReverse.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ReverseContinious)
 {
-    DimCheck2D<TypeParam, 2>(this->reverse_continuous_seq, TEST_DIR"/index/ReverseContinious.test");
+    DimCheck2D<TypeParam>(this->reverse_continuous_seq, TEST_DIR"/index/ReverseContinious.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ReverseReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->reverse_reverse_seq, TEST_DIR"/index/ReverseReverse.test");
+    DimCheck2D<TypeParam>(this->reverse_reverse_seq, TEST_DIR"/index/ReverseReverse.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ReverseStrided)
 {
-    DimCheck2D<TypeParam, 2>(this->reverse_strided_seq, TEST_DIR"/index/ReverseStrided.test");
+    DimCheck2D<TypeParam>(this->reverse_strided_seq, TEST_DIR"/index/ReverseStrided.test", 2);
 }
 
 TYPED_TEST(Indexing2D, ReverseStridedReverse)
 {
-    DimCheck2D<TypeParam, 2>(this->reverse_strided_reverse_seq, TEST_DIR"/index/ReverseStridedReverse.test");
+    DimCheck2D<TypeParam>(this->reverse_strided_reverse_seq, TEST_DIR"/index/ReverseStridedReverse.test", 2);
 }
 
 TYPED_TEST(Indexing2D, StridedContinious)
 {
-    DimCheck2D<TypeParam, 2>(this->strided_continuous_seq, TEST_DIR"/index/StridedContinious.test");
+    DimCheck2D<TypeParam>(this->strided_continuous_seq, TEST_DIR"/index/StridedContinious.test", 2);
 }
 
 TYPED_TEST(Indexing2D, StridedStrided)
 {
-    DimCheck2D<TypeParam, 2>(this->strided_strided_seq, TEST_DIR"/index/StridedStrided.test");
+    DimCheck2D<TypeParam>(this->strided_strided_seq, TEST_DIR"/index/StridedStrided.test", 2);
 }
 
 vector<af_seq> make_vec(af_seq first, af_seq second) {
@@ -448,51 +448,51 @@ class Indexing : public ::testing::Test
     vector<vector<af_seq> > continuous4d_to_1d;
 };
 
-template<typename T, size_t NDims>
-void DimCheckND(const vector<vector<af_seq> > &seqs,string TestFile)
+template<typename T>
+void DimCheckND(const vector<vector<af_seq> > &seqs,string TestFile, size_t NDims)
 {
     if (noDoubleTests<T>()) return;
 
     // DimCheck2D function is generalized enough
     // to check 3d and 4d indexing
-    DimCheck2D<T, NDims>(seqs, TestFile);
+    DimCheck2D<T>(seqs, TestFile, NDims);
 }
 
-TYPED_TEST_CASE(Indexing, TestTypes);
+TYPED_TEST_CASE(Indexing, AllTypes);
 
 TYPED_TEST(Indexing, 4D_to_4D)
 {
-    DimCheckND<TypeParam, 4>(this->continuous4d_to_4d, TEST_DIR"/index/Continuous4Dto4D.test");
+    DimCheckND<TypeParam>(this->continuous4d_to_4d, TEST_DIR"/index/Continuous4Dto4D.test", 4);
 }
 
 TYPED_TEST(Indexing, 4D_to_3D)
 {
-    DimCheckND<TypeParam, 4>(this->continuous4d_to_3d, TEST_DIR"/index/Continuous4Dto3D.test");
+    DimCheckND<TypeParam>(this->continuous4d_to_3d, TEST_DIR"/index/Continuous4Dto3D.test", 4);
 }
 
 TYPED_TEST(Indexing, 4D_to_2D)
 {
-    DimCheckND<TypeParam, 4>(this->continuous4d_to_2d, TEST_DIR"/index/Continuous4Dto2D.test");
+    DimCheckND<TypeParam>(this->continuous4d_to_2d, TEST_DIR"/index/Continuous4Dto2D.test", 4);
 }
 
 TYPED_TEST(Indexing, 4D_to_1D)
 {
-    DimCheckND<TypeParam, 4>(this->continuous4d_to_1d, TEST_DIR"/index/Continuous4Dto1D.test");
+    DimCheckND<TypeParam>(this->continuous4d_to_1d, TEST_DIR"/index/Continuous4Dto1D.test", 4);
 }
 
 TYPED_TEST(Indexing, 3D_to_3D)
 {
-    DimCheckND<TypeParam, 3>(this->continuous3d_to_3d, TEST_DIR"/index/Continuous3Dto3D.test");
+    DimCheckND<TypeParam>(this->continuous3d_to_3d, TEST_DIR"/index/Continuous3Dto3D.test", 3);
 }
 
 TYPED_TEST(Indexing, 3D_to_2D)
 {
-    DimCheckND<TypeParam, 3>(this->continuous3d_to_2d, TEST_DIR"/index/Continuous3Dto2D.test");
+    DimCheckND<TypeParam>(this->continuous3d_to_2d, TEST_DIR"/index/Continuous3Dto2D.test", 3);
 }
 
 TYPED_TEST(Indexing, 3D_to_1D)
 {
-    DimCheckND<TypeParam, 3>(this->continuous3d_to_1d, TEST_DIR"/index/Continuous3Dto1D.test");
+    DimCheckND<TypeParam>(this->continuous3d_to_1d, TEST_DIR"/index/Continuous3Dto1D.test", 3);
 }
 
 //////////////////////////////// CPP ////////////////////////////////
@@ -524,7 +524,7 @@ TEST(Indexing2D, ColumnContiniousCPP)
     }
 
     for(size_t i = 0; i < seqs.size(); i++) {
-        dim_type elems = sub[i].elements();
+        dim_t elems = sub[i].elements();
         float *ptr = new float[elems];
         sub[i].host(ptr);
 
@@ -588,9 +588,9 @@ void arrayIndexTest(string pTestFile, int dim)
     }
 
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(idxArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(idxArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 TYPED_TEST(lookup, Dim0)
@@ -689,13 +689,13 @@ TEST(SeqIndex, CPP_END_SEQ)
     delete[] hB;
 }
 
-af::array cpp_scope_test(const int num, const float val, const af::seq s)
+af::array cpp_scope_seq_test(const int num, const float val, const af::seq s)
 {
     af::array a = af::constant(val, num);
     return a(s);
 }
 
-TEST(SeqIndex, CPP_SCOPE)
+TEST(SeqIndex, CPP_SCOPE_SEQ)
 {
     using af::array;
 
@@ -704,11 +704,35 @@ TEST(SeqIndex, CPP_SCOPE)
     const int seq_end = 10;
     const float val = 133.33;
 
-    array b = cpp_scope_test(num, val, af::seq(seq_begin, seq_end));
+    array b = cpp_scope_seq_test(num, val, af::seq(seq_begin, seq_end));
     float *hB = b.host<float>();
 
     for (int i = 0; i < seq_end - seq_begin + 1; i++) {
         ASSERT_EQ(hB[i], val);
+    }
+
+    delete[] hB;
+}
+
+af::array cpp_scope_arr_test(const int num, const float val)
+{
+    af::array a = af::constant(val, num);
+    af::array idx = where(a > val/2);
+    return a(idx) * (val - 1);
+}
+
+TEST(SeqIndex, CPP_SCOPE_ARR)
+{
+    using af::array;
+
+    const int num = 20;
+    const float val = 133.33;
+
+    array b = cpp_scope_arr_test(num, val);
+    float *hB = b.host<float>();
+
+    for (int i = 0; i < (int)b.elements(); i++) {
+        ASSERT_EQ(hB[i], val * (val - 1));
     }
 
     delete[] hB;
@@ -766,8 +790,8 @@ TEST(SeqIndex, Cascade00)
     af::array b = a(seq(stb, enb), span);
     af::array c = b(seq(stc, enc), span);
 
-    ASSERT_EQ(c.dims(1), ny );
-    ASSERT_EQ(c.dims(0), nxc);
+    ASSERT_EQ(c.dims(1), (dim_t)ny );
+    ASSERT_EQ(c.dims(0), (dim_t)nxc);
 
     float *h_a = a.host<float>();
     float *h_b = b.host<float>();
@@ -811,8 +835,8 @@ TEST(SeqIndex, Cascade01)
     af::array b = a(seq(stb, enb), span);
     af::array c = b(span, seq(stc, enc));
 
-    ASSERT_EQ(c.dims(1), nyc);
-    ASSERT_EQ(c.dims(0), nxc);
+    ASSERT_EQ(c.dims(1), (dim_t)nyc);
+    ASSERT_EQ(c.dims(0), (dim_t)nxc);
 
     float *h_a = a.host<float>();
     float *h_b = b.host<float>();
@@ -857,8 +881,8 @@ TEST(SeqIndex, Cascade10)
     af::array b = a(span, seq(stb, enb));
     af::array c = b(seq(stc, enc), span);
 
-    ASSERT_EQ(c.dims(1), nyc);
-    ASSERT_EQ(c.dims(0), nxc);
+    ASSERT_EQ(c.dims(1), (dim_t)nyc);
+    ASSERT_EQ(c.dims(0), (dim_t)nxc);
 
     float *h_a = a.host<float>();
     float *h_b = b.host<float>();
@@ -927,4 +951,303 @@ TEST(SeqIndex, Cascade11)
     delete[] h_a;
     delete[] h_b;
     delete[] h_c;
+}
+
+TEST(ArrayIndex, CPP_INDEX_VECTOR)
+{
+    using af::array;
+    float h_inds[] = {0, 3, 2, 1}; // zero-based indexing
+    array inds(1, 4, h_inds);
+    array B = af::randu(1, 4);
+    array C = B(inds);
+
+    ASSERT_EQ(B.dims(0), 1);
+    ASSERT_EQ(B.dims(1), 4);
+    ASSERT_EQ(C.dims(0), 1);
+    ASSERT_EQ(C.dims(1), 4);
+
+    float *h_B = B.host<float>();
+    float *h_C = C.host<float>();
+
+    for (int i = 0; i < 4; i++) {
+        ASSERT_EQ(h_C[i], h_B[(int)h_inds[i]]);
+    }
+
+    delete[] h_B;
+    delete[] h_C;
+}
+
+TEST(SeqIndex, CPP_INDEX_VECTOR)
+{
+    using af::array;
+
+    const int num = 20;
+    const int len = 10;
+    const int st  =  3;
+    const int en  = st + len - 1;
+
+    array B = af::randu(1, 20);
+    array C = B(af::seq(st, en));
+
+    ASSERT_EQ(1  , B.dims(0));
+    ASSERT_EQ(num, B.dims(1));
+    ASSERT_EQ(1  , C.dims(0));
+    ASSERT_EQ(len, C.dims(1));
+
+    float *h_B = B.host<float>();
+    float *h_C = C.host<float>();
+
+    for (int i = 0; i < len; i++) {
+        ASSERT_EQ(h_C[i], h_B[i + st]);
+    }
+
+    delete[] h_B;
+    delete[] h_C;
+}
+
+
+TEST(ArrayIndex, CPP_INDEX_VECTOR_2D)
+{
+    using af::array;
+    float h_inds[] = {3, 5, 7, 2}; // zero-based indexing
+    array inds(1, 4, h_inds);
+    array B = af::randu(4, 4);
+    array C = B(inds);
+
+    ASSERT_EQ(B.dims(0), 4);
+    ASSERT_EQ(B.dims(1), 4);
+    ASSERT_EQ(C.dims(0), 4);
+    ASSERT_EQ(C.dims(1), 1);
+
+    float *h_B = B.host<float>();
+    float *h_C = C.host<float>();
+
+    for (int i = 0; i < 4; i++) {
+        ASSERT_EQ(h_C[i], h_B[(int)h_inds[i]]);
+    }
+
+    delete[] h_B;
+    delete[] h_C;
+}
+
+TEST(SeqIndex, CPP_INDEX_VECTOR_2D)
+{
+    using af::array;
+
+    const int nx = 4;
+    const int ny = 3 * nx;
+    const int len = 2 * nx;
+    const int st  = nx - 1;
+    const int en  = st + len - 1;
+
+    array B = af::randu(nx, ny);
+    array C = B(af::seq(st, en));
+
+    ASSERT_EQ(nx , B.dims(0));
+    ASSERT_EQ(ny , B.dims(1));
+    ASSERT_EQ(len, C.dims(0));
+    ASSERT_EQ(1  , C.dims(1));
+
+    float *h_B = B.host<float>();
+    float *h_C = C.host<float>();
+
+    for (int i = 0; i < len; i++) {
+        ASSERT_EQ(h_C[i], h_B[i + st]);
+    }
+
+    delete[] h_B;
+    delete[] h_C;
+}
+
+template<typename T>
+class IndexedMembers : public ::testing::Test
+{
+    public:
+        virtual void SetUp() {
+        }
+};
+
+TYPED_TEST_CASE(IndexedMembers, AllTypes);
+
+TYPED_TEST(IndexedMembers, MemFuncs)
+{
+    if (noDoubleTests<TypeParam>()) return;
+    using af::array;
+    dim_t dimsize = 100;
+    vector<TypeParam> in(dimsize * dimsize);
+    for(int i = 0; i < (int)in.size(); i++) in[i] = i;
+    array input(dimsize, dimsize, &in.front(), afHost);
+
+    ASSERT_EQ(dimsize, input(af::span, 1).elements());
+    ASSERT_EQ(input.type(), input(af::span, 1).type());
+    ASSERT_EQ(af::dim4(dimsize), input(af::span, 1).dims());
+    ASSERT_EQ(1u, input(af::span, 1).numdims());
+    ASSERT_FALSE(input(af::span, 1).isempty());
+    ASSERT_FALSE(input(af::span, 1).isscalar());
+    ASSERT_TRUE(input(1, 1).isscalar());
+    ASSERT_TRUE(input(af::span, 1).isvector());
+    ASSERT_FALSE(input(af::span, 1).isrow());
+    ASSERT_EQ(input.iscomplex(), input(af::span, 1).iscomplex());
+    ASSERT_EQ(input.isdouble(), input(af::span, 1).isdouble());
+    ASSERT_EQ(input.issingle(), input(af::span, 1).issingle());
+    ASSERT_EQ(input.isrealfloating(), input(af::span, 1).isrealfloating());
+    ASSERT_EQ(input.isfloating(), input(af::span, 1).isfloating());
+    ASSERT_EQ(input.isinteger(), input(af::span, 1).isinteger());
+    ASSERT_EQ(input.isbool(), input(af::span, 1).isbool());
+    // TODO: Doesn't compile in cuda for cfloat and cdouble
+    //ASSERT_EQ(input.scalar<TypeParam>(), input(af::span, 0).scalar<TypeParam>());
+}
+
+
+#if 0
+TYPED_TEST(IndexedMembers, MemIndex)
+{
+    using namespace af;
+    array a = range(dim4(10, 10));
+    array b = a(seq(1,7), span);
+    array brow = b.row(5);
+    array brows = b.rows(5, 6);
+    array bcol = b.col(5);
+    array bcols = b.cols(5, 6);
+
+    array out_row = a(seq(1,7), span).row(5);
+    array out_rows = a(seq(1,7), span).rows(5, 6);
+    array out_col = a(seq(1,7), span).col(5);
+    array out_cols = a(seq(1,7), span).cols(5, 6);
+
+    ASSERT_EQ(0, where(brow != out_row).elements());
+    ASSERT_EQ(0, where(brows != out_rows).elements());
+    ASSERT_EQ(0, where(bcol != out_col).elements());
+    ASSERT_EQ(0, where(bcols != out_cols).elements());
+
+    array avol = range(dim4(10, 10, 10));
+    array bvol = avol(seq(1, 7), span, span);
+    array bslice = bvol.slice(5);
+    array bslices = bvol.slices(5, 6);
+
+    array out_slice = avol(seq(1,7), span, span).slice(5);
+    array out_slices = avol(seq(1,7), span, span).slices(5, 6);
+
+    ASSERT_EQ(0, where(bslice != out_slice).elements());
+    ASSERT_EQ(0, where(bslices != out_slices).elements());
+}
+#endif
+
+TEST(Indexing, SNIPPET_indexing_first)
+{
+    using namespace af;
+    //! [ex_indexing_first]
+    array A = array(seq(1,9), 3, 3);
+    af_print(A);
+
+    af_print(A(0));    // first element
+    af_print(A(0,1));  // first row, second column
+
+    af_print(A(end));   // last element
+    af_print(A(-1));    // also last element
+    af_print(A(end-1)); // second-to-last element
+
+    af_print(A(1,span));       // second row
+    af_print(A.row(end));      // last row
+    af_print(A.cols(1,end));   // all but first column
+
+    float b_host[] = {0,1,2,3,4,5,6,7,8,9};
+    array b(10, 1, b_host);
+    af_print(b(seq(3)));
+    af_print(b(seq(1,7)));
+    af_print(b(seq(1,7,2)));
+    af_print(b(seq(0,end,2)));
+    //! [ex_indexing_first]
+
+
+    array lin_first = A(0);
+    array lin_last = A(end);
+    array lin_snd_last = A(end-1);
+
+    EXPECT_EQ(1, lin_first.dims(0));
+    EXPECT_EQ(1, lin_first.elements());
+    EXPECT_EQ(1, lin_last.dims(0));
+    EXPECT_EQ(1, lin_last.elements());
+    EXPECT_EQ(1, lin_snd_last.dims(0));
+    EXPECT_EQ(1, lin_snd_last.elements());
+
+    EXPECT_FLOAT_EQ(1.0f, lin_first.scalar<float>());
+    EXPECT_FLOAT_EQ(9.0f, lin_last.scalar<float>());
+    EXPECT_FLOAT_EQ(8.0f, lin_snd_last.scalar<float>());
+
+
+    lin_last = A(-1);
+    EXPECT_EQ(1, lin_last.dims(0));
+    EXPECT_EQ(1, lin_last.elements());
+    EXPECT_FLOAT_EQ(9.0f, lin_last.scalar<float>());
+
+    {
+        array out = b(seq(3));
+        ASSERT_EQ(3, out.elements());
+        vector<float> hout(out.elements());
+        out.host(&hout.front());
+        for(unsigned i = 0; i < hout.size(); i++) { ASSERT_FLOAT_EQ(b_host[i], hout[i]); }
+    }
+
+    {
+        array out = b(seq(1, 7));
+        ASSERT_EQ(7, out.elements());
+        vector<float> hout(out.elements());
+        out.host(&hout.front());
+        for(unsigned i = 1; i < hout.size(); i++) { ASSERT_FLOAT_EQ(b_host[i], hout[i - 1]); }
+    }
+
+    {
+        array out = b(seq(1, 7, 2));
+        ASSERT_EQ(4, out.elements());
+        vector<float> hout(out.elements());
+        out.host(&hout.front());
+        for(unsigned i = 0; i < hout.size(); i++) { ASSERT_FLOAT_EQ(b_host[i * 2 + 1], hout[i]); }
+    }
+}
+
+TEST(Indexing, SNIPPET_indexing_set)
+{
+    using namespace af;
+    //! [ex_indexing_set]
+    array A = constant(0, 3, 3);
+    af_print(A);
+
+    // setting entries to a constant
+    A(span) = 4;        // fill entire array
+    af_print(A);
+
+    A.row(0) = -1;      // first row
+    af_print(A);
+
+    A(seq(3)) = 3.1415; // first three elements
+    af_print(A);
+
+    // copy in another matrix
+    array B = constant(1, 4, 4, s32);
+    B.row(0) = randu(1, 4, f32); // set a row to random values (also upcast)
+    //! [ex_indexing_set]
+    //TODO: Confirm the outputs are correct. see #697
+}
+
+
+TEST(Indexing, SNIPPET_indexing_ref)
+{
+    using namespace af;
+    //! [ex_indexing_ref]
+    float h_inds[] = {0, 4, 2, 1}; // zero-based indexing
+    array inds(1, 4, h_inds);
+    af_print(inds);
+
+    array B = randu(1, 4);
+    af_print(B);
+
+    array c = B(inds);        // get
+    af_print(c);
+
+    B(inds) = -1;             // set to scalar
+    B(inds) = constant(0, 4); // zero indices
+    af_print(B);
+    //! [ex_indexing_ref]
+    //TODO: Confirm the outputs are correct. see #697
 }

@@ -20,10 +20,6 @@ namespace opencl
 template<typename T>
 Array<T> transpose(const Array<T> &in, const bool conjugate)
 {
-    if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-        !isDoubleSupported(getActiveDeviceId())) {
-        OPENCL_NOT_SUPPORTED();
-    }
     const dim4 inDims   = in.dims();
     dim4 outDims  = dim4(inDims[1],inDims[0],inDims[2],inDims[3]);
     Array<T> out  = createEmptyArray<T>(outDims);
@@ -43,7 +39,7 @@ Array<T> transpose(const Array<T> &in, const bool conjugate)
     return out;
 }
 
-#define INSTANTIATE(T)\
+#define INSTANTIATE(T)                                                          \
     template Array<T> transpose(const Array<T> &in, const bool conjugate);
 
 INSTANTIATE(float  )

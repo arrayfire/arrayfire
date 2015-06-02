@@ -84,7 +84,7 @@ af_err af_cplx(af_array *out, const af_array in)
         default: TYPE_ERROR(0, type);
         }
 
-        AF_CHECK(af_destroy_array(tmp));
+        AF_CHECK(af_release_array(tmp));
 
         std::swap(*out, res);
     }
@@ -100,7 +100,7 @@ af_err af_real(af_array *out, const af_array in)
         af_dtype type = info.getType();
 
         if (type != c32 && type != c64) {
-            AF_ERROR("Inputs to real must be of complex type", AF_ERR_ARG);
+            return af_retain_array(out, in);
         }
 
         af_array res;
@@ -126,7 +126,7 @@ af_err af_imag(af_array *out, const af_array in)
         af_dtype type = info.getType();
 
         if (type != c32 && type != c64) {
-            AF_ERROR("Inputs to imag must be of complex type", AF_ERR_ARG);
+            return af_constant(out, 0, info.ndims(), info.dims().get(), type);
         }
 
         af_array res;

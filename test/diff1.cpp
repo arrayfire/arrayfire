@@ -51,8 +51,8 @@ typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char, un
 // register the type list
 TYPED_TEST_CASE(Diff1, TestTypes);
 
-template<typename T, unsigned dim>
-void diff1Test(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=NULL)
+template<typename T>
+void diff1Test(string pTestFile, unsigned dim, bool isSubRef=false, const vector<af_seq> *seqv=NULL)
 {
     if (noDoubleTests<T>()) return;
 
@@ -97,60 +97,60 @@ void diff1Test(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv
     // Delete
     delete[] outData;
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(outArray  != 0) af_release_array(outArray);
+    if(tempArray != 0) af_release_array(tempArray);
 }
 
 TYPED_TEST(Diff1,Vector0)
 {
-    diff1Test<TypeParam, 0>(string(TEST_DIR"/diff1/vector0.test"));
+    diff1Test<TypeParam>(string(TEST_DIR"/diff1/vector0.test"), 0);
 }
 
 TYPED_TEST(Diff1,Matrix0)
 {
-    diff1Test<TypeParam, 0>(string(TEST_DIR"/diff1/matrix0.test"));
+    diff1Test<TypeParam>(string(TEST_DIR"/diff1/matrix0.test"), 0);
 }
 
 TYPED_TEST(Diff1,Matrix1)
 {
-    diff1Test<TypeParam, 1>(string(TEST_DIR"/diff1/matrix1.test"));
+    diff1Test<TypeParam>(string(TEST_DIR"/diff1/matrix1.test"), 1);
 }
 
 // Diff on 0 dimension
 TYPED_TEST(Diff1,Basic0)
 {
-    diff1Test<TypeParam, 0>(string(TEST_DIR"/diff1/basic0.test"));
+    diff1Test<TypeParam>(string(TEST_DIR"/diff1/basic0.test"), 0);
 }
 
 // Diff on 1 dimension
 TYPED_TEST(Diff1,Basic1)
 {
-    diff1Test<TypeParam, 1>(string(TEST_DIR"/diff1/basic1.test"));
+    diff1Test<TypeParam>(string(TEST_DIR"/diff1/basic1.test"), 1);
 }
 
 // Diff on 2 dimension
 TYPED_TEST(Diff1,Basic2)
 {
-    diff1Test<TypeParam, 2>(string(TEST_DIR"/diff1/basic2.test"));
+    diff1Test<TypeParam>(string(TEST_DIR"/diff1/basic2.test"), 2);
 }
 
 // Diff on 0 dimension subref
 TYPED_TEST(Diff1,Subref0)
 {
-    diff1Test<TypeParam, 0>(string(TEST_DIR"/diff1/subref0.test"),true,&(this->subMat0));
+    diff1Test<TypeParam>(string(TEST_DIR"/diff1/subref0.test"), 0,true,&(this->subMat0));
 }
 
 // Diff on 1 dimension subref
 TYPED_TEST(Diff1,Subref1)
 {
-    diff1Test<TypeParam, 1>(string(TEST_DIR"/diff1/subref1.test"),true,&(this->subMat1));
+    diff1Test<TypeParam>(string(TEST_DIR"/diff1/subref1.test"), 1,true,&(this->subMat1));
 }
 
 // Diff on 2 dimension subref
 TYPED_TEST(Diff1,Subref2)
 {
-    diff1Test<TypeParam, 2>(string(TEST_DIR"/diff1/subref2.test"),true,&(this->subMat2));
+    diff1Test<TypeParam>(string(TEST_DIR"/diff1/subref2.test"), 2,true,&(this->subMat2));
 }
 
 template<typename T>
@@ -173,8 +173,8 @@ void diff1ArgsTest(string pTestFile)
     ASSERT_EQ(AF_ERR_ARG, af_diff1(&outArray, inArray, -1));
     ASSERT_EQ(AF_ERR_ARG, af_diff1(&outArray, inArray,  5));
 
-    if(inArray  != 0) af_destroy_array(inArray);
-    if(outArray != 0) af_destroy_array(outArray);
+    if(inArray  != 0) af_release_array(inArray);
+    if(outArray != 0) af_release_array(outArray);
 }
 
 TYPED_TEST(Diff1,InvalidArgs)

@@ -67,9 +67,9 @@ void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=N
         ASSERT_EQ(AF_SUCCESS, af_index(&subArray,inArray,seqv->size(),&seqv->front()));
         ASSERT_EQ(AF_SUCCESS, af_transpose(&outArray,subArray, false));
         // destroy the temporary indexed Array
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(subArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(subArray));
 
-        dim_type nElems;
+        dim_t nElems;
         ASSERT_EQ(AF_SUCCESS, af_get_elements(&nElems,outArray));
         outData = new T[nElems];
     } else {
@@ -89,8 +89,8 @@ void trsTest(string pTestFile, bool isSubRef=false, const vector<af_seq> *seqv=N
 
     // cleanup
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 TYPED_TEST(Transpose,Vector)
@@ -211,8 +211,8 @@ void trsCPPConjTest()
 
     size_t nElems = dims.elements();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_NEAR(tData[elIter].real(), cData[elIter].real(), 1e-6)<< "at: " << elIter << std::endl;
-        ASSERT_NEAR(-tData[elIter].imag(), cData[elIter].imag(), 1e-6)<< "at: " << elIter << std::endl;
+        ASSERT_NEAR(real(tData[elIter]), real(cData[elIter]), 1e-6)<< "at: " << elIter << std::endl;
+        ASSERT_NEAR(-imag(tData[elIter]), imag(cData[elIter]), 1e-6)<< "at: " << elIter << std::endl;
     }
 
     // cleanup
@@ -225,3 +225,20 @@ TEST(Transpose, CPP_c32_CONJ)
     trsCPPConjTest<cfloat>();
 }
 
+TEST(Transpose, GFOR)
+{
+    using namespace af;
+    dim4 dims = dim4(100, 100, 3);
+    array A = round(100 * randu(dims));
+    array B = constant(0, 100, 100, 3);
+
+    gfor(seq ii, 3) {
+        B(span, span, ii) = A(span, span, ii).T();
+    }
+
+    for(int ii = 0; ii < 3; ii++) {
+        array c_ii = A(span, span, ii).T();
+        array b_ii = B(span, span, ii);
+        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
+    }
+}

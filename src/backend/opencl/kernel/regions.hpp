@@ -41,8 +41,8 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type THREADS_X = 16;
-static const dim_type THREADS_Y = 16;
+static const int THREADS_X = 16;
+static const int THREADS_Y = 16;
 
 template<typename T, bool full_conn, int n_per_thread>
 void regions(Param out, Param in)
@@ -93,8 +93,8 @@ void regions(Param out, Param in)
 
         const NDRange local(THREADS_X, THREADS_Y);
 
-        const dim_type blk_x = divup(in.info.dims[0], THREADS_X*2);
-        const dim_type blk_y = divup(in.info.dims[1], THREADS_Y*2);
+        const int blk_x = divup(in.info.dims[0], THREADS_X*2);
+        const int blk_y = divup(in.info.dims[1], THREADS_Y*2);
 
         const NDRange global(blk_x * THREADS_X, blk_y * THREADS_Y);
 
@@ -118,6 +118,7 @@ void regions(Param out, Param in)
 
             ueOp(EnqueueArgs(getQueue(), global, local),
                  *out.data, out.info, *d_continue);
+            CL_DEBUG_FINISH(getQueue());
 
             getQueue().enqueueReadBuffer(*d_continue, CL_TRUE, 0, sizeof(int), &h_continue);
         }
@@ -205,6 +206,7 @@ void regions(Param out, Param in)
         //Buffer labels_buf(tmp.get_buffer().get());
         frOp(EnqueueArgs(getQueue(), global, local),
              *out.data, out.info, *in.data, in.info, labels);
+        CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {
         CL_TO_AF_ERROR(err);
         throw;

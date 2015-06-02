@@ -10,13 +10,13 @@
 #include <blas.hpp>
 #include <af/blas.h>
 #include <Array.hpp>
-#include <clBLAS.h>
 #include <cassert>
 #include <string>
-#include <iostream>
 #include <functional>
 #include <stdexcept>
 #include <mutex>
+#include <err_common.hpp>
+#include <err_clblas.hpp>
 #include <math.hpp>
 
 namespace opencl
@@ -30,14 +30,14 @@ using std::runtime_error;
 using std::to_string;
 
 clblasTranspose
-toClblasTranspose(af_blas_transpose opt)
+toClblasTranspose(af_mat_prop opt)
 {
     clblasTranspose out = clblasNoTrans;
     switch(opt) {
-        case AF_NO_TRANSPOSE        : out = clblasNoTrans;   break;
-        case AF_TRANSPOSE           : out = clblasTrans;     break;
-        case AF_CONJUGATE_TRANSPOSE : out = clblasConjTrans; break;
-        default                     : assert( "INVALID af_blas_transpose" && 1!=1);
+        case AF_MAT_NONE        : out = clblasNoTrans;   break;
+        case AF_MAT_TRANS           : out = clblasTrans;     break;
+        case AF_MAT_CTRANS : out = clblasConjTrans; break;
+        default                     : AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
     }
     return out;
 }
@@ -74,15 +74,9 @@ BLAS_FUNC(dot, double,      D)
 #undef BLAS_FUNC_DEF
 #undef BLAS_FUNC
 
-static void
-initBlas() {
-    static std::once_flag clblasSetupFlag;
-    call_once(clblasSetupFlag, clblasSetup);
-}
-
 template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
-                af_blas_transpose optLhs, af_blas_transpose optRhs)
+                af_mat_prop optLhs, af_mat_prop optRhs)
 {
     initBlas();
     clblasTranspose lOpts = toClblasTranspose(optLhs);
@@ -105,23 +99,25 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
 
     dim4 lStrides = lhs.strides();
     dim4 rStrides = rhs.strides();
-    clblasStatus err;
     cl::Event event;
     if(rDims[bColDim] == 1) {
         N = lDims[aColDim];
         gemv_func<T> gemv;
-        err = gemv(
-            clblasColumnMajor, lOpts,
-            lDims[0], lDims[1],
-            alpha,
-            (*lhs.get())(),    lhs.getOffset(),   lStrides[1],
-            (*rhs.get())(),    rhs.getOffset(),   rStrides[0],
-            beta ,
-            (*out.get())(),   out.getOffset(),             1,
-            1, &getQueue()(), 0, nullptr, &event());
+        CLBLAS_CHECK(
+            gemv(
+                clblasColumnMajor, lOpts,
+                lDims[0], lDims[1],
+                alpha,
+                (*lhs.get())(),    lhs.getOffset(),   lStrides[1],
+                (*rhs.get())(),    rhs.getOffset(),   rStrides[0],
+                beta ,
+                (*out.get())(),   out.getOffset(),             1,
+                1, &getQueue()(), 0, nullptr, &event())
+            );
     } else {
         gemm_func<T> gemm;
-        err = gemm(
+        CLBLAS_CHECK(
+            gemm(
                 clblasColumnMajor, lOpts, rOpts,
                 M, N, K,
                 alpha,
@@ -129,11 +125,9 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                 (*rhs.get())(),    rhs.getOffset(),   rStrides[1],
                 beta,
                 (*out.get())(),   out.getOffset(),  out.dims()[0],
-                1, &getQueue()(), 0, nullptr, &event());
+                1, &getQueue()(), 0, nullptr, &event())
+            );
 
-    }
-    if(err) {
-        throw runtime_error(std::string("CLBLAS error: ") + std::to_string(err));
     }
 
     return out;
@@ -141,7 +135,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
 
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
-             af_blas_transpose optLhs, af_blas_transpose optRhs)
+             af_mat_prop optLhs, af_mat_prop optRhs)
 {
     initBlas();
 
@@ -150,23 +144,20 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
     cl::Event event;
     auto out = createEmptyArray<T>(af::dim4(1));
     cl::Buffer scratch(getContext(), CL_MEM_READ_WRITE, sizeof(T) * N);
-    clblasStatus err;
-    err = dot(N,
-              (*out.get())(), out.getOffset(),
-              (*lhs.get())(),  lhs.getOffset(), lhs.strides()[0],
-              (*rhs.get())(),  rhs.getOffset(), rhs.strides()[0],
-              scratch(),
-              1, &getQueue()(), 0, nullptr, &event());
-
-    if(err) {
-        throw runtime_error(std::string("CLBLAS error: ") + std::to_string(err));
-    }
+    CLBLAS_CHECK(
+        dot(N,
+            (*out.get())(), out.getOffset(),
+            (*lhs.get())(),  lhs.getOffset(), lhs.strides()[0],
+            (*rhs.get())(),  rhs.getOffset(), rhs.strides()[0],
+            scratch(),
+            1, &getQueue()(), 0, nullptr, &event())
+        );
     return out;
 }
 
 #define INSTANTIATE_BLAS(TYPE)                                                          \
     template Array<TYPE> matmul<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs,  \
-                    af_blas_transpose optLhs, af_blas_transpose optRhs);
+                    af_mat_prop optLhs, af_mat_prop optRhs);
 
 INSTANTIATE_BLAS(float)
 INSTANTIATE_BLAS(cfloat)
@@ -175,11 +166,11 @@ INSTANTIATE_BLAS(cdouble)
 
 #define INSTANTIATE_DOT(TYPE)                                                       \
     template Array<TYPE> dot<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs, \
-                                   af_blas_transpose optLhs, af_blas_transpose optRhs);
+                                   af_mat_prop optLhs, af_mat_prop optRhs);
 
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
-              af_blas_transpose optLhs, af_blas_transpose optRhs);
+              af_mat_prop optLhs, af_mat_prop optRhs);
 
 INSTANTIATE_DOT(float)
 INSTANTIATE_DOT(double)

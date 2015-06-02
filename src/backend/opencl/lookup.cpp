@@ -22,12 +22,12 @@ Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices, const 
     const dim4 iDims = input.dims();
 
     dim4 oDims(1);
-    for (dim_type d=0; d<4; ++d)
+    for (int d=0; d<4; ++d)
         oDims[d] = (d==int(dim) ? indices.elements() : iDims[d]);
 
     Array<in_t> out = createEmptyArray<in_t>(oDims);
 
-    dim_type nDims = iDims.ndims();
+    dim_t nDims = iDims.ndims();
 
     switch(dim) {
         case 0: kernel::lookup<in_t, idx_t, 0>(out, input, indices, nDims); break;
@@ -52,6 +52,8 @@ INSTANTIATE(double  );
 INSTANTIATE(cdouble );
 INSTANTIATE(int     );
 INSTANTIATE(unsigned);
+INSTANTIATE(intl    );
+INSTANTIATE(uintl   );
 INSTANTIATE(uchar   );
 INSTANTIATE(char    );
 

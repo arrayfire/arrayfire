@@ -10,9 +10,9 @@
 #include <blas.hpp>
 #include <af/dim4.hpp>
 #include <handle.hpp>
-#include <iostream>
 #include <cassert>
 #include <err_cpu.hpp>
+#include <err_common.hpp>
 
 namespace cpu
 {
@@ -26,36 +26,29 @@ namespace cpu
 
 template<typename T, typename BT>
 using cptr_type     =   typename conditional<   is_complex<T>::value,
-                                                const BT *,
+                                                const void *,
                                                 const T*>::type;
 template<typename T, typename BT>
 using ptr_type     =    typename conditional<   is_complex<T>::value,
-                                                BT *,
+                                                void *,
                                                 T*>::type;
 template<typename T, typename BT>
-using scale_type     =  typename conditional<   is_complex<T>::value,
-                                                const BT *,
-                                                T>::type;
+using scale_type   =    typename conditional<   is_complex<T>::value,
+                                                const void *,
+                                                const T>::type;
 template<typename T, typename BT>
-using gemm_func_def = void (*)( const enum CBLAS_ORDER, const enum CBLAS_TRANSPOSE, const enum CBLAS_TRANSPOSE,
+using gemm_func_def = void (*)( const CBLAS_ORDER, const CBLAS_TRANSPOSE, const CBLAS_TRANSPOSE,
                                 const int, const int, const int,
                                 scale_type<T, BT>, cptr_type<T, BT>, const int,
                                 cptr_type<T, BT>, const int,
                                 scale_type<T, BT>, ptr_type<T, BT>, const int);
 
 template<typename T, typename BT>
-using gemv_func_def = void (*)( const enum CBLAS_ORDER, const enum CBLAS_TRANSPOSE,
+using gemv_func_def = void (*)( const CBLAS_ORDER, const CBLAS_TRANSPOSE,
                                 const int, const int,
                                 scale_type<T, BT>, cptr_type<T, BT>, const int,
                                 cptr_type<T, BT>, const int,
                                 scale_type<T, BT>, ptr_type<T, BT>, const int);
-
-template<typename T, typename BT>
-using dot_func_def = T (*) (    const int,
-                                cptr_type<T, BT>,
-                                const int,
-                                cptr_type<T, BT>,
-                                const int);
 
 #define BLAS_FUNC_DEF( FUNC )                                                      \
 template<typename T, typename BT> FUNC##_func_def<T, BT> FUNC##_func();
@@ -91,10 +84,6 @@ BLAS_FUNC(gemv , cfloat  ,   void, c)
 BLAS_FUNC(gemv , cdouble ,   void, z)
 #endif
 
-BLAS_FUNC_DEF( dot )
-BLAS_FUNC(dot , float  , float  , s)
-BLAS_FUNC(dot , double , double , d)
-
 template<typename T, typename BT, int value>
 typename enable_if<is_floating_point<T>::value, scale_type<T,BT>>::type
 getScale() { return T(value); }
@@ -108,19 +97,18 @@ getScale()
 }
 
 CBLAS_TRANSPOSE
-toCblasTranspose(af_blas_transpose opt)
+toCblasTranspose(af_mat_prop opt)
 {
     CBLAS_TRANSPOSE out = CblasNoTrans;
     switch(opt) {
-        case AF_NO_TRANSPOSE        : out = CblasNoTrans;   break;
-        case AF_TRANSPOSE           : out = CblasTrans;     break;
-        case AF_CONJUGATE_TRANSPOSE : out = CblasConjTrans; break;
-        default                     : assert( "INVALID af_blas_transpose" && 1!=1);
+        case AF_MAT_NONE        : out = CblasNoTrans;   break;
+        case AF_MAT_TRANS           : out = CblasTrans;     break;
+        case AF_MAT_CTRANS : out = CblasConjTrans; break;
+        default                     : AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
     }
     return out;
 }
 
-#include <iostream>
 using namespace std;
 
 
@@ -155,7 +143,7 @@ struct cblas_types<cdouble> {
 
 template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
-                af_blas_transpose optLhs, af_blas_transpose optRhs)
+                af_mat_prop optLhs, af_mat_prop optRhs)
 {
     CBLAS_TRANSPOSE lOpts = toCblasTranspose(optLhs);
     CBLAS_TRANSPOSE rOpts = toCblasTranspose(optRhs);
@@ -199,14 +187,16 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
 
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
-             af_blas_transpose optLhs, af_blas_transpose optRhs)
+             af_mat_prop optLhs, af_mat_prop optRhs)
 {
     int N = lhs.dims()[0];
 
-    T out = dot_func<T, BT>()(N,
-                            lhs.get(), lhs.strides()[0],
-                            rhs.get(), rhs.strides()[0]
-                            );
+    T out = 0;
+    const T *pL = lhs.get();
+    const T *pR = rhs.get();
+
+    for(int i = 0; i < N; i++)
+        out += pL[i] * pR[i];
 
     return createValueArray(af::dim4(1), out);
 }
@@ -216,7 +206,7 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
 
 #define INSTANTIATE_BLAS(TYPE)                                                          \
     template Array<TYPE> matmul<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs,  \
-                                      af_blas_transpose optLhs, af_blas_transpose optRhs);
+                                      af_mat_prop optLhs, af_mat_prop optRhs);
 
 INSTANTIATE_BLAS(float)
 INSTANTIATE_BLAS(cfloat)
@@ -225,7 +215,7 @@ INSTANTIATE_BLAS(cdouble)
 
 #define INSTANTIATE_DOT(TYPE)                                                       \
     template Array<TYPE> dot<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs, \
-                                   af_blas_transpose optLhs, af_blas_transpose optRhs);
+                                   af_mat_prop optLhs, af_mat_prop optRhs);
 
 INSTANTIATE_DOT(float)
 INSTANTIATE_DOT(double)

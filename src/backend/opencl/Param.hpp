@@ -8,7 +8,7 @@
  ********************************************************/
 
 #pragma once
-#include <cl.hpp>
+#include <platform.hpp>
 #include <kernel/KParam.hpp>
 
 namespace opencl
@@ -19,4 +19,6 @@ namespace opencl
         cl::Buffer *data;
         KParam info;
     } Param;
+
+    Param makeParam(cl_mem mem, int off, int dims[4], int strides[4]);
 }

@@ -20,8 +20,8 @@ using af::dim4;
 namespace cuda
 {
 
-template<typename T, af_pad_type pad>
-Array<T> medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
+template<typename T, af_border_type pad>
+Array<T> medfilt(const Array<T> &in, dim_t w_len, dim_t w_wid)
 {
     ARG_ASSERT(2, (w_len<=kernel::MAX_MEDFILTER_LEN));
 
@@ -35,8 +35,8 @@ Array<T> medfilt(const Array<T> &in, dim_type w_len, dim_type w_wid)
 }
 
 #define INSTANTIATE(T)\
-    template Array<T> medfilt<T, AF_ZERO     >(const Array<T> &in, dim_type w_len, dim_type w_wid); \
-    template Array<T> medfilt<T, AF_SYMMETRIC>(const Array<T> &in, dim_type w_len, dim_type w_wid);
+    template Array<T> medfilt<T, AF_PAD_ZERO     >(const Array<T> &in, dim_t w_len, dim_t w_wid); \
+    template Array<T> medfilt<T, AF_PAD_SYM>(const Array<T> &in, dim_t w_len, dim_t w_wid);
 
 INSTANTIATE(float )
 INSTANTIATE(double)

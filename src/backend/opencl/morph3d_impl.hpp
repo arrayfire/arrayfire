@@ -24,11 +24,6 @@ namespace opencl
 template<typename T, bool isDilation>
 Array<T> morph3d(const Array<T> &in, const Array<T> &mask)
 {
-    if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-        !isDoubleSupported(getActiveDeviceId())) {
-        OPENCL_NOT_SUPPORTED();
-    }
-
     const dim4 mdims    = mask.dims();
 
     if (mdims[0]!=mdims[1] || mdims[0]!=mdims[2])
@@ -36,10 +31,7 @@ Array<T> morph3d(const Array<T> &in, const Array<T> &mask)
     if (mdims[0]>7)
         AF_ERROR("Upto 7x7x7 kernels are only supported in opencl currently", AF_ERR_SIZE);
 
-    const dim4 dims     = in.dims();
-    if (dims[3]>1)
-        AF_ERROR("Batch not supported for volumetic morphological operations", AF_ERR_NOT_SUPPORTED);
-
+    const dim4 dims= in.dims();
     Array<T> out   = createEmptyArray<T>(dims);
 
     switch(mdims[0]) {

@@ -23,10 +23,26 @@
 #include <iota.hpp>
 #include <identity.hpp>
 #include <diagonal.hpp>
+#include <triangle.hpp>
 
 using af::dim4;
 using namespace detail;
 using namespace std;
+
+static inline dim4 verifyDims(const unsigned ndims, const dim_t * const dims)
+{
+
+    DIM_ASSERT(1, ndims >= 1);
+
+    dim4 d(1, 1, 1, 1);
+
+    for(unsigned i = 0; i < ndims; i++) {
+        d[i] = dims[i];
+        DIM_ASSERT(2, dims[i] >= 1);
+    }
+
+    return d;
+}
 
 af_err af_get_data_ptr(void *data, const af_array arr)
 {
@@ -52,16 +68,15 @@ af_err af_get_data_ptr(void *data, const af_array arr)
 
 //Strong Exception Guarantee
 af_err af_create_array(af_array *result, const void * const data,
-                       const unsigned ndims, const dim_type * const dims,
+                       const unsigned ndims, const dim_t * const dims,
                        const af_dtype type)
 {
-    af_array out;
     try {
+        af_array out;
         AF_CHECK(af_init());
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-        }
+
+        dim4 d = verifyDims(ndims, dims);
+
         switch(type) {
         case f32:   out = createHandleFromData(d, static_cast<const float   *>(data)); break;
         case c32:   out = createHandleFromData(d, static_cast<const cfloat  *>(data)); break;
@@ -83,16 +98,15 @@ af_err af_create_array(af_array *result, const void * const data,
 
 //Strong Exception Guarantee
 af_err af_constant(af_array *result, const double value,
-                   const unsigned ndims, const dim_type * const dims,
+                   const unsigned ndims, const dim_t * const dims,
                    const af_dtype type)
 {
-    af_array out;
     try {
+        af_array out;
         AF_CHECK(af_init());
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-        }
+
+        dim4 d = verifyDims(ndims, dims);
+
         switch(type) {
         case f32:   out = createHandleFromValue<float  >(d, value); break;
         case c32:   out = createHandleFromValue<cfloat >(d, value); break;
@@ -121,16 +135,13 @@ static inline af_array createCplx(dim4 dims, const Ti real, const Ti imag)
 }
 
 af_err af_constant_complex(af_array *result, const double real, const double imag,
-                           const unsigned ndims, const dim_type * const dims, af_dtype type)
+                           const unsigned ndims, const dim_t * const dims, af_dtype type)
 {
-    af_array out;
     try {
+        af_array out;
         AF_CHECK(af_init());
 
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-        }
+        dim4 d = verifyDims(ndims, dims);
 
         switch (type) {
         case c32: out = createCplx<cfloat , float >(d, real, imag); break;
@@ -145,16 +156,13 @@ af_err af_constant_complex(af_array *result, const double real, const double ima
 }
 
 af_err af_constant_long(af_array *result, const intl val,
-                        const unsigned ndims, const dim_type * const dims)
+                        const unsigned ndims, const dim_t * const dims)
 {
-    af_array out;
     try {
+        af_array out;
         AF_CHECK(af_init());
 
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-        }
+        dim4 d = verifyDims(ndims, dims);
 
         out = getHandle(createValueArray<intl>(d, val));
 
@@ -165,17 +173,13 @@ af_err af_constant_long(af_array *result, const intl val,
 }
 
 af_err af_constant_ulong(af_array *result, const uintl val,
-                         const unsigned ndims, const dim_type * const dims)
+                         const unsigned ndims, const dim_t * const dims)
 {
-    af_array out;
     try {
+        af_array out;
         AF_CHECK(af_init());
 
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-        }
-
+        dim4 d = verifyDims(ndims, dims);
         out = getHandle(createValueArray<uintl>(d, val));
 
         std::swap(*result, out);
@@ -185,16 +189,18 @@ af_err af_constant_ulong(af_array *result, const uintl val,
 }
 
 //Strong Exception Guarantee
-af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type * const dims,
+af_err af_create_handle(af_array *result, const unsigned ndims, const dim_t * const dims,
                         const af_dtype type)
 {
-    af_array out;
     try {
+        af_array out;
         AF_CHECK(af_init());
+
         dim4 d((size_t)dims[0]);
         for(unsigned i = 1; i < ndims; i++) {
             d[i] = dims[i];
         }
+
         switch(type) {
         case f32:   out = createHandle<float  >(d); break;
         case c32:   out = createHandle<cfloat >(d); break;
@@ -217,11 +223,11 @@ af_err af_create_handle(af_array *result, const unsigned ndims, const dim_type *
 //Strong Exception Guarantee
 af_err af_copy_array(af_array *out, const af_array in)
 {
-    ArrayInfo info = getInfo(in);
-    const af_dtype type = info.getType();
-
-    af_array res;
     try {
+        ArrayInfo info = getInfo(in);
+        const af_dtype type = info.getType();
+
+        af_array res;
         switch(type) {
         case f32:   res = copyArray<float   >(in); break;
         case c32:   res = copyArray<cfloat  >(in); break;
@@ -259,17 +265,13 @@ static inline af_array identity_(const af::dim4 &dims)
     return getHandle(detail::identity<T>(dims));
 }
 
-af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
+af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type)
 {
-    af_array result;
     try {
+        af_array result;
         AF_CHECK(af_init());
 
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-            DIM_ASSERT(2, d[i] >= 1);
-        }
+        dim4 d = verifyDims(ndims, dims);
 
         switch(type) {
         case f32:   result = randu_<float  >(d);    break;
@@ -285,20 +287,17 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_type * const dims
         std::swap(*out, result);
     }
     CATCHALL
-        return AF_SUCCESS;
+    return AF_SUCCESS;
 }
 
-af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
+af_err af_randn(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type)
 {
-    af_array result;
     try {
+        af_array result;
         AF_CHECK(af_init());
 
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-            DIM_ASSERT(2, d[i] >= 1);
-        }
+        dim4 d = verifyDims(ndims, dims);
+
         switch(type) {
         case f32:   result = randn_<float  >(d);    break;
         case c32:   result = randn_<cfloat >(d);    break;
@@ -312,17 +311,29 @@ af_err af_randn(af_array *out, const unsigned ndims, const dim_type * const dims
     return AF_SUCCESS;
 }
 
-af_err af_identity(af_array *out, const unsigned ndims, const dim_type * const dims, const af_dtype type)
+af_err af_set_seed(const uintl seed)
 {
-    af_array result;
     try {
-        AF_CHECK(af_init());
-        dim4 d((size_t)dims[0]);
+        setSeed(seed);
+    } CATCHALL;
+    return AF_SUCCESS;
+}
 
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-            DIM_ASSERT(2, d[i] >= 1);
-        }
+af_err af_get_seed(uintl *seed)
+{
+    try {
+        *seed = getSeed();
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_identity(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type)
+{
+    try {
+        af_array result;
+        AF_CHECK(af_init());
+
+        dim4 d = verifyDims(ndims, dims);
 
         switch(type) {
         case f32:   result = identity_<float  >(d);    break;
@@ -332,6 +343,8 @@ af_err af_identity(af_array *out, const unsigned ndims, const dim_type * const d
         case s32:   result = identity_<int    >(d);    break;
         case u32:   result = identity_<uint   >(d);    break;
         case u8:    result = identity_<uchar  >(d);    break;
+        case u64:   result = identity_<uintl  >(d);    break;
+        case s64:   result = identity_<intl   >(d);    break;
             // Removed because of bool type. Functions implementations exist.
         case b8:    result = identity_<char   >(d);    break;
         default:    TYPE_ERROR(3, type);
@@ -342,22 +355,22 @@ af_err af_identity(af_array *out, const unsigned ndims, const dim_type * const d
     return AF_SUCCESS;
 }
 
-af_err af_destroy_array(af_array arr)
+af_err af_release_array(af_array arr)
 {
     try {
         af_dtype type = getInfo(arr).getType();
 
         switch(type) {
-        case f32:   destroyHandle<float   >(arr); break;
-        case c32:   destroyHandle<cfloat  >(arr); break;
-        case f64:   destroyHandle<double  >(arr); break;
-        case c64:   destroyHandle<cdouble >(arr); break;
-        case b8:    destroyHandle<char    >(arr); break;
-        case s32:   destroyHandle<int     >(arr); break;
-        case u32:   destroyHandle<uint    >(arr); break;
-        case u8:    destroyHandle<uchar   >(arr); break;
-        case s64:   destroyHandle<intl    >(arr); break;
-        case u64:   destroyHandle<uintl   >(arr); break;
+        case f32:   releaseHandle<float   >(arr); break;
+        case c32:   releaseHandle<cfloat  >(arr); break;
+        case f64:   releaseHandle<double  >(arr); break;
+        case c64:   releaseHandle<cdouble >(arr); break;
+        case b8:    releaseHandle<char    >(arr); break;
+        case s32:   releaseHandle<int     >(arr); break;
+        case u32:   releaseHandle<uint    >(arr); break;
+        case u8:    releaseHandle<uchar   >(arr); break;
+        case s64:   releaseHandle<intl    >(arr); break;
+        case u64:   releaseHandle<uintl   >(arr); break;
         default:    TYPE_ERROR(0, type);
         }
     }
@@ -368,7 +381,7 @@ af_err af_destroy_array(af_array arr)
 
 
 template<typename T>
-static af_array weakCopyHandle(const af_array in)
+static af_array retainHandle(const af_array in)
 {
     detail::Array<T> *A = reinterpret_cast<detail::Array<T> *>(in);
     detail::Array<T> *out = detail::initArray<T>();
@@ -376,28 +389,29 @@ static af_array weakCopyHandle(const af_array in)
     return reinterpret_cast<af_array>(out);
 }
 
-af_array weakCopy(const af_array in)
+af_array retain(const af_array in)
 {
-    switch(getInfo(in).getType()) {
-    case f32: return weakCopyHandle<float           >(in);
-    case f64: return weakCopyHandle<double          >(in);
-    case s32: return weakCopyHandle<int             >(in);
-    case u32: return weakCopyHandle<uint            >(in);
-    case u8:  return weakCopyHandle<uchar           >(in);
-    case c32: return weakCopyHandle<detail::cfloat  >(in);
-    case c64: return weakCopyHandle<detail::cdouble >(in);
-    case b8:  return weakCopyHandle<char            >(in);
-    case s64: return weakCopyHandle<intl            >(in);
-    case u64: return weakCopyHandle<uintl           >(in);
+    af_dtype ty = getInfo(in).getType();
+    switch(ty) {
+    case f32: return retainHandle<float           >(in);
+    case f64: return retainHandle<double          >(in);
+    case s32: return retainHandle<int             >(in);
+    case u32: return retainHandle<uint            >(in);
+    case u8:  return retainHandle<uchar           >(in);
+    case c32: return retainHandle<detail::cfloat  >(in);
+    case c64: return retainHandle<detail::cdouble >(in);
+    case b8:  return retainHandle<char            >(in);
+    case s64: return retainHandle<intl            >(in);
+    case u64: return retainHandle<uintl           >(in);
     default:
-        AF_ERROR("Invalid type", AF_ERR_INVALID_TYPE);
+        TYPE_ERROR(1, ty);
     }
 }
 
-af_err af_weak_copy(af_array *out, const af_array in)
+af_err af_retain_array(af_array *out, const af_array in)
 {
     try {
-        *out = weakCopy(in);
+        *out = retain(in);
     }
     CATCHALL;
     return AF_SUCCESS;
@@ -410,19 +424,14 @@ static inline af_array range_(const dim4& d, const int seq_dim)
 }
 
 //Strong Exception Guarantee
-af_err af_range(af_array *result, const unsigned ndims, const dim_type * const dims,
+af_err af_range(af_array *result, const unsigned ndims, const dim_t * const dims,
                const int seq_dim, const af_dtype type)
 {
-    af_array out;
     try {
+        af_array out;
         AF_CHECK(af_init());
 
-        DIM_ASSERT(1, ndims > 0 && ndims <= 4);
-        dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
-            d[i] = dims[i];
-            DIM_ASSERT(2, d[i] >= 1);
-        }
+        dim4 d = verifyDims(ndims, dims);
 
         switch(type) {
         case f32:   out = range_<float  >(d, seq_dim); break;
@@ -445,11 +454,11 @@ static inline af_array iota_(const dim4 &dims, const dim4 &tile_dims)
 }
 
 //Strong Exception Guarantee
-af_err af_iota(af_array *result, const unsigned ndims, const dim_type * const dims,
-               const unsigned t_ndims, const dim_type * const tdims, const af_dtype type)
+af_err af_iota(af_array *result, const unsigned ndims, const dim_t * const dims,
+               const unsigned t_ndims, const dim_t * const tdims, const af_dtype type)
 {
-    af_array out;
     try {
+        af_array out;
         AF_CHECK(af_init());
 
         DIM_ASSERT(1, ndims > 0 && ndims <= 4);
@@ -507,7 +516,7 @@ INSTANTIATE(af_is_bool        , isBool        )
 
 #undef INSTANTIATE
 
-af_err af_get_dims(dim_type *d0, dim_type *d1, dim_type *d2, dim_type *d3,
+af_err af_get_dims(dim_t *d0, dim_t *d1, dim_t *d2, dim_t *d3,
                    const af_array in)
 {
     try {
@@ -588,6 +597,8 @@ af_err af_diag_create(af_array *out, const af_array in, const int num)
         case c64:   result = diagCreate<cdouble>(in, num);    break;
         case s32:   result = diagCreate<int    >(in, num);    break;
         case u32:   result = diagCreate<uint   >(in, num);    break;
+        case s64:   result = diagCreate<intl   >(in, num);    break;
+        case u64:   result = diagCreate<uintl  >(in, num);    break;
         case u8:    result = diagCreate<uchar  >(in, num);    break;
             // Removed because of bool type. Functions implementations exist.
         case b8:    result = diagCreate<char   >(in, num);    break;
@@ -615,6 +626,8 @@ af_err af_diag_extract(af_array *out, const af_array in, const int num)
         case c64:   result = diagExtract<cdouble>(in, num);    break;
         case s32:   result = diagExtract<int    >(in, num);    break;
         case u32:   result = diagExtract<uint   >(in, num);    break;
+        case s64:   result = diagExtract<intl   >(in, num);    break;
+        case u64:   result = diagExtract<uintl  >(in, num);    break;
         case u8:    result = diagExtract<uchar  >(in, num);    break;
             // Removed because of bool type. Functions implementations exist.
         case b8:    result = diagExtract<char   >(in, num);    break;
@@ -625,4 +638,95 @@ af_err af_diag_extract(af_array *out, const af_array in, const int num)
     } CATCHALL;
 
     return AF_SUCCESS;
+}
+
+template<typename T>
+void write_array(af_array arr, const T * const data, const size_t bytes, af_source src)
+{
+    if(src == afHost) {
+        writeHostDataArray(getWritableArray<T>(arr), data, bytes);
+    } else {
+        writeDeviceDataArray(getWritableArray<T>(arr), data, bytes);
+    }
+    return;
+}
+
+af_err af_write_array(af_array arr, const void *data, const size_t bytes, af_source src)
+{
+    try {
+        af_dtype type = getInfo(arr).getType();
+        //DIM_ASSERT(2, bytes <= getInfo(arr).bytes());
+
+        switch(type) {
+        case f32:   write_array(arr, static_cast<const float   *>(data), bytes, src); break;
+        case c32:   write_array(arr, static_cast<const cfloat  *>(data), bytes, src); break;
+        case f64:   write_array(arr, static_cast<const double  *>(data), bytes, src); break;
+        case c64:   write_array(arr, static_cast<const cdouble *>(data), bytes, src); break;
+        case b8:    write_array(arr, static_cast<const char    *>(data), bytes, src); break;
+        case s32:   write_array(arr, static_cast<const int     *>(data), bytes, src); break;
+        case u32:   write_array(arr, static_cast<const uint    *>(data), bytes, src); break;
+        case u8:    write_array(arr, static_cast<const uchar   *>(data), bytes, src); break;
+        case s64:   write_array(arr, static_cast<const intl    *>(data), bytes, src); break;
+        case u64:   write_array(arr, static_cast<const uintl   *>(data), bytes, src); break;
+        default:    TYPE_ERROR(4, type);
+        }
+    }
+    CATCHALL
+        return AF_SUCCESS;
+}
+
+template<typename T, bool is_upper>
+af_array triangle(const af_array in, bool is_unit_diag)
+{
+    if (is_unit_diag)
+        return getHandle(triangle<T, is_upper,  true>(getArray<T>(in)));
+    else
+        return getHandle(triangle<T, is_upper, false>(getArray<T>(in)));
+}
+
+af_err af_lower(af_array *out, const af_array in, bool is_unit_diag)
+{
+    try {
+        af_dtype type = getInfo(in).getType();
+        af_array res;
+        switch(type) {
+        case f32: res = triangle<float   , false>(in, is_unit_diag); break;
+        case f64: res = triangle<double  , false>(in, is_unit_diag); break;
+        case c32: res = triangle<cfloat  , false>(in, is_unit_diag); break;
+        case c64: res = triangle<cdouble , false>(in, is_unit_diag); break;
+        case s32: res = triangle<int     , false>(in, is_unit_diag); break;
+        case s64: res = triangle<intl    , false>(in, is_unit_diag); break;
+        case u32: res = triangle<uint    , false>(in, is_unit_diag); break;
+        case u64: res = triangle<uintl   , false>(in, is_unit_diag); break;
+        case u8 : res = triangle<uchar   , false>(in, is_unit_diag); break;
+        case b8 : res = triangle<char    , false>(in, is_unit_diag); break;
+        }
+        std::swap(*out, res);
+    }
+    CATCHALL
+        return AF_SUCCESS;
+}
+
+
+af_err af_upper(af_array *out, const af_array in, bool is_unit_diag)
+{
+    try {
+        af_dtype type = getInfo(in).getType();
+        af_array res;
+        switch(type) {
+        case f32: res = triangle<float   , true>(in, is_unit_diag); break;
+        case f64: res = triangle<double  , true>(in, is_unit_diag); break;
+        case c32: res = triangle<cfloat  , true>(in, is_unit_diag); break;
+        case c64: res = triangle<cdouble , true>(in, is_unit_diag); break;
+        case s32: res = triangle<int     , true>(in, is_unit_diag); break;
+        case s64: res = triangle<intl    , true>(in, is_unit_diag); break;
+        case u32: res = triangle<uint    , true>(in, is_unit_diag); break;
+        case u64: res = triangle<uintl   , true>(in, is_unit_diag); break;
+        case u8 : res = triangle<uchar   , true>(in, is_unit_diag); break;
+        case b8 : res = triangle<char    , true>(in, is_unit_diag); break;
+        }
+        std::swap(*out, res);
+    }
+    CATCHALL
+        return AF_SUCCESS;
 }

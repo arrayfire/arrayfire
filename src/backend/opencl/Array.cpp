@@ -14,6 +14,7 @@
 #include <JIT/BufferNode.hpp>
 #include <err_opencl.hpp>
 #include <memory.hpp>
+#include <platform.hpp>
 
 using af::dim4;
 
@@ -27,7 +28,7 @@ namespace opencl
 
     template<typename T>
     Array<T>::Array(af::dim4 dims) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(bufferAlloc(ArrayInfo::elements() * sizeof(T)), bufferFree),
         data_dims(dims),
         node(), ready(true), offset(0), owner(true)
@@ -36,7 +37,7 @@ namespace opencl
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(-1, dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(),
         data_dims(dims),
         node(n), ready(false), offset(0), owner(true)
@@ -45,7 +46,7 @@ namespace opencl
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(bufferAlloc(ArrayInfo::elements()*sizeof(T)), bufferFree),
         data_dims(dims),
         node(), ready(true), offset(0), owner(true)
@@ -55,7 +56,7 @@ namespace opencl
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, cl_mem mem) :
-        ArrayInfo(dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(new cl::Buffer(mem), bufferFree),
         data_dims(dims),
         node(), ready(true), offset(0), owner(true)
@@ -64,7 +65,7 @@ namespace opencl
 
     template<typename T>
     Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &stride) :
-        ArrayInfo(dims, offsets, stride, (af_dtype)dtype_traits<T>::af_type),
+        ArrayInfo(parent.getDevId(), dims, offsets, stride, (af_dtype)dtype_traits<T>::af_type),
         data(parent.getData()),
         data_dims(parent.getDataDims()),
         node(),
@@ -76,7 +77,7 @@ namespace opencl
 
     template<typename T>
     Array<T>::Array(Param &tmp) :
-        ArrayInfo(af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3]),
+        ArrayInfo(getActiveDeviceId(), af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3]),
                   af::dim4(0, 0, 0, 0),
                   af::dim4(tmp.info.strides[0], tmp.info.strides[1],
                            tmp.info.strides[2], tmp.info.strides[3]),
@@ -93,6 +94,7 @@ namespace opencl
     {
         if (isReady()) return;
 
+        this->setId(getActiveDeviceId());
         data = Buffer_ptr(bufferAlloc(elements() * sizeof(T)), bufferFree);
 
         // Do not replace this with cast operator
@@ -144,6 +146,8 @@ namespace opencl
     template<typename T>
     Array<T> createNodeArray(const dim4 &dims, Node_ptr node)
     {
+        verifyDoubleSupport<T>();
+
         Array<T> out =  Array<T>(dims, node);
 
         unsigned length =0, buf_count = 0, bytes = 0;
@@ -171,9 +175,9 @@ namespace opencl
         dim4 dDims = parent.getDataDims();
         dim4 pDims = parent.dims();
 
-        dim4 dims   = af::toDims  (index, pDims);
-        dim4 offset = af::toOffset(index, dDims);
-        dim4 stride = af::toStride (index, dDims);
+        dim4 dims   = toDims  (index, pDims);
+        dim4 offset = toOffset(index, dDims);
+        dim4 stride = toStride (index, dDims);
 
         Array<T> out = Array<T>(parent, dims, offset, stride);
 
@@ -194,10 +198,7 @@ namespace opencl
     Array<T>
     createHostDataArray(const dim4 &size, const T * const data)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !opencl::isDoubleSupported(opencl::getActiveDeviceId())) {
-            TYPE_ERROR(1, (std::is_same<T, double>::value ? f64 : c64));
-        }
+        verifyDoubleSupport<T>();
         return Array<T>(size, data);
     }
 
@@ -205,10 +206,7 @@ namespace opencl
     Array<T>
     createDeviceDataArray(const dim4 &size, const void *data)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !opencl::isDoubleSupported(opencl::getActiveDeviceId())) {
-            TYPE_ERROR(1, (std::is_same<T, double>::value ? f64 : c64));
-        }
+        verifyDoubleSupport<T>();
 
         return Array<T>(size, (cl_mem)(data));
     }
@@ -217,10 +215,7 @@ namespace opencl
     Array<T>
     createValueArray(const dim4 &size, const T& value)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !opencl::isDoubleSupported(opencl::getActiveDeviceId())) {
-            TYPE_ERROR(1, (std::is_same<T, double>::value ? f64 : c64));
-        }
+        verifyDoubleSupport<T>();
         return createScalarNode<T>(size, value);
     }
 
@@ -228,10 +223,7 @@ namespace opencl
     Array<T>
     createEmptyArray(const dim4 &size)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !opencl::isDoubleSupported(opencl::getActiveDeviceId())) {
-            TYPE_ERROR(1, (std::is_same<T, double>::value ? f64 : c64));
-        }
+        verifyDoubleSupport<T>();
         return Array<T>(size);
     }
 
@@ -245,10 +237,7 @@ namespace opencl
     Array<T>
     createParamArray(Param &tmp)
     {
-        if ((std::is_same<T, double>::value || std::is_same<T, cdouble>::value) &&
-            !opencl::isDoubleSupported(opencl::getActiveDeviceId())) {
-            TYPE_ERROR(1, (std::is_same<T, double>::value ? f64 : c64));
-        }
+        verifyDoubleSupport<T>();
         return Array<T>(tmp);
     }
 
@@ -263,6 +252,42 @@ namespace opencl
     void evalArray(const Array<T> &A)
     {
         A.eval();
+    }
+
+    template<typename T>
+    void
+    writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes)
+    {
+        if (!arr.isOwner()) {
+            arr = createEmptyArray<T>(arr.dims());
+        }
+
+        getQueue().enqueueWriteBuffer(*arr.get(), CL_TRUE,
+                                      arr.getOffset(),
+                                      bytes,
+                                      data);
+
+        return;
+    }
+
+    template<typename T>
+    void
+    writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
+    {
+        if (!arr.isOwner()) {
+            arr = createEmptyArray<T>(arr.dims());
+        }
+
+        cl::Buffer& buf = *arr.get();
+
+        clRetainMemObject((cl_mem)(data));
+        cl::Buffer data_buf = cl::Buffer((cl_mem)(data));
+
+        getQueue().enqueueCopyBuffer(data_buf, buf,
+                                     0, (size_t)arr.getOffset(),
+                                     bytes);
+
+        return;
     }
 
 
@@ -282,6 +307,8 @@ namespace opencl
     template       Array<T>::~Array        ();                          \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
+    template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
+    template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

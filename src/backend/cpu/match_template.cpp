@@ -27,54 +27,54 @@ Array<outType> match_template(const Array<inType> &sImg, const Array<inType> &tI
     const dim4 sStrides = sImg.strides();
     const dim4 tStrides = tImg.strides();
 
-    const dim_type tDim0  = tDims[0];
-    const dim_type tDim1  = tDims[1];
-    const dim_type sDim0  = sDims[0];
-    const dim_type sDim1  = sDims[1];
+    const dim_t tDim0  = tDims[0];
+    const dim_t tDim1  = tDims[1];
+    const dim_t sDim0  = sDims[0];
+    const dim_t sDim1  = sDims[1];
 
     Array<outType> out = createEmptyArray<outType>(sDims);
     const dim4 oStrides = out.strides();
 
-    const dim_type batchNum = sDims[2];
-
     outType tImgMean = outType(0);
-    dim_type winNumElements = tImg.elements();
+    dim_t winNumElements = tImg.elements();
     bool needMean = mType==AF_ZSAD || mType==AF_LSAD ||
                     mType==AF_ZSSD || mType==AF_LSSD ||
                     mType==AF_ZNCC;
     const inType * tpl = tImg.get();
 
     if (needMean) {
-        for(dim_type tj=0; tj<tDim1; tj++) {
-            dim_type tjStride = tj*tStrides[1];
+        for(dim_t tj=0; tj<tDim1; tj++) {
+            dim_t tjStride = tj*tStrides[1];
 
-            for(dim_type ti=0; ti<tDim0; ti++) {
+            for(dim_t ti=0; ti<tDim0; ti++) {
                 tImgMean += (outType)tpl[tjStride+ti*tStrides[0]];
             }
         }
         tImgMean /= winNumElements;
     }
 
-    for(dim_type b=0; b<batchNum; ++b) {
-        outType * dst      = out.get() + b*oStrides[2];
-        const inType * src = sImg.get() + b*sStrides[2];
+    outType * dst      = out.get();
+    const inType * src = sImg.get();
+
+    for(dim_t b3=0; b3<sDims[3]; ++b3) {
+    for(dim_t b2=0; b2<sDims[2]; ++b2) {
 
         // slide through image window after window
-        for(dim_type sj=0; sj<sDim1; sj++) {
+        for(dim_t sj=0; sj<sDim1; sj++) {
 
-            dim_type ojStride = sj*oStrides[1];
+            dim_t ojStride = sj*oStrides[1];
 
-            for(dim_type si=0; si<sDim0; si++) {
+            for(dim_t si=0; si<sDim0; si++) {
                 outType disparity = outType(0);
 
                 // mean for window
                 // this variable will be used based on mType value
                 outType wImgMean = outType(0);
                 if (needMean) {
-                    for(dim_type tj=0,j=sj; tj<tDim1; tj++, j++) {
-                        dim_type jStride = j*sStrides[1];
+                    for(dim_t tj=0,j=sj; tj<tDim1; tj++, j++) {
+                        dim_t jStride = j*sStrides[1];
 
-                        for(dim_type ti=0, i=si; ti<tDim0; ti++, i++) {
+                        for(dim_t ti=0, i=si; ti<tDim0; ti++, i++) {
                             inType sVal = ((j<sDim1 && i<sDim0) ?
                                     src[jStride + i*sStrides[0]] : inType(0));
                             wImgMean += (outType)sVal;
@@ -84,11 +84,11 @@ Array<outType> match_template(const Array<inType> &sImg, const Array<inType> &tI
                 }
 
                 // run the window match metric
-                for(dim_type tj=0,j=sj; tj<tDim1; tj++, j++) {
-                    dim_type jStride = j*sStrides[1];
-                    dim_type tjStride = tj*tStrides[1];
+                for(dim_t tj=0,j=sj; tj<tDim1; tj++, j++) {
+                    dim_t jStride = j*sStrides[1];
+                    dim_t tjStride = tj*tStrides[1];
 
-                    for(dim_type ti=0, i=si; ti<tDim0; ti++, i++) {
+                    for(dim_t ti=0, i=si; ti<tDim0; ti++, i++) {
                         inType sVal = ((j<sDim1 && i<sDim0) ?
                                             src[jStride + i*sStrides[0]] : inType(0));
                         inType tVal = tpl[tjStride+ti*tStrides[0]];
@@ -132,6 +132,11 @@ Array<outType> match_template(const Array<inType> &sImg, const Array<inType> &tI
                 dst[ojStride + si] = disparity;
             }
         }
+        src += sStrides[2];
+        dst += oStrides[2];
+    }
+        src += sStrides[3];
+        dst += oStrides[3];
     }
 
     return out;

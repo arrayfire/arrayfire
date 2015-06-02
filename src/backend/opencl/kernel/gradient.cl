@@ -27,22 +27,22 @@ __kernel
 void gradient_kernel(__global T *d_grad0, const KParam grad0,
                      __global T *d_grad1, const KParam grad1,
                      __global const T* d_in, const KParam in,
-                     const dim_type blocksPerMatX, const dim_type blocksPerMatY)
+                     const int blocksPerMatX, const int blocksPerMatY)
 {
-    const dim_type idz = get_group_id(0) / blocksPerMatX;
-    const dim_type idw = get_group_id(1) / blocksPerMatY;
+    const int idz = get_group_id(0) / blocksPerMatX;
+    const int idw = get_group_id(1) / blocksPerMatY;
 
-    const dim_type blockIdx_x = get_group_id(0) - idz * blocksPerMatX;
-    const dim_type blockIdx_y = get_group_id(1) - idw * blocksPerMatY;
+    const int blockIdx_x = get_group_id(0) - idz * blocksPerMatX;
+    const int blockIdx_y = get_group_id(1) - idw * blocksPerMatY;
 
-    const dim_type xB = blockIdx_x * get_local_size(0);
-    const dim_type yB = blockIdx_y * get_local_size(1);
+    const int xB = blockIdx_x * get_local_size(0);
+    const int yB = blockIdx_y * get_local_size(1);
 
-    const dim_type tx = get_local_id(0);
-    const dim_type ty = get_local_id(1);
+    const int tx = get_local_id(0);
+    const int ty = get_local_id(1);
 
-    const dim_type idx = tx + xB;
-    const dim_type idy = ty + yB;
+    const int idx = tx + xB;
+    const int idy = ty + yB;
 
     const bool cond = (idx >= in.dims[0] || idy >= in.dims[1] ||
                        idz >= in.dims[2] || idw >= in.dims[3]);
@@ -50,13 +50,13 @@ void gradient_kernel(__global T *d_grad0, const KParam grad0,
     int xmax = (TX > (in.dims[0] - xB)) ? (in.dims[0] - xB) : TX;
     int ymax = (TY > (in.dims[1] - yB)) ? (in.dims[1] - yB) : TY;
 
-    dim_type iIdx = in.offset + idw * in.strides[3] + idz * in.strides[2]
+    int iIdx = in.offset + idw * in.strides[3] + idz * in.strides[2]
                               + idy * in.strides[1] + idx;
 
-    dim_type g0dx = idw * grad0.strides[3] + idz * grad0.strides[2]
+    int g0dx = idw * grad0.strides[3] + idz * grad0.strides[2]
                   + idy * grad0.strides[1] + idx;
 
-    dim_type g1dx = idw * grad1.strides[3] + idz * grad1.strides[2]
+    int g1dx = idw * grad1.strides[3] + idz * grad1.strides[2]
                   + idy * grad1.strides[1] + idx;
 
     __local T scratch[(TY + 2) * (TX + 2)];

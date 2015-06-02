@@ -24,12 +24,12 @@ template<typename T, typename accT, bool expand>
 void one2one_1d(T *optr, T const *iptr, accT const *fptr, dim4 const &oDims,
                 dim4 const &sDims, dim4 const &fDims, dim4 const &sStrides)
 {
-    dim_type start = (expand ? 0 : fDims[0]/2);
-    dim_type end   = (expand ? oDims[0] : start + sDims[0]);
-    for(dim_type i=start; i<end; ++i) {
+    dim_t start = (expand ? 0 : fDims[0]/2);
+    dim_t end   = (expand ? oDims[0] : start + sDims[0]);
+    for(dim_t i=start; i<end; ++i) {
         accT accum = 0.0;
-        for(dim_type f=0; f<fDims[0]; ++f) {
-            dim_type iIdx = i-f;
+        for(dim_t f=0; f<fDims[0]; ++f) {
+            dim_t iIdx = i-f;
             T s_val = ((iIdx>=0 &&iIdx<sDims[0])? iptr[iIdx*sStrides[0]] : T(0));
             accum += accT(s_val * fptr[f]);
         }
@@ -42,25 +42,25 @@ void one2one_2d(T *optr, T const *iptr, accT const *fptr, dim4 const &oDims,
                 dim4 const &sDims, dim4 const &fDims, dim4 const &oStrides,
                 dim4 const &sStrides, dim4 const &fStrides)
 {
-    dim_type jStart = (expand ? 0 : fDims[1]/2);
-    dim_type jEnd   = (expand ? oDims[1] : jStart + sDims[1]);
-    dim_type iStart = (expand ? 0 : fDims[0]/2);
-    dim_type iEnd   = (expand ? oDims[0] : iStart + sDims[0]);
+    dim_t jStart = (expand ? 0 : fDims[1]/2);
+    dim_t jEnd   = (expand ? oDims[1] : jStart + sDims[1]);
+    dim_t iStart = (expand ? 0 : fDims[0]/2);
+    dim_t iEnd   = (expand ? oDims[0] : iStart + sDims[0]);
 
-    for(dim_type j=jStart; j<jEnd; ++j) {
-        dim_type joff = (j-jStart)*oStrides[1];
+    for(dim_t j=jStart; j<jEnd; ++j) {
+        dim_t joff = (j-jStart)*oStrides[1];
 
-        for(dim_type i=iStart; i<iEnd; ++i) {
+        for(dim_t i=iStart; i<iEnd; ++i) {
 
             accT accum = accT(0);
-            for(dim_type wj=0; wj<fDims[1]; ++wj) {
-                dim_type jIdx  = j-wj;
-                dim_type w_joff = wj*fStrides[1];
-                dim_type s_joff = jIdx * sStrides[1];
+            for(dim_t wj=0; wj<fDims[1]; ++wj) {
+                dim_t jIdx  = j-wj;
+                dim_t w_joff = wj*fStrides[1];
+                dim_t s_joff = jIdx * sStrides[1];
                 bool isJValid = (jIdx>=0 && jIdx<sDims[1]);
 
-                for(dim_type wi=0; wi<fDims[0]; ++wi) {
-                    dim_type iIdx = i-wi;
+                for(dim_t wi=0; wi<fDims[0]; ++wi) {
+                    dim_t iIdx = i-wi;
 
                     T s_val = T(0);
                     if ( isJValid && (iIdx>=0 && iIdx<sDims[0])) {
@@ -80,36 +80,36 @@ void one2one_3d(T *optr, T const *iptr, accT const *fptr, dim4 const &oDims,
                 dim4 const &sDims, dim4 const &fDims, dim4 const &oStrides,
                 dim4 const &sStrides, dim4 const &fStrides)
 {
-    dim_type kStart = (expand ? 0 : fDims[2]/2);
-    dim_type kEnd   = (expand ? oDims[2] : kStart + sDims[2]);
-    dim_type jStart = (expand ? 0 : fDims[1]/2);
-    dim_type jEnd   = (expand ? oDims[1] : jStart + sDims[1]);
-    dim_type iStart = (expand ? 0 : fDims[0]/2);
-    dim_type iEnd   = (expand ? oDims[0] : iStart + sDims[0]);
+    dim_t kStart = (expand ? 0 : fDims[2]/2);
+    dim_t kEnd   = (expand ? oDims[2] : kStart + sDims[2]);
+    dim_t jStart = (expand ? 0 : fDims[1]/2);
+    dim_t jEnd   = (expand ? oDims[1] : jStart + sDims[1]);
+    dim_t iStart = (expand ? 0 : fDims[0]/2);
+    dim_t iEnd   = (expand ? oDims[0] : iStart + sDims[0]);
 
-    for(dim_type k=kStart; k<kEnd; ++k) {
-        dim_type koff = (k-kStart)*oStrides[2];
+    for(dim_t k=kStart; k<kEnd; ++k) {
+        dim_t koff = (k-kStart)*oStrides[2];
 
-        for(dim_type j=jStart; j<jEnd; ++j) {
-            dim_type joff = (j-jStart)*oStrides[1];
+        for(dim_t j=jStart; j<jEnd; ++j) {
+            dim_t joff = (j-jStart)*oStrides[1];
 
-            for(dim_type i=iStart; i<iEnd; ++i) {
+            for(dim_t i=iStart; i<iEnd; ++i) {
 
                 accT accum = accT(0);
-                for(dim_type wk=0; wk<fDims[2]; ++wk) {
-                    dim_type kIdx  = k-wk;
-                    dim_type w_koff = wk*fStrides[2];
-                    dim_type s_koff = kIdx * sStrides[2];
+                for(dim_t wk=0; wk<fDims[2]; ++wk) {
+                    dim_t kIdx  = k-wk;
+                    dim_t w_koff = wk*fStrides[2];
+                    dim_t s_koff = kIdx * sStrides[2];
                     bool isKValid = (kIdx>=0 && kIdx<sDims[2]);
 
-                    for(dim_type wj=0; wj<fDims[1]; ++wj) {
-                        dim_type jIdx  = j-wj;
-                        dim_type w_joff = wj*fStrides[1];
-                        dim_type s_joff = jIdx * sStrides[1];
+                    for(dim_t wj=0; wj<fDims[1]; ++wj) {
+                        dim_t jIdx  = j-wj;
+                        dim_t w_joff = wj*fStrides[1];
+                        dim_t s_joff = jIdx * sStrides[1];
                         bool isJValid = (jIdx>=0 && jIdx<sDims[1]);
 
-                        for(dim_type wi=0; wi<fDims[0]; ++wi) {
-                            dim_type iIdx = i-wi;
+                        for(dim_t wi=0; wi<fDims[0]; ++wi) {
+                            dim_t iIdx = i-wi;
 
                             T s_val = T(0);
                             if ( isKValid && isJValid && (iIdx>=0 && iIdx<sDims[0])) {
@@ -126,52 +126,59 @@ void one2one_3d(T *optr, T const *iptr, accT const *fptr, dim4 const &oDims,
     } // k loop ends here
 }
 
-template<typename T, typename accT, dim_type baseDim, bool expand>
+template<typename T, typename accT, dim_t baseDim, bool expand>
 void convolve_nd(T *optr, T const *iptr, accT const *fptr,
                 dim4 const &oDims, dim4 const &sDims, dim4 const &fDims,
                 dim4 const &oStrides, dim4 const &sStrides, dim4 const &fStrides,
                 ConvolveBatchKind kind)
 {
-    T * out       = optr;
-    T const *in   = iptr;
-    accT const *filt = fptr;
+    dim_t out_step[4]  = {0, 0, 0, 0}; /* first value is never used, and declared for code simplicity */
+    dim_t in_step[4]   = {0, 0, 0, 0}; /* first value is never used, and declared for code simplicity */
+    dim_t filt_step[4] = {0, 0, 0, 0}; /* first value is never used, and declared for code simplicity */
+    dim_t batch[4]     = {0, 1, 1, 1}; /* first value is never used, and declared for code simplicity */
 
-    dim_type out_step = 0, in_step   = 0, filt_step = 0;
-
-    switch(kind) {
-        case MANY2ONE:
-            out_step = oStrides[baseDim];
-            in_step  = sStrides[baseDim];
-            break;
-        case MANY2MANY:
-            out_step  = oStrides[baseDim];
-            in_step   = sStrides[baseDim];
-            filt_step = fStrides[baseDim];
-            break;
-        case ONE2ALL:
-            out_step  = oStrides[baseDim];
-            filt_step = fStrides[baseDim];
-            break;
-        default:
-            out_step = oStrides[baseDim];
-            break;
+    for (dim_t i=1; i<4; ++i) {
+        switch(kind) {
+            case MANY2ONE:
+                out_step[i] = oStrides[i];
+                in_step[i]  = sStrides[i];
+                if (i>=baseDim) batch[i] = sDims[i];
+                break;
+            case MANY2MANY:
+                out_step[i]  = oStrides[i];
+                in_step[i]   = sStrides[i];
+                filt_step[i] = fStrides[i];
+                if (i>=baseDim) batch[i] = sDims[i];
+                break;
+            case ONE2MANY:
+                out_step[i]  = oStrides[i];
+                filt_step[i] = fStrides[i];
+                if (i>=baseDim) batch[i] = fDims[i];
+                break;
+            default:
+                break;
+        }
     }
 
-    dim_type bCount = (kind==ONE2ALL ? fDims[baseDim] : sDims[baseDim]);
+    for (dim_t b3=0; b3<batch[3]; ++b3) {
+        for (dim_t b2=0; b2<batch[2]; ++b2) {
+            for (dim_t b1=0; b1<batch[1]; ++b1) {
 
-    for(dim_type b=0; b<bCount; ++b) {
-        switch(baseDim) {
-            case 1: one2one_1d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, sStrides);                     break;
-            case 2: one2one_2d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, oStrides, sStrides, fStrides); break;
-            case 3: one2one_3d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, oStrides, sStrides, fStrides); break;
+                T * out          = optr + b1 * out_step[1] + b2 * out_step[2] + b3 * out_step[3];
+                T const *in      = iptr + b1 *  in_step[1] + b2 *  in_step[2] + b3 *  in_step[3];
+                accT const *filt = fptr + b1 *filt_step[1] + b2 *filt_step[2] + b3 *filt_step[3];
+
+                switch(baseDim) {
+                    case 1: one2one_1d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, sStrides);                     break;
+                    case 2: one2one_2d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, oStrides, sStrides, fStrides); break;
+                    case 3: one2one_3d<T, accT, expand>(out, in, filt, oDims, sDims, fDims, oStrides, sStrides, fStrides); break;
+                }
+            }
         }
-        out += out_step;
-        in  += in_step;
-        filt+= filt_step;
     }
 }
 
-template<typename T, typename accT, dim_type baseDim, bool expand>
+template<typename T, typename accT, dim_t baseDim, bool expand>
 Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBatchKind kind)
 {
     auto sDims    = signal.dims();
@@ -179,10 +186,9 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
     auto sStrides = signal.strides();
 
     dim4 oDims(1);
-
     if (expand) {
-        for(dim_type d=0; d<4; ++d) {
-            if (kind==ONE2ONE || kind==ONE2ALL) {
+        for(dim_t d=0; d<4; ++d) {
+            if (kind==ONE2ONE || kind==ONE2MANY) {
                 oDims[d] = sDims[d]+fDims[d]-1;
             } else {
                 oDims[d] = (d<baseDim ? sDims[d]+fDims[d]-1 : sDims[d]);
@@ -190,7 +196,10 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
         }
     } else {
         oDims = sDims;
-        if (kind==ONE2ALL) oDims[baseDim] = fDims[baseDim];
+        if (kind==ONE2MANY) {
+            for (dim_t i=baseDim; i<4; ++i)
+                oDims[i] = fDims[i];
+        }
     }
 
     Array<T> out = createEmptyArray<T>(oDims);
@@ -201,34 +210,34 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
     return out;
 }
 
-template<typename T, typename accT, dim_type conv_dim, bool expand>
+template<typename T, typename accT, dim_t conv_dim, bool expand>
 void convolve2_separable(T *optr, T const *iptr, accT const *fptr,
-                        dim4 const &oDims, dim4 const &sDims, dim4 const &orgDims, dim_type fDim,
-                        dim4 const &oStrides, dim4 const &sStrides, dim_type fStride)
+                        dim4 const &oDims, dim4 const &sDims, dim4 const &orgDims, dim_t fDim,
+                        dim4 const &oStrides, dim4 const &sStrides, dim_t fStride)
 {
-    for(dim_type j=0; j<oDims[1]; ++j) {
+    for(dim_t j=0; j<oDims[1]; ++j) {
 
-        dim_type jOff = j*oStrides[1];
-        dim_type cj = j + (conv_dim==1)*(expand ? 0: fDim>>1);
+        dim_t jOff = j*oStrides[1];
+        dim_t cj = j + (conv_dim==1)*(expand ? 0: fDim>>1);
 
-        for(dim_type i=0; i<oDims[0]; ++i) {
+        for(dim_t i=0; i<oDims[0]; ++i) {
 
-            dim_type iOff = i*oStrides[0];
-            dim_type ci = i + (conv_dim==0)*(expand ? 0 : fDim>>1);
+            dim_t iOff = i*oStrides[0];
+            dim_t ci = i + (conv_dim==0)*(expand ? 0 : fDim>>1);
 
             accT accum = scalar<accT>(0);
 
-            for(dim_type f=0; f<fDim; ++f) {
+            for(dim_t f=0; f<fDim; ++f) {
                 T f_val = fptr[f];
                 T s_val;
 
                 if (conv_dim==0) {
-                    dim_type offi = ci - f;
+                    dim_t offi = ci - f;
                     bool isCIValid = offi>=0 && offi<sDims[0];
                     bool isCJValid = cj>=0 && cj<sDims[1];
                     s_val = (isCJValid && isCIValid ? iptr[cj*sDims[0]+offi] : scalar<T>(0));
                 } else {
-                    dim_type offj = cj - f;
+                    dim_t offj = cj - f;
                     bool isCIValid = ci>=0 && ci<sDims[0];
                     bool isCJValid = offj>=0 && offj<sDims[1];
                     s_val = (isCJValid && isCIValid ? iptr[offj*sDims[0]+ci] : scalar<T>(0));
@@ -249,8 +258,8 @@ Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter, Array<ac
     auto rfDims   = r_filter.dims();
     auto sStrides = signal.strides();
 
-    dim_type cflen = (dim_type)cfDims.elements();
-    dim_type rflen = (dim_type)rfDims.elements();
+    dim_t cflen = (dim_t)cfDims.elements();
+    dim_t rflen = (dim_t)rfDims.elements();
 
     dim4 tDims = sDims;
     dim4 oDims = sDims;
@@ -267,18 +276,26 @@ Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter, Array<ac
     auto tStrides = temp.strides();
     auto oStrides = out.strides();
 
-    for (dim_type b=0; b<oDims[2]; ++b) {
-        T const *iptr = signal.get()+ b*sStrides[2];
-        T *tptr = temp.get() + b*tStrides[2];
-        T *optr = out.get()  + b*oStrides[2];
+    for (dim_t b3=0; b3<oDims[3]; ++b3) {
 
-        convolve2_separable<T, accT, 0, expand>(tptr, iptr, c_filter.get(),
-                                                tDims, sDims, sDims, cflen,
-                                                tStrides, sStrides, c_filter.strides()[0]);
+        dim_t i_b3Off = b3*sStrides[3];
+        dim_t t_b3Off = b3*tStrides[3];
+        dim_t o_b3Off = b3*oStrides[3];
 
-        convolve2_separable<T, accT, 1, expand>(optr, tptr, r_filter.get(),
-                                                oDims, tDims, sDims, rflen,
-                                                oStrides, tStrides, r_filter.strides()[0]);
+        for (dim_t b2=0; b2<oDims[2]; ++b2) {
+
+            T const *iptr = signal.get()+ b2*sStrides[2] + i_b3Off;
+            T *tptr = temp.get() + b2*tStrides[2] + t_b3Off;
+            T *optr = out.get()  + b2*oStrides[2] + o_b3Off;
+
+            convolve2_separable<T, accT, 0, expand>(tptr, iptr, c_filter.get(),
+                    tDims, sDims, sDims, cflen,
+                    tStrides, sStrides, c_filter.strides()[0]);
+
+            convolve2_separable<T, accT, 1, expand>(optr, tptr, r_filter.get(),
+                    oDims, tDims, sDims, rflen,
+                    oStrides, tStrides, r_filter.strides()[0]);
+        }
     }
 
     return out;

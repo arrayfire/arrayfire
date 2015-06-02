@@ -15,6 +15,7 @@
 #include <limits>
 #include <arrayfire.h>
 #include <af/dim4.hpp>
+#include <af/array.h>
 
 typedef unsigned char uchar;
 typedef unsigned int uint;
@@ -126,7 +127,7 @@ void readTestsFromFile(const std::string &FileName, std::vector<af::dim4> &input
 void readImageTests(const std::string        &pFileName,
                     std::vector<af::dim4>    &pInputDims,
                     std::vector<std::string> &pTestInputs,
-                    std::vector<dim_type>    &pTestOutSizes,
+                    std::vector<dim_t>    &pTestOutSizes,
                     std::vector<std::string> &pTestOutputs)
 {
     using std::vector;
@@ -310,13 +311,13 @@ void readImageFeaturesDescriptors(const std::string                  &pFileName,
  * value of NRMSD. Hence, the range of RMSD is [0,255] for image inputs.
  */
 template<typename T>
-bool compareArraysRMSD(dim_type data_size, T *gold, T *data, double tolerance)
+bool compareArraysRMSD(dim_t data_size, T *gold, T *data, double tolerance)
 {
     double accum  = 0.0;
     double maxion = FLT_MAX;//(double)std::numeric_limits<T>::lowest();
     double minion = FLT_MAX;//(double)std::numeric_limits<T>::max();
 
-    for(dim_type i=0;i<data_size;i++)
+    for(dim_t i=0;i<data_size;i++)
     {
         double dTemp = (double)data[i];
         double gTemp = (double)gold[i];
@@ -360,7 +361,7 @@ struct cond_type<false, T, Other> {
 };
 
 template<typename T>
-double real(T val) { return val.real(); }
+double real(T val) { return real(val); }
 template<>
 double real<double>(double val) { return val; }
 template<>
@@ -368,10 +369,18 @@ double real<float>(float val) { return val; }
 template<>
 double real<int>(int val) { return val; }
 template<>
+double real<char>(char val) { return val; }
+template<>
+double real<uchar>(uchar val) { return val; }
+template<>
 double real<uint>(uint val) { return val; }
+template<>
+double real<intl>(intl val) { return val; }
+template<>
+double real<uintl>(uintl val) { return val; }
 
 template<typename T>
-double imag(T val) { return val.imag(); }
+double imag(T val) { return imag(val); }
 template<>
 double imag<double>(double val) { return 0; }
 template<>
@@ -380,6 +389,14 @@ template<>
 double imag<int>(int val) { return 0; }
 template<>
 double imag<uint>(uint val) { return 0; }
+template<>
+double imag<intl>(intl val) { return 0; }
+template<>
+double imag<uintl>(uintl val) { return 0; }
+template<>
+double imag<char>(char val) { return 0; }
+template<>
+double imag<uchar>(uchar val) { return 0; }
 
 template<typename T>
 bool noDoubleTests()
@@ -392,3 +409,51 @@ bool noDoubleTests()
     return ((isTypeDouble && !isDoubleSupported) ? true : false);
 }
 
+// TODO: perform conversion on device for CUDA and OpenCL
+template<typename T>
+af_err conv_image(af_array *out, af_array in)
+{
+    af_array outArray;
+
+    dim_t d0, d1, d2, d3;
+    af_get_dims(&d0, &d1, &d2, &d3, in);
+    af::dim4 idims(d0, d1, d2, d3);
+
+    dim_t nElems = 0;
+    af_get_elements(&nElems, in);
+
+    float *in_data = new float[nElems];
+    af_get_data_ptr(in_data, in);
+
+    T *out_data = new T[nElems];
+
+    for (int i = 0; i < (int)nElems; i++)
+        out_data[i] = (T)in_data[i];
+
+    af_create_array(&outArray, out_data, idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type);
+
+    std::swap(*out, outArray);
+
+    delete [] in_data;
+    delete [] out_data;
+
+    return AF_SUCCESS;
+}
+
+template<typename T>
+af::array cpu_randu(const af::dim4 dims)
+{
+    typedef typename af::dtype_traits<T>::base_type BT;
+
+    bool isTypeCplx = is_same_type<T, af::cfloat>::value || is_same_type<T, af::cdouble>::value;
+    bool isTypeFloat = is_same_type<BT, float>::value || is_same_type<BT, double>::value;
+
+    dim_t elements = (isTypeCplx ? 2 : 1) * dims.elements();
+
+    std::vector<BT> out(elements);
+    for(int i = 0; i < (int)elements; i++) {
+        out[i] = isTypeFloat ? (BT)(rand())/RAND_MAX : rand() % 100;
+    }
+
+    return af::array(dims, (T *)&out[0]);
+}

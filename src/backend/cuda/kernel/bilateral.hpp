@@ -12,6 +12,7 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_cuda.hpp>
+#include <math.hpp>
 #include "shared.hpp"
 
 namespace cuda
@@ -20,17 +21,17 @@ namespace cuda
 namespace kernel
 {
 
-static const dim_type THREADS_X = 16;
-static const dim_type THREADS_Y = 16;
+static const int THREADS_X = 16;
+static const int THREADS_Y = 16;
 
 inline __device__
-dim_type lIdx(dim_type x, dim_type y, dim_type stride1, dim_type stride0)
+int lIdx(int x, int y, int stride1, int stride0)
 {
     return (y*stride1 + x*stride0);
 }
 
 inline __device__
-dim_type clamp(dim_type f, dim_type a, dim_type b)
+int clamp(int f, int a, int b)
 {
     return max(a, min(f, b));
 }
@@ -44,10 +45,10 @@ float gaussian1d(float x, float variance)
 template<typename inType, typename outType>
 inline __device__
 void load2ShrdMem(outType * shrd, const inType * const in,
-                  dim_type lx, dim_type ly, dim_type shrdStride,
-                  dim_type dim0, dim_type dim1,
-                  dim_type gx, dim_type gy,
-                  dim_type inStride1, dim_type inStride0)
+                  int lx, int ly, int shrdStride,
+                  int dim0, int dim1,
+                  int gx, int gy,
+                  int inStride1, int inStride0)
 {
     shrd[ly*shrdStride+lx] = in[lIdx(clamp(gx, 0, dim0-1), clamp(gy, 0, dim1-1), inStride1, inStride0)];
 }
@@ -56,29 +57,30 @@ template<typename inType, typename outType>
 static __global__
 void bilateralKernel(Param<outType> out, CParam<inType> in,
                      float sigma_space, float sigma_color,
-                     dim_type gaussOff, dim_type nonBatchBlkSize)
+                     int gaussOff, int nBBS0, int nBBS1)
 {
     SharedMemory<outType> shared;
     outType *localMem = shared.getPointer();
     outType *gauss2d  = localMem + gaussOff;
 
-    const dim_type radius      = max((int)(sigma_space * 1.5f), 1);
-    const dim_type padding     = 2 * radius;
-    const dim_type window_size = padding + 1;
-    const dim_type shrdLen     = THREADS_X + padding;
+    const int radius      = max((int)(sigma_space * 1.5f), 1);
+    const int padding     = 2 * radius;
+    const int window_size = padding + 1;
+    const int shrdLen     = THREADS_X + padding;
     const float variance_range = sigma_color * sigma_color;
     const float variance_space = sigma_space * sigma_space;
 
     // gfor batch offsets
-    unsigned batchId = blockIdx.x / nonBatchBlkSize;
-    const inType* iptr  = (const inType *) in.ptr + (batchId * in.strides[2]);
-    outType*       optr = (outType *     )out.ptr + (batchId * out.strides[2]);
+    unsigned b2 = blockIdx.x / nBBS0;
+    unsigned b3 = blockIdx.y / nBBS1;
+    const inType* iptr  = (const inType *) in.ptr + (b2 * in.strides[2]  + b3 * in.strides[3] );
+    outType*       optr = (outType *     )out.ptr + (b2 * out.strides[2] + b3 * out.strides[3]);
 
-    dim_type lx = threadIdx.x;
-    dim_type ly = threadIdx.y;
+    int lx = threadIdx.x;
+    int ly = threadIdx.y;
 
-    const dim_type gx = THREADS_X * (blockIdx.x-batchId*nonBatchBlkSize) + lx;
-    const dim_type gy = THREADS_Y * blockIdx.y + ly;
+    const int gx = THREADS_X * (blockIdx.x-b2*nBBS0) + lx;
+    const int gy = THREADS_Y * (blockIdx.y-b3*nBBS1) + ly;
 
     // generate gauss2d spatial variance values for block
     if (lx<window_size && ly<window_size) {
@@ -91,10 +93,10 @@ void bilateralKernel(Param<outType> out, CParam<inType> in,
     load2ShrdMem<inType, outType>(localMem, iptr, lx, ly, shrdLen,
             in.dims[0], in.dims[1], gx-radius, gy-radius, in.strides[1], in.strides[0]);
 
-    dim_type lx2 = lx + THREADS_X;
-    dim_type ly2 = ly + THREADS_Y;
-    dim_type gx2 = gx + THREADS_X;
-    dim_type gy2 = gy + THREADS_Y;
+    int lx2 = lx + THREADS_X;
+    int ly2 = ly + THREADS_Y;
+    int gx2 = gx + THREADS_X;
+    int gy2 = gy + THREADS_Y;
 
     if (lx<padding) {
         load2ShrdMem<inType, outType>(localMem, iptr, lx2, ly, shrdLen,
@@ -117,11 +119,11 @@ void bilateralKernel(Param<outType> out, CParam<inType> in,
         outType res  = 0;
         outType norm = 0;
 #pragma unroll
-        for(dim_type wj=0; wj<window_size; ++wj) {
-            dim_type joff = (ly+wj-radius)*shrdLen + (lx-radius);
-            dim_type goff = wj*window_size;
+        for(int wj=0; wj<window_size; ++wj) {
+            int joff = (ly+wj-radius)*shrdLen + (lx-radius);
+            int goff = wj*window_size;
 #pragma unroll
-            for(dim_type wi=0; wi<window_size; ++wi) {
+            for(int wi=0; wi<window_size; ++wi) {
                 const outType tmp_color   = localMem[joff+wi];
                 const outType gauss_range = gaussian1d(center_color - tmp_color, variance_range);
                 const outType weight      = gauss2d[goff+wi] * gauss_range;
@@ -138,24 +140,20 @@ void bilateral(Param<outType> out, CParam<inType> in, float s_sigma, float c_sig
 {
     dim3 threads(kernel::THREADS_X, kernel::THREADS_Y);
 
-    dim_type blk_x = divup(in.dims[0], THREADS_X);
-    dim_type blk_y = divup(in.dims[1], THREADS_Y);
+    int blk_x = divup(in.dims[0], THREADS_X);
+    int blk_y = divup(in.dims[1], THREADS_Y);
 
-    dim_type bCount = blk_x * in.dims[2];
-    if (isColor)
-        bCount *= in.dims[3];
-
-    dim3 blocks(bCount, blk_y);
+    dim3 blocks(blk_x * in.dims[2], blk_y * in.dims[3]);
 
     // calculate shared memory size
-    dim_type radius = (dim_type)std::max(s_sigma * 1.5f, 1.f);
-    dim_type num_shrd_elems    = (THREADS_X + 2 * radius) * (THREADS_Y + 2 * radius);
-    dim_type num_gauss_elems   = (2 * radius + 1)*(2 * radius + 1);
-    dim_type total_shrd_size   = sizeof(outType) * (num_shrd_elems + num_gauss_elems);
+    int radius = (int)std::max(s_sigma * 1.5f, 1.f);
+    int num_shrd_elems    = (THREADS_X + 2 * radius) * (THREADS_Y + 2 * radius);
+    int num_gauss_elems   = (2 * radius + 1)*(2 * radius + 1);
+    int total_shrd_size   = sizeof(outType) * (num_shrd_elems + num_gauss_elems);
 
     bilateralKernel<inType, outType>
         <<<blocks, threads, total_shrd_size>>>
-        (out, in, s_sigma, c_sigma, num_shrd_elems, blk_x);
+        (out, in, s_sigma, c_sigma, num_shrd_elems, blk_x, blk_y);
 
     POST_LAUNCH_CHECK();
 }

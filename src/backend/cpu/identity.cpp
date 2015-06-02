@@ -21,12 +21,11 @@ namespace cpu
     {
         Array<T> out = createEmptyArray<T>(dims);
         T *ptr = out.get();
-        const dim_type *out_dims  = out.dims().get();
+        const dim_t *out_dims  = out.dims().get();
 
-        for (int k = 0; k < out_dims[2] * out_dims[3]; k++) {
-
-            for (int j = 0; j < out_dims[1]; j++) {
-                for (int i = 0; i < out_dims[0]; i++) {
+        for (dim_t k = 0; k < out_dims[2] * out_dims[3]; k++) {
+            for (dim_t j = 0; j < out_dims[1]; j++) {
+                for (dim_t i = 0; i < out_dims[0]; i++) {
                     ptr[j * out_dims[0] + i]  = (i == j) ? scalar<T>(1) : scalar<T>(0);
                 }
             }
@@ -43,6 +42,8 @@ namespace cpu
     INSTANTIATE_IDENTITY(cfloat)
     INSTANTIATE_IDENTITY(cdouble)
     INSTANTIATE_IDENTITY(int)
+    INSTANTIATE_IDENTITY(intl)
+    INSTANTIATE_IDENTITY(uintl)
     INSTANTIATE_IDENTITY(uint)
     INSTANTIATE_IDENTITY(char)
     INSTANTIATE_IDENTITY(uchar)

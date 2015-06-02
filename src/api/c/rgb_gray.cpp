@@ -11,6 +11,7 @@
 #include <af/dim4.hpp>
 #include <af/image.h>
 #include <af/index.h>
+#include <af/data.h>
 
 #include <ArrayInfo.hpp>
 #include <handle.hpp>
@@ -29,21 +30,21 @@ static af_array rgb2gray(const af_array& in, const float r, const float g, const
 {
     Array<cType> input = cast<cType>(getArray<T>(in));
     dim4 inputDims = input.dims();
-    dim4 matDims(inputDims[0], inputDims[1], 1 , 1);
+    dim4 matDims(inputDims[0], inputDims[1], 1, inputDims[3]);
 
     Array<cType> rCnst = createValueArray<cType>(matDims, scalar<cType>(r));
     Array<cType> gCnst = createValueArray<cType>(matDims, scalar<cType>(g));
     Array<cType> bCnst = createValueArray<cType>(matDims, scalar<cType>(b));
 
     // extract three channels as three slices
-    af_seq slice1[3] = { af_span, af_span, {0, 0, 1} };
-    af_seq slice2[3] = { af_span, af_span, {1, 1, 1} };
-    af_seq slice3[3] = { af_span, af_span, {2, 2, 1} };
+    af_seq slice1[4] = { af_span, af_span, {0, 0, 1}, af_span };
+    af_seq slice2[4] = { af_span, af_span, {1, 1, 1}, af_span };
+    af_seq slice3[4] = { af_span, af_span, {2, 2, 1}, af_span };
 
     af_array ch1Temp=0, ch2Temp=0, ch3Temp=0;
-    AF_CHECK(af_index(&ch1Temp, in, 3, slice1));
-    AF_CHECK(af_index(&ch2Temp, in, 3, slice2));
-    AF_CHECK(af_index(&ch3Temp, in, 3, slice3));
+    AF_CHECK(af_index(&ch1Temp, in, 4, slice1));
+    AF_CHECK(af_index(&ch2Temp, in, 4, slice2));
+    AF_CHECK(af_index(&ch3Temp, in, 4, slice3));
 
     // r*Slice0
     Array<cType> expr1 = arithOp<cType, af_mul_t>(getArray<cType>(ch1Temp), rCnst, matDims);
@@ -56,9 +57,9 @@ static af_array rgb2gray(const af_array& in, const float r, const float g, const
     //r*Slice0 + g*Slice1 + b*Slice2
     Array<cType> result= arithOp<cType, af_add_t>(expr3, expr4, matDims);
 
-    AF_CHECK(af_destroy_array(ch1Temp));
-    AF_CHECK(af_destroy_array(ch2Temp));
-    AF_CHECK(af_destroy_array(ch3Temp));
+    AF_CHECK(af_release_array(ch1Temp));
+    AF_CHECK(af_release_array(ch2Temp));
+    AF_CHECK(af_release_array(ch3Temp));
 
     return getHandle<cType>(result);
 }
@@ -66,22 +67,28 @@ static af_array rgb2gray(const af_array& in, const float r, const float g, const
 template<typename T, typename cType>
 static af_array gray2rgb(const af_array& in, const float r, const float g, const float b)
 {
-    Array<cType> input = cast<cType>(getArray<T>(in));
-    dim4 inputDims = input.dims();
-
     if (r==1.0 && g==1.0 && b==1.0) {
         dim4 tileDims(1, 1, 3, 1);
-        return getHandle(tile(input, tileDims));
+        return getHandle(tile(getArray<T>(in), tileDims));
     }
 
-    dim4 matDims(inputDims[0], inputDims[1], 1 , 1);
+    af_array mod_input = 0;
+    dim4 inputDims = getInfo(in).dims();
+
+    dim4 matDims(inputDims[0], inputDims[1], 1, inputDims[2]*inputDims[3]);
+
+    AF_CHECK(af_moddims(&mod_input, in, matDims.ndims(), matDims.get()));
+    Array<cType> mod_in = cast<cType>(getArray<cType>(mod_input));
+
     Array<cType> rCnst = createValueArray<cType>(matDims, scalar<cType>(r));
     Array<cType> gCnst = createValueArray<cType>(matDims, scalar<cType>(g));
     Array<cType> bCnst = createValueArray<cType>(matDims, scalar<cType>(b));
 
-    Array<cType> expr1 = arithOp<cType, af_mul_t>(input, rCnst, matDims);
-    Array<cType> expr2 = arithOp<cType, af_mul_t>(input, gCnst, matDims);
-    Array<cType> expr3 = arithOp<cType, af_mul_t>(input, bCnst, matDims);
+    Array<cType> expr1 = arithOp<cType, af_mul_t>(mod_in, rCnst, matDims);
+    Array<cType> expr2 = arithOp<cType, af_mul_t>(mod_in, gCnst, matDims);
+    Array<cType> expr3 = arithOp<cType, af_mul_t>(mod_in, bCnst, matDims);
+
+    AF_CHECK(af_release_array(mod_input));
 
     // join channels
     Array<cType> expr4 = join<cType, cType>(2, expr1, expr2);
@@ -106,10 +113,8 @@ af_err convert(af_array* out, const af_array in, const float r, const float g, c
         af_dtype iType     = info.getType();
         af::dim4 inputDims = info.dims();
 
-        if (isRGB2GRAY)
-            ARG_ASSERT(1, (inputDims.ndims()==3));
-        else
-            ARG_ASSERT(1, (inputDims.ndims()==2));
+        ARG_ASSERT(1, (inputDims.ndims()>=2));
+        if (isRGB2GRAY) ARG_ASSERT(1, (inputDims[2]==3));
 
         af_array output = 0;
         switch(iType) {

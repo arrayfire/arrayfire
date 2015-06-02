@@ -7,21 +7,21 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-dim_type lIdx(dim_type x, dim_type y,
-        dim_type stride1, dim_type stride0)
+int lIdx(int x, int y,
+        int stride1, int stride0)
 {
     return (y*stride1 + x*stride0);
 }
 
 void load2LocalMem(__local outType *  shrd,
         __global const inType *      in,
-        dim_type lx, dim_type ly, dim_type shrdStride,
-        dim_type dim0, dim_type dim1,
-        dim_type gx, dim_type gy,
-        dim_type inStride1, dim_type inStride0)
+        int lx, int ly, int shrdStride,
+        int dim0, int dim1,
+        int gx, int gy,
+        int inStride1, int inStride0)
 {
-    dim_type gx_  = clamp(gx, 0, dim0-1);
-    dim_type gy_  = clamp(gy, 0, dim1-1);
+    int gx_  = clamp(gx, 0, dim0-1);
+    int gy_  = clamp(gy, 0, dim1-1);
     shrd[ lIdx(lx, ly, shrdStride, 1) ] = (outType)in[ lIdx(gx_, gy_, inStride1, inStride0) ];
 }
 
@@ -38,25 +38,26 @@ void bilateral(__global outType *        d_dst,
                __local outType *         localMem,
                __local outType *         gauss2d,
                float sigma_space, float sigma_color,
-               dim_type gaussOff, dim_type nonBatchBlkSize)
+               int gaussOff, int nBBS0, int nBBS1)
 {
-    const dim_type radius      = max((int)(sigma_space * 1.5f), 1);
-    const dim_type padding     = 2 * radius;
-    const dim_type window_size = padding + 1;
-    const dim_type shrdLen     = get_local_size(0) + padding;
+    const int radius      = max((int)(sigma_space * 1.5f), 1);
+    const int padding     = 2 * radius;
+    const int window_size = padding + 1;
+    const int shrdLen     = get_local_size(0) + padding;
     const float variance_range = sigma_color * sigma_color;
     const float variance_space = sigma_space * sigma_space;
 
     // gfor batch offsets
-    unsigned batchId = get_group_id(0) / nonBatchBlkSize;
-    __global const inType* in = d_src + (batchId * iInfo.strides[2] + iInfo.offset);
-    __global outType* out     = d_dst + (batchId * oInfo.strides[2]);
+    unsigned b2 = get_group_id(0) / nBBS0;
+    unsigned b3 = get_group_id(1) / nBBS1;
+    __global const inType* in = d_src + (b2 * iInfo.strides[2] + b3 * iInfo.strides[3] + iInfo.offset);
+    __global outType* out     = d_dst + (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]);
 
-    dim_type lx = get_local_id(0);
-    dim_type ly = get_local_id(1);
+    int lx = get_local_id(0);
+    int ly = get_local_id(1);
 
-    const dim_type gx = get_local_size(0) * (get_group_id(0)-batchId*nonBatchBlkSize) + lx;
-    const dim_type gy = get_local_size(1) * get_group_id(1) + ly;
+    const int gx = get_local_size(0) * (get_group_id(0)-b2*nBBS0) + lx;
+    const int gy = get_local_size(1) * (get_group_id(1)-b3*nBBS1) + ly;
 
     // generate gauss2d spatial variance values for block
     if (lx<window_size && ly<window_size) {
@@ -65,10 +66,10 @@ void bilateral(__global outType *        d_dst,
         gauss2d[ly*window_size+lx] = exp( ((x*x) + (y*y)) / (-2.f * variance_space));
     }
 
-    dim_type lx2 = lx + get_local_size(0);
-    dim_type ly2 = ly + get_local_size(1);
-    dim_type gx2 = gx + get_local_size(0);
-    dim_type gy2 = gy + get_local_size(1);
+    int lx2 = lx + get_local_size(0);
+    int ly2 = ly + get_local_size(1);
+    int gx2 = gx + get_local_size(0);
+    int gy2 = gy + get_local_size(1);
 
     // pull image to local memory
     load2LocalMem(localMem, in, lx, ly, shrdLen,
@@ -98,11 +99,11 @@ void bilateral(__global outType *        d_dst,
         outType res  = 0;
         outType norm = 0;
 #pragma unroll
-        for(dim_type wj=0; wj<window_size; ++wj) {
-            dim_type joff = (ly+wj-radius)*shrdLen + (lx-radius);
-            dim_type goff = wj*window_size;
+        for(int wj=0; wj<window_size; ++wj) {
+            int joff = (ly+wj-radius)*shrdLen + (lx-radius);
+            int goff = wj*window_size;
 #pragma unroll
-            for(dim_type wi=0; wi<window_size; ++wi) {
+            for(int wi=0; wi<window_size; ++wi) {
                 outType tmp_color   = localMem[joff+wi];
                 outType gauss_range = gaussian1d(center_color - tmp_color, variance_range);
                 outType weight      = gauss2d[goff+wi] * gauss_range;

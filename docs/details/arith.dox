@@ -50,7 +50,7 @@ Right shift an input
 
 
 
-\defgroup logic_func_lt lt
+\defgroup arith_func_lt lt
 
 \ingroup logic_mat
 
@@ -58,7 +58,7 @@ Check if input is less than another
 
 
 
-\defgroup logic_func_gt gt
+\defgroup arith_func_gt gt
 
 \ingroup logic_mat
 
@@ -66,7 +66,7 @@ Check if input is greater than another
 
 
 
-\defgroup logic_func_le le
+\defgroup arith_func_le le
 
 \ingroup logic_mat
 
@@ -74,7 +74,7 @@ Check if input is less than or equal to another
 
 
 
-\defgroup logic_func_ge ge
+\defgroup arith_func_ge ge
 
 \ingroup logic_mat
 
@@ -82,7 +82,7 @@ Check if input is greater than or equal to another
 
 
 
-\defgroup logic_func_eq eq
+\defgroup arith_func_eq eq
 
 \ingroup logic_mat
 
@@ -90,7 +90,7 @@ Check if input two inputs are equal
 
 
 
-\defgroup logic_func_neq neq
+\defgroup arith_func_neq neq
 
 \ingroup logic_mat
 
@@ -98,7 +98,7 @@ Check if input two inputs are not equal
 
 
 
-\defgroup logic_func_and and
+\defgroup arith_func_and and
 
 \ingroup logic_mat
 
@@ -106,7 +106,7 @@ Logical and of two inputs
 
 
 
-\defgroup logic_func_or or
+\defgroup arith_func_or or
 
 \ingroup logic_mat
 
@@ -114,7 +114,7 @@ Logical or of two inputs
 
 
 
-\defgroup logic_func_not not
+\defgroup arith_func_not not
 
 \ingroup logic_mat
 
@@ -122,7 +122,7 @@ Logical not of an input
 
 
 
-\defgroup logic_func_neg neg
+\defgroup arith_func_neg neg
 
 \ingroup logic_mat
 
@@ -130,7 +130,7 @@ Negative of an input
 
 
 
-\defgroup logic_func_bitand bitand
+\defgroup arith_func_bitand bitand
 
 \ingroup logic_mat
 
@@ -138,7 +138,7 @@ Bitwise and operation of two inputs
 
 
 
-\defgroup logic_func_bitor bitor
+\defgroup arith_func_bitor bitor
 
 \ingroup logic_mat
 
@@ -146,7 +146,7 @@ Bitwise or operation of two inputs
 
 
 
-\defgroup logic_func_bitxor bitxor
+\defgroup arith_func_bitxor bitxor
 
 \ingroup logic_mat
 
@@ -154,7 +154,7 @@ Bitwise xor operation of two inputs
 
 
 
-\defgroup numeric_func_min min
+\defgroup arith_func_min min
 
 \ingroup numeric_mat
 
@@ -162,7 +162,7 @@ Minimum of two inputs.
 
 
 
-\defgroup numeric_func_max max
+\defgroup arith_func_max max
 
 \ingroup numeric_mat
 
@@ -170,7 +170,7 @@ Maximum of two inputs.
 
 
 
-\defgroup numeric_func_rem rem
+\defgroup arith_func_rem rem
 
 \ingroup numeric_mat
 
@@ -178,15 +178,15 @@ Remainder operation
 
 
 
-\defgroup numeric_func_mod mod
+\defgroup arith_func_mod mod
 
 \ingroup numeric_mat
 
-Remainder operation
+Compute \f$x - n * y\f$ where n is quotient of \f$x / y\f$
 
 
 
-\defgroup numeric_func_abs abs
+\defgroup arith_func_abs abs
 
 \ingroup numeric_mat
 
@@ -194,7 +194,23 @@ Absolute value
 
 
 
-\defgroup numeric_func_round round
+\defgroup arith_func_arg arg
+
+\ingroup numeric_mat
+
+Phase of a complex number
+
+
+
+\defgroup arith_func_sign sign
+
+\ingroup numeric_mat
+
+Check if input is negative
+
+
+
+\defgroup arith_func_round round
 
 \ingroup numeric_mat
 
@@ -202,7 +218,15 @@ Round to nearest integer
 
 
 
-\defgroup numeric_func_floor floor
+\defgroup arith_func_trunc trunc
+
+\ingroup numeric_mat
+
+Truncate to nearest integer
+
+
+
+\defgroup arith_func_floor floor
 
 \ingroup numeric_mat
 
@@ -210,7 +234,7 @@ Round to integer less than equal to current value
 
 
 
-\defgroup numeric_func_ceil ceil
+\defgroup arith_func_ceil ceil
 
 \ingroup numeric_mat
 
@@ -218,7 +242,7 @@ Round to integer greater than equal to current value
 
 
 
-\defgroup numeric_func_hypot hypot
+\defgroup arith_func_hypot hypot
 
 \ingroup numeric_mat
 
@@ -226,7 +250,7 @@ Hypotenuse of the two inputs
 
 
 
-\defgroup trig_func_sin sin
+\defgroup arith_func_sin sin
 
 \ingroup trig_mat
 
@@ -234,7 +258,7 @@ sin of input
 
 
 
-\defgroup trig_func_cos cos
+\defgroup arith_func_cos cos
 
 \ingroup trig_mat
 
@@ -242,7 +266,7 @@ cos of input
 
 
 
-\defgroup trig_func_tan tan
+\defgroup arith_func_tan tan/tan2
 
 \ingroup trig_mat
 
@@ -250,7 +274,7 @@ tan of input
 
 
 
-\defgroup trig_func_asin asin
+\defgroup arith_func_asin asin
 
 \ingroup trig_mat
 
@@ -258,7 +282,7 @@ arc sin of input
 
 
 
-\defgroup trig_func_acos acos
+\defgroup arith_func_acos acos
 
 \ingroup trig_mat
 
@@ -266,7 +290,7 @@ arc cos of input
 
 
 
-\defgroup trig_func_atan atan
+\defgroup arith_func_atan atan/atan2
 
 \ingroup trig_mat
 
@@ -274,15 +298,14 @@ arc tan of input
 
 
 
-\defgroup hyper_func_sinh sinh
+\defgroup arith_func_sinh sinh
 
 \ingroup hyper_mat
 
 sinh of input
 
 
-
-\defgroup hyper_func_cosh cosh
+\defgroup arith_func_cosh cosh
 
 \ingroup hyper_mat
 
@@ -290,7 +313,7 @@ cosh of input
 
 
 
-\defgroup hyper_func_tanh tanh
+\defgroup arith_func_tanh tanh
 
 \ingroup hyper_mat
 
@@ -298,7 +321,7 @@ tanh of input
 
 
 
-\defgroup hyper_func_asinh asinh
+\defgroup arith_func_asinh asinh
 
 \ingroup hyper_mat
 
@@ -306,7 +329,7 @@ asinh of input
 
 
 
-\defgroup hyper_func_acosh acosh
+\defgroup arith_func_acosh acosh
 
 \ingroup hyper_mat
 
@@ -314,7 +337,7 @@ acosh of input
 
 
 
-\defgroup hyper_func_atanh atanh
+\defgroup arith_func_atanh atanh
 
 \ingroup hyper_mat
 
@@ -322,7 +345,7 @@ atanh of input
 
 
 
-\defgroup complex_func_cplx complex
+\defgroup arith_func_cplx complex
 
 \ingroup complex_mat
 
@@ -330,7 +353,7 @@ create complex arrays
 
 
 
-\defgroup complex_func_real real
+\defgroup arith_func_real real
 
 \ingroup complex_mat
 
@@ -338,7 +361,7 @@ Get real part of complex arrays
 
 
 
-\defgroup complex_func_imag imag
+\defgroup arith_func_imag imag
 
 \ingroup complex_mat
 
@@ -346,7 +369,7 @@ Get imaginary part of complex arrays
 
 
 
-\defgroup complex_func_conjg conjg
+\defgroup arith_func_conjg conjg
 
 \ingroup complex_mat
 
@@ -354,7 +377,16 @@ Get complex conjugate
 
 
 
-\defgroup explog_func_pow pow
+
+\defgroup arith_func_root root
+
+\ingroup explog_mat
+
+Find root of an input
+
+
+
+\defgroup arith_func_pow pow
 
 \ingroup explog_mat
 
@@ -363,7 +395,7 @@ Raise an array to a power
 
 
 
-\defgroup explog_func_exp exp
+\defgroup arith_func_exp exp
 
 \ingroup explog_mat
 
@@ -371,8 +403,7 @@ Exponential of input
 
 
 
-
-\defgroup explog_func_expm1 expm1
+\defgroup arith_func_expm1 expm1
 
 \ingroup explog_mat
 
@@ -380,7 +411,7 @@ Exponential of input - 1
 
 
 
-\defgroup explog_func_erf erf
+\defgroup arith_func_erf erf
 
 \ingroup explog_mat
 
@@ -389,7 +420,7 @@ Error function value
 
 
 
-\defgroup explog_func_erfc erfc
+\defgroup arith_func_erfc erfc
 
 \ingroup explog_mat
 
@@ -397,7 +428,7 @@ Complementary Error function value
 
 
 
-\defgroup explog_func_log log
+\defgroup arith_func_log log
 
 \ingroup explog_mat
 
@@ -405,7 +436,7 @@ Natural logarithm
 
 
 
-\defgroup explog_func_log1p log1p
+\defgroup arith_func_log1p log1p
 
 \ingroup explog_mat
 
@@ -413,7 +444,7 @@ Natural logarithm of (1 + in)
 
 
 
-\defgroup explog_func_log10 log10
+\defgroup arith_func_log10 log10
 
 \ingroup explog_mat
 
@@ -421,7 +452,7 @@ logarithm base 10
 
 
 
-\defgroup explog_func_sqrt sqrt
+\defgroup arith_func_sqrt sqrt
 
 \ingroup explog_mat
 
@@ -429,7 +460,7 @@ Square root of input arrays
 
 
 
-\defgroup explog_func_cbrt cbrt
+\defgroup arith_func_cbrt cbrt
 
 \ingroup explog_mat
 
@@ -437,7 +468,15 @@ Cube root of input arrays
 
 
 
-\defgroup explog_func_tgamma tgamma
+\defgroup arith_func_factorial factorial
+
+\ingroup explog_mat
+
+Factorial function
+
+
+
+\defgroup arith_func_tgamma tgamma
 
 \ingroup explog_mat
 
@@ -445,7 +484,7 @@ Gamma function
 
 
 
-\defgroup explog_func_lgamma lgamma
+\defgroup arith_func_lgamma lgamma
 
 \ingroup explog_mat
 
@@ -453,7 +492,7 @@ Logarithm of absolute values of Gamma function
 
 
 
-\defgroup helper_func_iszero iszero
+\defgroup arith_func_iszero iszero
 
 \ingroup helper_mat
 
@@ -461,7 +500,7 @@ Check if values are zero
 
 
 
-\defgroup helper_func_isinf isinf
+\defgroup arith_func_isinf isinf
 
 \ingroup helper_mat
 
@@ -469,7 +508,7 @@ Check if values are infinite
 
 
 
-\defgroup helper_func_isNan isNan
+\defgroup arith_func_isnan isNan
 
 \ingroup helper_mat
 
@@ -477,7 +516,7 @@ Check if values are Nan
 
 
 
-\defgroup helper_func_cast cast
+\defgroup arith_func_cast cast
 
 \ingroup helper_mat
 

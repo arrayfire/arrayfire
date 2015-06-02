@@ -9,6 +9,7 @@
 
 #include <af/image.h>
 #include <af/arith.h>
+#include <af/array.h>
 #include "error.hpp"
 
 namespace af
@@ -23,7 +24,7 @@ void sobel(array &dx, array &dy, const array &img, const unsigned ker_size)
     dy = array(af_dy);
 }
 
-array sobel(const array &img, const unsigned ker_size, bool isFast)
+array sobel(const array &img, const unsigned ker_size, const bool isFast)
 {
     array dx;
     array dy;

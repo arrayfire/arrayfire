@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/index.h>
+#include <af/data.h>
 #include <err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
@@ -18,12 +18,12 @@ using af::dim4;
 using namespace detail;
 
 template<typename T>
-static inline af_array shift(const af_array in, const af::dim4 &sdims)
+static inline af_array shift(const af_array in, const int sdims[4])
 {
     return getHandle(shift<T>(getArray<T>(in), sdims));
 }
 
-af_err af_shift(af_array *out, const af_array in, const af::dim4 &sdims)
+af_err af_shift(af_array *out, const af_array in, const int sdims[4])
 {
     try {
         ArrayInfo info = getInfo(in);
@@ -54,6 +54,6 @@ af_err af_shift(af_array *out, const af_array in, const af::dim4 &sdims)
 af_err af_shift(af_array *out, const af_array in,
                 const int x, const int y, const int z, const int w)
 {
-    af::dim4 sdims(x, y, z, w);
+    const int sdims[] = {x, y, z, w};
     return af_shift(out, in, sdims);
 }

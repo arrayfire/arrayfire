@@ -40,17 +40,17 @@ void exampleFuncKernel(Param<T> out, CParam<T> in, const af_someenum_t p)
     // kernel implementation goes here
 }
 
-                                        
+
 template <typename T>                   // CUDA kernel wrapper function
 void exampleFunc(Param<T> out, CParam<T> in, const af_someenum_t p)
 {
 
     dim3 threads(TX, TY, 1);            // set your cuda launch config for blocks
 
-    dim_type blk_x = divup(out.dims[0], threads.x);
-    dim_type blk_y = divup(out.dims[1], threads.y);
+    int blk_x = divup(out.dims[0], threads.x);
+    int blk_y = divup(out.dims[1], threads.y);
     dim3 blocks(blk_x, blk_y);          // set your opencl launch config for grid
-                            
+
     // launch your kernel
     exampleFuncKernel<T> <<<blocks, threads>>> (out, in, p);
 

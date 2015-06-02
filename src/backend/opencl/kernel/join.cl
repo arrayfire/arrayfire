@@ -8,47 +8,35 @@
  ********************************************************/
 
 __kernel
-void join_kernel(__global Tx *d_out, const KParam out,
-                 __global const Tx *d_X, const KParam X,
-                 __global const Ty *d_Y, const KParam Y,
-                 const dim_type blocksPerMatX, const dim_type blocksPerMatY)
+void join_kernel(__global To *d_out, const KParam out,
+                 __global const Ti *d_in, const KParam in,
+                 const int o0, const int o1, const int o2, const int o3,
+                 const int blocksPerMatX, const int blocksPerMatY)
 {
-    dim_type offset[4] = {0, 0, 0, 0};
-    if(dim == 0) offset[0] = X.dims[0];
-    if(dim == 1) offset[1] = X.dims[1];
-    if(dim == 2) offset[2] = X.dims[2];
-    if(dim == 3) offset[3] = X.dims[3];
+    const int iz = get_group_id(0) / blocksPerMatX;
+    const int iw = get_group_id(1) / blocksPerMatY;
 
-    const dim_type oz = get_group_id(0) / blocksPerMatX;
-    const dim_type ow = get_group_id(1) / blocksPerMatY;
+    const int blockIdx_x = get_group_id(0) - iz * blocksPerMatX;
+    const int blockIdx_y = get_group_id(1) - iw * blocksPerMatY;
 
-    const dim_type blockIdx_x = get_group_id(0) - oz * blocksPerMatX;
-    const dim_type blockIdx_y = get_group_id(1) - ow * blocksPerMatY;
+    const int xx = get_local_id(0) + blockIdx_x * get_local_size(0);
+    const int yy = get_local_id(1) + blockIdx_y * get_local_size(1);
 
-    const dim_type xx = get_local_id(0) + blockIdx_x * get_local_size(0);
-    const dim_type yy = get_local_id(1) + blockIdx_y * get_local_size(1);
+    const int incy = blocksPerMatY * get_local_size(1);
+    const int incx = blocksPerMatX * get_local_size(0);
 
-    const dim_type incy = blocksPerMatY * get_local_size(1);
-    const dim_type incx = blocksPerMatX * get_local_size(0);
+    d_in = d_in + in.offset;
 
-    d_X = d_X + X.offset;
-    d_Y = d_Y + Y.offset;
+    if (iz < in.dims[2] && iw < in.dims[3]) {
+        d_out = d_out + (iz + o2) * out.strides[2] + (iw + o3) * out.strides[3];
+        d_in = d_in + iz * in.strides[2] + iw * in.strides[3];
 
-    if (oz < out.dims[2] && ow < out.dims[3]) {
-        d_out = d_out + oz * out.strides[2] + ow * out.strides[3];
-        d_X = d_X + oz * X.strides[2] + ow * X.strides[3];
-        d_Y = d_Y + (oz - offset[2]) * Y.strides[2] + (ow - offset[3]) * Y.strides[3];
-        bool cond2 = oz < X.dims[2] && ow < X.dims[3];
+        for (int iy = yy; iy < in.dims[1]; iy += incy) {
+            __global Ti *d_in_ = d_in + iy * in.strides[1];
+            __global To *d_out_ = d_out + (iy + o1) * out.strides[1];
 
-        for (dim_type oy = yy; oy < out.dims[1]; oy += incy) {
-            bool cond1 = cond2 && oy < X.dims[1];
-            __global Tx *d_X_ = d_X + oy * X.strides[1];
-            __global Ty *d_Y_ = d_Y + (oy - offset[1]) * Y.strides[1];
-            __global Tx *d_out_ = d_out + oy * out.strides[1];
-
-            for (dim_type ox = xx; ox < out.dims[0]; ox += incx) {
-                bool cond0 = cond1 && ox < X.dims[0];
-                d_out_[ox] = cond0 ? d_X_[ox] : d_Y_[ox - offset[0]];
+            for (int ix = xx; ix < in.dims[0]; ix += incx) {
+                d_out_[ix + o0] = d_in_[ix];
             }
         }
     }

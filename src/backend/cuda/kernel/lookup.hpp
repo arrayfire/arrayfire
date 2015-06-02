@@ -11,6 +11,8 @@
 #include <backend.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
+#include <math.hpp>
+#include <utility.hpp>
 #include <debug_cuda.hpp>
 
 namespace cuda
@@ -19,41 +21,28 @@ namespace cuda
 namespace kernel
 {
 
-static const dim_type THREADS = 256;
+static const int THREADS = 256;
 
-static const dim_type THREADS_X = 32;
-static const dim_type THREADS_Y = 8;
+static const int THREADS_X = 32;
+static const int THREADS_Y = 8;
 
-static const dim_type THRD_LOAD = THREADS_X/THREADS_Y;
-
-__device__
-dim_type trimIndex(dim_type idx, const dim_type &len)
-{
-    dim_type ret_val = idx;
-    dim_type offset  = abs(ret_val)%len;
-    if (ret_val<0) {
-        ret_val = offset-1;
-    } else if (ret_val>=len) {
-        ret_val = len-offset-1;
-    }
-    return ret_val;
-}
+static const int THRD_LOAD = THREADS_X/THREADS_Y;
 
 template<typename in_t, typename idx_t>
 __global__
-void lookup1D(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, dim_type vDim)
+void lookup1D(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int vDim)
 {
-    dim_type idx = threadIdx.x + blockIdx.x * THREADS * THRD_LOAD;
+    int idx = threadIdx.x + blockIdx.x * THREADS * THRD_LOAD;
 
     const in_t* inPtr   = (const in_t*)in.ptr;
     const idx_t* idxPtr = (const idx_t*)indices.ptr;
 
     in_t* outPtr  = (in_t*)out.ptr;
 
-    dim_type en = min(out.dims[vDim], idx + THRD_LOAD * THREADS);
+    int en = min(out.dims[vDim], idx + THRD_LOAD * THREADS);
 
-    for (dim_type oIdx = idx; oIdx < en; oIdx += THREADS) {
-        dim_type iIdx = trimIndex(idxPtr[oIdx], in.dims[vDim]);
+    for (int oIdx = idx; oIdx < en; oIdx += THREADS) {
+        int iIdx = trimIndex(idxPtr[oIdx], in.dims[vDim]);
         outPtr[oIdx] = inPtr[iIdx];
     }
 }
@@ -61,23 +50,23 @@ void lookup1D(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, dim_type 
 template<typename in_t, typename idx_t, unsigned dim>
 __global__
 void lookupND(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices,
-                    dim_type nBBS0, dim_type nBBS1)
+                    int nBBS0, int nBBS1)
 {
-    dim_type lx = threadIdx.x;
-    dim_type ly = threadIdx.y;
+    int lx = threadIdx.x;
+    int ly = threadIdx.y;
 
-    dim_type gz = blockIdx.x/nBBS0;
-    dim_type gw = blockIdx.y/nBBS1;
+    int gz = blockIdx.x/nBBS0;
+    int gw = blockIdx.y/nBBS1;
 
-    dim_type gx = blockDim.x * (blockIdx.x - gz*nBBS0) + lx;
-    dim_type gy = blockDim.y * (blockIdx.y - gw*nBBS1) + ly;
+    int gx = blockDim.x * (blockIdx.x - gz*nBBS0) + lx;
+    int gy = blockDim.y * (blockIdx.y - gw*nBBS1) + ly;
 
     const idx_t *idxPtr = (const idx_t*)indices.ptr;
 
-    dim_type i = in.strides[0]*(dim==0 ? trimIndex((dim_type)idxPtr[gx], in.dims[0]): gx);
-    dim_type j = in.strides[1]*(dim==1 ? trimIndex((dim_type)idxPtr[gy], in.dims[1]): gy);
-    dim_type k = in.strides[2]*(dim==2 ? trimIndex((dim_type)idxPtr[gz], in.dims[2]): gz);
-    dim_type l = in.strides[3]*(dim==3 ? trimIndex((dim_type)idxPtr[gw], in.dims[3]): gw);
+    int i = in.strides[0]*(dim==0 ? trimIndex((int)idxPtr[gx], in.dims[0]): gx);
+    int j = in.strides[1]*(dim==1 ? trimIndex((int)idxPtr[gy], in.dims[1]): gy);
+    int k = in.strides[2]*(dim==2 ? trimIndex((int)idxPtr[gz], in.dims[2]): gz);
+    int l = in.strides[3]*(dim==3 ? trimIndex((int)idxPtr[gw], in.dims[3]): gw);
 
     const in_t *inPtr = (const in_t*)in.ptr + (i+j+k+l);
     in_t *outPtr = (in_t*)out.ptr +(gx*out.strides[0]+gy*out.strides[1]+
@@ -89,20 +78,20 @@ void lookupND(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices,
 }
 
 template<typename in_t, typename idx_t, unsigned dim>
-void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, dim_type nDims)
+void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, int nDims)
 {
     if (nDims==1) {
         const dim3 threads(THREADS, 1);
         /* find which dimension has non-zero # of elements */
-        dim_type vDim = 0;
-        for (dim_type i=0; i<4; i++) {
+        int vDim = 0;
+        for (int i=0; i<4; i++) {
             if (in.dims[i]==1)
                 vDim++;
             else
                 break;
         }
 
-        dim_type blks = divup(out.dims[vDim], THREADS*THRD_LOAD);
+        int blks = divup(out.dims[vDim], THREADS*THRD_LOAD);
 
         dim3 blocks(blks, 1);
 
@@ -110,8 +99,8 @@ void lookup(Param<in_t> out, CParam<in_t> in, CParam<idx_t> indices, dim_type nD
     } else {
         const dim3 threads(THREADS_X, THREADS_Y);
 
-        dim_type blks_x = divup(out.dims[0], threads.x);
-        dim_type blks_y = divup(out.dims[1], threads.y);
+        int blks_x = divup(out.dims[0], threads.x);
+        int blks_y = divup(out.dims[1], threads.y);
 
         dim3 blocks(blks_x*out.dims[2], blks_y*out.dims[3]);
 

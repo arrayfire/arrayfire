@@ -27,7 +27,7 @@ int main(int argc, char ** argv)
     double peak = 0;
     try {
         int device = argc > 1 ? atoi(argv[1]) : 0;
-        deviceset(device);
+        setDevice(device);
         info();
 
         printf("Benchmark N-by-N matrix multiply\n");

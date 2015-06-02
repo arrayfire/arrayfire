@@ -7,9 +7,13 @@ Overview {#mainpage}
 
 ArrayFire is a high performance software library for parallel computing with an easy-to-use API. Its array based function set makes parallel programming more accessible.
 
-You can get ArrayFire in one of the following ways
-    * [Binary installers](http://arrayfire.com/download/) from our download page
-    * Build from source using our [github repo](https://github.com/arrayfire/arrayfire)
+## Installing ArrayFire
+
+You can install ArrayFire using either a binary installer for Windows, OSX,
+or Linux or download it from source:
+
+* [Binary installers for Windows, OSX, and Linux](\ref installing)
+* [Build from source](https://github.com/arrayfire/arrayfire)
 
 ## Easy to use
 

@@ -10,6 +10,7 @@
 #include <string.h> // strncpy
 #include <stdio.h>
 #include <af/exception.h>
+#include <algorithm>
 
 #ifdef OS_WIN
 #define snprintf _snprintf
@@ -17,32 +18,32 @@
 
 namespace af {
 
-exception::exception()
+exception::exception(): m_err(AF_ERR_UNKNOWN)
 {
     strncpy(m_msg, "unknown exception", sizeof(m_msg));
 }
 
-exception::exception(const char *msg)
+exception::exception(const char *msg): m_err(AF_ERR_UNKNOWN)
 {
     strncpy(m_msg, msg, sizeof(m_msg));
     m_msg[sizeof(m_msg)-1] = '\0';
 }
 
-exception::exception(const char *file, unsigned line)
+exception::exception(const char *file, unsigned line, af_err err): m_err(err)
 {
-    snprintf(m_msg, sizeof(m_msg)-1, "%s:%d: exception thrown", file, line);
+    snprintf(m_msg, sizeof(m_msg) - 1,
+             "ArrayFire Exception(%d): %s\nIn %s:%u",
+             (int)err, af_err_to_string(err), file, line);
+
     m_msg[sizeof(m_msg)-1] = '\0';
 }
 
-exception::exception(const char *file, unsigned line, af_err err)
+exception::exception(const char *msg, const char *file, unsigned line, af_err err): m_err(err)
 {
-    snprintf(m_msg, sizeof(m_msg)-1, "%s:%d: AF_ERROR %d", file, line, (int)(err));
-    m_msg[sizeof(m_msg)-1] = '\0';
-}
+    snprintf(m_msg, sizeof(m_msg) - 1,
+             "ArrayFire Exception(%d): %s\nIn %s:%u",
+             (int)(err), msg, file, line);
 
-exception::exception(const char *msg, const char *file, unsigned line, af_err err)
-{
-    snprintf(m_msg, sizeof(m_msg)-1, "%s\n%s:%d: AF_ERROR %d", msg, file, line, (int)(err));
     m_msg[sizeof(m_msg)-1] = '\0';
 }
 

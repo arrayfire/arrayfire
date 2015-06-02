@@ -5,53 +5,64 @@ FIND_PACKAGE(OpenCL REQUIRED)
 
 INCLUDE("${CMAKE_MODULE_PATH}/CLKernelToH.cmake")
 
+IF(USE_OPENCL_F77_BLAS)
+    MESSAGE("Using F77 BLAS")
+    ADD_DEFINITIONS(-DUSE_F77_BLAS)
+ENDIF()
+
+IF(USE_OPENCL_MKL)
+    MESSAGE("Using MKL")
+    ADD_DEFINITIONS(-DUSE_MKL)
+ENDIF()
+
+IF(APPLE)
+    FIND_PACKAGE(LAPACK)
+ELSE(APPLE) # Linux and Windows
+    FIND_PACKAGE(LAPACKE)
+ENDIF(APPLE)
+
+IF(NOT LAPACK_FOUND)
+    MESSAGE(WARNING "LAPACK not found. Functionality will be disabled")
+ELSE(NOT LAPACK_FOUND)
+    ADD_DEFINITIONS(-DLAPACK_${BLA_VENDOR})
+    ADD_DEFINITIONS(-DWITH_OPENCL_LINEAR_ALGEBRA)
+ENDIF()
+
 IF(NOT UNIX)
-  ADD_DEFINITIONS(-DAFDLL)
+    ADD_DEFINITIONS(-DAFDLL)
 ENDIF()
 
 ADD_DEFINITIONS(-DAF_OPENCL
                 -D__CL_ENABLE_EXCEPTIONS)
 
-# clBLAS and clFFT create packages when their `make install` step is executed,
-# rather than installing to system directories. Thus we have special find
-# and install methods for these libraries.
-FIND_PACKAGE(CLBLAS REQUIRED)
+OPTION(USE_SYSTEM_CLBLAS "Use system clBLAS" OFF)
+IF(USE_SYSTEM_CLBLAS)
+    FIND_PACKAGE(clBLAS REQUIRED)
+ELSE()
+    INCLUDE("${CMAKE_MODULE_PATH}/build_clBLAS.cmake")
+ENDIF()
 INCLUDE_DIRECTORIES(${CLBLAS_INCLUDE_DIRS})
 LINK_DIRECTORIES(${CLBLAS_LIBRARY_DIR})
-# Custom install command
-INSTALL(DIRECTORY "${CLBLAS_PACKAGE_DIR}/include/" DESTINATION include 
-    COMPONENT headers)
-IF(UNIX)
-    FILE(GLOB CLBLAS_LIBS "${CLBLAS_PACKAGE_DIR}/lib64/*${CMAKE_SHARED_LIBRARY_SUFFIX}*")
-ELSEIF(WIN32)
-    FILE(GLOB CLBLAS_LIB "${CLBLAS_PACKAGE_DIR}/lib64/import/*${CMAKE_STATIC_LIBRARY_SUFFIX}")
-    FILE(GLOB CLBLAS_DLL "${CLBLAS_PACKAGE_DIR}/bin/*${CMAKE_SHARED_LIBRARY_SUFFIX}")
-  LIST(APPEND CLBLAS_LIBS ${CLBLAS_LIB} ${CLBLAS_DLL})
-ENDIF(UNIX)
-INSTALL(FILES ${CLBLAS_LIBS} DESTINATION lib COMPONENT libraries)
 
-FIND_PACKAGE(clFFT REQUIRED)
+OPTION(USE_SYSTEM_CLFFT "Use system clFFT" OFF)
+IF(USE_SYSTEM_CLFFT)
+    FIND_PACKAGE(clFFT REQUIRED)
+ELSE()
+    INCLUDE("${CMAKE_MODULE_PATH}/build_clFFT.cmake")
+ENDIF()
 INCLUDE_DIRECTORIES(${CLFFT_INCLUDE_DIRS})
 LINK_DIRECTORIES(${CLFFT_LIBRARY_DIR})
-# Custom install command
-INSTALL(DIRECTORY "${CLFFT_BUILD_DIR}/package/include/" DESTINATION include
-    COMPONENT headers)
-IF(UNIX)
-  FILE(GLOB CLFFT_LIBS "${CLFFT_BUILD_DIR}/package/lib64/*${CMAKE_SHARED_LIBRARY_SUFFIX}*")
-ELSE(UNIX)
-  IF(WIN32)
-    FILE(GLOB CLFFT_LIB "${CLFFT_BUILD_DIR}/package/lib64/import/*${CMAKE_STATIC_LIBRARY_SUFFIX}")
-    FILE(GLOB CLFFT_DLL "${CLFFT_BUILD_DIR}/package/bin/*${CMAKE_SHARED_LIBRARY_SUFFIX}")
-    LIST(APPEND CLFFT_LIBS ${CLFFT_LIB} ${CLFFT_DLL})
-  ENDIF(WIN32)
-ENDIF(UNIX)
-INSTALL(FILES ${CLFFT_LIBS} DESTINATION lib COMPONENT libraries)
 
 ADD_DEFINITIONS( -DBOOST_ALL_NO_LIB )
 SET(Boost_USE_STATIC_LIBS OFF)
 FIND_PACKAGE(Boost 1.48 REQUIRED)
 
-FIND_PACKAGE(BoostCompute REQUIRED)
+OPTION(USE_SYSTEM_BOOST_COMPUTE "Use system BoostCompute" OFF)
+IF(USE_SYSTEM_BOOST_COMPUTE)
+    FIND_PACKAGE(BoostCompute REQUIRED)
+ELSE()
+    INCLUDE("${CMAKE_MODULE_PATH}/build_boost_compute.cmake")
+ENDIF()
 
 SET( cl_kernel_headers
     "kernel_headers")
@@ -59,19 +70,27 @@ SET( cl_kernel_headers
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
     "${CMAKE_SOURCE_DIR}/src/backend/opencl"
-    ${OPENCL_INCLUDE_DIRS}
+    ${OpenCL_INCLUDE_DIRS}
     "${CMAKE_CURRENT_BINARY_DIR}"
-    ${CLBLAS_INCLUDE_DIR}
+    ${CLBLAS_INCLUDE_DIRS}
     ${CLFFT_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIR}
-    ${BoostCompute_INCLUDE_DIR}
+    ${BoostCompute_INCLUDE_DIRS}
+    ${LAPACK_INCLUDE_DIR}
     )
 
 FILE(GLOB opencl_headers
   "*.hpp"
-    "*.h")
+  "*.h")
+
 FILE(GLOB opencl_sources
     "*.cpp")
+
+FILE(GLOB magma_sources
+    "magma/*.cpp")
+
+FILE(GLOB magma_headers
+    "magma/*.h")
 
 FILE(GLOB jit_sources
     "jit/*.hpp")
@@ -99,6 +118,8 @@ source_group(backend\\opencl\\kernel\\cl FILES ${opencl_kernels})
 source_group(backend\\opencl\\kernel\\Sources FILES ${kernel_sources})
 source_group(backend\\opencl\\kernel\\convolve\\Headers FILES ${conv_ker_headers})
 source_group(backend\\opencl\\kernel\\convolve\\Sources FILES ${conv_ker_sources})
+source_group(backend\\opencl\\magma\\Sources FILES ${magma_sources})
+source_group(backend\\opencl\\magma\\Headers FILES ${magma_headers})
 
 FILE(GLOB backend_headers
     "../*.hpp"
@@ -142,9 +163,11 @@ CL_KERNEL_TO_H(
 
 # OS Definitions
 IF(UNIX)
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread")
 ELSE(${UNIX}) #Windows
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /bigobj")
+    SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /bigobj")
 ENDIF()
 
 
@@ -162,30 +185,60 @@ ADD_LIBRARY(afopencl SHARED
             ${c_sources}
             ${c_headers}
             ${cpp_sources}
+            ${magma_sources}
+            ${magma_headers}
             )
 
 ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
 
-TARGET_LINK_LIBRARIES(afopencl ${OPENCL_LIBRARIES} ${lib_deps} ${CLBLAS_LIBRARIES} ${CLFFT_LIBRARIES} ${CMAKE_DL_LIBS} ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES(afopencl
+    ${OpenCL_LIBRARIES}
+    ${FreeImage_LIBS}
+    ${CLBLAS_LIBRARIES}
+    ${CLFFT_LIBRARIES}
+    ${CMAKE_DL_LIBS}
+    ${Boost_LIBRARIES})
 
+IF(LAPACK_FOUND)
+   TARGET_LINK_LIBRARIES(afopencl
+   ${LAPACK_LIBRARIES}
+   )
+ENDIF()
+
+SET_TARGET_PROPERTIES(afopencl PROPERTIES
+    VERSION "${AF_VERSION}"
+    SOVERSION "${AF_VERSION_MAJOR}")
+
+IF(FORGE_FOUND)
+    TARGET_LINK_LIBRARIES(afopencl
+                          ${FORGE_LIBRARIES}
+                         )
+ENDIF()
+
+IF(INSTALLER_MODE)
+    SET_TARGET_PROPERTIES(afopencl PROPERTIES LINK_INTERFACE_LIBRARIES "")
+    SET_TARGET_PROPERTIES(afopencl PROPERTIES INTERFACE_LINK_LIBRARIES "")
+ELSE()
 # locally built but not installed libraries (clBLAS and clFFT) must NOT appear in the
 # link interface. The best option would be to use LINK_PRIVATE, but unfortunately
 # it is not available for older cmake than 2.8.7, so they must be remove from
 # the link interface manually. Both LINK_INTERFACE_LIBRARIES and INTERFACE_LINK_LIBRARIES
 # are used to keep it working with older cmake versions that 2.8.12 and avoid
 # warnings on newer versions - see CMP0022
-FOREACH(property LINK_INTERFACE_LIBRARIES INTERFACE_LINK_LIBRARIES)
-  GET_TARGET_PROPERTY(value afopencl ${property})
-  IF(value)
-    LIST(REMOVE_ITEM value ${CLBLAS_LIBRARIES} ${CLFFT_LIBRARIES})
-    SET_TARGET_PROPERTIES(afopencl PROPERTIES LINK_INTERFACE_LIBRARIES "${value}")
-    SET_TARGET_PROPERTIES(afopencl PROPERTIES INTERFACE_LINK_LIBRARIES "${value}")
-  ENDIF()
-ENDFOREACH()
+    FOREACH(property LINK_INTERFACE_LIBRARIES INTERFACE_LINK_LIBRARIES)
+        GET_TARGET_PROPERTY(value afopencl ${property})
+        IF(value)
+            LIST(REMOVE_ITEM value ${CLBLAS_LIBRARIES} ${CLFFT_LIBRARIES})
+            SET_TARGET_PROPERTIES(afopencl PROPERTIES LINK_INTERFACE_LIBRARIES "${value}")
+            SET_TARGET_PROPERTIES(afopencl PROPERTIES INTERFACE_LINK_LIBRARIES "${value}")
+        ENDIF()
+    ENDFOREACH()
+ENDIF()
 
-INSTALL(TARGETS afopencl EXPORT OpenCL DESTINATION lib COMPONENT libraries)
+INSTALL(TARGETS afopencl EXPORT OpenCL DESTINATION "${AF_INSTALL_LIB_DIR}"
+        COMPONENT libraries)
 
 export(TARGETS afopencl FILE ArrayFireOpenCL.cmake)
-INSTALL(EXPORT OpenCL DESTINATION ${ARRAYFIRE_CMAKE_DIR} 
+INSTALL(EXPORT OpenCL DESTINATION "${AF_INSTALL_CMAKE_DIR}"
     COMPONENT cmake
     FILE ArrayFireOpenCL.cmake)

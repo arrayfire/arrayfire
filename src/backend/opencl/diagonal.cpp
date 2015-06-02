@@ -33,8 +33,8 @@ namespace opencl
     template<typename T>
     Array<T> diagExtract(const Array<T> &in, const int num)
     {
-        const dim_type *idims = in.dims().get();
-        dim_type size = std::max(idims[0], idims[1]) - std::abs(num);
+        const dim_t *idims = in.dims().get();
+        dim_t size = std::max(idims[0], idims[1]) - std::abs(num);
         Array<T> out = createEmptyArray<T>(dim4(size, 1, idims[2], idims[3]));
 
         kernel::diagExtract<T>(out, in, num);
@@ -53,6 +53,8 @@ namespace opencl
     INSTANTIATE_DIAGONAL(cdouble)
     INSTANTIATE_DIAGONAL(int)
     INSTANTIATE_DIAGONAL(uint)
+    INSTANTIATE_DIAGONAL(intl)
+    INSTANTIATE_DIAGONAL(uintl)
     INSTANTIATE_DIAGONAL(char)
     INSTANTIATE_DIAGONAL(uchar)
 

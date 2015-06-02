@@ -10,7 +10,6 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <map>
-#include <iostream>
 #include <stdexcept>
 #include <copy.hpp>
 #include <JIT/Node.hpp>
@@ -25,8 +24,13 @@
 #include <dispatch.hpp>
 #include <err_cuda.hpp>
 #include <math.hpp>
+#include <vector>
 #include <nvvm.h>
 #include <boost/functional/hash.hpp>
+#include <boost/scoped_ptr.hpp>
+
+using std::vector;
+using boost::scoped_ptr;
 
 namespace cuda
 {
@@ -201,7 +205,7 @@ static string getKernelString(string funcName, Node *node, bool is_linear)
         nvvmResult res = fn;                    \
         if (res == NVVM_SUCCESS) break;         \
         char nvvm_err_msg[1024];                \
-        snprintf(nvvm_err_msg,					\
+        snprintf(nvvm_err_msg,                    \
                  sizeof(nvvm_err_msg),          \
                  "NVVM Error (%d): %s\n",       \
                  (int)(res), msg);              \
@@ -227,11 +231,10 @@ static char *irToPtx(string IR, size_t *ptx_size)
     if (comp_res != NVVM_SUCCESS) {
         size_t log_size = 0;
         nvvmGetProgramLogSize(prog, &log_size);
-        printf("%ld, %ld\n", IR.size(), log_size);
-        char *log = new char[log_size];
-        nvvmGetProgramLog(prog, log);
-        printf("LOG:\n%s\n%s", log, IR.c_str());
-        delete[] log;
+        printf("%ld, %zu\n", IR.size(), log_size);
+        scoped_ptr<char> log(new char[log_size]);
+        nvvmGetProgramLog(prog, log.get());
+        printf("LOG:\n%s\n%s", log.get(), IR.c_str());
         NVVM_CHECK(comp_res, "Failed to compile program");
     }
 #endif
@@ -272,7 +275,7 @@ char linkError[size];
         CUresult res = fn;                      \
         if (res == CUDA_SUCCESS) break;         \
         char cu_err_msg[1024];                  \
-        snprintf(cu_err_msg,					\
+        snprintf(cu_err_msg,                    \
                  sizeof(cu_err_msg),            \
                  "CU Error (%d)\n",             \
                  (int)(res));                   \
@@ -284,7 +287,7 @@ char linkError[size];
 static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
 {
     size_t ptx_size;
-    const char *ptx = irToPtx(jit_ker, &ptx_size);
+    scoped_ptr<const char> ptx(irToPtx(jit_ker, &ptx_size));
 
     CUlinkState linkState;
 
@@ -308,7 +311,7 @@ static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
     };
 
     CU_CHECK(cuLinkCreate(5, linkOptions, linkOptionValues, &linkState));
-    CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)ptx,
+    CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)ptx.get(),
                            ptx_size, ker_name, 0, NULL, NULL));
 
     CU_CHECK(cuLinkAddData(linkState, CU_JIT_INPUT_PTX, (void*)arith_ptx,
@@ -344,7 +347,6 @@ static kc_entry_t compileKernel(const char *ker_name, string jit_ker)
 
     kc_entry_t entry = {module, kernel};
 
-    delete[] ptx;
     return entry;
 }
 
@@ -376,7 +378,7 @@ void evalNodes(Param<T> &out, Node *node)
 {
     bool is_linear = node->isLinear(out.dims);
     CUfunction ker = getKernel(node, is_linear);
-    std::vector<void *> args;
+    vector<void *> args;
     node->setArgs(args, is_linear);
 
     void *ptr = (void *)out.ptr;

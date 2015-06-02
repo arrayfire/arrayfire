@@ -7,24 +7,91 @@ INCLUDE("${CMAKE_MODULE_PATH}/CLKernelToH.cmake")
 INCLUDE("${CMAKE_MODULE_PATH}/FindNVVM.cmake")
 
 # Disables running cuda_compute_check.c when build windows using remote
-IF(NOT DEFINED CUDA_COMPUTE_CAPABILITY)
-  INCLUDE("${CMAKE_MODULE_PATH}/CUDACheckCompute.cmake")
-ELSE(NOT DEFINED CUDA_COMPUTE_CAPABILITY)
-  IF(NOT DEFINED CUDA_GENERATE_CODE)
-    SET(CUDA_GENERATE_CODE "arch=compute_${CUDA_COMPUTE_CAPABILITY},code=sm_${CUDA_COMPUTE_CAPABILITY}")
-  ENDIF(NOT DEFINED CUDA_GENERATE_CODE)
+OPTION(CUDA_COMPUTE_DETECT "Run autodetection of CUDA Architecture" ON)
+IF(CUDA_COMPUTE_DETECT AND NOT DEFINED CUDA_DETECTED_COMPUTE)
+    INCLUDE("${CMAKE_MODULE_PATH}/CUDACheckCompute.cmake")
+    SET(CUDA_COMPUTE_${CUDA_DETECTED_COMPUTE} ON CACHE BOOL "" FORCE)
+ENDIF()
 
-  SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -arch compute_${CUDA_COMPUTE_CAPABILITY})
+OPTION(CUDA_COMPUTE_20 "CUDA Compute Capability 2.0" OFF)
+OPTION(CUDA_COMPUTE_30 "CUDA Compute Capability 3.0" OFF)
+OPTION(CUDA_COMPUTE_32 "CUDA Compute Capability 3.2" OFF)
+OPTION(CUDA_COMPUTE_35 "CUDA Compute Capability 3.5" OFF)
+OPTION(CUDA_COMPUTE_50 "CUDA Compute Capability 5.0" OFF)
+OPTION(CUDA_COMPUTE_52 "CUDA Compute Capability 5.2" OFF)
+
+MARK_AS_ADVANCED(CUDA_COMPUTE_DETECT CUDA_COMPUTE_20
+                 CUDA_COMPUTE_30 CUDA_COMPUTE_32 CUDA_COMPUTE_35
+                 CUDA_COMPUTE_50 CUDA_COMPUTE_52)
+
+IF(${CUDA_COMPUTE_20})
+    SET(VERSION 20)
+    SET(CUDA_GENERATE_CODE_${VERSION} "-gencode arch=compute_${VERSION},code=sm_${VERSION}")
+    SET(CUDA_GENERATE_CODE ${CUDA_GENERATE_CODE} ${CUDA_GENERATE_CODE_${VERSION}})
+    LIST(APPEND COMPUTE_VERSIONS "${VERSION}")
+ENDIF()
+IF(${CUDA_COMPUTE_30})
+    SET (VERSION 30)
+    SET(CUDA_GENERATE_CODE_${VERSION} "-gencode arch=compute_${VERSION},code=sm_${VERSION}")
+    SET(CUDA_GENERATE_CODE ${CUDA_GENERATE_CODE} ${CUDA_GENERATE_CODE_${VERSION}})
+    LIST(APPEND COMPUTE_VERSIONS "${VERSION}")
+ENDIF()
+IF(${CUDA_COMPUTE_32})
+    SET(VERSION 32)
+    SET(CUDA_GENERATE_CODE_${VERSION} "-gencode arch=compute_${VERSION},code=sm_${VERSION}")
+    SET(CUDA_GENERATE_CODE ${CUDA_GENERATE_CODE} ${CUDA_GENERATE_CODE_${VERSION}})
+    LIST(APPEND COMPUTE_VERSIONS "${VERSION}")
+ENDIF()
+IF(${CUDA_COMPUTE_35})
+    SET(VERSION 35)
+    SET(CUDA_GENERATE_CODE_${VERSION} "-gencode arch=compute_${VERSION},code=sm_${VERSION}")
+    SET(CUDA_GENERATE_CODE ${CUDA_GENERATE_CODE} ${CUDA_GENERATE_CODE_${VERSION}})
+    LIST(APPEND COMPUTE_VERSIONS "${VERSION}")
+ENDIF()
+IF(${CUDA_COMPUTE_50})
+    SET(VERSION 50)
+    SET(CUDA_GENERATE_CODE_${VERSION} "-gencode arch=compute_${VERSION},code=sm_${VERSION}")
+    SET(CUDA_GENERATE_CODE ${CUDA_GENERATE_CODE} ${CUDA_GENERATE_CODE_${VERSION}})
+    LIST(APPEND COMPUTE_VERSIONS "${VERSION}")
+ENDIF()
+IF(${CUDA_COMPUTE_52})
+    SET(VERSION 52)
+    SET(CUDA_GENERATE_CODE_${VERSION} "-gencode arch=compute_${VERSION},code=sm_${VERSION}")
+    SET(CUDA_GENERATE_CODE ${CUDA_GENERATE_CODE} ${CUDA_GENERATE_CODE_${VERSION}})
+    LIST(APPEND COMPUTE_VERSIONS "${VERSION}")
 ENDIF()
 
 IF(UNIX)
-  SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -Xcompiler -fvisibility=hidden)
-  REMOVE_DEFINITIONS(-std=c++0x)
+    SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -Xcompiler -fvisibility=hidden)
+    REMOVE_DEFINITIONS(-std=c++0x)
+    IF(${WITH_COVERAGE})
+        SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler -fprofile-arcs -Xcompiler -ftest-coverage -Xlinker -fprofile-arcs -Xlinker -ftest-coverage")
+    ENDIF(${WITH_COVERAGE})
 ELSE()
-  ADD_DEFINITIONS(-DAFDLL)
+    ADD_DEFINITIONS(-DAFDLL)
 ENDIF()
 
 ADD_DEFINITIONS(-DAF_CUDA)
+
+IF(${CUDA_VERSION_MAJOR} LESS 7)
+    MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cuSolve library. Linear Algebra will not be available." )
+    IF(CMAKE_VERSION VERSION_LESS 3.2)
+        SET(CUDA_cusolver_LIBRARY)
+    ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
+ELSE(${CUDA_VERSION_MAJOR} LESS 7)
+    MESSAGE(STATUS "CUDA cusolver library available in CUDA Version ${CUDA_VERSION_STRING}")
+    ADD_DEFINITIONS(-DWITH_CUDA_LINEAR_ALGEBRA)
+    IF(CMAKE_VERSION VERSION_LESS 3.2)
+        FIND_LIBRARY(
+            CUDA_cusolver_LIBRARY
+            NAMES "cusolver"
+            PATHS ${CUDA_TOOLKIT_ROOT_DIR}
+            PATH_SUFFIXES "lib64" "lib/x64" "lib"
+            DOC "CUDA cusolver Library"
+            NO_DEFAULT_PATH
+            )
+    ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
+ENDIF(${CUDA_VERSION_MAJOR} LESS 7)
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
@@ -54,10 +121,10 @@ FILE(GLOB kernel_headers
 FILE(GLOB ptx_sources
     "JIT/*.cu")
 
-source_group(backend\\cuda\\Headers FILES ${cuda_headers})
-source_group(backend\\cuda\\Sources FILES ${cuda_sources})
-source_group(backend\\cuda\\JIT FILES ${jit_sources})
-source_group(backend\\cuda\\kernel\\Headers FILES ${kernel_headers})
+SOURCE_GROUP(backend\\cuda\\Headers FILES ${cuda_headers})
+SOURCE_GROUP(backend\\cuda\\Sources FILES ${cuda_sources})
+SOURCE_GROUP(backend\\cuda\\JIT FILES ${jit_sources})
+SOURCE_GROUP(backend\\cuda\\kernel\\Headers FILES ${kernel_headers})
 
 FILE(GLOB backend_headers
     "../*.hpp"
@@ -68,8 +135,8 @@ FILE(GLOB backend_sources
     "../*.cpp"
     )
 
-source_group(backend\\Headers FILES ${backend_headers})
-source_group(backend\\Sources FILES ${backend_sources})
+SOURCE_GROUP(backend\\Headers FILES ${backend_headers})
+SOURCE_GROUP(backend\\Sources FILES ${backend_sources})
 
 FILE(GLOB c_headers
     "../../api/c/*.hpp"
@@ -80,23 +147,20 @@ FILE(GLOB c_sources
     "../../api/c/*.cpp"
     )
 
-source_group(api\\c\\Headers FILES ${c_headers})
-source_group(api\\c\\Sources FILES ${c_sources})
+SOURCE_GROUP(api\\c\\Headers FILES ${c_headers})
+SOURCE_GROUP(api\\c\\Sources FILES ${c_sources})
 
 FILE(GLOB cpp_sources
     "../../api/cpp/*.cpp"
     )
 
-source_group(api\\cpp\\Sources FILES ${cpp_sources})
+SOURCE_GROUP(api\\cpp\\Sources FILES ${cpp_sources})
 
-IF(${CUDA_COMPUTE_CAPABILITY} STREQUAL "21")
-    SET(PTX_COMPUTE "20")
-ELSEIF(${CUDA_COMPUTE_CAPABILITY} STREQUAL "32")
-    SET(PTX_COMPUTE "30")
-ELSEIF(${CUDA_COMPUTE_CAPABILITY} STREQUAL "52")
-    SET(PTX_COMPUTE "50")
+LIST(LENGTH COMPUTE_VERSIONS COMPUTE_COUNT)
+IF(${COMPUTE_COUNT} EQUAL 1)
+  SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} ${CUDA_GENERATE_CODE}")
 ELSE()
-  SET(PTX_COMPUTE ${CUDA_COMPUTE_CAPABILITY})
+    SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch sm_20")
 ENDIF()
 
 CUDA_COMPILE_PTX(ptx_files ${ptx_sources})
@@ -158,16 +222,38 @@ CUDA_ADD_LIBRARY(afcuda SHARED
                 ${c_headers}
                 ${c_sources}
                 ${cpp_sources}
-                OPTIONS "-gencode" ${CUDA_GENERATE_CODE})
+                OPTIONS ${CUDA_GENERATE_CODE})
 
 ADD_DEPENDENCIES(afcuda ${ptx_targets})
 
+TARGET_LINK_LIBRARIES(afcuda
+                      ${CUDA_CUBLAS_LIBRARIES}
+                      ${CUDA_LIBRARIES}
+                      ${CUDA_cusolver_LIBRARY}
+                      ${FreeImage_LIBS}
+                      ${CUDA_CUFFT_LIBRARIES}
+                      ${CUDA_NVVM_LIBRARIES}
+                      ${CUDA_CUDA_LIBRARY})
 
-TARGET_LINK_LIBRARIES(afcuda ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES} ${lib_deps} ${CUDA_CUFFT_LIBRARIES} ${CUDA_NVVM_LIBRARIES} ${CUDA_CUDA_LIBRARY})
+IF(FORGE_FOUND)
+    TARGET_LINK_LIBRARIES(afcuda
+                          ${FORGE_LIBRARIES}
+                         )
+ENDIF()
 
-INSTALL(TARGETS afcuda EXPORT CUDA DESTINATION lib COMPONENT libraries)
+SET_TARGET_PROPERTIES(afcuda PROPERTIES
+    VERSION "${AF_VERSION}"
+    SOVERSION "${AF_VERSION_MAJOR}")
+
+IF(INSTALLER_MODE)
+    SET_TARGET_PROPERTIES(afcpu PROPERTIES LINK_INTERFACE_LIBRARIES "")
+    SET_TARGET_PROPERTIES(afcpu PROPERTIES INTERFACE_LINK_LIBRARIES "")
+ENDIF()
+
+INSTALL(TARGETS afcuda EXPORT CUDA DESTINATION "${AF_INSTALL_LIB_DIR}"
+        COMPONENT libraries)
 
 export(TARGETS afcuda FILE ArrayFireCUDA.cmake)
-INSTALL(EXPORT CUDA DESTINATION ${ARRAYFIRE_CMAKE_DIR} 
+INSTALL(EXPORT CUDA DESTINATION "${AF_INSTALL_CMAKE_DIR}"
     COMPONENT cmake
     FILE ArrayFireCUDA.cmake)

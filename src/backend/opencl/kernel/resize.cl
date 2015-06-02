@@ -7,6 +7,20 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#if CPLX
+#define set(a, b) a = b
+#define set_scalar(a, b) do {                   \
+        a.x = b;                                \
+        a.y = 0;                                \
+    } while(0)
+
+#else
+
+#define set(a, b) a = b
+#define set_scalar(a, b) a = b
+
+#endif
+
 #define NEAREST resize_n_
 #define BILINEAR resize_b_
 
@@ -14,7 +28,7 @@
 // nearest-neighbor resampling
 void resize_n_(__global T* d_out, const KParam out,
                __global const T* d_in, const KParam in,
-               const dim_type blockIdx_x, const dim_type blockIdx_y,
+               const int blockIdx_x, const int blockIdx_y,
                const float xf, const float yf)
 {
     int const ox = get_local_id(0) + blockIdx_x * get_local_size(0);
@@ -36,7 +50,7 @@ void resize_n_(__global T* d_out, const KParam out,
 // bilinear resampling
 void resize_b_(__global T* d_out, const KParam out,
                __global const T* d_in, const KParam in,
-               const dim_type blockIdx_x, const dim_type blockIdx_y,
+               const int blockIdx_x, const int blockIdx_y,
                const float xf_, const float yf_)
 {
     int const ox = get_local_id(0) + blockIdx_x * get_local_size(0);
@@ -58,17 +72,17 @@ void resize_b_(__global T* d_out, const KParam out,
     const int ix2 = (ix + 1) < in.dims[0] ? (ix + 1) : ix;
     const int iy2 = (iy + 1) < in.dims[1] ? (iy + 1) : iy;
 
-    const T p1 = d_in[ix  + in.strides[1] * iy ];
-    const T p2 = d_in[ix  + in.strides[1] * iy2];
-    const T p3 = d_in[ix2 + in.strides[1] * iy ];
-    const T p4 = d_in[ix2 + in.strides[1] * iy2];
+    const VT p1 = d_in[ix  + in.strides[1] * iy ];
+    const VT p2 = d_in[ix  + in.strides[1] * iy2];
+    const VT p3 = d_in[ix2 + in.strides[1] * iy ];
+    const VT p4 = d_in[ix2 + in.strides[1] * iy2];
 
-    T val = (1.0f-a) * (1.0f-b) * p1 +
-            (a)      * (1.0f-b) * p2 +
-            (1.0f-a) * (b)      * p3 +
-            (a)      * (b)      * p4;
+    d_out[ox + oy * out.strides[1]] =
+             (((1.0f-a) * (1.0f-b)) * p1) +
+             (((a)      * (1.0f-b)) * p2) +
+             (((1.0f-a) * (b)     ) * p3) +
+             (((a)      * (b)     ) * p4);
 
-    d_out[ox + oy * out.strides[1]] = val;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -76,15 +90,15 @@ void resize_b_(__global T* d_out, const KParam out,
 __kernel
 void resize_kernel(__global T *d_out, const KParam out,
                    __global const T *d_in, const KParam in,
-                   const dim_type b0, const dim_type b1, const float xf, const float yf)
+                   const int b0, const int b1, const float xf, const float yf)
 {
-    dim_type bIdx = get_group_id(0) / b0;
-    dim_type bIdy = get_group_id(1) / b1;
+    int bIdx = get_group_id(0) / b0;
+    int bIdy = get_group_id(1) / b1;
     // batch adjustment
     int i_off = bIdy *  in.strides[3] + bIdx *  in.strides[2] + in.offset;
     int o_off = bIdy * out.strides[3] + bIdx * out.strides[2];
-    dim_type blockIdx_x =  get_group_id(0) - bIdx * b0;
-    dim_type blockIdx_y =  get_group_id(1) - bIdy * b1;
+    int blockIdx_x =  get_group_id(0) - bIdx * b0;
+    int blockIdx_y =  get_group_id(1) - bIdy * b1;
 
     INTERP(d_out + o_off, out, d_in + i_off, in, blockIdx_x, blockIdx_y, xf, yf);
 }

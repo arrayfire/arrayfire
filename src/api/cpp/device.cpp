@@ -9,6 +9,7 @@
 
 #include <af/device.h>
 #include <af/compatible.h>
+#include <af/traits.hpp>
 #include "error.hpp"
 
 namespace af
@@ -20,7 +21,11 @@ namespace af
 
     void deviceprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
     {
-        AF_THROW(af_deviceprop(d_name, d_platform, d_toolkit, d_compute));
+        deviceInfo(d_name, d_platform, d_toolkit, d_compute);
+    }
+    void deviceInfo(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
+    {
+        AF_THROW(af_device_info(d_name, d_platform, d_toolkit, d_compute));
     }
 
     int getDeviceCount()
@@ -77,7 +82,7 @@ namespace af
         }
     }
 
-    void *alloc(size_t elements, af::dtype type)
+    void *alloc(const size_t elements, const af::dtype type)
     {
         void *ptr;
         AF_THROW(af_alloc_device(&ptr, elements * size_of(type)));
@@ -85,7 +90,7 @@ namespace af
         return ptr;
     }
 
-    void *pinned(size_t elements, af::dtype type)
+    void *pinned(const size_t elements, const af::dtype type)
     {
         void *ptr;
         AF_THROW(af_alloc_pinned(&ptr, elements * size_of(type)));
@@ -105,16 +110,40 @@ namespace af
         AF_THROW(af_free_pinned((void *)ptr));
     }
 
-#define INSTANTIATE(T)                                                      \
-    template<> AFAPI                                                        \
-    T* alloc(size_t elements)                                               \
-    {                                                                       \
-        return (T*)alloc(elements, (af::dtype)dtype_traits<T>::af_type);     \
-    }                                                                       \
-    template<> AFAPI                                                        \
-    T* pinned(size_t elements)                                              \
-    {                                                                       \
-        return (T*)pinned(elements, (af::dtype)dtype_traits<T>::af_type);    \
+    void deviceGC()
+    {
+        AF_THROW(af_device_gc());
+    }
+
+    void deviceMemInfo(size_t *alloc_bytes, size_t *alloc_buffers,
+                       size_t *lock_bytes,  size_t *lock_buffers)
+    {
+        AF_THROW(af_device_mem_info(alloc_bytes, alloc_buffers,
+                                    lock_bytes,  lock_buffers));
+    }
+
+    void setMemStepSize(const size_t step_bytes)
+    {
+        AF_THROW(af_set_mem_step_size(step_bytes));
+    }
+
+    size_t getMemStepSize()
+    {
+        size_t size_bytes = 0;
+        AF_THROW(af_get_mem_step_size(&size_bytes));
+        return size_bytes;
+    }
+
+#define INSTANTIATE(T)                                                  \
+    template<> AFAPI                                                    \
+    T* alloc(const size_t elements)                                     \
+    {                                                                   \
+        return (T*)alloc(elements, (af::dtype)dtype_traits<T>::af_type); \
+    }                                                                   \
+    template<> AFAPI                                                    \
+    T* pinned(const size_t elements)                                    \
+    {                                                                   \
+        return (T*)pinned(elements, (af::dtype)dtype_traits<T>::af_type); \
     }
 
     INSTANTIATE(float)
@@ -125,4 +154,5 @@ namespace af
     INSTANTIATE(unsigned)
     INSTANTIATE(unsigned char)
     INSTANTIATE(char)
+
 }

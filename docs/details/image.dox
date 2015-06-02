@@ -176,6 +176,8 @@ A component is defined as one or more nonzero pixels that are connected by
 the specified connectivity (either 4-way(\ref AF_CONNECTIVITY_4) or
 8-way(\ref AF_CONNECTIVITY_8)) in two dimensions.
 
+\image html regions_8conn.jpg "An example input and output for 8-connectivity"
+
 The default connectivity is \ref AF_CONNECTIVITY_4.
 
 =======================================================================
@@ -229,7 +231,25 @@ the median value of the pixels covered by the kernel is returned.
 
 =======================================================================
 
-\defgroup image_func_meanshift meanshift
+\defgroup image_func_minfilt minfilt
+\ingroup imageflt_mat
+
+\brief Find minimum value from a window
+
+minfilt finds the smallest value from a 2D window and assigns it to the current pixel.
+
+=======================================================================
+
+\defgroup image_func_maxfilt maxfilt
+\ingroup imageflt_mat
+
+\brief Find maximum value from a window
+
+maxfilt finds the smallest value from a 2D window and assigns it to the current pixel.
+
+=======================================================================
+
+\defgroup image_func_mean_shift meanshift
 \ingroup imageflt_mat
 
 \brief Meanshift Filter
@@ -361,8 +381,39 @@ Supported formats include JPG, PNG, PPM and other formats supported by freeimage
 
 Calculate the gradients of the input
 
+\p dx is the gradient along the 1st dimension of \p in.
+\p dy is the gradient along the 2nd dimension of \p in.
+
 The gradients along the first and second dimensions are calculated simultaneously
 
+\code
+
+array in = randu(dim4(5, 3));
+array dx, dy;
+grad(dx, dy, in);
+
+// in [5 3 1 1]
+//  0.0000     0.2190     0.3835
+//  0.1315     0.0470     0.5194
+//  0.7556     0.6789     0.8310
+//  0.4587     0.6793     0.0346
+//  0.5328     0.9347     0.0535
+//
+// dx [5 3 1 1]
+//  0.1315    -0.1719     0.1359
+//  0.3778     0.2300     0.2237
+//  0.1636     0.3161    -0.2424
+// -0.1114     0.1279    -0.3888
+//  0.0741     0.2554     0.0189
+//
+// dy [5 3 1 1]
+//  0.2190     0.1917     0.1645
+// -0.0845     0.1939     0.4724
+// -0.0767     0.0377     0.1521
+//  0.2206    -0.2120    -0.6447
+//  0.4019    -0.2397    -0.8812
+
+\endcode
 
 
 \defgroup transform_func_resize resize
@@ -370,6 +421,52 @@ The gradients along the first and second dimensions are calculated simultaneousl
 
 Resize an input image
 
+Resizing an input image can be done using either \ref AF_INTERP_NEAREST or
+\ref AF_INTERP_BILINEAR interpolations. Nearest interpolation will pick the
+nearest value to the location, whereas bilinear interpolation will do a
+weighted interpolation for calculate the new size.
+
+This function does not differentiate between images and data. As long as
+the array is defined and the output dimensions are not 0, it will resize any
+type or size of array.
+
+\code
+array in = iota(dim4(5, 3));
+af_print(resize(2, in, AF_INTERP_NEAREST));
+af_print(resize(2, in, AF_INTERP_BILINEAR));
+
+// in [5 3 1 1]
+// 0.0000     5.0000    10.0000
+// 1.0000     6.0000    11.0000
+// 2.0000     7.0000    12.0000
+// 3.0000     8.0000    13.0000
+// 4.0000     9.0000    14.0000
+//
+// resize(2, in, AF_INTERP_NEAREST) [10 6 1 1]
+// 0.0000     5.0000     5.0000    10.0000    10.0000    10.0000
+// 1.0000     6.0000     6.0000    11.0000    11.0000    11.0000
+// 1.0000     6.0000     6.0000    11.0000    11.0000    11.0000
+// 2.0000     7.0000     7.0000    12.0000    12.0000    12.0000
+// 2.0000     7.0000     7.0000    12.0000    12.0000    12.0000
+// 3.0000     8.0000     8.0000    13.0000    13.0000    13.0000
+// 3.0000     8.0000     8.0000    13.0000    13.0000    13.0000
+// 4.0000     9.0000     9.0000    14.0000    14.0000    14.0000
+// 4.0000     9.0000     9.0000    14.0000    14.0000    14.0000
+// 4.0000     9.0000     9.0000    14.0000    14.0000    14.0000
+//
+// resize(2, in, AF_INTERP_BILINEAR) [10 6 1 1]
+// 0.0000     2.5000     5.0000     7.5000    10.0000    10.0000
+// 0.5000     3.0000     5.5000     8.0000    10.5000    10.5000
+// 1.0000     3.5000     6.0000     8.5000    11.0000    11.0000
+// 1.5000     4.0000     6.5000     9.0000    11.5000    11.5000
+// 2.0000     4.5000     7.0000     9.5000    12.0000    12.0000
+// 2.5000     5.0000     7.5000    10.0000    12.5000    12.5000
+// 3.0000     5.5000     8.0000    10.5000    13.0000    13.0000
+// 3.5000     6.0000     8.5000    11.0000    13.5000    13.5000
+// 4.0000     6.5000     9.0000    11.5000    14.0000    14.0000
+// 4.0000     6.5000     9.0000    11.5000    14.0000    14.0000
+
+\endcode
 
 
 \defgroup transform_func_rotate rotate
@@ -377,6 +474,25 @@ Resize an input image
 
 Rotate an input image
 
+The angle theta is in radians.
+
+Rotating an input image can be done using either \ref AF_INTERP_NEAREST or
+\ref AF_INTERP_BILINEAR interpolations. Nearest interpolation will pick the
+nearest value to the location, whereas bilinear interpolation will do a
+weighted interpolation for calculate the new size.
+
+This function does not differentiate between images and data. As long as
+the array is defined, it will rotate any type or size of array.
+
+The crop option allows you to choose whether to resize the image.
+If crop is set to false, ie. the entire rotated image will be a part of the
+array and the new array size will be greater than or equal to the input array
+size.
+If crop is set to true, then the new array size is same as the input array
+size and the data that falls outside the boundaries of the array is discarded.
+
+Any location of the rotated array that does not map to a location of the input
+array is set to 0.
 
 
 \defgroup transform_func_translate translate
@@ -384,13 +500,59 @@ Rotate an input image
 
 Translate an input image
 
+Translating an image is moving it along 1st and 2nd dimensions by \p trans0
+and \p trans1. Positive values of these will move the data towards negative x
+and negative y whereas negative values of these will move the positive right
+and positive down. See the example below for more.
 
+To specify an output dimension, use the \p odim0 and odim1 for dim0 and dim1
+respectively. The size of 2rd and 3rd dimension is same as input.
+If \p odim0 and odim1 and not defined, then the output dimensions are same as
+the input dimensions and the data out of bounds will be discarded.
+
+All new values that do not map to a location of the input array are set to 0.
+
+Translate is a special case of the \ref af::transform function.
+
+\code
+in [5 3 1 1]
+0.0000     5.0000    10.0000
+1.0000     6.0000    11.0000
+2.0000     7.0000    12.0000
+3.0000     8.0000    13.0000
+4.0000     9.0000    14.0000
+
+// Moves +1 row up and -1 column left (1 column right)
+translate(in, 1, -1, 7, 5, AF_INTERP_NEAREST) [7 5 1 1]
+0.0000     1.0000     6.0000    11.0000     0.0000
+0.0000     2.0000     7.0000    12.0000     0.0000
+0.0000     3.0000     8.0000    13.0000     0.0000
+0.0000     4.0000     9.0000    14.0000     0.0000
+0.0000     0.0000     0.0000     0.0000     0.0000
+0.0000     0.0000     0.0000     0.0000     0.0000
+0.0000     0.0000     0.0000     0.0000     0.0000
+
+// Moves -2 row up (2 rows down) and -1 column left (1 column right)
+translate(in, -2, -1, 6, 4, AF_INTERP_BILINEAR) [6 4 1 1]
+0.0000     0.0000     0.0000     0.0000
+0.0000     0.0000     0.0000     0.0000
+0.0000     0.0000     5.0000    10.0000
+0.0000     1.0000     6.0000    11.0000
+0.0000     2.0000     7.0000    12.0000
+0.0000     3.0000     8.0000    13.0000
+
+\endcode
 
 \defgroup transform_func_scale scale
 \ingroup transform_mat
 
 Scale an input image
 
+Scale is the same functionality as \ref af::resize except that the scale function uses
+the transform kernels. The other difference is that scale does not set boundary
+values to be the boundary of the input array. Instead these are set to 0.
+
+Scale is a special case of the \ref af::transform function.
 
 
 \defgroup transform_func_skew skew
@@ -398,6 +560,18 @@ Scale an input image
 
 Skew an input image
 
+Skew function skews the input array along dim0 by \p skew0 and along dim1 by
+\p skew1. The skew areguments are in radians.
+Skewing the data means the data remains parallel along 1 dimensions but the
+other dimensions gets moved along based on the angle.
+If both \p skew0 and \p skew1 are specified, then the data will be skewed
+along both directions.
+
+Explicit output dimensions can be specified using \p odim0 and \p odim1.
+
+All new values that do not map to a location of the input array are set to 0.
+
+Skew is a special case of the \ref af::transform function.
 
 
 \defgroup transform_func_transform transform
@@ -405,7 +579,25 @@ Skew an input image
 
 Transform an input image
 
+The transform function uses an affine transform matrix to tranform an input
+image into a new one.
 
+The transform matrix \p tf is a 3x2 matrix of type float. The matrix operation
+is applied to each location (x, y) that is then transformed to (x', y') of the
+new array. Hence the transformation is an element-wise operation.
+
+The operation is as below:
+tf = [r00 r10
+      r01 r11
+      t0  t1]
+
+x' = x * r00 + y * r01 + t0;
+y' = x * r10 + y * r11 + t1;
+
+Interpolation types of \ref AF_INTERP_NEAREST and \ref AF_INTERP_BILINEAR are allowed.
+
+Affine transforms can be used for various purposes. \ref af::translate, \ref af::scale and \ref af::skew
+are specializations of the transform function.
 
 @}
 */

@@ -18,15 +18,20 @@
 #include "orb_patch.hpp"
 #include "sort_index.hpp"
 
+#include <boost/scoped_ptr.hpp>
+
+using std::vector;
+using boost::scoped_ptr;
+
 namespace cuda
 {
 
 namespace kernel
 {
 
-static const dim_type THREADS   = 256;
-static const dim_type THREADS_X = 16;
-static const dim_type THREADS_Y = 16;
+static const int THREADS   = 256;
+static const int THREADS_X = 16;
+static const int THREADS_Y = 16;
 
 static const float PI_VAL = 3.14159265358979323846f;
 
@@ -305,12 +310,12 @@ void orb(unsigned* out_feat,
          float** d_ori,
          float** d_size,
          unsigned** d_desc,
-         std::vector<unsigned>& feat_pyr,
-         std::vector<float*>& d_x_pyr,
-         std::vector<float*>& d_y_pyr,
-         std::vector<unsigned>& lvl_best,
-         std::vector<float>& lvl_scl,
-         std::vector<CParam<T> >& img_pyr,
+         vector<unsigned>& feat_pyr,
+         vector<float*>& d_x_pyr,
+         vector<float*>& d_y_pyr,
+         vector<unsigned>& lvl_best,
+         vector<float>& lvl_scl,
+         vector<CParam<T> >& img_pyr,
          const float fast_thr,
          const unsigned max_feat,
          const float scl_fctr,
@@ -325,11 +330,11 @@ void orb(unsigned* out_feat,
     // distribution instead of using the reference one
     //CUDA_CHECK(cudaMemcpyToSymbol(d_ref_pat, h_ref_pat, 256 * 4 * sizeof(int), 0, cudaMemcpyHostToDevice));
 
-    std::vector<float*> d_score_pyr(max_levels);
-    std::vector<float*> d_ori_pyr(max_levels);
-    std::vector<float*> d_size_pyr(max_levels);
-    std::vector<unsigned*> d_desc_pyr(max_levels);
-    std::vector<unsigned*> d_idx_pyr(max_levels);
+    vector<float*> d_score_pyr(max_levels);
+    vector<float*> d_ori_pyr(max_levels);
+    vector<float*> d_size_pyr(max_levels);
+    vector<unsigned*> d_desc_pyr(max_levels);
+    vector<unsigned*> d_idx_pyr(max_levels);
 
     unsigned total_feat = 0;
 
@@ -337,8 +342,8 @@ void orb(unsigned* out_feat,
     Param<convAccT> gauss_filter;
     if (blur_img) {
         unsigned gauss_len = 9;
-        convAccT* h_gauss = new convAccT[gauss_len];
-        gaussian1D(h_gauss, gauss_len, 2.f);
+        scoped_ptr<convAccT> h_gauss(new convAccT[gauss_len]);
+        gaussian1D(h_gauss.get(), gauss_len, 2.f);
         gauss_filter.dims[0] = gauss_len;
         gauss_filter.strides[0] = 1;
 
@@ -347,11 +352,9 @@ void orb(unsigned* out_feat,
             gauss_filter.strides[k] = gauss_filter.dims[k - 1] * gauss_filter.strides[k - 1];
         }
 
-        dim_type gauss_elem = gauss_filter.strides[3] * gauss_filter.dims[3];
+        int gauss_elem = gauss_filter.strides[3] * gauss_filter.dims[3];
         gauss_filter.ptr = memAlloc<convAccT>(gauss_elem);
-        CUDA_CHECK(cudaMemcpy(gauss_filter.ptr, h_gauss, gauss_elem * sizeof(convAccT), cudaMemcpyHostToDevice));
-
-        delete[] h_gauss;
+        CUDA_CHECK(cudaMemcpy(gauss_filter.ptr, h_gauss.get(), gauss_elem * sizeof(convAccT), cudaMemcpyHostToDevice));
     }
 
     for (int i = 0; i < (int)max_levels; i++) {
@@ -386,7 +389,7 @@ void orb(unsigned* out_feat,
             harris_idx.strides[k] = harris_idx.dims[k - 1] * harris_idx.strides[k - 1];
         }
 
-        dim_type sort_elem = harris_sorted.strides[3] * harris_sorted.dims[3];
+        int sort_elem = harris_sorted.strides[3] * harris_sorted.dims[3];
         harris_sorted.ptr = d_score_harris;
         harris_idx.ptr = memAlloc<unsigned>(sort_elem);
 
@@ -432,7 +435,7 @@ void orb(unsigned* out_feat,
                 lvl_filt.strides[k] = img_pyr[i].strides[k];
             }
 
-            dim_type lvl_elem = img_pyr[i].strides[3] * img_pyr[i].dims[3];
+            int lvl_elem = img_pyr[i].strides[3] * img_pyr[i].dims[3];
             lvl_tmp.ptr = memAlloc<T>(lvl_elem);
             lvl_filt.ptr = memAlloc<T>(lvl_elem);
 

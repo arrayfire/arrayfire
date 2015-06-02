@@ -31,10 +31,21 @@ namespace opencl
 {
     namespace kernel
     {
-        static const dim_type TX = 16;
-        static const dim_type TY = 16;
+        static const int TX = 16;
+        static const int TY = 16;
         // Used for batching images
-        static const dim_type TI = 4;
+        static const int TI = 4;
+
+        using std::conditional;
+        using std::is_same;
+        template<typename T>
+        using wtype_t = typename conditional<is_same<T, double>::value, double, float>::type;
+
+        template<typename T>
+        using vtype_t = typename conditional<is_complex<T>::value,
+                                             T, wtype_t<T>
+                                            >::type;
+
 
         template<typename T, bool isInverse, af_interp_type method>
         void transform(Param out, const Param in, const Param tf)
@@ -45,15 +56,19 @@ namespace opencl
                 static std::map<int, Kernel *> transformKernels;
 
                 int device = getActiveDeviceId();
+                typedef typename dtype_traits<T>::base_type BT;
 
                 std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
                     options << " -D T="        << dtype_traits<T>::getName()
                             << " -D INVERSE="  << (isInverse ? 1 : 0);
+                    options << " -D VT="       << dtype_traits<vtype_t<T>>::getName();
+                    options << " -D WT="       << dtype_traits<wtype_t<BT>>::getName();
 
                     if((af_dtype) dtype_traits<T>::af_type == c32 ||
                        (af_dtype) dtype_traits<T>::af_type == c64) {
                         options << " -D CPLX=1";
+                        options << " -D TB=" << dtype_traits<BT>::getName();
                     } else {
                         options << " -D CPLX=0";
                     }
@@ -81,23 +96,23 @@ namespace opencl
 
                 auto transformOp = make_kernel<Buffer, const KParam,
                                          const Buffer, const KParam, const Buffer, const KParam,
-                                         const dim_type, const dim_type, const dim_type>
+                                         const int, const int, const int>
                                          (*transformKernels[device]);
 
                 NDRange local(TX, TY, 1);
 
-                dim_type nimages = in.info.dims[2];
-                dim_type global_x = local[0] * divup(out.info.dims[0], local[0]);
-                const dim_type blocksXPerImage = global_x / local[0];
+                int nimages = in.info.dims[2];
+                int global_x = local[0] * divup(out.info.dims[0], local[0]);
+                const int blocksXPerImage = global_x / local[0];
 
                 if(nimages > TI) {
-                    dim_type tile_images = divup(nimages, TI);
+                    int tile_images = divup(nimages, TI);
                     nimages = TI;
                     global_x = global_x * tile_images;
                 }
 
                 // Multiplied in src/backend/transform.cpp
-                const dim_type ntransforms = out.info.dims[2] / in.info.dims[2];
+                const int ntransforms = out.info.dims[2] / in.info.dims[2];
 
                 NDRange global(global_x,
                                local[1] * divup(out.info.dims[1], local[1]) * ntransforms,

@@ -31,13 +31,13 @@ const double dbl_err = 1e-10;
         To *h_b = b.host<To>();                                 \
                                                                 \
         for (int i = 0; i < num; i++)                           \
-            ASSERT_NEAR(h_b[i], std::func(h_a[i]), err) <<      \
+            ASSERT_NEAR(h_b[i], func(h_a[i]), err) <<           \
                 "for value: " << h_a[i] << std::endl;           \
         delete[] h_a;                                           \
         delete[] h_b;                                           \
     }                                                           \
 
-#define MATH_TESTS_FLOAT(func) MATH_TESTS_LIMITS(float, float, func, flt_err, 0.05, 0.95)
+#define MATH_TESTS_FLOAT(func) MATH_TESTS_LIMITS(float, float, func, flt_err, 0.05f, 0.95f)
 #define MATH_TESTS_DOUBLE(func) MATH_TESTS_LIMITS(double, double, func, dbl_err, 0.05, 0.95)
 
 MATH_TESTS_FLOAT(sin)
@@ -57,6 +57,7 @@ MATH_TESTS_FLOAT(sqrt)
 MATH_TESTS_FLOAT(exp)
 MATH_TESTS_FLOAT(log)
 MATH_TESTS_FLOAT(log10)
+MATH_TESTS_FLOAT(log2)
 
 MATH_TESTS_LIMITS(float, float, abs, flt_err, -10, 10)
 MATH_TESTS_LIMITS(float, float, ceil, flt_err, -10, 10)
@@ -99,6 +100,7 @@ MATH_TESTS_DOUBLE(sqrt)
 MATH_TESTS_DOUBLE(exp)
 MATH_TESTS_DOUBLE(log)
 MATH_TESTS_DOUBLE(log10)
+MATH_TESTS_DOUBLE(log2)
 
 MATH_TESTS_LIMITS(double, double, abs, dbl_err, -10, 10)
 MATH_TESTS_LIMITS(double, double, ceil, dbl_err, -10, 10)

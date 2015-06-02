@@ -9,6 +9,8 @@
 
 #pragma once
 
+#ifdef __cplusplus
+
 #include <ostream>
 #include <istream>
 #include <vector>
@@ -16,7 +18,6 @@
 //#include <initializer_list>
 #endif
 #include <af/defines.h>
-#include <af/array.h>
 #include <af/seq.h>
 
 
@@ -25,31 +26,31 @@ namespace af
 class AFAPI dim4
 {
     public:
-    dim_type dims[4]; //FIXME: Make this C compatiable
+    dim_t dims[4]; //FIXME: Make this C compatiable
     dim4(); //deleted
 public:
 #if __cplusplus > 199711L
-    //dim4(std::initializer_list<dim_type> dim_vals);
+    //dim4(std::initializer_list<dim_t> dim_vals);
 #endif
-    dim4(   dim_type first,
-            dim_type second = 1,
-            dim_type third = 1,
-            dim_type fourth = 1);
+    dim4(   dim_t first,
+            dim_t second = 1,
+            dim_t third = 1,
+            dim_t fourth = 1);
     dim4(const dim4& other);
-    dim4(const unsigned ndims, const dim_type * const dims);
-    dim_type elements();
-    dim_type elements() const;
-    dim_type ndims();
-    dim_type ndims() const;
+    dim4(const unsigned ndims, const dim_t * const dims);
+    dim_t elements();
+    dim_t elements() const;
+    dim_t ndims();
+    dim_t ndims() const;
     bool operator==(const dim4& other) const;
     bool operator!=(const dim4& other) const;
     dim4& operator*=(const dim4& other);
     dim4& operator+=(const dim4& other);
     dim4& operator-=(const dim4& other);
-    dim_type& operator[](const unsigned dim);
-    const dim_type& operator[](const unsigned dim) const;
-            dim_type* get()         { return dims; }
-    const   dim_type* get() const   { return dims; }
+    dim_t& operator[](const unsigned dim);
+    const dim_t& operator[](const unsigned dim) const;
+            dim_t* get()         { return dims; }
+    const   dim_t* get() const   { return dims; }
 };
 
 dim4 operator+(const dim4& first, const dim4& second);
@@ -78,13 +79,11 @@ operator>>(std::istream& istr, dim4& dims)
     return istr;
 }
 
-bool isSpan(const af_seq &seq);
+AFAPI bool isSpan(const af_seq &seq);
 
-size_t seqElements(const af_seq &seq);
+AFAPI size_t seqElements(const af_seq &seq);
 
-dim4 toDims(const std::vector<af_seq>& seqs, af::dim4 parentDims);
-
-dim4 toOffset(const std::vector<af_seq>& seqs, af::dim4 parentDims);
-
-dim4 toStride(const std::vector<af_seq>& seqs, af::dim4 parentDims);
+AFAPI dim_t calcDim(const af_seq &seq, const dim_t &parentDim);
 }
+
+#endif

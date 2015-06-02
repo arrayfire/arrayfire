@@ -7,9 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <kernel_headers/set.hpp>
-#include <cl.hpp>
 #include <platform.hpp>
+#include <kernel_headers/set.hpp>
 #include <traits.hpp>
 #include <mutex>
 #include <map>
@@ -32,30 +31,36 @@ template<typename T>
 void
 set(Buffer &ptr, T val, const size_t &elements)
 {
-    static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-    static std::map<int, Program*>   setProgs;
-    static std::map<int, Kernel *> setKernels;
+    try {
+        static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*>   setProgs;
+        static std::map<int, Kernel *> setKernels;
 
-    int device = getActiveDeviceId();
+        int device = getActiveDeviceId();
 
-    std::call_once( compileFlags[device], [device] () {
-                Program::Sources setSrc;
-                setSrc.emplace_back(set_cl, set_cl_len);
+        std::call_once( compileFlags[device], [device] () {
+                    Program::Sources setSrc;
+                    setSrc.emplace_back(set_cl, set_cl_len);
 
-                setProgs[device] = new Program(getContext(), setSrc);
+                    setProgs[device] = new Program(getContext(), setSrc);
 
-                string opt = string("-D T=") + dtype_traits<T>::getName();
-                if (std::is_same<T, double>::value ||
-                    std::is_same<T, cdouble>::value) {
-                    opt << " -D USE_DOUBLE";
-                }
-                setProgs[device]->build(opt.c_str());
+                    string opt = string("-D T=") + dtype_traits<T>::getName();
+                    if (std::is_same<T, double>::value ||
+                        std::is_same<T, cdouble>::value) {
+                        opt << " -D USE_DOUBLE";
+                    }
+                    setProgs[device]->build(opt.c_str());
 
-                setKernels[device] = new Kernel(*setProgs[device], "set");
-            });
+                    setKernels[device] = new Kernel(*setProgs[device], "set");
+                });
 
-    auto setKern = make_kernel<Buffer, T, const unsigned long>(setKernels[device]);
-    setKern(EnqueueArgs(getQueue(), NDRange(elements)), ptr, val, elements);
+        auto setKern = make_kernel<Buffer, T, const unsigned long>(setKernels[device]);
+        setKern(EnqueueArgs(getQueue(), NDRange(elements)), ptr, val, elements);
+        CL_DEBUG_FINISH(getQueue());
+    } catch (cl::Error &err) {
+        CL_TO_AF_ERROR(err);
+        throw;
+    }
 }
 
 }

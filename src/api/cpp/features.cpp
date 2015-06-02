@@ -17,23 +17,12 @@ namespace af
 
     features::features()
     {
-        feat.n = 0;
-        feat.x = 0;
-        feat.y = 0;
-        feat.score = 0;
-        feat.orientation = 0;
-        feat.size = 0;
+        AF_THROW(af_create_features(&feat, 0));
     }
 
     features::features(const size_t n)
     {
-        feat.n = n;
-        dim_type out_dims[4] = {dim_type(n), 1, 1, 1};
-        AF_THROW(af_create_handle(&feat.x, 4, out_dims, f32));
-        AF_THROW(af_create_handle(&feat.y, 4, out_dims, f32));
-        AF_THROW(af_create_handle(&feat.score, 4, out_dims, f32));
-        AF_THROW(af_create_handle(&feat.orientation, 4, out_dims, f32));
-        AF_THROW(af_create_handle(&feat.size, 4, out_dims, f32));
+        AF_THROW(af_create_features(&feat, (int)n));
     }
 
     features::features(af_features f) : feat(f)
@@ -43,81 +32,68 @@ namespace af
     features& features::operator= (const features& other)
     {
         if (this != &other) {
-
-            if (feat.n > 0) {
-                AF_THROW(af_destroy_features(feat));
-            }
-
-            af_features f = other.get();
-
-            feat.n = f.n;
-            if (f.n > 0) {
-                AF_THROW(af_weak_copy(&feat.x, f.x));
-                AF_THROW(af_weak_copy(&feat.y, f.y));
-                AF_THROW(af_weak_copy(&feat.score, f.score));
-                AF_THROW(af_weak_copy(&feat.orientation, f.orientation));
-                AF_THROW(af_weak_copy(&feat.size, f.size));
-            } else {
-                feat.x = 0;
-                feat.y = 0;
-                feat.score = 0;
-                feat.orientation = 0;
-                feat.size = 0;
-            }
+            AF_THROW(af_release_features(feat));
+            AF_THROW(af_retain_features(&feat, other.get()));
         }
-
         return *this;
     }
 
     features::~features()
     {
-        if (feat.n >= 0) {
-            AF_THROW(af_destroy_features(feat));
+        if(AF_SUCCESS != af_release_features(feat)) {
+            fprintf(stderr, "Error: Couldn't release af::features: %p\n", this);
         }
     }
 
     size_t features::getNumFeatures() const
     {
-        return feat.n;
+        dim_t n = 0;
+        AF_THROW(af_get_features_num(&n, feat));
+        return n;
     }
 
     array features::getX() const
     {
-        if (feat.n == 0) return array();
+        af_array x = 0;
+        AF_THROW(af_get_features_xpos(&x, feat));
         af_array tmp = 0;
-        AF_THROW(af_weak_copy(&tmp, feat.x));
+        AF_THROW(af_retain_array(&tmp, x));
         return array(tmp);
     }
 
     array features::getY() const
     {
-        if (feat.n == 0) return array();
+        af_array y = 0;
+        AF_THROW(af_get_features_ypos(&y, feat));
         af_array tmp = 0;
-        AF_THROW(af_weak_copy(&tmp, feat.y));
+        AF_THROW(af_retain_array(&tmp, y));
         return array(tmp);
     }
 
     array features::getScore() const
     {
-        if (feat.n == 0) return array();
+        af_array s = 0;
+        AF_THROW(af_get_features_score(&s, feat));
         af_array tmp = 0;
-        AF_THROW(af_weak_copy(&tmp, feat.score));
+        AF_THROW(af_retain_array(&tmp, s));
         return array(tmp);
     }
 
     array features::getOrientation() const
     {
-        if (feat.n == 0) return array();
+        af_array ori = 0;
+        AF_THROW(af_get_features_orientation(&ori, feat));
         af_array tmp = 0;
-        AF_THROW(af_weak_copy(&tmp, feat.orientation));
+        AF_THROW(af_retain_array(&tmp, ori));
         return array(tmp);
     }
 
     array features::getSize() const
     {
-        if (feat.n == 0) return array();
+        af_array s = 0;
+        AF_THROW(af_get_features_size(&s, feat));
         af_array tmp = 0;
-        AF_THROW(af_weak_copy(&tmp, feat.size));
+        AF_THROW(af_retain_array(&tmp, s));
         return array(tmp);
     }
 

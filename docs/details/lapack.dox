@@ -1,0 +1,269 @@
+/**
+\addtogroup arrayfire_func
+@{
+\defgroup lapack_factor_func_lu lu
+
+\ingroup lapack_factor_mat
+
+\brief Perform LU decomposition
+
+This function decomposes input matrix **A** into a lower triangle **L**, an upper triangle **U** such that
+
+    \f$A = L * U\f$
+
+For stability, a permutation array **P** is also used to modify the formula in the following manner.
+
+    \f$A(P, span) = L * U\f$
+
+This operation can be performed in ArrayFire using the following code snippet.
+
+\snippet test/lu_dense.cpp ex_lu_unpacked
+
+The permuted version of the original matrix can be reconstructed using the following snippet.
+
+\snippet test/lu_dense.cpp ex_lu_recon
+
+The sample output for these operations can be seen below.
+
+\code
+a_orig [3 3 1 1]
+    0.0000     3.0000     6.0000
+    1.0000     4.0000     7.0000
+    2.0000     5.0000     8.0000
+
+l [3 3 1 1]
+    1.0000     0.0000     0.0000
+    0.0000     1.0000     0.0000
+    0.5000     0.5000     1.0000
+
+u [3 3 1 1]
+    2.0000     5.0000     8.0000
+    0.0000     3.0000     6.0000
+    0.0000     0.0000     0.0000
+
+pivot [3 1 1 1]
+         2
+         0
+         1
+
+a_recon [3 3 1 1]
+    2.0000     5.0000     8.0000
+    0.0000     3.0000     6.0000
+    1.0000     4.0000     7.0000
+
+a_perm [3 3 1 1]
+    2.0000     5.0000     8.0000
+    0.0000     3.0000     6.0000
+    1.0000     4.0000     7.0000
+\endcode
+
+When memory is a concern, users can perform the LU decomposition in place as shown below.
+
+\snippet test/lu_dense.cpp ex_lu_packed
+
+The lower and upper triangle matrices can be obtained if necessary in the following manner.
+
+\snippet test/lu_dense.cpp ex_lu_extract
+
+LU decompositions has many applications including <a href="http://en.wikipedia.org/wiki/LU_decomposition#Solving_linear_equations">solving a system of linear equations</a>. Check \ref af::solveLU fore more information.
+
+=======================================================================
+
+\defgroup lapack_factor_func_qr qr
+
+\ingroup lapack_factor_mat
+
+\brief Perform QR decomposition
+
+This function decomposes input matrix **A** into an orthogonal matrix **Q** and an upper triangular matrix **R** such that
+
+     \f$A = Q * R\f$
+
+     \f$Q * Q^T = I\f$
+
+Where **I** is an identity matrix. The matrix **Q** is a square matrix of size **max(M, N)** where **M** and **N** are rows and columns of **A** respectively. The matrix **R** is the same size as **A*.
+
+This operation can be performed in ArrayFire using the following code snippet.
+
+\snippet test/qr_dense.cpp ex_qr_unpacked
+
+The additional parameter **Tau** can be used to speed up solving over and under determined system of equations.
+
+The original matrix can be reconstructed using the following code snippet.
+
+\snippet test/qr_dense.cpp ex_qr_recon
+
+When memory is a concern, users can perform QR decomposition in place as shown below.
+
+\snippet test/qr_dense.cpp ex_qr_packed
+
+=======================================================================
+
+\defgroup lapack_factor_func_cholesky cholesky
+
+\ingroup lapack_factor_mat
+
+\brief Perform Cholesky decomposition
+
+This function decomposes a <a href="http://en.wikipedia.org/wiki/Positive-definite_matrix">positive definite</a> matrix **A** into two triangular matrices such that
+
+     \f$A = L * U\f$
+
+     \f$L = U^T\f$
+
+Only one of **L** and **U** is stored to conserve space when solving linear equations.
+
+This operation can be performed in ArrayFire using the following code snippet.
+
+\snippet test/cholesky_dense.cpp ex_chol_reg
+
+When memory is a concern, users can perform Cholesky decomposition in place as shown below.
+
+\snippet test/cholesky_dense.cpp ex_chol_inplace
+
+=======================================================================
+
+\defgroup lapack_solve_func_gen solve
+
+\ingroup lapack_solve_mat
+
+\brief Solve a system of equations
+
+This function takes a co-efficient matrix **A** and an output matrix **B**  as inputs to solve the following equation for **X**
+
+     \f$A * X = B\f$
+
+This operation can be done in ArrayFire using the following code snippet.
+
+\snippet test/solve_dense.cpp ex_solve
+
+The results can be verified by reconstructing the output matrix using \ref af::matmul in the following manner.
+
+\snippet test/solve_dense.cpp ex_solve_recon
+
+The sample output can be seen below
+
+\code
+A [3 3 1 1]
+    0.1000     3.1000     6.1000
+    1.1000     4.1000     7.0000
+    2.0000     5.0000     8.0000
+
+B0 [3 1 1 1]
+   21.9000
+   30.7000
+   39.0000
+
+X1 [3 1 1 1]
+    4.0000
+    3.0000
+    2.0000
+
+B1 [3 1 1 1]
+   21.9000
+   30.7000
+   39.0000
+\endcode
+
+If the coefficient matrix is known to be a triangular matrix, \ref AF_MAT_LOWER or \ref AF_MAT_UPPER can be passed to make solve faster.
+
+The sample code snippets for solving a lower triangular matrix can be seen below.
+
+\snippet test/solve_dense.cpp ex_solve_lower
+
+Similarily, the code snippet for solving an upper triangular matrix can be seen below.
+
+\snippet test/solve_dense.cpp ex_solve_upper
+
+See also: \ref af::solveLU
+
+=======================================================================
+
+\defgroup lapack_solve_lu_func_gen solveLU
+
+\ingroup lapack_solve_mat
+
+\brief Solve a system of equations
+
+This function takes a co-efficient matrix **A** and an output matrix **B**  as inputs to solve the following equation for **X**
+
+     \f$A * X = B\f$
+
+This operation can be done in ArrayFire using the following code snippet.
+
+\snippet test/solve_dense.cpp ex_solve_lu
+
+This function along with \ref af::lu split up the task af::solve performs for square matrices.
+
+\note This function is beneficial over \ref af::solve only in long running application where the coefficient matrix **A** stays the same, but the observed variables keep changing.
+
+
+=======================================================================
+
+\defgroup lapack_ops_func_inv inverse
+
+\ingroup lapack_ops_mat
+
+\brief Invert a matrix
+
+This function inverts a square matrix **A**. The code snippet to demonstrate this can be seen below.
+
+\snippet test/inverse_dense.cpp ex_inverse
+
+The sample output can be seen below
+
+\code
+A [3 3 1 1]
+    0.0100     3.0100     6.0100
+    1.0100     4.0100     7.0000
+    2.0000     5.0000     8.0000
+
+IA [3 3 1 1]
+   48.9076   -99.9927    50.7518
+  -99.1552   199.9852  -100.4968
+   49.7451   -99.9926    50.2475
+
+I [3 3 1 1]
+    1.0000     0.0001    -0.0000
+    0.0000     1.0000     0.0000
+    0.0000     0.0000     1.0000
+
+\endcode
+
+==================================================================================
+
+\defgroup lapack_ops_func_rank rank
+
+\ingroup lapack_ops_mat
+
+\brief Find the rank of the input matrix.
+
+This function uses \ref af::qr to find the rank of the input matrix within the given tolerance.
+
+=====================================================================================
+
+\defgroup lapack_ops_func_det det
+
+\ingroup lapack_ops_mat
+
+\brief Find the determinant of the input matrix.
+
+
+\note This function requires scratch space equal to the input array
+
+===============================================================================
+
+\defgroup lapack_ops_func_norm norm
+
+\ingroup lapack_ops_mat
+
+\brief Find the norm of the input matrix
+
+This function can return the norm using various metrics based on the type paramter.
+
+\note \ref AF_NORM_MATRIX_2 is currently not supported.
+
+===============================================================================
+
+@}
+*/

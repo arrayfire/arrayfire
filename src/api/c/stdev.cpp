@@ -48,7 +48,6 @@ static af_array stdev(const af_array& in, int dim)
     dim4 iDims = input.dims();
 
     Array<outType> meanArr = mean<outType>(input, dim);
-    dim4 oDims = meanArr.dims();
 
     /* now tile meanArr along dim and use it for variance computation */
     dim4 tileDims(1);
@@ -59,7 +58,7 @@ static af_array stdev(const af_array& in, int dim)
     Array<outType> diff    = detail::arithOp<outType, af_sub_t>(input, tMeanArr, tMeanArr.dims());
     Array<outType> diffSq  = detail::arithOp<outType, af_mul_t>(diff, diff, diff.dims());
     Array<outType> redDiff = reduce<af_add_t, outType, outType>(diffSq, dim);
-    oDims = redDiff.dims();
+    dim4 oDims = redDiff.dims();
 
     Array<outType> divArr = createValueArray<outType>(oDims, scalar<outType>(iDims[dim]));
     Array<outType> varArr = detail::arithOp<outType, af_div_t>(redDiff, divArr, redDiff.dims());
@@ -78,6 +77,8 @@ af_err af_stdev_all(double *realVal, double *imagVal, const af_array in)
             case f32: *realVal = stdev<float , float >(in); break;
             case s32: *realVal = stdev<int   , float >(in); break;
             case u32: *realVal = stdev<uint  , float >(in); break;
+            case s64: *realVal = stdev<intl  , double>(in); break;
+            case u64: *realVal = stdev<uintl , double>(in); break;
             case  u8: *realVal = stdev<uchar , float >(in); break;
             case  b8: *realVal = stdev<char  , float >(in); break;
             // TODO: FIXME: sqrt(complex) is not present in cuda/opencl backend
@@ -98,7 +99,7 @@ af_err af_stdev_all(double *realVal, double *imagVal, const af_array in)
     return AF_SUCCESS;
 }
 
-af_err af_stdev(af_array *out, const af_array in, dim_type dim)
+af_err af_stdev(af_array *out, const af_array in, const dim_t dim)
 {
     try {
         ARG_ASSERT(2, (dim>=0 && dim<=3));
@@ -111,6 +112,8 @@ af_err af_stdev(af_array *out, const af_array in, dim_type dim)
             case f32: output = stdev<float ,  float >(in, dim); break;
             case s32: output = stdev<int   ,  float >(in, dim); break;
             case u32: output = stdev<uint  ,  float >(in, dim); break;
+            case s64: output = stdev<intl  ,  double>(in, dim); break;
+            case u64: output = stdev<uintl ,  double>(in, dim); break;
             case  u8: output = stdev<uchar ,  float >(in, dim); break;
             case  b8: output = stdev<char  ,  float >(in, dim); break;
             // TODO: FIXME: sqrt(complex) is not present in cuda/opencl backend

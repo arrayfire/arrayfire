@@ -35,12 +35,12 @@ template<typename T, typename GenType>
 is_arithmetic_t<T>
 urand(GenType &generator)
 {
-	typedef typename conditional<   is_floating_point<T>::value,
-									uniform_real_distribution<T>,
+    typedef typename conditional<   is_floating_point<T>::value,
+                                    uniform_real_distribution<T>,
 #if OS_WIN
                                     uniform_int_distribution<unsigned>>::type dist;
 #else
-									uniform_int_distribution<T >> ::type dist;
+                                    uniform_int_distribution<T >> ::type dist;
 #endif
     return bind(dist(), generator);
 }
@@ -68,23 +68,46 @@ nrand(GenType &generator)
     return [func] () { return T(func(), func());};
 }
 
+static default_random_engine generator;
+static unsigned long long gen_seed = 0;
+static bool is_first = true;
+#define GLOBAL 1
+
 template<typename T>
 Array<T> randn(const af::dim4 &dims)
 {
-    static default_random_engine generator;
+    static unsigned long long my_seed = 0;
+    if (is_first) {
+        setSeed(gen_seed);
+        my_seed = gen_seed;
+    }
+
     static auto gen = nrand<T>(generator);
+
+    if (my_seed != gen_seed) {
+        gen = nrand<T>(generator);
+    }
 
     Array<T> outArray = createEmptyArray<T>(dims);
     T *outPtr = outArray.get();
-    generate(outPtr, outPtr + outArray.elements(), nrand<T>(generator));
+    generate(outPtr, outPtr + outArray.elements(), gen);
     return outArray;
 }
 
 template<typename T>
 Array<T> randu(const af::dim4 &dims)
 {
-    static default_random_engine generator;
+    static unsigned long long my_seed = 0;
+    if (is_first) {
+        setSeed(gen_seed);
+        my_seed = gen_seed;
+    }
+
     static auto gen = urand<T>(generator);
+
+    if (my_seed != gen_seed) {
+        gen = urand<T>(generator);
+    }
 
     Array<T> outArray = createEmptyArray<T>(dims);
     T *outPtr = outArray.get();
@@ -117,8 +140,17 @@ INSTANTIATE_NORMAL(cdouble)
 template<>
 Array<char> randu(const af::dim4 &dims)
 {
-    static default_random_engine generator;
+    static unsigned long long my_seed = 0;
+    if (is_first) {
+        setSeed(gen_seed);
+        my_seed = gen_seed;
+    }
+
     static auto gen = urand<float>(generator);
+
+    if (my_seed != gen_seed) {
+        gen = urand<float>(generator);
+    }
 
     Array<char> outArray = createEmptyArray<char>(dims);
     char *outPtr = outArray.get();
@@ -126,6 +158,18 @@ Array<char> randu(const af::dim4 &dims)
         outPtr[i] = gen() > 0.5;
     }
     return outArray;
+}
+
+void setSeed(const uintl seed)
+{
+    generator.seed(seed);
+    is_first = false;
+    gen_seed = seed;
+}
+
+uintl getSeed()
+{
+    return gen_seed;
 }
 
 }

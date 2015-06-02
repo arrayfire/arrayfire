@@ -29,12 +29,12 @@ namespace cpu
                 //FIXME: Check for errors / exceptions
                 memcpy(dst, src, dims[dim] * sizeof(T));
             } else {
-                for(dim_type i = 0; i < dims[dim]; i++) {
+                for(dim_t i = 0; i < dims[dim]; i++) {
                     dst[i] = src[strides[dim]*i];
                 }
             }
         } else {
-            for(dim_type i = dims[dim]; i > 0; i--) {
+            for(dim_t i = dims[dim]; i > 0; i--) {
                 stridedCopy<T>(dst, ostrides, src, dims, strides, dim - 1);
                 src += strides[dim];
                 dst += ostrides[dim];
@@ -74,36 +74,36 @@ namespace cpu
         const inType * src_ptr = src.get();
         outType * dst_ptr      = dst.get();
 
-        dim_type trgt_l = std::min(dst_dims[3], src_dims[3]);
-        dim_type trgt_k = std::min(dst_dims[2], src_dims[2]);
-        dim_type trgt_j = std::min(dst_dims[1], src_dims[1]);
-        dim_type trgt_i = std::min(dst_dims[0], src_dims[0]);
+        dim_t trgt_l = std::min(dst_dims[3], src_dims[3]);
+        dim_t trgt_k = std::min(dst_dims[2], src_dims[2]);
+        dim_t trgt_j = std::min(dst_dims[1], src_dims[1]);
+        dim_t trgt_i = std::min(dst_dims[0], src_dims[0]);
 
-        for(dim_type l=0; l<dst_dims[3]; ++l) {
+        for(dim_t l=0; l<dst_dims[3]; ++l) {
 
-            dim_type src_loff = l*src_strides[3];
-            dim_type dst_loff = l*dst_strides[3];
+            dim_t src_loff = l*src_strides[3];
+            dim_t dst_loff = l*dst_strides[3];
             bool isLvalid = l<trgt_l;
 
-            for(dim_type k=0; k<dst_dims[2]; ++k) {
+            for(dim_t k=0; k<dst_dims[2]; ++k) {
 
-                dim_type src_koff = k*src_strides[2];
-                dim_type dst_koff = k*dst_strides[2];
+                dim_t src_koff = k*src_strides[2];
+                dim_t dst_koff = k*dst_strides[2];
                 bool isKvalid = k<trgt_k;
 
-                for(dim_type j=0; j<dst_dims[1]; ++j) {
+                for(dim_t j=0; j<dst_dims[1]; ++j) {
 
-                    dim_type src_joff = j*src_strides[1];
-                    dim_type dst_joff = j*dst_strides[1];
+                    dim_t src_joff = j*src_strides[1];
+                    dim_t dst_joff = j*dst_strides[1];
                     bool isJvalid = j<trgt_j;
 
-                    for(dim_type i=0; i<dst_dims[0]; ++i) {
+                    for(dim_t i=0; i<dst_dims[0]; ++i) {
                         outType temp = default_value;
                         if (isLvalid && isKvalid && isJvalid && i<trgt_i) {
-                            dim_type src_idx = i*src_strides[0] + src_joff + src_koff + src_loff;
+                            dim_t src_idx = i*src_strides[0] + src_joff + src_koff + src_loff;
                             temp = outType(src_ptr[src_idx])*outType(factor);
                         }
-                        dim_type dst_idx = i*dst_strides[0] + dst_joff + dst_koff + dst_loff;
+                        dim_t dst_idx = i*dst_strides[0] + dst_joff + dst_koff + dst_loff;
                         dst_ptr[dst_idx] = temp;
                     }
                 }
@@ -152,6 +152,8 @@ namespace cpu
     template Array<cdouble> padArray<SRC_T, cdouble>(Array<SRC_T> const &src, dim4 const &dims, cdouble default_value, double factor); \
     template Array<int    > padArray<SRC_T, int    >(Array<SRC_T> const &src, dim4 const &dims, int     default_value, double factor); \
     template Array<uint   > padArray<SRC_T, uint   >(Array<SRC_T> const &src, dim4 const &dims, uint    default_value, double factor); \
+    template Array<intl    > padArray<SRC_T, intl    >(Array<SRC_T> const &src, dim4 const &dims, intl     default_value, double factor); \
+    template Array<uintl   > padArray<SRC_T, uintl   >(Array<SRC_T> const &src, dim4 const &dims, uintl    default_value, double factor); \
     template Array<uchar  > padArray<SRC_T, uchar  >(Array<SRC_T> const &src, dim4 const &dims, uchar   default_value, double factor); \
     template Array<char   > padArray<SRC_T, char   >(Array<SRC_T> const &src, dim4 const &dims, char    default_value, double factor); \
     template void copyArray<SRC_T, float  >(Array<float  > &dst, Array<SRC_T> const &src); \
@@ -160,6 +162,8 @@ namespace cpu
     template void copyArray<SRC_T, cdouble>(Array<cdouble> &dst, Array<SRC_T> const &src); \
     template void copyArray<SRC_T, int    >(Array<int    > &dst, Array<SRC_T> const &src); \
     template void copyArray<SRC_T, uint   >(Array<uint   > &dst, Array<SRC_T> const &src); \
+    template void copyArray<SRC_T, intl    >(Array<intl    > &dst, Array<SRC_T> const &src); \
+    template void copyArray<SRC_T, uintl   >(Array<uintl   > &dst, Array<SRC_T> const &src); \
     template void copyArray<SRC_T, uchar  >(Array<uchar  > &dst, Array<SRC_T> const &src); \
     template void copyArray<SRC_T, char   >(Array<char   > &dst, Array<SRC_T> const &src);
 
@@ -167,16 +171,41 @@ namespace cpu
     INSTANTIATE_PAD_ARRAY(double)
     INSTANTIATE_PAD_ARRAY(int   )
     INSTANTIATE_PAD_ARRAY(uint  )
+    INSTANTIATE_PAD_ARRAY(intl   )
+    INSTANTIATE_PAD_ARRAY(uintl  )
     INSTANTIATE_PAD_ARRAY(uchar )
     INSTANTIATE_PAD_ARRAY(char  )
 
 #define INSTANTIATE_PAD_ARRAY_COMPLEX(SRC_T)                            \
     template Array<cfloat > padArray<SRC_T, cfloat >(Array<SRC_T> const &src, dim4 const &dims, cfloat  default_value, double factor); \
     template Array<cdouble> padArray<SRC_T, cdouble>(Array<SRC_T> const &src, dim4 const &dims, cdouble default_value, double factor); \
-    template void copyArray<SRC_T, cfloat  >(Array<cfloat  > &dst, Array<SRC_T> const &src); \
+    template void copyArray<SRC_T, cfloat  >(Array<cfloat  > &dst, Array<SRC_T> const &src);    \
     template void copyArray<SRC_T, cdouble   >(Array<cdouble > &dst, Array<SRC_T> const &src);
 
     INSTANTIATE_PAD_ARRAY_COMPLEX(cfloat )
     INSTANTIATE_PAD_ARRAY_COMPLEX(cdouble)
+
+#define SPECILIAZE_UNUSED_COPYARRAY(SRC_T, DST_T) \
+    template<> void copyArray<SRC_T, DST_T>(Array<DST_T> &out, Array<SRC_T> const &in) \
+    {\
+        CPU_NOT_SUPPORTED();\
+    }
+
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, double)
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, float)
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, uchar)
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, char)
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, uint)
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, int)
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, intl)
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, uintl)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, double)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, float)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, uchar)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, char)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, uint)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, int)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, intl)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, uintl)
 
 }

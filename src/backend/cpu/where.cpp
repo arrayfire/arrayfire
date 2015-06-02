@@ -12,6 +12,7 @@
 #include <af/defines.h>
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
+#include <memory.hpp>
 #include <where.hpp>
 #include <ops.hpp>
 #include <vector>
@@ -23,25 +24,25 @@ namespace cpu
     template<typename T>
     Array<uint> where(const Array<T> &in)
     {
-        const dim_type *dims    = in.dims().get();
-        const dim_type *strides = in.strides().get();
+        const dim_t *dims    = in.dims().get();
+        const dim_t *strides = in.strides().get();
         static const T zero = scalar<T>(0);
 
         const T *iptr = in.get();
-        uint *out_vec  = new uint[in.elements()];
+        uint *out_vec  = memAlloc<uint>(in.elements());
 
-        dim_type count = 0;
-        dim_type idx = 0;
-        for (dim_type w = 0; w < dims[3]; w++) {
+        dim_t count = 0;
+        dim_t idx = 0;
+        for (dim_t w = 0; w < dims[3]; w++) {
             uint offw = w * strides[3];
 
-            for (dim_type z = 0; z < dims[2]; z++) {
+            for (dim_t z = 0; z < dims[2]; z++) {
                 uint offz = offw + z * strides[2];
 
-                for (dim_type y = 0; y < dims[1]; y++) {
+                for (dim_t y = 0; y < dims[1]; y++) {
                     uint offy = y * strides[1] + offz;
 
-                    for (dim_type x = 0; x < dims[0]; x++) {
+                    for (dim_t x = 0; x < dims[0]; x++) {
 
                         T val = iptr[offy + x];
                         if (val != zero) {
@@ -55,6 +56,7 @@ namespace cpu
         }
 
         Array<uint> out = createHostDataArray(dim4(count), out_vec);
+        memFree<uint>(out_vec);
         return out;
     }
 
@@ -68,6 +70,8 @@ namespace cpu
     INSTANTIATE(char   )
     INSTANTIATE(int    )
     INSTANTIATE(uint   )
+    INSTANTIATE(intl   )
+    INSTANTIATE(uintl  )
     INSTANTIATE(uchar  )
 
 }

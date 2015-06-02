@@ -7,12 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <cl.hpp>
-#include <traits.hpp>
 #include <program.hpp>
+#include <traits.hpp>
 #include <kernel_headers/KParam.hpp>
-#include <platform.hpp>
 #include <debug_opencl.hpp>
+#include <iostream>
 
 using cl::Buffer;
 using cl::Program;
@@ -47,8 +46,8 @@ namespace opencl
             }
 
             static std::string defaults =
-                std::string(" -D dim_type=") +
-                std::string(dtype_traits<dim_type>::getName());
+                std::string(" -D dim_t=") +
+                std::string(dtype_traits<dim_t>::getName());
 
             prog = cl::Program(getContext(), setSrc);
             std::vector<cl::Device> targetDevices;

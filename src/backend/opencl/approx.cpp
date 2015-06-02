@@ -20,10 +20,6 @@ namespace opencl
     Array<Ty> approx1(const Array<Ty> &in, const Array<Tp> &pos,
                       const af_interp_type method, const float offGrid)
     {
-        if ((std::is_same<Ty, double>::value || std::is_same<Ty, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
         af::dim4 odims = in.dims();
         odims[0] = pos.dims()[0];
 
@@ -47,10 +43,6 @@ namespace opencl
     Array<Ty> approx2(const Array<Ty> &in, const Array<Tp> &pos0, const Array<Tp> &pos1,
                       const af_interp_type method, const float offGrid)
     {
-        if ((std::is_same<Ty, double>::value || std::is_same<Ty, cdouble>::value) &&
-            !isDoubleSupported(getActiveDeviceId())) {
-            OPENCL_NOT_SUPPORTED();
-        }
         af::dim4 odims = pos0.dims();
         odims[2] = in.dims()[2];
         odims[3] = in.dims()[3];

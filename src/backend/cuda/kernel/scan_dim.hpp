@@ -33,18 +33,18 @@ namespace kernel
                                 uint blocks_dim,
                                 uint lim)
     {
-        const uint tidx = threadIdx.x;
-        const uint tidy = threadIdx.y;
-        const uint tid  = tidy * THREADS_X + tidx;
+        const int tidx = threadIdx.x;
+        const int tidy = threadIdx.y;
+        const int tid  = tidy * THREADS_X + tidx;
 
-        const uint zid = blockIdx.x / blocks_x;
-        const uint wid = blockIdx.y / blocks_y;
-        const uint blockIdx_x = blockIdx.x - (blocks_x) * zid;
-        const uint blockIdx_y = blockIdx.y - (blocks_y) * wid;
-        const uint xid = blockIdx_x * blockDim.x + tidx;
-        const uint yid = blockIdx_y; // yid  of output. updated for input later.
+        const int zid = blockIdx.x / blocks_x;
+        const int wid = blockIdx.y / blocks_y;
+        const int blockIdx_x = blockIdx.x - (blocks_x) * zid;
+        const int blockIdx_y = blockIdx.y - (blocks_y) * wid;
+        const int xid = blockIdx_x * blockDim.x + tidx;
+        const int yid = blockIdx_y; // yid  of output. updated for input later.
 
-        uint ids[4] = {xid, yid, zid, wid};
+        int ids[4] = {xid, yid, zid, wid};
 
         const Ti *iptr = in.ptr;
         To *optr = out.ptr;
@@ -54,13 +54,13 @@ namespace kernel
         // There are blockDim.y elements per block for in
         // Hence increment ids[dim] just after offseting out and before offsetting in
         tptr += ids[3] * tmp.strides[3] + ids[2] * tmp.strides[2] + ids[1] * tmp.strides[1] + ids[0];
-        const uint blockIdx_dim = ids[dim];
+        const int blockIdx_dim = ids[dim];
 
         ids[dim] = ids[dim] * blockDim.y * lim + tidy;
         optr  += ids[3] * out.strides[3] + ids[2] * out.strides[2] + ids[1] * out.strides[1] + ids[0];
         iptr  += ids[3] *  in.strides[3] + ids[2] *  in.strides[2] + ids[1] *  in.strides[1] + ids[0];
-        uint id_dim = ids[dim];
-        const uint out_dim = out.dims[dim];
+        int id_dim = ids[dim];
+        const int out_dim = out.dims[dim];
 
         bool is_valid =
             (ids[0] < out.dims[0]) &&
@@ -68,8 +68,8 @@ namespace kernel
             (ids[2] < out.dims[2]) &&
             (ids[3] < out.dims[3]);
 
-        const uint ostride_dim = out.strides[dim];
-        const uint istride_dim =  in.strides[dim];
+        const int ostride_dim = out.strides[dim];
+        const int istride_dim =  in.strides[dim];
 
         __shared__ To s_val[THREADS_X * DIMY * 2];
         __shared__ To s_tmp[THREADS_X];
@@ -92,7 +92,8 @@ namespace kernel
             *sptr = val;
             __syncthreads();
 
-            uint start = 0;
+            int start = 0;
+#pragma unroll
             for (int off = 1; off < DIMY; off *= 2) {
 
                 if (tidy >= off) val = binop(val, sptr[(start - off) * THREADS_X]);
@@ -103,6 +104,7 @@ namespace kernel
             }
 
             val = binop(val, s_tmp[tidx]);
+            __syncthreads();
             if (cond) *optr = val;
 
             id_dim += blockDim.y;
@@ -127,17 +129,17 @@ namespace kernel
                                  uint blocks_dim,
                                  uint lim)
     {
-        const uint tidx = threadIdx.x;
-        const uint tidy = threadIdx.y;
+        const int tidx = threadIdx.x;
+        const int tidy = threadIdx.y;
 
-        const uint zid = blockIdx.x / blocks_x;
-        const uint wid = blockIdx.y / blocks_y;
-        const uint blockIdx_x = blockIdx.x - (blocks_x) * zid;
-        const uint blockIdx_y = blockIdx.y - (blocks_y) * wid;
-        const uint xid = blockIdx_x * blockDim.x + tidx;
-        const uint yid = blockIdx_y; // yid  of output. updated for input later.
+        const int zid = blockIdx.x / blocks_x;
+        const int wid = blockIdx.y / blocks_y;
+        const int blockIdx_x = blockIdx.x - (blocks_x) * zid;
+        const int blockIdx_y = blockIdx.y - (blocks_y) * wid;
+        const int xid = blockIdx_x * blockDim.x + tidx;
+        const int yid = blockIdx_y; // yid  of output. updated for input later.
 
-        uint ids[4] = {xid, yid, zid, wid};
+        int ids[4] = {xid, yid, zid, wid};
 
         const To *tptr = tmp.ptr;
         To *optr = out.ptr;
@@ -146,12 +148,12 @@ namespace kernel
         // There are blockDim.y elements per block for in
         // Hence increment ids[dim] just after offseting out and before offsetting in
         tptr += ids[3] * tmp.strides[3] + ids[2] * tmp.strides[2] + ids[1] * tmp.strides[1] + ids[0];
-        const uint blockIdx_dim = ids[dim];
+        const int blockIdx_dim = ids[dim];
 
         ids[dim] = ids[dim] * blockDim.y * lim + tidy;
         optr  += ids[3] * out.strides[3] + ids[2] * out.strides[2] + ids[1] * out.strides[1] + ids[0];
-        const uint id_dim = ids[dim];
-        const uint out_dim = out.dims[dim];
+        const int id_dim = ids[dim];
+        const int out_dim = out.dims[dim];
 
         bool is_valid =
             (ids[0] < out.dims[0]) &&
@@ -165,7 +167,7 @@ namespace kernel
         To accum = *(tptr - tmp.strides[dim]);
 
         Binary<To, op> binop;
-        const uint ostride_dim = out.strides[dim];
+        const int ostride_dim = out.strides[dim];
 
         for (int k = 0, id = id_dim;
              is_valid && k < lim && (id < out_dim);
@@ -255,7 +257,7 @@ namespace kernel
             tmp.strides[0] = 1;
             for (int k = 1; k < 4; k++) tmp.strides[k] = tmp.strides[k - 1] * tmp.dims[k - 1];
 
-            dim_type tmp_elements = tmp.strides[3] * tmp.dims[3];
+            int tmp_elements = tmp.strides[3] * tmp.dims[3];
             tmp.ptr = memAlloc<To>(tmp_elements);
 
             scan_dim_launcher<Ti, To, op, dim, false>(out, tmp, in,

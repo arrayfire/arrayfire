@@ -27,11 +27,11 @@ namespace kernel
 {
 
 static const unsigned MAX_BINS  = 4000;
-static const dim_type THREADS_X =  256;
-static const dim_type THRD_LOAD =   16;
+static const int THREADS_X =  256;
+static const int THRD_LOAD =   16;
 
 template<typename inType, typename outType>
-void histogram(Param out, const Param in, const Param minmax, dim_type nbins)
+void histogram(Param out, const Param in, const Param minmax, int nbins)
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -59,24 +59,19 @@ void histogram(Param out, const Param in, const Param minmax, dim_type nbins)
 
         auto histogramOp = make_kernel<Buffer, KParam, Buffer, KParam,
                                        Buffer, cl::LocalSpaceArg,
-                                       dim_type, dim_type, dim_type
+                                       int, int, int
                                       >(*histKernels[device]);
 
+        int nElems = in.info.dims[0]*in.info.dims[1];
+        int blk_x  = divup(nElems, THRD_LOAD*THREADS_X);
+        int locSize = nbins * sizeof(outType);
+
         NDRange local(THREADS_X, 1);
-
-        dim_type numElements = in.info.dims[0]*in.info.dims[1];
-
-        dim_type blk_x       = divup(numElements, THRD_LOAD*THREADS_X);
-
-        dim_type batchCount  = in.info.dims[2];
-
-        NDRange global(blk_x*THREADS_X, batchCount);
-
-        dim_type locSize = nbins * sizeof(outType);
+        NDRange global(blk_x*in.info.dims[2]*THREADS_X, in.info.dims[3]);
 
         histogramOp(EnqueueArgs(getQueue(), global, local),
                 *out.data, out.info, *in.data, in.info, *minmax.data,
-                cl::Local(locSize), numElements, nbins, blk_x);
+                cl::Local(locSize), nElems, nbins, blk_x);
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {

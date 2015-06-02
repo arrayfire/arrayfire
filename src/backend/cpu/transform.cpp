@@ -50,13 +50,13 @@ namespace cpu
                     const af::dim4 &ostrides, const af::dim4 &istrides,
                     const af::dim4 &tstrides, const bool inverse)
     {
-        dim_type nimages     = idims[2];
+        dim_t nimages     = idims[2];
         // Multiplied in src/backend/transform.cpp
-        dim_type ntransforms = odims[2] / idims[2];
+        dim_t ntransforms = odims[2] / idims[2];
 
         void (*t_fn)(T *, const T *, const float *, const af::dim4 &,
                      const af::dim4 &, const af::dim4 &,
-                     const dim_type, const dim_type, const dim_type, const dim_type);
+                     const dim_t, const dim_t, const dim_t, const dim_t);
 
         switch(method) {
             case AF_INTERP_NEAREST:
@@ -72,18 +72,18 @@ namespace cpu
 
 
         // For each transform channel
-        for(int t_idx = 0; t_idx < ntransforms; t_idx++) {
+        for(int t_idx = 0; t_idx < (int)ntransforms; t_idx++) {
             // Compute inverse if required
             const float *tmat_ptr = tf + t_idx * 6;
             float tmat[6];
             calc_affine_inverse(tmat, tmat_ptr, inverse);
 
             // Offset for output pointer
-            dim_type o_offset = t_idx * nimages * ostrides[2];
+            dim_t o_offset = t_idx * nimages * ostrides[2];
 
             // Do transform for image
-            for(int yy = 0; yy < odims[1]; yy++) {
-                for(int xx = 0; xx < odims[0]; xx++) {
+            for(int yy = 0; yy < (int)odims[1]; yy++) {
+                for(int xx = 0; xx < (int)odims[0]; xx++) {
                     t_fn(out, in, tmat, idims, ostrides, istrides, nimages, o_offset, xx, yy);
                 }
             }
@@ -127,8 +127,11 @@ namespace cpu
     INSTANTIATE(float)
     INSTANTIATE(double)
     INSTANTIATE(cfloat)
-    //INSTANTIATE(cdouble)
+    INSTANTIATE(cdouble)
     INSTANTIATE(int)
     INSTANTIATE(uint)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
     INSTANTIATE(uchar)
+    INSTANTIATE(char)
 }

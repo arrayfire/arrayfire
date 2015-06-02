@@ -14,6 +14,7 @@
 #include <debug_opencl.hpp>
 #include <kernel_headers/fast.hpp>
 #include <memory.hpp>
+#include <map>
 
 using cl::Buffer;
 using cl::Program;
@@ -28,10 +29,10 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type FAST_THREADS_X = 16;
-static const dim_type FAST_THREADS_Y = 16;
-static const dim_type FAST_THREADS_NONMAX_X = 32;
-static const dim_type FAST_THREADS_NONMAX_Y = 8;
+static const int FAST_THREADS_X = 16;
+static const int FAST_THREADS_Y = 16;
+static const int FAST_THREADS_NONMAX_X = 32;
+static const int FAST_THREADS_NONMAX_Y = 8;
 
 template<typename T, const unsigned arc_length, const bool nonmax>
 void fast(unsigned* out_feat,
@@ -45,10 +46,10 @@ void fast(unsigned* out_feat,
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static Program           fastProgs[DeviceManager::MAX_DEVICES];
-        static Kernel             lfKernel[DeviceManager::MAX_DEVICES];
-        static Kernel             nmKernel[DeviceManager::MAX_DEVICES];
-        static Kernel             gfKernel[DeviceManager::MAX_DEVICES];
+        static std::map<int, Program*> fastProgs;
+        static std::map<int, Kernel*>  lfKernel;
+        static std::map<int, Kernel*>  nmKernel;
+        static std::map<int, Kernel*>  gfKernel;
 
         int device = getActiveDeviceId();
 
@@ -64,14 +65,13 @@ void fast(unsigned* out_feat,
                     options << " -D USE_DOUBLE";
                 }
 
-                buildProgram(fastProgs[device],
-                             fast_cl,
-                             fast_cl_len,
-                             options.str());
+                cl::Program prog;
+                buildProgram(prog, fast_cl, fast_cl_len, options.str());
+                fastProgs[device] = new Program(prog);
 
-                lfKernel[device] = Kernel(fastProgs[device], "locate_features");
-                nmKernel[device] = Kernel(fastProgs[device], "non_max_counts");
-                gfKernel[device] = Kernel(fastProgs[device], "get_features");
+                lfKernel[device] = new Kernel(*fastProgs[device], "locate_features");
+                nmKernel[device] = new Kernel(*fastProgs[device], "non_max_counts");
+                gfKernel[device] = new Kernel(*fastProgs[device], "get_features");
             });
 
         const unsigned max_feat = ceil(in.info.dims[0] * in.info.dims[1] * feature_ratio);
@@ -87,8 +87,8 @@ void fast(unsigned* out_feat,
             d_flags = bufferAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(T));
         }
 
-        const dim_type blk_x = divup(in.info.dims[0]-edge*2, FAST_THREADS_X);
-        const dim_type blk_y = divup(in.info.dims[1]-edge*2, FAST_THREADS_Y);
+        const int blk_x = divup(in.info.dims[0]-edge*2, FAST_THREADS_X);
+        const int blk_y = divup(in.info.dims[1]-edge*2, FAST_THREADS_Y);
 
         // Locate features kernel sizes
         const NDRange local(FAST_THREADS_X, FAST_THREADS_Y);
@@ -96,15 +96,15 @@ void fast(unsigned* out_feat,
 
         auto lfOp = make_kernel<Buffer, KParam,
                                 Buffer, const float, const unsigned,
-                                LocalSpaceArg> (lfKernel[device]);
+                                LocalSpaceArg> (*lfKernel[device]);
 
         lfOp(EnqueueArgs(getQueue(), global, local),
              *in.data, in.info, *d_score, thr, edge,
              cl::Local((FAST_THREADS_X + 6) * (FAST_THREADS_Y + 6) * sizeof(T)));
         CL_DEBUG_FINISH(getQueue());
 
-        const dim_type blk_nonmax_x = divup(in.info.dims[0], 64);
-        const dim_type blk_nonmax_y = divup(in.info.dims[1], 64);
+        const int blk_nonmax_x = divup(in.info.dims[0], 64);
+        const int blk_nonmax_y = divup(in.info.dims[1], 64);
 
         // Nonmax kernel sizes
         const NDRange local_nonmax(FAST_THREADS_NONMAX_X, FAST_THREADS_NONMAX_Y);
@@ -121,7 +121,7 @@ void fast(unsigned* out_feat,
 
         auto nmOp = make_kernel<Buffer, Buffer, Buffer,
                                 Buffer, Buffer,
-                                KParam, const unsigned> (nmKernel[device]);
+                                KParam, const unsigned> (*nmKernel[device]);
         nmOp(EnqueueArgs(getQueue(), global_nonmax, local_nonmax),
                          *d_counts, *d_offsets, *d_total, *d_flags, *d_score, in.info, edge);
         CL_DEBUG_FINISH(getQueue());
@@ -139,7 +139,7 @@ void fast(unsigned* out_feat,
             auto gfOp = make_kernel<Buffer, Buffer, Buffer,
                                     Buffer, Buffer, Buffer,
                                     KParam, const unsigned,
-                                    const unsigned> (gfKernel[device]);
+                                    const unsigned> (*gfKernel[device]);
             gfOp(EnqueueArgs(getQueue(), global_nonmax, local_nonmax),
                              *x_out.data, *y_out.data, *score_out.data,
                              *d_flags, *d_counts, *d_offsets,

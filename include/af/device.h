@@ -29,162 +29,134 @@ namespace af
     */
 
     /**
-       \defgroup device_func_prop deviceprop
+       \defgroup device_func_prop deviceInfo
 
-       Get device properties
+       Get device information
 
        @{
 
        \ingroup arrayfire_func
        \ingroup device_mat
     */
-    AFAPI void deviceprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+    AFAPI void deviceInfo(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
     /**
        @}
     */
 
-    /**
-       \defgroup device_func_count getDeviceCount
-
-       Get the number of devices available for the current backend
-
-       @{
-
-       \ingroup arrayfire_func
-       \ingroup device_mat
-    */
+    /// \brief Gets the number of devices
+    ///
+    /// \copydoc device_func_count
+    /// \returns the number of devices on the system
+    /// \ingroup device_func_count
     AFAPI int getDeviceCount();
-    /**
-       @}
-    */
 
-    /**
-       \defgroup device_func_get getDevice
-
-       Get the current device ID
-
-       @{
-
-       \ingroup arrayfire_func
-       \ingroup device_mat
-    */
+    /// \brief Gets the current device ID
+    ///
+    /// \copydoc device_func_get
+    /// \returns the device ID of the current device
+    /// \ingroup device_func_get
     AFAPI int getDevice();
-    /**
-       @}
-    */
 
-    /**
-       \defgroup device_func_dbl isDoubleAvailable
-
-       Check if double precision support is available for specified device
-
-       @{
-
-       \ingroup arrayfire_func
-       \ingroup device_mat
-    */
+    /// \brief Queries the current device for double precision floating point
+    ///        support
+    ///
+    /// \param[in] device the ID of the device to query
+    ///
+    /// \returns true if the \p device supports double precision operations. false otherwise
+    /// \ingroup device_func_dbl
     AFAPI bool isDoubleAvailable(const int device);
-    /**
-       @}
-    */
 
-    /**
-       \defgroup device_func_set setDevice
-
-       Change current device to specified device
-
-       @{
-
-       \ingroup arrayfire_func
-       \ingroup device_mat
-    */
+    /// \brief Sets the current device
+    ///
+    /// \param[in] device The ID of the target device
+    /// \ingroup device_func_set
     AFAPI void setDevice(const int device);
-    /**
-       @}
-    */
 
-    /**
-       \defgroup device_func_sync sync
+    /// \brief Blocks until the \p device is finished processing
+    ///
+    /// \param[in] device is the target device
+    /// \ingroup device_func_sync
+    AFAPI void sync(const int device = -1);
 
-       Wait until all operations on device are finished
+    /// \ingroup device_func_alloc
+    /// @{
+    /// \brief Allocates memory using ArrayFire's memory manager
+    ///
+    /// \copydoc device_func_alloc
+    /// \param[in] elements the number of elements to allocate
+    /// \param[in] type is the type of the elements to allocate
+    /// \returns the pointer to the memory
+    ///
+    AFAPI void *alloc(const size_t elements, const dtype type);
 
-       @{
-
-       \ingroup arrayfire_func
-       \ingroup device_mat
-    */
-    AFAPI void sync(int device = -1);
-    /**
-       @}
-    */
-
-    /**
-      \defgroup device_func_alloc alloc
-
-       Allocate device memory using ArrayFire's memory manager
-
-       @{
-
-       \ingroup arrayfire_func
-       \ingroup device_mat
-    */
-    AFAPI void *alloc(size_t elements, dtype type);
-
+    /// \brief Allocates memory using ArrayFire's memory manager
+    //
+    /// \copydoc device_func_alloc
+    /// \param[in] elements the number of elements to allocate
+    /// \returns the pointer to the memory
+    ///
+    /// \note the size of the memory allocated is the number of \p elements *
+    ///         sizeof(type)
     template<typename T>
-    T* alloc(size_t elements);
-    /**
-       @}
-    */
+    T* alloc(const size_t elements);
+    /// @}
 
+    /// \ingroup device_func_pinned
+    /// @{
+    ///
+    /// \copydoc device_func_pinned
+    ///
+    /// \param[in] elements the number of elements to allocate
+    /// \param[in] type is the type of the elements to allocate
+    /// \returns the pointer to the memory
+    AFAPI void *pinned(const size_t elements, const dtype type);
 
-    /**
-       \defgroup device_func_pinned pinned
-
-       Allocate pinned memory using ArrayFire's memory manager
-
-       @{
-
-       \ingroup arrayfire_func
-       \ingroup device_mat
-    */
-    AFAPI void *pinned(size_t elements, dtype type);
-
+    /// \copydoc device_func_pinned
+    ///
+    /// \param[in] elements the number of elements to allocate
+    /// \returns the pointer to the memory
     template<typename T>
-    T* pinned(size_t elements);
-    /**
-       @}
-    */
+    T* pinned(const size_t elements);
+    /// @}
 
-    /**
-       \defgroup device_func_free free
+    /// \ingroup device_func_free
+    /// @{
+    /// \copydoc device_func_free
+    /// \param[in] ptr the memory to free
+    AFAPI void free(const void *ptr);
 
-       Free device memory allocated by ArrayFire's memory manager
+    /// \copydoc free()
+    AFAPI void freePinned(const void *ptr);
+    ///@}
 
-       @{
+    /// \ingroup device_func_mem
+    /// @{
+    /// \brief Gets information about the memory manager
+    ///
+    /// \param[out] alloc_bytes the number of bytes allocated by the memory
+    //                          manager
+    /// \param[out] alloc_buffers   the number of buffers created by the memory
+    //                              manager
+    /// \param[out] lock_bytes The number of bytes in use
+    /// \param[out] lock_buffers The number of buffers in use
+    AFAPI void deviceMemInfo(size_t *alloc_bytes, size_t *alloc_buffers,
+                             size_t *lock_bytes, size_t *lock_buffers);
 
-       \ingroup arrayfire_func
-       \ingroup device_mat
-    */
-    AFAPI void free(const void *);
-    /**
-       @}
-    */
+    /// \brief Call the garbage collection function in the memory manager
+    ///
+    /// \ingroup device_func_mem
+    AFAPI void deviceGC();
+    /// @}
 
-    /**
-       \defgroup device_func_free_pinned freePinned
+    /// \brief Set the resolution of memory chunks
+    ///
+    /// \ingroup device_func_mem
+    AFAPI void setMemStepSize(const size_t size);
 
-       Free pinned memory allocated by ArrayFire' memory manager
-
-       @{
-
-       \ingroup arrayfire_func
-       \ingroup device_mat
-    */
-    AFAPI void freePinned(const void *);
-
-    /**
-       @}
-    */
+    /// \brief Get the resolution of memory chunks
+    ///
+    /// \ingroup device_func_mem
+    AFAPI size_t getMemStepSize();
 }
 #endif
 
@@ -200,9 +172,9 @@ extern "C" {
     AFAPI af_err af_init();
 
     /**
-       \ingroup device_func_prop
+       \ingroup device_func_info
     */
-    AFAPI af_err af_deviceprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
+    AFAPI af_err af_device_info(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
     /**
        \ingroup device_func_count
@@ -232,17 +204,17 @@ extern "C" {
     /**
        \ingroup device_func_device
     */
-    AFAPI af_err af_get_device_ptr(void **ptr, const af_array arr, bool read_only);
+    AFAPI af_err af_get_device_ptr(void **ptr, const af_array arr);
 
     /**
        \ingroup device_func_alloc
     */
-    AFAPI af_err af_alloc_device(void **ptr, dim_type bytes);
+    AFAPI af_err af_alloc_device(void **ptr, const dim_t bytes);
 
     /**
        \ingroup device_func_pinned
     */
-    AFAPI af_err af_alloc_pinned(void **ptr, dim_type bytes);
+    AFAPI af_err af_alloc_pinned(void **ptr, const dim_t bytes);
 
     /**
        \ingroup device_func_free
@@ -258,7 +230,32 @@ extern "C" {
        Create array from device memory
        \ingroup construct_mat
     */
-    AFAPI af_err af_device_array(af_array *arr, const void *data, const unsigned ndims, const dim_type * const dims, const af_dtype type);
+    AFAPI af_err af_device_array(af_array *arr, const void *data, const unsigned ndims, const dim_t * const dims, const af_dtype type);
+
+    /**
+       Get memory information from the memory manager
+       \ingroup device_func_mem
+    */
+    AFAPI af_err af_device_mem_info(size_t *alloc_bytes, size_t *alloc_buffers,
+                                    size_t *lock_bytes, size_t *lock_buffers);
+
+    /**
+       Call the garbage collection routine
+       \ingroup device_func_mem
+    */
+    AFAPI af_err af_device_gc();
+
+    /**
+       Set the minimum memory chunk size
+       \ingroup device_func_mem
+    */
+    AFAPI af_err af_set_mem_step_size(const size_t step_bytes);
+
+    /**
+       Get the minimum memory chunk size
+       \ingroup device_func_mem
+    */
+    AFAPI af_err af_get_mem_step_size(size_t *step_bytes);
 
 #ifdef __cplusplus
 }

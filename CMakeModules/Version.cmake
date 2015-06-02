@@ -1,8 +1,11 @@
 #
 # Make a version file that includes the ArrayFire version and git revision
 #
-SET(AF_VERSION "3.0")
-SET(AF_VERSION_MINOR ".beta")
+SET(AF_VERSION_MAJOR "3")
+SET(AF_VERSION_MINOR "0")
+SET(AF_VERSION_PATCH "0")
+
+SET(AF_VERSION "${AF_VERSION_MAJOR}.${AF_VERSION_MINOR}.${AF_VERSION_PATCH}")
 EXECUTE_PROCESS(
     COMMAND git log -1 --format=%h
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}

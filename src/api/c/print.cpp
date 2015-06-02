@@ -9,7 +9,9 @@
 
 #include <iostream>
 #include <iomanip>
+#include <vector>
 #include <af/array.h>
+#include <af/data.h>
 #include <copy.hpp>
 #include <print.hpp>
 #include <ArrayInfo.hpp>
@@ -23,17 +25,18 @@ using namespace detail;
 using std::ostream;
 using std::cout;
 using std::endl;
+using std::vector;
 
 template<typename T>
 static void printer(ostream &out, const T* ptr, const ArrayInfo &info, unsigned dim)
 {
 
-    dim_type stride =   info.strides()[dim];
-    dim_type d      =   info.dims()[dim];
+    dim_t stride =   info.strides()[dim];
+    dim_t d      =   info.dims()[dim];
     ToNum<T> toNum;
 
     if(dim == 0) {
-        for(dim_type i = 0, j = 0; i < d; i++, j+=stride) {
+        for(dim_t i = 0, j = 0; i < d; i++, j+=stride) {
             out<<   std::fixed <<
                     std::setw(10) <<
                     std::setprecision(4) << toNum(ptr[j]) << " ";
@@ -41,7 +44,7 @@ static void printer(ostream &out, const T* ptr, const ArrayInfo &info, unsigned 
         out << endl;
     }
     else {
-        for(dim_type i = 0; i < d; i++) {
+        for(dim_t i = 0; i < d; i++) {
             printer(out, ptr, info, dim - 1);
             ptr += stride;
         }
@@ -53,15 +56,15 @@ template<typename T>
 static void print(af_array arr)
 {
     const ArrayInfo info = getInfo(arr);
-    T *data = new T[info.elements()];
+    vector<T> data(info.elements());
 
     af_array arrT;
     AF_CHECK(af_reorder(&arrT, arr, 1, 0, 2, 3));
 
     //FIXME: Use alternative function to avoid copies if possible
-    AF_CHECK(af_get_data_ptr(data, arrT));
+    AF_CHECK(af_get_data_ptr(&data.front(), arrT));
     const ArrayInfo infoT = getInfo(arrT);
-    AF_CHECK(af_destroy_array(arrT));
+    AF_CHECK(af_release_array(arrT));
 
     std::ios_base::fmtflags backup = std::cout.flags();
 
@@ -71,9 +74,7 @@ static void print(af_array arr)
     std::cout <<"   Strides: ["<<info.strides()<<"]"<<std::endl;
 #endif
 
-    printer(std::cout, data, infoT, infoT.ndims() - 1);
-
-    delete[] data;
+    printer(std::cout, &data.front(), infoT, infoT.ndims() - 1);
 
     std::cout.flags(backup);
 }

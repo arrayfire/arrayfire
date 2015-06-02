@@ -25,6 +25,12 @@ using af::cfloat;
 using af::cdouble;
 
 template<typename T>
+class Where : public ::testing::Test { };
+
+typedef ::testing::Types< float, double, cfloat, cdouble, int, uint, intl, uintl, char, uchar > TestTypes;
+TYPED_TEST_CASE(Where, TestTypes);
+
+template<typename T>
 void whereTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=vector<af_seq>())
 {
     if (noDoubleTests<T>()) return;
@@ -67,9 +73,9 @@ void whereTest(string pTestFile, bool isSubRef=false, const vector<af_seq> seqv=
                                                         << std::endl;
     }
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(outArray  != 0) af_release_array(outArray);
+    if(tempArray != 0) af_release_array(tempArray);
 }
 
 vector<af_seq> init_subs()
@@ -91,20 +97,16 @@ vector<af_seq> init_subs()
             );                                  \
     }                                           \
 
-WHERE_TESTS(float)
-WHERE_TESTS(double)
-WHERE_TESTS(cfloat)
-WHERE_TESTS(cdouble)
-WHERE_TESTS(int)
-WHERE_TESTS(uint)
-WHERE_TESTS(char)
-WHERE_TESTS(uchar)
+TYPED_TEST(Where, BasicC)
+{
+    whereTest<TypeParam>(string(TEST_DIR"/where/where.test") );
+}
 
 //////////////////////////////////// CPP /////////////////////////////////
 //
-TEST(Where, CPP)
+TYPED_TEST(Where, CPP)
 {
-    if (noDoubleTests<int>()) return;
+    if (noDoubleTests<TypeParam>()) return;
 
     vector<af::dim4> numDims;
 
@@ -114,7 +116,7 @@ TEST(Where, CPP)
     af::dim4 dims       = numDims[0];
 
     vector<float> in(data[0].begin(), data[0].end());
-    af::array input(dims, &(in.front()));
+    af::array input(dims, &in.front(), afHost);
     af::array output = where(input);
 
     // Compare result

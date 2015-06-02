@@ -97,11 +97,11 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
     delete[] keyData;
     delete[] valData;
 
-    if(ikeyArray != 0) af_destroy_array(ikeyArray);
-    if(ivalArray != 0) af_destroy_array(ivalArray);
-    if(okeyArray != 0) af_destroy_array(okeyArray);
-    if(ovalArray != 0) af_destroy_array(ovalArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    if(ikeyArray != 0) af_release_array(ikeyArray);
+    if(ivalArray != 0) af_release_array(ivalArray);
+    if(okeyArray != 0) af_release_array(okeyArray);
+    if(ovalArray != 0) af_release_array(ovalArray);
+    if(tempArray != 0) af_release_array(tempArray);
 }
 
 #define SORT_INIT(desc, file, dir, resultIdx0, resultIdx1)                                       \

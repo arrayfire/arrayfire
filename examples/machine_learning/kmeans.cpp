@@ -112,7 +112,7 @@ int kmeans_demo(int k, bool console)
 {
     printf("** ArrayFire K-Means Demo (k = %d) **\n\n", k);
 
-    array img = loadimage(ASSETS_DIR"/examples/images/lena.ppm", true) / 255; // [0-255]
+    array img = loadImage(ASSETS_DIR"/examples/images/lena.ppm", true) / 255; // [0-255]
 
     int w = img.dims(0), h = img.dims(1), c = img.dims(2);
     array vec = moddims(img, w * h, 1, c);
@@ -168,11 +168,11 @@ int main(int argc, char** argv)
 
     try {
 
-        af::deviceset(device);
+        af::setDevice(device);
         af::info();
         return kmeans_demo(k, console);
 
     } catch (af::exception &ae) {
-        std::cout << ae.what() << std::endl;
+        std::cerr << ae.what() << std::endl;
     }
 }

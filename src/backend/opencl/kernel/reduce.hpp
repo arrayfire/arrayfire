@@ -23,6 +23,7 @@
 #include "names.hpp"
 #include "config.hpp"
 #include <memory.hpp>
+#include <memory>
 
 using cl::Buffer;
 using cl::Program;
@@ -31,6 +32,7 @@ using cl::make_kernel;
 using cl::EnqueueArgs;
 using cl::NDRange;
 using std::string;
+using std::unique_ptr;
 
 namespace opencl
 {
@@ -123,7 +125,7 @@ namespace kernel
 
         Param tmp = out;
 
-        dim_type tmp_elements = 1;
+        int tmp_elements = 1;
         if (groups_all[dim] > 1) {
             tmp.info.dims[dim] = groups_all[dim];
 
@@ -263,7 +265,7 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op>
-    void reduce(Param out, Param in, dim_type dim)
+    void reduce(Param out, Param in, int dim)
     {
         try {
             switch (dim) {
@@ -281,7 +283,7 @@ namespace kernel
     To reduce_all(Param in)
     {
         try {
-            dim_type in_elements = in.info.dims[3] * in.info.strides[3];
+            int in_elements = in.info.dims[3] * in.info.strides[3];
 
             // FIXME: Use better heuristics to get to the optimum number
             if (in_elements > 4096) {
@@ -304,8 +306,6 @@ namespace kernel
                 uint threads_y = THREADS_PER_GROUP / threads_x;
 
                 Param tmp;
-                To *h_ptr = NULL;
-
                 uint groups_x = divup(in.info.dims[0], threads_x * REPEAT);
                 uint groups_y = divup(in.info.dims[1], threads_y);
 
@@ -318,38 +318,36 @@ namespace kernel
                     tmp.info.strides[k] = tmp.info.dims[k - 1] * tmp.info.strides[k - 1];
                 }
 
-                dim_type tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
+                int tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
                 tmp.data = bufferAlloc(tmp_elements * sizeof(To));
 
                 reduce_first_fn<Ti, To, op>(tmp, in, groups_x, groups_y, threads_x);
 
-                h_ptr = new To[tmp_elements];
-                getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(To) * tmp_elements, h_ptr);
+                unique_ptr<To> h_ptr(new To[tmp_elements]);
+                getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(To) * tmp_elements, h_ptr.get());
 
                 Binary<To, op> reduce;
                 To out = reduce.init();
-                for (int i = 0; i < tmp_elements; i++) {
-                    out = reduce(out, h_ptr[i]);
+                for (int i = 0; i < (int)tmp_elements; i++) {
+                    out = reduce(out, h_ptr.get()[i]);
                 }
 
-                delete[] h_ptr;
                 bufferFree(tmp.data);
                 return out;
 
             } else {
 
-                Ti *h_ptr = new Ti[in_elements];
-                getQueue().enqueueReadBuffer(*in.data, CL_TRUE, 0, sizeof(Ti) * in_elements, h_ptr);
+                unique_ptr<Ti> h_ptr(new Ti[in_elements]);
+                getQueue().enqueueReadBuffer(*in.data, CL_TRUE, 0, sizeof(Ti) * in_elements, h_ptr.get());
 
                 Transform<Ti, To, op> transform;
                 Binary<To, op> reduce;
                 To out = reduce.init();
 
-                for (int i = 0; i < in_elements; i++) {
-                    out = reduce(out, transform(h_ptr[i]));
+                for (int i = 0; i < (int)in_elements; i++) {
+                    out = reduce(out, transform(h_ptr.get()[i]));
                 }
 
-                delete[] h_ptr;
                 return out;
             }
         } catch(cl::Error ex) {

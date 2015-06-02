@@ -20,6 +20,9 @@ namespace cpu
     uint abs(uint val);
     uchar abs(uchar val);
     uintl abs(uintl val);
+#if !(defined(OS_WIN) || (defined(ARCH_32) && defined(OS_LNX)))  // Not(Windows or Tegra)
+    size_t abs(size_t val);
+#endif
 
     template<typename T> static inline T min(T lhs, T rhs) { return std::min(lhs, rhs); }
     cfloat min(cfloat lhs, cfloat rhs);
@@ -56,7 +59,7 @@ namespace cpu
     }
 
     template<typename To, typename Ti>
-	static To scalar(Ti real, Ti imag)
+    static To scalar(Ti real, Ti imag)
     {
         To  cval = {real, imag};
         return cval;

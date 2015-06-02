@@ -15,10 +15,10 @@
 
 using af::dim4;
 
-dim_type
+dim_t
 calcOffset(const af::dim4 &strides, const af::dim4 &offsets)
 {
-    dim_type offset = 0;
+    dim_t offset = 0;
     for (int i = 0; i < 4; i++) offset += offsets[i] * strides[i];
     return offset;
 }
@@ -32,7 +32,7 @@ getInfo(af_array arr)
 }
 
 af_err
-af_get_elements(dim_type *elems, const af_array arr)
+af_get_elements(dim_t *elems, const af_array arr)
 {
     *elems =  getInfo(arr).elements();
     return AF_SUCCESS; //FIXME: Catch exceptions correctly
@@ -47,10 +47,10 @@ af_err af_get_type(af_dtype *type, const af_array arr)
 dim4 calcStrides(const dim4 &parentDim)
 {
     dim4 out(1, 1, 1, 1);
-    dim_type *out_dims = out.get();
-    const dim_type *parent_dims =  parentDim.get();
+    dim_t *out_dims = out.get();
+    const dim_t *parent_dims =  parentDim.get();
 
-    for (dim_type i=1; i < 4; i++) {
+    for (dim_t i=1; i < 4; i++) {
         out_dims[i] = out_dims[i - 1] * parent_dims[i-1];
     }
 
@@ -80,21 +80,21 @@ bool ArrayInfo::isScalar() const
 
 bool ArrayInfo::isRow() const
 {
-    return (ndims() == 2 && dims()[0] == 1);
+    return (dims()[0] == 1 && dims()[1] > 1 && dims()[2] == 1 && dims()[3] == 1);
 }
 
 bool ArrayInfo::isColumn() const
 {
-    return (ndims() == 1);
+    return (dims()[0] > 1 && dims()[1] == 1 && dims()[2] == 1 && dims()[3] == 1);
 }
 
 bool ArrayInfo::isVector() const
 {
-    bool ret = true;
-    for(unsigned i = 0; i < (ndims() - 1) && ret; i++) {
-        ret = (dims()[i] == 1);
+    int singular_dims = 0;
+    for(int i = 0; i < AF_MAX_DIMS; i++) {
+        singular_dims += (dims()[i] == 1);
     }
-    return ret;
+    return singular_dims == AF_MAX_DIMS - 1;
 }
 
 bool ArrayInfo::isComplex() const
@@ -124,13 +124,15 @@ bool ArrayInfo::isRealFloating() const
 
 bool ArrayInfo::isFloating() const
 {
-    return (!isInteger());
+    return (!isInteger() && !isBool());
 }
 
 bool ArrayInfo::isInteger() const
 {
     return (type == s32
          || type == u32
+         || type == s64
+         || type == u64
          || type == u8);
 }
 
@@ -145,7 +147,7 @@ bool ArrayInfo::isLinear() const
         return dim_strides[0] == 1;
     }
 
-    dim_type count = 1;
+    dim_t count = 1;
     for (int i = 0; i < (int)ndims(); i++) {
         if (count != dim_strides[i]) {
             return false;
@@ -155,14 +157,14 @@ bool ArrayInfo::isLinear() const
     return true;
 }
 
-dim4 getOutDims(const dim4 ldims, const dim4 rdims, bool batchMode)
+dim4 getOutDims(const dim4 &ldims, const dim4 &rdims, bool batchMode)
 {
     if (!batchMode) {
         DIM_ASSERT(1, ldims == rdims);
         return ldims;
     }
 
-    dim_type odims[] = {1, 1, 1, 1};
+    dim_t odims[] = {1, 1, 1, 1};
     for (int i = 0; i < 4; i++) {
         DIM_ASSERT(1, ldims[i] == rdims[i] || ldims[i] == 1 || rdims[i] == 1);
         odims[i] = std::max(ldims[i], rdims[i]);

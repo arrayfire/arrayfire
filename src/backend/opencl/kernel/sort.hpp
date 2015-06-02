@@ -35,8 +35,8 @@ namespace opencl
     namespace kernel
     {
         // Kernel Launch Config Values
-        static const dim_type TX = 32;
-        static const dim_type TY = 8;
+        static const int TX = 32;
+        static const int TY = 8;
 
         template<typename T, bool isAscending>
         void sort0(Param val)
@@ -46,13 +46,13 @@ namespace opencl
 
                 compute::buffer val_buf((*val.data)());
 
-                for(dim_type w = 0; w < val.info.dims[3]; w++) {
-                    dim_type valW = w * val.info.strides[3];
-                    for(dim_type z = 0; z < val.info.dims[2]; z++) {
-                        dim_type valWZ = valW + z * val.info.strides[2];
-                        for(dim_type y = 0; y < val.info.dims[1]; y++) {
+                for(int w = 0; w < val.info.dims[3]; w++) {
+                    int valW = w * val.info.strides[3];
+                    for(int z = 0; z < val.info.dims[2]; z++) {
+                        int valWZ = valW + z * val.info.strides[2];
+                        for(int y = 0; y < val.info.dims[1]; y++) {
 
-                            dim_type valOffset = valWZ + y * val.info.strides[1];
+                            int valOffset = valWZ + y * val.info.strides[1];
 
                             if(isAscending) {
                                 compute::stable_sort(

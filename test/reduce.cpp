@@ -20,8 +20,18 @@ using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
+using af::array;
 using af::cfloat;
 using af::cdouble;
+
+
+template<typename T>
+class Reduce : public ::testing::Test
+{
+};
+
+typedef ::testing::Types<float, double, af::cfloat, af::cdouble, uint, int, char, uchar> TestTypes;
+TYPED_TEST_CASE(Reduce, TestTypes);
 
 typedef af_err (*reduceFunc)(af_array *, const af_array, const int);
 
@@ -48,7 +58,7 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
     if (isSubRef) {
         ASSERT_EQ(AF_SUCCESS, af_create_array(&tempArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
         ASSERT_EQ(AF_SUCCESS, af_index(&inArray, tempArray, seqv.size(), &seqv.front()));
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(tempArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(tempArray));
     } else {
         ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &in.front(), dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<Ti>::af_type));
     }
@@ -74,11 +84,11 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
 
         // Delete
         delete[] outData;
-        ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
     }
 
 
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
 
 vector<af_seq> init_subs()
@@ -123,21 +133,21 @@ REDUCE_TESTS(max, cdouble , cdouble, cdouble);
 REDUCE_TESTS(max, unsigned, unsigned  , unsigned  );
 REDUCE_TESTS(max, uchar   , unsigned char, unsigned char);
 
-REDUCE_TESTS(anytrue, float   , float     , unsigned char);
-REDUCE_TESTS(anytrue, double  , double    , unsigned char);
-REDUCE_TESTS(anytrue, int     , int       , unsigned char);
-REDUCE_TESTS(anytrue, cfloat  , cfloat , unsigned char);
-REDUCE_TESTS(anytrue, cdouble , cdouble, unsigned char);
-REDUCE_TESTS(anytrue, unsigned, unsigned  , unsigned char);
-REDUCE_TESTS(anytrue, uchar   , unsigned char, unsigned char);
+REDUCE_TESTS(any_true, float   , float     , unsigned char);
+REDUCE_TESTS(any_true, double  , double    , unsigned char);
+REDUCE_TESTS(any_true, int     , int       , unsigned char);
+REDUCE_TESTS(any_true, cfloat  , cfloat , unsigned char);
+REDUCE_TESTS(any_true, cdouble , cdouble, unsigned char);
+REDUCE_TESTS(any_true, unsigned, unsigned  , unsigned char);
+REDUCE_TESTS(any_true, uchar   , unsigned char, unsigned char);
 
-REDUCE_TESTS(alltrue, float   , float     , unsigned char);
-REDUCE_TESTS(alltrue, double  , double    , unsigned char);
-REDUCE_TESTS(alltrue, int     , int       , unsigned char);
-REDUCE_TESTS(alltrue, cfloat  , cfloat , unsigned char);
-REDUCE_TESTS(alltrue, cdouble , cdouble, unsigned char);
-REDUCE_TESTS(alltrue, unsigned, unsigned  , unsigned char);
-REDUCE_TESTS(alltrue, uchar   , unsigned char, unsigned char);
+REDUCE_TESTS(all_true, float   , float     , unsigned char);
+REDUCE_TESTS(all_true, double  , double    , unsigned char);
+REDUCE_TESTS(all_true, int     , int       , unsigned char);
+REDUCE_TESTS(all_true, cfloat  , cfloat , unsigned char);
+REDUCE_TESTS(all_true, cdouble , cdouble, unsigned char);
+REDUCE_TESTS(all_true, unsigned, unsigned  , unsigned char);
+REDUCE_TESTS(all_true, uchar   , unsigned char, unsigned char);
 
 REDUCE_TESTS(count, float   , float     , unsigned);
 REDUCE_TESTS(count, double  , double    , unsigned);
@@ -174,8 +184,8 @@ typedef af::array (*ReductionOp)(const af::array&, const int);
 using af::sum;
 using af::min;
 using af::max;
-using af::alltrue;
-using af::anytrue;
+using af::allTrue;
+using af::anyTrue;
 using af::count;
 
 template<typename Ti, typename To, ReductionOp reduce>
@@ -218,20 +228,20 @@ void cppReduceTest(string pTestFile)
     }
 }
 
-#define CPP_REDUCE_TESTS(FN, Ti, To)               \
+#define CPP_REDUCE_TESTS(FN, FNAME, Ti, To)        \
     TEST(Reduce, Test_##FN##_CPP)                  \
     {                                              \
         cppReduceTest<Ti, To, FN>(                 \
-            string(TEST_DIR"/reduce/"#FN".test")   \
+            string(TEST_DIR"/reduce/"#FNAME".test")\
             );                                     \
     }
 
-CPP_REDUCE_TESTS(sum, float, float);
-CPP_REDUCE_TESTS(min, float, float);
-CPP_REDUCE_TESTS(max, float, float);
-CPP_REDUCE_TESTS(anytrue, float, unsigned char);
-CPP_REDUCE_TESTS(alltrue, float, unsigned char);
-CPP_REDUCE_TESTS(count, float, unsigned);
+CPP_REDUCE_TESTS(sum, sum, float, float);
+CPP_REDUCE_TESTS(min, min, float, float);
+CPP_REDUCE_TESTS(max, max, float, float);
+CPP_REDUCE_TESTS(anyTrue, any_true, float, unsigned char);
+CPP_REDUCE_TESTS(allTrue, all_true, float, unsigned char);
+CPP_REDUCE_TESTS(count, count, float, unsigned);
 
 TEST(Reduce, Test_Product_Global)
 {
@@ -321,36 +331,106 @@ TEST(Reduce, Test_max_Global)
     delete[] h_a;
 }
 
-TEST(Reduce, Test_All_Global)
+
+template<typename T>
+void typed_assert_eq(T lhs, T rhs, bool both = true)
 {
-    int num = 10000;
-    af::array a = af::round(2 * af::randu(num, 1));
-
-    char res = af::alltrue<char>(a);
-    float *h_a = a.host<float>();
-    char gold = 1;
-
-    for (int i = 0; i < num; i++) {
-        gold = gold && h_a[i];
-    }
-
-    ASSERT_EQ(gold, res);
-    delete[] h_a;
+    ASSERT_EQ(lhs, rhs);
 }
 
-TEST(Reduce, Test_Any_Global)
+template<>
+void typed_assert_eq<float>(float lhs, float rhs, bool both)
 {
-    int num = 10000;
-    af::array a = af::round(2 * af::randu(num, 1));
+    ASSERT_FLOAT_EQ(lhs, rhs);
+}
 
-    char res = af::anytrue<char>(a);
-    float *h_a = a.host<float>();
-    char gold = 0;
+template<>
+void typed_assert_eq<double>(double lhs, double rhs, bool both)
+{
+    ASSERT_DOUBLE_EQ(lhs, rhs);
+}
 
-    for (int i = 0; i < num; i++) {
-        gold = gold || h_a[i];
+template<>
+void typed_assert_eq<af::cfloat>(af::cfloat lhs, af::cfloat rhs, bool both)
+{
+    ASSERT_FLOAT_EQ(real(lhs), real(rhs));
+    if(both)
+        ASSERT_FLOAT_EQ(imag(lhs), imag(rhs));
+
+}
+
+template<>
+void typed_assert_eq<af::cdouble>(af::cdouble lhs, af::cdouble rhs, bool both)
+{
+    ASSERT_DOUBLE_EQ(real(lhs), real(rhs));
+    if(both)
+        ASSERT_DOUBLE_EQ(imag(lhs), imag(rhs));
+}
+
+TYPED_TEST(Reduce, Test_All_Global)
+{
+    if (noDoubleTests<TypeParam>()) return;
+
+    // Input size test
+    for(int i = 1; i < 1000; i+=100) {
+        int num = 10 * i;
+        vector<TypeParam> h_vals(num, (TypeParam)true);
+        array a(2, num/2, &h_vals.front());
+
+        TypeParam res = af::allTrue<TypeParam>(a);
+        typed_assert_eq((TypeParam)true, res, false);
+
+        h_vals[3] = false;
+        a = array(2, num/2, &h_vals.front());
+
+        res = af::allTrue<TypeParam>(a);
+        typed_assert_eq((TypeParam)false, res, false);
     }
 
-    ASSERT_EQ(gold, res);
-    delete[] h_a;
+    // false value location test
+    int num = 10000;
+    vector<TypeParam> h_vals(num, (TypeParam)true);
+    for(int i = 1; i < 10000; i+=100) {
+        h_vals[i] = false;
+        array a(2, num/2, &h_vals.front());
+
+        TypeParam res = af::allTrue<TypeParam>(a);
+        typed_assert_eq((TypeParam)false, res, false);
+
+        h_vals[i] = true;
+    }
+}
+
+TYPED_TEST(Reduce, Test_Any_Global)
+{
+    if (noDoubleTests<TypeParam>()) return;
+
+    // Input size test
+    for(int i = 1; i < 1000; i+=100) {
+        int num = 10 * i;
+        vector<TypeParam> h_vals(num, (TypeParam)false);
+        array a(2, num/2, &h_vals.front());
+
+        TypeParam res = af::anyTrue<TypeParam>(a);
+        typed_assert_eq((TypeParam)false, res, false);
+
+        h_vals[3] = true;
+        a = array(2, num/2, &h_vals.front());
+
+        res = af::anyTrue<TypeParam>(a);
+        typed_assert_eq((TypeParam)true, res, false);
+    }
+
+    // true value location test
+    int num = 10000;
+    vector<TypeParam> h_vals(num, (TypeParam)false);
+    for(int i = 1; i < 10000; i+=100) {
+        h_vals[i] = true;
+        array a(2, num/2, &h_vals.front());
+
+        TypeParam res = af::anyTrue<TypeParam>(a);
+        typed_assert_eq((TypeParam)true, res, false);
+
+        h_vals[i] = false;
+    }
 }

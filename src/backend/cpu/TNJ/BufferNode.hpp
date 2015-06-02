@@ -27,17 +27,17 @@ namespace TNJ
     protected:
         shared_ptr<T> ptr;
         unsigned m_bytes;
-        dim_type off;
-        dim_type strides[4];
-        dim_type dims[4];
+        dim_t off;
+        dim_t strides[4];
+        dim_t dims[4];
 
     public:
 
         BufferNode(shared_ptr<T> data,
                    unsigned bytes,
-                   dim_type data_off,
-                   const dim_type *dms,
-                   const dim_type *strs) :
+                   dim_t data_off,
+                   const dim_t *dms,
+                   const dim_t *strs) :
             Node(),
             ptr(data),
             m_bytes(bytes),
@@ -51,11 +51,11 @@ namespace TNJ
 
         void *calc(int x, int y, int z, int w)
         {
-            dim_type l_off = 0;
-            l_off += (w < dims[3]) * w * strides[3];
-            l_off += (z < dims[2]) * z * strides[2];
-            l_off += (y < dims[1]) * y * strides[1];
-            l_off += (x < dims[0]) * x;
+            dim_t l_off = 0;
+            l_off += (w < (int)dims[3]) * w * strides[3];
+            l_off += (z < (int)dims[2]) * z * strides[2];
+            l_off += (y < (int)dims[1]) * y * strides[1];
+            l_off += (x < (int)dims[0]) * x;
             return (void *)(ptr.get() + off + l_off);
         }
 
@@ -70,10 +70,10 @@ namespace TNJ
             return;
         }
 
-        void reset()
+        void reset(bool reset_off=true)
         {
             m_is_eval = false;
-            off = 0;
+            if (reset_off) off = 0;
         }
     };
 

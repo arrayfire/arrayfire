@@ -42,7 +42,7 @@ unsigned reverse(unsigned x)
 }
 
 template<class ty>
-void read_idx(std::vector<dim_type> &dims, std::vector<ty> &data, const char *name)
+void read_idx(std::vector<dim_t> &dims, std::vector<ty> &data, const char *name)
 {
     std::ifstream f(name, std::ios::in | std::ios::binary);
     if (!f.is_open()) throw std::runtime_error("Unable to open file");
@@ -59,7 +59,7 @@ void read_idx(std::vector<dim_type> &dims, std::vector<ty> &data, const char *na
 
     // Read the dimensions
     size_t elem = 1;
-    dims = std::vector<dim_type>(numdims);
+    dims = std::vector<dim_t>(numdims);
     for (unsigned i = 0; i < numdims; i++) {
         f.read(d.bytes, sizeof(d.bytes));
 
@@ -68,7 +68,7 @@ void read_idx(std::vector<dim_type> &dims, std::vector<ty> &data, const char *na
         unsigned dim = reverse(d.dim);
 
         elem *= dim;
-        dims[i] = (dim_type)dim;
+        dims[i] = (dim_t)dim;
     }
 
     // Read the data

@@ -17,6 +17,9 @@
 #include <debug_cuda.hpp>
 #include "config.hpp"
 #include <memory.hpp>
+#include <boost/scoped_ptr.hpp>
+
+using boost::scoped_ptr;
 
 namespace cuda
 {
@@ -141,8 +144,8 @@ namespace kernel
 
         Param<To> tmp = out;
 
-        dim_type tmp_elements = 1;
         if (blocks_dim[dim] > 1) {
+            int tmp_elements = 1;
             tmp.dims[dim] = blocks_dim[dim];
 
             for (int k = 0; k < 4; k++) tmp_elements *= tmp.dims[k];
@@ -167,66 +170,61 @@ namespace kernel
 
     }
 
-
-    template<typename To>
-    __inline__ __device__ void assign_vol(volatile To *s_ptr_vol, To &tmp)
+    template<typename To, af_op_t op>
+    __device__ void warp_reduce_sync(To *s_ptr, uint tidx)
     {
-        *s_ptr_vol = tmp;
+
     }
 
-    template<> __inline__ __device__
-    void assign_vol<cfloat>(volatile cfloat *s_ptr_vol, cfloat &tmp)
+#if (__CUDA_ARCH__ >= 300)
+    template<typename To, af_op_t op>
+    __device__ void warp_reduce_shfl(To *s_ptr, uint tidx)
     {
-        s_ptr_vol->x = tmp.x;
-        s_ptr_vol->y = tmp.y;
-    }
 
-    template<> __inline__ __device__
-    void assign_vol<cdouble>(volatile cdouble *s_ptr_vol, cdouble &tmp)
-    {
-        s_ptr_vol->x = tmp.x;
-        s_ptr_vol->y = tmp.y;
     }
-
-    template<typename To>
-    __inline__ __device__ void assign_vol(To &dst, volatile To *s_ptr_vol)
-    {
-        dst = *s_ptr_vol;
-    }
-
-    template<> __inline__ __device__
-    void assign_vol<cfloat>(cfloat &dst, volatile cfloat *s_ptr_vol)
-    {
-        dst.x = s_ptr_vol->x;
-        dst.y = s_ptr_vol->y;
-    }
-
-    template<> __inline__ __device__
-    void assign_vol<cdouble>(cdouble &dst, volatile cdouble *s_ptr_vol)
-    {
-        dst.x = s_ptr_vol->x;
-        dst.y = s_ptr_vol->y;
-    }
+#endif
 
     template<typename To, af_op_t op>
-    __device__ void warp_reduce(To *s_ptr, uint tidx)
+    struct WarpReduce
     {
-        Binary<To, op> reduce;
-        volatile To *s_ptr_vol = s_ptr + tidx;
-        To tmp = *s_ptr;
-
+        __device__ To operator()(To *s_ptr, uint tidx)
+        {
+            Binary<To, op> reduce;
 #pragma unroll
-        for (int n = 16; n >= 1; n >>= 1) {
-            if (tidx < n) {
-                To val1, val2;
-                assign_vol(val1, s_ptr_vol);
-                assign_vol(val2, s_ptr_vol + n);
-                tmp = reduce(val1, val2);
-                assign_vol(s_ptr_vol, tmp);
+            for (int n = 16; n >= 1; n >>= 1) {
+                if (tidx < n) {
+                    s_ptr[tidx] = reduce(s_ptr[tidx], s_ptr[tidx + n]);
+                }
+                __syncthreads();
             }
+            return s_ptr[tidx];
         }
-    }
+    };
 
+
+#if (__CUDA_ARCH__ >= 300)
+#define WARP_REDUCE(T)                                  \
+    template<af_op_t op>                                \
+    struct WarpReduce<T, op>                            \
+    {                                                   \
+        __device__ T operator()(T *s_ptr, uint tidx)    \
+        {                                               \
+            Binary<T, op> reduce;                       \
+                                                        \
+            T val = s_ptr[tidx];                        \
+                                                        \
+            for (int n = 16; n >= 1; n >>= 1) {         \
+                val = reduce(val, __shfl_down(val, n)); \
+            }                                           \
+            return val;                                 \
+        }                                               \
+    };                                                  \
+
+    WARP_REDUCE(float)
+    WARP_REDUCE(int)
+    WARP_REDUCE(uchar) // upcasted to int
+    WARP_REDUCE(char)  // upcasted to int
+#endif
 
     template<typename Ti, typename To, af_op_t op, uint DIMX>
     __global__
@@ -287,9 +285,10 @@ namespace kernel
             __syncthreads();
         }
 
-        warp_reduce<To, op>(s_ptr, tidx);
+        out_val = WarpReduce<To, op>()(s_ptr, tidx);
+
         if (tidx == 0) {
-            optr[blockIdx_x] = s_ptr[0];
+            optr[blockIdx_x] = out_val;
         }
     }
 
@@ -359,7 +358,7 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op>
-    void reduce(Param<To> out, CParam<Ti> in, dim_type dim)
+    void reduce(Param<To> out, CParam<Ti> in, int dim)
     {
         switch (dim) {
         case 0: return reduce_first<Ti, To, op   >(out, in);
@@ -372,7 +371,7 @@ namespace kernel
     template<typename Ti, typename To, af_op_t op>
     To reduce_all(CParam<Ti> in)
     {
-        dim_type in_elements = in.strides[3] * in.dims[3];
+        int in_elements = in.strides[3] * in.dims[3];
 
         // FIXME: Use better heuristics to get to the optimum number
         if (in_elements > 4096) {
@@ -395,7 +394,6 @@ namespace kernel
             uint threads_y = THREADS_PER_BLOCK / threads_x;
 
             Param<To> tmp;
-            To *h_ptr = NULL;
 
             uint blocks_x = divup(in.dims[0], threads_x * REPEAT);
             uint blocks_y = divup(in.dims[1], threads_y);
@@ -408,39 +406,39 @@ namespace kernel
                 tmp.strides[k] = tmp.dims[k - 1] * tmp.strides[k - 1];
             }
 
-            dim_type tmp_elements = tmp.strides[3] * tmp.dims[3];
+            int tmp_elements = tmp.strides[3] * tmp.dims[3];
 
             tmp.ptr = memAlloc<To>(tmp_elements);
             reduce_first_launcher<Ti, To, op>(tmp, in, blocks_x, blocks_y, threads_x);
 
-            h_ptr = new To[tmp_elements];
+            scoped_ptr<To> h_ptr(new To[tmp_elements]);
+            To* h_ptr_raw = h_ptr.get();
 
-            CUDA_CHECK(cudaMemcpy(h_ptr, tmp.ptr, tmp_elements * sizeof(To), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpy(h_ptr_raw, tmp.ptr, tmp_elements * sizeof(To), cudaMemcpyDeviceToHost));
             memFree(tmp.ptr);
 
             Binary<To, op> reduce;
             To out = reduce.init();
             for (int i = 0; i < tmp_elements; i++) {
-                out = reduce(out, h_ptr[i]);
+                out = reduce(out, h_ptr_raw[i]);
             }
 
-            delete[] h_ptr;
             return out;
 
         } else {
 
-            Ti *h_ptr = new Ti[in_elements];
-            CUDA_CHECK(cudaMemcpy(h_ptr, in.ptr, in_elements * sizeof(Ti), cudaMemcpyDeviceToHost));
+            scoped_ptr<Ti> h_ptr(new Ti[in_elements]);
+            Ti* h_ptr_raw = h_ptr.get();
+            CUDA_CHECK(cudaMemcpy(h_ptr_raw, in.ptr, in_elements * sizeof(Ti), cudaMemcpyDeviceToHost));
 
             Transform<Ti, To, op> transform;
             Binary<To, op> reduce;
             To out = reduce.init();
 
             for (int i = 0; i < in_elements; i++) {
-                out = reduce(out, transform(h_ptr[i]));
+                out = reduce(out, transform(h_ptr_raw[i]));
             }
 
-            delete[] h_ptr;
             return out;
         }
     }

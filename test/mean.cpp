@@ -28,7 +28,7 @@ class Mean : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, char, uchar> TestTypes;
+typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, intl, uintl, char, uchar> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Mean, TestTypes);
@@ -48,17 +48,30 @@ struct c32HelperType {
 };
 
 template<typename T>
-struct meanOutType {
-    typedef typename cond_type<is_same_type<T, cdouble>::value,
-                                              cdouble,
-                                              typename c32HelperType<T>::type >::type type;
+struct elseType {
+   typedef typename cond_type< is_same_type<T, uintl>::value ||
+                               is_same_type<T, intl>::value,
+                                              double,
+                                              T>::type type;
 };
 
-template<typename T, dim_type dim>
-void meanDimTest(string pFileName)
+template<typename T>
+struct meanOutType {
+   typedef typename cond_type< is_same_type<T, float>::value ||
+                               is_same_type<T, int>::value ||
+                               is_same_type<T, uint>::value ||
+                               is_same_type<T, uchar>::value ||
+                               is_same_type<T, char>::value,
+                                              float,
+                              typename elseType<T>::type>::type type;
+};
+
+template<typename T>
+void meanDimTest(string pFileName, dim_t dim)
 {
     typedef typename meanOutType<T>::type outType;
     if (noDoubleTests<T>()) return;
+    if (noDoubleTests<outType>()) return;
 
     vector<af::dim4>      numDims;
     vector<vector<int> >        in;
@@ -90,38 +103,38 @@ void meanDimTest(string pFileName)
 
     // cleanup
     delete[] outData;
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(inArray));
-    ASSERT_EQ(AF_SUCCESS, af_destroy_array(outArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+    ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
 TYPED_TEST(Mean, Dim0Matrix)
 {
-    meanDimTest<TypeParam, 0>(string(TEST_DIR"/mean/mean_dim0_matrix.test"));
+    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim0_matrix.test"), 0);
 }
 
 TYPED_TEST(Mean, Dim1Cube)
 {
-    meanDimTest<TypeParam, 1>(string(TEST_DIR"/mean/mean_dim1_cube.test"));
+    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim1_cube.test"), 1);
 }
 
 TYPED_TEST(Mean, Dim0HyperCube)
 {
-    meanDimTest<TypeParam, 0>(string(TEST_DIR"/mean/mean_dim0_hypercube.test"));
+    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim0_hypercube.test"), 0);
 }
 
 TYPED_TEST(Mean, Dim2Matrix)
 {
-    meanDimTest<TypeParam, 2>(string(TEST_DIR"/mean/mean_dim2_matrix.test"));
+    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim2_matrix.test"), 2);
 }
 
 TYPED_TEST(Mean, Dim2Cube)
 {
-    meanDimTest<TypeParam, 2>(string(TEST_DIR"/mean/mean_dim2_cube.test"));
+    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim2_cube.test"), 2);
 }
 
 TYPED_TEST(Mean, Dim2HyperCube)
 {
-    meanDimTest<TypeParam, 2>(string(TEST_DIR"/mean/mean_dim2_hypercube.test"));
+    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim2_hypercube.test"), 2);
 }
 
 //////////////////////////////// CPP ////////////////////////////////////
@@ -134,6 +147,7 @@ void testCPPMean(T const_value, af::dim4 dims)
 {
     typedef typename meanOutType<T>::type outType;
     if (noDoubleTests<T>()) return;
+    if (noDoubleTests<outType>()) return;
 
     using af::array;
     using af::mean;
@@ -143,9 +157,9 @@ void testCPPMean(T const_value, af::dim4 dims)
     outType gold = outType(0);
     //for(auto i:hundred) gold += i;
     for(int i = 0; i < (int)hundred.size(); i++) {
-        gold += hundred[i];
+        gold = gold + hundred[i];
     }
-    gold /= dims.elements();
+    gold = gold / dims.elements();
 
     array a(dims, &(hundred.front()));
     outType output = mean<outType>(a);

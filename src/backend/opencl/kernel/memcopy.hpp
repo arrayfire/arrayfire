@@ -35,16 +35,16 @@ namespace kernel
 
     typedef struct
     {
-        dim_type dim[4];
+        dim_t dim[4];
     } dims_t;
 
     static const uint DIM0 = 32;
     static const uint DIM1 =  8;
 
     template<typename T>
-    void memcopy(cl::Buffer out, const dim_type *ostrides,
-                 const cl::Buffer in, const dim_type *idims,
-                 const dim_type *istrides, dim_type offset, uint ndims)
+    void memcopy(cl::Buffer out, const dim_t *ostrides,
+                 const cl::Buffer in, const dim_t *idims,
+                 const dim_t *istrides, int offset, uint ndims)
     {
         try {
             static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -76,8 +76,8 @@ namespace kernel
                 local_size[1]  = 1;
             }
 
-            dim_type groups_0 = divup(idims[0], local_size[0]);
-            dim_type groups_1 = divup(idims[1], local_size[1]);
+            int groups_0 = divup(idims[0], local_size[0]);
+            int groups_1 = divup(idims[1], local_size[1]);
 
             NDRange local(local_size[0], local_size[1]);
             NDRange global(groups_0 * idims[2] * local_size[0],
@@ -85,11 +85,12 @@ namespace kernel
 
             auto memcopy_kernel = make_kernel< Buffer, dims_t,
                                                Buffer, dims_t,
-                                               dims_t, dim_type,
-                                               dim_type, dim_type >(*cpyKernels[device]);
+                                               dims_t, int,
+                                               int, int >(*cpyKernels[device]);
 
             memcopy_kernel(EnqueueArgs(getQueue(), global, local),
                 out, _ostrides, in, _idims, _istrides, offset, groups_0, groups_1);
+            CL_DEBUG_FINISH(getQueue());
         }
         catch (cl::Error err) {
             CL_TO_AF_ERROR(err);
@@ -98,7 +99,7 @@ namespace kernel
     }
 
     template<typename inType, typename outType, bool same_dims>
-    void copy(Param dst, const Param src, dim_type ndims, outType default_value, double factor)
+    void copy(Param dst, const Param src, int ndims, outType default_value, double factor)
     {
         try {
             static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -136,8 +137,8 @@ namespace kernel
                 local_size[1] = 1;
             }
 
-            size_t blk_x = divup(dst.info.dims[0], local_size[0]);
-            size_t blk_y = divup(dst.info.dims[1], local_size[1]);
+            int blk_x = divup(dst.info.dims[0], local_size[0]);
+            int blk_y = divup(dst.info.dims[1], local_size[1]);
 
             NDRange global(blk_x * dst.info.dims[2] * DIM0,
                     blk_y * dst.info.dims[3] * DIM1);
@@ -146,21 +147,22 @@ namespace kernel
             if (same_dims) {
                 trgt_dims= {{dst.info.dims[0], dst.info.dims[1], dst.info.dims[2], dst.info.dims[3]}};
             } else {
-                dim_type trgt_l = std::min(dst.info.dims[3], src.info.dims[3]);
-                dim_type trgt_k = std::min(dst.info.dims[2], src.info.dims[2]);
-                dim_type trgt_j = std::min(dst.info.dims[1], src.info.dims[1]);
-                dim_type trgt_i = std::min(dst.info.dims[0], src.info.dims[0]);
+                dim_t trgt_l = std::min(dst.info.dims[3], src.info.dims[3]);
+                dim_t trgt_k = std::min(dst.info.dims[2], src.info.dims[2]);
+                dim_t trgt_j = std::min(dst.info.dims[1], src.info.dims[1]);
+                dim_t trgt_i = std::min(dst.info.dims[0], src.info.dims[0]);
                 trgt_dims= {{trgt_i, trgt_j, trgt_k, trgt_l}};
             }
 
             auto copyOp = make_kernel<Buffer, KParam, Buffer, KParam,
                                       outType, float, dims_t,
-                                      dim_type, dim_type
+                                      int, int
                                      >(*cpyKernels[device]);
 
             copyOp(EnqueueArgs(getQueue(), global, local),
                    *dst.data, dst.info, *src.data, src.info,
                    default_value, (float)factor, trgt_dims, blk_x, blk_y);
+            CL_DEBUG_FINISH(getQueue());
         } catch (cl::Error err) {
             CL_TO_AF_ERROR(err);
             throw;

@@ -11,7 +11,7 @@
 #include <af/image.h>
 #include <err_common.hpp>
 
-af_err af_colorspace(af_array *out, const af_array image, af_cspace_t to, af_cspace_t from)
+af_err af_color_space(af_array *out, const af_array image, const af_cspace_t to, const af_cspace_t from)
 {
     bool hsv2rgb  = (from==AF_HSV  && to==AF_RGB );
     bool rgb2hsv  = (from==AF_RGB  && to==AF_HSV );

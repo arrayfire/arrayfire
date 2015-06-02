@@ -38,6 +38,8 @@ af_err af_where(af_array *idx, const af_array in)
         case c64: res = where<cdouble>(in); break;
         case s32: res = where<int    >(in); break;
         case u32: res = where<uint   >(in); break;
+        case s64: res = where<intl   >(in); break;
+        case u64: res = where<uintl  >(in); break;
         case u8 : res = where<uchar  >(in); break;
         case b8 : res = where<char   >(in); break;
         default:

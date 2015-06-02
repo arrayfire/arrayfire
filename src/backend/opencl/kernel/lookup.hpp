@@ -32,11 +32,11 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type THREADS_X = 32;
-static const dim_type THREADS_Y = 8;
+static const int THREADS_X = 32;
+static const int THREADS_Y = 8;
 
 template<typename in_t, typename idx_t, unsigned dim>
-void lookup(Param out, const Param in, const Param indices, dim_type nDims)
+void lookup(Param out, const Param in, const Param indices, int nDims)
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -65,8 +65,8 @@ void lookup(Param out, const Param in, const Param indices, dim_type nDims)
 
         NDRange local(THREADS_X, THREADS_Y);
 
-        dim_type blk_x = divup(out.info.dims[0], THREADS_X);
-        dim_type blk_y = divup(out.info.dims[1], THREADS_Y);
+        int blk_x = divup(out.info.dims[0], THREADS_X);
+        int blk_y = divup(out.info.dims[1], THREADS_Y);
 
         NDRange global(blk_x * out.info.dims[2] * THREADS_X,
                        blk_y * out.info.dims[3] * THREADS_Y);
@@ -74,7 +74,7 @@ void lookup(Param out, const Param in, const Param indices, dim_type nDims)
         auto arrIdxOp = make_kernel<Buffer, KParam,
                                     Buffer, KParam,
                                     Buffer, KParam,
-                                    dim_type, dim_type>(*aiKernels[device]);
+                                    int, int>(*aiKernels[device]);
 
         arrIdxOp(EnqueueArgs(getQueue(), global, local),
                 *out.data, out.info, *in.data, in.info, *indices.data, indices.info, blk_x, blk_y);

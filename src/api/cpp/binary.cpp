@@ -24,11 +24,12 @@ namespace af
         return array(out);                              \
     }
 
-    INSTANTIATE(min, af_minof)
-    INSTANTIATE(max, af_maxof)
-    INSTANTIATE(pow, af_pow  )
-    INSTANTIATE(rem, af_rem  )
-    INSTANTIATE(mod, af_mod  )
+    INSTANTIATE(min , af_minof)
+    INSTANTIATE(max , af_maxof)
+    INSTANTIATE(pow , af_pow  )
+    INSTANTIATE(root, af_root )
+    INSTANTIATE(rem , af_rem  )
+    INSTANTIATE(mod , af_mod  )
 
     INSTANTIATE(complex, af_cplx2)
     INSTANTIATE(atan2, af_atan2)
@@ -47,6 +48,7 @@ namespace af
     WRAPPER(min)
     WRAPPER(max)
     WRAPPER(pow)
+    WRAPPER(root)
     WRAPPER(rem)
     WRAPPER(mod)
     WRAPPER(complex)

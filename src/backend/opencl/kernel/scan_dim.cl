@@ -27,7 +27,7 @@ void scan_dim_kernel(__global To *oData, KParam oInfo,
     const int xid = groupId_x * get_local_size(0) + lidx;
     const int yid = groupId_y;
 
-    uint ids[4] = {xid, yid, zid, wid};
+    int ids[4] = {xid, yid, zid, wid};
 
     // There is only one element per group for out
     // There are DIMY elements per group for in
@@ -69,7 +69,7 @@ void scan_dim_kernel(__global To *oData, KParam oInfo,
         l_val[lid] = val;
         barrier(CLK_LOCAL_MEM_FENCE);
 
-        uint start = 0;
+        int start = 0;
         for (int off = 1; off < DIMY; off *= 2) {
 
             if (lidy >= off) val = binOp(val, l_val[lid - off * THREADS_X]);
@@ -83,6 +83,7 @@ void scan_dim_kernel(__global To *oData, KParam oInfo,
 
         val = binOp(val, l_tmp[lidx]);
         if (cond) *oData = val;
+        barrier(CLK_LOCAL_MEM_FENCE);
 
         id_dim += DIMY;
         iData += DIMY * istride_dim;
@@ -116,38 +117,41 @@ void bcast_dim_kernel(__global To *oData, KParam oInfo,
     const int xid = groupId_x * get_local_size(0) + lidx;
     const int yid = groupId_y;
 
-    uint ids[4] = {xid, yid, zid, wid};
-
-    // There is only one element per group for out
-    // There are DIMY elements per group for in
-    // Hence increment ids[dim] just after offseting out and before offsetting in
-    tData += ids[3] * tInfo.strides[3] + ids[2] * tInfo.strides[2] + ids[1] * tInfo.strides[1] + ids[0];
+    int ids[4] = {xid, yid, zid, wid};
     const int groupId_dim = ids[dim];
 
-    ids[dim] = ids[dim] * DIMY * lim + lidy;
-    oData  += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] + ids[1] * oInfo.strides[1] + ids[0];
+    if (groupId_dim != 0) {
 
-    const int id_dim = ids[dim];
-    const int out_dim = oInfo.dims[dim];
+        // There is only one element per group for out
+        // There are DIMY elements per group for in
+        // Hence increment ids[dim] just after offseting out and before offsetting in
+        tData += ids[3] * tInfo.strides[3] + ids[2] * tInfo.strides[2] + ids[1] * tInfo.strides[1] + ids[0];
 
-    bool is_valid =
-        (ids[0] < oInfo.dims[0]) &&
-        (ids[1] < oInfo.dims[1]) &&
-        (ids[2] < oInfo.dims[2]) &&
-        (ids[3] < oInfo.dims[3]);
+        ids[dim] = ids[dim] * DIMY * lim + lidy;
+        oData  += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] + ids[1] * oInfo.strides[1] + ids[0];
 
-    if (!is_valid) return;
-    if (groupId_dim == 0) return;
+        const int id_dim = ids[dim];
+        const int out_dim = oInfo.dims[dim];
 
-    To accum = *(tData - tInfo.strides[dim]);
+        bool is_valid =
+            (ids[0] < oInfo.dims[0]) &&
+            (ids[1] < oInfo.dims[1]) &&
+            (ids[2] < oInfo.dims[2]) &&
+            (ids[3] < oInfo.dims[3]);
 
-    const int ostride_dim = oInfo.strides[dim];
+        if (is_valid) {
 
-    for (int k = 0, id = id_dim;
-         is_valid && k < lim && (id < out_dim);
-         k++, id += DIMY) {
+            To accum = *(tData - tInfo.strides[dim]);
 
-        *oData = binOp(*oData, accum);
-        oData += DIMY * ostride_dim;
+            const int ostride_dim = oInfo.strides[dim];
+
+            for (int k = 0, id = id_dim;
+                 is_valid && k < lim && (id < out_dim);
+                 k++, id += DIMY) {
+
+                *oData = binOp(*oData, accum);
+                oData += DIMY * ostride_dim;
+            }
+        }
     }
 }

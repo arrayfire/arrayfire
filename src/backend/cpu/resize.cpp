@@ -11,6 +11,9 @@
 #include <resize.hpp>
 #include <stdexcept>
 #include <err_cpu.hpp>
+#include <math.hpp>
+#include <types.hpp>
+#include <af/traits.hpp>
 
 namespace cpu
 {
@@ -23,17 +26,28 @@ namespace cpu
      * is to be used only for positive numbers, i m using it here
      * for calculating dimensions of arrays
      */
-    dim_type round2int(float value)
+    dim_t round2int(float value)
     {
-        return (dim_type)(value+0.5f);
+        return (dim_t)(value+0.5f);
     }
+
+    using std::conditional;
+    using std::is_same;
+
+    template<typename T>
+    using wtype_t = typename conditional<is_same<T, double>::value, double, float>::type;
+
+    template<typename T>
+    using vtype_t = typename conditional<is_complex<T>::value,
+                                         T, wtype_t<T>
+                                        >::type;
 
     template<typename T, af_interp_type method>
     struct resize_op
     {
         void operator()(T *outPtr, const T *inPtr, const af::dim4 &odims, const af::dim4 &idims,
                   const af::dim4 &ostrides, const af::dim4 &istrides,
-                  const dim_type x, const dim_type y)
+                  const dim_t x, const dim_t y)
         {
             return;
         }
@@ -44,22 +58,22 @@ namespace cpu
     {
         void operator()(T *outPtr, const T *inPtr, const af::dim4 &odims, const af::dim4 &idims,
                 const af::dim4 &ostrides, const af::dim4 &istrides,
-                const dim_type x, const dim_type y)
+                const dim_t x, const dim_t y)
         {
             // Compute Indices
-            dim_type i_x = round2int((float)x / (odims[0] / (float)idims[0]));
-            dim_type i_y = round2int((float)y / (odims[1] / (float)idims[1]));
+            dim_t i_x = round2int((float)x / (odims[0] / (float)idims[0]));
+            dim_t i_y = round2int((float)y / (odims[1] / (float)idims[1]));
 
             if (i_x >= idims[0]) i_x = idims[0] - 1;
             if (i_y >= idims[1]) i_y = idims[1] - 1;
 
-            dim_type i_off = i_y * istrides[1] + i_x;
-            dim_type o_off =   y * ostrides[1] + x;
+            dim_t i_off = i_y * istrides[1] + i_x;
+            dim_t o_off =   y * ostrides[1] + x;
             // Copy values from all channels
-            for(dim_type w = 0; w < odims[3]; w++) {
-                dim_type wost = w * ostrides[3];
-                dim_type wist = w * istrides[3];
-                for(dim_type z = 0; z < odims[2]; z++) {
+            for(dim_t w = 0; w < odims[3]; w++) {
+                dim_t wost = w * ostrides[3];
+                dim_t wist = w * istrides[3];
+                for(dim_t z = 0; z < odims[2]; z++) {
                     outPtr[o_off + z * ostrides[2] + wost] = inPtr[i_off + z * istrides[2] + wist];
                 }
             }
@@ -71,14 +85,14 @@ namespace cpu
     {
         void operator()(T *outPtr, const T *inPtr, const af::dim4 &odims, const af::dim4 &idims,
                 const af::dim4 &ostrides, const af::dim4 &istrides,
-                const dim_type x, const dim_type y)
+                const dim_t x, const dim_t y)
         {
             // Compute Indices
             float f_x = (float)x / (odims[0] / (float)idims[0]);
             float f_y = (float)y / (odims[1] / (float)idims[1]);
 
-            dim_type i1_x  = floor(f_x);
-            dim_type i1_y  = floor(f_y);
+            dim_t i1_x  = floor(f_x);
+            dim_t i1_y  = floor(f_y);
 
             if (i1_x >= idims[0]) i1_x = idims[0] - 1;
             if (i1_y >= idims[1]) i1_y = idims[1] - 1;
@@ -86,26 +100,30 @@ namespace cpu
             float b   = f_x - i1_x;
             float a   = f_y - i1_y;
 
-            dim_type i2_x  = (i1_x + 1 >= idims[0] ? idims[0] - 1 : i1_x + 1);
-            dim_type i2_y  = (i1_y + 1 >= idims[1] ? idims[1] - 1 : i1_y + 1);
+            dim_t i2_x  = (i1_x + 1 >= idims[0] ? idims[0] - 1 : i1_x + 1);
+            dim_t i2_y  = (i1_y + 1 >= idims[1] ? idims[1] - 1 : i1_y + 1);
 
-            dim_type o_off = y * ostrides[1] + x;
+            typedef typename dtype_traits<T>::base_type BT;
+            typedef wtype_t<BT> WT;
+            typedef vtype_t<T> VT;
+
+            dim_t o_off = y * ostrides[1] + x;
             // Copy values from all channels
-            for(dim_type w = 0; w < odims[3]; w++) {
-                dim_type wst = w * istrides[3];
-                for(dim_type z = 0; z < odims[2]; z++) {
-                    dim_type zst = z * istrides[2];
-                    dim_type channel_off = zst + wst;
-                    T p1 = inPtr[i1_y * istrides[1] + i1_x + channel_off];
-                    T p2 = inPtr[i2_y * istrides[1] + i1_x + channel_off];
-                    T p3 = inPtr[i1_y * istrides[1] + i2_x + channel_off];
-                    T p4 = inPtr[i2_y * istrides[1] + i2_x + channel_off];
+            for(dim_t w = 0; w < odims[3]; w++) {
+                dim_t wst = w * istrides[3];
+                for(dim_t z = 0; z < odims[2]; z++) {
+                    dim_t zst = z * istrides[2];
+                    dim_t channel_off = zst + wst;
+                    VT p1 = inPtr[i1_y * istrides[1] + i1_x + channel_off];
+                    VT p2 = inPtr[i2_y * istrides[1] + i1_x + channel_off];
+                    VT p3 = inPtr[i1_y * istrides[1] + i2_x + channel_off];
+                    VT p4 = inPtr[i2_y * istrides[1] + i2_x + channel_off];
 
                     outPtr[o_off + z * ostrides[2] + w * ostrides[3]] =
-                                    (1.0f - a) * (1.0f - b) * p1 +
-                                         a     * (1.0f - b) * p2 +
-                                    (1.0f - a) *      b     * p3 +
-                                         a     *      b     * p4;
+                                    scalar<WT>((1.0f - a) * (1.0f - b)) * p1 +
+                                    scalar<WT>((    a   ) * (1.0f - b)) * p2 +
+                                    scalar<WT>((1.0f - a) * (    b   )) * p3 +
+                                    scalar<WT>((    a   ) * (    b   )) * p4;
                 }
             }
         }
@@ -116,15 +134,15 @@ namespace cpu
                  const af::dim4 &ostrides, const af::dim4 &istrides)
     {
         resize_op<T, method> op;
-        for(dim_type y = 0; y < odims[1]; y++) {
-            for(dim_type x = 0; x < odims[0]; x++) {
+        for(dim_t y = 0; y < odims[1]; y++) {
+            for(dim_t x = 0; x < odims[0]; x++) {
                 op(outPtr, inPtr, odims, idims, ostrides, istrides, x, y);
             }
         }
     }
 
     template<typename T>
-    Array<T> resize(const Array<T> &in, const dim_type odim0, const dim_type odim1,
+    Array<T> resize(const Array<T> &in, const dim_t odim0, const dim_t odim1,
                     const af_interp_type method)
     {
         af::dim4 idims = in.dims();
@@ -155,16 +173,18 @@ namespace cpu
 
 
 #define INSTANTIATE(T)                                                                            \
-    template Array<T> resize<T> (const Array<T> &in, const dim_type odim0, const dim_type odim1, \
+    template Array<T> resize<T> (const Array<T> &in, const dim_t odim0, const dim_t odim1, \
                                  const af_interp_type method);
 
 
     INSTANTIATE(float)
     INSTANTIATE(double)
-    //INSTANTIATE(cfloat)
-    //INSTANTIATE(cdouble)
+    INSTANTIATE(cfloat)
+    INSTANTIATE(cdouble)
     INSTANTIATE(int)
     INSTANTIATE(uint)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
 }

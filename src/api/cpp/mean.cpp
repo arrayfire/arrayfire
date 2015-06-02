@@ -10,20 +10,21 @@
 #include <af/dim4.hpp>
 #include <af/statistics.h>
 #include <af/algorithm.h>
+#include <af/array.h>
 #include "error.hpp"
 #include "common.hpp"
 
 namespace af
 {
 
-array mean(const array &in, dim_type dim)
+array mean(const array &in, const dim_t dim)
 {
     af_array temp = 0;
     AF_THROW(af_mean(&temp, in.get(), getFNSD(dim, in.dims())));
     return array(temp);
 }
 
-array mean(const array &in, const array &weights, dim_type dim)
+array mean(const array &in, const array &weights, const dim_t dim)
 {
     af_array temp = 0;
     AF_THROW(af_mean_weighted(&temp, in.get(), weights.get(), getFNSD(dim, in.dims())));
@@ -49,28 +50,28 @@ template<> AFAPI af_cfloat mean(const array& in)
 {
     double real, imag;
     AF_THROW(af_mean_all(&real, &imag, in.get()));
-    return std::complex<float>((float)real, (float)imag);
+    return af_cfloat((float)real, (float)imag);
 }
 
 template<> AFAPI af_cdouble mean(const array& in)
 {
     double real, imag;
     AF_THROW(af_mean_all(&real, &imag, in.get()));
-    return std::complex<double>(real, imag);
+    return af_cdouble(real, imag);
 }
 
 template<> AFAPI af_cfloat mean(const array& in, const array& weights)
 {
     double real, imag;
     AF_THROW(af_mean_all_weighted(&real, &imag, in.get(), weights.get()));
-    return std::complex<float>((float)real, (float)imag);
+    return af_cfloat((float)real, (float)imag);
 }
 
 template<> AFAPI af_cdouble mean(const array& in, const array& weights)
 {
     double real, imag;
     AF_THROW(af_mean_all_weighted(&real, &imag, in.get(), weights.get()));
-    return std::complex<double>(real, imag);
+    return af_cdouble(real, imag);
 }
 
 INSTANTIATE_MEAN(float);

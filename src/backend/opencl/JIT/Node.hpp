@@ -8,8 +8,8 @@
  ********************************************************/
 
 #pragma once
+#include <platform.hpp>
 #include <af/array.h>
-#include <cl.hpp>
 #include <optypes.hpp>
 #include <string>
 #include <vector>
@@ -66,7 +66,7 @@ namespace JIT
 
         virtual void resetFlags() {}
 
-        virtual bool isLinear(dim_type dims[4]) { return true; }
+        virtual bool isLinear(dim_t dims[4]) { return true; }
 
         std::string getTypeStr() { return m_type_str; }
 

@@ -9,6 +9,9 @@
 
 // Include this before af/opencl.h
 // Causes conflict between system cl.hpp and opencl/cl.hpp
+#if defined(WITH_GRAPHICS)
+#include <graphics_common.hpp>
+#endif
 #include <cl.hpp>
 
 #include <af/version.h>
@@ -20,7 +23,6 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include <iostream>
 #include <stdexcept>
 #include <cstring>
 #include <algorithm>
@@ -40,6 +42,13 @@ using cl::Device;
 
 namespace opencl
 {
+
+#if defined (OS_MAC)
+static const std::string CL_GL_SHARING_EXT = "cl_APPLE_gl_sharing";
+#else
+static const std::string CL_GL_SHARING_EXT = "cl_khr_gl_sharing";
+#endif
+
 static const char *get_system(void)
 {
     return
@@ -108,9 +117,11 @@ DeviceManager::DeviceManager()
         unsigned nDevices = 0;
         for (auto devType : DEVC_TYPES) {
             for (auto &platform : platforms) {
+
                 cl_context_properties cps[3] = {CL_CONTEXT_PLATFORM,
-                                                (cl_context_properties)(platform()),
-                                                0};
+                    (cl_context_properties)(platform()),
+                    0};
+
                 std::vector<Device> devs;
                 try {
                     platform.getDevices(devType, &devs);
@@ -128,6 +139,7 @@ DeviceManager::DeviceManager()
                     mContexts.push_back(ctx);
                     mQueues.push_back(cq);
                     mCtxOffsets.push_back(nDevices);
+                    mIsGLSharingOn.push_back(false);
                 }
             }
         }
@@ -147,6 +159,21 @@ DeviceManager::DeviceManager()
     } catch (const cl::Error &error) {
             CL_TO_AF_ERROR(error);
     }
+    /* loop over devices and replace contexts with
+     * OpenGL shared contexts whereever applicable */
+#if defined(WITH_GRAPHICS)
+    // Define AF_DISABLE_GRAPHICS with any value to disable initialization
+    const char* noGraphicsENV = getenv("AF_DISABLE_GRAPHICS");
+    if(!noGraphicsENV) { // If AF_DISABLE_GRAPHICS is not defined
+        try {
+            int devCount = mDevices.size();
+            fg::Window* wHandle = graphics::ForgeManager::getInstance().getMainWindow();
+            for(int i=0; i<devCount; ++i)
+                markDeviceForInterop(i, wHandle);
+        } catch (...) {
+        }
+    }
+#endif
 }
 
 
@@ -186,7 +213,7 @@ static std::string platformMap(std::string &platStr)
 std::string getInfo()
 {
     ostringstream info;
-    info << "ArrayFire v" << AF_VERSION << AF_VERSION_MINOR
+    info << "ArrayFire v" << AF_VERSION
          << " (OpenCL, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
 
     unsigned nDevices = 0;
@@ -217,6 +244,13 @@ std::string getInfo()
     return info.str();
 }
 
+std::string getPlatformName(const cl::Device &device)
+{
+    const Platform &platform = device.getInfo<CL_DEVICE_PLATFORM>();
+    std::string platStr = platform.getInfo<CL_PLATFORM_NAME>();
+    return platformMap(platStr);
+}
+
 int getDeviceCount()
 {
     return DeviceManager::getInstance().mQueues.size();
@@ -243,6 +277,12 @@ const cl::Device& getDevice()
 {
     DeviceManager& devMngr = DeviceManager::getInstance();
     return *(devMngr.mDevices[devMngr.mActiveQId]);
+}
+
+bool isGLSharingSupported()
+{
+    DeviceManager& devMngr = DeviceManager::getInstance();
+    return devMngr.mIsGLSharingOn[devMngr.mActiveQId];
 }
 
 bool isDoubleSupported(int device)
@@ -322,27 +362,110 @@ void sync(int device)
         setDevice(device);
         getQueue().finish();
         setDevice(currDevice);
-    } catch (cl::Error ex) {
+    } catch (const cl::Error &ex) {
         CL_TO_AF_ERROR(ex);
     }
 }
 
+bool checkExtnAvailability(const Device &pDevice, std::string pName)
+{
+    bool ret_val = false;
+    // find the extension required
+    std::string exts = pDevice.getInfo<CL_DEVICE_EXTENSIONS>();
+    std::stringstream ss(exts);
+    std::string item;
+    while (std::getline(ss,item,' ')) {
+        if (item==pName) {
+            ret_val = true;
+            break;
+        }
+    }
+    return ret_val;
 }
 
-namespace afcl
+#if defined(WITH_GRAPHICS)
+void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHandle)
 {
-    cl_context getContext()
-    {
-        return opencl::getContext()();
-    }
+    try {
+        if (device >= (int)mQueues.size() ||
+                device>= (int)DeviceManager::MAX_DEVICES) {
+            throw cl::Error(CL_INVALID_DEVICE, "Invalid device passed for CL-GL Interop");
+        }
+        else {
+            mQueues[device]->finish();
 
-    cl_command_queue getQueue()
-    {
-        return opencl::getQueue()();
-    }
+            // check if the device has CL_GL sharing extension enabled
+            bool temp = checkExtnAvailability(*mDevices[device], CL_GL_SHARING_EXT);
+            if (!temp) {
+                printf("Device[%d] has no support for OpenGL Interoperation\n",device);
+                /* return silently if given device has not OpenGL sharing extension
+                 * enabled so that regular queue is used for it */
+                return;
+            }
 
-    cl_device_id getDeviceId()
-    {
-        return opencl::getDevice()();
+            // call forge to get OpenGL sharing context and details
+            cl::Platform plat = mDevices[device]->getInfo<CL_DEVICE_PLATFORM>();
+#ifdef OS_MAC
+            CGLContextObj cgl_current_ctx = CGLGetCurrentContext();
+            CGLShareGroupObj cgl_share_group = CGLGetShareGroup(cgl_current_ctx);
+            printf("current opengl context is -------- %p \n", cgl_current_ctx);
+
+            cl_context_properties cps[] = {
+                CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE, (cl_context_properties)cgl_share_group,
+                0
+            };
+#else
+            cl_context_properties cps[] = {
+                CL_GL_CONTEXT_KHR, (cl_context_properties)wHandle->context(),
+#if defined(_WIN32) || defined(_MSC_VER)
+                CL_WGL_HDC_KHR, (cl_context_properties)wHandle->display(),
+#else
+                CL_GLX_DISPLAY_KHR, (cl_context_properties)wHandle->display(),
+#endif
+                CL_CONTEXT_PLATFORM, (cl_context_properties)plat(),
+                0
+            };
+#endif
+            Context * ctx = new Context(*mDevices[device], cps);
+            CommandQueue * cq = new CommandQueue(*ctx, *mDevices[device]);
+
+            delete mContexts[device];
+            delete mQueues[device];
+
+            mContexts[device] = ctx;
+            mQueues[device] = cq;
+        }
+        mIsGLSharingOn[device] = true;
+    } catch (const cl::Error &ex) {
+        /* If replacing the original context with GL shared context
+         * failes, don't throw an error and instead fall back to
+         * original context and use copy via host to support graphics
+         * on that particular OpenCL device. So mark it as no GL sharing */
     }
+}
+#endif
+
+}
+
+using namespace opencl;
+
+af_err afcl_get_context(cl_context *ctx, const bool retain)
+{
+    *ctx = getContext()();
+    if (retain) clRetainContext(*ctx);
+    return AF_SUCCESS;
+}
+
+
+af_err afcl_get_queue(cl_command_queue *queue, const bool retain)
+{
+    *queue = getQueue()();
+    if (retain) clRetainCommandQueue(*queue);
+    return AF_SUCCESS;
+}
+
+af_err afcl_get_device_id(cl_device_id *id)
+{
+    *id = getDevice()();
+    return AF_SUCCESS;
 }

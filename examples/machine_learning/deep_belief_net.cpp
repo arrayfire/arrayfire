@@ -179,7 +179,7 @@ private:
 
             // Input to current layer is output of previous
             out = signal[i];
-            err = matmul(weights[i], delta).T();
+            err = matmulTT(delta, weights[i]);
 
             // Remove the error of bias and propagate backward
             err = err(span, seq(1, out.dims(1)));
@@ -366,12 +366,12 @@ int main(int argc, char** argv)
 
     try {
 
-        af::deviceset(device);
+        af::setDevice(device);
         af::info();
         return dbn_demo(console, perc);
 
     } catch (af::exception &ae) {
-        std::cout << ae.what() << std::endl;
+        std::cerr << ae.what() << std::endl;
     }
 
 }

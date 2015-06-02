@@ -31,14 +31,24 @@ namespace opencl
 {
     namespace kernel
     {
-        static const dim_type TX = 16;
-        static const dim_type TY = 16;
+        static const int TX = 16;
+        static const int TY = 16;
         // Used for batching images
-        static const dim_type TI = 4;
+        static const int TI = 4;
 
         typedef struct {
             float tmat[6];
         } tmat_t;
+
+        using std::conditional;
+        using std::is_same;
+        template<typename T>
+        using wtype_t = typename conditional<is_same<T, double>::value, double, float>::type;
+
+        template<typename T>
+        using vtype_t = typename conditional<is_complex<T>::value,
+                                             T, wtype_t<T>
+                                            >::type;
 
         template<typename T, af_interp_type method>
         void rotate(Param out, const Param in, const float theta)
@@ -49,14 +59,18 @@ namespace opencl
                 static std::map<int, Kernel *> rotateKernels;
 
                 int device = getActiveDeviceId();
+                typedef typename dtype_traits<T>::base_type BT;
 
                 std::call_once( compileFlags[device], [device] () {
                     std::ostringstream options;
                     options << " -D T="        << dtype_traits<T>::getName();
+                    options << " -D VT="       << dtype_traits<vtype_t<T>>::getName();
+                    options << " -D WT="       << dtype_traits<wtype_t<BT>>::getName();
 
                     if((af_dtype) dtype_traits<T>::af_type == c32 ||
                        (af_dtype) dtype_traits<T>::af_type == c64) {
                         options << " -D CPLX=1";
+                        options << " -D TB=" << dtype_traits<BT>::getName();
                     } else {
                         options << " -D CPLX=0";
                     }
@@ -83,7 +97,7 @@ namespace opencl
                 });
 
                 auto rotateOp = make_kernel<Buffer, const KParam, const Buffer, const KParam, const tmat_t,
-                                            const dim_type, const dim_type, const dim_type, const dim_type>
+                                            const int, const int, const int, const int>
                                            (*rotateKernels[device]);
 
                 const float c = cos(-theta), s = sin(-theta);
@@ -99,25 +113,27 @@ namespace opencl
                     ty = -(sy - ny);
                 }
 
+                // Rounding error. Anything more than 3 decimal points wont make a diff
                 tmat_t t;
-                t.tmat[0] =  c;
-                t.tmat[1] = -s;
-                t.tmat[2] = tx;
-                t.tmat[3] =  s;
-                t.tmat[4] =  c;
-                t.tmat[5] = ty;
+                t.tmat[0] = round( c * 1000) / 1000.0f;
+                t.tmat[1] = round(-s * 1000) / 1000.0f;
+                t.tmat[2] = round(tx * 1000) / 1000.0f;
+                t.tmat[3] = round( s * 1000) / 1000.0f;
+                t.tmat[4] = round( c * 1000) / 1000.0f;
+                t.tmat[5] = round(ty * 1000) / 1000.0f;
+
 
                 NDRange local(TX, TY, 1);
 
-                dim_type nimages  = in.info.dims[2];
-                dim_type nbatches = in.info.dims[3];
-                dim_type global_x = local[0] * divup(out.info.dims[0], local[0]);
-                dim_type global_y = local[1] * divup(out.info.dims[1], local[1]);
-                const dim_type blocksXPerImage = global_x / local[0];
-                const dim_type blocksYPerImage = global_y / local[1];
+                int nimages  = in.info.dims[2];
+                int nbatches = in.info.dims[3];
+                int global_x = local[0] * divup(out.info.dims[0], local[0]);
+                int global_y = local[1] * divup(out.info.dims[1], local[1]);
+                const int blocksXPerImage = global_x / local[0];
+                const int blocksYPerImage = global_y / local[1];
 
                 if(nimages > TI) {
-                    dim_type tile_images = divup(nimages, TI);
+                    int tile_images = divup(nimages, TI);
                     nimages = TI;
                     global_x = global_x * tile_images;
                 }

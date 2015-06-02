@@ -42,7 +42,7 @@ namespace TNJ
             bytes = 0;
         }
 
-        virtual void reset() { m_is_eval = false;}
+        virtual void reset(bool reset_off=true) { m_is_eval = false;}
 
         virtual ~Node() {}
     };

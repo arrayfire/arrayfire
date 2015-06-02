@@ -79,6 +79,8 @@ UNARY(asinh)
 UNARY(acosh)
 UNARY(atanh)
 
+UNARY(trunc)
+UNARY(sign)
 UNARY(round)
 UNARY(floor)
 UNARY(ceil)
@@ -91,12 +93,14 @@ UNARY(erfc)
 UNARY(log)
 UNARY(log10)
 UNARY(log1p)
+UNARY(log2)
 
 UNARY(sqrt)
 UNARY(cbrt)
 
 UNARY(tgamma)
 UNARY(lgamma)
+
 
 af_err af_not(af_array *out, const af_array in)
 {
@@ -111,7 +115,76 @@ af_err af_not(af_array *out, const af_array in)
 
         AF_CHECK(af_neq(out, in, tmp, false));
 
-        AF_CHECK(af_destroy_array(tmp));
+        AF_CHECK(af_release_array(tmp));
+    } CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_arg(af_array *out, const af_array in)
+{
+    try {
+
+        ArrayInfo in_info = getInfo(in);
+
+        if (!in_info.isComplex()) {
+            return af_constant(out, 0,
+                               in_info.ndims(),
+                               in_info.dims().get(), in_info.getType());
+        }
+
+        af_array real;
+        af_array imag;
+
+        AF_CHECK(af_real(&real, in));
+        AF_CHECK(af_imag(&imag, in));
+
+        AF_CHECK(af_atan2(out, imag, real, false));
+
+        AF_CHECK(af_release_array(real));
+        AF_CHECK(af_release_array(imag));
+    } CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_pow2(af_array *out, const af_array in)
+{
+    try {
+
+        af_array two;
+        ArrayInfo in_info = getInfo(in);
+
+        AF_CHECK(af_constant(&two, 2,
+                             in_info.ndims(),
+                             in_info.dims().get(), in_info.getType()));
+
+        AF_CHECK(af_pow(out, two, in, false));
+
+        AF_CHECK(af_release_array(two));
+    } CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_factorial(af_array *out, const af_array in)
+{
+    try {
+
+        af_array one;
+        ArrayInfo in_info = getInfo(in);
+
+        AF_CHECK(af_constant(&one, 1,
+                             in_info.ndims(),
+                             in_info.dims().get(), in_info.getType()));
+
+        af_array inp1;
+        AF_CHECK(af_add(&inp1, one, in, false));
+
+        AF_CHECK(af_tgamma(out, inp1));
+
+        AF_CHECK(af_release_array(one));
+        AF_CHECK(af_release_array(inp1));
     } CATCHALL;
 
     return AF_SUCCESS;

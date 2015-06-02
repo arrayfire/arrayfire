@@ -14,46 +14,48 @@ void matchTemplate(global outType * out,
                     KParam          sInfo,
                     global const inType * tmplt,
                     KParam          tInfo,
-                    dim_type        nBBS)
+                    int        nBBS0,
+                    int        nBBS1)
 {
-    unsigned batchId = get_group_id(0) / nBBS;
+    unsigned b2 = get_group_id(0) / nBBS0;
+    unsigned b3 = get_group_id(1) / nBBS1;
 
-    dim_type gx = get_local_id(0) + (get_group_id(0) - batchId*nBBS) * get_local_size(0);
-    dim_type gy = get_local_id(1) + get_group_id(1) * get_local_size(1);
+    int gx = get_local_id(0) + (get_group_id(0) - b2*nBBS0) * get_local_size(0);
+    int gy = get_local_id(1) + (get_group_id(1) - b3*nBBS1)* get_local_size(1);
 
     if (gx < sInfo.dims[0] && gy < sInfo.dims[1]) {
 
-        const dim_type tDim0 = tInfo.dims[0];
-        const dim_type tDim1 = tInfo.dims[1];
-        const dim_type sDim0 = sInfo.dims[0];
-        const dim_type sDim1 = sInfo.dims[1];
-        dim_type winNumElems = tDim0*tDim1;
+        const int tDim0 = tInfo.dims[0];
+        const int tDim1 = tInfo.dims[1];
+        const int sDim0 = sInfo.dims[0];
+        const int sDim1 = sInfo.dims[1];
+        int winNumElems = tDim0*tDim1;
 
         global const inType* tptr = tmplt;
 
         outType tImgMean = (outType)0;
         if (NEEDMEAN) {
-            for(dim_type tj=0; tj<tDim1; tj++) {
-                dim_type tjStride = tj*tInfo.strides[1];
+            for(int tj=0; tj<tDim1; tj++) {
+                int tjStride = tj*tInfo.strides[1];
 
-                for(dim_type ti=0; ti<tDim0; ti++) {
+                for(int ti=0; ti<tDim0; ti++) {
                     tImgMean += (outType)tptr[ tjStride + ti*tInfo.strides[0] ];
                 }
             }
             tImgMean /= winNumElems;
         }
 
-        global const inType* sptr  = srch + (batchId * sInfo.strides[2]);
-        global outType* optr       = out  + (batchId * oInfo.strides[2]);
+        global const inType* sptr  = srch + (b2 * sInfo.strides[2] + b3 * sInfo.strides[3] + sInfo.offset);
+        global outType* optr       = out  + (b2 * oInfo.strides[2] + b3 * oInfo.strides[3]);
 
         // mean for window
         // this variable will be used based on MATCH_T value
         outType wImgMean = (outType)0;
         if (NEEDMEAN) {
-            for(dim_type tj=0,j=gy; tj<tDim1; tj++, j++) {
-                dim_type jStride = j*sInfo.strides[1];
+            for(int tj=0,j=gy; tj<tDim1; tj++, j++) {
+                int jStride = j*sInfo.strides[1];
 
-                for(dim_type ti=0, i=gx; ti<tDim0; ti++, i++) {
+                for(int ti=0, i=gx; ti<tDim0; ti++, i++) {
                     inType sVal = ((j<sDim1 && i<sDim0) ? sptr[jStride + i*sInfo.strides[0]] : (inType)0);
                     wImgMean += (outType)sVal;
                 }
@@ -64,12 +66,12 @@ void matchTemplate(global outType * out,
         // run the window match metric
         outType disparity = (outType)0;
 
-        for(dim_type tj=0,j=gy; tj<tDim1; tj++, j++) {
+        for(int tj=0,j=gy; tj<tDim1; tj++, j++) {
 
-            dim_type jStride  = j*sInfo.strides[1];
-            dim_type tjStride = tj*tInfo.strides[1];
+            int jStride  = j*sInfo.strides[1];
+            int tjStride = tj*tInfo.strides[1];
 
-            for(dim_type ti=0, i=gx; ti<tDim0; ti++, i++) {
+            for(int ti=0, i=gx; ti<tDim0; ti++, i++) {
 
                 inType sVal = ((j<sDim1 && i<sDim0) ? sptr[jStride + i*sInfo.strides[0]] : (inType)0);
                 inType tVal = tptr[ tjStride + ti*tInfo.strides[0] ];

@@ -10,10 +10,11 @@
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <af/features.h>
-#include <af/image.h>
+#include <af/vision.h>
 #include <handle.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>
+#include <features.hpp>
 #include <fast.hpp>
 
 using af::dim4;
@@ -28,7 +29,7 @@ static af_features fast(af_array const &in, const float thr,
     Array<float> y = createEmptyArray<float>(dim4());
     Array<float> score = createEmptyArray<float>(dim4());
 
-    af_features feat;
+    af_features_t feat;
     feat.n = fast<T>(x, y, score,
                      getArray<T>(in), thr,
                      arc_length, non_max, feature_ratio, edge);
@@ -42,7 +43,7 @@ static af_features fast(af_array const &in, const float thr,
     feat.orientation = getHandle(orientation);
     feat.size        = getHandle(size);
 
-    return feat;
+    return getFeaturesHandle(feat);
 }
 
 
@@ -54,12 +55,12 @@ af_err af_fast(af_features *out, const af_array in, const float thr,
         ArrayInfo info = getInfo(in);
         af::dim4 dims  = info.dims();
 
-        ARG_ASSERT(2, (dims[0] >= (int)(2*edge+1) || dims[1] >= (int)(2*edge+1)));
+        ARG_ASSERT(2, (dims[0] >= (dim_t)(2*edge+1) || dims[1] >= (dim_t)(2*edge+1)));
         ARG_ASSERT(3, thr > 0.0f);
         ARG_ASSERT(4, (arc_length >= 9 && arc_length <= 16));
         ARG_ASSERT(6, (feature_ratio > 0.0f && feature_ratio <= 1.0f));
 
-        dim_type in_ndims = dims.ndims();
+        dim_t in_ndims = dims.ndims();
         DIM_ASSERT(1, (in_ndims <= 3 && in_ndims >= 2));
 
         af_dtype type  = info.getType();

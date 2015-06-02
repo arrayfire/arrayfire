@@ -49,5 +49,8 @@ namespace cuda
     INSTANTIATE(cdouble)
     INSTANTIATE(int)
     INSTANTIATE(uint)
+    INSTANTIATE(intl)
+    INSTANTIATE(uintl)
     INSTANTIATE(uchar)
+    INSTANTIATE(char)
 }

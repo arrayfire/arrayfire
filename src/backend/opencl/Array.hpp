@@ -8,17 +8,17 @@
  ********************************************************/
 
 #pragma once
+#include <platform.hpp>
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <ArrayInfo.hpp>
-#include <cl.hpp>
-#include <platform.hpp>
 #include <traits.hpp>
 #include <backend.hpp>
 #include <types.hpp>
 #include <traits.hpp>
 #include <Param.hpp>
 #include <JIT/Node.hpp>
+#include <memory.hpp>
 #include <memory>
 
 namespace opencl
@@ -45,6 +45,14 @@ namespace opencl
     template<typename T>
     Array<T> createDeviceDataArray(const af::dim4 &size, const void *data);
 
+    // Copies data to an existing Array object from a host pointer
+    template<typename T>
+    void writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes);
+
+    // Copies data to an existing Array object from a device pointer
+    template<typename T>
+    void writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes);
+
     // Create an Array object and do not assign any values to it
     template<typename T> Array<T> *initArray();
 
@@ -70,6 +78,7 @@ namespace opencl
     template<typename T>
     void *getDevicePtr(const Array<T>& arr)
     {
+        memUnlink((T *)arr.get());
         return (void *)((*arr.get())());
     }
 
@@ -81,7 +90,7 @@ namespace opencl
 
         JIT::Node_ptr node;
         bool ready;
-        dim_type offset;
+        dim_t offset;
         bool owner;
 
         Array(af::dim4 dims);
@@ -114,7 +123,7 @@ namespace opencl
             return data.get();
         }
 
-        const dim_type getOffset() const
+        const dim_t getOffset() const
         {
             return offset;
         }

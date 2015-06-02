@@ -9,9 +9,9 @@
 
 #include <af/dim4.hpp>
 #include <af/device.h>
+#include <af/version.h>
 #include <backend.hpp>
 #include <platform.hpp>
-#include <iostream>
 #include <Array.hpp>
 #include <handle.hpp>
 #include <memory.hpp>
@@ -33,11 +33,20 @@ af_err af_init()
 
 af_err af_info()
 {
-    std::cout << getInfo();
+    printf("%s", getInfo().c_str());
     return AF_SUCCESS;
 }
 
-af_err af_deviceprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
+af_err af_get_version(int *major, int *minor, int *patch)
+{
+    *major = AF_VERSION_MAJOR;
+    *minor = AF_VERSION_MINOR;
+    *patch = AF_VERSION_PATCH;
+
+    return AF_SUCCESS;
+}
+
+af_err af_device_info(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
 {
     try {
         devprop(d_name, d_platform, d_toolkit, d_compute);
@@ -73,10 +82,8 @@ af_err af_get_device(int *device)
 af_err af_set_device(const int device)
 {
     try {
-        if (setDevice(device) < 0) {
-            std::cout << "Invalid Device ID" << std::endl;
-            return AF_ERR_INVALID_ARG;
-        }
+        ARG_ASSERT(0, device >= 0);
+        ARG_ASSERT(0, setDevice(device) >= 0);
     } CATCHALL;
 
     return AF_SUCCESS;
@@ -93,7 +100,7 @@ af_err af_sync(const int device)
 
 af_err af_device_array(af_array *arr, const void *data,
                        const unsigned ndims,
-                       const dim_type * const dims,
+                       const dim_t * const dims,
                        const af_dtype type)
 {
     try {
@@ -123,14 +130,9 @@ af_err af_device_array(af_array *arr, const void *data,
     return AF_SUCCESS;
 }
 
-af_err af_get_device_ptr(void **data, const af_array arr, bool read_only)
+af_err af_get_device_ptr(void **data, const af_array arr)
 {
     try {
-
-        if (!read_only) {
-            //FIXME: Implement a lock / unlock mechanism
-            AF_ERROR("Write access to device pointer not yet implemented", AF_ERR_NOT_SUPPORTED);
-        }
 
         // Make sure all kernels and memcopies are done before getting device pointer
         detail::sync(getActiveDeviceId());
@@ -150,12 +152,13 @@ af_err af_get_device_ptr(void **data, const af_array arr, bool read_only)
 
         default: TYPE_ERROR(4, type);
         }
+
     } CATCHALL;
 
     return AF_SUCCESS;
 }
 
-af_err af_alloc_device(void **ptr, dim_type bytes)
+af_err af_alloc_device(void **ptr, const dim_t bytes)
 {
     try {
         AF_CHECK(af_init());
@@ -164,7 +167,7 @@ af_err af_alloc_device(void **ptr, dim_type bytes)
     return AF_SUCCESS;
 }
 
-af_err af_alloc_pinned(void **ptr, dim_type bytes)
+af_err af_alloc_pinned(void **ptr, const dim_t bytes)
 {
     try {
         AF_CHECK(af_init());
@@ -186,5 +189,34 @@ af_err af_free_pinned(void *ptr)
     try {
         pinnedFree<char>((char *)ptr);
     } CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_device_gc()
+{
+    try {
+        garbageCollect();
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_device_mem_info(size_t *alloc_bytes, size_t *alloc_buffers,
+                          size_t *lock_bytes,  size_t *lock_buffers)
+{
+    try {
+        deviceMemoryInfo(alloc_bytes, alloc_buffers, lock_bytes, lock_buffers);
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_set_mem_step_size(const size_t step_bytes)
+{
+    detail::setMemStepSize(step_bytes);
+    return AF_SUCCESS;
+}
+
+af_err af_get_mem_step_size(size_t *step_bytes)
+{
+    *step_bytes =  detail::getMemStepSize();
     return AF_SUCCESS;
 }

@@ -47,8 +47,8 @@ namespace opencl
 namespace kernel
 {
 
-static const dim_type THREADS_X = 16;
-static const dim_type THREADS_Y = 16;
+static const int THREADS_X = 16;
+static const int THREADS_Y = 16;
 
 template<typename T>
 void exampleFunc(Param out, const Param in, const af_someenum_t p)
@@ -96,15 +96,15 @@ void exampleFunc(Param out, const Param in, const af_someenum_t p)
         // configure work group parameters
         NDRange local(THREADS_X, THREADS_Y);
 
-        dim_type blk_x = divup(out.info.dims[0], THREADS_X);
-        dim_type blk_y = divup(out.info.dims[1], THREADS_Y);
+        int blk_x = divup(out.info.dims[0], THREADS_X);
+        int blk_y = divup(out.info.dims[1], THREADS_Y);
 
         // configure global launch parameters
         NDRange global(blk_x * THREADS_X, blk_y * THREADS_Y);
 
         // create a kernel functor from the cl::Kernel object
         // corresponding to the device on which current execution
-        // is happending. 
+        // is happending.
         auto exampleFuncOp = make_kernel<Buffer, KParam,
                                      Buffer, KParam, int>(*egKernels[device]);
 

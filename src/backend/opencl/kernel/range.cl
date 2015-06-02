@@ -9,21 +9,21 @@
 
 __kernel
 void range_kernel(__global T *out, const KParam op, const int dim,
-                 const dim_type blocksPerMatX, const dim_type blocksPerMatY)
+                 const int blocksPerMatX, const int blocksPerMatY)
 {
     const int mul0 = (dim == 0);
     const int mul1 = (dim == 1);
     const int mul2 = (dim == 2);
     const int mul3 = (dim == 3);
 
-    const dim_type oz = get_group_id(0) / blocksPerMatX;
-    const dim_type ow = get_group_id(1) / blocksPerMatY;
+    const int oz = get_group_id(0) / blocksPerMatX;
+    const int ow = get_group_id(1) / blocksPerMatY;
 
-    const dim_type blockIdx_x = get_group_id(0) - oz * blocksPerMatX;
-    const dim_type blockIdx_y = get_group_id(1) - ow * blocksPerMatY;
+    const int blockIdx_x = get_group_id(0) - oz * blocksPerMatX;
+    const int blockIdx_y = get_group_id(1) - ow * blocksPerMatY;
 
-    const dim_type xx = get_local_id(0) + blockIdx_x * get_local_size(0);
-    const dim_type yy = get_local_id(1) + blockIdx_y * get_local_size(1);
+    const int xx = get_local_id(0) + blockIdx_x * get_local_size(0);
+    const int yy = get_local_id(1) + blockIdx_y * get_local_size(1);
 
     if(xx >= op.dims[0] ||
        yy >= op.dims[1] ||
@@ -31,19 +31,19 @@ void range_kernel(__global T *out, const KParam op, const int dim,
        ow >= op.dims[3])
         return;
 
-    const dim_type ozw = ow * op.strides[3] + oz * op.strides[2];
+    const int ozw = ow * op.strides[3] + oz * op.strides[2];
 
-    const dim_type incy = blocksPerMatY * get_local_size(1);
-    const dim_type incx = blocksPerMatX * get_local_size(0);
+    const int incy = blocksPerMatY * get_local_size(1);
+    const int incx = blocksPerMatX * get_local_size(0);
 
-    T val = mul3 * ow + mul2 * oz;
+    T valZW = (mul3 * ow) + (mul2 * oz);
 
-    for(dim_type oy = yy; oy < op.dims[1]; oy += incy) {
-        val += mul1 * oy;
-        dim_type oyzw = ozw + oy * op.strides[1];
-        for(dim_type ox = xx; ox < op.dims[0]; ox += incx) {
-            dim_type oidx = oyzw + ox;
-            val += mul0 * ox;
+    for(int oy = yy; oy < op.dims[1]; oy += incy) {
+        T valYZW = valZW + (mul1 * oy);
+        int oyzw = ozw + oy * op.strides[1];
+        for(int ox = xx; ox < op.dims[0]; ox += incx) {
+            int oidx = oyzw + ox;
+            T val = valYZW + (mul0 * ox);
 
             out[oidx] = val;
         }

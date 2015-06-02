@@ -23,14 +23,14 @@ namespace cpu
     template<typename T, int dim>
     void range(T *out, const dim4 &dims, const dim4 &strides)
     {
-        for(dim_type w = 0; w < dims[3]; w++) {
-            dim_type offW = w * strides[3];
-            for(dim_type z = 0; z < dims[2]; z++) {
-                dim_type offWZ = offW + z * strides[2];
-                for(dim_type y = 0; y < dims[1]; y++) {
-                    dim_type offWZY = offWZ + y * strides[1];
-                    for(dim_type x = 0; x < dims[0]; x++) {
-                        dim_type id = offWZY + x;
+        for(dim_t w = 0; w < dims[3]; w++) {
+            dim_t offW = w * strides[3];
+            for(dim_t z = 0; z < dims[2]; z++) {
+                dim_t offWZ = offW + z * strides[2];
+                for(dim_t y = 0; y < dims[1]; y++) {
+                    dim_t offWZY = offWZ + y * strides[1];
+                    for(dim_t x = 0; x < dims[0]; x++) {
+                        dim_t id = offWZY + x;
                         if(dim == 0) {
                             out[id] = x;
                         } else if(dim == 1) {
@@ -65,7 +65,7 @@ namespace cpu
             case 1: range<T, 1>(out.get(), out.dims(), out.strides()); break;
             case 2: range<T, 2>(out.get(), out.dims(), out.strides()); break;
             case 3: range<T, 3>(out.get(), out.dims(), out.strides()); break;
-            default : AF_ERROR("Invalid rep selection", AF_ERR_INVALID_ARG);
+            default : AF_ERROR("Invalid rep selection", AF_ERR_ARG);
         }
 
 

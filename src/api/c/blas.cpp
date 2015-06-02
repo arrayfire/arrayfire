@@ -19,21 +19,21 @@
 
 template<typename T>
 static inline af_array matmul(const af_array lhs, const af_array rhs,
-                    af_blas_transpose optLhs, af_blas_transpose optRhs)
+                    af_mat_prop optLhs, af_mat_prop optRhs)
 {
     return getHandle(detail::matmul<T>(getArray<T>(lhs), getArray<T>(rhs), optLhs, optRhs));
 }
 
 template<typename T>
 static inline af_array dot(const af_array lhs, const af_array rhs,
-                    af_blas_transpose optLhs, af_blas_transpose optRhs)
+                    af_mat_prop optLhs, af_mat_prop optRhs)
 {
     return getHandle(detail::dot<T>(getArray<T>(lhs), getArray<T>(rhs), optLhs, optRhs));
 }
 
 af_err af_matmul(   af_array *out,
                     const af_array lhs, const af_array rhs,
-                    af_blas_transpose optLhs, af_blas_transpose optRhs)
+                    const af_mat_prop optLhs, const af_mat_prop optRhs)
 {
     using namespace detail;
 
@@ -44,11 +44,29 @@ af_err af_matmul(   af_array *out,
         af_dtype lhs_type = lhsInfo.getType();
         af_dtype rhs_type = rhsInfo.getType();
 
+        if (!(optLhs == AF_MAT_NONE ||
+              optLhs == AF_MAT_TRANS ||
+              optLhs == AF_MAT_CTRANS)) {
+            AF_ERROR("Using this property is not yet supported in matmul", AF_ERR_NOT_SUPPORTED);
+        }
+
+        if (!(optRhs == AF_MAT_NONE ||
+              optRhs == AF_MAT_TRANS ||
+              optRhs == AF_MAT_CTRANS)) {
+            AF_ERROR("Using this property is not yet supported in matmul", AF_ERR_NOT_SUPPORTED);
+        }
+
+
+        if (lhsInfo.ndims() > 2 ||
+            rhsInfo.ndims() > 2) {
+            AF_ERROR("matmul can not be used in batch mode", AF_ERR_BATCH);
+        }
+
         TYPE_ASSERT(lhs_type == rhs_type);
         af_array output = 0;
 
-        int aColDim = (optLhs == AF_NO_TRANSPOSE) ? 1 : 0;
-        int bRowDim = (optRhs == AF_NO_TRANSPOSE) ? 0 : 1;
+        int aColDim = (optLhs == AF_MAT_NONE) ? 1 : 0;
+        int bRowDim = (optRhs == AF_MAT_NONE) ? 0 : 1;
 
         DIM_ASSERT(1, lhsInfo.dims()[aColDim] == rhsInfo.dims()[bRowDim]);
 
@@ -67,7 +85,7 @@ af_err af_matmul(   af_array *out,
 
 af_err af_dot(      af_array *out,
                     const af_array lhs, const af_array rhs,
-                    af_blas_transpose optLhs, af_blas_transpose optRhs)
+                    const af_mat_prop optLhs, const af_mat_prop optRhs)
 {
     using namespace detail;
 
@@ -75,9 +93,22 @@ af_err af_dot(      af_array *out,
         ArrayInfo lhsInfo = getInfo(lhs);
         ArrayInfo rhsInfo = getInfo(rhs);
 
+        if (optLhs != AF_MAT_NONE) {
+            AF_ERROR("Using this property is not yet supported in dot", AF_ERR_NOT_SUPPORTED);
+        }
+
+        if (optRhs != AF_MAT_NONE) {
+            AF_ERROR("Using this property is not yet supported in dot", AF_ERR_NOT_SUPPORTED);
+        }
+
         DIM_ASSERT(1, lhsInfo.dims()[0] == rhsInfo.dims()[0]);
         af_dtype lhs_type = lhsInfo.getType();
         af_dtype rhs_type = rhsInfo.getType();
+
+        if (lhsInfo.ndims() > 2 ||
+            rhsInfo.ndims() > 2) {
+            AF_ERROR("dot can not be used in batch mode", AF_ERR_BATCH);
+        }
 
         TYPE_ASSERT(lhs_type == rhs_type);
 

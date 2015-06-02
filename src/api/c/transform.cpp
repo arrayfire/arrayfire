@@ -26,7 +26,7 @@ static inline af_array transform(const af_array in, const af_array tf, const af:
 }
 
 af_err af_transform(af_array *out, const af_array in, const af_array tf,
-                    const dim_type odim0, const dim_type odim1,
+                    const dim_t odim0, const dim_t odim1,
                     const af_interp_type method, const bool inverse)
 {
     try {
@@ -43,8 +43,8 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
         DIM_ASSERT(1, idims.elements() > 0);
         DIM_ASSERT(1, (idims.ndims() == 2 || idims.ndims() == 3));
 
-        dim_type o0 = odim0, o1 = odim1;
-        dim_type o2 = idims[2] * tdims[2];
+        dim_t o0 = odim0, o1 = odim1;
+        dim_t o2 = idims[2] * tdims[2];
         if (odim0 * odim1 == 0) {
             o0 = idims[0];
             o1 = idims[1];
@@ -55,9 +55,14 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
         switch(itype) {
             case f32: output = transform<float  >(in, tf, odims, method, inverse);  break;
             case f64: output = transform<double >(in, tf, odims, method, inverse);  break;
+            case c32: output = transform<cfloat >(in, tf, odims, method, inverse);  break;
+            case c64: output = transform<cdouble>(in, tf, odims, method, inverse);  break;
             case s32: output = transform<int    >(in, tf, odims, method, inverse);  break;
             case u32: output = transform<uint   >(in, tf, odims, method, inverse);  break;
+            case s64: output = transform<intl   >(in, tf, odims, method, inverse);  break;
+            case u64: output = transform<uintl  >(in, tf, odims, method, inverse);  break;
             case u8:  output = transform<uchar  >(in, tf, odims, method, inverse);  break;
+            case b8:  output = transform<char   >(in, tf, odims, method, inverse);  break;
             default:  TYPE_ERROR(1, itype);
         }
         std::swap(*out,output);
@@ -68,7 +73,7 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
 }
 
 af_err af_translate(af_array *out, const af_array in, const float trans0, const float trans1,
-                    const dim_type odim0, const dim_type odim1, const af_interp_type method)
+                    const dim_t odim0, const dim_t odim1, const af_interp_type method)
 {
 
     try {
@@ -82,7 +87,7 @@ af_err af_translate(af_array *out, const af_array in, const float trans0, const 
 
         AF_CHECK(af_create_array(&t, trans_mat, tdims.ndims(), tdims.get(), f32));
         AF_CHECK(af_transform(out, in, t, odim0, odim1, method, true));
-        AF_CHECK(af_destroy_array(t));
+        AF_CHECK(af_release_array(t));
     }
     CATCHALL;
 
@@ -90,13 +95,13 @@ af_err af_translate(af_array *out, const af_array in, const float trans0, const 
 }
 
 af_err af_scale(af_array *out, const af_array in, const float scale0, const float scale1,
-                const dim_type odim0, const dim_type odim1, const af_interp_type method)
+                const dim_t odim0, const dim_t odim1, const af_interp_type method)
 {
     try {
         ArrayInfo i_info = getInfo(in);
         af::dim4 idims = i_info.dims();
 
-        dim_type _odim0 = odim0, _odim1 = odim1;
+        dim_t _odim0 = odim0, _odim1 = odim1;
         float sx, sy;
 
         DIM_ASSERT(4, odim0 != 0);
@@ -122,14 +127,14 @@ af_err af_scale(af_array *out, const af_array in, const float scale0, const floa
         af_array t = 0;
         AF_CHECK(af_create_array(&t, trans_mat, tdims.ndims(), tdims.get(), f32));
         AF_CHECK(af_transform(out, in, t, _odim0, _odim1, method, true));
-        AF_CHECK(af_destroy_array(t));
+        AF_CHECK(af_release_array(t));
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
 af_err af_skew(af_array *out, const af_array in, const float skew0, const float skew1,
-               const dim_type odim0, const dim_type odim1, const af_interp_type method,
+               const dim_t odim0, const dim_t odim1, const af_interp_type method,
                const bool inverse)
 {
     try {
@@ -159,7 +164,7 @@ af_err af_skew(af_array *out, const af_array in, const float skew0, const float 
         af_array t = 0;
         AF_CHECK(af_create_array(&t, trans_mat, tdims.ndims(), tdims.get(), f32));
         AF_CHECK(af_transform(out, in, t, odim0, odim1, method, true));
-        AF_CHECK(af_destroy_array(t));
+        AF_CHECK(af_release_array(t));
     }
     CATCHALL;
 

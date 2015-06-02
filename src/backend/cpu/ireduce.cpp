@@ -20,8 +20,8 @@ namespace cpu
 {
     template<typename T> double cabs(const T in) { return (double)in; }
     static double cabs(const char in) { return (double)(in > 0); }
-    static double cabs(const cfloat in) { return (double)abs(in); }
-    static double cabs(const cdouble in) { return (double)abs(in); }
+    static double cabs(const cfloat &in) { return (double)abs(in); }
+    static double cabs(const cdouble &in) { return (double)abs(in); }
 
     template<af_op_t op, typename T>
     struct MinMaxOp
@@ -74,7 +74,7 @@ namespace cpu
                         const int dim)
         {
             const int D1 = D - 1;
-            for (dim_type i = 0; i < odims[D1]; i++) {
+            for (dim_t i = 0; i < odims[D1]; i++) {
                 ireduce_dim<op, T, D1>()(out + i * ostrides[D1],
                                          ostrides, odims,
                                          loc + i * ostrides[D1],
@@ -94,9 +94,9 @@ namespace cpu
                         const int dim)
         {
 
-            dim_type stride = istrides[dim];
+            dim_t stride = istrides[dim];
             MinMaxOp<op, T> Op(in[0], 0);
-            for (dim_type i = 0; i < idims[dim]; i++) {
+            for (dim_t i = 0; i < idims[dim]; i++) {
                 Op(in[i * stride], i);
             }
 
@@ -148,17 +148,17 @@ namespace cpu
 
         MinMaxOp<op, T> Op(inPtr[0], 0);
 
-        for(dim_type l = 0; l < dims[3]; l++) {
-            dim_type off3 = l * strides[3];
+        for(dim_t l = 0; l < dims[3]; l++) {
+            dim_t off3 = l * strides[3];
 
-            for(dim_type k = 0; k < dims[2]; k++) {
-                dim_type off2 = k * strides[2];
+            for(dim_t k = 0; k < dims[2]; k++) {
+                dim_t off2 = k * strides[2];
 
-                for(dim_type j = 0; j < dims[1]; j++) {
-                    dim_type off1 = j * strides[1];
+                for(dim_t j = 0; j < dims[1]; j++) {
+                    dim_t off1 = j * strides[1];
 
-                    for(dim_type i = 0; i < dims[0]; i++) {
-                        dim_type idx = i + off1 + off2 + off3;
+                    for(dim_t i = 0; i < dims[0]; i++) {
+                        dim_t idx = i + off1 + off2 + off3;
                         Op(inPtr[idx], idx);
                     }
                 }

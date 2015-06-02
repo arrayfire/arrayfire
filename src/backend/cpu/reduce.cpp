@@ -7,13 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <complex>
 #include <af/dim4.hpp>
 #include <af/defines.h>
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <reduce.hpp>
 #include <ops.hpp>
+#include <functional>
+#include <complex>
 
 using af::dim4;
 
@@ -22,17 +23,18 @@ namespace cpu
     template<af_op_t op, typename Ti, typename To, int D>
     struct reduce_dim
     {
-        void operator()(To *out, const dim4 ostrides, const dim4 odims,
-                        const Ti *in , const dim4 istrides, const dim4 idims,
+        void operator()(To *out, const dim4 &ostrides, const dim4 &odims,
+                        const Ti *in , const dim4 &istrides, const dim4 &idims,
                         const int dim)
         {
-            const int D1 = D - 1;
-            for (dim_type i = 0; i < odims[D1]; i++) {
-                reduce_dim<op, Ti, To, D1>()(out + i * ostrides[D1],
-                                             ostrides, odims,
-                                             in  + i * istrides[D1],
-                                             istrides, idims,
-                                             dim);
+            static const int D1 = D - 1;
+            static reduce_dim<op, Ti, To, D1> reduce_dim_next;
+            for (dim_t i = 0; i < odims[D1]; i++) {
+                 reduce_dim_next(out + i * ostrides[D1],
+                                 ostrides, odims,
+                                 in  + i * istrides[D1],
+                                 istrides, idims,
+                                 dim);
             }
         }
     };
@@ -40,18 +42,17 @@ namespace cpu
     template<af_op_t op, typename Ti, typename To>
     struct reduce_dim<op, Ti, To, 0>
     {
-        void operator()(To *out, const dim4 ostrides, const dim4 odims,
-                        const Ti *in , const dim4 istrides, const dim4 idims,
+
+        Transform<Ti, To, op> transform;
+        Binary<To, op> reduce;
+        void operator()(To *out, const dim4 &ostrides, const dim4 &odims,
+                        const Ti *in , const dim4 &istrides, const dim4 &idims,
                         const int dim)
         {
-
-            dim_type stride = istrides[dim];
-
-            Transform<Ti, To, op> transform;
-            Binary<To, op> reduce;
+            dim_t stride = istrides[dim];
 
             To out_val = reduce.init();
-            for (dim_type i = 0; i < idims[dim]; i++) {
+            for (dim_t i = 0; i < idims[dim]; i++) {
                 To in_val = transform(in[i * stride]);
                 out_val = reduce(in_val, out_val);
             }
@@ -61,34 +62,24 @@ namespace cpu
     };
 
     template<af_op_t op, typename Ti, typename To>
+    using reduce_dim_func = std::function<void(To*,const dim4&, const dim4&,
+                                                const Ti*, const dim4&, const dim4&,
+                                                const int)>;
+
+    template<af_op_t op, typename Ti, typename To>
     Array<To> reduce(const Array<Ti> &in, const int dim)
     {
         dim4 odims = in.dims();
         odims[dim] = 1;
 
         Array<To> out = createEmptyArray<To>(odims);
+        static reduce_dim_func<op, Ti, To>  reduce_funcs[4] = { reduce_dim<op, Ti, To, 1>()
+                                                              , reduce_dim<op, Ti, To, 2>()
+                                                              , reduce_dim<op, Ti, To, 3>()
+                                                              , reduce_dim<op, Ti, To, 4>()};
 
-        switch (in.ndims()) {
-        case 1:
-            reduce_dim<op, Ti, To, 1>()(out.get(), out.strides(), out.dims(),
-                                        in.get(), in.strides(), in.dims(), dim);
-            break;
-
-        case 2:
-            reduce_dim<op, Ti, To, 2>()(out.get(), out.strides(), out.dims(),
-                                        in.get(), in.strides(), in.dims(), dim);
-            break;
-
-        case 3:
-            reduce_dim<op, Ti, To, 3>()(out.get(), out.strides(), out.dims(),
-                                        in.get(), in.strides(), in.dims(), dim);
-            break;
-
-        case 4:
-            reduce_dim<op, Ti, To, 4>()(out.get(), out.strides(), out.dims(),
-                                        in.get(), in.strides(), in.dims(), dim);
-            break;
-        }
+        reduce_funcs[in.ndims() - 1](out.get(), out.strides(), out.dims(),
+                                    in.get(), in.strides(), in.dims(), dim);
 
         return out;
     }
@@ -106,17 +97,17 @@ namespace cpu
         af::dim4 strides = in.strides();
         const Ti *inPtr = in.get();
 
-        for(dim_type l = 0; l < dims[3]; l++) {
-            dim_type off3 = l * strides[3];
+        for(dim_t l = 0; l < dims[3]; l++) {
+            dim_t off3 = l * strides[3];
 
-            for(dim_type k = 0; k < dims[2]; k++) {
-                dim_type off2 = k * strides[2];
+            for(dim_t k = 0; k < dims[2]; k++) {
+                dim_t off2 = k * strides[2];
 
-                for(dim_type j = 0; j < dims[1]; j++) {
-                    dim_type off1 = j * strides[1];
+                for(dim_t j = 0; j < dims[1]; j++) {
+                    dim_t off1 = j * strides[1];
 
-                    for(dim_type i = 0; i < dims[0]; i++) {
-                        dim_type idx = i + off1 + off2 + off3;
+                    for(dim_t i = 0; i < dims[0]; i++) {
+                        dim_t idx = i + off1 + off2 + off3;
 
                         To val = transform(inPtr[idx]);
                         out = reduce(val, out);
@@ -183,22 +174,22 @@ namespace cpu
     INSTANTIATE(af_notzero_t, uchar  , uint)
 
     //anytrue
-    INSTANTIATE(af_or_t, float  , uchar)
-    INSTANTIATE(af_or_t, double , uchar)
-    INSTANTIATE(af_or_t, cfloat , uchar)
-    INSTANTIATE(af_or_t, cdouble, uchar)
-    INSTANTIATE(af_or_t, int    , uchar)
-    INSTANTIATE(af_or_t, uint   , uchar)
-    INSTANTIATE(af_or_t, char   , uchar)
-    INSTANTIATE(af_or_t, uchar  , uchar)
+    INSTANTIATE(af_or_t, float  , char)
+    INSTANTIATE(af_or_t, double , char)
+    INSTANTIATE(af_or_t, cfloat , char)
+    INSTANTIATE(af_or_t, cdouble, char)
+    INSTANTIATE(af_or_t, int    , char)
+    INSTANTIATE(af_or_t, uint   , char)
+    INSTANTIATE(af_or_t, char   , char)
+    INSTANTIATE(af_or_t, uchar  , char)
 
     //alltrue
-    INSTANTIATE(af_and_t, float  , uchar)
-    INSTANTIATE(af_and_t, double , uchar)
-    INSTANTIATE(af_and_t, cfloat , uchar)
-    INSTANTIATE(af_and_t, cdouble, uchar)
-    INSTANTIATE(af_and_t, int    , uchar)
-    INSTANTIATE(af_and_t, uint   , uchar)
-    INSTANTIATE(af_and_t, char   , uchar)
-    INSTANTIATE(af_and_t, uchar  , uchar)
+    INSTANTIATE(af_and_t, float  , char)
+    INSTANTIATE(af_and_t, double , char)
+    INSTANTIATE(af_and_t, cfloat , char)
+    INSTANTIATE(af_and_t, cdouble, char)
+    INSTANTIATE(af_and_t, int    , char)
+    INSTANTIATE(af_and_t, uint   , char)
+    INSTANTIATE(af_and_t, char   , char)
+    INSTANTIATE(af_and_t, uchar  , char)
 }

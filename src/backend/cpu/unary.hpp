@@ -15,6 +15,7 @@
 
 namespace cpu
 {
+#define sign(in) std::signbit(in)
 
 #define UNARY_FN(op)                            \
     template<typename T>                        \
@@ -43,6 +44,8 @@ UNARY_FN(acosh)
 UNARY_FN(atanh)
 
 UNARY_FN(round)
+UNARY_FN(trunc)
+UNARY_FN(sign )
 UNARY_FN(floor)
 UNARY_FN(ceil)
 
@@ -54,6 +57,7 @@ UNARY_FN(erfc)
 UNARY_FN(log)
 UNARY_FN(log10)
 UNARY_FN(log1p)
+UNARY_FN(log2)
 
 UNARY_FN(sqrt)
 UNARY_FN(cbrt)
@@ -62,6 +66,7 @@ UNARY_FN(tgamma)
 UNARY_FN(lgamma)
 
 #undef UNARY_FN
+#undef sign
 
     template<typename T, af_op_t op>
     Array<T> unaryOp(const Array<T> &in)

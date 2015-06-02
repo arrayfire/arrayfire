@@ -39,7 +39,7 @@ class Join : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int, char, unsigned char> TestTypes;
+typedef ::testing::Types<float, double, cfloat, cdouble, int, unsigned int, intl, uintl, char, unsigned char> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Join, TestTypes);
@@ -94,10 +94,10 @@ void joinTest(string pTestFile, const unsigned dim, const unsigned in0, const un
     // Delete
     delete[] outData;
 
-    if(in0Array  != 0) af_destroy_array(in0Array);
-    if(in1Array  != 0) af_destroy_array(in1Array);
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    if(in0Array  != 0) af_release_array(in0Array);
+    if(in1Array  != 0) af_release_array(in1Array);
+    if(outArray  != 0) af_release_array(outArray);
+    if(tempArray != 0) af_release_array(tempArray);
 }
 
 #define JOIN_INIT(desc, file, dim, in0, in1, resultIdx)                                     \
@@ -148,4 +148,35 @@ TEST(Join, CPP)
 
     // Delete
     delete[] outData;
+}
+
+TEST(JoinMany0, CPP)
+{
+    if (noDoubleTests<float>()) return;
+
+    af::array a0 = af::randu(10, 5);
+    af::array a1 = af::randu(20, 5);
+    af::array a2 = af::randu(5, 5);
+
+    af::array output = af::join(0, a0, a1, a2);
+    af::array gold = af::join(0, a0, af::join(0, a1, a2));
+
+
+    ASSERT_EQ(af::sum<float>(output - gold), 0);
+}
+
+TEST(JoinMany1, CPP)
+{
+    if (noDoubleTests<float>()) return;
+
+    af::array a0 = af::randu(20, 200);
+    af::array a1 = af::randu(20, 400);
+    af::array a2 = af::randu(20, 10);
+    af::array a3 = af::randu(20, 100);
+
+    int dim = 1;
+    af::array output = af::join(dim, a0, a1, a2, a3);
+    af::array gold = af::join(dim, a0, af::join(dim, a1, af::join(dim, a2, a3)));
+
+    ASSERT_EQ(af::sum<float>(output - gold), 0);
 }

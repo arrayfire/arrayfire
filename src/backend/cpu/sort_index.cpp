@@ -46,19 +46,19 @@ namespace cpu
         const T *comp_ptr = nullptr;
         auto comparator = [&comp_ptr, &op](size_t i1, size_t i2) {return op(comp_ptr[i1], comp_ptr[i2]);};
 
-        for(dim_type w = 0; w < in.dims()[3]; w++) {
-            dim_type valW = w * val.strides()[3];
-            dim_type idxW = w * idx.strides()[3];
-            dim_type  inW = w *  in.strides()[3];
-            for(dim_type z = 0; z < in.dims()[2]; z++) {
-                dim_type valWZ = valW + z * val.strides()[2];
-                dim_type idxWZ = idxW + z * idx.strides()[2];
-                dim_type  inWZ =  inW + z *  in.strides()[2];
-                for(dim_type y = 0; y < in.dims()[1]; y++) {
+        for(dim_t w = 0; w < in.dims()[3]; w++) {
+            dim_t valW = w * val.strides()[3];
+            dim_t idxW = w * idx.strides()[3];
+            dim_t  inW = w *  in.strides()[3];
+            for(dim_t z = 0; z < in.dims()[2]; z++) {
+                dim_t valWZ = valW + z * val.strides()[2];
+                dim_t idxWZ = idxW + z * idx.strides()[2];
+                dim_t  inWZ =  inW + z *  in.strides()[2];
+                for(dim_t y = 0; y < in.dims()[1]; y++) {
 
-                    dim_type valOffset = valWZ + y * val.strides()[1];
-                    dim_type idxOffset = idxWZ + y * idx.strides()[1];
-                    dim_type inOffset  =  inWZ + y *  in.strides()[1];
+                    dim_t valOffset = valWZ + y * val.strides()[1];
+                    dim_t idxOffset = idxWZ + y * idx.strides()[1];
+                    dim_t inOffset  =  inWZ + y *  in.strides()[1];
 
                     uint *ptr = idx_ptr + idxOffset;
                     std::copy(seq_vec.begin(), seq_vec.end(), ptr);
@@ -66,7 +66,7 @@ namespace cpu
                     comp_ptr = in_ptr + inOffset;
                     std::stable_sort(ptr, ptr + in.dims()[0], comparator);
 
-                    for (dim_type i = 0; i < val.dims()[0]; ++i){
+                    for (dim_t i = 0; i < val.dims()[0]; ++i){
                         val_ptr[valOffset + i] = in_ptr[inOffset + idx_ptr[idxOffset + i]];
                     }
                 }

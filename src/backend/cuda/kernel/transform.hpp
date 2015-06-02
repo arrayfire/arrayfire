@@ -46,30 +46,30 @@ namespace cuda
         ///////////////////////////////////////////////////////////////////////////
         template<typename T, bool inverse, af_interp_type method>
         __global__ static void
-        transform_kernel(Param<T> out, CParam<T> in, const dim_type nimages,
-                         const dim_type ntransforms, const dim_type blocksXPerImage)
+        transform_kernel(Param<T> out, CParam<T> in, const int nimages,
+                         const int ntransforms, const int blocksXPerImage)
         {
             // Compute which image set
-            const dim_type setId = blockIdx.x / blocksXPerImage;
-            const dim_type blockIdx_x = blockIdx.x - setId * blocksXPerImage;
+            const int setId = blockIdx.x / blocksXPerImage;
+            const int blockIdx_x = blockIdx.x - setId * blocksXPerImage;
 
             // Get thread indices
-            const dim_type xx = blockIdx_x * blockDim.x + threadIdx.x;
-            const dim_type yy = blockIdx.y * blockDim.y + threadIdx.y;
+            const int xx = blockIdx_x * blockDim.x + threadIdx.x;
+            const int yy = blockIdx.y * blockDim.y + threadIdx.y;
 
-            const dim_type limages = min(out.dims[2] - setId * nimages, nimages);
+            const int limages = min(out.dims[2] - setId * nimages, nimages);
 
             if(xx >= out.dims[0] || yy >= out.dims[1] * ntransforms)
                 return;
 
             // Index of channel of images and transform
-            //const dim_type i_idx = xx / out.dims[0];
-            const dim_type t_idx = yy / out.dims[1];
+            //const int i_idx = xx / out.dims[0];
+            const int t_idx = yy / out.dims[1];
 
             // Index in local channel -> This is output index
-            //const dim_type xido = xx - i_idx * out.dims[0];
-            const dim_type xido = xx;
-            const dim_type yido = yy - t_idx * out.dims[1];
+            //const int xido = xx - i_idx * out.dims[0];
+            const int xido = xx;
+            const int yido = yy - t_idx * out.dims[1];
 
             // Global offset
             //          Offset for transform channel + Offset for image channel.
@@ -108,9 +108,9 @@ namespace cuda
         void transform(Param<T> out, CParam<T> in, CParam<float> tf,
                        const bool inverse)
         {
-            dim_type nimages = in.dims[2];
+            int nimages = in.dims[2];
             // Multiplied in src/backend/transform.cpp
-            const dim_type ntransforms = out.dims[2] / in.dims[2];
+            const int ntransforms = out.dims[2] / in.dims[2];
 
             // Copy transform to constant memory.
             CUDA_CHECK(cudaMemcpyToSymbol(c_tmat, tf.ptr, ntransforms * 6 * sizeof(float), 0,
@@ -119,9 +119,9 @@ namespace cuda
             dim3 threads(TX, TY, 1);
             dim3 blocks(divup(out.dims[0], threads.x), divup(out.dims[1], threads.y));
 
-            const dim_type blocksXPerImage = blocks.x;
+            const int blocksXPerImage = blocks.x;
             if(nimages > TI) {
-                dim_type tile_images = divup(nimages, TI);
+                int tile_images = divup(nimages, TI);
                 nimages = TI;
                 blocks.x = blocks.x * tile_images;
             }

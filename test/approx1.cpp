@@ -9,6 +9,7 @@
 
 #include <gtest/gtest.h>
 #include <af/array.h>
+#include <af/complex.h>
 #include <af/signal.h>
 #include <af/index.h>
 #include <af/traits.hpp>
@@ -84,17 +85,17 @@ void approx1Test(string pTestFile, const unsigned resultIdx, const af_interp_typ
     size_t nElems = tests[resultIdx].size();
     bool ret = true;
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ret = (std::abs(tests[resultIdx][elIter] - outData[elIter]) < 0.0005);
+        ret = (abs(tests[resultIdx][elIter] - outData[elIter]) < 0.0005);
         ASSERT_EQ(true, ret) << tests[resultIdx][elIter] << "\t" << outData[elIter] << "at: " << elIter << std::endl;
     }
 
     // Delete
     delete[] outData;
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(posArray  != 0) af_destroy_array(posArray);
-    if(outArray  != 0) af_destroy_array(outArray);
-    if(tempArray != 0) af_destroy_array(tempArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(posArray  != 0) af_release_array(posArray);
+    if(outArray  != 0) af_release_array(outArray);
+    if(tempArray != 0) af_release_array(tempArray);
 }
 
 #define APPROX1_INIT(desc, file, resultIdx, method)                               \
@@ -134,9 +135,9 @@ void approx1ArgsTest(string pTestFile, const unsigned resultIdx, const af_interp
 
     ASSERT_EQ(err, af_approx1(&outArray, inArray, posArray, method, 0));
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(posArray  != 0) af_destroy_array(posArray);
-    if(outArray  != 0) af_destroy_array(outArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(posArray  != 0) af_release_array(posArray);
+    if(outArray  != 0) af_release_array(outArray);
 }
 
 #define APPROX1_ARGS(desc, file, resultIdx, method, err)                                            \
@@ -179,9 +180,9 @@ void approx1ArgsTestPrecision(string pTestFile, const unsigned resultIdx, const 
         ASSERT_EQ(AF_SUCCESS, af_approx1(&outArray, inArray, posArray, method, 0));
     }
 
-    if(inArray   != 0) af_destroy_array(inArray);
-    if(posArray  != 0) af_destroy_array(posArray);
-    if(outArray  != 0) af_destroy_array(outArray);
+    if(inArray   != 0) af_release_array(inArray);
+    if(posArray  != 0) af_release_array(posArray);
+    if(outArray  != 0) af_release_array(outArray);
 }
 
 #define APPROX1_ARGSP(desc, file, resultIdx, method)                                           \

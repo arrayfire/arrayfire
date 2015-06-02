@@ -21,7 +21,7 @@ namespace kernel
 
     typedef struct
     {
-        dim_type dim[4];
+        int dim[4];
     } dims_t;
 
     static const uint DIMX = 32;
@@ -47,7 +47,7 @@ namespace kernel
         out += wid * ostrides.dim[3] + zid * ostrides.dim[2] + yid * ostrides.dim[1];
         in  += wid * istrides.dim[3] + zid * istrides.dim[2] + yid * istrides.dim[1];
 
-        dim_type istride0 = istrides.dim[0];
+        int istride0 = istrides.dim[0];
         if (xid < idims.dim[0] &&
             yid < idims.dim[1] &&
             zid < idims.dim[2] &&
@@ -58,9 +58,9 @@ namespace kernel
     }
 
     template<typename T>
-    void memcopy(T *out, const dim_type *ostrides,
-                 const T *in, const dim_type *idims,
-                 const dim_type *istrides, uint ndims)
+    void memcopy(T *out, const dim_t *ostrides,
+                 const T *in, const dim_t *idims,
+                 const dim_t *istrides, uint ndims)
     {
         dim3 threads(DIMX, DIMY);
 
@@ -141,6 +141,8 @@ namespace kernel
     OTHER_SPECIALIZATIONS(double)
     OTHER_SPECIALIZATIONS(int   )
     OTHER_SPECIALIZATIONS(uint  )
+    OTHER_SPECIALIZATIONS(intl   )
+    OTHER_SPECIALIZATIONS(uintl  )
     OTHER_SPECIALIZATIONS(uchar )
     OTHER_SPECIALIZATIONS(char  )
     ////////////////////////////// END - templated help functions for copy_kernel //////////////////////////////////
@@ -164,13 +166,13 @@ namespace kernel
         const inType * in = src.ptr + (gw * src.strides[3] + gz * src.strides[2] + gy * src.strides[1]);
         outType * out     = dst.ptr + (gw * dst.strides[3] + gz * dst.strides[2] + gy * dst.strides[1]);
 
-        dim_type istride0 = src.strides[0];
-        dim_type ostride0 = dst.strides[0];
+        int istride0 = src.strides[0];
+        int ostride0 = dst.strides[0];
 
         if (gy < dst.dims[1] && gz < dst.dims[2] && gw < dst.dims[3]) {
-            dim_type loop_offset = blockDim.x*gridDim.x;
+            int loop_offset = blockDim.x * blk_x;
             bool cond = gy < trgt.dim[1] && gz < trgt.dim[2] && gw < trgt.dim[3];
-            for(dim_type rep=gx; rep<dst.dims[0]; rep+=loop_offset) {
+            for(int rep=gx; rep<dst.dims[0]; rep+=loop_offset) {
                 outType temp = default_value;
                 if (same_dims || (rep < trgt.dim[0] && cond)) {
                     temp = convertType<inType, outType>(scale<inType>(in[rep * istride0], factor));
@@ -181,7 +183,7 @@ namespace kernel
     }
 
     template<typename inType, typename outType>
-    void copy(Param<outType> dst, CParam<inType> src, dim_type ndims, outType default_value, double factor)
+    void copy(Param<outType> dst, CParam<inType> src, int ndims, outType default_value, double factor)
     {
         dim3 threads(DIMX, DIMY);
         size_t local_size[] = {DIMX, DIMY};
@@ -197,10 +199,10 @@ namespace kernel
         dim3 blocks(blk_x * dst.dims[2],
                     blk_y * dst.dims[3]);
 
-        dim_type trgt_l  = std::min(dst.dims[3], src.dims[3]);
-        dim_type trgt_k  = std::min(dst.dims[2], src.dims[2]);
-        dim_type trgt_j  = std::min(dst.dims[1], src.dims[1]);
-        dim_type trgt_i  = std::min(dst.dims[0], src.dims[0]);
+        int trgt_l  = std::min(dst.dims[3], src.dims[3]);
+        int trgt_k  = std::min(dst.dims[2], src.dims[2]);
+        int trgt_j  = std::min(dst.dims[1], src.dims[1]);
+        int trgt_i  = std::min(dst.dims[0], src.dims[0]);
         dims_t trgt_dims = {{trgt_i, trgt_j, trgt_k, trgt_l}};
 
         bool same_dims = ( (src.dims[0]==dst.dims[0]) &&

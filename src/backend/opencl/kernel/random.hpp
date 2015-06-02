@@ -9,18 +9,17 @@
 
 #pragma once
 
+#include <platform.hpp>
 #include <af/defines.h>
 #include <kernel_headers/random.hpp>
-#include <cl.hpp>
-#include <platform.hpp>
 #include <traits.hpp>
 #include <sstream>
 #include <string>
 #include <mutex>
 #include <map>
-#include <iostream>
 #include <dispatch.hpp>
 #include <err_opencl.hpp>
+#include <debug_opencl.hpp>
 #include <program.hpp>
 
 using cl::Buffer;
@@ -37,7 +36,9 @@ namespace opencl
     {
         static const uint REPEAT  = 32;
         static const uint THREADS = 256;
-        static uint random_seed[2];
+
+        static uint random_seed[2] = {0, 0};
+        static unsigned counter;
 
         template<typename T, bool isRandu>
         struct random_name
@@ -89,14 +90,12 @@ namespace opencl
         template<> STATIC_ bool isDouble<cdouble>() { return true; }
 
         template<typename T, bool isRandu>
-        void random(cl::Buffer out, dim_type elements)
+        void random(cl::Buffer out, int elements)
         {
             try {
-                static unsigned counter;
-
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static Program            ranProgs[DeviceManager::MAX_DEVICES];
-                static Kernel           ranKernels[DeviceManager::MAX_DEVICES];
+                static std::map<int, Program*>  ranProgs;
+                static std::map<int, Kernel*>   ranKernels;
 
                 int device = getActiveDeviceId();
 
@@ -118,11 +117,13 @@ namespace opencl
                             options << " -D IS_BOOL";
                         }
 
-                        buildProgram(ranProgs[device], random_cl, random_cl_len, options.str());
-                        ranKernels[device] = Kernel(ranProgs[device], "random");
+                        cl::Program prog;
+                        buildProgram(prog, random_cl, random_cl_len, options.str());
+                        ranProgs[device] = new Program(prog);
+                        ranKernels[device] = new Kernel(*ranProgs[device], "random");
                     });
 
-                auto randomOp = make_kernel<cl::Buffer, uint, uint, uint, uint>(ranKernels[device]);
+                auto randomOp = make_kernel<cl::Buffer, uint, uint, uint, uint>(*ranKernels[device]);
 
                 uint groups = divup(elements, THREADS * REPEAT);
                 counter += divup(elements, THREADS * groups);
@@ -132,6 +133,7 @@ namespace opencl
 
                 randomOp(EnqueueArgs(getQueue(), global, local),
                          out, elements, counter, random_seed[0], random_seed[1]);
+                CL_DEBUG_FINISH(getQueue());
             } catch(cl::Error ex) {
                 CL_TO_AF_ERROR(ex);
             }

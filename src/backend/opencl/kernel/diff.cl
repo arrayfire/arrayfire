@@ -7,8 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-void diff_this(__global T* out, __global const T* in, const dim_type oMem,
-               const dim_type iMem0, const dim_type iMem1, const dim_type iMem2)
+void diff_this(__global T* out, __global const T* in, const int oMem,
+               const int iMem0, const int iMem1, const int iMem2)
 {
     if(isDiff2 == 0) {
         out[oMem] = in[iMem1] - in[iMem0];
@@ -19,17 +19,17 @@ void diff_this(__global T* out, __global const T* in, const dim_type oMem,
 
 __kernel
 void diff_kernel(__global T *out, __global const T *in,
-                 const KParam op, const KParam ip, const dim_type oElem,
-                 const dim_type blocksPerMatX, const dim_type blocksPerMatY)
+                 const KParam op, const KParam ip, const int oElem,
+                 const int blocksPerMatX, const int blocksPerMatY)
 {
-    const dim_type idz = get_group_id(0) / blocksPerMatX;
-    const dim_type idw = get_group_id(1) / blocksPerMatY;
+    const int idz = get_group_id(0) / blocksPerMatX;
+    const int idw = get_group_id(1) / blocksPerMatY;
 
-    const dim_type blockIdx_x = get_group_id(0) - idz * blocksPerMatX;
-    const dim_type blockIdx_y = get_group_id(1) - idw * blocksPerMatY;
+    const int blockIdx_x = get_group_id(0) - idz * blocksPerMatX;
+    const int blockIdx_y = get_group_id(1) - idw * blocksPerMatY;
 
-    const dim_type idx = get_local_id(0) + blockIdx_x * get_local_size(0);
-    const dim_type idy = get_local_id(1) + blockIdx_y * get_local_size(1);
+    const int idx = get_local_id(0) + blockIdx_x * get_local_size(0);
+    const int idy = get_local_id(1) + blockIdx_y * get_local_size(1);
 
     if(idx >= op.dims[0] ||
        idy >= op.dims[1] ||
@@ -37,11 +37,11 @@ void diff_kernel(__global T *out, __global const T *in,
        idw >= op.dims[3])
         return;
 
-    dim_type iMem0 = idw * ip.strides[3] + idz * ip.strides[2] + idy * ip.strides[1] + idx;
-    dim_type iMem1 = iMem0 + ip.strides[DIM];
-    dim_type iMem2 = iMem1 + ip.strides[DIM];
+    int iMem0 = idw * ip.strides[3] + idz * ip.strides[2] + idy * ip.strides[1] + idx;
+    int iMem1 = iMem0 + ip.strides[DIM];
+    int iMem2 = iMem1 + ip.strides[DIM];
 
-    dim_type oMem = idw * op.strides[3] + idz * op.strides[2] + idy * op.strides[1] + idx;
+    int oMem = idw * op.strides[3] + idz * op.strides[2] + idy * op.strides[1] + idx;
 
     iMem2 *= isDiff2;
 
