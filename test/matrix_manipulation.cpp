@@ -13,7 +13,7 @@
 #include <vector>
 
 using namespace af;
-using namespace std;
+using std::vector;
 
 TEST(MatrixManipulation, SNIPPET_matrix_manipulation_tile)
 {

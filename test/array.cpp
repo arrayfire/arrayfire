@@ -4,7 +4,7 @@
 #include <testHelpers.hpp>
 
 using namespace af;
-using namespace std;
+using std::vector;
 
 template<typename T>
 class Array : public ::testing::Test
