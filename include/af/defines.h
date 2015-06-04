@@ -25,15 +25,11 @@
         #define true  1
     #endif
     #define __PRETTY_FUNCTION__ __FUNCSIG__
-    #define snprintf sprintf_s
-    #define STATIC_ static
     #define SIZE_T_FRMT_SPECIFIER "%Iu"
     #define DEPRECATED(msg) __declspec(deprecated( msg ))
 #else
     #define AFAPI   __attribute__((visibility("default")))
     #include <stdbool.h>
-    #define __PRETTY_FUNCTION__ __func__
-    #define STATIC_ inline
     #define SIZE_T_FRMT_SPECIFIER "%zu"
 #if __GNUC__ >= 4 && __GNUC_MINOR > 4
     #define DEPRECATED(msg) __attribute__((deprecated( msg )))
