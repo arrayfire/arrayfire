@@ -31,6 +31,23 @@ times followed by FAST feature detection on each scale.
 
 =======================================================================
 
+\defgroup cv_func_hamming_matcher hammingMatcher
+\ingroup featmatcher_mat
+
+\brief Hamming Matcher
+
+Calculates Hamming distances between two 2-dimensional arrays containing
+features, one of the arrays containing the training data and the other the
+query data. One of the dimensions of the both arrays must be equal among them,
+identifying the length of each feature. The other dimension indicates the
+total number of features in each of the training and query arrays. Two
+1-dimensional arrays are created as results, one containg the smallest N
+distances of the query array and another containing the indices of these
+distances in the training array. The resulting 1-dimensional arrays have length
+equal to the number of features contained in the query array.
+
+=======================================================================
+
 \defgroup cv_func_match_template matchTemplate
 \ingroup match_mat
 
