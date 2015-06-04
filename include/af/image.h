@@ -336,23 +336,6 @@ AFAPI array erode3(const array& in, const array& mask);
 AFAPI array regions(const array& in, const af::connectivity connectivity=AF_CONNECTIVITY_4, const dtype type=f32);
 
 /**
-   C++ Interface for image template matching
-
-   \param[in]  searchImg is an array with image data
-   \param[in]  templateImg is the template we are looking for in the image
-   \param[in]  mType is metric that should be used to calculate the disparity
-               between window in the image and the template image. It can be one of
-               the values defined by the enum \ref af_match_type
-   \return     array with disparity values for the window starting at
-               corresponding pixel position
-
-   \note If \p search_img is 3d array, a batch operation will be performed.
-
-   \ingroup cv_func_match_template
- */
-AFAPI array matchTemplate(const array &searchImg, const array &templateImg, const matchType mType=AF_SAD);
-
-/**
    C++ Interface for extracting sobel gradients
 
    \param[out] dx is derivative along horizontal direction
@@ -790,25 +773,6 @@ extern "C" {
         \ingroup image_func_regions
     */
     AFAPI af_err af_regions(af_array *out, const af_array in, const af_connectivity connectivity, const af_dtype ty);
-
-    /**
-       C Interface for image template matching
-
-       \param[out] out will have disparity values for the window starting at
-                   corresponding pixel position
-       \param[in]  search_img is an array with image data
-       \param[in]  template_img is the template we are looking for in the image
-       \param[in]  m_type is metric that should be used to calculate the disparity
-                   between window in the image and the template image. It can be one of
-                   the values defined by the enum \ref af_match_type
-       \return     \ref AF_SUCCESS if disparity metric is computed successfully,
-       otherwise an appropriate error code is returned.
-
-       \note If \p search_img is 3d array, a batch operation will be performed.
-
-       \ingroup cv_func_match_template
-    */
-    AFAPI af_err af_match_template(af_array *out, const af_array search_img, const af_array template_img, const af_match_type m_type);
 
     /**
        C Interface for getting sobel gradients

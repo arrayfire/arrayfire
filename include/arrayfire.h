@@ -153,6 +153,9 @@
      @defgroup featdescriptor_mat Feature descriptors
      ORB feature descriptor
 
+     @defgroup featmatcher_mat Feature matchers
+     Feature matchers
+
      @defgroup match_mat Template matching
    @}
 
