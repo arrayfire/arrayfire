@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <defines.hpp>
 #include <af/traits.hpp>
 #include <string>
 #include <sstream>
