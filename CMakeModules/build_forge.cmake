@@ -12,13 +12,11 @@ ELSE()
     SET(byproducts BYPRODUCTS ${forge_location})
 ENDIF()
 
-INCLUDE("${CMAKE_MODULE_PATH}/FindGLEWmx.cmake")
-FIND_PACKAGE(GLFW)
-
+# FIXME Tag forge correctly during release
 ExternalProject_Add(
     forge-ext
     GIT_REPOSITORY https://github.com/arrayfire/forge.git
-    GIT_TAG af3.0
+    GIT_TAG 22eb2aeafc4547564e7d90234320cd65f2f859fb
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""
@@ -29,13 +27,6 @@ ExternalProject_Add(
     -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
     -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
     -DBUILD_EXAMPLES:BOOL=OFF
-    -DUSE_GLEWmx_STATIC:BOOL=${USE_GLEWmx_STATIC}
-    -DGLEW_INCLUDE_DIR:PATH=${GLEW_INCLUDE_DIR}
-    -DGLEW_LIBRARY:FILEPATH=${GLEW_LIBRARY}
-    -DGLEWmxd_LIBRARY:FILEPATH=${GLEWmxd_LIBRARY}
-    -DGLEWmxs_LIBRARY:FILEPATH=${GLEWmxs_LIBRARY}
-    -DGLFW_INCLUDE_DIR:PATH=${GLFW_INCLUDE_DIR}
-    -DGLFW_LIBRARY:FILEPATH=${GLFW_LIBRARY}
     ${byproducts}
     )
 

@@ -52,12 +52,11 @@ IF(BUILD_GRAPHICS)
     IF(FORGE_FOUND)
         ADD_DEFINITIONS(-DGLEW_MX -DWITH_GRAPHICS)
         INCLUDE("${CMAKE_MODULE_PATH}/FindGLEWmx.cmake")
-        FIND_PACKAGE(GLFW)
 
         INCLUDE_DIRECTORIES(
             ${FORGE_INCLUDE_DIRECTORIES}
             ${GLEW_INCLUDE_DIR}
-            ${GLFW_INCLUDE_DIR})
+            )
 
         SET(FORGE_LIBRARIES ${FORGE_LIBRARIES}
                             ${GLEWmx_LIBRARY}
