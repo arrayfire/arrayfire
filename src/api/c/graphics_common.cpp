@@ -19,14 +19,14 @@ using namespace std;
 template<typename T>
 GLenum getGLType() { return GL_FLOAT; }
 
-#define INSTANTIATE_GET_GL_TYPE(T, OpenGLEnum)\
-    template<> GLenum getGLType<T>() { return OpenGLEnum; }
+#define INSTANTIATE_GET_FG_TYPE(T, ForgeEnum)\
+    template<> fg::FGType getGLType<T>() { return ForgeEnum; }
 
-INSTANTIATE_GET_GL_TYPE(float, GL_FLOAT);
-INSTANTIATE_GET_GL_TYPE(int  , GL_INT);
-INSTANTIATE_GET_GL_TYPE(unsigned, GL_UNSIGNED_INT);
-INSTANTIATE_GET_GL_TYPE(char, GL_BYTE);
-INSTANTIATE_GET_GL_TYPE(unsigned char, GL_UNSIGNED_BYTE);
+INSTANTIATE_GET_FG_TYPE(float, fg::FG_FLOAT);
+INSTANTIATE_GET_FG_TYPE(int  , fg::FG_INT);
+INSTANTIATE_GET_FG_TYPE(unsigned, fg::FG_UNSIGNED_INT);
+INSTANTIATE_GET_FG_TYPE(char, fg::FG_BYTE);
+INSTANTIATE_GET_FG_TYPE(unsigned char, fg::FG_UNSIGNED_BYTE);
 
 GLenum glErrorSkip(const char *msg, const char* file, int line)
 {
@@ -136,7 +136,7 @@ fg::Window* ForgeManager::getMainWindow(const bool dontCreate)
     return wnd;
 }
 
-fg::Image* ForgeManager::getImage(int w, int h, fg::ColorMode mode, GLenum type)
+fg::Image* ForgeManager::getImage(int w, int h, fg::ColorMode mode, fg::FGType type)
 {
     /* w, h needs to fall in the range of [0, 2^16]
      * for the ForgeManager to correctly retrieve
@@ -157,7 +157,7 @@ fg::Image* ForgeManager::getImage(int w, int h, fg::ColorMode mode, GLenum type)
     return mImgMap[key];
 }
 
-fg::Plot* ForgeManager::getPlot(int nPoints, GLenum type)
+fg::Plot* ForgeManager::getPlot(int nPoints, fg::FGType type)
 {
     /* nPoints needs to fall in the range of [0, 2^48]
      * for the ForgeManager to correctly retrieve
@@ -176,7 +176,7 @@ fg::Plot* ForgeManager::getPlot(int nPoints, GLenum type)
     return mPltMap[key];
 }
 
-fg::Histogram* ForgeManager::getHistogram(int nBins, GLenum type)
+fg::Histogram* ForgeManager::getHistogram(int nBins, fg::FGType type)
 {
     /* nBins needs to fall in the range of [0, 2^48]
      * for the ForgeManager to correctly retrieve
