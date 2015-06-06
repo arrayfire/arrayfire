@@ -53,7 +53,7 @@ double vectorNorm(const Array<T> &A, double p)
 
     Array<T> P = createValueArray<T>(A.dims(), scalar<T>(p));
     Array<T> A_p = arithOp<T, af_pow_t>(A, P, A.dims());
-    return std::pow(reduce_all<af_add_t, T, T>(A_p), 1.0/p);
+    return std::pow(reduce_all<af_add_t, T, T>(A_p), T(1.0/p));
 }
 
 template<typename T>
@@ -79,7 +79,7 @@ double LPQNorm(const Array<T> &A, double p, double q)
     Array<T> Q = createValueArray<T>(A_p_norm.dims(), scalar<T>(q));
     Array<T> A_p_norm_q = arithOp<T, af_pow_t>(A_p_norm, Q, Q.dims());
 
-    return std::pow(reduce_all<af_add_t, T, T>(A_p_norm_q), 1.0/q);
+    return std::pow(reduce_all<af_add_t, T, T>(A_p_norm_q), T(1.0/q));
 }
 
 template<typename T>
