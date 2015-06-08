@@ -634,7 +634,7 @@ TEST(GFOR, convolve2_MO)
     }
 }
 
-TEST(GFOR, convolve2_1M)
+TEST(GFOR, convolve2_OM)
 {
     array A = randu(5, 5);
     array B = randu(5, 5, 3);

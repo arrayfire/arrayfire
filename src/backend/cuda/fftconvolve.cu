@@ -30,29 +30,20 @@ static const dim4 calcPackedSize(Array<T> const& i1,
     const dim4 i1d = i1.dims();
     const dim4 i2d = i2.dims();
 
-    dim_t pd[4];
+    dim_t pd[4] = {1, 1, 1, 1};
 
-    // Pack both signal and filter on same memory array, this will ensure
-    // better use of batched cuFFT capabilities
-    for (dim_t k = 0; k < 4; k++) {
-        if (k == 0)
-            pd[k] = nextpow2((unsigned)(i1d[k] + i2d[k] - 1)) / 2;
-        else if (k < baseDim)
-            pd[k] = nextpow2((unsigned)(i1d[k] + i2d[k] - 1));
-        else if (k == baseDim)
-            pd[k] = i1d[k];
-        else
-            pd[k] = 1;
-    }
 
     dim_t max_d0 = (i1d[0] > i2d[0]) ? i1d[0] : i2d[0];
     dim_t min_d0 = (i1d[0] < i2d[0]) ? i1d[0] : i2d[0];
-    unsigned df0  = nextpow2((unsigned)((int)ceil(max_d0 / 2.f) + min_d0 - 1));
+    pd[0]  = nextpow2((unsigned)((int)ceil(max_d0 / 2.f) + min_d0 - 1));
 
-    // Adjust dimension 0 size if ceil(signal/2.f)+filter-1 won't fit in
-    // packed_dims[0]
-    if (df0 == (pd[0]*2))
-        pd[0] *= 2;
+    for (dim_t k = 1; k < 4; k++) {
+        if (k < baseDim) {
+            pd[k] = nextpow2((unsigned)(i1d[k] + i2d[k] - 1));
+        } else {
+            pd[k] = i1d[k];
+        }
+    }
 
     return dim4(pd[0], pd[1], pd[2], pd[3]);
 }
