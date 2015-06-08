@@ -558,8 +558,9 @@ namespace af
     {
     }
 
-    af::array::array_proxy::array_proxy(const array_proxy &other) {
-        *impl = *(other.impl);
+    af::array::array_proxy::array_proxy(const array_proxy &other)
+        : impl(new array_proxy_impl(*other.impl->parent, other.impl->indices, other.impl->lin))
+    {
     }
 
 #if __cplusplus > 199711L
