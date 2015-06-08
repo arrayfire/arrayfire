@@ -11,6 +11,7 @@
 #define __MAGMA_BLAS_H
 
 #include "magma_common.h"
+#include <defines.hpp>
 #include <types.hpp>
 #include <clBLAS.h>
 #include <err_clblas.hpp>
