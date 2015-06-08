@@ -239,6 +239,13 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
         else
             packed_dims[k] = 1;
 
+        unsigned df0  = nextpow2((unsigned)((int)ceil(sd[0] / 2.f) + fd[0] - 1));
+
+        // Adjust dimension 0 size if ceil(signal/2.f)+filter-1 won't fit in
+        // packed_dims[0]
+        if (k == 0 && df0 == packed_dims[0])
+            packed_dims[0] *= 2;
+
         if (k < baseDim) {
             fft_dims[baseDim-k-1] = (k == 0) ? packed_dims[k] / 2 : packed_dims[k];
             fftScale *= fft_dims[baseDim-k-1];

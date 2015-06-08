@@ -44,6 +44,13 @@ static const dim4 calcPackedSize(Array<T> const& i1,
             pd[k] = 1;
     }
 
+    unsigned df0  = nextpow2((unsigned)((int)ceil(i1d[0] / 2.f) + i2d[0] - 1));
+
+    // Adjust dimension 0 size if ceil(signal/2.f)+filter-1 won't fit in
+    // packed_dims[0]
+    if (df0 == (pd[0]*2))
+        pd[0] *= 2;
+
     return dim4(pd[0], pd[1], pd[2], pd[3]);
 }
 
