@@ -13,8 +13,8 @@
 #include <math.h>
 #include <cstdlib>
 
-#define WIDTH 600 // Width of image
-#define HEIGHT 800 // Width of image
+#define WIDTH 400 // Width of image
+#define HEIGHT 400 // Width of image
 
 using namespace af;
 
@@ -77,16 +77,19 @@ int main(int argc, char **argv)
         af::setDevice(device);
         info();
         printf("** ArrayFire Fractals Demo **\n");
-        af::Window wnd("Fractal Demo");
+        af::Window wnd(WIDTH, HEIGHT, "Fractal Demo");
         wnd.setColorMap(AF_COLORMAP_SPECTRUM);
 
-        float center[] = {-0.5, 0};
+        float center[] = {-0.75, 0.1};
         // Keep zomming out for each frame
-        for (int zoom = 1000; zoom > 100; zoom -= 1) {
+        for (int i = 10; i < 400; i++) {
+            int zoom = i * i;
+            if(!(i % 10)) printf("iteration: %d zoom: %d\n", i, zoom); fflush(stdout);
 
             // Generate the grid at the current zoom factor
             array c = complex_grid(WIDTH, HEIGHT, zoom, center);
 
+            iter =sqrt(abs(2*sqrt(abs(1-sqrt(5*zoom)))))*100;
             // Generate the mandelbrot image
             array mag = mandelbrot(c, iter, 1000);
 
