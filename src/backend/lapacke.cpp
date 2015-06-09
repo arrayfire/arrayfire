@@ -11,6 +11,7 @@
 #include <Accelerate/Accelerate.h>
 #include "lapacke.hpp"
 #include <cstdint>
+#include <algorithm>
 
 #if INTPTR_MAX == INT16MAX
     #define BS 16
