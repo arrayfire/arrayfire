@@ -221,19 +221,16 @@ CUDA_ADD_LIBRARY(afcuda SHARED
 
 ADD_DEPENDENCIES(afcuda ${ptx_targets})
 
-TARGET_LINK_LIBRARIES(afcuda
-                      ${CUDA_CUBLAS_LIBRARIES}
-                      ${CUDA_LIBRARIES}
-                      ${CUDA_cusolver_LIBRARY}
-                      ${FreeImage_LIBS}
-                      ${CUDA_CUFFT_LIBRARIES}
-                      ${CUDA_NVVM_LIBRARIES}
-                      ${CUDA_CUDA_LIBRARY})
+TARGET_LINK_LIBRARIES(afcuda    LINK_PRIVATE ${CUDA_CUBLAS_LIBRARIES}
+                                LINK_PRIVATE ${CUDA_LIBRARIES}
+                                LINK_PRIVATE ${CUDA_cusolver_LIBRARY}
+                                LINK_PRIVATE ${FreeImage_LIBS}
+                                LINK_PRIVATE ${CUDA_CUFFT_LIBRARIES}
+                                LINK_PRIVATE ${CUDA_NVVM_LIBRARIES}
+                                LINK_PRIVATE ${CUDA_CUDA_LIBRARY})
 
 IF(FORGE_FOUND)
-    TARGET_LINK_LIBRARIES(afcuda
-                          ${FORGE_LIBRARIES}
-                         )
+    TARGET_LINK_LIBRARIES(afcuda LINK_PRIVATE ${FORGE_LIBRARIES})
 ENDIF()
 
 SET_TARGET_PROPERTIES(afcuda PROPERTIES

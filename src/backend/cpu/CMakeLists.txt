@@ -114,22 +114,16 @@ ADD_LIBRARY(afcpu SHARED
            ${c_sources}
            ${cpp_sources})
 
-TARGET_LINK_LIBRARIES(afcpu
-                      ${FreeImage_LIBS}
-                      ${CBLAS_LIBRARIES}
-                      ${FFTW_LIBRARIES}
-                      )
+TARGET_LINK_LIBRARIES(afcpu LINK_PRIVATE ${FreeImage_LIBS}
+                            LINK_PRIVATE ${CBLAS_LIBRARIES}
+                            LINK_PRIVATE ${FFTW_LIBRARIES})
 
 IF(LAPACK_FOUND)
-   TARGET_LINK_LIBRARIES(afcpu
-   ${LAPACK_LIBRARIES}
-   )
+   TARGET_LINK_LIBRARIES(afcpu  LINK_PRIVATE ${LAPACK_LIBRARIES})
 ENDIF()
 
 IF(FORGE_FOUND)
-    TARGET_LINK_LIBRARIES(afcpu
-                          ${FORGE_LIBRARIES}
-                         )
+    TARGET_LINK_LIBRARIES(afcpu LINK_PRIVATE ${FORGE_LIBRARIES})
 ENDIF()
 
 SET_TARGET_PROPERTIES(afcpu PROPERTIES
