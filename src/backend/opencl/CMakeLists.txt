@@ -210,21 +210,6 @@ IF(FORGE_FOUND)
     TARGET_LINK_LIBRARIES(afopencl  PRIVATE ${FORGE_LIBRARIES})
 ENDIF()
 
-# locally built but not installed libraries (clBLAS and clFFT) must NOT appear in the
-# link interface. The best option would be to use LINK_PRIVATE, but unfortunately
-# it is not available for older cmake than 2.8.7, so they must be remove from
-# the link interface manually. Both LINK_INTERFACE_LIBRARIES and INTERFACE_LINK_LIBRARIES
-# are used to keep it working with older cmake versions that 2.8.12 and avoid
-# warnings on newer versions - see CMP0022
-FOREACH(property LINK_INTERFACE_LIBRARIES INTERFACE_LINK_LIBRARIES)
-    GET_TARGET_PROPERTY(value afopencl ${property})
-    IF(value)
-        LIST(REMOVE_ITEM value ${CLBLAS_LIBRARIES} ${CLFFT_LIBRARIES})
-        SET_TARGET_PROPERTIES(afopencl PROPERTIES LINK_INTERFACE_LIBRARIES "${value}")
-        SET_TARGET_PROPERTIES(afopencl PROPERTIES INTERFACE_LINK_LIBRARIES "${value}")
-    ENDIF()
-ENDFOREACH()
-
 INSTALL(TARGETS afopencl EXPORT OpenCL DESTINATION "${AF_INSTALL_LIB_DIR}"
         COMPONENT libraries)
 
