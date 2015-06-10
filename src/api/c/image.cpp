@@ -22,14 +22,37 @@
 #include <reorder.hpp>
 #include <tile.hpp>
 #include <join.hpp>
+#include <cast.hpp>
+#include <arith.hpp>
 
 #include <iostream>
+#include <limits>
 
 using af::dim4;
 using namespace detail;
 
 #if defined(WITH_GRAPHICS)
 using namespace graphics;
+
+
+template<typename T>
+Array<T> normalizePerType(const Array<T>& in)
+{
+    Array<float> inFloat = cast<float, T>(in);
+
+    Array<float> cnst = createValueArray<float>(in.dims(),
+                             std::numeric_limits<T>::max()/(255.0f+1.0e-6f));
+
+    Array<float> scaled = arithOp<float, af_mul_t>(inFloat, cnst, in.dims());
+
+    return cast<T, float>(scaled);
+}
+
+template<>
+Array<float> normalizePerType<float>(const Array<float>& in)
+{
+    return in;
+}
 
 template<typename T>
 static fg::Image* convert_and_copy_image(const af_array in)
@@ -46,7 +69,7 @@ static fg::Image* convert_and_copy_image(const af_array in)
 
     fg::Image* ret_val = fgMngr.getImage(inDims[1], inDims[0], (fg::ColorMode)inDims[2], getGLType<T>());
 
-    copy_image<T>(imgData, ret_val);
+    copy_image<T>(normalizePerType<T>(imgData), ret_val);
 
     return ret_val;
 }
