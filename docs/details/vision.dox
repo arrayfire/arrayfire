@@ -1,0 +1,61 @@
+/**
+\addtogroup arrayfire_func
+@{
+
+\defgroup cv_func_fast fast
+\ingroup featdetect_mat
+
+\brief FAST feature detector
+
+A circle of radius 3 pixels, translating into a total of 16 pixels, is checked
+for sequential segments of pixels much brighter or much darker than the central
+one. For a pixel p to be considered a feature, there must exist a sequential
+segment of arc_length pixels in the circle around it such that all are greather
+than (p + thr) or smaller than (p - thr). After all features in the image are
+detected, if nonmax is true, the non-maximal suppression is applied, checking
+all detected features and the features detected in its 8-neighborhood and
+discard it if its score is non maximal.
+
+=======================================================================
+
+\defgroup cv_func_orb orb
+\ingroup featdescriptor_mat
+
+\brief ORB Feature descriptor
+
+Extract ORB descriptors from FAST features that hold higher Harris responses.
+FAST does not compute orientation, thus, orientation of features is calculated
+using the intensity centroid. As FAST is also not multi-scale enabled, a
+multi-scale pyramid is calculated by downsampling the input image multiple
+times followed by FAST feature detection on each scale.
+
+=======================================================================
+
+\defgroup cv_func_hamming_matcher hammingMatcher
+\ingroup featmatcher_mat
+
+\brief Hamming Matcher
+
+Calculates Hamming distances between two 2-dimensional arrays containing
+features, one of the arrays containing the training data and the other the
+query data. One of the dimensions of the both arrays must be equal among them,
+identifying the length of each feature. The other dimension indicates the
+total number of features in each of the training and query arrays. Two
+1-dimensional arrays are created as results, one containg the smallest N
+distances of the query array and another containing the indices of these
+distances in the training array. The resulting 1-dimensional arrays have length
+equal to the number of features contained in the query array.
+
+=======================================================================
+
+\defgroup cv_func_match_template matchTemplate
+\ingroup match_mat
+
+\brief Template Matching
+
+Template matching is an image processing technique to find small patches of an image which
+match a given template image. A more in depth discussion on the topic can be found
+[here](http://en.wikipedia.org/wiki/Template_matching).
+
+@}
+*/

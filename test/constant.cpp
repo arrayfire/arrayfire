@@ -13,8 +13,8 @@
 #include <af/data.h>
 #include <testHelpers.hpp>
 
-using namespace std;
 using namespace af;
+using std::vector;
 
 template<typename T>
 class Constant : public ::testing::Test { };

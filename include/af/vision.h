@@ -90,6 +90,23 @@ AFAPI void hammingMatcher(array& idx, array& dist,
                           const array& query, const array& train,
                           const dim_t dist_dim=0, const unsigned n_dist=1);
 
+/**
+   C++ Interface for image template matching
+
+   \param[in]  searchImg is an array with image data
+   \param[in]  templateImg is the template we are looking for in the image
+   \param[in]  mType is metric that should be used to calculate the disparity
+               between window in the image and the template image. It can be one of
+               the values defined by the enum \ref af_match_type
+   \return     array with disparity values for the window starting at
+               corresponding pixel position
+
+   \note If \p search_img is 3d array, a batch operation will be performed.
+
+   \ingroup cv_func_match_template
+ */
+AFAPI array matchTemplate(const array &searchImg, const array &templateImg, const matchType mType=AF_SAD);
+
 }
 #endif
 
@@ -172,6 +189,25 @@ extern "C" {
     AFAPI af_err af_hamming_matcher(af_array* idx, af_array* dist,
                                     const af_array query, const af_array train,
                                     const dim_t dist_dim, const unsigned n_dist);
+
+    /**
+       C Interface for image template matching
+
+       \param[out] out will have disparity values for the window starting at
+                   corresponding pixel position
+       \param[in]  search_img is an array with image data
+       \param[in]  template_img is the template we are looking for in the image
+       \param[in]  m_type is metric that should be used to calculate the disparity
+                   between window in the image and the template image. It can be one of
+                   the values defined by the enum \ref af_match_type
+       \return     \ref AF_SUCCESS if disparity metric is computed successfully,
+       otherwise an appropriate error code is returned.
+
+       \note If \p search_img is 3d array, a batch operation will be performed.
+
+       \ingroup cv_func_match_template
+    */
+    AFAPI af_err af_match_template(af_array *out, const af_array search_img, const af_array template_img, const af_match_type m_type);
 
 #ifdef __cplusplus
 }

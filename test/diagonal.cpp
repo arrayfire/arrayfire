@@ -4,8 +4,8 @@
 #include <arrayfire.h>
 #include <iostream>
 
-using namespace std;
 using namespace af;
+using std::vector;
 
 template<typename T>
 class Diagonal : public ::testing::Test
@@ -41,7 +41,7 @@ TYPED_TEST(Diagonal, Create)
             }
         }
     } catch (const af::exception& ex) {
-        FAIL() << ex.what() << endl;
+        FAIL() << ex.what() << std::endl;
     }
 }
 
@@ -67,7 +67,7 @@ TYPED_TEST(Diagonal, Extract)
             }
         }
     } catch (const af::exception& ex) {
-        FAIL() << ex.what() << endl;
+        FAIL() << ex.what() << std::endl;
     }
 }
 

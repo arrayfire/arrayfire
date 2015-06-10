@@ -16,6 +16,7 @@
 
 #include <af/version.h>
 #include <af/opencl.h>
+#include <defines.hpp>
 #include <platform.hpp>
 #include <functional>
 #include <algorithm>

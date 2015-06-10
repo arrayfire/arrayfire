@@ -14,7 +14,7 @@
 #include <testHelpers.hpp>
 
 using namespace af;
-using namespace std;
+using std::vector;
 
 TEST(GettingStarted, SNIPPET_getting_started_gen)
 {

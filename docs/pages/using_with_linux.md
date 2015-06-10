@@ -72,7 +72,7 @@ sudo apt-get install libatlas3gf-base libatlas-dev libfftw3-dev liblapacke-dev
 
 This is the suggested method of using ArrayFire on Linux.
 ArrayFire ships with support for CMake by default, including a series of
-`Find` scripts installed  in the `/usr/local/share/ArrayFire` (or similar)
+`Find` scripts installed  in the `/usr/local/share/ArrayFire/cmake` (or similar)
 directory.
 These scripts will automatically find the CUDA, OpenCL, and CPU versions
 of ArrayFire and automatically choose the most powerful installed backend
@@ -110,12 +110,12 @@ Therefore, if you wish to target a specific specific backend, switch
 
 Finally, if you have installed ArrayFire to a non-standard location, CMake can still help
 you out. When you execute CMake specify the path to the `ArrayFireConfig*` files that
-are found in the `share/ArrayFire` subdirectory of the installation folder.
+are found in the `share/ArrayFire/cmake` subdirectory of the installation folder.
 For example, if ArrayFire were installed locally to `/opt/ArrayFire` then you would
 modify the `cmake` command above to contain the following definition:
 
 ```
-cmake -DArrayFire_DIR=/opt/ArrayFire/share/ArrayFire ...
+cmake -DArrayFire_DIR=/opt/ArrayFire/share/ArrayFire/cmake ...
 ```
 
 ## MakeFiles
