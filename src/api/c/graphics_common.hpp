@@ -18,7 +18,7 @@
 
 // default to f32(float) type
 template<typename T>
-GLenum getGLType();
+fg::FGType getGLType();
 
 // Print for OpenGL errors
 // Returns 1 if an OpenGL error occurred, 0 otherwise.
@@ -73,9 +73,9 @@ class ForgeManager
 
         fg::Font* getFont(const bool dontCreate=false);
         fg::Window* getMainWindow(const bool dontCreate=false);
-        fg::Image* getImage(int w, int h, fg::ColorMode mode, GLenum type);
-        fg::Plot* getPlot(int nPoints, GLenum type);
-        fg::Histogram* getHistogram(int nBins, GLenum type);
+        fg::Image* getImage(int w, int h, fg::ColorMode mode, fg::FGType type);
+        fg::Plot* getPlot(int nPoints, fg::FGType type);
+        fg::Histogram* getHistogram(int nBins, fg::FGType type);
 
     protected:
         ForgeManager() {}
