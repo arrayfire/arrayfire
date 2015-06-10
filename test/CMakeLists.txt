@@ -13,9 +13,10 @@ MACRO(CREATE_TESTS BACKEND GTEST_LIBS OTHER_LIBS)
 
         ADD_TEST(Test_${TEST_NAME} ${TEST_NAME})
         ADD_EXECUTABLE(${TEST_NAME} ${FNAME}.cpp)
-        TARGET_LINK_LIBRARIES(${TEST_NAME}  af${BACKEND}
-                      ${THREAD_LIB_FLAG}
-                      ${GTEST_LIBS} ${OTHER_LIBS})
+        TARGET_LINK_LIBRARIES(${TEST_NAME}  PRIVATE  af${BACKEND}
+                                            PRIVATE ${THREAD_LIB_FLAG}
+                                            PRIVATE ${GTEST_LIBS}
+                                            PRIVATE ${OTHER_LIBS})
         SET_TARGET_PROPERTIES(${TEST_NAME}
                       PROPERTIES
                       COMPILE_FLAGS -DAF_${DEF_NAME}

@@ -207,7 +207,51 @@ IF("${APPLE}")
     ENDIF()
 ENDIF()
 
-CUDA_ADD_LIBRARY(afcuda SHARED
+## Copied from FindCUDA.cmake
+## The target_link_library needs to link with the cuda libraries using
+## PRIVATE
+macro(MY_CUDA_ADD_LIBRARY cuda_target)
+
+  CUDA_ADD_CUDA_INCLUDE_ONCE()
+
+  # Separate the sources from the options
+  CUDA_GET_SOURCES_AND_OPTIONS(_sources _cmake_options _options ${ARGN})
+  CUDA_BUILD_SHARED_LIBRARY(_cuda_shared_flag ${ARGN})
+  # Create custom commands and targets for each file.
+  CUDA_WRAP_SRCS( ${cuda_target} OBJ _generated_files ${_sources}
+    ${_cmake_options} ${_cuda_shared_flag}
+    OPTIONS ${_options} )
+
+  # Compute the file name of the intermedate link file used for separable
+  # compilation.
+  CUDA_COMPUTE_SEPARABLE_COMPILATION_OBJECT_FILE_NAME(link_file ${cuda_target} "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
+
+  # Add the library.
+  add_library(${cuda_target} ${_cmake_options}
+    ${_generated_files}
+    ${_sources}
+    ${link_file}
+    )
+
+  # Add a link phase for the separable compilation if it has been enabled.  If
+  # it has been enabled then the ${cuda_target}_SEPARABLE_COMPILATION_OBJECTS
+  # variable will have been defined.
+  CUDA_LINK_SEPARABLE_COMPILATION_OBJECTS("${link_file}" ${cuda_target} "${_options}" "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
+
+  target_link_libraries(${cuda_target}
+      PRIVATE ${CUDA_LIBRARIES}
+    )
+
+  # We need to set the linker language based on what the expected generated file
+  # would be. CUDA_C_OR_CXX is computed based on CUDA_HOST_COMPILATION_CPP.
+  set_target_properties(${cuda_target}
+    PROPERTIES
+    LINKER_LANGUAGE ${CUDA_C_OR_CXX}
+    )
+
+endmacro()
+
+MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${cuda_headers}
                 ${cuda_sources}
                 ${jit_sources}
@@ -221,29 +265,21 @@ CUDA_ADD_LIBRARY(afcuda SHARED
 
 ADD_DEPENDENCIES(afcuda ${ptx_targets})
 
-TARGET_LINK_LIBRARIES(afcuda
-                      ${CUDA_CUBLAS_LIBRARIES}
-                      ${CUDA_LIBRARIES}
-                      ${CUDA_cusolver_LIBRARY}
-                      ${FreeImage_LIBS}
-                      ${CUDA_CUFFT_LIBRARIES}
-                      ${CUDA_NVVM_LIBRARIES}
-                      ${CUDA_CUDA_LIBRARY})
+TARGET_LINK_LIBRARIES(afcuda    PRIVATE ${CUDA_CUBLAS_LIBRARIES}
+                                PRIVATE ${CUDA_LIBRARIES}
+                                PRIVATE ${CUDA_cusolver_LIBRARY}
+                                PRIVATE ${FreeImage_LIBS}
+                                PRIVATE ${CUDA_CUFFT_LIBRARIES}
+                                PRIVATE ${CUDA_NVVM_LIBRARIES}
+                                PRIVATE ${CUDA_CUDA_LIBRARY})
 
 IF(FORGE_FOUND)
-    TARGET_LINK_LIBRARIES(afcuda
-                          ${FORGE_LIBRARIES}
-                         )
+    TARGET_LINK_LIBRARIES(afcuda PRIVATE ${FORGE_LIBRARIES})
 ENDIF()
 
 SET_TARGET_PROPERTIES(afcuda PROPERTIES
     VERSION "${AF_VERSION}"
     SOVERSION "${AF_VERSION_MAJOR}")
-
-IF(INSTALLER_MODE)
-    SET_TARGET_PROPERTIES(afcuda PROPERTIES LINK_INTERFACE_LIBRARIES "")
-    SET_TARGET_PROPERTIES(afcuda PROPERTIES INTERFACE_LINK_LIBRARIES "")
-ENDIF()
 
 INSTALL(TARGETS afcuda EXPORT CUDA DESTINATION "${AF_INSTALL_LIB_DIR}"
         COMPONENT libraries)
