@@ -191,15 +191,15 @@ ADD_LIBRARY(afopencl SHARED
 
 ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
 
-TARGET_LINK_LIBRARIES(afopencl  LINK_PRIVATE ${OpenCL_LIBRARIES}
-                                LINK_PRIVATE ${FreeImage_LIBS}
-                                LINK_PRIVATE ${CLBLAS_LIBRARIES}
-                                LINK_PRIVATE ${CLFFT_LIBRARIES}
-                                LINK_PRIVATE ${CMAKE_DL_LIBS}
-                                LINK_PRIVATE ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES(afopencl  PRIVATE ${OpenCL_LIBRARIES}
+                                PRIVATE ${FreeImage_LIBS}
+                                PRIVATE ${CLBLAS_LIBRARIES}
+                                PRIVATE ${CLFFT_LIBRARIES}
+                                PRIVATE ${CMAKE_DL_LIBS}
+                                PRIVATE ${Boost_LIBRARIES})
 
 IF(LAPACK_FOUND)
-   TARGET_LINK_LIBRARIES(afopencl   LINK_PRIVATE ${LAPACK_LIBRARIES})
+   TARGET_LINK_LIBRARIES(afopencl   PRIVATE ${LAPACK_LIBRARIES})
 ENDIF()
 
 SET_TARGET_PROPERTIES(afopencl PROPERTIES
@@ -207,7 +207,7 @@ SET_TARGET_PROPERTIES(afopencl PROPERTIES
     SOVERSION "${AF_VERSION_MAJOR}")
 
 IF(FORGE_FOUND)
-    TARGET_LINK_LIBRARIES(afopencl  LINK_PRIVATE ${FORGE_LIBRARIES})
+    TARGET_LINK_LIBRARIES(afopencl  PRIVATE ${FORGE_LIBRARIES})
 ENDIF()
 
 IF(INSTALLER_MODE)
