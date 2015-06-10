@@ -16,9 +16,6 @@ OPTION(BUILD_GRAPHICS "Build ArrayFire with Forge Graphics" ON)
 OPTION(BUILD_DOCS "Create ArrayFire Documentation" OFF)
 OPTION(WITH_COVERAGE "Added code coverage flags" OFF)
 
-OPTION(INSTALLER_MODE "Build arrayfire in installer mode" OFF)
-MARK_AS_ADVANCED(INSTALLER_MODE)
-
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
