@@ -158,7 +158,7 @@ double ann::train(const array &input, const array &target,
         for (int j = 0; j < num_batches - 1; j++) {
 
             int st = j * batch_size;
-            int en = st + batch_size;
+            int en = st + batch_size - 1;
 
             array x = input(seq(st, en), span);
             array y = target(seq(st, en), span);
