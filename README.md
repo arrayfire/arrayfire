@@ -7,6 +7,8 @@ ArrayFire's multiple backends (**CUDA**, **OpenCL** and native **CPU**) make it 
 A few lines of code in ArrayFire can replace dozens of lines of parallel computing code, saving you valuable time and lowering development costs.
 
 ### Build ArrayFire from source
+
+[![Join the chat at https://gitter.im/arrayfire/arrayfire](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/arrayfire/arrayfire?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 To build ArrayFire from source, please follow the instructions on our [wiki](https://github.com/arrayfire/arrayfire/wiki).
 
 ### Download ArrayFire Installers
