@@ -12,13 +12,12 @@ To build ArrayFire from source, please follow the instructions on our [wiki](htt
 ### Download ArrayFire Installers
 We currently have binary tar balls and installers available for the beta version of ArrayFire 3.0. These can be downloaded at the [ArrayFire Downloads](http://go.arrayfire.com/l/37882/2015-03-31/mmhqy) page.
 
-### Support and Contact Info
+### Support and Contact Info [![Join the chat at https://gitter.im/arrayfire/arrayfire](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/arrayfire/arrayfire?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 * Google Groups: https://groups.google.com/forum/#!forum/arrayfire-users
 * ArrayFire Services:  [Consulting](http://arrayfire.com/consulting/)  |  [Support](http://arrayfire.com/support/)   |  [Training](http://arrayfire.com/training/)
 * ArrayFire Blogs: http://arrayfire.com/blog/
 * Email: <mailto:technical@arrayfire.com>
-
 
 ### Build Status
 |                 | Build           | Tests           |
