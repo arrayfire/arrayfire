@@ -33,7 +33,7 @@
     <choice title="ArrayFire Headers" description="ArrayFire Headers" id="com.arrayfire.arrayfire.inc" visible="true" enabled="true">
         <pkg-ref id="com.arrayfire.arrayfire.inc"/>
     </choice>
-    <choice title="Extas" description="Extas (Docs, Cmake scripts)" id="com.arrayfire.arrayfire.extra" visible="true" enabled="true">
+    <choice title="Extras" description="Extra files include documentation, examples, and cmake scripts to find and use ArrayFire with cmake," id="com.arrayfire.arrayfire.extra" visible="true" enabled="true">
         <pkg-ref id="com.arrayfire.arrayfire.extra"/>
     </choice>
 </installer-gui-script>

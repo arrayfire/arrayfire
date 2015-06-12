@@ -198,10 +198,10 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
     COMPONENT cmake)
 
 IF(APPLE)
-    INCLUDE("${CMAKE_MODULE_PATH}/OSXInstaller.cmake")
+    INCLUDE("${CMAKE_MODULE_PATH}/osx_install/OSXInstaller.cmake")
 ENDIF(APPLE)
 
 ##
 # Packaging
 ##
-include(${CMAKE_CURRENT_SOURCE_DIR}/CPack.txt)
+include(${CMAKE_CURRENT_SOURCE_DIR}/CPack.cmake)

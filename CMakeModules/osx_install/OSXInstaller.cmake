@@ -6,12 +6,18 @@ INCLUDE(${CMAKE_MODULE_PATH}/Version.cmake)
 
 SET(BIN2CPP_PROGRAM "bin2cpp")
 
+SET(OSX_INSTALL_DIR ${CMAKE_MODULE_PATH}/osx_install)
+
 FUNCTION(PKG_BUILD)
-    CMAKE_PARSE_ARGUMENTS(ARGS "" "INSTALL_LOCATION;IDENTIFIER;PATH_TO_FILES;PKG_NAME;TARGETS" "FILTERS" ${ARGN})
+    CMAKE_PARSE_ARGUMENTS(ARGS "" "INSTALL_LOCATION;IDENTIFIER;PATH_TO_FILES;PKG_NAME;TARGETS;SCRIPT_DIR" "FILTERS" ${ARGN})
 
     FOREACH(filter ${ARGS_FILTERS})
         LIST(APPEND  FILTER_LIST --filter ${filter})
     ENDFOREACH()
+
+    IF(ARGS_SCRIPT_DIR)
+        LIST(APPEND SCRPT_DIR --scripts ${ARGS_SCRIPT_DIR})
+    ENDIF(ARGS_SCRIPT_DIR)
 
     SET(PACKAGE_NAME "${ARGS_PKG_NAME}.pkg")
     ADD_CUSTOM_COMMAND( OUTPUT ${PACKAGE_NAME}
@@ -19,6 +25,7 @@ FUNCTION(PKG_BUILD)
                         COMMAND pkgbuild    --install-location  ${ARGS_INSTALL_LOCATION}
                                             --identifier        ${ARGS_IDENTIFIER}
                                             --root              ${ARGS_PATH_TO_FILES}
+                                            ${SCRPT_DIR}
                                             ${FILTER_LIST}
                                             ${ARGS_PKG_NAME}.pkg
                         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
@@ -31,13 +38,13 @@ ENDFUNCTION(PKG_BUILD)
 
 FUNCTION(PRODUCT_BUILD)
     CMAKE_PARSE_ARGUMENTS(ARGS "" "" "DEPENDS" ${ARGN})
-    SET(DISTRIBUTION_FILE       "${CMAKE_MODULE_PATH}/distribution.dist")
+    SET(DISTRIBUTION_FILE       "${OSX_INSTALL_DIR}/distribution.dist")
     SET(DISTRIBUTION_FILE_OUT   "${CMAKE_CURRENT_BINARY_DIR}/distribution.dist.out")
 
-    SET(WELCOME_FILE       "${CMAKE_MODULE_PATH}/welcome.html")
+    SET(WELCOME_FILE       "${OSX_INSTALL_DIR}/welcome.html")
     SET(WELCOME_FILE_OUT   "${CMAKE_CURRENT_BINARY_DIR}/welcome.html.out")
 
-    SET(README_FILE       "${CMAKE_MODULE_PATH}/readme.html")
+    SET(README_FILE       "${OSX_INSTALL_DIR}/readme.html")
     SET(README_FILE_OUT   "${CMAKE_CURRENT_BINARY_DIR}/readme.html.out")
 
     SET(AF_TITLE    "ArrayFire ${AF_VERSION}")
@@ -58,9 +65,10 @@ ENDFUNCTION(PRODUCT_BUILD)
 
 
 PKG_BUILD(  PKG_NAME        ArrayFireCPU
-            DEPENDS         package
+            DEPENDS         afcpu
             TARGETS         cpu_package
             INSTALL_LOCATION /usr/local/lib
+            SCRIPT_DIR      ${OSX_INSTALL_DIR}/cpu_scripts
             IDENTIFIER      com.arrayfire.pkg.arrayfire.cpu.lib
             PATH_TO_FILES   package/lib
             FILTERS         opencl cuda)
@@ -69,6 +77,7 @@ PKG_BUILD(  PKG_NAME        ArrayFireCUDA
             DEPENDS         afcuda
             TARGETS         cuda_package
             INSTALL_LOCATION /usr/local/lib
+            SCRIPT_DIR      ${OSX_INSTALL_DIR}/cuda_scripts
             IDENTIFIER      com.arrayfire.pkg.arrayfire.cuda.lib
             PATH_TO_FILES   package/lib
             FILTERS         cpu opencl)
