@@ -1,6 +1,31 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.0.1
+==============
+
+Bug Fixes
+--------------
+
+* Fixed header to work in Visual Studio 2015
+* Fixed a bug in batched mode for FFT based convolutions
+* Fixed graphics issues on OSX
+* Fixed various bugs in visualization functions
+
+Other improvements
+---------------
+
+* Improved fractal example
+* New OSX installer
+* Improved Windows installer
+  * Default install path has been changed
+* Fixed bug in machine learning examples
+
+<br>
+
+v3.0.0
+=================
+
 Major Updates
 -------------
 
