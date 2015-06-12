@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<installer-gui-script minSpecVersion="1">
+    <title>${AF_TITLE}</title>
+    <welcome    file="${WELCOME_FILE_OUT}" />
+    <readme     file="${README_FILE_OUT}" mime-type="test/html" />
+    <license    file="${CMAKE_MODULE_PATH}/../LICENSE" mime-type="test/plain" />
+
+    <pkg-ref id="com.arrayfire.arrayfire.cpu.lib"       version="${AF_VERSION}" onConclusion="none">ArrayFireCPU.pkg</pkg-ref>
+    <pkg-ref id="com.arrayfire.arrayfire.cuda.lib"      version="${AF_VERSION}" onConclusion="none">ArrayFireCUDA.pkg</pkg-ref>
+    <pkg-ref id="com.arrayfire.arrayfire.opencl.lib"    version="${AF_VERSION}" onConclusion="none">ArrayFireOPENCL.pkg</pkg-ref>
+    <pkg-ref id="com.arrayfire.arrayfire.inc"           version="${AF_VERSION}" onConclusion="none">ArrayFireHeaders.pkg</pkg-ref>
+    <pkg-ref id="com.arrayfire.arrayfire.extra"         version="${AF_VERSION}" onConclusion="none">ArrayFireExtra.pkg</pkg-ref>
+    <options customize="always" require-scripts="false"/>
+    <choices-outline>
+        <line choice="libs">
+            <line choice="com.arrayfire.arrayfire.cpu.lib"/>
+            <line choice="com.arrayfire.arrayfire.cuda.lib"/>
+            <line choice="com.arrayfire.arrayfire.opencl.lib"/>
+        </line>
+        <line choice="com.arrayfire.arrayfire.inc"/>
+        <line choice="com.arrayfire.arrayfire.extra"/>
+    </choices-outline>
+    <choice id="libs" title="ArrayFire Libraries" visible="true" />
+    <choice title="CPU Libraries" description="CPU Libraries" id="com.arrayfire.arrayfire.cpu.lib" visible="true" enabled="true">
+        <pkg-ref id="com.arrayfire.arrayfire.cpu.lib"/>
+    </choice>
+    <choice title="CUDA Libraries" description="CUDA Libraries" id="com.arrayfire.arrayfire.cuda.lib" visible="true" enabled="true">
+        <pkg-ref id="com.arrayfire.arrayfire.cuda.lib"/>
+    </choice>
+    <choice title="OpenCL Libraries" description="OpenCL Libraries" id="com.arrayfire.arrayfire.opencl.lib" visible="true" enabled="true">
+        <pkg-ref id="com.arrayfire.arrayfire.opencl.lib"/>
+    </choice>
+    <choice title="ArrayFire Headers" description="ArrayFire Headers" id="com.arrayfire.arrayfire.inc" visible="true" enabled="true">
+        <pkg-ref id="com.arrayfire.arrayfire.inc"/>
+    </choice>
+    <choice title="Extras" description="Extra files include documentation, examples, and cmake scripts to find and use ArrayFire with cmake," id="com.arrayfire.arrayfire.extra" visible="true" enabled="true">
+        <pkg-ref id="com.arrayfire.arrayfire.extra"/>
+    </choice>
+</installer-gui-script>
