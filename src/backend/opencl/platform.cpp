@@ -16,6 +16,7 @@
 
 #include <af/version.h>
 #include <af/opencl.h>
+#include <defines.hpp>
 #include <platform.hpp>
 #include <functional>
 #include <algorithm>
@@ -408,7 +409,6 @@ void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHa
 #ifdef OS_MAC
             CGLContextObj cgl_current_ctx = CGLGetCurrentContext();
             CGLShareGroupObj cgl_share_group = CGLGetShareGroup(cgl_current_ctx);
-            printf("current opengl context is -------- %p \n", cgl_current_ctx);
 
             cl_context_properties cps[] = {
                 CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE, (cl_context_properties)cgl_share_group,

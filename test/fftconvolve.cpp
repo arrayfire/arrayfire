@@ -588,3 +588,66 @@ TEST(FFTConvolve, Docs_Unified_Wrapper)
     //    1.0000     1.0000     1.0000     0.5000
     //![ex_image_convolve_3d]
 }
+using namespace af;
+
+TEST(GFOR, fftConvolve2_MO)
+{
+    array A = randu(5, 5, 3);
+    array B = randu(5, 5, 3);
+    array K = randu(3, 3);
+
+    gfor(seq ii, 3) {
+        B(span, span, ii) = fftConvolve2(A(span, span, ii), K);
+    }
+
+    for (int ii = 0; ii < 3; ii++) {
+        array c_ii = fftConvolve2(A(span, span, ii), K);
+        array b_ii = B(span, span, ii);
+        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
+    }
+}
+
+TEST(GFOR, fftConvolve2_OM)
+{
+    array A = randu(5, 5);
+    array B = randu(5, 5, 3);
+    array K = randu(3, 3, 3);
+
+    gfor(seq ii, 3) {
+        B(span, span, ii) = fftConvolve2(A, K(span, span, ii));
+    }
+
+    for (int ii = 0; ii < 3; ii++) {
+        array c_ii = fftConvolve2(A, K(span, span, ii));
+        array b_ii = B(span, span, ii);
+        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
+    }
+}
+
+TEST(GFOR, fftConvolve2_MM)
+{
+    array A = randu(5, 5, 3);
+    array B = randu(5, 5, 3);
+    array K = randu(3, 3, 3);
+
+    gfor(seq ii, 3) {
+        B(span, span, ii) = fftConvolve2(A(span, span, ii), K(span, span, ii));
+    }
+
+    for (int ii = 0; ii < 3; ii++) {
+        array c_ii = fftConvolve2(A(span, span, ii), K(span, span, ii));
+        array b_ii = B(span, span, ii);
+        ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
+    }
+}
+
+TEST(Padding, fftConvolve2)
+{
+    for (int n = 5; n < 32; n++) {
+        array a = randu(n, n);
+        array b = randu(5, 5);
+        array c = fftConvolve2(a, b);
+        array d = convolve2(a, b, AF_CONV_DEFAULT, AF_CONV_SPATIAL);
+        ASSERT_EQ(max<double>(abs(c - d)) < 1E-5, true);
+    }
+}

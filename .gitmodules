@@ -6,4 +6,4 @@
 	url = https://github.com/arrayfire/assets
 [submodule "test/gtest"]
 	path = test/gtest
-	url = http://git.chromium.org/external/googletest.git
+	url = https://chromium.googlesource.com/external/googletest

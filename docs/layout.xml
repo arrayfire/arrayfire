@@ -3,12 +3,13 @@
   <navindex>
     <tab type="mainpage" visible="yes" title="" />
     <tab type="usergroup" visible="yes" title="Tutorials">
+      <tab type="user" url="\ref using_on_linux" visible="yes" title="Using on Linux"/>
+      <tab type="user" url="\ref using_on_windows" visible="yes" title="Using on Windows"/>
+      <tab type="user" url="\ref using_on_osx" visible="yes" title="Using on OSX"/>
       <tab type="user" url="\ref gettingstarted" visible="yes" title="Getting Started"/>
       <tab type="user" url="\ref matrixmanipulation" visible="yes" title="Matrix Manipulation"/>
       <tab type="user" url="\ref indexing" visible="yes" title="Indexing"/>
       <tab type="user" url="\ref timing" visible="yes" title="Timing ArrayFire"/>
-      <tab type="user" url="\ref using_on_linux" visible="yes" title="Using on Linux"/>
-      <tab type="user" url="\ref using_on_windows" visible="yes" title="Using on Windows"/>
       <tab type="user" url="\ref configuring_environment" visible="yes" title="Configuring ArrayFire Environment"/>
       <tab type="usergroup" url="\ref page_gfor" visible="yes" title="GFOR Usage"/>
     </tab>

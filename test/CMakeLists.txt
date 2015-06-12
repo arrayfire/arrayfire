@@ -12,10 +12,13 @@ MACRO(CREATE_TESTS BACKEND GTEST_LIBS OTHER_LIBS)
         SET(TEST_NAME ${FNAME}_${BACKEND})
 
         ADD_TEST(Test_${TEST_NAME} ${TEST_NAME})
-        ADD_EXECUTABLE(${TEST_NAME} ${FNAME}.cpp)
-        TARGET_LINK_LIBRARIES(${TEST_NAME}  af${BACKEND}
-                      ${THREAD_LIB_FLAG}
-                      ${GTEST_LIBS} ${OTHER_LIBS})
+        FILE(GLOB TEST_FILE "${FNAME}.cpp" "${FNAME}.c")
+        ADD_EXECUTABLE(${TEST_NAME} ${TEST_FILE})
+        TARGET_LINK_LIBRARIES(${TEST_NAME}  PRIVATE  af${BACKEND}
+                                            PRIVATE ${THREAD_LIB_FLAG}
+                                            PRIVATE ${GTEST_LIBS}
+                                            PRIVATE ${OTHER_LIBS})
+
         SET_TARGET_PROPERTIES(${TEST_NAME}
                       PROPERTIES
                       COMPILE_FLAGS -DAF_${DEF_NAME}
@@ -73,7 +76,7 @@ ENDIF()
 ENDIF(NOT ${USE_RELATIVE_TEST_DIR})
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-FILE(GLOB FILES "*.cpp")
+FILE(GLOB FILES "*.cpp" "*.c")
 
 IF(${BUILD_CPU})
     CREATE_TESTS(cpu "${GTEST_LIBRARIES}" "")
@@ -82,7 +85,7 @@ ENDIF()
 IF(${BUILD_CUDA} AND ${CUDA_FOUND})
     FIND_PACKAGE(CUDA REQUIRED)
     IF("${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND ${CUDA_VERSION_MAJOR} VERSION_LESS 7)
-        CREATE_TESTS(cuda "${GTEST_LIBRARIES_STDLIB}")
+        CREATE_TESTS(cuda "${GTEST_LIBRARIES_STDLIB}" "")
         FOREACH(FILE ${FILES})
             GET_FILENAME_COMPONENT(FNAME ${FILE} NAME_WE)
             SET(TEST_NAME ${FNAME}_cuda)

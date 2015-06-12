@@ -224,26 +224,29 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
 
     dim_t fftScale = 1;
 
-    af::dim4 packed_dims;
+    af::dim4 packed_dims(1, 1, 1, 1);
     int fft_dims[baseDim];
     af::dim4 sig_tmp_dims, sig_tmp_strides;
     af::dim4 filter_tmp_dims, filter_tmp_strides;
 
     // Pack both signal and filter on same memory array, this will ensure
-    // better use of batched cuFFT capabilities
-    for (dim_t k = 0; k < 4; k++) {
-        if (k < baseDim)
-            packed_dims[k] = nextpow2((unsigned)(sd[k] + fd[k] - 1));
-        else if (k == baseDim)
-            packed_dims[k] = sd[k] + fd[k];
-        else
-            packed_dims[k] = 1;
+    // better use of batched FFT capabilities
+    fft_dims[baseDim - 1] = nextpow2((unsigned)((int)ceil(sd[0] / 2.f) + fd[0] - 1));
+    packed_dims[0] = 2 * fft_dims[baseDim - 1];
+    fftScale *= fft_dims[baseDim - 1];
 
-        if (k < baseDim) {
-            fft_dims[baseDim-k-1] = (k == 0) ? packed_dims[k] / 2 : packed_dims[k];
-            fftScale *= fft_dims[baseDim-k-1];
-        }
+    for (dim_t k = 1; k < baseDim; k++) {
+        packed_dims[k] = nextpow2((unsigned)(sd[k] + fd[k] - 1));
+        fft_dims[baseDim - k - 1] = packed_dims[k];
+        fftScale *= fft_dims[baseDim - k - 1];
     }
+
+    dim_t sbatch = 1, fbatch = 1;
+    for (int k = baseDim; k < 4; k++) {
+        sbatch *= sd[k];
+        fbatch *= fd[k];
+    }
+    packed_dims[baseDim] = (sbatch + fbatch);
 
     Array<convT> packed = createEmptyArray<convT>(packed_dims);
     convT *packed_ptr = packed.get();

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -e
+set -o pipefail
+
+err_file=/tmp/AFInstaller.err
+brew=/usr/local/bin/brew
+
+if [ ! -f $brew ]; then
+    osascript -e 'tell app "Finder" to display dialog "Brew not installed. Please install brew at http://brew.sh"'
+    open http://brew.sh
+    echo "Brew not found" >> $err_file
+    exit 1
+fi
+
+user=$(ps aux | grep console | grep -v 'grep\|root' | cut -d' ' -f1 | head -n1)
+
+if [ -z $user ]; then
+    echo "User not found" >> $err_file
+    exit 1
+fi
+
+su $user -c "$brew tap homebrew/versions"
+su $user -c "$brew install fftw glfw3 fontconfig"

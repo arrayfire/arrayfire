@@ -12,21 +12,20 @@ To build ArrayFire from source, please follow the instructions on our [wiki](htt
 ### Download ArrayFire Installers
 We currently have binary tar balls and installers available for the beta version of ArrayFire 3.0. These can be downloaded at the [ArrayFire Downloads](http://go.arrayfire.com/l/37882/2015-03-31/mmhqy) page.
 
-### Support and Contact Info
+### Support and Contact Info [![Join the chat at https://gitter.im/arrayfire/arrayfire](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/arrayfire/arrayfire?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 * Google Groups: https://groups.google.com/forum/#!forum/arrayfire-users
 * ArrayFire Services:  [Consulting](http://arrayfire.com/consulting/)  |  [Support](http://arrayfire.com/support/)   |  [Training](http://arrayfire.com/training/)
 * ArrayFire Blogs: http://arrayfire.com/blog/
 * Email: <mailto:technical@arrayfire.com>
 
-
 ### Build Status
 |                 | Build           | Tests           |
 |-----------------|-----------------|-----------------|
-| Linux x86       | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/devel)](http://ci.arrayfire.org/job/arrayfire-linux/branch/devel/)      | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux-test/devel)](http://ci.arrayfire.org/job/arrayfire-linux-test/branch/devel/)              |
-| Linux Tegra     | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegra/devel)](http://ci.arrayfire.org/job/arrayfire-tegra/branch/devel/)      | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegra-test/devel)](http://ci.arrayfire.org/job/arrayfire-tegra-test/branch/devel/)              |
-| Windows         | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows/devel)](http://ci.arrayfire.org/job/arrayfire-windows/branch/devel/)  | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows-test/devel)](http://ci.arrayfire.org/job/arrayfire-windows-test/branch/devel/)          |
-| OSX             | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/devel)](http://ci.arrayfire.org/job/arrayfire-osx/branch/devel/)          | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx-test/devel)](http://ci.arrayfire.org/job/arrayfire-osx-test/branch/devel/)                  |
+| Linux x86       | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux/master)](http://ci.arrayfire.org/job/arrayfire-linux/branch/master/)      | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-linux-test/master)](http://ci.arrayfire.org/job/arrayfire-linux-test/branch/master/)              |
+| Linux Tegra     | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegra/master)](http://ci.arrayfire.org/job/arrayfire-tegra/branch/master/)      | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-tegra-test/master)](http://ci.arrayfire.org/job/arrayfire-tegra-test/branch/master/)              |
+| Windows         | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows/master)](http://ci.arrayfire.org/job/arrayfire-windows/branch/master/)  | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-windows-test/master)](http://ci.arrayfire.org/job/arrayfire-windows-test/branch/master/)          |
+| OSX             | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx/master)](http://ci.arrayfire.org/job/arrayfire-osx/branch/master/)          | [![Build Status](http://ci.arrayfire.org/buildStatus/icon?job=arrayfire-osx-test/master)](http://ci.arrayfire.org/job/arrayfire-osx-test/branch/master/)                  |
 
 Test coverage: [![Coverage Status](https://coveralls.io/repos/arrayfire/arrayfire/badge.svg?branch=HEAD)](https://coveralls.io/r/arrayfire/arrayfire?branch=HEAD)
 

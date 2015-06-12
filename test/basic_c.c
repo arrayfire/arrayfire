@@ -7,18 +7,11 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/vision.h>
-#include <af/array.h>
-#include "error.hpp"
+#include <arrayfire.h>
 
-namespace af
-{
-
-array matchTemplate(const array &searchImg, const array &templateImg, const matchType mType)
-{
+int main() {
     af_array out = 0;
-    AF_THROW(af_match_template(&out, searchImg.get(), templateImg.get(), mType));
-    return array(out);
-}
-
+    dim_t s[] = {10, 10, 1, 1};
+    af_err e = af_randu(&out, 4, s, f32);
+    return (AF_SUCCESS != e);
 }

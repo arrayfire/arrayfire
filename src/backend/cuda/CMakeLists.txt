@@ -8,58 +8,53 @@ INCLUDE("${CMAKE_MODULE_PATH}/FindNVVM.cmake")
 
 # Disables running cuda_compute_check.c when build windows using remote
 OPTION(CUDA_COMPUTE_DETECT "Run autodetection of CUDA Architecture" ON)
-IF(CUDA_COMPUTE_DETECT AND NOT DEFINED CUDA_DETECTED_COMPUTE)
+MARK_AS_ADVANCED(CUDA_COMPUTE_DETECT)
+
+IF(CUDA_COMPUTE_DETECT AND NOT DEFINED COMPUTES_DETECTED_LIST)
     INCLUDE("${CMAKE_MODULE_PATH}/CUDACheckCompute.cmake")
-    SET(CUDA_COMPUTE_${CUDA_DETECTED_COMPUTE} ON CACHE BOOL "" FORCE)
 ENDIF()
 
-OPTION(CUDA_COMPUTE_20 "CUDA Compute Capability 2.0" OFF)
-OPTION(CUDA_COMPUTE_30 "CUDA Compute Capability 3.0" OFF)
-OPTION(CUDA_COMPUTE_32 "CUDA Compute Capability 3.2" OFF)
-OPTION(CUDA_COMPUTE_35 "CUDA Compute Capability 3.5" OFF)
-OPTION(CUDA_COMPUTE_50 "CUDA Compute Capability 5.0" OFF)
-OPTION(CUDA_COMPUTE_52 "CUDA Compute Capability 5.2" OFF)
+IF(    CUDA_COMPUTE_20
+    OR CUDA_COMPUTE_30
+    OR CUDA_COMPUTE_32
+    OR CUDA_COMPUTE_35
+    OR CUDA_COMPUTE_50
+    OR CUDA_COMPUTE_52
+    OR CUDA_COMPUTE_53
+    )
+    SET(FALLBACK OFF)
+ELSE()
+    SET(FALLBACK ON)
+ENDIF()
 
-MARK_AS_ADVANCED(CUDA_COMPUTE_DETECT CUDA_COMPUTE_20
-                 CUDA_COMPUTE_30 CUDA_COMPUTE_32 CUDA_COMPUTE_35
-                 CUDA_COMPUTE_50 CUDA_COMPUTE_52)
+LIST(LENGTH COMPUTES_DETECTED_LIST COMPUTES_LEN)
+IF(${COMPUTES_LEN} EQUAL 0 AND ${FALLBACK})
+    MESSAGE(STATUS "No computes detected. Fall back to 20, 30, 50")
+    LIST(APPEND COMPUTES_DETECTED_LIST "20" "30" "50")
+ENDIF()
 
-IF(${CUDA_COMPUTE_20})
-    SET(VERSION 20)
+LIST(LENGTH COMPUTES_DETECTED_LIST COMPUTES_LEN)
+MESSAGE(STATUS "Number of Computes Detected = ${COMPUTES_LEN}")
+
+FOREACH(COMPUTE_DETECTED ${COMPUTES_DETECTED_LIST})
+    SET(CUDA_COMPUTE_${COMPUTE_DETECTED} ON CACHE BOOL "" FORCE)
+ENDFOREACH()
+
+MACRO(SET_COMPUTE VERSION)
     SET(CUDA_GENERATE_CODE_${VERSION} "-gencode arch=compute_${VERSION},code=sm_${VERSION}")
     SET(CUDA_GENERATE_CODE ${CUDA_GENERATE_CODE} ${CUDA_GENERATE_CODE_${VERSION}})
     LIST(APPEND COMPUTE_VERSIONS "${VERSION}")
-ENDIF()
-IF(${CUDA_COMPUTE_30})
-    SET (VERSION 30)
-    SET(CUDA_GENERATE_CODE_${VERSION} "-gencode arch=compute_${VERSION},code=sm_${VERSION}")
-    SET(CUDA_GENERATE_CODE ${CUDA_GENERATE_CODE} ${CUDA_GENERATE_CODE_${VERSION}})
-    LIST(APPEND COMPUTE_VERSIONS "${VERSION}")
-ENDIF()
-IF(${CUDA_COMPUTE_32})
-    SET(VERSION 32)
-    SET(CUDA_GENERATE_CODE_${VERSION} "-gencode arch=compute_${VERSION},code=sm_${VERSION}")
-    SET(CUDA_GENERATE_CODE ${CUDA_GENERATE_CODE} ${CUDA_GENERATE_CODE_${VERSION}})
-    LIST(APPEND COMPUTE_VERSIONS "${VERSION}")
-ENDIF()
-IF(${CUDA_COMPUTE_35})
-    SET(VERSION 35)
-    SET(CUDA_GENERATE_CODE_${VERSION} "-gencode arch=compute_${VERSION},code=sm_${VERSION}")
-    SET(CUDA_GENERATE_CODE ${CUDA_GENERATE_CODE} ${CUDA_GENERATE_CODE_${VERSION}})
-    LIST(APPEND COMPUTE_VERSIONS "${VERSION}")
-ENDIF()
-IF(${CUDA_COMPUTE_50})
-    SET(VERSION 50)
-    SET(CUDA_GENERATE_CODE_${VERSION} "-gencode arch=compute_${VERSION},code=sm_${VERSION}")
-    SET(CUDA_GENERATE_CODE ${CUDA_GENERATE_CODE} ${CUDA_GENERATE_CODE_${VERSION}})
-    LIST(APPEND COMPUTE_VERSIONS "${VERSION}")
-ENDIF()
-IF(${CUDA_COMPUTE_52})
-    SET(VERSION 52)
-    SET(CUDA_GENERATE_CODE_${VERSION} "-gencode arch=compute_${VERSION},code=sm_${VERSION}")
-    SET(CUDA_GENERATE_CODE ${CUDA_GENERATE_CODE} ${CUDA_GENERATE_CODE_${VERSION}})
-    LIST(APPEND COMPUTE_VERSIONS "${VERSION}")
-ENDIF()
+    MESSAGE(STATUS "Setting Compute ${VERSION} to ON")
+ENDMACRO(SET_COMPUTE)
+
+# Iterate over compute versions. Create variables and enable computes if needed
+FOREACH(VER 20 30 32 35 50 52 53)
+    OPTION(CUDA_COMPUTE_${VER} "CUDA Compute Capability ${VER}" OFF)
+    MARK_AS_ADVANCED(CUDA_COMPUTE_${VER})
+    IF(${CUDA_COMPUTE_${VER}})
+        SET_COMPUTE(${VER})
+    ENDIF()
+ENDFOREACH()
 
 IF(UNIX)
     SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -Xcompiler -fvisibility=hidden)
@@ -158,7 +153,7 @@ SOURCE_GROUP(api\\cpp\\Sources FILES ${cpp_sources})
 
 LIST(LENGTH COMPUTE_VERSIONS COMPUTE_COUNT)
 IF(${COMPUTE_COUNT} EQUAL 1)
-  SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} ${CUDA_GENERATE_CODE}")
+    SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} ${CUDA_GENERATE_CODE}")
 ELSE()
     SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch sm_20")
 ENDIF()
@@ -212,7 +207,51 @@ IF("${APPLE}")
     ENDIF()
 ENDIF()
 
-CUDA_ADD_LIBRARY(afcuda SHARED
+## Copied from FindCUDA.cmake
+## The target_link_library needs to link with the cuda libraries using
+## PRIVATE
+macro(MY_CUDA_ADD_LIBRARY cuda_target)
+
+  CUDA_ADD_CUDA_INCLUDE_ONCE()
+
+  # Separate the sources from the options
+  CUDA_GET_SOURCES_AND_OPTIONS(_sources _cmake_options _options ${ARGN})
+  CUDA_BUILD_SHARED_LIBRARY(_cuda_shared_flag ${ARGN})
+  # Create custom commands and targets for each file.
+  CUDA_WRAP_SRCS( ${cuda_target} OBJ _generated_files ${_sources}
+    ${_cmake_options} ${_cuda_shared_flag}
+    OPTIONS ${_options} )
+
+  # Compute the file name of the intermedate link file used for separable
+  # compilation.
+  CUDA_COMPUTE_SEPARABLE_COMPILATION_OBJECT_FILE_NAME(link_file ${cuda_target} "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
+
+  # Add the library.
+  add_library(${cuda_target} ${_cmake_options}
+    ${_generated_files}
+    ${_sources}
+    ${link_file}
+    )
+
+  # Add a link phase for the separable compilation if it has been enabled.  If
+  # it has been enabled then the ${cuda_target}_SEPARABLE_COMPILATION_OBJECTS
+  # variable will have been defined.
+  CUDA_LINK_SEPARABLE_COMPILATION_OBJECTS("${link_file}" ${cuda_target} "${_options}" "${${cuda_target}_SEPARABLE_COMPILATION_OBJECTS}")
+
+  target_link_libraries(${cuda_target}
+      PRIVATE ${CUDA_LIBRARIES}
+    )
+
+  # We need to set the linker language based on what the expected generated file
+  # would be. CUDA_C_OR_CXX is computed based on CUDA_HOST_COMPILATION_CPP.
+  set_target_properties(${cuda_target}
+    PROPERTIES
+    LINKER_LANGUAGE ${CUDA_C_OR_CXX}
+    )
+
+endmacro()
+
+MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${cuda_headers}
                 ${cuda_sources}
                 ${jit_sources}
@@ -226,32 +265,28 @@ CUDA_ADD_LIBRARY(afcuda SHARED
 
 ADD_DEPENDENCIES(afcuda ${ptx_targets})
 
-TARGET_LINK_LIBRARIES(afcuda
-                      ${CUDA_CUBLAS_LIBRARIES}
-                      ${CUDA_LIBRARIES}
-                      ${CUDA_cusolver_LIBRARY}
-                      ${FreeImage_LIBS}
-                      ${CUDA_CUFFT_LIBRARIES}
-                      ${CUDA_NVVM_LIBRARIES}
-                      ${CUDA_CUDA_LIBRARY})
+TARGET_LINK_LIBRARIES(afcuda    PRIVATE ${CUDA_CUBLAS_LIBRARIES}
+                                PRIVATE ${CUDA_LIBRARIES}
+                                PRIVATE ${CUDA_cusolver_LIBRARY}
+                                PRIVATE ${FreeImage_LIBS}
+                                PRIVATE ${CUDA_CUFFT_LIBRARIES}
+                                PRIVATE ${CUDA_NVVM_LIBRARIES}
+                                PRIVATE ${CUDA_CUDA_LIBRARY})
 
 IF(FORGE_FOUND)
-    TARGET_LINK_LIBRARIES(afcuda
-                          ${FORGE_LIBRARIES}
-                         )
+    TARGET_LINK_LIBRARIES(afcuda PRIVATE ${FORGE_LIBRARIES})
 ENDIF()
 
 SET_TARGET_PROPERTIES(afcuda PROPERTIES
     VERSION "${AF_VERSION}"
     SOVERSION "${AF_VERSION_MAJOR}")
 
-IF(INSTALLER_MODE)
-    SET_TARGET_PROPERTIES(afcpu PROPERTIES LINK_INTERFACE_LIBRARIES "")
-    SET_TARGET_PROPERTIES(afcpu PROPERTIES INTERFACE_LINK_LIBRARIES "")
-ENDIF()
-
 INSTALL(TARGETS afcuda EXPORT CUDA DESTINATION "${AF_INSTALL_LIB_DIR}"
         COMPONENT libraries)
+
+IF(APPLE)
+    INSTALL(SCRIPT "${CMAKE_MODULE_PATH}/osx_install/InstallTool.cmake")
+ENDIF(APPLE)
 
 export(TARGETS afcuda FILE ArrayFireCUDA.cmake)
 INSTALL(EXPORT CUDA DESTINATION "${AF_INSTALL_CMAKE_DIR}"

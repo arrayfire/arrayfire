@@ -13,8 +13,8 @@
 #include <af/data.h>
 #include <testHelpers.hpp>
 
-using namespace std;
 using namespace af;
+using std::vector;
 
 template<typename To, typename Ti, bool flat>
 void median0(int nx, int ny=1, int nz=1, int nw=1)

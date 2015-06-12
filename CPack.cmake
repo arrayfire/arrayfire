@@ -3,14 +3,15 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 include("${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/Version.cmake")
 
 # CPack package generation
-SET(CPACK_GENERATOR "TGZ;STGZ")
+#SET(CPACK_GENERATOR "TGZ;STGZ")
+SET(CPACK_GENERATOR "STGZ")
 # Create the following installers are as follows:
 #  Windows: Use external packaging, do nothing here
 #  OSX: Deploy as TGZ and STGZ
-IF("${CMAKE_SYSTEM}" MATCHES "Linux")
-    #  Linux: TGZ, STGZ, DEB
-    SET(CPACK_GENERATOR "TGZ;STGZ;DEB;RPM")
-ENDIF()
+#IF("${CMAKE_SYSTEM}" MATCHES "Linux")
+#    #  Linux: TGZ, STGZ, DEB
+#    SET(CPACK_GENERATOR "TGZ;STGZ;DEB;RPM")
+#ENDIF()
 
 # Common settings to all packaging tools
 SET(CPACK_PREFIX_DIR ${CMAKE_INSTALL_PREFIX})

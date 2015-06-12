@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <af/defines.h>
-#include <af/image.h>
+#include <af/vision.h>
 #include <handle.hpp>
 #include <err_common.hpp>
 #include <backend.hpp>

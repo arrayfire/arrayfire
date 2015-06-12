@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.7)
 PROJECT(ARRAYFIRE)
 
 FIND_PACKAGE(OpenCL REQUIRED)
@@ -191,18 +191,15 @@ ADD_LIBRARY(afopencl SHARED
 
 ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
 
-TARGET_LINK_LIBRARIES(afopencl
-    ${OpenCL_LIBRARIES}
-    ${FreeImage_LIBS}
-    ${CLBLAS_LIBRARIES}
-    ${CLFFT_LIBRARIES}
-    ${CMAKE_DL_LIBS}
-    ${Boost_LIBRARIES})
+TARGET_LINK_LIBRARIES(afopencl  PRIVATE ${OpenCL_LIBRARIES}
+                                PRIVATE ${FreeImage_LIBS}
+                                PRIVATE ${CLBLAS_LIBRARIES}
+                                PRIVATE ${CLFFT_LIBRARIES}
+                                PRIVATE ${CMAKE_DL_LIBS}
+                                PRIVATE ${Boost_LIBRARIES})
 
 IF(LAPACK_FOUND)
-   TARGET_LINK_LIBRARIES(afopencl
-   ${LAPACK_LIBRARIES}
-   )
+   TARGET_LINK_LIBRARIES(afopencl   PRIVATE ${LAPACK_LIBRARIES})
 ENDIF()
 
 SET_TARGET_PROPERTIES(afopencl PROPERTIES
@@ -210,33 +207,15 @@ SET_TARGET_PROPERTIES(afopencl PROPERTIES
     SOVERSION "${AF_VERSION_MAJOR}")
 
 IF(FORGE_FOUND)
-    TARGET_LINK_LIBRARIES(afopencl
-                          ${FORGE_LIBRARIES}
-                         )
-ENDIF()
-
-IF(INSTALLER_MODE)
-    SET_TARGET_PROPERTIES(afopencl PROPERTIES LINK_INTERFACE_LIBRARIES "")
-    SET_TARGET_PROPERTIES(afopencl PROPERTIES INTERFACE_LINK_LIBRARIES "")
-ELSE()
-# locally built but not installed libraries (clBLAS and clFFT) must NOT appear in the
-# link interface. The best option would be to use LINK_PRIVATE, but unfortunately
-# it is not available for older cmake than 2.8.7, so they must be remove from
-# the link interface manually. Both LINK_INTERFACE_LIBRARIES and INTERFACE_LINK_LIBRARIES
-# are used to keep it working with older cmake versions that 2.8.12 and avoid
-# warnings on newer versions - see CMP0022
-    FOREACH(property LINK_INTERFACE_LIBRARIES INTERFACE_LINK_LIBRARIES)
-        GET_TARGET_PROPERTY(value afopencl ${property})
-        IF(value)
-            LIST(REMOVE_ITEM value ${CLBLAS_LIBRARIES} ${CLFFT_LIBRARIES})
-            SET_TARGET_PROPERTIES(afopencl PROPERTIES LINK_INTERFACE_LIBRARIES "${value}")
-            SET_TARGET_PROPERTIES(afopencl PROPERTIES INTERFACE_LINK_LIBRARIES "${value}")
-        ENDIF()
-    ENDFOREACH()
+    TARGET_LINK_LIBRARIES(afopencl  PRIVATE ${FORGE_LIBRARIES})
 ENDIF()
 
 INSTALL(TARGETS afopencl EXPORT OpenCL DESTINATION "${AF_INSTALL_LIB_DIR}"
         COMPONENT libraries)
+
+IF(APPLE)
+    INSTALL(SCRIPT "${CMAKE_MODULE_PATH}/osx_install/InstallTool.cmake")
+ENDIF(APPLE)
 
 export(TARGETS afopencl FILE ArrayFireOpenCL.cmake)
 INSTALL(EXPORT OpenCL DESTINATION "${AF_INSTALL_CMAKE_DIR}"

@@ -7,18 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/vision.h>
-#include <af/array.h>
-#include "error.hpp"
+#pragma once
 
-namespace af
-{
-
-array matchTemplate(const array &searchImg, const array &templateImg, const matchType mType)
-{
-    af_array out = 0;
-    AF_THROW(af_match_template(&out, searchImg.get(), templateImg.get(), mType));
-    return array(out);
-}
-
-}
+#if defined(_WIN32) || defined(_MSC_VER)
+    #define __PRETTY_FUNCTION__ __FUNCSIG__
+    #if _MSC_VER < 1900
+        #define snprintf sprintf_s
+    #endif
+    #define STATIC_ static
+#else
+    #define __PRETTY_FUNCTION__ __func__
+    #define STATIC_ inline
+#endif
