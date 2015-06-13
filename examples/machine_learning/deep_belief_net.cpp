@@ -84,7 +84,7 @@ public:
             for (int j = 0; j < num_batches - 1; j++) {
 
                 int st = j * batch_size;
-                int en = std::min(num_samples - 1, st + batch_size);
+                int en = std::min(num_samples - 1, st + batch_size - 1);
                 int num = en - st + 1;
 
                 array v_pos = in(seq(st, en), span);
@@ -240,7 +240,7 @@ public:
             for (int j = 0; j < num_batches; j++) {
 
                 int st = j * batch_size;
-                int en = std::min(num_samples - 1, st + batch_size);
+                int en = std::min(num_samples - 1, st + batch_size - 1);
 
                 array x = input(seq(st, en), span);
                 array y = target(seq(st, en), span);

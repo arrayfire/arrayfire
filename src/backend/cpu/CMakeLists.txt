@@ -114,35 +114,28 @@ ADD_LIBRARY(afcpu SHARED
            ${c_sources}
            ${cpp_sources})
 
-TARGET_LINK_LIBRARIES(afcpu
-                      ${FreeImage_LIBS}
-                      ${CBLAS_LIBRARIES}
-                      ${FFTW_LIBRARIES}
-                      )
+TARGET_LINK_LIBRARIES(afcpu PRIVATE ${FreeImage_LIBS}
+                            PRIVATE ${CBLAS_LIBRARIES}
+                            PRIVATE ${FFTW_LIBRARIES})
 
 IF(LAPACK_FOUND)
-   TARGET_LINK_LIBRARIES(afcpu
-   ${LAPACK_LIBRARIES}
-   )
+   TARGET_LINK_LIBRARIES(afcpu  PRIVATE ${LAPACK_LIBRARIES})
 ENDIF()
 
 IF(FORGE_FOUND)
-    TARGET_LINK_LIBRARIES(afcpu
-                          ${FORGE_LIBRARIES}
-                         )
+    TARGET_LINK_LIBRARIES(afcpu PRIVATE ${FORGE_LIBRARIES})
 ENDIF()
 
 SET_TARGET_PROPERTIES(afcpu PROPERTIES
                       VERSION "${AF_VERSION}"
                       SOVERSION "${AF_VERSION_MAJOR}")
 
-IF(INSTALLER_MODE)
-    SET_TARGET_PROPERTIES(afcpu PROPERTIES LINK_INTERFACE_LIBRARIES "")
-    SET_TARGET_PROPERTIES(afcpu PROPERTIES INTERFACE_LINK_LIBRARIES "")
-ENDIF()
-
 INSTALL(TARGETS afcpu EXPORT CPU DESTINATION "${AF_INSTALL_LIB_DIR}"
         COMPONENT libraries)
+
+IF(APPLE)
+    INSTALL(SCRIPT "${CMAKE_MODULE_PATH}/osx_install/InstallTool.cmake")
+ENDIF(APPLE)
 
 export(TARGETS afcpu FILE ArrayFireCPU.cmake)
 INSTALL(EXPORT CPU DESTINATION "${AF_INSTALL_CMAKE_DIR}"

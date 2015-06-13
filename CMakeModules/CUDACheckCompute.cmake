@@ -7,6 +7,7 @@
 
 IF(CUDA_FOUND)
     MESSAGE(STATUS "${CMAKE_MODULE_PATH}/cuda_compute_capability.cpp")
+
     TRY_RUN(RUN_RESULT_VAR COMPILE_RESULT_VAR
         ${CMAKE_BINARY_DIR}
         ${CMAKE_MODULE_PATH}/cuda_compute_capability.cpp
@@ -15,20 +16,23 @@ IF(CUDA_FOUND)
         -DLINK_LIBRARIES:STRING=${CUDA_CUDART_LIBRARY}
         COMPILE_OUTPUT_VARIABLE COMPILE_OUTPUT_VAR
         RUN_OUTPUT_VARIABLE RUN_OUTPUT_VAR)
-    MESSAGE(STATUS "Output: ${RUN_OUTPUT_VAR}")
-    IF(COMPILE_RESULT_VAR)
+
+    MESSAGE(STATUS "CUDA Compute Detection Output: ${RUN_OUTPUT_VAR}")
+    MESSAGE(STATUS "CUDA Compute Detection Return: ${RUN_RESULT_VAR}")
+
+    # COMPILE_RESULT_VAR is TRUE when compile succeeds
+    # Check Return Value of main() from RUN_RESULT_VAR
+    # RUN_RESULT_VAR is 0 when a GPU is found
+    # RUN_RESULT_VAR is 1 when errors occur
+
+    IF(COMPILE_RESULT_VAR AND RUN_RESULT_VAR EQUAL 0)
+        MESSAGE(STATUS "CUDA Compute Detection Worked")
         # Convert output into a list of computes
         STRING(REPLACE " " ";" COMPUTES_DETECTED_LIST ${RUN_OUTPUT_VAR})
-    ELSE()
-        MESSAGE(STATUS "didn't compile")
-    ENDIF()
-    # COMPILE_RESULT_VAR is TRUE when compile succeeds
-    # RUN_RESULT_VAR is zero when a GPU is found
-    IF(COMPILE_RESULT_VAR AND NOT RUN_RESULT_VAR)
-        MESSAGE(STATUS "CUDA Compute Detection Worked")
         SET(CUDA_HAVE_GPU TRUE CACHE BOOL "Whether CUDA-capable GPU is present")
     ELSE()
-        MESSAGE(STATUS "didn't work")
+        MESSAGE(STATUS "CUDA Compute Detection Failed")
         SET(CUDA_HAVE_GPU FALSE CACHE BOOL "Whether CUDA-capable GPU is present")
     ENDIF()
-endif()
+
+ENDIF(CUDA_FOUND)

@@ -71,7 +71,13 @@ FOREACH(FILE ${FILES})
 
     if (${CUDA_FOUND})
         if(${ArrayFire_CUDA_FOUND})  # variable defined by FIND(ArrayFire ...)
-            BUILD_EXAMPLE(${EXAMPLE} ${FILE} cuda ${ArrayFire_CUDA_LIBRARIES} "")
+            FIND_LIBRARY( CUDA_NVVM_LIBRARY
+              NAMES "nvvm"
+              PATH_SUFFIXES "nvvm/lib64" "nvvm/lib"
+              PATHS ${CUDA_TOOLKIT_ROOT_DIR}
+              DOC "CUDA NVVM Library"
+            )
+            BUILD_EXAMPLE(${EXAMPLE} ${FILE} cuda ${ArrayFire_CUDA_LIBRARIES} "${CUDA_CUBLAS_LIBRARIES};${CUDA_LIBRARIES};${CUDA_cusolver_LIBRARY};${CUDA_CUFFT_LIBRARIES};${CUDA_NVVM_LIBRARY};${CUDA_CUDA_LIBRARY}")
         elseif(TARGET afcuda)        # variable defined by the ArrayFire build tree
             BUILD_EXAMPLE(${EXAMPLE} ${FILE} cuda afcuda "")
         endif()
@@ -79,7 +85,7 @@ FOREACH(FILE ${FILES})
 
     if (${OpenCL_FOUND})
         if(${ArrayFire_OpenCL_FOUND})  # variable defined by FIND(ArrayFire ...)
-             BUILD_EXAMPLE(${EXAMPLE} ${FILE} opencl ${ArrayFire_OpenCL_LIBRARIES} "")
+             BUILD_EXAMPLE(${EXAMPLE} ${FILE} opencl ${ArrayFire_OpenCL_LIBRARIES} "${OpenCL_LIBRARIES}")
         elseif(TARGET afopencl)        # variable defined by the ArrayFire build tree
              BUILD_EXAMPLE(${EXAMPLE} ${FILE} opencl afopencl ${OpenCL_LIBRARIES})
         endif()

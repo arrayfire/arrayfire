@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include "../include/arrayfire.h"
+#include <arrayfire.h>
 
 int main() {
     af_array out = 0;

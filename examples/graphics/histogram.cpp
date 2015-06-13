@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 
         while (!myWindow.close() && !imgWnd.close()) {
             myWindow.hist(hist_out, 0, 255);
-            imgWnd.image(img/255);
+            imgWnd.image(img.as(u8));
         }
     }
 
