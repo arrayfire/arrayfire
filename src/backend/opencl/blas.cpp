@@ -187,4 +187,6 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
 
 INSTANTIATE_DOT(float)
 INSTANTIATE_DOT(double)
+INSTANTIATE_DOT(cfloat)
+INSTANTIATE_DOT(cdouble)
 }
