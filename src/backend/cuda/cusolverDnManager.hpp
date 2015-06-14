@@ -13,6 +13,7 @@
 #include <cuda_runtime.h>
 #include <cusolverDn.h>
 #include <stdio.h>
+#include <defines.hpp>
 #include <err_common.hpp>
 
 namespace cusolver
