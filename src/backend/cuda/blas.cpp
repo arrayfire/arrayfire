@@ -89,7 +89,7 @@ typename FUNC##_func_def_t<T>::FUNC##_func_def      \
 FUNC##_func();
 
 #define BLAS_FUNC( FUNC, TYPE, PREFIX )         \
-template<> typename FUNC##_func_def_t<TYPE>::FUNC##_func_def       FUNC##_func<TYPE>()  { return &cublas##PREFIX##FUNC; }
+template<> typename FUNC##_func_def_t<TYPE>::FUNC##_func_def       FUNC##_func<TYPE>()  { return (FUNC##_func_def_t<TYPE>::FUNC##_func_def)&cublas##PREFIX##FUNC; }
 
 BLAS_FUNC_DEF(gemm)
 BLAS_FUNC(gemm, float,  S)
