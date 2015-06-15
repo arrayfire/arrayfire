@@ -10,6 +10,7 @@
 #pragma once
 #include <stdio.h>
 #include <err_common.hpp>
+#include <defines.hpp>
 #include <cublas_v2.h>
 
 
