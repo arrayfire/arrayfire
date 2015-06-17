@@ -9,7 +9,7 @@
 
 #include <Array.hpp>
 #include <unwrap.hpp>
-//#include <kernel/unwrap.hpp>
+#include <kernel/unwrap.hpp>
 #include <stdexcept>
 #include <err_opencl.hpp>
 
@@ -28,6 +28,18 @@ namespace opencl
 
         // Create output placeholder
         Array<T> outArray = createEmptyArray<T>(odims);
+
+        if(odims[0] <= 16) {
+            kernel::unwrap<T, 16 >(outArray, in, wx, wy, sx, sy);
+        } else if (odims[0] <= 32) {
+            kernel::unwrap<T, 32 >(outArray, in, wx, wy, sx, sy);
+        } else if (odims[0] <= 64) {
+            kernel::unwrap<T, 64 >(outArray, in, wx, wy, sx, sy);
+        } else if(odims[0] <= 128) {
+            kernel::unwrap<T, 128>(outArray, in, wx, wy, sx, sy);
+        } else {
+            kernel::unwrap<T, 256>(outArray, in, wx, wy, sx, sy);
+        }
 
         return outArray;
     }
