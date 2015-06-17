@@ -461,6 +461,8 @@ AFAPI array rgb2hsv(const array& in);
  */
 AFAPI array colorSpace(const array& image, const CSpace to, const CSpace from);
 
+AFAPI array unwrap(const array& in, const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy);
+
 }
 #endif
 
@@ -902,6 +904,8 @@ extern "C" {
        \ingroup image_func_colorspace
     */
     AFAPI af_err af_color_space(af_array *out, const af_array image, const af_cspace_t to, const af_cspace_t from);
+
+    AFAPI af_err af_unwrap(af_array *out, const af_array in, const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy);
 
 #ifdef __cplusplus
 }
