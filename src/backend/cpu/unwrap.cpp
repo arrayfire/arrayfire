@@ -20,7 +20,7 @@ namespace cpu
                  const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy)
     {
         dim_t nx = (idims[0] - wx) / sx + 1;
-        dim_t ny = (idims[1] - wy) / sy + 1;
+        //dim_t ny = (idims[1] - wy) / sy + 1;
 
         for(dim_t w = 0; w < odims[3]; w++) {
             for(dim_t z = 0; z < odims[2]; z++) {
@@ -28,8 +28,8 @@ namespace cpu
                 dim_t cIn  = w * istrides[3] + z * istrides[2];
                 for(dim_t col = 0; col < odims[1]; col++) {
                     // Calculate input window index
-                    dim_t winy = (col / ny);
-                    dim_t winx = (col % ny);
+                    dim_t winy = (col / nx);
+                    dim_t winx = (col % nx);
 
                     dim_t startx = winx * sx;
                     dim_t starty = winy * sy;
@@ -39,7 +39,7 @@ namespace cpu
 
                     for(dim_t y = 0; y < wy; y++) {
                         for(dim_t x = 0; x < wx; x++) {
-                            dim_t oloc = (y * wy + x) * ostrides[0];
+                            dim_t oloc = (y * wx + x) * ostrides[0];
                             dim_t iloc = (y * istrides[1] + x * istrides[0]);
                             optr[oloc] = iptr[iloc];
                         }
