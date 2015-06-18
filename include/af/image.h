@@ -461,6 +461,18 @@ AFAPI array rgb2hsv(const array& in);
  */
 AFAPI array colorSpace(const array& image, const CSpace to, const CSpace from);
 
+/**
+   C++ Interface wrapper for unwrap
+
+   \param[in]  in is the input array
+   \param[in]  wx is the block window size along 0th-dimension
+   \param[in]  wy is the block window size along 1st-dimension
+   \param[in]  sx is the stride along 0th-dimension
+   \param[in]  sy is the stride along 1st-dimension
+   \returns    an array with the image blocks as columns
+
+   \ingroup image_func_unwrap
+*/
 AFAPI array unwrap(const array& in, const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy);
 
 }
@@ -905,6 +917,20 @@ extern "C" {
     */
     AFAPI af_err af_color_space(af_array *out, const af_array image, const af_cspace_t to, const af_cspace_t from);
 
+    /**
+       C Interface wrapper for unwrap
+
+       \param[out] out is an array with image blocks as columns.
+       \param[in]  in is the input array
+       \param[in]  wx is the block window size along 0th-dimension
+       \param[in]  wy is the block window size along 1st-dimension
+       \param[in]  sx is the stride along 0th-dimension
+       \param[in]  sy is the stride along 1st-dimension
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup image_func_unwrap
+    */
     AFAPI af_err af_unwrap(af_array *out, const af_array in, const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy);
 
 #ifdef __cplusplus

@@ -570,5 +570,54 @@ Interpolation types of \ref AF_INTERP_NEAREST and \ref AF_INTERP_BILINEAR are al
 Affine transforms can be used for various purposes. \ref af::translate, \ref af::scale and \ref af::skew
 are specializations of the transform function.
 
+\defgroup image_func_unwrap unwrap
+\ingroup image_mod
+
+Generate image with image windows as columns
+
+\ref unwrap takes in an input image along with the window sizes \p wx and \p
+wy and strides \p sx and \p sy. This function then generates a matrix where
+each windows is an independent column. The number of columns in the output
+array are govenered by the number of windows that can be fit along x and y
+directions.
+
+When strides are 1, the operation is sliding window. When strides are equal to
+the respective window sizes, the option is distinct window. Other stride
+values are also allowed. When strides are greater than 1, then the output may
+be padded with 0 if required.
+
+\code
+A [5 5 1 1]
+    0.0000     0.2190     0.3835     0.5297     0.4175
+    0.1315     0.0470     0.5194     0.6711     0.6868
+    0.7556     0.6789     0.8310     0.0077     0.5890
+    0.4587     0.6793     0.0346     0.3834     0.9304
+    0.5328     0.9347     0.0535     0.0668     0.8462
+
+// Sliding Window
+unwrap(A, 3, 3, 1, 1) [9 9 1 1]
+    0.0000     0.1315     0.7556     0.2190     0.0470     0.6789     0.3835     0.5194     0.8310
+    0.1315     0.7556     0.4587     0.0470     0.6789     0.6793     0.5194     0.8310     0.0346
+    0.7556     0.4587     0.5328     0.6789     0.6793     0.9347     0.8310     0.0346     0.0535
+    0.2190     0.0470     0.6789     0.3835     0.5194     0.8310     0.5297     0.6711     0.0077
+    0.0470     0.6789     0.6793     0.5194     0.8310     0.0346     0.6711     0.0077     0.3834
+    0.6789     0.6793     0.9347     0.8310     0.0346     0.0535     0.0077     0.3834     0.0668
+    0.3835     0.5194     0.8310     0.5297     0.6711     0.0077     0.4175     0.6868     0.5890
+    0.5194     0.8310     0.0346     0.6711     0.0077     0.3834     0.6868     0.5890     0.9304
+    0.8310     0.0346     0.0535     0.0077     0.3834     0.0668     0.5890     0.9304     0.8462
+
+// Distinct Windows (has padding)
+unwrap(A, 3, 3, 3, 3) [9 4 1 1]
+    0.0000     0.4587     0.5297     0.3834
+    0.1315     0.5328     0.6711     0.0668
+    0.7556     0.0000     0.0077     0.0000
+    0.2190     0.6793     0.4175     0.9304
+    0.0470     0.9347     0.6868     0.8462
+    0.6789     0.0000     0.5890     0.0000
+    0.3835     0.0346     0.0000     0.0000
+    0.5194     0.0535     0.0000     0.0000
+    0.8310     0.0000     0.0000     0.0000
+\endcode
+
 @}
 */
