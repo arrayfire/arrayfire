@@ -11,6 +11,8 @@
 #include <unwrap.hpp>
 #include <stdexcept>
 #include <err_cpu.hpp>
+#include <dispatch.hpp>
+#include <math.hpp>
 
 namespace cpu
 {
@@ -19,8 +21,7 @@ namespace cpu
                  const af::dim4 &ostrides, const af::dim4 &istrides,
                  const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy)
     {
-        dim_t nx = (idims[0] - wx) / sx + 1;
-        //dim_t ny = (idims[1] - wy) / sy + 1;
+        dim_t nx = divup(idims[0] - wx, sx) + (sx >= idims[0] ? 0 : 1);
 
         for(dim_t w = 0; w < odims[3]; w++) {
             for(dim_t z = 0; z < odims[2]; z++) {
@@ -37,11 +38,19 @@ namespace cpu
                           T* optr = outPtr + cOut + col * ostrides[1];
                     const T* iptr = inPtr  + cIn  + starty * istrides[1] + startx;
 
+                    // Condition shortcuts
+                    bool cond = true;
+                    if((startx + wx >= idims[0]) || (starty + wy >= idims[1]))
+                        cond = false;
+
                     for(dim_t y = 0; y < wy; y++) {
                         for(dim_t x = 0; x < wx; x++) {
                             dim_t oloc = (y * wx + x) * ostrides[0];
                             dim_t iloc = (y * istrides[1] + x * istrides[0]);
-                            optr[oloc] = iptr[iloc];
+                            if(cond || (startx + x < idims[0] && starty + y < idims[1]))
+                                optr[oloc] = iptr[iloc];
+                            else
+                                optr[oloc] = scalar<T>(0.0);
                         }
                     }
                 }
@@ -55,8 +64,8 @@ namespace cpu
     {
         af::dim4 idims = in.dims();
 
-        dim_t nx = (idims[0] - wx) / sx + 1;
-        dim_t ny = (idims[1] - wy) / sy + 1;
+        dim_t nx = divup(idims[0] - wx, sx) + (sx >= idims[0] ? 0 : 1);
+        dim_t ny = divup(idims[1] - wy, sy) + (sy >= idims[1] ? 0 : 1);
 
         af::dim4 odims(wx * wy, nx * ny, idims[2], idims[3]);
 

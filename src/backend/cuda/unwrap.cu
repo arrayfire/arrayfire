@@ -21,8 +21,8 @@ namespace cuda
     {
         af::dim4 idims = in.dims();
 
-        dim_t nx = (idims[0] - wx) / sx + 1;
-        dim_t ny = (idims[1] - wy) / sy + 1;
+        dim_t nx = divup(idims[0] - wx, sx) + (sx >= idims[0] ? 0 : 1);
+        dim_t ny = divup(idims[1] - wy, sy) + (sy >= idims[1] ? 0 : 1);
 
         af::dim4 odims(wx * wy, nx * ny, idims[2], idims[3]);
 

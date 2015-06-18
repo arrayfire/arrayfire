@@ -7,6 +7,19 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#define divup(a, b) (((a)+(b)-1)/(b))
+
+#if CPLX
+#define set(a, b) a = b
+#define set_scalar(a, b) do {                   \
+        a.x = b;                                \
+        a.y = 0;                                \
+    } while(0)
+#else
+#define set(a, b) a = b
+#define set_scalar(a, b) a = b
+#endif
+
 __kernel
 void unwrap_kernel(__global T *d_out, const KParam out,
                    __global const T *d_in, const KParam in,
@@ -25,8 +38,9 @@ void unwrap_kernel(__global T *d_out, const KParam out,
     const dim_t cIn  = w *  in.strides[3] + z *  in.strides[2];
 
     // Compute the number of windows along dim0 of input
-    const dim_t nx = (in.dims[0] - wx) / sx + 1;
-    //dim_t ny = (in.dims[1] - wy) / sy + 1;
+    int nx_add = 1;
+    if(sx >= in.dims[0]) nx_add = 0;
+    const dim_t nx = divup(in.dims[0] - wx, sx) + nx_add;
 
     // Compute the output column index
     const dim_t colId = get_group_id(0) * get_local_size(1) + get_local_id(1);
@@ -39,8 +53,12 @@ void unwrap_kernel(__global T *d_out, const KParam out,
     const dim_t starty = (colId / nx) * sy;
 
     // Offset the global pointers to the respective starting indices
-    __global T* optr = d_out + cOut + colId * out.strides[1];
-    __global T* iptr = d_in  + cIn  + starty * in.strides[1] + startx + in.offset;
+    __global       T* optr = d_out + cOut + colId * out.strides[1];
+    __global const T* iptr = d_in  + cIn  + starty * in.strides[1] + startx + in.offset;
+
+    bool cond = true;
+    if((startx + wx >= in.dims[0]) || (starty + wy >= in.dims[1]))
+        cond = false;
 
     for(int i = 0; i < repsPerColumn; i++) {
         // Compute output index local to column
@@ -57,6 +75,9 @@ void unwrap_kernel(__global T *d_out, const KParam out,
         const dim_t inIdx = y * in.strides[1] + x * in.strides[0];
 
         // Copy
-        optr[outIdx] = iptr[inIdx];
+        if(cond || (startx + x < in.dims[0] && starty + y < in.dims[1]))
+            optr[outIdx] = iptr[inIdx];
+        else
+            set_scalar(optr[outIdx], 0);
     }
 }

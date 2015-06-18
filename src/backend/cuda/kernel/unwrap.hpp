@@ -38,8 +38,7 @@ namespace cuda
             const dim_t cIn  = w *  in.strides[3] + z *  in.strides[2];
 
             // Compute the number of windows along dim0 of input
-            const dim_t nx = (in.dims[0] - wx) / sx + 1;
-            //dim_t ny = (in.dims[1] - wy) / sy + 1;
+            const dim_t nx = divup(in.dims[0] - wx, sx) + (sx >= in.dims[0] ? 0 : 1);
 
             // Compute the output column index
             const dim_t colId = blockIdx.x * blockDim.y + threadIdx.y;
@@ -54,6 +53,10 @@ namespace cuda
             // Offset the global pointers to the respective starting indices
                   T* optr = out.ptr + cOut + colId * out.strides[1];
             const T* iptr = in.ptr  + cIn  + starty * in.strides[1] + startx;
+
+            bool cond = true;
+            if((startx + wx >= in.dims[0]) || (starty + wy >= in.dims[1]))
+                cond = false;
 
             for(int i = 0; i < repsPerColumn; i++) {
                 // Compute output index local to column
@@ -70,7 +73,10 @@ namespace cuda
                 const dim_t inIdx = y * in.strides[1] + x * in.strides[0];
 
                 // Copy
-                optr[outIdx] = iptr[inIdx];
+                if(cond || (startx + x < in.dims[0] && starty + y < in.dims[1]))
+                    optr[outIdx] = iptr[inIdx];
+                else
+                    optr[outIdx] = scalar<T>(0.0);
             }
         }
 
