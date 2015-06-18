@@ -72,6 +72,19 @@ BLAS_FUNC(dot, float,       S)
 BLAS_FUNC(dot, double,      D)
 
 #undef BLAS_FUNC_DEF
+#define BLAS_FUNC(NAME, TYPE, PREFIX, SUFFIX)					\
+template<>                                                              \
+struct NAME##_func<TYPE>                                                \
+{                                                                       \
+    template<typename... Args>                                          \
+    clblasStatus                                                        \
+    operator() (Args... args) { return clblas##PREFIX##NAME##SUFFIX(args...); } \
+};
+
+BLAS_FUNC(dot, cfloat,       C, u)
+BLAS_FUNC(dot, cdouble,      Z, u)
+
+#undef BLAS_FUNC_DEF
 #undef BLAS_FUNC
 
 template<typename T>
@@ -174,4 +187,6 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
 
 INSTANTIATE_DOT(float)
 INSTANTIATE_DOT(double)
+INSTANTIATE_DOT(cfloat)
+INSTANTIATE_DOT(cdouble)
 }

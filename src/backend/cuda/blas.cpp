@@ -91,6 +91,7 @@ FUNC##_func();
 #define BLAS_FUNC( FUNC, TYPE, PREFIX )         \
 template<> typename FUNC##_func_def_t<TYPE>::FUNC##_func_def       FUNC##_func<TYPE>()  { return (FUNC##_func_def_t<TYPE>::FUNC##_func_def)&cublas##PREFIX##FUNC; }
 
+
 BLAS_FUNC_DEF(gemm)
 BLAS_FUNC(gemm, float,  S)
 BLAS_FUNC(gemm, cfloat, C)
@@ -112,6 +113,15 @@ BLAS_FUNC(trsm, float,  S)
 BLAS_FUNC(trsm, cfloat, C)
 BLAS_FUNC(trsm, double, D)
 BLAS_FUNC(trsm, cdouble,Z)
+
+
+#undef BLAS_FUNC
+#define BLAS_FUNC( FUNC, TYPE, PREFIX, SUFFIX)         \
+template<> typename FUNC##_func_def_t<TYPE>::FUNC##_func_def       FUNC##_func<TYPE>()  { return &cublas##PREFIX##FUNC##SUFFIX; }
+
+BLAS_FUNC_DEF(dot)
+BLAS_FUNC(dot, cfloat,  C, u)
+BLAS_FUNC(dot, cdouble, Z, u)
 
 using namespace std;
 
@@ -227,6 +237,8 @@ INSTANTIATE_BLAS(cdouble)
 
 INSTANTIATE_DOT(float)
 INSTANTIATE_DOT(double)
+INSTANTIATE_DOT(cfloat)
+INSTANTIATE_DOT(cdouble)
 
 #define INSTANTIATE_TRSM(TYPE)                                                          \
     template void trsm<TYPE>(const Array<TYPE> &lhs, Array<TYPE> &rhs,                  \
