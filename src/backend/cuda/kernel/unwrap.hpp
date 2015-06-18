@@ -26,41 +26,50 @@ namespace cuda
                            const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy,
                            dim_t repsPerColumn)
         {
+            // Compute channel and volume
             const dim_t w = blockIdx.y / in.dims[2];
             const dim_t z = blockIdx.y % in.dims[2];
 
             if(w >= in.dims[3] || z >= in.dims[2])
                 return;
 
+            // Compute offset for channel and volume
             const dim_t cOut = w * out.strides[3] + z * out.strides[2];
             const dim_t cIn  = w *  in.strides[3] + z *  in.strides[2];
 
+            // Compute the number of windows along dim0 of input
             const dim_t nx = (in.dims[0] - wx) / sx + 1;
             //dim_t ny = (in.dims[1] - wy) / sy + 1;
 
+            // Compute the output column index
             const dim_t colId = blockIdx.x * blockDim.y + threadIdx.y;
 
             if(colId >= out.dims[1])
                 return;
 
+            // Compute the starting index of window in x and y of input
             const dim_t startx = (colId % nx) * sx;
             const dim_t starty = (colId / nx) * sy;
 
+            // Offset the global pointers to the respective starting indices
                   T* optr = out.ptr + cOut + colId * out.strides[1];
             const T* iptr = in.ptr  + cIn  + starty * in.strides[1] + startx;
 
             for(int i = 0; i < repsPerColumn; i++) {
+                // Compute output index local to column
                 const dim_t colIndex = i * threads + threadIdx.x;
 
                 if(colIndex >= out.dims[0])
                     return;
 
+                // Compute input index local to window
                 const dim_t x = colIndex % wx;
                 const dim_t y = colIndex / wx;
 
                 const dim_t outIdx = (y * wx + x) * out.strides[0];
                 const dim_t inIdx = y * in.strides[1] + x * in.strides[0];
 
+                // Copy
                 optr[outIdx] = iptr[inIdx];
             }
         }
@@ -76,7 +85,7 @@ namespace cuda
 
             dim_t repsPerColumn = 1;
             if(TX == 256 && wx * wy > 256) {
-                repsPerColumn = (wx * wy) / 256;
+                repsPerColumn = divup((wx * wy), 256);
             }
 
             dim3 blocks(divup(out.dims[1], threads.y), out.dims[2] * out.dims[3]);

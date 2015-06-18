@@ -71,13 +71,13 @@ namespace opencl
                 const dim_t TY = 256 / TX;
                 dim_t repsPerColumn = 1;
                 if(TX == 256 && wx * wy > 256) {
-                    repsPerColumn = (wx * wy) / 256;
+                    repsPerColumn = divup((wx * wy), 256);
                 }
 
                 NDRange local(TX, TY, 1);
 
-                NDRange global(local[0] * divup(in.info.dims[1], TY),
-                               local[1] * in.info.dims[2] * in.info.dims[3],
+                NDRange global(local[0] * divup(out.info.dims[1], TY),
+                               local[1] * out.info.dims[2] * out.info.dims[3],
                                1);
 
                 unwrapOp(EnqueueArgs(getQueue(), global, local),
