@@ -570,5 +570,18 @@ Interpolation types of \ref AF_INTERP_NEAREST and \ref AF_INTERP_BILINEAR are al
 Affine transforms can be used for various purposes. \ref af::translate, \ref af::scale and \ref af::skew
 are specializations of the transform function.
 
+=======================================================================
+
+\defgroup image_func_dog DoG
+\ingroup imageflt_mat
+
+\brief Difference of Gaussians
+
+Given an image, this function computes two different versions of smoothed
+input image using the difference smoothing parameters and subtracts one
+from the other and returns the result.
+
+=======================================================================
+
 @}
 */

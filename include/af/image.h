@@ -461,6 +461,18 @@ AFAPI array rgb2hsv(const array& in);
  */
 AFAPI array colorSpace(const array& image, const CSpace to, const CSpace from);
 
+/**
+   C++ Interface wrapper for Difference of Gaussians
+
+   \param[in] in is input image
+   \param[in] radius1 is the radius of first gaussian kernel
+   \param[in] radius2 is the radius of second gaussian kernel
+   \return    Difference of smoothed inputs
+
+   \ingroup image_func_dog
+ */
+AFAPI array dog(const array& in, const int radius1, const int radius2);
+
 }
 #endif
 
@@ -902,6 +914,20 @@ extern "C" {
        \ingroup image_func_colorspace
     */
     AFAPI af_err af_color_space(af_array *out, const af_array image, const af_cspace_t to, const af_cspace_t from);
+
+    /**
+       C Interface wrapper for Difference of Gaussians
+
+       \param[out] out is difference of smoothed inputs
+       \param[in] in is input image
+       \param[in] radius1 is the radius of first gaussian kernel
+       \param[in] radius2 is the radius of second gaussian kernel
+       \return    \ref AF_SUCCESS if the computation is is successful,
+                  otherwise an appropriate error code is returned.
+
+       \ingroup image_func_dog
+     */
+    AFAPI af_err af_dog(af_array *out, const af_array in, const int radius1, const int radius2);
 
 #ifdef __cplusplus
 }
