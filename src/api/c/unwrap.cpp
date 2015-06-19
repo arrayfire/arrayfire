@@ -37,8 +37,6 @@ af_err af_unwrap(af_array *out, const af_array in, const dim_t wx, const dim_t w
         DIM_ASSERT(3, wy > 0 && wy <= idims[1] + py);
         ARG_ASSERT(4, sx > 0);
         ARG_ASSERT(5, sy > 0);
-        ARG_ASSERT(4, sx > 0);
-        ARG_ASSERT(5, sy > 0);
         ARG_ASSERT(6, px >= 0 && px < wx);
         ARG_ASSERT(7, py >= 0 && py < wy);
 
