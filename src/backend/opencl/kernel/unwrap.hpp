@@ -32,7 +32,7 @@ namespace opencl
     {
         template<typename T, int TX>
         void unwrap(Param out, const Param in, const dim_t wx, const dim_t wy,
-                    const dim_t sx, const dim_t sy)
+                    const dim_t sx, const dim_t sy, const dim_t px, const dim_t py, const dim_t nx)
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -65,7 +65,8 @@ namespace opencl
                 });
 
                 auto unwrapOp = make_kernel<Buffer, const KParam, const Buffer, const KParam,
-                                      const dim_t, const dim_t, const dim_t, const dim_t, const dim_t>
+                                      const dim_t, const dim_t, const dim_t, const dim_t,
+                                      const dim_t, const dim_t, const dim_t, const dim_t>
                                       (*unwrapKernels[device]);
 
                 const dim_t TY = 256 / TX;
@@ -81,7 +82,7 @@ namespace opencl
                                1);
 
                 unwrapOp(EnqueueArgs(getQueue(), global, local),
-                       *out.data, out.info, *in.data, in.info, wx, wy, sx, sy, repsPerColumn);
+                       *out.data, out.info, *in.data, in.info, wx, wy, sx, sy, px, py, nx, repsPerColumn);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {

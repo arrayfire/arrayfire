@@ -13,10 +13,11 @@
 
 namespace af
 {
-    array unwrap(const array& in, const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy)
+    array unwrap(const array& in, const dim_t wx, const dim_t wy,
+                 const dim_t sx, const dim_t sy, const dim_t px, const dim_t py)
     {
         af_array out = 0;
-        AF_THROW(af_unwrap(&out, in.get(), wx, wy, sx, sy));
+        AF_THROW(af_unwrap(&out, in.get(), wx, wy, sx, sy, px, py));
         return array(out);
     }
 }
