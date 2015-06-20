@@ -17,6 +17,9 @@
 
 namespace af
 {
+#if __cplusplus > 199711l
+    static_assert(std::is_pod<dim4>::value, "dim4 must be a POD object");
+#endif
 
 using std::vector;
 using std::numeric_limits;
