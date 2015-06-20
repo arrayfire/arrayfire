@@ -47,9 +47,9 @@ public:
 #if __cplusplus > 199711L
     //Copy constructors are deprecated if there is a
     //user-defined destructor in c++11
+    ArrayInfo() = default;
     ArrayInfo(const ArrayInfo& other) = default;
 #endif
-    ~ArrayInfo() {}
 
     const af_dtype& getType() const     { return type;                  }
 
