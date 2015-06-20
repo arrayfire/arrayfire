@@ -38,6 +38,7 @@ namespace cpu
         data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
         node(), ready(true), offset(0), owner(true)
     {
+        static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
         std::copy(in_data, in_data + dims.elements(), data.get());
     }
 

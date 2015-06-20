@@ -51,6 +51,7 @@ namespace opencl
         data_dims(dims),
         node(), ready(true), offset(0), owner(true)
     {
+        static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
         getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T)*info.elements(), in_data);
     }
 

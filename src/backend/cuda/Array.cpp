@@ -40,6 +40,9 @@ namespace cuda
         data_dims(dims),
         node(), ready(true), offset(0), owner(true)
     {
+#if __cplusplus > 199711L
+        static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
+#endif
         if (!is_device) {
             CUDA_CHECK(cudaMemcpy(data.get(), in_data, dims.elements() * sizeof(T), cudaMemcpyHostToDevice));
         }
