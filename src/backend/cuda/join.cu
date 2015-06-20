@@ -18,7 +18,7 @@ namespace cuda
     template<int dim>
     af::dim4 calcOffset(const af::dim4 dims)
     {
-        af::dim4 offset;
+        af::dim4 offset(0);
         offset[0] = (dim == 0) ? dims[0] : 0;
         offset[1] = (dim == 1) ? dims[1] : 0;
         offset[2] = (dim == 2) ? dims[2] : 0;
@@ -31,7 +31,7 @@ namespace cuda
     {
         // All dimensions except join dimension must be equal
         // Compute output dims
-        af::dim4 odims;
+        af::dim4 odims(0);
         af::dim4 fdims = first.dims();
         af::dim4 sdims = second.dims();
 
@@ -112,9 +112,9 @@ namespace cuda
     {
         // All dimensions except join dimension must be equal
         // Compute output dims
-        af::dim4 odims;
+        af::dim4 odims(0);
         const dim_t n_arrays = inputs.size();
-        std::vector<af::dim4> idims(n_arrays);
+        std::vector<af::dim4> idims(n_arrays, dim4(0));
 
         dim_t dim_size = 0;
         for(int i = 0; i < (int)idims.size(); i++) {

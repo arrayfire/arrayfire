@@ -23,9 +23,9 @@ template<typename T>
 static inline void lu(af_array *lower, af_array *upper, af_array *pivot,
                       const af_array in)
 {
-    Array<T> lowerArray = createEmptyArray<T>(af::dim4());
-    Array<T> upperArray = createEmptyArray<T>(af::dim4());
-    Array<int> pivotArray = createEmptyArray<int>(af::dim4());
+    Array<T> lowerArray = createEmptyArray<T>(af::dim4(0));
+    Array<T> upperArray = createEmptyArray<T>(af::dim4(0));
+    Array<int> pivotArray = createEmptyArray<int>(af::dim4(0));
 
     lu<T>(lowerArray, upperArray, pivotArray, getArray<T>(in));
 

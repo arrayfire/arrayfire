@@ -26,12 +26,12 @@ static void orb(af_features& feat_, af_array& descriptor,
                 const unsigned max_feat, const float scl_fctr,
                 const unsigned levels, const bool blur_img)
 {
-    Array<float> x     = createEmptyArray<float>(dim4());
-    Array<float> y     = createEmptyArray<float>(dim4());
-    Array<float> score = createEmptyArray<float>(dim4());
-    Array<float> ori   = createEmptyArray<float>(dim4());
-    Array<float> size  = createEmptyArray<float>(dim4());
-    Array<uint > desc  = createEmptyArray<uint >(dim4());
+    Array<float> x     = createEmptyArray<float>(dim4(0));
+    Array<float> y     = createEmptyArray<float>(dim4(0));
+    Array<float> score = createEmptyArray<float>(dim4(0));
+    Array<float> ori   = createEmptyArray<float>(dim4(0));
+    Array<float> size  = createEmptyArray<float>(dim4(0));
+    Array<uint > desc  = createEmptyArray<uint >(dim4(0));
 
     af_features_t feat;
 

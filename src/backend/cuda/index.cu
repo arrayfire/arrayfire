@@ -47,7 +47,7 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
         p.strds[i] = iStrds[i];
     }
 
-    std::vector< Array<uint> > idxArrs(4, createEmptyArray<uint>(dim4()));
+    std::vector< Array<uint> > idxArrs(4, createEmptyArray<uint>(dim4(0)));
     // look through indexs to read af_array indexs
     for (dim_t x=0; x<4; ++x) {
         // set idxPtrs to null

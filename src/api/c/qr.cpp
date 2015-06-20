@@ -22,9 +22,9 @@ using namespace detail;
 template<typename T>
 static inline void qr(af_array *q, af_array *r, af_array *tau, const af_array in)
 {
-    Array<T> qArray = createEmptyArray<T>(af::dim4());
-    Array<T> rArray = createEmptyArray<T>(af::dim4());
-    Array<T> tArray = createEmptyArray<T>(af::dim4());
+    Array<T> qArray = createEmptyArray<T>(af::dim4(0));
+    Array<T> rArray = createEmptyArray<T>(af::dim4(0));
+    Array<T> tArray = createEmptyArray<T>(af::dim4(0));
 
     qr<T>(qArray, rArray, tArray, getArray<T>(in));
 

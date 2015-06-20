@@ -28,7 +28,7 @@ namespace cpu
     Array<T> setUnique(const Array<T> &in,
                         const bool is_sorted)
     {
-        Array<T> out = createEmptyArray<T>(af::dim4());
+        Array<T> out = createEmptyArray<T>(af::dim4(0));
         if (is_sorted) out = copyArray<T>(in);
         else           out = sort<T, 1>(in, 0);
 

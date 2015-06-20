@@ -55,7 +55,7 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     dim4 iOffs = toOffset(seqs, dDims);
     dim4 iStrds= toStride(seqs, dDims);
 
-    std::vector< Array<uint> > idxArrs(4, createEmptyArray<uint>(dim4()));
+    std::vector< Array<uint> > idxArrs(4, createEmptyArray<uint>(dim4(0)));
     // look through indexs to read af_array indexs
     for (dim_t x=0; x<4; ++x) {
         if (!isSeq[x]) {

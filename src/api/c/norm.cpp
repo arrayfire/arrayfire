@@ -59,7 +59,7 @@ double vectorNorm(const Array<T> &A, double p)
 template<typename T>
 double LPQNorm(const Array<T> &A, double p, double q)
 {
-    Array<T> A_p_norm = createEmptyArray<T>(dim4());
+    Array<T> A_p_norm = createEmptyArray<T>(dim4(0));
 
     if (p == 1) {
         A_p_norm = reduce<af_add_t, T, T>(A, 0);

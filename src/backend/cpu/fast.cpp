@@ -253,7 +253,7 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
 
     // Matrix containing scores for detected features, scores are stored in the
     // same coordinates as features, dimensions should be equal to in.
-    Array<float> V = createEmptyArray<float>(dim4());
+    Array<float> V = createEmptyArray<float>(dim4(0));
     if (nonmax == 1) {
         dim4 V_dims(in_dims[0], in_dims[1]);
         V = createValueArray<float>(V_dims, (float)0);
@@ -277,9 +277,9 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
     unsigned feat_found = std::min(max_feat, count);
     dim4 feat_found_dims(feat_found);
 
-    Array<float> x_total = createEmptyArray<float>(af::dim4());
-    Array<float> y_total = createEmptyArray<float>(af::dim4());
-    Array<float> score_total = createEmptyArray<float>(af::dim4());
+    Array<float> x_total = createEmptyArray<float>(af::dim4(0));
+    Array<float> y_total = createEmptyArray<float>(af::dim4(0));
+    Array<float> score_total = createEmptyArray<float>(af::dim4(0));
 
     if (nonmax == 1) {
 
