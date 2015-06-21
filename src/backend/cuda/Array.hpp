@@ -95,13 +95,13 @@ namespace cuda
     template<typename T>
     class Array
     {
-        ArrayInfo       info;
+        ArrayInfo       info; // This must be the first element of Array<T>
         shared_ptr<T> data;
         af::dim4 data_dims;
 
         JIT::Node_ptr node;
-        bool ready;
         dim_t offset;
+        bool ready;
         bool owner;
 
         Array(af::dim4 dims);

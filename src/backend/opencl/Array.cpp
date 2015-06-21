@@ -31,7 +31,7 @@ namespace opencl
         info(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(bufferAlloc(info.elements() * sizeof(T)), bufferFree),
         data_dims(dims),
-        node(), ready(true), offset(0), owner(true)
+        node(), offset(0), ready(true), owner(true)
     {
     }
 
@@ -40,7 +40,7 @@ namespace opencl
         info(-1, dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(),
         data_dims(dims),
-        node(n), ready(false), offset(0), owner(true)
+        node(n), offset(0), ready(false), owner(true)
     {
     }
 
@@ -49,7 +49,7 @@ namespace opencl
         info(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(bufferAlloc(info.elements()*sizeof(T)), bufferFree),
         data_dims(dims),
-        node(), ready(true), offset(0), owner(true)
+        node(), offset(0), ready(true), owner(true)
     {
         static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
         getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T)*info.elements(), in_data);
@@ -60,7 +60,7 @@ namespace opencl
         info(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(new cl::Buffer(mem), bufferFree),
         data_dims(dims),
-        node(), ready(true), offset(0), owner(true)
+        node(), offset(0), ready(true), owner(true)
     {
     }
 
@@ -70,8 +70,8 @@ namespace opencl
         data(parent.getData()),
         data_dims(parent.getDataDims()),
         node(),
-        ready(true),
         offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
+        ready(true),
         owner(false)
     { }
 
@@ -85,7 +85,7 @@ namespace opencl
                   (af_dtype)dtype_traits<T>::af_type),
         data(tmp.data, bufferFree),
         data_dims(af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3])),
-        node(), ready(true), offset(0), owner(true)
+        node(), offset(0), ready(true), owner(true)
     {
     }
 

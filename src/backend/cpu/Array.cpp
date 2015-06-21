@@ -29,14 +29,14 @@ namespace cpu
     Array<T>::Array(dim4 dims):
         info(getActiveDeviceId(), dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
-        node(), ready(true), offset(0), owner(true)
+        node(), offset(0), ready(true), owner(true)
     { }
 
     template<typename T>
     Array<T>::Array(dim4 dims, const T * const in_data):
         info(getActiveDeviceId(), dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
-        node(), ready(true), offset(0), owner(true)
+        node(), offset(0), ready(true), owner(true)
     {
         static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
         std::copy(in_data, in_data + dims.elements(), data.get());
@@ -47,7 +47,7 @@ namespace cpu
     Array<T>::Array(af::dim4 dims, TNJ::Node_ptr n) :
         info(-1, dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(), data_dims(dims),
-        node(n), ready(false), offset(0), owner(true)
+        node(n), offset(0), ready(false), owner(true)
     {
     }
 
@@ -55,9 +55,9 @@ namespace cpu
     Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &strides) :
         info(parent.getDevId(), dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
         data(parent.getData()), data_dims(parent.getDataDims()),
-        node(), ready(true),
+        node(),
         offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
-        owner(false)
+        ready(true), owner(false)
     { }
 
     template<typename T>

@@ -30,7 +30,7 @@ namespace cuda
     Array<T>::Array(af::dim4 dims) :
         info(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
-        node(), ready(true), offset(0), owner(true)
+        node(), offset(0), ready(true), owner(true)
     {}
 
     template<typename T>
@@ -38,7 +38,7 @@ namespace cuda
         info(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data((is_device ? (T *)in_data : memAlloc<T>(dims.elements())), memFree<T>),
         data_dims(dims),
-        node(), ready(true), offset(0), owner(true)
+        node(), offset(0), ready(true), owner(true)
     {
 #if __cplusplus > 199711L
         static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
@@ -52,9 +52,9 @@ namespace cuda
     Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &strides) :
         info(parent.getDevId(), dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
         data(parent.getData()), data_dims(parent.getDataDims()),
-        node(), ready(true),
+        node(),
         offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
-        owner(false)
+        ready(true), owner(false)
     { }
 
     template<typename T>
@@ -65,7 +65,7 @@ namespace cuda
                   (af_dtype)dtype_traits<T>::af_type),
         data(tmp.ptr, memFree<T>),
         data_dims(af::dim4(tmp.dims[0], tmp.dims[1], tmp.dims[2], tmp.dims[3])),
-        node(), ready(true), offset(0), owner(true)
+        node(), offset(0), ready(true), owner(true)
     {
     }
 
@@ -73,7 +73,7 @@ namespace cuda
     Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
         info(-1, dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(), data_dims(dims),
-        node(n), ready(false), offset(0), owner(true)
+        node(n), offset(0), ready(false), owner(true)
     {
     }
 

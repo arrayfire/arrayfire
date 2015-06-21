@@ -81,16 +81,16 @@ namespace cpu
     template<typename T>
     class Array
     {
-         ArrayInfo info;
+        ArrayInfo info; // Must be the first element of Array<T>
         //TODO: Generator based array
 
         //data if parent. empty if child
         std::shared_ptr<T> data;
         af::dim4 data_dims;
-
         TNJ::Node_ptr node;
-        bool ready;
+
         dim_t offset;
+        bool ready;
         bool owner;
 
         Array() = default;
