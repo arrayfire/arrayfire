@@ -80,14 +80,14 @@ void gradient_kernel(__global T *d_grad0, const KParam grad0,
         // Y-1
         sidx(-1, tx) = (cond || idy == 0) ?
                         sidx(0, tx) : d_in[iIdx - in.strides[1]];
-        sidx(ymax, tx) = (cond || idy + ymax >= in.dims[1] - 1) ?
+        sidx(ymax, tx) = (cond || (idy + ymax) >= in.dims[1]) ?
                           sidx(ymax - 1, tx) : d_in[iIdx + ymax * in.strides[1]];
     }
     // Rows
     if(tx == 0) {
         sidx(ty, -1) = (cond || idx == 0) ?
                         sidx(ty, 0) : d_in[iIdx - 1];
-        sidx(ty, xmax) = (cond || idx + xmax >= in.dims[0] - 1) ?
+        sidx(ty, xmax) = (cond || (idx + xmax) >= in.dims[0]) ?
                           sidx(ty, xmax - 1) : d_in[iIdx + xmax];
     }
 
