@@ -27,36 +27,37 @@ namespace cpu
 
     template<typename T>
     Array<T>::Array(dim4 dims):
-        ArrayInfo(getActiveDeviceId(), dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        info(getActiveDeviceId(), dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
-        node(), ready(true), offset(0), owner(true)
+        node(), offset(0), ready(true), owner(true)
     { }
 
     template<typename T>
     Array<T>::Array(dim4 dims, const T * const in_data):
-        ArrayInfo(getActiveDeviceId(), dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        info(getActiveDeviceId(), dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
-        node(), ready(true), offset(0), owner(true)
+        node(), offset(0), ready(true), owner(true)
     {
+        static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
         std::copy(in_data, in_data + dims.elements(), data.get());
     }
 
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, TNJ::Node_ptr n) :
-        ArrayInfo(-1, dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        info(-1, dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(), data_dims(dims),
-        node(n), ready(false), offset(0), owner(true)
+        node(n), offset(0), ready(false), owner(true)
     {
     }
 
     template<typename T>
     Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &strides) :
-        ArrayInfo(parent.getDevId(), dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
+        info(parent.getDevId(), dims, offsets, strides, (af_dtype)dtype_traits<T>::af_type),
         data(parent.getData()), data_dims(parent.getDataDims()),
-        node(), ready(true),
+        node(),
         offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
-        owner(false)
+        ready(true), owner(false)
     { }
 
     template<typename T>
@@ -104,10 +105,6 @@ namespace cpu
         if (isReady()) return;
         const_cast<Array<T> *>(this)->eval();
     }
-
-    template<typename T>
-    Array<T>::~Array()
-    { }
 
     template<typename T>
     Node_ptr Array<T>::getNode() const
@@ -159,7 +156,7 @@ namespace cpu
     }
 
     template<typename T>
-    Array<T> *initArray() { return new Array<T>(dim4()); }
+    Array<T> *initArray() { return new Array<T>(dim4(0, 0, 0, 0)); }
 
 
     template<typename T>
@@ -259,7 +256,6 @@ namespace cpu
     template       void      destroyArray<T>          (Array<T> *A);    \
     template       void      evalArray<T>             (const Array<T> &A); \
     template       Array<T>  createNodeArray<T>       (const dim4 &size, TNJ::Node_ptr node); \
-    template       Array<T>::~Array        ();                          \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
     template       TNJ::Node_ptr Array<T>::getNode() const;             \
