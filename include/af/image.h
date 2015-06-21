@@ -473,6 +473,23 @@ AFAPI array colorSpace(const array& image, const CSpace to, const CSpace from);
  */
 AFAPI array dog(const array& in, const int radius1, const int radius2);
 
+/**
+   C++ Interface wrapper for unwrap
+
+   \param[in]  in is the input array
+   \param[in]  wx is the block window size along 0th-dimension between [1, input.dims[0] + px]
+   \param[in]  wy is the block window size along 1st-dimension between [1, input.dims[1] + py]
+   \param[in]  sx is the stride along 0th-dimension
+   \param[in]  sy is the stride along 1st-dimension
+   \param[in]  px is the padding along 0th-dimension between [0, wx). Padding is applied both before and after.
+   \param[in]  py is the padding along 1st-dimension between [0, wy). Padding is applied both before and after.
+   \returns    an array with the image blocks as columns
+
+   \ingroup image_func_unwrap
+*/
+AFAPI array unwrap(const array& in, const dim_t wx, const dim_t wy,
+                   const dim_t sx, const dim_t sy, const dim_t px=0, const dim_t py=0);
+
 }
 #endif
 
@@ -928,6 +945,25 @@ extern "C" {
        \ingroup image_func_dog
      */
     AFAPI af_err af_dog(af_array *out, const af_array in, const int radius1, const int radius2);
+
+    /**
+       C Interface wrapper for unwrap
+
+       \param[out] out is an array with image blocks as columns.
+       \param[in]  in is the input array
+       \param[in]  wx is the block window size along 0th-dimension between [1, input.dims[0] + px]
+       \param[in]  wy is the block window size along 1st-dimension between [1, input.dims[1] + py]
+       \param[in]  sx is the stride along 0th-dimension
+       \param[in]  sy is the stride along 1st-dimension
+       \param[in]  px is the padding along 0th-dimension between [0, wx). Padding is applied both before and after.
+       \param[in]  py is the padding along 1st-dimension between [0, wy). Padding is applied both before and after.
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup image_func_unwrap
+    */
+    AFAPI af_err af_unwrap(af_array *out, const af_array in, const dim_t wx, const dim_t wy,
+                           const dim_t sx, const dim_t sy, const dim_t px, const dim_t py);
 
 #ifdef __cplusplus
 }
