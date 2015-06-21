@@ -24,7 +24,7 @@ namespace cpu
 template<typename T>
 Array<T> exampleFunction(const Array<T> &in, const af_someenum_t method)
 {
-    dim4 outputDims(0);                 // this should be '= in.dims();' in most cases
+    dim4 outputDims;                    // this should be '= in.dims();' in most cases
                                         // but would definitely depend on the type of
                                         // algorithm you are implementing.
 

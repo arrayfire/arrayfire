@@ -18,13 +18,20 @@
 namespace af
 {
 #if __cplusplus > 199711l
-    static_assert(std::is_pod<dim4>::value, "dim4 must be a POD object");
+    static_assert(std::is_standard_layout<dim4>::value, "af::dim4 must be a standard layout type");
 #endif
 
 using std::vector;
 using std::numeric_limits;
 using std::abs;
 
+dim4::dim4()
+{
+    dims[0] = 0;
+    dims[1] = 0;
+    dims[2] = 0;
+    dims[3] = 0;
+}
 
 dim4::dim4( dim_t first,
             dim_t second,
@@ -37,6 +44,13 @@ dim4::dim4( dim_t first,
     dims[3] = fourth;
 }
 
+dim4::dim4(const dim4& other)
+{
+    dims[0] = other.dims[0];
+    dims[1] = other.dims[1];
+    dims[2] = other.dims[2];
+    dims[3] = other.dims[3];
+}
 
 dim4::dim4(const unsigned ndims_, const dim_t * const dims_)
 {

@@ -581,17 +581,17 @@ unsigned orb(Array<float> &x, Array<float> &y,
     lvl_best[max_levels-1] = max_feat - feat_sum;
 
     // Maintain a reference to previous level image
-    Array<T> prev_img = createEmptyArray<T>(af::dim4(0));
-    af::dim4 prev_ldims(0);
+    Array<T> prev_img = createEmptyArray<T>(af::dim4());
+    af::dim4 prev_ldims;
 
     af::dim4 gauss_dims(9);
     T* h_gauss = nullptr;
-    Array<T> gauss_filter = createEmptyArray<T>(af::dim4(0));
+    Array<T> gauss_filter = createEmptyArray<T>(af::dim4());
 
     for (unsigned i = 0; i < max_levels; i++) {
-        af::dim4 ldims(0);
+        af::dim4 ldims;
         const float lvl_scl = (float)std::pow(scl_fctr,(float)i);
-        Array<T> lvl_img = createEmptyArray<T>(af::dim4(0));
+        Array<T> lvl_img = createEmptyArray<T>(af::dim4());
 
         if (i == 0) {
             // First level is used in its original size
@@ -613,9 +613,9 @@ unsigned orb(Array<float> &x, Array<float> &y,
         }
 
 
-        Array<float> x_feat = createEmptyArray<float>(dim4(0));
-        Array<float> y_feat = createEmptyArray<float>(dim4(0));
-        Array<float> score_feat = createEmptyArray<float>(dim4(0));
+        Array<float> x_feat = createEmptyArray<float>(dim4());
+        Array<float> y_feat = createEmptyArray<float>(dim4());
+        Array<float> score_feat = createEmptyArray<float>(dim4());
 
         // Round feature size to nearest odd integer
         float size = 2.f * floor(patch_size / 2.f) + 1.f;
@@ -660,8 +660,8 @@ unsigned orb(Array<float> &x, Array<float> &y,
         // Sort features according to Harris responses
         af::dim4 usable_feat_dims(usable_feat);
         Array<float> score_harris = createHostDataArray(usable_feat_dims, h_score_harris);
-        Array<float> harris_sorted = createEmptyArray<float>(af::dim4(0));
-        Array<unsigned> harris_idx = createEmptyArray<unsigned>(af::dim4(0));
+        Array<float> harris_sorted = createEmptyArray<float>(af::dim4());
+        Array<unsigned> harris_idx = createEmptyArray<unsigned>(af::dim4());
 
         sort_index<float, false>(harris_sorted, harris_idx, score_harris, 0);
 
@@ -695,7 +695,7 @@ unsigned orb(Array<float> &x, Array<float> &y,
         centroid_angle<T>(h_x_lvl, h_y_lvl, h_ori_lvl, usable_feat,
                           lvl_img, patch_size);
 
-        Array<T> lvl_filt = createEmptyArray<T>(dim4(0));
+        Array<T> lvl_filt = createEmptyArray<T>(dim4());
 
         if (blur_img) {
             // Calculate a separable Gaussian kernel, if one is not already stored

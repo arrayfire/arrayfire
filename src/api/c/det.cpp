@@ -32,8 +32,8 @@ T det(const af_array a)
     std::vector<T> hD(num);
     std::vector<int> hP(num);
 
-    Array<T> D = createEmptyArray<T>(dim4(0));
-    Array<int> pivot = createEmptyArray<int>(dim4(0));
+    Array<T> D = createEmptyArray<T>(dim4());
+    Array<int> pivot = createEmptyArray<int>(dim4());
 
     // Free memory as soon as possible
     {

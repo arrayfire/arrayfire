@@ -21,8 +21,8 @@ using namespace detail;
 template<typename T>
 static void hamming_matcher(af_array* idx, af_array* dist, const af_array query, const af_array train, const dim_t dist_dim, const uint n_dist)
 {
-    Array<uint> oIdxArray = createEmptyArray<uint>(af::dim4(0));
-    Array<uint> oDistArray = createEmptyArray<uint>(af::dim4(0));
+    Array<uint> oIdxArray = createEmptyArray<uint>(af::dim4());
+    Array<uint> oDistArray = createEmptyArray<uint>(af::dim4());
 
     hamming_matcher<T>(oIdxArray, oDistArray, getArray<T>(query), getArray<T>(train), dist_dim, n_dist);
 

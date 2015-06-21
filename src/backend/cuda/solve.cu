@@ -228,7 +228,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
     int N = a.dims()[1];
     int K = b.dims()[1];
 
-    Array<T> B = createEmptyArray<T>(dim4(0));
+    Array<T> B = createEmptyArray<T>(dim4());
 
     if (M < N) {
 

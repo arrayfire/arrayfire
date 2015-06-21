@@ -26,12 +26,12 @@ static inline uint rank(const af_array in, double tol)
 {
     Array<T> In = getArray<T>(in);
 
-    Array<T> r = createEmptyArray<T>(dim4(0));
+    Array<T> r = createEmptyArray<T>(dim4());
 
     // Scoping to get rid of q and t as they are not necessary
     {
-        Array<T> q = createEmptyArray<T>(dim4(0));
-        Array<T> t = createEmptyArray<T>(dim4(0));
+        Array<T> q = createEmptyArray<T>(dim4());
+        Array<T> t = createEmptyArray<T>(dim4());
         qr(q, r, t, In);
     }
 

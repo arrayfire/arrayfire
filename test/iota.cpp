@@ -55,7 +55,7 @@ void iotaTest(const af::dim4 idims, const af::dim4 tdims)
 
     af_array temp0 = 0, temp1 = 0, temp2 = 0;
     af::dim4 tempdims(idims.elements());
-    af::dim4 fulldims(0);
+    af::dim4 fulldims;
     for(unsigned i = 0; i < 4; i++) {
         fulldims[i] = idims[i] * tdims[i];
     }
@@ -112,7 +112,7 @@ TEST(Iota, CPP)
 
     af::dim4 idims(23, 15, 1, 1);
     af::dim4 tdims(2, 2, 1, 1);
-    af::dim4 fulldims(0);
+    af::dim4 fulldims;
     for(unsigned i = 0; i < 4; i++) {
         fulldims[i] = idims[i] * tdims[i];
     }

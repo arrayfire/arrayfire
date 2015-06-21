@@ -25,9 +25,9 @@ static af_features fast(af_array const &in, const float thr,
                         const unsigned arc_length, const bool non_max,
                         const float feature_ratio, const unsigned edge)
 {
-    Array<float> x = createEmptyArray<float>(dim4(0));
-    Array<float> y = createEmptyArray<float>(dim4(0));
-    Array<float> score = createEmptyArray<float>(dim4(0));
+    Array<float> x = createEmptyArray<float>(dim4());
+    Array<float> y = createEmptyArray<float>(dim4());
+    Array<float> score = createEmptyArray<float>(dim4());
 
     af_features_t feat;
     feat.n = fast<T>(x, y, score,

@@ -111,7 +111,7 @@ public:
     bool isLinear() const;
 };
 #if __cplusplus > 199711l
-    static_assert(std::is_pod<ArrayInfo>::value, "ArrayInfo must be a POD object");
+    static_assert(std::is_standard_layout<ArrayInfo>::value, "ArrayInfo must be a standard layout type");
 #endif
 
 // Returns size and time info for an array object.

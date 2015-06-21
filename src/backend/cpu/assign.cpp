@@ -57,7 +57,7 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs)
     dim4 src_dims       = rhs.dims();
     dim4 src_strides    = rhs.strides();
 
-    std::vector< Array<uint> > idxArrs(4, createEmptyArray<uint>(dim4(0)));
+    std::vector< Array<uint> > idxArrs(4, createEmptyArray<uint>(dim4()));
     // look through indexs to read af_array indexs
     for (dim_t x=0; x<4; ++x) {
         if (!isSeq[x]) {
