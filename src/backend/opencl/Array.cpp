@@ -15,6 +15,7 @@
 #include <err_opencl.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
+#include <cstddef>
 
 using af::dim4;
 
@@ -52,6 +53,7 @@ namespace opencl
         node(), offset(0), ready(true), owner(true)
     {
         static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
+        static_assert(offsetof(Array<T>, info) == 0, "Array<T>::info must be the first member variable of Array<T>");
         getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T)*info.elements(), in_data);
     }
 

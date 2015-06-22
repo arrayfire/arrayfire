@@ -15,6 +15,7 @@
 #include <scalar.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
+#include <cstddef>
 
 using af::dim4;
 
@@ -42,6 +43,7 @@ namespace cuda
     {
 #if __cplusplus > 199711L
         static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
+        static_assert(offsetof(Array<T>, info) == 0, "Array<T>::info must be the first member variable of Array<T>");
 #endif
         if (!is_device) {
             CUDA_CHECK(cudaMemcpy(data.get(), in_data, dims.elements() * sizeof(T), cudaMemcpyHostToDevice));
