@@ -15,6 +15,7 @@
 #include <memory.hpp>
 #include <platform.hpp>
 #include <cstring>
+#include <cstddef>
 
 namespace cpu
 {
@@ -39,6 +40,7 @@ namespace cpu
         node(), offset(0), ready(true), owner(true)
     {
         static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
+        static_assert(offsetof(Array<T>, info) == 0, "Array<T>::info must be the first member variable of Array<T>");
         std::copy(in_data, in_data + dims.elements(), data.get());
     }
 
