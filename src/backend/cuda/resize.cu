@@ -31,6 +31,9 @@ namespace cuda
             case AF_INTERP_BILINEAR:
                 kernel::resize<T, AF_INTERP_BILINEAR>(out, in);
                 break;
+            case AF_INTERP_LOWER:
+                kernel::resize<T, AF_INTERP_LOWER>(out, in);
+                break;
             default:
                 break;
         }

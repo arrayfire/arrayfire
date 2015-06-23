@@ -32,7 +32,10 @@ af_err af_resize(af_array *out, const af_array in, const dim_t odim0, const dim_
         ArrayInfo info = getInfo(in);
         af_dtype type = info.getType();
 
-        ARG_ASSERT(4, (method == AF_INTERP_BILINEAR || method == AF_INTERP_NEAREST));
+        ARG_ASSERT(4, (method == AF_INTERP_BILINEAR ||
+                       method == AF_INTERP_NEAREST  ||
+                       method == AF_INTERP_LOWER
+                       ));
         DIM_ASSERT(2, odim0 > 0);
         DIM_ASSERT(3, odim1 > 0);
 

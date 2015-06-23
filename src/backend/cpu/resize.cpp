@@ -129,6 +129,33 @@ namespace cpu
         }
     };
 
+    template<typename T>
+    struct resize_op<T, AF_INTERP_LOWER>
+    {
+        void operator()(T *outPtr, const T *inPtr, const af::dim4 &odims, const af::dim4 &idims,
+                const af::dim4 &ostrides, const af::dim4 &istrides,
+                const dim_t x, const dim_t y)
+        {
+            // Compute Indices
+            dim_t i_x = floor((float)x / (odims[0] / (float)idims[0]));
+            dim_t i_y = floor((float)y / (odims[1] / (float)idims[1]));
+
+            if (i_x >= idims[0]) i_x = idims[0] - 1;
+            if (i_y >= idims[1]) i_y = idims[1] - 1;
+
+            dim_t i_off = i_y * istrides[1] + i_x;
+            dim_t o_off =   y * ostrides[1] + x;
+            // Copy values from all channels
+            for(dim_t w = 0; w < odims[3]; w++) {
+                dim_t wost = w * ostrides[3];
+                dim_t wist = w * istrides[3];
+                for(dim_t z = 0; z < odims[2]; z++) {
+                    outPtr[o_off + z * ostrides[2] + wost] = inPtr[i_off + z * istrides[2] + wist];
+                }
+            }
+        }
+    };
+
     template<typename T, af_interp_type method>
     void resize_(T *outPtr, const T *inPtr, const af::dim4 &odims, const af::dim4 &idims,
                  const af::dim4 &ostrides, const af::dim4 &istrides)
@@ -164,6 +191,9 @@ namespace cpu
                 break;
             case AF_INTERP_BILINEAR:
                 resize_<T, AF_INTERP_BILINEAR>(outPtr, inPtr, odims, idims, ostrides, istrides);
+                break;
+            case AF_INTERP_LOWER:
+                resize_<T, AF_INTERP_LOWER>(outPtr, inPtr, odims, idims, ostrides, istrides);
                 break;
             default:
                 break;

@@ -62,8 +62,9 @@ namespace opencl
                     options << " -D WT="       << dtype_traits<wtype_t<BT>>::getName();
 
                     switch(method) {
-                        case AF_INTERP_NEAREST:  options <<" -D INTERP=NEAREST" ;  break;
+                        case AF_INTERP_NEAREST:  options <<" -D INTERP=NEAREST" ; break;
                         case AF_INTERP_BILINEAR: options <<" -D INTERP=BILINEAR"; break;
+                        case AF_INTERP_LOWER:    options <<" -D INTERP=LOWER"   ; break;
                         default: break;
                     }
 
