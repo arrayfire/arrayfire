@@ -119,6 +119,8 @@ af_err af_device_array(af_array *arr, const void *data,
         case c64: res = getHandle(createDeviceDataArray<cdouble>(d, data)); break;
         case s32: res = getHandle(createDeviceDataArray<int    >(d, data)); break;
         case u32: res = getHandle(createDeviceDataArray<uint   >(d, data)); break;
+        case s64: res = getHandle(createDeviceDataArray<intl   >(d, data)); break;
+        case u64: res = getHandle(createDeviceDataArray<uintl  >(d, data)); break;
         case u8 : res = getHandle(createDeviceDataArray<uchar  >(d, data)); break;
         case b8 : res = getHandle(createDeviceDataArray<char   >(d, data)); break;
         default: TYPE_ERROR(4, type);
@@ -147,6 +149,8 @@ af_err af_get_device_ptr(void **data, const af_array arr)
         case c64: *data = getDevicePtr(getArray<cdouble>(arr)); break;
         case s32: *data = getDevicePtr(getArray<int    >(arr)); break;
         case u32: *data = getDevicePtr(getArray<uint   >(arr)); break;
+        case s64: *data = getDevicePtr(getArray<intl   >(arr)); break;
+        case u64: *data = getDevicePtr(getArray<uintl  >(arr)); break;
         case u8 : *data = getDevicePtr(getArray<uchar  >(arr)); break;
         case b8 : *data = getDevicePtr(getArray<char   >(arr)); break;
 
@@ -157,6 +161,75 @@ af_err af_get_device_ptr(void **data, const af_array arr)
 
     return AF_SUCCESS;
 }
+
+template <typename T>
+inline void lockDevicePtr(const af_array arr)
+{
+    memPop<T>((const T *)getArray<T>(arr).get());
+}
+
+af_err af_lock_device_ptr(const af_array arr)
+{
+    try {
+
+        // Make sure all kernels and memcopies are done before getting device pointer
+        detail::sync(getActiveDeviceId());
+
+        af_dtype type = getInfo(arr).getType();
+
+        switch (type) {
+        case f32: lockDevicePtr<float  >(arr); break;
+        case f64: lockDevicePtr<double >(arr); break;
+        case c32: lockDevicePtr<cfloat >(arr); break;
+        case c64: lockDevicePtr<cdouble>(arr); break;
+        case s32: lockDevicePtr<int    >(arr); break;
+        case u32: lockDevicePtr<uint   >(arr); break;
+        case s64: lockDevicePtr<intl   >(arr); break;
+        case u64: lockDevicePtr<uintl  >(arr); break;
+        case u8 : lockDevicePtr<uchar  >(arr); break;
+        case b8 : lockDevicePtr<char   >(arr); break;
+        default: TYPE_ERROR(4, type);
+        }
+
+    } CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+template <typename T>
+inline void unlockDevicePtr(const af_array arr)
+{
+    memPush<T>((const T *)getArray<T>(arr).get());
+}
+
+af_err af_unlock_device_ptr(const af_array arr)
+{
+    try {
+
+        // Make sure all kernels and memcopies are done before getting device pointer
+        detail::sync(getActiveDeviceId());
+
+        af_dtype type = getInfo(arr).getType();
+
+        switch (type) {
+        case f32: unlockDevicePtr<float  >(arr); break;
+        case f64: unlockDevicePtr<double >(arr); break;
+        case c32: unlockDevicePtr<cfloat >(arr); break;
+        case c64: unlockDevicePtr<cdouble>(arr); break;
+        case s32: unlockDevicePtr<int    >(arr); break;
+        case u32: unlockDevicePtr<uint   >(arr); break;
+        case s64: unlockDevicePtr<intl   >(arr); break;
+        case u64: unlockDevicePtr<uintl  >(arr); break;
+        case u8 : unlockDevicePtr<uchar  >(arr); break;
+        case b8 : unlockDevicePtr<char   >(arr); break;
+        default: TYPE_ERROR(4, type);
+        }
+
+    } CATCHALL;
+
+    return AF_SUCCESS;
+}
+
 
 af_err af_alloc_device(void **ptr, const dim_t bytes)
 {

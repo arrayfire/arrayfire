@@ -23,6 +23,24 @@ array lookup(const array &in, const array &idx, const int dim)
     return array(out);
 }
 
+void copy(array &dst, const array &src,
+          const index &idx0,
+          const index &idx1,
+          const index &idx2,
+          const index &idx3)
+{
+    unsigned nd = dst.numdims();
+
+    af_index_t indices[] = {idx0.get(),
+                            idx1.get(),
+                            idx2.get(),
+                            idx3.get()};
+
+    af_array lhs = dst.get();
+    const af_array rhs = src.get();
+    AF_THROW(af_assign_gen(&lhs, lhs, nd, indices, rhs));
+}
+
 index::index() {
     impl.idx.seq = af_span;
     impl.isSeq = true;

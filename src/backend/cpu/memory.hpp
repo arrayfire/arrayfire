@@ -13,7 +13,8 @@ namespace cpu
 {
     template<typename T> T* memAlloc(const size_t &elements);
     template<typename T> void memFree(T* ptr);
-    template<typename T> void memUnlink(T *ptr);
+    template<typename T> void memPop(const T *ptr);
+    template<typename T> void memPush(const T *ptr);
 
     template<typename T> T* pinnedAlloc(const size_t &elements);
     template<typename T> void pinnedFree(T* ptr);

@@ -120,6 +120,29 @@ namespace cuda
         }
 
         ///////////////////////////////////////////////////////////////////////////
+        // lower resampling
+        ///////////////////////////////////////////////////////////////////////////
+        template<typename T>
+        __host__ __device__
+        void resize_l(Param<T> out, CParam<T> in,
+                      const int o_off, const int i_off,
+                      const int blockIdx_x, const int blockIdx_y,
+                      const float xf, const float yf)
+        {
+            const int ox = threadIdx.x + blockIdx_x * blockDim.x;
+            const int oy = threadIdx.y + blockIdx_y * blockDim.y;
+
+            int ix = (ox * xf);
+            int iy = (oy * yf);
+
+            if (ox >= out.dims[0] || oy >= out.dims[1]) { return; }
+            if (ix >= in.dims[0]) { ix = in.dims[0] - 1; }
+            if (iy >= in.dims[1]) { iy = in.dims[1] - 1; }
+
+            out.ptr[o_off + ox + oy * out.strides[1]] = in.ptr[i_off + ix + iy * in.strides[1]];
+        }
+
+        ///////////////////////////////////////////////////////////////////////////
         // Resize Kernel
         ///////////////////////////////////////////////////////////////////////////
         template<typename T, af_interp_type method>
@@ -140,6 +163,8 @@ namespace cuda
                 resize_n(out, in, o_off, i_off, blockIdx_x, blockIdx_y, xf, yf);
             } else if(method == AF_INTERP_BILINEAR) {
                 resize_b(out, in, o_off, i_off, blockIdx_x, blockIdx_y, xf, yf);
+            } else if(method == AF_INTERP_LOWER) {
+                resize_l(out, in, o_off, i_off, blockIdx_x, blockIdx_y, xf, yf);
             }
         }
 

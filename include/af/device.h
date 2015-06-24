@@ -202,11 +202,6 @@ extern "C" {
     AFAPI af_err af_sync(const int device);
 
     /**
-       \ingroup device_func_device
-    */
-    AFAPI af_err af_get_device_ptr(void **ptr, const af_array arr);
-
-    /**
        \ingroup device_func_alloc
     */
     AFAPI af_err af_alloc_device(void **ptr, const dim_t bytes);
@@ -256,6 +251,31 @@ extern "C" {
        \ingroup device_func_mem
     */
     AFAPI af_err af_get_mem_step_size(size_t *step_bytes);
+
+    /**
+       Lock the device buffer in the memory manager.
+
+       Locked buffers are not freed by memory manager until \ref af_unlock_device_ptr is called.
+       \ingroup device_func_mem
+    */
+    AFAPI af_err af_lock_device_ptr(const af_array arr);
+
+    /**
+       Unlock device buffer in the memory manager.
+
+       This function will give back the control over the device pointer to the memory manager.
+       \ingroup device_func_mem
+    */
+    AFAPI af_err af_unlock_device_ptr(const af_array arr);
+
+    /**
+       Get the device pointer and lock the buffer in memory manager.
+
+       The device pointer \p ptr is notfreed by memory manager until \ref af_unlock_device_ptr is called.
+       \ingroup device_func_mem
+    */
+    AFAPI af_err af_get_device_ptr(void **ptr, const af_array arr);
+
 
 #ifdef __cplusplus
 }

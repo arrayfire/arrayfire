@@ -116,9 +116,9 @@ af_err af_dot(      af_array *out,
 
         switch(lhs_type) {
         case f32: output = dot<float  >(lhs, rhs, optLhs, optRhs);   break;
-            //case c32: output = dot<cfloat >(lhs, rhs, optLhs, optRhs);   break;
+	case c32: output = dot<cfloat >(lhs, rhs, optLhs, optRhs);   break;
         case f64: output = dot<double >(lhs, rhs, optLhs, optRhs);   break;
-            //case c64: output = dot<cdouble>(lhs, rhs, optLhs, optRhs);   break;
+	case c64: output = dot<cdouble>(lhs, rhs, optLhs, optRhs);   break;
         default:  TYPE_ERROR(1, lhs_type);
         }
         std::swap(*out, output);
