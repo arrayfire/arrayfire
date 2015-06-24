@@ -90,6 +90,11 @@ AFAPI void hammingMatcher(array& idx, array& dist,
                           const array& query, const array& train,
                           const dim_t dist_dim=0, const unsigned n_dist=1);
 
+AFAPI void nearestNeighbour(array& idx, array& dist,
+                            const array& query, const array& train,
+                            const dim_t dist_dim=0, const unsigned n_dist=1,
+                            const af_match_type dist_type = AF_SSD);
+
 /**
    C++ Interface for image template matching
 
@@ -189,6 +194,11 @@ extern "C" {
     AFAPI af_err af_hamming_matcher(af_array* idx, af_array* dist,
                                     const af_array query, const af_array train,
                                     const dim_t dist_dim, const unsigned n_dist);
+
+    AFAPI af_err af_nearest_neighbour(af_array* idx, af_array* dist,
+                                      const af_array query, const af_array train,
+                                      const dim_t dist_dim, const unsigned n_dist,
+                                      const af_match_type dist_type);
 
     /**
        C Interface for image template matching

@@ -20,15 +20,39 @@ __inline unsigned popcount(unsigned x)
 }
 #endif
 
+#ifdef USE_DOUBLE
+To _sad_(T v1, T v2)
+{
+    return fabs(v1 - v2);
+}
+#else
+To _sad_(T v1, T v2)
+{
+    return fabs((float)v1 - (float)v2);
+}
+#endif
+
+To _ssd_(T v1, T v2)
+{
+    return (v1 - v2) * (v1 - v2);
+}
+
+#ifdef __SHD__
+unsigned _shd_(T v1, T v2)
+{
+    return popcount(v1 ^ v2);
+}
+#endif
+
 __kernel
-void hamming_matcher_unroll(
+void nearest_neighbour_unroll(
     __global unsigned* out_idx,
-    __global unsigned* out_dist,
+    __global To* out_dist,
     __global const T* query,
     KParam qInfo,
     __global const T* train,
     KParam tInfo,
-    const unsigned max_dist,
+    const To max_dist,
     __local T* lmem)
 {
     unsigned nquery = qInfo.dims[0];
@@ -37,7 +61,7 @@ void hamming_matcher_unroll(
     unsigned f = get_global_id(0);
     unsigned tid = get_local_id(0);
 
-    __local unsigned l_dist[THREADS];
+    __local To l_dist[THREADS];
     __local unsigned l_idx[THREADS];
 
     __local T* l_query = lmem;
@@ -69,16 +93,16 @@ void hamming_matcher_unroll(
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
-        unsigned dist = 0;
+        To dist = 0;
         if (valid_feat) {
             #pragma unroll
             for (int k = 0; k < (int)FEAT_LEN; k++) {
                 // Calculate Hamming distance for 32-bits of descriptor and
                 // accumulates to dist
 #ifdef USE_LOCAL_MEM
-                dist += popcount(l_train[k * get_local_size(0) + tid] ^ l_query[k]);
+                dist += DISTOP(l_train[k * get_local_size(0) + tid], l_query[k]);
 #else
-                dist += popcount(train[k * ntrain + f] ^ l_query[k]);
+                dist += DISTOP(train[k * ntrain + f], l_query[k]);
 #endif
             }
         }
@@ -161,14 +185,14 @@ void hamming_matcher_unroll(
 }
 
 __kernel
-void hamming_matcher(
+void nearest_neighbour(
     __global unsigned* out_idx,
-    __global unsigned* out_dist,
+    __global To* out_dist,
     __global const T* query,
     KParam qInfo,
     __global const T* train,
     KParam tInfo,
-    const unsigned max_dist,
+    const To max_dist,
     const unsigned feat_len,
     __local T* lmem)
 {
@@ -178,7 +202,7 @@ void hamming_matcher(
     unsigned f = get_global_id(0);
     unsigned tid = get_local_id(0);
 
-    __local unsigned l_dist[THREADS];
+    __local To l_dist[THREADS];
     __local unsigned l_idx[THREADS];
 
     __local T* l_query = lmem;
@@ -209,15 +233,15 @@ void hamming_matcher(
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
-        unsigned dist = 0;
+        To dist = 0;
         if (valid_feat) {
             for (int k = 0; k < (int)feat_len; k++) {
                 // Calculate Hamming distance for 32-bits of descriptor and
                 // accumulates to dist
 #ifdef USE_LOCAL_MEM
-                dist += popcount(l_train[k * get_local_size(0) + tid] ^ l_query[k]);
+                dist += DISTOP(l_train[k * get_local_size(0) + tid], l_query[k]);
 #else
-                dist += popcount(train[k * ntrain + f] ^ l_query[k]);
+                dist += DISTOP(train[k * ntrain + f], l_query[k]);
 #endif
             }
         }
@@ -302,18 +326,18 @@ void hamming_matcher(
 __kernel
 void select_matches(
     __global unsigned* idx,
-    __global unsigned* dist,
+    __global To* dist,
     __global const unsigned* in_idx,
-    __global const unsigned* in_dist,
+    __global const To* in_dist,
     const unsigned nfeat,
     const unsigned nelem,
-    const unsigned max_dist)
+    const To max_dist)
 {
     unsigned f = get_global_id(0);
     unsigned lsz1 = get_local_size(1);
     unsigned sid = get_local_id(0) * lsz1 + get_local_id(1);
 
-    __local unsigned l_dist[THREADS];
+    __local To l_dist[THREADS];
     __local unsigned l_idx[THREADS];
 
     bool valid_feat = (f < nfeat);
@@ -327,9 +351,9 @@ void select_matches(
 
     for (unsigned i = get_local_id(1); i < nelem_max; i += get_local_size(1)) {
         if (valid_feat && i < nelem) {
-            unsigned dist = in_dist[f * nelem + i];
+            To dist = in_dist[f * nelem + i];
 
-            // Copy all best matches previously found in hamming_matcher() to
+            // Copy all best matches previously found in nearest_neighbour() to
             // shared memory
             if (dist < l_dist[sid]) {
                 l_dist[sid] = dist;
@@ -342,7 +366,7 @@ void select_matches(
     for (unsigned i = get_local_size(1) / 2; i > 0; i >>= 1) {
         if (get_local_id(1) < i) {
             if (valid_feat) {
-                unsigned dist = l_dist[sid + i];
+                To dist = l_dist[sid + i];
                 if (dist < l_dist[sid]) {
                     l_dist[sid] = dist;
                     l_idx[sid]  = l_idx[sid + i];

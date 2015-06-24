@@ -11,12 +11,13 @@
 
 using af::features;
 
-namespace cuda
+namespace opencl
 {
 
-template<typename T>
-void hamming_matcher(Array<uint>& idx, Array<uint>& dist,
-                     const Array<T>& query, const Array<T>& train,
-                     const uint dist_dim, const uint n_dist);
+template<typename T, typename To>
+void nearest_neighbour(Array<uint>& idx, Array<To>& dist,
+                       const Array<T>& query, const Array<T>& train,
+                       const uint dist_dim, const uint n_dist,
+                       const af_match_type dist_type = AF_SSD);
 
 }
