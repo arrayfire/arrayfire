@@ -651,9 +651,15 @@ namespace af
         void eval() const;
 
         /**
-           @}
+           \brief Get the first element of the array as a scalar
+
+           \note This is recommended for use while debugging. Calling this method constantly reduces performance.
         */
         template<typename T> T scalar() const;
+
+        /**
+           @}
+        */
 
 
         /**
