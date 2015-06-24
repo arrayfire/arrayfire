@@ -80,7 +80,7 @@ void core_linear2(const int idx, const int idy, const int idz, const int idw,
         return;
     }
 
-    const Tp grid_x = floor(x),   grid_y = floor(y);   // nearest grid
+    const int grid_x = floor(x),   grid_y = floor(y);   // nearest grid
     const Tp off_x  = x - grid_x, off_y  = y - grid_y; // fractional offset
 
     int ioff = idw * in.strides[3] + idz * in.strides[2] + grid_y * in.strides[1] + grid_x;

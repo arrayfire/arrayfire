@@ -85,7 +85,7 @@ namespace cpu
                 gFlag = true;
             }
 
-            const Tp grid_x = floor(x);  // nearest grid
+            const int grid_x = floor(x);  // nearest grid
             const Tp off_x = x - grid_x; // fractional offset
 
             for(dim_t idw = 0; idw < odims[3]; idw++) {
@@ -231,7 +231,7 @@ namespace cpu
                 gFlag = true;
             }
 
-            const Tp grid_x = floor(x),   grid_y = floor(y);   // nearest grid
+            const int grid_x = floor(x),   grid_y = floor(y);   // nearest grid
             const Tp off_x  = x - grid_x, off_y  = y - grid_y; // fractional offset
 
             // Check if pVal and pVal + 1 are both valid indices
