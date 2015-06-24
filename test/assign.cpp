@@ -771,8 +771,6 @@ TEST(ArrayAssign, CPP_ASSIGN_VECTOR_SEQ_2D)
     array a0 = a;
     array b = af::randu(len);
 
-    array idx = af::seq(st, en);
-
     a(af::seq(st, en)) = b;
 
     ASSERT_EQ(a.dims(0) , (dim_t)nx);
@@ -781,6 +779,42 @@ TEST(ArrayAssign, CPP_ASSIGN_VECTOR_SEQ_2D)
     ASSERT_EQ(b.dims(0) , (dim_t)len);
 
     float *h_a0 = a0.host<float>();
+    float *h_a  =  a.host<float>();
+    float *h_b  =  b.host<float>();
+
+    for (int i = 0; i < num; i++) {
+        if (i >= st && i <= en) {
+            ASSERT_EQ(h_a[i], h_b[i - st]);
+        } else {
+            ASSERT_EQ(h_a[i], h_a0[i]);
+        }
+    }
+
+    delete[] h_a0;
+    delete[] h_a;
+    delete[] h_b;
+}
+
+TEST(Assign, Copy)
+{
+    using af::array;
+
+    const int num = 20;
+    const int len = 10;
+    const int st = 3;
+    const int en = st + len - 1;
+
+    array a = af::randu(num, 1);
+    float *h_a0 = a.host<float>();
+
+    array b = af::randu(len);
+
+    float *d_ptr = a.device<float>();
+    af::copy(a, b, af::seq(st, en));
+
+    // Ensure that a still has same device pointer
+    ASSERT_EQ(d_ptr, a.device<float>());
+
     float *h_a  =  a.host<float>();
     float *h_b  =  b.host<float>();
 
