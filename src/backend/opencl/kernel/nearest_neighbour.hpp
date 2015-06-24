@@ -67,6 +67,11 @@ void nearest_neighbour(Param idx,
                     default: break;
                 }
 
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
+
                 if (use_lmem)
                     options << " -D USE_LOCAL_MEM";
 
