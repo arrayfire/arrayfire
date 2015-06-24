@@ -23,6 +23,7 @@
 
 #define NEAREST resize_n_
 #define BILINEAR resize_b_
+#define LOWER resize_l_
 
 ////////////////////////////////////////////////////////////////////////////////////
 // nearest-neighbor resampling
@@ -83,6 +84,26 @@ void resize_b_(__global T* d_out, const KParam out,
              (((1.0f-a) * (b)     ) * p3) +
              (((a)      * (b)     ) * p4);
 
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+// lower resampling
+void resize_l_(__global T* d_out, const KParam out,
+               __global const T* d_in, const KParam in,
+               const int blockIdx_x, const int blockIdx_y,
+               const float xf, const float yf)
+{
+    int const ox = get_local_id(0) + blockIdx_x * get_local_size(0);
+    int const oy = get_local_id(1) + blockIdx_y * get_local_size(1);
+
+    int ix = (ox * xf);
+    int iy = (oy * yf);
+
+    if (ox >= out.dims[0] || oy >= out.dims[1]) { return; }
+    if (ix >=  in.dims[0]) { ix = in.dims[0] - 1; }
+    if (iy >=  in.dims[1]) { iy = in.dims[1] - 1; }
+
+    d_out[ox + oy * out.strides[1]] = d_in[ix + iy * in.strides[1]];
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

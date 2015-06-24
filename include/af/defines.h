@@ -175,7 +175,8 @@ typedef enum {
     AF_INTERP_NEAREST,  ///< Nearest Interpolation
     AF_INTERP_LINEAR,   ///< Linear Interpolation
     AF_INTERP_BILINEAR, ///< Bilinear Interpolation
-    AF_INTERP_CUBIC     ///< Cubic Interpolation
+    AF_INTERP_CUBIC,    ///< Cubic Interpolation
+    AF_INTERP_LOWER     ///< Floor Indexed
 } af_interp_type;
 
 typedef enum {
