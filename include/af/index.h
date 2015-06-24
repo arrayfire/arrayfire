@@ -131,6 +131,24 @@ class AFAPI index {
 
 AFAPI array lookup(const array &in, const array &idx, const int dim = -1);
 
+///
+/// Copy the values of an input array based on index
+///
+/// \param[out] dst The destination array
+/// \param[in] src The source array
+/// \param[in] idx0 The first index
+/// \param[in] idx1 The second index (defaults to \ref af::span)
+/// \param[in] idx2 The third index (defaults to \ref af::span)
+/// \param[in] idx3 The fourth index (defaults to \ref af::span)
+/// \ingroup index_func_index
+///
+
+AFAPI void copy(array &dst, const array &src,
+                const index &idx0,
+                const index &idx1 = span,
+                const index &idx2 = span,
+                const index &idx3 = span);
+
 }
 #endif
 

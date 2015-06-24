@@ -114,6 +114,7 @@ namespace af
             template<typename T> T scalar() const;
             template<typename T> T* device() const;
             void unlock() const;
+            void lock() const;
 
                   array::array_proxy row(int index);
             const array::array_proxy row(int index) const;
@@ -670,9 +671,6 @@ namespace af
            @}
         */
 
-        void unlock() const;
-
-
         // INDEXING
         // Single arguments
 
@@ -911,6 +909,21 @@ namespace af
         ///
         /// For dense matrix, this is the same as count<int>(arr);
         int nonzeros() const;
+
+
+        ///
+        /// \brief Locks the device buffer in the memory manager.
+        ///
+        /// This method can be called to take control of the device pointer from the memory manager.
+        /// While a buffer is locked, the memory manager does not free the memory.
+        void lock() const;
+
+        ///
+        /// \brief Unlocks the device buffer in the memory manager.
+        ///
+        /// This method can be called after called after calling \ref array::lock()
+        /// Calling this method gives back the control of the device pointer to the memory manager.
+        void unlock() const;
     };
     // end of class array
 

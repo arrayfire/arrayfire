@@ -23,7 +23,7 @@ using std::endl;
 
 const size_t step_bytes = 1024;
 
-void cleanSlate()
+static void cleanSlate()
 {
     size_t alloc_bytes, alloc_buffers;
     size_t lock_bytes, lock_buffers;
@@ -41,34 +41,6 @@ void cleanSlate()
     af::setMemStepSize(step_bytes);
 
     ASSERT_EQ(af::getMemStepSize(), step_bytes);
-}
-
-TEST(Memory, GetDevicePtr)
-{
-    size_t alloc_bytes, alloc_buffers;
-    size_t lock_bytes, lock_buffers;
-
-    cleanSlate(); // Clean up everything done so far
-
-    af::array a = af::randu(5, 5);
-
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
-
-    ASSERT_EQ(alloc_buffers, 1u);
-    ASSERT_EQ(lock_buffers, 1u);
-    ASSERT_EQ(alloc_bytes, 1 * step_bytes);
-    ASSERT_EQ(lock_bytes, 1 * step_bytes);
-
-    a.device<float>();
-
-    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
-                      &lock_bytes, &lock_buffers);
-
-    ASSERT_EQ(alloc_buffers, 1u);
-    ASSERT_EQ(lock_buffers, 0u); // 0 because device should unlock the buffer
-    ASSERT_EQ(alloc_bytes, 1 * step_bytes);
-    ASSERT_EQ(lock_bytes, 0u);
 }
 
 TEST(Memory, Scope)
@@ -316,4 +288,97 @@ TEST(Memory, Assign)
     ASSERT_EQ(alloc_bytes, 3 * step_bytes);
     ASSERT_EQ(lock_bytes, 1 * step_bytes);
 
+}
+
+
+TEST(Memory, device)
+{
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    cleanSlate(); // Clean up everything done so far
+
+    {
+        af::array a = af::randu(5, 5);
+
+        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                          &lock_bytes, &lock_buffers);
+
+        ASSERT_EQ(alloc_buffers, 1u);
+        ASSERT_EQ(lock_buffers, 1u);
+        ASSERT_EQ(alloc_bytes, 1 * step_bytes);
+        ASSERT_EQ(lock_bytes, 1 * step_bytes);
+
+        a.device<float>();
+
+        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                          &lock_bytes, &lock_buffers);
+
+        ASSERT_EQ(alloc_buffers, 1u);
+        ASSERT_EQ(lock_buffers, 1u);
+        ASSERT_EQ(alloc_bytes, 1 * step_bytes);
+        ASSERT_EQ(lock_bytes, 1 * lock_bytes);
+
+        a.unlock(); //to reset the lock flag
+    }
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 1u);
+    ASSERT_EQ(lock_buffers, 0u);
+    ASSERT_EQ(alloc_bytes, 1 * step_bytes);
+    ASSERT_EQ(lock_bytes, 0u);
+}
+
+TEST(Memory, unlock)
+{
+
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    cleanSlate(); // Clean up everything done so far
+
+    const dim_t num = step_bytes / sizeof(float);
+
+    std::vector<float> in(num);
+
+    af_array arr = 0;
+    ASSERT_EQ(AF_SUCCESS, af_create_array(&arr, &in[0], 1, &num, f32));
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 1u);
+    ASSERT_EQ(lock_buffers, 1u);
+    ASSERT_EQ(alloc_bytes, step_bytes);
+    ASSERT_EQ(lock_bytes, step_bytes);
+
+    // arr1 gets released by end of the following code block
+    {
+        af::array a(arr);
+        a.lock();
+
+        // No new memory should be allocated
+        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                          &lock_bytes, &lock_buffers);
+
+        ASSERT_EQ(alloc_buffers, 1u);
+        ASSERT_EQ(lock_buffers, 1u);
+        ASSERT_EQ(alloc_bytes, step_bytes);
+        ASSERT_EQ(lock_bytes, step_bytes);
+
+        a.unlock();
+    }
+
+    // Making sure all unlocked buffers are freed
+    af::deviceGC();
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 0u);
+    ASSERT_EQ(lock_buffers, 0u);
+    ASSERT_EQ(alloc_bytes, 0u);
+    ASSERT_EQ(lock_bytes, 0u);
 }
