@@ -85,8 +85,8 @@ namespace opencl
 
                 if (!(iter->second).is_unlinked) {
                     destroy(iter->first);
+                    total_bytes[n] -= iter->second.bytes;
                 }
-                total_bytes[n] -= iter->second.bytes;
             }
         }
 
@@ -94,7 +94,7 @@ namespace opencl
         mem_iter memory_end  = memory_maps[n].end();
 
         while(memory_curr != memory_end) {
-            if (memory_curr->second.is_free) {
+            if (memory_curr->second.is_free  && !memory_curr->second.is_unlinked) {
                 memory_curr = memory_maps[n].erase(memory_curr);
             } else {
                 ++memory_curr;
@@ -155,9 +155,9 @@ namespace opencl
 
         if (iter != memory_maps[n].end()) {
 
+            iter->second.is_free = true;
             if ((iter->second).is_unlinked) return;
 
-            iter->second.is_free = true;
             used_bytes[n] -= iter->second.bytes;
             used_buffers[n]--;
         } else {
@@ -165,18 +165,13 @@ namespace opencl
         }
     }
 
-    void bufferUnlink(cl::Buffer *ptr)
+    void bufferPop(cl::Buffer *ptr)
     {
         int n = getActiveDeviceId();
         mem_iter iter = memory_maps[n].find(ptr);
 
         if (iter != memory_maps[n].end()) {
-
             iter->second.is_unlinked = true;
-            iter->second.is_free = true;
-            used_bytes[n] -= iter->second.bytes;
-            used_buffers[n]--;
-
         } else {
 
             mem_info info = { false,
@@ -184,6 +179,16 @@ namespace opencl
                               100 }; //This number is not relevant
 
             memory_maps[n][ptr] = info;
+        }
+    }
+
+    void bufferPush(cl::Buffer *ptr)
+    {
+        int n = getActiveDeviceId();
+        mem_iter iter = memory_maps[n].find(ptr);
+
+        if (iter != memory_maps[n].end()) {
+            iter->second.is_unlinked = false;
         }
     }
 
@@ -211,9 +216,15 @@ namespace opencl
     }
 
     template<typename T>
-    void memUnlink(T *ptr)
+    void memPop(const T *ptr)
     {
-        return bufferUnlink((cl::Buffer *)ptr);
+        return bufferPop((cl::Buffer *)ptr);
+    }
+
+    template<typename T>
+    void memPush(const T *ptr)
+    {
+        return bufferPush((cl::Buffer *)ptr);
     }
 
     // pinned memory manager
@@ -330,12 +341,13 @@ namespace opencl
         return pinnedBufferFree((void *) ptr);
     }
 
-#define INSTANTIATE(T)                              \
-    template T* memAlloc(const size_t &elements);   \
-    template void memFree(T* ptr);                  \
-    template void memUnlink(T* ptr);                \
-    template T* pinnedAlloc(const size_t &elements);\
-    template void pinnedFree(T* ptr);               \
+#define INSTANTIATE(T)                                  \
+    template T* memAlloc(const size_t &elements);       \
+    template void memFree(T* ptr);                      \
+    template void memPop(const T* ptr);                 \
+    template void memPush(const T* ptr);                \
+    template T* pinnedAlloc(const size_t &elements);    \
+    template void pinnedFree(T* ptr);                   \
 
     INSTANTIATE(float)
     INSTANTIATE(cfloat)

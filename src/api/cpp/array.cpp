@@ -1013,9 +1013,17 @@ namespace af
 #undef TEMPLATE_MEM_FUNC
 
     //FIXME: This needs to be implemented at a later point
-    void array::unlock() const {}
     void array::array_proxy::unlock() const {}
 
     int array::nonzeros() const { return count<int>(*this); }
 
+    void array::lock() const
+    {
+        AF_THROW(af_lock_device_ptr(get()));
+    }
+
+    void array::unlock() const
+    {
+        AF_THROW(af_unlock_device_ptr(get()));
+    }
 }
