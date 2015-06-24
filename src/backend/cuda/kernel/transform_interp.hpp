@@ -98,12 +98,12 @@ namespace cuda
             typedef typename itype_t<T>::wtype WT;
             typedef typename itype_t<T>::vtype VT;
 
-            const WT grd_x = floor(xidi),  grd_y = floor(yidi);
+            const int grd_x = floor(xidi),  grd_y = floor(yidi);
             const WT off_x = xidi - grd_x, off_y = yidi - grd_y;
 
             // Check if pVal and pVal + 1 are both valid indices
-            const bool condY = (yidi < in.dims[1] - 1);
-            const bool condX = (xidi < in.dims[0] - 1);
+            const bool condY = (yidi < (in.dims[1] - 1));
+            const bool condX = (xidi < (in.dims[0] - 1));
 
             // Compute weights used
             const WT wt00 = (1.0 - off_x) * (1.0 - off_y);
