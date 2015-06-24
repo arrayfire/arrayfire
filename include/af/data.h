@@ -17,18 +17,71 @@ namespace af
 {
     class array;
 
+    /**
+        \param[in] val is the value of each element of the array be genrated
+        \param[in] dims is the dimensions of the array to be generated
+        \param[in] ty is the type of the array
+
+        \return array of size \p dims
+
+        \ingroup data_func_constant
+    */
+
     template<typename T>
     array constant(T val, const dim4 &dims, const dtype ty=(af_dtype)dtype_traits<T>::ctype);
+
+    /**
+        \param[in] val is the value of each element of the array to be generated
+        \param[in] d0 is the size of the array to be generated
+        \param[in] ty is the type of the array
+
+        \return array of size \p d0
+
+        \ingroup data_func_constant
+    */
 
     template<typename T>
     array constant(T val, const dim_t d0, const af_dtype ty=(af_dtype)dtype_traits<T>::ctype);
 
+    /**
+        \param[in] val is the value of each element of the array to be generated
+        \param[in] d0 is the number of rows of the array to be generated
+        \param[in] d1 is the number of columns of the array to be generated
+        \param[in] ty is the type of the array
+
+        \return array of size \p d0 x d1
+
+        \ingroup data_func_constant
+    */
     template<typename T>
     array constant(T val, const dim_t d0, const dim_t d1, const af_dtype ty=(af_dtype)dtype_traits<T>::ctype);
 
+    /**
+        \param[in] val is the value of each element of the array to be generated
+        \param[in] d0 is the size of the 1st dimension of the array to be generated
+        \param[in] d1 is the size of the 2nd dimension of the array to be generated
+        \param[in] d2 is the size of the 3rd dimension of the array to be generated
+        \param[in] ty is the type of the array
+
+        \return array of size \p d0 x d1 x d2
+
+        \ingroup data_func_constant
+    */
     template<typename T>
     array constant(T val, const dim_t d0, const dim_t d1, const dim_t d2, const af_dtype ty=(af_dtype)dtype_traits<T>::ctype);
 
+    /**
+        \param[in] val is the value of each element of the array to be generated
+        \param[in] d0 is the size of the 1st dimension of the array to be generated
+        \param[in] d1 is the size of the 2nd dimension of the array to be generated
+        \param[in] d2 is the size of the 3rd dimension of the array to be generated
+        \param[in] d3 is the size of the 4rd dimension of the array to be generated
+        \param[in] ty is the type of the array
+
+        \return array of size \p d0 x d1 x d2 x d3
+
+        \ingroup data_func_constant
+    */
     template<typename T>
     array constant(T val, const dim_t d0, const dim_t d1, const dim_t d2, const dim_t d3, const af_dtype ty=(af_dtype)dtype_traits<T>::ctype);
 
@@ -446,20 +499,51 @@ namespace af
 extern "C" {
 #endif
 
-    /**
-       \defgroup data_func_constant constant
-       Create constant array from the specified dimensions
-       @{
 
-       \ingroup arrayfire_func
-       \ingroup data_mat
+    /**
+        \param[out] arr is the generated array of given type
+        \param[in] val is the value of each element in the generated array
+        \param[in] ndims is size of dimension array \p dims
+        \param[in] dims is the array containing sizes of the dimension
+        \param[in] type is the type of array to generate
+
+       \ingroup data_func_constant
     */
     AFAPI af_err af_constant(af_array *arr, const double val, const unsigned ndims, const dim_t * const dims, const af_dtype type);
+
+    /**
+        \param[out] arr is the generated array of type \ref c32 or \ref c64
+        \param[in] real is the real value of each element in the generated array
+        \param[in] imag is the imaginary value of each element in the generated array
+        \param[in] ndims is size of dimension array \p dims
+        \param[in] dims is the array containing sizes of the dimension
+        \param[in] type is the type of array to generate
+
+       \ingroup data_func_constant
+    */
 
     AFAPI af_err af_constant_complex(af_array *arr, const double real, const double imag,
                                      const unsigned ndims, const dim_t * const dims, const af_dtype type);
 
+    /**
+        \param[out] arr is the generated array of type \ref s64
+        \param[in] val is a complex value of each element in the generated array
+        \param[in] ndims is size of dimension array \p dims
+        \param[in] dims is the array containing sizes of the dimension
+
+       \ingroup data_func_constant
+    */
+
     AFAPI af_err af_constant_long (af_array *arr, const  intl val, const unsigned ndims, const dim_t * const dims);
+
+    /**
+        \param[out] arr is the generated array of type \ref u64
+        \param[in] val is a complex value of each element in the generated array
+        \param[in] ndims is size of dimension array \p dims
+        \param[in] dims is the array containing sizes of the dimension
+
+       \ingroup data_func_constant
+    */
 
     AFAPI af_err af_constant_ulong(af_array *arr, const uintl val, const unsigned ndims, const dim_t * const dims);
     /**
