@@ -1,3 +1,18 @@
+/*!
+\page arith_real_only arith_real
+
+\note This function supports real inputs only. Complex inputs are not yet supported.
+
+*/
+
+/*!
+\page arith_int_only arith_int
+
+\note This function supports integer only.
+
+*/
+
+
 /**
 \addtogroup arrayfire_func
 @{
@@ -40,6 +55,8 @@ Divide one input by another
 
 Left shift an input
 
+\copydoc arith_int_only
+
 
 
 \defgroup arith_func_shiftr bitshiftr
@@ -47,6 +64,8 @@ Left shift an input
 \ingroup arith_mat
 
 Right shift an input
+
+\copydoc arith_int_only
 
 
 
@@ -136,6 +155,7 @@ Negative of an input
 
 Bitwise and operation of two inputs
 
+\copydoc arith_int_only
 
 
 \defgroup arith_func_bitor bitor
@@ -144,6 +164,7 @@ Bitwise and operation of two inputs
 
 Bitwise or operation of two inputs
 
+\copydoc arith_int_only
 
 
 \defgroup arith_func_bitxor bitxor
@@ -152,6 +173,7 @@ Bitwise or operation of two inputs
 
 Bitwise xor operation of two inputs
 
+\copydoc arith_int_only
 
 
 \defgroup arith_func_min min
@@ -176,6 +198,7 @@ Maximum of two inputs.
 
 Remainder operation
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_mod mod
@@ -183,6 +206,8 @@ Remainder operation
 \ingroup numeric_mat
 
 Compute \f$x - n * y\f$ where n is quotient of \f$x / y\f$
+
+\copydoc arith_real_only
 
 
 
@@ -198,7 +223,7 @@ Absolute value
 
 \ingroup numeric_mat
 
-Phase of a complex number
+Phase of a number in the complex plane
 
 
 
@@ -208,6 +233,7 @@ Phase of a complex number
 
 Check if input is negative
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_round round
@@ -216,6 +242,7 @@ Check if input is negative
 
 Round to nearest integer
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_trunc trunc
@@ -224,6 +251,7 @@ Round to nearest integer
 
 Truncate to nearest integer
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_floor floor
@@ -232,6 +260,7 @@ Truncate to nearest integer
 
 Round to integer less than equal to current value
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_ceil ceil
@@ -240,6 +269,7 @@ Round to integer less than equal to current value
 
 Round to integer greater than equal to current value
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_hypot hypot
@@ -248,6 +278,7 @@ Round to integer greater than equal to current value
 
 Hypotenuse of the two inputs
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_sin sin
@@ -256,6 +287,7 @@ Hypotenuse of the two inputs
 
 sin of input
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_cos cos
@@ -263,6 +295,8 @@ sin of input
 \ingroup trig_mat
 
 cos of input
+
+\copydoc arith_real_only
 
 
 
@@ -272,6 +306,7 @@ cos of input
 
 tan of input
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_asin asin
@@ -280,6 +315,7 @@ tan of input
 
 arc sin of input
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_acos acos
@@ -288,6 +324,7 @@ arc sin of input
 
 arc cos of input
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_atan atan/atan2
@@ -296,6 +333,7 @@ arc cos of input
 
 arc tan of input
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_sinh sinh
@@ -304,6 +342,8 @@ arc tan of input
 
 sinh of input
 
+\copydoc arith_real_only
+
 
 \defgroup arith_func_cosh cosh
 
@@ -311,6 +351,7 @@ sinh of input
 
 cosh of input
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_tanh tanh
@@ -319,6 +360,7 @@ cosh of input
 
 tanh of input
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_asinh asinh
@@ -327,6 +369,7 @@ tanh of input
 
 asinh of input
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_acosh acosh
@@ -335,6 +378,7 @@ asinh of input
 
 acosh of input
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_atanh atanh
@@ -343,6 +387,7 @@ acosh of input
 
 atanh of input
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_cplx complex
@@ -384,6 +429,7 @@ Get complex conjugate
 
 Find root of an input
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_pow pow
@@ -392,6 +438,7 @@ Find root of an input
 
 Raise an array to a power
 
+\copydoc arith_real_only
 
 
 
@@ -401,6 +448,7 @@ Raise an array to a power
 
 Exponential of input
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_expm1 expm1
@@ -409,6 +457,7 @@ Exponential of input
 
 Exponential of input - 1
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_erf erf
@@ -417,6 +466,7 @@ Exponential of input - 1
 
 Error function value
 
+\copydoc arith_real_only
 
 
 
@@ -426,6 +476,7 @@ Error function value
 
 Complementary Error function value
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_log log
@@ -434,6 +485,7 @@ Complementary Error function value
 
 Natural logarithm
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_log1p log1p
@@ -442,6 +494,7 @@ Natural logarithm
 
 Natural logarithm of (1 + in)
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_log10 log10
@@ -450,6 +503,7 @@ Natural logarithm of (1 + in)
 
 logarithm base 10
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_sqrt sqrt
@@ -458,6 +512,7 @@ logarithm base 10
 
 Square root of input arrays
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_cbrt cbrt
@@ -466,6 +521,7 @@ Square root of input arrays
 
 Cube root of input arrays
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_factorial factorial
@@ -474,6 +530,7 @@ Cube root of input arrays
 
 Factorial function
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_tgamma tgamma
@@ -482,6 +539,7 @@ Factorial function
 
 Gamma function
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_lgamma lgamma
@@ -490,6 +548,7 @@ Gamma function
 
 Logarithm of absolute values of Gamma function
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_iszero iszero
@@ -498,6 +557,7 @@ Logarithm of absolute values of Gamma function
 
 Check if values are zero
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_isinf isinf
@@ -506,6 +566,7 @@ Check if values are zero
 
 Check if values are infinite
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_isnan isNan
@@ -514,6 +575,7 @@ Check if values are infinite
 
 Check if values are Nan
 
+\copydoc arith_real_only
 
 
 \defgroup arith_func_cast cast
@@ -521,7 +583,6 @@ Check if values are Nan
 \ingroup helper_mat
 
 Casting inputs from one type to another
-
 
 @}
 */
