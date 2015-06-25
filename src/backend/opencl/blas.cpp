@@ -72,6 +72,8 @@ BLAS_FUNC(dot, float,       S)
 BLAS_FUNC(dot, double,      D)
 
 #undef BLAS_FUNC_DEF
+#undef BLAS_FUNC
+
 #define BLAS_FUNC(NAME, TYPE, PREFIX, SUFFIX)					\
 template<>                                                              \
 struct NAME##_func<TYPE>                                                \
