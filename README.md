@@ -108,7 +108,7 @@ Contributions of any kind are welcome! Please refer to
 [this document](https://github.com/arrayfire/arrayfire/blob/master/CONTRIBUTING.md)
  to learn more about how you can get involved with ArrayFire.
 
-## Acknowledging use of ArrayFire
+## Citations and Acknowledgements
 
 If you redistribute ArrayFire, please follow the terms established in
 [the license](LICENSE).
@@ -137,5 +137,5 @@ year = {2015}
 ```
 
 ArrayFire development is funded by ArrayFire LLC and several third parties,
-please see the list of [acknowledgements](ACKNOWLEDGEMENTS.md) for further details.
+please see the list of [acknowledgements](https://github.com/arrayfire/arrayfire/blob/master/ACKNOWLEDGEMENTS.md) for further details.
 

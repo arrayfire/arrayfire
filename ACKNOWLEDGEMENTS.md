@@ -13,6 +13,8 @@ circumstances, the specific phrasing of the text is mandated by the grant
 provider. Thus these acknowledgements must remain intact without modification.
 -->
 
+### Grants
+
 This material is based upon work supported by the DARPA SBIR Program Office
 under Contract Numbers W31P4Q-14-C-0012 and W31P4Q-15-C-0008.
 Any opinions, findings and conclusions or recommendations expressed in this
