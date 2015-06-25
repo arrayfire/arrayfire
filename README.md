@@ -108,7 +108,7 @@ Contributions of any kind are welcome! Please refer to
 [this document](https://github.com/arrayfire/arrayfire/blob/master/CONTRIBUTING.md)
  to learn more about how you can get involved with ArrayFire.
 
-## Acknowleding use of ArrayFire
+## Acknowledging use of ArrayFire
 
 If you redistribute ArrayFire, please follow the terms established in
 [the license](LICENSE).
@@ -136,21 +136,6 @@ year = {2015}
 }
 ```
 
-## Acknowledgements
+ArrayFire development is funded by ArrayFire LLC and several third parties,
+please see the list of [acknowledgements](ACKNOWLEDGEMENTS.md) for further details.
 
-The ArrayFire library is written by developers at [ArrayFire](http://arrayfire.com) LLC
-with [contributions from several individuals](https://github.com/arrayfire/arrayfire/graphs/contributors).
-The developers at ArrayFire LLC are grateful for financial support from several
-institutions as listed below:
-
-<!--
-The following section contains acknowledgements for grant funding. In most
-circumstances, the specific phrasing of the text is mandated by the grant
-provider. Thus these acknowledgements must remain intact without modification.
--->
-
-This material is based upon work supported by the DARPA SBIR Program Office
-under Contract Numbers W31P4Q-14-C-0012 and W31P4Q-15-C-0008.
-Any opinions, findings and conclusions or recommendations expressed in this
-material are those of the author(s) and do not necessarily reflect the views of
-the DARPA SBIR Program Office.
