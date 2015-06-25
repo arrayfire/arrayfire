@@ -244,6 +244,7 @@ typedef enum {
     AF_MAT_NONE       = 0,    ///< Default
     AF_MAT_TRANS      = 1,    ///< Data needs to be transposed
     AF_MAT_CTRANS     = 2,    ///< Data needs to be conjugate tansposed
+    AF_MAT_CONJ       = 4,    ///< Data needs to be conjugate
     AF_MAT_UPPER      = 32,   ///< Matrix is upper triangular
     AF_MAT_LOWER      = 64,   ///< Matrix is lower triangular
     AF_MAT_DIAG_UNIT  = 128,  ///< Matrix diagonal contains unitary values

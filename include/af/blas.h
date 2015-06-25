@@ -138,7 +138,18 @@ namespace af
         af_print(dot(x,y));
         }
 
+        \param[in] lhs The array object on the left hand side
+        \param[in] rhs The array object on the right hand side
+        \param[in] optLhs Options for lhs. Currently only \ref AF_MAT_NONE and
+                   AF_MAT_CONJ are supported.
+        \param[in] optRhs Options for rhs. Currently only \ref AF_MAT_NONE and AF_MAT_CONJ are supported
+        \return The result of the dot product of lhs, rhs
+
+        \note optLhs and optRhs can only be one of \ref AF_MAT_NONE or \ref AF_MAT_CONJ
+        \note optLhs = AF_MAT_CONJ and optRhs = AF_MAT_NONE will run conjugate dot operation.
         \note This function is not supported in GFOR
+
+        \returns out = dot(lhs, rhs)
 
         \ingroup blas_func_dot
     */
