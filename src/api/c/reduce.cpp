@@ -53,6 +53,8 @@ static af_err reduce_type(af_array *out, const af_array in, const int dim)
         case c64:  res = reduce<op, cdouble, To>(in, dim); break;
         case u32:  res = reduce<op, uint   , To>(in, dim); break;
         case s32:  res = reduce<op, int    , To>(in, dim); break;
+        case u64:  res = reduce<op, uintl  , To>(in, dim); break;
+        case s64:  res = reduce<op, intl   , To>(in, dim); break;
         case b8:   res = reduce<op, char   , To>(in, dim); break;
         case u8:   res = reduce<op, uchar  , To>(in, dim); break;
         default:   TYPE_ERROR(1, type);
@@ -90,6 +92,8 @@ static af_err reduce_common(af_array *out, const af_array in, const int dim)
         case c64:  res = reduce<op, cdouble, cdouble>(in, dim); break;
         case u32:  res = reduce<op, uint   , uint   >(in, dim); break;
         case s32:  res = reduce<op, int    , int    >(in, dim); break;
+        case u64:  res = reduce<op, uintl  , uintl  >(in, dim); break;
+        case s64:  res = reduce<op, intl   , intl   >(in, dim); break;
         case b8:   res = reduce<op, char   , char   >(in, dim); break;
         case u8:   res = reduce<op, uchar  , uchar  >(in, dim); break;
         default:   TYPE_ERROR(1, type);
@@ -127,6 +131,8 @@ static af_err reduce_promote(af_array *out, const af_array in, const int dim)
         case c64:  res = reduce<op, cdouble, cdouble>(in, dim); break;
         case u32:  res = reduce<op, uint   , uint   >(in, dim); break;
         case s32:  res = reduce<op, int    , int    >(in, dim); break;
+        case u64:  res = reduce<op, uintl  , uintl  >(in, dim); break;
+        case s64:  res = reduce<op, intl   , intl   >(in, dim); break;
         case u8:   res = reduce<op, uchar  , uint   >(in, dim); break;
             // Make sure you are adding only "1" for every non zero value, even if op == af_add_t
         case b8:   res = reduce<af_notzero_t, char  , uint   >(in, dim); break;
@@ -199,6 +205,8 @@ static af_err reduce_all_type(double *real, double *imag, const af_array in)
         case c64:  *real = (double)reduce_all<op, cdouble, To>(in); break;
         case u32:  *real = (double)reduce_all<op, uint   , To>(in); break;
         case s32:  *real = (double)reduce_all<op, int    , To>(in); break;
+        case u64:  *real = (double)reduce_all<op, uintl  , To>(in); break;
+        case s64:  *real = (double)reduce_all<op, intl   , To>(in); break;
         case b8:   *real = (double)reduce_all<op, char   , To>(in); break;
         case u8:   *real = (double)reduce_all<op, uchar  , To>(in); break;
         default:   TYPE_ERROR(1, type);
@@ -230,6 +238,8 @@ static af_err reduce_all_common(double *real_val, double *imag_val, const af_arr
         case f64:  *real_val = (double)reduce_all<op, double , double >(in); break;
         case u32:  *real_val = (double)reduce_all<op, uint   , uint   >(in); break;
         case s32:  *real_val = (double)reduce_all<op, int    , int    >(in); break;
+        case u64:  *real_val = (double)reduce_all<op, uintl  , uintl  >(in); break;
+        case s64:  *real_val = (double)reduce_all<op, intl   , intl   >(in); break;
         case b8:   *real_val = (double)reduce_all<op, char   , char   >(in); break;
         case u8:   *real_val = (double)reduce_all<op, uchar  , uchar  >(in); break;
 
@@ -276,6 +286,8 @@ static af_err reduce_all_promote(double *real_val, double *imag_val, const af_ar
         case f64: *real_val = (double)reduce_all<op, double , double >(in); break;
         case u32: *real_val = (double)reduce_all<op, uint   , uint   >(in); break;
         case s32: *real_val = (double)reduce_all<op, int    , int    >(in); break;
+        case u64: *real_val = (double)reduce_all<op, uintl  , uintl  >(in); break;
+        case s64: *real_val = (double)reduce_all<op, intl   , intl   >(in); break;
         case u8:  *real_val = (double)reduce_all<op, uchar  , uint   >(in); break;
             // Make sure you are adding only "1" for every non zero value, even if op == af_add_t
         case b8:  *real_val = (double)reduce_all<af_notzero_t, char  , uint   >(in); break;
@@ -378,6 +390,8 @@ static af_err ireduce_common(af_array *val, af_array *idx, const af_array in, co
         case c64:  ireduce<op, cdouble>(&res, &loc, in, dim); break;
         case u32:  ireduce<op, uint   >(&res, &loc, in, dim); break;
         case s32:  ireduce<op, int    >(&res, &loc, in, dim); break;
+        case u64:  ireduce<op, uintl  >(&res, &loc, in, dim); break;
+        case s64:  ireduce<op, intl   >(&res, &loc, in, dim); break;
         case b8:   ireduce<op, char   >(&res, &loc, in, dim); break;
         case u8:   ireduce<op, uchar  >(&res, &loc, in, dim); break;
         default:   TYPE_ERROR(1, type);
@@ -428,6 +442,8 @@ static af_err ireduce_all_common(double *real_val, double *imag_val,
         case f64:  *real_val = (double)ireduce_all<op, double>(loc, in); break;
         case u32:  *real_val = (double)ireduce_all<op, uint  >(loc, in); break;
         case s32:  *real_val = (double)ireduce_all<op, int   >(loc, in); break;
+        case u64:  *real_val = (double)ireduce_all<op, uintl >(loc, in); break;
+        case s64:  *real_val = (double)ireduce_all<op, intl  >(loc, in); break;
         case b8:   *real_val = (double)ireduce_all<op, char  >(loc, in); break;
         case u8:   *real_val = (double)ireduce_all<op, uchar >(loc, in); break;
 

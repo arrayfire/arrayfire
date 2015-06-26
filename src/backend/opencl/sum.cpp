@@ -18,6 +18,8 @@ namespace opencl
     INSTANTIATE(af_add_t, cdouble, cdouble)
     INSTANTIATE(af_add_t, int    , int    )
     INSTANTIATE(af_add_t, uint   , uint   )
+    INSTANTIATE(af_add_t, intl   , intl   )
+    INSTANTIATE(af_add_t, uintl  , uintl  )
     INSTANTIATE(af_add_t, char   , int    )
     INSTANTIATE(af_add_t, uchar  , uint   )
 }

@@ -18,6 +18,8 @@ namespace cuda
     INSTANTIATE(af_min_t, cdouble, cdouble)
     INSTANTIATE(af_min_t, int    , int    )
     INSTANTIATE(af_min_t, uint   , uint   )
+    INSTANTIATE(af_min_t, intl   , intl   )
+    INSTANTIATE(af_min_t, uintl  , uintl  )
     INSTANTIATE(af_min_t, char   , char   )
     INSTANTIATE(af_min_t, uchar  , uchar  )
 }
