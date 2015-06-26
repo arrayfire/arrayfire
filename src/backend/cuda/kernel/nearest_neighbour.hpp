@@ -84,7 +84,7 @@ __global__ void nearest_neighbour_unroll(
     To* out_dist,
     CParam<T> query,
     CParam<T> train,
-    const unsigned max_dist)
+    const To max_dist)
 {
     unsigned nquery = query.dims[0];
     unsigned ntrain = train.dims[0];
