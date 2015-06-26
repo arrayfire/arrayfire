@@ -48,6 +48,26 @@ equal to the number of features contained in the query array.
 
 =======================================================================
 
+\defgroup cv_func_nearest_neighbour nearestNeighbour
+\ingroup featmatcher_mat
+
+\brief Nearest Neighbour
+
+Calculates nearest distances between two 2-dimensional arrays containing
+features based on the type of distance computation chosen. Currently, \ref
+AF_SAD (sum of absolute differences), \ref AF_SSD (sum of squared differences)
+and \ref AF_SHD (hamming distance) are supported.
+One of the arrays containing the training data and the other the
+query data. One of the dimensions of the both arrays must be equal among them,
+identifying the length of each feature. The other dimension indicates the
+total number of features in each of the training and query arrays. Two
+1-dimensional arrays are created as results, one containg the smallest N
+distances of the query array and another containing the indices of these
+distances in the training array. The resulting 1-dimensional arrays have length
+equal to the number of features contained in the query array.
+
+=======================================================================
+
 \defgroup cv_func_match_template matchTemplate
 \ingroup match_mat
 

@@ -102,9 +102,9 @@ toCblasTranspose(af_mat_prop opt)
     CBLAS_TRANSPOSE out = CblasNoTrans;
     switch(opt) {
         case AF_MAT_NONE        : out = CblasNoTrans;   break;
-        case AF_MAT_TRANS           : out = CblasTrans;     break;
-        case AF_MAT_CTRANS : out = CblasConjTrans; break;
-        default                     : AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
+        case AF_MAT_TRANS       : out = CblasTrans;     break;
+        case AF_MAT_CTRANS      : out = CblasConjTrans; break;
+        default                 : AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
     }
     return out;
 }
@@ -185,9 +185,15 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     return out;
 }
 
-template<typename T>
-Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
-             af_mat_prop optLhs, af_mat_prop optRhs)
+template<typename T> T
+conj(T  x) { return x; }
+
+template<> cfloat  conj<cfloat> (cfloat  c) { return std::conj(c); }
+template<> cdouble conj<cdouble>(cdouble c) { return std::conj(c); }
+
+template<typename T, bool conjugate, bool both_conjugate>
+Array<T> dot_(const Array<T> &lhs, const Array<T> &rhs,
+              af_mat_prop optLhs, af_mat_prop optRhs)
 {
     int N = lhs.dims()[0];
 
@@ -196,16 +202,33 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
     const T *pR = rhs.get();
 
     for(int i = 0; i < N; i++)
-        out += pL[i] * pR[i];
+        out += (conjugate ? cpu::conj(pL[i]) : pL[i]) * pR[i];
+
+    if(both_conjugate) out = cpu::conj(out);
 
     return createValueArray(af::dim4(1), out);
+}
+
+template<typename T>
+Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
+             af_mat_prop optLhs, af_mat_prop optRhs)
+{
+    if(optLhs == AF_MAT_CONJ && optRhs == AF_MAT_CONJ) {
+        return dot_<T, false, true>(lhs, rhs, optLhs, optRhs);
+    } else if (optLhs == AF_MAT_CONJ && optRhs == AF_MAT_NONE) {
+        return dot_<T, true, false>(lhs, rhs, optLhs, optRhs);
+    } else if (optLhs == AF_MAT_NONE && optRhs == AF_MAT_CONJ) {
+        return dot_<T, true, false>(rhs, lhs, optRhs, optLhs);
+    } else {
+        return dot_<T, false, false>(lhs, rhs, optLhs, optRhs);
+    }
 }
 
 #undef BT
 #undef REINTEPRET_CAST
 
 #define INSTANTIATE_BLAS(TYPE)                                                          \
-    template Array<TYPE> matmul<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs,  \
+    template Array<TYPE> matmul<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs,   \
                                       af_mat_prop optLhs, af_mat_prop optRhs);
 
 INSTANTIATE_BLAS(float)
@@ -213,8 +236,8 @@ INSTANTIATE_BLAS(cfloat)
 INSTANTIATE_BLAS(double)
 INSTANTIATE_BLAS(cdouble)
 
-#define INSTANTIATE_DOT(TYPE)                                                       \
-    template Array<TYPE> dot<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs, \
+#define INSTANTIATE_DOT(TYPE)                                                               \
+    template Array<TYPE> dot<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs,          \
                                    af_mat_prop optLhs, af_mat_prop optRhs);
 
 INSTANTIATE_DOT(float)

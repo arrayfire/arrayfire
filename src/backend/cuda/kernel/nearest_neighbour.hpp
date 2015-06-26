@@ -13,6 +13,7 @@
 #include <debug_cuda.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
+#include <backend.hpp>
 
 namespace cuda
 {
@@ -22,13 +23,68 @@ namespace kernel
 
 static const unsigned THREADS = 256;
 
-template<typename T, unsigned feat_len, bool use_shmem>
-__global__ void hamming_matcher_unroll(
+template<typename T, typename To, af_match_type dist_type>
+struct dist_op
+{
+    __DH__ To operator()(T v1, T v2)
+    {
+        return v1 - v2;
+    }
+};
+
+template<typename T, typename To>
+struct dist_op<T, To, AF_SAD>
+{
+    __device__ To operator()(T v1, T v2)
+    {
+        return abs((double)v1 - (double)v2);
+    }
+};
+
+template<typename T, typename To>
+struct dist_op<T, To, AF_SSD>
+{
+    __device__ To operator()(T v1, T v2)
+    {
+        return (v1 - v2) * (v1 - v2);
+    }
+};
+
+template<typename To>
+struct dist_op<uint, To, AF_SHD>
+{
+    __device__ To operator()(uint v1, uint v2)
+    {
+        return __popc(v1 ^ v2);
+    }
+};
+
+template<typename To>
+struct dist_op<uintl, To, AF_SHD>
+{
+    __device__ To operator()(uintl v1, uintl v2)
+    {
+        return __popc(v1 ^ v2);
+    }
+};
+
+template<typename To>
+struct dist_op<uchar, To, AF_SHD>
+{
+    __device__ To operator()(uchar v1, uchar v2)
+    {
+        return __popc(v1 ^ v2);
+    }
+};
+
+
+template<typename T, typename To, af_match_type dist_type, unsigned feat_len, bool use_shmem>
+__global__ void nearest_neighbour_unroll(
     unsigned* out_idx,
-    unsigned* out_dist,
+    To* out_dist,
     CParam<T> query,
     CParam<T> train,
-    const unsigned max_dist)
+    const To max_dist)
 {
     unsigned nquery = query.dims[0];
     unsigned ntrain = train.dims[0];
@@ -36,7 +92,7 @@ __global__ void hamming_matcher_unroll(
     unsigned f = blockDim.x * blockIdx.x + threadIdx.x;
     unsigned tid = threadIdx.x;
 
-    __shared__ unsigned s_dist[THREADS];
+    __shared__ To       s_dist[THREADS];
     __shared__ unsigned s_idx[THREADS];
 
     extern __shared__ char smem[];
@@ -59,6 +115,8 @@ __global__ void hamming_matcher_unroll(
     }
     __syncthreads();
 
+    dist_op<T, To, dist_type> op;
+
     for (unsigned j = 0; j < nquery; j++) {
         s_dist[tid] = max_dist;
 
@@ -69,17 +127,17 @@ __global__ void hamming_matcher_unroll(
         }
         __syncthreads();
 
-        unsigned dist = 0;
+        To dist = 0;
         if (valid_feat) {
             #pragma unroll
             for (unsigned k = 0; k < feat_len; k++) {
                 // Calculate Hamming distance for 32-bits of descriptor and
                 // accumulates to dist
                 if (use_shmem) {
-                    dist += __popc(s_train[k * blockDim.x + tid] ^ s_query[k]);
+                    dist += op(s_train[k * blockDim.x + tid], s_query[k]);
                 }
                 else {
-                    dist += __popc(train.ptr[k * ntrain + f] ^ s_query[k]);
+                    dist += op(train.ptr[k * ntrain + f], s_query[k]);
                 }
             }
 
@@ -159,13 +217,13 @@ __global__ void hamming_matcher_unroll(
     }
 }
 
-template<typename T, bool use_shmem>
-__global__ void hamming_matcher(
+template<typename T, typename To, af_match_type dist_type, bool use_shmem>
+__global__ void nearest_neighbour(
     unsigned* out_idx,
-    unsigned* out_dist,
+    To* out_dist,
     CParam<T> query,
     CParam<T> train,
-    const unsigned max_dist,
+    const To max_dist,
     const unsigned feat_len)
 {
     unsigned nquery = query.dims[0];
@@ -174,7 +232,7 @@ __global__ void hamming_matcher(
     unsigned f = blockDim.x * blockIdx.x + threadIdx.x;
     unsigned tid = threadIdx.x;
 
-    __shared__ unsigned s_dist[THREADS];
+    __shared__ To s_dist[THREADS];
     __shared__ unsigned s_idx[THREADS];
 
     extern __shared__ char smem[];
@@ -196,6 +254,8 @@ __global__ void hamming_matcher(
     }
     __syncthreads();
 
+    dist_op<T, To, dist_type> op;
+
     for (unsigned j = 0; j < nquery; j++) {
         s_dist[tid] = max_dist;
 
@@ -206,16 +266,16 @@ __global__ void hamming_matcher(
         }
         __syncthreads();
 
-        unsigned dist = 0;
+        To dist = 0;
         if (valid_feat) {
             for (unsigned k = 0; k < feat_len; k++) {
                 // Calculate Hamming distance for 32-bits of descriptor and
                 // accumulates to dist
                 if (use_shmem) {
-                    dist += __popc(s_train[k * blockDim.x + tid] ^ s_query[k]);
+                    dist += op(s_train[k * blockDim.x + tid], s_query[k]);
                 }
                 else {
-                    dist += __popc(train.ptr[k * ntrain + f] ^ s_query[k]);
+                    dist += op(train.ptr[k * ntrain + f], s_query[k]);
                 }
             }
 
@@ -295,19 +355,20 @@ __global__ void hamming_matcher(
     }
 }
 
+template<typename To>
 __global__ void select_matches(
     Param<unsigned> idx,
-    Param<unsigned> dist,
+    Param<To> dist,
     const unsigned* in_idx,
-    const unsigned* in_dist,
+    const To* in_dist,
     const unsigned nfeat,
     const unsigned nelem,
-    const unsigned max_dist)
+    const To max_dist)
 {
     unsigned f = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned sid = threadIdx.x * blockDim.y + threadIdx.y;
 
-    __shared__ unsigned s_dist[THREADS];
+    __shared__ To s_dist[THREADS];
     __shared__ unsigned s_idx[THREADS];
 
     if (f < nfeat) {
@@ -315,9 +376,9 @@ __global__ void select_matches(
         __syncthreads();
 
         for (unsigned i = threadIdx.y; i < nelem; i += blockDim.y) {
-            unsigned dist = in_dist[f * nelem + i];
+            To dist = in_dist[f * nelem + i];
 
-            // Copy all best matches previously found in hamming_matcher() to
+            // Copy all best matches previously found in nearest_neighbour() to
             // shared memory
             if (dist < s_dist[sid]) {
                 s_dist[sid] = dist;
@@ -329,7 +390,7 @@ __global__ void select_matches(
         // Reduce best matches and find the best of them all
         for (unsigned i = blockDim.y / 2; i > 0; i >>= 1) {
             if (threadIdx.y < i) {
-                unsigned dist = s_dist[sid + i];
+                To dist = s_dist[sid + i];
                 if (dist < s_dist[sid]) {
                     s_dist[sid] = dist;
                     s_idx[sid]  = s_idx[sid + i];
@@ -346,16 +407,16 @@ __global__ void select_matches(
     }
 }
 
-template<typename T>
-void hamming_matcher(Param<uint> idx,
-                     Param<uint> dist,
-                     CParam<T> query,
-                     CParam<T> train,
-                     const dim_t dist_dim,
-                     const unsigned n_dist)
+template<typename T, typename To, af_match_type dist_type>
+void nearest_neighbour(Param<uint> idx,
+                       Param<To> dist,
+                       CParam<T> query,
+                       CParam<T> train,
+                       const dim_t dist_dim,
+                       const unsigned n_dist)
 {
     const unsigned feat_len = query.dims[dist_dim];
-    const unsigned max_dist = feat_len * 8 * sizeof(T);
+    const To max_dist = limit_max<To>();
 
     if (feat_len > THREADS) {
         CUDA_NOT_SUPPORTED();
@@ -381,7 +442,7 @@ void hamming_matcher(Param<uint> idx,
     unsigned nblk = blocks.x;
 
     unsigned* d_blk_idx  = memAlloc<unsigned>(nblk * nquery);
-    unsigned* d_blk_dist = memAlloc<unsigned>(nblk * nquery);
+    To* d_blk_dist = memAlloc<To>(nblk * nquery);
 
     // For each query vector, find training vector with smallest Hamming
     // distance per CUDA block
@@ -389,35 +450,35 @@ void hamming_matcher(Param<uint> idx,
         switch(feat_len) {
         // Optimized lengths (faster due to loop unrolling)
         case 1:
-            hamming_matcher_unroll<T,1,true><<<blocks, threads, smem_sz>>>
+            nearest_neighbour_unroll<T,To,dist_type,1,true><<<blocks, threads, smem_sz>>>
                                   (d_blk_idx, d_blk_dist, query, train, max_dist);
             break;
         case 2:
-            hamming_matcher_unroll<T,2,true><<<blocks, threads, smem_sz>>>
+            nearest_neighbour_unroll<T,To,dist_type,2,true><<<blocks, threads, smem_sz>>>
                                   (d_blk_idx, d_blk_dist, query, train, max_dist);
             break;
         case 4:
-            hamming_matcher_unroll<T,4,true><<<blocks, threads, smem_sz>>>
+            nearest_neighbour_unroll<T,To,dist_type,4,true><<<blocks, threads, smem_sz>>>
                                   (d_blk_idx, d_blk_dist, query, train, max_dist);
             break;
         case 8:
-            hamming_matcher_unroll<T,8,true><<<blocks, threads, smem_sz>>>
+            nearest_neighbour_unroll<T,To,dist_type,8,true><<<blocks, threads, smem_sz>>>
                                   (d_blk_idx, d_blk_dist, query, train, max_dist);
             break;
         case 16:
-            hamming_matcher_unroll<T,16,true><<<blocks, threads, smem_sz>>>
+            nearest_neighbour_unroll<T,To,dist_type,16,true><<<blocks, threads, smem_sz>>>
                                   (d_blk_idx, d_blk_dist, query, train, max_dist);
             break;
         case 32:
-            hamming_matcher_unroll<T,32,true><<<blocks, threads, smem_sz>>>
+            nearest_neighbour_unroll<T,To,dist_type,32,true><<<blocks, threads, smem_sz>>>
                                   (d_blk_idx, d_blk_dist, query, train, max_dist);
             break;
         case 64:
-            hamming_matcher_unroll<T,64,true><<<blocks, threads, smem_sz>>>
+            nearest_neighbour_unroll<T,To,dist_type,64,true><<<blocks, threads, smem_sz>>>
                                   (d_blk_idx, d_blk_dist, query, train, max_dist);
             break;
         default:
-            hamming_matcher<T,true><<<blocks, threads, smem_sz>>>
+            nearest_neighbour<T,To,dist_type,true><<<blocks, threads, smem_sz>>>
                            (d_blk_idx, d_blk_dist, query, train, max_dist, feat_len);
         }
     }
@@ -425,35 +486,35 @@ void hamming_matcher(Param<uint> idx,
         switch(feat_len) {
         // Optimized lengths (faster due to loop unrolling)
         case 1:
-            hamming_matcher_unroll<T,1,false><<<blocks, threads, smem_sz>>>
+            nearest_neighbour_unroll<T,To,dist_type,1,false><<<blocks, threads, smem_sz>>>
                                   (d_blk_idx, d_blk_dist, query, train, max_dist);
             break;
         case 2:
-            hamming_matcher_unroll<T,2,false><<<blocks, threads, smem_sz>>>
+            nearest_neighbour_unroll<T,To,dist_type,2,false><<<blocks, threads, smem_sz>>>
                                   (d_blk_idx, d_blk_dist, query, train, max_dist);
             break;
         case 4:
-            hamming_matcher_unroll<T,4,false><<<blocks, threads, smem_sz>>>
+            nearest_neighbour_unroll<T,To,dist_type,4,false><<<blocks, threads, smem_sz>>>
                                   (d_blk_idx, d_blk_dist, query, train, max_dist);
             break;
         case 8:
-            hamming_matcher_unroll<T,8,false><<<blocks, threads, smem_sz>>>
+            nearest_neighbour_unroll<T,To,dist_type,8,false><<<blocks, threads, smem_sz>>>
                                   (d_blk_idx, d_blk_dist, query, train, max_dist);
             break;
         case 16:
-            hamming_matcher_unroll<T,16,false><<<blocks, threads, smem_sz>>>
+            nearest_neighbour_unroll<T,To,dist_type,16,false><<<blocks, threads, smem_sz>>>
                                   (d_blk_idx, d_blk_dist, query, train, max_dist);
             break;
         case 32:
-            hamming_matcher_unroll<T,32,false><<<blocks, threads, smem_sz>>>
+            nearest_neighbour_unroll<T,To,dist_type,32,false><<<blocks, threads, smem_sz>>>
                                   (d_blk_idx, d_blk_dist, query, train, max_dist);
             break;
         case 64:
-            hamming_matcher_unroll<T,64,false><<<blocks, threads, smem_sz>>>
+            nearest_neighbour_unroll<T,To,dist_type,64,false><<<blocks, threads, smem_sz>>>
                                   (d_blk_idx, d_blk_dist, query, train, max_dist);
             break;
         default:
-            hamming_matcher<T,false><<<blocks, threads, smem_sz>>>
+            nearest_neighbour<T,To,dist_type,false><<<blocks, threads, smem_sz>>>
                            (d_blk_idx, d_blk_dist, query, train, max_dist, feat_len);
         }
     }

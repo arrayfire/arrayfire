@@ -12,8 +12,9 @@
 #include <dispatch.hpp>
 #include <err_opencl.hpp>
 #include <debug_opencl.hpp>
-#include <kernel_headers/hamming.hpp>
+#include <kernel_headers/nearest_neighbour.hpp>
 #include <memory.hpp>
+#include <math.hpp>
 
 using cl::LocalSpaceArg;
 
@@ -25,18 +26,18 @@ namespace kernel
 
 static const unsigned THREADS = 256;
 
-template<typename T, bool use_lmem, unsigned unroll_len>
-void hamming_matcher(Param idx,
-                     Param dist,
-                     Param query,
-                     Param train,
-                     const dim_t dist_dim,
-                     const unsigned n_dist,
-                     const size_t lmem_sz)
+template<typename T, typename To, af_match_type dist_type, bool use_lmem, unsigned unroll_len>
+void nearest_neighbour(Param idx,
+                       Param dist,
+                       Param query,
+                       Param train,
+                       const dim_t dist_dim,
+                       const unsigned n_dist,
+                       const size_t lmem_sz)
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static Program        hammingProgs[DeviceManager::MAX_DEVICES];
+        static Program        nearest_neighbourProgs[DeviceManager::MAX_DEVICES];
         static Kernel             huKernel[DeviceManager::MAX_DEVICES];
         static Kernel             hmKernel[DeviceManager::MAX_DEVICES];
         static Kernel             smKernel[DeviceManager::MAX_DEVICES];
@@ -44,7 +45,7 @@ void hamming_matcher(Param idx,
         int device = getActiveDeviceId();
 
         const unsigned feat_len = query.info.dims[dist_dim];
-        const unsigned max_dist = feat_len * 8 * sizeof(T);
+        const To max_dist = limit_max<To>();
 
         if (feat_len > THREADS) {
             OPENCL_NOT_SUPPORTED();
@@ -54,20 +55,34 @@ void hamming_matcher(Param idx,
 
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName()
+                        << " -D To=" << dtype_traits<To>::getName()
                         << " -D THREADS=" << THREADS
                         << " -D FEAT_LEN=" << unroll_len;
+
+                switch(dist_type) {
+                    case AF_SAD: options <<" -D DISTOP=_sad_"; break;
+                    case AF_SSD: options <<" -D DISTOP=_ssd_"; break;
+                    case AF_SHD: options <<" -D DISTOP=_shd_ -D __SHD__";
+                                 break;
+                    default: break;
+                }
+
+                if (std::is_same<T, double>::value ||
+                    std::is_same<T, cdouble>::value) {
+                    options << " -D USE_DOUBLE";
+                }
 
                 if (use_lmem)
                     options << " -D USE_LOCAL_MEM";
 
-                buildProgram(hammingProgs[device],
-                             hamming_cl,
-                             hamming_cl_len,
+                buildProgram(nearest_neighbourProgs[device],
+                             nearest_neighbour_cl,
+                             nearest_neighbour_cl_len,
                              options.str());
 
-                huKernel[device] = Kernel(hammingProgs[device], "hamming_matcher_unroll");
-                hmKernel[device] = Kernel(hammingProgs[device], "hamming_matcher");
-                smKernel[device] = Kernel(hammingProgs[device], "select_matches");
+                huKernel[device] = Kernel(nearest_neighbourProgs[device], "nearest_neighbour_unroll");
+                hmKernel[device] = Kernel(nearest_neighbourProgs[device], "nearest_neighbour");
+                smKernel[device] = Kernel(nearest_neighbourProgs[device], "select_matches");
             });
 
         const dim_t sample_dim = (dist_dim == 0) ? 1 : 0;
@@ -80,7 +95,7 @@ void hamming_matcher(Param idx,
         const NDRange global(nblk * THREADS, 1);
 
         cl::Buffer *d_blk_idx  = bufferAlloc(nblk * nquery * sizeof(unsigned));
-        cl::Buffer *d_blk_dist = bufferAlloc(nblk * nquery * sizeof(unsigned));
+        cl::Buffer *d_blk_dist = bufferAlloc(nblk * nquery * sizeof(To));
 
         // For each query vector, find training vector with smallest Hamming
         // distance per CUDA block
@@ -88,7 +103,7 @@ void hamming_matcher(Param idx,
             auto huOp = make_kernel<Buffer, Buffer,
                                     Buffer, KParam,
                                     Buffer, KParam,
-                                    const unsigned,
+                                    const To,
                                     LocalSpaceArg> (huKernel[device]);
 
             huOp(EnqueueArgs(getQueue(), global, local),
@@ -100,7 +115,7 @@ void hamming_matcher(Param idx,
             auto hmOp = make_kernel<Buffer, Buffer,
                                     Buffer, KParam,
                                     Buffer, KParam,
-                                    const unsigned, const unsigned,
+                                    const To, const unsigned,
                                     LocalSpaceArg> (hmKernel[device]);
 
             hmOp(EnqueueArgs(getQueue(), global, local),
@@ -117,7 +132,7 @@ void hamming_matcher(Param idx,
         // best match
         auto smOp = make_kernel<Buffer, Buffer, Buffer, Buffer,
                                 const unsigned, const unsigned,
-                                const unsigned> (smKernel[device]);
+                                const To> (smKernel[device]);
 
         smOp(EnqueueArgs(getQueue(), global_sm, local_sm),
              *idx.data, *dist.data,
