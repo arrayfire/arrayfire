@@ -85,7 +85,7 @@ namespace cpu
         typedef wtype_t<BT> WT;
         typedef vtype_t<T> VT;
 
-        const WT grd_x = floor(xi),  grd_y = floor(yi);
+        const dim_t grd_x = floor(xi),  grd_y = floor(yi);
         const WT off_x = xi - grd_x, off_y = yi - grd_y;
 
         dim_t loci = grd_y * istrides[1] + grd_x;

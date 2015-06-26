@@ -9,6 +9,7 @@
 
 #pragma once
 #include <stdio.h>
+#include <defines.hpp>
 #include <err_common.hpp>
 
 #define CUDA_NOT_SUPPORTED() do {                       \

@@ -69,7 +69,7 @@ void transform_b(__global T *d_out, const KParam out, __global const T *d_in, co
         return;
     }
 
-    const WT grd_x = floor(xid),  grd_y = floor(yid);
+    const int grd_x = floor(xid),  grd_y = floor(yid);
     const WT off_x = xid - grd_x, off_y = yid - grd_y;
 
     // Check if pVal and pVal + 1 are both valid indices

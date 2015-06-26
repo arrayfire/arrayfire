@@ -2,6 +2,17 @@
 \addtogroup arrayfire_func
 @{
 
+\defgroup data_func_constant constant
+
+\brief Create a array from a scalar input value
+
+The array created has the same value at all locations
+
+\ingroup data_mat
+\ingroup arrayfire_func
+
+=======================================================================
+
 \defgroup data_func_randu randu
 
 \brief Create a random array sampled from uniform distribution
@@ -295,4 +306,3 @@ Mirrors the array along the specified dimensions.
 
 @}
 */
-
