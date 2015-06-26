@@ -9,6 +9,7 @@
 
 #include <af/version.h>
 #include <platform.hpp>
+#include <defines.hpp>
 #include <driver.h>
 #include <vector>
 #include <string>

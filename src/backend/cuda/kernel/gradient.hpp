@@ -72,14 +72,14 @@ namespace cuda
                 // Y-1
                 sidx(-1, threadIdx.x) = (cond || idy == 0) ?
                                         sidx(0, threadIdx.x) : in.ptr[iIdx - in.strides[1]];
-                sidx(ymax, threadIdx.x) = (cond || idy + ymax >= in.dims[1] - 1) ?
+                sidx(ymax, threadIdx.x) = (cond || (idy + ymax) >= in.dims[1]) ?
                                         sidx(ymax - 1, threadIdx.x) : in.ptr[iIdx + ymax * in.strides[1]];
             }
             // Rows
             if(threadIdx.x == 0) {
                 sidx(threadIdx.y, -1) = (cond || idx == 0) ?
                                         sidx(threadIdx.y, 0) : in.ptr[iIdx - 1];
-                sidx(threadIdx.y, xmax) = (cond || idx + xmax >= in.dims[0] - 1) ?
+                sidx(threadIdx.y, xmax) = (cond || (idx + xmax) >= in.dims[0]) ?
                                         sidx(threadIdx.y, xmax - 1) : in.ptr[iIdx + xmax];
             }
 

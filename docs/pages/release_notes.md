@@ -1,6 +1,30 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.0.2
+==============
+
+Bug Fixes
+--------------
+
+* Added missing symbols from the compatible API
+* Fixed a bug affecting corner rows and elements in \ref grad()
+* Fixed linear interpolation bugs affecting large images in the following:
+    - \ref approx1()
+    - \ref approx2()
+    - \ref resize()
+    - \ref rotate()
+    - \ref scale()
+    - \ref skew()
+    - \ref transform()
+
+Documentation
+-----------------
+
+* Added missing documentation for \ref constant()
+* Added missing documentation for `array::scalar()`
+* Added supported input types for functions in `arith.h`
+
 v3.0.1
 ==============
 
