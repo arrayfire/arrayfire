@@ -88,12 +88,12 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
                                                                 << " for dim " << d + off << std::endl;
             }
             af_print_array(outArray);
-            for(int i = 0; i < nElems; i++) {
+            for(int i = 0; i < (int)nElems; i++) {
                 cout << currGoldBar[i] << ", ";
             }
 
             cout << endl;
-            for(int i = 0; i < nElems; i++) {
+            for(int i = 0; i < (int)nElems; i++) {
                 cout << outData[i] << ", ";
             }
             FAIL();

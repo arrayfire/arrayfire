@@ -57,7 +57,6 @@ Array<float> normalizePerType<float>(const Array<float>& in)
 template<typename T>
 static fg::Image* convert_and_copy_image(const af_array in)
 {
-    ArrayInfo info      = getInfo(in);
     const Array<T> _in  = getArray<T>(in);
     dim4 inDims = _in.dims();
 
