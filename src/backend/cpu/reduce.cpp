@@ -130,6 +130,8 @@ namespace cpu
     INSTANTIATE(af_min_t, cdouble, cdouble)
     INSTANTIATE(af_min_t, int    , int    )
     INSTANTIATE(af_min_t, uint   , uint   )
+    INSTANTIATE(af_min_t, intl   , intl   )
+    INSTANTIATE(af_min_t, uintl  , uintl  )
     INSTANTIATE(af_min_t, char   , char   )
     INSTANTIATE(af_min_t, uchar  , uchar  )
 
@@ -140,6 +142,8 @@ namespace cpu
     INSTANTIATE(af_max_t, cdouble, cdouble)
     INSTANTIATE(af_max_t, int    , int    )
     INSTANTIATE(af_max_t, uint   , uint   )
+    INSTANTIATE(af_max_t, intl   , intl   )
+    INSTANTIATE(af_max_t, uintl  , uintl  )
     INSTANTIATE(af_max_t, char   , char   )
     INSTANTIATE(af_max_t, uchar  , uchar  )
 
@@ -150,6 +154,8 @@ namespace cpu
     INSTANTIATE(af_add_t, cdouble, cdouble)
     INSTANTIATE(af_add_t, int    , int    )
     INSTANTIATE(af_add_t, uint   , uint   )
+    INSTANTIATE(af_add_t, intl   , intl   )
+    INSTANTIATE(af_add_t, uintl  , uintl  )
     INSTANTIATE(af_add_t, char   , int    )
     INSTANTIATE(af_add_t, uchar  , uint   )
 
@@ -160,6 +166,8 @@ namespace cpu
     INSTANTIATE(af_mul_t, cdouble, cdouble)
     INSTANTIATE(af_mul_t, int    , int    )
     INSTANTIATE(af_mul_t, uint   , uint   )
+    INSTANTIATE(af_mul_t, intl   , intl   )
+    INSTANTIATE(af_mul_t, uintl  , uintl  )
     INSTANTIATE(af_mul_t, char   , int    )
     INSTANTIATE(af_mul_t, uchar  , uint   )
 
@@ -170,6 +178,8 @@ namespace cpu
     INSTANTIATE(af_notzero_t, cdouble, uint)
     INSTANTIATE(af_notzero_t, int    , uint)
     INSTANTIATE(af_notzero_t, uint   , uint)
+    INSTANTIATE(af_notzero_t, intl   , uint)
+    INSTANTIATE(af_notzero_t, uintl  , uint)
     INSTANTIATE(af_notzero_t, char   , uint)
     INSTANTIATE(af_notzero_t, uchar  , uint)
 
@@ -180,6 +190,8 @@ namespace cpu
     INSTANTIATE(af_or_t, cdouble, char)
     INSTANTIATE(af_or_t, int    , char)
     INSTANTIATE(af_or_t, uint   , char)
+    INSTANTIATE(af_or_t, intl   , char)
+    INSTANTIATE(af_or_t, uintl  , char)
     INSTANTIATE(af_or_t, char   , char)
     INSTANTIATE(af_or_t, uchar  , char)
 
@@ -190,6 +202,8 @@ namespace cpu
     INSTANTIATE(af_and_t, cdouble, char)
     INSTANTIATE(af_and_t, int    , char)
     INSTANTIATE(af_and_t, uint   , char)
+    INSTANTIATE(af_and_t, intl   , char)
+    INSTANTIATE(af_and_t, uintl  , char)
     INSTANTIATE(af_and_t, char   , char)
     INSTANTIATE(af_and_t, uchar  , char)
 }

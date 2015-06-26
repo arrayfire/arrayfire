@@ -33,7 +33,7 @@ class Random : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, unsigned char> TestTypes;
+typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, intl, uintl, unsigned char> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Random, TestTypes);
@@ -72,58 +72,17 @@ void randnTest(af::dim4 &dims)
     if(outArray != 0) af_release_array(outArray);
 }
 
-// INT, UNIT, CHAR, UCHAR Not Supported by RANDN
-template<>
-void randnTest<int>(af::dim4 &dims)
-{
-    if (noDoubleTests<int>()) return;
-
-    af_array outArray = 0;
-    ASSERT_EQ(AF_ERR_TYPE, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<int>::af_type));
-    if(outArray != 0) af_release_array(outArray);
-}
-
-template<>
-void randnTest<unsigned>(af::dim4 &dims)
-{
-    if (noDoubleTests<unsigned>()) return;
-
-    af_array outArray = 0;
-    ASSERT_EQ(AF_ERR_TYPE, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<unsigned>::af_type));
-    if(outArray != 0) af_release_array(outArray);
-}
-
-template<>
-void randnTest<char>(af::dim4 &dims)
-{
-    if (noDoubleTests<char>()) return;
-
-    af_array outArray = 0;
-    ASSERT_EQ(AF_ERR_TYPE, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<char>::af_type));
-    if(outArray != 0) af_release_array(outArray);
-}
-
-template<>
-void randnTest<unsigned char>(af::dim4 &dims)
-{
-    if (noDoubleTests<unsigned char>()) return;
-
-    af_array outArray = 0;
-    ASSERT_EQ(AF_ERR_TYPE, af_randn(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<unsigned char>::af_type));
-    if(outArray != 0) af_release_array(outArray);
-}
-
-#define RAND(d0, d1, d2, d3)                            \
-    TYPED_TEST(Random,randu_##d0##_##d1##_##d2##_##d3)  \
-    {                                                   \
-        af::dim4 dims(d0, d1, d2, d3);                  \
-        randuTest<TypeParam>(dims);                     \
-    }                                                   \
-    TYPED_TEST(Random,randn_##d0##_##d1##_##d2##_##d3)  \
-    {                                                   \
-        af::dim4 dims(d0, d1, d2, d3);                  \
-        randnTest<TypeParam>(dims);                     \
-    }                                                   \
+#define RAND(d0, d1, d2, d3)                                    \
+    TYPED_TEST(Random,randu_##d0##_##d1##_##d2##_##d3)          \
+    {                                                           \
+        af::dim4 dims(d0, d1, d2, d3);                          \
+        randuTest<TypeParam>(dims);                             \
+    }                                                           \
+    TYPED_TEST(Random_norm,randn_##d0##_##d1##_##d2##_##d3)     \
+    {                                                           \
+        af::dim4 dims(d0, d1, d2, d3);                          \
+        randnTest<TypeParam>(dims);                             \
+    }                                                           \
 
 RAND(1024, 1024,    1,    1);
 RAND( 512,  512,    1,    1);

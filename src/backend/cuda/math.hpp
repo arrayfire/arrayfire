@@ -99,6 +99,9 @@ namespace cuda
 
     template<> __device__  int    limit_max<int>()    { return 0x7fffffff; }
     template<> __device__  int    limit_min<int>()    { return 0x80000000; }
+    template<> __device__  intl   limit_max<intl>()   { return 0x7fffffffffffffff; }
+    template<> __device__  intl   limit_min<intl>()   { return 0x8000000000000000; }
+    template<> __device__  uintl  limit_max<uintl>()  { return 1ULL << (8 * sizeof(uintl) - 1); }
     template<> __device__  char   limit_max<char>()   { return 0x7f; }
     template<> __device__  char   limit_min<char>()   { return 0x80; }
     template<> __device__  float  limit_max<float>()  { return  CUDART_INF_F; }
