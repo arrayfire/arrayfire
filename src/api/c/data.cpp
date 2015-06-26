@@ -280,6 +280,8 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, c
         case c64:   result = randu_<cdouble>(d);    break;
         case s32:   result = randu_<int    >(d);    break;
         case u32:   result = randu_<uint   >(d);    break;
+        case s64:   result = randu_<intl   >(d);    break;
+        case u64:   result = randu_<uintl  >(d);    break;
         case u8:    result = randu_<uchar  >(d);    break;
         case b8:    result = randu_<char  >(d);    break;
         default:    TYPE_ERROR(3, type);
