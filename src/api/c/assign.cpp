@@ -118,7 +118,7 @@ af_err af_assign_seq(af_array *out,
 
         af_array res;
         if (*out != lhs) AF_CHECK(af_copy_array(&res, lhs));
-        else             res = retain(lhs);
+        else             res = lhs;
 
         try {
 
