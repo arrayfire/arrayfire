@@ -170,6 +170,12 @@ namespace cpu
             return data.get() + (withOffset ? offset : 0);
         }
 
+        int useCount() const
+        {
+            if (!isReady()) eval();
+            return data.use_count();
+        }
+
         TNJ::Node_ptr getNode() const;
 
         friend Array<T> createValueArray<T>(const af::dim4 &size, const T& value);

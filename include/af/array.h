@@ -1270,6 +1270,15 @@ extern "C" {
     AFAPI af_err af_retain_array(af_array *out, const af_array in);
 
     /**
+       \ingroup method_mat
+       @{
+
+       Get the use count of `af_array`
+    */
+    AFAPI af_err af_get_data_ref_count(int *use_count, const af_array in);
+
+
+    /**
        Evaluate any expressions in the Array
     */
     AFAPI af_err af_eval(af_array in);

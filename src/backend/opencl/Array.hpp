@@ -162,6 +162,12 @@ namespace opencl
             return data.get();
         }
 
+        int useCount() const
+        {
+            if (!isReady()) eval();
+            return data.use_count();
+        }
+
         const dim_t getOffset() const
         {
             return offset;
