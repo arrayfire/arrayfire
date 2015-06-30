@@ -60,6 +60,8 @@ AFAPI af::cdouble operator-(const af::cdouble &lhs, const af::cdouble &rhs);
 
 AFAPI cfloat operator*(const cfloat &lhs, const cfloat &rhs);
 AFAPI cdouble operator*(const cdouble &lhs, const cdouble &rhs);
+AFAPI cfloat operator*(const cfloat &lhs, const float &rhs);
+AFAPI cdouble operator*(const cdouble &lhs, const double &rhs);
 
 AFAPI cfloat operator/(const cfloat &lhs, const cfloat &rhs);
 AFAPI af::cfloat operator/(const af::cfloat &lhs, const float &rhs);

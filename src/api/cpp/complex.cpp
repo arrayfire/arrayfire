@@ -46,7 +46,7 @@ cdouble operator-(const cdouble &lhs, const cdouble &rhs)
     return out;
 }
 
-    using std::complex;
+using std::complex;
 cfloat operator*(const cfloat &lhs, const cfloat &rhs)
 {
     complex<float> clhs(lhs.real, lhs.imag);
@@ -60,6 +60,20 @@ cdouble operator*(const cdouble &lhs, const cdouble &rhs)
     complex<double> clhs(lhs.real, lhs.imag);
     complex<double> crhs(rhs.real, rhs.imag);
     complex<double> out = clhs * crhs;
+    return cdouble(out.real(), out.imag());
+}
+
+cfloat operator*(const cfloat &lhs, const float &rhs)
+{
+    complex<float> clhs(lhs.real, lhs.imag);
+    complex<float> out = clhs * rhs;
+    return cfloat(out.real(), out.imag());
+}
+
+cdouble operator*(const cdouble &lhs, const double &rhs)
+{
+    complex<double> clhs(lhs.real, lhs.imag);
+    complex<double> out = clhs * rhs;
     return cdouble(out.real(), out.imag());
 }
 
