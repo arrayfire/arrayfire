@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#define IS_NAN(in) !((in) == (in))
+
 #ifdef ADD_OP
 T binOp(T lhs, T rhs)
 {
@@ -102,7 +104,8 @@ uint transform(Ti in)
 
 T transform(T in)
 {
-    return in;
+    T val = init;
+    return IS_NAN(in) ? (val) : (in);
 }
 
 #if CPLX
@@ -121,7 +124,8 @@ T binOp(T lhs, T rhs)
 
 T transform(T in)
 {
-    return in;
+    T val = init;
+    return IS_NAN(in) ? (val) : (in);
 }
 
 #if CPLX
