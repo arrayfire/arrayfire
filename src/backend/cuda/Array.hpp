@@ -181,6 +181,12 @@ namespace cuda
             return data.get() + (withOffset ? offset : 0);
         }
 
+        int useCount() const
+        {
+            if (!isReady()) eval();
+            return data.use_count();
+        }
+
         operator Param<T>()
         {
             Param<T> out;

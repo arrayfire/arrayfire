@@ -247,6 +247,34 @@ af_err af_copy_array(af_array *out, const af_array in)
     return AF_SUCCESS;
 }
 
+//Strong Exception Guarantee
+af_err af_get_data_ref_count(int *use_count, const af_array in)
+{
+    try {
+        ArrayInfo info = getInfo(in);
+        const af_dtype type = info.getType();
+
+        int res;
+        switch(type) {
+        case f32:   res = getArray<float   >(in).useCount(); break;
+        case c32:   res = getArray<cfloat  >(in).useCount(); break;
+        case f64:   res = getArray<double  >(in).useCount(); break;
+        case c64:   res = getArray<cdouble >(in).useCount(); break;
+        case b8:    res = getArray<char    >(in).useCount(); break;
+        case s32:   res = getArray<int     >(in).useCount(); break;
+        case u32:   res = getArray<uint    >(in).useCount(); break;
+        case u8:    res = getArray<uchar   >(in).useCount(); break;
+        case s64:   res = getArray<intl    >(in).useCount(); break;
+        case u64:   res = getArray<uintl   >(in).useCount(); break;
+        default:    TYPE_ERROR(1, type);
+        }
+        std::swap(*use_count, res);
+    }
+    CATCHALL
+    return AF_SUCCESS;
+}
+
+
 template<typename T>
 static inline af_array randn_(const af::dim4 &dims)
 {
