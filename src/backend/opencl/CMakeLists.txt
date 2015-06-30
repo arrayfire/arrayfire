@@ -169,33 +169,78 @@ ELSE(${UNIX}) #Windows
     SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /bigobj")
 ENDIF()
 
+IF(DEFINED BLAS_SYM_FILE)
 
-ADD_LIBRARY(afopencl SHARED
-            ${opencl_headers}
-            ${opencl_sources}
-            ${jit_sources}
-            ${kernel_headers}
-            ${opencl_kernels}
-            ${kernel_sources}
-            ${conv_ker_headers}
-            ${conv_ker_sources}
-            ${backend_headers}
-            ${backend_sources}
-            ${c_sources}
-            ${c_headers}
-            ${cpp_sources}
-            ${magma_sources}
-            ${magma_headers}
-            )
+    ADD_LIBRARY(afopencl_static STATIC
+                ${opencl_headers}
+                ${opencl_sources}
+                ${jit_sources}
+                ${kernel_headers}
+                ${opencl_kernels}
+                ${kernel_sources}
+                ${conv_ker_headers}
+                ${conv_ker_sources}
+                ${backend_headers}
+                ${backend_sources}
+                ${magma_sources}
+                ${magma_headers})
+
+    ADD_LIBRARY(afopencl SHARED
+               ${c_headers}
+               ${c_sources}
+               ${cpp_sources})
+
+
+    IF(FORGE_FOUND)
+        ADD_DEPENDENCIES(afopencl_static forge)
+    ENDIF()
+
+    IF(APPLE)
+    SET_TARGET_PROPERTIES(afopencl_static
+        PROPERTIES LINK_FLAGS -Wl,-exported_symbols_list,${BLAS_SYM_FILE})
+    TARGET_LINK_LIBRARIES(afopencl PUBLIC $<TARGET_FILE:afopencl_static>)
+    ELSE(APPLE)
+    add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/afopencl_static.renamed
+      COMMAND objcopy --redefine-syms ${BLAS_SYM_FILE} $<TARGET_FILE:afopencl_static> ${CMAKE_BINARY_DIR}/afopencl_static.renamed
+      DEPENDS $<TARGET_FILE:afopencl_static>)
+      TARGET_LINK_LIBRARIES(afopencl PUBLIC ${CMAKE_BINARY_DIR}/afopencl_static.renamed)
+    ENDIF(APPLE)
+
+
+ELSE(DEFINED BLAS_SYM_FILE)
+
+    ADD_LIBRARY(afopencl SHARED
+                ${opencl_headers}
+                ${opencl_sources}
+                ${jit_sources}
+                ${kernel_headers}
+                ${opencl_kernels}
+                ${kernel_sources}
+                ${conv_ker_headers}
+                ${conv_ker_sources}
+                ${backend_headers}
+                ${backend_sources}
+                ${c_headers}
+                ${c_sources}
+                ${cpp_sources}
+                ${magma_sources}
+                ${magma_headers})
+
+ENDIF()
 
 ADD_DEPENDENCIES(afopencl ${cl_kernel_targets})
 
-TARGET_LINK_LIBRARIES(afopencl  PRIVATE ${OpenCL_LIBRARIES}
+TARGET_LINK_LIBRARIES(afopencl
+                                PRIVATE ${OpenCL_LIBRARIES}
                                 PRIVATE ${FreeImage_LIBS}
                                 PRIVATE ${CLBLAS_LIBRARIES}
                                 PRIVATE ${CLFFT_LIBRARIES}
                                 PRIVATE ${CMAKE_DL_LIBS}
                                 PRIVATE ${Boost_LIBRARIES})
+
+IF(FORGE_FOUND)
+    ADD_DEPENDENCIES(afopencl forge)
+ENDIF()
 
 IF(LAPACK_FOUND)
    TARGET_LINK_LIBRARIES(afopencl   PRIVATE ${LAPACK_LIBRARIES})
