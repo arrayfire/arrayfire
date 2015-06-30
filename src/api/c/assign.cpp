@@ -116,9 +116,19 @@ af_err af_assign_seq(af_array *out,
             ARG_ASSERT(2, (index[i].step>=0));
         }
 
-        af_array res;
-        if (*out != lhs) AF_CHECK(af_copy_array(&res, lhs));
-        else             res = lhs;
+        af_array res = 0;
+
+        if (*out != lhs) {
+            int count = 0;
+            AF_CHECK(af_get_data_ref_count(&count, lhs));
+            if (count > 1) {
+                AF_CHECK(af_copy_array(&res, lhs));
+            } else {
+                AF_CHECK(af_retain_array(&res, lhs));
+            }
+        } else {
+            res = lhs;
+        }
 
         try {
 
@@ -190,8 +200,17 @@ af_err af_assign_gen(af_array *out,
         ARG_ASSERT(1, (lhs!=0));
         ARG_ASSERT(4, (rhs!=0));
 
-        if (*out != lhs) AF_CHECK(af_copy_array(&output, lhs));
-        else             output = lhs;
+        if (*out != lhs) {
+            int count = 0;
+            AF_CHECK(af_get_data_ref_count(&count, lhs));
+            if (count > 1) {
+                AF_CHECK(af_copy_array(&output, lhs));
+            } else {
+                AF_CHECK(af_retain_array(&output, lhs));
+            }
+        } else {
+            output = lhs;
+        }
 
         ArrayInfo lInfo = getInfo(lhs);
         ArrayInfo rInfo = getInfo(rhs);
