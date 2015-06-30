@@ -42,11 +42,11 @@ ConvolveBatchKind identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
     dim_t fn = fDims.ndims();
 
     if (sn==baseDim && fn==baseDim)
-        return ONE2ONE;
+        return CONVOLVE_BATCH_NONE;
     else if (sn==baseDim && (fn>baseDim && fn<=4))
-        return ONE2MANY;
+        return CONVOLVE_BATCH_KERNEL;
     else if ((sn>baseDim && sn<=4) && fn==baseDim)
-        return MANY2ONE;
+        return CONVOLVE_BATCH_SIGNAL;
     else if ((sn>baseDim && sn<=4) && (fn>baseDim && fn<=4)) {
         bool doesDimensionsMatch = true;
         for (dim_t i=baseDim; i<4; i++) {
@@ -55,10 +55,10 @@ ConvolveBatchKind identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
                 break;
             }
         }
-        return (doesDimensionsMatch ? MANY2MANY : CONVOLVE_UNSUPPORTED_BATCH_MODE);
+        return (doesDimensionsMatch ? CONVOLVE_BATCH_SAME : CONVOLVE_BATCH_UNSUPPORTED);
     }
     else
-        return CONVOLVE_UNSUPPORTED_BATCH_MODE;
+        return CONVOLVE_BATCH_UNSUPPORTED;
 }
 
 template<dim_t baseDim, bool expand>
@@ -75,7 +75,7 @@ af_err convolve(af_array *out, const af_array signal, const af_array filter)
 
         ConvolveBatchKind convBT = identifyBatchKind<baseDim>(sdims, fdims);
 
-        ARG_ASSERT(1, (convBT != CONVOLVE_UNSUPPORTED_BATCH_MODE));
+        ARG_ASSERT(1, (convBT != CONVOLVE_BATCH_UNSUPPORTED));
 
         af_array output;
         switch(stype) {

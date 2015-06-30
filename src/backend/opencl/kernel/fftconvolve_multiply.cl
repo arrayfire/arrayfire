@@ -23,7 +23,7 @@ void complex_multiply(
     if (t >= nelem)
         return;
 
-    if (kind == ONE2ONE || kind == MANY2MANY) {
+    if (kind == CONVOLVE_BATCH_NONE || kind == CONVOLVE_BATCH_SAME) {
         // Complex multiply each signal to equivalent filter
         const int ridx = t * 2;
         const int iidx = t * 2 + 1;
@@ -39,7 +39,7 @@ void complex_multiply(
         d_out[oInfo.offset + ridx] = ac - bd;
         d_out[oInfo.offset + iidx] = (a+b) * (c+d) - ac - bd;
     }
-    else if (kind == MANY2ONE) {
+    else if (kind == CONVOLVE_BATCH_SIGNAL) {
         // Complex multiply all signals to filter
         const int ridx1 = t * 2;
         const int iidx1 = t * 2 + 1;
@@ -60,7 +60,7 @@ void complex_multiply(
         d_out[oInfo.offset + ridx1] = ac - bd;
         d_out[oInfo.offset + iidx1] = (a+b) * (c+d) - ac - bd;
     }
-    else if (kind == ONE2MANY) {
+    else if (kind == CONVOLVE_BATCH_KERNEL) {
         // Complex multiply signal to all filters
         const int ridx2 = t * 2;
         const int iidx2 = t * 2 + 1;

@@ -30,7 +30,7 @@ static af_array dog(const af_array& in, const int radius1, const int radius2)
     Array<T> input  = getArray<T>(in);
     dim4 iDims      = input.dims();
 
-    ConvolveBatchKind bkind = iDims[2] > 1 ? MANY2ONE : ONE2ONE;
+    ConvolveBatchKind bkind = iDims[2] > 1 ? CONVOLVE_BATCH_SIGNAL : CONVOLVE_BATCH_NONE;
 
     Array<T> smth1 = convolve<T, accT, 2, false>(input, castArray<accT>(g1), bkind);
     Array<T> smth2 = convolve<T, accT, 2, false>(input, castArray<accT>(g2), bkind);
