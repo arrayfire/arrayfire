@@ -60,7 +60,7 @@ template<> FUNC##_func_def<TYPE, BASE_TYPE>     FUNC##_func<TYPE, BASE_TYPE>()  
 { return &cblas_##PREFIX##FUNC; }
 
 BLAS_FUNC_DEF( gemm )
-#if defined(OS_WIN) || defined(IS_OPENBLAS)
+#if (defined(OS_WIN) && !defined(USE_MKL)) || defined(IS_OPENBLAS)
 BLAS_FUNC(gemm , float   , float  , s)
 BLAS_FUNC(gemm , double  , double , d)
 BLAS_FUNC(gemm , cfloat  , float  , c)
@@ -73,7 +73,7 @@ BLAS_FUNC(gemm , cdouble ,   void, z)
 #endif
 
 BLAS_FUNC_DEF(gemv)
-#if defined(OS_WIN) || defined(IS_OPENBLAS)
+#if (defined(OS_WIN) && !defined(USE_MKL)) || defined(IS_OPENBLAS)
 BLAS_FUNC(gemv , float   ,  float , s)
 BLAS_FUNC(gemv , double  ,  double, d)
 BLAS_FUNC(gemv , cfloat  ,  float , c)
@@ -113,7 +113,7 @@ toCblasTranspose(af_mat_prop opt)
 using namespace std;
 
 
-#if defined(OS_WIN) || defined(IS_OPENBLAS)
+#if (defined(OS_WIN) && !defined(USE_MKL)) || defined(IS_OPENBLAS)
 #define BT typename af::dtype_traits<T>::base_type
 #define REINTERPRET_CAST(PTR_TYPE, X) reinterpret_cast<PTR_TYPE>((X))
 #else
