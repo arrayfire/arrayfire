@@ -23,6 +23,18 @@ extern "C" {
 #endif
 #endif
 
+// TODO: Ask upstream for a more official way to detect it
+#ifdef OPENBLAS_CONST
+#define IS_OPENBLAS
+#endif
+
+// Make sure we get the correct type signature for OpenBLAS
+// OpenBLAS defines blasint as it's index type. Emulate this
+// if we're not dealing with openblas and use it where applicable
+#ifndef IS_OPENBLAS
+typedef int blasint;
+#endif
+
 namespace cpu
 {
 

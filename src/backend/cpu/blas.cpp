@@ -26,29 +26,30 @@ namespace cpu
 
 template<typename T, typename BT>
 using cptr_type     =   typename conditional<   is_complex<T>::value,
-                                                const void *,
+                                                const BT *,
                                                 const T*>::type;
 template<typename T, typename BT>
 using ptr_type     =    typename conditional<   is_complex<T>::value,
-                                                void *,
+                                                BT *,
                                                 T*>::type;
 template<typename T, typename BT>
 using scale_type   =    typename conditional<   is_complex<T>::value,
-                                                const void *,
+                                                const BT *,
                                                 const T>::type;
+
 template<typename T, typename BT>
 using gemm_func_def = void (*)( const CBLAS_ORDER, const CBLAS_TRANSPOSE, const CBLAS_TRANSPOSE,
-                                const int, const int, const int,
-                                scale_type<T, BT>, cptr_type<T, BT>, const int,
-                                cptr_type<T, BT>, const int,
-                                scale_type<T, BT>, ptr_type<T, BT>, const int);
+                                const blasint, const blasint, const blasint,
+                                scale_type<T, BT>, cptr_type<T, BT>, const blasint,
+                                cptr_type<T, BT>, const blasint,
+                                scale_type<T, BT>, ptr_type<T, BT>, const blasint);
 
 template<typename T, typename BT>
 using gemv_func_def = void (*)( const CBLAS_ORDER, const CBLAS_TRANSPOSE,
-                                const int, const int,
-                                scale_type<T, BT>, cptr_type<T, BT>, const int,
-                                cptr_type<T, BT>, const int,
-                                scale_type<T, BT>, ptr_type<T, BT>, const int);
+                                const blasint, const blasint,
+                                scale_type<T, BT>, cptr_type<T, BT>, const blasint,
+                                cptr_type<T, BT>, const blasint,
+                                scale_type<T, BT>, ptr_type<T, BT>, const blasint);
 
 #define BLAS_FUNC_DEF( FUNC )                                                      \
 template<typename T, typename BT> FUNC##_func_def<T, BT> FUNC##_func();
@@ -59,7 +60,7 @@ template<> FUNC##_func_def<TYPE, BASE_TYPE>     FUNC##_func<TYPE, BASE_TYPE>()  
 { return &cblas_##PREFIX##FUNC; }
 
 BLAS_FUNC_DEF( gemm )
-#ifdef OS_WIN
+#if defined(OS_WIN) || defined(IS_OPENBLAS)
 BLAS_FUNC(gemm , float   , float  , s)
 BLAS_FUNC(gemm , double  , double , d)
 BLAS_FUNC(gemm , cfloat  , float  , c)
@@ -72,7 +73,7 @@ BLAS_FUNC(gemm , cdouble ,   void, z)
 #endif
 
 BLAS_FUNC_DEF(gemv)
-#ifdef OS_WIN
+#if defined(OS_WIN) || defined(IS_OPENBLAS)
 BLAS_FUNC(gemv , float   ,  float , s)
 BLAS_FUNC(gemv , double  ,  double, d)
 BLAS_FUNC(gemv , cfloat  ,  float , c)
@@ -112,8 +113,8 @@ toCblasTranspose(af_mat_prop opt)
 using namespace std;
 
 
-#ifdef OS_WIN
-#define BT af::dtype_traits<T>::base_type
+#if defined(OS_WIN) || defined(IS_OPENBLAS)
+#define BT typename af::dtype_traits<T>::base_type
 #define REINTERPRET_CAST(PTR_TYPE, X) reinterpret_cast<PTR_TYPE>((X))
 #else
 template<typename T> struct cblas_types;
