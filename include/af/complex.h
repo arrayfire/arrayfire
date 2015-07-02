@@ -50,21 +50,22 @@ AFAPI double real(af_cdouble val);
 AFAPI float imag(af_cfloat val);
 AFAPI double imag(af_cdouble val);
 
-AFAPI af::cfloat operator+(const af::cfloat &lhs, const af::cfloat &rhs);
-AFAPI af::cfloat operator+(const af::cfloat &lhs, const double &rhs);
-AFAPI af::cdouble operator+(const af::cdouble &lhs, const af::cdouble &rhs);
-AFAPI af::cdouble operator+(const af::cdouble &lhs, const double &rhs);
+#define DEFINE_OP(OP)                                                   \
+    AFAPI af::cfloat  operator OP(const af::cfloat  &lhs, const af::cfloat  &rhs); \
+    AFAPI af::cdouble operator OP(const af::cdouble &lhs, const af::cdouble &rhs); \
+    AFAPI af::cfloat  operator OP(const af::cfloat  &lhs, const     double  &rhs); \
+    AFAPI af::cdouble operator OP(const af::cdouble &lhs, const     double  &rhs); \
+    AFAPI af::cfloat  operator OP(const double      &rhs, const af::cfloat  &lhs); \
+    AFAPI af::cdouble operator OP(const double      &rhs, const af::cdouble &lhs); \
+    AFAPI af::cdouble operator OP(const af::cfloat  &lhs, const af::cdouble &rhs); \
+    AFAPI af::cdouble operator OP(const af::cdouble &lhs, const af::cfloat  &rhs); \
 
-AFAPI af::cfloat operator-(const af::cfloat &lhs, const af::cfloat &rhs);
-AFAPI af::cdouble operator-(const af::cdouble &lhs, const af::cdouble &rhs);
+DEFINE_OP(+)
+DEFINE_OP(-)
+DEFINE_OP(*)
+DEFINE_OP(/)
 
-AFAPI cfloat operator*(const cfloat &lhs, const cfloat &rhs);
-AFAPI cdouble operator*(const cdouble &lhs, const cdouble &rhs);
-
-AFAPI cfloat operator/(const cfloat &lhs, const cfloat &rhs);
-AFAPI af::cfloat operator/(const af::cfloat &lhs, const float &rhs);
-AFAPI cdouble operator/(const cdouble &lhs, const cdouble &rhs);
-AFAPI af::cdouble operator/(const af::cdouble &lhs, const double &rhs);
+#undef DEFINE_OP
 
 AFAPI bool operator==(const cfloat &lhs, const cfloat &rhs);
 AFAPI bool operator==(const cdouble &lhs, const cdouble &rhs);
