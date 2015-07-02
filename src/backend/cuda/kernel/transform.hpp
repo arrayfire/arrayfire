@@ -97,6 +97,8 @@ namespace cuda
                     transform_n(optr, out, iptr, in, tmat, xido, yido, limages); break;
                 case AF_INTERP_BILINEAR:
                     transform_b(optr, out, iptr, in, tmat, xido, yido, limages); break;
+                case AF_INTERP_LOWER:
+                    transform_l(optr, out, iptr, in, tmat, xido, yido, limages); break;
                 default: break;
             }
         }

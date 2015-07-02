@@ -9,6 +9,7 @@
 
 #define NEAREST transform_n
 #define BILINEAR transform_b
+#define LOWER transform_l
 
 typedef struct {
     float tmat[6];
