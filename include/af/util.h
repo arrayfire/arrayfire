@@ -30,11 +30,22 @@ namespace af
     */
     AFAPI void print(const char *exp, const array &arr);
 
+    /**
+        \param[in] exp is an expression, generally the name of the array
+        \param[in] arr is the input array
+        \param[in] precision is the precision length for display
+
+        \ingroup print_func_print
+    */
+    AFAPI void print(const char *exp, const array &arr, const int precision);
+
     // Purpose of Addition: "How to add Function" documentation
     AFAPI array exampleFunction(const array& in, const af_someenum_t param);
 }
 
 #define af_print(exp) af::print(#exp, exp);
+
+#define af_print_p(exp, p) af::print(#exp, exp, p);
 
 #endif //__cplusplus
 
@@ -237,6 +248,16 @@ extern "C" {
         \ingroup print_func_print
     */
     AFAPI af_err af_print_array(af_array arr);
+
+    /**
+        \param[in] arr is the input array
+        \param[in] precision precision for the display
+
+        \returns error codes
+
+        \ingroup print_func_print
+    */
+    AFAPI af_err af_print_array_p(af_array arr, const int precision);
 
     // Purpose of Addition: "How to add Function" documentation
     AFAPI af_err af_example_function(af_array* out, const af_array in, const af_someenum_t param);
