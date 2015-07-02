@@ -43,13 +43,16 @@ namespace af
     AFAPI array exampleFunction(const array& in, const af_someenum_t param);
 }
 
+#define AF_PRINT1(exp)            af::print(#exp, exp);
+#define AF_PRINT2(exp, precision) af::print(#exp, exp, precision);
+
+#define GET_PRINT_MACRO(_1, _2, NAME, ...) NAME
+
 /**
     Macro to print an array along with the variable name
 
     \param[in] exp the array to be printed
-
-    An additional integer argument can be given to specify the precision to be
-    printed.
+    \param[in] precision (optional) is the number of decimal places to be printed
 
     \code
     af::array myarray = randu(3, 3);
@@ -67,7 +70,7 @@ namespace af
     //    60.33   497.97   359.59
     //   165.45   113.73     5.23
 
-    af_print(myarray, 6);
+    af_print(myarray, 6);               // Uses 6 decimal places
     // A [3 3 1 1]
     //     0.001029   311.361402     1.626432
     //    60.329828   497.973728   359.594787
@@ -76,7 +79,7 @@ namespace af
 
     \ingroup print_func_print
 */
-#define af_print(exp, ...) af::print(#exp, __VA_ARGS__);
+#define af_print(...) GET_PRINT_MACRO(__VA_ARGS__, AF_PRINT2, AF_PRINT1)(__VA_ARGS__)
 
 #endif //__cplusplus
 
