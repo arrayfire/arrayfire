@@ -33,6 +33,10 @@ namespace opencl
                     kernel::transform<T, true, AF_INTERP_BILINEAR>
                                      (out, in, transform);
                     break;
+                case AF_INTERP_LOWER:
+                    kernel::transform<T, true, AF_INTERP_LOWER>
+                                     (out, in, transform);
+                    break;
                 default:
                     AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
                     break;
@@ -47,6 +51,10 @@ namespace opencl
                     kernel::transform<T, false, AF_INTERP_BILINEAR>
                                      (out, in, transform);
                     break;
+                case AF_INTERP_LOWER:
+                    kernel::transform<T, false, AF_INTERP_LOWER>
+                                     (out, in, transform);
+                    break;
                 default:
                     AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
                     break;
@@ -57,11 +65,10 @@ namespace opencl
     }
 
 
-#define INSTANTIATE(T)                                                  \
-    template Array<T> transform(const Array<T> &in, const Array<float> &transform, \
-                                const af::dim4 &odims, const af_interp_type method, \
-                                const bool inverse);                    \
-
+#define INSTANTIATE(T)                                                                  \
+    template Array<T> transform(const Array<T> &in, const Array<float> &transform,      \
+                                const af::dim4 &odims, const af_interp_type method,     \
+                                const bool inverse);
 
     INSTANTIATE(float)
     INSTANTIATE(double)

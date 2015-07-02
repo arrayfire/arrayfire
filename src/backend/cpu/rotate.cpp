@@ -55,6 +55,9 @@ namespace cpu
             case AF_INTERP_BILINEAR:
                 t_fn = &transform_b;
                 break;
+            case AF_INTERP_LOWER:
+                t_fn = &transform_l;
+                break;
             default:
                 AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
                 break;
@@ -85,6 +88,10 @@ namespace cpu
                 rotate_<T, AF_INTERP_BILINEAR>
                        (out.get(), in.get(), theta, odims, idims, out.strides(), in.strides());
                 break;
+            case AF_INTERP_LOWER:
+                rotate_<T, AF_INTERP_LOWER>
+                       (out.get(), in.get(), theta, odims, idims, out.strides(), in.strides());
+                break;
             default:
                 AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
                 break;
@@ -96,7 +103,7 @@ namespace cpu
 
 #define INSTANTIATE(T)                                                              \
     template Array<T> rotate(const Array<T> &in, const float theta,                 \
-                             const af::dim4 &odims, const af_interp_type method);   \
+                             const af::dim4 &odims, const af_interp_type method);
 
     INSTANTIATE(float)
     INSTANTIATE(double)

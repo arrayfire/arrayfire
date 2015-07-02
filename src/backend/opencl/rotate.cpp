@@ -26,7 +26,10 @@ namespace opencl
                 kernel::rotate<T, AF_INTERP_NEAREST> (out, in, theta);
                 break;
             case AF_INTERP_BILINEAR:
-                kernel::rotate<T, AF_INTERP_BILINEAR> (out, in, theta);
+                kernel::rotate<T, AF_INTERP_BILINEAR>(out, in, theta);
+                break;
+            case AF_INTERP_LOWER:
+                kernel::rotate<T, AF_INTERP_LOWER>   (out, in, theta);
                 break;
             default:
                 AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
@@ -37,10 +40,9 @@ namespace opencl
     }
 
 
-#define INSTANTIATE(T)                                                  \
-    template Array<T> rotate(const Array<T> &in, const float theta,     \
-                             const af::dim4 &odims, const af_interp_type method); \
-
+#define INSTANTIATE(T)                                                              \
+    template Array<T> rotate(const Array<T> &in, const float theta,                 \
+                             const af::dim4 &odims, const af_interp_type method);
 
     INSTANTIATE(float)
     INSTANTIATE(double)

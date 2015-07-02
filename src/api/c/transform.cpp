@@ -38,7 +38,9 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
         af_dtype itype = i_info.getType();
 
         ARG_ASSERT(2, t_info.getType() == f32);
-        ARG_ASSERT(5, method == AF_INTERP_NEAREST || method == AF_INTERP_BILINEAR);
+        ARG_ASSERT(5, method == AF_INTERP_NEAREST  ||
+                      method == AF_INTERP_BILINEAR ||
+                      method == AF_INTERP_LOWER);
         DIM_ASSERT(2, (tdims[0] == 3 && tdims[1] == 2));
         DIM_ASSERT(1, idims.elements() > 0);
         DIM_ASSERT(1, (idims.ndims() == 2 || idims.ndims() == 3));

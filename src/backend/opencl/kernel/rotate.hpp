@@ -80,9 +80,11 @@ namespace opencl
                     }
 
                     switch(method) {
-                        case AF_INTERP_NEAREST: options << " -D INTERP=NEAREST";
+                        case AF_INTERP_NEAREST : options << " -D INTERP=NEAREST";
                             break;
-                        case AF_INTERP_BILINEAR:  options << " -D INTERP=BILINEAR";
+                        case AF_INTERP_BILINEAR: options << " -D INTERP=BILINEAR";
+                            break;
+                        case AF_INTERP_LOWER   : options << " -D INTERP=LOWER";
                             break;
                         default:
                             break;
