@@ -23,9 +23,10 @@ using af::dim4;
 using namespace detail;
 
 template<af_op_t op, typename Ti, typename To>
-static inline af_array reduce(const af_array in, const int dim)
+static inline af_array reduce(const af_array in, const int dim,
+                              bool change_nan = false, double nanval = 0)
 {
-    return getHandle(reduce<op,Ti,To>(getArray<Ti>(in), dim));
+    return getHandle(reduce<op,Ti,To>(getArray<Ti>(in), dim, change_nan, nanval));
 }
 
 template<af_op_t op, typename To>
@@ -107,7 +108,8 @@ static af_err reduce_common(af_array *out, const af_array in, const int dim)
 }
 
 template<af_op_t op>
-static af_err reduce_promote(af_array *out, const af_array in, const int dim)
+static af_err reduce_promote(af_array *out, const af_array in, const int dim,
+                             bool change_nan=false, double nanval=0)
 {
     try {
 
@@ -125,17 +127,17 @@ static af_err reduce_promote(af_array *out, const af_array in, const int dim)
         af_array res;
 
         switch(type) {
-        case f32:  res = reduce<op, float  , float  >(in, dim); break;
-        case f64:  res = reduce<op, double , double >(in, dim); break;
-        case c32:  res = reduce<op, cfloat , cfloat >(in, dim); break;
-        case c64:  res = reduce<op, cdouble, cdouble>(in, dim); break;
-        case u32:  res = reduce<op, uint   , uint   >(in, dim); break;
-        case s32:  res = reduce<op, int    , int    >(in, dim); break;
-        case u64:  res = reduce<op, uintl  , uintl  >(in, dim); break;
-        case s64:  res = reduce<op, intl   , intl   >(in, dim); break;
-        case u8:   res = reduce<op, uchar  , uint   >(in, dim); break;
+        case f32:  res = reduce<op, float  , float  >(in, dim, change_nan, nanval); break;
+        case f64:  res = reduce<op, double , double >(in, dim, change_nan, nanval); break;
+        case c32:  res = reduce<op, cfloat , cfloat >(in, dim, change_nan, nanval); break;
+        case c64:  res = reduce<op, cdouble, cdouble>(in, dim, change_nan, nanval); break;
+        case u32:  res = reduce<op, uint   , uint   >(in, dim, change_nan, nanval); break;
+        case s32:  res = reduce<op, int    , int    >(in, dim, change_nan, nanval); break;
+        case u64:  res = reduce<op, uintl  , uintl  >(in, dim, change_nan, nanval); break;
+        case s64:  res = reduce<op, intl   , intl   >(in, dim, change_nan, nanval); break;
+        case u8:   res = reduce<op, uchar  , uint   >(in, dim, change_nan, nanval); break;
             // Make sure you are adding only "1" for every non zero value, even if op == af_add_t
-        case b8:   res = reduce<af_notzero_t, char  , uint   >(in, dim); break;
+        case b8:   res = reduce<af_notzero_t, char  , uint   >(in, dim, change_nan, nanval); break;
         default:   TYPE_ERROR(1, type);
         }
         std::swap(*out, res);
@@ -165,6 +167,16 @@ af_err af_product(af_array *out, const af_array in, const int dim)
     return reduce_promote<af_mul_t>(out, in, dim);
 }
 
+af_err af_sum_nan(af_array *out, const af_array in, const int dim, const double nanval)
+{
+    return reduce_promote<af_add_t>(out, in, dim, true, nanval);
+}
+
+af_err af_product_nan(af_array *out, const af_array in, const int dim, const double nanval)
+{
+    return reduce_promote<af_mul_t>(out, in, dim, true, nanval);
+}
+
 af_err af_count(af_array *out, const af_array in, const int dim)
 {
     return reduce_type<af_notzero_t, uint>(out, in, dim);
@@ -181,9 +193,9 @@ af_err af_any_true(af_array *out, const af_array in, const int dim)
 }
 
 template<af_op_t op, typename Ti, typename To>
-static inline To reduce_all(const af_array in)
+static inline To reduce_all(const af_array in, bool change_nan = false, double nanval = 0)
 {
-    return reduce_all<op,Ti,To>(getArray<Ti>(in));
+    return reduce_all<op,Ti,To>(getArray<Ti>(in), change_nan, nanval);
 }
 
 template<af_op_t op, typename To>
@@ -267,7 +279,8 @@ static af_err reduce_all_common(double *real_val, double *imag_val, const af_arr
 }
 
 template<af_op_t op>
-static af_err reduce_all_promote(double *real_val, double *imag_val, const af_array in)
+static af_err reduce_all_promote(double *real_val, double *imag_val, const af_array in,
+                                 bool change_nan=false, double nanval=0)
 {
     try {
 
@@ -282,15 +295,15 @@ static af_err reduce_all_promote(double *real_val, double *imag_val, const af_ar
         cdouble cdval;
 
         switch(type) {
-        case f32: *real_val = (double)reduce_all<op, float  , float  >(in); break;
-        case f64: *real_val = (double)reduce_all<op, double , double >(in); break;
-        case u32: *real_val = (double)reduce_all<op, uint   , uint   >(in); break;
-        case s32: *real_val = (double)reduce_all<op, int    , int    >(in); break;
-        case u64: *real_val = (double)reduce_all<op, uintl  , uintl  >(in); break;
-        case s64: *real_val = (double)reduce_all<op, intl   , intl   >(in); break;
-        case u8:  *real_val = (double)reduce_all<op, uchar  , uint   >(in); break;
+        case f32: *real_val = (double)reduce_all<op, float  , float  >(in, change_nan, nanval); break;
+        case f64: *real_val = (double)reduce_all<op, double , double >(in, change_nan, nanval); break;
+        case u32: *real_val = (double)reduce_all<op, uint   , uint   >(in, change_nan, nanval); break;
+        case s32: *real_val = (double)reduce_all<op, int    , int    >(in, change_nan, nanval); break;
+        case u64: *real_val = (double)reduce_all<op, uintl  , uintl  >(in, change_nan, nanval); break;
+        case s64: *real_val = (double)reduce_all<op, intl   , intl   >(in, change_nan, nanval); break;
+        case u8:  *real_val = (double)reduce_all<op, uchar  , uint   >(in, change_nan, nanval); break;
             // Make sure you are adding only "1" for every non zero value, even if op == af_add_t
-        case b8:  *real_val = (double)reduce_all<af_notzero_t, char  , uint   >(in); break;
+        case b8:  *real_val = (double)reduce_all<af_notzero_t, char, uint>(in, change_nan, nanval); break;
 
         case c32:
             cfval = reduce_all<op, cfloat, cfloat>(in);
@@ -478,4 +491,14 @@ af_err af_imin_all(double *real, double *imag, unsigned *idx, const af_array in)
 af_err af_imax_all(double *real, double *imag, unsigned *idx, const af_array in)
 {
     return ireduce_all_common<af_max_t>(real, imag, idx, in);
+}
+
+af_err af_sum_nan_all(double *real, double *imag, const af_array in, const double nanval)
+{
+    return reduce_all_promote<af_add_t>(real, imag, in, true, nanval);
+}
+
+af_err af_product_nan_all(double *real, double *imag, const af_array in, const double nanval)
+{
+    return reduce_all_promote<af_mul_t>(real, imag, in, true, nanval);
 }

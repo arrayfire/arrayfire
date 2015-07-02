@@ -29,7 +29,8 @@ namespace kernel
     __global__
     static void reduce_dim_kernel(Param<To> out,
                                   CParam <Ti> in,
-                                  uint blocks_x, uint blocks_y, uint offset_dim)
+                                  uint blocks_x, uint blocks_y, uint offset_dim,
+                                  bool change_nan, To nanval)
     {
         const uint tidx = threadIdx.x;
         const uint tidy = threadIdx.y;
@@ -73,6 +74,7 @@ namespace kernel
         To out_val = reduce.init();
         for (int id = id_dim_in; is_valid && (id < in.dims[dim]); id += offset_dim * blockDim.y) {
             To in_val = transform(*iptr);
+            if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval;
             out_val = reduce(in_val, out_val);
             iptr = iptr + offset_dim * blockDim.y * istride_dim;
         }
@@ -106,7 +108,8 @@ namespace kernel
 
     template<typename Ti, typename To, af_op_t op, int dim>
     void reduce_dim_launcher(Param<To> out, CParam<Ti> in,
-                             const uint threads_y, const uint blocks_dim[4])
+                             const uint threads_y, const uint blocks_dim[4],
+                             bool change_nan, double nanval)
     {
         dim3 threads(THREADS_X, threads_y);
 
@@ -116,23 +119,27 @@ namespace kernel
         switch (threads_y) {
         case 8:
             (reduce_dim_kernel<Ti, To, op, dim, 8>)<<<blocks, threads>>>(
-                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]); break;
+                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
+                change_nan, scalar<To>(nanval)); break;
         case 4:
             (reduce_dim_kernel<Ti, To, op, dim, 4>)<<<blocks, threads>>>(
-                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]); break;
+                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
+                change_nan, scalar<To>(nanval)); break;
         case 2:
             (reduce_dim_kernel<Ti, To, op, dim, 2>)<<<blocks, threads>>>(
-                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]); break;
+                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
+                change_nan, scalar<To>(nanval)); break;
         case 1:
             (reduce_dim_kernel<Ti, To, op, dim, 1>)<<<blocks, threads>>>(
-                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim]); break;
+                out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
+                change_nan, scalar<To>(nanval)); break;
         }
 
         POST_LAUNCH_CHECK();
     }
 
     template<typename Ti, typename To, af_op_t op, int dim>
-    void reduce_dim(Param<To> out,  CParam<Ti> in)
+    void reduce_dim(Param<To> out,  CParam<Ti> in, bool change_nan, double nanval)
     {
         uint threads_y = std::min(THREADS_Y, nextpow2(in.dims[dim]));
         uint threads_x = THREADS_X;
@@ -154,35 +161,23 @@ namespace kernel
             for (int k = dim + 1; k < 4; k++) tmp.strides[k] *= blocks_dim[dim];
         }
 
-        reduce_dim_launcher<Ti, To, op, dim>(tmp, in, threads_y, blocks_dim);
+        reduce_dim_launcher<Ti, To, op, dim>(tmp, in, threads_y, blocks_dim, change_nan, nanval);
 
         if (blocks_dim[dim] > 1) {
             blocks_dim[dim] = 1;
 
             if (op == af_notzero_t) {
-                reduce_dim_launcher<To, To, af_add_t, dim>(out, tmp, threads_y, blocks_dim);
+                reduce_dim_launcher<To, To, af_add_t, dim>(out, tmp, threads_y, blocks_dim,
+                                                           change_nan, nanval);
             } else {
-                reduce_dim_launcher<To, To,       op, dim>(out, tmp, threads_y, blocks_dim);
+                reduce_dim_launcher<To, To,       op, dim>(out, tmp, threads_y, blocks_dim,
+                                                           change_nan, nanval);
             }
 
             memFree(tmp.ptr);
         }
 
     }
-
-    template<typename To, af_op_t op>
-    __device__ void warp_reduce_sync(To *s_ptr, uint tidx)
-    {
-
-    }
-
-#if (__CUDA_ARCH__ >= 300)
-    template<typename To, af_op_t op>
-    __device__ void warp_reduce_shfl(To *s_ptr, uint tidx)
-    {
-
-    }
-#endif
 
     template<typename To, af_op_t op>
     struct WarpReduce
@@ -230,7 +225,8 @@ namespace kernel
     __global__
     static void reduce_first_kernel(Param<To> out,
                                     CParam<Ti>  in,
-                                    uint blocks_x, uint blocks_y, uint repeat)
+                                    uint blocks_x, uint blocks_y, uint repeat,
+                                    bool change_nan, To nanval)
     {
         const uint tidx = threadIdx.x;
         const uint tidy = threadIdx.y;
@@ -263,6 +259,7 @@ namespace kernel
 
         for (int id = xid; id < lim; id += DIMX) {
             To in_val = transform(iptr[id]);
+            if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval;
             out_val = reduce(in_val, out_val);
         }
 
@@ -294,7 +291,8 @@ namespace kernel
 
     template<typename Ti, typename To, af_op_t op>
     void reduce_first_launcher(Param<To> out, CParam<Ti> in,
-                               const uint blocks_x, const uint blocks_y, const uint threads_x)
+                               const uint blocks_x, const uint blocks_y, const uint threads_x,
+                               bool change_nan, double nanval)
     {
 
         dim3 threads(threads_x, THREADS_PER_BLOCK / threads_x);
@@ -306,23 +304,23 @@ namespace kernel
         switch (threads_x) {
         case 32:
             (reduce_first_kernel<Ti, To, op,  32>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y, repeat); break;
+                out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval)); break;
         case 64:
             (reduce_first_kernel<Ti, To, op,  64>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y, repeat); break;
+                out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval)); break;
         case 128:
             (reduce_first_kernel<Ti, To, op,  128>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y, repeat); break;
+                out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval)); break;
         case 256:
             (reduce_first_kernel<Ti, To, op,  256>)<<<blocks, threads>>>(
-                out, in, blocks_x, blocks_y, repeat); break;
+                out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval)); break;
         }
 
         POST_LAUNCH_CHECK();
     }
 
     template<typename Ti, typename To, af_op_t op>
-    void reduce_first(Param<To> out, CParam<Ti> in)
+    void reduce_first(Param<To> out, CParam<Ti> in, bool change_nan, double nanval)
     {
         uint threads_x = nextpow2(std::max(32u, (uint)in.dims[0]));
         threads_x = std::min(threads_x, THREADS_PER_BLOCK);
@@ -342,15 +340,17 @@ namespace kernel
             for (int k = 1; k < 4; k++) tmp.strides[k] *= blocks_x;
         }
 
-        reduce_first_launcher<Ti, To, op>(tmp, in, blocks_x, blocks_y, threads_x);
+        reduce_first_launcher<Ti, To, op>(tmp, in, blocks_x, blocks_y, threads_x, change_nan, nanval);
 
         if (blocks_x > 1) {
 
             //FIXME: Is there an alternative to the if condition ?
             if (op == af_notzero_t) {
-                reduce_first_launcher<To, To, af_add_t>(out, tmp, 1, blocks_y, threads_x);
+                reduce_first_launcher<To, To, af_add_t>(out, tmp, 1, blocks_y, threads_x,
+                                                        change_nan, nanval);
             } else {
-                reduce_first_launcher<To, To,       op>(out, tmp, 1, blocks_y, threads_x);
+                reduce_first_launcher<To, To,       op>(out, tmp, 1, blocks_y, threads_x,
+                                                        change_nan, nanval);
             }
 
             memFree(tmp.ptr);
@@ -358,18 +358,18 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op>
-    void reduce(Param<To> out, CParam<Ti> in, int dim)
+    void reduce(Param<To> out, CParam<Ti> in, int dim, bool change_nan, double nanval)
     {
         switch (dim) {
-        case 0: return reduce_first<Ti, To, op   >(out, in);
-        case 1: return reduce_dim  <Ti, To, op, 1>(out, in);
-        case 2: return reduce_dim  <Ti, To, op, 2>(out, in);
-        case 3: return reduce_dim  <Ti, To, op, 3>(out, in);
+        case 0: return reduce_first<Ti, To, op   >(out, in, change_nan, nanval);
+        case 1: return reduce_dim  <Ti, To, op, 1>(out, in, change_nan, nanval);
+        case 2: return reduce_dim  <Ti, To, op, 2>(out, in, change_nan, nanval);
+        case 3: return reduce_dim  <Ti, To, op, 3>(out, in, change_nan, nanval);
         }
     }
 
     template<typename Ti, typename To, af_op_t op>
-    To reduce_all(CParam<Ti> in)
+    To reduce_all(CParam<Ti> in, bool change_nan, double nanval)
     {
         int in_elements = in.strides[3] * in.dims[3];
 
@@ -409,7 +409,8 @@ namespace kernel
             int tmp_elements = tmp.strides[3] * tmp.dims[3];
 
             tmp.ptr = memAlloc<To>(tmp_elements);
-            reduce_first_launcher<Ti, To, op>(tmp, in, blocks_x, blocks_y, threads_x);
+            reduce_first_launcher<Ti, To, op>(tmp, in, blocks_x, blocks_y, threads_x,
+                                              change_nan, nanval);
 
             scoped_ptr<To> h_ptr(new To[tmp_elements]);
             To* h_ptr_raw = h_ptr.get();
@@ -434,9 +435,12 @@ namespace kernel
             Transform<Ti, To, op> transform;
             Binary<To, op> reduce;
             To out = reduce.init();
+            To nanval_to = scalar<To>(nanval);
 
             for (int i = 0; i < in_elements; i++) {
-                out = reduce(out, transform(h_ptr_raw[i]));
+                To in_val = transform(h_ptr_raw[i]);
+                if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval_to;
+                out = reduce(out, in_val);
             }
 
             return out;
