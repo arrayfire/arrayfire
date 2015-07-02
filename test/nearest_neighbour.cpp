@@ -48,6 +48,8 @@ TYPED_TEST_CASE(NearestNeighbour,  TestTypes);
 template<typename T>
 void nearestNeighbourTest(string pTestFile, int feat_dim, const af_match_type type)
 {
+    if (noDoubleTests<T>()) return;
+
     typedef typename otype_t<T>::otype To;
 
     using af::dim4;
