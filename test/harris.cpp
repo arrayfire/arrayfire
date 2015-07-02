@@ -1,5 +1,5 @@
 /*******************************************************
- * Copyright (c) 2014, ArrayFire
+ * Copyright (c) 2015, ArrayFire
  * All rights reserved.
  *
  * This file is distributed under 3-clause BSD license.
@@ -49,27 +49,18 @@ void array_to_feat(vector<feat_t>& feat, float *x, float *y, float *score, float
 }
 
 template<typename T>
-class FloatFAST : public ::testing::Test
+class Harris : public ::testing::Test
 {
     public:
         virtual void SetUp() {}
 };
 
-template<typename T>
-class FixedFAST : public ::testing::Test
-{
-    public:
-        virtual void SetUp() {}
-};
+typedef ::testing::Types<float, double> TestTypes;
 
-typedef ::testing::Types<float, double> FloatTestTypes;
-typedef ::testing::Types<int, unsigned> FixedTestTypes;
-
-TYPED_TEST_CASE(FloatFAST, FloatTestTypes);
-TYPED_TEST_CASE(FixedFAST, FixedTestTypes);
+TYPED_TEST_CASE(Harris, TestTypes);
 
 template<typename T>
-void fastTest(string pTestFile, bool nonmax)
+void harrisTest(string pTestFile, float sigma, unsigned block_size)
 {
     if (noDoubleTests<T>()) return;
 
@@ -87,13 +78,13 @@ void fastTest(string pTestFile, bool nonmax)
         af_array inArray      = 0;
         af_features out;
 
-        inFiles[testId].insert(0,string(TEST_DIR"/fast/"));
+        inFiles[testId].insert(0,string(TEST_DIR"/harris/"));
 
         ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
 
         ASSERT_EQ(AF_SUCCESS, conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_EQ(AF_SUCCESS, af_fast(&out, inArray, 20.0f, 9, nonmax, 0.05f, 3));
+        ASSERT_EQ(AF_SUCCESS, af_harris(&out, inArray, 500, 1e5f, sigma, block_size, 0.04f));
 
         dim_t n = 0;
         af_array x, y, score, orientation, size;
@@ -131,7 +122,7 @@ void fastTest(string pTestFile, bool nonmax)
         for (int elIter = 0; elIter < (int)nElems; elIter++) {
             ASSERT_EQ(out_feat[elIter].f[0], gold_feat[elIter].f[0]) << "at: " << elIter << std::endl;
             ASSERT_EQ(out_feat[elIter].f[1], gold_feat[elIter].f[1]) << "at: " << elIter << std::endl;
-            ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e-3) << "at: " << elIter << std::endl;
+            ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e2) << "at: " << elIter << std::endl;
             ASSERT_EQ(out_feat[elIter].f[3], gold_feat[elIter].f[3]) << "at: " << elIter << std::endl;
             ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << std::endl;
         }
@@ -153,26 +144,24 @@ void fastTest(string pTestFile, bool nonmax)
     }
 }
 
-#define FLOAT_FAST_INIT(desc, image, nonmax) \
-    TYPED_TEST(FloatFAST, desc) \
+#define HARRIS_INIT(desc, image, sigma, block_size) \
+    TYPED_TEST(Harris, desc) \
     {   \
-        fastTest<TypeParam>(string(TEST_DIR"/fast/"#image"_float.test"), nonmax); \
+        harrisTest<TypeParam>(string(TEST_DIR"/harris/"#image"_"#sigma"_"#block_size".test"), sigma, block_size); \
     }
 
-#define FIXED_FAST_INIT(desc, image, nonmax) \
-    TYPED_TEST(FixedFAST, desc) \
-    {   \
-        fastTest<TypeParam>(string(TEST_DIR"/fast/"#image"_fixed.test"), nonmax); \
-    }
-
-    FLOAT_FAST_INIT(square, square, false);
-    FLOAT_FAST_INIT(square_nonmax, square_nonmax, true);
-    FIXED_FAST_INIT(square, square, false);
-    FIXED_FAST_INIT(square_nonmax, square_nonmax, true);
+    HARRIS_INIT(square_0_3, square, 0, 3);
+    HARRIS_INIT(square_0_7, square, 0, 7);
+    HARRIS_INIT(square_1_0, square, 1, 0);
+    HARRIS_INIT(square_5_0, square, 5, 0);
+    HARRIS_INIT(lena_0_3, lena, 0, 3);
+    HARRIS_INIT(lena_0_7, lena, 0, 7);
+    HARRIS_INIT(lena_1_0, lena, 1, 0);
+    HARRIS_INIT(lena_5_0, lena, 5, 0);
 
 /////////////////////////////////// CPP ////////////////////////////////
 
-TEST(FloatFAST, CPP)
+TEST(FloatHarris, CPP)
 {
     if (noDoubleTests<float>()) return;
 
@@ -180,12 +169,12 @@ TEST(FloatFAST, CPP)
     vector<string>     inFiles;
     vector<vector<float> > gold;
 
-    readImageTests(string(TEST_DIR"/fast/square_nonmax_float.test"), inDims, inFiles, gold);
-    inFiles[0].insert(0,string(TEST_DIR"/fast/"));
+    readImageTests(string(TEST_DIR"/harris/square_0_3.test"), inDims, inFiles, gold);
+    inFiles[0].insert(0,string(TEST_DIR"/harris/"));
 
     af::array in = af::loadImage(inFiles[0].c_str(), false);
 
-    af::features out = fast(in, 20.0f, 9, true, 0.05f, 3);
+    af::features out = harris(in, 500, 1e5f, 0.0f, 3, 0.04f);
 
     float * outX           = new float[gold[0].size()];
     float * outY           = new float[gold[1].size()];
@@ -210,7 +199,7 @@ TEST(FloatFAST, CPP)
     for (unsigned elIter = 0; elIter < out.getNumFeatures(); elIter++) {
         ASSERT_EQ(out_feat[elIter].f[0], gold_feat[elIter].f[0]) << "at: " << elIter << std::endl;
         ASSERT_EQ(out_feat[elIter].f[1], gold_feat[elIter].f[1]) << "at: " << elIter << std::endl;
-        ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e-3) << "at: " << elIter << std::endl;
+        ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e2) << "at: " << elIter << std::endl;
         ASSERT_EQ(out_feat[elIter].f[3], gold_feat[elIter].f[3]) << "at: " << elIter << std::endl;
         ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << std::endl;
     }

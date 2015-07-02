@@ -18,6 +18,18 @@ discard it if its score is non maximal.
 
 =======================================================================
 
+\defgroup cv_func_harris harris
+\ingroup featdetect_mat
+
+\brief Harris corner detector
+
+Compute corners using the Harris corner detector approach. For each pixel, a
+small window is used to calculate the determinant and trace of such a window,
+from which a response is calculated. Pixels are considered corners if they are
+local maximas and have a high positive response.
+
+=======================================================================
+
 \defgroup cv_func_orb orb
 \ingroup featdescriptor_mat
 

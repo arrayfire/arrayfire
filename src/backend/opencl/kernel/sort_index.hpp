@@ -35,10 +35,6 @@ namespace opencl
 {
     namespace kernel
     {
-        // Kernel Launch Config Values
-        static const int TX = 32;
-        static const int TY = 8;
-
         template<typename T, bool isAscending>
         void sort0_index(Param val, Param idx)
         {
