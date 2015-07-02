@@ -206,6 +206,9 @@ INSTANTIATE(product_nan, product)
     INSTANTIATE(allTrue, alltrue)
     INSTANTIATE(anyTrue, anytrue)
 
+    INSTANTIATE_COMPAT(allTrue, alltrue, bool)
+    INSTANTIATE_COMPAT(anyTrue, anytrue, bool)
+
 #undef INSTANTIATE
 #undef INSTANTIATE_COMPAT
 
