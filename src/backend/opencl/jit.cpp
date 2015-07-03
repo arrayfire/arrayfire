@@ -83,19 +83,19 @@ static string getKernelString(string funcName, Node *node, bool is_linear)
     if (!is_linear) {
 
         kerStream << "uint id0 = 0, id1 = 0, id2 = 0, id3 = 0;\n";
-        kerStream << "if (num_odims == 4) {\n";
+        kerStream << "if (num_odims > 2) {\n";
+
         kerStream << "id2 = get_group_id(0) / groups_0;" << "\n";
+        kerStream << "id0 = get_group_id(0) - id2 * groups_0;" << "\n";
+        kerStream << "id0 = get_local_id(0) + id0 * get_local_size(0);" << "\n";
+
+        kerStream << "if (num_odims > 3) {\n";
         kerStream << "id3 = get_group_id(1) / groups_1;" << "\n";
-        kerStream << "id0 = get_group_id(0) - id2 * groups_0;" << "\n";
         kerStream << "id1 = get_group_id(1) - id3 * groups_1;" << "\n";
-        kerStream << "id0 = get_local_id(0) + id0 * get_local_size(0);" << "\n";
         kerStream << "id1 = get_local_id(1) + id1 * get_local_size(1);" << "\n";
-        kerStream << " } else if (num_odims == 3) {\n";
-        kerStream << "id2 = get_group_id(0) / groups_0;" << "\n";
-        kerStream << "id3 = 0;" << "\n";
-        kerStream << "id0 = get_group_id(0) - id2 * groups_0;" << "\n";
+        kerStream << "} else {\n";
         kerStream << "id1 = get_global_id(1);" << "\n";
-        kerStream << "id0 = get_local_id(0) + id0 * get_local_size(0);" << "\n";
+        kerStream << "}\n";
         kerStream << " } else {\n";
         kerStream << "id3 = 0;" << "\n";
         kerStream << "id2 = 0;" << "\n";
