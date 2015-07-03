@@ -326,7 +326,7 @@ void harris(unsigned* corners_out,
 
             // Keep corners kernel sizes
             const unsigned blk_x_kc = divup(*corners_out, HARRIS_THREADS_PER_GROUP);
-            const NDRange local_kc(blk_x_kc * HARRIS_THREADS_PER_GROUP, 1);
+            const NDRange local_kc(HARRIS_THREADS_PER_GROUP, 1);
             const NDRange global_kc(blk_x_kc * HARRIS_THREADS_PER_GROUP, 1);
 
             auto kcOp = make_kernel<Buffer, Buffer, Buffer,
