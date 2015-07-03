@@ -14,13 +14,13 @@
 
 namespace af
 {
+using std::complex;
 
 float real(af_cfloat val) { return val.real; }
 double real(af_cdouble val) { return val.real; }
 
 float imag(af_cfloat val) { return val.imag; }
 double imag(af_cdouble val) { return val.imag; }
-
 
 cfloat operator+(const cfloat &lhs, const cfloat &rhs)
 {
@@ -34,19 +34,6 @@ cdouble operator+(const cdouble &lhs, const cdouble &rhs)
     return out;
 }
 
-cfloat operator-(const cfloat &lhs, const cfloat &rhs)
-{
-    cfloat out(lhs.real - rhs.real, lhs.imag - rhs.imag);
-    return out;
-}
-
-cdouble operator-(const cdouble &lhs, const cdouble &rhs)
-{
-    cdouble out(lhs.real - rhs.real, lhs.imag - rhs.imag);
-    return out;
-}
-
-    using std::complex;
 cfloat operator*(const cfloat &lhs, const cfloat &rhs)
 {
     complex<float> clhs(lhs.real, lhs.imag);
@@ -61,6 +48,18 @@ cdouble operator*(const cdouble &lhs, const cdouble &rhs)
     complex<double> crhs(rhs.real, rhs.imag);
     complex<double> out = clhs * crhs;
     return cdouble(out.real(), out.imag());
+}
+
+cfloat operator-(const cfloat &lhs, const cfloat &rhs)
+{
+    cfloat out(lhs.real - rhs.real, lhs.imag - rhs.imag);
+    return out;
+}
+
+cdouble operator-(const cdouble &lhs, const cdouble &rhs)
+{
+    cdouble out(lhs.real - rhs.real, lhs.imag - rhs.imag);
+    return out;
 }
 
 cfloat operator/(const cfloat &lhs, const cfloat &rhs)
@@ -79,20 +78,26 @@ cdouble operator/(const cdouble &lhs, const cdouble &rhs)
     return cdouble(out.real(), out.imag());
 }
 
-cfloat operator/(const cfloat &lhs, const float &rhs)
-{
-    complex<float> clhs(lhs.real, lhs.imag);
-    complex<float> out = clhs / rhs;
-    return cfloat(out.real(), out.imag());
+#define IMPL_OP(OP)                                             \
+    cfloat  operator OP(const cfloat  &lhs, const double  &rhs) \
+    { return lhs OP cfloat (rhs); }                             \
+    cdouble operator OP(const cdouble &lhs, const double  &rhs) \
+    { return lhs OP cdouble(rhs); }                             \
+    cfloat  operator OP(const double  &rhs, const cfloat  &lhs) \
+    { return cfloat (lhs) OP rhs; }                             \
+    cdouble operator OP(const double  &rhs, const cdouble &lhs) \
+    { return cdouble(lhs) OP rhs; }                             \
+    cdouble operator OP(const cfloat  &lhs, const cdouble &rhs) \
+    { return cdouble(real(lhs), imag(lhs)) OP rhs; }            \
+    cdouble operator OP(const cdouble &lhs, const cfloat  &rhs) \
+    { return lhs OP cdouble(real(rhs), imag(rhs)); }            \
 
-}
+IMPL_OP(+)
+IMPL_OP(-)
+IMPL_OP(*)
+IMPL_OP(/)
 
-cdouble operator/(const cdouble &lhs, const double &rhs)
-{
-    complex<double> clhs(lhs.real, lhs.imag);
-    complex<double> out = clhs / rhs;
-    return cdouble(out.real(), out.imag());
-}
+#undef IMPL_OP
 
 bool operator!=(const cfloat &lhs, const cfloat &rhs)
 {

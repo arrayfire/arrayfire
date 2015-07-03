@@ -847,17 +847,17 @@ namespace af
     {                                                           \
         af_array out;                                           \
         af::dtype ty = plhs.type();                             \
-        af::dtype cty = plhs.isrealfloating() ? ty : dty;       \
+        af::dtype cty = plhs.isfloating() ? ty : dty;           \
         array cst = constant(value, plhs.dims(), cty);          \
         AF_THROW(func(&out, plhs.get(), cst.get(), gforGet())); \
         return array(out);                                      \
     }                                                           \
     array operator OP(const TY &value, const array &other)      \
     {                                                           \
-        const af_array rhs = other.get();                         \
+        const af_array rhs = other.get();                       \
         af_array out;                                           \
         af::dtype ty = other.type();                            \
-        af::dtype cty = other.isrealfloating() ? ty : dty;      \
+        af::dtype cty = other.isfloating() ? ty : dty;          \
         array cst = constant(value, other.dims(), cty);         \
         AF_THROW(func(&out, cst.get(), rhs, gforGet()));        \
         return array(out);                                      \
