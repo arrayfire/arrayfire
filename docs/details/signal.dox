@@ -13,10 +13,11 @@ and the output for that pixel or data point is the sum of the products.
 Depending on the dimensions of the input signal and the filter signal, any one of the following
 batch mode convolutions take place.
 
-- **One to One**   - Single filter applied to single input.
-- **One to Many**  - Many filters applied on same input
-- **Many to One**  - Single filter applied to a set of inputs.
-- **Many to Many** - A set of filters applied onto to a set of inputs in one-to-one correspondence.
+- **No Batch**   - Single filter applied to single input.
+- **Filter is Batched**  - Many filters applied on same input
+- **Signal is Batched**  - Single filter applied to a set of inputs.
+- **Identical Batches** - A set of filters applied onto to a set of inputs in one-to-one correspondence.
+- **Non overlapping Batches** - All batched filters are applied to all batched signals. The batch dimension of Signal and Filter **should not** be the same.
 
 
 
@@ -25,13 +26,14 @@ batch mode convolutions take place.
 For example, if the signal is two dimensional with m & n as sizes along the 0th & 1st dimensions
 respectively, then the possible batch operations are as follows.
 
-| Input Signal Dimensions | Filter Signal Dimensions | Batch Mode | Explanation |
-|:-----------------------:|:------------------------:|:----------:|:------------|
-| [m n 1 1] | [m n 1 1] | One to One  | Output will be a single convolve array |
-| [m n 1 1] | [m n p 1] | One to Many | Output will be 3d array with 2nd dimension length as p - p filters applied to same input |
-| [m n p 1] | [m n 1 1] | Many to One | Output will be 3d array with 2nd dimension length as p - 1 filter applied to p inputs |
-| [m n p 1] | [m n p 1] | Many to Many| Output will be 3d array with 2nd dimension length as p - p filter applied to p inputs in one-to-one correspondence |
-
+| Input Signal Dimensions | Filter Dimensions | Output Dimensions | Batch Mode | Explanation |
+|:-----------------------:|:-----------------:|:-----------------:|:----------:|:------------|
+| [m n 1 1] | [m n 1 1] | [m n 1 1] | No Batch  | Output will be a single convolve array |
+| [m n 1 1] | [m n p 1] | [m n p 1] | Filter is Batched | p filters applied to same input |
+| [m n p 1] | [m n 1 1] | [m n p 1] | Signal is Batched | 1 filter applied to p inputs |
+| [m n p 1] | [m n p 1] | [m n p 1] | Identical Batches | p filters applied to p inputs in one-to-one correspondence |
+| [m n p 1] | [m n 1 q] | [m n p q] | Non-overlapping batches | q filters applied to p inputs in to produce p x q results |
+| [m n 1 p] | [m n q 1] | [m n q p] | Non-overlapping batches | q filters applied to p inputs in to produce q x p results |
 
 
 \page signal_func_fft_desc fft
@@ -77,13 +79,14 @@ factor is calculated internally based on the input data provided.
 
 For example, if the input size is m along 0th dimension, then the possible batch operations are as follows.
 
-| Input Signal Dimensions | Filter Signal Dimensions | Batch Mode | Explanation |
-|:-----------------------:|:------------------------:|:----------:|:------------|
-| [m 1 1 1] | [m 1 1 1] | One to One  | Output will be a single convolve array |
-| [m 1 1 1] | [m n 1 1] | One to Many | Output will be 2d array with 1st dimension length as n - n filters applied to same input |
-| [m n 1 1] | [m 1 1 1] | Many to One | Output will be 2d array with 1st dimension length as n - 1 filter applied to n inputs |
-| [m n 1 1] | [m n 1 1] | Many to Many| Output will be 2d array with 1st dimension length as n - n filter applied to n inputs in one-to-one correspondence |
-
+| Input Signal Dimensions | Filter Dimensions | Output Dimensions | Batch Mode | Explanation |
+|:-----------------------:|:-----------------:|:-----------------:|:----------:|:------------|
+| [m n 1 1] | [m n 1 1] | [m n 1 1] | No Batch  | Output will be a single convolve array |
+| [m n 1 1] | [m n p 1] | [m n p 1] | Filter is Batched | p filters applied to same input |
+| [m n p 1] | [m n 1 1] | [m n p 1] | Signal is Batched | 1 filter applied to p inputs |
+| [m n p 1] | [m n p 1] | [m n p 1] | Identical Batches | p filters applied to p inputs in one-to-one correspondence |
+| [m n p 1] | [m n 1 q] | [m n p q] | Non-overlapping batches | q filters applied to p inputs in to produce p x q results |
+| [m n 1 p] | [m n q 1] | [m n q p] | Non-overlapping batches | q filters applied to p inputs in to produce q x p results |
 
 
 \defgroup signal_func_convolve2 convolve2
@@ -107,12 +110,14 @@ For example, if the input size is m along 0th dimension, then the possible batch
 For example, if the signal is three dimensional with m, n & p sizes along the 0th, 1st & 2nd dimensions
 respectively, then the possible batch operations are as follows.
 
-| Input Signal Dimensions | Filter Signal Dimensions | Batch Mode | Explanation |
-|:-----------------------:|:------------------------:|:----------:|:------------|
-| [m n p 1] | [m n p 1] | One to One  | Output will be a single convolve array |
-| [m n p 1] | [m n p q] | One to Many | Output will be 4d array with 3rd dimension length as q - q filters applied to same input |
-| [m n p q] | [m n p 1] | Many to One | Output will be 4d array with 3rd dimension length as q - 1 filter applied to q inputs |
-| [m n p q] | [m n p q] | Many to Many| Output will be 4d array with 3rd dimension length as q - q filter applied to q inputs in one-to-one correspondence |
+| Input Signal Dimensions | Filter Dimensions | Output Dimensions | Batch Mode | Explanation |
+|:-----------------------:|:-----------------:|:-----------------:|:----------:|:------------|
+| [m n 1 1] | [m n 1 1] | [m n 1 1] | No Batch  | Output will be a single convolve array |
+| [m n 1 1] | [m n p 1] | [m n p 1] | Filter is Batched | p filters applied to same input |
+| [m n p 1] | [m n 1 1] | [m n p 1] | Signal is Batched | 1 filter applied to p inputs |
+| [m n p 1] | [m n p 1] | [m n p 1] | Identical Batches | p filters applied to p inputs in one-to-one correspondence |
+| [m n p 1] | [m n 1 q] | [m n p q] | Non-overlapping batches | q filters applied to p inputs in to produce p x q results |
+| [m n 1 p] | [m n q 1] | [m n q p] | Non-overlapping batches | q filters applied to p inputs in to produce q x p results |
 
 ===============================================================================
 

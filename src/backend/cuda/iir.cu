@@ -26,9 +26,9 @@ namespace cuda
     Array<T> iir(const Array<T> &b, const Array<T> &a, const Array<T> &x)
     {
 
-        ConvolveBatchKind type = x.ndims() == 1 ? ONE2ONE : MANY2MANY;
+        ConvolveBatchKind type = x.ndims() == 1 ? CONVOLVE_BATCH_NONE : CONVOLVE_BATCH_SAME;
         if (x.ndims() != b.ndims()) {
-            type = (x.ndims() < b.ndims()) ? ONE2MANY : MANY2ONE;
+            type = (x.ndims() < b.ndims()) ? CONVOLVE_BATCH_KERNEL : CONVOLVE_BATCH_SIGNAL;
         }
 
         // Extract the first N elements
