@@ -49,13 +49,13 @@ ConvolveBatchKind identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
         return CONVOLVE_BATCH_SIGNAL;
     else if ((sn>baseDim && sn<=4) && (fn>baseDim && fn<=4)) {
         bool doesDimensionsMatch = true;
+        bool isInterleaved = true;
         for (dim_t i=baseDim; i<4; i++) {
-            if (sDims[i]!=fDims[i]) {
-                doesDimensionsMatch = false;
-                break;
-            }
+            doesDimensionsMatch &= (sDims[i] == fDims[i]);
+            isInterleaved &= (sDims[i] == 1 || fDims[i] == 1);
         }
-        return (doesDimensionsMatch ? CONVOLVE_BATCH_SAME : CONVOLVE_BATCH_UNSUPPORTED);
+        if (doesDimensionsMatch) return CONVOLVE_BATCH_SAME;
+        return (isInterleaved ? CONVOLVE_BATCH_DIFF : CONVOLVE_BATCH_UNSUPPORTED);
     }
     else
         return CONVOLVE_BATCH_UNSUPPORTED;
@@ -75,7 +75,7 @@ af_err convolve(af_array *out, const af_array signal, const af_array filter)
 
         ConvolveBatchKind convBT = identifyBatchKind<baseDim>(sdims, fdims);
 
-        ARG_ASSERT(1, (convBT != CONVOLVE_BATCH_UNSUPPORTED));
+        ARG_ASSERT(1, (convBT != CONVOLVE_BATCH_UNSUPPORTED && convBT != CONVOLVE_BATCH_DIFF));
 
         af_array output;
         switch(stype) {
@@ -143,6 +143,8 @@ bool isFreqDomain(const af_array &signal, const af_array filter, af_conv_domain 
 
     dim4 sdims = sInfo.dims();
     dim4 fdims = fInfo.dims();
+
+    if (identifyBatchKind<baseDim>(sdims, fdims) == CONVOLVE_BATCH_DIFF) return true;
 
     int batch = 1;
     for(int i = 3; i >= baseDim; i--) {
