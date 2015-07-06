@@ -26,12 +26,20 @@ class Mean : public ::testing::Test
     public:
         virtual void SetUp() {}
 };
+template<typename T>
+class MeanFloat : public ::testing::Test
+{
+    public:
+        virtual void SetUp() {}
+};
 
 // create a list of types to be tested
 typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, intl, uintl, char, uchar> TestTypes;
+typedef ::testing::Types<cdouble, cfloat, float, double> TestTypesFloat;
 
 // register the type list
 TYPED_TEST_CASE(Mean, TestTypes);
+TYPED_TEST_CASE(MeanFloat, TestTypesFloat);
 
 template<typename T>
 struct f32HelperType {
@@ -74,10 +82,10 @@ void meanDimTest(string pFileName, dim_t dim)
     if (noDoubleTests<outType>()) return;
 
     vector<af::dim4>      numDims;
-    vector<vector<int> >        in;
+    vector<vector<float> >        in;
     vector<vector<float> >   tests;
 
-    readTestsFromFile<int,float>(pFileName, numDims, in, tests);
+    readTestsFromFile<float,float>(pFileName, numDims, in, tests);
 
     af::dim4 dims      = numDims[0];
     af_array outArray  = 0;
@@ -117,9 +125,19 @@ TYPED_TEST(Mean, Dim1Cube)
     meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim1_cube.test"), 1);
 }
 
+TYPED_TEST(MeanFloat, Dim1CubeRandomFloats)
+{
+    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim1_cube_random.test"), 1);
+}
+
 TYPED_TEST(Mean, Dim0HyperCube)
 {
     meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim0_hypercube.test"), 0);
+}
+
+TYPED_TEST(MeanFloat, Dim0HyperCubeRandomFloats)
+{
+    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim0_hypercube_random.test"), 0);
 }
 
 TYPED_TEST(Mean, Dim2Matrix)
@@ -130,6 +148,10 @@ TYPED_TEST(Mean, Dim2Matrix)
 TYPED_TEST(Mean, Dim2Cube)
 {
     meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim2_cube.test"), 2);
+}
+TYPED_TEST(MeanFloat, Dim2CubeRandomFloats)
+{
+    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim2_cube_random.test"), 2);
 }
 
 TYPED_TEST(Mean, Dim2HyperCube)
