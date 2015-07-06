@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 #include <testHelpers.hpp>
+#include <limits>
 
 using std::string;
 using std::vector;
@@ -167,6 +168,52 @@ TYPED_TEST(MeanFloat, Dim3HyperCubeRandomFloats)
     meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim3_hypercube_random.test"), 3);
 }
 
+template<typename T>
+void testMeanOverflow()
+{
+    typedef typename meanOutType<T>::type outType;
+    if (noDoubleTests<T>()) return;
+    if (noDoubleTests<outType>()) return;
+
+    vector<T> in(3,std::numeric_limits<T>::max());
+    vector<T> tests = in;
+    vector<af::dim4> test_dims;
+    test_dims.push_back(af::dim4(3,1,1,1));
+    test_dims.push_back(af::dim4(1,3,1,1));
+    test_dims.push_back(af::dim4(1,1,3,1));
+    test_dims.push_back(af::dim4(1,1,1,3));
+    for(unsigned i = 0; i<test_dims.size(); i++){
+        af_array outArray  = 0;
+        af_array inArray   = 0;
+        af::dim4 dims = test_dims[i];
+        vector<T> input(in.begin(), in.end());
+        ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(input.front()),
+                                              dims.ndims(), dims.get(), (af_dtype)af::dtype_traits<T>::af_type));
+
+        ASSERT_EQ(AF_SUCCESS, af_mean(&outArray, inArray, i));
+        
+        outType *outData = new outType[dims.elements()];
+
+        ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
+
+        vector<outType> currGoldBar(tests.begin(), tests.end());
+        size_t nElems = currGoldBar.size();
+        for (size_t elIter=0; elIter<nElems; ++elIter) {
+            ASSERT_NEAR(::real(currGoldBar[elIter]), ::real(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
+            ASSERT_NEAR(::imag(currGoldBar[elIter]), ::imag(outData[elIter]), 1.0e-3)<< "at: " << elIter<< std::endl;
+        }
+        
+        // cleanup
+        delete[] outData;
+        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
+        ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+    }
+}
+
+TYPED_TEST(Mean,MeanComputationOverflow)
+{
+    testMeanOverflow<TypeParam>();
+}
 //////////////////////////////// CPP ////////////////////////////////////
 // test mean_all interface using cpp api
 
