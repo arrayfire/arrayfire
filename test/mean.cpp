@@ -158,6 +158,14 @@ TYPED_TEST(Mean, Dim2HyperCube)
 {
     meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim2_hypercube.test"), 2);
 }
+TYPED_TEST(Mean, Dim3HyperCube)
+{
+    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim3_hypercube.test"), 3);
+}
+TYPED_TEST(MeanFloat, Dim3HyperCubeRandomFloats)
+{
+    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim3_hypercube_random.test"), 3);
+}
 
 //////////////////////////////// CPP ////////////////////////////////////
 // test mean_all interface using cpp api
