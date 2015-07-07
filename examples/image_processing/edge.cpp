@@ -74,7 +74,7 @@ void edge(bool console)
     af::Window myWindow("Edge Dectectors");
     af::Window myWindow2(512, 512, "Histogram");
 
-    array in = loadImage(ASSETS_DIR "/examples/images/lena.ppm", false);
+    array in = loadImage(ASSETS_DIR "/examples/images/trees_ctm.jpg", false);
 
     array prewitt = edge(in, 1);
     array sobelFilter   = edge(in, 2);

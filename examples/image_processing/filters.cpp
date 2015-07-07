@@ -214,7 +214,7 @@ int main(int argc, char **argv)
         af::setDevice(device);
         af::info();
 
-        array lena = loadImage(ASSETS_DIR "/examples/images/lena.ppm", true);
+        array lena = loadImage(ASSETS_DIR "/examples/images/vegetable-woman.jpg", true);
 
         array prew_mag, prew_dir;
         array sob_mag, sob_dir;
