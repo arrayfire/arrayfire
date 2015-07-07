@@ -132,11 +132,11 @@ namespace af
         Scalar dot product between two vectors.  Also referred to as the inner
         product.
 
-        \democode{
+        \code
         // compute scalar dot product
         array x = randu(100), y = randu(100);
         af_print(dot(x,y));
-        }
+        \endcode
 
         \param[in] lhs The array object on the left hand side
         \param[in] rhs The array object on the right hand side
@@ -210,11 +210,12 @@ extern "C" {
         Scalar dot product between two vectors.  Also referred to as the inner
         product.
 
-        \democode{
+        \code
         // compute scalar dot product
         array x = randu(100), y = randu(100);
         print(dot<float>(x,y));
-        }
+        \endcode
+
         \ingroup blas_func_dot
     */
     AFAPI af_err af_dot(    af_array *out,
