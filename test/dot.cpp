@@ -47,6 +47,8 @@ template<typename T>
 void dotTest(string pTestFile, const int resultIdx,
         const af_mat_prop optLhs = AF_MAT_NONE, const af_mat_prop optRhs = AF_MAT_NONE)
 {
+    if (noDoubleTests<T>()) return;
+
     using af::dim4;
 
     vector<dim4>        numDims;

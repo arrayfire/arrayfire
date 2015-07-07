@@ -12,7 +12,8 @@ void reduce_first_kernel(__global To *oData,
                          KParam oInfo,
                          const __global Ti *iData,
                          KParam iInfo,
-                         uint groups_x, uint groups_y, uint repeat)
+                         uint groups_x, uint groups_y, uint repeat,
+                         int change_nan, To nanval)
 {
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);
@@ -40,6 +41,7 @@ void reduce_first_kernel(__global To *oData,
 
     for (int id = xid; cond && id < lim; id += DIMX) {
         To in_val = transform(iData[id]);
+        if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval;
         out_val = binOp(in_val, out_val);
     }
 

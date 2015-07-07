@@ -221,3 +221,250 @@ TEST(GFOR, Inc_Array_Seq)
     delete[] hB;
     delete[] hC;
 }
+
+TEST(BatchFunc, 2D0)
+{
+    const int nx = 1000;
+    const int ny = 10;
+    array A = randu(nx, ny);
+    array B = randu( 1, ny);
+
+    gforSet(true);
+
+    array C = A + B;
+
+    float *hA = A.host<float>();
+    float *hB = B.host<float>();
+    float *hC = C.host<float>();
+
+    for (int j = 0; j < ny; j++) {
+        for (int i = 0; i < nx; i++) {
+            ASSERT_EQ(hA[j * nx + i] + hB[j], hC[j * nx + i]);
+        }
+    }
+
+    gforSet(false);
+}
+
+TEST(BatchFunc, 2D1)
+{
+    const int nx = 1000;
+    const int ny = 10;
+    array A = randu(nx, ny);
+    array B = randu(nx, 1);
+
+    gforSet(true);
+
+    array C = A + B;
+
+    float *hA = A.host<float>();
+    float *hB = B.host<float>();
+    float *hC = C.host<float>();
+
+    for (int j = 0; j < ny; j++) {
+        for (int i = 0; i < nx; i++) {
+            ASSERT_EQ(hA[j * nx + i] + hB[i], hC[j * nx + i]);
+        }
+    }
+
+    gforSet(false);
+}
+
+TEST(BatchFunc, 3D0)
+{
+    const int nx = 1000;
+    const int ny = 10;
+    const int nz = 3;
+    array A = randu(nx, ny, nz);
+    array B = randu( 1, ny, nz);
+
+    gforSet(true);
+
+    array C = A + B;
+
+    float *hA = A.host<float>();
+    float *hB = B.host<float>();
+    float *hC = C.host<float>();
+
+    for (int k = 0; k < nz; k++) {
+        for (int j = 0; j < ny; j++) {
+            for (int i = 0; i < nx; i++) {
+                ASSERT_EQ(hA[k * ny * nx + j * nx + i] + hB[k * ny + j], hC[k * ny * nx + j * nx + i]);
+            }
+        }
+    }
+
+    gforSet(false);
+}
+
+TEST(BatchFunc, 3D1)
+{
+    const int nx = 1000;
+    const int ny = 10;
+    const int nz = 3;
+    array A = randu(nx, ny, nz);
+    array B = randu(nx,  1, nz);
+
+    gforSet(true);
+
+    array C = A + B;
+
+    float *hA = A.host<float>();
+    float *hB = B.host<float>();
+    float *hC = C.host<float>();
+
+    for (int k = 0; k < nz; k++) {
+        for (int j = 0; j < ny; j++) {
+            for (int i = 0; i < nx; i++) {
+                ASSERT_EQ(hA[k * ny * nx + j * nx + i] + hB[k * nx + i], hC[k * ny * nx + j * nx + i]);
+            }
+        }
+    }
+
+    gforSet(false);
+}
+
+TEST(BatchFunc, 3D2)
+{
+    const int nx = 1000;
+    const int ny = 10;
+    const int nz = 3;
+    array A = randu(nx, ny, nz);
+    array B = randu(nx, ny,  1);
+
+    gforSet(true);
+
+    array C = A + B;
+
+    float *hA = A.host<float>();
+    float *hB = B.host<float>();
+    float *hC = C.host<float>();
+
+    for (int k = 0; k < nz; k++) {
+        for (int j = 0; j < ny; j++) {
+            for (int i = 0; i < nx; i++) {
+                ASSERT_EQ(hA[k * ny * nx + j * nx + i] + hB[j * nx + i], hC[k * ny * nx + j * nx + i]);
+            }
+        }
+    }
+
+    gforSet(false);
+}
+
+TEST(BatchFunc, 3D01)
+{
+    const int nx = 1000;
+    const int ny = 10;
+    const int nz = 3;
+    array A = randu(nx, ny, nz);
+    array B = randu( 1,  1, nz);
+
+    gforSet(true);
+
+    array C = A + B;
+
+    float *hA = A.host<float>();
+    float *hB = B.host<float>();
+    float *hC = C.host<float>();
+
+    for (int k = 0; k < nz; k++) {
+        for (int j = 0; j < ny; j++) {
+            for (int i = 0; i < nx; i++) {
+                ASSERT_EQ(hA[k * ny * nx + j * nx + i] + hB[k], hC[k * ny * nx + j * nx + i]);
+            }
+        }
+    }
+
+    gforSet(false);
+}
+
+TEST(BatchFunc, 3D_1_2)
+{
+    const int nx = 1000;
+    const int ny = 10;
+    const int nz = 3;
+    array A = randu(nx, ny,  1);
+    array B = randu(nx,  1, nz);
+
+    gforSet(true);
+
+    array C = A + B;
+
+    float *hA = A.host<float>();
+    float *hB = B.host<float>();
+    float *hC = C.host<float>();
+
+    for (int k = 0; k < nz; k++) {
+        for (int j = 0; j < ny; j++) {
+            for (int i = 0; i < nx; i++) {
+                ASSERT_EQ(hA[j * nx + i] + hB[k * nx + i], hC[k * ny * nx + j * nx + i]);
+            }
+        }
+    }
+
+    gforSet(false);
+}
+
+TEST(BatchFunc, 4D3)
+{
+    const int nx = 1000;
+    const int ny = 10;
+    const int nz = 3;
+    const int nw = 2;
+    array A = randu(nx, ny, nz, nw);
+    array B = randu(nx, ny, nz,  1);
+
+    gforSet(true);
+
+    array C = A + B;
+
+    float *hA = A.host<float>();
+    float *hB = B.host<float>();
+    float *hC = C.host<float>();
+
+    for (int l = 0; l < nw; l++) {
+        for (int k = 0; k < nz; k++) {
+            for (int j = 0; j < ny; j++) {
+                for (int i = 0; i < nx; i++) {
+                    ASSERT_EQ(hA[l * nz * ny * nx + k * ny * nx + j * nx + i] +
+                              hB[k * ny * nx + j * nx + i],
+                              hC[l * nz * ny * nx + k * ny * nx + j * nx + i]);
+                }
+            }
+        }
+    }
+
+    gforSet(false);
+}
+
+
+TEST(BatchFunc, 4D_2_3)
+{
+    const int nx = 1000;
+    const int ny = 10;
+    const int nz = 3;
+    const int nw = 2;
+    array A = randu(nx,  1, nz, nw);
+    array B = randu(nx, ny,  1,  1);
+
+    gforSet(true);
+
+    array C = A + B;
+
+    float *hA = A.host<float>();
+    float *hB = B.host<float>();
+    float *hC = C.host<float>();
+
+    for (int l = 0; l < nw; l++) {
+        for (int k = 0; k < nz; k++) {
+            for (int j = 0; j < ny; j++) {
+                for (int i = 0; i < nx; i++) {
+                    ASSERT_EQ(hA[l * nz * nx + k * nx + i] +
+                              hB[j * nx + i], hC[l * nz * ny * nx + k * ny * nx + j * nx + i]);
+                }
+            }
+        }
+    }
+
+    gforSet(false);
+}

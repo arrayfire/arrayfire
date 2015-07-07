@@ -263,18 +263,15 @@ TEST(Memory, Assign)
     ASSERT_EQ(lock_bytes, 1 * step_bytes);
 
     {
-        // Should just a copy
         af::array b = af::randu(num / 2);
         a(af::seq(num / 2)) = b;
 
         af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
                           &lock_bytes, &lock_buffers);
 
-        // FIXME: An extra buffer is used because of copy on write
-        // Fix to not perform a copy when the buffer does not have children
-        ASSERT_EQ(alloc_buffers, 3u);
+        ASSERT_EQ(alloc_buffers, 2u);
         ASSERT_EQ(lock_buffers, 2u);
-        ASSERT_EQ(alloc_bytes, 3 * step_bytes);
+        ASSERT_EQ(alloc_bytes, 2 * step_bytes);
         ASSERT_EQ(lock_bytes, 2 * step_bytes);
     }
 
@@ -283,13 +280,140 @@ TEST(Memory, Assign)
     af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
                       &lock_bytes, &lock_buffers);
 
-    ASSERT_EQ(alloc_buffers, 3u);
+    ASSERT_EQ(alloc_buffers, 2u);
     ASSERT_EQ(lock_buffers, 1u);
-    ASSERT_EQ(alloc_bytes, 3 * step_bytes);
+    ASSERT_EQ(alloc_bytes, 2 * step_bytes);
     ASSERT_EQ(lock_bytes, 1 * step_bytes);
 
 }
 
+TEST(Memory, AssignLoop)
+{
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    cleanSlate(); // Clean up everything done so far
+
+    const int num = step_bytes / sizeof(float);
+    const int cols = 100;
+
+    af::array a = af::randu(num, cols);
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 1u);
+    ASSERT_EQ(lock_buffers, 1u);
+    ASSERT_EQ(alloc_bytes, cols * step_bytes);
+    ASSERT_EQ(lock_bytes, cols * step_bytes);
+
+    for (int i = 0; i < cols; i++) {
+
+        af::array b = af::randu(num);
+        a(af::span, i) = b;
+
+        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                          &lock_bytes, &lock_buffers);
+
+        ASSERT_EQ(alloc_buffers, 2u); // 3 because you need another scratch space for b
+        ASSERT_EQ(lock_buffers, 2u);
+        ASSERT_EQ(alloc_bytes, (cols + 1) * step_bytes);
+        ASSERT_EQ(lock_bytes, (cols + 1) * step_bytes);
+    }
+}
+
+TEST(Memory, AssignRef)
+{
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    cleanSlate(); // Clean up everything done so far
+
+    const int num = step_bytes / sizeof(float);
+
+    af::array a = af::randu(num);
+    af::array a_ref = a;
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 1u);
+    ASSERT_EQ(lock_buffers, 1u);
+    ASSERT_EQ(alloc_bytes, 1 * step_bytes);
+    ASSERT_EQ(lock_bytes, 1 * step_bytes);
+
+    {
+        af::array b = af::randu(num / 2);
+        // This should do a full copy of a
+        a(af::seq(num / 2)) = b;
+
+        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                          &lock_bytes, &lock_buffers);
+
+        ASSERT_EQ(alloc_buffers, 3u);
+        ASSERT_EQ(lock_buffers, 3u);
+        ASSERT_EQ(alloc_bytes, 3 * step_bytes);
+        ASSERT_EQ(lock_bytes, 3 * step_bytes);
+    }
+
+
+    // b should not have deleted a
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 3u);
+    ASSERT_EQ(lock_buffers, 2u); // a_ref
+    ASSERT_EQ(alloc_bytes, 3 * step_bytes);
+    ASSERT_EQ(lock_bytes, 2 * step_bytes); // a_ref
+
+}
+
+TEST(Memory, AssignRefLoop)
+{
+    size_t alloc_bytes, alloc_buffers;
+    size_t lock_bytes, lock_buffers;
+
+    cleanSlate(); // Clean up everything done so far
+
+    const int num = step_bytes / sizeof(float);
+    const int cols = 100;
+
+    af::array a = af::randu(num, cols);
+    af::array a_ref = a;
+
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 1u);
+    ASSERT_EQ(lock_buffers, 1u);
+    ASSERT_EQ(alloc_bytes, cols * step_bytes);
+    ASSERT_EQ(lock_bytes, cols * step_bytes);
+
+    for (int i = 0; i < cols; i++) {
+
+        af::array b = af::randu(num);
+        a(af::span, i) = b;
+
+        af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                          &lock_bytes, &lock_buffers);
+
+        ASSERT_EQ(alloc_buffers, 3u);
+        ASSERT_EQ(lock_buffers, 3u);
+        ASSERT_EQ(alloc_bytes, (2 * cols + 1) * step_bytes);
+        ASSERT_EQ(lock_bytes, (2 * cols + 1) * step_bytes);
+    }
+
+
+    // b should not have deleted a
+    af::deviceMemInfo(&alloc_bytes, &alloc_buffers,
+                      &lock_bytes, &lock_buffers);
+
+    ASSERT_EQ(alloc_buffers, 3u);
+    ASSERT_EQ(lock_buffers, 2u); // a_ref
+    ASSERT_EQ(alloc_bytes, (2 * cols + 1) * step_bytes);
+    ASSERT_EQ(lock_bytes, 2 * cols * step_bytes); // a_ref
+
+}
 
 TEST(Memory, device)
 {

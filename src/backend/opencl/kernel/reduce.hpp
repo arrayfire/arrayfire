@@ -42,7 +42,8 @@ namespace kernel
 
     template<typename Ti, typename To, af_op_t op, int dim, int threads_y>
     void reduce_dim_launcher(Param out, Param in,
-                       const uint groups_all[4])
+                             const uint groups_all[4],
+                             int change_nan, double nanval)
     {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
         static std::map<int, Program*> reduceProgs;
@@ -84,34 +85,49 @@ namespace kernel
 
         auto reduceOp = make_kernel<Buffer, KParam,
                                     Buffer, KParam,
-                                    uint, uint, uint>(*reduceKerns[device]);
+                                    uint, uint, uint,
+                                    int, To>(*reduceKerns[device]);
 
         reduceOp(EnqueueArgs(getQueue(), global, local),
                  *out.data, out.info,
                  *in.data, in.info,
                  groups_all[0],
                  groups_all[1],
-                 groups_all[dim]);
+                 groups_all[dim],
+                 change_nan,
+                 scalar<To>(nanval));
 
         CL_DEBUG_FINISH(getQueue());
     }
 
     template<typename Ti, typename To, af_op_t op, int dim>
     void reduce_dim_fn(Param out, Param in,
-                       const uint threads_y, const uint groups_all[4])
+                       const uint threads_y, const uint groups_all[4],
+                       int change_nan, double nanval)
     {
         switch(threads_y) {
-        case 8: return reduce_dim_launcher<Ti, To, op, dim, 8>(out, in, groups_all);
-        case 4: return reduce_dim_launcher<Ti, To, op, dim, 4>(out, in, groups_all);
-        case 2: return reduce_dim_launcher<Ti, To, op, dim, 2>(out, in, groups_all);
-        case 1: return reduce_dim_launcher<Ti, To, op, dim, 1>(out, in, groups_all);
-        case 16: return reduce_dim_launcher<Ti, To, op, dim, 16>(out, in, groups_all);
-        case 32: return reduce_dim_launcher<Ti, To, op, dim, 32>(out, in, groups_all);
+        case  8: return reduce_dim_launcher<Ti, To, op, dim,  8>(out, in, groups_all,
+                                                                change_nan, nanval);
+
+        case  4: return reduce_dim_launcher<Ti, To, op, dim,  4>(out, in, groups_all,
+                                                                change_nan, nanval);
+
+        case  2: return reduce_dim_launcher<Ti, To, op, dim,  2>(out, in, groups_all,
+                                                                change_nan, nanval);
+
+        case  1: return reduce_dim_launcher<Ti, To, op, dim,  1>(out, in, groups_all,
+                                                                change_nan, nanval);
+
+        case 16: return reduce_dim_launcher<Ti, To, op, dim, 16>(out, in, groups_all,
+                                                                change_nan, nanval);
+
+        case 32: return reduce_dim_launcher<Ti, To, op, dim, 32>(out, in, groups_all,
+                                                                change_nan, nanval);
         }
     }
 
     template<typename Ti, typename To, af_op_t op, int dim>
-    void reduce_dim(Param out, Param in)
+    void reduce_dim(Param out, Param in, int change_nan, double nanval)
     {
         uint threads_y = std::min(THREADS_Y, nextpow2(in.info.dims[dim]));
         uint threads_x = THREADS_X;
@@ -136,15 +152,17 @@ namespace kernel
             for (int k = dim + 1; k < 4; k++) tmp.info.strides[k] *= groups_all[dim];
         }
 
-        reduce_dim_fn<Ti, To, op, dim>(tmp, in, threads_y, groups_all);
+        reduce_dim_fn<Ti, To, op, dim>(tmp, in, threads_y, groups_all, change_nan, nanval);
 
         if (groups_all[dim] > 1) {
             groups_all[dim] = 1;
 
             if (op == af_notzero_t) {
-                reduce_dim_fn<To, To, af_add_t, dim>(out, tmp, threads_y, groups_all);
+                reduce_dim_fn<To, To, af_add_t, dim>(out, tmp, threads_y, groups_all,
+                                                     change_nan, nanval);
             } else {
-                reduce_dim_fn<To, To,       op, dim>(out, tmp, threads_y, groups_all);
+                reduce_dim_fn<To, To,       op, dim>(out, tmp, threads_y, groups_all,
+                                                     change_nan, nanval);
             }
             bufferFree(tmp.data);
         }
@@ -154,7 +172,8 @@ namespace kernel
     template<typename Ti, typename To, af_op_t op, int threads_x>
     void reduce_first_launcher(Param out, Param in,
                                const uint groups_x,
-                               const uint groups_y)
+                               const uint groups_y,
+                               int change_nan, double nanval)
     {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
         static std::map<int, Program*> reduceProgs;
@@ -197,11 +216,12 @@ namespace kernel
 
         auto reduceOp = make_kernel<Buffer, KParam,
                                     Buffer, KParam,
-                                    uint, uint, uint>(*reduceKerns[device]);
+                                    uint, uint, uint,
+                                    int, To>(*reduceKerns[device]);
 
         reduceOp(EnqueueArgs(getQueue(), global, local),
                  *out.data, out.info,
-                 *in.data, in.info, groups_x, groups_y, repeat);
+                 *in.data, in.info, groups_x, groups_y, repeat, change_nan, scalar<To>(nanval));
 
         CL_DEBUG_FINISH(getQueue());
     }
@@ -210,24 +230,25 @@ namespace kernel
     void reduce_first_fn(Param out, Param in,
                          const uint groups_x,
                          const uint groups_y,
-                         const uint threads_x)
+                         const uint threads_x,
+                         int change_nan, double nanval)
     {
         switch(threads_x) {
         case  32: return reduce_first_launcher<Ti, To, op,  32>(out, in, groups_x,
-                                                                groups_y);
+                                                                groups_y, change_nan, nanval);
         case  64: return reduce_first_launcher<Ti, To, op,  64>(out, in, groups_x,
-                                                                groups_y);
+                                                                groups_y, change_nan, nanval);
         case 128: return reduce_first_launcher<Ti, To, op, 128>(out, in, groups_x,
-                                                                groups_y);
+                                                                groups_y, change_nan, nanval);
         case 256: return reduce_first_launcher<Ti, To, op, 256>(out, in, groups_x,
-                                                                groups_y);
+                                                                groups_y, change_nan, nanval);
         case 512: return reduce_first_launcher<Ti, To, op, 512>(out, in, groups_x,
-                                                                groups_y);
+                                                                groups_y, change_nan, nanval);
         }
     }
 
     template<typename Ti, typename To, af_op_t op>
-    void reduce_first(Param out, Param in)
+    void reduce_first(Param out, Param in, int change_nan, double nanval)
     {
         uint threads_x = nextpow2(std::max(32u, (uint)in.info.dims[0]));
         threads_x = std::min(threads_x, THREADS_PER_GROUP);
@@ -249,15 +270,15 @@ namespace kernel
             for (int k = 1; k < 4; k++) tmp.info.strides[k] *= groups_x;
         }
 
-        reduce_first_fn<Ti, To, op>(tmp, in, groups_x, groups_y, threads_x);
+        reduce_first_fn<Ti, To, op>(tmp, in, groups_x, groups_y, threads_x, change_nan, nanval);
 
         if (groups_x > 1) {
 
             //FIXME: Is there an alternative to the if condition ?
             if (op == af_notzero_t) {
-                reduce_first_fn<To, To, af_add_t>(out, tmp, 1, groups_y, threads_x);
+                reduce_first_fn<To, To, af_add_t>(out, tmp, 1, groups_y, threads_x, change_nan, nanval);
             } else {
-                reduce_first_fn<To, To,       op>(out, tmp, 1, groups_y, threads_x);
+                reduce_first_fn<To, To,       op>(out, tmp, 1, groups_y, threads_x, change_nan, nanval);
             }
 
             bufferFree(tmp.data);
@@ -265,14 +286,14 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op>
-    void reduce(Param out, Param in, int dim)
+    void reduce(Param out, Param in, int dim, int change_nan, double nanval)
     {
         try {
             switch (dim) {
-            case 0: return reduce_first<Ti, To, op   >(out, in);
-            case 1: return reduce_dim  <Ti, To, op, 1>(out, in);
-            case 2: return reduce_dim  <Ti, To, op, 2>(out, in);
-            case 3: return reduce_dim  <Ti, To, op, 3>(out, in);
+            case 0: return reduce_first<Ti, To, op   >(out, in, change_nan, nanval);
+            case 1: return reduce_dim  <Ti, To, op, 1>(out, in, change_nan, nanval);
+            case 2: return reduce_dim  <Ti, To, op, 2>(out, in, change_nan, nanval);
+            case 3: return reduce_dim  <Ti, To, op, 3>(out, in, change_nan, nanval);
             }
         } catch(cl::Error ex) {
             CL_TO_AF_ERROR(ex);
@@ -280,7 +301,7 @@ namespace kernel
     }
 
     template<typename Ti, typename To, af_op_t op>
-    To reduce_all(Param in)
+    To reduce_all(Param in, int change_nan, double nanval)
     {
         try {
             int in_elements = in.info.dims[3] * in.info.strides[3];
@@ -321,7 +342,7 @@ namespace kernel
                 int tmp_elements = tmp.info.strides[3] * tmp.info.dims[3];
                 tmp.data = bufferAlloc(tmp_elements * sizeof(To));
 
-                reduce_first_fn<Ti, To, op>(tmp, in, groups_x, groups_y, threads_x);
+                reduce_first_fn<Ti, To, op>(tmp, in, groups_x, groups_y, threads_x, change_nan, nanval);
 
                 unique_ptr<To> h_ptr(new To[tmp_elements]);
                 getQueue().enqueueReadBuffer(*tmp.data, CL_TRUE, 0, sizeof(To) * tmp_elements, h_ptr.get());
@@ -343,9 +364,12 @@ namespace kernel
                 Transform<Ti, To, op> transform;
                 Binary<To, op> reduce;
                 To out = reduce.init();
+                To nanval_to = scalar<To>(nanval);
 
                 for (int i = 0; i < (int)in_elements; i++) {
-                    out = reduce(out, transform(h_ptr.get()[i]));
+                    To in_val = transform(h_ptr.get()[i]);
+                    if (change_nan) in_val = IS_NAN(in_val) ? nanval_to : in_val;
+                    out = reduce(out, in_val);
                 }
 
                 return out;

@@ -433,3 +433,92 @@ TYPED_TEST(Reduce, Test_Any_Global)
         h_vals[i] = false;
     }
 }
+
+TEST(MinMax, NaN)
+{
+    const int num = 10000;
+    af::array A = af::randu(num);
+    A(where(A < 0.25)) = af::NaN;
+
+    float minval = af::min<float>(A);
+    float maxval = af::max<float>(A);
+
+    ASSERT_NE(std::isnan(minval), true);
+    ASSERT_NE(std::isnan(maxval), true);
+
+    float *h_A = A.host<float>();
+
+    for (int i = 0; i < num; i++) {
+        if (!std::isnan(h_A[i])) {
+            ASSERT_LE(minval, h_A[i]);
+            ASSERT_GE(maxval, h_A[i]);
+        }
+    }
+}
+
+TEST(Count, NaN)
+{
+    const int num = 10000;
+    af::array A = af::round(5 * af::randu(num));
+    af::array B = A;
+
+    A(where(A == 2)) = af::NaN;
+
+    ASSERT_EQ(af::count<uint>(A), af::count<uint>(B));
+}
+
+TEST(Sum, NaN)
+{
+    const int num = 10000;
+    af::array A = af::randu(num);
+    A(where(A < 0.25)) = af::NaN;
+
+    float res = af::sum<float>(A);
+
+    ASSERT_EQ(std::isnan(res), true);
+
+    res = af::sum<float>(A, 0);
+    float *h_A = A.host<float>();
+
+    float tmp = 0;
+    for (int i = 0; i < num; i++) {
+        tmp += std::isnan(h_A[i]) ? 0 : h_A[i];
+    }
+
+    ASSERT_NEAR(res/num, tmp/num, 1E-5);
+}
+
+TEST(Product, NaN)
+{
+    const int num = 5;
+    af::array A = af::randu(num);
+    A(2) = af::NaN;
+
+    float res = af::product<float>(A);
+
+    ASSERT_EQ(std::isnan(res), true);
+
+    res = af::product<float>(A, 1);
+    float *h_A = A.host<float>();
+
+    float tmp = 1;
+    for (int i = 0; i < num; i++) {
+        tmp *= std::isnan(h_A[i]) ? 1 : h_A[i];
+    }
+
+    ASSERT_NEAR(res/num, tmp/num, 1E-5);
+}
+
+TEST(AnyAll, NaN)
+{
+    const int num = 10000;
+    af::array A = (af::randu(num) > 0.5).as(f32);
+    af::array B = A;
+
+    B(af::where(B == 0)) = af::NaN;
+
+    ASSERT_EQ(af::anyTrue<bool>(B), true);
+    ASSERT_EQ(af::allTrue<bool>(B), true);
+    ASSERT_EQ(af::anyTrue<bool>(A), true);
+    ASSERT_EQ(af::allTrue<bool>(A), false);
+}

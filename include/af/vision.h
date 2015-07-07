@@ -43,6 +43,34 @@ AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_l
 /**
     C++ Interface for ORB feature descriptor
 
+    \param[in] in array containing a grayscale image (color images are not
+               supported)
+    \param[in] max_corners maximum number of corners to keep, only retains
+               those with highest Harris responses
+    \param[in] min_response minimum response in order for a corner to be
+               retained, only used if max_corners = 0
+    \param[in] sigma the standard deviation of a circular window (its
+               dimensions will be calculated according to the standard
+               deviation), the covariation matrix will be calculated to a
+               circular neighborhood of this standard deviation (only used
+               when block_size == 0, must be >= 0.5f and <= 5.0f)
+    \param[in] block_size square window size, the covariation matrix will be
+               calculated to a square neighborhood of this size (must be
+               >= 3 and <= 31)
+    \param[in] k_thr Harris constant, usually set empirically to 0.04f (must
+               be >= 0.01f)
+    \return    features object containing arrays for x and y coordinates and
+               score (Harris response), while arrays orientation and size are
+               set to 0 and 1, respectively, because Harris does not compute
+               that information
+
+    \ingroup cv_func_harris
+ */
+AFAPI features harris(const array& in, const unsigned max_corners=500, const float min_response=1e5f, const float sigma=1.f, const unsigned block_size=0, const float k_thr=0.04f);
+
+/**
+    C++ Interface for ORB feature descriptor
+
     \param[out] feat features object composed of arrays for x and y
                 coordinates, score, orientation and size of selected features
     \param[out] desc Nx8 array containing extracted descriptors, where N is the
@@ -63,7 +91,6 @@ AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_l
     \ingroup cv_func_orb
  */
 AFAPI void orb(features& feat, array& desc, const array& image, const float fast_thr=20.f, const unsigned max_feat=400, const float scl_fctr=1.5f, const unsigned levels=4, const bool blur_img=false);
-
 
 /**
    C++ Interface wrapper for Hamming matcher
@@ -172,6 +199,34 @@ extern "C" {
         \ingroup cv_func_fast
     */
     AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio, const unsigned edge);
+
+    /**
+        C Interface for Harris feature descriptor
+
+        \param[out] out struct containing arrays for x and y
+                    coordinates and score (Harris response), while arrays
+                    orientation and size are set to 0 and 1, respectively,
+                    because Harris does not compute that information
+        \param[in]  in array containing a grayscale image (color images are not
+                    supported)
+        \param[in]  max_corners maximum number of corners to keep, only retains
+                    those with highest Harris responses
+        \param[in]  min_response minimum response in order for a corner to be
+                    retained, only used if max_corners = 0
+        \param[in]  sigma the standard deviation of a circular window (its
+                    dimensions will be calculated according to the standard
+                    deviation), the covariation matrix will be calculated to a
+                    circular neighborhood of this standard deviation (only used
+                    when block_size == 0, must be >= 0.5f and <= 5.0f)
+        \param[in]  block_size square window size, the covariation matrix will be
+                    calculated to a square neighborhood of this size (must be
+                    >= 3 and <= 31)
+        \param[in]  k_thr Harris constant, usually set empirically to 0.04f (must
+                    be >= 0.01f)
+
+        \ingroup cv_func_harris
+    */
+    AFAPI af_err af_harris(af_features *out, const af_array in, const unsigned max_corners, const float min_response, const float sigma, const unsigned block_size, const float k_thr);
 
     /**
         C Interface for ORB feature descriptor

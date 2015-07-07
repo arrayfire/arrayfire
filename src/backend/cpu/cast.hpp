@@ -49,6 +49,23 @@ struct UnOp<To, std::complex<double>, af_cast_t>
     }
 };
 
+template<>
+struct UnOp<std::complex<float>, std::complex<double>, af_cast_t>
+{
+    std::complex<float> eval(std::complex<double> in)
+    {
+        return std::complex<float>(in);
+    }
+};
+
+template<>
+struct UnOp<std::complex<double>, std::complex<float>, af_cast_t>
+{
+    std::complex<double> eval(std::complex<float> in)
+    {
+        return std::complex<double>(in);
+    }
+};
 
 #define CAST_B8(T)                              \
     template<>                                  \

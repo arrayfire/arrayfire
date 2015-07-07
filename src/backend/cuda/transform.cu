@@ -29,6 +29,9 @@ namespace cuda
             case AF_INTERP_BILINEAR:
                 kernel::transform<T, AF_INTERP_BILINEAR>(out, in, transform, inverse);
                 break;
+            case AF_INTERP_LOWER:
+                kernel::transform<T, AF_INTERP_LOWER>   (out, in, transform, inverse);
+                break;
             default:
                 AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);
         }
@@ -37,11 +40,10 @@ namespace cuda
     }
 
 
-#define INSTANTIATE(T)                                                                          \
-    template Array<T> transform(const Array<T> &in, const Array<float> &transform,             \
-                                 const af::dim4 &odims, const af_interp_type method,            \
-                                 const bool inverse);                                           \
-
+#define INSTANTIATE(T)                                                                      \
+    template Array<T> transform(const Array<T> &in, const Array<float> &transform,          \
+                                const af::dim4 &odims, const af_interp_type method,         \
+                                const bool inverse);
 
     INSTANTIATE(float)
     INSTANTIATE(double)

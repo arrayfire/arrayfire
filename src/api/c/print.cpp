@@ -28,7 +28,7 @@ using std::endl;
 using std::vector;
 
 template<typename T>
-static void printer(ostream &out, const T* ptr, const ArrayInfo &info, unsigned dim)
+static void printer(ostream &out, const T* ptr, const ArrayInfo &info, unsigned dim, const int precision)
 {
 
     dim_t stride =   info.strides()[dim];
@@ -38,14 +38,14 @@ static void printer(ostream &out, const T* ptr, const ArrayInfo &info, unsigned 
     if(dim == 0) {
         for(dim_t i = 0, j = 0; i < d; i++, j+=stride) {
             out<<   std::fixed <<
-                    std::setw(10) <<
-                    std::setprecision(4) << toNum(ptr[j]) << " ";
+                    std::setw(precision + 6) <<
+                    std::setprecision(precision) << toNum(ptr[j]) << " ";
         }
         out << endl;
     }
     else {
         for(dim_t i = 0; i < d; i++) {
-            printer(out, ptr, info, dim - 1);
+            printer(out, ptr, info, dim - 1, precision);
             ptr += stride;
         }
         out << endl;
@@ -53,7 +53,7 @@ static void printer(ostream &out, const T* ptr, const ArrayInfo &info, unsigned 
 }
 
 template<typename T>
-static void print(af_array arr)
+static void print(af_array arr, const int precision)
 {
     const ArrayInfo info = getInfo(arr);
     vector<T> data(info.elements());
@@ -74,7 +74,7 @@ static void print(af_array arr)
     std::cout <<"   Strides: ["<<info.strides()<<"]"<<std::endl;
 #endif
 
-    printer(std::cout, &data.front(), infoT, infoT.ndims() - 1);
+    printer(std::cout, &data.front(), infoT, infoT.ndims() - 1, precision);
 
     std::cout.flags(backup);
 }
@@ -86,16 +86,40 @@ af_err af_print_array(af_array arr)
         af_dtype type = info.getType();
         switch(type)
         {
-        case f32:   print<float>(arr);    break;
-        case c32:   print<cfloat>(arr);   break;
-        case f64:   print<double>(arr);   break;
-        case c64:   print<cdouble>(arr);  break;
-        case b8:    print<char>(arr);     break;
-        case s32:   print<int>(arr);      break;
-        case u32:   print<unsigned>(arr); break;
-        case u8:    print<uchar>(arr);    break;
-        case s64:   print<intl>(arr);     break;
-        case u64:   print<uintl>(arr);    break;
+        case f32:   print<float>   (arr, 4);   break;
+        case c32:   print<cfloat>  (arr, 4);   break;
+        case f64:   print<double>  (arr, 4);   break;
+        case c64:   print<cdouble> (arr, 4);   break;
+        case b8:    print<char>    (arr, 4);   break;
+        case s32:   print<int>     (arr, 4);   break;
+        case u32:   print<unsigned>(arr, 4);   break;
+        case u8:    print<uchar>   (arr, 4);   break;
+        case s64:   print<intl>    (arr, 4);   break;
+        case u64:   print<uintl>   (arr, 4);   break;
+        default:    TYPE_ERROR(1, type);
+        }
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_print_array_p(af_array arr, const int precision)
+{
+    try {
+        ArrayInfo info = getInfo(arr);
+        af_dtype type = info.getType();
+        switch(type)
+        {
+        case f32:   print<float>   (arr, precision);   break;
+        case c32:   print<cfloat>  (arr, precision);   break;
+        case f64:   print<double>  (arr, precision);   break;
+        case c64:   print<cdouble> (arr, precision);   break;
+        case b8:    print<char>    (arr, precision);   break;
+        case s32:   print<int>     (arr, precision);   break;
+        case u32:   print<unsigned>(arr, precision);   break;
+        case u8:    print<uchar>   (arr, precision);   break;
+        case s64:   print<intl>    (arr, precision);   break;
+        case u64:   print<uintl>   (arr, precision);   break;
         default:    TYPE_ERROR(1, type);
         }
     }

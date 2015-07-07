@@ -35,6 +35,8 @@ af::array randgen(const int num, af::dtype ty)
     return tmp;
 }
 
+#define MY_ASSERT_NEAR(aa, bb, cc) ASSERT_NEAR(abs(aa), abs(bb), (cc))
+
 #define BINARY_TESTS(Ta, Tb, Tc, func)                                  \
     TEST(BinaryTests, Test_##func##_##Ta##_##Tb)                        \
     {                                                                   \
@@ -111,7 +113,7 @@ af::array randgen(const int num, af::dtype ty)
         Tb *h_b = b.host<Tb>();                                         \
         Tc *h_c = c.host<Tc>();                                         \
         for (int i = 0; i < num; i++)                                   \
-            ASSERT_NEAR(h_c[i], func(h_a[i], h_b[i]), err) <<           \
+            MY_ASSERT_NEAR(h_c[i], func(h_a[i], h_b[i]), (err)) <<      \
                 "for values: " << h_a[i]  << "," << h_b[i] << std::endl; \
         delete[] h_a;                                                   \
         delete[] h_b;                                                   \
@@ -130,7 +132,7 @@ af::array randgen(const int num, af::dtype ty)
         Ta *h_a = a.host<Ta>();                                         \
         Ta *h_c = c.host<Ta>();                                         \
         for (int i = 0; i < num; i++)                                   \
-            ASSERT_NEAR(h_c[i], func(h_a[i], h_b), err) <<              \
+            MY_ASSERT_NEAR(h_c[i], func(h_a[i], h_b), err) <<           \
                 "for values: " << h_a[i]  << "," << h_b << std::endl;   \
         delete[] h_a;                                                   \
         delete[] h_c;                                                   \
@@ -149,7 +151,7 @@ af::array randgen(const int num, af::dtype ty)
         Tb *h_b = b.host<Tb>();                                         \
         Tb *h_c = c.host<Tb>();                                         \
         for (int i = 0; i < num; i++)                                   \
-            ASSERT_NEAR(h_c[i], func(h_a, h_b[i]), err) <<              \
+            MY_ASSERT_NEAR(h_c[i], func(h_a, h_b[i]), err) <<           \
                 "for values: " << h_a  << "," << h_b[i] << std::endl;   \
         delete[] h_b;                                                   \
         delete[] h_c;                                                   \
@@ -218,6 +220,16 @@ BINARY_TESTS_NEAR(float, double, double, add, 1e-5)
 BINARY_TESTS_NEAR(float, double, double, sub, 1e-5)
 BINARY_TESTS_NEAR(float, double, double, mul, 1e-5)
 BINARY_TESTS_NEAR(float, double, double, div, 1e-5)
+
+BINARY_TESTS_NEAR(cfloat, cdouble, cdouble, add, 1e-5)
+BINARY_TESTS_NEAR(cfloat, cdouble, cdouble, sub, 1e-5)
+BINARY_TESTS_NEAR(cfloat, cdouble, cdouble, mul, 1e-5)
+BINARY_TESTS_NEAR(cfloat, cdouble, cdouble, div, 1e-5)
+
+BINARY_TESTS_NEAR(cfloat, double, cdouble, add, 1e-5)
+BINARY_TESTS_NEAR(cfloat, double, cdouble, sub, 1e-5)
+BINARY_TESTS_NEAR(cfloat, double, cdouble, mul, 1e-5)
+BINARY_TESTS_NEAR(cfloat, double, cdouble, div, 1e-5)
 
 #define BITOP(func, T, op)                                  \
     TEST(BinaryTests, Test_##func##_##T)                    \
