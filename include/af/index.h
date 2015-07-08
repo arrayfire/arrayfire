@@ -135,7 +135,21 @@ class AFAPI index {
     ///
     index & operator=(const index& idx0);
 
-
+#if __cplusplus > 199711L
+    ///
+    /// \brief Move constructor
+    ///
+    /// \param[in] idx0 is index to copy.
+    ///
+    index(index &&idx0);
+    ///
+    /// \brief Move assignment operator
+    ///
+    /// \param[in] idx0 is the index to be assigned to the /ref af::index
+    /// \returns a reference to this
+    ///
+    index& operator=(index &&idx0);
+#endif
 };
 
 ///
