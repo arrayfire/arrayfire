@@ -75,9 +75,23 @@ index::index(const af::array& idx0) {
     impl.isBatch = false;
 }
 
+index::index(const af::index& idx0) {  
+    *this = idx0;
+}
+
 index::~index() {
     if (!impl.isSeq)
         af_release_array(impl.idx.arr);
+}
+
+index & index::operator=(const index& idx0) {
+    impl = idx0.get();
+    if(impl.isSeq == false){
+        // increment reference count to avoid double free
+        // when/if idx0 is destroyed
+        AF_THROW(af_retain_array(&impl.idx.arr, impl.idx.arr));
+    }
+    return *this;
 }
 
 

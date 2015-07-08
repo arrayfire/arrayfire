@@ -104,6 +104,15 @@ class AFAPI index {
     index(const af::array& idx0);
 
     ///
+    /// \brief Copy constructor
+    ///
+    /// \param[in] idx0 is index to copy.
+    ///
+    /// \sa indexing
+    ///
+    index(const index& idx0);
+
+    ///
     /// \brief Returns true if the \ref af::index represents a af::span object
     ///
     /// \returns true if the af::index is an af::span
@@ -116,6 +125,17 @@ class AFAPI index {
     /// \returns the af_index_t represented by this object
     ///
     const af_index_t& get() const;
+
+    ///
+    /// \brief Assigns idx0 to this index
+    ///
+    /// \param[in] idx0 is the index to be assigned to the /ref af::index
+    /// \returns the reference to this
+    /// 
+    ///
+    index & operator=(const index& idx0);
+
+
 };
 
 ///
