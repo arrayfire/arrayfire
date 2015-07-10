@@ -86,6 +86,7 @@ UNARY(floor)
 UNARY(ceil)
 
 UNARY(exp)
+UNARY(sigmoid)
 UNARY(expm1)
 UNARY(erf)
 UNARY(erfc)

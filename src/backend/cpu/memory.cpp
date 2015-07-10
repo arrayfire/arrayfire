@@ -139,6 +139,10 @@ namespace cpu
             // Perform garbage collection if memory can not be allocated
             ptr = (T *)malloc(alloc_bytes);
 
+            if (ptr == NULL) {
+                AF_ERROR("Can not allocate memory", AF_ERR_NO_MEM);
+            }
+
             mem_info info = {false, false, alloc_bytes};
             memory_map[ptr] = info;
 
