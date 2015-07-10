@@ -1251,3 +1251,13 @@ TEST(Indexing, SNIPPET_indexing_ref)
     //! [ex_indexing_ref]
     //TODO: Confirm the outputs are correct. see #697
 }
+
+TEST(Indexing, SNIPPET_indexing_copy)
+{
+  af::array A = af::constant(0,1, s32);
+  af::index s1;
+  s1 = af::index(A);
+  // At exit both A and s1 will be destroyed
+  // but the underlying array should only be
+  // freed once.
+}
