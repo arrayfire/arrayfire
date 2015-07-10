@@ -9,6 +9,16 @@
 
 #include "types.h"
 
+__device__ double sigmoid(double in)
+{
+    return (1.0) / (1 + exp(-in));
+}
+
+__device__ float sigmoidf(float in)
+{
+    return (1.0) / (1 + expf(-in));
+}
+
 #define MATH_BASIC(fn, T)                       \
     __device__ T ___##fn(T a)                   \
     {                                           \
@@ -32,6 +42,7 @@ MATH(exp)
 MATH(expm1)
 MATH(erf)
 MATH(erfc)
+MATH(sigmoid)
 
 MATH(log)
 MATH(log10)

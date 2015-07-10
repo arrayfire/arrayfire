@@ -59,6 +59,7 @@ namespace af
     INSTANTIATE(expm1 )
     INSTANTIATE(erf   )
     INSTANTIATE(erfc  )
+    INSTANTIATE(sigmoid)
 
     INSTANTIATE(log   )
     INSTANTIATE(log1p )

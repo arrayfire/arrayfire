@@ -17,6 +17,12 @@ namespace cpu
 {
 #define sign(in) std::signbit(in)
 
+template<typename T>
+T sigmoid(T in)
+{
+    return (1.0) / (1 + std::exp(-in));
+}
+
 #define UNARY_FN(op)                            \
     template<typename T>                        \
     struct UnOp<T, T, af_##op##_t>              \
@@ -50,6 +56,7 @@ UNARY_FN(floor)
 UNARY_FN(ceil)
 
 UNARY_FN(exp)
+UNARY_FN(sigmoid)
 UNARY_FN(expm1)
 UNARY_FN(erf)
 UNARY_FN(erfc)
