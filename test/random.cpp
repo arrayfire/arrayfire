@@ -151,6 +151,8 @@ void testSetSeed(const uintl seed0, const uintl seed1, bool is_norm = false)
 
     if (noDoubleTests<T>()) return;
 
+    uintl orig_seed = af::getSeed();
+
     const int num = 1024 * 1024;
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 
@@ -186,6 +188,8 @@ void testSetSeed(const uintl seed0, const uintl seed1, bool is_norm = false)
         // b8 and u9 can clash because they generate a small set of values
         if (ty != b8 && ty != u8) ASSERT_NE(h_in2[i], h_in3[i]);
     }
+
+    af::setSeed(orig_seed); // Reset the seed
 }
 
 TYPED_TEST(Random, setSeed)
@@ -203,6 +207,8 @@ void testGetSeed(const uintl seed0, const uintl seed1)
 {
     if (noDoubleTests<T>()) return;
 
+    uintl orig_seed = af::getSeed();
+
     const int num = 1024;
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 
@@ -217,6 +223,8 @@ void testGetSeed(const uintl seed0, const uintl seed1)
     af::setSeed(seed0);
     af::array in2 = af::randu(num, ty);
     ASSERT_EQ(af::getSeed(), seed0);
+
+    af::setSeed(orig_seed); // Reset the seed
 }
 
 TYPED_TEST(Random, getSeed)
