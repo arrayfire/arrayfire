@@ -115,7 +115,7 @@ IF(DEFINED BLAS_SYM_FILE)
               ${c_sources}
               ${cpp_sources})
 
-  IF(FORGE_FOUND)
+  IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
     ADD_DEPENDENCIES(afcpu_static forge)
   ENDIF()
 
@@ -148,7 +148,7 @@ TARGET_LINK_LIBRARIES(afcpu
                             PRIVATE ${CBLAS_LIBRARIES}
                             PRIVATE ${FFTW_LIBRARIES})
 
-IF(FORGE_FOUND)
+IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
   ADD_DEPENDENCIES(afcpu forge)
 ENDIF()
 

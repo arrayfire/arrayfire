@@ -31,12 +31,6 @@ float abserr(const array& predicted, const array& target)
     return 100 * sum<float>(abs(predicted - target)) / predicted.elements();
 }
 
-// Activation function
-array sigmoid(const array &val)
-{
-    return 1 / (1 + exp(-val));
-}
-
 // Predict based on given parameters
 array predict(const array &X, const array &Weights)
 {

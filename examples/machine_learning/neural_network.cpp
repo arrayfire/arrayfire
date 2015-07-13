@@ -26,12 +26,6 @@ float accuracy(const array& predicted, const array& target)
     return 100 * count<float>(plabels == tlabels) / tlabels.elements();
 }
 
-// Activation function
-array sigmoid(const array &val)
-{
-    return 1 / (1 + exp(-val));
-}
-
 // Derivative of the activation function
 array deriv(const array &out)
 {

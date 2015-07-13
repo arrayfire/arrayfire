@@ -89,5 +89,7 @@ typedef enum {
     af_isinf_t,
     af_isnan_t,
 
+    af_sigmoid_t,
+
     af_noop_t
 } af_op_t;
