@@ -132,42 +132,42 @@ void meanDimTest(string pFileName, dim_t dim, bool isWeighted=false)
 
 TYPED_TEST(Mean, Dim0Matrix)
 {
-    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim0_matrix.test"), 0);
+    meanDimTest<TypeParam>(string(TEST_DIR "/mean/mean_dim0_matrix.test"), 0);
 }
 
 TYPED_TEST(Mean, Wtd_Dim0Matrix)
 {
-    meanDimTest<TypeParam>(/*string(TEST_DIR"/mean/wtd_mean_dim0_mat.test")*/"/home/pradeep/gitroot/arrayfire_data/mean/wtd_mean_dim0_mat.test", 0, true);
+    meanDimTest<TypeParam>(string(TEST_DIR "/mean/wtd_mean_dim0_mat.test"), 0);
 }
 
 TYPED_TEST(Mean, Wtd_Dim1Matrix)
 {
-    meanDimTest<TypeParam>(/*string(TEST_DIR"/mean/wtd_mean_dim0_mat.test")*/"/home/pradeep/gitroot/arrayfire_data/mean/wtd_mean_dim1_mat.test", 1, true);
+    meanDimTest<TypeParam>(string(TEST_DIR "/mean/wtd_mean_dim1_mat.test"), 1);
 }
 
 TYPED_TEST(Mean, Dim1Cube)
 {
-    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim1_cube.test"), 1);
+    meanDimTest<TypeParam>(string(TEST_DIR "/mean/mean_dim1_cube.test"), 1);
 }
 
 TYPED_TEST(Mean, Dim0HyperCube)
 {
-    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim0_hypercube.test"), 0);
+    meanDimTest<TypeParam>(string(TEST_DIR "/mean/mean_dim0_hypercube.test"), 0);
 }
 
 TYPED_TEST(Mean, Dim2Matrix)
 {
-    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim2_matrix.test"), 2);
+    meanDimTest<TypeParam>(string(TEST_DIR "/mean/mean_dim2_matrix.test"), 2);
 }
 
 TYPED_TEST(Mean, Dim2Cube)
 {
-    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim2_cube.test"), 2);
+    meanDimTest<TypeParam>(string(TEST_DIR "/mean/mean_dim2_cube.test"), 2);
 }
 
 TYPED_TEST(Mean, Dim2HyperCube)
 {
-    meanDimTest<TypeParam>(string(TEST_DIR"/mean/mean_dim2_hypercube.test"), 2);
+    meanDimTest<TypeParam>(string(TEST_DIR "/mean/mean_dim2_hypercube.test"), 2);
 }
 
 template<typename T>
