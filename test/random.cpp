@@ -151,6 +151,8 @@ void testSetSeed(const uintl seed0, const uintl seed1, bool is_norm = false)
 
     if (noDoubleTests<T>()) return;
 
+    uintl orig_seed = af::getSeed();
+
     const int num = 1024 * 1024;
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 
@@ -162,23 +164,32 @@ void testSetSeed(const uintl seed0, const uintl seed1, bool is_norm = false)
 
     af::setSeed(seed0);
     af::array in2 = is_norm ? af::randn(num, ty) : af::randu(num, ty);
+    af::array in3 = is_norm ? af::randn(num, ty) : af::randu(num, ty);
 
     std::vector<T> h_in0(num);
     std::vector<T> h_in1(num);
     std::vector<T> h_in2(num);
+    std::vector<T> h_in3(num);
 
     in0.host((void *)&h_in0[0]);
     in1.host((void *)&h_in1[0]);
     in2.host((void *)&h_in2[0]);
+    in3.host((void *)&h_in3[0]);
 
     for (int i = 0; i < num; i++) {
         // Verify if same seed produces same arrays
         ASSERT_EQ(h_in0[i], h_in2[i]);
 
-        // Verify different arrays don't clash at same location
+        // Verify different arrays created with different seeds differ
         // b8 and u9 can clash because they generate a small set of values
         if (ty != b8 && ty != u8) ASSERT_NE(h_in0[i], h_in1[i]);
+
+        // Verify different arrays created one after the other with same seed differ
+        // b8 and u9 can clash because they generate a small set of values
+        if (ty != b8 && ty != u8) ASSERT_NE(h_in2[i], h_in3[i]);
     }
+
+    af::setSeed(orig_seed); // Reset the seed
 }
 
 TYPED_TEST(Random, setSeed)
@@ -188,13 +199,15 @@ TYPED_TEST(Random, setSeed)
 
 TYPED_TEST(Random_norm, setSeed)
 {
-    testSetSeed<TypeParam>(456, 789, false);
+    testSetSeed<TypeParam>(456, 789, true);
 }
 
 template<typename T>
 void testGetSeed(const uintl seed0, const uintl seed1)
 {
     if (noDoubleTests<T>()) return;
+
+    uintl orig_seed = af::getSeed();
 
     const int num = 1024;
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
@@ -210,6 +223,8 @@ void testGetSeed(const uintl seed0, const uintl seed1)
     af::setSeed(seed0);
     af::array in2 = af::randu(num, ty);
     ASSERT_EQ(af::getSeed(), seed0);
+
+    af::setSeed(orig_seed); // Reset the seed
 }
 
 TYPED_TEST(Random, getSeed)

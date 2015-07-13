@@ -81,7 +81,7 @@ TEST(ifft2, Invalid_Array)
 
     af::dim4 dims(100,1,1,1);
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<cfloat>::af_type));
+                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_ifft2(&outArray, inArray, 0.01, 0, 0));
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
@@ -98,7 +98,7 @@ TEST(ifft3, Invalid_Array)
 
     af::dim4 dims(10,10,1,1);
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in.front()),
-                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<cfloat>::af_type));
+                dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type));
 
     ASSERT_EQ(AF_ERR_SIZE, af_ifft3(&outArray, inArray, 0.01, 0, 0, 0));
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));

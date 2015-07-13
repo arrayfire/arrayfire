@@ -919,8 +919,7 @@ namespace af
     {
         af_array lhs = this->get();
         af_array out;
-        array cst = constant(0, this->dims(), this->type());
-        AF_THROW(af_eq(&out, cst.get(), lhs, gforGet()));
+        AF_THROW(af_not(&out, lhs));
         return array(out);
     }
 
