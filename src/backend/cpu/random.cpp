@@ -86,11 +86,14 @@ Array<T> randn(const af::dim4 &dims)
 
     if (my_seed != gen_seed) {
         gen = nrand<T>(generator);
+        my_seed = gen_seed;
     }
 
     Array<T> outArray = createEmptyArray<T>(dims);
     T *outPtr = outArray.get();
-    generate(outPtr, outPtr + outArray.elements(), gen);
+    for (int i = 0; i < (int)outArray.elements(); i++) {
+        outPtr[i] = gen();
+    }
     return outArray;
 }
 
