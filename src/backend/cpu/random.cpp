@@ -110,6 +110,7 @@ Array<T> randu(const af::dim4 &dims)
 
     if (my_seed != gen_seed) {
         gen = urand<T>(generator);
+        my_seed = gen_seed;
     }
 
     Array<T> outArray = createEmptyArray<T>(dims);
@@ -155,6 +156,7 @@ Array<char> randu(const af::dim4 &dims)
 
     if (my_seed != gen_seed) {
         gen = urand<float>(generator);
+        my_seed = gen_seed;
     }
 
     Array<char> outArray = createEmptyArray<char>(dims);
