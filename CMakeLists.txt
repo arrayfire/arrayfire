@@ -13,13 +13,13 @@ OPTION(BUILD_GTEST "Download gtest and check for updates. Necessary if you chang
 
 OPTION(BUILD_CPU "Build ArrayFire with a CPU backend" ON)
 
-FIND_PACKAGE(CUDA)
+FIND_PACKAGE(CUDA QUIET)
 IF(${CUDA_FOUND})
     SET(BUILD_CUDA ON CACHE BOOL "")
 ENDIF(${CUDA_FOUND})
 OPTION(BUILD_CUDA "Build ArrayFire with a CUDA backend" OFF)
 
-FIND_PACKAGE(OpenCL)
+FIND_PACKAGE(OpenCL QUIET)
 IF(${OpenCL_FOUND})
     SET(BUILD_OPENCL ON CACHE BOOL "")
 ENDIF(${OpenCL_FOUND})
