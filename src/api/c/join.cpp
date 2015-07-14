@@ -117,6 +117,8 @@ af_err af_join_many(af_array *out, const int dim, const unsigned n_arrays, const
             case b8:  output = join_many<char   >(dim, n_arrays, inputs);  break;
             case s32: output = join_many<int    >(dim, n_arrays, inputs);  break;
             case u32: output = join_many<uint   >(dim, n_arrays, inputs);  break;
+            case s64: output = join_many<intl   >(dim, n_arrays, inputs);  break;
+            case u64: output = join_many<uintl  >(dim, n_arrays, inputs);  break;
             case u8:  output = join_many<uchar  >(dim, n_arrays, inputs);  break;
             default:  TYPE_ERROR(1, info[0].getType());
         }

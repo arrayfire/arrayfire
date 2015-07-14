@@ -468,6 +468,8 @@ af_err af_range(af_array *result, const unsigned ndims, const dim_t * const dims
         case f64:   out = range_<double >(d, seq_dim); break;
         case s32:   out = range_<int    >(d, seq_dim); break;
         case u32:   out = range_<uint   >(d, seq_dim); break;
+        case s64:   out = range_<intl   >(d, seq_dim); break;
+        case u64:   out = range_<uintl  >(d, seq_dim); break;
         case u8:    out = range_<uchar  >(d, seq_dim); break;
         default:    TYPE_ERROR(4, type);
         }
@@ -509,6 +511,8 @@ af_err af_iota(af_array *result, const unsigned ndims, const dim_t * const dims,
         case f64:   out = iota_<double >(d, t); break;
         case s32:   out = iota_<int    >(d, t); break;
         case u32:   out = iota_<uint   >(d, t); break;
+        case s64:   out = iota_<intl   >(d, t); break;
+        case u64:   out = iota_<uintl  >(d, t); break;
         case u8:    out = iota_<uchar  >(d, t); break;
         default:    TYPE_ERROR(4, type);
         }
