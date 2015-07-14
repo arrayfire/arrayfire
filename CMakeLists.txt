@@ -3,18 +3,35 @@ PROJECT(ARRAYFIRE)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+INCLUDE(${CMAKE_MODULE_PATH}/UploadCoveralls.cmake)
+INCLUDE(AFInstallDirs)
+
 OPTION(BUILD_TEST "Build Tests" ON)
 OPTION(BUILD_EXAMPLES "Build Examples" ON)
 OPTION(BUILD_GTEST "Download gtest and check for updates. Necessary if you change compilers" ON)
 
 OPTION(BUILD_CPU "Build ArrayFire with a CPU backend" ON)
+
+FIND_PACKAGE(CUDA)
+IF(${CUDA_FOUND})
+    SET(BUILD_CUDA ON CACHE BOOL "")
+ENDIF(${CUDA_FOUND})
 OPTION(BUILD_CUDA "Build ArrayFire with a CUDA backend" OFF)
+
+FIND_PACKAGE(OpenCL)
+IF(${OpenCL_FOUND})
+    SET(BUILD_OPENCL ON CACHE BOOL "")
+ENDIF(${OpenCL_FOUND})
 OPTION(BUILD_OPENCL "Build ArrayFire with a OpenCL backend" OFF)
 
 OPTION(BUILD_GRAPHICS "Build ArrayFire with Forge Graphics" ON)
 
 OPTION(BUILD_DOCS "Create ArrayFire Documentation" OFF)
 OPTION(WITH_COVERAGE "Added code coverage flags" OFF)
+
+OPTION(INSTALLER_MODE "Build arrayfire in installer mode" OFF)
+MARK_AS_ADVANCED(INSTALLER_MODE)
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -23,10 +40,6 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
       "MinSizeRel" "RelWithDebInfo")
 endif()
-
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
-INCLUDE(${CMAKE_MODULE_PATH}/UploadCoveralls.cmake)
-INCLUDE(AFInstallDirs)
 
 FIND_PACKAGE(FreeImage)
 IF(FREEIMAGE_FOUND)
@@ -197,11 +210,7 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
     DESTINATION ${AF_INSTALL_CMAKE_DIR}
     COMPONENT cmake)
 
-IF(APPLE)
-    INCLUDE("${CMAKE_MODULE_PATH}/osx_install/OSXInstaller.cmake")
-ENDIF(APPLE)
-
 ##
 # Packaging
 ##
-include(${CMAKE_CURRENT_SOURCE_DIR}/CPack.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/CPack.txt)
