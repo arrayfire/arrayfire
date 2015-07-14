@@ -103,9 +103,11 @@ vector<af_seq> init_subs()
 SCAN_TESTS(accum, float   , float     , float     );
 SCAN_TESTS(accum, double  , double    , double    );
 SCAN_TESTS(accum, int     , int       , int       );
-SCAN_TESTS(accum, cfloat  , cfloat , cfloat );
-SCAN_TESTS(accum, cdouble , cdouble, cdouble);
+SCAN_TESTS(accum, cfloat  , cfloat    , cfloat    );
+SCAN_TESTS(accum, cdouble , cdouble   , cdouble   );
 SCAN_TESTS(accum, unsigned, unsigned  , unsigned  );
+SCAN_TESTS(accum, intl    , intl      , intl      );
+SCAN_TESTS(accum, uintl   , uintl     , uintl     );
 SCAN_TESTS(accum, uchar   , unsigned char, unsigned);
 
 TEST(Scan,Test_Scan_Big0)
