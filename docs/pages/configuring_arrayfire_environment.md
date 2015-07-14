@@ -56,3 +56,13 @@ This is a useful enviornment variable when running code on servers and systems
 without displays. When graphics calls are run on such machines, they will
 print warning about window creation failing. To suppress those calls, set this
 variable.
+
+AF_PRINT_ERRORS {#af_print_errors}
+-------------------------------------------------------------------------------
+
+When AF_PRINT_ERRORS is set to 1, the exceptions thrown are more verbose and
+detailed. This helps in locating the exact failure.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+AF_PRINT_ERRORS=1 ./myprogram_opencl
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
