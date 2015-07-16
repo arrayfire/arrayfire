@@ -106,7 +106,7 @@ af_err af_scale(af_array *out, const af_array in, const float scale0, const floa
         dim_t _odim0 = odim0, _odim1 = odim1;
         float sx, sy;
 
-        if(_odim0 == 0 && _odim1 == 0) {
+        if(_odim0 == 0 || _odim1 == 0) {
 
             DIM_ASSERT(2, scale0 != 0);
             DIM_ASSERT(3, scale1 != 0);
@@ -115,7 +115,7 @@ af_err af_scale(af_array *out, const af_array in, const float scale0, const floa
             _odim0 = idims[0] / sx;
             _odim1 = idims[1] / sy;
 
-        } else if (scale0 == 0 && scale1 == 0) {
+        } else if (scale0 == 0 || scale1 == 0) {
 
             DIM_ASSERT(4, odim0 != 0);
             DIM_ASSERT(5, odim1 != 0);
