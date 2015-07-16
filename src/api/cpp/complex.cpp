@@ -83,9 +83,9 @@ cdouble operator/(const cdouble &lhs, const cdouble &rhs)
     { return lhs OP cfloat (rhs); }                             \
     cdouble operator OP(const cdouble &lhs, const double  &rhs) \
     { return lhs OP cdouble(rhs); }                             \
-    cfloat  operator OP(const double  &rhs, const cfloat  &lhs) \
+    cfloat  operator OP(const double  &lhs, const cfloat  &rhs) \
     { return cfloat (lhs) OP rhs; }                             \
-    cdouble operator OP(const double  &rhs, const cdouble &lhs) \
+    cdouble operator OP(const double  &lhs, const cdouble &rhs) \
     { return cdouble(lhs) OP rhs; }                             \
     cdouble operator OP(const cfloat  &lhs, const cdouble &rhs) \
     { return cdouble(real(lhs), imag(lhs)) OP rhs; }            \
