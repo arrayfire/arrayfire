@@ -30,6 +30,37 @@ local maximas and have a high positive response.
 
 =======================================================================
 
+\defgroup cv_func_susan susan
+\ingroup featdetect_mat
+
+\brief SUSAN corner detector
+
+SUSAN is an acronym standing for *Smallest Univalue Segment Assimilating Nucleus*. This method
+places a circular disc over the pixel to be tested (a.k.a nucleus) to compute the corner measure
+of that corresponding pixel. The region covered by the circular disc is **M**, and a pixel in this
+region is represented by \f$\vec{m} \in M\f$ where \f$\vec{m}_0\f$ is the nucleus. Every pixel in the region
+is compared to the nucleus using the following comparison function:
+
+\f$ c(\vec{m}) = e^{-{(({I(\vec{m}) - I(\vec{m}_0))} / t})^6}\f$
+
+where *t* is radius of the region, *I* is the brightness of the pixel.
+
+Response of SUSAN operator is given by the following equation:
+
+\f$ R(M) = \begin{cases} g - n(M) \quad \text{if } n(M) < g\\ 0 \quad \text{otherwise},\\ \end{cases}\f$
+
+where \f$ n(M) =  \sum\nolimits_{\vec{m} \in M} c(\vec{m})\f$, g is named the *geometric threshold* and n is the number
+of pixels in the mask which are within **t** of the nucleus.
+
+Importance of the parameters, **t** and **g** is explained below:
+
+- *t* determines how similar points have to be to the nucleusbefore they are considered to
+  be a part of the univalue segment
+- g determines the minimum size of the univalue segment. For a large enough *g*, SUSAN operator becomes
+  an edge dectector.
+
+=======================================================================
+
 \defgroup cv_func_orb orb
 \ingroup featdescriptor_mat
 
