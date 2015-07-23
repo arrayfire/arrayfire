@@ -123,3 +123,47 @@ void susanTest(string pTestFile, float t, float g)
 
 SUSAN_TEST(square_t32_g10, 32, 10);
 SUSAN_TEST(square_t32_g20, 32, 20);
+
+TEST(Susan, InvalidDims)
+{
+    try {
+        af::array a = af::randu(256);
+        af::features out = af::susan(a);
+        EXPECT_TRUE(false);
+    } catch (af::exception &e) {
+        EXPECT_TRUE(true);
+    }
+}
+
+TEST(Susan, InvalidThreshold)
+{
+    try {
+        af::array a = af::randu(256);
+        af::features out = af::susan(a, 3, -32, 10, 0.05f, 3);
+        EXPECT_TRUE(false);
+    } catch (af::exception &e) {
+        EXPECT_TRUE(true);
+    }
+}
+
+TEST(Susan, InvalidFeatureRatio)
+{
+    try {
+        af::array a = af::randu(256);
+        af::features out = af::susan(a, 3, 32, 10, 1.3f, 3);
+        EXPECT_TRUE(false);
+    } catch (af::exception &e) {
+        EXPECT_TRUE(true);
+    }
+}
+
+TEST(Susan, InvalidEdge)
+{
+    try {
+        af::array a = af::randu(128, 128);
+        af::features out = af::susan(a, 3, 32, 10, 1.3f, 129);
+        EXPECT_TRUE(false);
+    } catch (af::exception &e) {
+        EXPECT_TRUE(true);
+    }
+}

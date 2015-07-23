@@ -53,6 +53,13 @@ af_err af_susan(af_features* out, const af_array in,
     try {
         ArrayInfo info = getInfo(in);
         af::dim4 dims  = info.dims();
+
+        ARG_ASSERT(1, (dims.ndims()>=2 && dims.ndims()<=3));
+        ARG_ASSERT(3, diff_thr > 0.0f);
+        ARG_ASSERT(4, geom_thr > 0.0f);
+        ARG_ASSERT(5, (feature_ratio > 0.0f && feature_ratio <= 1.0f));
+        ARG_ASSERT(6, (dims[0] >= (dim_t)(2*edge+1) || dims[1] >= (dim_t)(2*edge+1)));
+
         af_dtype type  = info.getType();
         switch(type) {
             case f32: *out = susan<float >(in, radius, diff_thr, geom_thr, feature_ratio, edge); break;
