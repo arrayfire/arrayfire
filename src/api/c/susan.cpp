@@ -54,7 +54,8 @@ af_err af_susan(af_features* out, const af_array in,
         ArrayInfo info = getInfo(in);
         af::dim4 dims  = info.dims();
 
-        ARG_ASSERT(1, (dims.ndims()>=2 && dims.ndims()<=3));
+        ARG_ASSERT(1, dims.ndims()==2);
+        ARG_ASSERT(2, radius < 10);
         ARG_ASSERT(3, diff_thr > 0.0f);
         ARG_ASSERT(4, geom_thr > 0.0f);
         ARG_ASSERT(5, (feature_ratio > 0.0f && feature_ratio <= 1.0f));

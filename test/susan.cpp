@@ -135,6 +135,17 @@ TEST(Susan, InvalidDims)
     }
 }
 
+TEST(Susan, InvalidRadius)
+{
+    try {
+        af::array a = af::randu(256);
+        af::features out = af::susan(a, 10);
+        EXPECT_TRUE(false);
+    } catch (af::exception &e) {
+        EXPECT_TRUE(true);
+    }
+}
+
 TEST(Susan, InvalidThreshold)
 {
     try {
