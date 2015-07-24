@@ -8,7 +8,7 @@
  ********************************************************/
 
 /***********************************************************************
- * Based on MAGMA library http://icl.cs.utk.edu/magma/
+ * Based on clMAGMA library http://icl.cs.utk.edu/magma/
  * Below is the original copyright.
  *
  *   -- MAGMA (version 0.1) --
