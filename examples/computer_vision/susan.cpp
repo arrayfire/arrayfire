@@ -28,9 +28,7 @@ static void susan_demo(bool console)
 
     features feat = susan(img, 3, 32.0f, 10, 0.05f, 3);
 
-    if (feat.getNumFeatures() > 0) {
-        printf("Found features, proceeding ahead\n");
-    } else {
+    if (!(feat.getNumFeatures() > 0)) {
         printf("No features found, exiting\n");
         return;
     }

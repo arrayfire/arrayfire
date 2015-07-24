@@ -77,7 +77,7 @@ void susanTest(string pTestFile, float t, float g)
 
         af::array in = af::loadImage(inFiles[testId].c_str(), false);
 
-        af::features out = af::susan(in, 3, 32, 10, 0.05f, 3);
+        af::features out = af::susan(in, 3, t, g, 0.05f, 3);
 
         float * outX           = new float[gold[0].size()];
         float * outY           = new float[gold[1].size()];
@@ -121,6 +121,7 @@ void susanTest(string pTestFile, float t, float g)
         susanTest<TypeParam>(string(TEST_DIR "/susan/"#image".test"), tval, gval);\
     }
 
+SUSAN_TEST(man_t32_g10, 32, 10);
 SUSAN_TEST(square_t32_g10, 32, 10);
 SUSAN_TEST(square_t32_g20, 32, 20);
 

@@ -12,6 +12,7 @@
 #include <err_opencl.hpp>
 #include <kernel/susan.hpp>
 #include <cmath>
+#include <algorithm>
 #include <sort_index.hpp>
 
 using af::features;

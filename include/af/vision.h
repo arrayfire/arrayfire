@@ -171,7 +171,7 @@ AFAPI array matchTemplate(const array &searchImg, const array &templateImg, cons
    C++ Interface for SUSAN corner detector
 
    \param[in]  in is input grayscale/intensity image
-   \param[in]  radius Nuclei radius for each pixel neighborhood
+   \param[in]  radius nucleus radius for each pixel neighborhood
    \param[in]  diff_thr intensity difference threshold
    \param[in]  geom_thr geometric threshold a.k.a **t** from equations in description
    \param[in]  feature_ratio is maximum number of features that will be returned by the function
@@ -354,7 +354,7 @@ extern "C" {
        \param[out] out is af_features struct composed of arrays for x and y
                    coordinates, score, orientation and size of selected features
        \param[in]  in is input grayscale/intensity image
-       \param[in]  radius Nuclei radius for each pixel neighborhood
+       \param[in]  radius nucleus radius for each pixel neighborhood
        \param[in]  diff_thr intensity difference threshold a.k.a **t** from equations in description
        \param[in]  geom_thr geometric threshold
        \param[in]  feature_ratio is maximum number of features that will be returned by the function
