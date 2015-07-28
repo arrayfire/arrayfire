@@ -176,36 +176,6 @@ void nonMaximal(float* x_out, float* y_out, float* resp_out,
     memFree(d_corners_found);
 }
 
-__global__
-void keepCornersKernel(float* x_out, float* y_out, float* resp_out,
-                         const float* x_in, const float* y_in,
-                         const float* resp_in, const unsigned* resp_idx,
-                         const unsigned n_corners)
-{
-    const unsigned f = blockDim.x * blockIdx.x + threadIdx.x;
-
-    // Keep only the first n_feat features
-    if (f < n_corners) {
-        x_out[f] = x_in[(unsigned)resp_idx[f]];
-        y_out[f] = y_in[(unsigned)resp_idx[f]];
-        resp_out[f] = resp_in[f];
-    }
-}
-
-void keepCorners(float* x_out, float* y_out, float* resp_out,
-                  const float* x_in, const float* y_in,
-                  const float* resp_in, const unsigned* resp_idx,
-                  const unsigned n_corners)
-{
-    dim3 threads(THREADS_PER_BLOCK, 1);
-    dim3 blocks(divup(n_corners, threads.x), 1);
-
-    keepCornersKernel<<<blocks, threads>>>(x_out, y_out, resp_out,
-                                           x_in, y_in, resp_in, resp_idx, n_corners);
-
-    POST_LAUNCH_CHECK();
-}
-
 }
 
 }

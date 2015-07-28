@@ -10,7 +10,6 @@
 #include <af/features.h>
 #include <Array.hpp>
 #include <cmath>
-#include <sort_index.hpp>
 #include <math.hpp>
 
 using af::features;
@@ -88,19 +87,6 @@ void non_maximal(float* x_out, float* y_out, float* resp_out,
     }
 }
 
-static void keep_corners(float* x_out, float* y_out, float* resp_out,
-                  const float* x_in, const float* y_in,
-                  const float* resp_in, const unsigned* resp_idx,
-                  const unsigned n_corners)
-{
-    // Keep only the first n_feat features
-    for (unsigned f = 0; f < n_corners; f++) {
-        x_out[f] = x_in[resp_idx[f]];
-        y_out[f] = y_in[resp_idx[f]];
-        resp_out[f] = resp_in[f];
-    }
-}
-
 template<typename T>
 unsigned susan(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
                const Array<T> &in,
@@ -128,30 +114,9 @@ unsigned susan(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
     if (corners_out == 0)
         return 0;
 
-    if (corners_found > corners_out) {
-        Array<float> susan_responses = createDeviceDataArray<float>(dim4(corners_found), (void*)resp_corners);
-        Array<float> susan_sorted = createEmptyArray<float>(dim4(corners_found));
-        Array<unsigned> susan_idx = createEmptyArray<unsigned>(dim4(corners_found));
-
-        // Sort susan responses
-        sort_index<float, false>(susan_sorted, susan_idx, susan_responses, 0);
-
-        x_out = createEmptyArray<float>(dim4(corners_out));
-        y_out = createEmptyArray<float>(dim4(corners_out));
-        resp_out = createEmptyArray<float>(dim4(corners_out));
-
-        // Keep only the corners with higher SUSAN responses
-        keep_corners(x_out.get(), y_out.get(), resp_out.get(),
-                     x_corners, y_corners, susan_sorted.get(), susan_idx.get(),
-                     corners_out);
-
-        memFree(x_corners);
-        memFree(y_corners);
-    } else {
-        x_out = createDeviceDataArray<float>(dim4(corners_out), (void*)x_corners);
-        y_out = createDeviceDataArray<float>(dim4(corners_out), (void*)y_corners);
-        resp_out = createDeviceDataArray<float>(dim4(corners_out), (void*)resp_corners);
-    }
+    x_out = createDeviceDataArray<float>(dim4(corners_out), (void*)x_corners);
+    y_out = createDeviceDataArray<float>(dim4(corners_out), (void*)y_corners);
+    resp_out = createDeviceDataArray<float>(dim4(corners_out), (void*)resp_corners);
 
     return corners_out;
 }

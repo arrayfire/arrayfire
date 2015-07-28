@@ -101,21 +101,3 @@ void non_maximal(global float* x_out, global float* y_out,
     }
 }
 #endif
-
-#ifdef KEEP_CORNERS
-kernel
-void keep_corners(global float* x_out, global float* y_out, global float* resp_out,
-                  global const float* x_in, global const float* y_in,
-                  global const float* resp_in, global const unsigned* resp_idx,
-                  const unsigned n_corners)
-{
-    const unsigned f = get_global_id(0);
-
-    // Keep only the first n_feat features
-    if (f < n_corners) {
-        x_out[f] = x_in[(unsigned)resp_idx[f]];
-        y_out[f] = y_in[(unsigned)resp_idx[f]];
-        resp_out[f] = resp_in[f];
-    }
-}
-#endif

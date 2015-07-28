@@ -138,43 +138,6 @@ unsigned nonMaximal(cl::Buffer* x_out, cl::Buffer* y_out, cl::Buffer* resp_out,
     return corners_found;
 }
 
-void keepCorners(cl::Buffer* x_out, cl::Buffer* y_out, cl::Buffer* resp_out,
-                 const cl::Buffer* x_in, const cl::Buffer* y_in,
-                 const cl::Buffer* resp_in, const cl::Buffer* resp_idx,
-                 const unsigned n_corners)
-{
-    try {
-        static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static std::map<int, Program*> kcProg;
-        static std::map<int, Kernel*>  kcKernel;
-
-        int device = getActiveDeviceId();
-
-        std::call_once( compileFlags[device], [device] () {
-                std::ostringstream options;
-                options << " -D KEEP_CORNERS";
-                cl::Program prog;
-                buildProgram(prog, susan_cl, susan_cl_len, options.str());
-                kcProg[device]   = new Program(prog);
-                kcKernel[device] = new Kernel(*kcProg[device], "keep_corners");
-            });
-
-        auto kcOp = make_kernel<Buffer, Buffer, Buffer,
-                                Buffer, Buffer,
-                                Buffer, Buffer,
-                                unsigned>(*kcKernel[device]);
-
-        NDRange local(THREADS_PER_BLOCK, 1);
-        NDRange global(divup(n_corners, local[0]), 1);
-
-        kcOp(EnqueueArgs(getQueue(), global, local),
-             *x_out, *y_out, *resp_out, *x_in, *y_in, *resp_in, *resp_idx, n_corners);
-    } catch (cl::Error err) {
-        CL_TO_AF_ERROR(err);
-        throw;
-    }
-}
-
 }
 
 }

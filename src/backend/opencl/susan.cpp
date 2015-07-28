@@ -13,7 +13,6 @@
 #include <kernel/susan.hpp>
 #include <cmath>
 #include <algorithm>
-#include <sort_index.hpp>
 
 using af::features;
 
@@ -55,31 +54,9 @@ unsigned susan(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
     if (corners_out == 0)
         return 0;
 
-    if (corners_found > corners_out) {
-        Array<float> susan_responses = createDeviceDataArray<float>(dim4(corners_found),
-                                                                    (void*)((*resp_corners)()));
-        Array<float> susan_sorted = createEmptyArray<float>(dim4(corners_found));
-        Array<unsigned> susan_idx = createEmptyArray<unsigned>(dim4(corners_found));
-
-        // Sort susan responses
-        sort_index<float, false>(susan_sorted, susan_idx, susan_responses, 0);
-
-        x_out = createEmptyArray<float>(dim4(corners_out));
-        y_out = createEmptyArray<float>(dim4(corners_out));
-        resp_out = createEmptyArray<float>(dim4(corners_out));
-
-        // Keep only the corners with higher SUSAN responses
-        kernel::keepCorners(x_out.get(), y_out.get(), resp_out.get(),
-                             x_corners, y_corners, susan_sorted.get(), susan_idx.get(),
-                             corners_out);
-
-        bufferFree(x_corners);
-        bufferFree(y_corners);
-    } else {
-        x_out = createDeviceDataArray<float>(dim4(corners_out), (void*)((*x_corners)()));
-        y_out = createDeviceDataArray<float>(dim4(corners_out), (void*)((*y_corners)()));
-        resp_out = createDeviceDataArray<float>(dim4(corners_out), (void*)((*resp_corners)()));
-    }
+    x_out = createDeviceDataArray<float>(dim4(corners_out), (void*)((*x_corners)()));
+    y_out = createDeviceDataArray<float>(dim4(corners_out), (void*)((*y_corners)()));
+    resp_out = createDeviceDataArray<float>(dim4(corners_out), (void*)((*resp_corners)()));
 
     return corners_out;
 }
