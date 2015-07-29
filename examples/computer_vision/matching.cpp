@@ -60,8 +60,6 @@ static void templateMatchingDemo(bool console)
 
     // extract a patch from input image
     unsigned patch_size = 100;
-    // after input image is indexed, .copy() is required because
-    // displaying the indexed array doesn't seem to render correctly
     array tmp_img = img(seq(100, 100+patch_size, 1.0), seq(100, 100+patch_size, 1.0));
     array result  = matchTemplate(img, tmp_img); // Default disparity metric is
                                                  // Sum of Absolute differences (SAD)
@@ -90,11 +88,13 @@ static void templateMatchingDemo(bool console)
 
         // Previews color image with green crosshairs
         while(!wnd.close()) {
+            wnd.setColorMap(AF_COLORMAP_DEFAULT);
             wnd.grid(2, 2);
             wnd(0, 0).image(disp_img  , "Search Image"    );
             wnd(0, 1).image(disp_tmp  , "Template Patch"  );
-            wnd(1, 0).image(disp_res  , "Disparity values");
-            wnd(1, 1).image(marked_res, "Best Match"      );
+            wnd(1, 0).image(marked_res, "Best Match"      );
+            wnd.setColorMap(AF_COLORMAP_HEAT);
+            wnd(1, 1).image(disp_res  , "Disparity values");
             wnd.show();
         }
     }
