@@ -73,7 +73,7 @@ void susanKernel(T* out, const T* in,
     if (gx < idim0 - edge && gy < idim1 - edge) {
         unsigned idx = gy*idim0 + gx;
         float nM  = 0.0f;
-        float m_0 = shrdMem[(ly+RADIUS)*shrdLen + lx+RADIUS];
+        float m_0 = shrdMem[(ly+radius)*shrdLen + lx+radius];
 #pragma unroll
         for (int p=0; p<windLen; ++p) {
 #pragma unroll
