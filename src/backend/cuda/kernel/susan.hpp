@@ -65,15 +65,15 @@ void susanKernel(T* out, const T* in,
 #pragma unroll
         for (int a=lx, gx2=gx; a<shrdLen; a+=BLOCK_X, gx2+=BLOCK_X) {
             int i = gx2-radius;
-            shrdMem[b*shrdLen+a] = in[i*idim0+j];
+            shrdMem[b*shrdLen+a] = in[j*idim0+i];
         }
     }
     __syncthreads();
 
-    if (gx < idim1 - edge && gy < idim0 - edge) {
-        unsigned idx = gx*idim0 + gy;
+    if (gx < idim0 - edge && gy < idim1 - edge) {
+        unsigned idx = gy*idim0 + gx;
         float nM  = 0.0f;
-        float m_0 = in[idx];
+        float m_0 = shrdMem[(ly+RADIUS)*shrdLen + lx+RADIUS];
 #pragma unroll
         for (int p=0; p<windLen; ++p) {
 #pragma unroll
@@ -101,7 +101,7 @@ void susan_responses(T* out, const T* in,
                      const unsigned edge)
 {
     dim3 threads(BLOCK_X, BLOCK_Y);
-    dim3 blocks(divup(idim1-edge*2, BLOCK_X), divup(idim0-edge*2, BLOCK_Y));
+    dim3 blocks(divup(idim0-edge*2, BLOCK_X), divup(idim1-edge*2, BLOCK_Y));
 
     switch (radius) {
         case 1: susanKernel<T, 1><<<blocks, threads>>>(out, in, idim0, idim1, t, g, edge); break;
@@ -130,18 +130,18 @@ void nonMaxKernel(float* x_out, float* y_out, float* resp_out, unsigned* count,
     const unsigned gx = blockDim.x * blockIdx.x + threadIdx.x + r;
     const unsigned gy = blockDim.y * blockIdx.y + threadIdx.y + r;
 
-    if (gx < idim1 - r && gy < idim0 - r) {
-        const T v = resp_in[gx * idim0 + gy];
+    if (gx < idim0 - r && gy < idim1 - r) {
+        const T v = resp_in[gy * idim0 + gx];
 
         // Find maximum neighborhood response
         T max_v;
-        max_v = max_val(resp_in[(gx-1) * idim0 + gy-1], resp_in[gx * idim0 + gy-1]);
-        max_v = max_val(max_v, resp_in[(gx+1) * idim0 + gy-1]);
-        max_v = max_val(max_v, resp_in[(gx-1) * idim0 + gy  ]);
-        max_v = max_val(max_v, resp_in[(gx+1) * idim0 + gy  ]);
-        max_v = max_val(max_v, resp_in[(gx-1) * idim0 + gy+1]);
-        max_v = max_val(max_v, resp_in[(gx)   * idim0 + gy+1]);
-        max_v = max_val(max_v, resp_in[(gx+1) * idim0 + gy+1]);
+        max_v = max_val(resp_in[(gy-1) * idim0 + gx-1], resp_in[gy * idim0 + gx-1]);
+        max_v = max_val(max_v, resp_in[(gy+1) * idim0 + gx-1]);
+        max_v = max_val(max_v, resp_in[(gy-1) * idim0 + gx  ]);
+        max_v = max_val(max_v, resp_in[(gy+1) * idim0 + gx  ]);
+        max_v = max_val(max_v, resp_in[(gy-1) * idim0 + gx+1]);
+        max_v = max_val(max_v, resp_in[(gy)   * idim0 + gx+1]);
+        max_v = max_val(max_v, resp_in[(gy+1) * idim0 + gx+1]);
 
         // Stores corner to {x,y,resp}_out if it's response is maximum compared
         // to its 8-neighborhood and greater or equal minimum response
@@ -162,7 +162,7 @@ void nonMaximal(float* x_out, float* y_out, float* resp_out,
                  const T * resp_in, const unsigned edge, const unsigned max_corners)
 {
     dim3 threads(BLOCK_X, BLOCK_Y);
-    dim3 blocks(divup(idim1-edge*2, BLOCK_X), divup(idim0-edge*2, BLOCK_Y));
+    dim3 blocks(divup(idim0-edge*2, BLOCK_X), divup(idim1-edge*2, BLOCK_Y));
 
     unsigned* d_corners_found = memAlloc<unsigned>(1);
     CUDA_CHECK(cudaMemset(d_corners_found, 0, sizeof(unsigned)));

@@ -73,8 +73,8 @@ void susan(cl::Buffer* out, const cl::Buffer* in,
                                    float, float, unsigned>(*suKernel[device]);
 
         NDRange local(SUSAN_THREADS_X, SUSAN_THREADS_Y);
-        NDRange global(divup(idim1-2*edge, local[0])*local[0],
-                       divup(idim0-2*edge, local[1])*local[1]);
+        NDRange global(divup(idim0-2*edge, local[0])*local[0],
+                       divup(idim1-2*edge, local[1])*local[1]);
 
         susanOp(EnqueueArgs(getQueue(), global, local), *out, *in, idim0, idim1, t, g, edge);
 
@@ -122,8 +122,8 @@ unsigned nonMaximal(cl::Buffer* x_out, cl::Buffer* y_out, cl::Buffer* resp_out,
                                         unsigned, unsigned>(*nmKernel[device]);
 
         NDRange local(SUSAN_THREADS_X, SUSAN_THREADS_Y);
-        NDRange global(divup(idim1-2*edge, local[0])*local[0],
-                       divup(idim0-2*edge, local[1])*local[1]);
+        NDRange global(divup(idim0-2*edge, local[0])*local[0],
+                       divup(idim1-2*edge, local[1])*local[1]);
 
         nonMaximalOp(EnqueueArgs(getQueue(), global, local),
                      *x_out, *y_out, *resp_out, *d_corners_found,

@@ -32,15 +32,15 @@ void susan_responses(global T* out, global const T* in,
 #pragma unroll
         for (int a=lx, gx2=gx; a<shrdLen; a+=BLOCK_X, gx2+=BLOCK_X) {
             int i = gx2-RADIUS;
-            localMem[b*shrdLen+a] = in[i*idim0+j];
+            localMem[b*shrdLen+a] = in[i+idim0*j];
         }
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    if (gx < idim1 - edge && gy < idim0 - edge) {
-        unsigned idx = gx*idim0 + gy;
+    if (gx < idim0 - edge && gy < idim1 - edge) {
+        unsigned idx = gx + idim0 * gy;
         float nM  = 0.0f;
-        float m_0 = in[idx];
+        float m_0 = localMem[(ly+RADIUS)*shrdLen + lx+RADIUS];
 #pragma unroll
         for (int p=0; p<windLen; ++p) {
 #pragma unroll
@@ -75,18 +75,18 @@ void non_maximal(global float* x_out, global float* y_out,
     const unsigned gx = get_global_id(0) + r;
     const unsigned gy = get_global_id(1) + r;
 
-    if (gx < idim1 - r && gy < idim0 - r) {
-        const T v = resp_in[gx * idim0 + gy];
+    if (gx < idim0 - r && gy < idim1 - r) {
+        const T v = resp_in[gy * idim0 + gx];
 
         // Find maximum neighborhood response
         T max_v;
-        max_v = MAX_VAL(resp_in[(gx-1) * idim0 + gy-1], resp_in[gx * idim0 + gy-1]);
-        max_v = MAX_VAL(max_v, resp_in[(gx+1) * idim0 + gy-1]);
-        max_v = MAX_VAL(max_v, resp_in[(gx-1) * idim0 + gy  ]);
-        max_v = MAX_VAL(max_v, resp_in[(gx+1) * idim0 + gy  ]);
-        max_v = MAX_VAL(max_v, resp_in[(gx-1) * idim0 + gy+1]);
-        max_v = MAX_VAL(max_v, resp_in[(gx)   * idim0 + gy+1]);
-        max_v = MAX_VAL(max_v, resp_in[(gx+1) * idim0 + gy+1]);
+        max_v = MAX_VAL(resp_in[(gy-1) * idim0 + gx-1], resp_in[gy * idim0 + gx-1]);
+        max_v = MAX_VAL(max_v, resp_in[(gy+1) * idim0 + gx-1]);
+        max_v = MAX_VAL(max_v, resp_in[(gy-1) * idim0 + gx  ]);
+        max_v = MAX_VAL(max_v, resp_in[(gy+1) * idim0 + gx  ]);
+        max_v = MAX_VAL(max_v, resp_in[(gy-1) * idim0 + gx+1]);
+        max_v = MAX_VAL(max_v, resp_in[(gy)   * idim0 + gx+1]);
+        max_v = MAX_VAL(max_v, resp_in[(gy+1) * idim0 + gx+1]);
 
         // Stores corner to {x,y,resp}_out if it's response is maximum compared
         // to its 8-neighborhood and greater or equal minimum response

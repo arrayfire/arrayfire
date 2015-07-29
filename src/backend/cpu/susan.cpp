@@ -26,9 +26,9 @@ void susan_responses(T* resp_out, const T* in,
     const unsigned r = border_len;
     const int rSqrd = radius*radius;
 
-    for (unsigned x = r; x < idim1 - r; ++x) {
-        for (unsigned y = r; y < idim0 - r; ++y) {
-            const unsigned idx = x * idim0 + y;
+    for (unsigned y = r; y < idim1 - r; ++y) {
+        for (unsigned x = r; x < idim0 - r; ++x) {
+            const unsigned idx = y * idim0 + x;
             T m_0 = in[idx];
             float nM = 0.0f;
 
@@ -37,7 +37,7 @@ void susan_responses(T* resp_out, const T* in,
                     if (i*i + j*j < rSqrd) {
                         int p = x + i;
                         int q = y + j;
-                        T m = in[p * idim0 + q];
+                        T m = in[p + idim0 * q];
                         float exp_pow = std::pow((m - m_0)/t, 6.0);
                         float cM = std::exp(-exp_pow);
                         nM += cM;
@@ -58,19 +58,19 @@ void non_maximal(float* x_out, float* y_out, float* resp_out,
     // Responses on the border don't have 8-neighbors to compare, discard them
     const unsigned r = border_len + 1;
 
-    for (unsigned x = r; x < idim1 - r; x++) {
-        for (unsigned y = r; y < idim0 - r; y++) {
-            const T v = resp_in[x * idim0 + y];
+    for (unsigned y = r; y < idim1 - r; y++) {
+        for (unsigned x = r; x < idim0 - r; x++) {
+            const T v = resp_in[y * idim0 + x];
 
             // Find maximum neighborhood response
             T max_v;
-            max_v = max(resp_in[(x-1) * idim0 + y-1], resp_in[x * idim0 + y-1]);
-            max_v = max(max_v, resp_in[(x+1) * idim0 + y-1]);
-            max_v = max(max_v, resp_in[(x-1) * idim0 + y  ]);
-            max_v = max(max_v, resp_in[(x+1) * idim0 + y  ]);
-            max_v = max(max_v, resp_in[(x-1) * idim0 + y+1]);
-            max_v = max(max_v, resp_in[(x)   * idim0 + y+1]);
-            max_v = max(max_v, resp_in[(x+1) * idim0 + y+1]);
+            max_v = max(resp_in[(y-1) * idim0 + x-1], resp_in[y * idim0 + x-1]);
+            max_v = max(max_v, resp_in[(y+1) * idim0 + x-1]);
+            max_v = max(max_v, resp_in[(y-1) * idim0 + x  ]);
+            max_v = max(max_v, resp_in[(y+1) * idim0 + x  ]);
+            max_v = max(max_v, resp_in[(y-1) * idim0 + x+1]);
+            max_v = max(max_v, resp_in[(y)   * idim0 + x+1]);
+            max_v = max(max_v, resp_in[(y+1) * idim0 + x+1]);
 
             // Stores corner to {x,y,resp}_out if it's response is maximum compared
             // to its 8-neighborhood and greater or equal minimum response
