@@ -20,6 +20,29 @@ array normalize(array a)
     return (a-mn)/(mx-mn);
 }
 
+void drawRectangle(array &out, unsigned x, unsigned y, unsigned dim0, unsigned dim1)
+{
+    printf("\nMatching patch origin = (%u, %u)\n\n", x, y);
+    seq col_span(x, x+dim0, 1);
+    seq row_span(y, y+dim1, 1);
+    //edge on left
+    out(col_span, y       , 0) = 0.f;
+    out(col_span, y       , 1) = 0.f;
+    out(col_span, y       , 2) = 1.f;
+    //edge on right
+    out(col_span, y+dim1  , 0) = 0.f;
+    out(col_span, y+dim1  , 1) = 0.f;
+    out(col_span, y+dim1  , 2) = 1.f;
+    //edge on top
+    out(x       , row_span, 0) = 0.f;
+    out(x       , row_span, 1) = 0.f;
+    out(x       , row_span, 2) = 1.f;
+    //edge on bottom
+    out(x+dim0  , row_span, 0) = 0.f;
+    out(x+dim0  , row_span, 1) = 0.f;
+    out(x+dim0  , row_span, 2) = 1.f;
+}
+
 static void templateMatchingDemo(bool console)
 {
     // Load image
@@ -39,7 +62,7 @@ static void templateMatchingDemo(bool console)
     unsigned patch_size = 100;
     // after input image is indexed, .copy() is required because
     // displaying the indexed array doesn't seem to render correctly
-    array tmp_img = img(seq(100, 100+patch_size, 1.0), seq(100, 100+patch_size, 1.0)).copy();
+    array tmp_img = img(seq(100, 100+patch_size, 1.0), seq(100, 100+patch_size, 1.0));
     array result  = matchTemplate(img, tmp_img); // Default disparity metric is
                                                  // Sum of Absolute differences (SAD)
                                                  // Currently supported metrics are
@@ -49,39 +72,19 @@ static void templateMatchingDemo(bool console)
     array disp_tmp = tmp_img/255.0f;
     array disp_res = normalize(result);
 
-    unsigned minLoc = where(disp_res==0.0f).scalar<unsigned>();
-    std::cout<< "Location(linear index) of minimum disparity value = " <<
-        minLoc << std::endl;
+    unsigned minLoc;
+    float    minVal;
+    min<float>(&minVal, &minLoc, disp_res);
+    std::cout<< "Location(linear index) of minimum disparity value = " << minLoc << std::endl;
 
     if (!console) {
         // Draw a rectangle on input image where the template matches
         array marked_res = tile(disp_img, 1, 1, 3);
-
-        unsigned x = minLoc%iDims[0];
-        unsigned y = minLoc/iDims[0];
-        printf("\nMatching patch origin = (%u, %u)\n\n", x, y);
-        seq col_span(x, x+patch_size, 1);
-        seq row_span(y, y+patch_size, 1);
-        //edge on left
-        marked_res(col_span , y        , 0) = 0.f;
-        marked_res(col_span , y        , 1) = 0.f;
-        marked_res(col_span , y        , 2) = 1.f;
-        //edge on right
-        marked_res(col_span , y+100    , 0) = 0.f;
-        marked_res(col_span , y+100    , 1) = 0.f;
-        marked_res(col_span , y+100    , 2) = 1.f;
-        //edge on top
-        marked_res(x        , row_span , 0) = 0.f;
-        marked_res(x        , row_span , 1) = 0.f;
-        marked_res(x        , row_span , 2) = 1.f;
-        //edge on bottom
-        marked_res(x+100    , row_span , 0) = 0.f;
-        marked_res(x+100    , row_span , 1) = 0.f;
-        marked_res(x+100    , row_span , 2) = 1.f;
+        drawRectangle(marked_res, minLoc%iDims[0], minLoc/iDims[0], patch_size, patch_size);
 
         std::cout<<"Note: Based on the disparity metric option provided to matchTemplate function\n"
             "either minimum or maximum disparity location is the starting corner\n"
-            "of our best matching path to template image in the search image"<< std::endl;
+            "of our best matching patch to template image in the search image"<< std::endl;
 
         af::Window wnd("Template Matching Demo");
 
