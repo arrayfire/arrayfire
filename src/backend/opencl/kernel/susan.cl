@@ -26,13 +26,23 @@ void susan_responses(global T* out, global const T* in,
     const unsigned gx = get_global_id(0) + edge;
     const unsigned gy = get_global_id(1) + edge;
 
+    const unsigned nucleusIdx = (ly+RADIUS)*shrdLen + lx+RADIUS;
+    if (gx<idim0 && gy<idim1)
+        localMem[nucleusIdx] = in[gy*idim0+gx];
+    else
+        localMem[nucleusIdx] = 0;
+    T m_0 = localMem[nucleusIdx];
+
 #pragma unroll
     for (int b=ly, gy2=gy; b<shrdLen; b+=BLOCK_Y, gy2+=BLOCK_Y) {
         int j = gy2-RADIUS;
 #pragma unroll
         for (int a=lx, gx2=gx; a<shrdLen; a+=BLOCK_X, gx2+=BLOCK_X) {
             int i = gx2-RADIUS;
-            localMem[b*shrdLen+a] = in[i+idim0*j];
+            if (i<idim0 && j<idim1)
+                localMem[b*shrdLen+a] = in[i+idim0*j];
+            else
+                localMem[b*shrdLen+a] = m_0;
         }
     }
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -40,7 +50,6 @@ void susan_responses(global T* out, global const T* in,
     if (gx < idim0 - edge && gy < idim1 - edge) {
         unsigned idx = gx + idim0 * gy;
         float nM  = 0.0f;
-        float m_0 = localMem[(ly+RADIUS)*shrdLen + lx+RADIUS];
 #pragma unroll
         for (int p=0; p<windLen; ++p) {
 #pragma unroll
@@ -50,8 +59,9 @@ void susan_responses(global T* out, global const T* in,
                 int a = lx + RADIUS + i;
                 int b = ly + RADIUS + j;
                 if (i*i + j*j < rSqrd) {
+                    float c = m_0;
                     float m = localMem[b * shrdLen + a];
-                    float exp_pow = pow((m - m_0)/t, 6.0f);
+                    float exp_pow = pow((m - c)/t, 6.0f);
                     float cM = exp(-exp_pow);
                     nM += cM;
                 }

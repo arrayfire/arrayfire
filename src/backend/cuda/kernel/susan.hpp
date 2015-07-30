@@ -59,13 +59,17 @@ void susanKernel(T* out, const T* in,
     const unsigned gx  = blockDim.x * blockIdx.x + lx + edge;
     const unsigned gy  = blockDim.y * blockIdx.y + ly + edge;
 
+    const unsigned nucleusIdx = (ly+radius)*shrdLen + lx+radius;
+    shrdMem[nucleusIdx] = gx<idim0 && gy<idim1 ? in[gy*idim0+gx] : 0;
+    T m_0 = shrdMem[nucleusIdx];
+
 #pragma unroll
     for (int b=ly, gy2=gy; b<shrdLen; b+=BLOCK_Y, gy2+=BLOCK_Y) {
         int j = gy2-radius;
 #pragma unroll
         for (int a=lx, gx2=gx; a<shrdLen; a+=BLOCK_X, gx2+=BLOCK_X) {
             int i = gx2-radius;
-            shrdMem[b*shrdLen+a] = in[j*idim0+i];
+            shrdMem[b*shrdLen+a] = (i<idim0 && j<idim1 ? in[j*idim0+i]: m_0);
         }
     }
     __syncthreads();
@@ -73,7 +77,6 @@ void susanKernel(T* out, const T* in,
     if (gx < idim0 - edge && gy < idim1 - edge) {
         unsigned idx = gy*idim0 + gx;
         float nM  = 0.0f;
-        float m_0 = shrdMem[(ly+radius)*shrdLen + lx+radius];
 #pragma unroll
         for (int p=0; p<windLen; ++p) {
 #pragma unroll
@@ -83,8 +86,9 @@ void susanKernel(T* out, const T* in,
                 int a = lx + radius + i;
                 int b = ly + radius + j;
                 if (i*i + j*j < rSqrd) {
+                    float c = m_0;
                     float m = shrdMem[b * shrdLen + a];
-                    float exp_pow = powf((m - m_0)/t, 6.0f);
+                    float exp_pow = powf((m - c)/t, 6.0f);
                     float cM = expf(-exp_pow);
                     nM += cM;
                 }
