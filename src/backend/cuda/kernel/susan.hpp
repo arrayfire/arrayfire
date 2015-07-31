@@ -14,6 +14,7 @@
 #include <debug_cuda.hpp>
 #include <math.hpp>
 #include "config.hpp"
+#include "shared.hpp"
 
 namespace cuda
 {
@@ -41,18 +42,19 @@ inline __device__ double max_val(const double x, const double y)
     return fmax(x, y);
 }
 
-template<typename T, unsigned radius>
+template<typename T>
 __global__
 void susanKernel(T* out, const T* in,
                  const unsigned idim0, const unsigned idim1,
-                 const float t, const float g,
+                 const unsigned radius, const float t, const float g,
                  const unsigned edge)
 {
     const int rSqrd   = radius*radius;
     const int windLen = 2*radius+1;
     const int shrdLen = BLOCK_X + windLen-1;
-    const size_t SHRD_MEM_SIZE = (BLOCK_X+2*radius)*(BLOCK_Y+2*radius);
-    __shared__ T shrdMem[SHRD_MEM_SIZE];
+
+    SharedMemory<T> shared;
+    T* shrdMem = shared.getPointer();
 
     const unsigned lx = threadIdx.x;
     const unsigned ly = threadIdx.y;
@@ -106,18 +108,9 @@ void susan_responses(T* out, const T* in,
 {
     dim3 threads(BLOCK_X, BLOCK_Y);
     dim3 blocks(divup(idim0-edge*2, BLOCK_X), divup(idim1-edge*2, BLOCK_Y));
+    const size_t SMEM_SIZE = (BLOCK_X+2*radius)*(BLOCK_Y+2*radius)*sizeof(T);
 
-    switch (radius) {
-        case 1: susanKernel<T, 1><<<blocks, threads>>>(out, in, idim0, idim1, t, g, edge); break;
-        case 2: susanKernel<T, 2><<<blocks, threads>>>(out, in, idim0, idim1, t, g, edge); break;
-        case 3: susanKernel<T, 3><<<blocks, threads>>>(out, in, idim0, idim1, t, g, edge); break;
-        case 4: susanKernel<T, 4><<<blocks, threads>>>(out, in, idim0, idim1, t, g, edge); break;
-        case 5: susanKernel<T, 5><<<blocks, threads>>>(out, in, idim0, idim1, t, g, edge); break;
-        case 6: susanKernel<T, 6><<<blocks, threads>>>(out, in, idim0, idim1, t, g, edge); break;
-        case 7: susanKernel<T, 7><<<blocks, threads>>>(out, in, idim0, idim1, t, g, edge); break;
-        case 8: susanKernel<T, 8><<<blocks, threads>>>(out, in, idim0, idim1, t, g, edge); break;
-        case 9: susanKernel<T, 9><<<blocks, threads>>>(out, in, idim0, idim1, t, g, edge); break;
-    }
+    susanKernel<T><<<blocks, threads, SMEM_SIZE>>>(out, in, idim0, idim1, radius, t, g, edge);
 
     POST_LAUNCH_CHECK();
 }
