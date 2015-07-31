@@ -22,7 +22,7 @@ static void harris_demo(bool console)
     if (console)
         img_color = loadImage(ASSETS_DIR "/examples/images/square.png", true);
     else
-        img_color = loadImage(ASSETS_DIR "/examples/images/lena.ppm", true);
+        img_color = loadImage(ASSETS_DIR "/examples/images/man.jpg", true);
     // Convert the image from RGB to gray-scale
     array img = colorSpace(img_color, AF_GRAY, AF_RGB);
     // For visualization in ArrayFire, color images must be in the [0.0f-1.0f] interval

@@ -166,6 +166,29 @@ AFAPI void nearestNeighbour(array& idx, array& dist,
  */
 AFAPI array matchTemplate(const array &searchImg, const array &templateImg, const matchType mType=AF_SAD);
 
+
+/**
+   C++ Interface for SUSAN corner detector
+
+   \param[in]  in is input grayscale/intensity image
+   \param[in]  radius nucleus radius for each pixel neighborhood
+   \param[in]  diff_thr intensity difference threshold
+   \param[in]  geom_thr geometric threshold a.k.a **t** from equations in description
+   \param[in]  feature_ratio is maximum number of features that will be returned by the function
+   \param[in]  edge indicates how many pixels width area should be skipped for corner detection
+   \return If SUSAN corner detection is successfull returns an object of Features class, composed of arrays for x and y
+               coordinates, score, orientation and size of selected features, otherwise exception is thrown.
+
+   \note If \p in is a 3d array, a batch operation will be performed.
+
+   \ingroup cv_func_susan
+*/
+AFAPI features susan(const array& in,
+                     const unsigned radius=3,
+                     const float diff_thr=32.0f,
+                     const float geom_thr=10.0f,
+                     const float feature_ratio=0.05f,
+                     const unsigned edge=3);
 }
 #endif
 
@@ -324,6 +347,27 @@ extern "C" {
        \ingroup cv_func_match_template
     */
     AFAPI af_err af_match_template(af_array *out, const af_array search_img, const af_array template_img, const af_match_type m_type);
+
+    /**
+       C Interface for SUSAN corner detector
+
+       \param[out] out is af_features struct composed of arrays for x and y
+                   coordinates, score, orientation and size of selected features
+       \param[in]  in is input grayscale/intensity image
+       \param[in]  radius nucleus radius for each pixel neighborhood
+       \param[in]  diff_thr intensity difference threshold a.k.a **t** from equations in description
+       \param[in]  geom_thr geometric threshold
+       \param[in]  feature_ratio is maximum number of features that will be returned by the function
+       \param[in]  edge indicates how many pixels width area should be skipped for corner detection
+       \return \ref AF_SUCCESS if SUSAN corner detection is successfull, otherwise an appropriate
+       error code is returned.
+
+       \note If \p in is a 3d array, a batch operation will be performed.
+
+       \ingroup cv_func_susan
+    */
+    AFAPI af_err af_susan(af_features* out, const af_array in, const unsigned radius, const float diff_thr, const float geom_thr,
+                          const float feature_ratio, const unsigned edge);
 
 #ifdef __cplusplus
 }

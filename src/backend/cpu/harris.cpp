@@ -131,15 +131,9 @@ void non_maximal(
     }
 }
 
-void keep_corners(
-    float* x_out,
-    float* y_out,
-    float* resp_out,
-    const float* x_in,
-    const float* y_in,
-    const float* resp_in,
-    const unsigned* resp_idx,
-    const unsigned n_corners)
+static void keep_corners(float* x_out, float* y_out, float* resp_out,
+                         const float* x_in, const float* y_in, const float* resp_in,
+                         const unsigned* resp_idx, const unsigned n_corners)
 {
     // Keep only the first n_feat features
     for (unsigned f = 0; f < n_corners; f++) {
@@ -166,7 +160,7 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
     else {
         gaussian1D<convAccT>(h_filter, (int)filter_len, sigma);
     }
-    Array<convAccT> filter = createHostDataArray(filter_len, h_filter);
+    Array<convAccT> filter = createDeviceDataArray<convAccT>(dim4(filter_len), (const void*)h_filter);
 
     unsigned border_len = filter_len / 2 + 1;
 
@@ -219,7 +213,7 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
         return 0;
 
     if (max_corners > 0 && corners_found > corners_out) {
-        Array<float> harris_responses = createHostDataArray<float>(dim4(corners_found), resp_corners);
+        Array<float> harris_responses = createDeviceDataArray<float>(dim4(corners_found), (void*)resp_corners);
         Array<float> harris_sorted = createEmptyArray<float>(dim4(corners_found));
         Array<unsigned> harris_idx = createEmptyArray<unsigned>(dim4(corners_found));
 
@@ -252,9 +246,9 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
         memFree(resp_corners);
     }
     else {
-        x_out = createHostDataArray<float>(dim4(corners_out), x_corners);
-        y_out = createHostDataArray<float>(dim4(corners_out), y_corners);
-        resp_out = createHostDataArray<float>(dim4(corners_out), resp_corners);
+        x_out = createDeviceDataArray<float>(dim4(corners_out), (void*)x_corners);
+        y_out = createDeviceDataArray<float>(dim4(corners_out), (void*)y_corners);
+        resp_out = createDeviceDataArray<float>(dim4(corners_out), (void*)resp_corners);
     }
 
     return corners_out;

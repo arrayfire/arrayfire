@@ -13,7 +13,7 @@
 
 using namespace af;
 
-static void fast_demo(bool console)
+static void susan_demo(bool console)
 {
     // Load image
     array img_color;
@@ -26,7 +26,12 @@ static void fast_demo(bool console)
     // For visualization in ArrayFire, color images must be in the [0.0f-1.0f] interval
     img_color /= 255.f;
 
-    features feat = fast(img, 20.0f, 9, true, 0.05);
+    features feat = susan(img, 3, 32.0f, 10, 0.05f, 3);
+
+    if (!(feat.getNumFeatures() > 0)) {
+        printf("No features found, exiting\n");
+        return;
+    }
 
     float* h_x = feat.getX().host<float>();
     float* h_y = feat.getY().host<float>();
@@ -36,15 +41,15 @@ static void fast_demo(bool console)
     for (size_t f = 0; f < feat.getNumFeatures(); f++) {
         int x = h_x[f];
         int y = h_y[f];
-        img_color(y, seq(x-draw_len, x+draw_len), 0) = 0.f;
-        img_color(y, seq(x-draw_len, x+draw_len), 1) = 1.f;
-        img_color(y, seq(x-draw_len, x+draw_len), 2) = 0.f;
+        img_color(x, seq(y-draw_len, y+draw_len), 0) = 0.f;
+        img_color(x, seq(y-draw_len, y+draw_len), 1) = 1.f;
+        img_color(x, seq(y-draw_len, y+draw_len), 2) = 0.f;
 
         // Draw vertical line of (draw_len * 2 + 1) pixels centered on  the corner
         // Set only the first channel to 1 (green lines)
-        img_color(seq(y-draw_len, y+draw_len), x, 0) = 0.f;
-        img_color(seq(y-draw_len, y+draw_len), x, 1) = 1.f;
-        img_color(seq(y-draw_len, y+draw_len), x, 2) = 0.f;
+        img_color(seq(x-draw_len, x+draw_len), y, 0) = 0.f;
+        img_color(seq(x-draw_len, x+draw_len), y, 1) = 1.f;
+        img_color(seq(x-draw_len, x+draw_len), y, 2) = 0.f;
     }
 
     printf("Features found: %lu\n", feat.getNumFeatures());
@@ -58,6 +63,7 @@ static void fast_demo(bool console)
     } else {
         af_print(feat.getX());
         af_print(feat.getY());
+        af_print(feat.getScore());
     }
 }
 
@@ -70,7 +76,7 @@ int main(int argc, char** argv)
         af::setDevice(device);
         af::info();
         std::cout << "** ArrayFire FAST Feature Detector Demo **" << std::endl << std::endl;
-        fast_demo(console);
+        susan_demo(console);
 
     } catch (af::exception& ae) {
         std::cerr << ae.what() << std::endl;
