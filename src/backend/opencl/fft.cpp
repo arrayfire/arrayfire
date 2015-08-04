@@ -165,51 +165,10 @@ template<typename T> struct Precision;
 template<> struct Precision<cfloat > { enum {type = CLFFT_SINGLE}; };
 template<> struct Precision<cdouble> { enum {type = CLFFT_DOUBLE}; };
 
-void computeDims(size_t rdims[4], const dim4 &idims)
+static void computeDims(size_t rdims[4], const dim4 &idims)
 {
     for (int i = 0; i < 4; i++) {
         rdims[i] = (size_t)idims[i];
-    }
-}
-
-template<typename T, int rank, bool direction>
-void fft_inplace(Array<T> &in)
-{
-    size_t idims[4], istrides[4], iembed[4];
-
-    computeDims(idims   , in.dims());
-    computeDims(iembed  , in.getDataDims());
-    computeDims(istrides, in.strides());
-
-    clfftPlanHandle plan;
-
-    int batch = 1;
-    for (int i = rank; i < 4; i++) {
-        batch *= idims[i];
-    }
-
-    find_clfft_plan(plan, (clfftDim)rank, idims,
-                    istrides, istrides[rank],
-                    istrides, istrides[rank],
-                    (clfftPrecision)Precision<T>::type,
-                    batch);
-
-    cl_mem imem = (*in.get())();
-    cl_command_queue queue = getQueue()();
-
-    CLFFT_CHECK(clfftEnqueueTransform(plan,
-                                      direction ? CLFFT_FORWARD : CLFFT_BACKWARD,
-                                      1, &queue, 0, NULL, NULL,
-                                      &imem, &imem, NULL));
-}
-
-void computePaddedDims(dim4 &pdims,
-                       const dim4 &idims,
-                       const dim_t npad,
-                       dim_t const * const pad)
-{
-    for (int i = 0; i < 4; i++) {
-        pdims[i] = (i < (int)npad) ? pad[i] : idims[i];
     }
 }
 
@@ -238,52 +197,46 @@ void verifySupported(const dim4 dims)
     }
 }
 
-template<typename inType, typename outType, int rank, bool isR2C>
-Array<outType> fft(Array<inType> const &in, double norm_factor, dim_t const npad, dim_t const * const pad)
+template<typename T, int rank, bool direction>
+void fft_inplace(Array<T> &in)
 {
-    ARG_ASSERT(1, (rank>=1 && rank<=3));
+    verifySupported<rank>(in.dims());
+    size_t idims[4], istrides[4], iembed[4];
 
-    dim4 pdims(1);
-    computePaddedDims(pdims, in.dims(), npad, pad);
-    verifySupported<rank>(pdims);
+    computeDims(idims   , in.dims());
+    computeDims(iembed  , in.getDataDims());
+    computeDims(istrides, in.strides());
 
-    Array<outType> ret = padArray<inType, outType>(in, pdims, scalar<outType>(0), norm_factor);
-    fft_inplace<outType, rank, true>(ret);
+    clfftPlanHandle plan;
 
-    return ret;
+    int batch = 1;
+    for (int i = rank; i < 4; i++) {
+        batch *= idims[i];
+    }
+
+    find_clfft_plan(plan, (clfftDim)rank, idims,
+                    istrides, istrides[rank],
+                    istrides, istrides[rank],
+                    (clfftPrecision)Precision<T>::type,
+                    batch);
+
+    cl_mem imem = (*in.get())();
+    cl_command_queue queue = getQueue()();
+
+    CLFFT_CHECK(clfftEnqueueTransform(plan,
+                                      direction ? CLFFT_FORWARD : CLFFT_BACKWARD,
+                                      1, &queue, 0, NULL, NULL,
+                                      &imem, &imem, NULL));
 }
 
-template<typename T, int rank>
-Array<T> ifft(Array<T> const &in, double norm_factor, dim_t const npad, dim_t const * const pad)
-{
-    ARG_ASSERT(1, (rank>=1 && rank<=3));
+#define INSTANTIATE(T)                                      \
+    template void fft_inplace<T, 1, true >(Array<T> &in);   \
+    template void fft_inplace<T, 2, true >(Array<T> &in);   \
+    template void fft_inplace<T, 3, true >(Array<T> &in);   \
+    template void fft_inplace<T, 1, false>(Array<T> &in);   \
+    template void fft_inplace<T, 2, false>(Array<T> &in);   \
+    template void fft_inplace<T, 3, false>(Array<T> &in);
 
-    dim4 pdims(1);
-    computePaddedDims(pdims, in.dims(), npad, pad);
-    verifySupported<rank>(pdims);
-
-    Array<T> ret = padArray<T, T>(in, pdims, scalar<T>(0), norm_factor);
-    fft_inplace<T, rank, false>(ret);
-    return ret;
-}
-
-#define INSTANTIATE1(T1, T2)\
-    template Array<T2> fft <T1, T2, 1, true >(const Array<T1> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
-    template Array<T2> fft <T1, T2, 2, true >(const Array<T1> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
-    template Array<T2> fft <T1, T2, 3, true >(const Array<T1> &in, double norm_factor, dim_t const npad, dim_t const * const pad);
-
-INSTANTIATE1(float  , cfloat )
-INSTANTIATE1(double , cdouble)
-
-#define INSTANTIATE2(T)\
-    template Array<T> fft <T, T, 1, false>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
-    template Array<T> fft <T, T, 2, false>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
-    template Array<T> fft <T, T, 3, false>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
-    template Array<T> ifft<T, 1>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
-    template Array<T> ifft<T, 2>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
-    template Array<T> ifft<T, 3>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad);
-
-INSTANTIATE2(cfloat )
-INSTANTIATE2(cdouble)
-
+    INSTANTIATE(cfloat )
+    INSTANTIATE(cdouble)
 }

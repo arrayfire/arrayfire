@@ -13,11 +13,11 @@
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <arith.hpp>
-#include <fft.hpp>
 #include <fftconvolve.hpp>
 #include <convolve_common.hpp>
 #include <dispatch.hpp>
 #include <complex.hpp>
+#include <fft_common.hpp>
 
 using af::dim4;
 using namespace detail;
@@ -67,16 +67,16 @@ af_array fftconvolve_fallback(const af_array signal, const af_array filter, bool
     }
 
     // fft(signal)
-    Array<cT> T1 = fft<cT, cT, baseDim, false>(S, 1.0, baseDim, psdims.get());
+    Array<cT> T1 = fft<cT, cT, baseDim, true>(S, 1.0, baseDim, psdims.get());
 
     // fft(filter)
-    Array<cT> T2 = fft<cT, cT, baseDim, false>(F, 1.0, baseDim, pfdims.get());
+    Array<cT> T2 = fft<cT, cT, baseDim, true>(F, 1.0, baseDim, pfdims.get());
 
     // fft(signal) * fft(filter)
     T1 = arithOp<cT, af_mul_t>(T1, T2, odims);
 
     // ifft(ffit(signal) * fft(filter))
-    T1 = ifft<cT, baseDim>(T1, 1.0/(double)count, baseDim, odims.get());
+    T1 = fft<cT, cT, baseDim, false>(T1, 1.0/(double)count, baseDim, odims.get());
 
     // Index to proper offsets
     T1 = createSubArray<cT>(T1, index);
