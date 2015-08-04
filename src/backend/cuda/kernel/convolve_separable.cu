@@ -111,7 +111,7 @@ void convolve2_separable(Param<T> out, CParam<T> signal, int nBBS0, int nBBS1)
 template<typename T, typename aT, int cDim, bool expand, int f>
 void conv2Helper(dim3 blks, dim3 thrds, Param<T> out, CParam<T> sig, int nBBS0, int nBBS1)
 {
-   (convolve2_separable<T, aT, cDim, expand, f>)<<<blks, thrds>>>(out, sig, nBBS0, nBBS1);
+   CUDA_LAUNCH((convolve2_separable<T, aT, cDim, expand, f>), blks, thrds, out, sig, nBBS0, nBBS1);
 }
 
 template<typename T, typename accType, int conv_dim, bool expand>

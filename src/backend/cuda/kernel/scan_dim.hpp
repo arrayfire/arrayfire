@@ -226,7 +226,7 @@ namespace kernel
 
         uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
-        (bcast_dim_kernel<To, op, dim>)<<<blocks, threads>>>(
+        CUDA_LAUNCH((bcast_dim_kernel<To, op, dim>), blocks, threads,
             out, tmp, blocks_all[0], blocks_all[1], blocks_all[dim], lim);
 
         POST_LAUNCH_CHECK();

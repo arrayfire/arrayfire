@@ -300,8 +300,8 @@ void prepareKernelArgs(conv_kparam_t &params, dim_t oDims[], dim_t fDims[], int 
 template<typename T, typename aT, bool expand, int f0, int f1>
 void conv2Helper(const conv_kparam_t &p, Param<T> out, CParam<T> sig)
 {
-    (convolve2<T, aT, expand, f0, f1>)
-        <<<p.mBlocks, p.mThreads>>>(out, sig, p.mBlk_x, p.mBlk_y, p.o[1], p.o[2], p.s[1], p.s[2]);
+    CUDA_LAUNCH((convolve2<T, aT, expand, f0, f1>), p.mBlocks, p.mThreads,
+            out, sig, p.mBlk_x, p.mBlk_y, p.o[1], p.o[2], p.s[1], p.s[2]);
 
     POST_LAUNCH_CHECK();
 }
@@ -381,10 +381,9 @@ void convolve_1d(conv_kparam_t &p, Param<T> out, CParam<T> sig, CParam<aT> filt)
                 p.s[1] = (p.inHasNoOffset ? 0 : b2);
                 p.s[2] = (p.inHasNoOffset ? 0 : b3);
 
-                (convolve1<T, aT, expand>)
-                    <<<p.mBlocks, p.mThreads, p.mSharedSize>>>
-                    (out, sig, filt.dims[0], p.mBlk_x, p.mBlk_y,
-                     p.o[0], p.o[1], p.o[2], p.s[0], p.s[1], p.s[2]);
+                CUDA_LAUNCH_SMEM((convolve1<T, aT, expand>), p.mBlocks, p.mThreads, p.mSharedSize,
+                    out, sig, filt.dims[0], p.mBlk_x, p.mBlk_y,
+                    p.o[0], p.o[1], p.o[2], p.s[0], p.s[1], p.s[2]);
 
                 POST_LAUNCH_CHECK();
             }
@@ -442,9 +441,8 @@ void convolve_3d(conv_kparam_t &p, Param<T> out, CParam<T> sig, CParam<aT> filt)
         p.o[2] = (p.outHasNoOffset ? 0 : b3);
         p.s[2] = (p.inHasNoOffset ? 0 : b3);
 
-        (convolve3<T, aT, expand>)
-            <<<p.mBlocks, p.mThreads, p.mSharedSize>>>
-            (out, sig, filt.dims[0], filt.dims[1], filt.dims[2], p.mBlk_x, p.o[2], p.s[2]);
+        CUDA_LAUNCH_SMEM((convolve3<T, aT, expand>), p.mBlocks, p.mThreads, p.mSharedSize,
+            out, sig, filt.dims[0], filt.dims[1], filt.dims[2], p.mBlk_x, p.o[2], p.s[2]);
 
         POST_LAUNCH_CHECK();
     }
