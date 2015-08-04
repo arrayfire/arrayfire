@@ -112,3 +112,18 @@ MATH_TESTS_DOUBLE(log2)
 MATH_TESTS_LIMITS(double, double, abs, dbl_err, -10, 10)
 MATH_TESTS_LIMITS(double, double, ceil, dbl_err, -10, 10)
 MATH_TESTS_LIMITS(double, double, floor, dbl_err, -10, 10)
+
+TEST(MathTests, Not)
+{
+    af::array a = af::randu(5, 5, b8);
+    af::array b = !a;
+    char *ha = a.host<char>();
+    char *hb = b.host<char>();
+
+    for(int i = 0; i < a.elements(); i++) {
+        ASSERT_EQ(ha[i] ^ hb[i], true);
+    }
+
+    delete[] ha;
+    delete[] hb;
+}

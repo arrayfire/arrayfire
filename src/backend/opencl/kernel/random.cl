@@ -241,8 +241,13 @@ void generate(T *one, T *two, threefry2_ctr_t *c, threefry2_key_t k)
     T u1 = result(r.v[0]);
     T u2 = result(r.v[1]);
 
-    T R     = sqrt(-2*log(u1));
-    T Theta = 2 * PI_VAL * u2;
+#if defined(IS_APPLE) // Because Apple is.. "special"
+    T R     = sqrt((T)(-2.0) * log10(u1) * (T)log10_val);
+#else
+    T R     = sqrt((T)(-2.0) * log(u1));
+#endif
+
+    T Theta = 2 * (T)PI_VAL * u2;
 
     *one = R * sin(Theta);
     *two = R * cos(Theta);

@@ -95,7 +95,7 @@ namespace cpu
 
         Array() = default;
         Array(dim4 dims);
-        explicit Array(dim4 dims, const T * const in_data);
+        explicit Array(dim4 dims, const T * const in_data, bool is_device);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
         explicit Array(af::dim4 dims, TNJ::Node_ptr n);
 

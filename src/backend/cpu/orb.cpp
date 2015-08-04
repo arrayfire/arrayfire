@@ -659,13 +659,11 @@ unsigned orb(Array<float> &x, Array<float> &y,
 
         // Sort features according to Harris responses
         af::dim4 usable_feat_dims(usable_feat);
-        Array<float> score_harris = createHostDataArray(usable_feat_dims, h_score_harris);
+        Array<float> score_harris = createDeviceDataArray<float>(usable_feat_dims, h_score_harris);
         Array<float> harris_sorted = createEmptyArray<float>(af::dim4());
         Array<unsigned> harris_idx = createEmptyArray<unsigned>(af::dim4());
 
         sort_index<float, false>(harris_sorted, harris_idx, score_harris, 0);
-
-        memFree(h_score_harris);
 
         usable_feat = std::min(usable_feat, lvl_best[i]);
 
@@ -702,7 +700,7 @@ unsigned orb(Array<float> &x, Array<float> &y,
             if (!h_gauss) {
                 h_gauss = memAlloc<T>(gauss_dims[0]);
                 gaussian1D(h_gauss, gauss_dims[0], 2.f);
-                gauss_filter = createHostDataArray(gauss_dims, h_gauss);
+                gauss_filter = createDeviceDataArray<T>(gauss_dims, h_gauss);
             }
 
             // Filter level image with Gaussian kernel to reduce noise sensitivity
@@ -732,9 +730,6 @@ unsigned orb(Array<float> &x, Array<float> &y,
         h_desc_pyr[i] = h_desc_lvl;
 
     }
-
-    if (h_gauss != nullptr)
-        memFree(h_gauss);
 
     if (total_feat > 0 ) {
 

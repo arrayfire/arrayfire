@@ -17,6 +17,7 @@
 #include <qr.hpp>
 #include <reduce.hpp>
 #include <logic.hpp>
+#include <complex.hpp>
 
 using af::dim4;
 using namespace detail;
@@ -24,21 +25,24 @@ using namespace detail;
 template<typename T>
 static inline uint rank(const af_array in, double tol)
 {
+    typedef typename af::dtype_traits<T>::base_type BT;
     Array<T> In = getArray<T>(in);
 
-    Array<T> r = createEmptyArray<T>(dim4());
+    Array<BT> R = createEmptyArray<BT>(dim4());
 
-    // Scoping to get rid of q and t as they are not necessary
+    // Scoping to get rid of q, r and t as they are not necessary
     {
         Array<T> q = createEmptyArray<T>(dim4());
+        Array<T> r = createEmptyArray<T>(dim4());
         Array<T> t = createEmptyArray<T>(dim4());
         qr(q, r, t, In);
+
+        R = abs<BT, T>(r);
     }
 
-    Array<T> val = createValueArray<T>(r.dims(), scalar<T>(tol));
-    Array<char> gt = logicOp<T, af_gt_t>(r, val, val.dims());
+    Array<BT> val = createValueArray<BT>(R.dims(), scalar<BT>(tol));
+    Array<char> gt = logicOp<BT, af_gt_t>(R, val, val.dims());
     Array<char> at = reduce<af_or_t, char, char>(gt, 1);
-
     return reduce_all<af_notzero_t, char, uint>(at);
 }
 

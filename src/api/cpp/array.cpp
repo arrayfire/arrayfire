@@ -842,12 +842,30 @@ namespace af
 #undef ASSIGN_OP
 #undef ASSIGN_TYPE
 
+af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
+{
+    // If same, do not do anything
+    if (scalar_type == array_type) return scalar_type;
+
+    // If complex, return appropriate complex type
+    if (scalar_type == c32 || scalar_type == c64) {
+        if (array_type == f64 || array_type == c64) return c64;
+        return c32;
+    }
+
+    // If 64 bit precision, do not lose precision
+    if (array_type == f64 || array_type == c64 ||
+        array_type == f32 || array_type == c32 ) return array_type;
+
+    // Punt to C api for everything else
+    return scalar_type;
+}
+
 #define BINARY_TYPE(TY, OP, func, dty)                          \
     array operator OP(const array& plhs, const TY &value)       \
     {                                                           \
         af_array out;                                           \
-        af::dtype ty = plhs.type();                             \
-        af::dtype cty = plhs.isfloating() ? ty : dty;           \
+        af::dtype cty = implicit_dtype(dty, plhs.type());       \
         array cst = constant(value, plhs.dims(), cty);          \
         AF_THROW(func(&out, plhs.get(), cst.get(), gforGet())); \
         return array(out);                                      \
@@ -856,8 +874,7 @@ namespace af
     {                                                           \
         const af_array rhs = other.get();                       \
         af_array out;                                           \
-        af::dtype ty = other.type();                            \
-        af::dtype cty = other.isfloating() ? ty : dty;          \
+        af::dtype cty = implicit_dtype(dty, other.type());      \
         array cst = constant(value, other.dims(), cty);         \
         AF_THROW(func(&out, cst.get(), rhs, gforGet()));        \
         return array(out);                                      \
@@ -919,8 +936,7 @@ namespace af
     {
         af_array lhs = this->get();
         af_array out;
-        array cst = constant(0, this->dims(), this->type());
-        AF_THROW(af_eq(&out, cst.get(), lhs, gforGet()));
+        AF_THROW(af_not(&out, lhs));
         return array(out);
     }
 
