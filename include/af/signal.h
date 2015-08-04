@@ -76,7 +76,7 @@ AFAPI array fft2Norm(const array& in, const double norm_factor, const dim_t odim
 /**
    C++ Interface for fast fourier transform on three dimensional data
 
-   \param[in]  in is the input array
+   \param[in]  in is the input array and the output of 1D fourier transform on exit
    \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
    \param[in]  odim0 is the length of output data along first dimension - used to either truncate/pad the input
    \param[in]  odim1 is the length of output data along second dimension - used to either truncate/pad the input
@@ -86,6 +86,44 @@ AFAPI array fft2Norm(const array& in, const double norm_factor, const dim_t odim
    \ingroup signal_func_fft3
  */
 AFAPI array fft3Norm(const array& in, const double norm_factor, const dim_t odim0=0, const dim_t odim1=0, const dim_t odim2=0);
+
+/**
+   C++ Interface for fast fourier transform on one dimensional data
+
+   \param[inout]  in is the input array on entry and the output of 1D forward fourier transform on exit
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+
+   \note The input \p in must be complex
+
+   \ingroup signal_func_fft
+ */
+AFAPI void fftInPlace(const array& in, const double norm_factor = 1);
+
+/**
+   C++ Interface for fast fourier transform on two dimensional data
+
+   \param[inout]  in is the input array on entry and the output of 2D forward fourier transform on exit
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \return     the transformed array
+
+   \note The input \p in must be complex
+
+   \ingroup signal_func_fft2
+ */
+AFAPI void fft2InPlace(const array& in, const double norm_factor = 1);
+
+/**
+   C++ Interface for fast fourier transform on three dimensional data
+
+   \param[inout]  in is the input array on entry and the output of 3D forward fourier transform on exit
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \return     the transformed array
+
+   \note The input \p in must be complex
+
+   \ingroup signal_func_fft3
+ */
+AFAPI void fft3InPlace(const array& in, const double norm_factor = 1);
 
 /**
    C++ Interface for fast fourier transform on one dimensional data
@@ -209,6 +247,44 @@ AFAPI array ifft2Norm(const array& in, const double norm_factor, const dim_t odi
    \ingroup signal_func_ifft3
  */
 AFAPI array ifft3Norm(const array& in, const double norm_factor, const dim_t odim0=0, const dim_t odim1=0, const dim_t odim2=0);
+
+/**
+   C++ Interface for fast fourier transform on one dimensional data
+
+   \param[inout]  in is the input array on entry and the output of 1D inverse fourier transform on exit
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+
+   \note The input \p in must be complex
+
+   \ingroup signal_func_ifft
+ */
+AFAPI void ifftInPlace(const array& in, const double norm_factor = 1);
+
+/**
+   C++ Interface for fast fourier transform on two dimensional data
+
+   \param[inout]  in is the input array on entry and the output of 2D inverse fourier transform on exit
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \return     the transformed array
+
+   \note The input \p in must be complex
+
+   \ingroup signal_func_ifft2
+ */
+AFAPI void ifft2InPlace(const array& in, const double norm_factor = 1);
+
+/**
+   C++ Interface for fast fourier transform on three dimensional data
+
+   \param[inout]  in is the input array on entry and the output of 3D inverse fourier transform on exit
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \return     the transformed array
+
+   \note The input \p in must be complex
+
+   \ingroup signal_func_ifft3
+ */
+AFAPI void ifft3InPlace(const array& in, const double norm_factor = 1);
 
 /**
    C++ Interface for inverse fast fourier transform on one dimensional data
@@ -518,6 +594,20 @@ AFAPI af_err af_approx2(af_array *out, const af_array in, const af_array pos0, c
 AFAPI af_err af_fft(af_array *out, const af_array in, const double norm_factor, const dim_t odim0);
 
 /**
+   C Interface for fast fourier transform on one dimensional data
+
+   \param[inout]  in is the input array on entry and the output of 1D forward fourier transform at exit
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \return     \ref AF_SUCCESS if the fft transform is successful,
+               otherwise an appropriate error code is returned.
+
+   \note The input \p in must be a complex array
+
+   \ingroup signal_func_fft
+*/
+AFAPI af_err af_fft_inplace(af_array in, const double norm_factor);
+
+/**
    C Interface for fast fourier transform on two dimensional data
 
    \param[out] out is the transformed array
@@ -531,6 +621,20 @@ AFAPI af_err af_fft(af_array *out, const af_array in, const double norm_factor, 
    \ingroup signal_func_fft2
  */
 AFAPI af_err af_fft2(af_array *out, const af_array in, const double norm_factor, const dim_t odim0, const dim_t odim1);
+
+/**
+   C Interface for fast fourier transform on two dimensional data
+
+   \param[inout]  in is the input array on entry and the output of 2D forward fourier transform on exit
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \return     \ref AF_SUCCESS if the fft transform is successful,
+               otherwise an appropriate error code is returned.
+
+   \note The input \p in must be a complex array
+
+   \ingroup signal_func_fft2
+ */
+AFAPI af_err af_fft2_inplace(af_array in, const double norm_factor);
 
 /**
    C Interface for fast fourier transform on three dimensional data
@@ -549,6 +653,20 @@ AFAPI af_err af_fft2(af_array *out, const af_array in, const double norm_factor,
 AFAPI af_err af_fft3(af_array *out, const af_array in, const double norm_factor, const dim_t odim0, const dim_t odim1, const dim_t odim2);
 
 /**
+   C Interface for fast fourier transform on three dimensional data
+
+   \param[inout]  in is the input array on entry and the output of 3D forward fourier transform on exit
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \return     \ref AF_SUCCESS if the fft transform is successful,
+               otherwise an appropriate error code is returned.
+
+   \note The input \p must be a complex array
+
+   \ingroup signal_func_fft3
+ */
+AFAPI af_err af_fft3_inplace(af_array in, const double norm_factor);
+
+/**
    C Interface for inverse fast fourier transform on one dimensional data
 
    \param[out] out is the transformed array
@@ -561,6 +679,20 @@ AFAPI af_err af_fft3(af_array *out, const af_array in, const double norm_factor,
    \ingroup signal_func_ifft
  */
 AFAPI af_err af_ifft(af_array *out, const af_array in, const double norm_factor, const dim_t odim0);
+
+/**
+   C Interface for fast fourier transform on one dimensional data
+
+   \param[inout]  in is the input array on entry and the output of 1D inverse fourier transform at exit
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \return     \ref AF_SUCCESS if the ifft transform is successful,
+               otherwise an appropriate error code is returned.
+
+   \note The input \p in must be a complex array
+
+   \ingroup signal_func_ifft
+*/
+AFAPI af_err af_ifft_inplace(af_array in, const double norm_factor);
 
 /**
    C Interface for inverse fast fourier transform on two dimensional data
@@ -578,6 +710,20 @@ AFAPI af_err af_ifft(af_array *out, const af_array in, const double norm_factor,
 AFAPI af_err af_ifft2(af_array *out, const af_array in, const double norm_factor, const dim_t odim0, const dim_t odim1);
 
 /**
+   C Interface for fast fourier transform on two dimensional data
+
+   \param[inout]  in is the input array on entry and the output of 2D inverse fourier transform on exit
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \return     \ref AF_SUCCESS if the ifft transform is successful,
+               otherwise an appropriate error code is returned.
+
+   \note The input \p in must be a complex array
+
+   \ingroup signal_func_ifft2
+*/
+AFAPI af_err af_ifft2_inplace(af_array in, const double norm_factor);
+
+/**
    C Interface for inverse fast fourier transform on three dimensional data
 
    \param[out] out is the transformed array
@@ -592,6 +738,21 @@ AFAPI af_err af_ifft2(af_array *out, const af_array in, const double norm_factor
    \ingroup signal_func_ifft3
  */
 AFAPI af_err af_ifft3(af_array *out, const af_array in, const double norm_factor, const dim_t odim0, const dim_t odim1, const dim_t odim2);
+
+/**
+   C Interface for fast fourier transform on three dimensional data
+
+   \param[inout]  in is the input array on entry and the output of 3D inverse fourier transform on exit
+   \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
+   \return     \ref AF_SUCCESS if the ifft transform is successful,
+               otherwise an appropriate error code is returned.
+
+   \note The input \p must be a complex array
+
+   \ingroup signal_func_ifft3
+*/
+AFAPI af_err af_ifft3_inplace(af_array in, const double norm_factor);
+
 
 /**
    C Interface for convolution on one dimensional data

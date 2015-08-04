@@ -14,6 +14,7 @@
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <fft.hpp>
+#include <copy.hpp>
 
 using af::dim4;
 using namespace detail;
@@ -112,4 +113,65 @@ af_err af_ifft3(af_array *out, const af_array in, const double norm_factor, cons
 {
     const dim_t pad[3] = {pad0, pad1, pad2};
     return ifft<3>(out, in, norm_factor, (pad0>0&&pad1>0&&pad2>0?3:0), pad);
+}
+
+template<typename T, int rank, bool direction>
+static void fft_inplace(const af_array in, const double norm_factor)
+{
+    Array<T> &input = getWritableArray<T>(in);
+    fft_inplace<T, rank, direction>(input);
+    if (norm_factor != 1) {
+        multiply_inplace<T>(input, norm_factor);
+    }
+}
+
+template<int rank, bool direction>
+static af_err fft_inplace(af_array in, const double norm_factor)
+{
+    try {
+        ArrayInfo info = getInfo(in);
+        af_dtype type  = info.getType();
+        af::dim4 dims  = info.dims();
+
+        DIM_ASSERT(1, (dims.ndims()>=rank));
+
+        switch(type) {
+            case c32: fft_inplace<cfloat , rank, direction>(in, norm_factor); break;
+            case c64: fft_inplace<cdouble, rank, direction>(in, norm_factor); break;
+            default: TYPE_ERROR(1, type);
+        }
+    }
+    CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+af_err af_fft_inplace(af_array in, const double norm_factor)
+{
+    return fft_inplace<1, true>(in, norm_factor);
+}
+
+af_err af_fft2_inplace(af_array in, const double norm_factor)
+{
+    return fft_inplace<2, true>(in, norm_factor);
+}
+
+af_err af_fft3_inplace(af_array in, const double norm_factor)
+{
+    return fft_inplace<3, true>(in, norm_factor);
+}
+
+af_err af_ifft_inplace(af_array in, const double norm_factor)
+{
+    return fft_inplace<1, false>(in, norm_factor);
+}
+
+af_err af_ifft2_inplace(af_array in, const double norm_factor)
+{
+    return fft_inplace<2, false>(in, norm_factor);
+}
+
+af_err af_ifft3_inplace(af_array in, const double norm_factor)
+{
+    return fft_inplace<3, false>(in, norm_factor);
 }
