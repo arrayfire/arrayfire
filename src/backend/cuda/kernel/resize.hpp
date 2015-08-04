@@ -184,7 +184,8 @@ namespace cuda
             float xf = (float)in.dims[0] / (float)out.dims[0];
             float yf = (float)in.dims[1] / (float)out.dims[1];
 
-            resize_kernel<T, method><<<blocks, threads>>>(out, in, blocksPerMatX, blocksPerMatY, xf, yf);
+            CUDA_LAUNCH((resize_kernel<T, method>), blocks, threads,
+                    out, in, blocksPerMatX, blocksPerMatY, xf, yf);
             POST_LAUNCH_CHECK();
         }
     }

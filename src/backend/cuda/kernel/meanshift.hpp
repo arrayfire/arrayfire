@@ -212,9 +212,11 @@ void meanshift(Param<T> out, CParam<T> in, float s_sigma, float c_sigma, uint it
     size_t shrd_size = channels*(threads.x + padding)*(threads.y+padding)*sizeof(T);
 
     if (is_color)
-        (meanshiftKernel<T, 3>) <<<blocks, threads, shrd_size>>>(out, in, space_, radius, cvar, iter, blk_x, blk_y);
+        CUDA_LAUNCH_SMEM((meanshiftKernel<T, 3>), blocks, threads, shrd_size,
+                out, in, space_, radius, cvar, iter, blk_x, blk_y);
     else
-        (meanshiftKernel<T, 1>) <<<blocks, threads, shrd_size>>>(out, in, space_, radius, cvar, iter, blk_x, blk_y);
+        CUDA_LAUNCH_SMEM((meanshiftKernel<T, 1>), blocks, threads, shrd_size,
+                out, in, space_, radius, cvar, iter, blk_x, blk_y);
 
     POST_LAUNCH_CHECK();
 }

@@ -82,8 +82,9 @@ namespace cuda
                         blocksPerMatY * out.dims[3],
                         1);
 
-            reorder_kernel<T><<<blocks, threads>>>(out, in, rdims[0], rdims[1], rdims[2], rdims[3],
-                                                   blocksPerMatX, blocksPerMatY);
+            CUDA_LAUNCH((reorder_kernel<T>), blocks, threads,
+                out, in, rdims[0], rdims[1], rdims[2], rdims[3],
+                blocksPerMatX, blocksPerMatY);
             POST_LAUNCH_CHECK();
         }
     }

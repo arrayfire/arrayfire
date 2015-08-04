@@ -52,7 +52,16 @@ void exampleFunc(Param<T> out, CParam<T> in, const af_someenum_t p)
     dim3 blocks(blk_x, blk_y);          // set your opencl launch config for grid
 
     // launch your kernel
-    exampleFuncKernel<T> <<<blocks, threads>>> (out, in, p);
+    // One must use CUDA_LAUNCH macro to launch their kernels to ensure
+    // that the kernel is launched on an appropriate stream
+    //
+    // Use CUDA_LAUNCH macro for launching kernels that don't use dynamic shared memory
+    //
+    // Use CUDA_LAUNCH_SMEM macro for launching kernsl that use dynamic shared memory
+    //
+    // CUDA_LAUNCH_SMEM takes in an additional parameter, size of shared memory, after
+    // threads paramters, which are then followed by kernel parameters
+    CUDA_LAUNCH((exampleFuncKernel<T>), blocks, threads, out, in, p);
 
     POST_LAUNCH_CHECK();                // Macro for post kernel launch checks
                                         // these checks are carried  ONLY IN DEBUG mode

@@ -77,7 +77,7 @@ void assign(Param<T> out, CParam<T> in, const AssignKernelParam_t& p)
 
     dim3 blocks(blks_x*in.dims[2], blks_y*in.dims[3]);
 
-    AssignKernel<T> <<<blocks, threads>>> (out, in, p, blks_x, blks_y);
+    CUDA_LAUNCH((AssignKernel<T>), blocks, threads, out, in, p, blks_x, blks_y);
 
     POST_LAUNCH_CHECK();
 }

@@ -410,7 +410,7 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
 
     const dim3 blocks(blk_x, blk_y);
 
-    (initial_label<T,n_per_thread>)<<<blocks, threads>>>(out, in);
+    CUDA_LAUNCH((initial_label<T,n_per_thread>), blocks, threads, out, in);
 
     POST_LAUNCH_CHECK();
 
@@ -421,8 +421,7 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
         CUDA_CHECK(cudaMemcpyToSymbol(continue_flag, &h_continue, sizeof(int),
                                       0, cudaMemcpyHostToDevice));
 
-        (update_equiv<T, 16, n_per_thread, full_conn>)<<<blocks, threads>>>
-            (out, tex);
+        CUDA_LAUNCH((update_equiv<T, 16, n_per_thread, full_conn>), blocks, threads, out, tex);
 
         POST_LAUNCH_CHECK();
 
@@ -472,9 +471,8 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
                                      add);
 
     // Apply the correct labels to the equivalency map
-    (final_relabel<T,n_per_thread>)<<<blocks,threads>>>(out,
-                                                        in,
-                                                        thrust::raw_pointer_cast(&labels[0]));
+    CUDA_LAUNCH((final_relabel<T,n_per_thread>), blocks,threads,
+            out, in, thrust::raw_pointer_cast(&labels[0]));
 
     POST_LAUNCH_CHECK();
 

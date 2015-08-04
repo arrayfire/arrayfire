@@ -136,7 +136,7 @@ namespace kernel
             CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
         }
 
-        setup_kernel<<<BLOCKS, THREADS>>>(states[device], seed);
+        CUDA_LAUNCH((setup_kernel), BLOCKS, THREADS, states[device], seed);
         POST_LAUNCH_CHECK();
         is_init[device] = true;
     }
@@ -149,7 +149,7 @@ namespace kernel
         int threads = THREADS;
         int blocks  = divup(elements, THREADS);
         if (blocks > BLOCKS) blocks = BLOCKS;
-        uniform_kernel<<<blocks, threads>>>(out, states[device], elements);
+        CUDA_LAUNCH(uniform_kernel, blocks, threads, out, states[device], elements);
         POST_LAUNCH_CHECK();
     }
 
@@ -165,12 +165,12 @@ namespace kernel
         if (!states[device]) {
             CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
 
-            setup_kernel<<<BLOCKS, THREADS>>>(states[device], seed);
+            CUDA_LAUNCH(setup_kernel, BLOCKS, THREADS, states[device], seed);
 
             POST_LAUNCH_CHECK();
         }
 
-        normal_kernel<<<blocks, threads>>>(out, states[device], elements);
+        CUDA_LAUNCH(normal_kernel, blocks, threads, out, states[device], elements);
 
         POST_LAUNCH_CHECK();
     }

@@ -370,10 +370,8 @@ void orb(unsigned* out_feat,
         // Good block_size >= 7 (must be an odd number)
         dim3 threads(THREADS_X, THREADS_Y);
         dim3 blocks(divup(feat_pyr[i], threads.x), 1);
-        harris_response<T,false><<<blocks, threads>>>(d_score_harris, NULL,
-                                                      d_x_pyr[i], d_y_pyr[i], NULL,
-                                                      feat_pyr[i],
-                                                      img_pyr[i], 7, 0.04f, patch_size);
+        CUDA_LAUNCH((harris_response<T,false>), blocks, threads,
+               d_score_harris, NULL, d_x_pyr[i], d_y_pyr[i], NULL, feat_pyr[i], img_pyr[i], 7, 0.04f, patch_size);
         POST_LAUNCH_CHECK();
 
         Param<float> harris_sorted;
@@ -405,9 +403,9 @@ void orb(unsigned* out_feat,
         // Keep only features with higher Harris responses
         threads = dim3(THREADS, 1);
         blocks = dim3(divup(feat_pyr[i], threads.x), 1);
-        keep_features<T><<<blocks, threads>>>(d_x_lvl, d_y_lvl, d_score_lvl, NULL,
-                                              d_x_pyr[i], d_y_pyr[i], harris_sorted.ptr, harris_idx.ptr,
-                                              NULL, feat_pyr[i]);
+        CUDA_LAUNCH((keep_features<T>), blocks, threads,
+                d_x_lvl, d_y_lvl, d_score_lvl, NULL,
+                d_x_pyr[i], d_y_pyr[i], harris_sorted.ptr, harris_idx.ptr, NULL, feat_pyr[i]);
         POST_LAUNCH_CHECK();
 
         memFree(d_x_pyr[i]);
@@ -420,8 +418,8 @@ void orb(unsigned* out_feat,
         // Compute orientation of features
         threads = dim3(THREADS_X, THREADS_Y);
         blocks  = dim3(divup(feat_pyr[i], threads.x), 1);
-        centroid_angle<T><<<blocks, threads>>>(d_x_lvl, d_y_lvl, d_ori_lvl, feat_pyr[i],
-                                               img_pyr[i], patch_size);
+        CUDA_LAUNCH((centroid_angle<T>), blocks, threads,
+                d_x_lvl, d_y_lvl, d_ori_lvl, feat_pyr[i], img_pyr[i], patch_size);
         POST_LAUNCH_CHECK();
 
         Param<T> lvl_tmp;
@@ -462,9 +460,9 @@ void orb(unsigned* out_feat,
         // Compute ORB descriptors
         threads = dim3(THREADS_X, THREADS_Y);
         blocks  = dim3(divup(feat_pyr[i], threads.x), 1);
-        extract_orb<T><<<blocks, threads>>>(d_desc_lvl, feat_pyr[i],
-                                            d_x_lvl, d_y_lvl, d_ori_lvl, d_size_lvl,
-                                            img_pyr[i], lvl_scl[i], patch_size);
+        CUDA_LAUNCH((extract_orb<T>), blocks, threads,
+                d_desc_lvl, feat_pyr[i], d_x_lvl, d_y_lvl, d_ori_lvl, d_size_lvl,
+                img_pyr[i], lvl_scl[i], patch_size);
         POST_LAUNCH_CHECK();
 
         if (i > 0)

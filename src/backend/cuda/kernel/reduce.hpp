@@ -118,19 +118,19 @@ namespace kernel
 
         switch (threads_y) {
         case 8:
-            (reduce_dim_kernel<Ti, To, op, dim, 8>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((reduce_dim_kernel<Ti, To, op, dim, 8>), blocks, threads,
                 out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
                 change_nan, scalar<To>(nanval)); break;
         case 4:
-            (reduce_dim_kernel<Ti, To, op, dim, 4>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((reduce_dim_kernel<Ti, To, op, dim, 4>), blocks, threads,
                 out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
                 change_nan, scalar<To>(nanval)); break;
         case 2:
-            (reduce_dim_kernel<Ti, To, op, dim, 2>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((reduce_dim_kernel<Ti, To, op, dim, 2>), blocks, threads,
                 out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
                 change_nan, scalar<To>(nanval)); break;
         case 1:
-            (reduce_dim_kernel<Ti, To, op, dim, 1>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((reduce_dim_kernel<Ti, To, op, dim, 1>), blocks, threads,
                 out, in, blocks_dim[0], blocks_dim[1], blocks_dim[dim],
                 change_nan, scalar<To>(nanval)); break;
         }
@@ -303,16 +303,16 @@ namespace kernel
 
         switch (threads_x) {
         case 32:
-            (reduce_first_kernel<Ti, To, op,  32>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((reduce_first_kernel<Ti, To, op,  32>), blocks, threads,
                 out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval)); break;
         case 64:
-            (reduce_first_kernel<Ti, To, op,  64>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((reduce_first_kernel<Ti, To, op,  64>), blocks, threads,
                 out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval)); break;
         case 128:
-            (reduce_first_kernel<Ti, To, op,  128>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((reduce_first_kernel<Ti, To, op,  128>), blocks, threads,
                 out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval)); break;
         case 256:
-            (reduce_first_kernel<Ti, To, op,  256>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((reduce_first_kernel<Ti, To, op,  256>), blocks, threads,
                 out, in, blocks_x, blocks_y, repeat, change_nan, scalar<To>(nanval)); break;
         }
 

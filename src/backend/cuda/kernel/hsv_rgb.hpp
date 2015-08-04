@@ -106,7 +106,7 @@ void hsv2rgb_convert(Param<T> out, CParam<T> in)
     // parameter would be along 4th dimension
     dim3 blocks(blk_x*in.dims[3], blk_y);
 
-    convert<T, isHSV2RGB> <<<blocks, threads>>> (out, in, blk_x);
+    CUDA_LAUNCH((convert<T, isHSV2RGB>), blocks, threads, out, in, blk_x);
 
     POST_LAUNCH_CHECK();
 }
