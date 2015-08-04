@@ -51,21 +51,18 @@ struct fftw_transform;
 TRANSFORM(fftwf, cfloat)
 TRANSFORM(fftw, cdouble)
 
-template<typename T, int rank, int direction>
-void fft_common(Array <T> &out, const Array<T> &in)
+template<typename T, int rank, bool direction>
+void fft_inplace(Array<T> &in)
 {
     int in_dims[rank];
     int in_embed[rank];
-    int out_embed[rank];
 
     const dim4 idims = in.dims();
 
     computeDims<rank>(in_dims  , idims);
     computeDims<rank>(in_embed , in.getDataDims());
-    computeDims<rank>(out_embed, out.getDataDims());
 
     const dim4 istrides = in.strides();
-    const dim4 ostrides = out.strides();
 
     typedef typename fftw_transform<T>::ctype_t ctype_t;
     typename fftw_transform<T>::plan_t plan;
@@ -83,9 +80,9 @@ void fft_common(Array <T> &out, const Array<T> &in)
                             (ctype_t *)in.get(),
                             in_embed, (int)istrides[0],
                             (int)istrides[rank],
-                            (ctype_t *)out.get(),
-                            out_embed, (int)ostrides[0],
-                            (int)ostrides[rank],
+                            (ctype_t *)in.get(),
+                            in_embed, (int)istrides[0],
+                            (int)istrides[rank],
                             direction ? FFTW_FORWARD : FFTW_BACKWARD,
                             FFTW_ESTIMATE);
 
@@ -113,7 +110,7 @@ Array<outType> fft(Array<inType> const &in, double norm_factor, dim_t const npad
     computePaddedDims(pdims, in.dims(), npad, pad);
 
     Array<outType> ret = padArray<inType, outType>(in, pdims);
-    fft_common<outType, rank, true>(ret, ret);
+    fft_inplace<outType, rank, true>(ret);
     return ret;
 }
 
@@ -126,7 +123,7 @@ Array<T> ifft(Array<T> const &in, double norm_factor, dim_t const npad, dim_t co
     computePaddedDims(pdims, in.dims(), npad, pad);
 
     Array<T> ret = padArray<T, T>(in, pdims, scalar<T>(0), norm_factor);
-    fft_common<T, rank, false>(ret, ret);
+    fft_inplace<T, rank, false>(ret);
 
     return ret;
 }
@@ -139,13 +136,13 @@ Array<T> ifft(Array<T> const &in, double norm_factor, dim_t const npad, dim_t co
 INSTANTIATE1(float  , cfloat )
 INSTANTIATE1(double , cdouble)
 
-#define INSTANTIATE2(T)\
+#define INSTANTIATE2(T)                                                 \
     template Array<T> fft <T, T, 1, false>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
     template Array<T> fft <T, T, 2, false>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
     template Array<T> fft <T, T, 3, false>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
     template Array<T> ifft<T, 1>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
     template Array<T> ifft<T, 2>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
-    template Array<T> ifft<T, 3>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad);
+    template Array<T> ifft<T, 3>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
 
 INSTANTIATE2(cfloat )
 INSTANTIATE2(cdouble)

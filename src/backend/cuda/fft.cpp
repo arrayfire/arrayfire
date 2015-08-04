@@ -154,19 +154,16 @@ void computeDims(int rdims[rank], const dim4 &idims)
 }
 
 template<typename T, int rank, bool direction>
-void fft_common(Array<T> &out, const Array<T> &in)
+void fft_inplace(Array<T> &in)
 {
     const dim4 idims    = in.dims();
     const dim4 istrides = in.strides();
-    const dim4 ostrides = out.strides();
 
     int in_dims[rank];
     int in_embed[rank];
-    int out_embed[rank];
 
     computeDims<rank>(in_dims, idims);
     computeDims<rank>(in_embed, in.getDataDims());
-    computeDims<rank>(out_embed, out.getDataDims());
 
     int batch = 1;
     for (int i = rank; i < 4; i++) {
@@ -176,11 +173,11 @@ void fft_common(Array<T> &out, const Array<T> &in)
     cufftHandle plan;
     find_cufft_plan(plan, rank, in_dims,
                     in_embed , istrides[0], istrides[rank],
-                    out_embed, ostrides[0], ostrides[rank],
+                    in_embed , istrides[0], istrides[rank],
                     (cufftType)cufft_transform<T>::type, batch);
 
     cufft_transform<T> transform;
-    CUFFT_CHECK(transform(plan, (T *)in.get(), out.get(), direction ? CUFFT_FORWARD : CUFFT_INVERSE));
+    CUFFT_CHECK(transform(plan, (T *)in.get(), in.get(), direction ? CUFFT_FORWARD : CUFFT_INVERSE));
 }
 
 void computePaddedDims(dim4 &pdims,
@@ -202,7 +199,7 @@ Array<outType> fft(Array<inType> const &in, double norm_factor, dim_t const npad
     computePaddedDims(pdims, in.dims(), npad, pad);
 
     Array<outType> ret = padArray<inType, outType>(in, pdims, scalar<outType>(0), norm_factor);
-    fft_common<outType, rank, true>(ret, ret);
+    fft_inplace<outType, rank, true>(ret);
 
     return ret;
 }
@@ -216,7 +213,7 @@ Array<T> ifft(Array<T> const &in, double norm_factor, dim_t const npad, dim_t co
     computePaddedDims(pdims, in.dims(), npad, pad);
 
     Array<T> ret = padArray<T, T>(in, pdims, scalar<T>(0), norm_factor);
-    fft_common<T, rank, false>(ret, ret);
+    fft_inplace<T, rank, false>(ret);
 
     return ret;
 }

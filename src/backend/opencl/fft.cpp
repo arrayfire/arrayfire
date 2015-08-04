@@ -149,6 +149,7 @@ void find_clfft_plan(clfftPlanHandle &plan,
     CLFFT_CHECK(clfftSetPlanOutStride(temp, rank, ostrides));
     CLFFT_CHECK(clfftSetPlanPrecision(temp, precision));
     CLFFT_CHECK(clfftSetResultLocation(temp, CLFFT_INPLACE));
+    CLFFT_CHECK(clfftSetPlanScale(temp, CLFFT_BACKWARD, 1.0));
 
     // getQueue() returns object of type CommandQueue
     // CommandQueue() returns the actual cl_command_queue handle
@@ -172,18 +173,13 @@ void computeDims(size_t rdims[4], const dim4 &idims)
 }
 
 template<typename T, int rank, bool direction>
-void fft_common(Array<T> &out, const Array<T> &in)
+void fft_inplace(Array<T> &in)
 {
     size_t idims[4], istrides[4], iembed[4];
-    size_t odims[4], ostrides[4], oembed[4];
 
     computeDims(idims   , in.dims());
     computeDims(iembed  , in.getDataDims());
     computeDims(istrides, in.strides());
-
-    computeDims(odims   , out.dims());
-    computeDims(oembed  , out.getDataDims());
-    computeDims(ostrides, out.strides());
 
     clfftPlanHandle plan;
 
@@ -194,18 +190,17 @@ void fft_common(Array<T> &out, const Array<T> &in)
 
     find_clfft_plan(plan, (clfftDim)rank, idims,
                     istrides, istrides[rank],
-                    ostrides, ostrides[rank],
+                    istrides, istrides[rank],
                     (clfftPrecision)Precision<T>::type,
                     batch);
 
     cl_mem imem = (*in.get())();
-    cl_mem omem = (*out.get())();
     cl_command_queue queue = getQueue()();
 
     CLFFT_CHECK(clfftEnqueueTransform(plan,
                                       direction ? CLFFT_FORWARD : CLFFT_BACKWARD,
                                       1, &queue, 0, NULL, NULL,
-                                      &imem, &omem, NULL));
+                                      &imem, &imem, NULL));
 }
 
 void computePaddedDims(dim4 &pdims,
@@ -253,7 +248,7 @@ Array<outType> fft(Array<inType> const &in, double norm_factor, dim_t const npad
     verifySupported<rank>(pdims);
 
     Array<outType> ret = padArray<inType, outType>(in, pdims, scalar<outType>(0), norm_factor);
-    fft_common<outType, rank, true>(ret, ret);
+    fft_inplace<outType, rank, true>(ret);
 
     return ret;
 }
@@ -267,14 +262,8 @@ Array<T> ifft(Array<T> const &in, double norm_factor, dim_t const npad, dim_t co
     computePaddedDims(pdims, in.dims(), npad, pad);
     verifySupported<rank>(pdims);
 
-    // the input norm_factor is further scaled
-    // based on the input dimensions to match
-    // cuFFT behavior
-    for (int i=0; i<rank; i++)
-        norm_factor *= pdims[i];
-
     Array<T> ret = padArray<T, T>(in, pdims, scalar<T>(0), norm_factor);
-    fft_common<T, rank, false>(ret, ret);
+    fft_inplace<T, rank, false>(ret);
     return ret;
 }
 

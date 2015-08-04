@@ -78,7 +78,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
 
     kernel::packDataHelper<cT, T, isDouble, convT>(packed, signal, filter, baseDim, kind);
 
-    fft_common<cT, baseDim, true>(packed, packed);
+    fft_inplace<cT, baseDim, true>(packed);
 
     kernel::complexMultiplyHelper<cT, T, isDouble, convT>(packed, signal, filter, baseDim, kind);
 
@@ -95,7 +95,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
         }
 
         Array<cT> subPacked = createSubArray<cT>(packed, seqs);
-        fft_common<cT, baseDim, false>(subPacked, subPacked);
+        fft_inplace<cT, baseDim, false>(subPacked);
     }
     else {
         std::vector<af_seq> seqs;
@@ -109,7 +109,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
         }
 
         Array<cT> subPacked = createSubArray<cT>(packed, seqs);
-        fft_common<cT, baseDim, false>(subPacked, subPacked);
+        fft_inplace<cT, baseDim, false>(subPacked);
     }
 
     Array<T> out = createEmptyArray<T>(oDims);
