@@ -42,6 +42,8 @@ int getActiveDeviceId();
 
 int getDeviceNativeId(int device);
 
+cudaStream_t getStream(int device);
+
 int setDevice(int device);
 
 void sync(int device);
@@ -77,6 +79,8 @@ class DeviceManager
 
         friend int getDeviceNativeId(int device);
 
+        friend cudaStream_t getStream(int device);
+
         friend int setDevice(int device);
 
         friend cudaDeviceProp getDeviceProp(int device);
@@ -102,6 +106,7 @@ class DeviceManager
 
         int activeDev;
         int nDevices;
+        cudaStream_t streams[MAX_DEVICES];
 };
 
 }

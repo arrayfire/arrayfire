@@ -131,11 +131,11 @@ namespace cuda
             if (ntransforms > 1) { blocks.y *= ntransforms; }
 
             if(inverse) {
-                transform_kernel<T, true, method><<<blocks, threads>>>
-                                (out, in, nimages, ntransforms, blocksXPerImage);
+                CUDA_LAUNCH((transform_kernel<T, true, method>), blocks, threads,
+                                out, in, nimages, ntransforms, blocksXPerImage);
             } else {
-                transform_kernel<T, false, method><<<blocks, threads>>>
-                                (out, in, nimages, ntransforms, blocksXPerImage);
+                CUDA_LAUNCH((transform_kernel<T, false, method>), blocks, threads,
+                                out, in, nimages, ntransforms, blocksXPerImage);
             }
             POST_LAUNCH_CHECK();
         }

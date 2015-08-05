@@ -151,9 +151,8 @@ void bilateral(Param<outType> out, CParam<inType> in, float s_sigma, float c_sig
     int num_gauss_elems   = (2 * radius + 1)*(2 * radius + 1);
     int total_shrd_size   = sizeof(outType) * (num_shrd_elems + num_gauss_elems);
 
-    bilateralKernel<inType, outType>
-        <<<blocks, threads, total_shrd_size>>>
-        (out, in, s_sigma, c_sigma, num_shrd_elems, blk_x, blk_y);
+    CUDA_LAUNCH_SMEM((bilateralKernel<inType, outType>), blocks, threads, total_shrd_size,
+        out, in, s_sigma, c_sigma, num_shrd_elems, blk_x, blk_y);
 
     POST_LAUNCH_CHECK();
 }

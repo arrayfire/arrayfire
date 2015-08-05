@@ -274,13 +274,13 @@ void packDataHelper(Param<convT> sig_packed,
 
     // Pack signal in a complex matrix where first dimension is half the input
     // (allows faster FFT computation) and pad array to a power of 2 with 0s
-    packData<convT, T><<<blocks, threads>>>(sig_packed, sig, sig_half_d0, sig_half_d0_odd);
+    CUDA_LAUNCH((packData<convT, T>), blocks, threads, sig_packed, sig, sig_half_d0, sig_half_d0_odd);
     POST_LAUNCH_CHECK();
 
     blocks = dim3(divup(filter_packed_elem, threads.x));
 
     // Pad filter array with 0s
-    padArray<convT, T><<<blocks, threads>>>(filter_packed, filter);
+    CUDA_LAUNCH((padArray<convT, T>), blocks, threads, filter_packed, filter);
     POST_LAUNCH_CHECK();
 }
 
@@ -305,20 +305,20 @@ void complexMultiplyHelper(Param<T> out,
     // Multiply filter and signal FFT arrays
     switch(kind) {
         case CONVOLVE_BATCH_NONE:
-            complexMultiply<convT, CONVOLVE_BATCH_NONE  ><<<blocks, threads>>>
-                (sig_packed, sig_packed, filter_packed, mul_elem);
+            CUDA_LAUNCH((complexMultiply<convT, CONVOLVE_BATCH_NONE>), blocks, threads,
+                    sig_packed, sig_packed, filter_packed, mul_elem);
             break;
         case CONVOLVE_BATCH_SIGNAL:
-            complexMultiply<convT, CONVOLVE_BATCH_SIGNAL ><<<blocks, threads>>>
-                (sig_packed, sig_packed, filter_packed, mul_elem);
+            CUDA_LAUNCH((complexMultiply<convT, CONVOLVE_BATCH_SIGNAL>), blocks, threads,
+                        sig_packed, sig_packed, filter_packed, mul_elem);
             break;
         case CONVOLVE_BATCH_KERNEL:
-            complexMultiply<convT, CONVOLVE_BATCH_KERNEL ><<<blocks, threads>>>
-                (filter_packed, sig_packed, filter_packed, mul_elem);
+            CUDA_LAUNCH((complexMultiply<convT, CONVOLVE_BATCH_KERNEL>), blocks, threads,
+                    filter_packed, sig_packed, filter_packed, mul_elem);
             break;
         case CONVOLVE_BATCH_SAME:
-            complexMultiply<convT, CONVOLVE_BATCH_SAME><<<blocks, threads>>>
-                (sig_packed, sig_packed, filter_packed, mul_elem);
+            CUDA_LAUNCH((complexMultiply<convT, CONVOLVE_BATCH_SAME>), blocks, threads,
+                    sig_packed, sig_packed, filter_packed, mul_elem);
             break;
         case CONVOLVE_BATCH_UNSUPPORTED:
         default:
@@ -347,8 +347,8 @@ void reorderOutputHelper(Param<T> out,
     dim3 threads(THREADS);
     dim3 blocks(divup(out.strides[3] * out.dims[3], threads.x));
 
-    reorderOutput<T, convT, expand, roundOut><<<blocks, threads>>>
-        (out, packed, filter, sig_half_d0, baseDim, fftScale);
+    CUDA_LAUNCH((reorderOutput<T, convT, expand, roundOut>), blocks, threads,
+            out, packed, filter, sig_half_d0, baseDim, fftScale);
     POST_LAUNCH_CHECK();
 }
 

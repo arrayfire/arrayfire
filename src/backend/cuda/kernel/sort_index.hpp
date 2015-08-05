@@ -40,13 +40,15 @@ namespace cuda
                         int valOffset = valWZ + y * val.strides[1];
                         int idxOffset = idxWZ + y * idx.strides[1];
 
-                        thrust::sequence(idx_ptr + idxOffset, idx_ptr + idxOffset + idx.dims[0]);
+                        THRUST_SELECT(thrust::sequence, idx_ptr + idxOffset, idx_ptr + idxOffset + idx.dims[0]);
                         if(isAscending) {
-                            thrust::sort_by_key(val_ptr + valOffset, val_ptr + valOffset + val.dims[0],
-                                                idx_ptr + idxOffset);
+                            THRUST_SELECT(thrust::sort_by_key,
+                                    val_ptr + valOffset, val_ptr + valOffset + val.dims[0],
+                                    idx_ptr + idxOffset);
                         } else {
-                            thrust::sort_by_key(val_ptr + valOffset, val_ptr + valOffset + val.dims[0],
-                                                idx_ptr + idxOffset, thrust::greater<T>());
+                            THRUST_SELECT(thrust::sort_by_key,
+                                        val_ptr + valOffset, val_ptr + valOffset + val.dims[0],
+                                        idx_ptr + idxOffset, thrust::greater<T>());
                         }
                     }
                 }

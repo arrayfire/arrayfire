@@ -124,9 +124,7 @@ void sobel(Param<To> dx, Param<To> dy, CParam<Ti> in, const unsigned &ker_size)
 
     //TODO: add more cases when 5x5 and 7x7 kernels are done
     switch(ker_size) {
-        case  3:
-            (sobel3x3<Ti, To>) <<< blocks, threads >>> (dx, dy, in, blk_x, blk_y);
-            break;
+        case  3: CUDA_LAUNCH((sobel3x3<Ti, To>), blocks, threads, dx, dy, in, blk_x, blk_y); break;
     }
 
     POST_LAUNCH_CHECK();

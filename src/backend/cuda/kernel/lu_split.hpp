@@ -90,9 +90,9 @@ namespace cuda
                         1);
 
             if(lower.dims[0] == in.dims[0] && lower.dims[1] == in.dims[1]) {
-                lu_split_kernel<T, true><<<blocks, threads>>>(lower, upper, in, blocksPerMatX, blocksPerMatY);
+                CUDA_LAUNCH((lu_split_kernel<T, true>), blocks, threads, lower, upper, in, blocksPerMatX, blocksPerMatY);
             } else {
-                lu_split_kernel<T, false><<<blocks, threads>>>(lower, upper, in, blocksPerMatX, blocksPerMatY);
+                CUDA_LAUNCH((lu_split_kernel<T, false>), blocks, threads, lower, upper, in, blocksPerMatX, blocksPerMatY);
             }
             POST_LAUNCH_CHECK();
         }

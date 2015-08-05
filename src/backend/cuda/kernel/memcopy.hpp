@@ -80,9 +80,8 @@ namespace kernel
         dims_t _istrides = {{istrides[0], istrides[1], istrides[2], istrides[3]}};
         dims_t _idims = {{idims[0], idims[1], idims[2], idims[3]}};
 
-        (memcopy_kernel<T>)<<<blocks, threads>>>(out, _ostrides,
-                                                 in, _idims, _istrides,
-                                                 blocks_x, blocks_y);
+        CUDA_LAUNCH((memcopy_kernel<T>), blocks, threads,
+                out, _ostrides, in, _idims, _istrides, blocks_x, blocks_y);
         POST_LAUNCH_CHECK();
     }
 
@@ -211,9 +210,11 @@ namespace kernel
                            (src.dims[3]==dst.dims[3]) );
 
         if (same_dims)
-            (copy_kernel<inType, outType, true >)<<<blocks, threads>>>(dst, src, default_value, factor, trgt_dims, blk_x, blk_y);
+            CUDA_LAUNCH((copy_kernel<inType, outType, true >), blocks, threads,
+                    dst, src, default_value, factor, trgt_dims, blk_x, blk_y);
         else
-            (copy_kernel<inType, outType, false>)<<<blocks, threads>>>(dst, src, default_value, factor, trgt_dims, blk_x, blk_y);
+            CUDA_LAUNCH((copy_kernel<inType, outType, false>), blocks, threads,
+                    dst, src, default_value, factor, trgt_dims, blk_x, blk_y);
 
         POST_LAUNCH_CHECK();
     }

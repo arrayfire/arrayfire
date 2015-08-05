@@ -228,8 +228,8 @@ namespace cuda
             int blocksPerMat = divup(out.dims[0], threads.x);
             dim3 blocks(blocksPerMat * out.dims[1], out.dims[2] * out.dims[3]);
 
-            approx1_kernel<Ty, Tp, method><<<blocks, threads>>>
-                          (out, in, pos, offGrid, blocksPerMat);
+            CUDA_LAUNCH((approx1_kernel<Ty, Tp, method>), blocks, threads,
+                    out, in, pos, offGrid, blocksPerMat);
             POST_LAUNCH_CHECK();
         }
 
@@ -242,8 +242,8 @@ namespace cuda
             int blocksPerMatY = divup(out.dims[1], threads.y);
             dim3 blocks(blocksPerMatX * out.dims[2], blocksPerMatY * out.dims[3]);
 
-            approx2_kernel<Ty, Tp, method><<<blocks, threads>>>
-                          (out, in, pos, qos, offGrid, blocksPerMatX, blocksPerMatY);
+            CUDA_LAUNCH((approx2_kernel<Ty, Tp, method>), blocks, threads,
+                    out, in, pos, qos, offGrid, blocksPerMatX, blocksPerMatY);
             POST_LAUNCH_CHECK();
         }
     }

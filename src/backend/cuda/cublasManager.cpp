@@ -45,6 +45,7 @@ namespace cublas {
         cublasHandle()  : handle(0)
         {
             CUBLAS_CHECK(cublasCreate(&handle));
+            CUBLAS_CHECK(cublasSetStream(handle, cuda::getStream(cuda::getActiveDeviceId())));
         }
 
         ~cublasHandle()

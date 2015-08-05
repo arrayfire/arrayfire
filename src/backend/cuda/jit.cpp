@@ -485,7 +485,7 @@ void evalNodes(Param<T> &out, Node *node)
                             threads_y,
                             1,
                             0,
-                            NULL,
+                            getStream(getActiveDeviceId()),
                             &args.front(),
                             NULL));
 }

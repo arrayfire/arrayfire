@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/defines.h>
+#include <platform.hpp>
 #include <backend.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
@@ -212,13 +213,13 @@ void medfilt(Param<T> out, CParam<T> in, int w_len, int w_wid)
     dim3 blocks(blk_x*in.dims[2], blk_y*in.dims[3]);
 
     switch(w_len) {
-        case  3: (medfilt<T, pad,  3,  3>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
-        case  5: (medfilt<T, pad,  5,  5>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
-        case  7: (medfilt<T, pad,  7,  7>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
-        case  9: (medfilt<T, pad,  9,  9>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
-        case 11: (medfilt<T, pad, 11, 11>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
-        case 13: (medfilt<T, pad, 13, 13>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
-        case 15: (medfilt<T, pad, 15, 15>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
+        case  3: CUDA_LAUNCH((medfilt<T,pad, 3, 3>), blocks, threads, out, in, blk_x, blk_y); break;
+        case  5: CUDA_LAUNCH((medfilt<T,pad, 5, 5>), blocks, threads, out, in, blk_x, blk_y); break;
+        case  7: CUDA_LAUNCH((medfilt<T,pad, 7, 7>), blocks, threads, out, in, blk_x, blk_y); break;
+        case  9: CUDA_LAUNCH((medfilt<T,pad, 9, 9>), blocks, threads, out, in, blk_x, blk_y); break;
+        case 11: CUDA_LAUNCH((medfilt<T,pad,11,11>), blocks, threads, out, in, blk_x, blk_y); break;
+        case 13: CUDA_LAUNCH((medfilt<T,pad,13,13>), blocks, threads, out, in, blk_x, blk_y); break;
+        case 15: CUDA_LAUNCH((medfilt<T,pad,15,15>), blocks, threads, out, in, blk_x, blk_y); break;
     }
 
     POST_LAUNCH_CHECK();

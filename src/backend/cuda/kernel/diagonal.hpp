@@ -48,7 +48,7 @@ namespace kernel
         int blocks_y = divup(out.dims[1], threads.y);
         dim3 blocks(blocks_x * out.dims[2], blocks_y);
 
-        diagCreateKernel<T> <<<blocks, threads>>> (out, in, num, blocks_x);
+        CUDA_LAUNCH((diagCreateKernel<T>), blocks, threads, out, in, num, blocks_x);
         POST_LAUNCH_CHECK();
     }
 
@@ -82,7 +82,7 @@ namespace kernel
         int blocks_z = out.dims[2];
         dim3 blocks(blocks_x, out.dims[3] * blocks_z);
 
-        diagExtractKernel<T> <<<blocks, threads>>> (out, in, num, blocks_z);
+        CUDA_LAUNCH((diagExtractKernel<T>), blocks, threads, out, in, num, blocks_z);
         POST_LAUNCH_CHECK();
     }
 
