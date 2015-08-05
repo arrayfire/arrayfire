@@ -32,6 +32,8 @@ __device__ float sigmoidf(float in)
     MATH_BASIC(fn, uint)                        \
     MATH_BASIC(fn, char)                        \
     MATH_BASIC(fn, uchar)                       \
+    MATH_BASIC(fn, uintl)                       \
+    MATH_BASIC(fn, intl)                        \
     __device__ double ___##fn(double a)         \
     {                                           \
         return fn(a);                           \
@@ -64,6 +66,8 @@ MATH(cbrt)
     MATH2_BASIC(fn, uint)                           \
     MATH2_BASIC(fn, char)                           \
     MATH2_BASIC(fn, uchar)                          \
+    MATH2_BASIC(fn, uintl)                          \
+    MATH2_BASIC(fn, intl)                           \
     __device__ double ___##fn(double a, double b)   \
     {                                               \
         return fn(a, b);                            \
