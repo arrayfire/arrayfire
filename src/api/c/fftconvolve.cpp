@@ -112,7 +112,7 @@ ConvolveBatchKind identifyBatchKind(const dim4 &sDims, const dim4 &fDims)
         bool isInterleaved = true;
         for (dim_t i=baseDim; i<4; i++) {
             doesDimensionsMatch &= (sDims[i] == fDims[i]);
-            isInterleaved &= (sDims[i] == 1 || fDims[i] == 1);
+            isInterleaved &= (sDims[i] == 1 || fDims[i] == 1 || sDims[i] == fDims[i]);
         }
         if (doesDimensionsMatch) return CONVOLVE_BATCH_SAME;
         return (isInterleaved ? CONVOLVE_BATCH_DIFF : CONVOLVE_BATCH_UNSUPPORTED);

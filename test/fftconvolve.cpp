@@ -677,3 +677,16 @@ TEST(FFTConvolve2, Interleaved)
         ASSERT_EQ(max<double>(abs(c_ii - d)) < 1E-5, true);
     }
 }
+
+TEST(FFTConvolve2, Interleaved2)
+{
+    array a = randu(100, 100, 2);
+    array b = randu(5, 5, 2, 3);
+    array c = fftConvolve2(a, b);
+
+    for (int ii = 0; ii < 3; ii++) {
+        array c_ii = c(span, span, span, ii);
+        array d = fftConvolve2(a, b(span, span, span, ii));
+        ASSERT_EQ(max<double>(abs(c_ii - d)) < 1E-5, true);
+    }
+}
