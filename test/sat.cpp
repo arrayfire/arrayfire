@@ -33,6 +33,8 @@ TYPED_TEST_CASE(SAT, TestTypes);
 
 TYPED_TEST(SAT, IntegralImage)
 {
+    if(noDoubleTests<TypeParam>()) return;
+
     af::array a = af::randu(530, 671, (af_dtype)af::dtype_traits<TypeParam>::af_type);
     af::array b = af::accum(a, 0);
     af::array c = af::accum(b, 1);
