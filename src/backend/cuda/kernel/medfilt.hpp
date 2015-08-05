@@ -90,35 +90,15 @@ void medfilt(Param<T> out, CParam<T> in, int nBBS0, int nBBS1)
     int gx = blockDim.x * (blockIdx.x-b2*nBBS0) + lx;
     int gy = blockDim.y * (blockIdx.y-b3*nBBS1) + ly;
 
-    // offset values for pulling image to local memory
-    int lx2 = lx + blockDim.x;
-    int ly2 = ly + blockDim.y;
-    int gx2 = gx + blockDim.x;
-    int gy2 = gy + blockDim.y;
-
     // pull image to local memory
-    load2ShrdMem<T, pad>(shrdMem, iptr, lx, ly, shrdLen,
-                         in.dims[0], in.dims[1],
-                         gx-halo, gy-halo,
-                         in.strides[1], in.strides[0]);
-    if (lx<padding) {
-        load2ShrdMem<T, pad>(shrdMem, iptr, lx2, ly, shrdLen,
-                             in.dims[0], in.dims[1],
-                             gx2-halo, gy-halo,
-                             in.strides[1], in.strides[0]);
+    for (int b=ly, gy2=gy; b<shrdLen; b+=blockDim.y, gy2+=blockDim.y) {
+        // move row_set get_local_size(1) along coloumns
+        for (int a=lx, gx2=gx; a<shrdLen; a+=blockDim.x, gx2+=blockDim.x) {
+            load2ShrdMem<T, pad>(shrdMem, iptr, a, b, shrdLen, in.dims[0], in.dims[1],
+                    gx2-halo, gy2-halo, in.strides[1], in.strides[0]);
+        }
     }
-    if (ly<padding) {
-        load2ShrdMem<T, pad>(shrdMem, iptr, lx, ly2, shrdLen,
-                             in.dims[0], in.dims[1],
-                             gx-halo, gy2-halo,
-                             in.strides[1], in.strides[0]);
-    }
-    if (lx<padding && ly<padding) {
-        load2ShrdMem<T, pad>(shrdMem, iptr, lx2, ly2, shrdLen,
-                             in.dims[0], in.dims[1],
-                             gx2-halo, gy2-halo,
-                             in.strides[1], in.strides[0]);
-    }
+
     __syncthreads();
 
     // Only continue if we're at a valid location
