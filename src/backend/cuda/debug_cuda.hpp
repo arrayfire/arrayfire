@@ -10,8 +10,31 @@
 #pragma once
 #include <platform.hpp>
 #include <err_cuda.hpp>
+#include <thrust/version.h>
+#include <thrust/system/cuda/detail/par.h>
 
 #define THRUST_STREAM thrust::cuda::par.on(cuda::getStream(cuda::getActiveDeviceId()))
+
+#if THRUST_MAJOR_VERSION>=1 && THRUST_MINOR_VERSION>=8
+
+#define THRUST_SELECT(fn, ...) fn(THRUST_STREAM, __VA_ARGS__)
+#define THRUST_SELECT_OUT(res, fn, ...) res = fn(THRUST_STREAM, __VA_ARGS__)
+
+#else
+
+#define THRUST_SELECT(fn, ...) \
+    do {                          \
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId()))); \
+        fn(__VA_ARGS__);       \
+    } while(0)
+
+#define THRUST_SELECT_OUT(res, fn, ...) \
+    do {                          \
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId()))); \
+        res = fn(__VA_ARGS__);       \
+    } while(0)
+
+#endif
 
 #define CUDA_LAUNCH_SMEM(fn, blks, thrds, smem_size, ...) \
 	fn<<<blks, thrds, smem_size, cuda::getStream(cuda::getActiveDeviceId())>>>(__VA_ARGS__)
@@ -23,7 +46,7 @@
 #ifndef NDEBUG
 
 #define POST_LAUNCH_CHECK() do {                        \
-        CUDA_CHECK(cudaStreamSynchronize(getStream())); \
+        CUDA_CHECK(cudaStreamSynchronize(getStream(getActiveDeviceId()))); \
     } while(0)                                          \
 
 #else

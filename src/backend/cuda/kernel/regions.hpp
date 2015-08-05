@@ -443,7 +443,7 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
     thrust::device_ptr<T> wrapped_tmp = thrust::device_pointer_cast(tmp);
 
     // Sort the copy
-    thrust::sort(THRUST_STREAM, wrapped_tmp, wrapped_tmp + size);
+    THRUST_SELECT(thrust::sort, wrapped_tmp, wrapped_tmp + size);
 
     // Take the max element, this is the number of label assignments to
     // compute.
@@ -453,10 +453,10 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
 
     // Find the end of each section of values
     thrust::counting_iterator<T> search_begin(0);
-    thrust::upper_bound(THRUST_STREAM, wrapped_tmp,  wrapped_tmp  + size,
+    THRUST_SELECT(thrust::upper_bound, wrapped_tmp,  wrapped_tmp  + size,
                         search_begin, search_begin + num_bins,
                         labels.begin());
-    thrust::adjacent_difference(THRUST_STREAM, labels.begin(), labels.end(), labels.begin());
+    THRUST_SELECT(thrust::adjacent_difference, labels.begin(), labels.end(), labels.begin());
 
     // Operators for the scan
     clamp_to_one<T> clamp;
@@ -464,7 +464,7 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
 
     // Perform the scan -- this can computes the correct labels for each
     // component
-    thrust::transform_exclusive_scan(THRUST_STREAM,
+    THRUST_SELECT(thrust::transform_exclusive_scan,
                                      labels.begin(),
                                      labels.end(),
                                      labels.begin(),
