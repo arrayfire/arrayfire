@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
+#include <thrust/system/cuda/detail/par.h>
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>
 
@@ -44,10 +45,10 @@ namespace cuda
                         int ovalOffset = ovalWZ + y * oval.strides[1];
 
                         if(isAscending) {
-                            thrust::sort_by_key(okey_ptr + okeyOffset, okey_ptr + okeyOffset + okey.dims[0],
+                            thrust::sort_by_key(THRUST_STREAM, okey_ptr + okeyOffset, okey_ptr + okeyOffset + okey.dims[0],
                                                 oval_ptr + ovalOffset);
                         } else {
-                            thrust::sort_by_key(okey_ptr + okeyOffset, okey_ptr + okeyOffset + okey.dims[0],
+                            thrust::sort_by_key(THRUST_STREAM, okey_ptr + okeyOffset, okey_ptr + okeyOffset + okey.dims[0],
                                                 oval_ptr + ovalOffset, thrust::greater<Tk>());
                         }
                     }

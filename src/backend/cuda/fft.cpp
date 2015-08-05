@@ -13,7 +13,7 @@
 #include <Array.hpp>
 #include <copy.hpp>
 #include <fft.hpp>
-#include <err_cuda.hpp>
+#include <debug_cuda.hpp>
 #include <err_cufft.hpp>
 #include <cufft.h>
 #include <math.hpp>
@@ -123,6 +123,7 @@ void find_cufft_plan(cufftHandle &plan, int rank, int *n,
     }
 
     plan = temp;
+    cufftSetStream(plan, cuda::getStream(cuda::getActiveDeviceId()));
     planner.mHandles[slot_index] = temp;
     planner.mKeys[slot_index] = key_string;
     planner.mAvailSlotIndex = (slot_index + 1)%cuFFTPlanner::MAX_PLAN_CACHE;

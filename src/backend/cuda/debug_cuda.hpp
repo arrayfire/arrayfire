@@ -11,6 +11,8 @@
 #include <platform.hpp>
 #include <err_cuda.hpp>
 
+#define THRUST_STREAM thrust::cuda::par.on(cuda::getStream(cuda::getActiveDeviceId()))
+
 #define CUDA_LAUNCH_SMEM(fn, blks, thrds, smem_size, ...) \
 	fn<<<blks, thrds, smem_size, cuda::getStream(cuda::getActiveDeviceId())>>>(__VA_ARGS__)
 

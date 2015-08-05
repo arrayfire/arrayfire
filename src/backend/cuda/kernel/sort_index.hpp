@@ -12,6 +12,7 @@
 #include <Param.hpp>
 #include <err_cuda.hpp>
 #include <debug_cuda.hpp>
+#include <thrust/system/cuda/detail/par.h>
 #include <thrust/device_ptr.h>
 #include <thrust/sequence.h>
 #include <thrust/sort.h>
@@ -40,13 +41,15 @@ namespace cuda
                         int valOffset = valWZ + y * val.strides[1];
                         int idxOffset = idxWZ + y * idx.strides[1];
 
-                        thrust::sequence(idx_ptr + idxOffset, idx_ptr + idxOffset + idx.dims[0]);
+                        thrust::sequence(THRUST_STREAM, idx_ptr + idxOffset, idx_ptr + idxOffset + idx.dims[0]);
                         if(isAscending) {
-                            thrust::sort_by_key(val_ptr + valOffset, val_ptr + valOffset + val.dims[0],
-                                                idx_ptr + idxOffset);
+                            thrust::sort_by_key(THRUST_STREAM,
+                                    val_ptr + valOffset, val_ptr + valOffset + val.dims[0],
+                                    idx_ptr + idxOffset);
                         } else {
-                            thrust::sort_by_key(val_ptr + valOffset, val_ptr + valOffset + val.dims[0],
-                                                idx_ptr + idxOffset, thrust::greater<T>());
+                            thrust::sort_by_key(THRUST_STREAM,
+                                        val_ptr + valOffset, val_ptr + valOffset + val.dims[0],
+                                        idx_ptr + idxOffset, thrust::greater<T>());
                         }
                     }
                 }
