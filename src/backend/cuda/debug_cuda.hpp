@@ -46,7 +46,7 @@
 #ifndef NDEBUG
 
 #define POST_LAUNCH_CHECK() do {                        \
-        CUDA_CHECK(cudaStreamSynchronize(getStream(getActiveDeviceId()))); \
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId()))); \
     } while(0)                                          \
 
 #else
