@@ -428,7 +428,7 @@ void fast(unsigned* out_feat,
     blocks.y = divup(in.dims[1], 64);
 
     unsigned *d_total = (unsigned *)(d_score + in.dims[0] * in.dims[1]);
-    CUDA_CHECK(cudaMemset(d_total, 0, sizeof(unsigned)));
+    CUDA_CHECK(cudaMemsetAsync(d_total, 0, sizeof(unsigned), cuda::getStream(cuda::getActiveDeviceId())));
     unsigned *d_counts  = memAlloc<unsigned>(blocks.x * blocks.y);
     unsigned *d_offsets = memAlloc<unsigned>(blocks.x * blocks.y);
 

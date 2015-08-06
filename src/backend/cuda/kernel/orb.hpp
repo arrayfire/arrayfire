@@ -455,7 +455,8 @@ void orb(unsigned* out_feat,
         float* d_size_lvl = memAlloc<float>(feat_pyr[i]);
 
         unsigned* d_desc_lvl = memAlloc<unsigned>(feat_pyr[i] * 8);
-        CUDA_CHECK(cudaMemset(d_desc_lvl, 0, feat_pyr[i] * 8 * sizeof(unsigned)));
+        CUDA_CHECK(cudaMemsetAsync(d_desc_lvl, 0, feat_pyr[i] * 8 * sizeof(unsigned),
+                    cuda::getStream(cuda::getActiveDeviceId())));
 
         // Compute ORB descriptors
         threads = dim3(THREADS_X, THREADS_Y);
@@ -502,13 +503,18 @@ void orb(unsigned* out_feat,
         if (i > 0)
             offset += feat_pyr[i-1];
 
-        CUDA_CHECK(cudaMemcpy(*d_x+offset, d_x_pyr[i], feat_pyr[i] * sizeof(float), cudaMemcpyDeviceToDevice));
-        CUDA_CHECK(cudaMemcpy(*d_y+offset, d_y_pyr[i], feat_pyr[i] * sizeof(float), cudaMemcpyDeviceToDevice));
-        CUDA_CHECK(cudaMemcpy(*d_score+offset, d_score_pyr[i], feat_pyr[i] * sizeof(float), cudaMemcpyDeviceToDevice));
-        CUDA_CHECK(cudaMemcpy(*d_ori+offset, d_ori_pyr[i], feat_pyr[i] * sizeof(float), cudaMemcpyDeviceToDevice));
-        CUDA_CHECK(cudaMemcpy(*d_size+offset, d_size_pyr[i], feat_pyr[i] * sizeof(float), cudaMemcpyDeviceToDevice));
-
-        CUDA_CHECK(cudaMemcpy(*d_desc+(offset*8), d_desc_pyr[i], feat_pyr[i] * 8 * sizeof(unsigned), cudaMemcpyDeviceToDevice));
+        CUDA_CHECK(cudaMemcpyAsync(*d_x+offset, d_x_pyr[i], feat_pyr[i] * sizeof(float),
+                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(*d_y+offset, d_y_pyr[i], feat_pyr[i] * sizeof(float),
+                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(*d_score+offset, d_score_pyr[i], feat_pyr[i] * sizeof(float),
+                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(*d_ori+offset, d_ori_pyr[i], feat_pyr[i] * sizeof(float),
+                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(*d_size+offset, d_size_pyr[i], feat_pyr[i] * sizeof(float),
+                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(*d_desc+(offset*8), d_desc_pyr[i], feat_pyr[i] * 8 * sizeof(unsigned),
+                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
 
         memFree(d_x_pyr[i]);
         memFree(d_y_pyr[i]);

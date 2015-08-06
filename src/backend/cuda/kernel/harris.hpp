@@ -276,7 +276,8 @@ void harris(unsigned* corners_out,
     unsigned corner_lim = in.dims[3] * in.strides[3] * 0.2f;
 
     unsigned* d_corners_found = memAlloc<unsigned>(1);
-    CUDA_CHECK(cudaMemset(d_corners_found, 0, sizeof(unsigned)));
+    CUDA_CHECK(cudaMemsetAsync(d_corners_found, 0, sizeof(unsigned),
+                cuda::getStream(cuda::getActiveDeviceId())));
 
     float* d_x_corners = memAlloc<float>(corner_lim);
     float* d_y_corners = memAlloc<float>(corner_lim);
@@ -358,9 +359,12 @@ void harris(unsigned* corners_out,
         *x_out = memAlloc<float>(*corners_out);
         *y_out = memAlloc<float>(*corners_out);
         *resp_out = memAlloc<float>(*corners_out);
-        CUDA_CHECK(cudaMemcpy(*x_out, d_x_corners, *corners_out * sizeof(float), cudaMemcpyDeviceToDevice));
-        CUDA_CHECK(cudaMemcpy(*y_out, d_y_corners, *corners_out * sizeof(float), cudaMemcpyDeviceToDevice));
-        CUDA_CHECK(cudaMemcpy(*resp_out, d_resp_corners, *corners_out * sizeof(float), cudaMemcpyDeviceToDevice));
+        CUDA_CHECK(cudaMemcpyAsync(*x_out, d_x_corners, *corners_out * sizeof(float),
+                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(*y_out, d_y_corners, *corners_out * sizeof(float),
+                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaMemcpyAsync(*resp_out, d_resp_corners, *corners_out * sizeof(float),
+                    cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
 
         memFree(d_x_corners);
         memFree(d_y_corners);
