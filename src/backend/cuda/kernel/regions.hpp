@@ -436,8 +436,9 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
     // 1.
     int size = in.dims[0] * in.dims[1];
     T* tmp = cuda::memAlloc<T>(size);
-    CUDA_CHECK(cudaMemcpy(tmp, out.ptr, size * sizeof(T),
-                          cudaMemcpyDeviceToDevice));
+    CUDA_CHECK(cudaMemcpyAsync(tmp, out.ptr, size * sizeof(T),
+                          cudaMemcpyDeviceToDevice,
+                          cuda::getStream(cuda::getActiveDeviceId())));
 
     // Wrap raw device ptr
     thrust::device_ptr<T> wrapped_tmp = thrust::device_pointer_cast(tmp);

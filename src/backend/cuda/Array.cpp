@@ -255,9 +255,9 @@ namespace cuda
 
         T *ptr = arr.get();
 
-        CUDA_CHECK(cudaMemcpy(ptr + arr.getOffset(), data,
-                              bytes,
-                              cudaMemcpyDeviceToDevice));
+        CUDA_CHECK(cudaMemcpyAsync(ptr + arr.getOffset(), data,
+                                   bytes, cudaMemcpyDeviceToDevice,
+                                   cuda::getStream(cuda::getActiveDeviceId())));
 
         return;
     }
