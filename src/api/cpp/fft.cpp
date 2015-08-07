@@ -144,36 +144,36 @@ array idft(const array& in)
     return idft(in, 1.0, dim4(0,0,0,0));
 }
 
-void fftInPlace(const array& in, const double norm_factor)
+void fftInPlace(array& in, const double norm_factor)
 {
     AF_THROW(af_fft_inplace(in.get(), norm_factor));
 }
 
-void fft2InPlace(const array& in, const double norm_factor)
+void fft2InPlace(array& in, const double norm_factor)
 {
     AF_THROW(af_fft2_inplace(in.get(), norm_factor));
 }
 
-void fft3InPlace(const array& in, const double norm_factor)
+void fft3InPlace(array& in, const double norm_factor)
 {
     AF_THROW(af_fft3_inplace(in.get(), norm_factor));
 }
 
-void ifftInPlace(const array& in, const double norm_factor)
+void ifftInPlace(array& in, const double norm_factor)
 {
     const dim4 dims = in.dims();
     double norm = norm_factor *(1.0 / dims[0]);
     AF_THROW(af_ifft_inplace(in.get(), norm));
 }
 
-void ifft2InPlace(const array& in, const double norm_factor)
+void ifft2InPlace(array& in, const double norm_factor)
 {
     const dim4 dims = in.dims();
     double norm = norm_factor *(1.0 / (dims[0] * dims[1]));
     AF_THROW(af_ifft2_inplace(in.get(), norm));
 }
 
-void ifft3InPlace(const array& in, const double norm_factor)
+void ifft3InPlace(array& in, const double norm_factor)
 {
     const dim4 dims = in.dims();
     double norm = norm_factor *(1.0 / (dims[0] * dims[1] * dims[2]));

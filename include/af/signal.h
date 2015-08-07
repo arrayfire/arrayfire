@@ -97,7 +97,7 @@ AFAPI array fft3Norm(const array& in, const double norm_factor, const dim_t odim
 
    \ingroup signal_func_fft
  */
-AFAPI void fftInPlace(const array& in, const double norm_factor = 1);
+AFAPI void fftInPlace(array& in, const double norm_factor = 1);
 
 /**
    C++ Interface for fast fourier transform on two dimensional data
@@ -110,7 +110,7 @@ AFAPI void fftInPlace(const array& in, const double norm_factor = 1);
 
    \ingroup signal_func_fft2
  */
-AFAPI void fft2InPlace(const array& in, const double norm_factor = 1);
+AFAPI void fft2InPlace(array& in, const double norm_factor = 1);
 
 /**
    C++ Interface for fast fourier transform on three dimensional data
@@ -123,7 +123,7 @@ AFAPI void fft2InPlace(const array& in, const double norm_factor = 1);
 
    \ingroup signal_func_fft3
  */
-AFAPI void fft3InPlace(const array& in, const double norm_factor = 1);
+AFAPI void fft3InPlace(array& in, const double norm_factor = 1);
 
 /**
    C++ Interface for fast fourier transform on one dimensional data
@@ -258,7 +258,7 @@ AFAPI array ifft3Norm(const array& in, const double norm_factor, const dim_t odi
 
    \ingroup signal_func_ifft
  */
-AFAPI void ifftInPlace(const array& in, const double norm_factor = 1);
+AFAPI void ifftInPlace(array& in, const double norm_factor = 1);
 
 /**
    C++ Interface for fast fourier transform on two dimensional data
@@ -271,7 +271,7 @@ AFAPI void ifftInPlace(const array& in, const double norm_factor = 1);
 
    \ingroup signal_func_ifft2
  */
-AFAPI void ifft2InPlace(const array& in, const double norm_factor = 1);
+AFAPI void ifft2InPlace(array& in, const double norm_factor = 1);
 
 /**
    C++ Interface for fast fourier transform on three dimensional data
@@ -284,7 +284,7 @@ AFAPI void ifft2InPlace(const array& in, const double norm_factor = 1);
 
    \ingroup signal_func_ifft3
  */
-AFAPI void ifft3InPlace(const array& in, const double norm_factor = 1);
+AFAPI void ifft3InPlace(array& in, const double norm_factor = 1);
 
 /**
    C++ Interface for inverse fast fourier transform on one dimensional data
