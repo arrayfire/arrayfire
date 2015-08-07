@@ -89,6 +89,15 @@ namespace cuda
         pinnedFreeWrapper(ptr); // Free it because we are not sure what the size is
     }
 
+    void garbageCollect()
+    {
+    }
+
+    void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
+                          size_t *lock_bytes,  size_t *lock_buffers)
+    {
+    }
+
 #else
 
     // Manager Class

@@ -601,8 +601,8 @@ The output array of this function will have \f$ S(x, y) \f$ values at their corr
 
 Generate image with image windows as columns
 
-\ref unwrap takes in an input image along with the window sizes \p wx and \p
-wy, strides \p sx and \p sy, and padding \px and \p py. This function then
+unwrap takes in an input image along with the window sizes \p wx and \p
+wy, strides \p sx and \p sy, and padding \p px and \p py. This function then
 generates a matrix where each windows is an independent column.
 
 The number of columns in the output array are govenered by the number of

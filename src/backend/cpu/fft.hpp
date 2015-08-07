@@ -12,10 +12,12 @@
 namespace cpu
 {
 
-template<typename inType, typename outType, int rank, bool isR2C>
-Array<outType> fft(Array<inType> const &in, double norm_factor, dim_t const npad, dim_t const * const pad);
+template<typename T, int rank, bool direction>
+void fft_inplace(Array<T> &in);
 
-template<typename T, int rank>
-Array<T> ifft(Array<T> const &in, double norm_factor, dim_t const npad, dim_t const * const pad);
+template<typename Tc, typename Tr, int rank>
+Array<Tc> fft_r2c(const Array<Tr> &in);
 
+template<typename Tr, typename Tc, int rank>
+Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims);
 }

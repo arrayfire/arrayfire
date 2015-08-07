@@ -78,8 +78,8 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
 
     kernel::packDataHelper<cT, T>(signal_packed, filter_packed, signal, filter, baseDim);
 
-    fft_common<cT, baseDim, true>(signal_packed, signal_packed);
-    fft_common<cT, baseDim, true>(filter_packed, filter_packed);
+    fft_inplace<cT, baseDim, true>(signal_packed);
+    fft_inplace<cT, baseDim, true>(filter_packed);
 
     Array<T> out = createEmptyArray<T>(oDims);
 
@@ -89,13 +89,13 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter, const bool 
         kernel::complexMultiplyHelper<T, cT>(out, signal_packed, filter_packed, signal, filter, kind);
 
     if (kind == CONVOLVE_BATCH_KERNEL) {
-        fft_common<cT, baseDim, false>(filter_packed, filter_packed);
+        fft_inplace<cT, baseDim, false>(filter_packed);
         if (expand)
             kernel::reorderOutputHelper<T, cT, roundOut, baseDim, true >(out, filter_packed, signal, filter, kind);
         else
             kernel::reorderOutputHelper<T, cT, roundOut, baseDim, false>(out, filter_packed, signal, filter, kind);
     } else {
-        fft_common<cT, baseDim, false>(signal_packed, signal_packed);
+        fft_inplace<cT, baseDim, false>(signal_packed);
         if (expand)
             kernel::reorderOutputHelper<T, cT, roundOut, baseDim, true >(out, signal_packed, signal, filter, kind);
         else

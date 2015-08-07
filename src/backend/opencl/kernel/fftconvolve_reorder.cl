@@ -15,7 +15,8 @@ void reorder_output(
     KParam                iInfo,
     KParam                fInfo,
     const int        half_di0,
-    const int             baseDim)
+    const int             baseDim,
+    const int             fftScale)
 {
     const int t = get_global_id(0);
 
@@ -68,9 +69,9 @@ void reorder_output(
         // Copy top elements
         int iidx = iInfo.offset + ti3 + ti2 + ti1 + ti0 * 2;
 #if ROUND_OUT == 1
-            d_out[oidx] = (T)round(d_in[iidx]);
+        d_out[oidx] = (T)round(d_in[iidx] / fftScale);
 #else
-            d_out[oidx] = (T)(d_in[iidx]);
+        d_out[oidx] = (T)(d_in[iidx] / fftScale);
 #endif
     }
     else if (ti0 < half_di0 + fInfo.dims[0] - 1) {
@@ -78,18 +79,18 @@ void reorder_output(
         int iidx1 = iInfo.offset + ti3 + ti2 + ti1 + ti0 * 2;
         int iidx2 = iInfo.offset + ti3 + ti2 + ti1 + (ti0 - half_di0) * 2 + 1;
 #if ROUND_OUT == 1
-            d_out[oidx] = (T)round((d_in[iidx1] + d_in[iidx2]));
+        d_out[oidx] = (T)round((d_in[iidx1] + d_in[iidx2]) / fftScale);
 #else
-            d_out[oidx] = (T)((d_in[iidx1] + d_in[iidx2]));
+        d_out[oidx] = (T)((d_in[iidx1] + d_in[iidx2]) / fftScale);
 #endif
     }
     else {
         // Copy bottom elements
         const int iidx = iInfo.offset + ti3 + ti2 + ti1 + (ti0 - half_di0) * 2 + 1;
 #if ROUND_OUT == 1
-            d_out[oidx] = (T)round(d_in[iidx]);
+        d_out[oidx] = (T)round(d_in[iidx] / fftScale);
 #else
-            d_out[oidx] = (T)(d_in[iidx]);
+        d_out[oidx] = (T)(d_in[iidx] / fftScale);
 #endif
     }
 }

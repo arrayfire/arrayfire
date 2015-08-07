@@ -71,7 +71,14 @@ namespace cuda
         ARG_ASSERT(1, (in.ndims() == dims.ndims()));
         Array<outType> ret = createEmptyArray<outType>(dims);
         kernel::copy<inType, outType>(ret, in, in.ndims(), default_value, factor);
+        CUDA_CHECK(cudaDeviceSynchronize());
         return ret;
+    }
+
+    template<typename T>
+    void multiply_inplace(Array<T> &in, double val)
+    {
+        kernel::copy<T, T>(in, in, in.ndims(), scalar<T>(0), val);
     }
 
     template<typename inType, typename outType>
@@ -111,6 +118,7 @@ namespace cuda
 #define INSTANTIATE(T)                                              \
     template void      copyData<T> (T *data, const Array<T> &from); \
     template Array<T> copyArray<T>(const Array<T> &A);              \
+    template void      multiply_inplace<T> (Array<T> &in, double norm); \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

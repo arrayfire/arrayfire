@@ -580,3 +580,105 @@ TEST(fft3, GFOR)
     delete[] h_b;
     delete[] h_c;
 }
+
+TEST(fft, InPlace)
+{
+    af::array a = af::randu(1024, 1024, c32);
+    af::array b = af::fft(a);
+    af::fftInPlace(a);
+
+    std::vector<af::cfloat> ha(a.elements());
+    std::vector<af::cfloat> hb(b.elements());
+
+    a.host(&ha[0]);
+    b.host(&hb[0]);
+
+    for (int i = 0; i < (int)a.elements(); i++) {
+        ASSERT_EQ(ha[i], hb[i]);
+    }
+}
+
+TEST(ifft, InPlace)
+{
+    af::array a = af::randu(1024, 1024, c32);
+    af::array b = af::ifft(a);
+    af::ifftInPlace(a);
+
+    std::vector<af::cfloat> ha(a.elements());
+    std::vector<af::cfloat> hb(b.elements());
+
+    a.host(&ha[0]);
+    b.host(&hb[0]);
+
+    for (int i = 0; i < (int)a.elements(); i++) {
+        ASSERT_EQ(ha[i], hb[i]);
+    }
+}
+
+TEST(fft2, InPlace)
+{
+    af::array a = af::randu(1024, 1024, c32);
+    af::array b = af::fft2(a);
+    af::fft2InPlace(a);
+
+    std::vector<af::cfloat> ha(a.elements());
+    std::vector<af::cfloat> hb(b.elements());
+
+    a.host(&ha[0]);
+    b.host(&hb[0]);
+
+    for (int i = 0; i < (int)a.elements(); i++) {
+        ASSERT_EQ(ha[i], hb[i]);
+    }
+}
+
+TEST(ifft2, InPlace)
+{
+    af::array a = af::randu(1024, 1024, c32);
+    af::array b = af::ifft2(a);
+    af::ifft2InPlace(a);
+
+    std::vector<af::cfloat> ha(a.elements());
+    std::vector<af::cfloat> hb(b.elements());
+
+    a.host(&ha[0]);
+    b.host(&hb[0]);
+
+    for (int i = 0; i < (int)a.elements(); i++) {
+        ASSERT_EQ(ha[i], hb[i]);
+    }
+}
+
+TEST(fft3, InPlace)
+{
+    af::array a = af::randu(32, 32, 32, c32);
+    af::array b = af::fft3(a);
+    af::fft3InPlace(a);
+
+    std::vector<af::cfloat> ha(a.elements());
+    std::vector<af::cfloat> hb(b.elements());
+
+    a.host(&ha[0]);
+    b.host(&hb[0]);
+
+    for (int i = 0; i < (int)a.elements(); i++) {
+        ASSERT_EQ(ha[i], hb[i]);
+    }
+}
+
+TEST(ifft3, InPlace)
+{
+    af::array a = af::randu(32, 32, 32, c32);
+    af::array b = af::ifft3(a);
+    af::ifft3InPlace(a);
+
+    std::vector<af::cfloat> ha(a.elements());
+    std::vector<af::cfloat> hb(b.elements());
+
+    a.host(&ha[0]);
+    b.host(&hb[0]);
+
+    for (int i = 0; i < (int)a.elements(); i++) {
+        ASSERT_EQ(ha[i], hb[i]);
+    }
+}
