@@ -371,7 +371,7 @@ AFAPI array idft(const array& in, const dim4 outDims);
 AFAPI array idft(const array& in);
 
 /**
-   C Interface for real to complex fast fourier transform for one dimensional signals
+   C++ Interface for real to complex fast fourier transform for one dimensional signals
 
    \param[in]  in is a real array
    \param[in]  dims is the requested padded dimensions before the transform is applied
@@ -388,7 +388,7 @@ array fftR2C(const array &in,
              const double norm_factor = 0);
 
 /**
-   C Interface for real to complex fast fourier transform for one dimensional signals
+   C++ Interface for real to complex fast fourier transform for one dimensional signals
 
    \param[in]  in is a real array
    \param[in]  norm_factor is the normalization factor with which the input is scaled before the transformation is applied
