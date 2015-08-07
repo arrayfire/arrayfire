@@ -63,30 +63,6 @@ namespace cpu
         return out;
     }
 
-    template<typename T>
-    void multiply_inplace(Array<T> &in, double val)
-    {
-        dim4 idims       = in.dims();
-        dim4 istrides    = in.strides();
-        T *iptr = in.get();
-
-        for (dim_t l = 0; l < idims[3]; l++) {
-            dim_t off3 = l * istrides[3];
-
-            for (dim_t k = 0; k < idims[2]; k++) {
-                dim_t off2 = off3 + k * istrides[2];
-
-                for (dim_t j = 0; j < idims[1]; j++) {
-                    dim_t off1 = off2 + j * istrides[1];
-
-                    for (dim_t i = 0; i < idims[0]; i++) {
-                        iptr[off1 + i] *= val;
-                    }
-                }
-            }
-        }
-    }
-
     template<typename inType, typename outType>
     static void copy(Array<outType> &dst, const Array<inType> &src, outType default_value, double factor)
     {
@@ -135,6 +111,11 @@ namespace cpu
         }
     }
 
+    template<typename T>
+    void multiply_inplace(Array<T> &in, double val)
+    {
+        copy<T, T>(in, in, 0, val);
+    }
 
     template<typename inType, typename outType>
     Array<outType>
