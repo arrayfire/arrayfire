@@ -370,6 +370,20 @@ AFAPI array idft(const array& in, const dim4 outDims);
  */
 AFAPI array idft(const array& in);
 
+template<int rank>
+array fftR2C(const array &in,
+             const dim4& dims,
+             const double norm_factor = 0);
+
+
+template<int rank>
+array fftR2C(const array &in,
+             const double norm_factor = 0);
+
+template<int rank>
+array fftC2R(const array &in, bool is_odd = false,
+                 const double norm_factor = 0);
+
 /**
    C++ Interface for convolution any(one through three) dimensional data
 
@@ -752,6 +766,18 @@ AFAPI af_err af_ifft3(af_array *out, const af_array in, const double norm_factor
    \ingroup signal_func_ifft3
 */
 AFAPI af_err af_ifft3_inplace(af_array in, const double norm_factor);
+
+AFAPI af_err af_fft_r2c (af_array *out, const af_array in, const double norm_factor, const dim_t pad0);
+
+AFAPI af_err af_fft2_r2c(af_array *out, const af_array in, const double norm_factor, const dim_t pad0, const dim_t pad1);
+
+AFAPI af_err af_fft3_r2c(af_array *out, const af_array in, const double norm_factor, const dim_t pad0, const dim_t pad1, const dim_t pad2);
+
+AFAPI af_err af_fft_c2r (af_array *out, const af_array in, const double norm_factor, const bool is_odd);
+
+AFAPI af_err af_fft2_c2r(af_array *out, const af_array in, const double norm_factor, const bool is_odd);
+
+AFAPI af_err af_fft3_c2r(af_array *out, const af_array in, const double norm_factor, const bool is_odd);
 
 
 /**

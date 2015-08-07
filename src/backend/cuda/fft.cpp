@@ -103,11 +103,13 @@ void find_cufft_plan(cufftHandle &plan, int rank, int *n,
             break;
         }
     }
+
     // return mHandles[plan_index] if plan_index valid
     if (plan_index!=-1) {
         plan = planner.mHandles[plan_index];
         return;
     }
+
     // otherwise create a new plan and set it at mAvailSlotIndex
     // and finally set it to output plan variable
     int slot_index = planner.mAvailSlotIndex;
@@ -115,6 +117,7 @@ void find_cufft_plan(cufftHandle &plan, int rank, int *n,
 
     cufftHandle temp;
     cufftResult res = cufftPlanMany(&temp, rank, n, inembed, istride, idist, onembed, ostride, odist, type, batch);
+
 
     // If plan creation fails, clean up the memory we hold on to and try again
     if (res != CUFFT_SUCCESS) {
@@ -145,6 +148,26 @@ struct cufft_transform;
 CUFFT_FUNC(cfloat , C2C)
 CUFFT_FUNC(cdouble, Z2Z)
 
+template<typename To, typename Ti>
+struct cufft_real_transform;
+
+#define CUFFT_REAL_FUNC(To, Ti, TRANSFORM_TYPE)                 \
+    template<>                                                  \
+    struct cufft_real_transform<To, Ti>                         \
+    {                                                           \
+        enum { type = CUFFT_##TRANSFORM_TYPE };                 \
+        cufftResult                                             \
+            operator() (cufftHandle plan, Ti *in, To *out) {    \
+            return cufftExec##TRANSFORM_TYPE(plan, in, out);    \
+        }                                                       \
+    };
+
+CUFFT_REAL_FUNC(cfloat , float , R2C)
+CUFFT_REAL_FUNC(cdouble, double, D2Z)
+
+CUFFT_REAL_FUNC(float , cfloat , C2R)
+CUFFT_REAL_FUNC(double, cdouble, Z2D)
+
 template<int rank>
 void computeDims(int rdims[rank], const dim4 &idims)
 {
@@ -159,10 +182,10 @@ void fft_inplace(Array<T> &in)
     const dim4 idims    = in.dims();
     const dim4 istrides = in.strides();
 
-    int in_dims[rank];
+    int t_dims[rank];
     int in_embed[rank];
 
-    computeDims<rank>(in_dims, idims);
+    computeDims<rank>(t_dims, idims);
     computeDims<rank>(in_embed, in.getDataDims());
 
     int batch = 1;
@@ -171,13 +194,81 @@ void fft_inplace(Array<T> &in)
     }
 
     cufftHandle plan;
-    find_cufft_plan(plan, rank, in_dims,
+    find_cufft_plan(plan, rank, t_dims,
                     in_embed , istrides[0], istrides[rank],
                     in_embed , istrides[0], istrides[rank],
                     (cufftType)cufft_transform<T>::type, batch);
 
     cufft_transform<T> transform;
     CUFFT_CHECK(transform(plan, (T *)in.get(), in.get(), direction ? CUFFT_FORWARD : CUFFT_INVERSE));
+}
+
+template<typename Tc, typename Tr, int rank>
+Array<Tc> fft_r2c(const Array<Tr> &in)
+{
+    dim4 idims = in.dims();
+    dim4 odims = in.dims();
+
+    odims[0] = odims[0] / 2 + 1;
+
+    Array<Tc> out = createEmptyArray<Tc>(odims);
+
+    int t_dims[rank];
+    int in_embed[rank], out_embed[rank];
+
+    computeDims<rank>(t_dims, idims);
+    computeDims<rank>(in_embed, in.getDataDims());
+    computeDims<rank>(out_embed, out.getDataDims());
+
+    int batch = 1;
+    for (int i = rank; i < 4; i++) {
+        batch *= idims[i];
+    }
+
+    dim4 istrides = in.strides();
+    dim4 ostrides = out.strides();
+
+    cufftHandle plan;
+    find_cufft_plan(plan, rank, t_dims,
+                    in_embed  , istrides[0], istrides[rank],
+                    out_embed , ostrides[0], ostrides[rank],
+                    (cufftType)cufft_real_transform<Tc, Tr>::type, batch);
+
+    cufft_real_transform<Tc, Tr> transform;
+    CUFFT_CHECK(transform(plan, (Tr *)in.get(), out.get()));
+    return out;
+}
+
+template<typename Tr, typename Tc, int rank>
+Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims)
+{
+    Array<Tr> out = createEmptyArray<Tr>(odims);
+
+    int t_dims[rank];
+    int in_embed[rank], out_embed[rank];
+
+    computeDims<rank>(t_dims, odims);
+    computeDims<rank>(in_embed, in.getDataDims());
+    computeDims<rank>(out_embed, out.getDataDims());
+
+    int batch = 1;
+    for (int i = rank; i < 4; i++) {
+        batch *= odims[i];
+    }
+
+    dim4 istrides = in.strides();
+    dim4 ostrides = out.strides();
+
+    cufft_real_transform<Tr, Tc> transform;
+
+    cufftHandle plan;
+    find_cufft_plan(plan, rank, t_dims,
+                    in_embed  , istrides[0], istrides[rank],
+                    out_embed , ostrides[0], ostrides[rank],
+                    (cufftType)cufft_real_transform<Tr, Tc>::type, batch);
+
+    CUFFT_CHECK(transform(plan, (Tc *)in.get(), out.get()));
+    return out;
 }
 
 #define INSTANTIATE(T)                                      \
@@ -191,4 +282,14 @@ void fft_inplace(Array<T> &in)
     INSTANTIATE(cfloat )
     INSTANTIATE(cdouble)
 
+#define INSTANTIATE_REAL(Tr, Tc)                                        \
+    template Array<Tc> fft_r2c<Tc, Tr, 1>(const Array<Tr> &in);         \
+    template Array<Tc> fft_r2c<Tc, Tr, 2>(const Array<Tr> &in);         \
+    template Array<Tc> fft_r2c<Tc, Tr, 3>(const Array<Tr> &in);         \
+    template Array<Tr> fft_c2r<Tr, Tc, 1>(const Array<Tc> &in, const dim4 &odims); \
+    template Array<Tr> fft_c2r<Tr, Tc, 2>(const Array<Tc> &in, const dim4 &odims); \
+    template Array<Tr> fft_c2r<Tr, Tc, 3>(const Array<Tc> &in, const dim4 &odims); \
+
+    INSTANTIATE_REAL(float , cfloat )
+    INSTANTIATE_REAL(double, cdouble)
 }

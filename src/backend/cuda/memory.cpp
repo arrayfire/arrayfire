@@ -17,6 +17,8 @@
 #include <dispatch.hpp>
 #include <platform.hpp>
 
+#define AF_CUDA_MEM_DEBUG
+
 namespace cuda
 {
     static size_t memory_resolution = 1024; //1KB
@@ -87,6 +89,15 @@ namespace cuda
     void pinnedFree(T *ptr)
     {
         pinnedFreeWrapper(ptr); // Free it because we are not sure what the size is
+    }
+
+    void garbageCollect()
+    {
+    }
+
+    void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
+                          size_t *lock_bytes,  size_t *lock_buffers)
+    {
     }
 
 #else

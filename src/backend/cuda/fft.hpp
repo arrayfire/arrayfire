@@ -15,4 +15,10 @@ namespace cuda
 template<typename T, int rank, bool direction>
 void fft_inplace(Array<T> &out);
 
+template<typename Tc, typename Tr, int rank>
+Array<Tc> fft_r2c(const Array<Tr> &in);
+
+template<typename Tr, typename Tc, int rank>
+Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims);
+
 }

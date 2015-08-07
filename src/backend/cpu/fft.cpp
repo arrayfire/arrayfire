@@ -54,12 +54,12 @@ TRANSFORM(fftw, cdouble)
 template<typename T, int rank, bool direction>
 void fft_inplace(Array<T> &in)
 {
-    int in_dims[rank];
+    int t_dims[rank];
     int in_embed[rank];
 
     const dim4 idims = in.dims();
 
-    computeDims<rank>(in_dims  , idims);
+    computeDims<rank>(t_dims  , idims);
     computeDims<rank>(in_embed , in.getDataDims());
 
     const dim4 istrides = in.strides();
@@ -75,7 +75,7 @@ void fft_inplace(Array<T> &in)
     }
 
     plan = transform.create(rank,
-                            in_dims,
+                            t_dims,
                             (int)batch,
                             (ctype_t *)in.get(),
                             in_embed, (int)istrides[0],
@@ -88,7 +88,119 @@ void fft_inplace(Array<T> &in)
 
     transform.execute(plan);
     transform.destroy(plan);
+}
 
+template<typename To, typename Ti>
+struct fftw_real_transform;
+
+#define TRANSFORM_REAL(PRE, To, Ti, POST)                               \
+    template<>                                                          \
+    struct fftw_real_transform<To, Ti>                                  \
+    {                                                                   \
+        typedef PRE##_plan plan_t;                                      \
+        typedef PRE##_complex ctype_t;                                  \
+                                                                        \
+        template<typename... Args>                                      \
+            plan_t create(Args... args)                                 \
+        { return PRE##_plan_many_dft_##POST(args...); }                 \
+        void execute(plan_t plan) { return PRE##_execute(plan); }       \
+        void destroy(plan_t plan) { return PRE##_destroy_plan(plan); }  \
+    };                                                                  \
+
+
+TRANSFORM_REAL(fftwf, cfloat , float , r2c)
+TRANSFORM_REAL(fftw , cdouble, double, r2c)
+TRANSFORM_REAL(fftwf, float , cfloat , c2r)
+TRANSFORM_REAL(fftw , double, cdouble, c2r)
+
+template<typename Tc, typename Tr, int rank>
+Array<Tc> fft_r2c(const Array<Tr> &in)
+{
+    dim4 idims = in.dims();
+    dim4 odims = in.dims();
+
+    odims[0] = odims[0] / 2 + 1;
+
+    Array<Tc> out = createEmptyArray<Tc>(odims);
+
+    int t_dims[rank];
+    int in_embed[rank];
+    int out_embed[rank];
+
+    computeDims<rank>(t_dims  , idims);
+    computeDims<rank>(in_embed , in.getDataDims());
+    computeDims<rank>(out_embed , out.getDataDims());
+
+    const dim4 istrides = in.strides();
+    const dim4 ostrides = out.strides();
+
+    typedef typename fftw_real_transform<Tc, Tr>::ctype_t ctype_t;
+    typename fftw_real_transform<Tc, Tr>::plan_t plan;
+
+    fftw_real_transform<Tc, Tr> transform;
+
+    int batch = 1;
+    for (int i = rank; i < 4; i++) {
+        batch *= idims[i];
+    }
+
+    plan = transform.create(rank,
+                            t_dims,
+                            (int)batch,
+                            (Tr *)in.get(),
+                            in_embed, (int)istrides[0],
+                            (int)istrides[rank],
+                            (ctype_t *)out.get(),
+                            out_embed, (int)ostrides[0],
+                            (int)ostrides[rank],
+                            FFTW_ESTIMATE);
+
+    transform.execute(plan);
+    transform.destroy(plan);
+
+    return out;
+}
+
+template<typename Tr, typename Tc, int rank>
+Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims)
+{
+    Array<Tr> out = createEmptyArray<Tr>(odims);
+
+    int t_dims[rank];
+    int in_embed[rank];
+    int out_embed[rank];
+
+    computeDims<rank>(t_dims  , odims);
+    computeDims<rank>(in_embed , in.getDataDims());
+    computeDims<rank>(out_embed , out.getDataDims());
+
+    const dim4 istrides = in.strides();
+    const dim4 ostrides = out.strides();
+
+    typedef typename fftw_real_transform<Tr, Tc>::ctype_t ctype_t;
+    typename fftw_real_transform<Tr, Tc>::plan_t plan;
+
+    fftw_real_transform<Tr, Tc> transform;
+
+    int batch = 1;
+    for (int i = rank; i < 4; i++) {
+        batch *= odims[i];
+    }
+
+    plan = transform.create(rank,
+                            t_dims,
+                            (int)batch,
+                            (ctype_t *)in.get(),
+                            in_embed, (int)istrides[0],
+                            (int)istrides[rank],
+                            (Tr *)out.get(),
+                            out_embed, (int)ostrides[0],
+                            (int)ostrides[rank],
+                            FFTW_ESTIMATE);
+
+    transform.execute(plan);
+    transform.destroy(plan);
+    return out;
 }
 
 #define INSTANTIATE(T)                                      \
@@ -102,5 +214,14 @@ void fft_inplace(Array<T> &in)
     INSTANTIATE(cfloat )
     INSTANTIATE(cdouble)
 
+#define INSTANTIATE_REAL(Tr, Tc)                                        \
+    template Array<Tc> fft_r2c<Tc, Tr, 1>(const Array<Tr> &in);         \
+    template Array<Tc> fft_r2c<Tc, Tr, 2>(const Array<Tr> &in);         \
+    template Array<Tc> fft_r2c<Tc, Tr, 3>(const Array<Tr> &in);         \
+    template Array<Tr> fft_c2r<Tr, Tc, 1>(const Array<Tc> &in, const dim4 &odims); \
+    template Array<Tr> fft_c2r<Tr, Tc, 2>(const Array<Tc> &in, const dim4 &odims); \
+    template Array<Tr> fft_c2r<Tr, Tc, 3>(const Array<Tc> &in, const dim4 &odims); \
 
+    INSTANTIATE_REAL(float , cfloat )
+    INSTANTIATE_REAL(double, cdouble)
 }
