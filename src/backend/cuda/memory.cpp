@@ -17,8 +17,6 @@
 #include <dispatch.hpp>
 #include <platform.hpp>
 
-#define AF_CUDA_MEM_DEBUG
-
 namespace cuda
 {
     static size_t memory_resolution = 1024; //1KB
