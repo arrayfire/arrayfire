@@ -61,7 +61,7 @@ void morph(__global T *              out,
     int d1 = iInfo.dims[1];
     for (int b=ly, gy2=gy; b<shrdLen1; b+=get_local_size(1), gy2+=get_local_size(1)) {
         for (int a=lx, gx2=gx; a<shrdLen; a+=get_local_size(0), gx2+=get_local_size(0)) {
-            load2LocalMem(localMem, in, a, b, shrdLen, d0, d1, gx-halo, gy-halo, s1, s0);
+            load2LocalMem(localMem, in, a, b, shrdLen, d0, d1, gx2-halo, gy2-halo, s1, s0);
         }
     }
 
