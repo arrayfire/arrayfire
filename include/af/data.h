@@ -490,6 +490,26 @@ namespace af
     AFAPI array upper(const array &in, bool is_unit_diag=false);
 
     /**
+       \param[in]  cond is the conditional array
+       \param[in]  a is the array containing elements from the true part of the condition
+       \param[in]  b is the array containing elements from the false part of the condition
+       \return  the output containing elements of \p a when \p cond is true else elements from \p b
+
+       \ingroup data_func_select
+    */
+    AFAPI array select(const array &cond, const array  &a, const array  &b);
+
+    /**
+       \param[in]  cond is the conditional array
+       \param[in]  a is the array containing elements from the true part of the condition
+       \param[in]  b is a scalar assigned to \p out when \p cond is false
+       \return  the output containing elements of \p a when \p cond is true else the value \p b
+
+       \ingroup data_func_select
+    */
+    AFAPI array select(const array &cond, const array  &a, const double &b);
+
+    /**
       @}
     */
 }
@@ -759,6 +779,36 @@ extern "C" {
     /**
       @}
     */
+
+    /**
+       \param[out] out is the output containing elements of \p a when \p cond is true else elements from \p b
+       \param[in]  cond is the conditional array
+       \param[in]  a is the array containing elements from the true part of the condition
+       \param[in]  b is the array containing elements from the false part of the condition
+
+       \ingroup data_func_select
+    */
+    AFAPI af_err af_select(af_array *out, const af_array cond, const af_array a, const af_array b);
+
+    /**
+       \param[out] out is the output containing elements of \p a when \p cond is true else elements from \p b
+       \param[in]  cond is the conditional array
+       \param[in]  a is the array containing elements from the true part of the condition
+       \param[in]  b is a scalar assigned to \p out when \p cond is false
+
+       \ingroup data_func_select
+    */
+    AFAPI af_err af_select_scalar_r(af_array *out, const af_array cond, const af_array a, const double b);
+
+    /**
+       \param[out] out is the output containing elements of \p a when \p cond is true else elements from \p b
+       \param[in]  cond is the conditional array
+       \param[in]  a is a scalar assigned to \p out when \p cond is true
+       \param[in]  b is the array containing elements from the false part of the condition
+
+       \ingroup data_func_select
+    */
+    AFAPI af_err af_select_scalar_l(af_array *out, const af_array cond, const double a, const af_array b);
 #ifdef __cplusplus
 }
 #endif
