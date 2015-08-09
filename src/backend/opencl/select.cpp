@@ -10,19 +10,20 @@
 #include <Array.hpp>
 #include <select.hpp>
 #include <err_opencl.hpp>
+#include <kernel/select.hpp>
 
 namespace opencl
 {
     template<typename T>
     void select(Array<T> &out, const Array<char> &cond, const Array<T> &a, const Array<T> &b)
     {
-        OPENCL_NOT_SUPPORTED();
+        kernel::select<T>(out, cond, a, b, out.ndims());
     }
 
     template<typename T, bool flip>
     void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a, const double &b)
     {
-        OPENCL_NOT_SUPPORTED();
+        kernel::select_scalar<T, flip>(out, cond, a, b, out.ndims());
     }
 
 
