@@ -187,6 +187,7 @@ namespace kernel
         dim3 threads(DIMX, DIMY);
         size_t local_size[] = {DIMX, DIMY};
 
+        //FIXME: Why isn't threads being updated??
         local_size[0] *= local_size[1];
         if (ndims == 1) {
             local_size[1] = 1;

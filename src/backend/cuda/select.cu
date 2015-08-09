@@ -10,19 +10,20 @@
 #include <Array.hpp>
 #include <select.hpp>
 #include <err_cuda.hpp>
+#include <kernel/select.hpp>
 
 namespace cuda
 {
     template<typename T>
     void select(Array<T> &out, const Array<char> &cond, const Array<T> &a, const Array<T> &b)
     {
-        CUDA_NOT_SUPPORTED();
+        kernel::select<T>(out, cond, a, b, out.ndims());
     }
 
     template<typename T, bool flip>
     void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a, const double &b)
     {
-        CUDA_NOT_SUPPORTED();
+        kernel::select_scalar<T, flip>(out, cond, a, b, out.ndims());
     }
 
 #define INSTANTIATE(T)                                              \
