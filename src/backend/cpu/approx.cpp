@@ -12,6 +12,8 @@
 #include <math.hpp>
 #include <stdexcept>
 #include <err_cpu.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 namespace cpu
 {
@@ -141,14 +143,14 @@ namespace cpu
 
         switch(method) {
             case AF_INTERP_NEAREST:
-                approx1_<Ty, Tp, AF_INTERP_NEAREST>
-                        (out.get(), out.dims(), out.elements(),
+                getQueue().enqueue(approx1_<Ty, Tp, AF_INTERP_NEAREST>,
+                        out.get(), out.dims(), out.elements(),
                          in.get(), in.dims(), in.elements(), pos.get(), pos.dims(),
                          out.strides(), in.strides(), pos.strides(), offGrid);
                 break;
             case AF_INTERP_LINEAR:
-                approx1_<Ty, Tp, AF_INTERP_LINEAR>
-                        (out.get(), out.dims(), out.elements(),
+                getQueue().enqueue(approx1_<Ty, Tp, AF_INTERP_LINEAR>,
+                        out.get(), out.dims(), out.elements(),
                          in.get(), in.dims(), in.elements(), pos.get(), pos.dims(),
                          out.strides(), in.strides(), pos.strides(), offGrid);
                 break;
@@ -304,16 +306,16 @@ namespace cpu
 
         switch(method) {
             case AF_INTERP_NEAREST:
-                approx2_<Ty, Tp, AF_INTERP_NEAREST>
-                        (out.get(), out.dims(), out.elements(),
+                getQueue().enqueue(approx2_<Ty, Tp, AF_INTERP_NEAREST>,
+                        out.get(), out.dims(), out.elements(),
                          in.get(), in.dims(), in.elements(),
                          pos0.get(), pos0.dims(), pos1.get(), pos1.dims(),
                          out.strides(), in.strides(), pos0.strides(), pos1.strides(),
                          offGrid);
                 break;
             case AF_INTERP_LINEAR:
-                approx2_<Ty, Tp, AF_INTERP_LINEAR>
-                        (out.get(), out.dims(), out.elements(),
+                getQueue().enqueue(approx2_<Ty, Tp, AF_INTERP_LINEAR>,
+                        out.get(), out.dims(), out.elements(),
                          in.get(), in.dims(), in.elements(),
                          pos0.get(), pos0.dims(), pos1.get(), pos1.dims(),
                          out.strides(), in.strides(), pos0.strides(), pos1.strides(),
