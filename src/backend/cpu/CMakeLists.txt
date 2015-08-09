@@ -47,12 +47,25 @@ IF(NOT UNIX)
     ADD_DEFINITIONS(-DAFDLL)
 ENDIF()
 
+INCLUDE(ExternalProject)
+ExternalProject_Add(
+    threads
+    PREFIX ${CMAKE_BINARY_DIR}/third_party/threads
+    GIT_REPOSITORY https://github.com/alltheflops/threads.git
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    <SOURCE_DIR>/threads ${CMAKE_BINARY_DIR}/third_party/threads
+    LOG_DOWNLOAD ON
+    LOG_INSTALL ON
+    )
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
     "${CMAKE_SOURCE_DIR}/src/backend/cpu"
     ${FFTW_INCLUDES}
     ${CBLAS_INCLUDE_DIR}
     ${LAPACK_INCLUDE_DIR}
+    ${CMAKE_BINARY_DIR}/third_party/threads/src/threads
     )
 
 FILE(GLOB cpu_headers
@@ -148,6 +161,7 @@ TARGET_LINK_LIBRARIES(afcpu
                             PRIVATE ${CBLAS_LIBRARIES}
                             PRIVATE ${FFTW_LIBRARIES})
 
+ADD_DEPENDENCIES(afcpu threads)
 IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
   ADD_DEPENDENCIES(afcpu forge)
 ENDIF()

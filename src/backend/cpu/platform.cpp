@@ -10,6 +10,8 @@
 #include <af/version.h>
 #include <platform.hpp>
 #include <sstream>
+#include <async_queue.hpp>
+#include <array>
 
 namespace cpu
 {
@@ -75,9 +77,16 @@ int getActiveDeviceId()
     return 0;
 }
 
+static const int MAX_QUEUES = 1;
+
+async_queue& getQueue(int idx) {
+    static std::array<async_queue, MAX_QUEUES> queues;
+    return queues[idx];
+}
+
 void sync(int device)
 {
-    // Nothing here
+    getQueue().sync();
 }
 
 }

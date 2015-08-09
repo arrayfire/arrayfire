@@ -18,6 +18,8 @@
 #include <cassert>
 #include <err_cpu.hpp>
 #include <math.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 namespace cpu
 {
@@ -46,6 +48,7 @@ namespace cpu
     template<typename T>
     void copyData(T *to, const Array<T> &from)
     {
+        getQueue().sync();
         if(from.isOwner()) {
             // FIXME: Check for errors / exceptions
             memcpy(to, from.get(), from.elements()*sizeof(T));

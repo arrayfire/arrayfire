@@ -9,6 +9,8 @@
 
 #include <string>
 
+class async_queue;
+
 namespace cpu {
     std::string getInfo();
 
@@ -23,4 +25,6 @@ namespace cpu {
     int getActiveDeviceId();
 
     void sync(int device);
+
+    async_queue& getQueue(int idx = 0);
 }
