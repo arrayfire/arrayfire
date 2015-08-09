@@ -510,6 +510,35 @@ namespace af
     AFAPI array select(const array &cond, const array  &a, const double &b);
 
     /**
+       \param[in]  cond is the conditional array
+       \param[in]  a is a scalar assigned to \p out when \p cond is true
+       \param[in]  b is the array containing elements from the false part of the condition
+       \return  the output containing the value \p a when \p cond is true else elements from \p b
+
+       \ingroup data_func_select
+    */
+    AFAPI array select(const array &cond, const double &a, const array  &b);
+
+    /**
+       \param[inout]  a is the array whose values are replaced with values from \p b when \p cond is true
+       \param[in]  cond is the conditional array
+       \param[in]  b is the array containing elements which replace elements in \p a when \p cond is true
+
+       \ingroup data_func_replace
+    */
+    AFAPI void replace(array &a, const array  &cond, const array  &b);
+
+    /**
+       \param[inout]  a is the array whose values are replaced with values from \p b when \p cond is true
+       \param[in]  cond is the conditional array
+       \param[in]  b is value that replaces elements in \p a when \p cond is true
+
+       \ingroup data_func_replace
+    */
+    AFAPI void replace(array &a, const array  &cond, const double &b);
+
+
+    /**
       @}
     */
 }
@@ -809,6 +838,25 @@ extern "C" {
        \ingroup data_func_select
     */
     AFAPI af_err af_select_scalar_l(af_array *out, const af_array cond, const double a, const af_array b);
+
+
+    /**
+       \param[inout] a is the array whose values are replaced by \p b when \p cond is true
+       \param[in]  cond is the conditional array
+       \param[in]  b is the array containing elements that replaces elements of a where \p cond is false
+
+       \ingroup data_func_replace
+    */
+    AFAPI af_err af_replace(af_array a, const af_array cond, const af_array b);
+
+    /**
+       \param[inout] a is the array whose values are replaced by \p b when \p cond is true
+       \param[in]  cond is the conditional array
+       \param[in]  b is the scalar that replaces the false parts of \p a
+
+       \ingroup data_func_replace
+    */
+    AFAPI af_err af_replace_scalar(af_array a, const af_array cond, const double b);
 #ifdef __cplusplus
 }
 #endif

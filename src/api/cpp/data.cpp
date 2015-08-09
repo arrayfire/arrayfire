@@ -375,4 +375,13 @@ namespace af
         return array(res);
     }
 
+    void replace(array &a, const array &cond, const array &b)
+    {
+        AF_THROW(af_replace(a.get(), cond.get(), b.get()));
+    }
+
+    void replace(array &a, const array &cond, const double &b)
+    {
+        AF_THROW(af_replace_scalar(a.get(), cond.get(), b));
+    }
 }
