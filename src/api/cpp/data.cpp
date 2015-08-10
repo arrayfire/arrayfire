@@ -12,6 +12,7 @@
 #include <af/arith.h>
 #include <af/data.h>
 #include <af/traits.hpp>
+#include <af/gfor.h>
 #include "error.hpp"
 
 namespace af
@@ -351,5 +352,36 @@ namespace af
         af_array res;
         AF_THROW(af_upper(&res, in.get(), is_unit_diag));
         return array(res);
+    }
+
+    array select(const array &cond, const array &a, const array &b)
+    {
+        af_array res;
+        AF_THROW(af_select(&res, cond.get(), a.get(), b.get()));
+        return array(res);
+    }
+
+    array select(const array &cond, const array &a, const double &b)
+    {
+        af_array res;
+        AF_THROW(af_select_scalar_r(&res, cond.get(), a.get(), b));
+        return array(res);
+    }
+
+    array select(const array &cond, const double &a, const array &b)
+    {
+        af_array res;
+        AF_THROW(af_select_scalar_l(&res, cond.get(), a, b.get()));
+        return array(res);
+    }
+
+    void replace(array &a, const array &cond, const array &b)
+    {
+        AF_THROW(af_replace(a.get(), cond.get(), b.get()));
+    }
+
+    void replace(array &a, const array &cond, const double &b)
+    {
+        AF_THROW(af_replace_scalar(a.get(), cond.get(), b));
     }
 }
