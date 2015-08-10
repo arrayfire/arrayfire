@@ -47,7 +47,7 @@ TEST(GettingStarted, SNIPPET_getting_started_gen)
         output.resize(zeros.elements());
         zeros.host(&output.front());
         ASSERT_EQ(f32, zeros.type());
-        for(unsigned i = 0; i < zeros.elements(); i++) ASSERT_FLOAT_EQ(0, output[i]);
+        for(dim_t i = 0; i < zeros.elements(); i++) ASSERT_FLOAT_EQ(0, output[i]);
     }
 
     if (!noDoubleTests<double>()) {
@@ -55,15 +55,15 @@ TEST(GettingStarted, SNIPPET_getting_started_gen)
         vector<double> output(ones.elements());
         ones.host(&output.front());
         ASSERT_EQ(f64, ones.type());
-        for(unsigned i = 0; i < ones.elements(); i++) ASSERT_FLOAT_EQ(1, output[i]);
+        for(dim_t i = 0; i < ones.elements(); i++) ASSERT_FLOAT_EQ(1, output[i]);
     }
 
     {
         vector<float> output;
         output.resize(iden.elements());
         iden.host(&output.front());
-        for(unsigned i = 0; i < iden.dims(0); i++)
-            for(unsigned j = 0; j < iden.dims(1); j++)
+        for(dim_t i = 0; i < iden.dims(0); i++)
+            for(dim_t j = 0; j < iden.dims(1); j++)
                 if(i == j)  ASSERT_FLOAT_EQ(1, output[i * iden.dims(0) + j]);
                 else        ASSERT_FLOAT_EQ(0, output[i * iden.dims(0) + j]);
     }
