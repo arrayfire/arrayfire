@@ -16,13 +16,6 @@ namespace af
     class array;
 
     /**
-        \defgroup print_func_print print
-
-        \brief Print the array to screen
-
-        \ingroup arrayfire_func
-    */
-    /**
         \param[in] exp is an expression, generally the name of the array
         \param[in] arr is the input array
 
@@ -97,6 +90,17 @@ extern "C" {
     AFAPI af_err af_print_array(af_array arr);
 
     /**
+        \param[in] exp is the expression or name of the array
+        \param[in] arr is the input array
+
+        \returns error codes
+
+        \ingroup print_func_print
+    */
+    AFAPI af_err af_print_array_c(const char *exp, const af_array arr);
+
+    /**
+        \param[in] exp is the expression or name of the array
         \param[in] arr is the input array
         \param[in] precision precision for the display
 
@@ -104,7 +108,7 @@ extern "C" {
 
         \ingroup print_func_print
     */
-    AFAPI af_err af_print_array_p(af_array arr, const int precision);
+    AFAPI af_err af_print_array_p(const char *exp, const af_array arr, const int precision);
 
     // Purpose of Addition: "How to add Function" documentation
     AFAPI af_err af_example_function(af_array* out, const af_array in, const af_someenum_t param);

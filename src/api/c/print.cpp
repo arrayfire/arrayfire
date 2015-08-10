@@ -53,8 +53,14 @@ static void printer(ostream &out, const T* ptr, const ArrayInfo &info, unsigned 
 }
 
 template<typename T>
-static void print(af_array arr, const int precision)
+static void print(const char *exp, af_array arr, const int precision, std::ostream &os = std::cout)
 {
+    if(exp == NULL) {
+        os << "No Name Array" << std::endl;
+    } else {
+        os << exp << std::endl;
+    }
+
     const ArrayInfo info = getInfo(arr);
     vector<T> data(info.elements());
 
@@ -66,17 +72,17 @@ static void print(af_array arr, const int precision)
     const ArrayInfo infoT = getInfo(arrT);
     AF_CHECK(af_release_array(arrT));
 
-    std::ios_base::fmtflags backup = std::cout.flags();
+    std::ios_base::fmtflags backup = os.flags();
 
-    std::cout << "[" << info.dims() << "]\n";
+    os << "[" << info.dims() << "]\n";
 #ifndef NDEBUG
-    std::cout <<"   Offsets: ["<<info.offsets()<<"]"<<std::endl;
-    std::cout <<"   Strides: ["<<info.strides()<<"]"<<std::endl;
+    os <<"   Offsets: [" << info.offsets() << "]" << std::endl;
+    os <<"   Strides: [" << info.strides() << "]" << std::endl;
 #endif
 
-    printer(std::cout, &data.front(), infoT, infoT.ndims() - 1, precision);
+    printer(os, &data.front(), infoT, infoT.ndims() - 1, precision);
 
-    std::cout.flags(backup);
+    os.flags(backup);
 }
 
 af_err af_print_array(af_array arr)
@@ -86,16 +92,16 @@ af_err af_print_array(af_array arr)
         af_dtype type = info.getType();
         switch(type)
         {
-        case f32:   print<float>   (arr, 4);   break;
-        case c32:   print<cfloat>  (arr, 4);   break;
-        case f64:   print<double>  (arr, 4);   break;
-        case c64:   print<cdouble> (arr, 4);   break;
-        case b8:    print<char>    (arr, 4);   break;
-        case s32:   print<int>     (arr, 4);   break;
-        case u32:   print<unsigned>(arr, 4);   break;
-        case u8:    print<uchar>   (arr, 4);   break;
-        case s64:   print<intl>    (arr, 4);   break;
-        case u64:   print<uintl>   (arr, 4);   break;
+        case f32:   print<float>   (NULL, arr, 4);   break;
+        case c32:   print<cfloat>  (NULL, arr, 4);   break;
+        case f64:   print<double>  (NULL, arr, 4);   break;
+        case c64:   print<cdouble> (NULL, arr, 4);   break;
+        case b8:    print<char>    (NULL, arr, 4);   break;
+        case s32:   print<int>     (NULL, arr, 4);   break;
+        case u32:   print<unsigned>(NULL, arr, 4);   break;
+        case u8:    print<uchar>   (NULL, arr, 4);   break;
+        case s64:   print<intl>    (NULL, arr, 4);   break;
+        case u64:   print<uintl>   (NULL, arr, 4);   break;
         default:    TYPE_ERROR(1, type);
         }
     }
@@ -103,23 +109,49 @@ af_err af_print_array(af_array arr)
     return AF_SUCCESS;
 }
 
-af_err af_print_array_p(af_array arr, const int precision)
+af_err af_print_array_c(const char *exp, const af_array arr)
 {
     try {
+        ARG_ASSERT(0, exp != NULL);
         ArrayInfo info = getInfo(arr);
         af_dtype type = info.getType();
         switch(type)
         {
-        case f32:   print<float>   (arr, precision);   break;
-        case c32:   print<cfloat>  (arr, precision);   break;
-        case f64:   print<double>  (arr, precision);   break;
-        case c64:   print<cdouble> (arr, precision);   break;
-        case b8:    print<char>    (arr, precision);   break;
-        case s32:   print<int>     (arr, precision);   break;
-        case u32:   print<unsigned>(arr, precision);   break;
-        case u8:    print<uchar>   (arr, precision);   break;
-        case s64:   print<intl>    (arr, precision);   break;
-        case u64:   print<uintl>   (arr, precision);   break;
+        case f32:   print<float>   (exp, arr, 4);   break;
+        case c32:   print<cfloat>  (exp, arr, 4);   break;
+        case f64:   print<double>  (exp, arr, 4);   break;
+        case c64:   print<cdouble> (exp, arr, 4);   break;
+        case b8:    print<char>    (exp, arr, 4);   break;
+        case s32:   print<int>     (exp, arr, 4);   break;
+        case u32:   print<unsigned>(exp, arr, 4);   break;
+        case u8:    print<uchar>   (exp, arr, 4);   break;
+        case s64:   print<intl>    (exp, arr, 4);   break;
+        case u64:   print<uintl>   (exp, arr, 4);   break;
+        default:    TYPE_ERROR(1, type);
+        }
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_print_array_p(const char *exp, const af_array arr, const int precision)
+{
+    try {
+        ARG_ASSERT(0, exp != NULL);
+        ArrayInfo info = getInfo(arr);
+        af_dtype type = info.getType();
+        switch(type)
+        {
+        case f32:   print<float   >(exp, arr, precision);   break;
+        case c32:   print<cfloat  >(exp, arr, precision);   break;
+        case f64:   print<double  >(exp, arr, precision);   break;
+        case c64:   print<cdouble >(exp, arr, precision);   break;
+        case b8:    print<char    >(exp, arr, precision);   break;
+        case s32:   print<int     >(exp, arr, precision);   break;
+        case u32:   print<unsigned>(exp, arr, precision);   break;
+        case u8:    print<uchar   >(exp, arr, precision);   break;
+        case s64:   print<intl    >(exp, arr, precision);   break;
+        case u64:   print<uintl   >(exp, arr, precision);   break;
         default:    TYPE_ERROR(1, type);
         }
     }
