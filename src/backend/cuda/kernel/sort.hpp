@@ -40,10 +40,9 @@ namespace cuda
                         int valOffset = valWZ + y * val.strides[1];
 
                         if(isAscending) {
-                            thrust::sort(val_ptr + valOffset, val_ptr + valOffset + val.dims[0]);
+                            THRUST_SELECT(thrust::sort, val_ptr + valOffset, val_ptr + valOffset + val.dims[0]);
                         } else {
-                            thrust::sort(val_ptr + valOffset, val_ptr + valOffset + val.dims[0],
-                                         thrust::greater<T>());
+                            THRUST_SELECT(thrust::sort, val_ptr + valOffset, val_ptr + valOffset + val.dims[0], thrust::greater<T>());
                         }
                     }
                 }

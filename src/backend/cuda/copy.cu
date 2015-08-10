@@ -55,7 +55,8 @@ namespace cuda
         if (A.isLinear()) {
             CUDA_CHECK(cudaMemcpyAsync(out.get(), A.get(),
                                        A.elements() * sizeof(T),
-                                       cudaMemcpyDeviceToDevice));
+                                       cudaMemcpyDeviceToDevice,
+                                       cuda::getStream(cuda::getActiveDeviceId())));
         } else {
             // FIXME: Seems to fail when using Param<T>
             kernel::memcopy(out.get(), out.strides().get(), A.get(), A.dims().get(),
@@ -70,7 +71,14 @@ namespace cuda
         ARG_ASSERT(1, (in.ndims() == dims.ndims()));
         Array<outType> ret = createEmptyArray<outType>(dims);
         kernel::copy<inType, outType>(ret, in, in.ndims(), default_value, factor);
+        CUDA_CHECK(cudaDeviceSynchronize());
         return ret;
+    }
+
+    template<typename T>
+    void multiply_inplace(Array<T> &in, double val)
+    {
+        kernel::copy<T, T>(in, in, in.ndims(), scalar<T>(0), val);
     }
 
     template<typename inType, typename outType>
@@ -91,7 +99,8 @@ namespace cuda
             {
                 CUDA_CHECK(cudaMemcpyAsync(out.get(), in.get(),
                                            in.elements() * sizeof(T),
-                                           cudaMemcpyDeviceToDevice));
+                                           cudaMemcpyDeviceToDevice,
+                                           cuda::getStream(cuda::getActiveDeviceId())));
             } else {
                 kernel::copy<T, T>(out, in, in.ndims(), scalar<T>(0), 1);
             }
@@ -109,6 +118,7 @@ namespace cuda
 #define INSTANTIATE(T)                                              \
     template void      copyData<T> (T *data, const Array<T> &from); \
     template Array<T> copyArray<T>(const Array<T> &A);              \
+    template void      multiply_inplace<T> (Array<T> &in, double norm); \
 
     INSTANTIATE(float)
     INSTANTIATE(double)

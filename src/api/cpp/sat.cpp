@@ -7,17 +7,18 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <Array.hpp>
+#include <af/image.h>
+#include <af/array.h>
+#include "error.hpp"
 
-namespace cpu
+namespace af
 {
 
-template<typename T, int rank, bool direction>
-void fft_inplace(Array<T> &in);
+array sat(const array& in)
+{
+    af_array out = 0;
+    AF_THROW(af_sat(&out, in.get()));
+    return array(out);
+}
 
-template<typename Tc, typename Tr, int rank>
-Array<Tc> fft_r2c(const Array<Tr> &in);
-
-template<typename Tr, typename Tc, int rank>
-Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims);
 }

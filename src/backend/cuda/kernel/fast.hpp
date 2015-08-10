@@ -13,6 +13,7 @@
 #include <debug_cuda.hpp>
 #include <kernel/fast_lut.hpp>
 #include <memory.hpp>
+#include "shared.hpp"
 
 namespace cuda
 {
@@ -117,64 +118,6 @@ inline __device__ double abs_diff(const double x, const double y)
     return fabs(x - y);
 }
 
-// non-specialized class template
-//http://www.naic.edu/~phil/hardware/nvidia/doc/src/simpleTemplates/doc/readme.txt
-template <class T>
-class ExtSharedMem
-{
-    public:
-        // Ensure that we won't compile any un-specialized types
-        __device__ T* getPointer() { extern __shared__ float s_float[]; return s_float; };
-};
-
-// specialization for char
-template <>
-class ExtSharedMem <char>
-{
-    public:
-        __device__ char* getPointer() { extern __shared__ char s_char[]; return s_char; }
-};
-
-// specialization for int
-template <>
-class ExtSharedMem <uchar>
-{
-    public:
-        __device__ uchar* getPointer() { extern __shared__ uchar s_uchar[]; return s_uchar; }
-};
-
-// specialization for int
-template <>
-class ExtSharedMem <int>
-{
-    public:
-        __device__ int* getPointer() { extern __shared__ int s_int[]; return s_int; }
-};
-
-// specialization for unsigned
-template <>
-class ExtSharedMem <unsigned>
-{
-    public:
-        __device__ unsigned* getPointer() { extern __shared__ unsigned s_unsigned[]; return s_unsigned; }
-};
-
-// specialization for float
-template <>
-class ExtSharedMem <float>
-{
-    public:
-        __device__ float* getPointer() { extern __shared__ float s_float[]; return s_float; }
-};
-
-// specialization for double
-template <>
-class ExtSharedMem <double>
-{
-    public:
-        __device__ double* getPointer() { extern __shared__ double s_double[]; return s_double; }
-};
-
 template<typename T, int arc_length>
 __device__
 void locate_features_core(
@@ -276,7 +219,7 @@ void locate_features(
     unsigned lx = bx / 2 + 3;
     unsigned ly = by / 2 + 3;
 
-    ExtSharedMem<T> shared;
+    SharedMemory<T> shared;
     T* local_image_curr = shared.getPointer();
     load_shared_image(in, local_image_curr, ix, iy, bx, by, x, y, lx, ly, edge);
     __syncthreads();
@@ -451,28 +394,28 @@ void fast(unsigned* out_feat,
 
     switch(arc_length) {
     case 9:
-        locate_features<T, 9><<<blocks, threads, shared_size>>>(in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T, 9>), blocks, threads, shared_size, in, d_score, thr, edge);
         break;
     case 10:
-        locate_features<T,10><<<blocks, threads, shared_size>>>(in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,10>), blocks, threads, shared_size, in, d_score, thr, edge);
         break;
     case 11:
-        locate_features<T,11><<<blocks, threads, shared_size>>>(in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,11>), blocks, threads, shared_size, in, d_score, thr, edge);
         break;
     case 12:
-        locate_features<T,12><<<blocks, threads, shared_size>>>(in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,12>), blocks, threads, shared_size, in, d_score, thr, edge);
         break;
     case 13:
-        locate_features<T,13><<<blocks, threads, shared_size>>>(in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,13>), blocks, threads, shared_size, in, d_score, thr, edge);
         break;
     case 14:
-        locate_features<T,14><<<blocks, threads, shared_size>>>(in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,14>), blocks, threads, shared_size, in, d_score, thr, edge);
         break;
     case 15:
-        locate_features<T,15><<<blocks, threads, shared_size>>>(in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,15>), blocks, threads, shared_size, in, d_score, thr, edge);
         break;
     case 16:
-        locate_features<T,16><<<blocks, threads, shared_size>>>(in, d_score, thr, edge);
+        CUDA_LAUNCH_SMEM((locate_features<T,16>), blocks, threads, shared_size, in, d_score, thr, edge);
         break;
     }
 
@@ -485,16 +428,18 @@ void fast(unsigned* out_feat,
     blocks.y = divup(in.dims[1], 64);
 
     unsigned *d_total = (unsigned *)(d_score + in.dims[0] * in.dims[1]);
-    CUDA_CHECK(cudaMemset(d_total, 0, sizeof(unsigned)));
+    CUDA_CHECK(cudaMemsetAsync(d_total, 0, sizeof(unsigned), cuda::getStream(cuda::getActiveDeviceId())));
     unsigned *d_counts  = memAlloc<unsigned>(blocks.x * blocks.y);
     unsigned *d_offsets = memAlloc<unsigned>(blocks.x * blocks.y);
 
     if (nonmax)
-        non_max_counts<true ><<<blocks, threads>>>(d_counts, d_offsets, d_total, d_flags,
-                                                   d_score, in.dims[0], in.dims[1], edge);
+        CUDA_LAUNCH((non_max_counts<true >), blocks, threads,
+                d_counts, d_offsets, d_total, d_flags,
+                d_score, in.dims[0], in.dims[1], edge);
     else
-        non_max_counts<false><<<blocks, threads>>>(d_counts, d_offsets, d_total, d_flags,
-                                                   d_score, in.dims[0], in.dims[1], edge);
+        CUDA_LAUNCH((non_max_counts<false>), blocks, threads,
+                d_counts, d_offsets, d_total, d_flags,
+                d_score, in.dims[0], in.dims[1], edge);
 
     POST_LAUNCH_CHECK();
 
@@ -508,8 +453,9 @@ void fast(unsigned* out_feat,
         *y_out     = memAlloc<float>(total);
         *score_out = memAlloc<float>(total);
 
-        get_features<float><<<blocks, threads>>>(*x_out, *y_out, *score_out, d_flags, d_counts,
-                                                 d_offsets, total, in.dims[0], in.dims[1], edge);
+        CUDA_LAUNCH((get_features<float>), blocks, threads,
+                *x_out, *y_out, *score_out, d_flags, d_counts,
+                d_offsets, total, in.dims[0], in.dims[1], edge);
 
         POST_LAUNCH_CHECK();
     }

@@ -583,13 +583,26 @@ from the other and returns the result.
 
 =======================================================================
 
+\defgroup image_func_sat SAT
+\ingroup imageflt_mat
+
+\brief Summed Area Tables
+
+Given an image \f$ I: (x,y) \mapsto i \f$ where i is pixel intensity at position \f$(x, y)\f$.
+
+\f$S(x, y) = i(x, y) + S(x-1, y) + S(x, y-1) - S(x-1, y-1)\f$
+
+The output array of this function will have \f$ S(x, y) \f$ values at their corresponding locations, \f$(x,y)\f$
+
+=======================================================================
+
 \defgroup image_func_unwrap unwrap
 \ingroup image_mod
 
 Generate image with image windows as columns
 
-\ref unwrap takes in an input image along with the window sizes \p wx and \p
-wy, strides \p sx and \p sy, and padding \px and \p py. This function then
+unwrap takes in an input image along with the window sizes \p wx and \p
+wy, strides \p sx and \p sy, and padding \p px and \p py. This function then
 generates a matrix where each windows is an independent column.
 
 The number of columns in the output array are govenered by the number of

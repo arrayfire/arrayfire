@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/defines.h>
+#include <platform.hpp>
 #include <backend.hpp>
 #include <dispatch.hpp>
 #include <Param.hpp>
@@ -89,35 +90,15 @@ void medfilt(Param<T> out, CParam<T> in, int nBBS0, int nBBS1)
     int gx = blockDim.x * (blockIdx.x-b2*nBBS0) + lx;
     int gy = blockDim.y * (blockIdx.y-b3*nBBS1) + ly;
 
-    // offset values for pulling image to local memory
-    int lx2 = lx + blockDim.x;
-    int ly2 = ly + blockDim.y;
-    int gx2 = gx + blockDim.x;
-    int gy2 = gy + blockDim.y;
-
     // pull image to local memory
-    load2ShrdMem<T, pad>(shrdMem, iptr, lx, ly, shrdLen,
-                         in.dims[0], in.dims[1],
-                         gx-halo, gy-halo,
-                         in.strides[1], in.strides[0]);
-    if (lx<padding) {
-        load2ShrdMem<T, pad>(shrdMem, iptr, lx2, ly, shrdLen,
-                             in.dims[0], in.dims[1],
-                             gx2-halo, gy-halo,
-                             in.strides[1], in.strides[0]);
+    for (int b=ly, gy2=gy; b<shrdLen; b+=blockDim.y, gy2+=blockDim.y) {
+        // move row_set get_local_size(1) along coloumns
+        for (int a=lx, gx2=gx; a<shrdLen; a+=blockDim.x, gx2+=blockDim.x) {
+            load2ShrdMem<T, pad>(shrdMem, iptr, a, b, shrdLen, in.dims[0], in.dims[1],
+                    gx2-halo, gy2-halo, in.strides[1], in.strides[0]);
+        }
     }
-    if (ly<padding) {
-        load2ShrdMem<T, pad>(shrdMem, iptr, lx, ly2, shrdLen,
-                             in.dims[0], in.dims[1],
-                             gx-halo, gy2-halo,
-                             in.strides[1], in.strides[0]);
-    }
-    if (lx<padding && ly<padding) {
-        load2ShrdMem<T, pad>(shrdMem, iptr, lx2, ly2, shrdLen,
-                             in.dims[0], in.dims[1],
-                             gx2-halo, gy2-halo,
-                             in.strides[1], in.strides[0]);
-    }
+
     __syncthreads();
 
     // Only continue if we're at a valid location
@@ -212,13 +193,13 @@ void medfilt(Param<T> out, CParam<T> in, int w_len, int w_wid)
     dim3 blocks(blk_x*in.dims[2], blk_y*in.dims[3]);
 
     switch(w_len) {
-        case  3: (medfilt<T, pad,  3,  3>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
-        case  5: (medfilt<T, pad,  5,  5>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
-        case  7: (medfilt<T, pad,  7,  7>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
-        case  9: (medfilt<T, pad,  9,  9>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
-        case 11: (medfilt<T, pad, 11, 11>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
-        case 13: (medfilt<T, pad, 13, 13>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
-        case 15: (medfilt<T, pad, 15, 15>)<<<blocks, threads>>>(out, in, blk_x, blk_y); break;
+        case  3: CUDA_LAUNCH((medfilt<T,pad, 3, 3>), blocks, threads, out, in, blk_x, blk_y); break;
+        case  5: CUDA_LAUNCH((medfilt<T,pad, 5, 5>), blocks, threads, out, in, blk_x, blk_y); break;
+        case  7: CUDA_LAUNCH((medfilt<T,pad, 7, 7>), blocks, threads, out, in, blk_x, blk_y); break;
+        case  9: CUDA_LAUNCH((medfilt<T,pad, 9, 9>), blocks, threads, out, in, blk_x, blk_y); break;
+        case 11: CUDA_LAUNCH((medfilt<T,pad,11,11>), blocks, threads, out, in, blk_x, blk_y); break;
+        case 13: CUDA_LAUNCH((medfilt<T,pad,13,13>), blocks, threads, out, in, blk_x, blk_y); break;
+        case 15: CUDA_LAUNCH((medfilt<T,pad,15,15>), blocks, threads, out, in, blk_x, blk_y); break;
     }
 
     POST_LAUNCH_CHECK();

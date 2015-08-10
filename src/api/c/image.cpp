@@ -185,6 +185,25 @@ af_err af_set_title(const af_window wind, const char* const title)
 #endif
 }
 
+af_err af_set_size(const af_window wind, const unsigned w, const unsigned h)
+{
+#if defined(WITH_GRAPHICS)
+    if(wind==0) {
+        std::cerr<<"Not a valid window"<<std::endl;
+        return AF_SUCCESS;
+    }
+
+    try {
+        fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
+        wnd->setSize(w, h);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+#else
+    return AF_ERR_NO_GFX;
+#endif
+}
+
 af_err af_grid(const af_window wind, const int rows, const int cols)
 {
 #if defined(WITH_GRAPHICS)

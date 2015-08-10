@@ -199,16 +199,16 @@ namespace kernel
 
         switch (threads_y) {
         case 8:
-            (ireduce_dim_kernel<T, op, dim, is_first, 8>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((ireduce_dim_kernel<T, op, dim, is_first, 8>), blocks, threads,
                 out, olptr, in, ilptr, blocks_dim[0], blocks_dim[1], blocks_dim[dim]); break;
         case 4:
-            (ireduce_dim_kernel<T, op, dim, is_first, 4>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((ireduce_dim_kernel<T, op, dim, is_first, 4>), blocks, threads,
                 out, olptr, in, ilptr, blocks_dim[0], blocks_dim[1], blocks_dim[dim]); break;
         case 2:
-            (ireduce_dim_kernel<T, op, dim, is_first, 2>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((ireduce_dim_kernel<T, op, dim, is_first, 2>), blocks, threads,
                 out, olptr, in, ilptr, blocks_dim[0], blocks_dim[1], blocks_dim[dim]); break;
         case 1:
-            (ireduce_dim_kernel<T, op, dim, is_first, 1>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((ireduce_dim_kernel<T, op, dim, is_first, 1>), blocks, threads,
                 out, olptr, in, ilptr, blocks_dim[0], blocks_dim[1], blocks_dim[dim]); break;
         }
 
@@ -377,16 +377,16 @@ namespace kernel
 
         switch (threads_x) {
         case 32:
-            (ireduce_first_kernel<T, op, is_first,  32>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((ireduce_first_kernel<T, op, is_first,  32>), blocks, threads,
                 out, olptr, in, ilptr, blocks_x, blocks_y, repeat); break;
         case 64:
-            (ireduce_first_kernel<T, op, is_first,  64>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((ireduce_first_kernel<T, op, is_first,  64>), blocks, threads,
                 out, olptr, in, ilptr, blocks_x, blocks_y, repeat); break;
         case 128:
-            (ireduce_first_kernel<T, op, is_first,  128>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((ireduce_first_kernel<T, op, is_first,  128>), blocks, threads,
                 out, olptr, in, ilptr, blocks_x, blocks_y, repeat); break;
         case 256:
-            (ireduce_first_kernel<T, op, is_first,  256>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((ireduce_first_kernel<T, op, is_first,  256>), blocks, threads,
                 out, olptr, in, ilptr, blocks_x, blocks_y, repeat); break;
         }
 

@@ -96,8 +96,9 @@ namespace cuda
                 assert(sdims_[i] >= 0 && sdims_[i] <= out.dims[i]);
             }
 
-            shift_kernel<T><<<blocks, threads>>>(out, in, sdims_[0], sdims_[1], sdims_[2], sdims_[3],
-                                                 blocksPerMatX, blocksPerMatY);
+            CUDA_LAUNCH((shift_kernel<T>), blocks, threads,
+                    out, in, sdims_[0], sdims_[1], sdims_[2], sdims_[3],
+                    blocksPerMatX, blocksPerMatY);
             POST_LAUNCH_CHECK();
         }
     }

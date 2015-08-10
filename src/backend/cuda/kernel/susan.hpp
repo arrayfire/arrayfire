@@ -110,7 +110,8 @@ void susan_responses(T* out, const T* in,
     dim3 blocks(divup(idim0-edge*2, BLOCK_X), divup(idim1-edge*2, BLOCK_Y));
     const size_t SMEM_SIZE = (BLOCK_X+2*radius)*(BLOCK_Y+2*radius)*sizeof(T);
 
-    susanKernel<T><<<blocks, threads, SMEM_SIZE>>>(out, in, idim0, idim1, radius, t, g, edge);
+    CUDA_LAUNCH_SMEM((susanKernel<T>), blocks, threads, SMEM_SIZE,
+            out, in, idim0, idim1, radius, t, g, edge);
 
     POST_LAUNCH_CHECK();
 }
@@ -162,10 +163,11 @@ void nonMaximal(float* x_out, float* y_out, float* resp_out,
     dim3 blocks(divup(idim0-edge*2, BLOCK_X), divup(idim1-edge*2, BLOCK_Y));
 
     unsigned* d_corners_found = memAlloc<unsigned>(1);
-    CUDA_CHECK(cudaMemset(d_corners_found, 0, sizeof(unsigned)));
+    CUDA_CHECK(cudaMemsetAsync(d_corners_found, 0, sizeof(unsigned),
+                cuda::getStream(cuda::getActiveDeviceId())));
 
-    nonMaxKernel<T><<<blocks, threads>>>(x_out, y_out, resp_out, d_corners_found,
-                                         idim0, idim1, resp_in, edge, max_corners);
+    CUDA_LAUNCH((nonMaxKernel<T>), blocks, threads,
+            x_out, y_out, resp_out, d_corners_found, idim0, idim1, resp_in, edge, max_corners);
 
     POST_LAUNCH_CHECK();
 

@@ -558,6 +558,7 @@ extern "C" {
        \param[out] real will contain the real part of adding all elements in input \p in
        \param[out] imag will contain the imaginary part of adding all elements in input \p in
        \param[in] in is the input array
+       \param[in] nanval is the value which replaces nan
        \return \ref AF_SUCCESS if the execution completes properly
 
        \note \p imag is always set to 0 when \p in is real
@@ -586,6 +587,7 @@ extern "C" {
        \param[out] real will contain the real part of adding all elements in input \p in
        \param[out] imag will contain the imaginary part of adding all elements in input \p in
        \param[in] in is the input array
+       \param[in] nanval is the value which replaces nan
        \return \ref AF_SUCCESS if the execution completes properly
 
        \note \p imag is always set to 0 when \p in is real

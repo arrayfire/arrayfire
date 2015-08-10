@@ -82,7 +82,7 @@ namespace cuda
                         blocksPerMatY * out.dims[3],
                         1);
 
-            range_kernel<T><<<blocks, threads>>>(out, dim, blocksPerMatX, blocksPerMatY);
+            CUDA_LAUNCH((range_kernel<T>), blocks, threads, out, dim, blocksPerMatX, blocksPerMatY);
             POST_LAUNCH_CHECK();
         }
     }

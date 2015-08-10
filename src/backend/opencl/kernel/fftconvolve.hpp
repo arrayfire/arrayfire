@@ -238,6 +238,12 @@ void reorderOutputHelper(Param out,
         static std::map<int, Program*> fftconvolveProgs;
         static std::map<int, Kernel*>  roKernel;
 
+        int fftScale = 1;
+
+        // Calculate the scale by which to divide clFFT results
+        for (int k = 0; k < baseDim; k++)
+            fftScale *= packed.info.dims[k];
+
         int device = getActiveDeviceId();
 
         std::call_once( compileFlags[device], [device] () {
@@ -279,19 +285,19 @@ void reorderOutputHelper(Param out,
         auto roOp = make_kernel<Buffer, KParam,
                                 Buffer, KParam,
                                 KParam, const int,
-                                const int> (*roKernel[device]);
+                                const int, const int> (*roKernel[device]);
 
         if (kind == CONVOLVE_BATCH_KERNEL) {
             roOp(EnqueueArgs(getQueue(), global, local),
                  *out.data, out.info,
                  *filter_tmp.data, filter_tmp.info,
-                 filter.info, sig_half_d0, baseDim);
+                 filter.info, sig_half_d0, baseDim, fftScale);
         }
         else {
             roOp(EnqueueArgs(getQueue(), global, local),
                  *out.data, out.info,
                  *sig_tmp.data, sig_tmp.info,
-                 filter.info, sig_half_d0, baseDim);
+                 filter.info, sig_half_d0, baseDim, fftScale);
         }
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {

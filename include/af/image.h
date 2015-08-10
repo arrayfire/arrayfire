@@ -490,6 +490,17 @@ AFAPI array dog(const array& in, const int radius1, const int radius2);
 AFAPI array unwrap(const array& in, const dim_t wx, const dim_t wy,
                    const dim_t sx, const dim_t sy, const dim_t px=0, const dim_t py=0);
 
+
+/**
+   C++ Interface wrapper for summed area tables
+
+   \param[in]  in is the input array
+   \returns the summed area table of input image
+
+   \ingroup image_func_sat
+*/
+AFAPI array sat(const array& in);
+
 }
 #endif
 
@@ -964,6 +975,18 @@ extern "C" {
     */
     AFAPI af_err af_unwrap(af_array *out, const af_array in, const dim_t wx, const dim_t wy,
                            const dim_t sx, const dim_t sy, const dim_t px, const dim_t py);
+
+    /**
+       C Interface wrapper for summed area tables
+
+       \param[out] out is the summed area table on input image(s)
+       \param[in]  in is the input array
+       \return \ref AF_SUCCESS if the sat computation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup image_func_sat
+    */
+    AFAPI af_err af_sat(af_array *out, const af_array in);
 
 #ifdef __cplusplus
 }

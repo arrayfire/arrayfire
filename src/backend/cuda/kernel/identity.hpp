@@ -51,7 +51,7 @@ namespace kernel
         int blocks_y = divup(out.dims[1], threads.y);
         dim3 blocks(blocks_x * out.dims[2], blocks_y * out.dims[3]);
 
-        identity_kernel<T> <<<blocks, threads>>> (out, blocks_x, blocks_y);
+        CUDA_LAUNCH((identity_kernel<T>), blocks, threads, out, blocks_x, blocks_y);
         POST_LAUNCH_CHECK();
     }
 }

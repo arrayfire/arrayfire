@@ -79,7 +79,8 @@ namespace cuda
                         blocksPerMatY * r.dims[3],
                         1);
 
-            triangle_kernel<T, is_upper, is_unit_diag><<<blocks, threads>>>(r, in, blocksPerMatX, blocksPerMatY);
+            CUDA_LAUNCH((triangle_kernel<T, is_upper, is_unit_diag>), blocks, threads,
+                    r, in, blocksPerMatX, blocksPerMatY);
 
             POST_LAUNCH_CHECK();
         }

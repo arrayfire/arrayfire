@@ -57,6 +57,11 @@ void Window::setTitle(const char* const title)
     AF_THROW(af_set_title(get(), title));
 }
 
+void Window::setSize(const unsigned w, const unsigned h)
+{
+    AF_THROW(af_set_size(get(), w, h));
+}
+
 void Window::setColorMap(const ColorMap cmap)
 {
     _cmap = cmap;
