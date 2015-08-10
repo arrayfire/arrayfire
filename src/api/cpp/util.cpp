@@ -28,4 +28,31 @@ namespace af
         AF_THROW(af_print_array_p(exp, arr.get(), precision));
         return;
     }
+
+    void saveArray(const char *key, const array &arr, const char *filename, const bool append)
+    {
+        AF_THROW(af_save_array(key, arr.get(), filename, append));
+        return;
+    }
+
+    array readArray(const char *filename, const unsigned index)
+    {
+        af_array out = 0;
+        AF_THROW(af_read_array_index(&out, filename, index));
+        return array(out);
+    }
+
+    array readArray(const char *filename, const char *key)
+    {
+        af_array out = 0;
+        AF_THROW(af_read_array_key(&out, filename, key));
+        return array(out);
+    }
+
+    int readArrayCheck(const char *filename, const char *key)
+    {
+        int out = -1;
+        AF_THROW(af_read_array_key_check(&out, filename, key));
+        return out;
+    }
 }

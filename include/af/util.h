@@ -32,6 +32,54 @@ namespace af
     */
     AFAPI void print(const char *exp, const array &arr, const int precision);
 
+    /**
+        \param[in] key is an expression used as tag/key for the array during \ref readArray
+        \param[in] arr is the array to be written
+        \param[in] filename is the path to the location on disk
+        \param[in] append is used to append to an existing file when true and create or
+        overwrite an existing file when false
+
+        \ingroup stream_func_save
+    */
+    AFAPI void saveArray(const char *key, const array &arr, const char *filename, const bool append = false);
+
+    /**
+        \param[in] filename is the path to the location on disk
+        \param[in] index is the 0-based sequential location of the array to be read
+
+        \returns array read from the index location
+
+        \note This function will throw an exception if the index is out of bounds
+
+        \ingroup stream_func_read
+    */
+    AFAPI array readArray(const char *filename, const unsigned index);
+
+    /**
+        \param[in] filename is the path to the location on disk
+        \param[in] key is the tag/name of the array to be read. The key needs to have an exact match.
+
+        \returns array read by key
+
+        \note This function will throw an exception if the key is not found.
+
+        \ingroup stream_func_read
+    */
+    AFAPI array readArray(const char *filename, const char *key);
+
+    /**
+        When reading by key, it may be a good idea to run this function first to check for the key
+        and then call the readArray using the index. This will avoid exceptions in case of key not found.
+
+        \param[in] filename is the path to the location on disk
+        \param[in] key is the tag/name of the array to be read. The key needs to have an exact match.
+
+        \returns index of the array in the file if the key is found. -1 if key is not found.
+
+        \ingroup stream_func_read
+    */
+    AFAPI int readArrayCheck(const char *filename, const char *key);
+
     // Purpose of Addition: "How to add Function" documentation
     AFAPI array exampleFunction(const array& in, const af_someenum_t param);
 }
@@ -109,6 +157,51 @@ extern "C" {
         \ingroup print_func_print
     */
     AFAPI af_err af_print_array_p(const char *exp, const af_array arr, const int precision);
+
+    /**
+        \param[in] key is an expression used as tag/key for the array during \ref readArray
+        \param[in] arr is the array to be written
+        \param[in] filename is the path to the location on disk
+        \param[in] append is used to append to an existing file when true and create or
+        overwrite an existing file when false
+
+        \ingroup stream_func_save
+    */
+    AFAPI af_err af_save_array(const char* key, const af_array arr, const char *filename, const bool append);
+
+    /**
+        \param[out] out is the array read from index
+        \param[in] filename is the path to the location on disk
+        \param[in] index is the 0-based sequential location of the array to be read
+
+        \note This function will throw an exception if the key is not found.
+
+        \ingroup stream_func_read
+    */
+    AFAPI af_err af_read_array_index(af_array *out, const char *filename, const unsigned index);
+
+    /**
+        \param[out] out is the array read from key
+        \param[in] filename is the path to the location on disk
+        \param[in] key is the tag/name of the array to be read. The key needs to have an exact match.
+
+        \note This function will throw an exception if the key is not found.
+
+        \ingroup stream_func_read
+    */
+    AFAPI af_err af_read_array_key(af_array *out, const char *filename, const char* key);
+
+    /**
+        When reading by key, it may be a good idea to run this function first to check for the key
+        and then call the readArray using the index. This will avoid exceptions in case of key not found.
+
+        \param[out] index of the array in the file if the key is found. -1 if key is not found.
+        \param[in] filename is the path to the location on disk
+        \param[in] key is the tag/name of the array to be read. The key needs to have an exact match.
+
+        \ingroup stream_func_read
+    */
+    AFAPI af_err af_read_array_key_check(int *index, const char *filename, const char* key);
 
     // Purpose of Addition: "How to add Function" documentation
     AFAPI af_err af_example_function(af_array* out, const af_array in, const af_someenum_t param);
