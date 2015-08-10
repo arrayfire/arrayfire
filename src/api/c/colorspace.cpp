@@ -13,19 +13,23 @@
 
 af_err af_color_space(af_array *out, const af_array image, const af_cspace_t to, const af_cspace_t from)
 {
-    bool hsv2rgb  = (from==AF_HSV  && to==AF_RGB );
-    bool rgb2hsv  = (from==AF_RGB  && to==AF_HSV );
-    bool gray2rgb = (from==AF_GRAY && to==AF_RGB );
-    bool rgb2gray = (from==AF_RGB  && to==AF_GRAY);
+    bool hsv2rgb  = (from==AF_HSV   && to==AF_RGB  );
+    bool rgb2hsv  = (from==AF_RGB   && to==AF_HSV  );
+    bool gray2rgb = (from==AF_GRAY  && to==AF_RGB  );
+    bool rgb2gray = (from==AF_RGB   && to==AF_GRAY );
+    bool ycbcr2rgb= (from==AF_YCbCr && to==AF_RGB  );
+    bool rgb2ycbcr= (from==AF_RGB   && to==AF_YCbCr);
 
-    ARG_ASSERT(2, (hsv2rgb || rgb2hsv || gray2rgb || rgb2gray));
+    ARG_ASSERT(2, (hsv2rgb || rgb2hsv || gray2rgb || rgb2gray || ycbcr2rgb || rgb2ycbcr));
 
     af_err result = AF_SUCCESS;
 
-    if (hsv2rgb)  result = af_hsv2rgb(out, image);
-    if (rgb2hsv)  result = af_rgb2hsv(out, image);
-    if (gray2rgb) result = af_gray2rgb(out, image, 1.0f, 1.0f, 1.0f);
-    if (rgb2gray) result = af_rgb2gray(out, image, 0.2126f, 0.7152f, 0.0722f);
+    if (hsv2rgb)   result = af_hsv2rgb(out, image);
+    if (rgb2hsv)   result = af_rgb2hsv(out, image);
+    if (gray2rgb)  result = af_gray2rgb(out, image, 1.0f, 1.0f, 1.0f);
+    if (rgb2gray)  result = af_rgb2gray(out, image, 0.2126f, 0.7152f, 0.0722f);
+    if (ycbcr2rgb) result = af_ycbcr2rgb(out, image, AF_YCC_601);
+    if (rgb2ycbcr) result = af_rgb2ycbcr(out, image, AF_YCC_601);
 
     return result;
 }

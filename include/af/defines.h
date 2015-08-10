@@ -243,7 +243,8 @@ typedef enum {
 typedef enum {
     AF_GRAY = 0, ///< Grayscale
     AF_RGB,      ///< 3-channel RGB
-    AF_HSV       ///< 3-channel HSV
+    AF_HSV,      ///< 3-channel HSV
+    AF_YCbCr     ///< 3-channel YCbCr
 } af_cspace_t;
 
 typedef enum {
