@@ -235,6 +235,12 @@ typedef enum {
 } af_match_type;
 
 typedef enum {
+    AF_YCC_601 = 601,  ///< ITU-R BT.601 (formerly CCIR 601) standard
+    AF_YCC_709 = 709,  ///< ITU-R BT.709 standard
+    AF_YCC_2020 = 2020  ///< ITU-R BT.2020 standard
+} af_ycc_std;
+
+typedef enum {
     AF_GRAY = 0, ///< Grayscale
     AF_RGB,      ///< 3-channel RGB
     AF_HSV       ///< 3-channel HSV
@@ -302,6 +308,7 @@ namespace af
     typedef af_mat_prop matProp;
     typedef af_colormap ColorMap;
     typedef af_norm_type normType;
+    typedef af_ycc_std YCCStd;
 }
 
 #endif
