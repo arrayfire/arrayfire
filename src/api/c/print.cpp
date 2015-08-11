@@ -109,7 +109,7 @@ af_err af_print_array(af_array arr)
     return AF_SUCCESS;
 }
 
-af_err af_print_array_p(const char *exp, const af_array arr, const int precision)
+af_err af_print_array_gen(const char *exp, const af_array arr, const int precision)
 {
     try {
         ARG_ASSERT(0, exp != NULL);

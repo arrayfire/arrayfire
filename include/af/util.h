@@ -148,7 +148,7 @@ extern "C" {
 
         \ingroup print_func_print
     */
-    AFAPI af_err af_print_array_p(const char *exp, const af_array arr, const int precision);
+    AFAPI af_err af_print_array_gen(const char *exp, const af_array arr, const int precision);
 
     /**
         \param[out] index is the index location of the array in the file

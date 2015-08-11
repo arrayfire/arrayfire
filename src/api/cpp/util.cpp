@@ -18,14 +18,14 @@ namespace af
 {
     void print(const char *exp, const array &arr)
     {
-        AF_THROW(af_print_array_p(exp, arr.get(), 4));
+        AF_THROW(af_print_array_gen(exp, arr.get(), 4));
         return;
     }
 
     void print(const char *exp, const array &arr, const int precision)
     {
         printf("%s ", exp);
-        AF_THROW(af_print_array_p(exp, arr.get(), precision));
+        AF_THROW(af_print_array_gen(exp, arr.get(), precision));
         return;
     }
 
