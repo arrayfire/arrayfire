@@ -11,6 +11,8 @@
 #include <diff.hpp>
 #include <stdexcept>
 #include <err_cpu.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 namespace cpu
 {
@@ -36,28 +38,31 @@ namespace cpu
         dims[dim]--;
 
         // Create output placeholder
-        Array<T> outArray = createValueArray(dims, (T)0);
+        Array<T> outArray = createEmptyArray<T>(dims);
 
-        // Get pointers to raw data
-        const T *inPtr = in.get();
-              T *outPtr = outArray.get();
+        auto func = [=] (Array<T> outArray, Array<T> in) {
+            // Get pointers to raw data
+            const T *inPtr = in.get();
+                  T *outPtr = outArray.get();
 
-        // TODO: Improve this
-        for(dim_t l = 0; l < dims[3]; l++) {
-            for(dim_t k = 0; k < dims[2]; k++) {
-                for(dim_t j = 0; j < dims[1]; j++) {
-                    for(dim_t i = 0; i < dims[0]; i++) {
-                        // Operation: out[index] = in[index + 1 * dim_size] - in[index]
-                        int idx = getIdx(in.strides(), in.offsets(), i, j, k, l);
-                        int jdx = getIdx(in.strides(), in.offsets(),
-                                         i + is_dim0, j + is_dim1,
-                                         k + is_dim2, l + is_dim3);
-                        int odx = getIdx(outArray.strides(), outArray.offsets(), i, j, k, l);
-                        outPtr[odx] = inPtr[jdx] - inPtr[idx];
+            // TODO: Improve this
+            for(dim_t l = 0; l < dims[3]; l++) {
+                for(dim_t k = 0; k < dims[2]; k++) {
+                    for(dim_t j = 0; j < dims[1]; j++) {
+                        for(dim_t i = 0; i < dims[0]; i++) {
+                            // Operation: out[index] = in[index + 1 * dim_size] - in[index]
+                            int idx = getIdx(in.strides(), in.offsets(), i, j, k, l);
+                            int jdx = getIdx(in.strides(), in.offsets(),
+                                            i + is_dim0, j + is_dim1,
+                                            k + is_dim2, l + is_dim3);
+                            int odx = getIdx(outArray.strides(), outArray.offsets(), i, j, k, l);
+                            outPtr[odx] = inPtr[jdx] - inPtr[idx];
+                        }
                     }
                 }
             }
-        }
+        };
+        getQueue().enqueue(func, outArray, in);
 
         return outArray;
     }
@@ -76,31 +81,35 @@ namespace cpu
         dims[dim] -= 2;
 
         // Create output placeholder
-        Array<T> outArray = createValueArray(dims, (T)0);
+        Array<T> outArray = createEmptyArray<T>(dims);
 
-        // Get pointers to raw data
-        const T *inPtr = in.get();
-              T *outPtr = outArray.get();
+        auto func = [=] (Array<T> outArray, Array<T> in) {
+            // Get pointers to raw data
+            const T *inPtr = in.get();
+                T *outPtr = outArray.get();
 
-        // TODO: Improve this
-        for(dim_t l = 0; l < dims[3]; l++) {
-            for(dim_t k = 0; k < dims[2]; k++) {
-                for(dim_t j = 0; j < dims[1]; j++) {
-                    for(dim_t i = 0; i < dims[0]; i++) {
-                        // Operation: out[index] = in[index + 1 * dim_size] - in[index]
-                        int idx = getIdx(in.strides(), in.offsets(), i, j, k, l);
-                        int jdx = getIdx(in.strides(), in.offsets(),
-                                         i + is_dim0, j + is_dim1,
-                                         k + is_dim2, l + is_dim3);
-                        int kdx = getIdx(in.strides(), in.offsets(),
-                                         i + 2 * is_dim0, j + 2 * is_dim1,
-                                         k + 2 * is_dim2, l + 2 * is_dim3);
-                        int odx = getIdx(outArray.strides(), outArray.offsets(), i, j, k, l);
-                        outPtr[odx] = inPtr[kdx] + inPtr[idx] - inPtr[jdx] - inPtr[jdx];
+            // TODO: Improve this
+            for(dim_t l = 0; l < dims[3]; l++) {
+                for(dim_t k = 0; k < dims[2]; k++) {
+                    for(dim_t j = 0; j < dims[1]; j++) {
+                        for(dim_t i = 0; i < dims[0]; i++) {
+                            // Operation: out[index] = in[index + 1 * dim_size] - in[index]
+                            int idx = getIdx(in.strides(), in.offsets(), i, j, k, l);
+                            int jdx = getIdx(in.strides(), in.offsets(),
+                                            i + is_dim0, j + is_dim1,
+                                            k + is_dim2, l + is_dim3);
+                            int kdx = getIdx(in.strides(), in.offsets(),
+                                            i + 2 * is_dim0, j + 2 * is_dim1,
+                                            k + 2 * is_dim2, l + 2 * is_dim3);
+                            int odx = getIdx(outArray.strides(), outArray.offsets(), i, j, k, l);
+                            outPtr[odx] = inPtr[kdx] + inPtr[idx] - inPtr[jdx] - inPtr[jdx];
+                        }
                     }
                 }
             }
-        }
+        };
+
+        getQueue().enqueue(func, outArray, in);
 
         return outArray;
     }
