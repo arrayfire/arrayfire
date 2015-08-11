@@ -14,6 +14,8 @@
 #include <convolve.hpp>
 #include <err_cpu.hpp>
 #include <math.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 using af::dim4;
 
@@ -204,8 +206,8 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    convolve_nd<T, accT, baseDim, expand>(out.get(), signal.get(), filter.get(),
-            oDims, sDims, fDims, out.strides(), sStrides, filter.strides(), kind);
+    getQueue().enqueue(convolve_nd<T, accT, baseDim, expand>,out.get(), signal.get(), filter.get(),
+                                              oDims, sDims, fDims, out.strides(), sStrides, filter.strides(), kind);
 
     return out;
 }
@@ -271,32 +273,37 @@ Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter, Array<ac
         oDims[1] += rflen - 1;
     }
 
-    Array<T> temp = createEmptyArray<T>(tDims);
     Array<T> out  = createEmptyArray<T>(oDims);
-    auto tStrides = temp.strides();
-    auto oStrides = out.strides();
 
-    for (dim_t b3=0; b3<oDims[3]; ++b3) {
+    auto func = [=] (Array<T> out) {
+        Array<T> temp = createEmptyArray<T>(tDims);
+        auto tStrides = temp.strides();
+        auto oStrides = out.strides();
 
-        dim_t i_b3Off = b3*sStrides[3];
-        dim_t t_b3Off = b3*tStrides[3];
-        dim_t o_b3Off = b3*oStrides[3];
+        for (dim_t b3=0; b3<oDims[3]; ++b3) {
 
-        for (dim_t b2=0; b2<oDims[2]; ++b2) {
+            dim_t i_b3Off = b3*sStrides[3];
+            dim_t t_b3Off = b3*tStrides[3];
+            dim_t o_b3Off = b3*oStrides[3];
 
-            T const *iptr = signal.get()+ b2*sStrides[2] + i_b3Off;
-            T *tptr = temp.get() + b2*tStrides[2] + t_b3Off;
-            T *optr = out.get()  + b2*oStrides[2] + o_b3Off;
+            for (dim_t b2=0; b2<oDims[2]; ++b2) {
 
-            convolve2_separable<T, accT, 0, expand>(tptr, iptr, c_filter.get(),
-                    tDims, sDims, sDims, cflen,
-                    tStrides, sStrides, c_filter.strides()[0]);
+                T const *iptr = signal.get()+ b2*sStrides[2] + i_b3Off;
+                T *tptr = temp.get() + b2*tStrides[2] + t_b3Off;
+                T *optr = out.get()  + b2*oStrides[2] + o_b3Off;
 
-            convolve2_separable<T, accT, 1, expand>(optr, tptr, r_filter.get(),
-                    oDims, tDims, sDims, rflen,
-                    oStrides, tStrides, r_filter.strides()[0]);
+                convolve2_separable<T, accT, 0, expand>(tptr, iptr, c_filter.get(),
+                        tDims, sDims, sDims, cflen,
+                        tStrides, sStrides, c_filter.strides()[0]);
+
+                convolve2_separable<T, accT, 1, expand>(optr, tptr, r_filter.get(),
+                        oDims, tDims, sDims, rflen,
+                        oStrides, tStrides, r_filter.strides()[0]);
+            }
         }
-    }
+    };
+
+    getQueue().enqueue(func, out);
 
     return out;
 }
