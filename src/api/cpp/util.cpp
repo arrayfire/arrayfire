@@ -29,10 +29,11 @@ namespace af
         return;
     }
 
-    void saveArray(const char *key, const array &arr, const char *filename, const bool append)
+    int saveArray(const char *key, const array &arr, const char *filename, const bool append)
     {
-        AF_THROW(af_save_array(key, arr.get(), filename, append));
-        return;
+        int index = -1;
+        AF_THROW(af_save_array(&index, key, arr.get(), filename, append));
+        return index;
     }
 
     array readArray(const char *filename, const unsigned index)

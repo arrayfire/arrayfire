@@ -27,7 +27,7 @@ using namespace detail;
 static const char sfv_char = STREAM_FORMAT_VERSION;
 
 template<typename T>
-static void save(const char *key, const af_array arr, const char *filename, const bool append = false)
+static int save(const char *key, const af_array arr, const char *filename, const bool append = false)
 {
     // (char     )   Version (Once)
     // (int      )   No. of Arrays (Once)
@@ -109,9 +109,11 @@ static void save(const char *key, const af_array arr, const char *filename, cons
     fs.write((char*)&odims, sizeof(intl) * 4);
     fs.write((char*)&data.front(), sizeof(T) * data.size());
     fs.close();
+
+    return n_arrays - 1;
 }
 
-af_err af_save_array(const char *key, const af_array arr, const char *filename, const bool append)
+af_err af_save_array(int *index, const char *key, const af_array arr, const char *filename, const bool append)
 {
     try {
         ARG_ASSERT(0, key != NULL);
@@ -119,19 +121,21 @@ af_err af_save_array(const char *key, const af_array arr, const char *filename, 
 
         ArrayInfo info = getInfo(arr);
         af_dtype type = info.getType();
+        int id = -1;
         switch(type) {
-            case f32:   save<float>   (key, arr, filename, append);   break;
-            case c32:   save<cfloat>  (key, arr, filename, append);   break;
-            case f64:   save<double>  (key, arr, filename, append);   break;
-            case c64:   save<cdouble> (key, arr, filename, append);   break;
-            case b8:    save<char>    (key, arr, filename, append);   break;
-            case s32:   save<int>     (key, arr, filename, append);   break;
-            case u32:   save<unsigned>(key, arr, filename, append);   break;
-            case u8:    save<uchar>   (key, arr, filename, append);   break;
-            case s64:   save<intl>    (key, arr, filename, append);   break;
-            case u64:   save<uintl>   (key, arr, filename, append);   break;
+            case f32:   id = save<float>   (key, arr, filename, append);   break;
+            case c32:   id = save<cfloat>  (key, arr, filename, append);   break;
+            case f64:   id = save<double>  (key, arr, filename, append);   break;
+            case c64:   id = save<cdouble> (key, arr, filename, append);   break;
+            case b8:    id = save<char>    (key, arr, filename, append);   break;
+            case s32:   id = save<int>     (key, arr, filename, append);   break;
+            case u32:   id = save<unsigned>(key, arr, filename, append);   break;
+            case u8:    id = save<uchar>   (key, arr, filename, append);   break;
+            case s64:   id = save<intl>    (key, arr, filename, append);   break;
+            case u64:   id = save<uintl>   (key, arr, filename, append);   break;
             default:    TYPE_ERROR(1, type);
         }
+        std::swap(*index, id);
     }
     CATCHALL;
     return AF_SUCCESS;

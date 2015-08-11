@@ -39,9 +39,11 @@ namespace af
         \param[in] append is used to append to an existing file when true and create or
         overwrite an existing file when false
 
+        \returns index of the saved array in the file
+
         \ingroup stream_func_save
     */
-    AFAPI void saveArray(const char *key, const array &arr, const char *filename, const bool append = false);
+    AFAPI int saveArray(const char *key, const array &arr, const char *filename, const bool append = false);
 
     /**
         \param[in] filename is the path to the location on disk
@@ -149,6 +151,7 @@ extern "C" {
     AFAPI af_err af_print_array_p(const char *exp, const af_array arr, const int precision);
 
     /**
+        \param[out] index is the index location of the array in the file
         \param[in] key is an expression used as tag/key for the array during \ref readArray
         \param[in] arr is the array to be written
         \param[in] filename is the path to the location on disk
@@ -157,7 +160,7 @@ extern "C" {
 
         \ingroup stream_func_save
     */
-    AFAPI af_err af_save_array(const char* key, const af_array arr, const char *filename, const bool append);
+    AFAPI af_err af_save_array(int *index, const char* key, const af_array arr, const char *filename, const bool append);
 
     /**
         \param[out] out is the array read from index
