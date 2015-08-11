@@ -109,31 +109,6 @@ af_err af_print_array(af_array arr)
     return AF_SUCCESS;
 }
 
-af_err af_print_array_c(const char *exp, const af_array arr)
-{
-    try {
-        ARG_ASSERT(0, exp != NULL);
-        ArrayInfo info = getInfo(arr);
-        af_dtype type = info.getType();
-        switch(type)
-        {
-        case f32:   print<float>   (exp, arr, 4);   break;
-        case c32:   print<cfloat>  (exp, arr, 4);   break;
-        case f64:   print<double>  (exp, arr, 4);   break;
-        case c64:   print<cdouble> (exp, arr, 4);   break;
-        case b8:    print<char>    (exp, arr, 4);   break;
-        case s32:   print<int>     (exp, arr, 4);   break;
-        case u32:   print<unsigned>(exp, arr, 4);   break;
-        case u8:    print<uchar>   (exp, arr, 4);   break;
-        case s64:   print<intl>    (exp, arr, 4);   break;
-        case u64:   print<uintl>   (exp, arr, 4);   break;
-        default:    TYPE_ERROR(1, type);
-        }
-    }
-    CATCHALL;
-    return AF_SUCCESS;
-}
-
 af_err af_print_array_p(const char *exp, const af_array arr, const int precision)
 {
     try {

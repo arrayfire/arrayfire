@@ -140,16 +140,6 @@ extern "C" {
     /**
         \param[in] exp is the expression or name of the array
         \param[in] arr is the input array
-
-        \returns error codes
-
-        \ingroup print_func_print
-    */
-    AFAPI af_err af_print_array_c(const char *exp, const af_array arr);
-
-    /**
-        \param[in] exp is the expression or name of the array
-        \param[in] arr is the input array
         \param[in] precision precision for the display
 
         \returns error codes

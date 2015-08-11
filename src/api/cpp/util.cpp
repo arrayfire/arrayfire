@@ -18,7 +18,7 @@ namespace af
 {
     void print(const char *exp, const array &arr)
     {
-        AF_THROW(af_print_array_c(exp, arr.get()));
+        AF_THROW(af_print_array_p(exp, arr.get(), 4));
         return;
     }
 
