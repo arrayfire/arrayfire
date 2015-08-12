@@ -63,9 +63,9 @@ namespace TNJ
             return;
         }
 
-        void reset(bool reset_off=true)
+        void reset()
         {
-            m_child->reset(reset_off);
+            m_child->reset();
             m_is_eval = false;
         }
     };
