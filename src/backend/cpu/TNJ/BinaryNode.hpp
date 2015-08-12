@@ -12,6 +12,7 @@
 #include <optypes.hpp>
 #include <vector>
 #include <math.hpp>
+#include "Node.hpp"
 
 namespace cpu
 {
@@ -54,6 +55,13 @@ namespace TNJ
             return  (void *)&m_val;
         }
 
+        void *calc(int idx)
+        {
+            m_val = m_op.eval(*(Ti *)m_lhs->calc(idx),
+                              *(Ti *)m_rhs->calc(idx));
+            return (void *)&m_val;
+        }
+
         void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
         {
             if (m_is_eval) return;
@@ -71,6 +79,11 @@ namespace TNJ
             m_lhs->reset();
             m_rhs->reset();
             m_is_eval = false;
+        }
+
+        bool isLinear(const dim_t *dims)
+        {
+            return m_lhs->isLinear(dims) && m_rhs->isLinear(dims);
         }
     };
 
