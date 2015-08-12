@@ -857,6 +857,12 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
     if (array_type == f64 || array_type == c64 ||
         array_type == f32 || array_type == c32 ) return array_type;
 
+    // Default to single precision by default when multiplying with scalar
+    if ((scalar_type == f64 || scalar_type == c64) &&
+        (array_type  != f64 && array_type  != c64)) {
+        return f32;
+    }
+
     // Punt to C api for everything else
     return scalar_type;
 }
