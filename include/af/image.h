@@ -501,6 +501,34 @@ AFAPI array unwrap(const array& in, const dim_t wx, const dim_t wy,
 */
 AFAPI array sat(const array& in);
 
+/**
+   C++ Interface for converting YCbCr to RGB
+
+   \param[in]  in is an array in the YCbCr colorspace
+   \param[in]  standard specifies the ITU-R BT "xyz" standard which determines the Kb, Kr values
+   used in colorspace conversion equation
+   \return     array in RGB colorspace
+
+   \note \p in must be three dimensional and values should lie in the range [0,1]
+
+   \ingroup image_func_ycbcr2rgb
+ */
+AFAPI array ycbcr2rgb(const array& in, const YCCStd standard=AF_YCC_601);
+
+/**
+   C++ Interface for converting RGB to YCbCr
+
+   \param[in]  in is an array in the RGB colorspace
+   \param[in]  standard specifies the ITU-R BT "xyz" standard which determines the Kb, Kr values
+   used in colorspace conversion equation
+   \return     array in YCbCr colorspace
+
+   \note \p in must be three dimensional and values should lie in the range [0,1]
+
+   \ingroup image_func_rgb2ycbcr
+ */
+AFAPI array rgb2ycbcr(const array& in, const YCCStd standard=AF_YCC_601);
+
 }
 #endif
 
@@ -987,6 +1015,38 @@ extern "C" {
        \ingroup image_func_sat
     */
     AFAPI af_err af_sat(af_array *out, const af_array in);
+
+    /**
+       C Interface for converting YCbCr to RGB
+
+       \param[out] out is an array in the RGB color space
+       \param[in]  in is an array in the YCbCr color space
+       \param[in]  standard specifies the ITU-R BT "xyz" standard which determines the Kb, Kr values
+       used in colorspace conversion equation
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \note \p in must be three dimensional and values should lie in the range [0,1]
+
+       \ingroup image_func_ycbcr2rgb
+    */
+    AFAPI af_err af_ycbcr2rgb(af_array* out, const af_array in, const af_ycc_std standard);
+
+    /**
+       C Interface for converting RGB to YCbCr
+
+       \param[out] out is an array in the YCbCr color space
+       \param[in]  in is an array in the RGB color space
+       \param[in]  standard specifies the ITU-R BT "xyz" standard which determines the Kb, Kr values
+       used in colorspace conversion equation
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \note \p in must be three dimensional and values should lie in the range [0,1]
+
+       \ingroup image_func_rgb2ycbcr
+    */
+    AFAPI af_err af_rgb2ycbcr(af_array* out, const af_array in, const af_ycc_std standard);
 
 #ifdef __cplusplus
 }

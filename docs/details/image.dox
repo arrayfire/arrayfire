@@ -21,6 +21,12 @@ Grayscale is a single channel color space where pixel value ranges from 0 to 1.
 Zero represents black, one represent white and any value between zero & one is
 a gray value
 
+\page image_func_ycbcr YCbCr
+
+YCbCr is a family of color spaces used as a part of the color image pipeline in video
+and digital photography systems where Y is luma component and Cb & Cr are the blue-difference
+and red-difference chroma components.
+
 */
 //=================================================================================
 /**
@@ -99,6 +105,81 @@ following formula
        \f$G = gFactor * intensity\f$
 
        \f$B = bFactor * intensity\f$
+
+=======================================================================
+
+\defgroup image_func_rgb2ycbcr rgb2ycbcr
+\ingroup colorconv_mat
+
+RGB to YCbCr colorspace converter
+
+\copydoc image_func_rgb
+\copydoc image_func_ycbcr
+
+Input array to this function should be of real data in the range \f$[0,1]\f$.
+
+The following equations are used to convert image from RGB color space to YCbCr color space.
+
+\f$ Y  = 16 + \displaystyle k_r*R + (1 - \displaystyle k_r- \displaystyle k_b)*G + \displaystyle k_b * B \f$
+
+\f$ Cb =  128 + \frac{\displaystyle 1}{\displaystyle 2} * \frac{\displaystyle B - Y\displaystyle
+}{\displaystyle 1 - \displaystyle k_b} \f$
+
+\f$ Cr =  128 + \frac{\displaystyle 1}{\displaystyle 2} * \frac{\displaystyle R - Y\displaystyle
+}{\displaystyle 1 - \displaystyle k_r} \f$
+
+Output image in YCbCr has following range for their respective channels.
+
+\f$Y -> [16, 219]\f$
+
+\f$Cb-> [16, 240]\f$
+
+\f$Cr-> [16, 240]\f$
+
+Based on the ITU-R BT.xyz[w] standard used, different values of \f$k_b\f$ and \f$k_r\f$ are used
+to do the color space conversion. You can change these values by passing the \ref af_ycc_std enum
+value.
+
+=======================================================================
+
+\defgroup image_func_ycbcr2rgb ycbcr2rgb
+\ingroup colorconv_mat
+
+YCbCr to RGB colorspace converter
+
+\copydoc image_func_ycbcr
+\copydoc image_func_rgb
+
+Input array to this function should be of real data with the following range in
+their respective channels.
+
+\f$Y -> [16, 219]\f$
+
+\f$Cb-> [16, 240]\f$
+
+\f$Cr-> [16, 240]\f$
+
+
+The following equations are used to convert image from RGB color space to YCbCr color space.
+
+\f$ R = \frac{\displaystyle Y - \displaystyle 16}{\displaystyle 219}
+       + \frac{\displaystyle C_r - \displaystyle 128}{\displaystyle 112} * (\displaystyle 1 - \displaystyle k_r) \f$
+
+\f$ G = \frac{\displaystyle Y - \displaystyle 16}{\displaystyle 219}
+       - \frac{\displaystyle C_r - \displaystyle 128}{\displaystyle 112} * (\displaystyle 1 -
+\displaystyle k_r) * \frac{\displaystyle k_r}{\displaystyle 1 - \displaystyle k_b - \displaystyle
+k_r} - \frac{\displaystyle C_b - \displaystyle 128}{\displaystyle 112} * (\displaystyle 1 -
+\displaystyle k_b) * \frac{\displaystyle k_b}{\displaystyle 1 - \displaystyle k_b - \displaystyle
+k_r}\f$
+
+\f$ B = \frac{\displaystyle Y - \displaystyle 16}{\displaystyle 219}
+       + \frac{\displaystyle C_b - \displaystyle 128}{\displaystyle 112} * (\displaystyle 1 - \displaystyle k_b) \f$
+
+Output image in RGB will have values in range \f$[0, 1]\f$.
+
+Based on the ITU-R BT.xyz[w] standard used, different values of \f$k_b\f$ and \f$k_r\f$ are used
+to do the color space conversion. You can change these values by passing the \ref af_ycc_std enum
+value.
 
 =======================================================================
 
