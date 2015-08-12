@@ -15,7 +15,6 @@
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <arith.hpp>
-#include <copy.hpp>
 #include <join.hpp>
 #include <math.hpp>
 
@@ -27,8 +26,11 @@ static Array<T> mix(const Array<T>& X, const Array<T>& Y,
                 double xf, double yf)
 {
     dim4 dims = X.dims();
-    Array<T> fX = padArray<T, T>(X, dims, scalar<T>(0), xf);
-    Array<T> fY = padArray<T, T>(Y, dims, scalar<T>(0), yf);
+    Array<T> xf_cnst = createValueArray<T>(dims, xf);
+    Array<T> yf_cnst = createValueArray<T>(dims, yf);
+
+    Array<T> fX = arithOp<T, af_mul_t>(xf_cnst, X, dims);
+    Array<T> fY = arithOp<T, af_mul_t>(yf_cnst, Y, dims);
 
     return arithOp<T, af_add_t>(fX, fY, dims);
 }
@@ -38,9 +40,13 @@ static Array<T> mix(const Array<T>& X, const Array<T>& Y, const Array<T>& Z,
                 double xf, double yf, double zf)
 {
     dim4 dims = X.dims();
-    Array<T> fX = padArray<T, T>(X, dims, scalar<T>(0), xf);
-    Array<T> fY = padArray<T, T>(Y, dims, scalar<T>(0), yf);
-    Array<T> fZ = padArray<T, T>(Z, dims, scalar<T>(0), zf);
+    Array<T> xf_cnst = createValueArray<T>(dims, xf);
+    Array<T> yf_cnst = createValueArray<T>(dims, yf);
+    Array<T> zf_cnst = createValueArray<T>(dims, zf);
+
+    Array<T> fX = arithOp<T, af_mul_t>(xf_cnst, X, dims);
+    Array<T> fY = arithOp<T, af_mul_t>(yf_cnst, Y, dims);
+    Array<T> fZ = arithOp<T, af_mul_t>(zf_cnst, Z, dims);
 
     Array<T> fx_fy = arithOp<T, af_add_t>(fX, fY, dims);
     return arithOp<T, af_add_t>(fx_fy, fZ, dims);
