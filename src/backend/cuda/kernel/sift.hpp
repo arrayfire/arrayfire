@@ -185,31 +185,37 @@ Param<T> gauss_filter(float sigma)
     return gauss_filter;
 }
 
-__inline__ __device__ void gaussianElimination(float* A, float* b, float* x, const int n)
+template<int N>
+__inline__ __device__ void gaussianElimination(float* A, float* b, float* x)
 {
     // forward elimination
-    for (int i = 0; i < n-1; i++) {
-        for (int j = i+1; j < n; j++) {
-            float s = A[j*n+i] / A[i*n+i];
+    #pragma unroll
+    for (int i = 0; i < N-1; i++) {
+        #pragma unroll
+        for (int j = i+1; j < N; j++) {
+            float s = A[j*N+i] / A[i*N+i];
 
-            //for (int k = i+1; k < n; k++)
-            for (int k = i; k < n; k++)
-                A[j*n+k] -= s * A[i*n+k];
+            #pragma unroll
+            for (int k = i; k < N; k++)
+                A[j*N+k] -= s * A[i*N+k];
 
             b[j] -= s * b[i];
         }
     }
 
-    for (int i = 0; i < n; i++)
+    #pragma unroll
+    for (int i = 0; i < N; i++)
         x[i] = 0;
 
     // backward substitution
     float sum = 0;
-    for (int i = 0; i <= n-2; i++) {
+    #pragma unroll
+    for (int i = 0; i <= N-2; i++) {
         sum = b[i];
-        for (int j = i+1; j < n; j++)
-            sum -= A[i*n+j] * x[j];
-        x[i] = sum / A[i*n+i];
+        #pragma unroll
+        for (int j = i+1; j < N; j++)
+            sum -= A[i*N+j] * x[j];
+        x[i] = sum / A[i*N+i];
     }
 }
 
@@ -435,7 +441,7 @@ __global__ void interpolateExtrema(
                           dxs, dys, dss};
 
             float X[3];
-            gaussianElimination(H, dD, X, 3);
+            gaussianElimination<3>(H, dD, X);
 
             xl = -X[2];
             xy = -X[1];
