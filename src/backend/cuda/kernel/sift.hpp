@@ -996,7 +996,8 @@ std::vector< Param<T> > buildDoGPyr(
 
             dim3 threads(256);
             dim3 blocks(divup(nel, threads.x));
-            sub<T><<<blocks, threads>>>(dog_pyr[idx], gauss_pyr[top], gauss_pyr[bottom]);
+            CUDA_LAUNCH((sub<T>), blocks, threads,
+                        dog_pyr[idx], gauss_pyr[top], gauss_pyr[bottom]);
             POST_LAUNCH_CHECK();
         }
     }
@@ -1011,10 +1012,10 @@ void update_permutation(thrust::device_ptr<T>& keys, thrust::device_vector<int>&
     thrust::device_vector<T> temp(permutation.size());
 
     // permute the keys with the current reordering
-    thrust::gather(permutation.begin(), permutation.end(), keys, temp.begin());
+    THRUST_SELECT((thrust::gather), permutation.begin(), permutation.end(), keys, temp.begin());
 
     // stable_sort the permuted keys and update the permutation
-    thrust::stable_sort_by_key(temp.begin(), temp.end(), permutation.begin());
+    THRUST_SELECT((thrust::stable_sort_by_key), temp.begin(), temp.end(), permutation.begin());
 }
 
 template <typename T>
@@ -1024,7 +1025,7 @@ void apply_permutation(thrust::device_ptr<T>& keys, thrust::device_vector<int>& 
     thrust::device_vector<T> temp(keys, keys+permutation.size());
 
     // permute the keys
-    thrust::gather(permutation.begin(), permutation.end(), temp.begin(), keys);
+    THRUST_SELECT((thrust::gather), permutation.begin(), permutation.end(), temp.begin(), keys);
 }
 
 template<typename T, typename convAccT>
@@ -1097,9 +1098,10 @@ void sift(unsigned* out_feat,
             dim3 blocks(divup(dim0-2*IMG_BORDER, threads.x), divup(dim1-2*IMG_BORDER, threads.y));
 
             float extrema_thr = 0.5f * contrast_thr / n_layers;
-            detectExtrema<T><<<blocks, threads>>>(d_extrema_x, d_extrema_y, d_extrema_layer, d_count,
-                                                  CParam<T>(dog_pyr[prev]), CParam<T>(dog_pyr[center]), CParam<T>(dog_pyr[next]),
-                                                  layer, max_feat, extrema_thr);
+            CUDA_LAUNCH((detectExtrema<T>), blocks, threads,
+                        d_extrema_x, d_extrema_y, d_extrema_layer, d_count,
+                        CParam<T>(dog_pyr[prev]), CParam<T>(dog_pyr[center]), CParam<T>(dog_pyr[next]),
+                        layer, max_feat, extrema_thr);
             POST_LAUNCH_CHECK();
         }
 
@@ -1132,12 +1134,12 @@ void sift(unsigned* out_feat,
         CUDA_CHECK(cudaMalloc((void **)&dog_octave, (n_layers+2)*sizeof(Param<T>)));
         CUDA_CHECK(cudaMemcpy(dog_octave, &dog_pyr[i*(n_layers+2)], (n_layers+2)*sizeof(Param<T>), cudaMemcpyHostToDevice));
 
-        interpolateExtrema<T><<<blocks, threads>>>(d_interp_x, d_interp_y, d_interp_layer,
-                                                   d_interp_response, d_interp_size, d_count,
-
-                                                   d_extrema_x, d_extrema_y, d_extrema_layer, extrema_feat,
-                                                   dog_octave, max_feat, i, n_layers,
-                                                   contrast_thr, edge_thr, init_sigma, img_scale);
+        CUDA_LAUNCH((interpolateExtrema<T>), blocks, threads,
+                    d_interp_x, d_interp_y, d_interp_layer,
+                    d_interp_response, d_interp_size, d_count,
+                    d_extrema_x, d_extrema_y, d_extrema_layer, extrema_feat,
+                    dog_octave, max_feat, i, n_layers,
+                    contrast_thr, edge_thr, init_sigma, img_scale);
         POST_LAUNCH_CHECK();
 
         CUDA_CHECK(cudaFree(dog_octave));
@@ -1191,10 +1193,11 @@ void sift(unsigned* out_feat,
         threads = dim3(256, 1);
         blocks = dim3(divup(interp_feat, threads.x), 1);
 
-        removeDuplicates<<<blocks, threads>>>(d_nodup_x, d_nodup_y, d_nodup_layer,
-                                              d_nodup_response, d_nodup_size, d_count,
-                                              d_interp_x, d_interp_y, d_interp_layer,
-                                              d_interp_response, d_interp_size, interp_feat);
+        CUDA_LAUNCH((removeDuplicates), blocks, threads,
+                    d_nodup_x, d_nodup_y, d_nodup_layer,
+                    d_nodup_response, d_nodup_size, d_count,
+                    d_interp_x, d_interp_y, d_interp_layer,
+                    d_interp_response, d_interp_size, interp_feat);
         POST_LAUNCH_CHECK();
 
         memFree(d_interp_x);
@@ -1223,11 +1226,12 @@ void sift(unsigned* out_feat,
         threads = dim3(8, 32);
         blocks = dim3(divup(nodup_feat, threads.x), 1);
 
-        calcOrientation<T><<<blocks, threads>>>(d_oriented_x, d_oriented_y, d_oriented_layer,
-                                                    d_oriented_response, d_oriented_size, d_oriented_ori, d_count,
-                                                    d_nodup_x, d_nodup_y, d_nodup_layer,
-                                                    d_nodup_response, d_nodup_size, nodup_feat,
-                                                    gauss_octave, max_oriented_feat, i, double_input);
+        CUDA_LAUNCH((calcOrientation<T>), blocks, threads,
+                    d_oriented_x, d_oriented_y, d_oriented_layer,
+                    d_oriented_response, d_oriented_size, d_oriented_ori, d_count,
+                    d_nodup_x, d_nodup_y, d_nodup_layer,
+                    d_nodup_response, d_nodup_size, nodup_feat,
+                    gauss_octave, max_oriented_feat, i, double_input);
         POST_LAUNCH_CHECK();
 
         memFree(d_nodup_x);
@@ -1256,15 +1260,14 @@ void sift(unsigned* out_feat,
         float scale = 1.f/(1 << i);
         if (double_input) scale *= 2.f;
 
-        //threads = dim3(8, 32);
         threads = dim3(1, 256);
-        //threads = dim3(1, 256);
         blocks  = dim3(divup(oriented_feat, threads.x), 1);
 
-        computeDescriptor<<<blocks, threads>>>(d_desc, desc_len,
-                                               d_oriented_x, d_oriented_y, d_oriented_layer,
-                                               d_oriented_response, d_oriented_size, d_oriented_ori,
-                                               oriented_feat, gauss_octave, d, n, scale, init_sigma, n_layers);
+        CUDA_LAUNCH((computeDescriptor), blocks, threads,
+                    d_desc, desc_len,
+                    d_oriented_x, d_oriented_y, d_oriented_layer,
+                    d_oriented_response, d_oriented_size, d_oriented_ori,
+                    oriented_feat, gauss_octave, d, n, scale, init_sigma, n_layers);
         POST_LAUNCH_CHECK();
 
         total_feat += oriented_feat;
