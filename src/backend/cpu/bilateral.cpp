@@ -18,7 +18,6 @@
 #include <async_queue.hpp>
 
 using af::dim4;
-using std::ref;
 
 namespace cpu
 {
@@ -38,15 +37,15 @@ static inline unsigned getIdx(const dim4 &strides,
 }
 
 template<typename inType, typename outType, bool isColor>
-void bilateral_(Array<outType> out, const Array<inType> &in, float s_sigma, float c_sigma)
+void bilateral_(Array<outType> out, const Array<inType> in, float s_sigma, float c_sigma)
 {
     const dim4 dims     = in.dims();
     const dim4 istrides = in.strides();
 
     const dim4 ostrides = out.strides();
 
-    outType *outData    = out.get();
-    const inType * inData = in.get();
+          outType *outData = out.get();
+    const inType  *inData  = in.get();
 
     // clamp spatical and chromatic sigma's
     float space_          = std::min(11.5f, std::max(s_sigma, 0.f));
@@ -102,7 +101,7 @@ Array<outType> bilateral(const Array<inType> &in, const float &s_sigma, const fl
 {
     const dim4 dims     = in.dims();
     Array<outType> out = createEmptyArray<outType>(dims);
-    getQueue().enqueue(bilateral_<inType, outType, isColor>, out, ref(in), s_sigma, c_sigma);
+    getQueue().enqueue(bilateral_<inType, outType, isColor>, out, in, s_sigma, c_sigma);
     return out;
 }
 
