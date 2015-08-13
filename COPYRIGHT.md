@@ -2,6 +2,7 @@ Copyrights
 ==========================================
 ##Index
 * [ArrayFire](#arrayfire)
+* [ArrayFire: SIFT](#arrayfire-sift)
 * [FreeImage](#freeimage)
 * [clBLAS](#clblas)
 * [clFFT](#clfft)
@@ -11,7 +12,7 @@ Copyrights
 * [Magma](#magma)
 
 ### Introduction
-ArrayFire uses software written by the following parties. Each software is listed with it's copyright, license and home page.
+ArrayFire uses software written by the following parties. Each software is listed with its copyright, license and home page.
 
 All the licenses can be found in the LICENSES directory.
 
@@ -21,6 +22,15 @@ Copyright (C) 2014-2015, ArrayFire.
 ArrayFire is distributed under the BSD 3-Clause License. A copy of this license is present in the LICENSES directory.
 
 See ArrayFire home page https://github.com/arrayfire/arrayfire for details and links to the source code.
+
+### ArrayFire: SIFT
+Copyright (C) 2014-2015, ArrayFire.
+
+Copyright (c) 2006-2012, Rob Hess <rob@iqengines.com>
+
+ArrayFire SIFT is based on the OpenSIFT project by Rob Hess, licensed and distributed under the BSD 3-Clause License. A full copy of the license is present in the LICENSES directory.
+
+SIFT is an algorithm patented and protected by US Law under the US Patent 6,711,293 (March 23, 2004) assigned to the University of British Columbia. before using this code or any binary forms generated from it, please verify that you have permission to do so.
 
 ### FreeImage
 Copyright (C) 2014-2015, FreeImage.
