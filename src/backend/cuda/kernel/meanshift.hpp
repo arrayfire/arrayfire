@@ -64,7 +64,6 @@ void meanshiftKernel(Param<T> out, CParam<T> in,
 
     // calculate necessary offset and window parameters
     const int padding     = 2*radius + 1;
-    const int wind_len    = padding - 1;
     const int shrdLen     = blockDim.x + padding;
     const int schStride   = shrdLen*(blockDim.y + padding);
     // the variable ichStride will only effect when we have >1
@@ -84,32 +83,19 @@ void meanshiftKernel(Param<T> out, CParam<T> in,
     const int gx = blockDim.x * (blockIdx.x-b2*nBBS0) + lx;
     const int gy = blockDim.y * (blockIdx.y-b3*nBBS1) + ly;
 
-    int gx2 = gx + blockDim.x;
-    int gy2 = gy + blockDim.y;
-    int lx2 = lx + blockDim.x;
-    int ly2 = ly + blockDim.y;
+    // pull image to local memory
+    for (int b=ly, gy2=gy; b<shrdLen; b+=blockDim.y, gy2+=blockDim.y) {
+        // move row_set get_local_size(1) along coloumns
+        for (int a=lx, gx2=gx; a<shrdLen; a+=blockDim.x, gx2+=blockDim.x) {
+            load2ShrdMem<T, channels>(shrdMem, iptr, a, b, shrdLen, schStride,
+                    in.dims[0], in.dims[1], gx2-radius, gy2-radius, ichStride,
+                    in.strides[1], in.strides[0]);
+        }
+    }
+
     int i   = lx + radius;
     int j   = ly + radius;
 
-    // pull image to local memory
-    load2ShrdMem<T, channels>(shrdMem, iptr, lx, ly, shrdLen, schStride,
-                              in.dims[0], in.dims[1], gx-radius,
-                              gy-radius, ichStride, in.strides[1], in.strides[0]);
-    if (lx<wind_len) {
-        load2ShrdMem<T, channels>(shrdMem, iptr, lx2, ly, shrdLen, schStride,
-                                  in.dims[0], in.dims[1], gx2-radius,
-                                  gy-radius, ichStride, in.strides[1], in.strides[0]);
-    }
-    if (ly<wind_len) {
-        load2ShrdMem<T, channels>(shrdMem, iptr, lx, ly2, shrdLen, schStride,
-                                  in.dims[0], in.dims[1], gx-radius,
-                                  gy2-radius, ichStride, in.strides[1], in.strides[0]);
-    }
-    if (lx<wind_len && ly<wind_len) {
-        load2ShrdMem<T, channels>(shrdMem, iptr, lx2, ly2, shrdLen, schStride,
-                                  in.dims[0], in.dims[1], gx2-radius,
-                                  gy2-radius, ichStride, in.strides[1], in.strides[0]);
-    }
     __syncthreads();
 
     if (gx>=in.dims[0] || gy>=in.dims[1])
@@ -212,9 +198,11 @@ void meanshift(Param<T> out, CParam<T> in, float s_sigma, float c_sigma, uint it
     size_t shrd_size = channels*(threads.x + padding)*(threads.y+padding)*sizeof(T);
 
     if (is_color)
-        (meanshiftKernel<T, 3>) <<<blocks, threads, shrd_size>>>(out, in, space_, radius, cvar, iter, blk_x, blk_y);
+        CUDA_LAUNCH_SMEM((meanshiftKernel<T, 3>), blocks, threads, shrd_size,
+                out, in, space_, radius, cvar, iter, blk_x, blk_y);
     else
-        (meanshiftKernel<T, 1>) <<<blocks, threads, shrd_size>>>(out, in, space_, radius, cvar, iter, blk_x, blk_y);
+        CUDA_LAUNCH_SMEM((meanshiftKernel<T, 1>), blocks, threads, shrd_size,
+                out, in, space_, radius, cvar, iter, blk_x, blk_y);
 
     POST_LAUNCH_CHECK();
 }

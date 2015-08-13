@@ -115,8 +115,9 @@ namespace cuda
             const int ntransforms = out.dims[2] / in.dims[2];
 
             // Copy transform to constant memory.
-            CUDA_CHECK(cudaMemcpyToSymbol(c_tmat, tf.ptr, ntransforms * 6 * sizeof(float), 0,
-                                          cudaMemcpyDeviceToDevice));
+            CUDA_CHECK(cudaMemcpyToSymbolAsync(c_tmat, tf.ptr, ntransforms * 6 * sizeof(float), 0,
+                                          cudaMemcpyDeviceToDevice,
+                                          cuda::getStream(cuda::getActiveDeviceId())));
 
             dim3 threads(TX, TY, 1);
             dim3 blocks(divup(out.dims[0], threads.x), divup(out.dims[1], threads.y));
@@ -131,11 +132,11 @@ namespace cuda
             if (ntransforms > 1) { blocks.y *= ntransforms; }
 
             if(inverse) {
-                transform_kernel<T, true, method><<<blocks, threads>>>
-                                (out, in, nimages, ntransforms, blocksXPerImage);
+                CUDA_LAUNCH((transform_kernel<T, true, method>), blocks, threads,
+                                out, in, nimages, ntransforms, blocksXPerImage);
             } else {
-                transform_kernel<T, false, method><<<blocks, threads>>>
-                                (out, in, nimages, ntransforms, blocksXPerImage);
+                CUDA_LAUNCH((transform_kernel<T, false, method>), blocks, threads,
+                                out, in, nimages, ntransforms, blocksXPerImage);
             }
             POST_LAUNCH_CHECK();
         }

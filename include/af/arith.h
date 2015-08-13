@@ -387,6 +387,14 @@ namespace af
     /// @}
 
 
+    /// C++ Interface for calculating sigmoid function of an array
+    ///
+    /// \param[in] in is input
+    /// \return the sigmoid of \p in
+    ///
+    /// \ingroup arith_func_sigmoid
+    AFAPI array sigmoid (const array &in);
+
     /// C++ Interface for exponential of an array
     ///
     /// \param[in] in is exponent
@@ -1164,6 +1172,17 @@ extern "C" {
        \ingroup arith_func_exp
     */
     AFAPI af_err af_exp     (af_array *out, const af_array in);
+
+    /**
+       C Interface for calculating sigmoid function of an array
+
+       \param[out] out will contain the sigmoid of \p in
+       \param[in] in is input
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup arith_func_sigmoid
+    */
+    AFAPI af_err af_sigmoid (af_array *out, const af_array in);
 
     /**
        C Interface for exponential of an array minus 1

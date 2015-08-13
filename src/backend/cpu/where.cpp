@@ -55,8 +55,7 @@ namespace cpu
             }
         }
 
-        Array<uint> out = createHostDataArray(dim4(count), out_vec);
-        memFree<uint>(out_vec);
+        Array<uint> out = createDeviceDataArray<uint>(dim4(count), out_vec);
         return out;
     }
 

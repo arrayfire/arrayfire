@@ -20,8 +20,6 @@
 #include <string>
 #include <cstdio>
 #include <memory.hpp>
-#include <iostream>
-#include <handle.hpp>
 
 using af::dim4;
 using std::string;
@@ -36,6 +34,7 @@ namespace opencl
 class clFFTPlanner
 {
     friend void find_clfft_plan(clfftPlanHandle &plan,
+                                clfftLayout iLayout, clfftLayout oLayout,
                                 clfftDim rank, size_t *clLengths,
                                 size_t *istrides, size_t idist,
                                 size_t *ostrides, size_t odist,
@@ -72,6 +71,7 @@ class clFFTPlanner
 };
 
 void find_clfft_plan(clfftPlanHandle &plan,
+                     clfftLayout iLayout, clfftLayout oLayout,
                      clfftDim rank, size_t *clLengths,
                      size_t *istrides, size_t idist,
                      size_t *ostrides, size_t odist,
@@ -81,7 +81,7 @@ void find_clfft_plan(clfftPlanHandle &plan,
 
     // create the key string
     char key_str_temp[64];
-    sprintf(key_str_temp, "%d:", rank);
+    sprintf(key_str_temp, "%d:%d:%d:", iLayout, oLayout, rank);
 
     string key_string(key_str_temp);
 
@@ -142,13 +142,20 @@ void find_clfft_plan(clfftPlanHandle &plan,
     // Context() returns the actual cl_context handle
     CLFFT_CHECK(clfftCreateDefaultPlan(&temp, getContext()(), rank, clLengths));
 
-    CLFFT_CHECK(clfftSetLayout(temp, CLFFT_COMPLEX_INTERLEAVED, CLFFT_COMPLEX_INTERLEAVED));
+    // complex to complex
+    if (iLayout == oLayout) {
+        CLFFT_CHECK(clfftSetResultLocation(temp, CLFFT_INPLACE));
+    } else {
+        CLFFT_CHECK(clfftSetResultLocation(temp, CLFFT_OUTOFPLACE));
+    }
+
+    CLFFT_CHECK(clfftSetLayout(temp, iLayout, oLayout));
     CLFFT_CHECK(clfftSetPlanBatchSize(temp, batch));
     CLFFT_CHECK(clfftSetPlanDistance(temp, idist, odist));
     CLFFT_CHECK(clfftSetPlanInStride(temp, rank, istrides));
     CLFFT_CHECK(clfftSetPlanOutStride(temp, rank, ostrides));
     CLFFT_CHECK(clfftSetPlanPrecision(temp, precision));
-    CLFFT_CHECK(clfftSetResultLocation(temp, CLFFT_INPLACE));
+    CLFFT_CHECK(clfftSetPlanScale(temp, CLFFT_BACKWARD, 1.0));
 
     // getQueue() returns object of type CommandQueue
     // CommandQueue() returns the actual cl_command_queue handle
@@ -164,57 +171,10 @@ template<typename T> struct Precision;
 template<> struct Precision<cfloat > { enum {type = CLFFT_SINGLE}; };
 template<> struct Precision<cdouble> { enum {type = CLFFT_DOUBLE}; };
 
-void computeDims(size_t rdims[4], const dim4 &idims)
+static void computeDims(size_t rdims[4], const dim4 &idims)
 {
     for (int i = 0; i < 4; i++) {
         rdims[i] = (size_t)idims[i];
-    }
-}
-
-template<typename T, int rank, bool direction>
-void fft_common(Array<T> &out, const Array<T> &in)
-{
-    size_t idims[4], istrides[4], iembed[4];
-    size_t odims[4], ostrides[4], oembed[4];
-
-    computeDims(idims   , in.dims());
-    computeDims(iembed  , in.getDataDims());
-    computeDims(istrides, in.strides());
-
-    computeDims(odims   , out.dims());
-    computeDims(oembed  , out.getDataDims());
-    computeDims(ostrides, out.strides());
-
-    clfftPlanHandle plan;
-
-    int batch = 1;
-    for (int i = rank; i < 4; i++) {
-        batch *= idims[i];
-    }
-
-    find_clfft_plan(plan, (clfftDim)rank, idims,
-                    istrides, istrides[rank],
-                    ostrides, ostrides[rank],
-                    (clfftPrecision)Precision<T>::type,
-                    batch);
-
-    cl_mem imem = (*in.get())();
-    cl_mem omem = (*out.get())();
-    cl_command_queue queue = getQueue()();
-
-    CLFFT_CHECK(clfftEnqueueTransform(plan,
-                                      direction ? CLFFT_FORWARD : CLFFT_BACKWARD,
-                                      1, &queue, 0, NULL, NULL,
-                                      &imem, &omem, NULL));
-}
-
-void computePaddedDims(dim4 &pdims,
-                       const dim4 &idims,
-                       const dim_t npad,
-                       dim_t const * const pad)
-{
-    for (int i = 0; i < 4; i++) {
-        pdims[i] = (i < (int)npad) ? pad[i] : idims[i];
     }
 }
 
@@ -243,58 +203,143 @@ void verifySupported(const dim4 dims)
     }
 }
 
-template<typename inType, typename outType, int rank, bool isR2C>
-Array<outType> fft(Array<inType> const &in, double norm_factor, dim_t const npad, dim_t const * const pad)
+template<typename T, int rank, bool direction>
+void fft_inplace(Array<T> &in)
 {
-    ARG_ASSERT(1, (rank>=1 && rank<=3));
+    verifySupported<rank>(in.dims());
+    size_t tdims[4], istrides[4];
 
-    dim4 pdims(1);
-    computePaddedDims(pdims, in.dims(), npad, pad);
-    verifySupported<rank>(pdims);
+    computeDims(tdims   , in.dims());
+    computeDims(istrides, in.strides());
 
-    Array<outType> ret = padArray<inType, outType>(in, pdims, scalar<outType>(0), norm_factor);
-    fft_common<outType, rank, true>(ret, ret);
+    clfftPlanHandle plan;
 
-    return ret;
+    int batch = 1;
+    for (int i = rank; i < 4; i++) {
+        batch *= tdims[i];
+    }
+
+    find_clfft_plan(plan,
+                    CLFFT_COMPLEX_INTERLEAVED,
+                    CLFFT_COMPLEX_INTERLEAVED,
+                    (clfftDim)rank, tdims,
+                    istrides, istrides[rank],
+                    istrides, istrides[rank],
+                    (clfftPrecision)Precision<T>::type,
+                    batch);
+
+    cl_mem imem = (*in.get())();
+    cl_command_queue queue = getQueue()();
+
+    CLFFT_CHECK(clfftEnqueueTransform(plan,
+                                      direction ? CLFFT_FORWARD : CLFFT_BACKWARD,
+                                      1, &queue, 0, NULL, NULL,
+                                      &imem, &imem, NULL));
 }
 
-template<typename T, int rank>
-Array<T> ifft(Array<T> const &in, double norm_factor, dim_t const npad, dim_t const * const pad)
+template<typename Tc, typename Tr, int rank>
+Array<Tc> fft_r2c(const Array<Tr> &in)
 {
-    ARG_ASSERT(1, (rank>=1 && rank<=3));
+    dim4 odims = in.dims();
 
-    dim4 pdims(1);
-    computePaddedDims(pdims, in.dims(), npad, pad);
-    verifySupported<rank>(pdims);
+    odims[0] = odims[0] / 2 + 1;
 
-    // the input norm_factor is further scaled
-    // based on the input dimensions to match
-    // cuFFT behavior
-    for (int i=0; i<rank; i++)
-        norm_factor *= pdims[i];
+    Array<Tc> out = createEmptyArray<Tc>(odims);
 
-    Array<T> ret = padArray<T, T>(in, pdims, scalar<T>(0), norm_factor);
-    fft_common<T, rank, false>(ret, ret);
-    return ret;
+    verifySupported<rank>(in.dims());
+    size_t tdims[4], istrides[4], ostrides[4];
+
+    computeDims(tdims   ,  in.dims());
+    computeDims(istrides,  in.strides());
+    computeDims(ostrides, out.strides());
+
+    clfftPlanHandle plan;
+
+    int batch = 1;
+    for (int i = rank; i < 4; i++) {
+        batch *= tdims[i];
+    }
+
+    find_clfft_plan(plan,
+                    CLFFT_REAL,
+                    CLFFT_HERMITIAN_INTERLEAVED,
+                    (clfftDim)rank, tdims,
+                    istrides, istrides[rank],
+                    ostrides, ostrides[rank],
+                    (clfftPrecision)Precision<Tc>::type,
+                    batch);
+
+    cl_mem imem = (*in.get())();
+    cl_mem omem = (*out.get())();
+    cl_command_queue queue = getQueue()();
+
+    CLFFT_CHECK(clfftEnqueueTransform(plan,
+                                      CLFFT_FORWARD,
+                                      1, &queue, 0, NULL, NULL,
+                                      &imem, &omem, NULL));
+
+    return out;
 }
 
-#define INSTANTIATE1(T1, T2)\
-    template Array<T2> fft <T1, T2, 1, true >(const Array<T1> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
-    template Array<T2> fft <T1, T2, 2, true >(const Array<T1> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
-    template Array<T2> fft <T1, T2, 3, true >(const Array<T1> &in, double norm_factor, dim_t const npad, dim_t const * const pad);
+template<typename Tr, typename Tc, int rank>
+Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims)
+{
+    Array<Tr> out = createEmptyArray<Tr>(odims);
 
-INSTANTIATE1(float  , cfloat )
-INSTANTIATE1(double , cdouble)
+    verifySupported<rank>(odims);
+    size_t tdims[4], istrides[4], ostrides[4];
 
-#define INSTANTIATE2(T)\
-    template Array<T> fft <T, T, 1, false>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
-    template Array<T> fft <T, T, 2, false>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
-    template Array<T> fft <T, T, 3, false>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
-    template Array<T> ifft<T, 1>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
-    template Array<T> ifft<T, 2>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad); \
-    template Array<T> ifft<T, 3>(const Array<T> &in, double norm_factor, dim_t const npad, dim_t const * const pad);
+    computeDims(tdims   ,  odims);
+    computeDims(istrides,  in.strides());
+    computeDims(ostrides, out.strides());
 
-INSTANTIATE2(cfloat )
-INSTANTIATE2(cdouble)
+    clfftPlanHandle plan;
 
+    int batch = 1;
+    for (int i = rank; i < 4; i++) {
+        batch *= tdims[i];
+    }
+
+    find_clfft_plan(plan,
+                    CLFFT_HERMITIAN_INTERLEAVED,
+                    CLFFT_REAL,
+                    (clfftDim)rank, tdims,
+                    istrides, istrides[rank],
+                    ostrides, ostrides[rank],
+                    (clfftPrecision)Precision<Tc>::type,
+                    batch);
+
+    cl_mem imem = (*in.get())();
+    cl_mem omem = (*out.get())();
+    cl_command_queue queue = getQueue()();
+
+    CLFFT_CHECK(clfftEnqueueTransform(plan,
+                                      CLFFT_BACKWARD,
+                                      1, &queue, 0, NULL, NULL,
+                                      &imem, &omem, NULL));
+
+    return out;
+}
+
+#define INSTANTIATE(T)                                      \
+    template void fft_inplace<T, 1, true >(Array<T> &in);   \
+    template void fft_inplace<T, 2, true >(Array<T> &in);   \
+    template void fft_inplace<T, 3, true >(Array<T> &in);   \
+    template void fft_inplace<T, 1, false>(Array<T> &in);   \
+    template void fft_inplace<T, 2, false>(Array<T> &in);   \
+    template void fft_inplace<T, 3, false>(Array<T> &in);   \
+
+    INSTANTIATE(cfloat )
+    INSTANTIATE(cdouble)
+
+#define INSTANTIATE_REAL(Tr, Tc)                                        \
+    template Array<Tc> fft_r2c<Tc, Tr, 1>(const Array<Tr> &in);         \
+    template Array<Tc> fft_r2c<Tc, Tr, 2>(const Array<Tr> &in);         \
+    template Array<Tc> fft_r2c<Tc, Tr, 3>(const Array<Tr> &in);         \
+    template Array<Tr> fft_c2r<Tr, Tc, 1>(const Array<Tc> &in, const dim4 &odims); \
+    template Array<Tr> fft_c2r<Tr, Tc, 2>(const Array<Tc> &in, const dim4 &odims); \
+    template Array<Tr> fft_c2r<Tr, Tc, 3>(const Array<Tc> &in, const dim4 &odims); \
+
+    INSTANTIATE_REAL(float , cfloat )
+    INSTANTIATE_REAL(double, cdouble)
 }

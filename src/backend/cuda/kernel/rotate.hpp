@@ -114,8 +114,8 @@ namespace cuda
 
             blocks.y = blocks.y * nbatches;
 
-            rotate_kernel<T, method><<<blocks, threads>>> (out, in, t, nimages, nbatches,
-                                    blocksXPerImage, blocksYPerImage);
+            CUDA_LAUNCH((rotate_kernel<T, method>), blocks, threads,
+                    out, in, t, nimages, nbatches, blocksXPerImage, blocksYPerImage);
 
             POST_LAUNCH_CHECK();
         }

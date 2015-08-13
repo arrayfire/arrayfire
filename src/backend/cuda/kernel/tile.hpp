@@ -78,7 +78,7 @@ namespace cuda
                         blocksPerMatY * out.dims[3],
                         1);
 
-            tile_kernel<T><<<blocks, threads>>>(out, in, blocksPerMatX, blocksPerMatY);
+            CUDA_LAUNCH((tile_kernel<T>), blocks, threads, out, in, blocksPerMatX, blocksPerMatY);
             POST_LAUNCH_CHECK();
         }
     }

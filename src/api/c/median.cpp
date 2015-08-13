@@ -26,14 +26,15 @@ using af::dim4;
 template<typename T>
 static double median(const af_array& in)
 {
-    const Array<T> input  = getArray<T>(in);
-    dim_t nElems = input.elements();
+    dim_t nElems = getInfo(in).elements();
     double mid      = (nElems + 1) / 2;
     af_seq mdSpan[1]= {af_make_seq(mid-1, mid, 1)};
     dim4 dims(nElems, 1, 1, 1);
 
     af_array temp = 0;
     AF_CHECK(af_moddims(&temp, in, 1, dims.get()));
+    const Array<T> input  = getArray<T>(temp);
+
     Array<T> sortedArr = sort<T, true>(input, 0);
 
     double result;

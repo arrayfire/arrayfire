@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/version.h>
+#include <af/cuda.h>
 #include <platform.hpp>
 #include <defines.hpp>
 #include <driver.h>
@@ -267,6 +268,11 @@ int getDeviceNativeId(int device)
     return -1;
 }
 
+cudaStream_t getStream(int device)
+{
+    return DeviceManager::getInstance().streams[device];
+}
+
 int setDevice(int device)
 {
     return DeviceManager::getInstance().setActiveDevice(device);
@@ -306,6 +312,11 @@ DeviceManager::DeviceManager()
     }
 
     sortDevices();
+
+    for(int i = 0; i < nDevices; i++) {
+        setActiveDevice(i, cuDevices[i].nativeId);
+        CUDA_CHECK(cudaStreamCreate(&streams[i]));
+    }
 
     const char* deviceENV = getenv("AF_CUDA_DEFAULT_DEVICE");
     if(!deviceENV) {
@@ -359,8 +370,20 @@ void sync(int device)
 {
     int currDevice = getActiveDeviceId();
     setDevice(device);
-    CUDA_CHECK(cudaDeviceSynchronize());
+    CUDA_CHECK(cudaStreamSynchronize(getStream(getActiveDeviceId())));
     setDevice(currDevice);
 }
 
+}
+
+af_err afcu_get_stream(cudaStream_t* stream, int id)
+{
+    *stream = cuda::getStream(id);
+    return AF_SUCCESS;
+}
+
+af_err afcu_get_native_id(int* nativeid, int id)
+{
+    *nativeid = cuda::getDeviceNativeId(id);
+    return AF_SUCCESS;
 }

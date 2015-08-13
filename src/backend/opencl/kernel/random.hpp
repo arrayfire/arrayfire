@@ -106,6 +106,10 @@ namespace opencl
                         std::ostringstream options;
                         options << " -D T=" << dtype_traits<T>::getName()
                                 << " -D repeat="<< REPEAT
+#if defined(OS_MAC) // Because apple is "special"
+                                << " -D IS_APPLE"
+                                << " -D log10_val=" << std::log(10.0)
+#endif
                                 << " -D " << random_name<T, isRandu>().name();
 
                         if (std::is_same<T, double>::value) {

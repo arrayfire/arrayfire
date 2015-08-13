@@ -31,7 +31,7 @@ void matchTemplate(global outType * out,
         const int sDim1 = sInfo.dims[1];
         int winNumElems = tDim0*tDim1;
 
-        global const inType* tptr = tmplt;
+        global const inType* tptr = tmplt + tInfo.offset;
 
         outType tImgMean = (outType)0;
         if (NEEDMEAN) {

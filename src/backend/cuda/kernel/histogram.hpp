@@ -86,9 +86,8 @@ void histogram(Param<outType> out, CParam<inType> in, cfloat *d_minmax, int nbin
 
     int smem_size = nbins * sizeof(outType);
 
-    histogramKernel<inType, outType>
-        <<<blocks, threads, smem_size>>>
-        (out, in, d_minmax, nElems, nbins, blk_x);
+    CUDA_LAUNCH_SMEM((histogramKernel<inType, outType>), blocks, threads, smem_size,
+            out, in, d_minmax, nElems, nbins, blk_x);
 
     POST_LAUNCH_CHECK();
 }

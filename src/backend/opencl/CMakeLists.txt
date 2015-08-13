@@ -191,7 +191,7 @@ IF(DEFINED BLAS_SYM_FILE)
                ${cpp_sources})
 
 
-    IF(FORGE_FOUND)
+    IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
         ADD_DEPENDENCIES(afopencl_static forge)
     ENDIF()
 
@@ -238,7 +238,7 @@ TARGET_LINK_LIBRARIES(afopencl
                                 PRIVATE ${CMAKE_DL_LIBS}
                                 PRIVATE ${Boost_LIBRARIES})
 
-IF(FORGE_FOUND)
+IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
     ADD_DEPENDENCIES(afopencl forge)
 ENDIF()
 

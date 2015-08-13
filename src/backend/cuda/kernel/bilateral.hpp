@@ -90,26 +90,14 @@ void bilateralKernel(Param<outType> out, CParam<inType> in,
     }
 
     // pull image to local memory
-    load2ShrdMem<inType, outType>(localMem, iptr, lx, ly, shrdLen,
-            in.dims[0], in.dims[1], gx-radius, gy-radius, in.strides[1], in.strides[0]);
+    for (int b=ly, gy2=gy; b<shrdLen; b+=blockDim.y, gy2+=blockDim.y) {
+        // move row_set get_local_size(1) along coloumns
+        for (int a=lx, gx2=gx; a<shrdLen; a+=blockDim.x, gx2+=blockDim.x) {
+            load2ShrdMem<inType, outType>(localMem, iptr, a, b, shrdLen, in.dims[0], in.dims[1],
+                                          gx2-radius, gy2-radius, in.strides[1], in.strides[0]);
+        }
+    }
 
-    int lx2 = lx + THREADS_X;
-    int ly2 = ly + THREADS_Y;
-    int gx2 = gx + THREADS_X;
-    int gy2 = gy + THREADS_Y;
-
-    if (lx<padding) {
-        load2ShrdMem<inType, outType>(localMem, iptr, lx2, ly, shrdLen,
-                in.dims[0], in.dims[1], gx2-radius, gy-radius, in.strides[1], in.strides[0]);
-    }
-    if (ly<padding) {
-        load2ShrdMem<inType, outType>(localMem, iptr, lx, ly2, shrdLen,
-                in.dims[0], in.dims[1], gx-radius, gy2-radius, in.strides[1], in.strides[0]);
-    }
-    if (lx<padding && ly<padding) {
-        load2ShrdMem<inType, outType>(localMem, iptr, lx2, ly2, shrdLen,
-                in.dims[0], in.dims[1], gx2-radius, gy2-radius, in.strides[1], in.strides[0]);
-    }
     __syncthreads();
 
     if (gx<in.dims[0] && gy<in.dims[1]) {
@@ -151,9 +139,8 @@ void bilateral(Param<outType> out, CParam<inType> in, float s_sigma, float c_sig
     int num_gauss_elems   = (2 * radius + 1)*(2 * radius + 1);
     int total_shrd_size   = sizeof(outType) * (num_shrd_elems + num_gauss_elems);
 
-    bilateralKernel<inType, outType>
-        <<<blocks, threads, total_shrd_size>>>
-        (out, in, s_sigma, c_sigma, num_shrd_elems, blk_x, blk_y);
+    CUDA_LAUNCH_SMEM((bilateralKernel<inType, outType>), blocks, threads, total_shrd_size,
+        out, in, s_sigma, c_sigma, num_shrd_elems, blk_x, blk_y);
 
     POST_LAUNCH_CHECK();
 }

@@ -38,7 +38,8 @@ void morph(__global T *              out,
 {
     const int halo   = windLen/2;
     const int padding= 2*halo;
-    const int shrdLen= get_local_size(0) + padding + 1;
+    const int shrdLen = get_local_size(0) + padding + 1;
+    const int shrdLen1= get_local_size(1) + padding;
 
     // gfor batch offsets
     int b2 = get_group_id(0) / nBBS0;
@@ -54,34 +55,14 @@ void morph(__global T *              out,
     int gx = get_local_size(0) * (get_group_id(0)-b2*nBBS0) + lx;
     int gy = get_local_size(1) * (get_group_id(1)-b3*nBBS1) + ly;
 
-    // offset values for pulling image to local memory
-    int lx2      = lx + get_local_size(0);
-    int ly2      = ly + get_local_size(1);
-    int gx2      = gx + get_local_size(0);
-    int gy2      = gy + get_local_size(1);
-
-    // pull image to local memory
-    load2LocalMem(localMem, in, lx, ly, shrdLen,
-                  iInfo.dims[0], iInfo.dims[1],
-                  gx-halo, gy-halo,
-                  iInfo.strides[1], iInfo.strides[0]);
-    if (lx<padding) {
-        load2LocalMem(localMem, in, lx2, ly, shrdLen,
-                      iInfo.dims[0], iInfo.dims[1],
-                      gx2-halo, gy-halo,
-                      iInfo.strides[1], iInfo.strides[0]);
-    }
-    if (ly<padding) {
-        load2LocalMem(localMem, in, lx, ly2, shrdLen,
-                      iInfo.dims[0], iInfo.dims[1],
-                      gx-halo, gy2-halo,
-                      iInfo.strides[1], iInfo.strides[0]);
-    }
-    if (lx<padding && ly<padding) {
-        load2LocalMem(localMem, in, lx2, ly2, shrdLen,
-                      iInfo.dims[0], iInfo.dims[1],
-                      gx2-halo, gy2-halo,
-                      iInfo.strides[1], iInfo.strides[0]);
+    int s0 = iInfo.strides[0];
+    int s1 = iInfo.strides[1];
+    int d0 = iInfo.dims[0];
+    int d1 = iInfo.dims[1];
+    for (int b=ly, gy2=gy; b<shrdLen1; b+=get_local_size(1), gy2+=get_local_size(1)) {
+        for (int a=lx, gx2=gx; a<shrdLen; a+=get_local_size(0), gx2+=get_local_size(0)) {
+            load2LocalMem(localMem, in, a, b, shrdLen, d0, d1, gx2-halo, gy2-halo, s1, s0);
+        }
     }
 
     int i = lx + halo;
@@ -149,6 +130,8 @@ void morph3d(__global T *         out,
 
     const int se_area   = windLen*windLen;
     const int shrdLen   = get_local_size(0) + padding + 1;
+    const int shrdLen1  = get_local_size(1) + padding;
+    const int shrdLen2  = get_local_size(2) + padding;
     const int shrdArea  = shrdLen * (get_local_size(1)+padding);
 
     // gfor batch offsets
@@ -156,76 +139,35 @@ void morph3d(__global T *         out,
     in  += (batchId * iInfo.strides[3] + iInfo.offset);
     out += (batchId * oInfo.strides[3]);
 
-    int gx, gy, gz, i, j, k;
-    { // scoping out unnecessary variables
     const int lx = get_local_id(0);
     const int ly = get_local_id(1);
     const int lz = get_local_id(2);
 
-    gx = get_local_size(0) * (get_group_id(0)-batchId*nBBS) + lx;
-    gy = get_local_size(1) * get_group_id(1) + ly;
-    gz = get_local_size(2) * get_group_id(2) + lz;
+    const int gx = get_local_size(0) * (get_group_id(0)-batchId*nBBS) + lx;
+    const int gy = get_local_size(1) * get_group_id(1) + ly;
+    const int gz = get_local_size(2) * get_group_id(2) + lz;
 
-    const int gx2 = gx + get_local_size(0);
-    const int gy2 = gy + get_local_size(1);
-    const int gz2 = gz + get_local_size(2);
-    const int lx2 = lx + get_local_size(0);
-    const int ly2 = ly + get_local_size(1);
-    const int lz2 = lz + get_local_size(2);
+    int s0 = iInfo.strides[0];
+    int s1 = iInfo.strides[1];
+    int s2 = iInfo.strides[2];
+    int d0 = iInfo.dims[0];
+    int d1 = iInfo.dims[1];
+    int d2 = iInfo.dims[2];
 
-    // pull volume to shared memory
-    load2LocVolume(localMem, in, lx, ly, lz, shrdLen, shrdArea,
-                    iInfo.dims[0], iInfo.dims[1], iInfo.dims[2],
-                    gx-halo, gy-halo, gz-halo,
-                    iInfo.strides[2], iInfo.strides[1], iInfo.strides[0]);
-    if (lx<padding) {
-        load2LocVolume(localMem, in, lx2, ly, lz, shrdLen, shrdArea,
-                       iInfo.dims[0], iInfo.dims[1], iInfo.dims[2],
-                       gx2-halo, gy-halo, gz-halo,
-                       iInfo.strides[2], iInfo.strides[1], iInfo.strides[0]);
+    for (int c=lz, gz2=gz; c<shrdLen2; c+=get_local_size(2), gz2+=get_local_size(2)) {
+        for (int b=ly, gy2=gy; b<shrdLen1; b+=get_local_size(1), gy2+=get_local_size(1)) {
+            for (int a=lx, gx2=gx; a<shrdLen; a+=get_local_size(0), gx2+=get_local_size(0)) {
+                load2LocVolume(localMem, in, a, b, c, shrdLen, shrdArea, d0, d1, d2,
+                               gx2-halo, gy2-halo, gz2-halo, s2, s1, s0);
+            }
+        }
     }
-    if (ly<padding) {
-        load2LocVolume(localMem, in, lx, ly2, lz, shrdLen, shrdArea,
-                       iInfo.dims[0], iInfo.dims[1], iInfo.dims[2],
-                       gx-halo, gy2-halo, gz-halo,
-                       iInfo.strides[2], iInfo.strides[1], iInfo.strides[0]);
-    }
-    if (lz<padding) {
-        load2LocVolume(localMem, in, lx, ly, lz2, shrdLen, shrdArea,
-                       iInfo.dims[0], iInfo.dims[1], iInfo.dims[2],
-                       gx-halo, gy-halo, gz2-halo,
-                       iInfo.strides[2], iInfo.strides[1], iInfo.strides[0]);
-    }
-    if (lx<padding && ly<padding) {
-        load2LocVolume(localMem, in, lx2, ly2, lz, shrdLen, shrdArea,
-                       iInfo.dims[0], iInfo.dims[1], iInfo.dims[2],
-                       gx2-halo, gy2-halo, gz-halo,
-                       iInfo.strides[2], iInfo.strides[1], iInfo.strides[0]);
-    }
-    if (ly<padding && lz<padding) {
-        load2LocVolume(localMem, in, lx, ly2, lz2, shrdLen, shrdArea,
-                       iInfo.dims[0], iInfo.dims[1], iInfo.dims[2],
-                       gx-halo, gy2-halo, gz2-halo,
-                       iInfo.strides[2], iInfo.strides[1], iInfo.strides[0]);
-    }
-    if (lz<padding && lx<padding) {
-        load2LocVolume(localMem, in, lx2, ly, lz2, shrdLen, shrdArea,
-                       iInfo.dims[0], iInfo.dims[1], iInfo.dims[2],
-                       gx2-halo, gy-halo, gz2-halo,
-                       iInfo.strides[2], iInfo.strides[1], iInfo.strides[0]);
-    }
-    if (lx<padding && ly<padding && lz<padding) {
-        load2LocVolume(localMem, in, lx2, ly2, lz2, shrdLen, shrdArea,
-                       iInfo.dims[0], iInfo.dims[1], iInfo.dims[2],
-                       gx2-halo, gy2-halo, gz2-halo,
-                       iInfo.strides[2], iInfo.strides[1], iInfo.strides[0]);
-    }
+
     barrier(CLK_LOCAL_MEM_FENCE);
-    // indices of voxel owned by current thread
-    i  = lx + halo;
-    j  = ly + halo;
-    k  = lz + halo;
-    }
+
+    int i  = lx + halo;
+    int j  = ly + halo;
+    int k  = lz + halo;
 
     T acc = localMem[ lIdx3D(i, j, k, shrdArea, shrdLen, 1) ];
 #pragma unroll

@@ -50,6 +50,8 @@ LOGIC(or, ||)
     LOGIC_BASIC(fn, op, uint)                       \
     LOGIC_BASIC(fn, op, char)                       \
     LOGIC_BASIC(fn, op, uchar)                      \
+    LOGIC_BASIC(fn, op, intl)                       \
+    LOGIC_BASIC(fn, op, uintl)                      \
                                                     \
     __device__ bool ___##fn(cfloat a, cfloat b)     \
     {                                               \

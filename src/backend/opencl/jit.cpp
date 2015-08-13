@@ -76,19 +76,32 @@ static string getKernelString(string funcName, Node *node, bool is_linear)
 
     node->genParams(kerStream);
     kerStream << "__global " << node->getTypeStr() << " *out, KParam oInfo," << "\n";
-    kerStream << "uint groups_0, uint groups_1)" << "\n";
+    kerStream << "uint groups_0, uint groups_1, uint num_odims)" << "\n";
 
     kerStream << "{" << "\n" << "\n";
 
     if (!is_linear) {
 
-        kerStream << "uint id2 = get_group_id(0) / groups_0;" << "\n";
-        kerStream << "uint id3 = get_group_id(1) / groups_1;" << "\n";
-        kerStream << "uint groupId_0 = get_group_id(0) - id2 * groups_0;" << "\n";
-        kerStream << "uint groupId_1 = get_group_id(1) - id3 * groups_1;" << "\n";
-        kerStream << "uint id1 = get_local_id(1) + groupId_1 * get_local_size(1);" << "\n";
-        kerStream << "uint id0 = get_local_id(0) + groupId_0 * get_local_size(0);" << "\n";
-        kerStream << "\n";
+        kerStream << "uint id0 = 0, id1 = 0, id2 = 0, id3 = 0;\n";
+        kerStream << "if (num_odims > 2) {\n";
+
+        kerStream << "id2 = get_group_id(0) / groups_0;" << "\n";
+        kerStream << "id0 = get_group_id(0) - id2 * groups_0;" << "\n";
+        kerStream << "id0 = get_local_id(0) + id0 * get_local_size(0);" << "\n";
+
+        kerStream << "if (num_odims > 3) {\n";
+        kerStream << "id3 = get_group_id(1) / groups_1;" << "\n";
+        kerStream << "id1 = get_group_id(1) - id3 * groups_1;" << "\n";
+        kerStream << "id1 = get_local_id(1) + id1 * get_local_size(1);" << "\n";
+        kerStream << "} else {\n";
+        kerStream << "id1 = get_global_id(1);" << "\n";
+        kerStream << "}\n";
+        kerStream << " } else {\n";
+        kerStream << "id3 = 0;" << "\n";
+        kerStream << "id2 = 0;" << "\n";
+        kerStream << "id1 = get_global_id(1);" << "\n";
+        kerStream << "id0 = get_global_id(0);" << "\n";
+        kerStream << "}\n";
 
         kerStream << "bool cond = " << "\n";
         kerStream << "id0 < oInfo.dims[0] && " << "\n";
@@ -171,6 +184,12 @@ void evalNodes(Param &out, Node *node)
         uint global_1 = 1;
         uint groups_0 = 1;
         uint groups_1 = 1;
+        uint num_odims = 4;
+
+        while (num_odims >= 1) {
+            if (out.info.dims[num_odims - 1] == 1) num_odims--;
+            else break;
+        }
 
         if (is_linear) {
             local_0 = 256;
@@ -181,8 +200,8 @@ void evalNodes(Param &out, Node *node)
             global_0 = divup(groups, global_1) * local_0;
 
         } else {
-            local_0 = 32;
-            local_1 = 8;
+            local_0 = 64;
+            local_1 =  4;
 
             groups_0 = divup(out.info.dims[0], local_0);
             groups_1 = divup(out.info.dims[1], local_1);
@@ -199,6 +218,7 @@ void evalNodes(Param &out, Node *node)
         ker.setArg(args + 1,  out.info);
         ker.setArg(args + 2,  groups_0);
         ker.setArg(args + 3,  groups_1);
+        ker.setArg(args + 4,  num_odims);
 
         getQueue().enqueueNDRangeKernel(ker, cl::NullRange, global, local);
 

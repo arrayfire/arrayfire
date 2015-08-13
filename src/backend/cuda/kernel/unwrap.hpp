@@ -100,7 +100,8 @@ namespace cuda
 
             dim3 blocks(divup(out.dims[1], threads.y), out.dims[2] * out.dims[3]);
 
-            unwrap_kernel<T, TX><<<blocks, threads>>>(out, in, wx, wy, sx, sy, px, py, nx, repsPerColumn);
+            CUDA_LAUNCH((unwrap_kernel<T, TX>), blocks, threads,
+                    out, in, wx, wy, sx, sy, px, py, nx, repsPerColumn);
             POST_LAUNCH_CHECK();
         }
     }

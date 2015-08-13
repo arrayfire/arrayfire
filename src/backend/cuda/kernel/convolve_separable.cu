@@ -111,7 +111,7 @@ void convolve2_separable(Param<T> out, CParam<T> signal, int nBBS0, int nBBS1)
 template<typename T, typename aT, int cDim, bool expand, int f>
 void conv2Helper(dim3 blks, dim3 thrds, Param<T> out, CParam<T> sig, int nBBS0, int nBBS1)
 {
-   (convolve2_separable<T, aT, cDim, expand, f>)<<<blks, thrds>>>(out, sig, nBBS0, nBBS1);
+   CUDA_LAUNCH((convolve2_separable<T, aT, cDim, expand, f>), blks, thrds, out, sig, nBBS0, nBBS1);
 }
 
 template<typename T, typename accType, int conv_dim, bool expand>
@@ -133,7 +133,8 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<accType> filter)
 
    // FIX ME: if the filter array is strided, direct copy of symbols
    // might cause issues
-   CUDA_CHECK(cudaMemcpyToSymbol(kernel::sFilter, filter.ptr, fLen*sizeof(accType), 0, cudaMemcpyDeviceToDevice));
+   CUDA_CHECK(cudaMemcpyToSymbolAsync(kernel::sFilter, filter.ptr, fLen*sizeof(accType), 0,
+               cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
 
     switch(fLen) {
         case  2: conv2Helper<T, accType, conv_dim, expand,  2>(blocks, threads, out, signal, blk_x, blk_y); break;

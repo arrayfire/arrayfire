@@ -144,9 +144,9 @@ namespace kernel
         dim3 blocks(blk_x * in.dims[2], blk_y * in.dims[3]);
 
         if (in.dims[0] % TILE_DIM == 0 && in.dims[1] % TILE_DIM == 0)
-            (transposeIP<T, conjugate, true >)<<<blocks, threads>>>(in, blk_x, blk_y);
+            CUDA_LAUNCH((transposeIP<T, conjugate, true >), blocks, threads, in, blk_x, blk_y);
         else
-            (transposeIP<T, conjugate, false>)<<<blocks, threads>>>(in, blk_x, blk_y);
+            CUDA_LAUNCH((transposeIP<T, conjugate, false>), blocks, threads, in, blk_x, blk_y);
 
         POST_LAUNCH_CHECK();
     }

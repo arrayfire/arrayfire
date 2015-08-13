@@ -34,14 +34,16 @@ namespace cpu
     { }
 
     template<typename T>
-    Array<T>::Array(dim4 dims, const T * const in_data):
+    Array<T>::Array(dim4 dims, const T * const in_data, bool is_device):
         info(getActiveDeviceId(), dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
+        data(is_device ? (T*)in_data : memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
         node(), offset(0), ready(true), owner(true)
     {
         static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
         static_assert(offsetof(Array<T>, info) == 0, "Array<T>::info must be the first member variable of Array<T>");
-        std::copy(in_data, in_data + dims.elements(), data.get());
+        if (!is_device) {
+            std::copy(in_data, in_data + dims.elements(), data.get());
+        }
     }
 
 
@@ -63,38 +65,54 @@ namespace cpu
     { }
 
     template<typename T>
-    void Array<T>::eval()
+    std::shared_ptr<T> evalNodes(const int &num,
+                                 const dim4 &odims,
+                                 const dim4 &ostrs,
+                                 TNJ::Node_ptr &node)
     {
-        if (isReady()) return;
 
-        this->setId(getActiveDeviceId());
-        data = std::shared_ptr<T>(memAlloc<T>(elements()), memFree<T>);
+        std::shared_ptr<T> data(memAlloc<T>(num), memFree<T>);
         T *ptr = data.get();
 
-        dim4 ostrs = strides();
-        dim4 odims = dims();
+        bool is_linear = node->isLinear(odims.get());
 
-        for (int w = 0; w < (int)odims[3]; w++) {
-            dim_t offw = w * ostrs[3];
+        if (is_linear) {
+            for (int i = 0; i < num; i++) {
+                ptr[i] = *(T *)node->calc(i);
+            }
+        } else {
+            for (int w = 0; w < (int)odims[3]; w++) {
+                dim_t offw = w * ostrs[3];
 
-            for (int z = 0; z < (int)odims[2]; z++) {
-                dim_t offz = z * ostrs[2] + offw;
+                for (int z = 0; z < (int)odims[2]; z++) {
+                    dim_t offz = z * ostrs[2] + offw;
 
-                for (int y = 0; y < (int)odims[1]; y++) {
-                    dim_t offy = y * ostrs[1] + offz;
+                    for (int y = 0; y < (int)odims[1]; y++) {
+                        dim_t offy = y * ostrs[1] + offz;
 
-                    for (int x = 0; x < (int)odims[0]; x++) {
-                        dim_t id = x + offy;
+                        for (int x = 0; x < (int)odims[0]; x++) {
+                            dim_t id = x + offy;
 
-                        ptr[id] = *(T *)node->calc(x, y, z, w);
+                            ptr[id] = *(T *)node->calc(x, y, z, w);
+                        }
                     }
                 }
             }
         }
 
+        return data;
+    }
+
+    template<typename T>
+    void Array<T>::eval()
+    {
+        if (isReady()) return;
+
+        this->setId(getActiveDeviceId());
+
+        data = evalNodes<T>(elements(), dims(), strides(), node);
 
         ready = true;
-
         Node_ptr prev = node;
         prev->reset();
         // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
@@ -119,7 +137,8 @@ namespace cpu
                                                         bytes,
                                                         offset,
                                                         dims().get(),
-                                                        strides().get());
+                                                        strides().get(),
+                                                        isLinear());
 
             const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
         }
@@ -131,14 +150,14 @@ namespace cpu
     Array<T>
     createHostDataArray(const dim4 &size, const T * const data)
     {
-        return Array<T>(size, data);
+        return Array<T>(size, data, false);
     }
 
     template<typename T>
     Array<T>
     createDeviceDataArray(const dim4 &size, const void *data)
     {
-        return Array<T>(size, (const T * const) data);
+        return Array<T>(size, (const T * const) data, true);
     }
 
     template<typename T>
@@ -171,7 +190,7 @@ namespace cpu
 
         Node *n = node.get();
         n->getInfo(length, buf_count, bytes);
-        n->reset(false);
+        n->reset();
 
         if (length > MAX_TNJ_LEN ||
             buf_count >= MAX_BUFFERS ||

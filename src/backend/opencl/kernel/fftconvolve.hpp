@@ -63,7 +63,7 @@ void calcParamSizes(Param& sig_tmp,
     sig_tmp.data = packed.data;
     filter_tmp.data = packed.data;
 
-    if (kind == ONE2MANY) {
+    if (kind == CONVOLVE_BATCH_KERNEL) {
         filter_tmp.info.offset = 0;
         sig_tmp.info.offset = filter_tmp.info.strides[3] * filter_tmp.info.dims[3] * 2;
     }
@@ -171,10 +171,10 @@ void complexMultiplyHelper(Param packed,
 
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName()
-                        << " -D ONE2ONE=" << (int)ONE2ONE
-                        << " -D MANY2ONE=" << (int)MANY2ONE
-                        << " -D ONE2MANY=" << (int)ONE2MANY
-                        << " -D MANY2MANY=" << (int)MANY2MANY;
+                        << " -D CONVOLVE_BATCH_NONE=" << (int)CONVOLVE_BATCH_NONE
+                        << " -D CONVOLVE_BATCH_SIGNAL=" << (int)CONVOLVE_BATCH_SIGNAL
+                        << " -D CONVOLVE_BATCH_KERNEL=" << (int)CONVOLVE_BATCH_KERNEL
+                        << " -D CONVOLVE_BATCH_SAME=" << (int)CONVOLVE_BATCH_SAME;
 
                 if ((af_dtype) dtype_traits<convT>::af_type == c32) {
                     options << " -D CONVT=float";
@@ -238,6 +238,12 @@ void reorderOutputHelper(Param out,
         static std::map<int, Program*> fftconvolveProgs;
         static std::map<int, Kernel*>  roKernel;
 
+        int fftScale = 1;
+
+        // Calculate the scale by which to divide clFFT results
+        for (int k = 0; k < baseDim; k++)
+            fftScale *= packed.info.dims[k];
+
         int device = getActiveDeviceId();
 
         std::call_once( compileFlags[device], [device] () {
@@ -279,19 +285,19 @@ void reorderOutputHelper(Param out,
         auto roOp = make_kernel<Buffer, KParam,
                                 Buffer, KParam,
                                 KParam, const int,
-                                const int> (*roKernel[device]);
+                                const int, const int> (*roKernel[device]);
 
-        if (kind == ONE2MANY) {
+        if (kind == CONVOLVE_BATCH_KERNEL) {
             roOp(EnqueueArgs(getQueue(), global, local),
                  *out.data, out.info,
                  *filter_tmp.data, filter_tmp.info,
-                 filter.info, sig_half_d0, baseDim);
+                 filter.info, sig_half_d0, baseDim, fftScale);
         }
         else {
             roOp(EnqueueArgs(getQueue(), global, local),
                  *out.data, out.info,
                  *sig_tmp.data, sig_tmp.info,
-                 filter.info, sig_half_d0, baseDim);
+                 filter.info, sig_half_d0, baseDim, fftScale);
         }
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {

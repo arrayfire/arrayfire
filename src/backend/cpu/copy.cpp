@@ -111,6 +111,11 @@ namespace cpu
         }
     }
 
+    template<typename T>
+    void multiply_inplace(Array<T> &in, double val)
+    {
+        copy<T, T>(in, in, 0, val);
+    }
 
     template<typename inType, typename outType>
     Array<outType>
@@ -132,6 +137,7 @@ namespace cpu
 #define INSTANTIATE(T)                                                  \
     template void      copyData<T> (T *data, const Array<T> &from);     \
     template Array<T>  copyArray<T>(const Array<T> &A);                 \
+    template void      multiply_inplace<T> (Array<T> &in, double norm); \
 
     INSTANTIATE(float  )
     INSTANTIATE(double )

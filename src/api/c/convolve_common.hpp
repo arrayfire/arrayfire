@@ -10,9 +10,10 @@
 #pragma once
 
 typedef enum {
-    CONVOLVE_UNSUPPORTED_BATCH_MODE = -1, /* invalid inputs */
-    ONE2ONE,            /* one signal, one filter   */
-    MANY2ONE,           /* many signal, one filter  */
-    MANY2MANY,          /* many signal, many filter */
-    ONE2MANY            /* one signal, many filter  */
+    CONVOLVE_BATCH_UNSUPPORTED = -1, /* invalid inputs */
+    CONVOLVE_BATCH_NONE,          /* one signal, one filter   */
+    CONVOLVE_BATCH_SIGNAL,        /* many signal, one filter  */
+    CONVOLVE_BATCH_KERNEL,        /* one signal, many filter  */
+    CONVOLVE_BATCH_SAME,          /* signal and filter have same batch size */
+    CONVOLVE_BATCH_DIFF,          /* signal and filter have different batch size */
 } ConvolveBatchKind;

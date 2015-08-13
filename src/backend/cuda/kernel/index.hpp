@@ -77,7 +77,7 @@ void index(Param<T> out, CParam<T> in, const IndexKernelParam_t& p)
 
     dim3 blocks(blks_x*out.dims[2], blks_y*out.dims[3]);
 
-    indexKernel<T> <<<blocks, threads>>> (out, in, p, blks_x, blks_y);
+    CUDA_LAUNCH((indexKernel<T>), blocks, threads, out, in, p, blks_x, blks_y);
 
     POST_LAUNCH_CHECK();
 }

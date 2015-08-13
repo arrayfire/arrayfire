@@ -139,18 +139,18 @@ void convolve_nd(T *optr, T const *iptr, accT const *fptr,
 
     for (dim_t i=1; i<4; ++i) {
         switch(kind) {
-            case MANY2ONE:
+            case CONVOLVE_BATCH_SIGNAL:
                 out_step[i] = oStrides[i];
                 in_step[i]  = sStrides[i];
                 if (i>=baseDim) batch[i] = sDims[i];
                 break;
-            case MANY2MANY:
+            case CONVOLVE_BATCH_SAME:
                 out_step[i]  = oStrides[i];
                 in_step[i]   = sStrides[i];
                 filt_step[i] = fStrides[i];
                 if (i>=baseDim) batch[i] = sDims[i];
                 break;
-            case ONE2MANY:
+            case CONVOLVE_BATCH_KERNEL:
                 out_step[i]  = oStrides[i];
                 filt_step[i] = fStrides[i];
                 if (i>=baseDim) batch[i] = fDims[i];
@@ -188,7 +188,7 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
     dim4 oDims(1);
     if (expand) {
         for(dim_t d=0; d<4; ++d) {
-            if (kind==ONE2ONE || kind==ONE2MANY) {
+            if (kind==CONVOLVE_BATCH_NONE || kind==CONVOLVE_BATCH_KERNEL) {
                 oDims[d] = sDims[d]+fDims[d]-1;
             } else {
                 oDims[d] = (d<baseDim ? sDims[d]+fDims[d]-1 : sDims[d]);
@@ -196,7 +196,7 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
         }
     } else {
         oDims = sDims;
-        if (kind==ONE2MANY) {
+        if (kind==CONVOLVE_BATCH_KERNEL) {
             for (dim_t i=baseDim; i<4; ++i)
                 oDims[i] = fDims[i];
         }
@@ -265,7 +265,7 @@ Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter, Array<ac
     dim4 oDims = sDims;
 
     if (expand) {
-        // separable convolve only does ONE2ONE and standard batch(MANY2ONE)
+        // separable convolve only does CONVOLVE_BATCH_NONE and standard batch(CONVOLVE_BATCH_SIGNAL)
         tDims[0] += cflen - 1;
         oDims[0] += cflen - 1;
         oDims[1] += rflen - 1;

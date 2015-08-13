@@ -80,7 +80,7 @@ static void morphing_demo(bool console)
 {
     af::Window wnd(1280, 720, "Morphological Operations");
     // load images
-    array img_rgb = loadImage(ASSETS_DIR "/examples/images/lena.ppm", true) / 255.f; // 3 channel RGB       [0-1]
+    array img_rgb = loadImage(ASSETS_DIR "/examples/images/man.jpg", true) / 255.f; // 3 channel RGB       [0-1]
 
     array mask = constant(1, 5, 5);
 

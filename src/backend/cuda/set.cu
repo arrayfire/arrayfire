@@ -14,7 +14,7 @@
 #include <set.hpp>
 #include <copy.hpp>
 #include <sort.hpp>
-#include <err_cuda.hpp>
+#include <debug_cuda.hpp>
 
 #include <thrust/device_ptr.h>
 #include <thrust/sort.h>
@@ -34,8 +34,9 @@ namespace cuda
         thrust::device_ptr<T> out_ptr = thrust::device_pointer_cast<T>(out.get());
         thrust::device_ptr<T> out_ptr_end = out_ptr + out.dims()[0];
 
-        if(!is_sorted) thrust::sort(out_ptr, out_ptr_end);
-        thrust::device_ptr<T> out_ptr_last = thrust::unique(out_ptr, out_ptr_end);
+        if(!is_sorted) THRUST_SELECT(thrust::sort, out_ptr, out_ptr_end);
+        thrust::device_ptr<T> out_ptr_last;
+        THRUST_SELECT_OUT(out_ptr_last, thrust::unique, out_ptr, out_ptr_end);
 
         out.resetDims(dim4(thrust::distance(out_ptr, out_ptr_last)));
         return out;
@@ -65,9 +66,8 @@ namespace cuda
 
         thrust::device_ptr<T> out_ptr = thrust::device_pointer_cast<T>(out.get());
 
-        thrust::device_ptr<T> out_ptr_last = thrust::set_union(first_ptr, first_ptr_end,
-                                                               second_ptr, second_ptr_end,
-                                                               out_ptr);
+        thrust::device_ptr<T> out_ptr_last;
+        THRUST_SELECT_OUT(out_ptr_last, thrust::set_union, first_ptr, first_ptr_end, second_ptr, second_ptr_end, out_ptr);
 
         out.resetDims(dim4(thrust::distance(out_ptr, out_ptr_last)));
 
@@ -98,9 +98,8 @@ namespace cuda
 
         thrust::device_ptr<T> out_ptr = thrust::device_pointer_cast<T>(out.get());
 
-        thrust::device_ptr<T> out_ptr_last = thrust::set_intersection(first_ptr, first_ptr_end,
-                                                                      second_ptr, second_ptr_end,
-                                                                      out_ptr);
+        thrust::device_ptr<T> out_ptr_last;
+        THRUST_SELECT_OUT(out_ptr_last, thrust::set_intersection, first_ptr, first_ptr_end, second_ptr, second_ptr_end, out_ptr);
 
         out.resetDims(dim4(thrust::distance(out_ptr, out_ptr_last)));
 

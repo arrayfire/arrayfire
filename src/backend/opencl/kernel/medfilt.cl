@@ -64,35 +64,18 @@ void medfilt(__global T *       out,
     int gx = get_local_size(0) * (get_group_id(0)-b2*nBBS0) + lx;
     int gy = get_local_size(1) * (get_group_id(1)-b3*nBBS1) + ly;
 
-    // offset values for pulling image to local memory
-    int lx2 = lx + get_local_size(0);
-    int ly2 = ly + get_local_size(1);
-    int gx2 = gx + get_local_size(0);
-    int gy2 = gy + get_local_size(1);
-
+    int s0 = iInfo.strides[0];
+    int s1 = iInfo.strides[1];
+    int d0 = iInfo.dims[0];
+    int d1 = iInfo.dims[1];
     // pull image to local memory
-    load2ShrdMem(localMem, iptr, lx, ly, shrdLen,
-                 iInfo.dims[0], iInfo.dims[1],
-                 gx-halo, gy-halo,
-                 iInfo.strides[1], iInfo.strides[0]);
-    if (lx<padding) {
-        load2ShrdMem(localMem, iptr, lx2, ly, shrdLen,
-                     iInfo.dims[0], iInfo.dims[1],
-                     gx2-halo, gy-halo,
-                     iInfo.strides[1], iInfo.strides[0]);
+    for (int b=ly, gy2=gy; b<shrdLen; b+=get_local_size(1), gy2+=get_local_size(1)) {
+        // move row_set get_local_size(1) along coloumns
+        for (int a=lx, gx2=gx; a<shrdLen; a+=get_local_size(0), gx2+=get_local_size(0)) {
+            load2ShrdMem(localMem, iptr, a, b, shrdLen, d0, d1, gx2-halo, gy2-halo, s1, s0);
+        }
     }
-    if (ly<padding) {
-        load2ShrdMem(localMem, iptr, lx, ly2, shrdLen,
-                     iInfo.dims[0], iInfo.dims[1],
-                     gx-halo, gy2-halo,
-                     iInfo.strides[1], iInfo.strides[0]);
-    }
-    if (lx<padding && ly<padding) {
-        load2ShrdMem(localMem, iptr, lx2, ly2, shrdLen,
-                     iInfo.dims[0], iInfo.dims[1],
-                     gx2-halo, gy2-halo,
-                     iInfo.strides[1], iInfo.strides[0]);
-    }
+
     barrier(CLK_LOCAL_MEM_FENCE);
 
     // Only continue if we're at a valid location

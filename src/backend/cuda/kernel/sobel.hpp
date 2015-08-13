@@ -44,6 +44,7 @@ void sobel3x3(Param<To> dx, Param<To> dy, CParam<Ti> in, int nBBS0, int nBBS1)
     // calculate necessary offset and window parameters
     const int radius  = 1;
     const int padding = 2*radius;
+    const int shrdLen = blockDim.x + padding;
 
     // batch offsets
     unsigned b2 = blockIdx.x / nBBS0;
@@ -60,31 +61,14 @@ void sobel3x3(Param<To> dx, Param<To> dy, CParam<Ti> in, int nBBS0, int nBBS1)
     int gx = THREADS_X * (blockIdx.x-b2*nBBS0) + lx;
     int gy = THREADS_Y * (blockIdx.y-b3*nBBS1) + ly;
 
-    // offset values for pulling image to local memory
-    int lx2 = lx + THREADS_X;
-    int ly2 = ly + THREADS_Y;
-    int gx2 = gx + THREADS_X;
-    int gy2 = gy + THREADS_Y;
+    for (int b=ly, gy2=gy; b<shrdLen; b+=blockDim.y, gy2+=blockDim.y) {
+        for (int a=lx, gx2=gx; a<shrdLen; a+=blockDim.x, gx2+=blockDim.x) {
+            shrdMem[a][b] = load2ShrdMem<Ti>(iptr, in.dims[0], in.dims[1],
+                                             gx2-radius, gy2-radius,
+                                             in.strides[1], in.strides[0]);
+        }
+    }
 
-    // pull image to local memory
-    shrdMem[lx][ly] = load2ShrdMem<Ti>(iptr, in.dims[0], in.dims[1],
-                                      gx-radius, gy-radius,
-                                      in.strides[1], in.strides[0]);
-    if (lx<padding) {
-        shrdMem[lx2][ly] = load2ShrdMem<Ti>(iptr, in.dims[0], in.dims[1],
-                                           gx2-radius, gy-radius,
-                                           in.strides[1], in.strides[0]);
-    }
-    if (ly<padding) {
-        shrdMem[lx][ly2] = load2ShrdMem<Ti>(iptr, in.dims[0], in.dims[1],
-                                           gx-radius, gy2-radius,
-                                           in.strides[1], in.strides[0]);
-    }
-    if (lx<padding && ly<padding) {
-        shrdMem[lx2][ly2] = load2ShrdMem<Ti>(iptr, in.dims[0], in.dims[1],
-                                            gx2-radius, gy2-radius,
-                                            in.strides[1], in.strides[0]);
-    }
     __syncthreads();
 
     // Only continue if we're at a valid location
@@ -124,9 +108,7 @@ void sobel(Param<To> dx, Param<To> dy, CParam<Ti> in, const unsigned &ker_size)
 
     //TODO: add more cases when 5x5 and 7x7 kernels are done
     switch(ker_size) {
-        case  3:
-            (sobel3x3<Ti, To>) <<< blocks, threads >>> (dx, dy, in, blk_x, blk_y);
-            break;
+        case  3: CUDA_LAUNCH((sobel3x3<Ti, To>), blocks, threads, dx, dy, in, blk_x, blk_y); break;
     }
 
     POST_LAUNCH_CHECK();

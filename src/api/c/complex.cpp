@@ -152,7 +152,7 @@ af_err af_conjg(af_array *out, const af_array in)
         af_dtype type = info.getType();
 
         if (type != c32 && type != c64) {
-            AF_ERROR("Inputs to imag must be of complex type", AF_ERR_ARG);
+            return af_retain_array(out, in);
         }
 
         af_array res;

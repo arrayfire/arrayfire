@@ -22,6 +22,8 @@
     MATH_BASIC(fn, uint)                        \
     MATH_BASIC(fn, char)                        \
     MATH_BASIC(fn, uchar)                       \
+    MATH_BASIC(fn, uintl)                       \
+    MATH_BASIC(fn, intl)                        \
     __device__ double ___##fn(double a)         \
     {                                           \
         return fn(a);                           \
