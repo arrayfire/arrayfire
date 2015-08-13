@@ -11,6 +11,17 @@ Print Array and dimensions to screen
 
 =======================================================================
 
+\defgroup print_func_tostring toString
+
+\brief Print the array to a string instead of the screen
+
+This function is similar to af::print, except that it prints to a string
+rather than to screen.
+
+\ingroup arrayfire_func
+
+=======================================================================
+
 \defgroup stream_func_read readArray
 
 \brief Load an array from a file

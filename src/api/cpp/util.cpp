@@ -24,7 +24,6 @@ namespace af
 
     void print(const char *exp, const array &arr, const int precision)
     {
-        printf("%s ", exp);
         AF_THROW(af_print_array_gen(exp, arr.get(), precision));
         return;
     }
@@ -56,4 +55,11 @@ namespace af
         AF_THROW(af_read_array_key_check(&out, filename, key));
         return out;
     }
+
+    void toString(char **output, const char *exp, const array &arr, const int precision, const bool transpose)
+    {
+        AF_THROW(af_array_to_string(output, exp, arr.get(), precision, transpose));
+        return;
+    }
+
 }

@@ -82,6 +82,20 @@ namespace af
     */
     AFAPI int readArrayCheck(const char *filename, const char *key);
 
+    /**
+        \param[out] output is the pointer to the c-string that will hold the data. The memory for
+        output is allocated by the function. The user is responsible for deleting the memory.
+        \param[in] exp is an expression, generally the name of the array
+        \param[in] arr is the input array
+        \param[in] precision is the precision length for display
+        \param[in] transpose determines whether or not to transpose the array before storing it in
+        the string
+
+        \ingroup print_func_tostring
+    */
+    AFAPI void toString(char **output, const char *exp, const array &arr,
+                        const int precision = 4, const bool transpose = true);
+
     // Purpose of Addition: "How to add Function" documentation
     AFAPI array exampleFunction(const array& in, const af_someenum_t param);
 }
@@ -195,6 +209,20 @@ extern "C" {
         \ingroup stream_func_read
     */
     AFAPI af_err af_read_array_key_check(int *index, const char *filename, const char* key);
+
+    /**
+        \param[out] output is the pointer to the c-string that will hold the data. The memory for
+        output is allocated by the function. The user is responsible for deleting the memory.
+        \param[in] exp is an expression, generally the name of the array
+        \param[in] arr is the input array
+        \param[in] precision is the precision length for display
+        \param[in] transpose determines whether or not to transpose the array before storing it in
+        the string
+
+        \ingroup print_func_tostring
+    */
+    AFAPI af_err af_array_to_string(char **output, const char *exp, const af_array arr,
+                                    const int precision, const bool transpose);
 
     // Purpose of Addition: "How to add Function" documentation
     AFAPI af_err af_example_function(af_array* out, const af_array in, const af_someenum_t param);
