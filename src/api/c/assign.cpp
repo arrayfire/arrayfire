@@ -235,7 +235,7 @@ af_err af_assign_gen(af_array *out,
         }
 
         bool is_vector = true;
-        for (uint i = 0; is_vector && i < oDims.ndims() - 1; i++) {
+        for (int i = 0; is_vector && i < oDims.ndims() - 1; i++) {
             is_vector &= oDims[i] == 1;
         }
 
