@@ -133,7 +133,7 @@ static const float IntDescrFctr = 512.f;
 typedef struct
 {
     float    f[4];
-    unsigned l[1];
+    unsigned l;
 } feat_t;
 
 bool feat_cmp(feat_t i, feat_t j)
@@ -141,8 +141,8 @@ bool feat_cmp(feat_t i, feat_t j)
     for (int k = 0; k < 4; k++)
         if (i.f[k] != j.f[k])
             return (i.f[k] < j.f[k]);
-    if (i.l[0] != j.l[0])
-        return (i.l[0] < j.l[0]);
+    if (i.l != j.l)
+        return (i.l < j.l);
 
     return true;
 }
@@ -155,7 +155,7 @@ void array_to_feat(std::vector<feat_t>& feat, float *x, float *y, unsigned *laye
         feat[i].f[1] = y[i];
         feat[i].f[2] = resp[i];
         feat[i].f[3] = size[i];
-        feat[i].l[0] = layer[i];
+        feat[i].l    = layer[i];
     }
 }
 
@@ -232,6 +232,10 @@ void sub(
     }
 }
 
+#define CPTR(Y, X) (center_ptr[(Y) * idims[0] + (X)])
+#define PPTR(Y, X) (prev_ptr[(Y) * idims[0] + (X)])
+#define NPTR(Y, X) (next_ptr[(Y) * idims[0] + (X)])
+
 // Determines whether a pixel is a scale-space extremum by comparing it to its
 // 3x3x3 pixel neighborhood.
 template<typename T>
@@ -258,24 +262,24 @@ void detectExtrema(
 
             // Find extrema
             if (abs((float)p) > threshold &&
-                ((p > 0                                && p > center_ptr[(y-1)*idims[0] + x-1] && p > center_ptr[(y-1)*idims[0] + x]   &&
-                  p > center_ptr[(y-1)*idims[0] + x+1] && p > center_ptr[y*idims[0] + (x-1)]   && p > center_ptr[y*idims[0] + x+1]     &&
-                  p > center_ptr[(y+1)*idims[0] + x-1] && p > center_ptr[(y+1)*idims[0] + x]   && p > center_ptr[(y+1)*idims[0] + x+1] &&
-                  p > prev_ptr[(y-1)*idims[0] + x-1]   && p > prev_ptr[(y-1)*idims[0] + x]     && p > prev_ptr[(y-1)*idims[0] + x+1]   &&
-                  p > prev_ptr[y*idims[0] + x-1]       && p > prev_ptr[y*idims[0] + x]         && p > prev_ptr[y*idims[0] + x+1]       &&
-                  p > prev_ptr[(y+1)*idims[0] + x-1]   && p > prev_ptr[(y+1)*idims[0] + x]     && p > prev_ptr[(y+1)*idims[0] + x+1]   &&
-                  p > next_ptr[(y-1)*idims[0] + x-1]   && p > next_ptr[(y-1)*idims[0] + x]     && p > next_ptr[(y-1)*idims[0] + x+1]   &&
-                  p > next_ptr[y*idims[0] + x-1]       && p > next_ptr[y*idims[0] + x]         && p > next_ptr[y*idims[0] + x+1]       &&
-                  p > next_ptr[(y+1)*idims[0] + x-1]   && p > next_ptr[(y+1)*idims[0] + x]     && p > next_ptr[(y+1)*idims[0] + x+1])  ||
-                 (p < 0                                && p < center_ptr[(y-1)*idims[0] + x-1] && p < center_ptr[(y-1)*idims[0] + x]   &&
-                  p < center_ptr[(y-1)*idims[0] + x+1] && p < center_ptr[y*idims[0] + (x-1)]   && p < center_ptr[y*idims[0] + x+1]     &&
-                  p < center_ptr[(y+1)*idims[0] + x-1] && p < center_ptr[(y+1)*idims[0] + x]   && p < center_ptr[(y+1)*idims[0] + x+1] &&
-                  p < prev_ptr[(y-1)*idims[0] + x-1]   && p < prev_ptr[(y-1)*idims[0] + x]     && p < prev_ptr[(y-1)*idims[0] + x+1]   &&
-                  p < prev_ptr[y*idims[0] + x-1]       && p < prev_ptr[y*idims[0] + x]         && p < prev_ptr[y*idims[0] + x+1]       &&
-                  p < prev_ptr[(y+1)*idims[0] + x-1]   && p < prev_ptr[(y+1)*idims[0] + x]     && p < prev_ptr[(y+1)*idims[0] + x+1]   &&
-                  p < next_ptr[(y-1)*idims[0] + x-1]   && p < next_ptr[(y-1)*idims[0] + x]     && p < next_ptr[(y-1)*idims[0] + x+1]   &&
-                  p < next_ptr[y*idims[0] + x-1]       && p < next_ptr[y*idims[0] + x]         && p < next_ptr[y*idims[0] + x+1]       &&
-                  p < next_ptr[(y+1)*idims[0] + x-1]   && p < next_ptr[(y+1)*idims[0] + x]     && p < next_ptr[(y+1)*idims[0] + x+1]))) {
+                ((p > 0 && p > CPTR(y-1, x-1) && p > CPTR(y-1, x) &&
+                  p > CPTR(y-1, x+1) && p > CPTR(y, x-1) && p > CPTR(y,   x+1)  &&
+                  p > CPTR(y+1, x-1) && p > CPTR(y+1, x) && p > CPTR(y+1, x+1)  &&
+                  p > PPTR(y-1, x-1) && p > PPTR(y-1, x) && p > PPTR(y-1, x+1)  &&
+                  p > PPTR(y,   x-1) && p > PPTR(y  , x) && p > PPTR(y,   x+1)  &&
+                  p > PPTR(y+1, x-1) && p > PPTR(y+1, x) && p > PPTR(y+1, x+1)  &&
+                  p > NPTR(y-1, x-1) && p > NPTR(y-1, x) && p > NPTR(y-1, x+1)  &&
+                  p > NPTR(y,   x-1) && p > NPTR(y  , x) && p > NPTR(y,   x+1)  &&
+                  p > NPTR(y+1, x-1) && p > NPTR(y+1, x) && p > NPTR(y+1, x+1)) ||
+                 (p < 0 && p < CPTR(y-1, x-1) && p < CPTR(y-1, x) &&
+                  p < CPTR(y-1, x+1) && p < CPTR(y, x-1) && p < CPTR(y,   x+1)  &&
+                  p < CPTR(y+1, x-1) && p < CPTR(y+1, x) && p < CPTR(y+1, x+1)  &&
+                  p < PPTR(y-1, x-1) && p < PPTR(y-1, x) && p < PPTR(y-1, x+1)  &&
+                  p < PPTR(y,   x-1) && p < PPTR(y  , x) && p < PPTR(y,   x+1)  &&
+                  p < PPTR(y+1, x-1) && p < PPTR(y+1, x) && p < PPTR(y+1, x+1)  &&
+                  p < NPTR(y-1, x-1) && p < NPTR(y-1, x) && p < NPTR(y-1, x+1)  &&
+                  p < NPTR(y,   x-1) && p < NPTR(y  , x) && p < NPTR(y,   x+1)  &&
+                  p < NPTR(y+1, x-1) && p < NPTR(y+1, x) && p < NPTR(y+1, x+1)))) {
 
                 if (*counter < max_feat)
                 {
@@ -334,20 +338,20 @@ void interpolateExtrema(
         bool converges = true;
 
         for (i = 0; i < MaxInterpSteps; i++) {
-            float dD[3] = {(float)(center_ptr[(x+1)*idims[0]+y] - center_ptr[(x-1)*idims[0]+y]) * first_deriv_scale,
-                           (float)(center_ptr[x*idims[0]+y+1] - center_ptr[x*idims[0]+y-1]) * first_deriv_scale,
-                           (float)(next_ptr[x*idims[0]+y] - prev_ptr[x*idims[0]+y]) * first_deriv_scale};
+            float dD[3] = {(float)(CPTR(x+1, y) - CPTR(x-1, y)) * first_deriv_scale,
+                           (float)(CPTR(x, y+1) - CPTR(x, y-1)) * first_deriv_scale,
+                           (float)(NPTR(x, y)   - PPTR(x, y))   * first_deriv_scale};
 
-            float d2 = center_ptr[x*idims[0]+y]*2.f;
-            float dxx = (center_ptr[(x+1)*idims[0]+y] + center_ptr[(x-1)*idims[0]+y] - d2)*second_deriv_scale;
-            float dyy = (center_ptr[x*idims[0]+y+1] + center_ptr[x*idims[0]+y-1] - d2)*second_deriv_scale;
-            float dss = (next_ptr[x*idims[0]+y] + prev_ptr[x*idims[0]+y] - d2)*second_deriv_scale;
-            float dxy = (center_ptr[(x+1)*idims[0]+y+1] - center_ptr[(x-1)*idims[0]+y+1] -
-                         center_ptr[(x+1)*idims[0]+y-1] + center_ptr[(x-1)*idims[0]+y-1])*cross_deriv_scale;
-            float dxs = (next_ptr[(x+1)*idims[0]+y] - next_ptr[(x-1)*idims[0]+y] -
-                         prev_ptr[(x+1)*idims[0]+y] + prev_ptr[(x-1)*idims[0]+y])*cross_deriv_scale;
-            float dys = (next_ptr[x*idims[0]+y+1] - next_ptr[x*idims[0]+y-1] -
-                         prev_ptr[x*idims[0]+y+1] + prev_ptr[x*idims[0]+y-1])*cross_deriv_scale;
+            float d2  = CPTR(x, y) * 2.f;
+            float dxx = (CPTR(x+1, y) + CPTR(x-1, y) - d2) * second_deriv_scale;
+            float dyy = (CPTR(x, y+1) + CPTR(x, y-1) - d2) * second_deriv_scale;
+            float dss = (NPTR(x, y  ) + PPTR(x, y  ) - d2) * second_deriv_scale;
+            float dxy = (CPTR(x+1, y+1) - CPTR(x-1, y+1) -
+                         CPTR(x+1, y-1) + CPTR(x-1, y-1)) * cross_deriv_scale;
+            float dxs = (NPTR(x+1, y) - NPTR(x-1, y) -
+                         PPTR(x+1, y) + PPTR(x-1, y)) * cross_deriv_scale;
+            float dys = (NPTR(x, y+1) - NPTR(x-1, y-1) -
+                         PPTR(x, y-1) + PPTR(x-1, y-1)) * cross_deriv_scale;
 
             float H[9] = {dxx, dxy, dxs,
                           dxy, dyy, dys,
@@ -379,9 +383,9 @@ void interpolateExtrema(
         if (i >= MaxInterpSteps || !converges)
             continue;
 
-        float dD[3] = {(float)(center_ptr[(x+1)*idims[0]+y] - center_ptr[(x-1)*idims[0]+y]) * first_deriv_scale,
-                       (float)(center_ptr[x*idims[0]+y+1] - center_ptr[x*idims[0]+y-1]) * first_deriv_scale,
-                       (float)(next_ptr[x*idims[0]+y] - prev_ptr[(x-1)*idims[0]+y]) * first_deriv_scale};
+        float dD[3] = {(float)(CPTR(x+1, y) - CPTR(x-1, y)) * first_deriv_scale,
+                       (float)(CPTR(x, y+1) - CPTR(x, y-1)) * first_deriv_scale,
+                       (float)(NPTR(x, y)   - PPTR(x, y))   * first_deriv_scale};
         float X[3] = {xx, xy, xl};
 
         float P = dD[0]*X[0] + dD[1]*X[1] + dD[2]*X[2];
@@ -391,11 +395,11 @@ void interpolateExtrema(
             continue;
 
         // principal curvatures are computed using the trace and det of Hessian
-        float d2 = center_ptr[x*idims[0]+y]*2.f;
-        float dxx = (center_ptr[(x+1)*idims[0]+y] + center_ptr[(x-1)*idims[0]+y] - d2) * second_deriv_scale;
-        float dyy = (center_ptr[x*idims[0]+y+1] + center_ptr[x*idims[0]+y-1] - d2) * second_deriv_scale;
-        float dxy = (center_ptr[(x+1)*idims[0]+y+1] - center_ptr[(x-1)*idims[0]+y+1] -
-                     center_ptr[(x+1)*idims[0]+y-1] + center_ptr[(x-1)*idims[0]+y-1]) * cross_deriv_scale;
+        float d2  = CPTR(x, y) * 2.f;
+        float dxx = (CPTR(x+1, y) + CPTR(x-1, y) - d2) * second_deriv_scale;
+        float dyy = (CPTR(x, y+1) + CPTR(x, y-1) - d2) * second_deriv_scale;
+        float dxy = (CPTR(x+1, y+1) - CPTR(x-1, y+1) -
+                     CPTR(x+1, y-1) + CPTR(x-1, y-1)) * cross_deriv_scale;
 
         float tr = dxx + dyy;
         float det = dxx * dyy - dxy * dxy;
@@ -415,6 +419,10 @@ void interpolateExtrema(
         }
     }
 }
+
+#undef CPTR
+#undef PPTR
+#undef NPTR
 
 // Remove duplicate keypoints
 void removeDuplicates(
@@ -436,7 +444,7 @@ void removeDuplicates(
                 round(sorted_feat[f].f[1]*prec_fctr) == round(sorted_feat[f+1].f[1]*prec_fctr) &&
                 round(sorted_feat[f].f[2]*prec_fctr) == round(sorted_feat[f+1].f[2]*prec_fctr) &&
                 round(sorted_feat[f].f[3]*prec_fctr) == round(sorted_feat[f+1].f[3]*prec_fctr) &&
-                sorted_feat[f].l[0] == sorted_feat[f+1].l[0])
+                sorted_feat[f].l == sorted_feat[f+1].l)
                 continue;
         }
 
@@ -444,10 +452,12 @@ void removeDuplicates(
         y_out[*counter] = sorted_feat[f].f[1];
         response_out[*counter] = sorted_feat[f].f[2];
         size_out[*counter] = sorted_feat[f].f[3];
-        layer_out[*counter] = sorted_feat[f].l[0];
+        layer_out[*counter] = sorted_feat[f].l;
         (*counter)++;
     }
 }
+
+#define IPTR(Y, X) (img_ptr[(Y) * idims[0] + (X)])
 
 // Computes a canonical orientation for each image feature in an array.  Based
 // on Section 5 of Lowe's paper.  This function adds features to the array when
@@ -516,8 +526,8 @@ void calcOrientation(
                 x < 1 || x >= idims[1] - 1)
                 continue;
 
-            float dx = (float)(img_ptr[(x+1)*idims[0]+y] - img_ptr[(x-1)*idims[0]+y]);
-            float dy = (float)(img_ptr[x*idims[0]+y-1] - img_ptr[x*idims[0]+y+1]);
+            float dx = (float)(IPTR(x+1, y) - IPTR(x-1, y));
+            float dy = (float)(IPTR(x, y-1) - IPTR(x, y+1));
 
             float mag = sqrt(dx*dx+dy*dy);
             float ori = atan2(dy,dx);
@@ -632,7 +642,7 @@ void computeDescriptor(
         // Points img to correct Gaussian pyramid layer
         Array<T> img = gauss_pyr[octave*(n_layers+3) + layer];
         const T* img_ptr = img.get();
-        af::dim4 ddims = img.dims();
+        af::dim4 idims = img.dims();
 
         float cos_t = cos(ori);
         float sin_t = sin(ori);
@@ -661,9 +671,9 @@ void computeDescriptor(
             float ybin = y_rot + d/2 - 0.5f;
 
             if (ybin > -1.0f && ybin < d && xbin > -1.0f && xbin < d &&
-                y > 0 && y < ddims[0] - 1 && x > 0 && x < ddims[1] - 1) {
-                float dx = img_ptr[(x+1)*ddims[0]+y] - img_ptr[(x-1)*ddims[0]+y];
-                float dy = img_ptr[x*ddims[0]+(y-1)] - img_ptr[x*ddims[0]+(y+1)];
+                y > 0 && y < idims[0] - 1 && x > 0 && x < idims[1] - 1) {
+                float dx = (float)(IPTR(x+1, y) - IPTR(x-1, y));
+                float dy = (float)(IPTR(x, y-1) - IPTR(x, y+1));
 
                 float grad_mag = sqrt(dx*dx + dy*dy);
                 float grad_ori = atan2(dy, dx) - ori;
@@ -716,6 +726,8 @@ void computeDescriptor(
         }
     }
 }
+
+#undef IPTR
 
 template<typename T, typename convAccT>
 Array<T> createInitialImage(
