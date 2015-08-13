@@ -100,46 +100,46 @@ static const dim_t SIFT_THREADS   = 256;
 static const dim_t SIFT_THREADS_X = 32;
 static const dim_t SIFT_THREADS_Y = 8;
 
-static const float PI_VAL = 3.14159265358979323846f;
+#define PI_VAL 3.14159265358979323846f
 
 // default width of descriptor histogram array
-static const int DescrWidth = 4;
+#define DECR_WIDTH 4
 
 // default number of bins per histogram in descriptor array
-static const int DescrHistBins = 8;
+#define DESCR_HIST_BINS 8
 
 // assumed gaussian blur for input image
-static const float InitSigma = 0.5f;
+#define INIT_SIGMA 0.5f
 
 // width of border in which to ignore keypoints
-static const int ImgBorder = 5;
+#define IMG_BORDER 5
 
-// maximum steps of keypoint interpolation before failure
-static const int MaxInterpSteps = 5;
+// maximum steps of keypointerpolation before failure
+#define MAX_INTERP_STEPS 5
 
 // default number of bins in histogram for orientation assignment
-static const int OriHistBins = 36;
+#define ORI_HIST_BINS 36
 
 // determines gaussian sigma for orientation assignment
-static const float OriSigFctr = 1.5f;
+#define ORI_SIG_FCTR 1.5f
 
 // determines the radius of the region used in orientation assignment */
-static const float OriRadius = 3.0f * OriSigFctr;
+#define ORI_RADIUS (3.0f * ORI_SIG_FCTR)
 
 // number of passes of orientation histogram smoothing
-static const int SmoothOriPasses = 2;
+#define SMOOTH_ORI_PASSES 2
 
 // orientation magnitude relative to max that results in new feature
-static const float OriPeakRatio = 0.8f;
+#define ORI_PEAK_RATIO 0.8f
 
 // determines the size of a single descriptor orientation histogram
-static const float DescrSclFctr = 3.f;
+#define DESCR_SCL_FCTR 3.f
 
 // threshold on magnitude of elements of descriptor vector
-static const float DescrMagThr = 0.2f;
+#define DESC_MAG_THR 0.2f
 
-// factor used to convert floating-point descriptor to unsigned char
-static const float IntDescrFctr = 512.f;
+// factor used to convert floating-podescriptor to unsigned char
+#define INT_DESCR_FCTR 512.f
 
 template<typename T>
 void gaussian1D(T* out, const int dim, double sigma=0.0)
@@ -270,6 +270,10 @@ __global__ void sub(
         out.ptr[i] = in1.ptr[i] - in2.ptr[i];
 }
 
+#define LCPTR(Y, X) (s_center[(Y) * s_i + (X)])
+#define LPPTR(Y, X) (s_prev[(Y) * s_i + (X)])
+#define LNPTR(Y, X) (s_next[(Y) * s_i + (X)])
+
 // Determines whether a pixel is a scale-space extremum by comparing it to its
 // 3x3x3 pixel neighborhood.
 template<typename T>
@@ -299,15 +303,15 @@ __global__ void detectExtrema(
     const int lid_j = threadIdx.y;
     const int lsz_i = blockDim.x;
     const int lsz_j = blockDim.y;
-    const int i = blockIdx.x * lsz_i + lid_i+ImgBorder;
-    const int j = blockIdx.y * lsz_j + lid_j+ImgBorder;
+    const int i = blockIdx.x * lsz_i + lid_i+IMG_BORDER;
+    const int j = blockIdx.y * lsz_j + lid_j+IMG_BORDER;
 
     const int x = lid_i+1;
     const int y = lid_j+1;
 
     const int s_i_half = s_i/2;
     const int s_j_half = s_j/2;
-    if (lid_i < s_i_half && lid_j < s_j_half && i < dim0-ImgBorder+1 && j < dim1-ImgBorder+1) {
+    if (lid_i < s_i_half && lid_j < s_j_half && i < dim0-IMG_BORDER+1 && j < dim1-IMG_BORDER+1) {
         s_next  [lid_j*s_i + lid_i] = next.ptr  [(j-1)*dim0+i-1];
         s_center[lid_j*s_i + lid_i] = center.ptr[(j-1)*dim0+i-1];
         s_prev  [lid_j*s_i + lid_i] = prev.ptr  [(j-1)*dim0+i-1];
@@ -328,25 +332,25 @@ __global__ void detectExtrema(
 
     float p = s_center[y*s_i + x];
 
-    if (abs(p) > threshold && i < dim0-ImgBorder && j < dim1-ImgBorder &&
-        ((p > 0                         && p > s_center[(y-1)*s_i + x-1] && p > s_center[(y-1)*s_i + x]   &&
-          p > s_center[(y-1)*s_i + x+1] && p > s_center[y*s_i + (x-1)]   && p > s_center[y*s_i + x+1]     &&
-          p > s_center[(y+1)*s_i + x-1] && p > s_center[(y+1)*s_i + x]   && p > s_center[(y+1)*s_i + x+1] &&
-          p > s_prev[(y-1)*s_i + x-1]   && p > s_prev[(y-1)*s_i + x]     && p > s_prev[(y-1)*s_i + x+1]   &&
-          p > s_prev[y*s_i + x-1]       && p > s_prev[y*s_i + x]         && p > s_prev[y*s_i + x+1]       &&
-          p > s_prev[(y+1)*s_i + x-1]   && p > s_prev[(y+1)*s_i + x]     && p > s_prev[(y+1)*s_i + x+1]   &&
-          p > s_next[(y-1)*s_i + x-1]   && p > s_next[(y-1)*s_i + x]     && p > s_next[(y-1)*s_i + x+1]   &&
-          p > s_next[y*s_i + x-1]       && p > s_next[y*s_i + x]         && p > s_next[y*s_i + x+1]       &&
-          p > s_next[(y+1)*s_i + x-1]   && p > s_next[(y+1)*s_i + x]     && p > s_next[(y+1)*s_i + x+1])  ||
-         (p < 0                         && p < s_center[(y-1)*s_i + x-1] && p < s_center[(y-1)*s_i + x]   &&
-          p < s_center[(y-1)*s_i + x+1] && p < s_center[y*s_i + (x-1)]   && p < s_center[y*s_i + x+1]     &&
-          p < s_center[(y+1)*s_i + x-1] && p < s_center[(y+1)*s_i + x]   && p < s_center[(y+1)*s_i + x+1] &&
-          p < s_prev[(y-1)*s_i + x-1]   && p < s_prev[(y-1)*s_i + x]     && p < s_prev[(y-1)*s_i + x+1]   &&
-          p < s_prev[y*s_i + x-1]       && p < s_prev[y*s_i + x]         && p < s_prev[y*s_i + x+1]       &&
-          p < s_prev[(y+1)*s_i + x-1]   && p < s_prev[(y+1)*s_i + x]     && p < s_prev[(y+1)*s_i + x+1]   &&
-          p < s_next[(y-1)*s_i + x-1]   && p < s_next[(y-1)*s_i + x]     && p < s_next[(y-1)*s_i + x+1]   &&
-          p < s_next[y*s_i + x-1]       && p < s_next[y*s_i + x]         && p < s_next[y*s_i + x+1]       &&
-          p < s_next[(y+1)*s_i + x-1]   && p < s_next[(y+1)*s_i + x]     && p < s_next[(y+1)*s_i + x+1]))) {
+    if (abs(p) > threshold && i < dim0-IMG_BORDER && j < dim1-IMG_BORDER &&
+        ((p > 0 && p > LCPTR(y-1, x-1) && p > LCPTR(y-1, x) &&
+          p > LCPTR(y-1, x+1) && p > LCPTR(y, x-1) && p > LCPTR(y,   x+1)  &&
+          p > LCPTR(y+1, x-1) && p > LCPTR(y+1, x) && p > LCPTR(y+1, x+1)  &&
+          p > LPPTR(y-1, x-1) && p > LPPTR(y-1, x) && p > LPPTR(y-1, x+1)  &&
+          p > LPPTR(y,   x-1) && p > LPPTR(y  , x) && p > LPPTR(y,   x+1)  &&
+          p > LPPTR(y+1, x-1) && p > LPPTR(y+1, x) && p > LPPTR(y+1, x+1)  &&
+          p > LNPTR(y-1, x-1) && p > LNPTR(y-1, x) && p > LNPTR(y-1, x+1)  &&
+          p > LNPTR(y,   x-1) && p > LNPTR(y  , x) && p > LNPTR(y,   x+1)  &&
+          p > LNPTR(y+1, x-1) && p > LNPTR(y+1, x) && p > LNPTR(y+1, x+1)) ||
+         (p < 0 && p < LCPTR(y-1, x-1) && p < LCPTR(y-1, x) &&
+          p < LCPTR(y-1, x+1) && p < LCPTR(y, x-1) && p < LCPTR(y,   x+1)  &&
+          p < LCPTR(y+1, x-1) && p < LCPTR(y+1, x) && p < LCPTR(y+1, x+1)  &&
+          p < LPPTR(y-1, x-1) && p < LPPTR(y-1, x) && p < LPPTR(y-1, x+1)  &&
+          p < LPPTR(y,   x-1) && p < LPPTR(y  , x) && p < LPPTR(y,   x+1)  &&
+          p < LPPTR(y+1, x-1) && p < LPPTR(y+1, x) && p < LPPTR(y+1, x+1)  &&
+          p < LNPTR(y-1, x-1) && p < LNPTR(y-1, x) && p < LNPTR(y-1, x+1)  &&
+          p < LNPTR(y,   x-1) && p < LNPTR(y  , x) && p < LNPTR(y,   x+1)  &&
+          p < LNPTR(y+1, x-1) && p < LNPTR(y+1, x) && p < LNPTR(y+1, x+1)))) {
 
         unsigned idx = atomicAdd(counter, 1u);
         if (idx < max_feat)
@@ -357,6 +361,13 @@ __global__ void detectExtrema(
         }
     }
 }
+
+#undef LCPTR
+#undef LPPTR
+#undef LNPTR
+#define CPTR(Y, X) (center.ptr[(Y) * dim0 + (X)])
+#define PPTR(Y, X) (prev.ptr[(Y) * dim0 + (X)])
+#define NPTR(Y, X) (next.ptr[(Y) * dim0 + (X)])
 
 // Interpolates a scale-space extremum's location and scale to subpixel
 // accuracy to form an image feature. Rejects features with low contrast.
@@ -403,21 +414,21 @@ __global__ void interpolateExtrema(
         Param<T> center = dog_octave[layer];
         Param<T> next   = dog_octave[layer+1];
 
-        for(i = 0; i < MaxInterpSteps; i++) {
-            float dD[3] = {(center.ptr[(x+1)*dim0+y] - center.ptr[(x-1)*dim0+y]) * first_deriv_scale,
-                           (center.ptr[x*dim0+y+1] - center.ptr[x*dim0+y-1]) * first_deriv_scale,
-                           (next.ptr[x*dim0+y] - prev.ptr[x*dim0+y]) * first_deriv_scale};
+        for(i = 0; i < MAX_INTERP_STEPS; i++) {
+            float dD[3] = {(float)(CPTR(x+1, y) - CPTR(x-1, y)) * first_deriv_scale,
+                           (float)(CPTR(x, y+1) - CPTR(x, y-1)) * first_deriv_scale,
+                           (float)(NPTR(x, y)   - PPTR(x, y))   * first_deriv_scale};
 
-            float v2 = center.ptr[x*dim0+y]*2.f;
-            float dxx = (center.ptr[(x+1)*dim0+y] + center.ptr[(x-1)*dim0+y] - v2)*second_deriv_scale;
-            float dyy = (center.ptr[x*dim0+y+1] + center.ptr[x*dim0+y-1] - v2)*second_deriv_scale;
-            float dss = (next.ptr[x*dim0+y] + prev.ptr[x*dim0+y] - v2)*second_deriv_scale;
-            float dxy = (center.ptr[(x+1)*dim0+y+1] - center.ptr[(x-1)*dim0+y+1] -
-                         center.ptr[(x+1)*dim0+y-1] + center.ptr[(x-1)*dim0+y-1])*cross_deriv_scale;
-            float dxs = (next.ptr[(x+1)*dim0+y] - next.ptr[(x-1)*dim0+y] -
-                         prev.ptr[(x+1)*dim0+y] + prev.ptr[(x-1)*dim0+y])*cross_deriv_scale;
-            float dys = (next.ptr[x*dim0+y+1] - next.ptr[x*dim0+y-1] -
-                         prev.ptr[x*dim0+y+1] + prev.ptr[x*dim0+y-1])*cross_deriv_scale;
+            float d2  = CPTR(x, y) * 2.f;
+            float dxx = (CPTR(x+1, y) + CPTR(x-1, y) - d2) * second_deriv_scale;
+            float dyy = (CPTR(x, y+1) + CPTR(x, y-1) - d2) * second_deriv_scale;
+            float dss = (NPTR(x, y  ) + PPTR(x, y  ) - d2) * second_deriv_scale;
+            float dxy = (CPTR(x+1, y+1) - CPTR(x-1, y+1) -
+                         CPTR(x+1, y-1) + CPTR(x-1, y-1)) * cross_deriv_scale;
+            float dxs = (NPTR(x+1, y) - NPTR(x-1, y) -
+                         PPTR(x+1, y) + PPTR(x-1, y)) * cross_deriv_scale;
+            float dys = (NPTR(x, y+1) - NPTR(x-1, y-1) -
+                         PPTR(x, y-1) + PPTR(x-1, y-1)) * cross_deriv_scale;
 
             float H[9] = {dxx, dxy, dxs,
                           dxy, dyy, dys,
@@ -438,18 +449,18 @@ __global__ void interpolateExtrema(
             layer += round(xl);
 
             if (layer < 1 || layer > n_layers ||
-                x < ImgBorder || x >= dim1 - ImgBorder ||
-                y < ImgBorder || y >= dim0 - ImgBorder)
+                x < IMG_BORDER || x >= dim1 - IMG_BORDER ||
+                y < IMG_BORDER || y >= dim0 - IMG_BORDER)
                 return;
         }
 
         // ensure convergence of interpolation
-        if (i >= MaxInterpSteps)
+        if (i >= MAX_INTERP_STEPS)
             return;
 
-        float dD[3] = {(center.ptr[(x+1)*dim0+y] - center.ptr[(x-1)*dim0+y]) * first_deriv_scale,
-                       (center.ptr[x*dim0+y+1] - center.ptr[x*dim0+y-1]) * first_deriv_scale,
-                       (next.ptr[x*dim0+y] - prev.ptr[(x-1)*dim0+y]) * first_deriv_scale};
+        float dD[3] = {(float)(CPTR(x+1, y) - CPTR(x-1, y)) * first_deriv_scale,
+                       (float)(CPTR(x, y+1) - CPTR(x, y-1)) * first_deriv_scale,
+                       (float)(NPTR(x, y)   - PPTR(x, y))   * first_deriv_scale};
         float X[3] = {xx, xy, xl};
 
         float P = dD[0]*X[0] + dD[1]*X[1] + dD[2]*X[2];
@@ -459,11 +470,11 @@ __global__ void interpolateExtrema(
             return;
 
         // principal curvatures are computed using the trace and det of Hessian
-        float v2 = center.ptr[x*dim0+y]*2.f;
-        float dxx = (center.ptr[(x+1)*dim0+y] + center.ptr[(x-1)*dim0+y] - v2) * second_deriv_scale;
-        float dyy = (center.ptr[x*dim0+y+1] + center.ptr[x*dim0+y-1] - v2) * second_deriv_scale;
-        float dxy = (center.ptr[(x+1)*dim0+y+1] - center.ptr[(x-1)*dim0+y+1] -
-                     center.ptr[(x+1)*dim0+y-1] + center.ptr[(x-1)*dim0+y-1]) * cross_deriv_scale;
+        float d2  = CPTR(x, y) * 2.f;
+        float dxx = (CPTR(x+1, y) + CPTR(x-1, y) - d2) * second_deriv_scale;
+        float dyy = (CPTR(x, y+1) + CPTR(x, y-1) - d2) * second_deriv_scale;
+        float dxy = (CPTR(x+1, y+1) - CPTR(x-1, y+1) -
+                     CPTR(x+1, y-1) + CPTR(x-1, y-1)) * cross_deriv_scale;
 
         float tr = dxx + dyy;
         float det = dxx * dyy - dxy * dxy;
@@ -484,6 +495,10 @@ __global__ void interpolateExtrema(
         }
     }
 }
+
+#undef CPTR
+#undef PPTR
+#undef NPTR
 
 // Remove duplicate keypoints
 __global__ void removeDuplicates(
@@ -525,6 +540,8 @@ __global__ void removeDuplicates(
     size_out[idx] = size_in[f];
 }
 
+#define IPTR(Y, X) (img.ptr[(Y) * dim0 + (X)])
+
 // Computes a canonical orientation for each image feature in an array.  Based
 // on Section 5 of Lowe's paper.  This function adds features to the array when
 // there is more than one dominant orientation at a given feature location.
@@ -553,12 +570,12 @@ __global__ void calcOrientation(
     const int tid_y = threadIdx.y;
     const int bsz_y = blockDim.y;
 
-    const int n = OriHistBins;
+    const int n = ORI_HIST_BINS;
 
-    const int hdim = OriHistBins;
-    const int thdim = OriHistBins;
-    __shared__ float hist[OriHistBins*8];
-    __shared__ float temphist[OriHistBins*8];
+    const int hdim = ORI_HIST_BINS;
+    const int thdim = ORI_HIST_BINS;
+    __shared__ float hist[ORI_HIST_BINS*8];
+    __shared__ float temphist[ORI_HIST_BINS*8];
 
     if (f < total_feat) {
         // Load keypoint information
@@ -573,8 +590,8 @@ __global__ void calcOrientation(
 
         // Calculate auxiliary parameters
         const float scl_octv = size*0.5f / (1 << octave);
-        const int radius = (int)round(OriRadius * scl_octv);
-        const float sigma = OriSigFctr * scl_octv;
+        const int radius = (int)round(ORI_RADIUS * scl_octv);
+        const float sigma = ORI_SIG_FCTR * scl_octv;
         const int len = (radius*2+1);
         const float exp_denom = 2.f * sigma * sigma;
 
@@ -582,7 +599,7 @@ __global__ void calcOrientation(
         const Param<T> img = gauss_octave[layer];
 
         // Initialize temporary histogram
-        for (int i = tid_y; i < OriHistBins; i += bsz_y)
+        for (int i = tid_y; i < ORI_HIST_BINS; i += bsz_y)
             hist[tid_x*hdim + i] = 0.f;
         __syncthreads();
 
@@ -600,8 +617,8 @@ __global__ void calcOrientation(
                 x < 1 || x >= dim1 - 1)
                 continue;
 
-            float dx = (float)(img.ptr[(x+1)*dim0+y] - img.ptr[(x-1)*dim0+y]);
-            float dy = (float)(img.ptr[x*dim0+y-1] - img.ptr[x*dim0+y+1]);
+            float dx = (float)(IPTR(x+1, y) - IPTR(x-1, y));
+            float dy = (float)(IPTR(x, y-1) - IPTR(x, y+1));
 
             float mag = sqrt(dx*dx+dy*dy);
             float ori = atan2(dy,dx);
@@ -614,7 +631,7 @@ __global__ void calcOrientation(
         }
         __syncthreads();
 
-        for (int i = 0; i < SmoothOriPasses; i++) {
+        for (int i = 0; i < SMOOTH_ORI_PASSES; i++) {
             for (int j = tid_y; j < n; j += bsz_y) {
                 temphist[tid_x*hdim+j] = hist[tid_x*hdim+j];
             }
@@ -650,7 +667,7 @@ __global__ void calcOrientation(
         __syncthreads();
         float omax = temphist[tid_x*thdim];
 
-        float mag_thr = (float)(omax * OriPeakRatio);
+        float mag_thr = (float)(omax * ORI_PEAK_RATIO);
         int l, r;
         for (int j = tid_y; j < n; j+=bsz_y) {
             l = (j == 0) ? n - 1 : j - 1;
@@ -734,7 +751,7 @@ __global__ void computeDescriptor(
         float sin_t = sinf(ori);
         float bins_per_rad = n / (PI_VAL * 2.f);
         float exp_denom = d * d * 0.5f;
-        float hist_width = DescrSclFctr * sigma * powf(2.f, layer/n_layers);
+        float hist_width = DESCR_SCL_FCTR * sigma * powf(2.f, layer/n_layers);
         int radius = hist_width * sqrtf(2.f) * (d + 1.f) * 0.5f + 0.5f;
 
         int len = radius*2+1;
@@ -760,8 +777,8 @@ __global__ void computeDescriptor(
 
             if (ybin > -1.0f && ybin < d && xbin > -1.0f && xbin < d &&
                 y > 0 && y < dim0 - 1 && x > 0 && x < dim1 - 1) {
-                float dx = img.ptr[(x+1)*dim0+y] - img.ptr[(x-1)*dim0+y];
-                float dy = img.ptr[x*dim0+(y-1)] - img.ptr[x*dim0+(y+1)];
+                float dx = (float)(IPTR(x+1, y) - IPTR(x-1, y));
+                float dy = (float)(IPTR(x, y-1) - IPTR(x, y+1));
 
                 float grad_mag = sqrtf(dx*dx + dy*dy);
                 float grad_ori = atan2f(dy, dx) - ori;
@@ -816,17 +833,19 @@ __global__ void computeDescriptor(
         normalizeDesc(desc, accum, histlen);
 
         for (int i = tid_y; i < d*d*n; i += bsz_y)
-            desc[tid_x*128+i] = min(desc[tid_x*128+i], DescrMagThr);
+            desc[tid_x*128+i] = min(desc[tid_x*128+i], DESC_MAG_THR);
         __syncthreads();
 
         normalizeDesc(desc, accum, histlen);
 
         // Calculate final descriptor values
         for (int k = tid_y; k < d*d*n; k += bsz_y) {
-            desc_out[f*desc_len+k] = round(min(255.f, desc[tid_x*128+k] * IntDescrFctr));
+            desc_out[f*desc_len+k] = round(min(255.f, desc[tid_x*128+k] * INT_DESCR_FCTR));
         }
     }
 }
+
+#undef IPTR
 
 template<typename T, typename convAccT>
 Param<T> createInitialImage(
@@ -851,8 +870,8 @@ Param<T> createInitialImage(
     init_img.ptr = memAlloc<T>(init_img_el);
     init_tmp.ptr = memAlloc<T>(init_img_el);
 
-    float s = (double_input) ? sqrt(init_sigma * init_sigma - InitSigma * InitSigma * 4)
-                             : sqrt(init_sigma * init_sigma - InitSigma * InitSigma);
+    float s = (double_input) ? sqrt(init_sigma * init_sigma - INIT_SIGMA * INIT_SIGMA * 4)
+                             : sqrt(init_sigma * init_sigma - INIT_SIGMA * INIT_SIGMA);
 
     Param<T> filter = gauss_filter<T>(s);
 
@@ -1039,14 +1058,14 @@ void sift(unsigned* out_feat,
     std::vector<unsigned> feat_pyr(n_octaves, 0);
     unsigned total_feat = 0;
 
-    const unsigned d = DescrWidth;
-    const unsigned n = DescrHistBins;
+    const unsigned d = DECR_WIDTH;
+    const unsigned n = DESCR_HIST_BINS;
     const unsigned desc_len = d*d*n;
 
     unsigned* d_count = memAlloc<unsigned>(1);
     for (unsigned i = 0; i < n_octaves; i++) {
-        if (dog_pyr[i*(n_layers+2)].dims[0]-2*ImgBorder < 1 ||
-            dog_pyr[i*(n_layers+2)].dims[1]-2*ImgBorder < 1)
+        if (dog_pyr[i*(n_layers+2)].dims[0]-2*IMG_BORDER < 1 ||
+            dog_pyr[i*(n_layers+2)].dims[1]-2*IMG_BORDER < 1)
             continue;
 
         const unsigned imel = dog_pyr[i*(n_layers+2)].dims[0] * dog_pyr[i*(n_layers+2)].dims[1];
@@ -1069,7 +1088,7 @@ void sift(unsigned* out_feat,
             unsigned layer = j;
 
             dim3 threads(SIFT_THREADS_X, SIFT_THREADS_Y);
-            dim3 blocks(divup(dim0-2*ImgBorder, threads.x), divup(dim1-2*ImgBorder, threads.y));
+            dim3 blocks(divup(dim0-2*IMG_BORDER, threads.x), divup(dim1-2*IMG_BORDER, threads.y));
 
             float extrema_thr = 0.5f * contrast_thr / n_layers;
             detectExtrema<T><<<blocks, threads>>>(d_extrema_x, d_extrema_y, d_extrema_layer, d_count,
