@@ -30,6 +30,8 @@ OPTION(BUILD_GRAPHICS "Build ArrayFire with Forge Graphics" ON)
 OPTION(BUILD_DOCS "Create ArrayFire Documentation" OFF)
 OPTION(WITH_COVERAGE "Added code coverage flags" OFF)
 
+OPTION(BUILD_NONFREE "Build ArrayFire nonfree algorithms" ON)
+
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
@@ -80,6 +82,10 @@ IF(BUILD_GRAPHICS)
     ENDIF(FORGE_FOUND)
 
 ENDIF(BUILD_GRAPHICS)
+
+IF(BUILD_NONFREE)
+    ADD_DEFINITIONS(-DAF_NONFREE)
+ENDIF(BUILD_NONFREE)
 
 INCLUDE_DIRECTORIES(
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
