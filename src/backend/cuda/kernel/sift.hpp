@@ -226,39 +226,39 @@ __inline__ __device__ void normalizeDesc(
 {
     int tid_x = threadIdx.x;
     int tid_y = threadIdx.y;
-    int bsz_y = blockDim.y;
+    int bsz_x = blockDim.x;
 
-    for (int i = tid_y; i < histlen; i += bsz_y)
-        accum[tid_y] = desc[tid_x*histlen+i]*desc[tid_x*histlen+i];
+    for (int i = tid_x; i < histlen; i += bsz_x)
+        accum[tid_x] = desc[tid_y*histlen+i]*desc[tid_y*histlen+i];
     __syncthreads();
 
-    if (tid_y < 64)
-        accum[tid_y] += accum[tid_y+64];
+    if (tid_x < 64)
+        accum[tid_x] += accum[tid_x+64];
     __syncthreads();
-    if (tid_y < 32)
-        accum[tid_y] += accum[tid_y+32];
+    if (tid_x < 32)
+        accum[tid_x] += accum[tid_x+32];
     __syncthreads();
-    if (tid_y < 16)
-        accum[tid_y] += accum[tid_y+16];
+    if (tid_x < 16)
+        accum[tid_x] += accum[tid_x+16];
     __syncthreads();
-    if (tid_y < 8)
-        accum[tid_y] += accum[tid_y+8];
+    if (tid_x < 8)
+        accum[tid_x] += accum[tid_x+8];
     __syncthreads();
-    if (tid_y < 4)
-        accum[tid_y] += accum[tid_y+4];
+    if (tid_x < 4)
+        accum[tid_x] += accum[tid_x+4];
     __syncthreads();
-    if (tid_y < 2)
-        accum[tid_y] += accum[tid_y+2];
+    if (tid_x < 2)
+        accum[tid_x] += accum[tid_x+2];
     __syncthreads();
-    if (tid_y < 1)
-        accum[tid_y] += accum[tid_y+1];
+    if (tid_x < 1)
+        accum[tid_x] += accum[tid_x+1];
     __syncthreads();
 
     float len_sq = accum[0];
     float len_inv = 1.0f / sqrtf(len_sq);
 
-    for (int i = tid_y; i < histlen; i += bsz_y) {
-        desc[tid_x*histlen+i] *= len_inv;
+    for (int i = tid_x; i < histlen; i += bsz_x) {
+        desc[tid_y*histlen+i] *= len_inv;
     }
     __syncthreads();
 }
@@ -571,10 +571,12 @@ __global__ void calcOrientation(
     const unsigned octave,
     const bool double_input)
 {
-    const unsigned f = blockIdx.x * blockDim.x + threadIdx.x;
     const int tid_x = threadIdx.x;
     const int tid_y = threadIdx.y;
+    const int bsz_x = blockDim.x;
     const int bsz_y = blockDim.y;
+
+    const unsigned f = blockIdx.y * bsz_y + tid_y;
 
     const int n = ORI_HIST_BINS;
 
@@ -605,15 +607,15 @@ __global__ void calcOrientation(
         const Param<T> img = gauss_octave[layer];
 
         // Initialize temporary histogram
-        for (int i = tid_y; i < ORI_HIST_BINS; i += bsz_y)
-            hist[tid_x*hdim + i] = 0.f;
+        for (int i = tid_x; i < ORI_HIST_BINS; i += bsz_x)
+            hist[tid_y*hdim + i] = 0.f;
         __syncthreads();
 
         const int dim0 = img.dims[0];
         const int dim1 = img.dims[1];
 
         // Calculate orientation histogram
-        for (int l = tid_y; l < len*len; l += bsz_y) {
+        for (int l = tid_x; l < len*len; l += bsz_x) {
             int i = l / len - radius;
             int j = l % len - radius;
 
@@ -633,59 +635,59 @@ __global__ void calcOrientation(
             int bin = round(n*(ori+PI_VAL)/(2.f*PI_VAL));
             bin = bin < n ? bin : 0;
 
-            atomicAdd(&hist[tid_x*hdim+bin], w*mag);
+            atomicAdd(&hist[tid_y*hdim+bin], w*mag);
         }
         __syncthreads();
 
         for (int i = 0; i < SMOOTH_ORI_PASSES; i++) {
-            for (int j = tid_y; j < n; j += bsz_y) {
-                temphist[tid_x*hdim+j] = hist[tid_x*hdim+j];
+            for (int j = tid_x; j < n; j += bsz_x) {
+                temphist[tid_y*hdim+j] = hist[tid_y*hdim+j];
             }
             __syncthreads();
-            for (int j = tid_y; j < n; j += bsz_y) {
-                float prev = (j == 0) ? temphist[tid_x*hdim+n-1] : temphist[tid_x*hdim+j-1];
-                float next = (j+1 == n) ? temphist[tid_x*hdim] : temphist[tid_x*hdim+j+1];
-                hist[tid_x*hdim+j] = 0.25f * prev + 0.5f * temphist[tid_x*hdim+j] + 0.25f * next;
+            for (int j = tid_x; j < n; j += bsz_x) {
+                float prev = (j == 0) ? temphist[tid_y*hdim+n-1] : temphist[tid_y*hdim+j-1];
+                float next = (j+1 == n) ? temphist[tid_y*hdim] : temphist[tid_y*hdim+j+1];
+                hist[tid_y*hdim+j] = 0.25f * prev + 0.5f * temphist[tid_y*hdim+j] + 0.25f * next;
             }
             __syncthreads();
         }
 
-        for (int i = tid_y; i < n; i += bsz_y)
-            temphist[tid_x*hdim+i] = hist[tid_x*hdim+i];
+        for (int i = tid_x; i < n; i += bsz_x)
+            temphist[tid_y*hdim+i] = hist[tid_y*hdim+i];
         __syncthreads();
 
-        if (tid_y < 16)
-            temphist[tid_x*thdim+tid_y] = fmax(hist[tid_x*hdim+tid_y], hist[tid_x*hdim+tid_y+16]);
+        if (tid_x < 16)
+            temphist[tid_y*thdim+tid_x] = fmax(hist[tid_y*hdim+tid_x], hist[tid_y*hdim+tid_x+16]);
         __syncthreads();
-        if (tid_y < 8)
-            temphist[tid_x*thdim+tid_y] = fmax(temphist[tid_x*thdim+tid_y], temphist[tid_x*thdim+tid_y+8]);
+        if (tid_x < 8)
+            temphist[tid_y*thdim+tid_x] = fmax(temphist[tid_y*thdim+tid_x], temphist[tid_y*thdim+tid_x+8]);
         __syncthreads();
-        if (tid_y < 4) {
-            temphist[tid_x*thdim+tid_y] = fmax(temphist[tid_x*thdim+tid_y], hist[tid_x*hdim+tid_y+32]);
-            temphist[tid_x*thdim+tid_y] = fmax(temphist[tid_x*thdim+tid_y], temphist[tid_x*thdim+tid_y+4]);
+        if (tid_x < 4) {
+            temphist[tid_y*thdim+tid_x] = fmax(temphist[tid_y*thdim+tid_x], hist[tid_y*hdim+tid_x+32]);
+            temphist[tid_y*thdim+tid_x] = fmax(temphist[tid_y*thdim+tid_x], temphist[tid_y*thdim+tid_x+4]);
         }
         __syncthreads();
-        if (tid_y < 2)
-            temphist[tid_x*thdim+tid_y] = fmax(temphist[tid_x*thdim+tid_y], temphist[tid_x*thdim+tid_y+2]);
+        if (tid_x < 2)
+            temphist[tid_y*thdim+tid_x] = fmax(temphist[tid_y*thdim+tid_x], temphist[tid_y*thdim+tid_x+2]);
         __syncthreads();
-        if (tid_y < 1)
-            temphist[tid_x*thdim+tid_y] = fmax(temphist[tid_x*thdim+tid_y], temphist[tid_x*thdim+tid_y+1]);
+        if (tid_x < 1)
+            temphist[tid_y*thdim+tid_x] = fmax(temphist[tid_y*thdim+tid_x], temphist[tid_y*thdim+tid_x+1]);
         __syncthreads();
-        float omax = temphist[tid_x*thdim];
+        float omax = temphist[tid_y*thdim];
 
         float mag_thr = (float)(omax * ORI_PEAK_RATIO);
         int l, r;
-        for (int j = tid_y; j < n; j+=bsz_y) {
+        for (int j = tid_x; j < n; j+=bsz_x) {
             l = (j == 0) ? n - 1 : j - 1;
             r = (j + 1) % n;
-            if (hist[tid_x*hdim+j] > hist[tid_x*hdim+l] &&
-                hist[tid_x*hdim+j] > hist[tid_x*hdim+r] &&
-                hist[tid_x*hdim+j] >= mag_thr) {
+            if (hist[tid_y*hdim+j] > hist[tid_y*hdim+l] &&
+                hist[tid_y*hdim+j] > hist[tid_y*hdim+r] &&
+                hist[tid_y*hdim+j] >= mag_thr) {
                 int idx = atomicAdd(counter, 1);
 
                 if (idx < max_feat) {
-                    float bin = j + 0.5f * (hist[tid_x*hdim+l] - hist[tid_x*hdim+r]) /
-                                (hist[tid_x*hdim+l] - 2.0f*hist[tid_x*hdim+j] + hist[tid_x*hdim+r]);
+                    float bin = j + 0.5f * (hist[tid_y*hdim+l] - hist[tid_y*hdim+r]) /
+                                (hist[tid_y*hdim+l] - 2.0f*hist[tid_y*hdim+j] + hist[tid_y*hdim+r]);
                     bin = (bin < 0.0f) ? bin + n : (bin >= n) ? bin - n : bin;
                     float ori = 360.f - ((360.f/n) * bin);
 
@@ -731,10 +733,12 @@ __global__ void computeDescriptor(
     //const float scale)
     const float scale, const float sigma, const int n_layers)
 {
-    const int f = blockIdx.x * blockDim.x + threadIdx.x;
     const int tid_x = threadIdx.x;
     const int tid_y = threadIdx.y;
+    const int bsz_x = blockDim.x;
     const int bsz_y = blockDim.y;
+
+    const int f = blockIdx.y * bsz_y + tid_y;
 
     const int histsz = 8;
     __shared__ float desc[128*8];
@@ -762,14 +766,14 @@ __global__ void computeDescriptor(
 
         int len = radius*2+1;
         const int histlen = (d)*(d)*(n);
-        const int hist_off = (tid_y % histsz) * 128;
+        const int hist_off = (tid_x % histsz) * 128;
 
-        for (int i = tid_y; i < histlen*histsz; i += bsz_y)
-            desc[tid_x*histlen+i] = 0.f;
+        for (int i = tid_x; i < histlen*histsz; i += bsz_x)
+            desc[tid_y*histlen+i] = 0.f;
         __syncthreads();
 
         // Calculate orientation histogram
-        for (int l = tid_y; l < len*len; l += bsz_y) {
+        for (int l = tid_x; l < len*len; l += bsz_x) {
             int i = l / len - radius;
             int j = l % len - radius;
 
@@ -815,7 +819,7 @@ __global__ void computeDescriptor(
 		                        for (int ol = 0; ol <= 1; ol++) {
 		                            int ob = (o0 + ol) % n;
 		                            float v_o = v_x * ((ol == 0) ? 1.0f - obin : obin);
-		                            atomicAdd(&desc[hist_off + tid_x*128 + (yb*d + xb)*n + ob], v_o);
+		                            atomicAdd(&desc[hist_off + tid_y*128 + (yb*d + xb)*n + ob], v_o);
 		                        }
 		                    }
 	                    }
@@ -826,27 +830,27 @@ __global__ void computeDescriptor(
         __syncthreads();
 
         // Combine histograms (reduces previous atomicAdd overhead)
-        for (int l = tid_y; l < 128*4; l += bsz_y)
+        for (int l = tid_x; l < 128*4; l += bsz_x)
             desc[l] += desc[l+4*128];
         __syncthreads();
-        for (int l = tid_y; l < 128*2; l += bsz_y)
+        for (int l = tid_x; l < 128*2; l += bsz_x)
             desc[l    ] += desc[l+2*128];
         __syncthreads();
-        for (int l = tid_y; l < 128; l += bsz_y)
+        for (int l = tid_x; l < 128; l += bsz_x)
             desc[l] += desc[l+128];
         __syncthreads();
 
         normalizeDesc(desc, accum, histlen);
 
-        for (int i = tid_y; i < d*d*n; i += bsz_y)
-            desc[tid_x*128+i] = min(desc[tid_x*128+i], DESC_MAG_THR);
+        for (int i = tid_x; i < d*d*n; i += bsz_x)
+            desc[tid_y*128+i] = min(desc[tid_y*128+i], DESC_MAG_THR);
         __syncthreads();
 
         normalizeDesc(desc, accum, histlen);
 
         // Calculate final descriptor values
-        for (int k = tid_y; k < d*d*n; k += bsz_y) {
-            desc_out[f*desc_len+k] = round(min(255.f, desc[tid_x*128+k] * INT_DESCR_FCTR));
+        for (int k = tid_x; k < d*d*n; k += bsz_x) {
+            desc_out[f*desc_len+k] = round(min(255.f, desc[tid_y*128+k] * INT_DESCR_FCTR));
         }
     }
 }
@@ -1223,8 +1227,8 @@ void sift(unsigned* out_feat,
         float* d_oriented_size = memAlloc<float>(max_oriented_feat);
         float* d_oriented_ori = memAlloc<float>(max_oriented_feat);
 
-        threads = dim3(8, 32);
-        blocks = dim3(divup(nodup_feat, threads.x), 1);
+        threads = dim3(32, 8);
+        blocks = dim3(1, divup(nodup_feat, threads.y));
 
         CUDA_LAUNCH((calcOrientation<T>), blocks, threads,
                     d_oriented_x, d_oriented_y, d_oriented_layer,
@@ -1260,8 +1264,8 @@ void sift(unsigned* out_feat,
         float scale = 1.f/(1 << i);
         if (double_input) scale *= 2.f;
 
-        threads = dim3(1, 256);
-        blocks  = dim3(divup(oriented_feat, threads.x), 1);
+        threads = dim3(256, 1);
+        blocks  = dim3(1, divup(oriented_feat, threads.y));
 
         CUDA_LAUNCH((computeDescriptor), blocks, threads,
                     d_desc, desc_len,
