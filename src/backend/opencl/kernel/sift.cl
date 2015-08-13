@@ -205,6 +205,10 @@ __kernel void sub(
         out[l*nel + i] = in[l*nel + i] - in[(l+1)*nel + i];
 }
 
+#define LCPTR(Y, X) (l_center[(Y) * l_i + (X)])
+#define LPPTR(Y, X) (l_prev[(Y) * l_i + (X)])
+#define LNPTR(Y, X) (l_next[(Y) * l_i + (X)])
+
 // Determines whether a pixel is a scale-space extremum by comparing it to its
 // 3x3x3 pixel neighborhood.
 __kernel void detectExtrema(
@@ -268,24 +272,24 @@ __kernel void detectExtrema(
             float p = l_center[y*l_i + x];
 
             if (fabs((float)p) > threshold &&
-                ((p > 0                         && p > l_center[(y-1)*l_i + x-1] && p > l_center[(y-1)*l_i + x]   &&
-                  p > l_center[(y-1)*l_i + x+1] && p > l_center[y*l_i + (x-1)]   && p > l_center[y*l_i + x+1]     &&
-                  p > l_center[(y+1)*l_i + x-1] && p > l_center[(y+1)*l_i + x]   && p > l_center[(y+1)*l_i + x+1] &&
-                  p > l_prev[(y-1)*l_i + x-1]   && p > l_prev[(y-1)*l_i + x]     && p > l_prev[(y-1)*l_i + x+1]   &&
-                  p > l_prev[y*l_i + x-1]       && p > l_prev[y*l_i + x]         && p > l_prev[y*l_i + x+1]       &&
-                  p > l_prev[(y+1)*l_i + x-1]   && p > l_prev[(y+1)*l_i + x]     && p > l_prev[(y+1)*l_i + x+1]   &&
-                  p > l_next[(y-1)*l_i + x-1]   && p > l_next[(y-1)*l_i + x]     && p > l_next[(y-1)*l_i + x+1]   &&
-                  p > l_next[y*l_i + x-1]       && p > l_next[y*l_i + x]         && p > l_next[y*l_i + x+1]       &&
-                  p > l_next[(y+1)*l_i + x-1]   && p > l_next[(y+1)*l_i + x]     && p > l_next[(y+1)*l_i + x+1])  ||
-                 (p < 0                         && p < l_center[(y-1)*l_i + x-1] && p < l_center[(y-1)*l_i + x]   &&
-                  p < l_center[(y-1)*l_i + x+1] && p < l_center[y*l_i + (x-1)]   && p < l_center[y*l_i + x+1]     &&
-                  p < l_center[(y+1)*l_i + x-1] && p < l_center[(y+1)*l_i + x]   && p < l_center[(y+1)*l_i + x+1] &&
-                  p < l_prev[(y-1)*l_i + x-1]   && p < l_prev[(y-1)*l_i + x]     && p < l_prev[(y-1)*l_i + x+1]   &&
-                  p < l_prev[y*l_i + x-1]       && p < l_prev[y*l_i + x]         && p < l_prev[y*l_i + x+1]       &&
-                  p < l_prev[(y+1)*l_i + x-1]   && p < l_prev[(y+1)*l_i + x]     && p < l_prev[(y+1)*l_i + x+1]   &&
-                  p < l_next[(y-1)*l_i + x-1]   && p < l_next[(y-1)*l_i + x]     && p < l_next[(y-1)*l_i + x+1]   &&
-                  p < l_next[y*l_i + x-1]       && p < l_next[y*l_i + x]         && p < l_next[y*l_i + x+1]       &&
-                  p < l_next[(y+1)*l_i + x-1]   && p < l_next[(y+1)*l_i + x]     && p < l_next[(y+1)*l_i + x+1]))) {
+                ((p > 0 && p > LCPTR(y-1, x-1) && p > LCPTR(y-1, x) &&
+                  p > LCPTR(y-1, x+1) && p > LCPTR(y, x-1) && p > LCPTR(y,   x+1)  &&
+                  p > LCPTR(y+1, x-1) && p > LCPTR(y+1, x) && p > LCPTR(y+1, x+1)  &&
+                  p > LPPTR(y-1, x-1) && p > LPPTR(y-1, x) && p > LPPTR(y-1, x+1)  &&
+                  p > LPPTR(y,   x-1) && p > LPPTR(y  , x) && p > LPPTR(y,   x+1)  &&
+                  p > LPPTR(y+1, x-1) && p > LPPTR(y+1, x) && p > LPPTR(y+1, x+1)  &&
+                  p > LNPTR(y-1, x-1) && p > LNPTR(y-1, x) && p > LNPTR(y-1, x+1)  &&
+                  p > LNPTR(y,   x-1) && p > LNPTR(y  , x) && p > LNPTR(y,   x+1)  &&
+                  p > LNPTR(y+1, x-1) && p > LNPTR(y+1, x) && p > LNPTR(y+1, x+1)) ||
+                 (p < 0 && p < LCPTR(y-1, x-1) && p < LCPTR(y-1, x) &&
+                  p < LCPTR(y-1, x+1) && p < LCPTR(y, x-1) && p < LCPTR(y,   x+1)  &&
+                  p < LCPTR(y+1, x-1) && p < LCPTR(y+1, x) && p < LCPTR(y+1, x+1)  &&
+                  p < LPPTR(y-1, x-1) && p < LPPTR(y-1, x) && p < LPPTR(y-1, x+1)  &&
+                  p < LPPTR(y,   x-1) && p < LPPTR(y  , x) && p < LPPTR(y,   x+1)  &&
+                  p < LPPTR(y+1, x-1) && p < LPPTR(y+1, x) && p < LPPTR(y+1, x+1)  &&
+                  p < LNPTR(y-1, x-1) && p < LNPTR(y-1, x) && p < LNPTR(y-1, x+1)  &&
+                  p < LNPTR(y,   x-1) && p < LNPTR(y  , x) && p < LNPTR(y,   x+1)  &&
+                  p < LNPTR(y+1, x-1) && p < LNPTR(y+1, x) && p < LNPTR(y+1, x+1)))) {
 
                 unsigned idx = atomic_inc(counter);
                 if (idx < max_feat)
@@ -299,6 +303,13 @@ __kernel void detectExtrema(
         barrier(CLK_LOCAL_MEM_FENCE);
     }
 }
+
+#undef LCPTR
+#undef LPPTR
+#undef LNPTR
+#define CPTR(Y, X) (center[(Y) * dim0 + (X)])
+#define PPTR(Y, X) (prev[(Y) * dim0 + (X)])
+#define NPTR(Y, X) (next[(Y) * dim0 + (X)])
 
 // Interpolates a scale-space extremum's location and scale to subpixel
 // accuracy to form an image feature. Rejects features with low contrast.
@@ -348,20 +359,20 @@ __kernel void interpolateExtrema(
         __global const T* next   = dog_octave + (int)((layer+1)*imel);
 
         for(i = 0; i < MAX_INTERP_STEPS; i++) {
-            float dD[3] = {(center[(x+1)*dim0+y] - center[(x-1)*dim0+y]) * first_deriv_scale,
-                           (center[x*dim0+y+1] - center[x*dim0+y-1]) * first_deriv_scale,
-                           (next[x*dim0+y] - prev[x*dim0+y]) * first_deriv_scale};
+            float dD[3] = {(float)(CPTR(x+1, y) - CPTR(x-1, y)) * first_deriv_scale,
+                           (float)(CPTR(x, y+1) - CPTR(x, y-1)) * first_deriv_scale,
+                           (float)(NPTR(x, y)   - PPTR(x, y))   * first_deriv_scale};
 
-            float d2 = center[x*dim0+y]*2.f;
-            float dxx = (center[(x+1)*dim0+y] + center[(x-1)*dim0+y] - d2)*second_deriv_scale;
-            float dyy = (center[x*dim0+y+1] + center[x*dim0+y-1] - d2)*second_deriv_scale;
-            float dss = (next[x*dim0+y] + prev[x*dim0+y] - d2)*second_deriv_scale;
-            float dxy = (center[(x+1)*dim0+y+1] - center[(x-1)*dim0+y+1] -
-                         center[(x+1)*dim0+y-1] + center[(x-1)*dim0+y-1])*cross_deriv_scale;
-            float dxs = (next[(x+1)*dim0+y] - next[(x-1)*dim0+y] -
-                         prev[(x+1)*dim0+y] + prev[(x-1)*dim0+y])*cross_deriv_scale;
-            float dys = (next[x*dim0+y+1] - next[x*dim0+y-1] -
-                         prev[x*dim0+y+1] + prev[x*dim0+y-1])*cross_deriv_scale;
+            float d2  = CPTR(x, y) * 2.f;
+            float dxx = (CPTR(x+1, y) + CPTR(x-1, y) - d2) * second_deriv_scale;
+            float dyy = (CPTR(x, y+1) + CPTR(x, y-1) - d2) * second_deriv_scale;
+            float dss = (NPTR(x, y  ) + PPTR(x, y  ) - d2) * second_deriv_scale;
+            float dxy = (CPTR(x+1, y+1) - CPTR(x-1, y+1) -
+                         CPTR(x+1, y-1) + CPTR(x-1, y-1)) * cross_deriv_scale;
+            float dxs = (NPTR(x+1, y) - NPTR(x-1, y) -
+                         PPTR(x+1, y) + PPTR(x-1, y)) * cross_deriv_scale;
+            float dys = (NPTR(x, y+1) - NPTR(x-1, y-1) -
+                         PPTR(x, y-1) + PPTR(x-1, y-1)) * cross_deriv_scale;
 
             float H[9] = {dxx, dxy, dxs,
                           dxy, dyy, dys,
@@ -391,9 +402,9 @@ __kernel void interpolateExtrema(
         if (i >= MAX_INTERP_STEPS)
             return;
 
-        float dD[3] = {(center[(x+1)*dim0+y] - center[(x-1)*dim0+y]) * first_deriv_scale,
-                       (center[x*dim0+y+1] - center[x*dim0+y-1]) * first_deriv_scale,
-                       (next[x*dim0+y] - prev[(x-1)*dim0+y]) * first_deriv_scale};
+        float dD[3] = {(float)(CPTR(x+1, y) - CPTR(x-1, y)) * first_deriv_scale,
+                       (float)(CPTR(x, y+1) - CPTR(x, y-1)) * first_deriv_scale,
+                       (float)(NPTR(x, y)   - PPTR(x, y))   * first_deriv_scale};
         float X[3] = {xx, xy, xl};
 
         float P = dD[0]*X[0] + dD[1]*X[1] + dD[2]*X[2];
@@ -403,11 +414,11 @@ __kernel void interpolateExtrema(
             return;
 
         // principal curvatures are computed using the trace and det of Hessian
-        float d2 = center[x*dim0+y]*2.f;
-        float dxx = (center[(x+1)*dim0+y] + center[(x-1)*dim0+y] - d2) * second_deriv_scale;
-        float dyy = (center[x*dim0+y+1] + center[x*dim0+y-1] - d2) * second_deriv_scale;
-        float dxy = (center[(x+1)*dim0+y+1] - center[(x-1)*dim0+y+1] -
-                     center[(x+1)*dim0+y-1] + center[(x-1)*dim0+y-1]) * cross_deriv_scale;
+        float d2  = CPTR(x, y) * 2.f;
+        float dxx = (CPTR(x+1, y) + CPTR(x-1, y) - d2) * second_deriv_scale;
+        float dyy = (CPTR(x, y+1) + CPTR(x, y-1) - d2) * second_deriv_scale;
+        float dxy = (CPTR(x+1, y+1) - CPTR(x-1, y+1) -
+                     CPTR(x+1, y-1) + CPTR(x-1, y-1)) * cross_deriv_scale;
 
         float tr = dxx + dyy;
         float det = dxx * dyy - dxy * dxy;
@@ -428,6 +439,10 @@ __kernel void interpolateExtrema(
         }
     }
 }
+
+#undef CPTR
+#undef PPTR
+#undef NPTR
 
 // Remove duplicate keypoints
 __kernel void removeDuplicates(
@@ -469,6 +484,8 @@ __kernel void removeDuplicates(
     }
 
 }
+
+#define IPTR(Y, X) (img[(Y) * dim0 + X])
 
 // Computes a canonical orientation for each image feature in an array.  Based
 // on Section 5 of Lowe's paper.  This function adds features to the array when
@@ -547,8 +564,8 @@ __kernel void calcOrientation(
                 x < 1 || x >= dim1 - 1)
                 continue;
 
-            float dx = (float)(img[(x+1)*dim0+y] - img[(x-1)*dim0+y]);
-            float dy = (float)(img[x*dim0+y-1] - img[x*dim0+y+1]);
+            float dx = (float)(IPTR(x+1, y) - IPTR(x-1, y));
+            float dy = (float)(IPTR(x, y-1) - IPTR(x, y+1));
 
             float mag = sqrt(dx*dx+dy*dy);
             float ori = atan2(dy,dx);
@@ -711,8 +728,8 @@ __kernel void computeDescriptor(
 
             if (ybin > -1.0f && ybin < d && xbin > -1.0f && xbin < d &&
                 y > 0 && y < dim0 - 1 && x > 0 && x < dim1 - 1) {
-                float dx = img[(x+1)*dim0+y] - img[(x-1)*dim0+y];
-                float dy = img[x*dim0+(y-1)] - img[x*dim0+(y+1)];
+                float dx = (float)(IPTR(x+1, y) - IPTR(x-1, y));
+                float dy = (float)(IPTR(x, y-1) - IPTR(x, y+1));
 
                 float grad_mag = sqrt(dx*dx + dy*dy);
                 float grad_ori = atan2(dy, dx) - ori;
@@ -778,3 +795,5 @@ __kernel void computeDescriptor(
         }
     }
 }
+
+#undef IPTR
