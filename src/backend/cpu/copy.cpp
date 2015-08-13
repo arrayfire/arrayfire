@@ -117,7 +117,7 @@ namespace cpu
     template<typename T>
     void multiply_inplace(Array<T> &in, double val)
     {
-        copy<T, T>(in, in, 0, val);
+        getQueue().enqueue(copy<T, T>,in, in, 0, val);
     }
 
     template<typename inType, typename outType>
@@ -126,14 +126,14 @@ namespace cpu
              outType default_value, double factor)
     {
         Array<outType> ret = createValueArray<outType>(dims, default_value);
-        copy<inType, outType>(ret, in, outType(default_value), factor);
+        getQueue().enqueue(copy<inType, outType>,ret, in, outType(default_value), factor);
         return ret;
     }
 
     template<typename inType, typename outType>
     void copyArray(Array<outType> &out, Array<inType> const &in)
     {
-        copy<inType, outType>(out, in, scalar<outType>(0), 1.0);
+        getQueue().enqueue(copy<inType, outType>,out, in, scalar<outType>(0), 1.0);
     }
 
 

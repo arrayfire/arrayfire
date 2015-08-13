@@ -15,6 +15,8 @@
 #include <handle.hpp>
 #include <err_cpu.hpp>
 #include <vector>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 using af::dim4;
 
@@ -68,43 +70,49 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     Array<T> out = createEmptyArray<T>(oDims);
     dim4 oStrides= out.strides();
 
-    const T *src = in.get();
-    T *dst = out.get();
 
-    const uint* ptr0 = idxArrs[0].get();
-    const uint* ptr1 = idxArrs[1].get();
-    const uint* ptr2 = idxArrs[2].get();
-    const uint* ptr3 = idxArrs[3].get();
+    auto func = [=] (Array<T> out, const Array<T> in) {
 
-    for (dim_t l=0; l<oDims[3]; ++l) {
+        const T *src = in.get();
+              T *dst = out.get();
 
-        dim_t lOff   = l*oStrides[3];
-        dim_t inIdx3 = trimIndex(isSeq[3] ? l+iOffs[3] : ptr3[l], iDims[3]);
-        dim_t inOff3 = inIdx3*iStrds[3];
+        const uint* ptr0 = idxArrs[0].get();
+        const uint* ptr1 = idxArrs[1].get();
+        const uint* ptr2 = idxArrs[2].get();
+        const uint* ptr3 = idxArrs[3].get();
 
-        for (dim_t k=0; k<oDims[2]; ++k) {
+        for (dim_t l=0; l<oDims[3]; ++l) {
 
-            dim_t kOff   = k*oStrides[2];
-            dim_t inIdx2 = trimIndex(isSeq[2] ? k+iOffs[2] : ptr2[k], iDims[2]);
-            dim_t inOff2 = inIdx2*iStrds[2];
+            dim_t lOff   = l*oStrides[3];
+            dim_t inIdx3 = trimIndex(isSeq[3] ? l+iOffs[3] : ptr3[l], iDims[3]);
+            dim_t inOff3 = inIdx3*iStrds[3];
 
-            for (dim_t j=0; j<oDims[1]; ++j) {
+            for (dim_t k=0; k<oDims[2]; ++k) {
 
-                dim_t jOff   = j*oStrides[1];
-                dim_t inIdx1 = trimIndex(isSeq[1] ? j+iOffs[1] : ptr1[j], iDims[1]);
-                dim_t inOff1 = inIdx1*iStrds[1];
+                dim_t kOff   = k*oStrides[2];
+                dim_t inIdx2 = trimIndex(isSeq[2] ? k+iOffs[2] : ptr2[k], iDims[2]);
+                dim_t inOff2 = inIdx2*iStrds[2];
 
-                for (dim_t i=0; i<oDims[0]; ++i) {
+                for (dim_t j=0; j<oDims[1]; ++j) {
 
-                    dim_t iOff   = i*oStrides[0];
-                    dim_t inIdx0 = trimIndex(isSeq[0] ? i+iOffs[0] : ptr0[i], iDims[0]);
-                    dim_t inOff0 = inIdx0*iStrds[0];
+                    dim_t jOff   = j*oStrides[1];
+                    dim_t inIdx1 = trimIndex(isSeq[1] ? j+iOffs[1] : ptr1[j], iDims[1]);
+                    dim_t inOff1 = inIdx1*iStrds[1];
 
-                    dst[lOff+kOff+jOff+iOff] = src[inOff3+inOff2+inOff1+inOff0];
+                    for (dim_t i=0; i<oDims[0]; ++i) {
+
+                        dim_t iOff   = i*oStrides[0];
+                        dim_t inIdx0 = trimIndex(isSeq[0] ? i+iOffs[0] : ptr0[i], iDims[0]);
+                        dim_t inOff0 = inIdx0*iStrds[0];
+
+                        dst[lOff+kOff+jOff+iOff] = src[inOff3+inOff2+inOff1+inOff0];
+                    }
                 }
             }
         }
-    }
+    };
+
+    getQueue().enqueue(func, out, in);
 
     return out;
 }

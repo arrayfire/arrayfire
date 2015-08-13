@@ -16,9 +16,12 @@
 #include <err_cpu.hpp>
 #include <platform.hpp>
 #include <async_queue.hpp>
+#include <array>
 
 using af::dim4;
 using std::ref;
+using std::copy;
+using std::array;
 
 namespace cpu
 {
@@ -37,7 +40,7 @@ dim_t trimIndex(int idx, const dim_t &len)
 }
 
 template<typename T>
-void assign_(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs)
+void assign_(Array<T> out, const array<af_index_t, 4> idxrs, const Array<T> rhs)
 {
     bool isSeq[4];
     std::vector<af_seq> seqs(4, af_span);
@@ -117,7 +120,9 @@ void assign_(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs)
 template<typename T>
 void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs)
 {
-    getQueue().enqueue(assign_<T>, ref(out), idxrs, ref(rhs));
+    array<af_index_t, 4> idx;
+    copy(idxrs, idxrs+4, begin(idx));
+    getQueue().enqueue(assign_<T>, out, move(idx), rhs);
 }
 
 #define INSTANTIATE(T) \
