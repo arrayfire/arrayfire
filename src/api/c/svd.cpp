@@ -48,7 +48,8 @@ static inline void svd(af_array *s, af_array *u, af_array *vt, const af_array in
 }
 
 template <typename T>
-static inline void svdInPlace(af_array *s, af_array *u, af_array *vt, af_array in){
+static inline void svdInPlace(af_array *s, af_array *u, af_array *vt, af_array in)
+{
     ArrayInfo info = getInfo(in);  // ArrayInfo is the base class which
     af::dim4 dims = info.dims();
     int M = dims[0];

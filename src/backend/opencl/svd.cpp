@@ -30,9 +30,9 @@ void svdInPlace(Array<T> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
 }
 
 
-#define INSTANTIATE(T)                                                                  \
-    template void svd(Array<T> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)       \
-    template void svdInPlace(Array<T> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
+#define INSTANTIATE(T)                                                  \
+    template void svd(Array<T> &s, Array<T> &u, Array<T> &vt, const Array<T> &in); \
+    template void svdInPlace(Array<T> &s, Array<T> &u, Array<T> &vt, Array<T> &in);
 
 INSTANTIATE(float)
 INSTANTIATE(double)

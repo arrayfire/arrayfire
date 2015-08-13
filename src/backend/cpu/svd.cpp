@@ -24,11 +24,11 @@
 namespace cpu
 {
 
-    #define SVD_FUNC_DEF( FUNC )                                     \
+#define SVD_FUNC_DEF( FUNC )                                \
     template<typename T> FUNC##_func_def<T> FUNC##_func();
 
-    #define SVD_FUNC( FUNC, TYPE, PREFIX )                           \
-    template<> FUNC##_func_def<TYPE>     FUNC##_func<TYPE>()         \
+#define SVD_FUNC( FUNC, TYPE, PREFIX )                          \
+    template<> FUNC##_func_def<TYPE>     FUNC##_func<TYPE>()    \
     { return & LAPACK_NAME(PREFIX##FUNC); }
 
     template<typename T>
