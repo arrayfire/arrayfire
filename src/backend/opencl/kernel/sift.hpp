@@ -672,8 +672,8 @@ void sift(unsigned* out_feat,
             cl::Buffer* d_oriented_ori      = bufferAlloc(max_oriented_feat * sizeof(float));
 
             const int blk_x_ori = divup(nodup_feat, 8);
-            const NDRange local_ori(8, 32);
-            const NDRange global_ori(blk_x_ori * 8, 32);
+            const NDRange local_ori(32, 8);
+            const NDRange global_ori(32, blk_x_ori * 8);
 
             auto coOp = make_kernel<Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
                                     Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
@@ -706,8 +706,8 @@ void sift(unsigned* out_feat,
             if (double_input) scale *= 2.f;
 
             const int blk_x_desc = divup(oriented_feat, 1);
-            const NDRange local_desc(1, SIFT_THREADS);
-            const NDRange global_desc(blk_x_desc, SIFT_THREADS);
+            const NDRange local_desc(SIFT_THREADS, 1);
+            const NDRange global_desc(SIFT_THREADS, blk_x_desc);
 
             auto cdOp = make_kernel<Buffer, unsigned,
                                     Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
