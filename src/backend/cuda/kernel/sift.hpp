@@ -1202,7 +1202,7 @@ void sift(unsigned* out_feat,
         float* d_nodup_response = memAlloc<float>(interp_feat);
         float* d_nodup_size = memAlloc<float>(interp_feat);
 
-        threads = dim3(256, 1);
+        threads = dim3(SIFT_THREADS, 1);
         blocks = dim3(divup(interp_feat, threads.x), 1);
 
         CUDA_LAUNCH((removeDuplicates), blocks, threads,
@@ -1235,7 +1235,7 @@ void sift(unsigned* out_feat,
         float* d_oriented_size = memAlloc<float>(max_oriented_feat);
         float* d_oriented_ori = memAlloc<float>(max_oriented_feat);
 
-        threads = dim3(32, 8);
+        threads = dim3(SIFT_THREADS_X, SIFT_THREADS_Y);
         blocks = dim3(1, divup(nodup_feat, threads.y));
 
         const size_t ori_shared_size = ORI_HIST_BINS * threads.y * 2 * sizeof(float);
@@ -1273,7 +1273,7 @@ void sift(unsigned* out_feat,
         float scale = 1.f/(1 << i);
         if (double_input) scale *= 2.f;
 
-        threads = dim3(256, 1);
+        threads = dim3(SIFT_THREADS, 1);
         blocks  = dim3(1, divup(oriented_feat, threads.y));
 
         const unsigned histsz = 8;
