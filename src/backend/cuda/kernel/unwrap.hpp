@@ -20,7 +20,7 @@ namespace cuda
         ///////////////////////////////////////////////////////////////////////////
         // Resize Kernel
         ///////////////////////////////////////////////////////////////////////////
-        template<typename T, int threads>
+        template<typename T, int TX>
         __global__
         void unwrap_kernel(Param<T> out, CParam<T> in,
                            const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy,
@@ -54,13 +54,11 @@ namespace cuda
                   T* optr = out.ptr + cOut + colId * out.strides[1];
             const T* iptr = in.ptr  + cIn;
 
-            bool cond = false;
-            if(spx >= 0 && spx + wx < in.dims[0] && spy >= 0 && spy + wy < in.dims[1])
-                cond = true;
+            bool cond = (spx >= 0 && spx + wx < in.dims[0] && spy >= 0 && spy + wy < in.dims[1]);
 
             for(int i = 0; i < repsPerColumn; i++) {
                 // Compute output index local to column
-                const dim_t colIndex = i * threads + threadIdx.x;
+                const dim_t colIndex = i * TX + threadIdx.x;
 
                 if(colIndex >= out.dims[0])
                     return;
@@ -75,12 +73,12 @@ namespace cuda
                 const dim_t outIdx = (y * wx + x) * out.strides[0];
 
                 // Copy
+                T val = scalar<T>(0.0);
                 if(cond || (xpad >= 0 && xpad < in.dims[0] && ypad >= 0 && ypad < in.dims[1])) {
-                    const dim_t inIdx = ypad * in.strides[1] + xpad * in.strides[0];
-                    optr[outIdx] = iptr[inIdx];
-                } else {
-                    optr[outIdx] = scalar<T>(0.0);
+                    const dim_t inIdx = ypad * in.strides[1] + xpad;
+                    val = iptr[inIdx];
                 }
+                optr[outIdx] = val;
             }
         }
 
@@ -101,9 +99,8 @@ namespace cuda
             dim3 blocks(divup(out.dims[1], threads.y), out.dims[2] * out.dims[3]);
 
             CUDA_LAUNCH((unwrap_kernel<T, TX>), blocks, threads,
-                    out, in, wx, wy, sx, sy, px, py, nx, repsPerColumn);
+                        out, in, wx, wy, sx, sy, px, py, nx, repsPerColumn);
             POST_LAUNCH_CHECK();
         }
     }
 }
-

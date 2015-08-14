@@ -17,6 +17,9 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
+#include <type_util.hpp>
+#include <math.hpp>
+#include "config.hpp"
 
 using cl::Buffer;
 using cl::Program;
@@ -42,27 +45,30 @@ namespace opencl
                 int device = getActiveDeviceId();
 
                 std::call_once( compileFlags[device], [device] () {
-                    std::ostringstream options;
-                    options << " -D T="        << dtype_traits<T>::getName();
-                    options << " -D TX="       << TX;
 
-                    if((af_dtype) dtype_traits<T>::af_type == c32 ||
-                       (af_dtype) dtype_traits<T>::af_type == c64) {
-                        options << " -D CPLX=1";
-                    } else {
-                        options << " -D CPLX=0";
-                    }
+                        ToNum<T> toNum;
+                        std::ostringstream options;
+                        options << " -D ZERO=" << toNum(scalar<T>(0));
+                        options << " -D T="    << dtype_traits<T>::getName();
+                        options << " -D TX="   << TX;
 
-                    if (std::is_same<T, double>::value ||
-                        std::is_same<T, cdouble>::value) {
-                        options << " -D USE_DOUBLE";
-                    }
+                        if((af_dtype) dtype_traits<T>::af_type == c32 ||
+                           (af_dtype) dtype_traits<T>::af_type == c64) {
+                            options << " -D CPLX=1";
+                        } else {
+                            options << " -D CPLX=0";
+                        }
 
-                    Program prog;
-                    buildProgram(prog, unwrap_cl, unwrap_cl_len, options.str());
-                    unwrapProgs[device] = new Program(prog);
-                    unwrapKernels[device] = new Kernel(*unwrapProgs[device], "unwrap_kernel");
-                });
+                        if (std::is_same<T, double>::value ||
+                            std::is_same<T, cdouble>::value) {
+                            options << " -D USE_DOUBLE";
+                        }
+
+                        Program prog;
+                        buildProgram(prog, unwrap_cl, unwrap_cl_len, options.str());
+                        unwrapProgs[device] = new Program(prog);
+                        unwrapKernels[device] = new Kernel(*unwrapProgs[device], "unwrap_kernel");
+                    });
 
                 auto unwrapOp = make_kernel<Buffer, const KParam, const Buffer, const KParam,
                                       const dim_t, const dim_t, const dim_t, const dim_t,

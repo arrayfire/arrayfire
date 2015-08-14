@@ -54,10 +54,7 @@ void unwrap_kernel(__global T *d_out, const KParam out,
     __global       T* optr = d_out + cOut + colId * out.strides[1];
     __global const T* iptr = d_in  + cIn + in.offset;
 
-    bool cond = false;
-    if(spx >= 0 && spx + wx < in.dims[0] && spy >= 0 && spy + wy < in.dims[1])
-        cond = true;
-
+    bool cond = (spx >= 0 && spx + wx < in.dims[0] && spy >= 0 && spy + wy < in.dims[1]);
 
     for(int i = 0; i < repsPerColumn; i++) {
         // Compute output index local to column
@@ -76,11 +73,11 @@ void unwrap_kernel(__global T *d_out, const KParam out,
         const dim_t outIdx = (y * wx + x) * out.strides[0];
 
         // Copy
+        T val = ZERO;
         if(cond || (xpad >= 0 && xpad < in.dims[0] && ypad >= 0 && ypad < in.dims[1])) {
             const dim_t inIdx = ypad * in.strides[1] + xpad * in.strides[0];
-            optr[outIdx] = iptr[inIdx];
-        } else {
-            set_scalar(optr[outIdx], 0);
+            val = iptr[inIdx];
         }
+        optr[outIdx] = val;
     }
 }
