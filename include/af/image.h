@@ -483,12 +483,14 @@ AFAPI array dog(const array& in, const int radius1, const int radius2);
    \param[in]  sy is the stride along 1st-dimension
    \param[in]  px is the padding along 0th-dimension between [0, wx). Padding is applied both before and after.
    \param[in]  py is the padding along 1st-dimension between [0, wy). Padding is applied both before and after.
+   \param[in]  is_column specifies the layout for the unwrapped patch. If is_column is false, the unrapped patch is laid out as a row.
    \returns    an array with the image blocks as columns
 
    \ingroup image_func_unwrap
 */
 AFAPI array unwrap(const array& in, const dim_t wx, const dim_t wy,
-                   const dim_t sx, const dim_t sy, const dim_t px=0, const dim_t py=0);
+                   const dim_t sx, const dim_t sy, const dim_t px=0, const dim_t py=0,
+                   const bool is_column = true);
 
 
 /**
@@ -996,13 +998,15 @@ extern "C" {
        \param[in]  sy is the stride along 1st-dimension
        \param[in]  px is the padding along 0th-dimension between [0, wx). Padding is applied both before and after.
        \param[in]  py is the padding along 1st-dimension between [0, wy). Padding is applied both before and after.
+       \param[in]  is_column specifies the layout for the unwrapped patch. If is_column is false, the unrapped patch is laid out as a row.
        \return     \ref AF_SUCCESS if the color transformation is successful,
        otherwise an appropriate error code is returned.
 
        \ingroup image_func_unwrap
     */
     AFAPI af_err af_unwrap(af_array *out, const af_array in, const dim_t wx, const dim_t wy,
-                           const dim_t sx, const dim_t sy, const dim_t px, const dim_t py);
+                           const dim_t sx, const dim_t sy, const dim_t px, const dim_t py,
+                           const bool is_column);
 
     /**
        C Interface wrapper for summed area tables

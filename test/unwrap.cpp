@@ -54,26 +54,34 @@ void unwrapTest(string pTestFile, const unsigned resultIdx,
 
     af_array inArray = 0;
     af_array outArray = 0;
+    af_array outArrayT = 0;
+    af_array outArray2 = 0;
 
     ASSERT_EQ(AF_SUCCESS, af_create_array(&inArray, &(in[0].front()), idims.ndims(), idims.get(), (af_dtype) af::dtype_traits<T>::af_type));
 
-    ASSERT_EQ(AF_SUCCESS, af_unwrap(&outArray, inArray, wx, wy, sx, sy, px, py));
+    ASSERT_EQ(AF_SUCCESS, af_unwrap(&outArray , inArray, wx, wy, sx, sy, px, py, true ));
+    ASSERT_EQ(AF_SUCCESS, af_unwrap(&outArrayT, inArray, wx, wy, sx, sy, px, py, false));
+    ASSERT_EQ(AF_SUCCESS, af_transpose(&outArray2, outArrayT, false));
 
-    // Get result
-    T* outData = new T[tests[resultIdx].size()];
-    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
-
-    // Compare result
     size_t nElems = tests[resultIdx].size();
+    std::vector<T> outData(nElems);
+
+    // Compare is_column == true results
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData[0], outArray));
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
         ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
     }
 
-    // Delete
-    delete[] outData;
+    // Compare is_column == false results
+    ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)&outData[0], outArray2));
+    for (size_t elIter = 0; elIter < nElems; ++elIter) {
+        ASSERT_EQ(tests[resultIdx][elIter], outData[elIter]) << "at: " << elIter << std::endl;
+    }
 
     if(inArray   != 0) af_release_array(inArray);
     if(outArray  != 0) af_release_array(outArray);
+    if(outArrayT != 0) af_release_array(outArrayT);
+    if(outArray2 != 0) af_release_array(outArray2);
 }
 
 #define UNWRAP_INIT(desc, file, resultIdx, wx, wy, sx, sy, px,py)                                           \
@@ -164,4 +172,3 @@ TEST(Unwrap, CPP)
     // Delete
     delete[] outData;
 }
-

@@ -33,7 +33,7 @@ namespace opencl
 {
     namespace kernel
     {
-        template<typename T, int TX>
+        template<typename T, bool is_column>
         void unwrap(Param out, const Param in, const dim_t wx, const dim_t wy,
                     const dim_t sx, const dim_t sy, const dim_t px, const dim_t py, const dim_t nx)
         {
@@ -48,9 +48,9 @@ namespace opencl
 
                         ToNum<T> toNum;
                         std::ostringstream options;
-                        options << " -D ZERO=" << toNum(scalar<T>(0));
-                        options << " -D T="    << dtype_traits<T>::getName();
-                        options << " -D TX="   << TX;
+                        options << " -D is_column=" << is_column
+                                << " -D ZERO=" << toNum(scalar<T>(0))
+                                << " -D T="    << dtype_traits<T>::getName();
 
                         if((af_dtype) dtype_traits<T>::af_type == c32 ||
                            (af_dtype) dtype_traits<T>::af_type == c64) {
@@ -75,20 +75,29 @@ namespace opencl
                                       const dim_t, const dim_t, const dim_t, const dim_t>
                                       (*unwrapKernels[device]);
 
-                const dim_t TY = 256 / TX;
-                dim_t repsPerColumn = 1;
-                if(TX == 256 && wx * wy > 256) {
-                    repsPerColumn = divup((wx * wy), 256);
+                dim_t TX = 1, TY = 1;
+                dim_t BX = 1;
+                const dim_t BY = out.info.dims[2] * out.info.dims[3];
+                dim_t reps = 1;
+
+                if (is_column) {
+                    TX = std::min(THREADS_PER_GROUP, nextpow2(out.info.dims[0]));
+                    TY = THREADS_PER_GROUP / TX;
+                    BX = divup(out.info.dims[1], TY);
+                    reps = divup((wx * wy), TX);
+                } else {
+                    TX = THREADS_X;
+                    TY = THREADS_Y;
+                    BX = divup(out.info.dims[0], TX);
+                    reps = divup((wx * wy), TY);
                 }
 
-                NDRange local(TX, TY, 1);
-
-                NDRange global(local[0] * divup(out.info.dims[1], TY),
-                               local[1] * out.info.dims[2] * out.info.dims[3],
-                               1);
+                NDRange local(TX, TY);
+                NDRange global(local[0] * BX,
+                               local[1] * BY);
 
                 unwrapOp(EnqueueArgs(getQueue(), global, local),
-                       *out.data, out.info, *in.data, in.info, wx, wy, sx, sy, px, py, nx, repsPerColumn);
+                       *out.data, out.info, *in.data, in.info, wx, wy, sx, sy, px, py, nx, reps);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
