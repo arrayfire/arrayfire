@@ -104,10 +104,13 @@ namespace kernel
 {
 
 static const int SIFT_THREADS   = 256;
-static const int SIFT_THREADS_X = 16;
-static const int SIFT_THREADS_Y = 16;
+static const int SIFT_THREADS_X = 32;
+static const int SIFT_THREADS_Y = 8;
 
+// assumed gaussian blur for input image
 static const float InitSigma = 0.5f;
+
+// width of border in which to ignore keypoints
 static const int ImgBorder = 5;
 
 // default width of descriptor histogram array
@@ -115,6 +118,9 @@ static const int DescrWidth = 4;
 
 // default number of bins per histogram in descriptor array
 static const int DescrHistBins = 8;
+
+// default number of bins in histogram for orientation assignment
+static const int OriHistBins = 36;
 
 static const float PI_VAL = 3.14159265358979323846f;
 
@@ -166,7 +172,7 @@ Param gaussFilter(float sigma)
 }
 
 template<typename T, typename convAccT>
-void convHelper(Param& dst, Param src, Param filter)
+void conv2HelperFull(Param& dst, Param src, Param filter)
 {
     Param tmp;
     tmp.info.offset = 0;
@@ -179,68 +185,8 @@ void convHelper(Param& dst, Param src, Param filter)
     tmp.data = bufferAlloc(src_el * sizeof(T));
 
     const dim_t fLen = filter.info.dims[0];
-    switch(fLen) {
-        case 3:
-            convolve2<T, convAccT, 0, false, 3 >(tmp, src, filter);
-            convolve2<T, convAccT, 1, false, 3 >(dst, tmp, filter);
-            break;
-        case 5:
-            convolve2<T, convAccT, 0, false, 5 >(tmp, src, filter);
-            convolve2<T, convAccT, 1, false, 5 >(dst, tmp, filter);
-            break;
-        case 7:
-            convolve2<T, convAccT, 0, false, 7 >(tmp, src, filter);
-            convolve2<T, convAccT, 1, false, 7 >(dst, tmp, filter);
-            break;
-        case 9:
-            convolve2<T, convAccT, 0, false, 9 >(tmp, src, filter);
-            convolve2<T, convAccT, 1, false, 9 >(dst, tmp, filter);
-            break;
-        case 11:
-            convolve2<T, convAccT, 0, false, 11>(tmp, src, filter);
-            convolve2<T, convAccT, 1, false, 11>(dst, tmp, filter);
-            break;
-        case 13:
-            convolve2<T, convAccT, 0, false, 13>(tmp, src, filter);
-            convolve2<T, convAccT, 1, false, 13>(dst, tmp, filter);
-            break;
-        case 15:
-            convolve2<T, convAccT, 0, false, 15>(tmp, src, filter);
-            convolve2<T, convAccT, 1, false, 15>(dst, tmp, filter);
-            break;
-        case 17:
-            convolve2<T, convAccT, 0, false, 17>(tmp, src, filter);
-            convolve2<T, convAccT, 1, false, 17>(dst, tmp, filter);
-            break;
-        case 19:
-            convolve2<T, convAccT, 0, false, 19>(tmp, src, filter);
-            convolve2<T, convAccT, 1, false, 19>(dst, tmp, filter);
-            break;
-        case 21:
-            convolve2<T, convAccT, 0, false, 21>(tmp, src, filter);
-            convolve2<T, convAccT, 1, false, 21>(dst, tmp, filter);
-            break;
-        case 23:
-            convolve2<T, convAccT, 0, false, 23>(tmp, src, filter);
-            convolve2<T, convAccT, 1, false, 23>(dst, tmp, filter);
-            break;
-        case 25:
-            convolve2<T, convAccT, 0, false, 25>(tmp, src, filter);
-            convolve2<T, convAccT, 1, false, 25>(dst, tmp, filter);
-            break;
-        case 27:
-            convolve2<T, convAccT, 0, false, 27>(tmp, src, filter);
-            convolve2<T, convAccT, 1, false, 27>(dst, tmp, filter);
-            break;
-        case 29:
-            convolve2<T, convAccT, 0, false, 29>(tmp, src, filter);
-            convolve2<T, convAccT, 1, false, 29>(dst, tmp, filter);
-            break;
-        case 31:
-            convolve2<T, convAccT, 0, false, 31>(tmp, src, filter);
-            convolve2<T, convAccT, 1, false, 31>(dst, tmp, filter);
-            break;
-    }
+    conv2Helper<T, convAccT, 0, false>(tmp, src, filter, fLen);
+    conv2Helper<T, convAccT, 1, false>(dst, tmp, filter, fLen);
 
     bufferFree(tmp.data);
 }
@@ -269,12 +215,12 @@ Param createInitialImage(
     float s = (double_input) ? sqrt(init_sigma * init_sigma - InitSigma * InitSigma * 4)
                              : sqrt(init_sigma * init_sigma - InitSigma * InitSigma);
 
-    Param filter = gaussFilter<convAccT>(s);
+    const Param filter = gaussFilter<convAccT>(s);
 
     if (double_input)
         resize<T, AF_INTERP_BILINEAR>(init_img, img);
 
-    convHelper<T, convAccT>(init_img, (double_input) ? init_img : img, filter);
+    conv2HelperFull<T, convAccT>(init_img, (double_input) ? init_img : img, filter);
 
     bufferFree(filter.data);
 
@@ -355,7 +301,7 @@ std::vector<Param> buildGaussPyr(
 
                 Param filter = gaussFilter<convAccT>(sig_layers[l]);
 
-                convHelper<T, convAccT>(tmp_pyr[idx], tmp_pyr[src_idx], filter);
+                conv2HelperFull<T, convAccT>(tmp_pyr[idx], tmp_pyr[src_idx], filter);
 
                 bufferFree(filter.data);
             }
@@ -530,19 +476,21 @@ void sift(unsigned* out_feat,
             int dim0 = dog_pyr[o].info.dims[0];
             int dim1 = dog_pyr[o].info.dims[1];
 
-            const int blk_x = divup(dim0-2*ImgBorder, 32);
-            const int blk_y = divup(dim1-2*ImgBorder, 8);
-            const NDRange local(32, 8);
-            const NDRange global(blk_x * 32, blk_y * 8);
+            const int blk_x = divup(dim0-2*ImgBorder, SIFT_THREADS_X);
+            const int blk_y = divup(dim1-2*ImgBorder, SIFT_THREADS_Y);
+            const NDRange local(SIFT_THREADS_X, SIFT_THREADS_Y);
+            const NDRange global(blk_x * SIFT_THREADS_X, blk_y * SIFT_THREADS_Y);
 
             float extrema_thr = 0.5f * contrast_thr / n_layers;
 
             auto deOp = make_kernel<Buffer, Buffer, Buffer, Buffer,
-                                    Buffer, KParam, unsigned, float> (*deKernel[device]);
+                                    Buffer, KParam, unsigned, float,
+                                    LocalSpaceArg> (*deKernel[device]);
 
             deOp(EnqueueArgs(getQueue(), global, local),
                  *d_extrema_x, *d_extrema_y, *d_extrema_layer, *d_count,
-                 *dog_pyr[o].data, dog_pyr[o].info, max_feat, extrema_thr);
+                 *dog_pyr[o].data, dog_pyr[o].info, max_feat, extrema_thr,
+                 cl::Local((SIFT_THREADS_X+2) * (SIFT_THREADS_Y+2) * 3 * sizeof(float)));
             CL_DEBUG_FINISH(getQueue());
 
             getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &extrema_feat);
@@ -671,20 +619,22 @@ void sift(unsigned* out_feat,
             cl::Buffer* d_oriented_size     = bufferAlloc(max_oriented_feat * sizeof(float));
             cl::Buffer* d_oriented_ori      = bufferAlloc(max_oriented_feat * sizeof(float));
 
-            const int blk_x_ori = divup(nodup_feat, 8);
-            const NDRange local_ori(32, 8);
-            const NDRange global_ori(32, blk_x_ori * 8);
+            const int blk_x_ori = divup(nodup_feat, SIFT_THREADS_Y);
+            const NDRange local_ori(SIFT_THREADS_X, SIFT_THREADS_Y);
+            const NDRange global_ori(SIFT_THREADS_X, blk_x_ori * SIFT_THREADS_Y);
 
             auto coOp = make_kernel<Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, Buffer,
                                     Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
-                                    Buffer, KParam, unsigned, unsigned, int> (*coKernel[device]);
+                                    Buffer, KParam, unsigned, unsigned, int,
+                                    LocalSpaceArg> (*coKernel[device]);
 
             coOp(EnqueueArgs(getQueue(), global_ori, local_ori),
                  *d_oriented_x, *d_oriented_y, *d_oriented_layer,
                  *d_oriented_response, *d_oriented_size, *d_oriented_ori, *d_count,
                  *d_nodup_x, *d_nodup_y, *d_nodup_layer,
                  *d_nodup_response, *d_nodup_size, nodup_feat,
-                 *gauss_pyr[o].data, gauss_pyr[o].info, max_oriented_feat, o, (int)double_input);
+                 *gauss_pyr[o].data, gauss_pyr[o].info, max_oriented_feat, o, (int)double_input,
+                 cl::Local(OriHistBins * SIFT_THREADS_Y * 2 * sizeof(float)));
             CL_DEBUG_FINISH(getQueue());
 
             getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &oriented_feat);
@@ -709,15 +659,19 @@ void sift(unsigned* out_feat,
             const NDRange local_desc(SIFT_THREADS, 1);
             const NDRange global_desc(SIFT_THREADS, blk_x_desc);
 
-            auto cdOp = make_kernel<Buffer, unsigned,
+            const unsigned histsz = 8;
+
+            auto cdOp = make_kernel<Buffer, unsigned, unsigned,
                                     Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
-                                    Buffer, KParam, int, int, float, float, int> (*cdKernel[device]);
+                                    Buffer, KParam, int, int, float, float, int,
+                                    LocalSpaceArg> (*cdKernel[device]);
 
             cdOp(EnqueueArgs(getQueue(), global_desc, local_desc),
-                 *d_desc, desc_len,
+                 *d_desc, desc_len, histsz,
                  *d_oriented_x, *d_oriented_y, *d_oriented_layer,
                  *d_oriented_response, *d_oriented_size, *d_oriented_ori, oriented_feat,
-                 *gauss_pyr[o].data, gauss_pyr[o].info, d, n, scale, init_sigma, n_layers);
+                 *gauss_pyr[o].data, gauss_pyr[o].info, d, n, scale, init_sigma, n_layers,
+                 cl::Local(desc_len * (histsz+1) * sizeof(float)));
             CL_DEBUG_FINISH(getQueue());
 
             total_feat += oriented_feat;

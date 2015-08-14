@@ -149,46 +149,46 @@ inline void normalizeDesc(
     __local float* desc,
     __local float* accum,
     const int histlen,
-    int tid_x,
-    int tid_y,
-    int bsz_x)
+    int lid_x,
+    int lid_y,
+    int lsz_x)
 {
-    for (int i = tid_x; i < histlen; i += bsz_x)
-        accum[i] = desc[tid_y*histlen+i]*desc[tid_y*histlen+i];
+    for (int i = lid_x; i < histlen; i += lsz_x)
+        accum[i] = desc[lid_y*histlen+i]*desc[lid_y*histlen+i];
     barrier(CLK_LOCAL_MEM_FENCE);
 
     float sum = 0.0f;
     for (int i = 0; i < histlen; i++)
-        sum += desc[tid_y*histlen+i]*desc[tid_y*histlen+i];
+        sum += desc[lid_y*histlen+i]*desc[lid_y*histlen+i];
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    if (tid_x < 64)
-        accum[tid_x] += accum[tid_x+64];
+    if (lid_x < 64)
+        accum[lid_x] += accum[lid_x+64];
     barrier(CLK_LOCAL_MEM_FENCE);
-    if (tid_x < 32)
-        accum[tid_x] += accum[tid_x+32];
+    if (lid_x < 32)
+        accum[lid_x] += accum[lid_x+32];
     barrier(CLK_LOCAL_MEM_FENCE);
-    if (tid_x < 16)
-        accum[tid_x] += accum[tid_x+16];
+    if (lid_x < 16)
+        accum[lid_x] += accum[lid_x+16];
     barrier(CLK_LOCAL_MEM_FENCE);
-    if (tid_x < 8)
-        accum[tid_x] += accum[tid_x+8];
+    if (lid_x < 8)
+        accum[lid_x] += accum[lid_x+8];
     barrier(CLK_LOCAL_MEM_FENCE);
-    if (tid_x < 4)
-        accum[tid_x] += accum[tid_x+4];
+    if (lid_x < 4)
+        accum[lid_x] += accum[lid_x+4];
     barrier(CLK_LOCAL_MEM_FENCE);
-    if (tid_x < 2)
-        accum[tid_x] += accum[tid_x+2];
+    if (lid_x < 2)
+        accum[lid_x] += accum[lid_x+2];
     barrier(CLK_LOCAL_MEM_FENCE);
-    if (tid_x < 1)
-        accum[tid_x] += accum[tid_x+1];
+    if (lid_x < 1)
+        accum[lid_x] += accum[lid_x+1];
     barrier(CLK_LOCAL_MEM_FENCE);
 
     float len_sq = accum[0];
     float len_inv = 1.0f / sqrt(len_sq);
 
-    for (int i = tid_x; i < histlen; i += bsz_x) {
-        desc[tid_y*histlen+i] *= len_inv;
+    for (int i = lid_x; i < histlen; i += lsz_x) {
+        desc[lid_y*histlen+i] *= len_inv;
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 }
@@ -219,18 +219,9 @@ __kernel void detectExtrema(
     __global const T* dog,
     KParam iDoG,
     const unsigned max_feat,
-    const float threshold)
+    const float threshold,
+    __local float* l_mem)
 {
-    // One pixel border for each side
-    const int l_i = 32+2;
-    const int l_j = 8+2;
-
-    __local float l_mem[(32+2)*(8+2)*3];
-    __local float* l_prev   = l_mem;
-    __local float* l_center = l_mem + (32+2)*(8+2);
-    __local float* l_next   = l_mem + (32+2)*(8+2)*2;
-    __local float* l_tmp;
-
     const int dim0 = iDoG.dims[0];
     const int dim1 = iDoG.dims[1];
     const int imel = iDoG.dims[0]*iDoG.dims[1];
@@ -242,6 +233,14 @@ __kernel void detectExtrema(
     const int i = get_group_id(0) * lsz_i + lid_i+IMG_BORDER;
     const int j = get_group_id(1) * lsz_j + lid_j+IMG_BORDER;
 
+    // One pixel border for each side
+    const int l_i = lsz_i+2;
+    const int l_j = lsz_j+2;
+
+    __local float* l_prev   = l_mem;
+    __local float* l_center = l_mem + l_i * l_j;
+    __local float* l_next   = l_mem + l_i * l_j * 2;
+
     const int x = lid_i+1;
     const int y = lid_j+1;
 
@@ -249,21 +248,21 @@ __kernel void detectExtrema(
         const int l_i_half = l_i/2;
         const int l_j_half = l_j/2;
         if (lid_i < l_i_half && lid_j < l_j_half && i < dim0-IMG_BORDER+1 && j < dim1-IMG_BORDER+1) {
-                l_next  [lid_j*l_i + lid_i] = dog[(l+1)*imel+(j-1)*dim0+i-1];
-                l_center[lid_j*l_i + lid_i] = dog[(l  )*imel+(j-1)*dim0+i-1];
-                l_prev  [lid_j*l_i + lid_i] = dog[(l-1)*imel+(j-1)*dim0+i-1];
+                l_next  [lid_j*l_i + lid_i] = (float)dog[(l+1)*imel+(j-1)*dim0+i-1];
+                l_center[lid_j*l_i + lid_i] = (float)dog[(l  )*imel+(j-1)*dim0+i-1];
+                l_prev  [lid_j*l_i + lid_i] = (float)dog[(l-1)*imel+(j-1)*dim0+i-1];
 
-                l_next  [lid_j*l_i + lid_i+l_i_half] = dog[(l+1)*imel+(j-1)*dim0+i-1+l_i_half];
-                l_center[lid_j*l_i + lid_i+l_i_half] = dog[(l  )*imel+(j-1)*dim0+i-1+l_i_half];
-                l_prev  [lid_j*l_i + lid_i+l_i_half] = dog[(l-1)*imel+(j-1)*dim0+i-1+l_i_half];
+                l_next  [lid_j*l_i + lid_i+l_i_half] = (float)dog[(l+1)*imel+(j-1)*dim0+i-1+l_i_half];
+                l_center[lid_j*l_i + lid_i+l_i_half] = (float)dog[(l  )*imel+(j-1)*dim0+i-1+l_i_half];
+                l_prev  [lid_j*l_i + lid_i+l_i_half] = (float)dog[(l-1)*imel+(j-1)*dim0+i-1+l_i_half];
 
-                l_next  [(lid_j+l_j_half)*l_i + lid_i] = dog[(l+1)*imel+(j-1+l_j_half)*dim0+i-1];
-                l_center[(lid_j+l_j_half)*l_i + lid_i] = dog[(l  )*imel+(j-1+l_j_half)*dim0+i-1];
-                l_prev  [(lid_j+l_j_half)*l_i + lid_i] = dog[(l-1)*imel+(j-1+l_j_half)*dim0+i-1];
+                l_next  [(lid_j+l_j_half)*l_i + lid_i] = (float)dog[(l+1)*imel+(j-1+l_j_half)*dim0+i-1];
+                l_center[(lid_j+l_j_half)*l_i + lid_i] = (float)dog[(l  )*imel+(j-1+l_j_half)*dim0+i-1];
+                l_prev  [(lid_j+l_j_half)*l_i + lid_i] = (float)dog[(l-1)*imel+(j-1+l_j_half)*dim0+i-1];
 
-                l_next  [(lid_j+l_j_half)*l_i + lid_i+l_i_half] = dog[(l+1)*imel+(j-1+l_j_half)*dim0+i-1+l_i_half];
-                l_center[(lid_j+l_j_half)*l_i + lid_i+l_i_half] = dog[(l  )*imel+(j-1+l_j_half)*dim0+i-1+l_i_half];
-                l_prev  [(lid_j+l_j_half)*l_i + lid_i+l_i_half] = dog[(l-1)*imel+(j-1+l_j_half)*dim0+i-1+l_i_half];
+                l_next  [(lid_j+l_j_half)*l_i + lid_i+l_i_half] = (float)dog[(l+1)*imel+(j-1+l_j_half)*dim0+i-1+l_i_half];
+                l_center[(lid_j+l_j_half)*l_i + lid_i+l_i_half] = (float)dog[(l  )*imel+(j-1+l_j_half)*dim0+i-1+l_i_half];
+                l_prev  [(lid_j+l_j_half)*l_i + lid_i+l_i_half] = (float)dog[(l-1)*imel+(j-1+l_j_half)*dim0+i-1+l_i_half];
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -508,20 +507,19 @@ __kernel void calcOrientation(
     KParam iGauss,
     const unsigned max_feat,
     const unsigned octave,
-    const int double_input)
+    const int double_input,
+    __local float* l_mem)
 {
-    const int tid_x = get_local_id(0);
-    const int tid_y = get_local_id(1);
-    const int bsz_x = get_local_size(0);
+    const int lid_x = get_local_id(0);
+    const int lid_y = get_local_id(1);
+    const int lsz_x = get_local_size(0);
 
     const unsigned f = get_global_id(1);
 
     const int n = ORI_HIST_BINS;
 
-    const int hdim = ORI_HIST_BINS;
-    const int thdim = ORI_HIST_BINS;
-    __local float hist[ORI_HIST_BINS*8];
-    __local float temphist[ORI_HIST_BINS*8];
+    __local float* hist = l_mem;
+    __local float* temphist = l_mem + n*8;
 
     if (f < total_feat) {
         // Load keypoint information
@@ -542,8 +540,8 @@ __kernel void calcOrientation(
         const float exp_denom = 2.f * sigma * sigma;
 
         // Initialize temporary histogram
-        for (int i = tid_x; i < ORI_HIST_BINS; i += bsz_x) {
-            hist[tid_y*hdim + i] = 0.f;
+        for (int i = lid_x; i < n; i += lsz_x) {
+            hist[lid_y*n + i] = 0.f;
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -555,7 +553,7 @@ __kernel void calcOrientation(
         __global const T* img = gauss_octave + layer_offset;
 
         // Calculate orientation histogram
-        for (int l = tid_x; l < len*len; l += bsz_x) {
+        for (int l = lid_x; l < len*len; l += lsz_x) {
             int i = l / len - radius;
             int j = l % len - radius;
 
@@ -576,60 +574,60 @@ __kernel void calcOrientation(
             bin = bin < n ? bin : 0;
             bin = (bin < 0) ? 0 : (bin >= n) ? n-1 : bin;
 
-            fatomic_add(&hist[tid_y*hdim+bin], w*mag);
+            fatomic_add(&hist[lid_y*n+bin], w*mag);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
         for (int i = 0; i < SMOOTH_ORI_PASSES; i++) {
-            for (int j = tid_x; j < n; j += bsz_x) {
-                temphist[tid_y*hdim+j] = hist[tid_y*hdim+j];
+            for (int j = lid_x; j < n; j += lsz_x) {
+                temphist[lid_y*n+j] = hist[lid_y*n+j];
             }
             barrier(CLK_LOCAL_MEM_FENCE);
-            for (int j = tid_x; j < n; j += bsz_x) {
-                float prev = (j == 0) ? temphist[tid_y*hdim+n-1] : temphist[tid_y*hdim+j-1];
-                float next = (j+1 == n) ? temphist[tid_y*hdim] : temphist[tid_y*hdim+j+1];
-                hist[tid_y*hdim+j] = 0.25f * prev + 0.5f * temphist[tid_y*hdim+j] + 0.25f * next;
+            for (int j = lid_x; j < n; j += lsz_x) {
+                float prev = (j == 0) ? temphist[lid_y*n+n-1] : temphist[lid_y*n+j-1];
+                float next = (j+1 == n) ? temphist[lid_y*n] : temphist[lid_y*n+j+1];
+                hist[lid_y*n+j] = 0.25f * prev + 0.5f * temphist[lid_y*n+j] + 0.25f * next;
             }
             barrier(CLK_LOCAL_MEM_FENCE);
         }
 
-        for (int i = tid_x; i < n; i += bsz_x)
-            temphist[tid_y*hdim+i] = hist[tid_y*hdim+i];
+        for (int i = lid_x; i < n; i += lsz_x)
+            temphist[lid_y*n+i] = hist[lid_y*n+i];
         barrier(CLK_LOCAL_MEM_FENCE);
 
-        if (tid_x < 16)
-            temphist[tid_y*thdim+tid_x] = fmax(hist[tid_y*hdim+tid_x], hist[tid_y*hdim+tid_x+16]);
+        if (lid_x < 16)
+            temphist[lid_y*n+lid_x] = fmax(hist[lid_y*n+lid_x], hist[lid_y*n+lid_x+16]);
         barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid_x < 8)
-            temphist[tid_y*thdim+tid_x] = fmax(temphist[tid_y*thdim+tid_x], temphist[tid_y*thdim+tid_x+8]);
+        if (lid_x < 8)
+            temphist[lid_y*n+lid_x] = fmax(temphist[lid_y*n+lid_x], temphist[lid_y*n+lid_x+8]);
         barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid_x < 4) {
-            temphist[tid_y*thdim+tid_x] = fmax(temphist[tid_y*thdim+tid_x], hist[tid_y*hdim+tid_x+32]);
-            temphist[tid_y*thdim+tid_x] = fmax(temphist[tid_y*thdim+tid_x], temphist[tid_y*thdim+tid_x+4]);
+        if (lid_x < 4) {
+            temphist[lid_y*n+lid_x] = fmax(temphist[lid_y*n+lid_x], hist[lid_y*n+lid_x+32]);
+            temphist[lid_y*n+lid_x] = fmax(temphist[lid_y*n+lid_x], temphist[lid_y*n+lid_x+4]);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid_x < 2)
-            temphist[tid_y*thdim+tid_x] = fmax(temphist[tid_y*thdim+tid_x], temphist[tid_y*thdim+tid_x+2]);
+        if (lid_x < 2)
+            temphist[lid_y*n+lid_x] = fmax(temphist[lid_y*n+lid_x], temphist[lid_y*n+lid_x+2]);
         barrier(CLK_LOCAL_MEM_FENCE);
-        if (tid_x < 1)
-            temphist[tid_y*thdim+tid_x] = fmax(temphist[tid_y*thdim+tid_x], temphist[tid_y*thdim+tid_x+1]);
+        if (lid_x < 1)
+            temphist[lid_y*n+lid_x] = fmax(temphist[lid_y*n+lid_x], temphist[lid_y*n+lid_x+1]);
         barrier(CLK_LOCAL_MEM_FENCE);
-        float omax = temphist[tid_y*thdim];
+        float omax = temphist[lid_y*n];
 
         float mag_thr = (float)(omax * ORI_PEAK_RATIO);
         int l, r;
         float bin;
-        for (int j = tid_x; j < n; j+=bsz_x) {
+        for (int j = lid_x; j < n; j+=lsz_x) {
             l = (j == 0) ? n - 1 : j - 1;
             r = (j + 1) % n;
-            if (hist[tid_y*hdim+j] > hist[tid_y*hdim+l] &&
-                hist[tid_y*hdim+j] > hist[tid_y*hdim+r] &&
-                hist[tid_y*hdim+j] >= mag_thr) {
+            if (hist[lid_y*n+j] > hist[lid_y*n+l] &&
+                hist[lid_y*n+j] > hist[lid_y*n+r] &&
+                hist[lid_y*n+j] >= mag_thr) {
                 unsigned idx = atomic_inc(counter);
 
                 if (idx < max_feat) {
-                    float bin = j + 0.5f * (hist[tid_y*hdim+l] - hist[tid_y*hdim+r]) /
-                                (hist[tid_y*hdim+l] - 2.0f*hist[tid_y*hdim+j] + hist[tid_y*hdim+r]);
+                    float bin = j + 0.5f * (hist[lid_y*n+l] - hist[lid_y*n+r]) /
+                                (hist[lid_y*n+l] - 2.0f*hist[lid_y*n+j] + hist[lid_y*n+r]);
                     bin = (bin < 0.0f) ? bin + n : (bin >= n) ? bin - n : bin;
                     float ori = 360.f - ((360.f/n) * bin);
 
@@ -661,6 +659,7 @@ __kernel void calcOrientation(
 __kernel void computeDescriptor(
     __global float* desc_out,
     const unsigned desc_len,
+    const unsigned histsz,
     __global const float* x_in,
     __global const float* y_in,
     __global const unsigned* layer_in,
@@ -674,17 +673,17 @@ __kernel void computeDescriptor(
     const int n,
     const float scale,
     const float sigma,
-    const int n_layers)
+    const int n_layers,
+    __local float* l_mem)
 {
-    const int tid_x = get_local_id(0);
-    const int tid_y = get_local_id(1);
-    const int bsz_x = get_local_size(0);
+    const int lid_x = get_local_id(0);
+    const int lid_y = get_local_id(1);
+    const int lsz_x = get_local_size(0);
 
     const int f = get_global_id(1);
 
-    const int histsz = 8;
-    __local float desc[128*8];
-    __local float accum[128];
+    __local float* desc = l_mem;
+    __local float* accum = l_mem + desc_len * histsz;
 
     if (f < total_feat) {
         const unsigned layer = layer_in[f];
@@ -708,14 +707,14 @@ __kernel void computeDescriptor(
 
         int len = radius*2+1;
         const int histlen = d*d*n;
-        const int hist_off = (tid_x % histsz) * 128;
+        const int hist_off = (lid_x % histsz) * desc_len;
 
-        for (int i = tid_x; i < histlen*histsz; i += bsz_x)
-            desc[tid_y*histlen+i] = 0.f;
+        for (int i = lid_x; i < histlen*histsz; i += lsz_x)
+            desc[lid_y*histlen+i] = 0.f;
         barrier(CLK_LOCAL_MEM_FENCE);
 
         // Calculate orientation histogram
-        for (int l = tid_x; l < len*len; l += bsz_x) {
+        for (int l = lid_x; l < len*len; l += lsz_x) {
             int i = l / len - radius;
             int j = l % len - radius;
 
@@ -761,7 +760,7 @@ __kernel void computeDescriptor(
 		                        for (int ol = 0; ol <= 1; ol++) {
 		                            int ob = (o0 + ol) % n;
 		                            float v_o = v_x * ((ol == 0) ? 1.0f - obin : obin);
-		                            fatomic_add(&desc[hist_off + tid_y*128 + (yb*d + xb)*n + ob], v_o);
+		                            fatomic_add(&desc[hist_off + lid_y*desc_len + (yb*d + xb)*n + ob], v_o);
 		                        }
 		                    }
 	                    }
@@ -772,27 +771,27 @@ __kernel void computeDescriptor(
         barrier(CLK_LOCAL_MEM_FENCE);
 
         // Combine histograms (reduces previous atomicAdd overhead)
-        for (int l = tid_x; l < 128*4; l += bsz_x)
-            desc[l] += desc[l+4*128];
+        for (int l = lid_x; l < desc_len*4; l += lsz_x)
+            desc[l] += desc[l+4*desc_len];
         barrier(CLK_LOCAL_MEM_FENCE);
-        for (int l = tid_x; l < 128*2; l += bsz_x)
-            desc[l    ] += desc[l+2*128];
+        for (int l = lid_x; l < desc_len*2; l += lsz_x)
+            desc[l    ] += desc[l+2*desc_len];
         barrier(CLK_LOCAL_MEM_FENCE);
-        for (int l = tid_x; l < 128; l += bsz_x)
-            desc[l] += desc[l+128];
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        normalizeDesc(desc, accum, histlen, tid_x, tid_y, bsz_x);
-
-        for (int i = tid_x; i < d*d*n; i += bsz_x)
-            desc[tid_y*128+i] = min(desc[tid_y*128+i], DESCR_MAG_THR);
+        for (int l = lid_x; l < desc_len; l += lsz_x)
+            desc[l] += desc[l+desc_len];
         barrier(CLK_LOCAL_MEM_FENCE);
 
-        normalizeDesc(desc, accum, histlen, tid_x, tid_y, bsz_x);
+        normalizeDesc(desc, accum, histlen, lid_x, lid_y, lsz_x);
+
+        for (int i = lid_x; i < d*d*n; i += lsz_x)
+            desc[lid_y*desc_len+i] = min(desc[lid_y*desc_len+i], DESCR_MAG_THR);
+        barrier(CLK_LOCAL_MEM_FENCE);
+
+        normalizeDesc(desc, accum, histlen, lid_x, lid_y, lsz_x);
 
         // Calculate final descriptor values
-        for (int k = tid_x; k < d*d*n; k += bsz_x) {
-            desc_out[f*desc_len+k] = round(min(255.f, desc[tid_y*128+k] * INT_DESCR_FCTR));
+        for (int k = lid_x; k < d*d*n; k += lsz_x) {
+            desc_out[f*desc_len+k] = round(min(255.f, desc[lid_y*desc_len+k] * INT_DESCR_FCTR));
         }
     }
 }
