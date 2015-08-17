@@ -215,8 +215,8 @@ void siftTest(string pTestFile)
         vector<feat_desc_t> gold_feat_desc;
         array_to_feat_desc(gold_feat_desc, &goldFeat[0].front(), &goldFeat[1].front(), &goldFeat[2].front(), &goldFeat[3].front(), &goldFeat[4].front(), goldDesc, goldFeat[0].size());
 
-        std::sort(out_feat_desc.begin(), out_feat_desc.end(), feat_cmp);
-        std::sort(gold_feat_desc.begin(), gold_feat_desc.end(), feat_cmp);
+        std::stable_sort(out_feat_desc.begin(), out_feat_desc.end(), feat_cmp);
+        std::stable_sort(gold_feat_desc.begin(), gold_feat_desc.end(), feat_cmp);
 
         vector<feat_t> out_feat;
         vector<desc_t> v_out_desc;
@@ -305,8 +305,8 @@ TEST(SIFT, CPP)
     vector<feat_desc_t> gold_feat_desc;
     array_to_feat_desc(gold_feat_desc, &goldFeat[0].front(), &goldFeat[1].front(), &goldFeat[2].front(), &goldFeat[3].front(), &goldFeat[4].front(), goldDesc, goldFeat[0].size());
 
-    std::sort(out_feat_desc.begin(), out_feat_desc.end(), feat_cmp);
-    std::sort(gold_feat_desc.begin(), gold_feat_desc.end(), feat_cmp);
+    std::stable_sort(out_feat_desc.begin(), out_feat_desc.end(), feat_cmp);
+    std::stable_sort(gold_feat_desc.begin(), gold_feat_desc.end(), feat_cmp);
 
     vector<feat_t> out_feat;
     vector<desc_t> v_out_desc;
