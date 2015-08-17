@@ -1119,7 +1119,8 @@ void sift(unsigned* out_feat,
         const unsigned imel = dog_pyr[i].dims[0] * dog_pyr[i].dims[1];
         const unsigned max_feat = ceil(imel * feature_ratio);
 
-        CUDA_CHECK(cudaMemset(d_count, 0, sizeof(unsigned)));
+        CUDA_CHECK(cudaMemsetAsync(d_count, 0, sizeof(unsigned),
+                                   cuda::getStream(cuda::getActiveDeviceId())));
 
         float* d_extrema_x = memAlloc<float>(max_feat);
         float* d_extrema_y = memAlloc<float>(max_feat);
@@ -1150,7 +1151,8 @@ void sift(unsigned* out_feat,
             continue;
         }
 
-        CUDA_CHECK(cudaMemset(d_count, 0, sizeof(unsigned)));
+        CUDA_CHECK(cudaMemsetAsync(d_count, 0, sizeof(unsigned),
+                                   cuda::getStream(cuda::getActiveDeviceId())));
 
         unsigned interp_feat = 0;
 
@@ -1180,7 +1182,8 @@ void sift(unsigned* out_feat,
         CUDA_CHECK(cudaMemcpy(&interp_feat, d_count, sizeof(unsigned), cudaMemcpyDeviceToHost));
         interp_feat = min(interp_feat, max_feat);
 
-        CUDA_CHECK(cudaMemset(d_count, 0, sizeof(unsigned)));
+        CUDA_CHECK(cudaMemsetAsync(d_count, 0, sizeof(unsigned),
+                                   cuda::getStream(cuda::getActiveDeviceId())));
 
         if (interp_feat == 0) {
             memFree(d_interp_x);
@@ -1241,7 +1244,8 @@ void sift(unsigned* out_feat,
 
         unsigned nodup_feat = 0;
         CUDA_CHECK(cudaMemcpy(&nodup_feat, d_count, sizeof(unsigned), cudaMemcpyDeviceToHost));
-        CUDA_CHECK(cudaMemset(d_count, 0, sizeof(unsigned)));
+        CUDA_CHECK(cudaMemsetAsync(d_count, 0, sizeof(unsigned),
+                                   cuda::getStream(cuda::getActiveDeviceId())));
 
         const unsigned max_oriented_feat = nodup_feat * 3;
 
