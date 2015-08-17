@@ -592,13 +592,21 @@ __global__ void calcOrientation(
     float* hist = shrdMem;
     float* temphist = shrdMem + n*8;
 
+    // Initialize temporary histogram
+    for (int i = tid_x; i < ORI_HIST_BINS; i += bsz_x)
+        hist[tid_y*n + i] = 0.f;
+    __syncthreads();
+
+    float real_x, real_y, response, size;
+    unsigned layer;
+
     if (f < total_feat) {
         // Load keypoint information
-        const float real_x = x_in[f];
-        const float real_y = y_in[f];
-        const unsigned layer = layer_in[f];
-        const float response = response_in[f];
-        const float size = size_in[f];
+        real_x = x_in[f];
+        real_y = y_in[f];
+        layer = layer_in[f];
+        response = response_in[f];
+        size = size_in[f];
 
         const int pt_x = (int)round(real_x / (1 << octave));
         const int pt_y = (int)round(real_y / (1 << octave));
@@ -616,11 +624,6 @@ __global__ void calcOrientation(
 
         // Points img to correct Gaussian pyramid layer
         const T* img_ptr = gauss_octave.ptr + layer * imel;
-
-        // Initialize temporary histogram
-        for (int i = tid_x; i < ORI_HIST_BINS; i += bsz_x)
-            hist[tid_y*n + i] = 0.f;
-        __syncthreads();
 
         // Calculate orientation histogram
         for (int l = tid_x; l < len*len; l += bsz_x) {
@@ -645,44 +648,46 @@ __global__ void calcOrientation(
 
             atomicAdd(&hist[tid_y*n+bin], w*mag);
         }
-        __syncthreads();
+    }
+    __syncthreads();
 
-        for (int i = 0; i < SMOOTH_ORI_PASSES; i++) {
-            for (int j = tid_x; j < n; j += bsz_x) {
-                temphist[tid_y*n+j] = hist[tid_y*n+j];
-            }
-            __syncthreads();
-            for (int j = tid_x; j < n; j += bsz_x) {
-                float prev = (j == 0) ? temphist[tid_y*n+n-1] : temphist[tid_y*n+j-1];
-                float next = (j+1 == n) ? temphist[tid_y*n] : temphist[tid_y*n+j+1];
-                hist[tid_y*n+j] = 0.25f * prev + 0.5f * temphist[tid_y*n+j] + 0.25f * next;
-            }
-            __syncthreads();
-        }
-
-        for (int i = tid_x; i < n; i += bsz_x)
-            temphist[tid_y*n+i] = hist[tid_y*n+i];
-        __syncthreads();
-
-        if (tid_x < 16)
-            temphist[tid_y*n+tid_x] = fmax(hist[tid_y*n+tid_x], hist[tid_y*n+tid_x+16]);
-        __syncthreads();
-        if (tid_x < 8)
-            temphist[tid_y*n+tid_x] = fmax(temphist[tid_y*n+tid_x], temphist[tid_y*n+tid_x+8]);
-        __syncthreads();
-        if (tid_x < 4) {
-            temphist[tid_y*n+tid_x] = fmax(temphist[tid_y*n+tid_x], hist[tid_y*n+tid_x+32]);
-            temphist[tid_y*n+tid_x] = fmax(temphist[tid_y*n+tid_x], temphist[tid_y*n+tid_x+4]);
+    for (int i = 0; i < SMOOTH_ORI_PASSES; i++) {
+        for (int j = tid_x; j < n; j += bsz_x) {
+            temphist[tid_y*n+j] = hist[tid_y*n+j];
         }
         __syncthreads();
-        if (tid_x < 2)
-            temphist[tid_y*n+tid_x] = fmax(temphist[tid_y*n+tid_x], temphist[tid_y*n+tid_x+2]);
+        for (int j = tid_x; j < n; j += bsz_x) {
+            float prev = (j == 0) ? temphist[tid_y*n+n-1] : temphist[tid_y*n+j-1];
+            float next = (j+1 == n) ? temphist[tid_y*n] : temphist[tid_y*n+j+1];
+            hist[tid_y*n+j] = 0.25f * prev + 0.5f * temphist[tid_y*n+j] + 0.25f * next;
+        }
         __syncthreads();
-        if (tid_x < 1)
-            temphist[tid_y*n+tid_x] = fmax(temphist[tid_y*n+tid_x], temphist[tid_y*n+tid_x+1]);
-        __syncthreads();
-        float omax = temphist[tid_y*n];
+    }
 
+    for (int i = tid_x; i < n; i += bsz_x)
+        temphist[tid_y*n+i] = hist[tid_y*n+i];
+    __syncthreads();
+
+    if (tid_x < 16)
+        temphist[tid_y*n+tid_x] = fmax(hist[tid_y*n+tid_x], hist[tid_y*n+tid_x+16]);
+    __syncthreads();
+    if (tid_x < 8)
+        temphist[tid_y*n+tid_x] = fmax(temphist[tid_y*n+tid_x], temphist[tid_y*n+tid_x+8]);
+    __syncthreads();
+    if (tid_x < 4) {
+        temphist[tid_y*n+tid_x] = fmax(temphist[tid_y*n+tid_x], hist[tid_y*n+tid_x+32]);
+        temphist[tid_y*n+tid_x] = fmax(temphist[tid_y*n+tid_x], temphist[tid_y*n+tid_x+4]);
+    }
+    __syncthreads();
+    if (tid_x < 2)
+        temphist[tid_y*n+tid_x] = fmax(temphist[tid_y*n+tid_x], temphist[tid_y*n+tid_x+2]);
+    __syncthreads();
+    if (tid_x < 1)
+        temphist[tid_y*n+tid_x] = fmax(temphist[tid_y*n+tid_x], temphist[tid_y*n+tid_x+1]);
+    __syncthreads();
+    float omax = temphist[tid_y*n];
+
+    if (f < total_feat) {
         float mag_thr = (float)(omax * ORI_PEAK_RATIO);
         int l, r;
         for (int j = tid_x; j < n; j+=bsz_x) {
@@ -1165,10 +1170,6 @@ void sift(unsigned* out_feat,
         threads = dim3(SIFT_THREADS, 1);
         blocks = dim3(divup(extrema_feat, threads.x), 1);
 
-        Param<T>* dog_octave;
-        CUDA_CHECK(cudaMalloc((void **)&dog_octave, (n_layers+2)*sizeof(Param<T>)));
-        CUDA_CHECK(cudaMemcpy(dog_octave, &dog_pyr[i*(n_layers+2)], (n_layers+2)*sizeof(Param<T>), cudaMemcpyHostToDevice));
-
         CUDA_LAUNCH((interpolateExtrema<T>), blocks, threads,
                     d_interp_x, d_interp_y, d_interp_layer,
                     d_interp_response, d_interp_size, d_count,
@@ -1176,8 +1177,6 @@ void sift(unsigned* out_feat,
                     dog_pyr[i], max_feat, i, n_layers,
                     contrast_thr, edge_thr, init_sigma, img_scale);
         POST_LAUNCH_CHECK();
-
-        CUDA_CHECK(cudaFree(dog_octave));
 
         CUDA_CHECK(cudaMemcpy(&interp_feat, d_count, sizeof(unsigned), cudaMemcpyDeviceToHost));
         interp_feat = min(interp_feat, max_feat);
