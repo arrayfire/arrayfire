@@ -598,7 +598,6 @@ void sift(unsigned* out_feat,
                  *d_interp_response, *d_interp_size, interp_feat);
             CL_DEBUG_FINISH(getQueue());
 
-
             getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &nodup_feat);
             nodup_feat = min(nodup_feat, interp_feat);
 
@@ -686,6 +685,8 @@ void sift(unsigned* out_feat,
                 d_desc_pyr[o] = d_desc;
             }
         }
+
+        bufferFree(d_count);
 
         // If no features are found, set found features to 0 and return
         if (total_feat == 0) {
