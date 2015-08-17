@@ -267,19 +267,20 @@ __inline__ __device__ void normalizeDesc(
 template<typename T>
 __global__ void sub(
     Param<T> out,
-    CParam<T> in1,
-    CParam<T> in2)
+    CParam<T> in,
+    const unsigned nel,
+    const unsigned n_layers)
 {
-    unsigned i = blockDim.x * blockIdx.x + threadIdx.x;
-    unsigned nel = in1.dims[3] * in1.strides[3];
+    unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (i < nel)
-        out.ptr[i] = in1.ptr[i] - in2.ptr[i];
+    for (unsigned l = 0; l < n_layers; l++)
+        out.ptr[l*nel + i] = in.ptr[(l+1)*nel + i] - in.ptr[l*nel + i];
 }
 
-#define LCPTR(Y, X) (s_center[(Y) * s_i + (X)])
-#define LPPTR(Y, X) (s_prev[(Y) * s_i + (X)])
-#define LNPTR(Y, X) (s_next[(Y) * s_i + (X)])
+#define SCPTR(Y, X) (s_center[(Y) * s_i + (X)])
+#define SPPTR(Y, X) (s_prev[(Y) * s_i + (X)])
+#define SNPTR(Y, X) (s_next[(Y) * s_i + (X)])
+#define DPTR(Z, Y, X) (dog.ptr[(Z) * imel + (Y) * dim0 + (X)])
 
 // Determines whether a pixel is a scale-space extremum by comparing it to its
 // 3x3x3 pixel neighborhood.
@@ -289,15 +290,13 @@ __global__ void detectExtrema(
     float* y_out,
     unsigned* layer_out,
     unsigned* counter,
-    CParam<T> prev,
-    CParam<T> center,
-    CParam<T> next,
-    const unsigned layer,
+    CParam<T> dog,
     const unsigned max_feat,
     const float threshold)
 {
-    const int dim0 = center.dims[0];
-    const int dim1 = center.dims[1];
+    const int dim0 = dog.dims[0];
+    const int dim1 = dog.dims[1];
+    const int imel = dim0 * dim1;
 
     const int tid_i = threadIdx.x;
     const int tid_j = threadIdx.y;
@@ -319,65 +318,68 @@ __global__ void detectExtrema(
     float* s_center = shrdMem + s_i * s_j;
     float* s_prev   = shrdMem + s_i * s_j * 2;
 
-    const int s_i_half = s_i/2;
-    const int s_j_half = s_j/2;
-    if (tid_i < s_i_half && tid_j < s_j_half && i < dim0-IMG_BORDER+1 && j < dim1-IMG_BORDER+1) {
-        s_next  [tid_j*s_i + tid_i] = next.ptr  [(j-1)*dim0+i-1];
-        s_center[tid_j*s_i + tid_i] = center.ptr[(j-1)*dim0+i-1];
-        s_prev  [tid_j*s_i + tid_i] = prev.ptr  [(j-1)*dim0+i-1];
+    for (int l = 1; l < dog.dims[2]-1; l++) {
+        const int s_i_half = s_i/2;
+        const int s_j_half = s_j/2;
+        if (tid_i < s_i_half && tid_j < s_j_half && i < dim0-IMG_BORDER+1 && j < dim1-IMG_BORDER+1) {
+            SNPTR(tid_j, tid_i) = DPTR(l+1, j-1, i-1);
+            SCPTR(tid_j, tid_i) = DPTR(l,   j-1, i-1);
+            SPPTR(tid_j, tid_i) = DPTR(l-1, j-1, i-1);
 
-        s_next  [tid_j*s_i + tid_i+s_i_half] = next.ptr  [(j-1)*dim0+i-1+s_i_half];
-        s_center[tid_j*s_i + tid_i+s_i_half] = center.ptr[(j-1)*dim0+i-1+s_i_half];
-        s_prev  [tid_j*s_i + tid_i+s_i_half] = prev.ptr  [(j-1)*dim0+i-1+s_i_half];
+            SNPTR(tid_j, tid_i+s_i_half) = DPTR((l+1), j-1, i-1+s_i_half);
+            SCPTR(tid_j, tid_i+s_i_half) = DPTR((l  ), j-1, i-1+s_i_half);
+            SPPTR(tid_j, tid_i+s_i_half) = DPTR((l-1), j-1, i-1+s_i_half);
 
-        s_next  [(tid_j+s_j_half)*s_i + tid_i] = next.ptr  [(j-1+s_j_half)*dim0+i-1];
-        s_center[(tid_j+s_j_half)*s_i + tid_i] = center.ptr[(j-1+s_j_half)*dim0+i-1];
-        s_prev  [(tid_j+s_j_half)*s_i + tid_i] = prev.ptr  [(j-1+s_j_half)*dim0+i-1];
+            SNPTR(tid_j+s_j_half, tid_i) = DPTR(l+1, j-1+s_j_half, i-1);
+            SCPTR(tid_j+s_j_half, tid_i) = DPTR(l,   j-1+s_j_half, i-1);
+            SPPTR(tid_j+s_j_half, tid_i) = DPTR(l-1, j-1+s_j_half, i-1);
 
-        s_next  [(tid_j+s_j_half)*s_i + tid_i+s_i_half] = next.ptr  [(j-1+s_j_half)*dim0+i-1+s_i_half];
-        s_center[(tid_j+s_j_half)*s_i + tid_i+s_i_half] = center.ptr[(j-1+s_j_half)*dim0+i-1+s_i_half];
-        s_prev  [(tid_j+s_j_half)*s_i + tid_i+s_i_half] = prev.ptr  [(j-1+s_j_half)*dim0+i-1+s_i_half];
-    }
-    __syncthreads();
-
-    float p = s_center[y*s_i + x];
-
-    if (abs(p) > threshold && i < dim0-IMG_BORDER && j < dim1-IMG_BORDER &&
-        ((p > 0 && p > LCPTR(y-1, x-1) && p > LCPTR(y-1, x) &&
-          p > LCPTR(y-1, x+1) && p > LCPTR(y, x-1) && p > LCPTR(y,   x+1)  &&
-          p > LCPTR(y+1, x-1) && p > LCPTR(y+1, x) && p > LCPTR(y+1, x+1)  &&
-          p > LPPTR(y-1, x-1) && p > LPPTR(y-1, x) && p > LPPTR(y-1, x+1)  &&
-          p > LPPTR(y,   x-1) && p > LPPTR(y  , x) && p > LPPTR(y,   x+1)  &&
-          p > LPPTR(y+1, x-1) && p > LPPTR(y+1, x) && p > LPPTR(y+1, x+1)  &&
-          p > LNPTR(y-1, x-1) && p > LNPTR(y-1, x) && p > LNPTR(y-1, x+1)  &&
-          p > LNPTR(y,   x-1) && p > LNPTR(y  , x) && p > LNPTR(y,   x+1)  &&
-          p > LNPTR(y+1, x-1) && p > LNPTR(y+1, x) && p > LNPTR(y+1, x+1)) ||
-         (p < 0 && p < LCPTR(y-1, x-1) && p < LCPTR(y-1, x) &&
-          p < LCPTR(y-1, x+1) && p < LCPTR(y, x-1) && p < LCPTR(y,   x+1)  &&
-          p < LCPTR(y+1, x-1) && p < LCPTR(y+1, x) && p < LCPTR(y+1, x+1)  &&
-          p < LPPTR(y-1, x-1) && p < LPPTR(y-1, x) && p < LPPTR(y-1, x+1)  &&
-          p < LPPTR(y,   x-1) && p < LPPTR(y  , x) && p < LPPTR(y,   x+1)  &&
-          p < LPPTR(y+1, x-1) && p < LPPTR(y+1, x) && p < LPPTR(y+1, x+1)  &&
-          p < LNPTR(y-1, x-1) && p < LNPTR(y-1, x) && p < LNPTR(y-1, x+1)  &&
-          p < LNPTR(y,   x-1) && p < LNPTR(y  , x) && p < LNPTR(y,   x+1)  &&
-          p < LNPTR(y+1, x-1) && p < LNPTR(y+1, x) && p < LNPTR(y+1, x+1)))) {
-
-        unsigned idx = atomicAdd(counter, 1u);
-        if (idx < max_feat)
-        {
-            x_out[idx] = (float)j;
-            y_out[idx] = (float)i;
-            layer_out[idx] = layer;
+            SNPTR(tid_j+s_j_half, tid_i+s_i_half) = DPTR(l+1, j-1+s_j_half, i-1+s_i_half);
+            SCPTR(tid_j+s_j_half, tid_i+s_i_half) = DPTR(l,   j-1+s_j_half, i-1+s_i_half);
+            SPPTR(tid_j+s_j_half, tid_i+s_i_half) = DPTR(l-1, j-1+s_j_half, i-1+s_i_half);
         }
+        __syncthreads();
+
+        float p = SCPTR(y, x);
+
+        if (abs(p) > threshold && i < dim0-IMG_BORDER && j < dim1-IMG_BORDER &&
+            ((p > 0 && p > SCPTR(y-1, x-1) && p > SCPTR(y-1, x) &&
+              p > SCPTR(y-1, x+1) && p > SCPTR(y, x-1) && p > SCPTR(y,   x+1)  &&
+              p > SCPTR(y+1, x-1) && p > SCPTR(y+1, x) && p > SCPTR(y+1, x+1)  &&
+              p > SPPTR(y-1, x-1) && p > SPPTR(y-1, x) && p > SPPTR(y-1, x+1)  &&
+              p > SPPTR(y,   x-1) && p > SPPTR(y  , x) && p > SPPTR(y,   x+1)  &&
+              p > SPPTR(y+1, x-1) && p > SPPTR(y+1, x) && p > SPPTR(y+1, x+1)  &&
+              p > SNPTR(y-1, x-1) && p > SNPTR(y-1, x) && p > SNPTR(y-1, x+1)  &&
+              p > SNPTR(y,   x-1) && p > SNPTR(y  , x) && p > SNPTR(y,   x+1)  &&
+              p > SNPTR(y+1, x-1) && p > SNPTR(y+1, x) && p > SNPTR(y+1, x+1)) ||
+             (p < 0 && p < SCPTR(y-1, x-1) && p < SCPTR(y-1, x) &&
+              p < SCPTR(y-1, x+1) && p < SCPTR(y, x-1) && p < SCPTR(y,   x+1)  &&
+              p < SCPTR(y+1, x-1) && p < SCPTR(y+1, x) && p < SCPTR(y+1, x+1)  &&
+              p < SPPTR(y-1, x-1) && p < SPPTR(y-1, x) && p < SPPTR(y-1, x+1)  &&
+              p < SPPTR(y,   x-1) && p < SPPTR(y  , x) && p < SPPTR(y,   x+1)  &&
+              p < SPPTR(y+1, x-1) && p < SPPTR(y+1, x) && p < SPPTR(y+1, x+1)  &&
+              p < SNPTR(y-1, x-1) && p < SNPTR(y-1, x) && p < SNPTR(y-1, x+1)  &&
+              p < SNPTR(y,   x-1) && p < SNPTR(y  , x) && p < SNPTR(y,   x+1)  &&
+              p < SNPTR(y+1, x-1) && p < SNPTR(y+1, x) && p < SNPTR(y+1, x+1)))) {
+
+            unsigned idx = atomicAdd(counter, 1u);
+            if (idx < max_feat)
+            {
+                x_out[idx] = (float)j;
+                y_out[idx] = (float)i;
+                layer_out[idx] = l;
+            }
+        }
+        __syncthreads();
     }
 }
 
-#undef LCPTR
-#undef LPPTR
-#undef LNPTR
-#define CPTR(Y, X) (center.ptr[(Y) * dim0 + (X)])
-#define PPTR(Y, X) (prev.ptr[(Y) * dim0 + (X)])
-#define NPTR(Y, X) (next.ptr[(Y) * dim0 + (X)])
+#undef SCPTR
+#undef SPPTR
+#undef SNPTR
+#define CPTR(Y, X) (center_ptr[(Y) * dim0 + (X)])
+#define PPTR(Y, X) (prev_ptr[(Y) * dim0 + (X)])
+#define NPTR(Y, X) (next_ptr[(Y) * dim0 + (X)])
 
 // Interpolates a scale-space extremum's location and scale to subpixel
 // accuracy to form an image feature. Rejects features with low contrast.
@@ -394,7 +396,7 @@ __global__ void interpolateExtrema(
     const float* y_in,
     const unsigned* layer_in,
     const unsigned extrema_feat,
-    const Param<T>* dog_octave,
+    const CParam<T> dog_octave,
     const unsigned max_feat,
     const unsigned octave,
     const unsigned n_layers,
@@ -417,12 +419,13 @@ __global__ void interpolateExtrema(
         unsigned y = y_in[f];
         unsigned layer = layer_in[f];
 
-        const int dim0 = dog_octave[0].dims[0];
-        const int dim1 = dog_octave[0].dims[1];
+        const int dim0 = dog_octave.dims[0];
+        const int dim1 = dog_octave.dims[1];
+        const int imel = dim0 * dim1;
 
-        Param<T> prev   = dog_octave[layer-1];
-        Param<T> center = dog_octave[layer];
-        Param<T> next   = dog_octave[layer+1];
+        const T* prev_ptr   = dog_octave.ptr + (layer-1) * imel;
+        const T* center_ptr = dog_octave.ptr + (layer)   * imel;
+        const T* next_ptr   = dog_octave.ptr + (layer+1) * imel;
 
         for(i = 0; i < MAX_INTERP_STEPS; i++) {
             float dD[3] = {(float)(CPTR(x+1, y) - CPTR(x-1, y)) * first_deriv_scale,
@@ -475,7 +478,7 @@ __global__ void interpolateExtrema(
 
         float P = dD[0]*X[0] + dD[1]*X[1] + dD[2]*X[2];
 
-        contr = center.ptr[x*dim0+y]*img_scale + P * 0.5f;
+        contr = CPTR(x, y)*img_scale + P * 0.5f;
         if (abs(contr) < (contrast_thr / n_layers))
             return;
 
@@ -550,7 +553,7 @@ __global__ void removeDuplicates(
     size_out[idx] = size_in[f];
 }
 
-#define IPTR(Y, X) (img.ptr[(Y) * dim0 + (X)])
+#define IPTR(Y, X) (img_ptr[(Y) * dim0 + (X)])
 
 // Computes a canonical orientation for each image feature in an array.  Based
 // on Section 5 of Lowe's paper.  This function adds features to the array when
@@ -570,7 +573,7 @@ __global__ void calcOrientation(
     const float* response_in,
     const float* size_in,
     const unsigned total_feat,
-    const Param<T>* gauss_octave,
+    const CParam<T> gauss_octave,
     const unsigned max_feat,
     const unsigned octave,
     const bool double_input)
@@ -607,16 +610,17 @@ __global__ void calcOrientation(
         const int len = (radius*2+1);
         const float exp_denom = 2.f * sigma * sigma;
 
+        const int dim0 = gauss_octave.dims[0];
+        const int dim1 = gauss_octave.dims[1];
+        const int imel = dim0 * dim1;
+
         // Points img to correct Gaussian pyramid layer
-        const Param<T> img = gauss_octave[layer];
+        const T* img_ptr = gauss_octave.ptr + layer * imel;
 
         // Initialize temporary histogram
         for (int i = tid_x; i < ORI_HIST_BINS; i += bsz_x)
             hist[tid_y*n + i] = 0.f;
         __syncthreads();
-
-        const int dim0 = img.dims[0];
-        const int dim1 = img.dims[1];
 
         // Calculate orientation histogram
         for (int l = tid_x; l < len*len; l += bsz_x) {
@@ -732,7 +736,7 @@ __global__ void computeDescriptor(
     const float* size_in,
     const float* ori_in,
     const unsigned total_feat,
-    const Param<T>* gauss_octave,
+    const CParam<T> gauss_octave,
     const int d,
     const int n,
     const float scale,
@@ -759,10 +763,12 @@ __global__ void computeDescriptor(
         const int fx = round(x_in[f] * scale);
         const int fy = round(y_in[f] * scale);
 
+        const int dim0 = gauss_octave.dims[0];
+        const int dim1 = gauss_octave.dims[1];
+        const int imel = dim0 * dim1;
+
         // Points img to correct Gaussian pyramid layer
-        const Param<T> img = gauss_octave[layer];
-        const int dim0 = img.dims[0];
-        const int dim1 = img.dims[1];
+        const T* img_ptr = gauss_octave.ptr + layer * imel;
 
         float cos_t = cosf(ori);
         float sin_t = sinf(ori);
@@ -890,7 +896,7 @@ Param<T> createInitialImage(
     float s = (double_input) ? sqrt(init_sigma * init_sigma - INIT_SIGMA * INIT_SIGMA * 4)
                              : sqrt(init_sigma * init_sigma - INIT_SIGMA * INIT_SIGMA);
 
-    Param<T> filter = gauss_filter<T>(s);
+    Param<convAccT> filter = gauss_filter<convAccT>(s);
 
     if (double_input) {
         resize<T, AF_INTERP_BILINEAR>(init_img, img);
@@ -926,58 +932,85 @@ std::vector< Param<T> > buildGaussPyr(
     }
 
     // Gaussian Pyramid
-    std::vector<Param<T> > gauss_pyr(n_octaves * (n_layers+3));
+    std::vector<Param<T> > gauss_pyr(n_octaves);
+    std::vector<Param<T> > tmp_pyr(n_octaves * (n_layers+3));
     for (unsigned o = 0; o < n_octaves; o++) {
+        gauss_pyr[o].dims[0] = (o == 0) ? init_img.dims[0] : gauss_pyr[o-1].dims[0] / 2;
+        gauss_pyr[o].dims[1] = (o == 0) ? init_img.dims[1] : gauss_pyr[o-1].dims[1] / 2;
+        gauss_pyr[o].dims[2] = n_layers+3;
+        gauss_pyr[o].dims[3] = 1;
+
+        gauss_pyr[o].strides[0] = 1;
+        gauss_pyr[o].strides[1] = gauss_pyr[o].dims[0] * gauss_pyr[o].strides[0];
+        gauss_pyr[o].strides[2] = gauss_pyr[o].dims[1] * gauss_pyr[o].strides[1];
+        gauss_pyr[o].strides[3] = gauss_pyr[o].dims[2] * gauss_pyr[o].strides[2];
+
+        const unsigned nel = gauss_pyr[o].dims[3] * gauss_pyr[o].strides[3];
+        gauss_pyr[o].ptr = memAlloc<T>(nel);
+
         for (unsigned l = 0; l < n_layers+3; l++) {
             unsigned src_idx = (l == 0) ? (o-1)*(n_layers+3) + n_layers : o*(n_layers+3) + l-1;
             unsigned idx = o*(n_layers+3) + l;
 
             if (o == 0 && l == 0) {
                 for (int k = 0; k < 4; k++) {
-                    gauss_pyr[idx].dims[k] = init_img.dims[k];
-                    gauss_pyr[idx].strides[k] = init_img.strides[k];
+                    tmp_pyr[idx].dims[k] = init_img.dims[k];
+                    tmp_pyr[idx].strides[k] = init_img.strides[k];
                 }
-                gauss_pyr[idx].ptr = init_img.ptr;
+                tmp_pyr[idx].ptr = init_img.ptr;
             }
             else if (l == 0) {
-                gauss_pyr[idx].dims[0] = gauss_pyr[src_idx].dims[0] / 2;
-                gauss_pyr[idx].dims[1] = gauss_pyr[src_idx].dims[1] / 2;
-                gauss_pyr[idx].strides[0] = 1;
-                gauss_pyr[idx].strides[1] = gauss_pyr[idx].dims[0];
+                tmp_pyr[idx].dims[0] = tmp_pyr[src_idx].dims[0] / 2;
+                tmp_pyr[idx].dims[1] = tmp_pyr[src_idx].dims[1] / 2;
+                tmp_pyr[idx].strides[0] = 1;
+                tmp_pyr[idx].strides[1] = tmp_pyr[idx].dims[0];
 
                 for (int k = 2; k < 4; k++) {
-                    gauss_pyr[idx].dims[k] = 1;
-                    gauss_pyr[idx].strides[k] = gauss_pyr[idx].dims[k-1] * gauss_pyr[idx].strides[k-1];
+                    tmp_pyr[idx].dims[k] = 1;
+                    tmp_pyr[idx].strides[k] = tmp_pyr[idx].dims[k-1] * tmp_pyr[idx].strides[k-1];
                 }
 
-                dim_t lvl_el = gauss_pyr[idx].strides[3] * gauss_pyr[idx].dims[3];
-                gauss_pyr[idx].ptr = memAlloc<T>(lvl_el);
+                dim_t lvl_el = tmp_pyr[idx].strides[3] * tmp_pyr[idx].dims[3];
+                tmp_pyr[idx].ptr = memAlloc<T>(lvl_el);
 
-                resize<T, AF_INTERP_BILINEAR>(gauss_pyr[idx], gauss_pyr[src_idx]);
+                resize<T, AF_INTERP_BILINEAR>(tmp_pyr[idx], tmp_pyr[src_idx]);
             }
             else {
                 for (int k = 0; k < 4; k++) {
-                    gauss_pyr[idx].dims[k] = gauss_pyr[src_idx].dims[k];
-                    gauss_pyr[idx].strides[k] = gauss_pyr[src_idx].strides[k];
+                    tmp_pyr[idx].dims[k] = tmp_pyr[src_idx].dims[k];
+                    tmp_pyr[idx].strides[k] = tmp_pyr[src_idx].strides[k];
                 }
-                dim_t lvl_el = gauss_pyr[idx].strides[3] * gauss_pyr[idx].dims[3];
-                gauss_pyr[idx].ptr = memAlloc<T>(lvl_el);
+                dim_t lvl_el = tmp_pyr[idx].strides[3] * tmp_pyr[idx].dims[3];
+                tmp_pyr[idx].ptr = memAlloc<T>(lvl_el);
 
                 Param<T> tmp;
                 for (int k = 0; k < 4; k++) {
-                    tmp.dims[k] = gauss_pyr[idx].dims[k];
-                    tmp.strides[k] = gauss_pyr[idx].strides[k];
+                    tmp.dims[k] = tmp_pyr[idx].dims[k];
+                    tmp.strides[k] = tmp_pyr[idx].strides[k];
                 }
                 tmp.ptr = memAlloc<T>(lvl_el);
 
-                Param<T> filter = gauss_filter<T>(sig_layers[l]);
+                Param<convAccT> filter = gauss_filter<convAccT>(sig_layers[l]);
 
-                convolve2<T, convAccT, 0, false>(tmp, gauss_pyr[src_idx], filter);
-                convolve2<T, convAccT, 1, false>(gauss_pyr[idx], CParam<T>(tmp), filter);
+                convolve2<T, convAccT, 0, false>(tmp, tmp_pyr[src_idx], filter);
+                convolve2<T, convAccT, 1, false>(tmp_pyr[idx], CParam<T>(tmp), filter);
 
                 memFree(tmp.ptr);
                 memFree(filter.ptr);
             }
+
+            const unsigned imel = tmp_pyr[idx].dims[3] * tmp_pyr[idx].strides[3];
+            const unsigned offset = imel * l;
+
+            //getQueue().enqueueCopyBuffer(*tmp_pyr[idx].data, *gauss_pyr[o].data, 0, offset*sizeof(T), imel * sizeof(T));
+            CUDA_CHECK(cudaMemcpy(gauss_pyr[o].ptr + offset, tmp_pyr[idx].ptr, imel * sizeof(T), cudaMemcpyDeviceToDevice));
+        }
+    }
+
+    for (unsigned o = 0; o < n_octaves; o++) {
+        for (unsigned l = 0; l < n_layers+3; l++) {
+            unsigned idx = o*(n_layers+3) + l;
+            memFree(tmp_pyr[idx].ptr);
         }
     }
 
@@ -991,26 +1024,23 @@ std::vector< Param<T> > buildDoGPyr(
     const unsigned n_layers)
 {
     // DoG Pyramid
-    std::vector<Param<T> > dog_pyr(n_octaves * (n_layers+2));
+    std::vector< Param<T> > dog_pyr(n_octaves);
     for (unsigned o = 0; o < n_octaves; o++) {
-        for (unsigned l = 0; l < n_layers+2; l++) {
-            unsigned idx    = o*(n_layers+2) + l;
-            unsigned bottom = o*(n_layers+3) + l;
-            unsigned top    = o*(n_layers+3) + l+1;
-
-            for (int k = 0; k < 4; k++) {
-                dog_pyr[idx].dims[k] = gauss_pyr[bottom].dims[k];
-                dog_pyr[idx].strides[k] = gauss_pyr[bottom].strides[k];
-            }
-            unsigned nel = dog_pyr[idx].dims[3] * dog_pyr[idx].strides[3];
-            dog_pyr[idx].ptr = memAlloc<T>(nel);
-
-            dim3 threads(256);
-            dim3 blocks(divup(nel, threads.x));
-            CUDA_LAUNCH((sub<T>), blocks, threads,
-                        dog_pyr[idx], gauss_pyr[top], gauss_pyr[bottom]);
-            POST_LAUNCH_CHECK();
+        for (int k = 0; k < 4; k++) {
+            dog_pyr[o].dims[k] = (k == 2) ? gauss_pyr[o].dims[k]-1 : gauss_pyr[o].dims[k];
+            dog_pyr[o].strides[k] = (k == 0) ? 1 : dog_pyr[o].dims[k-1] * dog_pyr[o].strides[k-1];
         }
+
+        dog_pyr[o].ptr = memAlloc<T>(dog_pyr[o].dims[3] * dog_pyr[o].strides[3]);
+
+        const unsigned nel = dog_pyr[o].dims[1] * dog_pyr[o].strides[1];
+        const unsigned dog_layers = n_layers+2;
+
+        dim3 threads(SIFT_THREADS);
+        dim3 blocks(divup(nel, threads.x));
+        CUDA_LAUNCH((sub<T>), blocks, threads,
+                    dog_pyr[o], gauss_pyr[o], nel, dog_layers);
+        POST_LAUNCH_CHECK();
     }
 
     return dog_pyr;
@@ -1082,40 +1112,31 @@ void sift(unsigned* out_feat,
 
     unsigned* d_count = memAlloc<unsigned>(1);
     for (unsigned i = 0; i < n_octaves; i++) {
-        if (dog_pyr[i*(n_layers+2)].dims[0]-2*IMG_BORDER < 1 ||
-            dog_pyr[i*(n_layers+2)].dims[1]-2*IMG_BORDER < 1)
+        if (dog_pyr[i].dims[0]-2*IMG_BORDER < 1 ||
+            dog_pyr[i].dims[1]-2*IMG_BORDER < 1)
             continue;
 
-        const unsigned imel = dog_pyr[i*(n_layers+2)].dims[0] * dog_pyr[i*(n_layers+2)].dims[1];
+        const unsigned imel = dog_pyr[i].dims[0] * dog_pyr[i].dims[1];
         const unsigned max_feat = ceil(imel * feature_ratio);
 
         CUDA_CHECK(cudaMemset(d_count, 0, sizeof(unsigned)));
 
         float* d_extrema_x = memAlloc<float>(max_feat);
         float* d_extrema_y = memAlloc<float>(max_feat);
-            unsigned* d_extrema_layer = memAlloc<unsigned>(max_feat);
+        unsigned* d_extrema_layer = memAlloc<unsigned>(max_feat);
 
-        for (unsigned j = 1; j <= n_layers; j++) {
-            unsigned prev   = i*(n_layers+2) + j-1;
-            unsigned center = i*(n_layers+2) + j;
-            unsigned next   = i*(n_layers+2) + j+1;
+        int dim0 = dog_pyr[i].dims[0];
+        int dim1 = dog_pyr[i].dims[1];
 
-            int dim0 = dog_pyr[center].dims[0];
-            int dim1 = dog_pyr[center].dims[1];
+        dim3 threads(SIFT_THREADS_X, SIFT_THREADS_Y);
+        dim3 blocks(divup(dim0-2*IMG_BORDER, threads.x), divup(dim1-2*IMG_BORDER, threads.y));
 
-            unsigned layer = j;
-
-            dim3 threads(SIFT_THREADS_X, SIFT_THREADS_Y);
-            dim3 blocks(divup(dim0-2*IMG_BORDER, threads.x), divup(dim1-2*IMG_BORDER, threads.y));
-
-            float extrema_thr = 0.5f * contrast_thr / n_layers;
-            const size_t extrema_shared_size = (threads.x+2) * (threads.y+2) * 3 * sizeof(float);
-            CUDA_LAUNCH_SMEM((detectExtrema<T>), blocks, threads, extrema_shared_size,
-                             d_extrema_x, d_extrema_y, d_extrema_layer, d_count,
-                             CParam<T>(dog_pyr[prev]), CParam<T>(dog_pyr[center]), CParam<T>(dog_pyr[next]),
-                             layer, max_feat, extrema_thr);
-            POST_LAUNCH_CHECK();
-        }
+        float extrema_thr = 0.5f * contrast_thr / n_layers;
+        const size_t extrema_shared_size = (threads.x+2) * (threads.y+2) * 3 * sizeof(float);
+        CUDA_LAUNCH_SMEM((detectExtrema<T>), blocks, threads, extrema_shared_size,
+                         d_extrema_x, d_extrema_y, d_extrema_layer, d_count,
+                         CParam<T>(dog_pyr[i]), max_feat, extrema_thr);
+        POST_LAUNCH_CHECK();
 
         unsigned extrema_feat = 0;
         CUDA_CHECK(cudaMemcpy(&extrema_feat, d_count, sizeof(unsigned), cudaMemcpyDeviceToHost));
@@ -1139,8 +1160,8 @@ void sift(unsigned* out_feat,
         float* d_interp_response = memAlloc<float>(extrema_feat);
         float* d_interp_size = memAlloc<float>(extrema_feat);
 
-        dim3 threads(SIFT_THREADS, 1);
-        dim3 blocks(divup(extrema_feat, threads.x), 1);
+        threads = dim3(SIFT_THREADS, 1);
+        blocks = dim3(divup(extrema_feat, threads.x), 1);
 
         Param<T>* dog_octave;
         CUDA_CHECK(cudaMalloc((void **)&dog_octave, (n_layers+2)*sizeof(Param<T>)));
@@ -1150,7 +1171,7 @@ void sift(unsigned* out_feat,
                     d_interp_x, d_interp_y, d_interp_layer,
                     d_interp_response, d_interp_size, d_count,
                     d_extrema_x, d_extrema_y, d_extrema_layer, extrema_feat,
-                    dog_octave, max_feat, i, n_layers,
+                    dog_pyr[i], max_feat, i, n_layers,
                     contrast_thr, edge_thr, init_sigma, img_scale);
         POST_LAUNCH_CHECK();
 
@@ -1224,10 +1245,6 @@ void sift(unsigned* out_feat,
 
         const unsigned max_oriented_feat = nodup_feat * 3;
 
-        Param<T>* gauss_octave;
-        CUDA_CHECK(cudaMalloc((void **)&gauss_octave, (n_layers+3)*sizeof(Param<T>)));
-        CUDA_CHECK(cudaMemcpy(gauss_octave, &gauss_pyr[i*(n_layers+3)], (n_layers+3)*sizeof(Param<T>), cudaMemcpyHostToDevice));
-
         float* d_oriented_x = memAlloc<float>(max_oriented_feat);
         float* d_oriented_y = memAlloc<float>(max_oriented_feat);
         unsigned* d_oriented_layer = memAlloc<unsigned>(max_oriented_feat);
@@ -1244,7 +1261,7 @@ void sift(unsigned* out_feat,
                          d_oriented_response, d_oriented_size, d_oriented_ori, d_count,
                          d_nodup_x, d_nodup_y, d_nodup_layer,
                          d_nodup_response, d_nodup_size, nodup_feat,
-                         gauss_octave, max_oriented_feat, i, double_input);
+                         gauss_pyr[i], max_oriented_feat, i, double_input);
         POST_LAUNCH_CHECK();
 
         memFree(d_nodup_x);
@@ -1279,11 +1296,11 @@ void sift(unsigned* out_feat,
         const unsigned histsz = 8;
         const size_t shared_size = desc_len * (histsz+1) * sizeof(float);
 
-        CUDA_LAUNCH_SMEM((computeDescriptor), blocks, threads, shared_size,
+        CUDA_LAUNCH_SMEM((computeDescriptor<T>), blocks, threads, shared_size,
                          d_desc, desc_len, histsz,
                          d_oriented_x, d_oriented_y, d_oriented_layer,
                          d_oriented_response, d_oriented_size, d_oriented_ori,
-                         oriented_feat, gauss_octave, d, n, scale, init_sigma, n_layers);
+                         oriented_feat, gauss_pyr[i], d, n, scale, init_sigma, n_layers);
         POST_LAUNCH_CHECK();
 
         total_feat += oriented_feat;
@@ -1297,8 +1314,6 @@ void sift(unsigned* out_feat,
             d_size_pyr[i] = d_oriented_size;
             d_desc_pyr[i] = d_desc;
         }
-
-        CUDA_CHECK(cudaFree(gauss_octave));
     }
 
     memFree(d_count);
