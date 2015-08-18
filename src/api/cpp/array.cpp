@@ -739,12 +739,19 @@ namespace af
     }
 
     //FIXME: Check if this leaks
-#define MEM_INDEX(FUNC_SIG, USAGE)          \
-    array::array_proxy                      \
-    array::array_proxy::FUNC_SIG            \
-    {                                       \
-        array *out = new array(this->get());\
-        return out->USAGE;                  \
+#define MEM_INDEX(FUNC_SIG, USAGE)                  \
+    array::array_proxy                              \
+    array::array_proxy::FUNC_SIG                    \
+    {                                               \
+        array *out = new array(this->get());        \
+        return out->USAGE;                          \
+    }                                               \
+                                                    \
+    const array::array_proxy                        \
+    array::array_proxy::FUNC_SIG const              \
+    {                                               \
+        const array *out = new array(this->get());  \
+        return out->USAGE;                          \
     }
 
     MEM_INDEX(row(int index)                , row(index));
