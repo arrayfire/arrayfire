@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/version.h>
+#include <af/defines.h>
 #include <platform.hpp>
 #include <sstream>
 #include <algorithm>
@@ -23,6 +24,8 @@ typedef unsigned __int32  uint32_t;
 #endif
 
 using namespace std;
+
+#ifndef ARM_ARCH
 
 #define MAX_INTEL_TOP_LVL 4
 
@@ -47,6 +50,8 @@ class CPUID {
     inline const uint32_t &EDX() const { return regs[3]; }
 };
 
+#endif
+
 class CPUInfo {
     public:
         CPUInfo();
@@ -70,15 +75,23 @@ class CPUInfo {
         bool   mIsHTT;
 };
 
+#ifdef ARM_ARCH
+
 CPUInfo::CPUInfo()
     : mVendorId(""), mModelName(""), mNumSMT(0), mNumCores(0), mNumLogCpus(0), mIsHTT(false)
 {
-#if defined(ARM_ARCH)
     mVendorId = "Unknown";
     mModelName= "Unknown";
     mNumSMT   = 1;
     mNumCores = 1;
+    mNumLogCpus = 1;
+}
+
 #else
+
+CPUInfo::CPUInfo()
+    : mVendorId(""), mModelName(""), mNumSMT(0), mNumCores(0), mNumLogCpus(0), mIsHTT(false)
+{
     // Get vendor name EAX=0
     CPUID cpuID1(1, 0);
     mIsHTT   = cpuID1.EDX() & HTT_POS;
@@ -151,8 +164,9 @@ CPUInfo::CPUInfo()
         mModelName += string((const char*)&cpuID.EDX(), 4);
     }
     mModelName = string(mModelName.c_str());
-#endif
 }
+
+#endif
 
 namespace cpu
 {
@@ -182,16 +196,12 @@ std::string getInfo()
 
     info << "ArrayFire v" << AF_VERSION
          << " (CPU, " << get_system() << ", build " << AF_REVISION << ")" << std::endl;
-#if defined(ARM_ARCH)
-    //  Do nothing
-#else
     info << string("[0] ") << cinfo.vendor() <<": " << cinfo.model() << " ";
     info << "Max threads("<< cinfo.threads()<<") ";
 #ifndef NDEBUG
     info << AF_CMPLR_STR;
 #endif
     info << std::endl;
-#endif
     return info.str();
 }
 
@@ -203,18 +213,11 @@ bool isDoubleSupported(int device)
 void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
 {
     static CPUInfo cinfo;
-#if defined(ARM_ARCH)
-    snprintf(d_name, 64, "%s", "Unknown");
-    snprintf(d_platform, 10, "CPU");
-    snprintf(d_toolkit, 64, "%s", "Unknown");
-    snprintf(d_compute, 10, "%s", "Unknown");
-#else
     snprintf(d_name, 64, "%s", cinfo.vendor().c_str());
     snprintf(d_platform, 10, "CPU");
     // report the compiler for toolkit
     snprintf(d_toolkit, 64, "%s", AF_CMPLR_STR);
     snprintf(d_compute, 10, "%s", "0.0");
-#endif
 }
 
 int getDeviceCount()

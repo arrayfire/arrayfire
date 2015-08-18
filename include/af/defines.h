@@ -50,7 +50,7 @@
     typedef long long   dim_t;
 #endif
 
-#if defined(__arm__) || defined(_M_ARM)
+#if defined(__arm__) || defined(_M_ARM) || defined(_M_ARMT) || defined(_ARM) || defined(_TARGET_ARCH_ARM) || defined(__TARGET_ARCH_THUMB) || defined(__thumb__)
 #define ARM_ARCH
 #endif
 
