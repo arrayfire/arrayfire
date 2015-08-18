@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
+#include <defines.hpp>
 
 #ifdef _WIN32
 #include <limits.h>
