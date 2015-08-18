@@ -690,6 +690,12 @@ __kernel void computeDescriptor(
     __local float* desc = l_mem;
     __local float* accum = l_mem + desc_len * histsz;
 
+    const int histlen = d*d*n;
+
+    for (int i = lid_x; i < histlen*histsz; i += lsz_x)
+        desc[lid_y*histlen+i] = 0.f;
+    barrier(CLK_LOCAL_MEM_FENCE);
+
     if (f < total_feat) {
         const unsigned layer = layer_in[f];
         float ori = (360.f - ori_in[f]) * PI_VAL / 180.f;
@@ -711,12 +717,7 @@ __kernel void computeDescriptor(
         int radius = hist_width * sqrt(2.f) * (d + 1.f) * 0.5f + 0.5f;
 
         int len = radius*2+1;
-        const int histlen = d*d*n;
         const int hist_off = (lid_x % histsz) * desc_len;
-
-        for (int i = lid_x; i < histlen*histsz; i += lsz_x)
-            desc[lid_y*histlen+i] = 0.f;
-        barrier(CLK_LOCAL_MEM_FENCE);
 
         // Calculate orientation histogram
         for (int l = lid_x; l < len*len; l += lsz_x) {
@@ -773,31 +774,32 @@ __kernel void computeDescriptor(
                 }
             }
         }
-        barrier(CLK_LOCAL_MEM_FENCE);
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
 
-        // Combine histograms (reduces previous atomicAdd overhead)
-        for (int l = lid_x; l < desc_len*4; l += lsz_x)
-            desc[l] += desc[l+4*desc_len];
-        barrier(CLK_LOCAL_MEM_FENCE);
-        for (int l = lid_x; l < desc_len*2; l += lsz_x)
-            desc[l    ] += desc[l+2*desc_len];
-        barrier(CLK_LOCAL_MEM_FENCE);
-        for (int l = lid_x; l < desc_len; l += lsz_x)
-            desc[l] += desc[l+desc_len];
-        barrier(CLK_LOCAL_MEM_FENCE);
+    // Combine histograms (reduces previous atomicAdd overhead)
+    for (int l = lid_x; l < desc_len*4; l += lsz_x)
+        desc[l] += desc[l+4*desc_len];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    for (int l = lid_x; l < desc_len*2; l += lsz_x)
+        desc[l    ] += desc[l+2*desc_len];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    for (int l = lid_x; l < desc_len; l += lsz_x)
+        desc[l] += desc[l+desc_len];
+    barrier(CLK_LOCAL_MEM_FENCE);
 
-        normalizeDesc(desc, accum, histlen, lid_x, lid_y, lsz_x);
+    normalizeDesc(desc, accum, histlen, lid_x, lid_y, lsz_x);
 
-        for (int i = lid_x; i < d*d*n; i += lsz_x)
-            desc[lid_y*desc_len+i] = min(desc[lid_y*desc_len+i], DESCR_MAG_THR);
-        barrier(CLK_LOCAL_MEM_FENCE);
+    for (int i = lid_x; i < d*d*n; i += lsz_x)
+        desc[lid_y*desc_len+i] = min(desc[lid_y*desc_len+i], DESCR_MAG_THR);
+    barrier(CLK_LOCAL_MEM_FENCE);
 
-        normalizeDesc(desc, accum, histlen, lid_x, lid_y, lsz_x);
+    normalizeDesc(desc, accum, histlen, lid_x, lid_y, lsz_x);
 
+    if (f < total_feat) {
         // Calculate final descriptor values
-        for (int k = lid_x; k < d*d*n; k += lsz_x) {
+        for (int k = lid_x; k < d*d*n; k += lsz_x)
             desc_out[f*desc_len+k] = round(min(255.f, desc[lid_y*desc_len+k] * INT_DESCR_FCTR));
-        }
     }
 }
 
