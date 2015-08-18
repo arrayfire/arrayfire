@@ -427,6 +427,31 @@ Save an array to disk as an image
 Supported formats include JPG, PNG, PPM and other formats supported by freeimage
 
 
+\defgroup imagemem_func_load loadImageMem
+\ingroup imageio_mat
+
+Load an image from memory which is stored as a FreeImage stream (FIMEMORY).
+
+Supported formats include JPG, PNG, PPM and other formats supported by freeimage
+
+
+
+\defgroup imagemem_func_save saveImageMem
+\ingroup imageio_mat
+
+Save an array to memory as an image using FreeImage stream (FIMEMORY).
+
+Supported formats include JPG, PNG, PPM and other formats supported by freeimage
+
+
+\defgroup imagemem_func_delete deleteImageMem
+\ingroup imageio_mat
+
+Delete memory created by saveImageMem and af_save_image_memory function.
+This internally calls FreeImage_CloseMemory.
+
+Supported formats include JPG, PNG, PPM and other formats supported by freeimage
+
 
 \defgroup calc_func_grad grad
 \ingroup calc_mat

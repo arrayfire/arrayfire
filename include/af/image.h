@@ -48,6 +48,47 @@ AFAPI array loadImage(const char* filename, const bool is_color=false);
 AFAPI void saveImage(const char* filename, const array& in);
 
 /**
+    C++ Interface for loading an image from memory
+
+    \param[in] ptr is the location of the image data in memory. This is the pointer
+    created by saveImage.
+    \return image loaded as \ref af::array()
+
+    \note The pointer used is a void* cast of the FreeImage type FIMEMORY which is
+    created using the FreeImage_OpenMemory API. If the user is opening a FreeImage
+    stream external to ArrayFire, that pointer can be passed to this function as well.
+
+    \ingroup imagemem_func_load
+*/
+AFAPI array loadImageMem(const void *ptr);
+
+/**
+    C++ Interface for saving an image to memory
+
+    \param[in] filename is a dummy string that contains the image type. This is
+    used to determine the filetype to be used. No file is created.
+    \param[in] in is the arrayfire array to be saved as an image
+
+    \return a void* pointer which is a type cast of the FreeImage type FIMEMORY* pointer.
+
+    \note Ensure that \ref deleteImageMem is called on this pointer. Otherwise there will
+    be memory leaks
+
+    \ingroup imagemem_func_save
+*/
+AFAPI void* saveImageMem(const char* filename, const array& in);
+
+/**
+    C++ Interface for deleting memory created by \ref saveImageMem or
+    \ref af_save_image_memory
+
+    \param[in] ptr is the pointer to the FreeImage stream created by saveImageMem.
+
+    \ingroup imagemem_func_delete
+*/
+AFAPI void deleteImageMem(void *ptr);
+
+/**
     C++ Interface for resizing an image to specified dimensions
 
     \param[in] in is input image
@@ -562,17 +603,53 @@ extern "C" {
     */
     AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isColor);
 
-   /**
-      C Interface for saving an image
+    /**
+       C Interface for saving an image
 
-      \param[in] filename is name of file to be loaded
-      \param[in] in is the arrayfire array to be saved as an image
-      \return     \ref AF_SUCCESS if the color transformation is successful,
-      otherwise an appropriate error code is returned.
+       \param[in] filename is name of file to be loaded
+       \param[in] in is the arrayfire array to be saved as an image
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
 
-      \ingroup imageio_func_save
-   */
+       \ingroup imageio_func_save
+    */
     AFAPI af_err af_save_image(const char* filename, const af_array in);
+
+    /**
+       C Interface for loading an image from memory
+
+       \param[out] out is an array that will contain the image
+       \param[in] ptr is the FIMEMORY pointer created by either saveImageMem function, the
+       af_save_image_memory function, or the FreeImage_OpenMemory API.
+       \return     \ref AF_SUCCESS if successful
+
+       \ingroup imagemem_func_load
+    */
+    AFAPI af_err af_load_image_memory(af_array *out, const void* ptr);
+
+    /**
+       C Interface for saving an image to memory using FreeImage
+
+       \param[out] ptr is the FIMEMORY pointer created by FreeImage.
+       \param[in] filename is a string that contains the type of image storage to be used.
+       No file is created. This is used to determine the type and encoding to use.
+       \param[in] in is the arrayfire array to be saved as an image
+       \return     \ref AF_SUCCESS if successful.
+
+       \ingroup imagemem_func_save
+    */
+    AFAPI af_err af_save_image_memory(void** ptr, const char* filename, const af_array in);
+
+    /**
+       C Interface for deleting an image from memory
+
+       \param[in] ptr is the FIMEMORY pointer created by either saveImageMem function, the
+       af_save_image_memory function, or the FreeImage_OpenMemory API.
+       \return     \ref AF_SUCCESS if successful
+
+       \ingroup imagemem_func_delete
+    */
+    AFAPI af_err af_delete_image_memory(void* ptr);
 
     /**
        C Interface for resizing an image to specified dimensions
