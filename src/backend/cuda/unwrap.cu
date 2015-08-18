@@ -22,7 +22,7 @@ namespace cuda
         af::dim4 idims = in.dims();
 
         dim_t nx = (idims[0] + 2 * px - wx) / sx + 1;
-        dim_t ny = (idims[1] + 2 * py - wy) / sx + 1;
+        dim_t ny = (idims[1] + 2 * py - wy) / sy + 1;
 
         af::dim4 odims;
 
