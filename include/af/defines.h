@@ -50,6 +50,10 @@
     typedef long long   dim_t;
 #endif
 
+#if defined(__arm__) || defined(_M_ARM)
+#define ARM_ARCH
+#endif
+
 #include <stdlib.h>
 
 typedef long long intl;
