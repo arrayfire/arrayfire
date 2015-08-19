@@ -138,6 +138,9 @@
      @defgroup connected_comps_mat Connected Components & Labeling
      regions
 
+     @defgroup image_mod_mat Wrapping and unwrapping image windows
+     wrap, unwrap, etc.
+
      @defgroup utility_mat Utility Functions
      loadImage, saveImage, gaussianKernel
    @}

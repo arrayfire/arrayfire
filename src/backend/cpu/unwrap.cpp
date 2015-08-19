@@ -47,9 +47,7 @@ namespace cpu
                     dim_t spy = starty - py;
 
                     // Short cut condition ensuring all values within input dimensions
-                    bool cond = false;
-                    if(spx >= 0 && spx + wx < idims[0] && spy >= 0 && spy + wy < idims[1])
-                        cond = true;
+                    bool cond = (spx >= 0 && spx + wx < idims[0] && spy >= 0 && spy + wy < idims[1]);
 
                     for(dim_t y = 0; y < wy; y++) {
                         for(dim_t x = 0; x < wx; x++) {
