@@ -131,7 +131,7 @@ void wrapTest(const dim_t ix, const dim_t iy,
                 T rval = rptr[y * ix + x];
                 int factor = h_factor[y * ix + x];
 
-                if (abs(ival) == 0) continue;
+                if (get_val(ival) == 0) continue;
 
                 ASSERT_NEAR(get_val<T>(ival * factor), get_val<T>(rval), 1E-5)
                     << "at " << x << "," << y <<  " for cond  == " << cond << std::endl;
