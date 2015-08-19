@@ -11,6 +11,7 @@
 #include <af/defines.h>
 #include <af/blas.h>
 #include <af/data.h>
+#include <af/arith.h>
 #include <err_common.hpp>
 #include <handle.hpp>
 #include <backend.hpp>
@@ -33,10 +34,19 @@ af_err af_transpose(af_array *out, af_array in, const bool conjugate)
         af::dim4 dims = info.dims();
 
         if (dims[0]==1 || dims[1]==1) {
-            // for a vector OR a batch of vectors
-            // we can use modDims to transpose
             af::dim4 outDims(dims[1],dims[0],dims[2],dims[3]);
-            return af_moddims(out, in, outDims.ndims(), outDims.get());
+            if(conjugate) {
+                af_array temp = 0;
+                AF_CHECK(af_conjg(&temp, in));
+                AF_CHECK(af_moddims(out, temp, outDims.ndims(), outDims.get()));
+                AF_CHECK(af_release_array(temp));
+                return AF_SUCCESS;
+            } else {
+                // for a vector OR a batch of vectors
+                // we can use modDims to transpose
+                AF_CHECK(af_moddims(out, in, outDims.ndims(), outDims.get()));
+                return AF_SUCCESS;
+            }
         }
 
         af_array output;
