@@ -32,12 +32,7 @@ namespace opencl
 
         // Create output placeholder
         Array<T> outArray = createEmptyArray<T>(odims);
-
-        if (is_column) {
-            kernel::unwrap<T, true >(outArray, in, wx, wy, sx, sy, px, py, nx);
-        } else {
-            kernel::unwrap<T, false>(outArray, in, wx, wy, sx, sy, px, py, nx);
-        }
+        kernel::unwrap<T>(outArray, in, wx, wy, sx, sy, px, py, nx, is_column);
 
         return outArray;
     }

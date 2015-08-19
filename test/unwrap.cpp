@@ -84,10 +84,11 @@ void unwrapTest(string pTestFile, const unsigned resultIdx,
     if(outArray2 != 0) af_release_array(outArray2);
 }
 
-#define UNWRAP_INIT(desc, file, resultIdx, wx, wy, sx, sy, px,py)                                           \
-    TYPED_TEST(Unwrap, desc)                                                                                \
-    {                                                                                                       \
-        unwrapTest<TypeParam>(string(TEST_DIR"/unwrap/"#file".test"), resultIdx, wx, wy, sx, sy, px, py);   \
+#define UNWRAP_INIT(desc, file, resultIdx, wx, wy, sx, sy, px,py)       \
+    TYPED_TEST(Unwrap, desc)                                            \
+    {                                                                   \
+        unwrapTest<TypeParam>(string(TEST_DIR"/unwrap/"#file".test"),   \
+                              resultIdx, wx, wy, sx, sy, px, py);       \
     }
 
     UNWRAP_INIT(UnwrapSmall00, unwrap_small,  0,  3,  3,  1,  1,  0,  0);

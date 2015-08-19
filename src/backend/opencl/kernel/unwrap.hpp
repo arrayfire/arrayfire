@@ -10,6 +10,7 @@
 #pragma once
 #include <kernel_headers/unwrap.hpp>
 #include <program.hpp>
+#include <cache.hpp>
 #include <traits.hpp>
 #include <string>
 #include <map>
@@ -33,47 +34,47 @@ namespace opencl
 {
     namespace kernel
     {
-        template<typename T, bool is_column>
-        void unwrap(Param out, const Param in, const dim_t wx, const dim_t wy,
-                    const dim_t sx, const dim_t sy, const dim_t px, const dim_t py, const dim_t nx)
+        template<typename T>
+        void unwrap(Param out, const Param in,
+                    const dim_t wx, const dim_t wy,
+                    const dim_t sx, const dim_t sy,
+                    const dim_t px, const dim_t py,
+                    const dim_t nx, const bool is_column)
         {
             try {
-                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-                static std::map<int, Program*>   unwrapProgs;
-                static std::map<int, Kernel *> unwrapKernels;
+                std::string ref_name =
+                    std::string("unwrap_") +
+                    std::string(dtype_traits<T>::getName()) +
+                    std::string("_") +
+                    std::to_string(is_column);
 
                 int device = getActiveDeviceId();
+                kc_t::iterator idx = kernelCaches[device].find(ref_name);
 
-                std::call_once( compileFlags[device], [device] () {
+                kc_entry_t entry;
+                if (idx == kernelCaches[device].end()) {
 
-                        ToNum<T> toNum;
-                        std::ostringstream options;
-                        options << " -D is_column=" << is_column
-                                << " -D ZERO=" << toNum(scalar<T>(0))
-                                << " -D T="    << dtype_traits<T>::getName();
+                    ToNum<T> toNum;
+                    std::ostringstream options;
+                    options << " -D is_column=" << is_column
+                            << " -D ZERO=" << toNum(scalar<T>(0))
+                            << " -D T="    << dtype_traits<T>::getName();
 
-                        if((af_dtype) dtype_traits<T>::af_type == c32 ||
-                           (af_dtype) dtype_traits<T>::af_type == c64) {
-                            options << " -D CPLX=1";
-                        } else {
-                            options << " -D CPLX=0";
-                        }
+                    if (std::is_same<T, double>::value ||
+                        std::is_same<T, cdouble>::value) {
+                        options << " -D USE_DOUBLE";
+                    }
 
-                        if (std::is_same<T, double>::value ||
-                            std::is_same<T, cdouble>::value) {
-                            options << " -D USE_DOUBLE";
-                        }
+                    Program prog;
+                    buildProgram(prog, unwrap_cl, unwrap_cl_len, options.str());
 
-                        Program prog;
-                        buildProgram(prog, unwrap_cl, unwrap_cl_len, options.str());
-                        unwrapProgs[device] = new Program(prog);
-                        unwrapKernels[device] = new Kernel(*unwrapProgs[device], "unwrap_kernel");
-                    });
+                    entry.prog = new Program(prog);
+                    entry.ker = new Kernel(*entry.prog, "unwrap_kernel");
 
-                auto unwrapOp = make_kernel<Buffer, const KParam, const Buffer, const KParam,
-                                      const dim_t, const dim_t, const dim_t, const dim_t,
-                                      const dim_t, const dim_t, const dim_t, const dim_t>
-                                      (*unwrapKernels[device]);
+                    kernelCaches[device][ref_name] = entry;
+                } else {
+                    entry = idx->second;
+                }
 
                 dim_t TX = 1, TY = 1;
                 dim_t BX = 1;
@@ -95,6 +96,13 @@ namespace opencl
                 NDRange local(TX, TY);
                 NDRange global(local[0] * BX,
                                local[1] * BY);
+
+                auto unwrapOp = make_kernel<Buffer, const KParam,
+                                            const Buffer, const KParam,
+                                            const dim_t, const dim_t,
+                                            const dim_t, const dim_t,
+                                            const dim_t, const dim_t,
+                                            const dim_t, const dim_t> (*entry.ker);
 
                 unwrapOp(EnqueueArgs(getQueue(), global, local),
                        *out.data, out.info, *in.data, in.info, wx, wy, sx, sy, px, py, nx, reps);

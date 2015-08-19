@@ -9,6 +9,8 @@
 
 #pragma once
 #include <program.hpp>
+#include <map>
+#include <string>
 
 namespace opencl
 {
