@@ -65,9 +65,10 @@ AFAPI array loadImageMem(const void *ptr);
 /**
     C++ Interface for saving an image to memory
 
-    \param[in] filename is a dummy string that contains the image type. This is
-    used to determine the filetype to be used. No file is created.
     \param[in] in is the arrayfire array to be saved as an image
+    \param[in] format is the type of image to create in memory. The enum borrows from
+    the FREE_IMAGE_FORMAT enum of FreeImage. Other values not included in af_image_format
+    but included in FREE_IMAGE_FORMAT can also be passed to this function.
 
     \return a void* pointer which is a type cast of the FreeImage type FIMEMORY* pointer.
 
@@ -76,7 +77,7 @@ AFAPI array loadImageMem(const void *ptr);
 
     \ingroup imagemem_func_save
 */
-AFAPI void* saveImageMem(const char* filename, const array& in);
+AFAPI void* saveImageMem(const array& in, const af_image_format format = AF_FIF_PNG);
 
 /**
     C++ Interface for deleting memory created by \ref saveImageMem or
@@ -578,76 +579,77 @@ extern "C" {
 #endif
 
     /**
-       C Interface for calculating the gradients
+        C Interface for calculating the gradients
 
-       \param[out] dx the gradient along first dimension
-       \param[out] dy the gradient along second dimension
-       \param[in]  in is the input array
-       \return     \ref AF_SUCCESS if the color transformation is successful,
-       otherwise an appropriate error code is returned.
+        \param[out] dx the gradient along first dimension
+        \param[out] dy the gradient along second dimension
+        \param[in]  in is the input array
+        \return     \ref AF_SUCCESS if the color transformation is successful,
+        otherwise an appropriate error code is returned.
 
-       \ingroup calc_func_grad
+        \ingroup calc_func_grad
     */
     AFAPI af_err af_gradient(af_array *dx, af_array *dy, const af_array in);
 
     /**
-       C Interface for loading an image
+        C Interface for loading an image
 
-       \param[out] out will contain the image
-       \param[in] filename is name of file to be loaded
-       \param[in] isColor boolean denoting if the image should be loaded as 1 channel or 3 channel
-       \return     \ref AF_SUCCESS if the color transformation is successful,
-       otherwise an appropriate error code is returned.
+        \param[out] out will contain the image
+        \param[in] filename is name of file to be loaded
+        \param[in] isColor boolean denoting if the image should be loaded as 1 channel or 3 channel
+        \return     \ref AF_SUCCESS if the color transformation is successful,
+        otherwise an appropriate error code is returned.
 
-       \ingroup imageio_func_load
+        \ingroup imageio_func_load
     */
     AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isColor);
 
     /**
-       C Interface for saving an image
+        C Interface for saving an image
 
-       \param[in] filename is name of file to be loaded
-       \param[in] in is the arrayfire array to be saved as an image
-       \return     \ref AF_SUCCESS if the color transformation is successful,
-       otherwise an appropriate error code is returned.
+        \param[in] filename is name of file to be loaded
+        \param[in] in is the arrayfire array to be saved as an image
+        \return     \ref AF_SUCCESS if the color transformation is successful,
+        otherwise an appropriate error code is returned.
 
-       \ingroup imageio_func_save
+        \ingroup imageio_func_save
     */
     AFAPI af_err af_save_image(const char* filename, const af_array in);
 
     /**
-       C Interface for loading an image from memory
+        C Interface for loading an image from memory
 
-       \param[out] out is an array that will contain the image
-       \param[in] ptr is the FIMEMORY pointer created by either saveImageMem function, the
-       af_save_image_memory function, or the FreeImage_OpenMemory API.
-       \return     \ref AF_SUCCESS if successful
+        \param[out] out is an array that will contain the image
+        \param[in] ptr is the FIMEMORY pointer created by either saveImageMem function, the
+        af_save_image_memory function, or the FreeImage_OpenMemory API.
+        \return     \ref AF_SUCCESS if successful
 
-       \ingroup imagemem_func_load
+        \ingroup imagemem_func_load
     */
     AFAPI af_err af_load_image_memory(af_array *out, const void* ptr);
 
     /**
-       C Interface for saving an image to memory using FreeImage
+        C Interface for saving an image to memory using FreeImage
 
-       \param[out] ptr is the FIMEMORY pointer created by FreeImage.
-       \param[in] filename is a string that contains the type of image storage to be used.
-       No file is created. This is used to determine the type and encoding to use.
-       \param[in] in is the arrayfire array to be saved as an image
-       \return     \ref AF_SUCCESS if successful.
+        \param[out] ptr is the FIMEMORY pointer created by FreeImage.
+        \param[in] in is the arrayfire array to be saved as an image
+        \param[in] format is the type of image to create in memory. The enum borrows from
+        the FREE_IMAGE_FORMAT enum of FreeImage. Other values not included in af_image_format
+        but included in FREE_IMAGE_FORMAT can also be passed to this function.
+        \return     \ref AF_SUCCESS if successful.
 
-       \ingroup imagemem_func_save
+        \ingroup imagemem_func_save
     */
-    AFAPI af_err af_save_image_memory(void** ptr, const char* filename, const af_array in);
+    AFAPI af_err af_save_image_memory(void** ptr, const af_array in, const af_image_format format);
 
     /**
-       C Interface for deleting an image from memory
+        C Interface for deleting an image from memory
 
-       \param[in] ptr is the FIMEMORY pointer created by either saveImageMem function, the
-       af_save_image_memory function, or the FreeImage_OpenMemory API.
-       \return     \ref AF_SUCCESS if successful
+        \param[in] ptr is the FIMEMORY pointer created by either saveImageMem function, the
+        af_save_image_memory function, or the FreeImage_OpenMemory API.
+        \return     \ref AF_SUCCESS if successful
 
-       \ingroup imagemem_func_delete
+        \ingroup imagemem_func_delete
     */
     AFAPI af_err af_delete_image_memory(void* ptr);
 

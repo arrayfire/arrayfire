@@ -39,10 +39,10 @@ void saveImage(const char* filename, const array& in)
     AF_THROW(af_save_image(filename, in.get()));
 }
 
-void* saveImageMem(const char* filename, const array& in)
+void* saveImageMem(const array& in, const af_image_format format)
 {
     void* ptr = NULL;
-    AF_THROW(af_save_image_memory(&ptr, filename, in.get()));
+    AF_THROW(af_save_image_memory(&ptr, in.get(), format));
     return ptr;
 }
 

@@ -207,10 +207,20 @@ af_err af_load_image(af_array *out, const char* filename, const bool isColor)
         const uint fi_bpp = FreeImage_GetBPP(pBitmap);
         //int fi_color = (int)((fi_bpp / 8.0) + 0.5);        //ceil
         int fi_color;
-        if      (color_type == 1) fi_color = 1;
-        else if (color_type == 2) fi_color = 3;
-        else if (color_type == 4) fi_color = 4;
-        else                      fi_color = 3;
+        switch(color_type) {
+            case 0:                     // FIC_MINISBLACK
+            case 1:                     // FIC_MINISWHITE
+                fi_color = 1; break;
+            case 2:                     // FIC_PALETTE
+            case 3:                     // FIC_RGB
+                fi_color = 3; break;
+            case 4:                     // FIC_RGBALPHA
+            case 5:                     // FIC_CMYK
+                fi_color = 4; break;
+            default:                    // Should not come here
+                fi_color = 3; break;
+        }
+
         const int fi_bpc = fi_bpp / fi_color;
         if(fi_bpc != 8 && fi_bpc != 16 && fi_bpc != 32) {
             AF_ERROR("FreeImage Error: Bits per channel not supported", AF_ERR_NOT_SUPPORTED);
@@ -481,10 +491,19 @@ af_err af_load_image_memory(af_array *out, const void* ptr)
         const uint fi_bpp = FreeImage_GetBPP(pBitmap);
         //int fi_color = (int)((fi_bpp / 8.0) + 0.5);        //ceil
         int fi_color;
-        if      (color_type == 1) fi_color = 1;
-        else if (color_type == 2) fi_color = 3;
-        else if (color_type == 4) fi_color = 4;
-        else                      fi_color = 3;
+        switch(color_type) {
+            case 0:                     // FIC_MINISBLACK
+            case 1:                     // FIC_MINISWHITE
+                fi_color = 1; break;
+            case 2:                     // FIC_PALETTE
+            case 3:                     // FIC_RGB
+                fi_color = 3; break;
+            case 4:                     // FIC_RGBALPHA
+            case 5:                     // FIC_CMYK
+                fi_color = 4; break;
+            default:                    // Should not come here
+                fi_color = 3; break;
+        }
         const int fi_bpc = fi_bpp / fi_color;
         if(fi_bpc != 8 && fi_bpc != 16 && fi_bpc != 32) {
             AF_ERROR("FreeImage Error: Bits per channel not supported", AF_ERR_NOT_SUPPORTED);
@@ -530,12 +549,10 @@ af_err af_load_image_memory(af_array *out, const void* ptr)
     return AF_SUCCESS;
 }
 
-// Save an image to disk.
-af_err af_save_image_memory(void **ptr, const char* filename, const af_array in_)
+// Save an image to memory.
+af_err af_save_image_memory(void **ptr, const af_array in_, const af_image_format format)
 {
     try {
-
-        ARG_ASSERT(0, filename != NULL);
 
         FI_Init();
 
@@ -543,12 +560,9 @@ af_err af_save_image_memory(void **ptr, const char* filename, const af_array in_
         FreeImage_SetOutputMessage(FreeImageErrorHandler);
 
         // try to guess the file format from the file extension
-        FREE_IMAGE_FORMAT fif = FreeImage_GetFileType(filename);
-        if (fif == FIF_UNKNOWN) {
-            fif = FreeImage_GetFIFFromFilename(filename);
-        }
+        FREE_IMAGE_FORMAT fif = (FREE_IMAGE_FORMAT)format;
 
-        if(fif == FIF_UNKNOWN) {
+        if(fif == FIF_UNKNOWN || fif > 34) { // FreeImage FREE_IMAGE_FORMAT has upto 34 enums as of 3.17
             AF_ERROR("FreeImage Error: Unknown Filetype", AF_ERR_NOT_SUPPORTED);
         }
 
