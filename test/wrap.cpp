@@ -70,7 +70,8 @@ template<typename T>
 void wrapTest(const dim_t ix, const dim_t iy,
               const dim_t wx, const dim_t wy,
               const dim_t sx, const dim_t sy,
-              const dim_t px, const dim_t py)
+              const dim_t px, const dim_t py,
+              bool cond)
 {
     if (noDoubleTests<T>()) return;
 
@@ -110,69 +111,69 @@ void wrapTest(const dim_t ix, const dim_t iy,
 
     af::array factor(ix, iy, &h_factor[0]);
 
-    for (int i = 0; i <= 1; i++)
-    {
-        bool cond = i == 0;
-        af::array in_dim = af::unwrap(in, wx, wy, sx, sy, px, py, cond);
-        af::array res_dim = af::wrap(in_dim, ix, iy, wx, wy, sx, sy, px, py, cond);
+    af::array in_dim = af::unwrap(in, wx, wy, sx, sy, px, py, cond);
+    af::array res_dim = af::wrap(in_dim, ix, iy, wx, wy, sx, sy, px, py, cond);
 
-        ASSERT_EQ(in.elements(), res_dim.elements());
+    ASSERT_EQ(in.elements(), res_dim.elements());
 
-        std::vector<T> h_res(ix * iy);
-        res_dim.host(&h_res[0]);
+    std::vector<T> h_res(ix * iy);
+    res_dim.host(&h_res[0]);
 
-        for (int n = 0; n < nc; n++) {
-            T *iptr = &h_in[n * ix * iy];
-            T *rptr = &h_res[n * ix * iy];
+    for (int n = 0; n < nc; n++) {
+        T *iptr = &h_in[n * ix * iy];
+        T *rptr = &h_res[n * ix * iy];
 
-            for (int y = 0; y < iy; y++) {
-                for (int x = 0; x < ix; x++) {
+        for (int y = 0; y < iy; y++) {
+            for (int x = 0; x < ix; x++) {
 
-                    // FIXME: Use a better test
-                    T ival = iptr[y * ix + x];
-                    T rval = rptr[y * ix + x];
-                    int factor = h_factor[y * ix + x];
+                // FIXME: Use a better test
+                T ival = iptr[y * ix + x];
+                T rval = rptr[y * ix + x];
+                int factor = h_factor[y * ix + x];
 
-                    if (abs(ival) == 0) continue;
+                if (abs(ival) == 0) continue;
 
-                    ASSERT_NEAR(get_val<T>(ival * factor), get_val<T>(rval), 1E-5)
-                        << "at " << x << "," << y << std::endl;
-                }
+                ASSERT_NEAR(get_val<T>(ival * factor), get_val<T>(rval), 1E-5)
+                    << "at " << x << "," << y <<  " for cond  == " << cond << std::endl;
             }
-
         }
+
     }
 }
 
-#define WRAP_INIT(desc, ix, iy, wx, wy, sx, sy, px,py)          \
-    TYPED_TEST(Wrap, desc)                                      \
-    {                                                           \
-        wrapTest<TypeParam>(ix, iy, wx, wy, sx, sy, px, py);    \
+#define WRAP_INIT(desc, ix, iy, wx, wy, sx, sy, px,py)              \
+    TYPED_TEST(Wrap, Col##desc)                                     \
+    {                                                               \
+        wrapTest<TypeParam>(ix, iy, wx, wy, sx, sy, px, py, true ); \
+    }                                                               \
+    TYPED_TEST(Wrap, Row##desc)                                     \
+    {                                                               \
+        wrapTest<TypeParam>(ix, iy, wx, wy, sx, sy, px, py, false); \
     }
 
-    WRAP_INIT(Wrap00, 300, 100,  3,  3,  1,  1,  0,  0);
-    WRAP_INIT(Wrap01, 300, 100,  3,  3,  1,  1,  1,  1);
-    WRAP_INIT(Wrap03, 300, 100,  3,  3,  2,  2,  0,  0);
-    WRAP_INIT(Wrap04, 300, 100,  3,  3,  2,  2,  1,  1);
-    WRAP_INIT(Wrap05, 300, 100,  3,  3,  2,  2,  2,  2);
-    WRAP_INIT(Wrap06, 300, 100,  3,  3,  3,  3,  0,  0);
-    WRAP_INIT(Wrap07, 300, 100,  3,  3,  3,  3,  1,  1);
-    WRAP_INIT(Wrap08, 300, 100,  3,  3,  3,  3,  2,  2);
-    WRAP_INIT(Wrap09, 300, 100,  4,  4,  1,  1,  0,  0);
-    WRAP_INIT(Wrap13, 300, 100,  4,  4,  2,  2,  0,  0);
-    WRAP_INIT(Wrap14, 300, 100,  4,  4,  2,  2,  1,  1);
-    WRAP_INIT(Wrap15, 300, 100,  4,  4,  2,  2,  2,  2);
-    WRAP_INIT(Wrap16, 300, 100,  4,  4,  2,  2,  3,  3);
-    WRAP_INIT(Wrap17, 300, 100,  4,  4,  4,  4,  0,  0);
-    WRAP_INIT(Wrap18, 300, 100,  4,  4,  4,  4,  1,  1);
-    WRAP_INIT(Wrap19, 300, 100,  4,  4,  4,  4,  2,  2);
-    WRAP_INIT(Wrap27, 300, 100,  8,  8,  8,  8,  0,  0);
-    WRAP_INIT(Wrap28, 300, 100,  8,  8,  8,  8,  7,  7);
-    WRAP_INIT(Wrap31, 300, 100, 12, 12, 12, 12,  0,  0);
-    WRAP_INIT(Wrap32, 300, 100, 12, 12, 12, 12,  2,  2);
-    WRAP_INIT(Wrap35, 300, 100, 16, 16, 16, 16, 15, 15);
-    WRAP_INIT(Wrap36, 300, 100, 31, 31,  8,  8, 15, 15);
-    WRAP_INIT(Wrap39, 300, 100,  8, 12,  8, 12,  0,  0);
-    WRAP_INIT(Wrap40, 300, 100,  8, 12,  8, 12,  7, 11);
-    WRAP_INIT(Wrap43, 300, 100, 15, 10, 15, 10,  0,  0);
-    WRAP_INIT(Wrap44, 300, 100, 15, 10, 15, 10, 14,  9);
+    WRAP_INIT(00, 300, 100,  3,  3,  1,  1,  0,  0);
+    WRAP_INIT(01, 300, 100,  3,  3,  1,  1,  1,  1);
+    WRAP_INIT(03, 300, 100,  3,  3,  2,  2,  0,  0);
+    WRAP_INIT(04, 300, 100,  3,  3,  2,  2,  1,  1);
+    WRAP_INIT(05, 300, 100,  3,  3,  2,  2,  2,  2);
+    WRAP_INIT(06, 300, 100,  3,  3,  3,  3,  0,  0);
+    WRAP_INIT(07, 300, 100,  3,  3,  3,  3,  1,  1);
+    WRAP_INIT(08, 300, 100,  3,  3,  3,  3,  2,  2);
+    WRAP_INIT(09, 300, 100,  4,  4,  1,  1,  0,  0);
+    WRAP_INIT(13, 300, 100,  4,  4,  2,  2,  0,  0);
+    WRAP_INIT(14, 300, 100,  4,  4,  2,  2,  1,  1);
+    WRAP_INIT(15, 300, 100,  4,  4,  2,  2,  2,  2);
+    WRAP_INIT(16, 300, 100,  4,  4,  2,  2,  3,  3);
+    WRAP_INIT(17, 300, 100,  4,  4,  4,  4,  0,  0);
+    WRAP_INIT(18, 300, 100,  4,  4,  4,  4,  1,  1);
+    WRAP_INIT(19, 300, 100,  4,  4,  4,  4,  2,  2);
+    WRAP_INIT(27, 300, 100,  8,  8,  8,  8,  0,  0);
+    WRAP_INIT(28, 300, 100,  8,  8,  8,  8,  7,  7);
+    WRAP_INIT(31, 300, 100, 12, 12, 12, 12,  0,  0);
+    WRAP_INIT(32, 300, 100, 12, 12, 12, 12,  2,  2);
+    WRAP_INIT(35, 300, 100, 16, 16, 16, 16, 15, 15);
+    WRAP_INIT(36, 300, 100, 31, 31,  8,  8, 15, 15);
+    WRAP_INIT(39, 300, 100,  8, 12,  8, 12,  0,  0);
+    WRAP_INIT(40, 300, 100,  8, 12,  8, 12,  7, 11);
+    WRAP_INIT(43, 300, 100, 15, 10, 15, 10,  0,  0);
+    WRAP_INIT(44, 300, 100, 15, 10, 15, 10, 14,  9);

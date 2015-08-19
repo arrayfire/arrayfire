@@ -13,6 +13,7 @@
 #include <err_cuda.hpp>
 #include <dispatch.hpp>
 #include <math.hpp>
+#include <kernel/wrap.hpp>
 
 namespace cuda
 {
@@ -25,7 +26,12 @@ namespace cuda
                   const dim_t px, const dim_t py,
                   const bool is_column)
     {
-        CUDA_NOT_SUPPORTED();
+        af::dim4 idims = in.dims();
+        af::dim4 odims(ox, oy, idims[2], idims[3]);
+        Array<T> out = createValueArray<T>(odims, scalar<T>(0));
+
+        kernel::wrap<T>(out, in, wx, wy, sx, sy, px, py, is_column);
+        return out;
     }
 
 
