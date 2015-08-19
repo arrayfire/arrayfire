@@ -760,6 +760,12 @@ __global__ void computeDescriptor(
     float* desc = shrdMem;
     float* accum = shrdMem + desc_len * histsz;
 
+    const int histlen = (d)*(d)*(n);
+
+    for (int i = tid_x; i < histlen*histsz; i += bsz_x)
+        desc[tid_y*histlen+i] = 0.f;
+    __syncthreads();
+
     if (f < total_feat) {
         const unsigned layer = layer_in[f];
         float ori = (360.f - ori_in[f]) * PI_VAL / 180.f;
@@ -783,12 +789,7 @@ __global__ void computeDescriptor(
         int radius = hist_width * sqrtf(2.f) * (d + 1.f) * 0.5f + 0.5f;
 
         int len = radius*2+1;
-        const int histlen = (d)*(d)*(n);
         const int hist_off = (tid_x % histsz) * desc_len;
-
-        for (int i = tid_x; i < histlen*histsz; i += bsz_x)
-            desc[tid_y*histlen+i] = 0.f;
-        __syncthreads();
 
         // Calculate orientation histogram
         for (int l = tid_x; l < len*len; l += bsz_x) {
@@ -845,31 +846,32 @@ __global__ void computeDescriptor(
                 }
             }
         }
-        __syncthreads();
+    }
+    __syncthreads();
 
-        // Combine histograms (reduces previous atomicAdd overhead)
-        for (int l = tid_x; l < desc_len*4; l += bsz_x)
-            desc[l] += desc[l+4*desc_len];
-        __syncthreads();
-        for (int l = tid_x; l < desc_len*2; l += bsz_x)
-            desc[l    ] += desc[l+2*desc_len];
-        __syncthreads();
-        for (int l = tid_x; l < desc_len; l += bsz_x)
-            desc[l] += desc[l+desc_len];
-        __syncthreads();
+    // Combine histograms (reduces previous atomicAdd overhead)
+    for (int l = tid_x; l < desc_len*4; l += bsz_x)
+        desc[l] += desc[l+4*desc_len];
+    __syncthreads();
+    for (int l = tid_x; l < desc_len*2; l += bsz_x)
+        desc[l    ] += desc[l+2*desc_len];
+    __syncthreads();
+    for (int l = tid_x; l < desc_len; l += bsz_x)
+        desc[l] += desc[l+desc_len];
+    __syncthreads();
 
-        normalizeDesc(desc, accum, histlen);
+    normalizeDesc(desc, accum, histlen);
 
-        for (int i = tid_x; i < d*d*n; i += bsz_x)
-            desc[tid_y*desc_len+i] = min(desc[tid_y*desc_len+i], DESC_MAG_THR);
-        __syncthreads();
+    for (int i = tid_x; i < d*d*n; i += bsz_x)
+        desc[tid_y*desc_len+i] = min(desc[tid_y*desc_len+i], DESC_MAG_THR);
+    __syncthreads();
 
-        normalizeDesc(desc, accum, histlen);
+    normalizeDesc(desc, accum, histlen);
 
+    if (f < total_feat) {
         // Calculate final descriptor values
-        for (int k = tid_x; k < d*d*n; k += bsz_x) {
+        for (int k = tid_x; k < d*d*n; k += bsz_x)
             desc_out[f*desc_len+k] = round(min(255.f, desc[tid_y*desc_len+k] * INT_DESCR_FCTR));
-        }
     }
 }
 
