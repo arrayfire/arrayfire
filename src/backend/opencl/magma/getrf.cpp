@@ -31,22 +31,22 @@
  * * Redistributions  of  source  code  must  retain  the above copyright
  *   notice,  this  list  of  conditions  and  the  following  disclaimer.
  * * Redistributions  in  binary  form must reproduce the above copyright
- *   notice,  this list of conditions and the following disclaimer in the 
+ *   notice,  this list of conditions and the following disclaimer in the
  *   documentation  and/or other materials provided with the distribution.
- * * Neither  the  name of the University of Tennessee, Knoxville nor the 
+ * * Neither  the  name of the University of Tennessee, Knoxville nor the
  *   names of its contributors may be used to endorse or promote products
  *   derived from this software without specific prior written permission.
  *
  * THIS  SOFTWARE  IS  PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * ``AS IS''  AND  ANY  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
- * LIMITED  TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
+ * ``AS IS''  AND  ANY  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED  TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
  * A  PARTICULAR  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
  * HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL,  EXEMPLARY,  OR  CONSEQUENTIAL  DAMAGES  (INCLUDING,  BUT NOT 
+ * SPECIAL,  EXEMPLARY,  OR  CONSEQUENTIAL  DAMAGES  (INCLUDING,  BUT NOT
  * LIMITED  TO,  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA,  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * DATA,  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
  * THEORY  OF  LIABILITY,  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * (INCLUDING  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF  THIS  SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  **********************************************************************/
@@ -149,9 +149,9 @@ magma_int_t magma_getrf_gpu(
     if (m == 0 || n == 0)
         return *info;
 
-    gemm_func<Ty> gpu_gemm;
-    trsm_func<Ty> gpu_trsm;
-    getrf_func<Ty> cpu_getrf;
+    gpu_gemm_func<Ty> gpu_gemm;
+    gpu_trsm_func<Ty> gpu_trsm;
+    cpu_getrf_func<Ty> cpu_getrf;
 
     /* Function Body */
     mindim = std::min(m, n);
@@ -165,7 +165,7 @@ magma_int_t magma_getrf_gpu(
             return *info;
         }
         magma_getmatrix<Ty>(m, n, dA(0,0), ldda, work(0), m, queue);
-        cpu_getrf(LAPACK_COL_MAJOR, m, n, work, m, ipiv);
+        cpu_getrf( m, n, work, m, ipiv);
         magma_setmatrix<Ty>(m, n, work(0), m, dA(0,0), ldda, queue);
         magma_free_cpu(work);
     }
@@ -219,7 +219,7 @@ magma_int_t magma_getrf_gpu(
             magma_getmatrix<Ty>(m-j*nb, nb, dAP(0,0), maxm, work(0), ldwork, queue);
 
             if (j > 0 && n > (j + 1) * nb) {
-                gpu_trsm(clblasColumnMajor,
+                gpu_trsm(
                          clblasRight, clblasUpper, clblasNoTrans, clblasUnit,
                          n - (j+1)*nb, nb,
                          c_one,
@@ -228,7 +228,7 @@ magma_int_t magma_getrf_gpu(
                          1, &queue, 0, nullptr, &event);
 
                 if (m > j * nb)  {
-                    gpu_gemm(clblasColumnMajor, clblasNoTrans, clblasNoTrans,
+                    gpu_gemm( clblasNoTrans, clblasNoTrans,
                          n-(j+1)*nb, m-j*nb, nb,
                          c_neg_one,
                          dAT(j-1,j+1), lddat,
@@ -241,7 +241,7 @@ magma_int_t magma_getrf_gpu(
 
             // do the cpu part
             rows = m - j*nb;
-            cpu_getrf(LAPACK_COL_MAJOR, rows, nb, work, ldwork, ipiv+j*nb);
+            cpu_getrf( rows, nb, work, ldwork, ipiv+j*nb);
             if (*info == 0 && iinfo > 0)
                 *info = iinfo + j*nb;
 
@@ -257,7 +257,7 @@ magma_int_t magma_getrf_gpu(
 
             // do the small non-parallel computations (next panel update)
             if (s > (j+1)) {
-                gpu_trsm(clblasColumnMajor,
+                gpu_trsm(
                          clblasRight, clblasUpper, clblasNoTrans, clblasUnit,
                          nb, nb,
                          c_one,
@@ -266,7 +266,7 @@ magma_int_t magma_getrf_gpu(
                          1, &queue, 0, nullptr, &event);
 
 
-                gpu_gemm(clblasColumnMajor, clblasNoTrans, clblasNoTrans,
+                gpu_gemm( clblasNoTrans, clblasNoTrans,
                          nb, m-(j+1)*nb, nb,
                          c_neg_one,
                          dAT(j,   j+1), lddat,
@@ -277,7 +277,7 @@ magma_int_t magma_getrf_gpu(
             }
             else {
                 if (n > s * nb) {
-                    gpu_trsm(clblasColumnMajor,
+                    gpu_trsm(
                              clblasRight, clblasUpper, clblasNoTrans, clblasUnit,
                              n-s*nb, nb,
                              c_one,
@@ -287,7 +287,7 @@ magma_int_t magma_getrf_gpu(
                 }
 
                 if ((n > (j+1) * nb) && (m > (j+1) * nb)) {
-                    gpu_gemm(clblasColumnMajor, clblasNoTrans, clblasNoTrans,
+                    gpu_gemm( clblasNoTrans, clblasNoTrans,
                              n-(j+1)*nb, m-(j+1)*nb, nb,
                              c_neg_one,
                              dAT(j,   j+1), lddat,
@@ -308,7 +308,7 @@ magma_int_t magma_getrf_gpu(
             magma_getmatrix<Ty>(rows, nb0, dAP(0,0), maxm, work(0), ldwork, queue);
 
             // do the cpu part
-            cpu_getrf(LAPACK_COL_MAJOR, rows, nb0, work, ldwork, ipiv+s*nb);
+            cpu_getrf( rows, nb0, work, ldwork, ipiv+s*nb);
             if (*info == 0 && iinfo > 0)
                 *info = iinfo + s*nb;
 
@@ -322,7 +322,7 @@ magma_int_t magma_getrf_gpu(
             magmablas_transpose<Ty>(rows, nb0, dAP(0,0), maxm, dAT(s,s), lddat, queue);
 
             if (n > s * nb + nb0) {
-                gpu_trsm(clblasColumnMajor,
+                gpu_trsm(
                          clblasRight, clblasUpper, clblasNoTrans, clblasUnit,
                          n-s*nb-nb0, nb0,
                          c_one, dAT(s,s),     lddat,

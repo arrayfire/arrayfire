@@ -33,22 +33,22 @@
  * * Redistributions  of  source  code  must  retain  the above copyright
  *   notice,  this  list  of  conditions  and  the  following  disclaimer.
  * * Redistributions  in  binary  form must reproduce the above copyright
- *   notice,  this list of conditions and the following disclaimer in the 
+ *   notice,  this list of conditions and the following disclaimer in the
  *   documentation  and/or other materials provided with the distribution.
- * * Neither  the  name of the University of Tennessee, Knoxville nor the 
+ * * Neither  the  name of the University of Tennessee, Knoxville nor the
  *   names of its contributors may be used to endorse or promote products
  *   derived from this software without specific prior written permission.
  *
  * THIS  SOFTWARE  IS  PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * ``AS IS''  AND  ANY  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
- * LIMITED  TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
+ * ``AS IS''  AND  ANY  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED  TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
  * A  PARTICULAR  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
  * HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL,  EXEMPLARY,  OR  CONSEQUENTIAL  DAMAGES  (INCLUDING,  BUT NOT 
+ * SPECIAL,  EXEMPLARY,  OR  CONSEQUENTIAL  DAMAGES  (INCLUDING,  BUT NOT
  * LIMITED  TO,  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA,  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * DATA,  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
  * THEORY  OF  LIABILITY,  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * (INCLUDING  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF  THIS  SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  **********************************************************************/
@@ -56,7 +56,6 @@
 #include "magma.h"
 #include "magma_blas.h"
 #include "magma_data.h"
-#include "magma_cpu_lapack.h"
 #include "magma_helper.h"
 #include "magma_sync.h"
 
@@ -255,8 +254,8 @@ magma_larfb_gpu(
         transV   = clblasNoTrans;
     }
 
-    gemm_func<Ty> gpu_gemm;
-    trmm_func<Ty> gpu_trmm;
+    gpu_gemm_func<Ty> gpu_gemm;
+    gpu_trmm_func<Ty> gpu_trmm;
 
     cl_event event = NULL;
 
@@ -265,7 +264,7 @@ magma_larfb_gpu(
         // Comments assume H C. When forming H^H C, T gets transposed via transt.
 
         // W = C^H V
-        gpu_gemm(clblasColumnMajor,
+        gpu_gemm(
                  transType, notransV,
                  n, k, m,
                  c_one,
@@ -276,7 +275,7 @@ magma_larfb_gpu(
                  1, &queue, 0, nullptr, &event);
 
         // W = W T^H = C^H V T^H
-        gpu_trmm(clblasColumnMajor,
+        gpu_trmm(
                  clblasRight,
                  uplo, transt, clblasNonUnit,
                  n, k,
@@ -286,7 +285,7 @@ magma_larfb_gpu(
                  1, &queue, 0, nullptr, &event);
 
         // C = C - V W^H = C - V T V^H C = (I - V T V^H) C = H C
-        gpu_gemm(clblasColumnMajor,
+        gpu_gemm(
                  notransV, transType,
                  m, n, k,
                  c_neg_one,
@@ -301,7 +300,7 @@ magma_larfb_gpu(
         // Comments assume C H. When forming C H^H, T gets transposed via trans.
 
         // W = C V
-        gpu_gemm(clblasColumnMajor,
+        gpu_gemm(
                  clblasNoTrans, notransV,
                  m, k, n,
                  c_one,
@@ -312,7 +311,7 @@ magma_larfb_gpu(
                  1, &queue, 0, nullptr, &event);
 
         // W = W T = C V T
-        gpu_trmm(clblasColumnMajor,
+        gpu_trmm(
                  clblasRight, uplo,
                  cltrans,
                  clblasNonUnit,
@@ -323,7 +322,7 @@ magma_larfb_gpu(
                  1, &queue, 0, nullptr, &event);
 
         // C = C - W V^H = C - C V T V^H = C (I - V T V^H) = C H
-        gpu_gemm(clblasColumnMajor,
+        gpu_gemm(
                  clblasNoTrans, transV,
                  m, n, k,
                  c_neg_one,

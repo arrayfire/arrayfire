@@ -227,7 +227,7 @@ magma_unmqr_gpu(
 
     magma_malloc<Ty>(&dwork, (((n+31)/32)*32)*nb);
 
-    unmqr_work_func<Ty> cpu_unmqr;
+    cpu_unmqr_work_func<Ty> cpu_unmqr;
 
     if ( (left && (! notran)) || ( (!left) && notran ) ) {
         i1 = 0;
@@ -283,7 +283,7 @@ magma_unmqr_gpu(
         magma_getmatrix<Ty>(ma, ib, a_ref(i,  i ), ldda, hA, ma, queue);
         magma_getmatrix<Ty>(mi, ni, c_ref(ic, jc), lddc, hC, mi, queue);
 
-        *info = cpu_unmqr(LAPACK_COL_MAJOR,
+        *info = cpu_unmqr(
                           side == MagmaRight ? 'R' : 'L',
                           notran ? 'N' : (is_real ? 'T' : 'C'),
                           mi, ni, ib,
@@ -351,7 +351,7 @@ magma_unmqr_gpu(
         magma_getmatrix<Ty>(ma, ib, a_ref(i,  i ), ldda, hA, ma, queue);
         magma_getmatrix<Ty>(mi, ni, c_ref(ic, jc), lddc, hC, mi, queue);
 
-        *info = cpu_unmqr(LAPACK_COL_MAJOR,
+        *info = cpu_unmqr(
                           side == MagmaRight ? 'R' : 'L',
                           notran ? 'N' : (is_real ? 'T' : 'C'),
                           mi, ni, ib,

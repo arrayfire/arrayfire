@@ -31,22 +31,22 @@
  * * Redistributions  of  source  code  must  retain  the above copyright
  *   notice,  this  list  of  conditions  and  the  following  disclaimer.
  * * Redistributions  in  binary  form must reproduce the above copyright
- *   notice,  this list of conditions and the following disclaimer in the 
+ *   notice,  this list of conditions and the following disclaimer in the
  *   documentation  and/or other materials provided with the distribution.
- * * Neither  the  name of the University of Tennessee, Knoxville nor the 
+ * * Neither  the  name of the University of Tennessee, Knoxville nor the
  *   names of its contributors may be used to endorse or promote products
  *   derived from this software without specific prior written permission.
  *
  * THIS  SOFTWARE  IS  PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * ``AS IS''  AND  ANY  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
- * LIMITED  TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
+ * ``AS IS''  AND  ANY  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED  TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
  * A  PARTICULAR  PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
  * HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL,  EXEMPLARY,  OR  CONSEQUENTIAL  DAMAGES  (INCLUDING,  BUT NOT 
+ * SPECIAL,  EXEMPLARY,  OR  CONSEQUENTIAL  DAMAGES  (INCLUDING,  BUT NOT
  * LIMITED  TO,  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA,  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * DATA,  OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
  * THEORY  OF  LIABILITY,  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * (INCLUDING  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF  THIS  SOFTWARE,  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  **********************************************************************/
@@ -151,10 +151,10 @@ magma_int_t magma_potrf_gpu(
 
     nb = magma_get_potrf_nb<Ty>(n);
 
-    gemm_func<Ty> gpu_gemm;
-    trsm_func<Ty> gpu_trsm;
-    herk_func<Ty> gpu_herk;
-    potrf_func<Ty> cpu_potrf;
+    gpu_gemm_func<Ty> gpu_gemm;
+    gpu_trsm_func<Ty> gpu_trsm;
+    gpu_herk_func<Ty> gpu_herk;
+    cpu_potrf_func<Ty> cpu_potrf;
 
 
     err = magma_malloc_cpu<Ty>( &work, nb*nb);
@@ -170,7 +170,7 @@ magma_int_t magma_potrf_gpu(
         // use unblocked code
         magma_getmatrix<Ty>(n, n, dA, dA_offset, ldda, work, n, queue);
 
-        cpu_potrf(LAPACK_COL_MAJOR,
+        cpu_potrf(
                   uplo == MagmaUpper ? *MagmaUpperStr : *MagmaLowerStr,
                   n, work, n);
 
@@ -185,7 +185,7 @@ magma_int_t magma_potrf_gpu(
                 // apply all previous updates to diagonal block
                 jb = std::min(nb, n-j);
                 if (j > 0) {
-                    gpu_herk(clblasColumnMajor,
+                    gpu_herk(
                              clblasUpper, transType,
                              jb, j,
                              m_one,
@@ -200,7 +200,7 @@ magma_int_t magma_potrf_gpu(
 
                 // apply all previous updates to block row right of diagonal block
                 if (j+jb < n) {
-                    gpu_gemm(clblasColumnMajor,
+                    gpu_gemm(
                              transType, clblasNoTrans,
                              jb, n-j-jb, j,
                              mz_one,
@@ -214,7 +214,7 @@ magma_int_t magma_potrf_gpu(
                 // simultaneous with above zgemm, transfer data, factor
                 // diagonal block on CPU, and test for positive definiteness
                 magma_event_sync(event);
-                *info =cpu_potrf(LAPACK_COL_MAJOR, *MagmaUpperStr, jb, work, jb);
+                *info =cpu_potrf( *MagmaUpperStr, jb, work, jb);
 
                 if (*info != 0) {
                     assert(*info > 0);
@@ -227,7 +227,7 @@ magma_int_t magma_potrf_gpu(
                 // apply diagonal block to block row right of diagonal block
                 if (j+jb < n) {
                     magma_event_sync(event);
-                    gpu_trsm(clblasColumnMajor,
+                    gpu_trsm(
                              clblasLeft, clblasUpper,
                              transType, clblasNonUnit,
                              jb, n-j-jb,
@@ -246,7 +246,7 @@ magma_int_t magma_potrf_gpu(
                 // apply all previous updates to diagonal block
                 jb = std::min(nb, n-j);
                 if (j>0) {
-                    gpu_herk(clblasColumnMajor,
+                    gpu_herk(
                              clblasLower, clblasNoTrans, jb, j,
                              m_one,
                              dA(j, 0), ldda,
@@ -260,7 +260,7 @@ magma_int_t magma_potrf_gpu(
 
                 // apply all previous updates to block column below diagonal block
                 if (j+jb < n) {
-                    gpu_gemm(clblasColumnMajor,
+                    gpu_gemm(
                              clblasNoTrans, transType,
                              n-j-jb, jb, j,
                              mz_one,
@@ -274,7 +274,7 @@ magma_int_t magma_potrf_gpu(
                 // simultaneous with above zgemm, transfer data, factor
                 // diagonal block on CPU, and test for positive definiteness
                 magma_event_sync(event);
-                *info = cpu_potrf(LAPACK_COL_MAJOR,
+                *info = cpu_potrf(
                                   *MagmaLowerStr, jb, work, jb);
                 if (*info != 0) {
                     assert(*info > 0);
@@ -286,7 +286,7 @@ magma_int_t magma_potrf_gpu(
                 // apply diagonal block to block column below diagonal
                 if (j+jb < n) {
                     magma_event_sync(event);
-                    gpu_trsm(clblasColumnMajor,
+                    gpu_trsm(
                              clblasRight, clblasLower, transType, clblasNonUnit,
                              n-j-jb, jb,
                              z_one,

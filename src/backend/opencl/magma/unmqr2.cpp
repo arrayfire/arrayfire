@@ -251,7 +251,7 @@ magma_unmqr2_gpu(
         ic = 1;
     }
 
-    larft_func<Ty> cpu_larft;
+    cpu_larft_func<Ty> cpu_larft;
 
     // set nb-1 super-diagonals to 0, and diagonal to 1.
     // This way we can copy V directly to the GPU,
@@ -265,7 +265,7 @@ magma_unmqr2_gpu(
         /* Form the triangular factor of the block reflector
            H = H(i) H(i+1) . . . H(i+ib-1) */
         i__4 = nq - i + 1;
-        cpu_larft(LAPACK_COL_MAJOR,
+        cpu_larft(
                   *MagmaForwardStr, *MagmaColumnwiseStr,
                   i__4, ib,
                   wA(i,i), ldwa, &tau[i], T, ib);

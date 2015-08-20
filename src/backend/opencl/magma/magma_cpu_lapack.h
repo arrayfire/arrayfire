@@ -17,6 +17,12 @@
 #define LAPACKE_sungqr_work(...) LAPACKE_sorgqr_work(__VA_ARGS__)
 #define LAPACKE_dungqr_work(...) LAPACKE_dorgqr_work(__VA_ARGS__)
 
+template<typename... Args>
+int LAPACKE_slacgv(Args... args) { return 0; }
+
+template<typename... Args>
+int LAPACKE_dlacgv(Args... args) { return 0; }
+
 #define lapack_complex_float magmaFloatComplex
 #define lapack_complex_double magmaDoubleComplex
 #define LAPACK_PREFIX LAPACKE_
@@ -36,64 +42,53 @@
 
 #define CPU_LAPACK_FUNC_DEF(NAME)               \
     template<typename T>                        \
-    struct NAME##_func;
+    struct cpu_##NAME##_func;
 
-#define CPU_LAPACK_FUNC(NAME, TYPE, X)              \
-    template<>                                      \
-    struct NAME##_func<TYPE>                        \
-    {                                               \
-        template<typename... Args>                  \
-            int                                     \
-            operator() (Args... args)               \
-        { return LAPACK_NAME(X##NAME)(args...); }   \
+#define CPU_LAPACK_FUNC1(NAME, TYPE, X)                             \
+    template<>                                                      \
+    struct cpu_##NAME##_func<TYPE>                                  \
+    {                                                               \
+        template<typename... Args>                                  \
+            int                                                     \
+            operator() (Args... args)                               \
+        { return LAPACK_NAME(X##NAME)(LAPACK_COL_MAJOR, args...); } \
     };
 
-CPU_LAPACK_FUNC_DEF(getrf)
-CPU_LAPACK_FUNC(getrf, float,      s)
-CPU_LAPACK_FUNC(getrf, double,     d)
-CPU_LAPACK_FUNC(getrf, magmaFloatComplex,     c)
-CPU_LAPACK_FUNC(getrf, magmaDoubleComplex,    z)
+#define CPU_LAPACK_FUNC2(NAME, TYPE, X)                             \
+    template<>                                                      \
+    struct cpu_##NAME##_func<TYPE>                                  \
+    {                                                               \
+        template<typename... Args>                                  \
+            int                                                     \
+            operator() (Args... args)                               \
+        { return LAPACK_NAME(X##NAME)(args...); }                   \
+    };
 
-CPU_LAPACK_FUNC_DEF(potrf)
-CPU_LAPACK_FUNC(potrf, float,      s)
-CPU_LAPACK_FUNC(potrf, double,     d)
-CPU_LAPACK_FUNC(potrf, magmaFloatComplex,     c)
-CPU_LAPACK_FUNC(potrf, magmaDoubleComplex,    z)
+#define CPU_LAPACK_DECL1(NAME)                          \
+    CPU_LAPACK_FUNC_DEF(NAME)                           \
+    CPU_LAPACK_FUNC1(NAME, float,      s)               \
+    CPU_LAPACK_FUNC1(NAME, double,     d)               \
+    CPU_LAPACK_FUNC1(NAME, magmaFloatComplex,     c)    \
+    CPU_LAPACK_FUNC1(NAME, magmaDoubleComplex,    z)    \
 
-CPU_LAPACK_FUNC_DEF(trtri)
-CPU_LAPACK_FUNC(trtri, float,      s)
-CPU_LAPACK_FUNC(trtri, double,     d)
-CPU_LAPACK_FUNC(trtri, magmaFloatComplex,     c)
-CPU_LAPACK_FUNC(trtri, magmaDoubleComplex,    z)
+#define CPU_LAPACK_DECL2(NAME)                          \
+    CPU_LAPACK_FUNC_DEF(NAME)                           \
+    CPU_LAPACK_FUNC2(NAME, float,      s)               \
+    CPU_LAPACK_FUNC2(NAME, double,     d)               \
+    CPU_LAPACK_FUNC2(NAME, magmaFloatComplex,     c)    \
+    CPU_LAPACK_FUNC2(NAME, magmaDoubleComplex,    z)    \
 
-CPU_LAPACK_FUNC_DEF(geqrf_work)
-CPU_LAPACK_FUNC(geqrf_work, float,      s)
-CPU_LAPACK_FUNC(geqrf_work, double,     d)
-CPU_LAPACK_FUNC(geqrf_work, magmaFloatComplex,     c)
-CPU_LAPACK_FUNC(geqrf_work, magmaDoubleComplex,    z)
-
-CPU_LAPACK_FUNC_DEF(larft)
-CPU_LAPACK_FUNC(larft, float,      s)
-CPU_LAPACK_FUNC(larft, double,     d)
-CPU_LAPACK_FUNC(larft, magmaFloatComplex,     c)
-CPU_LAPACK_FUNC(larft, magmaDoubleComplex,    z)
-
-CPU_LAPACK_FUNC_DEF(unmqr_work)
-CPU_LAPACK_FUNC(unmqr_work, float,      s)
-CPU_LAPACK_FUNC(unmqr_work, double,     d)
-CPU_LAPACK_FUNC(unmqr_work, magmaFloatComplex,     c)
-CPU_LAPACK_FUNC(unmqr_work, magmaDoubleComplex,    z)
-
-CPU_LAPACK_FUNC_DEF(ungqr_work)
-CPU_LAPACK_FUNC(ungqr_work, float,      s)
-CPU_LAPACK_FUNC(ungqr_work, double,     d)
-CPU_LAPACK_FUNC(ungqr_work, magmaFloatComplex,     c)
-CPU_LAPACK_FUNC(ungqr_work, magmaDoubleComplex,    z)
-
-CPU_LAPACK_FUNC_DEF(laswp)
-CPU_LAPACK_FUNC(laswp, float,      s)
-CPU_LAPACK_FUNC(laswp, double,     d)
-CPU_LAPACK_FUNC(laswp, magmaFloatComplex,     c)
-CPU_LAPACK_FUNC(laswp, magmaDoubleComplex,    z)
+CPU_LAPACK_DECL1(getrf)
+CPU_LAPACK_DECL1(gebrd)
+CPU_LAPACK_DECL1(potrf)
+CPU_LAPACK_DECL1(trtri)
+CPU_LAPACK_DECL1(geqrf_work)
+CPU_LAPACK_DECL1(larft)
+CPU_LAPACK_DECL1(unmqr_work)
+CPU_LAPACK_DECL1(ungqr_work)
+CPU_LAPACK_DECL1(laswp)
+CPU_LAPACK_DECL1(laset)
+CPU_LAPACK_DECL2(lacgv)
+CPU_LAPACK_DECL2(larfg)
 
 #endif

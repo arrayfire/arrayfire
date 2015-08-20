@@ -217,8 +217,8 @@ magma_geqrf3_gpu(
     ldwork = m;
     lddwork= n;
 
-    geqrf_work_func<Ty> cpu_geqrf;
-    larft_func<Ty> cpu_larft;
+    cpu_geqrf_work_func<Ty> cpu_geqrf;
+    cpu_larft_func<Ty> cpu_larft;
 
     if ( (nb > 1) && (nb < k) ) {
         /* Use blocked code initially */
@@ -244,11 +244,11 @@ magma_geqrf3_gpu(
             }
 
             magma_event_sync(event[1]);
-            *info = cpu_geqrf(LAPACK_COL_MAJOR, rows, ib, work_ref(i), ldwork, tau+i, hwork, lhwork);
+            *info = cpu_geqrf( rows, ib, work_ref(i), ldwork, tau+i, hwork, lhwork);
 
             /* Form the triangular factor of the block reflector
                H = H(i) H(i+1) . . . H(i+ib-1) */
-            cpu_larft(LAPACK_COL_MAJOR,
+            cpu_larft(
                       *MagmaForwardStr, *MagmaColumnwiseStr,
                       rows, ib,
                       work_ref(i), ldwork,
@@ -296,7 +296,7 @@ magma_geqrf3_gpu(
         magma_getmatrix<Ty>( rows, ib, a_ref(i, i), ldda, work, rows, queue );
 
         lhwork = lwork - rows*ib;
-        *info = cpu_geqrf(LAPACK_COL_MAJOR, rows, ib, work, rows, tau+i, work+ib*rows, lhwork);
+        *info = cpu_geqrf( rows, ib, work, rows, tau+i, work+ib*rows, lhwork);
 
         magma_setmatrix<Ty>( rows, ib, work, rows, a_ref(i, i), ldda, queue );
     }

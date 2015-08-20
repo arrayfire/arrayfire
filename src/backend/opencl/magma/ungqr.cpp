@@ -137,7 +137,7 @@ magma_ungqr_gpu(
     cl_mem dW;
     magma_malloc<Ty>(&dW, (((n+31)/32)*32)*nb);
 
-    ungqr_work_func<Ty> cpu_ungqr;
+    cpu_ungqr_work_func<Ty> cpu_ungqr;
 
     // Use unblocked code for the last or only block.
     if (kk < n) {
@@ -147,7 +147,7 @@ magma_ungqr_gpu(
         magma_getmatrix<Ty>(m_kk, k_kk,
                             dA(kk, kk), ldda, panel, m_kk, queue);
 
-        cpu_ungqr(LAPACK_COL_MAJOR,
+        cpu_ungqr(
                   m_kk, n_kk, k_kk,
                   panel, m_kk,
                   &tau[kk], work, lwork);
