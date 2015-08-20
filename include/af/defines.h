@@ -289,6 +289,22 @@ typedef enum {
     AF_COLORMAP_BLUE    = 6     ///< Blue hue map
 } af_colormap;
 
+typedef enum {
+    AF_FIF_BMP          = 0,    ///< FreeImage Enum for Bitmap File
+    AF_FIF_ICO          = 1,    ///< FreeImage Enum for Windows Icon File
+    AF_FIF_JPEG         = 2,    ///< FreeImage Enum for JPEG File
+    AF_FIF_JNG          = 3,    ///< FreeImage Enum for JPEG Network Graphics File
+    AF_FIF_PNG          = 13,   ///< FreeImage Enum for Portable Network Graphics File
+    AF_FIF_PPM          = 14,   ///< FreeImage Enum for Portable Pixelmap (ASCII) File
+    AF_FIF_PPMRAW       = 15,   ///< FreeImage Enum for Portable Pixelmap (Binary) File
+    AF_FIF_TIFF         = 18,   ///< FreeImage Enum for Tagged Image File Format File
+    AF_FIF_PSD          = 20,   ///< FreeImage Enum for Adobe Photoshop File
+    AF_FIF_HDR          = 26,   ///< FreeImage Enum for High Dynamic Range File
+    AF_FIF_EXR          = 29,   ///< FreeImage Enum for ILM OpenEXR File
+    AF_FIF_JP2          = 31,   ///< FreeImage Enum for JPEG-2000 File
+    AF_FIF_RAW          = 34    ///< FreeImage Enum for RAW Camera Image File
+} af_image_format;
+
 // Below enum is purely added for example purposes
 // it doesn't and shoudn't be used anywhere in the
 // code. No Guarantee's provided if it is used.
@@ -314,6 +330,7 @@ namespace af
     typedef af_colormap ColorMap;
     typedef af_norm_type normType;
     typedef af_ycc_std YCCStd;
+    typedef af_image_format imageFormat;
 }
 
 #endif
