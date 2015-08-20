@@ -453,8 +453,8 @@ AFAPI array histEqual(const array& in, const array& hist);
 /**
    C++ Interface for generating gausian kernels
 
-   \param[in]  rows number of kernel rows
-   \param[in]  cols number of kernel columns
+   \param[in]  rows number of rows of the kernel
+   \param[in]  cols number of columns of the kernel
    \param[in]  sig_r (default 0) (calculated internally as 0.25 * rows + 0.75)
    \param[in]  sig_c (default 0) (calculated internally as 0.25 * cols + 0.75)
    \return     an array with values generated using gaussian function
@@ -518,20 +518,45 @@ AFAPI array dog(const array& in, const int radius1, const int radius2);
 /**
    C++ Interface wrapper for unwrap
 
-   \param[in]  in is the input array
+   \param[in]  in is the input image (or set of images)
    \param[in]  wx is the block window size along 0th-dimension between [1, input.dims[0] + px]
    \param[in]  wy is the block window size along 1st-dimension between [1, input.dims[1] + py]
    \param[in]  sx is the stride along 0th-dimension
    \param[in]  sy is the stride along 1st-dimension
    \param[in]  px is the padding along 0th-dimension between [0, wx). Padding is applied both before and after.
    \param[in]  py is the padding along 1st-dimension between [0, wy). Padding is applied both before and after.
-   \returns    an array with the image blocks as columns
+   \param[in]  is_column specifies the layout for the unwrapped patch. If is_column is false, the unrapped patch is laid out as a row.
+   \returns    an array with the image blocks as rows or columns
 
    \ingroup image_func_unwrap
 */
 AFAPI array unwrap(const array& in, const dim_t wx, const dim_t wy,
-                   const dim_t sx, const dim_t sy, const dim_t px=0, const dim_t py=0);
+                   const dim_t sx, const dim_t sy, const dim_t px=0, const dim_t py=0,
+                   const bool is_column = true);
 
+/**
+   C++ Interface wrapper for wrap
+
+   \param[in]  in is the input image (or set of images)
+   \param[in]  ox is the 0th-dimension of output
+   \param[in]  oy is the ist-dimension of output
+   \param[in]  wx is the block window size along 0th-dimension between
+   \param[in]  wy is the block window size along 1st-dimension between
+   \param[in]  sx is the stride along 0th-dimension
+   \param[in]  sy is the stride along 1st-dimension
+   \param[in]  px is the padding used along 0th-dimension between [0, wx).
+   \param[in]  py is the padding used along 1st-dimension between [0, wy).
+   \param[in]  is_column specifies the layout for the unwrapped patch. If is_column is false, the rows are treated as patches
+   \returns    an array of images after converting rows or columns into image windows
+
+   \ingroup image_func_wrap
+*/
+AFAPI array wrap(const array& in,
+                 const dim_t ox, const dim_t oy,
+                 const dim_t wx, const dim_t wy,
+                 const dim_t sx, const dim_t sy,
+                 const dim_t px = 0, const dim_t py = 0,
+                 const bool is_column = true);
 
 /**
    C++ Interface wrapper for summed area tables
@@ -990,8 +1015,8 @@ extern "C" {
        C Interface generating gaussian kernels
 
        \param[out] out is an array with values generated using gaussian function
-       \param[in]  rows number of kernel rows
-       \param[in]  cols number of kernel columns
+       \param[in]  rows number of rows of the gaussian kernel
+       \param[in]  cols number of columns of the gaussian kernel
        \param[in]  sigma_r (default 0) (calculated internally as 0.25 * rows + 0.75)
        \param[in]  sigma_c (default 0) (calculated internally as 0.25 * cols + 0.75)
        \return     \ref AF_SUCCESS if gaussian distribution values are generated successfully,
@@ -1067,21 +1092,52 @@ extern "C" {
     /**
        C Interface wrapper for unwrap
 
-       \param[out] out is an array with image blocks as columns.
-       \param[in]  in is the input array
+       \param[out] out is an array with image blocks as rows or columns.
+       \param[in]  in is the input image (or set of images)
        \param[in]  wx is the block window size along 0th-dimension between [1, input.dims[0] + px]
        \param[in]  wy is the block window size along 1st-dimension between [1, input.dims[1] + py]
        \param[in]  sx is the stride along 0th-dimension
        \param[in]  sy is the stride along 1st-dimension
        \param[in]  px is the padding along 0th-dimension between [0, wx). Padding is applied both before and after.
        \param[in]  py is the padding along 1st-dimension between [0, wy). Padding is applied both before and after.
+       \param[in]  is_column specifies the layout for the unwrapped patch. If is_column is false, the unrapped patch is laid out as a row.
        \return     \ref AF_SUCCESS if the color transformation is successful,
        otherwise an appropriate error code is returned.
 
        \ingroup image_func_unwrap
     */
     AFAPI af_err af_unwrap(af_array *out, const af_array in, const dim_t wx, const dim_t wy,
-                           const dim_t sx, const dim_t sy, const dim_t px, const dim_t py);
+                           const dim_t sx, const dim_t sy, const dim_t px, const dim_t py,
+                           const bool is_column);
+
+    /**
+       C Interface wrapper for wrap
+
+       \param[out] out is an array after converting
+       \param[in]  in is the input array
+       \param[in]  ox is the 0th-dimension of \p out
+       \param[in]  oy is the ist-dimension of \p out
+       \param[in]  wx is the block window size along 0th-dimension between
+       \param[in]  wy is the block window size along 1st-dimension between
+       \param[in]  sx is the stride along 0th-dimension
+       \param[in]  sy is the stride along 1st-dimension
+       \param[in]  px is the padding used along 0th-dimension between [0, wx).
+       \param[in]  py is the padding used along 1st-dimension between [0, wy).
+       \param[in]  is_column specifies the layout for the unwrapped patch. If is_column is false, the rows are treated as the patches
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \note The padding used in \ref af_unwrap is calculated from the provided parameters
+
+       \ingroup image_func_wrap
+    */
+    AFAPI af_err af_wrap(af_array *out,
+                         const af_array in,
+                         const dim_t ox, const dim_t oy,
+                         const dim_t wx, const dim_t wy,
+                         const dim_t sx, const dim_t sy,
+                         const dim_t px, const dim_t py,
+                         const bool is_column);
 
     /**
        C Interface wrapper for summed area tables
