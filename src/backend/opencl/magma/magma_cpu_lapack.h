@@ -16,6 +16,8 @@
 #define LAPACKE_dunmqr_work(...) LAPACKE_dormqr_work(__VA_ARGS__)
 #define LAPACKE_sungqr_work(...) LAPACKE_sorgqr_work(__VA_ARGS__)
 #define LAPACKE_dungqr_work(...) LAPACKE_dorgqr_work(__VA_ARGS__)
+#define LAPACKE_sungbr_work(...) LAPACKE_sorgbr_work(__VA_ARGS__)
+#define LAPACKE_dungbr_work(...) LAPACKE_dorgbr_work(__VA_ARGS__)
 
 template<typename... Args>
 int LAPACKE_slacgv(Args... args) { return 0; }
@@ -44,24 +46,42 @@ int LAPACKE_dlacgv(Args... args) { return 0; }
     template<typename T>                        \
     struct cpu_##NAME##_func;
 
-#define CPU_LAPACK_FUNC1(NAME, TYPE, X)                             \
-    template<>                                                      \
-    struct cpu_##NAME##_func<TYPE>                                  \
-    {                                                               \
-        template<typename... Args>                                  \
-            int                                                     \
-            operator() (Args... args)                               \
-        { return LAPACK_NAME(X##NAME)(LAPACK_COL_MAJOR, args...); } \
+#define CPU_LAPACK_FUNC1(NAME, TYPE, X)                                 \
+    template<>                                                          \
+    struct cpu_##NAME##_func<TYPE>                                      \
+    {                                                                   \
+        template<typename... Args>                                      \
+            int                                                         \
+            operator() (Args... args)                                   \
+        {                                                               \
+            int err = LAPACK_NAME(X##NAME)(LAPACK_COL_MAJOR, args...);  \
+            if (err != 0) AF_ERROR("Error in "#NAME, AF_ERR_INTERNAL);  \
+            return err;                                                 \
+        }                                                               \
     };
 
-#define CPU_LAPACK_FUNC2(NAME, TYPE, X)                             \
-    template<>                                                      \
-    struct cpu_##NAME##_func<TYPE>                                  \
-    {                                                               \
-        template<typename... Args>                                  \
-            int                                                     \
-            operator() (Args... args)                               \
-        { return LAPACK_NAME(X##NAME)(args...); }                   \
+#define CPU_LAPACK_FUNC2(NAME, TYPE, X)                                 \
+    template<>                                                          \
+    struct cpu_##NAME##_func<TYPE>                                      \
+    {                                                                   \
+        template<typename... Args>                                      \
+            int                                                         \
+            operator() (Args... args)                                   \
+        {                                                               \
+            int err = LAPACK_NAME(X##NAME)(args...);                    \
+            if (err != 0) AF_ERROR("Error in "#NAME, AF_ERR_INTERNAL);  \
+            return err;                                                 \
+        }                                                               \
+    };
+
+#define CPU_LAPACK_FUNC3(NAME, TYPE, X)             \
+    template<>                                      \
+    struct cpu_##NAME##_func<TYPE>                  \
+    {                                               \
+        template<typename... Args>                  \
+            double                                  \
+            operator() (Args... args)               \
+        { return LAPACK_NAME(X##NAME)(args...); }   \
     };
 
 #define CPU_LAPACK_DECL1(NAME)                          \
@@ -78,17 +98,28 @@ int LAPACKE_dlacgv(Args... args) { return 0; }
     CPU_LAPACK_FUNC2(NAME, magmaFloatComplex,     c)    \
     CPU_LAPACK_FUNC2(NAME, magmaDoubleComplex,    z)    \
 
+#define CPU_LAPACK_DECL3(NAME)                  \
+    CPU_LAPACK_FUNC_DEF(NAME)                   \
+    CPU_LAPACK_FUNC3(NAME, float,      s)       \
+    CPU_LAPACK_FUNC3(NAME, double,     d)       \
+
 CPU_LAPACK_DECL1(getrf)
 CPU_LAPACK_DECL1(gebrd)
+CPU_LAPACK_DECL1(gebrd_work)
 CPU_LAPACK_DECL1(potrf)
 CPU_LAPACK_DECL1(trtri)
 CPU_LAPACK_DECL1(geqrf_work)
 CPU_LAPACK_DECL1(larft)
 CPU_LAPACK_DECL1(unmqr_work)
 CPU_LAPACK_DECL1(ungqr_work)
+CPU_LAPACK_DECL1(ungbr_work)
+CPU_LAPACK_DECL1(bdsqr_work)
 CPU_LAPACK_DECL1(laswp)
 CPU_LAPACK_DECL1(laset)
+
 CPU_LAPACK_DECL2(lacgv)
 CPU_LAPACK_DECL2(larfg)
+CPU_LAPACK_DECL1(lacpy)
+CPU_LAPACK_DECL3(lamch)
 
 #endif

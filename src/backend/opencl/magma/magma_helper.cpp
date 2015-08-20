@@ -159,14 +159,12 @@ magma_int_t magma_get_geqrf_nb<magmaDoubleComplex>( magma_int_t m )
     else                return 128;
 }
 
-template<typename T> magma_int_t magma_get_gebrd_nb(int num) { return 256; }
-
 template<typename T> T magma_make(double r, double i) { return (T) r; }
 template float magma_make<float>(double r, double i);
 template double magma_make<double>(double r, double i);
 template<> magmaFloatComplex magma_make<magmaFloatComplex>(double r, double i)
 {
-    magmaFloatComplex tmp = {r, i};
+    magmaFloatComplex tmp = {(float)r, (float)i};
     return tmp;
 }
 template<> magmaDoubleComplex magma_make<magmaDoubleComplex>(double r, double i)
