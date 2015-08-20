@@ -178,7 +178,7 @@ CL_KERNEL_TO_H(
 
 # OS Definitions
 IF(UNIX)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread -Wno-comment")
 ELSE(${UNIX}) #Windows
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /bigobj")
