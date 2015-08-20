@@ -67,7 +67,7 @@ AFAPI array loadImageMem(const void *ptr);
 
     \param[in] in is the arrayfire array to be saved as an image
     \param[in] format is the type of image to create in memory. The enum borrows from
-    the FREE_IMAGE_FORMAT enum of FreeImage. Other values not included in af_image_format
+    the FREE_IMAGE_FORMAT enum of FreeImage. Other values not included in imageFormat
     but included in FREE_IMAGE_FORMAT can also be passed to this function.
 
     \return a void* pointer which is a type cast of the FreeImage type FIMEMORY* pointer.
@@ -77,7 +77,7 @@ AFAPI array loadImageMem(const void *ptr);
 
     \ingroup imagemem_func_save
 */
-AFAPI void* saveImageMem(const array& in, const af_image_format format = AF_FIF_PNG);
+AFAPI void* saveImageMem(const array& in, const imageFormat format = AF_FIF_PNG);
 
 /**
     C++ Interface for deleting memory created by \ref saveImageMem or

@@ -326,6 +326,7 @@ namespace af
     typedef af_colormap ColorMap;
     typedef af_norm_type normType;
     typedef af_ycc_std YCCStd;
+    typedef af_image_format imageFormat;
 }
 
 #endif
