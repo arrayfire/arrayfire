@@ -10,6 +10,7 @@
 #ifndef MAGMA_CPU_LAPACK
 #define MAGMA_CPU_LAPACK
 
+#include <err_common.hpp>
 #include "magma_types.h"
 
 #define LAPACKE_sunmqr_work(...) LAPACKE_sormqr_work(__VA_ARGS__)
@@ -42,41 +43,51 @@ int LAPACKE_dlacgv(Args... args) { return 0; }
     #endif  // MKL/NETLIB
 #endif  //APPLE
 
+#define LAPACKE_CHECK(fn) do {                  \
+        int __info = fn;                        \
+        if (__info != 0) {                      \
+            char lapacke_st_msg[32];            \
+            snprintf(lapacke_st_msg,            \
+                     sizeof(lapacke_st_msg),    \
+                     "LAPACKE Error (%d)",      \
+                     (int)(__info));            \
+            AF_ERROR(lapacke_st_msg,            \
+                     AF_ERR_INTERNAL);          \
+        }                                       \
+    } while(0)
+
 #define CPU_LAPACK_FUNC_DEF(NAME)               \
     template<typename T>                        \
-    struct cpu_##NAME##_func;
+    struct cpu_lapack_##NAME##_func;
 
-#define CPU_LAPACK_FUNC1(NAME, TYPE, X)                                 \
-    template<>                                                          \
-    struct cpu_##NAME##_func<TYPE>                                      \
-    {                                                                   \
-        template<typename... Args>                                      \
-            int                                                         \
-            operator() (Args... args)                                   \
-        {                                                               \
-            int err = LAPACK_NAME(X##NAME)(LAPACK_COL_MAJOR, args...);  \
-            if (err != 0) AF_ERROR("Error in "#NAME, AF_ERR_INTERNAL);  \
-            return err;                                                 \
-        }                                                               \
+#define CPU_LAPACK_FUNC1(NAME, TYPE, X)                     \
+    template<>                                              \
+    struct cpu_lapack_##NAME##_func<TYPE>                   \
+    {                                                       \
+        template<typename... Args>                          \
+            int                                             \
+            operator() (Args... args)                       \
+        {                                                   \
+            return LAPACK_NAME(X##NAME)(LAPACK_COL_MAJOR,   \
+                                        args...);           \
+        }                                                   \
     };
 
-#define CPU_LAPACK_FUNC2(NAME, TYPE, X)                                 \
-    template<>                                                          \
-    struct cpu_##NAME##_func<TYPE>                                      \
-    {                                                                   \
-        template<typename... Args>                                      \
-            int                                                         \
-            operator() (Args... args)                                   \
-        {                                                               \
-            int err = LAPACK_NAME(X##NAME)(args...);                    \
-            if (err != 0) AF_ERROR("Error in "#NAME, AF_ERR_INTERNAL);  \
-            return err;                                                 \
-        }                                                               \
+#define CPU_LAPACK_FUNC2(NAME, TYPE, X)             \
+    template<>                                      \
+    struct cpu_lapack_##NAME##_func<TYPE>           \
+    {                                               \
+        template<typename... Args>                  \
+            int                                     \
+            operator() (Args... args)               \
+        {                                           \
+            return LAPACK_NAME(X##NAME)(args...);   \
+        }                                           \
     };
 
 #define CPU_LAPACK_FUNC3(NAME, TYPE, X)             \
     template<>                                      \
-    struct cpu_##NAME##_func<TYPE>                  \
+    struct cpu_lapack_##NAME##_func<TYPE>           \
     {                                               \
         template<typename... Args>                  \
             double                                  \

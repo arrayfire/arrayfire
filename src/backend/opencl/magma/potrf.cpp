@@ -151,10 +151,10 @@ magma_int_t magma_potrf_gpu(
 
     nb = magma_get_potrf_nb<Ty>(n);
 
-    gpu_gemm_func<Ty> gpu_gemm;
-    gpu_trsm_func<Ty> gpu_trsm;
-    gpu_herk_func<Ty> gpu_herk;
-    cpu_potrf_func<Ty> cpu_potrf;
+    gpu_blas_gemm_func<Ty> gpu_blas_gemm;
+    gpu_blas_trsm_func<Ty> gpu_blas_trsm;
+    gpu_blas_herk_func<Ty> gpu_blas_herk;
+    cpu_lapack_potrf_func<Ty> cpu_lapack_potrf;
 
 
     err = magma_malloc_cpu<Ty>( &work, nb*nb);
@@ -170,9 +170,9 @@ magma_int_t magma_potrf_gpu(
         // use unblocked code
         magma_getmatrix<Ty>(n, n, dA, dA_offset, ldda, work, n, queue);
 
-        cpu_potrf(
-                  uplo == MagmaUpper ? *MagmaUpperStr : *MagmaLowerStr,
-                  n, work, n);
+        LAPACKE_CHECK(cpu_lapack_potrf(
+                          uplo == MagmaUpper ? *MagmaUpperStr : *MagmaLowerStr,
+                          n, work, n));
 
         magma_setmatrix<Ty>(n, n, work, n, dA, dA_offset, ldda, queue);
     }
@@ -185,14 +185,14 @@ magma_int_t magma_potrf_gpu(
                 // apply all previous updates to diagonal block
                 jb = std::min(nb, n-j);
                 if (j > 0) {
-                    gpu_herk(
-                             clblasUpper, transType,
-                             jb, j,
-                             m_one,
-                             dA(0,j), ldda,
-                             one,
-                             dA(j,j), ldda,
-                             1, &queue, 0, nullptr, &blas_event);
+                    CLBLAS_CHECK(gpu_blas_herk(
+                                     clblasUpper, transType,
+                                     jb, j,
+                                     m_one,
+                                     dA(0,j), ldda,
+                                     one,
+                                     dA(j,j), ldda,
+                                     1, &queue, 0, nullptr, &blas_event));
                 }
 
                 // start asynchronous data transfer
@@ -200,21 +200,21 @@ magma_int_t magma_potrf_gpu(
 
                 // apply all previous updates to block row right of diagonal block
                 if (j+jb < n) {
-                    gpu_gemm(
-                             transType, clblasNoTrans,
-                             jb, n-j-jb, j,
-                             mz_one,
-                             dA(0, j   ), ldda,
-                             dA(0, j+jb), ldda,
-                             z_one,
-                             dA(j, j+jb), ldda,
-                             1, &queue, 0, nullptr, &blas_event);
+                    CLBLAS_CHECK(gpu_blas_gemm(
+                                     transType, clblasNoTrans,
+                                     jb, n-j-jb, j,
+                                     mz_one,
+                                     dA(0, j   ), ldda,
+                                     dA(0, j+jb), ldda,
+                                     z_one,
+                                     dA(j, j+jb), ldda,
+                                     1, &queue, 0, nullptr, &blas_event));
                 }
 
                 // simultaneous with above zgemm, transfer data, factor
                 // diagonal block on CPU, and test for positive definiteness
                 magma_event_sync(event);
-                *info =cpu_potrf( *MagmaUpperStr, jb, work, jb);
+                LAPACKE_CHECK(cpu_lapack_potrf( *MagmaUpperStr, jb, work, jb));
 
                 if (*info != 0) {
                     assert(*info > 0);
@@ -227,14 +227,14 @@ magma_int_t magma_potrf_gpu(
                 // apply diagonal block to block row right of diagonal block
                 if (j+jb < n) {
                     magma_event_sync(event);
-                    gpu_trsm(
-                             clblasLeft, clblasUpper,
-                             transType, clblasNonUnit,
-                             jb, n-j-jb,
-                             z_one,
-                             dA(j, j   ), ldda,
-                             dA(j, j+jb), ldda,
-                             1, &queue, 0, nullptr, &blas_event);
+                    CLBLAS_CHECK(gpu_blas_trsm(
+                                     clblasLeft, clblasUpper,
+                                     transType, clblasNonUnit,
+                                     jb, n-j-jb,
+                                     z_one,
+                                     dA(j, j   ), ldda,
+                                     dA(j, j+jb), ldda,
+                                     1, &queue, 0, nullptr, &blas_event));
                 }
             }
         }
@@ -246,13 +246,13 @@ magma_int_t magma_potrf_gpu(
                 // apply all previous updates to diagonal block
                 jb = std::min(nb, n-j);
                 if (j>0) {
-                    gpu_herk(
-                             clblasLower, clblasNoTrans, jb, j,
-                             m_one,
-                             dA(j, 0), ldda,
-                             one,
-                             dA(j, j), ldda,
-                             1, &queue, 0, nullptr, &blas_event);
+                    CLBLAS_CHECK(gpu_blas_herk(
+                                     clblasLower, clblasNoTrans, jb, j,
+                                     m_one,
+                                     dA(j, 0), ldda,
+                                     one,
+                                     dA(j, j), ldda,
+                                     1, &queue, 0, nullptr, &blas_event));
                 }
 
                 // start asynchronous data transfer
@@ -260,22 +260,22 @@ magma_int_t magma_potrf_gpu(
 
                 // apply all previous updates to block column below diagonal block
                 if (j+jb < n) {
-                    gpu_gemm(
-                             clblasNoTrans, transType,
-                             n-j-jb, jb, j,
-                             mz_one,
-                             dA(j+jb, 0), ldda,
-                             dA(j,    0), ldda,
-                             z_one,
-                             dA(j+jb, j), ldda,
-                             1, &queue, 0, nullptr, &blas_event);
+                    CLBLAS_CHECK(gpu_blas_gemm(
+                                     clblasNoTrans, transType,
+                                     n-j-jb, jb, j,
+                                     mz_one,
+                                     dA(j+jb, 0), ldda,
+                                     dA(j,    0), ldda,
+                                     z_one,
+                                     dA(j+jb, j), ldda,
+                                     1, &queue, 0, nullptr, &blas_event));
                 }
 
                 // simultaneous with above zgemm, transfer data, factor
                 // diagonal block on CPU, and test for positive definiteness
                 magma_event_sync(event);
-                *info = cpu_potrf(
-                                  *MagmaLowerStr, jb, work, jb);
+                LAPACKE_CHECK(cpu_lapack_potrf(
+                                  *MagmaLowerStr, jb, work, jb));
                 if (*info != 0) {
                     assert(*info > 0);
                     *info += j;
@@ -286,13 +286,13 @@ magma_int_t magma_potrf_gpu(
                 // apply diagonal block to block column below diagonal
                 if (j+jb < n) {
                     magma_event_sync(event);
-                    gpu_trsm(
-                             clblasRight, clblasLower, transType, clblasNonUnit,
-                             n-j-jb, jb,
-                             z_one,
-                             dA(j   , j), ldda,
-                             dA(j+jb, j), ldda,
-                             1, &queue, 0, nullptr, &blas_event);
+                    CLBLAS_CHECK(gpu_blas_trsm(
+                                     clblasRight, clblasLower, transType, clblasNonUnit,
+                                     n-j-jb, jb,
+                                     z_one,
+                                     dA(j   , j), ldda,
+                                     dA(j+jb, j), ldda,
+                                     1, &queue, 0, nullptr, &blas_event));
                 }
             }
         }

@@ -244,12 +244,12 @@ magma_labrd_gpu(
 
     magma_event_t event = NULL;
 
-    gpu_gemv_func<Ty> gpu_blas_gemv;
-    cpu_gemv_func<Ty> cpu_blas_gemv;
-    cpu_scal_func<Ty> cpu_blas_scal;
-    cpu_axpy_func<Ty> cpu_blas_axpy;
-    cpu_larfg_func<Ty> cpu_lapack_larfg;
-    cpu_lacgv_func<Ty> cpu_lapack_lacgv;
+    gpu_blas_gemv_func<Ty> gpu_blas_gemv;
+    cpu_blas_gemv_func<Ty> cpu_blas_gemv;
+    cpu_blas_scal_func<Ty> cpu_blas_scal;
+    cpu_blas_axpy_func<Ty> cpu_blas_axpy;
+    cpu_lapack_larfg_func<Ty> cpu_lapack_larfg;
+    cpu_lapack_lacgv_func<Ty> cpu_lapack_lacgv;
 
     CBLAS_TRANSPOSE CblasTransParam = is_cplx ? CblasConjTrans : CblasTrans;
 
@@ -261,14 +261,14 @@ magma_labrd_gpu(
             i__3 = i__ - 1;
 
             if (is_cplx) {
-                cpu_lapack_lacgv(i__3, &y[i__+y_dim1], ldy);
+                LAPACKE_CHECK(cpu_lapack_lacgv(i__3, &y[i__+y_dim1], ldy));
             }
 
             cpu_blas_gemv(CblasNoTrans, i__2, i__3, cblas_scalar(&c_neg_one), &a[i__ + a_dim1], lda,
                           &y[i__+y_dim1], ldy, cblas_scalar(&c_one), &a[i__ + i__ * a_dim1], c__1);
 
             if (is_cplx) {
-                cpu_lapack_lacgv(i__3, &y[i__+y_dim1], ldy);
+                LAPACKE_CHECK(cpu_lapack_lacgv(i__3, &y[i__+y_dim1], ldy));
             }
 
             cpu_blas_gemv(CblasNoTrans, i__2, i__3, cblas_scalar(&c_neg_one), &x[i__ + x_dim1], ldx,
@@ -278,8 +278,11 @@ magma_labrd_gpu(
             alpha = a[i__ + i__ * a_dim1];
             i__2 = m - i__ + 1;
             i__3 = i__ + 1;
-            cpu_lapack_larfg(i__2, &alpha,
-                             &a[std::min(i__3,m) + i__ * a_dim1], c__1, &tauq[i__]);
+
+            LAPACKE_CHECK(cpu_lapack_larfg(i__2, &alpha,
+                                          &a[std::min(i__3,m) + i__ * a_dim1],
+                                          c__1, &tauq[i__]));
+
             d[i__] = magma_real<Ty>(alpha);
             if (i__ < n) {
                 a[i__ + i__ * a_dim1] = c_one;
@@ -294,11 +297,11 @@ magma_labrd_gpu(
                                     da, da_offset + (i__-1)+(i__-1)* (ldda), 1,
                                     queue);
                 // 2. Multiply ---------------------------------------------
-                gpu_blas_gemv(clblasConjTrans, i__2, i__3, c_one,
-                              da, da_offset + (i__-1) + ((i__-1) + 1) * (ldda), ldda,
-                              da, da_offset + (i__-1) + (i__-1) * (ldda), c__1, c_zero,
-                              dy, dy_offset + i__ + 1 + i__ * y_dim1, c__1,
-                              1, &queue, 0, nullptr, &event);
+                CLBLAS_CHECK(gpu_blas_gemv(clblasConjTrans, i__2, i__3, c_one,
+                                           da, da_offset + (i__-1) + ((i__-1) + 1) * (ldda), ldda,
+                                           da, da_offset + (i__-1) + (i__-1) * (ldda), c__1, c_zero,
+                                           dy, dy_offset + i__ + 1 + i__ * y_dim1, c__1,
+                                           1, &queue, 0, nullptr, &event));
 
                 // 3. Put the result back ----------------------------------
                 magma_getmatrix_async<Ty>(i__3, 1,
@@ -341,8 +344,8 @@ magma_labrd_gpu(
                 /* Update A(i,i+1:n) */
                 i__2 = n - i__;
                 if (is_cplx) {
-                    cpu_lapack_lacgv(i__2, &a[i__+(i__+1)*a_dim1], lda);
-                    cpu_lapack_lacgv(i__,  &a[i__+a_dim1], lda);
+                    LAPACKE_CHECK(cpu_lapack_lacgv(i__2, &a[i__+(i__+1)*a_dim1], lda));
+                    LAPACKE_CHECK(cpu_lapack_lacgv(i__,  &a[i__+a_dim1], lda));
                 }
 
                 cpu_blas_gemv(CblasNoTrans, i__2, i__, cblas_scalar(&c_neg_one),
@@ -352,15 +355,15 @@ magma_labrd_gpu(
                 i__3 = n - i__;
 
                 if (is_cplx) {
-                    cpu_lapack_lacgv(i__,  &a[i__+a_dim1], lda);
-                    cpu_lapack_lacgv(i__2, &x[i__+x_dim1], ldx);
+                    LAPACKE_CHECK(cpu_lapack_lacgv(i__,  &a[i__+a_dim1], lda));
+                    LAPACKE_CHECK(cpu_lapack_lacgv(i__2, &x[i__+x_dim1], ldx));
                 }
 
                 cpu_blas_gemv(CblasTransParam, i__2, i__3, cblas_scalar(&c_neg_one), &a[(i__ + 1) *
                                                                               a_dim1 + 1], lda, &x[i__ + x_dim1], ldx, cblas_scalar(&c_one), &a[
                                                                                   i__ + (i__ + 1) * a_dim1], lda);
                 if (is_cplx) {
-                    cpu_lapack_lacgv(i__2, &x[i__+x_dim1], ldx);
+                    LAPACKE_CHECK(cpu_lapack_lacgv(i__2, &x[i__+x_dim1], ldx));
                 }
 
                 /* Generate reflection P(i) to annihilate A(i,i+2:n) */
@@ -368,8 +371,9 @@ magma_labrd_gpu(
                 /* Computing MIN */
                 i__3 = i__ + 2;
                 alpha = a[i__ + (i__ + 1) * a_dim1];
-                cpu_lapack_larfg(i__2, &alpha, &a[i__ + std::min(
-                                         i__3,n) * a_dim1], lda, &taup[i__]);
+                LAPACKE_CHECK(cpu_lapack_larfg(i__2, &alpha,
+                                              &a[i__ + std::min(i__3,n) * a_dim1],
+                                              lda, &taup[i__]));
                 e[i__] = magma_real<Ty>(alpha);
                 a[i__ + (i__ + 1) * a_dim1] = c_one;
 
@@ -384,12 +388,12 @@ magma_labrd_gpu(
                 // 2. Multiply ---------------------------------------------
                 //magma_zcopy(i__3, da+(i__-1)+((i__-1)+1)*(ldda), ldda,
                 //            dy + 1 + lddy, 1);
-                gpu_blas_gemv(clblasNoTrans, i__2, i__3, c_one,
-                              da, da_offset + (i__-1)+1+ ((i__-1)+1) * (ldda), ldda,
-                              da, da_offset + (i__-1) +  ((i__-1)+1) * (ldda), ldda,
-                              //dy + 1 + lddy, 1,
-                              c_zero, dx, dx_offset + i__ + 1 + i__ * x_dim1, c__1,
-                              1, &queue, 0, nullptr, &event);
+                CLBLAS_CHECK(gpu_blas_gemv(clblasNoTrans, i__2, i__3, c_one,
+                                           da, da_offset + (i__-1)+1+ ((i__-1)+1) * (ldda), ldda,
+                                           da, da_offset + (i__-1) +  ((i__-1)+1) * (ldda), ldda,
+                                           //dy + 1 + lddy, 1,
+                                           c_zero, dx, dx_offset + i__ + 1 + i__ * x_dim1, c__1,
+                                           1, &queue, 0, nullptr, &event));
 
                 // 3. Put the result back ----------------------------------
                 magma_getmatrix_async<Ty>(i__2, 1,
@@ -430,7 +434,7 @@ magma_labrd_gpu(
 
                 if (is_cplx) {
                     i__2 = n - i__;
-                    cpu_lapack_lacgv(i__2,  &a[i__+(i__+1)*a_dim1], lda);
+                    LAPACKE_CHECK(cpu_lapack_lacgv(i__2,  &a[i__+(i__+1)*a_dim1], lda));
                     // 4. Send the block reflector  A(i+1:m,i) to the GPU after ZLACGV()
                     magma_setvector<Ty>(i__2,
                                         a + i__   + (i__   +1)* a_dim1, lda,
@@ -448,21 +452,21 @@ magma_labrd_gpu(
             i__2 = n - i__ + 1;
             i__3 = i__ - 1;
             if (is_cplx) {
-                cpu_lapack_lacgv(i__2, &a[i__ + i__ * a_dim1], lda);
-                cpu_lapack_lacgv(i__3, &a[i__ + a_dim1], lda);
+                LAPACKE_CHECK(cpu_lapack_lacgv(i__2, &a[i__ + i__ * a_dim1], lda));
+                LAPACKE_CHECK(cpu_lapack_lacgv(i__3, &a[i__ + a_dim1], lda));
             }
             cpu_blas_gemv(CblasNoTrans, i__2, i__3, cblas_scalar(&c_neg_one), &y[i__ + y_dim1], ldy,
                           &a[i__ + a_dim1], lda, cblas_scalar(&c_one), &a[i__ + i__ * a_dim1], lda);
             i__2 = i__ - 1;
             if (is_cplx) {
-                cpu_lapack_lacgv(i__3, &a[i__ + a_dim1], lda);
-                cpu_lapack_lacgv(i__3, &x[i__ + x_dim1], ldx);
+                LAPACKE_CHECK(cpu_lapack_lacgv(i__3, &a[i__ + a_dim1], lda));
+                LAPACKE_CHECK(cpu_lapack_lacgv(i__3, &x[i__ + x_dim1], ldx));
             }
             i__3 = n - i__ + 1;
             cpu_blas_gemv(CblasTransParam, i__2, i__3, cblas_scalar(&c_neg_one), &a[i__ * a_dim1 + 1],
                           lda, &x[i__ + x_dim1], ldx, cblas_scalar(&c_one), &a[i__ + i__ * a_dim1], lda);
             if (is_cplx) {
-                cpu_lapack_lacgv(i__2, &x[i__ + x_dim1], ldx);
+                LAPACKE_CHECK(cpu_lapack_lacgv(i__2, &x[i__ + x_dim1], ldx));
             }
 
             /* Generate reflection P(i) to annihilate A(i,i+1:n) */
@@ -470,8 +474,8 @@ magma_labrd_gpu(
             /* Computing MIN */
             i__3 = i__ + 1;
             alpha = a[i__ + i__ * a_dim1];
-            cpu_lapack_larfg(i__2, &alpha,
-                             &a[i__ + std::min(i__3,n) * a_dim1], lda, &taup[i__]);
+            LAPACKE_CHECK(cpu_lapack_larfg(i__2, &alpha,
+                                           &a[i__ + std::min(i__3,n) * a_dim1], lda, &taup[i__]));
             d[i__] = magma_real<Ty>(alpha);
             if (i__ < m) {
                 a[i__ + i__ * a_dim1] = c_one;
@@ -489,13 +493,13 @@ magma_labrd_gpu(
                 // 2. Multiply ---------------------------------------------
                 //magma_zcopy(i__3, da+(i__-1)+(i__-1)*(ldda), ldda,
                 //            dy + 1 + lddy, 1);
-                gpu_blas_gemv(clblasNoTrans, i__2, i__3, c_one,
-                              da, da_offset + (i__-1)+1 + (i__-1) * ldda, ldda,
-                              da, da_offset + (i__-1)   + (i__-1) * ldda, ldda,
-                              // dy + 1 + lddy, 1,
-                              c_zero,
-                              dx, dx_offset + i__ + 1 + i__ * x_dim1, c__1,
-                              1, &queue, 0, nullptr, &event);
+                CLBLAS_CHECK(gpu_blas_gemv(clblasNoTrans, i__2, i__3, c_one,
+                                           da, da_offset + (i__-1)+1 + (i__-1) * ldda, ldda,
+                                           da, da_offset + (i__-1)   + (i__-1) * ldda, ldda,
+                                           // dy + 1 + lddy, 1,
+                                           c_zero,
+                                           dx, dx_offset + i__ + 1 + i__ * x_dim1, c__1,
+                                           1, &queue, 0, nullptr, &event));
 
 
                 // 3. Put the result back ----------------------------------
@@ -538,7 +542,7 @@ magma_labrd_gpu(
                 i__2 = n - i__ + 1;
 
                 if (is_cplx) {
-                    cpu_lapack_lacgv(i__2, &a[i__ + i__ * a_dim1], lda);
+                    LAPACKE_CHECK(cpu_lapack_lacgv(i__2, &a[i__ + i__ * a_dim1], lda));
                     magma_setvector<Ty>(i__2,
                                         a + i__   + (i__ )* a_dim1, lda,
                                         da, da_offset + (i__-1)+ (i__-1)*(ldda), ldda,
@@ -550,7 +554,7 @@ magma_labrd_gpu(
                 i__3 = i__ - 1;
 
                 if (is_cplx) {
-                    cpu_lapack_lacgv(i__3, &y[i__ + y_dim1], ldy);
+                    LAPACKE_CHECK(cpu_lapack_lacgv(i__3, &y[i__ + y_dim1], ldy));
                 }
 
                 cpu_blas_gemv(CblasNoTrans, i__2, i__3, cblas_scalar(&c_neg_one),
@@ -558,7 +562,7 @@ magma_labrd_gpu(
                               &a[i__ + 1 + i__ * a_dim1], c__1);
                 i__2 = m - i__;
                 if (is_cplx) {
-                    cpu_lapack_lacgv(i__3, &y[i__ + y_dim1], ldy);
+                    LAPACKE_CHECK(cpu_lapack_lacgv(i__3, &y[i__ + y_dim1], ldy));
                 }
                 cpu_blas_gemv(CblasNoTrans, i__2, i__, cblas_scalar(&c_neg_one),
                               &x[i__ + 1 + x_dim1], ldx, &a[i__ * a_dim1 + 1], c__1, cblas_scalar(&c_one),
@@ -568,8 +572,9 @@ magma_labrd_gpu(
                 i__2 = m - i__;
                 i__3 = i__ + 2;
                 alpha = a[i__ + 1 + i__ * a_dim1];
-                cpu_lapack_larfg(i__2, &alpha,
-                                 &a[std::min(i__3,m) + i__ * a_dim1], c__1, &tauq[i__]);
+                LAPACKE_CHECK(cpu_lapack_larfg(i__2, &alpha,
+                                               &a[std::min(i__3,m) + i__ * a_dim1],
+                                               c__1, &tauq[i__]));
                 e[i__] = magma_real<Ty>(alpha);
                 a[i__ + 1 + i__ * a_dim1] = c_one;
 
@@ -583,11 +588,11 @@ magma_labrd_gpu(
                                     da, da_offset + (i__-1)+1+ (i__-1)*(ldda),  1,
                                     queue);
                 // 2. Multiply ---------------------------------------------
-                gpu_blas_gemv(clblasConjTrans, i__2, i__3, c_one,
-                              da, da_offset + (i__-1)+1+ ((i__-1)+1) * ldda, ldda,
-                              da, da_offset + (i__-1)+1+  (i__-1)    * ldda, c__1,
-                              c_zero, dy, dy_offset + i__ + 1 + i__ * y_dim1, c__1,
-                              1, &queue, 0, nullptr, &event);
+                CLBLAS_CHECK(gpu_blas_gemv(clblasConjTrans, i__2, i__3, c_one,
+                                           da, da_offset + (i__-1)+1+ ((i__-1)+1) * ldda, ldda,
+                                           da, da_offset + (i__-1)+1+  (i__-1)    * ldda, c__1,
+                                           c_zero, dy, dy_offset + i__ + 1 + i__ * y_dim1, c__1,
+                                           1, &queue, 0, nullptr, &event));
 
                 // 3. Put the result back ----------------------------------
                 magma_getmatrix_async<Ty>(i__3, 1,
@@ -628,7 +633,7 @@ magma_labrd_gpu(
             else {
                 if (is_cplx) {
                     i__2 = n - i__ + 1;
-                    cpu_lapack_lacgv(i__2, &a[i__ + i__ * a_dim1], lda);
+                    LAPACKE_CHECK(cpu_lapack_lacgv(i__2, &a[i__ + i__ * a_dim1], lda));
                     magma_setvector<Ty>(i__2,
                                         a + i__   + (i__ )* a_dim1, lda,
                                         da, da_offset + (i__-1)+ (i__-1)*(ldda), ldda,

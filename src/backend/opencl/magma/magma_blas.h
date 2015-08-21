@@ -24,19 +24,19 @@ using opencl::cdouble;
 
 #define BLAS_FUNC_DEF(NAME)                     \
     template<typename T>                        \
-    struct gpu_##NAME##_func;
+    struct gpu_blas_##NAME##_func;
 
-#define BLAS_FUNC(NAME, TYPE, PREFIX)                               \
-    template<>                                                      \
-    struct gpu_##NAME##_func<TYPE>                                  \
-    {                                                               \
-        template<typename... Args>                                  \
-            void                                                    \
-            operator() (Args... args)                               \
-        {                                                           \
-            CLBLAS_CHECK(clblas##PREFIX##NAME(clblasColumnMajor,    \
-                                              args...));            \
-        }                                                           \
+#define BLAS_FUNC(NAME, TYPE, PREFIX)                       \
+    template<>                                              \
+    struct gpu_blas_##NAME##_func<TYPE>                     \
+    {                                                       \
+        template<typename... Args>                          \
+            clblasStatus                                    \
+            operator() (Args... args)                       \
+        {                                                   \
+            return clblas##PREFIX##NAME(clblasColumnMajor,  \
+                                        args...);           \
+        }                                                   \
     };
 
 #define BLAS_FUNC_DECL(NAME)                    \

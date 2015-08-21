@@ -254,8 +254,8 @@ magma_larfb_gpu(
         transV   = clblasNoTrans;
     }
 
-    gpu_gemm_func<Ty> gpu_gemm;
-    gpu_trmm_func<Ty> gpu_trmm;
+    gpu_blas_gemm_func<Ty> gpu_blas_gemm;
+    gpu_blas_trmm_func<Ty> gpu_blas_trmm;
 
     cl_event event = NULL;
 
@@ -264,73 +264,73 @@ magma_larfb_gpu(
         // Comments assume H C. When forming H^H C, T gets transposed via transt.
 
         // W = C^H V
-        gpu_gemm(
-                 transType, notransV,
-                 n, k, m,
-                 c_one,
-                 dC(0,0),  lddc,
-                 dV(0,0),  lddv,
-                 c_zero,
-                 dwork(0), ldwork,
-                 1, &queue, 0, nullptr, &event);
+        CLBLAS_CHECK(gpu_blas_gemm(
+                         transType, notransV,
+                         n, k, m,
+                         c_one,
+                         dC(0,0),  lddc,
+                         dV(0,0),  lddv,
+                         c_zero,
+                         dwork(0), ldwork,
+                         1, &queue, 0, nullptr, &event));
 
         // W = W T^H = C^H V T^H
-        gpu_trmm(
-                 clblasRight,
-                 uplo, transt, clblasNonUnit,
-                 n, k,
-                 c_one,
-                 dT(0,0) , lddt,
-                 dwork(0), ldwork,
-                 1, &queue, 0, nullptr, &event);
+        CLBLAS_CHECK(gpu_blas_trmm(
+                         clblasRight,
+                         uplo, transt, clblasNonUnit,
+                         n, k,
+                         c_one,
+                         dT(0,0) , lddt,
+                         dwork(0), ldwork,
+                         1, &queue, 0, nullptr, &event));
 
         // C = C - V W^H = C - V T V^H C = (I - V T V^H) C = H C
-        gpu_gemm(
-                 notransV, transType,
-                 m, n, k,
-                 c_neg_one,
-                 dV(0,0),  lddv,
-                 dwork(0), ldwork,
-                 c_one,
-                 dC(0,0),  lddc,
-                 1, &queue, 0, nullptr, &event);
+        CLBLAS_CHECK(gpu_blas_gemm(
+                         notransV, transType,
+                         m, n, k,
+                         c_neg_one,
+                         dV(0,0),  lddv,
+                         dwork(0), ldwork,
+                         c_one,
+                         dC(0,0),  lddc,
+                         1, &queue, 0, nullptr, &event));
     }
     else {
         // Form C H or C H^H
         // Comments assume C H. When forming C H^H, T gets transposed via trans.
 
         // W = C V
-        gpu_gemm(
-                 clblasNoTrans, notransV,
-                 m, k, n,
-                 c_one,
-                 dC(0,0),  lddc,
-                 dV(0,0),  lddv,
-                 c_zero,
-                 dwork(0), ldwork,
-                 1, &queue, 0, nullptr, &event);
+        CLBLAS_CHECK(gpu_blas_gemm(
+                         clblasNoTrans, notransV,
+                         m, k, n,
+                         c_one,
+                         dC(0,0),  lddc,
+                         dV(0,0),  lddv,
+                         c_zero,
+                         dwork(0), ldwork,
+                         1, &queue, 0, nullptr, &event));
 
         // W = W T = C V T
-        gpu_trmm(
-                 clblasRight, uplo,
-                 cltrans,
-                 clblasNonUnit,
-                 m, k,
-                 c_one,
-                 dT(0,0),  lddt,
-                 dwork(0), ldwork,
-                 1, &queue, 0, nullptr, &event);
+        CLBLAS_CHECK(gpu_blas_trmm(
+                         clblasRight, uplo,
+                         cltrans,
+                         clblasNonUnit,
+                         m, k,
+                         c_one,
+                         dT(0,0),  lddt,
+                         dwork(0), ldwork,
+                         1, &queue, 0, nullptr, &event));
 
         // C = C - W V^H = C - C V T V^H = C (I - V T V^H) = C H
-        gpu_gemm(
-                 clblasNoTrans, transV,
-                 m, n, k,
-                 c_neg_one,
-                 dwork(0), ldwork,
-                 dV(0,0),  lddv,
-                 c_one,
-                 dC(0,0),  lddc,
-                 1, &queue, 0, nullptr, &event);
+        CLBLAS_CHECK(gpu_blas_gemm(
+                         clblasNoTrans, transV,
+                         m, n, k,
+                         c_neg_one,
+                         dwork(0), ldwork,
+                         dV(0,0),  lddv,
+                         c_one,
+                         dC(0,0),  lddc,
+                         1, &queue, 0, nullptr, &event));
     }
 
     return info;

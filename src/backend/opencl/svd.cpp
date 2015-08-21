@@ -28,7 +28,7 @@ Tr calc_scale(Tr From, Tr To)
     //FIXME: I am not sure this is correct, removing this for now
 #if 0
     //http://www.netlib.org/lapack/explore-3.1.1-html/dlascl.f.html
-    cpu_lamch_func<Tr> cpu_lapack_lamch;
+    cpu_lapack_lamch_func<Tr> cpu_lapack_lamch;
 
     Tr S = cpu_lapack_lamch('S');
     Tr B = 1.0 / S;
@@ -79,10 +79,10 @@ void svd(Array<T > &arrU,
     const int nb   = magma_get_gebrd_nb<T>(n);
     const int lwork = (m + n) * nb;
 
-    cpu_lacpy_func<T> cpu_lapack_lacpy;
-    cpu_bdsqr_work_func<T> cpu_lapack_bdsqr_work;
-    cpu_ungbr_work_func<T> cpu_lapack_ungbr_work;
-    cpu_lamch_func<Tr> cpu_lapack_lamch;
+    cpu_lapack_lacpy_func<T> cpu_lapack_lacpy;
+    cpu_lapack_bdsqr_work_func<T> cpu_lapack_bdsqr_work;
+    cpu_lapack_ungbr_work_func<T> cpu_lapack_ungbr_work;
+    cpu_lapack_lamch_func<Tr> cpu_lapack_lamch;
 
     // Get machine constants
     static const double eps = cpu_lapack_lamch('P');
@@ -144,17 +144,17 @@ void svd(Array<T > &arrU,
         // and generate left bidiagonalizing vectors in U
         // (CWorkspace: need 2*N + NCU, prefer 2*N + NCU*NB)
         // (RWorkspace: 0)
-        cpu_lapack_lacpy('L', m, n, &A[0], lda, &U[0], ldu);
+        LAPACKE_CHECK(cpu_lapack_lacpy('L', m, n, &A[0], lda, &U[0], ldu));
 
         int ncu = m;
-        cpu_lapack_ungbr_work('Q', m, ncu, n, &U[0], ldu, &tauq[0], &work[0], lwork);
+        LAPACKE_CHECK(cpu_lapack_ungbr_work('Q', m, ncu, n, &U[0], ldu, &tauq[0], &work[0], lwork));
 
         // If right singular vectors desired in VT, copy result to
         // VT and generate right bidiagonalizing vectors in VT
         // (CWorkspace: need 3*N-1, prefer 2*N + (N-1)*NB)
         // (RWorkspace: 0)
-        cpu_lapack_lacpy('U', n, n, &A[0], lda, &VT[0], ldvt);
-        cpu_lapack_ungbr_work('P', n, n, n, &VT[0], ldvt, &taup[0], &work[0], lwork);
+        LAPACKE_CHECK(cpu_lapack_lacpy('U', n, n, &A[0], lda, &VT[0], ldvt));
+        LAPACKE_CHECK(cpu_lapack_ungbr_work('P', n, n, n, &VT[0], ldvt, &taup[0], &work[0], lwork));
 
         nru = m;
         ncvt = n;
@@ -165,8 +165,9 @@ void svd(Array<T > &arrU,
     // vectors in VT
     // (CWorkspace: need 0)
     // (RWorkspace: need BDSPAC)
-    cpu_lapack_bdsqr_work('U', n, ncvt, nru, izero, &s0[0], &s1[0], &VT[0], ldvt, &U[0], ldu,
-                          &cdummy[0], ione, &work[0]);
+    LAPACKE_CHECK(cpu_lapack_bdsqr_work('U', n, ncvt, nru, izero,
+                                        &s0[0], &s1[0], &VT[0], ldvt, &U[0], ldu,
+                                        &cdummy[0], ione, &work[0]));
 
 
     if (want_vectors) {

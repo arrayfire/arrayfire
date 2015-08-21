@@ -149,9 +149,9 @@ magma_int_t magma_getrf_gpu(
     if (m == 0 || n == 0)
         return *info;
 
-    gpu_gemm_func<Ty> gpu_gemm;
-    gpu_trsm_func<Ty> gpu_trsm;
-    cpu_getrf_func<Ty> cpu_getrf;
+    gpu_blas_gemm_func<Ty> gpu_blas_gemm;
+    gpu_blas_trsm_func<Ty> gpu_blas_trsm;
+    cpu_lapack_getrf_func<Ty> cpu_lapack_getrf;
 
     /* Function Body */
     mindim = std::min(m, n);
@@ -165,7 +165,7 @@ magma_int_t magma_getrf_gpu(
             return *info;
         }
         magma_getmatrix<Ty>(m, n, dA(0,0), ldda, work(0), m, queue);
-        cpu_getrf( m, n, work, m, ipiv);
+        LAPACKE_CHECK(cpu_lapack_getrf( m, n, work, m, ipiv));
         magma_setmatrix<Ty>(m, n, work(0), m, dA(0,0), ldda, queue);
         magma_free_cpu(work);
     }
@@ -219,29 +219,29 @@ magma_int_t magma_getrf_gpu(
             magma_getmatrix<Ty>(m-j*nb, nb, dAP(0,0), maxm, work(0), ldwork, queue);
 
             if (j > 0 && n > (j + 1) * nb) {
-                gpu_trsm(
-                         clblasRight, clblasUpper, clblasNoTrans, clblasUnit,
-                         n - (j+1)*nb, nb,
-                         c_one,
-                         dAT(j-1,j-1), lddat,
-                         dAT(j-1,j+1), lddat,
-                         1, &queue, 0, nullptr, &event);
+                CLBLAS_CHECK(gpu_blas_trsm(
+                                 clblasRight, clblasUpper, clblasNoTrans, clblasUnit,
+                                 n - (j+1)*nb, nb,
+                                 c_one,
+                                 dAT(j-1,j-1), lddat,
+                                 dAT(j-1,j+1), lddat,
+                                 1, &queue, 0, nullptr, &event));
 
                 if (m > j * nb)  {
-                    gpu_gemm( clblasNoTrans, clblasNoTrans,
-                         n-(j+1)*nb, m-j*nb, nb,
-                         c_neg_one,
-                         dAT(j-1,j+1), lddat,
-                         dAT(j,  j-1), lddat,
-                         c_one,
-                         dAT(j,  j+1), lddat,
-                         1, &queue, 0, nullptr, &event);
+                    CLBLAS_CHECK(gpu_blas_gemm( clblasNoTrans, clblasNoTrans,
+                                                n-(j+1)*nb, m-j*nb, nb,
+                                                c_neg_one,
+                                                dAT(j-1,j+1), lddat,
+                                                dAT(j,  j-1), lddat,
+                                                c_one,
+                                                dAT(j,  j+1), lddat,
+                                                1, &queue, 0, nullptr, &event));
                 }
             }
 
             // do the cpu part
             rows = m - j*nb;
-            cpu_getrf( rows, nb, work, ldwork, ipiv+j*nb);
+            LAPACKE_CHECK(cpu_lapack_getrf( rows, nb, work, ldwork, ipiv+j*nb));
             if (*info == 0 && iinfo > 0)
                 *info = iinfo + j*nb;
 
@@ -257,44 +257,44 @@ magma_int_t magma_getrf_gpu(
 
             // do the small non-parallel computations (next panel update)
             if (s > (j+1)) {
-                gpu_trsm(
-                         clblasRight, clblasUpper, clblasNoTrans, clblasUnit,
-                         nb, nb,
-                         c_one,
-                         dAT(j, j  ), lddat,
-                         dAT(j, j+1), lddat,
-                         1, &queue, 0, nullptr, &event);
+                CLBLAS_CHECK(gpu_blas_trsm(
+                                 clblasRight, clblasUpper, clblasNoTrans, clblasUnit,
+                                 nb, nb,
+                                 c_one,
+                                 dAT(j, j  ), lddat,
+                                 dAT(j, j+1), lddat,
+                                 1, &queue, 0, nullptr, &event));
 
 
-                gpu_gemm( clblasNoTrans, clblasNoTrans,
-                         nb, m-(j+1)*nb, nb,
-                         c_neg_one,
-                         dAT(j,   j+1), lddat,
-                         dAT(j+1, j  ), lddat,
-                         c_one,
-                         dAT(j+1, j+1), lddat,
-                         1, &queue, 0, nullptr, &event);
+                CLBLAS_CHECK(gpu_blas_gemm( clblasNoTrans, clblasNoTrans,
+                                            nb, m-(j+1)*nb, nb,
+                                            c_neg_one,
+                                            dAT(j,   j+1), lddat,
+                                            dAT(j+1, j  ), lddat,
+                                            c_one,
+                                            dAT(j+1, j+1), lddat,
+                                            1, &queue, 0, nullptr, &event));
             }
             else {
                 if (n > s * nb) {
-                    gpu_trsm(
-                             clblasRight, clblasUpper, clblasNoTrans, clblasUnit,
-                             n-s*nb, nb,
-                             c_one,
-                             dAT(j, j  ), lddat,
-                             dAT(j, j+1), lddat,
-                             1, &queue, 0, nullptr, &event);
+                    CLBLAS_CHECK(gpu_blas_trsm(
+                                     clblasRight, clblasUpper, clblasNoTrans, clblasUnit,
+                                     n-s*nb, nb,
+                                     c_one,
+                                     dAT(j, j  ), lddat,
+                                     dAT(j, j+1), lddat,
+                                     1, &queue, 0, nullptr, &event));
                 }
 
                 if ((n > (j+1) * nb) && (m > (j+1) * nb)) {
-                    gpu_gemm( clblasNoTrans, clblasNoTrans,
-                             n-(j+1)*nb, m-(j+1)*nb, nb,
-                             c_neg_one,
-                             dAT(j,   j+1), lddat,
-                             dAT(j+1, j  ), lddat,
-                             c_one,
-                             dAT(j+1, j+1), lddat,
-                             1, &queue, 0, nullptr, &event);
+                    CLBLAS_CHECK(gpu_blas_gemm( clblasNoTrans, clblasNoTrans,
+                                                n-(j+1)*nb, m-(j+1)*nb, nb,
+                                                c_neg_one,
+                                                dAT(j,   j+1), lddat,
+                                                dAT(j+1, j  ), lddat,
+                                                c_one,
+                                                dAT(j+1, j+1), lddat,
+                                                1, &queue, 0, nullptr, &event));
                 }
             }
         }
@@ -308,7 +308,7 @@ magma_int_t magma_getrf_gpu(
             magma_getmatrix<Ty>(rows, nb0, dAP(0,0), maxm, work(0), ldwork, queue);
 
             // do the cpu part
-            cpu_getrf( rows, nb0, work, ldwork, ipiv+s*nb);
+            LAPACKE_CHECK(cpu_lapack_getrf( rows, nb0, work, ldwork, ipiv+s*nb));
             if (*info == 0 && iinfo > 0)
                 *info = iinfo + s*nb;
 
@@ -322,11 +322,11 @@ magma_int_t magma_getrf_gpu(
             magmablas_transpose<Ty>(rows, nb0, dAP(0,0), maxm, dAT(s,s), lddat, queue);
 
             if (n > s * nb + nb0) {
-                gpu_trsm(
-                         clblasRight, clblasUpper, clblasNoTrans, clblasUnit,
-                         n-s*nb-nb0, nb0,
-                         c_one, dAT(s,s),     lddat,
-                         dAT(s,s)+nb0, lddat, 1, &queue, 0, nullptr, &event);
+                CLBLAS_CHECK(gpu_blas_trsm(
+                                 clblasRight, clblasUpper, clblasNoTrans, clblasUnit,
+                                 n-s*nb-nb0, nb0,
+                                 c_one, dAT(s,s),     lddat,
+                                 dAT(s,s)+nb0, lddat, 1, &queue, 0, nullptr, &event));
             }
         }
 

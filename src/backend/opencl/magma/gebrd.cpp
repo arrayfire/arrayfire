@@ -266,8 +266,8 @@ magma_gebrd_hybrid(
         magma_setmatrix<Ty>(m, n, a, lda, da, da_offset, ldda, queue);
     }
 
-    gpu_gemm_func<Ty> gpu_blas_gemm;
-    cpu_gebrd_work_func<Ty> cpu_lapack_gebrd_work;
+    gpu_blas_gemm_func<Ty> gpu_blas_gemm;
+    cpu_lapack_gebrd_work_func<Ty> cpu_lapack_gebrd_work;
 
     for (i=0; i< (minmn - nx); i += nb) {
         /*  Reduce rows and columns i:i+nb-1 to bidiagonal form and return
@@ -302,19 +302,19 @@ magma_gebrd_hybrid(
                             work  +               (ldwrkx+1)*nb, ldwrky,
                             dwork, dwork_offset + (ldwrkx+1)*nb, ldwrky, queue);
 
-        gpu_blas_gemm(clblasNoTrans, clblasConjTrans,
-                      nrow, ncol, nb,
-                      c_neg_one, dA(i+nb, i  ),      ldda,
-                      dwork, dwork_offset+(ldwrkx+1)*nb, ldwrky,
-                      c_one,     dA(i+nb, i+nb), ldda,
-                      1, &queue, 0, nullptr, &event);
+        CLBLAS_CHECK(gpu_blas_gemm(clblasNoTrans, clblasConjTrans,
+                                   nrow, ncol, nb,
+                                   c_neg_one, dA(i+nb, i  ),      ldda,
+                                   dwork, dwork_offset+(ldwrkx+1)*nb, ldwrky,
+                                   c_one,     dA(i+nb, i+nb), ldda,
+                                   1, &queue, 0, nullptr, &event));
 
-        gpu_blas_gemm(clblasNoTrans, clblasNoTrans,
-                      nrow, ncol, nb,
-                      c_neg_one, dwork, dwork_offset+nb, ldwrkx,
-                      dA(i,    i+nb), ldda,
-                      c_one,     dA(i+nb, i+nb), ldda,
-                      1, &queue, 0, nullptr, &event);
+        CLBLAS_CHECK(gpu_blas_gemm(clblasNoTrans, clblasNoTrans,
+                                   nrow, ncol, nb,
+                                   c_neg_one, dwork, dwork_offset+nb, ldwrkx,
+                                   dA(i,    i+nb), ldda,
+                                   c_one,     dA(i+nb, i+nb), ldda,
+                                   1, &queue, 0, nullptr, &event));
 
         /* Copy diagonal and off-diagonal elements of B back into A */
         if (m >= n) {
@@ -340,13 +340,14 @@ magma_gebrd_hybrid(
         magma_getmatrix<Ty>(nrow, ncol, dA(i, i), ldda, A(i, i), lda, queue);
     }
 
-    *info = cpu_lapack_gebrd_work(nrow, ncol,
-                                  A(i, i), lda, d+i, e+i,
-                                  tauq+i, taup+i, work, lwork);
+    LAPACKE_CHECK(cpu_lapack_gebrd_work(nrow, ncol,
+                                        A(i, i), lda, d+i, e+i,
+                                        tauq+i, taup+i, work, lwork));
     work[0] = magma_make<Ty>(lwkopt, 0.);
 
     magma_free(dwork);
-    return *info;
+    *info = 0;
+    return 0;
 } /* magma_zgebrd */
 
 #define INSTANTIATE(Ty)                                 \

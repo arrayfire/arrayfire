@@ -9,7 +9,7 @@
 
 #ifndef MAGMA_CPU_BLAS
 #define MAGMA_CPU_BLAS
-
+#include <err_common.hpp>
 #include "magma_types.h"
 
 #ifdef __APPLE__
@@ -38,11 +38,11 @@ typedef int blasint;
 
 #define CPU_BLAS_FUNC_DEF(NAME)                 \
     template<typename T>                        \
-    struct cpu_##NAME##_func;
+    struct cpu_blas_##NAME##_func;
 
 #define CPU_BLAS_FUNC1(NAME, TYPE, X)                       \
     template<>                                              \
-    struct cpu_##NAME##_func<TYPE>                          \
+    struct cpu_blas_##NAME##_func<TYPE>                     \
     {                                                       \
         template<typename... Args>                          \
             void                                            \
@@ -50,24 +50,24 @@ typedef int blasint;
         { return cblas_##X##NAME(CblasColMajor, args...); } \
     };
 
-#define CPU_BLAS_FUNC2(NAME, TYPE, X)                       \
-    template<>                                              \
-    struct cpu_##NAME##_func<TYPE>                          \
-    {                                                       \
-        template<typename... Args>                          \
-            void                                            \
-            operator() (Args... args)                       \
-        { return cblas_##X##NAME(args...); }                \
+#define CPU_BLAS_FUNC2(NAME, TYPE, X)           \
+    template<>                                  \
+    struct cpu_blas_##NAME##_func<TYPE>         \
+    {                                           \
+        template<typename... Args>              \
+            void                                \
+            operator() (Args... args)           \
+        { return cblas_##X##NAME(args...); }    \
     };
 
-#define CPU_BLAS_DECL1(NAME)                         \
+#define CPU_BLAS_DECL1(NAME)                        \
     CPU_BLAS_FUNC_DEF(NAME)                         \
     CPU_BLAS_FUNC1(NAME, float,      s)             \
     CPU_BLAS_FUNC1(NAME, double,     d)             \
     CPU_BLAS_FUNC1(NAME, magmaFloatComplex,     c)  \
     CPU_BLAS_FUNC1(NAME, magmaDoubleComplex,    z)  \
 
-#define CPU_BLAS_DECL2(NAME)                         \
+#define CPU_BLAS_DECL2(NAME)                        \
     CPU_BLAS_FUNC_DEF(NAME)                         \
     CPU_BLAS_FUNC2(NAME, float,      s)             \
     CPU_BLAS_FUNC2(NAME, double,     d)             \
