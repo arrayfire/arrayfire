@@ -405,7 +405,7 @@ void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHa
             }
 
             // call forge to get OpenGL sharing context and details
-            cl::Platform plat = mDevices[device]->getInfo<CL_DEVICE_PLATFORM>();
+            cl::Platform plat(mDevices[device]->getInfo<CL_DEVICE_PLATFORM>());
 #ifdef OS_MAC
             CGLContextObj cgl_current_ctx = CGLGetCurrentContext();
             CGLShareGroupObj cgl_share_group = CGLGetShareGroup(cgl_current_ctx);
