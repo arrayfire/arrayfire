@@ -606,6 +606,14 @@ namespace af
         return out;
     }
 
+    af_array array::array_proxy::get() const
+    {
+        array tmp = *this;
+        af_array out = 0;
+        AF_THROW(af_retain_array(&out, tmp.get()));
+        return out;
+    }
+
 #define MEM_FUNC(PREFIX, FUNC)                  \
     PREFIX array::array_proxy::FUNC() const     \
     {                                           \
@@ -613,7 +621,6 @@ namespace af
         return out.FUNC();                      \
     }
 
-    MEM_FUNC(af_array               , get)
     MEM_FUNC(dim_t                  , elements)
     MEM_FUNC(array                  , T)
     MEM_FUNC(array                  , H)
