@@ -65,11 +65,9 @@ af_err af_svd(af_array *s, af_array *u, af_array *vt, const af_array in)
 {
     try {
         ArrayInfo info = getInfo(in);
-
         af::dim4 dims = info.dims();
 
-        ARG_ASSERT(2, (dims.ndims() >= 0 && dims.ndims() <= 3));
-
+        ARG_ASSERT(3, (dims.ndims() >= 0 && dims.ndims() <= 3));
         af_dtype type = info.getType();
 
         switch (type) {
@@ -91,10 +89,10 @@ af_err af_svd_inplace(af_array *s, af_array *u, af_array *vt, af_array in)
 {
     try {
         ArrayInfo info = getInfo(in);
-
         af::dim4 dims = info.dims();
 
-        ARG_ASSERT(2, (dims.ndims() >= 0 && dims.ndims() <= 3));
+        DIM_ASSERT(3, dims[0] <= dims[1]);
+        ARG_ASSERT(3, (dims.ndims() >= 0 && dims.ndims() <= 3));
 
         af_dtype type = info.getType();
 
