@@ -12,6 +12,14 @@
 #if defined(WITH_GRAPHICS)
 #include <graphics_common.hpp>
 #endif
+
+#if defined(OS_MAC)
+#include <OpenGL/OpenGL.h>
+#include <libkern/OSAtomic.h>
+#else
+#include <GL/gl.h>
+#endif // !__APPLE__
+
 #include <cl.hpp>
 
 #include <af/version.h>
