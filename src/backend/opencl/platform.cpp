@@ -10,8 +10,8 @@
 // Include this before af/opencl.h
 // Causes conflict between system cl.hpp and opencl/cl.hpp
 #if defined(WITH_GRAPHICS)
+
 #include <graphics_common.hpp>
-#endif
 
 #if defined(OS_MAC)
 #include <OpenGL/OpenGL.h>
@@ -19,6 +19,8 @@
 #else
 #include <GL/gl.h>
 #endif // !__APPLE__
+
+#endif
 
 #include <cl.hpp>
 
