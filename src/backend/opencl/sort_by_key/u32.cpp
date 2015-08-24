@@ -7,12 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#pragma once
+#include "impl.hpp"
 
-#define AF_VERSION "@AF_VERSION@"
-#define AF_VERSION_MAJOR @AF_VERSION_MAJOR@
-#define AF_VERSION_MINOR @AF_VERSION_MINOR@
-#define AF_VERSION_PATCH @AF_VERSION_PATCH@
-#define AF_API_VERSION_CURRENT   @AF_API_VERSION_CURRENT@
-#define AF_REVISION "@GIT_COMMIT_HASH@"
-#define AF_CMPLR_STR "@AF_COMPILER_STRING@"
+namespace opencl
+{
+    INSTANTIATE1(uint,true)
+    INSTANTIATE1(uint,false)
+}

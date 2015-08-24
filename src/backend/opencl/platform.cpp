@@ -233,10 +233,15 @@ std::string getInfo()
 
         for(auto &device:devices) {
             const Platform platform(device.getInfo<CL_DEVICE_PLATFORM>());
+
             string platStr = platform.getInfo<CL_PLATFORM_NAME>();
-            bool show_braces = ((unsigned)getActiveDeviceId() == nDevices);
             string dstr = device.getInfo<CL_DEVICE_NAME>();
 
+            // Remove null termination character from the strings
+            platStr.pop_back();
+            dstr.pop_back();
+
+            bool show_braces = ((unsigned)getActiveDeviceId() == nDevices);
             string id = (show_braces ? string("[") : "-") + std::to_string(nDevices) +
                         (show_braces ? string("]") : "-");
             info << id << " " << platformMap(platStr) << ": " << ltrim(dstr) << " ";

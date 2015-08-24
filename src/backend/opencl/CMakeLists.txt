@@ -80,10 +80,12 @@ INCLUDE_DIRECTORIES(
 
 FILE(GLOB opencl_headers
   "*.hpp"
-  "*.h")
+  "*.h"
+  "sort_by_key/*.hpp")
 
 FILE(GLOB opencl_sources
-    "*.cpp")
+    "*.cpp"
+    "sort_by_key/*.cpp")
 
 FILE(GLOB magma_sources
     "magma/*.cpp")

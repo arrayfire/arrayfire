@@ -45,8 +45,8 @@ Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter, Array<ac
     Array<T> temp= createEmptyArray<T>(tDims);
     Array<T> out = createEmptyArray<T>(oDims);
 
-    kernel::conv2Helper<T, accT, 0, expand>(temp, signal, c_filter, cflen);
-    kernel::conv2Helper<T, accT, 1, expand>( out,   temp, r_filter, rflen);
+    kernel::convSep<T, accT, 0, expand>(temp, signal, c_filter);
+    kernel::convSep<T, accT, 1, expand>( out,   temp, r_filter);
 
     return out;
 }

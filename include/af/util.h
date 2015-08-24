@@ -23,6 +23,7 @@ namespace af
     */
     AFAPI void print(const char *exp, const array &arr);
 
+#if AF_API_VERSION >= 31
     /**
         \param[in] exp is an expression, generally the name of the array
         \param[in] arr is the input array
@@ -31,7 +32,9 @@ namespace af
         \ingroup print_func_print
     */
     AFAPI void print(const char *exp, const array &arr, const int precision);
+#endif
 
+#if AF_API_VERSION >= 31
     /**
         \param[in] key is an expression used as tag/key for the array during \ref readArray
         \param[in] arr is the array to be written
@@ -44,7 +47,9 @@ namespace af
         \ingroup stream_func_save
     */
     AFAPI int saveArray(const char *key, const array &arr, const char *filename, const bool append = false);
+#endif
 
+#if AF_API_VERSION >= 31
     /**
         \param[in] filename is the path to the location on disk
         \param[in] index is the 0-based sequential location of the array to be read
@@ -56,7 +61,9 @@ namespace af
         \ingroup stream_func_read
     */
     AFAPI array readArray(const char *filename, const unsigned index);
+#endif
 
+#if AF_API_VERSION >= 31
     /**
         \param[in] filename is the path to the location on disk
         \param[in] key is the tag/name of the array to be read. The key needs to have an exact match.
@@ -68,7 +75,9 @@ namespace af
         \ingroup stream_func_read
     */
     AFAPI array readArray(const char *filename, const char *key);
+#endif
 
+#if AF_API_VERSION >= 31
     /**
         When reading by key, it may be a good idea to run this function first to check for the key
         and then call the readArray using the index. This will avoid exceptions in case of key not found.
@@ -81,7 +90,9 @@ namespace af
         \ingroup stream_func_read
     */
     AFAPI int readArrayCheck(const char *filename, const char *key);
+#endif
 
+#if AF_API_VERSION >= 31
     /**
         \param[out] output is the pointer to the c-string that will hold the data. The memory for
         output is allocated by the function. The user is responsible for deleting the memory.
@@ -95,6 +106,7 @@ namespace af
     */
     AFAPI void toString(char **output, const char *exp, const array &arr,
                         const int precision = 4, const bool transpose = true);
+#endif
 
     // Purpose of Addition: "How to add Function" documentation
     AFAPI array exampleFunction(const array& in, const af_someenum_t param);
@@ -153,6 +165,7 @@ extern "C" {
     */
     AFAPI af_err af_print_array(af_array arr);
 
+#if AF_API_VERSION >= 31
     /**
         \param[in] exp is the expression or name of the array
         \param[in] arr is the input array
@@ -163,7 +176,9 @@ extern "C" {
         \ingroup print_func_print
     */
     AFAPI af_err af_print_array_gen(const char *exp, const af_array arr, const int precision);
+#endif
 
+#if AF_API_VERSION >= 31
     /**
         \param[out] index is the index location of the array in the file
         \param[in] key is an expression used as tag/key for the array during \ref readArray
@@ -175,7 +190,9 @@ extern "C" {
         \ingroup stream_func_save
     */
     AFAPI af_err af_save_array(int *index, const char* key, const af_array arr, const char *filename, const bool append);
+#endif
 
+#if AF_API_VERSION >= 31
     /**
         \param[out] out is the array read from index
         \param[in] filename is the path to the location on disk
@@ -186,7 +203,9 @@ extern "C" {
         \ingroup stream_func_read
     */
     AFAPI af_err af_read_array_index(af_array *out, const char *filename, const unsigned index);
+#endif
 
+#if AF_API_VERSION >= 31
     /**
         \param[out] out is the array read from key
         \param[in] filename is the path to the location on disk
@@ -197,7 +216,9 @@ extern "C" {
         \ingroup stream_func_read
     */
     AFAPI af_err af_read_array_key(af_array *out, const char *filename, const char* key);
+#endif
 
+#if AF_API_VERSION >= 31
     /**
         When reading by key, it may be a good idea to run this function first to check for the key
         and then call the readArray using the index. This will avoid exceptions in case of key not found.
@@ -209,7 +230,9 @@ extern "C" {
         \ingroup stream_func_read
     */
     AFAPI af_err af_read_array_key_check(int *index, const char *filename, const char* key);
+#endif
 
+#if AF_API_VERSION >= 31
     /**
         \param[out] output is the pointer to the c-string that will hold the data. The memory for
         output is allocated by the function. The user is responsible for deleting the memory.
@@ -223,6 +246,7 @@ extern "C" {
     */
     AFAPI af_err af_array_to_string(char **output, const char *exp, const af_array arr,
                                     const int precision, const bool transpose);
+#endif
 
     // Purpose of Addition: "How to add Function" documentation
     AFAPI af_err af_example_function(af_array* out, const af_array in, const af_someenum_t param);

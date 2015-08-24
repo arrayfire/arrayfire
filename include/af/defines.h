@@ -59,6 +59,11 @@
 typedef long long intl;
 typedef unsigned long long uintl;
 
+#include <af/version.h>
+#ifndef AF_API_VERSION
+#define AF_API_VERSION AF_API_VERSION_CURRENT
+#endif
+
 typedef enum {
     ///
     /// The function returned successfully

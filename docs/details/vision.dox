@@ -127,6 +127,17 @@ equal to the number of features contained in the query array.
 
 =======================================================================
 
+\defgroup cv_func_dog DoG
+\ingroup featdetect_mat
+
+\brief Difference of Gaussians
+
+Given an image, this function computes two different versions of smoothed
+input image using the difference smoothing parameters and subtracts one
+from the other and returns the result.
+
+=======================================================================
+
 \defgroup cv_func_match_template matchTemplate
 \ingroup match_mat
 
@@ -135,6 +146,8 @@ equal to the number of features contained in the query array.
 Template matching is an image processing technique to find small patches of an image which
 match a given template image. A more in depth discussion on the topic can be found
 [here](http://en.wikipedia.org/wiki/Template_matching).
+
+
 
 @}
 */

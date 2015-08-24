@@ -131,7 +131,7 @@ class AFAPI index {
     ///
     /// \param[in] idx0 is the index to be assigned to the /ref af::index
     /// \returns the reference to this
-    /// 
+    ///
     ///
     index & operator=(const index& idx0);
 
@@ -165,6 +165,7 @@ class AFAPI index {
 
 AFAPI array lookup(const array &in, const array &idx, const int dim = -1);
 
+#if AF_API_VERSION >= 31
 ///
 /// Copy the values of an input array based on index
 ///
@@ -182,6 +183,7 @@ AFAPI void copy(array &dst, const array &src,
                 const index &idx1 = span,
                 const index &idx2 = span,
                 const index &idx3 = span);
+#endif
 
 }
 #endif

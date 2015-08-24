@@ -126,9 +126,10 @@ namespace kernel
             int otmp_elements = otmp.info.strides[3] * otmp.info.dims[3];
             otmp.data = bufferAlloc(otmp_elements * sizeof(uint));
 
-            scan_first_fn<T, uint, af_notzero_t, false>(otmp, rtmp, in,
-                                                        groups_x, groups_y,
-                                                        threads_x);
+            scan_first_launcher<T, uint, af_notzero_t>(otmp, rtmp, in,
+                                                       false,
+                                                       groups_x, groups_y,
+                                                       threads_x);
 
             // Linearize the dimensions and perform scan
             Param ltmp = rtmp;
