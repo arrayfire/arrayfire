@@ -18,6 +18,9 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
+#include <type_util.hpp>
+#include <math.hpp>
+#include "config.hpp"
 
 using cl::Buffer;
 using cl::Program;
@@ -62,10 +65,12 @@ namespace opencl
                 typedef typename dtype_traits<T>::base_type BT;
 
                 std::call_once( compileFlags[device], [device] () {
+                    ToNum<T> toNum;
                     std::ostringstream options;
                     options << " -D T="        << dtype_traits<T>::getName();
                     options << " -D VT="       << dtype_traits<vtype_t<T>>::getName();
                     options << " -D WT="       << dtype_traits<wtype_t<BT>>::getName();
+                    options << " -D ZERO="      << toNum(scalar<T>(0));
 
                     if((af_dtype) dtype_traits<T>::af_type == c32 ||
                        (af_dtype) dtype_traits<T>::af_type == c64) {
