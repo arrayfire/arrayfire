@@ -56,7 +56,7 @@ void gaussian1D(T* out, const int dim, double sigma=0.0)
         out[k] /= sum;
 }
 
-template<typename T, typename convAccT, unsigned fLen>
+template<typename T, typename convAccT>
 void conv_helper(Param &ixx, Param &ixy, Param &iyy, Param &filter)
 {
     Param ixx_tmp, ixy_tmp, iyy_tmp;
@@ -73,12 +73,12 @@ void conv_helper(Param &ixx, Param &ixy, Param &iyy, Param &filter)
     ixy_tmp.data = bufferAlloc(ixy_tmp.info.dims[3] * ixy_tmp.info.strides[3] * sizeof(convAccT));
     iyy_tmp.data = bufferAlloc(iyy_tmp.info.dims[3] * iyy_tmp.info.strides[3] * sizeof(convAccT));
 
-    convolve2<T, convAccT, 0, false, fLen>(ixx_tmp, ixx, filter);
-    convolve2<T, convAccT, 1, false, fLen>(ixx, ixx_tmp, filter);
-    convolve2<T, convAccT, 0, false, fLen>(ixy_tmp, ixy, filter);
-    convolve2<T, convAccT, 1, false, fLen>(ixy, ixy_tmp, filter);
-    convolve2<T, convAccT, 0, false, fLen>(iyy_tmp, iyy, filter);
-    convolve2<T, convAccT, 1, false, fLen>(iyy, iyy_tmp, filter);
+    convSep<T, convAccT, 0, false>(ixx_tmp, ixx, filter);
+    convSep<T, convAccT, 1, false>(ixx, ixx_tmp, filter);
+    convSep<T, convAccT, 0, false>(ixy_tmp, ixy, filter);
+    convSep<T, convAccT, 1, false>(ixy, ixy_tmp, filter);
+    convSep<T, convAccT, 0, false>(iyy_tmp, iyy, filter);
+    convSep<T, convAccT, 1, false>(iyy, iyy_tmp, filter);
 
     bufferFree(ixx_tmp.data);
     bufferFree(ixy_tmp.data);
@@ -195,38 +195,7 @@ void harris(unsigned* corners_out,
         bufferFree(iy.data);
 
         // Convolve second order derivatives with proper window filter
-        switch (filter_len) {
-            case 3:  conv_helper<T, convAccT, 3 >(ixx, ixy, iyy, filter); break;
-            case 4:  conv_helper<T, convAccT, 4 >(ixx, ixy, iyy, filter); break;
-            case 5:  conv_helper<T, convAccT, 5 >(ixx, ixy, iyy, filter); break;
-            case 6:  conv_helper<T, convAccT, 6 >(ixx, ixy, iyy, filter); break;
-            case 7:  conv_helper<T, convAccT, 7 >(ixx, ixy, iyy, filter); break;
-            case 8:  conv_helper<T, convAccT, 8 >(ixx, ixy, iyy, filter); break;
-            case 9:  conv_helper<T, convAccT, 9 >(ixx, ixy, iyy, filter); break;
-            case 10: conv_helper<T, convAccT, 10>(ixx, ixy, iyy, filter); break;
-            case 11: conv_helper<T, convAccT, 11>(ixx, ixy, iyy, filter); break;
-            case 12: conv_helper<T, convAccT, 12>(ixx, ixy, iyy, filter); break;
-            case 13: conv_helper<T, convAccT, 13>(ixx, ixy, iyy, filter); break;
-            case 14: conv_helper<T, convAccT, 14>(ixx, ixy, iyy, filter); break;
-            case 15: conv_helper<T, convAccT, 15>(ixx, ixy, iyy, filter); break;
-            case 16: conv_helper<T, convAccT, 16>(ixx, ixy, iyy, filter); break;
-            case 17: conv_helper<T, convAccT, 17>(ixx, ixy, iyy, filter); break;
-            case 18: conv_helper<T, convAccT, 18>(ixx, ixy, iyy, filter); break;
-            case 19: conv_helper<T, convAccT, 19>(ixx, ixy, iyy, filter); break;
-            case 20: conv_helper<T, convAccT, 20>(ixx, ixy, iyy, filter); break;
-            case 21: conv_helper<T, convAccT, 21>(ixx, ixy, iyy, filter); break;
-            case 22: conv_helper<T, convAccT, 22>(ixx, ixy, iyy, filter); break;
-            case 23: conv_helper<T, convAccT, 23>(ixx, ixy, iyy, filter); break;
-            case 24: conv_helper<T, convAccT, 24>(ixx, ixy, iyy, filter); break;
-            case 25: conv_helper<T, convAccT, 25>(ixx, ixy, iyy, filter); break;
-            case 26: conv_helper<T, convAccT, 26>(ixx, ixy, iyy, filter); break;
-            case 27: conv_helper<T, convAccT, 27>(ixx, ixy, iyy, filter); break;
-            case 28: conv_helper<T, convAccT, 28>(ixx, ixy, iyy, filter); break;
-            case 29: conv_helper<T, convAccT, 29>(ixx, ixy, iyy, filter); break;
-            case 30: conv_helper<T, convAccT, 30>(ixx, ixy, iyy, filter); break;
-            case 31: conv_helper<T, convAccT, 31>(ixx, ixy, iyy, filter); break;
-        }
-
+        conv_helper<T, convAccT>(ixx, ixy, iyy, filter);
         bufferFree(filter.data);
 
         cl::Buffer *d_responses = bufferAlloc(in.info.dims[3] * in.info.strides[3] * sizeof(T));

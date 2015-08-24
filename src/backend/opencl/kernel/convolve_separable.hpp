@@ -21,11 +21,8 @@ namespace kernel
 // considering complex types as well
 static const int MAX_SCONV_FILTER_LEN = 31;
 
-template<typename T, typename accType, int conv_dim, bool expand, int fLen>
-void convolve2(Param out, const Param signal, const Param filter);
-
-template<typename T, typename accT, dim_t cDim, bool expand>
-void conv2Helper(Param out, const Param sig, const Param filt, dim_t f);
+template<typename T, typename accT, int cDim, bool expand>
+void convSep(Param out, const Param sig, const Param filt);
 
 }
 

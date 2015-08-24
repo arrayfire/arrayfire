@@ -76,59 +76,9 @@ void nearest_neighbour_(Array<uint>& idx, Array<To>& dist,
     }
 
     if (use_lmem) {
-        switch (feat_len) {
-        case 1:
-            kernel::nearest_neighbour<T, To, dist_type, true , 1 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 2:
-            kernel::nearest_neighbour<T, To, dist_type, true , 2 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 4:
-            kernel::nearest_neighbour<T, To, dist_type, true , 4 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 8:
-            kernel::nearest_neighbour<T, To, dist_type, true , 8 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 16:
-            kernel::nearest_neighbour<T, To, dist_type, true , 16>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 32:
-            kernel::nearest_neighbour<T, To, dist_type, true , 32>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 64:
-            kernel::nearest_neighbour<T, To, dist_type, true , 64>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        default:
-            kernel::nearest_neighbour<T, To, dist_type, true , 0 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        }
+        kernel::nearest_neighbour<T, To, dist_type, true >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
     } else {
-        switch (feat_len) {
-        case 1:
-            kernel::nearest_neighbour<T, To, dist_type, false, 1 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 2:
-            kernel::nearest_neighbour<T, To, dist_type, false, 2 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 4:
-            kernel::nearest_neighbour<T, To, dist_type, false, 4 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 8:
-            kernel::nearest_neighbour<T, To, dist_type, false, 8 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 16:
-            kernel::nearest_neighbour<T, To, dist_type, false, 16>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 32:
-            kernel::nearest_neighbour<T, To, dist_type, false, 32>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 64:
-            kernel::nearest_neighbour<T, To, dist_type, false, 64>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        default:
-            kernel::nearest_neighbour<T, To, dist_type, false, 0 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        }
+        kernel::nearest_neighbour<T, To, dist_type, false>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
     }
 }
 
