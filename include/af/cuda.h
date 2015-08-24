@@ -16,9 +16,13 @@
 extern "C" {
 #endif
 
+#if AF_API_VERSION >= 31
 AFAPI af_err afcu_get_stream(cudaStream_t* stream, int id);
+#endif
 
+#if AF_API_VERSION >= 31
 AFAPI af_err afcu_get_native_id(int* nativeid, int id);
+#endif
 
 #ifdef __cplusplus
 }
@@ -29,6 +33,7 @@ AFAPI af_err afcu_get_native_id(int* nativeid, int id);
 namespace afcu
 {
 
+#if AF_API_VERSION >= 31
 static inline cudaStream_t getStream(int id)
 {
     cudaStream_t retVal;
@@ -37,7 +42,9 @@ static inline cudaStream_t getStream(int id)
         throw af::exception("Failed to get CUDA stream from ArrayFire");
     return retVal;
 }
+#endif
 
+#if AF_API_VERSION >= 31
 static inline int getNativeId(int id)
 {
     int retVal;
@@ -46,6 +53,7 @@ static inline int getNativeId(int id)
         throw af::exception("Failed to get CUDA device native id from ArrayFire");
     return retVal;
 }
+#endif
 
 }
 #endif

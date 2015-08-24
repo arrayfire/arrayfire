@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+#include <af/defines.h>
 #include <af/features.h>
 
 #ifdef __cplusplus
@@ -503,18 +504,7 @@ AFAPI array rgb2hsv(const array& in);
  */
 AFAPI array colorSpace(const array& image, const CSpace to, const CSpace from);
 
-/**
-   C++ Interface wrapper for Difference of Gaussians
-
-   \param[in] in is input image
-   \param[in] radius1 is the radius of first gaussian kernel
-   \param[in] radius2 is the radius of second gaussian kernel
-   \return    Difference of smoothed inputs
-
-   \ingroup image_func_dog
- */
-AFAPI array dog(const array& in, const int radius1, const int radius2);
-
+#if AF_API_VERSION >= 31
 /**
    C++ Interface wrapper for unwrap
 
@@ -533,7 +523,9 @@ AFAPI array dog(const array& in, const int radius1, const int radius2);
 AFAPI array unwrap(const array& in, const dim_t wx, const dim_t wy,
                    const dim_t sx, const dim_t sy, const dim_t px=0, const dim_t py=0,
                    const bool is_column = true);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
    C++ Interface wrapper for wrap
 
@@ -557,7 +549,9 @@ AFAPI array wrap(const array& in,
                  const dim_t sx, const dim_t sy,
                  const dim_t px = 0, const dim_t py = 0,
                  const bool is_column = true);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
    C++ Interface wrapper for summed area tables
 
@@ -567,7 +561,9 @@ AFAPI array wrap(const array& in,
    \ingroup image_func_sat
 */
 AFAPI array sat(const array& in);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
    C++ Interface for converting YCbCr to RGB
 
@@ -581,7 +577,9 @@ AFAPI array sat(const array& in);
    \ingroup image_func_ycbcr2rgb
  */
 AFAPI array ycbcr2rgb(const array& in, const YCCStd standard=AF_YCC_601);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
    C++ Interface for converting RGB to YCbCr
 
@@ -595,6 +593,7 @@ AFAPI array ycbcr2rgb(const array& in, const YCCStd standard=AF_YCC_601);
    \ingroup image_func_rgb2ycbcr
  */
 AFAPI array rgb2ycbcr(const array& in, const YCCStd standard=AF_YCC_601);
+#endif
 
 }
 #endif
@@ -1075,20 +1074,7 @@ extern "C" {
     */
     AFAPI af_err af_color_space(af_array *out, const af_array image, const af_cspace_t to, const af_cspace_t from);
 
-    /**
-       C Interface wrapper for Difference of Gaussians
-
-       \param[out] out is difference of smoothed inputs
-       \param[in] in is input image
-       \param[in] radius1 is the radius of first gaussian kernel
-       \param[in] radius2 is the radius of second gaussian kernel
-       \return    \ref AF_SUCCESS if the computation is is successful,
-                  otherwise an appropriate error code is returned.
-
-       \ingroup image_func_dog
-     */
-    AFAPI af_err af_dog(af_array *out, const af_array in, const int radius1, const int radius2);
-
+#if AF_API_VERSION >= 31
     /**
        C Interface wrapper for unwrap
 
@@ -1109,7 +1095,9 @@ extern "C" {
     AFAPI af_err af_unwrap(af_array *out, const af_array in, const dim_t wx, const dim_t wy,
                            const dim_t sx, const dim_t sy, const dim_t px, const dim_t py,
                            const bool is_column);
+#endif
 
+#if AF_API_VERSION >= 31
     /**
        C Interface wrapper for wrap
 
@@ -1138,7 +1126,9 @@ extern "C" {
                          const dim_t sx, const dim_t sy,
                          const dim_t px, const dim_t py,
                          const bool is_column);
+#endif
 
+#if AF_API_VERSION >= 31
     /**
        C Interface wrapper for summed area tables
 
@@ -1150,7 +1140,9 @@ extern "C" {
        \ingroup image_func_sat
     */
     AFAPI af_err af_sat(af_array *out, const af_array in);
+#endif
 
+#if AF_API_VERSION >= 31
     /**
        C Interface for converting YCbCr to RGB
 
@@ -1166,7 +1158,9 @@ extern "C" {
        \ingroup image_func_ycbcr2rgb
     */
     AFAPI af_err af_ycbcr2rgb(af_array* out, const af_array in, const af_ycc_std standard);
+#endif
 
+#if AF_API_VERSION >= 31
     /**
        C Interface for converting RGB to YCbCr
 
@@ -1182,7 +1176,7 @@ extern "C" {
        \ingroup image_func_rgb2ycbcr
     */
     AFAPI af_err af_rgb2ycbcr(af_array* out, const af_array in, const af_ycc_std standard);
-
+#endif
 #ifdef __cplusplus
 }
 #endif

@@ -252,6 +252,7 @@ extern "C" {
     */
     AFAPI af_err af_get_mem_step_size(size_t *step_bytes);
 
+#if AF_API_VERSION >= 31
     /**
        Lock the device buffer in the memory manager.
 
@@ -259,7 +260,9 @@ extern "C" {
        \ingroup device_func_mem
     */
     AFAPI af_err af_lock_device_ptr(const af_array arr);
+#endif
 
+#if AF_API_VERSION >= 31
     /**
        Unlock device buffer in the memory manager.
 
@@ -267,6 +270,7 @@ extern "C" {
        \ingroup device_func_mem
     */
     AFAPI af_err af_unlock_device_ptr(const af_array arr);
+#endif
 
     /**
        Get the device pointer and lock the buffer in memory manager.
