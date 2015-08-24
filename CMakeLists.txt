@@ -30,7 +30,7 @@ OPTION(BUILD_GRAPHICS "Build ArrayFire with Forge Graphics" ON)
 OPTION(BUILD_DOCS "Create ArrayFire Documentation" OFF)
 OPTION(WITH_COVERAGE "Added code coverage flags" OFF)
 
-OPTION(BUILD_NONFREE "Build ArrayFire nonfree algorithms" ON)
+OPTION(BUILD_NONFREE "Build ArrayFire nonfree algorithms" OFF)
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)

@@ -14,7 +14,10 @@
 #include <Array.hpp>
 #include <err_cuda.hpp>
 #include <handle.hpp>
-#include <kernel/sift.hpp>
+
+#ifdef AF_NONFREE
+#include <kernel/sift_nonfree.hpp>
+#endif
 
 using af::dim4;
 using af::features;
@@ -30,6 +33,7 @@ unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,
               const float init_sigma, const bool double_input,
               const float img_scale, const float feature_ratio)
 {
+#ifdef AF_NONFREE
     const dim4 dims = in.dims();
 
     unsigned nfeat_out;
@@ -65,6 +69,9 @@ unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,
     }
 
     return nfeat_out;
+#else
+    AF_ERROR("ArrayFire was not built with nonfree support, SIFT disabled\n", AFF_ERR_NONFREE);
+#endif
 }
 
 #define INSTANTIATE(T, convAccT)\

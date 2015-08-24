@@ -85,7 +85,7 @@
 #include <kernel/fast.hpp>
 #include <kernel/resize.hpp>
 #include <kernel/sort_index.hpp>
-#include <kernel_headers/sift.hpp>
+#include <kernel_headers/sift_nonfree.hpp>
 #include <memory.hpp>
 #include <vector>
 
@@ -422,7 +422,7 @@ void sift(unsigned* out_feat,
                 }
 
                 cl::Program prog;
-                buildProgram(prog, sift_cl, sift_cl_len, options.str());
+                buildProgram(prog, sift_nonfree_cl, sift_nonfree_cl_len, options.str());
                 siftProgs[device] = new Program(prog);
 
                 suKernel[device] = new Kernel(*siftProgs[device], "sub");
