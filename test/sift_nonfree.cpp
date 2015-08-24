@@ -157,7 +157,7 @@ TYPED_TEST_CASE(SIFT, TestTypes);
 template<typename T>
 void siftTest(string pTestFile)
 {
-#ifdef AF_NONFREE
+#ifdef AF_BUILD_SIFT
     if (noDoubleTests<T>()) return;
 
     vector<dim4>           inDims;
@@ -268,7 +268,7 @@ void siftTest(string pTestFile)
 //
 TEST(SIFT, CPP)
 {
-#ifdef AF_NONFREE
+#ifdef AF_BUILD_SIFT
     if (noDoubleTests<float>()) return;
 
     vector<dim4>           inDims;
