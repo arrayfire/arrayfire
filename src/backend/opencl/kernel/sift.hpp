@@ -172,7 +172,7 @@ Param gaussFilter(float sigma)
 }
 
 template<typename T, typename convAccT>
-void conv2HelperFull(Param& dst, Param src, Param filter)
+void convSepFull(Param& dst, Param src, Param filter)
 {
     Param tmp;
     tmp.info.offset = 0;
@@ -185,8 +185,7 @@ void conv2HelperFull(Param& dst, Param src, Param filter)
     tmp.data = bufferAlloc(src_el * sizeof(T));
 
     const dim_t fLen = filter.info.dims[0];
-    conv2Helper<T, convAccT, 0, false>(tmp, src, filter, fLen);
-    conv2Helper<T, convAccT, 1, false>(dst, tmp, filter, fLen);
+    convSep<T, convAccT, 0, false>(tmp, src, filter);
 
     bufferFree(tmp.data);
 }
@@ -220,7 +219,7 @@ Param createInitialImage(
     if (double_input)
         resize<T, AF_INTERP_BILINEAR>(init_img, img);
 
-    conv2HelperFull<T, convAccT>(init_img, (double_input) ? init_img : img, filter);
+    convSepFull<T, convAccT>(init_img, (double_input) ? init_img : img, filter);
 
     bufferFree(filter.data);
 
@@ -301,7 +300,7 @@ std::vector<Param> buildGaussPyr(
 
                 Param filter = gaussFilter<convAccT>(sig_layers[l]);
 
-                conv2HelperFull<T, convAccT>(tmp_pyr[idx], tmp_pyr[src_idx], filter);
+                convSepFull<T, convAccT>(tmp_pyr[idx], tmp_pyr[src_idx], filter);
 
                 bufferFree(filter.data);
             }

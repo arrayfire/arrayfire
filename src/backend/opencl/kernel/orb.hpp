@@ -360,8 +360,8 @@ void orb(unsigned* out_feat,
                 }
 
                 // Filter level image with Gaussian kernel to reduce noise sensitivity
-                convolve2<T, convAccT, 0, false, gauss_len>(lvl_tmp, lvl_img, gauss_filter);
-                convolve2<T, convAccT, 1, false, gauss_len>(lvl_filt, lvl_tmp, gauss_filter);
+                convSep<T, convAccT, 0, false>(lvl_tmp, lvl_img, gauss_filter);
+                convSep<T, convAccT, 1, false>(lvl_filt, lvl_tmp, gauss_filter);
 
                 bufferFree(lvl_tmp.data);
             }
