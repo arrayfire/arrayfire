@@ -239,6 +239,7 @@ AFAPI af_err af_set_position(const af_window wind, const unsigned x, const unsig
 */
 AFAPI af_err af_set_title(const af_window wind, const char* const title);
 
+#if AF_API_VERSION >= 31
 /**
    C Interface wrapper for setting window position
 
@@ -252,6 +253,7 @@ AFAPI af_err af_set_title(const af_window wind, const char* const title);
    \ingroup gfx_func_window
 */
 AFAPI af_err af_set_size(const af_window wind, const unsigned w, const unsigned h);
+#endif
 
 /**
    C Interface wrapper for drawing an array as an image

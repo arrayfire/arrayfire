@@ -678,17 +678,6 @@ are specializations of the transform function.
 
 =======================================================================
 
-\defgroup image_func_dog DoG
-\ingroup imageflt_mat
-
-\brief Difference of Gaussians
-
-Given an image, this function computes two different versions of smoothed
-input image using the difference smoothing parameters and subtracts one
-from the other and returns the result.
-
-=======================================================================
-
 \defgroup image_func_sat SAT
 \ingroup imageflt_mat
 
