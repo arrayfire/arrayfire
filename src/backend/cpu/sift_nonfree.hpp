@@ -305,7 +305,7 @@ namespace cpu
         const float sigma,
         const float img_scale)
     {
-        for (int f = 0; f < extrema_feat; f++) {
+        for (int f = 0; f < (int)extrema_feat; f++) {
             const float first_deriv_scale = img_scale*0.5f;
             const float second_deriv_scale = img_scale;
             const float cross_deriv_scale = img_scale*0.25f;
