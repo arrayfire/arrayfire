@@ -115,8 +115,8 @@ namespace kernel
         CL_DEBUG_FINISH(getQueue());
     }
 
-    template<typename T, af_op_t op, int dim>
-    void ireduce_dim(Param out, cl::Buffer *oidx, Param in)
+    template<typename T, af_op_t op>
+    void ireduce_dim(Param out, cl::Buffer *oidx, Param in, int dim)
     {
         uint threads_y = std::min(THREADS_Y, nextpow2(in.info.dims[dim]));
         uint threads_x = THREADS_X;
@@ -272,12 +272,10 @@ namespace kernel
     void ireduce(Param out, cl::Buffer *oidx, Param in, int dim)
     {
         try {
-            switch (dim) {
-            case 0: return ireduce_first<T, op   >(out, oidx, in);
-            case 1: return ireduce_dim  <T, op, 1>(out, oidx, in);
-            case 2: return ireduce_dim  <T, op, 2>(out, oidx, in);
-            case 3: return ireduce_dim  <T, op, 3>(out, oidx, in);
-            }
+            if (dim == 0)
+                return ireduce_first<T, op>(out, oidx, in);
+            else
+                return ireduce_dim  <T, op>(out, oidx, in, dim);
         } catch(cl::Error ex) {
             CL_TO_AF_ERROR(ex);
         }
