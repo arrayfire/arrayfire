@@ -185,6 +185,7 @@ void convSepFull(Param& dst, Param src, Param filter)
     tmp.data = bufferAlloc(src_el * sizeof(T));
 
     convSep<T, convAccT, 0, false>(tmp, src, filter);
+    convSep<T, convAccT, 1, false>(dst, tmp, filter);
 
     bufferFree(tmp.data);
 }
