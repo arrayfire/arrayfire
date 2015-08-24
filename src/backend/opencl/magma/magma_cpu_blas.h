@@ -24,7 +24,7 @@ extern "C" {
 #endif
 #endif
 
-// TODO: Ask upstream for a more official way to detect it
+// Todo: Ask upstream for a more official way to detect it
 #ifdef OPENBLAS_CONST
 #define IS_OPENBLAS
 #endif

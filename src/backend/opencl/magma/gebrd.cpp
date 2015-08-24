@@ -258,8 +258,7 @@ magma_gebrd_hybrid(
     ldwrky = n;
 
     /* Set the block/unblock crossover point NX. */
-    nx = nb;
-    assert(nx <= nb);
+    nx = 128;
 
     /* Copy the matrix to the GPU */
     if (copy && minmn - nx >= 1) {
