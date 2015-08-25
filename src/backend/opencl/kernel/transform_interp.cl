@@ -61,10 +61,10 @@ void transform_b(__global T *d_out, const KParam out, __global const T *d_in, co
                     + yido * tmat[4]
                            + tmat[5];
 
-    T zero; set_scalar(zero, 0);
+    T zero = ZERO;
     if (xid < -0.001 || yid < -0.001 || in.dims[0] < xid || in.dims[1] < yid) {
         for(int i = 0; i < nimages; i++) {
-            set(d_out[loco + i * out.strides[2]], zero);
+            d_out[loco + i * out.strides[2]] = zero;
         }
         return;
     }

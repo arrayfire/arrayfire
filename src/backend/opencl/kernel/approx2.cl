@@ -98,11 +98,11 @@ void core_linear2(const int idx, const int idy, const int idz, const int idw,
     Tp wt = wt00 + wt10 + wt01 + wt11;
 
     // Compute Weighted Values
-    Ty zero; set_scalar(zero, 0);
-    Ty y00; set(y00,                    mul(d_in[ioff],                     wt00)       );
-    Ty y10; set(y10, (condY) ?          mul(d_in[ioff + in.strides[1]],     wt10) : zero);
-    Ty y01; set(y01, (condX) ?          mul(d_in[ioff + 1],                 wt01) : zero);
-    Ty y11; set(y11, (condX && condY) ? mul(d_in[ioff + in.strides[1] + 1], wt11) : zero);
+    Ty zero = ZERO;
+    Ty y00 =                    mul(d_in[ioff],                     wt00)       ;
+    Ty y10 = (condY) ?          mul(d_in[ioff + in.strides[1]],     wt10) : zero;
+    Ty y01 = (condX) ?          mul(d_in[ioff + 1],                 wt01) : zero;
+    Ty y11 = (condX && condY) ? mul(d_in[ioff + in.strides[1] + 1], wt11) : zero;
 
     Ty yo = y00 + y10 + y01 + y11;
 
