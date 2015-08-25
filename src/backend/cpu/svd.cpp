@@ -20,27 +20,48 @@
 namespace cpu
 {
 
-#define SVD_FUNC_DEF( FUNC )                                \
-    template<typename T,typename Tr> FUNC##_func_def<T, Tr> FUNC##_func();
+#define SVD_FUNC_DEF( FUNC )                                            \
+    template<typename T,typename Tr> svd_func_def<T, Tr> svd_func();
 
-#define SVD_FUNC( FUNC, T, Tr, PREFIX )                         \
-    template<> FUNC##_func_def<T, Tr>     FUNC##_func<T, Tr>()  \
+#define SVD_FUNC( FUNC, T, Tr, PREFIX )                     \
+    template<> svd_func_def<T, Tr>     svd_func<T, Tr>()    \
     { return & LAPACK_NAME(PREFIX##FUNC); }
 
+#ifdef ARM_ARCH
     template<typename T, typename Tr>
-    using gesdd_func_def = int (*)(ORDER_TYPE,
-                                   char jobz,
-                                   int m, int n,
-                                   T* in, int ldin,
-                                   Tr* s,
-                                   T* u, int ldu,
-                                   T* vt, int ldvt);
+    using svd_func_def = int (*)(ORDER_TYPE,
+                                 char jobu, char jobvt,
+                                 int m, int n,
+                                 T* in, int ldin,
+                                 Tr* s,
+                                 T* u, int ldu,
+                                 T* vt, int ldvt,
+                                 Tr *superb);
+
+    SVD_FUNC_DEF( gesvd )
+    SVD_FUNC(gesvd, float  , float , s)
+    SVD_FUNC(gesvd, double , double, d)
+    SVD_FUNC(gesvd, cfloat , float , c)
+    SVD_FUNC(gesvd, cdouble, double, z)
+
+#else
+
+    template<typename T, typename Tr>
+    using svd_func_def = int (*)(ORDER_TYPE,
+                                 char jobz,
+                                 int m, int n,
+                                 T* in, int ldin,
+                                 Tr* s,
+                                 T* u, int ldu,
+                                 T* vt, int ldvt);
 
     SVD_FUNC_DEF( gesdd )
     SVD_FUNC(gesdd, float  , float , s)
     SVD_FUNC(gesdd, double , double, d)
     SVD_FUNC(gesdd, cfloat , float , c)
     SVD_FUNC(gesdd, cdouble, double, z)
+
+#endif
 
     template <typename T, typename Tr>
     void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
@@ -49,8 +70,14 @@ namespace cpu
         int M = iDims[0];
         int N = iDims[1];
 
-        gesdd_func<T, Tr>()(AF_LAPACK_COL_MAJOR, 'A', M, N, in.get(), in.strides()[1],
-                            s.get(), u.get(), u.strides()[1], vt.get(), vt.strides()[1]);
+#ifdef ARM_ARCH
+        std::vector<Tr> superb(std::min(M, N));
+        svd_func<T, Tr>()(AF_LAPACK_COL_MAJOR, 'A', 'A', M, N, in.get(), in.strides()[1],
+                          s.get(), u.get(), u.strides()[1], vt.get(), vt.strides()[1], &superb[0]);
+#else
+        svd_func<T, Tr>()(AF_LAPACK_COL_MAJOR, 'A', M, N, in.get(), in.strides()[1],
+                          s.get(), u.get(), u.strides()[1], vt.get(), vt.strides()[1]);
+#endif
     }
 
     template <typename T, typename Tr>
