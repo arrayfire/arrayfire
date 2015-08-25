@@ -27,24 +27,7 @@ namespace cpu
     template<> svd_func_def<T, Tr>     svd_func<T, Tr>()    \
     { return & LAPACK_NAME(PREFIX##FUNC); }
 
-#ifdef ARM_ARCH
-    template<typename T, typename Tr>
-    using svd_func_def = int (*)(ORDER_TYPE,
-                                 char jobu, char jobvt,
-                                 int m, int n,
-                                 T* in, int ldin,
-                                 Tr* s,
-                                 T* u, int ldu,
-                                 T* vt, int ldvt,
-                                 Tr *superb);
-
-    SVD_FUNC_DEF( gesvd )
-    SVD_FUNC(gesvd, float  , float , s)
-    SVD_FUNC(gesvd, double , double, d)
-    SVD_FUNC(gesvd, cfloat , float , c)
-    SVD_FUNC(gesvd, cdouble, double, z)
-
-#else
+#ifdef USE_MKL
 
     template<typename T, typename Tr>
     using svd_func_def = int (*)(ORDER_TYPE,
@@ -60,6 +43,24 @@ namespace cpu
     SVD_FUNC(gesdd, double , double, d)
     SVD_FUNC(gesdd, cfloat , float , c)
     SVD_FUNC(gesdd, cdouble, double, z)
+
+#else   // Atlas causes memory freeing issues with using gesdd
+
+    template<typename T, typename Tr>
+    using svd_func_def = int (*)(ORDER_TYPE,
+                                 char jobu, char jobvt,
+                                 int m, int n,
+                                 T* in, int ldin,
+                                 Tr* s,
+                                 T* u, int ldu,
+                                 T* vt, int ldvt,
+                                 Tr *superb);
+
+    SVD_FUNC_DEF( gesvd )
+    SVD_FUNC(gesvd, float  , float , s)
+    SVD_FUNC(gesvd, double , double, d)
+    SVD_FUNC(gesvd, cfloat , float , c)
+    SVD_FUNC(gesvd, cdouble, double, z)
 
 #endif
 
