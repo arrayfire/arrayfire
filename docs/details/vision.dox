@@ -74,6 +74,22 @@ times followed by FAST feature detection on each scale.
 
 =======================================================================
 
+\defgroup cv_func_sift sift
+\ingroup featdescriptor_mat
+
+\brief SIFT feature detector and descriptor extractor
+
+Detects features and extract descriptors using the Scale Invariant Feature
+Transform (SIFT), by David Lowe.
+
+Lowe, D. G., "Distinctive Image Features from Scale-Invariant Keypoints",
+International Journal of Computer Vision, 60, 2, pp. 91-110, 2004.
+
+WARNING: The SIFT algorithm is patented by the University of British Columbia,
+before using it, make sure you have the appropriate permission to do so.
+
+=======================================================================
+
 \defgroup cv_func_hamming_matcher hammingMatcher
 \ingroup featmatcher_mat
 
@@ -111,6 +127,17 @@ equal to the number of features contained in the query array.
 
 =======================================================================
 
+\defgroup cv_func_dog DoG
+\ingroup featdetect_mat
+
+\brief Difference of Gaussians
+
+Given an image, this function computes two different versions of smoothed
+input image using the difference smoothing parameters and subtracts one
+from the other and returns the result.
+
+=======================================================================
+
 \defgroup cv_func_match_template matchTemplate
 \ingroup match_mat
 
@@ -119,6 +146,8 @@ equal to the number of features contained in the query array.
 Template matching is an image processing technique to find small patches of an image which
 match a given template image. A more in depth discussion on the topic can be found
 [here](http://en.wikipedia.org/wiki/Template_matching).
+
+
 
 @}
 */

@@ -427,6 +427,31 @@ Save an array to disk as an image
 Supported formats include JPG, PNG, PPM and other formats supported by freeimage
 
 
+\defgroup imagemem_func_load loadImageMem
+\ingroup imageio_mat
+
+Load an image from memory which is stored as a FreeImage stream (FIMEMORY).
+
+Supported formats include JPG, PNG, PPM and other formats supported by freeimage
+
+
+
+\defgroup imagemem_func_save saveImageMem
+\ingroup imageio_mat
+
+Save an array to memory as an image using FreeImage stream (FIMEMORY).
+
+Supported formats include JPG, PNG, PPM and other formats supported by freeimage
+
+
+\defgroup imagemem_func_delete deleteImageMem
+\ingroup imageio_mat
+
+Delete memory created by saveImageMem and af_save_image_memory function.
+This internally calls FreeImage_CloseMemory.
+
+Supported formats include JPG, PNG, PPM and other formats supported by freeimage
+
 
 \defgroup calc_func_grad grad
 \ingroup calc_mat
@@ -653,17 +678,6 @@ are specializations of the transform function.
 
 =======================================================================
 
-\defgroup image_func_dog DoG
-\ingroup imageflt_mat
-
-\brief Difference of Gaussians
-
-Given an image, this function computes two different versions of smoothed
-input image using the difference smoothing parameters and subtracts one
-from the other and returns the result.
-
-=======================================================================
-
 \defgroup image_func_sat SAT
 \ingroup imageflt_mat
 
@@ -678,15 +692,15 @@ The output array of this function will have \f$ S(x, y) \f$ values at their corr
 =======================================================================
 
 \defgroup image_func_unwrap unwrap
-\ingroup image_mod
+\ingroup image_mod_mat
 
-Generate image with image windows as columns
+Generate an array with image windows as columns
 
 unwrap takes in an input image along with the window sizes \p wx and \p
 wy, strides \p sx and \p sy, and padding \p px and \p py. This function then
 generates a matrix where each windows is an independent column.
 
-The number of columns in the output array are govenered by the number of
+The number of columns (rows if is_column is true) in the output array are govenered by the number of
 windows that can be fit along x and y directions. Padding is applied along all
 4 sides of the matrix with \p px defining the height of the padding along dim
 0 and \p py defining the width of the padding along dim 1.
@@ -769,5 +783,15 @@ unwrap(A, 3, 3, 3, 3, 2, 2) [9 9 1 1]
     0    12     0     0    27     0     0     0     0
    10    13     0    25    28     0     0     0     0
 \endcode
+
+
+=======================================================================
+
+\defgroup image_func_wrap wrap
+\ingroup image_mod_mat
+
+Wrap takes an unwrapped image (see \ref unwrap) and converts it back to an image.
+
+The inputs to this function should be the same as the inputs used to generate the unwrapped image.
 @}
 */

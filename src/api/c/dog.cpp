@@ -9,6 +9,7 @@
 
 #include <af/dim4.hpp>
 #include <af/defines.h>
+#include <af/vision.h>
 #include <af/image.h>
 #include <err_common.hpp>
 #include <backend.hpp>

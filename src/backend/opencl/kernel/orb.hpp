@@ -201,8 +201,8 @@ void orb(unsigned* out_feat,
             unsigned edge = ceil(size * sqrt(2.f) / 2.f);
 
             // Detect FAST features
-            fast<T, 9, true>(&lvl_feat, d_x_feat, d_y_feat, d_score_feat,
-                             lvl_img, fast_thr, 0.15f, edge);
+            fast<T, true>(9, &lvl_feat, d_x_feat, d_y_feat, d_score_feat,
+                          lvl_img, fast_thr, 0.15f, edge);
 
             if (lvl_feat == 0) {
                 feat_pyr[i] = 0;
@@ -360,8 +360,8 @@ void orb(unsigned* out_feat,
                 }
 
                 // Filter level image with Gaussian kernel to reduce noise sensitivity
-                convolve2<T, convAccT, 0, false, gauss_len>(lvl_tmp, lvl_img, gauss_filter);
-                convolve2<T, convAccT, 1, false, gauss_len>(lvl_filt, lvl_tmp, gauss_filter);
+                convSep<T, convAccT, 0, false>(lvl_tmp, lvl_img, gauss_filter);
+                convSep<T, convAccT, 1, false>(lvl_filt, lvl_tmp, gauss_filter);
 
                 bufferFree(lvl_tmp.data);
             }

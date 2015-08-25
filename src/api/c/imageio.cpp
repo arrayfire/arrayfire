@@ -167,8 +167,11 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
     return err;
 }
 
-/// Load a gray-scale image from disk.
-AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isColor)
+////////////////////////////////////////////////////////////////////////////////
+// File IO
+////////////////////////////////////////////////////////////////////////////////
+// Load image from disk.
+af_err af_load_image(af_array *out, const char* filename, const bool isColor)
 {
     try {
         ARG_ASSERT(1, filename != NULL);
@@ -204,10 +207,20 @@ AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isCol
         const uint fi_bpp = FreeImage_GetBPP(pBitmap);
         //int fi_color = (int)((fi_bpp / 8.0) + 0.5);        //ceil
         int fi_color;
-        if      (color_type == 1) fi_color = 1;
-        else if (color_type == 2) fi_color = 3;
-        else if (color_type == 4) fi_color = 4;
-        else                      fi_color = 3;
+        switch(color_type) {
+            case 0:                     // FIC_MINISBLACK
+            case 1:                     // FIC_MINISWHITE
+                fi_color = 1; break;
+            case 2:                     // FIC_PALETTE
+            case 3:                     // FIC_RGB
+                fi_color = 3; break;
+            case 4:                     // FIC_RGBALPHA
+            case 5:                     // FIC_CMYK
+                fi_color = 4; break;
+            default:                    // Should not come here
+                fi_color = 3; break;
+        }
+
         const int fi_bpc = fi_bpp / fi_color;
         if(fi_bpc != 8 && fi_bpc != 16 && fi_bpc != 32) {
             AF_ERROR("FreeImage Error: Bits per channel not supported", AF_ERR_NOT_SUPPORTED);
@@ -435,16 +448,325 @@ af_err af_save_image(const char* filename, const af_array in_)
     return AF_SUCCESS;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Memory IO
+////////////////////////////////////////////////////////////////////////////////
+/// Load image from memory.
+af_err af_load_image_memory(af_array *out, const void* ptr)
+{
+    try {
+        ARG_ASSERT(1, ptr != NULL);
+
+        // for statically linked FI
+        FI_Init();
+
+        // set your own FreeImage error handler
+        FreeImage_SetOutputMessage(FreeImageErrorHandler);
+
+        FIMEMORY *stream = (FIMEMORY*)ptr;
+        FreeImage_SeekMemory(stream, 0L, SEEK_SET);
+
+        // try to guess the file format from the file extension
+        FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(stream, 0);
+        //if (fif == FIF_UNKNOWN) {
+        //    fif = FreeImage_GetFIFFromFilenameFromMemory(filename);
+        //}
+
+        if(fif == FIF_UNKNOWN) {
+            AF_ERROR("FreeImage Error: Unknown File or Filetype", AF_ERR_NOT_SUPPORTED);
+        }
+
+        // check that the plugin has reading capabilities ...
+        FIBITMAP* pBitmap = NULL;
+        if (FreeImage_FIFSupportsReading(fif)) {
+            pBitmap = FreeImage_LoadFromMemory(fif, stream, 0);
+        }
+
+        if(pBitmap == NULL) {
+            AF_ERROR("FreeImage Error: Error reading image or file does not exist", AF_ERR_RUNTIME);
+        }
+
+        // check image color type
+        uint color_type = FreeImage_GetColorType(pBitmap);
+        const uint fi_bpp = FreeImage_GetBPP(pBitmap);
+        //int fi_color = (int)((fi_bpp / 8.0) + 0.5);        //ceil
+        int fi_color;
+        switch(color_type) {
+            case 0:                     // FIC_MINISBLACK
+            case 1:                     // FIC_MINISWHITE
+                fi_color = 1; break;
+            case 2:                     // FIC_PALETTE
+            case 3:                     // FIC_RGB
+                fi_color = 3; break;
+            case 4:                     // FIC_RGBALPHA
+            case 5:                     // FIC_CMYK
+                fi_color = 4; break;
+            default:                    // Should not come here
+                fi_color = 3; break;
+        }
+        const int fi_bpc = fi_bpp / fi_color;
+        if(fi_bpc != 8 && fi_bpc != 16 && fi_bpc != 32) {
+            AF_ERROR("FreeImage Error: Bits per channel not supported", AF_ERR_NOT_SUPPORTED);
+        }
+
+        // sizes
+        uint fi_w = FreeImage_GetWidth(pBitmap);
+        uint fi_h = FreeImage_GetHeight(pBitmap);
+
+        // FI = row major | AF = column major
+        uint nSrcPitch = FreeImage_GetPitch(pBitmap);
+        const uchar* pSrcLine = FreeImage_GetBits(pBitmap) + nSrcPitch * (fi_h - 1);
+
+        // result image
+        af_array rImage;
+        if(fi_color == 4) {     //4 channel image
+            if(fi_bpc == 8)
+                AF_CHECK((readImage<uchar, 4, 4>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+            else if(fi_bpc == 16)
+                AF_CHECK((readImage<ushort,4, 4>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+            else if(fi_bpc == 32)
+                AF_CHECK((readImage<float, 4, 4>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+        } else if (fi_color == 1) { // 1 channel image
+            if(fi_bpc == 8)
+                AF_CHECK((readImage<uchar, 1>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+            else if(fi_bpc == 16)
+                AF_CHECK((readImage<ushort,1>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+            else if(fi_bpc == 32)
+                AF_CHECK((readImage<float, 1>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+        } else {             //3 channel image
+            if(fi_bpc == 8)
+                AF_CHECK((readImage<uchar, 3, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+            else if(fi_bpc == 16)
+                AF_CHECK((readImage<ushort,3, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+            else if(fi_bpc == 32)
+                AF_CHECK((readImage<float, 3, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+        }
+
+        FreeImage_Unload(pBitmap);
+        std::swap(*out,rImage);
+    } CATCHALL;
+
+    return AF_SUCCESS;
+}
+
+// Save an image to memory.
+af_err af_save_image_memory(void **ptr, const af_array in_, const af_image_format format)
+{
+    try {
+
+        FI_Init();
+
+        // set your own FreeImage error handler
+        FreeImage_SetOutputMessage(FreeImageErrorHandler);
+
+        // try to guess the file format from the file extension
+        FREE_IMAGE_FORMAT fif = (FREE_IMAGE_FORMAT)format;
+
+        if(fif == FIF_UNKNOWN || fif > 34) { // FreeImage FREE_IMAGE_FORMAT has upto 34 enums as of 3.17
+            AF_ERROR("FreeImage Error: Unknown Filetype", AF_ERR_NOT_SUPPORTED);
+        }
+
+        ArrayInfo info = getInfo(in_);
+        // check image color type
+        uint channels = info.dims()[2];
+        DIM_ASSERT(1, channels <= 4);
+        DIM_ASSERT(1, channels != 2);
+
+        int fi_bpp = channels * 8;
+
+        // sizes
+        uint fi_w = info.dims()[1];
+        uint fi_h = info.dims()[0];
+
+        // create the result image storage using FreeImage
+        FIBITMAP* pResultBitmap = FreeImage_Allocate(fi_w, fi_h, fi_bpp);
+        if(pResultBitmap == NULL) {
+            AF_ERROR("FreeImage Error: Error creating image or file", AF_ERR_RUNTIME);
+        }
+
+        // FI assumes [0-255]
+        // If array is in 0-1 range, multiply by 255
+        af_array in;
+        double max_real, max_imag;
+        bool free_in = false;
+        AF_CHECK(af_max_all(&max_real, &max_imag, in_));
+        if (max_real <= 1) {
+            af_array c255;
+            AF_CHECK(af_constant(&c255, 255.0, info.ndims(), info.dims().get(), f32));
+            AF_CHECK(af_mul(&in, in_, c255, false));
+            AF_CHECK(af_release_array(c255));
+            free_in = true;
+        } else {
+            in = in_;
+        }
+
+        // FI = row major | AF = column major
+        uint nDstPitch = FreeImage_GetPitch(pResultBitmap);
+        uchar* pDstLine = FreeImage_GetBits(pResultBitmap) + nDstPitch * (fi_h - 1);
+        af_array rr = 0, gg = 0, bb = 0, aa = 0;
+        AF_CHECK(channel_split(in, info.dims(), &rr, &gg, &bb, &aa)); // convert array to 3 channels if needed
+
+        uint step = channels; // force 3 channels saving
+        uint indx = 0;
+
+        af_array rrT = 0, ggT = 0, bbT = 0, aaT = 0;
+        if(channels == 4) {
+
+            AF_CHECK(af_transpose(&rrT, rr, false));
+            AF_CHECK(af_transpose(&ggT, gg, false));
+            AF_CHECK(af_transpose(&bbT, bb, false));
+            AF_CHECK(af_transpose(&aaT, aa, false));
+
+            ArrayInfo cinfo = getInfo(rrT);
+            float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc1 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc2 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc3 = pinnedAlloc<float>(cinfo.elements());
+
+            AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
+            AF_CHECK(af_get_data_ptr((void*)pSrc1, ggT));
+            AF_CHECK(af_get_data_ptr((void*)pSrc2, bbT));
+            AF_CHECK(af_get_data_ptr((void*)pSrc3, aaT));
+
+            // Copy the array into FreeImage buffer
+            for (uint y = 0; y < fi_h; ++y) {
+                for (uint x = 0; x < fi_w; ++x) {
+                    *(pDstLine + x * step + 2) = (uchar) pSrc0[indx]; // b
+                    *(pDstLine + x * step + 1) = (uchar) pSrc1[indx]; // g
+                    *(pDstLine + x * step + 0) = (uchar) pSrc2[indx]; // r
+                    *(pDstLine + x * step + 3) = (uchar) pSrc3[indx]; // a
+                    ++indx;
+                }
+                pDstLine -= nDstPitch;
+            }
+            pinnedFree(pSrc0);
+            pinnedFree(pSrc1);
+            pinnedFree(pSrc2);
+            pinnedFree(pSrc3);
+        } else if(channels == 3) {
+            AF_CHECK(af_transpose(&rrT, rr, false));
+            AF_CHECK(af_transpose(&ggT, gg, false));
+            AF_CHECK(af_transpose(&bbT, bb, false));
+
+            ArrayInfo cinfo = getInfo(rrT);
+            float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc1 = pinnedAlloc<float>(cinfo.elements());
+            float* pSrc2 = pinnedAlloc<float>(cinfo.elements());
+
+            AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
+            AF_CHECK(af_get_data_ptr((void*)pSrc1, ggT));
+            AF_CHECK(af_get_data_ptr((void*)pSrc2, bbT));
+
+            // Copy the array into FreeImage buffer
+            for (uint y = 0; y < fi_h; ++y) {
+                for (uint x = 0; x < fi_w; ++x) {
+                    *(pDstLine + x * step + 2) = (uchar) pSrc0[indx]; // b
+                    *(pDstLine + x * step + 1) = (uchar) pSrc1[indx]; // g
+                    *(pDstLine + x * step + 0) = (uchar) pSrc2[indx]; // r
+                    ++indx;
+                }
+                pDstLine -= nDstPitch;
+            }
+            pinnedFree(pSrc0);
+            pinnedFree(pSrc1);
+            pinnedFree(pSrc2);
+        } else {
+            AF_CHECK(af_transpose(&rrT, rr, false));
+            ArrayInfo cinfo = getInfo(rrT);
+            float* pSrc0 = pinnedAlloc<float>(cinfo.elements());
+            AF_CHECK(af_get_data_ptr((void*)pSrc0, rrT));
+
+            for (uint y = 0; y < fi_h; ++y) {
+                for (uint x = 0; x < fi_w; ++x) {
+                    *(pDstLine + x * step) = (uchar) pSrc0[indx];
+                    ++indx;
+                }
+                pDstLine -= nDstPitch;
+            }
+            pinnedFree(pSrc0);
+        }
+
+        FIMEMORY *stream = FreeImage_OpenMemory();
+
+        // now save the result image
+        if (!(FreeImage_SaveToMemory(fif, pResultBitmap, stream, 0) == TRUE)) {
+            AF_ERROR("FreeImage Error: Failed to save image", AF_ERR_RUNTIME);
+        }
+
+        *ptr = stream;
+
+        FreeImage_Unload(pResultBitmap);
+
+        if(free_in) AF_CHECK(af_release_array(in ));
+        if(rr != 0) AF_CHECK(af_release_array(rr ));
+        if(gg != 0) AF_CHECK(af_release_array(gg ));
+        if(bb != 0) AF_CHECK(af_release_array(bb ));
+        if(aa != 0) AF_CHECK(af_release_array(aa ));
+        if(rrT!= 0) AF_CHECK(af_release_array(rrT));
+        if(ggT!= 0) AF_CHECK(af_release_array(ggT));
+        if(bbT!= 0) AF_CHECK(af_release_array(bbT));
+        if(aaT!= 0) AF_CHECK(af_release_array(aaT));
+
+    } CATCHALL
+
+    return AF_SUCCESS;
+}
+
+af_err af_delete_image_memory(void *ptr)
+{
+    try {
+
+        ARG_ASSERT(0, ptr != NULL);
+
+        FI_Init();
+
+        // set your own FreeImage error handler
+        FreeImage_SetOutputMessage(FreeImageErrorHandler);
+
+        FIMEMORY *stream = (FIMEMORY*)ptr;
+        FreeImage_SeekMemory(stream, 0L, SEEK_SET);
+
+        // Ensure data is freeimage compatible
+        FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory((FIMEMORY*)ptr, 0);
+        if(fif == FIF_UNKNOWN) {
+            AF_ERROR("FreeImage Error: Unknown Filetype", AF_ERR_NOT_SUPPORTED);
+        }
+
+        FreeImage_CloseMemory((FIMEMORY *)ptr);
+
+    } CATCHALL
+
+    return AF_SUCCESS;
+}
+
 #else   // WITH_FREEIMAGE
 #include <af/image.h>
 #include <stdio.h>
-AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isColor)
+af_err af_load_image(af_array *out, const char* filename, const bool isColor)
 {
     printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
     return AF_ERR_NOT_CONFIGURED;
 }
 
 af_err af_save_image(const char* filename, const af_array in_)
+{
+    printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
+    return AF_ERR_NOT_CONFIGURED;
+}
+
+af_err af_load_image_memory(af_array *out, const void* ptr)
+{
+    printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
+    return AF_ERR_NOT_CONFIGURED;
+}
+
+af_err af_save_image_memory(void **ptr, const char* filename, const af_array in_)
+{
+    printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
+    return AF_ERR_NOT_CONFIGURED;
+}
+
+af_err af_delete_image_memory(void *ptr)
 {
     printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
     return AF_ERR_NOT_CONFIGURED;

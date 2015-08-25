@@ -7,14 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-kernel
-void
-set(    global  T*      ptr,
-                T       val,
-        const   unsigned long  elements)
-{
-    if(get_global_id(0) < elements) {
-        ptr[get_global_id(0)] = val;
-    }
-}
+#include "impl.hpp"
 
+namespace opencl
+{
+    INSTANTIATE1(char,true)
+    INSTANTIATE1(char,false)
+}

@@ -373,3 +373,19 @@ TEST(Array, ShapeAttributes)
     EXPECT_FALSE(volume.    iscolumn());
     EXPECT_FALSE(hypercube. iscolumn());
 }
+
+TEST(Array, ISSUE_951)
+{
+// This works
+    //const af::array a(100, 100);
+    //af::array b = a.cols(0, 20);
+    //b = b.rows(10, 20);
+
+// This works
+    //af::array a(100, 100);
+    //af::array b = a.cols(0, 20).rows(10, 20);
+
+// This fails with linking error
+    const af::array a = randu(100, 100);
+    af::array b = a.cols(0, 20).rows(10, 20);
+}

@@ -115,6 +115,9 @@ __global__ void harris_response(
 {
     unsigned f = blockDim.x * blockIdx.x + threadIdx.x;
 
+    float ixx = 0.f, iyy = 0.f, ixy = 0.f;
+    float size = 0.f;
+
     if (f < total_feat) {
         unsigned x, y;
         float scl = 1.f;
@@ -130,7 +133,7 @@ __global__ void harris_response(
         }
 
         // Round feature size to nearest odd integer
-        float size = 2.f * floor((patch_size * scl) / 2.f) + 1.f;
+        size = 2.f * floor((patch_size * scl) / 2.f) + 1.f;
 
         // Avoid keeping features that might be too wide and might not fit on
         // the image, sqrt(2.f) is the radius when angle is 45 degrees and
@@ -141,7 +144,6 @@ __global__ void harris_response(
 
         unsigned r = block_size / 2;
 
-        float ixx = 0.f, iyy = 0.f, ixy = 0.f;
         unsigned block_size_sq = block_size * block_size;
         for (unsigned k = threadIdx.y; k < block_size_sq; k += blockDim.y) {
             int i = k / block_size - r;
@@ -156,28 +158,28 @@ __global__ void harris_response(
             iyy += iy*iy;
             ixy += ix*iy;
         }
-        __syncthreads();
+    }
+    __syncthreads();
 
-        ixx = block_reduce_sum(ixx);
-        iyy = block_reduce_sum(iyy);
-        ixy = block_reduce_sum(ixy);
+    ixx = block_reduce_sum(ixx);
+    iyy = block_reduce_sum(iyy);
+    ixy = block_reduce_sum(ixy);
 
-        if (threadIdx.y == 0) {
-            float tr = ixx + iyy;
-            float det = ixx*iyy - ixy*ixy;
+    if (f < total_feat && threadIdx.y == 0) {
+        float tr = ixx + iyy;
+        float det = ixx*iyy - ixy*ixy;
 
-            // Calculate Harris responses
-            float resp = det - k_thr * (tr*tr);
+        // Calculate Harris responses
+        float resp = det - k_thr * (tr*tr);
 
-            // Scale factor
-            // TODO: improve response scaling
-            float rscale = 0.001f;
-            rscale = rscale * rscale * rscale * rscale;
+        // Scale factor
+        // TODO: improve response scaling
+        float rscale = 0.001f;
+        rscale = rscale * rscale * rscale * rscale;
 
-            score_out[f] = resp * rscale;
-            if (use_scl)
-                size_out[f] = size;
-        }
+        score_out[f] = resp * rscale;
+        if (use_scl)
+            size_out[f] = size;
     }
 }
 
