@@ -23,17 +23,21 @@ int main(int argc, char* argv[])
 
         float h_buffer[] = {1, 4, 2, 5, 3, 6 };  // host array
         array in(2, 3, h_buffer);                        // copy host data to device
-        print("in", in);
 
-        array s;
         array u;
+        array s_vec;
         array vt;
-        printf("Running svd");
-        svd(s, u, vt, in);
-        print("in", in);
-        print("s", s);
-        print("u", u);
-        print("vt", vt);
+        svd(u, s_vec, vt, in);
+
+        array s_mat = diag(s_vec, 0, false);
+        array in_recon = matmul(u, s_mat, vt(seq(2), span));
+
+        af_print(in);
+        af_print(s_vec);
+        af_print(u);
+        af_print(s_mat);
+        af_print(vt);
+        af_print(in_recon);
 
     } catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());
