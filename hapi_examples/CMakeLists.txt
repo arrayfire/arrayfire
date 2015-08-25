@@ -1,0 +1,13 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+PROJECT(arrayfire-hapi-examples)
+
+ADD_DEFINITIONS(-std=c++11)
+
+IF(NOT TARGET af)
+    FIND_PACKAGE(ArrayFire REQUIRED)
+    INCLUDE_DIRECTORIES(${ArrayFire_INCLUDE_DIRS})
+ENDIF()
+
+ADD_EXECUTABLE(hapi_test test.cpp)
+
+TARGET_LINK_LIBRARIES(hapi_test af dl)
