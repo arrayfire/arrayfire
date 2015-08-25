@@ -30,7 +30,7 @@ class svd : public ::testing::Test
 {
 };
 
-typedef ::testing::Types<float> TestTypes;
+typedef ::testing::Types<float, double, cfloat, cdouble> TestTypes;
 TYPED_TEST_CASE(svd, TestTypes);
 
 template<typename T>
@@ -52,6 +52,9 @@ template<> double get_val<cdouble>(cdouble val)
 template<typename T>
 void svdTest(const int M, const int N)
 {
+
+    if (noDoubleTests<T>()) return;
+
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 
     af::array A = af::randu(M, N, ty);
