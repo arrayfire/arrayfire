@@ -142,6 +142,10 @@
  * \endcode
  *
  */
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 #ifndef CL_HPP_
 #define CL_HPP_
 
@@ -12904,3 +12908,4 @@ public:
 } // namespace cl
 
 #endif // CL_HPP_
+#pragma GCC diagnostic pop

@@ -52,7 +52,6 @@
  **********************************************************************/
 
 #include "magma.h"
-#include "magma_blas.h"
 #include "magma_data.h"
 #include "magma_cpu_lapack.h"
 #include "magma_helper.h"
@@ -217,8 +216,8 @@ magma_geqrf3_gpu(
     ldwork = m;
     lddwork= n;
 
-    geqrf_work_func<Ty> cpu_geqrf;
-    larft_func<Ty> cpu_larft;
+    cpu_lapack_geqrf_work_func<Ty> cpu_lapack_geqrf;
+    cpu_lapack_larft_func<Ty> cpu_lapack_larft;
 
     if ( (nb > 1) && (nb < k) ) {
         /* Use blocked code initially */
@@ -244,15 +243,15 @@ magma_geqrf3_gpu(
             }
 
             magma_event_sync(event[1]);
-            *info = cpu_geqrf(LAPACK_COL_MAJOR, rows, ib, work_ref(i), ldwork, tau+i, hwork, lhwork);
+            LAPACKE_CHECK(cpu_lapack_geqrf( rows, ib, work_ref(i), ldwork, tau+i, hwork, lhwork));
 
             /* Form the triangular factor of the block reflector
                H = H(i) H(i+1) . . . H(i+ib-1) */
-            cpu_larft(LAPACK_COL_MAJOR,
-                      *MagmaForwardStr, *MagmaColumnwiseStr,
-                      rows, ib,
-                      work_ref(i), ldwork,
-                      tau+i, hwork, ib);
+            LAPACKE_CHECK(cpu_lapack_larft(
+                              *MagmaForwardStr, *MagmaColumnwiseStr,
+                              rows, ib,
+                              work_ref(i), ldwork,
+                              tau+i, hwork, ib));
 
             /* Put 0s in the upper triangular part of a panel (and 1s on the
                diagonal); copy the upper triangular in ut and invert it. */
@@ -296,7 +295,7 @@ magma_geqrf3_gpu(
         magma_getmatrix<Ty>( rows, ib, a_ref(i, i), ldda, work, rows, queue );
 
         lhwork = lwork - rows*ib;
-        *info = cpu_geqrf(LAPACK_COL_MAJOR, rows, ib, work, rows, tau+i, work+ib*rows, lhwork);
+        LAPACKE_CHECK(cpu_lapack_geqrf( rows, ib, work, rows, tau+i, work+ib*rows, lhwork));
 
         magma_setmatrix<Ty>( rows, ib, work, rows, a_ref(i, i), ldda, queue );
     }

@@ -75,11 +75,19 @@
 #include <dispatch.hpp>
 #include <err_opencl.hpp>
 #include <debug_opencl.hpp>
+
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 #include <boost/compute/core.hpp>
 #include <boost/compute/iterator/buffer_iterator.hpp>
 #include <boost/compute/algorithm/gather.hpp>
 #include <boost/compute/algorithm/iota.hpp>
 #include <boost/compute/algorithm/sort_by_key.hpp>
+
+#pragma GCC diagnostic pop
+
 #include <convolve_common.hpp>
 #include <kernel/convolve_separable.hpp>
 #include <kernel/fast.hpp>
