@@ -95,6 +95,7 @@ AFAPI features harris(const array& in, const unsigned max_corners=500, const flo
  */
 AFAPI void orb(features& feat, array& desc, const array& image, const float fast_thr=20.f, const unsigned max_feat=400, const float scl_fctr=1.5f, const unsigned levels=4, const bool blur_img=false);
 
+#if AF_API_VERSION >= 31
 /**
     C++ Interface for SIFT feature detector and descriptor
 
@@ -127,6 +128,7 @@ AFAPI void orb(features& feat, array& desc, const array& image, const float fast
     \ingroup cv_func_sift
  */
 AFAPI void sift(features& feat, array& desc, const array& in, const unsigned n_layers=3, const float contrast_thr=0.04f, const float edge_thr=10.f, const float init_sigma=1.6f, const bool double_input=true, const float img_scale=0.00390625f, const float feature_ratio=0.05f);
+#endif
 
 /**
    C++ Interface wrapper for Hamming matcher
@@ -331,6 +333,7 @@ extern "C" {
     */
     AFAPI af_err af_orb(af_features *feat, af_array *desc, const af_array in, const float fast_thr, const unsigned max_feat, const float scl_fctr, const unsigned levels, const bool blur_img);
 
+#if AF_API_VERSION >= 31
     /**
         C++ Interface for SIFT feature detector and descriptor
 
@@ -363,6 +366,7 @@ extern "C" {
         \ingroup cv_func_sift
     */
     AFAPI af_err af_sift(af_features *feat, af_array *desc, const af_array in, const unsigned n_layers, const float contrast_thr, const float edge_thr, const float init_sigma, const bool double_input, const float img_scale, const float feature_ratio);
+#endif
 
     /**
        C Interface wrapper for Hamming matcher

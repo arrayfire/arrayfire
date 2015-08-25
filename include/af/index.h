@@ -103,6 +103,7 @@ class AFAPI index {
     ///
     index(const af::array& idx0);
 
+#if AF_API_VERSION >= 31
     ///
     /// \brief Copy constructor
     ///
@@ -111,6 +112,7 @@ class AFAPI index {
     /// \sa indexing
     ///
     index(const index& idx0);
+#endif
 
     ///
     /// \brief Returns true if the \ref af::index represents a af::span object
@@ -126,6 +128,7 @@ class AFAPI index {
     ///
     const af_index_t& get() const;
 
+#if AF_API_VERSION >= 31
     ///
     /// \brief Assigns idx0 to this index
     ///
@@ -150,6 +153,7 @@ class AFAPI index {
     ///
     index& operator=(index &&idx0);
 #endif
+#endif // AF_API_VERSION
 };
 
 ///

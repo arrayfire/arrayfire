@@ -112,6 +112,8 @@ namespace af
     AFAPI array exampleFunction(const array& in, const af_someenum_t param);
 }
 
+#if AF_API_VERSION >= 31
+
 #define AF_PRINT1(exp)            af::print(#exp, exp);
 #define AF_PRINT2(exp, precision) af::print(#exp, exp, precision);
 
@@ -149,6 +151,12 @@ namespace af
     \ingroup print_func_print
 */
 #define af_print(...) GET_PRINT_MACRO(__VA_ARGS__, AF_PRINT2, AF_PRINT1)(__VA_ARGS__)
+
+#else
+
+#define af_print(exp) af::print(#exp, exp);
+
+#endif
 
 #endif //__cplusplus
 

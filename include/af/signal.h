@@ -418,6 +418,7 @@ array fftR2C(const array &in,
              const double norm_factor = 0);
 #endif
 
+#if AF_API_VERSION >= 31
 /**
    C++ Interface for complex to real fast fourier transform
 
@@ -433,6 +434,7 @@ array fftR2C(const array &in,
 template<int rank>
 array fftC2R(const array &in, bool is_odd = false,
                  const double norm_factor = 0);
+#endif
 
 /**
    C++ Interface for convolution any(one through three) dimensional signals

@@ -103,6 +103,7 @@ class AFAPI Window {
          */
         void setTitle(const char* const title);
 
+#if AF_API_VERSION >= 31
         /**
            Set the window size
 
@@ -110,6 +111,7 @@ class AFAPI Window {
            \param[in]   h is target height of the window
          */
         void setSize(const unsigned w, const unsigned h);
+#endif
 
         /**
            Set the colormap to be used for subsequent rendering calls

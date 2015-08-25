@@ -116,7 +116,9 @@ namespace af
             template<typename T> T scalar() const;
             template<typename T> T* device() const;
             void unlock() const;
+#if AF_API_VERSION >= 31
             void lock() const;
+#endif
 
                   array::array_proxy row(int index);
             const array::array_proxy row(int index) const;
@@ -1258,6 +1260,7 @@ extern "C" {
     */
     AFAPI af_err af_retain_array(af_array *out, const af_array in);
 
+#if AF_API_VERSION >= 31
     /**
        \ingroup method_mat
        @{
@@ -1265,6 +1268,7 @@ extern "C" {
        Get the use count of `af_array`
     */
     AFAPI af_err af_get_data_ref_count(int *use_count, const af_array in);
+#endif
 
 
     /**
