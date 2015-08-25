@@ -55,6 +55,8 @@ void svdTest(const int M, const int N)
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 
     af::array A = af::randu(M, N, ty);
+
+    //! [ex_svd_reg]
     af::array U, S, Vt;
     af::svd(U, S, Vt, A);
 
@@ -65,6 +67,7 @@ void svdTest(const int M, const int N)
     af::array VV = Vt(af::seq(MN), af::span);
 
     af::array AA = matmul(UU, SS, VV);
+    //! [ex_svd_reg]
 
     std::vector<T> hA(M * N);
     std::vector<T> hAA(M * N);
