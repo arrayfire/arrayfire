@@ -71,13 +71,13 @@ namespace cpu
         int M = iDims[0];
         int N = iDims[1];
 
-#ifdef ARM_ARCH
+#ifdef USE_MKL
+        svd_func<T, Tr>()(AF_LAPACK_COL_MAJOR, 'A', M, N, in.get(), in.strides()[1],
+                          s.get(), u.get(), u.strides()[1], vt.get(), vt.strides()[1]);
+#else
         std::vector<Tr> superb(std::min(M, N));
         svd_func<T, Tr>()(AF_LAPACK_COL_MAJOR, 'A', 'A', M, N, in.get(), in.strides()[1],
                           s.get(), u.get(), u.strides()[1], vt.get(), vt.strides()[1], &superb[0]);
-#else
-        svd_func<T, Tr>()(AF_LAPACK_COL_MAJOR, 'A', M, N, in.get(), in.strides()[1],
-                          s.get(), u.get(), u.strides()[1], vt.get(), vt.strides()[1]);
 #endif
     }
 
