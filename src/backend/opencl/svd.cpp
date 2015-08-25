@@ -67,7 +67,7 @@ void svd(Array<T > &arrU,
 {
 
     dim4 idims = arrA.dims();
-    dim4 istrides = arrA.dims();
+    dim4 istrides = arrA.strides();
 
     const int m = (int)idims[0];
     const int n = (int)idims[1];
@@ -206,12 +206,14 @@ void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
     int M = iDims[0];
     int N = iDims[1];
 
-    if (M <= N) {
+    if (M >= N) {
         Array<T> in_copy = copyArray(in);
-        return svdInPlace(s, u, vt, in_copy);
+        svdInPlace(s, u, vt, in_copy);
     } else {
         Array<T> in_trans = transpose(in, true);
-        return svdInPlace(s, vt, u, in_trans);
+        svdInPlace(s, vt, u, in_trans);
+        transpose_inplace(u, true);
+        transpose_inplace(vt, true);
     }
 }
 

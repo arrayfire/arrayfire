@@ -284,7 +284,8 @@ magma_gebrd_hybrid(
         }
 
         magma_labrd_gpu<Ty>(nrow, ncol, nb,
-                            A(i, i),          lda,    dA(i, i),          ldda,
+                            A(i, i),          lda,
+                            dA(i, i),          ldda,
                             d+i, e+i, tauq+i, taup+i,
                             work,             ldwrkx, dwork, dwork_offset,             ldwrkx,  // x, dx
                             work+(ldwrkx*nb), ldwrky, dwork, dwork_offset+(ldwrkx*nb), ldwrky,  // y, dy

@@ -26,6 +26,12 @@ int LAPACKE_slacgv(Args... args) { return 0; }
 template<typename... Args>
 int LAPACKE_dlacgv(Args... args) { return 0; }
 
+template<typename... Args>
+int LAPACKE_slacgv_work(Args... args) { return 0; }
+
+template<typename... Args>
+int LAPACKE_dlacgv_work(Args... args) { return 0; }
+
 #define lapack_complex_float magmaFloatComplex
 #define lapack_complex_double magmaDoubleComplex
 #define LAPACK_PREFIX LAPACKE_
@@ -129,6 +135,7 @@ CPU_LAPACK_DECL1(laswp)
 CPU_LAPACK_DECL1(laset)
 
 CPU_LAPACK_DECL2(lacgv)
+CPU_LAPACK_DECL2(lacgv_work)
 CPU_LAPACK_DECL2(larfg)
 CPU_LAPACK_DECL2(larfg_work)
 CPU_LAPACK_DECL1(lacpy)

@@ -249,7 +249,7 @@ magma_labrd_gpu(
     cpu_blas_scal_func<Ty> cpu_blas_scal;
     cpu_blas_axpy_func<Ty> cpu_blas_axpy;
     cpu_lapack_larfg_work_func<Ty> cpu_lapack_larfg;
-    cpu_lapack_lacgv_func<Ty> cpu_lapack_lacgv;
+    cpu_lapack_lacgv_work_func<Ty> cpu_lapack_lacgv;
 
     CBLAS_TRANSPOSE CblasTransParam = is_cplx ? CblasConjTrans : CblasTrans;
 

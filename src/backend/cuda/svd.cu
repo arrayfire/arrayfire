@@ -114,12 +114,14 @@ SVD_SPECIALIZE(cdouble, double, Z);
         int M = iDims[0];
         int N = iDims[1];
 
-        if (M <= N) {
+        if (M >= N) {
             Array<T> in_copy = copyArray(in);
-            return svdInPlace(s, u, vt, in_copy);
+            svdInPlace(s, u, vt, in_copy);
         } else {
             Array<T> in_trans = transpose(in, true);
-            return svdInPlace(s, vt, u, in_trans);
+            svdInPlace(s, vt, u, in_trans);
+            transpose_inplace(vt, true);
+            transpose_inplace(u, true);
         }
     }
 
