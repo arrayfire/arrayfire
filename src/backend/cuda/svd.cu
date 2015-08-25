@@ -10,8 +10,6 @@
 #include <svd.hpp>
 #include <err_common.hpp>
 
-#if defined(WITH_CUDA_LINEAR_ALGEBRA)
-
 #include <cusolverDnManager.hpp>
 #include "transpose.hpp"
 #include <memory.hpp>
@@ -21,123 +19,135 @@
 
 namespace cuda
 {
+
+#if defined(WITH_CUDA_LINEAR_ALGEBRA)
+
+#include <cusolverDnManager.hpp>
+
     using cusolver::getDnHandle;
 
-    template <typename T>
-    struct gesvd_func_def_t {
-        typedef cusolverStatus_t (*gesvd_func_def)(cusolverDnHandle_t, char, char, int,
-                                                   int, T *, int, T *, T *, int, T *, int,
-                                                   T *, int, T *, int *);
-    };
-
     template<typename T>
-    struct gesvd_buf_func_def_t {
-        typedef cusolverStatus_t (*gesvd_buf_func_def)(cusolverDnHandle_t, int, int,
-                                                       int *);
-    };
-
-#define SVD_FUNC_DEF(FUNC)                                                              \
-    template <typename T>                                                               \
-    typename FUNC##_func_def_t<T>::FUNC##_func_def FUNC##_func();                       \
-                                                                                        \
-    template<typename T>                                                                \
-    typename FUNC##_buf_func_def_t<T>::FUNC##_buf_func_def                              \
-    FUNC##_buf_func();
-
-#define SVD_FUNC(FUNC, TYPE, PREFIX)                                                    \
-    template <>                                                                         \
-    typename FUNC##_func_def_t<TYPE>::FUNC##_func_def FUNC##_func<TYPE>()               \
-    {                                                                                   \
-        return (FUNC##_func_def_t<TYPE>::FUNC##_func_def) & cusolverDn##PREFIX##FUNC;   \
-    }                                                                                   \
-                                                                                        \
-    template<> typename FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def                \
-    FUNC##_buf_func<TYPE>()                                                             \
-    {                                                                                   \
-        return (FUNC##_buf_func_def_t<TYPE>::FUNC##_buf_func_def) &                     \
-               cusolverDn##PREFIX##FUNC##_bufferSize;                                   \
+    cusolverStatus_t gesvd_buf_func(cusolverDnHandle_t handle, int m, int n, int *Lwork)
+    {
+        return CUSOLVER_STATUS_ARCH_MISMATCH;
     }
 
-    SVD_FUNC_DEF(gesvd)
-    SVD_FUNC(gesvd, float, S)
-    SVD_FUNC(gesvd, double, D)
-//SVD_FUNC(gesvd , cfloat , C)
-//SVD_FUNC(gesvd , cdouble, Z)
+    template<typename T, typename Tr>
+    cusolverStatus_t gesvd_func(cusolverDnHandle_t handle, char jobu, char jobvt,
+                                int m, int n,
+                                T *A, int lda,
+                                Tr *S,
+                                T *U, int ldu,
+                                T *VT, int ldvt,
+                                T *Work, int Lwork,
+                                Tr *rwork, int *devInfo)
+    {
+        return CUSOLVER_STATUS_ARCH_MISMATCH;
+    }
 
-    template <typename T>
-    void svdInPlace(Array<T> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
+#define SVD_SPECIALIZE(T, Tr, X)                                        \
+    template<> cusolverStatus_t                                         \
+    gesvd_buf_func<T>(cusolverDnHandle_t handle,                        \
+                      int m, int n, int *Lwork)                         \
+    {                                                                   \
+        return cusolverDn##X##gesvd_bufferSize(handle, m, n, Lwork);    \
+    }                                                                   \
+
+SVD_SPECIALIZE(float  , float , S);
+SVD_SPECIALIZE(double , double, D);
+SVD_SPECIALIZE(cfloat , float , C);
+SVD_SPECIALIZE(cdouble, double, Z);
+
+#undef SVD_SPECIALIZE
+
+#define SVD_SPECIALIZE(T, Tr, X)                                        \
+    template<> cusolverStatus_t                                         \
+    gesvd_func<T, Tr>(cusolverDnHandle_t handle,                        \
+                      char jobu, char jobvt,                            \
+                      int m, int n,                                     \
+                      T *A, int lda,                                    \
+                      Tr *S,                                            \
+                      T *U, int ldu,                                    \
+                      T *VT, int ldvt,                                  \
+                      T *Work, int Lwork,                               \
+                      Tr *rwork, int *devInfo)                          \
+    {                                                                   \
+        return cusolverDn##X##gesvd(handle, jobu, jobvt,                \
+                                    m, n, A, lda, S, U, ldu, VT, ldvt,  \
+                                    Work, Lwork, rwork, devInfo);       \
+    }                                                                   \
+
+SVD_SPECIALIZE(float  , float , S);
+SVD_SPECIALIZE(double , double, D);
+SVD_SPECIALIZE(cfloat , float , C);
+SVD_SPECIALIZE(cdouble, double, Z);
+
+    template <typename T, typename Tr>
+    void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
     {
         dim4 iDims = in.dims();
         int M = iDims[0];
         int N = iDims[1];
 
-        // cuSolver(cuda 7.0) doesn't have support for M<N
-        bool flip_and_transpose = M < N;
-
-        if (flip_and_transpose) {
-            std::swap(M, N);
-            std::swap(vt, u);
-        }
-
         int lwork = 0;
-        CUSOLVER_CHECK(gesvd_buf_func<T>()(getDnHandle(), M, N, &lwork));
-        T *lWorkspace = memAlloc<T>(lwork);
-        //complex numbers would need rWorkspace
-        //T *rWorkspace = memAlloc<T>(lwork);
+
+        CUSOLVER_CHECK(gesvd_buf_func<T>(getDnHandle(), M, N, &lwork));
+
+        T  *lWorkspace = memAlloc<T >(lwork);
+        Tr *rWorkspace = memAlloc<Tr>(5 * std::min(M, N));
 
         int *info = memAlloc<int>(1);
 
-        if (flip_and_transpose) {
-            transpose_inplace(in, true);
-            CUSOLVER_CHECK(gesvd_func<T>()(getDnHandle(), 'A', 'A', M, N, in.get(),
-                                           M, s.get(), u.get(), M, vt.get(), N,
-                                           lWorkspace, lwork, NULL, info));
-            std::swap(u, vt);
-            transpose_inplace(vt, true);
-        } else {
-            Array<T> inCopy = copyArray<T>(in);
-            CUSOLVER_CHECK(gesvd_func<T>()(getDnHandle(), 'A', 'A', M, N, in.get(),
-                                           M, s.get(), u.get(), M, vt.get(), N,
-                                           lWorkspace, lwork, NULL, info));
-        }
+        gesvd_func<T, Tr>(getDnHandle(), 'A', 'A', M, N, in.get(),
+                          M, s.get(), u.get(), M, vt.get(), N,
+                          lWorkspace, lwork, rWorkspace, info);
+
         memFree(info);
         memFree(lWorkspace);
-        //memFree(rWorkspace);
+        memFree(rWorkspace);
     }
 
-    template <typename T>
-    void svd(Array<T> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
+    template <typename T, typename Tr>
+    void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
     {
-        Array<T> inCopy = copyArray<T>(in);
-        svdInPlace(s, u, vt, inCopy);
+        dim4 iDims = in.dims();
+        int M = iDims[0];
+        int N = iDims[1];
+
+        if (M <= N) {
+            Array<T> in_copy = copyArray(in);
+            return svdInPlace(s, u, vt, in_copy);
+        } else {
+            Array<T> in_trans = transpose(in, true);
+            return svdInPlace(s, vt, u, in_trans);
+        }
     }
-
-#define INSTANTIATE_SVD(T)                                                              \
-    template void svd<T>(Array<T> &s, Array<T> &u, Array<T> &vt, const Array<T> &in);   \
-    template void svdInPlace<T>(Array<T> &s, Array<T> &u, Array<T> &vt, Array<T> &in);   \
-
-    INSTANTIATE_SVD(float)
-    //INSTANTIATE_SVD(cfloat)
-    INSTANTIATE_SVD(double)
-    //INSTANTIATE_SVD(cdouble)
-}
 
 #else
-namespace cuda
+
+template<typename T, typename Tr>
+void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
 {
-    template <typename T>
-    void svd(Array<T> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
-    {
-        AF_ERROR("CUDA cusolver not available. Linear Algebra is disabled",
-                 AF_ERR_NOT_CONFIGURED);
-    }
-
-#define INSTANTIATE_SVD(T)                                                              \
-    template void svd<T>(Array<T> &s, Array<T> &u, Array<T> &vt, const Array<T> &in);   \
-
-    INSTANTIATE_SVD(float)
-    //INSTANTIATE_SVD(cfloat)
-    INSTANTIATE_SVD(double)
-    //INSTANTIATE_SVD(cdouble)
+    AF_ERROR("CUDA cusolver not available. Linear Algebra is disabled",
+             AF_ERR_NOT_CONFIGURED);
 }
+
+template<typename T, typename Tr>
+void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
+{
+    AF_ERROR("CUDA cusolver not available. Linear Algebra is disabled",
+             AF_ERR_NOT_CONFIGURED);
+}
+
 #endif
+
+#define INSTANTIATE(T, Tr)                                              \
+    template void svd<T, Tr>(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in); \
+    template void svdInPlace<T, Tr>(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in);
+
+INSTANTIATE(float, float)
+INSTANTIATE(double, double)
+INSTANTIATE(cfloat, float)
+INSTANTIATE(cdouble, double)
+
+}

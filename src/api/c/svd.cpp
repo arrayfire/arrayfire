@@ -29,12 +29,14 @@ static inline void svd(af_array *s, af_array *u, af_array *vt, const af_array in
     int M = dims[0];
     int N = dims[1];
 
-    //Allocate output arrays
-    Array<T> sA = createEmptyArray<T>(af::dim4(min(M, N)));
-    Array<T> uA = createEmptyArray<T>(af::dim4(M, M));
-    Array<T> vtA = createEmptyArray<T>(af::dim4(N, N));
+    typedef typename af::dtype_traits<T>::base_type Tr;
 
-    svd<T>(sA, uA, vtA, getArray<T>(in));
+    //Allocate output arrays
+    Array<Tr> sA  = createEmptyArray<Tr>(af::dim4(min(M, N)));
+    Array<T > uA  = createEmptyArray<T >(af::dim4(M, M));
+    Array<T > vtA = createEmptyArray<T >(af::dim4(N, N));
+
+    svd<T, Tr>(sA, uA, vtA, getArray<T>(in));
 
     *s = getHandle(sA);
     *u = getHandle(uA);
@@ -49,19 +51,21 @@ static inline void svdInPlace(af_array *s, af_array *u, af_array *vt, af_array i
     int M = dims[0];
     int N = dims[1];
 
-    //Allocate output arrays
-    Array<T> sA = createEmptyArray<T>(af::dim4(min(M, N)));
-    Array<T> uA = createEmptyArray<T>(af::dim4(M, M));
-    Array<T> vtA = createEmptyArray<T>(af::dim4(N, N));
+    typedef typename af::dtype_traits<T>::base_type Tr;
 
-    svdInPlace<T>(sA, uA, vtA, getWritableArray<T>(in));
+    //Allocate output arrays
+    Array<Tr> sA  = createEmptyArray<Tr>(af::dim4(min(M, N)));
+    Array<T > uA  = createEmptyArray<T >(af::dim4(M, M));
+    Array<T > vtA = createEmptyArray<T >(af::dim4(N, N));
+
+    svdInPlace<T, Tr>(sA, uA, vtA, getWritableArray<T>(in));
 
     *s = getHandle(sA);
     *u = getHandle(uA);
     *vt = getHandle(vtA);
 }
 
-af_err af_svd(af_array *s, af_array *u, af_array *vt, const af_array in)
+af_err af_svd(af_array *u, af_array *s, af_array *vt, const af_array in)
 {
     try {
         ArrayInfo info = getInfo(in);
@@ -71,21 +75,27 @@ af_err af_svd(af_array *s, af_array *u, af_array *vt, const af_array in)
         af_dtype type = info.getType();
 
         switch (type) {
-            case f64:
-                svd<double>(s, u, vt, in);
-                break;
-            case f32:
-                svd<float>(s, u, vt, in);
-                break;
-            default:
-                TYPE_ERROR(1, type);
+        case f64:
+            svd<double>(s, u, vt, in);
+            break;
+        case f32:
+            svd<float>(s, u, vt, in);
+            break;
+        case c64:
+            svd<cdouble>(s, u, vt, in);
+            break;
+        case c32:
+            svd<cfloat>(s, u, vt, in);
+            break;
+        default:
+            TYPE_ERROR(1, type);
         }
     }
     CATCHALL;
     return AF_SUCCESS;
 }
 
-af_err af_svd_inplace(af_array *s, af_array *u, af_array *vt, af_array in)
+af_err af_svd_inplace(af_array *u, af_array *s, af_array *vt, af_array in)
 {
     try {
         ArrayInfo info = getInfo(in);
@@ -97,14 +107,20 @@ af_err af_svd_inplace(af_array *s, af_array *u, af_array *vt, af_array in)
         af_dtype type = info.getType();
 
         switch (type) {
-            case f64:
-                svdInPlace<double>(s, u, vt, in);
-                break;
-            case f32:
-                svdInPlace<float>(s, u, vt, in);
-                break;
-            default:
-                TYPE_ERROR(1, type);
+        case f64:
+            svdInPlace<double>(s, u, vt, in);
+            break;
+        case f32:
+            svdInPlace<float>(s, u, vt, in);
+            break;
+        case c64:
+            svdInPlace<cdouble>(s, u, vt, in);
+            break;
+        case c32:
+            svdInPlace<cfloat>(s, u, vt, in);
+            break;
+        default:
+            TYPE_ERROR(1, type);
         }
     }
     CATCHALL;

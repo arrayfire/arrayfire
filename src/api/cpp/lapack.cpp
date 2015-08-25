@@ -13,19 +13,19 @@
 
 namespace af
 {
-    void svd(array &s, array &u, array &vt, const array &in)
+    void svd(array &u, array &s, array &vt, const array &in)
     {
         af_array sl = 0, ul = 0, vtl = 0;
-        AF_THROW(af_svd(&sl, &ul, &vtl, in.get()));
+        AF_THROW(af_svd(&ul, &sl, &vtl, in.get()));
         s = array(sl);
         u = array(ul);
         vt = array(vtl);
     }
 
-    void svdInPlace(array &s, array &u, array &vt, array &in)
+    void svdInPlace(array &u, array &s, array &vt, array &in)
     {
         af_array sl = 0, ul = 0, vtl = 0;
-        AF_THROW(af_svd_inplace(&sl, &ul, &vtl, in.get()));
+        AF_THROW(af_svd_inplace(&ul, &sl, &vtl, in.get()));
         s = array(sl);
         u = array(ul);
         vt = array(vtl);

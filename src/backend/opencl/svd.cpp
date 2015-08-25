@@ -13,6 +13,7 @@
 #include <reduce.hpp>
 #include <copy.hpp>
 #include <blas.hpp>
+#include <transpose.hpp>
 
 #include <magma/magma.h>
 #include <magma/magma_cpu_lapack.h>
@@ -113,8 +114,10 @@ void svd(Array<T > &arrU,
     int ncvt = 0;
 
     std::vector<T> A(m * n);
+    std::vector<T> tauq(min_mn), taup(min_mn);
+    std::vector<T> work(lwork);
     std::vector<Tr> s0(min_mn), s1(min_mn - 1);
-    std::vector<T> tauq(min_mn), taup(min_mn), work(lwork);
+    std::vector<Tr> rwork(5 * min_mn);
 
     int info = 0;
 
@@ -167,7 +170,7 @@ void svd(Array<T > &arrU,
     // (RWorkspace: need BDSPAC)
     LAPACKE_CHECK(cpu_lapack_bdsqr_work('U', n, ncvt, nru, izero,
                                         &s0[0], &s1[0], &VT[0], ldvt, &U[0], ldu,
-                                        &cdummy[0], ione, &work[0]));
+                                        &cdummy[0], ione, &rwork[0]));
 
 
     if (want_vectors) {
@@ -189,47 +192,51 @@ void svd(Array<T > &arrU,
 }
 
 
-template<typename T>
-void svdInPlace(Array<T> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
+template<typename T, typename Tr>
+void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
 {
     initBlas();
+    svd<T, Tr>(u, s, vt, in, true);
+}
+
+template<typename T, typename Tr>
+void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
+{
     dim4 iDims = in.dims();
     int M = iDims[0];
     int N = iDims[1];
 
-    if (M < N) OPENCL_NOT_SUPPORTED();
-
-    typedef typename af::dtype_traits<T>::base_type Tr;
-    svd<T, Tr>(u, s, vt, in, true);
-}
-
-template<typename T>
-void svd(Array<T> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
-{
-    Array<T> in_copy = copyArray(in);
-    return svdInPlace(s, u, vt, in_copy);
+    if (M <= N) {
+        Array<T> in_copy = copyArray(in);
+        return svdInPlace(s, u, vt, in_copy);
+    } else {
+        Array<T> in_trans = transpose(in, true);
+        return svdInPlace(s, vt, u, in_trans);
+    }
 }
 
 #else
 
-template<typename T>
-void svd(Array<T> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
+template<typename T, typename Tr>
+void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
 {
-    OPENCL_NOT_SUPPORTED();
+    AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
 }
 
-template<typename T>
-void svdInPlace(Array<T> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
+template<typename T, typename Tr>
+void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
 {
-    OPENCL_NOT_SUPPORTED();
+    AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
 }
 #endif
 
-#define INSTANTIATE(T)                                                  \
-    template void svd(Array<T> &s, Array<T> &u, Array<T> &vt, const Array<T> &in); \
-    template void svdInPlace(Array<T> &s, Array<T> &u, Array<T> &vt, Array<T> &in);
+#define INSTANTIATE(T, Tr)                                              \
+    template void svd<T, Tr>(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in); \
+    template void svdInPlace<T, Tr>(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in);
 
-INSTANTIATE(float)
-INSTANTIATE(double)
+INSTANTIATE(float, float)
+INSTANTIATE(double, double)
+INSTANTIATE(cfloat, float)
+INSTANTIATE(cdouble, double)
 
 }
