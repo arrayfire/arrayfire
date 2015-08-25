@@ -33,7 +33,7 @@ OPTION(WITH_COVERAGE "Added code coverage flags" OFF)
 OPTION(BUILD_NONFREE "Build ArrayFire nonfree algorithms" OFF)
 OPTION(BUILD_SIFT "Build ArrayFire nonfree algorithms" OFF)
 
-MARK_AS_ADVANCED(BUIL_SIFT)
+MARK_AS_ADVANCED(BUILD_SIFT)
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
