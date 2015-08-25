@@ -121,7 +121,6 @@ int LAPACKE_dlacgv_work(Args... args) { return 0; }
     CPU_LAPACK_FUNC3(NAME, double,     d)       \
 
 CPU_LAPACK_DECL1(getrf)
-CPU_LAPACK_DECL1(gebrd)
 CPU_LAPACK_DECL1(gebrd_work)
 CPU_LAPACK_DECL1(potrf)
 CPU_LAPACK_DECL1(trtri)
@@ -134,9 +133,7 @@ CPU_LAPACK_DECL1(bdsqr_work)
 CPU_LAPACK_DECL1(laswp)
 CPU_LAPACK_DECL1(laset)
 
-CPU_LAPACK_DECL2(lacgv)
 CPU_LAPACK_DECL2(lacgv_work)
-CPU_LAPACK_DECL2(larfg)
 CPU_LAPACK_DECL2(larfg_work)
 CPU_LAPACK_DECL1(lacpy)
 CPU_LAPACK_DECL3(lamch)
