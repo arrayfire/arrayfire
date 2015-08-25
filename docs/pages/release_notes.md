@@ -10,7 +10,16 @@ Function Additions
     * Nearest Neighbour with SAD, SSD and SHD distances (nearestNeighbour)
     * Harris Corner Detector (harris)
     * Susan Corner Detector (susan)
-    * Scale Invariant Feature Transform (SIFT) - Add licensing info
+    * Scale Invariant Feature Transform (SIFT)
+        * Method and apparatus for identifying scale invariant features"
+          "in an image and use of same for locating an object in an image,\" David"
+          "G. Lowe, US Patent 6,711,293 (March 23, 2004). Provisional application"
+          "filed March 8, 1999. Asignee: The University of British Columbia. For"
+          "further details, contact David Lowe (lowe@cs.ubc.ca) or the"
+          "University-Industry Liaison Office of the University of British"
+          "Columbia.")
+        * SIFT is available for compiling but does not ship with ArrayFire
+          hosted installers/pre-built libraries
     * Difference of Gaussians (dog)
 
 * Image Processing Functions
