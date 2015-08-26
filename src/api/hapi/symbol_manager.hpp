@@ -70,3 +70,9 @@ class AFSymbolManager {
         af::Backend activeBknd;
         LibHandle activeHandle;
 };
+
+#if defined(OS_WIN)
+#define CALL(...) AFSymbolManager::getInstance().call(__FUNCTION__, __VA_ARGS__)
+#else
+#define CALL(...) AFSymbolManager::getInstance().call(__func__, __VA_ARGS__)
+#endif

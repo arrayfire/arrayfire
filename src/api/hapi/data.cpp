@@ -15,20 +15,17 @@ af_err af_create_array(af_array *result, const void * const data,
                        const unsigned ndims, const dim_t * const dims,
                        const af_dtype type)
 {
-    AFSymbolManager& symbolManager = AFSymbolManager::getInstance();
-    return symbolManager.call("af_create_array", result, data, ndims, dims, type);
+    return CALL(result, data, ndims, dims, type);
 }
 
 af_err af_constant(af_array *result, const double value,
                    const unsigned ndims, const dim_t * const dims,
                    const af_dtype type)
 {
-    AFSymbolManager& symbolManager = AFSymbolManager::getInstance();
-    return symbolManager.call("af_constant", result, value, ndims, dims, type);
+    return CALL(result, value, ndims, dims, type);
 }
 
 af_err af_release_array(af_array arr)
 {
-    AFSymbolManager& symbolManager = AFSymbolManager::getInstance();
-    return symbolManager.call("af_release_array", arr);
+    return CALL(arr);
 }
