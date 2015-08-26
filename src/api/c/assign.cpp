@@ -121,12 +121,15 @@ af_err af_assign_seq(af_array *out,
         ARG_ASSERT(1, (ndims>0));
         ARG_ASSERT(3, (rhs!=0));
 
+        ArrayInfo lInfo = getInfo(lhs);
 
-        if (ndims == 1 && ndims != (dim_t)getInfo(lhs).ndims()) {
-            af_array tmp;
-            AF_CHECK(af_flat(&tmp, lhs));
-            AF_CHECK(af_assign_seq(out, tmp, ndims, index, rhs));
-            AF_CHECK(af_release_array(tmp));
+        if (ndims == 1 && ndims != (dim_t)lInfo.ndims()) {
+            af_array tmp_in, tmp_out;
+            AF_CHECK(af_flat(&tmp_in, lhs));
+            AF_CHECK(af_assign_seq(&tmp_out, tmp_in, ndims, index, rhs));
+            AF_CHECK(af_moddims(out, tmp_out, lInfo.ndims(), lInfo.dims().get()));
+            AF_CHECK(af_release_array(tmp_in));
+            AF_CHECK(af_release_array(tmp_out));
             return AF_SUCCESS;
         }
 
@@ -228,10 +231,12 @@ af_err af_assign_gen(af_array *out,
         ARG_ASSERT(2, (ndims == 1) || (ndims == (dim_t)lInfo.ndims()));
 
         if (ndims == 1 && ndims != (dim_t)lInfo.ndims()) {
-            af_array tmp;
-            AF_CHECK(af_flat(&tmp, lhs));
-            AF_CHECK(af_assign_gen(out, tmp, ndims, indexs, rhs_));
-            AF_CHECK(af_release_array(tmp));
+            af_array tmp_in, tmp_out;
+            AF_CHECK(af_flat(&tmp_in, lhs));
+            AF_CHECK(af_assign_gen(&tmp_out, tmp_in, ndims, indexs, rhs_));
+            AF_CHECK(af_moddims(out, tmp_out, lInfo.ndims(), lInfo.dims().get()));
+            AF_CHECK(af_release_array(tmp_in));
+            AF_CHECK(af_release_array(tmp_out));
             return AF_SUCCESS;
         }
 

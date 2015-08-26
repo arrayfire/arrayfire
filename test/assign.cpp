@@ -846,6 +846,9 @@ TEST(Asssign, LinearCPP)
     af::index idx = af::seq(st, en);
     a(idx) = 3;
 
+    ASSERT_EQ(a.dims(0), a_copy.dims(0));
+    ASSERT_EQ(a.dims(1), a_copy.dims(1));
+
     std::vector<float> ha(nx * ny);
     std::vector<float> ha_copy(nx * ny);
 
@@ -884,6 +887,8 @@ TEST(Asssign, LinearAssignSeq)
 
     af::array out(out_arr);
 
+    ASSERT_EQ(a.dims(0), out.dims(0));
+    ASSERT_EQ(a.dims(1), out.dims(1));
 
     std::vector<float> hout(nx * ny);
     std::vector<float> ha(nx * ny);
@@ -923,6 +928,8 @@ TEST(Asssign, LinearAssignGenSeq)
 
     af::array out(out_arr);
 
+    ASSERT_EQ(a.dims(0), out.dims(0));
+    ASSERT_EQ(a.dims(1), out.dims(1));
 
     std::vector<float> hout(nx * ny);
     std::vector<float> ha(nx * ny);
@@ -962,6 +969,8 @@ TEST(Asssign, LinearAssignGenArr)
 
     af::array out(out_arr);
 
+    ASSERT_EQ(a.dims(0), out.dims(0));
+    ASSERT_EQ(a.dims(1), out.dims(1));
 
     std::vector<float> hout(nx * ny);
     std::vector<float> ha(nx * ny);
