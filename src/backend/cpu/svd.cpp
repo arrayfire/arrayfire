@@ -27,24 +27,7 @@ namespace cpu
     template<> svd_func_def<T, Tr>     svd_func<T, Tr>()    \
     { return & LAPACK_NAME(PREFIX##FUNC); }
 
-#ifdef ARM_ARCH
-    template<typename T, typename Tr>
-    using svd_func_def = int (*)(ORDER_TYPE,
-                                 char jobu, char jobvt,
-                                 int m, int n,
-                                 T* in, int ldin,
-                                 Tr* s,
-                                 T* u, int ldu,
-                                 T* vt, int ldvt,
-                                 Tr *superb);
-
-    SVD_FUNC_DEF( gesvd )
-    SVD_FUNC(gesvd, float  , float , s)
-    SVD_FUNC(gesvd, double , double, d)
-    SVD_FUNC(gesvd, cfloat , float , c)
-    SVD_FUNC(gesvd, cdouble, double, z)
-
-#else
+#if defined(USE_MKL) || defined(__APPLE__)
 
     template<typename T, typename Tr>
     using svd_func_def = int (*)(ORDER_TYPE,
@@ -61,6 +44,24 @@ namespace cpu
     SVD_FUNC(gesdd, cfloat , float , c)
     SVD_FUNC(gesdd, cdouble, double, z)
 
+#else   // Atlas causes memory freeing issues with using gesdd
+
+    template<typename T, typename Tr>
+    using svd_func_def = int (*)(ORDER_TYPE,
+                                 char jobu, char jobvt,
+                                 int m, int n,
+                                 T* in, int ldin,
+                                 Tr* s,
+                                 T* u, int ldu,
+                                 T* vt, int ldvt,
+                                 Tr *superb);
+
+    SVD_FUNC_DEF( gesvd )
+    SVD_FUNC(gesvd, float  , float , s)
+    SVD_FUNC(gesvd, double , double, d)
+    SVD_FUNC(gesvd, cfloat , float , c)
+    SVD_FUNC(gesvd, cdouble, double, z)
+
 #endif
 
     template <typename T, typename Tr>
@@ -70,13 +71,13 @@ namespace cpu
         int M = iDims[0];
         int N = iDims[1];
 
-#ifdef ARM_ARCH
+#if defined(USE_MKL) || defined(__APPLE__)
+        svd_func<T, Tr>()(AF_LAPACK_COL_MAJOR, 'A', M, N, in.get(), in.strides()[1],
+                          s.get(), u.get(), u.strides()[1], vt.get(), vt.strides()[1]);
+#else
         std::vector<Tr> superb(std::min(M, N));
         svd_func<T, Tr>()(AF_LAPACK_COL_MAJOR, 'A', 'A', M, N, in.get(), in.strides()[1],
                           s.get(), u.get(), u.strides()[1], vt.get(), vt.strides()[1], &superb[0]);
-#else
-        svd_func<T, Tr>()(AF_LAPACK_COL_MAJOR, 'A', M, N, in.get(), in.strides()[1],
-                          s.get(), u.get(), u.strides()[1], vt.get(), vt.strides()[1]);
 #endif
     }
 

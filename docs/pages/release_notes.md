@@ -1,6 +1,132 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.1.0
+==============
+
+Function Additions
+------------------
+* Computer Vision Functions
+    * Nearest Neighbour with SAD, SSD and SHD distances (nearestNeighbour)
+    * Harris Corner Detector (harris)
+    * Susan Corner Detector (susan)
+    * Scale Invariant Feature Transform (SIFT)
+        * Method and apparatus for identifying scale invariant features"
+          "in an image and use of same for locating an object in an image,\" David"
+          "G. Lowe, US Patent 6,711,293 (March 23, 2004). Provisional application"
+          "filed March 8, 1999. Asignee: The University of British Columbia. For"
+          "further details, contact David Lowe (lowe@cs.ubc.ca) or the"
+          "University-Industry Liaison Office of the University of British"
+          "Columbia.")
+        * SIFT is available for compiling but does not ship with ArrayFire
+          hosted installers/pre-built libraries
+    * Difference of Gaussians (dog)
+
+* Image Processing Functions
+    * RGB <->YCbCr color space conversion (ycbcr2rgb, rgb2ycbcr)
+    * Wrap and Unwrap (wrap, unwrap)
+    * Summed Area Tables (sat)
+    * Load and Save images to/from memory (loadImageMem, saveImageMem)
+        * Add imageFormat (af_image_format) enum
+
+* Utility
+    * Allow users to set print precision (print, af_print_array_gen)
+    * Stream arrays to binary files (saveArray, readArray)
+    * toString function returns the array and data as a string
+
+* Array & Data Handling
+    * Copy (copy)
+    * Lock and Unlock (array::lock, array::unlock)
+    * Select and Replace (select, replace)
+    * Get array reference count (af_get_data_ref_count)
+
+* Other operations
+    * SVD Decomposition (svd)
+    * FFT
+        * Support for in place FFT
+    * Sigmoid (sigmoid)
+    * Sum (with option to replace NaN values)
+    * Product (with option to replace NaN values)
+
+* Graphics
+    * Window resizing using Forge API (Window::setSize)
+
+Improvements
+------------
+* dot
+    * Allow complex inputs with conjugate option
+* AF_INTERP_LOWER interpolation
+    * For resize, rotate and transform based functions
+* 64-bit integer support
+    * For reductions, random, iota, range, diff1, diff2, accum, join, shift
+      and tile
+* sum and product
+    * Support for NaN value substitution
+* convolve
+    * Support for non-overlapping batched convolutions
+* Complex Arrays
+    * Fix binary ops on complex inputs of mixed types
+    * Complex type support for exp
+* FFT
+    * Support for r2c and c2r FFT
+    * Support for in place FFT
+* tile
+    * is now a JIT function
+* Add AF_API_VERSION macro
+    * Allows disabling of API to maintain consistency with previous versions
+* Other Performance Improvements
+    * Use reference counting to reduce unnecessary copies
+* CPU Backend
+    * Device properties for CPU
+    * Improved performance when all buffers are indexed linearly
+* CUDA Backend
+    * Use streams in CUDA (no longer using default stream)
+    * Using async cudaMem ops
+    * Add 64-bit integer support for JIT functions
+    * Performance improvements for CUDA JIT for non-linear 3D and 4D arrays
+* OpenCL Backend
+    * Improve compilation times for OpenCL backend
+    * Performance improvements for non-linear JIT kernels on OpenCL
+    * Improved shared memory load/store in many OpenCL kernels (PR 933)
+    * Using cl.hpp v1.2.7
+
+Bug Fixes
+---------
+* Common
+    * Fix compatibility of c32/c64 arrays when operating with scalars
+    * Fix median for all values of an array
+    * Fix double free issue when indexing (30cbbc7)
+    * Fix bug in rank
+    * Fix default values for scale throwing exception
+    * Fix conjg raising exception on real input
+    * Fix bug when using conjugate transpose for vector input
+    * Fix issue with const input for array_proxy::get()
+* CPU Backend
+    * Fix randn generating same sequence for multiple calls
+    * Fix setSeed for randu
+    * Fix casting to and from complex
+    * Check NULL values when allocating memory
+    * Fix offset issue for CPU element-wise operations
+
+New Examples
+------------
+* Match Template
+* Susan
+* Heston Model (contributed by Michael Nowotny)
+
+Distribution Changes
+--------------------
+* Fixed automatic detection of ArrayFire when using with CMake in the Windows
+  Installer
+* Compiling ArrayFire with FreeImage as a static library for Linux x86
+  installers
+
+Known Issues
+------------
+* OpenBlas can cause issues with QR
+* FreeImage older than 3.10 can cause issues with loadImageMem and
+  saveImageMem
+
 v3.0.2
 ==============
 
@@ -80,15 +206,15 @@ Function Additions
     * fftconvolve1(), fftconvolve2(), fftconvolve3()
         * Convolutions in frequency domain to support larger kernel sizes
     * dft(), idft()
-    	* Unified functions for calling multi dimensional ffts.
+        * Unified functions for calling multi dimensional ffts.
     * matchTemplate()
         * Match a kernel in an image
     * sobel()
         * Get sobel gradients of an image
     * rgb2hsv(), hsv2rgb(), rgb2gray(), gray2rgb()
-    	* Explicit function calls to colorspace conversions
+        * Explicit function calls to colorspace conversions
     * erode3d(), dilate3d()
-    	* Explicit erode and dilate calls for image morphing
+        * Explicit erode and dilate calls for image morphing
 
 * Linear Algebra
     * matmulNT(), matmulTN(), matmulTT()
@@ -101,7 +227,7 @@ Function Additions
 
 * Other functions
     * lookup() - lookup indices from a table
-	* batchFunc() - helper function to perform batch operations
+    * batchFunc() - helper function to perform batch operations
 
 * Visualization functions
     * Support for multiple windows

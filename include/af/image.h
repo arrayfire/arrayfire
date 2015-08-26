@@ -48,6 +48,7 @@ AFAPI array loadImage(const char* filename, const bool is_color=false);
 */
 AFAPI void saveImage(const char* filename, const array& in);
 
+#if AF_API_VERSION >= 31
 /**
     C++ Interface for loading an image from memory
 
@@ -62,7 +63,9 @@ AFAPI void saveImage(const char* filename, const array& in);
     \ingroup imagemem_func_load
 */
 AFAPI array loadImageMem(const void *ptr);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
     C++ Interface for saving an image to memory
 
@@ -79,7 +82,9 @@ AFAPI array loadImageMem(const void *ptr);
     \ingroup imagemem_func_save
 */
 AFAPI void* saveImageMem(const array& in, const imageFormat format = AF_FIF_PNG);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
     C++ Interface for deleting memory created by \ref saveImageMem or
     \ref af_save_image_memory
@@ -89,6 +94,7 @@ AFAPI void* saveImageMem(const array& in, const imageFormat format = AF_FIF_PNG)
     \ingroup imagemem_func_delete
 */
 AFAPI void deleteImageMem(void *ptr);
+#endif
 
 /**
     C++ Interface for resizing an image to specified dimensions
@@ -640,6 +646,7 @@ extern "C" {
     */
     AFAPI af_err af_save_image(const char* filename, const af_array in);
 
+#if AF_API_VERSION >= 31
     /**
         C Interface for loading an image from memory
 
@@ -651,7 +658,9 @@ extern "C" {
         \ingroup imagemem_func_load
     */
     AFAPI af_err af_load_image_memory(af_array *out, const void* ptr);
+#endif
 
+#if AF_API_VERSION >= 31
     /**
         C Interface for saving an image to memory using FreeImage
 
@@ -665,7 +674,9 @@ extern "C" {
         \ingroup imagemem_func_save
     */
     AFAPI af_err af_save_image_memory(void** ptr, const af_array in, const af_image_format format);
+#endif
 
+#if AF_API_VERSION >= 31
     /**
         C Interface for deleting an image from memory
 
@@ -676,6 +687,7 @@ extern "C" {
         \ingroup imagemem_func_delete
     */
     AFAPI af_err af_delete_image_memory(void* ptr);
+#endif
 
     /**
        C Interface for resizing an image to specified dimensions
