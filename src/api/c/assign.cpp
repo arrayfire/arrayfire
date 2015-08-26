@@ -19,6 +19,7 @@
 #include <copy.hpp>
 #include <assign.hpp>
 #include <math.hpp>
+#include <tile.hpp>
 
 using namespace detail;
 using std::vector;
@@ -49,13 +50,21 @@ void assign(Array<Tout> &out, const unsigned &ndims, const af_seq *index, const 
         is_vector &= oDims[i] == 1;
     }
 
-    if (is_vector && in_.isVector()) {
-        if (oDims.elements() != (dim_t)in_.elements()) {
+    is_vector &= in_.isVector() || in_.isScalar();
+
+    for (dim_t i = ndims; i < (int)in_.ndims(); i++) {
+        oDims[i] = 1;
+    }
+
+
+    if (is_vector) {
+        if (oDims.elements() != (dim_t)in_.elements() &&
+            in_.elements() != 1) {
             AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
         }
 
         // If both out and in are vectors of equal elements, reshape in to out dims
-        Array<Tin> in = modDims(in_, oDims);
+        Array<Tin> in = in_.elements() == 1 ? tile(in_, oDims) : modDims(in_, oDims);
         Array<Tout> dst = createSubArray<Tout>(out, index_, false);
 
         copyArray<Tin , Tout>(dst, in);
@@ -111,6 +120,15 @@ af_err af_assign_seq(af_array *out,
         ARG_ASSERT(0, (lhs!=0));
         ARG_ASSERT(1, (ndims>0));
         ARG_ASSERT(3, (rhs!=0));
+
+
+        if (ndims == 1 && ndims != (dim_t)getInfo(lhs).ndims()) {
+            af_array tmp;
+            AF_CHECK(af_flat(&tmp, lhs));
+            AF_CHECK(af_assign_seq(out, tmp, ndims, index, rhs));
+            AF_CHECK(af_release_array(tmp));
+            return AF_SUCCESS;
+        }
 
         for(dim_t i=0; i<(dim_t)ndims; ++i) {
             ARG_ASSERT(2, (index[i].step>=0));
@@ -200,6 +218,28 @@ af_err af_assign_gen(af_array *out,
         ARG_ASSERT(1, (lhs!=0));
         ARG_ASSERT(4, (rhs!=0));
 
+        ArrayInfo lInfo = getInfo(lhs);
+        ArrayInfo rInfo = getInfo(rhs);
+        dim4 lhsDims    = lInfo.dims();
+        dim4 rhsDims    = rInfo.dims();
+        af_dtype lhsType= lInfo.getType();
+        af_dtype rhsType= rInfo.getType();
+
+        ARG_ASSERT(2, (ndims == 1) || (ndims == (dim_t)lInfo.ndims()));
+
+        if (ndims == 1 && ndims != (dim_t)lInfo.ndims()) {
+            af_array tmp;
+            AF_CHECK(af_flat(&tmp, lhs));
+            AF_CHECK(af_assign_gen(out, tmp, ndims, indexs, rhs_));
+            AF_CHECK(af_release_array(tmp));
+            return AF_SUCCESS;
+        }
+
+        ARG_ASSERT(1, (lhsType==rhsType));
+        ARG_ASSERT(3, (rhsDims.ndims()>0));
+        ARG_ASSERT(1, (lhsDims.ndims()>=rhsDims.ndims()));
+        ARG_ASSERT(2, (lhsDims.ndims()>=ndims));
+
         if (*out != lhs) {
             int count = 0;
             AF_CHECK(af_get_data_ref_count(&count, lhs));
@@ -212,18 +252,6 @@ af_err af_assign_gen(af_array *out,
             output = lhs;
         }
 
-        ArrayInfo lInfo = getInfo(lhs);
-        ArrayInfo rInfo = getInfo(rhs);
-        dim4 lhsDims    = lInfo.dims();
-        dim4 rhsDims    = rInfo.dims();
-        af_dtype lhsType= lInfo.getType();
-        af_dtype rhsType= rInfo.getType();
-
-        ARG_ASSERT(1, (lhsType==rhsType));
-        ARG_ASSERT(3, (rhsDims.ndims()>0));
-        ARG_ASSERT(1, (lhsDims.ndims()>=rhsDims.ndims()));
-        ARG_ASSERT(2, (lhsDims.ndims()>=ndims));
-
         dim4 oDims = toDims(seqs, lhsDims);
         // if af_array are indexs along any
         // particular dimension, set the length of
@@ -234,20 +262,29 @@ af_err af_assign_gen(af_array *out,
             }
         }
 
+        for (dim_t i = ndims; i < (dim_t)lInfo.ndims(); i++) {
+            oDims[i] = 1;
+        }
+
         bool is_vector = true;
         for (int i = 0; is_vector && i < oDims.ndims() - 1; i++) {
             is_vector &= oDims[i] == 1;
         }
 
         //TODO: Move logic out of this
-        is_vector &= rInfo.isVector();
+        is_vector &= rInfo.isVector() || rInfo.isScalar();
         if (is_vector) {
-            if (oDims.elements() != (dim_t)rInfo.elements()) {
+            if (oDims.elements() != (dim_t)rInfo.elements() &&
+                rInfo.elements() != 1) {
                 AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
             }
 
-            // If both out and rhs are vectors of equal elements, reshape rhs to out dims
-            AF_CHECK(af_moddims(&rhs, rhs_, oDims.ndims(), oDims.get()));
+            if (rInfo.elements() == 1) {
+                AF_CHECK(af_tile(&rhs, rhs_, oDims[0], oDims[1], oDims[2], oDims[3]));
+            } else {
+                // If both out and rhs are vectors of equal elements, reshape rhs to out dims
+                AF_CHECK(af_moddims(&rhs, rhs_, oDims.ndims(), oDims.get()));
+            }
         } else {
             for (int i = 0; i < 4; i++) {
                 if (oDims[i] != rhsDims[i]) {

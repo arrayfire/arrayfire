@@ -830,3 +830,149 @@ TEST(Assign, Copy)
     delete[] h_a;
     delete[] h_b;
 }
+
+TEST(Asssign, LinearCPP)
+{
+    using af::array;
+    const int nx = 5;
+    const int ny = 4;
+    const float val = 3;
+
+    const int st = nx - 2;
+    const int en = nx * (ny - 1);
+
+    array a = af::randu(nx, ny);
+    array a_copy = a;
+    af::index idx = af::seq(st, en);
+    a(idx) = 3;
+
+    std::vector<float> ha(nx * ny);
+    std::vector<float> ha_copy(nx * ny);
+
+    a.host(&ha[0]);
+    a_copy.host(&ha_copy[0]);
+
+    for (int i = 0; i < nx * ny; i++) {
+        if (i < st || i > en)
+            ASSERT_EQ(ha[i], ha_copy[i]) << "at " << i;
+        else
+            ASSERT_EQ(ha[i], val) << "at " << i;
+    }
+}
+
+TEST(Asssign, LinearAssignSeq)
+{
+    using af::array;
+    const int nx = 5;
+    const int ny = 4;
+    const float val = 3;
+    const array rhs = af::constant(val, 1, 1);
+
+    const int st = nx - 2;
+    const int en = nx * (ny - 1);
+
+    array a = af::randu(nx, ny);
+    af::index idx = af::seq(st, en);
+
+    af_array in_arr = a.get();
+    af_index_t ii = idx.get();
+    af_array rhs_arr = rhs.get();
+    af_array out_arr;
+
+    ASSERT_EQ(AF_SUCCESS,
+              af_assign_seq(&out_arr, in_arr, 1, &ii.idx.seq, rhs_arr));
+
+    af::array out(out_arr);
+
+
+    std::vector<float> hout(nx * ny);
+    std::vector<float> ha(nx * ny);
+
+    a.host(&ha[0]);
+    out.host(&hout[0]);
+
+    for (int i = 0; i < nx * ny; i++) {
+        if (i < st || i > en)
+            ASSERT_EQ(hout[i], ha[i]) << "at " << i;
+        else
+            ASSERT_EQ(hout[i], val) << "at " << i;
+    }
+}
+
+TEST(Asssign, LinearAssignGenSeq)
+{
+    using af::array;
+    const int nx = 5;
+    const int ny = 4;
+    const float val = 3;
+    const array rhs = af::constant(val, 1, 1);
+
+    const int st = nx - 2;
+    const int en = nx * (ny - 1);
+
+    array a = af::randu(nx, ny);
+    af::index idx = af::seq(st, en);
+
+    af_array in_arr = a.get();
+    af_index_t ii = idx.get();
+    af_array rhs_arr = rhs.get();
+    af_array out_arr;
+
+    ASSERT_EQ(AF_SUCCESS,
+              af_assign_gen(&out_arr, in_arr, 1, &ii, rhs_arr));
+
+    af::array out(out_arr);
+
+
+    std::vector<float> hout(nx * ny);
+    std::vector<float> ha(nx * ny);
+
+    a.host(&ha[0]);
+    out.host(&hout[0]);
+
+    for (int i = 0; i < nx * ny; i++) {
+        if (i < st || i > en)
+            ASSERT_EQ(hout[i], ha[i]) << "at " << i;
+        else
+            ASSERT_EQ(hout[i], val) << "at " << i;
+    }
+}
+
+TEST(Asssign, LinearAssignGenArr)
+{
+    using af::array;
+    const int nx = 5;
+    const int ny = 4;
+    const float val = 3;
+    const array rhs = af::constant(val, 1, 1);
+
+    const int st = nx - 2;
+    const int en = nx * (ny - 1);
+
+    array a = af::randu(nx, ny);
+    af::index idx = af::array(af::seq(st, en));
+
+    af_array in_arr = a.get();
+    af_index_t ii = idx.get();
+    af_array rhs_arr = rhs.get();
+    af_array out_arr;
+
+    ASSERT_EQ(AF_SUCCESS,
+              af_assign_gen(&out_arr, in_arr, 1, &ii, rhs_arr));
+
+    af::array out(out_arr);
+
+
+    std::vector<float> hout(nx * ny);
+    std::vector<float> ha(nx * ny);
+
+    a.host(&ha[0]);
+    out.host(&hout[0]);
+
+    for (int i = 0; i < nx * ny; i++) {
+        if (i < st || i > en)
+            ASSERT_EQ(hout[i], ha[i]) << "at " << i;
+        else
+            ASSERT_EQ(hout[i], val) << "at " << i;
+    }
+}
