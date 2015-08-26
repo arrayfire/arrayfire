@@ -15,20 +15,43 @@ AFSymbolManager& AFSymbolManager::getInstance()
     return symbolManager;
 }
 
+/*flag parameter is not used on windows platform */
+LibHandle openDynLibrary(const char* dlName, int flag=RTLD_LAZY)
+{
+#if defined(OS_WIN)
+    HMODULE retVal = LoadLibrary(dlName);
+    if (retVal == NULL) {
+        retVal = LoadLibraryEx(dlName, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+    }
+    return retVal;
+#else
+    return dlopen(dlName, flag);
+#endif
+}
+
+void closeDynLibrary(LibHandle handle)
+{
+#if defined(OS_WIN)
+    FreeLibrary(handle);
+#else
+    dlclose(handle);
+#endif
+}
+
 AFSymbolManager::AFSymbolManager()
     : isCPULoaded(false), isCUDALoaded(false), isOCLLoaded(false)
 {
-    cpuHandle = dlopen("libafcpu.so", RTLD_LAZY);
+    cpuHandle = openDynLibrary(LIB_AF_CPU_NAME);
     if (cpuHandle) {
         isCPULoaded = true;
         activeHandle = cpuHandle;
     }
-    cudaHandle = dlopen("libafcuda.so", RTLD_LAZY);
+    cudaHandle = openDynLibrary(LIB_AF_CUDA_NAME);
     if (cudaHandle) {
         isCUDALoaded = true;
         activeHandle = cudaHandle;
     }
-    oclHandle = dlopen("libafopencl.so", RTLD_LAZY);
+    oclHandle = openDynLibrary(LIB_AF_OCL_NAME);
     if (oclHandle) {
         isOCLLoaded = true;
         activeHandle = oclHandle;
@@ -38,40 +61,42 @@ AFSymbolManager::AFSymbolManager()
 AFSymbolManager::~AFSymbolManager()
 {
     if (isCPULoaded) {
-        dlclose(cpuHandle);
+        closeDynLibrary(cpuHandle);
         isCPULoaded = false;
     }
     if (isCUDALoaded) {
-        dlclose(cudaHandle);
+        closeDynLibrary(cudaHandle);
         isCUDALoaded = false;
     }
     if (isOCLLoaded) {
-        dlclose(oclHandle);
+        closeDynLibrary(oclHandle);
         isOCLLoaded = false;
     }
 }
 
-void AFSymbolManager::setBackend(af::Backend bknd)
+af_err AFSymbolManager::setBackend(af::Backend bknd)
 {
+    af_err retCode = AF_SUCCESS;
     activeBknd = bknd;
     switch (activeBknd) {
         case af::Backend::AF_BACKEND_CPU:
             if(isCPULoaded)
                 activeHandle = cpuHandle;
             else
-                throw std::logic_error("can't load afcpu library");
+                retCode = AF_ERR_LOAD_LIB;
             break;
         case af::Backend::AF_BACKEND_CUDA:
             if(isCUDALoaded)
                 activeHandle = cudaHandle;
             else
-                throw std::logic_error("can't load afcuda library");
+                retCode = AF_ERR_LOAD_LIB;
             break;
         case af::Backend::AF_BACKEND_OPENCL:
-            if(isOCLLoaded)
+            if (isOCLLoaded)
                 activeHandle = oclHandle;
             else
-                throw std::logic_error("can't load afopencl library");
+                retCode = AF_ERR_LOAD_LIB;
             break;
     }
+    return retCode;
 }

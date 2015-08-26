@@ -8,10 +8,22 @@
  ********************************************************/
 
 #include <af/defines.h>
-#include <functional>
 #include <string>
 #include <stdlib.h>
+#if defined(OS_WIN)
+#include <Windows.h>
+typedef HMODULE LibHandle;
+#define RTLD_LAZY 0
+#define LIB_AF_CPU_NAME "afcpu.dll"
+#define LIB_AF_CUDA_NAME "afcuda.dll"
+#define LIB_AF_OCL_NAME "afopencl.dll"
+#else
 #include <dlfcn.h>
+typedef void* LibHandle;
+#define LIB_AF_CPU_NAME "libafcpu.so"
+#define LIB_AF_CUDA_NAME "libafcuda.so"
+#define LIB_AF_OCL_NAME "libafopencl.so"
+#endif
 
 class AFSymbolManager {
     public:
@@ -19,25 +31,21 @@ class AFSymbolManager {
 
         ~AFSymbolManager();
 
-        void setBackend(af::Backend bnkd);
+        af_err setBackend(af::Backend bnkd);
 
         template<typename... CalleeArgs>
         af_err call(const char* symbolName, CalleeArgs... args) {
-            using std::string;
-            using std::logic_error;
-
-            void* const handle = dlsym(activeHandle, symbolName);
-
-            if (!handle) {
-                char* const error = dlerror();
-                if (error) {
-                    throw logic_error("can't find symbol: "+string(symbolName)+" - "+error);
-                }
+            typedef af_err(*af_func)(CalleeArgs...);
+            af_func funcHandle;
+#if defined(OS_WIN)
+            funcHandle = (af_func)GetProcAddress(activeHandle, symbolName);
+#else
+            funcHandle = (af_func)dlsym(activeHandle, symbolName);
+#endif
+            if (!funcHandle) {
+                return AF_ERR_SYM_LOAD;
             }
-
-            std::function<af_err (CalleeArgs...)> callee = reinterpret_cast<af_err (*)(CalleeArgs...)>(handle);
-
-            return callee(args...);
+            return funcHandle(args...);
         }
 
     protected:
@@ -55,10 +63,10 @@ class AFSymbolManager {
         bool isCUDALoaded;
         bool isOCLLoaded;
 
-        void* cpuHandle;
-        void* cudaHandle;
-        void* oclHandle;
+        LibHandle cpuHandle;
+        LibHandle cudaHandle;
+        LibHandle oclHandle;
 
         af::Backend activeBknd;
-        void* activeHandle;
+        LibHandle activeHandle;
 };

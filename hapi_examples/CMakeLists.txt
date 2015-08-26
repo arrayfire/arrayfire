@@ -10,4 +10,7 @@ ENDIF()
 
 ADD_EXECUTABLE(hapi_test test.cpp)
 
-TARGET_LINK_LIBRARIES(hapi_test af dl)
+TARGET_LINK_LIBRARIES(hapi_test af)
+IF(UNIX)
+    TARGET_LINK_LIBRARIES(hapi_test dl)
+ENDIF()

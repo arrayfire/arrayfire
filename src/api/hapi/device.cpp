@@ -9,35 +9,15 @@
 
 #include <af/hapi.h>
 #include <af/device.h>
-#include <functional>
-#include <stdlib.h>
-#include <dlfcn.h>
-#include <iostream>
 #include "symbol_manager.hpp"
 
 af_err af_set_backend(const af_backend bknd)
 {
-    af_err errCode = AF_SUCCESS;
-    try {
-        AFSymbolManager::getInstance().setBackend(bknd);
-    } catch(std::logic_error &e) {
-        // FIXME: remove std::cerr
-        std::cerr<<e.what()<<std::endl;
-        errCode = AF_ERR_LOAD_LIB;
-    }
-    return errCode;
+    return AFSymbolManager::getInstance().setBackend(bknd);
 }
 
 af_err af_info()
 {
-    af_err errCode = AF_SUCCESS;
-    try {
-        AFSymbolManager& symbolManager = AFSymbolManager::getInstance();
-        errCode = symbolManager.call("af_info");
-    } catch(std::logic_error &e) {
-        // FIXME: remove std::cerr
-        std::cerr<<e.what()<<std::endl;
-        errCode = AF_ERR_SYM_LOAD;
-    }
-    return errCode;
+    AFSymbolManager& symbolManager = AFSymbolManager::getInstance();
+    return symbolManager.call("af_info");
 }
