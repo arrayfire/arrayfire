@@ -27,7 +27,7 @@ namespace cpu
     template<> svd_func_def<T, Tr>     svd_func<T, Tr>()    \
     { return & LAPACK_NAME(PREFIX##FUNC); }
 
-#ifdef USE_MKL
+#if defined(USE_MKL) || defined(__APPLE__)
 
     template<typename T, typename Tr>
     using svd_func_def = int (*)(ORDER_TYPE,
@@ -71,7 +71,7 @@ namespace cpu
         int M = iDims[0];
         int N = iDims[1];
 
-#ifdef USE_MKL
+#if defined(USE_MKL) || defined(__APPLE__)
         svd_func<T, Tr>()(AF_LAPACK_COL_MAJOR, 'A', M, N, in.get(), in.strides()[1],
                           s.get(), u.get(), u.strides()[1], vt.get(), vt.strides()[1]);
 #else
