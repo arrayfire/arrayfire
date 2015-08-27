@@ -32,13 +32,15 @@ namespace af
         ///
         /// \brief Updates the internal \ref af_array object
         ///
-        /// /note This function will reduce the reference of the previous
+        /// \note This function will reduce the reference of the previous
         ///       \ref af_array object
         ///
         void set(af_array tmp);
 
         ///
-        /// \brief Intermediate data class. Used for assignment and indexing
+        /// \brief Intermediate data class. Used for assignment and indexing.
+        ///
+        /// \note This class is for internal book keeping while indexing. This class is not intended for use in user code.
         ///
         class AFAPI array_proxy
         {
@@ -114,7 +116,9 @@ namespace af
             template<typename T> T scalar() const;
             template<typename T> T* device() const;
             void unlock() const;
+#if AF_API_VERSION >= 31
             void lock() const;
+#endif
 
                   array::array_proxy row(int index);
             const array::array_proxy row(int index) const;
@@ -295,15 +299,6 @@ namespace af
         /**
             Create a column vector on the device using a host/device pointer
 
-            This function can be used to transfer data from a host or device
-            pointer to an array object on the device with one column. The type
-            of the array is automatically matched to the type of the data.
-
-            Depending on the specified size of the column vector, the data will
-            be copied partially or completely. However, the user needs to be
-            careful to ensure that the array size is not larger than the number
-            of elements in the input buffer.
-
             \param[in] dim0     number of elements in the column vector
             \param[in] pointer  pointer (points to a buffer on the host/device)
             \param[in] src      source of the data (default is afHost, can also
@@ -321,6 +316,9 @@ namespace af
                                     //   = 99
 
             \endcode
+
+            \note If \p src is \ref afHost, the first \p dim0 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer.
+
         */
         template<typename T>
         array(dim_t dim0,
@@ -329,14 +327,6 @@ namespace af
 
         /**
             Create a 2D array on the device using a host/device pointer
-
-            This function copies data from the location specified by the
-            pointer to a 2D array on the device. The data is arranged in
-            "column-major" format (similar to that used by FORTRAN).
-
-            Note that this is a synchronous copy. The elements are not
-            actually filled until this array is evaluated or used in the
-            evaluation of some other expression that uses this array object.
 
             \param[in] dim0     number of rows
             \param[in] dim1     number of columns
@@ -350,6 +340,8 @@ namespace af
             \endcode
 
             \image html 2dArray.png
+
+            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer. The data is treated as column major format when performing linear algebra operations.
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1,
@@ -358,10 +350,6 @@ namespace af
 
         /**
             Create a 3D array on the device using a host/device pointer
-
-            This function copies data from the location specified by the pointer
-            to a 3D array on the device. The data is arranged in "column-major"
-            format (similar to that used by FORTRAN).
 
             \param[in] dim0     first dimension
             \param[in] dim1     second dimension
@@ -377,6 +365,8 @@ namespace af
             array A(3, 3, 2,  h_buffer);   // copy host data to 3D device array
             \endcode
 
+            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 * \p dim2 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer. The data is treated as column major format when performing linear algebra operations.
+
             \image html 3dArray.png
         */
         template<typename T>
@@ -386,10 +376,6 @@ namespace af
 
         /**
             Create a 4D array on the device using a host/device pointer
-
-            This function copies data from the location specified by the pointer
-            to a 4D array on the device. The data is arranged in "column-major"
-            format (similar to that used by FORTRAN).
 
             \param[in] dim0     first dimension
             \param[in] dim1     second dimension
@@ -407,6 +393,8 @@ namespace af
 
             array A(2, 2, 2, 2, h_buffer);   // copy host data to 4D device array
             \endcode
+
+            \note If \p src is \ref afHost, the first \p dim0 * \p dim1 * \p dim2 * \p dim3 elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer. The data is treated as column major format when performing linear algebra operations.
         */
         template<typename T>
         array(dim_t dim0, dim_t dim1, dim_t dim2, dim_t dim3,
@@ -442,6 +430,8 @@ namespace af
                                              // Note the "column-major" ordering
                                              // used in ArrayFire
             \endcode
+
+            \note If \p src is \ref afHost, the first dims.elements() elements are copied. If \p src is \ref afDevice, no copy is done; the array object just wraps the device pointer. The data is treated as column major format when performing linear algebra operations.
         */
         template<typename T>
         explicit
@@ -812,8 +802,15 @@ namespace af
 
         ~array();
 
-        // Transpose and Conjugate Tranpose
+        /// \brief Get the transposed the array
+        ///
+        /// \returns Transposed matrix
+        /// \ingroup method_mat
         array T() const;
+        /// \brief Get the conjugate-transpose of the current array
+        ///
+        /// \returns conjugate-transpose matrix
+        /// \ingroup method_mat
         array H() const;
 
 #define ASSIGN(OP)                                                                      \
@@ -1103,7 +1100,7 @@ namespace af
     BIN_OP(operator||)
     /// @}
 
-    /// \ingroup numeric_func_mod
+    /// \ingroup arith_func_mod
     /// @{
     /// \brief Performs an modulo operation on two arrays or an array and a value.
     ///
@@ -1270,6 +1267,7 @@ extern "C" {
     */
     AFAPI af_err af_retain_array(af_array *out, const af_array in);
 
+#if AF_API_VERSION >= 31
     /**
        \ingroup method_mat
        @{
@@ -1277,6 +1275,7 @@ extern "C" {
        Get the use count of `af_array`
     */
     AFAPI af_err af_get_data_ref_count(int *use_count, const af_array in);
+#endif
 
 
     /**

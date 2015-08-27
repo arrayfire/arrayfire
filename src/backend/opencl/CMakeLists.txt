@@ -24,7 +24,22 @@ ENDIF(APPLE)
 IF(NOT LAPACK_FOUND)
     MESSAGE(WARNING "LAPACK not found. Functionality will be disabled")
 ELSE(NOT LAPACK_FOUND)
-    ADD_DEFINITIONS(-DWITH_OPENCL_LINEAR_ALGEBRA)
+  ADD_DEFINITIONS(-DWITH_OPENCL_LINEAR_ALGEBRA)
+
+  IF(NOT USE_OPENCL_MKL)
+    FIND_PACKAGE(CBLAS REQUIRED)
+
+    IF(USE_CPU_F77_BLAS)
+      MESSAGE("Using F77 BLAS")
+      ADD_DEFINITIONS(-DUSE_F77_BLAS)
+    ENDIF()
+
+    IF (NOT CBLAS_LIBRARIES)
+      MESSAGE(SEND_ERROR "CBLAS Library not set")
+    ELSE()
+      MESSAGE(STATUS "Using CBLAS Library: ${CBLAS_LIBRARIES}")
+    ENDIF()
+  ENDIF()
 ENDIF()
 
 IF(NOT UNIX)
@@ -75,15 +90,18 @@ INCLUDE_DIRECTORIES(
     ${CLFFT_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIR}
     ${BoostCompute_INCLUDE_DIRS}
+    ${CBLAS_INCLUDE_DIR}
     ${LAPACK_INCLUDE_DIR}
     )
 
 FILE(GLOB opencl_headers
   "*.hpp"
-  "*.h")
+  "*.h"
+  "sort_by_key/*.hpp")
 
 FILE(GLOB opencl_sources
-    "*.cpp")
+    "*.cpp"
+    "sort_by_key/*.cpp")
 
 FILE(GLOB magma_sources
     "magma/*.cpp")
@@ -162,7 +180,7 @@ CL_KERNEL_TO_H(
 
 # OS Definitions
 IF(UNIX)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread -Wno-comment")
 ELSE(${UNIX}) #Windows
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /bigobj")
@@ -243,7 +261,9 @@ IF(FORGE_FOUND AND NOT USE_SYSTEM_FORGE)
 ENDIF()
 
 IF(LAPACK_FOUND)
-   TARGET_LINK_LIBRARIES(afopencl   PRIVATE ${LAPACK_LIBRARIES})
+  TARGET_LINK_LIBRARIES(afopencl
+    PRIVATE ${LAPACK_LIBRARIES}
+    PRIVATE ${CBLAS_LIBRARIES})
 ENDIF()
 
 SET_TARGET_PROPERTIES(afopencl PROPERTIES

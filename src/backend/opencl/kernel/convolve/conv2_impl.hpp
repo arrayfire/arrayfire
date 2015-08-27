@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <kernel/convolve/conv_common.hpp>
+#include <cache.hpp>
 
 namespace opencl
 {
@@ -15,42 +16,59 @@ namespace opencl
 namespace kernel
 {
 
-template<typename T, typename aT, bool expand, int f0, int f1>
+template<typename T, typename aT, bool expand>
 void conv2Helper(const conv_kparam_t& param, Param out, const Param signal, const Param filter)
 {
     try {
-        static std::once_flag  compileFlags[DeviceManager::MAX_DEVICES];
-        static std::map<int, Program*> convProgs;
-        static std::map<int, Kernel*>  convKernels;
+        int f0 = filter.info.dims[0];
+        int f1 = filter.info.dims[1];
+
+        std::string ref_name =
+            std::string("conv2_") +
+            std::string(dtype_traits<T>::getName()) +
+            std::string("_") +
+            std::string(dtype_traits<aT>::getName()) +
+            std::string("_") +
+            std::to_string(expand) +
+            std::string("_") +
+            std::to_string(f0) +
+            std::string("_") +
+            std::to_string(f1);
 
         int device = getActiveDeviceId();
+        kc_t::iterator idx = kernelCaches[device].find(ref_name);
 
-        std::call_once( compileFlags[device], [device] () {
-                    size_t LOC_SIZE = (THREADS_X+2*(f0-1))*(THREADS_Y+2*(f1-1));
+        kc_entry_t entry;
+        if (idx == kernelCaches[device].end()) {
+            size_t LOC_SIZE = (THREADS_X+2*(f0-1))*(THREADS_Y+2*(f1-1));
 
-                    std::ostringstream options;
-                    options << " -D T=" << dtype_traits<T>::getName()
-                            << " -D accType="<< dtype_traits<aT>::getName()
-                            << " -D BASE_DIM="<< 2 /* hard constant specific to this convolution type */
-                            << " -D FLEN0=" << f0
-                            << " -D FLEN1=" << f1
-                            << " -D EXPAND="<< expand
-                            << " -D C_SIZE="<< LOC_SIZE;
-                    if (std::is_same<T, double>::value ||
-                        std::is_same<T, cdouble>::value) {
-                        options << " -D USE_DOUBLE";
-                    }
-                    Program prog;
-                    buildProgram(prog, convolve_cl, convolve_cl_len, options.str());
-                    convProgs[device]   = new Program(prog);
-                    convKernels[device] = new Kernel(*convProgs[device], "convolve");
-                });
+            std::ostringstream options;
+            options << " -D T=" << dtype_traits<T>::getName()
+                    << " -D accType="<< dtype_traits<aT>::getName()
+                    << " -D BASE_DIM="<< 2 /* hard constant specific to this convolution type */
+                    << " -D FLEN0=" << f0
+                    << " -D FLEN1=" << f1
+                    << " -D EXPAND="<< expand
+                    << " -D C_SIZE="<< LOC_SIZE;
+            if (std::is_same<T, double>::value ||
+                std::is_same<T, cdouble>::value) {
+                options << " -D USE_DOUBLE";
+            }
+            Program prog;
+            buildProgram(prog, convolve_cl, convolve_cl_len, options.str());
+            entry.prog   = new Program(prog);
+            entry.ker = new Kernel(*entry.prog, "convolve");
+
+            kernelCaches[device][ref_name] = entry;
+        } else {
+            entry = idx->second;
+        }
 
         auto convOp = make_kernel<Buffer, KParam, Buffer, KParam,
                                   Buffer, KParam, int, int,
                                   int, int,
                                   int, int
-                                 >(*convKernels[device]);
+                                 >(*entry.ker);
 
         convOp(EnqueueArgs(getQueue(), param.global, param.local),
                 *out.data, out.info, *signal.data, signal.info,
@@ -60,53 +78,6 @@ void conv2Helper(const conv_kparam_t& param, Param out, const Param signal, cons
     } catch (cl::Error err) {
         CL_TO_AF_ERROR(err);
         throw;
-    }
-}
-
-template<typename T, typename aT, bool expand, int f>
-void conv2Helper(const conv_kparam_t& p, Param out, const Param sig, const Param filt)
-{
-    switch(filt.info.dims[1]) {
-        case  1: conv2Helper<T, aT, expand, f,  1>(p, out, sig, filt); break;
-        case  2: conv2Helper<T, aT, expand, f,  2>(p, out, sig, filt); break;
-        case  3: conv2Helper<T, aT, expand, f,  3>(p, out, sig, filt); break;
-        case  4: conv2Helper<T, aT, expand, f,  4>(p, out, sig, filt); break;
-        case  5: conv2Helper<T, aT, expand, f,  5>(p, out, sig, filt); break;
-        default: OPENCL_NOT_SUPPORTED();
-    }
-}
-
-template<typename T, typename aT, bool expand>
-void conv2Helper(const conv_kparam_t& p, Param& out, const Param& sig, const Param& filt)
-{
-    int f0 = filt.info.dims[0];
-    int f1 = filt.info.dims[1];
-    switch(f0) {
-        case  1: conv2Helper<T, aT, expand,  1>(p, out, sig, filt); break;
-        case  2: conv2Helper<T, aT, expand,  2>(p, out, sig, filt); break;
-        case  3: conv2Helper<T, aT, expand,  3>(p, out, sig, filt); break;
-        case  4: conv2Helper<T, aT, expand,  4>(p, out, sig, filt); break;
-        case  5: conv2Helper<T, aT, expand,  5>(p, out, sig, filt); break;
-        default: {
-                     if (f0==f1) {
-                         switch(f1) {
-                             case  6: conv2Helper<T, aT, expand,  6,  6>(p, out, sig, filt); break;
-                             case  7: conv2Helper<T, aT, expand,  7,  7>(p, out, sig, filt); break;
-                             case  8: conv2Helper<T, aT, expand,  8,  8>(p, out, sig, filt); break;
-                             case  9: conv2Helper<T, aT, expand,  9,  9>(p, out, sig, filt); break;
-                             case 10: conv2Helper<T, aT, expand, 10, 10>(p, out, sig, filt); break;
-                             case 11: conv2Helper<T, aT, expand, 11, 11>(p, out, sig, filt); break;
-                             case 12: conv2Helper<T, aT, expand, 12, 12>(p, out, sig, filt); break;
-                             case 13: conv2Helper<T, aT, expand, 13, 13>(p, out, sig, filt); break;
-                             case 14: conv2Helper<T, aT, expand, 14, 14>(p, out, sig, filt); break;
-                             case 15: conv2Helper<T, aT, expand, 15, 15>(p, out, sig, filt); break;
-                             case 16: conv2Helper<T, aT, expand, 16, 16>(p, out, sig, filt); break;
-                             case 17: conv2Helper<T, aT, expand, 17, 17>(p, out, sig, filt); break;
-                             default: OPENCL_NOT_SUPPORTED();
-                         }
-                     } else
-                         OPENCL_NOT_SUPPORTED();
-                 } break;
     }
 }
 

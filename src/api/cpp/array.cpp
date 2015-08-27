@@ -606,6 +606,14 @@ namespace af
         return out;
     }
 
+    af_array array::array_proxy::get() const
+    {
+        array tmp = *this;
+        af_array out = 0;
+        AF_THROW(af_retain_array(&out, tmp.get()));
+        return out;
+    }
+
 #define MEM_FUNC(PREFIX, FUNC)                  \
     PREFIX array::array_proxy::FUNC() const     \
     {                                           \
@@ -613,7 +621,6 @@ namespace af
         return out.FUNC();                      \
     }
 
-    MEM_FUNC(af_array               , get)
     MEM_FUNC(dim_t                  , elements)
     MEM_FUNC(array                  , T)
     MEM_FUNC(array                  , H)
@@ -739,12 +746,19 @@ namespace af
     }
 
     //FIXME: Check if this leaks
-#define MEM_INDEX(FUNC_SIG, USAGE)          \
-    array::array_proxy                      \
-    array::array_proxy::FUNC_SIG            \
-    {                                       \
-        array *out = new array(this->get());\
-        return out->USAGE;                  \
+#define MEM_INDEX(FUNC_SIG, USAGE)                  \
+    array::array_proxy                              \
+    array::array_proxy::FUNC_SIG                    \
+    {                                               \
+        array *out = new array(this->get());        \
+        return out->USAGE;                          \
+    }                                               \
+                                                    \
+    const array::array_proxy                        \
+    array::array_proxy::FUNC_SIG const              \
+    {                                               \
+        const array *out = new array(this->get());  \
+        return out->USAGE;                          \
     }
 
     MEM_INDEX(row(int index)                , row(index));
@@ -856,6 +870,12 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
     // If 64 bit precision, do not lose precision
     if (array_type == f64 || array_type == c64 ||
         array_type == f32 || array_type == c32 ) return array_type;
+
+    // Default to single precision by default when multiplying with scalar
+    if ((scalar_type == f64 || scalar_type == c64) &&
+        (array_type  != f64 && array_type  != c64)) {
+        return f32;
+    }
 
     // Punt to C api for everything else
     return scalar_type;

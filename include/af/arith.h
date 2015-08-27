@@ -243,12 +243,15 @@ namespace af
     /// \param[in] lhs is real value(s)
     /// \param[in] rhs is imaginary value(s)
     /// \return complex array from inputs
+    /// \ingroup arith_func_cplx
     AFAPI array complex(const array &lhs, const array &rhs);
 
     /// \copydoc complex(const array&, const array&)
+    /// \ingroup arith_func_cplx
     AFAPI array complex(const array &lhs, const double rhs);
 
     /// \copydoc complex(const array&, const array&)
+    /// \ingroup arith_func_cplx
     AFAPI array complex(const double lhs, const array &rhs);
 
     /// C++ Interface for creating complex array from real array
@@ -386,7 +389,7 @@ namespace af
     AFAPI array pow2    (const array &in);
     /// @}
 
-
+#if AF_API_VERSION >= 31
     /// C++ Interface for calculating sigmoid function of an array
     ///
     /// \param[in] in is input
@@ -394,6 +397,7 @@ namespace af
     ///
     /// \ingroup arith_func_sigmoid
     AFAPI array sigmoid (const array &in);
+#endif
 
     /// C++ Interface for exponential of an array
     ///
@@ -1173,6 +1177,7 @@ extern "C" {
     */
     AFAPI af_err af_exp     (af_array *out, const af_array in);
 
+#if AF_API_VERSION >= 31
     /**
        C Interface for calculating sigmoid function of an array
 
@@ -1183,6 +1188,7 @@ extern "C" {
        \ingroup arith_func_sigmoid
     */
     AFAPI af_err af_sigmoid (af_array *out, const af_array in);
+#endif
 
     /**
        C Interface for exponential of an array minus 1

@@ -15,6 +15,7 @@
 #include <JIT/Node.hpp>
 #include <kernel_headers/jit.hpp>
 #include <program.hpp>
+#include <cache.hpp>
 #include <dispatch.hpp>
 #include <err_opencl.hpp>
 #include <functional>
@@ -141,13 +142,6 @@ static Kernel getKernel(Node *node, bool is_linear)
     bool is_dbl = false;
     string funcName = getFuncName(node, is_linear, &is_dbl);
 
-    typedef struct {
-        Program* prog;
-        Kernel* ker;
-    } kc_entry_t;
-
-    typedef std::map<string, kc_entry_t> kc_t;
-    static kc_t kernelCaches[DeviceManager::MAX_DEVICES];
     int device = getActiveDeviceId();
 
     kc_t::iterator idx = kernelCaches[device].find(funcName);

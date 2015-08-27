@@ -103,6 +103,7 @@ class AFAPI index {
     ///
     index(const af::array& idx0);
 
+#if AF_API_VERSION >= 31
     ///
     /// \brief Copy constructor
     ///
@@ -111,6 +112,7 @@ class AFAPI index {
     /// \sa indexing
     ///
     index(const index& idx0);
+#endif
 
     ///
     /// \brief Returns true if the \ref af::index represents a af::span object
@@ -126,12 +128,13 @@ class AFAPI index {
     ///
     const af_index_t& get() const;
 
+#if AF_API_VERSION >= 31
     ///
     /// \brief Assigns idx0 to this index
     ///
     /// \param[in] idx0 is the index to be assigned to the /ref af::index
     /// \returns the reference to this
-    /// 
+    ///
     ///
     index & operator=(const index& idx0);
 
@@ -150,6 +153,7 @@ class AFAPI index {
     ///
     index& operator=(index &&idx0);
 #endif
+#endif // AF_API_VERSION
 };
 
 ///
@@ -165,6 +169,7 @@ class AFAPI index {
 
 AFAPI array lookup(const array &in, const array &idx, const int dim = -1);
 
+#if AF_API_VERSION >= 31
 ///
 /// Copy the values of an input array based on index
 ///
@@ -182,6 +187,7 @@ AFAPI void copy(array &dst, const array &src,
                 const index &idx1 = span,
                 const index &idx2 = span,
                 const index &idx3 = span);
+#endif
 
 }
 #endif
@@ -276,7 +282,7 @@ extern "C" {
     /// \param[in] indices  is an af_array of \ref af_index_t objects
     /// \param[in] rhs      is the array whose values will be assigned to \p lhs
     ///
-    /// \ingroup index_func_index
+    /// \ingroup index_func_assign
     ///
     AFAPI af_err af_assign_gen( af_array *out,
                                 const af_array lhs,

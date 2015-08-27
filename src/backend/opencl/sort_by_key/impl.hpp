@@ -34,28 +34,20 @@ namespace opencl
         }
     }
 
-#define INSTANTIATE(Tk, Tv)                                             \
+#define INSTANTIATE(Tk, Tv, isAscending)                                \
     template void                                                       \
-    sort_by_key<Tk, Tv, true>(Array<Tk> &okey, Array<Tv> &oval,         \
-                              const Array<Tk> &ikey, const Array<Tv> &ival, \
-                              const unsigned dim);                      \
-    template void                                                       \
-    sort_by_key<Tk, Tv,false>(Array<Tk> &okey, Array<Tv> &oval,         \
-                              const Array<Tk> &ikey, const Array<Tv> &ival, \
-                              const unsigned dim);                      \
+    sort_by_key<Tk, Tv, isAscending>(Array<Tk> &okey, Array<Tv> &oval,  \
+                                     const Array<Tk> &ikey,             \
+                                     const Array<Tv> &ival,             \
+                                     const unsigned dim);               \
 
-#define INSTANTIATE1(Tk)       \
-    INSTANTIATE(Tk, float)     \
-    INSTANTIATE(Tk, double)    \
-    INSTANTIATE(Tk, int)       \
-    INSTANTIATE(Tk, uint)      \
-    INSTANTIATE(Tk, char)      \
-    INSTANTIATE(Tk, uchar)     \
 
-    INSTANTIATE1(float)
-    INSTANTIATE1(double)
-    INSTANTIATE1(int)
-    INSTANTIATE1(uint)
-    INSTANTIATE1(char)
-    INSTANTIATE1(uchar)
+#define INSTANTIATE1(Tk, isAscending)           \
+    INSTANTIATE(Tk, float , isAscending)        \
+    INSTANTIATE(Tk, double, isAscending)        \
+    INSTANTIATE(Tk, int   , isAscending)        \
+    INSTANTIATE(Tk, uint  , isAscending)        \
+    INSTANTIATE(Tk, char  , isAscending)        \
+    INSTANTIATE(Tk, uchar , isAscending)        \
+
 }

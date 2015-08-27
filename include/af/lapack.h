@@ -14,6 +14,33 @@
 #ifdef __cplusplus
 namespace af
 {
+#if AF_API_VERSION >= 31
+    /**
+       C++ Interface for SVD decomposition
+
+       \param[out] u is the output array containing U
+       \param[out] s is the output array containing the diagonal values of sigma, (singular values of the input matrix))
+       \param[out] vt is the output array containing V^H
+       \param[in] in is the input matrix
+
+       \ingroup lapack_factor_func_svd
+    */
+    AFAPI void svd(array &u, array &s, array &vt, const array &in);
+#endif
+
+#if AF_API_VERSION >= 31
+    /**
+       C++ Interface for SVD decomposition
+
+       \param[out] u is the output array containing U
+       \param[out] s is the output array containing the diagonal values of sigma, (singular values of the input matrix))
+       \param[out] vt is the output array containing V^H
+       \param[inout] in is the input matrix and will contain random data after this operation
+
+       \ingroup lapack_factor_func_svd
+    */
+    AFAPI void svdInPlace(array &u, array &s, array &vt, array &in);
+#endif
 
     /**
        C++ Interface for LU decomposition in packed format
@@ -215,6 +242,34 @@ namespace af
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#if AF_API_VERSION >= 31
+    /**
+       C Interface for SVD decomposition
+
+       \param[out] u is the output array containing U
+       \param[out] s is the output array containing the diagonal values of sigma, (singular values of the input matrix))
+       \param[out] vt is the output array containing V^H
+       \param[in] in is the input matrix
+
+       \ingroup lapack_factor_func_svd
+    */
+    AFAPI af_err af_svd(af_array *u, af_array *s, af_array *vt, const af_array in);
+#endif
+
+#if AF_API_VERSION >= 31
+    /**
+       C Interface for SVD decomposition
+
+       \param[out] u is the output array containing U
+       \param[out] s is the output array containing the diagonal values of sigma, (singular values of the input matrix))
+       \param[out] vt is the output array containing V^H
+       \param[inout] in is the input matrix that will contain random data after this operation
+
+       \ingroup lapack_factor_func_svd
+    */
+    AFAPI af_err af_svd_inplace(af_array *u, af_array *s, af_array *vt, af_array in);
 #endif
 
     /**

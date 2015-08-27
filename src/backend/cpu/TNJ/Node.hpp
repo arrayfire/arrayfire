@@ -11,7 +11,6 @@
 #include <af/array.h>
 #include <optypes.hpp>
 #include <vector>
-#include "Node.hpp"
 #include <memory>
 
 namespace cpu
@@ -35,6 +34,12 @@ namespace TNJ
             return NULL;
         }
 
+        virtual void *calc(int idx)
+        {
+            m_is_eval = true;
+            return NULL;
+        }
+
         virtual void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
         {
             len = 0;
@@ -42,7 +47,8 @@ namespace TNJ
             bytes = 0;
         }
 
-        virtual void reset(bool reset_off=true) { m_is_eval = false;}
+        virtual bool isLinear(const dim_t *dims) { return true; }
+        virtual void reset() { m_is_eval = false;}
 
         virtual ~Node() {}
     };

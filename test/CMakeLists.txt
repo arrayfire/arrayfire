@@ -12,7 +12,7 @@ MACRO(CREATE_TESTS BACKEND GTEST_LIBS OTHER_LIBS)
         GET_FILENAME_COMPONENT(FNAME ${FILE} NAME_WE)
         SET(TEST_NAME ${FNAME}_${BACKEND})
 
-        IF ("${FILE}" MATCHES ".manual.")
+        IF ("${FILE}" MATCHES ".manual." OR "${FILE}" MATCHES ".nonfree.")
           MESSAGE(STATUS "Removing ${FILE} from ctest")
         ELSE()
           ADD_TEST(Test_${TEST_NAME} ${TEST_NAME})

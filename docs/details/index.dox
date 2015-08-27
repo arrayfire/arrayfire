@@ -1,0 +1,19 @@
+/**
+\addtogroup arrayfire_func
+@{
+
+\defgroup index_func_index index
+
+\brief lookup values on array based on sequences
+
+\ingroup index_mat
+
+
+
+\defgroup index_func_assign assign
+
+\brief Copy and write values in the locations specified by the sequences
+
+\ingroup index_mat
+@}
+*/

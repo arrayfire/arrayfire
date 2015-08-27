@@ -39,7 +39,7 @@ void core_nearest1(const int idx, const int idy, const int idz, const int idw,
                    const float offGrid)
 {
     const int omId = idw * out.strides[3] + idz * out.strides[2]
-                        + idy * out.strides[1] + idx;
+                   + idy * out.strides[1] + idx;
     const int pmId = idx;
 
     const Tp pVal = d_pos[pmId];
@@ -82,11 +82,12 @@ void core_linear1(const int idx, const int idy, const int idz, const int idw,
 
     // Check if pVal and pVal + 1 are both valid indices
     bool cond = (pVal < in.dims[0] - 1);
-    Ty zero; set_scalar(zero, 0);
+
+    Ty zero = ZERO;
 
     // Compute Left and Right Weighted Values
-    Ty yl; set(yl, mul(d_in[ioff] , (1 - off_x)));
-    Ty yr; set(yr, cond ? mul(d_in[ioff + 1], off_x) : zero);
+    Ty yl = mul(d_in[ioff] , (1 - off_x));
+    Ty yr = cond ? mul(d_in[ioff + 1], off_x) : zero;
     Ty yo = yl + yr;
 
     // Compute Weight used

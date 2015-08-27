@@ -16,11 +16,11 @@
 
 namespace cpu
 {
-    template<typename T>
-    void unwrap_(T *outPtr, const T *inPtr, const af::dim4 &odims, const af::dim4 &idims,
-                 const af::dim4 &ostrides, const af::dim4 &istrides,
-                 const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy,
-                 const dim_t px, const dim_t py)
+    template<typename T, int d>
+    void unwrap_dim(T *outPtr, const T *inPtr, const af::dim4 &odims, const af::dim4 &idims,
+                    const af::dim4 &ostrides, const af::dim4 &istrides,
+                    const dim_t wx, const dim_t wy, const dim_t sx, const dim_t sy,
+                    const dim_t px, const dim_t py)
     {
         dim_t nx = (idims[0] + 2 * px - wx) / sx + 1;
 
@@ -30,11 +30,11 @@ namespace cpu
                 dim_t cOut = w * ostrides[3] + z * ostrides[2];
                 dim_t cIn  = w * istrides[3] + z * istrides[2];
                 const T* iptr = inPtr  + cIn;
-                      T* optr_= outPtr + cOut;
+                T* optr_= outPtr + cOut;
 
-                for(dim_t col = 0; col < odims[1]; col++) {
+                for(dim_t col = 0; col < odims[d]; col++) {
                     // Offset output ptr
-                    T* optr = optr_ + col * ostrides[1];
+                    T* optr = optr_ + col * ostrides[d];
 
                     // Calculate input window index
                     dim_t winy = (col / nx);
@@ -47,16 +47,16 @@ namespace cpu
                     dim_t spy = starty - py;
 
                     // Short cut condition ensuring all values within input dimensions
-                    bool cond = false;
-                    if(spx >= 0 && spx + wx < idims[0] && spy >= 0 && spy + wy < idims[1])
-                        cond = true;
+                    bool cond = (spx >= 0 && spx + wx < idims[0] && spy >= 0 && spy + wy < idims[1]);
 
                     for(dim_t y = 0; y < wy; y++) {
                         for(dim_t x = 0; x < wx; x++) {
                             dim_t xpad = spx + x;
                             dim_t ypad = spy + y;
 
-                            dim_t oloc = (y * wx + x) * ostrides[0];
+                            dim_t oloc = (y * wx + x);
+                            if (d == 0) oloc *= ostrides[1];
+
                             if(cond || (xpad >= 0 && xpad < idims[0] && ypad >= 0 && ypad < idims[1])) {
                                 dim_t iloc = (ypad * istrides[1] + xpad * istrides[0]);
                                 optr[oloc] = iptr[iloc];
@@ -72,34 +72,41 @@ namespace cpu
 
     template<typename T>
     Array<T> unwrap(const Array<T> &in, const dim_t wx, const dim_t wy,
-                    const dim_t sx, const dim_t sy, const dim_t px, const dim_t py)
+                    const dim_t sx, const dim_t sy, const dim_t px, const dim_t py, const bool is_column)
     {
         af::dim4 idims = in.dims();
 
         dim_t nx = (idims[0] + 2 * px - wx) / sx + 1;
-        dim_t ny = (idims[1] + 2 * py - wy) / sx + 1;
+        dim_t ny = (idims[1] + 2 * py - wy) / sy + 1;
 
         af::dim4 odims(wx * wy, nx * ny, idims[2], idims[3]);
+
+        if (!is_column) {
+            std::swap(odims[0], odims[1]);
+        }
 
         // Create output placeholder
         Array<T> outArray = createEmptyArray<T>(odims);
 
         // Get pointers to raw data
         const T *inPtr = in.get();
-              T *outPtr = outArray.get();
+        T *outPtr = outArray.get();
 
         af::dim4 ostrides = outArray.strides();
         af::dim4 istrides = in.strides();
 
-        unwrap_(outPtr, inPtr, odims, idims, ostrides, istrides, wx, wy, sx, sy, px, py);
-
+        if (is_column) {
+            unwrap_dim<T, 1>(outPtr, inPtr, odims, idims, ostrides, istrides, wx, wy, sx, sy, px, py);
+        } else {
+            unwrap_dim<T, 0>(outPtr, inPtr, odims, idims, ostrides, istrides, wx, wy, sx, sy, px, py);
+        }
         return outArray;
     }
 
 
 #define INSTANTIATE(T)                                                                  \
     template Array<T> unwrap<T> (const Array<T> &in, const dim_t wx, const dim_t wy,    \
-                    const dim_t sx, const dim_t sy, const dim_t px, const dim_t py);
+                    const dim_t sx, const dim_t sy, const dim_t px, const dim_t py, const bool is_column);
 
 
     INSTANTIATE(float)
@@ -113,4 +120,3 @@ namespace cpu
     INSTANTIATE(uchar)
     INSTANTIATE(char)
 }
-

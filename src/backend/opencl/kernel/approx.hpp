@@ -18,6 +18,9 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
+#include <type_util.hpp>
+#include <math.hpp>
+#include "config.hpp"
 
 using cl::Buffer;
 using cl::Program;
@@ -50,9 +53,11 @@ namespace opencl
                 int device = getActiveDeviceId();
 
                 std::call_once( compileFlags[device], [device] () {
+                    ToNum<Ty> toNum;
                     std::ostringstream options;
                     options << " -D Ty="        << dtype_traits<Ty>::getName()
-                            << " -D Tp="        << dtype_traits<Tp>::getName();
+                            << " -D Tp="        << dtype_traits<Tp>::getName()
+                            << " -D ZERO="      << toNum(scalar<Ty>(0));
 
                     if((af_dtype) dtype_traits<Ty>::af_type == c32 ||
                        (af_dtype) dtype_traits<Ty>::af_type == c64) {
@@ -113,9 +118,11 @@ namespace opencl
                 int device = getActiveDeviceId();
 
                 std::call_once( compileFlags[device], [device] () {
+                    ToNum<Ty> toNum;
                     std::ostringstream options;
                     options << " -D Ty="        << dtype_traits<Ty>::getName()
-                            << " -D Tp="        << dtype_traits<Tp>::getName();
+                            << " -D Tp="        << dtype_traits<Tp>::getName()
+                            << " -D ZERO="      << toNum(scalar<Ty>(0));
 
                     if((af_dtype) dtype_traits<Ty>::af_type == c32 ||
                        (af_dtype) dtype_traits<Ty>::af_type == c64) {

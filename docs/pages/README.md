@@ -130,8 +130,7 @@ af_print(pi);
 
 ## Citations and Acknowledgements
 
-If you redistribute ArrayFire, please follow the terms established in
-[the license](LICENSE).
+If you redistribute ArrayFire, please follow the terms established in <a href="https://github.com/arrayfire/arrayfire/blob/master/LICENSE">the license</a>.
 If you wish to cite ArrayFire in an academic publication, please use the
 following reference:
 
@@ -156,5 +155,4 @@ year = {2015}
 }
 ```
 
-ArrayFire development is funded by ArrayFire LLC and several third parties,
-please see the list of [acknowledgements](https://github.com/arrayfire/arrayfire/blob/master/ACKNOWLEDGEMENTS.md) for further details.
+ArrayFire development is funded by ArrayFire LLC and several third parties, please see the list of <a href="https://github.com/arrayfire/arrayfire/blob/master/ACKNOWLEDGEMENTS.md">acknowledgements</a>.

@@ -11,6 +11,7 @@
 #if defined(WITH_GRAPHICS)
 #include <fg/window.h>
 #endif
+
 #include <cl.hpp>
 #include <vector>
 #include <string>

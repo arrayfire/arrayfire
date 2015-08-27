@@ -66,8 +66,9 @@ void gradient_kernel(__global T *d_grad0, const KParam grad0,
     float yf = 0.5 * (1 + (idy == 0 || idy >= (in.dims[1] - 1)));
 
     // Copy data to scratch space
+    T zero = ZERO;
     if(cond) {
-        set_scalar(sidx(ty, tx), 0);
+        sidx(ty, tx) = zero;
     } else {
         sidx(ty, tx) = d_in[iIdx];
     }
