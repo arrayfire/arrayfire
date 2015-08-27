@@ -17,10 +17,24 @@ extern "C" {
 #endif
 
 #if AF_API_VERSION >= 31
+/**
+   Get the stream for the CUDA device with \ref id in ArrayFire context
+
+   \param[out] CUDA Stream of device with \ref id in ArrayFire context
+   \param[in] ArrayFire device id
+   \returns \ref af_err error code
+ */
 AFAPI af_err afcu_get_stream(cudaStream_t* stream, int id);
 #endif
 
 #if AF_API_VERSION >= 31
+/**
+   Get the native device id of the CUDA device with \ref id in ArrayFire context
+
+   \param[out] native device id of the CUDA device with \ref id in ArrayFire context
+   \param[in] ArrayFire device id
+   \returns \ref af_err error code
+ */
 AFAPI af_err afcu_get_native_id(int* nativeid, int id);
 #endif
 
@@ -34,6 +48,14 @@ namespace afcu
 {
 
 #if AF_API_VERSION >= 31
+/**
+   Get the stream for the CUDA device with \ref id in ArrayFire context
+
+   \param[in] ArrayFire device id
+   \returns cuda stream used by CUDA device
+
+   \ingroup cuda_mat
+ */
 static inline cudaStream_t getStream(int id)
 {
     cudaStream_t retVal;
@@ -45,6 +67,14 @@ static inline cudaStream_t getStream(int id)
 #endif
 
 #if AF_API_VERSION >= 31
+/**
+   Get the native device id of the CUDA device with \ref id in ArrayFire context
+
+   \param[in] ArrayFire device id
+   \returns cuda native id of device
+
+   \ingroup cuda_mat
+ */
 static inline int getNativeId(int id)
 {
     int retVal;
