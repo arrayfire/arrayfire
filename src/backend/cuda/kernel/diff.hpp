@@ -88,8 +88,8 @@ namespace cuda
 
             const int oElem = out.dims[0] * out.dims[1] * out.dims[2] * out.dims[3];
 
-            diff_kernel<T, dim, isDiff2> <<<blocks, threads>>>
-                (out, in, oElem, blocksPerMatX, blocksPerMatY);
+            CUDA_LAUNCH((diff_kernel<T, dim, isDiff2>), blocks, threads,
+                out, in, oElem, blocksPerMatX, blocksPerMatY);
 
             POST_LAUNCH_CHECK();
         }

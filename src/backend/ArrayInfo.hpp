@@ -47,9 +47,9 @@ public:
 #if __cplusplus > 199711L
     //Copy constructors are deprecated if there is a
     //user-defined destructor in c++11
+    ArrayInfo() = default;
     ArrayInfo(const ArrayInfo& other) = default;
 #endif
-    ~ArrayInfo() {}
 
     const af_dtype& getType() const     { return type;                  }
 
@@ -110,6 +110,9 @@ public:
 
     bool isLinear() const;
 };
+#if __cplusplus > 199711l
+    static_assert(std::is_standard_layout<ArrayInfo>::value, "ArrayInfo must be a standard layout type");
+#endif
 
 // Returns size and time info for an array object.
 // Note this doesn't require template parameters.

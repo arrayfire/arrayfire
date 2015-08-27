@@ -84,8 +84,8 @@ namespace cpu
 
                 if (!(iter->second).is_unlinked) {
                     freeWrapper(iter->first);
+                    total_bytes -= iter->second.bytes;
                 }
-                total_bytes -= iter->second.bytes;
             }
         }
 
@@ -93,7 +93,7 @@ namespace cpu
         mem_iter memory_end  = memory_map.end();
 
         while(memory_curr != memory_end) {
-            if (memory_curr->second.is_free) {
+            if (memory_curr->second.is_free && !memory_curr->second.is_unlinked) {
                 memory_map.erase(memory_curr++);
             } else {
                 ++memory_curr;
@@ -139,6 +139,10 @@ namespace cpu
             // Perform garbage collection if memory can not be allocated
             ptr = (T *)malloc(alloc_bytes);
 
+            if (ptr == NULL) {
+                AF_ERROR("Can not allocate memory", AF_ERR_NO_MEM);
+            }
+
             mem_info info = {false, false, alloc_bytes};
             memory_map[ptr] = info;
 
@@ -157,9 +161,10 @@ namespace cpu
         mem_iter iter = memory_map.find((void *)ptr);
 
         if (iter != memory_map.end()) {
-            if ((iter->second).is_unlinked) return;
 
             iter->second.is_free = true;
+            if ((iter->second).is_unlinked) return;
+
             used_bytes -= iter->second.bytes;
             used_buffers--;
 
@@ -169,27 +174,33 @@ namespace cpu
     }
 
     template<typename T>
-    void memUnlink(T *ptr)
+    void memPop(const T *ptr)
     {
         std::lock_guard<std::mutex> lock(memory_map_mutex);
 
         mem_iter iter = memory_map.find((void *)ptr);
 
         if (iter != memory_map.end()) {
-
             iter->second.is_unlinked = true;
-            iter->second.is_free = true;
-            used_bytes -= iter->second.bytes;
-            used_buffers--;
-
         } else {
             mem_info info = { false,
-                              false,
+                              true,
                               100 }; //This number is not relevant
 
-            memory_map[ptr] = info;
+            memory_map[(void *)ptr] = info;
         }
     }
+
+    template<typename T>
+    void memPush(const T *ptr)
+    {
+        std::lock_guard<std::mutex> lock(memory_map_mutex);
+        mem_iter iter = memory_map.find((void *)ptr);
+        if (iter != memory_map.end()) {
+            iter->second.is_unlinked = false;
+        }
+    }
+
 
     void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                           size_t *lock_bytes,  size_t *lock_buffers)
@@ -212,12 +223,13 @@ namespace cpu
         memFree<T>(ptr);
     }
 
-#define INSTANTIATE(T)                              \
-    template T* memAlloc(const size_t &elements);   \
-    template void memFree(T* ptr);                  \
-    template void memUnlink(T* ptr);                \
-    template T* pinnedAlloc(const size_t &elements);\
-    template void pinnedFree(T* ptr);               \
+#define INSTANTIATE(T)                                  \
+    template T* memAlloc(const size_t &elements);       \
+    template void memFree(T* ptr);                      \
+    template void memPop(const T* ptr);                 \
+    template void memPush(const T* ptr);                \
+    template T* pinnedAlloc(const size_t &elements);    \
+    template void pinnedFree(T* ptr);                   \
 
     INSTANTIATE(float)
     INSTANTIATE(cfloat)

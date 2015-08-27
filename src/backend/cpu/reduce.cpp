@@ -25,16 +25,16 @@ namespace cpu
     {
         void operator()(To *out, const dim4 &ostrides, const dim4 &odims,
                         const Ti *in , const dim4 &istrides, const dim4 &idims,
-                        const int dim)
+                        const int dim, bool change_nan, double nanval)
         {
             static const int D1 = D - 1;
             static reduce_dim<op, Ti, To, D1> reduce_dim_next;
             for (dim_t i = 0; i < odims[D1]; i++) {
-                 reduce_dim_next(out + i * ostrides[D1],
-                                 ostrides, odims,
-                                 in  + i * istrides[D1],
-                                 istrides, idims,
-                                 dim);
+                reduce_dim_next(out + i * ostrides[D1],
+                                ostrides, odims,
+                                in  + i * istrides[D1],
+                                istrides, idims,
+                                dim, change_nan, nanval);
             }
         }
     };
@@ -47,13 +47,14 @@ namespace cpu
         Binary<To, op> reduce;
         void operator()(To *out, const dim4 &ostrides, const dim4 &odims,
                         const Ti *in , const dim4 &istrides, const dim4 &idims,
-                        const int dim)
+                        const int dim, bool change_nan, double nanval)
         {
             dim_t stride = istrides[dim];
 
             To out_val = reduce.init();
             for (dim_t i = 0; i < idims[dim]; i++) {
                 To in_val = transform(in[i * stride]);
+                if (change_nan) in_val = IS_NAN(in_val) ? nanval : in_val;
                 out_val = reduce(in_val, out_val);
             }
 
@@ -64,10 +65,10 @@ namespace cpu
     template<af_op_t op, typename Ti, typename To>
     using reduce_dim_func = std::function<void(To*,const dim4&, const dim4&,
                                                 const Ti*, const dim4&, const dim4&,
-                                                const int)>;
+                                                const int, bool, double)>;
 
     template<af_op_t op, typename Ti, typename To>
-    Array<To> reduce(const Array<Ti> &in, const int dim)
+    Array<To> reduce(const Array<Ti> &in, const int dim, bool change_nan, double nanval)
     {
         dim4 odims = in.dims();
         odims[dim] = 1;
@@ -79,13 +80,14 @@ namespace cpu
                                                               , reduce_dim<op, Ti, To, 4>()};
 
         reduce_funcs[in.ndims() - 1](out.get(), out.strides(), out.dims(),
-                                    in.get(), in.strides(), in.dims(), dim);
+                                     in.get(), in.strides(), in.dims(), dim,
+                                     change_nan, nanval);
 
         return out;
     }
 
     template<af_op_t op, typename Ti, typename To>
-    To reduce_all(const Array<Ti> &in)
+    To reduce_all(const Array<Ti> &in, bool change_nan, double nanval)
     {
         Transform<Ti, To, op> transform;
         Binary<To, op> reduce;
@@ -109,8 +111,9 @@ namespace cpu
                     for(dim_t i = 0; i < dims[0]; i++) {
                         dim_t idx = i + off1 + off2 + off3;
 
-                        To val = transform(inPtr[idx]);
-                        out = reduce(val, out);
+                        To in_val = transform(inPtr[idx]);
+                        if (change_nan) in_val = IS_NAN(in_val) ? nanval : in_val;
+                        out = reduce(in_val, out);
                     }
                 }
             }
@@ -120,8 +123,10 @@ namespace cpu
     }
 
 #define INSTANTIATE(ROp, Ti, To)                                        \
-    template Array<To> reduce<ROp, Ti, To>(const Array<Ti> &in, const int dim); \
-    template To reduce_all<ROp, Ti, To>(const Array<Ti> &in);
+    template Array<To> reduce<ROp, Ti, To>(const Array<Ti> &in, const int dim, \
+                                           bool change_nan, double nanval); \
+    template To reduce_all<ROp, Ti, To>(const Array<Ti> &in,            \
+                                        bool change_nan, double nanval);
 
     //min
     INSTANTIATE(af_min_t, float  , float  )
@@ -130,6 +135,8 @@ namespace cpu
     INSTANTIATE(af_min_t, cdouble, cdouble)
     INSTANTIATE(af_min_t, int    , int    )
     INSTANTIATE(af_min_t, uint   , uint   )
+    INSTANTIATE(af_min_t, intl   , intl   )
+    INSTANTIATE(af_min_t, uintl  , uintl  )
     INSTANTIATE(af_min_t, char   , char   )
     INSTANTIATE(af_min_t, uchar  , uchar  )
 
@@ -140,6 +147,8 @@ namespace cpu
     INSTANTIATE(af_max_t, cdouble, cdouble)
     INSTANTIATE(af_max_t, int    , int    )
     INSTANTIATE(af_max_t, uint   , uint   )
+    INSTANTIATE(af_max_t, intl   , intl   )
+    INSTANTIATE(af_max_t, uintl  , uintl  )
     INSTANTIATE(af_max_t, char   , char   )
     INSTANTIATE(af_max_t, uchar  , uchar  )
 
@@ -150,6 +159,8 @@ namespace cpu
     INSTANTIATE(af_add_t, cdouble, cdouble)
     INSTANTIATE(af_add_t, int    , int    )
     INSTANTIATE(af_add_t, uint   , uint   )
+    INSTANTIATE(af_add_t, intl   , intl   )
+    INSTANTIATE(af_add_t, uintl  , uintl  )
     INSTANTIATE(af_add_t, char   , int    )
     INSTANTIATE(af_add_t, uchar  , uint   )
 
@@ -160,6 +171,8 @@ namespace cpu
     INSTANTIATE(af_mul_t, cdouble, cdouble)
     INSTANTIATE(af_mul_t, int    , int    )
     INSTANTIATE(af_mul_t, uint   , uint   )
+    INSTANTIATE(af_mul_t, intl   , intl   )
+    INSTANTIATE(af_mul_t, uintl  , uintl  )
     INSTANTIATE(af_mul_t, char   , int    )
     INSTANTIATE(af_mul_t, uchar  , uint   )
 
@@ -170,6 +183,8 @@ namespace cpu
     INSTANTIATE(af_notzero_t, cdouble, uint)
     INSTANTIATE(af_notzero_t, int    , uint)
     INSTANTIATE(af_notzero_t, uint   , uint)
+    INSTANTIATE(af_notzero_t, intl   , uint)
+    INSTANTIATE(af_notzero_t, uintl  , uint)
     INSTANTIATE(af_notzero_t, char   , uint)
     INSTANTIATE(af_notzero_t, uchar  , uint)
 
@@ -180,6 +195,8 @@ namespace cpu
     INSTANTIATE(af_or_t, cdouble, char)
     INSTANTIATE(af_or_t, int    , char)
     INSTANTIATE(af_or_t, uint   , char)
+    INSTANTIATE(af_or_t, intl   , char)
+    INSTANTIATE(af_or_t, uintl  , char)
     INSTANTIATE(af_or_t, char   , char)
     INSTANTIATE(af_or_t, uchar  , char)
 
@@ -190,6 +207,8 @@ namespace cpu
     INSTANTIATE(af_and_t, cdouble, char)
     INSTANTIATE(af_and_t, int    , char)
     INSTANTIATE(af_and_t, uint   , char)
+    INSTANTIATE(af_and_t, intl   , char)
+    INSTANTIATE(af_and_t, uintl  , char)
     INSTANTIATE(af_and_t, char   , char)
     INSTANTIATE(af_and_t, uchar  , char)
 }

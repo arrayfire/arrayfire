@@ -89,7 +89,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
     int MN = std::min(M, N);
 
     Array<T> B = createEmptyArray<T>(dim4());
-    trsm_func<T> gpu_trsm;
+    gpu_blas_trsm_func<T> gpu_blas_trsm;
 
     cl_event event;
     cl_command_queue queue = getQueue()();
@@ -137,14 +137,14 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
                               (*dA)(), A.getOffset(), A.strides()[1], 1,
                               (*dT)(), tmp.getOffset() + MN * NB, NB, 0, queue);
 
-        gpu_trsm(clblasColumnMajor,
-                 clblasLeft, clblasUpper,
-                 clblasConjTrans, clblasNonUnit,
-                 B.dims()[0], B.dims()[1],
-                 scalar<T>(1),
-                 (*dA)(), A.getOffset(), A.strides()[1],
-                 (*dB)(), B.getOffset(), B.strides()[1],
-                 1, &queue, 0, nullptr, &event);
+        CLBLAS_CHECK(gpu_blas_trsm(
+                         clblasLeft, clblasUpper,
+                         clblasConjTrans, clblasNonUnit,
+                         B.dims()[0], B.dims()[1],
+                         scalar<T>(1),
+                         (*dA)(), A.getOffset(), A.strides()[1],
+                         (*dB)(), B.getOffset(), B.strides()[1],
+                         1, &queue, 0, nullptr, &event));
 
         magmablas_swapdblk<T>(MN - 1, NB,
                               (*dT)(), tmp.getOffset() + MN * NB, NB, 0,
@@ -225,19 +225,19 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
         {
             Array<T> AT = transpose<T>(A, true);
             cl::Buffer* AT_buf = AT.get();
-            gpu_trsm(clblasColumnMajor,
-                     clblasLeft, clblasLower, clblasConjTrans, clblasNonUnit,
-                     N, NRHS, scalar<T>(1),
-                     (*AT_buf)(), AT.getOffset(), AT.strides()[1],
-                     (*B_buf)(), B.getOffset(), B.strides()[1],
-                     1, &queue, 0, nullptr, &event);
+            CLBLAS_CHECK(gpu_blas_trsm(
+                             clblasLeft, clblasLower, clblasConjTrans, clblasNonUnit,
+                             N, NRHS, scalar<T>(1),
+                             (*AT_buf)(), AT.getOffset(), AT.strides()[1],
+                             (*B_buf)(), B.getOffset(), B.strides()[1],
+                             1, &queue, 0, nullptr, &event));
         } else {
-            gpu_trsm(clblasColumnMajor,
-                     clblasLeft, clblasUpper, clblasNoTrans, clblasNonUnit,
-                     N, NRHS, scalar<T>(1),
-                     (*A_buf)(), A.getOffset(), A.strides()[1],
-                     (*B_buf)(), B.getOffset(), B.strides()[1],
-                     1, &queue, 0, nullptr, &event);
+            CLBLAS_CHECK(gpu_blas_trsm(
+                             clblasLeft, clblasUpper, clblasNoTrans, clblasNonUnit,
+                             N, NRHS, scalar<T>(1),
+                             (*A_buf)(), A.getOffset(), A.strides()[1],
+                             (*B_buf)(), B.getOffset(), B.strides()[1],
+                             1, &queue, 0, nullptr, &event));
         }
         B.resetDims(dim4(N, K));
     }
@@ -248,7 +248,7 @@ Array<T> leastSquares(const Array<T> &a, const Array<T> &b)
 template<typename T>
 Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop options)
 {
-    trsm_func<T> gpu_trsm;
+    gpu_blas_trsm_func<T> gpu_blas_trsm;
 
     Array<T> B = copyArray<T>(b);
 
@@ -267,25 +267,25 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop o
         Array<T> AT = transpose<T>(A, true);
 
         cl::Buffer* AT_buf = AT.get();
-        gpu_trsm(clblasColumnMajor,
-                 clblasLeft,
-                 clblasLower,
-                 clblasConjTrans,
-                 options & AF_MAT_DIAG_UNIT ? clblasUnit : clblasNonUnit,
-                 N, NRHS, scalar<T>(1),
-                 (*AT_buf)(), AT.getOffset(), AT.strides()[1],
-                 (*B_buf)(), B.getOffset(), B.strides()[1],
-                 1, &queue, 0, nullptr, &event);
+        CLBLAS_CHECK(gpu_blas_trsm(
+                         clblasLeft,
+                         clblasLower,
+                         clblasConjTrans,
+                         options & AF_MAT_DIAG_UNIT ? clblasUnit : clblasNonUnit,
+                         N, NRHS, scalar<T>(1),
+                         (*AT_buf)(), AT.getOffset(), AT.strides()[1],
+                         (*B_buf)(), B.getOffset(), B.strides()[1],
+                         1, &queue, 0, nullptr, &event));
     } else {
-        gpu_trsm(clblasColumnMajor,
-                 clblasLeft,
-                 options & AF_MAT_LOWER ? clblasLower : clblasUpper,
-                 clblasNoTrans,
-                 options & AF_MAT_DIAG_UNIT ? clblasUnit : clblasNonUnit,
-                 N, NRHS, scalar<T>(1),
-                 (*A_buf)(), A.getOffset(), A.strides()[1],
-                 (*B_buf)(), B.getOffset(), B.strides()[1],
-                 1, &queue, 0, nullptr, &event);
+        CLBLAS_CHECK(gpu_blas_trsm(
+                         clblasLeft,
+                         options & AF_MAT_LOWER ? clblasLower : clblasUpper,
+                         clblasNoTrans,
+                         options & AF_MAT_DIAG_UNIT ? clblasUnit : clblasNonUnit,
+                         N, NRHS, scalar<T>(1),
+                         (*A_buf)(), A.getOffset(), A.strides()[1],
+                         (*B_buf)(), B.getOffset(), B.strides()[1],
+                         1, &queue, 0, nullptr, &event));
     }
 
     return B;

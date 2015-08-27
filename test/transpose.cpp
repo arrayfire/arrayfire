@@ -192,11 +192,11 @@ TEST(Transpose, CPP_f32)
 }
 
 template<typename T>
-void trsCPPConjTest()
+void trsCPPConjTest(dim_t d0, dim_t d1 = 1, dim_t d2 = 1, dim_t d3 = 1)
 {
     vector<af::dim4> numDims;
 
-    af::dim4 dims(40, 40);
+    af::dim4 dims(d0, d1, d2, d3);
 
     if (noDoubleTests<T>()) return;
 
@@ -220,9 +220,19 @@ void trsCPPConjTest()
     delete[] cData;
 }
 
-TEST(Transpose, CPP_c32_CONJ)
+TEST(Transpose, CPP_c32_CONJ40x40)
 {
-    trsCPPConjTest<cfloat>();
+    trsCPPConjTest<cfloat>(40, 40);
+}
+
+TEST(Transpose, CPP_c32_CONJ2000x1)
+{
+    trsCPPConjTest<cfloat>(2000);
+}
+
+TEST(Transpose, CPP_c32_CONJ20x20x5)
+{
+    trsCPPConjTest<cfloat>(20, 20, 5);
 }
 
 TEST(Transpose, GFOR)

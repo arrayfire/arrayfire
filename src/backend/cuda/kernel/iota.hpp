@@ -79,8 +79,9 @@ namespace cuda
                         blocksPerMatY * out.dims[3],
                         1);
 
-            iota_kernel<T><<<blocks, threads>>>(out, sdims[0], sdims[1], sdims[2], sdims[3],
-                        tdims[0], tdims[1], tdims[2], tdims[3], blocksPerMatX, blocksPerMatY);
+            CUDA_LAUNCH((iota_kernel<T>), blocks, threads,
+                    out, sdims[0], sdims[1], sdims[2], sdims[3],
+                    tdims[0], tdims[1], tdims[2], tdims[3], blocksPerMatX, blocksPerMatY);
             POST_LAUNCH_CHECK();
         }
     }

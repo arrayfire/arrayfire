@@ -13,6 +13,7 @@
 #include <af/array.h>
 #include <af/index.h>
 #include <af/arith.h>
+#include <af/data.h>
 #include <ArrayInfo.hpp>
 #include <err_common.hpp>
 #include <handle.hpp>
@@ -39,7 +40,17 @@ af_err af_index(af_array *result, const af_array in, const unsigned ndims, const
 {
     af_array out;
     try {
-        af_dtype in_type = getInfo(in).getType();
+
+        ArrayInfo iInfo = getInfo(in);
+        if (ndims == 1 && ndims != (dim_t)iInfo.ndims()) {
+            af_array tmp_in;
+            AF_CHECK(af_flat(&tmp_in, in));
+            AF_CHECK(af_index(result, tmp_in, ndims, index));
+            AF_CHECK(af_release_array(tmp_in));
+            return AF_SUCCESS;
+        }
+
+        af_dtype in_type = iInfo.getType();
 
         switch(in_type) {
         case f32:    indexArray<float>   (out, in, ndims, index);  break;
@@ -90,7 +101,6 @@ af_err af_lookup(af_array *out, const af_array in, const af_array indices, const
     try {
         ARG_ASSERT(3, (dim>=0 && dim<=3));
 
-        ArrayInfo inInfo = getInfo(in);
         ArrayInfo idxInfo= getInfo(indices);
 
         ARG_ASSERT(2, idxInfo.isVector() || idxInfo.isScalar());
@@ -146,6 +156,15 @@ af_err af_index_gen(af_array *out, const af_array in, const dim_t ndims, const a
         ARG_ASSERT(2, (ndims>0));
         ARG_ASSERT(3, (indexs!=NULL));
 
+        ArrayInfo iInfo = getInfo(in);
+        if (ndims == 1 && ndims != (dim_t)iInfo.ndims()) {
+            af_array tmp_in;
+            AF_CHECK(af_flat(&tmp_in, in));
+            AF_CHECK(af_index_gen(out, tmp_in, ndims, indexs));
+            AF_CHECK(af_release_array(tmp_in));
+            return AF_SUCCESS;
+        }
+
         int track = 0;
         af_seq seqs[] = {af_span, af_span, af_span, af_span};
         for (dim_t i = 0; i < ndims; i++) {
@@ -184,7 +203,6 @@ af_err af_index_gen(af_array *out, const af_array in, const dim_t ndims, const a
             }
         }
 
-        ArrayInfo iInfo = getInfo(in);
         dim4 iDims = iInfo.dims();
 
         ARG_ASSERT(1, (iDims.ndims()>0));

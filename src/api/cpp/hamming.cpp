@@ -20,7 +20,7 @@ void hammingMatcher(array& idx, array& dist,
 {
     af_array temp_idx  = 0;
     af_array temp_dist = 0;
-    AF_THROW(af_hamming_matcher(&temp_idx, &temp_dist, query.get(), train.get(), dist_dim, n_dist));
+    AF_THROW(af_nearest_neighbour(&temp_idx, &temp_dist, query.get(), train.get(), dist_dim, n_dist, AF_SHD));
     idx  = array(temp_idx);
     dist = array(temp_dist);
 }

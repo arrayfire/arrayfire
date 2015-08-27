@@ -17,6 +17,9 @@
 
 namespace af
 {
+#if __cplusplus > 199711l
+    static_assert(std::is_standard_layout<dim4>::value, "af::dim4 must be a standard layout type");
+#endif
 
 using std::vector;
 using std::numeric_limits;

@@ -300,8 +300,8 @@ void prepareKernelArgs(conv_kparam_t &params, dim_t oDims[], dim_t fDims[], int 
 template<typename T, typename aT, bool expand, int f0, int f1>
 void conv2Helper(const conv_kparam_t &p, Param<T> out, CParam<T> sig)
 {
-    (convolve2<T, aT, expand, f0, f1>)
-        <<<p.mBlocks, p.mThreads>>>(out, sig, p.mBlk_x, p.mBlk_y, p.o[1], p.o[2], p.s[1], p.s[2]);
+    CUDA_LAUNCH((convolve2<T, aT, expand, f0, f1>), p.mBlocks, p.mThreads,
+            out, sig, p.mBlk_x, p.mBlk_y, p.o[1], p.o[2], p.s[1], p.s[2]);
 
     POST_LAUNCH_CHECK();
 }
@@ -369,10 +369,11 @@ void convolve_1d(conv_kparam_t &p, Param<T> out, CParam<T> sig, CParam<aT> filt)
 
                 // FIXME: if the filter array is strided, direct copy of symbols
                 // might cause issues
-                CUDA_CHECK(cudaMemcpyToSymbol(kernel::cFilter,
+                CUDA_CHECK(cudaMemcpyToSymbolAsync(kernel::cFilter,
                                               filt.ptr+(f1Off+f2Off+f3Off),
                                               filterLen*sizeof(aT),
-                                              0, cudaMemcpyDeviceToDevice));
+                                              0, cudaMemcpyDeviceToDevice,
+                                              cuda::getStream(cuda::getActiveDeviceId())));
 
                 p.o[0] = (p.outHasNoOffset ? 0 : b1);
                 p.o[1] = (p.outHasNoOffset ? 0 : b2);
@@ -381,10 +382,9 @@ void convolve_1d(conv_kparam_t &p, Param<T> out, CParam<T> sig, CParam<aT> filt)
                 p.s[1] = (p.inHasNoOffset ? 0 : b2);
                 p.s[2] = (p.inHasNoOffset ? 0 : b3);
 
-                (convolve1<T, aT, expand>)
-                    <<<p.mBlocks, p.mThreads, p.mSharedSize>>>
-                    (out, sig, filt.dims[0], p.mBlk_x, p.mBlk_y,
-                     p.o[0], p.o[1], p.o[2], p.s[0], p.s[1], p.s[2]);
+                CUDA_LAUNCH_SMEM((convolve1<T, aT, expand>), p.mBlocks, p.mThreads, p.mSharedSize,
+                    out, sig, filt.dims[0], p.mBlk_x, p.mBlk_y,
+                    p.o[0], p.o[1], p.o[2], p.s[0], p.s[1], p.s[2]);
 
                 POST_LAUNCH_CHECK();
             }
@@ -407,10 +407,11 @@ void convolve_2d(conv_kparam_t &p, Param<T> out, CParam<T> sig, CParam<aT> filt)
 
             // FIXME: if the filter array is strided, direct copy of symbols
             // might cause issues
-            CUDA_CHECK(cudaMemcpyToSymbol(kernel::cFilter,
+            CUDA_CHECK(cudaMemcpyToSymbolAsync(kernel::cFilter,
                                           filt.ptr+(f2Off+f3Off),
                                           filterLen*sizeof(aT),
-                                          0, cudaMemcpyDeviceToDevice));
+                                          0, cudaMemcpyDeviceToDevice,
+                                          cuda::getStream(cuda::getActiveDeviceId())));
 
             p.o[1] = (p.outHasNoOffset ? 0 : b2);
             p.o[2] = (p.outHasNoOffset ? 0 : b3);
@@ -434,17 +435,17 @@ void convolve_3d(conv_kparam_t &p, Param<T> out, CParam<T> sig, CParam<aT> filt)
 
         // FIXME: if the filter array is strided, direct copy of symbols
         // might cause issues
-        CUDA_CHECK(cudaMemcpyToSymbol(kernel::cFilter,
+        CUDA_CHECK(cudaMemcpyToSymbolAsync(kernel::cFilter,
                     filt.ptr+f3Off,
                     filterLen*sizeof(aT),
-                    0, cudaMemcpyDeviceToDevice));
+                    0, cudaMemcpyDeviceToDevice,
+                    cuda::getStream(cuda::getActiveDeviceId())));
 
         p.o[2] = (p.outHasNoOffset ? 0 : b3);
         p.s[2] = (p.inHasNoOffset ? 0 : b3);
 
-        (convolve3<T, aT, expand>)
-            <<<p.mBlocks, p.mThreads, p.mSharedSize>>>
-            (out, sig, filt.dims[0], filt.dims[1], filt.dims[2], p.mBlk_x, p.o[2], p.s[2]);
+        CUDA_LAUNCH_SMEM((convolve3<T, aT, expand>), p.mBlocks, p.mThreads, p.mSharedSize,
+            out, sig, filt.dims[0], filt.dims[1], filt.dims[2], p.mBlk_x, p.o[2], p.s[2]);
 
         POST_LAUNCH_CHECK();
     }
@@ -470,9 +471,9 @@ void convolve_nd(Param<T> out, CParam<T> signal, CParam<aT> filt, ConvolveBatchK
         param.o[i] = 0;
         param.s[i] = 0;
     }
-    param.launchMoreBlocks = kind==MANY2MANY || kind==ONE2MANY;
-    param.outHasNoOffset = kind==MANY2ONE || kind==ONE2ONE;
-    param.inHasNoOffset  = kind!=MANY2MANY;
+    param.launchMoreBlocks = kind==CONVOLVE_BATCH_SAME || kind==CONVOLVE_BATCH_KERNEL;
+    param.outHasNoOffset = kind==CONVOLVE_BATCH_SIGNAL || kind==CONVOLVE_BATCH_NONE;
+    param.inHasNoOffset  = kind!=CONVOLVE_BATCH_SAME;
 
     switch(baseDim) {
         case 1: convolve_1d<T, aT, expand>(param, out, signal, filt); break;

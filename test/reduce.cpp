@@ -30,7 +30,7 @@ class Reduce : public ::testing::Test
 {
 };
 
-typedef ::testing::Types<float, double, af::cfloat, af::cdouble, uint, int, char, uchar> TestTypes;
+typedef ::testing::Types<float, double, af::cfloat, af::cdouble, uint, int, intl, uintl, uchar> TestTypes;
 TYPED_TEST_CASE(Reduce, TestTypes);
 
 typedef af_err (*reduceFunc)(af_array *, const af_array, const int);
@@ -71,22 +71,39 @@ void reduceTest(string pTestFile, int off = 0, bool isSubRef=false, const vector
         // Run sum
         ASSERT_EQ(AF_SUCCESS, af_reduce(&outArray, inArray, d + off));
 
+        af_dtype t;
+        af_get_type(&t, outArray);
+
         // Get result
         To *outData;
         outData = new To[dims.elements()];
         ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*)outData, outArray));
 
         size_t nElems = currGoldBar.size();
-        for (size_t elIter = 0; elIter < nElems; ++elIter) {
-            ASSERT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
-                                                            << " for dim " << d + off << std::endl;
+        if(std::equal(currGoldBar.begin(), currGoldBar.end(), outData) == false)
+        {
+            for (size_t elIter = 0; elIter < nElems; ++elIter) {
+
+                EXPECT_EQ(currGoldBar[elIter], outData[elIter]) << "at: " << elIter
+                                                                << " for dim " << d + off << std::endl;
+            }
+            af_print_array(outArray);
+            for(int i = 0; i < (int)nElems; i++) {
+                cout << currGoldBar[i] << ", ";
+            }
+
+            cout << endl;
+            for(int i = 0; i < (int)nElems; i++) {
+                cout << outData[i] << ", ";
+            }
+            FAIL();
         }
+
 
         // Delete
         delete[] outData;
         ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
     }
-
 
     ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
 }
@@ -101,61 +118,43 @@ vector<af_seq> init_subs()
     return subs;
 }
 
-#define REDUCE_TESTS(FN, TAG, Ti, To)                   \
-    TEST(Reduce,Test_##FN##_##TAG)                      \
-    {                                                   \
-        reduceTest<Ti, To, af_##FN>(                    \
-            string(TEST_DIR"/reduce/"#FN".test")        \
-            );                                          \
-    }                                                   \
+template<typename T,reduceFunc OP>
+struct promote_type {
+    typedef T type;
+};
 
-REDUCE_TESTS(sum, float   , float     , float     );
-REDUCE_TESTS(sum, double  , double    , double    );
-REDUCE_TESTS(sum, int     , int       , int       );
-REDUCE_TESTS(sum, cfloat  , cfloat , cfloat );
-REDUCE_TESTS(sum, cdouble , cdouble, cdouble);
-REDUCE_TESTS(sum, unsigned, unsigned  , unsigned  );
-REDUCE_TESTS(sum, uchar   , unsigned char, unsigned);
+// char and uchar are promoted to int for sum and product
+template<> struct promote_type<uchar, af_sum>       { typedef uint type; };
+template<> struct promote_type<char , af_sum>       { typedef uint type; };
+template<> struct promote_type<uchar, af_product>   { typedef uint type; };
+template<> struct promote_type<char , af_product>   { typedef uint type; };
 
-REDUCE_TESTS(min, float   , float     , float     );
-REDUCE_TESTS(min, double  , double    , double    );
-REDUCE_TESTS(min, int     , int       , int       );
-REDUCE_TESTS(min, cfloat  , cfloat , cfloat );
-REDUCE_TESTS(min, cdouble , cdouble, cdouble);
-REDUCE_TESTS(min, unsigned, unsigned  , unsigned  );
-REDUCE_TESTS(min, uchar   , unsigned char, unsigned char);
+#define REDUCE_TESTS(FN)                                                                    \
+    TYPED_TEST(Reduce,Test_##FN)                                                    \
+    {                                                                                       \
+        reduceTest<TypeParam, typename promote_type<TypeParam, af_##FN>::type, af_##FN>(    \
+            string(TEST_DIR"/reduce/"#FN".test")                                            \
+            );                                                                              \
+    }                                                                                       \
 
-REDUCE_TESTS(max, float   , float     , float     );
-REDUCE_TESTS(max, double  , double    , double    );
-REDUCE_TESTS(max, int     , int       , int       );
-REDUCE_TESTS(max, cfloat  , cfloat , cfloat );
-REDUCE_TESTS(max, cdouble , cdouble, cdouble);
-REDUCE_TESTS(max, unsigned, unsigned  , unsigned  );
-REDUCE_TESTS(max, uchar   , unsigned char, unsigned char);
+REDUCE_TESTS(sum);
+REDUCE_TESTS(min);
+REDUCE_TESTS(max);
 
-REDUCE_TESTS(any_true, float   , float     , unsigned char);
-REDUCE_TESTS(any_true, double  , double    , unsigned char);
-REDUCE_TESTS(any_true, int     , int       , unsigned char);
-REDUCE_TESTS(any_true, cfloat  , cfloat , unsigned char);
-REDUCE_TESTS(any_true, cdouble , cdouble, unsigned char);
-REDUCE_TESTS(any_true, unsigned, unsigned  , unsigned char);
-REDUCE_TESTS(any_true, uchar   , unsigned char, unsigned char);
+#undef REDUCE_TESTS
+#define REDUCE_TESTS(FN, OT)                        \
+    TYPED_TEST(Reduce,Test_##FN)            \
+    {                                               \
+        reduceTest<TypeParam, OT, af_##FN>(         \
+            string(TEST_DIR"/reduce/"#FN".test")    \
+            );                                      \
+    }                                               \
 
-REDUCE_TESTS(all_true, float   , float     , unsigned char);
-REDUCE_TESTS(all_true, double  , double    , unsigned char);
-REDUCE_TESTS(all_true, int     , int       , unsigned char);
-REDUCE_TESTS(all_true, cfloat  , cfloat , unsigned char);
-REDUCE_TESTS(all_true, cdouble , cdouble, unsigned char);
-REDUCE_TESTS(all_true, unsigned, unsigned  , unsigned char);
-REDUCE_TESTS(all_true, uchar   , unsigned char, unsigned char);
+REDUCE_TESTS(any_true, unsigned char);
+REDUCE_TESTS(all_true, unsigned char);
+REDUCE_TESTS(count, unsigned);
 
-REDUCE_TESTS(count, float   , float     , unsigned);
-REDUCE_TESTS(count, double  , double    , unsigned);
-REDUCE_TESTS(count, int     , int       , unsigned);
-REDUCE_TESTS(count, cfloat  , cfloat , unsigned);
-REDUCE_TESTS(count, cdouble , cdouble, unsigned);
-REDUCE_TESTS(count, unsigned, unsigned  , unsigned);
-REDUCE_TESTS(count, uchar   , unsigned char, unsigned);
+#undef REDUCE_TESTS
 
 TEST(Reduce,Test_Reduce_Big0)
 {
@@ -433,4 +432,93 @@ TYPED_TEST(Reduce, Test_Any_Global)
 
         h_vals[i] = false;
     }
+}
+
+TEST(MinMax, NaN)
+{
+    const int num = 10000;
+    af::array A = af::randu(num);
+    A(where(A < 0.25)) = af::NaN;
+
+    float minval = af::min<float>(A);
+    float maxval = af::max<float>(A);
+
+    ASSERT_NE(std::isnan(minval), true);
+    ASSERT_NE(std::isnan(maxval), true);
+
+    float *h_A = A.host<float>();
+
+    for (int i = 0; i < num; i++) {
+        if (!std::isnan(h_A[i])) {
+            ASSERT_LE(minval, h_A[i]);
+            ASSERT_GE(maxval, h_A[i]);
+        }
+    }
+}
+
+TEST(Count, NaN)
+{
+    const int num = 10000;
+    af::array A = af::round(5 * af::randu(num));
+    af::array B = A;
+
+    A(where(A == 2)) = af::NaN;
+
+    ASSERT_EQ(af::count<uint>(A), af::count<uint>(B));
+}
+
+TEST(Sum, NaN)
+{
+    const int num = 10000;
+    af::array A = af::randu(num);
+    A(where(A < 0.25)) = af::NaN;
+
+    float res = af::sum<float>(A);
+
+    ASSERT_EQ(std::isnan(res), true);
+
+    res = af::sum<float>(A, 0);
+    float *h_A = A.host<float>();
+
+    float tmp = 0;
+    for (int i = 0; i < num; i++) {
+        tmp += std::isnan(h_A[i]) ? 0 : h_A[i];
+    }
+
+    ASSERT_NEAR(res/num, tmp/num, 1E-5);
+}
+
+TEST(Product, NaN)
+{
+    const int num = 5;
+    af::array A = af::randu(num);
+    A(2) = af::NaN;
+
+    float res = af::product<float>(A);
+
+    ASSERT_EQ(std::isnan(res), true);
+
+    res = af::product<float>(A, 1);
+    float *h_A = A.host<float>();
+
+    float tmp = 1;
+    for (int i = 0; i < num; i++) {
+        tmp *= std::isnan(h_A[i]) ? 1 : h_A[i];
+    }
+
+    ASSERT_NEAR(res/num, tmp/num, 1E-5);
+}
+
+TEST(AnyAll, NaN)
+{
+    const int num = 10000;
+    af::array A = (af::randu(num) > 0.5).as(f32);
+    af::array B = A;
+
+    B(af::where(B == 0)) = af::NaN;
+
+    ASSERT_EQ(af::anyTrue<bool>(B), true);
+    ASSERT_EQ(af::allTrue<bool>(B), true);
+    ASSERT_EQ(af::anyTrue<bool>(A), true);
+    ASSERT_EQ(af::allTrue<bool>(A), false);
 }

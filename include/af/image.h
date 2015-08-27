@@ -8,6 +8,7 @@
  ********************************************************/
 
 #pragma once
+#include <af/defines.h>
 #include <af/features.h>
 
 #ifdef __cplusplus
@@ -46,6 +47,54 @@ AFAPI array loadImage(const char* filename, const bool is_color=false);
     \ingroup imageio_func_save
 */
 AFAPI void saveImage(const char* filename, const array& in);
+
+#if AF_API_VERSION >= 31
+/**
+    C++ Interface for loading an image from memory
+
+    \param[in] ptr is the location of the image data in memory. This is the pointer
+    created by saveImage.
+    \return image loaded as \ref af::array()
+
+    \note The pointer used is a void* cast of the FreeImage type FIMEMORY which is
+    created using the FreeImage_OpenMemory API. If the user is opening a FreeImage
+    stream external to ArrayFire, that pointer can be passed to this function as well.
+
+    \ingroup imagemem_func_load
+*/
+AFAPI array loadImageMem(const void *ptr);
+#endif
+
+#if AF_API_VERSION >= 31
+/**
+    C++ Interface for saving an image to memory
+
+    \param[in] in is the arrayfire array to be saved as an image
+    \param[in] format is the type of image to create in memory. The enum borrows from
+    the FREE_IMAGE_FORMAT enum of FreeImage. Other values not included in imageFormat
+    but included in FREE_IMAGE_FORMAT can also be passed to this function.
+
+    \return a void* pointer which is a type cast of the FreeImage type FIMEMORY* pointer.
+
+    \note Ensure that \ref deleteImageMem is called on this pointer. Otherwise there will
+    be memory leaks
+
+    \ingroup imagemem_func_save
+*/
+AFAPI void* saveImageMem(const array& in, const imageFormat format = AF_FIF_PNG);
+#endif
+
+#if AF_API_VERSION >= 31
+/**
+    C++ Interface for deleting memory created by \ref saveImageMem or
+    \ref af_save_image_memory
+
+    \param[in] ptr is the pointer to the FreeImage stream created by saveImageMem.
+
+    \ingroup imagemem_func_delete
+*/
+AFAPI void deleteImageMem(void *ptr);
+#endif
 
 /**
     C++ Interface for resizing an image to specified dimensions
@@ -411,8 +460,8 @@ AFAPI array histEqual(const array& in, const array& hist);
 /**
    C++ Interface for generating gausian kernels
 
-   \param[in]  rows number of kernel rows
-   \param[in]  cols number of kernel columns
+   \param[in]  rows number of rows of the kernel
+   \param[in]  cols number of columns of the kernel
    \param[in]  sig_r (default 0) (calculated internally as 0.25 * rows + 0.75)
    \param[in]  sig_c (default 0) (calculated internally as 0.25 * cols + 0.75)
    \return     an array with values generated using gaussian function
@@ -461,6 +510,97 @@ AFAPI array rgb2hsv(const array& in);
  */
 AFAPI array colorSpace(const array& image, const CSpace to, const CSpace from);
 
+#if AF_API_VERSION >= 31
+/**
+   C++ Interface wrapper for unwrap
+
+   \param[in]  in is the input image (or set of images)
+   \param[in]  wx is the block window size along 0th-dimension between [1, input.dims[0] + px]
+   \param[in]  wy is the block window size along 1st-dimension between [1, input.dims[1] + py]
+   \param[in]  sx is the stride along 0th-dimension
+   \param[in]  sy is the stride along 1st-dimension
+   \param[in]  px is the padding along 0th-dimension between [0, wx). Padding is applied both before and after.
+   \param[in]  py is the padding along 1st-dimension between [0, wy). Padding is applied both before and after.
+   \param[in]  is_column specifies the layout for the unwrapped patch. If is_column is false, the unrapped patch is laid out as a row.
+   \returns    an array with the image blocks as rows or columns
+
+   \ingroup image_func_unwrap
+*/
+AFAPI array unwrap(const array& in, const dim_t wx, const dim_t wy,
+                   const dim_t sx, const dim_t sy, const dim_t px=0, const dim_t py=0,
+                   const bool is_column = true);
+#endif
+
+#if AF_API_VERSION >= 31
+/**
+   C++ Interface wrapper for wrap
+
+   \param[in]  in is the input image (or set of images)
+   \param[in]  ox is the 0th-dimension of output
+   \param[in]  oy is the ist-dimension of output
+   \param[in]  wx is the block window size along 0th-dimension between
+   \param[in]  wy is the block window size along 1st-dimension between
+   \param[in]  sx is the stride along 0th-dimension
+   \param[in]  sy is the stride along 1st-dimension
+   \param[in]  px is the padding used along 0th-dimension between [0, wx).
+   \param[in]  py is the padding used along 1st-dimension between [0, wy).
+   \param[in]  is_column specifies the layout for the unwrapped patch. If is_column is false, the rows are treated as patches
+   \returns    an array of images after converting rows or columns into image windows
+
+   \ingroup image_func_wrap
+*/
+AFAPI array wrap(const array& in,
+                 const dim_t ox, const dim_t oy,
+                 const dim_t wx, const dim_t wy,
+                 const dim_t sx, const dim_t sy,
+                 const dim_t px = 0, const dim_t py = 0,
+                 const bool is_column = true);
+#endif
+
+#if AF_API_VERSION >= 31
+/**
+   C++ Interface wrapper for summed area tables
+
+   \param[in]  in is the input array
+   \returns the summed area table of input image
+
+   \ingroup image_func_sat
+*/
+AFAPI array sat(const array& in);
+#endif
+
+#if AF_API_VERSION >= 31
+/**
+   C++ Interface for converting YCbCr to RGB
+
+   \param[in]  in is an array in the YCbCr colorspace
+   \param[in]  standard specifies the ITU-R BT "xyz" standard which determines the Kb, Kr values
+   used in colorspace conversion equation
+   \return     array in RGB colorspace
+
+   \note \p in must be three dimensional and values should lie in the range [0,1]
+
+   \ingroup image_func_ycbcr2rgb
+ */
+AFAPI array ycbcr2rgb(const array& in, const YCCStd standard=AF_YCC_601);
+#endif
+
+#if AF_API_VERSION >= 31
+/**
+   C++ Interface for converting RGB to YCbCr
+
+   \param[in]  in is an array in the RGB colorspace
+   \param[in]  standard specifies the ITU-R BT "xyz" standard which determines the Kb, Kr values
+   used in colorspace conversion equation
+   \return     array in YCbCr colorspace
+
+   \note \p in must be three dimensional and values should lie in the range [0,1]
+
+   \ingroup image_func_rgb2ycbcr
+ */
+AFAPI array rgb2ycbcr(const array& in, const YCCStd standard=AF_YCC_601);
+#endif
+
 }
 #endif
 
@@ -469,42 +609,85 @@ extern "C" {
 #endif
 
     /**
-       C Interface for calculating the gradients
+        C Interface for calculating the gradients
 
-       \param[out] dx the gradient along first dimension
-       \param[out] dy the gradient along second dimension
-       \param[in]  in is the input array
-       \return     \ref AF_SUCCESS if the color transformation is successful,
-       otherwise an appropriate error code is returned.
+        \param[out] dx the gradient along first dimension
+        \param[out] dy the gradient along second dimension
+        \param[in]  in is the input array
+        \return     \ref AF_SUCCESS if the color transformation is successful,
+        otherwise an appropriate error code is returned.
 
-       \ingroup calc_func_grad
+        \ingroup calc_func_grad
     */
     AFAPI af_err af_gradient(af_array *dx, af_array *dy, const af_array in);
 
     /**
-       C Interface for loading an image
+        C Interface for loading an image
 
-       \param[out] out will contain the image
-       \param[in] filename is name of file to be loaded
-       \param[in] isColor boolean denoting if the image should be loaded as 1 channel or 3 channel
-       \return     \ref AF_SUCCESS if the color transformation is successful,
-       otherwise an appropriate error code is returned.
+        \param[out] out will contain the image
+        \param[in] filename is name of file to be loaded
+        \param[in] isColor boolean denoting if the image should be loaded as 1 channel or 3 channel
+        \return     \ref AF_SUCCESS if the color transformation is successful,
+        otherwise an appropriate error code is returned.
 
-       \ingroup imageio_func_load
+        \ingroup imageio_func_load
     */
     AFAPI af_err af_load_image(af_array *out, const char* filename, const bool isColor);
 
-   /**
-      C Interface for saving an image
+    /**
+        C Interface for saving an image
 
-      \param[in] filename is name of file to be loaded
-      \param[in] in is the arrayfire array to be saved as an image
-      \return     \ref AF_SUCCESS if the color transformation is successful,
-      otherwise an appropriate error code is returned.
+        \param[in] filename is name of file to be loaded
+        \param[in] in is the arrayfire array to be saved as an image
+        \return     \ref AF_SUCCESS if the color transformation is successful,
+        otherwise an appropriate error code is returned.
 
-      \ingroup imageio_func_save
-   */
+        \ingroup imageio_func_save
+    */
     AFAPI af_err af_save_image(const char* filename, const af_array in);
+
+#if AF_API_VERSION >= 31
+    /**
+        C Interface for loading an image from memory
+
+        \param[out] out is an array that will contain the image
+        \param[in] ptr is the FIMEMORY pointer created by either saveImageMem function, the
+        af_save_image_memory function, or the FreeImage_OpenMemory API.
+        \return     \ref AF_SUCCESS if successful
+
+        \ingroup imagemem_func_load
+    */
+    AFAPI af_err af_load_image_memory(af_array *out, const void* ptr);
+#endif
+
+#if AF_API_VERSION >= 31
+    /**
+        C Interface for saving an image to memory using FreeImage
+
+        \param[out] ptr is the FIMEMORY pointer created by FreeImage.
+        \param[in] in is the arrayfire array to be saved as an image
+        \param[in] format is the type of image to create in memory. The enum borrows from
+        the FREE_IMAGE_FORMAT enum of FreeImage. Other values not included in af_image_format
+        but included in FREE_IMAGE_FORMAT can also be passed to this function.
+        \return     \ref AF_SUCCESS if successful.
+
+        \ingroup imagemem_func_save
+    */
+    AFAPI af_err af_save_image_memory(void** ptr, const af_array in, const af_image_format format);
+#endif
+
+#if AF_API_VERSION >= 31
+    /**
+        C Interface for deleting an image from memory
+
+        \param[in] ptr is the FIMEMORY pointer created by either saveImageMem function, the
+        af_save_image_memory function, or the FreeImage_OpenMemory API.
+        \return     \ref AF_SUCCESS if successful
+
+        \ingroup imagemem_func_delete
+    */
+    AFAPI af_err af_delete_image_memory(void* ptr);
+#endif
 
     /**
        C Interface for resizing an image to specified dimensions
@@ -843,8 +1026,8 @@ extern "C" {
        C Interface generating gaussian kernels
 
        \param[out] out is an array with values generated using gaussian function
-       \param[in]  rows number of kernel rows
-       \param[in]  cols number of kernel columns
+       \param[in]  rows number of rows of the gaussian kernel
+       \param[in]  cols number of columns of the gaussian kernel
        \param[in]  sigma_r (default 0) (calculated internally as 0.25 * rows + 0.75)
        \param[in]  sigma_c (default 0) (calculated internally as 0.25 * cols + 0.75)
        \return     \ref AF_SUCCESS if gaussian distribution values are generated successfully,
@@ -903,6 +1086,109 @@ extern "C" {
     */
     AFAPI af_err af_color_space(af_array *out, const af_array image, const af_cspace_t to, const af_cspace_t from);
 
+#if AF_API_VERSION >= 31
+    /**
+       C Interface wrapper for unwrap
+
+       \param[out] out is an array with image blocks as rows or columns.
+       \param[in]  in is the input image (or set of images)
+       \param[in]  wx is the block window size along 0th-dimension between [1, input.dims[0] + px]
+       \param[in]  wy is the block window size along 1st-dimension between [1, input.dims[1] + py]
+       \param[in]  sx is the stride along 0th-dimension
+       \param[in]  sy is the stride along 1st-dimension
+       \param[in]  px is the padding along 0th-dimension between [0, wx). Padding is applied both before and after.
+       \param[in]  py is the padding along 1st-dimension between [0, wy). Padding is applied both before and after.
+       \param[in]  is_column specifies the layout for the unwrapped patch. If is_column is false, the unrapped patch is laid out as a row.
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup image_func_unwrap
+    */
+    AFAPI af_err af_unwrap(af_array *out, const af_array in, const dim_t wx, const dim_t wy,
+                           const dim_t sx, const dim_t sy, const dim_t px, const dim_t py,
+                           const bool is_column);
+#endif
+
+#if AF_API_VERSION >= 31
+    /**
+       C Interface wrapper for wrap
+
+       \param[out] out is an array after converting
+       \param[in]  in is the input array
+       \param[in]  ox is the 0th-dimension of \p out
+       \param[in]  oy is the ist-dimension of \p out
+       \param[in]  wx is the block window size along 0th-dimension between
+       \param[in]  wy is the block window size along 1st-dimension between
+       \param[in]  sx is the stride along 0th-dimension
+       \param[in]  sy is the stride along 1st-dimension
+       \param[in]  px is the padding used along 0th-dimension between [0, wx).
+       \param[in]  py is the padding used along 1st-dimension between [0, wy).
+       \param[in]  is_column specifies the layout for the unwrapped patch. If is_column is false, the rows are treated as the patches
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \note The padding used in \ref af_unwrap is calculated from the provided parameters
+
+       \ingroup image_func_wrap
+    */
+    AFAPI af_err af_wrap(af_array *out,
+                         const af_array in,
+                         const dim_t ox, const dim_t oy,
+                         const dim_t wx, const dim_t wy,
+                         const dim_t sx, const dim_t sy,
+                         const dim_t px, const dim_t py,
+                         const bool is_column);
+#endif
+
+#if AF_API_VERSION >= 31
+    /**
+       C Interface wrapper for summed area tables
+
+       \param[out] out is the summed area table on input image(s)
+       \param[in]  in is the input array
+       \return \ref AF_SUCCESS if the sat computation is successful,
+       otherwise an appropriate error code is returned.
+
+       \ingroup image_func_sat
+    */
+    AFAPI af_err af_sat(af_array *out, const af_array in);
+#endif
+
+#if AF_API_VERSION >= 31
+    /**
+       C Interface for converting YCbCr to RGB
+
+       \param[out] out is an array in the RGB color space
+       \param[in]  in is an array in the YCbCr color space
+       \param[in]  standard specifies the ITU-R BT "xyz" standard which determines the Kb, Kr values
+       used in colorspace conversion equation
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \note \p in must be three dimensional and values should lie in the range [0,1]
+
+       \ingroup image_func_ycbcr2rgb
+    */
+    AFAPI af_err af_ycbcr2rgb(af_array* out, const af_array in, const af_ycc_std standard);
+#endif
+
+#if AF_API_VERSION >= 31
+    /**
+       C Interface for converting RGB to YCbCr
+
+       \param[out] out is an array in the YCbCr color space
+       \param[in]  in is an array in the RGB color space
+       \param[in]  standard specifies the ITU-R BT "xyz" standard which determines the Kb, Kr values
+       used in colorspace conversion equation
+       \return     \ref AF_SUCCESS if the color transformation is successful,
+       otherwise an appropriate error code is returned.
+
+       \note \p in must be three dimensional and values should lie in the range [0,1]
+
+       \ingroup image_func_rgb2ycbcr
+    */
+    AFAPI af_err af_rgb2ycbcr(af_array* out, const af_array in, const af_ycc_std standard);
+#endif
 #ifdef __cplusplus
 }
 #endif

@@ -63,6 +63,8 @@ namespace cuda
                     transform_n(optr, out, iptr, in, t.tmat, xx, yy, limages); break;
                 case AF_INTERP_BILINEAR:
                     transform_b(optr, out, iptr, in, t.tmat, xx, yy, limages); break;
+                case AF_INTERP_LOWER:
+                    transform_l(optr, out, iptr, in, t.tmat, xx, yy, limages); break;
                 default: break;
             }
         }
@@ -112,8 +114,8 @@ namespace cuda
 
             blocks.y = blocks.y * nbatches;
 
-            rotate_kernel<T, method><<<blocks, threads>>> (out, in, t, nimages, nbatches,
-                                    blocksXPerImage, blocksYPerImage);
+            CUDA_LAUNCH((rotate_kernel<T, method>), blocks, threads,
+                    out, in, t, nimages, nbatches, blocksXPerImage, blocksYPerImage);
 
             POST_LAUNCH_CHECK();
         }

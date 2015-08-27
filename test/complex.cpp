@@ -34,9 +34,9 @@ const int num = 10;
         af::array c = af::complex(a, b);                                \
         Ta *h_a = a.host<Ta>();                                         \
         Tb *h_b = b.host<Tb>();                                         \
-        CPLX(Tc) *h_c = c.host< CPLX(Tc) >();           \
+        CPLX(Tc) *h_c = c.host< CPLX(Tc) >();                           \
         for (int i = 0; i < num; i++)                                   \
-            ASSERT_EQ(h_c[i], CPLX(Tc)(h_a[i], h_b[i])) <<      \
+            ASSERT_EQ(h_c[i], CPLX(Tc)(h_a[i], h_b[i])) <<              \
                 "for values: " << h_a[i]  << "," << h_b[i] << std::endl; \
         delete[] h_a;                                                   \
         delete[] h_b;                                                   \
@@ -52,9 +52,9 @@ const int num = 10;
         Tb h_b = 0.3;                                                   \
         af::array c = af::complex(a, h_b);                              \
         Ta *h_a = a.host<Ta>();                                         \
-        CPLX(Ta) *h_c = c.host<CPLX(Ta) >();            \
+        CPLX(Ta) *h_c = c.host<CPLX(Ta) >();                            \
         for (int i = 0; i < num; i++)                                   \
-            ASSERT_EQ(h_c[i], CPLX(Ta)(h_a[i], h_b)) <<         \
+            ASSERT_EQ(h_c[i], CPLX(Ta)(h_a[i], h_b)) <<                 \
                 "for values: " << h_a[i]  << "," << h_b << std::endl;   \
         delete[] h_a;                                                   \
         delete[] h_c;                                                   \
@@ -70,9 +70,9 @@ const int num = 10;
         af::array b = randu(num, tb);                                   \
         af::array c = af::complex(h_a, b);                              \
         Tb *h_b = b.host<Tb>();                                         \
-        CPLX(Tb) *h_c = c.host<CPLX(Tb) >();            \
+        CPLX(Tb) *h_c = c.host<CPLX(Tb) >();                            \
         for (int i = 0; i < num; i++)                                   \
-            ASSERT_EQ(h_c[i], CPLX(Tb)(h_a, h_b[i])) <<         \
+            ASSERT_EQ(h_c[i], CPLX(Tb)(h_a, h_b[i])) <<                 \
                 "for values: " << h_a  << "," << h_b[i] << std::endl;   \
         delete[] h_b;                                                   \
         delete[] h_c;                                                   \
@@ -127,10 +127,10 @@ const int num = 10;
         af::array b = randu(num, tb);                                   \
         af::array c = af::complex(a, b);                                \
         af::array d = af::conjg(c);                                     \
-        CPLX(Tc) *h_c = c.host<CPLX(Tc) >();            \
-        CPLX(Tc) *h_d = d.host<CPLX(Tc) >();            \
+        CPLX(Tc) *h_c = c.host<CPLX(Tc) >();                            \
+        CPLX(Tc) *h_d = d.host<CPLX(Tc) >();                            \
         for (int i = 0; i < num; i++)                                   \
-            ASSERT_EQ(conj(h_c[i]), h_d[i])                        \
+            ASSERT_EQ(conj(h_c[i]), h_d[i])                             \
                 << "at: " << i << std::endl;                            \
         delete[] h_c;                                                   \
         delete[] h_d;                                                   \

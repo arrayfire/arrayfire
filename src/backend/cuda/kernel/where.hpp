@@ -135,7 +135,8 @@ namespace kernel
 
         uint lim = divup(otmp.dims[0], (threads_x * blocks_x));
 
-        (get_out_idx<T>)<<<blocks, threads>>>(out.ptr, otmp, rtmp, in, blocks_x, blocks_y, lim);
+        CUDA_LAUNCH((get_out_idx<T>), blocks, threads,
+                out.ptr, otmp, rtmp, in, blocks_x, blocks_y, lim);
         POST_LAUNCH_CHECK();
 
         memFree(rtmp.ptr);

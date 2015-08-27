@@ -606,6 +606,14 @@ namespace af
         return out;
     }
 
+    af_array array::array_proxy::get() const
+    {
+        array tmp = *this;
+        af_array out = 0;
+        AF_THROW(af_retain_array(&out, tmp.get()));
+        return out;
+    }
+
 #define MEM_FUNC(PREFIX, FUNC)                  \
     PREFIX array::array_proxy::FUNC() const     \
     {                                           \
@@ -613,7 +621,6 @@ namespace af
         return out.FUNC();                      \
     }
 
-    MEM_FUNC(af_array               , get)
     MEM_FUNC(dim_t                  , elements)
     MEM_FUNC(array                  , T)
     MEM_FUNC(array                  , H)
@@ -739,12 +746,19 @@ namespace af
     }
 
     //FIXME: Check if this leaks
-#define MEM_INDEX(FUNC_SIG, USAGE)          \
-    array::array_proxy                      \
-    array::array_proxy::FUNC_SIG            \
-    {                                       \
-        array *out = new array(this->get());\
-        return out->USAGE;                  \
+#define MEM_INDEX(FUNC_SIG, USAGE)                  \
+    array::array_proxy                              \
+    array::array_proxy::FUNC_SIG                    \
+    {                                               \
+        array *out = new array(this->get());        \
+        return out->USAGE;                          \
+    }                                               \
+                                                    \
+    const array::array_proxy                        \
+    array::array_proxy::FUNC_SIG const              \
+    {                                               \
+        const array *out = new array(this->get());  \
+        return out->USAGE;                          \
     }
 
     MEM_INDEX(row(int index)                , row(index));
@@ -842,22 +856,45 @@ namespace af
 #undef ASSIGN_OP
 #undef ASSIGN_TYPE
 
+af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
+{
+    // If same, do not do anything
+    if (scalar_type == array_type) return scalar_type;
+
+    // If complex, return appropriate complex type
+    if (scalar_type == c32 || scalar_type == c64) {
+        if (array_type == f64 || array_type == c64) return c64;
+        return c32;
+    }
+
+    // If 64 bit precision, do not lose precision
+    if (array_type == f64 || array_type == c64 ||
+        array_type == f32 || array_type == c32 ) return array_type;
+
+    // Default to single precision by default when multiplying with scalar
+    if ((scalar_type == f64 || scalar_type == c64) &&
+        (array_type  != f64 && array_type  != c64)) {
+        return f32;
+    }
+
+    // Punt to C api for everything else
+    return scalar_type;
+}
+
 #define BINARY_TYPE(TY, OP, func, dty)                          \
     array operator OP(const array& plhs, const TY &value)       \
     {                                                           \
         af_array out;                                           \
-        af::dtype ty = plhs.type();                             \
-        af::dtype cty = plhs.isrealfloating() ? ty : dty;       \
+        af::dtype cty = implicit_dtype(dty, plhs.type());       \
         array cst = constant(value, plhs.dims(), cty);          \
         AF_THROW(func(&out, plhs.get(), cst.get(), gforGet())); \
         return array(out);                                      \
     }                                                           \
     array operator OP(const TY &value, const array &other)      \
     {                                                           \
-        const af_array rhs = other.get();                         \
+        const af_array rhs = other.get();                       \
         af_array out;                                           \
-        af::dtype ty = other.type();                            \
-        af::dtype cty = other.isrealfloating() ? ty : dty;      \
+        af::dtype cty = implicit_dtype(dty, other.type());      \
         array cst = constant(value, other.dims(), cty);         \
         AF_THROW(func(&out, cst.get(), rhs, gforGet()));        \
         return array(out);                                      \
@@ -919,8 +956,7 @@ namespace af
     {
         af_array lhs = this->get();
         af_array out;
-        array cst = constant(0, this->dims(), this->type());
-        AF_THROW(af_eq(&out, cst.get(), lhs, gforGet()));
+        AF_THROW(af_not(&out, lhs));
         return array(out);
     }
 
@@ -1013,9 +1049,17 @@ namespace af
 #undef TEMPLATE_MEM_FUNC
 
     //FIXME: This needs to be implemented at a later point
-    void array::unlock() const {}
     void array::array_proxy::unlock() const {}
 
     int array::nonzeros() const { return count<int>(*this); }
 
+    void array::lock() const
+    {
+        AF_THROW(af_lock_device_ptr(get()));
+    }
+
+    void array::unlock() const
+    {
+        AF_THROW(af_unlock_device_ptr(get()));
+    }
 }

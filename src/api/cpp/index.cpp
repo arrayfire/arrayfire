@@ -23,6 +23,24 @@ array lookup(const array &in, const array &idx, const int dim)
     return array(out);
 }
 
+void copy(array &dst, const array &src,
+          const index &idx0,
+          const index &idx1,
+          const index &idx2,
+          const index &idx3)
+{
+    unsigned nd = dst.numdims();
+
+    af_index_t indices[] = {idx0.get(),
+                            idx1.get(),
+                            idx2.get(),
+                            idx3.get()};
+
+    af_array lhs = dst.get();
+    const af_array rhs = src.get();
+    AF_THROW(af_assign_gen(&lhs, lhs, nd, indices, rhs));
+}
+
 index::index() {
     impl.idx.seq = af_span;
     impl.isSeq = true;
@@ -57,10 +75,35 @@ index::index(const af::array& idx0) {
     impl.isBatch = false;
 }
 
+index::index(const af::index& idx0) {  
+    *this = idx0;
+}
+
 index::~index() {
     if (!impl.isSeq)
         af_release_array(impl.idx.arr);
 }
+
+index & index::operator=(const index& idx0) {
+    impl = idx0.get();
+    if(impl.isSeq == false){
+        // increment reference count to avoid double free
+        // when/if idx0 is destroyed
+        AF_THROW(af_retain_array(&impl.idx.arr, impl.idx.arr));
+    }
+    return *this;
+}
+
+#if __cplusplus > 199711L
+index::index(index &&idx0) {
+    impl = idx0.impl;
+}
+
+index& index::operator=(index &&idx0) {
+    impl = idx0.impl;
+    return *this;
+}
+#endif
 
 
 static bool operator==(const af_seq& lhs, const af_seq& rhs) {

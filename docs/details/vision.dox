@@ -18,6 +18,49 @@ discard it if its score is non maximal.
 
 =======================================================================
 
+\defgroup cv_func_harris harris
+\ingroup featdetect_mat
+
+\brief Harris corner detector
+
+Compute corners using the Harris corner detector approach. For each pixel, a
+small window is used to calculate the determinant and trace of such a window,
+from which a response is calculated. Pixels are considered corners if they are
+local maximas and have a high positive response.
+
+=======================================================================
+
+\defgroup cv_func_susan susan
+\ingroup featdetect_mat
+
+\brief SUSAN corner detector
+
+SUSAN is an acronym standing for *Smallest Univalue Segment Assimilating Nucleus*. This method
+places a circular disc over the pixel to be tested (a.k.a nucleus) to compute the corner measure
+of that corresponding pixel. The region covered by the circular disc is **M**, and a pixel in this
+region is represented by \f$\vec{m} \in M\f$ where \f$\vec{m}_0\f$ is the nucleus. Every pixel in the region
+is compared to the nucleus using the following comparison function:
+
+\f$ c(\vec{m}) = e^{-{(({I(\vec{m}) - I(\vec{m}_0))} / t})^6}\f$
+
+where *t* is radius of the region, *I* is the brightness of the pixel.
+
+Response of SUSAN operator is given by the following equation:
+
+\f$ R(M) = \begin{cases} g - n(M) \quad \text{if } n(M) < g\\ 0 \quad \text{otherwise},\\ \end{cases}\f$
+
+where \f$ n(M) =  \sum\nolimits_{\vec{m} \in M} c(\vec{m})\f$, g is named the *geometric threshold* and n is the number
+of pixels in the mask which are within **t** of the nucleus.
+
+Importance of the parameters, **t** and **g** is explained below:
+
+- *t* determines how similar points have to be to the nucleusbefore they are considered to
+  be a part of the univalue segment
+- g determines the minimum size of the univalue segment. For a large enough *g*, SUSAN operator becomes
+  an edge dectector.
+
+=======================================================================
+
 \defgroup cv_func_orb orb
 \ingroup featdescriptor_mat
 
@@ -28,6 +71,22 @@ FAST does not compute orientation, thus, orientation of features is calculated
 using the intensity centroid. As FAST is also not multi-scale enabled, a
 multi-scale pyramid is calculated by downsampling the input image multiple
 times followed by FAST feature detection on each scale.
+
+=======================================================================
+
+\defgroup cv_func_sift sift
+\ingroup featdescriptor_mat
+
+\brief SIFT feature detector and descriptor extractor
+
+Detects features and extract descriptors using the Scale Invariant Feature
+Transform (SIFT), by David Lowe.
+
+Lowe, D. G., "Distinctive Image Features from Scale-Invariant Keypoints",
+International Journal of Computer Vision, 60, 2, pp. 91-110, 2004.
+
+WARNING: The SIFT algorithm is patented by the University of British Columbia,
+before using it, make sure you have the appropriate permission to do so.
 
 =======================================================================
 
@@ -48,6 +107,37 @@ equal to the number of features contained in the query array.
 
 =======================================================================
 
+\defgroup cv_func_nearest_neighbour nearestNeighbour
+\ingroup featmatcher_mat
+
+\brief Nearest Neighbour
+
+Calculates nearest distances between two 2-dimensional arrays containing
+features based on the type of distance computation chosen. Currently, \ref
+AF_SAD (sum of absolute differences), \ref AF_SSD (sum of squared differences)
+and \ref AF_SHD (hamming distance) are supported.
+One of the arrays containing the training data and the other the
+query data. One of the dimensions of the both arrays must be equal among them,
+identifying the length of each feature. The other dimension indicates the
+total number of features in each of the training and query arrays. Two
+1-dimensional arrays are created as results, one containg the smallest N
+distances of the query array and another containing the indices of these
+distances in the training array. The resulting 1-dimensional arrays have length
+equal to the number of features contained in the query array.
+
+=======================================================================
+
+\defgroup cv_func_dog DoG
+\ingroup featdetect_mat
+
+\brief Difference of Gaussians
+
+Given an image, this function computes two different versions of smoothed
+input image using the difference smoothing parameters and subtracts one
+from the other and returns the result.
+
+=======================================================================
+
 \defgroup cv_func_match_template matchTemplate
 \ingroup match_mat
 
@@ -56,6 +146,8 @@ equal to the number of features contained in the query array.
 Template matching is an image processing technique to find small patches of an image which
 match a given template image. A more in depth discussion on the topic can be found
 [here](http://en.wikipedia.org/wiki/Template_matching).
+
+
 
 @}
 */

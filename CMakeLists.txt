@@ -3,18 +3,37 @@ PROJECT(ARRAYFIRE)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
+INCLUDE(${CMAKE_MODULE_PATH}/UploadCoveralls.cmake)
+INCLUDE(AFInstallDirs)
+
 OPTION(BUILD_TEST "Build Tests" ON)
 OPTION(BUILD_EXAMPLES "Build Examples" ON)
 OPTION(BUILD_GTEST "Download gtest and check for updates. Necessary if you change compilers" ON)
 
 OPTION(BUILD_CPU "Build ArrayFire with a CPU backend" ON)
+
+FIND_PACKAGE(CUDA QUIET)
+IF(${CUDA_FOUND})
+    SET(BUILD_CUDA ON CACHE BOOL "")
+ENDIF(${CUDA_FOUND})
 OPTION(BUILD_CUDA "Build ArrayFire with a CUDA backend" OFF)
+
+FIND_PACKAGE(OpenCL QUIET)
+IF(${OpenCL_FOUND})
+    SET(BUILD_OPENCL ON CACHE BOOL "")
+ENDIF(${OpenCL_FOUND})
 OPTION(BUILD_OPENCL "Build ArrayFire with a OpenCL backend" OFF)
 
 OPTION(BUILD_GRAPHICS "Build ArrayFire with Forge Graphics" ON)
 
 OPTION(BUILD_DOCS "Create ArrayFire Documentation" OFF)
 OPTION(WITH_COVERAGE "Added code coverage flags" OFF)
+
+OPTION(BUILD_NONFREE "Build ArrayFire nonfree algorithms" OFF)
+OPTION(BUILD_SIFT "Build ArrayFire nonfree algorithms" OFF)
+
+MARK_AS_ADVANCED(BUILD_SIFT)
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -23,10 +42,6 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
       "MinSizeRel" "RelWithDebInfo")
 endif()
-
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
-INCLUDE(${CMAKE_MODULE_PATH}/UploadCoveralls.cmake)
-INCLUDE(AFInstallDirs)
 
 FIND_PACKAGE(FreeImage)
 IF(FREEIMAGE_FOUND)
@@ -70,6 +85,27 @@ IF(BUILD_GRAPHICS)
     ENDIF(FORGE_FOUND)
 
 ENDIF(BUILD_GRAPHICS)
+
+IF(BUILD_NONFREE)
+  MESSAGE(WARNING "Building With NONFREE ON requires the following patents")
+  SET(BUILD_SIFT ON)
+ENDIF(BUILD_NONFREE)
+
+IF(BUILD_SIFT)
+  ADD_DEFINITIONS(-DAF_BUILD_SIFT)
+
+  IF (NOT BUILD_NONFREE)
+    MESSAGE(WARNING "Building with SIFT requires the following patents")
+  ENDIF()
+
+  MESSAGE("Method and apparatus for identifying scale invariant features"
+    "in an image and use of same for locating an object in an image,\" David"
+    "G. Lowe, US Patent 6,711,293 (March 23, 2004). Provisional application"
+    "filed March 8, 1999. Asignee: The University of British Columbia. For"
+    "further details, contact David Lowe (lowe@cs.ubc.ca) or the"
+    "University-Industry Liaison Office of the University of British"
+    "Columbia.")
+ENDIF(BUILD_SIFT)
 
 INCLUDE_DIRECTORIES(
     "${CMAKE_CURRENT_SOURCE_DIR}/include"

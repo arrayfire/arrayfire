@@ -86,11 +86,14 @@ Array<T> randn(const af::dim4 &dims)
 
     if (my_seed != gen_seed) {
         gen = nrand<T>(generator);
+        my_seed = gen_seed;
     }
 
     Array<T> outArray = createEmptyArray<T>(dims);
     T *outPtr = outArray.get();
-    generate(outPtr, outPtr + outArray.elements(), gen);
+    for (int i = 0; i < (int)outArray.elements(); i++) {
+        outPtr[i] = gen();
+    }
     return outArray;
 }
 
@@ -107,6 +110,7 @@ Array<T> randu(const af::dim4 &dims)
 
     if (my_seed != gen_seed) {
         gen = urand<T>(generator);
+        my_seed = gen_seed;
     }
 
     Array<T> outArray = createEmptyArray<T>(dims);
@@ -126,6 +130,8 @@ INSTANTIATE_UNIFORM(cfloat)
 INSTANTIATE_UNIFORM(cdouble)
 INSTANTIATE_UNIFORM(int)
 INSTANTIATE_UNIFORM(uint)
+INSTANTIATE_UNIFORM(intl)
+INSTANTIATE_UNIFORM(uintl)
 INSTANTIATE_UNIFORM(uchar)
 
 #define INSTANTIATE_NORMAL(T)                              \
@@ -150,6 +156,7 @@ Array<char> randu(const af::dim4 &dims)
 
     if (my_seed != gen_seed) {
         gen = urand<float>(generator);
+        my_seed = gen_seed;
     }
 
     Array<char> outArray = createEmptyArray<char>(dims);

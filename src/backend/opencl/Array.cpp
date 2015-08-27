@@ -15,6 +15,7 @@
 #include <err_opencl.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
+#include <cstddef>
 
 using af::dim4;
 
@@ -28,63 +29,65 @@ namespace opencl
 
     template<typename T>
     Array<T>::Array(af::dim4 dims) :
-        ArrayInfo(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(bufferAlloc(ArrayInfo::elements() * sizeof(T)), bufferFree),
+        info(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        data(bufferAlloc(info.elements() * sizeof(T)), bufferFree),
         data_dims(dims),
-        node(), ready(true), offset(0), owner(true)
+        node(), offset(0), ready(true), owner(true)
     {
     }
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
-        ArrayInfo(-1, dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        info(-1, dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(),
         data_dims(dims),
-        node(n), ready(false), offset(0), owner(true)
+        node(n), offset(0), ready(false), owner(true)
     {
     }
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, const T * const in_data) :
-        ArrayInfo(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(bufferAlloc(ArrayInfo::elements()*sizeof(T)), bufferFree),
+        info(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        data(bufferAlloc(info.elements()*sizeof(T)), bufferFree),
         data_dims(dims),
-        node(), ready(true), offset(0), owner(true)
+        node(), offset(0), ready(true), owner(true)
     {
-        getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T)*ArrayInfo::elements(), in_data);
+        static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
+        static_assert(offsetof(Array<T>, info) == 0, "Array<T>::info must be the first member variable of Array<T>");
+        getQueue().enqueueWriteBuffer(*data.get(), CL_TRUE, 0, sizeof(T)*info.elements(), in_data);
     }
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, cl_mem mem) :
-        ArrayInfo(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        info(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(new cl::Buffer(mem), bufferFree),
         data_dims(dims),
-        node(), ready(true), offset(0), owner(true)
+        node(), offset(0), ready(true), owner(true)
     {
     }
 
     template<typename T>
     Array<T>::Array(const Array<T>& parent, const dim4 &dims, const dim4 &offsets, const dim4 &stride) :
-        ArrayInfo(parent.getDevId(), dims, offsets, stride, (af_dtype)dtype_traits<T>::af_type),
+        info(parent.getDevId(), dims, offsets, stride, (af_dtype)dtype_traits<T>::af_type),
         data(parent.getData()),
         data_dims(parent.getDataDims()),
         node(),
-        ready(true),
         offset(parent.getOffset() + calcOffset(parent.strides(), offsets)),
+        ready(true),
         owner(false)
     { }
 
 
     template<typename T>
     Array<T>::Array(Param &tmp) :
-        ArrayInfo(getActiveDeviceId(), af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3]),
+        info(getActiveDeviceId(), af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3]),
                   af::dim4(0, 0, 0, 0),
                   af::dim4(tmp.info.strides[0], tmp.info.strides[1],
                            tmp.info.strides[2], tmp.info.strides[3]),
                   (af_dtype)dtype_traits<T>::af_type),
         data(tmp.data, bufferFree),
         data_dims(af::dim4(tmp.info.dims[0], tmp.info.dims[1], tmp.info.dims[2], tmp.info.dims[3])),
-        node(), ready(true), offset(0), owner(true)
+        node(), offset(0), ready(true), owner(true)
     {
     }
 

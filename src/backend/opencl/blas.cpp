@@ -18,6 +18,7 @@
 #include <err_common.hpp>
 #include <err_clblas.hpp>
 #include <math.hpp>
+#include <transpose.hpp>
 
 namespace opencl
 {
@@ -34,10 +35,10 @@ toClblasTranspose(af_mat_prop opt)
 {
     clblasTranspose out = clblasNoTrans;
     switch(opt) {
-        case AF_MAT_NONE        : out = clblasNoTrans;   break;
-        case AF_MAT_TRANS           : out = clblasTrans;     break;
-        case AF_MAT_CTRANS : out = clblasConjTrans; break;
-        default                     : AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
+        case AF_MAT_NONE    : out = clblasNoTrans;   break;
+        case AF_MAT_TRANS   : out = clblasTrans;     break;
+        case AF_MAT_CTRANS  : out = clblasConjTrans; break;
+        default             : AF_ERROR("INVALID af_mat_prop", AF_ERR_ARG);
     }
     return out;
 }
@@ -67,9 +68,43 @@ BLAS_FUNC(gemv, double,     D)
 BLAS_FUNC(gemv, cfloat,     C)
 BLAS_FUNC(gemv, cdouble,    Z)
 
+#undef BLAS_FUNC_DEF
+#undef BLAS_FUNC
+
+#define BLAS_FUNC_DEF(NAME)                                             \
+template<typename T, bool conjugate>                                    \
+struct NAME##_func;
+
+#define BLAS_FUNC(NAME, TYPE, CONJUGATE, PREFIX)                        \
+template<>                                                              \
+struct NAME##_func<TYPE, CONJUGATE>                                     \
+{                                                                       \
+    template<typename... Args>                                          \
+    clblasStatus                                                        \
+    operator() (Args... args) { return clblas##PREFIX##NAME(args...); } \
+};
+
 BLAS_FUNC_DEF( dot )
-BLAS_FUNC(dot, float,       S)
-BLAS_FUNC(dot, double,      D)
+BLAS_FUNC(dot, float,  false, S)
+BLAS_FUNC(dot, double, false, D)
+BLAS_FUNC(dot, float,  true , S)
+BLAS_FUNC(dot, double, true , D)
+
+#undef BLAS_FUNC
+
+#define BLAS_FUNC(NAME, TYPE, CONJUGATE, PREFIX, SUFFIX)                \
+template<>                                                              \
+struct NAME##_func<TYPE, CONJUGATE>                                     \
+{                                                                       \
+    template<typename... Args>                                          \
+    clblasStatus                                                        \
+    operator() (Args... args) { return clblas##PREFIX##NAME##SUFFIX(args...); } \
+};
+
+BLAS_FUNC(dot, cfloat,  true , C, c)
+BLAS_FUNC(dot, cdouble, true , Z, c)
+BLAS_FUNC(dot, cfloat,  false, C, u)
+BLAS_FUNC(dot, cdouble, false, Z, u)
 
 #undef BLAS_FUNC_DEF
 #undef BLAS_FUNC
@@ -133,16 +168,16 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     return out;
 }
 
-template<typename T>
-Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
-             af_mat_prop optLhs, af_mat_prop optRhs)
+template<typename T, bool conjugate, bool both_conjugate>
+Array<T> dot_(const Array<T> &lhs, const Array<T> &rhs,
+              af_mat_prop optLhs, af_mat_prop optRhs)
 {
     initBlas();
 
     int N = lhs.dims()[0];
-    dot_func<T> dot;
+    dot_func<T, conjugate> dot;
     cl::Event event;
-    auto out = createEmptyArray<T>(af::dim4(1));
+    Array<T> out = createEmptyArray<T>(af::dim4(1));
     cl::Buffer scratch(getContext(), CL_MEM_READ_WRITE, sizeof(T) * N);
     CLBLAS_CHECK(
         dot(N,
@@ -152,11 +187,30 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
             scratch(),
             1, &getQueue()(), 0, nullptr, &event())
         );
+
+    if(both_conjugate)
+        transpose_inplace<T>(out, true);
+
     return out;
 }
 
+template<typename T>
+Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
+             af_mat_prop optLhs, af_mat_prop optRhs)
+{
+    if(optLhs == AF_MAT_CONJ && optRhs == AF_MAT_CONJ) {
+        return dot_<T, false, true>(lhs, rhs, optLhs, optRhs);
+    } else if (optLhs == AF_MAT_CONJ && optRhs == AF_MAT_NONE) {
+        return dot_<T, true, false>(lhs, rhs, optLhs, optRhs);
+    } else if (optLhs == AF_MAT_NONE && optRhs == AF_MAT_CONJ) {
+        return dot_<T, true, false>(rhs, lhs, optRhs, optLhs);
+    } else {
+        return dot_<T, false, false>(lhs, rhs, optLhs, optRhs);
+    }
+}
+
 #define INSTANTIATE_BLAS(TYPE)                                                          \
-    template Array<TYPE> matmul<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs,  \
+    template Array<TYPE> matmul<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs,   \
                     af_mat_prop optLhs, af_mat_prop optRhs);
 
 INSTANTIATE_BLAS(float)
@@ -165,13 +219,11 @@ INSTANTIATE_BLAS(double)
 INSTANTIATE_BLAS(cdouble)
 
 #define INSTANTIATE_DOT(TYPE)                                                       \
-    template Array<TYPE> dot<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs, \
+    template Array<TYPE> dot<TYPE>(const Array<TYPE> &lhs, const Array<TYPE> &rhs,  \
                                    af_mat_prop optLhs, af_mat_prop optRhs);
-
-template<typename T>
-Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
-              af_mat_prop optLhs, af_mat_prop optRhs);
 
 INSTANTIATE_DOT(float)
 INSTANTIATE_DOT(double)
+INSTANTIATE_DOT(cfloat)
+INSTANTIATE_DOT(cdouble)
 }

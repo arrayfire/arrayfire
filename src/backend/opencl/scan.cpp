@@ -28,12 +28,12 @@ namespace opencl
         try {
             Param Out = out;
             Param In  =   in;
-            switch (dim) {
-            case 0: kernel::scan_first<Ti, To, op   >(Out, In); break;
-            case 1: kernel::scan_dim  <Ti, To, op, 1>(Out, In); break;
-            case 2: kernel::scan_dim  <Ti, To, op, 2>(Out, In); break;
-            case 3: kernel::scan_dim  <Ti, To, op, 3>(Out, In); break;
-            }
+
+            if (dim == 0)
+                kernel::scan_first<Ti, To, op>(Out, In);
+            else
+                kernel::scan_dim  <Ti, To, op>(Out, In, dim);
+
         } catch (cl::Error &ex) {
 
             CL_TO_AF_ERROR(ex);
@@ -52,6 +52,8 @@ namespace opencl
     INSTANTIATE(af_add_t, cdouble, cdouble)
     INSTANTIATE(af_add_t, int    , int    )
     INSTANTIATE(af_add_t, uint   , uint   )
+    INSTANTIATE(af_add_t, intl   , intl   )
+    INSTANTIATE(af_add_t, uintl  , uintl  )
     INSTANTIATE(af_add_t, char   , int    )
     INSTANTIATE(af_add_t, uchar  , uint   )
     INSTANTIATE(af_notzero_t, char  , uint)

@@ -54,6 +54,8 @@ CAST_BASIC_BOOL(___mkJ, char, uintl)
     CPLX_BASIC(___mk##X, T, Tr, uint)           \
     CPLX_BASIC(___mk##X, T, Tr, char)           \
     CPLX_BASIC(___mk##X, T, Tr, uchar)          \
+    CPLX_BASIC(___mk##X, T, Tr, uintl)          \
+    CPLX_BASIC(___mk##X, T, Tr, intl)           \
 
 CPLX_CAST(cfloat, float, C)
 CPLX_CAST(cdouble, double, Z)

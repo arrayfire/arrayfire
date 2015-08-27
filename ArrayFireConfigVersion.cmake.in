@@ -36,16 +36,16 @@
 # but only if the requested major version is the same as the current one.
 
 
-set(PACKAGE_VERSION "@AF_VERSION@@AF_VERSION_MINOR@")
+set(PACKAGE_VERSION "@AF_VERSION_MAJOR@@AF_VERSION_MINOR@")
 
 if("${PACKAGE_VERSION}" VERSION_LESS "${PACKAGE_FIND_VERSION}" )
   set(PACKAGE_VERSION_COMPATIBLE FALSE)
 else()
 
-  if("@AF_VERSION@@AF_VERSION_MINOR@" MATCHES "^([0-9]+)\\.")
+  if("@AF_VERSION_MAJOR@@AF_VERSION_MINOR@" MATCHES "^([0-9]+)\\.")
     set(ArrayFire_VERSION_MAJOR "${CMAKE_MATCH_1}")
   else()
-    set(ArrayFire_VERSION_MAJOR "@AF_VERSION@@AF_VERSION_MINOR@")
+    set(ArrayFire_VERSION_MAJOR "@AF_VERSION_MAJOR@@AF_VERSION_MINOR@")
   endif()
 
   if("${PACKAGE_FIND_VERSION_MAJOR}" STREQUAL "${ArrayFire_VERSION_MAJOR}")

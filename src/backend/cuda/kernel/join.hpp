@@ -73,9 +73,9 @@ namespace cuda
                         blocksPerMatY * X.dims[3],
                         1);
 
-            join_kernel<To, Tx, dim><<<blocks, threads>>>
-                       (out, X, offset[0], offset[1], offset[2], offset[3],
-                        blocksPerMatX, blocksPerMatY);
+            CUDA_LAUNCH((join_kernel<To, Tx, dim>), blocks, threads,
+                       out, X, offset[0], offset[1], offset[2], offset[3],
+                       blocksPerMatX, blocksPerMatY);
             POST_LAUNCH_CHECK();
         }
     }

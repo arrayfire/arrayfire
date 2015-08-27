@@ -93,11 +93,11 @@ af_err af_dot(      af_array *out,
         ArrayInfo lhsInfo = getInfo(lhs);
         ArrayInfo rhsInfo = getInfo(rhs);
 
-        if (optLhs != AF_MAT_NONE) {
+        if (optLhs != AF_MAT_NONE && optLhs != AF_MAT_CONJ) {
             AF_ERROR("Using this property is not yet supported in dot", AF_ERR_NOT_SUPPORTED);
         }
 
-        if (optRhs != AF_MAT_NONE) {
+        if (optRhs != AF_MAT_NONE && optRhs != AF_MAT_CONJ) {
             AF_ERROR("Using this property is not yet supported in dot", AF_ERR_NOT_SUPPORTED);
         }
 
@@ -105,8 +105,8 @@ af_err af_dot(      af_array *out,
         af_dtype lhs_type = lhsInfo.getType();
         af_dtype rhs_type = rhsInfo.getType();
 
-        if (lhsInfo.ndims() > 2 ||
-            rhsInfo.ndims() > 2) {
+        if (lhsInfo.ndims() > 1 ||
+            rhsInfo.ndims() > 1) {
             AF_ERROR("dot can not be used in batch mode", AF_ERR_BATCH);
         }
 
@@ -115,10 +115,10 @@ af_err af_dot(      af_array *out,
         af_array output = 0;
 
         switch(lhs_type) {
-        case f32: output = dot<float  >(lhs, rhs, optLhs, optRhs);   break;
-            //case c32: output = dot<cfloat >(lhs, rhs, optLhs, optRhs);   break;
-        case f64: output = dot<double >(lhs, rhs, optLhs, optRhs);   break;
-            //case c64: output = dot<cdouble>(lhs, rhs, optLhs, optRhs);   break;
+        case f32: output = dot<float  >(lhs, rhs, optLhs, optRhs);    break;
+        case c32: output = dot<cfloat >(lhs, rhs, optLhs, optRhs);    break;
+        case f64: output = dot<double >(lhs, rhs, optLhs, optRhs);    break;
+        case c64: output = dot<cdouble>(lhs, rhs, optLhs, optRhs);    break;
         default:  TYPE_ERROR(1, lhs_type);
         }
         std::swap(*out, output);

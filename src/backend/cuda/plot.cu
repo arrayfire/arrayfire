@@ -36,7 +36,8 @@ void copy_plot(const Array<T> &P, fg::Plot* plot)
     T* d_vbo = NULL;
     cudaGraphicsMapResources(1, &cudaVBOResource, 0);
     cudaGraphicsResourceGetMappedPointer((void **)&d_vbo, &num_bytes, cudaVBOResource);
-    cudaMemcpy(d_vbo, d_P, num_bytes, cudaMemcpyDeviceToDevice);
+    cudaMemcpyAsync(d_vbo, d_P, num_bytes, cudaMemcpyDeviceToDevice,
+               cuda::getStream(cuda::getActiveDeviceId()));
     cudaGraphicsUnmapResources(1, &cudaVBOResource, 0);
 
     CheckGL("After cuda resource copy");

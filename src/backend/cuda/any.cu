@@ -18,6 +18,8 @@ namespace cuda
     INSTANTIATE(af_or_t, cdouble, char)
     INSTANTIATE(af_or_t, int    , char)
     INSTANTIATE(af_or_t, uint   , char)
+    INSTANTIATE(af_or_t, intl   , char)
+    INSTANTIATE(af_or_t, uintl  , char)
     INSTANTIATE(af_or_t, char   , char)
     INSTANTIATE(af_or_t, uchar  , char)
 }

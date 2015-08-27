@@ -73,33 +73,74 @@ namespace cpu
     template<typename T>
     void *getDevicePtr(const Array<T>& arr)
     {
-        memUnlink((T *)arr.get());
+        memPop((T *)arr.get());
         return (void *)arr.get();
     }
 
     // Array Array Implementation
     template<typename T>
-    class Array : public ArrayInfo
+    class Array
     {
+        ArrayInfo info; // Must be the first element of Array<T>
         //TODO: Generator based array
 
         //data if parent. empty if child
         std::shared_ptr<T> data;
         af::dim4 data_dims;
-
         TNJ::Node_ptr node;
-        bool ready;
+
         dim_t offset;
+        bool ready;
         bool owner;
 
+        Array() = default;
         Array(dim4 dims);
-        explicit Array(dim4 dims, const T * const in_data);
+        explicit Array(dim4 dims, const T * const in_data, bool is_device);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
         explicit Array(af::dim4 dims, TNJ::Node_ptr n);
 
     public:
 
-        ~Array();
+        void resetInfo(const af::dim4& dims)        { info.resetInfo(dims);         }
+        void resetDims(const af::dim4& dims)        { info.resetDims(dims);         }
+        void modDims(const af::dim4 &newDims)       { info.modDims(newDims);        }
+        void modStrides(const af::dim4 &newStrides) { info.modStrides(newStrides);  }
+        void setId(int id)                          { info.setId(id);               }
+
+#define INFO_FUNC(RET_TYPE, NAME)   \
+    RET_TYPE NAME() const { return info.NAME(); }
+
+        INFO_FUNC(const af_dtype& ,getType)
+        INFO_FUNC(const af::dim4& ,offsets)
+        INFO_FUNC(const af::dim4& ,strides)
+        INFO_FUNC(size_t          ,elements)
+        INFO_FUNC(size_t          ,ndims)
+        INFO_FUNC(const af::dim4& ,dims )
+        INFO_FUNC(int             ,getDevId)
+
+#undef INFO_FUNC
+
+#define INFO_IS_FUNC(NAME)\
+    bool NAME () const { return info.NAME(); }
+
+        INFO_IS_FUNC(isEmpty);
+        INFO_IS_FUNC(isScalar);
+        INFO_IS_FUNC(isRow);
+        INFO_IS_FUNC(isColumn);
+        INFO_IS_FUNC(isVector);
+        INFO_IS_FUNC(isComplex);
+        INFO_IS_FUNC(isReal);
+        INFO_IS_FUNC(isDouble);
+        INFO_IS_FUNC(isSingle);
+        INFO_IS_FUNC(isRealFloating);
+        INFO_IS_FUNC(isFloating);
+        INFO_IS_FUNC(isInteger);
+        INFO_IS_FUNC(isBool);
+        INFO_IS_FUNC(isLinear);
+
+#undef INFO_IS_FUNC
+
+        ~Array() = default;
 
         bool isReady() const { return ready; }
 
@@ -115,7 +156,7 @@ namespace cpu
         {
             // This is for moddims
             // dims and data_dims are different when moddims is used
-            return isOwner() ? dims() : data_dims;
+            return isOwner() ? info.dims() : data_dims;
         }
 
         T* get(bool withOffset = true)
@@ -127,6 +168,12 @@ namespace cpu
         {
             if (!isReady()) eval();
             return data.get() + (withOffset ? offset : 0);
+        }
+
+        int useCount() const
+        {
+            if (!isReady()) eval();
+            return data.use_count();
         }
 
         TNJ::Node_ptr getNode() const;

@@ -247,6 +247,34 @@ af_err af_copy_array(af_array *out, const af_array in)
     return AF_SUCCESS;
 }
 
+//Strong Exception Guarantee
+af_err af_get_data_ref_count(int *use_count, const af_array in)
+{
+    try {
+        ArrayInfo info = getInfo(in);
+        const af_dtype type = info.getType();
+
+        int res;
+        switch(type) {
+        case f32:   res = getArray<float   >(in).useCount(); break;
+        case c32:   res = getArray<cfloat  >(in).useCount(); break;
+        case f64:   res = getArray<double  >(in).useCount(); break;
+        case c64:   res = getArray<cdouble >(in).useCount(); break;
+        case b8:    res = getArray<char    >(in).useCount(); break;
+        case s32:   res = getArray<int     >(in).useCount(); break;
+        case u32:   res = getArray<uint    >(in).useCount(); break;
+        case u8:    res = getArray<uchar   >(in).useCount(); break;
+        case s64:   res = getArray<intl    >(in).useCount(); break;
+        case u64:   res = getArray<uintl   >(in).useCount(); break;
+        default:    TYPE_ERROR(1, type);
+        }
+        std::swap(*use_count, res);
+    }
+    CATCHALL
+    return AF_SUCCESS;
+}
+
+
 template<typename T>
 static inline af_array randn_(const af::dim4 &dims)
 {
@@ -280,6 +308,8 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, c
         case c64:   result = randu_<cdouble>(d);    break;
         case s32:   result = randu_<int    >(d);    break;
         case u32:   result = randu_<uint   >(d);    break;
+        case s64:   result = randu_<intl   >(d);    break;
+        case u64:   result = randu_<uintl  >(d);    break;
         case u8:    result = randu_<uchar  >(d);    break;
         case b8:    result = randu_<char  >(d);    break;
         default:    TYPE_ERROR(3, type);
@@ -438,6 +468,8 @@ af_err af_range(af_array *result, const unsigned ndims, const dim_t * const dims
         case f64:   out = range_<double >(d, seq_dim); break;
         case s32:   out = range_<int    >(d, seq_dim); break;
         case u32:   out = range_<uint   >(d, seq_dim); break;
+        case s64:   out = range_<intl   >(d, seq_dim); break;
+        case u64:   out = range_<uintl  >(d, seq_dim); break;
         case u8:    out = range_<uchar  >(d, seq_dim); break;
         default:    TYPE_ERROR(4, type);
         }
@@ -479,6 +511,8 @@ af_err af_iota(af_array *result, const unsigned ndims, const dim_t * const dims,
         case f64:   out = iota_<double >(d, t); break;
         case s32:   out = iota_<int    >(d, t); break;
         case u32:   out = iota_<uint   >(d, t); break;
+        case s64:   out = iota_<intl   >(d, t); break;
+        case u64:   out = iota_<uintl  >(d, t); break;
         case u8:    out = iota_<uchar  >(d, t); break;
         default:    TYPE_ERROR(4, type);
         }

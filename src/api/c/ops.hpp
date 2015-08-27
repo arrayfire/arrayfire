@@ -19,6 +19,9 @@
 
 using namespace detail;
 
+// Because isnan(cfloat) and isnan(cdouble) is not defined
+#define IS_NAN(val) !((val) == (val))
+
 template<typename T, af_op_t op>
 struct Binary
 {
@@ -229,6 +232,24 @@ struct Transform
     __DH__ To operator ()(Ti in)
     {
         return (To)(in);
+    }
+};
+
+template<typename Ti, typename To>
+struct Transform<Ti, To, af_min_t>
+{
+    __DH__ To operator ()(Ti in)
+    {
+        return (To) (IS_NAN(in) ? Binary<To, af_min_t>().init() : in);
+    }
+};
+
+template<typename Ti, typename To>
+struct Transform<Ti, To, af_max_t>
+{
+    __DH__ To operator ()(Ti in)
+    {
+        return (To) (IS_NAN(in) ? Binary<To, af_max_t>().init() : in);
     }
 };
 

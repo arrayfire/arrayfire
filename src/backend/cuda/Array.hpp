@@ -88,19 +88,20 @@ namespace cuda
     template<typename T>
     void *getDevicePtr(const Array<T>& arr)
     {
-        memUnlink((T *)arr.get());
+        memPop((T *)arr.get());
         return (void *)arr.get();
     }
 
     template<typename T>
-    class Array : public ArrayInfo
+    class Array
     {
+        ArrayInfo       info; // This must be the first element of Array<T>
         shared_ptr<T> data;
         af::dim4 data_dims;
 
         JIT::Node_ptr node;
-        bool ready;
         dim_t offset;
+        bool ready;
         bool owner;
 
         Array(af::dim4 dims);
@@ -109,6 +110,45 @@ namespace cuda
         Array(Param<T> &tmp);
         Array(af::dim4 dims, JIT::Node_ptr n);
     public:
+
+        void resetInfo(const af::dim4& dims)        { info.resetInfo(dims);         }
+        void resetDims(const af::dim4& dims)        { info.resetDims(dims);         }
+        void modDims(const af::dim4 &newDims)       { info.modDims(newDims);        }
+        void modStrides(const af::dim4 &newStrides) { info.modStrides(newStrides);  }
+        void setId(int id)                          { info.setId(id);               }
+
+#define INFO_FUNC(RET_TYPE, NAME)   \
+    RET_TYPE NAME() const { return info.NAME(); }
+
+        INFO_FUNC(const af_dtype& ,getType)
+        INFO_FUNC(const af::dim4& ,offsets)
+        INFO_FUNC(const af::dim4& ,strides)
+        INFO_FUNC(size_t          ,elements)
+        INFO_FUNC(size_t          ,ndims)
+        INFO_FUNC(const af::dim4& ,dims )
+        INFO_FUNC(int             ,getDevId)
+
+#undef INFO_FUNC
+
+#define INFO_IS_FUNC(NAME)\
+    bool NAME () const { return info.NAME(); }
+
+        INFO_IS_FUNC(isEmpty);
+        INFO_IS_FUNC(isScalar);
+        INFO_IS_FUNC(isRow);
+        INFO_IS_FUNC(isColumn);
+        INFO_IS_FUNC(isVector);
+        INFO_IS_FUNC(isComplex);
+        INFO_IS_FUNC(isReal);
+        INFO_IS_FUNC(isDouble);
+        INFO_IS_FUNC(isSingle);
+        INFO_IS_FUNC(isRealFloating);
+        INFO_IS_FUNC(isFloating);
+        INFO_IS_FUNC(isInteger);
+        INFO_IS_FUNC(isBool);
+        INFO_IS_FUNC(isLinear);
+
+#undef INFO_IS_FUNC
 
         ~Array();
 
@@ -139,6 +179,12 @@ namespace cuda
         {
             if (!isReady()) eval();
             return data.get() + (withOffset ? offset : 0);
+        }
+
+        int useCount() const
+        {
+            if (!isReady()) eval();
+            return data.use_count();
         }
 
         operator Param<T>()

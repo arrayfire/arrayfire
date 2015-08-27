@@ -89,7 +89,7 @@ static string getKernelString(string funcName, Node *node, bool is_linear)
     kerStream << node->getTypeStr() <<"* %out,\n"
               << "i32 %ostr0, i32 %ostr1, i32 %ostr2, i32 %ostr3,\n"
               << "i32 %odim0, i32 %odim1, i32 %odim2, i32 %odim3,\n"
-              << "i32 %blkx, i32 %blky) {"
+              << "i32 %blkx, i32 %blky, i32 %ndims) {"
               << "\n\n";
 
     kerStream << "entry:\n\n";
@@ -105,15 +105,53 @@ static string getKernelString(string funcName, Node *node, bool is_linear)
         kerStream << "%tidy = call i32 @llvm.nvvm.read.ptx.sreg.tid.y()\n";
         kerStream << "%bdmy = call i32 @llvm.nvvm.read.ptx.sreg.ntid.y()\n";
 
-        kerStream << "%id2 = sdiv i32 %bidx, %blkx\n";
-        kerStream << "%id3 = sdiv i32 %bidy, %blky\n";
-        kerStream << "%id2m = mul i32 %id2, %blkx\n";
-        kerStream << "%id3m = mul i32 %id3, %blky\n";
-        kerStream << "%blk_x = sub i32 %bidx, %id2m\n";
-        kerStream << "%blk_y = sub i32 %bidy, %id3m\n";
-        kerStream << "%id0m = mul i32 %blk_x, %bdmx\n";
-        kerStream << "%id1m = mul i32 %blk_y, %bdmy\n";
+        kerStream << "%blk_x = alloca i32, align 4\n";
+        kerStream << "%blk_y = alloca i32, align 4\n";
+        kerStream << "%id_3 = alloca i32, align 4\n";
+        kerStream << "%id_2 = alloca i32, align 4\n";
+        kerStream << "store i32 %bidx, i32* %blk_x, align 4\n";
+        kerStream << "store i32 %bidy, i32* %blk_y, align 4\n";
+        kerStream << "store i32 0, i32* %id_2, align 4\n";
+        kerStream << "store i32 0, i32* %id_3, align 4\n";
+
+        kerStream << "%two = alloca i32, align 4\n";
+        kerStream << "store i32 2, i32* %two, align 4\n";
+        kerStream << "%twoval = load i32* %two, align 4\n";
+        kerStream << "%is34 = icmp sgt i32 %ndims, %twoval\n";
+        kerStream << "br i1 %is34, label %do34, label %do2\n";
+
+        kerStream << "\ndo34:\n";
+
+        kerStream << "%id2t = sdiv i32 %bidx, %blkx\n";
+        kerStream << "store i32 %id2t, i32* %id_2, align 4\n";
+        kerStream << "%id2m = mul i32 %id2t, %blkx\n";
+        kerStream << "%blk_xx = sub i32 %bidx, %id2m\n";
+        kerStream << "store i32 %blk_xx, i32* %blk_x, align 4\n";
+
+        kerStream << "%three = alloca i32, align 4\n";
+        kerStream << "store i32 3, i32* %three, align 4\n";
+        kerStream << "%threeval = load i32* %three, align 4\n";
+        kerStream << "%is4 = icmp sgt i32 %ndims, %threeval\n";
+        kerStream << "br i1 %is4, label %do4, label %do2\n";
+
+        kerStream << "\ndo4:\n";
+        kerStream << "%id3t = sdiv i32 %bidy, %blky\n";
+        kerStream << "store i32 %id3t, i32* %id_3, align 4\n";
+        kerStream << "%id3m = mul i32 %id3t, %blky\n";
+        kerStream << "%blk_yy = sub i32 %bidy, %id3m\n";
+        kerStream << "store i32 %blk_yy, i32* %blk_y, align 4\n";
+        kerStream << "br label %do2\n";
+
+        kerStream << "\ndo2:\n";
+        kerStream << "%id2 = load i32* %id_2, align 4\n";
+        kerStream << "%id3 = load i32* %id_3, align 4\n";
+
+        kerStream << "%tmp_x = load i32* %blk_x, align 4\n";
+        kerStream << "%id0m = mul i32 %tmp_x, %bdmx\n";
         kerStream << "%id0 = add i32 %tidx, %id0m\n";
+
+        kerStream << "%tmp_y = load i32* %blk_y, align 4\n";
+        kerStream << "%id1m = mul i32 %tmp_y, %bdmy\n";
         kerStream << "%id1 = add i32 %tidy, %id1m\n";
         kerStream << "\n\n";
 
@@ -194,7 +232,7 @@ static string getKernelString(string funcName, Node *node, bool is_linear)
               << node->getTypeStr() << "*,\n"
               << "i32, i32, i32, i32,\n"
               << "i32, i32, i32, i32,\n"
-              << "i32, i32\n"
+              << "i32, i32, i32\n"
               << ")* " << funcName << ",\n "
               << "metadata !\"kernel\", i32 1}\n";
 
@@ -400,6 +438,13 @@ void evalNodes(Param<T> &out, Node *node)
     int blocks_x_ = 1, blocks_y_ = 1;
     int blocks_x  = 1, blocks_y = 1;
 
+    int num_odims = 4;
+
+    while (num_odims >= 1) {
+        if (out.dims[num_odims - 1] == 1) num_odims--;
+        else break;
+    }
+
     if (is_linear) {
 
         threads_x = 256;
@@ -430,6 +475,7 @@ void evalNodes(Param<T> &out, Node *node)
 
     args.push_back((void *)&blocks_x_);
     args.push_back((void *)&blocks_y_);
+    args.push_back((void *)&num_odims);
 
     CU_CHECK(cuLaunchKernel(ker,
                             blocks_x,
@@ -439,7 +485,7 @@ void evalNodes(Param<T> &out, Node *node)
                             threads_y,
                             1,
                             0,
-                            NULL,
+                            getStream(getActiveDeviceId()),
                             &args.front(),
                             NULL));
 }

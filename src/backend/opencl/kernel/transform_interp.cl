@@ -26,11 +26,11 @@ void transform_n(__global T *d_out, const KParam out, __global const T *d_in, co
 {
     // Compute input index
     const int xidi = round(xido * tmat[0]
-                              + yido * tmat[1]
-                                     + tmat[2]);
+                         + yido * tmat[1]
+                                + tmat[2]);
     const int yidi = round(xido * tmat[3]
-                              + yido * tmat[4]
-                                     + tmat[5]);
+                         + yido * tmat[4]
+                                + tmat[5]);
 
     // Compute memory location of indices
     const int loci = yidi * in.strides[1]  + xidi;
@@ -61,10 +61,10 @@ void transform_b(__global T *d_out, const KParam out, __global const T *d_in, co
                     + yido * tmat[4]
                            + tmat[5];
 
-    T zero; set_scalar(zero, 0);
+    T zero = ZERO;
     if (xid < -0.001 || yid < -0.001 || in.dims[0] < xid || in.dims[1] < yid) {
         for(int i = 0; i < nimages; i++) {
-            set(d_out[loco + i * out.strides[2]], zero);
+            d_out[loco + i * out.strides[2]] = zero;
         }
         return;
     }
@@ -99,3 +99,31 @@ void transform_b(__global T *d_out, const KParam out, __global const T *d_in, co
         d_out[ooff] = (T)(vo / wt);
     }
 }
+
+void transform_l(__global T *d_out, const KParam out, __global const T *d_in, const KParam in,
+                 const float *tmat, const int xido, const int yido, const int nimages)
+{
+    // Compute input index
+    const int xidi = floor(xido * tmat[0]
+                         + yido * tmat[1]
+                                + tmat[2]);
+    const int yidi = floor(xido * tmat[3]
+                         + yido * tmat[4]
+                                + tmat[5]);
+
+    // Compute memory location of indices
+    const int loci = yidi * in.strides[1]  + xidi;
+    const int loco = yido * out.strides[1] + xido;
+
+    for(int i = 0; i < nimages; i++) {
+        // Compute memory location of indices
+        int ioff = loci + i * in.strides[2];
+        int ooff = loco + i * out.strides[2];
+
+        T val; set_scalar(val, 0);
+        if (xidi < in.dims[0] && yidi < in.dims[1] && xidi >= 0 && yidi >= 0) val = d_in[ioff];
+
+        d_out[ooff] = val;
+    }
+}
+

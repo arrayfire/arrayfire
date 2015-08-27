@@ -19,6 +19,12 @@ const int num = 10000;
 const float flt_err = 1e-3;
 const double dbl_err = 1e-10;
 
+template<typename T>
+T sigmoid(T in)
+{
+    return 1.0 / (1.0 + std::exp(-in));
+}
+
 #define MATH_TESTS_LIMITS(Ti, To, func, err, lo, hi)            \
     TEST(MathTests, Test_##func##_##Ti)                         \
     {                                                           \
@@ -55,6 +61,7 @@ MATH_TESTS_FLOAT(tanh)
 MATH_TESTS_FLOAT(sqrt)
 
 MATH_TESTS_FLOAT(exp)
+MATH_TESTS_FLOAT(sigmoid)
 MATH_TESTS_FLOAT(log)
 MATH_TESTS_FLOAT(log10)
 MATH_TESTS_FLOAT(log2)
@@ -105,3 +112,18 @@ MATH_TESTS_DOUBLE(log2)
 MATH_TESTS_LIMITS(double, double, abs, dbl_err, -10, 10)
 MATH_TESTS_LIMITS(double, double, ceil, dbl_err, -10, 10)
 MATH_TESTS_LIMITS(double, double, floor, dbl_err, -10, 10)
+
+TEST(MathTests, Not)
+{
+    af::array a = af::randu(5, 5, b8);
+    af::array b = !a;
+    char *ha = a.host<char>();
+    char *hb = b.host<char>();
+
+    for(int i = 0; i < a.elements(); i++) {
+        ASSERT_EQ(ha[i] ^ hb[i], true);
+    }
+
+    delete[] ha;
+    delete[] hb;
+}

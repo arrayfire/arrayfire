@@ -36,7 +36,8 @@ void copy_image(const Array<T> &in, const fg::Image* image)
     T* d_pbo = NULL;
     cudaGraphicsMapResources(1, &cudaPBOResource, 0);
     cudaGraphicsResourceGetMappedPointer((void **)&d_pbo, &num_bytes, cudaPBOResource);
-    cudaMemcpy(d_pbo, d_X, num_bytes, cudaMemcpyDeviceToDevice);
+    cudaMemcpyAsync(d_pbo, d_X, num_bytes, cudaMemcpyDeviceToDevice,
+                    cuda::getStream(cuda::getActiveDeviceId()));
     cudaGraphicsUnmapResources(1, &cudaPBOResource, 0);
 
     POST_LAUNCH_CHECK();

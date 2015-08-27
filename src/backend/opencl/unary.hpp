@@ -44,6 +44,7 @@ UNARY_FN(acosh)
 UNARY_FN(atanh)
 
 UNARY_FN(exp)
+UNARY_DECL(sigmoid, "__sigmoid")
 UNARY_FN(expm1)
 UNARY_FN(erf)
 UNARY_FN(erfc)

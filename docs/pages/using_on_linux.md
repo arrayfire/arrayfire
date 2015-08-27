@@ -51,7 +51,7 @@ Install common dependencies
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 apt-get install build-essential cmake cmake-curses-gui
-apt-get libfreeimage3
+apt-get install libfreeimage3
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Install glfw (not required for no-gl installers)

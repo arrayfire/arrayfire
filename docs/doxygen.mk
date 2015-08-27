@@ -1111,8 +1111,7 @@ HTML_EXTRA_STYLESHEET  = ${DOCS_DIR}/arrayfire.css
 # files will be copied as-is; there are no commands or markers available.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_EXTRA_FILES       = ${DOCS_DIR}/highlight.pack.js \
-                         ${DOCS_DIR}/highlight_js_doxygen.css
+HTML_EXTRA_FILES       =
 
 # The HTML_COLORSTYLE_HUE tag controls the color of the HTML output. Doxygen
 # will adjust the colors in the stylesheet and background images according to
@@ -1979,7 +1978,8 @@ INCLUDE_FILE_PATTERNS  =
 PREDEFINED             = __declspec(x)= \
                          __attribute__(x)= \
                          __cplusplus \
-                         AF_DOC
+                         AF_DOC \
+						 AF_API_VERSION=${AF_API_VERSION_CURRENT}
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

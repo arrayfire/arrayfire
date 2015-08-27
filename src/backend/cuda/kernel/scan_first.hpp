@@ -161,16 +161,16 @@ namespace kernel
 
         switch (threads_x) {
         case 32:
-            (scan_first_kernel<Ti, To, op, isFinalPass,  32>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  32>), blocks, threads,
                 out, tmp, in, blocks_x, blocks_y, lim); break;
         case 64:
-            (scan_first_kernel<Ti, To, op, isFinalPass,  64>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  64>), blocks, threads,
                 out, tmp, in, blocks_x, blocks_y, lim); break;
         case 128:
-            (scan_first_kernel<Ti, To, op, isFinalPass,  128>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  128>), blocks, threads,
                 out, tmp, in, blocks_x, blocks_y, lim); break;
         case 256:
-            (scan_first_kernel<Ti, To, op, isFinalPass,  256>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((scan_first_kernel<Ti, To, op, isFinalPass,  256>), blocks, threads,
                 out, tmp, in, blocks_x, blocks_y, lim); break;
         }
 
@@ -193,8 +193,7 @@ namespace kernel
 
         uint lim = divup(out.dims[0], (threads_x * blocks_x));
 
-        (bcast_first_kernel<To, op>)<<<blocks, threads>>>(
-            out, tmp, blocks_x, blocks_y, lim);
+        CUDA_LAUNCH((bcast_first_kernel<To, op>), blocks, threads, out, tmp, blocks_x, blocks_y, lim);
 
         POST_LAUNCH_CHECK();
     }

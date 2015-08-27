@@ -103,6 +103,16 @@ class AFAPI Window {
          */
         void setTitle(const char* const title);
 
+#if AF_API_VERSION >= 31
+        /**
+           Set the window size
+
+           \param[in]   w is target width of the window
+           \param[in]   h is target height of the window
+         */
+        void setSize(const unsigned w, const unsigned h);
+#endif
+
         /**
            Set the colormap to be used for subsequent rendering calls
 
@@ -230,6 +240,22 @@ AFAPI af_err af_set_position(const af_window wind, const unsigned x, const unsig
    \ingroup gfx_func_window
 */
 AFAPI af_err af_set_title(const af_window wind, const char* const title);
+
+#if AF_API_VERSION >= 31
+/**
+   C Interface wrapper for setting window position
+
+   \param[in]   wind is the window handle
+   \param[in]   w is target width of the window
+   \param[in]   h is target height of the window
+
+   \return     \ref AF_SUCCESS if set size for window is successful, otherwise an appropriate error code
+   is returned.
+
+   \ingroup gfx_func_window
+*/
+AFAPI af_err af_set_size(const af_window wind, const unsigned w, const unsigned h);
+#endif
 
 /**
    C Interface wrapper for drawing an array as an image

@@ -194,16 +194,16 @@ namespace kernel
 
         switch (threads_y) {
         case 8:
-            (scan_dim_kernel<Ti, To, op, dim, isFinalPass, 8>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 8>), blocks, threads,
                 out, tmp, in, blocks_all[0], blocks_all[1], blocks_all[dim], lim); break;
         case 4:
-            (scan_dim_kernel<Ti, To, op, dim, isFinalPass, 4>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 4>), blocks, threads,
                 out, tmp, in, blocks_all[0], blocks_all[1], blocks_all[dim], lim); break;
         case 2:
-            (scan_dim_kernel<Ti, To, op, dim, isFinalPass, 2>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 2>), blocks, threads,
                 out, tmp, in, blocks_all[0], blocks_all[1], blocks_all[dim], lim); break;
         case 1:
-            (scan_dim_kernel<Ti, To, op, dim, isFinalPass, 1>)<<<blocks, threads>>>(
+            CUDA_LAUNCH((scan_dim_kernel<Ti, To, op, dim, isFinalPass, 1>), blocks, threads,
                 out, tmp, in, blocks_all[0], blocks_all[1], blocks_all[dim], lim); break;
         }
 
@@ -226,7 +226,7 @@ namespace kernel
 
         uint lim = divup(out.dims[dim], (threads_y * blocks_all[dim]));
 
-        (bcast_dim_kernel<To, op, dim>)<<<blocks, threads>>>(
+        CUDA_LAUNCH((bcast_dim_kernel<To, op, dim>), blocks, threads,
             out, tmp, blocks_all[0], blocks_all[1], blocks_all[dim], lim);
 
         POST_LAUNCH_CHECK();

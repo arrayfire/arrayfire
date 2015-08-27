@@ -90,10 +90,7 @@ void fastTest(string pTestFile, bool nonmax)
         inFiles[testId].insert(0,string(TEST_DIR"/fast/"));
 
         ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
-        ASSERT_EQ(AF_SUCCESS, af_release_array(inArray_f32));
-        continue;
 
-        printf("I should not be here\n");
         ASSERT_EQ(AF_SUCCESS, conv_image<T>(&inArray, inArray_f32));
 
         ASSERT_EQ(AF_SUCCESS, af_fast(&out, inArray, 20.0f, 9, nonmax, 0.05f, 3));
@@ -173,54 +170,54 @@ void fastTest(string pTestFile, bool nonmax)
     FIXED_FAST_INIT(square, square, false);
     FIXED_FAST_INIT(square_nonmax, square_nonmax, true);
 
-///////////////////////////////////// CPP ////////////////////////////////
-//
-// TEST(FloatFAST, CPP)
-// {
-//     if (noDoubleTests<float>()) return;
+/////////////////////////////////// CPP ////////////////////////////////
 
-//     vector<dim4>        inDims;
-//     vector<string>     inFiles;
-//     vector<vector<float> > gold;
+TEST(FloatFAST, CPP)
+{
+    if (noDoubleTests<float>()) return;
 
-//     readImageTests(string(TEST_DIR"/fast/square_nonmax_float.test"), inDims, inFiles, gold);
-//     inFiles[0].insert(0,string(TEST_DIR"/fast/"));
+    vector<dim4>        inDims;
+    vector<string>     inFiles;
+    vector<vector<float> > gold;
 
-//     af::array in = af::loadimage(inFiles[0].c_str(), false);
+    readImageTests(string(TEST_DIR"/fast/square_nonmax_float.test"), inDims, inFiles, gold);
+    inFiles[0].insert(0,string(TEST_DIR"/fast/"));
 
-//     af::features out = fast(in, 20.0f, 9, true, 0.05f, 3);
+    af::array in = af::loadImage(inFiles[0].c_str(), false);
 
-//     float * outX           = new float[gold[0].size()];
-//     float * outY           = new float[gold[1].size()];
-//     float * outScore       = new float[gold[2].size()];
-//     float * outOrientation = new float[gold[3].size()];
-//     float * outSize        = new float[gold[4].size()];
-//     out.getX().host(outX);
-//     out.getY().host(outY);
-//     out.getScore().host(outScore);
-//     out.getOrientation().host(outOrientation);
-//     out.getSize().host(outSize);
+    af::features out = fast(in, 20.0f, 9, true, 0.05f, 3);
 
-//     vector<feat_t> out_feat;
-//     array_to_feat(out_feat, outX, outY, outScore, outOrientation, outSize, out.getNumFeatures());
+    float * outX           = new float[gold[0].size()];
+    float * outY           = new float[gold[1].size()];
+    float * outScore       = new float[gold[2].size()];
+    float * outOrientation = new float[gold[3].size()];
+    float * outSize        = new float[gold[4].size()];
+    out.getX().host(outX);
+    out.getY().host(outY);
+    out.getScore().host(outScore);
+    out.getOrientation().host(outOrientation);
+    out.getSize().host(outSize);
 
-//     vector<feat_t> gold_feat;
-//     array_to_feat(gold_feat, &gold[0].front(), &gold[1].front(), &gold[2].front(), &gold[3].front(), &gold[4].front(), gold[0].size());
+    vector<feat_t> out_feat;
+    array_to_feat(out_feat, outX, outY, outScore, outOrientation, outSize, out.getNumFeatures());
 
-//     std::sort(out_feat.begin(), out_feat.end(), feat_cmp);
-//     std::sort(gold_feat.begin(), gold_feat.end(), feat_cmp);
+    vector<feat_t> gold_feat;
+    array_to_feat(gold_feat, &gold[0].front(), &gold[1].front(), &gold[2].front(), &gold[3].front(), &gold[4].front(), gold[0].size());
 
-//     for (unsigned elIter = 0; elIter < out.getNumFeatures(); elIter++) {
-//         ASSERT_EQ(out_feat[elIter].f[0], gold_feat[elIter].f[0]) << "at: " << elIter << std::endl;
-//         ASSERT_EQ(out_feat[elIter].f[1], gold_feat[elIter].f[1]) << "at: " << elIter << std::endl;
-//         ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e-3) << "at: " << elIter << std::endl;
-//         ASSERT_EQ(out_feat[elIter].f[3], gold_feat[elIter].f[3]) << "at: " << elIter << std::endl;
-//         ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << std::endl;
-//     }
+    std::sort(out_feat.begin(), out_feat.end(), feat_cmp);
+    std::sort(gold_feat.begin(), gold_feat.end(), feat_cmp);
 
-//     delete[] outX;
-//     delete[] outY;
-//     delete[] outScore;
-//     delete[] outOrientation;
-//     delete[] outSize;
-// }
+    for (unsigned elIter = 0; elIter < out.getNumFeatures(); elIter++) {
+        ASSERT_EQ(out_feat[elIter].f[0], gold_feat[elIter].f[0]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(out_feat[elIter].f[1], gold_feat[elIter].f[1]) << "at: " << elIter << std::endl;
+        ASSERT_LE(fabs(out_feat[elIter].f[2] - gold_feat[elIter].f[2]), 1e-3) << "at: " << elIter << std::endl;
+        ASSERT_EQ(out_feat[elIter].f[3], gold_feat[elIter].f[3]) << "at: " << elIter << std::endl;
+        ASSERT_EQ(out_feat[elIter].f[4], gold_feat[elIter].f[4]) << "at: " << elIter << std::endl;
+    }
+
+    delete[] outX;
+    delete[] outY;
+    delete[] outScore;
+    delete[] outOrientation;
+    delete[] outSize;
+}

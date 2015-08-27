@@ -15,6 +15,10 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 #include <boost/compute/core.hpp>
 #include <boost/compute/algorithm/stable_sort.hpp>
 #include <boost/compute/functional/operator.hpp>
@@ -77,3 +81,5 @@ namespace opencl
         }
     }
 }
+
+#pragma GCC diagnostic pop

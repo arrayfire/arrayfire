@@ -9,6 +9,7 @@
 
 #define NEAREST transform_n
 #define BILINEAR transform_b
+#define LOWER transform_l
 
 void calc_affine_inverse(float* txo, __global const float* txi)
 {

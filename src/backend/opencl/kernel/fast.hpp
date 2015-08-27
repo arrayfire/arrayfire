@@ -12,6 +12,7 @@
 #include <dispatch.hpp>
 #include <err_opencl.hpp>
 #include <debug_opencl.hpp>
+#include <cache.hpp>
 #include <kernel_headers/fast.hpp>
 #include <memory.hpp>
 #include <map>
@@ -34,8 +35,9 @@ static const int FAST_THREADS_Y = 16;
 static const int FAST_THREADS_NONMAX_X = 32;
 static const int FAST_THREADS_NONMAX_Y = 8;
 
-template<typename T, const unsigned arc_length, const bool nonmax>
-void fast(unsigned* out_feat,
+template<typename T, const bool nonmax>
+void fast(const unsigned arc_length,
+          unsigned* out_feat,
           Param &x_out,
           Param &y_out,
           Param &score_out,
@@ -45,15 +47,19 @@ void fast(unsigned* out_feat,
           const unsigned edge)
 {
     try {
-        static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static std::map<int, Program*> fastProgs;
-        static std::map<int, Kernel*>  lfKernel;
-        static std::map<int, Kernel*>  nmKernel;
-        static std::map<int, Kernel*>  gfKernel;
+        std::string ref_name =
+            std::string("fast_") +
+            std::to_string(arc_length) +
+            std::string("_") +
+            std::to_string(nonmax) +
+            std::string("_") +
+            std::string(dtype_traits<T>::getName());
 
         int device = getActiveDeviceId();
+        kc_t::iterator cache_idx = kernelCaches[device].find(ref_name);
 
-        std::call_once( compileFlags[device], [device] () {
+        kc_entry_t entry;
+        if (cache_idx == kernelCaches[device].end()) {
 
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName()
@@ -67,12 +73,17 @@ void fast(unsigned* out_feat,
 
                 cl::Program prog;
                 buildProgram(prog, fast_cl, fast_cl_len, options.str());
-                fastProgs[device] = new Program(prog);
+                entry.prog = new Program(prog);
+                entry.ker = new Kernel[3];
 
-                lfKernel[device] = new Kernel(*fastProgs[device], "locate_features");
-                nmKernel[device] = new Kernel(*fastProgs[device], "non_max_counts");
-                gfKernel[device] = new Kernel(*fastProgs[device], "get_features");
-            });
+                entry.ker[0] = Kernel(*entry.prog, "locate_features");
+                entry.ker[1] = Kernel(*entry.prog, "non_max_counts");
+                entry.ker[2] = Kernel(*entry.prog, "get_features");
+
+                kernelCaches[device][ref_name] = entry;
+        } else {
+            entry = cache_idx -> second;
+        }
 
         const unsigned max_feat = ceil(in.info.dims[0] * in.info.dims[1] * feature_ratio);
 
@@ -96,7 +107,7 @@ void fast(unsigned* out_feat,
 
         auto lfOp = make_kernel<Buffer, KParam,
                                 Buffer, const float, const unsigned,
-                                LocalSpaceArg> (*lfKernel[device]);
+                                LocalSpaceArg> (entry.ker[0]);
 
         lfOp(EnqueueArgs(getQueue(), global, local),
              *in.data, in.info, *d_score, thr, edge,
@@ -121,7 +132,7 @@ void fast(unsigned* out_feat,
 
         auto nmOp = make_kernel<Buffer, Buffer, Buffer,
                                 Buffer, Buffer,
-                                KParam, const unsigned> (*nmKernel[device]);
+                                KParam, const unsigned> (entry.ker[1]);
         nmOp(EnqueueArgs(getQueue(), global_nonmax, local_nonmax),
                          *d_counts, *d_offsets, *d_total, *d_flags, *d_score, in.info, edge);
         CL_DEBUG_FINISH(getQueue());
@@ -139,7 +150,7 @@ void fast(unsigned* out_feat,
             auto gfOp = make_kernel<Buffer, Buffer, Buffer,
                                     Buffer, Buffer, Buffer,
                                     KParam, const unsigned,
-                                    const unsigned> (*gfKernel[device]);
+                                    const unsigned> (entry.ker[2]);
             gfOp(EnqueueArgs(getQueue(), global_nonmax, local_nonmax),
                              *x_out.data, *y_out.data, *score_out.data,
                              *d_flags, *d_counts, *d_offsets,
@@ -176,53 +187,6 @@ void fast(unsigned* out_feat,
     }
 }
 
-template<typename T, bool nonmax>
-void fast_dispatch_nonmax(const unsigned arc_length,
-                          unsigned* out_feat,
-                          Param &x_out,
-                          Param &y_out,
-                          Param &score_out,
-                          Param in,
-                          const float thr,
-                          const float feature_ratio,
-                          const unsigned edge)
-{
-    switch (arc_length) {
-    case 9:
-        fast<T,  9, nonmax>(out_feat, x_out, y_out, score_out, in,
-                            thr, feature_ratio, edge);
-        break;
-    case 10:
-        fast<T, 10, nonmax>(out_feat, x_out, y_out, score_out, in,
-                            thr, feature_ratio, edge);
-        break;
-    case 11:
-        fast<T, 11, nonmax>(out_feat, x_out, y_out, score_out, in,
-                            thr, feature_ratio, edge);
-        break;
-    case 12:
-        fast<T, 12, nonmax>(out_feat, x_out, y_out, score_out, in,
-                            thr, feature_ratio, edge);
-        break;
-    case 13:
-        fast<T, 13, nonmax>(out_feat, x_out, y_out, score_out, in,
-                            thr, feature_ratio, edge);
-        break;
-    case 14:
-        fast<T, 14, nonmax>(out_feat, x_out, y_out, score_out, in,
-                            thr, feature_ratio, edge);
-        break;
-    case 15:
-        fast<T, 15, nonmax>(out_feat, x_out, y_out, score_out, in,
-                            thr, feature_ratio, edge);
-        break;
-    case 16:
-        fast<T, 16, nonmax>(out_feat, x_out, y_out, score_out, in,
-                            thr, feature_ratio, edge);
-        break;
-    }
-}
-
 template<typename T>
 void fast_dispatch(const unsigned arc_length, const bool nonmax,
                    unsigned* out_feat,
@@ -235,11 +199,11 @@ void fast_dispatch(const unsigned arc_length, const bool nonmax,
                    const unsigned edge)
 {
     if (!nonmax) {
-        fast_dispatch_nonmax<T, 0>(arc_length, out_feat, x_out, y_out, score_out, in,
-                                   thr, feature_ratio, edge);
+        fast<T, 0>(arc_length, out_feat, x_out, y_out, score_out, in,
+                   thr, feature_ratio, edge);
     } else {
-        fast_dispatch_nonmax<T, 1>(arc_length, out_feat, x_out, y_out, score_out, in,
-                                   thr, feature_ratio, edge);
+        fast<T, 1>(arc_length, out_feat, x_out, y_out, score_out, in,
+                   thr, feature_ratio, edge);
     }
 }
 

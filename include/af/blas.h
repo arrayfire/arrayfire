@@ -132,13 +132,24 @@ namespace af
         Scalar dot product between two vectors.  Also referred to as the inner
         product.
 
-        \democode{
+        \code
         // compute scalar dot product
         array x = randu(100), y = randu(100);
         af_print(dot(x,y));
-        }
+        \endcode
 
+        \param[in] lhs The array object on the left hand side
+        \param[in] rhs The array object on the right hand side
+        \param[in] optLhs Options for lhs. Currently only \ref AF_MAT_NONE and
+                   AF_MAT_CONJ are supported.
+        \param[in] optRhs Options for rhs. Currently only \ref AF_MAT_NONE and AF_MAT_CONJ are supported
+        \return The result of the dot product of lhs, rhs
+
+        \note optLhs and optRhs can only be one of \ref AF_MAT_NONE or \ref AF_MAT_CONJ
+        \note optLhs = AF_MAT_CONJ and optRhs = AF_MAT_NONE will run conjugate dot operation.
         \note This function is not supported in GFOR
+
+        \returns out = dot(lhs, rhs)
 
         \ingroup blas_func_dot
     */
@@ -199,11 +210,12 @@ extern "C" {
         Scalar dot product between two vectors.  Also referred to as the inner
         product.
 
-        \democode{
+        \code
         // compute scalar dot product
         array x = randu(100), y = randu(100);
         print(dot<float>(x,y));
-        }
+        \endcode
+
         \ingroup blas_func_dot
     */
     AFAPI af_err af_dot(    af_array *out,

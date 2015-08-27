@@ -8,7 +8,7 @@
  ********************************************************/
 
 /***********************************************************************
- * Based on MAGMA library http://icl.cs.utk.edu/magma/
+ * Based on clMAGMA library http://icl.cs.utk.edu/magma/
  * Below is the original copyright.
  *
  *   -- MAGMA (version 0.1) --
@@ -52,7 +52,6 @@
  **********************************************************************/
 
 #include "magma.h"
-#include "magma_blas.h"
 #include "magma_data.h"
 #include "magma_cpu_lapack.h"
 #include "magma_helper.h"
@@ -245,8 +244,8 @@ magma_geqrf2_gpu(
                                    0, lwork*sizeof(Ty),
                                    0, NULL, NULL, NULL);
 
-    geqrf_work_func<Ty> cpu_geqrf;
-    larft_func<Ty> cpu_larft;
+    cpu_lapack_geqrf_work_func<Ty> cpu_lapack_geqrf;
+    cpu_lapack_larft_func<Ty> cpu_lapack_larft;
 
     nbmin = 2;
     nx    = nb;
@@ -275,14 +274,14 @@ magma_geqrf2_gpu(
             }
 
             magma_queue_sync(queue[0]);
-            *info = cpu_geqrf(LAPACK_COL_MAJOR, rows, ib, work(i), ldwork, tau+i, hwork, lhwork);
+            LAPACKE_CHECK(cpu_lapack_geqrf( rows, ib, work(i), ldwork, tau+i, hwork, lhwork));
 
             /* Form the triangular factor of the block reflector
                H = H(i) H(i+1) . . . H(i+ib-1) */
-            cpu_larft(LAPACK_COL_MAJOR,
-                      *MagmaForwardStr, *MagmaColumnwiseStr,
-                      rows, ib,
-                      work(i), ldwork, tau+i, hwork, ib);
+            LAPACKE_CHECK(cpu_lapack_larft(
+                              *MagmaForwardStr, *MagmaColumnwiseStr,
+                              rows, ib,
+                              work(i), ldwork, tau+i, hwork, ib));
 
             panel_to_q<Ty>( MagmaUpper, ib, work(i), ldwork, hwork+ib*ib );
 
@@ -329,7 +328,7 @@ magma_geqrf2_gpu(
         magma_queue_sync(queue[1]);
 
         lhwork = lwork - rows*ib;
-        *info = cpu_geqrf(LAPACK_COL_MAJOR, rows, ib, work, rows, tau+i, work+ib*rows, lhwork);
+        LAPACKE_CHECK(cpu_lapack_geqrf( rows, ib, work, rows, tau+i, work+ib*rows, lhwork));
 
         magma_setmatrix_async<Ty>(rows, ib, work, rows, dA(i, i), ldda, queue[1], NULL);
     }

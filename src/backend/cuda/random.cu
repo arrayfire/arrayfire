@@ -40,6 +40,8 @@ namespace cuda
     template Array<cdouble> randu<cdouble> (const af::dim4 &dims);
     template Array<int>     randu<int>     (const af::dim4 &dims);
     template Array<uint>    randu<uint>    (const af::dim4 &dims);
+    template Array<intl>    randu<intl>    (const af::dim4 &dims);
+    template Array<uintl>   randu<uintl>   (const af::dim4 &dims);
     template Array<char>    randu<char>    (const af::dim4 &dims);
     template Array<uchar>   randu<uchar>   (const af::dim4 &dims);
 

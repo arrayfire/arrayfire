@@ -28,6 +28,21 @@ namespace af
     */
     AFAPI array sum(const array &in, const int dim = -1);
 
+#if AF_API_VERSION >= 31
+    /**
+       C++ Interface for sum of elements in an array while replacing nan values
+
+       \param[in] in is the input array
+       \param[in] dim The dimension along which the add operation occurs
+       \param[in] nanval Replace nans with the value passed to this function
+       \return    result of sum all values along dimension \p dim
+
+       \ingroup reduce_func_sum
+
+    */
+    AFAPI array sum(const array &in, const int dim, const double nanval);
+#endif
+
     /**
        C++ Interface for product of elements in an array
 
@@ -41,6 +56,21 @@ namespace af
     */
     AFAPI array product(const array &in, const int dim = -1);
 
+#if AF_API_VERSION >= 31
+    /**
+       C++ Interface for product of elements in an array while replacing nan values
+
+       \param[in] in is the input array
+       \param[in] dim The dimension along which the add operation occurs
+       \param[in] nanval Replace nans with the value passed to this function
+       \return    result of product all values along dimension \p dim
+
+       \ingroup reduce_func_product
+
+    */
+    AFAPI array product(const array &in, const int dim, const double nanval);
+#endif
+
     /**
        C++ Interface for minimum values in an array
 
@@ -51,6 +81,7 @@ namespace af
        \ingroup reduce_func_min
 
        \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
+       \note NaN values are ignored
     */
     AFAPI array min(const array &in, const int dim = -1);
 
@@ -64,6 +95,7 @@ namespace af
        \ingroup reduce_func_max
 
        \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
+       \note NaN values are ignored
     */
     AFAPI array max(const array &in, const int dim = -1);
 
@@ -77,6 +109,7 @@ namespace af
        \ingroup reduce_func_all_true
 
        \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
+       \note NaN values are ignored
     */
     AFAPI array allTrue(const array &in, const int dim = -1);
 
@@ -90,6 +123,7 @@ namespace af
        \ingroup reduce_func_any_true
 
        \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
+       \note NaN values are ignored
     */
     AFAPI array anyTrue(const array &in, const int dim = -1);
 
@@ -103,6 +137,7 @@ namespace af
        \ingroup reduce_func_count
 
        \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
+       \note NaN values are treated as non zero.
     */
     AFAPI array count(const array &in, const int dim = -1);
 
@@ -116,6 +151,19 @@ namespace af
     */
     template<typename T> T sum(const array &in);
 
+#if AF_API_VERSION >= 31
+    /**
+       C++ Interface for sum of all elements in an array while replacing nan values
+
+       \param[in] in is the input array
+       \param[in] nanval  Replace nans with the value passed to this function
+       \return    the sum of all values of \p in
+
+       \ingroup reduce_func_sum
+    */
+    template<typename T> T sum(const array &in, double nanval);
+#endif
+
     /**
        C++ Interface for product of all elements in an array
 
@@ -126,6 +174,19 @@ namespace af
     */
     template<typename T> T product(const array &in);
 
+#if AF_API_VERSION >= 31
+    /**
+       C++ Interface for product of all elements in an array while replacing nan values
+
+       \param[in] in is the input array
+       \param[in] nanval  Replace nans with the value passed to this function
+       \return    the product of all values of \p in
+
+       \ingroup reduce_func_product
+    */
+    template<typename T> T product(const array &in, double nanval);
+#endif
+
     /**
        C++ Interface for getting minimum value of an array
 
@@ -133,6 +194,8 @@ namespace af
        \return    the minimum of all values of \p in
 
        \ingroup reduce_func_min
+
+       \note NaN values are ignored
     */
     template<typename T> T min(const array &in);
 
@@ -143,6 +206,8 @@ namespace af
        \return    the maximum of all values of \p in
 
        \ingroup reduce_func_max
+
+       \note NaN values are ignored
     */
     template<typename T> T max(const array &in);
 
@@ -153,6 +218,8 @@ namespace af
        \return    true if all values of \p in are true, false otherwise
 
        \ingroup reduce_func_all_true
+
+       \note NaN values are ignored
     */
     template<typename T> T allTrue(const array &in);
 
@@ -163,6 +230,8 @@ namespace af
        \return    true if any values of \p in are true, false otherwise
 
        \ingroup reduce_func_any_true
+
+       \note NaN values are ignored
     */
     template<typename T> T anyTrue(const array &in);
 
@@ -173,6 +242,8 @@ namespace af
        \return    the number of non-zero values in \p in
 
        \ingroup reduce_func_count
+
+       \note NaN values are treated as non zero
     */
     template<typename T> T count(const array &in);
 
@@ -187,6 +258,8 @@ namespace af
        \ingroup reduce_func_min
 
        \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
+
+       \note NaN values are ignored
     */
     AFAPI void min(array &val, array &idx, const array &in, const int dim = -1);
 
@@ -201,6 +274,8 @@ namespace af
        \ingroup reduce_func_max
 
        \note \p dim is -1 by default. -1 denotes the first non-singleton dimension.
+
+       \note NaN values are ignored
     */
     AFAPI void max(array &val, array &idx, const array &in, const int dim = -1);
 
@@ -212,6 +287,8 @@ namespace af
        \param[in]  in is the input array
 
        \ingroup reduce_func_min
+
+       \note NaN values are ignored
     */
     template<typename T> void min(T *val, unsigned *idx, const array &in);
 
@@ -223,6 +300,8 @@ namespace af
        \param[in]  in is the input array
 
        \ingroup reduce_func_max
+
+       \note NaN values are ignored
     */
     template<typename T> void max(T *val, unsigned *idx, const array &in);
 
@@ -368,6 +447,21 @@ extern "C" {
     */
     AFAPI af_err af_sum(af_array *out, const af_array in, const int dim);
 
+#if AF_API_VERSION >= 31
+    /**
+       C Interface for sum of elements in an array while replacing nans
+
+       \param[out] out will contain the sum of all values in \p in along \p dim
+       \param[in] in is the input array
+       \param[in] dim The dimension along which the add operation occurs
+       \param[in] nanval Replace nans with the value passed to this function
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_sum
+    */
+    AFAPI af_err af_sum_nan(af_array *out, const af_array in, const int dim, const double nanval);
+#endif
+
     /**
        C Interface for product of elements in an array
 
@@ -379,6 +473,21 @@ extern "C" {
        \ingroup reduce_func_product
     */
     AFAPI af_err af_product(af_array *out, const af_array in, const int dim);
+
+#if AF_API_VERSION >= 31
+    /**
+       C Interface for product of elements in an array while replacing nans
+
+       \param[out] out will contain the product of all values in \p in along \p dim
+       \param[in] in is the input array
+       \param[in] dim The dimension along which the add operation occurs
+       \param[in] nanval Replace nans with the value passed to this function
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \ingroup reduce_func_product
+    */
+    AFAPI af_err af_product_nan(af_array *out, const af_array in, const int dim, const double nanval);
+#endif
 
     /**
        C Interface for minimum values in an array
@@ -454,6 +563,23 @@ extern "C" {
     */
     AFAPI af_err af_sum_all(double *real, double *imag, const af_array in);
 
+#if AF_API_VERSION >= 31
+    /**
+       C Interface for sum of all elements in an array while replacing nans
+
+       \param[out] real will contain the real part of adding all elements in input \p in
+       \param[out] imag will contain the imaginary part of adding all elements in input \p in
+       \param[in] in is the input array
+       \param[in] nanval is the value which replaces nan
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \note \p imag is always set to 0 when \p in is real
+
+       \ingroup reduce_func_sum
+    */
+    AFAPI af_err af_sum_nan_all(double *real, double *imag, const af_array in, const double nanval);
+#endif
+
     /**
        C Interface for product of all elements in an array
 
@@ -467,6 +593,23 @@ extern "C" {
        \ingroup reduce_func_product
     */
     AFAPI af_err af_product_all(double *real, double *imag, const af_array in);
+
+#if AF_API_VERSION >= 31
+    /**
+       C Interface for product of all elements in an array while replacing nans
+
+       \param[out] real will contain the real part of adding all elements in input \p in
+       \param[out] imag will contain the imaginary part of adding all elements in input \p in
+       \param[in] in is the input array
+       \param[in] nanval is the value which replaces nan
+       \return \ref AF_SUCCESS if the execution completes properly
+
+       \note \p imag is always set to 0 when \p in is real
+
+       \ingroup reduce_func_product
+    */
+    AFAPI af_err af_product_nan_all(double *real, double *imag, const af_array in, const double nanval);
+#endif
 
     /**
        C Interface for getting minimum value of an array

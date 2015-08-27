@@ -107,7 +107,8 @@ namespace cuda
                         blocksPerMatY * in.dims[3],
                         1);
 
-            gradient_kernel<T><<<blocks, threads>>>(grad0, grad1, in, blocksPerMatX, blocksPerMatY);
+            CUDA_LAUNCH((gradient_kernel<T>), blocks, threads,
+                    grad0, grad1, in, blocksPerMatX, blocksPerMatY);
             POST_LAUNCH_CHECK();
         }
     }

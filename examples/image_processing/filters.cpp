@@ -130,7 +130,7 @@ void normalizeImage(array &in)
     in = 255.0f*((in - min) / (max - min));
 }
 
-array dog(const array &in, int window_radius1, int window_radius2)
+array DifferenceOfGaussian(const array &in, int window_radius1, int window_radius2)
 {
     array ret_val;
     int w1 = 2 * window_radius1 + 1;
@@ -214,7 +214,7 @@ int main(int argc, char **argv)
         af::setDevice(device);
         af::info();
 
-        array lena = loadImage(ASSETS_DIR "/examples/images/lena.ppm", true);
+        array lena = loadImage(ASSETS_DIR "/examples/images/vegetable-woman.jpg", true);
 
         array prew_mag, prew_dir;
         array sob_mag, sob_dir;
@@ -224,7 +224,7 @@ int main(int argc, char **argv)
         array sprd = spread(lena, 3, 3);
         array hrl = hurl(lena, 10, 1);
         array pckng = pick(lena, 40, 2);
-        array difog = dog(lena, 1, 2);
+        array difog = DifferenceOfGaussian(lena, 1, 2);
         array bil = bilateral(hrl, 3.0f, 40.0f);
         array mf = medianfilter(hrl, 5, 5);
         array gb = gaussianblur(hrl, 3, 3, 0.8);

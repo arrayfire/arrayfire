@@ -12,7 +12,8 @@ void reduce_dim_kernel(__global To *oData,
                        KParam oInfo,
                        const __global Ti *iData,
                        KParam iInfo,
-                       uint groups_x, uint groups_y, uint group_dim)
+                       uint groups_x, uint groups_y, uint group_dim,
+                       int change_nan, To nanval)
 {
     const uint lidx = get_local_id(0);
     const uint lidy = get_local_id(1);
@@ -54,6 +55,7 @@ void reduce_dim_kernel(__global To *oData,
          id += group_dim * get_local_size(1)) {
 
         To in_val = transform(*iData);
+        if (change_nan) in_val = !IS_NAN(in_val) ? in_val : nanval;
         out_val = binOp(in_val, out_val);
         iData = iData + group_dim * get_local_size(1) * istride_dim;
     }

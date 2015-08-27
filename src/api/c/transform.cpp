@@ -38,7 +38,9 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
         af_dtype itype = i_info.getType();
 
         ARG_ASSERT(2, t_info.getType() == f32);
-        ARG_ASSERT(5, method == AF_INTERP_NEAREST || method == AF_INTERP_BILINEAR);
+        ARG_ASSERT(5, method == AF_INTERP_NEAREST  ||
+                      method == AF_INTERP_BILINEAR ||
+                      method == AF_INTERP_LOWER);
         DIM_ASSERT(2, (tdims[0] == 3 && tdims[1] == 2));
         DIM_ASSERT(1, idims.elements() > 0);
         DIM_ASSERT(1, (idims.ndims() == 2 || idims.ndims() == 3));
@@ -104,17 +106,25 @@ af_err af_scale(af_array *out, const af_array in, const float scale0, const floa
         dim_t _odim0 = odim0, _odim1 = odim1;
         float sx, sy;
 
-        DIM_ASSERT(4, odim0 != 0);
-        DIM_ASSERT(5, odim1 != 0);
+        if(_odim0 == 0 || _odim1 == 0) {
 
-        if(_odim0 == 0 && _odim1 == 0) {
+            DIM_ASSERT(2, scale0 != 0);
+            DIM_ASSERT(3, scale1 != 0);
+
             sx = 1.f / scale0, sy = 1.f / scale1;
             _odim0 = idims[0] / sx;
             _odim1 = idims[1] / sy;
-        } else if (scale0 == 0 && scale1 == 0) {
+
+        } else if (scale0 == 0 || scale1 == 0) {
+
+            DIM_ASSERT(4, odim0 != 0);
+            DIM_ASSERT(5, odim1 != 0);
+
             sx = idims[0] / (float)_odim0;
             sy = idims[1] / (float)_odim1;
+
         } else {
+
             sx = 1.f / scale0, sy = 1.f / scale1;
         }
 

@@ -1251,3 +1251,121 @@ TEST(Indexing, SNIPPET_indexing_ref)
     //! [ex_indexing_ref]
     //TODO: Confirm the outputs are correct. see #697
 }
+
+TEST(Indexing, SNIPPET_indexing_copy)
+{
+  af::array A = af::constant(0,1, s32);
+  af::index s1;
+  s1 = af::index(A);
+  // At exit both A and s1 will be destroyed
+  // but the underlying array should only be
+  // freed once.
+}
+
+TEST(Asssign, LinearIndexSeq)
+{
+    using af::array;
+    const int nx = 5;
+    const int ny = 4;
+
+    const int st = nx - 2;
+    const int en = nx * (ny - 1);
+    const int num = (en - st + 1);
+
+    array a = af::randu(nx, ny);
+    af::index idx = af::seq(st, en);
+
+    af_array in_arr = a.get();
+    af_index_t ii = idx.get();
+    af_array out_arr;
+
+    ASSERT_EQ(AF_SUCCESS,
+              af_index(&out_arr, in_arr, 1, &ii.idx.seq));
+
+    af::array out(out_arr);
+
+    ASSERT_EQ(out.dims(0), num);
+    ASSERT_EQ(out.elements(), num);
+
+    std::vector<float> hout(nx * ny);
+    std::vector<float> ha(nx * ny);
+
+    a.host(&ha[0]);
+    out.host(&hout[0]);
+
+    for (int i = 0; i < num; i++) {
+        ASSERT_EQ(ha[i + st], hout[i]);
+    }
+}
+
+TEST(Asssign, LinearIndexGenSeq)
+{
+    using af::array;
+    const int nx = 5;
+    const int ny = 4;
+
+    const int st = nx - 2;
+    const int en = nx * (ny - 1);
+    const int num = (en - st + 1);
+
+    array a = af::randu(nx, ny);
+    af::index idx = af::seq(st, en);
+
+    af_array in_arr = a.get();
+    af_index_t ii = idx.get();
+    af_array out_arr;
+
+    ASSERT_EQ(AF_SUCCESS,
+              af_index_gen(&out_arr, in_arr, 1, &ii));
+
+    af::array out(out_arr);
+
+    ASSERT_EQ(out.dims(0), num);
+    ASSERT_EQ(out.elements(), num);
+
+    std::vector<float> hout(nx * ny);
+    std::vector<float> ha(nx * ny);
+
+    a.host(&ha[0]);
+    out.host(&hout[0]);
+
+    for (int i = 0; i < num; i++) {
+        ASSERT_EQ(ha[i + st], hout[i]);
+    }
+}
+
+TEST(Asssign, LinearIndexGenArr)
+{
+    using af::array;
+    const int nx = 5;
+    const int ny = 4;
+
+    const int st = nx - 2;
+    const int en = nx * (ny - 1);
+    const int num = (en - st + 1);
+
+    array a = af::randu(nx, ny);
+    af::index idx = af::array(af::seq(st, en));
+
+    af_array in_arr = a.get();
+    af_index_t ii = idx.get();
+    af_array out_arr;
+
+    ASSERT_EQ(AF_SUCCESS,
+              af_index_gen(&out_arr, in_arr, 1, &ii));
+
+    af::array out(out_arr);
+
+    ASSERT_EQ(out.dims(0), num);
+    ASSERT_EQ(out.elements(), num);
+
+    std::vector<float> hout(nx * ny);
+    std::vector<float> ha(nx * ny);
+
+    a.host(&ha[0]);
+    out.host(&hout[0]);
+
+    for (int i = 0; i < num; i++) {
+        ASSERT_EQ(ha[i + st], hout[i]);
+    }
+}

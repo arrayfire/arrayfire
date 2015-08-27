@@ -57,32 +57,22 @@ void meanshift(__global T *       d_dst,
     const int gx = get_local_size(0) * (get_group_id(0)-b2*nBBS0) + lx;
     const int gy = get_local_size(1) * (get_group_id(1)-b3*nBBS1) + ly;
 
-    int gx2 = gx + get_local_size(0);
-    int gy2 = gy + get_local_size(1);
-    int lx2 = lx + get_local_size(0);
-    int ly2 = ly + get_local_size(1);
+    int s0 = iInfo.strides[0];
+    int s1 = iInfo.strides[1];
+    int d0 = iInfo.dims[0];
+    int d1 = iInfo.dims[1];
+    // pull image to local memory
+    for (int b=ly, gy2=gy; b<shrdLen; b+=get_local_size(1), gy2+=get_local_size(1)) {
+        // move row_set get_local_size(1) along coloumns
+        for (int a=lx, gx2=gx; a<shrdLen; a+=get_local_size(0), gx2+=get_local_size(0)) {
+            load2LocalMem(localMem, iptr, a, b, shrdLen, schStride, channels,
+                    d0, d1, gx2-radius, gy2-radius, ichStride, s1, s0);
+        }
+    }
+
     int i   = lx + radius;
     int j   = ly + radius;
 
-    // pull image to local memory
-    load2LocalMem(localMem, iptr, lx, ly, shrdLen, schStride, channels,
-            iInfo.dims[0], iInfo.dims[1], gx-radius,
-            gy-radius, ichStride, iInfo.strides[1], iInfo.strides[0]);
-    if (lx<wind_len) {
-        load2LocalMem(localMem, iptr, lx2, ly, shrdLen, schStride, channels,
-                iInfo.dims[0], iInfo.dims[1], gx2-radius,
-                gy-radius, ichStride, iInfo.strides[1], iInfo.strides[0]);
-    }
-    if (ly<wind_len) {
-        load2LocalMem(localMem, iptr, lx, ly2, shrdLen, schStride, channels,
-                iInfo.dims[0], iInfo.dims[1], gx-radius,
-                gy2-radius, ichStride, iInfo.strides[1], iInfo.strides[0]);
-    }
-    if (lx<wind_len && ly<wind_len) {
-        load2LocalMem(localMem, iptr, lx2, ly2, shrdLen, schStride, channels,
-                iInfo.dims[0], iInfo.dims[1], gx2-radius,
-                gy2-radius, ichStride, iInfo.strides[1], iInfo.strides[0]);
-    }
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if (gx<iInfo.dims[0] && gy<iInfo.dims[1])

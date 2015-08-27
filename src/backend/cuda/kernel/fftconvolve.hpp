@@ -143,7 +143,7 @@ __global__ void complexMultiply(
     if (t >= nelem)
         return;
 
-    if (kind == ONE2ONE || kind == MANY2MANY) {
+    if (kind == CONVOLVE_BATCH_NONE || kind == CONVOLVE_BATCH_SAME) {
         // Complex multiply each signal to equivalent filter
         const int ridx = t;
 
@@ -153,7 +153,7 @@ __global__ void complexMultiply(
         out.ptr[ridx].x = c1.x*c2.x - c1.y*c2.y;
         out.ptr[ridx].y = (c1.x+c1.y) * (c2.x+c2.y) - c1.x*c2.x - c1.y*c2.y;
     }
-    else if (kind == MANY2ONE) {
+    else if (kind == CONVOLVE_BATCH_SIGNAL) {
         // Complex multiply all signals to filter
         const int ridx1 = t;
         const int ridx2 = t % (in2.strides[3] * in2.dims[3]);
@@ -164,7 +164,7 @@ __global__ void complexMultiply(
         out.ptr[ridx1].x = c1.x*c2.x - c1.y*c2.y;
         out.ptr[ridx1].y = (c1.x+c1.y) * (c2.x+c2.y) - c1.x*c2.x - c1.y*c2.y;
     }
-    else if (kind == ONE2MANY) {
+    else if (kind == CONVOLVE_BATCH_KERNEL) {
         // Complex multiply signal to all filters
         const int ridx1 = t % (in1.strides[3] * in1.dims[3]);
         const int ridx2 = t;
@@ -274,13 +274,13 @@ void packDataHelper(Param<convT> sig_packed,
 
     // Pack signal in a complex matrix where first dimension is half the input
     // (allows faster FFT computation) and pad array to a power of 2 with 0s
-    packData<convT, T><<<blocks, threads>>>(sig_packed, sig, sig_half_d0, sig_half_d0_odd);
+    CUDA_LAUNCH((packData<convT, T>), blocks, threads, sig_packed, sig, sig_half_d0, sig_half_d0_odd);
     POST_LAUNCH_CHECK();
 
     blocks = dim3(divup(filter_packed_elem, threads.x));
 
     // Pad filter array with 0s
-    padArray<convT, T><<<blocks, threads>>>(filter_packed, filter);
+    CUDA_LAUNCH((padArray<convT, T>), blocks, threads, filter_packed, filter);
     POST_LAUNCH_CHECK();
 }
 
@@ -304,23 +304,23 @@ void complexMultiplyHelper(Param<T> out,
 
     // Multiply filter and signal FFT arrays
     switch(kind) {
-        case ONE2ONE:
-            complexMultiply<convT, ONE2ONE  ><<<blocks, threads>>>
-                (sig_packed, sig_packed, filter_packed, mul_elem);
+        case CONVOLVE_BATCH_NONE:
+            CUDA_LAUNCH((complexMultiply<convT, CONVOLVE_BATCH_NONE>), blocks, threads,
+                    sig_packed, sig_packed, filter_packed, mul_elem);
             break;
-        case MANY2ONE:
-            complexMultiply<convT, MANY2ONE ><<<blocks, threads>>>
-                (sig_packed, sig_packed, filter_packed, mul_elem);
+        case CONVOLVE_BATCH_SIGNAL:
+            CUDA_LAUNCH((complexMultiply<convT, CONVOLVE_BATCH_SIGNAL>), blocks, threads,
+                        sig_packed, sig_packed, filter_packed, mul_elem);
             break;
-        case ONE2MANY:
-            complexMultiply<convT, ONE2MANY ><<<blocks, threads>>>
-                (filter_packed, sig_packed, filter_packed, mul_elem);
+        case CONVOLVE_BATCH_KERNEL:
+            CUDA_LAUNCH((complexMultiply<convT, CONVOLVE_BATCH_KERNEL>), blocks, threads,
+                    filter_packed, sig_packed, filter_packed, mul_elem);
             break;
-        case MANY2MANY:
-            complexMultiply<convT, MANY2MANY><<<blocks, threads>>>
-                (sig_packed, sig_packed, filter_packed, mul_elem);
+        case CONVOLVE_BATCH_SAME:
+            CUDA_LAUNCH((complexMultiply<convT, CONVOLVE_BATCH_SAME>), blocks, threads,
+                    sig_packed, sig_packed, filter_packed, mul_elem);
             break;
-        case CONVOLVE_UNSUPPORTED_BATCH_MODE:
+        case CONVOLVE_BATCH_UNSUPPORTED:
         default:
             break;
     }
@@ -347,8 +347,8 @@ void reorderOutputHelper(Param<T> out,
     dim3 threads(THREADS);
     dim3 blocks(divup(out.strides[3] * out.dims[3], threads.x));
 
-    reorderOutput<T, convT, expand, roundOut><<<blocks, threads>>>
-        (out, packed, filter, sig_half_d0, baseDim, fftScale);
+    CUDA_LAUNCH((reorderOutput<T, convT, expand, roundOut>), blocks, threads,
+            out, packed, filter, sig_half_d0, baseDim, fftScale);
     POST_LAUNCH_CHECK();
 }
 

@@ -15,6 +15,10 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 #include <boost/compute/core.hpp>
 #include <boost/compute/algorithm/iota.hpp>
 #include <boost/compute/algorithm/sort_by_key.hpp>
@@ -35,10 +39,6 @@ namespace opencl
 {
     namespace kernel
     {
-        // Kernel Launch Config Values
-        static const int TX = 32;
-        static const int TY = 8;
-
         template<typename T, bool isAscending>
         void sort0_index(Param val, Param idx)
         {
@@ -85,3 +85,5 @@ namespace opencl
         }
     }
 }
+
+#pragma GCC diagnostic pop

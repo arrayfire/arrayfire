@@ -93,4 +93,25 @@ magma_getrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
                 magma_queue_t queue,
                 magma_int_t *info);
 
+template<typename Ty>  magma_int_t
+magma_labrd_gpu(magma_int_t m, magma_int_t n, magma_int_t nb,
+                Ty *a, magma_int_t lda,
+                cl_mem da, size_t da_offset, magma_int_t ldda,
+                void *_d, void *_e, Ty *tauq, Ty *taup,
+                Ty *x, magma_int_t ldx,
+                cl_mem dx, size_t dx_offset, magma_int_t lddx,
+                Ty *y, magma_int_t ldy,
+                cl_mem dy, size_t dy_offset, magma_int_t lddy,
+                magma_queue_t queue);
+
+template<typename Ty> magma_int_t
+magma_gebrd_hybrid(magma_int_t m, magma_int_t n,
+                   Ty *a, magma_int_t lda,
+                   cl_mem da, size_t da_offset, magma_int_t ldda,
+                   void *_d, void *_e,
+                   Ty *tauq, Ty *taup,
+                   Ty *work, magma_int_t lwork,
+                   magma_queue_t queue,
+                   magma_int_t *info, bool copy);
+
 #endif
