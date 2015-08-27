@@ -33,7 +33,24 @@ The distribution is centered around 0
 \ingroup data_mat
 \ingroup arrayfire_func
 
-=======================================================================
+
+\defgroup data_func_setseed setSeed
+
+\brief Set the seed for random number generator
+
+
+\ingroup data_mat
+\ingroup arrayfire_func
+
+
+\defgroup data_func_getseed getSeed
+
+\brief Get the seed for random number generator
+
+
+\ingroup data_mat
+\ingroup arrayfire_func
+
 
 \defgroup data_func_identity identity
 

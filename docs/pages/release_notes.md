@@ -7,10 +7,10 @@ v3.1.0
 Function Additions
 ------------------
 * Computer Vision Functions
-    * Nearest Neighbour with SAD, SSD and SHD distances (nearestNeighbour)
-    * Harris Corner Detector (harris)
-    * Susan Corner Detector (susan)
-    * Scale Invariant Feature Transform (SIFT)
+    * \ref nearestNeighbour() - Nearest Neighbour with SAD, SSD and SHD distances
+    * \ref harris() - Harris Corner Detector
+    * \ref susan() - Susan Corner Detector
+    * \ref sift() - Scale Invariant Feature Transform (SIFT)
         * Method and apparatus for identifying scale invariant features"
           "in an image and use of same for locating an object in an image,\" David"
           "G. Lowe, US Patent 6,711,293 (March 23, 2004). Provisional application"
@@ -20,36 +20,50 @@ Function Additions
           "Columbia.")
         * SIFT is available for compiling but does not ship with ArrayFire
           hosted installers/pre-built libraries
-    * Difference of Gaussians (dog)
+    * \ref dog() -  Difference of Gaussians
 
 * Image Processing Functions
-    * RGB <->YCbCr color space conversion (ycbcr2rgb, rgb2ycbcr)
-    * Wrap and Unwrap (wrap, unwrap)
-    * Summed Area Tables (sat)
-    * Load and Save images to/from memory (loadImageMem, saveImageMem)
-        * Add imageFormat (af_image_format) enum
-
-* Utility
-    * Allow users to set print precision (print, af_print_array_gen)
-    * Stream arrays to binary files (saveArray, readArray)
-    * toString function returns the array and data as a string
+    * \ref ycbcr2rgb() and \ref rgb2ycbcr() - RGB <->YCbCr color space conversion
+    * \ref wrap() and \ref unwrap() Wrap and Unwrap
+    * \ref sat() - Summed Area Tables
+    * \ref loadImageMem() and \ref saveImageMem() - Load and Save images to/from memory
+        * \ref af_image_format - Added imageFormat (af_image_format) enum
 
 * Array & Data Handling
-    * Copy (copy)
-    * Lock and Unlock (array::lock, array::unlock)
-    * Select and Replace (select, replace)
+    * \ref copy() - Copy
+    * array::lock() and array::unlock() - Lock and Unlock
+    * \ref select() and \ref replace() - Select and Replace
     * Get array reference count (af_get_data_ref_count)
 
+* Signal Processing
+    * \ref fftInPlace() - 1D in place FFT
+    * \ref fft2InPlace() - 2D in place FFT
+    * \ref fft3InPlace() - 3D in place FFT
+    * \ref ifftInPlace() - 1D in place Inverse FFT
+    * \ref ifft2InPlace() - 2D in place Inverse FFT
+    * \ref ifft3InPlace() - 3D in place Inverse FFT
+    * \ref fftR2C() - Real to complex FFT
+    * \ref fftC2R() - Complex to Real FFT
+
+* Linear Algebra
+    * \ref svd() and \ref svdInPlace() - Singular Value Decomposition
+
 * Other operations
-    * SVD Decomposition (svd)
-    * FFT
-        * Support for in place FFT
-    * Sigmoid (sigmoid)
+    * \ref sigmoid() - Sigmoid
     * Sum (with option to replace NaN values)
     * Product (with option to replace NaN values)
 
 * Graphics
-    * Window resizing using Forge API (Window::setSize)
+    * Window::setSize() - Window resizing using Forge API
+
+* Utility
+    * Allow users to set print precision (print, af_print_array_gen)
+    * \ref saveArray() and \ref readArray() - Stream arrays to binary files
+    * \ref toString() - toString function returns the array and data as a string
+
+* CUDA specific functionality
+    * \ref getStream() - Returns default CUDA stream ArrayFire uses for the current device
+    * \ref getNativeId() - Returns native id of the CUDA device
 
 Improvements
 ------------
@@ -60,18 +74,13 @@ Improvements
 * 64-bit integer support
     * For reductions, random, iota, range, diff1, diff2, accum, join, shift
       and tile
-* sum and product
-    * Support for NaN value substitution
 * convolve
     * Support for non-overlapping batched convolutions
 * Complex Arrays
     * Fix binary ops on complex inputs of mixed types
     * Complex type support for exp
-* FFT
-    * Support for r2c and c2r FFT
-    * Support for in place FFT
 * tile
-    * is now a JIT function
+    * Performance improvements by using JIT when possible.
 * Add AF_API_VERSION macro
     * Allows disabling of API to maintain consistency with previous versions
 * Other Performance Improvements
@@ -123,9 +132,14 @@ Distribution Changes
 
 Known Issues
 ------------
-* OpenBlas can cause issues with QR
+* OpenBlas can cause issues with QR factorization in CPU backend
 * FreeImage older than 3.10 can cause issues with loadImageMem and
   saveImageMem
+* OpenCL backend issues on OSX
+    * AMD GPUs not supported because of driver issues
+    * Intel CPUs not supported
+    * Linear algebra functions do not work on Intel GPUs.
+* Stability and correctness issues with open source OpenCL implementations such as Beignet, GalliumCompute.
 
 v3.0.2
 ==============

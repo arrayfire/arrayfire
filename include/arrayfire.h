@@ -203,7 +203,7 @@
    @defgroup external Interface Functions
    @{
 
-     CUDA/OpenCL specific functions
+     Backend specific functions
 
      @defgroup opencl_mat OpenCL specific functions
 
@@ -219,6 +219,14 @@
         upload data to `cl_mem` objects from separate threads, but the thread which
         instantiated ArrayFire must do the `cl_mem` to \ref af::array conversion.
 
+     @defgroup cuda_mat CUDA specific functions
+
+        \brief Accessing ArrayFire's stream, and native device id with other CUDA code.
+
+        If your software is using ArrayFire's CUDA backend, you can also write custom
+        kernels and do custom memory operations using native CUDA commands. The functions
+        contained in the \p afcu namespace provide methods to get the stream and native
+        device id that ArrayFire is using.
    @}
 @}
 

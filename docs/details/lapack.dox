@@ -140,7 +140,7 @@ The arrayfire function only returns the non zero diagonal elements of **S**. To 
 
 \snippet test/svd_dense.cpp ex_svd_reg
 
-When memory is a concern, and **A** is dispensible, \ref svdInPlace can be used
+When memory is a concern, and **A** is dispensible, \ref svdInPlace() can be used
 
 
 =======================================================================

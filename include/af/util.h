@@ -119,37 +119,6 @@ namespace af
 
 #define GET_PRINT_MACRO(_1, _2, NAME, ...) NAME
 
-/**
-    Macro to print an array along with the variable name
-
-    \param[in] exp the array to be printed
-    \param[in] precision (optional) is the number of decimal places to be printed
-
-    \code
-    af::array myarray = randu(3, 3);
-    int myprecision = 2;
-
-    af_print(myarray);                  // Defaults precision to 4 decimal places
-    // A [3 3 1 1]
-    //     0.0010   311.3614     1.6264
-    //    60.3298   497.9737   359.5948
-    //   165.4467   113.7310     5.2294
-
-    af_print(myarray, myprecision);     // Uses myprecision decimal places
-    // A [3 3 1 1]
-    //     0.00   311.36     1.63
-    //    60.33   497.97   359.59
-    //   165.45   113.73     5.23
-
-    af_print(myarray, 6);               // Uses 6 decimal places
-    // A [3 3 1 1]
-    //     0.001029   311.361402     1.626432
-    //    60.329828   497.973728   359.594787
-    //   165.446732   113.730984     5.229350
-    \endcode
-
-    \ingroup print_func_print
-*/
 #define af_print(...) GET_PRINT_MACRO(__VA_ARGS__, AF_PRINT2, AF_PRINT1)(__VA_ARGS__)
 
 #else
@@ -189,7 +158,7 @@ extern "C" {
 #if AF_API_VERSION >= 31
     /**
         \param[out] index is the index location of the array in the file
-        \param[in] key is an expression used as tag/key for the array during \ref readArray
+        \param[in] key is an expression used as tag/key for the array during \ref readArray()
         \param[in] arr is the array to be written
         \param[in] filename is the path to the location on disk
         \param[in] append is used to append to an existing file when true and create or
