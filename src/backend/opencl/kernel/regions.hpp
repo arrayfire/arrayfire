@@ -19,6 +19,9 @@
 #include <map>
 #include <memory.hpp>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 #include <boost/compute/container/vector.hpp>
 #include <boost/compute/algorithm/adjacent_difference.hpp>
 #include <boost/compute/algorithm/sort.hpp>
@@ -27,6 +30,8 @@
 #include <boost/compute/algorithm/transform.hpp>
 #include <boost/compute/lambda/placeholders.hpp>
 #include <boost/compute/lambda.hpp>
+
+#pragma GCC diagnostic pop
 
 using cl::Buffer;
 using cl::Program;

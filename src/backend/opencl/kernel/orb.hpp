@@ -29,6 +29,9 @@ using cl::LocalSpaceArg;
 using cl::NDRange;
 using std::vector;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+
 namespace opencl
 {
 
@@ -503,3 +506,4 @@ void orb(unsigned* out_feat,
 } //namespace kernel
 
 } //namespace opencl
+#pragma GCC diagnostic pop

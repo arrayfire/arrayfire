@@ -71,7 +71,7 @@ An file with 2 arrays would look like (representative)
 > Array 2 Dims\n
 > Array 2 Data\n
 
-\ingroup stream_func
+\ingroup dataio_mat
 \ingroup arrayfire_func
 
 =======================================================================
@@ -129,7 +129,7 @@ On each append, the array counter in the header is incremented and the new
 array is written to the end of the file. This function does not check if the
 tag is unique or not.
 
-\ingroup stream_func
+\ingroup dataio_mat
 \ingroup arrayfire_func
 
 =======================================================================
