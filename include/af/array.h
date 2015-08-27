@@ -802,8 +802,15 @@ namespace af
 
         ~array();
 
-        // Transpose and Conjugate Tranpose
+        /// \brief Get the transposed the array
+        ///
+        /// \returns Transposed matrix
+        /// \ingroup method_mat
         array T() const;
+        /// \brief Get the conjugate-transpose of the current array
+        ///
+        /// \returns conjugate-transpose matrix
+        /// \ingroup method_mat
         array H() const;
 
 #define ASSIGN(OP)                                                                      \
@@ -1093,7 +1100,7 @@ namespace af
     BIN_OP(operator||)
     /// @}
 
-    /// \ingroup numeric_func_mod
+    /// \ingroup arith_func_mod
     /// @{
     /// \brief Performs an modulo operation on two arrays or an array and a value.
     ///

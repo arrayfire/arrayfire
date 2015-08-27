@@ -19,12 +19,43 @@
 extern "C" {
 #endif
 
+    /**
+        \ingroup opencl_mat
+        @{
+    */
+    /**
+      Get a handle to ArrayFire's OpenCL context
+
+      \param[out] ctx the current context being used by ArrayFire
+      \param[in] retain if true calls clRetainContext prior to returning the context
+      \returns \ref af_err error code
+
+      \note Set \p retain to true if this value will be passed to a cl::Context constructor
+    */
     AFAPI af_err afcl_get_context(cl_context *ctx, const bool retain);
 
+    /**
+      Get a handle to ArrayFire's OpenCL command queue
+
+      \param[out] queue the current command queue being used by ArrayFire
+      \param[in] retain if true calls clRetainCommandQueue prior to returning the context
+      \returns \ref af_err error code
+
+      \note Set \p retain to true if this value will be passed to a cl::CommandQueue constructor
+    */
     AFAPI af_err afcl_get_queue(cl_command_queue *queue, const bool retain);
 
+    /**
+       Get the device ID for ArrayFire's current active device
+
+       \param[out] id the cl_device_id of the current device
+       \returns \ref af_err error code
+    */
     AFAPI af_err afcl_get_device_id(cl_device_id *id);
 
+    /**
+      @}
+    */
 #ifdef __cplusplus
 }
 #endif

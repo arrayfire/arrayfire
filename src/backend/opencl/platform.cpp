@@ -246,8 +246,12 @@ std::string getInfo()
                         (show_braces ? string("]") : "-");
             info << id << " " << platformMap(platStr) << ": " << ltrim(dstr) << " ";
 #ifndef NDEBUG
-            info << device.getInfo<CL_DEVICE_VERSION>();
-            info << " Device driver " << device.getInfo<CL_DRIVER_VERSION>();
+            string devVersion = device.getInfo<CL_DEVICE_VERSION>();
+            string driVersion = device.getInfo<CL_DRIVER_VERSION>();
+            devVersion.pop_back();
+            driVersion.pop_back();
+            info << devVersion;
+            info << " Device driver " << driVersion;
             info << " FP64 Support("
                  << (device.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0 ? "True" : "False")
                  << ")";

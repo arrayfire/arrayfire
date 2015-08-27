@@ -790,7 +790,7 @@ unwrap(A, 3, 3, 3, 3, 2, 2) [9 9 1 1]
 \defgroup image_func_wrap wrap
 \ingroup image_mod_mat
 
-Wrap takes an unwrapped image (see \ref unwrap) and converts it back to an image.
+Wrap takes an unwrapped image (see \ref unwrap()) and converts it back to an image.
 
 The inputs to this function should be the same as the inputs used to generate the unwrapped image.
 @}

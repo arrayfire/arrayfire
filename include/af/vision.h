@@ -127,7 +127,7 @@ AFAPI void orb(features& feat, array& desc, const array& image, const float fast
 
     \ingroup cv_func_sift
  */
-AFAPI void sift(features& feat, array& desc, const array& in, const unsigned n_layers=3, const float contrast_thr=0.04f, const float edge_thr=10.f, const float init_sigma=1.6f, const bool double_input=true, const float img_scale=0.00390625f, const float feature_ratio=0.05f);
+AFAPI void sift(features& feat, array& desc, const array& in, const unsigned n_layers=3, const float contrast_thr=0.04f, const float edge_thr=10.f, const float init_sigma=1.6f, const bool double_input=true, const float intensity_scale=0.00390625f, const float feature_ratio=0.05f);
 #endif
 
 /**
@@ -365,7 +365,7 @@ extern "C" {
 
         \ingroup cv_func_sift
     */
-    AFAPI af_err af_sift(af_features *feat, af_array *desc, const af_array in, const unsigned n_layers, const float contrast_thr, const float edge_thr, const float init_sigma, const bool double_input, const float img_scale, const float feature_ratio);
+    AFAPI af_err af_sift(af_features *feat, af_array *desc, const af_array in, const unsigned n_layers, const float contrast_thr, const float edge_thr, const float init_sigma, const bool double_input, const float intensity_scale, const float feature_ratio);
 #endif
 
     /**
