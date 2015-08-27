@@ -282,7 +282,7 @@ extern "C" {
     /// \param[in] indices  is an af_array of \ref af_index_t objects
     /// \param[in] rhs      is the array whose values will be assigned to \p lhs
     ///
-    /// \ingroup index_func_index
+    /// \ingroup index_func_assign
     ///
     AFAPI af_err af_assign_gen( af_array *out,
                                 const af_array lhs,
