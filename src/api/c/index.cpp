@@ -36,27 +36,33 @@ static void indexArray(af_array &dest, const af_array &src, const unsigned ndims
     dest = getHandle(dst);
 }
 
-af_err af_make_array_index(af_index_t* result, const af_array in)
+af_err af_make_array_index(af_index_t** result, const af_array in)
 {
     try {
-        af_index_t index;
-        index.idx.arr = in;
-        index.isBatch = true;
-        index.isSeq = false;
-        std::swap(*result, index);
+        if(*result) {
+            // avoid a dangling pointer
+            return AF_ERR_NOT_SUPPORTED;
+        }
+        *result = new af_index_t;
+        (*result)->idx.arr = in;
+        (*result)->isBatch = true;
+        (*result)->isSeq = false;
     }
     CATCHALL
         return AF_SUCCESS;    
 }
 
-af_err af_make_seq_index(af_index_t* result, const af_seq in)
+af_err af_make_seq_index(af_index_t** result, const af_seq in)
 {
     try {
-        af_index_t index;
-        index.idx.seq = in;
-        index.isBatch = false;
-        index.isSeq = true;
-        std::swap(*result, index);
+        if(*result) {
+            // avoid a dangling pointer
+            return AF_ERR_NOT_SUPPORTED;
+        }
+        *result = new af_index_t;
+        (*result)->idx.seq = in;
+        (*result)->isBatch = false;
+        (*result)->isSeq = true;
     }
     CATCHALL
         return AF_SUCCESS;
