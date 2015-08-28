@@ -197,6 +197,24 @@ extern "C" {
 #endif
 
     ///
+    /// Helper to generate an af_index_t from an af_array
+    ///
+    /// \param[out] result  a non initialized array that will be populated
+    /// \param[in]  arr     the array that will be used to generate the af_index_t
+    ///
+    /// \ingroup index_func_index
+    AFAPI af_err af_make_array_index(af_index_t* result, const af_array in);
+
+    ///
+    /// Helper to generate an af_index_t from an af_seq
+    ///
+    /// \param[out] result  a non initialized array that will be populated
+    /// \param[in]  seq     the seq that will be used to generate the af_index_t
+    ///
+    /// \ingroup index_func_index
+    AFAPI af_err af_make_seq_index(af_index_t* result, const af_seq in);
+
+    ///
     /// Lookup the values of input array based on sequences
     ///
     /// \param[out] out  output array containing values indexed by the
