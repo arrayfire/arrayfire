@@ -212,7 +212,7 @@ extern "C" {
     /// \param[in]  seq     the seq that will be used to generate the af_index_t
     ///
     /// \ingroup index_func_index
-    AFAPI af_err af_make_seq_index(af_index_t** result, const af_seq in);
+    AFAPI af_err af_make_seq_index(af_index_t** result, const af_seq* in);
 
     ///
     /// Lookup the values of input array based on sequences

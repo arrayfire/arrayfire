@@ -52,7 +52,7 @@ af_err af_make_array_index(af_index_t** result, const af_array in)
         return AF_SUCCESS;    
 }
 
-af_err af_make_seq_index(af_index_t** result, const af_seq in)
+af_err af_make_seq_index(af_index_t** result, const af_seq* in)
 {
     try {
         if(*result) {
@@ -60,7 +60,7 @@ af_err af_make_seq_index(af_index_t** result, const af_seq in)
             return AF_ERR_NOT_SUPPORTED;
         }
         *result = new af_index_t;
-        (*result)->idx.seq = in;
+        (*result)->idx.seq = *in;
         (*result)->isBatch = false;
         (*result)->isSeq = true;
     }
