@@ -68,6 +68,17 @@ af_err af_make_seq_index(af_index_t** result, const af_seq* in, bool is_batch)
         return AF_SUCCESS;
 }
 
+af_err af_release_index(af_index_t* indexer)
+{
+    try{
+        if(indexer) {
+            delete indexer;
+        }
+    }
+    CATCHALL
+        return AF_SUCCESS;
+}
+
 af_err af_index(af_array *result, const af_array in, const unsigned ndims, const af_seq* index)
 {
     af_array out;

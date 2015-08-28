@@ -215,6 +215,14 @@ extern "C" {
     AFAPI af_err af_make_seq_index(af_index_t** result, const af_seq* in, bool is_batch);
 
     ///
+    /// Helper to release an initialized indexer
+    ///
+    /// \param[in] indexer  is the array of sequences
+    ///
+    /// \ingroup index_func_index
+    AFAPI af_err af_release_index(af_index_t* indexer);
+
+    ///
     /// Lookup the values of input array based on sequences
     ///
     /// \param[out] out  output array containing values indexed by the
