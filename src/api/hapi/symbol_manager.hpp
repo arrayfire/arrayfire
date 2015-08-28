@@ -73,6 +73,8 @@ class AFSymbolManager {
 
 #if defined(OS_WIN)
 #define CALL(...) AFSymbolManager::getInstance().call(__FUNCTION__, __VA_ARGS__)
+#define CALL_NO_PARAMS() AFSymbolManager::getInstance().call(__FUNCTION__)
 #else
 #define CALL(...) AFSymbolManager::getInstance().call(__func__, __VA_ARGS__)
+#define CALL_NO_PARAMS() AFSymbolManager::getInstance().call(__func__)
 #endif
