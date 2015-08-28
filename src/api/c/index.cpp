@@ -45,14 +45,14 @@ af_err af_make_array_index(af_index_t** result, const af_array in)
         }
         *result = new af_index_t;
         (*result)->idx.arr = in;
-        (*result)->isBatch = true;
+        (*result)->isBatch = false;
         (*result)->isSeq = false;
     }
     CATCHALL
         return AF_SUCCESS;    
 }
 
-af_err af_make_seq_index(af_index_t** result, const af_seq* in)
+af_err af_make_seq_index(af_index_t** result, const af_seq* in, bool is_batch)
 {
     try {
         if(*result) {
@@ -61,7 +61,7 @@ af_err af_make_seq_index(af_index_t** result, const af_seq* in)
         }
         *result = new af_index_t;
         (*result)->idx.seq = *in;
-        (*result)->isBatch = false;
+        (*result)->isBatch = is_batch;
         (*result)->isSeq = true;
     }
     CATCHALL
