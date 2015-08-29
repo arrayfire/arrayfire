@@ -9,6 +9,13 @@
 
 #include "symbol_manager.hpp"
 
+#if defined(OS_WIN)
+static const char* LIB_AF_BKND_NAME[] = {"afcpu.dll", "afcuda.dll", "afopencl.dll"};
+#define RTLD_LAZY 0
+#else
+static const char* LIB_AF_BKND_NAME[] = {"libafcpu.so", "libafcuda.so", "libafopencl.so"};
+#endif
+
 AFSymbolManager& AFSymbolManager::getInstance()
 {
     static AFSymbolManager symbolManager;
@@ -39,64 +46,48 @@ void closeDynLibrary(LibHandle handle)
 }
 
 AFSymbolManager::AFSymbolManager()
-    : isCPULoaded(false), isCUDALoaded(false), isOCLLoaded(false)
+    : backendBitFlag(0x0000), activeHandle(NULL), defaultHandle(NULL)
 {
-    cpuHandle = openDynLibrary(LIB_AF_CPU_NAME);
-    if (cpuHandle) {
-        isCPULoaded = true;
-        activeHandle = cpuHandle;
+    // AF_BACKEND_DEFAULT enum value is 1 + last valid compute
+    // backend in af_backend enum, hence it represents the number
+    // of valid backends in ArrayFire framework
+    unsigned bkndFlag = 0x0001;
+    for(int i=0; i<AF_BACKEND_DEFAULT; ++i) {
+        bkndHandles[i] = openDynLibrary(LIB_AF_BKND_NAME[i]);
+        if (bkndHandles[i]) {
+            backendBitFlag |= bkndFlag;
+            activeHandle = bkndHandles[i];
+        }
+        bkndFlag = bkndFlag << 1;
     }
-    cudaHandle = openDynLibrary(LIB_AF_CUDA_NAME);
-    if (cudaHandle) {
-        isCUDALoaded = true;
-        activeHandle = cudaHandle;
-    }
-    oclHandle = openDynLibrary(LIB_AF_OCL_NAME);
-    if (oclHandle) {
-        isOCLLoaded = true;
-        activeHandle = oclHandle;
-    }
+    // Keep a copy of default order handle
+    // inorder to use it in ::setBackend when
+    // the user passes AF_BACKEND_DEFAULT
+    defaultHandle = activeHandle;
 }
 
 AFSymbolManager::~AFSymbolManager()
 {
-    if (isCPULoaded) {
-        closeDynLibrary(cpuHandle);
-        isCPULoaded = false;
+    unsigned bkndFlag = 0x0001;
+    for(int i=0; i<AF_BACKEND_DEFAULT; ++i) {
+        if (bkndFlag & backendBitFlag)
+            closeDynLibrary(bkndHandles[i]);
+        bkndFlag = bkndFlag << 1;
     }
-    if (isCUDALoaded) {
-        closeDynLibrary(cudaHandle);
-        isCUDALoaded = false;
-    }
-    if (isOCLLoaded) {
-        closeDynLibrary(oclHandle);
-        isOCLLoaded = false;
-    }
+    backendBitFlag = 0x0000;
 }
 
 af_err AFSymbolManager::setBackend(af::Backend bknd)
 {
-    af_err retCode = AF_SUCCESS;
-    activeBknd = bknd;
-    switch (activeBknd) {
-        case af::Backend::AF_BACKEND_CPU:
-            if(isCPULoaded)
-                activeHandle = cpuHandle;
-            else
-                retCode = AF_ERR_LOAD_LIB;
-            break;
-        case af::Backend::AF_BACKEND_CUDA:
-            if(isCUDALoaded)
-                activeHandle = cudaHandle;
-            else
-                retCode = AF_ERR_LOAD_LIB;
-            break;
-        case af::Backend::AF_BACKEND_OPENCL:
-            if (isOCLLoaded)
-                activeHandle = oclHandle;
-            else
-                retCode = AF_ERR_LOAD_LIB;
-            break;
+    if (bknd==AF_BACKEND_DEFAULT) {
+        activeHandle = defaultHandle;
+        return AF_SUCCESS;
     }
-    return retCode;
+    unsigned bkndFlag = 0x0001;
+    if((bkndFlag << bknd) & backendBitFlag) {
+        activeHandle = bkndHandles[bknd];
+        return AF_SUCCESS;
+    } else {
+        return AF_ERR_LOAD_LIB;
+    }
 }

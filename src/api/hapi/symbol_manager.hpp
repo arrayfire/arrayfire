@@ -13,16 +13,9 @@
 #if defined(OS_WIN)
 #include <Windows.h>
 typedef HMODULE LibHandle;
-#define RTLD_LAZY 0
-#define LIB_AF_CPU_NAME "afcpu.dll"
-#define LIB_AF_CUDA_NAME "afcuda.dll"
-#define LIB_AF_OCL_NAME "afopencl.dll"
 #else
 #include <dlfcn.h>
 typedef void* LibHandle;
-#define LIB_AF_CPU_NAME "libafcpu.so"
-#define LIB_AF_CUDA_NAME "libafcuda.so"
-#define LIB_AF_OCL_NAME "libafopencl.so"
 #endif
 
 class AFSymbolManager {
@@ -59,16 +52,12 @@ class AFSymbolManager {
         void operator=(AFSymbolManager const&);
 
     private:
-        bool isCPULoaded;
-        bool isCUDALoaded;
-        bool isOCLLoaded;
+        unsigned backendBitFlag;
 
-        LibHandle cpuHandle;
-        LibHandle cudaHandle;
-        LibHandle oclHandle;
+        LibHandle bkndHandles[3];
 
-        af::Backend activeBknd;
         LibHandle activeHandle;
+        LibHandle defaultHandle;
 };
 
 #if defined(OS_WIN)

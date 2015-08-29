@@ -322,9 +322,10 @@ typedef enum {
 } af_image_format;
 
 typedef enum {
-    AF_BACKEND_CPU,
-    AF_BACKEND_CUDA,
-    AF_BACKEND_OPENCL
+    AF_BACKEND_CPU     = 0,  ///< CPU a.k.a sequential algorithms
+    AF_BACKEND_CUDA    = 1,  ///< CUDA Compute Backend
+    AF_BACKEND_OPENCL  = 2,  ///< OpenCL Compute Backend
+    AF_BACKEND_DEFAULT = 3   ///< Default backend order: OpenCL -> CUDA -> CPU
 } af_backend;
 
 // Below enum is purely added for example purposes
