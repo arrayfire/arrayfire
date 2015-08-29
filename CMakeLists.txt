@@ -35,7 +35,7 @@ OPTION(BUILD_SIFT "Build ArrayFire nonfree algorithms" OFF)
 
 MARK_AS_ADVANCED(BUILD_SIFT)
 
-OPTION(BUILD_HETEROGENOUS_API "Build Heterogeneous ArrayFire API" ON)
+OPTION(BUILD_AF "Build Backend-Independent ArrayFire API" ON)
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -170,7 +170,7 @@ IF(${BUILD_OPENCL})
     ADD_SUBDIRECTORY(src/backend/opencl)
 ENDIF()
 
-IF(${BUILD_HETEROGENOUS_API})
+IF(${BUILD_AF})
     ADD_SUBDIRECTORY(src/api/hapi)
     ADD_SUBDIRECTORY(hapi_examples)
 ENDIF()
