@@ -223,6 +223,19 @@ extern "C" {
     AFAPI af_err af_release_index(af_index_t* indexer);
 
     ///
+    /// Helper to generate an af_index_t from an internal af_seq
+    ///
+    /// \param[out] result    a non initialized array that will be populated
+    /// \param[in]  begin     the begin index to use for the seq
+    /// \param[in]  end       the end index to use for the seq
+    /// \param[in]  step      the step size to use for the seq
+    /// \param[in]  is_batch  determine batching mode
+    ///
+    /// \ingroup index_func_index
+    AFAPI af_err af_create_seq_param_index(af_index_t** result, double begin
+                                            , double end, double step, bool is_batch);
+
+    ///
     /// Lookup the values of input array based on sequences
     ///
     /// \param[out] out  output array containing values indexed by the

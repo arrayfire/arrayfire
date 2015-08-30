@@ -79,6 +79,12 @@ af_err af_release_index(af_index_t* indexer)
         return AF_SUCCESS;
 }
 
+af_err af_create_seq_param_index(af_index_t** result, double begin, double end, double step, bool is_batch)
+{
+    af_seq in = af_make_seq(begin, end, step);
+    return af_create_seq_index(result, &in, is_batch);
+}
+
 af_err af_index(af_array *result, const af_array in, const unsigned ndims, const af_seq* index)
 {
     af_array out;
