@@ -36,7 +36,7 @@ static void indexArray(af_array &dest, const af_array &src, const unsigned ndims
     dest = getHandle(dst);
 }
 
-af_err af_make_array_index(af_index_t** result, const af_array in)
+af_err af_create_array_index(af_index_t** result, const af_array in)
 {
     try {
         if(*result) {
@@ -52,7 +52,7 @@ af_err af_make_array_index(af_index_t** result, const af_array in)
         return AF_SUCCESS;    
 }
 
-af_err af_make_seq_index(af_index_t** result, const af_seq* in, bool is_batch)
+af_err af_create_seq_index(af_index_t** result, const af_seq* in, bool is_batch)
 {
     try {
         if(*result) {
