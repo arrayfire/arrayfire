@@ -265,14 +265,14 @@ TEST(Approx2, CPPNearestBatch)
             pos(af::span, af::span, i), qos(af::span, af::span, i), AF_INTERP_NEAREST);
     }
 
-    //af::array outGFOR(pos.dims());
-    //gfor(af::seq i, 10) {
-    //    outGFOR(af::span, af::span, i) = af::approx2(input(af::span, af::span, i),
-    //        pos(af::span, af::span, i), qos(af::span, af::span, i), AF_INTERP_NEAREST);
-    //}
+    af::array outGFOR(pos.dims());
+    gfor(af::seq i, 10) {
+        outGFOR(af::span, af::span, i) = af::approx2(input(af::span, af::span, i),
+            pos(af::span, af::span, i), qos(af::span, af::span, i), AF_INTERP_NEAREST);
+    }
 
     ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outSerial)), 1e-3);
-    //ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outGFOR)), 1e-3);
+    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outGFOR)), 1e-3);
 }
 
 TEST(Approx2, CPPLinearBatch)
@@ -291,12 +291,12 @@ TEST(Approx2, CPPLinearBatch)
             pos(af::span, af::span, i), qos(af::span, af::span, i), AF_INTERP_LINEAR);
     }
 
-    //af::array outGFOR(pos.dims());
-    //gfor(af::seq i, 10) {
-    //    outGFOR(af::span, af::span, i) = af::approx2(input(af::span, af::span, i),
-    //        pos(af::span, af::span, i), qos(af::span, af::span, i), AF_INTERP_LINEAR);
-    //}
+    af::array outGFOR(pos.dims());
+    gfor(af::seq i, 10) {
+        outGFOR(af::span, af::span, i) = af::approx2(input(af::span, af::span, i),
+            pos(af::span, af::span, i), qos(af::span, af::span, i), AF_INTERP_LINEAR);
+    }
 
     ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outSerial)), 1e-3);
-    //ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outGFOR)), 1e-3);
+    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outGFOR)), 1e-3);
 }

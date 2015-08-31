@@ -87,7 +87,7 @@ namespace opencl
 
 
                 auto approx1Op = make_kernel<Buffer, const KParam, const Buffer, const KParam,
-                                       const Buffer, const KParam, const float, const dim_t>
+                                       const Buffer, const KParam, const float, const dim_t, const int>
                                       (*approxKernels[device]);
 
                 NDRange local(THREADS, 1, 1);
@@ -96,9 +96,14 @@ namespace opencl
                                out.info.dims[2] * out.info.dims[3] * local[0],
                                1);
 
+                // Passing bools to opencl kernels is not allowed
+                int pBatch = 0;
+                if(!(pos.info.dims[1] == 1 && pos.info.dims[2] == 1 && pos.info.dims[3] == 1))
+                    pBatch = 1;
+
                 approx1Op(EnqueueArgs(getQueue(), global, local),
                           *out.data, out.info, *in.data, in.info,
-                          *pos.data, pos.info, offGrid, blocksPerMat);
+                          *pos.data, pos.info, offGrid, blocksPerMat, pBatch);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
@@ -152,7 +157,7 @@ namespace opencl
 
                 auto approx2Op = make_kernel<Buffer, const KParam, const Buffer, const KParam,
                                        const Buffer, const KParam, const Buffer, const KParam,
-                                       const float, const dim_t, const dim_t>
+                                       const float, const dim_t, const dim_t, const int>
                                        (*approxKernels[device]);
 
                 NDRange local(TX, TY, 1);
@@ -162,13 +167,17 @@ namespace opencl
                                blocksPerMatY * local[1] * out.info.dims[3],
                                1);
 
+                // Passing bools to opencl kernels is not allowed
+                int pBatch = 0;
+                if(!(pos.info.dims[2] == 1 && pos.info.dims[3] == 1))
+                    pBatch = 1;
 
                 approx2Op(EnqueueArgs(getQueue(), global, local),
                           *out.data, out.info,
                           *in.data, in.info,
                           *pos.data, pos.info,
                           *qos.data, qos.info,
-                          offGrid, blocksPerMatX, blocksPerMatY);
+                          offGrid, blocksPerMatX, blocksPerMatY, pBatch);
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
                 CL_TO_AF_ERROR(err);

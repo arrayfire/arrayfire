@@ -25,7 +25,8 @@ namespace cpu
                   const Ty *in,  const af::dim4 &idims, const dim_t iElems,
                   const Tp *pos, const af::dim4 &pdims,
                   const af::dim4 &ostrides, const af::dim4 &istrides, const af::dim4 &pstrides,
-                  const float offGrid, const dim_t idx, const dim_t idy)
+                  const float offGrid, const bool pBatch,
+                  const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw)
         {
             return;
         }
@@ -38,9 +39,11 @@ namespace cpu
                   const Ty *in,  const af::dim4 &idims, const dim_t iElems,
                   const Tp *pos, const af::dim4 &pdims,
                   const af::dim4 &ostrides, const af::dim4 &istrides, const af::dim4 &pstrides,
-                  const float offGrid, const dim_t idx, const dim_t idy)
+                  const float offGrid, const bool pBatch,
+                  const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw)
         {
-            const dim_t pmId = idx + (pdims[1] == 1 ? 0 : idy * pstrides[1]);
+            dim_t pmId = idx;
+            if(pBatch) pmId += idw * pstrides[3] + idz * pstrides[2] + idy * pstrides[1];
 
             const Tp x = pos[pmId];
             bool gFlag = false;
@@ -48,20 +51,16 @@ namespace cpu
                 gFlag = true;
             }
 
-            for(dim_t idw = 0; idw < odims[3]; idw++) {
-                for(dim_t idz = 0; idz < odims[2]; idz++) {
-                    const dim_t omId = idw * ostrides[3] + idz * ostrides[2]
-                                     + idy * ostrides[1] + idx;
-                    if(gFlag) {
-                        out[omId] = scalar<Ty>(offGrid);
-                    } else {
-                        dim_t ioff = idw * istrides[3] + idz * istrides[2]
-                                   + idy * istrides[1];
-                        const dim_t iMem = round(x) + ioff;
+            const dim_t omId = idw * ostrides[3] + idz * ostrides[2]
+                             + idy * ostrides[1] + idx;
+            if(gFlag) {
+                out[omId] = scalar<Ty>(offGrid);
+            } else {
+                dim_t ioff = idw * istrides[3] + idz * istrides[2]
+                           + idy * istrides[1];
+                const dim_t iMem = round(x) + ioff;
 
-                        out[omId] = in[iMem];
-                    }
-                }
+                out[omId] = in[iMem];
             }
         }
     };
@@ -73,9 +72,11 @@ namespace cpu
                   const Ty *in,  const af::dim4 &idims, const dim_t iElems,
                   const Tp *pos, const af::dim4 &pdims,
                   const af::dim4 &ostrides, const af::dim4 &istrides, const af::dim4 &pstrides,
-                  const float offGrid, const dim_t idx, const dim_t idy)
+                  const float offGrid, const bool pBatch,
+                  const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw)
         {
-            const dim_t pmId = idx + (pdims[1] == 1 ? 0 : idy * pstrides[1]);
+            dim_t pmId = idx;
+            if(pBatch) pmId += idw * pstrides[3] + idz * pstrides[2] + idy * pstrides[1];
 
             const Tp x = pos[pmId];
             bool gFlag = false;
@@ -86,27 +87,23 @@ namespace cpu
             const dim_t grid_x = floor(x);  // nearest grid
             const Tp off_x = x - grid_x; // fractional offset
 
-            for(dim_t idw = 0; idw < odims[3]; idw++) {
-                for(dim_t idz = 0; idz < odims[2]; idz++) {
-                    const dim_t omId = idw * ostrides[3] + idz * ostrides[2]
-                                     + idy * ostrides[1] + idx;
-                    if(gFlag) {
-                        out[omId] = scalar<Ty>(offGrid);
-                    } else {
-                        dim_t ioff = idw * istrides[3] + idz * istrides[2] + idy * istrides[1] + grid_x;
+            const dim_t omId = idw * ostrides[3] + idz * ostrides[2]
+                             + idy * ostrides[1] + idx;
+            if(gFlag) {
+                out[omId] = scalar<Ty>(offGrid);
+            } else {
+                dim_t ioff = idw * istrides[3] + idz * istrides[2] + idy * istrides[1] + grid_x;
 
-                        // Check if x and x + 1 are both valid indices
-                        bool cond = (x < idims[0] - 1);
-                        // Compute Left and Right Weighted Values
-                        Ty yl = ((Tp)1.0 - off_x) * in[ioff];
-                        Ty yr = cond ? (off_x) * in[ioff + 1] : scalar<Ty>(0);
-                        Ty yo = yl + yr;
-                        // Compute Weight used
-                        Tp wt = cond ? (Tp)1.0 : (Tp)(1.0 - off_x);
-                        // Write final value
-                        out[omId] = (yo / wt);
-                    }
-                }
+                // Check if x and x + 1 are both valid indices
+                bool cond = (x < idims[0] - 1);
+                // Compute Left and Right Weighted Values
+                Ty yl = ((Tp)1.0 - off_x) * in[ioff];
+                Ty yr = cond ? (off_x) * in[ioff + 1] : scalar<Ty>(0);
+                Ty yo = yl + yr;
+                // Compute Weight used
+                Tp wt = cond ? (Tp)1.0 : (Tp)(1.0 - off_x);
+                // Write final value
+                out[omId] = (yo / wt);
             }
         }
     };
@@ -119,10 +116,18 @@ namespace cpu
             const float offGrid)
     {
         approx1_op<Ty, Tp, method> op;
-        for(dim_t y = 0; y < odims[1]; y++) {
-            for(dim_t x = 0; x < odims[0]; x++) {
-                op(out, odims, oElems, in, idims, iElems, pos, pdims,
-                    ostrides, istrides, pstrides, offGrid, x, y);
+        bool pBatch = false;
+        if(!(pdims[1] == 1 && pdims[2] == 1 && pdims[3] == 1))
+            pBatch = true;
+
+        for(dim_t w = 0; w < odims[3]; w++) {
+            for(dim_t z = 0; z < odims[2]; z++) {
+                for(dim_t y = 0; y < odims[1]; y++) {
+                    for(dim_t x = 0; x < odims[0]; x++) {
+                        op(out, odims, oElems, in, idims, iElems, pos, pdims,
+                           ostrides, istrides, pstrides, offGrid, pBatch, x, y, z, w);
+                    }
+                }
             }
         }
     }
@@ -167,7 +172,8 @@ namespace cpu
                   const Tp *pos, const af::dim4 &pdims, const Tp *qos, const af::dim4 &qdims,
                   const af::dim4 &ostrides, const af::dim4 &istrides,
                   const af::dim4 &pstrides, const af::dim4 &qstrides,
-                  const float offGrid, const dim_t idx, const dim_t idy, const dim_t idz)
+                  const float offGrid, const bool pBatch,
+                  const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw)
         {
             return;
         }
@@ -181,10 +187,15 @@ namespace cpu
                   const Tp *pos, const af::dim4 &pdims, const Tp *qos, const af::dim4 &qdims,
                   const af::dim4 &ostrides, const af::dim4 &istrides,
                   const af::dim4 &pstrides, const af::dim4 &qstrides,
-                  const float offGrid, const dim_t idx, const dim_t idy, const dim_t idz)
+                  const float offGrid, const bool pBatch,
+                  const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw)
         {
-            const dim_t pmId = (pdims[2] == 1 ? 0 : idz * pstrides[2]) + idy * pstrides[1] + idx;
-            const dim_t qmId = (qdims[2] == 1 ? 0 : idz * qstrides[2]) + idy * qstrides[1] + idx;
+            dim_t pmId = idy * pstrides[1] + idx;
+            dim_t qmId = idy * qstrides[1] + idx;
+            if(pBatch) {
+                pmId += idw * pstrides[3] + idz * pstrides[2];
+                qmId += idw * qstrides[3] + idz * qstrides[2];
+            }
 
             bool gFlag = false;
             const Tp x = pos[pmId], y = qos[qmId];
@@ -192,18 +203,15 @@ namespace cpu
                 gFlag = true;
             }
 
-            for(dim_t idw = 0; idw < odims[3]; idw++) {
-                const dim_t omId = idw * ostrides[3] + idz * ostrides[2]
-                                 + idy * ostrides[1] + idx;
-                if(gFlag) {
-                    out[omId] = scalar<Ty>(offGrid);
-                } else {
-                    const dim_t grid_x = round(x), grid_y = round(y); // nearest grid
-                    const dim_t imId = idw * istrides[3] +
-                                       idz * istrides[2] +
-                                       grid_y * istrides[1] + grid_x;
-                    out[omId] = in[imId];
-                }
+            const dim_t omId = idw * ostrides[3] + idz * ostrides[2]
+                             + idy * ostrides[1] + idx;
+            if(gFlag) {
+                out[omId] = scalar<Ty>(offGrid);
+            } else {
+                const dim_t grid_x = round(x), grid_y = round(y); // nearest grid
+                const dim_t imId = idw * istrides[3] + idz * istrides[2] +
+                                grid_y * istrides[1] + grid_x;
+                out[omId] = in[imId];
             }
         }
     };
@@ -216,10 +224,15 @@ namespace cpu
                   const Tp *pos, const af::dim4 &pdims, const Tp *qos, const af::dim4 &qdims,
                   const af::dim4 &ostrides, const af::dim4 &istrides,
                   const af::dim4 &pstrides, const af::dim4 &qstrides,
-                  const float offGrid, const dim_t idx, const dim_t idy, const dim_t idz)
+                  const float offGrid, const bool pBatch,
+                  const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw)
         {
-            const dim_t pmId = (pdims[2] == 1 ? 0 : idz * pstrides[2]) + idy * pstrides[1] + idx;
-            const dim_t qmId = (qdims[2] == 1 ? 0 : idz * qstrides[2]) + idy * qstrides[1] + idx;
+            dim_t pmId = idy * pstrides[1] + idx;
+            dim_t qmId = idy * qstrides[1] + idx;
+            if(pBatch) {
+                pmId += idw * pstrides[3] + idz * pstrides[2];
+                qmId += idw * qstrides[3] + idz * qstrides[2];
+            }
 
             bool gFlag = false;
             const Tp x = pos[pmId], y = qos[qmId];
@@ -243,26 +256,24 @@ namespace cpu
             Tp wt = wt00 + wt10 + wt01 + wt11;
             Ty zero = scalar<Ty>(0);
 
-            for(dim_t idw = 0; idw < odims[3]; idw++) {
-                const dim_t omId = idw * ostrides[3] + idz * ostrides[2]
-                                 + idy * ostrides[1] + idx;
-                if(gFlag) {
-                    out[omId] = scalar<Ty>(offGrid);
-                } else {
-                    dim_t ioff = idw * istrides[3] + idz * istrides[2]
-                            + grid_y * istrides[1] + grid_x;
+            const dim_t omId = idw * ostrides[3] + idz * ostrides[2]
+                             + idy * ostrides[1] + idx;
+            if(gFlag) {
+                out[omId] = scalar<Ty>(offGrid);
+            } else {
+                dim_t ioff = idw * istrides[3] + idz * istrides[2]
+                        + grid_y * istrides[1] + grid_x;
 
-                    // Compute Weighted Values
-                    Ty y00 =                    wt00 * in[ioff];
-                    Ty y10 = (condY) ?          wt10 * in[ioff + istrides[1]]     : zero;
-                    Ty y01 = (condX) ?          wt01 * in[ioff + 1]                   : zero;
-                    Ty y11 = (condX && condY) ? wt11 * in[ioff + istrides[1] + 1] : zero;
+                // Compute Weighted Values
+                Ty y00 =                    wt00 * in[ioff];
+                Ty y10 = (condY) ?          wt10 * in[ioff + istrides[1]]     : zero;
+                Ty y01 = (condX) ?          wt01 * in[ioff + 1]               : zero;
+                Ty y11 = (condX && condY) ? wt11 * in[ioff + istrides[1] + 1] : zero;
 
-                    Ty yo = y00 + y10 + y01 + y11;
+                Ty yo = y00 + y10 + y01 + y11;
 
-                    // Write Final Value
-                    out[omId] = (yo / wt);
-                }
+                // Write Final Value
+                out[omId] = (yo / wt);
             }
         }
     };
@@ -276,11 +287,17 @@ namespace cpu
             const float offGrid)
     {
         approx2_op<Ty, Tp, method> op;
-        for(dim_t z = 0; z < odims[2]; z++) {
-            for(dim_t y = 0; y < odims[1]; y++) {
-                for(dim_t x = 0; x < odims[0]; x++) {
-                    op(out, odims, oElems, in, idims, iElems, pos, pdims, qos, qdims,
-                            ostrides, istrides, pstrides, qstrides, offGrid, x, y, z);
+        bool pBatch = false;
+        if(!(pdims[2] == 1 && pdims[3] == 1))
+            pBatch = true;
+
+        for(dim_t w = 0; w < odims[3]; w++) {
+            for(dim_t z = 0; z < odims[2]; z++) {
+                for(dim_t y = 0; y < odims[1]; y++) {
+                    for(dim_t x = 0; x < odims[0]; x++) {
+                        op(out, odims, oElems, in, idims, iElems, pos, pdims, qos, qdims,
+                           ostrides, istrides, pstrides, qstrides, offGrid, pBatch, x, y, z, w);
+                    }
                 }
             }
         }

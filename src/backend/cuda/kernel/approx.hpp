@@ -29,11 +29,12 @@ namespace cuda
         __device__ inline static
         void core_nearest1(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw,
                            Param<Ty> out, CParam<Ty> in, CParam<Tp> pos,
-                           const float offGrid)
+                           const float offGrid, const bool pBatch)
         {
             const dim_t omId = idw * out.strides[3] + idz * out.strides[2]
                              + idy * out.strides[1] + idx;
-            const dim_t pmId = idx + (pos.dims[1] == 1 ? 0 : idy * pos.strides[1]);
+            dim_t pmId = idx;
+            if(pBatch) pmId += idw * pos.strides[3] + idz * pos.strides[2] + idy * pos.strides[1];
 
             const Tp x = pos.ptr[pmId];
             if (x < 0 || in.dims[0] < x+1) {
@@ -52,14 +53,16 @@ namespace cuda
         __device__ inline static
         void core_nearest2(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw,
                            Param<Ty> out, CParam<Ty> in,
-                           CParam<Tp> pos, CParam<Tp> qos, const float offGrid)
+                           CParam<Tp> pos, CParam<Tp> qos, const float offGrid, const bool pBatch)
         {
             const dim_t omId = idw * out.strides[3] + idz * out.strides[2]
                              + idy * out.strides[1] + idx;
-            const dim_t pmId = (pos.dims[2] == 1 ? 0 : idz * pos.strides[2])
-                             + idy * pos.strides[1] + idx;
-            const dim_t qmId = (qos.dims[2] == 1 ? 0 : idz * qos.strides[2])
-                             + idy * qos.strides[1] + idx;
+            dim_t pmId = idy * pos.strides[1] + idx;
+            dim_t qmId = idy * qos.strides[1] + idx;
+            if(pBatch) {
+                pmId += idw * pos.strides[3] + idz * pos.strides[2];
+                qmId += idw * qos.strides[3] + idz * qos.strides[2];
+            }
 
             const Tp x = pos.ptr[pmId], y = qos.ptr[qmId];
             if (x < 0 || y < 0 || in.dims[0] < x+1 || in.dims[1] < y+1) {
@@ -82,11 +85,12 @@ namespace cuda
         __device__ inline static
         void core_linear1(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw,
                           Param<Ty> out, CParam<Ty> in, CParam<Tp> pos,
-                          const float offGrid)
+                          const float offGrid, const bool pBatch)
         {
             const dim_t omId = idw * out.strides[3] + idz * out.strides[2]
                              + idy * out.strides[1] + idx;
-            const dim_t pmId = idx + (pos.dims[1] == 1 ? 0 : idy * pos.strides[1]);
+            dim_t pmId = idx;
+            if(pBatch) pmId += idw * pos.strides[3] + idz * pos.strides[2] + idy * pos.strides[1];
 
             const Tp pVal = pos.ptr[pmId];
             if (pVal < 0 || in.dims[0] < pVal+1) {
@@ -115,14 +119,17 @@ namespace cuda
         __device__ inline static
         void core_linear2(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t idw,
                            Param<Ty> out, CParam<Ty> in,
-                           CParam<Tp> pos, CParam<Tp> qos, const float offGrid)
+                           CParam<Tp> pos, CParam<Tp> qos, const float offGrid, const bool pBatch)
         {
             const dim_t omId = idw * out.strides[3] + idz * out.strides[2]
                              + idy * out.strides[1] + idx;
-            const dim_t pmId = (pos.dims[2] == 1 ? 0 : idz * pos.strides[2])
-                             + idy * pos.strides[1] + idx;
-            const dim_t qmId = (qos.dims[2] == 1 ? 0 : idz * qos.strides[2])
-                             + idy * qos.strides[1] + idx;
+            dim_t pmId = idy * pos.strides[1] + idx;
+            dim_t qmId = idy * qos.strides[1] + idx;
+            if(pBatch) {
+                pmId += idw * pos.strides[3] + idz * pos.strides[2];
+                qmId += idw * qos.strides[3] + idz * qos.strides[2];
+            }
+
 
             const Tp x = pos.ptr[pmId], y = qos.ptr[qmId];
             if (x < 0 || y < 0 || in.dims[0] < x+1 || in.dims[1] < y+1) {
@@ -165,7 +172,7 @@ namespace cuda
         template<typename Ty, typename Tp, af_interp_type method>
         __global__
         void approx1_kernel(Param<Ty> out, CParam<Ty> in, CParam<Tp> pos,
-                            const float offGrid, const dim_t blocksMatX)
+                            const float offGrid, const dim_t blocksMatX, const bool pBatch)
         {
             const dim_t idw = blockIdx.y / out.dims[2];
             const dim_t idz = blockIdx.y - idw * out.dims[2];
@@ -180,10 +187,10 @@ namespace cuda
 
             switch(method) {
                 case AF_INTERP_NEAREST:
-                    core_nearest1(idx, idy, idz, idw, out, in, pos, offGrid);
+                    core_nearest1(idx, idy, idz, idw, out, in, pos, offGrid, pBatch);
                     break;
                 case AF_INTERP_LINEAR:
-                    core_linear1(idx, idy, idz, idw, out, in, pos, offGrid);
+                    core_linear1(idx, idy, idz, idw, out, in, pos, offGrid, pBatch);
                     break;
                 default:
                     break;
@@ -194,7 +201,7 @@ namespace cuda
         __global__
         void approx2_kernel(Param<Ty> out, CParam<Ty> in,
                       CParam<Tp> pos, CParam<Tp> qos, const float offGrid,
-                      const dim_t blocksMatX, const dim_t blocksMatY)
+                      const dim_t blocksMatX, const dim_t blocksMatY, const bool pBatch)
         {
             const dim_t idz = blockIdx.x / blocksMatX;
             const dim_t idw = blockIdx.y / blocksMatY;
@@ -211,10 +218,10 @@ namespace cuda
 
             switch(method) {
                 case AF_INTERP_NEAREST:
-                    core_nearest2(idx, idy, idz, idw, out, in, pos, qos, offGrid);
+                    core_nearest2(idx, idy, idz, idw, out, in, pos, qos, offGrid, pBatch);
                     break;
                 case AF_INTERP_LINEAR:
-                    core_linear2(idx, idy, idz, idw, out, in, pos, qos, offGrid);
+                    core_linear2(idx, idy, idz, idw, out, in, pos, qos, offGrid, pBatch);
                     break;
                 default:
                     break;
@@ -232,8 +239,12 @@ namespace cuda
             dim_t blocksPerMat = divup(out.dims[0], threads.x);
             dim3 blocks(blocksPerMat * out.dims[1], out.dims[2] * out.dims[3]);
 
+            bool pBatch = false;
+            if(!(pos.dims[1] == 1 && pos.dims[2] == 1 && pos.dims[3] == 1))
+                pBatch = true;
+
             CUDA_LAUNCH((approx1_kernel<Ty, Tp, method>), blocks, threads,
-                    out, in, pos, offGrid, blocksPerMat);
+                         out, in, pos, offGrid, blocksPerMat, pBatch);
             POST_LAUNCH_CHECK();
         }
 
@@ -246,8 +257,12 @@ namespace cuda
             dim_t blocksPerMatY = divup(out.dims[1], threads.y);
             dim3 blocks(blocksPerMatX * out.dims[2], blocksPerMatY * out.dims[3]);
 
+            bool pBatch = false;
+            if(!(pos.dims[2] == 1 && pos.dims[3] == 1))
+                pBatch = true;
+
             CUDA_LAUNCH((approx2_kernel<Ty, Tp, method>), blocks, threads,
-                    out, in, pos, qos, offGrid, blocksPerMatX, blocksPerMatY);
+                         out, in, pos, qos, offGrid, blocksPerMatX, blocksPerMatY, pBatch);
             POST_LAUNCH_CHECK();
         }
     }

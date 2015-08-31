@@ -36,11 +36,12 @@ void core_nearest1(const dim_t idx, const dim_t idy, const dim_t idz, const dim_
                    __global       Ty *d_out, const KParam out,
                    __global const Ty *d_in,  const KParam in,
                    __global const Tp *d_pos, const KParam pos,
-                   const float offGrid)
+                   const float offGrid, const bool pBatch)
 {
     const dim_t omId = idw * out.strides[3] + idz * out.strides[2]
                      + idy * out.strides[1] + idx;
-    const dim_t pmId = idx + (pos.dims[1] == 1 ? 0 : idy * pos.strides[1]);
+    dim_t pmId = idx;
+    if(pBatch) pmId += idw * pos.strides[3] + idz * pos.strides[2] + idy * pos.strides[1];
 
     const Tp pVal = d_pos[pmId];
     if (pVal < 0 || in.dims[0] < pVal+1) {
@@ -63,11 +64,12 @@ void core_linear1(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t
                    __global       Ty *d_out, const KParam out,
                    __global const Ty *d_in,  const KParam in,
                    __global const Tp *d_pos, const KParam pos,
-                   const float offGrid)
+                   const float offGrid, const bool pBatch)
 {
     const dim_t omId = idw * out.strides[3] + idz * out.strides[2]
                      + idy * out.strides[1] + idx;
-    const dim_t pmId = idx + (pos.dims[1] == 1 ? 0 : idy * pos.strides[1]);
+    dim_t pmId = idx;
+    if(pBatch) pmId += idw * pos.strides[3] + idz * pos.strides[2] + idy * pos.strides[1];
 
     const Tp pVal = d_pos[pmId];
     if (pVal < 0 || in.dims[0] < pVal+1) {
@@ -104,7 +106,7 @@ __kernel
 void approx1_kernel(__global       Ty *d_out, const KParam out,
                     __global const Ty *d_in,  const KParam in,
                     __global const Tp *d_pos, const KParam pos,
-                    const float offGrid, const dim_t blocksMatX)
+                    const float offGrid, const dim_t blocksMatX, const int pBatch)
 {
     const dim_t idw = get_group_id(1) / out.dims[2];
     const dim_t idz = get_group_id(1)  - idw * out.dims[2];
@@ -119,5 +121,5 @@ void approx1_kernel(__global       Ty *d_out, const KParam out,
        idw >= out.dims[3])
         return;
 
-    INTERP(idx, idy, idz, idw, d_out, out, d_in + in.offset, in, d_pos + pos.offset, pos, offGrid);
+    INTERP(idx, idy, idz, idw, d_out, out, d_in + in.offset, in, d_pos + pos.offset, pos, offGrid, pBatch);
 }

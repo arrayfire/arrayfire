@@ -37,14 +37,16 @@ void core_nearest2(const dim_t idx, const dim_t idy, const dim_t idz, const dim_
                    __global const Ty *d_in,  const KParam in,
                    __global const Tp *d_pos, const KParam pos,
                    __global const Tp *d_qos, const KParam qos,
-                   const float offGrid)
+                   const float offGrid, const bool pBatch)
 {
     const dim_t omId = idw * out.strides[3] + idz * out.strides[2]
                      + idy * out.strides[1] + idx;
-    const dim_t pmId = (pos.dims[2] == 1 ? 0 : idz * pos.strides[2])
-                     + idy * pos.strides[1] + idx;
-    const dim_t qmId = (qos.dims[2] == 1 ? 0 : idz * qos.strides[2])
-                     + idy * qos.strides[1] + idx;
+    dim_t pmId = idy * pos.strides[1] + idx;
+    dim_t qmId = idy * qos.strides[1] + idx;
+    if(pBatch) {
+        pmId += idw * pos.strides[3] + idz * pos.strides[2];
+        qmId += idw * qos.strides[3] + idz * qos.strides[2];
+    }
 
     const Tp x = d_pos[pmId], y = d_qos[qmId];
     if (x < 0 || y < 0 || in.dims[0] < x+1 || in.dims[1] < y+1) {
@@ -69,14 +71,16 @@ void core_linear2(const dim_t idx, const dim_t idy, const dim_t idz, const dim_t
                   __global const Ty *d_in,  const KParam in,
                   __global const Tp *d_pos, const KParam pos,
                   __global const Tp *d_qos, const KParam qos,
-                  const float offGrid)
+                  const float offGrid, const bool pBatch)
 {
     const dim_t omId = idw * out.strides[3] + idz * out.strides[2]
                      + idy * out.strides[1] + idx;
-    const dim_t pmId = (pos.dims[2] == 1 ? 0 : idz * pos.strides[2])
-                     + idy * pos.strides[1] + idx;
-    const dim_t qmId = (qos.dims[2] == 1 ? 0 : idz * qos.strides[2])
-                     + idy * qos.strides[1] + idx;
+    dim_t pmId = idy * pos.strides[1] + idx;
+    dim_t qmId = idy * qos.strides[1] + idx;
+    if(pBatch) {
+        pmId += idw * pos.strides[3] + idz * pos.strides[2];
+        qmId += idw * qos.strides[3] + idz * qos.strides[2];
+    }
 
     const Tp x = d_pos[pmId], y = d_qos[qmId];
     if (x < 0 || y < 0 || in.dims[0] < x+1 || in.dims[1] < y+1) {
@@ -122,7 +126,8 @@ void approx2_kernel(__global       Ty *d_out, const KParam out,
                     __global const Ty *d_in,  const KParam in,
                     __global const Tp *d_pos, const KParam pos,
                     __global const Tp *d_qos, const KParam qos,
-                    const float offGrid, const dim_t blocksMatX, const dim_t blocksMatY)
+                    const float offGrid, const dim_t blocksMatX, const dim_t blocksMatY,
+                    const int pBatch)
 {
     const dim_t idz = get_group_id(0) / blocksMatX;
     const dim_t idw = get_group_id(1) / blocksMatY;
@@ -140,5 +145,5 @@ void approx2_kernel(__global       Ty *d_out, const KParam out,
         return;
 
     INTERP(idx, idy, idz, idw, d_out, out, d_in + in.offset, in,
-           d_pos + pos.offset, pos, d_qos + qos.offset, qos, offGrid);
+           d_pos + pos.offset, pos, d_qos + qos.offset, qos, offGrid, pBatch);
 }
