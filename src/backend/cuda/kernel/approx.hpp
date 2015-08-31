@@ -32,8 +32,8 @@ namespace cuda
                            const float offGrid)
         {
             const int omId = idw * out.strides[3] + idz * out.strides[2]
-                                + idy * out.strides[1] + idx;
-            const int pmId = idx;
+                           + idy * out.strides[1] + idx;
+            const int pmId = idx + (pos.dims[1] == 1 ? 0 : idy * pos.strides[1]);
 
             const Tp x = pos.ptr[pmId];
             if (x < 0 || in.dims[0] < x+1) {
@@ -55,9 +55,11 @@ namespace cuda
                            CParam<Tp> pos, CParam<Tp> qos, const float offGrid)
         {
             const int omId = idw * out.strides[3] + idz * out.strides[2]
-                                + idy * out.strides[1] + idx;
-            const int pmId = idy * pos.strides[1] + idx;
-            const int qmId = idy * qos.strides[1] + idx;
+                           + idy * out.strides[1] + idx;
+            const int pmId = (pos.dims[2] == 1 ? 0 : idz * pos.strides[2])
+                            + idy * pos.strides[1] + idx;
+            const int qmId = (qos.dims[2] == 1 ? 0 : idz * qos.strides[2])
+                            + idy * qos.strides[1] + idx;
 
             const Tp x = pos.ptr[pmId], y = qos.ptr[qmId];
             if (x < 0 || y < 0 || in.dims[0] < x+1 || in.dims[1] < y+1) {
@@ -67,7 +69,7 @@ namespace cuda
 
             const int grid_x = round(x), grid_y = round(y); // nearest grid
             const int imId = idw * in.strides[3] + idz * in.strides[2]
-                             + grid_y * in.strides[1] + grid_x;
+                        + grid_y * in.strides[1] + grid_x;
 
             Ty val = in.ptr[imId];
             out.ptr[omId] = val;
@@ -83,8 +85,8 @@ namespace cuda
                           const float offGrid)
         {
             const int omId = idw * out.strides[3] + idz * out.strides[2]
-                                + idy * out.strides[1] + idx;
-            const int pmId = idx;
+                           + idy * out.strides[1] + idx;
+            const int pmId = idx + (pos.dims[1] == 1 ? 0 : idy * pos.strides[1]);
 
             const Tp pVal = pos.ptr[pmId];
             if (pVal < 0 || in.dims[0] < pVal+1) {
@@ -116,9 +118,11 @@ namespace cuda
                            CParam<Tp> pos, CParam<Tp> qos, const float offGrid)
         {
             const int omId = idw * out.strides[3] + idz * out.strides[2]
-                                + idy * out.strides[1] + idx;
-            const int pmId = idy * pos.strides[1] + idx;
-            const int qmId = idy * qos.strides[1] + idx;
+                           + idy * out.strides[1] + idx;
+            const int pmId = (pos.dims[2] == 1 ? 0 : idz * pos.strides[2])
+                           + idy * pos.strides[1] + idx;
+            const int qmId = (qos.dims[2] == 1 ? 0 : idz * qos.strides[2])
+                           + idy * qos.strides[1] + idx;
 
             const Tp x = pos.ptr[pmId], y = qos.ptr[qmId];
             if (x < 0 || y < 0 || in.dims[0] < x+1 || in.dims[1] < y+1) {

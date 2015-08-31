@@ -40,7 +40,7 @@ void core_nearest1(const int idx, const int idy, const int idz, const int idw,
 {
     const int omId = idw * out.strides[3] + idz * out.strides[2]
                    + idy * out.strides[1] + idx;
-    const int pmId = idx;
+    const int pmId = idx + (pos.dims[1] == 1 ? 0 : idy * pos.strides[1]);
 
     const Tp pVal = d_pos[pmId];
     if (pVal < 0 || in.dims[0] < pVal+1) {
@@ -66,8 +66,8 @@ void core_linear1(const int idx, const int idy, const int idz, const int idw,
                    const float offGrid)
 {
     const int omId = idw * out.strides[3] + idz * out.strides[2]
-                        + idy * out.strides[1] + idx;
-    const int pmId = idx;
+                   + idy * out.strides[1] + idx;
+    const int pmId = idx + (pos.dims[1] == 1 ? 0 : idy * pos.strides[1]);
 
     const Tp pVal = d_pos[pmId];
     if (pVal < 0 || in.dims[0] < pVal+1) {

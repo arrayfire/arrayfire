@@ -41,13 +41,16 @@ af_err af_approx1(af_array *out, const af_array in, const af_array pos,
         ArrayInfo i_info = getInfo(in);
         ArrayInfo p_info = getInfo(pos);
 
+        dim4 idims = i_info.dims();
+        dim4 pdims = p_info.dims();
+
         af_dtype itype = i_info.getType();
 
         ARG_ASSERT(1, i_info.isFloating());                       // Only floating and complex types
         ARG_ASSERT(2, p_info.isRealFloating());                   // Only floating types
         ARG_ASSERT(1, i_info.isSingle() == p_info.isSingle());    // Must have same precision
         ARG_ASSERT(1, i_info.isDouble() == p_info.isDouble());    // Must have same precision
-        DIM_ASSERT(2, p_info.isColumn());                         // Only 1D input allowed
+        DIM_ASSERT(2, p_info.isColumn() || pdims[1] == idims[1]); // Only 1D input allowed or Same no. of cols
         ARG_ASSERT(3, (method == AF_INTERP_LINEAR || method == AF_INTERP_NEAREST));
 
         af_array output;
@@ -83,7 +86,8 @@ af_err af_approx2(af_array *out, const af_array in, const af_array pos0, const a
         ARG_ASSERT(1, i_info.isSingle() == p_info.isSingle());    // Must have same precision
         ARG_ASSERT(1, i_info.isDouble() == p_info.isDouble());    // Must have same precision
         DIM_ASSERT(2, p_info.dims() == q_info.dims());            // POS0 and POS1 must have same dims
-        DIM_ASSERT(2, p_info.ndims() < 3);// Allowing input batch but not positions. Output dims = (px, py, iz, iw)
+        DIM_ASSERT(2, p_info.dims()[2] == 1
+                   || p_info.dims()[2] == i_info.dims()[2]);      // Allowing input batch. Output dims = (px, py, iz, iw)
         ARG_ASSERT(3, (method == AF_INTERP_LINEAR || method == AF_INTERP_NEAREST));
 
         af_array output;

@@ -40,9 +40,11 @@ void core_nearest2(const int idx, const int idy, const int idz, const int idw,
                    const float offGrid)
 {
     const int omId = idw * out.strides[3] + idz * out.strides[2]
-                        + idy * out.strides[1] + idx;
-    const int pmId = idy * pos.strides[1] + idx;
-    const int qmId = idy * qos.strides[1] + idx;
+                   + idy * out.strides[1] + idx;
+    const int pmId = (pos.dims[2] == 1 ? 0 : idz * pos.strides[2])
+                    + idy * pos.strides[1] + idx;
+    const int qmId = (qos.dims[2] == 1 ? 0 : idz * qos.strides[2])
+                    + idy * qos.strides[1] + idx;
 
     const Tp x = d_pos[pmId], y = d_qos[qmId];
     if (x < 0 || y < 0 || in.dims[0] < x+1 || in.dims[1] < y+1) {
@@ -71,8 +73,10 @@ void core_linear2(const int idx, const int idy, const int idz, const int idw,
 {
     const int omId = idw * out.strides[3] + idz * out.strides[2]
                         + idy * out.strides[1] + idx;
-    const int pmId = idy * pos.strides[1] + idx;
-    const int qmId = idy * qos.strides[1] + idx;
+    const int pmId = (pos.dims[2] == 1 ? 0 : idz * pos.strides[2])
+                    + idy * pos.strides[1] + idx;
+    const int qmId = (qos.dims[2] == 1 ? 0 : idz * qos.strides[2])
+                    + idy * qos.strides[1] + idx;
 
     const Tp x = d_pos[pmId], y = d_qos[qmId];
     if (x < 0 || y < 0 || in.dims[0] < x+1 || in.dims[1] < y+1) {
