@@ -16,6 +16,12 @@ af_err af_set_backend(const af_backend bknd)
     return AFSymbolManager::getInstance().setBackend(bknd);
 }
 
+af_err af_get_backend_count(unsigned* num_backends)
+{
+    *num_backends = AFSymbolManager::getInstance().getBackendCount();
+    return AF_SUCCESS;
+}
+
 af_err af_info()
 {
     return CALL_NO_PARAMS();

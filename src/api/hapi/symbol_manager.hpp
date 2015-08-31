@@ -18,15 +18,15 @@ typedef HMODULE LibHandle;
 typedef void* LibHandle;
 #endif
 
-const unsigned NUM_BACKENDS = 3;
-const unsigned NO_BACKEND_LOADED = 0x0000;
-const unsigned CPU_BACKEND_MASK = 0x0001;
+const int NUM_BACKENDS = 3;
 
 class AFSymbolManager {
     public:
         static AFSymbolManager& getInstance();
 
         ~AFSymbolManager();
+
+        unsigned getBackendCount();
 
         af_err setBackend(af::Backend bnkd);
 
@@ -56,15 +56,11 @@ class AFSymbolManager {
         void operator=(AFSymbolManager const&);
 
     private:
-        /* The following bit flag represents which
-         * backends are available. 32-bits and 32 backends
-         * LSB - CPU, next one CUDA, next one OpenCL and so on.  */
-        unsigned backendBitFlag;
-
         LibHandle bkndHandles[NUM_BACKENDS];
 
         LibHandle activeHandle;
         LibHandle defaultHandle;
+        unsigned numBackends;
 };
 
 #if defined(OS_WIN)

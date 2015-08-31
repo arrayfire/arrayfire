@@ -46,16 +46,15 @@ void closeDynLibrary(LibHandle handle)
 }
 
 AFSymbolManager::AFSymbolManager()
-    : backendBitFlag(NO_BACKEND_LOADED), activeHandle(NULL), defaultHandle(NULL)
+    : activeHandle(NULL), defaultHandle(NULL), numBackends(0)
 {
-    unsigned bkndFlag = CPU_BACKEND_MASK;
+
     for(int i=0; i<NUM_BACKENDS; ++i) {
         bkndHandles[i] = openDynLibrary(LIB_AF_BKND_NAME[i]);
         if (bkndHandles[i]) {
-            backendBitFlag |= bkndFlag;
             activeHandle = bkndHandles[i];
+            numBackends++;
         }
-        bkndFlag = bkndFlag << 1;
     }
     // Keep a copy of default order handle
     // inorder to use it in ::setBackend when
@@ -65,13 +64,15 @@ AFSymbolManager::AFSymbolManager()
 
 AFSymbolManager::~AFSymbolManager()
 {
-    unsigned bkndFlag = CPU_BACKEND_MASK;
     for(int i=0; i<NUM_BACKENDS; ++i) {
-        if (bkndFlag & backendBitFlag)
+        if (bkndHandles[i])
             closeDynLibrary(bkndHandles[i]);
-        bkndFlag = bkndFlag << 1;
     }
-    backendBitFlag = NO_BACKEND_LOADED;
+}
+
+unsigned AFSymbolManager::getBackendCount()
+{
+    return numBackends;
 }
 
 af_err AFSymbolManager::setBackend(af::Backend bknd)
@@ -83,9 +84,8 @@ af_err AFSymbolManager::setBackend(af::Backend bknd)
         } else
             return AF_ERR_LOAD_LIB;
     }
-    unsigned bkndFlag = CPU_BACKEND_MASK;
     unsigned idx = bknd - 1;
-    if((bkndFlag << idx) & backendBitFlag) {
+    if(bkndHandles[idx]) {
         activeHandle = bkndHandles[idx];
         return AF_SUCCESS;
     } else {

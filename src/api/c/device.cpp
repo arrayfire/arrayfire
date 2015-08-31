@@ -19,6 +19,26 @@
 
 using namespace detail;
 
+af_err af_set_backend(const af_backend bknd)
+{
+#if defined(AF_CPU)
+    ARG_ASSERT(0, bknd==AF_BACKEND_CPU);
+#endif
+#if defined(AF_CUDA)
+    ARG_ASSERT(0, bknd==AF_BACKEND_CUDA);
+#endif
+#if defined(AF_OPENCL)
+    ARG_ASSERT(0, bknd==AF_BACKEND_OPENCL);
+#endif
+    return AF_SUCCESS;
+}
+
+af_err af_get_backend_count(unsigned* num_backends)
+{
+    *num_backends = 1;
+    return AF_SUCCESS;
+}
+
 af_err af_init()
 {
     try {

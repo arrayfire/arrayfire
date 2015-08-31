@@ -13,6 +13,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 /**
    Changes the compute backend at run time
 
@@ -21,10 +22,19 @@ extern "C" {
  */
 AFAPI af_err af_set_backend(const af_backend bknd);
 
+/**
+   Gets the number of available backends
+
+   \param[out] num_backends Number of available backends
+   \returns \ref af_err error code
+ */
+AFAPI af_err af_get_backend_count(unsigned* num_backends);
+
 #ifdef __cplusplus
 }
 #endif
 
+#ifdef __cplusplus
 namespace af
 {
 
@@ -33,6 +43,14 @@ namespace af
 
    \param[in] bknd takes one of the values of enum \ref af_backend
  */
-void setBackend(const Backend bknd);
+AFAPI void setBackend(const Backend bknd);
+
+/**
+   Gets the number of available backends
+
+   \returns Number of available backends
+ */
+AFAPI unsigned getBackendCount();
 
 }
+#endif

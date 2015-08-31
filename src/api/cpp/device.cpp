@@ -10,10 +10,23 @@
 #include <af/device.h>
 #include <af/compatible.h>
 #include <af/traits.hpp>
+#include <af/hapi.h>
 #include "error.hpp"
 
 namespace af
 {
+    void setBackend(const Backend bknd)
+    {
+        AF_THROW(af_set_backend(bknd));
+    }
+
+    unsigned getBackendCount()
+    {
+        unsigned temp = 1;
+        AF_THROW(af_get_backend_count(&temp));
+        return temp;
+    }
+
     void info()
     {
         AF_THROW(af_info());
