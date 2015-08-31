@@ -116,9 +116,7 @@ namespace cpu
             const float offGrid)
     {
         approx1_op<Ty, Tp, method> op;
-        bool pBatch = false;
-        if(!(pdims[1] == 1 && pdims[2] == 1 && pdims[3] == 1))
-            pBatch = true;
+        bool pBatch = !(pdims[1] == 1 && pdims[2] == 1 && pdims[3] == 1);
 
         for(dim_t w = 0; w < odims[3]; w++) {
             for(dim_t z = 0; z < odims[2]; z++) {
@@ -287,9 +285,7 @@ namespace cpu
             const float offGrid)
     {
         approx2_op<Ty, Tp, method> op;
-        bool pBatch = false;
-        if(!(pdims[2] == 1 && pdims[3] == 1))
-            pBatch = true;
+        bool pBatch = !(pdims[2] == 1 && pdims[3] == 1);
 
         for(dim_t w = 0; w < odims[3]; w++) {
             for(dim_t z = 0; z < odims[2]; z++) {

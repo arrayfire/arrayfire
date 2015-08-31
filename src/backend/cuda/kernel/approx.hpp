@@ -239,9 +239,7 @@ namespace cuda
             dim_t blocksPerMat = divup(out.dims[0], threads.x);
             dim3 blocks(blocksPerMat * out.dims[1], out.dims[2] * out.dims[3]);
 
-            bool pBatch = false;
-            if(!(pos.dims[1] == 1 && pos.dims[2] == 1 && pos.dims[3] == 1))
-                pBatch = true;
+            bool pBatch = !(pos.dims[1] == 1 && pos.dims[2] == 1 && pos.dims[3] == 1);
 
             CUDA_LAUNCH((approx1_kernel<Ty, Tp, method>), blocks, threads,
                          out, in, pos, offGrid, blocksPerMat, pBatch);
@@ -257,9 +255,7 @@ namespace cuda
             dim_t blocksPerMatY = divup(out.dims[1], threads.y);
             dim3 blocks(blocksPerMatX * out.dims[2], blocksPerMatY * out.dims[3]);
 
-            bool pBatch = false;
-            if(!(pos.dims[2] == 1 && pos.dims[3] == 1))
-                pBatch = true;
+            bool pBatch = !(pos.dims[2] == 1 && pos.dims[3] == 1);
 
             CUDA_LAUNCH((approx2_kernel<Ty, Tp, method>), blocks, threads,
                          out, in, pos, qos, offGrid, blocksPerMatX, blocksPerMatY, pBatch);

@@ -97,13 +97,11 @@ namespace opencl
                                1);
 
                 // Passing bools to opencl kernels is not allowed
-                int pBatch = 0;
-                if(!(pos.info.dims[1] == 1 && pos.info.dims[2] == 1 && pos.info.dims[3] == 1))
-                    pBatch = 1;
+                bool pBatch = !(pos.info.dims[1] == 1 && pos.info.dims[2] == 1 && pos.info.dims[3] == 1);
 
                 approx1Op(EnqueueArgs(getQueue(), global, local),
                           *out.data, out.info, *in.data, in.info,
-                          *pos.data, pos.info, offGrid, blocksPerMat, pBatch);
+                          *pos.data, pos.info, offGrid, blocksPerMat, (int)pBatch);
 
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
@@ -168,16 +166,14 @@ namespace opencl
                                1);
 
                 // Passing bools to opencl kernels is not allowed
-                int pBatch = 0;
-                if(!(pos.info.dims[2] == 1 && pos.info.dims[3] == 1))
-                    pBatch = 1;
+                bool pBatch = !(pos.info.dims[2] == 1 && pos.info.dims[3] == 1);
 
                 approx2Op(EnqueueArgs(getQueue(), global, local),
                           *out.data, out.info,
                           *in.data, in.info,
                           *pos.data, pos.info,
                           *qos.data, qos.info,
-                          offGrid, blocksPerMatX, blocksPerMatY, pBatch);
+                          offGrid, blocksPerMatX, blocksPerMatY, (int)pBatch);
                 CL_DEBUG_FINISH(getQueue());
             } catch (cl::Error err) {
                 CL_TO_AF_ERROR(err);
