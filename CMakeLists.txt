@@ -172,7 +172,6 @@ ENDIF()
 
 IF(${BUILD_AF})
     ADD_SUBDIRECTORY(src/api/hapi)
-    ADD_SUBDIRECTORY(hapi_examples)
 ENDIF()
 
 IF(${BUILD_DOCS})

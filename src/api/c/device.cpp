@@ -10,6 +10,7 @@
 #include <af/dim4.hpp>
 #include <af/device.h>
 #include <af/version.h>
+#include <af/hapi.h>
 #include <backend.hpp>
 #include <platform.hpp>
 #include <Array.hpp>
@@ -21,6 +22,7 @@ using namespace detail;
 
 af_err af_set_backend(const af_backend bknd)
 {
+    try {
 #if defined(AF_CPU)
     ARG_ASSERT(0, bknd==AF_BACKEND_CPU);
 #endif
@@ -30,6 +32,9 @@ af_err af_set_backend(const af_backend bknd)
 #if defined(AF_OPENCL)
     ARG_ASSERT(0, bknd==AF_BACKEND_OPENCL);
 #endif
+    }
+    CATCHALL;
+
     return AF_SUCCESS;
 }
 

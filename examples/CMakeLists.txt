@@ -68,7 +68,24 @@ ENDMACRO()
 
 # Collect the source
 FILE(GLOB FILES "*/*.cpp")
+FILE(GLOB HAPI_FILES "hapi/*.cpp")
 ADD_DEFINITIONS("-DASSETS_DIR=\"${ASSETS_DIR}\"")
+
+IF(${ArrayFire_HAPI_FOUND})
+    MESSAGE(STATUS "HAPI examples")
+    IF(WIN32)
+        BUILD_ALL("${HAPI_FILES}" hapi ${ArrayFire_HAPI_LIBRARIES})
+    ELSE()
+        BUILD_ALL("${HAPI_FILES}" hapi ${ArrayFire_HAPI_LIBRARIES} dl)
+    ENDIF()
+ELSEIF(TARGET af)
+    MESSAGE(STATUS "HAPI examples")
+    IF(WIN32)
+        BUILD_ALL("${HAPI_FILES}" hapi af)
+    ELSE()
+        BUILD_ALL("${HAPI_FILES}" hapi af dl)
+    ENDIF()
+ENDIF()
 
 # Next we build each example using every backend.
 if(${ArrayFire_CPU_FOUND})  # variable defined by FIND(ArrayFire ...)

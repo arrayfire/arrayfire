@@ -49,11 +49,11 @@ int main(int argc, char *argv[])
 {
     std::generate(input.begin(), input.end(), unifRand);
 
-    af_set_backend(AF_BACKEND_CPU);
-    testBackend();
+    if (AF_SUCCESS == af_set_backend(AF_BACKEND_CPU))
+        testBackend();
 
-    af_set_backend(AF_BACKEND_OPENCL);
-    testBackend();
+    if (AF_SUCCESS == af_set_backend(AF_BACKEND_OPENCL))
+        testBackend();
 
     #ifdef WIN32 // pause in Windows
     if (!(argc == 2 && argv[1][0] == '-')) {
