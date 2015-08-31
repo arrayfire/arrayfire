@@ -13,9 +13,26 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+/**
+   Changes the compute backend at run time
 
+   \param[in] bknd takes one of the values of enum \ref af_backend
+   \returns \ref af_err error code
+ */
 AFAPI af_err af_set_backend(const af_backend bknd);
 
 #ifdef __cplusplus
 }
 #endif
+
+namespace af
+{
+
+/**
+   Changes the compute backend at run time
+
+   \param[in] bknd takes one of the values of enum \ref af_backend
+ */
+void setBackend(const Backend bknd);
+
+}

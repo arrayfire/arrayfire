@@ -50,9 +50,7 @@ AFSymbolManager::AFSymbolManager()
 {
     unsigned bkndFlag = CPU_BACKEND_MASK;
     for(int i=0; i<NUM_BACKENDS; ++i) {
-        printf("backend %d %s \n", i, LIB_AF_BKND_NAME[i]);
         bkndHandles[i] = openDynLibrary(LIB_AF_BKND_NAME[i]);
-        printf("backend handle %p\n", bkndHandles[i]);
         if (bkndHandles[i]) {
             backendBitFlag |= bkndFlag;
             activeHandle = bkndHandles[i];
@@ -63,7 +61,6 @@ AFSymbolManager::AFSymbolManager()
     // inorder to use it in ::setBackend when
     // the user passes AF_BACKEND_DEFAULT
     defaultHandle = activeHandle;
-    printf("backend bit flag %x\n", backendBitFlag);
 }
 
 AFSymbolManager::~AFSymbolManager()
@@ -87,8 +84,9 @@ af_err AFSymbolManager::setBackend(af::Backend bknd)
             return AF_ERR_LOAD_LIB;
     }
     unsigned bkndFlag = CPU_BACKEND_MASK;
-    if((bkndFlag << bknd) & backendBitFlag) {
-        activeHandle = bkndHandles[bknd];
+    unsigned idx = bknd - 1;
+    if((bkndFlag << idx) & backendBitFlag) {
+        activeHandle = bkndHandles[idx];
         return AF_SUCCESS;
     } else {
         return AF_ERR_LOAD_LIB;
