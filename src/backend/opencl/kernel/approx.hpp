@@ -87,11 +87,11 @@ namespace opencl
 
 
                 auto approx1Op = make_kernel<Buffer, const KParam, const Buffer, const KParam,
-                                       const Buffer, const KParam, const float, const int>
+                                       const Buffer, const KParam, const float, const dim_t>
                                       (*approxKernels[device]);
 
                 NDRange local(THREADS, 1, 1);
-                int blocksPerMat = divup(out.info.dims[0], local[0]);
+                dim_t blocksPerMat = divup(out.info.dims[0], local[0]);
                 NDRange global(blocksPerMat * local[0] * out.info.dims[1],
                                out.info.dims[2] * out.info.dims[3] * local[0],
                                1);
@@ -152,12 +152,12 @@ namespace opencl
 
                 auto approx2Op = make_kernel<Buffer, const KParam, const Buffer, const KParam,
                                        const Buffer, const KParam, const Buffer, const KParam,
-                                       const float, const int, const int>
+                                       const float, const dim_t, const dim_t>
                                        (*approxKernels[device]);
 
                 NDRange local(TX, TY, 1);
-                int blocksPerMatX = divup(out.info.dims[0], local[0]);
-                int blocksPerMatY = divup(out.info.dims[1], local[1]);
+                dim_t blocksPerMatX = divup(out.info.dims[0], local[0]);
+                dim_t blocksPerMatY = divup(out.info.dims[1], local[1]);
                 NDRange global(blocksPerMatX * local[0] * out.info.dims[2],
                                blocksPerMatY * local[1] * out.info.dims[3],
                                1);
