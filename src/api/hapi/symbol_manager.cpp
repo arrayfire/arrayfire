@@ -10,10 +10,10 @@
 #include "symbol_manager.hpp"
 
 #if defined(OS_WIN)
-static const char* LIB_AF_BKND_NAME[] = {"afcpu.dll", "afcuda.dll", "afopencl.dll"};
+static const char* LIB_AF_BKND_NAME[NUM_BACKENDS] = {"afcpu.dll", "afcuda.dll", "afopencl.dll"};
 #define RTLD_LAZY 0
 #else
-static const char* LIB_AF_BKND_NAME[] = {"libafcpu.so", "libafcuda.so", "libafopencl.so"};
+static const char* LIB_AF_BKND_NAME[NUM_BACKENDS] = {"libafcpu.so", "libafcuda.so", "libafopencl.so"};
 #endif
 
 AFSymbolManager& AFSymbolManager::getInstance()
@@ -46,14 +46,13 @@ void closeDynLibrary(LibHandle handle)
 }
 
 AFSymbolManager::AFSymbolManager()
-    : backendBitFlag(0x0000), activeHandle(NULL), defaultHandle(NULL)
+    : backendBitFlag(NO_BACKEND_LOADED), activeHandle(NULL), defaultHandle(NULL)
 {
-    // AF_BACKEND_DEFAULT enum value is 1 + last valid compute
-    // backend in af_backend enum, hence it represents the number
-    // of valid backends in ArrayFire framework
-    unsigned bkndFlag = 0x0001;
-    for(int i=0; i<AF_BACKEND_DEFAULT; ++i) {
+    unsigned bkndFlag = CPU_BACKEND_MASK;
+    for(int i=0; i<NUM_BACKENDS; ++i) {
+        printf("backend %d %s \n", i, LIB_AF_BKND_NAME[i]);
         bkndHandles[i] = openDynLibrary(LIB_AF_BKND_NAME[i]);
+        printf("backend handle %p\n", bkndHandles[i]);
         if (bkndHandles[i]) {
             backendBitFlag |= bkndFlag;
             activeHandle = bkndHandles[i];
@@ -64,26 +63,30 @@ AFSymbolManager::AFSymbolManager()
     // inorder to use it in ::setBackend when
     // the user passes AF_BACKEND_DEFAULT
     defaultHandle = activeHandle;
+    printf("backend bit flag %x\n", backendBitFlag);
 }
 
 AFSymbolManager::~AFSymbolManager()
 {
-    unsigned bkndFlag = 0x0001;
-    for(int i=0; i<AF_BACKEND_DEFAULT; ++i) {
+    unsigned bkndFlag = CPU_BACKEND_MASK;
+    for(int i=0; i<NUM_BACKENDS; ++i) {
         if (bkndFlag & backendBitFlag)
             closeDynLibrary(bkndHandles[i]);
         bkndFlag = bkndFlag << 1;
     }
-    backendBitFlag = 0x0000;
+    backendBitFlag = NO_BACKEND_LOADED;
 }
 
 af_err AFSymbolManager::setBackend(af::Backend bknd)
 {
     if (bknd==AF_BACKEND_DEFAULT) {
-        activeHandle = defaultHandle;
-        return AF_SUCCESS;
+        if (defaultHandle) {
+            activeHandle = defaultHandle;
+            return AF_SUCCESS;
+        } else
+            return AF_ERR_LOAD_LIB;
     }
-    unsigned bkndFlag = 0x0001;
+    unsigned bkndFlag = CPU_BACKEND_MASK;
     if((bkndFlag << bknd) & backendBitFlag) {
         activeHandle = bkndHandles[bknd];
         return AF_SUCCESS;
