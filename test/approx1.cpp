@@ -233,3 +233,49 @@ TEST(Approx1, CPP)
 
 #undef BT
 }
+
+TEST(Approx1, CPPNearestBatch)
+{
+    if (noDoubleTests<float>()) return;
+
+    af::array input = af::randu(600, 10);
+    af::array pos   = af::randu(100, 10);
+
+    af::array outBatch = af::approx1(input, pos, AF_INTERP_NEAREST);
+
+    af::array outSerial(pos.dims());
+    for(int i = 0; i < pos.dims()[1]; i++) {
+        outSerial(af::span, i) = af::approx1(input(af::span, i), pos(af::span, i), AF_INTERP_NEAREST);
+    }
+
+    af::array outGFOR(pos.dims());
+    gfor(af::seq i, 10) {
+        outGFOR(af::span, i) = af::approx1(input(af::span, i), pos(af::span, i), AF_INTERP_NEAREST);
+    }
+
+    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outSerial)), 1e-3);
+    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outGFOR)), 1e-3);
+}
+
+TEST(Approx1, CPPLinearBatch)
+{
+    if (noDoubleTests<float>()) return;
+
+    af::array input = af::iota(af::dim4(10, 10));
+    af::array pos   = af::randu(10, 10);
+
+    af::array outBatch = af::approx1(input, pos, AF_INTERP_LINEAR);
+
+    af::array outSerial(pos.dims());
+    for(int i = 0; i < pos.dims()[1]; i++) {
+        outSerial(af::span, i) = af::approx1(input(af::span, i), pos(af::span, i), AF_INTERP_LINEAR);
+    }
+
+    af::array outGFOR(pos.dims());
+    gfor(af::seq i, 10) {
+        outGFOR(af::span, i) = af::approx1(input(af::span, i), pos(af::span, i), AF_INTERP_LINEAR);
+    }
+
+    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outSerial)), 1e-3);
+    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outGFOR)), 1e-3);
+}
