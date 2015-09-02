@@ -6,6 +6,9 @@ FILE(GLOB hapi_headers
 FILE(GLOB hapi_sources
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
+FILE(GLOB backend_sources
+    "../c/util.cpp")
+
 ADD_LIBRARY(af SHARED
             ${hapi_headers}
             ${hapi_sources})
