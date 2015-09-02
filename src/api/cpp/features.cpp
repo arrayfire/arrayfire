@@ -9,7 +9,6 @@
 
 #include <af/features.h>
 #include <af/array.h>
-#include <handle.hpp>
 #include "error.hpp"
 
 namespace af

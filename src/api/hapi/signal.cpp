@@ -11,14 +11,15 @@
 #include <af/signal.h>
 #include "symbol_manager.hpp"
 
-#define APPROX_HAPI_DEF(af_func)\
-af_err af_func(af_array *out, const af_array in, const af_array pos, const af_interp_type method, const float offGrid) \
-{\
-    return CALL(out, in, pos, method, offGrid);\
+af_err af_approx1(af_array *out, const af_array in, const af_array pos, const af_interp_type method, const float offGrid)
+{
+    return CALL(out, in, pos, method, offGrid);
 }
 
-APPROX_HAPI_DEF(af_approx1)
-APPROX_HAPI_DEF(af_approx2)
+af_err af_approx2(af_array *out, const af_array in, const af_array pos0, const af_array pos1, const af_interp_type method, const float offGrid)
+{
+    return CALL(out, in, pos0, pos1, method, offGrid);
+}
 
 #define FFT_HAPI_DEF(af_func)\
 af_err af_func(af_array in, const double norm_factor)\
@@ -97,9 +98,16 @@ af_err af_func(af_array *out, const af_array signal, const af_array filter, cons
 CONV_HAPI_DEF(af_convolve1)
 CONV_HAPI_DEF(af_convolve2)
 CONV_HAPI_DEF(af_convolve3)
-CONV_HAPI_DEF(af_fft_convolve1)
-CONV_HAPI_DEF(af_fft_convolve2)
-CONV_HAPI_DEF(af_fft_convolve3)
+
+#define FFT_CONV_HAPI_DEF(af_func)\
+af_err af_func(af_array *out, const af_array signal, const af_array filter, const af_conv_mode mode)\
+{\
+    return CALL(out, signal, filter, mode);\
+}
+
+FFT_CONV_HAPI_DEF(af_fft_convolve1)
+FFT_CONV_HAPI_DEF(af_fft_convolve2)
+FFT_CONV_HAPI_DEF(af_fft_convolve3)
 
 af_err af_convolve2_sep(af_array *out, const af_array col_filter, const af_array row_filter, const af_array signal, const af_conv_mode mode)
 {
