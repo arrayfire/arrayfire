@@ -248,3 +248,55 @@ TEST(Approx2, CPP)
 
 #undef BT
 }
+
+TEST(Approx2, CPPNearestBatch)
+{
+    if (noDoubleTests<float>()) return;
+
+    af::array input = af::randu(200, 100, 10);
+    af::array pos   = af::randu(100, 100, 10);
+    af::array qos   = af::randu(100, 100, 10);
+
+    af::array outBatch = af::approx2(input, pos, qos, AF_INTERP_NEAREST);
+
+    af::array outSerial(pos.dims());
+    for(int i = 0; i < pos.dims()[2]; i++) {
+        outSerial(af::span, af::span, i) = af::approx2(input(af::span, af::span, i),
+            pos(af::span, af::span, i), qos(af::span, af::span, i), AF_INTERP_NEAREST);
+    }
+
+    af::array outGFOR(pos.dims());
+    gfor(af::seq i, 10) {
+        outGFOR(af::span, af::span, i) = af::approx2(input(af::span, af::span, i),
+            pos(af::span, af::span, i), qos(af::span, af::span, i), AF_INTERP_NEAREST);
+    }
+
+    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outSerial)), 1e-3);
+    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outGFOR)), 1e-3);
+}
+
+TEST(Approx2, CPPLinearBatch)
+{
+    if (noDoubleTests<float>()) return;
+
+    af::array input = af::randu(200, 100, 10);
+    af::array pos   = af::randu(100, 100, 10);
+    af::array qos   = af::randu(100, 100, 10);
+
+    af::array outBatch = af::approx2(input, pos, qos, AF_INTERP_LINEAR);
+
+    af::array outSerial(pos.dims());
+    for(int i = 0; i < pos.dims()[2]; i++) {
+        outSerial(af::span, af::span, i) = af::approx2(input(af::span, af::span, i),
+            pos(af::span, af::span, i), qos(af::span, af::span, i), AF_INTERP_LINEAR);
+    }
+
+    af::array outGFOR(pos.dims());
+    gfor(af::seq i, 10) {
+        outGFOR(af::span, af::span, i) = af::approx2(input(af::span, af::span, i),
+            pos(af::span, af::span, i), qos(af::span, af::span, i), AF_INTERP_LINEAR);
+    }
+
+    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outSerial)), 1e-3);
+    ASSERT_NEAR(0, af::sum<double>(af::abs(outBatch - outGFOR)), 1e-3);
+}
