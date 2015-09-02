@@ -127,12 +127,6 @@ af_err af_lookup(af_array *out, const af_array in, const af_array indices, const
     return AF_SUCCESS;
 }
 
-af_seq
-af_make_seq(double begin, double end, double step) {
-    af_seq seq = {begin, end, step};
-    return seq;
-}
-
 // idxrs parameter to the below static function
 // expects 4 values which is handled appropriately
 // by the C-API af_index_gen
@@ -226,5 +220,73 @@ af_err af_index_gen(af_array *out, const af_array in, const dim_t ndims, const a
 
     std::swap(*out, output);
 
+    return AF_SUCCESS;
+}
+
+af_seq af_make_seq(double begin, double end, double step)
+{
+    af_seq seq = {begin, end, step};
+    return seq;
+}
+
+af_err af_create_indexers(af_index_t** indexers)
+{
+    try {
+        af_index_t* out = new af_index_t[4];
+        std::swap(*indexers, out);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_set_array_indexer(af_index_t* indexer, const af_array idx, const dim_t dim)
+{
+    ARG_ASSERT(0, (indexer!=NULL));
+    ARG_ASSERT(1, (idx!=NULL));
+    ARG_ASSERT(2, (dim>=0 && dim<=3));
+    try {
+        indexer[dim].idx.arr = idx;
+        indexer[dim].isBatch = false;
+        indexer[dim].isSeq   = false;
+    }
+    CATCHALL
+        return AF_SUCCESS;
+}
+
+af_err af_set_seq_indexer(af_index_t* indexer, const af_seq* idx, const dim_t dim, const bool is_batch)
+{
+    ARG_ASSERT(0, (indexer!=NULL));
+    ARG_ASSERT(1, (idx!=NULL));
+    ARG_ASSERT(2, (dim>=0 && dim<=3));
+    try {
+        indexer[dim].idx.seq = *idx;
+        indexer[dim].isBatch = is_batch;
+        indexer[dim].isSeq   = true;
+    }
+    CATCHALL
+        return AF_SUCCESS;
+}
+
+af_err af_set_seq_param_indexer(af_index_t* indexer,
+                              const double begin, const double end, const double step,
+                              const dim_t dim, const bool is_batch)
+{
+    ARG_ASSERT(0, (indexer!=NULL));
+    ARG_ASSERT(4, (dim>=0 && dim<=3));
+    try {
+        indexer[dim].idx.seq = af_make_seq(begin, end, step);
+        indexer[dim].isBatch = is_batch;
+        indexer[dim].isSeq   = true;
+    }
+    CATCHALL
+        return AF_SUCCESS;
+}
+
+af_err af_release_indexers(af_index_t* indexers)
+{
+    try {
+        delete[] indexers;
+    }
+    CATCHALL;
     return AF_SUCCESS;
 }
