@@ -15,6 +15,7 @@
 #include <iostream>
 #include <string>
 #include <testHelpers.hpp>
+#include <algorithm>
 
 using std::vector;
 using std::string;
@@ -521,4 +522,42 @@ TEST(AnyAll, NaN)
     ASSERT_EQ(af::allTrue<bool>(B), true);
     ASSERT_EQ(af::anyTrue<bool>(A), true);
     ASSERT_EQ(af::allTrue<bool>(A), false);
+}
+
+TEST(MaxAll, IndexedSmall)
+{
+    const int num = 1000;
+    const int st = 10;
+    const int en = num - 100;
+    af::array a = af::randu(num);
+    float b = af::max<float>(a(af::seq(st, en)));
+
+    std::vector<float> ha(num);
+    a.host(&ha[0]);
+
+    float res = ha[st];
+    for (int i = st; i <= en; i++) {
+        res = std::max(res, ha[i]);
+    }
+
+    ASSERT_EQ(b, res);
+}
+
+TEST(MaxAll, IndexedBig)
+{
+    const int num = 100000;
+    const int st = 1000;
+    const int en = num - 1000;
+    af::array a = af::randu(num);
+    float b = af::max<float>(a(af::seq(st, en)));
+
+    std::vector<float> ha(num);
+    a.host(&ha[0]);
+
+    float res = ha[st];
+    for (int i = st; i <= en; i++) {
+        res = std::max(res, ha[i]);
+    }
+
+    ASSERT_EQ(b, res);
 }

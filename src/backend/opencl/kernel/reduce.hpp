@@ -287,7 +287,7 @@ namespace kernel
     To reduce_all(Param in, int change_nan, double nanval)
     {
         try {
-            int in_elements = in.info.dims[3] * in.info.strides[3];
+            int in_elements = in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
 
             // FIXME: Use better heuristics to get to the optimum number
             if (in_elements > 4096) {
@@ -342,7 +342,8 @@ namespace kernel
             } else {
 
                 unique_ptr<Ti> h_ptr(new Ti[in_elements]);
-                getQueue().enqueueReadBuffer(*in.data, CL_TRUE, 0, sizeof(Ti) * in_elements, h_ptr.get());
+                getQueue().enqueueReadBuffer(*in.data, CL_TRUE, sizeof(Ti) * in.info.offset,
+                                             sizeof(Ti) * in_elements, h_ptr.get());
 
                 Transform<Ti, To, op> transform;
                 Binary<To, op> reduce;

@@ -332,7 +332,7 @@ namespace kernel
     T ireduce_all(uint *loc, Param in)
     {
         try {
-            int in_elements = in.info.dims[3] * in.info.strides[3];
+            int in_elements = in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
 
             // FIXME: Use better heuristics to get to the optimum number
             if (in_elements > 4096) {
@@ -397,7 +397,9 @@ namespace kernel
 
                 unique_ptr<T> h_ptr(new T[in_elements]);
                 T* h_ptr_raw = h_ptr.get();
-                getQueue().enqueueReadBuffer(*in.data, CL_TRUE, 0, sizeof(T) * in_elements, h_ptr_raw);
+
+                getQueue().enqueueReadBuffer(*in.data, CL_TRUE, sizeof(T) * in.info.offset,
+                                             sizeof(T) * in_elements, h_ptr_raw);
 
 
                 MinMaxOp<op, T> Op(h_ptr_raw[0], 0);
