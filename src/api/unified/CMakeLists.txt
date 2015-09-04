@@ -1,17 +1,17 @@
 
-FILE(GLOB hapi_headers
+FILE(GLOB unified_headers
     "*.hpp"
     "*.h")
 
-FILE(GLOB hapi_sources
+FILE(GLOB unified_sources
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 FILE(GLOB backend_sources
     "../c/util.cpp")
 
 ADD_LIBRARY(af SHARED
-            ${hapi_headers}
-            ${hapi_sources})
+            ${unified_headers}
+            ${unified_sources})
 
 IF(${BUILD_CPU})
     ADD_DEPENDENCIES(af afcpu)
@@ -36,7 +36,7 @@ IF(APPLE)
     INSTALL(SCRIPT "${CMAKE_MODULE_PATH}/osx_install/InstallTool.cmake")
 ENDIF(APPLE)
 
-EXPORT(TARGETS af FILE ArrayFireHAPI.cmake)
+EXPORT(TARGETS af FILE ArrayFireUnified.cmake)
 INSTALL(EXPORT AF DESTINATION "${AF_INSTALL_CMAKE_DIR}"
         COMPONENT cmake
-        FILE ArrayFireHAPI.cmake)
+        FILE ArrayFireUnified.cmake)

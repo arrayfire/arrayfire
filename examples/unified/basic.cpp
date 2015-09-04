@@ -52,6 +52,9 @@ int main(int argc, char *argv[])
     if (AF_SUCCESS == af_set_backend(AF_BACKEND_CPU))
         testBackend();
 
+    if (AF_SUCCESS == af_set_backend(AF_BACKEND_CUDA))
+        testBackend();
+
     if (AF_SUCCESS == af_set_backend(AF_BACKEND_OPENCL))
         testBackend();
 
