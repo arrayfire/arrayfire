@@ -68,24 +68,7 @@ ENDMACRO()
 
 # Collect the source
 FILE(GLOB FILES "*/*.cpp")
-FILE(GLOB UNIFIED_FILES "unified/*.cpp")
 ADD_DEFINITIONS("-DASSETS_DIR=\"${ASSETS_DIR}\"")
-
-IF(${ArrayFire_UNIFIED_FOUND})
-    MESSAGE(STATUS "UNIFIED examples")
-    IF(WIN32)
-        BUILD_ALL("${UNIFIED_FILES}" unified ${ArrayFire_UNIFIED_LIBRARIES} "")
-    ELSE()
-        BUILD_ALL("${UNIFIED_FILES}" unified ${ArrayFire_UNIFIED_LIBRARIES} dl)
-    ENDIF()
-ELSEIF(TARGET af)
-    MESSAGE(STATUS "UNIFIED examples")
-    IF(WIN32)
-        BUILD_ALL("${UNIFIED_FILES}" unified af "")
-    ELSE()
-        BUILD_ALL("${UNIFIED_FILES}" unified af dl)
-    ENDIF()
-ENDIF()
 
 # Next we build each example using every backend.
 if(${ArrayFire_CPU_FOUND})  # variable defined by FIND(ArrayFire ...)
@@ -96,6 +79,17 @@ elseif(TARGET afcpu)        # variable defined by the ArrayFire build tree
   BUILD_ALL("${FILES}" cpu afcpu "")
 else()
   MESSAGE(STATUS "EXAMPLES: CPU backend is OFF. afcpu was not found.")
+endif()
+
+# Next we build each example using every backend.
+if(${ArrayFire_Unified_FOUND})  # variable defined by FIND(ArrayFire ...)
+  MESSAGE(STATUS "EXAMPLES: UNIFIED backend is ON.")
+  BUILD_ALL("${FILES}" unified ${ArrayFire_Unified_LIBRARIES} "")
+elseif(TARGET af)        # variable defined by the ArrayFire build tree
+  MESSAGE(STATUS "EXAMPLES: UNIFIED backend is ON.")
+  BUILD_ALL("${FILES}" unified af "dl")
+else()
+  MESSAGE(STATUS "EXAMPLES: UNIFIED backend is OFF. af was not found.")
 endif()
 
 if (${CUDA_FOUND})

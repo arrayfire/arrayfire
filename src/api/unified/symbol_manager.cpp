@@ -65,8 +65,9 @@ AFSymbolManager::AFSymbolManager()
 AFSymbolManager::~AFSymbolManager()
 {
     for(int i=0; i<NUM_BACKENDS; ++i) {
-        if (bkndHandles[i])
+        if (bkndHandles[i]) {
             closeDynLibrary(bkndHandles[i]);
+        }
     }
 }
 
