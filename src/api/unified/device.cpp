@@ -7,7 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/hapi.h>
+#include <af/backend.h>
 #include <af/device.h>
 #include "symbol_manager.hpp"
 

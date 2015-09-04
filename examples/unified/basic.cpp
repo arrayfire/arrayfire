@@ -8,7 +8,7 @@
  ********************************************************/
 
 #include <arrayfire.h>
-#include <af/hapi.h>
+#include <af/backend.h>
 #include <cstdio>
 #include <cstdlib>
 #include <vector>

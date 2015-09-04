@@ -35,7 +35,7 @@ OPTION(BUILD_SIFT "Build ArrayFire nonfree algorithms" OFF)
 
 MARK_AS_ADVANCED(BUILD_SIFT)
 
-OPTION(BUILD_AF "Build Backend-Independent ArrayFire API" ON)
+OPTION(BUILD_UNIFIED "Build Backend-Independent ArrayFire API" ON)
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -170,8 +170,8 @@ IF(${BUILD_OPENCL})
     ADD_SUBDIRECTORY(src/backend/opencl)
 ENDIF()
 
-IF(${BUILD_AF})
-    ADD_SUBDIRECTORY(src/api/hapi)
+IF(${BUILD_UNIFIED})
+    ADD_SUBDIRECTORY(src/api/unified)
 ENDIF()
 
 IF(${BUILD_DOCS})

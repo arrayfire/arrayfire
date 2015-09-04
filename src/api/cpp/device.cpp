@@ -10,7 +10,7 @@
 #include <af/device.h>
 #include <af/compatible.h>
 #include <af/traits.hpp>
-#include <af/hapi.h>
+#include <af/backend.h>
 #include "error.hpp"
 
 namespace af

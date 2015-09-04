@@ -10,7 +10,7 @@
 #include <af/dim4.hpp>
 #include <af/device.h>
 #include <af/version.h>
-#include <af/hapi.h>
+#include <af/backend.h>
 #include <backend.hpp>
 #include <platform.hpp>
 #include <Array.hpp>

@@ -9,7 +9,7 @@
 
 #include <af/index.h>
 // The following should be included using double quotes
-// to enable it's use in HAPI wrapper
+// to enable it's use in unified wrapper
 #include "err_common.hpp"
 
 af_seq af_make_seq(double begin, double end, double step)
