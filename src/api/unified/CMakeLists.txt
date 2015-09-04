@@ -6,12 +6,22 @@ FILE(GLOB unified_headers
 FILE(GLOB unified_sources
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-FILE(GLOB backend_sources
-    "../c/util.cpp")
+FILE(GLOB cpp_sources
+    "../cpp/*.cpp")
+
+FILE(GLOB common_sources
+    "../c/util.cpp"
+    "../c/err_common.cpp"
+    "../c/type_util.cpp"
+    "../../backend/dim4.cpp"
+    )
 
 ADD_LIBRARY(af SHARED
             ${unified_headers}
-            ${unified_sources})
+            ${unified_sources}
+            ${common_sources}
+            ${cpp_sources}
+            )
 
 IF(${BUILD_CPU})
     ADD_DEPENDENCIES(af afcpu)

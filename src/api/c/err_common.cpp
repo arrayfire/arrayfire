@@ -16,7 +16,7 @@
 #include <cstdio>
 #include <algorithm>
 
-#if defined(WITH_GRAPHICS)
+#if defined(WITH_GRAPHICS) && !defined(AF_UNIFIED)
 #include <graphics_common.hpp>
 #endif
 
@@ -229,7 +229,7 @@ af_err processException()
 
         print_error(ss);
         err = ex.getError();
-#if defined(WITH_GRAPHICS)
+#if defined(WITH_GRAPHICS) && !defined(AF_UNIFIED)
     } catch (const fg::Error &ex) {
         ss << ex << "\n";
         print_error(ss);
