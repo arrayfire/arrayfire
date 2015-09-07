@@ -19,6 +19,7 @@ typedef void* LibHandle;
 #endif
 
 const int NUM_BACKENDS = 3;
+const int NUM_ENV_VARS = 2;
 
 class AFSymbolManager {
     public:
