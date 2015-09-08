@@ -33,6 +33,8 @@ class AFSymbolManager {
 
         template<typename... CalleeArgs>
         af_err call(const char* symbolName, CalleeArgs... args) {
+            if (!activeHandle)
+                return AF_ERR_LOAD_LIB;
             typedef af_err(*af_func)(CalleeArgs...);
             af_func funcHandle;
 #if defined(OS_WIN)
@@ -41,7 +43,7 @@ class AFSymbolManager {
             funcHandle = (af_func)dlsym(activeHandle, symbolName);
 #endif
             if (!funcHandle) {
-                return AF_ERR_SYM_LOAD;
+                return AF_ERR_LOAD_SYM;
             }
             return funcHandle(args...);
         }

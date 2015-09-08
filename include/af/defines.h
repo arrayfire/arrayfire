@@ -152,7 +152,7 @@ typedef enum {
 
     // 500-599 Errors specific to heterogenous API
     AF_ERR_LOAD_LIB       = 501,
-    AF_ERR_SYM_LOAD       = 502,
+    AF_ERR_LOAD_SYM       = 502,
 
     // 900-999 Errors from upstream libraries and runtimes
 

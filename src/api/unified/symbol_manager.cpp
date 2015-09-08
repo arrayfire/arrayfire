@@ -68,6 +68,8 @@ LibHandle openDynLibrary(const int bknd_idx, int flag=RTLD_LAZY)
     // in the event that dlopen returns NULL, search for the lib
     // ub hard coded paths based on the environment variables
     // defined in the constant string array LIB_AF_PATHS
+    string show_flag = getEnvVar("AF_SHOW_LOAD_PATH");
+    bool show_load_path = show_flag=="1";
     if (retVal == NULL) {
         for (int i=0; i<NUM_ENV_VARS; ++i) {
             string abs_path = getEnvVar(LIB_AF_ENVARS[i])
@@ -81,12 +83,17 @@ LibHandle openDynLibrary(const int bknd_idx, int flag=RTLD_LAZY)
             retVal = dlopen(abs_path.c_str(), flag);
 #endif
             if (retVal!=NULL) {
+                if (show_load_path)
+                    printf("Using %s\n", abs_path.c_str());
                 // if the current absolute path based dlopen
                 // search is a success, then abandon search
                 // and proceed for compute
                 break;
             }
         }
+    } else {
+        if (show_load_path)
+            printf("Using %s from system path\n", bkndName.c_str());
     }
     return retVal;
 }
