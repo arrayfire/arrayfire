@@ -23,6 +23,19 @@ FILE(GLOB common_sources
 
 SOURCE_GROUP(common FILES ${common_sources})
 
+IF(NOT UNIX)
+    ADD_DEFINITIONS(-DAFDLL)
+ENDIF()
+
+# OS Definitions
+IF(UNIX)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -pthread -Wno-comment")
+ELSE(${UNIX}) #Windows
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /bigobj")
+    SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /bigobj")
+ENDIF()
+
 ADD_LIBRARY(af SHARED
             ${unified_headers}
             ${unified_sources}
