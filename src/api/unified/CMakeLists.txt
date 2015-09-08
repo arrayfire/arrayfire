@@ -6,8 +6,13 @@ FILE(GLOB unified_headers
 FILE(GLOB unified_sources
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
+SOURCE_GROUP(api\\unified\\Headers FILES ${unified_headers})
+SOURCE_GROUP(api\\unified\\Sources FILES ${unified_sources})
+
 FILE(GLOB cpp_sources
     "../cpp/*.cpp")
+
+SOURCE_GROUP(api\\cpp\\Sources FILES ${cpp_sources})
 
 FILE(GLOB common_sources
     "../c/util.cpp"
@@ -15,6 +20,8 @@ FILE(GLOB common_sources
     "../c/type_util.cpp"
     "../../backend/dim4.cpp"
     )
+
+SOURCE_GROUP(common FILES ${common_sources})
 
 ADD_LIBRARY(af SHARED
             ${unified_headers}
