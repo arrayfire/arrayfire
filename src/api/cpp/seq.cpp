@@ -15,8 +15,8 @@
 namespace af
 {
 
-AFAPI int end = -1;
-AFAPI seq span(af_span);
+int end = -1;
+seq span(af_span);
 
 void seq::init(double begin, double end, double step)
 {
