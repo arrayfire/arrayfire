@@ -23,7 +23,7 @@ af_err af_load_image(af_array *out, const char* filename, const bool isColor)
 
 af_err af_save_image(const char* filename, const af_array in)
 {
-    return CALL(in);
+    return CALL(filename, in);
 }
 
 af_err af_load_image_memory(af_array *out, const void* ptr)
