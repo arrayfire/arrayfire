@@ -75,7 +75,7 @@ index::index(const af::array& idx0) {
     impl.isBatch = false;
 }
 
-index::index(const af::index& idx0) {  
+index::index(const af::index& idx0) {
     *this = idx0;
 }
 

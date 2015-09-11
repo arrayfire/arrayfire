@@ -176,7 +176,7 @@ dim4 operator*(const dim4& first, const dim4& second)
 
 
 bool
-isEnd(const af_seq &seq)    { return (seq.end <= -1); }
+hasEnd(const af_seq &seq)    { return (seq.begin <= -1 || seq.end <= -1); }
 
 bool
 isSpan(const af_seq &seq)   { return (seq.step == 0 && seq.begin == 1 && seq.end == 1); }
@@ -196,18 +196,11 @@ dim_t calcDim(const af_seq &seq, const dim_t &parentDim)
     dim_t outDim = 1;
     if  (isSpan(seq)) {
         outDim = parentDim;
-    } else if (isEnd(seq)) {
-        if(seq.begin == -1) {   // only end is passed as seq
-            outDim = 1;
-        } else if (seq.begin < 0) {
-            af_seq temp = {parentDim + seq.begin,
-                           parentDim + seq.end,
-                           seq.step};
-            outDim = seqElements(temp);
-        } else {    // end is passed as a part of seq
-            af_seq temp = {seq.begin, parentDim + seq.end, seq.step};
-            outDim = seqElements(temp);
-        }
+    } else if (hasEnd(seq)) {
+        af_seq temp = {seq.begin, seq.end, seq.step};
+        if (seq.begin < 0) temp.begin += parentDim;
+        if (seq.end   < 0) temp.end   += parentDim;
+        outDim = seqElements(temp);
     } else {
         DIM_ASSERT(1, seq.begin >= -DBL_MIN && seq.begin < parentDim);
         DIM_ASSERT(1, seq.end < parentDim);
@@ -216,7 +209,8 @@ dim_t calcDim(const af_seq &seq, const dim_t &parentDim)
 
     return outDim;
 }
-}
+
+} // end namespace af
 
 using af::dim4;
 using std::vector;
