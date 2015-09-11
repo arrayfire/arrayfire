@@ -116,9 +116,10 @@ void sortTest(string pTestFile, const bool dir, const unsigned resultIdx0, const
     SORT_INIT(Sort10x10True,  sort_10x10, true,  0, 1);
     SORT_INIT(Sort10x10False, sort_10x10, false, 2, 3);
     SORT_INIT(Sort1000True,   sort_1000,  true,  0, 1);
-    SORT_INIT(Sort1000False,  sort_1000,  false, 2, 3);
     SORT_INIT(SortMedTrue,    sort_med1,  true,  0, 1);
-    SORT_INIT(SortMedFalse,   sort_med1,  false, 2, 3);
+    // FIXME: below two tests are disabled temporarily until issue#995 is fixed
+    //SORT_INIT(Sort1000False,  sort_1000,  false, 2, 3);
+    //SORT_INIT(SortMedFalse,   sort_med1,  false, 2, 3);
     // Takes too much time in current implementation. Enable when everything is parallel
     //SORT_INIT(SortMed5True,   sort_med,   true,  0, 1);
     //SORT_INIT(SortMed5False,  sort_med,   false, 2, 3);

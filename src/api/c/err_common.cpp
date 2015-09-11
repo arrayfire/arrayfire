@@ -16,7 +16,7 @@
 #include <cstdio>
 #include <algorithm>
 
-#if defined(WITH_GRAPHICS)
+#if defined(WITH_GRAPHICS) && !defined(AF_UNIFIED)
 #include <graphics_common.hpp>
 #endif
 
@@ -179,6 +179,8 @@ const char *af_err_to_string(const af_err err)
     case AF_ERR_NOT_CONFIGURED: return "Function not configured to build";
     case AF_ERR_TYPE:           return "Function does not support this data type";
     case AF_ERR_NO_DBL:         return "Double precision not supported for this device";
+    case AF_ERR_LOAD_LIB:       return "Failed to load dynamic library";
+    case AF_ERR_LOAD_SYM:       return "Failed to load symbol";
     case AF_ERR_UNKNOWN:
     default:
         return "Unknown error";
@@ -229,7 +231,7 @@ af_err processException()
 
         print_error(ss);
         err = ex.getError();
-#if defined(WITH_GRAPHICS)
+#if defined(WITH_GRAPHICS) && !defined(AF_UNIFIED)
     } catch (const fg::Error &ex) {
         ss << ex << "\n";
         print_error(ss);

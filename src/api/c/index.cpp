@@ -127,12 +127,6 @@ af_err af_lookup(af_array *out, const af_array in, const af_array indices, const
     return AF_SUCCESS;
 }
 
-af_seq
-af_make_seq(double begin, double end, double step) {
-    af_seq seq = {begin, end, step};
-    return seq;
-}
-
 // idxrs parameter to the below static function
 // expects 4 values which is handled appropriately
 // by the C-API af_index_gen
