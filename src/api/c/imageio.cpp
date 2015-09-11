@@ -58,6 +58,24 @@ static void FI_Init()
     static FI_Manager manager = FI_Manager();
 }
 
+class FI_BitmapResource
+{
+public:
+    explicit FI_BitmapResource(FIBITMAP * p) :
+        pBitmap(p)
+    {
+    }
+
+    ~FI_BitmapResource()
+    {
+        FreeImage_Unload(pBitmap);
+    }
+private:
+    FIBITMAP * pBitmap;
+};
+
+
+
 // Helpers
 void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage);
 
@@ -202,6 +220,9 @@ af_err af_load_image(af_array *out, const char* filename, const bool isColor)
             AF_ERROR("FreeImage Error: Error reading image or file does not exist", AF_ERR_RUNTIME);
         }
 
+        // make sure pBitmap is unleaded automatically, no matter how we exit this function
+        FI_BitmapResource bitmapUnloader(pBitmap);
+
         // check image color type
         uint color_type = FreeImage_GetColorType(pBitmap);
         const uint fi_bpp = FreeImage_GetBPP(pBitmap);
@@ -277,7 +298,6 @@ af_err af_load_image(af_array *out, const char* filename, const bool isColor)
             }
         }
 
-        FreeImage_Unload(pBitmap);
         std::swap(*out,rImage);
     } CATCHALL;
 
@@ -323,6 +343,9 @@ af_err af_save_image(const char* filename, const af_array in_)
         if(pResultBitmap == NULL) {
             AF_ERROR("FreeImage Error: Error creating image or file", AF_ERR_RUNTIME);
         }
+
+        // make sure pResultBitmap is unleaded automatically, no matter how we exit this function
+        FI_BitmapResource resultBitmapUnloader(pResultBitmap);
 
         // FI assumes [0-255]
         // If array is in 0-1 range, multiply by 255
@@ -431,8 +454,6 @@ af_err af_save_image(const char* filename, const af_array in_)
             AF_ERROR("FreeImage Error: Failed to save image", AF_ERR_RUNTIME);
         }
 
-        FreeImage_Unload(pResultBitmap);
-
         if(free_in) AF_CHECK(af_release_array(in ));
         if(rr != 0) AF_CHECK(af_release_array(rr ));
         if(gg != 0) AF_CHECK(af_release_array(gg ));
@@ -485,6 +506,9 @@ af_err af_load_image_memory(af_array *out, const void* ptr)
         if(pBitmap == NULL) {
             AF_ERROR("FreeImage Error: Error reading image or file does not exist", AF_ERR_RUNTIME);
         }
+
+        // make sure pBitmap is unleaded automatically, no matter how we exit this function
+        FI_BitmapResource bitmapUnloader(pBitmap);
 
         // check image color type
         uint color_type = FreeImage_GetColorType(pBitmap);
@@ -542,7 +566,6 @@ af_err af_load_image_memory(af_array *out, const void* ptr)
                 AF_CHECK((readImage<float, 3, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
         }
 
-        FreeImage_Unload(pBitmap);
         std::swap(*out,rImage);
     } CATCHALL;
 
@@ -583,6 +606,9 @@ af_err af_save_image_memory(void **ptr, const af_array in_, const af_image_forma
         if(pResultBitmap == NULL) {
             AF_ERROR("FreeImage Error: Error creating image or file", AF_ERR_RUNTIME);
         }
+
+        // make sure pResultBitmap is unleaded automatically, no matter how we exit this function
+        FI_BitmapResource resultBitmapUnloader(pResultBitmap);
 
         // FI assumes [0-255]
         // If array is in 0-1 range, multiply by 255
@@ -694,8 +720,6 @@ af_err af_save_image_memory(void **ptr, const af_array in_, const af_image_forma
         }
 
         *ptr = stream;
-
-        FreeImage_Unload(pResultBitmap);
 
         if(free_in) AF_CHECK(af_release_array(in ));
         if(rr != 0) AF_CHECK(af_release_array(rr ));
