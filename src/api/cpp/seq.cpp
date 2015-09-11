@@ -65,10 +65,6 @@ seq& seq::operator=(const af_seq& s_)
 
 seq::seq(double begin, double end, double step): m_gfor(false)
 {
-    if(begin == -1 && end <= -1) {
-        step = 0;           // end
-    }
-
     if (step == 0) {
         if (begin != end)   // Span
             AF_THROW_MSG("Invalid step size", AF_ERR_ARG);
