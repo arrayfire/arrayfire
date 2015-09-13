@@ -10,6 +10,7 @@
 #ifndef MAGMA_CPU_BLAS
 #define MAGMA_CPU_BLAS
 #include <err_common.hpp>
+#include <defines.hpp>
 #include "magma_types.h"
 
 #ifdef __APPLE__

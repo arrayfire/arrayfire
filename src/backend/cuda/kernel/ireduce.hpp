@@ -444,7 +444,7 @@ namespace kernel
     template<typename T, af_op_t op>
     T ireduce_all(uint *idx, CParam<T> in)
     {
-        int in_elements = in.strides[3] * in.dims[3];
+        int in_elements = in.dims[0] * in.dims[1] * in.dims[2] * in.dims[3];
 
         // FIXME: Use better heuristics to get to the optimum number
         if (in_elements > 4096) {

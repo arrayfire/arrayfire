@@ -10,7 +10,7 @@ A few lines of code in ArrayFire can replace dozens of lines of parallel computi
 To build ArrayFire from source, please follow the instructions on our [wiki](https://github.com/arrayfire/arrayfire/wiki).
 
 ### Download ArrayFire Installers
-We currently have binary tar balls and installers available for the beta version of ArrayFire 3.0. These can be downloaded at the [ArrayFire Downloads](http://go.arrayfire.com/l/37882/2015-03-31/mmhqy) page.
+ArrayFire binary installers can be downloaded at the [ArrayFire Downloads](http://go.arrayfire.com/l/37882/2015-03-31/mmhqy) page.
 
 ### Support and Contact Info [![Join the chat at https://gitter.im/arrayfire/arrayfire](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/arrayfire/arrayfire?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -118,7 +118,7 @@ following reference:
 Formatted:
 ```
 Yalamanchili, P., Arshad, U., Mohammed, Z., Garigipati, P., Entschev, P.,
-Kloppenborg, B., Malcolm, James and Melonakos, J. (2015).
+Kloppenborg, B., Malcolm, J. and Melonakos, J. (2015).
 ArrayFire - A high performance software library for parallel computing with an
 easy-to-use API. Atlanta: AccelerEyes. Retrieved from https://github.com/arrayfire/arrayfire
 ```
