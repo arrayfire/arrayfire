@@ -20,7 +20,12 @@ Build
 ------
 
 * `cmake` now includes `PKG_CONFIG` in the search path for CBLAS and LAPACKE libraries
-* `heston_model` example now builds with the default ArrayFire cmake files after installation
+* [heston_model.cpp](\ref heston_model.cpp) example now builds with the default ArrayFire cmake files after installation
+
+Other
+------
+
+* Fixed bug in [image_editing.cpp](\ref image_editing.cpp)
 
 v3.1.0
 ==============
