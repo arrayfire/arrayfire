@@ -137,12 +137,12 @@ TYPED_TEST(Mean, Dim0Matrix)
 
 TYPED_TEST(Mean, Wtd_Dim0Matrix)
 {
-    meanDimTest<TypeParam>(string(TEST_DIR "/mean/wtd_mean_dim0_mat.test"), 0);
+    meanDimTest<TypeParam>(string(TEST_DIR "/mean/wtd_mean_dim0_mat.test"), 0, true);
 }
 
 TYPED_TEST(Mean, Wtd_Dim1Matrix)
 {
-    meanDimTest<TypeParam>(string(TEST_DIR "/mean/wtd_mean_dim1_mat.test"), 1);
+    meanDimTest<TypeParam>(string(TEST_DIR "/mean/wtd_mean_dim1_mat.test"), 1, true);
 }
 
 TYPED_TEST(Mean, Dim1Cube)
@@ -287,8 +287,8 @@ void weightedMeanAllTest(af::dim4 dims)
     array w(dims, &(wts.front()));
     outType output = mean<outType>(a, w);
 
-    ASSERT_NEAR(::real(output), ::real(gold), 1.0e-3);
-    ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-3);
+    ASSERT_NEAR(::real(output), ::real(gold), 1.0e-2);
+    ASSERT_NEAR(::imag(output), ::imag(gold), 1.0e-2);
 }
 
 TYPED_TEST(WeightedMean, Basic)
