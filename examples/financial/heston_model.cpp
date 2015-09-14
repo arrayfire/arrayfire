@@ -29,22 +29,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***********************************************************************************************/
 
+#include <stdio.h>
 #include <iostream>
 #include <arrayfire.h>
-#include <vector>
-#include <tuple>
 
 using namespace std;
 using namespace af;
 
-tuple<af::array, af::array>
-simulateHestonModel(float T, unsigned int N, unsigned int R, float mu, float kappa,
-                    float vBar, float sigmaV, float rho, float x0, float v0)
+void simulateHestonModel(af::array &xres, af::array &vres,
+                         float T, unsigned int N, unsigned int R, float mu, float kappa,
+                         float vBar, float sigmaV, float rho, float x0, float v0)
 {
     float deltaT = T / (float)(N - 1);
 
-    std::vector<af::array> x = {af::constant(x0, R), af::constant(0, R)};
-    std::vector<af::array> v = {af::constant(v0, R), af::constant(0, R)};
+    af::array x[] = {af::constant(x0, R), af::constant(0, R)};
+    af::array v[] = {af::constant(v0, R), af::constant(0, R)};
 
     float sqrtDeltaT = sqrt(deltaT);
 
@@ -68,7 +67,8 @@ simulateHestonModel(float T, unsigned int N, unsigned int R, float mu, float kap
         v[tCurrent] = max(vTmp, zeroConstant);
     }
 
-    return std::make_tuple(x[tCurrent], v[tCurrent]);
+    xres = x[tCurrent];
+    vres = v[tCurrent];
 }
 
 int main()
@@ -94,11 +94,11 @@ int main()
         af::array v;
 
         // first run
-        std::tie(x, v) = simulateHestonModel(T, nT, R_first_run, r, kappa, vBar, sigmaV, rho, x0, v0);
+        simulateHestonModel(x, v, T, nT, R_first_run, r, kappa, vBar, sigmaV, rho, x0, v0);
         af::sync(); // Ensure the first run is finished
 
         timer::start();
-        std::tie(x, v) = simulateHestonModel(T, nT, R, r, kappa, vBar, sigmaV, rho, x0, v0);
+        simulateHestonModel(x, v, T, nT, R, r, kappa, vBar, sigmaV, rho, x0, v0);
         af::sync();
         cout << "Time in simulation: " << timer::stop() << endl;
 

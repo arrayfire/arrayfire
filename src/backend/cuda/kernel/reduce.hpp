@@ -371,7 +371,7 @@ namespace kernel
     template<typename Ti, typename To, af_op_t op>
     To reduce_all(CParam<Ti> in, bool change_nan, double nanval)
     {
-        int in_elements = in.strides[3] * in.dims[3];
+        int in_elements = in.dims[0] * in.dims[1] * in.dims[2] * in.dims[3];
 
         // FIXME: Use better heuristics to get to the optimum number
         if (in_elements > 4096) {

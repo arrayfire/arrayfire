@@ -241,6 +241,7 @@
 \example vectorize.cpp
 \example black_scholes_options.cpp
 \example monte_carlo_options.cpp
+\example heston_model.cpp
 \example harris.cpp
 \example kmeans.cpp
 \example knn.cpp
@@ -258,6 +259,7 @@
 \example plot2d.cpp
 \example brain_segmentation.cpp
 \example image_demo.cpp
+\example image_editing.cpp
 \example morphing.cpp
 \example optical_flow.cpp
 \example pyramids.cpp

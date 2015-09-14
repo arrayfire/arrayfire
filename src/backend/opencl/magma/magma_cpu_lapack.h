@@ -11,6 +11,7 @@
 #define MAGMA_CPU_LAPACK
 
 #include <err_common.hpp>
+#include <defines.hpp>
 #include "magma_types.h"
 
 #define LAPACKE_sunmqr_work(...) LAPACKE_sormqr_work(__VA_ARGS__)
