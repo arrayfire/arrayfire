@@ -262,8 +262,13 @@ void packDataHelper(Param<convT> sig_packed,
 {
     dim_t *sd = sig.dims;
 
-    int sig_packed_elem = sig_packed.strides[3] * sig_packed.dims[3];
-    int filter_packed_elem = filter_packed.strides[3] * filter_packed.dims[3];
+    int sig_packed_elem = 1;
+    int filter_packed_elem = 1;
+
+    for (int i = 0; i < 4; i++) {
+        sig_packed_elem *= sig_packed.dims[i];
+        filter_packed_elem *= filter_packed.dims[i];
+    }
 
     // Number of packed complex elements in dimension 0
     int sig_half_d0 = divup(sd[0], 2);
@@ -292,8 +297,13 @@ void complexMultiplyHelper(Param<T> out,
                            CParam<T> filter,
                            ConvolveBatchKind kind)
 {
-    int sig_packed_elem = sig_packed.strides[3] * sig_packed.dims[3];
-    int filter_packed_elem = filter_packed.strides[3] * filter_packed.dims[3];
+    int sig_packed_elem = 1;
+    int filter_packed_elem = 1;
+
+    for (int i = 0; i < 4; i++) {
+        sig_packed_elem *= sig_packed.dims[i];
+        filter_packed_elem *= filter_packed.dims[i];
+    }
 
     dim3 threads(THREADS);
     dim3 blocks(divup(sig_packed_elem / 2, threads.x));

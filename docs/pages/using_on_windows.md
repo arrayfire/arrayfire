@@ -24,7 +24,7 @@ to the location of the executables.
 ## Step 1: Adding ArrayFire to PATH for all users
 
 The ArrayFire installer for Windows creates a user `PATH` variable containing
-`%AF_PATH%/lib`. This is required so that Windows knows where to find the
+`%%AF_PATH%/lib`. This is required so that Windows knows where to find the
 ArrayFire DLLs. This variable fixes the DLL finding only for the user that
 installs ArrayFire.
 
@@ -42,9 +42,9 @@ To allow DLL detection for all users, it needs to be added to the system
 3. Click on _Environment Variables_, then under **System Variables**, find
    `PATH`, and click on it.
 
-4. In edit mode, append `%AF_PATH%/lib`. NOTE: Ensure that there is a semi-colon
-   separating `%AF_PATH%/lib` from any existing content (e.g.
-   `EXISTING_PATHS;%AF_PATH%/lib;`) otherwise other software may not function
+4. In edit mode, append `%%AF_PATH%/lib`. NOTE: Ensure that there is a semi-colon
+   separating `%%AF_PATH%/lib` from any existing content (e.g.
+   `EXISTING_PATHS;%%AF_PATH%/lib;`) otherwise other software may not function
    correctly.
 
 ## Step 2: Verify the path addition functions correctly

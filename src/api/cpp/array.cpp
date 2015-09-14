@@ -374,8 +374,7 @@ namespace af
 
     const array::array_proxy array::row(int index) const
     {
-        seq idx(index, index, 1);
-        return this->operator()(idx, span, span, span);
+        return this->operator()(index, span, span, span);
     }
 
     array::array_proxy array::row(int index)
@@ -385,8 +384,7 @@ namespace af
 
     const array::array_proxy array::col(int index) const
     {
-        seq idx(index, index, 1);
-        return this->operator()(span, idx, span, span);
+        return this->operator()(span, index, span, span);
     }
 
     array::array_proxy array::col(int index)
@@ -396,8 +394,7 @@ namespace af
 
     const array::array_proxy array::slice(int index) const
     {
-        seq idx(index, index, 1);
-        return this->operator()(span, span, idx, span);
+        return this->operator()(span, span, index, span);
     }
 
     array::array_proxy array::slice(int index)

@@ -1,6 +1,32 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.1.1
+==============
+
+Installers
+-----------
+
+* CUDA backend now depends on CUDA 7.5 toolkit
+* OpenCL backend now require OpenCL 1.2 or greater
+
+Bug Fixes
+--------------
+
+* Fixed [bug](https://github.com/arrayfire/arrayfire/issues/981) in reductions after indexing
+* Fixed [bug](https://github.com/arrayfire/arrayfire/issues/976) in indexing when using reverse indices
+
+Build
+------
+
+* `cmake` now includes `PKG_CONFIG` in the search path for CBLAS and LAPACKE libraries
+* [heston_model.cpp](\ref heston_model.cpp) example now builds with the default ArrayFire cmake files after installation
+
+Other
+------
+
+* Fixed bug in [image_editing.cpp](\ref image_editing.cpp)
+
 v3.1.0
 ==============
 
@@ -105,7 +131,7 @@ Bug Fixes
     * Fix compatibility of c32/c64 arrays when operating with scalars
     * Fix median for all values of an array
     * Fix double free issue when indexing (30cbbc7)
-    * Fix bug in rank
+    * Fix [bug](https://github.com/arrayfire/arrayfire/issues/901) in rank
     * Fix default values for scale throwing exception
     * Fix conjg raising exception on real input
     * Fix bug when using conjugate transpose for vector input
@@ -115,7 +141,7 @@ Bug Fixes
     * Fix setSeed for randu
     * Fix casting to and from complex
     * Check NULL values when allocating memory
-    * Fix offset issue for CPU element-wise operations
+    * Fix [offset issue](https://github.com/arrayfire/arrayfire/issues/923) for CPU element-wise operations
 
 New Examples
 ------------
@@ -123,12 +149,10 @@ New Examples
 * Susan
 * Heston Model (contributed by Michael Nowotny)
 
-Distribution Changes
---------------------
-* Fixed automatic detection of ArrayFire when using with CMake in the Windows
-  Installer
-* Compiling ArrayFire with FreeImage as a static library for Linux x86
-  installers
+Installer
+----------
+* Fixed bug in automatic detection of ArrayFire when using with CMake in Windows
+* The Linux libraries are now compiled with static version of FreeImage
 
 Known Issues
 ------------
