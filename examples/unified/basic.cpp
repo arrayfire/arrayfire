@@ -36,10 +36,10 @@ void testBackend()
     af_array B = 0;
 
     af_create_array(&A, &(input.front()), 4, dims, af_dtype::f32);
-    af_print_array(A);
+    af_print_array_gen("A", A, 4);
 
     af_constant(&B, 0.5, 4, dims, af_dtype::f32);
-    af_print_array(B);
+    af_print_array_gen("B", B, 4);
 
     af_release_array(A);
     af_release_array(B);
