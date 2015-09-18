@@ -1,0 +1,32 @@
+/**
+\addtogroup arrayfire_func
+@{
+
+\defgroup unified_func_setbackend setBackend
+
+\brief Set the current backend when using Unified backend
+
+This is a noop when using one of CPU, CUDA, or OpenCL backend.
+
+However, when using on of those 3 but trying to set it to a different backend
+will return in an exception.
+
+\ingroup unified_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup unified_func_getbackendcount getBackendCount
+
+\brief Get the number of backends whose libraries were successfully loaded.
+
+This will be between 0-3. 0 Being no backends were loaded and 3 being all
+backends loaded successfully.
+
+\ingroup unified_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+@}
+*/

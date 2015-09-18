@@ -200,6 +200,13 @@
      Reading and writing images
    @}
 
+   @defgroup unified_func Unified API Functions
+   @{
+
+     Functions to set current backend and utilities
+
+   @}
+
    @defgroup external Interface Functions
    @{
 

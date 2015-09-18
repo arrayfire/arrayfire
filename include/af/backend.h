@@ -15,18 +15,18 @@ extern "C" {
 #endif
 
 /**
-   Changes the compute backend at run time
-
    \param[in] bknd takes one of the values of enum \ref af_backend
    \returns \ref af_err error code
+
+   \ingroup unified_func_setbackend
  */
 AFAPI af_err af_set_backend(const af_backend bknd);
 
 /**
-   Gets the number of available backends
-
    \param[out] num_backends Number of available backends
    \returns \ref af_err error code
+
+   \ingroup unified_func_getbackendcount
  */
 AFAPI af_err af_get_backend_count(unsigned* num_backends);
 
@@ -39,16 +39,16 @@ namespace af
 {
 
 /**
-   Changes the compute backend at run time
-
    \param[in] bknd takes one of the values of enum \ref af_backend
+
+   \ingroup unified_func_setbackend
  */
 AFAPI void setBackend(const Backend bknd);
 
 /**
-   Gets the number of available backends
-
    \returns Number of available backends
+
+   \ingroup unified_func_getbackendcount
  */
 AFAPI unsigned getBackendCount();
 
