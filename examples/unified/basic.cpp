@@ -8,16 +8,12 @@
  ********************************************************/
 
 #include <arrayfire.h>
-#include <af/backend.h>
-#include <cstdio>
-#include <cstdlib>
 #include <vector>
 #include <algorithm>
 
 using namespace af;
 
 std::vector<float> input(100);
-
 
 // Generate a random number between 0 and 1
 // return a uniform number in [0,1].
@@ -28,35 +24,47 @@ double unifRand()
 
 void testBackend()
 {
-    af_info();
+    af::info();
 
-    dim_t dims[] = {10, 10, 1, 1};
+    af::dim4 dims(10, 10, 1, 1);
 
-    af_array A = 0;
-    af_array B = 0;
+    af::array A(dims, &input.front());
+    af_print(A);
 
-    af_create_array(&A, &(input.front()), 4, dims, af_dtype::f32);
-    af_print_array(A);
-
-    af_constant(&B, 0.5, 4, dims, af_dtype::f32);
-    af_print_array(B);
-
-    af_release_array(A);
-    af_release_array(B);
+    af::array B = af::constant(0.5, dims, f32);
+    af_print(B);
 }
 
 int main(int argc, char *argv[])
 {
     std::generate(input.begin(), input.end(), unifRand);
 
-    if (AF_SUCCESS == af_set_backend(AF_BACKEND_CPU))
+    try {
+        printf("Trying CPU Backend\n");
+        af::setBackend(AF_BACKEND_CPU);
         testBackend();
+    } catch (af::exception& e) {
+        printf("Caught exception when trying CPU backend\n");
+        fprintf(stderr, "%s\n", e.what());
+    }
 
-    if (AF_SUCCESS == af_set_backend(AF_BACKEND_CUDA))
+    try {
+        printf("Trying CUDA Backend\n");
+        af::setBackend(AF_BACKEND_CUDA);
         testBackend();
+    } catch (af::exception& e) {
+        printf("Caught exception when trying CUDA backend\n");
+        fprintf(stderr, "%s\n", e.what());
+    }
 
-    if (AF_SUCCESS == af_set_backend(AF_BACKEND_OPENCL))
+    try {
+        printf("Trying OpenCL Backend\n");
+        af::setBackend(AF_BACKEND_OPENCL);
         testBackend();
+    } catch (af::exception& e) {
+        printf("Caught exception when trying OpenCL backend\n");
+        fprintf(stderr, "%s\n", e.what());
+    }
 
     #ifdef WIN32 // pause in Windows
     if (!(argc == 2 && argv[1][0] == '-')) {

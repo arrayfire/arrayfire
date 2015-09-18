@@ -9,12 +9,14 @@
 #
 # ----------------------------------------------------------------------------
 #
-# ArrayFire_CPU_FOUND        - True of the ArrayFire CPU library has been found.
-# ArrayFire_CPU_LIBRARIES    - Location of ArrayFire's CPU library, if found
-# ArrayFire_CUDA_FOUND       - True of the ArrayFire CUDA library has been found.
-# ArrayFire_CUDA_LIBRARIES   - Location of ArrayFire's CUDA library, if found
-# ArrayFire_OpenCL_FOUND     - True of the ArrayFire OpenCL library has been found.
-# ArrayFire_OpenCL_LIBRARIES - Location of ArrayFire's OpenCL library, if found
+# ArrayFire_CPU_FOUND         - True of the ArrayFire CPU library has been found.
+# ArrayFire_CPU_LIBRARIES     - Location of ArrayFire's CPU library, if found
+# ArrayFire_CUDA_FOUND        - True of the ArrayFire CUDA library has been found.
+# ArrayFire_CUDA_LIBRARIES    - Location of ArrayFire's CUDA library, if found
+# ArrayFire_OpenCL_FOUND      - True of the ArrayFire OpenCL library has been found.
+# ArrayFire_OpenCL_LIBRARIES  - Location of ArrayFire's OpenCL library, if found
+# ArrayFire_Unified_FOUND     - True of the ArrayFire Unified library has been found.
+# ArrayFire_Unified_LIBRARIES - Location of ArrayFire's Unified library, if found
 #
 #=============================================================================
 # Copyright (c) 2015, ArrayFire
