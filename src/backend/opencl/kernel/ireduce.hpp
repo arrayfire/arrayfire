@@ -169,7 +169,7 @@ namespace kernel
             std::string("_") +
             std::to_string(op) +
             std::string("_") +
-            std::to_string(is_first);
+            std::to_string(is_first) +
             std::string("_") +
             std::to_string(threads_x);
 
