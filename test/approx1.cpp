@@ -262,7 +262,7 @@ TEST(Approx1, CPPLinearBatch)
     if (noDoubleTests<float>()) return;
 
     af::array input = af::iota(af::dim4(10000, 20), c32);
-    af::array pos   = input.dims(0) * af::randu(562500, 20);
+    af::array pos   = input.dims(0) * af::randu(50000, 20);
 
     af::array outBatch = af::approx1(input, pos, AF_INTERP_LINEAR);
 
