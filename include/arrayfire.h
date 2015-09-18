@@ -270,6 +270,7 @@
 #include "af/algorithm.h"
 #include "af/arith.h"
 #include "af/array.h"
+#include "af/backend.h"
 #include "af/blas.h"
 #include "af/constants.h"
 #include "af/complex.h"

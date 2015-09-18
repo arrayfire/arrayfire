@@ -116,10 +116,17 @@ AFSymbolManager& AFSymbolManager::getInstance()
 AFSymbolManager::AFSymbolManager()
     : activeHandle(NULL), defaultHandle(NULL), numBackends(0)
 {
-    for(int i=0; i<NUM_BACKENDS; ++i) {
-        bkndHandles[i] = openDynLibrary(i);
-        if (bkndHandles[i]) {
-            activeHandle = bkndHandles[i];
+    // In reverse order of priority. The last successful backend loaded will be
+    // the most prefered one.
+    static const int order[] = {AF_BACKEND_CPU,
+                                AF_BACKEND_OPENCL,
+                                AF_BACKEND_CUDA};
+
+    for(int i = 0; i < NUM_BACKENDS; ++i) {
+        int backend = order[i] - 1;
+        bkndHandles[backend] = openDynLibrary(backend);
+        if (bkndHandles[backend]) {
+            activeHandle = bkndHandles[backend];
             numBackends++;
         }
     }
