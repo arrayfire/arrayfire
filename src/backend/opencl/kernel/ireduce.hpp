@@ -381,8 +381,19 @@ namespace kernel
 
                 T* h_ptr_raw = h_ptr.get();
                 uint* h_iptr_raw = h_iptr.get();
-                MinMaxOp<op, T> Op(h_ptr_raw[0], h_iptr_raw[0]);
 
+                if (!is_linear) {
+                    // Converting n-d index into a linear index
+                    // in is of size   [   dims0, dims1, dims2, dims3]
+                    // tidx is of size [groups_x, dims1, dims2, dims3]
+                    // i / groups_x gives you the batch number "N"
+                    // "N * dims0 + i" gives the linear index
+                    for (int i = 0; i < tmp_elements; i++) {
+                        h_iptr_raw[i] += (i / groups_x) * in.info.dims[0];
+                    }
+                }
+
+                MinMaxOp<op, T> Op(h_ptr_raw[0], h_iptr_raw[0]);
                 for (int i = 1; i < (int)tmp_elements; i++) {
                     Op(h_ptr_raw[i], h_iptr_raw[i]);
                 }
