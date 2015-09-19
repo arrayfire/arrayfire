@@ -561,3 +561,18 @@ TEST(MaxAll, IndexedBig)
 
     ASSERT_EQ(b, res);
 }
+
+TEST(Reduce, KernelName)
+{
+    const int m = 64;
+    const int n = 100;
+    const int b = 5;
+
+    array in = af::constant(0, m, n, b);
+    for (int i = 0; i < b; i++) {
+        array tmp = af::randu(m, n);
+        in(af::span, af::span, i) = tmp;
+        ASSERT_EQ(af::min<float>(in(af::span, af::span, i)),
+                  af::min<float>(tmp));
+    }
+}
