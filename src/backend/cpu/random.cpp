@@ -18,6 +18,8 @@
 #include <af/defines.h>
 #include <Array.hpp>
 #include <random.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 namespace cpu
 {
@@ -74,7 +76,7 @@ static bool is_first = true;
 #define GLOBAL 1
 
 template<typename T>
-Array<T> randn(const af::dim4 &dims)
+void randn_(Array<T> out)
 {
     static unsigned long long my_seed = 0;
     if (is_first) {
@@ -89,16 +91,22 @@ Array<T> randn(const af::dim4 &dims)
         my_seed = gen_seed;
     }
 
-    Array<T> outArray = createEmptyArray<T>(dims);
-    T *outPtr = outArray.get();
-    for (int i = 0; i < (int)outArray.elements(); i++) {
+    T *outPtr = out.get();
+    for (int i = 0; i < (int)out.elements(); i++) {
         outPtr[i] = gen();
     }
+}
+
+template<typename T>
+Array<T> randn(const af::dim4 &dims)
+{
+    Array<T> outArray = createEmptyArray<T>(dims);
+    getQueue().enqueue(randn_<T>, outArray);
     return outArray;
 }
 
 template<typename T>
-Array<T> randu(const af::dim4 &dims)
+void randu_(Array<T> out)
 {
     static unsigned long long my_seed = 0;
     if (is_first) {
@@ -113,11 +121,39 @@ Array<T> randu(const af::dim4 &dims)
         my_seed = gen_seed;
     }
 
-    Array<T> outArray = createEmptyArray<T>(dims);
-    T *outPtr = outArray.get();
-    for (int i = 0; i < (int)outArray.elements(); i++) {
+    T *outPtr = out.get();
+    for (int i = 0; i < (int)out.elements(); i++) {
         outPtr[i] = gen();
     }
+}
+
+template<>
+void randu_(Array<char> out)
+{
+    static unsigned long long my_seed = 0;
+    if (is_first) {
+        setSeed(gen_seed);
+        my_seed = gen_seed;
+    }
+
+    static auto gen = urand<float>(generator);
+
+    if (my_seed != gen_seed) {
+        gen = urand<float>(generator);
+        my_seed = gen_seed;
+    }
+
+    char *outPtr = out.get();
+    for (int i = 0; i < (int)out.elements(); i++) {
+        outPtr[i] = gen() > 0.5;
+    }
+}
+
+template<typename T>
+Array<T> randu(const af::dim4 &dims)
+{
+    Array<T> outArray = createEmptyArray<T>(dims);
+    getQueue().enqueue(randu_<T>, outArray);
     return outArray;
 }
 
@@ -133,6 +169,7 @@ INSTANTIATE_UNIFORM(uint)
 INSTANTIATE_UNIFORM(intl)
 INSTANTIATE_UNIFORM(uintl)
 INSTANTIATE_UNIFORM(uchar)
+INSTANTIATE_UNIFORM(char)
 
 #define INSTANTIATE_NORMAL(T)                              \
     template Array<T>  randn<T>(const af::dim4 &dims);
@@ -143,39 +180,19 @@ INSTANTIATE_NORMAL(cfloat)
 INSTANTIATE_NORMAL(cdouble)
 
 
-template<>
-Array<char> randu(const af::dim4 &dims)
-{
-    static unsigned long long my_seed = 0;
-    if (is_first) {
-        setSeed(gen_seed);
-        my_seed = gen_seed;
-    }
-
-    static auto gen = urand<float>(generator);
-
-    if (my_seed != gen_seed) {
-        gen = urand<float>(generator);
-        my_seed = gen_seed;
-    }
-
-    Array<char> outArray = createEmptyArray<char>(dims);
-    char *outPtr = outArray.get();
-    for (int i = 0; i < (int)outArray.elements(); i++) {
-        outPtr[i] = gen() > 0.5;
-    }
-    return outArray;
-}
-
 void setSeed(const uintl seed)
 {
-    generator.seed(seed);
-    is_first = false;
-    gen_seed = seed;
+    auto f = [=](const uintl seed){
+        generator.seed(seed);
+        is_first = false;
+        gen_seed = seed;
+    };
+    getQueue().enqueue(f, seed);
 }
 
 uintl getSeed()
 {
+    getQueue().sync();
     return gen_seed;
 }
 
