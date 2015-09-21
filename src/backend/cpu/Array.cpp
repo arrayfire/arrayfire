@@ -14,6 +14,7 @@
 #include <TNJ/ScalarNode.hpp>
 #include <memory.hpp>
 #include <platform.hpp>
+#include <async_queue.hpp>
 #include <cstring>
 #include <cstddef>
 
@@ -46,7 +47,6 @@ namespace cpu
         }
     }
 
-
     template<typename T>
     Array<T>::Array(af::dim4 dims, TNJ::Node_ptr n) :
         info(-1, dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
@@ -67,40 +67,42 @@ namespace cpu
     template<typename T>
     void Array<T>::eval()
     {
-        if (isReady()) return;
+        auto func = [this] {
+            if (isReady()) return;
 
-        this->setId(getActiveDeviceId());
-        data = std::shared_ptr<T>(memAlloc<T>(elements()), memFree<T>);
-        T *ptr = data.get();
+            setId(getActiveDeviceId());
+            data = std::shared_ptr<T>(memAlloc<T>(elements()), memFree<T>);
+            T *ptr = data.get();
 
-        dim4 ostrs = strides();
-        dim4 odims = dims();
+            dim4 ostrs = strides();
+            dim4 odims = dims();
 
-        for (int w = 0; w < (int)odims[3]; w++) {
-            dim_t offw = w * ostrs[3];
+            for (int w = 0; w < (int)odims[3]; w++) {
+                dim_t offw = w * ostrs[3];
 
-            for (int z = 0; z < (int)odims[2]; z++) {
-                dim_t offz = z * ostrs[2] + offw;
+                for (int z = 0; z < (int)odims[2]; z++) {
+                    dim_t offz = z * ostrs[2] + offw;
 
-                for (int y = 0; y < (int)odims[1]; y++) {
-                    dim_t offy = y * ostrs[1] + offz;
+                    for (int y = 0; y < (int)odims[1]; y++) {
+                        dim_t offy = y * ostrs[1] + offz;
 
-                    for (int x = 0; x < (int)odims[0]; x++) {
-                        dim_t id = x + offy;
+                        for (int x = 0; x < (int)odims[0]; x++) {
+                            dim_t id = x + offy;
 
-                        ptr[id] = *(T *)node->calc(x, y, z, w);
+                            ptr[id] = *(T *)node->calc(x, y, z, w);
+                        }
                     }
                 }
             }
-        }
 
+            ready = true;
+            Node_ptr prev = node;
+            prev->reset();
+            // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
+            node.reset();
+        };
 
-        ready = true;
-
-        Node_ptr prev = node;
-        prev->reset();
-        // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
-        node.reset();
+        getQueue().enqueue(func);
     }
 
     template<typename T>

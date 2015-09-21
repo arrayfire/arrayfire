@@ -11,19 +11,14 @@
 #include <reorder.hpp>
 #include <stdexcept>
 #include <err_cpu.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 namespace cpu
 {
     template<typename T>
-    Array<T> reorder(const Array<T> &in, const af::dim4 &rdims)
+    void reorder_(Array<T> out, const Array<T> in, const af::dim4 oDims, const af::dim4 rdims)
     {
-        const af::dim4 iDims = in.dims();
-        af::dim4 oDims(0);
-        for(int i = 0; i < 4; i++)
-            oDims[i] = iDims[rdims[i]];
-
-        Array<T> out = createEmptyArray<T>(oDims);
-
         T* outPtr = out.get();
         const T* inPtr = in.get();
 
@@ -53,7 +48,18 @@ namespace cpu
                 }
             }
         }
+    }
 
+    template<typename T>
+    Array<T> reorder(const Array<T> &in, const af::dim4 &rdims)
+    {
+        const af::dim4 iDims = in.dims();
+        af::dim4 oDims(0);
+        for(int i = 0; i < 4; i++)
+            oDims[i] = iDims[rdims[i]];
+
+        Array<T> out = createEmptyArray<T>(oDims);
+        getQueue().enqueue(reorder_<T>, out, in, oDims, rdims);
         return out;
     }
 

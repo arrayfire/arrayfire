@@ -67,7 +67,7 @@ namespace cpu
     }
 
     template<typename inType, typename outType>
-    static void copy(Array<outType> &dst, const Array<inType> &src, outType default_value, double factor)
+    static void copy(Array<outType> dst, const Array<inType> src, outType default_value, double factor)
     {
         dim4 src_dims       = src.dims();
         dim4 dst_dims       = dst.dims();
@@ -117,7 +117,7 @@ namespace cpu
     template<typename T>
     void multiply_inplace(Array<T> &in, double val)
     {
-        getQueue().enqueue(copy<T, T>,in, in, 0, val);
+        getQueue().enqueue(copy<T, T>, in, in, 0, val);
     }
 
     template<typename inType, typename outType>
@@ -126,14 +126,16 @@ namespace cpu
              outType default_value, double factor)
     {
         Array<outType> ret = createValueArray<outType>(dims, default_value);
-        getQueue().enqueue(copy<inType, outType>,ret, in, outType(default_value), factor);
+        ret.eval();
+        getQueue().sync();
+        getQueue().enqueue(copy<inType, outType>, ret, in, outType(default_value), factor);
         return ret;
     }
 
     template<typename inType, typename outType>
     void copyArray(Array<outType> &out, Array<inType> const &in)
     {
-        getQueue().enqueue(copy<inType, outType>,out, in, scalar<outType>(0), 1.0);
+        getQueue().enqueue(copy<inType, outType>, out, in, scalar<outType>(0), 1.0);
     }
 
 

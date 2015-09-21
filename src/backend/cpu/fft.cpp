@@ -16,6 +16,8 @@
 #include <fftw3.h>
 #include <copy.hpp>
 #include <math.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 using af::dim4;
 
@@ -52,7 +54,7 @@ TRANSFORM(fftwf, cfloat)
 TRANSFORM(fftw, cdouble)
 
 template<typename T, int rank, bool direction>
-void fft_inplace(Array<T> &in)
+void fft_inplace_(Array<T> in)
 {
     int t_dims[rank];
     int in_embed[rank];
@@ -90,6 +92,12 @@ void fft_inplace(Array<T> &in)
     transform.destroy(plan);
 }
 
+template<typename T, int rank, bool direction>
+void fft_inplace(Array<T> &in)
+{
+    getQueue().enqueue(fft_inplace_<T, rank, direction>, in);
+}
+
 template<typename To, typename Ti>
 struct fftw_real_transform;
 
@@ -114,14 +122,9 @@ TRANSFORM_REAL(fftwf, float , cfloat , c2r)
 TRANSFORM_REAL(fftw , double, cdouble, c2r)
 
 template<typename Tc, typename Tr, int rank>
-Array<Tc> fft_r2c(const Array<Tr> &in)
+void fft_r2c_(Array<Tc> out, const Array<Tr> in)
 {
     dim4 idims = in.dims();
-    dim4 odims = in.dims();
-
-    odims[0] = odims[0] / 2 + 1;
-
-    Array<Tc> out = createEmptyArray<Tc>(odims);
 
     int t_dims[rank];
     int in_embed[rank];
@@ -157,15 +160,23 @@ Array<Tc> fft_r2c(const Array<Tr> &in)
 
     transform.execute(plan);
     transform.destroy(plan);
+}
+
+template<typename Tc, typename Tr, int rank>
+Array<Tc> fft_r2c(const Array<Tr> &in)
+{
+    dim4 odims = in.dims();
+    odims[0] = odims[0] / 2 + 1;
+    Array<Tc> out = createEmptyArray<Tc>(odims);
+
+    getQueue().enqueue(fft_r2c_<Tc, Tr, rank>, out, in);
 
     return out;
 }
 
 template<typename Tr, typename Tc, int rank>
-Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims)
+void fft_c2r_(Array<Tr> out, const Array<Tc> in, const dim4 odims)
 {
-    Array<Tr> out = createEmptyArray<Tr>(odims);
-
     int t_dims[rank];
     int in_embed[rank];
     int out_embed[rank];
@@ -200,6 +211,14 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims)
 
     transform.execute(plan);
     transform.destroy(plan);
+}
+
+template<typename Tr, typename Tc, int rank>
+Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims)
+{
+    Array<Tr> out = createEmptyArray<Tr>(odims);
+    getQueue().enqueue(fft_c2r_<Tr, Tc, rank>, out, in, odims);
+
     return out;
 }
 
