@@ -289,13 +289,13 @@ namespace kernel
         try {
             int in_elements = in.info.dims[0] * in.info.dims[1] * in.info.dims[2] * in.info.dims[3];
 
-            // FIXME: Use better heuristics to get to the optimum number
-            if (in_elements > 4096) {
+            bool is_linear = (in.info.strides[0] == 1);
+            for (int k = 1; k < 4; k++) {
+                is_linear &= (in.info.strides[k] == (in.info.strides[k - 1] * in.info.dims[k - 1]));
+            }
 
-                bool is_linear = (in.info.strides[0] == 1);
-                for (int k = 1; k < 4; k++) {
-                    is_linear &= (in.info.strides[k] == (in.info.strides[k - 1] * in.info.dims[k - 1]));
-                }
+            // FIXME: Use better heuristics to get to the optimum number
+            if (in_elements > 4096 || !is_linear) {
 
                 if (is_linear) {
                     in.info.dims[0] = in_elements;

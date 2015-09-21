@@ -576,3 +576,11 @@ TEST(Reduce, KernelName)
                   af::min<float>(tmp));
     }
 }
+
+TEST(Reduce, AllSmallIndexed)
+{
+    int LEN = 1000;
+    array a = af::range(af::dim4(LEN, 2));
+    array b = a(af::seq(LEN/2), af::span);
+    ASSERT_EQ(af::max<float>(b), LEN/2-1);
+}
