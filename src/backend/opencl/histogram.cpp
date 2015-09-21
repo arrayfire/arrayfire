@@ -22,7 +22,7 @@ using std::vector;
 namespace opencl
 {
 
-template<typename inType, typename outType>
+template<typename inType, typename outType, bool isLinear>
 Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const double &minval, const double &maxval)
 {
     ARG_ASSERT(1, (nbins<=kernel::MAX_BINS));
@@ -43,13 +43,14 @@ Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const d
     dim4 minmax_dims(mmNElems*2);
     Array<cfloat> minmax = createHostDataArray<cfloat>(minmax_dims, h_minmax.data());
 
-    kernel::histogram<inType, outType>(out, in, minmax, nbins);
+    kernel::histogram<inType, outType, isLinear>(out, in, minmax, nbins);
 
     return out;
 }
 
 #define INSTANTIATE(in_t,out_t)\
-    template Array<out_t> histogram(const Array<in_t> &in, const unsigned &nbins, const double &minval, const double &maxval);
+template Array<out_t> histogram<in_t, out_t, true>(const Array<in_t> &in, const unsigned &nbins, const double &minval, const double &maxval); \
+template Array<out_t> histogram<in_t, out_t, false>(const Array<in_t> &in, const unsigned &nbins, const double &minval, const double &maxval);
 
 INSTANTIATE(float , uint)
 INSTANTIATE(double, uint)

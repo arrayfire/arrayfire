@@ -41,7 +41,14 @@ void histogram(__global outType *         d_dst,
     barrier(CLK_LOCAL_MEM_FENCE);
 
     for (int row = start; row < end; row += get_local_size(0)) {
-        int bin = (int)(((float)in[row] - minval) / dx);
+#if defined(IS_LINEAR)
+        int idx = row;
+#else
+        int i0 = row % iInfo.dims[0];
+        int i1 = row / iInfo.dims[0];
+        int idx= i0+i1*iInfo.strides[1];
+#endif
+        int bin = (int)(((float)in[idx] - minval) / dx);
         bin     = max(bin, 0);
         bin     = min(bin, (int)nbins-1);
         atomic_inc((localMem + bin));

@@ -255,3 +255,22 @@ TEST(histogram, GFOR)
         ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
     }
 }
+
+TEST(histogram, IndexedArray)
+{
+    using namespace af;
+
+    const long int LEN = 32;
+    array A = range(LEN, 2);
+    for (int i=16; i<28; ++i) {
+        A(seq(i, i+3), span) = i/4 - 1;
+    }
+    array B = A(seq(20), span);
+    array C = histogram(B, 4);
+    unsigned out[4];
+    C.host((void*)out);
+    ASSERT_EQ(true, out[0] == 16);
+    ASSERT_EQ(true, out[1] ==  8);
+    ASSERT_EQ(true, out[2] ==  8);
+    ASSERT_EQ(true, out[3] ==  8);
+}

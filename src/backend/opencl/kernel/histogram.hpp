@@ -30,7 +30,7 @@ static const unsigned MAX_BINS  = 4000;
 static const int THREADS_X =  256;
 static const int THRD_LOAD =   16;
 
-template<typename inType, typename outType>
+template<typename inType, typename outType, bool isLinear>
 void histogram(Param out, const Param in, const Param minmax, int nbins)
 {
     try {
@@ -45,7 +45,8 @@ void histogram(Param out, const Param in, const Param minmax, int nbins)
                     options << " -D inType=" << dtype_traits<inType>::getName()
                             << " -D outType=" << dtype_traits<outType>::getName()
                             << " -D THRD_LOAD=" << THRD_LOAD;
-
+                    if (isLinear)
+                        options << " -D IS_LINEAR";
                     if (std::is_same<inType, double>::value ||
                         std::is_same<inType, cdouble>::value) {
                         options << " -D USE_DOUBLE";

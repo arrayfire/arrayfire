@@ -28,7 +28,7 @@ __forceinline__ __device__ int minimum(int a, int b)
   return (a < b ? a : b);
 }
 
-template<typename inType, typename outType>
+template<typename inType, typename outType, bool isLinear>
 static __global__
 void histogramKernel(Param<outType> out, CParam<inType> in,
                      const cfloat *d_minmax, int len,
@@ -62,7 +62,8 @@ void histogramKernel(Param<outType> out, CParam<inType> in,
     __syncthreads();
 
     for (int row = start; row < end; row += blockDim.x) {
-        int bin = (int)((iptr[row] - min) / step);
+        int idx = isLinear ? row : ((row % in.dims[0]) + (row / in.dims[0])*in.strides[1]);
+        int bin = (int)((iptr[idx] - min) / step);
         bin     = (bin < 0)      ? 0         : bin;
         bin     = (bin >= nbins) ? (nbins-1) : bin;
         atomicAdd((shrdMem + bin), 1);
@@ -74,7 +75,7 @@ void histogramKernel(Param<outType> out, CParam<inType> in,
     }
 }
 
-template<typename inType, typename outType>
+template<typename inType, typename outType, bool isLinear>
 void histogram(Param<outType> out, CParam<inType> in, cfloat *d_minmax, int nbins)
 {
     dim3 threads(kernel::THREADS_X, 1);
@@ -86,7 +87,7 @@ void histogram(Param<outType> out, CParam<inType> in, cfloat *d_minmax, int nbin
 
     int smem_size = nbins * sizeof(outType);
 
-    CUDA_LAUNCH_SMEM((histogramKernel<inType, outType>), blocks, threads, smem_size,
+    CUDA_LAUNCH_SMEM((histogramKernel<inType, outType, isLinear>), blocks, threads, smem_size,
             out, in, d_minmax, nElems, nbins, blk_x);
 
     POST_LAUNCH_CHECK();
