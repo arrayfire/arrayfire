@@ -48,6 +48,7 @@ namespace cpu
     template<typename T>
     void copyData(T *to, const Array<T> &from)
     {
+        evalArray(from);
         getQueue().sync();
         if(from.isOwner()) {
             // FIXME: Check for errors / exceptions
