@@ -31,7 +31,7 @@ static const int THREADS_X =  256;
 static const int THRD_LOAD =   16;
 
 template<typename inType, typename outType, bool isLinear>
-void histogram(Param out, const Param in, const Param minmax, int nbins)
+void histogram(Param out, const Param in, int nbins, float minval, float maxval)
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -59,8 +59,8 @@ void histogram(Param out, const Param in, const Param minmax, int nbins)
                 });
 
         auto histogramOp = make_kernel<Buffer, KParam, Buffer, KParam,
-                                       Buffer, cl::LocalSpaceArg,
-                                       int, int, int
+                                       cl::LocalSpaceArg,
+                                       int, int, float, float, int
                                       >(*histKernels[device]);
 
         int nElems = in.info.dims[0]*in.info.dims[1];
@@ -71,8 +71,8 @@ void histogram(Param out, const Param in, const Param minmax, int nbins)
         NDRange global(blk_x*in.info.dims[2]*THREADS_X, in.info.dims[3]);
 
         histogramOp(EnqueueArgs(getQueue(), global, local),
-                *out.data, out.info, *in.data, in.info, *minmax.data,
-                cl::Local(locSize), nElems, nbins, blk_x);
+                *out.data, out.info, *in.data, in.info,
+                cl::Local(locSize), nElems, nbins, minval, maxval, blk_x);
 
         CL_DEBUG_FINISH(getQueue());
     } catch (cl::Error err) {

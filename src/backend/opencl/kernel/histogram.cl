@@ -12,9 +12,8 @@ void histogram(__global outType *         d_dst,
                KParam                     oInfo,
                __global const inType *    d_src,
                KParam                     iInfo,
-               __global const float2 *    d_minmax,
                __local outType *          localMem,
-               int len, int nbins, int nBBS)
+               int len, int nbins, float minval, float maxval, int nBBS)
 {
     unsigned b2    = get_group_id(0)/nBBS;
     int start = (get_group_id(0)-b2*nBBS) * THRD_LOAD * get_local_size(0) + get_local_id(0);
@@ -24,17 +23,7 @@ void histogram(__global outType *         d_dst,
     __global const inType *in = d_src + b2 * iInfo.strides[2] + get_group_id(1) * iInfo.strides[3] + iInfo.offset;
     __global outType * out    = d_dst + b2 * oInfo.strides[2] + get_group_id(1) * oInfo.strides[3];
 
-    __local float minval;
-    __local float dx;
-
-    // offset minmax array to account for batch ops
-    __global const float2 * d_mnmx = d_minmax + (b2 * get_group_id(0) + get_group_id(1));
-
-    if (get_local_id(0) == 0) {
-        float2 minmax = *d_mnmx;
-        minval = minmax.s0;
-        dx     = (minmax.s1-minmax.s0) / (float)nbins;
-    }
+    float dx = (maxval-minval)/(float)nbins;
 
     for (int i = get_local_id(0); i < nbins; i += get_local_size(0))
         localMem[i] = 0;
