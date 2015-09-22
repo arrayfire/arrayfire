@@ -260,8 +260,8 @@ TEST(histogram, IndexedArray)
 {
     using namespace af;
 
-    const long int LEN = 32;
-    array A = range(LEN, 2);
+    const dim_t LEN = 32;
+    array A = range(LEN, (dim_t)2);
     for (int i=16; i<28; ++i) {
         A(seq(i, i+3), span) = i/4 - 1;
     }
