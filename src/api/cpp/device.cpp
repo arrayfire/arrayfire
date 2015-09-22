@@ -92,7 +92,7 @@ namespace af
         case c32: return sizeof(float) * 2;
         case c64: return sizeof(double) * 2;
         case s16: return sizeof(short);
-        case u16: return sizeof(ushort);
+        case u16: return sizeof(unsigned short);
         default: return sizeof(float);
         }
     }
