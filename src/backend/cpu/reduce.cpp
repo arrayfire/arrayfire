@@ -16,6 +16,9 @@
 #include <functional>
 #include <complex>
 
+#include <platform.hpp>
+#include <async_queue.hpp>
+
 using af::dim4;
 
 namespace cpu
@@ -74,12 +77,12 @@ namespace cpu
         odims[dim] = 1;
 
         Array<To> out = createEmptyArray<To>(odims);
-        static reduce_dim_func<op, Ti, To>  reduce_funcs[4] = { reduce_dim<op, Ti, To, 1>()
-                                                              , reduce_dim<op, Ti, To, 2>()
-                                                              , reduce_dim<op, Ti, To, 3>()
-                                                              , reduce_dim<op, Ti, To, 4>()};
+        static const reduce_dim_func<op, Ti, To>  reduce_funcs[4] = { reduce_dim<op, Ti, To, 1>()
+                                                                    , reduce_dim<op, Ti, To, 2>()
+                                                                    , reduce_dim<op, Ti, To, 3>()
+                                                                    , reduce_dim<op, Ti, To, 4>()};
 
-        reduce_funcs[in.ndims() - 1](out.get(), out.strides(), out.dims(),
+        getQueue().enqueue(reduce_funcs[in.ndims() - 1],out.get(), out.strides(), out.dims(),
                                      in.get(), in.strides(), in.dims(), dim,
                                      change_nan, nanval);
 
@@ -89,6 +92,8 @@ namespace cpu
     template<af_op_t op, typename Ti, typename To>
     To reduce_all(const Array<Ti> &in, bool change_nan, double nanval)
     {
+        evalArray(in);
+        getQueue().sync();
         Transform<Ti, To, op> transform;
         Binary<To, op> reduce;
 

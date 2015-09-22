@@ -14,6 +14,9 @@
 #include <Array.hpp>
 #include <ireduce.hpp>
 
+#include <platform.hpp>
+#include <async_queue.hpp>
+
 using af::dim4;
 
 namespace cpu
@@ -106,42 +109,31 @@ namespace cpu
     };
 
     template<af_op_t op, typename T>
+    using ireduce_dim_func = std::function<void(T *out, const dim4 ostrides, const dim4 odims,
+                                                uint *loc,
+                                                const T *in , const dim4 istrides, const dim4 idims,
+                                                const int dim)>;
+
+    template<af_op_t op, typename T>
     void ireduce(Array<T> &out, Array<uint> &loc,
                  const Array<T> &in, const int dim)
     {
         dim4 odims = in.dims();
         odims[dim] = 1;
+        static const ireduce_dim_func<op, T> ireduce_funcs[] = { ireduce_dim<op, T, 1>()
+                                                               , ireduce_dim<op, T, 2>()
+                                                               , ireduce_dim<op, T, 3>()
+                                                               , ireduce_dim<op, T, 4>()};
 
-        switch (in.ndims()) {
-        case 1:
-            ireduce_dim<op, T, 1>()(out.get(), out.strides(), out.dims(),
-                                    loc.get(),
-                                    in.get(), in.strides(), in.dims(), dim);
-            break;
-
-        case 2:
-            ireduce_dim<op, T, 2>()(out.get(), out.strides(), out.dims(),
-                                    loc.get(),
-                                    in.get(), in.strides(), in.dims(), dim);
-            break;
-
-        case 3:
-            ireduce_dim<op, T, 3>()(out.get(), out.strides(), out.dims(),
-                                    loc.get(),
-                                    in.get(), in.strides(), in.dims(), dim);
-            break;
-
-        case 4:
-            ireduce_dim<op, T, 4>()(out.get(), out.strides(), out.dims(),
-                                    loc.get(),
-                                    in.get(), in.strides(), in.dims(), dim);
-            break;
-        }
+        getQueue().enqueue(ireduce_funcs[in.ndims() - 1], out.get(), out.strides(), out.dims(),
+                           loc.get(), in.get(), in.strides(), in.dims(), dim);
     }
 
     template<af_op_t op, typename T>
     T ireduce_all(unsigned *loc, const Array<T> &in)
     {
+        evalArray(in);
+        getQueue().sync();
         af::dim4 dims = in.dims();
         af::dim4 strides = in.strides();
         const T *inPtr = in.get();
