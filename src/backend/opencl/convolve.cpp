@@ -77,5 +77,7 @@ INSTANTIATE(uint   ,   float)
 INSTANTIATE(int    ,   float)
 INSTANTIATE(uchar  ,   float)
 INSTANTIATE(char   ,   float)
+INSTANTIATE(ushort ,   float)
+INSTANTIATE(short  ,   float)
 
 }

@@ -41,6 +41,8 @@ namespace opencl
     template Array<uint>   randu<uint>    (const af::dim4 &dims);
     template Array<intl>   randu<intl>    (const af::dim4 &dims);
     template Array<uintl>  randu<uintl>   (const af::dim4 &dims);
+    template Array<short>  randu<short>   (const af::dim4 &dims);
+    template Array<ushort> randu<ushort>  (const af::dim4 &dims);
     template Array<char>   randu<char>    (const af::dim4 &dims);
     template Array<uchar>  randu<uchar>   (const af::dim4 &dims);
 

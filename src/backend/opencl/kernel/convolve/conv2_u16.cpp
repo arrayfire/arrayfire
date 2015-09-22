@@ -7,18 +7,17 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include "morph_impl.hpp"
+#include <kernel/convolve/conv2_impl.hpp>
 
 namespace opencl
 {
 
-INSTANTIATE(float , false)
-INSTANTIATE(double, false)
-INSTANTIATE(char  , false)
-INSTANTIATE(int   , false)
-INSTANTIATE(uint  , false)
-INSTANTIATE(uchar , false)
-INSTANTIATE(short , false)
-INSTANTIATE(ushort, false)
+namespace kernel
+{
+
+INSTANTIATE(ushort, float)
 
 }
+
+}
+

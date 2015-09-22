@@ -179,6 +179,8 @@ namespace opencl
     INSTANTIATE(uint,    uint)
     INSTANTIATE(intl,    intl)
     INSTANTIATE(uintl,   uintl)
+    INSTANTIATE(short,   short)
+    INSTANTIATE(ushort,  ushort)
     INSTANTIATE(uchar,   uchar)
     INSTANTIATE(char,    char)
 
@@ -195,6 +197,8 @@ namespace opencl
     INSTANTIATE(uint)
     INSTANTIATE(intl)
     INSTANTIATE(uintl)
+    INSTANTIATE(short)
+    INSTANTIATE(ushort)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
 

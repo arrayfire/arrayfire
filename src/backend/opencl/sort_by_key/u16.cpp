@@ -7,18 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include "morph_impl.hpp"
+#include "impl.hpp"
 
 namespace opencl
 {
-
-INSTANTIATE(float , false)
-INSTANTIATE(double, false)
-INSTANTIATE(char  , false)
-INSTANTIATE(int   , false)
-INSTANTIATE(uint  , false)
-INSTANTIATE(uchar , false)
-INSTANTIATE(short , false)
-INSTANTIATE(ushort, false)
-
+    INSTANTIATE1(ushort,true)
+    INSTANTIATE1(ushort,false)
 }
