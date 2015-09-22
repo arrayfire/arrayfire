@@ -12,6 +12,8 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <transpose.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 #include <utility>
 #include <cassert>
@@ -78,15 +80,8 @@ void transpose_(T *out, const T *in, const af::dim4 &odims, const af::dim4 &idim
 }
 
 template<typename T>
-Array<T> transpose(const Array<T> &in, const bool conjugate)
+void transpose_(Array<T> out, const Array<T> in, const bool conjugate)
 {
-    const dim4 inDims = in.dims();
-
-    dim4 outDims   = dim4(inDims[1],inDims[0],inDims[2],inDims[3]);
-
-    // create an array with first two dimensions swapped
-    Array<T> out  = createEmptyArray<T>(outDims);
-
     // get data pointers for input and output Arrays
     T* outData          = out.get();
     const T*   inData   = in.get();
@@ -98,7 +93,18 @@ Array<T> transpose(const Array<T> &in, const bool conjugate)
         transpose_<T, false>(outData, inData,
                              out.dims(), in.dims(), out.strides(), in.strides());
     }
+}
 
+template<typename T>
+Array<T> transpose(const Array<T> &in, const bool conjugate)
+{
+    const dim4 inDims = in.dims();
+
+    dim4 outDims   = dim4(inDims[1],inDims[0],inDims[2],inDims[3]);
+
+    // create an array with first two dimensions swapped
+    Array<T> out  = createEmptyArray<T>(outDims);
+    getQueue().enqueue(transpose_<T>, out, in, conjugate);
     return out;
 }
 
@@ -133,7 +139,7 @@ void transpose_inplace(T *in, const af::dim4 &idims, const af::dim4 &istrides)
 }
 
 template<typename T>
-void transpose_inplace(Array<T> &in, const bool conjugate)
+void transpose_inplace_(Array<T> in, const bool conjugate)
 {
     // get data pointers for input and output Arrays
     T* inData = in.get();
@@ -143,6 +149,12 @@ void transpose_inplace(Array<T> &in, const bool conjugate)
     } else {
         transpose_inplace<T, false>(inData, in.dims(), in.strides());
     }
+}
+
+template<typename T>
+void transpose_inplace(Array<T> &in, const bool conjugate)
+{
+    getQueue().enqueue(transpose_inplace_<T>, in, conjugate);
 }
 
 #define INSTANTIATE(T)                                                      \

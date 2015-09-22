@@ -67,11 +67,12 @@ namespace cpu
     template<typename T>
     void Array<T>::eval()
     {
-        auto func = [this] {
-            if (isReady()) return;
+        if (isReady()) return;
 
+        data = std::shared_ptr<T>(memAlloc<T>(elements()), memFree<T>);
+
+        auto func = [this] {
             setId(getActiveDeviceId());
-            data = std::shared_ptr<T>(memAlloc<T>(elements()), memFree<T>);
             T *ptr = data.get();
 
             dim4 ostrs = strides();
@@ -95,13 +96,13 @@ namespace cpu
                 }
             }
 
-            ready = true;
             Node_ptr prev = node;
             prev->reset();
             // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
             node.reset();
         };
 
+        ready = true;
         getQueue().enqueue(func);
     }
 
