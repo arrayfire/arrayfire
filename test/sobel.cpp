@@ -34,7 +34,7 @@ class Sobel_Integer : public ::testing::Test
 
 // create a list of types to be tested
 typedef ::testing::Types<float, double> TestTypes;
-typedef ::testing::Types<int, unsigned, char, unsigned char> TestTypesInt;
+typedef ::testing::Types<int, unsigned, char, unsigned char, short, ushort> TestTypesInt;
 
 // register the type list
 TYPED_TEST_CASE(Sobel, TestTypes);

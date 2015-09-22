@@ -84,6 +84,8 @@ namespace af
         case b8 : return sizeof(unsigned char);
         case c32: return sizeof(float) * 2;
         case c64: return sizeof(double) * 2;
+        case s16: return sizeof(short);
+        case u16: return sizeof(ushort);
         default: return sizeof(float);
         }
     }
@@ -219,6 +221,8 @@ namespace af
     INSTANTIATE(char)
     INSTANTIATE(intl)
     INSTANTIATE(uintl)
+    INSTANTIATE(short)
+    INSTANTIATE(ushort)
 
 #undef INSTANTIATE
 
@@ -669,14 +673,17 @@ namespace af
     ASSIGN_TYPE(char               , OP)        \
     ASSIGN_TYPE(unsigned char      , OP)        \
     ASSIGN_TYPE(bool               , OP)        \
+    ASSIGN_TYPE(short              , OP)        \
+    ASSIGN_TYPE(unsigned short     , OP)        \
 
     ASSIGN_OP(= , =)
     ASSIGN_OP(+=, +)
     ASSIGN_OP(-=, -)
     ASSIGN_OP(*=, *)
     ASSIGN_OP(/=, /)
-#undef ASSIGN_TYPE
 #undef ASSIGN_OP
+
+#undef ASSIGN_TYPE
 
 #define SELF_OP(OP, op1)                                                          \
     array::array_proxy& array::array_proxy::operator OP(const array_proxy &other) \
@@ -815,6 +822,8 @@ namespace af
     ASSIGN_TYPE(char               , OP)                            \
     ASSIGN_TYPE(unsigned char      , OP)                            \
     ASSIGN_TYPE(bool               , OP)                            \
+    ASSIGN_TYPE(short              , OP)                            \
+    ASSIGN_TYPE(unsigned short     , OP)                            \
 
     ASSIGN_OP(+=, af_add)
     ASSIGN_OP(-=, af_sub)
@@ -822,6 +831,7 @@ namespace af
     ASSIGN_OP(/=, af_div)
 
 #undef ASSIGN_OP
+
 #undef ASSIGN_TYPE
 
 #define ASSIGN_TYPE(TY, OP)                                     \
@@ -847,10 +857,13 @@ namespace af
     ASSIGN_TYPE(char               , OP)        \
     ASSIGN_TYPE(unsigned char      , OP)        \
     ASSIGN_TYPE(bool               , OP)        \
+    ASSIGN_TYPE(short              , OP)        \
+    ASSIGN_TYPE(unsigned short     , OP)        \
 
     ASSIGN_OP(= )
 
 #undef ASSIGN_OP
+
 #undef ASSIGN_TYPE
 
 af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
@@ -917,6 +930,8 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
     BINARY_TYPE(char               , OP, func, b8)              \
     BINARY_TYPE(unsigned char      , OP, func, u8)              \
     BINARY_TYPE(bool               , OP, func, b8)              \
+    BINARY_TYPE(short              , OP, func, s16)             \
+    BINARY_TYPE(unsigned short     , OP, func, u16)             \
 
     BINARY_OP(+, af_add)
     BINARY_OP(-, af_sub)
@@ -937,8 +952,9 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
     BINARY_OP(<<, af_bitshiftl)
     BINARY_OP(>>, af_bitshiftr)
 
-#undef BINARY_TYPE
 #undef BINARY_OP
+
+#undef BINARY_TYPE
 
     array array::operator-() const
     {
@@ -1013,6 +1029,8 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
     INSTANTIATE(char)
     INSTANTIATE(intl)
     INSTANTIATE(uintl)
+    INSTANTIATE(short);
+    INSTANTIATE(ushort);
 
 #undef INSTANTIATE
 
@@ -1041,6 +1059,8 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
     INSTANTIATE(char)
     INSTANTIATE(intl)
     INSTANTIATE(uintl)
+    INSTANTIATE(short);
+    INSTANTIATE(ushort);
 
 #undef INSTANTIATE
 #undef TEMPLATE_MEM_FUNC

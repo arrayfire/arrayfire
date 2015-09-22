@@ -69,6 +69,8 @@ af_err af_flip(af_array *result, const af_array in, const unsigned dim)
         case u32:    out = flipArray<unsigned>(in, dim);  break;
         case s64:    out = flipArray<intl>    (in, dim);  break;
         case u64:    out = flipArray<uintl>   (in, dim);  break;
+        case s16:    out = flipArray<short>   (in, dim);  break;
+        case u16:    out = flipArray<ushort>  (in, dim);  break;
         case u8:     out = flipArray<uchar>   (in, dim);  break;
         default:    TYPE_ERROR(1, in_type);
         }

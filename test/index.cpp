@@ -126,7 +126,7 @@ public:
     vector<af_seq> span_seqs;
 };
 
-typedef ::testing::Types<float, double, af::cfloat, af::cdouble, int, unsigned, unsigned char, intl, uintl> AllTypes;
+typedef ::testing::Types<float, double, af::cfloat, af::cdouble, int, unsigned, unsigned char, intl, uintl, short, ushort> AllTypes;
 TYPED_TEST_CASE(Indexing1D, AllTypes);
 
 TYPED_TEST(Indexing1D, Continious)          { DimCheck<TypeParam>(this->continuous_seqs);           }
@@ -549,7 +549,7 @@ class lookup : public ::testing::Test
         }
 };
 
-typedef ::testing::Types<float, double, int, unsigned, unsigned char> ArrIdxTestTypes;
+typedef ::testing::Types<float, double, int, unsigned, unsigned char, short, ushort> ArrIdxTestTypes;
 TYPED_TEST_CASE(lookup, ArrIdxTestTypes);
 
 template<typename T>

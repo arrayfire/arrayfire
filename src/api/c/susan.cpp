@@ -69,6 +69,8 @@ af_err af_susan(af_features* out, const af_array in,
             case b8 : *out = susan<char  >(in, radius, diff_thr, geom_thr, feature_ratio, edge); break;
             case s32: *out = susan<int   >(in, radius, diff_thr, geom_thr, feature_ratio, edge); break;
             case u32: *out = susan<uint  >(in, radius, diff_thr, geom_thr, feature_ratio, edge); break;
+            case s16: *out = susan<short >(in, radius, diff_thr, geom_thr, feature_ratio, edge); break;
+            case u16: *out = susan<ushort>(in, radius, diff_thr, geom_thr, feature_ratio, edge); break;
             case u8 : *out = susan<uchar >(in, radius, diff_thr, geom_thr, feature_ratio, edge); break;
             default : TYPE_ERROR(1, type);
         }

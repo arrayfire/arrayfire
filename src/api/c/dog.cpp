@@ -59,6 +59,8 @@ af_err af_dog(af_array *out, const af_array in, const int radius1, const int rad
             case b8 : output = dog<char  , float>(in, radius1, radius2); break;
             case s32: output = dog<int   , float>(in, radius1, radius2); break;
             case u32: output = dog<uint  , float>(in, radius1, radius2); break;
+            case s16: output = dog<short , float>(in, radius1, radius2); break;
+            case u16: output = dog<ushort, float>(in, radius1, radius2); break;
             case u8 : output = dog<uchar , float>(in, radius1, radius2); break;
             default : TYPE_ERROR(1, type);
         }

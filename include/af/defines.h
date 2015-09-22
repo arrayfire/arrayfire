@@ -173,12 +173,16 @@ typedef enum {
     c32,    ///< 32-bit complex floating point values
     f64,    ///< 64-bit complex floating point values
     c64,    ///< 64-bit complex floating point values
-    b8,     ///< 8-bit boolean values
+    b8 ,    ///< 8-bit boolean values
     s32,    ///< 32-bit signed integral values
     u32,    ///< 32-bit unsigned integral values
-    u8,     ///< 8-bit unsigned integral values
+    u8 ,    ///< 8-bit unsigned integral values
     s64,    ///< 64-bit signed integral values
-    u64     ///< 64-bit unsigned integral values
+    u64,    ///< 64-bit unsigned integral values
+#if AF_API_VERSION >= 32
+    s16,    ///< 16-bit signed integral values
+    u16,    ///< 16-bit unsigned integral values
+#endif
 } af_dtype;
 
 typedef enum {

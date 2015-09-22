@@ -20,7 +20,7 @@ class Array : public ::testing::Test
 
 };
 
-typedef ::testing::Types<float, double, af::cfloat, af::cdouble, char, unsigned char, int, uint, intl, uintl> TestTypes;
+typedef ::testing::Types<float, double, af::cfloat, af::cdouble, char, unsigned char, int, uint, intl, uintl, short, ushort> TestTypes;
 TYPED_TEST_CASE(Array, TestTypes);
 
 TEST(Array, ConstructorDefault)
@@ -274,6 +274,26 @@ TYPED_TEST(Array, TypeAttributes)
             EXPECT_FALSE(one.isbool());
             break;
         case u32:
+            EXPECT_FALSE(one.isfloating());
+            EXPECT_FALSE(one.isdouble());
+            EXPECT_FALSE(one.issingle());
+            EXPECT_FALSE(one.isrealfloating());
+            EXPECT_TRUE(one.isinteger());
+            EXPECT_TRUE(one.isreal());
+            EXPECT_FALSE(one.iscomplex());
+            EXPECT_FALSE(one.isbool());
+            break;
+        case s16:
+            EXPECT_FALSE(one.isfloating());
+            EXPECT_FALSE(one.isdouble());
+            EXPECT_FALSE(one.issingle());
+            EXPECT_FALSE(one.isrealfloating());
+            EXPECT_TRUE(one.isinteger());
+            EXPECT_TRUE(one.isreal());
+            EXPECT_FALSE(one.iscomplex());
+            EXPECT_FALSE(one.isbool());
+            break;
+        case u16:
             EXPECT_FALSE(one.isfloating());
             EXPECT_FALSE(one.isdouble());
             EXPECT_FALSE(one.issingle());

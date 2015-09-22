@@ -54,6 +54,8 @@ af_err af_diff1(af_array *out, const af_array in, const int dim)
             case u32: output = diff1<uint   >(in,dim);  break;
             case s64: output = diff1<intl   >(in,dim);  break;
             case u64: output = diff1<uintl  >(in,dim);  break;
+            case s16: output = diff1<short  >(in,dim);  break;
+            case u16: output = diff1<ushort >(in,dim);  break;
             case u8:  output = diff1<uchar  >(in,dim);  break;
             default:  TYPE_ERROR(1, type);
         }
@@ -89,6 +91,8 @@ af_err af_diff2(af_array *out, const af_array in, const int dim)
             case u32: output = diff2<uint   >(in,dim);  break;
             case s64: output = diff2<intl   >(in,dim);  break;
             case u64: output = diff2<uintl  >(in,dim);  break;
+            case s16: output = diff2<short  >(in,dim);  break;
+            case u16: output = diff2<ushort >(in,dim);  break;
             case u8:  output = diff2<uchar  >(in,dim);  break;
             default:  TYPE_ERROR(1, type);
         }

@@ -108,7 +108,9 @@ SCAN_TESTS(accum, cdouble , cdouble   , cdouble   );
 SCAN_TESTS(accum, unsigned, unsigned  , unsigned  );
 SCAN_TESTS(accum, intl    , intl      , intl      );
 SCAN_TESTS(accum, uintl   , uintl     , uintl     );
-SCAN_TESTS(accum, uchar   , unsigned char, unsigned);
+SCAN_TESTS(accum, uchar   , uchar     , unsigned  );
+SCAN_TESTS(accum, short   , short     , int       );
+SCAN_TESTS(accum, ushort  , ushort    , uint      );
 
 TEST(Scan,Test_Scan_Big0)
 {

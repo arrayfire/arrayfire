@@ -71,6 +71,8 @@ af_err af_corrcoef(double *realVal, double *imagVal, const af_array X, const af_
             case u32: *realVal = corrcoef<uint  , float >(X, Y); break;
             case s64: *realVal = corrcoef<intl  , double>(X, Y); break;
             case u64: *realVal = corrcoef<uintl , double>(X, Y); break;
+            case s16: *realVal = corrcoef<short , float >(X, Y); break;
+            case u16: *realVal = corrcoef<ushort, float >(X, Y); break;
             case  u8: *realVal = corrcoef<uchar , float >(X, Y); break;
             case  b8: *realVal = corrcoef<char  , float >(X, Y); break;
             default : TYPE_ERROR(1, xType);

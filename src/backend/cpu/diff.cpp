@@ -120,4 +120,6 @@ namespace cpu
     INSTANTIATE(uintl)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
+    INSTANTIATE(ushort)
+    INSTANTIATE(short)
 }

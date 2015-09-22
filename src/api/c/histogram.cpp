@@ -38,6 +38,8 @@ af_err af_histogram(af_array *out, const af_array in,
             case b8 : output = histogram<char  , uint>(in, nbins, minval, maxval); break;
             case s32: output = histogram<int   , uint>(in, nbins, minval, maxval); break;
             case u32: output = histogram<uint  , uint>(in, nbins, minval, maxval); break;
+            case s16: output = histogram<short , uint>(in, nbins, minval, maxval); break;
+            case u16: output = histogram<ushort, uint>(in, nbins, minval, maxval); break;
             case u8 : output = histogram<uchar , uint>(in, nbins, minval, maxval); break;
             default : TYPE_ERROR(1, type);
         }

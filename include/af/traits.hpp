@@ -139,6 +139,26 @@ struct dtype_traits<unsigned long long> {
     static const char* getName() { return "ulong"; }
 };
 
+template<>
+struct dtype_traits<short> {
+    enum {
+        af_type = s16 ,
+        ctype = s16
+    };
+    typedef short base_type;
+    static const char* getName() { return "short"; }
+};
+
+template<>
+struct dtype_traits<unsigned short> {
+    enum {
+        af_type = u16 ,
+        ctype = u16
+    };
+    typedef unsigned short base_type;
+    static const char* getName() { return "ushort"; }
+};
+
 }
 
 #endif

@@ -333,12 +333,12 @@ namespace cpu
         return out;
     }
 
-#define INSTANTIATE(Ty, Tp)                                                                     \
+#define INSTANTIATE(Ty, Tp)                                                                    \
     template Array<Ty> approx1<Ty, Tp>(const Array<Ty> &in, const Array<Tp> &pos,              \
-                                        const af_interp_type method, const float offGrid);      \
+                                       const af_interp_type method, const float offGrid);      \
     template Array<Ty> approx2<Ty, Tp>(const Array<Ty> &in, const Array<Tp> &pos0,             \
-                                        const Array<Tp> &pos1, const af_interp_type method,     \
-                                        const float offGrid);                                   \
+                                       const Array<Tp> &pos1, const af_interp_type method,     \
+                                       const float offGrid);                                   \
 
     INSTANTIATE(float  , float )
     INSTANTIATE(double , double)

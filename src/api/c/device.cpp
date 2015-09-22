@@ -146,6 +146,8 @@ af_err af_device_array(af_array *arr, const void *data,
         case u32: res = getHandle(createDeviceDataArray<uint   >(d, data)); break;
         case s64: res = getHandle(createDeviceDataArray<intl   >(d, data)); break;
         case u64: res = getHandle(createDeviceDataArray<uintl  >(d, data)); break;
+        case s16: res = getHandle(createDeviceDataArray<short  >(d, data)); break;
+        case u16: res = getHandle(createDeviceDataArray<ushort >(d, data)); break;
         case u8 : res = getHandle(createDeviceDataArray<uchar  >(d, data)); break;
         case b8 : res = getHandle(createDeviceDataArray<char   >(d, data)); break;
         default: TYPE_ERROR(4, type);
@@ -176,6 +178,8 @@ af_err af_get_device_ptr(void **data, const af_array arr)
         case u32: *data = getDevicePtr(getArray<uint   >(arr)); break;
         case s64: *data = getDevicePtr(getArray<intl   >(arr)); break;
         case u64: *data = getDevicePtr(getArray<uintl  >(arr)); break;
+        case s16: *data = getDevicePtr(getArray<short  >(arr)); break;
+        case u16: *data = getDevicePtr(getArray<ushort >(arr)); break;
         case u8 : *data = getDevicePtr(getArray<uchar  >(arr)); break;
         case b8 : *data = getDevicePtr(getArray<char   >(arr)); break;
 
@@ -211,6 +215,8 @@ af_err af_lock_device_ptr(const af_array arr)
         case u32: lockDevicePtr<uint   >(arr); break;
         case s64: lockDevicePtr<intl   >(arr); break;
         case u64: lockDevicePtr<uintl  >(arr); break;
+        case s16: lockDevicePtr<short  >(arr); break;
+        case u16: lockDevicePtr<ushort >(arr); break;
         case u8 : lockDevicePtr<uchar  >(arr); break;
         case b8 : lockDevicePtr<char   >(arr); break;
         default: TYPE_ERROR(4, type);
@@ -245,6 +251,8 @@ af_err af_unlock_device_ptr(const af_array arr)
         case u32: unlockDevicePtr<uint   >(arr); break;
         case s64: unlockDevicePtr<intl   >(arr); break;
         case u64: unlockDevicePtr<uintl  >(arr); break;
+        case s16: unlockDevicePtr<short  >(arr); break;
+        case u16: unlockDevicePtr<ushort >(arr); break;
         case u8 : unlockDevicePtr<uchar  >(arr); break;
         case b8 : unlockDevicePtr<char   >(arr); break;
         default: TYPE_ERROR(4, type);
