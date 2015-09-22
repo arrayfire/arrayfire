@@ -174,10 +174,10 @@ void convolve2(Param<T> out, CParam<T> signal, CParam<accType> filter)
 }
 
 #define INSTANTIATE(T, accType)                                         \
-	template void convolve2<T, accType, 0, true >(Param<T> out, CParam<T> signal, CParam<accType> filter); \
-	template void convolve2<T, accType, 0, false>(Param<T> out, CParam<T> signal, CParam<accType> filter); \
-	template void convolve2<T, accType, 1, true >(Param<T> out, CParam<T> signal, CParam<accType> filter); \
-	template void convolve2<T, accType, 1, false>(Param<T> out, CParam<T> signal, CParam<accType> filter); \
+    template void convolve2<T, accType, 0, true >(Param<T> out, CParam<T> signal, CParam<accType> filter); \
+    template void convolve2<T, accType, 0, false>(Param<T> out, CParam<T> signal, CParam<accType> filter); \
+    template void convolve2<T, accType, 1, true >(Param<T> out, CParam<T> signal, CParam<accType> filter); \
+    template void convolve2<T, accType, 1, false>(Param<T> out, CParam<T> signal, CParam<accType> filter); \
 
 
 INSTANTIATE(cdouble, cdouble)
@@ -188,6 +188,8 @@ INSTANTIATE(uint   ,   float)
 INSTANTIATE(int    ,   float)
 INSTANTIATE(uchar  ,   float)
 INSTANTIATE(char   ,   float)
+INSTANTIATE(ushort ,   float)
+INSTANTIATE(short  ,   float)
 
 }
 

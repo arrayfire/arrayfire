@@ -69,6 +69,15 @@ struct dist_op<uintl, To, AF_SHD>
 };
 
 template<typename To>
+struct dist_op<ushort, To, AF_SHD>
+{
+    __device__ To operator()(ushort v1, ushort v2)
+    {
+        return __popc(v1 ^ v2);
+    }
+};
+
+template<typename To>
 struct dist_op<uchar, To, AF_SHD>
 {
     __device__ To operator()(uchar v1, uchar v2)
