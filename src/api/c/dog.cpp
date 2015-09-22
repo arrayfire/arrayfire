@@ -28,19 +28,19 @@ static af_array dog(const af_array& in, const int radius1, const int radius2)
     AF_CHECK(af_gaussian_kernel(&g1, 2*radius1+1, 2*radius1+1, 0.0, 0.0));
     AF_CHECK(af_gaussian_kernel(&g2, 2*radius2+1, 2*radius2+1, 0.0, 0.0));
 
-    Array<T> input  = getArray<T>(in);
+    Array<accT> input  = castArray<accT>(in);
     dim4 iDims      = input.dims();
 
     ConvolveBatchKind bkind = iDims[2] > 1 ? CONVOLVE_BATCH_SIGNAL : CONVOLVE_BATCH_NONE;
 
-    Array<T> smth1 = convolve<T, accT, 2, false>(input, castArray<accT>(g1), bkind);
-    Array<T> smth2 = convolve<T, accT, 2, false>(input, castArray<accT>(g2), bkind);
-    Array<T> retVal= arithOp<T, af_sub_t>(smth1, smth2, iDims);
+    Array<accT> smth1 = convolve<accT, accT, 2, false>(input, castArray<accT>(g1), bkind);
+    Array<accT> smth2 = convolve<accT, accT, 2, false>(input, castArray<accT>(g2), bkind);
+    Array<accT> retVal= arithOp<accT, af_sub_t>(smth1, smth2, iDims);
 
     AF_CHECK(af_release_array(g1));
     AF_CHECK(af_release_array(g2));
 
-    return getHandle<T>(retVal);
+    return getHandle<accT>(retVal);
 }
 
 af_err af_dog(af_array *out, const af_array in, const int radius1, const int radius2)
