@@ -16,6 +16,8 @@
 #include <where.hpp>
 #include <ops.hpp>
 #include <vector>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 using af::dim4;
 
@@ -24,6 +26,9 @@ namespace cpu
     template<typename T>
     Array<uint> where(const Array<T> &in)
     {
+        evalArray(in);
+        getQueue().sync();
+
         const dim_t *dims    = in.dims().get();
         const dim_t *strides = in.strides().get();
         static const T zero = scalar<T>(0);
