@@ -26,7 +26,7 @@ typedef unsigned __int32  uint32_t;
 
 using namespace std;
 
-#ifndef ARM_ARCH
+#ifdef USE_CPUID
 
 #define MAX_INTEL_TOP_LVL 4
 
@@ -76,7 +76,7 @@ class CPUInfo {
         bool   mIsHTT;
 };
 
-#ifdef ARM_ARCH
+#ifndef USE_CPUID
 
 CPUInfo::CPUInfo()
     : mVendorId(""), mModelName(""), mNumSMT(0), mNumCores(0), mNumLogCpus(0), mIsHTT(false)
