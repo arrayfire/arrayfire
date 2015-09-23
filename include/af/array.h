@@ -640,7 +640,7 @@ namespace af
         bool isfloating() const;
 
         /**
-           \brief Returns true if the array type is \ref u8, \ref b8, \ref s32 \ref u32, \ref s64, \ref u64
+           \brief Returns true if the array type is \ref u8, \ref b8, \ref s32 \ref u32, \ref s64, \ref u64, \ref s16, \ref u16
         */
         bool isinteger() const;
 
