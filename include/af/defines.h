@@ -50,8 +50,8 @@
     typedef long long   dim_t;
 #endif
 
-#if defined(__arm__) || defined(_M_ARM) || defined(_M_ARMT) || defined(_ARM) || defined(_TARGET_ARCH_ARM) || defined(__TARGET_ARCH_THUMB) || defined(__thumb__)
-#define ARM_ARCH
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86) || defined(_WIN64) || defined(__LP64__)
+#define USE_CPUID
 #endif
 
 #include <stdlib.h>
