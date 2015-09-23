@@ -39,7 +39,7 @@
       @defgroup data_mat Functions to create arrays.
       constant, random, range, etc.
 
-      @defgroup index_mat Indexing operation on arrays
+      @defgroup index_mat Assignment & Indexing operation on arrays
       Access sub regions of an array object
 
       @defgroup manip_mat Move and Reorder array content
