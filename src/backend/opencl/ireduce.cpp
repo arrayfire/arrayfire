@@ -51,6 +51,8 @@ namespace opencl
     INSTANTIATE(af_min_t, uintl  )
     INSTANTIATE(af_min_t, char   )
     INSTANTIATE(af_min_t, uchar  )
+    INSTANTIATE(af_min_t, short  )
+    INSTANTIATE(af_min_t, ushort )
 
     //max
     INSTANTIATE(af_max_t, float  )
@@ -63,4 +65,6 @@ namespace opencl
     INSTANTIATE(af_max_t, uintl  )
     INSTANTIATE(af_max_t, char   )
     INSTANTIATE(af_max_t, uchar  )
+    INSTANTIATE(af_max_t, short  )
+    INSTANTIATE(af_max_t, ushort )
 }

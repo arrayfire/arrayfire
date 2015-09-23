@@ -79,6 +79,8 @@ af_err af_mean(af_array *out, const af_array in, const dim_t dim)
             case u32: output = mean<uint  ,  float >(in, dim); break;
             case s64: output = mean<intl  ,  double>(in, dim); break;
             case u64: output = mean<uintl ,  double>(in, dim); break;
+            case s16: output = mean<short ,  float >(in, dim); break;
+            case u16: output = mean<ushort,  float >(in, dim); break;
             case  u8: output = mean<uchar ,  float >(in, dim); break;
             case  b8: output = mean<char  ,  float >(in, dim); break;
             case c32: output = mean<cfloat,  cfloat>(in, dim); break;
@@ -111,6 +113,8 @@ af_err af_mean_weighted(af_array *out, const af_array in, const af_array weights
             case u32: output = mean<uint  ,  float >(in, weights, dim); break;
             case s64: output = mean<intl  ,  double>(in, weights, dim); break;
             case u64: output = mean<uintl ,  double>(in, weights, dim); break;
+            case s16: output = mean<short ,  float >(in, weights, dim); break;
+            case u16: output = mean<ushort,  float >(in, weights, dim); break;
             case  u8: output = mean<uchar ,  float >(in, weights, dim); break;
             case  b8: output = mean<char  ,  float >(in, weights, dim); break;
             case c32: output = mean<cfloat,  cfloat>(in, weights, dim); break;
@@ -135,6 +139,8 @@ af_err af_mean_all(double *realVal, double *imagVal, const af_array in)
             case u32: *realVal = mean<uint  ,  float>(in); break;
             case s64: *realVal = mean<intl  , double>(in); break;
             case u64: *realVal = mean<uintl , double>(in); break;
+            case s16: *realVal = mean<short ,  float>(in); break;
+            case u16: *realVal = mean<ushort,  float>(in); break;
             case  u8: *realVal = mean<uchar ,  float>(in); break;
             case  b8: *realVal = mean<char  ,  float>(in); break;
             case c32: {
@@ -171,6 +177,8 @@ af_err af_mean_all_weighted(double *realVal, double *imagVal, const af_array in,
             case u32: *realVal = mean<uint  ,  float>(in, weights); break;
             case s64: *realVal = mean<intl  , double>(in, weights); break;
             case u64: *realVal = mean<uintl , double>(in, weights); break;
+            case s16: *realVal = mean<short ,  float>(in, weights); break;
+            case u16: *realVal = mean<ushort,  float>(in, weights); break;
             case  u8: *realVal = mean<uchar ,  float>(in, weights); break;
             case  b8: *realVal = mean<char  ,  float>(in, weights); break;
             case c32: {

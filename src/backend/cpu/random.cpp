@@ -133,6 +133,8 @@ INSTANTIATE_UNIFORM(uint)
 INSTANTIATE_UNIFORM(intl)
 INSTANTIATE_UNIFORM(uintl)
 INSTANTIATE_UNIFORM(uchar)
+INSTANTIATE_UNIFORM(short)
+INSTANTIATE_UNIFORM(ushort)
 
 #define INSTANTIATE_NORMAL(T)                              \
     template Array<T>  randn<T>(const af::dim4 &dims);

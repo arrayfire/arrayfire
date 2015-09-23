@@ -133,6 +133,8 @@ bool ArrayInfo::isInteger() const
          || type == u32
          || type == s64
          || type == u64
+         || type == s16
+         || type == u16
          || type == u8);
 }
 

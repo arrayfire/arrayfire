@@ -63,6 +63,8 @@ af_err af_select(af_array *out, const af_array cond, const af_array a, const af_
         case u32: res = select<uint   >(cond, a, b, odims); break;
         case s64: res = select<intl   >(cond, a, b, odims); break;
         case u64: res = select<uintl  >(cond, a, b, odims); break;
+        case s16: res = select<short  >(cond, a, b, odims); break;
+        case u16: res = select<ushort >(cond, a, b, odims); break;
         case u8:  res = select<uchar  >(cond, a, b, odims); break;
         case b8:  res = select<char   >(cond, a, b, odims); break;
         default:  TYPE_ERROR(2, ainfo.getType());
@@ -106,6 +108,8 @@ af_err af_select_scalar_r(af_array *out, const af_array cond, const af_array a, 
         case c64: res = select_scalar<cdouble, false>(cond, a, b, adims); break;
         case s32: res = select_scalar<int    , false>(cond, a, b, adims); break;
         case u32: res = select_scalar<uint   , false>(cond, a, b, adims); break;
+        case s16: res = select_scalar<short  , false>(cond, a, b, adims); break;
+        case u16: res = select_scalar<ushort , false>(cond, a, b, adims); break;
         case s64: res = select_scalar<intl   , false>(cond, a, b, adims); break;
         case u64: res = select_scalar<uintl  , false>(cond, a, b, adims); break;
         case u8:  res = select_scalar<uchar  , false>(cond, a, b, adims); break;
@@ -143,6 +147,8 @@ af_err af_select_scalar_l(af_array *out, const af_array cond, const double a, co
         case c64: res = select_scalar<cdouble, true >(cond, b, a, bdims); break;
         case s32: res = select_scalar<int    , true >(cond, b, a, bdims); break;
         case u32: res = select_scalar<uint   , true >(cond, b, a, bdims); break;
+        case s16: res = select_scalar<short  , true >(cond, b, a, bdims); break;
+        case u16: res = select_scalar<ushort , true >(cond, b, a, bdims); break;
         case s64: res = select_scalar<intl   , true >(cond, b, a, bdims); break;
         case u64: res = select_scalar<uintl  , true >(cond, b, a, bdims); break;
         case u8:  res = select_scalar<uchar  , true >(cond, b, a, bdims); break;

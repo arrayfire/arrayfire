@@ -24,7 +24,7 @@ class Select : public ::testing::Test
 {
 };
 
-typedef ::testing::Types<float, double, af::cfloat, af::cdouble, uint, int, intl, uintl, uchar, char> TestTypes;
+typedef ::testing::Types<float, double, af::cfloat, af::cdouble, uint, int, intl, uintl, uchar, char, short, ushort> TestTypes;
 TYPED_TEST_CASE(Select, TestTypes);
 
 template<typename T>

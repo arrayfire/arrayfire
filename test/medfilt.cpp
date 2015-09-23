@@ -26,7 +26,7 @@ class MedianFilter : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, int, uint, char, uchar> TestTypes;
+typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(MedianFilter, TestTypes);

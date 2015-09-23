@@ -95,7 +95,7 @@ void fast(const unsigned arc_length,
 
         cl::Buffer *d_flags = d_score;
         if (nonmax) {
-            d_flags = bufferAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(T));
+            d_flags = bufferAlloc(in.info.dims[0] * in.info.dims[1] * sizeof(float));
         }
 
         const int blk_x = divup(in.info.dims[0]-edge*2, FAST_THREADS_X);

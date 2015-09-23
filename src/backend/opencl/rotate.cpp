@@ -54,4 +54,6 @@ namespace opencl
     INSTANTIATE(uintl)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
+    INSTANTIATE(short)
+    INSTANTIATE(ushort)
 }

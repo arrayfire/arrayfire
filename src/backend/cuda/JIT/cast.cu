@@ -22,14 +22,18 @@
     CAST_BASIC(___mk##X, T, uchar)              \
     CAST_BASIC(___mk##X, T, intl)               \
     CAST_BASIC(___mk##X, T, uintl)              \
+    CAST_BASIC(___mk##X, T, short)              \
+    CAST_BASIC(___mk##X, T, ushort)             \
 
-CAST(float, S)
+CAST(float , S)
 CAST(double, D)
-CAST(int, I)
-CAST(intl, X)
-CAST(uint, U)
-CAST(uchar, V)
-CAST(uintl, Y)
+CAST(int   , I)
+CAST(intl  , X)
+CAST(short , P)
+CAST(uint  , U)
+CAST(uchar , V)
+CAST(uintl , Y)
+CAST(ushort, Q)
 
 CAST_BASIC_BOOL(___mkJ, char, float)
 CAST_BASIC_BOOL(___mkJ, char, double)
@@ -39,6 +43,8 @@ CAST_BASIC_BOOL(___mkJ, char, char)
 CAST_BASIC_BOOL(___mkJ, char, uchar)
 CAST_BASIC_BOOL(___mkJ, char, intl)
 CAST_BASIC_BOOL(___mkJ, char, uintl)
+CAST_BASIC_BOOL(___mkJ, char, short)
+CAST_BASIC_BOOL(___mkJ, char, ushort)
 
 #define CPLX_BASIC(FN, To, Tr, Ti)              \
     __device__ To FN(Ti in)                     \
@@ -56,6 +62,8 @@ CAST_BASIC_BOOL(___mkJ, char, uintl)
     CPLX_BASIC(___mk##X, T, Tr, uchar)          \
     CPLX_BASIC(___mk##X, T, Tr, uintl)          \
     CPLX_BASIC(___mk##X, T, Tr, intl)           \
+    CPLX_BASIC(___mk##X, T, Tr, ushort)         \
+    CPLX_BASIC(___mk##X, T, Tr, short)          \
 
 CPLX_CAST(cfloat, float, C)
 CPLX_CAST(cdouble, double, Z)

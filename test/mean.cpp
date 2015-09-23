@@ -28,7 +28,7 @@ class Mean : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, intl, uintl, char, uchar> TestTypes;
+typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, intl, uintl, char, uchar, short, ushort> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Mean, TestTypes);
@@ -50,18 +50,20 @@ struct c32HelperType {
 template<typename T>
 struct elseType {
    typedef typename cond_type< is_same_type<T, uintl>::value ||
-                               is_same_type<T, intl>::value,
+                               is_same_type<T, intl> ::value,
                                               double,
                                               T>::type type;
 };
 
 template<typename T>
 struct meanOutType {
-   typedef typename cond_type< is_same_type<T, float>::value ||
-                               is_same_type<T, int>::value ||
-                               is_same_type<T, uint>::value ||
-                               is_same_type<T, uchar>::value ||
-                               is_same_type<T, char>::value,
+   typedef typename cond_type< is_same_type<T, float>   ::value ||
+                               is_same_type<T, int>     ::value ||
+                               is_same_type<T, uint>    ::value ||
+                               is_same_type<T, uchar>   ::value ||
+                               is_same_type<T, short>   ::value ||
+                               is_same_type<T, ushort>  ::value ||
+                               is_same_type<T, char>    ::value,
                                               float,
                               typename elseType<T>::type>::type type;
 };
@@ -196,6 +198,16 @@ TEST(Mean, CPP_s8)
 TEST(Mean, CPP_u8)
 {
     testCPPMean<uchar>(2, af::dim4(100, 1, 1, 1));
+}
+
+TEST(Mean, CPP_s16)
+{
+    testCPPMean<short>(2, af::dim4(5, 5, 2, 2));
+}
+
+TEST(Mean, CPP_u16)
+{
+    testCPPMean<ushort>(2, af::dim4(100, 1, 1, 1));
 }
 
 TEST(Mean, CPP_cfloat)

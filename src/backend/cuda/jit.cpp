@@ -500,6 +500,8 @@ template void evalNodes<char   >(Param<char   > &out, Node *node);
 template void evalNodes<uchar  >(Param<uchar  > &out, Node *node);
 template void evalNodes<intl   >(Param<intl   > &out, Node *node);
 template void evalNodes<uintl  >(Param<uintl  > &out, Node *node);
+template void evalNodes<short  >(Param<short  > &out, Node *node);
+template void evalNodes<ushort >(Param<ushort > &out, Node *node);
 
 
 }

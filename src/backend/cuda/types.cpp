@@ -24,6 +24,8 @@ namespace cuda
     template<> const char *cuShortName<uchar   >() { return "h"; }
     template<> const char *cuShortName<intl    >() { return "x"; }
     template<> const char *cuShortName<uintl   >() { return "y"; }
+    template<> const char *cuShortName<short   >() { return "s"; }
+    template<> const char *cuShortName<ushort  >() { return "t"; }
 
     template<typename T > const char *afShortName(bool caps) { return caps ?  "Q" : "q"; }
     template<> const char *afShortName<float   >(bool caps) { return caps ?  "S" : "s"; }
@@ -36,6 +38,8 @@ namespace cuda
     template<> const char *afShortName<uchar   >(bool caps) { return caps ?  "V" : "v"; }
     template<> const char *afShortName<intl    >(bool caps) { return caps ?  "X" : "x"; }
     template<> const char *afShortName<uintl   >(bool caps) { return caps ?  "Y" : "y"; }
+    template<> const char *afShortName<short   >(bool caps) { return caps ?  "P" : "P"; }
+    template<> const char *afShortName<ushort  >(bool caps) { return caps ?  "Q" : "Q"; }
 
     template<typename T > const char *irname() { return  "i32"; }
     template<> const char *irname<float   >() { return  "float"; }
@@ -48,6 +52,8 @@ namespace cuda
     template<> const char *irname<uintl   >() { return  "i64"; }
     template<> const char *irname<char    >() { return  "i8"; }
     template<> const char *irname<uchar   >() { return  "i8"; }
+    template<> const char *irname<short   >() { return  "i16"; }
+    template<> const char *irname<ushort  >() { return  "i16"; }
 
     template <typename T>
     static inline std::string toString(T val)
@@ -89,4 +95,6 @@ namespace cuda
     INSTANTIATE(uint)
     INSTANTIATE(intl)
     INSTANTIATE(uintl)
+    INSTANTIATE(short)
+    INSTANTIATE(ushort)
 }

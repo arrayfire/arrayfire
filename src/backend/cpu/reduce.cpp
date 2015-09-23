@@ -139,6 +139,8 @@ namespace cpu
     INSTANTIATE(af_min_t, uintl  , uintl  )
     INSTANTIATE(af_min_t, char   , char   )
     INSTANTIATE(af_min_t, uchar  , uchar  )
+    INSTANTIATE(af_min_t, short  , short  )
+    INSTANTIATE(af_min_t, ushort , ushort )
 
     //max
     INSTANTIATE(af_max_t, float  , float  )
@@ -151,6 +153,8 @@ namespace cpu
     INSTANTIATE(af_max_t, uintl  , uintl  )
     INSTANTIATE(af_max_t, char   , char   )
     INSTANTIATE(af_max_t, uchar  , uchar  )
+    INSTANTIATE(af_max_t, short  , short  )
+    INSTANTIATE(af_max_t, ushort , ushort )
 
     //sum
     INSTANTIATE(af_add_t, float  , float  )
@@ -163,8 +167,10 @@ namespace cpu
     INSTANTIATE(af_add_t, uintl  , uintl  )
     INSTANTIATE(af_add_t, char   , int    )
     INSTANTIATE(af_add_t, uchar  , uint   )
+    INSTANTIATE(af_add_t, short  , int    )
+    INSTANTIATE(af_add_t, ushort , uint   )
 
-    //sum
+    //mul
     INSTANTIATE(af_mul_t, float  , float  )
     INSTANTIATE(af_mul_t, double , double )
     INSTANTIATE(af_mul_t, cfloat , cfloat )
@@ -175,6 +181,8 @@ namespace cpu
     INSTANTIATE(af_mul_t, uintl  , uintl  )
     INSTANTIATE(af_mul_t, char   , int    )
     INSTANTIATE(af_mul_t, uchar  , uint   )
+    INSTANTIATE(af_mul_t, short  , int    )
+    INSTANTIATE(af_mul_t, ushort , uint   )
 
     // count
     INSTANTIATE(af_notzero_t, float  , uint)
@@ -187,6 +195,8 @@ namespace cpu
     INSTANTIATE(af_notzero_t, uintl  , uint)
     INSTANTIATE(af_notzero_t, char   , uint)
     INSTANTIATE(af_notzero_t, uchar  , uint)
+    INSTANTIATE(af_notzero_t, short  , uint)
+    INSTANTIATE(af_notzero_t, ushort , uint)
 
     //anytrue
     INSTANTIATE(af_or_t, float  , char)
@@ -199,6 +209,8 @@ namespace cpu
     INSTANTIATE(af_or_t, uintl  , char)
     INSTANTIATE(af_or_t, char   , char)
     INSTANTIATE(af_or_t, uchar  , char)
+    INSTANTIATE(af_or_t, short  , char)
+    INSTANTIATE(af_or_t, ushort , char)
 
     //alltrue
     INSTANTIATE(af_and_t, float  , char)
@@ -211,4 +223,6 @@ namespace cpu
     INSTANTIATE(af_and_t, uintl  , char)
     INSTANTIATE(af_and_t, char   , char)
     INSTANTIATE(af_and_t, uchar  , char)
+    INSTANTIATE(af_and_t, short  , char)
+    INSTANTIATE(af_and_t, ushort , char)
 }

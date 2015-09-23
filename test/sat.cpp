@@ -26,7 +26,7 @@ class SAT : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, int, uint, char, uchar, uintl, intl> TestTypes;
+typedef ::testing::Types<float, double, int, uint, char, uchar, uintl, intl, short, ushort> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(SAT, TestTypes);

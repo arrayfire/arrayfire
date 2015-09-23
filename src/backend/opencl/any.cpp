@@ -22,4 +22,6 @@ namespace opencl
     INSTANTIATE(af_or_t, uintl  , char)
     INSTANTIATE(af_or_t, char   , char)
     INSTANTIATE(af_or_t, uchar  , char)
+    INSTANTIATE(af_or_t, short  , char)
+    INSTANTIATE(af_or_t, ushort , char)
 }
