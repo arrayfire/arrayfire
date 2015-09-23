@@ -133,7 +133,7 @@ for the CPU, OpenCL and CUDA backends repsectively).
 Here is a minimial example MakeFile which uses ArrayFire's CPU backend:
 
     LIBS=-lafcpu
-    LIB_PATHS=/usr/lib
+    LIB_PATHS=-L/usr/lib
     INCLUDES=-I/usr/include
     CC=g++ $(COMPILER_OPTIONS)
     COMPILER_OPTIONS=-std=c++11 -g
