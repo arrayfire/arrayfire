@@ -271,6 +271,7 @@
 \example optical_flow.cpp
 \example pyramids.cpp
 \example edge.cpp
+\example basic.cpp
 */
 
 #include "af/compatible.h"
