@@ -17,8 +17,9 @@
 #include <af/dim4.hpp>
 #include <af/array.h>
 
-typedef unsigned char uchar;
-typedef unsigned int uint;
+typedef unsigned char  uchar;
+typedef unsigned int   uint;
+typedef unsigned short ushort;
 
 template<typename inType, typename outType, typename FileElementType>
 void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
