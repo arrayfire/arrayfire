@@ -256,7 +256,7 @@ TEST(Reduce, Test_Product_Global)
         gold *= h_a[i];
     }
 
-    ASSERT_EQ(gold, res);
+    ASSERT_NEAR(gold, res, 1e-3);
     delete[] h_a;
 }
 
