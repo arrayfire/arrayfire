@@ -231,7 +231,7 @@ af_err af_assign_gen(af_array *out,
         ARG_ASSERT(2, (ndims == 1) || (ndims == (dim_t)lInfo.ndims()));
 
         if (ndims == 1 && ndims != (dim_t)lInfo.ndims()) {
-            af_array tmp_in, tmp_out;
+            af_array tmp_in = 0, tmp_out = 0;
             AF_CHECK(af_flat(&tmp_in, lhs));
             AF_CHECK(af_assign_gen(&tmp_out, tmp_in, ndims, indexs, rhs_));
             AF_CHECK(af_moddims(out, tmp_out, lInfo.ndims(), lInfo.dims().get()));

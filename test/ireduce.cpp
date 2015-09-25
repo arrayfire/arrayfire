@@ -143,3 +143,25 @@ TEST(ImaxAll, IndexedBig)
 
     ASSERT_EQ(b, res);
 }
+
+TEST(IReduce, BUG_FIX_1005)
+{
+    const int m = 64;
+    const int n = 100;
+    const int b = 5;
+
+    array in = constant(0, m, n, b);
+    for (int i = 0; i < b; i++) {
+        array tmp = randu(m, n);
+        in(span, span, i) = tmp;
+
+        float val0, val1;
+        unsigned idx0, idx1;
+
+        min<float>(&val0, &idx0, in(span, span, i));
+        min<float>(&val1, &idx1, tmp);
+
+        ASSERT_EQ(val0, val1);
+        ASSERT_EQ(idx0, idx1);
+    }
+}

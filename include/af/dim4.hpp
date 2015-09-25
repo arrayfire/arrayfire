@@ -53,9 +53,9 @@ public:
     const   dim_t* get() const   { return dims; }
 };
 
-dim4 operator+(const dim4& first, const dim4& second);
-dim4 operator-(const dim4& first, const dim4& second);
-dim4 operator*(const dim4& first, const dim4& second);
+AFAPI dim4 operator+(const dim4& first, const dim4& second);
+AFAPI dim4 operator-(const dim4& first, const dim4& second);
+AFAPI dim4 operator*(const dim4& first, const dim4& second);
 
 static inline
 std::ostream&
