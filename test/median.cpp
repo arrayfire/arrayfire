@@ -41,7 +41,7 @@ template<typename To, typename Ti, bool flat>
 void median0(int nx, int ny=1, int nz=1, int nw=1)
 {
     if (noDoubleTests<Ti>()) return;
-    array a = randu(nx, ny, nz, nw, (af::dtype)dtype_traits<Ti>::af_type);
+    array a = generateArray<Ti>(nx, ny, nz, nw);
     array sa = sort(a);
 
     Ti *h_sa = sa.host<Ti>();
