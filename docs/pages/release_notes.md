@@ -1,6 +1,30 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.1.2
+==============
+
+Bug Fixes
+---------
+
+* Fixed [bug](https://github.com/arrayfire/arrayfire/commit/4698f12) in assign that was causing test to fail
+* Fixed bug in convolve. Frequency condition now depends on kernel size only
+* Fixed [bug](https://github.com/arrayfire/arrayfire/issues/1005) in indexed reductions for complex type in OpenCL backend
+* Fixed [bug](https://github.com/arrayfire/arrayfire/issues/1006) in kernel name generation in ireduce for OpenCL backend
+* Fixed non-linear to linear indices in ireduce
+* Fixed [bug](https://github.com/arrayfire/arrayfire/issues/1011) in reductions for small arrays
+* Fixed [bug](https://github.com/arrayfire/arrayfire/issues/1010) in histogram for indexed arrays
+* Fixed [compiler error](https://github.com/arrayfire/arrayfire/issues/1015) CPUID for non-compliant devices
+* Fixed [failing tests](https://github.com/arrayfire/arrayfire/issues/1008) on i386 platforms
+* Add missing AFAPI
+
+Other
+-------
+
+* Documentation: Added missing examples and other corrections
+* Documentation: Fixed warnings in documentation building
+* Installers: Send error messages to log file in OSX Installer
+
 v3.1.1
 ==============
 
