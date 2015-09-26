@@ -3,7 +3,7 @@
 set -e
 set -o pipefail
 
-err_file=/tmp/AFInstaller.err
+err_file=/tmp/AFInstallerCPU.err
 brew=/usr/local/bin/brew
 
 if [ ! -f $brew ]; then
@@ -20,5 +20,5 @@ if [ -z $user ]; then
     exit 1
 fi
 
-su $user -c "$brew tap homebrew/versions"
-su $user -c "$brew install fftw glfw3 fontconfig"
+su $user -c "$brew tap homebrew/versions" 2> $err_file
+su $user -c "$brew install fftw glfw3 fontconfig" 2> $err_file

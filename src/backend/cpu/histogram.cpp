@@ -18,7 +18,7 @@ using af::dim4;
 namespace cpu
 {
 
-template<typename inType, typename outType>
+template<typename inType, typename outType, bool isLinear>
 Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const double &minval, const double &maxval)
 {
     float step = (maxval - minval)/(float)nbins;
@@ -36,7 +36,8 @@ Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const d
     for(dim_t b3 = 0; b3 < outDims[3]; b3++) {
         for(dim_t b2 = 0; b2 < outDims[2]; b2++) {
             for(dim_t i=0; i<nElems; i++) {
-                int bin = (int)((inData[i] - minval) / step);
+                int idx = isLinear ? i : ((i % inDims[0]) + (i / inDims[0])*iStrides[1]);
+                int bin = (int)((inData[idx] - minval) / step);
                 bin = std::max(bin, 0);
                 bin = std::min(bin, (int)(nbins - 1));
                 outData[bin]++;
@@ -50,7 +51,8 @@ Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const d
 }
 
 #define INSTANTIATE(in_t,out_t)\
-template Array<out_t> histogram(const Array<in_t> &in, const unsigned &nbins, const double &minval, const double &maxval);
+template Array<out_t> histogram<in_t, out_t, true>(const Array<in_t> &in, const unsigned &nbins, const double &minval, const double &maxval); \
+template Array<out_t> histogram<in_t, out_t, false>(const Array<in_t> &in, const unsigned &nbins, const double &minval, const double &maxval);
 
 INSTANTIATE(float , uint)
 INSTANTIATE(double, uint)

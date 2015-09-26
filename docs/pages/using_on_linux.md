@@ -138,7 +138,7 @@ you wish to use with the `-l` option (i.e. `-lafcpu`, `-lafopencl` or `-lafcuda`
 Here is a minimial example MakeFile which uses ArrayFire's CPU backend:
 
     LIBS=-lafcpu
-    LIB_PATHS=/usr/lib
+    LIB_PATHS=-L/usr/lib
     INCLUDES=-I/usr/include
     CC=g++ $(COMPILER_OPTIONS)
     COMPILER_OPTIONS=-std=c++11 -g

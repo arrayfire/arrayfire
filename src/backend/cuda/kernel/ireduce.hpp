@@ -497,6 +497,17 @@ namespace kernel
             memFree(tmp.ptr);
             memFree(tlptr);
 
+            if (!is_linear) {
+                // Converting n-d index into a linear index
+                // in is of size   [   dims0, dims1, dims2, dims3]
+                // tidx is of size [blocks_x, dims1, dims2, dims3]
+                // i / blocks_x gives you the batch number "N"
+                // "N * dims0 + i" gives the linear index
+                for (int i = 0; i < tmp_elements; i++) {
+                    h_lptr_raw[i] += (i / blocks_x) * in.dims[0];
+                }
+            }
+
             MinMaxOp<op, T> Op(h_ptr_raw[0], h_lptr_raw[0]);
 
             for (int i = 1; i < tmp_elements; i++) {
