@@ -25,6 +25,8 @@ directory.
 These scripts will automatically find the CUDA, OpenCL, and CPU versions
 of ArrayFire and automatically choose the most powerful installed backend
 (typically CUDA).
+Following version 3.2, the scripts will also check for the Unified backend of
+ArrayFire.
 
 To use ArrayFire, simply insert the `FIND_PACKAGE` command inside of your
 `CMakeLists.txt` file as follows:
@@ -45,16 +47,19 @@ The find script will automatically define several variables including:
 
 If you wish to use a specific backend, the find script also defines these variables:
 
-    ArrayFire_CPU_FOUND        - True of the ArrayFire CPU library has been found.
-    ArrayFire_CPU_LIBRARIES    - Location of ArrayFire's CPU library, if found
-    ArrayFire_CUDA_FOUND       - True of the ArrayFire CUDA library has been found.
-    ArrayFire_CUDA_LIBRARIES   - Location of ArrayFire's CUDA library, if found
-    ArrayFire_OpenCL_FOUND     - True of the ArrayFire OpenCL library has been found.
-    ArrayFire_OpenCL_LIBRARIES - Location of ArrayFire's OpenCL library, if found
+    ArrayFire_CPU_FOUND         - True of the ArrayFire CPU library has been found.
+    ArrayFire_CPU_LIBRARIES     - Location of ArrayFire's CPU library, if found
+    ArrayFire_CUDA_FOUND        - True of the ArrayFire CUDA library has been found.
+    ArrayFire_CUDA_LIBRARIES    - Location of ArrayFire's CUDA library, if found
+    ArrayFire_OpenCL_FOUND      - True of the ArrayFire OpenCL library has been found.
+    ArrayFire_OpenCL_LIBRARIES  - Location of ArrayFire's OpenCL library, if found
+    ArrayFire_Unified_FOUND     - True of the ArrayFire Unified library has been found.
+    ArrayFire_Unified_LIBRARIES - Location of ArrayFire's Unified library, if found
 
 Therefore, if you wish to target a specific specific backend, switch
-`${ArrayFire_LIBRARIES}` to `${ArrayFire_CPU}` `${ArrayFire_OPENCL}` or
-`${ArrayFire_CUDA}` in the `TARGET_LINK_LIBRARIES` command above.
+`${ArrayFire_LIBRARIES}` to `${ArrayFire_CPU}` `${ArrayFire_OPENCL}`
+`${ArrayFire_CUDA}` or `${ArrayFire_Unified}` in the `TARGET_LINK_LIBRARIES`
+command above.
 
 Finally, if you have installed ArrayFire to a non-standard location, CMake can still help
 you out. When you execute CMake specify the path to the `ArrayFireConfig*` files that
@@ -76,12 +81,12 @@ instructions.
 Then, in your linker line specify the path to ArrayFire using the `-L` option
 (typically `-L/usr/lib` or `-L/usr/local/lib` and the specific ArrayFire backend
 you wish to use with the `-l` option (i.e. `-lafcpu`, `-lafopencl` or `-lafcuda`
-for the CPU, OpenCL and CUDA backends repsectively).
+`-laf` for the CPU, OpenCL, CUDA and Unified backends repsectively).
 
 Here is a minimial example MakeFile which uses ArrayFire's CPU backend:
 
     LIBS=-lafcpu
-    LIB_PATHS=/usr/lib
+    LIB_PATHS=-L/usr/lib
     INCLUDES=-I/usr/include
     CC=g++ $(COMPILER_OPTIONS)
     COMPILER_OPTIONS=-std=c++11 -g

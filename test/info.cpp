@@ -36,23 +36,35 @@ typedef ::testing::Types<float> TestTypes;
 TYPED_TEST_CASE(Info, TestTypes);
 
 template<typename T>
+void testFunction()
+{
+    af::info();
+
+    af_array outArray = 0;
+    af::dim4 dims(32, 32, 1, 1);
+    ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    // cleanup
+    if(outArray != 0) ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+}
+
+template<typename T>
 void infoTest()
 {
     if (noDoubleTests<T>()) return;
 
-    int nDevices = 0;
-    ASSERT_EQ(AF_SUCCESS, af_get_device_count(&nDevices));
+    const char* ENV = getenv("AF_MULTI_GPU_TESTS");
+    if(ENV && ENV[0] == '0') {
+        testFunction<T>();
+    } else {
+        int nDevices = 0;
+        ASSERT_EQ(AF_SUCCESS, af_get_device_count(&nDevices));
 
-    for(int d = 0; d < nDevices; d++) {
-
-        af::setDevice(d);
-        af::info();
-
-        af_array outArray = 0;
-        af::dim4 dims(32, 32, 1, 1);
-        ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
-        // cleanup
-        if(outArray != 0) ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
+        int oldDevice = af::getDevice();
+        for(int d = 0; d < nDevices; d++) {
+            af::setDevice(d);
+            testFunction<T>();
+        }
+        af::setDevice(oldDevice);
     }
 }
 

@@ -19,7 +19,7 @@ using std::vector;
 template<typename T>
 class Constant : public ::testing::Test { };
 
-typedef ::testing::Types<float, af::cfloat, double, af::cdouble, int, unsigned, char, uchar, uintl, intl> TestTypes;
+typedef ::testing::Types<float, af::cfloat, double, af::cdouble, int, unsigned, char, uchar, uintl, intl, short, ushort> TestTypes;
 TYPED_TEST_CASE(Constant, TestTypes);
 
 template<typename T>

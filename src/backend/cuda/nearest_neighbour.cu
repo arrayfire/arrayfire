@@ -73,6 +73,8 @@ INSTANTIATE(uint  , uint)
 INSTANTIATE(intl  , intl)
 INSTANTIATE(uintl , uintl)
 INSTANTIATE(uchar , uint)
+INSTANTIATE(short , int)
+INSTANTIATE(ushort, uint)
 
 INSTANTIATE(uintl, uint)    // For Hamming
 

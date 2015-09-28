@@ -80,6 +80,15 @@ struct dist_op<uchar, To, AF_SHD>
     }
 };
 
+template<typename To>
+struct dist_op<ushort, To, AF_SHD>
+{
+    To operator()(ushort v1, ushort v2)
+    {
+        return __builtin_popcount(v1 ^ v2);
+    }
+};
+
 template<typename T, typename To, af_match_type dist_type>
 void nearest_neighbour_(Array<uint>& idx, Array<To>& dist,
                         const Array<T>& query, const Array<T>& train,
@@ -169,7 +178,9 @@ INSTANTIATE(uint  , uint)
 INSTANTIATE(intl  , intl)
 INSTANTIATE(uintl , uintl)
 INSTANTIATE(uchar , uint)
+INSTANTIATE(ushort, uint)
+INSTANTIATE(short , int)
 
-INSTANTIATE(uintl, uint)    // For Hamming
+INSTANTIATE(uintl , uint)    // For Hamming
 
 }

@@ -79,8 +79,6 @@ private:
 // Helpers
 void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage);
 
-typedef unsigned short ushort;
-
 // Error handler for FreeImage library.
 // In case this handler is invoked, it throws an af exception.
 void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage)

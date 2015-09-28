@@ -133,6 +133,8 @@ af_err af_save_array(int *index, const char *key, const af_array arr, const char
             case u8:    id = save<uchar>   (key, arr, filename, append);   break;
             case s64:   id = save<intl>    (key, arr, filename, append);   break;
             case u64:   id = save<uintl>   (key, arr, filename, append);   break;
+            case s16:   id = save<short>   (key, arr, filename, append);   break;
+            case u16:   id = save<ushort>  (key, arr, filename, append);   break;
             default:    TYPE_ERROR(1, type);
         }
         std::swap(*index, id);
@@ -234,6 +236,8 @@ static af_array readArrayV1(const char *filename, const unsigned index)
         case u8  : out = readDataToArray<uchar>  (fs);  break;
         case s64 : out = readDataToArray<intl>   (fs);  break;
         case u64 : out = readDataToArray<uintl>  (fs);  break;
+        case s16 : out = readDataToArray<short>  (fs);  break;
+        case u16 : out = readDataToArray<ushort> (fs);  break;
         default:    TYPE_ERROR(1, type);
     }
     fs.close();

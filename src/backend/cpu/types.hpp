@@ -16,6 +16,7 @@ namespace cpu
     typedef std::complex<double>    cdouble;
     typedef unsigned int            uint;
     typedef unsigned char           uchar;
+    typedef unsigned short          ushort;
 
     template<typename T> struct is_complex          { static const bool value = false;  };
     template<> struct           is_complex<cfloat>  { static const bool value = true;   };

@@ -9,10 +9,29 @@
 
 #if CPLX
 #define sabs(in) ((in.x)*(in.x) + (in.y)*(in.y))
-#else
-#define sabs(in) in
+#ifdef MIN_OP
+void binOp(T *lhs, uint *lidx, T rhs, uint ridx)
+{
+    if ((sabs(lhs[0]) > sabs(rhs)) ||
+        (sabs(lhs[0]) == sabs(rhs) && *lidx < ridx)) {
+        *lhs = rhs;
+        *lidx = ridx;
+    }
+}
 #endif
 
+#ifdef MAX_OP
+void binOp(T *lhs, uint *lidx, T rhs, uint ridx)
+{
+    if ((sabs(lhs[0]) < sabs(rhs)) ||
+        (sabs(lhs[0]) == sabs(rhs) && *lidx > ridx)) {
+        *lhs = rhs;
+        *lidx = ridx;
+    }
+}
+#endif
+#else
+#define sabs(in) in
 #ifdef MIN_OP
 void binOp(T *lhs, uint *lidx, T rhs, uint ridx)
 {
@@ -33,4 +52,5 @@ void binOp(T *lhs, uint *lidx, T rhs, uint ridx)
         *lidx = ridx;
     }
 }
+#endif
 #endif

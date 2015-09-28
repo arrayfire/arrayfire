@@ -61,13 +61,15 @@ af_err af_mean(af_array *out, const af_array in, const dim_t dim)
         af_dtype type = info.getType();
         switch(type) {
             case f64: output = mean< double>(in, dim); break;
-            case f32: output = mean<  float>(in, dim); break;
-            case s32: output = mean<  float>(in, dim); break;
-            case u32: output = mean<  float>(in, dim); break;
+            case f32: output = mean< float >(in, dim); break;
+            case s32: output = mean< float >(in, dim); break;
+            case u32: output = mean< float >(in, dim); break;
             case s64: output = mean< double>(in, dim); break;
             case u64: output = mean< double>(in, dim); break;
-            case  u8: output = mean<  float>(in, dim); break;
-            case  b8: output = mean<  float>(in, dim); break;
+            case s16: output = mean< float >(in, dim); break;
+            case u16: output = mean< float >(in, dim); break;
+            case  u8: output = mean< float >(in, dim); break;
+            case  b8: output = mean< float >(in, dim); break;
             case c32: output = mean< cfloat>(in, dim); break;
             case c64: output = mean<cdouble>(in, dim); break;
             default : TYPE_ERROR(1, type);
@@ -93,13 +95,15 @@ af_err af_mean_weighted(af_array *out, const af_array in, const af_array weights
 
         switch(iType) {
             case f64: output = mean< double>(in, weights, dim); break;
-            case f32: output = mean<  float>(in, weights, dim); break;
-            case s32: output = mean<  float>(in, weights, dim); break;
-            case u32: output = mean<  float>(in, weights, dim); break;
+            case f32: output = mean< float >(in, weights, dim); break;
+            case s32: output = mean< float >(in, weights, dim); break;
+            case u32: output = mean< float >(in, weights, dim); break;
             case s64: output = mean< double>(in, weights, dim); break;
             case u64: output = mean< double>(in, weights, dim); break;
-            case  u8: output = mean<  float>(in, weights, dim); break;
-            case  b8: output = mean<  float>(in, weights, dim); break;
+            case s16: output = mean< float >(in, weights, dim); break;
+            case u16: output = mean< float >(in, weights, dim); break;
+            case  u8: output = mean< float >(in, weights, dim); break;
+            case  b8: output = mean< float >(in, weights, dim); break;
             case c32: output = mean< cfloat>(in, weights, dim); break;
             case c64: output = mean<cdouble>(in, weights, dim); break;
             default : TYPE_ERROR(1, iType);
@@ -122,6 +126,8 @@ af_err af_mean_all(double *realVal, double *imagVal, const af_array in)
             case u32: *realVal = mean< float>(in); break;
             case s64: *realVal = mean<double>(in); break;
             case u64: *realVal = mean<double>(in); break;
+            case s16: *realVal = mean< float>(in); break;
+            case u16: *realVal = mean< float>(in); break;
             case  u8: *realVal = mean< float>(in); break;
             case  b8: *realVal = mean< float>(in); break;
             case c32: {
@@ -158,6 +164,8 @@ af_err af_mean_all_weighted(double *realVal, double *imagVal, const af_array in,
             case u32: *realVal = mean< float>(in, weights); break;
             case s64: *realVal = mean<double>(in, weights); break;
             case u64: *realVal = mean<double>(in, weights); break;
+            case s16: *realVal = mean< float>(in, weights); break;
+            case u16: *realVal = mean< float>(in, weights); break;
             case  u8: *realVal = mean< float>(in, weights); break;
             case  b8: *realVal = mean< float>(in, weights); break;
             case c32: {

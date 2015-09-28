@@ -117,6 +117,8 @@ namespace af
     CONSTANT(long long);
     CONSTANT(unsigned long long);
     CONSTANT(bool);
+    CONSTANT(short);
+    CONSTANT(unsigned short);
 
 #undef CONSTANT
 

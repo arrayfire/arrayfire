@@ -46,6 +46,8 @@ af_err mean_shift(af_array *out, const af_array in, const float s_sigma, const f
             case b8 : output = mean_shift<char  , is_color>(in, s_sigma, c_sigma, iter); break;
             case s32: output = mean_shift<int   , is_color>(in, s_sigma, c_sigma, iter); break;
             case u32: output = mean_shift<uint  , is_color>(in, s_sigma, c_sigma, iter); break;
+            case s16: output = mean_shift<short , is_color>(in, s_sigma, c_sigma, iter); break;
+            case u16: output = mean_shift<ushort, is_color>(in, s_sigma, c_sigma, iter); break;
             case u8 : output = mean_shift<uchar , is_color>(in, s_sigma, c_sigma, iter); break;
             default : TYPE_ERROR(1, type);
         }

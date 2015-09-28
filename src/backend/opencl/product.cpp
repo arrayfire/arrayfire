@@ -22,4 +22,6 @@ namespace opencl
     INSTANTIATE(af_mul_t, uintl  , uintl  )
     INSTANTIATE(af_mul_t, char   , int    )
     INSTANTIATE(af_mul_t, uchar  , uint   )
+    INSTANTIATE(af_mul_t, short  , int    )
+    INSTANTIATE(af_mul_t, ushort , uint   )
 }

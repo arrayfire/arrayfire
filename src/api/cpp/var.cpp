@@ -80,6 +80,8 @@ INSTANTIATE_VAR(int);
 INSTANTIATE_VAR(unsigned int);
 INSTANTIATE_VAR(intl);
 INSTANTIATE_VAR(uintl);
+INSTANTIATE_VAR(short);
+INSTANTIATE_VAR(unsigned short);
 INSTANTIATE_VAR(char);
 INSTANTIATE_VAR(unsigned char);
 

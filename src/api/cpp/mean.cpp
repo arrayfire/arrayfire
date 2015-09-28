@@ -82,6 +82,8 @@ INSTANTIATE_MEAN(char);
 INSTANTIATE_MEAN(unsigned char);
 INSTANTIATE_MEAN(long long);
 INSTANTIATE_MEAN(unsigned long long);
+INSTANTIATE_MEAN(short);
+INSTANTIATE_MEAN(unsigned short);
 
 #undef INSTANTIATE_MEAN
 

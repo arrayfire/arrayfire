@@ -42,6 +42,8 @@ static af_err bilateral(af_array *out, const af_array &in, const float &s_sigma,
             case s32: output = bilateral<int   ,  float, isColor> (in, s_sigma, c_sigma); break;
             case u32: output = bilateral<uint  ,  float, isColor> (in, s_sigma, c_sigma); break;
             case u8 : output = bilateral<uchar ,  float, isColor> (in, s_sigma, c_sigma); break;
+            case s16: output = bilateral<short ,  float, isColor> (in, s_sigma, c_sigma); break;
+            case u16: output = bilateral<ushort,  float, isColor> (in, s_sigma, c_sigma); break;
             default : TYPE_ERROR(1, type);
         }
         std::swap(*out,output);

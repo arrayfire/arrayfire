@@ -121,11 +121,11 @@ namespace af
 
 #define af_print(...) GET_PRINT_MACRO(__VA_ARGS__, AF_PRINT2, AF_PRINT1)(__VA_ARGS__)
 
-#else
+#else // AF_API_VERSION
 
 #define af_print(exp) af::print(#exp, exp);
 
-#endif
+#endif // AF_API_VERSION
 
 #endif //__cplusplus
 

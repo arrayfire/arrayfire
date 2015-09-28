@@ -31,7 +31,7 @@ class Mean : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, intl, uintl, char, uchar> TestTypes;
+typedef ::testing::Types<cdouble, cfloat, float, double, int, uint, intl, uintl, char, uchar, short, ushort> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Mean, TestTypes);
@@ -53,18 +53,20 @@ struct c32HelperType {
 template<typename T>
 struct elseType {
    typedef typename cond_type< is_same_type<T, uintl>::value ||
-                               is_same_type<T, intl>::value,
+                               is_same_type<T, intl> ::value,
                                               double,
                                               T>::type type;
 };
 
 template<typename T>
 struct meanOutType {
-   typedef typename cond_type< is_same_type<T, float>::value ||
-                               is_same_type<T, int>::value ||
-                               is_same_type<T, uint>::value ||
-                               is_same_type<T, uchar>::value ||
-                               is_same_type<T, char>::value,
+   typedef typename cond_type< is_same_type<T, float>   ::value ||
+                               is_same_type<T, int>     ::value ||
+                               is_same_type<T, uint>    ::value ||
+                               is_same_type<T, uchar>   ::value ||
+                               is_same_type<T, short>   ::value ||
+                               is_same_type<T, ushort>  ::value ||
+                               is_same_type<T, char>    ::value,
                                               float,
                               typename elseType<T>::type>::type type;
 };
@@ -135,16 +137,6 @@ TYPED_TEST(Mean, Dim0Matrix)
     meanDimTest<TypeParam>(string(TEST_DIR "/mean/mean_dim0_matrix.test"), 0);
 }
 
-TYPED_TEST(Mean, Wtd_Dim0Matrix)
-{
-    meanDimTest<TypeParam>(string(TEST_DIR "/mean/wtd_mean_dim0_mat.test"), 0, true);
-}
-
-TYPED_TEST(Mean, Wtd_Dim1Matrix)
-{
-    meanDimTest<TypeParam>(string(TEST_DIR "/mean/wtd_mean_dim1_mat.test"), 1, true);
-}
-
 TYPED_TEST(Mean, Dim1Cube)
 {
     meanDimTest<TypeParam>(string(TEST_DIR "/mean/mean_dim1_cube.test"), 1);
@@ -168,6 +160,16 @@ TYPED_TEST(Mean, Dim2Cube)
 TYPED_TEST(Mean, Dim2HyperCube)
 {
     meanDimTest<TypeParam>(string(TEST_DIR "/mean/mean_dim2_hypercube.test"), 2);
+}
+
+TYPED_TEST(Mean, Wtd_Dim0Matrix)
+{
+    meanDimTest<TypeParam>(string(TEST_DIR "/mean/wtd_mean_dim0_mat.test"), 0, true);
+}
+
+TYPED_TEST(Mean, Wtd_Dim1Matrix)
+{
+    meanDimTest<TypeParam>(string(TEST_DIR "/mean/wtd_mean_dim1_mat.test"), 1, true);
 }
 
 template<typename T>
@@ -229,6 +231,16 @@ TEST(MeanAll, u8)
 TEST(MeanAll, c32)
 {
     meanAllTest<cfloat>(cfloat(2.1f), af::dim4(10, 5, 2, 1));
+}
+
+TEST(MeanAll, s16)
+{
+    meanAllTest<short>(2, af::dim4(5, 5, 2, 2));
+}
+
+TEST(MeanAll, u16)
+{
+    meanAllTest<ushort>(2, af::dim4(100, 1, 1, 1));
 }
 
 TEST(MeanAll, c64)

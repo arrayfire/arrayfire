@@ -48,5 +48,7 @@ INSTANTIATE(float )
 INSTANTIATE(double)
 INSTANTIATE(int   )
 INSTANTIATE(uint  )
+INSTANTIATE(short)
+INSTANTIATE(ushort)
 
 }

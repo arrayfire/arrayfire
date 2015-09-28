@@ -108,6 +108,8 @@ namespace cpu
     INSTANTIATE(af_add_t, uintl  , uintl  )
     INSTANTIATE(af_add_t, char   , int    )
     INSTANTIATE(af_add_t, uchar  , uint   )
+    INSTANTIATE(af_add_t, short  , int    )
+    INSTANTIATE(af_add_t, ushort , uint   )
     INSTANTIATE(af_notzero_t, char  , uint   )
 
 }

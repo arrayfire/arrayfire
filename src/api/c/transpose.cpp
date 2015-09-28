@@ -61,6 +61,8 @@ af_err af_transpose(af_array *out, af_array in, const bool conjugate)
             case u8 : output = trs<uchar>  (in, conjugate);    break;
             case s64: output = trs<intl>   (in, conjugate);    break;
             case u64: output = trs<uintl>  (in, conjugate);    break;
+            case s16: output = trs<short>  (in, conjugate);    break;
+            case u16: output = trs<ushort> (in, conjugate);    break;
             default : TYPE_ERROR(1, type);
         }
         std::swap(*out,output);
@@ -101,6 +103,8 @@ af_err af_transpose_inplace(af_array in, const bool conjugate)
             case u8 : transpose_inplace<uchar>  (in, conjugate);    break;
             case s64: transpose_inplace<intl>   (in, conjugate);    break;
             case u64: transpose_inplace<uintl>  (in, conjugate);    break;
+            case s16: transpose_inplace<short>  (in, conjugate);    break;
+            case u16: transpose_inplace<ushort> (in, conjugate);    break;
             default : TYPE_ERROR(1, type);
         }
     }

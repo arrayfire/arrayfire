@@ -71,6 +71,8 @@ af_err af_cov(af_array* out, const af_array X, const af_array Y, const bool isbi
             case u32: output = cov<uint  , float >(X, Y, isbiased); break;
             case s64: output = cov<intl  , double>(X, Y, isbiased); break;
             case u64: output = cov<uintl , double>(X, Y, isbiased); break;
+            case s16: output = cov<short , float >(X, Y, isbiased); break;
+            case u16: output = cov<ushort, float >(X, Y, isbiased); break;
             case  u8: output = cov<uchar , float >(X, Y, isbiased); break;
             default : TYPE_ERROR(1, xType);
         }

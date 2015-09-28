@@ -91,6 +91,8 @@ namespace af
         case b8 : return sizeof(unsigned char);
         case c32: return sizeof(float) * 2;
         case c64: return sizeof(double) * 2;
+        case s16: return sizeof(short);
+        case u16: return sizeof(unsigned short);
         default: return sizeof(float);
         }
     }
@@ -148,12 +150,12 @@ namespace af
     }
 
 #define INSTANTIATE(T)                                                  \
-    template<> AFAPI                                                    \
+    template<>                                                          \
     T* alloc(const size_t elements)                                     \
     {                                                                   \
         return (T*)alloc(elements, (af::dtype)dtype_traits<T>::af_type); \
     }                                                                   \
-    template<> AFAPI                                                    \
+    template<>                                                          \
     T* pinned(const size_t elements)                                    \
     {                                                                   \
         return (T*)pinned(elements, (af::dtype)dtype_traits<T>::af_type); \
@@ -167,5 +169,7 @@ namespace af
     INSTANTIATE(unsigned)
     INSTANTIATE(unsigned char)
     INSTANTIATE(char)
+    INSTANTIATE(short)
+    INSTANTIATE(unsigned short)
 
 }
