@@ -21,7 +21,11 @@ static const string LIB_AF_BKND_SUFFIX = ".dll";
 #define RTLD_LAZY 0
 #else
 static const string LIB_AF_BKND_PREFIX = "libaf";
+#if defined(__APPLE__)
+static const string LIB_AF_BKND_SUFFIX = ".dylib";
+#else
 static const string LIB_AF_BKND_SUFFIX = ".so";
+#endif // APPLE
 #endif
 
 static const string LIB_AF_ENVARS[NUM_ENV_VARS] = {"AF_PATH", "AF_BUILD_PATH"};
@@ -56,21 +60,36 @@ inline std::string getEnvVar(const std::string &key)
 /*flag parameter is not used on windows platform */
 LibHandle openDynLibrary(const int bknd_idx, int flag=RTLD_LAZY)
 {
+    /*
+     * The default search path is the colon separated list of
+     * paths stored in the environment variables:
+     * * LD_LIBRARY_PATH(Linux/Unix/Apple)
+     * * DYLD_LIBRARY_PATH (Apple)
+     * * PATH (Windows)
+    */
     string bkndName = getBkndLibName(bknd_idx);
+    string show_flag = getEnvVar("AF_SHOW_LOAD_PATH");
+    bool show_load_path = show_flag=="1";
+
 #if defined(OS_WIN)
     HMODULE retVal = LoadLibrary(bkndName.c_str());
 #else
     LibHandle retVal = dlopen(bkndName.c_str(), flag);
 #endif
-    // default search path is the colon separated list of
-    // paths stored in the environment variable
-    // LD_LIBRARY_PATH(Linux/Unix) or PATH(windows)
-    // in the event that dlopen returns NULL, search for the lib
-    // ub hard coded paths based on the environment variables
-    // defined in the constant string array LIB_AF_PATHS
-    string show_flag = getEnvVar("AF_SHOW_LOAD_PATH");
-    bool show_load_path = show_flag=="1";
-    if (retVal == NULL) {
+    if(retVal != NULL) { // Success
+        if (show_load_path)
+            printf("Using %s from system path\n", bkndName.c_str());
+    } else {
+        /*
+         * In the event that dlopen returns NULL, search for the lib
+         * in hard coded paths based on the environment variables
+         * defined in the constant string array LIB_AF_PATHS
+         * * AF_PATH
+         * * AF_BUILD_PATH
+         *
+         * Note: This does not guarantee successful loading as the dependent
+         * libraries may still not load
+        */
         for (int i=0; i<NUM_ENV_VARS; ++i) {
             string abs_path = getEnvVar(LIB_AF_ENVARS[i])
                                  + LIB_AF_RPATHS[i]
@@ -91,9 +110,6 @@ LibHandle openDynLibrary(const int bknd_idx, int flag=RTLD_LAZY)
                 break;
             }
         }
-    } else {
-        if (show_load_path)
-            printf("Using %s from system path\n", bkndName.c_str());
     }
     return retVal;
 }

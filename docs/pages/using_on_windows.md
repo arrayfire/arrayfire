@@ -96,10 +96,10 @@ different:
    _Project Properties -> Build Events -> Post Build Events_
    dialog:
 
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     echo copy "$(CUDA_PATH)\nvvm\bin\nvvm64*.dll" "$(OutDir)"
-     copy "$(CUDA_PATH)\nvvm\bin\nvvm64*.dll" "$(OutDir)"
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.c}
+echo copy "$(CUDA_PATH)\nvvm\bin\nvvm64*.dll" "$(OutDir)"
+copy "$(CUDA_PATH)\nvvm\bin\nvvm64*.dll" "$(OutDir)"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 4. Ensure that you use x64 based configurations.
 
