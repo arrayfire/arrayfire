@@ -13,7 +13,7 @@
 ///
 /// Print a line on screen using printf syntax.
 /// Usage: Uses same syntax and semantics as printf.
-/// Output: <filename>:<line number>: <message>
+/// Output: \<filename\>:\<line number\>: \<message\>
 ///
 #ifndef AF_MSG
 #define AF_MSG(fmt,...) do {            \

@@ -27,19 +27,50 @@ The Unified backend will try to dynamically load the backend libraries. The
 priority of backends is __CUDA -> OpenCL -> CPU__
 
 The most important aspect to note here is that all the libraries the ArrayFire
-libs depend on need to be in the environment paths (`LD_LIBRARY_PATH` /
-`DYLD_LIBRARY_PATH` / `PATH`). If any of the libs are missing, then the library will
-fail to load and the backend will be marked as unavailable.
+libs depend on need to be in the environment paths
 
-> Note: For the CUDA backend, ensure that the CUDA NVVM libs/dlls are in the path.
-> These can be easily missed since CUDA installation does not add the paths by default.
+* `LD_LIBRARY_PATH` -> Linux, Unix, OSX
+* `DYLD_LIBRARY_PATH` -> OSX
+* `PATH` -> Windows
+
+If any of the libs are missing, then the library will fail to load and the
+backend will be marked as unavailable.
+
+Optionally, The ArrayFire libs may be present in `AF_PATH` or `AF_BUILD_PATH`
+environment variables if the path is not in the system paths. These are
+treated as fallback paths in case the files are not found in the system paths.
+However, all the other upstream libraries for ArrayFire libs must be present
+in the system path variables shown above.
+
+### Special Mention: CUDA NVVM
+For the CUDA backend, ensure that the CUDA NVVM libs/dlls are in the path.
+These can be easily missed since CUDA installation does not add the paths by default.
+
+On Linux and OSX, add `/usr/local/cuda/nvvm/(lib or lib64)` to LD_LIBRARY_PATH or
+DYLD_LIBRARY_PATH.
+
+On Windows, you can set up a post build event that copys the NVVM dlls to
+the executable directory by using the following commands:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.c}
+echo copy "$(CUDA_PATH)\nvvm\bin\nvvm64*.dll" "$(OutDir)"
+copy "$(CUDA_PATH)\nvvm\bin\nvvm64*.dll" "$(OutDir)"
+if errorlevel 1 (
+    echo "CUDA NVVM DLLs copy failed due to missing files."
+    exit /B 0
+)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This ensures that the NVVM DLLs are copied if present, but does not fail the
+build if the copy fails. This is how ArrayFire ships it's examples.
+
+The other option is to set `%%CUDA_PATH%/nvvm/bin` in the PATH environment
+variable.
 
 # Switching Backends
 
 The af_backend enum stores the possible backends.
 To select a backend, call the af::setBackend function as shown below.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.c}
 af::setBackend(AF_BACKEND_OPENCL);    // Sets CUDA as current backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
