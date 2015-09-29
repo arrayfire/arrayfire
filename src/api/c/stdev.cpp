@@ -28,15 +28,12 @@ using namespace detail;
 template<typename inType, typename outType>
 static outType stdev(const af_array& in)
 {
-    Array<outType> input = cast<outType>(getArray<inType>(in));
-
-    Array<outType> meanCnst= createValueArray<outType>(input.dims(), mean<outType>(input));
-
-    Array<outType> diff    = detail::arithOp<outType, af_sub_t>(input, meanCnst, input.dims());
-
-    Array<outType> diffSq  = detail::arithOp<outType, af_mul_t>(diff, diff, diff.dims());
-
-    outType result = division(reduce_all<af_add_t, outType, outType>(diffSq), input.elements());
+    Array<inType> _in       = getArray<inType>(in);
+    Array<outType> input    = cast<outType>(_in);
+    Array<outType> meanCnst = createValueArray<outType>(input.dims(), mean<inType, outType>(_in));
+    Array<outType> diff     = detail::arithOp<outType, af_sub_t>(input, meanCnst, input.dims());
+    Array<outType> diffSq   = detail::arithOp<outType, af_mul_t>(diff, diff, diff.dims());
+    outType result          = division(reduce_all<af_add_t, outType, outType>(diffSq), input.elements());
 
     return sqrt(result);
 }
@@ -44,10 +41,11 @@ static outType stdev(const af_array& in)
 template<typename inType, typename outType>
 static af_array stdev(const af_array& in, int dim)
 {
-    Array<outType> input = cast<outType>(getArray<inType>(in));
+    Array<inType> _in    = getArray<inType>(in);
+    Array<outType> input = cast<outType>(_in);
     dim4 iDims = input.dims();
 
-    Array<outType> meanArr = mean<outType>(input, dim);
+    Array<outType> meanArr = mean<inType, outType>(_in, dim);
 
     /* now tile meanArr along dim and use it for variance computation */
     dim4 tileDims(1);

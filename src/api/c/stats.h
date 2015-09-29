@@ -40,39 +40,52 @@ struct baseOutType {
                                 float>::type type;
 };
 
-template<typename T>
-inline T mean(const Array<T>& in)
+template<typename Ti, typename To>
+inline To mean(const Array<Ti>& in)
 {
-    T out = reduce_all<af_add_t, T, T>(in);
-    T result = division(out, in.elements());
+    To out    = reduce_all<af_add_t, Ti, To>(in);
+    To result = division(out, in.elements());
     return result;
 }
 
-template<typename T, typename wType>
-inline T mean(const Array<T>& in, const Array<wType>& weights)
+template<typename T, typename Tw>
+static T mean(const Array<T>& input, const Array<Tw>& weights)
 {
-    Array<T> wts   = cast<T>(weights);
+    dim4 iDims = input.dims();
 
-    dim4 iDims = in.dims();
-
-    Array<T> wtdInput = arithOp<T, af_mul_t>(in, wts, iDims);
+    Array<T> wtdInput = arithOp<T, af_mul_t>(input, weights, iDims);
 
     T wtdSum = reduce_all<af_add_t, T, T>(wtdInput);
-    wType wtsSum = reduce_all<af_add_t, wType, wType>(weights);
+    T wtsSum = reduce_all<af_add_t, T, T>(weights);
 
     return division(wtdSum, wtsSum);
 }
 
-template<typename T>
-inline Array<T> mean(const Array<T>& in, dim_t dim)
+#define COMPLEX_TYPE_SPECILIZATION(T, Tw) \
+template<>\
+T mean<T, Tw>(const Array<T>& input, const Array<Tw>& weights)\
+{\
+    Array<T> wts = cast<T, Tw>(weights);\
+    dim4 iDims   = input.dims();\
+    Array<T> wtdInput = arithOp<T, af_mul_t>(input, wts, iDims);\
+    T wtdSum  = reduce_all<af_add_t, T, T>(wtdInput);\
+    Tw wtsSum = reduce_all<af_add_t, Tw, Tw>(weights);\
+    return division(wtdSum, wtsSum);\
+}
+
+COMPLEX_TYPE_SPECILIZATION(cfloat, float)
+COMPLEX_TYPE_SPECILIZATION(cdouble, double)
+
+template<typename Ti, typename To>
+inline Array<To> mean(const Array<Ti>& in, dim_t dim)
 {
-    Array<T> redArr = reduce<af_add_t, T, T>(in, dim);
+    Array<To> redArr = reduce<af_add_t, Ti, To>(in, dim);
 
     dim4 iDims = in.dims();
     dim4 oDims = redArr.dims();
 
-    Array<T> cnstArr = createValueArray<T>(oDims, scalar<T>(iDims[dim]));
-    Array<T> result  = arithOp<T, af_div_t>(redArr, cnstArr, oDims);
+    Array<To> cnstArr = createValueArray<To>(oDims, scalar<To>(iDims[dim]));
+    Array<To> result  = arithOp<To, af_div_t>(redArr, cnstArr, oDims);
 
     return result;
 }
