@@ -63,7 +63,7 @@ static T mean(const Array<T>& input, const Array<Tw>& weights)
 
 #define COMPLEX_TYPE_SPECILIZATION(T, Tw) \
 template<>\
-T mean<T, Tw>(const Array<T>& input, const Array<Tw>& weights)\
+STATIC_ T mean<T, Tw>(const Array<T>& input, const Array<Tw>& weights)\
 {\
     Array<T> wts = cast<T, Tw>(weights);\
     dim4 iDims   = input.dims();\
