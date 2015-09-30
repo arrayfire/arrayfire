@@ -128,6 +128,7 @@ TEST(Covariance, c32)
 
 TEST(Covariance, c64)
 {
+    if (noDoubleTests<double>()) return;
     array a = constant(cdouble(1.0, -1.0), 10, c64);
     array b = constant(cdouble(2.0, -1.0), 10, c64);
     ASSERT_THROW(cov(a, b), af::exception);
