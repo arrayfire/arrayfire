@@ -229,7 +229,8 @@ string getDriverVersion()
     char driverVersion[1024] = {" ",};
     int x = nvDriverVersion(driverVersion, sizeof(driverVersion));
     if (x != 1) {
-        #if !defined(OS_MAC) && !defined(__arm__)  // HACK Mac OSX 10.7 needs new method for fetching driver
+        // Windows, OSX, Tegra Need a new way to fetch driver
+        #if !defined(OS_WIN) && !defined(OS_MAC) && !defined(__arm__)
         throw runtime_error("Invalid driver");
         #endif
         int driver = 0;
