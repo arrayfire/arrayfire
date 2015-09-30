@@ -305,5 +305,5 @@ void weightedMeanAllTest(af::dim4 dims)
 
 TYPED_TEST(WeightedMean, Basic)
 {
-    weightedMeanAllTest<TypeParam, float>(af::dim4(66, 66, 31, 17));
+    weightedMeanAllTest<TypeParam, float>(af::dim4(32, 30, 33, 17));
 }

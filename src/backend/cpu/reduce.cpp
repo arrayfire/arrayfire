@@ -18,6 +18,20 @@
 
 using af::dim4;
 
+template<>
+struct Binary<cdouble, af_add_t>
+{
+    cdouble init()
+    {
+        return cdouble(0,0);
+    }
+
+    cdouble operator()(cdouble lhs, cdouble rhs)
+    {
+        return cdouble(real(lhs)+real(rhs), imag(lhs)+imag(rhs));
+    }
+};
+
 namespace cpu
 {
     template<af_op_t op, typename Ti, typename To, int D>
