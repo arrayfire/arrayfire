@@ -272,6 +272,18 @@ int getDeviceNativeId(int device)
     return -1;
 }
 
+int getDeviceIdFromNativeId(int nativeId)
+{
+    DeviceManager& mngr = DeviceManager::getInstance();
+
+    int devId = 0;
+    for(devId = 0; devId < mngr.nDevices; ++devId) {
+        if (nativeId == mngr.cuDevices[devId].nativeId)
+            break;
+    }
+    return devId;
+}
+
 cudaStream_t getStream(int device)
 {
     return DeviceManager::getInstance().streams[device];
@@ -389,5 +401,11 @@ af_err afcu_get_stream(cudaStream_t* stream, int id)
 af_err afcu_get_native_id(int* nativeid, int id)
 {
     *nativeid = cuda::getDeviceNativeId(id);
+    return AF_SUCCESS;
+}
+
+af_err afcu_set_native_id(int nativeid)
+{
+    cuda::setDevice(cuda::getDeviceIdFromNativeId(nativeid));
     return AF_SUCCESS;
 }

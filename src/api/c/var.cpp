@@ -26,9 +26,10 @@ using namespace detail;
 template<typename inType, typename outType>
 static outType varAll(const af_array& in, const bool isbiased)
 {
-    Array<outType> input = cast<outType>(getArray<inType>(in));
+    Array<inType> inArr = getArray<inType>(in);
+    Array<outType> input = cast<outType>(inArr);
 
-    Array<outType> meanCnst= createValueArray<outType>(input.dims(), mean<outType>(input));
+    Array<outType> meanCnst= createValueArray<outType>(input.dims(), mean<inType, outType>(inArr));
 
     Array<outType> diff    = arithOp<outType, af_sub_t>(input, meanCnst, input.dims());
 
@@ -65,10 +66,11 @@ static outType varAll(const af_array& in, const af_array weights)
 template<typename inType, typename outType>
 static af_array var(const af_array& in, const bool isbiased, int dim)
 {
-    Array<outType> input = cast<outType>(getArray<inType>(in));
+    Array<inType> _in    = getArray<inType>(in);
+    Array<outType> input = cast<outType>(_in);
     dim4 iDims = input.dims();
 
-    Array<outType> meanArr = mean<outType>(input, dim);
+    Array<outType> meanArr = mean<inType, outType>(_in, dim);
 
     /* now tile meanArr along dim and use it for variance computation */
     dim4 tileDims(1);

@@ -205,7 +205,7 @@ extern "C" {
    \param[out] out will contain the mean of the input array along dimension \p dim
    \param[in] in is the input array
    \param[in] dim the dimension along which the mean is extracted
-   \return     \ref AF_SUCCESS if the color transformation is successful,
+   \return     \ref AF_SUCCESS if the operation is successful,
    otherwise an appropriate error code is returned.
 
    \ingroup stat_func_mean
@@ -219,7 +219,7 @@ AFAPI af_err af_mean(af_array *out, const af_array in, const dim_t dim);
    \param[in] in is the input array
    \param[in] weights is used to scale input \p in before getting mean
    \param[in] dim the dimension along which the mean is extracted
-   \return     \ref AF_SUCCESS if the color transformation is successful,
+   \return     \ref AF_SUCCESS if the operation is successful,
    otherwise an appropriate error code is returned.
 
    \ingroup stat_func_mean
@@ -233,7 +233,7 @@ AFAPI af_err af_mean_weighted(af_array *out, const af_array in, const af_array w
    \param[in] in is the input array
    \param[in] isbiased is boolean denoting Population variance (false) or Sample Variance (true)
    \param[in] dim the dimension along which the variance is extracted
-   \return     \ref AF_SUCCESS if the color transformation is successful,
+   \return     \ref AF_SUCCESS if the operation is successful,
    otherwise an appropriate error code is returned.
 
    \ingroup stat_func_var
@@ -248,7 +248,7 @@ AFAPI af_err af_var(af_array *out, const af_array in, const bool isbiased, const
    \param[in] in is the input array
    \param[in] weights is used to scale input \p in before getting variance
    \param[in] dim the dimension along which the variance is extracted
-   \return     \ref AF_SUCCESS if the color transformation is successful,
+   \return     \ref AF_SUCCESS if the operation is successful,
    otherwise an appropriate error code is returned.
 
    \ingroup stat_func_var
@@ -262,7 +262,7 @@ AFAPI af_err af_var_weighted(af_array *out, const af_array in, const af_array we
    \param[out] out will contain the standard deviation of the input array along dimension \p dim
    \param[in] in is the input array
    \param[in] dim the dimension along which the standard deviation is extracted
-   \return     \ref AF_SUCCESS if the color transformation is successful,
+   \return     \ref AF_SUCCESS if the operation is successful,
    otherwise an appropriate error code is returned.
 
    \ingroup stat_func_stdev
@@ -277,7 +277,7 @@ AFAPI af_err af_stdev(af_array *out, const af_array in, const dim_t dim);
    \param[in] X is the first input array
    \param[in] Y is the second input array
    \param[in] isbiased is boolean specifying if biased estimate should be taken (default: false)
-   \return     \ref AF_SUCCESS if the color transformation is successful,
+   \return     \ref AF_SUCCESS if the operation is successful,
    otherwise an appropriate error code is returned.
 
    \ingroup stat_func_cov
@@ -290,7 +290,7 @@ AFAPI af_err af_cov(af_array* out, const af_array X, const af_array Y, const boo
    \param[out] out will contain the median of the input array along dimension \p dim
    \param[in] in is the input array
    \param[in] dim the dimension along which the median is extracted
-   \return     \ref AF_SUCCESS if the color transformation is successful,
+   \return     \ref AF_SUCCESS if the operation is successful,
    otherwise an appropriate error code is returned.
 
    \ingroup stat_func_median
@@ -303,7 +303,7 @@ AFAPI af_err af_median(af_array* out, const af_array in, const dim_t dim);
    \param[out] real will contain the real part of mean of the entire input array
    \param[out] imag will contain the imaginary part of mean of the entire input array
    \param[in] in is the input array
-   \return     \ref AF_SUCCESS if the color transformation is successful,
+   \return     \ref AF_SUCCESS if the operation is successful,
    otherwise an appropriate error code is returned.
 
    \ingroup stat_func_mean
@@ -317,7 +317,7 @@ AFAPI af_err af_mean_all(double *real, double *imag, const af_array in);
    \param[out] imag will contain the imaginary part of mean of the entire weighted input array
    \param[in] in is the input array
    \param[in] weights  is used to scale input \p in before getting mean
-   \return     \ref AF_SUCCESS if the color transformation is successful,
+   \return     \ref AF_SUCCESS if the operation is successful,
    otherwise an appropriate error code is returned.
 
    \ingroup stat_func_mean
@@ -332,7 +332,7 @@ AFAPI af_err af_mean_all_weighted(double *real, double *imag, const af_array in,
    \param[out] imagVal will contain the imaginary part of variance of the entire input array
    \param[in] in is the input array
    \param[in] isbiased is boolean denoting Population variance (false) or Sample Variance (true)
-   \return     \ref AF_SUCCESS if the color transformation is successful,
+   \return     \ref AF_SUCCESS if the operation is successful,
    otherwise an appropriate error code is returned.
 
    \ingroup stat_func_var
@@ -346,7 +346,7 @@ AFAPI af_err af_var_all(double *realVal, double *imagVal, const af_array in, con
    \param[out] imagVal will contain the imaginary part of variance of the entire weighted input array
    \param[in] in is the input array
    \param[in] weights  is used to scale input \p in before getting variance
-   \return     \ref AF_SUCCESS if the color transformation is successful,
+   \return     \ref AF_SUCCESS if the operation is successful,
    otherwise an appropriate error code is returned.
 
    \ingroup stat_func_var
@@ -359,7 +359,7 @@ AFAPI af_err af_var_all_weighted(double *realVal, double *imagVal, const af_arra
    \param[out] real will contain the real part of standard deviation of the entire input array
    \param[out] imag will contain the imaginary part of standard deviation of the entire input array
    \param[in] in is the input array
-   \return     \ref AF_SUCCESS if the color transformation is successful,
+   \return     \ref AF_SUCCESS if the operation is successful,
    otherwise an appropriate error code is returned.
 
    \ingroup stat_func_stdev
@@ -372,7 +372,7 @@ AFAPI af_err af_stdev_all(double *real, double *imag, const af_array in);
    \param[out] realVal will contain the real part of median of the entire input array
    \param[out] imagVal will contain the imaginary part of median of the entire input array
    \param[in] in is the input array
-   \return     \ref AF_SUCCESS if the color transformation is successful,
+   \return     \ref AF_SUCCESS if the operation is successful,
    otherwise an appropriate error code is returned.
 
    \ingroup stat_func_median
@@ -386,7 +386,7 @@ AFAPI af_err af_median_all(double *realVal, double *imagVal, const af_array in);
    \param[out] imagVal will contain the imaginary part of correlation coefficient of the inputs
    \param[in] X is the first input array
    \param[in] Y is the second input array
-   \return     \ref AF_SUCCESS if the color transformation is successful,
+   \return     \ref AF_SUCCESS if the operation is successful,
    otherwise an appropriate error code is returned.
 
    \note There are many ways correlation coefficient is calculated. This algorithm returns Pearson product-moment correlation coefficient.
