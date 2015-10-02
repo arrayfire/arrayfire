@@ -172,15 +172,11 @@ CPUInfo::CPUInfo()
 namespace cpu
 {
 
-static const char *get_system(void)
+static const std::string get_system(void)
 {
-    return
-#if defined(ARCH_32)
-    "32-bit "
-#elif defined(ARCH_64)
-    "64-bit "
-#endif
+    std::string arch = (sizeof(void *) == 4) ? "32-bit " : "64-bit ";
 
+    return arch +
 #if defined(OS_LNX)
     "Linux";
 #elif defined(OS_WIN)
