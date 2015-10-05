@@ -1181,6 +1181,10 @@ void sift(unsigned* out_feat,
                     contrast_thr, edge_thr, init_sigma, img_scale);
         POST_LAUNCH_CHECK();
 
+        memFree(d_extrema_x);
+        memFree(d_extrema_y);
+        memFree(d_extrema_layer);
+
         CUDA_CHECK(cudaMemcpy(&interp_feat, d_count, sizeof(unsigned), cudaMemcpyDeviceToHost));
         interp_feat = min(interp_feat, max_feat);
 
@@ -1217,10 +1221,6 @@ void sift(unsigned* out_feat,
         apply_permutation<unsigned>(interp_layer_ptr, permutation);
         apply_permutation<float>(interp_y_ptr, permutation);
         apply_permutation<float>(interp_x_ptr, permutation);
-
-        memFree(d_extrema_x);
-        memFree(d_extrema_y);
-        memFree(d_extrema_layer);
 
         float* d_nodup_x = memAlloc<float>(interp_feat);
         float* d_nodup_y = memAlloc<float>(interp_feat);
