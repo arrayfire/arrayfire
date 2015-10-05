@@ -164,7 +164,7 @@ template<typename T>
 Param<T> gauss_filter(float sigma)
 {
     // Using 6-sigma rule
-    unsigned gauss_len = (unsigned)round(sigma * 6 + 1) | 1;
+    unsigned gauss_len = std::min((unsigned)round(sigma * 6 + 1) | 1, 31u);
 
     T* h_gauss = new T[gauss_len];
     gaussian1D(h_gauss, gauss_len, sigma);
@@ -899,8 +899,8 @@ Param<T> createInitialImage(
     init_img.ptr = memAlloc<T>(init_img_el);
     init_tmp.ptr = memAlloc<T>(init_img_el);
 
-    float s = (double_input) ? sqrt(init_sigma * init_sigma - INIT_SIGMA * INIT_SIGMA * 4)
-                             : sqrt(init_sigma * init_sigma - INIT_SIGMA * INIT_SIGMA);
+    float s = (double_input) ? std::max((float)sqrt(init_sigma * init_sigma - INIT_SIGMA * INIT_SIGMA * 4), 0.1f)
+                             : std::max((float)sqrt(init_sigma * init_sigma - INIT_SIGMA * INIT_SIGMA), 0.1f);
 
     Param<convAccT> filter = gauss_filter<convAccT>(s);
 

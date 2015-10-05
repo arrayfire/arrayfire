@@ -218,8 +218,8 @@ Param createInitialImage(
     dim_t init_img_el = init_img.info.strides[3] * init_img.info.dims[3];
     init_img.data = bufferAlloc(init_img_el * sizeof(T));
 
-    float s = (double_input) ? sqrt(init_sigma * init_sigma - InitSigma * InitSigma * 4)
-                             : sqrt(init_sigma * init_sigma - InitSigma * InitSigma);
+    float s = (double_input) ? std::max((float)sqrt(init_sigma * init_sigma - InitSigma * InitSigma * 4.f), 0.1f)
+                             : std::max((float)sqrt(init_sigma * init_sigma - InitSigma * InitSigma), 0.1f);
 
     const Param filter = gaussFilter<convAccT>(s);
 
