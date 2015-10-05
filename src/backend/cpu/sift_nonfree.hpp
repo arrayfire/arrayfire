@@ -736,7 +736,7 @@ namespace cpu
             init_img = convolve2<T, convAccT, false>(double_img, filter, filter);
         }
         else {
-            init_img = convolve2<T, convAccT, false>(init_img, filter, filter);
+            init_img = convolve2<T, convAccT, false>(img, filter, filter);
         }
 
         return init_img;
