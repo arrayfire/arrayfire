@@ -669,14 +669,14 @@ void sift(unsigned* out_feat,
 
             auto cdOp = make_kernel<Buffer, unsigned, unsigned,
                                     Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
-                                    Buffer, KParam, int, int, float, float, int,
+                                    Buffer, KParam, int, int, float, int,
                                     LocalSpaceArg> (*cdKernel[device]);
 
             cdOp(EnqueueArgs(getQueue(), global_desc, local_desc),
                  *d_desc, desc_len, histsz,
                  *d_oriented_x, *d_oriented_y, *d_oriented_layer,
                  *d_oriented_response, *d_oriented_size, *d_oriented_ori, oriented_feat,
-                 *gauss_pyr[o].data, gauss_pyr[o].info, d, n, scale, init_sigma, n_layers,
+                 *gauss_pyr[o].data, gauss_pyr[o].info, d, n, scale, n_layers,
                  cl::Local(desc_len * (histsz+1) * sizeof(float)));
             CL_DEBUG_FINISH(getQueue());
 

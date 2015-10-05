@@ -402,7 +402,7 @@ namespace cpu
                 y_out[*counter] = (y + xy) * (1 << octave);
                 layer_out[*counter] = layer;
                 response_out[*counter] = abs(contr);
-                size_out[*counter] = sigma*pow(2.f, octave + (layer + xl) / n_layers);
+                size_out[*counter] = sigma*pow(2.f, octave + (layer + xl) / n_layers) * 2.f;
                 (*counter)++;
             }
         }
@@ -613,7 +613,6 @@ namespace cpu
         const int d,
         const int n,
         const float scale,
-        const float sigma,
         const unsigned octave,
         const unsigned n_layers)
     {
@@ -623,7 +622,7 @@ namespace cpu
             const unsigned layer = layer_in[f];
             float ori = (360.f - ori_in[f]) * PI_VAL / 180.f;
             ori = (ori > PI_VAL) ? ori - PI_VAL*2 : ori;
-            //const float size = size_in[f];
+            const float size = size_in[f];
             const int fx = round(x_in[f] * scale);
             const int fy = round(y_in[f] * scale);
 
@@ -636,7 +635,7 @@ namespace cpu
             float sin_t = sin(ori);
             float bins_per_rad = n / (PI_VAL * 2.f);
             float exp_denom = d * d * 0.5f;
-            float hist_width = DescrSclFctr * sigma * powf(2.f, layer/n_layers);
+            float hist_width = DescrSclFctr * size * scale * 0.5f;
             int radius = hist_width * sqrt(2.f) * (d + 1.f) * 0.5f + 0.5f;
 
             int len = radius*2+1;
@@ -970,7 +969,7 @@ namespace cpu
             computeDescriptor<T>(desc, desc_len,
                                  oriented_x, oriented_y, oriented_layer,
                                  oriented_response, oriented_size, oriented_ori,
-                                 oriented_feat, gauss_pyr, d, n, scale, init_sigma, i, n_layers);
+                                 oriented_feat, gauss_pyr, d, n, scale, i, n_layers);
 
             total_feat += oriented_feat;
             feat_pyr[i] = oriented_feat;
