@@ -434,7 +434,7 @@ __kernel void interpolateExtrema(
             y_out[ridx] = (y + xy) * (1 << octave);
             layer_out[ridx] = layer;
             response_out[ridx] = fabs(contr);
-            size_out[ridx] = sigma*pow(2.f, octave + (layer + xl) / n_layers);
+            size_out[ridx] = sigma*pow(2.f, octave + (layer + xl) / n_layers) * 2.f;
         }
     }
 }
@@ -677,7 +677,6 @@ __kernel void computeDescriptor(
     const int d,
     const int n,
     const float scale,
-    const float sigma,
     const int n_layers,
     __local float* l_mem)
 {
@@ -713,7 +712,7 @@ __kernel void computeDescriptor(
         float sin_t = sin(ori);
         float bins_per_rad = n / (PI_VAL * 2.f);
         float exp_denom = d * d * 0.5f;
-        float hist_width = DESCR_SCL_FCTR * sigma * pow(2.f, layer/n_layers);
+        float hist_width = DESCR_SCL_FCTR * size * scale * 0.5f;
         int radius = hist_width * sqrt(2.f) * (d + 1.f) * 0.5f + 0.5f;
 
         int len = radius*2+1;
