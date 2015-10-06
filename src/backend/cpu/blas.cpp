@@ -24,12 +24,39 @@ namespace cpu
     using std::remove_const;
     using std::conditional;
 
-  // Some implementations of BLAS require void* for complex pointers while
-  // others use float*/double*
-#if (defined(OS_WIN) && !defined(USE_MKL)) || defined(IS_OPENBLAS)
-  static const bool cplx_void_ptr = false;
+// Some implementations of BLAS require void* for complex pointers while others use float*/double*
+//
+// Sample cgemm API
+// OpenBLAS
+// void cblas_cgemm(OPENBLAS_CONST enum CBLAS_ORDER Order, OPENBLAS_CONST enum CBLAS_TRANSPOSE TransA, OPENBLAS_CONST enum CBLAS_TRANSPOSE TransB,
+//                  OPENBLAS_CONST blasint M, OPENBLAS_CONST blasint N, OPENBLAS_CONST blasint K,
+//                  OPENBLAS_CONST float *alpha, OPENBLAS_CONST float *A, OPENBLAS_CONST blasint lda,
+//                  OPENBLAS_CONST float *B, OPENBLAS_CONST blasint ldb, OPENBLAS_CONST float *beta,
+//                  float *C, OPENBLAS_CONST blasint ldc);
+//
+// MKL
+// void cblas_cgemm(const  CBLAS_LAYOUT Layout, const CBLAS_TRANSPOSE TransA, const  CBLAS_TRANSPOSE TransB,
+//                  const MKL_INT M, const MKL_INT N, const MKL_INT K,
+//                  const void *alpha, const void *A, const MKL_INT lda,
+//                  const void *B, const MKL_INT ldb, const void *beta,
+//                  void *C, const MKL_INT ldc);
+// atlas cblas
+// void cblas_cgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA,
+//                  const enum CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
+//                  const void *alpha, const void *A, const int lda,
+//                  const void *B, const int ldb, const void *beta,
+//                  void *C, const int ldc);
+//
+// LAPACKE
+// void cblas_cgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA,
+//                  const enum CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
+//                  const void *alpha, const void *A, const int lda,
+//                  const void *B, const int ldb, const void *beta,
+//                  void *C, const int ldc);
+#if defined(IS_OPENBLAS)
+    static const bool cplx_void_ptr = false;
 #else
-  static const bool cplx_void_ptr = true;
+    static const bool cplx_void_ptr = true;
 #endif
 
 template<typename T, class Enable = void>

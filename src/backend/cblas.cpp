@@ -7,9 +7,33 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
 ********************************************************/
 
-#include <blas.hpp>
-
 #ifdef USE_F77_BLAS
+
+#ifdef AF_CPU
+    #include <blas.hpp>
+#else
+    #ifdef __APPLE__
+        #include <Accelerate/Accelerate.h>
+    #else
+        #ifdef USE_MKL
+            #include <mkl_cblas.h>
+        #else
+            extern "C" {
+                #include <cblas.h>
+            }
+        #endif
+    #endif
+
+    // TODO: Ask upstream for a more official way to detect it
+    #ifdef OPENBLAS_CONST
+        #define IS_OPENBLAS
+    #endif
+
+    #ifndef IS_OPENBLAS
+        typedef int blasint;
+    #endif
+#endif
+
 #define ADD_
 #include <cblas_f77.h>
 
@@ -80,4 +104,6 @@ GEMM_F77(c, void *, void, float)
 GEMM_F77(z, void *, void, double)
 #undef ADDR
 
+#else
+    #include <blas.hpp>
 #endif
