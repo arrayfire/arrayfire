@@ -150,11 +150,6 @@ ENDIF()
 # Architechture Definitions
 INCLUDE(${CMAKE_MODULE_PATH}/TargetArch.cmake)
 target_architecture(ARCH)
-IF(${ARCH} STREQUAL "x86_64")
-    ADD_DEFINITIONS(-DARCH_64)
-ELSE(${ARCH})
-    ADD_DEFINITIONS(-DARCH_32)
-ENDIF()
 
 INCLUDE(${CMAKE_MODULE_PATH}/Version.cmake)
 

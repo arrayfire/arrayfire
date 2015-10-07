@@ -782,7 +782,7 @@ af_err af_load_image_memory(af_array *out, const void* ptr)
     return AF_ERR_NOT_CONFIGURED;
 }
 
-af_err af_save_image_memory(void **ptr, const char* filename, const af_array in_)
+af_err af_save_image_memory(void **ptr, const af_array in_, const af_image_format format)
 {
     printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
     return AF_ERR_NOT_CONFIGURED;

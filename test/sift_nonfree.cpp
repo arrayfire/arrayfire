@@ -155,7 +155,7 @@ typedef ::testing::Types<float, double> TestTypes;
 TYPED_TEST_CASE(SIFT, TestTypes);
 
 template<typename T>
-void siftTest(string pTestFile)
+void siftTest(string pTestFile, unsigned nLayers, float contrastThr, float edgeThr, float initSigma, bool doubleInput)
 {
 #ifdef AF_BUILD_SIFT
     if (noDoubleTests<T>()) return;
@@ -180,7 +180,7 @@ void siftTest(string pTestFile)
         ASSERT_EQ(AF_SUCCESS, af_load_image(&inArray_f32, inFiles[testId].c_str(), false));
         ASSERT_EQ(AF_SUCCESS, conv_image<T>(&inArray, inArray_f32));
 
-        ASSERT_EQ(AF_SUCCESS, af_sift(&feat, &desc, inArray, 3, 0.04f, 10.0f, 1.6f, true, 1.f/256.f, 0.05f));
+        ASSERT_EQ(AF_SUCCESS, af_sift(&feat, &desc, inArray, nLayers, contrastThr, edgeThr, initSigma, doubleInput, 1.f/256.f, 0.05f));
 
         dim_t n = 0;
         af_array x, y, score, orientation, size;
@@ -234,7 +234,11 @@ void siftTest(string pTestFile)
             ASSERT_LE(fabs(out_feat[elIter].f[4] - gold_feat[elIter].f[4]), 1e-3) << "at: " << elIter << std::endl;
         }
 
-        EXPECT_TRUE(compareEuclidean(descDims[0], descDims[1], (float*)&v_out_desc[0], (float*)&v_gold_desc[0], 1.f, 2.f));
+        bool isTypeDouble = is_same_type<T, double>::value || is_same_type<T, af::cdouble>::value;
+        if (isTypeDouble)
+            EXPECT_TRUE(compareEuclidean(descDims[0], descDims[1], (float*)&v_out_desc[0], (float*)&v_gold_desc[0], 2.f, 4.5f));
+        else
+            EXPECT_TRUE(compareEuclidean(descDims[0], descDims[1], (float*)&v_out_desc[0], (float*)&v_gold_desc[0], 1.f, 4.f));
 
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray_f32));
@@ -256,13 +260,19 @@ void siftTest(string pTestFile)
 #endif
 }
 
-#define SIFT_INIT(desc, image) \
+#define SIFT_INIT(desc, image, nLayers, contrastThr, edgeThr, initSigma, doubleInput) \
     TYPED_TEST(SIFT, desc) \
     {   \
-        siftTest<TypeParam>(string(TEST_DIR"/sift/"#image".test"));   \
+        for (int i = 0; i < 1; i++) \
+        siftTest<TypeParam>(string(TEST_DIR"/sift/"#image".test"), nLayers, contrastThr, edgeThr, initSigma, doubleInput);   \
     }
 
-    SIFT_INIT(man, man);
+    SIFT_INIT(Man_Default, man, 3, 0.04f, 10.0f, 1.6f, true);
+    SIFT_INIT(Man_2Layers, man_2layers, 2, 0.04f, 10.0f, 1.6f, true);
+    SIFT_INIT(Man_ContrastThr005, man_contrast005, 3, 0.05f, 10.0f, 1.6f, true);
+    SIFT_INIT(Man_EdgeThr5, man_edge5, 3, 0.04f, 5.0f, 1.6f, true);
+    SIFT_INIT(Man_InitSigma18, man_initsigma18, 3, 0.04f, 10.0f, 1.8f, true);
+    SIFT_INIT(Man_NoDoubleInput, man_nodoubleinput, 3, 0.04f, 10.0f, 1.6f, false);
 
 ///////////////////////////////////// CPP ////////////////////////////////
 //

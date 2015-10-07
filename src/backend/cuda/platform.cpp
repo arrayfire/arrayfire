@@ -116,15 +116,11 @@ static inline bool card_compare_num(const cudaDevice_t &l, const cudaDevice_t &r
     return 0;
 }
 
-static const char *get_system(void)
+static const std::string get_system(void)
 {
-    return
-#if defined(ARCH_32)
-    "32-bit "
-#elif defined(ARCH_64)
-    "64-bit "
-#endif
+    std::string arch = (sizeof(void *) == 4) ? "32-bit " : "64-bit ";
 
+    return arch +
 #if defined(OS_LNX)
     "Linux";
 #elif defined(OS_WIN)
@@ -233,7 +229,8 @@ string getDriverVersion()
     char driverVersion[1024] = {" ",};
     int x = nvDriverVersion(driverVersion, sizeof(driverVersion));
     if (x != 1) {
-        #if !defined(OS_MAC) && !defined(__arm__)  // HACK Mac OSX 10.7 needs new method for fetching driver
+        // Windows, OSX, Tegra Need a new way to fetch driver
+        #if !defined(OS_WIN) && !defined(OS_MAC) && !defined(__arm__)
         throw runtime_error("Invalid driver");
         #endif
         int driver = 0;
