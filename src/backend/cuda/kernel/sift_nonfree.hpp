@@ -142,6 +142,18 @@ static const dim_t SIFT_THREADS_Y = 8;
 // factor used to convert floating-podescriptor to unsigned char
 #define INT_DESCR_FCTR 512.f
 
+// Number of GLOH bins in radial direction
+static const unsigned GLOHRadialBins = 3;
+
+// Radii of GLOH descriptors
+__constant__ float GLOHRadii[GLOHRadialBins] = {6.f, 11.f, 15.f};
+
+// Number of GLOH angular bins (excluding the inner-most radial section)
+static const unsigned GLOHAngularBins = 8;
+
+// Number of GLOH bins per histogram in descriptor
+static const unsigned GLOHHistBins = 16;
+
 template<typename T>
 void gaussian1D(T* out, const int dim, double sigma=0.0)
 {
@@ -230,7 +242,7 @@ __inline__ __device__ void normalizeDesc(
     int bsz_x = blockDim.x;
 
     for (int i = tid_x; i < histlen; i += bsz_x)
-        accum[tid_x] = desc[tid_y*histlen+i]*desc[tid_y*histlen+i];
+        accum[i] = desc[tid_y*histlen+i]*desc[tid_y*histlen+i];
     __syncthreads();
 
     if (tid_x < 64)
@@ -241,6 +253,54 @@ __inline__ __device__ void normalizeDesc(
     __syncthreads();
     if (tid_x < 16)
         accum[tid_x] += accum[tid_x+16];
+    __syncthreads();
+    if (tid_x < 8)
+        accum[tid_x] += accum[tid_x+8];
+    __syncthreads();
+    if (tid_x < 4)
+        accum[tid_x] += accum[tid_x+4];
+    __syncthreads();
+    if (tid_x < 2)
+        accum[tid_x] += accum[tid_x+2];
+    __syncthreads();
+    if (tid_x < 1)
+        accum[tid_x] += accum[tid_x+1];
+    __syncthreads();
+
+    float len_sq = accum[0];
+    float len_inv = 1.0f / sqrtf(len_sq);
+
+    for (int i = tid_x; i < histlen; i += bsz_x) {
+        desc[tid_y*histlen+i] *= len_inv;
+    }
+    __syncthreads();
+}
+
+__inline__ __device__ void normalizeGLOHDesc(
+    float* desc,
+    float* accum,
+    const int histlen)
+{
+    int tid_x = threadIdx.x;
+    int tid_y = threadIdx.y;
+    int bsz_x = blockDim.x;
+
+    for (int i = tid_x; i < histlen; i += bsz_x)
+        accum[i] = desc[tid_y*histlen+i]*desc[tid_y*histlen+i];
+    __syncthreads();
+
+    if (tid_x < 128)
+        accum[tid_x] += accum[tid_x+128];
+    __syncthreads();
+    if (tid_x < 64)
+        accum[tid_x] += accum[tid_x+64];
+    __syncthreads();
+    if (tid_x < 32)
+        accum[tid_x] += accum[tid_x+32];
+    __syncthreads();
+    if (tid_x < 16)
+        // GLOH is 272-dimensional, accumulating last 16 descriptors
+        accum[tid_x] += accum[tid_x+16] + accum[tid_x+256];
     __syncthreads();
     if (tid_x < 8)
         accum[tid_x] += accum[tid_x+8];
@@ -759,10 +819,8 @@ __global__ void computeDescriptor(
     float* desc = shrdMem;
     float* accum = shrdMem + desc_len * histsz;
 
-    const int histlen = (d)*(d)*(n);
-
-    for (int i = tid_x; i < histlen*histsz; i += bsz_x)
-        desc[tid_y*histlen+i] = 0.f;
+    for (int i = tid_x; i < desc_len*histsz; i += bsz_x)
+        desc[tid_y*desc_len+i] = 0.f;
     __syncthreads();
 
     if (f < total_feat) {
@@ -859,17 +917,184 @@ __global__ void computeDescriptor(
         desc[l] += desc[l+desc_len];
     __syncthreads();
 
-    normalizeDesc(desc, accum, histlen);
+    normalizeDesc(desc, accum, desc_len);
 
-    for (int i = tid_x; i < d*d*n; i += bsz_x)
+    for (int i = tid_x; i < desc_len; i += bsz_x)
         desc[tid_y*desc_len+i] = min(desc[tid_y*desc_len+i], DESC_MAG_THR);
     __syncthreads();
 
-    normalizeDesc(desc, accum, histlen);
+    normalizeDesc(desc, accum, desc_len);
 
     if (f < total_feat) {
         // Calculate final descriptor values
-        for (int k = tid_x; k < d*d*n; k += bsz_x)
+        for (int k = tid_x; k < desc_len; k += bsz_x)
+            desc_out[f*desc_len+k] = round(min(255.f, desc[tid_y*desc_len+k] * INT_DESCR_FCTR));
+    }
+}
+
+// Computes GLOH feature descriptors for features in an array. Based on Section III-B
+// of Mikolajczyk and Schmid paper.
+template<typename T>
+__global__ void computeGLOHDescriptor(
+    float* desc_out,
+    const unsigned desc_len,
+    const unsigned histsz,
+    const float* x_in,
+    const float* y_in,
+    const unsigned* layer_in,
+    const float* response_in,
+    const float* size_in,
+    const float* ori_in,
+    const unsigned total_feat,
+    const CParam<T> gauss_octave,
+    const int d,
+    const unsigned rb,
+    const unsigned ab,
+    const unsigned hb,
+    const float scale,
+    const int n_layers)
+{
+    const int tid_x = threadIdx.x;
+    const int tid_y = threadIdx.y;
+    const int bsz_x = blockDim.x;
+    const int bsz_y = blockDim.y;
+
+    const int f = blockIdx.y * bsz_y + tid_y;
+
+    SharedMemory<float> shared;
+    float* shrdMem = shared.getPointer();
+    float* desc = shrdMem;
+    float* accum = shrdMem + desc_len * histsz;
+
+    for (int i = tid_x; i < desc_len*histsz; i += bsz_x)
+        desc[tid_y*desc_len+i] = 0.f;
+    __syncthreads();
+
+    if (f < total_feat) {
+        const unsigned layer = layer_in[f];
+        float ori = (360.f - ori_in[f]) * PI_VAL / 180.f;
+        ori = (ori > PI_VAL) ? ori - PI_VAL*2 : ori;
+        const float size = size_in[f];
+        const int fx = round(x_in[f] * scale);
+        const int fy = round(y_in[f] * scale);
+
+        const int dim0 = gauss_octave.dims[0];
+        const int dim1 = gauss_octave.dims[1];
+        const int imel = dim0 * dim1;
+
+        // Points img to correct Gaussian pyramid layer
+        const T* img_ptr = gauss_octave.ptr + layer * imel;
+
+        float cos_t = cosf(ori);
+        float sin_t = sinf(ori);
+        float hist_bins_per_rad = hb / (PI_VAL * 2.f);
+        float polar_bins_per_rad = ab / (PI_VAL * 2.f);
+        float exp_denom = GLOHRadii[rb-1] * 0.5f;
+
+        float hist_width = DESCR_SCL_FCTR * size * scale * 0.5f;
+
+        // Keep same descriptor radius used for SIFT
+        int radius = hist_width * sqrt(2.f) * (d + 1.f) * 0.5f + 0.5f;
+
+        // Alternative radius size calculation, changing the radius weight
+        // (rw) in the range of 0.25f-0.75f gives different results,
+        // increasing it tends to show a better recall rate but with a
+        // smaller amount of correct matches
+        //float rw = 0.5f;
+        //int radius = hist_width * GLOHRadii[rb-1] * rw + 0.5f;
+
+        int len = radius*2+1;
+        const int hist_off = (tid_x % histsz) * desc_len;
+
+        // Calculate orientation histogram
+        for (int l = tid_x; l < len*len; l += bsz_x) {
+            int i = l / len - radius;
+            int j = l % len - radius;
+
+            int y = fy + i;
+            int x = fx + j;
+
+            float x_rot = (j * cos_t - i * sin_t);
+            float y_rot = (j * sin_t + i * cos_t);
+
+            float r = sqrt(x_rot*x_rot + y_rot*y_rot) / radius * GLOHRadii[rb-1];
+            float theta = atan2(y_rot, x_rot);
+            while (theta < 0.0f)
+                theta += PI_VAL*2;
+            while (theta >= PI_VAL*2)
+                theta -= PI_VAL*2;
+
+            float tbin = theta * polar_bins_per_rad;
+            float rbin = (r < GLOHRadii[0]) ? r / GLOHRadii[0] :
+                         ((r < GLOHRadii[1]) ? 1 + (r - GLOHRadii[0]) / (float)(GLOHRadii[1] - GLOHRadii[0]) :
+                         min(2 + (r - GLOHRadii[1]) / (float)(GLOHRadii[2] - GLOHRadii[1]), 3.f-FLT_EPSILON));
+
+            if (r <= GLOHRadii[rb-1] &&
+                y > 0 && y < dim0 - 1 && x > 0 && x < dim1 - 1) {
+                float dx = (float)(IPTR(x+1, y) - IPTR(x-1, y));
+                float dy = (float)(IPTR(x, y-1) - IPTR(x, y+1));
+
+                float grad_mag = sqrtf(dx*dx + dy*dy);
+                float grad_ori = atan2f(dy, dx) - ori;
+                while (grad_ori < 0.0f)
+                    grad_ori += PI_VAL*2;
+                while (grad_ori >= PI_VAL*2)
+                    grad_ori -= PI_VAL*2;
+
+                float w = exp(-r / exp_denom);
+                float obin = grad_ori * hist_bins_per_rad;
+                float mag = grad_mag*w;
+
+                int t0 = floor(tbin);
+                int r0 = floor(rbin);
+                int o0 = floor(obin);
+                tbin -= t0;
+                rbin -= r0;
+                obin -= o0;
+
+                for (int rl = 0; rl <= 1; rl++) {
+                    int rb = (rbin > 0.5f) ? (r0 + rl) : (r0 - rl);
+                    float v_r = mag * ((rl == 0) ? 1.0f - rbin : rbin);
+                    if (rb >= 0 && rb <= 2) {
+                        for (int tl = 0; tl <= 1; tl++) {
+                            int tb = (t0 + tl) % ab;
+                            float v_t = v_r * ((tl == 0) ? 1.0f - tbin : tbin);
+                            for (int ol = 0; ol <= 1; ol++) {
+                                int ob = (o0 + ol) % hb;
+                                float v_o = v_t * ((ol == 0) ? 1.0f - obin : obin);
+                                unsigned idx = (rb > 0) * (hb + ((rb-1) * ab + tb)*hb) + ob;
+                                atomicAdd(&desc[hist_off + tid_y*desc_len + idx], v_o);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    __syncthreads();
+
+    // Combine histograms (reduces previous atomicAdd overhead)
+    for (int l = tid_x; l < desc_len*4; l += bsz_x)
+        desc[l] += desc[l+4*desc_len];
+    __syncthreads();
+    for (int l = tid_x; l < desc_len*2; l += bsz_x)
+        desc[l    ] += desc[l+2*desc_len];
+    __syncthreads();
+    for (int l = tid_x; l < desc_len; l += bsz_x)
+        desc[l] += desc[l+desc_len];
+    __syncthreads();
+
+    normalizeGLOHDesc(desc, accum, desc_len);
+
+    for (int i = tid_x; i < desc_len; i += bsz_x)
+        desc[tid_y*desc_len+i] = min(desc[tid_y*desc_len+i], DESC_MAG_THR);
+    __syncthreads();
+
+    normalizeGLOHDesc(desc, accum, desc_len);
+
+    if (f < total_feat) {
+        // Calculate final descriptor values
+        for (int k = tid_x; k < desc_len; k += bsz_x)
             desc_out[f*desc_len+k] = round(min(255.f, desc[tid_y*desc_len+k] * INT_DESCR_FCTR));
     }
 }
@@ -1010,7 +1235,6 @@ std::vector< Param<T> > buildGaussPyr(
             const unsigned imel = tmp_pyr[idx].dims[3] * tmp_pyr[idx].strides[3];
             const unsigned offset = imel * l;
 
-            //getQueue().enqueueCopyBuffer(*tmp_pyr[idx].data, *gauss_pyr[o].data, 0, offset*sizeof(T), imel * sizeof(T));
             CUDA_CHECK(cudaMemcpy(gauss_pyr[o].ptr + offset, tmp_pyr[idx].ptr, imel * sizeof(T), cudaMemcpyDeviceToDevice));
         }
     }
@@ -1093,7 +1317,8 @@ void sift(unsigned* out_feat,
           const float init_sigma,
           const bool double_input,
           const float img_scale,
-          const float feature_ratio)
+          const float feature_ratio,
+          const bool compute_GLOH)
 {
     const unsigned min_dim = (double_input) ? min(img.dims[0]*2, img.dims[1]*2)
                                             : min(img.dims[0], img.dims[1]);
@@ -1116,7 +1341,10 @@ void sift(unsigned* out_feat,
 
     const unsigned d = DESCR_WIDTH;
     const unsigned n = DESCR_HIST_BINS;
-    const unsigned desc_len = d*d*n;
+    const unsigned rb = GLOHRadialBins;
+    const unsigned ab = GLOHAngularBins;
+    const unsigned hb = GLOHHistBins;
+    const unsigned desc_len = (compute_GLOH) ? (1 + (rb-1) * ab) * hb : d*d*n;
 
     unsigned* d_count = memAlloc<unsigned>(1);
     for (unsigned i = 0; i < n_octaves; i++) {
@@ -1302,11 +1530,19 @@ void sift(unsigned* out_feat,
         const unsigned histsz = 8;
         const size_t shared_size = desc_len * (histsz+1) * sizeof(float);
 
-        CUDA_LAUNCH_SMEM((computeDescriptor<T>), blocks, threads, shared_size,
-                         d_desc, desc_len, histsz,
-                         d_oriented_x, d_oriented_y, d_oriented_layer,
-                         d_oriented_response, d_oriented_size, d_oriented_ori,
-                         oriented_feat, gauss_pyr[i], d, n, scale, n_layers);
+        if (compute_GLOH)
+            CUDA_LAUNCH_SMEM((computeGLOHDescriptor<T>), blocks, threads, shared_size,
+                             d_desc, desc_len, histsz,
+                             d_oriented_x, d_oriented_y, d_oriented_layer,
+                             d_oriented_response, d_oriented_size, d_oriented_ori,
+                             oriented_feat, gauss_pyr[i], d, rb, ab, hb,
+                             scale, n_layers);
+        else
+            CUDA_LAUNCH_SMEM((computeDescriptor<T>), blocks, threads, shared_size,
+                             d_desc, desc_len, histsz,
+                             d_oriented_x, d_oriented_y, d_oriented_layer,
+                             d_oriented_response, d_oriented_size, d_oriented_ori,
+                             oriented_feat, gauss_pyr[i], d, n, scale, n_layers);
         POST_LAUNCH_CHECK();
 
         total_feat += oriented_feat;
