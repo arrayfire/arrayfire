@@ -168,7 +168,7 @@ namespace cpu
     Array<T> gauss_filter(float sigma)
     {
         // Using 6-sigma rule
-        unsigned gauss_len = (unsigned)round(sigma * 6 + 1) | 1;
+        unsigned gauss_len = std::min((unsigned)round(sigma * 6 + 1) | 1, 31u);
 
         Array<T> filter = createEmptyArray<T>(gauss_len);
         gaussian1D((T*)getDevicePtr(filter), gauss_len, sigma);
@@ -726,8 +726,8 @@ namespace cpu
 
         Array<T> init_img = createEmptyArray<T>(af::dim4());
 
-        float s = (double_input) ? sqrt(init_sigma * init_sigma - InitSigma * InitSigma * 4)
-            : sqrt(init_sigma * init_sigma - InitSigma * InitSigma);
+        float s = (double_input) ? std::max((float)sqrt(init_sigma * init_sigma - InitSigma * InitSigma * 4), 0.1f)
+                                 : std::max((float)sqrt(init_sigma * init_sigma - InitSigma * InitSigma), 0.1f);
 
         Array<T> filter = gauss_filter<T>(s);
 
@@ -736,7 +736,7 @@ namespace cpu
             init_img = convolve2<T, convAccT, false>(double_img, filter, filter);
         }
         else {
-            init_img = convolve2<T, convAccT, false>(init_img, filter, filter);
+            init_img = convolve2<T, convAccT, false>(img, filter, filter);
         }
 
         return init_img;
