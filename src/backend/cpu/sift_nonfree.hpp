@@ -117,6 +117,18 @@ namespace cpu
 // factor used to convert floating-point descriptor to unsigned char
     static const float IntDescrFctr = 512.f;
 
+// Number of GLOH bins in radial direction
+    static const unsigned GLOHRadialBins = 3;
+
+// Radiuses of GLOH descriptors
+    static const float GLOHRadii[GLOHRadialBins] = {6.f, 11.f, 15.f};
+
+// Number of GLOH angular bins (excluding the inner-most radial section)
+    static const unsigned GLOHAngularBins = 8;
+
+// Number of GLOH bins per histogram in descriptor
+    static const unsigned GLOHHistBins = 16;
+
     typedef struct
     {
         float    f[4];
@@ -639,9 +651,8 @@ namespace cpu
             int radius = hist_width * sqrt(2.f) * (d + 1.f) * 0.5f + 0.5f;
 
             int len = radius*2+1;
-            const int histlen = d*d*n;
 
-            for (int i = 0; i < histlen; i++)
+            for (int i = 0; i < desc_len; i++)
                 desc[i] = 0.f;
 
             // Calculate orientation histogram
@@ -700,15 +711,154 @@ namespace cpu
                 }
             }
 
-            normalizeDesc(desc, histlen);
+            normalizeDesc(desc, desc_len);
 
-            for (int i = 0; i < d*d*n; i++)
+            for (int i = 0; i < desc_len; i++)
                 desc[i] = min(desc[i], DescrMagThr);
 
-            normalizeDesc(desc, histlen);
+            normalizeDesc(desc, desc_len);
 
             // Calculate final descriptor values
-            for (int k = 0; k < d*d*n; k++) {
+            for (int k = 0; k < desc_len; k++) {
+                desc_out[f*desc_len+k] = round(min(255.f, desc[k] * IntDescrFctr));
+            }
+        }
+    }
+
+// Computes GLOH feature descriptors for features in an array. Based on Section III-B
+// of Mikolajczyk and Schmid paper.
+    template<typename T>
+    void computeGLOHDescriptor(
+        float* desc_out,
+        const unsigned desc_len,
+        const float* x_in,
+        const float* y_in,
+        const unsigned* layer_in,
+        const float* response_in,
+        const float* size_in,
+        const float* ori_in,
+        const unsigned total_feat,
+        const std::vector< Array<T> >& gauss_pyr,
+        const int d,
+        const unsigned rb,
+        const unsigned ab,
+        const unsigned hb,
+        const float scale,
+        const unsigned octave,
+        const unsigned n_layers)
+    {
+        float desc[272];
+
+        for (unsigned f = 0; f < total_feat; f++) {
+            const unsigned layer = layer_in[f];
+            float ori = (360.f - ori_in[f]) * PI_VAL / 180.f;
+            ori = (ori > PI_VAL) ? ori - PI_VAL*2 : ori;
+            const float size = size_in[f];
+            const int fx = round(x_in[f] * scale);
+            const int fy = round(y_in[f] * scale);
+
+            // Points img to correct Gaussian pyramid layer
+            Array<T> img = gauss_pyr[octave*(n_layers+3) + layer];
+            const T* img_ptr = img.get();
+            af::dim4 idims = img.dims();
+
+            float cos_t = cos(ori);
+            float sin_t = sin(ori);
+            float hist_bins_per_rad = hb / (PI_VAL * 2.f);
+            float polar_bins_per_rad = ab / (PI_VAL * 2.f);
+            float exp_denom = GLOHRadii[rb-1] * 0.5f;
+
+            float hist_width = DescrSclFctr * size * scale * 0.5f;
+
+            // Keep same descriptor radius used for SIFT
+            int radius = hist_width * sqrt(2.f) * (d + 1.f) * 0.5f + 0.5f;
+
+            // Alternative radius size calculation, changing the radius weight
+            // (rw) in the range of 0.25f-0.75f gives different results,
+            // increasing it tends to show a better recall rate but with a
+            // smaller amount of correct matches
+            //float rw = 0.5f;
+            //int radius = hist_width * GLOHRadii[rb-1] * rw + 0.5f;
+
+            int len = radius*2+1;
+
+            for (int i = 0; i < desc_len; i++)
+                desc[i] = 0.f;
+
+            // Calculate orientation histogram
+            for (int l = 0; l < len*len; l++) {
+                int i = l / len - radius;
+                int j = l % len - radius;
+
+                int y = fy + i;
+                int x = fx + j;
+
+                float x_rot = (j * cos_t - i * sin_t);
+                float y_rot = (j * sin_t + i * cos_t);
+
+                float r = sqrt(x_rot*x_rot + y_rot*y_rot) / radius * GLOHRadii[rb-1];
+                float theta = atan2(y_rot, x_rot);
+                while (theta < 0.0f)
+                    theta += PI_VAL*2;
+                while (theta >= PI_VAL*2)
+                    theta -= PI_VAL*2;
+
+                float tbin = theta * polar_bins_per_rad;
+                float rbin = (r < GLOHRadii[0]) ? r / GLOHRadii[0] :
+                             ((r < GLOHRadii[1]) ? 1 + (r - GLOHRadii[0]) / (float)(GLOHRadii[1] - GLOHRadii[0]) :
+                             min(2 + (r - GLOHRadii[1]) / (float)(GLOHRadii[2] - GLOHRadii[1]), 3.f-FLT_EPSILON));
+
+                if (r <= GLOHRadii[rb-1] &&
+                    y > 0 && y < idims[0] - 1 && x > 0 && x < idims[1] - 1) {
+                    float dx = (float)(IPTR(x+1, y) - IPTR(x-1, y));
+                    float dy = (float)(IPTR(x, y-1) - IPTR(x, y+1));
+
+                    float grad_mag = sqrt(dx*dx + dy*dy);
+                    float grad_ori = atan2(dy, dx) - ori;
+                    while (grad_ori < 0.0f)
+                        grad_ori += PI_VAL*2;
+                    while (grad_ori >= PI_VAL*2)
+                        grad_ori -= PI_VAL*2;
+
+                    float w = exp(-r / exp_denom);
+                    float obin = grad_ori * hist_bins_per_rad;
+                    float mag = grad_mag*w;
+
+                    int t0 = floor(tbin);
+                    int r0 = floor(rbin);
+                    int o0 = floor(obin);
+                    tbin -= t0;
+                    rbin -= r0;
+                    obin -= o0;
+
+                    for (int rl = 0; rl <= 1; rl++) {
+                        int rb = (rbin > 0.5f) ? (r0 + rl) : (r0 - rl);
+                        float v_r = mag * ((rl == 0) ? 1.0f - rbin : rbin);
+                        if (rb >= 0 && rb <= 2) {
+                            for (int tl = 0; tl <= 1; tl++) {
+                                int tb = (t0 + tl) % ab;
+                                float v_t = v_r * ((tl == 0) ? 1.0f - tbin : tbin);
+                                for (int ol = 0; ol <= 1; ol++) {
+                                    int ob = (o0 + ol) % hb;
+                                    float v_o = v_t * ((ol == 0) ? 1.0f - obin : obin);
+                                    unsigned idx = (rb > 0) * (hb + ((rb-1) * ab + tb)*hb) + ob;
+                                    desc[idx] += v_o;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            normalizeDesc(desc, desc_len);
+
+            for (int i = 0; i < desc_len; i++)
+                desc[i] = min(desc[i], DescrMagThr);
+
+            normalizeDesc(desc, desc_len);
+
+            // Calculate final descriptor values
+            for (int k = 0; k < desc_len; k++) {
                 desc_out[f*desc_len+k] = round(min(255.f, desc[k] * IntDescrFctr));
             }
         }
@@ -815,7 +965,8 @@ namespace cpu
                        const Array<T>& in, const unsigned n_layers,
                        const float contrast_thr, const float edge_thr,
                        const float init_sigma, const bool double_input,
-                       const float img_scale, const float feature_ratio)
+                       const float img_scale, const float feature_ratio,
+                       const bool compute_GLOH)
     {
         af::dim4 idims = in.dims();
 
@@ -840,7 +991,10 @@ namespace cpu
 
         const unsigned d = DescrWidth;
         const unsigned n = DescrHistBins;
-        const unsigned desc_len = d*d*n;
+        const unsigned rb = GLOHRadialBins;
+        const unsigned ab = GLOHAngularBins;
+        const unsigned hb = GLOHHistBins;
+        const unsigned desc_len = (compute_GLOH) ? (1 + (rb-1) * ab) * hb : d*d*n;
 
         for (unsigned i = 0; i < n_octaves; i++) {
             af::dim4 ddims = dog_pyr[i*(n_layers+2)].dims();
@@ -966,10 +1120,17 @@ namespace cpu
             float scale = 1.f/(1 << i);
             if (double_input) scale *= 2.f;
 
-            computeDescriptor<T>(desc, desc_len,
-                                 oriented_x, oriented_y, oriented_layer,
-                                 oriented_response, oriented_size, oriented_ori,
-                                 oriented_feat, gauss_pyr, d, n, scale, i, n_layers);
+            if (compute_GLOH)
+                computeGLOHDescriptor<T>(desc, desc_len,
+                                         oriented_x, oriented_y, oriented_layer,
+                                         oriented_response, oriented_size, oriented_ori,
+                                         oriented_feat, gauss_pyr, d, rb, ab, hb,
+                                         scale, i, n_layers);
+            else
+                computeDescriptor<T>(desc, desc_len,
+                                     oriented_x, oriented_y, oriented_layer,
+                                     oriented_response, oriented_size, oriented_ori,
+                                     oriented_feat, gauss_pyr, d, n, scale, i, n_layers);
 
             total_feat += oriented_feat;
             feat_pyr[i] = oriented_feat;
