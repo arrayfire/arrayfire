@@ -34,23 +34,23 @@
 # Copyright 2000-2014 Kitware, Inc.
 # Copyright 2000-2011 Insight Software Consortium
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright
 # notice, this list of conditions and the following disclaimer.
-# 
+#
 # * Redistributions in binary form must reproduce the above copyright
 # notice, this list of conditions and the following disclaimer in the
 # documentation and/or other materials provided with the distribution.
-# 
+#
 # * Neither the names of Kitware, Inc., the Insight Software Consortium,
 # nor the names of their contributors may be used to endorse or promote
 # products derived from this software without specific prior written
 # permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -149,7 +149,29 @@ if(WIN32)
   endif()
 else()
   find_library(OpenCL_LIBRARY
-    NAMES OpenCL)
+    NAMES OpenCL
+    PATHS
+        ENV LD_LIBRARY_PATH
+        ENV AMDAPPSDKROOT
+        ENV INTELOCLSDKROOT
+        ENV CUDA_PATH
+        ENV NVSDKCOMPUTE_ROOT
+        ENV ATISTREAMSDKROOT
+        /usr/lib64
+        /usr/lib
+        /usr/local/lib64
+        /usr/local/lib
+        /sw/lib
+        /opt/local/lib
+    PATH_SUFFIXES
+        "AMD APP/lib/x86_64"
+        lib/x86_64
+        lib/x64
+        lib/
+        lib64/
+        x86_64-linux-gnu
+        arm-linux-gnueabihf
+    )
 endif()
 
 set(OpenCL_LIBRARIES ${OpenCL_LIBRARY})
