@@ -105,6 +105,8 @@ void assign_helper(Array<T> &out, const unsigned &ndims, const af_seq *index, co
             case u32: assign<T, uint   >(out, ndims, index, getArray<uint     >(in_));  break;
             case s64: assign<T, intl   >(out, ndims, index, getArray<intl     >(in_));  break;
             case u64: assign<T, uintl  >(out, ndims, index, getArray<uintl    >(in_));  break;
+            case s16: assign<T, short  >(out, ndims, index, getArray<short    >(in_));  break;
+            case u16: assign<T, ushort >(out, ndims, index, getArray<ushort   >(in_));  break;
             case u8 : assign<T, uchar  >(out, ndims, index, getArray<uchar    >(in_));  break;
             case b8 : assign<T, char   >(out, ndims, index, getArray<char     >(in_));  break;
             default : TYPE_ERROR(1, iType); break;
@@ -165,6 +167,8 @@ af_err af_assign_seq(af_array *out,
                 case u32: assign_helper<uint   >(getWritableArray<uint   >(res), ndims, index, rhs);  break;
                 case s64: assign_helper<intl   >(getWritableArray<intl   >(res), ndims, index, rhs);  break;
                 case u64: assign_helper<uintl  >(getWritableArray<uintl  >(res), ndims, index, rhs);  break;
+                case s16: assign_helper<short  >(getWritableArray<short  >(res), ndims, index, rhs);  break;
+                case u16: assign_helper<ushort >(getWritableArray<ushort >(res), ndims, index, rhs);  break;
                 case u8 : assign_helper<uchar  >(getWritableArray<uchar  >(res), ndims, index, rhs);  break;
                 case b8 : assign_helper<char   >(getWritableArray<char   >(res), ndims, index, rhs);  break;
                 default : TYPE_ERROR(1, oType); break;
@@ -332,6 +336,8 @@ af_err af_assign_gen(af_array *out,
                 case u32: genAssign<uint   >(output, idxrs, rhs); break;
                 case s64: genAssign<intl   >(output, idxrs, rhs); break;
                 case s32: genAssign<int    >(output, idxrs, rhs); break;
+                case s16: genAssign<short  >(output, idxrs, rhs); break;
+                case u16: genAssign<ushort >(output, idxrs, rhs); break;
                 case  u8: genAssign<uchar  >(output, idxrs, rhs); break;
                 case  b8: genAssign<char   >(output, idxrs, rhs); break;
                 default: TYPE_ERROR(1, rhsType);

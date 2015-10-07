@@ -87,6 +87,16 @@ unsigned max_val(const unsigned x, const unsigned y)
     return max(x, y);
 }
 inline __device__
+short max_val(const short x, const short y)
+{
+    return max(x, y);
+}
+inline __device__
+ushort max_val(const ushort x, const ushort y)
+{
+    return max(x, y);
+}
+inline __device__
 float max_val(const float x, const float y)
 {
     return fmax(x, y);
@@ -108,6 +118,16 @@ inline __device__ unsigned abs_diff(const unsigned x, const unsigned y)
 {
     int i = (int)x - (int)y;
     return max(-i, i);
+}
+inline __device__ short abs_diff(const short x, const short y)
+{
+    short i = x - y;
+    return max(-i, i);
+}
+inline __device__ ushort abs_diff(const ushort x, const ushort y)
+{
+    int i = (int)x - (int)y;
+    return (ushort)max(-i, i);
 }
 inline __device__ float abs_diff(const float x, const float y)
 {

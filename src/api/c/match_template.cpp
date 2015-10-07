@@ -60,6 +60,8 @@ af_err af_match_template(af_array *out, const af_array search_img, const af_arra
             case f32: output = match_template<float ,  float>(search_img, template_img, m_type); break;
             case s32: output = match_template<int   ,  float>(search_img, template_img, m_type); break;
             case u32: output = match_template<uint  ,  float>(search_img, template_img, m_type); break;
+            case s16: output = match_template<short ,  float>(search_img, template_img, m_type); break;
+            case u16: output = match_template<ushort,  float>(search_img, template_img, m_type); break;
             case  b8: output = match_template<char  ,  float>(search_img, template_img, m_type); break;
             case  u8: output = match_template<uchar ,  float>(search_img, template_img, m_type); break;
             default : TYPE_ERROR(1, sType);

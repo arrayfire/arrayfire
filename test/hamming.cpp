@@ -35,8 +35,8 @@ class HammingMatcher32 : public ::testing::Test
 };
 
 // create lists of types to be tested
-typedef ::testing::Types<uchar> TestTypes8;
-typedef ::testing::Types<uint> TestTypes32;
+typedef ::testing::Types<uchar, ushort> TestTypes8;
+typedef ::testing::Types<uint, uintl> TestTypes32;
 
 // register the type list
 TYPED_TEST_CASE(HammingMatcher8,  TestTypes8);

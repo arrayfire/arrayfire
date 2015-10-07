@@ -133,6 +133,8 @@ bool ArrayInfo::isInteger() const
          || type == u32
          || type == s64
          || type == u64
+         || type == s16
+         || type == u16
          || type == u8);
 }
 
@@ -171,4 +173,47 @@ dim4 getOutDims(const dim4 &ldims, const dim4 &rdims, bool batchMode)
     }
 
     return dim4(4, odims);
+}
+
+using std::vector;
+
+dim4
+toDims(const vector<af_seq>& seqs, const dim4 &parentDims)
+{
+    dim4 outDims(1, 1, 1, 1);
+    for(unsigned i = 0; i < seqs.size(); i++ ) {
+        outDims[i] = af::calcDim(seqs[i], parentDims[i]);
+        if (outDims[i] > parentDims[i])
+            AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
+    }
+    return outDims;
+}
+
+dim4
+toOffset(const vector<af_seq>& seqs, const dim4 &parentDims)
+{
+    dim4 outOffsets(0, 0, 0, 0);
+    for(unsigned i = 0; i < seqs.size(); i++ ) {
+        if (seqs[i].step !=0 && seqs[i].begin >= 0) {
+            outOffsets[i] = seqs[i].begin;
+        } else if (seqs[i].begin <= -1) {
+            outOffsets[i] = parentDims[i] + seqs[i].begin;
+        } else {
+            outOffsets[i] = 0;
+        }
+
+        if (outOffsets[i] >= parentDims[i])
+            AF_ERROR("Index out of range", AF_ERR_SIZE);
+    }
+    return outOffsets;
+}
+
+dim4
+toStride(const vector<af_seq>& seqs, const af::dim4 &parentDims)
+{
+    dim4 out(calcStrides(parentDims));
+    for(unsigned i = 0; i < seqs.size(); i++ ) {
+        if  (seqs[i].step != 0) {   out[i] *= seqs[i].step; }
+    }
+    return out;
 }

@@ -53,8 +53,8 @@ To allow DLL detection for all users, it needs to be added to the system
    `AF_PATH/examples/helloworld/helloworld.sln`.
 2. Build and run the `helloworld` example. Be sure to, select the
    platform/configuration of your choice using the platform drop-down
-   (the options are CPU, CUDA, and OpenCL) and Solution Configuration drop down
-   (options of Release and Debug) menus.
+   (the options are CPU, CUDA, OpenCL, and Unified) and Solution Configuration
+   drop down (options of Release and Debug) menus.
 3. Run the `helloworld` example
 
 ## Step 3: Creating your own Visual Studio Project
@@ -96,10 +96,10 @@ different:
    _Project Properties -> Build Events -> Post Build Events_
    dialog:
 
-     ```
-     echo copy "$(CUDA_PATH)\nvvm\bin\nvvm64*.dll" "$(OutDir)"
-     copy "$(CUDA_PATH)\nvvm\bin\nvvm64*.dll" "$(OutDir)"
-     ```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.c}
+echo copy "$(CUDA_PATH)\nvvm\bin\nvvm64*.dll" "$(OutDir)"
+copy "$(CUDA_PATH)\nvvm\bin\nvvm64*.dll" "$(OutDir)"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 4. Ensure that you use x64 based configurations.
 

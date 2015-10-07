@@ -200,6 +200,13 @@
      Reading and writing images
    @}
 
+   @defgroup unified_func Unified API Functions
+   @{
+
+     Functions to set current backend and utilities
+
+   @}
+
    @defgroup external Interface Functions
    @{
 
@@ -263,6 +270,7 @@
 \example fractal.cpp
 \example plot2d.cpp
 \example conway_pretty.cpp
+\example basic.cpp
 \example helloworld.cpp
 \example vectorize.cpp
 \example integer.cpp
@@ -284,6 +292,7 @@
 #include "af/algorithm.h"
 #include "af/arith.h"
 #include "af/array.h"
+#include "af/backend.h"
 #include "af/blas.h"
 #include "af/constants.h"
 #include "af/complex.h"

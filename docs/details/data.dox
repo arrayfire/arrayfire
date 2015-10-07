@@ -321,5 +321,30 @@ Mirrors the array along the specified dimensions.
 
 =======================================================================
 
+\defgroup data_func_select select
+
+\brief Select elements from two arrays based on an conditional array
+
+If the condition array has an element as true, then the element from
+the lhs array/value is selected, otherwise the element from the rhs
+array/value is selected.
+
+\ingroup manip_mat
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup data_func_replace replace
+
+\brief Replace elements of an array based on an conditional array
+
+If the condition array has an element as true, then the element is
+replaced by the array/value, otherwise no change.
+
+\ingroup manip_mat
+\ingroup arrayfire_func
+
+=======================================================================
+
 @}
 */

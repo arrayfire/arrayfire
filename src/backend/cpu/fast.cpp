@@ -336,5 +336,7 @@ INSTANTIATE(char  )
 INSTANTIATE(int   )
 INSTANTIATE(uint  )
 INSTANTIATE(uchar )
+INSTANTIATE(short )
+INSTANTIATE(ushort)
 
 }

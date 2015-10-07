@@ -17,8 +17,9 @@
 #include <af/dim4.hpp>
 #include <af/array.h>
 
-typedef unsigned char uchar;
-typedef unsigned int uint;
+typedef unsigned char  uchar;
+typedef unsigned int   uint;
+typedef unsigned short ushort;
 
 template<typename inType, typename outType, typename FileElementType>
 void readTests(const std::string &FileName, std::vector<af::dim4> &inputDims,
@@ -361,42 +362,18 @@ struct cond_type<false, T, Other> {
 };
 
 template<typename T>
-double real(T val) { return real(val); }
+double real(T val) { return (double)val; }
 template<>
-double real<double>(double val) { return val; }
+double real<af::cdouble>(af::cdouble val) { return real(val); }
 template<>
-double real<float>(float val) { return val; }
-template<>
-double real<int>(int val) { return val; }
-template<>
-double real<char>(char val) { return val; }
-template<>
-double real<uchar>(uchar val) { return val; }
-template<>
-double real<uint>(uint val) { return val; }
-template<>
-double real<intl>(intl val) { return val; }
-template<>
-double real<uintl>(uintl val) { return val; }
+double real<af::cfloat> (af::cfloat val) { return real(val); }
 
 template<typename T>
-double imag(T val) { return imag(val); }
+double imag(T val) { return (double)val; }
 template<>
-double imag<double>(double val) { return 0; }
+double imag<af::cdouble>(af::cdouble val) { return imag(val); }
 template<>
-double imag<float>(float val) { return 0; }
-template<>
-double imag<int>(int val) { return 0; }
-template<>
-double imag<uint>(uint val) { return 0; }
-template<>
-double imag<intl>(intl val) { return 0; }
-template<>
-double imag<uintl>(uintl val) { return 0; }
-template<>
-double imag<char>(char val) { return 0; }
-template<>
-double imag<uchar>(uchar val) { return 0; }
+double imag<af::cfloat> (af::cfloat val) { return imag(val); }
 
 template<typename T>
 bool noDoubleTests()

@@ -18,8 +18,12 @@ const char *getName(af_dtype type)
     case c64: return "complex double";
     case u32: return "unsigned int";
     case s32: return "int";
-    case u8: return "unsigned char";
-    case b8: return "bool";
-    default: return "unknown type";
+    case u16: return "unsigned short";
+    case s16: return "short";
+    case u64: return "unsigned long long";
+    case s64: return "long long";
+    case u8 : return "unsigned char";
+    case b8 : return "bool";
+    default : return "unknown type";
     }
 }

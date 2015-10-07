@@ -10,10 +10,23 @@
 #include <af/device.h>
 #include <af/compatible.h>
 #include <af/traits.hpp>
+#include <af/backend.h>
 #include "error.hpp"
 
 namespace af
 {
+    void setBackend(const Backend bknd)
+    {
+        AF_THROW(af_set_backend(bknd));
+    }
+
+    unsigned getBackendCount()
+    {
+        unsigned temp = 1;
+        AF_THROW(af_get_backend_count(&temp));
+        return temp;
+    }
+
     void info()
     {
         AF_THROW(af_info());
@@ -78,6 +91,8 @@ namespace af
         case b8 : return sizeof(unsigned char);
         case c32: return sizeof(float) * 2;
         case c64: return sizeof(double) * 2;
+        case s16: return sizeof(short);
+        case u16: return sizeof(unsigned short);
         default: return sizeof(float);
         }
     }
@@ -135,12 +150,12 @@ namespace af
     }
 
 #define INSTANTIATE(T)                                                  \
-    template<> AFAPI                                                    \
+    template<>                                                          \
     T* alloc(const size_t elements)                                     \
     {                                                                   \
         return (T*)alloc(elements, (af::dtype)dtype_traits<T>::af_type); \
     }                                                                   \
-    template<> AFAPI                                                    \
+    template<>                                                          \
     T* pinned(const size_t elements)                                    \
     {                                                                   \
         return (T*)pinned(elements, (af::dtype)dtype_traits<T>::af_type); \
@@ -154,5 +169,7 @@ namespace af
     INSTANTIATE(unsigned)
     INSTANTIATE(unsigned char)
     INSTANTIATE(char)
+    INSTANTIATE(short)
+    INSTANTIATE(unsigned short)
 
 }

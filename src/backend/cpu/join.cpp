@@ -226,6 +226,8 @@ namespace cpu
     INSTANTIATE(uintl,   uintl)
     INSTANTIATE(uchar,   uchar)
     INSTANTIATE(char,    char)
+    INSTANTIATE(ushort,  ushort)
+    INSTANTIATE(short,   short)
 
 #undef INSTANTIATE
 
@@ -242,6 +244,8 @@ namespace cpu
     INSTANTIATE(uintl)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
+    INSTANTIATE(ushort)
+    INSTANTIATE(short)
 
 #undef INSTANTIATE
 }

@@ -178,7 +178,7 @@ void testSetSeed(const uintl seed0, const uintl seed1, bool is_norm = false)
 
     for (int i = 0; i < num; i++) {
         // Verify if same seed produces same arrays
-        ASSERT_EQ(h_in0[i], h_in2[i]);
+        ASSERT_EQ(h_in0[i], h_in2[i]) << "at : " << i;
 
         // Verify different arrays created with different seeds differ
         // b8 and u9 can clash because they generate a small set of values

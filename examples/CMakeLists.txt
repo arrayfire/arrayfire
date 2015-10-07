@@ -81,6 +81,21 @@ else()
   MESSAGE(STATUS "EXAMPLES: CPU backend is OFF. afcpu was not found.")
 endif()
 
+# Next we build each example using every backend.
+if(${ArrayFire_Unified_FOUND})  # variable defined by FIND(ArrayFire ...)
+  MESSAGE(STATUS "EXAMPLES: UNIFIED backend is ON.")
+  BUILD_ALL("${FILES}" unified ${ArrayFire_Unified_LIBRARIES} "")
+elseif(TARGET af)        # variable defined by the ArrayFire build tree
+  MESSAGE(STATUS "EXAMPLES: UNIFIED backend is ON.")
+  IF(WIN32)
+      BUILD_ALL("${FILES}" unified af "")
+  ELSE()
+      BUILD_ALL("${FILES}" unified af "dl")
+  ENDIF()
+else()
+  MESSAGE(STATUS "EXAMPLES: UNIFIED backend is OFF. af was not found.")
+endif()
+
 if (${CUDA_FOUND})
   if(${ArrayFire_CUDA_FOUND})  # variable defined by FIND(ArrayFire ...)
     FIND_LIBRARY( CUDA_NVVM_LIBRARY

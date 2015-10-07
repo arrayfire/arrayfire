@@ -111,6 +111,8 @@ af_err af_print_array(af_array arr)
         case u8:    print<uchar>   (NULL, arr, 4);   break;
         case s64:   print<intl>    (NULL, arr, 4);   break;
         case u64:   print<uintl>   (NULL, arr, 4);   break;
+        case s16:   print<short>   (NULL, arr, 4);   break;
+        case u16:   print<ushort>  (NULL, arr, 4);   break;
         default:    TYPE_ERROR(1, type);
         }
     }
@@ -136,6 +138,8 @@ af_err af_print_array_gen(const char *exp, const af_array arr, const int precisi
         case u8:    print<uchar   >(exp, arr, precision);   break;
         case s64:   print<intl    >(exp, arr, precision);   break;
         case u64:   print<uintl   >(exp, arr, precision);   break;
+        case s16:   print<short   >(exp, arr, precision);   break;
+        case u16:   print<ushort  >(exp, arr, precision);   break;
         default:    TYPE_ERROR(1, type);
         }
     }
@@ -163,6 +167,8 @@ af_err af_array_to_string(char **output, const char *exp, const af_array arr,
         case u8:    print<uchar   >(exp, arr, precision, ss, transpose);   break;
         case s64:   print<intl    >(exp, arr, precision, ss, transpose);   break;
         case u64:   print<uintl   >(exp, arr, precision, ss, transpose);   break;
+        case s16:   print<short   >(exp, arr, precision, ss, transpose);   break;
+        case u16:   print<ushort  >(exp, arr, precision, ss, transpose);   break;
         default:    TYPE_ERROR(1, type);
         }
         std::string str = ss.str();

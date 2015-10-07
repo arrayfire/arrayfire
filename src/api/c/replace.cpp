@@ -59,6 +59,8 @@ af_err af_replace(af_array a, const af_array cond, const af_array b)
         case u32: replace<uint   >(a, cond, b); break;
         case s64: replace<intl   >(a, cond, b); break;
         case u64: replace<uintl  >(a, cond, b); break;
+        case s16: replace<short  >(a, cond, b); break;
+        case u16: replace<ushort >(a, cond, b); break;
         case u8:  replace<uchar  >(a, cond, b); break;
         case b8:  replace<char   >(a, cond, b); break;
         default:  TYPE_ERROR(2, ainfo.getType());
@@ -99,6 +101,8 @@ af_err af_replace_scalar(af_array a, const af_array cond, const double b)
         case u32: replace_scalar<uint   >(a, cond, b); break;
         case s64: replace_scalar<intl   >(a, cond, b); break;
         case u64: replace_scalar<uintl  >(a, cond, b); break;
+        case s16: replace_scalar<short  >(a, cond, b); break;
+        case u16: replace_scalar<ushort >(a, cond, b); break;
         case u8:  replace_scalar<uchar  >(a, cond, b); break;
         case b8:  replace_scalar<char   >(a, cond, b); break;
         default:  TYPE_ERROR(2, ainfo.getType());

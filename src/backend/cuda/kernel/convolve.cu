@@ -485,12 +485,12 @@ void convolve_nd(Param<T> out, CParam<T> signal, CParam<aT> filt, ConvolveBatchK
 }
 
 #define INSTANTIATE(T, aT)  \
-	template void convolve_nd<T, aT, 1, true >(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
-	template void convolve_nd<T, aT, 1, false>(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
-	template void convolve_nd<T, aT, 2, true >(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
-	template void convolve_nd<T, aT, 2, false>(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
-	template void convolve_nd<T, aT, 3, true >(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
-	template void convolve_nd<T, aT, 3, false>(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
+    template void convolve_nd<T, aT, 1, true >(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
+    template void convolve_nd<T, aT, 1, false>(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
+    template void convolve_nd<T, aT, 2, true >(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
+    template void convolve_nd<T, aT, 2, false>(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
+    template void convolve_nd<T, aT, 3, true >(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
+    template void convolve_nd<T, aT, 3, false>(Param<T> out, CParam<T> signal, CParam<aT> filter, ConvolveBatchKind kind);\
 
 
 INSTANTIATE(cdouble, cdouble)
@@ -501,6 +501,8 @@ INSTANTIATE(uint   ,   float)
 INSTANTIATE(int    ,   float)
 INSTANTIATE(uchar  ,   float)
 INSTANTIATE(char   ,   float)
+INSTANTIATE(ushort ,   float)
+INSTANTIATE(short  ,   float)
 
 }
 

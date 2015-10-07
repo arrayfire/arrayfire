@@ -31,6 +31,7 @@ detail::Array<To> castArray(const af_array &in)
     using detail::cdouble;
     using detail::uint;
     using detail::uchar;
+    using detail::ushort;
 
     const ArrayInfo info = getInfo(in);
     switch (info.getType()) {
@@ -44,6 +45,8 @@ detail::Array<To> castArray(const af_array &in)
     case b8 : return detail::cast<To, char   >(getArray<char   >(in));
     case s64: return detail::cast<To, intl   >(getArray<intl   >(in));
     case u64: return detail::cast<To, uintl  >(getArray<uintl  >(in));
+    case s16: return detail::cast<To, short  >(getArray<short  >(in));
+    case u16: return detail::cast<To, ushort >(getArray<ushort >(in));
     default: TYPE_ERROR(1, info.getType());
     }
 }

@@ -149,6 +149,11 @@ typedef enum {
     /// not support graphics
     ///
     AF_ERR_NO_GFX         = 402,
+
+    // 500-599 Errors specific to heterogenous API
+    AF_ERR_LOAD_LIB       = 501,
+    AF_ERR_LOAD_SYM       = 502,
+
     // 900-999 Errors from upstream libraries and runtimes
 
     ///
@@ -168,12 +173,16 @@ typedef enum {
     c32,    ///< 32-bit complex floating point values
     f64,    ///< 64-bit complex floating point values
     c64,    ///< 64-bit complex floating point values
-    b8,     ///< 8-bit boolean values
+    b8 ,    ///< 8-bit boolean values
     s32,    ///< 32-bit signed integral values
     u32,    ///< 32-bit unsigned integral values
-    u8,     ///< 8-bit unsigned integral values
+    u8 ,    ///< 8-bit unsigned integral values
     s64,    ///< 64-bit signed integral values
-    u64     ///< 64-bit unsigned integral values
+    u64,    ///< 64-bit unsigned integral values
+#if AF_API_VERSION >= 32
+    s16,    ///< 16-bit signed integral values
+    u16,    ///< 16-bit unsigned integral values
+#endif
 } af_dtype;
 
 typedef enum {
@@ -316,6 +325,13 @@ typedef enum {
     AF_FIF_RAW          = 34    ///< FreeImage Enum for RAW Camera Image File
 } af_image_format;
 
+typedef enum {
+    AF_BACKEND_DEFAULT = 0,  ///< Default backend order: OpenCL -> CUDA -> CPU
+    AF_BACKEND_CPU     = 1,  ///< CPU a.k.a sequential algorithms
+    AF_BACKEND_CUDA    = 2,  ///< CUDA Compute Backend
+    AF_BACKEND_OPENCL  = 3,  ///< OpenCL Compute Backend
+} af_backend;
+
 // Below enum is purely added for example purposes
 // it doesn't and shoudn't be used anywhere in the
 // code. No Guarantee's provided if it is used.
@@ -342,6 +358,7 @@ namespace af
     typedef af_norm_type normType;
     typedef af_ycc_std YCCStd;
     typedef af_image_format imageFormat;
+    typedef af_backend Backend;
 }
 
 #endif

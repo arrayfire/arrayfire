@@ -42,6 +42,18 @@ AFAPI af_err afcu_get_stream(cudaStream_t* stream, int id);
 AFAPI af_err afcu_get_native_id(int* nativeid, int id);
 #endif
 
+#if AF_API_VERSION >= 32
+/**
+   Set the CUDA device with given native id as the active device for ArrayFire
+
+   \param[in] nativeid native device id of the CUDA device
+   \returns \ref af_err error code
+
+   \ingroup cuda_mat
+ */
+AFAPI af_err afcu_set_native_id(int nativeid);
+#endif
+
 #ifdef __cplusplus
 }
 #endif
@@ -86,6 +98,22 @@ static inline int getNativeId(int id)
     if (err!=AF_SUCCESS)
         throw af::exception("Failed to get CUDA device native id from ArrayFire");
     return retVal;
+}
+#endif
+
+#if AF_API_VERSION >= 32
+/**
+   Set the CUDA device with given native id as the active device for ArrayFire
+
+   \param[in] nativeId native device id of the CUDA device
+
+   \ingroup cuda_mat
+ */
+static inline void setNativeId(int nativeId)
+{
+    af_err err = afcu_set_native_id(nativeId);
+    if (err!=AF_SUCCESS)
+        throw af::exception("Failed to change active CUDA device to the device with given native id");
 }
 #endif
 

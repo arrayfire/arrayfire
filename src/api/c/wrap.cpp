@@ -66,6 +66,8 @@ af_err af_wrap(af_array *out, const af_array in,
             case u32: output = wrap<uint   >(in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
             case s64: output = wrap<intl   >(in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
             case u64: output = wrap<uintl  >(in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
+            case s16: output = wrap<short  >(in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
+            case u16: output = wrap<ushort >(in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
             case u8:  output = wrap<uchar  >(in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
             case b8:  output = wrap<char   >(in, ox, oy, wx, wy, sx, sy, px, py, is_column);  break;
             default:  TYPE_ERROR(1, type);
