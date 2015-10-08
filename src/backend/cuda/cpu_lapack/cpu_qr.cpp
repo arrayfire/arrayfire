@@ -7,11 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <qr.hpp>
-#include <err_common.hpp>
-
 #if defined(WITH_CPU_LINEAR_ALGEBRA)
 
+#include <cpu_lapack/cpu_qr.hpp>
+#include <err_common.hpp>
 #include <af/dim4.hpp>
 #include <handle.hpp>
 #include <copy.hpp>

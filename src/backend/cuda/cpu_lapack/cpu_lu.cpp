@@ -7,10 +7,10 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#if defined(WITH_CPU_LINEAR_ALGEBRA)
+
 #include <cpu_lapack/cpu_lu.hpp>
 #include <err_common.hpp>
-
-#if defined(WITH_CPU_LINEAR_ALGEBRA)
 
 #include <af/dim4.hpp>
 #include <handle.hpp>
