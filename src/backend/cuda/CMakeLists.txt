@@ -69,7 +69,20 @@ ENDIF()
 ADD_DEFINITIONS(-DAF_CUDA)
 
 IF(${CUDA_VERSION_MAJOR} LESS 7)
-    MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cuSolve library. Linear Algebra will not be available." )
+    ## Try to use CPU side lapack
+    IF(APPLE)
+        FIND_PACKAGE(LAPACK)
+    ELSE(APPLE) # Linux and Windows
+        FIND_PACKAGE(LAPACKE)
+    ENDIF(APPLE)
+
+    IF(NOT LAPACK_FOUND)
+        MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cuSolve library. Linear Algebra will not be available.")
+    ELSE(NOT LAPACK_FOUND)
+        MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cuSolve library. But CPU LAPACK libraries are available. Will fallback to using host side code.")
+        SET(CUDA_LAPACK_CPU_FALLBACK ON)
+        ADD_DEFINITIONS(-DWITH_CPU_LINEAR_ALGEBRA)
+    ENDIF()
     IF(CMAKE_VERSION VERSION_LESS 3.2)
         SET(CUDA_cusolver_LIBRARY)
     ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
@@ -97,6 +110,10 @@ INCLUDE_DIRECTORIES(
     ${CUDA_NVVM_INCLUDE_DIR}
     )
 
+IF(CUDA_LAPACK_CPU_FALLBACK)
+  INCLUDE_DIRECTORIES(${LAPACK_INCLUDE_DIR})
+ENDIF()
+
 FILE(GLOB cuda_headers
      "*.hpp"
      "*.h")
@@ -120,6 +137,16 @@ SOURCE_GROUP(backend\\cuda\\Headers FILES ${cuda_headers})
 SOURCE_GROUP(backend\\cuda\\Sources FILES ${cuda_sources})
 SOURCE_GROUP(backend\\cuda\\JIT FILES ${jit_sources})
 SOURCE_GROUP(backend\\cuda\\kernel\\Headers FILES ${kernel_headers})
+
+IF(CUDA_LAPACK_CPU_FALLBACK)
+    FILE(GLOB cpu_lapack_sources
+        "cpu_lapack/*.cpp")
+    FILE(GLOB cpu_lapack_headers
+        "cpu_lapack/*.hpp")
+
+    SOURCE_GROUP(backend\\cuda\\cpu_lapack\\Headers FILES ${cpu_lapack_headers})
+    SOURCE_GROUP(backend\\cuda\\cpu_lapack\\Sources FILES ${cpu_lapack_sources})
+ENDIF()
 
 FILE(GLOB backend_headers
     "../*.hpp"
@@ -256,6 +283,8 @@ MY_CUDA_ADD_LIBRARY(afcuda SHARED
                 ${cuda_sources}
                 ${jit_sources}
                 ${kernel_headers}
+                ${cpu_lapack_headers}
+                ${cpu_lapack_sources}
                 ${backend_headers}
                 ${backend_sources}
                 ${c_headers}
@@ -275,6 +304,10 @@ TARGET_LINK_LIBRARIES(afcuda    PRIVATE ${CUDA_CUBLAS_LIBRARIES}
 
 IF(FORGE_FOUND)
     TARGET_LINK_LIBRARIES(afcuda PRIVATE ${FORGE_LIBRARIES})
+ENDIF()
+
+IF(CUDA_LAPACK_CPU_FALLBACK)
+  TARGET_LINK_LIBRARIES(afcuda PRIVATE ${LAPACK_LIBRARIES})
 ENDIF()
 
 SET_TARGET_PROPERTIES(afcuda PROPERTIES
