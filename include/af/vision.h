@@ -130,6 +130,41 @@ AFAPI void orb(features& feat, array& desc, const array& image, const float fast
 AFAPI void sift(features& feat, array& desc, const array& in, const unsigned n_layers=3, const float contrast_thr=0.04f, const float edge_thr=10.f, const float init_sigma=1.6f, const bool double_input=true, const float intensity_scale=0.00390625f, const float feature_ratio=0.05f);
 #endif
 
+#if AF_API_VERSION >= 32
+/**
+    C++ Interface for SIFT feature detector and GLOH descriptor
+
+    \param[out] feat features object composed of arrays for x and y
+                coordinates, score, orientation and size of selected features
+    \param[out] desc Nx272 array containing extracted GLOH descriptors, where N
+                is the number of features found by SIFT
+    \param[in]  in array containing a grayscale image (color images are not
+                supported)
+    \param[in]  n_layers number of layers per octave, the number of octaves is
+                computed automatically according to the input image dimensions,
+                the original SIFT paper suggests 3
+    \param[in]  contrast_thr threshold used to filter out features that have
+                low contrast, the original SIFT paper suggests 0.04
+    \param[in]  edge_thr threshold used to filter out features that are too
+                edge-like, the original SIFT paper suggests 10.0
+    \param[in]  init_sigma the sigma value used to filter the input image at
+                the first octave, the original SIFT paper suggests 1.6
+    \param[in]  double_input if true, the input image dimensions will be
+                doubled and the doubled image will be used for the first octave
+    \param[in]  intensity_scale the inverse of the difference between the minimum
+                and maximum grayscale intensity value, e.g.: if the ranges are
+                0-256, the proper intensity_scale value is 1/256, if the ranges
+                are 0-1, the proper intensity-scale value is 1/1
+    \param[in]  feature_ratio maximum ratio of features to detect, the maximum
+                number of features is calculated by feature_ratio * in.elements().
+                The maximum number of features is not based on the score, instead,
+                features detected after the limit is reached are discarded
+
+    \ingroup cv_func_sift
+ */
+AFAPI void gloh(features& feat, array& desc, const array& in, const unsigned n_layers=3, const float contrast_thr=0.04f, const float edge_thr=10.f, const float init_sigma=1.6f, const bool double_input=true, const float intensity_scale=0.00390625f, const float feature_ratio=0.05f);
+#endif
+
 /**
    C++ Interface wrapper for Hamming matcher
 
@@ -366,6 +401,41 @@ extern "C" {
         \ingroup cv_func_sift
     */
     AFAPI af_err af_sift(af_features *feat, af_array *desc, const af_array in, const unsigned n_layers, const float contrast_thr, const float edge_thr, const float init_sigma, const bool double_input, const float intensity_scale, const float feature_ratio);
+#endif
+
+#if AF_API_VERSION >= 32
+    /**
+        C++ Interface for SIFT feature detector and GLOH descriptor
+
+        \param[out] feat af_features object composed of arrays for x and y
+                    coordinates, score, orientation and size of selected features
+        \param[out] desc Nx272 array containing extracted GLOH descriptors, where N
+                    is the number of features found by SIFT
+        \param[in]  in array containing a grayscale image (color images are not
+                    supported)
+        \param[in]  n_layers number of layers per octave, the number of octaves is
+                    computed automatically according to the input image dimensions,
+                    the original SIFT paper suggests 3
+        \param[in]  contrast_thr threshold used to filter out features that have
+                    low contrast, the original SIFT paper suggests 0.04
+        \param[in]  edge_thr threshold used to filter out features that are too
+                    edge-like, the original SIFT paper suggests 10.0
+        \param[in]  init_sigma the sigma value used to filter the input image at
+                    the first octave, the original SIFT paper suggests 1.6
+        \param[in]  double_input if true, the input image dimensions will be
+                    doubled and the doubled image will be used for the first octave
+        \param[in]  intensity_scale the inverse of the difference between the minimum
+                    and maximum grayscale intensity value, e.g.: if the ranges are
+                    0-256, the proper intensity_scale value is 1/256, if the ranges
+                    are 0-1, the proper intensity-scale value is 1/1
+        \param[in]  feature_ratio maximum ratio of features to detect, the maximum
+                    number of features is calculated by feature_ratio * in.elements().
+                    The maximum number of features is not based on the score, instead,
+                    features detected after the limit is reached are discarded
+
+        \ingroup cv_func_sift
+    */
+    AFAPI af_err af_gloh(af_features *feat, af_array *desc, const af_array in, const unsigned n_layers, const float contrast_thr, const float edge_thr, const float init_sigma, const bool double_input, const float intensity_scale, const float feature_ratio);
 #endif
 
     /**

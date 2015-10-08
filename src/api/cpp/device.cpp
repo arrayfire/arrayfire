@@ -150,12 +150,12 @@ namespace af
     }
 
 #define INSTANTIATE(T)                                                  \
-    template<>                                                          \
+    template<> AFAPI                                                    \
     T* alloc(const size_t elements)                                     \
     {                                                                   \
         return (T*)alloc(elements, (af::dtype)dtype_traits<T>::af_type); \
     }                                                                   \
-    template<>                                                          \
+    template<> AFAPI                                                    \
     T* pinned(const size_t elements)                                    \
     {                                                                   \
         return (T*)pinned(elements, (af::dtype)dtype_traits<T>::af_type); \

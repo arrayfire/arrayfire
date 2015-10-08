@@ -90,6 +90,29 @@ before using it, make sure you have the appropriate permission to do so.
 
 =======================================================================
 
+\defgroup cv_func_gloh gloh
+\ingroup featdescriptor_mat
+
+\brief SIFT feature detector and GLOH descriptor extractor
+
+Detects features using the Scale Invariant Feature Transform (SIFT),
+by David Lowe. Descriptors are extracted using Gradient Location and
+Orientation Histogram (GLOH).
+
+Lowe, D. G., "Distinctive Image Features from Scale-Invariant Keypoints",
+International Journal of Computer Vision, 60, 2, pp. 91-110, 2004.
+
+Mikolajczyk, K., and Schmid, C., "A performance evaluation of local
+descriptors", IEEE Transactions on Pattern Analysis and Machine Intelligence,
+10, 27, pp. 1615-1630, 2005.
+
+WARNING: Although GLOH is free of patents, the SIFT algorithm, used to detect
+features that will later be used by GLOH descriptors, is patented by the
+University of British Columbia, before using it, make sure you have the
+appropriate permission to do so.
+
+=======================================================================
+
 \defgroup cv_func_hamming_matcher hammingMatcher
 \ingroup featmatcher_mat
 

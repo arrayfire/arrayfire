@@ -21,6 +21,7 @@ unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,
               const Array<T>& in, const unsigned n_layers,
               const float contrast_thr, const float edge_thr,
               const float init_sigma, const bool double_input,
-              const float img_scale, const float feature_ratio);
+              const float img_scale, const float feature_ratio,
+              const bool compute_GLOH);
 
 }

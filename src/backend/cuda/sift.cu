@@ -31,7 +31,8 @@ unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,
               const Array<T>& in, const unsigned n_layers,
               const float contrast_thr, const float edge_thr,
               const float init_sigma, const bool double_input,
-              const float img_scale, const float feature_ratio)
+              const float img_scale, const float feature_ratio,
+              const bool compute_GLOH)
 {
 #ifdef AF_BUILD_SIFT
     const dim4 dims = in.dims();
@@ -48,7 +49,8 @@ unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,
     kernel::sift<T, convAccT>(&nfeat_out, &desc_len, &x_out, &y_out, &score_out,
                               &orientation_out, &size_out, &desc_out,
                               in, n_layers, contrast_thr, edge_thr,
-                              init_sigma, double_input, img_scale, feature_ratio);
+                              init_sigma, double_input, img_scale, feature_ratio,
+                              compute_GLOH);
 
     if (nfeat_out > 0) {
         if (x_out == NULL || y_out == NULL || score_out == NULL ||
@@ -70,7 +72,10 @@ unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,
 
     return nfeat_out;
 #else
-    AF_ERROR("ArrayFire was not built with nonfree support, SIFT disabled\n", AFF_ERR_NONFREE);
+    if (compute_GLOH)
+        AF_ERROR("ArrayFire was not built with nonfree support, GLOH disabled\n", AFF_ERR_NONFREE);
+    else
+        AF_ERROR("ArrayFire was not built with nonfree support, SIFT disabled\n", AFF_ERR_NONFREE);
 #endif
 }
 
@@ -81,7 +86,8 @@ unsigned sift(Array<float>& x, Array<float>& y, Array<float>& score,
                                         const Array<T>& in, const unsigned n_layers,        \
                                         const float contrast_thr, const float edge_thr,     \
                                         const float init_sigma, const bool double_input,    \
-                                        const float img_scale, const float feature_ratio);
+                                        const float img_scale, const float feature_ratio,   \
+                                        const bool compute_GLOH);
 
 INSTANTIATE(float , float )
 INSTANTIATE(double, double)

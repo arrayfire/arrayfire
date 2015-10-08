@@ -31,6 +31,11 @@ af_err af_sift(af_features *feat, af_array *desc, const af_array in, const unsig
     return CALL(feat, desc, in, n_layers, contrast_thr, edge_thr, init_sigma, double_input, intensity_scale, feature_ratio);
 }
 
+af_err af_gloh(af_features *feat, af_array *desc, const af_array in, const unsigned n_layers, const float contrast_thr, const float edge_thr, const float init_sigma, const bool double_input, const float intensity_scale, const float feature_ratio)
+{
+    return CALL(feat, desc, in, n_layers, contrast_thr, edge_thr, init_sigma, double_input, intensity_scale, feature_ratio);
+}
+
 af_err af_hamming_matcher(af_array* idx, af_array* dist,
         const af_array query, const af_array train,
         const dim_t dist_dim, const unsigned n_dist)
