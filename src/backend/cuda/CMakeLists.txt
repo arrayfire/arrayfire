@@ -69,22 +69,30 @@ ENDIF()
 ADD_DEFINITIONS(-DAF_CUDA)
 
 IF(${CUDA_VERSION_MAJOR} LESS 7)
-    ## Try to use CPU side lapack
-    IF(APPLE)
-        FIND_PACKAGE(LAPACK)
-    ELSE(APPLE) # Linux and Windows
-        FIND_PACKAGE(LAPACKE)
-    ENDIF(APPLE)
+    # Use CPU Lapack as fallback?
+    OPTION(CUDA_LAPACK_CPU_FALLBACK "Use CPU LAPACK as fallback for CUDA LAPACK when CUDA is 6.5 or older" OFF)
+    MARK_AS_ADVANCED(CUDA_LAPACK_CPU_FALLBACK)
 
-    IF(NOT LAPACK_FOUND)
+    IF(${CUDA_LAPACK_CPU_FALLBACK})
+        ## Try to use CPU side lapack
+        IF(APPLE)
+            FIND_PACKAGE(LAPACK)
+        ELSE(APPLE) # Linux and Windows
+            FIND_PACKAGE(LAPACKE)
+        ENDIF(APPLE)
+
+        IF(NOT LAPACK_FOUND)
+            MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cuSolve library. Linear Algebra will not be available.")
+        ELSE(NOT LAPACK_FOUND)
+            MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cuSolve library. But CPU LAPACK libraries are available. Will fallback to using host side code.")
+            ADD_DEFINITIONS(-DWITH_CPU_LINEAR_ALGEBRA)
+        ENDIF()
+    ELSE()
         MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cuSolve library. Linear Algebra will not be available.")
-    ELSE(NOT LAPACK_FOUND)
-        MESSAGE(STATUS "CUDA Version ${CUDA_VERSION_STRING} does not contain cuSolve library. But CPU LAPACK libraries are available. Will fallback to using host side code.")
-        SET(CUDA_LAPACK_CPU_FALLBACK ON)
-        ADD_DEFINITIONS(-DWITH_CPU_LINEAR_ALGEBRA)
     ENDIF()
     IF(CMAKE_VERSION VERSION_LESS 3.2)
         SET(CUDA_cusolver_LIBRARY)
+        MARK_AS_ADVANCED(CUDA_cusolver_LIBRARY)
     ENDIF(CMAKE_VERSION VERSION_LESS 3.2)
 ELSE(${CUDA_VERSION_MAJOR} LESS 7)
     MESSAGE(STATUS "CUDA cusolver library available in CUDA Version ${CUDA_VERSION_STRING}")
