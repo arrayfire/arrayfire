@@ -1061,7 +1061,7 @@ namespace cpu
 
             std::vector<feat_t> sorted_feat;
             array_to_feat(sorted_feat, interp_x, interp_y, interp_layer, interp_response, interp_size, interp_feat);
-            std::sort(sorted_feat.begin(), sorted_feat.end(), feat_cmp);
+            std::stable_sort(sorted_feat.begin(), sorted_feat.end(), feat_cmp);
 
             memFree(interp_x);
             memFree(interp_y);

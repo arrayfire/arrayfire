@@ -238,7 +238,7 @@ void siftTest(string pTestFile, unsigned nLayers, float contrastThr, float edgeT
         if (isTypeDouble)
             EXPECT_TRUE(compareEuclidean(descDims[0], descDims[1], (float*)&v_out_desc[0], (float*)&v_gold_desc[0], 2.f, 4.5f));
         else
-            EXPECT_TRUE(compareEuclidean(descDims[0], descDims[1], (float*)&v_out_desc[0], (float*)&v_gold_desc[0], 1.f, 4.f));
+            EXPECT_TRUE(compareEuclidean(descDims[0], descDims[1], (float*)&v_out_desc[0], (float*)&v_gold_desc[0], 2.f, 4.f));
 
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray_f32));
@@ -334,7 +334,7 @@ TEST(SIFT, CPP)
         ASSERT_LE(fabs(out_feat[elIter].f[4] - gold_feat[elIter].f[4]), 1e-3) << "at: " << elIter << std::endl;
     }
 
-    EXPECT_TRUE(compareEuclidean(descDims[0], descDims[1], (float*)&v_out_desc[0], (float*)&v_gold_desc[0], 1.f, 2.f));
+    EXPECT_TRUE(compareEuclidean(descDims[0], descDims[1], (float*)&v_out_desc[0], (float*)&v_gold_desc[0], 2.f, 2.f));
 
     delete[] outX;
     delete[] outY;
