@@ -14,12 +14,12 @@ if(TARGET afcpu OR TARGET afcuda OR TARGET afopencl)
     SET(ArrayFire_OpenCL_FOUND False)
     SET(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../assets")
     IF(NOT EXISTS "${ASSETS_DIR}/LICENSE")
-        MESSAGE(WARNING "Arrayfire assets are not available. Assets will not be installed.")
-        MESSAGE("Did you miss the --recursive option when cloning?")
-        MESSAGE("Run the following commands to correct this:")
-        MESSAGE("git submodule init")
-        MESSAGE("git submodule update")
-        MESSAGE("git submodule foreach git pull origin master")
+        MESSAGE(STATUS "Assests submodule unavailable. Updating submodules.")
+        EXECUTE_PROCESS(
+            COMMAND git submodule update --init --recursive
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_QUIET
+        )
     ENDIF()
 else()
     FIND_PACKAGE(ArrayFire REQUIRED)

@@ -652,7 +652,7 @@ namespace cpu
 
             int len = radius*2+1;
 
-            for (int i = 0; i < desc_len; i++)
+            for (int i = 0; i < (int)desc_len; i++)
                 desc[i] = 0.f;
 
             // Calculate orientation histogram
@@ -713,13 +713,13 @@ namespace cpu
 
             normalizeDesc(desc, desc_len);
 
-            for (int i = 0; i < desc_len; i++)
+            for (int i = 0; i < (int)desc_len; i++)
                 desc[i] = min(desc[i], DescrMagThr);
 
             normalizeDesc(desc, desc_len);
 
             // Calculate final descriptor values
-            for (int k = 0; k < desc_len; k++) {
+            for (int k = 0; k < (int)desc_len; k++) {
                 desc_out[f*desc_len+k] = round(min(255.f, desc[k] * IntDescrFctr));
             }
         }
@@ -1061,7 +1061,7 @@ namespace cpu
 
             std::vector<feat_t> sorted_feat;
             array_to_feat(sorted_feat, interp_x, interp_y, interp_layer, interp_response, interp_size, interp_feat);
-            std::sort(sorted_feat.begin(), sorted_feat.end(), feat_cmp);
+            std::stable_sort(sorted_feat.begin(), sorted_feat.end(), feat_cmp);
 
             memFree(interp_x);
             memFree(interp_y);
