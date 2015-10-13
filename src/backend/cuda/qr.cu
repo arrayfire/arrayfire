@@ -219,6 +219,35 @@ INSTANTIATE_QR(double)
 INSTANTIATE_QR(cdouble)
 }
 
+#elif defined(WITH_CPU_LINEAR_ALGEBRA)
+#include <cpu_lapack/cpu_qr.hpp>
+
+namespace cuda
+{
+
+template<typename T>
+void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
+{
+    return cpu::qr(q, r, t, in);
+}
+
+template<typename T>
+Array<T> qr_inplace(Array<T> &in)
+{
+    return cpu::qr_inplace(in);
+}
+
+#define INSTANTIATE_QR(T)                                                                           \
+    template Array<T> qr_inplace<T>(Array<T> &in);                                                \
+    template void qr<T>(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in);
+
+INSTANTIATE_QR(float)
+INSTANTIATE_QR(cfloat)
+INSTANTIATE_QR(double)
+INSTANTIATE_QR(cdouble)
+
+}
+
 #else
 namespace cuda
 {
