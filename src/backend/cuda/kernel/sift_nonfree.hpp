@@ -333,8 +333,10 @@ __global__ void sub(
 {
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    for (unsigned l = 0; l < n_layers; l++)
-        out.ptr[l*nel + i] = in.ptr[(l+1)*nel + i] - in.ptr[l*nel + i];
+    if (i < nel) {
+        for (unsigned l = 0; l < n_layers; l++)
+            out.ptr[l*nel + i] = in.ptr[(l+1)*nel + i] - in.ptr[l*nel + i];
+    }
 }
 
 #define SCPTR(Y, X) (s_center[(Y) * s_i + (X)])

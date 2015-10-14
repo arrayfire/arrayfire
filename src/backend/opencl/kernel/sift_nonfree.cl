@@ -255,8 +255,10 @@ __kernel void sub(
 {
     unsigned i = get_global_id(0);
 
-    for (unsigned l = 0; l < n_layers; l++)
-        out[l*nel + i] = in[l*nel + i] - in[(l+1)*nel + i];
+    if (i < nel) {
+        for (unsigned l = 0; l < n_layers; l++)
+            out[l*nel + i] = in[l*nel + i] - in[(l+1)*nel + i];
+    }
 }
 
 #define LCPTR(Y, X) (l_center[(Y) * l_i + (X)])
