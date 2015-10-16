@@ -59,6 +59,18 @@ cl::Buffer* InteropManager::getBufferResource(const fg::Plot* plot)
     return interop_maps[device][key];
 }
 
+cl::Buffer* InteropManager::getBufferResource(const fg::Plot3* plot3)
+{
+    void * key = (void*)plot3;
+    int device = getActiveDeviceId();
+    iter_t iter = interop_maps[device].find(key);
+
+    if (iter == interop_maps[device].end())
+        interop_maps[device][key] = new cl::BufferGL(getContext(), CL_MEM_WRITE_ONLY, plot3->vbo(), NULL);
+
+    return interop_maps[device][key];
+}
+
 cl::Buffer* InteropManager::getBufferResource(const fg::Histogram* hist)
 {
     void * key = (void*)hist;

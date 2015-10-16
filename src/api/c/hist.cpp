@@ -39,8 +39,7 @@ fg::Histogram* setup_histogram(const af_array in, const double minval, const dou
     /* set x axis limits to maximum and minimum values of data
      * and y axis limits to range [0, nBins]*/
     hist->setAxesLimits(maxval, minval, double(freqMax), 0.0f);
-    hist->setXAxisTitle("Bins");
-    hist->setYAxisTitle("Frequency");
+    hist->setAxesTitles("Bins", "Frequency");
 
     copy_histogram<T>(histogramInput, hist);
 

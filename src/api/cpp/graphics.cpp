@@ -79,6 +79,13 @@ void Window::plot(const array& X, const array& Y, const char* const title)
     AF_THROW(af_draw_plot(get(), X.get(), Y.get(), &temp));
 }
 
+void Window::plot3(const array& P, const char* const title)
+{
+    af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
+    P.eval();
+    AF_THROW(af_draw_plot3(get(), P.get(), &temp));
+}
+
 void Window::hist(const array& X, const double minval, const double maxval, const char* const title)
 {
     af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};

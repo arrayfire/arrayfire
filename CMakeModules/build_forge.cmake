@@ -22,7 +22,7 @@ ENDIF()
 ExternalProject_Add(
     forge-ext
     GIT_REPOSITORY https://github.com/arrayfire/forge.git
-    GIT_TAG af3.1.2
+    GIT_TAG 50959f2f04592d23d5207623c43e675bc4a648dc
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""

@@ -18,7 +18,7 @@
 
 // default to f32(float) type
 template<typename T>
-fg::FGType getGLType();
+fg::dtype getGLType();
 
 // Print for OpenGL errors
 // Returns 1 if an OpenGL error occurred, 0 otherwise.
@@ -45,9 +45,11 @@ static const long long _48BIT = 0x0000FFFFFFFFFFFF;
 typedef std::map<long long, fg::Image*> ImageMap_t;
 typedef std::map<long long, fg::Plot*> PlotMap_t;
 typedef std::map<long long, fg::Histogram*> HistogramMap_t;
+typedef std::map<long long, fg::Plot3*> Plot3Map_t;
 
 typedef ImageMap_t::iterator ImgMapIter;
 typedef PlotMap_t::iterator PltMapIter;
+typedef Plot3Map_t::iterator Plt3MapIter;
 typedef HistogramMap_t::iterator HstMapIter;
 
 /**
@@ -58,6 +60,7 @@ typedef HistogramMap_t::iterator HstMapIter;
  * Renderables:
  *             fg::Image
  *             fg::Plot
+ *             fg::Plot3
  *             fg::Histogram
  * */
 class ForgeManager
@@ -65,6 +68,7 @@ class ForgeManager
     private:
         ImageMap_t      mImgMap;
         PlotMap_t       mPltMap;
+        Plot3Map_t      mPlt3Map;
         HistogramMap_t  mHstMap;
 
     public:
@@ -73,9 +77,10 @@ class ForgeManager
 
         fg::Font* getFont(const bool dontCreate=false);
         fg::Window* getMainWindow(const bool dontCreate=false);
-        fg::Image* getImage(int w, int h, fg::ColorMode mode, fg::FGType type);
-        fg::Plot* getPlot(int nPoints, fg::FGType type);
-        fg::Histogram* getHistogram(int nBins, fg::FGType type);
+        fg::Image* getImage(int w, int h, fg::ChannelFormat mode, fg::dtype type);
+        fg::Plot* getPlot(int nPoints, fg::dtype type);
+        fg::Plot3* getPlot3(int nPoints, fg::dtype type);
+        fg::Histogram* getHistogram(int nBins, fg::dtype type);
 
     protected:
         ForgeManager() {}

@@ -131,6 +131,15 @@ class AFAPI Window {
         void image(const array& in, const char* title=NULL);
 
         /**
+           Renders the input array as an 3d line plot to the window
+
+           \param[in] in is an \ref array
+           \param[in] title parameter is used when this function is called in grid mode
+
+           \note \p in should be 1d array of size 3n or 2d array with (3 x n) or (n x 3) channels.
+         */
+        void plot3(const array& in, const char* title=NULL);
+        /**
            Renders the input arrays as a 2D plot to the window
 
            \param[in] X is an \ref array with the x-axis data points
@@ -139,6 +148,7 @@ class AFAPI Window {
 
            \note \p X and \p Y should be vectors.
          */
+
         void plot(const array& X, const array& Y, const char* const title=NULL);
 
         /**
@@ -291,6 +301,24 @@ AFAPI af_err af_draw_image(const af_window wind, const af_array in, const af_cel
    \ingroup gfx_func_draw
 */
 AFAPI af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, const af_cell* const props);
+
+/**
+   C Interface wrapper for drawing an array as a plot
+
+   \param[in]   wind is the window handle
+   \param[in]   X is an \ref af_array with the x-axis data points
+   \param[in]   Y is an \ref af_array with the y-axis data points
+   \param[in]   props is structure \ref af_cell that has the properties that are used
+   for the current rendering.
+
+   \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
+   is returned.
+
+   \note \p X and \p Y should be vectors.
+
+   \ingroup gfx_func_draw
+*/
+AFAPI af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* const props);
 
 /**
    C Interface wrapper for drawing an array as a histogram
