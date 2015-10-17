@@ -1,6 +1,26 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.1.3
+==============
+
+Bug Fixes
+---------
+
+* Remove ARCH_32 and ARCH_64 flags
+* Fix [missing symbols](https://github.com/arrayfire/arrayfire/issues/1040) when freeimage is not found
+* Use CUDA driver version for Windows
+* Improvements to SIFT
+* Fixed [memory leak](https://github.com/arrayfire/arrayfire/issues/1045) in median
+* Fixes for Windows compilation when not using MKL [#1047](https://github.com/arrayfire/arrayfire/issues/1047)
+* Fixed for building without LAPACK
+
+Other
+-------
+
+* Documentation: Fixed documentation for select and replace
+* Documentation: Fixed documentation for af_isnan
+
 v3.1.2
 ==============
 
