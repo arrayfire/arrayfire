@@ -28,14 +28,15 @@ namespace kernel
 
 static const unsigned THREADS = 256;
 
-template<typename T, typename To, af_match_type dist_type, bool use_lmem>
+template<typename T, typename To, af_match_type dist_type>
 void nearest_neighbour(Param idx,
                        Param dist,
                        Param query,
                        Param train,
                        const dim_t dist_dim,
                        const unsigned n_dist,
-                       const size_t lmem_sz)
+                       const size_t lmem_sz,
+                       bool use_lmem)
 {
     try {
         const unsigned feat_len = query.info.dims[dist_dim];
