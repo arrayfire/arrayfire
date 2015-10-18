@@ -24,7 +24,7 @@ void convert(global T * out, KParam oInfo, global const T * in, KParam iInfo, in
         int oIdx1 = oIdx0 + oInfo.strides[2];
         int oIdx2 = oIdx1 + oInfo.strides[2];
 
-        int iIdx0 = gx * iInfo.strides[0] + gy * iInfo.strides[1];
+        int iIdx0 = gx * iInfo.strides[0] + gy * iInfo.strides[1] + iInfo.offset;
         int iIdx1 = iIdx0 + iInfo.strides[2];
         int iIdx2 = iIdx1 + iInfo.strides[2];
 

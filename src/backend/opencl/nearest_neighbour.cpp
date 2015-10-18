@@ -26,8 +26,8 @@ static const unsigned THREADS = 256;
 
 template<typename T, typename To, af_match_type dist_type>
 void nearest_neighbour_(Array<uint>& idx, Array<To>& dist,
-                     const Array<T>& query, const Array<T>& train,
-                     const uint dist_dim, const uint n_dist)
+                        const Array<T>& query, const Array<T>& train,
+                        const uint dist_dim, const uint n_dist)
 {
     uint sample_dim = (dist_dim == 0) ? 1 : 0;
     const dim4 qDims = query.dims();
@@ -75,11 +75,8 @@ void nearest_neighbour_(Array<uint>& idx, Array<To>& dist,
             kernel::transpose<T, false, false>(trainT, train);
     }
 
-    if (use_lmem) {
-        kernel::nearest_neighbour<T, To, dist_type, true >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-    } else {
-        kernel::nearest_neighbour<T, To, dist_type, false>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-    }
+    kernel::nearest_neighbour<T, To, dist_type>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz, use_lmem);
+
 }
 
 template<typename T, typename To>

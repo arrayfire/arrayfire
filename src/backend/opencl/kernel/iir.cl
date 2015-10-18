@@ -72,8 +72,8 @@ void iir_kernel(      __global T *yptr, const KParam yinfo,
 #endif
 
     __global T *d_y = yptr + y_off;
-    const __global T *d_c = cptr + c_off;
-    const __global T *d_a = aptr + a_off;
+    const __global T *d_c = cptr + c_off + cinfo.offset;
+    const __global T *d_a = aptr + a_off + ainfo.offset;
     const int repeat = (num_a + get_local_size(0) - 1) / get_local_size(0);
 
     for (int ii = 0; ii < MAX_A_SIZE / get_local_size(0); ii++) {

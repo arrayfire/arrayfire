@@ -38,6 +38,8 @@ void scan_dim_kernel(__global To *oData, KParam oInfo,
     ids[dim] = ids[dim] * DIMY * lim + lidy;
     oData  += ids[3] * oInfo.strides[3] + ids[2] * oInfo.strides[2] + ids[1] * oInfo.strides[1] + ids[0];
     iData  += ids[3] *  iInfo.strides[3] + ids[2] *  iInfo.strides[2] + ids[1] *  iInfo.strides[1] + ids[0];
+    iData  += iInfo.offset;
+
     int id_dim = ids[dim];
     const int out_dim = oInfo.dims[dim];
 
