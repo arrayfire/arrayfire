@@ -172,7 +172,6 @@ Param gaussFilter(float sigma)
     dim_t gauss_elem = gauss_filter.info.strides[3] * gauss_filter.info.dims[3];
     gauss_filter.data = bufferAlloc(gauss_elem * sizeof(T));
     getQueue().enqueueWriteBuffer(*gauss_filter.data, CL_TRUE, 0, gauss_elem * sizeof(T), h_gauss);
-    getQueue().enqueueWriteBuffer(*gauss_filter.data, CL_TRUE, 0, gauss_elem * sizeof(T), h_gauss);
 
     delete[] h_gauss;
 
@@ -219,8 +218,8 @@ Param createInitialImage(
     dim_t init_img_el = init_img.info.strides[3] * init_img.info.dims[3];
     init_img.data = bufferAlloc(init_img_el * sizeof(T));
 
-    float s = (double_input) ? sqrt(init_sigma * init_sigma - InitSigma * InitSigma * 4)
-                             : sqrt(init_sigma * init_sigma - InitSigma * InitSigma);
+    float s = (double_input) ? std::max((float)sqrt(init_sigma * init_sigma - InitSigma * InitSigma * 4.f), 0.1f)
+                             : std::max((float)sqrt(init_sigma * init_sigma - InitSigma * InitSigma), 0.1f);
 
     const Param filter = gaussFilter<convAccT>(s);
 
@@ -538,6 +537,10 @@ void sift(unsigned* out_feat,
                  contrast_thr, edge_thr, init_sigma, img_scale);
             CL_DEBUG_FINISH(getQueue());
 
+            bufferFree(d_extrema_x);
+            bufferFree(d_extrema_y);
+            bufferFree(d_extrema_layer);
+
             getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &interp_feat);
             interp_feat = min(interp_feat, extrema_feat);
 
@@ -643,6 +646,12 @@ void sift(unsigned* out_feat,
                  cl::Local(OriHistBins * SIFT_THREADS_Y * 2 * sizeof(float)));
             CL_DEBUG_FINISH(getQueue());
 
+            bufferFree(d_nodup_x);
+            bufferFree(d_nodup_y);
+            bufferFree(d_nodup_layer);
+            bufferFree(d_nodup_response);
+            bufferFree(d_nodup_size);
+
             getQueue().enqueueReadBuffer(*d_count, CL_TRUE, 0, sizeof(unsigned), &oriented_feat);
             oriented_feat = min(oriented_feat, max_oriented_feat);
 
@@ -669,14 +678,14 @@ void sift(unsigned* out_feat,
 
             auto cdOp = make_kernel<Buffer, unsigned, unsigned,
                                     Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
-                                    Buffer, KParam, int, int, float, float, int,
+                                    Buffer, KParam, int, int, float, int,
                                     LocalSpaceArg> (*cdKernel[device]);
 
             cdOp(EnqueueArgs(getQueue(), global_desc, local_desc),
                  *d_desc, desc_len, histsz,
                  *d_oriented_x, *d_oriented_y, *d_oriented_layer,
                  *d_oriented_response, *d_oriented_size, *d_oriented_ori, oriented_feat,
-                 *gauss_pyr[o].data, gauss_pyr[o].info, d, n, scale, init_sigma, n_layers,
+                 *gauss_pyr[o].data, gauss_pyr[o].info, d, n, scale, n_layers,
                  cl::Local(desc_len * (histsz+1) * sizeof(float)));
             CL_DEBUG_FINISH(getQueue());
 
@@ -694,6 +703,11 @@ void sift(unsigned* out_feat,
         }
 
         bufferFree(d_count);
+
+        for (size_t i = 0; i < gauss_pyr.size(); i++)
+            bufferFree(gauss_pyr[i].data);
+        for (size_t i = 0; i < dog_pyr.size(); i++)
+            bufferFree(dog_pyr[i].data);
 
         // If no features are found, set found features to 0 and return
         if (total_feat == 0) {

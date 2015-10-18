@@ -15,11 +15,12 @@
 #include <blas.hpp>
 #include <transpose.hpp>
 
+#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
+
 #include <magma/magma.h>
 #include <magma/magma_cpu_lapack.h>
 #include <magma/magma_helper.h>
 
-#if defined(WITH_OPENCL_LINEAR_ALGEBRA)
 namespace opencl
 {
 
@@ -217,7 +218,21 @@ void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
     }
 }
 
+#define INSTANTIATE(T, Tr)                                              \
+    template void svd<T, Tr>(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in); \
+    template void svdInPlace<T, Tr>(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in);
+
+INSTANTIATE(float, float)
+INSTANTIATE(double, double)
+INSTANTIATE(cfloat, float)
+INSTANTIATE(cdouble, double)
+
+}
+
 #else
+
+namespace opencl
+{
 
 template<typename T, typename Tr>
 void svd(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in)
@@ -230,7 +245,6 @@ void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
 {
     AF_ERROR("Linear Algebra is disabled on OpenCL", AF_ERR_NOT_CONFIGURED);
 }
-#endif
 
 #define INSTANTIATE(T, Tr)                                              \
     template void svd<T, Tr>(Array<Tr> &s, Array<T> &u, Array<T> &vt, const Array<T> &in); \
@@ -242,3 +256,5 @@ INSTANTIATE(cfloat, float)
 INSTANTIATE(cdouble, double)
 
 }
+
+#endif

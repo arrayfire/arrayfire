@@ -42,7 +42,7 @@ void get_out_idx_kernel(__global uint *oData,
     const uint gid = wid * rtInfo.strides[3] + zid * rtInfo.strides[2] + yid * rtInfo.strides[1] + groupId_x;
 
     otData += wid * otInfo.strides[3] + zid * otInfo.strides[2] + yid * otInfo.strides[1];
-    iData  += wid *  iInfo.strides[3] + zid *  iInfo.strides[2] + yid *  iInfo.strides[1];
+    iData  += wid *  iInfo.strides[3] + zid *  iInfo.strides[2] + yid *  iInfo.strides[1] + iInfo.offset;
 
     bool cond = (yid < otInfo.dims[1]) && (zid < otInfo.dims[2]) && (wid < otInfo.dims[3]);
     if (!cond) return;
