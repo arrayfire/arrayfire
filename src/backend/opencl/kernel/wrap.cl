@@ -27,7 +27,7 @@ void wrap_kernel(__global T *optr, KParam out,
     dim_t oidx1 = get_local_id(1) + get_local_size(1) * groupId_y;
 
     optr += idx2 * out.strides[2] + idx3 * out.strides[3];
-    iptr += idx2 *  in.strides[2] + idx3 *  in.strides[3];
+    iptr += idx2 *  in.strides[2] + idx3 *  in.strides[3] + in.offset;
 
 
     if (oidx0 >= out.dims[0] || oidx1 >= out.dims[1]) return;

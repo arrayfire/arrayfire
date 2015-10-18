@@ -12,9 +12,10 @@
 __kernel
 void initial_label(global    T * equiv_map,
                    KParam        eInfo,
-                   global char * bin,
+                   global char * bin_,
                    KParam        bInfo)
 {
+    global char *bin = bin_ + bInfo.offset;
     const int base_x = (get_group_id(0) * get_local_size(0) * N_PER_THREAD) + get_local_id(0);
     const int base_y = (get_group_id(1) * get_local_size(1) * N_PER_THREAD) + get_local_id(1);
 
@@ -36,10 +37,11 @@ void initial_label(global    T * equiv_map,
 __kernel
 void final_relabel(global       T    * equiv_map,
                    KParam              eInfo,
-                   global       char * bin,
+                   global       char * bin_,
                    KParam              bInfo,
                    global const T    * d_tmp)
 {
+    global char *bin = bin_ + bInfo.offset;
     const int base_x = (get_group_id(0) * get_local_size(0) * N_PER_THREAD) + get_local_id(0);
     const int base_y = (get_group_id(1) * get_local_size(1) * N_PER_THREAD) + get_local_id(1);
 

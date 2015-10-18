@@ -49,11 +49,12 @@ void indexKernel(global T * optr, KParam oInfo, global const T * iptr, KParam iI
         int k = p.strds[2] * trimIndex(s2 ? gz+p.offs[2] : ptr2[gz], iInfo.dims[2]);
         int l = p.strds[3] * trimIndex(s3 ? gw+p.offs[3] : ptr3[gw], iInfo.dims[3]);
         // offset input and output pointers
-        global const T *src = iptr + (i+j+k+l);
+        global const T *src = iptr + (i+j+k+l) + iInfo.offset;
         global T *dst = optr + (gx*oInfo.strides[0]+
                                 gy*oInfo.strides[1]+
                                 gz*oInfo.strides[2]+
-                                gw*oInfo.strides[3]);
+                                gw*oInfo.strides[3]+
+                                oInfo.offset);
         // set the output
         dst[0] = src[0];
     }

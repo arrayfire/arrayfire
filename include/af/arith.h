@@ -1351,9 +1351,10 @@ extern "C" {
         \param[in] in is input
         \return \ref AF_SUCCESS if the execution completes properly
 
-        \ingroup arith_func_nan
+        \ingroup arith_func_isnan
     */
     AFAPI af_err af_isnan   (af_array *out, const af_array in);
+
 #ifdef __cplusplus
 }
 #endif

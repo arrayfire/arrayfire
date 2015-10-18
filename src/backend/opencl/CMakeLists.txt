@@ -91,8 +91,10 @@ INCLUDE_DIRECTORIES(
     ${Boost_INCLUDE_DIR}
     ${BoostCompute_INCLUDE_DIRS}
     ${CBLAS_INCLUDE_DIR}
-    ${LAPACK_INCLUDE_DIR}
     )
+IF(LAPACK_FOUND)
+    INCLUDE_DIRECTORIES(${LAPACK_INCLUDE_DIR})
+ENDIF()
 
 FILE(GLOB opencl_headers
   "*.hpp"
@@ -102,12 +104,6 @@ FILE(GLOB opencl_headers
 FILE(GLOB opencl_sources
     "*.cpp"
     "sort_by_key/*.cpp")
-
-FILE(GLOB magma_sources
-    "magma/*.cpp")
-
-FILE(GLOB magma_headers
-    "magma/*.h")
 
 FILE(GLOB jit_sources
     "jit/*.hpp")
@@ -135,8 +131,20 @@ source_group(backend\\opencl\\kernel\\cl FILES ${opencl_kernels})
 source_group(backend\\opencl\\kernel\\Sources FILES ${kernel_sources})
 source_group(backend\\opencl\\kernel\\convolve\\Headers FILES ${conv_ker_headers})
 source_group(backend\\opencl\\kernel\\convolve\\Sources FILES ${conv_ker_sources})
-source_group(backend\\opencl\\magma\\Sources FILES ${magma_sources})
-source_group(backend\\opencl\\magma\\Headers FILES ${magma_headers})
+
+IF(LAPACK_FOUND)
+    FILE(GLOB magma_sources
+        "magma/*.cpp")
+
+    FILE(GLOB magma_headers
+        "magma/*.h")
+
+    source_group(backend\\opencl\\magma\\Sources FILES ${magma_sources})
+    source_group(backend\\opencl\\magma\\Headers FILES ${magma_headers})
+ELSE()
+    SET(magma_sources)
+    SET(magma_headers)
+ENDIF()
 
 FILE(GLOB backend_headers
     "../*.hpp"
