@@ -119,7 +119,7 @@ FUNC##_func();
 
 #define BLAS_FUNC( FUNC, TYPE, CONJUGATE, PREFIX )                           \
 template<> typename FUNC##_func_def_t<TYPE, CONJUGATE>::FUNC##_func_def      \
-FUNC##_func<TYPE, CONJUGATE>()  { return &cublas##PREFIX##FUNC; }
+FUNC##_func<TYPE, CONJUGATE>()  { return (FUNC##_func_def_t<TYPE, CONJUGATE>::FUNC##_func_def)&cublas##PREFIX##FUNC; }
 
 BLAS_FUNC_DEF(dot)
 BLAS_FUNC(dot, float,  true,  S)
@@ -131,7 +131,7 @@ BLAS_FUNC(dot, double, false, D)
 
 #define BLAS_FUNC( FUNC, TYPE, CONJUGATE, PREFIX, SUFFIX)                \
 template<> typename FUNC##_func_def_t<TYPE, CONJUGATE>::FUNC##_func_def  \
-FUNC##_func<TYPE, CONJUGATE>()  { return &cublas##PREFIX##FUNC##SUFFIX; }
+FUNC##_func<TYPE, CONJUGATE>()  { return (FUNC##_func_def_t<TYPE, CONJUGATE>::FUNC##_func_def)&cublas##PREFIX##FUNC##SUFFIX; }
 
 BLAS_FUNC_DEF(dot)
 BLAS_FUNC(dot, cfloat,  true , C, c)
