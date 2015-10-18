@@ -7,6 +7,7 @@ v3.1.3
 Bug Fixes
 ---------
 
+* Fixed [bugs](https://github.com/arrayfire/arrayfire/issues/1042) in various OpenCL kernels without offset additions
 * Remove ARCH_32 and ARCH_64 flags
 * Fix [missing symbols](https://github.com/arrayfire/arrayfire/issues/1040) when freeimage is not found
 * Use CUDA driver version for Windows
