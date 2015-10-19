@@ -52,6 +52,11 @@ af_err af_draw_hist(const af_window wind, const af_array X, const double minval,
     return CALL(wind, X, minval, maxval, props);
 }
 
+af_err af_draw_surface(const af_window wind, const af_array xVals, const af_array yVals, const af_array S, const af_cell* const props)
+{
+    return CALL(wind, xVals, yVals, S, props);
+}
+
 af_err af_grid(const af_window wind, const int rows, const int cols)
 {
     return CALL(wind, rows, cols);

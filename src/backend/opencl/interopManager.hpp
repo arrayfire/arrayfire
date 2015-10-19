@@ -32,6 +32,7 @@ class InteropManager
         cl::Buffer* getBufferResource(const fg::Plot* plot);
         cl::Buffer* getBufferResource(const fg::Plot3* plot3);
         cl::Buffer* getBufferResource(const fg::Histogram* hist);
+        cl::Buffer* getBufferResource(const fg::Surface* surface);
 
     protected:
         InteropManager() {}

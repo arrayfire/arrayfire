@@ -164,6 +164,28 @@ class AFAPI Window {
         void hist(const array& X, const double minval, const double maxval, const char* const title=NULL);
 
         /**
+           Renders the input arrays as a 3D surface plot to the window
+
+           \param[in] S is an \ref array with the z-axis data points
+           \param[in] title parameter is used when this function is called in grid mode
+
+           \note \p S should be a 2D array
+         */
+        void surface(const array& S, const char* const title);
+
+        /**
+           Renders the input arrays as a 3D surface plot to the window
+
+           \param[in] xVals is an \ref array with the x-axis data points
+           \param[in] yVals is an \ref array with the y-axis data points
+           \param[in] S is an \ref array with the z-axis data points
+           \param[in] title parameter is used when this function is called in grid mode
+
+           \note \p X and \p Y should be vectors or 2D arrays \p S should be s 2D array
+         */
+	void surface(const array& xVals, const array& yVals, const array& S, const char* const title);
+
+        /**
            Setup grid layout for multiview mode in a window
 
            \param[in]   rows is number of rows you want to show in a window
@@ -306,15 +328,14 @@ AFAPI af_err af_draw_plot(const af_window wind, const af_array X, const af_array
    C Interface wrapper for drawing an array as a plot
 
    \param[in]   wind is the window handle
-   \param[in]   X is an \ref af_array with the x-axis data points
-   \param[in]   Y is an \ref af_array with the y-axis data points
+   \param[in]   P is an \ref af_array or matrix with the xyz-values of the points
    \param[in]   props is structure \ref af_cell that has the properties that are used
    for the current rendering.
 
    \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
    is returned.
 
-   \note \p X and \p Y should be vectors.
+   \note \p P should be a 3n x 1  vector or one of a 3xn or nx3 matrices.
 
    \ingroup gfx_func_draw
 */
@@ -338,6 +359,26 @@ AFAPI af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell
    \ingroup gfx_func_draw
 */
 AFAPI af_err af_draw_hist(const af_window wind, const af_array X, const double minval, const double maxval, const af_cell* const props);
+
+/**
+   C Interface wrapper for drawing arrayis as a surface
+
+   \param[in]   wind is the window handle
+   \param[in]   xVals is an \ref af_array with the x-axis data points
+   \param[in]   yVals is an \ref af_array with the y-axis data points
+   \param[in]   S is an \ref af_array with the z-axis data points
+   \param[in]   props is structure \ref af_cell that has the properties that are used
+   for the current rendering.
+
+   \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
+   is returned.
+
+   \note \p X and \p Y should be vectors. \p S should be a 2D array
+
+   \ingroup gfx_func_draw
+*/
+
+af_err af_draw_surface(const af_window wind, const af_array xVals, const af_array yVals, const af_array S, const af_cell* const props);
 
 /**
    C Interface wrapper for grid setup in a window

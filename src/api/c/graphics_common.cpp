@@ -214,6 +214,25 @@ fg::Histogram* ForgeManager::getHistogram(int nBins, fg::dtype type)
     return mHstMap[key];
 }
 
+fg::Surface* ForgeManager::getSurface(int nX, int nY, fg::dtype type)
+{
+    /* nX * nY needs to fall in the range of [0, 2^48]
+     * for the ForgeManager to correctly retrieve
+     * the necessary Forge Plot object. So, this implementation
+     * is a limitation on how big of an plot graph can be rendered
+     * using arrayfire graphics funtionality */
+    assert(nX * nY <= 2ll<<48);
+    long long key = (((nX * nY) & _48BIT) << 48) | (type & _16BIT);
+
+    SfcMapIter iter = mSfcMap.find(key);
+    if (iter==mSfcMap.end()) {
+        fg::Surface* temp = new fg::Surface(nX, nY, type);
+        mSfcMap[key] = temp;
+    }
+
+    return mSfcMap[key];
+}
+
 void ForgeManager::destroyResources()
 {
     /* clear all OpenGL resource objects (images, plots, histograms etc) first

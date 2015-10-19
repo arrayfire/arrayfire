@@ -13,7 +13,7 @@
 
 using namespace af;
 
-static const int ITERATIONS = 200;
+static const int ITERATIONS = 30;
 static const float PRECISION = 1.0f/ITERATIONS;
 
 int main(int argc, char *argv[])
@@ -21,25 +21,22 @@ int main(int argc, char *argv[])
     try {
         // Initialize the kernel array just once
         af::info();
-        af::Window myWindow(800, 800, "3D Line Plot example: ArrayFire");
+        af::Window myWindow(800, 800, "3D Surface example: ArrayFire");
 
-        static float t=0.1;
-        array Z = seq( 0.1f, 10.f, PRECISION);
-        array bounds = constant(1, Z.dims());
+        array X = seq(-1, 1, PRECISION);
+        array Y = seq(-1, 1, PRECISION);
+        array Z = randn(X.dims(0), Y.dims(0));
 
-        do{
-            array Y = sin((Z*t) + t) / Z;
-            array X = cos((Z*t) + t) / Z;
-            X = max(min(X, bounds),-bounds);
-            Y = max(min(Y, bounds),-bounds);
+        static float t=0;
+        for (double val=-af::Pi; !myWindow.close(); ) {
+            t+=0.07;
+            //Z = sin(tile(X,1, Y.dims(0))*t + t) + cos(transpose(tile(Y, 1, X.dims(0)))*t + t);
+            array x = tile(X,1, Y.dims(0));
+            array y = transpose(tile(Y, 1, X.dims(0)));
+            Z = 10*x*-abs(y) * cos(x*x*(y+t))+sin(y*(x+t))-1.5;
 
-            array Pts = join(1, X, Y, Z);
-            //Pts can be passed in as a matrix in the form n x 3, 3 x n
-            //or in the flattened xyz-triplet array with size 3n x 1
-            myWindow.plot3(Pts);
-
-            t+=0.01;
-        } while(!myWindow.close());
+            myWindow.surface(X, Y, Z, NULL);
+        }
 
     } catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());
