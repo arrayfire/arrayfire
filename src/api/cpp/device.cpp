@@ -27,6 +27,13 @@ namespace af
         return temp;
     }
 
+    int getAvailableBackends()
+    {
+        int result = 0;
+        AF_THROW(af_get_available_backends(&result));
+        return result;
+    }
+
     void info()
     {
         AF_THROW(af_info());

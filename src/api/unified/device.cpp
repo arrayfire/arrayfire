@@ -22,6 +22,12 @@ af_err af_get_backend_count(unsigned* num_backends)
     return AF_SUCCESS;
 }
 
+af_err af_get_available_backends(int* result)
+{
+    *result = AFSymbolManager::getInstance().getAvailableBackends();
+    return AF_SUCCESS;
+}
+
 af_err af_info()
 {
     return CALL_NO_PARAMS();
