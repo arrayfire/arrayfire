@@ -36,7 +36,7 @@ static bool progress(unsigned iter_curr, af::timer t, double time_total)
 
     if (time_curr < time_total) return true;
 
-    printf(" ### vortex %f iterations per second (max)\n", max_rate);
+    printf(" ### %f iterations per second (max)\n", max_rate);
     return false;
 }
 
