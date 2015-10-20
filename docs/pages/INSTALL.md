@@ -2,12 +2,21 @@ ArrayFire binary installation instructions {#installing}
 =====
 
 Installing ArrayFire couldn't be easier. We ship installers for Windows,
-OSX, and several variants of Linux. In general the installation procedure
-proceeds like this:
+OSX, and Linux. Although you could
+[build ArrayFire from source](https://github.com/arrayfire/arrayfire), we
+suggest using our pre-compiled binaries as they include the Intel Math
+Kernel Library to accelerate linear algebra functions.
 
-1. [Download](http://arrayfire.com/download/) the ArrayFire installer for your
+Please note that although our download page requires a valid login, registration
+is free and downloading ArrayFire is also free. We request your contact
+information so that we may notify you of software updates and occasionally
+collect user feedback about our library.
+
+In general, the installation process for ArrayFire looks like this:
+
+1. Install prerequisites
+2. [Download](http://arrayfire.com/download/) the ArrayFire installer for your
    operating system
-2. Install prerequisites
 3. Install ArrayFire
 4. Test the installation
 5. [Where to go for help?](#GettingHelp)
@@ -16,29 +25,23 @@ Below you will find instructions for
 
 * [Windows](#Windows)
 * Linux including
-    * [Debian (.deb) 8](#Debian)
-    * [Ubuntu (.deb) 14.10 and later](#Ubuntu)
-    * [Fedora (.rpm) 21](#Fedora)
+    * [Debian 8](#Debian)
+    * [Ubuntu 14.10 and later](#Ubuntu)
+    * [Fedora 21](#Fedora)
 * [Mac OSX (.sh and brew)](#OSX)
 
 # <a name="Windows"></a> Windows
 
-Simply [download](http://arrayfire.com/download/) and run the installer.
 If you wish to use CUDA or OpenCL please ensure that you have also installed
 support for these technologies from your video card vendor's website.
+After this, simply [download](http://arrayfire.com/download/) and run the
+installer.
 
 # Linux
 
 ## <a name="Debian"></a> Debian 8
 
-First [download](http://arrayfire.com/download/) ArrayFire. Then, using the
-`gdebi` package manager, you can install ArrayFire and all dependencies as
-follows:
-
-    gdebi arrayfire*.deb
-
-If you prefer to use the `.sh` installer, it and all prerequisite packages
-may be installed as follows:
+First install the prerequisite packages:
 
     # Prerequisite packages:
     apt-get install libfreeimage-dev libatlas3gf-base libfftw3-dev cmake
@@ -46,77 +49,73 @@ may be installed as follows:
     # Enable GPU support (OpenCL):
     apt-get install ocl-icd-libopencl1
 
-    # Run Installer
-    ./arrayfire_3.0.0_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
+If you wish to use CUDA, please
+[download the latest version of CUDA](https://developer.nvidia.com/cuda-zone)
+and install it on your system.
 
-To enable CUDA support, edit `/etc/apt/sources.list` and append `non-free`
-to the line containing `deb http://.../debian jessie main`. Then, as root, run
+Next [download](http://arrayfire.com/download/) ArrayFire. After you have the
+file, run the installer.
 
-    apt-get update
-    apt-get install nvidia-cuda-dev
+    ./arrayfire_*_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
 
 ## <a name="Fedora"></a> Fedora 21
 
-First [download](http://arrayfire.com/download/) ArrayFire. Then, using the
-`yum` package manager, you can install ArrayFire and all dependencies as
-follows:
-
-    yum --nogpgcheck localinstall arrayfire*.rpm
-
-Or with the self-extracting installer
+First install the prerequisite packages:
 
     # Install prerequiste packages
     yum install freeimage atlas fftw cmake
 
-    # Run Installer
-    ./arrayfire_3.0.0_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
+If you wish to use CUDA, please
+[download the latest version of CUDA](https://developer.nvidia.com/cuda-downloads)
+and install it on your system.
+
+Next [download](http://arrayfire.com/download/) ArrayFire. After you have the
+file, run the installer.
+
+    ./arrayfire_*_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
 
 ## <a name="Ubuntu"></a> Ubuntu 14.10 and later
 
-First [download](http://arrayfire.com/download/) ArrayFire. Then, using the
-`gdebi` package manager, you can install ArrayFire and all dependencies as
-follows:
-
-    sudo apt-get install gdebi
-    gdebi arrayfire*.deb
-
-If you prefer to use the `.sh` installer, it and all prerequisite packages
-may be installed as follows:
+First install the prerequisite packages:
 
     # Prerequisite packages:
     sudo apt-get install libfreeimage-dev libatlas3gf-base libfftw3-dev cmake
 
-    # Enable GPU support (OpenCL and/or CUDA):
-    sudo apt-get install ocl-icd-libopencl1
-    sudo apt-get install nvidia-cuda-dev
+If you are using ArrayFire on the Tegra-K1 also install these packages:
 
-    # Run Installer
-    sudo ./arrayfire_3.0.0_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
+    sudo apt-get install libatlas3gf-base libatlas-dev libfftw3-dev liblapacke-dev
+
+If your system has a CUDA GPU, we suggest downloading the latest drivers
+from NVIDIA in the form of a Debian package and installing using the
+package manager. At present, CUDA downloads can be found on the
+[NVIDIA CUDA download page](https://developer.nvidia.com/cuda-downloads)
+Follow NVIDIA's instructions for getting CUDA set up.
+
+If you wish to use OpenCL, simply install the OpenCL ICD loader along
+with any drivers required for your hardware.
+
+    # Enable GPU support (OpenCL):
+    apt-get install ocl-icd-libopencl1
+
+Finally, [download](http://arrayfire.com/download/) ArrayFire. After you have
+the file, run the installer using:
+
+    ./arrayfire_*_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
 
 # <a name="OSX"></a> Mac OSX
 
-## Self-extracting zip from ArrayFire website
-
 On OSX there are several dependencies that are not integrated into the
-operating system. It is easiest to install these using [Homebrew](http://brew.sh/),
-but you can also build them yourself if you prefer.
+operating system. The ArrayFire installer automatically satisfies these
+dependencies using [Homebrew](http://brew.sh/).
+If you don't have Homebrew installed on your system, the ArrayFire installer
+will ask you do to so.
 
-First [download](http://arrayfire.com/download/) ArrayFire. You may install
-ArrayFire to `/usr/local` from XTerm using the following commands:
+Simply [download](http://arrayfire.com/download) the ArrayFire installer
+and double-click it to carry out the installation.
 
-    brew install boost fftw cmake freeimage
-
-    sudo ./arrayfire_3.0.0_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
-
-## Brew installation
-
-GitHub user [sutoiku](https://github.com/sutoiku) has been kind enough to
-write a brew installation script for ArrayFire. This installation method will
-download and compile ArrayFire and all prerequisites. Please remember to
-register on the ArrayFire website so we can keep you up to date about new
-versions of our software!
-
-    brew install arrayfire
+ArrayFire can also be installed through Homebrew directly using
+`brew install arrayfire`; however, it will
+not include MKL acceleration of linear algebra functions.
 
 ## Testing installation
 
