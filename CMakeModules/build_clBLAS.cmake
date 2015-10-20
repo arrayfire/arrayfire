@@ -14,7 +14,7 @@ ENDIF()
 ExternalProject_Add(
     clBLAS-external
     GIT_REPOSITORY https://github.com/arrayfire/clBLAS.git
-    GIT_TAG f0aca20f2e331e9ee4667e28c27e60a11fe7d483
+    GIT_TAG 102c832825e8e4d60ad73ca97e95668463294068
     PREFIX "${prefix}"
     INSTALL_DIR "${prefix}"
     UPDATE_COMMAND ""
