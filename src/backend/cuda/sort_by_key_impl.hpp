@@ -43,5 +43,7 @@ namespace cuda
     INSTANTIATE(Tk, short,  dr) \
     INSTANTIATE(Tk, ushort, dr) \
     INSTANTIATE(Tk, char,   dr) \
-    INSTANTIATE(Tk, uchar,  dr)
+    INSTANTIATE(Tk, uchar,  dr) \
+    INSTANTIATE(Tk, intl,   dr) \
+    INSTANTIATE(Tk, uintl,  dr)
 }
