@@ -20,5 +20,7 @@ INSTANTIATE(uint  , true)
 INSTANTIATE(uchar , true)
 INSTANTIATE(short , true)
 INSTANTIATE(ushort, true)
+INSTANTIATE(intl  , true)
+INSTANTIATE(uintl , true)
 
 }

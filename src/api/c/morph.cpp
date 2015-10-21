@@ -60,6 +60,8 @@ static af_err morph(af_array *out, const af_array &in, const af_array &mask)
             case u32: output = morph<uint  , isDilation>(in, mask);      break;
             case s16: output = morph<short , isDilation>(in, mask);      break;
             case u16: output = morph<ushort, isDilation>(in, mask);      break;
+            case s64: output = morph<intl  , isDilation>(in, mask);      break;
+            case u64: output = morph<uintl , isDilation>(in, mask);      break;
             case u8 : output = morph<uchar , isDilation>(in, mask);      break;
             default : TYPE_ERROR(1, type);
         }
@@ -94,6 +96,8 @@ static af_err morph3d(af_array *out, const af_array &in, const af_array &mask)
             case u32: output = morph3d<uint  , isDilation>(in, mask);       break;
             case s16: output = morph3d<short , isDilation>(in, mask);       break;
             case u16: output = morph3d<ushort, isDilation>(in, mask);       break;
+            case s64: output = morph3d<intl  , isDilation>(in, mask);       break;
+            case u64: output = morph3d<uintl , isDilation>(in, mask);       break;
             case u8 : output = morph3d<uchar , isDilation>(in, mask);       break;
             default : TYPE_ERROR(1, type);
         }
