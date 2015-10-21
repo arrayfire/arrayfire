@@ -143,6 +143,8 @@ af_err fft_convolve(af_array *out, const af_array signal, const af_array filter,
             case f32: output = fftconvolve<float , float,  cfloat,  false, false, baseDim>(signal, filter, expand, convBT); break;
             case u32: output = fftconvolve<uint  , float,  cfloat,  false, true,  baseDim>(signal, filter, expand, convBT); break;
             case s32: output = fftconvolve<int   , float,  cfloat,  false, true,  baseDim>(signal, filter, expand, convBT); break;
+            case u64: output = fftconvolve<uintl , float,  cfloat,  false, true,  baseDim>(signal, filter, expand, convBT); break;
+            case s64: output = fftconvolve<intl  , float,  cfloat,  false, true,  baseDim>(signal, filter, expand, convBT); break;
             case u16: output = fftconvolve<ushort, float,  cfloat,  false, true,  baseDim>(signal, filter, expand, convBT); break;
             case s16: output = fftconvolve<short , float,  cfloat,  false, true,  baseDim>(signal, filter, expand, convBT); break;
             case u8:  output = fftconvolve<uchar , float,  cfloat,  false, true,  baseDim>(signal, filter, expand, convBT); break;

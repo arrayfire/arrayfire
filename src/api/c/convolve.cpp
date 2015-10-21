@@ -87,6 +87,8 @@ af_err convolve(af_array *out, const af_array signal, const af_array filter)
             case s32: output = convolve<int    ,   float, baseDim, expand>(signal, filter, convBT); break;
             case u16: output = convolve<ushort ,   float, baseDim, expand>(signal, filter, convBT); break;
             case s16: output = convolve<short  ,   float, baseDim, expand>(signal, filter, convBT); break;
+            case u64: output = convolve<uintl  ,   float, baseDim, expand>(signal, filter, convBT); break;
+            case s64: output = convolve<intl   ,   float, baseDim, expand>(signal, filter, convBT); break;
             case u8:  output = convolve<uchar  ,   float, baseDim, expand>(signal, filter, convBT); break;
             case b8:  output = convolve<char   ,   float, baseDim, expand>(signal, filter, convBT); break;
             default: TYPE_ERROR(1, stype);
@@ -124,6 +126,8 @@ af_err convolve2_sep(af_array *out, af_array col_filter, af_array row_filter, co
             case s32: output = convolve2<int    ,   float, expand>(signal, col_filter, row_filter); break;
             case u16: output = convolve2<ushort ,   float, expand>(signal, col_filter, row_filter); break;
             case s16: output = convolve2<short  ,   float, expand>(signal, col_filter, row_filter); break;
+            case u64: output = convolve2<uintl  ,   float, expand>(signal, col_filter, row_filter); break;
+            case s64: output = convolve2<intl   ,   float, expand>(signal, col_filter, row_filter); break;
             case u8:  output = convolve2<uchar  ,   float, expand>(signal, col_filter, row_filter); break;
             case b8:  output = convolve2<char   ,   float, expand>(signal, col_filter, row_filter); break;
             default: TYPE_ERROR(1, signalType);

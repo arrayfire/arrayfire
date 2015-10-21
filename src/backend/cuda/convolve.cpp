@@ -98,5 +98,7 @@ INSTANTIATE(uchar  ,   float)
 INSTANTIATE(char   ,   float)
 INSTANTIATE(ushort ,   float)
 INSTANTIATE(short  ,   float)
+INSTANTIATE(uintl  ,   float)
+INSTANTIATE(intl   ,   float)
 
 }
