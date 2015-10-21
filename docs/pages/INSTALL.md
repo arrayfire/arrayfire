@@ -67,7 +67,7 @@ Finally, verify that the path addition worked correctly. You can do this by:
 First install the prerequisite packages:
 
     # Prerequisite packages:
-    apt-get install libfreeimage-dev libatlas3gf-base libfftw3-dev cmake
+    apt-get install libfreeimage-dev libatlas3gf-base libfftw3-dev libglew-dev libglewmx-dev libglfw3-dev cmake
 
     # Enable GPU support (OpenCL):
     apt-get install ocl-icd-libopencl1
@@ -86,7 +86,7 @@ file, run the installer.
 First install the prerequisite packages:
 
     # Install prerequiste packages
-    yum install freeimage atlas fftw cmake
+    yum install freeimage atlas fftw libGLEW libGLEWmx glfw cmake
 
 If you wish to use CUDA, please
 [download the latest version of CUDA](https://developer.nvidia.com/cuda-downloads)
