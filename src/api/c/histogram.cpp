@@ -44,6 +44,8 @@ af_err af_histogram(af_array *out, const af_array in,
             case u32: output = histogram<uint  , uint>(in, nbins, minval, maxval, info.isLinear()); break;
             case s16: output = histogram<short , uint>(in, nbins, minval, maxval, info.isLinear()); break;
             case u16: output = histogram<ushort, uint>(in, nbins, minval, maxval, info.isLinear()); break;
+            case s64: output = histogram<intl  , uint>(in, nbins, minval, maxval, info.isLinear()); break;
+            case u64: output = histogram<uintl , uint>(in, nbins, minval, maxval, info.isLinear()); break;
             case u8 : output = histogram<uchar , uint>(in, nbins, minval, maxval, info.isLinear()); break;
             default : TYPE_ERROR(1, type);
         }
