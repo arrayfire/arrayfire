@@ -44,6 +44,8 @@ Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices, const 
     template Array<T> lookup<T, unsigned>(const Array<T> &input, const Array<unsigned> &indices, const unsigned dim); \
     template Array<T> lookup<T, short   >(const Array<T> &input, const Array<short   > &indices, const unsigned dim); \
     template Array<T> lookup<T, ushort  >(const Array<T> &input, const Array<ushort  > &indices, const unsigned dim); \
+    template Array<T> lookup<T, intl    >(const Array<T> &input, const Array<intl    > &indices, const unsigned dim); \
+    template Array<T> lookup<T, uintl   >(const Array<T> &input, const Array<uintl   > &indices, const unsigned dim); \
     template Array<T> lookup<T, uchar   >(const Array<T> &input, const Array<uchar   > &indices, const unsigned dim);
 
 INSTANTIATE(float   );
