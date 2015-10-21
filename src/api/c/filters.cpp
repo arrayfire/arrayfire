@@ -56,6 +56,8 @@ af_err af_medfilt(af_array *out, const af_array in, const dim_t wind_length, con
                 case u32: output = medfilt<uint  >(in, wind_length, wind_width, edge_pad); break;
                 case s16: output = medfilt<short >(in, wind_length, wind_width, edge_pad); break;
                 case u16: output = medfilt<ushort>(in, wind_length, wind_width, edge_pad); break;
+                case s64: output = medfilt<intl  >(in, wind_length, wind_width, edge_pad); break;
+                case u64: output = medfilt<uintl >(in, wind_length, wind_width, edge_pad); break;
                 case u8 : output = medfilt<uchar >(in, wind_length, wind_width, edge_pad); break;
                 default : TYPE_ERROR(1, type);
             }

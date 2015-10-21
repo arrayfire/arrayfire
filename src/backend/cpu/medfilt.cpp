@@ -147,5 +147,7 @@ INSTANTIATE(uint  )
 INSTANTIATE(uchar )
 INSTANTIATE(ushort)
 INSTANTIATE(short )
+INSTANTIATE(intl  )
+INSTANTIATE(uintl )
 
 }
