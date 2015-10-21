@@ -578,7 +578,7 @@ extern "C" {
     /**
        C Interface for dividing an array by another
 
-       \param[out] out will contain result of \p lhs / \p rhs
+       \param[out] out will contain result of \p lhs / \p rhs. out is of type b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -591,7 +591,7 @@ extern "C" {
     /**
        C Interface for checking if an array is less than another
 
-       \param[out] out will contain result of \p lhs < \p rhs
+       \param[out] out will contain result of \p lhs < \p rhs. out is of type b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -604,7 +604,7 @@ extern "C" {
     /**
        C Interface for checking if an array is greater than another
 
-       \param[out] out will contain result of \p lhs > \p rhs
+       \param[out] out will contain result of \p lhs > \p rhs. out is of type b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -617,7 +617,7 @@ extern "C" {
     /**
        C Interface for checking if an array is less or equal to another
 
-       \param[out] out will contain result of \p lhs <= \p rhs
+       \param[out] out will contain result of \p lhs <= \p rhs. out is of type b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -630,7 +630,7 @@ extern "C" {
     /**
        C Interface for checking if an array is greater or equal to another
 
-       \param[out] out will contain result of \p lhs >= \p rhs
+       \param[out] out will contain result of \p lhs >= \p rhs. out is of type b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -643,7 +643,7 @@ extern "C" {
     /**
        C Interface for checking if an array is equal to another
 
-       \param[out] out will contain result of \p lhs == \p rhs
+       \param[out] out will contain result of \p lhs == \p rhs. out is of type b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -656,7 +656,7 @@ extern "C" {
     /**
        C Interface for checking if an array is not equal to another
 
-       \param[out] out will contain result of \p lhs != \p rhs
+       \param[out] out will contain result of \p lhs != \p rhs. out is of type b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -669,7 +669,7 @@ extern "C" {
     /**
        C Interface for performing logical and on two arrays
 
-       \param[out] out will contain result of \p lhs && \p rhs
+       \param[out] out will contain result of \p lhs && \p rhs. out is of type b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -682,7 +682,7 @@ extern "C" {
     /**
        C Interface for performing logical or on two arrays
 
-       \param[out] out will contain result of \p lhs || \p rhs
+       \param[out] out will contain result of \p lhs || \p rhs. out is of type b8
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode
@@ -695,7 +695,7 @@ extern "C" {
     /**
        C Interface for performing logical not on input
 
-       \param[out] out will contain result of logical not of \p in
+       \param[out] out will contain result of logical not of \p in. out is of type b8
        \param[in] in is the input
        \return \ref AF_SUCCESS if the execution completes properly
 

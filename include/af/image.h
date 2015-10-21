@@ -230,7 +230,7 @@ AFAPI array bilateral(const array &in, const float spatial_sigma, const float ch
    \param[in]  nbins  Number of bins to populate between min and max
    \param[in]  minval minimum bin value (accumulates -inf to min)
    \param[in]  maxval minimum bin value (accumulates max to +inf)
-   \return     histogram array
+   \return     histogram array of type u32
 
    \ingroup image_func_histogram
  */
@@ -243,7 +243,7 @@ AFAPI array histogram(const array &in, const unsigned nbins, const double minval
 
    \param[in]  in is the input array
    \param[in]  nbins  Number of bins to populate between min and max
-   \return     histogram array
+   \return     histogram array of type u32
 
    \ingroup image_func_histogram
  */
@@ -796,7 +796,7 @@ extern "C" {
     /**
        C Interface for histogram
 
-       \param[out] out is the histogram for input array in
+       \param[out] out (type u32) is the histogram for input array in
        \param[in]  in is the input array
        \param[in]  nbins  Number of bins to populate between min and max
        \param[in]  minval minimum bin value (accumulates -inf to min)

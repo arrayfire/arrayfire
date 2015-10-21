@@ -28,5 +28,27 @@ backends loaded successfully.
 
 =======================================================================
 
+\defgroup unified_func_getavailbackends getAvailableBackends
+
+\brief Returns an integer indicating the backends loaded successfully.
+
+The number returned denotes the backends available according to the table:
+
+Return Value | Backends Available
+-------------|-----------------------
+0            | None
+1            | CPU
+2            | CUDA
+3            | CPU and CUDA
+4            | OpenCL
+5            | CPU and OpenCL
+6            | CUDA and OpenCL
+7            | CPU, CUDA and OpenCL
+
+\ingroup unified_func
+\ingroup arrayfire_func
+
+=======================================================================
+
 @}
 */

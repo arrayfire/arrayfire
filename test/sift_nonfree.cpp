@@ -234,7 +234,6 @@ void siftTest(string pTestFile, unsigned nLayers, float contrastThr, float edgeT
             ASSERT_LE(fabs(out_feat[elIter].f[4] - gold_feat[elIter].f[4]), 1e-3) << "at: " << elIter << std::endl;
         }
 
-        bool isTypeDouble = is_same_type<T, double>::value || is_same_type<T, af::cdouble>::value;
         EXPECT_TRUE(compareEuclidean(descDims[0], descDims[1], (float*)&v_out_desc[0], (float*)&v_gold_desc[0], 2.f, 4.5f));
 
         ASSERT_EQ(AF_SUCCESS, af_release_array(inArray));

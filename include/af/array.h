@@ -1047,7 +1047,7 @@ namespace af
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
     ///
-    /// \returns an array with the equality operation performed on each element
+    /// \returns an array of type b8 with the equality operation performed on each element
     BIN_OP(operator==)
     /// @}
 
@@ -1058,7 +1058,7 @@ namespace af
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
     ///
-    /// \returns    an array with the != operation performed on each element
+    /// \returns    an array of type b8 with the != operation performed on each element
     ///             of \p lhs and \p rhs
     BIN_OP(operator!=)
     /// @}
@@ -1070,7 +1070,7 @@ namespace af
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
     ///
-    /// \returns    an array with the < operation performed on each element
+    /// \returns    an array of type b8 with the < operation performed on each element
     ///             of \p lhs and \p rhs
     BIN_OP(operator< )
     /// @}
@@ -1082,7 +1082,7 @@ namespace af
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
     ///
-    /// \returns    an array with the <= operation performed on each element
+    /// \returns    an array of type b8 with the <= operation performed on each element
     ///             of \p lhs and \p rhs
     BIN_OP(operator<=)
     /// @}
@@ -1094,7 +1094,7 @@ namespace af
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
     ///
-    /// \returns    an array with the > operation performed on each element
+    /// \returns    an array of type b8 with the > operation performed on each element
     ///             of \p lhs and \p rhs
     BIN_OP(operator> )
     /// @}
@@ -1106,7 +1106,7 @@ namespace af
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
     ///
-    /// \returns    an array with the >= operation performed on each element
+    /// \returns    an array of type b8 with the >= operation performed on each element
     ///             of \p lhs and \p rhs
     BIN_OP(operator>=)
     /// @}
@@ -1119,7 +1119,7 @@ namespace af
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
     ///
-    /// \returns    an array with a logical AND operation performed on each
+    /// \returns    an array of type b8 with a logical AND operation performed on each
     ///             element of \p lhs and \p rhs
     BIN_OP(operator&&)
     /// @}
@@ -1132,7 +1132,7 @@ namespace af
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
     ///
-    /// \returns    an array with a logical OR operation performed on each
+    /// \returns    an array of type b8 with a logical OR operation performed on each
     ///             element of \p lhs and \p rhs
     BIN_OP(operator||)
     /// @}

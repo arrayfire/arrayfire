@@ -10,6 +10,7 @@
 #include "symbol_manager.hpp"
 #include <algorithm>
 #include <string>
+#include <cmath>
 
 using std::string;
 using std::replace;
@@ -130,20 +131,21 @@ AFSymbolManager& AFSymbolManager::getInstance()
 }
 
 AFSymbolManager::AFSymbolManager()
-    : activeHandle(NULL), defaultHandle(NULL), numBackends(0)
+    : activeHandle(NULL), defaultHandle(NULL), numBackends(0), backendsAvailable(0)
 {
-    // In reverse order of priority. The last successful backend loaded will be
-    // the most prefered one.
-    static const int order[] = {AF_BACKEND_CPU,
-                                AF_BACKEND_OPENCL,
-                                AF_BACKEND_CUDA};
+    // In order of priority.
+    static const int order[] = {AF_BACKEND_CUDA,        // 1 -> Most Preferred
+                                AF_BACKEND_OPENCL,      // 4 -> Preferred if CUDA unavailable
+                                AF_BACKEND_CPU};        // 2 -> Preferred if CUDA and OpenCL unavailable
 
-    for(int i = 0; i < NUM_BACKENDS; ++i) {
-        int backend = order[i] - 1;
+    // Decremeting loop. The last successful backend loaded will be the most prefered one.
+    for(int i = NUM_BACKENDS - 1; i >= 0; i--) {
+        int backend = order[i] >> 1;    // Convert order[1, 4, 2] -> backend[0, 2, 1]
         bkndHandles[backend] = openDynLibrary(backend);
         if (bkndHandles[backend]) {
             activeHandle = bkndHandles[backend];
             numBackends++;
+            backendsAvailable += order[i];
         }
     }
     // Keep a copy of default order handle
@@ -164,6 +166,11 @@ AFSymbolManager::~AFSymbolManager()
 unsigned AFSymbolManager::getBackendCount()
 {
     return numBackends;
+}
+
+int AFSymbolManager::getAvailableBackends()
+{
+    return backendsAvailable;
 }
 
 af_err AFSymbolManager::setBackend(af::Backend bknd)

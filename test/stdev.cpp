@@ -85,9 +85,9 @@ void stdevDimTest(string pFileName, dim_t dim=-1)
     af::dim4 dims = numDims[0];
     vector<T> input(in[0].begin(), in[0].end());
 
-    array a(dims, &(input.front()));
+    af::array a(dims, &(input.front()));
 
-    array b = stdev(a, dim);
+    af::array b = stdev(a, dim);
 
     vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
 
@@ -127,7 +127,7 @@ TYPED_TEST(StandardDev, Dim3)
 
 TEST(StandardDev, InvalidDim)
 {
-    ASSERT_THROW(af::stdev(array(), 5), af::exception);
+    ASSERT_THROW(af::stdev(af::array(), 5), af::exception);
 }
 
 TEST(StandardDev, InvalidType)
@@ -151,10 +151,10 @@ void stdevDimIndexTest(string pFileName, dim_t dim=-1)
     af::dim4 dims = numDims[0];
     vector<T> input(in[0].begin(), in[0].end());
 
-    array a(dims, &(input.front()));
-    array b = a(seq(2,6), seq(1,7));
+    af::array a(dims, &(input.front()));
+    af::array b = a(seq(2,6), seq(1,7));
 
-    array c = stdev(b, dim);
+    af::array c = stdev(b, dim);
 
     vector<outType> currGoldBar(tests[0].begin(), tests[0].end());
 
@@ -198,7 +198,7 @@ TYPED_TEST(StandardDev, All)
     af::dim4 dims = numDims[0];
     vector<TypeParam> input(in[0].begin(), in[0].end());
 
-    array a(dims, &(input.front()));
+    af::array a(dims, &(input.front()));
     outType b = stdev<outType>(a);
 
     vector<outType> currGoldBar(tests[0].begin(), tests[0].end());

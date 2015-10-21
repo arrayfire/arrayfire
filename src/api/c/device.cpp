@@ -44,6 +44,18 @@ af_err af_get_backend_count(unsigned* num_backends)
     return AF_SUCCESS;
 }
 
+af_err af_get_available_backends(int* result)
+{
+#if defined(AF_CPU)
+    *result = AF_BACKEND_CPU;
+#elif defined(AF_CUDA)
+    *result = AF_BACKEND_CUDA;
+#elif defined(AF_OPENCL)
+    *result = AF_BACKEND_OPENCL;
+#endif
+    return AF_SUCCESS;
+}
+
 af_err af_init()
 {
     try {

@@ -29,6 +29,8 @@ class AFSymbolManager {
 
         unsigned getBackendCount();
 
+        int getAvailableBackends();
+
         af_err setBackend(af::Backend bnkd);
 
         template<typename... CalleeArgs>
@@ -64,6 +66,7 @@ class AFSymbolManager {
         LibHandle activeHandle;
         LibHandle defaultHandle;
         unsigned numBackends;
+        int backendsAvailable;
 };
 
 #if defined(OS_WIN)
