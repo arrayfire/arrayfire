@@ -549,7 +549,7 @@ class lookup : public ::testing::Test
         }
 };
 
-typedef ::testing::Types<float, double, int, unsigned, unsigned char, short, ushort> ArrIdxTestTypes;
+typedef ::testing::Types<float, double, int, unsigned, unsigned char, short, ushort, intl, uintl> ArrIdxTestTypes;
 TYPED_TEST_CASE(lookup, ArrIdxTestTypes);
 
 template<typename T>

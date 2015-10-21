@@ -122,6 +122,8 @@ af_err af_lookup(af_array *out, const af_array in, const af_array indices, const
             case u32: output = lookup<unsigned>(in, indices, dim); break;
             case s16: output = lookup<short   >(in, indices, dim); break;
             case u16: output = lookup<ushort  >(in, indices, dim); break;
+            case s64: output = lookup<intl    >(in, indices, dim); break;
+            case u64: output = lookup<uintl   >(in, indices, dim); break;
             case  u8: output = lookup<uchar   >(in, indices, dim); break;
             default : TYPE_ERROR(1, idxType);
         }
