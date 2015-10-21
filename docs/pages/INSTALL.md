@@ -34,8 +34,31 @@ Below you will find instructions for
 
 If you wish to use CUDA or OpenCL please ensure that you have also installed
 support for these technologies from your video card vendor's website.
-After this, simply [download](http://arrayfire.com/download/) and run the
-installer.
+
+Next [download](http://arrayfire.com/download/) and run the ArrayFire installer.
+After it has completed, you need to add ArrayFire to the path for all users.
+
+1. Open Advanced System Settings:
+    * Windows 8: Move the Mouse pointer to the bottom right corner of the
+      screen, Right click, choose System. Then click "Advanced System Settings"
+    * Windows 7: Open the Start Menu and Right Click on "Computer". Then choose
+      Properties and click "Advanced System Settings"
+2. In Advanced System Settings window, click on Advanced tab
+3. Click on Environment Variables, then under System Variables, find PATH, and
+   click on it.
+4. In edit mode, append %AF_PATH%/lib. NOTE: Ensure that there is a semi-colon
+   separating %AF_PATH%/lib from any existing content (e.g.
+   EXISTING_PATHS;%AF_PATH%/lib;) otherwise other software may not function
+   correctly.
+
+Finally, verify that the path addition worked correctly. You can do this by:
+
+1. Open Visual Studio 2013. Open the HelloWorld solution which is located at
+   AF_PATH/examples/helloworld/helloworld.sln.
+2. Build and run the helloworld example. Be sure to, select the
+   platform/configuration of your choice using the platform drop-down (the
+   options are CPU, CUDA, and OpenCL) and Solution Configuration drop down
+   (options of Release and Debug) menus. Run the helloworld example
 
 # Linux
 
