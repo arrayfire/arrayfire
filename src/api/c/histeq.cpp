@@ -79,6 +79,8 @@ af_err af_hist_equal(af_array *out, const af_array in, const af_array hist)
             case u32: output = hist_equal<uint  , uint>(in, hist); break;
             case s16: output = hist_equal<short , uint>(in, hist); break;
             case u16: output = hist_equal<ushort, uint>(in, hist); break;
+            case s64: output = hist_equal<intl  , uint>(in, hist); break;
+            case u64: output = hist_equal<uintl , uint>(in, hist); break;
             case u8 : output = hist_equal<uchar , uint>(in, hist); break;
             default : TYPE_ERROR(1, dataType);
         }
