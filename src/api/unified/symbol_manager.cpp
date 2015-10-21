@@ -133,22 +133,19 @@ AFSymbolManager& AFSymbolManager::getInstance()
 AFSymbolManager::AFSymbolManager()
     : activeHandle(NULL), defaultHandle(NULL), numBackends(0), backendsAvailable(0)
 {
-    // In reverse order of priority. The last successful backend loaded will be
-    // the most prefered one.
-    static const int order[] = {AF_BACKEND_CPU,         // 1
-                                AF_BACKEND_OPENCL,      // 4
-                                AF_BACKEND_CUDA};       // 2
+    // In order of priority.
+    static const int order[] = {AF_BACKEND_CUDA,        // 1 -> Most Preferred
+                                AF_BACKEND_OPENCL,      // 4 -> Preferred if CUDA unavailable
+                                AF_BACKEND_CPU};        // 2 -> Preferred if CUDA and OpenCL unavailable
 
-    static const int index[] = {-1, 0, 2, -1, 1}; // Nothing at position 0, 3
-
-    for(int i = 0; i < NUM_BACKENDS; ++i) {
-        int backend = index[order[i]];
+    // Decremeting loop. The last successful backend loaded will be the most prefered one.
+    for(int i = NUM_BACKENDS - 1; i >= 0; i--) {
+        int backend = order[i] >> 1;    // Convert order[1, 4, 2] -> backend[0, 2, 1]
         bkndHandles[backend] = openDynLibrary(backend);
         if (bkndHandles[backend]) {
             activeHandle = bkndHandles[backend];
             numBackends++;
-            backendsAvailable += std::pow(2, backend);
-            printf("BA %d %d\n", backend, backendsAvailable);
+            backendsAvailable += order[i];
         }
     }
     // Keep a copy of default order handle
