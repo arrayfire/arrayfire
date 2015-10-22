@@ -85,6 +85,10 @@ UNIQUE_TESTS(double)
 UNIQUE_TESTS(int)
 UNIQUE_TESTS(uint)
 UNIQUE_TESTS(uchar)
+UNIQUE_TESTS(short)
+UNIQUE_TESTS(ushort)
+UNIQUE_TESTS(intl)
+UNIQUE_TESTS(uintl)
 
 typedef af_err (*setFunc)(af_array *, const af_array, const af_array, const bool);
 
@@ -161,3 +165,7 @@ SET_TESTS(double)
 SET_TESTS(int)
 SET_TESTS(uint)
 SET_TESTS(uchar)
+SET_TESTS(short)
+SET_TESTS(ushort)
+SET_TESTS(intl)
+SET_TESTS(uintl)
