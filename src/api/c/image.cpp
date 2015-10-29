@@ -66,7 +66,9 @@ static fg::Image* convert_and_copy_image(const af_array in)
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
 
-    fg::Image* ret_val = fgMngr.getImage(inDims[1], inDims[0], (fg::ChannelFormat)inDims[2], getGLType<T>());
+    // The inDims[2] * 100 is a hack to convert to fg::ChannelFormat
+    // TODO Write a proper conversion function
+    fg::Image* ret_val = fgMngr.getImage(inDims[1], inDims[0], (fg::ChannelFormat)(inDims[2] * 100), getGLType<T>());
 
     copy_image<T>(normalizePerType<T>(imgData), ret_val);
 
