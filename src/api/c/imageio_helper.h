@@ -64,12 +64,9 @@ typedef enum {
     AFFI_RGBA = 4
 } FI_CHANNELS;
 
-// Helpers
-void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage);
-
 // Error handler for FreeImage library.
 // In case this handler is invoked, it throws an af exception.
-void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage)
+static void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage)
 {
     printf("FreeImage Error Handler: %s\n", zMessage);
 }

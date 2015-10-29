@@ -56,4 +56,16 @@ void deleteImageMem(void* ptr)
     AF_THROW(af_delete_image_memory(ptr));
 }
 
+array loadImageT(const char* filename)
+{
+    af_array out = 0;
+    AF_THROW(af_load_image_t(&out, filename));
+    return array(out);
+}
+
+void saveImageT(const char* filename, const array& in)
+{
+    AF_THROW(af_save_image_t(filename, in.get()));
+}
+
 }

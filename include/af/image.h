@@ -96,6 +96,31 @@ AFAPI void* saveImageMem(const array& in, const imageFormat format = AF_FIF_PNG)
 AFAPI void deleteImageMem(void *ptr);
 #endif
 
+#if AF_API_VERSION >= 32
+/**
+    C++ Interface for loading an image as is original type
+
+    \param[in] filename is name of file to be loaded
+    \return image loaded as \ref af::array()
+
+    \ingroup imageio_func_load
+*/
+AFAPI array loadImageT(const char* filename);
+#endif
+
+#if AF_API_VERSION >= 32
+/**
+    C++ Interface for saving an image without modifications
+
+    \param[in] filename is name of file to be saved
+    \param[in] in is the array to be saved. Should be u8 for saving 8-bit image,
+    u16 for 16-bit image, and f32 for 32-bit image.
+
+    \ingroup imageio_func_load
+*/
+AFAPI void saveImageT(const char* filename, const array& in);
+#endif
+
 /**
     C++ Interface for resizing an image to specified dimensions
 
@@ -687,6 +712,33 @@ extern "C" {
         \ingroup imagemem_func_delete
     */
     AFAPI af_err af_delete_image_memory(void* ptr);
+#endif
+
+#if AF_API_VERSION >= 32
+    /**
+        C Interface for loading an image as is original type
+
+        \param[in] filename is name of file to be loaded
+        \return     \ref AF_SUCCESS if successful
+
+        \ingroup imageio_func_load
+    */
+    AFAPI af_err af_load_image_t(af_array *out, const char* filename);
+#endif
+
+#if AF_API_VERSION >= 32
+    /**
+        C Interface for saving an image without modifications
+
+        \param[in] filename is name of file to be saved
+        \param[in] in is the array to be saved. Should be u8 for saving 8-bit image,
+        u16 for 16-bit image, and f32 for 32-bit image.
+
+        \return     \ref AF_SUCCESS if successful
+
+        \ingroup imageio_func_load
+    */
+    AFAPI af_err af_save_image_t(const char* filename, const af_array in);
 #endif
 
     /**
