@@ -66,7 +66,7 @@ static fg::Image* convert_and_copy_image(const af_array in)
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
 
-    fg::Image* ret_val = fgMngr.getImage(inDims[1], inDims[0], (fg::ColorMode)inDims[2], getGLType<T>());
+    fg::Image* ret_val = fgMngr.getImage(inDims[1], inDims[0], (fg::ChannelFormat)inDims[2], getGLType<T>());
 
     copy_image<T>(normalizePerType<T>(imgData), ret_val);
 
@@ -233,7 +233,7 @@ af_err af_show(const af_window wind)
 
     try {
         fg::Window* wnd = reinterpret_cast<fg::Window*>(wind);
-        wnd->draw();
+        wnd->swapBuffers();
     }
     CATCHALL;
     return AF_SUCCESS;

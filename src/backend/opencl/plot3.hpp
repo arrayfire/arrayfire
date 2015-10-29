@@ -15,7 +15,7 @@
 namespace opencl
 {
     template<typename T>
-    void copy_plot(const Array<T> &P, fg::Plot* plot);
+    void copy_plot3(const Array<T> &P, fg::Plot3* plot3);
 }
 
 #endif

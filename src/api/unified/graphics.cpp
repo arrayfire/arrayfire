@@ -42,9 +42,19 @@ af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, co
     return CALL(wind, X, Y, props);
 }
 
+af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* const props)
+{
+    return CALL(wind, P, props);
+}
+
 af_err af_draw_hist(const af_window wind, const af_array X, const double minval, const double maxval, const af_cell* const props)
 {
     return CALL(wind, X, minval, maxval, props);
+}
+
+af_err af_draw_surface(const af_window wind, const af_array xVals, const af_array yVals, const af_array S, const af_cell* const props)
+{
+    return CALL(wind, xVals, yVals, S, props);
 }
 
 af_err af_grid(const af_window wind, const int rows, const int cols)
