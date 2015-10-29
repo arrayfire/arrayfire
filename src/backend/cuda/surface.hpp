@@ -12,10 +12,10 @@
 #include <Array.hpp>
 #include <graphics_common.hpp>
 
-namespace opencl
+namespace cuda
 {
     template<typename T>
-    void copy_plot(const Array<T> &P, fg::Plot* plot);
+    void copy_surface(const Array<T> &P, fg::Surface* surface);
 }
 
 #endif

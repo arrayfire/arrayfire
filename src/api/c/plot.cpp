@@ -49,8 +49,7 @@ fg::Plot* setup_plot(const af_array X, const af_array Y)
     fg::Plot* plot = fgMngr.getPlot(X_dims.elements(), getGLType<T>());
     plot->setColor(1.0, 0.0, 0.0);
     plot->setAxesLimits(xmax, xmin, ymax, ymin);
-    plot->setXAxisTitle("X Axis");
-    plot->setYAxisTitle("Y Axis");
+    plot->setAxesTitles("X Axis", "Y Axis");
 
     copy_plot<T>(P, plot);
 
