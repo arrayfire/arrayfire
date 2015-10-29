@@ -116,6 +116,23 @@ cudaGraphicsResource* InteropManager::getBufferResource(const fg::Histogram* key
     return interop_maps[device][key_value];
 }
 
+cudaGraphicsResource* InteropManager::getBufferResource(const fg::Surface* key)
+{
+    int device = getActiveDeviceId();
+    void* key_value = (void*)key;
+
+    iter_t iter = interop_maps[device].find(key_value);
+
+    if(interop_maps[device].find(key_value) == interop_maps[device].end()) {
+        cudaGraphicsResource *cudaVBOResource;
+        // Register VBO with CUDA
+        CUDA_CHECK(cudaGraphicsGLRegisterBuffer(&cudaVBOResource, key->vbo(), cudaGraphicsMapFlagsWriteDiscard));
+        interop_maps[device][key_value] = cudaVBOResource;
+    }
+
+    return interop_maps[device][key_value];
+}
+
 }
 
 #endif
