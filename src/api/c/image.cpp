@@ -40,8 +40,7 @@ Array<T> normalizePerType(const Array<T>& in)
 {
     Array<float> inFloat = cast<float, T>(in);
 
-    Array<float> cnst = createValueArray<float>(in.dims(),
-                             std::numeric_limits<T>::max()/(255.0f+1.0e-6f));
+    Array<float> cnst = createValueArray<float>(in.dims(), 1.0 - 1.0e-6f);
 
     Array<float> scaled = arithOp<float, af_mul_t>(inFloat, cnst, in.dims());
 
@@ -97,11 +96,13 @@ af_err af_draw_image(const af_window wind, const af_array in, const af_cell* con
         fg::Image* image = NULL;
 
         switch(type) {
-            case f32: image = convert_and_copy_image<float>(in); break;
-            case b8 : image = convert_and_copy_image<char >(in); break;
-            case s32: image = convert_and_copy_image<int  >(in); break;
-            case u32: image = convert_and_copy_image<uint >(in); break;
-            case u8 : image = convert_and_copy_image<uchar>(in); break;
+            case f32: image = convert_and_copy_image<float >(in); break;
+            case b8 : image = convert_and_copy_image<char  >(in); break;
+            case s32: image = convert_and_copy_image<int   >(in); break;
+            case u32: image = convert_and_copy_image<uint  >(in); break;
+            case s16: image = convert_and_copy_image<short >(in); break;
+            case u16: image = convert_and_copy_image<ushort>(in); break;
+            case u8 : image = convert_and_copy_image<uchar >(in); break;
             default:  TYPE_ERROR(1, type);
         }
 

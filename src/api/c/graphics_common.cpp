@@ -27,6 +27,8 @@ INSTANTIATE_GET_FG_TYPE(int  , fg::s32);
 INSTANTIATE_GET_FG_TYPE(unsigned, fg::u32);
 INSTANTIATE_GET_FG_TYPE(char, fg::s8);
 INSTANTIATE_GET_FG_TYPE(unsigned char, fg::u8);
+INSTANTIATE_GET_FG_TYPE(ushort, fg::u16);
+INSTANTIATE_GET_FG_TYPE(short, fg::s16);
 
 GLenum glErrorSkip(const char *msg, const char* file, int line)
 {
@@ -78,6 +80,8 @@ size_t getTypeSize(GLenum type)
         case GL_FLOAT:          return sizeof(float);
         case GL_INT:            return sizeof(int  );
         case GL_UNSIGNED_INT:   return sizeof(unsigned);
+        case GL_SHORT:          return sizeof(short);
+        case GL_UNSIGNED_SHORT: return sizeof(ushort);
         case GL_BYTE:           return sizeof(char );
         case GL_UNSIGNED_BYTE:  return sizeof(unsigned char);
         default: return sizeof(float);
