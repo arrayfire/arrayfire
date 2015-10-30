@@ -174,10 +174,6 @@ af_err af_device_array(af_array *arr, const void *data,
 af_err af_get_device_ptr(void **data, const af_array arr)
 {
     try {
-
-        // Make sure all kernels and memcopies are done before getting device pointer
-        detail::sync(getActiveDeviceId());
-
         af_dtype type = getInfo(arr).getType();
 
         switch (type) {
@@ -212,10 +208,6 @@ inline void lockDevicePtr(const af_array arr)
 af_err af_lock_device_ptr(const af_array arr)
 {
     try {
-
-        // Make sure all kernels and memcopies are done before getting device pointer
-        detail::sync(getActiveDeviceId());
-
         af_dtype type = getInfo(arr).getType();
 
         switch (type) {
@@ -248,10 +240,6 @@ inline void unlockDevicePtr(const af_array arr)
 af_err af_unlock_device_ptr(const af_array arr)
 {
     try {
-
-        // Make sure all kernels and memcopies are done before getting device pointer
-        detail::sync(getActiveDeviceId());
-
         af_dtype type = getInfo(arr).getType();
 
         switch (type) {
