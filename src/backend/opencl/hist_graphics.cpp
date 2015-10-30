@@ -60,6 +60,8 @@ void copy_histogram(const Array<T> &data, const fg::Histogram* hist)
 INSTANTIATE(float)
 INSTANTIATE(int)
 INSTANTIATE(uint)
+INSTANTIATE(short)
+INSTANTIATE(ushort)
 INSTANTIATE(uchar)
 
 }
