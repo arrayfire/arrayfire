@@ -98,7 +98,16 @@ AFAPI void deleteImageMem(void *ptr);
 
 #if AF_API_VERSION >= 32
 /**
-    C++ Interface for loading an image as is original type
+    C++ Interface for loading an image as its original type
+
+    This load image function allows you to load images as u8, u16 or f32
+    depending on the type of input image as shown by the table below.
+
+     Bits per Color (Gray/RGB/RGBA Bits Per Pixel) | Array Type  | Range
+    -----------------------------------------------|-------------|---------------
+      8 ( 8/24/32  BPP)                            | u8          | 0 - 255
+     16 (16/48/64  BPP)                            | u16         | 0 - 65535
+     32 (32/96/128 BPP)                            | f32         | 0 - 1
 
     \param[in] filename is name of file to be loaded
     \return image loaded as \ref af::array()
@@ -112,11 +121,28 @@ AFAPI array loadImageT(const char* filename);
 /**
     C++ Interface for saving an image without modifications
 
+    This function only accepts u8, u16, f32 arrays. These arrays are saved to
+    images without any modifications.
+
+    You must also note that note all image type support 16 or 32 bit images.
+
+    The best options for 16 bit images are PNG, PPM and TIFF.
+    The best option for 32 bit images is TIFF.
+    These allow lossless storage.
+
+    The images stored have the following properties:
+
+     Array Type  | Bits per Color (Gray/RGB/RGBA Bits Per Pixel) | Range
+    -------------|-----------------------------------------------|---------------
+     u8          |  8 ( 8/24/32  BPP)                            | 0 - 255
+     u16         | 16 (16/48/64  BPP)                            | 0 - 65535
+     f32         | 32 (32/96/128 BPP)                            | 0 - 1
+
     \param[in] filename is name of file to be saved
     \param[in] in is the array to be saved. Should be u8 for saving 8-bit image,
     u16 for 16-bit image, and f32 for 32-bit image.
 
-    \ingroup imageio_func_load
+    \ingroup imageio_func_save
 */
 AFAPI void saveImageT(const char* filename, const array& in);
 #endif
@@ -718,6 +744,15 @@ extern "C" {
     /**
         C Interface for loading an image as is original type
 
+        This load image function allows you to load images as u8, u16 or f32
+        depending on the type of input image as shown by the table below.
+
+         Bits per Color (Gray/RGB/RGBA Bits Per Pixel) | Array Type  | Range
+        -----------------------------------------------|-------------|---------------
+          8 ( 8/24/32  BPP)                            | u8          | 0 - 255
+         16 (16/48/64  BPP)                            | u16         | 0 - 65535
+         32 (32/96/128 BPP)                            | f32         | 0 - 1
+
         \param[in] filename is name of file to be loaded
         \return     \ref AF_SUCCESS if successful
 
@@ -730,13 +765,30 @@ extern "C" {
     /**
         C Interface for saving an image without modifications
 
+        This function only accepts u8, u16, f32 arrays. These arrays are saved to
+        images without any modifications.
+
+        You must also note that note all image type support 16 or 32 bit images.
+
+        The best options for 16 bit images are PNG, PPM and TIFF.
+        The best option for 32 bit images is TIFF.
+        These allow lossless storage.
+
+        The images stored have the following properties:
+
+         Array Type  | Bits per Color (Gray/RGB/RGBA Bits Per Pixel) | Range
+        -------------|-----------------------------------------------|---------------
+         u8          |  8 ( 8/24/32  BPP)                            | 0 - 255
+         u16         | 16 (16/48/64  BPP)                            | 0 - 65535
+         f32         | 32 (32/96/128 BPP)                            | 0 - 1
+
         \param[in] filename is name of file to be saved
         \param[in] in is the array to be saved. Should be u8 for saving 8-bit image,
         u16 for 16-bit image, and f32 for 32-bit image.
 
         \return     \ref AF_SUCCESS if successful
 
-        \ingroup imageio_func_load
+        \ingroup imageio_func_save
     */
     AFAPI af_err af_save_image_t(const char* filename, const af_array in);
 #endif
