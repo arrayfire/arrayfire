@@ -46,20 +46,28 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
     float* pDst2 = pDst + (fi_w * fi_h * 2);
     float* pDst3 = pDst + (fi_w * fi_h * 3);
 
-    int offR = 2; int offG = 1; int offB = 0; int offA = 3;
-    if (fo_color == 3 && fi_color == 1) {       //Convert gray to color
-        offG = 0; offR = 0;
-    }
     uint indx = 0;
     uint step = fi_color;
 
     for (uint x = 0; x < fi_w; ++x) {
         for (uint y = 0; y < fi_h; ++y) {
             const T *src = (T*)(pSrcLine - y * nSrcPitch);
-                               pDst2[indx] = (float) *(src + (x * step + offB));
-            if (fo_color >= 3) pDst1[indx] = (float) *(src + (x * step + offG));
-            if (fo_color >= 3) pDst0[indx] = (float) *(src + (x * step + offR));
-            if (fo_color == 4) pDst3[indx] = (float) *(src + (x * step + offA));
+            if(fo_color == 1) {
+                pDst0[indx] = (T) *(src + (x * step));
+            } else if(fo_color >= 3) {
+                if((af_dtype) af::dtype_traits<T>::af_type == u8) {
+                    pDst0[indx] = (float) *(src + (x * step + FI_RGBA_RED));
+                    pDst1[indx] = (float) *(src + (x * step + FI_RGBA_GREEN));
+                    pDst2[indx] = (float) *(src + (x * step + FI_RGBA_BLUE));
+                } else {
+                    // Non 8-bit types do not use ordering
+                    // See Pixel Access Functions Chapter in FreeImage Doc
+                    pDst0[indx] = (float) *(src + (x * step + 0));
+                    pDst1[indx] = (float) *(src + (x * step + 1));
+                    pDst2[indx] = (float) *(src + (x * step + 2));
+                }
+                if (fo_color == 4) pDst3[indx] = (float) *(src + (x * step + FI_RGBA_ALPHA));
+            }
             indx++;
         }
     }
@@ -85,12 +93,20 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
     for (uint x = 0; x < fi_w; ++x) {
         for (uint y = 0; y < fi_h; ++y) {
             const T *src = (T*)(pSrcLine - y * nSrcPitch);
-            if (fo_color == 1) {
-                pDst[indx] = (float) *(src + (x * step));
-            } else if (fo_color >=3) {
-                b = (float) *(src + (x * step + 0));
-                g = (float) *(src + (x * step + 1));
-                r = (float) *(src + (x * step + 2));
+            if(fo_color == 1) {
+                pDst[indx] = (T) *(src + (x * step));
+            } else if(fo_color >= 3) {
+                if((af_dtype) af::dtype_traits<T>::af_type == u8) {
+                    r = (T) *(src + (x * step + FI_RGBA_RED));
+                    g = (T) *(src + (x * step + FI_RGBA_GREEN));
+                    b = (T) *(src + (x * step + FI_RGBA_BLUE));
+                } else {
+                    // Non 8-bit types do not use ordering
+                    // See Pixel Access Functions Chapter in FreeImage Doc
+                    r = (T) *(src + (x * step + 0));
+                    g = (T) *(src + (x * step + 1));
+                    b = (T) *(src + (x * step + 2));
+                }
                 pDst[indx] = r * 0.2989f + g * 0.5870f + b * 0.1140f;
             }
             indx++;
@@ -189,11 +205,11 @@ af_err af_load_image(af_array *out, const char* filename, const bool isColor)
                     AF_CHECK((readImage<float,  AFFI_RGBA, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             } else if (fi_color == 1) {
                 if(fi_bpc == 8)
-                    AF_CHECK((readImage<uchar,  AFFI_GRAY, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<uchar,  AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 16)
-                    AF_CHECK((readImage<ushort, AFFI_GRAY, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<ushort, AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    AF_CHECK((readImage<float,  AFFI_GRAY, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<float,  AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             } else {             //3 channel image
                 if(fi_bpc == 8)
                     AF_CHECK((readImage<uchar,  AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
