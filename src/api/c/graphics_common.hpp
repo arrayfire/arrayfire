@@ -73,7 +73,7 @@ class ForgeManager
         PlotMap_t       mPltMap;
         Plot3Map_t      mPlt3Map;
         HistogramMap_t  mHstMap;
-	SurfaceMap_t	mSfcMap;
+        SurfaceMap_t    mSfcMap;
 
     public:
         static ForgeManager& getInstance();

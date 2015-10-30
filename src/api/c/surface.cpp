@@ -116,6 +116,8 @@ af_err af_draw_surface(const af_window wind, const af_array xVals, const af_arra
             case f32: surface = setup_surface<float  >(xVals, yVals , S); break;
             case s32: surface = setup_surface<int    >(xVals, yVals , S); break;
             case u32: surface = setup_surface<uint   >(xVals, yVals , S); break;
+            case s16: surface = setup_surface<short  >(xVals, yVals , S); break;
+            case u16: surface = setup_surface<ushort >(xVals, yVals , S); break;
             case u8 : surface = setup_surface<uchar  >(xVals, yVals , S); break;
             default:  TYPE_ERROR(1, Xtype);
         }
