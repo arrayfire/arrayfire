@@ -25,8 +25,11 @@ namespace kernel
 static const unsigned BLOCK_X = 16;
 static const unsigned BLOCK_Y = 16;
 
-template<typename T>
-inline __device__ T max_val(const T x, const T y)
+inline __device__ int max_val(const int x, const int y)
+{
+    return max(x, y);
+}
+inline __device__ unsigned max_val(const unsigned x, const unsigned y)
 {
     return max(x, y);
 }
