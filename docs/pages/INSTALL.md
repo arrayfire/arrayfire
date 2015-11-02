@@ -26,7 +26,7 @@ Below you will find instructions for
 * [Windows](#Windows)
 * Linux including
     * [Debian 8](#Debian)
-    * [Ubuntu 14.10 and later](#Ubuntu)
+    * [Ubuntu 14.04 and later](#Ubuntu)
     * [Fedora 21](#Fedora)
 * [Mac OSX (.sh and brew)](#OSX)
 
