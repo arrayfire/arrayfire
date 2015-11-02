@@ -26,7 +26,7 @@ Below you will find instructions for
 * [Windows](#Windows)
 * Linux including
     * [Debian 8](#Debian)
-    * [Ubuntu 14.10 and later](#Ubuntu)
+    * [Ubuntu 14.04 and later](#Ubuntu)
     * [Fedora 21](#Fedora)
 * [Mac OSX (.sh and brew)](#OSX)
 
@@ -97,12 +97,16 @@ file, run the installer.
 
     ./arrayfire_*_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
 
-## <a name="Ubuntu"></a> Ubuntu 14.10 and later
+## <a name="Ubuntu"></a> Ubuntu 14.04 and later
 
 First install the prerequisite packages:
 
     # Prerequisite packages:
     sudo apt-get install libfreeimage-dev libatlas3gf-base libfftw3-dev cmake
+
+If you are using Ubuntu 14.04, you will need to install GLFW3 from source following the 
+[instructions listed here](https://github.com/arrayfire/arrayfire/wiki/Build-Instructions-for-Linux#general-dependencies). 
+After this point, the installation should proceed identically to Ubuntu 14.10 or newer.
 
 If you are using ArrayFire on the Tegra-K1 also install these packages:
 
