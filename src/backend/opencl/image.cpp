@@ -45,16 +45,12 @@ void copy_image(const Array<T> &in, const fg::Image* image)
     } else {
         CheckGL("Begin OpenCL fallback-resource copy");
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, image->pbo());
-        CheckGL("1Begin OpenCL fallback-resource copy");
         glBufferData(GL_PIXEL_UNPACK_BUFFER, image->size(), 0, GL_STREAM_DRAW);
-        CheckGL("2Begin OpenCL fallback-resource copy");
         GLubyte* ptr = (GLubyte*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-        CheckGL("3Begin OpenCL fallback-resource copy");
         if (ptr) {
             getQueue().enqueueReadBuffer(*in.get(), CL_TRUE, 0, image->size(), ptr);
             glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
         }
-        CheckGL("4Begin OpenCL fallback-resource copy");
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
         CheckGL("End OpenCL fallback-resource copy");
     }

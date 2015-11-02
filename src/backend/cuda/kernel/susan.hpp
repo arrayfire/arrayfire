@@ -171,7 +171,9 @@ void nonMaximal(float* x_out, float* y_out, float* resp_out,
 
     POST_LAUNCH_CHECK();
 
-    CUDA_CHECK(cudaMemcpy(count, d_corners_found, sizeof(unsigned), cudaMemcpyDeviceToHost));
+    CUDA_CHECK(cudaMemcpyAsync(count, d_corners_found, sizeof(unsigned),
+                cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
+    CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
     memFree(d_corners_found);
 }
 

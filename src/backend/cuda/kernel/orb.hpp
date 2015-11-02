@@ -330,7 +330,8 @@ void orb(unsigned* out_feat,
 
     // In future implementations, the user will be capable of passing his
     // distribution instead of using the reference one
-    //CUDA_CHECK(cudaMemcpyToSymbol(d_ref_pat, h_ref_pat, 256 * 4 * sizeof(int), 0, cudaMemcpyHostToDevice));
+    //CUDA_CHECK(cudaMemcpyToSymbolAsync(d_ref_pat, h_ref_pat, 256 * 4 * sizeof(int), 0,
+    // cudaMemcpyHostToDevice, cuda::getStream(cuda::getActiveDeviceId())));
 
     vector<float*> d_score_pyr(max_levels);
     vector<float*> d_ori_pyr(max_levels);
@@ -356,7 +357,9 @@ void orb(unsigned* out_feat,
 
         int gauss_elem = gauss_filter.strides[3] * gauss_filter.dims[3];
         gauss_filter.ptr = memAlloc<convAccT>(gauss_elem);
-        CUDA_CHECK(cudaMemcpy(gauss_filter.ptr, h_gauss.get(), gauss_elem * sizeof(convAccT), cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpyAsync(gauss_filter.ptr, h_gauss.get(), gauss_elem * sizeof(convAccT),
+                    cudaMemcpyHostToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
     }
 
     for (int i = 0; i < (int)max_levels; i++) {

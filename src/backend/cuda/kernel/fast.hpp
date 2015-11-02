@@ -465,7 +465,9 @@ void fast(unsigned* out_feat,
 
     // Dimensions of output array
     unsigned total;
-    CUDA_CHECK(cudaMemcpy(&total, d_total, sizeof(unsigned), cudaMemcpyDeviceToHost));
+    CUDA_CHECK(cudaMemcpyAsync(&total, d_total, sizeof(unsigned), cudaMemcpyDeviceToHost,
+                cuda::getStream(cuda::getActiveDeviceId())));
+    CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
     total = total < max_feat ? total : max_feat;
 
     if (total > 0) {
