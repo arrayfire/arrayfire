@@ -26,8 +26,8 @@ Below you will find instructions for
 * [Windows](#Windows)
 * Linux including
     * [Debian 8](#Debian)
-    * [Ubuntu 14.10 and later](#Ubuntu)
-    * [Fedora 21](#Fedora)
+    * [Ubuntu 14.04 and later](#Ubuntu)
+    * [RedHat, Fedora, and CentOS](#RPM-distros)
 * [Mac OSX (.sh and brew)](#OSX)
 
 # <a name="Windows"></a> Windows
@@ -54,7 +54,7 @@ After it has completed, you need to add ArrayFire to the path for all users.
 Finally, verify that the path addition worked correctly. You can do this by:
 
 1. Open Visual Studio 2013. Open the HelloWorld solution which is located at
-   AF_PATH/examples/helloworld/helloworld.sln.
+   `%AF_PATH%/examples/helloworld/helloworld.exe`.
 2. Build and run the helloworld example. Be sure to, select the
    platform/configuration of your choice using the platform drop-down (the
    options are CPU, CUDA, and OpenCL) and Solution Configuration drop down
@@ -81,12 +81,16 @@ file, run the installer.
 
     ./arrayfire_*_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
 
-## <a name="Fedora"></a> Fedora 21
+## <a name="RPM-distros"></a> RedHat, Fedora, and CentOS
 
 First install the prerequisite packages:
 
     # Install prerequiste packages
     yum install freeimage atlas fftw libGLEW libGLEWmx glfw cmake
+
+On Centos and Redhat the `glfw` package is outdated and you will need to compile
+it from source. Please
+[these instructions](https://github.com/arrayfire/arrayfire/wiki/GLFW-for-ArrayFire).
 
 If you wish to use CUDA, please
 [download the latest version of CUDA](https://developer.nvidia.com/cuda-downloads)
