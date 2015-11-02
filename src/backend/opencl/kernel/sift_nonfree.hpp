@@ -801,7 +801,6 @@ void sift(unsigned* out_feat,
             getQueue().enqueueCopyBuffer(*d_response_pyr[i], *score_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
             getQueue().enqueueCopyBuffer(*d_ori_pyr[i], *ori_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
             getQueue().enqueueCopyBuffer(*d_size_pyr[i], *size_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
-
             getQueue().enqueueCopyBuffer(*d_desc_pyr[i], *desc_out.data, 0, offset*desc_len*sizeof(unsigned), feat_pyr[i] * desc_len * sizeof(unsigned));
 
             bufferFree(d_x_pyr[i]);
