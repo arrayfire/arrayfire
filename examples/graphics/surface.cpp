@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
         array Z = randn(X.dims(0), Y.dims(0));
 
         static float t=0;
-        for (double val=-af::Pi; !myWindow.close(); ) {
+        while(!myWindow.close()) {
             t+=0.07;
             //Z = sin(tile(X,1, Y.dims(0))*t + t) + cos(transpose(tile(Y, 1, X.dims(0)))*t + t);
             array x = tile(X,1, Y.dims(0));

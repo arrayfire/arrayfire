@@ -56,10 +56,18 @@ void loadImageTest(string pTestFile, string pImageFile, const bool isColor)
     float *imgData = new float[dims.elements()];
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*) imgData, imgArray));
 
+    bool isJPEG = false;
+    if(pImageFile.find(".jpg") != std::string::npos) {
+        isJPEG = true;
+    }
+
     // Compare result
     size_t nElems = in[0].size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(in[0][elIter], imgData[elIter]) << "at: " << elIter << std::endl;
+        if(isJPEG)  // Allow +- 1 because of compression when testing JPG
+            ASSERT_NEAR(in[0][elIter], imgData[elIter], 1) << "at: " << elIter << std::endl;
+        else
+            ASSERT_EQ(in[0][elIter], imgData[elIter]) << "at: " << elIter << std::endl;
     }
 
     // Delete

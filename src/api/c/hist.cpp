@@ -70,6 +70,8 @@ af_err af_draw_hist(const af_window wind, const af_array X, const double minval,
             case f32: hist = setup_histogram<float  >(X, minval, maxval); break;
             case s32: hist = setup_histogram<int    >(X, minval, maxval); break;
             case u32: hist = setup_histogram<uint   >(X, minval, maxval); break;
+            case s16: hist = setup_histogram<short  >(X, minval, maxval); break;
+            case u16: hist = setup_histogram<ushort >(X, minval, maxval); break;
             case u8 : hist = setup_histogram<uchar  >(X, minval, maxval); break;
             default:  TYPE_ERROR(1, Xtype);
         }
