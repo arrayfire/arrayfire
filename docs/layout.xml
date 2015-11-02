@@ -3,6 +3,7 @@
   <navindex>
     <tab type="mainpage" visible="yes" title="" />
     <tab type="usergroup" visible="yes" title="Tutorials">
+      <tab type="user" url="\ref installing" visible="yes" title="Installation"/>
       <tab type="user" url="\ref using_on_linux" visible="yes" title="Using on Linux"/>
       <tab type="user" url="\ref using_on_windows" visible="yes" title="Using on Windows"/>
       <tab type="user" url="\ref using_on_osx" visible="yes" title="Using on OSX"/>

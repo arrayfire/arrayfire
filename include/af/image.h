@@ -753,6 +753,7 @@ extern "C" {
          16 (16/48/64  BPP)                            | u16         | 0 - 65535
          32 (32/96/128 BPP)                            | f32         | 0 - 1
 
+        \param[out] out contains them image
         \param[in] filename is name of file to be loaded
         \return     \ref AF_SUCCESS if successful
 
