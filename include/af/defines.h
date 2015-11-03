@@ -325,6 +325,11 @@ typedef enum {
     AF_FIF_RAW          = 34    ///< FreeImage Enum for RAW Camera Image File
 } af_image_format;
 
+typedef enum {
+    AF_RANSAC           = 0,    ///< Computes homography using RANSAC
+    AF_LMEDS            = 1     ///< Computes homography using Least Median of Squares
+} af_homography_type;
+
 // These enums should be 2^x
 typedef enum {
     AF_BACKEND_DEFAULT = 0,  ///< Default backend order: OpenCL -> CUDA -> CPU

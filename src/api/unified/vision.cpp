@@ -66,3 +66,10 @@ af_err af_dog(af_array *out, const af_array in, const int radius1, const int rad
 {
     return CALL(out, in, radius1, radius2);
 }
+
+af_err af_homography(af_array *H, int *inliers, const af_array x_src, const af_array y_src,
+                     const af_array x_dst, const af_array y_dst, const af_homography_type htype,
+                     const float inlier_thr, const unsigned iterations, const af_dtype type)
+{
+    return CALL(H, inliers, x_src, y_src, x_dst, y_dst, htype, inlier_thr, iterations, type);
+}
