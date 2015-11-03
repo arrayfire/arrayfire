@@ -114,7 +114,7 @@ AFAPI void deleteImageMem(void *ptr);
 
     \ingroup imageio_func_load
 */
-AFAPI array loadImageT(const char* filename);
+AFAPI array loadImageNative(const char* filename);
 #endif
 
 #if AF_API_VERSION >= 32
@@ -144,7 +144,7 @@ AFAPI array loadImageT(const char* filename);
 
     \ingroup imageio_func_save
 */
-AFAPI void saveImageT(const char* filename, const array& in);
+AFAPI void saveImageNative(const char* filename, const array& in);
 #endif
 
 /**
@@ -758,7 +758,7 @@ extern "C" {
 
         \ingroup imageio_func_load
     */
-    AFAPI af_err af_load_image_t(af_array *out, const char* filename);
+    AFAPI af_err af_load_image_native(af_array *out, const char* filename);
 #endif
 
 #if AF_API_VERSION >= 32
@@ -790,7 +790,7 @@ extern "C" {
 
         \ingroup imageio_func_save
     */
-    AFAPI af_err af_save_image_t(const char* filename, const af_array in);
+    AFAPI af_err af_save_image_native(const char* filename, const af_array in);
 #endif
 
     /**
