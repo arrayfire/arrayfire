@@ -375,7 +375,7 @@ af_err af_save_image_t(const char* filename, const af_array in)
 #else   // WITH_FREEIMAGE
 #include <af/image.h>
 #include <stdio.h>
-af_err af_load_image_t(af_array *out, const char* filename, const bool isColor)
+af_err af_load_image_t(af_array *out, const char* filename)
 {
     printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
     return AF_ERR_NOT_CONFIGURED;
