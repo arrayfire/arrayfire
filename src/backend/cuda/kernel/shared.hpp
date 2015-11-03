@@ -47,6 +47,8 @@ SPECIALIZE(uint)
 SPECIALIZE(short)
 SPECIALIZE(ushort)
 SPECIALIZE(uchar)
+SPECIALIZE(intl)
+SPECIALIZE(uintl)
 
 #undef SPECIALIZE
 
