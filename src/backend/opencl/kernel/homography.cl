@@ -7,12 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-T sq(T a)
+inline T sq(T a)
 {
     return a * a;
 }
 
-void jacobi_svd(__global T* S, __global T* V, int m, int n)
+inline void jacobi_svd(__global T* S, __global T* V, int m, int n,
+                       __local T* l_acc1, __local T* l_acc2, __local T* l_S,
+                       __local T* l_V, __local T* l_d)
 {
     const int iterations = 30;
 
@@ -21,43 +23,37 @@ void jacobi_svd(__global T* S, __global T* V, int m, int n)
     int tid_y = get_local_id(1);
     int gid_y = get_global_id(1);
 
-    __local T acc[512];
-    __local T* acc1 = acc;
-    __local T* acc2 = acc + 256;
-
-    __local T l_S[16*81];
-    __local T l_V[16*81];
-    __local T d[16*9];
-
-    for (int i = 0; i <= 4; i++)
-        l_S[tid_y * 81 + i*bsz_x + tid_x] = S[gid_y * 81 + i*bsz_x + tid_x];
+    for (int k = 0; k <= 4; k++)
+        l_S[tid_y * 81 + k*bsz_x + tid_x] = S[gid_y * 81 + k*bsz_x + tid_x];
     if (tid_x == 0)
         l_S[tid_y * 81 + 80] = S[gid_y * 81 + 80];
     barrier(CLK_LOCAL_MEM_FENCE);
 
     // Copy first 80 elements
-    for (int i = 0; i <= 4; i++) {
+    T t = l_S[tid_y*81 + tid_x];
+    l_acc1[tid_y*bsz_x + tid_x] = t*t;
+    for (int i = 1; i <= 4; i++) {
         T t = l_S[tid_y*81 + tid_x+i*bsz_x];
-        acc1[tid_y*bsz_x + tid_x] += t*t;
+        l_acc1[tid_y*bsz_x + tid_x] += t*t;
     }
     if (tid_x < 8)
-        acc1[tid_y*16 + tid_x] += acc1[tid_y*16 + tid_x+8];
+        l_acc1[tid_y*16 + tid_x] += l_acc1[tid_y*16 + tid_x+8];
     barrier(CLK_LOCAL_MEM_FENCE);
     if (tid_x < 4)
-        acc1[tid_y*16 + tid_x] += acc1[tid_y*16 + tid_x+4];
+        l_acc1[tid_y*16 + tid_x] += l_acc1[tid_y*16 + tid_x+4];
     barrier(CLK_LOCAL_MEM_FENCE);
     if (tid_x < 2)
-        acc1[tid_y*16 + tid_x] += acc1[tid_y*16 + tid_x+2];
+        l_acc1[tid_y*16 + tid_x] += l_acc1[tid_y*16 + tid_x+2];
     barrier(CLK_LOCAL_MEM_FENCE);
     if (tid_x < 1) {
         // Copy last element
         T t = l_S[tid_y*bsz_x + tid_x+80];
-        acc1[tid_y*16 + tid_x] += acc1[tid_y*16 + tid_x+1] + t*t;
+        l_acc1[tid_y*16 + tid_x] += l_acc1[tid_y*16 + tid_x+1] + t*t;
     }
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if (tid_x < n)
-        d[tid_y*9 + tid_x] = acc1[tid_y*bsz_x + tid_x];
+        l_d[tid_y*9 + tid_x] = l_acc1[tid_y*bsz_x + tid_x];
 
     // V is initialized as an identity matrix
     for (int i = 0; i <= 4; i++) {
@@ -80,59 +76,60 @@ void jacobi_svd(__global T* S, __global T* V, int m, int n)
                 for (int k = 0; k < m; k++)
                     p += Si[k]*Sj[k];
 
-                if (fabs(p) <= EPS*sqrt(d[tid_y*9 + i]*d[tid_y*9 + j]))
-                    continue;
+                T c = 0, s = 0;
 
-                T y = d[tid_y*9 + i] - d[tid_y*9 + j];
-                T r = hypot(p*2, y);
-                T r2 = r*2;
-                T c, s;
-                if (y >= 0) {
-                    c = sqrt((r + y) / r2);
-                    s = p / (r2*c);
-                }
-                else {
-                    s = sqrt((r - y) / r2);
-                    c = p / (r2*s);
-                }
+                int cond = (fabs(p) > EPS*sqrt(l_d[tid_y*9 + i]*l_d[tid_y*9 + j]));
+                if (cond) {
+                    T y = l_d[tid_y*9 + i] - l_d[tid_y*9 + j];
+                    T r = hypot(p*2, y);
+                    T r2 = r*2;
+                    if (y >= 0) {
+                        c = sqrt((r + y) / r2);
+                        s = p / (r2*c);
+                    }
+                    else {
+                        s = sqrt((r - y) / r2);
+                        c = p / (r2*s);
+                    }
 
-                if (tid_x < m) {
-                    T t0 = c*Si[tid_x] + s*Sj[tid_x];
-                    T t1 = c*Sj[tid_x] - s*Si[tid_x];
-                    Si[tid_x] = t0;
-                    Sj[tid_x] = t1;
+                    if (tid_x < m) {
+                        T t0 = c*Si[tid_x] + s*Sj[tid_x];
+                        T t1 = c*Sj[tid_x] - s*Si[tid_x];
+                        Si[tid_x] = t0;
+                        Sj[tid_x] = t1;
 
-                    acc1[tid_y*16 + tid_x] = t0*t0;
-                    acc2[tid_y*16 + tid_x] = t1*t1;
+                        l_acc1[tid_y*16 + tid_x] = t0*t0;
+                        l_acc2[tid_y*16 + tid_x] = t1*t1;
+                    }
                 }
                 barrier(CLK_LOCAL_MEM_FENCE);
 
-                if (tid_x < 4) {
-                    acc1[tid_y*16 + tid_x] += acc1[tid_y*16 + tid_x+4];
-                    acc2[tid_y*16 + tid_x] += acc2[tid_y*16 + tid_x+4];
+                if (cond && tid_x < 4) {
+                    l_acc1[tid_y*16 + tid_x] += l_acc1[tid_y*16 + tid_x+4];
+                    l_acc2[tid_y*16 + tid_x] += l_acc2[tid_y*16 + tid_x+4];
                 }
                 barrier(CLK_LOCAL_MEM_FENCE);
-                if (tid_x < 2) {
-                    acc1[tid_y*16 + tid_x] += acc1[tid_y*16 + tid_x+2];
-                    acc2[tid_y*16 + tid_x] += acc2[tid_y*16 + tid_x+2];
+                if (cond && tid_x < 2) {
+                    l_acc1[tid_y*16 + tid_x] += l_acc1[tid_y*16 + tid_x+2];
+                    l_acc2[tid_y*16 + tid_x] += l_acc2[tid_y*16 + tid_x+2];
                 }
                 barrier(CLK_LOCAL_MEM_FENCE);
-                if (tid_x < 1) {
-                    acc1[tid_y*16 + tid_x] += acc1[tid_y*16 + tid_x+1] + acc1[tid_y*16 + tid_x+8];
-                    acc2[tid_y*16 + tid_x] += acc2[tid_y*16 + tid_x+1] + acc2[tid_y*16 + tid_x+8];
+                if (cond && tid_x < 1) {
+                    l_acc1[tid_y*16 + tid_x] += l_acc1[tid_y*16 + tid_x+1] + l_acc1[tid_y*16 + tid_x+8];
+                    l_acc2[tid_y*16 + tid_x] += l_acc2[tid_y*16 + tid_x+1] + l_acc2[tid_y*16 + tid_x+8];
                 }
                 barrier(CLK_LOCAL_MEM_FENCE);
 
-                if (tid_x == 0) {
-                    d[tid_y*9 + i] = acc1[tid_y*16];
-                    d[tid_y*9 + j] = acc2[tid_y*16];
+                if (cond && tid_x == 0) {
+                    l_d[tid_y*9 + i] = l_acc1[tid_y*16];
+                    l_d[tid_y*9 + j] = l_acc2[tid_y*16];
                 }
                 barrier(CLK_LOCAL_MEM_FENCE);
 
                 __local T* Vi = l_V + tid_y*81 + i*n;
                 __local T* Vj = l_V + tid_y*81 + j*n;
 
-                if (tid_x < n) {
+                if (cond && tid_x < n) {
                     T t0 = Vi[tid_x] * c + Vj[tid_x] * s;
                     T t1 = Vj[tid_x] * c - Vi[tid_x] * s;
 
@@ -156,7 +153,7 @@ void jacobi_svd(__global T* S, __global T* V, int m, int n)
     barrier(CLK_LOCAL_MEM_FENCE);
 }
 
-int compute_mean_scale(
+inline int compute_mean_scale(
     float* x_src_mean,
     float* y_src_mean,
     float* x_dst_mean,
@@ -232,67 +229,72 @@ __kernel void compute_homography(
 {
     unsigned i = get_global_id(1);
 
-    if (i < iterations) {
-        float x_src_mean, y_src_mean;
-        float x_dst_mean, y_dst_mean;
-        float src_scale, dst_scale;
-        float src_pt_x[4], src_pt_y[4], dst_pt_x[4], dst_pt_y[4];
+    float x_src_mean, y_src_mean;
+    float x_dst_mean, y_dst_mean;
+    float src_scale, dst_scale;
+    float src_pt_x[4], src_pt_y[4], dst_pt_x[4], dst_pt_y[4];
 
-        compute_mean_scale(&x_src_mean, &y_src_mean,
-                           &x_dst_mean, &y_dst_mean,
-                           &src_scale, &dst_scale,
-                           src_pt_x, src_pt_y,
-                           dst_pt_x, dst_pt_y,
-                           x_src, y_src, x_dst, y_dst,
-                           rnd, rInfo, i);
+    compute_mean_scale(&x_src_mean, &y_src_mean,
+                       &x_dst_mean, &y_dst_mean,
+                       &src_scale, &dst_scale,
+                       src_pt_x, src_pt_y,
+                       dst_pt_x, dst_pt_y,
+                       x_src, y_src, x_dst, y_dst,
+                       rnd, rInfo, i);
 
-        // Compute input matrix
-        for (unsigned j = get_local_id(0); j < 4; j+=get_local_size(0)) {
-            float srcx = (src_pt_x[j] - x_src_mean) * src_scale;
-            float srcy = (src_pt_y[j] - y_src_mean) * src_scale;
-            float dstx = (dst_pt_x[j] - x_dst_mean) * dst_scale;
-            float dsty = (dst_pt_y[j] - y_dst_mean) * dst_scale;
+    // Compute input matrix
+    for (unsigned j = get_local_id(0); j < 4; j+=get_local_size(0)) {
+        float srcx = (src_pt_x[j] - x_src_mean) * src_scale;
+        float srcy = (src_pt_y[j] - y_src_mean) * src_scale;
+        float dstx = (dst_pt_x[j] - x_dst_mean) * dst_scale;
+        float dsty = (dst_pt_y[j] - y_dst_mean) * dst_scale;
 
-            APTR(i, 3, j*2) = -srcx;
-            APTR(i, 4, j*2) = -srcy;
-            APTR(i, 5, j*2) = -1.0f;
-            APTR(i, 6, j*2) = dsty*srcx;
-            APTR(i, 7, j*2) = dsty*srcy;
-            APTR(i, 8, j*2) = dsty;
+        APTR(i, 3, j*2) = -srcx;
+        APTR(i, 4, j*2) = -srcy;
+        APTR(i, 5, j*2) = -1.0f;
+        APTR(i, 6, j*2) = dsty*srcx;
+        APTR(i, 7, j*2) = dsty*srcy;
+        APTR(i, 8, j*2) = dsty;
 
-            APTR(i, 0, j*2+1) = srcx;
-            APTR(i, 1, j*2+1) = srcy;
-            APTR(i, 2, j*2+1) = 1.0f;
-            APTR(i, 6, j*2+1) = -dstx*srcx;
-            APTR(i, 7, j*2+1) = -dstx*srcy;
-            APTR(i, 8, j*2+1) = -dstx;
-        }
-
-        jacobi_svd(A, V, 9, 9);
-
-        T vH[9], H_tmp[9];
-        for (unsigned j = 0; j < 9; j++)
-            vH[j] = V[i * VInfo.dims[0] * VInfo.dims[1] + 8 * VInfo.dims[0] + j];
-
-        H_tmp[0] = src_scale*x_dst_mean*vH[6] + src_scale*vH[0]/dst_scale;
-        H_tmp[1] = src_scale*x_dst_mean*vH[7] + src_scale*vH[1]/dst_scale;
-        H_tmp[2] = x_dst_mean*(vH[8] - src_scale*y_src_mean*vH[7] - src_scale*x_src_mean*vH[6]) +
-                              (vH[2] - src_scale*y_src_mean*vH[1] - src_scale*x_src_mean*vH[0])/dst_scale;
-
-        H_tmp[3] = src_scale*y_dst_mean*vH[6] + src_scale*vH[3]/dst_scale;
-        H_tmp[4] = src_scale*y_dst_mean*vH[7] + src_scale*vH[4]/dst_scale;
-        H_tmp[5] = y_dst_mean*(vH[8] - src_scale*y_src_mean*vH[7] - src_scale*x_src_mean*vH[6]) +
-                              (vH[5] - src_scale*y_src_mean*vH[4] - src_scale*x_src_mean*vH[3])/dst_scale;
-
-        H_tmp[6] = src_scale*vH[6];
-        H_tmp[7] = src_scale*vH[7];
-        H_tmp[8] = vH[8] - src_scale*y_src_mean*vH[7] - src_scale*x_src_mean*vH[6];
-
-        const unsigned Hidx = HInfo.dims[0] * i;
-        __global T* H_ptr = H + Hidx;
-        for (int h = 0; h < 9; h++)
-            H_ptr[h] = H_tmp[h];
+        APTR(i, 0, j*2+1) = srcx;
+        APTR(i, 1, j*2+1) = srcy;
+        APTR(i, 2, j*2+1) = 1.0f;
+        APTR(i, 6, j*2+1) = -dstx*srcx;
+        APTR(i, 7, j*2+1) = -dstx*srcy;
+        APTR(i, 8, j*2+1) = -dstx;
     }
+
+    __local T l_acc1[256];
+    __local T l_acc2[256];
+
+    __local T l_S[16*81];
+    __local T l_V[16*81];
+    __local T l_d[16*9];
+
+    jacobi_svd(A, V, 9, 9, l_acc1, l_acc2, l_S, l_V, l_d);
+
+    T vH[9], H_tmp[9];
+    for (unsigned j = 0; j < 9; j++)
+        vH[j] = V[i * VInfo.dims[0] * VInfo.dims[1] + 8 * VInfo.dims[0] + j];
+
+    H_tmp[0] = src_scale*x_dst_mean*vH[6] + src_scale*vH[0]/dst_scale;
+    H_tmp[1] = src_scale*x_dst_mean*vH[7] + src_scale*vH[1]/dst_scale;
+    H_tmp[2] = x_dst_mean*(vH[8] - src_scale*y_src_mean*vH[7] - src_scale*x_src_mean*vH[6]) +
+                          (vH[2] - src_scale*y_src_mean*vH[1] - src_scale*x_src_mean*vH[0])/dst_scale;
+
+    H_tmp[3] = src_scale*y_dst_mean*vH[6] + src_scale*vH[3]/dst_scale;
+    H_tmp[4] = src_scale*y_dst_mean*vH[7] + src_scale*vH[4]/dst_scale;
+    H_tmp[5] = y_dst_mean*(vH[8] - src_scale*y_src_mean*vH[7] - src_scale*x_src_mean*vH[6]) +
+                          (vH[5] - src_scale*y_src_mean*vH[4] - src_scale*x_src_mean*vH[3])/dst_scale;
+
+    H_tmp[6] = src_scale*vH[6];
+    H_tmp[7] = src_scale*vH[7];
+    H_tmp[8] = vH[8] - src_scale*y_src_mean*vH[7] - src_scale*x_src_mean*vH[6];
+
+    const unsigned Hidx = HInfo.dims[0] * i;
+    __global T* H_ptr = H + Hidx;
+    for (int h = 0; h < 9; h++)
+        H_ptr[h] = H_tmp[h];
 }
 
 #undef APTR
@@ -314,7 +316,6 @@ __kernel void eval_homography(
     const unsigned nsamples,
     const float inlier_thr)
 {
-    unsigned bid_x = get_group_id(0);
     unsigned tid_x = get_local_id(0);
     unsigned i = get_global_id(0);
 
@@ -362,6 +363,8 @@ __kernel void eval_homography(
     }
 
 #ifdef RANSAC
+    unsigned bid_x = get_group_id(0);
+
     // Find sample with most inliers
     for (unsigned tx = 128; tx > 0; tx >>= 1) {
         if (tid_x < tx) {
@@ -430,7 +433,7 @@ __kernel void find_min_median(
     KParam mInfo,
     __global const unsigned* idx)
 {
-    const int tid = get_local_id(0);
+    const unsigned tid = get_local_id(0);
 
     __local float l_minMedian[256];
     __local unsigned l_minIdx[256];
