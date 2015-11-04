@@ -112,10 +112,6 @@ If you are using Ubuntu 14.04, you will need to install GLFW3 from source follow
 [instructions listed here](https://github.com/arrayfire/arrayfire/wiki/Build-Instructions-for-Linux#general-dependencies).
 After this point, the installation should proceed identically to Ubuntu 14.10 or newer.
 
-If you are using ArrayFire on the Tegra-K1 also install these packages:
-
-    sudo apt-get install libatlas3gf-base libatlas-dev libfftw3-dev liblapacke-dev
-
 If your system has a CUDA GPU, we suggest downloading the latest drivers
 from NVIDIA in the form of a Debian package and installing using the
 package manager. At present, CUDA downloads can be found on the
@@ -127,6 +123,14 @@ with any drivers required for your hardware.
 
     # Enable GPU support (OpenCL):
     apt-get install ocl-icd-libopencl1
+
+### Special instructions for Tegra K1
+If you are using ArrayFire on the Tegra K1 also install these packages:
+
+    sudo apt-get install libatlas3gf-base libatlas-dev libfftw3-dev liblapacke-dev
+
+In addition to these packages, you will need to compile GLFW3 from source
+using the instructions above.
 
 Finally, [download](http://arrayfire.com/download/) ArrayFire. After you have
 the file, run the installer using:
