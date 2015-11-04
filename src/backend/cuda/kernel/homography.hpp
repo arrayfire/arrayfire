@@ -124,23 +124,25 @@ __device__ void JacobiSVD(T* S, T* V, int m, int n)
                 for (int k = 0; k < m; k++)
                     p += Si[k]*Sj[k];
 
-                if (abs(p) <= EPS<T>::eps()*sqrt(d[tid_y*9 + i]*d[tid_y*9 + j]))
-                    continue;
+                T c = 0, s = 0;
 
-                T y = d[tid_y*9 + i] - d[tid_y*9 + j];
-                T r = hypot(p*2, y);
-                T r2 = r*2;
-                T c, s;
-                if (y >= 0) {
-                    c = sqrt((r + y) / r2);
-                    s = p / (r2*c);
+                bool cond = (abs(p) > EPS<T>::eps()*sqrt(d[tid_y*9 + i]*d[tid_y*9 + j]));
+                if (cond) {
+                    T y = d[tid_y*9 + i] - d[tid_y*9 + j];
+                    T r = hypot(p*2, y);
+                    T r2 = r*2;
+                    if (y >= 0) {
+                        c = sqrt((r + y) / r2);
+                        s = p / (r2*c);
+                    }
+                    else {
+                        s = sqrt((r - y) / r2);
+                        c = p / (r2*s);
+                    }
                 }
-                else {
-                    s = sqrt((r - y) / r2);
-                    c = p / (r2*s);
-                }
+                __syncthreads();
 
-                if (tid_x < m) {
+                if (cond && tid_x < m) {
                     T t0 = c*Si[tid_x] + s*Sj[tid_x];
                     T t1 = c*Sj[tid_x] - s*Si[tid_x];
                     Si[tid_x] = t0;
@@ -151,23 +153,23 @@ __device__ void JacobiSVD(T* S, T* V, int m, int n)
                 }
                 __syncthreads();
 
-                if (tid_x < 4) {
+                if (cond && tid_x < 4) {
                     acc1[tid_y*16 + tid_x] += acc1[tid_y*16 + tid_x+4];
                     acc2[tid_y*16 + tid_x] += acc2[tid_y*16 + tid_x+4];
                 }
                 __syncthreads();
-                if (tid_x < 2) {
+                if (cond && tid_x < 2) {
                     acc1[tid_y*16 + tid_x] += acc1[tid_y*16 + tid_x+2];
                     acc2[tid_y*16 + tid_x] += acc2[tid_y*16 + tid_x+2];
                 }
                 __syncthreads();
-                if (tid_x < 1) {
+                if (cond && tid_x < 1) {
                     acc1[tid_y*16 + tid_x] += acc1[tid_y*16 + tid_x+1] + acc1[tid_y*16 + tid_x+8];
                     acc2[tid_y*16 + tid_x] += acc2[tid_y*16 + tid_x+1] + acc2[tid_y*16 + tid_x+8];
                 }
                 __syncthreads();
 
-                if (tid_x == 0) {
+                if (cond && tid_x == 0) {
                     d[tid_y*9 + i] = acc1[tid_y*16];
                     d[tid_y*9 + j] = acc2[tid_y*16];
                 }
@@ -176,7 +178,7 @@ __device__ void JacobiSVD(T* S, T* V, int m, int n)
                 T* Vi = s_V + tid_y*81 + i*n;
                 T* Vj = s_V + tid_y*81 + j*n;
 
-                if (tid_x < n) {
+                if (cond && tid_x < n) {
                     T t0 = Vi[tid_x] * c + Vj[tid_x] * s;
                     T t1 = Vj[tid_x] * c - Vi[tid_x] * s;
 
