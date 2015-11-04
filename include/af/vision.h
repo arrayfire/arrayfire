@@ -39,7 +39,9 @@ class array;
 
     \ingroup cv_func_fast
  */
-AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_length=9, const bool non_max=true, const float feature_ratio=0.05, const unsigned edge=3);
+AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_length=9,
+                    const bool non_max=true, const float feature_ratio=0.05,
+                    const unsigned edge=3);
 
 #if AF_API_VERSION >= 31
 /**
@@ -68,7 +70,9 @@ AFAPI features fast(const array& in, const float thr=20.0f, const unsigned arc_l
 
     \ingroup cv_func_harris
  */
-AFAPI features harris(const array& in, const unsigned max_corners=500, const float min_response=1e5f, const float sigma=1.f, const unsigned block_size=0, const float k_thr=0.04f);
+AFAPI features harris(const array& in, const unsigned max_corners=500,
+                      const float min_response=1e5f, const float sigma=1.f,
+                      const unsigned block_size=0, const float k_thr=0.04f);
 #endif
 
 /**
@@ -93,7 +97,10 @@ AFAPI features harris(const array& in, const unsigned max_corners=500, const flo
 
     \ingroup cv_func_orb
  */
-AFAPI void orb(features& feat, array& desc, const array& image, const float fast_thr=20.f, const unsigned max_feat=400, const float scl_fctr=1.5f, const unsigned levels=4, const bool blur_img=false);
+AFAPI void orb(features& feat, array& desc, const array& image,
+               const float fast_thr=20.f, const unsigned max_feat=400,
+               const float scl_fctr=1.5f, const unsigned levels=4,
+               const bool blur_img=false);
 
 #if AF_API_VERSION >= 31
 /**
@@ -127,7 +134,10 @@ AFAPI void orb(features& feat, array& desc, const array& image, const float fast
 
     \ingroup cv_func_sift
  */
-AFAPI void sift(features& feat, array& desc, const array& in, const unsigned n_layers=3, const float contrast_thr=0.04f, const float edge_thr=10.f, const float init_sigma=1.6f, const bool double_input=true, const float intensity_scale=0.00390625f, const float feature_ratio=0.05f);
+AFAPI void sift(features& feat, array& desc, const array& in, const unsigned n_layers=3,
+                const float contrast_thr=0.04f, const float edge_thr=10.f,
+                const float init_sigma=1.6f, const bool double_input=true,
+                const float intensity_scale=0.00390625f, const float feature_ratio=0.05f);
 #endif
 
 #if AF_API_VERSION >= 32
@@ -162,7 +172,10 @@ AFAPI void sift(features& feat, array& desc, const array& in, const unsigned n_l
 
     \ingroup cv_func_sift
  */
-AFAPI void gloh(features& feat, array& desc, const array& in, const unsigned n_layers=3, const float contrast_thr=0.04f, const float edge_thr=10.f, const float init_sigma=1.6f, const bool double_input=true, const float intensity_scale=0.00390625f, const float feature_ratio=0.05f);
+AFAPI void gloh(features& feat, array& desc, const array& in, const unsigned n_layers=3,
+                const float contrast_thr=0.04f, const float edge_thr=10.f,
+                const float init_sigma=1.6f, const bool double_input=true,
+                const float intensity_scale=0.00390625f, const float feature_ratio=0.05f);
 #endif
 
 /**
@@ -306,7 +319,9 @@ AFAPI array dog(const array& in, const int radius1, const int radius2);
 
    \ingroup cv_func_homography
 */
-AFAPI void homography(array& H, int& inliers, const array& x_src, const array& y_src, const array& x_dst, const array& y_dst, const af_homography_type htype=AF_RANSAC, const float inlier_thr=3.f, const unsigned iterations=1000, const dtype type=f32);
+AFAPI void homography(array& H, int& inliers, const array& x_src, const array& y_src,
+                      const array& x_dst, const array& y_dst, const af_homography_type htype=AF_RANSAC,
+                      const float inlier_thr=3.f, const unsigned iterations=1000, const dtype type=f32);
 #endif
 
 }
@@ -341,7 +356,8 @@ extern "C" {
 
         \ingroup cv_func_fast
     */
-    AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length, const bool non_max, const float feature_ratio, const unsigned edge);
+    AFAPI af_err af_fast(af_features *out, const af_array in, const float thr, const unsigned arc_length,
+                         const bool non_max, const float feature_ratio, const unsigned edge);
 
 #if AF_API_VERSION >= 31
     /**
@@ -370,7 +386,9 @@ extern "C" {
 
         \ingroup cv_func_harris
     */
-    AFAPI af_err af_harris(af_features *out, const af_array in, const unsigned max_corners, const float min_response, const float sigma, const unsigned block_size, const float k_thr);
+    AFAPI af_err af_harris(af_features *out, const af_array in, const unsigned max_corners,
+                           const float min_response, const float sigma,
+                           const unsigned block_size, const float k_thr);
 #endif
 
     /**
@@ -395,7 +413,9 @@ extern "C" {
 
         \ingroup cv_func_orb
     */
-    AFAPI af_err af_orb(af_features *feat, af_array *desc, const af_array in, const float fast_thr, const unsigned max_feat, const float scl_fctr, const unsigned levels, const bool blur_img);
+    AFAPI af_err af_orb(af_features *feat, af_array *desc, const af_array in,
+                        const float fast_thr, const unsigned max_feat, const float scl_fctr,
+                        const unsigned levels, const bool blur_img);
 
 #if AF_API_VERSION >= 31
     /**
@@ -429,7 +449,10 @@ extern "C" {
 
         \ingroup cv_func_sift
     */
-    AFAPI af_err af_sift(af_features *feat, af_array *desc, const af_array in, const unsigned n_layers, const float contrast_thr, const float edge_thr, const float init_sigma, const bool double_input, const float intensity_scale, const float feature_ratio);
+    AFAPI af_err af_sift(af_features *feat, af_array *desc, const af_array in,
+                         const unsigned n_layers, const float contrast_thr, const float edge_thr,
+                         const float init_sigma, const bool double_input,
+                         const float intensity_scale, const float feature_ratio);
 #endif
 
 #if AF_API_VERSION >= 32
@@ -464,7 +487,10 @@ extern "C" {
 
         \ingroup cv_func_sift
     */
-    AFAPI af_err af_gloh(af_features *feat, af_array *desc, const af_array in, const unsigned n_layers, const float contrast_thr, const float edge_thr, const float init_sigma, const bool double_input, const float intensity_scale, const float feature_ratio);
+    AFAPI af_err af_gloh(af_features *feat, af_array *desc, const af_array in,
+                         const unsigned n_layers, const float contrast_thr,
+                         const float edge_thr, const float init_sigma, const bool double_input,
+                         const float intensity_scale, const float feature_ratio);
 #endif
 
     /**
@@ -540,7 +566,8 @@ extern "C" {
 
        \ingroup cv_func_match_template
     */
-    AFAPI af_err af_match_template(af_array *out, const af_array search_img, const af_array template_img, const af_match_type m_type);
+    AFAPI af_err af_match_template(af_array *out, const af_array search_img,
+                                   const af_array template_img, const af_match_type m_type);
 
 #if AF_API_VERSION >= 31
     /**
@@ -561,7 +588,8 @@ extern "C" {
 
        \ingroup cv_func_susan
     */
-    AFAPI af_err af_susan(af_features* out, const af_array in, const unsigned radius, const float diff_thr, const float geom_thr,
+    AFAPI af_err af_susan(af_features* out, const af_array in, const unsigned radius,
+                          const float diff_thr, const float geom_thr,
                           const float feature_ratio, const unsigned edge);
 #endif
 
@@ -610,7 +638,10 @@ extern "C" {
 
        \ingroup cv_func_homography
      */
-    AFAPI af_err af_homography(af_array *H, int *inliers, const af_array x_src, const af_array y_src, const af_array x_dst, const af_array y_dst, const af_homography_type htype, const float inlier_thr, const unsigned iterations, const af_dtype type);
+    AFAPI af_err af_homography(af_array *H, int *inliers, const af_array x_src, const af_array y_src,
+                               const af_array x_dst, const af_array y_dst,
+                               const af_homography_type htype, const float inlier_thr,
+                               const unsigned iterations, const af_dtype type);
 #endif
 
 #ifdef __cplusplus
