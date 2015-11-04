@@ -105,7 +105,7 @@ af_err af_draw_surface(const af_window wind, const af_array xVals, const af_arra
             DIM_ASSERT(1, X_dims == Y_dims);
             DIM_ASSERT(3, Y_dims == S_dims);
         }else{
-            DIM_ASSERT(3, ( X_dims[0] * Y_dims[0] == Sinfo.elements()));
+            DIM_ASSERT(3, ( X_dims[0] * Y_dims[0] == (dim_t)Sinfo.elements()));
         }
 
         fg::Window* window = reinterpret_cast<fg::Window*>(wind);
