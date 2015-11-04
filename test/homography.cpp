@@ -100,9 +100,6 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     af_array query_feat_y_idx = 0;
     af_features query_feat;
 
-    //ASSERT_EQ(AF_SUCCESS, af_load_image(&queryArray_f32, inFiles[testId].c_str(), false));
-    //ASSERT_EQ(AF_SUCCESS, conv_image<T>(&queryArray, queryArray_f32));
-    //const float theta = 0.0f;
     const float theta = af::Pi * 0.5f;
     const dim_t test_d0 = inDims[0][0] * size_ratio;
     const dim_t test_d1 = inDims[0][1] * size_ratio;
@@ -211,9 +208,9 @@ void homographyTest(string pTestFile, const af_homography_type htype,
     HOMOGRAPHY_INIT(Tux_RANSAC, tux, AF_RANSAC, false, 1.0f);
     HOMOGRAPHY_INIT(Tux_RANSAC_90degrees, tux, AF_RANSAC, true, 1.0f);
     HOMOGRAPHY_INIT(Tux_RANSAC_resize, tux, AF_RANSAC, false, 1.5f);
-    HOMOGRAPHY_INIT(Tux_LMedS, tux, AF_LMEDS, false, 1.0f);
-    HOMOGRAPHY_INIT(Tux_LMedS_90degrees, tux, AF_LMEDS, true, 1.0f);
-    HOMOGRAPHY_INIT(Tux_LMedS_resize, tux, AF_LMEDS, false, 1.5f);
+    //HOMOGRAPHY_INIT(Tux_LMedS, tux, AF_LMEDS, false, 1.0f);
+    //HOMOGRAPHY_INIT(Tux_LMedS_90degrees, tux, AF_LMEDS, true, 1.0f);
+    //HOMOGRAPHY_INIT(Tux_LMedS_resize, tux, AF_LMEDS, false, 1.5f);
 
 ///////////////////////////////////// CPP ////////////////////////////////
 //
@@ -239,7 +236,7 @@ TEST(Homography, CPP)
     orb(feat_query, desc_query, query_img, 20, 2000, 1.2, 8, true);
 
     af::array idx, dist;
-    af::hammingMatcher(idx, dist, desc_train, desc_query, 0, 1); 
+    af::hammingMatcher(idx, dist, desc_train, desc_query, 0, 1);
 
     af::array train_idx = where(dist < 30);
     af::array query_idx = idx(train_idx);
