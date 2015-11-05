@@ -26,8 +26,8 @@ Below you will find instructions for
 * [Windows](#Windows)
 * Linux including
     * [Debian 8](#Debian)
-    * [Ubuntu 14.10 and later](#Ubuntu)
-    * [Fedora 21](#Fedora)
+    * [Ubuntu 14.04 and later](#Ubuntu)
+    * [RedHat, Fedora, and CentOS](#RPM-distros)
 * [Mac OSX (.sh and brew)](#OSX)
 
 # <a name="Windows"></a> Windows
@@ -54,7 +54,7 @@ After it has completed, you need to add ArrayFire to the path for all users.
 Finally, verify that the path addition worked correctly. You can do this by:
 
 1. Open Visual Studio 2013. Open the HelloWorld solution which is located at
-   AF_PATH/examples/helloworld/helloworld.sln.
+   `%AF_PATH%/examples/helloworld/helloworld.exe`.
 2. Build and run the helloworld example. Be sure to, select the
    platform/configuration of your choice using the platform drop-down (the
    options are CPU, CUDA, and OpenCL) and Solution Configuration drop down
@@ -67,7 +67,7 @@ Finally, verify that the path addition worked correctly. You can do this by:
 First install the prerequisite packages:
 
     # Prerequisite packages:
-    apt-get install libfreeimage-dev libatlas3gf-base libfftw3-dev cmake
+    apt-get install libfreeimage-dev libatlas3gf-base libfftw3-dev libglew-dev libglewmx-dev libglfw3-dev cmake
 
     # Enable GPU support (OpenCL):
     apt-get install ocl-icd-libopencl1
@@ -81,12 +81,16 @@ file, run the installer.
 
     ./arrayfire_*_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
 
-## <a name="Fedora"></a> Fedora 21
+## <a name="RPM-distros"></a> RedHat, Fedora, and CentOS
 
 First install the prerequisite packages:
 
     # Install prerequiste packages
-    yum install freeimage atlas fftw cmake
+    yum install freeimage atlas fftw libGLEW libGLEWmx glfw cmake
+
+On Centos and Redhat the `glfw` package is outdated and you will need to compile
+it from source. Please
+[these instructions](https://github.com/arrayfire/arrayfire/wiki/GLFW-for-ArrayFire).
 
 If you wish to use CUDA, please
 [download the latest version of CUDA](https://developer.nvidia.com/cuda-downloads)
@@ -97,16 +101,16 @@ file, run the installer.
 
     ./arrayfire_*_Linux_x86_64.sh --exclude-subdir --prefix=/usr/local
 
-## <a name="Ubuntu"></a> Ubuntu 14.10 and later
+## <a name="Ubuntu"></a> Ubuntu 14.04 and later
 
 First install the prerequisite packages:
 
     # Prerequisite packages:
     sudo apt-get install libfreeimage-dev libatlas3gf-base libfftw3-dev cmake
 
-If you are using ArrayFire on the Tegra-K1 also install these packages:
-
-    sudo apt-get install libatlas3gf-base libatlas-dev libfftw3-dev liblapacke-dev
+If you are using Ubuntu 14.04, you will need to install GLFW3 from source following the
+[instructions listed here](https://github.com/arrayfire/arrayfire/wiki/Build-Instructions-for-Linux#general-dependencies).
+After this point, the installation should proceed identically to Ubuntu 14.10 or newer.
 
 If your system has a CUDA GPU, we suggest downloading the latest drivers
 from NVIDIA in the form of a Debian package and installing using the
@@ -119,6 +123,14 @@ with any drivers required for your hardware.
 
     # Enable GPU support (OpenCL):
     apt-get install ocl-icd-libopencl1
+
+### Special instructions for Tegra K1
+If you are using ArrayFire on the Tegra K1 also install these packages:
+
+    sudo apt-get install libatlas3gf-base libatlas-dev libfftw3-dev liblapacke-dev
+
+In addition to these packages, you will need to compile GLFW3 from source
+using the instructions above.
 
 Finally, [download](http://arrayfire.com/download/) ArrayFire. After you have
 the file, run the installer using:
