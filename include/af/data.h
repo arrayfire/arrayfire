@@ -644,6 +644,18 @@ extern "C" {
     AFAPI af_err af_randn(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type);
 
     /**
+        \param[out] out is the generated array
+        \param[in] ndims is size of dimension array \p dims
+        \param[in] dims is the array containing sizes of the dimension
+        \param[in] type is the type of array to generate
+        \param[in] rtype is the type of random number generator algorithm
+
+       \ingroup data_func_randu
+    */
+    AFAPI af_err af_randu_gen(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type,
+            const af_random_type rtype);
+
+    /**
         \param[in] seed is a 64 bit unsigned integer
 
         \ingroup data_func_setseed

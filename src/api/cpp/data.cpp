@@ -122,10 +122,11 @@ namespace af
 
 #undef CONSTANT
 
+    ////
     array randu(const dim4 &dims, const af::dtype type)
     {
         af_array res;
-        AF_THROW(af_randu(&res, dims.ndims(), dims.get(), type));
+        AF_THROW(af_randu(&res, dims.ndims(), dims.get(), type, AF_RANDOM_DEFAULT));
         return array(res);
     }
 
@@ -151,6 +152,42 @@ namespace af
                 const dim_t d3, const af::dtype ty)
     {
         return randu(dim4(d0, d1, d2, d3), ty);
+    }
+
+    array randu(const dim4 &dims, const af::dtype type,
+            const af::randomType rtype)
+    {
+        af_array res;
+        AF_THROW(af_randu(&res, dims.ndims(), dims.get(), type, rtype));
+        return array(res);
+    }
+
+    array randu(const dim_t d0, const af::dtype ty,
+            const af:randomType rtype)
+    {
+        return randu(dim4(d0), ty, rtype);
+    }
+
+    array randu(const dim_t d0,
+                const dim_t d1, const af::dtype ty,
+                const af::randomType rtype)
+    {
+        return randu(dim4(d0, d1), ty, rtype);
+    }
+
+    array randu(const dim_t d0,
+                const dim_t d1, const dim_t d2, const af::dtype ty,
+                const af::randomType rtype)
+    {
+        return randu(dim4(d0, d1, d2), ty, rtype);
+    }
+
+    array randu(const dim_t d0,
+                const dim_t d1, const dim_t d2,
+                const dim_t d3, const af::dtype ty,
+                const af::randomType rtype)
+    {
+        return randu(dim4(d0, d1, d2, d3), ty, rtype);
     }
 
     array randn(const dim4 &dims, const af::dtype type)

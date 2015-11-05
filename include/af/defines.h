@@ -333,6 +333,11 @@ typedef enum {
     AF_BACKEND_OPENCL  = 4,  ///< OpenCL Compute Backend
 } af_backend;
 
+typedef enum {
+    AF_RANDOM_DEFAULT = 0;  ///< Default Random number generator. Backend specific.
+    AF_RANDOM_PHILOX = 1;   ///< Philox PRNG from Random123
+} af_random_type;
+
 // Below enum is purely added for example purposes
 // it doesn't and shoudn't be used anywhere in the
 // code. No Guarantee's provided if it is used.
@@ -360,6 +365,7 @@ namespace af
     typedef af_ycc_std YCCStd;
     typedef af_image_format imageFormat;
     typedef af_backend Backend;
+    typedef af_random_type randomType;
 }
 
 #endif
