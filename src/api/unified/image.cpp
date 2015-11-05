@@ -41,12 +41,12 @@ af_err af_delete_image_memory(void* ptr)
     return CALL(ptr);
 }
 
-af_err af_load_image_t(af_array *out, const char* filename)
+af_err af_load_image_native(af_array *out, const char* filename)
 {
     return CALL(out, filename);
 }
 
-af_err af_save_image_t(const char* filename, const af_array in)
+af_err af_save_image_native(const char* filename, const af_array in)
 {
     return CALL(filename, in);
 }
