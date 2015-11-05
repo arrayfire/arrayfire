@@ -8,7 +8,7 @@ configured, and tested ArrayFire following the
 ## The big picture
 The ArrayFire Windows installer creates the following:
 1. `AF_PATH` environment variable to point to the installation location. The
-   default install location is C:\Program Files\ArrayFire\v3
+   default install location is `C:\Program Files\ArrayFire\v3`
 2. `AF_PATH/include`         : Header files for ArrayFire (include directory)
 3. `AF_PATH/lib`             : All ArrayFire backends libraries, dlls and dependency dlls (library directory)
 4. `AF_PATH/examples`        : Examples to get started. Some examples also have pre-built exectuables
@@ -128,7 +128,7 @@ as the Unified API. These can be chosen from the Solution/Platform configuration
 drop down boxes.
 
 You can alternately download the template project from
-[ArrayFire Template Projects](https://github.com/arrayfire/arrayfire-template-projects)
+[ArrayFire Template Projects](https://github.com/arrayfire/arrayfire-project-templates)
 
 ### <a name="s3partD" />Part D: ArrayFire with CMake
 *NOTE:* The ArrayFire installer sets up CMake file and registry so that it can be found
@@ -136,7 +136,7 @@ by CMake by simply using the `Find_PACKAGE(ArrayFire)` command.
 
 If you are writing a new ArrayFire project in C/C++ from scratch, we suggest
 you grab a copy of our
-[CMake Project Example](https://github.com/arrayfire/arrayfire-template-projects);
+[CMake Project Example](https://github.com/arrayfire/arrayfire-project-templates);
 however, it is useful to read the documentation below in case you need to add
 ArrayFire to an existing project.
 
@@ -174,7 +174,7 @@ See the [CMake documentation](https://cmake.org/documentation/) for more
 information on how to use CMake.
 Clearly the above code snippet precludes the use of both CUDA and OpenCL, see
 the
-[ArrayFire CMake Example](https://github.com/bkloppenborg/arrayfire-cmake-example)
+[ArrayFire CMake Example](https://github.com/arrayfire/arrayfire-project-templates/tree/master/CMake)
 for an example of how to build executables for both backends from the same
 CMake script.
 
@@ -215,7 +215,7 @@ and source files cleanly separated. To do this open the CMake GUI.
   compile the ALL_BUILD project.
 
 
-The [ArrayFire CMake Example](https://github.com/bkloppenborg/arrayfire-cmake-example)
+The [ArrayFire CMake Example](https://github.com/arrayfire/arrayfire-project-templates/tree/master/CMake)
 is a CMake project used to demo how ArrayFire can be using with a CMake project.
 
 Note: The CMake project does not add the post build event to copy the NVVM DLLs
