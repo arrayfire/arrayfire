@@ -100,7 +100,7 @@ FREE_IMAGE_TYPE getFIT(FI_CHANNELS channels, af_dtype type)
 // File IO
 ////////////////////////////////////////////////////////////////////////////////
 // Load image from disk.
-af_err af_load_image_t(af_array *out, const char* filename)
+af_err af_load_image_native(af_array *out, const char* filename)
 {
     try {
         ARG_ASSERT(1, filename != NULL);
@@ -270,7 +270,7 @@ static void save_t(T* pDstLine, const af_array in, const dim4 dims, uint nDstPit
 }
 
 // Save an image to disk.
-af_err af_save_image_t(const char* filename, const af_array in)
+af_err af_save_image_native(const char* filename, const af_array in)
 {
     try {
 
@@ -375,13 +375,13 @@ af_err af_save_image_t(const char* filename, const af_array in)
 #else   // WITH_FREEIMAGE
 #include <af/image.h>
 #include <stdio.h>
-af_err af_load_image_t(af_array *out, const char* filename)
+af_err af_load_image_native(af_array *out, const char* filename)
 {
     printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
     return AF_ERR_NOT_CONFIGURED;
 }
 
-af_err af_save_image_t(const char* filename, const af_array in_)
+af_err af_save_image_native(const char* filename, const af_array in)
 {
     printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
     return AF_ERR_NOT_CONFIGURED;
