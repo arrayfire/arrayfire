@@ -18,7 +18,7 @@
 #include <af/defines.h>
 #include <Array.hpp>
 #include <random.hpp>
-#include <debug_cpu.hpp>
+#include <err_cpu.hpp>
 
 namespace cpu
 {
