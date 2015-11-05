@@ -316,6 +316,7 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, c
     try {
         af_array result;
         AF_CHECK(af_init());
+        ARG_ASSERT(4, (rtype == AF_RANDOM_DEFAULT) || (rtype == AF_RANDOM_PHILOX));
 
         dim4 d = verifyDims(ndims, dims);
 

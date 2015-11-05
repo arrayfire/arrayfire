@@ -18,7 +18,7 @@
 namespace opencl
 {
     template<typename T>
-    Array<T> randu(const af::dim4 &dims)
+    Array<T> randu(const af::dim4 &dims, const af::randomType &rtype)
     {
         verifyDoubleSupport<T>();
         Array<T> out = createEmptyArray<T>(dims);
@@ -35,16 +35,16 @@ namespace opencl
         return out;
     }
 
-    template Array<float>  randu<float>   (const af::dim4 &dims);
-    template Array<double> randu<double>  (const af::dim4 &dims);
-    template Array<int>    randu<int>     (const af::dim4 &dims);
-    template Array<uint>   randu<uint>    (const af::dim4 &dims);
-    template Array<intl>   randu<intl>    (const af::dim4 &dims);
-    template Array<uintl>  randu<uintl>   (const af::dim4 &dims);
-    template Array<short>  randu<short>   (const af::dim4 &dims);
-    template Array<ushort> randu<ushort>  (const af::dim4 &dims);
-    template Array<char>   randu<char>    (const af::dim4 &dims);
-    template Array<uchar>  randu<uchar>   (const af::dim4 &dims);
+    template Array<float>  randu<float>   (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<double> randu<double>  (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<int>    randu<int>     (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<uint>   randu<uint>    (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<intl>   randu<intl>    (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<uintl>  randu<uintl>   (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<short>  randu<short>   (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<ushort> randu<ushort>  (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<char>   randu<char>    (const af::dim4 &dims, const af::randomType &rtype);
+    template Array<uchar>  randu<uchar>   (const af::dim4 &dims, const af::randomType &rtype);
 
     template Array<float>  randn<float>   (const af::dim4 &dims);
     template Array<double> randn<double>  (const af::dim4 &dims);

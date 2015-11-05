@@ -142,14 +142,21 @@ namespace kernel
     }
 
     template<typename T>
-    void randu(T *out, size_t elements)
+    void randu(T *out, size_t elements, const af::randomType &rtype)
     {
         int device = getActiveDeviceId();
 
         int threads = THREADS;
         int blocks  = divup(elements, THREADS);
         if (blocks > BLOCKS) blocks = BLOCKS;
-        CUDA_LAUNCH(uniform_kernel, blocks, threads, out, states[device], elements);
+        switch (rtype) {
+            case AF_RANDOM_DEFAULT:
+                CUDA_LAUNCH(uniform_kernel, blocks, threads, out, states[device], elements);
+                break;
+            case AF_RANDOM_PHILOX:
+                CUDA_LAUNCH(philox_kernel, blocks, threads, out, states[device], elements);
+                break;
+        }
         POST_LAUNCH_CHECK();
     }
 
