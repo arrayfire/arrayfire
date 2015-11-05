@@ -334,8 +334,8 @@ typedef enum {
 } af_backend;
 
 typedef enum {
-    AF_RANDOM_DEFAULT = 0;  ///< Default Random number generator. Backend specific.
-    AF_RANDOM_PHILOX = 1;   ///< Philox PRNG from Random123
+    AF_RANDOM_DEFAULT = 0,  ///< Default Random number generator. Backend specific.
+    AF_RANDOM_PHILOX = 1,   ///< Philox PRNG from Random123
 } af_random_type;
 
 // Below enum is purely added for example purposes

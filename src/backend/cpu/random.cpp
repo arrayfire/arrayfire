@@ -18,6 +18,7 @@
 #include <af/defines.h>
 #include <Array.hpp>
 #include <random.hpp>
+#include <debug_cpu.hpp>
 
 namespace cpu
 {
@@ -98,8 +99,13 @@ Array<T> randn(const af::dim4 &dims)
 }
 
 template<typename T>
-Array<T> randu(const af::dim4 &dims)
+Array<T> randu(const af::dim4 &dims, const af::randomType &rtype)
 {
+    switch (rtype)  {
+        case AF_RANDOM_PHILOX:
+            CPU_NOT_SUPPORTED();
+            break;
+    }
     static unsigned long long my_seed = 0;
     if (is_first) {
         setSeed(gen_seed);
@@ -122,7 +128,7 @@ Array<T> randu(const af::dim4 &dims)
 }
 
 #define INSTANTIATE_UNIFORM(T)                              \
-    template Array<T>  randu<T>    (const af::dim4 &dims);
+    template Array<T>  randu<T>    (const af::dim4 &dims, const af::randomType &rtype);
 
 INSTANTIATE_UNIFORM(float)
 INSTANTIATE_UNIFORM(double)
@@ -146,7 +152,7 @@ INSTANTIATE_NORMAL(cdouble)
 
 
 template<>
-Array<char> randu(const af::dim4 &dims)
+Array<char> randu(const af::dim4 &dims, const af::randomType &rtype)
 {
     static unsigned long long my_seed = 0;
     if (is_first) {
@@ -174,6 +180,11 @@ void setSeed(const uintl seed)
     generator.seed(seed);
     is_first = false;
     gen_seed = seed;
+}
+
+void setSeed(const uintl seed, const af::randomType rtype)
+{
+    setSeed(seed);
 }
 
 uintl getSeed()

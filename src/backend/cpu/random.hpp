@@ -19,5 +19,6 @@ namespace cpu
     Array<T> randn(const af::dim4 &dims);
 
     void setSeed(const uintl seed);
+    void setSeed(const uintl seed, const af::randomType rtype);
     uintl getSeed();
 }

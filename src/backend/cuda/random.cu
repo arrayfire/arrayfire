@@ -19,9 +19,11 @@ namespace cuda
     template<typename T>
     Array<T> randu(const af::dim4 &dims, const af::randomType &rtype)
     {
-        if (!kernel::is_init[getActiveDeviceId()]) kernel::setup_states();
+        if (rtype == AF_RANDOM_DEFAULT) {
+            if (!kernel::is_init[getActiveDeviceId()]) kernel::setup_states();
+        }
         Array<T> out = createEmptyArray<T>(dims);
-        kernel::randu(out.get(), out.elements());
+        kernel::randu(out.get(), out.elements(), rtype);
         return out;
     }
 

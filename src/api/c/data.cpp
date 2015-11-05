@@ -307,10 +307,10 @@ static inline af_array identity_(const af::dim4 &dims)
 
 af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type)
 {
-    return af_randu(out, ndims, dims, type, AF_RANDOM_DEFAULT);
+    return af_randu_gen(out, ndims, dims, type, AF_RANDOM_DEFAULT);
 }
 
-af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type,
+af_err af_randu_gen(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type,
         const af_random_type rtype)
 {
     try {
