@@ -31,6 +31,9 @@ either CMake or Makefiles with CMake being our preferred build system.
 
 Although we recommend using CMake to build ArrayFire projects on OSX, you can
 use XCode if this is your preferred development platform.
+To save some time, we have created an sample XCode project in our 
+[ArrayFire Project Templates repository](https://github.com/arrayfire/arrayfire-project-templates).
+
 To set up a basic C/C++ project in XCode do the following:
 
 1. Start up XCode. Choose OSX -> Application, Command Line Tool for the project:
