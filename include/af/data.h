@@ -144,7 +144,7 @@ namespace af
     AFAPI array randu(const dim_t d0,
                       const dim_t d1, const dim_t d2,
                       const dim_t d3, const dtype ty=f32);
-//start here
+
     /**
         \param[in] dims is the dimensions of the array to be generated
         \param[in] ty is the type of the array
@@ -155,7 +155,7 @@ namespace af
         \ingroup data_func_randu
     */
     AFAPI array randu(const dim4 &dims, const dtype ty,
-            const af::randomType rtype);
+                      const af::randomType rtype);
 
     /**
         \param[in] d0 is the size of the first dimension
@@ -167,7 +167,7 @@ namespace af
         \ingroup data_func_randu
     */
     AFAPI array randu(const dim_t d0, const dtype ty,
-            const af::randomType rtype);
+                      const af::randomType rtype);
 
     /**
         \param[in] d0 is the size of the first dimension
@@ -724,7 +724,7 @@ extern "C" {
        \ingroup data_func_randu
     */
     AFAPI af_err af_randu_gen(af_array *out, const unsigned ndims, const dim_t * const dims, const af_dtype type,
-            const af_random_type rtype);
+                              const af_random_type rtype);
 
     /**
         \param[in] seed is a 64 bit unsigned integer

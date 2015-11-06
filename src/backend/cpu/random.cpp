@@ -182,11 +182,6 @@ void setSeed(const uintl seed)
     gen_seed = seed;
 }
 
-void setSeed(const uintl seed, const af::randomType rtype)
-{
-    setSeed(seed);
-}
-
 uintl getSeed()
 {
     return gen_seed;
