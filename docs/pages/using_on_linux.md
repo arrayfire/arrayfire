@@ -57,7 +57,7 @@ apt-get install build-essential cmake cmake-curses-gui
 We recommend that the CMake build system be used to create ArrayFire projects.
 If you are writing a new ArrayFire project in C/C++ from scratch, we suggest
 you grab a copy of our
-[CMake Project Example](https://github.com/arrayfire/arrayfire-project-templates/tree/master/CMake);
+[CMake Project Example](https://github.com/arrayfire/arrayfire-project-templates);
 however, it is useful to read the documentation below in case you need to add
 ArrayFire to an existing project.
 
@@ -123,6 +123,11 @@ Therefore, if you wish to target a specific specific backend, simply replace
 `${ArrayFire_LIBRARIES}` with `${ArrayFire_CPU}`, `${ArrayFire_OPENCL}`,
 `${ArrayFire_CUDA}`, or `${ArrayFire_Unified}` in the `TARGET_LINK_LIBRARIES`
 command above.
+If you intend on building your software to link with all of these backends,
+please see the
+[CMake Project Example](https://github.com/arrayfire/arrayfire-project-templates)
+which makes use of some fairly fun CMake tricks to avoid re-compiling code
+whenever possible.
 
 Next we need to instruct CMake to create build instructions and then compile.
 We suggest using CMake's out-of-source build functionality to keep your build
