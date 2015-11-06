@@ -517,16 +517,9 @@ af_err af_iota(af_array *result, const unsigned ndims, const dim_t * const dims,
 
         DIM_ASSERT(1, ndims > 0 && ndims <= 4);
         DIM_ASSERT(3, t_ndims > 0 && t_ndims <= 4);
-        dim4 d;
-        dim4 t;
-        for(unsigned i = 0; i < 4; i++) {
-            d[i] = dims[i];
-            DIM_ASSERT(2, d[i] >= 1);
-        }
-        for(unsigned i = 0; i < 4; i++) {
-            t[i] = tdims[i];
-            DIM_ASSERT(4, t[i] >= 1);
-        }
+
+        dim4 d = verifyDims(ndims, dims);
+        dim4 t = verifyDims(t_ndims, tdims);
 
         switch(type) {
         case f32:   out = iota_<float  >(d, t); break;

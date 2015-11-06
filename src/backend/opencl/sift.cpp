@@ -64,9 +64,9 @@ unsigned sift(Array<float>& x_out, Array<float>& y_out, Array<float>& score_out,
     return nfeat_out;
 #else
     if (compute_GLOH)
-        AF_ERROR("ArrayFire was not built with nonfree support, GLOH disabled\n", AFF_ERR_NONFREE);
+        AF_ERROR("ArrayFire was not built with nonfree support, GLOH disabled\n", AF_ERR_NONFREE);
     else
-        AF_ERROR("ArrayFire was not built with nonfree support, SIFT disabled\n", AFF_ERR_NONFREE);
+        AF_ERROR("ArrayFire was not built with nonfree support, SIFT disabled\n", AF_ERR_NONFREE);
 #endif
 }
 
