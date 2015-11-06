@@ -282,7 +282,7 @@ int findBestHomography(Array<T> &bestH,
                                  x_dst_ptr, y_dst_ptr))
             continue;
 
-        if (htype == AF_RANSAC) {
+        if (htype == AF_HOMOGRAPHY_RANSAC) {
             unsigned inliers_count = 0;
             for (unsigned j = 0; j < nsamples; j++) {
                 float z =  H_ptr[6]*x_src_ptr[j] + H_ptr[7]*y_src_ptr[j] + H_ptr[8];
@@ -299,7 +299,7 @@ int findBestHomography(Array<T> &bestH,
                 bestInliers = inliers_count;
             }
         }
-        else if (htype == AF_LMEDS) {
+        else if (htype == AF_HOMOGRAPHY_LMEDS) {
             std::vector<float> err(nsamples);
             for (unsigned j = 0; j < nsamples; j++) {
                 float z =  H_ptr[6]*x_src_ptr[j] + H_ptr[7]*y_src_ptr[j] + H_ptr[8];
@@ -326,7 +326,7 @@ int findBestHomography(Array<T> &bestH,
 
     memcpy(bestH.get(), H.get() + bestIdx*9, 9 * sizeof(T));
 
-    if (htype == AF_LMEDS) {
+    if (htype == AF_HOMOGRAPHY_LMEDS) {
         float sigma = std::max(1.4826f * (1 + 5.f/(nsamples - 4)) * (float)sqrt(minMedian), 1e-6f);
         float dist_thr = sq(2.5f * sigma);
         T* bestH_ptr = bestH.get();
@@ -359,7 +359,7 @@ int homography(Array<T> &bestH,
     const unsigned nsamples = idims[0];
 
     unsigned iter = iterations;
-    if (htype == AF_LMEDS)
+    if (htype == AF_HOMOGRAPHY_LMEDS)
         iter = std::min(iter, (unsigned)(log(1.f - LMEDSConfidence) / log(1.f - pow(1.f - LMEDSOutlierRatio, 4.f))));
 
     af::dim4 rdims(4, iter);

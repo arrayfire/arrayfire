@@ -45,7 +45,7 @@ int homography(Array<T> &bestH,
 
     unsigned iter = iterations;
     Array<float> err = createEmptyArray<float>(af::dim4());
-    if (htype == AF_LMEDS) {
+    if (htype == AF_HOMOGRAPHY_LMEDS) {
         iter = ::std::min(iter, (unsigned)(log(1.f - LMEDSConfidence) / log(1.f - pow(1.f - LMEDSOutlierRatio, 4.f))));
         err = createValueArray<float>(af::dim4(nsamples, iter), FLT_MAX);
     }
@@ -67,13 +67,13 @@ int homography(Array<T> &bestH,
 
     bestH = createValueArray<T>(af::dim4(3, 3), (T)0);
     switch (htype) {
-    case AF_RANSAC:
-        return kernel::computeH<T, AF_RANSAC>(bestH, tmpH, tmpA, tmpV, err,
+    case AF_HOMOGRAPHY_RANSAC:
+        return kernel::computeH<T, AF_HOMOGRAPHY_RANSAC>(bestH, tmpH, tmpA, tmpV, err,
                                               x_src, y_src, x_dst, y_dst,
                                               rnd, iter, nsamples, inlier_thr);
         break;
-    case AF_LMEDS:
-        return kernel::computeH<T, AF_LMEDS> (bestH, tmpH, tmpA, tmpV, err,
+    case AF_HOMOGRAPHY_LMEDS:
+        return kernel::computeH<T, AF_HOMOGRAPHY_LMEDS> (bestH, tmpH, tmpA, tmpV, err,
                                               x_src, y_src, x_dst, y_dst,
                                               rnd, iter, nsamples, inlier_thr);
         break;

@@ -374,7 +374,7 @@ __global__ void computeEvalHomography(
         for (int h = 0; h < 9; h++)
             H_tmp[h] = H_ptr[h];
 
-        if (htype == AF_RANSAC) {
+        if (htype == AF_HOMOGRAPHY_RANSAC) {
             // Compute inliers
             unsigned inliers_count = 0;
             for (unsigned j = 0; j < nsamples; j++) {
@@ -390,7 +390,7 @@ __global__ void computeEvalHomography(
             s_inliers[tid_x] = inliers_count;
             s_idx[tid_x]     = i;
         }
-        else if (htype == AF_LMEDS) {
+        else if (htype == AF_HOMOGRAPHY_LMEDS) {
             // Compute error
             for (unsigned j = 0; j < nsamples; j++) {
                 float z =  H_tmp[6]*x_src.ptr[j] + H_tmp[7]*y_src.ptr[j] + H_tmp[8];
@@ -403,7 +403,7 @@ __global__ void computeEvalHomography(
         }
     }
 
-    if (htype == AF_RANSAC) {
+    if (htype == AF_HOMOGRAPHY_RANSAC) {
         // Find sample with most inliers
         for (unsigned tx = 128; tx > 0; tx >>= 1) {
             if (tid_x < tx) {
@@ -585,7 +585,7 @@ int computeH(
     // Allocate some temporary buffers
     Param<unsigned> idx, inliers;
     Param<float> median;
-    inliers.dims[0] = (htype == AF_RANSAC) ? blocks.x : divup(nsamples, threads.x);
+    inliers.dims[0] = (htype == AF_HOMOGRAPHY_RANSAC) ? blocks.x : divup(nsamples, threads.x);
     inliers.strides[0] = 1;
     idx.dims[0] = median.dims[0] = blocks.x;
     idx.strides[0] = median.strides[0] = 1;
@@ -597,7 +597,7 @@ int computeH(
     }
     idx.ptr = memAlloc<unsigned>(idx.dims[3] * idx.strides[3]);
     inliers.ptr = memAlloc<unsigned>(inliers.dims[3] * inliers.strides[3]);
-    if (htype == AF_LMEDS)
+    if (htype == AF_HOMOGRAPHY_LMEDS)
         median.ptr = memAlloc<float>(median.dims[3] * median.strides[3]);
 
     // Compute (and for RANSAC, evaluate) homographies
@@ -607,7 +607,7 @@ int computeH(
     POST_LAUNCH_CHECK();
 
     unsigned inliersH, idxH;
-    if (htype == AF_LMEDS) {
+    if (htype == AF_HOMOGRAPHY_LMEDS) {
         // TODO: Improve this sorting, if the number of iterations is
         // sufficiently large, this can be *very* slow
         kernel::sort0<float, true>(err);
@@ -665,7 +665,7 @@ int computeH(
         memFree(totalInliers.ptr);
         memFree(median.ptr);
     }
-    else if (htype == AF_RANSAC) {
+    else if (htype == AF_HOMOGRAPHY_RANSAC) {
         Param<unsigned> bestInliers, bestIdx;
         for (int k = 0; k < 4; k++) {
             bestInliers.dims[k] = bestIdx.dims[k] = 1;

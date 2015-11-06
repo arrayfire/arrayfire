@@ -326,8 +326,8 @@ typedef enum {
 } af_image_format;
 
 typedef enum {
-    AF_RANSAC           = 0,    ///< Computes homography using RANSAC
-    AF_LMEDS            = 1     ///< Computes homography using Least Median of Squares
+    AF_HOMOGRAPHY_RANSAC = 0,   ///< Computes homography using RANSAC
+    AF_HOMOGRAPHY_LMEDS  = 1    ///< Computes homography using Least Median of Squares
 } af_homography_type;
 
 // These enums should be 2^x

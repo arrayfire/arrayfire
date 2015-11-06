@@ -299,28 +299,28 @@ AFAPI array dog(const array& in, const int radius1, const int radius2);
 
    \param[out] H is a 3x3 array containing the estimated homography.
    \param[out] inliers is the number of inliers that the homography was estimated to comprise,
-               in the case that htype is AF_RANSAC, a higher inlier_thr value will increase the
+               in the case that htype is AF_HOMOGRAPHY_RANSAC, a higher inlier_thr value will increase the
                estimated inliers. Note that if the number of inliers is too low, it is likely
                that a bad homography will be returned.
    \param[in]  x_src x coordinates of the source points.
    \param[in]  y_src y coordinates of the source points.
    \param[in]  x_dst x coordinates of the destination points.
    \param[in]  y_dst y coordinates of the destination points.
-   \param[in]  inlier_thr if htype is AF_RANSAC, this parameter will five the maximum L2-distance
+   \param[in]  inlier_thr if htype is AF_HOMOGRAPHY_RANSAC, this parameter will five the maximum L2-distance
                for a point to be considered an inlier.
-   \param[in]  iterations maximum number of iterations when htype is AF_RANSAC and backend is CPU,
+   \param[in]  iterations maximum number of iterations when htype is AF_HOMOGRAPHY_RANSAC and backend is CPU,
                if backend is CUDA or OpenCL, iterations is the total number of iterations, an
                iteration is a selection of 4 random points for which the homography is estimated
                and evaluated for number of inliers.
-   \param[in]  af_homography_type can be AF_RANSAC, for which a RANdom SAmple Consensus will be
-               used to evaluate the homography quality (e.g., number of inliers), or AF_LMEDS,
+   \param[in]  af_homography_type can be AF_HOMOGRAPHY_RANSAC, for which a RANdom SAmple Consensus will be
+               used to evaluate the homography quality (e.g., number of inliers), or AF_HOMOGRAPHY_LMEDS,
                which will use Least Median of Squares method to evaluate homography quality
    \param[in]  dtype the array type for the homography output.
 
    \ingroup cv_func_homography
 */
 AFAPI void homography(array& H, int& inliers, const array& x_src, const array& y_src,
-                      const array& x_dst, const array& y_dst, const af_homography_type htype=AF_RANSAC,
+                      const array& x_dst, const array& y_dst, const af_homography_type htype=AF_HOMOGRAPHY_RANSAC,
                       const float inlier_thr=3.f, const unsigned iterations=1000, const dtype type=f32);
 #endif
 
@@ -615,21 +615,21 @@ extern "C" {
 
        \param[out] H is a 3x3 array containing the estimated homography.
        \param[out] inliers is the number of inliers that the homography was estimated to comprise,
-                   in the case that htype is AF_RANSAC, a higher inlier_thr value will increase the
+                   in the case that htype is AF_HOMOGRAPHY_RANSAC, a higher inlier_thr value will increase the
                    estimated inliers. Note that if the number of inliers is too low, it is likely
                    that a bad homography will be returned.
        \param[in]  x_src x coordinates of the source points.
        \param[in]  y_src y coordinates of the source points.
        \param[in]  x_dst x coordinates of the destination points.
        \param[in]  y_dst y coordinates of the destination points.
-       \param[in]  inlier_thr if htype is AF_RANSAC, this parameter will five the maximum L2-distance
+       \param[in]  inlier_thr if htype is AF_HOMOGRAPHY_RANSAC, this parameter will five the maximum L2-distance
                    for a point to be considered an inlier.
-       \param[in]  iterations maximum number of iterations when htype is AF_RANSAC and backend is CPU,
+       \param[in]  iterations maximum number of iterations when htype is AF_HOMOGRAPHY_RANSAC and backend is CPU,
                    if backend is CUDA or OpenCL, iterations is the total number of iterations, an
                    iteration is a selection of 4 random points for which the homography is estimated
                    and evaluated for number of inliers.
-       \param[in]  af_homography_type can be AF_RANSAC, for which a RANdom SAmple Consensus will be
-                   used to evaluate the homography quality (e.g., number of inliers), or AF_LMEDS,
+       \param[in]  af_homography_type can be AF_HOMOGRAPHY_RANSAC, for which a RANdom SAmple Consensus will be
+                   used to evaluate the homography quality (e.g., number of inliers), or AF_HOMOGRAPHY_LMEDS,
                    which will use Least Median of Squares method to evaluate homography quality.
        \param[in]  dtype the array type for the homography output.
        \param[out] out is difference of smoothed inputs.

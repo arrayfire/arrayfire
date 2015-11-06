@@ -74,9 +74,9 @@ int computeH(
                 } else
                     options << " -D EPS=" << FLT_EPSILON;
 
-                if (htype == AF_RANSAC)
+                if (htype == AF_HOMOGRAPHY_RANSAC)
                     options << " -D RANSAC";
-                else if (htype == AF_LMEDS)
+                else if (htype == AF_HOMOGRAPHY_LMEDS)
                     options << " -D LMEDS";
 
                 cl::Program prog;
@@ -115,7 +115,7 @@ int computeH(
         // Allocate some temporary buffers
         Param inliers, idx, median;
         inliers.info.offset = idx.info.offset = median.info.offset = 0;
-        inliers.info.dims[0] = (htype == AF_RANSAC) ? blk_x_eh : divup(nsamples, HG_THREADS);
+        inliers.info.dims[0] = (htype == AF_HOMOGRAPHY_RANSAC) ? blk_x_eh : divup(nsamples, HG_THREADS);
         inliers.info.strides[0] = 1;
         idx.info.dims[0] = median.info.dims[0] = blk_x_eh;
         idx.info.strides[0] = median.info.strides[0] = 1;
@@ -127,7 +127,7 @@ int computeH(
         }
         idx.data = bufferAlloc(idx.info.dims[3] * idx.info.strides[3] * sizeof(unsigned));
         inliers.data = bufferAlloc(inliers.info.dims[3] * inliers.info.strides[3] * sizeof(unsigned));
-        if (htype == AF_LMEDS)
+        if (htype == AF_HOMOGRAPHY_LMEDS)
             median.data = bufferAlloc(median.info.dims[3] * median.info.strides[3] * sizeof(float));
         else
             median.data = bufferAlloc(sizeof(float));
@@ -146,7 +146,7 @@ int computeH(
         CL_DEBUG_FINISH(getQueue());
 
         unsigned inliersH, idxH;
-        if (htype == AF_LMEDS) {
+        if (htype == AF_HOMOGRAPHY_LMEDS) {
             // TODO: Improve this sorting, if the number of iterations is
             // sufficiently large, this can be *very* slow
             kernel::sort0<float, true>(err);
@@ -220,7 +220,7 @@ int computeH(
 
             bufferFree(totalInliers.data);
         }
-        else if (htype == AF_RANSAC) {
+        else if (htype == AF_HOMOGRAPHY_RANSAC) {
             Param bestInliers, bestIdx;
             bestInliers.info.offset = bestIdx.info.offset = 0;
             for (int k = 0; k < 4; k++) {

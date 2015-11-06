@@ -205,12 +205,12 @@ void homographyTest(string pTestFile, const af_homography_type htype,
                                   htype, rotate, size_ratio);                   \
     }
 
-    HOMOGRAPHY_INIT(Tux_RANSAC, tux, AF_RANSAC, false, 1.0f);
-    HOMOGRAPHY_INIT(Tux_RANSAC_90degrees, tux, AF_RANSAC, true, 1.0f);
-    HOMOGRAPHY_INIT(Tux_RANSAC_resize, tux, AF_RANSAC, false, 1.5f);
-    //HOMOGRAPHY_INIT(Tux_LMedS, tux, AF_LMEDS, false, 1.0f);
-    //HOMOGRAPHY_INIT(Tux_LMedS_90degrees, tux, AF_LMEDS, true, 1.0f);
-    //HOMOGRAPHY_INIT(Tux_LMedS_resize, tux, AF_LMEDS, false, 1.5f);
+    HOMOGRAPHY_INIT(Tux_RANSAC, tux, AF_HOMOGRAPHY_RANSAC, false, 1.0f);
+    HOMOGRAPHY_INIT(Tux_RANSAC_90degrees, tux, AF_HOMOGRAPHY_RANSAC, true, 1.0f);
+    HOMOGRAPHY_INIT(Tux_RANSAC_resize, tux, AF_HOMOGRAPHY_RANSAC, false, 1.5f);
+    //HOMOGRAPHY_INIT(Tux_LMedS, tux, AF_HOMOGRAPHY_LMEDS, false, 1.0f);
+    //HOMOGRAPHY_INIT(Tux_LMedS_90degrees, tux, AF_HOMOGRAPHY_LMEDS, true, 1.0f);
+    //HOMOGRAPHY_INIT(Tux_LMedS_resize, tux, AF_HOMOGRAPHY_LMEDS, false, 1.5f);
 
 ///////////////////////////////////// CPP ////////////////////////////////
 //
@@ -254,7 +254,7 @@ TEST(Homography, CPP)
 
     af::array H;
     int inliers = 0;
-    af::homography(H, inliers, feat_train_x, feat_train_y, feat_query_x, feat_query_y, AF_RANSAC, 3.0f, 1000, f32);
+    af::homography(H, inliers, feat_train_x, feat_train_y, feat_query_x, feat_query_y, AF_HOMOGRAPHY_RANSAC, 3.0f, 1000, f32);
 
     float* gold_t = new float[8];
     for (int i = 0; i < 8; i++)
