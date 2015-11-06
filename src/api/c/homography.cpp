@@ -40,7 +40,7 @@ af_err af_homography(af_array *H, int *inliers,
                      const af_array x_src, const af_array y_src,
                      const af_array x_dst, const af_array y_dst,
                      const af_homography_type htype, const float inlier_thr,
-                     const unsigned iterations, const af_dtype type)
+                     const unsigned iterations, const af_dtype otype)
 {
     try {
         ArrayInfo xsinfo = getInfo(x_src);
@@ -74,10 +74,10 @@ af_err af_homography(af_array *H, int *inliers,
         af_array outH;
         int outInl;
 
-        switch(type) {
+        switch(otype) {
             case f32: homography<float >(outH, outInl, x_src, y_src, x_dst, y_dst, htype, inlier_thr, iterations);  break;
             case f64: homography<double>(outH, outInl, x_src, y_src, x_dst, y_dst, htype, inlier_thr, iterations);  break;
-            default:  TYPE_ERROR(1, type);
+            default:  TYPE_ERROR(1, otype);
         }
         std::swap(*H, outH);
         std::swap(*inliers, outInl);
