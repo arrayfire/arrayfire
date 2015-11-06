@@ -195,37 +195,44 @@ namespace kernel
         return double(num)/uintlmaxdouble;
     }
 
-    __device__ static void writeOut(uint *out, const unsigned &index,
-            const PhiloxCounter<uint, 4> &counter)
-    {
-        out[index]                  = counter.v[0];
-        out[index + blockDim.x]     = counter.v[1];
-        out[index + 2*blockDim.x]   = counter.v[2];
-        out[index + 3*blockDim.x]   = counter.v[3];
+#define writeOut16(T)                                               \
+    __device__ static void writeOut(T *out, const unsigned &index,  \
+            const PhiloxCounter<uint, 4> &counter)                  \
+    {                                                               \
+        out[index]                  = (counter.v[0]&0x00001111);    \
+        out[index + blockDim.x]     = (counter.v[0]>>4);            \
+        out[index + 2*blockDim.x]   = (counter.v[1]&0x00001111);    \
+        out[index + 3*blockDim.x]   = (counter.v[1]>>4);            \
+        out[index + 4*blockDim.x]   = (counter.v[2]&0x00001111);    \
+        out[index + 5*blockDim.x]   = (counter.v[2]>>4);            \
+        out[index + 6*blockDim.x]   = (counter.v[3]&0x00001111);    \
+        out[index + 7*blockDim.x]   = (counter.v[3]>>4);            \
     }
 
-    __device__ static void writeOut(uintl *out, const unsigned &index,
-            const PhiloxCounter<uint, 4> &counter)
-    {
-        out[index]              = (uintl(counter.v[0])<<32) | uintl(counter.v[1]);
-        out[index + blockDim.x] = (uintl(counter.v[2])<<32) | uintl(counter.v[3]);
+#define writeOut32(T)                                                   \
+    __device__ static void writeOut(T *out, const unsigned &index,      \
+            const PhiloxCounter<uint, 4> &counter)                      \
+    {                                                                   \
+        out[index]                  = counter.v[0];                     \
+        out[index + blockDim.x]     = counter.v[1];                     \
+        out[index + 2*blockDim.x]   = counter.v[2];                     \
+        out[index + 3*blockDim.x]   = counter.v[3];                     \
     }
 
-    __device__ static void writeOut(int *out, const unsigned &index,
-            const PhiloxCounter<uint, 4> &counter)
-    {
-        out[index]                  = counter.v[0];
-        out[index + blockDim.x]     = counter.v[1];
-        out[index + 2*blockDim.x]   = counter.v[2];
-        out[index + 3*blockDim.x]   = counter.v[3];
+#define writeOut64(T)                                                               \
+    __device__ static void writeOut(T *out, const unsigned &index,                  \
+            const PhiloxCounter<uint, 4> &counter)                                  \
+    {                                                                               \
+        out[index]              = (uintl(counter.v[0])<<32) | uintl(counter.v[1]);  \
+        out[index + blockDim.x] = (uintl(counter.v[2])<<32) | uintl(counter.v[3]);  \
     }
 
-    __device__ static void writeOut(intl *out, const unsigned &index,
-            const PhiloxCounter<uint, 4> &counter)
-    {
-        out[index]              = (uintl(counter.v[0])<<32) | uintl(counter.v[1]);
-        out[index + blockDim.x] = (uintl(counter.v[2])<<32) | uintl(counter.v[3]);
-    }
+    writeOut16(ushort);
+    writeOut16(short);
+    writeOut32(uint);
+    writeOut32(int);
+    writeOut64(uintl);
+    writeOut64(intl);
 
     __device__ static void writeOut(float *out, const unsigned &index,
             const PhiloxCounter<uint, 4> &counter)
@@ -301,63 +308,44 @@ namespace kernel
         out[index + 15*blockDim.x]  = (counter.v[3]&0x11000000)>>6;
     }
 
-    __device__ static void writeOut(short *out, const unsigned &index,
-            const PhiloxCounter<uint, 4> &counter)
-    {
-        out[index]                  = (counter.v[0]&0x00001111);
-        out[index + blockDim.x]     = (counter.v[0]>>4);
-        out[index + 2*blockDim.x]   = (counter.v[1]&0x00001111);
-        out[index + 3*blockDim.x]   = (counter.v[1]>>4);
-        out[index + 4*blockDim.x]   = (counter.v[2]&0x00001111);
-        out[index + 5*blockDim.x]   = (counter.v[2]>>4);
-        out[index + 6*blockDim.x]   = (counter.v[3]&0x00001111);
-        out[index + 7*blockDim.x]   = (counter.v[3]>>4);
+#define writeOutPartial16(T)                                                                                \
+    __device__ static void writeOutPartial(T *out, const unsigned &index,                                   \
+            const size_t &elements, const PhiloxCounter<uint, 4> &counter)                                  \
+    {                                                                                                       \
+         if (index                  < elements) {out[index]                  = (counter.v[0]&0x00001111);}  \
+         if (index + blockDim.x     < elements) {out[index + blockDim.x]     = (counter.v[0]>>4);}          \
+         if (index + 2*blockDim.x   < elements) {out[index + 2*blockDim.x]   = (counter.v[1]&0x00001111);}  \
+         if (index + 3*blockDim.x   < elements) {out[index + 3*blockDim.x]   = (counter.v[1]>>4);}          \
+         if (index + 4*blockDim.x   < elements) {out[index + 4*blockDim.x]   = (counter.v[2]&0x00001111);}  \
+         if (index + 5*blockDim.x   < elements) {out[index + 5*blockDim.x]   = (counter.v[2]>>4);}          \
+         if (index + 6*blockDim.x   < elements) {out[index + 6*blockDim.x]   = (counter.v[3]&0x00001111);}  \
+         if (index + 7*blockDim.x   < elements) {out[index + 7*blockDim.x]   = (counter.v[3]>>4);}          \
     }
 
-    __device__ static void writeOut(ushort *out, const unsigned &index,
-            const PhiloxCounter<uint, 4> &counter)
-    {
-        out[index]                  = (counter.v[0]&0x00001111);
-        out[index + blockDim.x]     = (counter.v[0]>>4);
-        out[index + 2*blockDim.x]   = (counter.v[1]&0x00001111);
-        out[index + 3*blockDim.x]   = (counter.v[1]>>4);
-        out[index + 4*blockDim.x]   = (counter.v[2]&0x00001111);
-        out[index + 5*blockDim.x]   = (counter.v[2]>>4);
-        out[index + 6*blockDim.x]   = (counter.v[3]&0x00001111);
-        out[index + 7*blockDim.x]   = (counter.v[3]>>4);
+#define writeOutPartial32(T)                                                                    \
+    __device__ static void writeOutPartial(T *out, const unsigned &index,                       \
+            const size_t &elements, const PhiloxCounter<uint, 4> &counter)                      \
+    {                                                                                           \
+        if (index                   < elements) {out[index]                  = counter.v[0];}   \
+        if (index + blockDim.x      < elements) {out[index + blockDim.x]     = counter.v[1];}   \
+        if (index + 2*blockDim.x    < elements) {out[index + 2*blockDim.x]   = counter.v[2];}   \
+        if (index + 3*blockDim.x    < elements) {out[index + 3*blockDim.x]   = counter.v[3];}   \
     }
 
-    __device__ static void writeOutPartial(uint *out, const unsigned &index,
-            const size_t &elements, const PhiloxCounter<uint, 4> &counter)
-    {
-        if (index                   < elements) {out[index]                  = counter.v[0];}
-        if (index + blockDim.x      < elements) {out[index + blockDim.x]     = counter.v[1];}
-        if (index + 2*blockDim.x    < elements) {out[index + 2*blockDim.x]   = counter.v[2];}
-        if (index + 3*blockDim.x    < elements) {out[index + 3*blockDim.x]   = counter.v[3];}
+#define writeOutPartial64(T)                                                                                            \
+    __device__ static void writeOutPartial(T *out, const unsigned &index,                                               \
+            const size_t &elements, const PhiloxCounter<uint, 4> &counter)                                              \
+    {                                                                                                                   \
+        if (index               < elements) {out[index]              = (uintl(counter.v[0])<<32) | uintl(counter.v[1]);}\
+        if (index + blockDim.x  < elements) {out[index + blockDim.x] = (uintl(counter.v[2])<<32) | uintl(counter.v[3]);}\
     }
 
-    __device__ static void writeOutPartial(uintl *out, const unsigned &index,
-            const size_t &elements, const PhiloxCounter<uint, 4> &counter)
-    {
-        if (index               < elements) {out[index]              = (uintl(counter.v[0])<<32) | uintl(counter.v[1]);}
-        if (index + blockDim.x  < elements) {out[index + blockDim.x] = (uintl(counter.v[2])<<32) | uintl(counter.v[3]);}
-    }
-
-    __device__ static void writeOutPartial(int *out, const unsigned &index,
-            const size_t &elements, const PhiloxCounter<uint, 4> &counter)
-    {
-        if (index                   < elements) {out[index]                  = counter.v[0];}
-        if (index + blockDim.x      < elements) {out[index + blockDim.x]     = counter.v[1];}
-        if (index + 2*blockDim.x    < elements) {out[index + 2*blockDim.x]   = counter.v[2];}
-        if (index + 3*blockDim.x    < elements) {out[index + 3*blockDim.x]   = counter.v[3];}
-    }
-
-    __device__ static void writeOutPartial(intl *out, const unsigned &index,
-            const size_t &elements, const PhiloxCounter<uint, 4> &counter)
-    {
-        if (index               < elements) {out[index]              = (uintl(counter.v[0])<<32) | uintl(counter.v[1]);}
-        if (index + blockDim.x  < elements) {out[index + blockDim.x] = (uintl(counter.v[2])<<32) | uintl(counter.v[3]);}
-    }
+    writeOutPartial16(ushort);
+    writeOutPartial16(short);
+    writeOutPartial32(uint);
+    writeOutPartial32(int);
+    writeOutPartial64(uintl);
+    writeOutPartial64(intl);
 
     __device__ static void writeOutPartial(float *out, const unsigned &index,
             const size_t &elements, const PhiloxCounter<uint, 4> &counter)
@@ -436,32 +424,6 @@ namespace kernel
         if (index + 13*blockDim.x   < elements) {out[index + 13*blockDim.x]  = (counter.v[3]&0x00001100)>>2;}
         if (index + 14*blockDim.x   < elements) {out[index + 14*blockDim.x]  = (counter.v[3]&0x00110000)>>4;}
         if (index + 15*blockDim.x   < elements) {out[index + 15*blockDim.x]  = (counter.v[3]&0x11000000)>>6;}
-    }
-
-    __device__ static void writeOutPartial(short *out, const unsigned &index,
-            const size_t &elements, const PhiloxCounter<uint, 4> &counter)
-    {
-         if (index                  < elements) {out[index]                  = (counter.v[0]&0x00001111);}
-         if (index + blockDim.x     < elements) {out[index + blockDim.x]     = (counter.v[0]>>4);}
-         if (index + 2*blockDim.x   < elements) {out[index + 2*blockDim.x]   = (counter.v[1]&0x00001111);}
-         if (index + 3*blockDim.x   < elements) {out[index + 3*blockDim.x]   = (counter.v[1]>>4);}
-         if (index + 4*blockDim.x   < elements) {out[index + 4*blockDim.x]   = (counter.v[2]&0x00001111);}
-         if (index + 5*blockDim.x   < elements) {out[index + 5*blockDim.x]   = (counter.v[2]>>4);}
-         if (index + 6*blockDim.x   < elements) {out[index + 6*blockDim.x]   = (counter.v[3]&0x00001111);}
-         if (index + 7*blockDim.x   < elements) {out[index + 7*blockDim.x]   = (counter.v[3]>>4);}
-    }
-
-    __device__ static void writeOutPartial(ushort *out, const unsigned &index,
-            const size_t &elements, const PhiloxCounter<uint, 4> &counter)
-    {
-         if (index                  < elements) {out[index]                  = (counter.v[0]&0x00001111);}
-         if (index + blockDim.x     < elements) {out[index + blockDim.x]     = (counter.v[0]>>4);}
-         if (index + 2*blockDim.x   < elements) {out[index + 2*blockDim.x]   = (counter.v[1]&0x00001111);}
-         if (index + 3*blockDim.x   < elements) {out[index + 3*blockDim.x]   = (counter.v[1]>>4);}
-         if (index + 4*blockDim.x   < elements) {out[index + 4*blockDim.x]   = (counter.v[2]&0x00001111);}
-         if (index + 5*blockDim.x   < elements) {out[index + 5*blockDim.x]   = (counter.v[2]>>4);}
-         if (index + 6*blockDim.x   < elements) {out[index + 6*blockDim.x]   = (counter.v[3]&0x00001111);}
-         if (index + 7*blockDim.x   < elements) {out[index + 7*blockDim.x]   = (counter.v[3]>>4);}
     }
 
     template<typename T>
