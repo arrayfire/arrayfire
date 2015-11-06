@@ -67,8 +67,8 @@ namespace kernel
     static const uint w32_0 = uint(0x9E3779B9);
     static const uint w32_1 = uint(0xBB67AE85);
     static const unsigned int PhiloxDefaultRounds = 10;
-    static const float uintmaxfloat = 4294967296.0f;
-    static const double uintlmaxdouble = 4294967296.0*4294967296.0;
+    #define UINTMAXFLOAT 4294967296.0f
+    #define UINTLMAXDOUBLE 4294967296.0*4294967296.0
 
     static inline __device__ void mulhilo(const uint &a, const uint &b,
             uint &hi, uint &lo)
@@ -187,12 +187,12 @@ namespace kernel
 
     __device__ static float normalizeToFloat(const uint &num)
     {
-        return float(num)/uintmaxfloat;
+        return float(num)/UINTMAXFLOAT;
     }
 
     __device__ static double normalizeToDouble(const uintl &num)
     {
-        return double(num)/uintlmaxdouble;
+        return double(num)/UINTLMAXDOUBLE;
     }
 
 #define writeOut16(T)                                               \
@@ -432,8 +432,8 @@ namespace kernel
             int elementsPerBlockIteration, size_t elements)
     {
         unsigned index = blockIdx.x*elementsPerBlockIteration + threadIdx.x;
-        PhiloxKey<uint, 4> key = {index, seed>>32};
-        PhiloxCounter<uint, 4> counter = {index, (seed&0xffffffff), blockIdx.x^index, philoxcounter};
+        PhiloxKey<uint, 4> key = {index, uint(seed>>32)};
+        PhiloxCounter<uint, 4> counter = {index, uint(seed&0xffffffff), blockIdx.x^index, philoxcounter};
         if (blockIdx.x != (gridDim.x - 1))   {
             PhiloxCounter<uint, 4> r = philox<uint, 4>(counter, key);
             writeOut(out, index, r);
