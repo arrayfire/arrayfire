@@ -135,7 +135,7 @@ typedef enum {
     ///
     /// This build of ArrayFire is not compiled with "nonfree" algorithms
     ///
-    AFF_ERR_NONFREE       = 303,
+    AF_ERR_NONFREE        = 303,
 
     // 400-499 Errors for missing hardware features
 
