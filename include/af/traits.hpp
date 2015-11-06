@@ -139,6 +139,7 @@ struct dtype_traits<unsigned long long> {
     static const char* getName() { return "ulong"; }
 };
 
+#if AF_API_VERSION >= 32
 template<>
 struct dtype_traits<short> {
     enum {
@@ -148,7 +149,9 @@ struct dtype_traits<short> {
     typedef short base_type;
     static const char* getName() { return "short"; }
 };
+#endif
 
+#if AF_API_VERSION >= 32
 template<>
 struct dtype_traits<unsigned short> {
     enum {
@@ -158,6 +161,7 @@ struct dtype_traits<unsigned short> {
     typedef unsigned short base_type;
     static const char* getName() { return "ushort"; }
 };
+#endif
 
 }
 
