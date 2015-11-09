@@ -108,8 +108,14 @@ First install the prerequisite packages:
     # Prerequisite packages:
     sudo apt-get install libfreeimage-dev libatlas3gf-base libfftw3-dev cmake
 
-If you are using Ubuntu 14.04, you will need to install GLFW3 from source following the
-[instructions listed here](https://github.com/arrayfire/arrayfire/wiki/Build-Instructions-for-Linux#general-dependencies).
+Ubuntu 14.04 will not have the libglfw3-dev package in its repositories. You can either build the library from source (following the instructions listed) or install the library from a PPA as follows:
+
+```
+sudo apt-add repository ppa:keithw/glfw3
+sudo apt-get update
+sudo apt-get install glfw3
+```
+
 After this point, the installation should proceed identically to Ubuntu 14.10 or newer.
 
 If your system has a CUDA GPU, we suggest downloading the latest drivers
