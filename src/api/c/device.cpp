@@ -140,9 +140,12 @@ af_err af_device_array(af_array *arr, const void *data,
         AF_CHECK(af_init());
 
         af_array res;
-        af::dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
+
+        DIM_ASSERT(1, ndims >= 1);
+        dim4 d(1, 1, 1, 1);
+        for(unsigned i = 0; i < ndims; i++) {
             d[i] = dims[i];
+            DIM_ASSERT(3, dims[i] >= 1);
         }
 
         switch (type) {

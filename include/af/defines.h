@@ -132,10 +132,12 @@ typedef enum {
     ///
     AF_ERR_NOT_CONFIGURED = 302,
 
+#if AF_API_VERSION >= 32
     ///
     /// This build of ArrayFire is not compiled with "nonfree" algorithms
     ///
-    AFF_ERR_NONFREE       = 303,
+    AF_ERR_NONFREE        = 303,
+#endif
 
     // 400-499 Errors for missing hardware features
 
@@ -151,9 +153,27 @@ typedef enum {
     AF_ERR_NO_GFX         = 402,
 
     // 500-599 Errors specific to heterogenous API
+
+#if AF_API_VERSION >= 32
+    ///
+    /// There was an error when loading the libraries
+    ///
     AF_ERR_LOAD_LIB       = 501,
+#endif
+
+#if AF_API_VERSION >= 32
+    ///
+    /// There was an error when loading the symbols
+    ///
     AF_ERR_LOAD_SYM       = 502,
+#endif
+
+#if AF_API_VERSION >= 32
+    ///
+    /// There was a mismatch between the input array and the active backend
+    ///
     AF_ERR_ARR_BKND_MISMATCH    = 503,
+#endif
 
     // 900-999 Errors from upstream libraries and runtimes
 
@@ -182,6 +202,8 @@ typedef enum {
     u64,    ///< 64-bit unsigned integral values
 #if AF_API_VERSION >= 32
     s16,    ///< 16-bit signed integral values
+#endif
+#if AF_API_VERSION >= 32
     u16,    ///< 16-bit unsigned integral values
 #endif
 } af_dtype;
@@ -259,17 +281,21 @@ typedef enum {
     AF_SHD        ///< Match based on Sum of Hamming Distances (SHD)
 } af_match_type;
 
+#if AF_API_VERSION >= 31
 typedef enum {
     AF_YCC_601 = 601,  ///< ITU-R BT.601 (formerly CCIR 601) standard
     AF_YCC_709 = 709,  ///< ITU-R BT.709 standard
     AF_YCC_2020 = 2020  ///< ITU-R BT.2020 standard
 } af_ycc_std;
+#endif
 
 typedef enum {
     AF_GRAY = 0, ///< Grayscale
     AF_RGB,      ///< 3-channel RGB
     AF_HSV,      ///< 3-channel HSV
+#if AF_API_VERSION >= 31
     AF_YCbCr     ///< 3-channel YCbCr
+#endif
 } af_cspace_t;
 
 typedef enum {
@@ -310,6 +336,7 @@ typedef enum {
     AF_COLORMAP_BLUE    = 6     ///< Blue hue map
 } af_colormap;
 
+#if AF_API_VERSION >= 31
 typedef enum {
     AF_FIF_BMP          = 0,    ///< FreeImage Enum for Bitmap File
     AF_FIF_ICO          = 1,    ///< FreeImage Enum for Windows Icon File
@@ -325,7 +352,9 @@ typedef enum {
     AF_FIF_JP2          = 31,   ///< FreeImage Enum for JPEG-2000 File
     AF_FIF_RAW          = 34    ///< FreeImage Enum for RAW Camera Image File
 } af_image_format;
+#endif
 
+#if AF_API_VERSION >= 32
 // These enums should be 2^x
 typedef enum {
     AF_BACKEND_DEFAULT = 0,  ///< Default backend order: OpenCL -> CUDA -> CPU
@@ -333,6 +362,7 @@ typedef enum {
     AF_BACKEND_CUDA    = 2,  ///< CUDA Compute Backend
     AF_BACKEND_OPENCL  = 4,  ///< OpenCL Compute Backend
 } af_backend;
+#endif
 
 // Below enum is purely added for example purposes
 // it doesn't and shoudn't be used anywhere in the
@@ -358,9 +388,15 @@ namespace af
     typedef af_mat_prop matProp;
     typedef af_colormap ColorMap;
     typedef af_norm_type normType;
+#if AF_API_VERSION >= 31
     typedef af_ycc_std YCCStd;
+#endif
+#if AF_API_VERSION >= 31
     typedef af_image_format imageFormat;
+#endif
+#if AF_API_VERSION >= 32
     typedef af_backend Backend;
+#endif
 }
 
 #endif

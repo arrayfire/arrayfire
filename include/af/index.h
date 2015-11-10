@@ -289,6 +289,7 @@ extern "C" {
                                 const dim_t ndims, const af_index_t* indices,
                                 const af_array rhs);
 
+#if AF_API_VERSION >= 32
     ///
     /// \brief Create an quadruple of af_index_t array
     ///
@@ -298,7 +299,9 @@ extern "C" {
     /// \ingroup index_func_util
     ///
     AFAPI af_err af_create_indexers(af_index_t** indexers);
+#endif
 
+#if AF_API_VERSION >= 32
     ///
     /// \brief set \p dim to given indexer af_array \p idx
     ///
@@ -310,7 +313,9 @@ extern "C" {
     /// \ingroup index_func_util
     ///
     AFAPI af_err af_set_array_indexer(af_index_t* indexer, const af_array idx, const dim_t dim);
+#endif
 
+#if AF_API_VERSION >= 32
     ///
     /// \brief set \p dim to given indexer af_array \p idx
     ///
@@ -323,7 +328,9 @@ extern "C" {
     ///
     AFAPI af_err af_set_seq_indexer(af_index_t* indexer, const af_seq* idx,
                                   const dim_t dim, const bool is_batch);
+#endif
 
+#if AF_API_VERSION >= 32
     ///
     /// \brief set \p dim to given indexer af_array \p idx
     ///
@@ -340,7 +347,9 @@ extern "C" {
     AFAPI af_err af_set_seq_param_indexer(af_index_t* indexer,
                                         const double begin, const double end, const double step,
                                         const dim_t dim, const bool is_batch);
+#endif
 
+#if AF_API_VERSION >= 32
     ///
     /// \brief Release's the memory resource used by the quadruple af_index_t array
     ///
@@ -350,6 +359,7 @@ extern "C" {
     /// \ingroup index_func_util
     ///
     AFAPI af_err af_release_indexers(af_index_t* indexers);
+#endif
 
 #ifdef __cplusplus
 }

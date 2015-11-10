@@ -14,6 +14,7 @@
 extern "C" {
 #endif
 
+#if AF_API_VERSION >= 32
 /**
    \param[in] bknd takes one of the values of enum \ref af_backend
    \returns \ref af_err error code
@@ -21,7 +22,9 @@ extern "C" {
    \ingroup unified_func_setbackend
  */
 AFAPI af_err af_set_backend(const af_backend bknd);
+#endif
 
+#if AF_API_VERSION >= 32
 /**
    \param[out] num_backends Number of available backends
    \returns \ref af_err error code
@@ -29,7 +32,9 @@ AFAPI af_err af_set_backend(const af_backend bknd);
    \ingroup unified_func_getbackendcount
  */
 AFAPI af_err af_get_backend_count(unsigned* num_backends);
+#endif
 
+#if AF_API_VERSION >= 32
 /**
    \param[out] backends is the OR sum of the backends available.
    \returns \ref af_err error code
@@ -37,6 +42,7 @@ AFAPI af_err af_get_backend_count(unsigned* num_backends);
    \ingroup unified_func_getavailbackends
  */
 AFAPI af_err af_get_available_backends(int* backends);
+#endif
 
 /**
    \param[out] backend takes one of the values of enum \ref af_backend
@@ -56,26 +62,32 @@ namespace af
 {
 class array;
 
+#if AF_API_VERSION >= 32
 /**
    \param[in] bknd takes one of the values of enum \ref af_backend
 
    \ingroup unified_func_setbackend
  */
 AFAPI void setBackend(const Backend bknd);
+#endif
 
+#if AF_API_VERSION >= 32
 /**
    \returns Number of available backends
 
    \ingroup unified_func_getbackendcount
  */
 AFAPI unsigned getBackendCount();
+#endif
 
+#if AF_API_VERSION >= 32
 /**
    \returns OR sum of the backends available
 
    \ingroup unified_func_getavailbackends
  */
 AFAPI int getAvailableBackends();
+#endif
 
 /**
    \param[in] in is the array who's backend is to be queried
