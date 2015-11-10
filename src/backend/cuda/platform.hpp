@@ -20,6 +20,8 @@
 namespace cuda
 {
 
+int getBackend();
+
 std::string getInfo();
 
 std::string getDeviceInfo(int device);

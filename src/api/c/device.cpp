@@ -23,15 +23,7 @@ using namespace detail;
 af_err af_set_backend(const af_backend bknd)
 {
     try {
-#if defined(AF_CPU)
-    ARG_ASSERT(0, bknd==AF_BACKEND_CPU);
-#endif
-#if defined(AF_CUDA)
-    ARG_ASSERT(0, bknd==AF_BACKEND_CUDA);
-#endif
-#if defined(AF_OPENCL)
-    ARG_ASSERT(0, bknd==AF_BACKEND_OPENCL);
-#endif
+        ARG_ASSERT(0, bknd==getBackend());
     }
     CATCHALL;
 
@@ -46,13 +38,7 @@ af_err af_get_backend_count(unsigned* num_backends)
 
 af_err af_get_available_backends(int* result)
 {
-#if defined(AF_CPU)
-    *result = AF_BACKEND_CPU;
-#elif defined(AF_CUDA)
-    *result = AF_BACKEND_CUDA;
-#elif defined(AF_OPENCL)
-    *result = AF_BACKEND_OPENCL;
-#endif
+    *result = getBackend();
     return AF_SUCCESS;
 }
 

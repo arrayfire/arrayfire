@@ -14,6 +14,7 @@
 #include <af/dim4.hpp>
 #include <af/device.h>
 #include <vector>
+#include <cstddef>
 
 dim_t
 calcOffset(const af::dim4 &strides, const af::dim4 &offsets);
@@ -30,6 +31,20 @@ af::dim4 getOutDims(const af::dim4 &ldims, const af::dim4 &rdims, bool batchMode
 class ArrayInfo
 {
 private:
+    // The devId variable stores information about the deviceId as well as the backend.
+    // The 4 LSBs (0-3) are used to store the device ID.
+    // The 4th LSB is set to 1 if backend is CPU
+    // The 5th LSB is set to 1 if backend is CUDA
+    // The 6th LSB is set to 1 if backend is OpenCL
+    // This information can be retrieved directly from an af_array by doing
+    //     int* devId = reinterpret_cast<int*>(a); // a is an af_array
+    //     af_backend backendID = *devId >> 3;  // Returns 1, 2, 4 for CPU, CUDA or OpenCL respectively
+    //     int        deviceID  = *devId & 0xf; // Returns devices ID between 0-15
+    // This is possible by doing a static_assert on devId
+    //
+    // This can be changed in the future if the need arises for more devices as this
+    // implementation is internal. Make sure to change the bit shift ops when
+    // such a change is being made
     int             devId;
     af_dtype        type;
     af::dim4        dim_size;
@@ -42,7 +57,16 @@ public:
         dim_size(size),
         dim_offsets(offset),
         dim_strides(stride)
-    { af_init(); }
+    {
+        af_init();
+        setId(id);
+#if __cplusplus > 199711l
+    static_assert(offsetof(ArrayInfo, devId) == 0,
+                  "ArrayInfo::devId must be the first member variable of ArrayInfo. \
+                   devId is used to encode the backend into the integer. \
+                   This is then used in the unified backend to check mismatched arrays.");
+#endif
+    }
 
 #if __cplusplus > 199711L
     //Copy constructors are deprecated if there is a
@@ -55,16 +79,19 @@ public:
 
     const af::dim4& offsets() const     { return dim_offsets;           }
 
-    const af::dim4& strides()    const  { return dim_strides;           }
+    const af::dim4& strides() const     { return dim_strides;           }
 
     size_t elements() const             { return dim_size.elements();   }
     size_t ndims() const                { return dim_size.ndims();      }
     const af::dim4& dims() const        { return dim_size;              }
 
-    int getDevId() const { return devId; }
+    int getDevId() const;
 
-    void setId(int id) const { const_cast<ArrayInfo *>(this)->setId(id); }
-    void setId(int id) { devId = id; }
+    void setId(int id) const;
+
+    void setId(int id);
+
+    af_backend getBackendId() const;
 
     void resetInfo(const af::dim4& dims)
     {
