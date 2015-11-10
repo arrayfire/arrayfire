@@ -45,6 +45,7 @@ af_err af_get_available_backends(int* result)
 af_err af_get_backend_id(af_backend *result, const af_array in)
 {
     try {
+        ARG_ASSERT(1, in != 0);
         ArrayInfo info = getInfo(in);
         *result = info.getBackendId();
     } CATCHALL;

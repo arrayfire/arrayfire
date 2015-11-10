@@ -203,6 +203,13 @@ bool checkArray(af_backend activeBackend, af_array a)
     // Convert af_array into int to retrieve the backend info.
     // See ArrayInfo.hpp for more
     af_backend backend = (af_backend)0;
+
+    // This condition is required so that the invalid args tests for unified
+    // backend return the expected error rather than AF_ERR_ARR_BKND_MISMATCH
+    // Since a = 0, does not have a backend specified, it should be a
+    // AF_ERR_ARG instead of AF_ERR_ARR_BKND_MISMATCH
+    if(a == 0) return true;
+
     unified::AFSymbolManager::getInstance().call("af_get_backend_id", &backend, a);
     return backend == activeBackend;
 }
