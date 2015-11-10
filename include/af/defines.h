@@ -355,6 +355,13 @@ typedef enum {
 #endif
 
 #if AF_API_VERSION >= 32
+typedef enum {
+    AF_HOMOGRAPHY_RANSAC = 0,   ///< Computes homography using RANSAC
+    AF_HOMOGRAPHY_LMEDS  = 1    ///< Computes homography using Least Median of Squares
+} af_homography_type;
+#endif
+
+#if AF_API_VERSION >= 32
 // These enums should be 2^x
 typedef enum {
     AF_BACKEND_DEFAULT = 0,  ///< Default backend order: OpenCL -> CUDA -> CPU
