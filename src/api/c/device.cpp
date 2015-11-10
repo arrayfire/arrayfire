@@ -42,6 +42,15 @@ af_err af_get_available_backends(int* result)
     return AF_SUCCESS;
 }
 
+af_err af_get_backend_id(af_backend *result, const af_array in)
+{
+    try {
+        ArrayInfo info = getInfo(in);
+        *result = info.getBackendId();
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
 af_err af_init()
 {
     try {

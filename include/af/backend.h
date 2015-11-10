@@ -38,6 +38,15 @@ AFAPI af_err af_get_backend_count(unsigned* num_backends);
  */
 AFAPI af_err af_get_available_backends(int* backends);
 
+/**
+   \param[out] backend takes one of the values of enum \ref af_backend
+   \param[in] in is the array who's backend is to be queried
+   \returns \ref af_err error code
+
+   \ingroup unified_func_getbackendid
+ */
+AFAPI af_err af_get_backend_id(af_backend *backend, const af_array in);
+
 #ifdef __cplusplus
 }
 #endif
@@ -45,6 +54,7 @@ AFAPI af_err af_get_available_backends(int* backends);
 #ifdef __cplusplus
 namespace af
 {
+class array;
 
 /**
    \param[in] bknd takes one of the values of enum \ref af_backend
@@ -66,6 +76,14 @@ AFAPI unsigned getBackendCount();
    \ingroup unified_func_getavailbackends
  */
 AFAPI int getAvailableBackends();
+
+/**
+   \param[in] in is the array who's backend is to be queried
+   \returns \ref af_backend which is the backend on which the array is created
+
+   \ingroup unified_func_getbackendid
+ */
+AFAPI af::Backend getBackendId(const array &in);
 
 }
 #endif

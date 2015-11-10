@@ -202,8 +202,9 @@ bool checkArray(af_backend activeBackend, af_array a)
 {
     // Convert af_array into int to retrieve the backend info.
     // See ArrayInfo.hpp for more
-    int* a_ = reinterpret_cast<int*>(a);
-    return (*a_ >> 3) == activeBackend;
+    af_backend backend = (af_backend)0;
+    unified::AFSymbolManager::getInstance().call("af_get_backend_id", &backend, a);
+    return backend == activeBackend;
 }
 
 bool checkArrays(af_backend activeBackend)

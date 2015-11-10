@@ -28,6 +28,13 @@ af_err af_get_available_backends(int* result)
     return AF_SUCCESS;
 }
 
+af_err af_get_backend_id(af_backend *result, const af_array in)
+{
+    // DO NOT CALL CHECK_ARRAYS HERE.
+    // IT WILL RESULT IN AN INFINITE RECURSION
+    return CALL(result, in);
+}
+
 af_err af_info()
 {
     return CALL_NO_PARAMS();
