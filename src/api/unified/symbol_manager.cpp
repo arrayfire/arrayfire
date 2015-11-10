@@ -15,6 +15,9 @@
 using std::string;
 using std::replace;
 
+namespace unified
+{
+
 static const string LIB_AF_BKND_NAME[NUM_BACKENDS] = {"cpu", "cuda", "opencl"};
 #if defined(OS_WIN)
 static const string LIB_AF_BKND_PREFIX = "af";
@@ -144,6 +147,7 @@ AFSymbolManager::AFSymbolManager()
         bkndHandles[backend] = openDynLibrary(backend);
         if (bkndHandles[backend]) {
             activeHandle = bkndHandles[backend];
+            activeBackend = (af_backend)order[i];
             numBackends++;
             backendsAvailable += order[i];
         }
@@ -152,6 +156,7 @@ AFSymbolManager::AFSymbolManager()
     // inorder to use it in ::setBackend when
     // the user passes AF_BACKEND_DEFAULT
     defaultHandle = activeHandle;
+    defaultBackend = activeBackend;
 }
 
 AFSymbolManager::~AFSymbolManager()
@@ -178,15 +183,33 @@ af_err AFSymbolManager::setBackend(af::Backend bknd)
     if (bknd==AF_BACKEND_DEFAULT) {
         if (defaultHandle) {
             activeHandle = defaultHandle;
+            activeBackend = defaultBackend;
             return AF_SUCCESS;
         } else
             return AF_ERR_LOAD_LIB;
     }
-    unsigned idx = bknd - 1;
+    int idx = bknd >> 1;    // Convert 1, 2, 4 -> 0, 1, 2
     if(bkndHandles[idx]) {
         activeHandle = bkndHandles[idx];
+        activeBackend = bknd;
         return AF_SUCCESS;
     } else {
         return AF_ERR_LOAD_LIB;
     }
 }
+
+bool checkArray(af_backend activeBackend, af_array a)
+{
+    // Convert af_array into int to retrieve the backend info.
+    // See ArrayInfo.hpp for more
+    int* a_ = reinterpret_cast<int*>(a);
+    return (*a_ >> 3) == activeBackend;
+}
+
+bool checkArrays(af_backend activeBackend)
+{
+    // Dummy
+    return true;
+}
+
+} // namespace unified
