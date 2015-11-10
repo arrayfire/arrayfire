@@ -167,11 +167,10 @@ switching of backends.
 
 ### Don't: Do not use arrays between different backends
 
-ArrayFire does not track associations between array objects and the backends
-they were created on. Hence, there will be no compiler errors when an array
-created on one backend is used on another. But this is not allowed and will
-result in exceptions and/or segmenation faults. An example of this is as
-follows.
+ArrayFire checks the input arrays to functions for mismatches with the active
+backend. If an array created on one backend, but used when another backend is
+set to active, an exception with code 503 (`AF_ERR_ARR_BKND_MISMATCH`) is
+thrown.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.c}
 #include <arrayfire.h>
