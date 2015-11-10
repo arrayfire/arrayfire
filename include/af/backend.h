@@ -44,6 +44,7 @@ AFAPI af_err af_get_backend_count(unsigned* num_backends);
 AFAPI af_err af_get_available_backends(int* backends);
 #endif
 
+#if AF_API_VERSION >= 32
 /**
    \param[out] backend takes one of the values of enum \ref af_backend
    \param[in] in is the array who's backend is to be queried
@@ -52,6 +53,7 @@ AFAPI af_err af_get_available_backends(int* backends);
    \ingroup unified_func_getbackendid
  */
 AFAPI af_err af_get_backend_id(af_backend *backend, const af_array in);
+#endif
 
 #ifdef __cplusplus
 }
@@ -89,6 +91,7 @@ AFAPI unsigned getBackendCount();
 AFAPI int getAvailableBackends();
 #endif
 
+#if AF_API_VERSION >= 32
 /**
    \param[in] in is the array who's backend is to be queried
    \returns \ref af_backend which is the backend on which the array is created
@@ -96,6 +99,7 @@ AFAPI int getAvailableBackends();
    \ingroup unified_func_getbackendid
  */
 AFAPI af::Backend getBackendId(const array &in);
+#endif
 
 }
 #endif
