@@ -1369,3 +1369,20 @@ TEST(Asssign, LinearIndexGenArr)
         ASSERT_EQ(ha[i + st], hout[i]);
     }
 }
+
+TEST(Index, OutOfBounds)
+{
+    using af::array;
+
+    uint gold[7] = {0, 9, 49, 119, 149, 149, 148};
+    uint h_idx[7] = {0, 9, 49, 119, 149, 150, 151};
+    uint output[7];
+
+    array a = af::iota(af::dim4(50, 1, 3)).as(s32);
+    array idx(7, h_idx);
+    array b = a(idx);
+    b.host((void*)output);
+
+    for(int i=0; i<7; ++i)
+        ASSERT_EQ(gold[i], output[i]);
+}

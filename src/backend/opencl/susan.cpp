@@ -51,14 +51,20 @@ unsigned susan(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
     bufferFree(resp);
 
     const unsigned corners_out = std::min(corners_found, corner_lim);
-    if (corners_out == 0)
+    if (corners_out == 0) {
+        bufferFree(x_corners);
+        bufferFree(y_corners);
+        bufferFree(resp_corners);
+        x_out    = createEmptyArray<float>(dim4());
+        y_out    = createEmptyArray<float>(dim4());
+        resp_out = createEmptyArray<float>(dim4());
         return 0;
-
-    x_out = createDeviceDataArray<float>(dim4(corners_out), (void*)((*x_corners)()));
-    y_out = createDeviceDataArray<float>(dim4(corners_out), (void*)((*y_corners)()));
-    resp_out = createDeviceDataArray<float>(dim4(corners_out), (void*)((*resp_corners)()));
-
-    return corners_out;
+    } else {
+        x_out    = createDeviceDataArray<float>(dim4(corners_out), (void*)((*x_corners)()));
+        y_out    = createDeviceDataArray<float>(dim4(corners_out), (void*)((*y_corners)()));
+        resp_out = createDeviceDataArray<float>(dim4(corners_out), (void*)((*resp_corners)()));
+        return corners_out;
+    }
 }
 
 #define INSTANTIATE(T) \
