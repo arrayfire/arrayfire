@@ -78,6 +78,8 @@ class DeviceManager
         unsigned mActiveQId;
 };
 
+int getBackend();
+
 std::string getInfo();
 
 int getDeviceCount();

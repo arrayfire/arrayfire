@@ -23,15 +23,7 @@ using namespace detail;
 af_err af_set_backend(const af_backend bknd)
 {
     try {
-#if defined(AF_CPU)
-    ARG_ASSERT(0, bknd==AF_BACKEND_CPU);
-#endif
-#if defined(AF_CUDA)
-    ARG_ASSERT(0, bknd==AF_BACKEND_CUDA);
-#endif
-#if defined(AF_OPENCL)
-    ARG_ASSERT(0, bknd==AF_BACKEND_OPENCL);
-#endif
+        ARG_ASSERT(0, bknd==getBackend());
     }
     CATCHALL;
 
@@ -46,13 +38,17 @@ af_err af_get_backend_count(unsigned* num_backends)
 
 af_err af_get_available_backends(int* result)
 {
-#if defined(AF_CPU)
-    *result = AF_BACKEND_CPU;
-#elif defined(AF_CUDA)
-    *result = AF_BACKEND_CUDA;
-#elif defined(AF_OPENCL)
-    *result = AF_BACKEND_OPENCL;
-#endif
+    *result = getBackend();
+    return AF_SUCCESS;
+}
+
+af_err af_get_backend_id(af_backend *result, const af_array in)
+{
+    try {
+        ARG_ASSERT(1, in != 0);
+        ArrayInfo info = getInfo(in);
+        *result = info.getBackendId();
+    } CATCHALL;
     return AF_SUCCESS;
 }
 
@@ -144,9 +140,12 @@ af_err af_device_array(af_array *arr, const void *data,
         AF_CHECK(af_init());
 
         af_array res;
-        af::dim4 d((size_t)dims[0]);
-        for(unsigned i = 1; i < ndims; i++) {
+
+        DIM_ASSERT(1, ndims >= 1);
+        dim4 d(1, 1, 1, 1);
+        for(unsigned i = 0; i < ndims; i++) {
             d[i] = dims[i];
+            DIM_ASSERT(3, dims[i] >= 1);
         }
 
         switch (type) {

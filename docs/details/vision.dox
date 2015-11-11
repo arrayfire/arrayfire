@@ -170,6 +170,30 @@ Template matching is an image processing technique to find small patches of an i
 match a given template image. A more in depth discussion on the topic can be found
 [here](http://en.wikipedia.org/wiki/Template_matching).
 
+=======================================================================
+
+\defgroup cv_func_homography homography
+\ingroup homography_mat
+
+\brief Homography Estimation
+
+Homography estimation find a perspective transform between two sets of 2D points.
+Currently, two methods are supported for the estimation, RANSAC (RANdom SAmple Consensus)
+and LMedS (Least Median of Squares). Both methods work by randomly selecting a subset
+of 4 points of the set of source points, computing the eigenvectors of that set and
+finding the perspective transform. The process is repeated several times, a maximum of
+times given by the value passed to the iterations arguments for RANSAC (for the CPU
+backend, usually less than that, depending on the quality of the dataset, but for CUDA
+and OpenCL backends the transformation will be computed exactly the amount of times
+passed via the iterations parameter), the returned value is the one that matches the
+best number of inliers, which are all of the points that fall within a maximum L2
+distance from the value passed to the inlier_thr argument. For the LMedS case, the
+number of iterations is currently hardcoded to meet the following equation:
+
+\f$ m = \frac{log(1 - P)}{log[1 - {(1 - \epsilon)}^{p}]}\f$,
+
+where \f$ P = 0.99\f$, \f$ \epsilon = 40\%\f$ and \f$ p = 4\f$.
+
 
 
 @}

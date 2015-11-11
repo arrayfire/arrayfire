@@ -172,6 +172,11 @@ CPUInfo::CPUInfo()
 namespace cpu
 {
 
+int getBackend()
+{
+    return AF_BACKEND_CPU;
+}
+
 static const std::string get_system(void)
 {
     std::string arch = (sizeof(void *) == 4) ? "32-bit " : "64-bit ";
