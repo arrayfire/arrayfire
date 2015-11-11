@@ -2,30 +2,272 @@ Matrix Manipulation {#matrixmanipulation}
 ===================
 
 Many different kinds of [matrix manipulation routines](\ref manip_mat) are available:
-* tile() to repeat a matrix along dimensions
-* join() to concatenate two matrices along a dimension
+* flat() - flatten an array to one dimension
+* flip() - flip an array along a dimension
+* join() - join up to 4 arrays
+* moddims() - change the dimensions of an array without changing the data
+* reorder() - changes the dimension order within the array
+* shift() - shifts data along a dimension
+* tile() - repeats an array along a dimension
+* transpose() - performs a matrix transpose
 * [array()](\ref af::array) to adjust the dimensions of an array
-* [transpose](\ref af::array::T) a matrix or vector
+* [transpose](\ref af::array::T) a matrix or vector with shorthand notation
 
-tile() allows you to repeat a matrix along specified
-dimensions, effectively 'tiling' the matrix.  Please note that the
-dimensions passed in indicate the number of times to replicate the
-matrix in each dimension, not the final dimensions of the matrix.
+### flat()
+The __flat()__ function flattens an array to one dimension.
+```
+a [3 3 1 1]
+    1.0000     4.0000     7.0000
+    2.0000     5.0000     8.0000
+    3.0000     6.0000     9.0000
 
-\snippet test/matrix_manipulation.cpp ex_matrix_manipulation_tile
+flat(a) [9 1 1 1]
+    1.0000
+    2.0000
+    3.0000
+    4.0000
+    5.0000
+    6.0000
+    7.0000
+    8.0000
+    9.0000
 
-join() allows you to joining two matrices together.  Matrix
-dimensions must match along every dimension except the dimension
-of joining (dimensions are 0-indexed). For example, a 2x3 matrix
-can be joined with a 2x4 matrix along dimension 1, but not along
-dimension 0 since {3,4} don`t match up.
+```
+The flat function has the following overloads:
+* __array af::flat(const array& in)__ -- flatten an array
+* __af_err af_flat(af_array* out, const af_array in)__ -- C interface for flat() function
 
-\snippet test/matrix_manipulation.cpp ex_matrix_manipulation_join
 
-Construct a regular mesh grid from vectors `x` and `y`. For example, a
-mesh grid of the vectors {1,2,3,4} and {5,6} would result in two matrices:
+### flip()
+The __flip()__ function flips the contents of an array along a chosen dimension.
+```
+a [5 2 1 1]
+    1.0000     6.0000
+    2.0000     7.0000
+    3.0000     8.0000
+    4.0000     9.0000
+    5.0000    10.0000
 
-\snippet test/matrix_manipulation.cpp ex_matrix_manipulation_mesh
+flip(a, 0) [5 2 1 1]
+    5.0000    10.0000
+    4.0000     9.0000
+    3.0000     8.0000
+    2.0000     7.0000
+    1.0000     6.0000
+
+flip(a, 1) [5 2 1 1]
+    6.0000     1.0000
+    7.0000     2.0000
+    8.0000     3.0000
+    9.0000     4.0000
+   10.0000     5.0000
+```
+The flip function has the following overloads:
+* __array af::flip(const array &in, const unsigned dim)__ -- flips an array along a dimension 
+* __af_err af_flip(af_array *out, const af_array in, const unsigned dim)__ -- C interface for flip()
+
+### join()
+The __join()__ function can join up to 4 arrays together.
+```
+a [5 1 1 1]
+    1.0000
+    2.0000
+    3.0000
+    4.0000
+    5.0000
+
+join(0, a, a) [10 1 1 1]
+    1.0000
+    2.0000
+    3.0000
+    4.0000
+    5.0000
+    1.0000
+    2.0000
+    3.0000
+    4.0000
+    5.0000
+
+join(1, a, a) [5 2 1 1]
+    1.0000     1.0000
+    2.0000     2.0000
+    3.0000     3.0000
+    4.0000     4.0000
+    5.0000     5.0000
+```
+The join function has several overloads:
+* __array af::join(const int dim, const array &first, const array &second)__ -- Joins 2 arrays along a dimension
+
+* __array af::join(const int dim, const array &first, const array &second, const array &third)__ -- Joins 3 arrays along a dimension.
+
+* __array af::join(const int dim, const array &first, const array &second, const array &third, const array &fourth)__ -- Joins 4 arrays along a dimension
+
+* __af_err af_join(af_array *out, const int dim, const af_array first, const af_array second)__ -- C interface function to join 2 arrays along a dimension
+
+* __af_err af_join_many(af_array *out, const int dim, const unsigned n_arrays, const af_array *inputs)__ -- C interface function to join up to 10 arrays along a dimension
+
+### moddims()
+The __moddims()__ function changes the dimensions of an array without changing its data or order. It is important to remember that the function only modifies the _metadata_ associated with the array and does not actually modify the content of the array.
+```
+a [8 1 1 1]
+    1.0000
+    2.0000
+    1.0000
+    2.0000
+    1.0000
+    2.0000
+    1.0000
+    2.0000
+
+af::dim4 new_dims(2, 4);
+moddims(a, new_dims) [2 4 1 1]
+    1.0000     1.0000     1.0000     1.0000
+    2.0000     2.0000     2.0000     2.0000
+
+moddims(a, a.elements(), 1, 1, 1) [8 1 1 1]
+    1.0000
+    2.0000
+    1.0000
+    2.0000
+    1.0000
+    2.0000
+    1.0000
+    2.0000
+```
+The moddims function has several overloads:
+* __array af::moddims(const array &in, const unsigned ndims, const dim_t *const dims)__ -- mods number of dimensions to match _ndims_ as specidied in the array _dims_
+* __array af::moddims(const array &in, const dim4 &dims)__ -- mods dimensions as specified by _dims_
+* __array af::moddims(const array &in, const dim_t d0, const dim_t d1=1, const dim_t d2=1, const dim_t d3=1)__ -- mods dimensions of an array
+* __af_err af_moddims(af_array *out, const af_array in, const unsigned ndims, const dim_t *const dims)__ -- C interface to mod dimensions of an array
+
+### reorder()
+The __reorder()__ function changes the order of the dimensions within the array. This actually alters the underlying data of the array.
+```
+a [2 2 3 1]
+    1.0000     3.0000
+    2.0000     4.0000
+
+    1.0000     3.0000
+    2.0000     4.0000
+
+    1.0000     3.0000
+    2.0000     4.0000
+
+
+reorder(a, 1, 0, 2) [2 2 3 1]  //equivalent to a transpose
+    1.0000     2.0000
+    3.0000     4.0000
+
+    1.0000     2.0000
+    3.0000     4.0000
+
+    1.0000     2.0000
+    3.0000     4.0000
+
+
+reorder(a, 2, 0, 1) [3 2 2 1]
+    1.0000     2.0000
+    1.0000     2.0000
+    1.0000     2.0000
+
+    3.0000     4.0000
+    3.0000     4.0000
+    3.0000     4.0000
+```
+The reorder function the following several overloads:
+* __array af::reorder(const array &in, const unsigned x, const unsigned y=1, const unsigned z=2, const unsigned w=3)__ -- Reorders dimensions of an array
+
+* __af_err af_reorder(af_array *out, const af_array in, const unsigned x, const unsigned y, const unsigned z, const unsigned w)__ -- C interface for reordering function
+
+### shift()
+The __shift()__ function shifts data in a circular buffer fashion along a chosen dimension.
+```
+a [3 5 1 1]
+    0.0000     0.0000     0.0000     0.0000     0.0000
+    3.0000     4.0000     5.0000     1.0000     2.0000
+    3.0000     4.0000     5.0000     1.0000     2.0000
+
+shift(a, 0, 2 ) [3 5 1 1]
+    0.0000     0.0000     0.0000     0.0000     0.0000
+    1.0000     2.0000     3.0000     4.0000     5.0000
+    1.0000     2.0000     3.0000     4.0000     5.0000
+
+shift(a, -1, 2 ) [3 5 1 1]
+    1.0000     2.0000     3.0000     4.0000     5.0000
+    1.0000     2.0000     3.0000     4.0000     5.0000
+    0.0000     0.0000     0.0000     0.0000     0.0000
+```
+The shift function has the following overloads:
+* __array af::shift(const array &in, const int x, const int y=0, const int z=0, const int w=0)__ -- Shifts array along specified dimensions
+
+* __af_err af_shift(af_array *out, const af_array in, const int x, const int y, const int z, const int w)__ -- C interface for shifting an array
+
+### tile()
+The __tile()__ function repeats an array along a dimension
+```
+a [3 1 1 1]
+    1.0000
+    2.0000
+    3.0000
+
+tile(a, 2) [6 1 1 1]
+    1.0000
+    2.0000
+    3.0000
+    1.0000
+    2.0000
+    3.0000
+
+tile(a, 2, 2) [6 2 1 1]
+    1.0000     1.0000
+    2.0000     2.0000
+    3.0000     3.0000
+    1.0000     1.0000
+    2.0000     2.0000
+    3.0000     3.0000
+
+af::dim4 tile_dims(1, 2, 3);
+tile(a, tile_dims) [3 2 3 1]
+    1.0000     1.0000
+    2.0000     2.0000
+    3.0000     3.0000
+
+    1.0000     1.0000
+    2.0000     2.0000
+    3.0000     3.0000
+
+    1.0000     1.0000
+    2.0000     2.0000
+    3.0000     3.0000
+
+```
+The tile function has several overloads:
+* __array af::tile(const array &in, const unsigned x, const unsigned y=1, const unsigned z=1, const unsigned w=1)__  --  Tiles array along specified dimensions
+* __array af::tile(const array &in, const dim4 &dims)__  --  Tile an array according to a dim4 object
+* __af_err af_tile(af_array *out, const af_array in, const unsigned x, const unsigned y, const unsigned z, const unsigned w)__  --  C interface for tiling an array
+
+### transpose()
+The __transpose()__ function performs a standard matrix transpose. The input array must have the dimensions of a 2D-matrix.
+```
+a [3 3 1 1]
+    1.0000     3.0000     3.0000
+    2.0000     1.0000     3.0000
+    2.0000     2.0000     1.0000
+
+transpose(a) [3 3 1 1]
+    1.0000     2.0000     2.0000
+    3.0000     1.0000     2.0000
+    3.0000     3.0000     1.0000
+
+```
+The transpose function has several overloads:
+* __array af::transpose(const array &in, const bool conjugate=false)__ -- Transposes a matrix.
+
+* __void af::transposeInPlace(array &in, const bool conjugate=false)__ -- Transposes a matrix in-place.
+
+* __af_err af_transpose(af_array *out, af_array in, const bool conjugate)__ -- C interface to transpose a matrix.
+
+* __af_err af_transpose_inplace(af_array in, const bool conjugate)__ -- C interface to transpose a matrix in-place.
 
 [array()](\ref af::array) can be used to create a (shallow) copy of a matrix
 with different dimensions.  The number of elements must remain the same as
@@ -37,3 +279,25 @@ The [T()](\ref af::array::T) and [H()](\ref af::array::H) methods can be
 used to form the [matrix or vector transpose](\ref af::array::T) .
 
 \snippet test/matrix_manipulation.cpp ex_matrix_manipulation_transpose
+
+### Combining re-ordering functions to enumerate grid coordinates
+By using a combination of the array restructuring functions, we can quickly code complex manipulation patterns with a few lines of code. For example, consider generating _(x,y)_ coordinates for a grid where each axis goes from *1 to n*. Instead of using several loops to populate our arrays we can just use a small combination of the above functions.
+```
+unsigned n=3;
+af::array xy = join(1
+                tile(seq(1, n), n)
+                flat( transpose(tile(seq(1, n), 1, n)) )
+                   );
+xy [9 2 1 1]
+    1.0000     1.0000
+    2.0000     1.0000
+    3.0000     1.0000
+    1.0000     2.0000
+    2.0000     2.0000
+    3.0000     2.0000
+    1.0000     3.0000
+    2.0000     3.0000
+    3.0000     3.0000
+```
+### Conclusion
+Functions provided by arrayfire offer ease and flexibility for efficiently manipulating the structure of arrays. The provided functions can be used as building blocks to generate, shift, or prepare data to any form imaginable!
