@@ -397,7 +397,6 @@ __kernel void compute_median(
 
     l_median[tid] = FLT_MAX;
     l_idx[tid] = 0;
-    barrier(CLK_LOCAL_MEM_FENCE);
 
     if (i < iterations) {
         const int nsamples = eInfo.dims[0];

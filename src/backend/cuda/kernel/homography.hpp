@@ -435,7 +435,6 @@ __global__ void computeMedian(
 
     s_median[tid] = FLT_MAX;
     s_idx[tid] = 0;
-    __syncthreads();
 
     if (i < iterations) {
         const int nsamples = err.dims[0];
