@@ -47,6 +47,8 @@ class AFAPI Window {
         /**
            Creates a window object with default width
            and height with title set to "ArrayFire"
+
+           \ingroup gfx_func_window
          */
         Window();
 
@@ -55,6 +57,8 @@ class AFAPI Window {
            and height using the title provided by the user
 
            \param[in] title is the window title
+
+           \ingroup gfx_func_window
          */
         Window(const char* const title);
 
@@ -65,6 +69,8 @@ class AFAPI Window {
            \param[in] width is the window width
            \param[in] height is the window height
            \param[in] title is the window title with default value as "ArrayFire"
+
+           \ingroup gfx_func_window
          */
         Window(const int width, const int height, const char* const title="ArrayFire");
 
@@ -74,10 +80,14 @@ class AFAPI Window {
 
            \param[in] wnd is an \ref af_window handle which can be retrieved by
            doing a get call on any \ref Window object
+
+           \ingroup gfx_func_window
          */
         Window(const af_window wnd);
         /**
            Destroys the window handle
+
+           \ingroup gfx_func_window
          */
         ~Window();
 
@@ -85,6 +95,8 @@ class AFAPI Window {
 
         /**
            \return Returns the \ref af_window window handle.
+
+           \ingroup gfx_func_window
          */
         af_window get() const { return wnd; }
 
@@ -93,6 +105,8 @@ class AFAPI Window {
 
            \param[in] x is horizontal coordinate
            \param[in] y is vertical coordinate
+
+           \ingroup gfx_func_window
          */
         void setPos(const unsigned x, const unsigned y);
 
@@ -100,6 +114,8 @@ class AFAPI Window {
            Set the window title
 
            \param[in] title is the window title
+
+           \ingroup gfx_func_window
          */
         void setTitle(const char* const title);
 
@@ -109,6 +125,8 @@ class AFAPI Window {
 
            \param[in]   w is target width of the window
            \param[in]   h is target height of the window
+
+           \ingroup gfx_func_window
          */
         void setSize(const unsigned w, const unsigned h);
 #endif
@@ -117,6 +135,8 @@ class AFAPI Window {
            Set the colormap to be used for subsequent rendering calls
 
            \param[in] cmap should be one of the enum values from \ref ColorMap
+
+           \ingroup gfx_func_window
          */
         void setColorMap(const ColorMap cmap);
 
@@ -127,6 +147,8 @@ class AFAPI Window {
            \param[in] title parameter is used when this function is called in grid mode
 
            \note \p in should be 2d array or 3d array with 3 channels.
+
+           \ingroup gfx_func_draw
          */
         void image(const array& in, const char* title=NULL);
 
@@ -138,6 +160,8 @@ class AFAPI Window {
            \param[in] title parameter is used when this function is called in grid mode
 
            \note \p in should be 1d array of size 3n or 2d array with (3 x n) or (n x 3) channels.
+
+           \ingroup gfx_func_draw
          */
         void plot3(const array& in, const char* title=NULL);
 #endif
@@ -150,6 +174,8 @@ class AFAPI Window {
            \param[in] title parameter is used when this function is called in grid mode
 
            \note \p X and \p Y should be vectors.
+
+           \ingroup gfx_func_draw
          */
 
         void plot(const array& X, const array& Y, const char* const title=NULL);
@@ -163,6 +189,8 @@ class AFAPI Window {
            \param[in] title parameter is used when this function is called in grid mode
 
            \note \p X should be a vector.
+
+           \ingroup gfx_func_draw
          */
         void hist(const array& X, const double minval, const double maxval, const char* const title=NULL);
 
@@ -174,6 +202,8 @@ class AFAPI Window {
            \param[in] title parameter is used when this function is called in grid mode
 
            \note \p S should be a 2D array
+
+           \ingroup gfx_func_draw
          */
         void surface(const array& S, const char* const title);
 #endif
@@ -188,6 +218,8 @@ class AFAPI Window {
            \param[in] title parameter is used when this function is called in grid mode
 
            \note \p X and \p Y should be vectors or 2D arrays \p S should be s 2D array
+
+           \ingroup gfx_func_draw
          */
         void surface(const array& xVals, const array& yVals, const array& S, const char* const title);
 #endif
@@ -197,12 +229,16 @@ class AFAPI Window {
 
            \param[in]   rows is number of rows you want to show in a window
            \param[in]   cols is number of coloumns you want to show in a window
+
+           \ingroup gfx_func_window
         */
         void grid(const int rows, const int cols);
 
         /**
            This function swaps the background buffer to current view
            and polls for any key strokes while the window was in focus
+
+           \ingroup gfx_func_window
         */
         void show();
 
@@ -212,6 +248,8 @@ class AFAPI Window {
 
            \return     \ref AF_SUCCESS if window show is successful, otherwise an appropriate error code
            is returned.
+
+           \ingroup gfx_func_window
         */
         bool close();
 
@@ -224,6 +262,8 @@ class AFAPI Window {
 
            \return a reference to the object pointed by this
            to enable cascading this call with rendering functions.
+
+           \ingroup gfx_window_func
          */
         inline Window& operator()(const int r, const int c) {
             _r = r; _c = c;
@@ -249,7 +289,7 @@ extern "C" {
    \return     \ref AF_SUCCESS if window creation is successful, otherwise an appropriate error code
    is returned.
 
-   \ingroup gfx_window_func
+   \ingroup gfx_func_window
 */
 AFAPI af_err af_create_window(af_window *out, const int width, const int height, const char* const title);
 
@@ -387,7 +427,6 @@ AFAPI af_err af_draw_hist(const af_window wind, const af_array X, const double m
 
    \ingroup gfx_func_draw
 */
-
 af_err af_draw_surface(const af_window wind, const af_array xVals, const af_array yVals, const af_array S, const af_cell* const props);
 #endif
 
