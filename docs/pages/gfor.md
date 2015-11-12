@@ -75,14 +75,6 @@ gfor (seq k, 0, n-1) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-array A = constant(1,n,n,m);
-array B = constant(1,n,n);
-gfor (seq k, 0,m-1) {
-   A(span,span,k) = A(span,span,k) * B; // matrix-matrix multiply
-}
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 array A = randu(n,m);
 array B = constant(0,n,m);
 gfor (seq k, 0, m-1) {
@@ -120,30 +112,6 @@ float ep = 2.35;
 array H = constant(0,m,n);
 gfor (seq ii, n)
   H(span,ii) = compute(A(span,ii), B(span,ii), ep);
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Multiplications {#gfor_mul}
----------------
-
-ArrayFire supports bulk multiplications of vector-vector, matrix-vector, and
-matrix-matrix types using GFOR. This is especially useful with many small
-matrices.
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-array A = constant(1,n,n);
-array B = constant(1,n,1);
-array C = constant(0,n,m);
-gfor (seq k, n)
-  B(k) = A(k,span) * A(span,k); // vector-vector multiply
-
-A = constant(1,n,n,m);
-gfor (seq k, m)
-  C(span,k) = A(span,span,k) * B;  // matrix-vector multiply
-
-A = constant(1,n,n,m);
-B = constant(1,n,n);
-gfor (seq k, m)
-  A(span,span,k) = A(span,span,k) * B;  // matrix-matrix multiply
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Iterator {#gfor_iterator}
