@@ -15,5 +15,11 @@
 \brief Copy and write values in the locations specified by the sequences
 
 \ingroup index_mat
+
+\defgroup index_func_util util
+
+\brief Utility functions to create objects of type \ref af_index_t
+
+\ingroup index_mat
 @}
 */

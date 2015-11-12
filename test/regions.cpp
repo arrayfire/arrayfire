@@ -33,7 +33,7 @@ class Regions : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, int, unsigned> TestTypes;
+typedef ::testing::Types<float, double, int, unsigned, short, ushort> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Regions, TestTypes);

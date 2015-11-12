@@ -39,8 +39,7 @@ fg::Histogram* setup_histogram(const af_array in, const double minval, const dou
     /* set x axis limits to maximum and minimum values of data
      * and y axis limits to range [0, nBins]*/
     hist->setAxesLimits(maxval, minval, double(freqMax), 0.0f);
-    hist->setXAxisTitle("Bins");
-    hist->setYAxisTitle("Frequency");
+    hist->setAxesTitles("Bins", "Frequency");
 
     copy_histogram<T>(histogramInput, hist);
 
@@ -71,6 +70,8 @@ af_err af_draw_hist(const af_window wind, const af_array X, const double minval,
             case f32: hist = setup_histogram<float  >(X, minval, maxval); break;
             case s32: hist = setup_histogram<int    >(X, minval, maxval); break;
             case u32: hist = setup_histogram<uint   >(X, minval, maxval); break;
+            case s16: hist = setup_histogram<short  >(X, minval, maxval); break;
+            case u16: hist = setup_histogram<ushort >(X, minval, maxval); break;
             case u8 : hist = setup_histogram<uchar  >(X, minval, maxval); break;
             default:  TYPE_ERROR(1, Xtype);
         }

@@ -90,6 +90,29 @@ before using it, make sure you have the appropriate permission to do so.
 
 =======================================================================
 
+\defgroup cv_func_gloh gloh
+\ingroup featdescriptor_mat
+
+\brief SIFT feature detector and GLOH descriptor extractor
+
+Detects features using the Scale Invariant Feature Transform (SIFT),
+by David Lowe. Descriptors are extracted using Gradient Location and
+Orientation Histogram (GLOH).
+
+Lowe, D. G., "Distinctive Image Features from Scale-Invariant Keypoints",
+International Journal of Computer Vision, 60, 2, pp. 91-110, 2004.
+
+Mikolajczyk, K., and Schmid, C., "A performance evaluation of local
+descriptors", IEEE Transactions on Pattern Analysis and Machine Intelligence,
+10, 27, pp. 1615-1630, 2005.
+
+WARNING: Although GLOH is free of patents, the SIFT algorithm, used to detect
+features that will later be used by GLOH descriptors, is patented by the
+University of British Columbia, before using it, make sure you have the
+appropriate permission to do so.
+
+=======================================================================
+
 \defgroup cv_func_hamming_matcher hammingMatcher
 \ingroup featmatcher_mat
 
@@ -146,6 +169,30 @@ from the other and returns the result.
 Template matching is an image processing technique to find small patches of an image which
 match a given template image. A more in depth discussion on the topic can be found
 [here](http://en.wikipedia.org/wiki/Template_matching).
+
+=======================================================================
+
+\defgroup cv_func_homography homography
+\ingroup homography_mat
+
+\brief Homography Estimation
+
+Homography estimation find a perspective transform between two sets of 2D points.
+Currently, two methods are supported for the estimation, RANSAC (RANdom SAmple Consensus)
+and LMedS (Least Median of Squares). Both methods work by randomly selecting a subset
+of 4 points of the set of source points, computing the eigenvectors of that set and
+finding the perspective transform. The process is repeated several times, a maximum of
+times given by the value passed to the iterations arguments for RANSAC (for the CPU
+backend, usually less than that, depending on the quality of the dataset, but for CUDA
+and OpenCL backends the transformation will be computed exactly the amount of times
+passed via the iterations parameter), the returned value is the one that matches the
+best number of inliers, which are all of the points that fall within a maximum L2
+distance from the value passed to the inlier_thr argument. For the LMedS case, the
+number of iterations is currently hardcoded to meet the following equation:
+
+\f$ m = \frac{log(1 - P)}{log[1 - {(1 - \epsilon)}^{p}]}\f$,
+
+where \f$ P = 0.99\f$, \f$ \epsilon = 40\%\f$ and \f$ p = 4\f$.
 
 
 

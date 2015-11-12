@@ -36,6 +36,28 @@ INSTANTIATE(cdouble)
 
 }
 
+#elif defined(WITH_CPU_LINEAR_ALGEBRA)
+#include <cpu_lapack/cpu_inverse.hpp>
+
+namespace cuda
+{
+
+template<typename T>
+Array<T> inverse(const Array<T> &in)
+{
+    return cpu::inverse(in);
+}
+
+#define INSTANTIATE(T)                                                                   \
+    template Array<T> inverse<T> (const Array<T> &in);
+
+INSTANTIATE(float)
+INSTANTIATE(cfloat)
+INSTANTIATE(double)
+INSTANTIATE(cdouble)
+
+}
+
 #else
 namespace cuda
 {

@@ -74,6 +74,11 @@ static const std::string get_system(void)
 #endif
 }
 
+int getBackend()
+{
+    return AF_BACKEND_OPENCL;
+}
+
 DeviceManager& DeviceManager::getInstance()
 {
     static DeviceManager my_instance;
@@ -275,6 +280,18 @@ int getDeviceCount()
 int getActiveDeviceId()
 {
     return DeviceManager::getInstance().mActiveQId;
+}
+
+int getDeviceIdFromNativeId(cl_device_id id)
+{
+    DeviceManager& devMngr = DeviceManager::getInstance();
+    int nDevices = devMngr.mDevices.size();
+    int devId = 0;
+    for (devId=0; devId<nDevices; ++devId) {
+        if (id == devMngr.mDevices[devId]->operator()())
+            break;
+    }
+    return devId;
 }
 
 const Context& getContext()
@@ -482,5 +499,11 @@ af_err afcl_get_queue(cl_command_queue *queue, const bool retain)
 af_err afcl_get_device_id(cl_device_id *id)
 {
     *id = getDevice()();
+    return AF_SUCCESS;
+}
+
+af_err afcl_set_device_id(cl_device_id id)
+{
+    setDevice(getDeviceIdFromNativeId(id));
     return AF_SUCCESS;
 }

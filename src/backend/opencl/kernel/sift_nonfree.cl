@@ -100,6 +100,8 @@
 // factor used to convert floating-point descriptor to unsigned char
 #define INT_DESCR_FCTR 512.f
 
+__constant float GLOHRadii[3] = {6.f, 11.f, 15.f};
+
 #define PI_VAL 3.14159265358979323846f
 
 void gaussianElimination(float* A, float* b, float* x, const int n)
@@ -193,6 +195,58 @@ inline void normalizeDesc(
     barrier(CLK_LOCAL_MEM_FENCE);
 }
 
+inline void normalizeGLOHDesc(
+    __local float* desc,
+    __local float* accum,
+    const int histlen,
+    int lid_x,
+    int lid_y,
+    int lsz_x)
+{
+    for (int i = lid_x; i < histlen; i += lsz_x)
+        accum[i] = desc[lid_y*histlen+i]*desc[lid_y*histlen+i];
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    float sum = 0.0f;
+    for (int i = 0; i < histlen; i++)
+        sum += desc[lid_y*histlen+i]*desc[lid_y*histlen+i];
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    if (lid_x < 128)
+        accum[lid_x] += accum[lid_x+128];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if (lid_x < 64)
+        accum[lid_x] += accum[lid_x+64];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if (lid_x < 32)
+        accum[lid_x] += accum[lid_x+32];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if (lid_x < 16)
+        // GLOH is 272-dimensional, accumulating last 16 descriptors
+        accum[lid_x] += accum[lid_x+16] + accum[lid_x+256];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if (lid_x < 8)
+        accum[lid_x] += accum[lid_x+8];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if (lid_x < 4)
+        accum[lid_x] += accum[lid_x+4];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if (lid_x < 2)
+        accum[lid_x] += accum[lid_x+2];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if (lid_x < 1)
+        accum[lid_x] += accum[lid_x+1];
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    float len_sq = accum[0];
+    float len_inv = 1.0f / sqrt(len_sq);
+
+    for (int i = lid_x; i < histlen; i += lsz_x) {
+        desc[lid_y*histlen+i] *= len_inv;
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+}
+
 __kernel void sub(
     __global T* out,
     __global const T* in,
@@ -201,8 +255,10 @@ __kernel void sub(
 {
     unsigned i = get_global_id(0);
 
-    for (unsigned l = 0; l < n_layers; l++)
-        out[l*nel + i] = in[l*nel + i] - in[(l+1)*nel + i];
+    if (i < nel) {
+        for (unsigned l = 0; l < n_layers; l++)
+            out[l*nel + i] = in[l*nel + i] - in[(l+1)*nel + i];
+    }
 }
 
 #define LCPTR(Y, X) (l_center[(Y) * l_i + (X)])
@@ -689,10 +745,8 @@ __kernel void computeDescriptor(
     __local float* desc = l_mem;
     __local float* accum = l_mem + desc_len * histsz;
 
-    const int histlen = d*d*n;
-
-    for (int i = lid_x; i < histlen*histsz; i += lsz_x)
-        desc[lid_y*histlen+i] = 0.f;
+    for (int i = lid_x; i < desc_len*histsz; i += lsz_x)
+        desc[lid_y*desc_len+i] = 0.f;
     barrier(CLK_LOCAL_MEM_FENCE);
 
     if (f < total_feat) {
@@ -787,17 +841,178 @@ __kernel void computeDescriptor(
         desc[l] += desc[l+desc_len];
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    normalizeDesc(desc, accum, histlen, lid_x, lid_y, lsz_x);
+    normalizeDesc(desc, accum, desc_len, lid_x, lid_y, lsz_x);
 
     for (int i = lid_x; i < d*d*n; i += lsz_x)
         desc[lid_y*desc_len+i] = min(desc[lid_y*desc_len+i], DESCR_MAG_THR);
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    normalizeDesc(desc, accum, histlen, lid_x, lid_y, lsz_x);
+    normalizeDesc(desc, accum, desc_len, lid_x, lid_y, lsz_x);
 
     if (f < total_feat) {
         // Calculate final descriptor values
         for (int k = lid_x; k < d*d*n; k += lsz_x)
+            desc_out[f*desc_len+k] = round(min(255.f, desc[lid_y*desc_len+k] * INT_DESCR_FCTR));
+    }
+}
+
+__kernel void computeGLOHDescriptor(
+    __global float* desc_out,
+    const unsigned desc_len,
+    const unsigned histsz,
+    __global const float* x_in,
+    __global const float* y_in,
+    __global const unsigned* layer_in,
+    __global const float* response_in,
+    __global const float* size_in,
+    __global const float* ori_in,
+    const unsigned total_feat,
+    __global const T* gauss_octave,
+    KParam iGauss,
+    const int d,
+    const unsigned rb,
+    const unsigned ab,
+    const unsigned hb,
+    const float scale,
+    const int n_layers,
+    __local float* l_mem)
+{
+    const int lid_x = get_local_id(0);
+    const int lid_y = get_local_id(1);
+    const int lsz_x = get_local_size(0);
+
+    const int f = get_global_id(1);
+
+    __local float* desc = l_mem;
+    __local float* accum = l_mem + desc_len * histsz;
+
+    for (int i = lid_x; i < desc_len*histsz; i += lsz_x)
+        desc[lid_y*desc_len+i] = 0.f;
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    if (f < total_feat) {
+        const unsigned layer = layer_in[f];
+        float ori = (360.f - ori_in[f]) * PI_VAL / 180.f;
+        ori = (ori > PI_VAL) ? ori - PI_VAL*2 : ori;
+        const float size = size_in[f];
+        const int fx = round(x_in[f] * scale);
+        const int fy = round(y_in[f] * scale);
+
+        // Points img to correct Gaussian pyramid layer
+        const int dim0 = iGauss.dims[0];
+        const int dim1 = iGauss.dims[1];
+        __global const T* img = gauss_octave + (layer * dim0 * dim1);
+
+        float cos_t = cos(ori);
+        float sin_t = sin(ori);
+        float hist_bins_per_rad = hb / (PI_VAL * 2.f);
+        float polar_bins_per_rad = ab / (PI_VAL * 2.f);
+        float exp_denom = GLOHRadii[rb-1] * 0.5f;
+
+        float hist_width = DESCR_SCL_FCTR * size * scale * 0.5f;
+
+        // Keep same descriptor radius used for SIFT
+        int radius = hist_width * sqrt(2.f) * (d + 1.f) * 0.5f + 0.5f;
+
+        // Alternative radius size calculation, changing the radius weight
+        // (rw) in the range of 0.25f-0.75f gives different results,
+        // increasing it tends to show a better recall rate but with a
+        // smaller amount of correct matches
+        //float rw = 0.5f;
+        //int radius = hist_width * GLOHRadii[rb-1] * rw + 0.5f;
+
+        int len = radius*2+1;
+        const int hist_off = (lid_x % histsz) * desc_len;
+
+        // Calculate orientation histogram
+        for (int l = lid_x; l < len*len; l += lsz_x) {
+            int i = l / len - radius;
+            int j = l % len - radius;
+
+            int y = fy + i;
+            int x = fx + j;
+
+            float x_rot = (j * cos_t - i * sin_t);
+            float y_rot = (j * sin_t + i * cos_t);
+
+            float r = sqrt(x_rot*x_rot + y_rot*y_rot) / radius * GLOHRadii[rb-1];
+            float theta = atan2(y_rot, x_rot);
+            while (theta < 0.0f)
+                theta += PI_VAL*2;
+            while (theta >= PI_VAL*2)
+                theta -= PI_VAL*2;
+
+            float tbin = theta * polar_bins_per_rad;
+            float rbin = (r < GLOHRadii[0]) ? r / GLOHRadii[0] :
+                         ((r < GLOHRadii[1]) ? 1 + (r - GLOHRadii[0]) / (float)(GLOHRadii[1] - GLOHRadii[0]) :
+                         min(2 + (r - GLOHRadii[1]) / (float)(GLOHRadii[2] - GLOHRadii[1]), 3.f-FLT_EPSILON));
+
+            if (r <= GLOHRadii[rb-1] &&
+                y > 0 && y < dim0 - 1 && x > 0 && x < dim1 - 1) {
+                float dx = (float)(IPTR(x+1, y) - IPTR(x-1, y));
+                float dy = (float)(IPTR(x, y-1) - IPTR(x, y+1));
+
+                float grad_mag = sqrt(dx*dx + dy*dy);
+                float grad_ori = atan2(dy, dx) - ori;
+                while (grad_ori < 0.0f)
+                    grad_ori += PI_VAL*2;
+                while (grad_ori >= PI_VAL*2)
+                    grad_ori -= PI_VAL*2;
+
+                float w = exp(-r / exp_denom);
+                float obin = grad_ori * hist_bins_per_rad;
+                float mag = grad_mag*w;
+
+                int t0 = floor(tbin);
+                int r0 = floor(rbin);
+                int o0 = floor(obin);
+                tbin -= t0;
+                rbin -= r0;
+                obin -= o0;
+
+                for (int rl = 0; rl <= 1; rl++) {
+                    int rb = (rbin > 0.5f) ? (r0 + rl) : (r0 - rl);
+                    float v_r = mag * ((rl == 0) ? 1.0f - rbin : rbin);
+                    if (rb >= 0 && rb <= 2) {
+                        for (int tl = 0; tl <= 1; tl++) {
+                            int tb = (t0 + tl) % ab;
+                            float v_t = v_r * ((tl == 0) ? 1.0f - tbin : tbin);
+                            for (int ol = 0; ol <= 1; ol++) {
+                                int ob = (o0 + ol) % hb;
+                                float v_o = v_t * ((ol == 0) ? 1.0f - obin : obin);
+                                unsigned idx = (rb > 0) * (hb + ((rb-1) * ab + tb)*hb) + ob;
+		                        fatomic_add(&desc[hist_off + lid_y*desc_len + idx], v_o);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    // Combine histograms (reduces previous atomicAdd overhead)
+    for (int l = lid_x; l < desc_len*4; l += lsz_x)
+        desc[l] += desc[l+4*desc_len];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    for (int l = lid_x; l < desc_len*2; l += lsz_x)
+        desc[l    ] += desc[l+2*desc_len];
+    barrier(CLK_LOCAL_MEM_FENCE);
+    for (int l = lid_x; l < desc_len; l += lsz_x)
+        desc[l] += desc[l+desc_len];
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    normalizeGLOHDesc(desc, accum, desc_len, lid_x, lid_y, lsz_x);
+
+    for (int i = lid_x; i < desc_len; i += lsz_x)
+        desc[lid_y*desc_len+i] = min(desc[lid_y*desc_len+i], DESCR_MAG_THR);
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    normalizeGLOHDesc(desc, accum, desc_len, lid_x, lid_y, lsz_x);
+
+    if (f < total_feat) {
+        // Calculate final descriptor values
+        for (int k = lid_x; k < desc_len; k += lsz_x)
             desc_out[f*desc_len+k] = round(min(255.f, desc[lid_y*desc_len+k] * INT_DESCR_FCTR));
     }
 }

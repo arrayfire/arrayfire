@@ -9,20 +9,21 @@
 
 #if defined(WITH_FREEIMAGE)
 
+#include "imageio_helper.h"
+
 #include <af/array.h>
+#include <af/index.h>
+#include <af/dim4.hpp>
 #include <af/arith.h>
 #include <af/algorithm.h>
 #include <af/blas.h>
 #include <af/data.h>
 #include <af/image.h>
-#include <af/index.h>
-#include <err_common.hpp>
 #include <backend.hpp>
 #include <ArrayInfo.hpp>
 #include <traits.hpp>
 #include <memory.hpp>
 
-#include <FreeImage.h>
 #include <string>
 #include <cstring>
 #include <cstdio>
@@ -31,74 +32,9 @@
 using af::dim4;
 using namespace detail;
 
-class FI_Manager
-{
-    public:
-    static bool initialized;
-    FI_Manager()
-    {
-#ifdef FREEIMAGE_LIB
-        FreeImage_Initialise();
-#endif
-        initialized = true;
-    }
-
-    ~FI_Manager()
-    {
-#ifdef FREEIMAGE_LIB
-        FreeImage_DeInitialise();
-#endif
-    }
-};
-
 bool FI_Manager::initialized = false;
 
-static void FI_Init()
-{
-    static FI_Manager manager = FI_Manager();
-}
-
-// Helpers
-void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage);
-
-typedef unsigned short ushort;
-
-// Error handler for FreeImage library.
-// In case this handler is invoked, it throws an af exception.
-void FreeImageErrorHandler(FREE_IMAGE_FORMAT oFif, const char* zMessage)
-{
-    printf("FreeImage Error Handler: %s\n", zMessage);
-}
-
-//  Split a MxNx3 image into 3 separate channel matrices.
-//  Produce 3 channels if needed
-static af_err channel_split(const af_array rgb, const af::dim4 &dims,
-                            af_array *outr, af_array *outg, af_array *outb, af_array *outa)
-{
-    try {
-        af_seq idx[4][3] = {{af_span, af_span, {0, 0, 1}},
-                            {af_span, af_span, {1, 1, 1}},
-                            {af_span, af_span, {2, 2, 1}},
-                            {af_span, af_span, {3, 3, 1}}
-                           };
-
-        if (dims[2] == 4) {
-            AF_CHECK(af_index(outr, rgb, dims.ndims(), idx[0]));
-            AF_CHECK(af_index(outg, rgb, dims.ndims(), idx[1]));
-            AF_CHECK(af_index(outb, rgb, dims.ndims(), idx[2]));
-            AF_CHECK(af_index(outa, rgb, dims.ndims(), idx[3]));
-        } else if (dims[2] == 3) {
-            AF_CHECK(af_index(outr, rgb, dims.ndims(), idx[0]));
-            AF_CHECK(af_index(outg, rgb, dims.ndims(), idx[1]));
-            AF_CHECK(af_index(outb, rgb, dims.ndims(), idx[2]));
-        } else {
-            AF_CHECK(af_index(outr, rgb, dims.ndims(), idx[0]));
-        }
-    } CATCHALL;
-    return AF_SUCCESS;
-}
-
-template<typename T, int fi_color, int fo_color>
+template<typename T, FI_CHANNELS fi_color, FI_CHANNELS fo_color>
 static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcPitch,
                         const uint fi_w, const uint fi_h)
 {
@@ -110,20 +46,28 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
     float* pDst2 = pDst + (fi_w * fi_h * 2);
     float* pDst3 = pDst + (fi_w * fi_h * 3);
 
-    int offR = 2; int offG = 1; int offB = 0; int offA = 3;
-    if (fo_color == 3 && fi_color == 1) {       //Convert gray to color
-        offG = 0; offR = 0;
-    }
     uint indx = 0;
     uint step = fi_color;
 
     for (uint x = 0; x < fi_w; ++x) {
         for (uint y = 0; y < fi_h; ++y) {
             const T *src = (T*)(pSrcLine - y * nSrcPitch);
-                               pDst2[indx] = (float) *(src + (x * step + offB));
-            if (fo_color >= 3) pDst1[indx] = (float) *(src + (x * step + offG));
-            if (fo_color >= 3) pDst0[indx] = (float) *(src + (x * step + offR));
-            if (fo_color == 4) pDst3[indx] = (float) *(src + (x * step + offA));
+            if(fo_color == 1) {
+                pDst0[indx] = (T) *(src + (x * step));
+            } else if(fo_color >= 3) {
+                if((af_dtype) af::dtype_traits<T>::af_type == u8) {
+                    pDst0[indx] = (float) *(src + (x * step + FI_RGBA_RED));
+                    pDst1[indx] = (float) *(src + (x * step + FI_RGBA_GREEN));
+                    pDst2[indx] = (float) *(src + (x * step + FI_RGBA_BLUE));
+                } else {
+                    // Non 8-bit types do not use ordering
+                    // See Pixel Access Functions Chapter in FreeImage Doc
+                    pDst0[indx] = (float) *(src + (x * step + 0));
+                    pDst1[indx] = (float) *(src + (x * step + 1));
+                    pDst2[indx] = (float) *(src + (x * step + 2));
+                }
+                if (fo_color == 4) pDst3[indx] = (float) *(src + (x * step + FI_RGBA_ALPHA));
+            }
             indx++;
         }
     }
@@ -135,7 +79,7 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
     return err;
 }
 
-template<typename T, int fo_color>
+template<typename T, FI_CHANNELS fo_color>
 static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcPitch,
                         const uint fi_w, const uint fi_h)
 {
@@ -149,12 +93,20 @@ static af_err readImage(af_array *rImage, const uchar* pSrcLine, const int nSrcP
     for (uint x = 0; x < fi_w; ++x) {
         for (uint y = 0; y < fi_h; ++y) {
             const T *src = (T*)(pSrcLine - y * nSrcPitch);
-            if (fo_color == 1) {
-                pDst[indx] = (float) *(src + (x * step));
-            } else if (fo_color >=3) {
-                r = (float) *(src + (x * step + 2));
-                g = (float) *(src + (x * step + 1));
-                b = (float) *(src + (x * step + 0));
+            if(fo_color == 1) {
+                pDst[indx] = (T) *(src + (x * step));
+            } else if(fo_color >= 3) {
+                if((af_dtype) af::dtype_traits<T>::af_type == u8) {
+                    r = (T) *(src + (x * step + FI_RGBA_RED));
+                    g = (T) *(src + (x * step + FI_RGBA_GREEN));
+                    b = (T) *(src + (x * step + FI_RGBA_BLUE));
+                } else {
+                    // Non 8-bit types do not use ordering
+                    // See Pixel Access Functions Chapter in FreeImage Doc
+                    r = (T) *(src + (x * step + 0));
+                    g = (T) *(src + (x * step + 1));
+                    b = (T) *(src + (x * step + 2));
+                }
                 pDst[indx] = r * 0.2989f + g * 0.5870f + b * 0.1140f;
             }
             indx++;
@@ -192,15 +144,22 @@ af_err af_load_image(af_array *out, const char* filename, const bool isColor)
             AF_ERROR("FreeImage Error: Unknown File or Filetype", AF_ERR_NOT_SUPPORTED);
         }
 
+        int flags = 0;
+        if(fif == FIF_JPEG) flags = flags | JPEG_ACCURATE;
+        if(fif == FIF_JPEG && !isColor) flags = flags | JPEG_GREYSCALE;
+
         // check that the plugin has reading capabilities ...
         FIBITMAP* pBitmap = NULL;
         if (FreeImage_FIFSupportsReading(fif)) {
-            pBitmap = FreeImage_Load(fif, filename);
+            pBitmap = FreeImage_Load(fif, filename, flags);
         }
 
         if(pBitmap == NULL) {
             AF_ERROR("FreeImage Error: Error reading image or file does not exist", AF_ERR_RUNTIME);
         }
+
+        // make sure pBitmap is unleaded automatically, no matter how we exit this function
+        FI_BitmapResource bitmapUnloader(pBitmap);
 
         // check image color type
         uint color_type = FreeImage_GetColorType(pBitmap);
@@ -239,45 +198,44 @@ af_err af_load_image(af_array *out, const char* filename, const bool isColor)
         if (isColor) {
             if(fi_color == 4) {     //4 channel image
                 if(fi_bpc == 8)
-                    AF_CHECK((readImage<uchar, 4, 4>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<uchar,  AFFI_RGBA, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 16)
-                    AF_CHECK((readImage<ushort, 4, 4>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<ushort, AFFI_RGBA, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    AF_CHECK((readImage<float, 4, 4>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<float,  AFFI_RGBA, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             } else if (fi_color == 1) {
                 if(fi_bpc == 8)
-                    AF_CHECK((readImage<uchar, 1, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<uchar,  AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 16)
-                    AF_CHECK((readImage<ushort, 1, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<ushort, AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    AF_CHECK((readImage<float, 1, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<float,  AFFI_GRAY, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             } else {             //3 channel image
                 if(fi_bpc == 8)
-                    AF_CHECK((readImage<uchar, 3, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<uchar,  AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 16)
-                    AF_CHECK((readImage<ushort, 3, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<ushort, AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    AF_CHECK((readImage<float, 3, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<float,  AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             }
         } else {                    //output gray irrespective
             if(fi_color == 1) {     //4 channel image
                 if(fi_bpc == 8)
-                    AF_CHECK((readImage<uchar, 1>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<uchar,  AFFI_GRAY>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 16)
-                    AF_CHECK((readImage<ushort, 1>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<ushort, AFFI_GRAY>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    AF_CHECK((readImage<float, 1>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<float,  AFFI_GRAY>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             } else if (fi_color == 3 || fi_color == 4) {
                 if(fi_bpc == 8)
-                    AF_CHECK((readImage<uchar, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<uchar,  AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 16)
-                    AF_CHECK((readImage<ushort, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<ushort, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
                 else if(fi_bpc == 32)
-                    AF_CHECK((readImage<float, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                    AF_CHECK((readImage<float,  AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             }
         }
 
-        FreeImage_Unload(pBitmap);
         std::swap(*out,rImage);
     } CATCHALL;
 
@@ -324,6 +282,9 @@ af_err af_save_image(const char* filename, const af_array in_)
             AF_ERROR("FreeImage Error: Error creating image or file", AF_ERR_RUNTIME);
         }
 
+        // make sure pResultBitmap is unleaded automatically, no matter how we exit this function
+        FI_BitmapResource resultBitmapUnloader(pResultBitmap);
+
         // FI assumes [0-255]
         // If array is in 0-1 range, multiply by 255
         af_array in;
@@ -331,7 +292,7 @@ af_err af_save_image(const char* filename, const af_array in_)
         bool free_in = false;
         AF_CHECK(af_max_all(&max_real, &max_imag, in_));
         if (max_real <= 1) {
-            af_array c255;
+            af_array c255 = 0;
             AF_CHECK(af_constant(&c255, 255.0, info.ndims(), info.dims().get(), f32));
             AF_CHECK(af_mul(&in, in_, c255, false));
             AF_CHECK(af_release_array(c255));
@@ -371,9 +332,9 @@ af_err af_save_image(const char* filename, const af_array in_)
             // Copy the array into FreeImage buffer
             for (uint y = 0; y < fi_h; ++y) {
                 for (uint x = 0; x < fi_w; ++x) {
-                    *(pDstLine + x * step + 2) = (uchar) pSrc0[indx]; // b
-                    *(pDstLine + x * step + 1) = (uchar) pSrc1[indx]; // g
                     *(pDstLine + x * step + 0) = (uchar) pSrc2[indx]; // r
+                    *(pDstLine + x * step + 1) = (uchar) pSrc1[indx]; // g
+                    *(pDstLine + x * step + 2) = (uchar) pSrc0[indx]; // b
                     *(pDstLine + x * step + 3) = (uchar) pSrc3[indx]; // a
                     ++indx;
                 }
@@ -400,9 +361,9 @@ af_err af_save_image(const char* filename, const af_array in_)
             // Copy the array into FreeImage buffer
             for (uint y = 0; y < fi_h; ++y) {
                 for (uint x = 0; x < fi_w; ++x) {
-                    *(pDstLine + x * step + 2) = (uchar) pSrc0[indx]; // b
-                    *(pDstLine + x * step + 1) = (uchar) pSrc1[indx]; // g
                     *(pDstLine + x * step + 0) = (uchar) pSrc2[indx]; // r
+                    *(pDstLine + x * step + 1) = (uchar) pSrc1[indx]; // g
+                    *(pDstLine + x * step + 2) = (uchar) pSrc0[indx]; // b
                     ++indx;
                 }
                 pDstLine -= nDstPitch;
@@ -426,12 +387,13 @@ af_err af_save_image(const char* filename, const af_array in_)
             pinnedFree(pSrc0);
         }
 
+        int flags = 0;
+        if(fif == FIF_JPEG) flags = flags | JPEG_QUALITYSUPERB;
+
         // now save the result image
-        if (!(FreeImage_Save(fif, pResultBitmap, filename, 0) == TRUE)) {
+        if (!(FreeImage_Save(fif, pResultBitmap, filename, flags) == TRUE)) {
             AF_ERROR("FreeImage Error: Failed to save image", AF_ERR_RUNTIME);
         }
-
-        FreeImage_Unload(pResultBitmap);
 
         if(free_in) AF_CHECK(af_release_array(in ));
         if(rr != 0) AF_CHECK(af_release_array(rr ));
@@ -476,15 +438,21 @@ af_err af_load_image_memory(af_array *out, const void* ptr)
             AF_ERROR("FreeImage Error: Unknown File or Filetype", AF_ERR_NOT_SUPPORTED);
         }
 
+        int flags = 0;
+        if(fif == FIF_JPEG) flags = flags | JPEG_ACCURATE;
+
         // check that the plugin has reading capabilities ...
         FIBITMAP* pBitmap = NULL;
         if (FreeImage_FIFSupportsReading(fif)) {
-            pBitmap = FreeImage_LoadFromMemory(fif, stream, 0);
+            pBitmap = FreeImage_LoadFromMemory(fif, stream, flags);
         }
 
         if(pBitmap == NULL) {
             AF_ERROR("FreeImage Error: Error reading image or file does not exist", AF_ERR_RUNTIME);
         }
+
+        // make sure pBitmap is unleaded automatically, no matter how we exit this function
+        FI_BitmapResource bitmapUnloader(pBitmap);
 
         // check image color type
         uint color_type = FreeImage_GetColorType(pBitmap);
@@ -521,28 +489,27 @@ af_err af_load_image_memory(af_array *out, const void* ptr)
         af_array rImage;
         if(fi_color == 4) {     //4 channel image
             if(fi_bpc == 8)
-                AF_CHECK((readImage<uchar, 4, 4>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                AF_CHECK((readImage<uchar,  AFFI_RGBA, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             else if(fi_bpc == 16)
-                AF_CHECK((readImage<ushort,4, 4>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                AF_CHECK((readImage<ushort, AFFI_RGBA, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             else if(fi_bpc == 32)
-                AF_CHECK((readImage<float, 4, 4>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                AF_CHECK((readImage<float,  AFFI_RGBA, AFFI_RGBA>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
         } else if (fi_color == 1) { // 1 channel image
             if(fi_bpc == 8)
-                AF_CHECK((readImage<uchar, 1>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                AF_CHECK((readImage<uchar,  AFFI_GRAY>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             else if(fi_bpc == 16)
-                AF_CHECK((readImage<ushort,1>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                AF_CHECK((readImage<ushort, AFFI_GRAY>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             else if(fi_bpc == 32)
-                AF_CHECK((readImage<float, 1>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                AF_CHECK((readImage<float,  AFFI_GRAY>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
         } else {             //3 channel image
             if(fi_bpc == 8)
-                AF_CHECK((readImage<uchar, 3, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                AF_CHECK((readImage<uchar,  AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             else if(fi_bpc == 16)
-                AF_CHECK((readImage<ushort,3, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                AF_CHECK((readImage<ushort, AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
             else if(fi_bpc == 32)
-                AF_CHECK((readImage<float, 3, 3>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
+                AF_CHECK((readImage<float,  AFFI_RGB, AFFI_RGB>)(&rImage, pSrcLine, nSrcPitch, fi_w, fi_h));
         }
 
-        FreeImage_Unload(pBitmap);
         std::swap(*out,rImage);
     } CATCHALL;
 
@@ -583,6 +550,9 @@ af_err af_save_image_memory(void **ptr, const af_array in_, const af_image_forma
         if(pResultBitmap == NULL) {
             AF_ERROR("FreeImage Error: Error creating image or file", AF_ERR_RUNTIME);
         }
+
+        // make sure pResultBitmap is unleaded automatically, no matter how we exit this function
+        FI_BitmapResource resultBitmapUnloader(pResultBitmap);
 
         // FI assumes [0-255]
         // If array is in 0-1 range, multiply by 255
@@ -688,14 +658,15 @@ af_err af_save_image_memory(void **ptr, const af_array in_, const af_image_forma
 
         FIMEMORY *stream = FreeImage_OpenMemory();
 
+        int flags = 0;
+        if(fif == FIF_JPEG) flags = flags | JPEG_QUALITYSUPERB;
+
         // now save the result image
-        if (!(FreeImage_SaveToMemory(fif, pResultBitmap, stream, 0) == TRUE)) {
+        if (!(FreeImage_SaveToMemory(fif, pResultBitmap, stream, flags) == TRUE)) {
             AF_ERROR("FreeImage Error: Failed to save image", AF_ERR_RUNTIME);
         }
 
         *ptr = stream;
-
-        FreeImage_Unload(pResultBitmap);
 
         if(free_in) AF_CHECK(af_release_array(in ));
         if(rr != 0) AF_CHECK(af_release_array(rr ));

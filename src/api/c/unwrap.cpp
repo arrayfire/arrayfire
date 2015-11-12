@@ -52,6 +52,8 @@ af_err af_unwrap(af_array *out, const af_array in, const dim_t wx, const dim_t w
             case u32: output = unwrap<uint   >(in, wx, wy, sx, sy, px, py, is_column);  break;
             case s64: output = unwrap<intl   >(in, wx, wy, sx, sy, px, py, is_column);  break;
             case u64: output = unwrap<uintl  >(in, wx, wy, sx, sy, px, py, is_column);  break;
+            case s16: output = unwrap<short  >(in, wx, wy, sx, sy, px, py, is_column);  break;
+            case u16: output = unwrap<ushort >(in, wx, wy, sx, sy, px, py, is_column);  break;
             case u8:  output = unwrap<uchar  >(in, wx, wy, sx, sy, px, py, is_column);  break;
             case b8:  output = unwrap<char   >(in, wx, wy, sx, sy, px, py, is_column);  break;
             default:  TYPE_ERROR(1, type);

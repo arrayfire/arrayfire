@@ -32,7 +32,7 @@ class Write : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char, unsigned char> TestTypes;
+typedef ::testing::Types<float, cfloat, double, cdouble, int, unsigned, char, unsigned char, short, ushort> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Write, TestTypes);

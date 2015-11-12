@@ -117,8 +117,10 @@ namespace kernel
 
         // Get output size and allocate output
         uint total;
-        CUDA_CHECK(cudaMemcpy(&total, rtmp.ptr + rtmp_elements - 1,
-                              sizeof(uint), cudaMemcpyDeviceToHost));
+        CUDA_CHECK(cudaMemcpyAsync(&total, rtmp.ptr + rtmp_elements - 1,
+                              sizeof(uint), cudaMemcpyDeviceToHost,
+                              cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
 
         out.ptr = memAlloc<uint>(total);
 

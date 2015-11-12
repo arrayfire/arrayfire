@@ -119,5 +119,9 @@ INSTANTIATE(uint  , float,  cfloat,  false, true)
 INSTANTIATE(int   , float,  cfloat,  false, true)
 INSTANTIATE(uchar , float,  cfloat,  false, true)
 INSTANTIATE(char  , float,  cfloat,  false, true)
+INSTANTIATE(ushort, float,  cfloat,  false, true)
+INSTANTIATE(short , float,  cfloat,  false, true)
+INSTANTIATE(uintl , float,  cfloat,  false, true)
+INSTANTIATE(intl  , float,  cfloat,  false, true)
 
 }

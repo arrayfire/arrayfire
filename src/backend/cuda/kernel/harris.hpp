@@ -216,7 +216,8 @@ void harris(unsigned* corners_out,
 
     int filter_elem = filter.strides[3] * filter.dims[3];
     filter.ptr = memAlloc<convAccT>(filter_elem);
-    CUDA_CHECK(cudaMemcpy(filter.ptr, h_filter, filter_elem * sizeof(convAccT), cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpyAsync(filter.ptr, h_filter, filter_elem * sizeof(convAccT),
+                cudaMemcpyHostToDevice, cuda::getStream(cuda::getActiveDeviceId())));
 
     delete[] h_filter;
 
@@ -305,7 +306,9 @@ void harris(unsigned* corners_out,
             in.dims[0], in.dims[1], d_responses, min_r, border_len, corner_lim);
 
     unsigned corners_found = 0;
-    CUDA_CHECK(cudaMemcpy(&corners_found, d_corners_found, sizeof(unsigned), cudaMemcpyDeviceToHost));
+    CUDA_CHECK(cudaMemcpyAsync(&corners_found, d_corners_found, sizeof(unsigned),
+                cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
+    CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
 
     memFree(d_responses);
     memFree(d_corners_found);

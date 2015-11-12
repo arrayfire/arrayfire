@@ -41,6 +41,8 @@ namespace cpu
     INSTANTIATE(int)
     INSTANTIATE(uint)
     INSTANTIATE(uchar)
+    INSTANTIATE(short)
+    INSTANTIATE(ushort)
 }
 
 #endif  // WITH_GRAPHICS

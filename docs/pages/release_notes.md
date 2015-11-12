@@ -1,6 +1,112 @@
 Release Notes {#releasenotes}
 ==============
 
+v3.2.0
+=================
+
+Major Updates
+-------------
+
+* Added Unified backend
+    * Allows switching backends at runtime
+    * Read [Unified Backend](\ref unifiedbackend) for more.
+* Support for 16-bit integers (\ref s16 and \ref u16)
+    * All functions that support 32-bit interger types (\ref s32, \ref u32),
+      now also support 16-bit interger types
+
+Function Additions
+------------------
+* Unified Backend
+    * \ref setBackend() - Sets a backend as active
+    * \ref getBackendCount() - Gets the number of backends available for use
+    * \ref getAvailableBackends() - Returns information about available backends
+    * \ref getBackendId() - Gets the backend enum for an array
+
+* Vision
+    * \ref homography() - Homography estimation
+    * \ref gloh() - GLOH Descriptor for SIFT
+
+* Image Processing
+    * \ref loadImageNative() - Load an image as native data without modification
+    * \ref saveImageNative() - Save an image without modifying data or type
+
+* Graphics
+    * \ref af::Window::plot3() - 3-dimensional line plot
+    * \ref af::Window::surface() - 3-dimensional curve plot
+
+* Indexing
+    * \ref af_create_indexers()
+    * \ref af_set_array_indexer()
+    * \ref af_set_seq_indexer()
+    * \ref af_set_seq_param_indexer()
+    * \ref af_release_indexers()
+
+* CUDA Backend Specific
+    * \ref setNativeId() - Set the CUDA device with given native id as active
+        * ArrayFire uses a modified order for devices. The native id for a
+          device can be retreived using `nvidia-smi`
+
+* OpenCL Backend Specific
+    * \ref setDeviceId() - Set the OpenCL device using the `clDeviceId`
+
+Other Improvements
+------------------------
+* Added \ref c32 and \ref c64 support for \ref isNaN(), \ref isInf() and \ref iszero()
+* Added CPU information for `x86` and `x86_64` architectures in CPU backend's \ref info()
+* Batch support for \ref approx1() and \ref approx2()
+    * Now can be used with gfor as well
+* Added \ref s64 and \ref u64 support to:
+    * \ref sort() (along with sort index and sort by key)
+    * \ref setUnique(), \ref setUnion(), \ref setIntersect()
+    * \ref convolve() and \ref fftConvolve()
+    * \ref histogram() and \ref histEqual()
+    * \ref lookup()
+    * \ref mean()
+* Added \ref AF_MSG macro
+
+Build Improvements
+------------------
+* Submodules update is now automatically called if not cloned recursively
+* [Fixes for compilation](https://github.com/arrayfire/arrayfire/issues/766) on Visual Studio 2015
+* Option to use [fallback to CPU LAPACK](https://github.com/arrayfire/arrayfire/pull/1053)
+  for linear algebra functions in case of CUDA 6.5 or older versions.
+
+Bug Fixes
+--------------
+* Fixed [memory leak](https://github.com/arrayfire/arrayfire/pull/1096) in \ref susan()
+* Fixed [failing test](https://github.com/arrayfire/arrayfire/commit/144a2db)
+  in \ref lower() and \ref upper() for CUDA compute 53
+* Fixed [bug](https://github.com/arrayfire/arrayfire/issues/1092) in CUDA for indexing out of bounds
+* Fixed [dims check](https://github.com/arrayfire/arrayfire/commit/6975da8) in \ref iota()
+* Fixed [out-of-bounds access](https://github.com/arrayfire/arrayfire/commit/7fc3856) in \ref sift()
+* Fixed [memory allocation](https://github.com/arrayfire/arrayfire/commit/5e88e4a) in \ref fast() OpenCL
+* Fixed [memory leak](https://github.com/arrayfire/arrayfire/pull/994) in image I/O functions
+* \ref dog() now returns float-point type arrays
+
+Documentation Updates
+---------------------
+* Improved tutorials documentation
+    * More detailed Using on [Linux](\ref using_on_windows), [OSX](\ref using_on_windows),
+      [Windows](\ref using_on_windows) pages.
+* Added return type information for functions that return different type
+  arrays
+
+New Examples
+------------
+* Graphics
+    * [Plot3](\ref plot3.cpp)
+    * [Surface](\ref surface.cpp)
+* [Shallow Water Equation](\ref swe.cpp)
+* [Basic](\ref basic.cpp) as a Unified backend example
+
+Installers
+-----------
+* All installers now include the Unified backend and corresponding CMake files
+* Visual Studio projects include Unified in the Platform Configurations
+* Added installer for Jetson TX1
+* SIFT and GLOH do not ship with the installers as SIFT is protected by
+  patents that do not allow commercial distribution without licensing.
+
 v3.1.3
 ==============
 

@@ -38,5 +38,7 @@ namespace cuda
     INSTANTIATE_IDENTITY(uintl)
     INSTANTIATE_IDENTITY(char)
     INSTANTIATE_IDENTITY(uchar)
+    INSTANTIATE_IDENTITY(short)
+    INSTANTIATE_IDENTITY(ushort)
 
 }

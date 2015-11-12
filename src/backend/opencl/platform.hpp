@@ -27,6 +27,8 @@ class DeviceManager
 
     friend int getActiveDeviceId();
 
+    friend int getDeviceIdFromNativeId(cl_device_id id);
+
     friend const cl::Context& getContext();
 
     friend cl::CommandQueue& getQueue();
@@ -75,6 +77,8 @@ class DeviceManager
         unsigned mActiveCtxId;
         unsigned mActiveQId;
 };
+
+int getBackend();
 
 std::string getInfo();
 

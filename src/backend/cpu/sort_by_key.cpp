@@ -122,6 +122,11 @@ namespace cpu
     INSTANTIATE(Tk, uint)      \
     INSTANTIATE(Tk, char)      \
     INSTANTIATE(Tk, uchar)     \
+    INSTANTIATE(Tk, short)     \
+    INSTANTIATE(Tk, ushort)    \
+    INSTANTIATE(Tk, intl)      \
+    INSTANTIATE(Tk, uintl)     \
+
 
     INSTANTIATE1(float)
     INSTANTIATE1(double)
@@ -129,4 +134,8 @@ namespace cpu
     INSTANTIATE1(uint)
     INSTANTIATE1(char)
     INSTANTIATE1(uchar)
+    INSTANTIATE1(short)
+    INSTANTIATE1(ushort)
+    INSTANTIATE1(intl)
+    INSTANTIATE1(uintl)
 }

@@ -38,9 +38,15 @@ namespace opencl
 {
     namespace kernel
     {
-        // Kernel Launch Config Values
-        static const int TX = 32;
-        static const int TY = 8;
+        using std::conditional;
+        using std::is_same;
+        template<typename T>
+        using ltype_t = typename conditional<is_same<T, intl>::value, cl_long, T>::type;
+
+        template<typename T>
+        using type_t = typename conditional<is_same<T, uintl>::value,
+                                            cl_ulong, ltype_t<T>
+                                           >::type;
 
         template<typename Tk, typename Tv, bool isAscending>
         void sort0_by_key(Param okey, Param oval)
@@ -62,14 +68,14 @@ namespace opencl
                             int okeyOffset = okeyWZ + y * okey.info.strides[1];
                             int ovalOffset = ovalWZ + y * oval.info.strides[1];
 
-                            compute::buffer_iterator<Tk> start= compute::make_buffer_iterator<Tk>(okey_buf, okeyOffset);
-                            compute::buffer_iterator<Tk> end = compute::make_buffer_iterator<Tk>(okey_buf, okeyOffset + okey.info.dims[0]);
-                            compute::buffer_iterator<Tv> vals = compute::make_buffer_iterator<Tv>(oval_buf, ovalOffset);
+                            compute::buffer_iterator< type_t<Tk> > start= compute::make_buffer_iterator< type_t<Tk> >(okey_buf, okeyOffset);
+                            compute::buffer_iterator< type_t<Tk> > end = compute::make_buffer_iterator< type_t<Tk> >(okey_buf, okeyOffset + okey.info.dims[0]);
+                            compute::buffer_iterator< type_t<Tv> > vals = compute::make_buffer_iterator< type_t<Tv> >(oval_buf, ovalOffset);
                             if(isAscending) {
                                 compute::sort_by_key(start, end, vals, c_queue);
                             } else {
                                 compute::sort_by_key(start, end, vals,
-                                                     compute::greater<Tk>(), c_queue);
+                                                     compute::greater< type_t<Tk> >(), c_queue);
                             }
                         }
                     }

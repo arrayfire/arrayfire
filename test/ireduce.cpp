@@ -14,7 +14,6 @@
 #include <testHelpers.hpp>
 #include <algorithm>
 
-using namespace std;
 using namespace af;
 
 
@@ -27,14 +26,14 @@ using namespace af;
         const int ny = 100;                             \
         af::array in = randu(nx, ny, dty);              \
         af::array val, idx;                             \
-        fn(val, idx, in, 0);                            \
+        af::fn(val, idx, in, 0);                        \
                                                         \
         ty *h_in = in.host<ty>();                       \
         ty *h_in_st = h_in;                             \
         ty *h_val = val.host<ty>();                     \
         uint *h_idx = idx.host<uint>();                 \
         for (int i = 0; i < ny; i++) {                  \
-            ty tmp = *fn##_element(h_in, h_in + nx);    \
+            ty tmp = *std::fn##_element(h_in, h_in +nx);\
             ASSERT_EQ(tmp, h_val[i])                    \
                 << "for index" << i;                    \
             ASSERT_EQ(h_in[h_idx[i]], tmp)              \
@@ -53,7 +52,7 @@ using namespace af;
         const int ny = 100;                             \
         af::array in = randu(nx, ny, dty);              \
         af::array val, idx;                             \
-        fn(val, idx, in, 1);                            \
+        af::fn(val, idx, in, 1);                        \
                                                         \
         ty *h_in = in.host<ty>();                       \
         ty *h_val = val.host<ty>();                     \
@@ -61,7 +60,7 @@ using namespace af;
         for (int i = 0; i < nx; i++) {                  \
             ty val = h_val[i];                          \
             for (int j= 0; j < ny; j++) {               \
-                ty tmp = fn(val, h_in[j * nx + i]);     \
+                ty tmp = std::fn(val, h_in[j * nx + i]);\
                 ASSERT_EQ(tmp, val);                    \
             }                                           \
             ASSERT_EQ(val, h_in[h_idx[i] * nx + i]);    \
@@ -78,9 +77,9 @@ using namespace af;
         af::array in = randu(num, dty);                 \
         ty val;                                         \
         uint idx;                                       \
-        fn<ty>(&val, &idx, in);                         \
+        af::fn<ty>(&val, &idx, in);                     \
         ty *h_in = in.host<ty>();                       \
-        ty tmp = *fn##_element(h_in, h_in + num);       \
+        ty tmp = *std::fn##_element(h_in, h_in + num);  \
         ASSERT_EQ(tmp, val);                            \
         ASSERT_EQ(tmp, h_in[idx]);                      \
         delete[] h_in;                                  \

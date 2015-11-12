@@ -49,5 +49,9 @@ namespace opencl
     INSTANTIATE(Tk, uint  , isAscending)        \
     INSTANTIATE(Tk, char  , isAscending)        \
     INSTANTIATE(Tk, uchar , isAscending)        \
+    INSTANTIATE(Tk, short , isAscending)        \
+    INSTANTIATE(Tk, ushort, isAscending)        \
+    INSTANTIATE(Tk, intl  , isAscending)        \
+    INSTANTIATE(Tk, uintl , isAscending)        \
 
 }

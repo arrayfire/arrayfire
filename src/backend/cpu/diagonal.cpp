@@ -86,5 +86,7 @@ namespace cpu
     INSTANTIATE_DIAGONAL(uintl)
     INSTANTIATE_DIAGONAL(char)
     INSTANTIATE_DIAGONAL(uchar)
+    INSTANTIATE_DIAGONAL(short)
+    INSTANTIATE_DIAGONAL(ushort)
 
 }

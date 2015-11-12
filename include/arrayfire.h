@@ -200,6 +200,13 @@
      Reading and writing images
    @}
 
+   @defgroup unified_func Unified API Functions
+   @{
+
+     Functions to set current backend and utilities
+
+   @}
+
    @defgroup external Interface Functions
    @{
 
@@ -262,12 +269,16 @@
 \example histogram.cpp
 \example fractal.cpp
 \example plot2d.cpp
+\example plot3.cpp
+\example surface.cpp
 \example conway_pretty.cpp
+\example basic.cpp
 \example helloworld.cpp
 \example vectorize.cpp
 \example integer.cpp
 \example convolve.cpp
 \example rainfall.cpp
+\example swe.cpp
 \example morphing.cpp
 \example image_demo.cpp
 \example brain_segmentation.cpp
@@ -284,6 +295,7 @@
 #include "af/algorithm.h"
 #include "af/arith.h"
 #include "af/array.h"
+#include "af/backend.h"
 #include "af/blas.h"
 #include "af/constants.h"
 #include "af/complex.h"

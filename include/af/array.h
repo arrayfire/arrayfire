@@ -84,6 +84,19 @@ namespace af
             ASSIGN(/=)
 #undef ASSIGN
 
+#if AF_API_VERSION >= 32
+#define ASSIGN(OP)                                                  \
+            array_proxy& operator OP(const short &a);               \
+            array_proxy& operator OP(const unsigned short &a);      \
+
+            ASSIGN(=)
+            ASSIGN(+=)
+            ASSIGN(-=)
+            ASSIGN(*=)
+            ASSIGN(/=)
+#undef ASSIGN
+#endif
+
             // af::array member functions. same behavior as those below
             af_array get();
             af_array get() const;
@@ -627,7 +640,7 @@ namespace af
         bool isfloating() const;
 
         /**
-           \brief Returns true if the array type is \ref u8, \ref b8, \ref s32 \ref u32, \ref s64, \ref u64
+           \brief Returns true if the array type is \ref u8, \ref b8, \ref s32 \ref u32, \ref s64, \ref u64, \ref s16, \ref u16
         */
         bool isinteger() const;
 
@@ -813,7 +826,7 @@ namespace af
         /// \ingroup method_mat
         array H() const;
 
-#define ASSIGN(OP)                                                                      \
+#define ASSIGN_(OP)                                                                     \
         array& OP(const array &val);                                                    \
         array& OP(const double &val);              /**< \copydoc OP (const array &) */  \
         array& OP(const cdouble &val);             /**< \copydoc OP (const array &) */  \
@@ -828,6 +841,17 @@ namespace af
         array& OP(const unsigned long &val);       /**< \copydoc OP (const array &) */  \
         array& OP(const long long  &val);          /**< \copydoc OP (const array &) */  \
         array& OP(const unsigned long long &val);  /**< \copydoc OP (const array &) */  \
+
+#if AF_API_VERSION >= 32
+#define ASSIGN(OP)                                                                      \
+        ASSIGN_(OP)                                                                     \
+        array& OP(const short  &val);              /**< \copydoc OP (const array &) */  \
+        array& OP(const unsigned short &val);      /**< \copydoc OP (const array &) */  \
+
+#else
+#define ASSIGN(OP) ASSIGN_(OP)
+#endif
+
 
         /// \ingroup array_mem_operator_eq
         /// @{
@@ -892,6 +916,7 @@ namespace af
 
 
 #undef ASSIGN
+#undef ASSIGN_
 
         ///
         /// \brief Negates the values of the array
@@ -930,7 +955,7 @@ namespace af
     };
     // end of class array
 
-#define BIN_OP(OP)                                                                                                       \
+#define BIN_OP_(OP)                                                                                                      \
     AFAPI array OP (const array& lhs, const array& rhs);                                                                 \
     AFAPI array OP (const bool& lhs, const array& rhs);                 /**< \copydoc OP (const array&, const array&) */ \
     AFAPI array OP (const int& lhs, const array& rhs);                  /**< \copydoc OP (const array&, const array&) */ \
@@ -958,6 +983,18 @@ namespace af
     AFAPI array OP (const array& lhs, const float& rhs);                /**< \copydoc OP (const array&, const array&) */ \
     AFAPI array OP (const array& lhs, const cfloat& rhs);               /**< \copydoc OP (const array&, const array&) */ \
     AFAPI array OP (const array& lhs, const cdouble& rhs);              /**< \copydoc OP (const array&, const array&) */ \
+
+#if AF_API_VERSION >= 32
+#define BIN_OP(OP)                                                                                                       \
+        BIN_OP_(OP)                                                                                                      \
+        AFAPI array OP (const short& lhs, const array& rhs);            /**< \copydoc OP (const array&, const array&) */ \
+        AFAPI array OP (const unsigned short& lhs, const array& rhs);   /**< \copydoc OP (const array&, const array&) */ \
+        AFAPI array OP (const array& lhs, const short& rhs);            /**< \copydoc OP (const array&, const array&) */ \
+        AFAPI array OP (const array& lhs, const unsigned short& rhs);   /**< \copydoc OP (const array&, const array&) */ \
+
+#else
+#define BIN_OP(OP) BIN_OP_(OP)
+#endif
 
     /// \ingroup arith_func_add
     /// @{
@@ -1010,7 +1047,7 @@ namespace af
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
     ///
-    /// \returns an array with the equality operation performed on each element
+    /// \returns an array of type b8 with the equality operation performed on each element
     BIN_OP(operator==)
     /// @}
 
@@ -1021,7 +1058,7 @@ namespace af
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
     ///
-    /// \returns    an array with the != operation performed on each element
+    /// \returns    an array of type b8 with the != operation performed on each element
     ///             of \p lhs and \p rhs
     BIN_OP(operator!=)
     /// @}
@@ -1033,7 +1070,7 @@ namespace af
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
     ///
-    /// \returns    an array with the < operation performed on each element
+    /// \returns    an array of type b8 with the < operation performed on each element
     ///             of \p lhs and \p rhs
     BIN_OP(operator< )
     /// @}
@@ -1045,7 +1082,7 @@ namespace af
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
     ///
-    /// \returns    an array with the <= operation performed on each element
+    /// \returns    an array of type b8 with the <= operation performed on each element
     ///             of \p lhs and \p rhs
     BIN_OP(operator<=)
     /// @}
@@ -1057,7 +1094,7 @@ namespace af
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
     ///
-    /// \returns    an array with the > operation performed on each element
+    /// \returns    an array of type b8 with the > operation performed on each element
     ///             of \p lhs and \p rhs
     BIN_OP(operator> )
     /// @}
@@ -1069,7 +1106,7 @@ namespace af
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
     ///
-    /// \returns    an array with the >= operation performed on each element
+    /// \returns    an array of type b8 with the >= operation performed on each element
     ///             of \p lhs and \p rhs
     BIN_OP(operator>=)
     /// @}
@@ -1082,7 +1119,7 @@ namespace af
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
     ///
-    /// \returns    an array with a logical AND operation performed on each
+    /// \returns    an array of type b8 with a logical AND operation performed on each
     ///             element of \p lhs and \p rhs
     BIN_OP(operator&&)
     /// @}
@@ -1095,7 +1132,7 @@ namespace af
     /// \param[in] lhs the left hand side value of the operand
     /// \param[in] rhs the right hand side value of the operand
     ///
-    /// \returns    an array with a logical OR operation performed on each
+    /// \returns    an array of type b8 with a logical OR operation performed on each
     ///             element of \p lhs and \p rhs
     BIN_OP(operator||)
     /// @}
@@ -1178,6 +1215,7 @@ namespace af
     /// @}
 
 #undef BIN_OP
+#undef BIN_OP_
 
     /// Evaluate an expression (nonblocking).
     /**

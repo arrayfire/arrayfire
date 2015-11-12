@@ -35,6 +35,7 @@
 #endif
 
 #define ADD_
+#include <cblas.h>
 #include <cblas_f77.h>
 
 static char transChar(CBLAS_TRANSPOSE Trans)

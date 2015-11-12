@@ -38,9 +38,15 @@ namespace opencl
 {
     namespace kernel
     {
-        // Kernel Launch Config Values
-        static const int TX = 32;
-        static const int TY = 8;
+        using std::conditional;
+        using std::is_same;
+        template<typename T>
+        using ltype_t = typename conditional<is_same<T, intl>::value, cl_long, T>::type;
+
+        template<typename T>
+        using type_t = typename conditional<is_same<T, uintl>::value,
+                                            cl_ulong, ltype_t<T>
+                                           >::type;
 
         template<typename T, bool isAscending>
         void sort0(Param val)
@@ -60,14 +66,14 @@ namespace opencl
 
                             if(isAscending) {
                                 compute::stable_sort(
-                                        compute::make_buffer_iterator<T>(val_buf, valOffset),
-                                        compute::make_buffer_iterator<T>(val_buf, valOffset + val.info.dims[0]),
-                                        compute::less<T>(), c_queue);
+                                        compute::make_buffer_iterator< type_t<T> >(val_buf, valOffset),
+                                        compute::make_buffer_iterator< type_t<T> >(val_buf, valOffset + val.info.dims[0]),
+                                        compute::less< type_t<T> >(), c_queue);
                             } else {
                                 compute::stable_sort(
-                                        compute::make_buffer_iterator<T>(val_buf, valOffset),
-                                        compute::make_buffer_iterator<T>(val_buf, valOffset + val.info.dims[0]),
-                                        compute::greater<T>(), c_queue);
+                                        compute::make_buffer_iterator< type_t<T> >(val_buf, valOffset),
+                                        compute::make_buffer_iterator< type_t<T> >(val_buf, valOffset + val.info.dims[0]),
+                                        compute::greater< type_t<T> >(), c_queue);
                             }
                         }
                     }

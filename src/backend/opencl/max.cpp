@@ -22,4 +22,6 @@ namespace opencl
     INSTANTIATE(af_max_t, uintl  , uintl  )
     INSTANTIATE(af_max_t, char   , char   )
     INSTANTIATE(af_max_t, uchar  , uchar  )
+    INSTANTIATE(af_max_t, short  , short  )
+    INSTANTIATE(af_max_t, ushort , ushort )
 }

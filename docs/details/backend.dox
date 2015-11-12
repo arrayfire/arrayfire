@@ -1,0 +1,66 @@
+/**
+\addtogroup arrayfire_func
+@{
+
+\defgroup unified_func_setbackend setBackend
+
+\brief Set the current backend when using Unified backend
+
+This is a noop when using one of CPU, CUDA, or OpenCL backend.
+
+However, when using on of those 3 but trying to set it to a different backend
+will return in an exception.
+
+\ingroup unified_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup unified_func_getbackendcount getBackendCount
+
+\brief Get the number of backends whose libraries were successfully loaded.
+
+This will be between 0-3. 0 Being no backends were loaded and 3 being all
+backends loaded successfully.
+
+\ingroup unified_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup unified_func_getavailbackends getAvailableBackends
+
+\brief Returns an integer indicating the backends loaded successfully.
+
+The number returned denotes the backends available according to the table:
+
+Return Value | Backends Available
+-------------|-----------------------
+0            | None
+1            | CPU
+2            | CUDA
+3            | CPU and CUDA
+4            | OpenCL
+5            | CPU and OpenCL
+6            | CUDA and OpenCL
+7            | CPU, CUDA and OpenCL
+
+\ingroup unified_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup unified_func_getbackendid getBackendId
+
+\brief Get's the backend enum for an array
+
+This will return one of the values from the \ref af_backend enum.
+The return value specifies which backend the array was created on.
+
+\ingroup unified_func
+\ingroup arrayfire_func
+
+=======================================================================
+
+@}
+*/

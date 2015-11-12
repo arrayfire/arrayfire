@@ -27,24 +27,26 @@ class Var : public ::testing::Test
 
 };
 
-typedef ::testing::Types< float, double, cfloat, cdouble, uint, int, uintl, intl, char, uchar> TestTypes;
+typedef ::testing::Types< float, double, cfloat, cdouble, uint, int, uintl, intl, char, uchar, short, ushort> TestTypes;
 TYPED_TEST_CASE(Var, TestTypes);
 
 template<typename T>
 struct elseType {
    typedef typename cond_type< is_same_type<T, uintl>::value ||
-                               is_same_type<T, intl>::value,
+                               is_same_type<T, intl> ::value,
                                               double,
                                               T>::type type;
 };
 
 template<typename T>
 struct varOutType {
-   typedef typename cond_type< is_same_type<T, float>::value ||
-                               is_same_type<T, int>::value ||
-                               is_same_type<T, uint>::value ||
-                               is_same_type<T, uchar>::value ||
-                               is_same_type<T, char>::value,
+   typedef typename cond_type< is_same_type<T, float >::value ||
+                               is_same_type<T, int   >::value ||
+                               is_same_type<T, uint  >::value ||
+                               is_same_type<T, short >::value ||
+                               is_same_type<T, ushort>::value ||
+                               is_same_type<T, uchar >::value ||
+                               is_same_type<T, char  >::value,
                                               float,
                               typename elseType<T>::type>::type type;
 };

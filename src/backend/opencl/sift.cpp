@@ -31,7 +31,8 @@ unsigned sift(Array<float>& x_out, Array<float>& y_out, Array<float>& score_out,
               const Array<T>& in, const unsigned n_layers,
               const float contrast_thr, const float edge_thr,
               const float init_sigma, const bool double_input,
-              const float img_scale, const float feature_ratio)
+              const float img_scale, const float feature_ratio,
+              const bool compute_GLOH)
 {
 #ifdef AF_BUILD_SIFT
     unsigned nfeat_out;
@@ -46,7 +47,7 @@ unsigned sift(Array<float>& x_out, Array<float>& y_out, Array<float>& score_out,
 
     kernel::sift<T,convAccT>(&nfeat_out, &desc_len, x, y, score, ori, size, desc,
                              in, n_layers, contrast_thr, edge_thr, init_sigma,
-                             double_input, img_scale, feature_ratio);
+                             double_input, img_scale, feature_ratio, compute_GLOH);
 
     if (nfeat_out > 0) {
         const dim4 out_dims(nfeat_out);
@@ -62,19 +63,23 @@ unsigned sift(Array<float>& x_out, Array<float>& y_out, Array<float>& score_out,
 
     return nfeat_out;
 #else
-    AF_ERROR("ArrayFire was not built with nonfree support, SIFT disabled\n", AFF_ERR_NONFREE);
+    if (compute_GLOH)
+        AF_ERROR("ArrayFire was not built with nonfree support, GLOH disabled\n", AF_ERR_NONFREE);
+    else
+        AF_ERROR("ArrayFire was not built with nonfree support, SIFT disabled\n", AF_ERR_NONFREE);
 #endif
 }
 
 
-#define INSTANTIATE(T, convAccT)                                        \
-    template unsigned sift<T, convAccT>(Array<float>& x_out, Array<float>& y_out, \
-                                        Array<float>& score_out, Array<float>& ori_out, \
-                                        Array<float>& size_out, Array<float>& desc_out, \
-                                        const Array<T>& in, const unsigned n_layers, \
-                                        const float contrast_thr, const float edge_thr, \
-                                        const float init_sigma, const bool double_input, \
-                                        const float img_scale, const float feature_ratio);
+#define INSTANTIATE(T, convAccT)                                                            \
+    template unsigned sift<T, convAccT>(Array<float>& x_out, Array<float>& y_out,           \
+                                        Array<float>& score_out, Array<float>& ori_out,     \
+                                        Array<float>& size_out, Array<float>& desc_out,     \
+                                        const Array<T>& in, const unsigned n_layers,        \
+                                        const float contrast_thr, const float edge_thr,     \
+                                        const float init_sigma, const bool double_input,    \
+                                        const float img_scale, const float feature_ratio,   \
+                                        const bool compute_GLOH);
 
 INSTANTIATE(float , float )
 INSTANTIATE(double, double)

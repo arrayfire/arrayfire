@@ -130,6 +130,15 @@ static const int DescrHistBins = 8;
 // default number of bins in histogram for orientation assignment
 static const int OriHistBins = 36;
 
+// Number of GLOH bins in radial direction
+static const unsigned GLOHRadialBins = 3;
+
+// Number of GLOH angular bins (excluding the inner-most radial section)
+static const unsigned GLOHAngularBins = 8;
+
+// Number of GLOH bins per histogram in descriptor
+static const unsigned GLOHHistBins = 16;
+
 static const float PI_VAL = 3.14159265358979323846f;
 
 template<typename T>
@@ -403,7 +412,8 @@ void sift(unsigned* out_feat,
           const float init_sigma,
           const bool double_input,
           const float img_scale,
-          const float feature_ratio)
+          const float feature_ratio,
+          const bool compute_GLOH)
 {
     try {
         static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -414,6 +424,7 @@ void sift(unsigned* out_feat,
         static std::map<int, Kernel*>  coKernel;
         static std::map<int, Kernel*>  rdKernel;
         static std::map<int, Kernel*>  cdKernel;
+        static std::map<int, Kernel*>  cgKernel;
 
         int device = getActiveDeviceId();
 
@@ -437,6 +448,7 @@ void sift(unsigned* out_feat,
                 coKernel[device] = new Kernel(*siftProgs[device], "calcOrientation");
                 rdKernel[device] = new Kernel(*siftProgs[device], "removeDuplicates");
                 cdKernel[device] = new Kernel(*siftProgs[device], "computeDescriptor");
+                cgKernel[device] = new Kernel(*siftProgs[device], "computeGLOHDescriptor");
             });
 
         const unsigned min_dim = (double_input) ? min(img.info.dims[0]*2, img.info.dims[1]*2)
@@ -460,7 +472,10 @@ void sift(unsigned* out_feat,
 
         const unsigned d = DescrWidth;
         const unsigned n = DescrHistBins;
-        const unsigned desc_len = d*d*n;
+        const unsigned rb = GLOHRadialBins;
+        const unsigned ab = GLOHAngularBins;
+        const unsigned hb = GLOHHistBins;
+        const unsigned desc_len = (compute_GLOH) ? (1 + (rb-1) * ab) * hb : d*d*n;
 
         cl::Buffer* d_count = bufferAlloc(sizeof(unsigned));
 
@@ -676,17 +691,32 @@ void sift(unsigned* out_feat,
 
             const unsigned histsz = 8;
 
-            auto cdOp = make_kernel<Buffer, unsigned, unsigned,
-                                    Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
-                                    Buffer, KParam, int, int, float, int,
-                                    LocalSpaceArg> (*cdKernel[device]);
+            if (compute_GLOH) {
+                auto cgOp = make_kernel<Buffer, unsigned, unsigned,
+                                        Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
+                                        Buffer, KParam, int, unsigned, unsigned, unsigned, float, int,
+                                        LocalSpaceArg> (*cgKernel[device]);
 
-            cdOp(EnqueueArgs(getQueue(), global_desc, local_desc),
-                 *d_desc, desc_len, histsz,
-                 *d_oriented_x, *d_oriented_y, *d_oriented_layer,
-                 *d_oriented_response, *d_oriented_size, *d_oriented_ori, oriented_feat,
-                 *gauss_pyr[o].data, gauss_pyr[o].info, d, n, scale, n_layers,
-                 cl::Local(desc_len * (histsz+1) * sizeof(float)));
+                cgOp(EnqueueArgs(getQueue(), global_desc, local_desc),
+                     *d_desc, desc_len, histsz,
+                     *d_oriented_x, *d_oriented_y, *d_oriented_layer,
+                     *d_oriented_response, *d_oriented_size, *d_oriented_ori, oriented_feat,
+                     *gauss_pyr[o].data, gauss_pyr[o].info, d, rb, ab, hb, scale, n_layers,
+                     cl::Local(desc_len * (histsz+1) * sizeof(float)));
+            }
+            else {
+                auto cdOp = make_kernel<Buffer, unsigned, unsigned,
+                                        Buffer, Buffer, Buffer, Buffer, Buffer, Buffer, unsigned,
+                                        Buffer, KParam, int, int, float, int,
+                                        LocalSpaceArg> (*cdKernel[device]);
+
+                cdOp(EnqueueArgs(getQueue(), global_desc, local_desc),
+                     *d_desc, desc_len, histsz,
+                     *d_oriented_x, *d_oriented_y, *d_oriented_layer,
+                     *d_oriented_response, *d_oriented_size, *d_oriented_ori, oriented_feat,
+                     *gauss_pyr[o].data, gauss_pyr[o].info, d, n, scale, n_layers,
+                     cl::Local(desc_len * (histsz+1) * sizeof(float)));
+            }
             CL_DEBUG_FINISH(getQueue());
 
             total_feat += oriented_feat;
@@ -771,7 +801,6 @@ void sift(unsigned* out_feat,
             getQueue().enqueueCopyBuffer(*d_response_pyr[i], *score_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
             getQueue().enqueueCopyBuffer(*d_ori_pyr[i], *ori_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
             getQueue().enqueueCopyBuffer(*d_size_pyr[i], *size_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
-
             getQueue().enqueueCopyBuffer(*d_desc_pyr[i], *desc_out.data, 0, offset*desc_len*sizeof(unsigned), feat_pyr[i] * desc_len * sizeof(unsigned));
 
             bufferFree(d_x_pyr[i]);

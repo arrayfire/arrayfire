@@ -63,6 +63,8 @@ af_err af_moddims(af_array *out, const af_array in,
         case u8:  output = getHandle(modDims<uchar  >(getArray<uchar  >(in), newDims)); break;
         case s64: output = getHandle(modDims<intl   >(getArray<intl   >(in), newDims)); break;
         case u64: output = getHandle(modDims<uintl  >(getArray<uintl  >(in), newDims)); break;
+        case s16: output = getHandle(modDims<short  >(getArray<short  >(in), newDims)); break;
+        case u16: output = getHandle(modDims<ushort >(getArray<ushort >(in), newDims)); break;
         default: TYPE_ERROR(1, type);
         }
         std::swap(*out,output);

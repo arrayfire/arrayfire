@@ -20,13 +20,15 @@ template<typename T>
 GLenum getGLType() { return GL_FLOAT; }
 
 #define INSTANTIATE_GET_FG_TYPE(T, ForgeEnum)\
-    template<> fg::FGType getGLType<T>() { return ForgeEnum; }
+    template<> fg::dtype getGLType<T>() { return ForgeEnum; }
 
-INSTANTIATE_GET_FG_TYPE(float, fg::FG_FLOAT);
-INSTANTIATE_GET_FG_TYPE(int  , fg::FG_INT);
-INSTANTIATE_GET_FG_TYPE(unsigned, fg::FG_UNSIGNED_INT);
-INSTANTIATE_GET_FG_TYPE(char, fg::FG_BYTE);
-INSTANTIATE_GET_FG_TYPE(unsigned char, fg::FG_UNSIGNED_BYTE);
+INSTANTIATE_GET_FG_TYPE(float, fg::f32);
+INSTANTIATE_GET_FG_TYPE(int  , fg::s32);
+INSTANTIATE_GET_FG_TYPE(unsigned, fg::u32);
+INSTANTIATE_GET_FG_TYPE(char, fg::s8);
+INSTANTIATE_GET_FG_TYPE(unsigned char, fg::u8);
+INSTANTIATE_GET_FG_TYPE(unsigned short, fg::u16);
+INSTANTIATE_GET_FG_TYPE(short, fg::s16);
 
 GLenum glErrorSkip(const char *msg, const char* file, int line)
 {
@@ -78,6 +80,8 @@ size_t getTypeSize(GLenum type)
         case GL_FLOAT:          return sizeof(float);
         case GL_INT:            return sizeof(int  );
         case GL_UNSIGNED_INT:   return sizeof(unsigned);
+        case GL_SHORT:          return sizeof(short);
+        case GL_UNSIGNED_SHORT: return sizeof(unsigned short);
         case GL_BYTE:           return sizeof(char );
         case GL_UNSIGNED_BYTE:  return sizeof(unsigned char);
         default: return sizeof(float);
@@ -136,7 +140,7 @@ fg::Window* ForgeManager::getMainWindow(const bool dontCreate)
     return wnd;
 }
 
-fg::Image* ForgeManager::getImage(int w, int h, fg::ColorMode mode, fg::FGType type)
+fg::Image* ForgeManager::getImage(int w, int h, fg::ChannelFormat mode, fg::dtype type)
 {
     /* w, h needs to fall in the range of [0, 2^16]
      * for the ForgeManager to correctly retrieve
@@ -157,7 +161,7 @@ fg::Image* ForgeManager::getImage(int w, int h, fg::ColorMode mode, fg::FGType t
     return mImgMap[key];
 }
 
-fg::Plot* ForgeManager::getPlot(int nPoints, fg::FGType type)
+fg::Plot* ForgeManager::getPlot(int nPoints, fg::dtype type)
 {
     /* nPoints needs to fall in the range of [0, 2^48]
      * for the ForgeManager to correctly retrieve
@@ -176,7 +180,26 @@ fg::Plot* ForgeManager::getPlot(int nPoints, fg::FGType type)
     return mPltMap[key];
 }
 
-fg::Histogram* ForgeManager::getHistogram(int nBins, fg::FGType type)
+fg::Plot3* ForgeManager::getPlot3(int nPoints, fg::dtype type)
+{
+    /* nPoints needs to fall in the range of [0, 2^48]
+     * for the ForgeManager to correctly retrieve
+     * the necessary Forge Plot object. So, this implementation
+     * is a limitation on how big of an plot graph can be rendered
+     * using arrayfire graphics funtionality */
+    assert(nPoints <= 2ll<<48);
+    long long key = ((nPoints & _48BIT) << 48) | (type & _16BIT);
+
+    Plt3MapIter iter = mPlt3Map.find(key);
+    if (iter==mPlt3Map.end()) {
+        fg::Plot3* temp = new fg::Plot3(nPoints, type);
+        mPlt3Map[key] = temp;
+    }
+
+    return mPlt3Map[key];
+}
+
+fg::Histogram* ForgeManager::getHistogram(int nBins, fg::dtype type)
 {
     /* nBins needs to fall in the range of [0, 2^48]
      * for the ForgeManager to correctly retrieve
@@ -193,6 +216,25 @@ fg::Histogram* ForgeManager::getHistogram(int nBins, fg::FGType type)
     }
 
     return mHstMap[key];
+}
+
+fg::Surface* ForgeManager::getSurface(int nX, int nY, fg::dtype type)
+{
+    /* nX * nY needs to fall in the range of [0, 2^48]
+     * for the ForgeManager to correctly retrieve
+     * the necessary Forge Plot object. So, this implementation
+     * is a limitation on how big of an plot graph can be rendered
+     * using arrayfire graphics funtionality */
+    assert(nX * nY <= 2ll<<48);
+    long long key = (((nX * nY) & _48BIT) << 48) | (type & _16BIT);
+
+    SfcMapIter iter = mSfcMap.find(key);
+    if (iter==mSfcMap.end()) {
+        fg::Surface* temp = new fg::Surface(nX, nY, type);
+        mSfcMap[key] = temp;
+    }
+
+    return mSfcMap[key];
 }
 
 void ForgeManager::destroyResources()

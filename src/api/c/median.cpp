@@ -132,6 +132,8 @@ af_err af_median_all(double *realVal, double *imagVal, const af_array in)
             case f32: *realVal = median<float >(in); break;
             case s32: *realVal = median<int   >(in); break;
             case u32: *realVal = median<uint  >(in); break;
+            case s16: *realVal = median<short >(in); break;
+            case u16: *realVal = median<ushort>(in); break;
             case  u8: *realVal = median<uchar >(in); break;
             default : TYPE_ERROR(1, type);
         }
@@ -153,6 +155,8 @@ af_err af_median(af_array* out, const af_array in, const dim_t dim)
             case f32: output = median<float >(in, dim); break;
             case s32: output = median<int   >(in, dim); break;
             case u32: output = median<uint  >(in, dim); break;
+            case s16: output = median<short >(in, dim); break;
+            case u16: output = median<ushort>(in, dim); break;
             case  u8: output = median<uchar >(in, dim); break;
             default : TYPE_ERROR(1, type);
         }

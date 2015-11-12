@@ -122,6 +122,8 @@ af_err convert(af_array* out, const af_array in, const float r, const float g, c
             case f32: output = convert<float , float , isRGB2GRAY>(in, r, g, b); break;
             case u32: output = convert<uint  , float , isRGB2GRAY>(in, r, g, b); break;
             case s32: output = convert<int   , float , isRGB2GRAY>(in, r, g, b); break;
+            case u16: output = convert<ushort, float , isRGB2GRAY>(in, r, g, b); break;
+            case s16: output = convert<short , float , isRGB2GRAY>(in, r, g, b); break;
             case u8:  output = convert<uchar , float , isRGB2GRAY>(in, r, g, b); break;
             default: TYPE_ERROR(1, iType); break;
         }

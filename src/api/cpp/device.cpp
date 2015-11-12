@@ -7,13 +7,41 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <af/array.h>
 #include <af/device.h>
 #include <af/compatible.h>
 #include <af/traits.hpp>
+#include <af/backend.h>
 #include "error.hpp"
 
 namespace af
 {
+    void setBackend(const Backend bknd)
+    {
+        AF_THROW(af_set_backend(bknd));
+    }
+
+    unsigned getBackendCount()
+    {
+        unsigned temp = 1;
+        AF_THROW(af_get_backend_count(&temp));
+        return temp;
+    }
+
+    int getAvailableBackends()
+    {
+        int result = 0;
+        AF_THROW(af_get_available_backends(&result));
+        return result;
+    }
+
+    af::Backend getBackendId(const array &in)
+    {
+        af::Backend result = (af::Backend)0;
+        AF_THROW(af_get_backend_id(&result, in.get()));
+        return result;
+    }
+
     void info()
     {
         AF_THROW(af_info());
@@ -78,6 +106,8 @@ namespace af
         case b8 : return sizeof(unsigned char);
         case c32: return sizeof(float) * 2;
         case c64: return sizeof(double) * 2;
+        case s16: return sizeof(short);
+        case u16: return sizeof(unsigned short);
         default: return sizeof(float);
         }
     }
@@ -154,5 +184,7 @@ namespace af
     INSTANTIATE(unsigned)
     INSTANTIATE(unsigned char)
     INSTANTIATE(char)
+    INSTANTIATE(short)
+    INSTANTIATE(unsigned short)
 
 }

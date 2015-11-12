@@ -46,6 +46,8 @@ af_err af_regions(af_array *out, const af_array in, const af_connectivity connec
             case f64: output = regions<double>(in, connectivity); break;
             case s32: output = regions<int   >(in, connectivity); break;
             case u32: output = regions<uint  >(in, connectivity); break;
+            case s16: output = regions<short >(in, connectivity); break;
+            case u16: output = regions<ushort>(in, connectivity); break;
             default : TYPE_ERROR(0, type);
         }
         std::swap(*out, output);

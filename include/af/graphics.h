@@ -47,6 +47,8 @@ class AFAPI Window {
         /**
            Creates a window object with default width
            and height with title set to "ArrayFire"
+
+           \ingroup gfx_func_window
          */
         Window();
 
@@ -55,6 +57,8 @@ class AFAPI Window {
            and height using the title provided by the user
 
            \param[in] title is the window title
+
+           \ingroup gfx_func_window
          */
         Window(const char* const title);
 
@@ -65,6 +69,8 @@ class AFAPI Window {
            \param[in] width is the window width
            \param[in] height is the window height
            \param[in] title is the window title with default value as "ArrayFire"
+
+           \ingroup gfx_func_window
          */
         Window(const int width, const int height, const char* const title="ArrayFire");
 
@@ -74,10 +80,14 @@ class AFAPI Window {
 
            \param[in] wnd is an \ref af_window handle which can be retrieved by
            doing a get call on any \ref Window object
+
+           \ingroup gfx_func_window
          */
         Window(const af_window wnd);
         /**
            Destroys the window handle
+
+           \ingroup gfx_func_window
          */
         ~Window();
 
@@ -85,6 +95,8 @@ class AFAPI Window {
 
         /**
            \return Returns the \ref af_window window handle.
+
+           \ingroup gfx_func_window
          */
         af_window get() const { return wnd; }
 
@@ -93,6 +105,8 @@ class AFAPI Window {
 
            \param[in] x is horizontal coordinate
            \param[in] y is vertical coordinate
+
+           \ingroup gfx_func_window
          */
         void setPos(const unsigned x, const unsigned y);
 
@@ -100,6 +114,8 @@ class AFAPI Window {
            Set the window title
 
            \param[in] title is the window title
+
+           \ingroup gfx_func_window
          */
         void setTitle(const char* const title);
 
@@ -109,6 +125,8 @@ class AFAPI Window {
 
            \param[in]   w is target width of the window
            \param[in]   h is target height of the window
+
+           \ingroup gfx_func_window
          */
         void setSize(const unsigned w, const unsigned h);
 #endif
@@ -117,6 +135,8 @@ class AFAPI Window {
            Set the colormap to be used for subsequent rendering calls
 
            \param[in] cmap should be one of the enum values from \ref ColorMap
+
+           \ingroup gfx_func_window
          */
         void setColorMap(const ColorMap cmap);
 
@@ -127,8 +147,24 @@ class AFAPI Window {
            \param[in] title parameter is used when this function is called in grid mode
 
            \note \p in should be 2d array or 3d array with 3 channels.
+
+           \ingroup gfx_func_draw
          */
         void image(const array& in, const char* title=NULL);
+
+#if AF_API_VERSION >= 32
+        /**
+           Renders the input array as an 3d line plot to the window
+
+           \param[in] in is an \ref array
+           \param[in] title parameter is used when this function is called in grid mode
+
+           \note \p in should be 1d array of size 3n or 2d array with (3 x n) or (n x 3) channels.
+
+           \ingroup gfx_func_draw
+         */
+        void plot3(const array& in, const char* title=NULL);
+#endif
 
         /**
            Renders the input arrays as a 2D plot to the window
@@ -138,7 +174,10 @@ class AFAPI Window {
            \param[in] title parameter is used when this function is called in grid mode
 
            \note \p X and \p Y should be vectors.
+
+           \ingroup gfx_func_draw
          */
+
         void plot(const array& X, const array& Y, const char* const title=NULL);
 
         /**
@@ -150,20 +189,56 @@ class AFAPI Window {
            \param[in] title parameter is used when this function is called in grid mode
 
            \note \p X should be a vector.
+
+           \ingroup gfx_func_draw
          */
         void hist(const array& X, const double minval, const double maxval, const char* const title=NULL);
+
+#if AF_API_VERSION >= 32
+        /**
+           Renders the input arrays as a 3D surface plot to the window
+
+           \param[in] S is an \ref array with the z-axis data points
+           \param[in] title parameter is used when this function is called in grid mode
+
+           \note \p S should be a 2D array
+
+           \ingroup gfx_func_draw
+         */
+        void surface(const array& S, const char* const title);
+#endif
+
+#if AF_API_VERSION >= 32
+        /**
+           Renders the input arrays as a 3D surface plot to the window
+
+           \param[in] xVals is an \ref array with the x-axis data points
+           \param[in] yVals is an \ref array with the y-axis data points
+           \param[in] S is an \ref array with the z-axis data points
+           \param[in] title parameter is used when this function is called in grid mode
+
+           \note \p X and \p Y should be vectors or 2D arrays \p S should be s 2D array
+
+           \ingroup gfx_func_draw
+         */
+        void surface(const array& xVals, const array& yVals, const array& S, const char* const title);
+#endif
 
         /**
            Setup grid layout for multiview mode in a window
 
            \param[in]   rows is number of rows you want to show in a window
            \param[in]   cols is number of coloumns you want to show in a window
+
+           \ingroup gfx_func_window
         */
         void grid(const int rows, const int cols);
 
         /**
            This function swaps the background buffer to current view
            and polls for any key strokes while the window was in focus
+
+           \ingroup gfx_func_window
         */
         void show();
 
@@ -173,6 +248,8 @@ class AFAPI Window {
 
            \return     \ref AF_SUCCESS if window show is successful, otherwise an appropriate error code
            is returned.
+
+           \ingroup gfx_func_window
         */
         bool close();
 
@@ -185,6 +262,8 @@ class AFAPI Window {
 
            \return a reference to the object pointed by this
            to enable cascading this call with rendering functions.
+
+           \ingroup gfx_window_func
          */
         inline Window& operator()(const int r, const int c) {
             _r = r; _c = c;
@@ -210,7 +289,7 @@ extern "C" {
    \return     \ref AF_SUCCESS if window creation is successful, otherwise an appropriate error code
    is returned.
 
-   \ingroup gfx_window_func
+   \ingroup gfx_func_window
 */
 AFAPI af_err af_create_window(af_window *out, const int width, const int height, const char* const title);
 
@@ -292,6 +371,25 @@ AFAPI af_err af_draw_image(const af_window wind, const af_array in, const af_cel
 */
 AFAPI af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, const af_cell* const props);
 
+#if AF_API_VERSION >= 32
+/**
+   C Interface wrapper for drawing an array as a plot
+
+   \param[in]   wind is the window handle
+   \param[in]   P is an \ref af_array or matrix with the xyz-values of the points
+   \param[in]   props is structure \ref af_cell that has the properties that are used
+   for the current rendering.
+
+   \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
+   is returned.
+
+   \note \p P should be a 3n x 1  vector or one of a 3xn or nx3 matrices.
+
+   \ingroup gfx_func_draw
+*/
+AFAPI af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* const props);
+#endif
+
 /**
    C Interface wrapper for drawing an array as a histogram
 
@@ -310,6 +408,27 @@ AFAPI af_err af_draw_plot(const af_window wind, const af_array X, const af_array
    \ingroup gfx_func_draw
 */
 AFAPI af_err af_draw_hist(const af_window wind, const af_array X, const double minval, const double maxval, const af_cell* const props);
+
+#if AF_API_VERSION >= 32
+/**
+   C Interface wrapper for drawing arrayis as a surface
+
+   \param[in]   wind is the window handle
+   \param[in]   xVals is an \ref af_array with the x-axis data points
+   \param[in]   yVals is an \ref af_array with the y-axis data points
+   \param[in]   S is an \ref af_array with the z-axis data points
+   \param[in]   props is structure \ref af_cell that has the properties that are used
+   for the current rendering.
+
+   \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
+   is returned.
+
+   \note \p X and \p Y should be vectors. \p S should be a 2D array
+
+   \ingroup gfx_func_draw
+*/
+af_err af_draw_surface(const af_window wind, const af_array xVals, const af_array yVals, const af_array S, const af_cell* const props);
+#endif
 
 /**
    C Interface wrapper for grid setup in a window

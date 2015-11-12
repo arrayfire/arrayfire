@@ -47,5 +47,9 @@ INSTANTIATE(char  , uint)
 INSTANTIATE(int   , uint)
 INSTANTIATE(uint  , uint)
 INSTANTIATE(uchar , uint)
+INSTANTIATE(short , uint)
+INSTANTIATE(ushort, uint)
+INSTANTIATE(intl  , uint)
+INSTANTIATE(uintl , uint)
 
 }

@@ -329,6 +329,9 @@ distance as well as the color distance.
 The bilateral filter requires the size of the filter (in pixels) and the upper
 bound on color values, N, where pixel values range from 0–N inclusively.
 
+The return type of the array is f64 for f64 input, f32 for all other input
+types.
+
 =======================================================================
 
 \defgroup image_func_erode erode
