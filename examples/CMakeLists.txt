@@ -84,7 +84,11 @@ endif()
 # Next we build each example using every backend.
 if(${ArrayFire_Unified_FOUND})  # variable defined by FIND(ArrayFire ...)
   MESSAGE(STATUS "EXAMPLES: UNIFIED backend is ON.")
-  BUILD_ALL("${FILES}" unified ${ArrayFire_Unified_LIBRARIES} "")
+  IF(WIN32)
+    BUILD_ALL("${FILES}" unified ${ArrayFire_Unified_LIBRARIES} "")
+  ELSE()
+    BUILD_ALL("${FILES}" unified ${ArrayFire_Unified_LIBRARIES} "dl")
+  ENDIF()
 elseif(TARGET af)        # variable defined by the ArrayFire build tree
   MESSAGE(STATUS "EXAMPLES: UNIFIED backend is ON.")
   IF(WIN32)
