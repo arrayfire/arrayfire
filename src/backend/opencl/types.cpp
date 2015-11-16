@@ -25,5 +25,7 @@ namespace opencl
     template<> const char *shortname<uchar   >(bool caps) { return caps ? "V" : "v"; }
     template<> const char *shortname<intl    >(bool caps) { return caps ? "L" : "l"; }
     template<> const char *shortname<uintl   >(bool caps) { return caps ? "K" : "k"; }
+    template<> const char *shortname<short   >(bool caps) { return caps ? "P" : "p"; }
+    template<> const char *shortname<ushort  >(bool caps) { return caps ? "Q" : "q"; }
 
 }

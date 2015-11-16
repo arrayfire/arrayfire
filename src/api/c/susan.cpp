@@ -34,14 +34,11 @@ static af_features susan(af_array const &in,
                       getArray<T>(in), radius, diff_thr, geom_thr,
                       feature_ratio, edge);
 
-    Array<float> orientation = createValueArray<float>(feat.n, 0.0);
-    Array<float> size = createValueArray<float>(feat.n, 1.0);
-
     feat.x           = getHandle(x);
     feat.y           = getHandle(y);
     feat.score       = getHandle(score);
-    feat.orientation = getHandle(orientation);
-    feat.size        = getHandle(size);
+    feat.orientation = getHandle(feat.n > 0 ? createValueArray<float>(feat.n, 0.0) : createEmptyArray<float>(dim4()));
+    feat.size        = getHandle(feat.n > 0 ? createValueArray<float>(feat.n, 1.0) : createEmptyArray<float>(dim4()));
 
     return getFeaturesHandle(feat);
 }
@@ -69,6 +66,8 @@ af_err af_susan(af_features* out, const af_array in,
             case b8 : *out = susan<char  >(in, radius, diff_thr, geom_thr, feature_ratio, edge); break;
             case s32: *out = susan<int   >(in, radius, diff_thr, geom_thr, feature_ratio, edge); break;
             case u32: *out = susan<uint  >(in, radius, diff_thr, geom_thr, feature_ratio, edge); break;
+            case s16: *out = susan<short >(in, radius, diff_thr, geom_thr, feature_ratio, edge); break;
+            case u16: *out = susan<ushort>(in, radius, diff_thr, geom_thr, feature_ratio, edge); break;
             case u8 : *out = susan<uchar >(in, radius, diff_thr, geom_thr, feature_ratio, edge); break;
             default : TYPE_ERROR(1, type);
         }

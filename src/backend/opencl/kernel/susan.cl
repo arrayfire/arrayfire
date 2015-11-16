@@ -11,11 +11,14 @@
 
 #ifdef RESPONSE
 kernel
-void susan_responses(global T* out, global const T* in,
+void susan_responses(global T* out, global const T* in_,
+                     const unsigned in_off,
                      const unsigned idim0, const unsigned idim1,
                      const float t, const float g,
                      const unsigned edge)
 {
+    global const T* in = in_ + in_off;
+
     const int rSqrd   = RADIUS*RADIUS;
     const int windLen = 2*RADIUS+1;
     const int shrdLen = BLOCK_X + windLen-1;

@@ -17,6 +17,8 @@ underlying data may be one of various [basic types](\ref af::af_dtype):
 * [c64](\ref c64) complex double-precision (`cdouble`)
 * [s64](\ref s64) 64-bit signed integer (`intl`)
 * [u64](\ref u64) 64-bit unsigned integer (`uintl`)
+* [s16](\ref s16) 16-bit signed integer (`short`)
+* [u16](\ref u16) 16-bit unsigned integer (`unsigned short`)
 
 Older devices may not support double precision operations.
 

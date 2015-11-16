@@ -169,7 +169,8 @@ INSTANTIATE_UNIFORM(uint)
 INSTANTIATE_UNIFORM(intl)
 INSTANTIATE_UNIFORM(uintl)
 INSTANTIATE_UNIFORM(uchar)
-INSTANTIATE_UNIFORM(char)
+INSTANTIATE_UNIFORM(short)
+INSTANTIATE_UNIFORM(ushort)
 
 #define INSTANTIATE_NORMAL(T)                              \
     template Array<T>  randn<T>(const af::dim4 &dims);
@@ -179,6 +180,29 @@ INSTANTIATE_NORMAL(double)
 INSTANTIATE_NORMAL(cfloat)
 INSTANTIATE_NORMAL(cdouble)
 
+template<>
+Array<char> randu(const af::dim4 &dims)
+{
+    static unsigned long long my_seed = 0;
+    if (is_first) {
+        setSeed(gen_seed);
+        my_seed = gen_seed;
+    }
+
+    static auto gen = urand<float>(generator);
+
+    if (my_seed != gen_seed) {
+        gen = urand<float>(generator);
+        my_seed = gen_seed;
+    }
+
+    Array<char> outArray = createEmptyArray<char>(dims);
+    char *outPtr = outArray.get();
+    for (int i = 0; i < (int)outArray.elements(); i++) {
+        outPtr[i] = gen() > 0.5;
+    }
+    return outArray;
+}
 
 void setSeed(const uintl seed)
 {

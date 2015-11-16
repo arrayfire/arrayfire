@@ -45,9 +45,10 @@ void lookupND(global in_t * out,
     int k = iInfo.strides[2]*(DIM==2 ? trimIndex((int)idxPtr[gz], iInfo.dims[2]): gz);
     int l = iInfo.strides[3]*(DIM==3 ? trimIndex((int)idxPtr[gw], iInfo.dims[3]): gw);
 
-    global const in_t *inPtr = in + (i+j+k+l);
+    global const in_t *inPtr = in + (i+j+k+l) + iInfo.offset;
     global in_t *outPtr = out + (gx*oInfo.strides[0]+gy*oInfo.strides[1]+
-                                 gz*oInfo.strides[2]+gw*oInfo.strides[3]);
+                                 gz*oInfo.strides[2]+gw*oInfo.strides[3]+
+                                 oInfo.offset);
 
     if (gx<oInfo.dims[0] && gy<oInfo.dims[1] && gz<oInfo.dims[2] && gw<oInfo.dims[3]) {
         outPtr[0] = inPtr[0];

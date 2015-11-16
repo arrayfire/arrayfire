@@ -49,8 +49,7 @@ fg::Plot* setup_plot(const af_array X, const af_array Y)
     fg::Plot* plot = fgMngr.getPlot(X_dims.elements(), getGLType<T>());
     plot->setColor(1.0, 0.0, 0.0);
     plot->setAxesLimits(xmax, xmin, ymax, ymin);
-    plot->setXAxisTitle("X Axis");
-    plot->setYAxisTitle("Y Axis");
+    plot->setAxesTitles("X Axis", "Y Axis");
 
     copy_plot<T>(P, plot);
 
@@ -89,6 +88,8 @@ af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, co
             case f32: plot = setup_plot<float  >(X, Y); break;
             case s32: plot = setup_plot<int    >(X, Y); break;
             case u32: plot = setup_plot<uint   >(X, Y); break;
+            case s16: plot = setup_plot<short  >(X, Y); break;
+            case u16: plot = setup_plot<ushort >(X, Y); break;
             case u8 : plot = setup_plot<uchar  >(X, Y); break;
             default:  TYPE_ERROR(1, Xtype);
         }

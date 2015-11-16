@@ -26,9 +26,10 @@ using namespace detail;
 template<typename inType, typename outType>
 static outType varAll(const af_array& in, const bool isbiased)
 {
-    Array<outType> input = cast<outType>(getArray<inType>(in));
+    Array<inType> inArr = getArray<inType>(in);
+    Array<outType> input = cast<outType>(inArr);
 
-    Array<outType> meanCnst= createValueArray<outType>(input.dims(), mean<outType>(input));
+    Array<outType> meanCnst= createValueArray<outType>(input.dims(), mean<inType, outType>(inArr));
 
     Array<outType> diff    = arithOp<outType, af_sub_t>(input, meanCnst, input.dims());
 
@@ -65,10 +66,11 @@ static outType varAll(const af_array& in, const af_array weights)
 template<typename inType, typename outType>
 static af_array var(const af_array& in, const bool isbiased, int dim)
 {
-    Array<outType> input = cast<outType>(getArray<inType>(in));
+    Array<inType> _in    = getArray<inType>(in);
+    Array<outType> input = cast<outType>(_in);
     dim4 iDims = input.dims();
 
-    Array<outType> meanArr = mean<outType>(input, dim);
+    Array<outType> meanArr = mean<inType, outType>(_in, dim);
 
     /* now tile meanArr along dim and use it for variance computation */
     dim4 tileDims(1);
@@ -127,6 +129,8 @@ af_err af_var(af_array *out, const af_array in, const bool isbiased, const dim_t
             case f32: output = var<float ,  float >(in, isbiased, dim); break;
             case s32: output = var<int   ,  float >(in, isbiased, dim); break;
             case u32: output = var<uint  ,  float >(in, isbiased, dim); break;
+            case s16: output = var<short ,  float >(in, isbiased, dim); break;
+            case u16: output = var<ushort,  float >(in, isbiased, dim); break;
             case s64: output = var<intl  ,  double>(in, isbiased, dim); break;
             case u64: output = var<uintl ,  double>(in, isbiased, dim); break;
             case  u8: output = var<uchar ,  float >(in, isbiased, dim); break;
@@ -159,6 +163,8 @@ af_err af_var_weighted(af_array *out, const af_array in, const af_array weights,
             case f32: output = var<float ,  float >(in, weights, dim); break;
             case s32: output = var<int   ,  float >(in, weights, dim); break;
             case u32: output = var<uint  ,  float >(in, weights, dim); break;
+            case s16: output = var<short ,  float >(in, weights, dim); break;
+            case u16: output = var<ushort,  float >(in, weights, dim); break;
             case s64: output = var<intl  ,  double>(in, weights, dim); break;
             case u64: output = var<uintl ,  double>(in, weights, dim); break;
             case  u8: output = var<uchar ,  float >(in, weights, dim); break;
@@ -183,6 +189,8 @@ af_err af_var_all(double *realVal, double *imagVal, const af_array in, const boo
             case f32: *realVal = varAll<float , float >(in, isbiased); break;
             case s32: *realVal = varAll<int   , float >(in, isbiased); break;
             case u32: *realVal = varAll<uint  , float >(in, isbiased); break;
+            case s16: *realVal = varAll<short , float >(in, isbiased); break;
+            case u16: *realVal = varAll<ushort, float >(in, isbiased); break;
             case s64: *realVal = varAll<intl  , double>(in, isbiased); break;
             case u64: *realVal = varAll<uintl , double>(in, isbiased); break;
             case  u8: *realVal = varAll<uchar , float >(in, isbiased); break;
@@ -219,6 +227,8 @@ af_err af_var_all_weighted(double *realVal, double *imagVal, const af_array in, 
             case f32: *realVal = varAll<float , float >(in, weights); break;
             case s32: *realVal = varAll<int   , float >(in, weights); break;
             case u32: *realVal = varAll<uint  , float >(in, weights); break;
+            case s16: *realVal = varAll<short , float >(in, weights); break;
+            case u16: *realVal = varAll<ushort, float >(in, weights); break;
             case s64: *realVal = varAll<intl  , double >(in, weights); break;
             case u64: *realVal = varAll<uintl , double >(in, weights); break;
             case  u8: *realVal = varAll<uchar , float >(in, weights); break;

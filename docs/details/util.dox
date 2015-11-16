@@ -1,0 +1,148 @@
+/**
+\addtogroup arrayfire_func
+@{
+\defgroup print_func_print print
+
+\brief Print the array to screen
+
+Print Array and dimensions to screen
+
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup print_func_tostring toString
+
+\brief Print the array to a string instead of the screen
+
+This function is similar to af::print, except that it prints to a string
+rather than to screen.
+
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup stream_func_read readArray
+
+\brief Load an array from a file
+
+The readArray function lets users read arrays saved in files.
+Arrays can either be read using the index in the file (0-indexed), or using
+the key that was used along with the Array.
+
+Note that if there are multiple arrays with the same key, only the first one
+will be read.
+
+The format of the file (version 1) is as follows:
+
+Header:
+Description | Data Type | Size (Bytes) | Detailed Desc
+------------|-----------|--------------|--------------
+Version     | Char      | 1            | ArrayFire File Format Version for future use. Currently set to 1
+Array Count | Int       | 4            | No. of Arrays stored in file
+
+
+Per Array:
+Description             | Data Type | Size (Bytes) | Detailed Desc
+------------------------|-----------|--------------|--------------
+Length of Key String    | Int       | 4            | No. of characters (excluding null ending) in the key string
+Key                     | Char []   | length       | Key of the Array. Used when reading from file
+Offset                  | Int64     | 8            | No of bytes between offset and start of next array
+Array Type              | Char      | 1            | Type corresponding to af_dtype enum
+Dims (4 values)         | Int64     | 4 * 8 = 32   | Dimensions of the Array
+Data                    | Type      | sizeof(Type) * dims.elements() | Actual data of the array
+
+The offset is equal to 1 byte (type) + 32 bytes (dims) + size of data.
+
+An file with 2 arrays would look like (representative)
+
+> 1\n
+> 2\n
+> Array 1 Key Length\n
+> Array 1 Key\n
+> Array 1 Offset\n
+> Array 1 Type\n
+> Array 1 Dims\n
+> Array 1 Data\n
+> Array 2 Key Length\n
+> Array 2 Key\n
+> Array 2 Offset\n
+> Array 2 Type\n
+> Array 2 Dims\n
+> Array 2 Data\n
+
+\ingroup dataio_mat
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup stream_func_save saveArray
+
+\brief Save an array to a binary file
+
+The saveArray and readArray functions are designed to provide store and
+read access to arrays using files written to disk.
+
+The format of the file (version 1) is as follows:
+
+Header:
+Description | Data Type | Size (Bytes) | Detailed Desc
+------------|-----------|--------------|--------------
+Version     | Char      | 1            | ArrayFire File Format Version for future use. Currently set to 1
+Array Count | Int       | 4            | No. of Arrays stored in file
+
+
+Per Array:
+Description             | Data Type | Size (Bytes) | Detailed Desc
+------------------------|-----------|--------------|--------------
+Length of Key String    | Int       | 4            | No. of characters (excluding null ending) in the key string
+Key                     | Char []   | length       | Key of the Array. Used when reading from file
+Offset                  | Int64     | 8            | No of bytes between offset and start of next array
+Array Type              | Char      | 1            | Type corresponding to af_dtype enum
+Dims (4 values)         | Int64     | 4 * 8 = 32   | Dimensions of the Array
+Data                    | Type      | sizeof(Type) * dims.elements() | Actual data of the array
+
+The offset is equal to 1 byte (type) + 32 bytes (dims) + size of data.
+
+An file with 2 arrays would look like (representative)
+
+> 1\n
+> 2\n
+> Array 1 Key Length\n
+> Array 1 Key\n
+> Array 1 Offset\n
+> Array 1 Type\n
+> Array 1 Dims\n
+> Array 1 Data\n
+> Array 2 Key Length\n
+> Array 2 Key\n
+> Array 2 Offset\n
+> Array 2 Type\n
+> Array 2 Dims\n
+> Array 2 Data\n
+
+Save array allows you to append any number of Arrays to the same file using
+the append argument. If the append argument is false, then the contents of the
+file are discarded and new array is written anew.
+
+On each append, the array counter in the header is incremented and the new
+array is written to the end of the file. This function does not check if the
+tag is unique or not.
+
+\ingroup dataio_mat
+\ingroup arrayfire_func
+
+=======================================================================
+
+\defgroup data_func_randn randn
+
+\brief Create a random array sampled from a normal distribution
+
+The distribution is centered around 0
+
+\ingroup data_mat
+\ingroup arrayfire_func
+
+@}
+*/
+

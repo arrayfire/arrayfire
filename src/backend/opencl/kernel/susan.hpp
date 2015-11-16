@@ -36,6 +36,7 @@ static const unsigned SUSAN_THREADS_Y = 16;
 
 template<typename T, unsigned radius>
 void susan(cl::Buffer* out, const cl::Buffer* in,
+           const unsigned in_off,
            const unsigned idim0, const unsigned idim1,
            const float t, const float g, const unsigned edge)
 {
@@ -69,6 +70,7 @@ void susan(cl::Buffer* out, const cl::Buffer* in,
             });
 
         auto susanOp = make_kernel<Buffer, Buffer,
+                                   unsigned,
                                    unsigned, unsigned,
                                    float, float, unsigned>(*suKernel[device]);
 
@@ -76,7 +78,7 @@ void susan(cl::Buffer* out, const cl::Buffer* in,
         NDRange global(divup(idim0-2*edge, local[0])*local[0],
                        divup(idim1-2*edge, local[1])*local[1]);
 
-        susanOp(EnqueueArgs(getQueue(), global, local), *out, *in, idim0, idim1, t, g, edge);
+        susanOp(EnqueueArgs(getQueue(), global, local), *out, *in, in_off, idim0, idim1, t, g, edge);
 
     } catch (cl::Error err) {
         CL_TO_AF_ERROR(err);

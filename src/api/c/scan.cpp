@@ -53,6 +53,8 @@ af_err af_accum(af_array *out, const af_array in, const int dim)
         case s32:  res = scan<af_add_t, int    , int    >(in, dim); break;
         case u64:  res = scan<af_add_t, uintl  , uintl  >(in, dim); break;
         case s64:  res = scan<af_add_t, intl   , intl   >(in, dim); break;
+        case u16:  res = scan<af_add_t, ushort , uint   >(in, dim); break;
+        case s16:  res = scan<af_add_t, short  , int    >(in, dim); break;
         case u8:   res = scan<af_add_t, uchar  , uint   >(in, dim); break;
         // Make sure you are adding only "1" for every non zero value, even if op == af_add_t
         case b8:   res = scan<af_notzero_t, char  , uint   >(in, dim); break;

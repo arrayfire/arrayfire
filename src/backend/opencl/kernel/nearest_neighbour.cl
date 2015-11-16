@@ -77,7 +77,7 @@ void nearest_neighbour_unroll(
         // Copy local_size(0) training features to shared memory
         #pragma unroll
         for (unsigned i = 0; i < FEAT_LEN; i++) {
-            l_train[i * get_local_size(0) + tid] = train[i * ntrain + f];
+            l_train[i * get_local_size(0) + tid] = train[i * ntrain + f + tInfo.offset];
         }
     }
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -89,7 +89,7 @@ void nearest_neighbour_unroll(
         // Load one query feature that will be tested against all training
         // features in current block
         if (tid < FEAT_LEN && valid_feat) {
-            l_query[tid] = query[tid * nquery + j];
+            l_query[tid] = query[tid * nquery + j + qInfo.offset];
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -102,7 +102,7 @@ void nearest_neighbour_unroll(
 #ifdef USE_LOCAL_MEM
                 dist += DISTOP(l_train[k * get_local_size(0) + tid], l_query[k]);
 #else
-                dist += DISTOP(train[k * ntrain + f], l_query[k]);
+                dist += DISTOP(train[k * ntrain + f + tInfo.offset], l_query[k]);
 #endif
             }
         }
@@ -217,7 +217,7 @@ void nearest_neighbour(
     if (valid_feat) {
         // Copy local_size(0) training features to shared memory
         for (unsigned i = 0; i < feat_len; i++) {
-            l_train[i * get_local_size(0) + tid] = train[i * ntrain + f];
+            l_train[i * get_local_size(0) + tid] = train[i * ntrain + f + tInfo.offset];
         }
     }
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -229,7 +229,7 @@ void nearest_neighbour(
         // Load one query feature that will be tested against all training
         // features in current block
         if (tid < feat_len && valid_feat) {
-            l_query[tid] = query[tid * nquery + j];
+            l_query[tid] = query[tid * nquery + j + qInfo.offset];
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -241,7 +241,7 @@ void nearest_neighbour(
 #ifdef USE_LOCAL_MEM
                 dist += DISTOP(l_train[k * get_local_size(0) + tid], l_query[k]);
 #else
-                dist += DISTOP(train[k * ntrain + f], l_query[k]);
+                dist += DISTOP(train[k * ntrain + f + tInfo.offset], l_query[k]);
 #endif
             }
         }

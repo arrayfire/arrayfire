@@ -123,6 +123,28 @@ When memory is a concern, users can perform Cholesky decomposition in place as s
 
 =======================================================================
 
+\defgroup lapack_factor_func_svd svd
+
+\ingroup lapack_factor_mat
+
+\brief Perform Singular Value Decomposition
+
+This function factorizes a  matrix **A** into two unitary matrices **U** and **Vt**, and a diagonal matrix **S** such that
+
+     \f$A = U * S * Vt\f$
+
+If **A** has **M** rows and **N** columns, **U** is of the size **M x M** , **V** is of size **N x N**, and **S** is of size **M x N**
+
+The arrayfire function only returns the non zero diagonal elements of **S**. To reconstruct the original matrix **A** from the individual factors, the following code snuppet can be used:
+
+
+\snippet test/svd_dense.cpp ex_svd_reg
+
+When memory is a concern, and **A** is dispensible, \ref svdInPlace() can be used
+
+
+=======================================================================
+
 \defgroup lapack_solve_func_gen solve
 
 \ingroup lapack_solve_mat

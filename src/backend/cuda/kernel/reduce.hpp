@@ -371,15 +371,14 @@ namespace kernel
     template<typename Ti, typename To, af_op_t op>
     To reduce_all(CParam<Ti> in, bool change_nan, double nanval)
     {
-        int in_elements = in.strides[3] * in.dims[3];
+        int in_elements = in.dims[0] * in.dims[1] * in.dims[2] * in.dims[3];
+        bool is_linear = (in.strides[0] == 1);
+        for (int k = 1; k < 4; k++) {
+            is_linear &= (in.strides[k] == (in.strides[k - 1] * in.dims[k - 1]));
+        }
 
         // FIXME: Use better heuristics to get to the optimum number
-        if (in_elements > 4096) {
-
-            bool is_linear = (in.strides[0] == 1);
-            for (int k = 1; k < 4; k++) {
-                is_linear &= (in.strides[k] == (in.strides[k - 1] * in.dims[k - 1]));
-            }
+        if (in_elements > 4096 || !is_linear) {
 
             if (is_linear) {
                 in.dims[0] = in_elements;
@@ -415,7 +414,9 @@ namespace kernel
             scoped_ptr<To> h_ptr(new To[tmp_elements]);
             To* h_ptr_raw = h_ptr.get();
 
-            CUDA_CHECK(cudaMemcpy(h_ptr_raw, tmp.ptr, tmp_elements * sizeof(To), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, tmp.ptr, tmp_elements * sizeof(To),
+                       cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
+            CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
             memFree(tmp.ptr);
 
             Binary<To, op> reduce;
@@ -430,7 +431,9 @@ namespace kernel
 
             scoped_ptr<Ti> h_ptr(new Ti[in_elements]);
             Ti* h_ptr_raw = h_ptr.get();
-            CUDA_CHECK(cudaMemcpy(h_ptr_raw, in.ptr, in_elements * sizeof(Ti), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpyAsync(h_ptr_raw, in.ptr, in_elements * sizeof(Ti),
+                       cudaMemcpyDeviceToHost, cuda::getStream(cuda::getActiveDeviceId())));
+            CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
 
             Transform<Ti, To, op> transform;
             Binary<To, op> reduce;

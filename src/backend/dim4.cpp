@@ -12,11 +12,11 @@
 #include <cmath>
 #include <cfloat>
 #include <af/dim4.hpp>
-#include <ArrayInfo.hpp>
 #include <err_common.hpp>
 
 namespace af
 {
+
 #if __cplusplus > 199711l
     static_assert(std::is_standard_layout<dim4>::value, "af::dim4 must be a standard layout type");
 #endif
@@ -176,7 +176,7 @@ dim4 operator*(const dim4& first, const dim4& second)
 
 
 bool
-isEnd(const af_seq &seq)    { return (seq.end <= -1); }
+hasEnd(const af_seq &seq)    { return (seq.begin <= -1 || seq.end <= -1); }
 
 bool
 isSpan(const af_seq &seq)   { return (seq.step == 0 && seq.begin == 1 && seq.end == 1); }
@@ -196,18 +196,11 @@ dim_t calcDim(const af_seq &seq, const dim_t &parentDim)
     dim_t outDim = 1;
     if  (isSpan(seq)) {
         outDim = parentDim;
-    } else if (isEnd(seq)) {
-        if(seq.begin == -1) {   // only end is passed as seq
-            outDim = 1;
-        } else if (seq.begin < 0) {
-            af_seq temp = {parentDim + seq.begin,
-                           parentDim + seq.end,
-                           seq.step};
-            outDim = seqElements(temp);
-        } else {    // end is passed as a part of seq
-            af_seq temp = {seq.begin, parentDim + seq.end, seq.step};
-            outDim = seqElements(temp);
-        }
+    } else if (hasEnd(seq)) {
+        af_seq temp = {seq.begin, seq.end, seq.step};
+        if (seq.begin < 0) temp.begin += parentDim;
+        if (seq.end   < 0) temp.end   += parentDim;
+        outDim = seqElements(temp);
     } else {
         DIM_ASSERT(1, seq.begin >= -DBL_MIN && seq.begin < parentDim);
         DIM_ASSERT(1, seq.end < parentDim);
@@ -216,48 +209,5 @@ dim_t calcDim(const af_seq &seq, const dim_t &parentDim)
 
     return outDim;
 }
-}
 
-using af::dim4;
-using std::vector;
-
-dim4
-toDims(const vector<af_seq>& seqs, const dim4 &parentDims)
-{
-    dim4 outDims(1, 1, 1, 1);
-    for(unsigned i = 0; i < seqs.size(); i++ ) {
-        outDims[i] = af::calcDim(seqs[i], parentDims[i]);
-        if (outDims[i] > parentDims[i])
-            AF_ERROR("Size mismatch between input and output", AF_ERR_SIZE);
-    }
-    return outDims;
-}
-
-dim4
-toOffset(const vector<af_seq>& seqs, const dim4 &parentDims)
-{
-    dim4 outOffsets(0, 0, 0, 0);
-    for(unsigned i = 0; i < seqs.size(); i++ ) {
-        if (seqs[i].step !=0 && seqs[i].begin >= 0) {
-            outOffsets[i] = seqs[i].begin;
-        } else if (seqs[i].begin <= -1) {
-            outOffsets[i] = parentDims[i] + seqs[i].begin;
-        } else {
-            outOffsets[i] = 0;
-        }
-
-        if (outOffsets[i] >= parentDims[i])
-            AF_ERROR("Index out of range", AF_ERR_SIZE);
-    }
-    return outOffsets;
-}
-
-dim4
-toStride(const vector<af_seq>& seqs, const af::dim4 &parentDims)
-{
-    dim4 out(calcStrides(parentDims));
-    for(unsigned i = 0; i < seqs.size(); i++ ) {
-        if  (seqs[i].step != 0) {   out[i] *= seqs[i].step; }
-    }
-    return out;
 }

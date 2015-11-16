@@ -43,8 +43,12 @@ static inline int compute2cores(int major, int minor)
         { 0x20, 32 },
         { 0x21, 48 },
         { 0x30, 192 },
+        { 0x32, 192 },
         { 0x35, 192 },
+        { 0x37, 192 },
         { 0x50, 128 },
+        { 0x52, 128 },
+        { 0x53, 128 },
         {   -1, -1  },
     };
 
@@ -112,15 +116,11 @@ static inline bool card_compare_num(const cudaDevice_t &l, const cudaDevice_t &r
     return 0;
 }
 
-static const char *get_system(void)
+static const std::string get_system(void)
 {
-    return
-#if defined(ARCH_32)
-    "32-bit "
-#elif defined(ARCH_64)
-    "64-bit "
-#endif
+    std::string arch = (sizeof(void *) == 4) ? "32-bit " : "64-bit ";
 
+    return arch +
 #if defined(OS_LNX)
     "Linux";
 #elif defined(OS_WIN)
@@ -141,6 +141,11 @@ static inline string toString(T val)
 ///////////////////////////////////////////////////////////////////////////
 // Wrapper Functions
 ///////////////////////////////////////////////////////////////////////////
+int getBackend()
+{
+    return AF_BACKEND_CUDA;
+}
+
 string getInfo()
 {
     ostringstream info;
@@ -229,7 +234,8 @@ string getDriverVersion()
     char driverVersion[1024] = {" ",};
     int x = nvDriverVersion(driverVersion, sizeof(driverVersion));
     if (x != 1) {
-        #if !defined(OS_MAC) && !defined(__arm__)  // HACK Mac OSX 10.7 needs new method for fetching driver
+        // Windows, OSX, Tegra Need a new way to fetch driver
+        #if !defined(OS_WIN) && !defined(OS_MAC) && !defined(__arm__)
         throw runtime_error("Invalid driver");
         #endif
         int driver = 0;
@@ -266,6 +272,18 @@ int getDeviceNativeId(int device)
     if(device < (int)DeviceManager::getInstance().cuDevices.size())
         return DeviceManager::getInstance().cuDevices[device].nativeId;
     return -1;
+}
+
+int getDeviceIdFromNativeId(int nativeId)
+{
+    DeviceManager& mngr = DeviceManager::getInstance();
+
+    int devId = 0;
+    for(devId = 0; devId < mngr.nDevices; ++devId) {
+        if (nativeId == mngr.cuDevices[devId].nativeId)
+            break;
+    }
+    return devId;
 }
 
 cudaStream_t getStream(int device)
@@ -385,5 +403,11 @@ af_err afcu_get_stream(cudaStream_t* stream, int id)
 af_err afcu_get_native_id(int* nativeid, int id)
 {
     *nativeid = cuda::getDeviceNativeId(id);
+    return AF_SUCCESS;
+}
+
+af_err afcu_set_native_id(int nativeid)
+{
+    cuda::setDevice(cuda::getDeviceIdFromNativeId(nativeid));
     return AF_SUCCESS;
 }

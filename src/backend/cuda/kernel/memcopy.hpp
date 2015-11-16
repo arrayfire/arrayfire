@@ -142,6 +142,8 @@ namespace kernel
     OTHER_SPECIALIZATIONS(uint  )
     OTHER_SPECIALIZATIONS(intl   )
     OTHER_SPECIALIZATIONS(uintl  )
+    OTHER_SPECIALIZATIONS(short  )
+    OTHER_SPECIALIZATIONS(ushort )
     OTHER_SPECIALIZATIONS(uchar )
     OTHER_SPECIALIZATIONS(char  )
     ////////////////////////////// END - templated help functions for copy_kernel //////////////////////////////////
@@ -187,6 +189,7 @@ namespace kernel
         dim3 threads(DIMX, DIMY);
         size_t local_size[] = {DIMX, DIMY};
 
+        //FIXME: Why isn't threads being updated??
         local_size[0] *= local_size[1];
         if (ndims == 1) {
             local_size[1] = 1;

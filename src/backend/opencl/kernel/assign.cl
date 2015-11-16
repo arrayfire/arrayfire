@@ -52,8 +52,9 @@ void assignKernel(global T * optr, KParam oInfo, global const T * iptr, KParam i
         global const T *src = iptr + (gx*iInfo.strides[0]+
                                       gy*iInfo.strides[1]+
                                       gz*iInfo.strides[2]+
-                                      gw*iInfo.strides[3]);
-        global T *dst = optr + (i+j+k+l);
+                                      gw*iInfo.strides[3]+
+                                      iInfo.offset);
+        global T *dst = optr + (i+j+k+l) + oInfo.offset;
         // set the output
         dst[0] = src[0];
     }

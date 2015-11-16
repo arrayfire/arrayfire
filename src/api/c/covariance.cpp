@@ -27,14 +27,16 @@ using namespace detail;
 template<typename T, typename cType>
 static af_array cov(const af_array& X, const af_array& Y, const bool isbiased)
 {
-    Array<cType> xArr = cast<cType>(getArray<T>(X));
-    Array<cType> yArr = cast<cType>(getArray<T>(Y));
+    Array<T> _x = getArray<T>(X);
+    Array<T> _y = getArray<T>(Y);
+    Array<cType> xArr = cast<cType>(_x);
+    Array<cType> yArr = cast<cType>(_y);
 
     dim4 xDims = xArr.dims();
     dim_t N = isbiased ? xDims[0] : xDims[0]-1;
 
-    Array<cType> xmArr = createValueArray<cType>(xDims, mean<cType>(xArr));
-    Array<cType> ymArr = createValueArray<cType>(xDims, mean<cType>(yArr));
+    Array<cType> xmArr = createValueArray<cType>(xDims, mean<T, cType>(_x));
+    Array<cType> ymArr = createValueArray<cType>(xDims, mean<T, cType>(_y));
     Array<cType> nArr  = createValueArray<cType>(xDims, scalar<cType>(N));
 
     Array<cType> diffX = detail::arithOp<cType, af_sub_t>(xArr, xmArr, xDims);
@@ -71,6 +73,8 @@ af_err af_cov(af_array* out, const af_array X, const af_array Y, const bool isbi
             case u32: output = cov<uint  , float >(X, Y, isbiased); break;
             case s64: output = cov<intl  , double>(X, Y, isbiased); break;
             case u64: output = cov<uintl , double>(X, Y, isbiased); break;
+            case s16: output = cov<short , float >(X, Y, isbiased); break;
+            case u16: output = cov<ushort, float >(X, Y, isbiased); break;
             case  u8: output = cov<uchar , float >(X, Y, isbiased); break;
             default : TYPE_ERROR(1, xType);
         }

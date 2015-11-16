@@ -43,6 +43,9 @@ namespace cuda
             T *d_r = r.ptr;
             const T *d_i = in.ptr;
 
+            const T one  = scalar<T>(1);
+            const T zero = scalar<T>(0);
+
             if(oz < r.dims[2] && ow < r.dims[3]) {
                 d_i = d_i + oz * in.strides[2]    + ow * in.strides[3];
                 d_r = d_r + oz * r.strides[2] + ow * r.strides[3];
@@ -56,9 +59,10 @@ namespace cuda
                         bool cond = is_upper ? (oy >= ox) : (oy <= ox);
                         bool do_unit_diag  = is_unit_diag && (ox == oy);
                         if(cond) {
-                            Yd_r[ox] = do_unit_diag ? scalar<T>(1) : Yd_i[ox];
+                            // Change made because of compute 53 failing tests
+                            Yd_r[ox] = do_unit_diag ? one : Yd_i[ox];
                         } else {
-                            Yd_r[ox] = scalar<T>(0);
+                            Yd_r[ox] = zero;
                         }
                     }
                 }

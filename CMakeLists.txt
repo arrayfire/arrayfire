@@ -30,6 +30,13 @@ OPTION(BUILD_GRAPHICS "Build ArrayFire with Forge Graphics" ON)
 OPTION(BUILD_DOCS "Create ArrayFire Documentation" OFF)
 OPTION(WITH_COVERAGE "Added code coverage flags" OFF)
 
+OPTION(BUILD_NONFREE "Build ArrayFire nonfree algorithms" OFF)
+OPTION(BUILD_SIFT "Build ArrayFire nonfree algorithms" OFF)
+
+MARK_AS_ADVANCED(BUILD_SIFT)
+
+OPTION(BUILD_UNIFIED "Build Backend-Independent ArrayFire API" ON)
+
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
@@ -81,6 +88,27 @@ IF(BUILD_GRAPHICS)
 
 ENDIF(BUILD_GRAPHICS)
 
+IF(BUILD_NONFREE)
+  MESSAGE(WARNING "Building With NONFREE ON requires the following patents")
+  SET(BUILD_SIFT ON)
+ENDIF(BUILD_NONFREE)
+
+IF(BUILD_SIFT)
+  ADD_DEFINITIONS(-DAF_BUILD_SIFT)
+
+  IF (NOT BUILD_NONFREE)
+    MESSAGE(WARNING "Building with SIFT requires the following patents")
+  ENDIF()
+
+  MESSAGE("Method and apparatus for identifying scale invariant features"
+    "in an image and use of same for locating an object in an image,\" David"
+    "G. Lowe, US Patent 6,711,293 (March 23, 2004). Provisional application"
+    "filed March 8, 1999. Asignee: The University of British Columbia. For"
+    "further details, contact David Lowe (lowe@cs.ubc.ca) or the"
+    "University-Industry Liaison Office of the University of British"
+    "Columbia.")
+ENDIF(BUILD_SIFT)
+
 INCLUDE_DIRECTORIES(
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/backend"
@@ -122,11 +150,6 @@ ENDIF()
 # Architechture Definitions
 INCLUDE(${CMAKE_MODULE_PATH}/TargetArch.cmake)
 target_architecture(ARCH)
-IF(${ARCH} STREQUAL "x86_64")
-    ADD_DEFINITIONS(-DARCH_64)
-ELSE(${ARCH})
-    ADD_DEFINITIONS(-DARCH_32)
-ENDIF()
 
 INCLUDE(${CMAKE_MODULE_PATH}/Version.cmake)
 
@@ -140,6 +163,11 @@ ENDIF()
 
 IF(${BUILD_OPENCL})
     ADD_SUBDIRECTORY(src/backend/opencl)
+ENDIF()
+
+IF(${BUILD_UNIFIED})
+    ADD_DEFINITIONS(-DAF_UNIFIED)
+    ADD_SUBDIRECTORY(src/api/unified)
 ENDIF()
 
 IF(${BUILD_DOCS})

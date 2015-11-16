@@ -10,8 +10,18 @@
 // Include this before af/opencl.h
 // Causes conflict between system cl.hpp and opencl/cl.hpp
 #if defined(WITH_GRAPHICS)
+
 #include <graphics_common.hpp>
+
+#if defined(OS_MAC)
+#include <OpenGL/OpenGL.h>
+#include <libkern/OSAtomic.h>
+#else
+#include <GL/gl.h>
+#endif // !__APPLE__
+
 #endif
+
 #include <cl.hpp>
 
 #include <af/version.h>
@@ -50,15 +60,11 @@ static const std::string CL_GL_SHARING_EXT = "cl_APPLE_gl_sharing";
 static const std::string CL_GL_SHARING_EXT = "cl_khr_gl_sharing";
 #endif
 
-static const char *get_system(void)
+static const std::string get_system(void)
 {
-    return
-#if defined(ARCH_32)
-    "32-bit "
-#elif defined(ARCH_64)
-    "64-bit "
-#endif
+    std::string arch = (sizeof(void *) == 4) ? "32-bit " : "64-bit ";
 
+    return arch +
 #if defined(OS_LNX)
     "Linux";
 #elif defined(OS_WIN)
@@ -66,6 +72,11 @@ static const char *get_system(void)
 #elif defined(OS_MAC)
     "Mac OSX";
 #endif
+}
+
+int getBackend()
+{
+    return AF_BACKEND_OPENCL;
 }
 
 DeviceManager& DeviceManager::getInstance()
@@ -222,17 +233,26 @@ std::string getInfo()
         vector<Device> devices = context->getInfo<CL_CONTEXT_DEVICES>();
 
         for(auto &device:devices) {
-            const Platform &platform = device.getInfo<CL_DEVICE_PLATFORM>();
+            const Platform platform(device.getInfo<CL_DEVICE_PLATFORM>());
+
             string platStr = platform.getInfo<CL_PLATFORM_NAME>();
-            bool show_braces = ((unsigned)getActiveDeviceId() == nDevices);
             string dstr = device.getInfo<CL_DEVICE_NAME>();
 
+            // Remove null termination character from the strings
+            platStr.pop_back();
+            dstr.pop_back();
+
+            bool show_braces = ((unsigned)getActiveDeviceId() == nDevices);
             string id = (show_braces ? string("[") : "-") + std::to_string(nDevices) +
                         (show_braces ? string("]") : "-");
             info << id << " " << platformMap(platStr) << ": " << ltrim(dstr) << " ";
 #ifndef NDEBUG
-            info << device.getInfo<CL_DEVICE_VERSION>();
-            info << " Device driver " << device.getInfo<CL_DRIVER_VERSION>();
+            string devVersion = device.getInfo<CL_DEVICE_VERSION>();
+            string driVersion = device.getInfo<CL_DRIVER_VERSION>();
+            devVersion.pop_back();
+            driVersion.pop_back();
+            info << devVersion;
+            info << " Device driver " << driVersion;
             info << " FP64 Support("
                  << (device.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()>0 ? "True" : "False")
                  << ")";
@@ -247,7 +267,7 @@ std::string getInfo()
 
 std::string getPlatformName(const cl::Device &device)
 {
-    const Platform &platform = device.getInfo<CL_DEVICE_PLATFORM>();
+    const Platform platform(device.getInfo<CL_DEVICE_PLATFORM>());
     std::string platStr = platform.getInfo<CL_PLATFORM_NAME>();
     return platformMap(platStr);
 }
@@ -260,6 +280,18 @@ int getDeviceCount()
 int getActiveDeviceId()
 {
     return DeviceManager::getInstance().mActiveQId;
+}
+
+int getDeviceIdFromNativeId(cl_device_id id)
+{
+    DeviceManager& devMngr = DeviceManager::getInstance();
+    int nDevices = devMngr.mDevices.size();
+    int devId = 0;
+    for (devId=0; devId<nDevices; ++devId) {
+        if (id == devMngr.mDevices[devId]->operator()())
+            break;
+    }
+    return devId;
 }
 
 const Context& getContext()
@@ -302,7 +334,7 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
         vector<Device> devices = context->getInfo<CL_CONTEXT_DEVICES>();
 
         for (auto &device : devices) {
-            const Platform &platform = device.getInfo<CL_DEVICE_PLATFORM>();
+            const Platform platform(device.getInfo<CL_DEVICE_PLATFORM>());
             string platStr = platform.getInfo<CL_PLATFORM_NAME>();
 
             if (currActiveDevId == nDevices) {
@@ -405,7 +437,7 @@ void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHa
             }
 
             // call forge to get OpenGL sharing context and details
-            cl::Platform plat = mDevices[device]->getInfo<CL_DEVICE_PLATFORM>();
+            cl::Platform plat(mDevices[device]->getInfo<CL_DEVICE_PLATFORM>());
 #ifdef OS_MAC
             CGLContextObj cgl_current_ctx = CGLGetCurrentContext();
             CGLShareGroupObj cgl_share_group = CGLGetShareGroup(cgl_current_ctx);
@@ -467,5 +499,11 @@ af_err afcl_get_queue(cl_command_queue *queue, const bool retain)
 af_err afcl_get_device_id(cl_device_id *id)
 {
     *id = getDevice()();
+    return AF_SUCCESS;
+}
+
+af_err afcl_set_device_id(cl_device_id id)
+{
+    setDevice(getDeviceIdFromNativeId(id));
     return AF_SUCCESS;
 }

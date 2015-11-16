@@ -67,20 +67,20 @@ namespace af {
 
 static timer _timer_;
 
-AFAPI timer timer::start()
+timer timer::start()
 {
     return _timer_ = time_now();
 }
-AFAPI double timer::stop(timer start)
+double timer::stop(timer start)
 {
     return time_seconds(start, time_now());
 }
-AFAPI double timer::stop()
+double timer::stop()
 {
     return time_seconds(_timer_, time_now());
 }
 
-AFAPI double timeit(void(*fn)())
+double timeit(void(*fn)())
 {
     // parameters
     int sample_trials = 3;

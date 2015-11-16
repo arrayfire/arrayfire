@@ -64,9 +64,12 @@ INCLUDE_DIRECTORIES(
     "${CMAKE_SOURCE_DIR}/src/backend/cpu"
     ${FFTW_INCLUDES}
     ${CBLAS_INCLUDE_DIR}
-    ${LAPACK_INCLUDE_DIR}
     ${CMAKE_BINARY_DIR}/third_party/threads/src/threads
     )
+
+IF(LAPACK_FOUND)
+    INCLUDE_DIRECTORIES(${LAPACK_INCLUDE_DIR})
+ENDIF()
 
 FILE(GLOB cpu_headers
     "*.hpp"

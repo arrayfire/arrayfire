@@ -70,6 +70,8 @@ af_err af_tile(af_array *out, const af_array in, const af::dim4 &tileDims)
             case u32: output = tile<uint   >(in, tileDims);  break;
             case s64: output = tile<intl   >(in, tileDims);  break;
             case u64: output = tile<uintl  >(in, tileDims);  break;
+            case s16: output = tile<short  >(in, tileDims);  break;
+            case u16: output = tile<ushort >(in, tileDims);  break;
             case u8:  output = tile<uchar  >(in, tileDims);  break;
             default:  TYPE_ERROR(1, type);
         }

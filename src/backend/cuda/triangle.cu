@@ -52,4 +52,6 @@ Array<T> triangle(const Array<T> &in)
     INSTANTIATE(uintl)
     INSTANTIATE(char)
     INSTANTIATE(uchar)
+    INSTANTIATE(short)
+    INSTANTIATE(ushort)
 }

@@ -52,6 +52,12 @@ namespace TNJ
             return (void *)(&m_val);
         }
 
+        void *calc(int idx)
+        {
+            m_val = m_op.eval(*(Ti *)m_child->calc(idx));
+            return (void *)&m_val;
+        }
+
         void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
         {
             if (m_is_eval) return;
@@ -63,10 +69,15 @@ namespace TNJ
             return;
         }
 
-        void reset(bool reset_off=true)
+        void reset()
         {
-            m_child->reset(reset_off);
+            m_child->reset();
             m_is_eval = false;
+        }
+
+        bool isLinear(const dim_t *dims)
+        {
+            return m_child->isLinear(dims);
         }
     };
 

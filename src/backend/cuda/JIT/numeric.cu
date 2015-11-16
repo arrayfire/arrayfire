@@ -39,6 +39,8 @@ MATH_NOOP(floor, char)
 MATH_NOOP(floor, uchar)
 MATH_NOOP(floor, uintl)
 MATH_NOOP(floor, intl)
+MATH_NOOP(floor, ushort)
+MATH_NOOP(floor, short)
 
 MATH_BASIC(ceil, float)
 MATH_BASIC(ceil, double)
@@ -48,6 +50,8 @@ MATH_NOOP(ceil, char)
 MATH_NOOP(ceil, uchar)
 MATH_NOOP(ceil, uintl)
 MATH_NOOP(ceil, intl)
+MATH_NOOP(ceil, ushort)
+MATH_NOOP(ceil, short)
 
 MATH_BASIC(round, float)
 MATH_BASIC(round, double)
@@ -57,6 +61,8 @@ MATH_NOOP(round, char)
 MATH_NOOP(round, uchar)
 MATH_NOOP(round, uintl)
 MATH_NOOP(round, intl)
+MATH_NOOP(round, ushort)
+MATH_NOOP(round, short)
 
 MATH_BASIC(trunc, float)
 MATH_BASIC(trunc, double)
@@ -66,6 +72,8 @@ MATH_NOOP(trunc, char)
 MATH_NOOP(trunc, uchar)
 MATH_NOOP(trunc, uintl)
 MATH_NOOP(trunc, intl)
+MATH_NOOP(trunc, ushort)
+MATH_NOOP(trunc, short)
 
 MATH_BASIC(sign, float)
 MATH_BASIC(sign, double)
@@ -75,6 +83,8 @@ MATH_NOOP(sign, char)
 MATH_NOOP(sign, uchar)
 MATH_NOOP(sign, uintl)
 MATH_NOOP(sign, intl)
+MATH_NOOP(sign, ushort)
+MATH_NOOP(sign, short)
 
 MATH_BASIC(abs, float)
 MATH_BASIC(abs, double)
@@ -84,24 +94,30 @@ MATH_NOOP(abs, uint)
 MATH_NOOP(abs, uchar)
 MATH_NOOP(abs, uintl)
 MATH_NOOP(abs, intl)
+MATH_NOOP(abs, ushort)
+MATH_NOOP(abs, short)
 
 MATH_BASIC(tgamma, float)
 MATH_BASIC(tgamma, double)
-MATH_CAST(tgamma, int, float)
-MATH_CAST(tgamma, uint, float)
-MATH_CAST(tgamma, char, float)
-MATH_CAST(tgamma, uchar, float)
-MATH_CAST(tgamma, uintl, float)
-MATH_CAST(tgamma, intl, float)
+MATH_CAST(tgamma, int   , float)
+MATH_CAST(tgamma, uint  , float)
+MATH_CAST(tgamma, char  , float)
+MATH_CAST(tgamma, uchar , float)
+MATH_CAST(tgamma, uintl , float)
+MATH_CAST(tgamma, intl  , float)
+MATH_CAST(tgamma, ushort, float)
+MATH_CAST(tgamma, short , float)
 
 MATH_BASIC(lgamma, float)
 MATH_BASIC(lgamma, double)
-MATH_CAST(lgamma, int, float)
-MATH_CAST(lgamma, uint, float)
-MATH_CAST(lgamma, char, float)
-MATH_CAST(lgamma, uchar, float)
-MATH_CAST(lgamma, uintl, float)
-MATH_CAST(lgamma, intl, float)
+MATH_CAST(lgamma, int   , float)
+MATH_CAST(lgamma, uint  , float)
+MATH_CAST(lgamma, char  , float)
+MATH_CAST(lgamma, uchar , float)
+MATH_CAST(lgamma, uintl , float)
+MATH_CAST(lgamma, intl  , float)
+MATH_CAST(lgamma, ushort, float)
+MATH_CAST(lgamma, short , float)
 
 __device__ float ___abs(cfloat a) { return cuCabsf(a); }
 __device__ double ___abs(cdouble a) { return cuCabs(a); }
@@ -128,6 +144,8 @@ __device__ double mod(double a, double b) { return fmod(a, b); }
     MATH2_BASIC(fn, uintl)                          \
     MATH2_BASIC(fn, char)                           \
     MATH2_BASIC(fn, uchar)                          \
+    MATH2_BASIC(fn, short)                          \
+    MATH2_BASIC(fn, ushort)                         \
     __device__ double ___##fn(double a, double b)   \
     {                                               \
         return fn(a, b);                            \

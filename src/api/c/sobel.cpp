@@ -48,6 +48,8 @@ af_err af_sobel_operator(af_array *dx, af_array *dy, const af_array img, const u
             case f64: output = sobelDerivatives<double, double>(img, ker_size); break;
             case s32: output = sobelDerivatives<int   , int>   (img, ker_size); break;
             case u32: output = sobelDerivatives<uint  , int>   (img, ker_size); break;
+            case s16: output = sobelDerivatives<short , int>   (img, ker_size); break;
+            case u16: output = sobelDerivatives<ushort, int>   (img, ker_size); break;
             case b8 : output = sobelDerivatives<char  , int>   (img, ker_size); break;
             case u8:  output = sobelDerivatives<uchar , int>   (img, ker_size); break;
             default : TYPE_ERROR(1, type);

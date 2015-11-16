@@ -20,6 +20,8 @@
 namespace cuda
 {
 
+int getBackend();
+
 std::string getInfo();
 
 std::string getDeviceInfo(int device);
@@ -78,6 +80,8 @@ class DeviceManager
         friend int getActiveDeviceId();
 
         friend int getDeviceNativeId(int device);
+
+        friend int getDeviceIdFromNativeId(int nativeId);
 
         friend cudaStream_t getStream(int device);
 

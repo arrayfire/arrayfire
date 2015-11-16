@@ -19,5 +19,5 @@ if [ -z $user ]; then
     exit 1
 fi
 
-su $user -c "$brew tap homebrew/versions"
-su $user -c "$brew install glfw3 fontconfig"
+su $user -c "$brew tap homebrew/versions" 2> $err_file
+su $user -c "$brew install glfw3 fontconfig" 2> $err_file

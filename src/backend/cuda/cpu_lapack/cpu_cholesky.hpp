@@ -7,14 +7,16 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-kernel
-void
-set(    global  T*      ptr,
-                T       val,
-        const   unsigned long  elements)
-{
-    if(get_global_id(0) < elements) {
-        ptr[get_global_id(0)] = val;
-    }
-}
+#include <Array.hpp>
 
+namespace cuda
+{
+namespace cpu
+{
+    template<typename T>
+    Array<T> cholesky(int *info, const Array<T> &in, const bool is_upper);
+
+    template<typename T>
+    int cholesky_inplace(Array<T> &in, const bool is_upper);
+}
+}

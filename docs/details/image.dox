@@ -21,6 +21,12 @@ Grayscale is a single channel color space where pixel value ranges from 0 to 1.
 Zero represents black, one represent white and any value between zero & one is
 a gray value
 
+\page image_func_ycbcr YCbCr
+
+YCbCr is a family of color spaces used as a part of the color image pipeline in video
+and digital photography systems where Y is luma component and Cb & Cr are the blue-difference
+and red-difference chroma components.
+
 */
 //=================================================================================
 /**
@@ -99,6 +105,81 @@ following formula
        \f$G = gFactor * intensity\f$
 
        \f$B = bFactor * intensity\f$
+
+=======================================================================
+
+\defgroup image_func_rgb2ycbcr rgb2ycbcr
+\ingroup colorconv_mat
+
+RGB to YCbCr colorspace converter
+
+\copydoc image_func_rgb
+\copydoc image_func_ycbcr
+
+Input array to this function should be of real data in the range \f$[0,1]\f$.
+
+The following equations are used to convert image from RGB color space to YCbCr color space.
+
+\f$ Y  = 16 + \displaystyle k_r*R + (1 - \displaystyle k_r- \displaystyle k_b)*G + \displaystyle k_b * B \f$
+
+\f$ Cb =  128 + \frac{\displaystyle 1}{\displaystyle 2} * \frac{\displaystyle B - Y\displaystyle
+}{\displaystyle 1 - \displaystyle k_b} \f$
+
+\f$ Cr =  128 + \frac{\displaystyle 1}{\displaystyle 2} * \frac{\displaystyle R - Y\displaystyle
+}{\displaystyle 1 - \displaystyle k_r} \f$
+
+Output image in YCbCr has following range for their respective channels.
+
+\f$Y -> [16, 219]\f$
+
+\f$Cb-> [16, 240]\f$
+
+\f$Cr-> [16, 240]\f$
+
+Based on the ITU-R BT.xyz[w] standard used, different values of \f$k_b\f$ and \f$k_r\f$ are used
+to do the color space conversion. You can change these values by passing the \ref af_ycc_std enum
+value.
+
+=======================================================================
+
+\defgroup image_func_ycbcr2rgb ycbcr2rgb
+\ingroup colorconv_mat
+
+YCbCr to RGB colorspace converter
+
+\copydoc image_func_ycbcr
+\copydoc image_func_rgb
+
+Input array to this function should be of real data with the following range in
+their respective channels.
+
+\f$Y -> [16, 219]\f$
+
+\f$Cb-> [16, 240]\f$
+
+\f$Cr-> [16, 240]\f$
+
+
+The following equations are used to convert image from RGB color space to YCbCr color space.
+
+\f$ R = \frac{\displaystyle Y - \displaystyle 16}{\displaystyle 219}
+       + \frac{\displaystyle C_r - \displaystyle 128}{\displaystyle 112} * (\displaystyle 1 - \displaystyle k_r) \f$
+
+\f$ G = \frac{\displaystyle Y - \displaystyle 16}{\displaystyle 219}
+       - \frac{\displaystyle C_r - \displaystyle 128}{\displaystyle 112} * (\displaystyle 1 -
+\displaystyle k_r) * \frac{\displaystyle k_r}{\displaystyle 1 - \displaystyle k_b - \displaystyle
+k_r} - \frac{\displaystyle C_b - \displaystyle 128}{\displaystyle 112} * (\displaystyle 1 -
+\displaystyle k_b) * \frac{\displaystyle k_b}{\displaystyle 1 - \displaystyle k_b - \displaystyle
+k_r}\f$
+
+\f$ B = \frac{\displaystyle Y - \displaystyle 16}{\displaystyle 219}
+       + \frac{\displaystyle C_b - \displaystyle 128}{\displaystyle 112} * (\displaystyle 1 - \displaystyle k_b) \f$
+
+Output image in RGB will have values in range \f$[0, 1]\f$.
+
+Based on the ITU-R BT.xyz[w] standard used, different values of \f$k_b\f$ and \f$k_r\f$ are used
+to do the color space conversion. You can change these values by passing the \ref af_ycc_std enum
+value.
 
 =======================================================================
 
@@ -248,6 +329,9 @@ distance as well as the color distance.
 The bilateral filter requires the size of the filter (in pixels) and the upper
 bound on color values, N, where pixel values range from 0–N inclusively.
 
+The return type of the array is f64 for f64 input, f32 for all other input
+types.
+
 =======================================================================
 
 \defgroup image_func_erode erode
@@ -345,6 +429,31 @@ Save an array to disk as an image
 
 Supported formats include JPG, PNG, PPM and other formats supported by freeimage
 
+
+\defgroup imagemem_func_load loadImageMem
+\ingroup imageio_mat
+
+Load an image from memory which is stored as a FreeImage stream (FIMEMORY).
+
+Supported formats include JPG, PNG, PPM and other formats supported by freeimage
+
+
+
+\defgroup imagemem_func_save saveImageMem
+\ingroup imageio_mat
+
+Save an array to memory as an image using FreeImage stream (FIMEMORY).
+
+Supported formats include JPG, PNG, PPM and other formats supported by freeimage
+
+
+\defgroup imagemem_func_delete deleteImageMem
+\ingroup imageio_mat
+
+Delete memory created by saveImageMem and af_save_image_memory function.
+This internally calls FreeImage_CloseMemory.
+
+Supported formats include JPG, PNG, PPM and other formats supported by freeimage
 
 
 \defgroup calc_func_grad grad
@@ -572,17 +681,6 @@ are specializations of the transform function.
 
 =======================================================================
 
-\defgroup image_func_dog DoG
-\ingroup imageflt_mat
-
-\brief Difference of Gaussians
-
-Given an image, this function computes two different versions of smoothed
-input image using the difference smoothing parameters and subtracts one
-from the other and returns the result.
-
-=======================================================================
-
 \defgroup image_func_sat SAT
 \ingroup imageflt_mat
 
@@ -597,15 +695,15 @@ The output array of this function will have \f$ S(x, y) \f$ values at their corr
 =======================================================================
 
 \defgroup image_func_unwrap unwrap
-\ingroup image_mod
+\ingroup image_mod_mat
 
-Generate image with image windows as columns
+Generate an array with image windows as columns
 
 unwrap takes in an input image along with the window sizes \p wx and \p
 wy, strides \p sx and \p sy, and padding \p px and \p py. This function then
 generates a matrix where each windows is an independent column.
 
-The number of columns in the output array are govenered by the number of
+The number of columns (rows if is_column is true) in the output array are govenered by the number of
 windows that can be fit along x and y directions. Padding is applied along all
 4 sides of the matrix with \p px defining the height of the padding along dim
 0 and \p py defining the width of the padding along dim 1.
@@ -688,5 +786,15 @@ unwrap(A, 3, 3, 3, 3, 2, 2) [9 9 1 1]
     0    12     0     0    27     0     0     0     0
    10    13     0    25    28     0     0     0     0
 \endcode
+
+
+=======================================================================
+
+\defgroup image_func_wrap wrap
+\ingroup image_mod_mat
+
+Wrap takes an unwrapped image (see \ref unwrap()) and converts it back to an image.
+
+The inputs to this function should be the same as the inputs used to generate the unwrapped image.
 @}
 */

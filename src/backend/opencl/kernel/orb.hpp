@@ -29,6 +29,9 @@ using cl::LocalSpaceArg;
 using cl::NDRange;
 using std::vector;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+
 namespace opencl
 {
 
@@ -201,8 +204,8 @@ void orb(unsigned* out_feat,
             unsigned edge = ceil(size * sqrt(2.f) / 2.f);
 
             // Detect FAST features
-            fast<T, 9, true>(&lvl_feat, d_x_feat, d_y_feat, d_score_feat,
-                             lvl_img, fast_thr, 0.15f, edge);
+            fast<T, true>(9, &lvl_feat, d_x_feat, d_y_feat, d_score_feat,
+                          lvl_img, fast_thr, 0.15f, edge);
 
             if (lvl_feat == 0) {
                 feat_pyr[i] = 0;
@@ -360,8 +363,8 @@ void orb(unsigned* out_feat,
                 }
 
                 // Filter level image with Gaussian kernel to reduce noise sensitivity
-                convolve2<T, convAccT, 0, false, gauss_len>(lvl_tmp, lvl_img, gauss_filter);
-                convolve2<T, convAccT, 1, false, gauss_len>(lvl_filt, lvl_tmp, gauss_filter);
+                convSep<T, convAccT, 0, false>(lvl_tmp, lvl_img, gauss_filter);
+                convSep<T, convAccT, 1, false>(lvl_filt, lvl_tmp, gauss_filter);
 
                 bufferFree(lvl_tmp.data);
             }
@@ -481,7 +484,6 @@ void orb(unsigned* out_feat,
             getQueue().enqueueCopyBuffer(*d_score_pyr[i], *score_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
             getQueue().enqueueCopyBuffer(*d_ori_pyr[i], *ori_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
             getQueue().enqueueCopyBuffer(*d_size_pyr[i], *size_out.data, 0, offset*sizeof(float), feat_pyr[i] * sizeof(float));
-
             getQueue().enqueueCopyBuffer(*d_desc_pyr[i], *desc_out.data, 0, offset*8*sizeof(unsigned), feat_pyr[i] * 8 * sizeof(unsigned));
 
             bufferFree(d_x_pyr[i]);
@@ -503,3 +505,4 @@ void orb(unsigned* out_feat,
 } //namespace kernel
 
 } //namespace opencl
+#pragma GCC diagnostic pop
