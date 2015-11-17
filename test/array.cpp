@@ -20,7 +20,7 @@ class Array : public ::testing::Test
 
 };
 
-typedef ::testing::Types<float, double, af::cfloat, af::cdouble, char, unsigned char, int, uint, intl, uintl> TestTypes;
+typedef ::testing::Types<float, double, af::cfloat, af::cdouble, char, unsigned char, int, uint, intl, uintl, short, ushort> TestTypes;
 TYPED_TEST_CASE(Array, TestTypes);
 
 TEST(Array, ConstructorDefault)
@@ -283,6 +283,26 @@ TYPED_TEST(Array, TypeAttributes)
             EXPECT_FALSE(one.iscomplex());
             EXPECT_FALSE(one.isbool());
             break;
+        case s16:
+            EXPECT_FALSE(one.isfloating());
+            EXPECT_FALSE(one.isdouble());
+            EXPECT_FALSE(one.issingle());
+            EXPECT_FALSE(one.isrealfloating());
+            EXPECT_TRUE(one.isinteger());
+            EXPECT_TRUE(one.isreal());
+            EXPECT_FALSE(one.iscomplex());
+            EXPECT_FALSE(one.isbool());
+            break;
+        case u16:
+            EXPECT_FALSE(one.isfloating());
+            EXPECT_FALSE(one.isdouble());
+            EXPECT_FALSE(one.issingle());
+            EXPECT_FALSE(one.isrealfloating());
+            EXPECT_TRUE(one.isinteger());
+            EXPECT_TRUE(one.isreal());
+            EXPECT_FALSE(one.iscomplex());
+            EXPECT_FALSE(one.isbool());
+            break;
         case u8:
             EXPECT_FALSE(one.isfloating());
             EXPECT_FALSE(one.isdouble());
@@ -372,4 +392,20 @@ TEST(Array, ShapeAttributes)
     EXPECT_FALSE(matrix.    iscolumn());
     EXPECT_FALSE(volume.    iscolumn());
     EXPECT_FALSE(hypercube. iscolumn());
+}
+
+TEST(Array, ISSUE_951)
+{
+// This works
+    //const af::array a(100, 100);
+    //af::array b = a.cols(0, 20);
+    //b = b.rows(10, 20);
+
+// This works
+    //af::array a(100, 100);
+    //af::array b = a.cols(0, 20).rows(10, 20);
+
+// This fails with linking error
+    const af::array a = randu(100, 100);
+    af::array b = a.cols(0, 20).rows(10, 20);
 }

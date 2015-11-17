@@ -12,6 +12,8 @@
 class async_queue;
 
 namespace cpu {
+    int getBackend();
+
     std::string getInfo();
 
     bool isDoubleSupported(int device);

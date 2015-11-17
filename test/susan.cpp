@@ -55,7 +55,7 @@ class Susan : public ::testing::Test
         virtual void SetUp() {}
 };
 
-typedef ::testing::Types<float, double, int, uint, char, uchar> TestTypes;
+typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort> TestTypes;
 
 TYPED_TEST_CASE(Susan, TestTypes);
 

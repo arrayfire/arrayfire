@@ -80,7 +80,7 @@ class BilateralOnData : public ::testing::Test
 {
 };
 
-typedef ::testing::Types<float, double, int, uint, char, uchar> DataTestTypes;
+typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort> DataTestTypes;
 
 // register the type list
 TYPED_TEST_CASE(BilateralOnData, DataTestTypes);

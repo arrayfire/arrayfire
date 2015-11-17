@@ -18,5 +18,7 @@ INSTANTIATE(char  , false)
 INSTANTIATE(int   , false)
 INSTANTIATE(uint  , false)
 INSTANTIATE(uchar , false)
+INSTANTIATE(short , false)
+INSTANTIATE(ushort, false)
 
 }

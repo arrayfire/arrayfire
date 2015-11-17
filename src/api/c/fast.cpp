@@ -70,6 +70,8 @@ af_err af_fast(af_features *out, const af_array in, const float thr,
             case b8 : *out = fast<char  >(in, thr, arc_length, non_max, feature_ratio, edge); break;
             case s32: *out = fast<int   >(in, thr, arc_length, non_max, feature_ratio, edge); break;
             case u32: *out = fast<uint  >(in, thr, arc_length, non_max, feature_ratio, edge); break;
+            case s16: *out = fast<short >(in, thr, arc_length, non_max, feature_ratio, edge); break;
+            case u16: *out = fast<ushort>(in, thr, arc_length, non_max, feature_ratio, edge); break;
             case u8 : *out = fast<uchar >(in, thr, arc_length, non_max, feature_ratio, edge); break;
             default : TYPE_ERROR(1, type);
         }

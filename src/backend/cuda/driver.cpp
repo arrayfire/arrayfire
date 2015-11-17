@@ -50,7 +50,7 @@ int nvDriverVersion(char *result, int len)
 #else
     snprintf(result, len, "%.2f", 0.0);
 #endif
-    return 1;
+    return 0;
 }
 
 #else

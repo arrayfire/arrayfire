@@ -5,22 +5,24 @@ FIND_PACKAGE(CUDA QUIET)
 FIND_PACKAGE(OpenCL QUIET)
 
 
-MACRO(CREATE_TESTS BACKEND GTEST_LIBS OTHER_LIBS)
+MACRO(CREATE_TESTS BACKEND LIBNAME GTEST_LIBS OTHER_LIBS)
     STRING(TOUPPER ${BACKEND} DEF_NAME)
 
     FOREACH(FILE ${FILES})
         GET_FILENAME_COMPONENT(FNAME ${FILE} NAME_WE)
         SET(TEST_NAME ${FNAME}_${BACKEND})
 
-        IF ("${FILE}" MATCHES ".manual.")
-          MESSAGE(STATUS "Removing ${FILE} from ctest")
+        IF(NOT ${BUILD_NONFREE} AND "${FILE}" MATCHES ".nonfree.")
+            MESSAGE(STATUS "Removing ${FILE} from ctest")
+        ELSEIF("${FILE}" MATCHES ".manual.")
+            MESSAGE(STATUS "Removing ${FILE} from ctest")
         ELSE()
           ADD_TEST(Test_${TEST_NAME} ${TEST_NAME})
         ENDIF()
 
         FILE(GLOB TEST_FILE "${FNAME}.cpp" "${FNAME}.c")
         ADD_EXECUTABLE(${TEST_NAME} ${TEST_FILE})
-        TARGET_LINK_LIBRARIES(${TEST_NAME}  PRIVATE  af${BACKEND}
+        TARGET_LINK_LIBRARIES(${TEST_NAME}  PRIVATE  af${LIBNAME}
                                             PRIVATE ${THREAD_LIB_FLAG}
                                             PRIVATE ${GTEST_LIBS}
                                             PRIVATE ${OTHER_LIBS})
@@ -39,15 +41,6 @@ IF(CMAKE_USE_PTHREADS_INIT AND NOT "${APPLE}")
 ELSE()
     SET(THREAD_LIB_FLAG ${CMAKE_THREAD_LIBS_INIT})
 ENDIF()
-
-OPTION(USE_SYSTEM_GTEST "Use GTEST from system libraries" OFF)
-IF(USE_SYSTEM_GTEST)
-    FIND_PACKAGE(GTest REQUIRED)
-ELSE(USE_SYSTEM_GTEST)
-    INCLUDE("${CMAKE_MODULE_PATH}/build_gtest.cmake")
-ENDIF(USE_SYSTEM_GTEST)
-
-INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
 
 OPTION(USE_RELATIVE_TEST_DIR "Use relative paths for the test data directory(For continious integration(CI) purposes only)" OFF)
 
@@ -72,21 +65,30 @@ IF (EXISTS "${TESTDATA_SOURCE_DIR}" AND IS_DIRECTORY "${TESTDATA_SOURCE_DIR}"
     # Do Nothing
 ELSE (EXISTS "${TESTDATA_SOURCE_DIR}" AND IS_DIRECTORY "${TESTDATA_SOURCE_DIR}"
     AND EXISTS "${TESTDATA_SOURCE_DIR}/README.md")
-    MESSAGE(WARNING "Test Data is not available. Tests will build but fail when run.")
-    MESSAGE("Did you miss the --recursive option when cloning?")
-    MESSAGE("Run the following commands to correct this:")
-    MESSAGE("git submodule init")
-    MESSAGE("git submodule update")
-    MESSAGE("git submodule foreach git pull origin master")
+    MESSAGE(STATUS "Test submodules unavailable. Updating submodules.")
+    EXECUTE_PROCESS(
+        COMMAND git submodule update --init --recursive
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_QUIET
+    )
 ENDIF()
 ENDIF(NOT ${USE_RELATIVE_TEST_DIR})
+
+OPTION(USE_SYSTEM_GTEST "Use GTEST from system libraries" OFF)
+IF(USE_SYSTEM_GTEST)
+    FIND_PACKAGE(GTest REQUIRED)
+ELSE(USE_SYSTEM_GTEST)
+    INCLUDE("${CMAKE_MODULE_PATH}/build_gtest.cmake")
+ENDIF(USE_SYSTEM_GTEST)
+
+INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 FILE(GLOB FILES "*.cpp" "*.c")
 
 IF(${BUILD_CPU})
     MESSAGE(STATUS "TESTS: CPU backend is ON")
-    CREATE_TESTS(cpu "${GTEST_LIBRARIES}" "")
+    CREATE_TESTS(cpu cpu "${GTEST_LIBRARIES}" "")
 ELSE()
     MESSAGE(STATUS "TESTS: CPU backend is OFF")
 ENDIF()
@@ -94,7 +96,7 @@ ENDIF()
 IF(${BUILD_CUDA} AND ${CUDA_FOUND})
     MESSAGE(STATUS "TESTS: CUDA backend is ON")
     IF("${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND ${CUDA_VERSION_MAJOR} VERSION_LESS 7)
-        CREATE_TESTS(cuda "${GTEST_LIBRARIES_STDLIB}" "")
+        CREATE_TESTS(cuda cuda "${GTEST_LIBRARIES_STDLIB}" "")
         FOREACH(FILE ${FILES})
             GET_FILENAME_COMPONENT(FNAME ${FILE} NAME_WE)
             SET(TEST_NAME ${FNAME}_cuda)
@@ -102,7 +104,7 @@ IF(${BUILD_CUDA} AND ${CUDA_FOUND})
             SET_TARGET_PROPERTIES(${TEST_NAME} PROPERTIES LINK_FLAGS -stdlib=libstdc++)
         ENDFOREACH()
     ELSE("${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND ${CUDA_VERSION_MAJOR} VERSION_LESS 7)
-        CREATE_TESTS(cuda "${GTEST_LIBRARIES}" "")
+        CREATE_TESTS(cuda cuda "${GTEST_LIBRARIES}" "")
     ENDIF("${APPLE}" AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND ${CUDA_VERSION_MAJOR} VERSION_LESS 7)
 ELSE()
     MESSAGE(STATUS "TESTS: CUDA backend is OFF")
@@ -110,7 +112,16 @@ ENDIF()
 
 IF(${BUILD_OPENCL} AND ${OpenCL_FOUND})
     MESSAGE(STATUS "TESTS: OPENCL backend is ON")
-    CREATE_TESTS(opencl "${GTEST_LIBRARIES}" "${OpenCL_LIBRARIES}")
+    CREATE_TESTS(opencl opencl "${GTEST_LIBRARIES}" "${OpenCL_LIBRARIES}")
 ELSE()
     MESSAGE(STATUS "TESTS: OPENCL backend is OFF")
+ENDIF()
+
+IF(${BUILD_UNIFIED})
+    MESSAGE(STATUS "TESTS: Unified backends is ON")
+    IF(WIN32)
+        CREATE_TESTS(unified "" "${GTEST_LIBRARIES}" "")
+    ELSE()
+        CREATE_TESTS(unified "" "${GTEST_LIBRARIES}" dl)
+    ENDIF()
 ENDIF()

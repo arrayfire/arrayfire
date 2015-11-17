@@ -15,6 +15,8 @@
 #include <kernel_headers/nearest_neighbour.hpp>
 #include <memory.hpp>
 #include <math.hpp>
+#include <dispatch.hpp>
+#include <cache.hpp>
 
 using cl::LocalSpaceArg;
 
@@ -26,24 +28,17 @@ namespace kernel
 
 static const unsigned THREADS = 256;
 
-template<typename T, typename To, af_match_type dist_type, bool use_lmem, unsigned unroll_len>
+template<typename T, typename To, af_match_type dist_type>
 void nearest_neighbour(Param idx,
                        Param dist,
                        Param query,
                        Param train,
                        const dim_t dist_dim,
                        const unsigned n_dist,
-                       const size_t lmem_sz)
+                       const size_t lmem_sz,
+                       bool use_lmem)
 {
     try {
-        static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
-        static Program        nearest_neighbourProgs[DeviceManager::MAX_DEVICES];
-        static Kernel             huKernel[DeviceManager::MAX_DEVICES];
-        static Kernel             hmKernel[DeviceManager::MAX_DEVICES];
-        static Kernel             smKernel[DeviceManager::MAX_DEVICES];
-
-        int device = getActiveDeviceId();
-
         const unsigned feat_len = query.info.dims[dist_dim];
         const To max_dist = limit_max<To>();
 
@@ -51,7 +46,24 @@ void nearest_neighbour(Param idx,
             OPENCL_NOT_SUPPORTED();
         }
 
-        std::call_once( compileFlags[device], [device] () {
+        unsigned unroll_len = nextpow2(feat_len);
+        if (unroll_len != feat_len) unroll_len = 0;
+
+        std::string ref_name =
+            std::string("knn_") +
+            std::to_string(dist_type) +
+            std::string("_") +
+            std::to_string(use_lmem) +
+            std::string("_") +
+            std::string(dtype_traits<T>::getName()) +
+            std::string("_") +
+            std::to_string(unroll_len);
+
+        int device = getActiveDeviceId();
+        kc_t::iterator cache_idx = kernelCaches[device].find(ref_name);
+
+        kc_entry_t entry;
+        if (cache_idx == kernelCaches[device].end()) {
 
                 std::ostringstream options;
                 options << " -D T=" << dtype_traits<T>::getName()
@@ -75,15 +87,23 @@ void nearest_neighbour(Param idx,
                 if (use_lmem)
                     options << " -D USE_LOCAL_MEM";
 
-                buildProgram(nearest_neighbourProgs[device],
+                cl::Program prog;
+                buildProgram(prog,
                              nearest_neighbour_cl,
                              nearest_neighbour_cl_len,
                              options.str());
 
-                huKernel[device] = Kernel(nearest_neighbourProgs[device], "nearest_neighbour_unroll");
-                hmKernel[device] = Kernel(nearest_neighbourProgs[device], "nearest_neighbour");
-                smKernel[device] = Kernel(nearest_neighbourProgs[device], "select_matches");
-            });
+                entry.prog = new Program(prog);
+                entry.ker = new Kernel[3];
+
+                entry.ker[0] = Kernel(*entry.prog, "nearest_neighbour_unroll");
+                entry.ker[1] = Kernel(*entry.prog, "nearest_neighbour");
+                entry.ker[2] = Kernel(*entry.prog, "select_matches");
+
+                kernelCaches[device][ref_name] = entry;
+        } else {
+            entry = cache_idx->second;
+        }
 
         const dim_t sample_dim = (dist_dim == 0) ? 1 : 0;
 
@@ -104,7 +124,7 @@ void nearest_neighbour(Param idx,
                                     Buffer, KParam,
                                     Buffer, KParam,
                                     const To,
-                                    LocalSpaceArg> (huKernel[device]);
+                                    LocalSpaceArg> (entry.ker[0]);
 
             huOp(EnqueueArgs(getQueue(), global, local),
                  *d_blk_idx, *d_blk_dist,
@@ -116,7 +136,7 @@ void nearest_neighbour(Param idx,
                                     Buffer, KParam,
                                     Buffer, KParam,
                                     const To, const unsigned,
-                                    LocalSpaceArg> (hmKernel[device]);
+                                    LocalSpaceArg> (entry.ker[1]);
 
             hmOp(EnqueueArgs(getQueue(), global, local),
                  *d_blk_idx, *d_blk_dist,
@@ -132,7 +152,7 @@ void nearest_neighbour(Param idx,
         // best match
         auto smOp = make_kernel<Buffer, Buffer, Buffer, Buffer,
                                 const unsigned, const unsigned,
-                                const To> (smKernel[device]);
+                                const To> (entry.ker[2]);
 
         smOp(EnqueueArgs(getQueue(), global_sm, local_sm),
              *idx.data, *dist.data,

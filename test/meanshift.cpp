@@ -27,7 +27,7 @@ class Meanshift : public ::testing::Test
         virtual void SetUp() {}
 };
 
-typedef ::testing::Types<float, double, int, uint, char, uchar> TestTypes;
+typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort, intl, uintl> TestTypes;
 
 TYPED_TEST_CASE(Meanshift, TestTypes);
 

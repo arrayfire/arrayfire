@@ -49,7 +49,7 @@ namespace cpu
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, TNJ::Node_ptr n) :
-        info(-1, dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        info(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(), data_dims(dims),
         node(n), offset(0), ready(false), owner(true)
     {
@@ -64,46 +64,60 @@ namespace cpu
         ready(true), owner(false)
     { }
 
+
     template<typename T>
     void Array<T>::eval()
     {
         if (isReady()) return;
 
+        this->setId(getActiveDeviceId());
+
+        if (isReady()) return;
+
         data = std::shared_ptr<T>(memAlloc<T>(elements()), memFree<T>);
 
-        auto func = [this] {
-            setId(getActiveDeviceId());
-            T *ptr = data.get();
+        auto func = [] (Array<T> in) {
+            in.setId(getActiveDeviceId());
+            T *ptr = in.data.get();
 
-            dim4 ostrs = strides();
-            dim4 odims = dims();
+            dim4 odims = in.dims();
+            dim4 ostrs = in.strides();
 
-            for (int w = 0; w < (int)odims[3]; w++) {
-                dim_t offw = w * ostrs[3];
+            bool is_linear = in.node->isLinear(odims.get());
 
-                for (int z = 0; z < (int)odims[2]; z++) {
-                    dim_t offz = z * ostrs[2] + offw;
+            if (is_linear) {
+                int num = in.elements();
+                for (int i = 0; i < num; i++) {
+                    ptr[i] = *(T *)in.node->calc(i);
+                }
+            } else {
+                for (int w = 0; w < (int)odims[3]; w++) {
+                    dim_t offw = w * ostrs[3];
 
-                    for (int y = 0; y < (int)odims[1]; y++) {
-                        dim_t offy = y * ostrs[1] + offz;
+                    for (int z = 0; z < (int)odims[2]; z++) {
+                        dim_t offz = z * ostrs[2] + offw;
 
-                        for (int x = 0; x < (int)odims[0]; x++) {
-                            dim_t id = x + offy;
+                        for (int y = 0; y < (int)odims[1]; y++) {
+                            dim_t offy = y * ostrs[1] + offz;
 
-                            ptr[id] = *(T *)node->calc(x, y, z, w);
+                            for (int x = 0; x < (int)odims[0]; x++) {
+                                dim_t id = x + offy;
+
+                                ptr[id] = *(T *)in.node->calc(x, y, z, w);
+                            }
                         }
                     }
                 }
             }
-
-            Node_ptr prev = node;
-            prev->reset();
-            // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
-            node.reset();
         };
 
+        getQueue().enqueue(func, *this);
+
         ready = true;
-        getQueue().enqueue(func);
+        Node_ptr prev = node;
+        prev->reset();
+        // FIXME: Replace the current node in any JIT possible trees with the new BufferNode
+        node.reset();
     }
 
     template<typename T>
@@ -124,7 +138,8 @@ namespace cpu
                                                         bytes,
                                                         offset,
                                                         dims().get(),
-                                                        strides().get());
+                                                        strides().get(),
+                                                        isLinear());
 
             const_cast<Array<T> *>(this)->node = Node_ptr(reinterpret_cast<Node *>(buf_node));
         }
@@ -176,7 +191,7 @@ namespace cpu
 
         Node *n = node.get();
         n->getInfo(length, buf_count, bytes);
-        n->reset(false);
+        n->reset();
 
         if (length > MAX_TNJ_LEN ||
             buf_count >= MAX_BUFFERS ||
@@ -279,4 +294,6 @@ namespace cpu
     INSTANTIATE(char)
     INSTANTIATE(intl)
     INSTANTIATE(uintl)
+    INSTANTIATE(short)
+    INSTANTIATE(ushort)
 }

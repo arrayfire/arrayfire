@@ -159,9 +159,9 @@ magma_getrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
     i1 = 1;
     i2 = n;
 
-    laswp_func<Ty> cpu_laswp;
-    trsm_func<Ty> gpu_trsm;
-    trsv_func<Ty> gpu_trsv;
+    cpu_lapack_laswp_func<Ty> cpu_lapack_laswp;
+    gpu_blas_trsm_func<Ty> gpu_blas_trsm;
+    gpu_blas_trsv_func<Ty> gpu_blas_trsv;
 
     cl_event event = NULL;
 
@@ -180,18 +180,18 @@ magma_getrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
 
         /* Solve A * X = B. */
         magma_getmatrix<Ty>( n, nrhs, dB, dB_offset, lddb, work, n, queue );
-        cpu_laswp(LAPACK_COL_MAJOR, nrhs, work, n, i1, i2, ipiv, inc);
+        LAPACKE_CHECK(cpu_lapack_laswp( nrhs, work, n, i1, i2, ipiv, inc));
         magma_setmatrix<Ty>( n, nrhs, work, n, dB, dB_offset, lddb, queue );
         if ( nrhs == 1) {
-            gpu_trsv(clblasColumnMajor, clblasLower, clblasNoTrans, clblasUnit, n, dA, dA_offset, ldda, dB, dB_offset, 1, 1, &queue, 0, nullptr, &event);
-            gpu_trsv(clblasColumnMajor, clblasUpper, clblasNoTrans, clblasNonUnit, n, dA, dA_offset, ldda, dB, dB_offset, 1, 1, &queue, 0, nullptr, &event);
+            CLBLAS_CHECK(gpu_blas_trsv( clblasLower, clblasNoTrans, clblasUnit, n, dA, dA_offset, ldda, dB, dB_offset, 1, 1, &queue, 0, nullptr, &event));
+            CLBLAS_CHECK(gpu_blas_trsv( clblasUpper, clblasNoTrans, clblasNonUnit, n, dA, dA_offset, ldda, dB, dB_offset, 1, 1, &queue, 0, nullptr, &event));
         } else {
-            gpu_trsm(clblasColumnMajor, clblasLeft, clblasLower, clblasNoTrans, clblasUnit, n, nrhs, c_one, dA, dA_offset, ldda, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event);
+            CLBLAS_CHECK(gpu_blas_trsm( clblasLeft, clblasLower, clblasNoTrans, clblasUnit, n, nrhs, c_one, dA, dA_offset, ldda, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event));
 
             if(cond) {
-                gpu_trsm(clblasColumnMajor, clblasLeft, clblasLower, clblasTrans, clblasNonUnit, n, nrhs, c_one, dAT, 0, n, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event);
+                CLBLAS_CHECK(gpu_blas_trsm( clblasLeft, clblasLower, clblasTrans, clblasNonUnit, n, nrhs, c_one, dAT, 0, n, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event));
             } else {
-                gpu_trsm(clblasColumnMajor, clblasLeft, clblasUpper, clblasNoTrans, clblasNonUnit, n, nrhs, c_one, dA, dA_offset, ldda, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event);
+                CLBLAS_CHECK(gpu_blas_trsm( clblasLeft, clblasUpper, clblasNoTrans, clblasNonUnit, n, nrhs, c_one, dA, dA_offset, ldda, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event));
             }
         }
     } else {
@@ -199,18 +199,18 @@ magma_getrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
 
         /* Solve A' * X = B. */
         if ( nrhs == 1) {
-            gpu_trsv(clblasColumnMajor, clblasUpper, cltrans, clblasNonUnit, n, dA, dA_offset, ldda, dB, dB_offset, 1, 1, &queue, 0, nullptr, &event);
-            gpu_trsv(clblasColumnMajor, clblasLower, cltrans, clblasUnit, n, dA, dA_offset, ldda, dB, dB_offset, 1, 1, &queue, 0, nullptr, &event);
+            CLBLAS_CHECK(gpu_blas_trsv( clblasUpper, cltrans, clblasNonUnit, n, dA, dA_offset, ldda, dB, dB_offset, 1, 1, &queue, 0, nullptr, &event));
+            CLBLAS_CHECK(gpu_blas_trsv( clblasLower, cltrans, clblasUnit, n, dA, dA_offset, ldda, dB, dB_offset, 1, 1, &queue, 0, nullptr, &event));
         } else {
             if(cond) {
-                gpu_trsm(clblasColumnMajor, clblasLeft, clblasLower, clblasNoTrans, clblasNonUnit, n, nrhs, c_one, dAT, 0, n, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event);
+                CLBLAS_CHECK(gpu_blas_trsm( clblasLeft, clblasLower, clblasNoTrans, clblasNonUnit, n, nrhs, c_one, dAT, 0, n, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event));
             } else {
-                gpu_trsm(clblasColumnMajor, clblasLeft, clblasUpper, cltrans, clblasNonUnit, n, nrhs, c_one, dA, dA_offset, ldda, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event);
+                CLBLAS_CHECK(gpu_blas_trsm( clblasLeft, clblasUpper, cltrans, clblasNonUnit, n, nrhs, c_one, dA, dA_offset, ldda, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event));
             }
-            gpu_trsm(clblasColumnMajor, clblasLeft, clblasLower, cltrans, clblasUnit, n, nrhs, c_one, dA, dA_offset, ldda, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event);
+            CLBLAS_CHECK(gpu_blas_trsm( clblasLeft, clblasLower, cltrans, clblasUnit, n, nrhs, c_one, dA, dA_offset, ldda, dB, dB_offset, lddb, 1, &queue, 0, nullptr, &event));
         }
         magma_getmatrix<Ty>( n, nrhs, dB, dB_offset, lddb, work, n, queue );
-        cpu_laswp(LAPACK_COL_MAJOR, nrhs, work, n, i1, i2, ipiv, inc);
+        LAPACKE_CHECK(cpu_lapack_laswp( nrhs, work, n, i1, i2, ipiv, inc));
         magma_setmatrix<Ty>( n, nrhs, work, n, dB, dB_offset, lddb, queue );
     }
 

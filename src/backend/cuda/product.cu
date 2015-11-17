@@ -11,7 +11,7 @@
 
 namespace cuda
 {
-    //sum
+    //mul
     INSTANTIATE(af_mul_t, float  , float  )
     INSTANTIATE(af_mul_t, double , double )
     INSTANTIATE(af_mul_t, cfloat , cfloat )
@@ -22,4 +22,6 @@ namespace cuda
     INSTANTIATE(af_mul_t, uintl  , uintl  )
     INSTANTIATE(af_mul_t, char   , int    )
     INSTANTIATE(af_mul_t, uchar  , uint   )
+    INSTANTIATE(af_mul_t, short  , int    )
+    INSTANTIATE(af_mul_t, ushort , uint   )
 }

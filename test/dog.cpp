@@ -11,6 +11,7 @@
 #include <arrayfire.h>
 #include <af/dim4.hpp>
 #include <af/traits.hpp>
+#include <af/vision.h>
 #include <string>
 #include <vector>
 #include <testHelpers.hpp>
@@ -23,7 +24,7 @@ class DOG : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, int, uint, char, uchar> TestTypes;
+typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(DOG, TestTypes);
@@ -34,7 +35,7 @@ TYPED_TEST(DOG, Basic)
     if (noDoubleTests<TypeParam>()) return;
 
     af::dim4 iDims(512, 512, 1, 1);
-    af::array in = af::constant<TypeParam>(1, iDims);
+    af::array in = af::constant(1, iDims, (af_dtype)af::dtype_traits<float>::af_type);
     /* calculate DOG using ArrayFire functions */
     af::array k1    = af::gaussianKernel(3, 3);
     af::array k2    = af::gaussianKernel(2, 2);
@@ -53,7 +54,7 @@ TYPED_TEST(DOG, Batch)
     if (noDoubleTests<TypeParam>()) return;
 
     af::dim4 iDims(512, 512, 3, 1);
-    af::array in = af::constant<TypeParam>(1, iDims);
+    af::array in = af::constant(1, iDims, (af_dtype)af::dtype_traits<float>::af_type);
     /* calculate DOG using ArrayFire functions */
     af::array k1    = af::gaussianKernel(3, 3);
     af::array k2    = af::gaussianKernel(2, 2);

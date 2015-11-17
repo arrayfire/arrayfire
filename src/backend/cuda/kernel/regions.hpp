@@ -419,15 +419,18 @@ void regions(cuda::Param<T> out, cuda::CParam<char> in, cudaTextureObject_t tex)
 
     while (h_continue) {
         h_continue = 0;
-        CUDA_CHECK(cudaMemcpyToSymbol(continue_flag, &h_continue, sizeof(int),
-                                      0, cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpyToSymbolAsync(continue_flag, &h_continue, sizeof(int),
+                    0, cudaMemcpyHostToDevice,
+                    cuda::getStream(cuda::getActiveDeviceId())));
 
         CUDA_LAUNCH((update_equiv<T, 16, n_per_thread, full_conn>), blocks, threads, out, tex);
 
         POST_LAUNCH_CHECK();
 
-        CUDA_CHECK(cudaMemcpyFromSymbol(&h_continue, continue_flag, sizeof(int),
-                                        0, cudaMemcpyDeviceToHost));
+        CUDA_CHECK(cudaMemcpyFromSymbolAsync(&h_continue, continue_flag, sizeof(int),
+                    0, cudaMemcpyDeviceToHost,
+                    cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
     }
 
     // Now, perform the final relabeling.  This converts the equivalency

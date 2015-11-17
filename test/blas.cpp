@@ -209,34 +209,39 @@ TYPED_TEST(MatrixMultiply, RectangleVector_CPP)
     cppMatMulCheck<TypeParam, true>(TEST_DIR"/blas/RectangleVector.test");
 }
 
+#define DEVICE_ITERATE(func) do {                                           \
+    const char* ENV = getenv("AF_MULTI_GPU_TESTS");                         \
+    if(ENV && ENV[0] == '0') {                                              \
+        func;                                                               \
+    } else {                                                                \
+        int oldDevice = af::getDevice();                                    \
+        for(int i = 0; i < af::getDeviceCount(); i++) {                     \
+            af::setDevice(i);                                               \
+            func;                                                           \
+        }                                                                   \
+        af::setDevice(oldDevice);                                           \
+    }                                                                       \
+} while(0);
+
+
 TYPED_TEST(MatrixMultiply, MultiGPUSquare_CPP)
 {
-    for(int i = 0; i < af::getDeviceCount(); i++) {
-        af::setDevice(i);
-        cppMatMulCheck<TypeParam, false>(TEST_DIR"/blas/Basic.test");
-    }
+    DEVICE_ITERATE((cppMatMulCheck<TypeParam, false>(TEST_DIR"/blas/Basic.test")));
 }
 
 TYPED_TEST(MatrixMultiply, MultiGPUNonSquare_CPP)
 {
-    for(int i = 0; i < af::getDeviceCount(); i++) {
-        af::setDevice(i);
-        cppMatMulCheck<TypeParam, false>(TEST_DIR"/blas/NonSquare.test");
-    }
+    DEVICE_ITERATE((cppMatMulCheck<TypeParam, false>(TEST_DIR"/blas/NonSquare.test")));
 }
 
 TYPED_TEST(MatrixMultiply, MultiGPUSquareVector_CPP)
 {
-    for(int i = 0; i < af::getDeviceCount(); i++) {
-        af::setDevice(i);
-        cppMatMulCheck<TypeParam, true>(TEST_DIR"/blas/SquareVector.test");
-    }
+    DEVICE_ITERATE((cppMatMulCheck<TypeParam, true>(TEST_DIR"/blas/SquareVector.test")));
 }
 
 TYPED_TEST(MatrixMultiply, MultiGPURectangleVector_CPP)
 {
-    for(int i = 0; i < af::getDeviceCount(); i++) {
-        af::setDevice(i);
-        cppMatMulCheck<TypeParam, true>(TEST_DIR"/blas/RectangleVector.test");
-    }
+    DEVICE_ITERATE((cppMatMulCheck<TypeParam, true>(TEST_DIR"/blas/RectangleVector.test")));
 }
+
+#undef DEVICE_ITERATE

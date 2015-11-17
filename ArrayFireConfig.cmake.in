@@ -9,12 +9,14 @@
 #
 # ----------------------------------------------------------------------------
 #
-# ArrayFire_CPU_FOUND        - True of the ArrayFire CPU library has been found.
-# ArrayFire_CPU_LIBRARIES    - Location of ArrayFire's CPU library, if found
-# ArrayFire_CUDA_FOUND       - True of the ArrayFire CUDA library has been found.
-# ArrayFire_CUDA_LIBRARIES   - Location of ArrayFire's CUDA library, if found
-# ArrayFire_OpenCL_FOUND     - True of the ArrayFire OpenCL library has been found.
-# ArrayFire_OpenCL_LIBRARIES - Location of ArrayFire's OpenCL library, if found
+# ArrayFire_CPU_FOUND         - True of the ArrayFire CPU library has been found.
+# ArrayFire_CPU_LIBRARIES     - Location of ArrayFire's CPU library, if found
+# ArrayFire_CUDA_FOUND        - True of the ArrayFire CUDA library has been found.
+# ArrayFire_CUDA_LIBRARIES    - Location of ArrayFire's CUDA library, if found
+# ArrayFire_OpenCL_FOUND      - True of the ArrayFire OpenCL library has been found.
+# ArrayFire_OpenCL_LIBRARIES  - Location of ArrayFire's OpenCL library, if found
+# ArrayFire_Unified_FOUND     - True of the ArrayFire Unified library has been found.
+# ArrayFire_Unified_LIBRARIES - Location of ArrayFire's Unified library, if found
 #
 #=============================================================================
 # Copyright (c) 2015, ArrayFire
@@ -48,17 +50,23 @@
 
 get_filename_component(ArrayFire_INCLUDE_DIRS "@INCLUDE_DIR@" ABSOLUTE)
 
-# keep in the backends in the slowest to fastest order
-foreach(backend CPU OpenCL CUDA)
-  string(TOLOWER "${backend}" lowerbackend)
+macro(find_backend backend libname)
   set(targetFile ${CMAKE_CURRENT_LIST_DIR}/@BACKEND_DIR@/ArrayFire${backend}.cmake)
   if(EXISTS ${targetFile})
     include(${targetFile})
     set(ArrayFire_${backend}_FOUND ON)
-    set(ArrayFire_${backend}_LIBRARIES af${lowerbackend})
+    set(ArrayFire_${backend}_LIBRARIES af${libname})
     # set the default backend
-    set(ArrayFire_LIBRARIES af${lowerbackend})
+    set(ArrayFire_LIBRARIES af${libname})
   else()
     set(ArrayFire_${backend}_FOUND OFF)
   endif()
+endmacro()
+
+# keep in the backends in the slowest to fastest order
+foreach(backend CPU OpenCL CUDA)
+  string(TOLOWER "${backend}" lowerbackend)
+  find_backend("${backend}" "${lowerbackend}")
 endforeach()
+
+find_backend("Unified" "")

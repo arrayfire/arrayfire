@@ -15,6 +15,10 @@
 #include <dispatch.hpp>
 #include <Param.hpp>
 #include <debug_opencl.hpp>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 #include <boost/compute/core.hpp>
 #include <boost/compute/algorithm/iota.hpp>
 #include <boost/compute/algorithm/sort_by_key.hpp>
@@ -35,6 +39,16 @@ namespace opencl
 {
     namespace kernel
     {
+        using std::conditional;
+        using std::is_same;
+        template<typename T>
+        using ltype_t = typename conditional<is_same<T, intl>::value, cl_long, T>::type;
+
+        template<typename T>
+        using type_t = typename conditional<is_same<T, uintl>::value,
+                                            cl_ulong, ltype_t<T>
+                                           >::type;
+
         template<typename T, bool isAscending>
         void sort0_index(Param val, Param idx)
         {
@@ -60,14 +74,14 @@ namespace opencl
 
                             if(isAscending) {
                                 compute::sort_by_key(
-                                        compute::make_buffer_iterator<T>(val_buf, valOffset),
-                                        compute::make_buffer_iterator<T>(val_buf, valOffset + val.info.dims[0]),
-                                        idx_begin, compute::less<T>(), c_queue);
+                                        compute::make_buffer_iterator< type_t<T> >(val_buf, valOffset),
+                                        compute::make_buffer_iterator< type_t<T> >(val_buf, valOffset + val.info.dims[0]),
+                                        idx_begin, compute::less< type_t<T> >(), c_queue);
                             } else {
                                 compute::sort_by_key(
-                                        compute::make_buffer_iterator<T>(val_buf, valOffset),
-                                        compute::make_buffer_iterator<T>(val_buf, valOffset + val.info.dims[0]),
-                                        idx_begin, compute::greater<T>(), c_queue);
+                                        compute::make_buffer_iterator< type_t<T> >(val_buf, valOffset),
+                                        compute::make_buffer_iterator< type_t<T> >(val_buf, valOffset + val.info.dims[0]),
+                                        idx_begin, compute::greater< type_t<T> >(), c_queue);
                             }
                         }
                     }
@@ -81,3 +95,5 @@ namespace opencl
         }
     }
 }
+
+#pragma GCC diagnostic pop

@@ -84,6 +84,8 @@ namespace af
         case b8 : return sizeof(unsigned char);
         case c32: return sizeof(float) * 2;
         case c64: return sizeof(double) * 2;
+        case s16: return sizeof(short);
+        case u16: return sizeof(unsigned short);
         default: return sizeof(float);
         }
     }
@@ -219,6 +221,8 @@ namespace af
     INSTANTIATE(char)
     INSTANTIATE(intl)
     INSTANTIATE(uintl)
+    INSTANTIATE(short)
+    INSTANTIATE(unsigned short)
 
 #undef INSTANTIATE
 
@@ -374,8 +378,7 @@ namespace af
 
     const array::array_proxy array::row(int index) const
     {
-        seq idx(index, index, 1);
-        return this->operator()(idx, span, span, span);
+        return this->operator()(index, span, span, span);
     }
 
     array::array_proxy array::row(int index)
@@ -385,8 +388,7 @@ namespace af
 
     const array::array_proxy array::col(int index) const
     {
-        seq idx(index, index, 1);
-        return this->operator()(span, idx, span, span);
+        return this->operator()(span, index, span, span);
     }
 
     array::array_proxy array::col(int index)
@@ -396,8 +398,7 @@ namespace af
 
     const array::array_proxy array::slice(int index) const
     {
-        seq idx(index, index, 1);
-        return this->operator()(span, span, idx, span);
+        return this->operator()(span, span, index, span);
     }
 
     array::array_proxy array::slice(int index)
@@ -606,6 +607,14 @@ namespace af
         return out;
     }
 
+    af_array array::array_proxy::get() const
+    {
+        array tmp = *this;
+        af_array out = 0;
+        AF_THROW(af_retain_array(&out, tmp.get()));
+        return out;
+    }
+
 #define MEM_FUNC(PREFIX, FUNC)                  \
     PREFIX array::array_proxy::FUNC() const     \
     {                                           \
@@ -613,7 +622,6 @@ namespace af
         return out.FUNC();                      \
     }
 
-    MEM_FUNC(af_array               , get)
     MEM_FUNC(dim_t                  , elements)
     MEM_FUNC(array                  , T)
     MEM_FUNC(array                  , H)
@@ -665,14 +673,17 @@ namespace af
     ASSIGN_TYPE(char               , OP)        \
     ASSIGN_TYPE(unsigned char      , OP)        \
     ASSIGN_TYPE(bool               , OP)        \
+    ASSIGN_TYPE(short              , OP)        \
+    ASSIGN_TYPE(unsigned short     , OP)        \
 
     ASSIGN_OP(= , =)
     ASSIGN_OP(+=, +)
     ASSIGN_OP(-=, -)
     ASSIGN_OP(*=, *)
     ASSIGN_OP(/=, /)
-#undef ASSIGN_TYPE
 #undef ASSIGN_OP
+
+#undef ASSIGN_TYPE
 
 #define SELF_OP(OP, op1)                                                          \
     array::array_proxy& array::array_proxy::operator OP(const array_proxy &other) \
@@ -739,12 +750,19 @@ namespace af
     }
 
     //FIXME: Check if this leaks
-#define MEM_INDEX(FUNC_SIG, USAGE)          \
-    array::array_proxy                      \
-    array::array_proxy::FUNC_SIG            \
-    {                                       \
-        array *out = new array(this->get());\
-        return out->USAGE;                  \
+#define MEM_INDEX(FUNC_SIG, USAGE)                  \
+    array::array_proxy                              \
+    array::array_proxy::FUNC_SIG                    \
+    {                                               \
+        array *out = new array(this->get());        \
+        return out->USAGE;                          \
+    }                                               \
+                                                    \
+    const array::array_proxy                        \
+    array::array_proxy::FUNC_SIG const              \
+    {                                               \
+        const array *out = new array(this->get());  \
+        return out->USAGE;                          \
     }
 
     MEM_INDEX(row(int index)                , row(index));
@@ -804,6 +822,8 @@ namespace af
     ASSIGN_TYPE(char               , OP)                            \
     ASSIGN_TYPE(unsigned char      , OP)                            \
     ASSIGN_TYPE(bool               , OP)                            \
+    ASSIGN_TYPE(short              , OP)                            \
+    ASSIGN_TYPE(unsigned short     , OP)                            \
 
     ASSIGN_OP(+=, af_add)
     ASSIGN_OP(-=, af_sub)
@@ -811,6 +831,7 @@ namespace af
     ASSIGN_OP(/=, af_div)
 
 #undef ASSIGN_OP
+
 #undef ASSIGN_TYPE
 
 #define ASSIGN_TYPE(TY, OP)                                     \
@@ -836,10 +857,13 @@ namespace af
     ASSIGN_TYPE(char               , OP)        \
     ASSIGN_TYPE(unsigned char      , OP)        \
     ASSIGN_TYPE(bool               , OP)        \
+    ASSIGN_TYPE(short              , OP)        \
+    ASSIGN_TYPE(unsigned short     , OP)        \
 
     ASSIGN_OP(= )
 
 #undef ASSIGN_OP
+
 #undef ASSIGN_TYPE
 
 af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
@@ -856,6 +880,12 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
     // If 64 bit precision, do not lose precision
     if (array_type == f64 || array_type == c64 ||
         array_type == f32 || array_type == c32 ) return array_type;
+
+    // Default to single precision by default when multiplying with scalar
+    if ((scalar_type == f64 || scalar_type == c64) &&
+        (array_type  != f64 && array_type  != c64)) {
+        return f32;
+    }
 
     // Punt to C api for everything else
     return scalar_type;
@@ -900,6 +930,8 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
     BINARY_TYPE(char               , OP, func, b8)              \
     BINARY_TYPE(unsigned char      , OP, func, u8)              \
     BINARY_TYPE(bool               , OP, func, b8)              \
+    BINARY_TYPE(short              , OP, func, s16)             \
+    BINARY_TYPE(unsigned short     , OP, func, u16)             \
 
     BINARY_OP(+, af_add)
     BINARY_OP(-, af_sub)
@@ -920,8 +952,9 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
     BINARY_OP(<<, af_bitshiftl)
     BINARY_OP(>>, af_bitshiftr)
 
-#undef BINARY_TYPE
 #undef BINARY_OP
+
+#undef BINARY_TYPE
 
     array array::operator-() const
     {
@@ -996,6 +1029,8 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
     INSTANTIATE(char)
     INSTANTIATE(intl)
     INSTANTIATE(uintl)
+    INSTANTIATE(short)
+    INSTANTIATE(unsigned short)
 
 #undef INSTANTIATE
 
@@ -1024,6 +1059,8 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
     INSTANTIATE(char)
     INSTANTIATE(intl)
     INSTANTIATE(uintl)
+    INSTANTIATE(short)
+    INSTANTIATE(unsigned short)
 
 #undef INSTANTIATE
 #undef TEMPLATE_MEM_FUNC

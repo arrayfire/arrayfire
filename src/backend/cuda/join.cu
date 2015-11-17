@@ -170,16 +170,18 @@ namespace cuda
 #define INSTANTIATE(Tx, Ty)                                                                             \
     template Array<Tx> join<Tx, Ty>(const int dim, const Array<Tx> &first, const Array<Ty> &second);   \
 
-    INSTANTIATE(float,   float)
-    INSTANTIATE(double,  double)
-    INSTANTIATE(cfloat,  cfloat)
+    INSTANTIATE(float  , float  )
+    INSTANTIATE(double , double )
+    INSTANTIATE(cfloat , cfloat )
     INSTANTIATE(cdouble, cdouble)
-    INSTANTIATE(int,     int)
-    INSTANTIATE(uint,    uint)
-    INSTANTIATE(intl,    intl)
-    INSTANTIATE(uintl,   uintl)
-    INSTANTIATE(uchar,   uchar)
-    INSTANTIATE(char,    char)
+    INSTANTIATE(int    , int    )
+    INSTANTIATE(uint   , uint   )
+    INSTANTIATE(intl   , intl   )
+    INSTANTIATE(uintl  , uintl  )
+    INSTANTIATE(short  , short  )
+    INSTANTIATE(ushort , ushort )
+    INSTANTIATE(uchar  , uchar  )
+    INSTANTIATE(char   , char   )
 
 #undef INSTANTIATE
 
@@ -194,6 +196,8 @@ namespace cuda
     INSTANTIATE(uint)
     INSTANTIATE(intl)
     INSTANTIATE(uintl)
+    INSTANTIATE(short)
+    INSTANTIATE(ushort)
     INSTANTIATE(uchar)
     INSTANTIATE(char)
 

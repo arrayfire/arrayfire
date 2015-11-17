@@ -15,6 +15,7 @@
 #include <iostream>
 #include <string>
 #include <testHelpers.hpp>
+#include <algorithm>
 
 using std::vector;
 using std::string;
@@ -30,7 +31,7 @@ class Reduce : public ::testing::Test
 {
 };
 
-typedef ::testing::Types<float, double, af::cfloat, af::cdouble, uint, int, intl, uintl, uchar> TestTypes;
+typedef ::testing::Types<float, double, af::cfloat, af::cdouble, uint, int, intl, uintl, uchar, short, ushort> TestTypes;
 TYPED_TEST_CASE(Reduce, TestTypes);
 
 typedef af_err (*reduceFunc)(af_array *, const af_array, const int);
@@ -124,10 +125,14 @@ struct promote_type {
 };
 
 // char and uchar are promoted to int for sum and product
-template<> struct promote_type<uchar, af_sum>       { typedef uint type; };
-template<> struct promote_type<char , af_sum>       { typedef uint type; };
-template<> struct promote_type<uchar, af_product>   { typedef uint type; };
-template<> struct promote_type<char , af_product>   { typedef uint type; };
+template<> struct promote_type<uchar , af_sum>       { typedef uint type; };
+template<> struct promote_type<char  , af_sum>       { typedef uint type; };
+template<> struct promote_type<short , af_sum>       { typedef int  type; };
+template<> struct promote_type<ushort, af_sum>       { typedef uint type; };
+template<> struct promote_type<uchar , af_product>   { typedef uint type; };
+template<> struct promote_type<char  , af_product>   { typedef uint type; };
+template<> struct promote_type<short, af_product>    { typedef int  type; };
+template<> struct promote_type<ushort, af_product>   { typedef uint type; };
 
 #define REDUCE_TESTS(FN)                                                                    \
     TYPED_TEST(Reduce,Test_##FN)                                                    \
@@ -255,7 +260,7 @@ TEST(Reduce, Test_Product_Global)
         gold *= h_a[i];
     }
 
-    ASSERT_EQ(gold, res);
+    ASSERT_NEAR(gold, res, 1e-3);
     delete[] h_a;
 }
 
@@ -521,4 +526,65 @@ TEST(AnyAll, NaN)
     ASSERT_EQ(af::allTrue<bool>(B), true);
     ASSERT_EQ(af::anyTrue<bool>(A), true);
     ASSERT_EQ(af::allTrue<bool>(A), false);
+}
+
+TEST(MaxAll, IndexedSmall)
+{
+    const int num = 1000;
+    const int st = 10;
+    const int en = num - 100;
+    af::array a = af::randu(num);
+    float b = af::max<float>(a(af::seq(st, en)));
+
+    std::vector<float> ha(num);
+    a.host(&ha[0]);
+
+    float res = ha[st];
+    for (int i = st; i <= en; i++) {
+        res = std::max(res, ha[i]);
+    }
+
+    ASSERT_EQ(b, res);
+}
+
+TEST(MaxAll, IndexedBig)
+{
+    const int num = 100000;
+    const int st = 1000;
+    const int en = num - 1000;
+    af::array a = af::randu(num);
+    float b = af::max<float>(a(af::seq(st, en)));
+
+    std::vector<float> ha(num);
+    a.host(&ha[0]);
+
+    float res = ha[st];
+    for (int i = st; i <= en; i++) {
+        res = std::max(res, ha[i]);
+    }
+
+    ASSERT_EQ(b, res);
+}
+
+TEST(Reduce, KernelName)
+{
+    const int m = 64;
+    const int n = 100;
+    const int b = 5;
+
+    array in = af::constant(0, m, n, b);
+    for (int i = 0; i < b; i++) {
+        array tmp = af::randu(m, n);
+        in(af::span, af::span, i) = tmp;
+        ASSERT_EQ(af::min<float>(in(af::span, af::span, i)),
+                  af::min<float>(tmp));
+    }
+}
+
+TEST(Reduce, AllSmallIndexed)
+{
+    int LEN = 1000;
+    array a = af::range(af::dim4(LEN, 2));
+    array b = a(af::seq(LEN/2), af::span);
+    ASSERT_EQ(af::max<float>(b), LEN/2-1);
 }

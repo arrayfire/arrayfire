@@ -141,6 +141,8 @@ namespace opencl
     INSTANTIATE(char)
     INSTANTIATE(intl)
     INSTANTIATE(uintl)
+    INSTANTIATE(short)
+    INSTANTIATE(ushort)
 
     #define INSTANTIATE_PAD_ARRAY(SRC_T)                                    \
     template Array<float  > padArray<SRC_T, float  >(Array<SRC_T> const &src, dim4 const &dims, float   default_value, double factor); \
@@ -149,8 +151,10 @@ namespace opencl
     template Array<cdouble> padArray<SRC_T, cdouble>(Array<SRC_T> const &src, dim4 const &dims, cdouble default_value, double factor); \
     template Array<int    > padArray<SRC_T, int    >(Array<SRC_T> const &src, dim4 const &dims, int     default_value, double factor); \
     template Array<uint   > padArray<SRC_T, uint   >(Array<SRC_T> const &src, dim4 const &dims, uint    default_value, double factor); \
-    template Array<intl    > padArray<SRC_T, intl    >(Array<SRC_T> const &src, dim4 const &dims, intl     default_value, double factor); \
-    template Array<uintl   > padArray<SRC_T, uintl   >(Array<SRC_T> const &src, dim4 const &dims, uintl    default_value, double factor); \
+    template Array<intl   > padArray<SRC_T, intl   >(Array<SRC_T> const &src, dim4 const &dims, intl    default_value, double factor); \
+    template Array<uintl  > padArray<SRC_T, uintl  >(Array<SRC_T> const &src, dim4 const &dims, uintl   default_value, double factor); \
+    template Array<short  > padArray<SRC_T, short  >(Array<SRC_T> const &src, dim4 const &dims, short   default_value, double factor); \
+    template Array<ushort > padArray<SRC_T, ushort >(Array<SRC_T> const &src, dim4 const &dims, ushort  default_value, double factor); \
     template Array<uchar  > padArray<SRC_T, uchar  >(Array<SRC_T> const &src, dim4 const &dims, uchar   default_value, double factor); \
     template Array<char   > padArray<SRC_T, char   >(Array<SRC_T> const &src, dim4 const &dims, char    default_value, double factor); \
     template void copyArray<SRC_T, float  >(Array<float  > &dst, Array<SRC_T> const &src); \
@@ -159,8 +163,10 @@ namespace opencl
     template void copyArray<SRC_T, cdouble>(Array<cdouble> &dst, Array<SRC_T> const &src); \
     template void copyArray<SRC_T, int    >(Array<int    > &dst, Array<SRC_T> const &src); \
     template void copyArray<SRC_T, uint   >(Array<uint   > &dst, Array<SRC_T> const &src); \
-    template void copyArray<SRC_T, intl    >(Array<intl    > &dst, Array<SRC_T> const &src); \
-    template void copyArray<SRC_T, uintl   >(Array<uintl   > &dst, Array<SRC_T> const &src); \
+    template void copyArray<SRC_T, intl   >(Array<intl   > &dst, Array<SRC_T> const &src); \
+    template void copyArray<SRC_T, uintl  >(Array<uintl  > &dst, Array<SRC_T> const &src); \
+    template void copyArray<SRC_T, short  >(Array<short  > &dst, Array<SRC_T> const &src); \
+    template void copyArray<SRC_T, ushort >(Array<ushort > &dst, Array<SRC_T> const &src); \
     template void copyArray<SRC_T, uchar  >(Array<uchar  > &dst, Array<SRC_T> const &src); \
     template void copyArray<SRC_T, char   >(Array<char   > &dst, Array<SRC_T> const &src);
 
@@ -168,10 +174,12 @@ namespace opencl
     INSTANTIATE_PAD_ARRAY(double)
     INSTANTIATE_PAD_ARRAY(int   )
     INSTANTIATE_PAD_ARRAY(uint  )
-    INSTANTIATE_PAD_ARRAY(intl   )
-    INSTANTIATE_PAD_ARRAY(uintl  )
+    INSTANTIATE_PAD_ARRAY(intl  )
+    INSTANTIATE_PAD_ARRAY(uintl )
     INSTANTIATE_PAD_ARRAY(uchar )
     INSTANTIATE_PAD_ARRAY(char  )
+    INSTANTIATE_PAD_ARRAY(short )
+    INSTANTIATE_PAD_ARRAY(ushort)
 
 #define INSTANTIATE_PAD_ARRAY_COMPLEX(SRC_T)                            \
     template Array<cfloat > padArray<SRC_T, cfloat >(Array<SRC_T> const &src, dim4 const &dims, cfloat  default_value, double factor); \
@@ -196,6 +204,8 @@ namespace opencl
     SPECILIAZE_UNUSED_COPYARRAY(cfloat, int)
     SPECILIAZE_UNUSED_COPYARRAY(cfloat, intl)
     SPECILIAZE_UNUSED_COPYARRAY(cfloat, uintl)
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, short)
+    SPECILIAZE_UNUSED_COPYARRAY(cfloat, ushort)
     SPECILIAZE_UNUSED_COPYARRAY(cdouble, double)
     SPECILIAZE_UNUSED_COPYARRAY(cdouble, float)
     SPECILIAZE_UNUSED_COPYARRAY(cdouble, uchar)
@@ -204,5 +214,7 @@ namespace opencl
     SPECILIAZE_UNUSED_COPYARRAY(cdouble, int)
     SPECILIAZE_UNUSED_COPYARRAY(cdouble, intl)
     SPECILIAZE_UNUSED_COPYARRAY(cdouble, uintl)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, short)
+    SPECILIAZE_UNUSED_COPYARRAY(cdouble, ushort)
 
 }

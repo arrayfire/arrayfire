@@ -24,6 +24,8 @@
     MATH_BASIC(fn, uchar)                       \
     MATH_BASIC(fn, uintl)                       \
     MATH_BASIC(fn, intl)                        \
+    MATH_BASIC(fn, ushort)                      \
+    MATH_BASIC(fn, short)                       \
     __device__ double ___##fn(double a)         \
     {                                           \
         return fn(a);                           \
@@ -51,6 +53,8 @@ ATAN2(char)
 ATAN2(uchar)
 ATAN2(uintl)
 ATAN2(intl)
+ATAN2(ushort)
+ATAN2(short)
 
 __device__ double ___atan2(double x, double y)
 {

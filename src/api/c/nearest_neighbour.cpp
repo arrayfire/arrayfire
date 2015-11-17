@@ -57,16 +57,17 @@ af_err af_nearest_neighbour(af_array* idx, af_array* dist,
         ARG_ASSERT(6, dist_type == AF_SAD || dist_type == AF_SSD || dist_type == AF_SHD);
         TYPE_ASSERT(qType == tType);
 
-        // For Hamming, only u8, u32 and u64 allowed.
+        // For Hamming, only u8, u16, u32 and u64 allowed.
         af_array oIdx;
         af_array oDist;
 
         if(dist_type == AF_SHD) {
-            TYPE_ASSERT(qType == u8 || qType == u32 || qType == u64);
+            TYPE_ASSERT(qType == u8 || qType == u16 || qType == u32 || qType == u64);
             switch(qType) {
-                case u8:  nearest_neighbour<uchar, uint>(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
-                case u32: nearest_neighbour<uint , uint>(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
-                case u64: nearest_neighbour<uintl, uint>(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
+                case u8:  nearest_neighbour<uchar , uint>(&oIdx, &oDist, query, train, dist_dim, n_dist, AF_SHD); break;
+                case u16: nearest_neighbour<ushort, uint>(&oIdx, &oDist, query, train, dist_dim, n_dist, AF_SHD); break;
+                case u32: nearest_neighbour<uint  , uint>(&oIdx, &oDist, query, train, dist_dim, n_dist, AF_SHD); break;
+                case u64: nearest_neighbour<uintl , uint>(&oIdx, &oDist, query, train, dist_dim, n_dist, AF_SHD); break;
                 default : TYPE_ERROR(1, qType);
             }
         } else {
@@ -77,6 +78,8 @@ af_err af_nearest_neighbour(af_array* idx, af_array* dist,
                 case u32: nearest_neighbour<uint  , uint  >(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
                 case s64: nearest_neighbour<intl  , intl  >(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
                 case u64: nearest_neighbour<uintl , uintl >(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
+                case s16: nearest_neighbour<short , int   >(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
+                case u16: nearest_neighbour<ushort, uint  >(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
                 case u8:  nearest_neighbour<uchar , uint  >(&oIdx, &oDist, query, train, dist_dim, n_dist, dist_type); break;
                 default : TYPE_ERROR(1, qType);
             }

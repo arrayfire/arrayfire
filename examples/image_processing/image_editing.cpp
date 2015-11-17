@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 
         array man = loadImage(ASSETS_DIR "/examples/images/man.jpg", true);
         array fight = loadImage(ASSETS_DIR "/examples/images/fight.jpg", true);
-        array nature = loadImage(ASSETS_DIR "/examples/images/nature.jpg", true);
+        array nature = resize(loadImage(ASSETS_DIR "/examples/images/nature.jpg", true), fight.dims(0), fight.dims(1));
 
         array intensity = colorSpace(fight, AF_GRAY, AF_RGB);
         array mask = clamp(intensity, 10.0f, 255.0f)>0.0f;

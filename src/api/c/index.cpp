@@ -13,6 +13,7 @@
 #include <af/array.h>
 #include <af/index.h>
 #include <af/arith.h>
+#include <af/data.h>
 #include <ArrayInfo.hpp>
 #include <err_common.hpp>
 #include <handle.hpp>
@@ -39,7 +40,17 @@ af_err af_index(af_array *result, const af_array in, const unsigned ndims, const
 {
     af_array out;
     try {
-        af_dtype in_type = getInfo(in).getType();
+
+        ArrayInfo iInfo = getInfo(in);
+        if (ndims == 1 && ndims != (dim_t)iInfo.ndims()) {
+            af_array tmp_in;
+            AF_CHECK(af_flat(&tmp_in, in));
+            AF_CHECK(af_index(result, tmp_in, ndims, index));
+            AF_CHECK(af_release_array(tmp_in));
+            return AF_SUCCESS;
+        }
+
+        af_dtype in_type = iInfo.getType();
 
         switch(in_type) {
         case f32:    indexArray<float>   (out, in, ndims, index);  break;
@@ -49,6 +60,8 @@ af_err af_index(af_array *result, const af_array in, const unsigned ndims, const
         case b8:     indexArray<char>    (out, in, ndims, index);  break;
         case s32:    indexArray<int>     (out, in, ndims, index);  break;
         case u32:    indexArray<unsigned>(out, in, ndims, index);  break;
+        case s16:    indexArray<short>   (out, in, ndims, index);  break;
+        case u16:    indexArray<ushort>  (out, in, ndims, index);  break;
         case s64:    indexArray<intl>    (out, in, ndims, index);  break;
         case u64:    indexArray<uintl>   (out, in, ndims, index);  break;
         case u8:     indexArray<uchar>   (out, in, ndims, index);  break;
@@ -77,6 +90,8 @@ static af_array lookup(const af_array &in, const af_array &idx, const unsigned d
         case u32: return getHandle(lookup<unsigned, idx_t > (getArray<unsigned>(in), getArray<idx_t>(idx), dim));
         case s64: return getHandle(lookup<intl    , idx_t > (getArray<intl    >(in), getArray<idx_t>(idx), dim));
         case u64: return getHandle(lookup<uintl   , idx_t > (getArray<uintl   >(in), getArray<idx_t>(idx), dim));
+        case s16: return getHandle(lookup<short   , idx_t > (getArray<short   >(in), getArray<idx_t>(idx), dim));
+        case u16: return getHandle(lookup<ushort  , idx_t > (getArray<ushort  >(in), getArray<idx_t>(idx), dim));
         case  u8: return getHandle(lookup<uchar   , idx_t > (getArray<uchar   >(in), getArray<idx_t>(idx), dim));
         case  b8: return getHandle(lookup<char    , idx_t > (getArray<char    >(in), getArray<idx_t>(idx), dim));
         default : TYPE_ERROR(1, inType);
@@ -105,6 +120,10 @@ af_err af_lookup(af_array *out, const af_array in, const af_array indices, const
             case f64: output = lookup<double  >(in, indices, dim); break;
             case s32: output = lookup<int     >(in, indices, dim); break;
             case u32: output = lookup<unsigned>(in, indices, dim); break;
+            case s16: output = lookup<short   >(in, indices, dim); break;
+            case u16: output = lookup<ushort  >(in, indices, dim); break;
+            case s64: output = lookup<intl    >(in, indices, dim); break;
+            case u64: output = lookup<uintl   >(in, indices, dim); break;
             case  u8: output = lookup<uchar   >(in, indices, dim); break;
             default : TYPE_ERROR(1, idxType);
         }
@@ -114,12 +133,6 @@ af_err af_lookup(af_array *out, const af_array in, const af_array indices, const
     std::swap(*out, output);
 
     return AF_SUCCESS;
-}
-
-af_seq
-af_make_seq(double begin, double end, double step) {
-    af_seq seq = {begin, end, step};
-    return seq;
 }
 
 // idxrs parameter to the below static function
@@ -144,6 +157,15 @@ af_err af_index_gen(af_array *out, const af_array in, const dim_t ndims, const a
     try {
         ARG_ASSERT(2, (ndims>0));
         ARG_ASSERT(3, (indexs!=NULL));
+
+        ArrayInfo iInfo = getInfo(in);
+        if (ndims == 1 && ndims != (dim_t)iInfo.ndims()) {
+            af_array tmp_in;
+            AF_CHECK(af_flat(&tmp_in, in));
+            AF_CHECK(af_index_gen(out, tmp_in, ndims, indexs));
+            AF_CHECK(af_release_array(tmp_in));
+            return AF_SUCCESS;
+        }
 
         int track = 0;
         af_seq seqs[] = {af_span, af_span, af_span, af_span};
@@ -183,7 +205,6 @@ af_err af_index_gen(af_array *out, const af_array in, const dim_t ndims, const a
             }
         }
 
-        ArrayInfo iInfo = getInfo(in);
         dim4 iDims = iInfo.dims();
 
         ARG_ASSERT(1, (iDims.ndims()>0));
@@ -195,9 +216,11 @@ af_err af_index_gen(af_array *out, const af_array in, const dim_t ndims, const a
             case c32: output = genIndex<cfloat >(in, idxrs); break;
             case f32: output = genIndex<float  >(in, idxrs); break;
             case u64: output = genIndex<uintl  >(in, idxrs); break;
-            case u32: output = genIndex<uint   >(in, idxrs); break;
             case s64: output = genIndex<intl   >(in, idxrs); break;
+            case u32: output = genIndex<uint   >(in, idxrs); break;
             case s32: output = genIndex<int    >(in, idxrs); break;
+            case u16: output = genIndex<ushort >(in, idxrs); break;
+            case s16: output = genIndex<short  >(in, idxrs); break;
             case  u8: output = genIndex<uchar  >(in, idxrs); break;
             case  b8: output = genIndex<char   >(in, idxrs); break;
             default: TYPE_ERROR(1, inType);

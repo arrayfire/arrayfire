@@ -47,6 +47,8 @@ af_err af_sat(af_array* out, const af_array in)
             case  u8: output = sat<uint  , uchar >(in); break;
             case s64: output = sat<intl  , intl  >(in); break;
             case u64: output = sat<uintl , uintl >(in); break;
+            case s16: output = sat<int   , short >(in); break;
+            case u16: output = sat<uint  , ushort>(in); break;
             default: TYPE_ERROR(1, inputType);
         }
         std::swap(*out, output);

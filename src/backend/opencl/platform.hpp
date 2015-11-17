@@ -11,6 +11,7 @@
 #if defined(WITH_GRAPHICS)
 #include <fg/window.h>
 #endif
+
 #include <cl.hpp>
 #include <vector>
 #include <string>
@@ -25,6 +26,8 @@ class DeviceManager
     friend int getDeviceCount();
 
     friend int getActiveDeviceId();
+
+    friend int getDeviceIdFromNativeId(cl_device_id id);
 
     friend const cl::Context& getContext();
 
@@ -74,6 +77,8 @@ class DeviceManager
         unsigned mActiveCtxId;
         unsigned mActiveQId;
 };
+
+int getBackend();
 
 std::string getInfo();
 

@@ -34,6 +34,11 @@ namespace TNJ
             return (void *)(&m_val);
         }
 
+        void *calc(int idx)
+        {
+            return (void *)&m_val;
+        }
+
         void getInfo(unsigned &len, unsigned &buf_count, unsigned &bytes)
         {
             if (m_is_eval) return;
@@ -42,7 +47,9 @@ namespace TNJ
             return;
         }
 
-        void reset(bool reset_off=true) { m_is_eval = false; }
+        void reset() { m_is_eval = false; }
+
+        bool isLinear(const dim_t *dims) { return true; }
     };
 }
 

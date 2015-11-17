@@ -72,7 +72,8 @@ static af_array median(const af_array& in, const dim_t dim)
     af_seq slices[4] = {af_span, af_span, af_span, af_span};
     slices[dim] = af_make_seq(mid-1.0, mid-1.0, 1.0);
 
-    AF_CHECK(af_index(&left, getHandle<T>(sortedIn), input.ndims(), slices));
+    af_array sortedIn_handle = getHandle<T>(sortedIn);
+    AF_CHECK(af_index(&left, sortedIn_handle, input.ndims(), slices));
 
     if (nElems % 2 == 1) {
         // mid-1 is our guy
@@ -82,6 +83,7 @@ static af_array median(const af_array& in, const dim_t dim)
         af_array out;
         AF_CHECK(af_cast(&out, left, f32));
         AF_CHECK(af_release_array(left));
+        AF_CHECK(af_release_array(sortedIn_handle));
         return out;
     } else {
         // ((mid-1)+mid)/2 is our guy
@@ -89,7 +91,7 @@ static af_array median(const af_array& in, const dim_t dim)
         af_array right = 0;
         slices[dim] = af_make_seq(mid, mid, 1.0);
 
-        AF_CHECK(af_index(&right, getHandle<T>(sortedIn), dims.ndims(), slices));
+        AF_CHECK(af_index(&right, sortedIn_handle, dims.ndims(), slices));
 
         af_array sumarr = 0;
         af_array carr   = 0;
@@ -115,6 +117,7 @@ static af_array median(const af_array& in, const dim_t dim)
         AF_CHECK(af_release_array(right));
         AF_CHECK(af_release_array(sumarr));
         AF_CHECK(af_release_array(carr));
+        AF_CHECK(af_release_array(sortedIn_handle));
         return result;
     }
 }
@@ -129,6 +132,8 @@ af_err af_median_all(double *realVal, double *imagVal, const af_array in)
             case f32: *realVal = median<float >(in); break;
             case s32: *realVal = median<int   >(in); break;
             case u32: *realVal = median<uint  >(in); break;
+            case s16: *realVal = median<short >(in); break;
+            case u16: *realVal = median<ushort>(in); break;
             case  u8: *realVal = median<uchar >(in); break;
             default : TYPE_ERROR(1, type);
         }
@@ -150,6 +155,8 @@ af_err af_median(af_array* out, const af_array in, const dim_t dim)
             case f32: output = median<float >(in, dim); break;
             case s32: output = median<int   >(in, dim); break;
             case u32: output = median<uint  >(in, dim); break;
+            case s16: output = median<short >(in, dim); break;
+            case u16: output = median<ushort>(in, dim); break;
             case  u8: output = median<uchar >(in, dim); break;
             default : TYPE_ERROR(1, type);
         }

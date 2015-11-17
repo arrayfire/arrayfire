@@ -165,7 +165,7 @@ void locate_features(
     unsigned lx = bx / 2 + 3;
     unsigned ly = by / 2 + 3;
 
-    load_shared_image(in, iInfo, local_image, ix, iy, bx, by, x, y, lx, ly);
+    load_shared_image(in + iInfo.offset, iInfo, local_image, ix, iy, bx, by, x, y, lx, ly);
     barrier(CLK_LOCAL_MEM_FENCE);
     locate_features_core(local_image, score,
                          iInfo, thr, x, y, edge);

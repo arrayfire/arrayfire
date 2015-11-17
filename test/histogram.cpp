@@ -27,7 +27,7 @@ class Histogram : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<float, double, int, uint, char, uchar> TestTypes;
+typedef ::testing::Types<float, double, int, uint, char, uchar, short, ushort, intl, uintl> TestTypes;
 
 // register the type list
 TYPED_TEST_CASE(Histogram, TestTypes);
@@ -254,4 +254,23 @@ TEST(histogram, GFOR)
         array b_ii = B(span, span, ii);
         ASSERT_EQ(max<double>(abs(c_ii - b_ii)) < 1E-5, true);
     }
+}
+
+TEST(histogram, IndexedArray)
+{
+    using namespace af;
+
+    const dim_t LEN = 32;
+    array A = range(LEN, (dim_t)2);
+    for (int i=16; i<28; ++i) {
+        A(seq(i, i+3), span) = i/4 - 1;
+    }
+    array B = A(seq(20), span);
+    array C = histogram(B, 4);
+    unsigned out[4];
+    C.host((void*)out);
+    ASSERT_EQ(true, out[0] == 16);
+    ASSERT_EQ(true, out[1] ==  8);
+    ASSERT_EQ(true, out[2] ==  8);
+    ASSERT_EQ(true, out[3] ==  8);
 }

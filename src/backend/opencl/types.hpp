@@ -21,6 +21,7 @@ namespace opencl
     typedef cl_double2 cdouble;
     typedef cl_uchar     uchar;
     typedef cl_uint       uint;
+    typedef cl_ushort   ushort;
 
     template<typename T> struct is_complex          { static const bool value = false;  };
     template<> struct           is_complex<cfloat>  { static const bool value = true;   };

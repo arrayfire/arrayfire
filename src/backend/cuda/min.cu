@@ -22,4 +22,6 @@ namespace cuda
     INSTANTIATE(af_min_t, uintl  , uintl  )
     INSTANTIATE(af_min_t, char   , char   )
     INSTANTIATE(af_min_t, uchar  , uchar  )
+    INSTANTIATE(af_min_t, short  , short  )
+    INSTANTIATE(af_min_t, ushort , ushort )
 }

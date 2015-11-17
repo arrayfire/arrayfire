@@ -52,7 +52,6 @@
  **********************************************************************/
 
 #include "magma.h"
-#include "magma_blas.h"
 #include "magma_data.h"
 #include "magma_cpu_lapack.h"
 #include "magma_helper.h"
@@ -137,7 +136,7 @@ magma_ungqr_gpu(
     cl_mem dW;
     magma_malloc<Ty>(&dW, (((n+31)/32)*32)*nb);
 
-    ungqr_work_func<Ty> cpu_ungqr;
+    cpu_lapack_ungqr_work_func<Ty> cpu_lapack_ungqr;
 
     // Use unblocked code for the last or only block.
     if (kk < n) {
@@ -147,10 +146,10 @@ magma_ungqr_gpu(
         magma_getmatrix<Ty>(m_kk, k_kk,
                             dA(kk, kk), ldda, panel, m_kk, queue);
 
-        cpu_ungqr(LAPACK_COL_MAJOR,
-                  m_kk, n_kk, k_kk,
-                  panel, m_kk,
-                  &tau[kk], work, lwork);
+        LAPACKE_CHECK(cpu_lapack_ungqr(
+                          m_kk, n_kk, k_kk,
+                          panel, m_kk,
+                          &tau[kk], work, lwork));
 
         magma_setmatrix<Ty>(m_kk, n_kk,
                             panel, m_kk, dA(kk, kk), ldda, queue);

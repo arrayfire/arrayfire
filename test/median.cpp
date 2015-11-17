@@ -16,11 +16,32 @@
 using namespace af;
 using std::vector;
 
+template<typename Ti>
+af::array generateArray(int nx, int ny, int nz, int nw)
+{
+    array a = randu(nx, ny, nz, nw, (af::dtype)dtype_traits<Ti>::af_type);
+    return a;
+}
+
+template<>
+af::array generateArray<int>(int nx, int ny, int nz, int nw)
+{
+    array a = (randu(nx, ny, nz, nw, (af::dtype)dtype_traits<float>::af_type) * 1e6).as(s32);
+    return a;
+}
+
+template<>
+af::array generateArray<unsigned int>(int nx, int ny, int nz, int nw)
+{
+    array a = (randu(nx, ny, nz, nw, (af::dtype)dtype_traits<float>::af_type) * 1e6).as(u32);
+    return a;
+}
+
 template<typename To, typename Ti, bool flat>
 void median0(int nx, int ny=1, int nz=1, int nw=1)
 {
     if (noDoubleTests<Ti>()) return;
-    array a = randu(nx, ny, nz, nw, (af::dtype)dtype_traits<Ti>::af_type);
+    array a = generateArray<Ti>(nx, ny, nz, nw);
     array sa = sort(a);
 
     Ti *h_sa = sa.host<Ti>();
@@ -49,7 +70,7 @@ void median0(int nx, int ny=1, int nz=1, int nw=1)
                     To left = h_sa[id + off * nx - 1];
                     To right = h_sa[id + off * nx];
 
-                    ASSERT_NEAR((left + right) / 2, h_b[off], 1e-8);
+                    ASSERT_NEAR((left + right) / 2, h_b[off], 1e-5);
                 }
             }
         }
@@ -106,4 +127,6 @@ MEDIAN0(float, float)
 MEDIAN0(float, int)
 MEDIAN0(float, uint)
 MEDIAN0(float, uchar)
+MEDIAN0(float, short)
+MEDIAN0(float, ushort)
 MEDIAN0(double, double)

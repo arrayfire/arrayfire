@@ -56,10 +56,18 @@ void loadImageTest(string pTestFile, string pImageFile, const bool isColor)
     float *imgData = new float[dims.elements()];
     ASSERT_EQ(AF_SUCCESS, af_get_data_ptr((void*) imgData, imgArray));
 
+    bool isJPEG = false;
+    if(pImageFile.find(".jpg") != std::string::npos) {
+        isJPEG = true;
+    }
+
     // Compare result
     size_t nElems = in[0].size();
     for (size_t elIter = 0; elIter < nElems; ++elIter) {
-        ASSERT_EQ(in[0][elIter], imgData[elIter]) << "at: " << elIter << std::endl;
+        if(isJPEG)  // Allow +- 1 because of compression when testing JPG
+            ASSERT_NEAR(in[0][elIter], imgData[elIter], 1) << "at: " << elIter << std::endl;
+        else
+            ASSERT_EQ(in[0][elIter], imgData[elIter]) << "at: " << elIter << std::endl;
     }
 
     // Delete
@@ -165,6 +173,70 @@ TEST(ImageIO, SaveBMPCPP) {
     af::array out = af::loadImage("SaveCPP.bmp", true);
 
     ASSERT_FALSE(af::anyTrue<bool>(out - input));
+}
+
+TEST(ImageMem, SaveMemPNG)
+{
+    if (noDoubleTests<float>()) return;
+
+    af::array img = af::loadImage(string(TEST_DIR"/imageio/color_seq.png").c_str(), true);
+
+    void* savedMem = af::saveImageMem(img, AF_FIF_PNG);
+
+    af::array loadMem = af::loadImageMem(savedMem);
+
+    ASSERT_FALSE(af::anyTrue<bool>(img - loadMem));
+
+    af::deleteImageMem(savedMem);
+}
+
+TEST(ImageMem, SaveMemJPG1)
+{
+    if (noDoubleTests<float>()) return;
+
+    af::array img = af::loadImage(string(TEST_DIR"/imageio/color_seq.png").c_str(), false);
+    af::saveImage("color_seq1.jpg", img);
+
+    void* savedMem = af::saveImageMem(img, AF_FIF_JPEG);
+
+    af::array loadMem = af::loadImageMem(savedMem);
+    af::array imgJPG = af::loadImage("color_seq1.jpg", false);
+
+    ASSERT_FALSE(af::anyTrue<bool>(imgJPG - loadMem));
+
+    af::deleteImageMem(savedMem);
+}
+
+TEST(ImageMem, SaveMemJPG3)
+{
+    if (noDoubleTests<float>()) return;
+
+    af::array img = af::loadImage(string(TEST_DIR"/imageio/color_seq.png").c_str(), true);
+    af::saveImage("color_seq3.jpg", img);
+
+    void* savedMem = af::saveImageMem(img, AF_FIF_JPEG);
+
+    af::array loadMem = af::loadImageMem(savedMem);
+    af::array imgJPG = af::loadImage("color_seq3.jpg", true);
+
+    ASSERT_FALSE(af::anyTrue<bool>(imgJPG - loadMem));
+
+    af::deleteImageMem(savedMem);
+}
+
+TEST(ImageMem, SaveMemBMP)
+{
+    if (noDoubleTests<float>()) return;
+
+    af::array img = af::loadImage(string(TEST_DIR"/imageio/color_rand.png").c_str(), true);
+
+    void* savedMem = af::saveImageMem(img, AF_FIF_BMP);
+
+    af::array loadMem = af::loadImageMem(savedMem);
+
+    ASSERT_FALSE(af::anyTrue<bool>(img - loadMem));
+
+    af::deleteImageMem(savedMem);
 }
 
 #endif // WITH_FREEIMAGE

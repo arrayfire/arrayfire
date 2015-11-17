@@ -63,6 +63,8 @@ af_err af_rotate(af_array *out, const af_array in, const float theta,
             case u32: output = rotate<uint   >(in, theta, odims, method);  break;
             case s64: output = rotate<intl   >(in, theta, odims, method);  break;
             case u64: output = rotate<uintl  >(in, theta, odims, method);  break;
+            case s16: output = rotate<short  >(in, theta, odims, method);  break;
+            case u16: output = rotate<ushort >(in, theta, odims, method);  break;
             case u8:  output = rotate<uchar  >(in, theta, odims, method);  break;
             case b8:  output = rotate<uchar  >(in, theta, odims, method);  break;
             default:  TYPE_ERROR(1, itype);

@@ -145,5 +145,7 @@ INSTANTIATE(char  )
 INSTANTIATE(int   )
 INSTANTIATE(uint  )
 INSTANTIATE(uchar )
+INSTANTIATE(ushort)
+INSTANTIATE(short )
 
 }

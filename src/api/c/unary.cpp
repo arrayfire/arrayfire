@@ -19,6 +19,10 @@
 #include <backend.hpp>
 #include <unary.hpp>
 #include <implicit.hpp>
+#include <complex.hpp>
+#include <logic.hpp>
+#include <cast.hpp>
+#include <arith.hpp>
 
 using namespace detail;
 
@@ -85,7 +89,6 @@ UNARY(round)
 UNARY(floor)
 UNARY(ceil)
 
-UNARY(exp)
 UNARY(sigmoid)
 UNARY(expm1)
 UNARY(erf)
@@ -102,6 +105,50 @@ UNARY(cbrt)
 UNARY(tgamma)
 UNARY(lgamma)
 
+template<typename Tc, typename Tr>
+af_array expCplx(const af_array a)
+{
+    Array<Tc> In = getArray<Tc>(a);
+    Array<Tr> Real = real<Tr, Tc>(In);
+    Array<Tr> Imag = imag<Tr, Tc>(In);
+
+    Array<Tr> ExpReal = unaryOp<Tr, af_exp_t>(Real);
+    Array<Tr> CosImag = unaryOp<Tr, af_cos_t>(Imag);
+    Array<Tr> SinImag = unaryOp<Tr, af_sin_t>(Imag);
+
+    Array<Tc> Unit  = cplx<Tc, Tr>(CosImag, SinImag, CosImag.dims());
+    Array<Tc> Scale = cast<Tc, Tr>(ExpReal);
+
+    Array<Tc> Result = arithOp<Tc, af_mul_t>(Scale, Unit, Scale.dims());
+
+    return getHandle(Result);
+}
+
+af_err af_exp(af_array *out, const af_array in)
+{
+    try {
+
+        ArrayInfo in_info = getInfo(in);
+        af_dtype in_type = in_info.getType();
+        af_array res;
+
+        // Convert all inputs to floats / doubles
+        af_dtype type = implicit(in_type, f32);
+
+        switch (type) {
+        case f32 : res = unaryOp<float  , af_exp_t>(in); break;
+        case f64 : res = unaryOp<double , af_exp_t>(in); break;
+        case c32 : res = expCplx<cfloat , float >(in); break;
+        case c64 : res = expCplx<cdouble, double>(in); break;
+        default:
+            TYPE_ERROR(1, in_type); break;
+        }
+
+        std::swap(*out, res);
+    }
+    CATCHALL;
+    return AF_SUCCESS;
+}
 
 af_err af_not(af_array *out, const af_array in)
 {
@@ -199,22 +246,58 @@ static inline af_array checkOp(const af_array in)
 }
 
 template<af_op_t op>
+struct cplxLogicOp
+{
+    af_array operator()(Array<char> resR, Array<char> resI, dim4 dims)
+    {
+        return getHandle(logicOp<char, af_or_t>(resR, resI, dims));
+    }
+};
+
+template <>
+struct cplxLogicOp<af_iszero_t>
+{
+    af_array operator()(Array<char> resR, Array<char> resI, dim4 dims)
+    {
+        return getHandle(logicOp<char, af_and_t>(resR, resI, dims));
+    }
+};
+
+template<typename T, typename BT, af_op_t op>
+static inline af_array checkOpCplx(const af_array in)
+{
+    Array<BT> R = real<BT, T>(getArray<T>(in));
+    Array<BT> I = imag<BT, T>(getArray<T>(in));
+
+    Array<char> resR = checkOp<BT, op>(R);
+    Array<char> resI = checkOp<BT, op>(I);
+
+    ArrayInfo in_info = getInfo(in);
+    dim4 dims = in_info.dims();
+    cplxLogicOp<op> cplxLogic;
+    af_array res = cplxLogic(resR, resI, dims);
+
+    return res;
+}
+
+template<af_op_t op>
 static af_err af_check(af_array *out, const af_array in)
 {
     try {
 
         ArrayInfo in_info = getInfo(in);
-        ARG_ASSERT(1, in_info.isReal());
 
         af_dtype in_type = in_info.getType();
         af_array res;
 
-        // Convert all inputs to floats / doubles
+        // Convert all inputs to floats / doubles / complex
         af_dtype type = implicit(in_type, f32);
 
         switch (type) {
         case f32 : res = checkOp<float  , op>(in); break;
         case f64 : res = checkOp<double , op>(in); break;
+        case c32 : res = checkOpCplx<cfloat , float , op>(in); break;
+        case c64 : res = checkOpCplx<cdouble, double, op>(in); break;
         default:
             TYPE_ERROR(1, in_type); break;
         }

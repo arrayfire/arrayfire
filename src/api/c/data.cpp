@@ -59,6 +59,8 @@ af_err af_get_data_ptr(void *data, const af_array arr)
         case u8:    copyData(static_cast<uchar    *>(data), arr);  break;
         case s64:   copyData(static_cast<intl     *>(data), arr);  break;
         case u64:   copyData(static_cast<uintl    *>(data), arr);  break;
+        case s16:   copyData(static_cast<short    *>(data), arr);  break;
+        case u16:   copyData(static_cast<ushort   *>(data), arr);  break;
         default:    TYPE_ERROR(1, type);
         }
     }
@@ -88,6 +90,8 @@ af_err af_create_array(af_array *result, const void * const data,
         case u8:    out = createHandleFromData(d, static_cast<const uchar   *>(data)); break;
         case s64:   out = createHandleFromData(d, static_cast<const intl    *>(data)); break;
         case u64:   out = createHandleFromData(d, static_cast<const uintl   *>(data)); break;
+        case s16:   out = createHandleFromData(d, static_cast<const short   *>(data)); break;
+        case u16:   out = createHandleFromData(d, static_cast<const ushort  *>(data)); break;
         default:    TYPE_ERROR(4, type);
         }
         std::swap(*result, out);
@@ -118,6 +122,8 @@ af_err af_constant(af_array *result, const double value,
         case u8:    out = createHandleFromValue<uchar  >(d, value); break;
         case s64:   out = createHandleFromValue<intl   >(d, value); break;
         case u64:   out = createHandleFromValue<uintl  >(d, value); break;
+        case s16:   out = createHandleFromValue<short  >(d, value); break;
+        case u16:   out = createHandleFromValue<ushort >(d, value); break;
         default:    TYPE_ERROR(4, type);
         }
         std::swap(*result, out);
@@ -212,6 +218,8 @@ af_err af_create_handle(af_array *result, const unsigned ndims, const dim_t * co
         case u8:    out = createHandle<uchar  >(d); break;
         case s64:   out = createHandle<intl   >(d); break;
         case u64:   out = createHandle<uintl  >(d); break;
+        case s16:   out = createHandle<short  >(d); break;
+        case u16:   out = createHandle<ushort >(d); break;
         default:    TYPE_ERROR(3, type);
         }
         std::swap(*result, out);
@@ -239,6 +247,8 @@ af_err af_copy_array(af_array *out, const af_array in)
         case u8:    res = copyArray<uchar   >(in); break;
         case s64:   res = copyArray<intl    >(in); break;
         case u64:   res = copyArray<uintl   >(in); break;
+        case s16:   res = copyArray<short   >(in); break;
+        case u16:   res = copyArray<ushort  >(in); break;
         default:    TYPE_ERROR(1, type);
         }
         std::swap(*out, res);
@@ -266,6 +276,8 @@ af_err af_get_data_ref_count(int *use_count, const af_array in)
         case u8:    res = getArray<uchar   >(in).useCount(); break;
         case s64:   res = getArray<intl    >(in).useCount(); break;
         case u64:   res = getArray<uintl   >(in).useCount(); break;
+        case s16:   res = getArray<short   >(in).useCount(); break;
+        case u16:   res = getArray<ushort  >(in).useCount(); break;
         default:    TYPE_ERROR(1, type);
         }
         std::swap(*use_count, res);
@@ -310,6 +322,8 @@ af_err af_randu(af_array *out, const unsigned ndims, const dim_t * const dims, c
         case u32:   result = randu_<uint   >(d);    break;
         case s64:   result = randu_<intl   >(d);    break;
         case u64:   result = randu_<uintl  >(d);    break;
+        case s16:   result = randu_<short  >(d);    break;
+        case u16:   result = randu_<ushort >(d);    break;
         case u8:    result = randu_<uchar  >(d);    break;
         case b8:    result = randu_<char  >(d);    break;
         default:    TYPE_ERROR(3, type);
@@ -375,6 +389,8 @@ af_err af_identity(af_array *out, const unsigned ndims, const dim_t * const dims
         case u8:    result = identity_<uchar  >(d);    break;
         case u64:   result = identity_<uintl  >(d);    break;
         case s64:   result = identity_<intl   >(d);    break;
+        case u16:   result = identity_<ushort >(d);    break;
+        case s16:   result = identity_<short  >(d);    break;
             // Removed because of bool type. Functions implementations exist.
         case b8:    result = identity_<char   >(d);    break;
         default:    TYPE_ERROR(3, type);
@@ -401,6 +417,8 @@ af_err af_release_array(af_array arr)
         case u8:    releaseHandle<uchar   >(arr); break;
         case s64:   releaseHandle<intl    >(arr); break;
         case u64:   releaseHandle<uintl   >(arr); break;
+        case s16:   releaseHandle<short   >(arr); break;
+        case u16:   releaseHandle<ushort  >(arr); break;
         default:    TYPE_ERROR(0, type);
         }
     }
@@ -433,6 +451,8 @@ af_array retain(const af_array in)
     case b8:  return retainHandle<char            >(in);
     case s64: return retainHandle<intl            >(in);
     case u64: return retainHandle<uintl           >(in);
+    case s16: return retainHandle<short           >(in);
+    case u16: return retainHandle<ushort          >(in);
     default:
         TYPE_ERROR(1, ty);
     }
@@ -470,6 +490,8 @@ af_err af_range(af_array *result, const unsigned ndims, const dim_t * const dims
         case u32:   out = range_<uint   >(d, seq_dim); break;
         case s64:   out = range_<intl   >(d, seq_dim); break;
         case u64:   out = range_<uintl  >(d, seq_dim); break;
+        case s16:   out = range_<short  >(d, seq_dim); break;
+        case u16:   out = range_<ushort >(d, seq_dim); break;
         case u8:    out = range_<uchar  >(d, seq_dim); break;
         default:    TYPE_ERROR(4, type);
         }
@@ -495,16 +517,9 @@ af_err af_iota(af_array *result, const unsigned ndims, const dim_t * const dims,
 
         DIM_ASSERT(1, ndims > 0 && ndims <= 4);
         DIM_ASSERT(3, t_ndims > 0 && t_ndims <= 4);
-        dim4 d;
-        dim4 t;
-        for(unsigned i = 0; i < 4; i++) {
-            d[i] = dims[i];
-            DIM_ASSERT(2, d[i] >= 1);
-        }
-        for(unsigned i = 0; i < 4; i++) {
-            t[i] = tdims[i];
-            DIM_ASSERT(4, t[i] >= 1);
-        }
+
+        dim4 d = verifyDims(ndims, dims);
+        dim4 t = verifyDims(t_ndims, tdims);
 
         switch(type) {
         case f32:   out = iota_<float  >(d, t); break;
@@ -513,6 +528,8 @@ af_err af_iota(af_array *result, const unsigned ndims, const dim_t * const dims,
         case u32:   out = iota_<uint   >(d, t); break;
         case s64:   out = iota_<intl   >(d, t); break;
         case u64:   out = iota_<uintl  >(d, t); break;
+        case s16:   out = iota_<short  >(d, t); break;
+        case u16:   out = iota_<ushort >(d, t); break;
         case u8:    out = iota_<uchar  >(d, t); break;
         default:    TYPE_ERROR(4, type);
         }
@@ -596,6 +613,8 @@ af_err af_eval(af_array arr)
         case b8 : eval<char   >(arr); break;
         case s64: eval<intl   >(arr); break;
         case u64: eval<uintl  >(arr); break;
+        case s16: eval<short  >(arr); break;
+        case u16: eval<ushort >(arr); break;
         default:
             TYPE_ERROR(0, type);
         }
@@ -633,6 +652,8 @@ af_err af_diag_create(af_array *out, const af_array in, const int num)
         case u32:   result = diagCreate<uint   >(in, num);    break;
         case s64:   result = diagCreate<intl   >(in, num);    break;
         case u64:   result = diagCreate<uintl  >(in, num);    break;
+        case s16:   result = diagCreate<short  >(in, num);    break;
+        case u16:   result = diagCreate<ushort >(in, num);    break;
         case u8:    result = diagCreate<uchar  >(in, num);    break;
             // Removed because of bool type. Functions implementations exist.
         case b8:    result = diagCreate<char   >(in, num);    break;
@@ -662,6 +683,8 @@ af_err af_diag_extract(af_array *out, const af_array in, const int num)
         case u32:   result = diagExtract<uint   >(in, num);    break;
         case s64:   result = diagExtract<intl   >(in, num);    break;
         case u64:   result = diagExtract<uintl  >(in, num);    break;
+        case s16:   result = diagExtract<short  >(in, num);    break;
+        case u16:   result = diagExtract<ushort >(in, num);    break;
         case u8:    result = diagExtract<uchar  >(in, num);    break;
             // Removed because of bool type. Functions implementations exist.
         case b8:    result = diagExtract<char   >(in, num);    break;
@@ -702,6 +725,8 @@ af_err af_write_array(af_array arr, const void *data, const size_t bytes, af_sou
         case u8:    write_array(arr, static_cast<const uchar   *>(data), bytes, src); break;
         case s64:   write_array(arr, static_cast<const intl    *>(data), bytes, src); break;
         case u64:   write_array(arr, static_cast<const uintl   *>(data), bytes, src); break;
+        case s16:   write_array(arr, static_cast<const short   *>(data), bytes, src); break;
+        case u16:   write_array(arr, static_cast<const ushort  *>(data), bytes, src); break;
         default:    TYPE_ERROR(4, type);
         }
     }
@@ -729,9 +754,11 @@ af_err af_lower(af_array *out, const af_array in, bool is_unit_diag)
         case c32: res = triangle<cfloat  , false>(in, is_unit_diag); break;
         case c64: res = triangle<cdouble , false>(in, is_unit_diag); break;
         case s32: res = triangle<int     , false>(in, is_unit_diag); break;
-        case s64: res = triangle<intl    , false>(in, is_unit_diag); break;
         case u32: res = triangle<uint    , false>(in, is_unit_diag); break;
+        case s64: res = triangle<intl    , false>(in, is_unit_diag); break;
         case u64: res = triangle<uintl   , false>(in, is_unit_diag); break;
+        case s16: res = triangle<short   , false>(in, is_unit_diag); break;
+        case u16: res = triangle<ushort  , false>(in, is_unit_diag); break;
         case u8 : res = triangle<uchar   , false>(in, is_unit_diag); break;
         case b8 : res = triangle<char    , false>(in, is_unit_diag); break;
         }
@@ -753,9 +780,11 @@ af_err af_upper(af_array *out, const af_array in, bool is_unit_diag)
         case c32: res = triangle<cfloat  , true>(in, is_unit_diag); break;
         case c64: res = triangle<cdouble , true>(in, is_unit_diag); break;
         case s32: res = triangle<int     , true>(in, is_unit_diag); break;
-        case s64: res = triangle<intl    , true>(in, is_unit_diag); break;
         case u32: res = triangle<uint    , true>(in, is_unit_diag); break;
+        case s64: res = triangle<intl    , true>(in, is_unit_diag); break;
         case u64: res = triangle<uintl   , true>(in, is_unit_diag); break;
+        case s16: res = triangle<short   , true>(in, is_unit_diag); break;
+        case u16: res = triangle<ushort  , true>(in, is_unit_diag); break;
         case u8 : res = triangle<uchar   , true>(in, is_unit_diag); break;
         case b8 : res = triangle<char    , true>(in, is_unit_diag); break;
         }

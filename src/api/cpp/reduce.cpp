@@ -115,6 +115,8 @@ namespace af
     INSTANTIATE_REAL(fnC, fnCPP, unsigned long)         \
     INSTANTIATE_REAL(fnC, fnCPP, long long)             \
     INSTANTIATE_REAL(fnC, fnCPP, unsigned long long)    \
+    INSTANTIATE_REAL(fnC, fnCPP, short)                 \
+    INSTANTIATE_REAL(fnC, fnCPP, unsigned short)        \
     INSTANTIATE_REAL(fnC, fnCPP, char)                  \
     INSTANTIATE_REAL(fnC, fnCPP, unsigned char)         \
     INSTANTIATE_CPLX(fnC, fnCPP, af_cfloat, float)      \
@@ -201,6 +203,8 @@ INSTANTIATE(product_nan, product)
     INSTANTIATE_COMPAT(fnCPP, fnCompat, unsigned char)          \
     INSTANTIATE_COMPAT(fnCPP, fnCompat, af_cfloat)              \
     INSTANTIATE_COMPAT(fnCPP, fnCompat, af_cdouble)             \
+    INSTANTIATE_COMPAT(fnCPP, fnCompat, short)                  \
+    INSTANTIATE_COMPAT(fnCPP, fnCompat, unsigned short)         \
 
     INSTANTIATE(product, mul)
     INSTANTIATE(allTrue, alltrue)
@@ -238,6 +242,8 @@ INSTANTIATE(product_nan, product)
     INSTANTIATE_REAL(fn, unsigned)              \
     INSTANTIATE_REAL(fn, char)                  \
     INSTANTIATE_REAL(fn, unsigned char)         \
+    INSTANTIATE_REAL(fn, short)                 \
+    INSTANTIATE_REAL(fn, unsigned short)        \
     INSTANTIATE_CPLX(fn, af_cfloat, float)      \
     INSTANTIATE_CPLX(fn, af_cdouble, double)    \
 

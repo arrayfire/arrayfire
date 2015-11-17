@@ -46,7 +46,9 @@ namespace cuda
         static_assert(offsetof(Array<T>, info) == 0, "Array<T>::info must be the first member variable of Array<T>");
 #endif
         if (!is_device) {
-            CUDA_CHECK(cudaMemcpy(data.get(), in_data, dims.elements() * sizeof(T), cudaMemcpyHostToDevice));
+            CUDA_CHECK(cudaMemcpyAsync(data.get(), in_data, dims.elements() * sizeof(T),
+                        cudaMemcpyHostToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+            CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
         }
     }
 
@@ -73,7 +75,7 @@ namespace cuda
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, JIT::Node_ptr n) :
-        info(-1, dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        info(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(), data_dims(dims),
         node(n), offset(0), ready(false), owner(true)
     {
@@ -238,9 +240,9 @@ namespace cuda
 
         T *ptr = arr.get();
 
-        CUDA_CHECK(cudaMemcpy(ptr + arr.getOffset(), data,
-                              bytes,
-                              cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpyAsync(ptr + arr.getOffset(), data, bytes, cudaMemcpyHostToDevice,
+                    cuda::getStream(cuda::getActiveDeviceId())));
+        CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
 
         return;
     }
@@ -291,5 +293,7 @@ namespace cuda
     INSTANTIATE(char)
     INSTANTIATE(intl)
     INSTANTIATE(uintl)
+    INSTANTIATE(short)
+    INSTANTIATE(ushort)
 
 }

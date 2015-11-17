@@ -23,6 +23,8 @@
 namespace cuda
 {
     template<typename T> static inline __DH__ T abs(T val)  { return abs(val); }
+    static inline __DH__ int  abs(int  val) { return (val>0? val : -val); }
+    static inline __DH__ char  abs(char  val) { return (val>0? val : -val); }
     static inline __DH__ float  abs(float  val) { return fabsf(val); }
     static inline __DH__ double abs(double val) { return fabs (val); }
     static inline __DH__ float  abs(cfloat  cval) { return cuCabsf(cval); }
@@ -108,6 +110,9 @@ namespace cuda
     template<> __device__  float  limit_min<float>()  { return -CUDART_INF_F; }
     template<> __device__  double limit_max<double>() { return  CUDART_INF; }
     template<> __device__  double limit_min<double>() { return -CUDART_INF; }
+    template<> __device__  short  limit_max<short>()  { return 0x7fff; }
+    template<> __device__  short  limit_min<short>()  { return 0x8000; }
+    template<> __device__  ushort limit_max<ushort>() { return ((ushort)1) << (8 * sizeof(ushort) - 1); }
 #endif
 
 #define upcast cuComplexFloatToDouble
@@ -134,6 +139,8 @@ __SDH__ cdouble conj(cdouble c) { return cuConj(c); }
 __SDH__ cfloat make_cfloat(bool     x) { return make_cuComplex(x,0);     }
 __SDH__ cfloat make_cfloat(int      x) { return make_cuComplex(x,0);     }
 __SDH__ cfloat make_cfloat(unsigned x) { return make_cuComplex(x,0);     }
+__SDH__ cfloat make_cfloat(short    x) { return make_cuComplex(x,0);     }
+__SDH__ cfloat make_cfloat(ushort   x) { return make_cuComplex(x,0);     }
 __SDH__ cfloat make_cfloat(float    x) { return make_cuComplex(x,0);     }
 __SDH__ cfloat make_cfloat(double   x) { return make_cuComplex(x,0);     }
 __SDH__ cfloat make_cfloat(cfloat   x) { return x;                    }
@@ -142,6 +149,8 @@ __SDH__ cfloat make_cfloat(cdouble  c) { return make_cuComplex(c.x,c.y); }
 __SDH__ cdouble make_cdouble(bool      x) { return make_cuDoubleComplex(x,0);       }
 __SDH__ cdouble make_cdouble(int       x) { return make_cuDoubleComplex(x,0);       }
 __SDH__ cdouble make_cdouble(unsigned  x) { return make_cuDoubleComplex(x,0);       }
+__SDH__ cdouble make_cdouble(short     x) { return make_cuDoubleComplex(x,0);       }
+__SDH__ cdouble make_cdouble(ushort    x) { return make_cuDoubleComplex(x,0);       }
 __SDH__ cdouble make_cdouble(float     x) { return make_cuDoubleComplex(x,0);       }
 __SDH__ cdouble make_cdouble(double    x) { return make_cuDoubleComplex(x,0);       }
 __SDH__ cdouble make_cdouble(cdouble   x) { return x;                       }

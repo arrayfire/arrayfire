@@ -26,8 +26,8 @@ static const unsigned THREADS = 256;
 
 template<typename T, typename To, af_match_type dist_type>
 void nearest_neighbour_(Array<uint>& idx, Array<To>& dist,
-                     const Array<T>& query, const Array<T>& train,
-                     const uint dist_dim, const uint n_dist)
+                        const Array<T>& query, const Array<T>& train,
+                        const uint dist_dim, const uint n_dist)
 {
     uint sample_dim = (dist_dim == 0) ? 1 : 0;
     const dim4 qDims = query.dims();
@@ -75,61 +75,8 @@ void nearest_neighbour_(Array<uint>& idx, Array<To>& dist,
             kernel::transpose<T, false, false>(trainT, train);
     }
 
-    if (use_lmem) {
-        switch (feat_len) {
-        case 1:
-            kernel::nearest_neighbour<T, To, dist_type, true , 1 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 2:
-            kernel::nearest_neighbour<T, To, dist_type, true , 2 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 4:
-            kernel::nearest_neighbour<T, To, dist_type, true , 4 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 8:
-            kernel::nearest_neighbour<T, To, dist_type, true , 8 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 16:
-            kernel::nearest_neighbour<T, To, dist_type, true , 16>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 32:
-            kernel::nearest_neighbour<T, To, dist_type, true , 32>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 64:
-            kernel::nearest_neighbour<T, To, dist_type, true , 64>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        default:
-            kernel::nearest_neighbour<T, To, dist_type, true , 0 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        }
-    } else {
-        switch (feat_len) {
-        case 1:
-            kernel::nearest_neighbour<T, To, dist_type, false, 1 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 2:
-            kernel::nearest_neighbour<T, To, dist_type, false, 2 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 4:
-            kernel::nearest_neighbour<T, To, dist_type, false, 4 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 8:
-            kernel::nearest_neighbour<T, To, dist_type, false, 8 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 16:
-            kernel::nearest_neighbour<T, To, dist_type, false, 16>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 32:
-            kernel::nearest_neighbour<T, To, dist_type, false, 32>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        case 64:
-            kernel::nearest_neighbour<T, To, dist_type, false, 64>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        default:
-            kernel::nearest_neighbour<T, To, dist_type, false, 0 >(idx, dist, queryT, trainT, 1, n_dist, lmem_sz);
-            break;
-        }
-    }
+    kernel::nearest_neighbour<T, To, dist_type>(idx, dist, queryT, trainT, 1, n_dist, lmem_sz, use_lmem);
+
 }
 
 template<typename T, typename To>
@@ -158,6 +105,8 @@ INSTANTIATE(int   , int)
 INSTANTIATE(uint  , uint)
 INSTANTIATE(intl  , intl)
 INSTANTIATE(uintl , uintl)
+INSTANTIATE(short , int)
+INSTANTIATE(ushort, uint)
 INSTANTIATE(uchar , uint)
 
 INSTANTIATE(uintl, uint)    // For Hamming

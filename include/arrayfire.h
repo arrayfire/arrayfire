@@ -39,7 +39,7 @@
       @defgroup data_mat Functions to create arrays.
       constant, random, range, etc.
 
-      @defgroup index_mat Indexing operation on arrays
+      @defgroup index_mat Assignment & Indexing operation on arrays
       Access sub regions of an array object
 
       @defgroup manip_mat Move and Reorder array content
@@ -138,6 +138,9 @@
      @defgroup connected_comps_mat Connected Components & Labeling
      regions
 
+     @defgroup image_mod_mat Wrapping and unwrapping image windows
+     wrap, unwrap, etc.
+
      @defgroup utility_mat Utility Functions
      loadImage, saveImage, gaussianKernel
    @}
@@ -197,10 +200,17 @@
      Reading and writing images
    @}
 
+   @defgroup unified_func Unified API Functions
+   @{
+
+     Functions to set current backend and utilities
+
+   @}
+
    @defgroup external Interface Functions
    @{
 
-     CUDA/OpenCL specific functions
+     Backend specific functions
 
      @defgroup opencl_mat OpenCL specific functions
 
@@ -216,6 +226,14 @@
         upload data to `cl_mem` objects from separate threads, but the thread which
         instantiated ArrayFire must do the `cl_mem` to \ref af::array conversion.
 
+     @defgroup cuda_mat CUDA specific functions
+
+        \brief Accessing ArrayFire's stream, and native device id with other CUDA code.
+
+        If your software is using ArrayFire's CUDA backend, you can also write custom
+        kernels and do custom memory operations using native CUDA commands. The functions
+        contained in the \p afcu namespace provide methods to get the stream and native
+        device id that ArrayFire is using.
    @}
 @}
 
@@ -223,40 +241,61 @@
 */
 
 /**
-\example helloworld.cpp
-\example pi.cpp
-\example integer.cpp
-\example rainfall.cpp
-\example vectorize.cpp
-\example black_scholes_options.cpp
-\example monte_carlo_options.cpp
+\example matching.cpp
+\example fast.cpp
 \example harris.cpp
-\example kmeans.cpp
-\example knn.cpp
-\example bagging.cpp
-\example naive_bayes.cpp
+\example susan.cpp
+\example logistic_regression.cpp
+\example rbm.cpp
 \example perceptron.cpp
 \example neural_network.cpp
-\example rbm.cpp
+\example bagging.cpp
+\example naive_bayes.cpp
 \example deep_belief_net.cpp
-\example logistic_regression.cpp
+\example kmeans.cpp
+\example softmax_regression.cpp
+\example knn.cpp
+\example monte_carlo_options.cpp
+\example heston_model.cpp
+\example black_scholes_options.cpp
+\example blas.cpp
+\example fft.cpp
+\example pi.cpp
+\example svd.cpp
+\example cholesky.cpp
+\example qr.cpp
+\example lu.cpp
 \example conway.cpp
-\example conway_pretty.cpp
-\example fractal.cpp
 \example histogram.cpp
+\example fractal.cpp
 \example plot2d.cpp
-\example brain_segmentation.cpp
-\example image_demo.cpp
+\example plot3.cpp
+\example surface.cpp
+\example conway_pretty.cpp
+\example basic.cpp
+\example helloworld.cpp
+\example vectorize.cpp
+\example integer.cpp
+\example convolve.cpp
+\example rainfall.cpp
+\example swe.cpp
 \example morphing.cpp
-\example optical_flow.cpp
+\example image_demo.cpp
+\example brain_segmentation.cpp
 \example pyramids.cpp
+\example binary_thresholding.cpp
+\example optical_flow.cpp
+\example adaptive_thresholding.cpp
+\example image_editing.cpp
 \example edge.cpp
+\example filters.cpp
 */
 
 #include "af/compatible.h"
 #include "af/algorithm.h"
 #include "af/arith.h"
 #include "af/array.h"
+#include "af/backend.h"
 #include "af/blas.h"
 #include "af/constants.h"
 #include "af/complex.h"

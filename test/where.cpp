@@ -27,7 +27,7 @@ using af::cdouble;
 template<typename T>
 class Where : public ::testing::Test { };
 
-typedef ::testing::Types< float, double, cfloat, cdouble, int, uint, intl, uintl, char, uchar > TestTypes;
+typedef ::testing::Types< float, double, cfloat, cdouble, int, uint, intl, uintl, char, uchar, short, ushort> TestTypes;
 TYPED_TEST_CASE(Where, TestTypes);
 
 template<typename T>

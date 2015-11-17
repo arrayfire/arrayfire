@@ -39,6 +39,8 @@ static af_array cast(const af_array in, const af_dtype type)
     case b8 : return getHandle(castArray<char    >(in));
     case s64: return getHandle(castArray<intl    >(in));
     case u64: return getHandle(castArray<uintl   >(in));
+    case s16: return getHandle(castArray<short   >(in));
+    case u16: return getHandle(castArray<ushort  >(in));
     default: TYPE_ERROR(2, type);
     }
 }

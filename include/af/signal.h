@@ -87,6 +87,7 @@ AFAPI array fft2Norm(const array& in, const double norm_factor, const dim_t odim
  */
 AFAPI array fft3Norm(const array& in, const double norm_factor, const dim_t odim0=0, const dim_t odim1=0, const dim_t odim2=0);
 
+#if AF_API_VERSION >= 31
 /**
    C++ Interface for fast fourier transform on one dimensional signals
 
@@ -98,7 +99,9 @@ AFAPI array fft3Norm(const array& in, const double norm_factor, const dim_t odim
    \ingroup signal_func_fft
  */
 AFAPI void fftInPlace(array& in, const double norm_factor = 1);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
    C++ Interface for fast fourier transform on two dimensional signals
 
@@ -111,7 +114,9 @@ AFAPI void fftInPlace(array& in, const double norm_factor = 1);
    \ingroup signal_func_fft2
  */
 AFAPI void fft2InPlace(array& in, const double norm_factor = 1);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
    C++ Interface for fast fourier transform on three dimensional signals
 
@@ -124,6 +129,7 @@ AFAPI void fft2InPlace(array& in, const double norm_factor = 1);
    \ingroup signal_func_fft3
  */
 AFAPI void fft3InPlace(array& in, const double norm_factor = 1);
+#endif
 
 /**
    C++ Interface for fast fourier transform on one dimensional signals
@@ -248,6 +254,7 @@ AFAPI array ifft2Norm(const array& in, const double norm_factor, const dim_t odi
  */
 AFAPI array ifft3Norm(const array& in, const double norm_factor, const dim_t odim0=0, const dim_t odim1=0, const dim_t odim2=0);
 
+#if AF_API_VERSION >= 31
 /**
    C++ Interface for fast fourier transform on one dimensional signals
 
@@ -259,7 +266,9 @@ AFAPI array ifft3Norm(const array& in, const double norm_factor, const dim_t odi
    \ingroup signal_func_ifft
  */
 AFAPI void ifftInPlace(array& in, const double norm_factor = 1);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
    C++ Interface for fast fourier transform on two dimensional signals
 
@@ -272,7 +281,9 @@ AFAPI void ifftInPlace(array& in, const double norm_factor = 1);
    \ingroup signal_func_ifft2
  */
 AFAPI void ifft2InPlace(array& in, const double norm_factor = 1);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
    C++ Interface for fast fourier transform on three dimensional signals
 
@@ -285,6 +296,7 @@ AFAPI void ifft2InPlace(array& in, const double norm_factor = 1);
    \ingroup signal_func_ifft3
  */
 AFAPI void ifft3InPlace(array& in, const double norm_factor = 1);
+#endif
 
 /**
    C++ Interface for inverse fast fourier transform on one dimensional signals
@@ -370,6 +382,7 @@ AFAPI array idft(const array& in, const dim4 outDims);
  */
 AFAPI array idft(const array& in);
 
+#if AF_API_VERSION >= 31
 /**
    C++ Interface for real to complex fast fourier transform for one dimensional signals
 
@@ -386,7 +399,9 @@ template<int rank>
 array fftR2C(const array &in,
              const dim4& dims,
              const double norm_factor = 0);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
    C++ Interface for real to complex fast fourier transform for one dimensional signals
 
@@ -401,7 +416,9 @@ array fftR2C(const array &in,
 template<int rank>
 array fftR2C(const array &in,
              const double norm_factor = 0);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
    C++ Interface for complex to real fast fourier transform
 
@@ -417,6 +434,7 @@ array fftR2C(const array &in,
 template<int rank>
 array fftC2R(const array &in, bool is_odd = false,
                  const double norm_factor = 0);
+#endif
 
 /**
    C++ Interface for convolution any(one through three) dimensional signals
@@ -641,6 +659,7 @@ AFAPI af_err af_approx2(af_array *out, const af_array in, const af_array pos0, c
  */
 AFAPI af_err af_fft(af_array *out, const af_array in, const double norm_factor, const dim_t odim0);
 
+#if AF_API_VERSION >= 31
 /**
    C Interface for fast fourier transform on one dimensional signals
 
@@ -654,6 +673,7 @@ AFAPI af_err af_fft(af_array *out, const af_array in, const double norm_factor, 
    \ingroup signal_func_fft
 */
 AFAPI af_err af_fft_inplace(af_array in, const double norm_factor);
+#endif
 
 /**
    C Interface for fast fourier transform on two dimensional signals
@@ -670,6 +690,7 @@ AFAPI af_err af_fft_inplace(af_array in, const double norm_factor);
  */
 AFAPI af_err af_fft2(af_array *out, const af_array in, const double norm_factor, const dim_t odim0, const dim_t odim1);
 
+#if AF_API_VERSION >= 31
 /**
    C Interface for fast fourier transform on two dimensional signals
 
@@ -683,6 +704,7 @@ AFAPI af_err af_fft2(af_array *out, const af_array in, const double norm_factor,
    \ingroup signal_func_fft2
  */
 AFAPI af_err af_fft2_inplace(af_array in, const double norm_factor);
+#endif
 
 /**
    C Interface for fast fourier transform on three dimensional signals
@@ -700,6 +722,7 @@ AFAPI af_err af_fft2_inplace(af_array in, const double norm_factor);
  */
 AFAPI af_err af_fft3(af_array *out, const af_array in, const double norm_factor, const dim_t odim0, const dim_t odim1, const dim_t odim2);
 
+#if AF_API_VERSION >= 31
 /**
    C Interface for fast fourier transform on three dimensional signals
 
@@ -713,6 +736,7 @@ AFAPI af_err af_fft3(af_array *out, const af_array in, const double norm_factor,
    \ingroup signal_func_fft3
  */
 AFAPI af_err af_fft3_inplace(af_array in, const double norm_factor);
+#endif
 
 /**
    C Interface for inverse fast fourier transform on one dimensional signals
@@ -728,6 +752,7 @@ AFAPI af_err af_fft3_inplace(af_array in, const double norm_factor);
  */
 AFAPI af_err af_ifft(af_array *out, const af_array in, const double norm_factor, const dim_t odim0);
 
+#if AF_API_VERSION >= 31
 /**
    C Interface for fast fourier transform on one dimensional signals
 
@@ -741,6 +766,7 @@ AFAPI af_err af_ifft(af_array *out, const af_array in, const double norm_factor,
    \ingroup signal_func_ifft
 */
 AFAPI af_err af_ifft_inplace(af_array in, const double norm_factor);
+#endif
 
 /**
    C Interface for inverse fast fourier transform on two dimensional signals
@@ -757,6 +783,7 @@ AFAPI af_err af_ifft_inplace(af_array in, const double norm_factor);
  */
 AFAPI af_err af_ifft2(af_array *out, const af_array in, const double norm_factor, const dim_t odim0, const dim_t odim1);
 
+#if AF_API_VERSION >= 31
 /**
    C Interface for fast fourier transform on two dimensional signals
 
@@ -770,6 +797,7 @@ AFAPI af_err af_ifft2(af_array *out, const af_array in, const double norm_factor
    \ingroup signal_func_ifft2
 */
 AFAPI af_err af_ifft2_inplace(af_array in, const double norm_factor);
+#endif
 
 /**
    C Interface for inverse fast fourier transform on three dimensional signals
@@ -787,6 +815,7 @@ AFAPI af_err af_ifft2_inplace(af_array in, const double norm_factor);
  */
 AFAPI af_err af_ifft3(af_array *out, const af_array in, const double norm_factor, const dim_t odim0, const dim_t odim1, const dim_t odim2);
 
+#if AF_API_VERSION >= 31
 /**
    C Interface for fast fourier transform on three dimensional signals
 
@@ -800,7 +829,9 @@ AFAPI af_err af_ifft3(af_array *out, const af_array in, const double norm_factor
    \ingroup signal_func_ifft3
 */
 AFAPI af_err af_ifft3_inplace(af_array in, const double norm_factor);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
    C Interface for real to complex fast fourier transform for one dimensional signals
 
@@ -816,7 +847,9 @@ AFAPI af_err af_ifft3_inplace(af_array in, const double norm_factor);
    \ingroup signal_func_fft_r2c
 */
 AFAPI af_err af_fft_r2c (af_array *out, const af_array in, const double norm_factor, const dim_t pad0);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
    C Interface for real to complex fast fourier transform for two dimensional signals
 
@@ -833,7 +866,9 @@ AFAPI af_err af_fft_r2c (af_array *out, const af_array in, const double norm_fac
    \ingroup signal_func_fft_r2c
 */
 AFAPI af_err af_fft2_r2c(af_array *out, const af_array in, const double norm_factor, const dim_t pad0, const dim_t pad1);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
    C Interface for real to complex fast fourier transform for three dimensional signals
 
@@ -851,7 +886,9 @@ AFAPI af_err af_fft2_r2c(af_array *out, const af_array in, const double norm_fac
    \ingroup signal_func_fft_r2c
 */
 AFAPI af_err af_fft3_r2c(af_array *out, const af_array in, const double norm_factor, const dim_t pad0, const dim_t pad1, const dim_t pad2);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
    C Interface for complex to real fast fourier transform for one dimensional signals
 
@@ -868,7 +905,9 @@ AFAPI af_err af_fft3_r2c(af_array *out, const af_array in, const double norm_fac
 */
 
 AFAPI af_err af_fft_c2r (af_array *out, const af_array in, const double norm_factor, const bool is_odd);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
    C Interface for complex to real fast fourier transform for two dimensional signals
 
@@ -884,7 +923,9 @@ AFAPI af_err af_fft_c2r (af_array *out, const af_array in, const double norm_fac
    \ingroup signal_func_fft_c2r
 */
 AFAPI af_err af_fft2_c2r(af_array *out, const af_array in, const double norm_factor, const bool is_odd);
+#endif
 
+#if AF_API_VERSION >= 31
 /**
    C Interface for complex to real fast fourier transform for three dimensional signals
 
@@ -900,6 +941,7 @@ AFAPI af_err af_fft2_c2r(af_array *out, const af_array in, const double norm_fac
    \ingroup signal_func_fft_c2r
 */
 AFAPI af_err af_fft3_c2r(af_array *out, const af_array in, const double norm_factor, const bool is_odd);
+#endif
 
 /**
    C Interface for convolution on one dimensional signals

@@ -35,7 +35,7 @@ class FFTConvolveLarge : public ::testing::Test
 };
 
 // create a list of types to be tested
-typedef ::testing::Types<cfloat, cdouble, float, double, int, uint, char, uchar> TestTypes;
+typedef ::testing::Types<cfloat, cdouble, float, double, int, uint, char, uchar, intl, uintl> TestTypes;
 typedef ::testing::Types<float, double> TestTypesLarge;
 
 // register the type list

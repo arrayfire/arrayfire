@@ -76,7 +76,7 @@ PKG_BUILD(  PKG_NAME        ArrayFireCPU
             SCRIPT_DIR      ${OSX_INSTALL_DIR}/cpu_scripts
             IDENTIFIER      com.arrayfire.pkg.arrayfire.cpu.lib
             PATH_TO_FILES   package/lib
-            FILTERS         opencl cuda)
+            FILTERS         opencl cuda unified)
 
 PKG_BUILD(  PKG_NAME        ArrayFireCUDA
             DEPENDS         afcuda
@@ -85,7 +85,7 @@ PKG_BUILD(  PKG_NAME        ArrayFireCUDA
             SCRIPT_DIR      ${OSX_INSTALL_DIR}/cuda_scripts
             IDENTIFIER      com.arrayfire.pkg.arrayfire.cuda.lib
             PATH_TO_FILES   package/lib
-            FILTERS         cpu opencl)
+            FILTERS         cpu opencl unified)
 
 PKG_BUILD(  PKG_NAME        ArrayFireOPENCL
             DEPENDS         afopencl
@@ -93,7 +93,15 @@ PKG_BUILD(  PKG_NAME        ArrayFireOPENCL
             INSTALL_LOCATION /usr/local/lib
             IDENTIFIER      com.arrayfire.pkg.arrayfire.opencl.lib
             PATH_TO_FILES   package/lib
-            FILTERS         cpu cuda)
+            FILTERS         cpu cuda unified)
+
+PKG_BUILD(  PKG_NAME        ArrayFireUNIFIED
+            DEPENDS         af
+            TARGETS         unified_package
+            INSTALL_LOCATION /usr/local/lib
+            IDENTIFIER      com.arrayfire.pkg.arrayfire.unified.lib
+            PATH_TO_FILES   package/lib
+            FILTERS         cpu cuda opencl)
 
 PKG_BUILD(  PKG_NAME        ArrayFireHeaders
             TARGETS         header_package
@@ -107,5 +115,5 @@ PKG_BUILD(  PKG_NAME        ArrayFireExtra
             IDENTIFIER      com.arrayfire.pkg.arrayfire.extra
             PATH_TO_FILES   package/share)
 
-PRODUCT_BUILD(DEPENDS ${cpu_package} ${cuda_package} ${opencl_package} ${header_package} ${extra_package})
+PRODUCT_BUILD(DEPENDS ${cpu_package} ${cuda_package} ${opencl_package} ${unified_package} ${header_package} ${extra_package})
 

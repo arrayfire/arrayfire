@@ -25,6 +25,8 @@
     ARITH_BASIC(fn, op, uchar)                          \
     ARITH_BASIC(fn, op, intl)                           \
     ARITH_BASIC(fn, op, uintl)                          \
+    ARITH_BASIC(fn, op, short)                          \
+    ARITH_BASIC(fn, op, ushort)                         \
                                                         \
     __device__ cfloat ___##fn(cfloat a, cfloat b)       \
     {                                                   \

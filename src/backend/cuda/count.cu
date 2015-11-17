@@ -20,6 +20,8 @@ namespace cuda
     INSTANTIATE(af_notzero_t, uint   , uint)
     INSTANTIATE(af_notzero_t, intl   , uint)
     INSTANTIATE(af_notzero_t, uintl  , uint)
+    INSTANTIATE(af_notzero_t, short  , uint)
+    INSTANTIATE(af_notzero_t, ushort , uint)
     INSTANTIATE(af_notzero_t, char   , uint)
     INSTANTIATE(af_notzero_t, uchar  , uint)
 }
