@@ -17,6 +17,7 @@
 #include <vector>
 #include <platform.hpp>
 #include <async_queue.hpp>
+#include <utility>
 
 using af::dim4;
 
@@ -50,12 +51,8 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
         isSeq[x] = idxrs[x].isSeq;
     }
 
-    // rettrieve
-    dim4 iDims = in.dims();
-    dim4 dDims = in.getDataDims();
-    dim4 oDims = toDims  (seqs, iDims);
-    dim4 iOffs = toOffset(seqs, dDims);
-    dim4 iStrds= toStride(seqs, dDims);
+    // retrieve
+    dim4 oDims = toDims(seqs, in.dims());
 
     std::vector< Array<uint> > idxArrs(4, createEmptyArray<uint>(dim4()));
     // look through indexs to read af_array indexs
@@ -68,18 +65,25 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     }
 
     Array<T> out = createEmptyArray<T>(oDims);
-    dim4 oStrides= out.strides();
 
 
-    auto func = [=] (Array<T> out, const Array<T> in) {
+    auto func = [=] (Array<T> out, const Array<T> in,
+                     const bool isSeq[],
+                     const std::vector<af_seq> seqs,
+                     const std::vector< Array<uint> > idxArrs) {
 
-        const T *src = in.get();
-              T *dst = out.get();
-
-        const uint* ptr0 = idxArrs[0].get();
-        const uint* ptr1 = idxArrs[1].get();
-        const uint* ptr2 = idxArrs[2].get();
-        const uint* ptr3 = idxArrs[3].get();
+        const dim4 iDims    = in.dims();
+        const dim4 dDims    = in.getDataDims();
+        const dim4 iOffs    = toOffset(seqs, dDims);
+        const dim4 iStrds   = toStride(seqs, dDims);
+        const dim4 oDims    = out.dims();
+        const dim4 oStrides = out.strides();
+        const T *src        = in.get();
+              T *dst        = out.get();
+        const uint* ptr0    = idxArrs[0].get();
+        const uint* ptr1    = idxArrs[1].get();
+        const uint* ptr2    = idxArrs[2].get();
+        const uint* ptr3    = idxArrs[3].get();
 
         for (dim_t l=0; l<oDims[3]; ++l) {
 
@@ -112,7 +116,7 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
         }
     };
 
-    getQueue().enqueue(func, out, in);
+    getQueue().enqueue(func, out, in, std::move(isSeq), std::move(seqs), std::move(idxArrs));
 
     return out;
 }

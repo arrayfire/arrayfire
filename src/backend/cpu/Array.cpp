@@ -72,8 +72,6 @@ namespace cpu
 
         this->setId(getActiveDeviceId());
 
-        if (isReady()) return;
-
         data = std::shared_ptr<T>(memAlloc<T>(elements()), memFree<T>);
 
         auto func = [] (Array<T> in) {
