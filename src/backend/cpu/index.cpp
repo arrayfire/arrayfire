@@ -19,6 +19,7 @@
 #include <async_queue.hpp>
 #include <utility>
 
+using std::vector;
 using af::dim4;
 
 namespace cpu
@@ -40,11 +41,11 @@ dim_t trimIndex(dim_t idx, const dim_t &len)
 template<typename T>
 Array<T> index(const Array<T>& in, const af_index_t idxrs[])
 {
-    bool isSeq[4];
-    std::vector<af_seq> seqs(4, af_span);
+    vector<bool> isSeq(4);
+    vector<af_seq> seqs(4, af_span);
     // create seq vector to retrieve output
     // dimensions, offsets & offsets
-    for (dim_t x=0; x<4; ++x) {
+    for (dim_t x=0; x<isSeq.size(); ++x) {
         if (idxrs[x].isSeq) {
             seqs[x] = idxrs[x].idx.seq;
         }
@@ -54,9 +55,9 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     // retrieve
     dim4 oDims = toDims(seqs, in.dims());
 
-    std::vector< Array<uint> > idxArrs(4, createEmptyArray<uint>(dim4()));
+    vector< Array<uint> > idxArrs(4, createEmptyArray<uint>(dim4()));
     // look through indexs to read af_array indexs
-    for (dim_t x=0; x<4; ++x) {
+    for (dim_t x=0; x<isSeq.size(); ++x) {
         if (!isSeq[x]) {
             idxArrs[x] = castArray<uint>(idxrs[x].idx.arr);
             // set output array ith dimension value
@@ -66,11 +67,10 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-
     auto func = [=] (Array<T> out, const Array<T> in,
-                     const bool isSeq[],
-                     const std::vector<af_seq> seqs,
-                     const std::vector< Array<uint> > idxArrs) {
+                     const vector<bool> isSeq,
+                     const vector<af_seq> seqs,
+                     const vector< Array<uint> > idxArrs) {
 
         const dim4 iDims    = in.dims();
         const dim4 dDims    = in.getDataDims();
