@@ -11,25 +11,32 @@
 #include <tile.hpp>
 #include <stdexcept>
 #include <err_cpu.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 namespace cpu
 {
-    template<typename T>
-    Array<T> tile(const Array<T> &in, const af::dim4 &tileDims)
-    {
-        const af::dim4 iDims = in.dims();
-        af::dim4 oDims = iDims;
-        oDims *= tileDims;
 
-        if(iDims.elements() == 0 || oDims.elements() == 0) {
-            throw std::runtime_error("Elements are 0");
-        }
+template<typename T>
+Array<T> tile(const Array<T> &in, const af::dim4 &tileDims)
+{
+    const af::dim4 iDims = in.dims();
+    af::dim4 oDims = iDims;
+    oDims *= tileDims;
 
-        Array<T> out = createEmptyArray<T>(oDims);
+    if(iDims.elements() == 0 || oDims.elements() == 0) {
+        throw std::runtime_error("Elements are 0");
+    }
+
+    Array<T> out = createEmptyArray<T>(oDims);
+
+    auto func = [=] (Array<T> out, const Array<T> in) {
 
         T* outPtr = out.get();
         const T* inPtr = in.get();
 
+        const af::dim4 iDims = in.dims();
+        const af::dim4 oDims = out.dims();
         const af::dim4 ist = in.strides();
         const af::dim4 ost = out.strides();
 
@@ -54,24 +61,27 @@ namespace cpu
                 }
             }
         }
+    };
 
-        return out;
-    }
+    getQueue().enqueue(func, out, in);
+
+    return out;
+}
 
 #define INSTANTIATE(T)                                                         \
     template Array<T> tile<T>(const Array<T> &in, const af::dim4 &tileDims);  \
 
-    INSTANTIATE(float)
-    INSTANTIATE(double)
-    INSTANTIATE(cfloat)
-    INSTANTIATE(cdouble)
-    INSTANTIATE(int)
-    INSTANTIATE(uint)
-    INSTANTIATE(intl)
-    INSTANTIATE(uintl)
-    INSTANTIATE(uchar)
-    INSTANTIATE(char)
-    INSTANTIATE(short)
-    INSTANTIATE(ushort)
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(cfloat)
+INSTANTIATE(cdouble)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(intl)
+INSTANTIATE(uintl)
+INSTANTIATE(uchar)
+INSTANTIATE(char)
+INSTANTIATE(short)
+INSTANTIATE(ushort)
 
 }
