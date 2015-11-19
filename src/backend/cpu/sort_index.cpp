@@ -14,16 +14,12 @@
 #include <err_cpu.hpp>
 #include <algorithm>
 #include <numeric>
-#include <queue>
-#include <future>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 using std::greater;
 using std::less;
 using std::sort;
-using std::function;
-using std::queue;
-using std::future;
-using std::async;
 
 namespace cpu
 {
@@ -85,8 +81,7 @@ namespace cpu
         val = createEmptyArray<T>(in.dims());
         idx = createEmptyArray<uint>(in.dims());
         switch(dim) {
-            case 0: sort0_index<T, isAscending>(val, idx, in);
-                    break;
+            case 0: getQueue().enqueue(sort0_index<T, isAscending>, val, idx, in); break;
             default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }
     }
