@@ -18,8 +18,9 @@
 #include <cassert>
 #include <err_cpu.hpp>
 #include <triangle.hpp>
-
 #include <lapack_helper.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 namespace cpu
 {
@@ -65,8 +66,13 @@ int cholesky_inplace(Array<T> &in, const bool is_upper)
     if(is_upper)
         uplo = 'U';
 
-    int info = potrf_func<T>()(AF_LAPACK_COL_MAJOR, uplo,
-                               N, in.get(), in.strides()[1]);
+    int info = 0;
+    auto func = [&] (int& info, Array<T>& in) {
+        info = potrf_func<T>()(AF_LAPACK_COL_MAJOR, uplo, N, in.get(), in.strides()[1]);
+    };
+
+    getQueue().enqueue(func, info, in);
+    getQueue().sync();
 
     return info;
 }

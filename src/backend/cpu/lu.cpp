@@ -17,9 +17,10 @@
 #include <iostream>
 #include <cassert>
 #include <err_cpu.hpp>
-
 #include <range.hpp>
 #include <lapack_helper.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 namespace cpu
 {
@@ -128,23 +129,22 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
     lower = createEmptyArray<T>(ldims);
     upper = createEmptyArray<T>(udims);
 
-    lu_split<T>(lower, upper, in_copy);
+    getQueue().enqueue(lu_split<T>, lower, upper, in_copy);
 }
 
 template<typename T>
 Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
 {
     dim4 iDims = in.dims();
-    int M = iDims[0];
-    int N = iDims[1];
+    Array<int> pivot = createEmptyArray<int>(af::dim4(min(iDims[0], iDims[1]), 1, 1, 1));
 
-    Array<int> pivot = createEmptyArray<int>(af::dim4(min(M, N), 1, 1, 1));
+    auto func = [=] (Array<T> in, Array<int> pivot, const bool convert_pivot) {
+        dim4 iDims = in.dims();
+        getrf_func<T>()(AF_LAPACK_COL_MAJOR, iDims[0], iDims[1], in.get(), in.strides()[1], pivot.get());
+        if(convert_pivot) convertPivot(pivot, iDims[0]);
+    };
 
-    getrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N,
-                    in.get(), in.strides()[1],
-                    pivot.get());
-
-    if(convert_pivot) convertPivot(pivot, M);
+    getQueue().enqueue(func, in, pivot, convert_pivot);
 
     return pivot;
 }
