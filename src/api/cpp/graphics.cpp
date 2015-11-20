@@ -79,6 +79,12 @@ void Window::plot(const array& X, const array& Y, const char* const title)
     AF_THROW(af_draw_plot(get(), X.get(), Y.get(), &temp));
 }
 
+void Window::scatter(const array& X, const array& Y, af::markerType marker, const char* const title)
+{
+    af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};
+    AF_THROW(af_draw_scatter(get(), X.get(), Y.get(), &temp, marker));
+}
+
 void Window::plot3(const array& P, const char* const title)
 {
     af_cell temp{_r, _c, title, AF_COLORMAP_DEFAULT};

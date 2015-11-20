@@ -27,7 +27,7 @@ using namespace detail;
 using namespace graphics;
 
 template<typename T>
-fg::Plot* setup_plot(const af_array X, const af_array Y)
+fg::Plot* setup_plot(const af_array X, const af_array Y, fg::PlotType type, fg::MarkerType marker)
 {
     Array<T> xIn = getArray<T>(X);
     Array<T> yIn = getArray<T>(Y);
@@ -46,7 +46,7 @@ fg::Plot* setup_plot(const af_array X, const af_array Y)
     af::dim4 X_dims = Xinfo.dims();
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
-    fg::Plot* plot = fgMngr.getPlot(X_dims.elements(), getGLType<T>());
+    fg::Plot* plot = fgMngr.getPlot(X_dims.elements(), getGLType<T>(), type, marker);
     plot->setColor(1.0, 0.0, 0.0);
     plot->setAxesLimits(xmax, xmin, ymax, ymin);
     plot->setAxesTitles("X Axis", "Y Axis");
@@ -57,7 +57,7 @@ fg::Plot* setup_plot(const af_array X, const af_array Y)
 }
 #endif
 
-af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, const af_cell* const props)
+af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, const af_cell* const props, fg::PlotType type=fg::FG_LINE, fg::MarkerType marker=fg::FG_NONE)
 {
 #if defined(WITH_GRAPHICS)
     if(wind==0) {
@@ -85,12 +85,12 @@ af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, co
         fg::Plot* plot = NULL;
 
         switch(Xtype) {
-            case f32: plot = setup_plot<float  >(X, Y); break;
-            case s32: plot = setup_plot<int    >(X, Y); break;
-            case u32: plot = setup_plot<uint   >(X, Y); break;
-            case s16: plot = setup_plot<short  >(X, Y); break;
-            case u16: plot = setup_plot<ushort >(X, Y); break;
-            case u8 : plot = setup_plot<uchar  >(X, Y); break;
+            case f32: plot = setup_plot<float  >(X, Y, type, marker); break;
+            case s32: plot = setup_plot<int    >(X, Y, type, marker); break;
+            case u32: plot = setup_plot<uint   >(X, Y, type, marker); break;
+            case s16: plot = setup_plot<short  >(X, Y, type, marker); break;
+            case u16: plot = setup_plot<ushort >(X, Y, type, marker); break;
+            case u8 : plot = setup_plot<uchar  >(X, Y, type, marker); break;
             default:  TYPE_ERROR(1, Xtype);
         }
 
@@ -104,4 +104,26 @@ af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, co
 #else
     return AF_ERR_NO_GFX;
 #endif
+}
+
+af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, const af_cell* const props)
+{
+    return plotWrapper(wind, X, Y, props);
+}
+
+af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y, const af_cell* const props, const af::markerType af_marker)
+{
+    fg::MarkerType fg_marker;
+    switch(af_marker){
+        case AF_MARKER_NONE: fg_marker = fg::FG_NONE; break;
+        case AF_MARKER_POINT: fg_marker = fg::FG_POINT; break;
+        case AF_MARKER_CIRCLE: fg_marker = fg::FG_CIRCLE; break;
+        case AF_MARKER_SQUARE: fg_marker = fg::FG_SQUARE; break;
+        case AF_MARKER_TRIANGLE: fg_marker = fg::FG_TRIANGLE; break;
+        case AF_MARKER_CROSS: fg_marker = fg::FG_CROSS; break;
+        case AF_MARKER_PLUS: fg_marker = fg::FG_PLUS; break;
+        case AF_MARKER_STAR: fg_marker = fg::FG_STAR; break;
+        default: fg_marker = fg::FG_NONE; break;
+    }
+    return plotWrapper(wind, X, Y, props, fg::FG_SCATTER, fg_marker);
 }

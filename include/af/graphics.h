@@ -181,6 +181,20 @@ class AFAPI Window {
         void plot(const array& X, const array& Y, const char* const title=NULL);
 
         /**
+           Renders the input arrays as a 2D scatter-plot to the window
+
+           \param[in] X is an \ref array with the x-axis data points
+           \param[in] Y is an \ref array with the y-axis data points
+           \param[in] marker is an \ref markerType enum specifying which marker to use in the scatter plot
+           \param[in] title parameter is used when this function is called in grid mode
+
+           \note \p X and \p Y should be vectors.
+
+           \ingroup gfx_func_draw
+         */
+
+        void scatter(const array& X, const array& Y, const af::markerType marker=AF_MARKER_POINT, const char* const title=NULL);
+        /**
            Renders the input array as a histogram to the window
 
            \param[in] X is the data frequency \ref array
@@ -370,6 +384,27 @@ AFAPI af_err af_draw_image(const af_window wind, const af_array in, const af_cel
    \ingroup gfx_func_draw
 */
 AFAPI af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, const af_cell* const props);
+
+#if AF_API_VERSION >= 32
+/**
+   C Interface wrapper for drawing an array as a plot
+
+   \param[in]   wind is the window handle
+   \param[in]   X is an \ref af_array with the x-axis data points
+   \param[in]   Y is an \ref af_array with the y-axis data points
+   \param[in]   props is structure \ref af_cell that has the properties that are used
+   \param[in] marker is an \ref markerType enum specifying which marker to use in the scatter plot
+   for the current rendering.
+
+   \return     \ref AF_SUCCESS if rendering is successful, otherwise an appropriate error code
+   is returned.
+
+   \note \p X and \p Y should be vectors.
+
+   \ingroup gfx_func_draw
+*/
+AFAPI af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y, const af_cell* const props, const af_marker_type marker);
+#endif
 
 #if AF_API_VERSION >= 32
 /**

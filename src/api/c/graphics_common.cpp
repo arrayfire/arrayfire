@@ -161,7 +161,7 @@ fg::Image* ForgeManager::getImage(int w, int h, fg::ChannelFormat mode, fg::dtyp
     return mImgMap[key];
 }
 
-fg::Plot* ForgeManager::getPlot(int nPoints, fg::dtype type)
+fg::Plot* ForgeManager::getPlot(int nPoints, fg::dtype dtype, fg::PlotType ptype, fg::MarkerType mtype)
 {
     /* nPoints needs to fall in the range of [0, 2^48]
      * for the ForgeManager to correctly retrieve
@@ -169,11 +169,12 @@ fg::Plot* ForgeManager::getPlot(int nPoints, fg::dtype type)
      * is a limitation on how big of an plot graph can be rendered
      * using arrayfire graphics funtionality */
     assert(nPoints <= 2ll<<48);
-    long long key = ((nPoints & _48BIT) << 48) | (type & _16BIT);
+    long long key = ((nPoints & _48BIT) << 48);
+    key |= (((((dtype & 0x000F) << 12) | (ptype & 0x000F)) << 8) | (mtype & 0x000F));
 
     PltMapIter iter = mPltMap.find(key);
     if (iter==mPltMap.end()) {
-        fg::Plot* temp = new fg::Plot(nPoints, type);
+        fg::Plot* temp = new fg::Plot(nPoints, dtype, ptype, mtype);
         mPltMap[key] = temp;
     }
 

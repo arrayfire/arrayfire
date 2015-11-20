@@ -44,6 +44,12 @@ af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, co
     return CALL(wind, X, Y, props);
 }
 
+af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y, const af_cell* const props, const af_marker_type marker)
+{
+    CHECK_ARRAYS(X, Y);
+    return CALL(wind, X, Y, props, marker);
+}
+
 af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* const props)
 {
     CHECK_ARRAYS(P);
