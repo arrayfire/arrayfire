@@ -11,7 +11,6 @@
 #include <err_common.hpp>
 
 #if defined(WITH_CPU_LINEAR_ALGEBRA)
-
 #include <af/dim4.hpp>
 #include <handle.hpp>
 #include <iostream>
@@ -26,9 +25,7 @@ namespace cpu
 {
 
 template<typename T>
-using getrf_func_def = int (*)(ORDER_TYPE, int, int,
-                               T*, int,
-                               int*);
+using getrf_func_def = int (*)(ORDER_TYPE, int, int, T*, int, int*);
 
 #define LU_FUNC_DEF( FUNC )                                     \
 template<typename T> FUNC##_func_def<T> FUNC##_func();
@@ -45,7 +42,7 @@ LU_FUNC(getrf , cfloat , c)
 LU_FUNC(getrf , cdouble, z)
 
 template<typename T>
-void lu_split(Array<T> &lower, Array<T> &upper, const Array<T> &in)
+void lu_split(Array<T> lower, Array<T> upper, const Array<T> in)
 {
     T *l = lower.get();
     T *u = upper.get();
@@ -54,7 +51,6 @@ void lu_split(Array<T> &lower, Array<T> &upper, const Array<T> &in)
     dim4 ldm = lower.dims();
     dim4 udm = upper.dims();
     dim4 idm = in.dims();
-
     dim4 lst = lower.strides();
     dim4 ust = upper.strides();
     dim4 ist = in.strides();
@@ -79,20 +75,14 @@ void lu_split(Array<T> &lower, Array<T> &upper, const Array<T> &in)
                     const dim_t uMem = uYZW + ox;
                     const dim_t iMem = iYZW + ox;
                     if(ox > oy) {
-                        if(oy < ldm[1])
-                            l[lMem] = i[iMem];
-                        if(ox < udm[0])
-                            u[uMem] = scalar<T>(0);
+                        if(oy < ldm[1]) l[lMem] = i[iMem];
+                        if(ox < udm[0]) u[uMem] = scalar<T>(0);
                     } else if (oy > ox) {
-                        if(oy < ldm[1])
-                            l[lMem] = scalar<T>(0);
-                        if(ox < udm[0])
-                            u[uMem] = i[iMem];
+                        if(oy < ldm[1]) l[lMem] = scalar<T>(0);
+                        if(ox < udm[0]) u[uMem] = i[iMem];
                     } else if(ox == oy) {
-                        if(oy < ldm[1])
-                            l[lMem] = scalar<T>(1.0);
-                        if(ox < udm[0])
-                            u[uMem] = i[iMem];
+                        if(oy < ldm[1]) l[lMem] = scalar<T>(1.0);
+                        if(ox < udm[0]) u[uMem] = i[iMem];
                     }
                 }
             }
@@ -100,17 +90,15 @@ void lu_split(Array<T> &lower, Array<T> &upper, const Array<T> &in)
     }
 }
 
-void convertPivot(Array<int> &pivot, int out_sz)
+void convertPivot(Array<int> p, Array<int> pivot)
 {
-    Array<int> p = range<int>(dim4(out_sz), 0);
     int *d_pi = pivot.get();
     int *d_po = p.get();
-    dim_t d0 = pivot.dims()[0];
+    dim_t d0  = pivot.dims()[0];
     for(int j = 0; j < (int)d0; j++) {
         // 1 indexed in pivot
         std::swap(d_po[j], d_po[d_pi[j] - 1]);
     }
-    pivot = p;
 }
 
 template<typename T>
@@ -138,25 +126,20 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
     dim4 iDims = in.dims();
     Array<int> pivot = createEmptyArray<int>(af::dim4(min(iDims[0], iDims[1]), 1, 1, 1));
 
-    auto func = [=] (Array<T> in, Array<int> pivot, const bool convert_pivot) {
+    auto func = [=] (Array<T> in, Array<int> pivot) {
         dim4 iDims = in.dims();
         getrf_func<T>()(AF_LAPACK_COL_MAJOR, iDims[0], iDims[1], in.get(), in.strides()[1], pivot.get());
-        if(convert_pivot) convertPivot(pivot, iDims[0]);
     };
+    getQueue().enqueue(func, in, pivot);
 
-    getQueue().enqueue(func, in, pivot, convert_pivot);
-
-    return pivot;
+    if(convert_pivot) {
+        Array<int> p = range<int>(dim4(iDims[0]), 0);
+        getQueue().enqueue(convertPivot, p, pivot);
+        return p;
+    } else {
+        return pivot;
+    }
 }
-
-#define INSTANTIATE_LU(T)                                                                           \
-    template Array<int> lu_inplace<T>(Array<T> &in, const bool convert_pivot);                      \
-    template void lu<T>(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in);
-
-INSTANTIATE_LU(float)
-INSTANTIATE_LU(cfloat)
-INSTANTIATE_LU(double)
-INSTANTIATE_LU(cdouble)
 
 }
 
@@ -177,6 +160,12 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
     AF_ERROR("Linear Algebra is disabled on CPU", AF_ERR_NOT_CONFIGURED);
 }
 
+}
+
+#endif
+
+namespace cpu
+{
 #define INSTANTIATE_LU(T)                                                                           \
     template Array<int> lu_inplace<T>(Array<T> &in, const bool convert_pivot);                      \
     template void lu<T>(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in);
@@ -185,7 +174,4 @@ INSTANTIATE_LU(float)
 INSTANTIATE_LU(cfloat)
 INSTANTIATE_LU(double)
 INSTANTIATE_LU(cdouble)
-
 }
-
-#endif
