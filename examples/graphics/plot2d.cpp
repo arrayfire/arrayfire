@@ -21,17 +21,21 @@ int main(int argc, char *argv[])
     try {
         // Initialize the kernel array just once
         af::info();
-        af::Window myWindow(512, 512, "2D Plot example: ArrayFire");
+        af::Window myWindow(1024, 512, "2D Plot example: ArrayFire");
 
         array Y;
         int sign = 1;
         array X = seq(-af::Pi, af::Pi, PRECISION);
 
+        myWindow.grid(1, 2);
         for (double val=-af::Pi; !myWindow.close(); ) {
 
             Y = sin(X);
 
-            myWindow.plot(X, Y);
+            myWindow(0,0).plot(X, Y);
+            myWindow(0,1).scatter(X, Y, AF_MARKER_POINT);
+
+            myWindow.show();
 
             X = X + PRECISION * float(sign);
             val += PRECISION * float(sign);
