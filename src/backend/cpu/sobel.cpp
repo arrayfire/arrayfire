@@ -14,7 +14,8 @@
 #include <sobel.hpp>
 #include <convolve.hpp>
 #include <err_cpu.hpp>
-#include <utility>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 using af::dim4;
 
@@ -22,8 +23,13 @@ namespace cpu
 {
 
 template<typename Ti, typename To, bool isDX>
-void derivative(To *optr, Ti const *iptr, dim4 const &dims, dim4 const &strides)
+void derivative(Array<To> output, const Array<Ti> input)
 {
+    const dim4 dims    = input.dims();
+    const dim4 strides = input.strides();
+          To* optr     = output.get();
+    const Ti* iptr     = input.get();
+
     for(dim_t b3=0; b3<dims[3]; ++b3) {
     for(dim_t b2=0; b2<dims[2]; ++b2) {
 
@@ -85,16 +91,18 @@ template<typename Ti, typename To>
 std::pair< Array<To>, Array<To> >
 sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size)
 {
+    // ket_size is for future proofing, this argument is not used
+    // currently
     Array<To> dx = createEmptyArray<To>(img.dims());
     Array<To> dy = createEmptyArray<To>(img.dims());
 
-    derivative<Ti, To, true >(dx.get(), img.get(), img.dims(), img.strides());
-    derivative<Ti, To, false>(dy.get(), img.get(), img.dims(), img.strides());
+    getQueue().enqueue(derivative<Ti, To, true >, dx, img);
+    getQueue().enqueue(derivative<Ti, To, false>, dy, img);
 
     return std::make_pair(dx, dy);
 }
 
-#define INSTANTIATE(Ti, To)                                                 \
+#define INSTANTIATE(Ti, To)                                               \
     template std::pair< Array<To>, Array<To> >                            \
     sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size);
 
