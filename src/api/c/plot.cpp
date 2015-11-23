@@ -111,19 +111,8 @@ af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, co
     return plotWrapper(wind, X, Y, props);
 }
 
-af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y, const af_cell* const props, const af::markerType af_marker)
+af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y, const af_marker_type af_marker, const af_cell* const props)
 {
-    fg::MarkerType fg_marker;
-    switch(af_marker){
-        case AF_MARKER_NONE: fg_marker = fg::FG_NONE; break;
-        case AF_MARKER_POINT: fg_marker = fg::FG_POINT; break;
-        case AF_MARKER_CIRCLE: fg_marker = fg::FG_CIRCLE; break;
-        case AF_MARKER_SQUARE: fg_marker = fg::FG_SQUARE; break;
-        case AF_MARKER_TRIANGLE: fg_marker = fg::FG_TRIANGLE; break;
-        case AF_MARKER_CROSS: fg_marker = fg::FG_CROSS; break;
-        case AF_MARKER_PLUS: fg_marker = fg::FG_PLUS; break;
-        case AF_MARKER_STAR: fg_marker = fg::FG_STAR; break;
-        default: fg_marker = fg::FG_NONE; break;
-    }
+    fg::MarkerType fg_marker = getFGMarker(af_marker);
     return plotWrapper(wind, X, Y, props, fg::FG_SCATTER, fg_marker);
 }

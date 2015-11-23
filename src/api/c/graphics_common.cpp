@@ -19,6 +19,22 @@ using namespace std;
 template<typename T>
 GLenum getGLType() { return GL_FLOAT; }
 
+fg::MarkerType getFGMarker(const af_marker_type af_marker) {
+    fg::MarkerType fg_marker;
+    switch (af_marker) {
+        case AF_MARKER_NONE: fg_marker = fg::FG_NONE; break;
+        case AF_MARKER_POINT: fg_marker = fg::FG_POINT; break;
+        case AF_MARKER_CIRCLE: fg_marker = fg::FG_CIRCLE; break;
+        case AF_MARKER_SQUARE: fg_marker = fg::FG_SQUARE; break;
+        case AF_MARKER_TRIANGLE: fg_marker = fg::FG_TRIANGLE; break;
+        case AF_MARKER_CROSS: fg_marker = fg::FG_CROSS; break;
+        case AF_MARKER_PLUS: fg_marker = fg::FG_PLUS; break;
+        case AF_MARKER_STAR: fg_marker = fg::FG_STAR; break;
+        default: fg_marker = fg::FG_NONE; break;
+    }
+    return fg_marker;
+}
+
 #define INSTANTIATE_GET_FG_TYPE(T, ForgeEnum)\
     template<> fg::dtype getGLType<T>() { return ForgeEnum; }
 
@@ -181,7 +197,7 @@ fg::Plot* ForgeManager::getPlot(int nPoints, fg::dtype dtype, fg::PlotType ptype
     return mPltMap[key];
 }
 
-fg::Plot3* ForgeManager::getPlot3(int nPoints, fg::dtype type)
+fg::Plot3* ForgeManager::getPlot3(int nPoints, fg::dtype dtype, fg::PlotType ptype, fg::MarkerType mtype)
 {
     /* nPoints needs to fall in the range of [0, 2^48]
      * for the ForgeManager to correctly retrieve
@@ -189,11 +205,12 @@ fg::Plot3* ForgeManager::getPlot3(int nPoints, fg::dtype type)
      * is a limitation on how big of an plot graph can be rendered
      * using arrayfire graphics funtionality */
     assert(nPoints <= 2ll<<48);
-    long long key = ((nPoints & _48BIT) << 48) | (type & _16BIT);
+    long long key = ((nPoints & _48BIT) << 48);
+    key |= (((((dtype & 0x000F) << 12) | (ptype & 0x000F)) << 8) | (mtype & 0x000F));
 
     Plt3MapIter iter = mPlt3Map.find(key);
     if (iter==mPlt3Map.end()) {
-        fg::Plot3* temp = new fg::Plot3(nPoints, type);
+        fg::Plot3* temp = new fg::Plot3(nPoints, dtype, ptype, mtype);
         mPlt3Map[key] = temp;
     }
 
