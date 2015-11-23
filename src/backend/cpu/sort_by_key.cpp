@@ -15,14 +15,14 @@
 #include <algorithm>
 #include <numeric>
 #include <queue>
-#include <future>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 using std::greater;
 using std::less;
 using std::sort;
 using std::function;
 using std::queue;
-using std::future;
 using std::async;
 
 namespace cpu
@@ -32,7 +32,7 @@ namespace cpu
     ///////////////////////////////////////////////////////////////////////////
 
     template<typename Tk, typename Tv, bool isAscending>
-    void sort0_by_key(Array<Tk> &okey, Array<Tv> &oval, const Array<Tk> &ikey, const Array<Tv> &ival)
+    void sort0_by_key(Array<Tk> okey, Array<Tv> oval, const Array<Tk> ikey, const Array<Tv> ival)
     {
         function<bool(Tk, Tk)> op = greater<Tk>();
         if(isAscending) { op = less<Tk>(); }
@@ -101,8 +101,7 @@ namespace cpu
         okey = createEmptyArray<Tk>(ikey.dims());
         oval = createEmptyArray<Tv>(ival.dims());
         switch(dim) {
-            case 0: sort0_by_key<Tk, Tv, isAscending>(okey, oval, ikey, ival);
-                    break;
+            case 0: getQueue().enqueue(sort0_by_key<Tk, Tv, isAscending>, okey, oval, ikey, ival); break;
             default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }
     }

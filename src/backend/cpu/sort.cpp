@@ -15,6 +15,8 @@
 #include <err_cpu.hpp>
 #include <algorithm>
 #include <functional>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 using std::greater;
 using std::less;
@@ -29,7 +31,7 @@ namespace cpu
 
     // Based off of http://stackoverflow.com/a/12399290
     template<typename T, bool isAscending>
-    void sort0(Array<T> &val)
+    void sort0(Array<T> val)
     {
         // initialize original index locations
         T *val_ptr = val.get();
@@ -62,8 +64,7 @@ namespace cpu
     {
         Array<T> out = copyArray<T>(in);
         switch(dim) {
-            case 0: sort0<T, isAscending>(out);
-                    break;
+            case 0: getQueue().enqueue(sort0<T, isAscending>, out); break;
             default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
         }
         return out;
