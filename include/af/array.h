@@ -683,47 +683,65 @@ namespace af
         // INDEXING
         // Single arguments
 
+        /**
+            \brief This operator returns a reference of the original array at a given coordinate.
 
-        /// \ingroup array_mem_operator_paren
-        /// @{
-        ///
-        /// \brief Gets a reference to a set of linear elements
-        ///
-        /// \copydetails array_mem_operator_paren_one
-        ///
-        /// \param[in] s0   is sequence of linear indices
-        ///
-        /// \returns A reference to the array at the given index
-        ///
-              array::array_proxy operator()(const index &s0);
+            You can pass \ref af::seq, \ref af::array, or an int as it's parameters.
+            These references can be used for assignment or returning references
+            to \ref af::array objects.
 
-        /// \copydoc operator()(const index &)
+            If the \ref af::array is a multi-dimensional array then this coordinate
+            will treated as the data as a linear array.
+
+            \param[in] s0   is sequence of linear indices
+
+            \returns A reference to the array at the given index
+
+            \ingroup array_mem_operator_paren
+
+        */
+        array::array_proxy operator()(const index &s0);
+
+        /**
+            \copydoc operator()(const index &)
+
+            \ingroup array_mem_operator_paren
+        */
         const array::array_proxy operator()(const index &s0) const;
 
 
-        ///
-        /// \brief Gets a reference to a sub array
-        ///
-        /// \copydetails array_mem_operator_paren_many
-        ///
-        /// \param[in] s0   is sequence of indices along the first dimension
-        /// \param[in] s1   is sequence of indices along the second dimension
-        /// \param[in] s2   is sequence of indices along the third dimension
-        /// \param[in] s3   is sequence of indices along the fourth dimension
-        ///
-        /// \returns A reference to the array at the given index
-        ///
-              array::array_proxy operator()(const index &s0,
-                                            const index &s1,
-                                            const index &s2 = span,
-                                            const index &s3 = span);
+        /**
+            \brief This operator returns a reference of the original array at a
+            given coordinate.
 
-        /// \copydoc operator()(const index &, const index &, const index &, const index &)
+            You can pass \ref af::seq, \ref af::array, or an int as it's parameters.
+            These references can be used for assignment or returning references
+            to \ref af::array objects.
+
+            \param[in] s0   is sequence of indices along the first dimension
+            \param[in] s1   is sequence of indices along the second dimension
+            \param[in] s2   is sequence of indices along the third dimension
+            \param[in] s3   is sequence of indices along the fourth dimension
+
+            \returns A reference to the array at the given index
+
+            \ingroup array_mem_operator_paren
+        */
+        array::array_proxy operator()(const index &s0,
+                                      const index &s1,
+                                      const index &s2 = span,
+                                      const index &s3 = span);
+
+        /**
+            \copydoc operator()(const index &, const index &, const index &, const index &)
+
+            \ingroup array_mem_operator_paren
+        */
         const array::array_proxy operator()(const index &s0,
                                             const index &s1,
                                             const index &s2 = span,
                                             const index &s3 = span) const;
-        /// @}
+
 
         /// \ingroup array_mem_row
         /// @{
