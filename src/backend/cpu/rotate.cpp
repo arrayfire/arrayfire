@@ -12,15 +12,22 @@
 #include <math.hpp>
 #include <stdexcept>
 #include <err_cpu.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 #include "transform_interp.hpp"
 
 namespace cpu
 {
     template<typename T, af_interp_type method>
-    void rotate_(T *out, const T *in, const float theta,
-                 const af::dim4 &odims, const af::dim4 &idims,
-                 const af::dim4 &ostrides, const af::dim4 &istrides)
+    void rotate_(Array<T> output, const Array<T> input, const float theta)
     {
+        const af::dim4 odims    = output.dims();
+        const af::dim4 idims    = input.dims();
+        const af::dim4 ostrides = output.strides();
+        const af::dim4 istrides = input.strides();
+
+        const T* in   = input.get();
+              T* out  = output.get();
         dim_t nimages = idims[2];
 
         void (*t_fn)(T *, const T *, const float *, const af::dim4 &,
@@ -77,20 +84,16 @@ namespace cpu
                      const af_interp_type method)
     {
         Array<T> out = createEmptyArray<T>(odims);
-        const af::dim4 idims = in.dims();
 
         switch(method) {
             case AF_INTERP_NEAREST:
-                rotate_<T, AF_INTERP_NEAREST>
-                       (out.get(), in.get(), theta, odims, idims, out.strides(), in.strides());
+                getQueue().enqueue(rotate_<T, AF_INTERP_NEAREST>, out, in, theta);
                 break;
             case AF_INTERP_BILINEAR:
-                rotate_<T, AF_INTERP_BILINEAR>
-                       (out.get(), in.get(), theta, odims, idims, out.strides(), in.strides());
+                getQueue().enqueue(rotate_<T, AF_INTERP_BILINEAR>, out, in, theta);
                 break;
             case AF_INTERP_LOWER:
-                rotate_<T, AF_INTERP_LOWER>
-                       (out.get(), in.get(), theta, odims, idims, out.strides(), in.strides());
+                getQueue().enqueue(rotate_<T, AF_INTERP_LOWER>, out, in, theta);
                 break;
             default:
                 AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);

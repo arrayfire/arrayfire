@@ -10,14 +10,22 @@
 #include <Array.hpp>
 #include <select.hpp>
 #include <err_cpu.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 using af::dim4;
 
 namespace cpu
 {
-    template<typename T>
-    void select(Array<T> &out, const Array<char> &cond, const Array<T> &a, const Array<T> &b)
-    {
+
+template<typename T>
+void select(Array<T> &out, const Array<char> &cond, const Array<T> &a, const Array<T> &b)
+{
+    out.eval();
+    cond.eval();
+    a.eval();
+    b.eval();
+    auto func = [=] (Array<T> out, const Array<char> cond, const Array<T> a, const Array<T> b) {
         dim4 adims = a.dims();
         dim4 astrides = a.strides();
         dim4 bdims = b.dims();
@@ -30,13 +38,13 @@ namespace cpu
         dim4 ostrides = out.strides();
 
         bool is_a_same[] = {adims[0] == odims[0], adims[1] == odims[1],
-                            adims[2] == odims[2], adims[3] == odims[3]};
+            adims[2] == odims[2], adims[3] == odims[3]};
 
         bool is_b_same[] = {bdims[0] == odims[0], bdims[1] == odims[1],
-                            bdims[2] == odims[2], bdims[3] == odims[3]};
+            bdims[2] == odims[2], bdims[3] == odims[3]};
 
         bool is_c_same[] = {cdims[0] == odims[0], cdims[1] == odims[1],
-                            cdims[2] == odims[2], cdims[3] == odims[3]};
+            cdims[2] == odims[2], cdims[3] == odims[3]};
 
         const T *aptr = a.get();
         const T *bptr = b.get();
@@ -75,11 +83,17 @@ namespace cpu
                 }
             }
         }
-    }
+    };
+    getQueue().enqueue(func, out, cond, a, b);
+}
 
-    template<typename T, bool flip>
-    void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a, const double &b)
-    {
+template<typename T, bool flip>
+void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a, const double &b)
+{
+    out.eval();
+    cond.eval();
+    a.eval();
+    auto func = [=] (Array<T> out, const Array<char> cond, const Array<T> a, const double b) {
         dim4 astrides = a.strides();
         dim4 cstrides = cond.strides();
 
@@ -115,8 +129,9 @@ namespace cpu
                 }
             }
         }
-    }
-
+    };
+    getQueue().enqueue(func, out, cond, a, b);
+}
 
 #define INSTANTIATE(T)                                              \
     template void select<T>(Array<T> &out, const Array<char> &cond, \
@@ -130,16 +145,17 @@ namespace cpu
                                           const Array<T> &a,        \
                                           const double &b);         \
 
-    INSTANTIATE(float  )
-    INSTANTIATE(double )
-    INSTANTIATE(cfloat )
-    INSTANTIATE(cdouble)
-    INSTANTIATE(int    )
-    INSTANTIATE(uint   )
-    INSTANTIATE(intl   )
-    INSTANTIATE(uintl  )
-    INSTANTIATE(char   )
-    INSTANTIATE(uchar  )
-    INSTANTIATE(short  )
-    INSTANTIATE(ushort )
+INSTANTIATE(float  )
+INSTANTIATE(double )
+INSTANTIATE(cfloat )
+INSTANTIATE(cdouble)
+INSTANTIATE(int    )
+INSTANTIATE(uint   )
+INSTANTIATE(intl   )
+INSTANTIATE(uintl  )
+INSTANTIATE(char   )
+INSTANTIATE(uchar  )
+INSTANTIATE(short  )
+INSTANTIATE(ushort )
+
 }
