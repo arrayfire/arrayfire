@@ -12,27 +12,32 @@
 #include <stdexcept>
 #include <err_cpu.hpp>
 #include <cassert>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 namespace cpu
 {
-    static inline dim_t simple_mod(const dim_t i, const dim_t dim)
-    {
-        return (i < dim) ? i : (i - dim);
-    }
+static inline dim_t simple_mod(const dim_t i, const dim_t dim)
+{
+    return (i < dim) ? i : (i - dim);
+}
 
-    template<typename T>
-    Array<T> shift(const Array<T> &in, const int sdims[4])
-    {
-        const af::dim4 iDims = in.dims();
-        af::dim4 oDims = iDims;
+template<typename T>
+Array<T> shift(const Array<T> &in, const int sdims[4])
+{
+    Array<T> out = createEmptyArray<T>(in.dims());
+    out.eval();
+    in.eval();
+    const af::dim4 temp(sdims[0], sdims[1], sdims[2], sdims[3]);
 
-        Array<T> out = createEmptyArray<T>(oDims);
+    auto func = [=] (Array<T> out, const Array<T> in, const af::dim4 sdims) {
 
         T* outPtr = out.get();
         const T* inPtr = in.get();
 
-        const af::dim4 ist = in.strides();
-        const af::dim4 ost = out.strides();
+        const af::dim4 oDims = out.dims();
+        const af::dim4 ist   = in.strides();
+        const af::dim4 ost   = out.strides();
 
         int sdims_[4];
         // Need to do this because we are mapping output to input in the kernel
@@ -65,24 +70,25 @@ namespace cpu
                 }
             }
         }
+    };
+    getQueue().enqueue(func, out, in, temp);
 
-        return out;
-    }
+    return out;
+}
 
 #define INSTANTIATE(T)                                                  \
     template Array<T> shift<T>(const Array<T> &in, const int sdims[4]); \
 
-    INSTANTIATE(float)
-    INSTANTIATE(double)
-    INSTANTIATE(cfloat)
-    INSTANTIATE(cdouble)
-    INSTANTIATE(int)
-    INSTANTIATE(uint)
-    INSTANTIATE(intl)
-    INSTANTIATE(uintl)
-    INSTANTIATE(uchar)
-    INSTANTIATE(char)
-    INSTANTIATE(short)
-    INSTANTIATE(ushort)
-
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(cfloat)
+INSTANTIATE(cdouble)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(intl)
+INSTANTIATE(uintl)
+INSTANTIATE(uchar)
+INSTANTIATE(char)
+INSTANTIATE(short)
+INSTANTIATE(ushort)
 }
