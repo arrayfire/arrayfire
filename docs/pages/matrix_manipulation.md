@@ -15,7 +15,7 @@ Many different kinds of [matrix manipulation routines](\ref manip_mat) are avail
 
 ### flat()
 The __flat()__ function flattens an array to one dimension.
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 a [3 3 1 1]
     1.0000     4.0000     7.0000
     2.0000     5.0000     8.0000
@@ -31,8 +31,8 @@ flat(a) [9 1 1 1]
     7.0000
     8.0000
     9.0000
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-```
 The flat function has the following overloads:
 * __array af::flat(const array& in)__ -- flatten an array
 * __af_err af_flat(af_array* out, const af_array in)__ -- C interface for flat() function
@@ -40,7 +40,7 @@ The flat function has the following overloads:
 
 ### flip()
 The __flip()__ function flips the contents of an array along a chosen dimension.
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 a [5 2 1 1]
     1.0000     6.0000
     2.0000     7.0000
@@ -61,14 +61,14 @@ flip(a, 1) [5 2 1 1]
     8.0000     3.0000
     9.0000     4.0000
    10.0000     5.0000
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The flip function has the following overloads:
 * __array af::flip(const array &in, const unsigned dim)__ -- flips an array along a dimension 
 * __af_err af_flip(af_array *out, const af_array in, const unsigned dim)__ -- C interface for flip()
 
 ### join()
 The __join()__ function can join up to 4 arrays together.
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 a [5 1 1 1]
     1.0000
     2.0000
@@ -94,7 +94,7 @@ join(1, a, a) [5 2 1 1]
     3.0000     3.0000
     4.0000     4.0000
     5.0000     5.0000
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The join function has several overloads:
 * __array af::join(const int dim, const array &first, const array &second)__ -- Joins 2 arrays along a dimension
 
@@ -108,7 +108,7 @@ The join function has several overloads:
 
 ### moddims()
 The __moddims()__ function changes the dimensions of an array without changing its data or order. It is important to remember that the function only modifies the _metadata_ associated with the array and does not actually modify the content of the array.
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 a [8 1 1 1]
     1.0000
     2.0000
@@ -133,7 +133,7 @@ moddims(a, a.elements(), 1, 1, 1) [8 1 1 1]
     2.0000
     1.0000
     2.0000
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The moddims function has several overloads:
 * __array af::moddims(const array &in, const unsigned ndims, const dim_t *const dims)__ -- mods number of dimensions to match _ndims_ as specidied in the array _dims_
 * __array af::moddims(const array &in, const dim4 &dims)__ -- mods dimensions as specified by _dims_
@@ -142,7 +142,7 @@ The moddims function has several overloads:
 
 ### reorder()
 The __reorder()__ function changes the order of the dimensions within the array. This actually alters the underlying data of the array.
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 a [2 2 3 1]
     1.0000     3.0000
     2.0000     4.0000
@@ -173,7 +173,7 @@ reorder(a, 2, 0, 1) [3 2 2 1]
     3.0000     4.0000
     3.0000     4.0000
     3.0000     4.0000
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The reorder function the following several overloads:
 * __array af::reorder(const array &in, const unsigned x, const unsigned y=1, const unsigned z=2, const unsigned w=3)__ -- Reorders dimensions of an array
 
@@ -181,7 +181,7 @@ The reorder function the following several overloads:
 
 ### shift()
 The __shift()__ function shifts data in a circular buffer fashion along a chosen dimension.
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 a [3 5 1 1]
     0.0000     0.0000     0.0000     0.0000     0.0000
     3.0000     4.0000     5.0000     1.0000     2.0000
@@ -196,7 +196,7 @@ shift(a, -1, 2 ) [3 5 1 1]
     1.0000     2.0000     3.0000     4.0000     5.0000
     1.0000     2.0000     3.0000     4.0000     5.0000
     0.0000     0.0000     0.0000     0.0000     0.0000
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The shift function has the following overloads:
 * __array af::shift(const array &in, const int x, const int y=0, const int z=0, const int w=0)__ -- Shifts array along specified dimensions
 
@@ -204,7 +204,7 @@ The shift function has the following overloads:
 
 ### tile()
 The __tile()__ function repeats an array along a dimension
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 a [3 1 1 1]
     1.0000
     2.0000
@@ -239,8 +239,8 @@ tile(a, tile_dims) [3 2 3 1]
     1.0000     1.0000
     2.0000     2.0000
     3.0000     3.0000
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-```
 The tile function has several overloads:
 * __array af::tile(const array &in, const unsigned x, const unsigned y=1, const unsigned z=1, const unsigned w=1)__  --  Tiles array along specified dimensions
 * __array af::tile(const array &in, const dim4 &dims)__  --  Tile an array according to a dim4 object
@@ -248,7 +248,7 @@ The tile function has several overloads:
 
 ### transpose()
 The __transpose()__ function performs a standard matrix transpose. The input array must have the dimensions of a 2D-matrix.
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 a [3 3 1 1]
     1.0000     3.0000     3.0000
     2.0000     1.0000     3.0000
@@ -258,8 +258,8 @@ transpose(a) [3 3 1 1]
     1.0000     2.0000     2.0000
     3.0000     1.0000     2.0000
     3.0000     3.0000     1.0000
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-```
 The transpose function has several overloads:
 * __array af::transpose(const array &in, const bool conjugate=false)__ -- Transposes a matrix.
 
@@ -282,7 +282,7 @@ used to form the [matrix or vector transpose](\ref af::array::T) .
 
 ### Combining re-ordering functions to enumerate grid coordinates
 By using a combination of the array restructuring functions, we can quickly code complex manipulation patterns with a few lines of code. For example, consider generating _(x,y)_ coordinates for a grid where each axis goes from *1 to n*. Instead of using several loops to populate our arrays we can just use a small combination of the above functions.
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 unsigned n=3;
 af::array xy = join(1
                 tile(seq(1, n), n)
@@ -298,6 +298,6 @@ xy [9 2 1 1]
     1.0000     3.0000
     2.0000     3.0000
     3.0000     3.0000
-```
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ### Conclusion
 Functions provided by arrayfire offer ease and flexibility for efficiently manipulating the structure of arrays. The provided functions can be used as building blocks to generate, shift, or prepare data to any form imaginable!
