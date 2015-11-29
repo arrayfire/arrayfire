@@ -30,7 +30,7 @@ using namespace detail;
 using namespace graphics;
 
 template<typename T>
-fg::Plot3* setup_plot3(const af_array P)
+fg::Plot3* setup_plot3(const af_array P, fg::PlotType ptype, fg::MarkerType mtype)
 {
     Array<T> pIn = getArray<T>(P);
     ArrayInfo Pinfo = getInfo(P);
@@ -58,7 +58,7 @@ fg::Plot3* setup_plot3(const af_array P)
     }
 
     ForgeManager& fgMngr = ForgeManager::getInstance();
-    fg::Plot3* plot3 = fgMngr.getPlot3(P_dims.elements()/3, getGLType<T>());
+    fg::Plot3* plot3 = fgMngr.getPlot3(P_dims.elements()/3, getGLType<T>(), ptype, mtype);
     plot3->setColor(1.0, 0.0, 0.0);
     plot3->setAxesLimits(max[0], min[0],
                          max[1], min[1],
@@ -74,7 +74,7 @@ fg::Plot3* setup_plot3(const af_array P)
 }
 #endif
 
-af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* const props)
+af_err plot3Wrapper(const af_window wind, const af_array P, const af_cell* const props, const fg::PlotType type=fg::FG_LINE, const fg::MarkerType marker=fg::FG_NONE)
 {
 #if defined(WITH_GRAPHICS)
     if(wind==0) {
@@ -91,12 +91,12 @@ af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* cons
         fg::Plot3* plot3 = NULL;
 
         switch(Ptype) {
-            case f32: plot3 = setup_plot3<float >(P); break;
-            case s32: plot3 = setup_plot3<int   >(P); break;
-            case u32: plot3 = setup_plot3<uint  >(P); break;
-            case s16: plot3 = setup_plot3<short >(P); break;
-            case u16: plot3 = setup_plot3<ushort>(P); break;
-            case u8 : plot3 = setup_plot3<uchar >(P); break;
+            case f32: plot3 = setup_plot3<float >(P, type, marker); break;
+            case s32: plot3 = setup_plot3<int   >(P, type, marker); break;
+            case u32: plot3 = setup_plot3<uint  >(P, type, marker); break;
+            case s16: plot3 = setup_plot3<short >(P, type, marker); break;
+            case u16: plot3 = setup_plot3<ushort>(P, type, marker); break;
+            case u8 : plot3 = setup_plot3<uchar >(P, type, marker); break;
             default:  TYPE_ERROR(1, Ptype);
         }
 
@@ -110,4 +110,15 @@ af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* cons
 #else
     return AF_ERR_NO_GFX;
 #endif
+}
+
+af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* const props)
+{
+    return plot3Wrapper(wind, P, props);
+}
+
+af_err af_draw_scatter3(const af_window wind, const af_array P, const af_marker_type af_marker, const af_cell* const props)
+{
+    fg::MarkerType fg_marker = getFGMarker(af_marker);
+    return plot3Wrapper(wind, P, props, fg::FG_SCATTER, fg_marker);
 }
