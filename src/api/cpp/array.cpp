@@ -357,23 +357,7 @@ namespace af
 
     const array::array_proxy array::operator()(const index &s0, const index &s1, const index &s2, const index &s3) const
     {
-        if(isvector()   && s1.isspan()
-                        && s2.isspan()
-                        && s3.isspan()) {
-            int num_dims = numDims(this->arr);
-
-            switch(num_dims) {
-            case 1: return gen_indexing(*this, s0, s1, s2, s3);
-            case 2: return gen_indexing(*this, s1, s0, s2, s3);
-            case 3: return gen_indexing(*this, s1, s2, s0, s3);
-            case 4: return gen_indexing(*this, s1, s2, s3, s0);
-            default: THROW(AF_ERR_SIZE);
-            }
-        }
-        else {
-            return gen_indexing(*this, s0, s1, s2, s3);
-        }
-
+        return gen_indexing(*this, s0, s1, s2, s3);
     }
 
     const array::array_proxy array::row(int index) const
