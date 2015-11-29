@@ -27,9 +27,10 @@ Array<T> modDims(const Array<T>& in, const af::dim4 &newDims)
 
     Array<T> Out = in;
 
-    if (!in.isOwner()) {
+    if (!in.isLinear()) {
         Out = copyArray<T>(in);
     }
+
     Out.modDims(newDims);
 
     return Out;
