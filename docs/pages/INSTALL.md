@@ -162,7 +162,7 @@ not include MKL acceleration of linear algebra functions.
 
 After ArrayFire is installed, you can build the example programs as follows:
 
-    cp -r /usr/local/share/doc/arrayfire/examples .
+    cp -r /usr/local/share/ArrayFire/examples .
     cd examples
     mkdir build
     cd build

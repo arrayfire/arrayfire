@@ -16,27 +16,6 @@ to \ref af::array objects.
 
 ===============================================================================
 
-\defgroup array_mem_operator_paren_one operator()
-
-This operator returns a reference of the original array at a given coordinate.
-You can pass \ref af::seq, \ref af::array, or an int as it's parameters. These
-references can be used for assignment or returning references
-to \ref af::array objects.
-
-If the \ref af::array is a multi-dimensional array then this coordinate
-will treated as the data as a linear array.
-
-===============================================================================
-
-\defgroup array_mem_operator_paren_many operator()
-
-This operator returns a reference of the original array at a given coordinate.
-You can pass \ref af::seq, \ref af::array, or an int as it's parameters. These
-references can be used for assignment or returning references
-to \ref af::array objects.
-
-===============================================================================
-
 \defgroup array_mem_row row/rows
 \ingroup index_mat
 
