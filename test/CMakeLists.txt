@@ -20,6 +20,11 @@ ELSE()
     IF(${BUILD_NONFREE}) # Add definition. Not required when building with AF
         ADD_DEFINITIONS(-DAF_BUILD_SIFT)
     ENDIF(${BUILD_NONFREE})
+
+    # ENABLE_TESTING is required when building only tests
+    # When building from source, enable_testing is picked from from the main
+    # CMakeLists.txt
+    ENABLE_TESTING()
 ENDIF()
 
 REMOVE_DEFINITIONS(-std=c++11)
