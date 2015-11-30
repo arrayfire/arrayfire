@@ -179,6 +179,7 @@ class AFAPI Window {
          */
         void plot(const array& X, const array& Y, const char* const title=NULL);
 
+#if AF_API_VERSION >= 33
         /**
            Renders the input arrays as a 2D scatter-plot to the window
 
@@ -191,18 +192,23 @@ class AFAPI Window {
 
            \ingroup gfx_func_draw
          */
-        void scatter(const array& X, const array& Y, const af::markerType marker=AF_MARKER_POINT, const char* const title=NULL);
+        void scatter(const array& X, const array& Y,
+                     const af::markerType marker = AF_MARKER_POINT, const char* const title = NULL);
+#endif
 
+#if AF_API_VERSION >= 33
         /**
-           Renders the input arrays as a 2D scatter-plot to the window
+           Renders the input arrays as a 3D scatter-plot to the window
 
-           \param[in]   P is an \ref af_array or matrix with the xyz-values of the points
+           \param[in] P is an \ref af_array or matrix with the xyz-values of the points
            \param[in] marker is an \ref markerType enum specifying which marker to use in the scatter plot
            \param[in] title parameter is used when this function is called in grid mode
 
            \ingroup gfx_func_draw
          */
-        void scatter3(const array& P, const af::markerType marker=AF_MARKER_POINT, const char* const title=NULL);
+        void scatter3(const array& P, const af::markerType marker = AF_MARKER_POINT,
+                      const char* const title = NULL);
+#endif
 
         /**
            Renders the input array as a histogram to the window
@@ -395,7 +401,7 @@ AFAPI af_err af_draw_image(const af_window wind, const af_array in, const af_cel
 */
 AFAPI af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, const af_cell* const props);
 
-#if AF_API_VERSION >= 32
+#if AF_API_VERSION >= 33
 /**
    C Interface wrapper for drawing an array as a plot
 
@@ -413,10 +419,11 @@ AFAPI af_err af_draw_plot(const af_window wind, const af_array X, const af_array
 
    \ingroup gfx_func_draw
 */
-AFAPI af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y, const af_marker_type marker, const af_cell* const props);
+AFAPI af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y,
+                             const af_marker_type marker, const af_cell* const props);
 #endif
 
-#if AF_API_VERSION >= 32
+#if AF_API_VERSION >= 33
 /**
    C Interface wrapper for drawing an array as a plot
 
@@ -431,9 +438,10 @@ AFAPI af_err af_draw_scatter(const af_window wind, const af_array X, const af_ar
 
    \ingroup gfx_func_draw
 */
-AFAPI af_err af_draw_scatter3(const af_window wind, const af_array P, const af_marker_type marker, const af_cell* const props);
-
+AFAPI af_err af_draw_scatter3(const af_window wind, const af_array P,
+                              const af_marker_type marker, const af_cell* const props);
 #endif
+
 #if AF_API_VERSION >= 32
 /**
    C Interface wrapper for drawing an array as a plot

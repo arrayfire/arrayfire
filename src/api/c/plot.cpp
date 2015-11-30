@@ -55,11 +55,9 @@ fg::Plot* setup_plot(const af_array X, const af_array Y, fg::PlotType type, fg::
 
     return plot;
 }
-#endif
 
 af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, const af_cell* const props, fg::PlotType type=fg::FG_LINE, fg::MarkerType marker=fg::FG_NONE)
 {
-#if defined(WITH_GRAPHICS)
     if(wind==0) {
         std::cerr<<"Not a valid window"<<std::endl;
         return AF_SUCCESS;
@@ -101,18 +99,25 @@ af_err plotWrapper(const af_window wind, const af_array X, const af_array Y, con
     }
     CATCHALL;
     return AF_SUCCESS;
+}
+
+#endif // WITH_GRAPHICS
+
+af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, const af_cell* const props)
+{
+#if defined(WITH_GRAPHICS)
+    return plotWrapper(wind, X, Y, props);
 #else
     return AF_ERR_NO_GFX;
 #endif
 }
 
-af_err af_draw_plot(const af_window wind, const af_array X, const af_array Y, const af_cell* const props)
-{
-    return plotWrapper(wind, X, Y, props);
-}
-
 af_err af_draw_scatter(const af_window wind, const af_array X, const af_array Y, const af_marker_type af_marker, const af_cell* const props)
 {
+#if defined(WITH_GRAPHICS)
     fg::MarkerType fg_marker = getFGMarker(af_marker);
     return plotWrapper(wind, X, Y, props, fg::FG_SCATTER, fg_marker);
+#else
+    return AF_ERR_NO_GFX;
+#endif
 }
