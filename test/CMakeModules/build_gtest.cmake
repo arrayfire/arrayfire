@@ -1,14 +1,15 @@
 # Build the gtest libraries
 
 # Check if Google Test exists
-SET(GTEST_SOURCE_DIR "${CMAKE_SOURCE_DIR}/test/gtest")
+SET(GTEST_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/gtest")
+MESSAGE(STATUS ${GTEST_SOURCE_DIR})
 IF(NOT EXISTS "${GTEST_SOURCE_DIR}/README")
-    MESSAGE(WARNING "GTest Source is not available. Tests will not build.")
-    MESSAGE("Did you miss the --recursive option when cloning?")
-    MESSAGE("Run the following commands to correct this:")
-    MESSAGE("git submodule init")
-    MESSAGE("git submodule update")
-    MESSAGE("git submodule foreach git pull origin master")
+    MESSAGE(STATUS "GTest submodules unavailable. Updating submodules.")
+    EXECUTE_PROCESS(
+        COMMAND git submodule update --init --recursive
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_QUIET
+    )
 ENDIF()
 
 if(CMAKE_VERSION VERSION_LESS 3.2 AND CMAKE_GENERATOR MATCHES "Ninja")
