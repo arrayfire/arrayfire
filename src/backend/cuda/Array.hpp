@@ -88,8 +88,9 @@ namespace cuda
     template<typename T>
     void *getDevicePtr(const Array<T>& arr)
     {
-        memPop((T *)arr.get());
-        return (void *)arr.get();
+        T *ptr = arr.device();
+        memPop(ptr);
+        return (void *)ptr;
     }
 
     template<typename T>
@@ -105,7 +106,7 @@ namespace cuda
         bool owner;
 
         Array(af::dim4 dims);
-        explicit Array(af::dim4 dims, const T * const in_data, bool is_device = false);
+        explicit Array(af::dim4 dims, const T * const in_data, bool is_device = false, bool copy_device = false);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
         Array(Param<T> &tmp);
         Array(af::dim4 dims, JIT::Node_ptr n);
@@ -166,6 +167,19 @@ namespace cuda
             // This is for moddims
             // dims and data_dims are different when moddims is used
             return isOwner() ? dims() : data_dims;
+        }
+
+        T* device()
+        {
+            if (!isOwner() || data.use_count() > 1) {
+                *this = Array(dims(), get(), true, true);
+            }
+            return this->data.get();
+        }
+
+        T* device() const
+        {
+            return const_cast<Array<T>*>(this)->device();
         }
 
         T* get(bool withOffset = true)

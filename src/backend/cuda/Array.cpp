@@ -35,9 +35,9 @@ namespace cuda
     {}
 
     template<typename T>
-    Array<T>::Array(af::dim4 dims, const T * const in_data, bool is_device) :
+    Array<T>::Array(af::dim4 dims, const T * const in_data, bool is_device, bool copy_device) :
         info(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data((is_device ? (T *)in_data : memAlloc<T>(dims.elements())), memFree<T>),
+        data(((is_device & !copy_device) ? (T *)in_data : memAlloc<T>(dims.elements())), memFree<T>),
         data_dims(dims),
         node(), offset(0), ready(true), owner(true)
     {
@@ -47,7 +47,11 @@ namespace cuda
 #endif
         if (!is_device) {
             CUDA_CHECK(cudaMemcpyAsync(data.get(), in_data, dims.elements() * sizeof(T),
-                        cudaMemcpyHostToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+                                       cudaMemcpyHostToDevice, cuda::getStream(cuda::getActiveDeviceId())));
+            CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
+        } else if (copy_device) {
+            CUDA_CHECK(cudaMemcpyAsync(data.get(), in_data, dims.elements() * sizeof(T),
+                                       cudaMemcpyDeviceToDevice, cuda::getStream(cuda::getActiveDeviceId())));
             CUDA_CHECK(cudaStreamSynchronize(cuda::getStream(cuda::getActiveDeviceId())));
         }
     }

@@ -34,14 +34,14 @@ namespace cpu
     { }
 
     template<typename T>
-    Array<T>::Array(dim4 dims, const T * const in_data, bool is_device):
+    Array<T>::Array(dim4 dims, const T * const in_data, bool is_device, bool copy_device):
         info(getActiveDeviceId(), dims, dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(is_device ? (T*)in_data : memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
+        data((is_device & !copy_device) ? (T*)in_data : memAlloc<T>(dims.elements()), memFree<T>), data_dims(dims),
         node(), offset(0), ready(true), owner(true)
     {
         static_assert(std::is_standard_layout<Array<T>>::value, "Array<T> must be a standard layout type");
         static_assert(offsetof(Array<T>, info) == 0, "Array<T>::info must be the first member variable of Array<T>");
-        if (!is_device) {
+        if (!is_device || copy_device) {
             std::copy(in_data, in_data + dims.elements(), data.get());
         }
     }
