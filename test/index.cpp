@@ -1386,3 +1386,98 @@ TEST(Index, OutOfBounds)
     for(int i=0; i<7; ++i)
         ASSERT_EQ(gold[i], output[i]);
 }
+
+TEST(Index, ISSUE_1101_FULL)
+{
+    using namespace af;
+    deviceGC();
+    array a = randu(5,5);
+    std::vector<float> ha(a.elements());
+    a.host(&ha[0]);
+
+    size_t aby, abu, lby, lbu;
+    deviceMemInfo(&aby, &abu, &lby, &lbu);
+
+    array b = a(span, span);
+
+    size_t aby1, abu1, lby1, lbu1;
+    deviceMemInfo(&aby1, &abu1, &lby1, &lbu1);
+
+    ASSERT_EQ(aby, aby1);
+    ASSERT_EQ(abu, abu1);
+    ASSERT_EQ(lby, lby1);
+    ASSERT_EQ(lbu, lbu1);
+
+    std::vector<float> hb(b.elements());
+    b.host(&hb[0]);
+    for (int i = 0; i < b.elements(); i++) {
+        ASSERT_EQ(ha[i], hb[i]);
+    }
+}
+
+TEST(Index, ISSUE_1101_COL0)
+{
+    using namespace af;
+    deviceGC();
+    array a = randu(5,5);
+    std::vector<float> ha(a.elements());
+    a.host(&ha[0]);
+
+    size_t aby, abu, lby, lbu;
+    deviceMemInfo(&aby, &abu, &lby, &lbu);
+
+    array b = a(span, 0);
+
+    size_t aby1, abu1, lby1, lbu1;
+    deviceMemInfo(&aby1, &abu1, &lby1, &lbu1);
+
+    ASSERT_EQ(aby, aby1);
+    ASSERT_EQ(abu, abu1);
+    ASSERT_EQ(lby, lby1);
+    ASSERT_EQ(lbu, lbu1);
+
+    std::vector<float> hb(b.elements());
+    b.host(&hb[0]);
+    for (int i = 0; i < b.elements(); i++) {
+        ASSERT_EQ(ha[i], hb[i]);
+    }
+
+}
+
+TEST(Index, ISSUE_1101_MODDIMS)
+{
+    using namespace af;
+    deviceGC();
+    array a = randu(5,5);
+    std::vector<float> ha(a.elements());
+    a.host(&ha[0]);
+
+    size_t aby, abu, lby, lbu;
+    deviceMemInfo(&aby, &abu, &lby, &lbu);
+
+    int st = 0;
+    int en = 9;
+    int nx = 2;
+    int ny = 5;
+    array b = a(seq(st, en));
+    array c = moddims(b, nx, ny);
+    size_t aby1, abu1, lby1, lbu1;
+    deviceMemInfo(&aby1, &abu1, &lby1, &lbu1);
+
+    ASSERT_EQ(aby, aby1);
+    ASSERT_EQ(abu, abu1);
+    ASSERT_EQ(lby, lby1);
+    ASSERT_EQ(lbu, lbu1);
+
+    std::vector<float> hb(b.elements());
+    b.host(&hb[0]);
+    for (int i = 0; i < b.elements(); i++) {
+        ASSERT_EQ(ha[i + st], hb[i]);
+    }
+
+    std::vector<float> hc(c.elements());
+    c.host(&hc[0]);
+    for (int i = 0; i < c.elements(); i++) {
+        ASSERT_EQ(ha[i + st], hc[i]);
+    }
+}

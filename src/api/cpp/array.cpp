@@ -357,23 +357,7 @@ namespace af
 
     const array::array_proxy array::operator()(const index &s0, const index &s1, const index &s2, const index &s3) const
     {
-        if(isvector()   && s1.isspan()
-                        && s2.isspan()
-                        && s3.isspan()) {
-            int num_dims = numDims(this->arr);
-
-            switch(num_dims) {
-            case 1: return gen_indexing(*this, s0, s1, s2, s3);
-            case 2: return gen_indexing(*this, s1, s0, s2, s3);
-            case 3: return gen_indexing(*this, s1, s2, s0, s3);
-            case 4: return gen_indexing(*this, s1, s2, s3, s0);
-            default: THROW(AF_ERR_SIZE);
-            }
-        }
-        else {
-            return gen_indexing(*this, s0, s1, s2, s3);
-        }
-
+        return gen_indexing(*this, s0, s1, s2, s3);
     }
 
     const array::array_proxy array::row(int index) const
@@ -493,15 +477,16 @@ namespace af
         bool batch_assign = false;
         bool is_reordered = false;
         if (dim >= 0) {
+            //FIXME: Figure out a faster, cleaner way to do this
+            dim4 out_dims = seqToDims(impl->indices, this_dims, false);
+
             batch_assign = true;
             for (int i = 0; i < AF_MAX_DIMS; i++) {
                 if (this->impl->indices[i].isBatch) batch_assign &= (other_dims[i] == 1);
-                else                          batch_assign &= (other_dims[i] == this_dims[i]);
+                else                          batch_assign &= (other_dims[i] == out_dims[i]);
             }
 
             if (batch_assign) {
-                //FIXME: Figure out a faster, cleaner way to do this
-                dim4 out_dims = seqToDims(impl->indices, this_dims, false);
                 af_array out;
                 AF_THROW(af_tile(&out, other_arr,
                                  out_dims[0] / other_dims[0],
@@ -510,7 +495,7 @@ namespace af
                                  out_dims[3] / other_dims[3]));
                 other_arr = out;
 
-            } else if (this_dims != other_dims) {
+            } else if (out_dims != other_dims) {
                 // HACK: This is a quick check to see if other has been reordered inside gfor
                 // TODO: Figure out if this breaks and implement a cleaner method
                 other_arr = gforReorder(other_arr, dim);
