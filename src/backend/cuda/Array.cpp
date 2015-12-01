@@ -281,6 +281,8 @@ namespace cuda
     template       void      destroyArray<T>          (Array<T> *A);    \
     template       void      evalArray<T>             (const Array<T> &A); \
     template       Array<T>  createNodeArray<T>       (const dim4 &size, JIT::Node_ptr node); \
+    template       Array<T>::Array(af::dim4 dims, const T * const in_data, \
+                                   bool is_device, bool copy_device);   \
     template       Array<T>::~Array        ();                          \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \

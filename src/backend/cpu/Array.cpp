@@ -279,6 +279,8 @@ namespace cpu
     template       Array<T>  createNodeArray<T>       (const dim4 &size, TNJ::Node_ptr node); \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
+    template       Array<T>::Array(af::dim4 dims, const T * const in_data, \
+                                   bool is_device, bool copy_device);   \
     template       TNJ::Node_ptr Array<T>::getNode() const;             \
     template       void      writeHostDataArray<T>    (Array<T> &arr, const T * const data, const size_t bytes); \
     template       void      writeDeviceDataArray<T>  (Array<T> &arr, const void * const data, const size_t bytes); \

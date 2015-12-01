@@ -101,7 +101,7 @@ namespace opencl
         Array(Param &tmp);
         explicit Array(af::dim4 dims, JIT::Node_ptr n);
         explicit Array(af::dim4 dims, const T * const in_data);
-        explicit Array(af::dim4 dims, cl_mem mem, size_t offset = 0, bool copy = false);
+        explicit Array(af::dim4 dims, cl_mem mem, size_t offset, bool copy);
 
     public:
 
@@ -154,7 +154,7 @@ namespace opencl
         cl::Buffer* device()
         {
             if (!isOwner() || data.use_count() > 1) {
-                *this = Array(dims(), (*get())(), getOffset(), true);
+                *this = Array<T>(dims(), (*get())(), (size_t)getOffset(), true);
             }
             return this->data.get();
         }

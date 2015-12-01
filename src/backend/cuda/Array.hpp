@@ -172,7 +172,7 @@ namespace cuda
         T* device()
         {
             if (!isOwner() || data.use_count() > 1) {
-                *this = Array(dims(), get(), true, true);
+                *this = Array<T>(dims(), get(), true, true);
             }
             return this->data.get();
         }

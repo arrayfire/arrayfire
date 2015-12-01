@@ -218,7 +218,7 @@ namespace opencl
     {
         verifyDoubleSupport<T>();
 
-        return Array<T>(size, (cl_mem)(data));
+        return Array<T>(size, (cl_mem)(data), 0, false);
     }
 
     template<typename T>
@@ -314,6 +314,7 @@ namespace opencl
     template       void      destroyArray<T>          (Array<T> *A);    \
     template       void      evalArray<T>             (const Array<T> &A); \
     template       Array<T>  createNodeArray<T>       (const dim4 &size, JIT::Node_ptr node); \
+    template       Array<T>::Array(af::dim4 dims, cl_mem mem, size_t src_offset, bool copy); \
     template       Array<T>::~Array        ();                          \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \
