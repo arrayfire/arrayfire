@@ -1,7 +1,7 @@
 Interoperability with CUDA {#interop_cuda}
 ========
 
-As extensive as ArrayFire is, there are a few cases where you are still working with custom [CUDA] (@ref interop_cuda) or [OpenCL] (@ref interop_opencl) kernels. For example, you may want to integrate ArrayFire into an existing code base for productivity or you may want to keep it around the old implementation for testing purposes. In this post we are going to talk about how to integrate your custom kernels into ArrayFire in a seamless fashion.
+As extensive as ArrayFire is, there are a few cases where you are still working with custom [CUDA] (@ref interop_cuda) or [OpenCL] (@ref interop_opencl) kernels. For example, you may want to integrate ArrayFire into an existing code base for productivity or you may want to keep it around the old implementation for testing purposes. Arrayfire provides a number of functions that allow it to work alongside native CUDA commands. In this tutorial we are going to talk about how to use native CUDA memory operations and integrate custom CUDA kernels into ArrayFire in a seamless fashion.
 
 # In and Out of Arrayfire
 
@@ -45,6 +45,7 @@ In this example, the output is the same size as in the input. Note that the actu
     float *d_x = x.device<float>();
     float *d_y = y.device<float>();
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Accesing the device pointer in this manner internally sets a flag prohibiting the arrayfire object from further managing the memory. Ownership will need to be returned to the af::array object once we are finished using it.
 
 Before  launching your custom kernel, it is best to make sure that all ArrayFire computations have finished. This can be called by using af::sync(). The function ensures you are not unintentionally doing out of order executions.
 af::sync() is not strictly required if you are not using streams in CUDA.
@@ -55,7 +56,9 @@ af::sync() is not strictly required if you are not using streams in CUDA.
     // y = sin(x)^2 + cos(x)^2
     launch_simple_kernel(d_x, d_y, num);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The function **launch_simple_kernel** handles the launching of your custom kernel. We will have a look at how to do this in CUDA and OpenCL later in the post. Once you have finished your computations, you have to tell ArrayFire to take control of the memory objects.
+The function **launch_simple_kernel** handles the launching of your custom kernel. We will have a look at how to do this in CUDA and OpenCL later in the post.
+
+Once you have finished your computations, you have to tell ArrayFire to take control of the memory objects.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
     x.unlock();
     y.unlock();
@@ -101,3 +104,15 @@ void inline launch_simple_kernel(float *d_y,
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# Additional interop functions and CUDA Streams
+
+Arrayfire provides a collection of CUDA interoperability functions for additional capabilities when working with custom CUDA code. To use them, we need to include the appropriate header.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+#include <af/cuda.h>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The first thing these headers allow us to do are to get and set the active device using native CUDA device ids. This is achieved through the following functions:
+    **static int getNativeId (int id)** -- Get the native device id of the CUDA device with id in the ArrayFire context.
+    **static void setNativeId (int nativeId)**  -- Set the CUDA device with given native id as the active device for ArrayFire. 
+
+These functions are available within the afcu:: namespace and equal C variants can be fund in the full [cuda interop documentation.](group__cuda__mat.htm)
