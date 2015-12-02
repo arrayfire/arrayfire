@@ -18,6 +18,8 @@
 #include <sort.hpp>
 #include <err_cpu.hpp>
 #include <vector>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 namespace cpu
 {
@@ -28,6 +30,9 @@ namespace cpu
     Array<T> setUnique(const Array<T> &in,
                         const bool is_sorted)
     {
+        in.eval();
+        getQueue().sync();
+
         Array<T> out = createEmptyArray<T>(af::dim4());
         if (is_sorted) out = copyArray<T>(in);
         else           out = sort<T, 1>(in, 0);
@@ -46,6 +51,10 @@ namespace cpu
                        const Array<T> &second,
                        const bool is_unique)
     {
+        first.eval();
+        second.eval();
+        getQueue().sync();
+
         Array<T> uFirst = first;
         Array<T> uSecond = second;
 
@@ -78,6 +87,10 @@ namespace cpu
                           const Array<T> &second,
                           const bool is_unique)
     {
+        first.eval();
+        second.eval();
+        getQueue().sync();
+
         Array<T> uFirst = first;
         Array<T> uSecond = second;
 

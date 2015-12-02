@@ -89,6 +89,7 @@ namespace cpu
     {
         dim4 odims = in.dims();
         odims[dim] = 1;
+        in.eval();
 
         Array<To> out = createEmptyArray<To>(odims);
         static const reduce_dim_func<op, Ti, To>  reduce_funcs[4] = { reduce_dim<op, Ti, To, 1>()
