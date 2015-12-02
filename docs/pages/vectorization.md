@@ -1,4 +1,4 @@
-Vectorization {#vectorization}
+Introduction to Vectorization {#vectorization}
 ===================
 
 Programmers and Data Scientists want to take advantage of fast and parallel
@@ -29,7 +29,7 @@ af::array a = af::range(10);  // [0,  9]
 a = a + 1;                    // [1, 10]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Some of the vectorized mathematical functions of Arrayfire include:
+Most Arrayfire functions are vectorized. A small subset of these include:
 
 Operator Category                                           | Functions
 ------------------------------------------------------------|--------------------------
@@ -41,6 +41,8 @@ Operator Category                                           | Functions
 [Numeric functions](\ref numeric_mat)                       | abs(), floor(), round(), min(), max(), etc.
 [Trigonometric functions](\ref trig_mat)                    | sin(), cos(), tan(), etc.
 
+Using the built in vectorized operations should be the first and preferred method
+of vectorizing any code written with Arrayfire.
 
 # GFOR: Parallel for-loops
 Another novel method of vectorization present in Arrayfire is the GFOR loop replacement construct.
@@ -58,17 +60,37 @@ af::array a = af::range(10);
 gfor(seq i, n)
     a(i) = a(i) + 1;
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-It is best to vectorize computation as much as possible to avoid the overhead in
-both for-loops and gfor-loops.
 
-To see another example, you could run an FFT on every 2D slice of a volume in a
+To see another example, you could run an accum() on every slice of a matrix in a
 for-loop, or you could "vectorize" and simply do it all in one gfor-loop operation:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 for (int i = 0; i < N; ++i)
-   A(span,span,i) = fft2(A(span,span,i)); // runs each FFT in sequence
+   B(span,i) = accum(A(span,i)); // runs each accum() in sequence
 gfor (seq i, N)
-   A(span,span,i) = fft2(A(span,span,i)); // runs N FFTs in parallel
+   B(span,i) = accum(A(span,i)); // runs N accums in parallel
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+However, returning to our previous vectorization technique, accum() is already
+vectorized and the operation could be completely replaced with merely:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+    B = accum(A);
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is best to vectorize computation as much as possible to avoid the overhead in
+both for-loops and gfor-loops. However, the gfor-loop construct is most effective
+in the narrow case of broadcast-style operations. Consider the case when we have
+a vector of constants that we wish to apply to a collection of variables, such as
+expressing the values of a linear combination for multiple vectors. The broadcast
+of one set of constants to many vectors works well with gfor-loops:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+const static int p=4, n=1000;
+af::array consts = af::randu(p);
+af::array var_terms = randn(p, n);
+
+gfor(seq i, n)
+    combination(span, i) = consts * var_terms(span, i);
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 ## GFOR: Usage
 There are three formats for instantiating gfor-loops:
 
@@ -102,12 +124,12 @@ The naive solution would be using a loop as we've seen before:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 af::array filtered_weights = constant(0, 5, 5);
 for(int i=0; i<weights.dims(1); ++i){
-    filtered_weights.col(i) = filter * weights(i);
+    filtered_weights.col(i) = filter * weights.col(i);
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 However we would like a vectorized solution. The following syntax begs to be used:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-af::array filtered_weights = filter * weights; //fails due to dimension mismatch
+af::array filtered_weights = filter * weights; // fails due to dimension mismatch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 but it fails due to the (5x1), (5x5) dimension mismatch. Wouldn't it be nice if
 Arrayfire could figure out along which dimension we intend to apply the batch
@@ -121,14 +143,35 @@ where __batchFunc_t__ is a function pointer of the form:
 
 
 So, to use batchFunc(), we need to provide the function we will be applying as a
-batch operation. Our final batch call is not much more difficult than the ideal
+batch operation. For illustration's sake, let's "implement" a multiplication
+function following the format.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+af::array my_mult (const af::array &lhs, const af::array &rhs){
+    return lhs * rhs;
+}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Our final batch call is not much more difficult than the ideal
 syntax we imagined.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-af::array filtered_weights = batchFunc(filter, weights, operator* );
+af::array filtered_weights = batchFunc( filter, weights, my_mult );
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The batch function will work with many previously mentioned vectorized Arrayfire
 functions. It can even work with a combination of those functions if they are
 wrapped inside a helper function matching the __batchFunc_t__ signature. Unfortunately,
 the batch function cannot be used within a gfor() construct at this moment.
+
+# Advanced Vectorization
+We have seen the different methods Arrayfire provides to vectorize our code. Tying
+them all together is a slightly more involved process that needs to consider data
+dimensionality and layout, memory usage, nesting order, etc. An excellent example
+and discussion of these factors can be found on our blog:
+http://arrayfire.com/how-to-write-vectorized-code/
+
+It's worth noting that the content discussed in the blog has since been transformed
+into a convenient af::nearestNeighbour() function. Before writing something from
+scratch, check that Arrayfire doesn't already have an implementation. The default
+vectorized nature of Arrayfire and an extensive collection of functions will
+speed things up in addition to replacing dozens of lines of code!
 
