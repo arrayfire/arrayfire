@@ -41,19 +41,48 @@ Operator Category                                           | Functions
 [Numeric functions](\ref numeric_mat)                       | abs(), floor(), round(), min(), max(), etc.
 [Trigonometric functions](\ref trig_mat)                    | sin(), cos(), tan(), etc.
 
-Using the built in vectorized operations should be the first and preferred method
-of vectorizing any code written with Arrayfire.
+Not only elementwise arithmetic operations are vectorized in Arrayfire.
+
+Vector operations such as min() support vectorization:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+af::array arr = randn(100);
+std::cout << min<float>(arr) << std::endl;
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Signal processing functions like convolve() support vectorization:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+float g_coef[] = { 1, 2, 1,
+                   2, 4, 2,
+                   1, 2, 1 };
+
+af::array filter = 1.f/16 * af::array(3, 3, f_coef);
+
+af::array signal = randu(WIDTH, HEIGHT, NUM);
+af::array conv = convolve2(signal, filter);
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Image processing functions such as rotate() support vectorization:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+af::array imgs = randu(WIDTH, HEIGHT, 100); // 100 (WIDTH x HEIGHT) images
+af::array rot_imgs = rotate(imgs, 45); // 100 rotated images
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+One class of functions that does not support vectorization is the set of linear
+algebra functions. Using the built in vectorized operations should be the first
+and preferred method of vectorizing any code written with Arrayfire.
 
 # GFOR: Parallel for-loops
-Another novel method of vectorization present in Arrayfire is the GFOR loop replacement construct.
-GFOR allows launching all iterations of a loop in parallel on the GPU or device,
-as long as the iterations are independent. While the standard for-loop performs
-each iteration sequentially, ArrayFire's gfor-loop performs each iteration at
-the same time (in parallel). ArrayFire does this by tiling out the values of all
-loop iterations and then performing computation on those tiles in one pass.
-You can think of gfor as performing auto-vectorization of your code, e.g. you
-write a gfor-loop that increments every element of a vector but behind the scenes
-ArrayFire rewrites it to operate on the entire vector in parallel.
+Another novel method of vectorization present in Arrayfire is the GFOR loop 
+replacement construct. GFOR allows launching all iterations of a loop in parallel
+on the GPU or device, as long as the iterations are independent. While the 
+standard for-loop performs each iteration sequentially, ArrayFire's gfor-loop
+performs each iteration at the same time (in parallel). ArrayFire does this by
+tiling out the values of all loop iterations and then performing computation on 
+those tiles in one pass. You can think of gfor as performing auto-vectorization
+of your code, e.g. you write a gfor-loop that increments every element of a vector
+but behind the scenes ArrayFire rewrites it to operate on the entire vector in
+parallel.
+
 We can remedy our first example with GFOR:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 af::array a = af::range(10);
@@ -90,21 +119,6 @@ gfor(seq i, n)
     combination(span, i) = consts * var_terms(span, i);
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-## GFOR: Usage
-There are three formats for instantiating gfor-loops:
-
- 1. gfor(var,n)-- Creates a sequence <B>{0, 1, ..., n-1}</B>
- 2. gfor(var,first,last)-- Creates a sequence <B>{first, first+1, ..., last}</B>
- 3. gfor(var,first,incr,last)-- Creates a sequence <B>{first, first+inc, first+2 * inc, ..., last}</B>
-
-
-All of the following represent the equivalent sequence: 0,1,2,3,4
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
-gfor (seq i, 5)
-gfor (seq i, 0, 4)
-gfor (seq i, 0, 1, 4)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Using GFOR requires following several rules and multiple guidelines for optimal performance.
 The details of this vectorization method can be found in the [GFOR documentation](\ref gfor).
 
@@ -167,6 +181,7 @@ We have seen the different methods Arrayfire provides to vectorize our code. Tyi
 them all together is a slightly more involved process that needs to consider data
 dimensionality and layout, memory usage, nesting order, etc. An excellent example
 and discussion of these factors can be found on our blog:
+
 http://arrayfire.com/how-to-write-vectorized-code/
 
 It's worth noting that the content discussed in the blog has since been transformed
