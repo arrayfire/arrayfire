@@ -13,6 +13,8 @@
 #include <Array.hpp>
 #include <err_cpu.hpp>
 #include <handle.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 using af::dim4;
 
@@ -90,26 +92,17 @@ struct dist_op<ushort, To, AF_SHD>
 };
 
 template<typename T, typename To, af_match_type dist_type>
-void nearest_neighbour_(Array<uint>& idx, Array<To>& dist,
-                        const Array<T>& query, const Array<T>& train,
+void nearest_neighbour_(Array<uint> idx, Array<To> dist,
+                        const Array<T> query, const Array<T> train,
                         const uint dist_dim, const uint n_dist)
 {
     uint sample_dim = (dist_dim == 0) ? 1 : 0;
     const dim4 qDims = query.dims();
     const dim4 tDims = train.dims();
 
-    if (n_dist > 1) {
-        CPU_NOT_SUPPORTED();
-    }
-
     const unsigned distLength = qDims[dist_dim];
     const unsigned nQuery = qDims[sample_dim];
     const unsigned nTrain = tDims[sample_dim];
-
-    const dim4 outDims(n_dist, nQuery);
-
-    idx  = createEmptyArray<uint>(outDims);
-    dist = createEmptyArray<To  >(outDims);
 
     const T* qPtr = query.get();
     const T* tPtr = train.get();
@@ -157,11 +150,34 @@ void nearest_neighbour(Array<uint>& idx, Array<To>& dist,
                        const uint dist_dim, const uint n_dist,
                        const af_match_type dist_type)
 {
+    if (n_dist > 1) {
+        CPU_NOT_SUPPORTED();
+    }
+
+    query.eval();
+    train.eval();
+
+    uint sample_dim  = (dist_dim == 0) ? 1 : 0;
+    const dim4 qDims = query.dims();
+    const dim4 outDims(n_dist, qDims[sample_dim]);
+
+    idx  = createEmptyArray<uint>(outDims);
+    dist = createEmptyArray<To  >(outDims);
+    idx.eval();
+    dist.eval();
+
     switch(dist_type) {
-        case AF_SAD: nearest_neighbour_<T, To, AF_SAD>(idx, dist, query, train, dist_dim, n_dist); break;
-        case AF_SSD: nearest_neighbour_<T, To, AF_SSD>(idx, dist, query, train, dist_dim, n_dist); break;
-        case AF_SHD: nearest_neighbour_<T, To, AF_SHD>(idx, dist, query, train, dist_dim, n_dist); break;
-        default: AF_ERROR("Unsupported dist_type", AF_ERR_NOT_CONFIGURED);
+        case AF_SAD:
+            getQueue().enqueue(nearest_neighbour_<T, To, AF_SAD>, idx, dist, query, train, dist_dim, n_dist);
+            break;
+        case AF_SSD:
+            getQueue().enqueue(nearest_neighbour_<T, To, AF_SSD>, idx, dist, query, train, dist_dim, n_dist);
+            break;
+        case AF_SHD:
+            getQueue().enqueue(nearest_neighbour_<T, To, AF_SHD>, idx, dist, query, train, dist_dim, n_dist);
+            break;
+        default:
+            AF_ERROR("Unsupported dist_type", AF_ERR_NOT_CONFIGURED);
     }
 }
 
