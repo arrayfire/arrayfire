@@ -10,6 +10,8 @@
 #include <lookup.hpp>
 #include <err_cpu.hpp>
 #include <cstdlib>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 namespace cpu
 {
@@ -30,11 +32,10 @@ dim_t trimIndex(int idx, const dim_t &len)
 template<typename in_t, typename idx_t>
 Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices, const unsigned dim)
 {
-    const dim4 iDims = input.dims();
-    const dim4 iStrides = input.strides();
+    input.eval();
+    indices.eval();
 
-    const in_t *inPtr = input.get();
-    const idx_t *idxPtr = indices.get();
+    const dim4 iDims = input.dims();
 
     dim4 oDims(1);
     for (int d=0; d<4; ++d)
@@ -42,35 +43,44 @@ Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices, const 
 
     Array<in_t> out = createEmptyArray<in_t>(oDims);
 
-    dim4 oStrides = out.strides();
+    auto func = [=] (Array<in_t> out, const Array<in_t> input,
+                     const Array<idx_t> indices, const unsigned dim) {
+        const dim4 iDims    = input.dims();
+        const dim4 oDims    = out.dims();
+        const dim4 iStrides = input.strides();
+        const dim4 oStrides = out.strides();
+        const in_t *inPtr   = input.get();
+        const idx_t *idxPtr = indices.get();
 
-    in_t *outPtr = out.get();
+        in_t *outPtr = out.get();
 
-    for (dim_t l=0; l<oDims[3]; ++l) {
+        for (dim_t l=0; l<oDims[3]; ++l) {
 
-        dim_t iLOff = iStrides[3]*(dim==3 ? trimIndex((dim_t)idxPtr[l], iDims[3]): l);
-        dim_t oLOff = l*oStrides[3];
+            dim_t iLOff = iStrides[3]*(dim==3 ? trimIndex((dim_t)idxPtr[l], iDims[3]): l);
+            dim_t oLOff = l*oStrides[3];
 
-        for (dim_t k=0; k<oDims[2]; ++k) {
+            for (dim_t k=0; k<oDims[2]; ++k) {
 
-            dim_t iKOff = iStrides[2]*(dim==2 ? trimIndex((dim_t)idxPtr[k], iDims[2]): k);
-            dim_t oKOff = k*oStrides[2];
+                dim_t iKOff = iStrides[2]*(dim==2 ? trimIndex((dim_t)idxPtr[k], iDims[2]): k);
+                dim_t oKOff = k*oStrides[2];
 
-            for (dim_t j=0; j<oDims[1]; ++j) {
+                for (dim_t j=0; j<oDims[1]; ++j) {
 
-                dim_t iJOff = iStrides[1]*(dim==1 ? trimIndex((dim_t)idxPtr[j], iDims[1]): j);
-                dim_t oJOff = j*oStrides[1];
+                    dim_t iJOff = iStrides[1]*(dim==1 ? trimIndex((dim_t)idxPtr[j], iDims[1]): j);
+                    dim_t oJOff = j*oStrides[1];
 
-                for (dim_t i=0; i<oDims[0]; ++i) {
+                    for (dim_t i=0; i<oDims[0]; ++i) {
 
-                    dim_t iIOff = iStrides[0]*(dim==0 ? trimIndex((dim_t)idxPtr[i], iDims[0]): i);
-                    dim_t oIOff = i*oStrides[0];
+                        dim_t iIOff = iStrides[0]*(dim==0 ? trimIndex((dim_t)idxPtr[i], iDims[0]): i);
+                        dim_t oIOff = i*oStrides[0];
 
-                    outPtr[oLOff+oKOff+oJOff+oIOff] = inPtr[iLOff+iKOff+iJOff+iIOff];
+                        outPtr[oLOff+oKOff+oJOff+oIOff] = inPtr[iLOff+iKOff+iJOff+iIOff];
+                    }
                 }
             }
         }
-    }
+    };
+    getQueue().enqueue(func, out, input, indices, dim);
 
     return out;
 }

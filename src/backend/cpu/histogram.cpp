@@ -12,6 +12,8 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <histogram.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 using af::dim4;
 
@@ -21,31 +23,39 @@ namespace cpu
 template<typename inType, typename outType, bool isLinear>
 Array<outType> histogram(const Array<inType> &in, const unsigned &nbins, const double &minval, const double &maxval)
 {
-    float step = (maxval - minval)/(float)nbins;
+    in.eval();
 
     const dim4 inDims  = in.dims();
-    dim4 iStrides      = in.strides();
     dim4 outDims       = dim4(nbins,1,inDims[2],inDims[3]);
     Array<outType> out = createValueArray<outType>(outDims, outType(0));
-    dim4 oStrides      = out.strides();
-    dim_t nElems    = inDims[0]*inDims[1];
+    out.eval();
 
-    outType *outData    = out.get();
-    const inType* inData= in.get();
+    auto func = [=](Array<outType> out, const Array<inType> in,
+                    const unsigned nbins, const double minval, const double maxval) {
+        const float step     = (maxval - minval)/(float)nbins;
+        const dim4 inDims    = in.dims();
+        const dim4 iStrides  = in.strides();
+        const dim4 oStrides  = out.strides();
+        const dim_t nElems   = inDims[0]*inDims[1];
 
-    for(dim_t b3 = 0; b3 < outDims[3]; b3++) {
-        for(dim_t b2 = 0; b2 < outDims[2]; b2++) {
-            for(dim_t i=0; i<nElems; i++) {
-                int idx = isLinear ? i : ((i % inDims[0]) + (i / inDims[0])*iStrides[1]);
-                int bin = (int)((inData[idx] - minval) / step);
-                bin = std::max(bin, 0);
-                bin = std::min(bin, (int)(nbins - 1));
-                outData[bin]++;
+        outType *outData    = out.get();
+        const inType* inData= in.get();
+
+        for(dim_t b3 = 0; b3 < outDims[3]; b3++) {
+            for(dim_t b2 = 0; b2 < outDims[2]; b2++) {
+                for(dim_t i=0; i<nElems; i++) {
+                    int idx = isLinear ? i : ((i % inDims[0]) + (i / inDims[0])*iStrides[1]);
+                    int bin = (int)((inData[idx] - minval) / step);
+                    bin = std::max(bin, 0);
+                    bin = std::min(bin, (int)(nbins - 1));
+                    outData[bin]++;
+                }
+                inData  += iStrides[2];
+                outData += oStrides[2];
             }
-            inData  += iStrides[2];
-            outData += oStrides[2];
         }
-    }
+    };
+    getQueue().enqueue(func, out, in, nbins, minval, maxval);
 
     return out;
 }

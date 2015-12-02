@@ -13,13 +13,17 @@
 #include <Array.hpp>
 #include <identity.hpp>
 #include <math.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 namespace cpu
 {
-    template<typename T>
-    Array<T> identity(const dim4& dims)
-    {
-        Array<T> out = createEmptyArray<T>(dims);
+template<typename T>
+Array<T> identity(const dim4& dims)
+{
+    Array<T> out = createEmptyArray<T>(dims);
+
+    auto func = [=] (Array<T> out) {
         T *ptr = out.get();
         const dim_t *out_dims  = out.dims().get();
 
@@ -31,23 +35,25 @@ namespace cpu
             }
             ptr += out_dims[0] * out_dims[1];
         }
-        return out;
-    }
+    };
+    getQueue().enqueue(func, out);
+
+    return out;
+}
 
 #define INSTANTIATE_IDENTITY(T)                              \
     template Array<T>  identity<T>    (const af::dim4 &dims);
 
-    INSTANTIATE_IDENTITY(float)
-    INSTANTIATE_IDENTITY(double)
-    INSTANTIATE_IDENTITY(cfloat)
-    INSTANTIATE_IDENTITY(cdouble)
-    INSTANTIATE_IDENTITY(int)
-    INSTANTIATE_IDENTITY(uint)
-    INSTANTIATE_IDENTITY(intl)
-    INSTANTIATE_IDENTITY(uintl)
-    INSTANTIATE_IDENTITY(char)
-    INSTANTIATE_IDENTITY(uchar)
-    INSTANTIATE_IDENTITY(short)
-    INSTANTIATE_IDENTITY(ushort)
-
+INSTANTIATE_IDENTITY(float)
+INSTANTIATE_IDENTITY(double)
+INSTANTIATE_IDENTITY(cfloat)
+INSTANTIATE_IDENTITY(cdouble)
+INSTANTIATE_IDENTITY(int)
+INSTANTIATE_IDENTITY(uint)
+INSTANTIATE_IDENTITY(intl)
+INSTANTIATE_IDENTITY(uintl)
+INSTANTIATE_IDENTITY(char)
+INSTANTIATE_IDENTITY(uchar)
+INSTANTIATE_IDENTITY(short)
+INSTANTIATE_IDENTITY(ushort)
 }
