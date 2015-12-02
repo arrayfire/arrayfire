@@ -968,6 +968,7 @@ namespace cpu
                        const float img_scale, const float feature_ratio,
                        const bool compute_GLOH)
     {
+        in.eval();
         af::dim4 idims = in.dims();
 
         const unsigned min_dim = (double_input) ? min(idims[0]*2, idims[1]*2)
