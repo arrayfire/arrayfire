@@ -96,13 +96,13 @@ the appropriate header.
 The first thing these headers allow us to do are to get and set the active device
 using native CUDA device ids. This is achieved through the following functions:
 > **static int getNativeId (int id)** 
-> -- Get the native device id of the CUDA device with id in the ArrayFire context.
+> -- Get the native device id of the CUDA device with **id** in the ArrayFire context.
 
 > **static void setNativeId (int nativeId)**  
-> -- Set the CUDA device with given native id as the active device for ArrayFire.
+> -- Set the CUDA device with given native **id** as the active device for ArrayFire.
 The headers also allow us to retrieve the CUDA stream used internally inside Arrayfire.
 > **static cudaStream_t afcu::getStream(int id)**  
-> -- Get the stream for the CUDA device with id in ArrayFire context.
+> -- Get the stream for the CUDA device with **id** in ArrayFire context.
 These functions are available within the afcu:: namespace and equal C variants 
 can be fund in the full [cuda interop documentation.](\ref cuda_mat.htm)
 

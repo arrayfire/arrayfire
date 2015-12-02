@@ -172,7 +172,8 @@ void simple_kernel(__global float *d_y,
 
 Unfortunately, Arrayfire's interoperability functions don't yet allow us to work with
 external OpenCL contexts. This is currently an open issue and can be tracked here:
-https://github.com/arrayfire/arrayfire/issues/1002
+https://github.com/arrayfire/arrayfire/issues/1002.
+
 Once the issue is addressed, it will be possible to take the reverse route and start with
 completely custom OpenCL code, then transfer our results into af::array objects.
 
