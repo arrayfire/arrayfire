@@ -301,17 +301,26 @@ void generate(T *one, T *two, threefry2_ctr_t *c, threefry2_key_t k)
 }
 #endif
 
-__kernel void random_threefry(__global T *output, unsigned numel,
+struct philox_32_4_key_t
+{
+    uint_t v[2];
+};
+
+struct philox_32_4_ctr_t
+{
+    uint_t v[4];
+};
+
+__kernel void random_philox(__global T *output, unsigned numel,
                     unsigned counter, unsigned lo, unsigned hi)
 {
     unsigned gid = get_group_id(0);
     unsigned off = get_local_size(0);
     unsigned tid =  off * gid * repeat + get_local_id(0);
 
-    threefry2_key_t k = {{tid, lo}};
-    threefry2_ctr_t c = {{counter, hi}};
-
-    T one, two;
+    uint one, two, three, four;
+    philox_32_4_key_t k{{tid, hi}};
+    philox_32_4_ctr_t c{{index, lo, gid^tid, counter}};
 
     if (gid < get_num_groups(0) - 1) {
         for(int i = 0; i < repeat; i+=2) {

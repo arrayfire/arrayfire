@@ -21,14 +21,16 @@ namespace opencl
     template<typename T>
     Array<T> randu(const af::dim4 &dims, const af::randomType &rtype)
     {
+        /*
         switch (rtype)  {
             case AF_RANDOM_PHILOX:
                 OPENCL_NOT_SUPPORTED();
                 break;
         }
+        */
         verifyDoubleSupport<T>();
         Array<T> out = createEmptyArray<T>(dims);
-        kernel::random<T, true>(*out.get(), out.elements());
+        kernel::random<T, true>(*out.get(), out.elements(), rtype);
         return out;
     }
 

@@ -269,43 +269,17 @@ namespace kernel
     __device__ static void writeOut(char *out, const unsigned &index,
             const PhiloxCounter<uint, 4> &counter)
     {
-        out[index]                  = (counter.v[0]&0x00000001)? 1:0;
-        out[index + blockDim.x]     = (counter.v[0]&0x00000010)? 1:0;
-        out[index + 2*blockDim.x]   = (counter.v[0]&0x00000100)? 1:0;
-        out[index + 3*blockDim.x]   = (counter.v[0]&0x00001000)? 1:0;
-        out[index + 4*blockDim.x]   = (counter.v[1]&0x00000001)? 1:0;
-        out[index + 5*blockDim.x]   = (counter.v[1]&0x00000010)? 1:0;
-        out[index + 6*blockDim.x]   = (counter.v[1]&0x00000100)? 1:0;
-        out[index + 7*blockDim.x]   = (counter.v[1]&0x00001000)? 1:0;
-        out[index + 8*blockDim.x]   = (counter.v[2]&0x00000001)? 1:0;
-        out[index + 9*blockDim.x]   = (counter.v[2]&0x00000010)? 1:0;
-        out[index + 10*blockDim.x]  = (counter.v[2]&0x00000100)? 1:0;
-        out[index + 11*blockDim.x]  = (counter.v[2]&0x00001000)? 1:0;
-        out[index + 12*blockDim.x]  = (counter.v[3]&0x00000001)? 1:0;
-        out[index + 13*blockDim.x]  = (counter.v[3]&0x00000010)? 1:0;
-        out[index + 14*blockDim.x]  = (counter.v[3]&0x00000100)? 1:0;
-        out[index + 15*blockDim.x]  = (counter.v[3]&0x00001000)? 1:0;
+        for (unsigned tid = index, i = 0; (i < 16); tid += blockDim.x, ++i) {
+            out[tid] = (counter.v[i>>2] & (1 << (i & 3)))? 1:0;
+        }
     }
 
     __device__ static void writeOut(uchar *out, const unsigned &index,
             const PhiloxCounter<uint, 4> &counter)
     {
-        out[index]                  = (counter.v[0]&0x00000011);
-        out[index + blockDim.x]     = (counter.v[0]&0x00001100)>>2;
-        out[index + 2*blockDim.x]   = (counter.v[0]&0x00110000)>>4;
-        out[index + 3*blockDim.x]   = (counter.v[0]&0x11000000)>>6;
-        out[index + 4*blockDim.x]   = (counter.v[1]&0x00000011);
-        out[index + 5*blockDim.x]   = (counter.v[1]&0x00001100)>>2;
-        out[index + 6*blockDim.x]   = (counter.v[1]&0x00110000)>>4;
-        out[index + 7*blockDim.x]   = (counter.v[1]&0x11000000)>>6;
-        out[index + 8*blockDim.x]   = (counter.v[2]&0x00000011);
-        out[index + 9*blockDim.x]   = (counter.v[2]&0x00001100)>>2;
-        out[index + 10*blockDim.x]  = (counter.v[2]&0x00110000)>>4;
-        out[index + 11*blockDim.x]  = (counter.v[2]&0x11000000)>>6;
-        out[index + 12*blockDim.x]  = (counter.v[3]&0x00000011);
-        out[index + 13*blockDim.x]  = (counter.v[3]&0x00001100)>>2;
-        out[index + 14*blockDim.x]  = (counter.v[3]&0x00110000)>>4;
-        out[index + 15*blockDim.x]  = (counter.v[3]&0x11000000)>>6;
+        for (unsigned tid = index, i = 0; (i < 16); tid += blockDim.x, ++i) {
+            out[tid] = (counter.v[i>>2] >> ((i & 3) << 1)) & 3;
+        }
     }
 
 #define writeOutPartial16(T)                                                                                \
@@ -387,43 +361,17 @@ namespace kernel
     __device__ static void writeOutPartial(char *out, const unsigned &index,
             const size_t &elements, const PhiloxCounter<uint, 4> &counter)
     {
-        if (index                   < elements) {out[index]                  = (counter.v[0]&0x00000001)? 1:0;}
-        if (index + blockDim.x      < elements) {out[index + blockDim.x]     = (counter.v[0]&0x00000010)? 1:0;}
-        if (index + 2*blockDim.x    < elements) {out[index + 2*blockDim.x]   = (counter.v[0]&0x00000100)? 1:0;}
-        if (index + 3*blockDim.x    < elements) {out[index + 3*blockDim.x]   = (counter.v[0]&0x00001000)? 1:0;}
-        if (index + 4*blockDim.x    < elements) {out[index + 4*blockDim.x]   = (counter.v[1]&0x00000001)? 1:0;}
-        if (index + 5*blockDim.x    < elements) {out[index + 5*blockDim.x]   = (counter.v[1]&0x00000010)? 1:0;}
-        if (index + 6*blockDim.x    < elements) {out[index + 6*blockDim.x]   = (counter.v[1]&0x00000100)? 1:0;}
-        if (index + 7*blockDim.x    < elements) {out[index + 7*blockDim.x]   = (counter.v[1]&0x00001000)? 1:0;}
-        if (index + 8*blockDim.x    < elements) {out[index + 8*blockDim.x]   = (counter.v[2]&0x00000001)? 1:0;}
-        if (index + 9*blockDim.x    < elements) {out[index + 9*blockDim.x]   = (counter.v[2]&0x00000010)? 1:0;}
-        if (index + 10*blockDim.x   < elements) {out[index + 10*blockDim.x]  = (counter.v[2]&0x00000100)? 1:0;}
-        if (index + 11*blockDim.x   < elements) {out[index + 11*blockDim.x]  = (counter.v[2]&0x00001000)? 1:0;}
-        if (index + 12*blockDim.x   < elements) {out[index + 12*blockDim.x]  = (counter.v[3]&0x00000001)? 1:0;}
-        if (index + 13*blockDim.x   < elements) {out[index + 13*blockDim.x]  = (counter.v[3]&0x00000010)? 1:0;}
-        if (index + 14*blockDim.x   < elements) {out[index + 14*blockDim.x]  = (counter.v[3]&0x00000100)? 1:0;}
-        if (index + 15*blockDim.x   < elements) {out[index + 15*blockDim.x]  = (counter.v[3]&0x00001000)? 1:0;}
+        for (unsigned tid = index, i = 0; (i < 16) && (tid < elements); tid += blockDim.x, ++i) {
+            out[tid] = (counter.v[i>>2] & (1 << (i & 3)))? 1:0;
+        }
     }
 
     __device__ static void writeOutPartial(uchar *out, const unsigned &index,
             const size_t &elements, const PhiloxCounter<uint, 4> &counter)
     {
-        if (index                   < elements) {out[index]                  = (counter.v[0]&0x00000011);   }
-        if (index + blockDim.x      < elements) {out[index + blockDim.x]     = (counter.v[0]&0x00001100)>>2;}
-        if (index + 2*blockDim.x    < elements) {out[index + 2*blockDim.x]   = (counter.v[0]&0x00110000)>>4;}
-        if (index + 3*blockDim.x    < elements) {out[index + 3*blockDim.x]   = (counter.v[0]&0x11000000)>>6;}
-        if (index + 4*blockDim.x    < elements) {out[index + 4*blockDim.x]   = (counter.v[1]&0x00000011);   }
-        if (index + 5*blockDim.x    < elements) {out[index + 5*blockDim.x]   = (counter.v[1]&0x00001100)>>2;}
-        if (index + 6*blockDim.x    < elements) {out[index + 6*blockDim.x]   = (counter.v[1]&0x00110000)>>4;}
-        if (index + 7*blockDim.x    < elements) {out[index + 7*blockDim.x]   = (counter.v[1]&0x11000000)>>6;}
-        if (index + 8*blockDim.x    < elements) {out[index + 8*blockDim.x]   = (counter.v[2]&0x00000011);   }
-        if (index + 9*blockDim.x    < elements) {out[index + 9*blockDim.x]   = (counter.v[2]&0x00001100)>>2;}
-        if (index + 10*blockDim.x   < elements) {out[index + 10*blockDim.x]  = (counter.v[2]&0x00110000)>>4;}
-        if (index + 11*blockDim.x   < elements) {out[index + 11*blockDim.x]  = (counter.v[2]&0x11000000)>>6;}
-        if (index + 12*blockDim.x   < elements) {out[index + 12*blockDim.x]  = (counter.v[3]&0x00000011);   }
-        if (index + 13*blockDim.x   < elements) {out[index + 13*blockDim.x]  = (counter.v[3]&0x00001100)>>2;}
-        if (index + 14*blockDim.x   < elements) {out[index + 14*blockDim.x]  = (counter.v[3]&0x00110000)>>4;}
-        if (index + 15*blockDim.x   < elements) {out[index + 15*blockDim.x]  = (counter.v[3]&0x11000000)>>6;}
+        for (unsigned tid = index, i = 0; (i < 16) && (tid < elements); tid += blockDim.x, ++i) {
+            out[tid] = (counter.v[i>>2] >> ((i & 3) << 1)) & 3;
+        }
     }
 
     template<typename T>

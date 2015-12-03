@@ -11,7 +11,8 @@
 
 #include <platform.hpp>
 #include <af/defines.h>
-#include <kernel_headers/random.hpp>
+#include <kernel_headers/random_philox.hpp>
+#include <kernel_headers/random_threefry.hpp>
 #include <traits.hpp>
 #include <sstream>
 #include <string>
@@ -89,8 +90,12 @@ namespace opencl
         template<> STATIC_ bool isDouble<double>() { return true; }
         template<> STATIC_ bool isDouble<cdouble>() { return true; }
 
+        //random -> random_threefry
+        // void random(cl::Buffer out, int elements, //randomtype)
+        // copy
+        //
         template<typename T, bool isRandu>
-        void random(cl::Buffer out, int elements)
+        void random_threefry(cl::Buffer out, int elements)
         {
             try {
                 static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
@@ -124,7 +129,7 @@ namespace opencl
                         cl::Program prog;
                         buildProgram(prog, random_cl, random_cl_len, options.str());
                         ranProgs[device] = new Program(prog);
-                        ranKernels[device] = new Kernel(*ranProgs[device], "random");
+                        ranKernels[device] = new Kernel(*ranProgs[device], "random_threefry");
                     });
 
                 auto randomOp = make_kernel<cl::Buffer, uint, uint, uint, uint>(*ranKernels[device]);
@@ -140,6 +145,77 @@ namespace opencl
                 CL_DEBUG_FINISH(getQueue());
             } catch(cl::Error ex) {
                 CL_TO_AF_ERROR(ex);
+            }
+        }
+
+        template<typename T, bool isRandu>
+        void random_philox(cl::Buffer out, int elements)
+        {
+            try {
+                static std::once_flag compileFlags[DeviceManager::MAX_DEVICES];
+                static std::map<int, Program*>  ranProgs;
+                static std::map<int, Kernel*>   ranKernels;
+
+                int device = getActiveDeviceId();
+
+                std::call_once( compileFlags[device], [device] () {
+                        Program::Sources setSrc;
+                        setSrc.emplace_back(random_cl, random_cl_len);
+
+                        std::ostringstream options;
+                        options << " -D T=" << dtype_traits<T>::getName()
+                                << " -D repeat="<< REPEAT
+#if defined(OS_MAC) // Because apple is "special"
+                                << " -D IS_APPLE"
+                                << " -D log10_val=" << std::log(10.0)
+#endif
+                                << " -D " << random_name<T, isRandu>().name();
+
+                        if (std::is_same<T, double>::value) {
+                            options << " -D USE_DOUBLE";
+                            options << " -D IS_64";
+                        }
+
+                        if (std::is_same<T, char>::value) {
+                            options << " -D IS_BOOL";
+                        }
+
+                        cl::Program prog;
+                        buildProgram(prog, random_cl, random_cl_len, options.str());
+                        ranProgs[device] = new Program(prog);
+                        ranKernels[device] = new Kernel(*ranProgs[device], "random_philox");
+                    });
+
+                auto randomOp = make_kernel<cl::Buffer, uint, uint, uint, uint>(*ranKernels[device]);
+
+                uint groups = divup(elements, THREADS * REPEAT);
+                counter += divup(elements, THREADS * groups);
+
+                NDRange local(THREADS, 1);
+                NDRange global(THREADS * groups, 1);
+
+                randomOp(EnqueueArgs(getQueue(), global, local),
+                         out, elements, counter, random_seed[0], random_seed[1]);
+                CL_DEBUG_FINISH(getQueue());
+            } catch(cl::Error ex) {
+                CL_TO_AF_ERROR(ex);
+            }
+        }
+
+        template<typename T, bool isRandu>
+        void random(cl::Buffer out, int elements, const af::randomType &rtype)
+        {
+            switch(rtype) {
+                case AF_RANDOM_DEFAULT:
+                    {
+                        random_threefry(out, elements);
+                        break;
+                    }
+                case AF_RANDOM_PHILOX:
+                    {
+                        random_philox(out, elements);
+                        break;
+                    }
             }
         }
     }
