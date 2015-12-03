@@ -18,6 +18,31 @@ SET(SNIPPETS_DIR "${CMAKE_SOURCE_DIR}/test")
 CONFIGURE_FILE(${AF_DOCS_CONFIG} ${AF_DOCS_CONFIG_OUT})
 CONFIGURE_FILE(${AF_DOCS_LAYOUT} ${AF_DOCS_LAYOUT_OUT})
 
+###########################################################
+## This generates a list of the examples cpp files and
+## creates a dox file under docs/details/examples.dox
+## This is used to generate documentation for examples
+###########################################################
+FILE(GLOB EXAMPLES_CPP
+    "${EXAMPLES_DIR}/*/*.cpp")
+
+# Sort alphabetically
+# Note: example directories will be major sort order
+LIST(SORT EXAMPLES_CPP)
+
+# Get filenames and write to a string
+FOREACH(SRC ${EXAMPLES_CPP})
+    GET_FILENAME_COMPONENT(SRC_NAME ${SRC} NAME)
+    SET(EXAMPLES_LIST "${EXAMPLES_LIST}\\example ${SRC_NAME}\n")
+ENDFOREACH(SRC ${EXAMPLES_CPP})
+
+# Write string containing file names to examples.dox
+CONFIGURE_FILE(
+    ${CMAKE_MODULE_PATH}/examples.dox.in
+    ${DOCS_DIR}/details/examples.dox
+)
+###########################################################
+
 ADD_CUSTOM_TARGET(docs
     ALL
     COMMAND ${DOXYGEN_EXECUTABLE} ${AF_DOCS_CONFIG_OUT}
