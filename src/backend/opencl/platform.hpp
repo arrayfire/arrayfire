@@ -70,8 +70,6 @@ class DeviceManager
         std::vector<cl::CommandQueue*>  mQueues;
         std::vector<cl::Device*>       mDevices;
         std::vector<cl::Context*>     mContexts;
-        std::vector<cl::Platform*>   mPlatforms;
-        std::vector<unsigned>       mCtxOffsets;
         std::vector<bool>        mIsGLSharingOn;
 
         unsigned mActiveCtxId;

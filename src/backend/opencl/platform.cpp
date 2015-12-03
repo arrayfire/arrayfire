@@ -98,7 +98,6 @@ DeviceManager::~DeviceManager()
     for (auto q: mQueues) delete q;
     for (auto d : mDevices) delete d;
     for (auto c : mContexts) delete c;
-    for (auto p : mPlatforms) delete p;
 #endif
 }
 
@@ -122,9 +121,6 @@ DeviceManager::DeviceManager()
             CL_DEVICE_TYPE_CPU
 #endif
         };
-
-        for (auto &platform : platforms)
-            mPlatforms.push_back(new Platform(platform));
 
         unsigned nDevices = 0;
         for (auto devType : DEVC_TYPES) {
@@ -150,7 +146,6 @@ DeviceManager::DeviceManager()
                     mDevices.push_back(new Device(dev));
                     mContexts.push_back(ctx);
                     mQueues.push_back(cq);
-                    mCtxOffsets.push_back(nDevices);
                     mIsGLSharingOn.push_back(false);
                 }
             }
