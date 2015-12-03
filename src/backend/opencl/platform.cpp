@@ -108,7 +108,7 @@ void DeviceManager::setContext(int device)
 }
 
 DeviceManager::DeviceManager()
-    : mActiveCtxId(0), mActiveQId(0)
+    : mUserDeviceOffset(0), mActiveCtxId(0), mActiveQId(0)
 {
     try {
         std::vector<cl::Platform>   platforms;
@@ -181,6 +181,7 @@ DeviceManager::DeviceManager()
         }
     }
 #endif
+    mUserDeviceOffset = mDevices.size();
 }
 
 
@@ -472,6 +473,88 @@ void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHa
 }
 #endif
 
+void pushDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que)
+{
+    try {
+        DeviceManager& devMngr   = DeviceManager::getInstance();
+        cl::Device* tDevice      = new cl::Device(dev);
+        cl::Context* tContext    = new cl::Context(ctx);
+        cl::CommandQueue* tQueue = (que==NULL ?
+                new cl::CommandQueue(*tContext, *tDevice) : new cl::CommandQueue(que));
+        devMngr.mDevices.push_back(tDevice);
+        devMngr.mContexts.push_back(tContext);
+        devMngr.mQueues.push_back(tQueue);
+        // FIXME: add OpenGL Interop for user provided contexts later
+        devMngr.mIsGLSharingOn.push_back(false);
+    } catch (const cl::Error &ex) {
+        CL_TO_AF_ERROR(ex);
+    }
+}
+
+void setDeviceContext(cl_device_id dev, cl_context ctx)
+{
+    // FIXME: add OpenGL Interop for user provided contexts later
+    try {
+        DeviceManager& devMngr = DeviceManager::getInstance();
+        const int dCount = devMngr.mDevices.size();
+        for (int i=0; i<dCount; ++i) {
+            if(devMngr.mDevices[i]->operator()()==dev &&
+                    devMngr.mContexts[i]->operator()()==ctx) {
+                setDevice(i);
+                return;
+            }
+        }
+    } catch (const cl::Error &ex) {
+        CL_TO_AF_ERROR(ex);
+    }
+    AF_ERROR("No matching device found", AF_ERR_ARG);
+}
+
+void popDeviceContext(cl_device_id dev, cl_context ctx)
+{
+    try {
+        if (getDevice()() == dev && getContext()()==ctx) {
+            AF_ERROR("Cannot pop the device currently in use", AF_ERR_ARG);
+        }
+
+        DeviceManager& devMngr = DeviceManager::getInstance();
+        const int dCount = devMngr.mDevices.size();
+        int deleteIdx = -1;
+        for (int i = 0; i<dCount; ++i) {
+            if(devMngr.mDevices[i]->operator()()==dev &&
+                    devMngr.mContexts[i]->operator()()==ctx) {
+                deleteIdx = i;
+                break;
+            }
+        }
+        if (deleteIdx < (int)devMngr.mUserDeviceOffset) {
+            AF_ERROR("Cannot pop ArrayFire internal devices", AF_ERR_ARG);
+        } else if (deleteIdx == -1) {
+            AF_ERROR("No matching device found", AF_ERR_ARG);
+        } else {
+            // FIXME: this case can potentially cause issues due to the
+            // modification of the device pool stl containers.
+
+            // IF the current active device is enumerated at a position
+            // that lies ahead of the device that has been requested
+            // to be removed. We just pop the entries from pool since it
+            // has no side effects.
+            devMngr.mDevices.erase(devMngr.mDevices.begin()+deleteIdx);
+            devMngr.mContexts.erase(devMngr.mContexts.begin()+deleteIdx);
+            devMngr.mQueues.erase(devMngr.mQueues.begin()+deleteIdx);
+            // FIXME: add OpenGL Interop for user provided contexts later
+            devMngr.mIsGLSharingOn.erase(devMngr.mIsGLSharingOn.begin()+deleteIdx);
+            // OTHERWISE, update(decrement) the `mActive*Id` variables
+            if (deleteIdx < (int)devMngr.mActiveCtxId) {
+                --devMngr.mActiveCtxId;
+                --devMngr.mActiveQId;
+            }
+        }
+    } catch (const cl::Error &ex) {
+        CL_TO_AF_ERROR(ex);
+    }
+}
+
 }
 
 using namespace opencl;
@@ -500,5 +583,23 @@ af_err afcl_get_device_id(cl_device_id *id)
 af_err afcl_set_device_id(cl_device_id id)
 {
     setDevice(getDeviceIdFromNativeId(id));
+    return AF_SUCCESS;
+}
+
+af_err afcl_push_device_context(cl_device_id dev, cl_context ctx, cl_command_queue que)
+{
+    pushDeviceContext(dev, ctx, que);
+    return AF_SUCCESS;
+}
+
+af_err afcl_set_device_context(cl_device_id dev, cl_context ctx)
+{
+    setDeviceContext(dev, ctx);
+    return AF_SUCCESS;
+}
+
+af_err afcl_pop_device_context(cl_device_id dev, cl_context ctx)
+{
+    popDeviceContext(dev, ctx);
     return AF_SUCCESS;
 }

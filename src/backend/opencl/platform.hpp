@@ -43,8 +43,14 @@ class DeviceManager
 
     friend int setDevice(int device);
 
+    friend void pushDeviceContext(cl_device_id dev, cl_context cxt, cl_command_queue que);
+
+    friend void setDeviceContext(cl_device_id dev, cl_context cxt);
+
+    friend void popDeviceContext(cl_device_id dev, cl_context ctx);
+
     public:
-        static const unsigned MAX_DEVICES = 16;
+        static const unsigned MAX_DEVICES = 32;
 
         static DeviceManager& getInstance();
 
@@ -67,10 +73,11 @@ class DeviceManager
 
     private:
         // Attributes
-        std::vector<cl::CommandQueue*>  mQueues;
         std::vector<cl::Device*>       mDevices;
         std::vector<cl::Context*>     mContexts;
+        std::vector<cl::CommandQueue*>  mQueues;
         std::vector<bool>        mIsGLSharingOn;
+        unsigned mUserDeviceOffset;
 
         unsigned mActiveCtxId;
         unsigned mActiveQId;
@@ -99,6 +106,12 @@ void devprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 std::string getPlatformName(const cl::Device &device);
 
 int setDevice(int device);
+
+void pushDeviceContext(cl_device_id dev, cl_context cxt, cl_command_queue que);
+
+void setDeviceContext(cl_device_id dev, cl_context cxt);
+
+void popDeviceContext(cl_device_id dev, cl_context ctx);
 
 void sync(int device);
 
