@@ -94,10 +94,10 @@ Documentation Updates
 New Examples
 ------------
 * Graphics
-    * [Plot3](\ref plot3.cpp)
-    * [Surface](\ref surface.cpp)
-* [Shallow Water Equation](\ref swe.cpp)
-* [Basic](\ref basic.cpp) as a Unified backend example
+    * [Plot3](\ref graphics/plot3.cpp)
+    * [Surface](\ref graphics/surface.cpp)
+* [Shallow Water Equation](\ref pde/swe.cpp)
+* [Basic](\ref unified/basic.cpp) as a Unified backend example
 
 Installers
 -----------
@@ -171,12 +171,12 @@ Build
 ------
 
 * `cmake` now includes `PKG_CONFIG` in the search path for CBLAS and LAPACKE libraries
-* [heston_model.cpp](\ref heston_model.cpp) example now builds with the default ArrayFire cmake files after installation
+* [heston_model.cpp](\ref financial/heston_model.cpp) example now builds with the default ArrayFire cmake files after installation
 
 Other
 ------
 
-* Fixed bug in [image_editing.cpp](\ref image_editing.cpp)
+* Fixed bug in [image_editing.cpp](\ref image_processing/image_editing.cpp)
 
 v3.1.0
 ==============
