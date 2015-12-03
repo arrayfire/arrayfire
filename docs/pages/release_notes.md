@@ -23,7 +23,7 @@ Bug Fixes
 
 Build
 ------
-* Tests can now be used as a [standlone project](https://github.com/arrayfire/arrayfire/pull/1120)
+* Tests can now be used as a [standalone project](https://github.com/arrayfire/arrayfire/pull/1120)
     * Tests can now be built using pre-compiled libraries
     * Similar to how the examples are built
 * The install target now installs the examples source irrespective of the
