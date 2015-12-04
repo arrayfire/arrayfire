@@ -60,5 +60,5 @@ int main() {
 
 This produces:
 
-	pi_function took 0.007252 seconds
-	(test machine: Core i7 920 @ 2.67GHz with a Tesla C2070)
+    pi_function took 0.007252 seconds
+    (test machine: Core i7 920 @ 2.67GHz with a Tesla C2070)
