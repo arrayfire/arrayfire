@@ -80,7 +80,7 @@ AFAPI af_err afcl_set_device_id(cl_device_id id);
    that are defined in the `cl.hpp` OpenCL c++ header provided by Khronos Group Inc. Therefore, please
    be aware of the lifetime of the cl_* objects before passing them to ArrayFire.
 */
-AFAPI af_err afcl_push_device_context(cl_device_id dev, cl_context ctx, cl_command_queue que);
+AFAPI af_err afcl_add_device_context(cl_device_id dev, cl_context ctx, cl_command_queue que);
 #endif
 
 #if AF_API_VERSION >= 33
@@ -107,7 +107,7 @@ AFAPI af_err afcl_set_device_context(cl_device_id dev, cl_context ctx);
    by this func call and you won't be able to call `afcl_set_device_context` on these objects after
    this function has been called.
 */
-AFAPI af_err afcl_pop_device_context(cl_device_id dev, cl_context ctx);
+AFAPI af_err afcl_delete_device_context(cl_device_id dev, cl_context ctx);
 #endif
 
 /**
@@ -211,9 +211,9 @@ namespace afcl
    that are defined in the `cl.hpp` OpenCL c++ header provided by Khronos Group Inc. Therefore, please
    be aware of the lifetime of the cl_* objects before passing them to ArrayFire.
 */
-static inline void pushDevice(cl_device_id dev, cl_context ctx, cl_command_queue que)
+static inline void addDevice(cl_device_id dev, cl_context ctx, cl_command_queue que)
 {
-    af_err err = afcl_push_device_context(dev, ctx, que);
+    af_err err = afcl_add_device_context(dev, ctx, que);
     if (err!=AF_SUCCESS) throw af::exception("Failed to push user provided device/context to ArrayFire pool");
 }
 #endif
@@ -246,9 +246,9 @@ static inline void setDevice(cl_device_id dev, cl_context ctx)
    by this func call and you won't be able to call `afcl_set_device_context` on these objects after
    this function has been called.
 */
-static inline void popDevice(cl_device_id dev, cl_context ctx)
+static inline void deleteDevice(cl_device_id dev, cl_context ctx)
 {
-    af_err err = afcl_pop_device_context(dev, ctx);
+    af_err err = afcl_delete_device_context(dev, ctx);
     if (err!=AF_SUCCESS) throw af::exception("Failed to remove the requested device from ArrayFire device pool");
 }
 #endif

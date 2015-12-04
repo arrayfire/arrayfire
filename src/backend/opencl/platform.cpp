@@ -473,7 +473,7 @@ void DeviceManager::markDeviceForInterop(const int device, const fg::Window* wHa
 }
 #endif
 
-void pushDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que)
+void addDeviceContext(cl_device_id dev, cl_context ctx, cl_command_queue que)
 {
     try {
         DeviceManager& devMngr   = DeviceManager::getInstance();
@@ -510,7 +510,7 @@ void setDeviceContext(cl_device_id dev, cl_context ctx)
     AF_ERROR("No matching device found", AF_ERR_ARG);
 }
 
-void popDeviceContext(cl_device_id dev, cl_context ctx)
+void removeDeviceContext(cl_device_id dev, cl_context ctx)
 {
     try {
         if (getDevice()() == dev && getContext()()==ctx) {
@@ -586,9 +586,9 @@ af_err afcl_set_device_id(cl_device_id id)
     return AF_SUCCESS;
 }
 
-af_err afcl_push_device_context(cl_device_id dev, cl_context ctx, cl_command_queue que)
+af_err afcl_add_device_context(cl_device_id dev, cl_context ctx, cl_command_queue que)
 {
-    pushDeviceContext(dev, ctx, que);
+    addDeviceContext(dev, ctx, que);
     return AF_SUCCESS;
 }
 
@@ -598,8 +598,8 @@ af_err afcl_set_device_context(cl_device_id dev, cl_context ctx)
     return AF_SUCCESS;
 }
 
-af_err afcl_pop_device_context(cl_device_id dev, cl_context ctx)
+af_err afcl_delete_device_context(cl_device_id dev, cl_context ctx)
 {
-    popDeviceContext(dev, ctx);
+    removeDeviceContext(dev, ctx);
     return AF_SUCCESS;
 }

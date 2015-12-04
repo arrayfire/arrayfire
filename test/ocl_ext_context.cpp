@@ -61,11 +61,11 @@ TEST(OCLExtContext, push)
 
     getExternals(deviceId, context, queue);
     int dCount = af::getDeviceCount();
-    printf("%d devices before afcl::pushDevice\n", dCount);
+    printf("%d devices before afcl::addDevice\n", dCount);
     af::info();
-    afcl::pushDevice(deviceId, context, queue);
+    afcl::addDevice(deviceId, context, queue);
     ASSERT_EQ(true, dCount+1==af::getDeviceCount());
-    printf("%d devices after afcl::pushDevice\n", af::getDeviceCount());
+    printf("%d devices after afcl::addDevice\n", af::getDeviceCount());
     af::info();
 }
 
@@ -97,12 +97,12 @@ TEST(OCLExtContext, pop)
 
     getExternals(deviceId, context, queue);
     int dCount = af::getDeviceCount();
-    printf("%d devices before afcl::popDevice\n", dCount);
+    printf("%d devices before afcl::deleteDevice\n", dCount);
     af::setDevice(0);
     af::info();
-    afcl::popDevice(deviceId, context);
+    afcl::deleteDevice(deviceId, context);
     ASSERT_EQ(true, dCount-1==af::getDeviceCount());
-    printf("%d devices after afcl::popDevice\n", af::getDeviceCount());
+    printf("%d devices after afcl::deleteDevice\n", af::getDeviceCount());
     af::info();
 }
 #else

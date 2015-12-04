@@ -43,11 +43,11 @@ class DeviceManager
 
     friend int setDevice(int device);
 
-    friend void pushDeviceContext(cl_device_id dev, cl_context cxt, cl_command_queue que);
+    friend void addDeviceContext(cl_device_id dev, cl_context cxt, cl_command_queue que);
 
     friend void setDeviceContext(cl_device_id dev, cl_context cxt);
 
-    friend void popDeviceContext(cl_device_id dev, cl_context ctx);
+    friend void removeDeviceContext(cl_device_id dev, cl_context ctx);
 
     public:
         static const unsigned MAX_DEVICES = 32;
@@ -107,11 +107,11 @@ std::string getPlatformName(const cl::Device &device);
 
 int setDevice(int device);
 
-void pushDeviceContext(cl_device_id dev, cl_context cxt, cl_command_queue que);
+void addDeviceContext(cl_device_id dev, cl_context cxt, cl_command_queue que);
 
 void setDeviceContext(cl_device_id dev, cl_context cxt);
 
-void popDeviceContext(cl_device_id dev, cl_context ctx);
+void removeDeviceContext(cl_device_id dev, cl_context ctx);
 
 void sync(int device);
 
