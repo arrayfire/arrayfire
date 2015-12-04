@@ -79,7 +79,7 @@ backend libraries loaded successfully), call the af::getBackendCount function.
 
 # Example
 
-This example is shortened form of [basic.cpp](\ref basic.cpp).
+This example is shortened form of [basic.cpp](\ref unified/basic.cpp).
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.c}
 #include <arrayfire.h>
