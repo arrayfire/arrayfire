@@ -216,7 +216,9 @@ static inline void pushDevice(cl_device_id dev, cl_context ctx, cl_command_queue
     af_err err = afcl_push_device_context(dev, ctx, que);
     if (err!=AF_SUCCESS) throw af::exception("Failed to push user provided device/context to ArrayFire pool");
 }
+#endif
 
+#if AF_API_VERSION >= 33
 /**
    Set active device using cl_context and cl_device_id
 
@@ -228,7 +230,9 @@ static inline void setDevice(cl_device_id dev, cl_context ctx)
     af_err err = afcl_set_device_context(dev, ctx);
     if (err!=AF_SUCCESS) throw af::exception("Failed to set device based on cl_device_id & cl_context");
 }
+#endif
 
+#if AF_API_VERSION >= 33
 /**
    Remove the user provided device control constructs from the ArrayFire device manager pool
 
