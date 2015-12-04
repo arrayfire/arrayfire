@@ -62,18 +62,16 @@ int homography(Array<T> &bestH,
     Array<float> rnd = arithOp<float, af_mul_t>(frnd, fctr, rdims);
 
     Array<T> tmpH = createValueArray<T>(af::dim4(9, iter_sz), (T)0);
-    Array<T> tmpA = createValueArray<T>(af::dim4(9, 9, iter_sz), (T)0);
-    Array<T> tmpV = createValueArray<T>(af::dim4(9, 9, iter_sz), (T)0);
 
     bestH = createValueArray<T>(af::dim4(3, 3), (T)0);
     switch (htype) {
     case AF_HOMOGRAPHY_RANSAC:
-        return kernel::computeH<T, AF_HOMOGRAPHY_RANSAC>(bestH, tmpH, tmpA, tmpV, err,
+        return kernel::computeH<T, AF_HOMOGRAPHY_RANSAC>(bestH, tmpH, err,
                                               x_src, y_src, x_dst, y_dst,
                                               rnd, iter, nsamples, inlier_thr);
         break;
     case AF_HOMOGRAPHY_LMEDS:
-        return kernel::computeH<T, AF_HOMOGRAPHY_LMEDS> (bestH, tmpH, tmpA, tmpV, err,
+        return kernel::computeH<T, AF_HOMOGRAPHY_LMEDS> (bestH, tmpH, err,
                                               x_src, y_src, x_dst, y_dst,
                                               rnd, iter, nsamples, inlier_thr);
         break;

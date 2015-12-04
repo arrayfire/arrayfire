@@ -10,6 +10,12 @@ p
     padding-left    :   10px;
 }
 
+p code
+{
+    font-weight     :   bold;
+    background-color:   #F7F7F7;
+}
+
 /* @group Heading Levels */
 /* Increase the size of the page title */
 .title

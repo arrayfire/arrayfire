@@ -12,9 +12,8 @@ inline T sq(T a)
     return a * a;
 }
 
-inline void jacobi_svd(__global T* S, __global T* V, int m, int n,
-                       __local T* l_acc1, __local T* l_acc2, __local T* l_S,
-                       __local T* l_V, __local T* l_d)
+inline void jacobi_svd(__local T* l_V, __local T* l_S, __local T* l_d,
+                       __local T* l_acc1, __local T* l_acc2, int m, int n)
 {
     const int iterations = 30;
 
@@ -22,12 +21,6 @@ inline void jacobi_svd(__global T* S, __global T* V, int m, int n,
     int bsz_x = get_local_size(0);
     int tid_y = get_local_id(1);
     int gid_y = get_global_id(1);
-
-    for (int k = 0; k <= 4; k++)
-        l_S[tid_y * 81 + k*bsz_x + tid_x] = S[gid_y * 81 + k*bsz_x + tid_x];
-    if (tid_x == 0)
-        l_S[tid_y * 81 + 80] = S[gid_y * 81 + 80];
-    barrier(CLK_LOCAL_MEM_FENCE);
 
     // Copy first 80 elements
     T t = l_S[tid_y*81 + tid_x];
@@ -145,12 +138,6 @@ inline void jacobi_svd(__global T* S, __global T* V, int m, int n,
         }
     }
     barrier(CLK_LOCAL_MEM_FENCE);
-
-    for (int i = 0; i <= 4; i++)
-        V[gid_y * 81 + tid_x+i*bsz_x] = l_V[tid_y * 81 + tid_x+i*bsz_x];
-    if (tid_x == 0)
-        V[gid_y * 81 + 80] = l_V[tid_y * 81 + 80];
-    barrier(CLK_LOCAL_MEM_FENCE);
 }
 
 inline int compute_mean_scale(
@@ -210,15 +197,11 @@ inline int compute_mean_scale(
     return !bad;
 }
 
-#define APTR(Z, Y, X) (A[(Z) * AInfo.dims[0] * AInfo.dims[1] + (Y) * AInfo.dims[0] + (X)])
+#define LSPTR(Z, Y, X) (l_S[(Z) * 81 + (Y) * 9 + (X)])
 
 __kernel void compute_homography(
     __global T* H,
     KParam HInfo,
-    __global T* A,
-    KParam AInfo,
-    __global T* V,
-    KParam VInfo,
     __global const float* x_src,
     __global const float* y_src,
     __global const float* x_dst,
@@ -228,6 +211,7 @@ __kernel void compute_homography(
     const unsigned iterations)
 {
     unsigned i = get_global_id(1);
+    unsigned tid_y = get_local_id(1);
 
     float x_src_mean, y_src_mean;
     float x_dst_mean, y_dst_mean;
@@ -242,28 +226,6 @@ __kernel void compute_homography(
                        x_src, y_src, x_dst, y_dst,
                        rnd, rInfo, i);
 
-    // Compute input matrix
-    for (unsigned j = get_local_id(0); j < 4; j+=get_local_size(0)) {
-        float srcx = (src_pt_x[j] - x_src_mean) * src_scale;
-        float srcy = (src_pt_y[j] - y_src_mean) * src_scale;
-        float dstx = (dst_pt_x[j] - x_dst_mean) * dst_scale;
-        float dsty = (dst_pt_y[j] - y_dst_mean) * dst_scale;
-
-        APTR(i, 3, j*2) = -srcx;
-        APTR(i, 4, j*2) = -srcy;
-        APTR(i, 5, j*2) = -1.0f;
-        APTR(i, 6, j*2) = dsty*srcx;
-        APTR(i, 7, j*2) = dsty*srcy;
-        APTR(i, 8, j*2) = dsty;
-
-        APTR(i, 0, j*2+1) = srcx;
-        APTR(i, 1, j*2+1) = srcy;
-        APTR(i, 2, j*2+1) = 1.0f;
-        APTR(i, 6, j*2+1) = -dstx*srcx;
-        APTR(i, 7, j*2+1) = -dstx*srcy;
-        APTR(i, 8, j*2+1) = -dstx;
-    }
-
     __local T l_acc1[256];
     __local T l_acc2[256];
 
@@ -271,11 +233,52 @@ __kernel void compute_homography(
     __local T l_V[16*81];
     __local T l_d[16*9];
 
-    jacobi_svd(A, V, 9, 9, l_acc1, l_acc2, l_S, l_V, l_d);
+    // Compute input matrix
+    for (unsigned j = get_local_id(0); j < 4; j+=get_local_size(0)) {
+        float srcx = (src_pt_x[j] - x_src_mean) * src_scale;
+        float srcy = (src_pt_y[j] - y_src_mean) * src_scale;
+        float dstx = (dst_pt_x[j] - x_dst_mean) * dst_scale;
+        float dsty = (dst_pt_y[j] - y_dst_mean) * dst_scale;
+
+        LSPTR(tid_y, 0, j*2) = 0.0f;
+        LSPTR(tid_y, 1, j*2) = 0.0f;
+        LSPTR(tid_y, 2, j*2) = 0.0f;
+        LSPTR(tid_y, 3, j*2) = -srcx;
+        LSPTR(tid_y, 4, j*2) = -srcy;
+        LSPTR(tid_y, 5, j*2) = -1.0f;
+        LSPTR(tid_y, 6, j*2) = dsty*srcx;
+        LSPTR(tid_y, 7, j*2) = dsty*srcy;
+        LSPTR(tid_y, 8, j*2) = dsty;
+
+        LSPTR(tid_y, 0, j*2+1) = srcx;
+        LSPTR(tid_y, 1, j*2+1) = srcy;
+        LSPTR(tid_y, 2, j*2+1) = 1.0f;
+        LSPTR(tid_y, 3, j*2+1) = 0.0f;
+        LSPTR(tid_y, 4, j*2+1) = 0.0f;
+        LSPTR(tid_y, 5, j*2+1) = 0.0f;
+        LSPTR(tid_y, 6, j*2+1) = -dstx*srcx;
+        LSPTR(tid_y, 7, j*2+1) = -dstx*srcy;
+        LSPTR(tid_y, 8, j*2+1) = -dstx;
+
+        if (j == 4) {
+            LSPTR(tid_y, 0, 8) = 0.0f;
+            LSPTR(tid_y, 1, 8) = 0.0f;
+            LSPTR(tid_y, 2, 8) = 0.0f;
+            LSPTR(tid_y, 3, 8) = 0.0f;
+            LSPTR(tid_y, 4, 8) = 0.0f;
+            LSPTR(tid_y, 5, 8) = 0.0f;
+            LSPTR(tid_y, 6, 8) = 0.0f;
+            LSPTR(tid_y, 7, 8) = 0.0f;
+            LSPTR(tid_y, 8, 8) = 0.0f;
+        }
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    jacobi_svd(l_V, l_S, l_d, l_acc1, l_acc2, 9, 9);
 
     T vH[9], H_tmp[9];
     for (unsigned j = 0; j < 9; j++)
-        vH[j] = V[i * VInfo.dims[0] * VInfo.dims[1] + 8 * VInfo.dims[0] + j];
+        vH[j] = l_V[tid_y * 81 + 8 * 9 + j];
 
     H_tmp[0] = src_scale*x_dst_mean*vH[6] + src_scale*vH[0]/dst_scale;
     H_tmp[1] = src_scale*x_dst_mean*vH[7] + src_scale*vH[1]/dst_scale;

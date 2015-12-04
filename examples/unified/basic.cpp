@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <arrayfire.h>
+#include <cstdio>
 #include <vector>
 #include <algorithm>
 
