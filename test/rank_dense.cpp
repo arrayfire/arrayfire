@@ -30,8 +30,14 @@ class Rank : public ::testing::Test
 {
 };
 
+template<typename T>
+class Det : public ::testing::Test
+{
+};
+
 typedef ::testing::Types<float, double, af::cfloat, af::cdouble> TestTypes;
 TYPED_TEST_CASE(Rank, TestTypes);
+TYPED_TEST_CASE(Det, TestTypes);
 
 template<typename T>
 void rankSmall()
@@ -85,4 +91,28 @@ TYPED_TEST(Rank, big)
 TYPED_TEST(Rank, low)
 {
     rankBig<TypeParam>(512);
+}
+
+template<typename T>
+void detTest()
+{
+    if (noDoubleTests<T>()) return;
+    af::dtype dt = (af::dtype)af::dtype_traits<T>::af_type;
+
+    vector<af::dim4> numDims;
+
+    vector<vector<float> >   in;
+    vector<vector<float> >   tests;
+    readTests<float,float,float>(string(TEST_DIR"/lapack/detSmall.test"),numDims,in,tests);
+    af::dim4 dims       = numDims[0];
+
+    af::array input = af::array(dims, &(in[0].front())).as(dt);
+    T output = af::det<T>(input);
+
+    ASSERT_NEAR(abs((T)tests[0][0]), abs(output), 1e-6);
+}
+
+TYPED_TEST(Det, Small)
+{
+    detTest<TypeParam>();
 }

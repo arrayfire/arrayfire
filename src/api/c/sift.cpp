@@ -82,7 +82,7 @@ af_err af_sift(af_features* feat, af_array* desc, const af_array in, const unsig
         }
         std::swap(*desc, tmp_desc);
 #else
-        AF_ERROR("ArrayFire was not built with nonfree support, SIFT disabled\n", AFF_ERR_NONFREE);
+        AF_ERROR("ArrayFire was not built with nonfree support, SIFT disabled\n", AF_ERR_NONFREE);
 #endif
     }
     CATCHALL;
@@ -123,7 +123,7 @@ af_err af_gloh(af_features* feat, af_array* desc, const af_array in, const unsig
         }
         std::swap(*desc, tmp_desc);
 #else
-        AF_ERROR("ArrayFire was not built with nonfree support, GLOH disabled\n", AFF_ERR_NONFREE);
+        AF_ERROR("ArrayFire was not built with nonfree support, GLOH disabled\n", AF_ERR_NONFREE);
 #endif
     }
     CATCHALL;

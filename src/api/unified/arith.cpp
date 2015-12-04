@@ -14,6 +14,7 @@
 #define BINARY_HAPI_DEF(af_func) \
 af_err af_func(af_array* out, const af_array lhs, const af_array rhs, const bool batchMode) \
 { \
+    CHECK_ARRAYS(lhs, rhs); \
     return CALL(out, lhs, rhs, batchMode); \
 }
 
@@ -46,12 +47,14 @@ BINARY_HAPI_DEF(af_hypot)
 
 af_err af_cast(af_array *out, const af_array in, const af_dtype type)
 {
+    CHECK_ARRAYS(in);
     return CALL(out, in, type);
 }
 
 #define UNARY_HAPI_DEF(af_func) \
 af_err af_func(af_array* out, const af_array in) \
 { \
+    CHECK_ARRAYS(in); \
     return CALL(out, in); \
 }
 

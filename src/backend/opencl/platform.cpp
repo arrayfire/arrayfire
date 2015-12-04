@@ -74,6 +74,11 @@ static const std::string get_system(void)
 #endif
 }
 
+int getBackend()
+{
+    return AF_BACKEND_OPENCL;
+}
+
 DeviceManager& DeviceManager::getInstance()
 {
     static DeviceManager my_instance;

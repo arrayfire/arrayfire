@@ -7,6 +7,7 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#include <af/array.h>
 #include <af/device.h>
 #include <af/compatible.h>
 #include <af/traits.hpp>
@@ -31,6 +32,13 @@ namespace af
     {
         int result = 0;
         AF_THROW(af_get_available_backends(&result));
+        return result;
+    }
+
+    af::Backend getBackendId(const array &in)
+    {
+        af::Backend result = (af::Backend)0;
+        AF_THROW(af_get_backend_id(&result, in.get()));
         return result;
     }
 

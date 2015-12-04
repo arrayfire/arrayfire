@@ -13,19 +13,26 @@
 
 af_err af_set_backend(const af_backend bknd)
 {
-    return AFSymbolManager::getInstance().setBackend(bknd);
+    return unified::AFSymbolManager::getInstance().setBackend(bknd);
 }
 
 af_err af_get_backend_count(unsigned* num_backends)
 {
-    *num_backends = AFSymbolManager::getInstance().getBackendCount();
+    *num_backends = unified::AFSymbolManager::getInstance().getBackendCount();
     return AF_SUCCESS;
 }
 
 af_err af_get_available_backends(int* result)
 {
-    *result = AFSymbolManager::getInstance().getAvailableBackends();
+    *result = unified::AFSymbolManager::getInstance().getAvailableBackends();
     return AF_SUCCESS;
+}
+
+af_err af_get_backend_id(af_backend *result, const af_array in)
+{
+    // DO NOT CALL CHECK_ARRAYS HERE.
+    // IT WILL RESULT IN AN INFINITE RECURSION
+    return CALL(result, in);
 }
 
 af_err af_info()
@@ -116,15 +123,18 @@ af_err af_get_mem_step_size(size_t *step_bytes)
 
 af_err af_lock_device_ptr(const af_array arr)
 {
+    CHECK_ARRAYS(arr);
     return CALL(arr);
 }
 
 af_err af_unlock_device_ptr(const af_array arr)
 {
+    CHECK_ARRAYS(arr);
     return CALL(arr);
 }
 
 af_err af_get_device_ptr(void **ptr, const af_array arr)
 {
+    CHECK_ARRAYS(arr);
     return CALL(ptr, arr);
 }

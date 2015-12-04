@@ -49,7 +49,7 @@ namespace cpu
 
     template<typename T>
     Array<T>::Array(af::dim4 dims, TNJ::Node_ptr n) :
-        info(-1, dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
+        info(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
         data(), data_dims(dims),
         node(n), offset(0), ready(false), owner(true)
     {

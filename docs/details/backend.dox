@@ -50,5 +50,17 @@ Return Value | Backends Available
 
 =======================================================================
 
+\defgroup unified_func_getbackendid getBackendId
+
+\brief Get's the backend enum for an array
+
+This will return one of the values from the \ref af_backend enum.
+The return value specifies which backend the array was created on.
+
+\ingroup unified_func
+\ingroup arrayfire_func
+
+=======================================================================
+
 @}
 */

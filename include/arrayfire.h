@@ -269,6 +269,8 @@
 \example histogram.cpp
 \example fractal.cpp
 \example plot2d.cpp
+\example plot3.cpp
+\example surface.cpp
 \example conway_pretty.cpp
 \example basic.cpp
 \example helloworld.cpp
@@ -276,6 +278,7 @@
 \example integer.cpp
 \example convolve.cpp
 \example rainfall.cpp
+\example swe.cpp
 \example morphing.cpp
 \example image_demo.cpp
 \example brain_segmentation.cpp

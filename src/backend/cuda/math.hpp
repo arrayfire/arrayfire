@@ -23,6 +23,8 @@
 namespace cuda
 {
     template<typename T> static inline __DH__ T abs(T val)  { return abs(val); }
+    static inline __DH__ int  abs(int  val) { return (val>0? val : -val); }
+    static inline __DH__ char  abs(char  val) { return (val>0? val : -val); }
     static inline __DH__ float  abs(float  val) { return fabsf(val); }
     static inline __DH__ double abs(double val) { return fabs (val); }
     static inline __DH__ float  abs(cfloat  cval) { return cuCabsf(cval); }
