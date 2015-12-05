@@ -64,7 +64,7 @@ __device__ void JacobiSVD(int m, int n)
     int tid_x = threadIdx.x;
     int bsz_x = blockDim.x;
     int tid_y = threadIdx.y;
-    int gid_y = blockIdx.y * blockDim.y + tid_y;
+    //int gid_y = blockIdx.y * blockDim.y + tid_y;
 
     __shared__ T acc1[256];
     __shared__ T acc2[256];
