@@ -58,12 +58,19 @@ namespace opencl
     }
 
     template<typename T>
-    Array<T>::Array(af::dim4 dims, cl_mem mem) :
+    Array<T>::Array(af::dim4 dims, cl_mem mem, size_t src_offset, bool copy) :
         info(getActiveDeviceId(), dims, af::dim4(0,0,0,0), calcStrides(dims), (af_dtype)dtype_traits<T>::af_type),
-        data(new cl::Buffer(mem), bufferFree),
+        data(copy ? bufferAlloc(info.elements() * sizeof(T)) : new cl::Buffer(mem), bufferFree),
         data_dims(dims),
         node(), offset(0), ready(true), owner(true)
     {
+        if (copy) {
+            clRetainMemObject(mem);
+            cl::Buffer src_buf = cl::Buffer((cl_mem)(mem));
+            getQueue().enqueueCopyBuffer(src_buf, *data.get(),
+                                         src_offset, 0,
+                                         sizeof(T) * info.elements());
+        }
     }
 
     template<typename T>
@@ -211,7 +218,7 @@ namespace opencl
     {
         verifyDoubleSupport<T>();
 
-        return Array<T>(size, (cl_mem)(data));
+        return Array<T>(size, (cl_mem)(data), 0, false);
     }
 
     template<typename T>
@@ -307,6 +314,7 @@ namespace opencl
     template       void      destroyArray<T>          (Array<T> *A);    \
     template       void      evalArray<T>             (const Array<T> &A); \
     template       Array<T>  createNodeArray<T>       (const dim4 &size, JIT::Node_ptr node); \
+    template       Array<T>::Array(af::dim4 dims, cl_mem mem, size_t src_offset, bool copy); \
     template       Array<T>::~Array        ();                          \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \

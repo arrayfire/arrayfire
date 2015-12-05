@@ -22,7 +22,7 @@ underlying data may be one of various [basic types](\ref af::af_dtype):
 
 Older devices may not support double precision operations.
 
-# Creating an populating an ArrayFire array {#getting_started_af_arrays}
+# Creating and populating an ArrayFire array {#getting_started_af_arrays}
 
 ArrayFire [array](\ref af::array)s always exist on the device. They
 may be populated with data using an ArrayFire function, or filled with data
@@ -45,7 +45,7 @@ For example ArrayFire can be populated directly by a call to `cudaMemcpy`
 
 \snippet test/getting_started.cpp ex_getting_started_dev_ptr
 
-# ArrayFire array contents, dimentions, and properties {#getting_started_array_properties}
+# ArrayFire array contents, dimensions, and properties {#getting_started_array_properties}
 
 The [af_print](\ref af::af_print) function can be used to print arrays that
 have already been generated or an expression involving arrays:

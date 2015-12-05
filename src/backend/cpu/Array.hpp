@@ -73,8 +73,9 @@ namespace cpu
     template<typename T>
     void *getDevicePtr(const Array<T>& arr)
     {
-        memPop((T *)arr.get());
-        return (void *)arr.get();
+        T *ptr = arr.device();
+        memPop(ptr);
+        return (void *)ptr;
     }
 
     // Array Array Implementation
@@ -95,7 +96,7 @@ namespace cpu
 
         Array() = default;
         Array(dim4 dims);
-        explicit Array(dim4 dims, const T * const in_data, bool is_device);
+        explicit Array(dim4 dims, const T * const in_data, bool is_device, bool copy_device=false);
         Array(const Array<T>& parnt, const dim4 &dims, const dim4 &offset, const dim4 &stride);
         explicit Array(af::dim4 dims, TNJ::Node_ptr n);
 
@@ -157,6 +158,19 @@ namespace cpu
             // This is for moddims
             // dims and data_dims are different when moddims is used
             return isOwner() ? info.dims() : data_dims;
+        }
+
+        T* device()
+        {
+            if (!isOwner() || data.use_count() > 1) {
+                *this = Array<T>(dims(), get(), true, true);
+            }
+            return this->data.get();
+        }
+
+        T* device() const
+        {
+            return const_cast<Array<T>*>(this)->device();
         }
 
         T* get(bool withOffset = true)

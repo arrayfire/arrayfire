@@ -468,3 +468,37 @@ TEST(BatchFunc, 4D_2_3)
 
     gforSet(false);
 }
+
+TEST(ASSIGN, ISSUE_1127)
+{
+    using namespace af;
+    array orig = randu(512, 768, 3);
+    array vert = randu(512, 768, 3);
+    array horiz = randu(512, 768, 3);
+    array diag = randu(512, 768, 3);
+
+    array out0 = constant(0, orig.dims(0) * 2, orig.dims(1) * 2, orig.dims(2));
+    array out1 = constant(0, orig.dims(0) * 2, orig.dims(1) * 2, orig.dims(2));
+    int rows = out0.dims(0), cols = out0.dims(1);
+
+    gfor(seq chan, 3) {
+        out0(seq(0,rows-1,2), seq(0,cols-1,2), chan) = orig(span,span,chan);
+        out0(seq(1,rows-1,2), seq(0,cols-1,2), chan) = vert(span,span,chan);
+        out0(seq(0,rows-1,2), seq(1,cols-1,2), chan) = horiz(span,span,chan);
+        out0(seq(1,rows-1,2), seq(1,cols-1,2), chan) = diag(span,span,chan);
+    }
+    out1(seq(0,rows-1,2), seq(0,cols-1,2), span) = orig;
+    out1(seq(1,rows-1,2), seq(0,cols-1,2), span) = vert;
+    out1(seq(0,rows-1,2), seq(1,cols-1,2), span) = horiz;
+    out1(seq(1,rows-1,2), seq(1,cols-1,2), span) = diag;
+
+    std::vector<float> hout0(out0.elements());
+    std::vector<float> hout1(out1.elements());
+
+    out0.host(&hout0[0]);
+    out1.host(&hout1[0]);
+
+    for (int i = 0; i < out0.elements(); i++) {
+        ASSERT_EQ(hout0[i], hout1[i]);
+    }
+}

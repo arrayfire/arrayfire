@@ -498,7 +498,7 @@ AFAPI af_err af_draw_hist(const af_window wind, const af_array X, const double m
 
    \ingroup gfx_func_draw
 */
-af_err af_draw_surface(const af_window wind, const af_array xVals, const af_array yVals, const af_array S, const af_cell* const props);
+AFAPI af_err af_draw_surface(const af_window wind, const af_array xVals, const af_array yVals, const af_array S, const af_cell* const props);
 #endif
 
 /**

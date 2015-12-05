@@ -40,8 +40,6 @@ template<typename T, af_homography_type htype>
 int computeH(
     Param bestH,
     Param H,
-    Param A,
-    Param V,
     Param err,
     Param x_src,
     Param y_src,
@@ -96,14 +94,12 @@ int computeH(
         const NDRange global_ch(blk_x_ch * HG_THREADS_X, blk_y_ch * HG_THREADS_Y);
 
         // Build linear system and solve SVD
-        auto chOp = make_kernel<Buffer, KParam, Buffer, KParam,
-                                Buffer, KParam,
+        auto chOp = make_kernel<Buffer, KParam,
                                 Buffer, Buffer, Buffer, Buffer,
                                 Buffer, KParam, unsigned>(*chKernel[device]);
 
         chOp(EnqueueArgs(getQueue(), global_ch, local_ch),
-             *H.data, H.info, *A.data, A.info,
-             *V.data, V.info,
+             *H.data, H.info,
              *x_src.data, *y_src.data, *x_dst.data, *y_dst.data,
              *rnd.data, rnd.info, iterations);
         CL_DEBUG_FINISH(getQueue());
