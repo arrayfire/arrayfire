@@ -408,7 +408,7 @@ AFAPI af_err af_draw_plot(const af_window wind, const af_array X, const af_array
    \param[in]   wind is the window handle
    \param[in]   X is an \ref af_array with the x-axis data points
    \param[in]   Y is an \ref af_array with the y-axis data points
-   \param[in]   marker is an \ref markerType enum specifying which marker to use in the scatter plot
+   \param[in]   marker is an \ref af_marker_type enum specifying which marker to use in the scatter plot
    \param[in]   props is structure \ref af_cell that has the properties that are used
    for the current rendering.
 
@@ -429,7 +429,7 @@ AFAPI af_err af_draw_scatter(const af_window wind, const af_array X, const af_ar
 
    \param[in]   wind is the window handle
    \param[in]   P is an \ref af_array or matrix with the xyz-values of the points
-   \param[in]   marker is an \ref markerType enum specifying which marker to use in the scatter plot
+   \param[in]   marker is an \ref af_marker_type enum specifying which marker to use in the scatter plot
    \param[in]   props is structure \ref af_cell that has the properties that are used
    for the current rendering.
 
