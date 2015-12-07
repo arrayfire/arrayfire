@@ -63,6 +63,53 @@ AFAPI af_err afcl_get_device_id(cl_device_id *id);
 AFAPI af_err afcl_set_device_id(cl_device_id id);
 #endif
 
+#if AF_API_VERSION >= 33
+/**
+   Push user provided device control constructs into the ArrayFire device manager pool
+
+   This function should be used only when the user would like ArrayFire to use an
+   user generated OpenCL context and related objects for ArrayFire operations.
+
+   \param[in] dev is the OpenCL device for which user provided context will be used by ArrayFire
+   \param[in] ctx is the user provided OpenCL cl_context to be used by ArrayFire
+   \param[in] que is the user provided OpenCL cl_command_queue to be used by ArrayFire. If this
+                  parameter is NULL, then we create a command queue for the user using the OpenCL
+                  context they provided us.
+
+   \note The cl_* objects are passed onto c++ objects (cl::Device, cl::Context & cl::CommandQueue)
+   that are defined in the `cl.hpp` OpenCL c++ header provided by Khronos Group Inc. Therefore, please
+   be aware of the lifetime of the cl_* objects before passing them to ArrayFire.
+*/
+AFAPI af_err afcl_add_device_context(cl_device_id dev, cl_context ctx, cl_command_queue que);
+#endif
+
+#if AF_API_VERSION >= 33
+/**
+   Set active device using cl_context and cl_device_id
+
+   \param[in] dev is the OpenCL device id that is to be set as Active device inside ArrayFire
+   \param[in] ctx is the OpenCL cl_context being used by ArrayFire
+*/
+AFAPI af_err afcl_set_device_context(cl_device_id dev, cl_context ctx);
+#endif
+
+#if AF_API_VERSION >= 33
+/**
+   Remove the user provided device control constructs from the ArrayFire device manager pool
+
+   This function should be used only when the user would like ArrayFire to remove an already
+   pushed user generated OpenCL context and related objects.
+
+   \param[in] dev is the OpenCL device id that has to be popped
+   \param[in] ctx is the cl_context object to be removed from ArrayFire pool
+
+   \note Any reference counts incremented for cl_* objects by ArrayFire internally are decremented
+   by this func call and you won't be able to call `afcl_set_device_context` on these objects after
+   this function has been called.
+*/
+AFAPI af_err afcl_delete_device_context(cl_device_id dev, cl_context ctx);
+#endif
+
 /**
   @}
 */
@@ -145,6 +192,65 @@ namespace afcl
      af_err err = afcl_set_device_id(id);
      if (err != AF_SUCCESS) throw af::exception("Failed to set OpenCL device as active device");
  }
+#endif
+
+#if AF_API_VERSION >= 33
+/**
+   Push user provided device control constructs into the ArrayFire device manager pool
+
+   This function should be used only when the user would like ArrayFire to use an
+   user generated OpenCL context and related objects for ArrayFire operations.
+
+   \param[in] dev is the OpenCL device for which user provided context will be used by ArrayFire
+   \param[in] ctx is the user provided OpenCL cl_context to be used by ArrayFire
+   \param[in] que is the user provided OpenCL cl_command_queue to be used by ArrayFire. If this
+                  parameter is NULL, then we create a command queue for the user using the OpenCL
+                  context they provided us.
+
+   \note The cl_* objects are passed onto c++ objects (cl::Device, cl::Context & cl::CommandQueue)
+   that are defined in the `cl.hpp` OpenCL c++ header provided by Khronos Group Inc. Therefore, please
+   be aware of the lifetime of the cl_* objects before passing them to ArrayFire.
+*/
+static inline void addDevice(cl_device_id dev, cl_context ctx, cl_command_queue que)
+{
+    af_err err = afcl_add_device_context(dev, ctx, que);
+    if (err!=AF_SUCCESS) throw af::exception("Failed to push user provided device/context to ArrayFire pool");
+}
+#endif
+
+#if AF_API_VERSION >= 33
+/**
+   Set active device using cl_context and cl_device_id
+
+   \param[in] dev is the OpenCL device id that is to be set as Active device inside ArrayFire
+   \param[in] ctx is the OpenCL cl_context being used by ArrayFire
+*/
+static inline void setDevice(cl_device_id dev, cl_context ctx)
+{
+    af_err err = afcl_set_device_context(dev, ctx);
+    if (err!=AF_SUCCESS) throw af::exception("Failed to set device based on cl_device_id & cl_context");
+}
+#endif
+
+#if AF_API_VERSION >= 33
+/**
+   Remove the user provided device control constructs from the ArrayFire device manager pool
+
+   This function should be used only when the user would like ArrayFire to remove an already
+   pushed user generated OpenCL context and related objects.
+
+   \param[in] dev is the OpenCL device id that has to be popped
+   \param[in] ctx is the cl_context object to be removed from ArrayFire pool
+
+   \note Any reference counts incremented for cl_* objects by ArrayFire internally are decremented
+   by this func call and you won't be able to call `afcl_set_device_context` on these objects after
+   this function has been called.
+*/
+static inline void deleteDevice(cl_device_id dev, cl_context ctx)
+{
+    af_err err = afcl_delete_device_context(dev, ctx);
+    if (err!=AF_SUCCESS) throw af::exception("Failed to remove the requested device from ArrayFire device pool");
+}
 #endif
 
  /**

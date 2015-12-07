@@ -51,6 +51,7 @@ DYLD_LIBRARY_PATH.
 
 On Windows, you can set up a post build event that copys the NVVM dlls to
 the executable directory by using the following commands:
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.c}
 echo copy "$(CUDA_PATH)\nvvm\bin\nvvm64*.dll" "$(OutDir)"
 copy "$(CUDA_PATH)\nvvm\bin\nvvm64*.dll" "$(OutDir)"
@@ -59,6 +60,7 @@ if errorlevel 1 (
     exit /B 0
 )
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 This ensures that the NVVM DLLs are copied if present, but does not fail the
 build if the copy fails. This is how ArrayFire ships it's examples.
 
@@ -79,7 +81,7 @@ backend libraries loaded successfully), call the af::getBackendCount function.
 
 # Example
 
-This example is shortened form of [basic.cpp](\ref basic.cpp).
+This example is shortened form of [basic.cpp](\ref unified/basic.cpp).
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.c}
 #include <arrayfire.h>

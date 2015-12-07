@@ -1,5 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-PROJECT(arrayfire-examples)
+PROJECT(ArrayFire-Examples)
 
 # Find CUDA and OpenCL
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
@@ -8,10 +8,11 @@ FIND_PACKAGE(OpenCL QUIET)
 
 # If the examples are not being built at the same time as ArrayFire,
 # we need to first find the ArrayFire library
-if(TARGET afcpu OR TARGET afcuda OR TARGET afopencl)
+IF(TARGET afcpu OR TARGET afcuda OR TARGET afopencl OR TARGET af)
     SET(ArrayFire_CPU_FOUND False)
     SET(ArrayFire_CUDA_FOUND False)
     SET(ArrayFire_OpenCL_FOUND False)
+    SET(ArrayFire_Unified_FOUND False)
     SET(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../assets")
     IF(NOT EXISTS "${ASSETS_DIR}/LICENSE")
         MESSAGE(STATUS "Assests submodule unavailable. Updating submodules.")
@@ -21,12 +22,13 @@ if(TARGET afcpu OR TARGET afcuda OR TARGET afopencl)
             OUTPUT_QUIET
         )
     ENDIF()
-else()
+ELSE()
+    SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
     FIND_PACKAGE(ArrayFire REQUIRED)
     INCLUDE_DIRECTORIES(${ArrayFire_INCLUDE_DIRS})
 
     SET(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets")
-endif()
+ENDIF()
 
 IF(WIN32)
     # Deprecated Errors are Warning 4996 on VS2013.
@@ -71,69 +73,57 @@ FILE(GLOB FILES "*/*.cpp")
 ADD_DEFINITIONS("-DASSETS_DIR=\"${ASSETS_DIR}\"")
 
 # Next we build each example using every backend.
-if(${ArrayFire_CPU_FOUND})  # variable defined by FIND(ArrayFire ...)
-  MESSAGE(STATUS "EXAMPLES: CPU backend is ON.")
-  BUILD_ALL("${FILES}" cpu ${ArrayFire_CPU_LIBRARIES} "")
-elseif(TARGET afcpu)        # variable defined by the ArrayFire build tree
-  MESSAGE(STATUS "EXAMPLES: CPU backend is ON.")
-  BUILD_ALL("${FILES}" cpu afcpu "")
-else()
-  MESSAGE(STATUS "EXAMPLES: CPU backend is OFF. afcpu was not found.")
-endif()
+IF(${ArrayFire_CPU_FOUND})  # variable defined by FIND(ArrayFire ...)
+    MESSAGE(STATUS "EXAMPLES: CPU backend is ON.")
+    BUILD_ALL("${FILES}" cpu ${ArrayFire_CPU_LIBRARIES} "")
+ELSEIF(TARGET afcpu)        # variable defined by the ArrayFire build tree
+    MESSAGE(STATUS "EXAMPLES: CPU backend is ON.")
+    BUILD_ALL("${FILES}" cpu afcpu "")
+ELSE()
+    MESSAGE(STATUS "EXAMPLES: CPU backend is OFF. afcpu was not found.")
+ENDIF()
 
 # Next we build each example using every backend.
-if(${ArrayFire_Unified_FOUND})  # variable defined by FIND(ArrayFire ...)
-  MESSAGE(STATUS "EXAMPLES: UNIFIED backend is ON.")
-  BUILD_ALL("${FILES}" unified ${ArrayFire_Unified_LIBRARIES} "")
-elseif(TARGET af)        # variable defined by the ArrayFire build tree
-  MESSAGE(STATUS "EXAMPLES: UNIFIED backend is ON.")
-  IF(WIN32)
-      BUILD_ALL("${FILES}" unified af "")
-  ELSE()
-      BUILD_ALL("${FILES}" unified af "dl")
-  ENDIF()
-else()
-  MESSAGE(STATUS "EXAMPLES: UNIFIED backend is OFF. af was not found.")
-endif()
+IF(${ArrayFire_Unified_FOUND})  # variable defined by FIND(ArrayFire ...)
+    MESSAGE(STATUS "EXAMPLES: UNIFIED backend is ON.")
+    BUILD_ALL("${FILES}" unified ${ArrayFire_Unified_LIBRARIES} "${CMAKE_DL_LIBS}")
+ELSEIF(TARGET af)        # variable defined by the ArrayFire build tree
+    MESSAGE(STATUS "EXAMPLES: UNIFIED backend is ON.")
+    BUILD_ALL("${FILES}" unified af "${CMAKE_DL_LIBS}")
+ELSE()
+    MESSAGE(STATUS "EXAMPLES: UNIFIED backend is OFF. af was not found.")
+ENDIF()
 
-if (${CUDA_FOUND})
-  if(${ArrayFire_CUDA_FOUND})  # variable defined by FIND(ArrayFire ...)
-    FIND_LIBRARY( CUDA_NVVM_LIBRARY
-      NAMES "nvvm"
-      PATH_SUFFIXES "nvvm/lib64" "nvvm/lib"
-      PATHS ${CUDA_TOOLKIT_ROOT_DIR}
-      DOC "CUDA NVVM Library"
-      )
-    MESSAGE(STATUS "EXAMPLES: CUDA backend is ON.")
-    BUILD_ALL("${FILES}" cuda ${ArrayFire_CUDA_LIBRARIES} "${CUDA_CUBLAS_LIBRARIES};${CUDA_LIBRARIES};${CUDA_cusolver_LIBRARY};${CUDA_CUFFT_LIBRARIES};${CUDA_NVVM_LIBRARY};${CUDA_CUDA_LIBRARY}")
-  elseif(TARGET afcuda)        # variable defined by the ArrayFire build tree
-    MESSAGE(STATUS "EXAMPLES: CUDA backend is ON.")
-    BUILD_ALL("${FILES}" cuda afcuda "")
-  else()
-    MESSAGE(STATUS "EXAMPLES: CUDA backend is OFF. afcuda was not found")
-  endif()
-else()
-  MESSAGE(STATUS "EXAMPLES: CUDA backend is OFF. CUDA was not found")
-endif()
+IF (${CUDA_FOUND})
+    IF(${ArrayFire_CUDA_FOUND})  # variable defined by FIND(ArrayFire ...)
+        FIND_LIBRARY( CUDA_NVVM_LIBRARY
+          NAMES "nvvm"
+          PATH_SUFFIXES "nvvm/lib64" "nvvm/lib"
+          PATHS ${CUDA_TOOLKIT_ROOT_DIR}
+          DOC "CUDA NVVM Library"
+          )
+        MESSAGE(STATUS "EXAMPLES: CUDA backend is ON.")
+        BUILD_ALL("${FILES}" cuda ${ArrayFire_CUDA_LIBRARIES} "${CUDA_CUBLAS_LIBRARIES};${CUDA_LIBRARIES};${CUDA_cusolver_LIBRARY};${CUDA_CUFFT_LIBRARIES};${CUDA_NVVM_LIBRARY};${CUDA_CUDA_LIBRARY}")
+    ELSEIF(TARGET afcuda)        # variable defined by the ArrayFire build tree
+        MESSAGE(STATUS "EXAMPLES: CUDA backend is ON.")
+        BUILD_ALL("${FILES}" cuda afcuda "")
+    ELSE()
+        MESSAGE(STATUS "EXAMPLES: CUDA backend is OFF. afcuda was not found")
+    ENDIF()
+ELSE()
+    MESSAGE(STATUS "EXAMPLES: CUDA backend is OFF. CUDA was not found")
+ENDIF()
 
-if (${OpenCL_FOUND})
-  if(${ArrayFire_OpenCL_FOUND})  # variable defined by FIND(ArrayFire ...)
-    MESSAGE(STATUS "EXAMPLES: OPENCL backend is ON.")
-    BUILD_ALL("${FILES}" opencl ${ArrayFire_OpenCL_LIBRARIES} "${OpenCL_LIBRARIES}")
-  elseif(TARGET afopencl)        # variable defined by the ArrayFire build tree
-    MESSAGE(STATUS "EXAMPLES: OPENCL backend is ON.")
-    BUILD_ALL("${FILES}" opencl afopencl ${OpenCL_LIBRARIES})
-  else()
-    MESSAGE(STATUS "EXAMPLES: OPENCL backend is OFF. afopencl was not found")
-  endif()
-else()
-  MESSAGE(STATUS "EXAMPLES: OPENCL backend is OFF. OPENCL was not found")
-endif()
-
-INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-    DESTINATION "${AF_INSTALL_EXAMPLE_DIR}"
-    COMPONENT examples)
-
-INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../assets/examples"
-    DESTINATION "${AF_INSTALL_EXAMPLE_DIR}/examples/assets/"
-)
+IF (${OpenCL_FOUND})
+    IF(${ArrayFire_OpenCL_FOUND})  # variable defined by FIND(ArrayFire ...)
+        MESSAGE(STATUS "EXAMPLES: OpenCL backend is ON.")
+        BUILD_ALL("${FILES}" opencl ${ArrayFire_OpenCL_LIBRARIES} "${OpenCL_LIBRARIES}")
+    ELSEIF(TARGET afopencl)        # variable defined by the ArrayFire build tree
+        MESSAGE(STATUS "EXAMPLES: OpenCL backend is ON.")
+        BUILD_ALL("${FILES}" opencl afopencl "${OpenCL_LIBRARIES}")
+    ELSE()
+        MESSAGE(STATUS "EXAMPLES: OpenCL backend is OFF. afopencl was not found")
+    ENDIF()
+ELSE()
+    MESSAGE(STATUS "EXAMPLES: OpenCL backend is OFF. OpenCL was not found")
+ENDIF()

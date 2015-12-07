@@ -37,7 +37,7 @@ To take care of much of this boilerplate, [timeit](\ref af::timeit) provides
 accurate and reliable estimates of both CPU or GPU code.
 
 Here`s a stripped down example of
-[Monte-Carlo estimation of PI](\ref pi.cpp) making use
+[Monte-Carlo estimation of PI](\ref benchmarks/pi.cpp) making use
 of [timeit](\ref af::timeit).  Notice how it expects a `void` function pointer.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
@@ -60,5 +60,5 @@ int main() {
 
 This produces:
 
-	pi_function took 0.007252 seconds
-	(test machine: Core i7 920 @ 2.67GHz with a Tesla C2070)
+    pi_function took 0.007252 seconds
+    (test machine: Core i7 920 @ 2.67GHz with a Tesla C2070)

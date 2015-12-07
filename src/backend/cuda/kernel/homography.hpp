@@ -54,30 +54,25 @@ struct EPS<double>
 #define LMEDSConfidence 0.99f
 #define LMEDSOutlierRatio 0.4f
 
+extern __shared__ char sh[];
 
 template<typename T>
-__device__ void JacobiSVD(T* S, T* V, int m, int n)
+__device__ void JacobiSVD(int m, int n)
 {
     const int iterations = 30;
 
     int tid_x = threadIdx.x;
     int bsz_x = blockDim.x;
     int tid_y = threadIdx.y;
-    int gid_y = blockIdx.y * blockDim.y + tid_y;
+    //int gid_y = blockIdx.y * blockDim.y + tid_y;
 
-    __shared__ T acc[512];
-    T* acc1 = acc;
-    T* acc2 = acc + 256;
+    __shared__ T acc1[256];
+    __shared__ T acc2[256];
 
-    __shared__ T s_S[16*81];
-    __shared__ T s_V[16*81];
     __shared__ T d[16*9];
 
-    for (int i = 0; i <= 4; i++)
-        s_S[tid_y * 81 + i*bsz_x + tid_x] = S[gid_y * 81 + i*bsz_x + tid_x];
-    if (tid_x == 0)
-        s_S[tid_y * 81 + 80] = S[gid_y * 81 + 80];
-    __syncthreads();
+    T* s_V = (T*)sh;
+    T* s_S = (T*)sh + 16*81;
 
     // Copy first 80 elements
     for (int i = 0; i <= 4; i++) {
@@ -194,12 +189,6 @@ __device__ void JacobiSVD(T* S, T* V, int m, int n)
         }
     }
     __syncthreads();
-
-    for (int i = 0; i <= 4; i++)
-        V[gid_y * 81 + tid_x+i*bsz_x] = s_V[tid_y * 81 + tid_x+i*bsz_x];
-    if (tid_x == 0)
-        V[gid_y * 81 + 80] = s_V[tid_y * 81 + 80];
-    __syncthreads();
 }
 
 __device__ bool computeMeanScale(
@@ -258,13 +247,11 @@ __device__ bool computeMeanScale(
     return !bad;
 }
 
-#define APTR(Z, Y, X) (A.ptr[(Z) * A.dims[0] * A.dims[1] + (Y) * A.dims[0] + (X)])
+#define SSPTR(Z, Y, X) (s_S[(Z) * 81 + (Y) * 9 + (X)])
 
 template<typename T>
 __global__ void buildLinearSystem(
     Param<T> H,
-    Param<T> A,
-    Param<T> V,
     CParam<float> x_src,
     CParam<float> y_src,
     CParam<float> x_dst,
@@ -272,7 +259,8 @@ __global__ void buildLinearSystem(
     CParam<float> rnd,
     const unsigned iterations)
 {
-    unsigned i = blockIdx.y * blockDim.y + threadIdx.y;
+    unsigned tid_y = threadIdx.y;
+    unsigned i = blockIdx.y * blockDim.y + tid_y;
 
     if (i < iterations) {
         float x_src_mean, y_src_mean;
@@ -288,6 +276,9 @@ __global__ void buildLinearSystem(
                          x_src, y_src, x_dst, y_dst,
                          rnd, i);
 
+        T* s_V = (T*)sh;
+        T* s_S = (T*)sh + 16*81;
+
         // Compute input matrix
         for (unsigned j = threadIdx.x; j < 4; j+=blockDim.x) {
             float srcx = (src_pt_x[j] - x_src_mean) * src_scale;
@@ -295,26 +286,45 @@ __global__ void buildLinearSystem(
             float dstx = (dst_pt_x[j] - x_dst_mean) * dst_scale;
             float dsty = (dst_pt_y[j] - y_dst_mean) * dst_scale;
 
-            APTR(i, 3, j*2) = -srcx;
-            APTR(i, 4, j*2) = -srcy;
-            APTR(i, 5, j*2) = -1.0f;
-            APTR(i, 6, j*2) = dsty*srcx;
-            APTR(i, 7, j*2) = dsty*srcy;
-            APTR(i, 8, j*2) = dsty;
+            SSPTR(tid_y, 0, j*2) = 0.0f;
+            SSPTR(tid_y, 1, j*2) = 0.0f;
+            SSPTR(tid_y, 2, j*2) = 0.0f;
+            SSPTR(tid_y, 3, j*2) = -srcx;
+            SSPTR(tid_y, 4, j*2) = -srcy;
+            SSPTR(tid_y, 5, j*2) = -1.0f;
+            SSPTR(tid_y, 6, j*2) = dsty*srcx;
+            SSPTR(tid_y, 7, j*2) = dsty*srcy;
+            SSPTR(tid_y, 8, j*2) = dsty;
 
-            APTR(i, 0, j*2+1) = srcx;
-            APTR(i, 1, j*2+1) = srcy;
-            APTR(i, 2, j*2+1) = 1.0f;
-            APTR(i, 6, j*2+1) = -dstx*srcx;
-            APTR(i, 7, j*2+1) = -dstx*srcy;
-            APTR(i, 8, j*2+1) = -dstx;
+            SSPTR(tid_y, 0, j*2+1) = srcx;
+            SSPTR(tid_y, 1, j*2+1) = srcy;
+            SSPTR(tid_y, 2, j*2+1) = 1.0f;
+            SSPTR(tid_y, 3, j*2+1) = 0.0f;
+            SSPTR(tid_y, 4, j*2+1) = 0.0f;
+            SSPTR(tid_y, 5, j*2+1) = 0.0f;
+            SSPTR(tid_y, 6, j*2+1) = -dstx*srcx;
+            SSPTR(tid_y, 7, j*2+1) = -dstx*srcy;
+            SSPTR(tid_y, 8, j*2+1) = -dstx;
+
+            if (j == 4) {
+                SSPTR(tid_y, 0, 8) = 0.0f;
+                SSPTR(tid_y, 1, 8) = 0.0f;
+                SSPTR(tid_y, 2, 8) = 0.0f;
+                SSPTR(tid_y, 3, 8) = 0.0f;
+                SSPTR(tid_y, 4, 8) = 0.0f;
+                SSPTR(tid_y, 5, 8) = 0.0f;
+                SSPTR(tid_y, 6, 8) = 0.0f;
+                SSPTR(tid_y, 7, 8) = 0.0f;
+                SSPTR(tid_y, 8, 8) = 0.0f;
+            }
         }
+        __syncthreads();
 
-        JacobiSVD<T>(A.ptr, V.ptr, 9, 9);
+        JacobiSVD<T>(9, 9);
 
         T vH[9], H_tmp[9];
         for (unsigned j = 0; j < 9; j++)
-            vH[j] = V.ptr[i * V.dims[0] * V.dims[1] + 8 * V.dims[0] + j];
+            vH[j] = s_V[tid_y * 81 + 8 * 9 + j];
 
         H_tmp[0] = src_scale*x_dst_mean*vH[6] + src_scale*vH[0]/dst_scale;
         H_tmp[1] = src_scale*x_dst_mean*vH[7] + src_scale*vH[1]/dst_scale;
@@ -337,7 +347,7 @@ __global__ void buildLinearSystem(
     }
 }
 
-#undef APTR
+#undef SSPTR
 
 // LMedS: http://research.microsoft.com/en-us/um/people/zhang/INRIA/Publis/Tutorial-Estim/node25.html
 template<typename T>
@@ -557,8 +567,6 @@ template<typename T>
 int computeH(
     Param<T> bestH,
     Param<T> H,
-    Param<T> A,
-    Param<T> V,
     Param<float> err,
     CParam<float> x_src,
     CParam<float> y_src,
@@ -574,8 +582,9 @@ int computeH(
     dim3 blocks(1, divup(iterations, threads.y));
 
     // Build linear system and solve SVD
-    CUDA_LAUNCH((buildLinearSystem<T>), blocks, threads,
-                H, A, V, x_src, y_src, x_dst, y_dst, rnd, iterations);
+    size_t ls_shared_sz = threads.x * 81 * 2 * sizeof(T);
+    CUDA_LAUNCH_SMEM((buildLinearSystem<T>), blocks, threads, ls_shared_sz,
+                H, x_src, y_src, x_dst, y_dst, rnd, iterations);
     POST_LAUNCH_CHECK();
 
     threads = dim3(256);
