@@ -44,272 +44,260 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *********************************************************/
-typedef ulong uint64_t;
 typedef uint  uint32_t;
 
 #define PI_VAL 3.1415926535897932384626433832795028841971693993751058209749445923078164
-#define R123_STATIC_INLINE inline
-#define R123_0x1p_32f (1.f/4294967296.f)
-#define R123_0x1p_64 (1./(4294967296.*4294967296.))
-
-#ifdef IS_64
-#define SKEIN_KS_PARITY SKEIN_KS_PARITY64
-#define RotL RotL_64
-#define uint_t uint64_t
-
-#define result(a) (a)*R123_0x1p_64
-
-enum r123_enum_threefry64x2 {
-    /*
-    // Output from skein_rot_search: (srs64_B64-X1000)
-    // Random seed = 1. BlockSize = 128 bits. sampleCnt =  1024. rounds =  8, minHW_or=57
-    // Start: Tue Mar  1 10:07:48 2011
-    // rMin = 0.136. #0325[*15] [CRC=455A682F. hw_OR=64. cnt=16384. blkSize= 128].format
-    */
-    R_2_0_0=16,
-    R_2_1_0=42,
-    R_2_2_0=12,
-    R_2_3_0=31,
-    R_2_4_0=16,
-    R_2_5_0=32,
-    R_2_6_0=24,
-    R_2_7_0=21
-    /* 4 rounds: minHW =  4  [  4  4  4  4 ]
-    // 5 rounds: minHW =  8  [  8  8  8  8 ]
-    // 6 rounds: minHW = 16  [ 16 16 16 16 ]
-    // 7 rounds: minHW = 32  [ 32 32 32 32 ]
-    // 8 rounds: minHW = 64  [ 64 64 64 64 ]
-    // 9 rounds: minHW = 64  [ 64 64 64 64 ]
-    //10 rounds: minHW = 64  [ 64 64 64 64 ]
-    //11 rounds: minHW = 64  [ 64 64 64 64 ] */
-};
-#else
-#define SKEIN_KS_PARITY SKEIN_KS_PARITY32
-#define RotL RotL_32
-#define uint_t uint32_t
-
-#ifdef IS_BOOL
-#define result(a) ((a)*R123_0x1p_32f) > 0.5
-#else
-#define result(a) (a)*R123_0x1p_32f
-#endif
-
-enum r123_enum_threefry32x2 {
-    /* Output from skein_rot_search (srs2-X5000.out)
-    // Random seed = 1. BlockSize = 64 bits. sampleCnt =  1024. rounds =  8, minHW_or=28
-    // Start: Tue Jul 12 11:11:33 2011
-    // rMin = 0.334. #0206[*07] [CRC=1D9765C0. hw_OR=32. cnt=16384. blkSize=  64].format   */
-    R_2_0_0=13,
-    R_2_1_0=15,
-    R_2_2_0=26,
-    R_2_3_0= 6,
-    R_2_4_0=17,
-    R_2_5_0=29,
-    R_2_6_0=16,
-    R_2_7_0=24
-
-    /* 4 rounds: minHW =  4  [  4  4  4  4 ]
-    // 5 rounds: minHW =  6  [  6  8  6  8 ]
-    // 6 rounds: minHW =  9  [  9 12  9 12 ]
-    // 7 rounds: minHW = 16  [ 16 24 16 24 ]
-    // 8 rounds: minHW = 32  [ 32 32 32 32 ]
-    // 9 rounds: minHW = 32  [ 32 32 32 32 ]
-    //10 rounds: minHW = 32  [ 32 32 32 32 ]
-    //11 rounds: minHW = 32  [ 32 32 32 32 ] */
-};
-#endif
-
-enum r123_enum_threefry_wcnt {
-    WCNT2=2,
-    WCNT4=4
-};
-
-R123_STATIC_INLINE uint64_t RotL_64(uint64_t x, uint64_t N)
-{
-    return (x << (N & 63)) | (x >> ((64-N) & 63));
-}
-
-R123_STATIC_INLINE uint32_t RotL_32(uint32_t x, uint32_t N)
-{
-    return (x << (N & 31)) | (x >> ((32-N) & 31));
-}
-
-#define SKEIN_MK_64(hi32,lo32)  ((lo32) + (((uint64_t) (hi32)) << 32))
-#define SKEIN_KS_PARITY64         SKEIN_MK_64(0x1BD11BDA,0xA9FC1A22)
-#define SKEIN_KS_PARITY32         0x1BD11BDA
-
-
-// http://www.thesalmons.org/john/random123/releases/1.06/docs/structr123_1_1Threefry2x32__R.html#af5be46f8426cfcd86e75327e4b3750b0
-#define Nrounds 16
-
-struct r123array2
-{
-    uint_t v[2];
-};
-
-typedef struct r123array2 threefry2_ctr_t;
-typedef struct r123array2 threefry2_key_t;
-typedef struct r123array2 threefry2_ukey_t;
-
-R123_STATIC_INLINE
-threefry2_key_t threefry2keyinit(threefry2_ukey_t uk) { return uk; }
-
-R123_STATIC_INLINE
-threefry2_ctr_t threefry2_R(threefry2_ctr_t in, threefry2_key_t k)
-{
-    threefry2_ctr_t X;
-    uint_t ks[2+1];
-    int  i; /* avoid size_t to avoid need for stddef.h */
-    ks[2] =  SKEIN_KS_PARITY;
-    for (i=0;i < 2; i++)
-    {
-        ks[i] = k.v[i];
-        X.v[i]  = in.v[i];
-        ks[2] ^= k.v[i];
-    }
-
-    /* Insert initial key before round 0 */
-    X.v[0] += ks[0]; X.v[1] += ks[1];
-
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_0_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_1_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_2_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_3_0); X.v[1] ^= X.v[0];
-
-    /* InjectKey(r=1) */
-    X.v[0] += ks[1]; X.v[1] += ks[2];
-    X.v[1] += 1;     /* X.v[2-1] += r  */
-
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_4_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_5_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_6_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_7_0); X.v[1] ^= X.v[0];
-
-    /* InjectKey(r=2) */
-    X.v[0] += ks[2]; X.v[1] += ks[0];
-    X.v[1] += 2;
-
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_0_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_1_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_2_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_3_0); X.v[1] ^= X.v[0];
-
-    /* InjectKey(r=3) */
-    X.v[0] += ks[0]; X.v[1] += ks[1];
-    X.v[1] += 3;
-
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_4_0); X.v[1] ^= X.v[0];
-
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_5_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_6_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_7_0); X.v[1] ^= X.v[0];
-
-    /* InjectKey(r=4) */
-    X.v[0] += ks[1]; X.v[1] += ks[2];
-    X.v[1] += 4;
-
-#if Nrounds > 16
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_0_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_1_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_2_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_3_0); X.v[1] ^= X.v[0];
-
-    /* InjectKey(r=4) */
-    X.v[0] += ks[2]; X.v[1] += ks[0];
-    X.v[1] += 5;
-#endif
-
-#if Nrounds > 20
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_0_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_1_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_2_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_3_0); X.v[1] ^= X.v[0];
-
-    /* InjectKey(r=3) */
-    X.v[0] += ks[0]; X.v[1] += ks[1];
-    X.v[1] += 6;
-#endif
-
-#if Nrounds > 24
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_4_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_5_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_6_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_7_0); X.v[1] ^= X.v[0];
-
-    /* InjectKey(r=4) */
-    X.v[0] += ks[1]; X.v[1] += ks[2];
-    X.v[1] += 7;
-#endif
-
-#if Nrounds > 28
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_0_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_1_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_2_0); X.v[1] ^= X.v[0];
-    X.v[0] += X.v[1]; X.v[1] = RotL(X.v[1],R_2_3_0); X.v[1] ^= X.v[0];
-
-        /* InjectKey(r=4) */
-    X.v[0] += ks[2]; X.v[1] += ks[0];
-    X.v[1] += 8;
-#endif
-
-    return X;
-}
-
-#define threefry2(c,k) threefry2_R(c, k)
-
-#ifdef randu
-void generate(T *one, T *two, threefry2_ctr_t *c, threefry2_key_t k)
-{
-    threefry2_ctr_t r = threefry2(*c, k);
-    c->v[0] = c->v[0] + 1;
-
-    *one = result(r.v[0]);
-    *two = result(r.v[1]);
-}
-#endif
-
-#ifdef randn
-void generate(T *one, T *two, threefry2_ctr_t *c, threefry2_key_t k)
-{
-    threefry2_ctr_t r = threefry2(*c, k);
-    c->v[0] = c->v[0] + 1;
-
-    T u1 = result(r.v[0]);
-    T u2 = result(r.v[1]);
-
-#if defined(IS_APPLE) // Because Apple is.. "special"
-    T R     = sqrt((T)(-2.0) * log10(u1) * (T)log10_val);
-#else
-    T R     = sqrt((T)(-2.0) * log(u1));
-#endif
-
-    T Theta = 2 * (T)PI_VAL * u2;
-
-    *one = R * sin(Theta);
-    *two = R * cos(Theta);
-}
-#endif
-
-#ifdef randi
-void generate(T *one, T *two, threefry2_ctr_t *c, threefry2_key_t k)
-{
-    threefry2_ctr_t r = threefry2(*c, k);
-    c->v[0] = c->v[0] + 1;
-
-    *one = (T)r.v[0];
-    *two = (T)r.v[1];
-}
-#endif
+#define m4x32_0                 0xD2511F53u
+#define m4x32_1                 0xCD9E8D57u
+#define w32_0                   0x9E3779B9u
+#define w32_1                   0xBB67AE85u
+#define PHILOX_DEFAULT_ROUNDS   10u
+#define R                       PHILOX_DEFAULT_ROUNDS
+#define UINTMAXFLOAT            4294967296.0f
+#define UINTLMAXDOUBLE          4294967296.0*4294967296.0
 
 struct philox_32_4_key_t
 {
-    uint_t v[2];
+    uint v[2];
 };
 
 struct philox_32_4_ctr_t
 {
-    uint_t v[4];
+    uint v[4];
 };
+
+void mulhilo(uint a, uint const * const b,
+    uint * const hi, uint * const lo)
+{
+    *hi = mul_hi(a, *b);
+    *lo = a*(*b);
+}
+
+void philox_round(struct philox_32_4_ctr_t * const ctr,
+    struct philox_32_4_key_t const * const key)
+{
+    uint hi0, lo0, hi1, lo1;
+    mulhilo(m4x32_0, &(ctr->v[0]), &hi0, &lo0);
+    mulhilo(m4x32_1, &(ctr->v[2]), &hi1, &lo1);
+    ctr->v[0] = hi1^(ctr->v[1])^(key->v[0]);
+    ctr->v[1] = lo1;
+    ctr->v[2] = hi0^(ctr->v[3])^(key->v[1]);
+    ctr->v[3] = lo0;
+}
+
+void philox_bump(struct philox_32_4_key_t * const key)
+{
+    key->v[0] += w32_0;
+    key->v[1] += w32_1;
+}
+
+struct philox_32_4_ctr_t philox(struct philox_32_4_ctr_t ctr,
+    struct philox_32_4_key_t key)
+{
+    struct philox_32_4_key_t const * const keyptr_read_only = (struct philox_32_4_key_t const * const) (&key);
+    struct philox_32_4_key_t * const keyptr = (struct philox_32_4_key_t * const) (&key);
+    struct philox_32_4_ctr_t * const ctrptr = (struct philox_32_4_ctr_t * const) (&ctr);
+#if R > 0
+    philox_round(ctrptr, keyptr_read_only);
+#endif
+#if R > 1
+    philox_bump(keyptr); philox_round(ctrptr, keyptr_read_only);
+#endif
+#if R > 2
+    philox_bump(keyptr); philox_round(ctrptr, keyptr_read_only);
+#endif
+#if R > 3
+    philox_bump(keyptr); philox_round(ctrptr, keyptr_read_only);
+#endif
+#if R > 4
+    philox_bump(keyptr); philox_round(ctrptr, keyptr_read_only);
+#endif
+#if R > 5
+    philox_bump(keyptr); philox_round(ctrptr, keyptr_read_only);
+#endif
+#if R > 6
+    philox_bump(keyptr); philox_round(ctrptr, keyptr_read_only);
+#endif
+#if R > 7
+    philox_bump(keyptr); philox_round(ctrptr, keyptr_read_only);
+#endif
+#if R > 8
+    philox_bump(keyptr); philox_round(ctrptr, keyptr_read_only);
+#endif
+#if R > 9
+    philox_bump(keyptr); philox_round(ctrptr, keyptr_read_only);
+#endif
+#if R > 10
+    philox_bump(keyptr); philox_round(ctrptr, keyptr_read_only);
+#endif
+#if R > 11
+    philox_bump(keyptr); philox_round(ctrptr, keyptr_read_only);
+#endif
+#if R > 12
+    philox_bump(keyptr); philox_round(ctrptr, keyptr_read_only);
+#endif
+#if R > 13
+    philox_bump(keyptr); philox_round(ctrptr, keyptr_read_only);
+#endif
+#if R > 14
+    philox_bump(keyptr); philox_round(ctrptr, keyptr_read_only);
+#endif
+#if R > 15
+    philox_bump(keyptr); philox_round(ctrptr, keyptr_read_only);
+#endif
+
+return ctr;
+}
+
+float normalize_to_float(uint val)
+{
+    return ((float)(val)/UINTMAXFLOAT);
+}
+
+double normalize_to_double(ulong val)
+{
+    return ((double)(val)/UINTLMAXDOUBLE);
+}
+
+#define write_out_4_vals(CONVERT)\
+    output[(*tid)]            = CONVERT(r->v[0]);\
+    output[(*tid) +   (*off)] = CONVERT(r->v[1]);\
+    output[(*tid) + 2*(*off)] = CONVERT(r->v[2]);\
+    output[(*tid) + 3*(*off)] = CONVERT(r->v[3]);\
+    (*tid) += 4*(*off);\
+
+#define write_out_2_vals(CONVERT)\
+    output[(*tid)] = CONVERT((ulong(r->v[0])<<32) | (ulong(r->v[1])));\
+    output[(*tid) + (*off)] = CONVERT((ulong(r->v[2])<<32) | (ulong(r->v[3])));\
+    (*tid) += 2*(*off);\
+
+#define write_out_8_vals(CONVERT)\
+    out[(*tid)]         = CONVERT((r->v[0])&0x00001111);\
+    out[(*tid) +   (*off)] = CONVERT((r->v[0])>>4);\
+    out[(*tid) + 2*(*off)] = CONVERT((r->v[1])&0x00001111);\
+    out[(*tid) + 3*(*off)] = CONVERT((r->v[1])>>4);\
+    out[(*tid) + 4*(*off)] = CONVERT((r->v[2])&0x00001111);\
+    out[(*tid) + 5*(*off)] = CONVERT((r->v[2])>>4);\
+    out[(*tid) + 6*(*off)] = CONVERT((r->v[3])&0x00001111);\
+    out[(*tid) + 7*(*off)] = CONVERT((r->v[3])>>4);\
+    (*tid) += 8*(*off);\
+
+#define write_out_bool\
+    for(uint i = 0; (i < 16); ++i) {\
+        out[(*tid)] = ((r->v[i>>2]) & (1 << (i & 3)))? 1:0;\
+        (*tid) += (*off);\
+    }\
+
+#define write_out_uchar\
+    for(uint i = 0; (i < 16); ++i) {\
+        out[(*tid)] = (r->v[i>>2] >> ((i & 3) << 1)) & 3;\
+        (*tid) += (*off);\
+    }\
+
+#define partial_write_out_4_vals(CONVERT)\
+    if ((*tid) < (*numel)) {output[(*tid)]            = CONVERT(r->v[0]); *(tid) += (*off);}\
+    if ((*tid) < (*numel)) {output[(*tid) +   (*off)] = CONVERT(r->v[1]); *(tid) += (*off);}\
+    if ((*tid) < (*numel)) {output[(*tid) + 2*(*off)] = CONVERT(r->v[2]); *(tid) += (*off);}\
+    if ((*tid) < (*numel)) {output[(*tid) + 3*(*off)] = CONVERT(r->v[3]); *(tid) += (*off);}
+
+#define partial_write_out_2_vals(CONVERT)\
+    if ((*tid) < (*numel)) {output[(*tid)] = CONVERT((ulong(r->v[0])<<32) | (ulong(r->v[1]))); (*tid) += (*off);}\
+    if ((*tid) < (*numel)) {output[(*tid) + (*off)] = CONVERT((ulong(r->v[2])<<32) | (ulong(r->v[3]))); (*tid) += (*off);}
+
+#define partial_write_out_8_vals(CONVERT)\
+    if ((*tid) < (*numel)) {out[(*tid)]            = CONVERT((r->v[0])&0x00001111); (*tid) += (*off);}\
+    if ((*tid) < (*numel)) {out[(*tid) +   (*off)] = CONVERT((r->v[0])>>4); (*tid) += (*off);}\
+    if ((*tid) < (*numel)) {out[(*tid) + 2*(*off)] = CONVERT((r->v[1])&0x00001111); (*tid) += (*off);}\
+    if ((*tid) < (*numel)) {out[(*tid) + 3*(*off)] = CONVERT((r->v[1])>>4); (*tid) += (*off);}\
+    if ((*tid) < (*numel)) {out[(*tid) + 4*(*off)] = CONVERT((r->v[2])&0x00001111); (*tid) += (*off);}\
+    if ((*tid) < (*numel)) {out[(*tid) + 5*(*off)] = CONVERT((r->v[2])>>4); (*tid) += (*off);}\
+    if ((*tid) < (*numel)) {out[(*tid) + 6*(*off)] = CONVERT((r->v[3])&0x00001111); (*tid) += (*off);}\
+    if ((*tid) < (*numel)) {out[(*tid) + 7*(*off)] = CONVERT((r->v[3])>>4); (*tid) += (*off);}
+
+#define partial_write_out_bool\
+    for(uint i = 0; (i < 16) && ((*tid) < (*numel)); (*tid) += (*off), ++i) {\
+        out[*tid] = ((r->v[i>>2]) & (1 << (i & 3)))? 1:0;\
+    }
+
+#define partial_write_out_uchar\
+    for(uint i = 0; (i < 16) && ((*tid) < (*numel)); (*tid) += (*off), ++i) {\
+        out[*tid] = (r->v[i>>2] >> ((i & 3) << 1)) & 3;\
+    }
+
+void generate(__global T *output,
+    unsigned * const tid,
+    unsigned const * const off,
+    struct philox_32_4_ctr_t const * const r)
+{
+#ifdef inType_float
+    write_out_4_vals(normalize_to_float);
+#endif
+#ifdef inType_double
+    write_out_2_vals(normalize_to_double);
+#endif
+#ifdef inType_int
+    write_out_4_vals(int);
+#endif
+#ifdef inType_intl
+    write_out_2_vals(intl);
+#endif
+#ifdef inType_uint
+    write_out_4_vals(uint);
+#endif
+#ifdef inType_ulong
+    write_out_2_vals(ulong);
+#endif
+#ifdef inType_short
+    write_out_8_vals(short);
+#endif
+#ifdef inType_ushort
+    write_out_8_vals(ushort);
+#endif
+#ifdef inType_char
+    write_out_bool;
+#endif
+#ifdef inType_uchar
+    write_out_uchar;
+#endif
+}
+
+void generate_partial(__global T *output,
+    unsigned * const tid,
+    unsigned const * const numel,
+    unsigned const * const off,
+    struct philox_32_4_ctr_t const * const r)
+{
+#ifdef inType_float
+    partial_write_out_4_vals(normalize_to_float);
+#endif
+#ifdef inType_double
+    partial_write_out_2_vals(normalize_to_double);
+#endif
+#ifdef inType_int
+    partial_write_out_4_vals(int);
+#endif
+#ifdef inType_intl
+    partial_write_out_2_vals(intl);
+#endif
+#ifdef inType_uint
+    partial_write_out_4_vals(uint);
+#endif
+#ifdef inType_ulong
+    partial_write_out_2_vals(ulong);
+#endif
+#ifdef inType_short
+    partial_write_out_8_vals(short);
+#endif
+#ifdef inType_ushort
+    partial_write_out_8_vals(ushort);
+#endif
+#ifdef inType_char
+    partial_write_out_bool;
+#endif
+#ifdef inType_uchar
+    partial_write_out_uchar;
+#endif
+}
 
 __kernel void random_philox(__global T *output, unsigned numel,
                     unsigned counter, unsigned lo, unsigned hi)
@@ -319,22 +307,18 @@ __kernel void random_philox(__global T *output, unsigned numel,
     unsigned tid =  off * gid * repeat + get_local_id(0);
 
     uint one, two, three, four;
-    philox_32_4_key_t k{{tid, hi}};
-    philox_32_4_ctr_t c{{index, lo, gid^tid, counter}};
+    struct philox_32_4_key_t k = {{tid, hi}};
+    struct philox_32_4_ctr_t c = {{tid, lo, gid^tid, counter}};
 
     if (gid < get_num_groups(0) - 1) {
-        for(int i = 0; i < repeat; i+=2) {
-            generate(&one, &two, &c, k);
-            output[tid      ] = one;
-            output[tid + off] = two;
-            tid += 2 * off;
+        for(int i = 0; i < repeat; ++i) {
+            struct philox_32_4_ctr_t r = philox(c, k);
+            generate(output, &tid, &off, &r);
         }
     } else {
-        for(int i = 0; i < repeat; i+=2) {
-            generate(&one, &two, &c, k);
-            if (tid       < numel) output[tid      ] = one;
-            if (tid + off < numel) output[tid + off] = two;
-            tid += 2 * off;
+        for(int i = 0; i < repeat; ++i) {
+            struct philox_32_4_ctr_t r = philox(c, k);
+            generate_partial(output, &tid, &numel, &off, &r);
         }
     }
 }

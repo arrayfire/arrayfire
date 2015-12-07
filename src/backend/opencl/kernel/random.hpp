@@ -90,10 +90,6 @@ namespace opencl
         template<> STATIC_ bool isDouble<double>() { return true; }
         template<> STATIC_ bool isDouble<cdouble>() { return true; }
 
-        //random -> random_threefry
-        // void random(cl::Buffer out, int elements, //randomtype)
-        // copy
-        //
         template<typename T, bool isRandu>
         void random_threefry(cl::Buffer out, int elements)
         {
@@ -106,7 +102,7 @@ namespace opencl
 
                 std::call_once( compileFlags[device], [device] () {
                         Program::Sources setSrc;
-                        setSrc.emplace_back(random_cl, random_cl_len);
+                        setSrc.emplace_back(random_threefry_cl, random_threefry_cl_len);
 
                         std::ostringstream options;
                         options << " -D T=" << dtype_traits<T>::getName()
@@ -127,7 +123,7 @@ namespace opencl
                         }
 
                         cl::Program prog;
-                        buildProgram(prog, random_cl, random_cl_len, options.str());
+                        buildProgram(prog, random_threefry_cl, random_threefry_cl_len, options.str());
                         ranProgs[device] = new Program(prog);
                         ranKernels[device] = new Kernel(*ranProgs[device], "random_threefry");
                     });
@@ -160,11 +156,12 @@ namespace opencl
 
                 std::call_once( compileFlags[device], [device] () {
                         Program::Sources setSrc;
-                        setSrc.emplace_back(random_cl, random_cl_len);
+                        setSrc.emplace_back(random_philox_cl, random_philox_cl_len);
 
                         std::ostringstream options;
                         options << " -D T=" << dtype_traits<T>::getName()
-                                << " -D repeat="<< REPEAT
+                                << " -D inType_" << dtype_traits<T>::getName()
+                                << " -D repeat="<< REPEAT/sizeof(T)
 #if defined(OS_MAC) // Because apple is "special"
                                 << " -D IS_APPLE"
                                 << " -D log10_val=" << std::log(10.0)
@@ -181,7 +178,7 @@ namespace opencl
                         }
 
                         cl::Program prog;
-                        buildProgram(prog, random_cl, random_cl_len, options.str());
+                        buildProgram(prog, random_philox_cl, random_philox_cl_len, options.str());
                         ranProgs[device] = new Program(prog);
                         ranKernels[device] = new Kernel(*ranProgs[device], "random_philox");
                     });
@@ -208,12 +205,12 @@ namespace opencl
             switch(rtype) {
                 case AF_RANDOM_DEFAULT:
                     {
-                        random_threefry(out, elements);
+                        random_threefry<T, isRandu>(out, elements);
                         break;
                     }
                 case AF_RANDOM_PHILOX:
                     {
-                        random_philox(out, elements);
+                        random_philox<T, isRandu>(out, elements);
                         break;
                     }
             }
