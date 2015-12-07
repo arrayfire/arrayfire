@@ -30,7 +30,7 @@ if(NOT DEFINED AF_INSTALL_DOC_DIR)
 endif()
 
 if(NOT DEFINED AF_INSTALL_EXAMPLE_DIR)
-  set(AF_INSTALL_EXAMPLE_DIR "${AF_INSTALL_DATA_DIR}" CACHE PATH "Installation path for examples")
+  set(AF_INSTALL_EXAMPLE_DIR "${AF_INSTALL_DATA_DIR}/examples" CACHE PATH "Installation path for examples")
 endif()
 
 # Man pages

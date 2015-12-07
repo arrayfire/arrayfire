@@ -120,7 +120,9 @@ CPUInfo::CPUInfo()
                         default: break;
                     }
             }
-            mNumCores = mNumLogCpus/mNumSMT;
+            // Fixes Possible divide by zero error
+            // TODO: Fix properly
+            mNumCores = mNumLogCpus/(mNumSMT == 0 ? 1 : mNumSMT);
         } else {
             if (HFS>=1) {
                 mNumLogCpus = (cpuID1.EBX() >> 16) & 0xFF;

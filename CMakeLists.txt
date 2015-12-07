@@ -235,6 +235,19 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/Install/ArrayFireConfig.cmake
     DESTINATION ${AF_INSTALL_CMAKE_DIR}
     COMPONENT cmake)
 
+# install the examples irrespective of the BUILD_EXAMPLES value
+# only the examples source files are installed, so the installation of these
+# source files does not depend on BUILD_EXAMPLES
+# when BUILD_EXAMPLES is OFF, the examples source is installed without
+# building the example executables
+INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/"
+    DESTINATION "${AF_INSTALL_EXAMPLE_DIR}"
+    COMPONENT examples)
+
+INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/assets/examples"
+    DESTINATION "${AF_INSTALL_EXAMPLE_DIR}/assets"
+    COMPONENT examples)
+
 IF(APPLE)
     INCLUDE("${CMAKE_MODULE_PATH}/osx_install/OSXInstaller.cmake")
 ENDIF(APPLE)

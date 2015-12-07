@@ -20,6 +20,7 @@
 #include <JIT/Node.hpp>
 #include <memory.hpp>
 #include <memory>
+#include <err_common.hpp>
 
 namespace opencl
 {
@@ -78,8 +79,9 @@ namespace opencl
     template<typename T>
     void *getDevicePtr(const Array<T>& arr)
     {
-        memPop((T *)arr.get());
-        return (void *)((*arr.get())());
+        cl::Buffer *buf = arr.device();
+        memPop((T *)buf);
+        return (void *)((*buf)());
     }
 
     template<typename T>
@@ -99,7 +101,7 @@ namespace opencl
         Array(Param &tmp);
         explicit Array(af::dim4 dims, JIT::Node_ptr n);
         explicit Array(af::dim4 dims, const T * const in_data);
-        explicit Array(af::dim4 dims, cl_mem mem);
+        explicit Array(af::dim4 dims, cl_mem mem, size_t offset, bool copy);
 
     public:
 
@@ -148,6 +150,19 @@ namespace opencl
 
         void eval();
         void eval() const;
+
+        cl::Buffer* device()
+        {
+            if (!isOwner() || data.use_count() > 1) {
+                *this = Array<T>(dims(), (*get())(), (size_t)getOffset(), true);
+            }
+            return this->data.get();
+        }
+
+        cl::Buffer* device() const
+        {
+            return const_cast<Array<T>*>(this)->device();
+        }
 
         //FIXME: This should do a copy if it is not owner. You do not want to overwrite parents data
         cl::Buffer *get()

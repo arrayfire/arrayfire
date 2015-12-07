@@ -409,3 +409,48 @@ TEST(Array, ISSUE_951)
     const af::array a = randu(100, 100);
     af::array b = a.cols(0, 20).rows(10, 20);
 }
+
+
+TEST(Device, simple)
+{
+    array a = randu(5,5);
+    {
+        float *ptr0 = a.device<float>();
+        float *ptr1 = a.device<float>();
+        ASSERT_EQ(ptr0, ptr1);
+    }
+
+    {
+        float *ptr0 = a.device<float>();
+        a.unlock();
+        float *ptr1 = a.device<float>();
+        ASSERT_EQ(ptr0, ptr1);
+    }
+}
+
+TEST(Device, index)
+{
+    array a = randu(5,5);
+    array b = a(span, 0);
+
+    ASSERT_NE(a.device<float>(), b.device<float>());
+}
+
+TEST(Device, unequal)
+{
+    {
+        array a = randu(5,5);
+        float *ptr = a.device<float>();
+        array b = a;
+        ASSERT_NE(ptr, b.device<float>());
+        ASSERT_EQ(ptr, a.device<float>());
+    }
+
+    {
+        array a = randu(5,5);
+        float *ptr = a.device<float>();
+        array b = a;
+        ASSERT_NE(ptr, a.device<float>());
+        ASSERT_EQ(ptr, b.device<float>());
+    }
+}
