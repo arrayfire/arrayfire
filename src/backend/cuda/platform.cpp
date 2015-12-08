@@ -11,6 +11,7 @@
 #include <af/cuda.h>
 #include <platform.hpp>
 #include <defines.hpp>
+#include <version.hpp>
 #include <driver.h>
 #include <vector>
 #include <string>

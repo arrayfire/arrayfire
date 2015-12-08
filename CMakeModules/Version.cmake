@@ -36,3 +36,8 @@ CONFIGURE_FILE(
     ${CMAKE_MODULE_PATH}/version.h.in
     ${CMAKE_SOURCE_DIR}/include/af/version.h
 )
+
+CONFIGURE_FILE(
+    ${CMAKE_MODULE_PATH}/version.hpp.in
+    ${CMAKE_SOURCE_DIR}/src/backend/version.hpp
+)

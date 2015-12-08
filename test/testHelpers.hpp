@@ -13,6 +13,8 @@
 #include <vector>
 #include <algorithm>
 #include <limits>
+#include <stdexcept>
+#include <cfloat>
 #include <arrayfire.h>
 #include <af/dim4.hpp>
 #include <af/array.h>

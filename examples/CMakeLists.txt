@@ -36,8 +36,8 @@ IF(WIN32)
     SET(CMAKE_CXX_FLAGS "/we4996")
     SET(CMAKE_C_FLAGS   "/we4996")
 ELSE(WIN32)
-    SET(CMAKE_CXX_FLAGS "-Werror=deprecated-declarations")
-    SET(CMAKE_C_FLAGS   "-Werror=deprecated-declarations")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=deprecated-declarations")
+    SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Werror=deprecated-declarations")
 ENDIF(WIN32)
 
 # A macro to build an ArrayFire example
