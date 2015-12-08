@@ -19,6 +19,8 @@
 #include <convolve.hpp>
 #include <memory.hpp>
 #include <cstring>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 using af::dim4;
 
@@ -542,6 +544,8 @@ unsigned orb(Array<float> &x, Array<float> &y,
              const float scl_fctr, const unsigned levels,
              const bool blur_img)
 {
+    image.eval();
+    getQueue().sync();
 
     unsigned patch_size = REF_PAT_SIZE;
 
@@ -607,6 +611,8 @@ unsigned orb(Array<float> &x, Array<float> &y,
             ldims[1] = round(idims[1] / lvl_scl);
 
             lvl_img = resize<T>(prev_img, ldims[0], ldims[1], AF_INTERP_BILINEAR);
+            lvl_img.eval();
+            getQueue().sync();
 
             prev_img = lvl_img;
             prev_ldims = lvl_img.dims();
@@ -627,7 +633,10 @@ unsigned orb(Array<float> &x, Array<float> &y,
 
         unsigned lvl_feat = fast(x_feat, y_feat, score_feat,
                                  lvl_img, fast_thr, 9, 1, 0.15f, edge);
-
+        x_feat.eval();
+        y_feat.eval();
+        score_feat.eval();
+        getQueue().sync();
 
         if (lvl_feat == 0) {
             continue;
@@ -653,7 +662,6 @@ unsigned orb(Array<float> &x, Array<float> &y,
             memFree(h_x_harris);
             memFree(h_y_harris);
             memFree(h_score_harris);
-
             continue;
         }
 
@@ -664,13 +672,15 @@ unsigned orb(Array<float> &x, Array<float> &y,
         Array<unsigned> harris_idx = createEmptyArray<unsigned>(af::dim4());
 
         sort_index<float, false>(harris_sorted, harris_idx, score_harris, 0);
+        harris_sorted.eval();
+        harris_idx.eval();
+        getQueue().sync();
 
         usable_feat = std::min(usable_feat, lvl_best[i]);
 
         if (usable_feat == 0) {
             memFree(h_x_harris);
             memFree(h_y_harris);
-
             continue;
         }
 
@@ -706,6 +716,8 @@ unsigned orb(Array<float> &x, Array<float> &y,
             // Filter level image with Gaussian kernel to reduce noise sensitivity
             lvl_filt = convolve2<T, convAccT, false>(lvl_img, gauss_filter, gauss_filter);
         }
+        lvl_filt.eval();
+        getQueue().sync();
 
         // Compute ORB descriptors
         unsigned* h_desc_lvl = memAlloc<unsigned>(usable_feat * 8);

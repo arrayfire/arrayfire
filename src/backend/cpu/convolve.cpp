@@ -183,6 +183,9 @@ void convolve_nd(T *optr, T const *iptr, accT const *fptr,
 template<typename T, typename accT, dim_t baseDim, bool expand>
 Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBatchKind kind)
 {
+    signal.eval();
+    filter.eval();
+
     auto sDims    = signal.dims();
     auto fDims    = filter.dims();
     auto sStrides = signal.strides();
@@ -255,6 +258,10 @@ void convolve2_separable(T *optr, T const *iptr, accT const *fptr,
 template<typename T, typename accT, bool expand>
 Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter, Array<accT> const& r_filter)
 {
+    signal.eval();
+    c_filter.eval();
+    r_filter.eval();
+
     auto sDims    = signal.dims();
     auto cfDims   = c_filter.dims();
     auto rfDims   = r_filter.dims();

@@ -14,6 +14,8 @@
 #include <err_cpu.hpp>
 #include <handle.hpp>
 #include <fast.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 using af::dim4;
 
@@ -248,6 +250,9 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
               const bool nonmax, const float feature_ratio,
               const unsigned edge)
 {
+    in.eval();
+    getQueue().sync();
+
     dim4 in_dims = in.dims();
     const unsigned max_feat = ceil(in.elements() * feature_ratio);
 
@@ -257,6 +262,7 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
     if (nonmax == 1) {
         dim4 V_dims(in_dims[0], in_dims[1]);
         V = createValueArray<float>(V_dims, (float)0);
+        V.eval();
     }
 
     // Arrays containing all features detected before non-maximal suppression.
@@ -282,7 +288,6 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
     Array<float> score_total = createEmptyArray<float>(af::dim4());
 
     if (nonmax == 1) {
-
         x_total     = createEmptyArray<float>(feat_found_dims);
         y_total     = createEmptyArray<float>(feat_found_dims);
         score_total = createEmptyArray<float>(feat_found_dims);

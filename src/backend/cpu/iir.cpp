@@ -16,32 +16,37 @@
 #include <math.hpp>
 #include <arith.hpp>
 #include <convolve.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 using af::dim4;
 
 namespace cpu
 {
-    template<typename T>
-    Array<T> iir(const Array<T> &b, const Array<T> &a, const Array<T> &x)
-    {
-        T h_a0 = a.get()[0];
-        Array<T> a0 = createValueArray<T>(b.dims(), h_a0);
 
-        ConvolveBatchKind type = x.ndims() == 1 ? CONVOLVE_BATCH_NONE : CONVOLVE_BATCH_SAME;
-        if (x.ndims() != b.ndims()) {
-            type = (x.ndims() < b.ndims()) ? CONVOLVE_BATCH_KERNEL : CONVOLVE_BATCH_SIGNAL;
-        }
+template<typename T>
+Array<T> iir(const Array<T> &b, const Array<T> &a, const Array<T> &x)
+{
+    b.eval();
+    a.eval();
+    x.eval();
 
-        // Extract the first N elements
-        Array<T> c = convolve<T, T, 1, true>(x, b, type);
-        dim4 cdims = c.dims();
-        cdims[0] = x.dims()[0];
-        c.resetDims(cdims);
+    ConvolveBatchKind type = x.ndims() == 1 ? CONVOLVE_BATCH_NONE : CONVOLVE_BATCH_SAME;
+    if (x.ndims() != b.ndims()) {
+        type = (x.ndims() < b.ndims()) ? CONVOLVE_BATCH_KERNEL : CONVOLVE_BATCH_SIGNAL;
+    }
 
-        int num_a = a.dims()[0];
+    // Extract the first N elements
+    Array<T> c = convolve<T, T, 1, true>(x, b, type);
+    dim4 cdims = c.dims();
+    cdims[0] = x.dims()[0];
+    c.resetDims(cdims);
 
+    Array<T> y = createEmptyArray<T>(c.dims());
+
+    auto func = [=] (Array<T> y, Array<T> c, const Array<T> a) {
         dim4 ydims = c.dims();
-        Array<T> y = createEmptyArray<T>(ydims);
+        int num_a = a.dims()[0];
 
         for (int l = 0; l < (int)ydims[3]; l++) {
             dim_t yidx3 = l * y.strides()[3];
@@ -76,17 +81,20 @@ namespace cpu
                 }
             }
         }
+    };
+    getQueue().enqueue(func, y, c, a);
 
-        return y;
-    }
+    return y;
+}
 
 #define INSTANTIATE(T)                          \
     template Array<T> iir(const Array<T> &b,    \
                           const Array<T> &a,    \
                           const Array<T> &x);   \
 
-    INSTANTIATE(float)
-    INSTANTIATE(double)
-    INSTANTIATE(cfloat)
-    INSTANTIATE(cdouble)
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(cfloat)
+INSTANTIATE(cdouble)
+
 }
