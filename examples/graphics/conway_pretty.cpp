@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
             // Update state
             state = state * C0 + C1;
 
-            double fps = 5;
+            double fps = 30;
             while(timer::stop(delay) < (1 / fps)) { }
         }
     } catch (af::exception& e) {
@@ -101,4 +101,3 @@ int main(int argc, char *argv[])
     #endif
     return 0;
 }
-
