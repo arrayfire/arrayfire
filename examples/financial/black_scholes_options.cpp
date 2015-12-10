@@ -82,7 +82,7 @@ int main(int argc, char **argv)
         af::sync();
 
 
-        int iter = 5;
+        int iter = 100;
         for (int n = 50; n <= 500; n += 50) {
 
             // Create GPU copies of the data
