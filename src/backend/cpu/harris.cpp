@@ -19,6 +19,8 @@
 #include <gradient.hpp>
 #include <sort_index.hpp>
 #include <cstring>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 using af::dim4;
 
@@ -44,14 +46,14 @@ void gaussian1D(T* out, const int dim, double sigma=0.0)
 }
 
 template<typename T>
-void second_order_deriv(
-    T* ixx_out,
-    T* ixy_out,
-    T* iyy_out,
-    const unsigned in_len,
-    const T* ix_in,
-    const T* iy_in)
+void second_order_deriv(Array<T> ixx, Array<T> ixy, Array<T> iyy,
+                        const unsigned in_len, const Array<T> ix, const Array<T> iy)
 {
+    T* ixx_out     = ixx.get();
+    T* ixy_out     = ixy.get();
+    T* iyy_out     = iyy.get();
+    const T* ix_in = ix.get();
+    const T* iy_in = iy.get();
     for (unsigned x = 0; x < in_len; x++) {
         ixx_out[x] = ix_in[x] * ix_in[x];
         ixy_out[x] = ix_in[x] * iy_in[x];
@@ -60,16 +62,14 @@ void second_order_deriv(
 }
 
 template<typename T>
-void harris_responses(
-    T* resp_out,
-    const unsigned idim0,
-    const unsigned idim1,
-    const T* ixx_in,
-    const T* ixy_in,
-    const T* iyy_in,
-    const float k_thr,
-    const unsigned border_len)
+void harris_responses(Array<T> resp, const unsigned idim0, const unsigned idim1,
+                      const Array<T> ixx, const Array<T> ixy, const Array<T> iyy,
+                      const float k_thr, const unsigned border_len)
 {
+    T* resp_out      = resp.get();
+    const T* ixx_in  = ixx.get();
+    const T* ixy_in  = ixy.get();
+    const T* iyy_in  = iyy.get();
     const unsigned r = border_len;
 
     for (unsigned x = r; x < idim1 - r; x++) {
@@ -87,18 +87,14 @@ void harris_responses(
 }
 
 template<typename T>
-void non_maximal(
-    float* x_out,
-    float* y_out,
-    float* resp_out,
-    unsigned* count,
-    const unsigned idim0,
-    const unsigned idim1,
-    const T* resp_in,
-    const float min_resp,
-    const unsigned border_len,
-    const unsigned max_corners)
+void non_maximal(Array<float> xOut, Array<float> yOut, Array<float> respOut, unsigned* count,
+                 const unsigned idim0, const unsigned idim1, const Array<T> respIn,
+                 const float min_resp, const unsigned border_len, const unsigned max_corners)
 {
+    float* x_out = xOut.get();
+    float* y_out = yOut.get();
+    float* resp_out = respOut.get();
+    const T* resp_in = respIn.get();
     // Responses on the border don't have 8-neighbors to compare, discard them
     const unsigned r = border_len + 1;
 
@@ -131,10 +127,19 @@ void non_maximal(
     }
 }
 
-static void keep_corners(float* x_out, float* y_out, float* resp_out,
-                         const float* x_in, const float* y_in, const float* resp_in,
-                         const unsigned* resp_idx, const unsigned n_corners)
+static void keep_corners(Array<float> xOut, Array<float> yOut, Array<float> respOut,
+                         const Array<float> xIn, const Array<float> yIn,
+                         const Array<float> respIn, const Array<unsigned> respIdx,
+                         const unsigned n_corners)
 {
+    float* x_out = xOut.get();
+    float* y_out = yOut.get();
+    float* resp_out = respOut.get();
+    const float* x_in = xIn.get();
+    const float* y_in = yIn.get();
+    const float* resp_in = respIn.get();
+    const uint* resp_idx = respIdx.get();
+
     // Keep only the first n_feat features
     for (unsigned f = 0; f < n_corners; f++) {
         x_out[f] = x_in[resp_idx[f]];
@@ -148,6 +153,8 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
                 const Array<T> &in, const unsigned max_corners, const float min_response,
                 const float sigma, const unsigned filter_len, const float k_thr)
 {
+    in.eval();
+
     dim4 idims = in.dims();
 
     // Window filter
@@ -156,8 +163,7 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
     if (sigma < 0.5f) {
         for (unsigned i = 0; i < filter_len; i++)
             h_filter[i] = (T)1.f / (filter_len);
-    }
-    else {
+    } else {
         gaussian1D<convAccT>(h_filter, (int)filter_len, sigma);
     }
     Array<convAccT> filter = createDeviceDataArray<convAccT>(dim4(filter_len), (const void*)h_filter);
@@ -168,15 +174,14 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
     Array<T> iy = createEmptyArray<T>(idims);
 
     // Compute first order derivatives
-    gradient<T>(iy, ix, in);
+    getQueue().enqueue(gradient<T>, iy, ix, in);
 
     Array<T> ixx = createEmptyArray<T>(idims);
     Array<T> ixy = createEmptyArray<T>(idims);
     Array<T> iyy = createEmptyArray<T>(idims);
 
     // Compute second-order derivatives
-    second_order_deriv<T>(ixx.get(), ixy.get(), iyy.get(),
-                          in.elements(), ix.get(), iy.get());
+    getQueue().enqueue(second_order_deriv<T>, ixx, ixy, iyy, in.elements(), ix, iy);
 
     // Convolve second-order derivatives with proper window filter
     ixx = convolve2<T, convAccT, false>(ixx, filter, filter);
@@ -185,26 +190,22 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
 
     const unsigned corner_lim = in.elements() * 0.2f;
 
-    float* x_corners = memAlloc<float>(corner_lim);
-    float* y_corners = memAlloc<float>(corner_lim);
-    float* resp_corners = memAlloc<float>(corner_lim);
+    Array<T> responses = createEmptyArray<T>(dim4(in.elements()));
 
-    T* resp = memAlloc<T>(in.elements());
+    getQueue().enqueue(harris_responses<T>, responses, idims[0], idims[1],
+                       ixx, ixy, iyy, k_thr, border_len);
 
-    // Calculate Harris responses for all pixels
-    harris_responses<T>(resp,
-                        idims[0], idims[1],
-                        ixx.get(), ixy.get(), iyy.get(),
-                        k_thr, border_len);
+    Array<float> xCorners    = createEmptyArray<float>(dim4(corner_lim));
+    Array<float> yCorners    = createEmptyArray<float>(dim4(corner_lim));
+    Array<float> respCorners = createEmptyArray<float>(dim4(corner_lim));
 
     const unsigned min_r = (max_corners > 0) ? 0.f : min_response;
-    unsigned corners_found = 0;
 
     // Performs non-maximal suppression
-    non_maximal<T>(x_corners, y_corners, resp_corners, &corners_found,
-                   idims[0], idims[1], resp, min_r, border_len, corner_lim);
-
-    memFree(resp);
+    getQueue().sync();
+    unsigned corners_found = 0;
+    non_maximal<T>(xCorners, yCorners, respCorners, &corners_found,
+                   idims[0], idims[1], responses, min_r, border_len, corner_lim);
 
     const unsigned corners_out = (max_corners > 0) ?
                                  min(corners_found, max_corners) :
@@ -213,42 +214,42 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
         return 0;
 
     if (max_corners > 0 && corners_found > corners_out) {
-        Array<float> harris_responses = createDeviceDataArray<float>(dim4(corners_found), (void*)resp_corners);
+        respCorners.resetDims(dim4(corners_found));
         Array<float> harris_sorted = createEmptyArray<float>(dim4(corners_found));
         Array<unsigned> harris_idx = createEmptyArray<unsigned>(dim4(corners_found));
 
         // Sort Harris responses
-        sort_index<float, false>(harris_sorted, harris_idx, harris_responses, 0);
+        sort_index<float, false>(harris_sorted, harris_idx, respCorners, 0);
 
         x_out = createEmptyArray<float>(dim4(corners_out));
         y_out = createEmptyArray<float>(dim4(corners_out));
         resp_out = createEmptyArray<float>(dim4(corners_out));
 
         // Keep only the corners with higher Harris responses
-        keep_corners(x_out.get(), y_out.get(), resp_out.get(),
-                     x_corners, y_corners, harris_sorted.get(), harris_idx.get(),
-                     corners_out);
-
-        memFree(x_corners);
-        memFree(y_corners);
-    }
-    else if (max_corners == 0 && corners_found < corner_lim) {
+        getQueue().enqueue(keep_corners, x_out, y_out, resp_out, xCorners, yCorners,
+                           harris_sorted, harris_idx, corners_out);
+    } else if (max_corners == 0 && corners_found < corner_lim) {
         x_out = createEmptyArray<float>(dim4(corners_out));
         y_out = createEmptyArray<float>(dim4(corners_out));
         resp_out = createEmptyArray<float>(dim4(corners_out));
 
-        memcpy(x_out.get(), x_corners, corners_out * sizeof(float));
-        memcpy(y_out.get(), y_corners, corners_out * sizeof(float));
-        memcpy(resp_out.get(), resp_corners, corners_out * sizeof(float));
-
-        memFree(x_corners);
-        memFree(y_corners);
-        memFree(resp_corners);
-    }
-    else {
-        x_out = createDeviceDataArray<float>(dim4(corners_out), (void*)x_corners);
-        y_out = createDeviceDataArray<float>(dim4(corners_out), (void*)y_corners);
-        resp_out = createDeviceDataArray<float>(dim4(corners_out), (void*)resp_corners);
+        auto copyFunc = [=](Array<float> x_out, Array<float> y_out,
+                            Array<float> outResponses, const Array<float> x_crnrs,
+                            const Array<float> y_crnrs, const Array<float> inResponses,
+                            const unsigned corners_out) {
+            memcpy(x_out.get(), x_crnrs.get(), corners_out * sizeof(float));
+            memcpy(y_out.get(), y_crnrs.get(), corners_out * sizeof(float));
+            memcpy(outResponses.get(), inResponses.get(), corners_out * sizeof(float));
+        };
+        getQueue().enqueue(copyFunc, x_out, y_out, resp_out,
+                           xCorners, yCorners, respCorners, corners_out);
+    } else {
+        x_out = xCorners;
+        y_out = yCorners;
+        resp_out = respCorners;
+        x_out.resetDims(dim4(corners_out));
+        y_out.resetDims(dim4(corners_out));
+        resp_out.resetDims(dim4(corners_out));
     }
 
     return corners_out;
