@@ -12,6 +12,7 @@
 #include <math.h>
 #include <arrayfire.h>
 #include <af/util.h>
+#include <af/macros.h>
 
 using namespace af;
 template<class ty> dtype get_dtype();

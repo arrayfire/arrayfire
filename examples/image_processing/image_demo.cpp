@@ -38,7 +38,7 @@ static const float h_sobel[] = {
 };
 
 // Demonstrates various image manipulations.
-static void img_test_demo(bool console)
+static void img_test_demo()
 {
     af::Window wnd("Image Demo");
 
@@ -95,13 +95,12 @@ static void img_test_demo(bool console)
 int main(int argc, char** argv)
 {
     int device = argc > 1 ? atoi(argv[1]) : 0;
-    bool console = argc > 2 ? argv[2][0] == '-' : false;
 
     try {
         af::setDevice(device);
         af::info();
         printf("** ArrayFire Image Demo **\n\n");
-        img_test_demo(console);
+        img_test_demo();
 
     } catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());

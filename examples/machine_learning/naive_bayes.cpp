@@ -12,6 +12,7 @@
 #include <vector>
 #include <string>
 #include <af/util.h>
+#include <af/macros.h>
 #include <math.h>
 #include "mnist_common.h"
 
@@ -163,4 +164,5 @@ int main(int argc, char** argv)
         std::cerr << ae.what() << std::endl;
     }
 
+    return 0;
 }

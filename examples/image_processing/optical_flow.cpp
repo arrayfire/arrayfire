@@ -12,6 +12,7 @@
 #include <math.h>
 #include <algorithm>
 #include <arrayfire.h>
+#include <af/macros.h>
 
 using namespace af;
 
@@ -121,12 +122,5 @@ int main(int argc, char* argv[])
         throw;
     }
 
-#ifdef WIN32 // pause in Windows
-    if (!console) {
-        printf("hit [enter]...");
-        fflush(stdout);
-        getchar();
-    }
-#endif
     return 0;
 }

@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <arrayfire.h>
+#include <af/macros.h>
 #include <math.h>
 #include <cstdlib>
 

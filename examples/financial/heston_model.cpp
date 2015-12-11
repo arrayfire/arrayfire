@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <arrayfire.h>
+#include <af/macros.h>
 
 using namespace std;
 using namespace af;
@@ -109,6 +110,7 @@ int main()
         af_print(C_CPU);
         return 0;
     } catch (af::exception& e) {
+
         fprintf(stderr, "%s\n", e.what());
         return 1;
     }

@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <arrayfire.h>
+#include <af/macros.h>
 #include "../common/progress.h"
 
 using namespace af;
@@ -163,5 +164,6 @@ int main(int argc, char* argv[])
     } catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());
     }
+
     return 0;
 }

@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <arrayfire.h>
+#include <af/macros.h>
 #include <cstdlib>
 
 #include "input.h"
@@ -112,12 +113,5 @@ int main(int argc, char **argv)
         throw;
     }
 
-    #ifdef WIN32 // pause in Windows
-    if (!(argc == 2 && argv[1][0] =='-')) {
-        printf("hit [enter]...");
-        fflush(stdout);
-        getchar();
-    }
-    #endif
     return 0;
 }

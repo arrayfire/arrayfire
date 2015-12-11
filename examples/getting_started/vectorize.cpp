@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <arrayfire.h>
 #include <af/util.h>
+#include <af/macros.h>
 
 using namespace af;
 
@@ -217,11 +218,5 @@ int main(int argc, char **argv)
         throw;
     }
 
-    #ifdef WIN32 // pause in Windows
-    if (!(argc == 2 && argv[1][0] == '-')) {
-        printf("hit [enter]...");
-        fflush(stdout);
-        getchar();
-    }
-    #endif
+    return 0;
 }

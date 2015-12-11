@@ -44,7 +44,7 @@ array pyramid(const array& img, const int level, const bool sampling)
     return pyr;
 }
 
-void pyramids_demo(bool console)
+void pyramids_demo()
 {
     af::Window wnd_rgb("Image Pyramids - RGB Images");
     af::Window wnd_gray("Image Pyramids - Grayscale Images");
@@ -88,13 +88,12 @@ void pyramids_demo(bool console)
 int main(int argc, char** argv)
 {
     int device = argc > 1 ? atoi(argv[1]) : 0;
-    bool console = argc > 2 ? argv[2][0] == '-' : false;
 
     try {
         af::setDevice(device);
         af::info();
         printf("** ArrayFire Image Pyramids Demo **\n\n");
-        pyramids_demo(console);
+        pyramids_demo();
 
     } catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());

@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <arrayfire.h>
+#include <af/macros.h>
 #include <cstdio>
 #include <cstdlib>
 
@@ -47,12 +48,5 @@ int main(int argc, char *argv[])
         throw;
     }
 
-    #ifdef WIN32 // pause in Windows
-    if (!(argc == 2 && argv[1][0] == '-')) {
-        printf("hit [enter]...");
-        fflush(stdout);
-        getchar();
-    }
-    #endif
     return 0;
 }

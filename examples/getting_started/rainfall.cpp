@@ -23,6 +23,7 @@
 
 #include <arrayfire.h>
 #include <af/util.h>
+#include <af/macros.h>
 #include <stdio.h>
 #include <cstdlib>
 using namespace af;
@@ -70,12 +71,5 @@ int main(int argc, char **argv)
         throw;
     }
 
-    #ifdef WIN32 // pause in Windows
-    if (!(argc == 2 && argv[1][0] == '-')) {
-        std::cout << "hit [enter]...";
-        fflush(stdout);
-        getchar();
-    }
-    #endif
     return 0;
 }

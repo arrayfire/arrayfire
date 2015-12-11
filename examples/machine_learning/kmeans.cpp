@@ -10,6 +10,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <arrayfire.h>
+#include <af/macros.h>
 #include <af/util.h>
 #include <cstdlib>
 
@@ -175,4 +176,6 @@ int main(int argc, char** argv)
     } catch (af::exception &ae) {
         std::cerr << ae.what() << std::endl;
     }
+
+    return 0;
 }

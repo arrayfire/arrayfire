@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <arrayfire.h>
+#include <af/macros.h>
 #include <stdio.h>
 #include <vector>
 #include <string>
@@ -197,4 +198,5 @@ int main(int argc, char** argv)
         std::cerr << ae.what() << std::endl;
     }
 
+    return 0;
 }
