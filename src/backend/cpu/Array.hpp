@@ -20,6 +20,8 @@
 #include <memory>
 #include <algorithm>
 #include <vector>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 namespace cpu
 {
@@ -162,6 +164,7 @@ namespace cpu
 
         T* device()
         {
+            getQueue().sync();
             if (!isOwner() || data.use_count() > 1) {
                 *this = Array<T>(dims(), get(), true, true);
             }
