@@ -14,6 +14,8 @@
 #include <dispatch.hpp>
 #include <cstdlib>
 #include <mutex>
+#include <platform.hpp>
+#include <async_queue.hpp>
 
 namespace cpu
 {
@@ -205,6 +207,7 @@ namespace cpu
     void deviceMemoryInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                           size_t *lock_bytes,  size_t *lock_buffers)
     {
+        getQueue().sync();
         if (alloc_bytes   ) *alloc_bytes   = total_bytes;
         if (alloc_buffers ) *alloc_buffers = memory_map.size();
         if (lock_bytes    ) *lock_bytes    = used_bytes;
