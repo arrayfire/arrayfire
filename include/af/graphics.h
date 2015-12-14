@@ -235,7 +235,7 @@ class AFAPI Window {
 
            \ingroup gfx_func_draw
          */
-        void surface(const array& S, const char* const title);
+        void surface(const array& S, const char* const title = NULL);
 #endif
 
 #if AF_API_VERSION >= 32
@@ -251,7 +251,7 @@ class AFAPI Window {
 
            \ingroup gfx_func_draw
          */
-        void surface(const array& xVals, const array& yVals, const array& S, const char* const title);
+        void surface(const array& xVals, const array& yVals, const array& S, const char* const title = NULL);
 #endif
 
         /**

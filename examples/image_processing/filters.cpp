@@ -214,21 +214,21 @@ int main(int argc, char **argv)
         af::setDevice(device);
         af::info();
 
-        array lena = loadImage(ASSETS_DIR "/examples/images/vegetable-woman.jpg", true);
+        array img = loadImage(ASSETS_DIR "/examples/images/vegetable-woman.jpg", true);
 
         array prew_mag, prew_dir;
         array sob_mag, sob_dir;
-        array lena1ch = colorSpace(lena, AF_GRAY, AF_RGB);
-        prewitt(prew_mag, prew_dir, lena1ch);
-        sobelFilter(sob_mag, sob_dir, lena1ch);
-        array sprd = spread(lena, 3, 3);
-        array hrl = hurl(lena, 10, 1);
-        array pckng = pick(lena, 40, 2);
-        array difog = DifferenceOfGaussian(lena, 1, 2);
+        array img1ch = colorSpace(img, AF_GRAY, AF_RGB);
+        prewitt(prew_mag, prew_dir, img1ch);
+        sobelFilter(sob_mag, sob_dir, img1ch);
+        array sprd = spread(img, 3, 3);
+        array hrl = hurl(img, 10, 1);
+        array pckng = pick(img, 40, 2);
+        array difog = DifferenceOfGaussian(img, 1, 2);
         array bil = bilateral(hrl, 3.0f, 40.0f);
         array mf = medianfilter(hrl, 5, 5);
         array gb = gaussianblur(hrl, 3, 3, 0.8);
-        array emb = emboss(lena, 45, 20, 10);
+        array emb = emboss(img, 45, 20, 10);
 
         af::Window wnd("Image Filters Demo");
         std::cout << "Press ESC while the window is in focus to exit" << std::endl;
@@ -252,13 +252,5 @@ int main(int argc, char **argv)
         fprintf(stderr, "%s\n", e.what());
         throw;
     }
-
-#ifdef WIN32 // pause in Windows
-    if (!(argc == 2 && argv[1][0] == '-')) {
-        printf("hit [enter]...");
-        fflush(stdout);
-        getchar();
-    }
-#endif
     return 0;
 }

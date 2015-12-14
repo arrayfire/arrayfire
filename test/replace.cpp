@@ -35,9 +35,16 @@ void replaceTest(const dim4 &dims)
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 
     array a = randu(dims, ty);
-    array c = a.copy();
-    array cond = randu(dims, ty) > constant(0.3, dims, ty);
     array b = randu(dims, ty);
+
+    if (a.isinteger()) {
+        a = (a % (1 << 30)).as(ty);
+        b = (b % (1 << 30)).as(ty);
+    }
+
+    array c = a.copy();
+
+    array cond = randu(dims, ty) > a;
 
     replace(c, cond, b);
 
@@ -65,8 +72,13 @@ void replaceScalarTest(const dim4 &dims)
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 
     array a = randu(dims, ty);
+
+    if (a.isinteger()) {
+        a = (a % (1 << 30)).as(ty);
+    }
+
     array c = a.copy();
-    array cond = randu(dims, ty) > constant(0.3, dims, ty);
+    array cond = randu(dims, ty) > a;
     double b = 3;
 
     replace(c, cond, b);
@@ -81,7 +93,7 @@ void replaceScalarTest(const dim4 &dims)
     cond.host(&hcond[0]);
 
     for (int i = 0; i < num; i++) {
-        ASSERT_EQ(hc[i], hcond[i] ? b : ha[i]);
+        ASSERT_EQ(hc[i], hcond[i] ? T(b) : ha[i]);
     }
 }
 
@@ -103,7 +115,7 @@ TEST(Replace, NaN)
     array a = randu(dims, ty);
     a(seq(a.dims(0) / 2), span, span, span) = af::NaN;
     array c = a.copy();
-    double b = 0;
+    float b = 0;
     replace(c, isNaN(c), b);
 
     int num = (int)a.elements();
