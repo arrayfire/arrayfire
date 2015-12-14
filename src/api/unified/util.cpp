@@ -61,3 +61,8 @@ af_err af_get_version(int *major, int *minor, int *patch)
 {
     return CALL(major, minor, patch);
 }
+
+const char *af_get_revision()
+{
+    return CALL_NO_PARAMS();
+}

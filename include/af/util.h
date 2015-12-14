@@ -248,9 +248,19 @@ extern "C" {
     AFAPI af_err af_example_function(af_array* out, const af_array in, const af_someenum_t param);
 
     ///
-    ///Get the version information of the library
+    /// Get the version information of the library
     ///
     AFAPI af_err af_get_version(int *major, int *minor, int *patch);
+
+
+#if AF_API_VERSION >= 33
+    ///
+    /// Get the revision (commit) information of the library.
+    /// This returns a constant string from compile time and should not be
+    /// freed by the user.
+    ///
+    AFAPI const char *af_get_revision();
+#endif
 
 #ifdef __cplusplus
 }
