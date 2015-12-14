@@ -72,13 +72,15 @@ af_err af_info()
 
 af_err af_info_string(char **str, const bool verbose)
 {
-    std::string infoStr = getInfo();
-    *str = (char*)malloc(sizeof(char) * (infoStr.size() + 1));
+    try {
+        std::string infoStr = getInfo();
+        af_alloc_host((void**)str, sizeof(char) * (infoStr.size() + 1));
 
-    // Need to do a deep copy
-    // str.c_str wont cut it
-    infoStr.copy(*str, infoStr.size());
-    (*str)[infoStr.size()] = '\0';
+        // Need to do a deep copy
+        // str.c_str wont cut it
+        infoStr.copy(*str, infoStr.size());
+        (*str)[infoStr.size()] = '\0';
+    } CATCHALL;
 
     return AF_SUCCESS;
 }

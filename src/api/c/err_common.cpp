@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/exception.h>
+#include <af/device.h>
 #include <err_common.hpp>
 #include <type_util.hpp>
 #include <string>
@@ -156,8 +157,8 @@ void af_get_last_error(char **str, dim_t *len)
         *str = NULL;
     }
 
-    *str = new char[*len + 1];
-    memcpy(*str, global_err_string.c_str(), *len * sizeof(char));
+    af_alloc_host((void**)str, sizeof(char) * (*len + 1));
+    global_err_string.copy(*str, *len);
 
     (*str)[*len] = '\0';
     global_err_string = std::string("");
