@@ -69,7 +69,7 @@ array edge(const array &in, int method = 0)
     return normalize(mag);
 }
 
-void edge(bool console)
+void edge()
 {
     af::Window myWindow("Edge Dectectors");
     af::Window myWindow2(512, 512, "Histogram");
@@ -99,14 +99,13 @@ void edge(bool console)
 int main(int argc, char* argv[])
 {
     int device = argc > 1 ? atoi(argv[1]) : 0;
-    bool console = argc > 2 ? argv[2][0] == '-' : false;
 
     try {
         af::setDevice(device);
         af::info();
 
         printf("** ArrayFire Edge Detection Demo **\n");
-        edge(console);
+        edge();
 
     } catch (af::exception &e) {
         fprintf(stderr, "%s\n", e.what());

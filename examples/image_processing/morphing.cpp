@@ -76,7 +76,7 @@ array blur(const array& img, const array mask = gaussianKernel(3,3))
 }
 
 // Demonstrates various image morphing manipulations.
-static void morphing_demo(bool console)
+static void morphing_demo()
 {
     af::Window wnd(1280, 720, "Morphological Operations");
     // load images
@@ -120,13 +120,12 @@ static void morphing_demo(bool console)
 int main(int argc, char** argv)
 {
     int device = argc > 1 ? atoi(argv[1]) : 0;
-    bool console = argc > 2 ? argv[2][0] == '-' : false;
 
     try {
         af::info();
         af::setDevice(device);
         printf("** ArrayFire Image Morphing Demo **\n\n");
-        morphing_demo(console);
+        morphing_demo();
 
     } catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());

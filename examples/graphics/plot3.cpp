@@ -25,13 +25,12 @@ int main(int argc, char *argv[])
 
         static float t=0.1;
         array Z = seq( 0.1f, 10.f, PRECISION);
-        array bounds = constant(1, Z.dims());
 
         do{
             array Y = sin((Z*t) + t) / Z;
             array X = cos((Z*t) + t) / Z;
-            X = max(min(X, bounds),-bounds);
-            Y = max(min(Y, bounds),-bounds);
+            X = max(min(X, 1), -1);
+            Y = max(min(Y, 1), -1);
 
             array Pts = join(1, X, Y, Z);
             //Pts can be passed in as a matrix in the form n x 3, 3 x n
@@ -45,14 +44,5 @@ int main(int argc, char *argv[])
         fprintf(stderr, "%s\n", e.what());
         throw;
     }
-
-    #ifdef WIN32 // pause in Windows
-    if (!(argc == 2 && argv[1][0] == '-')) {
-        printf("hit [enter]...");
-        fflush(stdout);
-        getchar();
-    }
-    #endif
     return 0;
 }
-
