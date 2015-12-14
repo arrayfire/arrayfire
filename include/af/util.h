@@ -95,7 +95,8 @@ namespace af
 #if AF_API_VERSION >= 31
     /**
         \param[out] output is the pointer to the c-string that will hold the data. The memory for
-        output is allocated by the function. The user is responsible for deleting the memory.
+        output is allocated by the function. The user is responsible for deleting the memory using
+        af::freeHost() or af_free_host().
         \param[in] exp is an expression, generally the name of the array
         \param[in] arr is the input array
         \param[in] precision is the precision length for display
@@ -106,6 +107,24 @@ namespace af
     */
     AFAPI void toString(char **output, const char *exp, const array &arr,
                         const int precision = 4, const bool transpose = true);
+#endif
+
+#if AF_API_VERSION >= 33
+    /**
+        \param[in] exp is an expression, generally the name of the array
+        \param[in] arr is the input array
+        \param[in] precision is the precision length for display
+        \param[in] transpose determines whether or not to transpose the array before storing it in
+        the string
+
+        \return output is the pointer to the c-string that will hold the data. The memory for
+        output is allocated by the function. The user is responsible for deleting the memory using
+        af::freeHost() or af_free_host().
+
+        \ingroup print_func_tostring
+    */
+    AFAPI const char* toString(const char *exp, const array &arr,
+                               const int precision = 4, const bool transpose = true);
 #endif
 
     // Purpose of Addition: "How to add Function" documentation

@@ -62,4 +62,10 @@ namespace af
         return;
     }
 
+    const char* toString(const char *exp, const array &arr, const int precision, const bool transpose)
+    {
+        char *output = NULL;
+        AF_THROW(af_array_to_string(&output, exp, arr.get(), precision, transpose));
+        return output;
+    }
 }
