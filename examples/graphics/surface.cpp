@@ -13,8 +13,8 @@
 
 using namespace af;
 
-static const int POINTS = 30;
-static const int N = 2 * POINTS;
+static const int M = 30;
+static const int N = 2 * M;
 
 int main(int argc, char *argv[])
 {
@@ -23,9 +23,9 @@ int main(int argc, char *argv[])
         af::info();
         af::Window myWindow(800, 800, "3D Surface example: ArrayFire");
 
-        // Creates grid of between [-1 1] with precision of 1 / POINTS
-        const array x = iota(dim4(N, 1), dim4(1, N)) / POINTS - 1;
-        const array y = iota(dim4(1, N), dim4(N, 1)) / POINTS - 1;
+        // Creates grid of between [-1 1] with precision of 1 / M
+        const array x = iota(dim4(N, 1), dim4(1, N)) / M - 1;
+        const array y = iota(dim4(1, N), dim4(N, 1)) / M - 1;
 
         std::cout << x.dims()  << y.dims() << std::endl;
 
