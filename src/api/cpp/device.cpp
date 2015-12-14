@@ -47,6 +47,13 @@ namespace af
         AF_THROW(af_info());
     }
 
+    const char* infoString(const bool verbose)
+    {
+        char *str = NULL;
+        AF_THROW(af_info_string(&str, verbose));
+        return (const char *)str;
+    }
+
     void deviceprop(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
     {
         deviceInfo(d_name, d_platform, d_toolkit, d_compute);

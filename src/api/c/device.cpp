@@ -70,6 +70,19 @@ af_err af_info()
     return AF_SUCCESS;
 }
 
+af_err af_info_string(char **str, const bool verbose)
+{
+    std::string infoStr = getInfo();
+    *str = (char*)malloc(sizeof(char) * (infoStr.size() + 1));
+
+    // Need to do a deep copy
+    // str.c_str wont cut it
+    infoStr.copy(*str, infoStr.size());
+    (*str)[infoStr.size()] = '\0';
+
+    return AF_SUCCESS;
+}
+
 af_err af_get_version(int *major, int *minor, int *patch)
 {
     *major = AF_VERSION_MAJOR;

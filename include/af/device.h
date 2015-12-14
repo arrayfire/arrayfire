@@ -29,6 +29,27 @@ namespace af
     */
 
     /**
+       \defgroup device_func_info_string infoString
+
+       Get af::info() as a string
+
+       @{
+
+       \brief Returns the output of af::info() as a string
+
+       \param[in] verbose flag to return verbose info
+
+       \returns string containing output of af::info()
+
+       \ingroup arrayfire_func
+       \ingroup device_mat
+    */
+    AFAPI const char* infoString(const bool verbose = false);
+    /**
+       @}
+    */
+
+    /**
        \defgroup device_func_prop deviceInfo
 
        Get device information
@@ -205,10 +226,23 @@ extern "C" {
     */
     AFAPI af_err af_info();
 
+    /**
+       \ingroup device_func_info
+    */
     AFAPI af_err af_init();
 
     /**
-       \ingroup device_func_info
+       \brief Gets the output of af_info() as a string
+
+       \param[out] str contains the string
+       \param[in] verbose flag to return verbose info
+
+       \ingroup device_func_info_string
+    */
+    AFAPI af_err af_info_string(char** str, const bool verbose);
+
+    /**
+       \ingroup device_func_prop
     */
     AFAPI af_err af_device_info(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
