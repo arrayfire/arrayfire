@@ -140,6 +140,18 @@ namespace af
         AF_THROW(af_free_pinned((void *)ptr));
     }
 
+    void *allocHost(const size_t elements, const af::dtype type)
+    {
+        void *ptr;
+        AF_THROW(af_alloc_host(&ptr, elements * size_of(type)));
+        return ptr;
+    }
+
+    void freeHost(const void *ptr)
+    {
+        AF_THROW(af_free_host((void *)ptr));
+    }
+
     void deviceGC()
     {
         AF_THROW(af_device_gc());
@@ -164,16 +176,21 @@ namespace af
         return size_bytes;
     }
 
-#define INSTANTIATE(T)                                                  \
-    template<> AFAPI                                                    \
-    T* alloc(const size_t elements)                                     \
-    {                                                                   \
-        return (T*)alloc(elements, (af::dtype)dtype_traits<T>::af_type); \
-    }                                                                   \
-    template<> AFAPI                                                    \
-    T* pinned(const size_t elements)                                    \
-    {                                                                   \
-        return (T*)pinned(elements, (af::dtype)dtype_traits<T>::af_type); \
+#define INSTANTIATE(T)                                                      \
+    template<> AFAPI                                                        \
+    T* alloc(const size_t elements)                                         \
+    {                                                                       \
+        return (T*)alloc(elements, (af::dtype)dtype_traits<T>::af_type);    \
+    }                                                                       \
+    template<> AFAPI                                                        \
+    T* pinned(const size_t elements)                                        \
+    {                                                                       \
+        return (T*)pinned(elements, (af::dtype)dtype_traits<T>::af_type);   \
+    }                                                                       \
+    template<> AFAPI                                                        \
+    T* allocHost(const size_t elements)                                     \
+    {                                                                       \
+        return (T*)allocHost(elements, (af::dtype)dtype_traits<T>::af_type);\
     }
 
     INSTANTIATE(float)

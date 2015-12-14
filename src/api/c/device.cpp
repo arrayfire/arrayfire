@@ -297,6 +297,24 @@ af_err af_free_pinned(void *ptr)
     return AF_SUCCESS;
 }
 
+af_err af_alloc_host(void **ptr, const dim_t bytes)
+{
+    try {
+        AF_CHECK(af_init());
+        *ptr = malloc(bytes);
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_free_host(void *ptr)
+{
+    try {
+        AF_CHECK(af_init());
+        free(ptr);
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
 af_err af_device_gc()
 {
     try {

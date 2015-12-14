@@ -101,6 +101,12 @@ namespace af
     T* alloc(const size_t elements);
     /// @}
 
+    /// \ingroup device_func_free
+    ///
+    /// \copydoc device_func_free
+    /// \param[in] ptr the memory to free
+    AFAPI void free(const void *ptr);
+
     /// \ingroup device_func_pinned
     /// @{
     ///
@@ -119,15 +125,45 @@ namespace af
     T* pinned(const size_t elements);
     /// @}
 
-    /// \ingroup device_func_free
-    /// @{
-    /// \copydoc device_func_free
+    /// \ingroup device_func_free_pinned
+    ///
+    /// \copydoc device_func_free_pinned
     /// \param[in] ptr the memory to free
-    AFAPI void free(const void *ptr);
-
-    /// \copydoc free()
     AFAPI void freePinned(const void *ptr);
-    ///@}
+
+    /// \brief Allocate memory on host
+    ///
+    /// \copydoc device_func_alloc_host
+    ///
+    /// \param[in] elements the number of elements to allocate
+    /// \param[in] type is the type of the elements to allocate
+    /// \returns the pointer to the memory
+    ///
+    /// \ingroup device_func_alloc_host
+    AFAPI void *allocHost(const size_t elements, const dtype type);
+
+    /// \brief Allocate memory on host
+    ///
+    /// \copydoc device_func_alloc_host
+    ///
+    /// \param[in] elements the number of elements to allocate
+    /// \returns the pointer to the memory
+    ///
+    /// \note the size of the memory allocated is the number of \p elements *
+    ///         sizeof(type)
+    ///
+    /// \ingroup device_func_alloc_host
+    template<typename T>
+    AFAPI T* allocHost(const size_t elements);
+
+    /// \brief Free memory allocated internally by ArrayFire
+    //
+    /// \copydoc device_func_free_host
+    ///
+    /// \param[in] ptr the memory to free
+    ///
+    /// \ingroup device_func_free_host
+    AFAPI void freeHost(const void *ptr);
 
     /// \ingroup device_func_mem
     /// @{
@@ -207,19 +243,29 @@ extern "C" {
     AFAPI af_err af_alloc_device(void **ptr, const dim_t bytes);
 
     /**
-       \ingroup device_func_pinned
-    */
-    AFAPI af_err af_alloc_pinned(void **ptr, const dim_t bytes);
-
-    /**
        \ingroup device_func_free
     */
     AFAPI af_err af_free_device(void *ptr);
 
     /**
+       \ingroup device_func_pinned
+    */
+    AFAPI af_err af_alloc_pinned(void **ptr, const dim_t bytes);
+
+    /**
        \ingroup device_func_free_pinned
     */
     AFAPI af_err af_free_pinned(void *ptr);
+
+    /**
+       \ingroup device_func_alloc_host
+    */
+    AFAPI af_err af_alloc_host(void **ptr, const dim_t bytes);
+
+    /**
+       \ingroup device_func_free_host
+    */
+    AFAPI af_err af_free_host(void *ptr);
 
     /**
        Create array from device memory

@@ -95,6 +95,16 @@ af_err af_free_pinned(void *ptr)
     return CALL(ptr);
 }
 
+af_err af_alloc_host(void **ptr, const dim_t bytes)
+{
+    return CALL(ptr, bytes);
+}
+
+af_err af_free_host(void *ptr)
+{
+    return CALL(ptr);
+}
+
 af_err af_device_array(af_array *arr, const void *data, const unsigned ndims, const dim_t * const dims, const af_dtype type)
 {
     return CALL(arr, data, ndims, dims, type);
