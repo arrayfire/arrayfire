@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <cstdlib>
 #include <arrayfire.h>
-#include <af/macros.h>
 using namespace af;
 
 // use static variables at file scope so timeit() wrapper functions

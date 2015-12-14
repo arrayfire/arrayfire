@@ -19,7 +19,6 @@
 #include <math.h>
 #include <cstdlib>
 #include <arrayfire.h>
-#include <af/macros.h>
 using namespace af;
 
 // generate millions of random samples

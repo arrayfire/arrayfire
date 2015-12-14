@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <arrayfire.h>
-#include <af/macros.h>
 #include <cstdlib>
 
 #include "input.h"

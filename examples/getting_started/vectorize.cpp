@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <arrayfire.h>
 #include <af/util.h>
-#include <af/macros.h>
 
 using namespace af;
 

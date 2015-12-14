@@ -32,7 +32,6 @@
 #include <stdio.h>
 #include <iostream>
 #include <arrayfire.h>
-#include <af/macros.h>
 
 using namespace std;
 using namespace af;

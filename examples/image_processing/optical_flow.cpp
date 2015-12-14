@@ -12,7 +12,6 @@
 #include <math.h>
 #include <algorithm>
 #include <arrayfire.h>
-#include <af/macros.h>
 
 using namespace af;
 

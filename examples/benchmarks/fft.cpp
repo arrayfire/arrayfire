@@ -8,7 +8,6 @@
  ********************************************************/
 
 #include <arrayfire.h>
-#include <af/macros.h>
 #include <stdio.h>
 #include <math.h>
 #include <cstdlib>

@@ -23,7 +23,6 @@
 
 #include <arrayfire.h>
 #include <af/util.h>
-#include <af/macros.h>
 #include <stdio.h>
 #include <cstdlib>
 using namespace af;
