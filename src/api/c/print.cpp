@@ -172,8 +172,8 @@ af_err af_array_to_string(char **output, const char *exp, const af_array arr,
         default:    TYPE_ERROR(1, type);
         }
         std::string str = ss.str();
-        *output = new char[str.size() + 1];
-        std::copy(str.begin(), str.end(), *output);
+        af_alloc_host((void**)output, sizeof(char) * (str.size() + 1));
+        str.copy(*output, str.size());
         (*output)[str.size()] = '\0'; // don't forget the terminating 0
     }
     CATCHALL;

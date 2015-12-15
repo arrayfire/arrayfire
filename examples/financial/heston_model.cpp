@@ -109,6 +109,7 @@ int main()
         af_print(C_CPU);
         return 0;
     } catch (af::exception& e) {
+
         fprintf(stderr, "%s\n", e.what());
         return 1;
     }

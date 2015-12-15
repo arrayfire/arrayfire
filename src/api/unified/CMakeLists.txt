@@ -18,6 +18,7 @@ FILE(GLOB common_sources
     "../c/util.cpp"
     "../c/err_common.cpp"
     "../c/type_util.cpp"
+    "../c/version.cpp"
     "../../backend/dim4.cpp"
     )
 

@@ -29,6 +29,27 @@ namespace af
     */
 
     /**
+       \defgroup device_func_info_string infoString
+
+       Get af::info() as a string
+
+       @{
+
+       \brief Returns the output of af::info() as a string
+
+       \param[in] verbose flag to return verbose info
+
+       \returns string containing output of af::info()
+
+       \ingroup arrayfire_func
+       \ingroup device_mat
+    */
+    AFAPI const char* infoString(const bool verbose = false);
+    /**
+       @}
+    */
+
+    /**
        \defgroup device_func_prop deviceInfo
 
        Get device information
@@ -101,6 +122,12 @@ namespace af
     T* alloc(const size_t elements);
     /// @}
 
+    /// \ingroup device_func_free
+    ///
+    /// \copydoc device_func_free
+    /// \param[in] ptr the memory to free
+    AFAPI void free(const void *ptr);
+
     /// \ingroup device_func_pinned
     /// @{
     ///
@@ -119,15 +146,45 @@ namespace af
     T* pinned(const size_t elements);
     /// @}
 
-    /// \ingroup device_func_free
-    /// @{
-    /// \copydoc device_func_free
+    /// \ingroup device_func_free_pinned
+    ///
+    /// \copydoc device_func_free_pinned
     /// \param[in] ptr the memory to free
-    AFAPI void free(const void *ptr);
-
-    /// \copydoc free()
     AFAPI void freePinned(const void *ptr);
-    ///@}
+
+    /// \brief Allocate memory on host
+    ///
+    /// \copydoc device_func_alloc_host
+    ///
+    /// \param[in] elements the number of elements to allocate
+    /// \param[in] type is the type of the elements to allocate
+    /// \returns the pointer to the memory
+    ///
+    /// \ingroup device_func_alloc_host
+    AFAPI void *allocHost(const size_t elements, const dtype type);
+
+    /// \brief Allocate memory on host
+    ///
+    /// \copydoc device_func_alloc_host
+    ///
+    /// \param[in] elements the number of elements to allocate
+    /// \returns the pointer to the memory
+    ///
+    /// \note the size of the memory allocated is the number of \p elements *
+    ///         sizeof(type)
+    ///
+    /// \ingroup device_func_alloc_host
+    template<typename T>
+    AFAPI T* allocHost(const size_t elements);
+
+    /// \brief Free memory allocated internally by ArrayFire
+    //
+    /// \copydoc device_func_free_host
+    ///
+    /// \param[in] ptr the memory to free
+    ///
+    /// \ingroup device_func_free_host
+    AFAPI void freeHost(const void *ptr);
 
     /// \ingroup device_func_mem
     /// @{
@@ -169,10 +226,23 @@ extern "C" {
     */
     AFAPI af_err af_info();
 
+    /**
+       \ingroup device_func_info
+    */
     AFAPI af_err af_init();
 
     /**
-       \ingroup device_func_info
+       \brief Gets the output of af_info() as a string
+
+       \param[out] str contains the string
+       \param[in] verbose flag to return verbose info
+
+       \ingroup device_func_info_string
+    */
+    AFAPI af_err af_info_string(char** str, const bool verbose);
+
+    /**
+       \ingroup device_func_prop
     */
     AFAPI af_err af_device_info(char* d_name, char* d_platform, char *d_toolkit, char* d_compute);
 
@@ -207,19 +277,29 @@ extern "C" {
     AFAPI af_err af_alloc_device(void **ptr, const dim_t bytes);
 
     /**
-       \ingroup device_func_pinned
-    */
-    AFAPI af_err af_alloc_pinned(void **ptr, const dim_t bytes);
-
-    /**
        \ingroup device_func_free
     */
     AFAPI af_err af_free_device(void *ptr);
 
     /**
+       \ingroup device_func_pinned
+    */
+    AFAPI af_err af_alloc_pinned(void **ptr, const dim_t bytes);
+
+    /**
        \ingroup device_func_free_pinned
     */
     AFAPI af_err af_free_pinned(void *ptr);
+
+    /**
+       \ingroup device_func_alloc_host
+    */
+    AFAPI af_err af_alloc_host(void **ptr, const dim_t bytes);
+
+    /**
+       \ingroup device_func_free_host
+    */
+    AFAPI af_err af_free_host(void *ptr);
 
     /**
        Create array from device memory

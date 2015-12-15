@@ -70,6 +70,21 @@ af_err af_info()
     return AF_SUCCESS;
 }
 
+af_err af_info_string(char **str, const bool verbose)
+{
+    try {
+        std::string infoStr = getInfo();
+        af_alloc_host((void**)str, sizeof(char) * (infoStr.size() + 1));
+
+        // Need to do a deep copy
+        // str.c_str wont cut it
+        infoStr.copy(*str, infoStr.size());
+        (*str)[infoStr.size()] = '\0';
+    } CATCHALL;
+
+    return AF_SUCCESS;
+}
+
 af_err af_get_version(int *major, int *minor, int *patch)
 {
     *major = AF_VERSION_MAJOR;
@@ -293,6 +308,24 @@ af_err af_free_pinned(void *ptr)
 {
     try {
         pinnedFree<char>((char *)ptr);
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_alloc_host(void **ptr, const dim_t bytes)
+{
+    try {
+        AF_CHECK(af_init());
+        *ptr = malloc(bytes);
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_free_host(void *ptr)
+{
+    try {
+        AF_CHECK(af_init());
+        free(ptr);
     } CATCHALL;
     return AF_SUCCESS;
 }
