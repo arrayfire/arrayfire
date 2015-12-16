@@ -388,6 +388,19 @@ bool noDoubleTests()
     return ((isTypeDouble && !isDoubleSupported) ? true : false);
 }
 
+bool noImageIOTests()
+{
+    af_array arr = 0;
+    const af_err err = af_load_image(&arr, TEST_DIR"/imageio/color_small.png", true);
+
+    if(arr != 0) af_release_array(arr);
+
+    if(err == AF_ERR_NOT_CONFIGURED)
+        return true;    // Yes, disable test
+    else
+        return false;   // No, let test continue
+}
+
 // TODO: perform conversion on device for CUDA and OpenCL
 template<typename T>
 af_err conv_image(af_array *out, af_array in)
