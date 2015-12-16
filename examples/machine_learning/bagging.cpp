@@ -147,4 +147,5 @@ int main(int argc, char** argv)
         std::cerr << ae.what() << std::endl;
     }
 
+    return 0;
 }
