@@ -64,6 +64,22 @@ static void print(const char *exp, af_array arr, const int precision, std::ostre
     }
 
     const ArrayInfo info = getInfo(arr);
+
+    std::ios_base::fmtflags backup = os.flags();
+
+    os << "[" << info.dims() << "]\n";
+#ifndef NDEBUG
+    os <<"   Offsets: [" << info.offsets() << "]" << std::endl;
+    os <<"   Strides: [" << info.strides() << "]" << std::endl;
+#endif
+
+    // Handle empty array
+    if(info.elements() == 0) {
+        os << "<empty>" << std::endl;
+        os.flags(backup);
+        return;
+    }
+
     vector<T> data(info.elements());
 
     af_array arrT;
@@ -80,14 +96,6 @@ static void print(const char *exp, af_array arr, const int precision, std::ostre
     if(transpose) {
         AF_CHECK(af_release_array(arrT));
     }
-
-    std::ios_base::fmtflags backup = os.flags();
-
-    os << "[" << info.dims() << "]\n";
-#ifndef NDEBUG
-    os <<"   Offsets: [" << info.offsets() << "]" << std::endl;
-    os <<"   Strides: [" << info.strides() << "]" << std::endl;
-#endif
 
     printer(os, &data.front(), infoT, infoT.ndims() - 1, precision);
 
