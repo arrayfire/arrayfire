@@ -24,6 +24,7 @@ template<typename T, bool isColor>
 void bilateralTest(string pTestFile)
 {
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     vector<dim4>       inDims;
     vector<string>    inFiles;
