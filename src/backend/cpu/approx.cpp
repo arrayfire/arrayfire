@@ -136,6 +136,9 @@ namespace cpu
     Array<Ty> approx1(const Array<Ty> &in, const Array<Tp> &pos,
                        const af_interp_type method, const float offGrid)
     {
+        in.eval();
+        pos.eval();
+
         af::dim4 odims = in.dims();
         odims[0] = pos.dims()[0];
 
@@ -305,6 +308,10 @@ namespace cpu
     Array<Ty> approx2(const Array<Ty> &in, const Array<Tp> &pos0, const Array<Tp> &pos1,
                        const af_interp_type method, const float offGrid)
     {
+        in.eval();
+        pos0.eval();
+        pos1.eval();
+
         af::dim4 odims = in.dims();
         odims[0] = pos0.dims()[0];
         odims[1] = pos0.dims()[1];

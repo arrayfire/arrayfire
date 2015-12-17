@@ -31,11 +31,14 @@ namespace cpu
                         const bool is_sorted)
     {
         in.eval();
-        getQueue().sync();
 
         Array<T> out = createEmptyArray<T>(af::dim4());
         if (is_sorted) out = copyArray<T>(in);
         else           out = sort<T, 1>(in, 0);
+
+        // Need to sync old jobs since we need to
+        // operator on pointers directly in std::unique
+        getQueue().sync();
 
         T *ptr = out.get();
         T *last = std::unique(ptr, ptr + in.elements());

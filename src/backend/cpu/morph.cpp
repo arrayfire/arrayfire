@@ -33,6 +33,9 @@ static inline unsigned getIdx(const dim4 &strides,
 template<typename T, bool isDilation>
 Array<T> morph(const Array<T> &in, const Array<T> &mask)
 {
+    in.eval();
+    mask.eval();
+
     Array<T> out = createEmptyArray<T>(in.dims());
 
     auto func = [=] (Array<T> out, const Array<T> in, const Array<T> mask) {
@@ -96,6 +99,9 @@ Array<T> morph(const Array<T> &in, const Array<T> &mask)
 template<typename T, bool isDilation>
 Array<T> morph3d(const Array<T> &in, const Array<T> &mask)
 {
+    in.eval();
+    mask.eval();
+
     Array<T> out = createEmptyArray<T>(in.dims());
 
     auto func = [=] (Array<T> out, const Array<T> in, const Array<T> mask) {

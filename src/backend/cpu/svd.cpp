@@ -68,6 +68,11 @@ namespace cpu
     template <typename T, typename Tr>
     void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
     {
+        s.eval();
+        u.eval();
+        vt.eval();
+        in.eval();
+
         auto func = [=] (Array<Tr> s, Array<T> u, Array<T> vt, Array<T> in) {
             dim4 iDims = in.dims();
             int M = iDims[0];

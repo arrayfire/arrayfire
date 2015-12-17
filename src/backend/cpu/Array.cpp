@@ -8,6 +8,7 @@
  ********************************************************/
 
 #include <af/dim4.hpp>
+#include <err_common.hpp>
 #include <Array.hpp>
 #include <copy.hpp>
 #include <TNJ/BufferNode.hpp>
@@ -69,6 +70,7 @@ namespace cpu
     void Array<T>::eval()
     {
         if (isReady()) return;
+        if (getQueue().is_worker()) AF_ERROR("Array not evaluated", AF_ERR_INTERNAL);
 
         this->setId(getActiveDeviceId());
 

@@ -48,7 +48,7 @@ namespace cpu
     template<typename T>
     void copyData(T *to, const Array<T> &from)
     {
-        evalArray(from);
+        from.eval();
         getQueue().sync();
         if(from.isOwner()) {
             // FIXME: Check for errors / exceptions
@@ -118,16 +118,18 @@ namespace cpu
     template<typename T>
     void multiply_inplace(Array<T> &in, double val)
     {
+        in.eval();
         getQueue().enqueue(copy<T, T>, in, in, 0, val);
     }
 
     template<typename inType, typename outType>
-    Array<outType>
-    padArray(Array<inType> const &in, dim4 const &dims,
-             outType default_value, double factor)
+    Array<outType> padArray(Array<inType> const &in, dim4 const &dims,
+                            outType default_value, double factor)
     {
         Array<outType> ret = createValueArray<outType>(dims, default_value);
         ret.eval();
+        in.eval();
+        // FIXME:
         getQueue().sync();
         getQueue().enqueue(copy<inType, outType>, ret, in, outType(default_value), factor);
         return ret;
@@ -136,6 +138,8 @@ namespace cpu
     template<typename inType, typename outType>
     void copyArray(Array<outType> &out, Array<inType> const &in)
     {
+        out.eval();
+        in.eval();
         getQueue().enqueue(copy<inType, outType>, out, in, scalar<outType>(0), 1.0);
     }
 

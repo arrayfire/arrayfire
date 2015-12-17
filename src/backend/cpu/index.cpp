@@ -41,6 +41,8 @@ dim_t trimIndex(dim_t idx, const dim_t &len)
 template<typename T>
 Array<T> index(const Array<T>& in, const af_index_t idxrs[])
 {
+    in.eval();
+
     vector<bool> isSeq(4);
     vector<af_seq> seqs(4, af_span);
     // create seq vector to retrieve output
@@ -60,6 +62,7 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     for (dim_t x=0; x<isSeq.size(); ++x) {
         if (!isSeq[x]) {
             idxArrs[x] = castArray<uint>(idxrs[x].idx.arr);
+            idxArrs[x].eval();
             // set output array ith dimension value
             oDims[x] = idxArrs[x].elements();
         }

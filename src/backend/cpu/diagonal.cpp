@@ -10,6 +10,7 @@
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <af/defines.h>
+#include <handle.hpp>
 #include <Array.hpp>
 #include <diagonal.hpp>
 #include <math.hpp>
@@ -22,6 +23,8 @@ namespace cpu
     template<typename T>
     Array<T> diagCreate(const Array<T> &in, const int num)
     {
+        in.eval();
+
         int size = in.dims()[0] + std::abs(num);
         int batch = in.dims()[1];
         Array<T> out = createEmptyArray<T>(dim4(size, size, batch));
@@ -52,12 +55,14 @@ namespace cpu
     template<typename T>
     Array<T> diagExtract(const Array<T> &in, const int num)
     {
-        const dim_t *idims = in.dims().get();
+        in.eval();
+
+        const dim4 idims = in.dims();
         dim_t size = std::max(idims[0], idims[1]) - std::abs(num);
         Array<T> out = createEmptyArray<T>(dim4(size, 1, idims[2], idims[3]));
 
         auto func = [=] (Array<T> out, const Array<T> in) {
-            const dim_t *odims = out.dims().get();
+            const dim4 odims = out.dims();
 
             const int i_off = (num > 0) ? (num * in.strides()[1]) : (-num);
 

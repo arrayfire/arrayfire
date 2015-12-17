@@ -147,6 +147,9 @@ template<typename T>
 Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                 af_mat_prop optLhs, af_mat_prop optRhs)
 {
+    lhs.eval();
+    rhs.eval();
+
     CBLAS_TRANSPOSE lOpts = toCblasTranspose(optLhs);
     CBLAS_TRANSPOSE rOpts = toCblasTranspose(optRhs);
 
@@ -225,6 +228,9 @@ template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
              af_mat_prop optLhs, af_mat_prop optRhs)
 {
+    lhs.eval();
+    rhs.eval();
+
     Array<T> out = createEmptyArray<T>(af::dim4(1));
     if(optLhs == AF_MAT_CONJ && optRhs == AF_MAT_CONJ) {
         getQueue().enqueue(dot_<T, false, true>, out, lhs, rhs, optLhs, optRhs);

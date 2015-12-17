@@ -52,9 +52,15 @@ cdouble getConjugate(const cdouble &in)
 }
 
 template<typename T, bool conjugate>
-void transpose_(T *out, const T *in, const af::dim4 &odims, const af::dim4 &idims,
-                const af::dim4 &ostrides, const af::dim4 &istrides)
+void transpose_(Array<T> output, const Array<T> input)
 {
+    const dim4 odims    = output.dims();
+    const dim4 ostrides = output.strides();
+    const dim4 istrides = input.strides();
+
+    T * out = output.get();
+    T const * const in = input.get();
+
     for (dim_t l = 0; l < odims[3]; ++l) {
         for (dim_t k = 0; k < odims[2]; ++k) {
             // Outermost loop handles batch mode
@@ -82,35 +88,32 @@ void transpose_(T *out, const T *in, const af::dim4 &odims, const af::dim4 &idim
 template<typename T>
 void transpose_(Array<T> out, const Array<T> in, const bool conjugate)
 {
-    // get data pointers for input and output Arrays
-    T* outData          = out.get();
-    const T*   inData   = in.get();
-
-    if(conjugate) {
-        transpose_<T, true>(outData, inData,
-                            out.dims(), in.dims(), out.strides(), in.strides());
-    } else {
-        transpose_<T, false>(outData, inData,
-                             out.dims(), in.dims(), out.strides(), in.strides());
-    }
+    return (conjugate ? transpose_<T, true>(out, in) : transpose_<T, false>(out, in));
 }
 
 template<typename T>
 Array<T> transpose(const Array<T> &in, const bool conjugate)
 {
-    const dim4 inDims = in.dims();
+    in.eval();
 
-    dim4 outDims   = dim4(inDims[1],inDims[0],inDims[2],inDims[3]);
-
+    const dim4 inDims  = in.dims();
+    const dim4 outDims = dim4(inDims[1],inDims[0],inDims[2],inDims[3]);
     // create an array with first two dimensions swapped
     Array<T> out  = createEmptyArray<T>(outDims);
+
     getQueue().enqueue(transpose_<T>, out, in, conjugate);
+
     return out;
 }
 
 template<typename T, bool conjugate>
-void transpose_inplace(T *in, const af::dim4 &idims, const af::dim4 &istrides)
+void transpose_inplace(Array<T> input)
 {
+    const dim4 idims    = input.dims();
+    const dim4 istrides = input.strides();
+
+    T * in = input.get();
+
     for (dim_t l = 0; l < idims[3]; ++l) {
         for (dim_t k = 0; k < idims[2]; ++k) {
             // Outermost loop handles batch mode
@@ -141,19 +144,13 @@ void transpose_inplace(T *in, const af::dim4 &idims, const af::dim4 &istrides)
 template<typename T>
 void transpose_inplace_(Array<T> in, const bool conjugate)
 {
-    // get data pointers for input and output Arrays
-    T* inData = in.get();
-
-    if(conjugate) {
-        transpose_inplace<T, true >(inData, in.dims(), in.strides());
-    } else {
-        transpose_inplace<T, false>(inData, in.dims(), in.strides());
-    }
+    return (conjugate ? transpose_inplace<T, true >(in) : transpose_inplace<T, false>(in));
 }
 
 template<typename T>
 void transpose_inplace(Array<T> &in, const bool conjugate)
 {
+    in.eval();
     getQueue().enqueue(transpose_inplace_<T>, in, conjugate);
 }
 
