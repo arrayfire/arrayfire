@@ -9,10 +9,6 @@
 
 #pragma once
 
-#include <af/macros.h>
-
-#define MSG AF_MSG
-
 #if defined(_WIN32) || defined(_MSC_VER)
     #define __PRETTY_FUNCTION__ __FUNCSIG__
     #if _MSC_VER < 1900

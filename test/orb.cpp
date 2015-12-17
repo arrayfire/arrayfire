@@ -144,6 +144,7 @@ template<typename T>
 void orbTest(string pTestFile)
 {
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     vector<dim4>             inDims;
     vector<string>           inFiles;
@@ -253,6 +254,7 @@ void orbTest(string pTestFile)
 TEST(ORB, CPP)
 {
     if (noDoubleTests<float>()) return;
+    if (noImageIOTests()) return;
 
     vector<dim4>             inDims;
     vector<string>           inFiles;
