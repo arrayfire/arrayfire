@@ -20,9 +20,79 @@ namespace kernel
 
     static const int THREADS = 256;
     static const int BLOCKS  = 64;
-    static unsigned long long seed = 0;
-    static curandState_t *states[DeviceManager::MAX_DEVICES];
-    static bool is_init[DeviceManager::MAX_DEVICES] = {0};
+    static unsigned long long seeds[DeviceManager::MAX_DEVICES] = {0};
+
+    __global__ static void
+    setup_kernel(curandState_t *states, unsigned long long seed)
+    {
+        unsigned tid = blockDim.x * blockIdx.x + threadIdx.x;
+        curand_init(seed, tid, 0, &states[tid]);
+    }
+
+    class curandStateManager
+    {
+        curandState_t *_state;
+        unsigned long long _seed;
+
+        void resetSeed()
+        {
+            CUDA_LAUNCH(setup_kernel, BLOCKS, THREADS, _state, _seed);
+
+            POST_LAUNCH_CHECK();
+        }
+
+        public:
+        curandStateManager()
+            : _state(NULL), _seed(0)
+        {
+        }
+
+        ~curandStateManager()
+        {
+            //if(_state != NULL) memFree((char*)_state);
+            if(_state != NULL) CUDA_CHECK(cudaFree(_state));
+        }
+
+        unsigned long long getSeed() const
+        {
+            return _seed;
+        }
+
+        void setSeed(const unsigned long long in_seed)
+        {
+            _seed = in_seed;
+            this->resetSeed();
+        }
+
+        curandState_t* getState()
+        {
+            if(_state)
+                return _state;
+
+            //_state = (curandState_t*)memAlloc<char>(BLOCKS * THREADS * sizeof(curandState_t));
+            CUDA_CHECK(cudaMalloc((void **)&_state, BLOCKS * THREADS * sizeof(curandState_t)));
+            this->resetSeed();
+            return _state;
+        }
+    };
+
+    curandState_t* getcurandState()
+    {
+        static curandStateManager states[cuda::DeviceManager::MAX_DEVICES];
+
+        int id = cuda::getActiveDeviceId();
+
+        if(!(states[id].getState())) {
+            // states[id] was not initialized. Very bad.
+            // Throw an error here
+        }
+
+        if(states[id].getSeed() != seeds[id]) {
+            states[id].setSeed(seeds[id]);
+        }
+
+        return states[id].getState();
+    }
 
     template<typename T>
     __device__
@@ -93,13 +163,6 @@ namespace kernel
         cval->y = curand_normal_double(state);
     }
 
-    __global__ static void
-    setup_kernel(curandState_t *states, unsigned long long seed)
-    {
-        unsigned tid = blockDim.x * blockIdx.x + threadIdx.x;
-        curand_init(seed, tid, 0, &states[tid]);
-    }
-
     template<typename T>
     __global__ static void
     uniform_kernel(T *out, curandState_t *states, size_t elements)
@@ -130,15 +193,7 @@ namespace kernel
 
     void setup_states()
     {
-        int device = getActiveDeviceId();
-
-        if (!is_init[device]) {
-            CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
-        }
-
-        CUDA_LAUNCH((setup_kernel), BLOCKS, THREADS, states[device], seed);
-        POST_LAUNCH_CHECK();
-        is_init[device] = true;
+        curandState_t *state = getcurandState();
     }
 
     template<typename T>
@@ -149,7 +204,10 @@ namespace kernel
         int threads = THREADS;
         int blocks  = divup(elements, THREADS);
         if (blocks > BLOCKS) blocks = BLOCKS;
-        CUDA_LAUNCH(uniform_kernel, blocks, threads, out, states[device], elements);
+
+        curandState_t *state = getcurandState();
+
+        CUDA_LAUNCH(uniform_kernel, blocks, threads, out, state, elements);
         POST_LAUNCH_CHECK();
     }
 
@@ -162,15 +220,9 @@ namespace kernel
         int blocks  = divup(elements, THREADS);
         if (blocks > BLOCKS) blocks = BLOCKS;
 
-        if (!states[device]) {
-            CUDA_CHECK(cudaMalloc(&states[device], BLOCKS * THREADS * sizeof(curandState_t)));
+        curandState_t *state = getcurandState();
 
-            CUDA_LAUNCH(setup_kernel, BLOCKS, THREADS, states[device], seed);
-
-            POST_LAUNCH_CHECK();
-        }
-
-        CUDA_LAUNCH(normal_kernel, blocks, threads, out, states[device], elements);
+        CUDA_LAUNCH(normal_kernel, blocks, threads, out, state, elements);
 
         POST_LAUNCH_CHECK();
     }

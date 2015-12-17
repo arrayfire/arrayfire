@@ -175,4 +175,6 @@ int main(int argc, char** argv)
     } catch (af::exception &ae) {
         std::cerr << ae.what() << std::endl;
     }
+
+    return 0;
 }

@@ -45,6 +45,11 @@ af_err af_init()
     return CALL_NO_PARAMS();
 }
 
+af_err af_info_string(char **str, const bool verbose)
+{
+    return CALL(str, verbose);
+}
+
 af_err af_device_info(char* d_name, char* d_platform, char *d_toolkit, char* d_compute)
 {
     return CALL(d_name, d_platform, d_toolkit, d_compute);
@@ -91,6 +96,16 @@ af_err af_free_device(void *ptr)
 }
 
 af_err af_free_pinned(void *ptr)
+{
+    return CALL(ptr);
+}
+
+af_err af_alloc_host(void **ptr, const dim_t bytes)
+{
+    return CALL(ptr, bytes);
+}
+
+af_err af_free_host(void *ptr)
 {
     return CALL(ptr);
 }

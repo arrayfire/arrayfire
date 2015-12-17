@@ -34,8 +34,14 @@ void selectTest(const dim4 &dims)
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 
     array a = randu(dims, ty);
-    array cond = randu(dims, ty) > constant(0.3, dims, ty);
     array b = randu(dims, ty);
+
+    if (a.isinteger()) {
+        a = (a % (1 << 30)).as(ty);
+        b = (b % (1 << 30)).as(ty);
+    }
+
+    array cond = randu(dims, ty) > a;
 
     array c = select(cond, a, b);
 
@@ -63,8 +69,12 @@ void selectScalarTest(const dim4 &dims)
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 
     array a = randu(dims, ty);
-    array cond = randu(dims, ty) > constant(0.3, dims, ty);
+    array cond = randu(dims, ty) > a;
     double b = 3;
+
+    if (a.isinteger()) {
+        a = (a % (1 << 30)).as(ty);
+    }
 
     array c = is_right ? select(cond, a, b) : select(cond, b, a);
 
@@ -80,11 +90,11 @@ void selectScalarTest(const dim4 &dims)
 
     if (is_right) {
         for (int i = 0; i < num; i++) {
-            ASSERT_EQ(hc[i], hcond[i] ? ha[i] : b);
+            ASSERT_EQ(hc[i], hcond[i] ? ha[i] : T(b));
         }
     } else {
         for (int i = 0; i < num; i++) {
-            ASSERT_EQ(hc[i], hcond[i] ? b : ha[i]);
+            ASSERT_EQ(hc[i], hcond[i] ? T(b) : ha[i]);
         }
     }
 }
@@ -111,7 +121,7 @@ TEST(Select, NaN)
 
     array a = randu(dims, ty);
     a(seq(a.dims(0) / 2), span, span, span) = af::NaN;
-    double b = 0;
+    float b = 0;
     array c = select(isNaN(a), b, a);
 
     int num = (int)a.elements();

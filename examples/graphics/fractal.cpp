@@ -22,12 +22,8 @@ array complex_grid(int width, int height, float zoom, float center[2])
 {
 
     // Generate sequences of length width, height
-    array x = (seq(double(height)) - double(height) / 2.0);
-    array y = (seq(double(width )) - double(width)  / 2.0);
-
-    // Tile the sequences to generate grid of image size
-    array X = tile(x.T(), y.elements(), 1) / zoom + center[0];
-    array Y = tile(y    , 1, x.elements()) / zoom + center[1];
+    array X = (iota(dim4(1, height), dim4(width , 1)) -  (float)height / 2.0) / zoom + center[0];
+    array Y = (iota(dim4(width , 1), dim4(1, height)) -  (float)width  / 2.0) / zoom + center[1];
 
     // Return the locations as a complex grid
     return complex(X, Y);

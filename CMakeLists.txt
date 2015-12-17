@@ -145,6 +145,13 @@ IF(UNIX)
     ENDIF()
 ELSE(${UNIX}) #Windows
     ADD_DEFINITIONS(-DOS_WIN -DNOMINMAX)
+    IF(MSVC)
+        # MP is multiprocess compilation. Gm- disables minimal rebuilds
+        # http://stackoverflow.com/questions/6172205/how-can-i-do-a-parallel-build-in-visual-studio-2010vvvvvvvv
+        # http://www.kitware.com/blog/home/post/434
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /Gm-")
+        SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} /MP /Gm-")
+    ENDIF(MSVC)
 ENDIF()
 
 # Architechture Definitions

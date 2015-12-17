@@ -82,7 +82,7 @@ int main(int argc, char **argv)
         af::sync();
 
 
-        int iter = 5;
+        int iter = 100;
         for (int n = 50; n <= 500; n += 50) {
 
             // Create GPU copies of the data
@@ -112,12 +112,5 @@ int main(int argc, char **argv)
         throw;
     }
 
-    #ifdef WIN32 // pause in Windows
-    if (!(argc == 2 && argv[1][0] =='-')) {
-        printf("hit [enter]...");
-        fflush(stdout);
-        getchar();
-    }
-    #endif
     return 0;
 }

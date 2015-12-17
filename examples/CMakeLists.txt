@@ -33,11 +33,13 @@ ENDIF()
 IF(WIN32)
     # Deprecated Errors are Warning 4996 on VS2013.
     # https://msdn.microsoft.com/en-us/library/ttcz0bys.aspx
-    SET(CMAKE_CXX_FLAGS "/we4996")
-    SET(CMAKE_C_FLAGS   "/we4996")
+    IF(MSVC)
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /we4996")
+        SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} /we4996")
+    ENDIF(MSVC)
 ELSE(WIN32)
-    SET(CMAKE_CXX_FLAGS "-Werror=deprecated-declarations")
-    SET(CMAKE_C_FLAGS   "-Werror=deprecated-declarations")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=deprecated-declarations")
+    SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Werror=deprecated-declarations")
 ENDIF(WIN32)
 
 # A macro to build an ArrayFire example
