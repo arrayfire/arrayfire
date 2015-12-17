@@ -95,6 +95,7 @@ void fft_inplace_(Array<T> in)
 template<typename T, int rank, bool direction>
 void fft_inplace(Array<T> &in)
 {
+    in.eval();
     getQueue().enqueue(fft_inplace_<T, rank, direction>, in);
 }
 
@@ -165,6 +166,8 @@ void fft_r2c_(Array<Tc> out, const Array<Tr> in)
 template<typename Tc, typename Tr, int rank>
 Array<Tc> fft_r2c(const Array<Tr> &in)
 {
+    in.eval();
+
     dim4 odims = in.dims();
     odims[0] = odims[0] / 2 + 1;
     Array<Tc> out = createEmptyArray<Tc>(odims);
@@ -216,6 +219,8 @@ void fft_c2r_(Array<Tr> out, const Array<Tc> in, const dim4 odims)
 template<typename Tr, typename Tc, int rank>
 Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims)
 {
+    in.eval();
+
     Array<Tr> out = createEmptyArray<Tr>(odims);
     getQueue().enqueue(fft_c2r_<Tr, Tc, rank>, out, in, odims);
 
@@ -243,4 +248,5 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims)
 
     INSTANTIATE_REAL(float , cfloat )
     INSTANTIATE_REAL(double, cdouble)
+
 }

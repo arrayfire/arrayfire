@@ -17,6 +17,7 @@
 
 namespace cpu
 {
+
 static inline dim_t simple_mod(const dim_t i, const dim_t dim)
 {
     return (i < dim) ? i : (i - dim);
@@ -25,9 +26,9 @@ static inline dim_t simple_mod(const dim_t i, const dim_t dim)
 template<typename T>
 Array<T> shift(const Array<T> &in, const int sdims[4])
 {
-    Array<T> out = createEmptyArray<T>(in.dims());
-    out.eval();
     in.eval();
+
+    Array<T> out = createEmptyArray<T>(in.dims());
     const af::dim4 temp(sdims[0], sdims[1], sdims[2], sdims[3]);
 
     auto func = [=] (Array<T> out, const Array<T> in, const af::dim4 sdims) {
@@ -91,4 +92,5 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+
 }

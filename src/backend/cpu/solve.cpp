@@ -75,6 +75,10 @@ template<typename T>
 Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
                  const Array<T> &b, const af_mat_prop options)
 {
+    A.eval();
+    pivot.eval();
+    b.eval();
+
     int N        = A.dims()[0];
     int NRHS     = b.dims()[1];
     Array< T > B = copyArray<T>(b);
@@ -114,9 +118,10 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop o
 template<typename T>
 Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 {
+    a.eval();
+    b.eval();
 
-    if (options & AF_MAT_UPPER ||
-        options & AF_MAT_LOWER) {
+    if (options & AF_MAT_UPPER || options & AF_MAT_LOWER) {
         return triangleSolve<T>(a, b, options);
     }
 
@@ -178,6 +183,7 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
 
 namespace cpu
 {
+
 #define INSTANTIATE_SOLVE(T)                                            \
     template Array<T> solve<T>(const Array<T> &a, const Array<T> &b,    \
                                const af_mat_prop options);              \
@@ -188,4 +194,5 @@ INSTANTIATE_SOLVE(float)
 INSTANTIATE_SOLVE(cfloat)
 INSTANTIATE_SOLVE(double)
 INSTANTIATE_SOLVE(cdouble)
+
 }

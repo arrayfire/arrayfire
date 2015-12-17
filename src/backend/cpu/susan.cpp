@@ -106,6 +106,8 @@ unsigned susan(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
                const unsigned radius, const float diff_thr, const float geom_thr,
                const float feature_ratio, const unsigned edge)
 {
+    in.eval();
+
     dim4 idims = in.dims();
     const unsigned corner_lim = in.elements() * feature_ratio;
 

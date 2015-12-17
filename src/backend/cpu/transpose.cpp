@@ -171,5 +171,4 @@ INSTANTIATE(uintl  )
 INSTANTIATE(short)
 INSTANTIATE(ushort)
 
-
 }

@@ -59,6 +59,8 @@ GQR_FUNC(gqr , cdouble, zungqr)
 template<typename T>
 void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
 {
+    in.eval();
+
     dim4 iDims = in.dims();
     int M      = iDims[0];
     int N      = iDims[1];
@@ -83,6 +85,8 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
 template<typename T>
 Array<T> qr_inplace(Array<T> &in)
 {
+    in.eval();
+
     dim4 iDims = in.dims();
     int M      = iDims[0];
     int N      = iDims[1];
@@ -121,6 +125,7 @@ Array<T> qr_inplace(Array<T> &in)
 
 namespace cpu
 {
+
 #define INSTANTIATE_QR(T)                                                                           \
     template Array<T> qr_inplace<T>(Array<T> &in);                                                \
     template void qr<T>(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in);
@@ -129,4 +134,5 @@ INSTANTIATE_QR(float)
 INSTANTIATE_QR(cfloat)
 INSTANTIATE_QR(double)
 INSTANTIATE_QR(cdouble)
+
 }

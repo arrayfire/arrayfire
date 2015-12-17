@@ -24,6 +24,9 @@ namespace cpu
 template<typename inType, typename outType, af_match_type mType>
 Array<outType> match_template(const Array<inType> &sImg, const Array<inType> &tImg)
 {
+    sImg.eval();
+    tImg.eval();
+
     Array<outType> out = createEmptyArray<outType>(sImg.dims());
 
     auto func = [=](Array<outType> out, const Array<inType> sImg, const Array<inType> tImg) {

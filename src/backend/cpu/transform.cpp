@@ -107,8 +107,10 @@ template<typename T>
 Array<T> transform(const Array<T> &in, const Array<float> &transform, const af::dim4 &odims,
                     const af_interp_type method, const bool inverse)
 {
-    Array<T> out = createEmptyArray<T>(odims);
     in.eval();
+    transform.eval();
+
+    Array<T> out = createEmptyArray<T>(odims);
 
     switch(method) {
         case AF_INTERP_NEAREST :

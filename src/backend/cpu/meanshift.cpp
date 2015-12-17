@@ -33,6 +33,8 @@ inline dim_t clamp(dim_t a, dim_t mn, dim_t mx)
 template<typename T, bool is_color>
 Array<T>  meanshift(const Array<T> &in, const float &s_sigma, const float &c_sigma, const unsigned iter)
 {
+    in.eval();
+
     Array<T> out = createEmptyArray<T>(in.dims());
 
     auto func = [=] (Array<T> out, const Array<T> in, const float s_sigma,

@@ -91,6 +91,7 @@ template<typename Ti, typename To>
 std::pair< Array<To>, Array<To> >
 sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size)
 {
+    img.eval();
     // ket_size is for future proofing, this argument is not used
     // currently
     Array<To> dx = createEmptyArray<To>(img.dims());

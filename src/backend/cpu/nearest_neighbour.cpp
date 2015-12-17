@@ -163,8 +163,6 @@ void nearest_neighbour(Array<uint>& idx, Array<To>& dist,
 
     idx  = createEmptyArray<uint>(outDims);
     dist = createEmptyArray<To  >(outDims);
-    idx.eval();
-    dist.eval();
 
     switch(dist_type) {
         case AF_SAD:

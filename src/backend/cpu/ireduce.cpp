@@ -21,178 +21,180 @@ using af::dim4;
 
 namespace cpu
 {
-    template<typename T> double cabs(const T in) { return (double)in; }
-    static double cabs(const char in) { return (double)(in > 0); }
-    static double cabs(const cfloat &in) { return (double)abs(in); }
-    static double cabs(const cdouble &in) { return (double)abs(in); }
 
-    template<af_op_t op, typename T>
-    struct MinMaxOp
+template<typename T> double cabs(const T in) { return (double)in; }
+static double cabs(const char in) { return (double)(in > 0); }
+static double cabs(const cfloat &in) { return (double)abs(in); }
+static double cabs(const cdouble &in) { return (double)abs(in); }
+
+template<af_op_t op, typename T>
+struct MinMaxOp
+{
+    T m_val;
+    uint m_idx;
+    MinMaxOp(T val, uint idx) :
+        m_val(val), m_idx(idx)
     {
-        T m_val;
-        uint m_idx;
-        MinMaxOp(T val, uint idx) :
-            m_val(val), m_idx(idx)
-        {
-        }
-
-        void operator()(T val, uint idx)
-        {
-            if (cabs(val) < cabs(m_val) ||
-                (cabs(val) == cabs(m_val) &&
-                 idx > m_idx)) {
-                m_val = val;
-                m_idx = idx;
-            }
-        }
-    };
-
-    template<typename T>
-    struct MinMaxOp<af_max_t, T>
-    {
-        T m_val;
-        uint m_idx;
-        MinMaxOp(T val, uint idx) :
-            m_val(val), m_idx(idx)
-        {
-        }
-
-        void operator()(T val, uint idx)
-        {
-            if (cabs(val) > cabs(m_val) ||
-                (cabs(val) == cabs(m_val) &&
-                 idx <= m_idx)) {
-                m_val = val;
-                m_idx = idx;
-            }
-        }
-    };
-
-    template<af_op_t op, typename T, int D>
-    struct ireduce_dim
-    {
-        void operator()(Array<T> output, Array<uint> locArray, const dim_t outOffset,
-                        const Array<T> input, const dim_t inOffset, const int dim)
-        {
-            const dim4 odims    = output.dims();
-            const dim4 ostrides = output.strides();
-            const dim4 istrides = input.strides();
-            const int D1 = D - 1;
-            for (dim_t i = 0; i < odims[D1]; i++) {
-                ireduce_dim<op, T, D1>()(output, locArray, outOffset + i * ostrides[D1],
-                                         input, inOffset + i * istrides[D1], dim);
-            }
-        }
-    };
-
-    template<af_op_t op, typename T>
-    struct ireduce_dim<op, T, 0>
-    {
-        void operator()(Array<T> output, Array<uint> locArray, const dim_t outOffset,
-                        const Array<T> input, const dim_t inOffset, const int dim)
-        {
-            const dim4 idims = input.dims();
-            const dim4 istrides = input.strides();
-
-            T const * const in = input.get();
-            T * out = output.get();
-            uint * loc = locArray.get();
-
-            dim_t stride = istrides[dim];
-            MinMaxOp<op, T> Op(in[0], 0);
-            for (dim_t i = 0; i < idims[dim]; i++) {
-                Op(in[inOffset + i * stride], i);
-            }
-
-            *(out+outOffset) = Op.m_val;
-            *(loc+outOffset) = Op.m_idx;
-        }
-    };
-
-    template<af_op_t op, typename T>
-    using ireduce_dim_func = std::function<void(Array<T>, Array<uint>, const dim_t,
-                                                const Array<T>, const dim_t, const int)>;
-
-    template<af_op_t op, typename T>
-    void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in, const int dim)
-    {
-        out.eval();
-        loc.eval();
-        in.eval();
-
-        dim4 odims = in.dims();
-        odims[dim] = 1;
-        static const ireduce_dim_func<op, T> ireduce_funcs[] = { ireduce_dim<op, T, 1>()
-                                                               , ireduce_dim<op, T, 2>()
-                                                               , ireduce_dim<op, T, 3>()
-                                                               , ireduce_dim<op, T, 4>()};
-
-        getQueue().enqueue(ireduce_funcs[in.ndims() - 1], out, loc, 0, in, 0, dim);
     }
 
-    template<af_op_t op, typename T>
-    T ireduce_all(unsigned *loc, const Array<T> &in)
+    void operator()(T val, uint idx)
     {
-        in.eval();
-        getQueue().sync();
+        if (cabs(val) < cabs(m_val) ||
+            (cabs(val) == cabs(m_val) &&
+             idx > m_idx)) {
+            m_val = val;
+            m_idx = idx;
+        }
+    }
+};
 
-        af::dim4 dims = in.dims();
-        af::dim4 strides = in.strides();
-        const T *inPtr = in.get();
+template<typename T>
+struct MinMaxOp<af_max_t, T>
+{
+    T m_val;
+    uint m_idx;
+    MinMaxOp(T val, uint idx) :
+        m_val(val), m_idx(idx)
+    {
+    }
 
-        MinMaxOp<op, T> Op(inPtr[0], 0);
+    void operator()(T val, uint idx)
+    {
+        if (cabs(val) > cabs(m_val) ||
+            (cabs(val) == cabs(m_val) &&
+             idx <= m_idx)) {
+            m_val = val;
+            m_idx = idx;
+        }
+    }
+};
 
-        for(dim_t l = 0; l < dims[3]; l++) {
-            dim_t off3 = l * strides[3];
+template<af_op_t op, typename T, int D>
+struct ireduce_dim
+{
+    void operator()(Array<T> output, Array<uint> locArray, const dim_t outOffset,
+                    const Array<T> input, const dim_t inOffset, const int dim)
+    {
+        const dim4 odims    = output.dims();
+        const dim4 ostrides = output.strides();
+        const dim4 istrides = input.strides();
+        const int D1 = D - 1;
+        for (dim_t i = 0; i < odims[D1]; i++) {
+            ireduce_dim<op, T, D1>()(output, locArray, outOffset + i * ostrides[D1],
+                                     input, inOffset + i * istrides[D1], dim);
+        }
+    }
+};
 
-            for(dim_t k = 0; k < dims[2]; k++) {
-                dim_t off2 = k * strides[2];
+template<af_op_t op, typename T>
+struct ireduce_dim<op, T, 0>
+{
+    void operator()(Array<T> output, Array<uint> locArray, const dim_t outOffset,
+                    const Array<T> input, const dim_t inOffset, const int dim)
+    {
+        const dim4 idims = input.dims();
+        const dim4 istrides = input.strides();
 
-                for(dim_t j = 0; j < dims[1]; j++) {
-                    dim_t off1 = j * strides[1];
+        T const * const in = input.get();
+        T * out = output.get();
+        uint * loc = locArray.get();
 
-                    for(dim_t i = 0; i < dims[0]; i++) {
-                        dim_t idx = i + off1 + off2 + off3;
-                        Op(inPtr[idx], idx);
-                    }
+        dim_t stride = istrides[dim];
+        MinMaxOp<op, T> Op(in[0], 0);
+        for (dim_t i = 0; i < idims[dim]; i++) {
+            Op(in[inOffset + i * stride], i);
+        }
+
+        *(out+outOffset) = Op.m_val;
+        *(loc+outOffset) = Op.m_idx;
+    }
+};
+
+template<af_op_t op, typename T>
+using ireduce_dim_func = std::function<void(Array<T>, Array<uint>, const dim_t,
+                                            const Array<T>, const dim_t, const int)>;
+
+template<af_op_t op, typename T>
+void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in, const int dim)
+{
+    out.eval();
+    loc.eval();
+    in.eval();
+
+    dim4 odims = in.dims();
+    odims[dim] = 1;
+    static const ireduce_dim_func<op, T> ireduce_funcs[] = { ireduce_dim<op, T, 1>()
+                                                           , ireduce_dim<op, T, 2>()
+                                                           , ireduce_dim<op, T, 3>()
+                                                           , ireduce_dim<op, T, 4>()};
+
+    getQueue().enqueue(ireduce_funcs[in.ndims() - 1], out, loc, 0, in, 0, dim);
+}
+
+template<af_op_t op, typename T>
+T ireduce_all(unsigned *loc, const Array<T> &in)
+{
+    in.eval();
+    getQueue().sync();
+
+    af::dim4 dims = in.dims();
+    af::dim4 strides = in.strides();
+    const T *inPtr = in.get();
+
+    MinMaxOp<op, T> Op(inPtr[0], 0);
+
+    for(dim_t l = 0; l < dims[3]; l++) {
+        dim_t off3 = l * strides[3];
+
+        for(dim_t k = 0; k < dims[2]; k++) {
+            dim_t off2 = k * strides[2];
+
+            for(dim_t j = 0; j < dims[1]; j++) {
+                dim_t off1 = j * strides[1];
+
+                for(dim_t i = 0; i < dims[0]; i++) {
+                    dim_t idx = i + off1 + off2 + off3;
+                    Op(inPtr[idx], idx);
                 }
             }
         }
-
-        *loc = Op.m_idx;
-        return Op.m_val;
     }
+
+    *loc = Op.m_idx;
+    return Op.m_val;
+}
 
 #define INSTANTIATE(ROp, T)                                             \
     template void ireduce<ROp, T>(Array<T> &out, Array<uint> &loc,      \
                                   const Array<T> &in, const int dim);   \
     template T ireduce_all<ROp, T>(unsigned *loc, const Array<T> &in);  \
 
-    //min
-    INSTANTIATE(af_min_t, float  )
-    INSTANTIATE(af_min_t, double )
-    INSTANTIATE(af_min_t, cfloat )
-    INSTANTIATE(af_min_t, cdouble)
-    INSTANTIATE(af_min_t, int    )
-    INSTANTIATE(af_min_t, uint   )
-    INSTANTIATE(af_min_t, intl   )
-    INSTANTIATE(af_min_t, uintl  )
-    INSTANTIATE(af_min_t, char   )
-    INSTANTIATE(af_min_t, uchar  )
-    INSTANTIATE(af_min_t, short  )
-    INSTANTIATE(af_min_t, ushort )
+//min
+INSTANTIATE(af_min_t, float  )
+INSTANTIATE(af_min_t, double )
+INSTANTIATE(af_min_t, cfloat )
+INSTANTIATE(af_min_t, cdouble)
+INSTANTIATE(af_min_t, int    )
+INSTANTIATE(af_min_t, uint   )
+INSTANTIATE(af_min_t, intl   )
+INSTANTIATE(af_min_t, uintl  )
+INSTANTIATE(af_min_t, char   )
+INSTANTIATE(af_min_t, uchar  )
+INSTANTIATE(af_min_t, short  )
+INSTANTIATE(af_min_t, ushort )
 
-    //max
-    INSTANTIATE(af_max_t, float  )
-    INSTANTIATE(af_max_t, double )
-    INSTANTIATE(af_max_t, cfloat )
-    INSTANTIATE(af_max_t, cdouble)
-    INSTANTIATE(af_max_t, int    )
-    INSTANTIATE(af_max_t, uint   )
-    INSTANTIATE(af_max_t, intl   )
-    INSTANTIATE(af_max_t, uintl  )
-    INSTANTIATE(af_max_t, char   )
-    INSTANTIATE(af_max_t, uchar  )
-    INSTANTIATE(af_max_t, short  )
-    INSTANTIATE(af_max_t, ushort )
+//max
+INSTANTIATE(af_max_t, float  )
+INSTANTIATE(af_max_t, double )
+INSTANTIATE(af_max_t, cfloat )
+INSTANTIATE(af_max_t, cdouble)
+INSTANTIATE(af_max_t, int    )
+INSTANTIATE(af_max_t, uint   )
+INSTANTIATE(af_max_t, intl   )
+INSTANTIATE(af_max_t, uintl  )
+INSTANTIATE(af_max_t, char   )
+INSTANTIATE(af_max_t, uchar  )
+INSTANTIATE(af_max_t, short  )
+INSTANTIATE(af_max_t, ushort )
+
 }

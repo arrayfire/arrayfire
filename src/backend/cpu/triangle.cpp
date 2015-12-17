@@ -66,6 +66,7 @@ void triangle(Array<T> &out, const Array<T> &in)
 template<typename T, bool is_upper, bool is_unit_diag>
 Array<T> triangle(const Array<T> &in)
 {
+    in.eval();
     Array<T> out = createEmptyArray<T>(in.dims());
     triangle<T, is_upper, is_unit_diag>(out, in);
     return out;
@@ -81,17 +82,17 @@ Array<T> triangle(const Array<T> &in)
     template Array<T> triangle<T, true , false>(const Array<T> &in);    \
     template Array<T> triangle<T, false, false>(const Array<T> &in);    \
 
-    INSTANTIATE(float)
-    INSTANTIATE(double)
-    INSTANTIATE(cfloat)
-    INSTANTIATE(cdouble)
-    INSTANTIATE(int)
-    INSTANTIATE(uint)
-    INSTANTIATE(intl)
-    INSTANTIATE(uintl)
-    INSTANTIATE(char)
-    INSTANTIATE(uchar)
-    INSTANTIATE(short)
-    INSTANTIATE(ushort)
+INSTANTIATE(float)
+INSTANTIATE(double)
+INSTANTIATE(cfloat)
+INSTANTIATE(cdouble)
+INSTANTIATE(int)
+INSTANTIATE(uint)
+INSTANTIATE(intl)
+INSTANTIATE(uintl)
+INSTANTIATE(char)
+INSTANTIATE(uchar)
+INSTANTIATE(short)
+INSTANTIATE(ushort)
 
 }

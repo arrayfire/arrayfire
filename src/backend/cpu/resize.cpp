@@ -19,6 +19,7 @@
 
 namespace cpu
 {
+
 /**
  * noop function for round to avoid compilation
  * issues due to lack of this function in C90 based
@@ -215,4 +216,5 @@ INSTANTIATE(uchar)
 INSTANTIATE(char)
 INSTANTIATE(short)
 INSTANTIATE(ushort)
+
 }
