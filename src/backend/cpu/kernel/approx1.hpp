@@ -9,13 +9,12 @@
 
 #include <Array.hpp>
 #include <math.hpp>
-
+namespace cpu
+{
 namespace kernel
 {
 
 using af::dim4;
-using cpu::scalar;
-using cpu::Array;
 
 template<typename Ty, typename Tp, af_interp_type method>
 struct approx1_op
@@ -138,4 +137,5 @@ void approx1(Array<Ty> output, Array<Ty> const input,
     }
 }
 
+}
 }

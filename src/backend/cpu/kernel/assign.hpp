@@ -10,11 +10,12 @@
 #include <Array.hpp>
 #include <vector>
 
+namespace cpu
+{
 namespace kernel
 {
 
 using af::dim4;
-using cpu::Array;
 using std::vector;
 
 inline
@@ -88,4 +89,5 @@ void assign(Array<T> out, const Array<T> rhs, const vector<bool> isSeq,
     }
 }
 
+}
 }

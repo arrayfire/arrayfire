@@ -27,12 +27,11 @@
 namespace cpu
 {
 template<typename T> class Array;
-}
-
 // kernel::evalArray fn forward declaration
 namespace kernel
 {
 template<typename T> void evalArray(cpu::Array<T> in);
+}
 }
 
 namespace cpu

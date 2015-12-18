@@ -10,11 +10,12 @@
 #include <Array.hpp>
 #include <platform.hpp>
 
+namespace cpu
+{
 namespace kernel
 {
 
 using af::dim4;
-using cpu::Array;
 
 template<typename T>
 void evalArray(Array<T> in)
@@ -53,4 +54,5 @@ void evalArray(Array<T> in)
     }
 }
 
+}
 }
