@@ -23,6 +23,18 @@
 #include <platform.hpp>
 #include <async_queue.hpp>
 
+// cpu::Array class forward declaration
+namespace cpu
+{
+template<typename T> class Array;
+}
+
+// kernel::evalArray fn forward declaration
+namespace kernel
+{
+template<typename T> void evalArray(cpu::Array<T> in);
+}
+
 namespace cpu
 {
 
@@ -203,6 +215,8 @@ namespace cpu
         friend Array<T> createSubArray<T>(const Array<T>& parent,
                                           const std::vector<af_seq> &index,
                                           bool copy);
+
+        friend void kernel::evalArray<T>(Array<T> in);
 
         friend void destroyArray<T>(Array<T> *arr);
         friend void *getDevicePtr<T>(const Array<T>& arr);
