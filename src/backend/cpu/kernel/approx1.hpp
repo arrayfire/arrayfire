@@ -9,6 +9,7 @@
 
 #include <Array.hpp>
 #include <math.hpp>
+
 namespace cpu
 {
 namespace kernel
