@@ -20,32 +20,11 @@
 #include <math.hpp>
 #include <platform.hpp>
 #include <async_queue.hpp>
+#include <kernel/copy.hpp>
 
 namespace cpu
 {
 
-template<typename T>
-static void stridedCopy(T* dst, const dim4& ostrides, const T* src, const dim4 &dims, const dim4 &strides, unsigned dim)
-{
-    if(dim == 0) {
-        if(strides[dim] == 1) {
-            //FIXME: Check for errors / exceptions
-            memcpy(dst, src, dims[dim] * sizeof(T));
-        } else {
-            for(dim_t i = 0; i < dims[dim]; i++) {
-                dst[i] = src[strides[dim]*i];
-            }
-        }
-    } else {
-        for(dim_t i = dims[dim]; i > 0; i--) {
-            stridedCopy<T>(dst, ostrides, src, dims, strides, dim - 1);
-            src += strides[dim];
-            dst += ostrides[dim];
-        }
-    }
-}
-
-// Assigns to single elements
 template<typename T>
 void copyData(T *to, const Array<T> &from)
 {
@@ -56,7 +35,7 @@ void copyData(T *to, const Array<T> &from)
         memcpy(to, from.get(), from.elements()*sizeof(T));
     } else {
         dim4 ostrides = calcStrides(from.dims());
-        stridedCopy<T>(to, ostrides, from.get(), from.dims(), from.strides(), from.ndims() - 1);
+        kernel::stridedCopy<T>(to, ostrides, from.get(), from.dims(), from.strides(), from.ndims() - 1);
     }
 }
 
@@ -68,59 +47,11 @@ Array<T> copyArray(const Array<T> &A)
     return out;
 }
 
-template<typename inType, typename outType>
-static void copy(Array<outType> dst, const Array<inType> src, outType default_value, double factor)
-{
-    dim4 src_dims       = src.dims();
-    dim4 dst_dims       = dst.dims();
-    dim4 src_strides    = src.strides();
-    dim4 dst_strides    = dst.strides();
-
-    const inType * src_ptr = src.get();
-    outType * dst_ptr      = dst.get();
-
-    dim_t trgt_l = std::min(dst_dims[3], src_dims[3]);
-    dim_t trgt_k = std::min(dst_dims[2], src_dims[2]);
-    dim_t trgt_j = std::min(dst_dims[1], src_dims[1]);
-    dim_t trgt_i = std::min(dst_dims[0], src_dims[0]);
-
-    for(dim_t l=0; l<dst_dims[3]; ++l) {
-
-        dim_t src_loff = l*src_strides[3];
-        dim_t dst_loff = l*dst_strides[3];
-        bool isLvalid = l<trgt_l;
-
-        for(dim_t k=0; k<dst_dims[2]; ++k) {
-
-            dim_t src_koff = k*src_strides[2];
-            dim_t dst_koff = k*dst_strides[2];
-            bool isKvalid = k<trgt_k;
-
-            for(dim_t j=0; j<dst_dims[1]; ++j) {
-
-                dim_t src_joff = j*src_strides[1];
-                dim_t dst_joff = j*dst_strides[1];
-                bool isJvalid = j<trgt_j;
-
-                for(dim_t i=0; i<dst_dims[0]; ++i) {
-                    outType temp = default_value;
-                    if (isLvalid && isKvalid && isJvalid && i<trgt_i) {
-                        dim_t src_idx = i*src_strides[0] + src_joff + src_koff + src_loff;
-                        temp = outType(src_ptr[src_idx])*outType(factor);
-                    }
-                    dim_t dst_idx = i*dst_strides[0] + dst_joff + dst_koff + dst_loff;
-                    dst_ptr[dst_idx] = temp;
-                }
-            }
-        }
-    }
-}
-
 template<typename T>
 void multiply_inplace(Array<T> &in, double val)
 {
     in.eval();
-    getQueue().enqueue(copy<T, T>, in, in, 0, val);
+    getQueue().enqueue(kernel::copy<T, T>, in, in, 0, val);
 }
 
 template<typename inType, typename outType>
@@ -132,7 +63,7 @@ Array<outType> padArray(Array<inType> const &in, dim4 const &dims,
     in.eval();
     // FIXME:
     getQueue().sync();
-    getQueue().enqueue(copy<inType, outType>, ret, in, outType(default_value), factor);
+    getQueue().enqueue(kernel::copy<inType, outType>, ret, in, outType(default_value), factor);
     return ret;
 }
 
@@ -141,7 +72,7 @@ void copyArray(Array<outType> &out, Array<inType> const &in)
 {
     out.eval();
     in.eval();
-    getQueue().enqueue(copy<inType, outType>, out, in, scalar<outType>(0), 1.0);
+    getQueue().enqueue(kernel::copy<inType, outType>, out, in, scalar<outType>(0), 1.0);
 }
 
 #define INSTANTIATE(T)                                                  \
