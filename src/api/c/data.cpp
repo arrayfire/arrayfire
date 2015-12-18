@@ -594,7 +594,7 @@ af_err af_get_numdims(unsigned *nd, const af_array in)
 template<typename T>
 static inline void eval(af_array arr)
 {
-    evalArray(getArray<T>(arr));
+    getArray<T>(arr).eval();
     return;
 }
 

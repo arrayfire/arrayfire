@@ -181,7 +181,6 @@ createEmptyArray(const dim4 &size)
 template<typename T>
 Array<T> *initArray() { return new Array<T>(dim4(0, 0, 0, 0)); }
 
-
 template<typename T>
 Array<T>
 createNodeArray(const dim4 &dims, Node_ptr node)
@@ -202,7 +201,6 @@ createNodeArray(const dim4 &dims, Node_ptr node)
 
     return out;
 }
-
 
 template<typename T>
 Array<T> createSubArray(const Array<T>& parent,
@@ -240,13 +238,6 @@ destroyArray(Array<T> *A)
     delete A;
 }
 
-
-template<typename T>
-void evalArray(const Array<T> &A)
-{
-    A.eval();
-}
-
 template<typename T>
 void
 writeHostDataArray(Array<T> &arr, const T * const data, const size_t bytes)
@@ -277,7 +268,6 @@ writeDeviceDataArray(Array<T> &arr, const void * const data, const size_t bytes)
                                                        const std::vector<af_seq> &index, \
                                                        bool copy);      \
     template       void      destroyArray<T>          (Array<T> *A);    \
-    template       void      evalArray<T>             (const Array<T> &A); \
     template       Array<T>  createNodeArray<T>       (const dim4 &size, TNJ::Node_ptr node); \
     template       void Array<T>::eval();                               \
     template       void Array<T>::eval() const;                         \

@@ -23,7 +23,7 @@ template<typename T>
 Array<T> modDims(const Array<T>& in, const af::dim4 &newDims)
 {
     //FIXME: Figure out a better way
-    evalArray<T>(in);
+    in.eval();
 
     Array<T> Out = in;
 

@@ -23,7 +23,7 @@ namespace cuda
     void copyData(T *data, const Array<T> &A)
     {
         // FIXME: Merge this with copyArray
-        evalArray(A);
+        A.eval();
 
         Array<T> out = A;
         const T *ptr = NULL;

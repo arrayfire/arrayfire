@@ -65,9 +65,6 @@ namespace cpu
                             const std::vector<af_seq> &index,
                             bool copy=true);
 
-    template<typename T>
-    void evalArray(const Array<T> &A);
-
     // Creates a new Array object on the heap and returns a reference to it.
     template<typename T>
     void destroyArray(Array<T> *A);
@@ -208,7 +205,6 @@ namespace cpu
                                           bool copy);
 
         friend void destroyArray<T>(Array<T> *arr);
-        friend void evalArray<T>(const Array<T> &arr);
         friend void *getDevicePtr<T>(const Array<T>& arr);
     };
 

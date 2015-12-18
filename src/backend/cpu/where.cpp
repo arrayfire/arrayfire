@@ -27,7 +27,7 @@ namespace cpu
 template<typename T>
 Array<uint> where(const Array<T> &in)
 {
-    evalArray(in);
+    in.eval();
     getQueue().sync();
 
     const dim_t *dims    = in.dims().get();
