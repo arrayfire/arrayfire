@@ -9,50 +9,12 @@
 
 #include <Array.hpp>
 #include <join.hpp>
-#include <stdexcept>
-#include <err_cpu.hpp>
 #include <platform.hpp>
 #include <async_queue.hpp>
+#include <kernel/join.hpp>
 
 namespace cpu
 {
-template<typename To, typename Tx, int dim>
-void join_append(To *out, const Tx *X, const af::dim4 &offset,
-           const af::dim4 &odims, const af::dim4 &xdims,
-           const af::dim4 &ost, const af::dim4 &xst)
-{
-    for(dim_t ow = 0; ow < xdims[3]; ow++) {
-        const dim_t xW = ow * xst[3];
-        const dim_t oW = (ow + offset[3]) * ost[3];
-
-        for(dim_t oz = 0; oz < xdims[2]; oz++) {
-            const dim_t xZW = xW + oz * xst[2];
-            const dim_t oZW = oW + (oz + offset[2]) * ost[2];
-
-            for(dim_t oy = 0; oy < xdims[1]; oy++) {
-                const dim_t xYZW = xZW + oy * xst[1];
-                const dim_t oYZW = oZW + (oy + offset[1]) * ost[1];
-
-                for(dim_t ox = 0; ox < xdims[0]; ox++) {
-                    const dim_t iMem = xYZW + ox;
-                    const dim_t oMem = oYZW + (ox + offset[0]);
-                    out[oMem] = X[iMem];
-                }
-            }
-        }
-    }
-}
-
-template<int dim>
-af::dim4 calcOffset(const af::dim4 dims)
-{
-    af::dim4 offset;
-    offset[0] = (dim == 0) ? dims[0] : 0;
-    offset[1] = (dim == 1) ? dims[1] : 0;
-    offset[2] = (dim == 2) ? dims[2] : 0;
-    offset[3] = (dim == 3) ? dims[3] : 0;
-    return offset;
-}
 
 template<typename Tx, typename Ty>
 Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second)
@@ -76,97 +38,15 @@ Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second)
 
     Array<Tx> out = createEmptyArray<Tx>(odims);
 
-    auto func = [=] (Array<Tx> out, const Array<Tx> first, const Array<Ty> second) {
-        Tx* outPtr = out.get();
-        const Tx* fptr = first.get();
-        const Ty* sptr = second.get();
-
-        af::dim4 zero(0,0,0,0);
-        const af::dim4 odims = out.dims();
-        const af::dim4 fdims = first.dims();
-        const af::dim4 sdims = second.dims();
-
-        switch(dim) {
-            case 0:
-                join_append<Tx, Tx, 0>(outPtr, fptr, zero,
-                        odims, fdims, out.strides(), first.strides());
-                join_append<Tx, Ty, 0>(outPtr, sptr, calcOffset<0>(fdims),
-                        odims, sdims, out.strides(), second.strides());
-                break;
-            case 1:
-                join_append<Tx, Tx, 1>(outPtr, fptr, zero,
-                        odims, fdims, out.strides(), first.strides());
-                join_append<Tx, Ty, 1>(outPtr, sptr, calcOffset<1>(fdims),
-                        odims, sdims, out.strides(), second.strides());
-                break;
-            case 2:
-                join_append<Tx, Tx, 2>(outPtr, fptr, zero,
-                        odims, fdims, out.strides(), first.strides());
-                join_append<Tx, Ty, 2>(outPtr, sptr, calcOffset<2>(fdims),
-                        odims, sdims, out.strides(), second.strides());
-                break;
-            case 3:
-                join_append<Tx, Tx, 3>(outPtr, fptr, zero,
-                        odims, fdims, out.strides(), first.strides());
-                join_append<Tx, Ty, 3>(outPtr, sptr, calcOffset<3>(fdims),
-                        odims, sdims, out.strides(), second.strides());
-                break;
-        }
-    };
-    getQueue().enqueue(func, out, first, second);
+    getQueue().enqueue(kernel::join<Tx, Ty>, out, dim, first, second);
 
     return out;
-}
-
-template<typename T, int n_arrays>
-void join_wrapper(const int dim, Array<T> out, const std::vector<Array<T>> inputs)
-{
-    af::dim4 zero(0,0,0,0);
-    af::dim4 d = zero;
-    switch(dim) {
-        case 0:
-            join_append<T, T, 0>(out.get(), inputs[0].get(), zero,
-                        out.dims(), inputs[0].dims(), out.strides(), inputs[0].strides());
-            for(int i = 1; i < n_arrays; i++) {
-                d += inputs[i - 1].dims();
-                join_append<T, T, 0>(out.get(), inputs[i].get(), calcOffset<0>(d),
-                        out.dims(), inputs[i].dims(), out.strides(), inputs[i].strides());
-            }
-            break;
-        case 1:
-            join_append<T, T, 1>(out.get(), inputs[0].get(), zero,
-                        out.dims(), inputs[0].dims(), out.strides(), inputs[0].strides());
-            for(int i = 1; i < n_arrays; i++) {
-                d += inputs[i - 1].dims();
-                join_append<T, T, 1>(out.get(), inputs[i].get(), calcOffset<1>(d),
-                        out.dims(), inputs[i].dims(), out.strides(), inputs[i].strides());
-            }
-            break;
-        case 2:
-            join_append<T, T, 2>(out.get(), inputs[0].get(), zero,
-                        out.dims(), inputs[0].dims(), out.strides(), inputs[0].strides());
-            for(int i = 1; i < n_arrays; i++) {
-                d += inputs[i - 1].dims();
-                join_append<T, T, 2>(out.get(), inputs[i].get(), calcOffset<2>(d),
-                        out.dims(), inputs[i].dims(), out.strides(), inputs[i].strides());
-            }
-            break;
-        case 3:
-            join_append<T, T, 3>(out.get(), inputs[0].get(), zero,
-                        out.dims(), inputs[0].dims(), out.strides(), inputs[0].strides());
-            for(int i = 1; i < n_arrays; i++) {
-                d += inputs[i - 1].dims();
-                join_append<T, T, 3>(out.get(), inputs[i].get(), calcOffset<3>(d),
-                        out.dims(), inputs[i].dims(), out.strides(), inputs[i].strides());
-            }
-            break;
-    }
 }
 
 template<typename T>
 Array<T> join(const int dim, const std::vector<Array<T>> &inputs)
 {
-    for (int i=0; i<inputs.size(); ++i)
+    for (unsigned i=0; i<inputs.size(); ++i)
         inputs[i].eval();
     // All dimensions except join dimension must be equal
     // Compute output dims
@@ -175,7 +55,7 @@ Array<T> join(const int dim, const std::vector<Array<T>> &inputs)
     std::vector<af::dim4> idims(n_arrays);
 
     dim_t dim_size = 0;
-    for(int i = 0; i < (int)idims.size(); i++) {
+    for(unsigned i = 0; i < idims.size(); i++) {
         idims[i] = inputs[i].dims();
         dim_size += idims[i][dim];
     }
@@ -192,34 +72,34 @@ Array<T> join(const int dim, const std::vector<Array<T>> &inputs)
 
     switch(n_arrays) {
         case 1:
-            getQueue().enqueue(join_wrapper<T, 1>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 1>, dim, out, inputs);
             break;
         case 2:
-            getQueue().enqueue(join_wrapper<T, 2>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 2>, dim, out, inputs);
             break;
         case 3:
-            getQueue().enqueue(join_wrapper<T, 3>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 3>, dim, out, inputs);
             break;
         case 4:
-            getQueue().enqueue(join_wrapper<T, 4>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 4>, dim, out, inputs);
             break;
         case 5:
-            getQueue().enqueue(join_wrapper<T, 5>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 5>, dim, out, inputs);
             break;
         case 6:
-            getQueue().enqueue(join_wrapper<T, 6>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 6>, dim, out, inputs);
             break;
         case 7:
-            getQueue().enqueue(join_wrapper<T, 7>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 7>, dim, out, inputs);
             break;
         case 8:
-            getQueue().enqueue(join_wrapper<T, 8>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 8>, dim, out, inputs);
             break;
         case 9:
-            getQueue().enqueue(join_wrapper<T, 9>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 9>, dim, out, inputs);
             break;
         case 10:
-            getQueue().enqueue(join_wrapper<T,10>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T,10>, dim, out, inputs);
             break;
     }
 

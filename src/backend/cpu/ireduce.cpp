@@ -13,102 +13,14 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <ireduce.hpp>
-
 #include <platform.hpp>
 #include <async_queue.hpp>
+#include <kernel/ireduce.hpp>
 
 using af::dim4;
 
 namespace cpu
 {
-
-template<typename T> double cabs(const T in) { return (double)in; }
-static double cabs(const char in) { return (double)(in > 0); }
-static double cabs(const cfloat &in) { return (double)abs(in); }
-static double cabs(const cdouble &in) { return (double)abs(in); }
-
-template<af_op_t op, typename T>
-struct MinMaxOp
-{
-    T m_val;
-    uint m_idx;
-    MinMaxOp(T val, uint idx) :
-        m_val(val), m_idx(idx)
-    {
-    }
-
-    void operator()(T val, uint idx)
-    {
-        if (cabs(val) < cabs(m_val) ||
-            (cabs(val) == cabs(m_val) &&
-             idx > m_idx)) {
-            m_val = val;
-            m_idx = idx;
-        }
-    }
-};
-
-template<typename T>
-struct MinMaxOp<af_max_t, T>
-{
-    T m_val;
-    uint m_idx;
-    MinMaxOp(T val, uint idx) :
-        m_val(val), m_idx(idx)
-    {
-    }
-
-    void operator()(T val, uint idx)
-    {
-        if (cabs(val) > cabs(m_val) ||
-            (cabs(val) == cabs(m_val) &&
-             idx <= m_idx)) {
-            m_val = val;
-            m_idx = idx;
-        }
-    }
-};
-
-template<af_op_t op, typename T, int D>
-struct ireduce_dim
-{
-    void operator()(Array<T> output, Array<uint> locArray, const dim_t outOffset,
-                    const Array<T> input, const dim_t inOffset, const int dim)
-    {
-        const dim4 odims    = output.dims();
-        const dim4 ostrides = output.strides();
-        const dim4 istrides = input.strides();
-        const int D1 = D - 1;
-        for (dim_t i = 0; i < odims[D1]; i++) {
-            ireduce_dim<op, T, D1>()(output, locArray, outOffset + i * ostrides[D1],
-                                     input, inOffset + i * istrides[D1], dim);
-        }
-    }
-};
-
-template<af_op_t op, typename T>
-struct ireduce_dim<op, T, 0>
-{
-    void operator()(Array<T> output, Array<uint> locArray, const dim_t outOffset,
-                    const Array<T> input, const dim_t inOffset, const int dim)
-    {
-        const dim4 idims = input.dims();
-        const dim4 istrides = input.strides();
-
-        T const * const in = input.get();
-        T * out = output.get();
-        uint * loc = locArray.get();
-
-        dim_t stride = istrides[dim];
-        MinMaxOp<op, T> Op(in[0], 0);
-        for (dim_t i = 0; i < idims[dim]; i++) {
-            Op(in[inOffset + i * stride], i);
-        }
-
-        *(out+outOffset) = Op.m_val;
-        *(loc+outOffset) = Op.m_idx;
-    }
-};
 
 template<af_op_t op, typename T>
 using ireduce_dim_func = std::function<void(Array<T>, Array<uint>, const dim_t,
@@ -123,10 +35,10 @@ void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in, const int dim)
 
     dim4 odims = in.dims();
     odims[dim] = 1;
-    static const ireduce_dim_func<op, T> ireduce_funcs[] = { ireduce_dim<op, T, 1>()
-                                                           , ireduce_dim<op, T, 2>()
-                                                           , ireduce_dim<op, T, 3>()
-                                                           , ireduce_dim<op, T, 4>()};
+    static const ireduce_dim_func<op, T> ireduce_funcs[] = { kernel::ireduce_dim<op, T, 1>()
+                                                           , kernel::ireduce_dim<op, T, 2>()
+                                                           , kernel::ireduce_dim<op, T, 3>()
+                                                           , kernel::ireduce_dim<op, T, 4>()};
 
     getQueue().enqueue(ireduce_funcs[in.ndims() - 1], out, loc, 0, in, 0, dim);
 }
@@ -141,7 +53,7 @@ T ireduce_all(unsigned *loc, const Array<T> &in)
     af::dim4 strides = in.strides();
     const T *inPtr = in.get();
 
-    MinMaxOp<op, T> Op(inPtr[0], 0);
+    kernel::MinMaxOp<op, T> Op(inPtr[0], 0);
 
     for(dim_t l = 0; l < dims[3]; l++) {
         dim_t off3 = l * strides[3];

@@ -31,9 +31,9 @@ dim_t trimIndex(int const & idx, dim_t const & len)
 }
 
 static inline
-dim_t clamp(int a, dim_t mn, dim_t mx)
+dim_t clamp(dim_t a, dim_t mn, dim_t mx)
 {
-    return (a < (int)mn ? mn : (a > (int)mx ? mx : a));
+    return (a<mn ? mn : (a>mx ? mx : a));
 }
 
 static inline
