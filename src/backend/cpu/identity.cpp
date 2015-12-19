@@ -7,14 +7,12 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <af/array.h>
 #include <af/dim4.hpp>
-#include <af/defines.h>
 #include <Array.hpp>
 #include <identity.hpp>
-#include <math.hpp>
 #include <platform.hpp>
 #include <async_queue.hpp>
+#include <kernel/identity.hpp>
 
 namespace cpu
 {
@@ -24,20 +22,7 @@ Array<T> identity(const dim4& dims)
 {
     Array<T> out = createEmptyArray<T>(dims);
 
-    auto func = [=] (Array<T> out) {
-        T *ptr = out.get();
-        const dim_t *out_dims  = out.dims().get();
-
-        for (dim_t k = 0; k < out_dims[2] * out_dims[3]; k++) {
-            for (dim_t j = 0; j < out_dims[1]; j++) {
-                for (dim_t i = 0; i < out_dims[0]; i++) {
-                    ptr[j * out_dims[0] + i]  = (i == j) ? scalar<T>(1) : scalar<T>(0);
-                }
-            }
-            ptr += out_dims[0] * out_dims[1];
-        }
-    };
-    getQueue().enqueue(func, out);
+    getQueue().enqueue(kernel::identity<T>, out);
 
     return out;
 }
