@@ -7,19 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+#include <af/defines.h>
 #include <Array.hpp>
+#include <utility.hpp>
 
 namespace cpu
 {
 namespace kernel
 {
-
-using af::dim4;
-
-inline int clamp(int f, int a, int b)
-{
-    return std::max(a, std::min(f, b));
-}
 
 inline int idx_y(int i)
 {
@@ -86,14 +82,14 @@ inline double abs_diff(double x, double y)
 }
 
 template<typename T>
-void locate_features(const Array<T> &in, Array<float> &score,
-                     Array<float> &x_out, Array<float> &y_out,
-                     Array<float> &score_out, unsigned* count, const float thr,
-                     const unsigned arc_length, const unsigned nonmax,
-                     const unsigned max_feat, const unsigned edge)
+void locate_features(Array<T> const & in, Array<float> & score,
+                     Array<float> & x_out, Array<float> & y_out,
+                     Array<float> & score_out, unsigned* count, float const thr,
+                     unsigned const arc_length, unsigned const nonmax,
+                     unsigned const max_feat, unsigned const edge)
 {
-    dim4 in_dims = in.dims();
-    const T* in_ptr = in.get();
+    af::dim4 in_dims = in.dims();
+    T const * in_ptr = in.get();
 
     for (int y = edge; y < (int)(in_dims[0] - edge); y++) {
         for (int x = edge; x < (int)(in_dims[1] - edge); x++) {
@@ -179,15 +175,15 @@ void locate_features(const Array<T> &in, Array<float> &score,
     }
 }
 
-void non_maximal(const Array<float> &score, const Array<float> &x_in, const Array<float> &y_in,
-                 Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
-                 unsigned* count, const unsigned total_feat, const unsigned edge)
+void non_maximal(Array<float> const & score, const Array<float> & x_in, const Array<float> & y_in,
+                 Array<float> & x_out, Array<float> & y_out, Array<float> & score_out,
+                 unsigned* count, unsigned const total_feat, unsigned const edge)
 {
-    const float *score_ptr = score.get();
-    const float *x_in_ptr = x_in.get();
-    const float *y_in_ptr = y_in.get();
+    float const * score_ptr = score.get();
+    float const * x_in_ptr = x_in.get();
+    float const * y_in_ptr = y_in.get();
 
-    dim4 score_dims = score.dims();
+    af::dim4 score_dims = score.dims();
 
     for (unsigned k = 0; k < total_feat; k++) {
         unsigned x = static_cast<unsigned>(round(x_in_ptr[k]));

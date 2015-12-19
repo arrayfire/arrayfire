@@ -7,6 +7,8 @@
 * http://arrayfire.com/licenses/BSD-3-Clause
 ********************************************************/
 
+#pragma once
+#include <af/defines.h>
 #include <Array.hpp>
 #include <cmath>
 
@@ -15,13 +17,11 @@ namespace cpu
 namespace kernel
 {
 
-using af::dim4;
-
 template<typename T>
 void hsv2rgb(Array<T> out, Array<T> const in)
 {
-    const dim4 dims    = in.dims();
-    const dim4 strides = in.strides();
+    const af::dim4 dims    = in.dims();
+    const af::dim4 strides = in.strides();
     dim_t obStride  = out.strides()[3];
     dim_t coff      = strides[2];
     dim_t bCount    = dims[3];
@@ -72,9 +72,9 @@ void hsv2rgb(Array<T> out, Array<T> const in)
 template<typename T>
 void rgb2hsv(Array<T> out, Array<T> const in)
 {
-    const dim4 dims    = in.dims();
-    const dim4 strides = in.strides();
-    dim4 oStrides      = out.strides();
+    const af::dim4 dims    = in.dims();
+    const af::dim4 strides = in.strides();
+    af::dim4 oStrides      = out.strides();
     dim_t bCount    = dims[3];
 
     for(dim_t b=0; b<bCount; ++b) {

@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+#include <af/defines.h>
 #include <Array.hpp>
 
 namespace cpu

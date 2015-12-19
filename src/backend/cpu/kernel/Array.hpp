@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+#include <af/defines.h>
 #include <Array.hpp>
 #include <platform.hpp>
 
@@ -15,16 +17,14 @@ namespace cpu
 namespace kernel
 {
 
-using af::dim4;
-
 template<typename T>
 void evalArray(Array<T> in)
 {
     in.setId(cpu::getActiveDeviceId());
     T *ptr = in.data.get();
 
-    dim4 odims = in.dims();
-    dim4 ostrs = in.strides();
+    af::dim4 odims = in.dims();
+    af::dim4 ostrs = in.strides();
 
     bool is_linear = in.node->isLinear(odims.get());
 

@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+#include <af/defines.h>
 #include <Array.hpp>
 
 namespace cpu
@@ -14,11 +16,9 @@ namespace cpu
 namespace kernel
 {
 
-using af::dim4;
-
 template<typename T>
-void stridedCopy(T* dst, const dim4& ostrides, const T* src,
-                 const dim4 &dims, const dim4 &strides, unsigned dim)
+void stridedCopy(T* dst, af::dim4 const & ostrides, T const * src,
+                 af::dim4 const & dims, af::dim4 const & strides, unsigned dim)
 {
     if(dim == 0) {
         if(strides[dim] == 1) {
@@ -38,16 +38,16 @@ void stridedCopy(T* dst, const dim4& ostrides, const T* src,
     }
 }
 
-template<typename inType, typename outType>
-void copy(Array<outType> dst, const Array<inType> src, outType default_value, double factor)
+template<typename OutT, typename InT>
+void copy(Array<OutT> dst, Array<InT> const src, OutT default_value, double factor)
 {
-    dim4 src_dims       = src.dims();
-    dim4 dst_dims       = dst.dims();
-    dim4 src_strides    = src.strides();
-    dim4 dst_strides    = dst.strides();
+    af::dim4 src_dims       = src.dims();
+    af::dim4 dst_dims       = dst.dims();
+    af::dim4 src_strides    = src.strides();
+    af::dim4 dst_strides    = dst.strides();
 
-    const inType * src_ptr = src.get();
-    outType * dst_ptr      = dst.get();
+    InT const * const src_ptr = src.get();
+    OutT * dst_ptr      = dst.get();
 
     dim_t trgt_l = std::min(dst_dims[3], src_dims[3]);
     dim_t trgt_k = std::min(dst_dims[2], src_dims[2]);
@@ -73,10 +73,10 @@ void copy(Array<outType> dst, const Array<inType> src, outType default_value, do
                 bool isJvalid = j<trgt_j;
 
                 for(dim_t i=0; i<dst_dims[0]; ++i) {
-                    outType temp = default_value;
+                    OutT temp = default_value;
                     if (isLvalid && isKvalid && isJvalid && i<trgt_i) {
                         dim_t src_idx = i*src_strides[0] + src_joff + src_koff + src_loff;
-                        temp = outType(src_ptr[src_idx])*outType(factor);
+                        temp = OutT(src_ptr[src_idx])*OutT(factor);
                     }
                     dim_t dst_idx = i*dst_strides[0] + dst_joff + dst_koff + dst_loff;
                     dst_ptr[dst_idx] = temp;

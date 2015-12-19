@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+#include <af/defines.h>
 #include <vector>
 #include <Array.hpp>
 #include <utility.hpp>
@@ -16,19 +18,17 @@ namespace cpu
 namespace kernel
 {
 
-using af::dim4;
-
 template<typename T>
 void index(Array<T> out, Array<T> const in,
            std::vector<bool> const isSeq, std::vector<af_seq> const seqs,
            std::vector< Array<uint> > const idxArrs)
 {
-    const dim4 iDims    = in.dims();
-    const dim4 dDims    = in.getDataDims();
-    const dim4 iOffs    = toOffset(seqs, dDims);
-    const dim4 iStrds   = toStride(seqs, dDims);
-    const dim4 oDims    = out.dims();
-    const dim4 oStrides = out.strides();
+    const af::dim4 iDims    = in.dims();
+    const af::dim4 dDims    = in.getDataDims();
+    const af::dim4 iOffs    = toOffset(seqs, dDims);
+    const af::dim4 iStrds   = toStride(seqs, dDims);
+    const af::dim4 oDims    = out.dims();
+    const af::dim4 oStrides = out.strides();
     const T *src        = in.get();
     T *dst        = out.get();
     const uint* ptr0    = idxArrs[0].get();

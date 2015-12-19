@@ -29,7 +29,7 @@ Array<outType> bilateral(const Array<inType> &in, const float &s_sigma, const fl
     in.eval();
     const dim4 dims     = in.dims();
     Array<outType> out = createEmptyArray<outType>(dims);
-    getQueue().enqueue(kernel::bilateral<inType, outType, isColor>, out, in, s_sigma, c_sigma);
+    getQueue().enqueue(kernel::bilateral<outType, inType, isColor>, out, in, s_sigma, c_sigma);
     return out;
 }
 

@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+#include <af/defines.h>
 #include <vector>
 #include <Array.hpp>
 #include <utility.hpp>
@@ -16,25 +18,23 @@ namespace cpu
 namespace kernel
 {
 
-using af::dim4;
-
 template<typename T>
-void assign(Array<T> out, const Array<T> rhs, const std::vector<bool> isSeq,
-            const std::vector<af_seq> seqs, const std::vector< Array<uint> > idxArrs)
+void assign(Array<T> out, Array<T> const rhs, std::vector<bool> const isSeq,
+            std::vector<af_seq> const seqs, std::vector< Array<uint> > const idxArrs)
 {
-    dim4 dDims = out.getDataDims();
-    dim4 pDims = out.dims();
+    af::dim4 dDims = out.getDataDims();
+    af::dim4 pDims = out.dims();
     // retrieve dimensions & strides for array to which rhs is being copied to
-    dim4 dst_offsets = toOffset(seqs, dDims);
-    dim4 dst_strides = toStride(seqs, dDims);
+    af::dim4 dst_offsets = toOffset(seqs, dDims);
+    af::dim4 dst_strides = toStride(seqs, dDims);
     // retrieve rhs array dimenesions & strides
-    dim4 src_dims    = rhs.dims();
-    dim4 src_strides = rhs.strides();
+    af::dim4 src_dims    = rhs.dims();
+    af::dim4 src_strides = rhs.strides();
     // declare pointers to af_array index data
-    const uint* ptr0 = idxArrs[0].get();
-    const uint* ptr1 = idxArrs[1].get();
-    const uint* ptr2 = idxArrs[2].get();
-    const uint* ptr3 = idxArrs[3].get();
+    uint const * const ptr0 = idxArrs[0].get();
+    uint const * const ptr1 = idxArrs[1].get();
+    uint const * const ptr2 = idxArrs[2].get();
+    uint const * const ptr3 = idxArrs[3].get();
 
     const T * src= rhs.get();
     T * dst      = out.get();

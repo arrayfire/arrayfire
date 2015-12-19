@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+#include <af/defines.h>
 #include <Array.hpp>
 
 namespace cpu
@@ -14,8 +16,8 @@ namespace cpu
 namespace kernel
 {
 
-template<typename inType, typename outType, bool isLinear>
-void histogram(Array<outType> out, Array<inType> const in,
+template<typename OutT, typename InT, bool IsLinear>
+void histogram(Array<OutT> out, Array<InT> const in,
                unsigned const nbins, double const minval, double const maxval)
 {
     dim4 const outDims   = out.dims();
@@ -25,13 +27,13 @@ void histogram(Array<outType> out, Array<inType> const in,
     dim4 const oStrides  = out.strides();
     dim_t const nElems   = inDims[0]*inDims[1];
 
-    outType *outData    = out.get();
-    const inType* inData= in.get();
+    OutT *outData    = out.get();
+    const InT* inData= in.get();
 
     for(dim_t b3 = 0; b3 < outDims[3]; b3++) {
         for(dim_t b2 = 0; b2 < outDims[2]; b2++) {
             for(dim_t i=0; i<nElems; i++) {
-                int idx = isLinear ? i : ((i % inDims[0]) + (i / inDims[0])*iStrides[1]);
+                int idx = IsLinear ? i : ((i % inDims[0]) + (i / inDims[0])*iStrides[1]);
                 int bin = (int)((inData[idx] - minval) / step);
                 bin = std::max(bin, 0);
                 bin = std::min(bin, (int)(nbins - 1));

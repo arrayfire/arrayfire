@@ -32,7 +32,7 @@ Array<outType> histogram(const Array<inType> &in,
     Array<outType> out = createValueArray<outType>(outDims, outType(0));
     out.eval();
 
-    getQueue().enqueue(kernel::histogram<inType, outType, isLinear>,
+    getQueue().enqueue(kernel::histogram<outType, inType, isLinear>,
             out, in, nbins, minval, maxval);
 
     return out;

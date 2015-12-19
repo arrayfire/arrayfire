@@ -63,7 +63,7 @@ Array<outType> padArray(Array<inType> const &in, dim4 const &dims,
     in.eval();
     // FIXME:
     getQueue().sync();
-    getQueue().enqueue(kernel::copy<inType, outType>, ret, in, outType(default_value), factor);
+    getQueue().enqueue(kernel::copy<outType, inType>, ret, in, outType(default_value), factor);
     return ret;
 }
 
@@ -72,7 +72,7 @@ void copyArray(Array<outType> &out, Array<inType> const &in)
 {
     out.eval();
     in.eval();
-    getQueue().enqueue(kernel::copy<inType, outType>, out, in, scalar<outType>(0), 1.0);
+    getQueue().enqueue(kernel::copy<outType, inType>, out, in, scalar<outType>(0), 1.0);
 }
 
 #define INSTANTIATE(T)                                                  \

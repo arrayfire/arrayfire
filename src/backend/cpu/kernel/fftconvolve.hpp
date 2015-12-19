@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+#include <af/defines.h>
 #include <Array.hpp>
 #include <convolve_common.hpp>
 
@@ -14,8 +16,6 @@ namespace cpu
 {
 namespace kernel
 {
-
-using af::dim4;
 
 template<typename To, typename Ti>
 void packData(Array<To> out, const af::dim4 od, const af::dim4 os, Array<Ti> const in)
@@ -95,12 +95,12 @@ void complexMultiply(Array<T> packed, const af::dim4 sig_dims, const af::dim4 si
     T* in1_ptr = packed.get();
     T* in2_ptr = packed.get() + offset;
 
-    const dim4& od = (kind==CONVOLVE_BATCH_KERNEL ? fit_dims : sig_dims);
-    const dim4& os = (kind==CONVOLVE_BATCH_KERNEL ? fit_strides : sig_strides);
-    const dim4& i1d = sig_dims;
-    const dim4& i2d = fit_dims;
-    const dim4& i1s = sig_strides;
-    const dim4& i2s = fit_strides;
+    const af::dim4& od = (kind==CONVOLVE_BATCH_KERNEL ? fit_dims : sig_dims);
+    const af::dim4& os = (kind==CONVOLVE_BATCH_KERNEL ? fit_strides : sig_strides);
+    const af::dim4& i1d = sig_dims;
+    const af::dim4& i2d = fit_dims;
+    const af::dim4& i1s = sig_strides;
+    const af::dim4& i2s = fit_strides;
 
     for (int d3 = 0; d3 < (int)od[3]; d3++) {
         for (int d2 = 0; d2 < (int)od[2]; d2++) {

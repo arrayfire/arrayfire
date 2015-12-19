@@ -7,42 +7,33 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+#include <af/defines.h>
 #include <Array.hpp>
+#include <utility.hpp>
+#include <cmath>
 
 namespace cpu
 {
 namespace kernel
 {
 
-inline
-dim_t clamp(int a, dim_t mn, dim_t mx)
+template<typename OutT, typename InT, bool IsColor>
+void bilateral(Array<OutT> out, Array<InT> const in, float const s_sigma, float const c_sigma)
 {
-    return (a < (int)mn ? mn : (a > (int)mx ? mx : a));
-}
+    af::dim4 const dims     = in.dims();
+    af::dim4 const istrides = in.strides();
+    af::dim4 const ostrides = out.strides();
 
-inline
-unsigned getIdx(const dim4 &strides, int i, int j = 0, int k = 0, int l = 0)
-{
-    return (l * strides[3] + k * strides[2] + j * strides[1] + i * strides[0]);
-}
-
-template<typename inType, typename outType, bool isColor>
-void bilateral(Array<outType> out, const Array<inType> in, float s_sigma, float c_sigma)
-{
-    const dim4 dims     = in.dims();
-    const dim4 istrides = in.strides();
-
-    const dim4 ostrides = out.strides();
-
-          outType *outData = out.get();
-    const inType  *inData  = in.get();
+          OutT *outData = out.get();
+    InT const * inData  = in.get();
 
     // clamp spatical and chromatic sigma's
-    float space_          = std::min(11.5f, std::max(s_sigma, 0.f));
-    float color_          = std::max(c_sigma, 0.f);
-    const dim_t radius = std::max((dim_t)(space_ * 1.5f), (dim_t)1);
-    const float svar      = space_*space_;
-    const float cvar      = color_*color_;
+    float space_       = std::min(11.5f, std::max(s_sigma, 0.f));
+    float color_       = std::max(c_sigma, 0.f);
+    dim_t const radius = std::max((dim_t)(space_ * 1.5f), (dim_t)1);
+    float const svar   = space_*space_;
+    float const cvar   = color_*color_;
 
     for(dim_t b3=0; b3<dims[3]; ++b3) {
         // b3 for loop handles following batch configurations
@@ -58,9 +49,9 @@ void bilateral(Array<outType> out, const Array<inType> in, float s_sigma, float 
                 // j steps along 2nd dimension
                 for(dim_t i=0; i<dims[0]; ++i) {
                     // i steps along 1st dimension
-                    outType norm = 0.0;
-                    outType res  = 0.0;
-                    const outType center = (outType)inData[getIdx(istrides, i, j)];
+                    OutT norm = 0.0;
+                    OutT res  = 0.0;
+                    OutT const center = (OutT)inData[getIdx(istrides, i, j)];
                     for(dim_t wj=-radius; wj<=radius; ++wj) {
                         // clamps offsets
                         dim_t tj = clamp(j+wj, 0, dims[1]-1);
@@ -68,10 +59,10 @@ void bilateral(Array<outType> out, const Array<inType> in, float s_sigma, float 
                             // clamps offsets
                             dim_t ti = clamp(i+wi, 0, dims[0]-1);
                             // proceed
-                            const outType val= (outType)inData[getIdx(istrides, ti, tj)];
-                            const outType gauss_space = (wi*wi+wj*wj)/(-2.0*svar);
-                            const outType gauss_range = ((center-val)*(center-val))/(-2.0*cvar);
-                            const outType weight = std::exp(gauss_space+gauss_range);
+                            OutT const val= (OutT)inData[getIdx(istrides, ti, tj)];
+                            OutT const gauss_space = (wi*wi+wj*wj)/(-2.0*svar);
+                            OutT const gauss_range = ((center-val)*(center-val))/(-2.0*cvar);
+                            OutT const weight = std::exp(gauss_space+gauss_range);
                             norm += weight;
                             res += val*weight;
                         }

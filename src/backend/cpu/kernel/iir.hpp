@@ -7,14 +7,14 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+#include <af/defines.h>
 #include <Array.hpp>
 
 namespace cpu
 {
 namespace kernel
 {
-
-using af::dim4;
 
 template<typename T>
 void iir(Array<T> y, Array<T> c, Array<T> const a)

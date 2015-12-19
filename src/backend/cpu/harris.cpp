@@ -43,7 +43,7 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
         for (unsigned i = 0; i < filter_len; i++)
             h_filter[i] = (T)1.f / (filter_len);
     } else {
-        kernel::gaussian1D<convAccT>(h_filter, (int)filter_len, sigma);
+        gaussian1D<convAccT>(h_filter, (int)filter_len, sigma);
     }
     Array<convAccT> filter = createDeviceDataArray<convAccT>(dim4(filter_len), (const void*)h_filter);
 

@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+#include <af/defines.h>
 #include <Array.hpp>
 
 namespace cpu
@@ -14,16 +16,14 @@ namespace cpu
 namespace kernel
 {
 
-using af::dim4;
-
 template<typename T>
 void diagCreate(Array<T> out, Array<T> const in, int const num)
 {
     int batch = in.dims()[1];
     int size  = out.dims()[0];
 
-    const T *iptr = in.get();
-    T *optr = out.get();
+    T const * iptr = in.get();
+    T * optr = out.get();
 
     for (int k = 0; k < batch; k++) {
         for (int j = 0; j < size; j++) {
@@ -43,10 +43,10 @@ void diagCreate(Array<T> out, Array<T> const in, int const num)
 template<typename T>
 void diagExtract(Array<T> out, Array<T> const in, int const num)
 {
-    const dim4 odims = out.dims();
-    const dim4 idims = in.dims();
+    dim4 const odims = out.dims();
+    dim4 const idims = in.dims();
 
-    const int i_off = (num > 0) ? (num * in.strides()[1]) : (-num);
+    int const i_off = (num > 0) ? (num * in.strides()[1]) : (-num);
 
     for (int l = 0; l < (int)odims[3]; l++) {
 

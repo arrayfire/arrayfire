@@ -7,30 +7,15 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+#include <af/defines.h>
 #include <Array.hpp>
+#include <utility.hpp>
 
 namespace cpu
 {
 namespace kernel
 {
-
-template<typename T>
-void gaussian1D(T* out, const int dim, double sigma=0.0)
-{
-    if(!(sigma>0)) sigma = 0.25*dim;
-
-    T sum = (T)0;
-    for(int i=0;i<dim;i++)
-    {
-        int x = i-(dim-1)/2;
-        T el = 1. / sqrt(2 * af::Pi * sigma*sigma) * exp(-((x*x)/(2*(sigma*sigma))));
-        out[i] = el;
-        sum   += el;
-    }
-
-    for(int k=0;k<dim;k++)
-        out[k] /= sum;
-}
 
 template<typename T>
 void second_order_deriv(Array<T> ixx, Array<T> ixy, Array<T> iyy,

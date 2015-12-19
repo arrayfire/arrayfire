@@ -7,6 +7,8 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
+#pragma once
+#include <af/defines.h>
 #include <vector>
 #include <Array.hpp>
 #include <utility.hpp>
@@ -16,20 +18,18 @@ namespace cpu
 namespace kernel
 {
 
-using af::dim4;
-
-template<typename in_t, typename idx_t>
-void lookup(Array<in_t> out, Array<in_t> const input,
-            Array<idx_t> const indices, unsigned const dim)
+template<typename InT, typename IndexT>
+void lookup(Array<InT> out, Array<InT> const input,
+            Array<IndexT> const indices, unsigned const dim)
 {
-    const dim4 iDims    = input.dims();
-    const dim4 oDims    = out.dims();
-    const dim4 iStrides = input.strides();
-    const dim4 oStrides = out.strides();
-    const in_t *inPtr   = input.get();
-    const idx_t *idxPtr = indices.get();
+    const af::dim4 iDims    = input.dims();
+    const af::dim4 oDims    = out.dims();
+    const af::dim4 iStrides = input.strides();
+    const af::dim4 oStrides = out.strides();
+    const InT *inPtr   = input.get();
+    const IndexT *idxPtr = indices.get();
 
-    in_t *outPtr = out.get();
+    InT *outPtr = out.get();
 
     for (dim_t l=0; l<oDims[3]; ++l) {
 
