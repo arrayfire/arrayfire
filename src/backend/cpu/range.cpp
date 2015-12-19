@@ -16,47 +16,11 @@
 #include <numeric>
 #include <platform.hpp>
 #include <async_queue.hpp>
+#include <kernel/range.hpp>
 
 namespace cpu
 {
 
-///////////////////////////////////////////////////////////////////////////
-// Kernel Functions
-///////////////////////////////////////////////////////////////////////////
-template<typename T, int dim>
-void range(Array<T> output)
-{
-    T* out = output.get();
-
-    const dim4 dims = output.dims();
-    const dim4 strides = output.strides();
-
-    for(dim_t w = 0; w < dims[3]; w++) {
-        dim_t offW = w * strides[3];
-        for(dim_t z = 0; z < dims[2]; z++) {
-            dim_t offWZ = offW + z * strides[2];
-            for(dim_t y = 0; y < dims[1]; y++) {
-                dim_t offWZY = offWZ + y * strides[1];
-                for(dim_t x = 0; x < dims[0]; x++) {
-                    dim_t id = offWZY + x;
-                    if(dim == 0) {
-                        out[id] = x;
-                    } else if(dim == 1) {
-                        out[id] = y;
-                    } else if(dim == 2) {
-                        out[id] = z;
-                    } else if(dim == 3) {
-                        out[id] = w;
-                    }
-                }
-            }
-        }
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////
-// Wrapper Functions
-///////////////////////////////////////////////////////////////////////////
 template<typename T>
 Array<T> range(const dim4& dims, const int seq_dim)
 {
@@ -69,10 +33,10 @@ Array<T> range(const dim4& dims, const int seq_dim)
 
     Array<T> out = createEmptyArray<T>(dims);
     switch(_seq_dim) {
-        case 0: getQueue().enqueue(range<T, 0>, out); break;
-        case 1: getQueue().enqueue(range<T, 1>, out); break;
-        case 2: getQueue().enqueue(range<T, 2>, out); break;
-        case 3: getQueue().enqueue(range<T, 3>, out); break;
+        case 0: getQueue().enqueue(kernel::range<T, 0>, out); break;
+        case 1: getQueue().enqueue(kernel::range<T, 1>, out); break;
+        case 2: getQueue().enqueue(kernel::range<T, 2>, out); break;
+        case 3: getQueue().enqueue(kernel::range<T, 3>, out); break;
         default : AF_ERROR("Invalid rep selection", AF_ERR_ARG);
     }
 

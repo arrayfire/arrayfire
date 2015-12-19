@@ -22,7 +22,7 @@
 #include <vector>
 
 #ifdef AF_BUILD_SIFT
-#include <sift_nonfree.hpp>
+#include <kernel/sift_nonfree.hpp>
 #endif
 
 using af::dim4;

@@ -7,12 +7,6 @@
  * http://arrayfire.com/licenses/BSD-3-Clause
  ********************************************************/
 
-#include <type_traits>
-#include <random>
-#include <algorithm>
-#include <functional>
-#include <limits>
-#include <type_traits>
 #include <af/array.h>
 #include <af/dim4.hpp>
 #include <af/defines.h>
@@ -20,140 +14,16 @@
 #include <random.hpp>
 #include <platform.hpp>
 #include <async_queue.hpp>
+#include <kernel/random.hpp>
 
 namespace cpu
 {
-
-using namespace std;
-
-template<typename T>
-using is_arithmetic_t       = typename enable_if< is_arithmetic<T>::value,      function<T()>>::type;
-template<typename T>
-using is_complex_t          = typename enable_if< is_complex<T>::value,         function<T()>>::type;
-template<typename T>
-using is_floating_point_t   = typename enable_if< is_floating_point<T>::value,  function<T()>>::type;
-
-template<typename T, typename GenType>
-is_arithmetic_t<T>
-urand(GenType &generator)
-{
-    typedef typename conditional<   is_floating_point<T>::value,
-                                    uniform_real_distribution<T>,
-#if OS_WIN
-                                    uniform_int_distribution<unsigned>>::type dist;
-#else
-                                    uniform_int_distribution<T >> ::type dist;
-#endif
-    return bind(dist(), generator);
-}
-
-template<typename T, typename GenType>
-is_complex_t<T>
-urand(GenType &generator)
-{
-    auto func = urand<typename T::value_type>(generator);
-    return [func] () { return T(func(), func());};
-}
-
-template<typename T, typename GenType>
-is_floating_point_t<T>
-nrand(GenType &generator)
-{
-    return bind(normal_distribution<T>(), generator);
-}
-
-template<typename T, typename GenType>
-is_complex_t<T>
-nrand(GenType &generator)
-{
-    auto func = nrand<typename T::value_type>(generator);
-    return [func] () { return T(func(), func());};
-}
-
-static default_random_engine generator;
-static unsigned long long gen_seed = 0;
-static bool is_first = true;
-#define GLOBAL 1
-
-template<typename T>
-void randn_(Array<T> out)
-{
-    static unsigned long long my_seed = 0;
-    if (is_first) {
-        setSeed(gen_seed);
-        my_seed = gen_seed;
-    }
-
-    static auto gen = nrand<T>(generator);
-
-    if (my_seed != gen_seed) {
-        gen = nrand<T>(generator);
-        my_seed = gen_seed;
-    }
-
-    T *outPtr = out.get();
-    for (int i = 0; i < (int)out.elements(); i++) {
-        outPtr[i] = gen();
-    }
-}
-
-template<typename T>
-Array<T> randn(const af::dim4 &dims)
-{
-    Array<T> outArray = createEmptyArray<T>(dims);
-    getQueue().enqueue(randn_<T>, outArray);
-    return outArray;
-}
-
-template<typename T>
-void randu_(Array<T> out)
-{
-    static unsigned long long my_seed = 0;
-    if (is_first) {
-        setSeed(gen_seed);
-        my_seed = gen_seed;
-    }
-
-    static auto gen = urand<T>(generator);
-
-    if (my_seed != gen_seed) {
-        gen = urand<T>(generator);
-        my_seed = gen_seed;
-    }
-
-    T *outPtr = out.get();
-    for (int i = 0; i < (int)out.elements(); i++) {
-        outPtr[i] = gen();
-    }
-}
-
-template<>
-void randu_(Array<char> out)
-{
-    static unsigned long long my_seed = 0;
-    if (is_first) {
-        setSeed(gen_seed);
-        my_seed = gen_seed;
-    }
-
-    static auto gen = urand<float>(generator);
-
-    if (my_seed != gen_seed) {
-        gen = urand<float>(generator);
-        my_seed = gen_seed;
-    }
-
-    char *outPtr = out.get();
-    for (int i = 0; i < (int)out.elements(); i++) {
-        outPtr[i] = gen() > 0.5;
-    }
-}
 
 template<typename T>
 Array<T> randu(const af::dim4 &dims)
 {
     Array<T> outArray = createEmptyArray<T>(dims);
-    getQueue().enqueue(randu_<T>, outArray);
+    getQueue().enqueue(kernel::randu<T>, outArray);
     return outArray;
 }
 
@@ -172,6 +42,14 @@ INSTANTIATE_UNIFORM(uchar)
 INSTANTIATE_UNIFORM(short)
 INSTANTIATE_UNIFORM(ushort)
 
+template<typename T>
+Array<T> randn(const af::dim4 &dims)
+{
+    Array<T> outArray = createEmptyArray<T>(dims);
+    getQueue().enqueue(kernel::randn<T>, outArray);
+    return outArray;
+}
+
 #define INSTANTIATE_NORMAL(T)                              \
     template Array<T>  randn<T>(const af::dim4 &dims);
 
@@ -184,32 +62,36 @@ template<>
 Array<char> randu(const af::dim4 &dims)
 {
     static unsigned long long my_seed = 0;
-    if (is_first) {
-        setSeed(gen_seed);
-        my_seed = gen_seed;
+    if (kernel::is_first) {
+        setSeed(kernel::gen_seed);
+        my_seed = kernel::gen_seed;
     }
 
-    static auto gen = urand<float>(generator);
+    static auto gen = kernel::urand<float>(kernel::generator);
 
-    if (my_seed != gen_seed) {
-        gen = urand<float>(generator);
-        my_seed = gen_seed;
+    if (my_seed != kernel::gen_seed) {
+        gen = kernel::urand<float>(kernel::generator);
+        my_seed = kernel::gen_seed;
     }
 
     Array<char> outArray = createEmptyArray<char>(dims);
-    char *outPtr = outArray.get();
-    for (int i = 0; i < (int)outArray.elements(); i++) {
-        outPtr[i] = gen() > 0.5;
-    }
+    auto func = [=](Array<char> outArray) {
+        char *outPtr = outArray.get();
+        for (int i = 0; i < (int)outArray.elements(); i++) {
+            outPtr[i] = gen() > 0.5;
+        }
+    };
+    getQueue().enqueue(func, outArray);
+
     return outArray;
 }
 
 void setSeed(const uintl seed)
 {
     auto f = [=](const uintl seed){
-        generator.seed(seed);
-        is_first = false;
-        gen_seed = seed;
+        kernel::generator.seed(seed);
+        kernel::is_first = false;
+        kernel::gen_seed = seed;
     };
     getQueue().enqueue(f, seed);
 }
@@ -217,7 +99,7 @@ void setSeed(const uintl seed)
 uintl getSeed()
 {
     getQueue().sync();
-    return gen_seed;
+    return kernel::gen_seed;
 }
 
 }

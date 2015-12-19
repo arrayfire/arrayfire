@@ -15,9 +15,9 @@
 #include <ops.hpp>
 #include <functional>
 #include <complex>
-
 #include <platform.hpp>
 #include <async_queue.hpp>
+#include <kernel/reduce.hpp>
 
 using af::dim4;
 
@@ -38,56 +38,6 @@ struct Binary<cdouble, af_add_t>
 namespace cpu
 {
 
-template<af_op_t op, typename Ti, typename To, int D>
-struct reduce_dim
-{
-    void operator()(Array<To> out, const dim_t outOffset,
-                    const Array<Ti> in, const dim_t inOffset,
-                    const int dim, bool change_nan, double nanval)
-    {
-        static const int D1 = D - 1;
-        static reduce_dim<op, Ti, To, D1> reduce_dim_next;
-
-        const dim4 ostrides = out.strides();
-        const dim4 istrides = in.strides();
-        const dim4 odims    = out.dims();
-
-        for (dim_t i = 0; i < odims[D1]; i++) {
-            reduce_dim_next(out, outOffset + i * ostrides[D1],
-                            in, inOffset + i * istrides[D1],
-                            dim, change_nan, nanval);
-        }
-    }
-};
-
-template<af_op_t op, typename Ti, typename To>
-struct reduce_dim<op, Ti, To, 0>
-{
-
-    Transform<Ti, To, op> transform;
-    Binary<To, op> reduce;
-    void operator()(Array<To> out, const dim_t outOffset,
-                    const Array<Ti> in, const dim_t inOffset,
-                    const int dim, bool change_nan, double nanval)
-    {
-        const dim4 istrides = in.strides();
-        const dim4 idims    = in.dims();
-
-        To * const outPtr = out.get() + outOffset;
-        Ti const * const inPtr = in.get() + inOffset;
-        dim_t stride = istrides[dim];
-
-        To out_val = reduce.init();
-        for (dim_t i = 0; i < idims[dim]; i++) {
-            To in_val = transform(inPtr[i * stride]);
-            if (change_nan) in_val = IS_NAN(in_val) ? nanval : in_val;
-            out_val = reduce(in_val, out_val);
-        }
-
-        *outPtr = out_val;
-    }
-};
-
 template<af_op_t op, typename Ti, typename To>
 using reduce_dim_func = std::function<void(Array<To>, const dim_t,
                                            const Array<Ti>, const dim_t,
@@ -101,10 +51,10 @@ Array<To> reduce(const Array<Ti> &in, const int dim, bool change_nan, double nan
     in.eval();
 
     Array<To> out = createEmptyArray<To>(odims);
-    static const reduce_dim_func<op, Ti, To>  reduce_funcs[4] = { reduce_dim<op, Ti, To, 1>()
-                                                                , reduce_dim<op, Ti, To, 2>()
-                                                                , reduce_dim<op, Ti, To, 3>()
-                                                                , reduce_dim<op, Ti, To, 4>()};
+    static const reduce_dim_func<op, Ti, To>  reduce_funcs[4] = { kernel::reduce_dim<op, Ti, To, 1>()
+                                                                , kernel::reduce_dim<op, Ti, To, 2>()
+                                                                , kernel::reduce_dim<op, Ti, To, 3>()
+                                                                , kernel::reduce_dim<op, Ti, To, 4>()};
 
     getQueue().enqueue(reduce_funcs[in.ndims() - 1], out, 0, in, 0, dim, change_nan, nanval);
 
