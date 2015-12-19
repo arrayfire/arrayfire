@@ -12,7 +12,6 @@
 #include <af/constants.h>
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
-#include <err_cpu.hpp>
 #include <handle.hpp>
 #include <harris.hpp>
 #include <convolve.hpp>
@@ -21,132 +20,12 @@
 #include <cstring>
 #include <platform.hpp>
 #include <async_queue.hpp>
+#include <kernel/harris.hpp>
 
 using af::dim4;
 
 namespace cpu
 {
-
-template<typename T>
-void gaussian1D(T* out, const int dim, double sigma=0.0)
-{
-    if(!(sigma>0)) sigma = 0.25*dim;
-
-    T sum = (T)0;
-    for(int i=0;i<dim;i++)
-    {
-        int x = i-(dim-1)/2;
-        T el = 1. / sqrt(2 * af::Pi * sigma*sigma) * exp(-((x*x)/(2*(sigma*sigma))));
-        out[i] = el;
-        sum   += el;
-    }
-
-    for(int k=0;k<dim;k++)
-        out[k] /= sum;
-}
-
-template<typename T>
-void second_order_deriv(Array<T> ixx, Array<T> ixy, Array<T> iyy,
-                        const unsigned in_len, const Array<T> ix, const Array<T> iy)
-{
-    T* ixx_out     = ixx.get();
-    T* ixy_out     = ixy.get();
-    T* iyy_out     = iyy.get();
-    const T* ix_in = ix.get();
-    const T* iy_in = iy.get();
-    for (unsigned x = 0; x < in_len; x++) {
-        ixx_out[x] = ix_in[x] * ix_in[x];
-        ixy_out[x] = ix_in[x] * iy_in[x];
-        iyy_out[x] = iy_in[x] * iy_in[x];
-    }
-}
-
-template<typename T>
-void harris_responses(Array<T> resp, const unsigned idim0, const unsigned idim1,
-                      const Array<T> ixx, const Array<T> ixy, const Array<T> iyy,
-                      const float k_thr, const unsigned border_len)
-{
-    T* resp_out      = resp.get();
-    const T* ixx_in  = ixx.get();
-    const T* ixy_in  = ixy.get();
-    const T* iyy_in  = iyy.get();
-    const unsigned r = border_len;
-
-    for (unsigned x = r; x < idim1 - r; x++) {
-        for (unsigned y = r; y < idim0 - r; y++) {
-            const unsigned idx = x * idim0 + y;
-
-            // Calculates matrix trace and determinant
-            T tr = ixx_in[idx] + iyy_in[idx];
-            T det = ixx_in[idx] * iyy_in[idx] - ixy_in[idx] * ixy_in[idx];
-
-            // Calculates local Harris response
-            resp_out[idx] = det - k_thr * (tr*tr);
-        }
-    }
-}
-
-template<typename T>
-void non_maximal(Array<float> xOut, Array<float> yOut, Array<float> respOut, unsigned* count,
-                 const unsigned idim0, const unsigned idim1, const Array<T> respIn,
-                 const float min_resp, const unsigned border_len, const unsigned max_corners)
-{
-    float* x_out = xOut.get();
-    float* y_out = yOut.get();
-    float* resp_out = respOut.get();
-    const T* resp_in = respIn.get();
-    // Responses on the border don't have 8-neighbors to compare, discard them
-    const unsigned r = border_len + 1;
-
-    for (unsigned x = r; x < idim1 - r; x++) {
-        for (unsigned y = r; y < idim0 - r; y++) {
-            const T v = resp_in[x * idim0 + y];
-
-            // Find maximum neighborhood response
-            T max_v;
-            max_v = max(resp_in[(x-1) * idim0 + y-1], resp_in[x * idim0 + y-1]);
-            max_v = max(max_v, resp_in[(x+1) * idim0 + y-1]);
-            max_v = max(max_v, resp_in[(x-1) * idim0 + y  ]);
-            max_v = max(max_v, resp_in[(x+1) * idim0 + y  ]);
-            max_v = max(max_v, resp_in[(x-1) * idim0 + y+1]);
-            max_v = max(max_v, resp_in[(x)   * idim0 + y+1]);
-            max_v = max(max_v, resp_in[(x+1) * idim0 + y+1]);
-
-            // Stores corner to {x,y,resp}_out if it's response is maximum compared
-            // to its 8-neighborhood and greater or equal minimum response
-            if (v > max_v && v >= (T)min_resp) {
-                const unsigned idx = *count;
-                *count += 1;
-                if (idx < max_corners) {
-                    x_out[idx]    = (float)x;
-                    y_out[idx]    = (float)y;
-                    resp_out[idx] = (float)v;
-                }
-            }
-        }
-    }
-}
-
-static void keep_corners(Array<float> xOut, Array<float> yOut, Array<float> respOut,
-                         const Array<float> xIn, const Array<float> yIn,
-                         const Array<float> respIn, const Array<unsigned> respIdx,
-                         const unsigned n_corners)
-{
-    float* x_out = xOut.get();
-    float* y_out = yOut.get();
-    float* resp_out = respOut.get();
-    const float* x_in = xIn.get();
-    const float* y_in = yIn.get();
-    const float* resp_in = respIn.get();
-    const uint* resp_idx = respIdx.get();
-
-    // Keep only the first n_feat features
-    for (unsigned f = 0; f < n_corners; f++) {
-        x_out[f] = x_in[resp_idx[f]];
-        y_out[f] = y_in[resp_idx[f]];
-        resp_out[f] = resp_in[f];
-    }
-}
 
 template<typename T, typename convAccT>
 unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
@@ -164,7 +43,7 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
         for (unsigned i = 0; i < filter_len; i++)
             h_filter[i] = (T)1.f / (filter_len);
     } else {
-        gaussian1D<convAccT>(h_filter, (int)filter_len, sigma);
+        kernel::gaussian1D<convAccT>(h_filter, (int)filter_len, sigma);
     }
     Array<convAccT> filter = createDeviceDataArray<convAccT>(dim4(filter_len), (const void*)h_filter);
 
@@ -181,7 +60,7 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
     Array<T> iyy = createEmptyArray<T>(idims);
 
     // Compute second-order derivatives
-    getQueue().enqueue(second_order_deriv<T>, ixx, ixy, iyy, in.elements(), ix, iy);
+    getQueue().enqueue(kernel::second_order_deriv<T>, ixx, ixy, iyy, in.elements(), ix, iy);
 
     // Convolve second-order derivatives with proper window filter
     ixx = convolve2<T, convAccT, false>(ixx, filter, filter);
@@ -192,7 +71,7 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
 
     Array<T> responses = createEmptyArray<T>(dim4(in.elements()));
 
-    getQueue().enqueue(harris_responses<T>, responses, idims[0], idims[1],
+    getQueue().enqueue(kernel::harris_responses<T>, responses, idims[0], idims[1],
                        ixx, ixy, iyy, k_thr, border_len);
 
     Array<float> xCorners    = createEmptyArray<float>(dim4(corner_lim));
@@ -204,7 +83,7 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
     // Performs non-maximal suppression
     getQueue().sync();
     unsigned corners_found = 0;
-    non_maximal<T>(xCorners, yCorners, respCorners, &corners_found,
+    kernel::non_maximal<T>(xCorners, yCorners, respCorners, &corners_found,
                    idims[0], idims[1], responses, min_r, border_len, corner_lim);
 
     const unsigned corners_out = (max_corners > 0) ?
@@ -226,7 +105,7 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
         resp_out = createEmptyArray<float>(dim4(corners_out));
 
         // Keep only the corners with higher Harris responses
-        getQueue().enqueue(keep_corners, x_out, y_out, resp_out, xCorners, yCorners,
+        getQueue().enqueue(kernel::keep_corners, x_out, y_out, resp_out, xCorners, yCorners,
                            harris_sorted, harris_idx, corners_out);
     } else if (max_corners == 0 && corners_found < corner_lim) {
         x_out = createEmptyArray<float>(dim4(corners_out));

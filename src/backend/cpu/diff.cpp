@@ -9,62 +9,25 @@
 
 #include <Array.hpp>
 #include <diff.hpp>
-#include <stdexcept>
-#include <err_cpu.hpp>
 #include <platform.hpp>
 #include <async_queue.hpp>
+#include <kernel/diff.hpp>
 
 namespace cpu
 {
-
-unsigned getIdx(af::dim4 strides, af::dim4 offs, int i, int j = 0, int k = 0, int l = 0)
-{
-    return (l * strides[3] +
-            k * strides[2] +
-            j * strides[1] +
-            i);
-}
 
 template<typename T>
 Array<T>  diff1(const Array<T> &in, const int dim)
 {
     in.eval();
-    // Bool for dimension
-    bool is_dim0 = dim == 0;
-    bool is_dim1 = dim == 1;
-    bool is_dim2 = dim == 2;
-    bool is_dim3 = dim == 3;
 
     // Decrement dimension of select dimension
     af::dim4 dims = in.dims();
     dims[dim]--;
 
-    // Create output placeholder
     Array<T> outArray = createEmptyArray<T>(dims);
 
-    auto func = [=] (Array<T> outArray, Array<T> in) {
-        // Get pointers to raw data
-        const T *inPtr = in.get();
-              T *outPtr = outArray.get();
-
-        // TODO: Improve this
-        for(dim_t l = 0; l < dims[3]; l++) {
-            for(dim_t k = 0; k < dims[2]; k++) {
-                for(dim_t j = 0; j < dims[1]; j++) {
-                    for(dim_t i = 0; i < dims[0]; i++) {
-                        // Operation: out[index] = in[index + 1 * dim_size] - in[index]
-                        int idx = getIdx(in.strides(), in.offsets(), i, j, k, l);
-                        int jdx = getIdx(in.strides(), in.offsets(),
-                                        i + is_dim0, j + is_dim1,
-                                        k + is_dim2, l + is_dim3);
-                        int odx = getIdx(outArray.strides(), outArray.offsets(), i, j, k, l);
-                        outPtr[odx] = inPtr[jdx] - inPtr[idx];
-                    }
-                }
-            }
-        }
-    };
-    getQueue().enqueue(func, outArray, in);
+    getQueue().enqueue(kernel::diff1<T>, outArray, in, dim);
 
     return outArray;
 }
@@ -73,46 +36,14 @@ template<typename T>
 Array<T>  diff2(const Array<T> &in, const int dim)
 {
     in.eval();
-    // Bool for dimension
-    bool is_dim0 = dim == 0;
-    bool is_dim1 = dim == 1;
-    bool is_dim2 = dim == 2;
-    bool is_dim3 = dim == 3;
 
     // Decrement dimension of select dimension
     af::dim4 dims = in.dims();
     dims[dim] -= 2;
 
-    // Create output placeholder
     Array<T> outArray = createEmptyArray<T>(dims);
 
-    auto func = [=] (Array<T> outArray, Array<T> in) {
-        // Get pointers to raw data
-        const T *inPtr = in.get();
-            T *outPtr = outArray.get();
-
-        // TODO: Improve this
-        for(dim_t l = 0; l < dims[3]; l++) {
-            for(dim_t k = 0; k < dims[2]; k++) {
-                for(dim_t j = 0; j < dims[1]; j++) {
-                    for(dim_t i = 0; i < dims[0]; i++) {
-                        // Operation: out[index] = in[index + 1 * dim_size] - in[index]
-                        int idx = getIdx(in.strides(), in.offsets(), i, j, k, l);
-                        int jdx = getIdx(in.strides(), in.offsets(),
-                                        i + is_dim0, j + is_dim1,
-                                        k + is_dim2, l + is_dim3);
-                        int kdx = getIdx(in.strides(), in.offsets(),
-                                        i + 2 * is_dim0, j + 2 * is_dim1,
-                                        k + 2 * is_dim2, l + 2 * is_dim3);
-                        int odx = getIdx(outArray.strides(), outArray.offsets(), i, j, k, l);
-                        outPtr[odx] = inPtr[kdx] + inPtr[idx] - inPtr[jdx] - inPtr[jdx];
-                    }
-                }
-            }
-        }
-    };
-
-    getQueue().enqueue(func, outArray, in);
+    getQueue().enqueue(kernel::diff2<T>, outArray, in, dim);
 
     return outArray;
 }
