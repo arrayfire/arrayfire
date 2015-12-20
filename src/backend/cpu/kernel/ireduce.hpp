@@ -94,13 +94,13 @@ struct ireduce_dim<op, T, 0>
         uint * loc = locArray.get();
 
         dim_t stride = istrides[dim];
-        MinMaxOp<op, T> Op(in[0], 0);
+        MinMaxOp<op, T> Op(in[inOffset], 0);
         for (dim_t i = 0; i < idims[dim]; i++) {
             Op(in[inOffset + i * stride], i);
         }
 
-        *(out+outOffset) = Op.m_val;
-        *(loc+outOffset) = Op.m_idx;
+        out[outOffset] = Op.m_val;
+        loc[outOffset] = Op.m_idx;
     }
 };
 
