@@ -332,10 +332,10 @@ DeviceManager::DeviceManager()
 
     sortDevices();
 
-    for(int i = 0; i < nDevices; i++) {
-        setActiveDevice(i, cuDevices[i].nativeId);
-        CUDA_CHECK(cudaStreamCreate(&streams[i]));
-    }
+    // Initialize all streams to 0.
+    // Streams will be created in setActiveDevice()
+    for(int i = 0; i < (int)MAX_DEVICES; i++)
+        streams[i] = (cudaStream_t)0;
 
     const char* deviceENV = getenv("AF_CUDA_DEFAULT_DEVICE");
     if(!deviceENV) {
@@ -381,6 +381,11 @@ int DeviceManager::setActiveDevice(int device, int nId)
         if(nId == -1) nId = getDeviceNativeId(device);
         CUDA_CHECK(cudaSetDevice(nId));
         activeDev = device;
+
+        if(!streams[device]) {
+            CUDA_CHECK(cudaStreamCreate(&streams[device]));
+        }
+
         return old;
     }
 }
