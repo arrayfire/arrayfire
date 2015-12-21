@@ -30,7 +30,6 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
               const unsigned edge)
 {
     in.eval();
-    getQueue().sync();
 
     dim4 in_dims = in.dims();
     const unsigned max_feat = ceil(in.elements() * feature_ratio);
@@ -43,6 +42,7 @@ unsigned fast(Array<float> &x_out, Array<float> &y_out, Array<float> &score_out,
         V = createValueArray<float>(V_dims, (float)0);
         V.eval();
     }
+    getQueue().sync();
 
     // Arrays containing all features detected before non-maximal suppression.
     dim4 max_feat_dims(max_feat);

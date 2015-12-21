@@ -103,12 +103,13 @@ unsigned orb(Array<float> &x, Array<float> &y,
             ldims[1] = round(idims[1] / lvl_scl);
 
             lvl_img = resize<T>(prev_img, ldims[0], ldims[1], AF_INTERP_BILINEAR);
-            lvl_img.eval();
-            getQueue().sync();
 
             prev_img = lvl_img;
             prev_ldims = lvl_img.dims();
         }
+        prev_img.eval();
+        lvl_img.eval();
+        getQueue().sync();
 
 
         Array<float> x_feat = createEmptyArray<float>(dim4());
@@ -125,10 +126,6 @@ unsigned orb(Array<float> &x, Array<float> &y,
 
         unsigned lvl_feat = fast(x_feat, y_feat, score_feat,
                                  lvl_img, fast_thr, 9, 1, 0.15f, edge);
-        x_feat.eval();
-        y_feat.eval();
-        score_feat.eval();
-        getQueue().sync();
 
         if (lvl_feat == 0) {
             continue;
@@ -164,8 +161,6 @@ unsigned orb(Array<float> &x, Array<float> &y,
         Array<unsigned> harris_idx = createEmptyArray<unsigned>(af::dim4());
 
         sort_index<float, false>(harris_sorted, harris_idx, score_harris, 0);
-        harris_sorted.eval();
-        harris_idx.eval();
         getQueue().sync();
 
         usable_feat = std::min(usable_feat, lvl_best[i]);
@@ -203,6 +198,7 @@ unsigned orb(Array<float> &x, Array<float> &y,
                 h_gauss = memAlloc<T>(gauss_dims[0]);
                 gaussian1D(h_gauss, gauss_dims[0], 2.f);
                 gauss_filter = createDeviceDataArray<T>(gauss_dims, h_gauss);
+                gauss_filter.eval();
             }
 
             // Filter level image with Gaussian kernel to reduce noise sensitivity
