@@ -289,7 +289,17 @@ int getDeviceIdFromNativeId(int nativeId)
 
 cudaStream_t getStream(int device)
 {
-    return DeviceManager::getInstance().streams[device];
+    cudaStream_t str = DeviceManager::getInstance().streams[device];
+    // if the stream has not yet been initialized, ie. the device has not been
+    // set to active at least once (cuz that's where the stream is created)
+    // then set the device, get the stream, reset the device to current
+    if(!str) {
+        int active_dev = DeviceManager::getInstance().activeDev;
+        setDevice(device);
+        str = DeviceManager::getInstance().streams[device];
+        setDevice(active_dev);
+    }
+    return str;
 }
 
 int setDevice(int device)
