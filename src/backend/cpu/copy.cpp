@@ -60,8 +60,6 @@ Array<outType> padArray(Array<inType> const &in, dim4 const &dims,
     Array<outType> ret = createValueArray<outType>(dims, default_value);
     ret.eval();
     in.eval();
-    // FIXME:
-    getQueue().sync();
     ENQUEUE(kernel::copy<outType, inType>, ret, in, outType(default_value), factor);
     return ret;
 }
