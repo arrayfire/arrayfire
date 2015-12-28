@@ -15,8 +15,7 @@
 #include <ops.hpp>
 #include <functional>
 #include <complex>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/reduce.hpp>
 
 using af::dim4;
@@ -56,7 +55,7 @@ Array<To> reduce(const Array<Ti> &in, const int dim, bool change_nan, double nan
                                                                 , kernel::reduce_dim<op, Ti, To, 3>()
                                                                 , kernel::reduce_dim<op, Ti, To, 4>()};
 
-    getQueue().enqueue(reduce_funcs[in.ndims() - 1], out, 0, in, 0, dim, change_nan, nanval);
+    ENQUEUE(reduce_funcs[in.ndims() - 1], out, 0, in, 0, dim, change_nan, nanval);
 
     return out;
 }

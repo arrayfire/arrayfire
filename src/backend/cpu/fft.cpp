@@ -15,8 +15,7 @@
 #include <kernel/fft.hpp>
 #include <copy.hpp>
 #include <math.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 
 using af::dim4;
 
@@ -27,7 +26,7 @@ template<typename T, int rank, bool direction>
 void fft_inplace(Array<T> &in)
 {
     in.eval();
-    getQueue().enqueue(kernel::fft_inplace<T, rank, direction>, in);
+    ENQUEUE(kernel::fft_inplace<T, rank, direction>, in);
 }
 
 template<typename Tc, typename Tr, int rank>
@@ -39,7 +38,7 @@ Array<Tc> fft_r2c(const Array<Tr> &in)
     odims[0] = odims[0] / 2 + 1;
     Array<Tc> out = createEmptyArray<Tc>(odims);
 
-    getQueue().enqueue(kernel::fft_r2c<Tc, Tr, rank>, out, in);
+    ENQUEUE(kernel::fft_r2c<Tc, Tr, rank>, out, in);
 
     return out;
 }
@@ -50,7 +49,7 @@ Array<Tr> fft_c2r(const Array<Tc> &in, const dim4 &odims)
     in.eval();
 
     Array<Tr> out = createEmptyArray<Tr>(odims);
-    getQueue().enqueue(kernel::fft_c2r<Tr, Tc, rank>, out, in, odims);
+    ENQUEUE(kernel::fft_c2r<Tr, Tc, rank>, out, in, odims);
 
     return out;
 }

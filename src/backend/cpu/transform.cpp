@@ -10,8 +10,7 @@
 #include <Array.hpp>
 #include <transform.hpp>
 #include <math.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include "transform_interp.hpp"
 #include <kernel/transform.hpp>
 
@@ -29,13 +28,13 @@ Array<T> transform(const Array<T> &in, const Array<float> &transform, const af::
 
     switch(method) {
         case AF_INTERP_NEAREST :
-            getQueue().enqueue(kernel::transform<T, AF_INTERP_NEAREST >, out, in, transform, inverse);
+            ENQUEUE(kernel::transform<T, AF_INTERP_NEAREST >, out, in, transform, inverse);
             break;
         case AF_INTERP_BILINEAR:
-            getQueue().enqueue(kernel::transform<T, AF_INTERP_BILINEAR>, out, in, transform, inverse);
+            ENQUEUE(kernel::transform<T, AF_INTERP_BILINEAR>, out, in, transform, inverse);
             break;
         case AF_INTERP_LOWER   :
-            getQueue().enqueue(kernel::transform<T, AF_INTERP_LOWER   >, out, in, transform, inverse);
+            ENQUEUE(kernel::transform<T, AF_INTERP_LOWER   >, out, in, transform, inverse);
             break;
         default: AF_ERROR("Unsupported interpolation type", AF_ERR_ARG); break;
     }

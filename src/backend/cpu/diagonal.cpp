@@ -15,8 +15,7 @@
 #include <diagonal.hpp>
 #include <math.hpp>
 #include <err_cpu.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/diagonal.hpp>
 
 namespace cpu
@@ -31,7 +30,7 @@ Array<T> diagCreate(const Array<T> &in, const int num)
     int batch = in.dims()[1];
     Array<T> out = createEmptyArray<T>(dim4(size, size, batch));
 
-    getQueue().enqueue(kernel::diagCreate<T>, out, in, num);
+    ENQUEUE(kernel::diagCreate<T>, out, in, num);
 
     return out;
 }
@@ -45,7 +44,7 @@ Array<T> diagExtract(const Array<T> &in, const int num)
     dim_t size = std::max(idims[0], idims[1]) - std::abs(num);
     Array<T> out = createEmptyArray<T>(dim4(size, 1, idims[2], idims[3]));
 
-    getQueue().enqueue(kernel::diagExtract<T>, out, in, num);
+    ENQUEUE(kernel::diagExtract<T>, out, in, num);
 
     return out;
 }

@@ -18,8 +18,7 @@
 #include <random.hpp>
 #include <cstring>
 #include <cfloat>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 
 using af::dim4;
 

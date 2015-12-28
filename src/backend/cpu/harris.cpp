@@ -18,8 +18,7 @@
 #include <gradient.hpp>
 #include <sort_index.hpp>
 #include <cstring>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/harris.hpp>
 
 using af::dim4;
@@ -53,14 +52,14 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
     Array<T> iy = createEmptyArray<T>(idims);
 
     // Compute first order derivatives
-    getQueue().enqueue(gradient<T>, iy, ix, in);
+    ENQUEUE(gradient<T>, iy, ix, in);
 
     Array<T> ixx = createEmptyArray<T>(idims);
     Array<T> ixy = createEmptyArray<T>(idims);
     Array<T> iyy = createEmptyArray<T>(idims);
 
     // Compute second-order derivatives
-    getQueue().enqueue(kernel::second_order_deriv<T>, ixx, ixy, iyy, in.elements(), ix, iy);
+    ENQUEUE(kernel::second_order_deriv<T>, ixx, ixy, iyy, in.elements(), ix, iy);
 
     // Convolve second-order derivatives with proper window filter
     ixx = convolve2<T, convAccT, false>(ixx, filter, filter);
@@ -71,7 +70,7 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
 
     Array<T> responses = createEmptyArray<T>(dim4(in.elements()));
 
-    getQueue().enqueue(kernel::harris_responses<T>, responses, idims[0], idims[1],
+    ENQUEUE(kernel::harris_responses<T>, responses, idims[0], idims[1],
                        ixx, ixy, iyy, k_thr, border_len);
 
     Array<float> xCorners    = createEmptyArray<float>(dim4(corner_lim));
@@ -105,7 +104,7 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
         resp_out = createEmptyArray<float>(dim4(corners_out));
 
         // Keep only the corners with higher Harris responses
-        getQueue().enqueue(kernel::keep_corners, x_out, y_out, resp_out, xCorners, yCorners,
+        ENQUEUE(kernel::keep_corners, x_out, y_out, resp_out, xCorners, yCorners,
                            harris_sorted, harris_idx, corners_out);
     } else if (max_corners == 0 && corners_found < corner_lim) {
         x_out = createEmptyArray<float>(dim4(corners_out));
@@ -120,7 +119,7 @@ unsigned harris(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out
             memcpy(y_out.get(), y_crnrs.get(), corners_out * sizeof(float));
             memcpy(outResponses.get(), inResponses.get(), corners_out * sizeof(float));
         };
-        getQueue().enqueue(copyFunc, x_out, y_out, resp_out,
+        ENQUEUE(copyFunc, x_out, y_out, resp_out,
                            xCorners, yCorners, respCorners, corners_out);
     } else {
         x_out = xCorners;

@@ -17,8 +17,7 @@
 #include <fftw3.h>
 #include <copy.hpp>
 #include <convolve_common.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/fftconvolve.hpp>
 
 namespace cpu
@@ -84,11 +83,11 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
 
     // Pack signal in a complex matrix where first dimension is half the input
     // (allows faster FFT computation) and pad array to a power of 2 with 0s
-    getQueue().enqueue(kernel::packData<convT, T>, packed, sig_tmp_dims, sig_tmp_strides, signal);
+    ENQUEUE(kernel::packData<convT, T>, packed, sig_tmp_dims, sig_tmp_strides, signal);
 
     // Pad filter array with 0s
     const dim_t offset = sig_tmp_strides[3]*sig_tmp_dims[3];
-    getQueue().enqueue(kernel::padArray<convT, T>, packed, filter_tmp_dims, filter_tmp_strides,
+    ENQUEUE(kernel::padArray<convT, T>, packed, filter_tmp_dims, filter_tmp_strides,
                        filter, offset);
 
     dim4 fftDims(1, 1, 1, 1);
@@ -138,10 +137,10 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
             fftwf_destroy_plan(plan);
         }
     };
-    getQueue().enqueue(upstream_dft, packed, fftDims);
+    ENQUEUE(upstream_dft, packed, fftDims);
 
     // Multiply filter and signal FFT arrays
-    getQueue().enqueue(kernel::complexMultiply<convT>, packed,
+    ENQUEUE(kernel::complexMultiply<convT>, packed,
                        sig_tmp_dims, sig_tmp_strides,
                        filter_tmp_dims, filter_tmp_strides,
                        kind, offset);
@@ -189,7 +188,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
             fftwf_destroy_plan(plan);
         }
     };
-    getQueue().enqueue(upstream_idft, packed, fftDims);
+    ENQUEUE(upstream_idft, packed, fftDims);
 
     // Compute output dimensions
     dim4 oDims(1);
@@ -211,7 +210,7 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    getQueue().enqueue(kernel::reorder<T, convT, roundOut, baseDim>, out, packed, filter,
+    ENQUEUE(kernel::reorder<T, convT, roundOut, baseDim>, out, packed, filter,
                        sig_half_d0, fftScale, sig_tmp_dims, sig_tmp_strides, filter_tmp_dims,
                        filter_tmp_strides, expand, kind);
 

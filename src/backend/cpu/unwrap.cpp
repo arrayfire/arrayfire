@@ -11,8 +11,7 @@
 #include <unwrap.hpp>
 #include <dispatch.hpp>
 #include <math.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/unwrap.hpp>
 
 namespace cpu
@@ -37,9 +36,9 @@ Array<T> unwrap(const Array<T> &in, const dim_t wx, const dim_t wy,
     Array<T> outArray = createEmptyArray<T>(odims);
 
     if (is_column) {
-        getQueue().enqueue(kernel::unwrap_dim<T, 1>, outArray, in, wx, wy, sx, sy, px, py);
+        ENQUEUE(kernel::unwrap_dim<T, 1>, outArray, in, wx, wy, sx, sy, px, py);
     } else {
-        getQueue().enqueue(kernel::unwrap_dim<T, 0>, outArray, in, wx, wy, sx, sy, px, py);
+        ENQUEUE(kernel::unwrap_dim<T, 0>, outArray, in, wx, wy, sx, sy, px, py);
     }
 
     return outArray;

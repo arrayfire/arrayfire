@@ -13,8 +13,7 @@
 #include <copy.hpp>
 #include <algorithm>
 #include <functional>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/sort.hpp>
 
 namespace cpu
@@ -27,7 +26,7 @@ Array<T> sort(const Array<T> &in, const unsigned dim)
 
     Array<T> out = copyArray<T>(in);
     switch(dim) {
-        case 0: getQueue().enqueue(kernel::sort0<T, isAscending>, out); break;
+        case 0: ENQUEUE(kernel::sort0<T, isAscending>, out); break;
         default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
     }
     return out;

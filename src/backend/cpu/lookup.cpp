@@ -9,8 +9,7 @@
 
 #include <lookup.hpp>
 #include <cstdlib>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/lookup.hpp>
 
 namespace cpu
@@ -30,7 +29,7 @@ Array<in_t> lookup(const Array<in_t> &input, const Array<idx_t> &indices, const 
 
     Array<in_t> out = createEmptyArray<in_t>(oDims);
 
-    getQueue().enqueue(kernel::lookup<in_t, idx_t>, out, input, indices, dim);
+    ENQUEUE(kernel::lookup<in_t, idx_t>, out, input, indices, dim);
 
     return out;
 }

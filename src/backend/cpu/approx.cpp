@@ -11,8 +11,7 @@
 #include <approx.hpp>
 #include <kernel/approx1.hpp>
 #include <kernel/approx2.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 
 namespace cpu
 {
@@ -31,12 +30,12 @@ Array<Ty> approx1(const Array<Ty> &in, const Array<Tp> &pos,
 
     switch(method) {
         case AF_INTERP_NEAREST:
-            getQueue().enqueue(kernel::approx1<Ty, Tp, AF_INTERP_NEAREST>,
-                               out, in, pos, offGrid);
+            ENQUEUE(kernel::approx1<Ty, Tp, AF_INTERP_NEAREST>,
+                    out, in, pos, offGrid);
             break;
         case AF_INTERP_LINEAR:
-            getQueue().enqueue(kernel::approx1<Ty, Tp, AF_INTERP_LINEAR>,
-                               out, in, pos, offGrid);
+            ENQUEUE(kernel::approx1<Ty, Tp, AF_INTERP_LINEAR>,
+                    out, in, pos, offGrid);
             break;
         default:
             break;
@@ -61,12 +60,12 @@ Array<Ty> approx2(const Array<Ty> &in, const Array<Tp> &pos0, const Array<Tp> &p
 
     switch(method) {
         case AF_INTERP_NEAREST:
-            getQueue().enqueue(kernel::approx2<Ty, Tp, AF_INTERP_NEAREST>,
-                               out, in, pos0, pos1, offGrid);
+            ENQUEUE(kernel::approx2<Ty, Tp, AF_INTERP_NEAREST>,
+                    out, in, pos0, pos1, offGrid);
             break;
         case AF_INTERP_LINEAR:
-            getQueue().enqueue(kernel::approx2<Ty, Tp, AF_INTERP_LINEAR>,
-                               out, in, pos0, pos1, offGrid);
+            ENQUEUE(kernel::approx2<Ty, Tp, AF_INTERP_LINEAR>,
+                    out, in, pos0, pos1, offGrid);
             break;
         default:
             break;

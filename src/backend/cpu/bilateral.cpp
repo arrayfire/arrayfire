@@ -15,8 +15,7 @@
 #include <bilateral.hpp>
 #include <cmath>
 #include <algorithm>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 
 using af::dim4;
 
@@ -29,7 +28,7 @@ Array<outType> bilateral(const Array<inType> &in, const float &s_sigma, const fl
     in.eval();
     const dim4 dims     = in.dims();
     Array<outType> out = createEmptyArray<outType>(dims);
-    getQueue().enqueue(kernel::bilateral<outType, inType, isColor>, out, in, s_sigma, c_sigma);
+    ENQUEUE(kernel::bilateral<outType, inType, isColor>, out, in, s_sigma, c_sigma);
     return out;
 }
 

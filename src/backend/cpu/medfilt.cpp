@@ -12,8 +12,7 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <medfilt.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/medfilt.hpp>
 
 using af::dim4;
@@ -28,7 +27,7 @@ Array<T> medfilt(const Array<T> &in, dim_t w_len, dim_t w_wid)
 
     Array<T> out = createEmptyArray<T>(in.dims());
 
-    getQueue().enqueue(kernel::medfilt<T, pad>, out, in, w_len, w_wid);
+    ENQUEUE(kernel::medfilt<T, pad>, out, in, w_len, w_wid);
 
     return out;
 }

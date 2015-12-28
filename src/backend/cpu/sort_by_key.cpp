@@ -9,8 +9,7 @@
 
 #include <Array.hpp>
 #include <sort_by_key.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/sort_by_key.hpp>
 
 namespace cpu
@@ -29,7 +28,7 @@ void sort_by_key(Array<Tk> &okey, Array<Tv> &oval,
     oidx.eval();
 
     switch(dim) {
-        case 0: getQueue().enqueue(kernel::sort0_by_key<Tk, Tv, isAscending>,
+        case 0: ENQUEUE(kernel::sort0_by_key<Tk, Tv, isAscending>,
                                    okey, oval, oidx, ikey, ival); break;
         default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
     }

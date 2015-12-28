@@ -12,8 +12,7 @@
 #include <af/defines.h>
 #include <Array.hpp>
 #include <random.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/random.hpp>
 
 namespace cpu
@@ -23,7 +22,7 @@ template<typename T>
 Array<T> randu(const af::dim4 &dims)
 {
     Array<T> outArray = createEmptyArray<T>(dims);
-    getQueue().enqueue(kernel::randu<T>, outArray);
+    ENQUEUE(kernel::randu<T>, outArray);
     return outArray;
 }
 
@@ -46,7 +45,7 @@ template<typename T>
 Array<T> randn(const af::dim4 &dims)
 {
     Array<T> outArray = createEmptyArray<T>(dims);
-    getQueue().enqueue(kernel::randn<T>, outArray);
+    ENQUEUE(kernel::randn<T>, outArray);
     return outArray;
 }
 
@@ -81,7 +80,7 @@ Array<char> randu(const af::dim4 &dims)
             outPtr[i] = gen() > 0.5;
         }
     };
-    getQueue().enqueue(func, outArray);
+    ENQUEUE(func, outArray);
 
     return outArray;
 }
@@ -93,7 +92,7 @@ void setSeed(const uintl seed)
         kernel::is_first = false;
         kernel::gen_seed = seed;
     };
-    getQueue().enqueue(f, seed);
+    ENQUEUE(f, seed);
 }
 
 uintl getSeed()

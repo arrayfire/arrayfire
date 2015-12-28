@@ -10,8 +10,7 @@
 #include <Array.hpp>
 #include <iota.hpp>
 #include <math.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/iota.hpp>
 
 using namespace std;
@@ -26,7 +25,7 @@ Array<T> iota(const dim4 &dims, const dim4 &tile_dims)
 
     Array<T> out = createEmptyArray<T>(outdims);
 
-    getQueue().enqueue(kernel::iota<T>, out, dims, tile_dims);
+    ENQUEUE(kernel::iota<T>, out, dims, tile_dims);
 
     return out;
 }

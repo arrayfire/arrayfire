@@ -17,8 +17,7 @@
 #include <err_cpu.hpp>
 #include <triangle.hpp>
 #include <lapack_helper.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 
 namespace cpu
 {
@@ -79,7 +78,7 @@ void qr(Array<T> &q, Array<T> &r, Array<T> &t, const Array<T> &in)
         gqr_func<T>()(AF_LAPACK_COL_MAJOR, M, M, min(M, N), q.get(), q.strides()[1], t.get());
     };
     q.resetDims(dim4(M, M));
-    getQueue().enqueue(func, q, t, M, N);
+    ENQUEUE(func, q, t, M, N);
 }
 
 template<typename T>
@@ -95,7 +94,7 @@ Array<T> qr_inplace(Array<T> &in)
     auto func = [=] (Array<T> in, Array<T> t, int M, int N) {
         geqrf_func<T>()(AF_LAPACK_COL_MAJOR, M, N, in.get(), in.strides()[1], t.get());
     };
-    getQueue().enqueue(func, in, t, M, N);
+    ENQUEUE(func, in, t, M, N);
 
     return t;
 }

@@ -18,8 +18,7 @@
 #include <cassert>
 #include <err_cpu.hpp>
 #include <math.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/copy.hpp>
 
 namespace cpu
@@ -51,7 +50,7 @@ template<typename T>
 void multiply_inplace(Array<T> &in, double val)
 {
     in.eval();
-    getQueue().enqueue(kernel::copy<T, T>, in, in, 0, val);
+    ENQUEUE(kernel::copy<T, T>, in, in, 0, val);
 }
 
 template<typename inType, typename outType>
@@ -63,7 +62,7 @@ Array<outType> padArray(Array<inType> const &in, dim4 const &dims,
     in.eval();
     // FIXME:
     getQueue().sync();
-    getQueue().enqueue(kernel::copy<outType, inType>, ret, in, outType(default_value), factor);
+    ENQUEUE(kernel::copy<outType, inType>, ret, in, outType(default_value), factor);
     return ret;
 }
 
@@ -72,7 +71,7 @@ void copyArray(Array<outType> &out, Array<inType> const &in)
 {
     out.eval();
     in.eval();
-    getQueue().enqueue(kernel::copy<outType, inType>, out, in, scalar<outType>(0), 1.0);
+    ENQUEUE(kernel::copy<outType, inType>, out, in, scalar<outType>(0), 1.0);
 }
 
 #define INSTANTIATE(T)                                                  \

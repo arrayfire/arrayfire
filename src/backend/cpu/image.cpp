@@ -16,8 +16,7 @@
 #include <image.hpp>
 #include <err_cpu.hpp>
 #include <graphics_common.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 
 using af::dim4;
 

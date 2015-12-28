@@ -12,8 +12,7 @@
 #include <math.hpp>
 #include <stdexcept>
 #include <err_cpu.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/gradient.hpp>
 
 namespace cpu
@@ -26,7 +25,7 @@ void gradient(Array<T> &grad0, Array<T> &grad1, const Array<T> &in)
     grad1.eval();
     in.eval();
 
-    getQueue().enqueue(kernel::gradient<T>, grad0, grad1, in);
+    ENQUEUE(kernel::gradient<T>, grad0, grad1, in);
 }
 
 #define INSTANTIATE(T)                                                                  \

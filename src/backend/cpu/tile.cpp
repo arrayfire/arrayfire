@@ -9,8 +9,7 @@
 
 #include <Array.hpp>
 #include <tile.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/tile.hpp>
 
 namespace cpu
@@ -31,7 +30,7 @@ Array<T> tile(const Array<T> &in, const af::dim4 &tileDims)
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    getQueue().enqueue(kernel::tile<T>, out, in);
+    ENQUEUE(kernel::tile<T>, out, in);
 
     return out;
 }

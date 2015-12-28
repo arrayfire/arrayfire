@@ -18,8 +18,7 @@
 #include <convolve.hpp>
 #include <memory.hpp>
 #include <cstring>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/orb.hpp>
 
 using af::dim4;

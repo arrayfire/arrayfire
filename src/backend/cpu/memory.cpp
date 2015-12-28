@@ -14,8 +14,7 @@
 #include <dispatch.hpp>
 #include <cstdlib>
 #include <mutex>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 
 namespace cpu
 {

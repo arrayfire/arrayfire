@@ -9,8 +9,7 @@
 
 #include <Array.hpp>
 #include <diff.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/diff.hpp>
 
 namespace cpu
@@ -27,7 +26,7 @@ Array<T>  diff1(const Array<T> &in, const int dim)
 
     Array<T> outArray = createEmptyArray<T>(dims);
 
-    getQueue().enqueue(kernel::diff1<T>, outArray, in, dim);
+    ENQUEUE(kernel::diff1<T>, outArray, in, dim);
 
     return outArray;
 }
@@ -43,7 +42,7 @@ Array<T>  diff2(const Array<T> &in, const int dim)
 
     Array<T> outArray = createEmptyArray<T>(dims);
 
-    getQueue().enqueue(kernel::diff2<T>, outArray, in, dim);
+    ENQUEUE(kernel::diff2<T>, outArray, in, dim);
 
     return outArray;
 }

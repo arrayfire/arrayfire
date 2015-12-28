@@ -12,8 +12,7 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <transpose.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/transpose.hpp>
 #include <utility>
 #include <cassert>
@@ -33,7 +32,7 @@ Array<T> transpose(const Array<T> &in, const bool conjugate)
     // create an array with first two dimensions swapped
     Array<T> out  = createEmptyArray<T>(outDims);
 
-    getQueue().enqueue(kernel::transpose<T>, out, in, conjugate);
+    ENQUEUE(kernel::transpose<T>, out, in, conjugate);
 
     return out;
 }
@@ -42,7 +41,7 @@ template<typename T>
 void transpose_inplace(Array<T> &in, const bool conjugate)
 {
     in.eval();
-    getQueue().enqueue(kernel::transpose_inplace<T>, in, conjugate);
+    ENQUEUE(kernel::transpose_inplace<T>, in, conjugate);
 }
 
 #define INSTANTIATE(T)                                                      \

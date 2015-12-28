@@ -10,8 +10,7 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <select.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/select.hpp>
 
 using af::dim4;
@@ -26,7 +25,7 @@ void select(Array<T> &out, const Array<char> &cond, const Array<T> &a, const Arr
     cond.eval();
     a.eval();
     b.eval();
-    getQueue().enqueue(kernel::select<T>, out, cond, a, b);
+    ENQUEUE(kernel::select<T>, out, cond, a, b);
 }
 
 template<typename T, bool flip>
@@ -35,7 +34,7 @@ void select_scalar(Array<T> &out, const Array<char> &cond, const Array<T> &a, co
     out.eval();
     cond.eval();
     a.eval();
-    getQueue().enqueue(kernel::select_scalar<T, flip>, out, cond, a, b);
+    ENQUEUE(kernel::select_scalar<T, flip>, out, cond, a, b);
 }
 
 #define INSTANTIATE(T)                                              \

@@ -16,8 +16,7 @@
 #include <where.hpp>
 #include <ops.hpp>
 #include <vector>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 
 using af::dim4;
 

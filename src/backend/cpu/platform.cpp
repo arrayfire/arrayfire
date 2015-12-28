@@ -9,9 +9,8 @@
 
 #include <af/version.h>
 #include <af/defines.h>
-#include <platform.hpp>
+#include <debug_cpu.hpp>
 #include <sstream>
-#include <async_queue.hpp>
 #include <array>
 #include <algorithm>
 #include <iostream>

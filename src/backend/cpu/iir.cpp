@@ -13,8 +13,7 @@
 #include <Array.hpp>
 #include <iir.hpp>
 #include <convolve.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/iir.hpp>
 
 using af::dim4;
@@ -42,7 +41,7 @@ Array<T> iir(const Array<T> &b, const Array<T> &a, const Array<T> &x)
 
     Array<T> y = createEmptyArray<T>(c.dims());
 
-    getQueue().enqueue(kernel::iir<T>, y, c, a);
+    ENQUEUE(kernel::iir<T>, y, c, a);
 
     return y;
 }

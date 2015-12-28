@@ -9,8 +9,7 @@
 
 #include <Array.hpp>
 #include <shift.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/shift.hpp>
 
 namespace cpu
@@ -24,7 +23,7 @@ Array<T> shift(const Array<T> &in, const int sdims[4])
     Array<T> out = createEmptyArray<T>(in.dims());
     const af::dim4 temp(sdims[0], sdims[1], sdims[2], sdims[3]);
 
-    getQueue().enqueue(kernel::shift<T>, out, in, temp);
+    ENQUEUE(kernel::shift<T>, out, in, temp);
 
     return out;
 }

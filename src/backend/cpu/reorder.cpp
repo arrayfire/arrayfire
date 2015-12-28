@@ -9,8 +9,7 @@
 
 #include <Array.hpp>
 #include <reorder.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/reorder.hpp>
 
 namespace cpu
@@ -27,7 +26,7 @@ Array<T> reorder(const Array<T> &in, const af::dim4 &rdims)
         oDims[i] = iDims[rdims[i]];
 
     Array<T> out = createEmptyArray<T>(oDims);
-    getQueue().enqueue(kernel::reorder<T>, out, in, oDims, rdims);
+    ENQUEUE(kernel::reorder<T>, out, in, oDims, rdims);
     return out;
 }
 

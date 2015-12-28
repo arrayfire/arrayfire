@@ -12,8 +12,7 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <match_template.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/match_template.hpp>
 
 using af::dim4;
@@ -29,7 +28,7 @@ Array<OutT> match_template(const Array<InT> &sImg, const Array<InT> &tImg)
 
     Array<OutT> out = createEmptyArray<OutT>(sImg.dims());
 
-    getQueue().enqueue(kernel::matchTemplate<OutT, InT, MatchT>, out, sImg, tImg);
+    ENQUEUE(kernel::matchTemplate<OutT, InT, MatchT>, out, sImg, tImg);
 
     return out;
 }

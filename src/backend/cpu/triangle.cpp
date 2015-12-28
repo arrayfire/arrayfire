@@ -12,8 +12,7 @@
 #include <Array.hpp>
 #include <triangle.hpp>
 #include <math.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/triangle.hpp>
 
 namespace cpu
@@ -22,7 +21,7 @@ namespace cpu
 template<typename T, bool is_upper, bool is_unit_diag>
 void triangle(Array<T> &out, const Array<T> &in)
 {
-    getQueue().enqueue(kernel::triangle<T, is_upper, is_unit_diag>, out, in);
+    ENQUEUE(kernel::triangle<T, is_upper, is_unit_diag>, out, in);
 }
 
 template<typename T, bool is_upper, bool is_unit_diag>

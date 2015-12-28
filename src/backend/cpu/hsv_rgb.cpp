@@ -11,8 +11,7 @@
 #include <Array.hpp>
 #include <ArrayInfo.hpp>
 #include <hsv_rgb.hpp>
-#include <platform.hpp>
-#include <async_queue.hpp>
+#include <debug_cpu.hpp>
 #include <kernel/hsv_rgb.hpp>
 
 using af::dim4;
@@ -27,7 +26,7 @@ Array<T> hsv2rgb(const Array<T>& in)
 
     Array<T> out = createEmptyArray<T>(in.dims());
 
-    getQueue().enqueue(kernel::hsv2rgb<T>, out, in);
+    ENQUEUE(kernel::hsv2rgb<T>, out, in);
 
     return out;
 }
@@ -39,7 +38,7 @@ Array<T> rgb2hsv(const Array<T>& in)
 
     Array<T> out = createEmptyArray<T>(in.dims());
 
-    getQueue().enqueue(kernel::rgb2hsv<T>, out, in);
+    ENQUEUE(kernel::rgb2hsv<T>, out, in);
 
     return out;
 }
