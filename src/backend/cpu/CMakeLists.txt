@@ -47,6 +47,18 @@ IF(NOT UNIX)
     ADD_DEFINITIONS(-DAFDLL)
 ENDIF()
 
+SET(THREADS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/threads")
+IF(EXISTS "${THREADS_SRC_DIR}" AND IS_DIRECTORY "${THREADS_SRC_DIR}")
+    # threads submodule has been initialized
+    # Nothing to do
+ELSE(EXISTS "${THREADS_SRC_DIR}" AND IS_DIRECTORY "${THREADS_SRC_DIR}")
+    MESSAGE(STATUS "threads submodule unavailable. Updating submodules.")
+    EXECUTE_PROCESS(
+        COMMAND git submodule update --init --recursive
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        )
+ENDIF(EXISTS "${THREADS_SRC_DIR}" AND IS_DIRECTORY "${THREADS_SRC_DIR}")
+
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
     "${CMAKE_SOURCE_DIR}/src/backend/cpu"
