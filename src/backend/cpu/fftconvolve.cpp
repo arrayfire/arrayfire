@@ -211,35 +211,9 @@ Array<T> fftconvolve(Array<T> const& signal, Array<T> const& filter,
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    auto reorderFunc = [=](Array<T> out, Array<convT> packed,
-                           const Array<T> filter, const dim_t sig_hald_d0, const dim_t fftScale,
-                           const dim4 sig_tmp_dims, const dim4 sig_tmp_strides,
-                           const dim4 filter_tmp_dims, const dim4 filter_tmp_strides) {
-        T* out_ptr = out.get();
-        const af::dim4 out_dims = out.dims();
-        const af::dim4 out_strides = out.strides();
-
-        const af::dim4 filter_dims = filter.dims();
-
-        convT* packed_ptr = packed.get();
-        convT* sig_tmp_ptr    = packed_ptr;
-        convT* filter_tmp_ptr = packed_ptr + sig_tmp_strides[3] * sig_tmp_dims[3];
-
-        // Reorder the output
-        if (kind == CONVOLVE_BATCH_KERNEL) {
-            kernel::reorderHelper<T, convT, roundOut>(out_ptr, out_dims, out_strides,
-                                              filter_tmp_ptr, filter_tmp_dims, filter_tmp_strides,
-                                              filter_dims, sig_half_d0, baseDim, fftScale, expand);
-        } else {
-            kernel::reorderHelper<T, convT, roundOut>(out_ptr, out_dims, out_strides,
-                                              sig_tmp_ptr, sig_tmp_dims, sig_tmp_strides,
-                                              filter_dims, sig_half_d0, baseDim, fftScale, expand);
-        }
-    };
-
-    getQueue().enqueue(reorderFunc, out, packed, filter, sig_half_d0, fftScale,
-                       sig_tmp_dims, sig_tmp_strides,
-                       filter_tmp_dims, filter_tmp_strides);
+    getQueue().enqueue(kernel::reorder<T, convT, roundOut, baseDim>, out, packed, filter,
+                       sig_half_d0, fftScale, sig_tmp_dims, sig_tmp_strides, filter_tmp_dims,
+                       filter_tmp_strides, expand, kind);
 
     return out;
 }
