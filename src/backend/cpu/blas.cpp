@@ -11,20 +11,20 @@
 #include <af/dim4.hpp>
 #include <handle.hpp>
 #include <cassert>
-#include <err_cpu.hpp>
 #include <err_common.hpp>
+#include <kernel/dot.hpp>
 #include <platform.hpp>
 #include <async_queue.hpp>
 
 namespace cpu
 {
 
-    using std::add_const;
-    using std::add_pointer;
-    using std::enable_if;
-    using std::is_floating_point;
-    using std::remove_const;
-    using std::conditional;
+using std::add_const;
+using std::add_pointer;
+using std::enable_if;
+using std::is_floating_point;
+using std::remove_const;
+using std::conditional;
 
 // Some implementations of BLAS require void* for complex pointers while others use float*/double*
 //
@@ -199,31 +199,6 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
     return out;
 }
 
-template<typename T> T
-conj(T  x) { return x; }
-
-template<> cfloat  conj<cfloat> (cfloat  c) { return std::conj(c); }
-template<> cdouble conj<cdouble>(cdouble c) { return std::conj(c); }
-
-template<typename T, bool conjugate, bool both_conjugate>
-void dot_(Array<T> output, const Array<T> &lhs, const Array<T> &rhs,
-              af_mat_prop optLhs, af_mat_prop optRhs)
-{
-    int N = lhs.dims()[0];
-
-    T out = 0;
-    const T *pL = lhs.get();
-    const T *pR = rhs.get();
-
-    for(int i = 0; i < N; i++)
-        out += (conjugate ? cpu::conj(pL[i]) : pL[i]) * pR[i];
-
-    if(both_conjugate) out = cpu::conj(out);
-
-    *output.get() = out;
-
-}
-
 template<typename T>
 Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
              af_mat_prop optLhs, af_mat_prop optRhs)
@@ -233,13 +208,13 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
 
     Array<T> out = createEmptyArray<T>(af::dim4(1));
     if(optLhs == AF_MAT_CONJ && optRhs == AF_MAT_CONJ) {
-        getQueue().enqueue(dot_<T, false, true>, out, lhs, rhs, optLhs, optRhs);
+        getQueue().enqueue(kernel::dot<T, false, true>, out, lhs, rhs, optLhs, optRhs);
     } else if (optLhs == AF_MAT_CONJ && optRhs == AF_MAT_NONE) {
-        getQueue().enqueue(dot_<T, true, false>,out, lhs, rhs, optLhs, optRhs);
+        getQueue().enqueue(kernel::dot<T, true, false>,out, lhs, rhs, optLhs, optRhs);
     } else if (optLhs == AF_MAT_NONE && optRhs == AF_MAT_CONJ) {
-        getQueue().enqueue(dot_<T, true, false>,out, rhs, lhs, optRhs, optLhs);
+        getQueue().enqueue(kernel::dot<T, true, false>,out, rhs, lhs, optRhs, optLhs);
     } else {
-        getQueue().enqueue(dot_<T, false, false>,out, lhs, rhs, optLhs, optRhs);
+        getQueue().enqueue(kernel::dot<T, false, false>,out, lhs, rhs, optLhs, optRhs);
     }
     return out;
 }
