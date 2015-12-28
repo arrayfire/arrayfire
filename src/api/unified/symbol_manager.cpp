@@ -135,8 +135,8 @@ LibHandle openDynLibrary(const int bknd_idx, int flag=RTLD_LAZY)
                                                     "/usr/local/arrayfire/lib/",
                                                    };
 
-            for (int i = 0; i < (int)extraLibPaths.size(); ++i) {
-                string abs_path = extraLibPaths[i] + bkndLibName;
+            for (auto libPath: extraLibPaths) {
+                string abs_path = libPath + bkndLibName;
                 retVal = dlopen(abs_path.c_str(), flag);
                 if (retVal != NULL) {
                     if (show_load_path)
