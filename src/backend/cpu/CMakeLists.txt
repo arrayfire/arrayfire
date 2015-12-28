@@ -48,16 +48,17 @@ IF(NOT UNIX)
 ENDIF()
 
 SET(THREADS_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/threads")
-IF(EXISTS "${THREADS_SRC_DIR}" AND IS_DIRECTORY "${THREADS_SRC_DIR}")
+IF(EXISTS "${THREADS_SRC_DIR}" AND IS_DIRECTORY "${THREADS_SRC_DIR}"
+        AND EXISTS "${THREADS_SRC_DIR}/LICENSE")
     # threads submodule has been initialized
     # Nothing to do
-ELSE(EXISTS "${THREADS_SRC_DIR}" AND IS_DIRECTORY "${THREADS_SRC_DIR}")
+ELSE()
     MESSAGE(STATUS "threads submodule unavailable. Updating submodules.")
     EXECUTE_PROCESS(
         COMMAND git submodule update --init --recursive
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         )
-ENDIF(EXISTS "${THREADS_SRC_DIR}" AND IS_DIRECTORY "${THREADS_SRC_DIR}")
+ENDIF()
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_INCLUDE_PATH}
