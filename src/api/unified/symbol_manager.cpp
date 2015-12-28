@@ -127,15 +127,15 @@ LibHandle openDynLibrary(const int bknd_idx, int flag=RTLD_LAZY)
          * /usr/local/arrayfire-3/lib
         */
         if (retVal == NULL) {
-            static const char* extraLibPaths[] = {"/opt/arrayfire-3/lib/",
-                                                  "/opt/arrayfire/lib/",
-                                                  "/usr/local/lib/",
-                                                  "/usr/local/arrayfire-3/lib/",
-                                                  "/usr/local/arrayfire/lib/",
-                                                 };
-            const int nPaths = sizeof(extraLibPaths) / sizeof(extraLibPaths[0]);
+            static
+            std::vector<std::string> extraLibPaths {"/opt/arrayfire-3/lib/",
+                                                    "/opt/arrayfire/lib/",
+                                                    "/usr/local/lib/",
+                                                    "/usr/local/arrayfire-3/lib/",
+                                                    "/usr/local/arrayfire/lib/",
+                                                   };
 
-            for (int i = 0; i < nPaths; ++i) {
+            for (int i = 0; i < (int)extraLibPaths.size(); ++i) {
                 string abs_path = extraLibPaths[i] + bkndLibName;
                 retVal = dlopen(abs_path.c_str(), flag);
                 if (retVal != NULL) {
