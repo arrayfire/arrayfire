@@ -24,7 +24,7 @@ template<> cfloat  conj<cfloat> (cfloat  c) { return std::conj(c); }
 template<> cdouble conj<cdouble>(cdouble c) { return std::conj(c); }
 
 template<typename T, bool conjugate, bool both_conjugate>
-void dot(Array<T> output, const Array<T> &lhs, const Array<T> &rhs,
+void dot(Array<T> output, const Array<T> lhs, const Array<T> rhs,
          af_mat_prop optLhs, af_mat_prop optRhs)
 {
     int N = lhs.dims()[0];
