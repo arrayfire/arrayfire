@@ -45,7 +45,7 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
         DIM_ASSERT(1, idims.elements() > 0);
         DIM_ASSERT(1, (idims.ndims() == 2 || idims.ndims() == 3));
 
-        const bool perspective = (tdims[1] == 3) ? true : false;
+        const bool perspective = (tdims[1] == 3);
 
         dim_t o0 = odim0, o1 = odim1;
         dim_t o2 = idims[2] * tdims[2];
