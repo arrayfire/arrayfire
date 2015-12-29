@@ -14,11 +14,15 @@
 inline std::string
 clipFilePath(std::string path, std::string str)
 {
-    std::string::size_type pos = path.rfind(str);
-    if(pos == std::string::npos) {
+    try {
+        std::string::size_type pos = path.rfind(str);
+        if(pos == std::string::npos) {
+            return path;
+        } else {
+            return path.substr(pos);
+        }
+    } catch(...) {
         return path;
-    } else {
-        return path.substr(pos);
     }
 }
 

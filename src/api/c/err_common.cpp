@@ -71,7 +71,7 @@ AfError::getError() const
 
 AfError::~AfError() throw() {}
 
-TypeError::TypeError(const char * const  func,
+TypeError::TypeError(const char * const func,
                      const char * const file,
                      const int line,
                      const int index, const af_dtype type)
@@ -90,7 +90,7 @@ int TypeError::getArgIndex() const
     return argIndex;
 }
 
-ArgumentError::ArgumentError(const char * const  func,
+ArgumentError::ArgumentError(const char * const func,
                              const char * const file,
                              const int line,
                              const int index,
@@ -211,16 +211,16 @@ af_err processException()
     try {
         throw;
     } catch (const DimensionError &ex) {
-        ss << "In function " << ex.getFunctionName()
-           << "(" << ex.getFileName() << ":" << ex.getLine() << "):\n"
+        ss << "In function " << ex.getFunctionName() << "\n"
+           << "In file " << ex.getFileName() << ":" << ex.getLine() << "\n"
            << "Invalid dimension for argument " << ex.getArgIndex() << "\n"
            << "Expected: " << ex.getExpectedCondition() << "\n";
 
         print_error(ss.str());
         err = AF_ERR_SIZE;
     } catch (const ArgumentError &ex) {
-        ss << "In function " << ex.getFunctionName()
-           << "(" << ex.getFileName() << ":" << ex.getLine() << "):\n"
+        ss << "In function " << ex.getFunctionName() << "\n"
+           << "In file " << ex.getFileName() << ":" << ex.getLine() << "\n"
            << "Invalid argument at index " << ex.getArgIndex() << "\n"
            << "Expected: " << ex.getExpectedCondition() << "\n";
 
@@ -234,15 +234,15 @@ af_err processException()
         print_error(ss.str());
         err = AF_ERR_NOT_SUPPORTED;
     } catch (const TypeError &ex) {
-        ss << "In function " << ex.getFunctionName()
-           << "(" << ex.getFileName() << ":" << ex.getLine() << "):\n"
+        ss << "In function " << ex.getFunctionName() << "\n"
+           << "In file " << ex.getFileName() << ":" << ex.getLine() << "\n"
            << "Invalid type for argument " << ex.getArgIndex() << "\n";
 
         print_error(ss.str());
         err = AF_ERR_TYPE;
     } catch (const AfError &ex) {
-        ss << "Error in " << ex.getFunctionName()
-           << "(" << ex.getFileName() << ":" << ex.getLine() << "):\n"
+        ss << "In function " << ex.getFunctionName() << "\n"
+           << "In file " << ex.getFileName() << ":" << ex.getLine() << "\n"
            << ex.what() << "\n";
 
         print_error(ss.str());
