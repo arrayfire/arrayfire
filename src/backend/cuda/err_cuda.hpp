@@ -13,7 +13,8 @@
 #include <err_common.hpp>
 
 #define CUDA_NOT_SUPPORTED() do {                       \
-        throw SupportError(__AF_FILENAME__, __LINE__, "CUDA"); \
+        throw SupportError(__PRETTY_FUNCTION__,         \
+                __AF_FILENAME__, __LINE__, "CUDA");     \
     } while(0)
 
 #define CUDA_CHECK(fn) do {                                 \

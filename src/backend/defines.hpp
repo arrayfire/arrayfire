@@ -18,9 +18,9 @@
     #define STATIC_ static
     #define __AF_FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
 #else
-    #ifndef __PRETTY_FUNCTION__
-        #define __PRETTY_FUNCTION__ __func__ // __PRETTY_FUNCTION__ Fallback
-    #endif
+    //#ifndef __PRETTY_FUNCTION__
+    //    #define __PRETTY_FUNCTION__ __func__ // __PRETTY_FUNCTION__ Fallback
+    //#endif
     #define STATIC_ inline
     #define __AF_FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif

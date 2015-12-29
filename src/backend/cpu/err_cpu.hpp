@@ -9,6 +9,7 @@
 
 #include <err_common.hpp>
 
-#define CPU_NOT_SUPPORTED() do {                       \
-        throw SupportError(__AF_FILENAME__, __LINE__, "CPU"); \
+#define CPU_NOT_SUPPORTED() do {                        \
+        throw SupportError(__PRETTY_FUNCTION__,         \
+                __AF_FILENAME__, __LINE__, "CPU");      \
     } while(0)

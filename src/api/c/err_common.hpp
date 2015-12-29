@@ -19,22 +19,28 @@
 class AfError   : public std::logic_error
 {
     std::string functionName;
+    std::string fileName;
     int lineNumber;
     af_err error;
     AfError();
 
 public:
 
-    AfError(const char * const funcName,
+    AfError(const char * const func,
+            const char * const file,
             const int line,
             const char * const message, af_err err);
 
-    AfError(std::string funcName,
+    AfError(std::string func,
+            std::string file,
             const int line,
             std::string message, af_err err);
 
     const std::string&
     getFunctionName() const;
+
+    const std::string&
+    getFileName() const;
 
     int getLine() const;
 
@@ -52,7 +58,8 @@ class TypeError : public AfError
 
 public:
 
-    TypeError(const char * const  funcName,
+    TypeError(const char * const func,
+              const char * const file,
               const int line,
               const int index,
               const af_dtype type);
@@ -68,14 +75,16 @@ public:
 class ArgumentError : public AfError
 {
     int argIndex;
-    std::string    expected;
+    std::string expected;
     ArgumentError();
 
 public:
-    ArgumentError(const char * const funcName,
-                   const int line,
-                   const int index,
-                   const char * const expectString);
+
+    ArgumentError(const char * const func,
+                  const char * const file,
+                  const int line,
+                  const int index,
+                  const char * const expectString);
 
     const std::string&
     getExpectedCondition() const;
@@ -89,11 +98,16 @@ class SupportError  :   public AfError
 {
     std::string backend;
     SupportError();
+
 public:
-    SupportError(const char * const funcName,
+
+    SupportError(const char * const func,
+                 const char * const file,
                  const int line,
                  const char * const back);
+
     ~SupportError()throw() {}
+
     const std::string&
     getBackendName() const;
 };
@@ -101,11 +115,13 @@ public:
 class DimensionError : public AfError
 {
     int argIndex;
-    std::string    expected;
+    std::string expected;
     DimensionError();
 
 public:
-    DimensionError(const char * const funcName,
+
+    DimensionError(const char * const func,
+                   const char * const file,
                    const int line,
                    const int index,
                    const char * const expectString);
@@ -122,61 +138,67 @@ af_err processException();
 
 void print_error(const std::string &msg);
 
-#define DIM_ASSERT(INDEX, COND) do {                    \
-        if((COND) == false) {                           \
-            throw DimensionError(__AF_FILENAME__, __LINE__,    \
-                                 INDEX, #COND);         \
-        }                                               \
+#define DIM_ASSERT(INDEX, COND) do {                        \
+        if((COND) == false) {                               \
+            throw DimensionError(__PRETTY_FUNCTION__,       \
+                                 __AF_FILENAME__, __LINE__, \
+                                 INDEX, #COND);             \
+        }                                                   \
     } while(0)
 
-#define ARG_ASSERT(INDEX, COND) do {                \
-        if((COND) == false) {                       \
-            throw ArgumentError(__AF_FILENAME__, __LINE__, \
-                                INDEX, #COND);      \
-        }                                           \
+#define ARG_ASSERT(INDEX, COND) do {                        \
+        if((COND) == false) {                               \
+            throw ArgumentError(__PRETTY_FUNCTION__,        \
+                                __AF_FILENAME__, __LINE__,  \
+                                INDEX, #COND);              \
+        }                                                   \
     } while(0)
 
-#define TYPE_ERROR(INDEX, type) do {            \
-        throw TypeError(__AF_FILENAME__, __LINE__,     \
-                        INDEX, type);           \
-    } while(0)                                  \
+#define TYPE_ERROR(INDEX, type) do {                        \
+        throw TypeError(__PRETTY_FUNCTION__,                \
+                        __AF_FILENAME__, __LINE__,          \
+                        INDEX, type);                       \
+    } while(0)                                              \
 
 
-#define AF_ERROR(MSG, ERR_TYPE) do {            \
-        throw AfError(__AF_FILENAME__, __LINE__,       \
-                      MSG, ERR_TYPE);           \
+#define AF_ERROR(MSG, ERR_TYPE) do {                        \
+        throw AfError(__PRETTY_FUNCTION__,                  \
+                      __AF_FILENAME__, __LINE__,            \
+                      MSG, ERR_TYPE);                       \
     } while(0)
 
-#define AF_RETURN_ERROR(MSG, ERR_TYPE) do {     \
-        AfError err(__AF_FILENAME__, __LINE__,  \
-                      MSG, ERR_TYPE);           \
-        std::string str = "Error in "           \
-                        + err,getFunctionName() \
-                        + "(" + ex.getLine()    \
-                        + "):\n"                \
-                        + ex.what() + "\n";     \
-        print_error(str);                       \
-        return ERR_TYPE;                        \
+#define AF_RETURN_ERROR(MSG, ERR_TYPE) do {                 \
+        AfError err(__PRETTY_FUNCTION__,                    \
+                    __AF_FILENAME__, __LINE__,              \
+                    MSG, ERR_TYPE);                         \
+        std::string s = "Error in " + err.getFunctionName() \
+                        + "(" + err.getFileName()           \
+                        + ":" + err.getLine() + "):\n"      \
+                        + err.getError().what() + "\n"      \
+                        ;                                   \
+        print_error(str);                                   \
+        return ERR_TYPE;                                    \
     } while(0)
 
-#define TYPE_ASSERT(COND) do {                  \
-        if ((COND) == false) {                  \
-            AF_ERROR("Type mismatch inputs",    \
-                     AF_ERR_DIFF_TYPE);         \
-        }                                       \
+#define TYPE_ASSERT(COND) do {                              \
+        if ((COND) == false) {                              \
+            AF_ERROR("Type mismatch inputs",                \
+                     AF_ERR_DIFF_TYPE);                     \
+        }                                                   \
     } while(0)
 
-#define AF_ASSERT(COND, MESSAGE)                \
+#define AF_ASSERT(COND, MESSAGE)                            \
     assert(MESSAGE && COND)
 
-#define CATCHALL                                \
-    catch(...) {                                \
-        return processException();              \
+#define CATCHALL                                            \
+    catch(...) {                                            \
+        return processException();                          \
     }
 
-#define AF_CHECK(fn) do {                       \
-        af_err __err = fn;                      \
-        if (__err == AF_SUCCESS) break;         \
-        throw AfError(__AF_FILENAME__, __LINE__,       \
-                      "\n", __err);             \
+#define AF_CHECK(fn) do {                                   \
+        af_err __err = fn;                                  \
+        if (__err == AF_SUCCESS) break;                     \
+        throw AfError(__PRETTY_FUNCTION__,                  \
+                      __AF_FILENAME__, __LINE__,            \
+                      "\n", __err);                         \
     } while(0)
