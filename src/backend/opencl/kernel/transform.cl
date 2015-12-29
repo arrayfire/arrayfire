@@ -26,13 +26,13 @@ void calc_transf_inverse(float* txo, __global const float* txi)
     txo[7] = -(txi[0]*txi[7] - txi[1]*txi[6]);
     txo[8] =   txi[0]*txi[4] - txi[1]*txi[3];
 
-    T det = txi[0]*txo[0] + txi[1]*txo[3] + txi[2]*txo[6];
+    float det = txi[0]*txo[0] + txi[1]*txo[3] + txi[2]*txo[6];
 
     txo[0] /= det; txo[1] /= det; txo[2] /= det;
     txo[3] /= det; txo[4] /= det; txo[5] /= det;
     txo[6] /= det; txo[7] /= det; txo[8] /= det;
 #else
-    T det = txi[0]*txi[4] - txi[1]*txi[3];
+    float det = txi[0]*txi[4] - txi[1]*txi[3];
 
     txo[0] = txi[4] / det;
     txo[1] = txi[3] / det;
@@ -85,7 +85,7 @@ void transform_kernel(__global T *d_out, const KParam out,
     // We expect a inverse transform matrix by default
     // If it is an forward transform, then we need its inverse
     if(INVERSE == 1) {
-        #pragma unroll
+        #pragma unroll 3
         for(int i = 0; i < TRANSF_LEN; i++)
             tmat[i] = tmat_ptr[i];
     } else {
