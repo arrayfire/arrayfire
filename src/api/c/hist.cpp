@@ -84,6 +84,6 @@ af_err af_draw_hist(const af_window wind, const af_array X, const double minval,
     CATCHALL;
     return AF_SUCCESS;
 #else
-    return AF_ERR_NO_GFX;
+    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }

@@ -108,6 +108,6 @@ af_err af_draw_plot3(const af_window wind, const af_array P, const af_cell* cons
     CATCHALL;
     return AF_SUCCESS;
 #else
-    return AF_ERR_NO_GFX;
+    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
