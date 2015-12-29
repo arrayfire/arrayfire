@@ -32,7 +32,7 @@ namespace af
     static af_array gforReorder(const af_array in, unsigned dim)
     {
         // This is here to stop gcc from complaining
-        if (dim > 3) THROW(AF_ERR_SIZE);
+        if (dim > 3) AF_THROW_MSG("GFor: Dimension is invalid", AF_ERR_SIZE);
         unsigned order[AF_MAX_DIMS] = {0, 1, 2, dim};
         order[dim] = 3;
         af_array out;
@@ -347,7 +347,7 @@ namespace af
                 case 2: return gen_indexing(*this, z, s0, z, z);
                 case 3: return gen_indexing(*this, z, z, s0, z);
                 case 4: return gen_indexing(*this, z, z, z, s0);
-                default: THROW(AF_ERR_SIZE);
+                default: AF_THROW_MSG("ndims for Array is invalid", AF_ERR_SIZE);
             }
         }
         else {
