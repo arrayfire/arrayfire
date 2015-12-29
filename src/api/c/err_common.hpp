@@ -13,6 +13,7 @@
 #include <string>
 #include <cassert>
 #include <af/defines.h>
+#include <defines.hpp>
 #include <vector>
 
 class AfError   : public std::logic_error
@@ -121,26 +122,26 @@ af_err processException();
 
 #define DIM_ASSERT(INDEX, COND) do {                    \
         if((COND) == false) {                           \
-            throw DimensionError(__FILE__, __LINE__,    \
+            throw DimensionError(__AF_FILENAME__, __LINE__,    \
                                  INDEX, #COND);         \
         }                                               \
     } while(0)
 
 #define ARG_ASSERT(INDEX, COND) do {                \
         if((COND) == false) {                       \
-            throw ArgumentError(__FILE__, __LINE__, \
+            throw ArgumentError(__AF_FILENAME__, __LINE__, \
                                 INDEX, #COND);      \
         }                                           \
     } while(0)
 
 #define TYPE_ERROR(INDEX, type) do {            \
-        throw TypeError(__FILE__, __LINE__,     \
+        throw TypeError(__AF_FILENAME__, __LINE__,     \
                         INDEX, type);           \
     } while(0)                                  \
 
 
 #define AF_ERROR(MSG, ERR_TYPE) do {            \
-        throw AfError(__FILE__, __LINE__,       \
+        throw AfError(__AF_FILENAME__, __LINE__,       \
                       MSG, ERR_TYPE);           \
     } while(0)
 
@@ -162,6 +163,6 @@ af_err processException();
 #define AF_CHECK(fn) do {                       \
         af_err __err = fn;                      \
         if (__err == AF_SUCCESS) break;         \
-        throw AfError(__FILE__, __LINE__,       \
+        throw AfError(__AF_FILENAME__, __LINE__,       \
                       "\n", __err);             \
     } while(0)

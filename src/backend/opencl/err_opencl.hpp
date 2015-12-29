@@ -15,7 +15,7 @@
 #include <types.hpp>
 
 #define OPENCL_NOT_SUPPORTED() do {                         \
-        throw SupportError(__FILE__, __LINE__, "OPENCL");   \
+        throw SupportError(__AF_FILENAME__, __LINE__, "OPENCL");   \
     } while(0)
 
 #define CL_TO_AF_ERROR(ERR) do {                                \
