@@ -45,6 +45,15 @@ Return Value | Backends Available
 6            | CUDA and OpenCL
 7            | CPU, CUDA and OpenCL
 
+To convert the integer back into bools for each device, use the following code
+\code
+int backends = af::getAvailableBackends();
+
+bool cpu    = backends & AF_BACKEND_CPU;
+bool cuda   = backends & AF_BACKEND_CUDA;
+bool opencl = backends & AF_BACKEND_OPENCL;
+\endcode
+
 \ingroup unified_func
 \ingroup arrayfire_func
 
