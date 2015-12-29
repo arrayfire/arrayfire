@@ -33,7 +33,7 @@ void testFunction()
     if(outArray != 0) ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
-void unifiedTest()
+void backendTest()
 {
     int backends = af::getAvailableBackends();
 
@@ -42,27 +42,25 @@ void unifiedTest()
     bool opencl = backends & AF_BACKEND_OPENCL;
 
     if(cpu) {
-        printf("Running CPU Backend...\n");
+        printf("\nRunning CPU Backend...\n");
         af::setBackend(AF_BACKEND_CPU);
         testFunction<float>();
     }
 
     if(cuda) {
-        printf("Running CUDA Backend...\n");
+        printf("\nRunning CUDA Backend...\n");
         af::setBackend(AF_BACKEND_CUDA);
         testFunction<float>();
     }
 
     if(opencl) {
-        printf("Running OpenCL Backend...\n");
+        printf("\nRunning OpenCL Backend...\n");
         af::setBackend(AF_BACKEND_OPENCL);
         testFunction<float>();
     }
-
-    af::setBackend(AF_BACKEND_DEFAULT);
 }
 
-TEST(UNIFIED_TEST, Basic)
+TEST(BACKEND_TEST, Basic)
 {
-    unifiedTest();
+    backendTest();
 }
