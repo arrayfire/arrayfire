@@ -138,14 +138,14 @@ static const int MAX_ERR_SIZE = 1024;
 static std::string global_err_string;
 
 void
-print_error(const stringstream &msg)
+print_error(const string &msg)
 {
     const char* perr = getenv("AF_PRINT_ERRORS");
     if(perr != nullptr) {
         if(std::strncmp(perr, "0", 1) != 0)
-            fprintf(stderr, "%s\n", msg.str().c_str());
+            fprintf(stderr, "%s\n", msg.c_str());
     }
-    global_err_string = msg.str();
+    global_err_string = msg;
 }
 
 void af_get_last_error(char **str, dim_t *len)
@@ -202,7 +202,7 @@ af_err processException()
            << "Invalid dimension for argument " << ex.getArgIndex() << "\n"
            << "Expected: " << ex.getExpectedCondition() << "\n";
 
-        print_error(ss);
+        print_error(ss.str());
         err = AF_ERR_SIZE;
     } catch (const ArgumentError &ex) {
         ss << "In function " << ex.getFunctionName()
@@ -210,37 +210,37 @@ af_err processException()
            << "Invalid argument at index " << ex.getArgIndex() << "\n"
            << "Expected: " << ex.getExpectedCondition() << "\n";
 
-        print_error(ss);
+        print_error(ss.str());
         err = AF_ERR_ARG;
     } catch (const SupportError &ex) {
         ss << ex.getFunctionName()
            << " not supported for " << ex.getBackendName()
            << " backend\n";
 
-        print_error(ss);
+        print_error(ss.str());
         err = AF_ERR_NOT_SUPPORTED;
     } catch (const TypeError &ex) {
         ss << "In function " << ex.getFunctionName()
            << "(" << ex.getLine() << "):\n"
            << "Invalid type for argument " << ex.getArgIndex() << "\n";
 
-        print_error(ss);
+        print_error(ss.str());
         err = AF_ERR_TYPE;
     } catch (const AfError &ex) {
         ss << "Error in " << ex.getFunctionName()
            << "(" << ex.getLine() << "):\n"
            << ex.what() << "\n";
 
-        print_error(ss);
+        print_error(ss.str());
         err = ex.getError();
 #if defined(WITH_GRAPHICS) && !defined(AF_UNIFIED)
     } catch (const fg::Error &ex) {
         ss << ex << "\n";
-        print_error(ss);
+        print_error(ss.str());
         err = AF_ERR_INTERNAL;
 #endif
     } catch (...) {
-        print_error(ss);
+        print_error(ss.str());
         err = AF_ERR_UNKNOWN;
     }
 

@@ -120,6 +120,8 @@ public:
 
 af_err processException();
 
+void print_error(const std::string &msg);
+
 #define DIM_ASSERT(INDEX, COND) do {                    \
         if((COND) == false) {                           \
             throw DimensionError(__AF_FILENAME__, __LINE__,    \
@@ -143,6 +145,18 @@ af_err processException();
 #define AF_ERROR(MSG, ERR_TYPE) do {            \
         throw AfError(__AF_FILENAME__, __LINE__,       \
                       MSG, ERR_TYPE);           \
+    } while(0)
+
+#define AF_RETURN_ERROR(MSG, ERR_TYPE) do {     \
+        AfError err(__AF_FILENAME__, __LINE__,  \
+                      MSG, ERR_TYPE);           \
+        std::string str = "Error in "           \
+                        + err,getFunctionName() \
+                        + "(" + ex.getLine()    \
+                        + "):\n"                \
+                        + ex.what() + "\n";     \
+        print_error(str);                       \
+        return ERR_TYPE;                        \
     } while(0)
 
 #define TYPE_ASSERT(COND) do {                  \
