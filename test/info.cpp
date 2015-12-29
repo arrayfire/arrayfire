@@ -22,20 +22,6 @@ using std::string;
 using std::vector;
 
 template<typename T>
-class Info : public ::testing::Test
-{
-    public:
-        virtual void SetUp() {
-        }
-};
-
-// create a list of types to be tested
-typedef ::testing::Types<float> TestTypes;
-
-// register the type list
-TYPED_TEST_CASE(Info, TestTypes);
-
-template<typename T>
 void testFunction()
 {
     af::info();
@@ -47,14 +33,11 @@ void testFunction()
     if(outArray != 0) ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
-template<typename T>
 void infoTest()
 {
-    if (noDoubleTests<T>()) return;
-
     const char* ENV = getenv("AF_MULTI_GPU_TESTS");
     if(ENV && ENV[0] == '0') {
-        testFunction<T>();
+        testFunction<float>();
     } else {
         int nDevices = 0;
         ASSERT_EQ(AF_SUCCESS, af_get_device_count(&nDevices));
@@ -62,13 +45,13 @@ void infoTest()
         int oldDevice = af::getDevice();
         for(int d = 0; d < nDevices; d++) {
             af::setDevice(d);
-            testFunction<T>();
+            testFunction<float>();
         }
         af::setDevice(oldDevice);
     }
 }
 
-TYPED_TEST(Info, All)
+TEST(Info, All)
 {
-    infoTest<TypeParam>();
+    infoTest();
 }
