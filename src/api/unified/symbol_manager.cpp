@@ -9,6 +9,7 @@
 
 #include "symbol_manager.hpp"
 #include <algorithm>
+#include <vector>
 #include <string>
 #include <cmath>
 
