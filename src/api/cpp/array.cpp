@@ -32,7 +32,7 @@ namespace af
     static af_array gforReorder(const af_array in, unsigned dim)
     {
         // This is here to stop gcc from complaining
-        if (dim > 3) AF_THROW_MSG("GFor: Dimension is invalid", AF_ERR_SIZE);
+        if (dim > 3) AF_THROW_ERR("GFor: Dimension is invalid", AF_ERR_SIZE);
         unsigned order[AF_MAX_DIMS] = {0, 1, 2, dim};
         order[dim] = 3;
         af_array out;
@@ -67,7 +67,7 @@ namespace af
             }
             return odims;
         } catch(std::logic_error &err) {
-            AF_THROW_MSG(err.what(), AF_ERR_SIZE);
+            AF_THROW_ERR(err.what(), AF_ERR_SIZE);
         }
     }
 
@@ -138,7 +138,7 @@ namespace af
         switch (src) {
         case afHost:   AF_THROW(af_create_array(arr, (const void * const)ptr, AF_MAX_DIMS, my_dims, ty)); break;
         case afDevice: AF_THROW(af_device_array(arr, (const void *      )ptr, AF_MAX_DIMS, my_dims, ty)); break;
-        default: AF_THROW_MSG("Can not create array from the requested source pointer",
+        default: AF_THROW_ERR("Can not create array from the requested source pointer",
                               AF_ERR_ARG);
         }
     }
@@ -347,7 +347,7 @@ namespace af
                 case 2: return gen_indexing(*this, z, s0, z, z);
                 case 3: return gen_indexing(*this, z, z, s0, z);
                 case 4: return gen_indexing(*this, z, z, z, s0);
-                default: AF_THROW_MSG("ndims for Array is invalid", AF_ERR_SIZE);
+                default: AF_THROW_ERR("ndims for Array is invalid", AF_ERR_SIZE);
             }
         }
         else {
@@ -968,7 +968,7 @@ af::dtype implicit_dtype(af::dtype scalar_type, af::dtype array_type)
     template<> AFAPI T *array::host() const                         \
     {                                                               \
         if (type() != (af::dtype)dtype_traits<T>::af_type) {        \
-            AF_THROW_MSG("Requested type doesn't match with array", \
+            AF_THROW_ERR("Requested type doesn't match with array", \
                          AF_ERR_TYPE);                              \
         }                                                           \
                                                                     \

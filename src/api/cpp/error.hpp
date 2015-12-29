@@ -16,9 +16,6 @@
         throw af::exception(__AF_FILENAME__, __LINE__, __err); \
     } while(0)
 
-#define AF_THROW_MSG(__msg, __err) do {                         \
-        if (__err == AF_SUCCESS) break;                         \
+#define AF_THROW_ERR(__msg, __err) do {                         \
         throw af::exception(__msg, __AF_FILENAME__, __LINE__, __err);  \
-    } while(0);
-
-#define THROW(__err) throw af::exception(__AF_FILENAME__, __LINE__, __err)
+    } while(0)
