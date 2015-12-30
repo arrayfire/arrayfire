@@ -118,9 +118,11 @@ INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 FILE(GLOB FILES "*.cpp" "*.c")
+LIST(SORT FILES)  # Tests execute in alphabetical order
 
 # We only build info.cpp and backend.cpp for Unified backend
-SET(UNIFIED_FILES "info.cpp;backend.cpp")
+SET(UNIFIED_FILES "backend.cpp;info.cpp")
+LIST(SORT UNIFIED_FILES)  # Tests execute in alphabetical order
 
 # Next we build each example using every backend.
 IF(${ArrayFire_CPU_FOUND})  # variable defined by FIND(ArrayFire ...)
@@ -131,17 +133,6 @@ ELSEIF(TARGET afcpu)        # variable defined by the ArrayFire build tree
     CREATE_TESTS(cpu afcpu "${GTEST_LIBRARIES}" "")
 ELSE()
     MESSAGE(STATUS "TESTS: CPU backend is OFF. afcpu was not found.")
-ENDIF()
-
-# Unified Backend
-IF(${ArrayFire_Unified_FOUND})  # variable defined by FIND(ArrayFire ...)
-    MESSAGE(STATUS "TESTS: UNIFIED backend is ON.")
-    CREATE_TESTS(unified ${ArrayFire_Unified_LIBRARIES} "${GTEST_LIBRARIES}" "${CMAKE_DL_LIBS}")
-ELSEIF(TARGET af)        # variable defined by the ArrayFire build tree
-    MESSAGE(STATUS "TESTS: UNIFIED backend is ON.")
-    CREATE_TESTS(unified af "${GTEST_LIBRARIES}" "${CMAKE_DL_LIBS}")
-ELSE()
-    MESSAGE(STATUS "TESTS: UNIFIED backend is OFF. af was not found.")
 ENDIF()
 
 # CUDA Backend
@@ -209,4 +200,15 @@ IF (${OpenCL_FOUND})
     ENDIF()
 ELSE()
     MESSAGE(STATUS "TESTS: OpenCL backend is OFF. OpenCL was not found")
+ENDIF()
+
+# Unified Backend
+IF(${ArrayFire_Unified_FOUND})  # variable defined by FIND(ArrayFire ...)
+    MESSAGE(STATUS "TESTS: UNIFIED backend is ON.")
+    CREATE_TESTS(unified ${ArrayFire_Unified_LIBRARIES} "${GTEST_LIBRARIES}" "${CMAKE_DL_LIBS}")
+ELSEIF(TARGET af)        # variable defined by the ArrayFire build tree
+    MESSAGE(STATUS "TESTS: UNIFIED backend is ON.")
+    CREATE_TESTS(unified af "${GTEST_LIBRARIES}" "${CMAKE_DL_LIBS}")
+ELSE()
+    MESSAGE(STATUS "TESTS: UNIFIED backend is OFF. af was not found.")
 ENDIF()
