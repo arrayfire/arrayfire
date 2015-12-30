@@ -27,7 +27,7 @@ IF(PC_LAPACKE_FOUND)
       IF (NOT ${PC_LIB}_LIBRARY)
         MESSAGE(FATAL_ERROR "Something is wrong in your pkg-config file - lib ${PC_LIB} not found in ${PC_LAPACKE_LIBRARY_DIRS}")
       ENDIF (NOT ${PC_LIB}_LIBRARY)
-      LIST(APPEND LAPACKE_LIB ${${PC_LIB}_LIBRARY}) 
+      LIST(APPEND LAPACKE_LIB ${${PC_LIB}_LIBRARY})
     ENDFOREACH(PC_LIB)
 
     FIND_PATH(
@@ -78,7 +78,7 @@ ELSE(PC_LAPACKE_FOUND)
     ELSE()
         FIND_LIBRARY(
             LAPACKE_LIB
-            NAMES "lapacke" "liblapacke"
+            NAMES "lapacke" "liblapacke" "openblas"
             PATHS
             ${PC_LAPACKE_LIBRARY_DIRS}
             ${LIB_INSTALL_DIR}
@@ -92,7 +92,7 @@ ELSE(PC_LAPACKE_FOUND)
             )
         FIND_LIBRARY(
            LAPACK_LIB
-            NAMES "lapack" "liblapack"
+            NAMES "lapack" "liblapack" "openblas"
             PATHS
             ${PC_LAPACKE_LIBRARY_DIRS}
             ${LIB_INSTALL_DIR}
