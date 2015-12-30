@@ -289,7 +289,17 @@ int getDeviceIdFromNativeId(int nativeId)
 
 cudaStream_t getStream(int device)
 {
-    return DeviceManager::getInstance().streams[device];
+    cudaStream_t str = DeviceManager::getInstance().streams[device];
+    // if the stream has not yet been initialized, ie. the device has not been
+    // set to active at least once (cuz that's where the stream is created)
+    // then set the device, get the stream, reset the device to current
+    if(!str) {
+        int active_dev = DeviceManager::getInstance().activeDev;
+        setDevice(device);
+        str = DeviceManager::getInstance().streams[device];
+        setDevice(active_dev);
+    }
+    return str;
 }
 
 int setDevice(int device)
@@ -332,10 +342,10 @@ DeviceManager::DeviceManager()
 
     sortDevices();
 
-    for(int i = 0; i < nDevices; i++) {
-        setActiveDevice(i, cuDevices[i].nativeId);
-        CUDA_CHECK(cudaStreamCreate(&streams[i]));
-    }
+    // Initialize all streams to 0.
+    // Streams will be created in setActiveDevice()
+    for(int i = 0; i < (int)MAX_DEVICES; i++)
+        streams[i] = (cudaStream_t)0;
 
     const char* deviceENV = getenv("AF_CUDA_DEFAULT_DEVICE");
     if(!deviceENV) {
@@ -381,6 +391,11 @@ int DeviceManager::setActiveDevice(int device, int nId)
         if(nId == -1) nId = getDeviceNativeId(device);
         CUDA_CHECK(cudaSetDevice(nId));
         activeDev = device;
+
+        if(!streams[device]) {
+            CUDA_CHECK(cudaStreamCreate(&streams[device]));
+        }
+
         return old;
     }
 }

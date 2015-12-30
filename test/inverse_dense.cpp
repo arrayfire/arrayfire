@@ -32,6 +32,7 @@ template<typename T>
 void inverseTester(const int m, const int n, const int k, double eps)
 {
     if (noDoubleTests<T>()) return;
+    if (noLAPACKTests()) return;
 #if 1
     af::array A  = cpu_randu<T>(af::dim4(m, n));
 #else

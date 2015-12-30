@@ -97,7 +97,7 @@ bool checkArrays(af_backend activeBackend, T a, Args... arg)
     af_backend backendId = unified::AFSymbolManager::getInstance().getActiveBackend();      \
     if(!unified::checkArrays(backendId, __VA_ARGS__))                                       \
         return AF_ERR_ARR_BKND_MISMATCH;                                                    \
-} while(0);
+} while(0)
 
 #if defined(OS_WIN)
 #define CALL(...) unified::AFSymbolManager::getInstance().call(__FUNCTION__, __VA_ARGS__)

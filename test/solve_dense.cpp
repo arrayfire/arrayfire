@@ -34,6 +34,8 @@ void solveTester(const int m, const int n, const int k, double eps)
     af::deviceGC();
 
     if (noDoubleTests<T>()) return;
+    if (noLAPACKTests()) return;
+
 #if 1
     af::array A  = cpu_randu<T>(af::dim4(m, n));
     af::array X0 = cpu_randu<T>(af::dim4(n, k));
@@ -61,6 +63,8 @@ void solveLUTester(const int n, const int k, double eps)
     af::deviceGC();
 
     if (noDoubleTests<T>()) return;
+    if (noLAPACKTests()) return;
+
 #if 1
     af::array A  = cpu_randu<T>(af::dim4(n, n));
     af::array X0 = cpu_randu<T>(af::dim4(n, k));
@@ -88,6 +92,8 @@ void solveTriangleTester(const int n, const int k, bool is_upper, double eps)
     af::deviceGC();
 
     if (noDoubleTests<T>()) return;
+    if (noLAPACKTests()) return;
+
 #if 1
     af::array A  = cpu_randu<T>(af::dim4(n, n));
     af::array X0 = cpu_randu<T>(af::dim4(n, k));

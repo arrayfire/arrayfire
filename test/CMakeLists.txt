@@ -33,7 +33,14 @@ REMOVE_DEFINITIONS(-std=c++11)
 MACRO(CREATE_TESTS BACKEND AFLIBNAME GTEST_LIBS OTHER_LIBS)
     STRING(TOUPPER ${BACKEND} DEF_NAME)
 
-    FOREACH(FILE ${FILES})
+    # For some reason passing FILES/UNIFIED_FILES to macro doesn't work
+    IF(${BACKEND} STREQUAL "unified")
+      SET(TEST_FILES ${UNIFIED_FILES})
+    ELSE(${BACKEND} STREQUAL "unified")
+      SET(TEST_FILES ${FILES})
+    ENDIF(${BACKEND} STREQUAL "unified")
+
+    FOREACH(FILE ${TEST_FILES})
         GET_FILENAME_COMPONENT(FNAME ${FILE} NAME_WE)
         SET(TEST_NAME ${FNAME}_${BACKEND})
 
@@ -112,6 +119,9 @@ INCLUDE_DIRECTORIES(${GTEST_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 FILE(GLOB FILES "*.cpp" "*.c")
 
+# We only build info.cpp and backend.cpp for Unified backend
+SET(UNIFIED_FILES "info.cpp;backend.cpp")
+
 # Next we build each example using every backend.
 IF(${ArrayFire_CPU_FOUND})  # variable defined by FIND(ArrayFire ...)
     MESSAGE(STATUS "TESTS: CPU backend is ON.")
@@ -123,7 +133,7 @@ ELSE()
     MESSAGE(STATUS "TESTS: CPU backend is OFF. afcpu was not found.")
 ENDIF()
 
-# Next we build each example using every backend.
+# Unified Backend
 IF(${ArrayFire_Unified_FOUND})  # variable defined by FIND(ArrayFire ...)
     MESSAGE(STATUS "TESTS: UNIFIED backend is ON.")
     CREATE_TESTS(unified ${ArrayFire_Unified_LIBRARIES} "${GTEST_LIBRARIES}" "${CMAKE_DL_LIBS}")
@@ -134,6 +144,7 @@ ELSE()
     MESSAGE(STATUS "TESTS: UNIFIED backend is OFF. af was not found.")
 ENDIF()
 
+# CUDA Backend
 IF (${CUDA_FOUND})
     IF(${ArrayFire_CUDA_FOUND})  # variable defined by FIND(ArrayFire ...)
         FIND_LIBRARY( CUDA_NVVM_LIBRARY
@@ -185,6 +196,7 @@ ELSE()
     MESSAGE(STATUS "TESTS: CUDA backend is OFF. CUDA was not found")
 ENDIF()
 
+# OpenCL Backend
 IF (${OpenCL_FOUND})
     INCLUDE_DIRECTORIES(${OpenCL_INCLUDE_DIRS})
     IF(${ArrayFire_OpenCL_FOUND})  # variable defined by FIND(ArrayFire ...)
