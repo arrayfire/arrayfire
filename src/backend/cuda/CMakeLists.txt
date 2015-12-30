@@ -178,6 +178,7 @@ FILE(GLOB c_headers
     )
 
 FILE(GLOB c_sources
+    "../../util.cpp"
     "../../api/c/*.cpp"
     )
 

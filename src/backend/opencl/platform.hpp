@@ -115,4 +115,6 @@ void removeDeviceContext(cl_device_id dev, cl_context ctx);
 
 void sync(int device);
 
+bool synchronize_calls();
+
 }

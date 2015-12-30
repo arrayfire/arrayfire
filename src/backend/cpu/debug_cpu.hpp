@@ -9,7 +9,7 @@
 
 #pragma once
 #include <platform.hpp>
-#include <async_queue.hpp>
+#include <queue.hpp>
 #include <err_cpu.hpp>
 
 #ifndef NDEBUG

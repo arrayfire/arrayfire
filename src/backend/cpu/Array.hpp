@@ -21,7 +21,7 @@
 #include <algorithm>
 #include <vector>
 #include <platform.hpp>
-#include <async_queue.hpp>
+#include <queue.hpp>
 
 // cpu::Array class forward declaration
 namespace cpu

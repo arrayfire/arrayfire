@@ -17,6 +17,7 @@
 #include <string>
 #include <defines.hpp>
 #include <version.hpp>
+#include <queue.hpp>
 
 #ifdef _WIN32
 #include <limits.h>
@@ -249,8 +250,9 @@ int getActiveDeviceId()
 
 static const int MAX_QUEUES = 1;
 
-async_queue& getQueue(int idx) {
-    static std::array<async_queue, MAX_QUEUES> queues;
+
+queue& getQueue(int idx) {
+    static std::array<queue, MAX_QUEUES> queues;
     return queues[idx];
 }
 

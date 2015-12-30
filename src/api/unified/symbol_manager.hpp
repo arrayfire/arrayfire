@@ -11,6 +11,8 @@
 #include <af/defines.h>
 #include <string>
 #include <stdlib.h>
+#include <util.hpp>
+
 #if defined(OS_WIN)
 #include <Windows.h>
 typedef HMODULE LibHandle;

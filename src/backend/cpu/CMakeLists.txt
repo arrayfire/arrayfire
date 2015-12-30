@@ -107,6 +107,7 @@ source_group(api\\c\\Headers FILES ${c_headers})
 source_group(api\\c\\Sources FILES ${c_sources})
 
 FILE(GLOB cpp_sources
+    "../../util.cpp"
     "../../api/cpp/*.cpp"
     )
 

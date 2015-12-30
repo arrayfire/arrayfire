@@ -41,6 +41,7 @@
 #include <map>
 #include <errorcodes.hpp>
 #include <err_opencl.hpp>
+#include <util.hpp>
 
 using std::string;
 using std::vector;
@@ -554,6 +555,11 @@ void removeDeviceContext(cl_device_id dev, cl_context ctx)
     } catch (const cl::Error &ex) {
         CL_TO_AF_ERROR(ex);
     }
+}
+
+bool synchronize_calls() {
+    static bool sync = getEnvVar("AF_SYNCHRONOUS_CALLS") == "1";
+    return sync;
 }
 
 }
