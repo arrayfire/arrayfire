@@ -76,19 +76,19 @@ af_err af_identity(af_array *out, const unsigned ndims, const dim_t * const dims
 
 af_err af_diag_create(af_array *out, const af_array in, const int num)
 {
-    CHECK_ARRAYS(in)
+    CHECK_ARRAYS(in);
     return CALL(out, in, num);
 }
 
 af_err af_diag_extract(af_array *out, const af_array in, const int num)
 {
-    CHECK_ARRAYS(in)
+    CHECK_ARRAYS(in);
     return CALL(out, in, num);
 }
 
 af_err af_join(af_array *out, const int dim, const af_array first, const af_array second)
 {
-    CHECK_ARRAYS(first, second)
+    CHECK_ARRAYS(first, second);
     return CALL(out, dim, first, second);
 }
 

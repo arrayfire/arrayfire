@@ -30,6 +30,7 @@ using af::cdouble;
 TEST(LU, InPlaceSmall)
 {
     if (noDoubleTests<float>()) return;
+    if (noLAPACKTests()) return;
 
     int resultIdx = 0;
 
@@ -67,6 +68,7 @@ TEST(LU, InPlaceSmall)
 TEST(LU, SplitSmall)
 {
     if (noDoubleTests<float>()) return;
+    if (noLAPACKTests()) return;
 
     int resultIdx = 0;
 
@@ -117,6 +119,7 @@ template<typename T>
 void luTester(const int m, const int n, double eps)
 {
     if (noDoubleTests<T>()) return;
+    if (noLAPACKTests()) return;
 
 #if 1
     af::array a_orig = cpu_randu<T>(af::dim4(m, n));

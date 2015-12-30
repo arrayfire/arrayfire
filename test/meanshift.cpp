@@ -51,6 +51,7 @@ template<typename T, bool isColor>
 void meanshiftTest(string pTestFile)
 {
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     vector<dim4>       inDims;
     vector<string>    inFiles;
@@ -120,6 +121,7 @@ IMAGE_TESTS(double)
 TEST(Meanshift, Color_CPP)
 {
     if (noDoubleTests<float>()) return;
+    if (noImageIOTests()) return;
 
     vector<dim4>       inDims;
     vector<string>    inFiles;
