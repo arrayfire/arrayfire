@@ -17,7 +17,8 @@
 #include <cassert>
 #include <range.hpp>
 #include <lapack_helper.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <kernel/lu.hpp>
 
 namespace cpu
@@ -58,7 +59,7 @@ void lu(Array<T> &lower, Array<T> &upper, Array<int> &pivot, const Array<T> &in)
     lower = createEmptyArray<T>(ldims);
     upper = createEmptyArray<T>(udims);
 
-    ENQUEUE(kernel::lu_split<T>, lower, upper, in_copy);
+    getQueue().enqueue(kernel::lu_split<T>, lower, upper, in_copy);
 }
 
 template<typename T>
@@ -73,11 +74,11 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
         dim4 iDims = in.dims();
         getrf_func<T>()(AF_LAPACK_COL_MAJOR, iDims[0], iDims[1], in.get(), in.strides()[1], pivot.get());
     };
-    ENQUEUE(func, in, pivot);
+    getQueue().enqueue(func, in, pivot);
 
     if(convert_pivot) {
         Array<int> p = range<int>(dim4(iDims[0]), 0);
-        ENQUEUE(kernel::convertPivot, p, pivot);
+        getQueue().enqueue(kernel::convertPivot, p, pivot);
         return p;
     } else {
         return pivot;

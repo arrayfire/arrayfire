@@ -14,7 +14,8 @@
 #include <Array.hpp>
 #include <scan.hpp>
 #include <ops.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <kernel/scan.hpp>
 
 using af::dim4;
@@ -33,19 +34,19 @@ Array<To> scan(const Array<Ti>& in, const int dim)
     switch (in.ndims()) {
         case 1:
             kernel::scan_dim<op, Ti, To, 1> func1;
-            ENQUEUE(func1, out, 0, in, 0, dim);
+            getQueue().enqueue(func1, out, 0, in, 0, dim);
             break;
         case 2:
             kernel::scan_dim<op, Ti, To, 2> func2;
-            ENQUEUE(func2, out, 0, in, 0, dim);
+            getQueue().enqueue(func2, out, 0, in, 0, dim);
             break;
         case 3:
             kernel::scan_dim<op, Ti, To, 3> func3;
-            ENQUEUE(func3, out, 0, in, 0, dim);
+            getQueue().enqueue(func3, out, 0, in, 0, dim);
             break;
         case 4:
             kernel::scan_dim<op, Ti, To, 4> func4;
-            ENQUEUE(func4, out, 0, in, 0, dim);
+            getQueue().enqueue(func4, out, 0, in, 0, dim);
             break;
     }
 

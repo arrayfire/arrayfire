@@ -13,7 +13,8 @@
 #include <Array.hpp>
 #include <morph.hpp>
 #include <algorithm>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <kernel/morph.hpp>
 
 using af::dim4;
@@ -29,7 +30,7 @@ Array<T> morph(const Array<T> &in, const Array<T> &mask)
 
     Array<T> out = createEmptyArray<T>(in.dims());
 
-    ENQUEUE(kernel::morph<T, isDilation>, out, in, mask);
+    getQueue().enqueue(kernel::morph<T, isDilation>, out, in, mask);
 
     return out;
 }
@@ -42,7 +43,7 @@ Array<T> morph3d(const Array<T> &in, const Array<T> &mask)
 
     Array<T> out = createEmptyArray<T>(in.dims());
 
-    ENQUEUE(kernel::morph3d<T, isDilation>, out, in, mask);
+    getQueue().enqueue(kernel::morph3d<T, isDilation>, out, in, mask);
 
     return out;
 }

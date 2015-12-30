@@ -9,7 +9,8 @@
 
 #include <Array.hpp>
 #include <join.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <kernel/join.hpp>
 
 namespace cpu
@@ -37,7 +38,7 @@ Array<Tx> join(const int dim, const Array<Tx> &first, const Array<Ty> &second)
 
     Array<Tx> out = createEmptyArray<Tx>(odims);
 
-    ENQUEUE(kernel::join<Tx, Ty>, out, dim, first, second);
+    getQueue().enqueue(kernel::join<Tx, Ty>, out, dim, first, second);
 
     return out;
 }
@@ -71,34 +72,34 @@ Array<T> join(const int dim, const std::vector<Array<T>> &inputs)
 
     switch(n_arrays) {
         case 1:
-            ENQUEUE(kernel::join<T, 1>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 1>, dim, out, inputs);
             break;
         case 2:
-            ENQUEUE(kernel::join<T, 2>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 2>, dim, out, inputs);
             break;
         case 3:
-            ENQUEUE(kernel::join<T, 3>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 3>, dim, out, inputs);
             break;
         case 4:
-            ENQUEUE(kernel::join<T, 4>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 4>, dim, out, inputs);
             break;
         case 5:
-            ENQUEUE(kernel::join<T, 5>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 5>, dim, out, inputs);
             break;
         case 6:
-            ENQUEUE(kernel::join<T, 6>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 6>, dim, out, inputs);
             break;
         case 7:
-            ENQUEUE(kernel::join<T, 7>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 7>, dim, out, inputs);
             break;
         case 8:
-            ENQUEUE(kernel::join<T, 8>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 8>, dim, out, inputs);
             break;
         case 9:
-            ENQUEUE(kernel::join<T, 9>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T, 9>, dim, out, inputs);
             break;
         case 10:
-            ENQUEUE(kernel::join<T,10>, dim, out, inputs);
+            getQueue().enqueue(kernel::join<T,10>, dim, out, inputs);
             break;
     }
 

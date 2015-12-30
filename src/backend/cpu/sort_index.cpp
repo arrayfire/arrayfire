@@ -12,7 +12,8 @@
 #include <math.hpp>
 #include <algorithm>
 #include <numeric>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <kernel/sort_index.hpp>
 
 namespace cpu
@@ -26,7 +27,7 @@ void sort_index(Array<T> &val, Array<uint> &idx, const Array<T> &in, const uint 
     val = createEmptyArray<T>(in.dims());
     idx = createEmptyArray<uint>(in.dims());
     switch(dim) {
-        case 0: ENQUEUE(kernel::sort0_index<T, isAscending>, val, idx, in); break;
+        case 0: getQueue().enqueue(kernel::sort0_index<T, isAscending>, val, idx, in); break;
         default: AF_ERROR("Not Supported", AF_ERR_NOT_SUPPORTED);
     }
 }

@@ -16,7 +16,8 @@
 #include <algorithm>
 #include <err_cpu.hpp>
 #include <math.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <kernel/meanshift.hpp>
 
 using af::dim4;
@@ -32,7 +33,7 @@ Array<T>  meanshift(const Array<T> &in, const float &s_sigma, const float &c_sig
 
     Array<T> out = createEmptyArray<T>(in.dims());
 
-    ENQUEUE(kernel::meanShift<T, is_color>, out, in, s_sigma, c_sigma, iter);
+    getQueue().enqueue(kernel::meanShift<T, is_color>, out, in, s_sigma, c_sigma, iter);
 
     return out;
 }

@@ -14,7 +14,8 @@
 #include <err_cpu.hpp>
 #include <handle.hpp>
 #include <fast.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <kernel/fast.hpp>
 
 using af::dim4;

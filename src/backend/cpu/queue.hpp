@@ -25,6 +25,10 @@ public:
 
     if(sync_calls) { func( args... ); }
     else           { aQueue.enqueue( func, args... ); }
+#ifndef NDEBUG
+    sync();
+#endif
+
   }
   void sync() {
     if(!sync_calls) aQueue.sync();

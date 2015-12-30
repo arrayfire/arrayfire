@@ -14,7 +14,8 @@
 #include <err_cpu.hpp>
 #include <algorithm>
 #include <numeric>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <kernel/range.hpp>
 
 namespace cpu
@@ -32,10 +33,10 @@ Array<T> range(const dim4& dims, const int seq_dim)
 
     Array<T> out = createEmptyArray<T>(dims);
     switch(_seq_dim) {
-        case 0: ENQUEUE(kernel::range<T, 0>, out); break;
-        case 1: ENQUEUE(kernel::range<T, 1>, out); break;
-        case 2: ENQUEUE(kernel::range<T, 2>, out); break;
-        case 3: ENQUEUE(kernel::range<T, 3>, out); break;
+        case 0: getQueue().enqueue(kernel::range<T, 0>, out); break;
+        case 1: getQueue().enqueue(kernel::range<T, 1>, out); break;
+        case 2: getQueue().enqueue(kernel::range<T, 2>, out); break;
+        case 3: getQueue().enqueue(kernel::range<T, 3>, out); break;
         default : AF_ERROR("Invalid rep selection", AF_ERR_ARG);
     }
 

@@ -13,7 +13,8 @@
 #include <plot.hpp>
 #include <err_cpu.hpp>
 #include <graphics_common.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 
 using af::dim4;
 

@@ -14,7 +14,8 @@
 #include <handle.hpp>
 #include <kernel/assign.hpp>
 #include <assign.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 
 namespace cpu
 {
@@ -47,7 +48,7 @@ void assign(Array<T>& out, const af_index_t idxrs[], const Array<T>& rhs)
         }
     }
 
-    ENQUEUE(kernel::assign<T>, out, rhs, std::move(isSeq),
+    getQueue().enqueue(kernel::assign<T>, out, rhs, std::move(isSeq),
             std::move(seqs), std::move(idxArrs));
 }
 

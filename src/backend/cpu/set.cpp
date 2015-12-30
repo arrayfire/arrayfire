@@ -18,7 +18,8 @@
 #include <sort.hpp>
 #include <err_cpu.hpp>
 #include <vector>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 
 namespace cpu
 {

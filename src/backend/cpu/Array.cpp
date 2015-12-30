@@ -15,7 +15,8 @@
 #include <TNJ/BufferNode.hpp>
 #include <TNJ/ScalarNode.hpp>
 #include <memory.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <cstring>
 #include <cstddef>
 
@@ -77,7 +78,7 @@ void Array<T>::eval()
 
     data = std::shared_ptr<T>(memAlloc<T>(elements()), memFree<T>);
 
-    ENQUEUE(kernel::evalArray<T>, *this);
+    getQueue().enqueue(kernel::evalArray<T>, *this);
 
     ready = true;
     Node_ptr prev = node;

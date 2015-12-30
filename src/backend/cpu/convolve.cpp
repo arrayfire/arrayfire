@@ -14,7 +14,8 @@
 #include <convolve.hpp>
 #include <err_cpu.hpp>
 #include <math.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <kernel/convolve.hpp>
 
 using af::dim4;
@@ -50,7 +51,7 @@ Array<T> convolve(Array<T> const& signal, Array<accT> const& filter, ConvolveBat
 
     Array<T> out = createEmptyArray<T>(oDims);
 
-    ENQUEUE(kernel::convolve_nd<T, accT, baseDim, expand>,out, signal, filter, kind);
+    getQueue().enqueue(kernel::convolve_nd<T, accT, baseDim, expand>,out, signal, filter, kind);
 
     return out;
 }
@@ -80,7 +81,7 @@ Array<T> convolve2(Array<T> const& signal, Array<accT> const& c_filter, Array<ac
 
     Array<T> out  = createEmptyArray<T>(oDims);
 
-    ENQUEUE(kernel::convolve2<T, accT, expand>, out, signal, c_filter, r_filter, tDims);
+    getQueue().enqueue(kernel::convolve2<T, accT, expand>, out, signal, c_filter, r_filter, tDims);
 
     return out;
 }

@@ -12,7 +12,8 @@
 #include <cmath>
 #include <math.hpp>
 #include <memory>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <kernel/susan.hpp>
 
 using af::features;
@@ -39,9 +40,9 @@ unsigned susan(Array<float> &x_out, Array<float> &y_out, Array<float> &resp_out,
     auto corners_found= std::shared_ptr<unsigned>(memAlloc<unsigned>(1), memFree<unsigned>);
     corners_found.get()[0] = 0;
 
-    ENQUEUE(kernel::susan_responses<T>, response, in, idims[0], idims[1],
+    getQueue().enqueue(kernel::susan_responses<T>, response, in, idims[0], idims[1],
                        radius, diff_thr, geom_thr, edge);
-    ENQUEUE(kernel::non_maximal<T>, x_corners, y_corners, resp_corners, corners_found,
+    getQueue().enqueue(kernel::non_maximal<T>, x_corners, y_corners, resp_corners, corners_found,
                        idims[0], idims[1], response, edge, corner_lim);
     getQueue().sync();
 

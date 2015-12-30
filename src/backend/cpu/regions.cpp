@@ -17,7 +17,8 @@
 #include <map>
 #include <set>
 #include <algorithm>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <kernel/regions.hpp>
 
 using af::dim4;
@@ -33,7 +34,7 @@ Array<T> regions(const Array<char> &in, af_connectivity connectivity)
     Array<T> out = createValueArray(in.dims(), (T)0);
     out.eval();
 
-    ENQUEUE(kernel::regions<T>, out, in, connectivity);
+    getQueue().enqueue(kernel::regions<T>, out, in, connectivity);
 
     return out;
 }

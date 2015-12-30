@@ -16,7 +16,8 @@
 #include <cassert>
 #include <err_cpu.hpp>
 #include <lapack_helper.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 
 namespace cpu
 {
@@ -87,7 +88,7 @@ Array<T> solveLU(const Array<T> &A, const Array<int> &pivot,
                         N, NRHS, A.get(), A.strides()[1],
                         pivot.get(), B.get(), B.strides()[1]);
     };
-    ENQUEUE(func, A, B, pivot, N, NRHS);
+    getQueue().enqueue(func, A, B, pivot, N, NRHS);
 
     return B;
 }
@@ -108,7 +109,7 @@ Array<T> triangleSolve(const Array<T> &A, const Array<T> &b, const af_mat_prop o
                         A.get(), A.strides()[1],
                         B.get(), B.strides()[1]);
     };
-    ENQUEUE(func, A, B, N, NRHS, options);
+    getQueue().enqueue(func, A, B, N, NRHS, options);
 
     return B;
 }
@@ -138,7 +139,7 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
             gesv_func<T>()(AF_LAPACK_COL_MAJOR, N, K, A.get(), A.strides()[1],
                            pivot.get(), B.get(), B.strides()[1]);
         };
-        ENQUEUE(func, A, B, pivot, N, K);
+        getQueue().enqueue(func, A, B, pivot, N, K);
     } else {
         auto func = [=] (Array<T> A, Array<T> B, int M, int N, int K) {
             int sM = A.strides()[1];
@@ -150,7 +151,7 @@ Array<T> solve(const Array<T> &a, const Array<T> &b, const af_mat_prop options)
                     B.get(), max(sM, sN));
         };
         B.resetDims(dim4(N, K));
-        ENQUEUE(func, A, B, M, N, K);
+        getQueue().enqueue(func, A, B, M, N, K);
     }
 
     return B;

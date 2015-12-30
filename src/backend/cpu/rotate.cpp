@@ -9,7 +9,8 @@
 
 #include <Array.hpp>
 #include <rotate.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include "transform_interp.hpp"
 #include <kernel/rotate.hpp>
 
@@ -26,13 +27,13 @@ Array<T> rotate(const Array<T> &in, const float theta, const af::dim4 &odims,
 
     switch(method) {
         case AF_INTERP_NEAREST:
-            ENQUEUE(kernel::rotate<T, AF_INTERP_NEAREST>, out, in, theta);
+            getQueue().enqueue(kernel::rotate<T, AF_INTERP_NEAREST>, out, in, theta);
             break;
         case AF_INTERP_BILINEAR:
-            ENQUEUE(kernel::rotate<T, AF_INTERP_BILINEAR>, out, in, theta);
+            getQueue().enqueue(kernel::rotate<T, AF_INTERP_BILINEAR>, out, in, theta);
             break;
         case AF_INTERP_LOWER:
-            ENQUEUE(kernel::rotate<T, AF_INTERP_LOWER>, out, in, theta);
+            getQueue().enqueue(kernel::rotate<T, AF_INTERP_LOWER>, out, in, theta);
             break;
         default:
             AF_ERROR("Unsupported interpolation type", AF_ERR_ARG);

@@ -11,7 +11,8 @@
 
 #include <hist_graphics.hpp>
 #include <err_cpu.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 
 namespace cpu
 {

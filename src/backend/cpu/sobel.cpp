@@ -13,7 +13,8 @@
 #include <Array.hpp>
 #include <sobel.hpp>
 #include <convolve.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <kernel/sobel.hpp>
 
 using af::dim4;
@@ -31,8 +32,8 @@ sobelDerivatives(const Array<Ti> &img, const unsigned &ker_size)
     Array<To> dx = createEmptyArray<To>(img.dims());
     Array<To> dy = createEmptyArray<To>(img.dims());
 
-    ENQUEUE(kernel::derivative<Ti, To, true >, dx, img);
-    ENQUEUE(kernel::derivative<Ti, To, false>, dy, img);
+    getQueue().enqueue(kernel::derivative<Ti, To, true >, dx, img);
+    getQueue().enqueue(kernel::derivative<Ti, To, false>, dy, img);
 
     return std::make_pair(dx, dy);
 }

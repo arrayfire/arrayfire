@@ -12,7 +12,8 @@
 #include <math.hpp>
 #include <types.hpp>
 #include <af/traits.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <kernel/resize.hpp>
 
 namespace cpu
@@ -31,11 +32,11 @@ Array<T> resize(const Array<T> &in, const dim_t odim0, const dim_t odim1,
 
     switch(method) {
         case AF_INTERP_NEAREST:
-            ENQUEUE(kernel::resize<T, AF_INTERP_NEAREST>, out, in); break;
+            getQueue().enqueue(kernel::resize<T, AF_INTERP_NEAREST>, out, in); break;
         case AF_INTERP_BILINEAR:
-            ENQUEUE(kernel::resize<T, AF_INTERP_BILINEAR>, out, in); break;
+            getQueue().enqueue(kernel::resize<T, AF_INTERP_BILINEAR>, out, in); break;
         case AF_INTERP_LOWER:
-            ENQUEUE(kernel::resize<T, AF_INTERP_LOWER>, out, in); break;
+            getQueue().enqueue(kernel::resize<T, AF_INTERP_LOWER>, out, in); break;
         default: break;
     }
     return out;

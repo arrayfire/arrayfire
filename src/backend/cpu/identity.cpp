@@ -10,7 +10,8 @@
 #include <af/dim4.hpp>
 #include <Array.hpp>
 #include <identity.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <kernel/identity.hpp>
 
 namespace cpu
@@ -21,7 +22,7 @@ Array<T> identity(const dim4& dims)
 {
     Array<T> out = createEmptyArray<T>(dims);
 
-    ENQUEUE(kernel::identity<T>, out);
+    getQueue().enqueue(kernel::identity<T>, out);
 
     return out;
 }

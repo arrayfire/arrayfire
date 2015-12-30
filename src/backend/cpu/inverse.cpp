@@ -23,7 +23,8 @@
 #include <lu.hpp>
 #include <identity.hpp>
 #include <solve.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 
 namespace cpu
 {
@@ -67,7 +68,7 @@ Array<T> inverse(const Array<T> &in)
                 A.get(), A.strides()[1],
                 pivot.get());
     };
-    ENQUEUE(func, A, pivot, M);
+    getQueue().enqueue(func, A, pivot, M);
 
     return A;
 }

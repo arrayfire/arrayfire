@@ -11,7 +11,8 @@
 #include <wrap.hpp>
 #include <dispatch.hpp>
 #include <math.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <async_queue.hpp>
 #include <kernel/wrap.hpp>
 
 namespace cpu
@@ -33,9 +34,9 @@ Array<T> wrap(const Array<T> &in,
     in.eval();
 
     if (is_column) {
-        ENQUEUE(kernel::wrap_dim<T, 1>, out, in, wx, wy, sx, sy, px, py);
+        getQueue().enqueue(kernel::wrap_dim<T, 1>, out, in, wx, wy, sx, sy, px, py);
     } else {
-        ENQUEUE(kernel::wrap_dim<T, 0>, out, in, wx, wy, sx, sy, px, py);
+        getQueue().enqueue(kernel::wrap_dim<T, 0>, out, in, wx, wy, sx, sy, px, py);
     }
 
     return out;

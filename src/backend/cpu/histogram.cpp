@@ -12,7 +12,8 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <histogram.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <kernel/histogram.hpp>
 
 using af::dim4;
@@ -31,7 +32,7 @@ Array<outType> histogram(const Array<inType> &in,
     Array<outType> out = createValueArray<outType>(outDims, outType(0));
     out.eval();
 
-    ENQUEUE(kernel::histogram<outType, inType, isLinear>,
+    getQueue().enqueue(kernel::histogram<outType, inType, isLinear>,
             out, in, nbins, minval, maxval);
 
     return out;

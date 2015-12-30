@@ -15,7 +15,8 @@
 #if defined(WITH_CPU_LINEAR_ALGEBRA)
 #include <lapack_helper.hpp>
 #include <copy.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 
 namespace cpu
 {
@@ -86,7 +87,7 @@ void svdInPlace(Array<Tr> &s, Array<T> &u, Array<T> &vt, Array<T> &in)
                 s.get(), u.get(), u.strides()[1], vt.get(), vt.strides()[1], &superb[0]);
 #endif
     };
-    ENQUEUE(func, s, u, vt, in);
+    getQueue().enqueue(func, s, u, vt, in);
 }
 
 template <typename T, typename Tr>

@@ -13,7 +13,8 @@
 #include <cassert>
 #include <err_common.hpp>
 #include <kernel/dot.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 
 namespace cpu
 {
@@ -193,7 +194,7 @@ Array<T> matmul(const Array<T> &lhs, const Array<T> &rhs,
                 reinterpret_cast<BT*>(output.get()), output.dims()[0]);
         }
     };
-    ENQUEUE(func, out, lhs, rhs);
+    getQueue().enqueue(func, out, lhs, rhs);
 
     return out;
 }
@@ -207,13 +208,13 @@ Array<T> dot(const Array<T> &lhs, const Array<T> &rhs,
 
     Array<T> out = createEmptyArray<T>(af::dim4(1));
     if(optLhs == AF_MAT_CONJ && optRhs == AF_MAT_CONJ) {
-        ENQUEUE(kernel::dot<T, false, true>, out, lhs, rhs, optLhs, optRhs);
+        getQueue().enqueue(kernel::dot<T, false, true>, out, lhs, rhs, optLhs, optRhs);
     } else if (optLhs == AF_MAT_CONJ && optRhs == AF_MAT_NONE) {
-        ENQUEUE(kernel::dot<T, true, false>,out, lhs, rhs, optLhs, optRhs);
+        getQueue().enqueue(kernel::dot<T, true, false>,out, lhs, rhs, optLhs, optRhs);
     } else if (optLhs == AF_MAT_NONE && optRhs == AF_MAT_CONJ) {
-        ENQUEUE(kernel::dot<T, true, false>,out, rhs, lhs, optRhs, optLhs);
+        getQueue().enqueue(kernel::dot<T, true, false>,out, rhs, lhs, optRhs, optLhs);
     } else {
-        ENQUEUE(kernel::dot<T, false, false>,out, lhs, rhs, optLhs, optRhs);
+        getQueue().enqueue(kernel::dot<T, false, false>,out, lhs, rhs, optLhs, optRhs);
     }
     return out;
 }

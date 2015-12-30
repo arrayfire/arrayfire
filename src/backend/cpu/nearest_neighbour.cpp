@@ -12,7 +12,8 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <handle.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <kernel/nearest_neighbour.hpp>
 
 using af::dim4;
@@ -42,13 +43,13 @@ void nearest_neighbour(Array<uint>& idx, Array<To>& dist,
 
     switch(dist_type) {
         case AF_SAD:
-            ENQUEUE(kernel::nearest_neighbour<T, To, AF_SAD>, idx, dist, query, train, dist_dim, n_dist);
+            getQueue().enqueue(kernel::nearest_neighbour<T, To, AF_SAD>, idx, dist, query, train, dist_dim, n_dist);
             break;
         case AF_SSD:
-            ENQUEUE(kernel::nearest_neighbour<T, To, AF_SSD>, idx, dist, query, train, dist_dim, n_dist);
+            getQueue().enqueue(kernel::nearest_neighbour<T, To, AF_SSD>, idx, dist, query, train, dist_dim, n_dist);
             break;
         case AF_SHD:
-            ENQUEUE(kernel::nearest_neighbour<T, To, AF_SHD>, idx, dist, query, train, dist_dim, n_dist);
+            getQueue().enqueue(kernel::nearest_neighbour<T, To, AF_SHD>, idx, dist, query, train, dist_dim, n_dist);
             break;
         default:
             AF_ERROR("Unsupported dist_type", AF_ERR_NOT_CONFIGURED);

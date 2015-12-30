@@ -13,7 +13,8 @@
 #include <ArrayInfo.hpp>
 #include <Array.hpp>
 #include <ireduce.hpp>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <kernel/ireduce.hpp>
 
 using af::dim4;
@@ -39,7 +40,7 @@ void ireduce(Array<T> &out, Array<uint> &loc, const Array<T> &in, const int dim)
                                                            , kernel::ireduce_dim<op, T, 3>()
                                                            , kernel::ireduce_dim<op, T, 4>()};
 
-    ENQUEUE(ireduce_funcs[in.ndims() - 1], out, loc, 0, in, 0, dim);
+    getQueue().enqueue(ireduce_funcs[in.ndims() - 1], out, loc, 0, in, 0, dim);
 }
 
 template<af_op_t op, typename T>

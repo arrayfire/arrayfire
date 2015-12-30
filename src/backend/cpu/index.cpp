@@ -14,7 +14,8 @@
 #include <index.hpp>
 #include <handle.hpp>
 #include <vector>
-#include <debug_cpu.hpp>
+#include <platform.hpp>
+#include <queue.hpp>
 #include <utility>
 #include <kernel/index.hpp>
 
@@ -57,7 +58,7 @@ Array<T> index(const Array<T>& in, const af_index_t idxrs[])
     Array<T> out = createEmptyArray<T>(oDims);
 
 
-    ENQUEUE(kernel::index<T>, out, in, std::move(isSeq), std::move(seqs), std::move(idxArrs));
+    getQueue().enqueue(kernel::index<T>, out, in, std::move(isSeq), std::move(seqs), std::move(idxArrs));
 
     return out;
 }
