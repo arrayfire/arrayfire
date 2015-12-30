@@ -42,15 +42,28 @@ namespace cuda
         template<typename T>
         __device__
         void transform_n(T *optr, Param<T> out, const T *iptr, CParam<T> in, const float *tmat,
-                         const int xido, const int yido, const int nimages)
+                         const int xido, const int yido, const int nimages,
+                         const bool perspective)
         {
             // Compute input index
-            int xidi = round(xido * tmat[0]
+            int xidi = 0, yidi = 0;
+            if (perspective) {
+                const float W = xido * tmat[6] + yido * tmat[7] + tmat[8];
+                xidi = round((xido * tmat[0]
+                            + yido * tmat[1]
+                                   + tmat[2]) / W);
+                yidi = round((xido * tmat[3]
+                            + yido * tmat[4]
+                                   + tmat[5]) / W);
+            }
+            else {
+                xidi = round(xido * tmat[0]
                            + yido * tmat[1]
                                   + tmat[2]);
-            int yidi = round(xido * tmat[3]
+                yidi = round(xido * tmat[3]
                            + yido * tmat[4]
                                   + tmat[5]);
+            }
 
             // Makes scale give same output as resize
             // But fails rotate tests
@@ -76,17 +89,30 @@ namespace cuda
         template<typename T>
         __device__
         void transform_b(T *optr, Param<T> out, const T *iptr, CParam<T> in, const float *tmat,
-                         const int xido, const int yido, const int nimages)
+                         const int xido, const int yido, const int nimages,
+                         const bool perspective)
         {
             const int loco = (yido * out.strides[1] + xido);
 
             // Compute input index
-            const float xidi = xido * tmat[0]
-                             + yido * tmat[1]
-                                    + tmat[2];
-            const float yidi = xido * tmat[3]
-                             + yido * tmat[4]
-                                    + tmat[5];
+            float xidi = 0.0f, yidi = 0.0f;
+            if (perspective) {
+                const float W = xido * tmat[6] + yido * tmat[7] + tmat[8];
+                xidi = (xido * tmat[0]
+                      + yido * tmat[1]
+                             + tmat[2]) / W;
+                yidi = (xido * tmat[3]
+                      + yido * tmat[4]
+                             + tmat[5]) / W;
+            }
+            else {
+                xidi = xido * tmat[0]
+                     + yido * tmat[1]
+                            + tmat[2];
+                yidi = xido * tmat[3]
+                     + yido * tmat[4]
+                            + tmat[5];
+            }
 
             if (xidi < -0.0001 || yidi < -0.0001 || in.dims[0] < xidi || in.dims[1] < yidi) {
                 for(int i = 0; i < nimages; i++) {
@@ -133,15 +159,28 @@ namespace cuda
         template<typename T>
         __device__
         void transform_l(T *optr, Param<T> out, const T *iptr, CParam<T> in, const float *tmat,
-                         const int xido, const int yido, const int nimages)
+                         const int xido, const int yido, const int nimages,
+                         const bool perspective)
         {
             // Compute input index
-            int xidi = floor(xido * tmat[0]
+            int xidi = 0, yidi = 0;
+            if (perspective) {
+                const float W = xido * tmat[6] + yido * tmat[7] + tmat[8];
+                xidi = floor((xido * tmat[0]
+                            + yido * tmat[1]
+                                   + tmat[2]) / W);
+                yidi = floor((xido * tmat[3]
+                            + yido * tmat[4]
+                                   + tmat[5]) / W);
+            }
+            else {
+                xidi = floor(xido * tmat[0]
                            + yido * tmat[1]
                                   + tmat[2]);
-            int yidi = floor(xido * tmat[3]
+                yidi = floor(xido * tmat[3]
                            + yido * tmat[4]
                                   + tmat[5]);
+            }
 
             // Makes scale give same output as resize
             // But fails rotate tests

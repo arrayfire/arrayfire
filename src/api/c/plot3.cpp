@@ -124,6 +124,6 @@ af_err af_draw_scatter3(const af_window wind, const af_array P, const af_marker_
     fg::MarkerType fg_marker = getFGMarker(af_marker);
     return plot3Wrapper(wind, P, props, fg::FG_SCATTER, fg_marker);
 #else
-    return AF_ERR_NO_GFX;
+    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }

@@ -11,8 +11,27 @@
 #define BILINEAR transform_b
 #define LOWER transform_l
 
-void calc_affine_inverse(float* txo, __global const float* txi)
+void calc_transf_inverse(float* txo, __global const float* txi)
 {
+#if PERSPECTIVE
+    txo[0] =   txi[4]*txi[8] - txi[5]*txi[7];
+    txo[1] = -(txi[1]*txi[8] - txi[2]*txi[7]);
+    txo[2] =   txi[1]*txi[5] - txi[2]*txi[4];
+
+    txo[3] = -(txi[3]*txi[8] - txi[5]*txi[6]);
+    txo[4] =   txi[0]*txi[8] - txi[2]*txi[6];
+    txo[5] = -(txi[0]*txi[5] - txi[2]*txi[3]);
+
+    txo[6] =   txi[3]*txi[7] - txi[4]*txi[6];
+    txo[7] = -(txi[0]*txi[7] - txi[1]*txi[6]);
+    txo[8] =   txi[0]*txi[4] - txi[1]*txi[3];
+
+    float det = txi[0]*txo[0] + txi[1]*txo[3] + txi[2]*txo[6];
+
+    txo[0] /= det; txo[1] /= det; txo[2] /= det;
+    txo[3] /= det; txo[4] /= det; txo[5] /= det;
+    txo[6] /= det; txo[7] /= det; txo[8] /= det;
+#else
     float det = txi[0]*txi[4] - txi[1]*txi[3];
 
     txo[0] = txi[4] / det;
@@ -22,6 +41,7 @@ void calc_affine_inverse(float* txo, __global const float* txi)
 
     txo[2] = txi[2] * -txo[0] + txi[5] * -txo[1];
     txo[5] = txi[2] * -txo[3] + txi[5] * -txo[4];
+#endif
 }
 
 __kernel
@@ -59,17 +79,17 @@ void transform_kernel(__global T *d_out, const KParam out,
 
     // Transform is in global memory.
     // Needs offset to correct transform being processed.
-    __global const float *tmat_ptr = c_tmat + t_idx * 6;
-    float tmat[6];
+    __global const float *tmat_ptr = c_tmat + t_idx * TRANSF_LEN;
+    float tmat[TRANSF_LEN];
 
     // We expect a inverse transform matrix by default
     // If it is an forward transform, then we need its inverse
     if(INVERSE == 1) {
-        #pragma unroll
-        for(int i = 0; i < 6; i++)
+        #pragma unroll 3
+        for(int i = 0; i < TRANSF_LEN; i++)
             tmat[i] = tmat_ptr[i];
     } else {
-        calc_affine_inverse(tmat, tmat_ptr);
+        calc_transf_inverse(tmat, tmat_ptr);
     }
 
     if (xido >= out.dims[0] && yido >= out.dims[1]) return;

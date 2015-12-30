@@ -25,12 +25,23 @@ void transform_n(__global T *d_out, const KParam out, __global const T *d_in, co
                  const float *tmat, const int xido, const int yido, const int nimages)
 {
     // Compute input index
-    const int xidi = round(xido * tmat[0]
-                         + yido * tmat[1]
-                                + tmat[2]);
-    const int yidi = round(xido * tmat[3]
-                         + yido * tmat[4]
-                                + tmat[5]);
+    int xidi = 0, yidi = 0;
+#if PERSPECTIVE
+    const float W = xido * tmat[6] + yido * tmat[7] + tmat[8];
+    xidi = round((xido * tmat[0]
+                + yido * tmat[1]
+                       + tmat[2]) / W);
+    yidi = round((xido * tmat[3]
+                + yido * tmat[4]
+                       + tmat[5]) / W);
+#else
+    xidi = round(xido * tmat[0]
+               + yido * tmat[1]
+                      + tmat[2]);
+    yidi = round(xido * tmat[3]
+               + yido * tmat[4]
+                      + tmat[5]);
+#endif
 
     // Compute memory location of indices
     const int loci = yidi * in.strides[1]  + xidi;
@@ -54,12 +65,23 @@ void transform_b(__global T *d_out, const KParam out, __global const T *d_in, co
     const int loco = (yido * out.strides[1] + xido);
 
     // Compute input index
-    const float xid = xido * tmat[0]
-                    + yido * tmat[1]
-                           + tmat[2];
-    const float yid = xido * tmat[3]
-                    + yido * tmat[4]
-                           + tmat[5];
+    float xid = 0.0f, yid = 0.0f;
+#if PERSPECTIVE
+    const float W = xido * tmat[6] + yido * tmat[7] + tmat[8];
+    xid = (xido * tmat[0]
+         + yido * tmat[1]
+                + tmat[2]) / W;
+    yid = (xido * tmat[3]
+         + yido * tmat[4]
+                + tmat[5]) / W;
+#else
+    xid = xido * tmat[0]
+        + yido * tmat[1]
+               + tmat[2];
+    yid = xido * tmat[3]
+        + yido * tmat[4]
+               + tmat[5];
+#endif
 
     T zero = ZERO;
     if (xid < -0.001 || yid < -0.001 || in.dims[0] < xid || in.dims[1] < yid) {
@@ -104,12 +126,23 @@ void transform_l(__global T *d_out, const KParam out, __global const T *d_in, co
                  const float *tmat, const int xido, const int yido, const int nimages)
 {
     // Compute input index
-    const int xidi = floor(xido * tmat[0]
-                         + yido * tmat[1]
-                                + tmat[2]);
-    const int yidi = floor(xido * tmat[3]
-                         + yido * tmat[4]
-                                + tmat[5]);
+    int xidi = 0, yidi = 0;
+#if PERSPECTIVE
+    const float W = xido * tmat[6] + yido * tmat[7] + tmat[8];
+    xidi = floor((xido * tmat[0]
+                + yido * tmat[1]
+                       + tmat[2]) / W);
+    yidi = floor((xido * tmat[3]
+                + yido * tmat[4]
+                       + tmat[5]) / W);
+#else
+    xidi = floor(xido * tmat[0]
+               + yido * tmat[1]
+                      + tmat[2]);
+    yidi = floor(xido * tmat[3]
+               + yido * tmat[4]
+                      + tmat[5]);
+#endif
 
     // Compute memory location of indices
     const int loci = yidi * in.strides[1]  + xidi;

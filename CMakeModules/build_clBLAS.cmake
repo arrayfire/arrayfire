@@ -12,7 +12,7 @@ ELSE()
 ENDIF()
 
 ExternalProject_Add(
-    clBLAS-external
+    clBLAS-ext
     GIT_REPOSITORY https://github.com/arrayfire/clBLAS.git
     GIT_TAG 102c832825e8e4d60ad73ca97e95668463294068
     PREFIX "${prefix}"
@@ -33,10 +33,10 @@ ExternalProject_Add(
     ${byproducts}
     )
 
-ExternalProject_Get_Property(clBLAS-external install_dir)
+ExternalProject_Get_Property(clBLAS-ext install_dir)
 ADD_LIBRARY(clBLAS IMPORTED STATIC)
 SET_TARGET_PROPERTIES(clBLAS PROPERTIES IMPORTED_LOCATION ${clBLAS_location})
-ADD_DEPENDENCIES(clBLAS clBLAS-external)
+ADD_DEPENDENCIES(clBLAS clBLAS-ext)
 SET(CLBLAS_INCLUDE_DIRS ${install_dir}/include)
 SET(CLBLAS_LIBRARIES clBLAS)
 SET(CLBLAS_FOUND ON)

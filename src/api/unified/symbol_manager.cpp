@@ -9,6 +9,7 @@
 
 #include "symbol_manager.hpp"
 #include <algorithm>
+#include <vector>
 #include <string>
 #include <cmath>
 
@@ -52,18 +53,18 @@ LibHandle openDynLibrary(const int bknd_idx, int flag=RTLD_LAZY)
      * * DYLD_LIBRARY_PATH (Apple)
      * * PATH (Windows)
     */
-    string bkndName = getBkndLibName(bknd_idx);
+    string bkndLibName = getBkndLibName(bknd_idx);
     string show_flag = getEnvVar("AF_SHOW_LOAD_PATH");
     bool show_load_path = show_flag=="1";
 
 #if defined(OS_WIN)
-    HMODULE retVal = LoadLibrary(bkndName.c_str());
+    HMODULE retVal = LoadLibrary(bkndLibName.c_str());
 #else
-    LibHandle retVal = dlopen(bkndName.c_str(), flag);
+    LibHandle retVal = dlopen(bkndLibName.c_str(), flag);
 #endif
     if(retVal != NULL) { // Success
         if (show_load_path)
-            printf("Using %s from system path\n", bkndName.c_str());
+            printf("Using %s from system path\n", bkndLibName.c_str());
     } else {
         /*
          * In the event that dlopen returns NULL, search for the lib
@@ -75,11 +76,12 @@ LibHandle openDynLibrary(const int bknd_idx, int flag=RTLD_LAZY)
          * Note: This does not guarantee successful loading as the dependent
          * libraries may still not load
         */
+
         for (int i=0; i<NUM_ENV_VARS; ++i) {
             string abs_path = getEnvVar(LIB_AF_ENVARS[i])
                                  + LIB_AF_RPATHS[i]
                                  + (LIB_AF_RPATH_SUFFIX[i] ? LIB_AF_BKND_NAME[bknd_idx]+"/" : "")
-                                 + bkndName;
+                                 + bkndLibName;
 #if defined(OS_WIN)
             replace(abs_path.begin(), abs_path.end(), '/', '\\');
             retVal = LoadLibrary(abs_path.c_str());
@@ -95,7 +97,42 @@ LibHandle openDynLibrary(const int bknd_idx, int flag=RTLD_LAZY)
                 break;
             }
         }
+
+#if !defined(OS_WIN)
+        /*
+         * If Linux/OSX, then the following are also checked
+         * (only if lib is not found)
+         * /opt/arrayfire/lib
+         * /opt/arrayfire-3/lib
+         * /usr/local/lib
+         * /usr/local/arrayfire/lib
+         * /usr/local/arrayfire-3/lib
+        */
+        if (retVal == NULL) {
+            static
+            std::vector<std::string> extraLibPaths {"/opt/arrayfire-3/lib/",
+                                                    "/opt/arrayfire/lib/",
+                                                    "/usr/local/lib/",
+                                                    "/usr/local/arrayfire-3/lib/",
+                                                    "/usr/local/arrayfire/lib/",
+                                                   };
+
+            for (auto libPath: extraLibPaths) {
+                string abs_path = libPath + bkndLibName;
+                retVal = dlopen(abs_path.c_str(), flag);
+                if (retVal != NULL) {
+                    if (show_load_path)
+                        printf("Using %s\n", abs_path.c_str());
+                    // if the current absolute path based dlopen
+                    // search is a success, then abandon search
+                    // and proceed for compute
+                    break;
+                }
+            }
+        }
+#endif
     }
+
     return retVal;
 }
 

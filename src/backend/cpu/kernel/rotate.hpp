@@ -32,7 +32,8 @@ void rotate(Array<T> output, const Array<T> input, const float theta)
 
     void (*t_fn)(T *, const T *, const float *, const af::dim4 &,
                  const af::dim4 &, const af::dim4 &,
-                 const dim_t, const dim_t, const dim_t, const dim_t);
+                 const dim_t, const dim_t, const dim_t, const dim_t,
+                 const bool);
 
     const float c = cos(-theta), s = sin(-theta);
     float tx, ty;
@@ -74,7 +75,7 @@ void rotate(Array<T> output, const Array<T> input, const float theta)
     // Do transform for image
     for(int yy = 0; yy < (int)odims[1]; yy++) {
         for(int xx = 0; xx < (int)odims[0]; xx++) {
-            t_fn(out, in, tmat, idims, ostrides, istrides, nimages, 0, xx, yy);
+            t_fn(out, in, tmat, idims, ostrides, istrides, nimages, 0, xx, yy, false);
         }
     }
 }

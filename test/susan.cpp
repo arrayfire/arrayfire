@@ -63,6 +63,7 @@ template<typename T>
 void susanTest(string pTestFile, float t, float g)
 {
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     vector<dim4>        inDims;
     vector<string>     inFiles;

@@ -23,6 +23,7 @@
 #include <ArrayInfo.hpp>
 #include <traits.hpp>
 #include <memory.hpp>
+#include <err_common.hpp>
 
 #include <string>
 #include <cstring>
@@ -713,33 +714,29 @@ af_err af_delete_image_memory(void *ptr)
 #else   // WITH_FREEIMAGE
 #include <af/image.h>
 #include <stdio.h>
+#include <err_common.hpp>
 af_err af_load_image(af_array *out, const char* filename, const bool isColor)
 {
-    printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
-    return AF_ERR_NOT_CONFIGURED;
+    AF_RETURN_ERROR("ArrayFire compiled without Image IO (FreeImage) support", AF_ERR_NOT_CONFIGURED);
 }
 
 af_err af_save_image(const char* filename, const af_array in_)
 {
-    printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
-    return AF_ERR_NOT_CONFIGURED;
+    AF_RETURN_ERROR("ArrayFire compiled without Image IO (FreeImage) support", AF_ERR_NOT_CONFIGURED);
 }
 
 af_err af_load_image_memory(af_array *out, const void* ptr)
 {
-    printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
-    return AF_ERR_NOT_CONFIGURED;
+    AF_RETURN_ERROR("ArrayFire compiled without Image IO (FreeImage) support", AF_ERR_NOT_CONFIGURED);
 }
 
 af_err af_save_image_memory(void **ptr, const af_array in_, const af_image_format format)
 {
-    printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
-    return AF_ERR_NOT_CONFIGURED;
+    AF_RETURN_ERROR("ArrayFire compiled without Image IO (FreeImage) support", AF_ERR_NOT_CONFIGURED);
 }
 
 af_err af_delete_image_memory(void *ptr)
 {
-    printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
-    return AF_ERR_NOT_CONFIGURED;
+    AF_RETURN_ERROR("ArrayFire compiled without Image IO (FreeImage) support", AF_ERR_NOT_CONFIGURED);
 }
 #endif  // WITH_FREEIMAGE

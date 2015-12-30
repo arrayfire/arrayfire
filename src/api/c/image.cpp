@@ -116,7 +116,7 @@ af_err af_draw_image(const af_window wind, const af_array in, const af_cell* con
 
     return AF_SUCCESS;
 #else
-    return AF_ERR_NO_GFX;
+    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
 
@@ -146,7 +146,7 @@ af_err af_create_window(af_window *out, const int width, const int height, const
     *out = reinterpret_cast<af_window>(wnd);
     return AF_SUCCESS;
 #else
-    return AF_ERR_NO_GFX;
+    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
 
@@ -165,7 +165,7 @@ af_err af_set_position(const af_window wind, const unsigned x, const unsigned y)
     CATCHALL;
     return AF_SUCCESS;
 #else
-    return AF_ERR_NO_GFX;
+    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
 
@@ -184,7 +184,7 @@ af_err af_set_title(const af_window wind, const char* const title)
     CATCHALL;
     return AF_SUCCESS;
 #else
-    return AF_ERR_NO_GFX;
+    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
 
@@ -203,7 +203,7 @@ af_err af_set_size(const af_window wind, const unsigned w, const unsigned h)
     CATCHALL;
     return AF_SUCCESS;
 #else
-    return AF_ERR_NO_GFX;
+    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
 
@@ -222,7 +222,7 @@ af_err af_grid(const af_window wind, const int rows, const int cols)
     CATCHALL;
     return AF_SUCCESS;
 #else
-    return AF_ERR_NO_GFX;
+    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
 
@@ -241,7 +241,7 @@ af_err af_show(const af_window wind)
     CATCHALL;
     return AF_SUCCESS;
 #else
-    return AF_ERR_NO_GFX;
+    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
 
@@ -260,7 +260,7 @@ af_err af_is_window_closed(bool *out, const af_window wind)
     CATCHALL;
     return AF_SUCCESS;
 #else
-    return AF_ERR_NO_GFX;
+    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
 
@@ -279,6 +279,6 @@ af_err af_destroy_window(const af_window wind)
     CATCHALL;
     return AF_SUCCESS;
 #else
-    return AF_ERR_NO_GFX;
+    AF_RETURN_ERROR("ArrayFire compiled without graphics support", AF_ERR_NO_GFX);
 #endif
 }
