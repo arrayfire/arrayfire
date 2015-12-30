@@ -37,13 +37,22 @@ MARK_AS_ADVANCED(BUILD_SIFT)
 
 OPTION(BUILD_UNIFIED "Build Backend-Independent ArrayFire API" ON)
 
+# Add a Fast compiling config
+INCLUDE("${CMAKE_MODULE_PATH}/FastConfig.cmake")
+
 # Set a default build type if none was specified
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+IF(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    SET(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
     # Set the possible values of build type for cmake-gui
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
-      "MinSizeRel" "RelWithDebInfo")
-endif()
+
+    IF(${FAST_CONFIG_ENABLED})
+        SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+            "Debug" "Fast" "Release" "MinSizeRel" "RelWithDebInfo")
+    ELSE()
+        SET_PROPERTY(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+            "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+    ENDIF()
+ENDIF()
 
 FIND_PACKAGE(FreeImage)
 IF(FREEIMAGE_FOUND)
