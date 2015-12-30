@@ -20,9 +20,9 @@ using namespace detail;
 
 template<typename T>
 static inline af_array transform(const af_array in, const af_array tf, const af::dim4 &odims,
-                                 const af_interp_type method, const bool inverse)
+                                 const af_interp_type method, const bool inverse, const bool perspective)
 {
-    return getHandle(transform<T>(getArray<T>(in), getArray<float>(tf), odims, method, inverse));
+    return getHandle(transform<T>(getArray<T>(in), getArray<float>(tf), odims, method, inverse, perspective));
 }
 
 af_err af_transform(af_array *out, const af_array in, const af_array tf,
@@ -41,9 +41,11 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
         ARG_ASSERT(5, method == AF_INTERP_NEAREST  ||
                       method == AF_INTERP_BILINEAR ||
                       method == AF_INTERP_LOWER);
-        DIM_ASSERT(2, (tdims[0] == 3 && tdims[1] == 2));
+        DIM_ASSERT(2, (tdims[0] == 3 && (tdims[1] == 2 || tdims[1] == 3)));
         DIM_ASSERT(1, idims.elements() > 0);
         DIM_ASSERT(1, (idims.ndims() == 2 || idims.ndims() == 3));
+
+        const bool perspective = (tdims[1] == 3);
 
         dim_t o0 = odim0, o1 = odim1;
         dim_t o2 = idims[2] * tdims[2];
@@ -55,18 +57,18 @@ af_err af_transform(af_array *out, const af_array in, const af_array tf,
 
         af_array output = 0;
         switch(itype) {
-            case f32: output = transform<float  >(in, tf, odims, method, inverse);  break;
-            case f64: output = transform<double >(in, tf, odims, method, inverse);  break;
-            case c32: output = transform<cfloat >(in, tf, odims, method, inverse);  break;
-            case c64: output = transform<cdouble>(in, tf, odims, method, inverse);  break;
-            case s32: output = transform<int    >(in, tf, odims, method, inverse);  break;
-            case u32: output = transform<uint   >(in, tf, odims, method, inverse);  break;
-            case s64: output = transform<intl   >(in, tf, odims, method, inverse);  break;
-            case u64: output = transform<uintl  >(in, tf, odims, method, inverse);  break;
-            case s16: output = transform<short  >(in, tf, odims, method, inverse);  break;
-            case u16: output = transform<ushort >(in, tf, odims, method, inverse);  break;
-            case u8:  output = transform<uchar  >(in, tf, odims, method, inverse);  break;
-            case b8:  output = transform<char   >(in, tf, odims, method, inverse);  break;
+            case f32: output = transform<float  >(in, tf, odims, method, inverse, perspective);  break;
+            case f64: output = transform<double >(in, tf, odims, method, inverse, perspective);  break;
+            case c32: output = transform<cfloat >(in, tf, odims, method, inverse, perspective);  break;
+            case c64: output = transform<cdouble>(in, tf, odims, method, inverse, perspective);  break;
+            case s32: output = transform<int    >(in, tf, odims, method, inverse, perspective);  break;
+            case u32: output = transform<uint   >(in, tf, odims, method, inverse, perspective);  break;
+            case s64: output = transform<intl   >(in, tf, odims, method, inverse, perspective);  break;
+            case u64: output = transform<uintl  >(in, tf, odims, method, inverse, perspective);  break;
+            case s16: output = transform<short  >(in, tf, odims, method, inverse, perspective);  break;
+            case u16: output = transform<ushort >(in, tf, odims, method, inverse, perspective);  break;
+            case u8:  output = transform<uchar  >(in, tf, odims, method, inverse, perspective);  break;
+            case b8:  output = transform<char   >(in, tf, odims, method, inverse, perspective);  break;
             default:  TYPE_ERROR(1, itype);
         }
         std::swap(*out,output);

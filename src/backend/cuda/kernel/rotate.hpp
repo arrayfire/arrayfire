@@ -60,11 +60,11 @@ namespace cuda
 
             switch(method) {
                 case AF_INTERP_NEAREST:
-                    transform_n(optr, out, iptr, in, t.tmat, xx, yy, limages); break;
+                    transform_n(optr, out, iptr, in, t.tmat, xx, yy, limages, false); break;
                 case AF_INTERP_BILINEAR:
-                    transform_b(optr, out, iptr, in, t.tmat, xx, yy, limages); break;
+                    transform_b(optr, out, iptr, in, t.tmat, xx, yy, limages, false); break;
                 case AF_INTERP_LOWER:
-                    transform_l(optr, out, iptr, in, t.tmat, xx, yy, limages); break;
+                    transform_l(optr, out, iptr, in, t.tmat, xx, yy, limages, false); break;
                 default: break;
             }
         }
