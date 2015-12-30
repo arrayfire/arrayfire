@@ -11,6 +11,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <sstream>
 #include <cassert>
 #include <af/defines.h>
 #include <defines.hpp>
@@ -171,12 +172,12 @@ void print_error(const std::string &msg);
         AfError err(__PRETTY_FUNCTION__,                    \
                     __AF_FILENAME__, __LINE__,              \
                     MSG, ERR_TYPE);                         \
-        std::string s = "Error in " + err.getFunctionName() \
-                        + "(" + err.getFileName()           \
-                        + ":" + err.getLine() + "):\n"      \
-                        + err.getError().what() + "\n"      \
-                        ;                                   \
-        print_error(str);                                   \
+        std::stringstream s;                                \
+        s << "Error in " << err.getFunctionName() << "\n"   \
+          << "In file " << err.getFileName()                \
+          << ":" << err.getLine()  << "\n"                  \
+          << err.what() << "\n";                            \
+        print_error(s.str());                               \
         return ERR_TYPE;                                    \
     } while(0)
 
