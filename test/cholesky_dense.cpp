@@ -29,6 +29,7 @@ template<typename T>
 void choleskyTester(const int n, double eps, bool is_upper)
 {
     if (noDoubleTests<T>()) return;
+    if (noLAPACKTests()) return;
 
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 

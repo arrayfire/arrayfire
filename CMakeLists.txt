@@ -45,6 +45,9 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
       "MinSizeRel" "RelWithDebInfo")
 endif()
 
+OPTION(MIN_BUILD_TIME "This flag compiles ArrayFire with O0, which is the fastest way to compile" OFF)
+INCLUDE(${CMAKE_MODULE_PATH}/MinBuildTime.cmake)
+
 FIND_PACKAGE(FreeImage)
 IF(FREEIMAGE_FOUND)
     ADD_DEFINITIONS(-DWITH_FREEIMAGE)

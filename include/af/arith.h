@@ -578,7 +578,7 @@ extern "C" {
     /**
        C Interface for dividing an array by another
 
-       \param[out] out will contain result of \p lhs / \p rhs. out is of type b8
+       \param[out] out will contain result of \p lhs / \p rhs.
        \param[in] lhs first input
        \param[in] rhs second input
        \param[in] batch specifies if operations need to be performed in batch mode

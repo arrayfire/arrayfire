@@ -41,6 +41,7 @@ TYPED_TEST_CASE(ImageIO, TestTypes);
 void loadImageTest(string pTestFile, string pImageFile, const bool isColor)
 {
     if (noDoubleTests<float>()) return;
+    if (noImageIOTests()) return;
 
     vector<af::dim4> numDims;
 
@@ -98,6 +99,8 @@ TYPED_TEST(ImageIO, ColorSeq)
 
 void loadimageArgsTest(string pImageFile, const bool isColor, af_err err)
 {
+    if (noImageIOTests()) return;
+
     af_array imgArray = 0;
 
     ASSERT_EQ(err, af_load_image(&imgArray, pImageFile.c_str(), isColor));
@@ -119,6 +122,7 @@ TYPED_TEST(ImageIO,InvalidArgsWrongExt)
 TEST(ImageIO, CPP)
 {
     if (noDoubleTests<float>()) return;
+    if (noImageIOTests()) return;
 
     vector<af::dim4> numDims;
 
@@ -145,6 +149,8 @@ TEST(ImageIO, CPP)
 
 TEST(ImageIO, SavePNGCPP) {
 
+    if (noImageIOTests()) return;
+
     af::array input(10, 10, 3, f32);
 
     input(af::span, af::span, af::span) = 0;
@@ -160,6 +166,8 @@ TEST(ImageIO, SavePNGCPP) {
 }
 
 TEST(ImageIO, SaveBMPCPP) {
+
+    if (noImageIOTests()) return;
 
     af::array input(10, 10, 3, f32);
 
@@ -178,6 +186,7 @@ TEST(ImageIO, SaveBMPCPP) {
 TEST(ImageMem, SaveMemPNG)
 {
     if (noDoubleTests<float>()) return;
+    if (noImageIOTests()) return;
 
     af::array img = af::loadImage(string(TEST_DIR"/imageio/color_seq.png").c_str(), true);
 
@@ -193,6 +202,7 @@ TEST(ImageMem, SaveMemPNG)
 TEST(ImageMem, SaveMemJPG1)
 {
     if (noDoubleTests<float>()) return;
+    if (noImageIOTests()) return;
 
     af::array img = af::loadImage(string(TEST_DIR"/imageio/color_seq.png").c_str(), false);
     af::saveImage("color_seq1.jpg", img);
@@ -210,6 +220,7 @@ TEST(ImageMem, SaveMemJPG1)
 TEST(ImageMem, SaveMemJPG3)
 {
     if (noDoubleTests<float>()) return;
+    if (noImageIOTests()) return;
 
     af::array img = af::loadImage(string(TEST_DIR"/imageio/color_seq.png").c_str(), true);
     af::saveImage("color_seq3.jpg", img);
@@ -227,6 +238,7 @@ TEST(ImageMem, SaveMemJPG3)
 TEST(ImageMem, SaveMemBMP)
 {
     if (noDoubleTests<float>()) return;
+    if (noImageIOTests()) return;
 
     af::array img = af::loadImage(string(TEST_DIR"/imageio/color_rand.png").c_str(), true);
 

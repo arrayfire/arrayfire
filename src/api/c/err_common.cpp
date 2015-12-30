@@ -24,20 +24,24 @@
 using std::string;
 using std::stringstream;
 
-AfError::AfError(const char * const funcName,
+AfError::AfError(const char * const func,
+                 const char * const file,
                  const int line,
                  const char * const message, af_err err)
     : logic_error   (message),
-      functionName  (funcName),
+      functionName  (func),
+      fileName      (file),
       lineNumber(line),
       error(err)
 {}
 
-AfError::AfError(string funcName,
+AfError::AfError(string func,
+                 string file,
                  const int line,
                  string message, af_err err)
     : logic_error   (message),
-      functionName  (funcName),
+      functionName  (func),
+      fileName      (file),
       lineNumber(line),
       error(err)
 {}
@@ -46,6 +50,12 @@ const string&
 AfError::getFunctionName() const
 {
     return functionName;
+}
+
+const string&
+AfError::getFileName() const
+{
+    return fileName;
 }
 
 int
@@ -62,10 +72,11 @@ AfError::getError() const
 
 AfError::~AfError() throw() {}
 
-TypeError::TypeError(const char * const  funcName,
+TypeError::TypeError(const char * const func,
+                     const char * const file,
                      const int line,
                      const int index, const af_dtype type)
-    : AfError (funcName, line, "Invalid data type", AF_ERR_TYPE),
+    : AfError (func, file, line, "Invalid data type", AF_ERR_TYPE),
       argIndex(index),
       errTypeName(getName(type))
 {}
@@ -80,11 +91,12 @@ int TypeError::getArgIndex() const
     return argIndex;
 }
 
-ArgumentError::ArgumentError(const char * const  funcName,
+ArgumentError::ArgumentError(const char * const func,
+                             const char * const file,
                              const int line,
                              const int index,
                              const char * const  expectString)
-    : AfError(funcName, line, "Invalid argument", AF_ERR_ARG),
+    : AfError(func, file, line, "Invalid argument", AF_ERR_ARG),
       argIndex(index),
       expected(expectString)
 {
@@ -102,10 +114,11 @@ int ArgumentError::getArgIndex() const
 }
 
 
-SupportError::SupportError(const char * const funcName,
+SupportError::SupportError(const char * const func,
+                           const char * const file,
                            const int line,
                            const char * const back)
-    : AfError(funcName, line, "Unsupported Error", AF_ERR_NOT_SUPPORTED),
+    : AfError(func, file, line, "Unsupported Error", AF_ERR_NOT_SUPPORTED),
       backend(back)
 {}
 
@@ -114,11 +127,12 @@ const string& SupportError::getBackendName() const
     return backend;
 }
 
-DimensionError::DimensionError(const char * const  funcName,
-                             const int line,
-                             const int index,
-                             const char * const  expectString)
-    : AfError(funcName, line, "Invalid size", AF_ERR_SIZE),
+DimensionError::DimensionError(const char * const  func,
+                               const char * const file,
+                               const int line,
+                               const int index,
+                               const char * const  expectString)
+    : AfError(func, file, line, "Invalid size", AF_ERR_SIZE),
       argIndex(index),
       expected(expectString)
 {
@@ -139,14 +153,14 @@ static const int MAX_ERR_SIZE = 1024;
 static std::string global_err_string;
 
 void
-print_error(const stringstream &msg)
+print_error(const string &msg)
 {
     const char* perr = getenv("AF_PRINT_ERRORS");
     if(perr != nullptr) {
         if(std::strncmp(perr, "0", 1) != 0)
-            fprintf(stderr, "%s\n", msg.str().c_str());
+            fprintf(stderr, "%s\n", msg.c_str());
     }
-    global_err_string = msg.str();
+    global_err_string = msg;
 }
 
 void af_get_last_error(char **str, dim_t *len)
@@ -180,8 +194,10 @@ const char *af_err_to_string(const af_err err)
     case AF_ERR_NOT_CONFIGURED: return "Function not configured to build";
     case AF_ERR_TYPE:           return "Function does not support this data type";
     case AF_ERR_NO_DBL:         return "Double precision not supported for this device";
-    case AF_ERR_LOAD_LIB:       return "Failed to load dynamic library";
+    case AF_ERR_LOAD_LIB:       return "Failed to load dynamic library. See http://www.arrayfire.com/docs/unifiedbackend.htm for instructions to set up environment for Unified backend";
     case AF_ERR_LOAD_SYM:       return "Failed to load symbol";
+    case AF_ERR_ARR_BKND_MISMATCH   :
+                                return "There was a mismatch between an array and the current backend";
     case AF_ERR_UNKNOWN:
     default:
         return "Unknown error";
@@ -196,50 +212,50 @@ af_err processException()
     try {
         throw;
     } catch (const DimensionError &ex) {
-        ss << "In function " << ex.getFunctionName()
-           << "(" << ex.getLine() << "):\n"
+        ss << "In function " << ex.getFunctionName() << "\n"
+           << "In file " << ex.getFileName() << ":" << ex.getLine() << "\n"
            << "Invalid dimension for argument " << ex.getArgIndex() << "\n"
            << "Expected: " << ex.getExpectedCondition() << "\n";
 
-        print_error(ss);
+        print_error(ss.str());
         err = AF_ERR_SIZE;
     } catch (const ArgumentError &ex) {
-        ss << "In function " << ex.getFunctionName()
-           << "(" << ex.getLine() << "):\n"
+        ss << "In function " << ex.getFunctionName() << "\n"
+           << "In file " << ex.getFileName() << ":" << ex.getLine() << "\n"
            << "Invalid argument at index " << ex.getArgIndex() << "\n"
            << "Expected: " << ex.getExpectedCondition() << "\n";
 
-        print_error(ss);
+        print_error(ss.str());
         err = AF_ERR_ARG;
     } catch (const SupportError &ex) {
         ss << ex.getFunctionName()
            << " not supported for " << ex.getBackendName()
            << " backend\n";
 
-        print_error(ss);
+        print_error(ss.str());
         err = AF_ERR_NOT_SUPPORTED;
     } catch (const TypeError &ex) {
-        ss << "In function " << ex.getFunctionName()
-           << "(" << ex.getLine() << "):\n"
+        ss << "In function " << ex.getFunctionName() << "\n"
+           << "In file " << ex.getFileName() << ":" << ex.getLine() << "\n"
            << "Invalid type for argument " << ex.getArgIndex() << "\n";
 
-        print_error(ss);
+        print_error(ss.str());
         err = AF_ERR_TYPE;
     } catch (const AfError &ex) {
-        ss << "Error in " << ex.getFunctionName()
-           << "(" << ex.getLine() << "):\n"
+        ss << "In function " << ex.getFunctionName() << "\n"
+           << "In file " << ex.getFileName() << ":" << ex.getLine() << "\n"
            << ex.what() << "\n";
 
-        print_error(ss);
+        print_error(ss.str());
         err = ex.getError();
 #if defined(WITH_GRAPHICS) && !defined(AF_UNIFIED)
     } catch (const fg::Error &ex) {
         ss << ex << "\n";
-        print_error(ss);
+        print_error(ss.str());
         err = AF_ERR_INTERNAL;
 #endif
     } catch (...) {
-        print_error(ss);
+        print_error(ss.str());
         err = AF_ERR_UNKNOWN;
     }
 

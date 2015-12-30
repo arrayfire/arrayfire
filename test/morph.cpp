@@ -121,6 +121,7 @@ template<typename T, bool isDilation, bool isColor>
 void morphImageTest(string pTestFile)
 {
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     using af::dim4;
 
@@ -341,6 +342,7 @@ template<typename T, bool isDilation, bool isColor>
 void cppMorphImageTest(string pTestFile)
 {
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     using af::dim4;
 
