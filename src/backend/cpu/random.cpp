@@ -68,7 +68,7 @@ nrand(GenType &generator)
     return [func] () { return T(func(), func());};
 }
 
-static default_random_engine generator;
+static mt19937 generator;
 static unsigned long long gen_seed = 0;
 static bool is_first = true;
 #define GLOBAL 1

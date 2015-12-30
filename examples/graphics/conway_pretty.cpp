@@ -84,21 +84,12 @@ int main(int argc, char *argv[])
             // Update state
             state = state * C0 + C1;
 
-            double fps = 5;
+            double fps = 30;
             while(timer::stop(delay) < (1 / fps)) { }
         }
     } catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());
         throw;
     }
-
-    #ifdef WIN32 // pause in Windows
-    if (!(argc == 2 && argv[1][0] == '-')) {
-        printf("hit [enter]...");
-        fflush(stdout);
-        getchar();
-    }
-    #endif
     return 0;
 }
-

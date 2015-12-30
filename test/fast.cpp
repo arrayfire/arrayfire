@@ -72,6 +72,7 @@ template<typename T>
 void fastTest(string pTestFile, bool nonmax)
 {
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     vector<dim4>        inDims;
     vector<string>     inFiles;
@@ -175,6 +176,7 @@ void fastTest(string pTestFile, bool nonmax)
 TEST(FloatFAST, CPP)
 {
     if (noDoubleTests<float>()) return;
+    if (noImageIOTests()) return;
 
     vector<dim4>        inDims;
     vector<string>     inFiles;

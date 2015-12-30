@@ -36,7 +36,7 @@ IF(PC_CBLAS_FOUND)
     IF (NOT ${PC_LIB}_LIBRARY)
       message(FATAL_ERROR "Something is wrong in your pkg-config file - lib ${PC_LIB} not found in ${PC_CBLAS_LIBRARY_DIRS}")
     ENDIF (NOT ${PC_LIB}_LIBRARY)
-    LIST(APPEND CBLAS_LIBRARIES ${${PC_LIB}_LIBRARY}) 
+    LIST(APPEND CBLAS_LIBRARIES ${${PC_LIB}_LIBRARY})
   ENDFOREACH(PC_LIB)
 
   FIND_PACKAGE_HANDLE_STANDARD_ARGS(CBLAS DEFAULT_MSG CBLAS_LIBRARIES)
@@ -146,12 +146,12 @@ MACRO(CHECK_ALL_LIBRARIES
 
       SET(${LIBRARIES} ${${LIBRARIES}} ${${_prefix}_${_library}_LIBRARY})
       SET(_libraries_work ${${_prefix}_${_library}_LIBRARY})
-
     ENDIF(_libraries_work)
   ENDFOREACH(_library)
 
   # Test include
   SET(_bug_search_include ${_search_include}) #CMAKE BUG!!! SHOULD NOT BE THAT
+  SET(_bug_libraries_work_check ${_libraries_work_check}) #CMAKE BUG!!! SHOULD NOT BE THAT
 
   IF(_bug_search_include)
     FIND_PATH(${_prefix}${_combined_name}_INCLUDE ${_include} ${_paths})
@@ -170,8 +170,7 @@ MACRO(CHECK_ALL_LIBRARIES
     SET(${_prefix}_INCLUDE_FILE ${_include})
   ENDIF(_bug_search_include)
 
-
-  IF (_libraries_work_check)
+  IF (_bug_libraries_work_check)
     # Test this combination of libraries.
     IF(_libraries_work)
       SET(CMAKE_REQUIRED_LIBRARIES ${_flags} ${${LIBRARIES}})
@@ -179,9 +178,13 @@ MACRO(CHECK_ALL_LIBRARIES
       SET(CMAKE_REQUIRED_LIBRARIES)
       MARK_AS_ADVANCED(${_prefix}${_combined_name}_WORKS)
       SET(_libraries_work ${${_prefix}${_combined_name}_WORKS})
+
       IF(_verbose AND _libraries_work)
-        MESSAGE(STATUS "Libraries found")
+        MESSAGE(STATUS "CBLAS Symbols FOUND")
+      ELSE()
+        MESSAGE(STATUS "CBLAS Symbols NOTFOUND")
       ENDIF(_verbose AND _libraries_work)
+
     ENDIF(_libraries_work)
   ENDIF()
 
@@ -215,31 +218,6 @@ IF( NOT CBLAS_LIBRARIES )
     FALSE,
     TRUE)
 ENDIF( NOT CBLAS_LIBRARIES )
-
-# MKL
-IF (INTEL_MKL_ROOT_DIR)
-  IF ("${SIZE_OF_VOIDP}" EQUAL 8)
-    SET(MKL_CBLAS_EXT mkl_gf_lp64)
-  ELSE()
-    SET(MKL_CBLAS_EXT mkl_gf)
-  ENDIF()
-
-  IF(NOT CBLAS_LIBRARIES)
-    CHECK_ALL_LIBRARIES(
-      CBLAS_LIBRARIES
-      CBLAS
-      cblas_dgemm
-      ""
-      "${MKL_CBLAS_EXT};mkl_intel_thread"
-      "mkl_cblas.h"
-      TRUE,
-      FALSE)
-  ENDIF(NOT CBLAS_LIBRARIES)
-
-  IF (CBLAS_LIBRARIES)
-    SET(MKL_CBLAS_FOUND TRUE)
-  ENDIF()
-ENDIF()
 
 # CBLAS in ATLAS library? (http://math-atlas.sourceforge.net/)
 IF(NOT CBLAS_LIBRARIES)
@@ -275,6 +253,20 @@ IF(NOT CBLAS_LIBRARIES)
     cblas_dgemm
     ""
     "cblas"
+    "cblas.h"
+    TRUE,
+    TRUE)
+ENDIF(NOT CBLAS_LIBRARIES)
+
+# Generic BLAS+CBLAS library
+# Debian based systems have them as single library
+IF(NOT CBLAS_LIBRARIES)
+  CHECK_ALL_LIBRARIES(
+    CBLAS_LIBRARIES
+    CBLAS
+    cblas_dgemm
+    ""
+    "blas"
     "cblas.h"
     TRUE,
     TRUE)

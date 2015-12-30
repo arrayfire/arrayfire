@@ -23,6 +23,7 @@
 #include <ArrayInfo.hpp>
 #include <traits.hpp>
 #include <memory.hpp>
+#include <err_common.hpp>
 
 #include <string>
 #include <cstring>
@@ -375,15 +376,14 @@ af_err af_save_image_native(const char* filename, const af_array in)
 #else   // WITH_FREEIMAGE
 #include <af/image.h>
 #include <stdio.h>
+#include <err_common.hpp>
 af_err af_load_image_native(af_array *out, const char* filename)
 {
-    printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
-    return AF_ERR_NOT_CONFIGURED;
+    AF_RETURN_ERROR("ArrayFire compiled without Image IO (FreeImage) support", AF_ERR_NOT_CONFIGURED);
 }
 
 af_err af_save_image_native(const char* filename, const af_array in)
 {
-    printf("Error: Image IO requires FreeImage. See https://github.com/arrayfire/arrayfire\n");
-    return AF_ERR_NOT_CONFIGURED;
+    AF_RETURN_ERROR("ArrayFire compiled without Image IO (FreeImage) support", AF_ERR_NOT_CONFIGURED);
 }
 #endif  // WITH_FREEIMAGE

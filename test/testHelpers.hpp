@@ -13,6 +13,8 @@
 #include <vector>
 #include <algorithm>
 #include <limits>
+#include <stdexcept>
+#include <cfloat>
 #include <arrayfire.h>
 #include <af/dim4.hpp>
 #include <af/array.h>
@@ -384,6 +386,39 @@ bool noDoubleTests()
     bool isDoubleSupported = af::isDoubleAvailable(dev);
 
     return ((isTypeDouble && !isDoubleSupported) ? true : false);
+}
+
+bool noImageIOTests()
+{
+    af_array arr = 0;
+    const af_err err = af_load_image(&arr, TEST_DIR"/imageio/color_small.png", true);
+
+    if(arr != 0) af_release_array(arr);
+
+    if(err == AF_ERR_NOT_CONFIGURED)
+        return true;    // Yes, disable test
+    else
+        return false;   // No, let test continue
+}
+
+bool noLAPACKTests()
+{
+    // Run LU
+    af::dim4 dims(5, 5);
+    af_array in = 0, l = 0, u = 0, p= 0;
+    af_randu(&in, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type);
+
+    af_err err = af_lu(&l, &u, &p, in);
+
+    if(in != 0) af_release_array(in);
+    if(l  != 0) af_release_array(l);
+    if(u  != 0) af_release_array(u);
+    if(p  != 0) af_release_array(p);
+
+    if(err == AF_ERR_NOT_CONFIGURED)
+        return true;    // Yes, disable test
+    else
+        return false;   // No, let test continue
 }
 
 // TODO: perform conversion on device for CUDA and OpenCL

@@ -669,7 +669,7 @@ namespace af
         /**
            \defgroup device_func_device array::device<T>
 
-           Get the device pointer from the array
+           Get the device pointer from the array and lock the buffer in memory manager.
            @{
 
            \ingroup arrayfire_func

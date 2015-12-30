@@ -159,6 +159,7 @@ void glohTest(string pTestFile)
 {
 #ifdef AF_BUILD_SIFT
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     vector<dim4>           inDims;
     vector<string>         inFiles;
@@ -270,6 +271,7 @@ TEST(GLOH, CPP)
 {
 #ifdef AF_BUILD_SIFT
     if (noDoubleTests<float>()) return;
+    if (noImageIOTests()) return;
 
     vector<dim4>           inDims;
     vector<string>         inFiles;

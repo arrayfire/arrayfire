@@ -24,34 +24,43 @@ using std::vector;
 template<typename T>
 void testFunction()
 {
-    af::info();
+    af_info();
 
     af_array outArray = 0;
-    af::dim4 dims(32, 32, 1, 1);
-    ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<T>::af_type));
+    dim_t dims[] = {32, 32};
+    ASSERT_EQ(AF_SUCCESS, af_randu(&outArray, 2, dims, (af_dtype) af::dtype_traits<T>::af_type));
     // cleanup
     if(outArray != 0) ASSERT_EQ(AF_SUCCESS, af_release_array(outArray));
 }
 
-void infoTest()
+void backendTest()
 {
-    const char* ENV = getenv("AF_MULTI_GPU_TESTS");
-    if(ENV && ENV[0] == '0') {
-        testFunction<float>();
-    } else {
-        int nDevices = 0;
-        ASSERT_EQ(AF_SUCCESS, af_get_device_count(&nDevices));
+    int backends = af::getAvailableBackends();
 
-        int oldDevice = af::getDevice();
-        for(int d = 0; d < nDevices; d++) {
-            af::setDevice(d);
-            testFunction<float>();
-        }
-        af::setDevice(oldDevice);
+    bool cpu    = backends & AF_BACKEND_CPU;
+    bool cuda   = backends & AF_BACKEND_CUDA;
+    bool opencl = backends & AF_BACKEND_OPENCL;
+
+    if(cpu) {
+        printf("\nRunning CPU Backend...\n");
+        af::setBackend(AF_BACKEND_CPU);
+        testFunction<float>();
+    }
+
+    if(cuda) {
+        printf("\nRunning CUDA Backend...\n");
+        af::setBackend(AF_BACKEND_CUDA);
+        testFunction<float>();
+    }
+
+    if(opencl) {
+        printf("\nRunning OpenCL Backend...\n");
+        af::setBackend(AF_BACKEND_OPENCL);
+        testFunction<float>();
     }
 }
 
-TEST(Info, All)
+TEST(BACKEND_TEST, Basic)
 {
-    infoTest();
+    backendTest();
 }

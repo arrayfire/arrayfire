@@ -54,6 +54,7 @@ void svdTest(const int M, const int N)
 {
 
     if (noDoubleTests<T>()) return;
+    if (noLAPACKTests()) return;
 
     af::dtype ty = (af::dtype)af::dtype_traits<T>::af_type;
 

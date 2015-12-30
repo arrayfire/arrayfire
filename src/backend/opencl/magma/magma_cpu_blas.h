@@ -41,14 +41,14 @@ typedef int blasint;
     template<typename T>                        \
     struct cpu_blas_##NAME##_func;
 
-#define CPU_BLAS_FUNC1(NAME, TYPE, X)                       \
-    template<>                                              \
-    struct cpu_blas_##NAME##_func<TYPE>                     \
-    {                                                       \
-        template<typename... Args>                          \
-            void                                            \
-            operator() (Args... args)                       \
-        { return cblas_##X##NAME(CblasColMajor, args...); } \
+#define CPU_BLAS_FUNC1(NAME, TYPE, X)                   \
+    template<>                                          \
+    struct cpu_blas_##NAME##_func<TYPE>                 \
+    {                                                   \
+        template<typename... Args>                      \
+            void                                        \
+            operator() (Args... args)                   \
+        { cblas_##X##NAME(CblasColMajor, args...); }    \
     };
 
 #define CPU_BLAS_FUNC2(NAME, TYPE, X)           \
@@ -58,7 +58,7 @@ typedef int blasint;
         template<typename... Args>              \
             void                                \
             operator() (Args... args)           \
-        { return cblas_##X##NAME(args...); }    \
+        {  cblas_##X##NAME(args...); }          \
     };
 
 #define CPU_BLAS_DECL1(NAME)                        \
@@ -81,11 +81,24 @@ CPU_BLAS_DECL2(axpy)
 
 inline float * cblas_ptr(float *in) { return in; }
 inline double * cblas_ptr(double *in) { return in; }
+
+#if defined(IS_OPENBLAS)
+inline float * cblas_ptr(magmaFloatComplex *in) { return (float *)in; }
+inline double * cblas_ptr(magmaDoubleComplex *in) { return (double *)in; }
+#else
 inline void * cblas_ptr(magmaFloatComplex *in) { return (void *)in; }
 inline void * cblas_ptr(magmaDoubleComplex *in) { return (void *)in; }
+#endif
 
 inline float cblas_scalar(float *in) { return *in; }
 inline double cblas_scalar(double *in) { return *in; }
+
+#if defined(IS_OPENBLAS)
+inline float *cblas_scalar(magmaFloatComplex *in) { return (float *)in; }
+inline double *cblas_scalar(magmaDoubleComplex *in) { return (double *)in; }
+#else
 inline void *cblas_scalar(magmaFloatComplex *in) { return (void *)in; }
 inline void *cblas_scalar(magmaDoubleComplex *in) { return (void *)in; }
+#endif
+
 #endif

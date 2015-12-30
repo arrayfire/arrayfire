@@ -163,5 +163,6 @@ int main(int argc, char* argv[])
     } catch (af::exception& e) {
         fprintf(stderr, "%s\n", e.what());
     }
+
     return 0;
 }

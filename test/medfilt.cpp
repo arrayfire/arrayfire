@@ -91,6 +91,7 @@ template<typename T,bool isColor>
 void medfiltImageTest(string pTestFile, dim_t w_len, dim_t w_wid)
 {
     if (noDoubleTests<T>()) return;
+    if (noImageIOTests()) return;
 
     using af::dim4;
 

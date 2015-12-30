@@ -43,6 +43,7 @@ template<typename T>
 void rankSmall()
 {
     if (noDoubleTests<T>()) return;
+    if (noLAPACKTests()) return;
 
     T ha[] = {1, 4, 7, 2, 5, 8, 3, 6, 20};
     af::array a(3, 3, ha);
@@ -54,6 +55,8 @@ template<typename T>
 void rankBig(const int num)
 {
     if (noDoubleTests<T>()) return;
+    if (noLAPACKTests()) return;
+
     af::dtype dt = (af::dtype)af::dtype_traits<T>::af_type;
     af::array a = af::randu(num, num, dt);
     ASSERT_EQ(num, (int)af::rank(a));
@@ -67,6 +70,8 @@ template<typename T>
 void rankLow(const int num)
 {
     if (noDoubleTests<T>()) return;
+    if (noLAPACKTests()) return;
+
     af::dtype dt = (af::dtype)af::dtype_traits<T>::af_type;
 
     af::array a = af::randu(3 * num, num, dt);
@@ -97,6 +102,8 @@ template<typename T>
 void detTest()
 {
     if (noDoubleTests<T>()) return;
+    if (noLAPACKTests()) return;
+
     af::dtype dt = (af::dtype)af::dtype_traits<T>::af_type;
 
     vector<af::dim4> numDims;

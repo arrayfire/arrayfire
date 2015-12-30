@@ -26,9 +26,9 @@ GLenum glErrorSkip(const char *msg, const char* file, int line);
 GLenum glErrorCheck(const char *msg, const char* file, int line);
 GLenum glForceErrorCheck(const char *msg, const char* file, int line);
 
-#define CheckGL(msg)      glErrorCheck     (msg, __FILE__, __LINE__)
-#define ForceCheckGL(msg) glForceErrorCheck(msg, __FILE__, __LINE__)
-#define CheckGLSkip(msg)  glErrorSkip      (msg, __FILE__, __LINE__)
+#define CheckGL(msg)      glErrorCheck     (msg, __AF_FILENAME__, __LINE__)
+#define ForceCheckGL(msg) glForceErrorCheck(msg, __AF_FILENAME__, __LINE__)
+#define CheckGLSkip(msg)  glErrorSkip      (msg, __AF_FILENAME__, __LINE__)
 
 namespace graphics
 {
