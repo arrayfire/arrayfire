@@ -397,22 +397,9 @@ bool noImageIOTests()
 
 bool noLAPACKTests()
 {
-    // Run LU
-    af::dim4 dims(5, 5);
-    af_array in = 0, l = 0, u = 0, p= 0;
-    af_randu(&in, dims.ndims(), dims.get(), (af_dtype) af::dtype_traits<float>::af_type);
-
-    af_err err = af_lu(&l, &u, &p, in);
-
-    if(in != 0) af_release_array(in);
-    if(l  != 0) af_release_array(l);
-    if(u  != 0) af_release_array(u);
-    if(p  != 0) af_release_array(p);
-
-    if(err == AF_ERR_NOT_CONFIGURED)
-        return true;    // Yes, disable test
-    else
-        return false;   // No, let test continue
+    bool ret = !af::isLAPACKAvailable();
+    if(ret) printf("LAPACK Not Configured. Test will exit\n");
+    return ret;
 }
 
 // TODO: perform conversion on device for CUDA and OpenCL
