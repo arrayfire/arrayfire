@@ -390,15 +390,9 @@ bool noDoubleTests()
 
 bool noImageIOTests()
 {
-    af_array arr = 0;
-    const af_err err = af_load_image(&arr, TEST_DIR"/imageio/color_small.png", true);
-
-    if(arr != 0) af_release_array(arr);
-
-    if(err == AF_ERR_NOT_CONFIGURED)
-        return true;    // Yes, disable test
-    else
-        return false;   // No, let test continue
+    bool ret = !af::isImageIOAvailable();
+    if(ret) printf("Image IO Not Configured. Test will exit\n");
+    return ret;
 }
 
 bool noLAPACKTests()
