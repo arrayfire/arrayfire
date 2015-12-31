@@ -166,17 +166,21 @@ print_error(const string &msg)
 
 void af_get_last_error(char **str, dim_t *len)
 {
-    *len = std::min(MAX_ERR_SIZE, (int)global_err_string.size());
+    dim_t slen = std::min(MAX_ERR_SIZE, (int)global_err_string.size());
 
-    if (*len == 0) {
+    if (len && slen == 0) {
+        *len = 0;
         *str = NULL;
+        return;
     }
 
-    af_alloc_host((void**)str, sizeof(char) * (*len + 1));
-    global_err_string.copy(*str, *len);
+    af_alloc_host((void**)str, sizeof(char) * (slen + 1));
+    global_err_string.copy(*str, slen);
 
-    (*str)[*len] = '\0';
+    (*str)[slen] = '\0';
     global_err_string = std::string("");
+
+    if(len) *len = slen;
 }
 
 const char *af_err_to_string(const af_err err)
