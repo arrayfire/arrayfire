@@ -29,6 +29,7 @@
 #include <defines.hpp>
 #include <version.hpp>
 #include <platform.hpp>
+#include <util.hpp>
 #include <functional>
 #include <algorithm>
 #include <cctype>
@@ -153,8 +154,8 @@ DeviceManager::DeviceManager()
             }
         }
 
-        const char* deviceENV = getenv("AF_OPENCL_DEFAULT_DEVICE");
-        if(deviceENV) {
+        std::string deviceENV = getEnvVar("AF_OPENCL_DEFAULT_DEVICE");
+        if(!deviceENV.empty()) {
             std::stringstream s(deviceENV);
             int def_device = -1;
             s >> def_device;
@@ -172,8 +173,8 @@ DeviceManager::DeviceManager()
      * OpenGL shared contexts whereever applicable */
 #if defined(WITH_GRAPHICS)
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
-    const char* noGraphicsENV = getenv("AF_DISABLE_GRAPHICS");
-    if(!noGraphicsENV) { // If AF_DISABLE_GRAPHICS is not defined
+    std::string noGraphicsENV = getEnvVar("AF_DISABLE_GRAPHICS");
+    if(!noGraphicsENV.empty()) { // If AF_DISABLE_GRAPHICS is not defined
         try {
             int devCount = mDevices.size();
             fg::Window* wHandle = graphics::ForgeManager::getInstance().getMainWindow();

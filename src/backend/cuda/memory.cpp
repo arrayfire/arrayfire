@@ -12,6 +12,7 @@
 #include <cuda_runtime_api.h>
 #include <cuda_runtime.h>
 #include <err_cuda.hpp>
+#include <util.hpp>
 #include <types.hpp>
 #include <map>
 #include <dispatch.hpp>
@@ -123,9 +124,10 @@ namespace cuda
 
             } catch (AfError &ex) {
 
-                const char* perr = getenv("AF_PRINT_ERRORS");
-                if(perr && perr[0] != '0') {
-                    fprintf(stderr, "%s\n", ex.what());
+                std::string perr = getEnvVar("AF_PRINT_ERRORS");
+                if(!perr.empty()) {
+                    if(perr != "0")
+                        fprintf(stderr, "%s\n", ex.what());
                 }
             }
         }

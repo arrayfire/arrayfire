@@ -9,6 +9,7 @@
 
 #pragma once
 #include <platform.hpp>
+#include <util.hpp>
 #include <string>
 #include <mutex>
 
@@ -35,8 +36,8 @@ using std::string;
 #if defined(NDEBUG)
 
 #define SHOW_BUILD_INFO(PROG) do {                                  \
-        const char *info = getenv("AF_OPENCL_SHOW_BUILD_INFO");     \
-        if (info != nullptr && std::strncmp(info,"0", 1) != 0) {    \
+        std::string info = getEnvVar("AF_OPENCL_SHOW_BUILD_INFO");  \
+        if (!info.empty() && info != "0") {                         \
             SHOW_DEBUG_BUILD_INFO(prog);                            \
         }                                                           \
     } while(0)

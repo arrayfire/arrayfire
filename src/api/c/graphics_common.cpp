@@ -13,6 +13,7 @@
 #include <err_common.hpp>
 #include <backend.hpp>
 #include <platform.hpp>
+#include <util.hpp>
 
 using namespace std;
 
@@ -145,8 +146,8 @@ fg::Window* ForgeManager::getMainWindow(const bool dontCreate)
     static fg::Window* wnd = NULL;
 
     // Define AF_DISABLE_GRAPHICS with any value to disable initialization
-    const char* noGraphicsENV = getenv("AF_DISABLE_GRAPHICS");
-    if(!noGraphicsENV) { // If AF_DISABLE_GRAPHICS is not defined
+    std::string noGraphicsENV = getEnvVar("AF_DISABLE_GRAPHICS");
+    if(!noGraphicsENV.empty()) { // If AF_DISABLE_GRAPHICS is not defined
         if (flag && !dontCreate) {
             wnd = new fg::Window(WIDTH, HEIGHT, "ArrayFire", NULL, true);
             CheckGL("End ForgeManager::getMainWindow");

@@ -11,6 +11,7 @@
 #include <af/device.h>
 #include <err_common.hpp>
 #include <type_util.hpp>
+#include <util.hpp>
 #include <string>
 #include <sstream>
 #include <cstring>
@@ -155,9 +156,9 @@ static std::string global_err_string;
 void
 print_error(const string &msg)
 {
-    const char* perr = getenv("AF_PRINT_ERRORS");
-    if(perr != nullptr) {
-        if(std::strncmp(perr, "0", 1) != 0)
+    std::string perr = getEnvVar("AF_PRINT_ERRORS");
+    if(!perr.empty()) {
+        if(perr != "0")
             fprintf(stderr, "%s\n", msg.c_str());
     }
     global_err_string = msg;

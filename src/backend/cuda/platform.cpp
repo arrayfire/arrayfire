@@ -11,6 +11,7 @@
 #include <af/cuda.h>
 #include <platform.hpp>
 #include <defines.hpp>
+#include <util.hpp>
 #include <version.hpp>
 #include <driver.h>
 #include <vector>
@@ -348,8 +349,8 @@ DeviceManager::DeviceManager()
     for(int i = 0; i < (int)MAX_DEVICES; i++)
         streams[i] = (cudaStream_t)0;
 
-    const char* deviceENV = getenv("AF_CUDA_DEFAULT_DEVICE");
-    if(!deviceENV) {
+    std::string deviceENV = getEnvVar("AF_CUDA_DEFAULT_DEVICE");
+    if(deviceENV.empty()) {
         setActiveDevice(0, cuDevices[0].nativeId);
     } else {
         stringstream s(deviceENV);
