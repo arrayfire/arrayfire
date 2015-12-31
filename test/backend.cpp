@@ -37,9 +37,14 @@ void backendTest()
 {
     int backends = af::getAvailableBackends();
 
+    ASSERT_NE(backends, 0);
+
     bool cpu    = backends & AF_BACKEND_CPU;
     bool cuda   = backends & AF_BACKEND_CUDA;
     bool opencl = backends & AF_BACKEND_OPENCL;
+
+    printf("\nRunning Default Backend...\n");
+    testFunction<float>();
 
     if(cpu) {
         printf("\nRunning CPU Backend...\n");
