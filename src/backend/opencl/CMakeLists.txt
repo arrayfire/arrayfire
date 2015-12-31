@@ -152,7 +152,6 @@ FILE(GLOB backend_headers
     )
 
 FILE(GLOB backend_sources
-    "../../util.cpp"
     "../*.cpp"
     )
 source_group(backend\\Headers FILES ${backend_headers})

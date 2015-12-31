@@ -15,12 +15,12 @@ FILE(GLOB cpp_sources
 SOURCE_GROUP(api\\cpp\\Sources FILES ${cpp_sources})
 
 FILE(GLOB common_sources
-    "../../util.cpp"
     "../c/util.cpp"
     "../c/err_common.cpp"
     "../c/type_util.cpp"
     "../c/version.cpp"
     "../../backend/dim4.cpp"
+    "../../backend/util.cpp"
     )
 
 SOURCE_GROUP(common FILES ${common_sources})
