@@ -32,8 +32,8 @@ exception::exception(const char *msg): m_err(AF_ERR_UNKNOWN)
 exception::exception(const char *file, unsigned line, af_err err): m_err(err)
 {
     snprintf(m_msg, sizeof(m_msg) - 1,
-             "ArrayFire Exception(%d): %s\nIn %s:%u",
-             (int)err, af_err_to_string(err), file, line);
+             "ArrayFire Exception (%s:%d):\nIn %s:%u",
+             af_err_to_string(err), (int)err, file, line);
 
     m_msg[sizeof(m_msg)-1] = '\0';
 }
@@ -41,11 +41,19 @@ exception::exception(const char *file, unsigned line, af_err err): m_err(err)
 exception::exception(const char *msg, const char *file, unsigned line, af_err err): m_err(err)
 {
     snprintf(m_msg, sizeof(m_msg) - 1,
-             "ArrayFire Exception(%d): %s\nIn %s:%u",
-             (int)(err), msg, file, line);
+             "ArrayFire Exception (%s:%d):\n%s\nIn %s:%u",
+             af_err_to_string(err), (int)(err), msg, file, line);
 
     m_msg[sizeof(m_msg)-1] = '\0';
 }
 
+exception::exception(const char *msg, const char *func, const char *file, unsigned line, af_err err): m_err(err)
+{
+    snprintf(m_msg, sizeof(m_msg) - 1,
+             "ArrayFire Exception (%s:%d):\n%s\nIn function %s\nIn file %s:%u",
+             af_err_to_string(err), (int)(err), msg, func, file, line);
+
+    m_msg[sizeof(m_msg)-1] = '\0';
+}
 
 }
