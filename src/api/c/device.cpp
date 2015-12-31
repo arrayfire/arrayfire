@@ -17,6 +17,7 @@
 #include <handle.hpp>
 #include <memory.hpp>
 #include "err_common.hpp"
+#include <cstring>
 
 using namespace detail;
 
@@ -336,6 +337,22 @@ af_err af_free_host(void *ptr)
     try {
         AF_CHECK(af_init());
         free(ptr);
+    } CATCHALL;
+    return AF_SUCCESS;
+}
+
+af_err af_print_mem_info(const char *msg, const int device_id)
+{
+    try {
+        int device = device_id;
+        if(device == -1) {
+            device = getActiveDeviceId();
+        }
+
+        if(msg != NULL) ARG_ASSERT(0, strlen(msg) < 256); // 256 character limit on msg
+        ARG_ASSERT(1, device >= 0 && device < getDeviceCount());
+
+        printMemInfo(msg ? msg : "", device);
     } CATCHALL;
     return AF_SUCCESS;
 }

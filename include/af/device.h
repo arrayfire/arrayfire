@@ -205,6 +205,19 @@ namespace af
     AFAPI void deviceMemInfo(size_t *alloc_bytes, size_t *alloc_buffers,
                              size_t *lock_bytes, size_t *lock_buffers);
 
+#if AF_API_VERSION >= 33
+    ///
+    /// Prints buffer details from the ArrayFire Device Manager
+    //
+    /// \param [in] msg A message to print before the table
+    /// \param [in] device_id print the memory info of the specified device.
+    ///  -1 signifies active device.
+    //
+    /// \ingroup device_func_mem
+    ///
+    AFAPI void printMemInfo(const char *msg = NULL, const int device_id = -1);
+#endif
+
     /// \brief Call the garbage collection function in the memory manager
     ///
     /// \ingroup device_func_mem
@@ -323,6 +336,21 @@ extern "C" {
     */
     AFAPI af_err af_device_mem_info(size_t *alloc_bytes, size_t *alloc_buffers,
                                     size_t *lock_bytes, size_t *lock_buffers);
+
+#if AF_API_VERSION >= 33
+    ///
+    /// Prints buffer details from the ArrayFire Device Manager
+    //
+    /// \param [in] msg A message to print before the table
+    /// \param [in] device_id print the memory info of the specified device.
+    ///  -1 signifies active device.
+    ///
+    /// return AF_SUCCESS if successful
+    ///
+    /// \ingroup device_func_mem
+    ///
+    AFAPI af_err af_print_mem_info(const char *msg, const int device_id);
+#endif
 
     /**
        Call the garbage collection routine

@@ -159,6 +159,11 @@ namespace af
         AF_THROW(af_free_host((void *)ptr));
     }
 
+    void printMemInfo(const char *msg, const int device_id)
+    {
+        AF_THROW(af_print_mem_info(msg, device_id));
+    }
+
     void deviceGC()
     {
         AF_THROW(af_device_gc());

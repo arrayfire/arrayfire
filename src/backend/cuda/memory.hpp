@@ -28,6 +28,8 @@ namespace cuda
     void garbageCollect();
     void pinnedGarbageCollect();
 
+    void printMemInfo(const char *msg, const int device);
+
     void setMemStepSize(size_t step_bytes);
     size_t getMemStepSize(void);
 }

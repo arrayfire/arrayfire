@@ -14,6 +14,9 @@
 #include <dispatch.hpp>
 #include <cstdlib>
 #include <mutex>
+#include <iostream>
+#include <iomanip>
+#include <string>
 #include <platform.hpp>
 #include <queue.hpp>
 
@@ -101,6 +104,43 @@ void garbageCollect()
             ++memory_curr;
         }
     }
+}
+
+void printMemInfo(const char *msg, const int device)
+{
+    std::cout << msg << std::endl;
+
+    static const std::string head("|     POINTER      |    SIZE    |  AF LOCK  | USER LOCK |");
+    static const std::string line(head.size(), '-');
+    std::cout << line << std::endl << head << std::endl << line << std::endl;
+
+    for(mem_iter iter = memory_map.begin();
+        iter != memory_map.end(); ++iter) {
+
+        std::string status_af("Unknown");
+        std::string status_us("Unknown");
+
+        if(!(iter->second.is_free))    status_af = "Yes";
+        else                           status_af = " No";
+
+        if((iter->second.is_unlinked)) status_us = "Yes";
+        else                           status_us = " No";
+
+        std::string unit = "KB";
+        double size = (double)(iter->second.bytes) / 1024;
+        if(size >= 1024) {
+            size = size / 1024;
+            unit = "MB";
+        }
+
+        std::cout << "|  " << std::right << std::setw(14) << iter->first << " "
+                  << " | " << std::setw(7) << std::setprecision(4) << size << " " << unit
+                  << " | " << std::setw(9) << status_af
+                  << " | " << std::setw(9) << status_us
+                  << " |"  << std::endl;
+    }
+
+    std::cout << line << std::endl;
 }
 
 template<typename T>

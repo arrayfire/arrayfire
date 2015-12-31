@@ -14,6 +14,9 @@
 #include <err_cuda.hpp>
 #include <util.hpp>
 #include <types.hpp>
+#include <iostream>
+#include <iomanip>
+#include <string>
 #include <map>
 #include <dispatch.hpp>
 #include <platform.hpp>
@@ -105,6 +108,10 @@ namespace cuda
     {
     }
 
+    void printMemInfo(const char *msg, const int device)
+    {
+        std::cout << "printMemInfo() disabled in AF_CUDA_MEM_DEBUG Mode" << std::endl;
+    }
 #else
 
     // Manager Class
@@ -188,6 +195,44 @@ namespace cuda
                 ++memory_curr;
             }
         }
+    }
+
+    void printMemInfo(const char *msg, const int device)
+    {
+        std::cout << msg << std::endl;
+        std::cout << "Memory Map for Device: " << device << std::endl;
+
+        static const std::string head("|     POINTER      |    SIZE    |  AF LOCK  | USER LOCK |");
+        static const std::string line(head.size(), '-');
+        std::cout << line << std::endl << head << std::endl << line << std::endl;
+
+        for(mem_iter iter = memory_maps[device].begin();
+            iter != memory_maps[device].end(); ++iter) {
+
+            std::string status_af("Unknown");
+            std::string status_us("Unknown");
+
+            if(!(iter->second.is_free))    status_af = "Yes";
+            else                           status_af = " No";
+
+            if((iter->second.is_unlinked)) status_us = "Yes";
+            else                           status_us = " No";
+
+            std::string unit = "KB";
+            double size = (double)(iter->second.bytes) / 1024;
+            if(size >= 1024) {
+                size = size / 1024;
+                unit = "MB";
+            }
+
+            std::cout << "|  " << std::right << std::setw(14) << iter->first << " "
+                      << " | " << std::setw(7) << std::setprecision(4) << size << " " << unit
+                      << " | " << std::setw(9) << status_af
+                      << " | " << std::setw(9) << status_us
+                      << " |"  << std::endl;
+        }
+
+        std::cout << line << std::endl;
     }
 
     template<typename T>
