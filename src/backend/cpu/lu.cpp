@@ -85,6 +85,11 @@ Array<int> lu_inplace(Array<T> &in, const bool convert_pivot)
     }
 }
 
+bool isLAPACKAvailable()
+{
+    return true;
+}
+
 }
 
 #else

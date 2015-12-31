@@ -96,3 +96,8 @@ af_err af_norm(double *out, const af_array in, const af_norm_type type, const do
     CHECK_ARRAYS(in);
     return CALL(out, in, type, p, q);
 }
+
+af_err af_is_lapack_available(bool *out)
+{
+    return CALL(out);
+}

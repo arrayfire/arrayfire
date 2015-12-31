@@ -17,4 +17,6 @@ namespace opencl
 
     template<typename T>
     Array<int> lu_inplace(Array<T> &in, const bool convert_pivot = true);
+
+    bool isLAPACKAvailable();
 }
