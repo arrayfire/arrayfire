@@ -152,6 +152,7 @@ namespace af
     /// \param[in] ptr the memory to free
     AFAPI void freePinned(const void *ptr);
 
+#if AF_API_VERSION >= 33
     /// \brief Allocate memory on host
     ///
     /// \copydoc device_func_alloc_host
@@ -162,7 +163,9 @@ namespace af
     ///
     /// \ingroup device_func_alloc_host
     AFAPI void *allocHost(const size_t elements, const dtype type);
+#endif
 
+#if AF_API_VERSION >= 33
     /// \brief Allocate memory on host
     ///
     /// \copydoc device_func_alloc_host
@@ -176,7 +179,9 @@ namespace af
     /// \ingroup device_func_alloc_host
     template<typename T>
     AFAPI T* allocHost(const size_t elements);
+#endif
 
+#if AF_API_VERSION >= 33
     /// \brief Free memory allocated internally by ArrayFire
     //
     /// \copydoc device_func_free_host
@@ -185,6 +190,7 @@ namespace af
     ///
     /// \ingroup device_func_free_host
     AFAPI void freeHost(const void *ptr);
+#endif
 
     /// \ingroup device_func_mem
     /// @{
@@ -291,15 +297,19 @@ extern "C" {
     */
     AFAPI af_err af_free_pinned(void *ptr);
 
+#if AF_API_VERSION >= 33
     /**
        \ingroup device_func_alloc_host
     */
     AFAPI af_err af_alloc_host(void **ptr, const dim_t bytes);
+#endif
 
+#if AF_API_VERSION >= 33
     /**
        \ingroup device_func_free_host
     */
     AFAPI af_err af_free_host(void *ptr);
+#endif
 
     /**
        Create array from device memory
